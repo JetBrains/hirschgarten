@@ -3,7 +3,7 @@ package org.jetbrains.bazel.sync.workspace.languages.java.sourceRoot.projectview
 import org.jetbrains.bazel.languages.projectview.ListSection
 import org.jetbrains.bazel.languages.projectview.SectionKey
 
-class JavaSROPatternsSection : ListSection<List<String>>() {
+internal class JavaSROPatternsSection : ListSection<List<String>>() {
   override val name: String = NAME
   override val sectionKey: SectionKey<List<String>> = KEY
   override val doc: String = "Patterns for java source root optimization"

@@ -13,7 +13,7 @@ import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.languages.bazelrc.BazelrcFileType
 import org.jetbrains.bazel.languages.bazelrc.psi.BazelrcImport
 
-class BazelrcImportReference(
+internal class BazelrcImportReference(
   referenceSet: FileReferenceSet,
   range: TextRange,
   index: Int,
@@ -31,7 +31,7 @@ class BazelrcImportReference(
     }.let(PsiElementResolveResult::createResults)
 }
 
-class BazelrcImportFileReferenceSet(importSpec: BazelrcImport) :
+internal class BazelrcImportFileReferenceSet(importSpec: BazelrcImport) :
   FileReferenceSet(
     importSpec.getImportPath()?.text ?: "",
     importSpec,

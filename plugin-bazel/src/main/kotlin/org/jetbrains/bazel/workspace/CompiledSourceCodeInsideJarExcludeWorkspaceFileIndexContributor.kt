@@ -45,7 +45,7 @@ private val JVM_EXTENSIONS =
  *    This is done mainly to prevent resolve from navigating into jars instead of source code (see https://youtrack.jetbrains.com/issue/BAZEL-1672),
  *    but this also helps with indexing performance.
  */
-class CompiledSourceCodeInsideJarExcludeWorkspaceFileIndexContributor :
+internal class CompiledSourceCodeInsideJarExcludeWorkspaceFileIndexContributor :
   WorkspaceFileIndexContributor<LibraryCompiledSourceCodeInsideJarExcludeEntity> {
   override val entityClass: Class<LibraryCompiledSourceCodeInsideJarExcludeEntity>
     get() = LibraryCompiledSourceCodeInsideJarExcludeEntity::class.java

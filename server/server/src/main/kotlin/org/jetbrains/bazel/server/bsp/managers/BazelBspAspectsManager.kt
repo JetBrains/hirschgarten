@@ -1,5 +1,6 @@
 package org.jetbrains.bazel.server.bsp.managers
 
+import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.bazelrunner.ShowRepoResult
 import org.jetbrains.bazel.bazelrunner.params.BazelFlag.aspect
 import org.jetbrains.bazel.bazelrunner.params.BazelFlag.buildManualTests
@@ -24,7 +25,7 @@ import java.nio.file.Files
 import kotlin.io.path.exists
 import kotlin.io.path.invariantSeparatorsPathString
 
-data class BazelBspAspectsManagerResult(val bepOutput: BepOutput, val status: BazelStatus) {
+internal data class BazelBspAspectsManagerResult(val bepOutput: BepOutput, val status: BazelStatus) {
   val isFailure: Boolean
     get() = status != BazelStatus.SUCCESS
 
@@ -36,18 +37,21 @@ data class BazelBspAspectsManagerResult(val bepOutput: BepOutput, val status: Ba
   }
 }
 
+@ApiStatus.Internal
 sealed interface RuleSetName
+@ApiStatus.Internal
 data class ApparentRulesetName(val name: String) : RuleSetName
-data class CanonicalRulesetName(val name: String) : RuleSetName
+internal data class CanonicalRulesetName(val name: String) : RuleSetName
 
-fun RuleSetName.asReponame() = when (this) {
+internal fun RuleSetName.asReponame() = when (this) {
   is CanonicalRulesetName -> "@${name}"
   is ApparentRulesetName -> name
 }
 
+@ApiStatus.Internal
 data class RulesetLanguage(val rulesetName: RuleSetName?, val language: Language)
 
-class BazelBspAspectsManager(
+internal class BazelBspAspectsManager(
   private val executeService: ExecuteService,
   private val aspectsResolver: InternalAspectsResolver,
   private val bazelRelease: BazelRelease,

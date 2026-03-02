@@ -1,8 +1,10 @@
 package org.jetbrains.bsp.protocol
 
+import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.commons.BazelStatus
 import org.jetbrains.bazel.label.Label
 
+@ApiStatus.Internal
 data class TaskFinishParams(
   val taskId: TaskId,
   val eventTime: Long? = null,
@@ -11,8 +13,10 @@ data class TaskFinishParams(
   val data: TaskFinishData? = null,
 )
 
+@ApiStatus.Internal
 sealed interface TaskFinishData
 
+@ApiStatus.Internal
 data class CompileReport(
   val target: Label,
   val errors: Int,
@@ -21,6 +25,7 @@ data class CompileReport(
   val noOp: Boolean? = null,
 ) : TaskFinishData
 
+@ApiStatus.Internal
 data class TestFinish(
   val displayName: String,
   val status: TestStatus,
@@ -29,9 +34,11 @@ data class TestFinish(
   val data: TestFinishData? = null,
 ) : TaskFinishData
 
+@ApiStatus.Internal
 sealed interface TestFinishData
 
-public data class JUnitStyleTestCaseData(
+@ApiStatus.Internal
+data class JUnitStyleTestCaseData(
   val time: Double?,
   val className: String?,
   val errorMessage: String?,
@@ -39,7 +46,8 @@ public data class JUnitStyleTestCaseData(
   val errorType: String?,
 ) : TestFinishData
 
-public data class JUnitStyleTestSuiteData(
+@ApiStatus.Internal
+data class JUnitStyleTestSuiteData(
   val time: Double?,
   val systemOut: String?,
   val systemErr: String?,

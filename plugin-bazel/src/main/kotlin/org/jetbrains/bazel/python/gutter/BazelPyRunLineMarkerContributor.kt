@@ -8,11 +8,13 @@ import com.jetbrains.python.PyTokenTypes
 import com.jetbrains.python.psi.PyFile
 import com.jetbrains.python.psi.PyIfStatement
 import com.jetbrains.python.psi.PyUtil
+import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.target.targetUtils
 import org.jetbrains.bazel.ui.gutters.BazelRunLineMarkerContributor
 import org.jetbrains.bsp.protocol.PythonBuildTarget
 import kotlin.io.path.isRegularFile
 
+@ApiStatus.Internal
 class BazelPyRunLineMarkerContributor : BazelRunLineMarkerContributor() {
   override fun PsiElement.shouldAddMarker(): Boolean =
     containingFile is PyFile &&

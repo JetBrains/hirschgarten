@@ -36,7 +36,7 @@ import org.jetbrains.concurrency.await
 
 private val log = logger<BazelProjectModelModifier>()
 
-class BazelProjectModelModifier(private val project: Project) : JavaProjectModelModifier() {
+internal class BazelProjectModelModifier(private val project: Project) : JavaProjectModelModifier() {
   private val ideaProjectModelModifier = IdeaProjectModelModifier(project)
 
   override fun addModuleDependency(

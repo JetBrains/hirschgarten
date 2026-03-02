@@ -21,7 +21,7 @@ import java.awt.Font
 
 private val UNUSED_TEXT_ATTRIBUTES = TextAttributes(JBColor.GRAY, null, null, null, Font.PLAIN)
 
-class StarlarkDeclarationAnnotator : StarlarkAnnotator() {
+internal class StarlarkDeclarationAnnotator : StarlarkAnnotator() {
   override fun annotate(element: PsiElement, holder: AnnotationHolder) {
     if (isDeclaration(element) &&
       hasNoUsages(element.parent) &&

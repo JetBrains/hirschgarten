@@ -18,7 +18,7 @@ import java.net.http.HttpRequest
 import java.net.http.HttpResponse
 import java.util.Base64
 
-class BazelCentralRegistryModuleResolver : BazelModuleResolver {
+internal class BazelCentralRegistryModuleResolver : BazelModuleResolver {
   override val id: String = ID
   override val name: String = "Bazel Central Registry"
 

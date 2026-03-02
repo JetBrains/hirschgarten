@@ -11,7 +11,7 @@ import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.languages.bazelrc.flags.Flag
 import org.jetbrains.bazel.languages.bazelrc.psi.BazelrcFlag
 
-class DeleteFlagUseFix(element: PsiElement, val flag: Flag) : PsiUpdateModCommandAction<PsiElement>(element) {
+internal class DeleteFlagUseFix(element: PsiElement, val flag: Flag) : PsiUpdateModCommandAction<PsiElement>(element) {
   override fun invoke(
     context: ActionContext,
     element: PsiElement,

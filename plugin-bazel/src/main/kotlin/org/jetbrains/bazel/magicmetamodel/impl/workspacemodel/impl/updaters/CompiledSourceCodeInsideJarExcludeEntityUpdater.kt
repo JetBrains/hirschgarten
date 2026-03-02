@@ -9,7 +9,7 @@ import org.jetbrains.bazel.workspacemodel.entities.CompiledSourceCodeInsideJarEx
 import org.jetbrains.bazel.workspacemodel.entities.CompiledSourceCodeInsideJarExcludeId
 import org.jetbrains.bazel.workspacemodel.entities.LibraryCompiledSourceCodeInsideJarExcludeEntity
 
-class CompiledSourceCodeInsideJarExcludeEntityUpdater(private val workspaceModelEntityUpdaterConfig: WorkspaceModelEntityUpdaterConfig) :
+internal class CompiledSourceCodeInsideJarExcludeEntityUpdater(private val workspaceModelEntityUpdaterConfig: WorkspaceModelEntityUpdaterConfig) :
   WorkspaceModelEntityWithoutParentModuleUpdater<CompiledSourceCodeInsideJarExclude, CompiledSourceCodeInsideJarExcludeEntity> {
   override suspend fun addEntity(entityToAdd: CompiledSourceCodeInsideJarExclude): CompiledSourceCodeInsideJarExcludeEntity {
     val currentExcludeEntity =

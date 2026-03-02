@@ -2,25 +2,31 @@ package org.jetbrains.bazel.workspacemodel.entities
 
 import com.intellij.platform.workspace.jps.entities.ModuleTypeId
 import com.intellij.platform.workspace.jps.entities.SourceRootTypeId
+import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bsp.protocol.MavenCoordinates
 import java.nio.file.Path
 import kotlin.io.path.extension
 
+@ApiStatus.Internal
 abstract class WorkspaceModelEntity
 
+@ApiStatus.Internal
 data class ContentRoot(val path: Path) : WorkspaceModelEntity()
 
-interface ResourceRootEntity
+internal interface ResourceRootEntity
 
-interface EntityDependency
+internal interface EntityDependency
 
+@ApiStatus.Internal
 data class GenericSourceRoot(val sourcePath: Path, val rootType: SourceRootTypeId) : WorkspaceModelEntity()
 
+@ApiStatus.Internal
 data class ResourceRoot(val resourcePath: Path, val rootType: SourceRootTypeId) :
   WorkspaceModelEntity(),
   ResourceRootEntity
 
+@ApiStatus.Internal
 data class Library(
   val displayName: String,
   val iJars: List<Path> = listOf(),
@@ -44,6 +50,7 @@ data class Library(
 /**
 This class holds basic module data that are not language-specific
  */
+@ApiStatus.Internal
 data class GenericModuleInfo(
   val name: String,
   val type: ModuleTypeId,
@@ -54,16 +61,19 @@ data class GenericModuleInfo(
   val isLibraryModule: Boolean = false,
 ) : WorkspaceModelEntity()
 
+@ApiStatus.Internal
 data class Dependency(
   val id: String,
   val isRuntimeOnly: Boolean = false,
   val exported: Boolean = false,
 )
 
+@ApiStatus.Internal
 interface Module {
   fun getModuleName(): String
 }
 
+@ApiStatus.Internal
 data class CompiledSourceCodeInsideJarExclude(
   val relativePathsInsideJarToExclude: Set<String>,
   val librariesFromInternalTargetsUrls: Set<String>,

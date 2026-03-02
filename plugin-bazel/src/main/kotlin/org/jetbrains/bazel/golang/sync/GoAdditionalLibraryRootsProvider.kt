@@ -21,7 +21,7 @@ import com.intellij.openapi.roots.SyntheticLibrary
 import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.config.isBazelProject
 
-class GoAdditionalLibraryRootsProvider : AdditionalLibraryRootsProvider() {
+internal class GoAdditionalLibraryRootsProvider : AdditionalLibraryRootsProvider() {
   override fun getAdditionalProjectLibraries(project: Project): Collection<SyntheticLibrary> {
     if (!BazelFeatureFlags.isGoSupportEnabled) return emptyList()
     if (!project.isBazelProject) return emptyList()

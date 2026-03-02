@@ -9,7 +9,7 @@ import org.jetbrains.bazel.languages.starlark.elements.StarlarkTokenSets
 import org.jetbrains.bazel.languages.starlark.elements.StarlarkTokenType
 import org.jetbrains.bazel.languages.starlark.elements.StarlarkTokenTypes
 
-open class Parsing(val context: ParsingContext) {
+internal open class Parsing(val context: ParsingContext) {
   protected val builder = context.builder
 
   protected fun checkMatches(token: IElementType, message: @ParsingError String): Boolean {

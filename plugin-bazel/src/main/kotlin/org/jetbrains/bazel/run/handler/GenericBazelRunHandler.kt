@@ -7,7 +7,7 @@ import org.jetbrains.bazel.run.BazelRunHandler
 import org.jetbrains.bazel.run.commandLine.BazelRunCommandLineState
 import org.jetbrains.bazel.run.state.GenericRunState
 
-class GenericBazelRunHandler : BazelRunHandler {
+internal class GenericBazelRunHandler : BazelRunHandler {
   override val state: GenericRunState = GenericRunState()
 
   override val name: String

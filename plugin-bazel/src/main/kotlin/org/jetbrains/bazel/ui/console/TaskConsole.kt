@@ -33,6 +33,7 @@ import com.intellij.terminal.TerminalExecutionConsole
 import com.intellij.terminal.TerminalExecutionConsoleBuilder
 import com.jediterm.core.util.TermSize
 import com.jediterm.terminal.TtyConnector
+import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.action.SuspendableAction
 import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.config.BazelPluginBundle
@@ -44,6 +45,7 @@ import java.nio.file.Path
 
 private val log = logger<TaskConsole>()
 
+@ApiStatus.Internal
 abstract class TaskConsole(
   private val taskView: BuildProgressListener,
   private val basePath: String,
@@ -445,10 +447,6 @@ abstract class TaskConsole(
           override fun syncStarted() {}
 
           override fun syncFinished(canceled: Boolean) {}
-
-          override fun allTasksCancelled() {
-            doCancelAction()
-          }
         },
       )
     }
@@ -472,7 +470,7 @@ abstract class TaskConsole(
   }
 }
 
-class SyncTaskConsole(
+internal class SyncTaskConsole(
   taskView: BuildProgressListener,
   basePath: String,
   project: Project,
@@ -493,7 +491,7 @@ class SyncTaskConsole(
     }
 }
 
-class BuildTaskConsole(
+internal class BuildTaskConsole(
   taskView: BuildProgressListener,
   basePath: String,
   project: Project,
@@ -516,4 +514,4 @@ class BuildTaskConsole(
     }
 }
 
-fun Project.isBuildInProgress() = ConsoleService.getInstance(this).buildConsole.hasTasksInProgress()
+internal fun Project.isBuildInProgress() = ConsoleService.getInstance(this).buildConsole.hasTasksInProgress()

@@ -3,7 +3,7 @@ package org.jetbrains.bazel.languages.projectview.sections
 import org.jetbrains.bazel.languages.projectview.SectionKey
 import org.jetbrains.bazel.languages.projectview.sections.presets.BooleanScalarSection
 
-class DeriveTargetsFromDirectoriesSection : BooleanScalarSection() {
+internal class DeriveTargetsFromDirectoriesSection : BooleanScalarSection() {
   override val name = NAME
   override val default = false
   override val sectionKey = KEY

@@ -3,7 +3,7 @@ package org.jetbrains.bazel.languages.projectview.sections
 import org.jetbrains.bazel.languages.projectview.SectionKey
 import org.jetbrains.bazel.languages.projectview.sections.presets.VariantsScalarSection
 
-enum class ShardingApproach {
+internal enum class ShardingApproach {
   EXPAND_AND_SHARD, // expand wildcard targets to package targets, query single targets, and then shard to batches
   QUERY_AND_SHARD, // query single targets from the given list of targets, and then shard to batches
   SHARD_ONLY, // split unexpanded wildcard targets into batches
@@ -14,7 +14,7 @@ enum class ShardingApproach {
   }
 }
 
-class ShardingApproachSection : VariantsScalarSection<ShardingApproach>(VARIANTS) {
+internal class ShardingApproachSection : VariantsScalarSection<ShardingApproach>(VARIANTS) {
   override val name = NAME
   override val sectionKey = KEY
   override val doc = "Sharding approach to use for the build, can be: expand_and_shard, query_and_shard, shard_only"

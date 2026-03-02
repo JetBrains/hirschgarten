@@ -6,7 +6,7 @@ import org.jetbrains.bazel.languages.bazelrc.psi.BazelrcFlag
 import org.jetbrains.bazel.languages.bazelrc.psi.BazelrcImport
 import org.jetbrains.bazel.languages.bazelrc.psi.BazelrcLine
 
-object BazelrcElementTypes {
+internal object BazelrcElementTypes {
   val LINE = BazelrcElementType("LINE")
   val FLAG = BazelrcElementType("FLAG")
   val IMPORT = BazelrcElementType("IMPORT")

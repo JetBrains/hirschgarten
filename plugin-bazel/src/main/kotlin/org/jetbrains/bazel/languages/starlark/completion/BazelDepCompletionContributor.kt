@@ -16,7 +16,7 @@ import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkCallExpres
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkStringLiteralExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.getCompletionLookupElemenent
 
-class BazelDepCompletionContributor : CompletionContributor() {
+internal class BazelDepCompletionContributor : CompletionContributor() {
   init {
     extend(
       CompletionType.BASIC,
@@ -29,7 +29,7 @@ class BazelDepCompletionContributor : CompletionContributor() {
   }
 }
 
-class BazelDepCompletionProvider : CompletionProvider<CompletionParameters>() {
+internal class BazelDepCompletionProvider : CompletionProvider<CompletionParameters>() {
   override fun addCompletions(
     parameters: CompletionParameters,
     context: ProcessingContext,

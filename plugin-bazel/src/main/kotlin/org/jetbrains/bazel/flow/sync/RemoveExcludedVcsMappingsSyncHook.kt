@@ -13,7 +13,7 @@ import org.jetbrains.bazel.sync.ProjectPostSyncHook
 /**
  * https://youtrack.jetbrains.com/issue/BAZEL-948
  */
-class RemoveExcludedVcsMappingsSyncHook : ProjectPostSyncHook {
+internal class RemoveExcludedVcsMappingsSyncHook : ProjectPostSyncHook {
   override suspend fun onPostSync(environment: ProjectPostSyncHook.ProjectPostSyncHookEnvironment) {
     val project = environment.project
     val manager = ProjectLevelVcsManager.getInstance(project)

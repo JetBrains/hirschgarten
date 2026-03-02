@@ -1,4 +1,4 @@
-object Main {
+internal object Main {
   fun main() {
     println("Hello world")
   }

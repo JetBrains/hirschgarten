@@ -8,7 +8,7 @@ import com.intellij.codeInsight.lookup.LookupElementBuilder
 import com.intellij.util.PlatformIcons
 import com.intellij.util.ProcessingContext
 
-class SimpleCompletionProvider(val variants: List<String>) : CompletionProvider<CompletionParameters>() {
+internal class SimpleCompletionProvider(val variants: List<String>) : CompletionProvider<CompletionParameters>() {
   override fun addCompletions(
     parameters: CompletionParameters,
     context: ProcessingContext,

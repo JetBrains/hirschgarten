@@ -25,7 +25,7 @@ import org.jetbrains.bsp.protocol.BazelServerFacade
 import org.jetbrains.bsp.protocol.TaskGroupId
 import kotlin.random.Random
 
-abstract class BazelCommandLineStateBase(environment: ExecutionEnvironment) : CommandLineState(environment) {
+internal abstract class BazelCommandLineStateBase(environment: ExecutionEnvironment) : CommandLineState(environment) {
   protected val taskGroupId: TaskGroupId = TaskGroupId(environment.toString() + "-" + Random.nextBytes(8).toHexString())
 
   protected abstract fun createAndAddTaskListener(handler: BazelProcessHandler): BazelTaskListener

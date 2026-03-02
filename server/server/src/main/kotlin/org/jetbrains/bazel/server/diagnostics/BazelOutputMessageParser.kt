@@ -6,7 +6,7 @@ import java.nio.file.InvalidPathException
 import java.nio.file.Paths
 import kotlin.io.path.exists
 
-object BazelOutputMessageParser : Parser {
+internal object BazelOutputMessageParser : Parser {
   private val COLOR = "\\u001B\\[[0-9]+m".toRegex()
 
   override fun tryParse(output: Output): List<Diagnostic> = findErrorInOutput(output)

@@ -26,7 +26,7 @@ private const val BAZEL_TEST_FILTER_ENV = "TESTBRIDGE_TEST_ONLY"
  * See [ScriptPathBeforeRunTaskProvider], we have to pass [env] to the script process manually
  * because Bazel doesn't include environment variable setup in the generated script.
  */
-suspend fun runWithScriptPath(
+internal suspend fun runWithScriptPath(
   taskId: TaskId,
   scriptPath: Path,
   project: Project,

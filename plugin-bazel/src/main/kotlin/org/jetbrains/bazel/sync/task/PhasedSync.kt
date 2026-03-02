@@ -9,7 +9,7 @@ import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.sync.scope.FirstPhaseSync
 import org.jetbrains.bazel.sync.scope.SecondPhaseSync
 
-class PhasedSync(private val project: Project) {
+internal class PhasedSync(private val project: Project) {
   suspend fun sync() {
     var incompleteState: IncompleteDependenciesAccessToken? = null
     try {

@@ -5,7 +5,7 @@ import java.nio.file.Path
 import kotlin.io.path.exists
 import kotlin.io.path.isRegularFile
 
-object InstallationContextProvider {
+internal object InstallationContextProvider {
   fun calculateProjectViewPath(workspaceDir: Path, projectViewFilePath: Path?): Path =
     projectViewFilePath ?: workspaceDir.resolve(DEFAULT_PROJECT_VIEW_FILE_NAME)
 

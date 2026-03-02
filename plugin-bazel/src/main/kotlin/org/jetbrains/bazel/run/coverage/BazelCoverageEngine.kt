@@ -19,7 +19,7 @@ import org.jetbrains.bazel.run.config.BazelRunConfiguration
 import org.jetbrains.bazel.target.targetUtils
 import java.io.File
 
-class BazelCoverageEngine : CoverageEngine() {
+internal class BazelCoverageEngine : CoverageEngine() {
   companion object {
     @JvmStatic
     fun getInstance(): BazelCoverageEngine = EP_NAME.findExtensionOrFail(BazelCoverageEngine::class.java)

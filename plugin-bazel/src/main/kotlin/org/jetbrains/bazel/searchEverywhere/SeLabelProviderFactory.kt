@@ -7,11 +7,9 @@ import com.intellij.openapi.project.Project
 import com.intellij.platform.searchEverywhere.SeItemsProvider
 import com.intellij.platform.searchEverywhere.providers.SeAsyncContributorWrapper
 import com.intellij.platform.searchEverywhere.providers.SeWrappedLegacyContributorItemsProviderFactory
-import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.config.BazelPluginConstants.SE_LABEL_PROVIDER_ID
 
-@ApiStatus.Internal
-class SeLabelProviderFactory : SeWrappedLegacyContributorItemsProviderFactory {
+internal class SeLabelProviderFactory : SeWrappedLegacyContributorItemsProviderFactory {
   override val id: String
     get() = SE_LABEL_PROVIDER_ID
 

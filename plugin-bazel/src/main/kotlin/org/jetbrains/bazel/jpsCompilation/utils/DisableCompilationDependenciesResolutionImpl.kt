@@ -12,6 +12,6 @@ import org.jetbrains.bazel.config.isBazelProject
  * For now, we need to implement this interface to explicitly skip this task.
  * [Relevant ticket](https://youtrack.jetbrains.com/issue/IDEA-367562)
  */
-class DisableCompilationDependenciesResolutionImpl : DisableCompilationDependenciesResolutionTask {
+internal class DisableCompilationDependenciesResolutionImpl : DisableCompilationDependenciesResolutionTask {
   override fun shouldDisable(project: Project): Boolean = project.isBazelProject
 }

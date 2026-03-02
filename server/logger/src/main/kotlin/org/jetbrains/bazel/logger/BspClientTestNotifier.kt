@@ -1,5 +1,6 @@
 package org.jetbrains.bazel.logger
 
+import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.commons.BazelStatus
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.testing.BazelTestLocationHintProvider
@@ -14,6 +15,7 @@ import org.jetbrains.bsp.protocol.TestStart
 import org.jetbrains.bsp.protocol.TestStatus
 import org.jetbrains.bsp.protocol.TestTask
 
+@ApiStatus.Internal
 class BspClientTestNotifier(private val taskEventsHandler: BazelTaskEventsHandler) {
   private var passedTests: Int = 0
   private var failedTests: Int = 0

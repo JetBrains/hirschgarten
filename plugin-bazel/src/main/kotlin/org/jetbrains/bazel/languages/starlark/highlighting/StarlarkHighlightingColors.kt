@@ -3,7 +3,7 @@ package org.jetbrains.bazel.languages.starlark.highlighting
 import com.intellij.openapi.editor.DefaultLanguageHighlighterColors
 import com.intellij.openapi.editor.colors.TextAttributesKey.createTextAttributesKey
 
-object StarlarkHighlightingColors {
+internal object StarlarkHighlightingColors {
   val KEYWORD = createTextAttributesKey("STARLARK_KEYWORD", DefaultLanguageHighlighterColors.KEYWORD)
   val STRING = createTextAttributesKey("STARLARK_STRING", DefaultLanguageHighlighterColors.STRING)
   val NUMBER = createTextAttributesKey("STARLARK_NUMBER", DefaultLanguageHighlighterColors.NUMBER)

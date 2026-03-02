@@ -2,9 +2,11 @@ package org.jetbrains.bazel.run.synthetic
 
 import com.intellij.openapi.application.ReadAction
 import com.intellij.psi.PsiElement
+import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bsp.protocol.BuildTarget
 
+@ApiStatus.Internal
 abstract class MainClassSyntheticRunTargetTemplateGenerator : SyntheticRunTargetTemplateGenerator {
   private val DEFAULT_TARGET_NAME = "synthetic_binary"
 

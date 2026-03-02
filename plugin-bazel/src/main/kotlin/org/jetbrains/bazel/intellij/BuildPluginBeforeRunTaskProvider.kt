@@ -14,7 +14,7 @@ import org.jetbrains.bazel.server.tasks.runBuildTargetTask
 
 private val PROVIDER_ID = Key.create<BuildPluginBeforeRunTaskProvider.Task>("BuildPluginBeforeRunTaskProvider")
 
-public class BuildPluginBeforeRunTaskProvider : BeforeRunTaskProvider<BuildPluginBeforeRunTaskProvider.Task>() {
+internal class BuildPluginBeforeRunTaskProvider : BeforeRunTaskProvider<BuildPluginBeforeRunTaskProvider.Task>() {
   public class Task : BeforeRunTask<Task>(PROVIDER_ID)
 
   override fun getId(): Key<Task> = PROVIDER_ID

@@ -10,7 +10,7 @@ import kotlinx.coroutines.withTimeoutOrNull
 import org.jetbrains.bazel.runnerAction.RunWithCoverageAction
 import org.jetbrains.bazel.target.targetUtils
 
-class RunTestWithCoverageCommand(text: String, line: Int) : PlaybackCommandCoroutineAdapter(text, line) {
+internal class RunTestWithCoverageCommand(text: String, line: Int) : PlaybackCommandCoroutineAdapter(text, line) {
   companion object {
     const val PREFIX = CMD_PREFIX + "runTestWithCoverage"
   }

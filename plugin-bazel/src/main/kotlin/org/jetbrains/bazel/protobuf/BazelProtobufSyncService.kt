@@ -10,7 +10,7 @@ import com.intellij.platform.workspace.storage.impl.url.toVirtualFileUrl
 import java.io.IOException
 
 @Service(Service.Level.PROJECT)
-class BazelProtobufSyncService(val project: Project) : SettingsSavingComponent {
+internal class BazelProtobufSyncService(val project: Project) : SettingsSavingComponent {
   val store = BazelProtobufIndexStore(project)
 
   fun getRealProtoFile(importPath: String): VirtualFile? {

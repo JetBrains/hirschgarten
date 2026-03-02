@@ -31,7 +31,7 @@ private val log = logger<BazelStartupActivity>()
  * @see org.jetbrains.bazel.flow.open.BazelProjectOpenProcessor for additional actions that
  * may run when a project is being imported for the first time.
  */
-class BazelStartupActivity : BazelProjectActivity() {
+internal class BazelStartupActivity : BazelProjectActivity() {
   override suspend fun executeForBazelProject(project: Project) {
     log.info("Executing Bazel startup activity for project: $project")
     val trackerService = project.serviceAsync<BspConfigurationTrackerService>()
@@ -43,8 +43,6 @@ class BazelStartupActivity : BazelProjectActivity() {
       resyncProjectIfNeeded(project)
 
       executeOnSyncedProject(project)
-
-      project.serviceAsync<BazelProjectProperties>().isInitialized = true
     } finally {
       trackerService.isRunning.update { false }
     }

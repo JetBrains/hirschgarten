@@ -1,12 +1,13 @@
 package org.jetbrains.bazel.extensionPoints.buildTargetClassifier
 
 import com.intellij.openapi.project.Project
+import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.label.ResolvedLabel
 import org.jetbrains.bazel.languages.starlark.repomapping.toApparentLabelOrThis
 import org.jetbrains.bazel.languages.starlark.repomapping.toShortString
 
-public interface BuildTargetClassifierExtension {
+internal interface BuildTargetClassifierExtension {
   /**
    * Sets a separator for chaining target directories. Example:
    * ```
@@ -48,7 +49,7 @@ public interface BuildTargetClassifierExtension {
   public fun calculateBuildTargetName(buildTarget: Label): String
 }
 
-class ListTargetClassifier(private val project: Project) : BuildTargetClassifierExtension {
+internal class ListTargetClassifier(private val project: Project) : BuildTargetClassifierExtension {
   override val separator: String? = null
 
   override fun calculateBuildTargetPath(buildTarget: Label): List<String> = emptyList()
@@ -56,6 +57,7 @@ class ListTargetClassifier(private val project: Project) : BuildTargetClassifier
   override fun calculateBuildTargetName(buildTarget: Label): String = buildTarget.toShortString(project)
 }
 
+@ApiStatus.Internal
 class TreeTargetClassifier(private val project: Project) : BuildTargetClassifierExtension {
   override val separator: String = "/"
 

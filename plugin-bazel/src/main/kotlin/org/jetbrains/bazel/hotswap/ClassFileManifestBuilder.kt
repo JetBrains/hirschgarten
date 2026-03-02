@@ -44,7 +44,7 @@ private val MANIFEST_KEY: Key<AtomicReference<ClassFileManifest>> =
   Key.create<AtomicReference<ClassFileManifest>>("bazel.debug.class.manifest")
 
 /** Builds a .class file manifest to support hotswapping.  */
-object ClassFileManifestBuilder {
+internal object ClassFileManifestBuilder {
   fun initStateIfNotExists(session: HotSwappableDebugSession, project: Project) {
     val env = session.env
     if (!HotSwapUtils.canHotSwap(env, project)) {

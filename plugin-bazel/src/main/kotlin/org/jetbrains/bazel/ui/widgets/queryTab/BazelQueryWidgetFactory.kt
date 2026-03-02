@@ -16,7 +16,7 @@ import org.jetbrains.bazel.config.BazelPluginConstants
 import org.jetbrains.bazel.config.isBazelProject
 import org.jetbrains.bazel.ui.widgets.tool.window.components.BazelQueryToolWindow
 
-class BazelQueryWidgetFactory :
+internal class BazelQueryWidgetFactory :
   ToolWindowFactory,
   DumbAware {
   override suspend fun isApplicableAsync(project: Project): Boolean = project.isBazelProject
@@ -30,7 +30,7 @@ class BazelQueryWidgetFactory :
   }
 }
 
-suspend fun registerBazelQueryToolWindow(project: Project) {
+internal suspend fun registerBazelQueryToolWindow(project: Project) {
   val toolWindowManager = project.serviceAsync<ToolWindowManager>()
   val currentToolWindow = toolWindowManager.getToolWindow(bazelQueryToolWindowId)
   if (currentToolWindow == null) {
@@ -47,5 +47,5 @@ suspend fun registerBazelQueryToolWindow(project: Project) {
   }
 }
 
-val bazelQueryToolWindowId: String
+internal val bazelQueryToolWindowId: String
   get() = BazelPluginConstants.BAZEL_QUERY_DISPLAY_NAME

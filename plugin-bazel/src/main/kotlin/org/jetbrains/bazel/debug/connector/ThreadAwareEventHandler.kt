@@ -3,11 +3,13 @@ package org.jetbrains.bazel.debug.connector
 import com.google.devtools.build.lib.starlarkdebugging.StarlarkDebuggingProtos.DebugEvent.PayloadCase
 import com.intellij.xdebugger.XDebugSession
 import com.intellij.xdebugger.breakpoints.XLineBreakpoint
+import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.debug.platform.StarlarkBreakpointProperties
 import org.jetbrains.bazel.debug.platform.StarlarkDebuggerEvaluator
 import org.jetbrains.bazel.debug.platform.StarlarkSuspendContext
 import com.google.devtools.build.lib.starlarkdebugging.StarlarkDebuggingProtos as SDP
 
+@ApiStatus.Internal
 class ThreadAwareEventHandler(
   private val session: XDebugSession,
   private val messenger: StarlarkDebugMessenger,

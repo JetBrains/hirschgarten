@@ -13,7 +13,7 @@ import org.jetbrains.bazel.taskEvents.BazelTaskListener
 import org.jetbrains.bsp.protocol.BazelServerFacade
 import org.jetbrains.bsp.protocol.RunParams
 
-class BazelRunCommandLineState(environment: ExecutionEnvironment, private val runState: AbstractGenericRunState<*>) :
+internal class BazelRunCommandLineState(environment: ExecutionEnvironment, private val runState: AbstractGenericRunState<*>) :
   BazelCommandLineStateBase(environment) {
   private val configuration = BazelRunConfiguration.get(environment)
 

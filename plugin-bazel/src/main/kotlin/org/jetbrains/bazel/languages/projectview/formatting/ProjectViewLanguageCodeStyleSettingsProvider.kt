@@ -14,7 +14,7 @@ import com.intellij.psi.codeStyle.LanguageCodeStyleSettingsProvider
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.languages.projectview.base.ProjectViewLanguage
 
-class ProjectViewLanguageCodeStyleSettingsProvider : LanguageCodeStyleSettingsProvider() {
+internal class ProjectViewLanguageCodeStyleSettingsProvider : LanguageCodeStyleSettingsProvider() {
   override fun getLanguage(): Language = ProjectViewLanguage
 
   override fun getIndentOptionsEditor(): IndentOptionsEditor = SmartIndentOptionsEditor()

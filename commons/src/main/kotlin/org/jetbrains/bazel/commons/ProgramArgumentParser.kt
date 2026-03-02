@@ -1,5 +1,7 @@
 package org.jetbrains.bazel.commons
 
+import org.jetbrains.annotations.ApiStatus
+
 internal class ProgramArgumentParser(private val input: String) {
   private var position = 0
 
@@ -80,4 +82,5 @@ internal class ProgramArgumentParser(private val input: String) {
   }
 }
 
+@ApiStatus.Internal
 fun String.toProgramArguments() = ProgramArgumentParser(this.trim()).parse()

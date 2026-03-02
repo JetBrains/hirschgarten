@@ -8,7 +8,7 @@ import org.jetbrains.bazel.languages.projectview.elements.ProjectViewElementType
 import org.jetbrains.bazel.languages.projectview.elements.ProjectViewElementTypes
 import org.jetbrains.bazel.languages.projectview.lexer.ProjectViewTokenType
 
-class ProjectViewParser(private val builder: PsiBuilder) {
+internal class ProjectViewParser(private val builder: PsiBuilder) {
   fun parseFile() {
     builder.setDebugMode(ApplicationManager.getApplication().isUnitTestMode)
     while (!builder.eof()) {

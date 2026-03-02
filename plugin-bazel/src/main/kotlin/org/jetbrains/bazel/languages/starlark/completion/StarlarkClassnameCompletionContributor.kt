@@ -22,7 +22,7 @@ import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkStringLite
 import org.jetbrains.bazel.languages.starlark.psi.expressions.getCompletionLookupElemenent
 import org.jetbrains.kotlin.load.kotlin.header.KotlinClassHeader
 
-class StarlarkClassnameCompletionContributor : CompletionContributor() {
+internal class StarlarkClassnameCompletionContributor : CompletionContributor() {
   init {
     extend(CompletionType.BASIC, StarlarkClassnameCompletionProvider.psiPattern, StarlarkClassnameCompletionProvider())
   }

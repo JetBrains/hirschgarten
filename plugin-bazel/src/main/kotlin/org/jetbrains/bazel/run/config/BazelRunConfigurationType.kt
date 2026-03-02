@@ -5,10 +5,12 @@ import com.intellij.execution.configurations.SimpleConfigurationType
 import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.NotNullLazyValue
+import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.assets.BazelPluginIcons
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.config.BazelPluginConstants.BAZEL_DISPLAY_NAME
 
+@ApiStatus.Internal
 class BazelRunConfigurationType :
   SimpleConfigurationType(
     id = ID,

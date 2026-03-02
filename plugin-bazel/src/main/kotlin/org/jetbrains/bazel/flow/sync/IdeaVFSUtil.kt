@@ -2,9 +2,11 @@ package org.jetbrains.bazel.flow.sync
 
 import com.intellij.platform.workspace.storage.url.VirtualFileUrl
 import com.intellij.platform.workspace.storage.url.VirtualFileUrlManager
+import org.jetbrains.annotations.ApiStatus
 import java.net.URI
 import java.nio.file.Path
 
+@ApiStatus.Internal
 object IdeaVFSUtil {
   fun toVirtualFileUrl(uri: String, virtualFileUrlManager: VirtualFileUrlManager): VirtualFileUrl =
     if (uri.startsWith("file://")) {

@@ -7,7 +7,7 @@ import java.io.PrintWriter
 import java.nio.file.Path
 import java.time.Instant
 
-object BazelLog {
+internal object BazelLog {
   val logPath: Path
     get() = PathManager.getLogDir().resolve("bazel-logs").resolve("bazel.log")
 

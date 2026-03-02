@@ -4,7 +4,7 @@ import org.jetbrains.bazel.label.Label
 import org.jetbrains.bsp.protocol.DiagnosticSeverity
 import kotlin.io.path.Path
 
-object BazelRootMessageParser : Parser {
+internal object BazelRootMessageParser : Parser {
   private const val TARGET_LABEL = """(//[\w/.-]*:[\w/.-]+)"""
 
   override fun tryParse(output: Output): List<Diagnostic> = findErrorInBUILD(output) ?: findWarningsInInfoMessage(output) ?: emptyList()

@@ -6,6 +6,7 @@ import com.intellij.openapi.vfs.resolveFromRootOrRelative
 import com.intellij.psi.PsiManager
 import com.intellij.util.concurrency.annotations.RequiresBackgroundThread
 import com.intellij.util.concurrency.annotations.RequiresReadLock
+import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.languages.projectview.psi.ProjectViewPsiFile
 import org.jetbrains.bazel.languages.projectview.psi.sections.ProjectViewPsiImport
@@ -15,6 +16,7 @@ import org.jetbrains.bazel.languages.projectview.psi.sections.ProjectViewPsiTryI
 /**
  * Immutable representation of a ProjectView: a map of section keys to parsed values.
  */
+@ApiStatus.Internal
 data class ProjectView(val sections: Map<SectionKey<*>, Any>, val imports: List<VirtualFile>) {
   inline fun <reified T> getSection(key: SectionKey<T>): T? {
     var value = sections[key] as? T

@@ -22,7 +22,7 @@ import org.jetbrains.bazel.languages.starlark.elements.StarlarkTokenTypes
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkFile
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkReferenceExpression
 
-class BazelGlobalFunctionCompletionContributor : CompletionContributor() {
+internal class BazelGlobalFunctionCompletionContributor : CompletionContributor() {
   init {
     extend(CompletionType.BASIC, globalFunctionCompletionElement(), StarlarkFunctionCompletionProvider)
     extend(

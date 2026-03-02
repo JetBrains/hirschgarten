@@ -10,7 +10,7 @@ import org.jetbrains.bazel.server.sync.firstPhase.FirstPhaseProjectResolver
 import org.jetbrains.bsp.protocol.TaskId
 import java.util.concurrent.atomic.AtomicReference
 
-class BazelSyncProjectProvider(
+internal class BazelSyncProjectProvider(
   private val projectResolver: ProjectResolver,
   private val firstPhaseProjectResolver: FirstPhaseProjectResolver)
 {

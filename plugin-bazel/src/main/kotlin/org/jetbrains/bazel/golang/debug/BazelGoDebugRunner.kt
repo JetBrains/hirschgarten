@@ -23,7 +23,7 @@ import org.jetbrains.bazel.run.config.BazelRunConfiguration
 import org.jetbrains.concurrency.Promise
 import org.jetbrains.concurrency.resolvedPromise
 
-class BazelGoDebugRunner : GoBuildingRunner() {
+internal class BazelGoDebugRunner : GoBuildingRunner() {
   override fun getRunnerId(): String = "BazelGoDebugRunner"
 
   override fun canRun(executorId: String, profile: RunProfile): Boolean {

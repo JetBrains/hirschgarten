@@ -36,7 +36,7 @@ internal class BazelDepProcessor(private val lookingForModuleName: String) : Pro
   }
 }
 
-class StarlarkFunctionCallReference(element: StarlarkCallExpression, rangeInElement: TextRange) :
+internal class StarlarkFunctionCallReference(element: StarlarkCallExpression, rangeInElement: TextRange) :
   PsiReferenceBase<StarlarkCallExpression>(element, rangeInElement, true) {
   override fun resolve(): PsiElement? =
     myElement?.let {

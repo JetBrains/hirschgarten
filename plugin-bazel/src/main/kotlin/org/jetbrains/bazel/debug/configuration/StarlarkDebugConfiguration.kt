@@ -14,7 +14,7 @@ import com.intellij.util.xmlb.XmlSerializer
 import com.intellij.util.xmlb.annotations.Attribute
 import org.jdom.Element
 
-class StarlarkDebugConfiguration(
+internal class StarlarkDebugConfiguration(
   project: Project,
   configurationFactory: ConfigurationFactory?,
   name: String,

@@ -10,7 +10,7 @@ import org.jetbrains.bazel.run.test.BazelTestLocatorProvider
 import org.jetbrains.kotlin.idea.base.psi.kotlinFqName
 import org.jetbrains.kotlin.idea.stubindex.KotlinClassShortNameIndex
 
-class KotlinShortNameTestLocatorProvider : BazelTestLocatorProvider {
+internal class KotlinShortNameTestLocatorProvider : BazelTestLocatorProvider {
   override fun getTestLocator(): SMTestLocator = KotlinShortNameTestLocator
 }
 

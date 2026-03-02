@@ -4,7 +4,7 @@ import com.intellij.lang.PsiBuilder
 import com.intellij.psi.tree.IElementType
 import com.intellij.psi.tree.TokenSet
 
-class ParsingUtils(private val builder: PsiBuilder) {
+internal class ParsingUtils(private val builder: PsiBuilder) {
   fun atToken(tokenType: IElementType?): Boolean = builder.tokenType === tokenType
 
   fun atAnyToken(tokenTypes: TokenSet): Boolean = tokenTypes.contains(builder.tokenType)

@@ -10,12 +10,14 @@ import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import com.intellij.psi.tree.IFileElementType
 import com.intellij.psi.tree.TokenSet
+import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.languages.starlark.StarlarkLanguage
 import org.jetbrains.bazel.languages.starlark.elements.StarlarkElementTypes
 import org.jetbrains.bazel.languages.starlark.elements.StarlarkTokenSets
 import org.jetbrains.bazel.languages.starlark.lexer.StarlarkIndentingLexer
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkFile
 
+@ApiStatus.Internal
 class StarlarkParserDefinition : ParserDefinition {
   override fun createLexer(project: Project?): Lexer = StarlarkIndentingLexer()
 

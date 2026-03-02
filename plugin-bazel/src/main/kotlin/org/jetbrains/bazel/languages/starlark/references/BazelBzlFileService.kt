@@ -5,6 +5,7 @@ import com.intellij.openapi.vfs.VfsUtilCore
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.VirtualFileManager
 import com.intellij.openapi.vfs.VirtualFileVisitor
+import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.label.Canonical
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.label.Package
@@ -15,6 +16,7 @@ import org.jetbrains.bazel.sync.SyncCache
 import org.jetbrains.bazel.workspace.excludedRoots
 import kotlin.io.path.relativeToOrNull
 
+@ApiStatus.Internal
 fun getCanonicalRepoNameToBzlFiles(project: Project): Map<String, List<Label>> =
   SyncCache.getInstance(project).get(canonicalRepoNameToBzlFilesValue)
 

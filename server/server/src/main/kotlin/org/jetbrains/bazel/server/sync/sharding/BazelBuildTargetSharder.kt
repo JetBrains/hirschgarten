@@ -37,10 +37,10 @@ private const val MAX_TARGET_SHARD_SIZE = 10000
 /**
  * number of packages per bazel query shard
  */
-const val PACKAGE_SHARD_SIZE = 500
+internal const val PACKAGE_SHARD_SIZE = 500
 
 /** Utility methods for sharding Bazel build invocations.  */
-object BazelBuildTargetSharder {
+internal object BazelBuildTargetSharder {
   /** Expand wildcard target patterns and partition the resulting target list.  */
   suspend fun expandAndShardTargets(
     pathResolver: BazelPathsResolver,

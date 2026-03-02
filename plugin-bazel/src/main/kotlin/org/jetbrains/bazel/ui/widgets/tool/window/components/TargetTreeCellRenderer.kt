@@ -10,7 +10,7 @@ import javax.swing.SwingConstants
 import javax.swing.tree.DefaultMutableTreeNode
 import javax.swing.tree.TreeCellRenderer
 
-class TargetTreeCellRenderer(val labelHighlighter: (String) -> String) : TreeCellRenderer {
+internal class TargetTreeCellRenderer(val labelHighlighter: (String) -> String) : TreeCellRenderer {
   override fun getTreeCellRendererComponent(
     tree: JTree?,
     value: Any?,

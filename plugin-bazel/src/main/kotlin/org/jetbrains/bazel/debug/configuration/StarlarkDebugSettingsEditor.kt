@@ -10,7 +10,7 @@ import javax.swing.JLabel
 import javax.swing.JPanel
 import javax.swing.JTextField
 
-class StarlarkDebugSettingsEditor : SettingsEditor<StarlarkDebugConfiguration>() {
+internal class StarlarkDebugSettingsEditor : SettingsEditor<StarlarkDebugConfiguration>() {
   private val targetField = JTextField()
   private val targetLabel =
     createLabelFor(BazelPluginBundle.message("starlark.debug.config.target.label"), targetField)

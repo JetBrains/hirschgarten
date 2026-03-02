@@ -7,7 +7,7 @@ import com.intellij.openapi.util.registry.Registry
 import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.config.isBazelProject
 
-class ToggleBazelLogAction : DumbAwareToggleAction() {
+internal class ToggleBazelLogAction : DumbAwareToggleAction() {
   override fun isSelected(e: AnActionEvent): Boolean = Registry.`is`(BazelFeatureFlags.ENABLE_LOG)
 
   override fun setSelected(e: AnActionEvent, state: Boolean) {

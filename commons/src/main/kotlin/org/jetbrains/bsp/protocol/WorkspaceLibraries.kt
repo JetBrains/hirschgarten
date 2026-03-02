@@ -1,10 +1,12 @@
 package org.jetbrains.bsp.protocol
 
+import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.label.DependencyLabel
 import org.jetbrains.bazel.label.Label
 import java.nio.file.Path
 
-public data class LibraryItem(
+@ApiStatus.Internal
+data class LibraryItem(
   val id: Label,
   val dependencies: List<DependencyLabel>,
   val ijars: List<Path>,
@@ -15,18 +17,19 @@ public data class LibraryItem(
   val isLowPriority: Boolean,
 )
 
+@ApiStatus.Internal
 data class MavenCoordinates(
   val groupId: String,
   val artifactId: String,
   val version: String,
 )
 
-public data class GoLibraryItem(
+internal data class GoLibraryItem(
   val id: Label,
   val goImportPath: String? = null,
   val goRoot: Path? = null,
 )
 
-public data class WorkspaceLibrariesResult(val libraries: List<LibraryItem>)
+internal data class WorkspaceLibrariesResult(val libraries: List<LibraryItem>)
 
-public data class WorkspaceGoLibrariesResult(val libraries: List<GoLibraryItem>)
+internal data class WorkspaceGoLibrariesResult(val libraries: List<GoLibraryItem>)

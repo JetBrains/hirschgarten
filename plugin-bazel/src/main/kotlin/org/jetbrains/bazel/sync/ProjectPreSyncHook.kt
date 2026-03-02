@@ -3,6 +3,7 @@ package org.jetbrains.bazel.sync
 import com.intellij.openapi.extensions.ExtensionPointName
 import com.intellij.openapi.project.Project
 import com.intellij.platform.util.progress.SequentialProgressReporter
+import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.ui.console.withSubtask
 import org.jetbrains.bsp.protocol.TaskId
 
@@ -25,6 +26,7 @@ interface ProjectPreSyncHook {
   suspend fun onPreSync(environment: ProjectPreSyncHookEnvironment)
 
   companion object {
+    @ApiStatus.Internal
     val ep = ExtensionPointName.create<ProjectPreSyncHook>("org.jetbrains.bazel.projectPreSyncHook")
   }
 
@@ -41,10 +43,11 @@ interface ProjectPreSyncHook {
 }
 
 val Project.projectPreSyncHooks: List<ProjectPreSyncHook>
+  @ApiStatus.Internal
   get() =
     ProjectPreSyncHook.ep
       .extensionList
       .filter { it.isEnabled(this) }
 
-suspend fun <T> ProjectPreSyncHook.ProjectPreSyncHookEnvironment.withSubtask(text: String, block: suspend (subtaskId: TaskId) -> T) =
+internal suspend fun <T> ProjectPreSyncHook.ProjectPreSyncHookEnvironment.withSubtask(text: String, block: suspend (subtaskId: TaskId) -> T) =
   project.withSubtask(progressReporter, taskId.subTask(text), text, block)

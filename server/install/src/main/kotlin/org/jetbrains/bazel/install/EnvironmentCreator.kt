@@ -1,5 +1,6 @@
 package org.jetbrains.bazel.install
 
+import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.commons.constants.Constants
 import org.jetbrains.bazel.server.bsp.utils.FileUtils.writeIfDifferent
 import java.nio.file.FileAlreadyExistsException
@@ -18,6 +19,7 @@ import kotlin.io.path.readText
 
 private const val ASPECTS_JAR_PATH = "/" + Constants.ASPECTS_ROOT
 
+@ApiStatus.Internal
 class EnvironmentCreator(private val projectRootDir: Path) {
   fun create() = createDotBazelBsp()
 

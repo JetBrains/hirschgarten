@@ -6,7 +6,7 @@ import com.intellij.openapi.startup.ProjectActivity
 import org.jetbrains.bazel.config.BazelProjectProperties
 
 // todo to be removed
-abstract class BazelProjectActivity : ProjectActivity {
+internal abstract class BazelProjectActivity : ProjectActivity {
   final override suspend fun execute(project: Project) {
     if (project.serviceAsync<BazelProjectProperties>().isBazelProject) {
       executeForBazelProject(project)

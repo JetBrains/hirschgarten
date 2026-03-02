@@ -4,7 +4,7 @@ import org.jetbrains.bazel.base.BazelBaseTestRunner
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetParams
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetSelector
 
-object BazelTestRunner : BazelBaseTestRunner() {
+internal object BazelTestRunner : BazelBaseTestRunner() {
   @JvmStatic
   fun main(args: Array<String>) {
     performTest { session ->

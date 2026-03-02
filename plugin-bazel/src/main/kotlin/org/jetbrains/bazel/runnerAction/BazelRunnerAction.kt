@@ -10,7 +10,7 @@ import org.jetbrains.bazel.run.config.BazelRunConfigurationType
 import org.jetbrains.bsp.protocol.BuildTarget
 import javax.swing.Icon
 
-abstract class BazelRunnerAction(
+internal abstract class BazelRunnerAction(
   private val targetInfos: List<BuildTarget>,
   private val text: (isRunConfigName: Boolean) -> String,
   icon: Icon? = null,

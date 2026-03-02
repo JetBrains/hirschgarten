@@ -2,7 +2,7 @@ package org.jetbrains.bazel.languages.starlark.utils
 
 import com.intellij.openapi.util.TextRange
 
-enum class StarlarkQuote(val quote: String) {
+internal enum class StarlarkQuote(val quote: String) {
   SINGLE("'"),
   DOUBLE("\""),
   TRIPLE_SINGLE("'''"),

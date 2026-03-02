@@ -2,6 +2,7 @@ package org.jetbrains.bazel.sync.workspace.languages.java
 
 import com.intellij.openapi.project.Project
 import com.intellij.util.EnvironmentUtil
+import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.commons.BazelPathsResolver
 import org.jetbrains.bazel.commons.LanguageClass
 import org.jetbrains.bazel.info.BspTargetInfo.JvmTargetInfo
@@ -23,7 +24,8 @@ import org.jetbrains.bsp.protocol.SourceItem
 import java.nio.file.Path
 import kotlin.io.path.Path
 
-class JavaLanguagePlugin(
+@ApiStatus.Internal
+class JavaLanguagePlugin internal constructor(
   private val bazelPathsResolver: BazelPathsResolver,
   private val jdkResolver: JdkResolver,
   private val packageResolver: JvmPackageResolver,

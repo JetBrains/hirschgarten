@@ -1,5 +1,6 @@
 package org.jetbrains.bazel.config
 
+import com.google.common.annotations.VisibleForTesting
 import com.intellij.openapi.components.PersistentStateComponent
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.State
@@ -13,9 +14,10 @@ import com.intellij.platform.backend.workspace.WorkspaceModel
 import com.intellij.platform.backend.workspace.virtualFile
 import com.intellij.platform.backend.workspace.workspaceModel
 import com.intellij.workspaceModel.ide.impl.WorkspaceModelImpl
-import org.jetbrains.bazel.annotations.PublicApi
+import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.workspacemodel.entities.BazelProjectDirectoriesEntity
 
+@ApiStatus.Internal
 data class BazelProjectPropertiesState(
   var isBazelProject: Boolean = false,
   var isInitialized: Boolean = false,
@@ -29,8 +31,8 @@ data class BazelProjectPropertiesState(
   name = "BazelProjectProperties",
   storages = [Storage(StoragePathMacros.WORKSPACE_FILE)],
 )
+@ApiStatus.Internal
 class BazelProjectProperties(private val project: Project) : PersistentStateComponent<BazelProjectPropertiesState> {
-  var isInitialized: Boolean = false
   var isBazelProject: Boolean = false
   var rootDir: VirtualFile? = null
   var defaultJdkName: String? = null
@@ -42,14 +44,12 @@ class BazelProjectProperties(private val project: Project) : PersistentStateComp
 
   override fun getState(): BazelProjectPropertiesState =
     BazelProjectPropertiesState(
-      isInitialized = isInitialized,
       isBazelProject = isBazelProject,
       rootDirUrl = rootDir?.url,
       defaultJdkName = defaultJdkName,
     )
 
   override fun loadState(state: BazelProjectPropertiesState) {
-    isInitialized = state.isInitialized
     isBazelProject = state.isBazelProject
     rootDir = state.rootDirUrl?.let { VirtualFileManager.getInstance().findFileByUrl(it) }
     defaultJdkName = state.defaultJdkName
@@ -73,50 +73,42 @@ class BazelProjectProperties(private val project: Project) : PersistentStateComp
 }
 
 val Project.bazelProjectProperties: BazelProjectProperties
+  @ApiStatus.Internal
   get() = service<BazelProjectProperties>()
 
 // todo replace with an instanceof BazelProjectStoreDescriptor check in some way
-@PublicApi
 var Project.isBazelProject: Boolean
   get() = bazelProjectProperties.isBazelProject
+  @ApiStatus.Internal
   set(value) {
     bazelProjectProperties.isBazelProject = value
   }
 
-var Project.isBazelProjectInitialized: Boolean
-  get() = bazelProjectProperties.isInitialized
-  set(value) {
-    bazelProjectProperties.isInitialized = value
-  }
-
-val Project.isBazelProjectLoaded: Boolean
-  get() = isBazelProjectInitialized && workspaceModelLoadedFromCache
-
-val Project.workspaceModelLoadedFromCache: Boolean
+internal val Project.workspaceModelLoadedFromCache: Boolean
   get() = (workspaceModel as WorkspaceModelImpl).loadedFromCache
 
-val Project.isBrokenBazelProject: Boolean
+internal val Project.isBrokenBazelProject: Boolean
   get() = bazelProjectProperties.isBrokenBazelProject
 
-@PublicApi
 var Project.rootDir: VirtualFile
   get() =
     bazelProjectProperties.rootDir
       ?: error("Bazel project root dir is not set. Reimport the project to fix this.")
+  @ApiStatus.Internal
   set(value) {
     bazelProjectProperties.rootDir = value
   }
 
-val Project.bazelProjectName: String
+internal val Project.bazelProjectName: String
   get() = rootDir.name
 
-var Project.defaultJdkName: String?
+internal var Project.defaultJdkName: String?
   get() = bazelProjectProperties.defaultJdkName
   set(value) {
     bazelProjectProperties.defaultJdkName = value
   }
 
-var Project.workspaceName: String?
+internal var Project.workspaceName: String?
   get() = bazelProjectProperties.workspaceName
   set(value) {
     bazelProjectProperties.workspaceName = value

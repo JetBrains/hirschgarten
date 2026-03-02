@@ -35,7 +35,7 @@ import java.io.File
 private val LOG = logger<StarlarkFormattingService>()
 private const val NOTIFICATION_GROUP_ID = "Buildifier"
 
-class StarlarkFormattingService : AsyncDocumentFormattingService() {
+internal class StarlarkFormattingService : AsyncDocumentFormattingService() {
   override fun getFeatures(): Set<Feature> = emptySet()
 
   override fun canFormat(file: PsiFile): Boolean {
@@ -160,7 +160,7 @@ private open class BuildifierProcessListener(private val request: AsyncFormattin
       )
 }
 
-suspend fun formatBuildFile(buildFile: StarlarkFile): Unit =
+internal suspend fun formatBuildFile(buildFile: StarlarkFile): Unit =
   readAndWriteAction {
     val formattingService = StarlarkFormattingService()
     val textRange = TextRange.from(0, buildFile.textLength)

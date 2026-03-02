@@ -8,7 +8,7 @@ import org.jetbrains.bazel.languages.projectview.psi.ProjectViewBaseElement
 import org.jetbrains.bazel.languages.projectview.psi.ProjectViewElementVisitor
 import org.jetbrains.kotlin.psi.psiUtil.getChildrenOfType
 
-class ProjectViewPsiSection(node: ASTNode) : ProjectViewBaseElement(node) {
+internal class ProjectViewPsiSection(node: ASTNode) : ProjectViewBaseElement(node) {
   override fun acceptVisitor(visitor: ProjectViewElementVisitor) {
     visitor.visitSection(this)
   }

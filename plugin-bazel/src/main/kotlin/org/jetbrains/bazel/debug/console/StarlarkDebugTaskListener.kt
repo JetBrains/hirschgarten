@@ -7,7 +7,7 @@ import com.intellij.execution.ui.ConsoleViewContentType
 import org.jetbrains.bazel.taskEvents.BazelTaskListener
 import org.jetbrains.bsp.protocol.TaskId
 
-class StarlarkDebugTaskListener(private val console: ConsoleView) : BazelTaskListener {
+internal class StarlarkDebugTaskListener(private val console: ConsoleView) : BazelTaskListener {
   private val ansiEscapeDecoder = AnsiEscapeDecoder()
 
   /** Function for checking if debug execution is currently suspended */

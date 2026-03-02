@@ -11,9 +11,10 @@ import com.intellij.platform.workspace.storage.WorkspaceEntity
 import com.intellij.platform.workspace.storage.WorkspaceEntityBuilder
 import com.intellij.platform.workspace.storage.impl.containers.toMutableWorkspaceList
 import com.intellij.platform.workspace.storage.url.VirtualFileUrl
+import org.jetbrains.annotations.ApiStatus
 
 @GeneratedCodeApiVersion(3)
-interface JvmBinaryJarsEntityBuilder : WorkspaceEntityBuilder<JvmBinaryJarsEntity> {
+internal interface JvmBinaryJarsEntityBuilder : WorkspaceEntityBuilder<JvmBinaryJarsEntity> {
   override var entitySource: EntitySource
   var jars: MutableList<VirtualFileUrl>
   var module: ModuleEntityBuilder
@@ -34,18 +35,19 @@ internal object JvmBinaryJarsEntityType : EntityType<JvmBinaryJarsEntity, JvmBin
   }
 }
 
-fun MutableEntityStorage.modifyJvmBinaryJarsEntity(
+internal fun MutableEntityStorage.modifyJvmBinaryJarsEntity(
   entity: JvmBinaryJarsEntity,
   modification: JvmBinaryJarsEntityBuilder.() -> Unit,
 ): JvmBinaryJarsEntity = modifyEntity(JvmBinaryJarsEntityBuilder::class.java, entity, modification)
 
-var ModuleEntityBuilder.jvmBinaryJarsEntity: JvmBinaryJarsEntityBuilder?
+internal var ModuleEntityBuilder.jvmBinaryJarsEntity: JvmBinaryJarsEntityBuilder?
   by WorkspaceEntity.extensionBuilder(JvmBinaryJarsEntity::class.java)
 
 
 @JvmOverloads
 @JvmName("createJvmBinaryJarsEntity")
-fun JvmBinaryJarsEntity(
+@ApiStatus.Internal
+internal fun JvmBinaryJarsEntity(
   jars: List<VirtualFileUrl>,
   entitySource: EntitySource,
   init: (JvmBinaryJarsEntityBuilder.() -> Unit)? = null,

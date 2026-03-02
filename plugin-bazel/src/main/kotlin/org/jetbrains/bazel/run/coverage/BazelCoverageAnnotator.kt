@@ -16,7 +16,7 @@ import java.io.File
 private const val AVERAGE_LINE_COUNT_IN_FILE = 100
 
 @Service(Service.Level.PROJECT)
-class BazelCoverageAnnotator(project: Project) : SimpleCoverageAnnotator(project) {
+internal class BazelCoverageAnnotator(project: Project) : SimpleCoverageAnnotator(project) {
   companion object {
     @JvmStatic
     fun getInstance(project: Project): BazelCoverageAnnotator = project.service()

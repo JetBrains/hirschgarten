@@ -5,7 +5,7 @@ import com.intellij.psi.AbstractElementManipulator
 import com.intellij.psi.impl.source.tree.LeafElement
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkStringLiteralExpression
 
-class StarlarkStringLiteralManipulator : AbstractElementManipulator<StarlarkStringLiteralExpression>() {
+internal class StarlarkStringLiteralManipulator : AbstractElementManipulator<StarlarkStringLiteralExpression>() {
   override fun handleContentChange(
     element: StarlarkStringLiteralExpression,
     range: TextRange,

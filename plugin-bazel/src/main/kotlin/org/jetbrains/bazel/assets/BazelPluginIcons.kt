@@ -1,10 +1,11 @@
 package org.jetbrains.bazel.assets
 
 import com.intellij.openapi.util.IconLoader
+import org.jetbrains.annotations.ApiStatus
 import javax.swing.Icon
 
 @Suppress("unused") // should be able to provide us with all available icons
-object BazelPluginIcons {
+internal object BazelPluginIcons {
   private fun loadIcon(path: String): Icon = IconLoader.getIcon(path, BazelPluginIcons::class.java.classLoader)
 
   @JvmField

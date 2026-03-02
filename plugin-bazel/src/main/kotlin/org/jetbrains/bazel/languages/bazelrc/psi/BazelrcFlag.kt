@@ -5,7 +5,7 @@ import com.intellij.psi.PsiElement
 import org.jetbrains.bazel.languages.bazelrc.elements.BazelrcTokenTypes
 import org.jetbrains.bazel.languages.bazelrc.references.BazelrcFlagNameReference
 
-class BazelrcFlag(node: ASTNode) : BazelrcBaseElement(node) {
+internal class BazelrcFlag(node: ASTNode) : BazelrcBaseElement(node) {
   override fun acceptVisitor(visitor: BazelrcElementVisitor) = visitor.visitFlag(this)
 
   val name: PsiElement?

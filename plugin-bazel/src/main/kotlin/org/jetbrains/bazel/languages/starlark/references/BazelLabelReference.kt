@@ -26,7 +26,7 @@ import org.jetbrains.bazel.target.targetUtils
 import org.jetbrains.kotlin.psi.psiUtil.getParentOfType
 
 // Tested in ExternalRepoResolveTest
-class BazelLabelReference(element: StarlarkStringLiteralExpression, soft: Boolean) :
+internal class BazelLabelReference(element: StarlarkStringLiteralExpression, soft: Boolean) :
   PsiReferenceBase<StarlarkStringLiteralExpression>(element, TextRange(0, element.textLength), soft) {
   override fun resolve(): PsiElement? {
     val project = element.project

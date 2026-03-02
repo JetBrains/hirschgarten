@@ -8,7 +8,7 @@ import org.jetbrains.bazel.languages.projectview.ProjectViewBundle
 import org.jetbrains.bazel.languages.projectview.ProjectViewSections
 import org.jetbrains.bazel.languages.projectview.psi.sections.ProjectViewPsiSection
 
-class ProjectViewAnnotator : Annotator {
+internal class ProjectViewAnnotator : Annotator {
   override fun annotate(element: PsiElement, holder: AnnotationHolder) {
     if (element !is ProjectViewPsiSection) {
       return

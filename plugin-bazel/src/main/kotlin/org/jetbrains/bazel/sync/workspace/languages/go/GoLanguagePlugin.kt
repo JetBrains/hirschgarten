@@ -2,6 +2,7 @@ package org.jetbrains.bazel.sync.workspace.languages.go
 
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.diagnostic.logger
+import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.commons.BazelPathsResolver
 import org.jetbrains.bazel.commons.LanguageClass
 import org.jetbrains.bazel.info.BspTargetInfo
@@ -17,6 +18,7 @@ import org.jetbrains.bsp.protocol.SourceItem
 import java.nio.file.Path
 import java.nio.file.Paths
 
+@ApiStatus.Internal
 class GoLanguagePlugin(private val bazelPathsResolver: BazelPathsResolver) : LanguagePlugin<GoBuildTarget> {
   private val logger: Logger = logger<GoLanguagePlugin>()
 

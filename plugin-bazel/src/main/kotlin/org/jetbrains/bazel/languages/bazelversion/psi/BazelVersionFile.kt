@@ -6,7 +6,7 @@ import com.intellij.psi.FileViewProvider
 import org.jetbrains.bazel.languages.bazelversion.BazelVersionFileType
 import org.jetbrains.bazel.languages.bazelversion.BazelVersionLanguage
 
-class BazelVersionFile(viewProvider: FileViewProvider) : PsiFileBase(viewProvider, BazelVersionLanguage) {
+internal class BazelVersionFile(viewProvider: FileViewProvider) : PsiFileBase(viewProvider, BazelVersionLanguage) {
   override fun getFileType(): FileType = BazelVersionFileType
 
   val bazelVersion: BazelVersionLiteral?

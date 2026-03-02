@@ -8,9 +8,10 @@ import com.intellij.platform.workspace.storage.GeneratedCodeApiVersion
 import com.intellij.platform.workspace.storage.MutableEntityStorage
 import com.intellij.platform.workspace.storage.WorkspaceEntityBuilder
 import com.intellij.platform.workspace.storage.impl.containers.toMutableWorkspaceSet
+import org.jetbrains.annotations.ApiStatus
 
 @GeneratedCodeApiVersion(3)
-interface CompiledSourceCodeInsideJarExcludeEntityBuilder : WorkspaceEntityBuilder<CompiledSourceCodeInsideJarExcludeEntity> {
+internal interface CompiledSourceCodeInsideJarExcludeEntityBuilder : WorkspaceEntityBuilder<CompiledSourceCodeInsideJarExcludeEntity> {
   override var entitySource: EntitySource
   var relativePathsInsideJarToExclude: MutableSet<String>
   var librariesFromInternalTargetsUrls: MutableSet<String>
@@ -37,7 +38,7 @@ internal object CompiledSourceCodeInsideJarExcludeEntityType :
   }
 }
 
-fun MutableEntityStorage.modifyCompiledSourceCodeInsideJarExcludeEntity(
+internal fun MutableEntityStorage.modifyCompiledSourceCodeInsideJarExcludeEntity(
   entity: CompiledSourceCodeInsideJarExcludeEntity,
   modification: CompiledSourceCodeInsideJarExcludeEntityBuilder.() -> Unit,
 ): CompiledSourceCodeInsideJarExcludeEntity =
@@ -45,7 +46,8 @@ fun MutableEntityStorage.modifyCompiledSourceCodeInsideJarExcludeEntity(
 
 @JvmOverloads
 @JvmName("createCompiledSourceCodeInsideJarExcludeEntity")
-fun CompiledSourceCodeInsideJarExcludeEntity(
+@ApiStatus.Internal
+internal fun CompiledSourceCodeInsideJarExcludeEntity(
   relativePathsInsideJarToExclude: Set<String>,
   librariesFromInternalTargetsUrls: Set<String>,
   excludeId: CompiledSourceCodeInsideJarExcludeId,

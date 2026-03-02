@@ -1,5 +1,6 @@
 package org.jetbrains.bazel.sync.workspace.languages.kotlin
 
+import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.commons.BazelPathsResolver
 import org.jetbrains.bazel.commons.LanguageClass
 import org.jetbrains.bazel.info.BspTargetInfo
@@ -12,6 +13,7 @@ import org.jetbrains.bsp.protocol.KotlinBuildTarget
 import org.jetbrains.bsp.protocol.SourceItem
 import java.nio.file.Path
 
+@ApiStatus.Internal
 class KotlinLanguagePlugin(private val javaLanguagePlugin: JavaLanguagePlugin, private val bazelPathsResolver: BazelPathsResolver) :
   LanguagePlugin<KotlinBuildTarget>,
   JVMPackagePrefixResolver {

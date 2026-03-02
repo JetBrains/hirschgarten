@@ -25,7 +25,7 @@ import org.jetbrains.bazel.sync.task.ProjectSyncTask
 import java.util.function.Function
 import javax.swing.JComponent
 
-class BuildAndResyncOnUnresolvedImportNotificationsProvider :
+internal class BuildAndResyncOnUnresolvedImportNotificationsProvider :
   EditorNotificationProvider,
   DumbAware {
   private val disableNotificationForFile = mutableSetOf<VirtualFile>()
@@ -90,7 +90,7 @@ class BuildAndResyncOnUnresolvedImportNotificationsProvider :
   }
 }
 
-interface UnresolvedImportChecker {
+internal interface UnresolvedImportChecker {
   fun hasUnresolvedImport(project: Project, psiFile: PsiFile): Boolean
 
   companion object {

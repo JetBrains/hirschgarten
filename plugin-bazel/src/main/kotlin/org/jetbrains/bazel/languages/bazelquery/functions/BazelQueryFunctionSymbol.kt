@@ -6,7 +6,7 @@ import com.intellij.platform.backend.documentation.DocumentationSymbol
 import org.jetbrains.bazel.languages.bazelquery.documentation.BazelQueryFunctionDocumentationTarget
 
 @Suppress("UnstableApiUsage")
-class BazelQueryFunctionSymbol(val function: BazelQueryFunction, val project: Project) :
+internal class BazelQueryFunctionSymbol(val function: BazelQueryFunction, val project: Project) :
   DocumentationSymbol,
   Pointer<BazelQueryFunctionSymbol> {
   override fun createPointer() = this

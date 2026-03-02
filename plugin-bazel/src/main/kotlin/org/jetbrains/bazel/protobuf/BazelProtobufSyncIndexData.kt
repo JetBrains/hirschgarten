@@ -7,7 +7,7 @@ import java.nio.ByteBuffer
 import java.nio.file.Path
 import kotlin.io.path.absolutePathString
 
-data class BazelProtobufSyncIndexData(val importPath: String, val absolutePath: Path)
+internal data class BazelProtobufSyncIndexData(val importPath: String, val absolutePath: Path)
 
 internal fun WriteBuffer.putString(str: String) {
   if (str.isEmpty()) {
@@ -27,7 +27,7 @@ internal fun ByteBuffer.getString(): String {
 }
 
 @Suppress("UNCHECKED_CAST")
-object BazelProtobufSyncIndexDataType : DataType<BazelProtobufSyncIndexData> {
+internal object BazelProtobufSyncIndexDataType : DataType<BazelProtobufSyncIndexData> {
   override fun getMemory(obj: BazelProtobufSyncIndexData): Int = 0
 
   override fun isMemoryEstimationAllowed(): Boolean = true

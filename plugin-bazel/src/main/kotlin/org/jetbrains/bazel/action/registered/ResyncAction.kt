@@ -9,7 +9,7 @@ import org.jetbrains.bazel.sync.status.isSyncInProgress
 import org.jetbrains.bazel.sync.task.ProjectSyncTask
 import org.jetbrains.bazel.ui.console.isBuildInProgress
 
-class ResyncAction : SuspendableAction({ BazelPluginBundle.message("resync.action.text") }) {
+internal class ResyncAction : SuspendableAction({ BazelPluginBundle.message("resync.action.text") }) {
   override suspend fun actionPerformed(project: Project, e: AnActionEvent) {
     ProjectSyncTask(project).sync(syncScope = SecondPhaseSync, buildProject = false)
   }

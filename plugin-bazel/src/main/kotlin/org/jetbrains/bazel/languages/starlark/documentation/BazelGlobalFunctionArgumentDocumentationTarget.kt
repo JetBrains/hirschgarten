@@ -6,7 +6,7 @@ import com.intellij.platform.backend.documentation.DocumentationTarget
 import com.intellij.platform.backend.presentation.TargetPresentation
 
 @Suppress("UnstableApiUsage")
-class BazelGlobalFunctionArgumentDocumentationTarget(symbol: BazelGlobalFunctionArgumentDocumentationSymbol) :
+internal class BazelGlobalFunctionArgumentDocumentationTarget(symbol: BazelGlobalFunctionArgumentDocumentationSymbol) :
   DocumentationTarget,
   Pointer<BazelGlobalFunctionArgumentDocumentationTarget> {
   val symbolPtr = symbol.createPointer()

@@ -1,12 +1,14 @@
 package org.jetbrains.bazel.workspace.indexAdditionalFiles
 
 import com.intellij.openapi.fileTypes.FileNameMatcher
+import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.jps.model.fileTypes.FileNameMatcherFactory
 
 /**
  * A list of glob patterns, matching either the filename or the workspace-relative path.
  * TODO: revise after project view refactor PR is merged
  */
+@ApiStatus.Internal
 class ProjectViewGlobSet {
   private val acceptedFilenames = mutableSetOf<String>()
   private val acceptedExtensions = mutableSetOf<String>()

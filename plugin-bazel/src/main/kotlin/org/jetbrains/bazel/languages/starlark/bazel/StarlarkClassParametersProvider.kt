@@ -1,7 +1,9 @@
 package org.jetbrains.bazel.languages.starlark.bazel
 
 import com.intellij.openapi.extensions.ExtensionPointName
+import org.jetbrains.annotations.ApiStatus
 
+@ApiStatus.Internal
 interface StarlarkClassParametersProvider {
   companion object {
     val EP_NAME: ExtensionPointName<StarlarkClassParametersProvider> =
@@ -11,7 +13,7 @@ interface StarlarkClassParametersProvider {
   fun getClassnameParameters(): List<String>
 }
 
-class DefaultStarlarkClassParametersProvider : StarlarkClassParametersProvider {
+internal class DefaultStarlarkClassParametersProvider : StarlarkClassParametersProvider {
   override fun getClassnameParameters(): List<String> =
     listOf(
       "classname",

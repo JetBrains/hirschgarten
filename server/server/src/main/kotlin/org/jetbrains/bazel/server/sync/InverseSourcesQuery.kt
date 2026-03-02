@@ -14,7 +14,7 @@ import org.jetbrains.bsp.protocol.TaskId
 import java.nio.file.Path
 import kotlin.io.path.relativeTo
 
-object InverseSourcesQuery {
+internal object InverseSourcesQuery {
   suspend fun inverseSourcesQuery(
     params: InverseSourcesParams,
     workspaceRoot: Path,

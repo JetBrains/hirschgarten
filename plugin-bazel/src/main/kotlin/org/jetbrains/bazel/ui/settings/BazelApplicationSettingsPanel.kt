@@ -26,7 +26,7 @@ import javax.swing.JComponent
     ),
   ],
 )
-class BazelApplicationSettingsService : PersistentStateComponent<BazelApplicationSettings> {
+internal class BazelApplicationSettingsService : PersistentStateComponent<BazelApplicationSettings> {
   var settings: BazelApplicationSettings = BazelApplicationSettings()
 
   override fun getState(): BazelApplicationSettings = settings
@@ -41,9 +41,9 @@ class BazelApplicationSettingsService : PersistentStateComponent<BazelApplicatio
   }
 }
 
-data class BazelApplicationSettings(var updateChannel: UpdateChannel = UpdateChannel.RELEASE, var enablePhasedSync: Boolean = false)
+internal data class BazelApplicationSettings(var updateChannel: UpdateChannel = UpdateChannel.RELEASE, var enablePhasedSync: Boolean = false)
 
-class BazelApplicationSettingsConfigurable : SearchableConfigurable {
+internal class BazelApplicationSettingsConfigurable : SearchableConfigurable {
   private val panelApplicationSettings = BazelApplicationSettingsService.getInstance().settings.copy()
 
   private val updateChannelComboBox: ComboBox<UpdateChannel> = ComboBox<UpdateChannel>()

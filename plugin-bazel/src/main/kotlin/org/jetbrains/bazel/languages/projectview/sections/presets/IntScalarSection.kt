@@ -2,9 +2,11 @@ package org.jetbrains.bazel.languages.projectview.sections.presets
 
 import com.intellij.lang.annotation.AnnotationHolder
 import com.intellij.psi.PsiElement
+import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.languages.projectview.ProjectViewBundle
 import org.jetbrains.bazel.languages.projectview.ScalarSection
 
+@ApiStatus.Internal
 abstract class IntScalarSection : ScalarSection<Int>() {
   final override fun fromRawValue(rawValue: String): Int? = rawValue.toIntOrNull()
 

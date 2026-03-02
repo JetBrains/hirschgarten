@@ -11,7 +11,7 @@ import com.intellij.psi.PsiDocumentManager
 import com.intellij.psi.PsiReference
 import com.intellij.psi.util.parents
 
-class ApplyOrderEntryQuickFixCommand(text: String, line: Int) : PlaybackCommandCoroutineAdapter(text, line) {
+internal class ApplyOrderEntryQuickFixCommand(text: String, line: Int) : PlaybackCommandCoroutineAdapter(text, line) {
   companion object {
     const val PREFIX = CMD_PREFIX + "applyOrderEntryQuickFix"
   }

@@ -15,7 +15,7 @@ import java.util.NavigableMap
  * https://youtrack.jetbrains.com/issue/IJPL-199364/Excluded-symlinks-are-watched-by-WatchRootsManager
  * https://youtrack.jetbrains.com/issue/BAZEL-2235/Overly-aggressive-fsnotifier
  */
-fun excludeSymlinksFromFileWatcher(symlinksToExclude: List<Path>) {
+internal fun excludeSymlinksFromFileWatcher(symlinksToExclude: List<Path>) {
   if (!BazelFeatureFlags.excludeSymlinksFromFileWatcherViaReflection) return
 
   val localFileSystem = LocalFileSystem.getInstance()

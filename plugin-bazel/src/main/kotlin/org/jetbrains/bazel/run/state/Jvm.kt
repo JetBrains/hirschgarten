@@ -9,11 +9,11 @@ import com.intellij.openapi.util.text.StringUtil
 import com.intellij.ui.RawCommandLineEditor
 import com.intellij.ui.components.TextComponentEmptyText
 
-interface HasJavaVmOptions {
+internal interface HasJavaVmOptions {
   var javaVmOptions: String?
 }
 
-fun <T : HasJavaVmOptions> vmOptions(): SettingsEditorFragment<T, RawCommandLineEditor> {
+internal fun <T : HasJavaVmOptions> vmOptions(): SettingsEditorFragment<T, RawCommandLineEditor> {
   val group = ExecutionBundle.message("group.java.options")
   val vmOptions = RawCommandLineEditor()
   CommandLinePanel.setMinimumWidth(vmOptions, 400)

@@ -7,7 +7,7 @@ import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.settings.bazel.bazelProjectSettings
 import org.jetbrains.bazel.sync.ProjectPreSyncHook
 
-class RegenerateProjectViewFileContentPreSyncHook : ProjectPreSyncHook {
+internal class RegenerateProjectViewFileContentPreSyncHook : ProjectPreSyncHook {
   override suspend fun onPreSync(environment: ProjectPreSyncHook.ProjectPreSyncHookEnvironment) {
     val project = environment.project
 

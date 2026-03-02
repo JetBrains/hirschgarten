@@ -14,6 +14,7 @@ import com.intellij.patterns.PlatformPatterns.psiElement
 import com.intellij.psi.tree.TokenSet
 import com.intellij.psi.util.startOffset
 import com.intellij.util.ProcessingContext
+import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.assets.BazelPluginIcons
 import org.jetbrains.bazel.languages.bazelquery.BazelQueryLanguage
 import org.jetbrains.bazel.languages.bazelquery.elements.BazelQueryTokenSets
@@ -21,13 +22,14 @@ import org.jetbrains.bazel.languages.bazelquery.elements.BazelQueryTokenType
 import org.jetbrains.bazel.languages.bazelquery.elements.BazelQueryTokenTypes
 import org.jetbrains.bazel.languages.bazelquery.psi.BazelQueryFile
 
-class BazelQueryCompletionContributor : CompletionContributor() {
+internal class BazelQueryCompletionContributor : CompletionContributor() {
   init {
     extend(CompletionType.BASIC, BazelWordCompletionProvider.psiPattern, BazelWordCompletionProvider())
     extend(CompletionType.BASIC, BazelInfixCompletionProvider.psiPattern, BazelInfixCompletionProvider())
   }
 }
 
+@ApiStatus.Internal
 val knownCommands =
   BazelQueryTokenSets.COMMANDS.types
     .map { tokenType ->
@@ -35,20 +37,21 @@ val knownCommands =
       tokenType.completionText() + "()"
     }.toList()
 
+@ApiStatus.Internal
 val knownOperations =
   listOf(
     BazelQueryTokenTypes.LET.completionText() + "  in",
     BazelQueryTokenTypes.SET.completionText() + "()",
   )
 
-val knownInfixOperators =
+internal val knownInfixOperators =
   BazelQueryTokenSets.INFIX_OPERATORS.types
     .map { tokenType ->
       tokenType as BazelQueryTokenType
       tokenType.completionText()
     }.toList()
 
-class BazelQueryPrefixMatcher(prefix: String) : PrefixMatcher(prefix) {
+internal class BazelQueryPrefixMatcher(prefix: String) : PrefixMatcher(prefix) {
   override fun prefixMatches(name: String): Boolean = name.startsWith(prefix, ignoreCase = true)
 
   override fun cloneWithPrefix(newPrefix: String): PrefixMatcher = BazelQueryPrefixMatcher(newPrefix)

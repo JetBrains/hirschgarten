@@ -12,7 +12,7 @@ import org.junit.jupiter.api.Assertions.assertNull
 import kotlin.io.path.Path
 import kotlin.time.Duration.Companion.seconds
 
-object JavaDiagnosticsTest : BazelBspTestBaseScenario() {
+internal object JavaDiagnosticsTest : BazelBspTestBaseScenario() {
   private val testClient = createTestkitClient()
 
   @JvmStatic

@@ -6,7 +6,7 @@ import org.jetbrains.bazel.flow.sync.bazelPaths.BazelBinPathService
 import org.jetbrains.bazel.sync.ProjectSyncHook
 import org.jetbrains.bazel.sync.withSubtask
 
-class PathSyncHook : ProjectSyncHook {
+internal class PathSyncHook : ProjectSyncHook {
   override suspend fun onSync(environment: ProjectSyncHook.ProjectSyncHookEnvironment) =
     coroutineScope {
       environment.withSubtask("Collect bazel workspace info") {
