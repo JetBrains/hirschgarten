@@ -52,6 +52,12 @@ class BepServer(
   private var bspClientTestNotifier: BspClientTestNotifier? = null // Present for test commands
   private val bepOutputBuilder = BepOutputBuilder(bazelPathsResolver)
   private val buildProgressParser = BuildProgressParser()
+  private val customBepEventHandlers: List<BepEventHandler>
+
+  init {
+    val bepEventHandlerContext = BepEventHandlerContext(bspClient, diagnosticsService)
+    customBepEventHandlers = BepEventHandlerProvider.EP_NAME.extensionList.map { it.create(bepEventHandlerContext) }
+  }
 
   override fun publishLifecycleEvent(request: PublishLifecycleEventRequest, responseObserver: StreamObserver<Empty>) {
     responseObserver.onNext(Empty.getDefaultInstance())
@@ -68,6 +74,11 @@ class BepServer(
 
       LOGGER.trace("Got event {}", event)
 
+      for (customHandler in customBepEventHandlers) {
+        if (customHandler.handleEvent(event)) {
+          return
+        }
+      }
       handleBuildEventStreamProtosEvent(event)
     } catch (e: IOException) {
       LOGGER.error("Error deserializing BEP proto: {}", e.toString())

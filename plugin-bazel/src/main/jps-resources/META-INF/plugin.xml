@@ -216,6 +216,10 @@
     <extensionPoint qualifiedName="org.jetbrains.bazel.buildTargetLanguageInferenceContributor"
                     interface="org.jetbrains.bazel.target.lang.BuildTargetLangInferenceContributor"
                     dynamic="true"/>
+    <extensionPoint qualifiedName="org.jetbrains.bazel.bepEventHandlerProvider"
+                    interface="org.jetbrains.bazel.server.bep.BepEventHandlerProvider"
+                    dynamic="true"
+    />
   </extensionPoints>
 
   <!-- it needs to be here, not in withKotlin.xml because plugin loader checks only this file -->
