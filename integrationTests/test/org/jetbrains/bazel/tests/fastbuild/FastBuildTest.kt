@@ -2,9 +2,8 @@ package org.jetbrains.bazel.tests.fastbuild
 
 import com.intellij.driver.client.Remote
 import com.intellij.driver.client.service
-import com.intellij.driver.model.OnDispatcher
 import com.intellij.driver.sdk.VirtualFile
-import com.intellij.driver.sdk.XDebuggerUtil
+import com.intellij.driver.sdk.invokeAction
 import com.intellij.driver.sdk.singleProject
 import com.intellij.driver.sdk.step
 import com.intellij.driver.sdk.ui.components.UiComponent.Companion.waitFound
@@ -48,11 +47,11 @@ class FastBuildTest : IdeStarterBaseProjectTest() {
           waitForIndicators(5.minutes)
 
           step("Set breakpoint") {
-            val file = openFile("Main.java")
-            withContext(OnDispatcher.EDT) {
-              val debuggerUtil = service<XDebuggerUtil>()
-              debuggerUtil.toggleLineBreakpoint(singleProject(), file, 6, false)
+            openFile("Main.java")
+            codeEditor {
+              goToPosition(7, 1)
             }
+            driver.invokeAction("ToggleLineBreakpoint")
           }
 
           step("Launch debug run config") {
