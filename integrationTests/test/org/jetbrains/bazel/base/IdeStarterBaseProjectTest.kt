@@ -111,6 +111,20 @@ abstract class IdeStarterBaseProjectTest {
     } catch (t: Throwable) {
       System.err.println("Failed to find/kill Bazel server processes: ${t.message}")
     }
+    try {
+      val cefProcesses = getProcessList { p ->
+        p.name.contains("cef_server") &&
+          p.arguments.any { it.contains("/ide-tests/") || it.contains("\\ide-tests\\") }
+      }
+      if (cefProcesses.isEmpty()) {
+        println("Killing orphaned JCEF helper processes: no processes were detected")
+      } else {
+        println("Killing orphaned JCEF helper processes: [${cefProcesses.joinToString(", ")}] will be force-killed")
+        cefProcesses.forEach { it.processHandle?.destroyForcibly() }
+      }
+    } catch (t: Throwable) {
+      System.err.println("Failed to find/kill JCEF processes: ${t.message}")
+    }
   }
 
   private fun IDETestContext.propagateSystemProperty(key: String): IDETestContext {
