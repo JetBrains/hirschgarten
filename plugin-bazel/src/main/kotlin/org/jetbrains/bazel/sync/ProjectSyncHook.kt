@@ -10,6 +10,7 @@ import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.sync.scope.ProjectSyncScope
 import org.jetbrains.bazel.sync.workspace.BazelResolvedWorkspace
 import org.jetbrains.bazel.sync.workspace.BazelWorkspaceResolveService
+import org.jetbrains.bazel.ui.console.syncConsole
 import org.jetbrains.bazel.ui.console.withSubtask
 import org.jetbrains.bsp.protocol.BazelServerFacade
 import org.jetbrains.bsp.protocol.TaskId
@@ -76,4 +77,4 @@ val Project.projectSyncHooks: List<ProjectSyncHook>
       .filter { it.isEnabled(this) }
 
 internal suspend fun <T> ProjectSyncHook.ProjectSyncHookEnvironment.withSubtask(text: String, block: suspend (subtaskId: TaskId) -> T) =
-  project.withSubtask(progressReporter, taskId.subTask(text), text, block)
+  project.syncConsole.withSubtask(progressReporter, taskId.subTask(text), text, block)

@@ -15,6 +15,7 @@ import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.sync.ProjectPostSyncHook
 import org.jetbrains.bazel.sync.SyncCache
 import org.jetbrains.bazel.target.targetUtils
+import org.jetbrains.bazel.ui.console.syncConsole
 import org.jetbrains.bazel.ui.console.withSubtask
 import org.jetbrains.bsp.protocol.GoBuildTarget
 import org.jetbrains.bsp.protocol.TaskId
@@ -66,7 +67,7 @@ internal class GoSdkSyncHook : ProjectPostSyncHook {
     reporter: SequentialProgressReporter,
     project: Project,
     taskId: TaskId,
-  ) = project.withSubtask(
+  ) = project.syncConsole.withSubtask(
     reporter = reporter,
     subtaskId = taskId.subTask("calculate-and-add-go-sdk"),
     text = BazelPluginBundle.message("console.task.model.calculate.add.go.fetched.sdk"),
