@@ -7,6 +7,7 @@ import com.intellij.openapi.vfs.isFile
 import com.intellij.platform.workspace.jps.entities.LibraryRootTypeId
 import com.intellij.platform.workspace.storage.EntityStorage
 import com.intellij.workspaceModel.core.fileIndex.WorkspaceFileIndexContributor
+import com.intellij.workspaceModel.core.fileIndex.WorkspaceFileSetExclusionCondition
 import com.intellij.workspaceModel.core.fileIndex.WorkspaceFileSetRegistrar
 import org.jetbrains.bazel.workspacemodel.entities.LibraryCompiledSourceCodeInsideJarExcludeEntity
 
@@ -57,37 +58,52 @@ class CompiledSourceCodeInsideJarExcludeWorkspaceFileIndexContributor :
     val library = storage.resolve(entity.libraryId) ?: return
     val compiledSourceCodeInsideJarExcludeEntity = storage.resolve(entity.compiledSourceCodeInsideJarExcludeId) ?: return
 
-    val relativePathsToExclude: Set<String> = compiledSourceCodeInsideJarExcludeEntity.relativePathsInsideJarToExclude
-    val librariesFromInternalTargetsUrls: Set<String> = compiledSourceCodeInsideJarExcludeEntity.librariesFromInternalTargetsUrls
+    val relativePathsToExclude: Set<String> = compiledSourceCodeInsideJarExcludeEntity.relativePathsInsideJarToExclude.toSet()
+    val librariesFromInternalTargetsUrls: Set<String> = compiledSourceCodeInsideJarExcludeEntity.librariesFromInternalTargetsUrls.toSet()
+    val internalTargetsExclusionCondition =
+      InternalTargetsJarExclusionCondition(relativePathsToExclude, librariesFromInternalTargetsUrls)
 
-    library.roots.map { libraryRoot ->
+    library.roots.forEach { libraryRoot ->
       val contentRootUrl = libraryRoot.url
       registrar.registerExclusionCondition(
         root = contentRootUrl,
-        condition = { virtualFile ->
-          if (virtualFile.isDirectory) return@registerExclusionCondition false
-          val rootFile = VfsUtilCore.getRootFile(virtualFile)
-          val relativePath = virtualFile.getRelativePathInsideJar(rootFile)
-          val relativePathWithoutNestedClass = removeNestedClass(relativePath)
-          if (rootFile.url in librariesFromInternalTargetsUrls) {
-            return@registerExclusionCondition virtualFile.hasNonJvmExtension() || relativePathWithoutNestedClass in relativePathsToExclude
-          }
-          false
-        },
+        condition = internalTargetsExclusionCondition,
         entity = entity,
       )
 
       if (libraryRoot.type == LibraryRootTypeId.SOURCES) {
         registrar.registerExclusionCondition(
           root = contentRootUrl,
-          condition = { virtualFile ->
-            virtualFile.hasNonJvmExtension()
-          },
+          condition = NonJvmExtensionExclusionCondition,
           entity = entity,
         )
       }
     }
   }
+}
+
+private data class InternalTargetsJarExclusionCondition(
+  private val relativePathsToExclude: Set<String>,
+  private val librariesFromInternalTargetsUrls: Set<String>,
+) : WorkspaceFileSetExclusionCondition {
+  override fun shouldExclude(virtualFile: VirtualFile): Boolean {
+    if (virtualFile.isDirectory) return false
+    val rootFile = VfsUtilCore.getRootFile(virtualFile)
+    val relativePath = virtualFile.getRelativePathInsideJar(rootFile)
+    val relativePathWithoutNestedClass = removeNestedClass(relativePath)
+    if (rootFile.url in librariesFromInternalTargetsUrls) {
+      return virtualFile.hasNonJvmExtension() || relativePathWithoutNestedClass in relativePathsToExclude
+    }
+    return false
+  }
+}
+
+private object NonJvmExtensionExclusionCondition : WorkspaceFileSetExclusionCondition {
+  override fun shouldExclude(file: VirtualFile): Boolean = file.hasNonJvmExtension()
+
+  override fun equals(other: Any?): Boolean = other === this
+
+  override fun hashCode(): Int = javaClass.hashCode()
 }
 
 /**
