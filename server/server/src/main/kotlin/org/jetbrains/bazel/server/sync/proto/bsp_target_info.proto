@@ -29,7 +29,6 @@ message JvmOutputs {
 }
 
 message JvmTargetInfo {
-  reserved 1, 2, 6, 10, 12;
   repeated string jvm_flags = 7;
   string main_class = 8;
   repeated string args = 9;
@@ -52,7 +51,6 @@ message JavaRuntimeInfo {
 }
 
 message ScalaTargetInfo {
-  reserved 3;
   repeated string scalac_opts = 1;
   repeated FileLocation compiler_classpath = 2;
   repeated string scalatest_classpath_targets = 4;
@@ -87,7 +85,6 @@ message JavaCommonInfo {
 }
 
 message PythonTargetInfo {
-  reserved 4;
   FileLocation interpreter = 1;
   string version = 2;
   repeated string imports = 3;
@@ -126,7 +123,6 @@ message TargetInfo {
   bool executable = 90;
   string workspace_name = 100;
   JvmTargetInfo jvm_target_info = 1000;
-  reserved 1001 to 1003, 1006;
   bool jvm_target = 1004;
   bool has_api_generating_plugins = 1005;
   string generator_name = 1500;
