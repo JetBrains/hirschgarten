@@ -1,5 +1,6 @@
 package org.jetbrains.bazel.server.bzlmod
 
+import kotlinx.coroutines.CancellationException
 import org.jetbrains.bazel.bazelrunner.BazelRunner
 import org.jetbrains.bazel.bazelrunner.ModuleResolver
 import org.jetbrains.bazel.bazelrunner.ShowRepoResult
@@ -35,6 +36,9 @@ internal suspend fun calculateRepoMapping(
     try {
       // empty string is the name of the root module
       moduleResolver.getRepoMappings(listOf("")).get("").orEmpty()
+    }
+    catch (e: CancellationException) {
+      throw e
     }
     catch (e: Exception) {
       taskLogger.error(e.toString())
