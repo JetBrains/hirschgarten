@@ -2,14 +2,18 @@ package org.jetbrains.bsp.protocol
 
 import org.jetbrains.annotations.ApiStatus
 
-@ApiStatus.Internal
 interface BazelTaskEventsHandler {
+  @ApiStatus.Internal
   fun onBuildTaskStart(params: TaskStartParams)
+  @ApiStatus.Internal
   fun onBuildTaskFinish(params: TaskFinishParams)
 
+  @ApiStatus.Internal
   fun onBuildLogMessage(params: LogMessageParams)
   fun onBuildPublishDiagnostics(params: PublishDiagnosticsParams)
+  @ApiStatus.Internal
   fun onPublishCoverageReport(report: CoverageReport)
+  @ApiStatus.Internal
   fun onCachedTestLog(testLog: CachedTestLog)
 }
 

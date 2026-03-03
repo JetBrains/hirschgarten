@@ -1,12 +1,10 @@
 package org.jetbrains.bazel.server.diagnostics
 
-import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bsp.protocol.PublishDiagnosticsParams
 import org.jetbrains.bsp.protocol.TaskId
 import java.nio.file.Path
 
-@ApiStatus.Internal
 class DiagnosticsService internal constructor(
   private val parser: DiagnosticsParser,
   private val mapper: DiagnosticBspMapper,
