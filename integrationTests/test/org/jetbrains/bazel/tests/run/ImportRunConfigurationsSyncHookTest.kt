@@ -2,10 +2,12 @@ package org.jetbrains.bazel.tests.run
 
 import com.intellij.driver.sdk.singleProject
 import com.intellij.driver.sdk.step
+import com.intellij.driver.sdk.ui.Finder
 import com.intellij.driver.sdk.ui.components.common.codeEditor
 import com.intellij.driver.sdk.ui.components.common.ideFrame
 import com.intellij.driver.sdk.ui.components.elements.popup
 import com.intellij.driver.sdk.ui.shouldBe
+import com.intellij.driver.sdk.withRetries
 import com.intellij.ide.starter.driver.engine.runIdeWithDriver
 import org.jetbrains.bazel.data.IdeaBazelCases
 import org.jetbrains.bazel.ideStarter.IdeStarterBaseProjectTest
@@ -33,12 +35,10 @@ class ImportRunConfigurationsSyncHookTest : IdeStarterBaseProjectTest() {
         waitForIndicators(5.minutes)
 
         step("Select Bazel test configuration") {
-          step("Open run configurations dropdown") { 
-            x { byVisibleText("Remote JVM") }.click() 
-          }
-          step("Select 'Bazel test CalculatorTest' from dropdown") {
-            popup().waitOneText("Bazel test CalculatorTest").click()
-          }
+          // Clicking the run config widget sometimes focuses it without opening the dropdown,
+          // especially after focus was elsewhere (editor, build tool window). Retry the click
+          // until the popup actually appears. ~9% flake rate observed without retries.
+          selectRunConfiguration(currentText = "Remote JVM", targetText = "Bazel test CalculatorTest")
         }
 
         step("Check build diagnostics with run configs") {
@@ -68,12 +68,7 @@ class ImportRunConfigurationsSyncHookTest : IdeStarterBaseProjectTest() {
         }
 
         step("Select Bazel run configuration") {
-          step("Open run configurations dropdown") { 
-            x { byVisibleText("Bazel test CalculatorTest") }.click() 
-          }
-          step("Select 'Bazel run :main' from dropdown") {
-            popup().waitOneText("Bazel run :main").click()
-          }
+          selectRunConfiguration(currentText = "Bazel test CalculatorTest", targetText = "Bazel run :main")
         }
 
         step("Execute the run configuration") { x { byAccessibleName("Run 'Bazel run :main'") }.click() }
@@ -97,5 +92,12 @@ class ImportRunConfigurationsSyncHookTest : IdeStarterBaseProjectTest() {
       }
     }
     checkIdeaLogForExceptions(context)
+  }
+
+  private fun Finder.selectRunConfiguration(currentText: String, targetText: String) {
+    withRetries(message = "Click run config dropdown '$currentText' and select '$targetText'", times = 3) {
+      x { byVisibleText(currentText) }.click()
+      popup().waitOneText(targetText, timeout = 5.seconds).click()
+    }
   }
 }
