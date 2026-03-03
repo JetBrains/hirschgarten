@@ -22,6 +22,7 @@ import com.intellij.ide.starter.ide.IDETestContext
 import com.intellij.ide.starter.models.TestCase
 import com.intellij.ide.starter.path.GlobalPaths
 import com.intellij.ide.starter.process.findAndKillProcesses
+import com.intellij.ide.starter.process.getProcessList
 import com.intellij.ide.starter.project.GitProjectInfo
 import com.intellij.ide.starter.project.LocalProjectInfo
 import com.intellij.ide.starter.project.ProjectInfoSpec
@@ -178,13 +179,16 @@ abstract class IdeStarterBaseProjectTest {
 
     fun killCefProcesses() {
       try {
-        findAndKillProcesses(
-          message = "Killing orphaned JCEF helper processes",
-          filter = java.util.function.Predicate { p ->
-            p.name.contains("cef_server") &&
-              p.arguments.any { it.contains("/ide-tests/") || it.contains("\\ide-tests\\") }
-          },
-        )
+        val cefProcesses = getProcessList(java.util.function.Predicate { p ->
+          p.name.contains("cef_server") &&
+            p.arguments.any { it.contains("/ide-tests/") || it.contains("\\ide-tests\\") }
+        })
+        if (cefProcesses.isEmpty()) {
+          println("Killing orphaned JCEF helper processes: no processes were detected")
+          return
+        }
+        println("Killing orphaned JCEF helper processes: [${cefProcesses.joinToString(", ")}] will be force-killed")
+        cefProcesses.forEach { it.processHandle?.destroyForcibly() }
       } catch (t: Throwable) {
         System.err.println("Failed to find/kill JCEF processes: ${t.message}")
       }
