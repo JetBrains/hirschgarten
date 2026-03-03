@@ -130,3 +130,21 @@ f:org.jetbrains.bazel.workspacecontext.WorkspaceContext
 - hashCode():I
 org.jetbrains.bsp.protocol.BazelServerFacade
 - a:getWorkspaceContext():org.jetbrains.bazel.workspacecontext.WorkspaceContext
+org.jetbrains.bsp.protocol.BazelTaskEventsHandler
+- a:onBuildPublishDiagnostics(org.jetbrains.bsp.protocol.PublishDiagnosticsParams):V
+f:org.jetbrains.bsp.protocol.PublishDiagnosticsParams
+- <init>(org.jetbrains.bsp.protocol.TaskId,org.jetbrains.bsp.protocol.TextDocumentIdentifier,org.jetbrains.bazel.label.Label,java.util.List,Z):V
+- f:component1():org.jetbrains.bsp.protocol.TaskId
+- f:component2():org.jetbrains.bsp.protocol.TextDocumentIdentifier
+- f:component3():org.jetbrains.bazel.label.Label
+- f:component4():java.util.List
+- f:component5():Z
+- f:copy(org.jetbrains.bsp.protocol.TaskId,org.jetbrains.bsp.protocol.TextDocumentIdentifier,org.jetbrains.bazel.label.Label,java.util.List,Z):org.jetbrains.bsp.protocol.PublishDiagnosticsParams
+- bs:copy$default(org.jetbrains.bsp.protocol.PublishDiagnosticsParams,org.jetbrains.bsp.protocol.TaskId,org.jetbrains.bsp.protocol.TextDocumentIdentifier,org.jetbrains.bazel.label.Label,java.util.List,Z,I,java.lang.Object):org.jetbrains.bsp.protocol.PublishDiagnosticsParams
+- equals(java.lang.Object):Z
+- f:getBuildTarget():org.jetbrains.bazel.label.Label
+- f:getDiagnostics():java.util.List
+- f:getReset():Z
+- f:getTaskId():org.jetbrains.bsp.protocol.TaskId
+- f:getTextDocument():org.jetbrains.bsp.protocol.TextDocumentIdentifier
+- hashCode():I

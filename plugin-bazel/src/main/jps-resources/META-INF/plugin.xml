@@ -220,6 +220,10 @@
                     interface="org.jetbrains.bazel.bazelrunner.BazelProcessLauncherProvider"
                     dynamic="true"
     />
+    <extensionPoint qualifiedName="org.jetbrains.bazel.bepEventHandlerProvider"
+                    interface="org.jetbrains.bazel.server.bep.BepEventHandlerProvider"
+                    dynamic="true"
+    />
   </extensionPoints>
 
   <projectListeners>
