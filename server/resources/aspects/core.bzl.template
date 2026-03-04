@@ -15,7 +15,7 @@ MAX_FILENAME_LENGTH = 200
 
 def make_dep(dep, dependency_type, exported):
     return struct(
-        id = str(dep[BspAspectInfo].bsp_info.id),
+        target = dep[BspAspectInfo].bsp_info.key,
         dependency_type = dependency_type,
         exported = exported,
     )
@@ -83,7 +83,7 @@ def _bsp_target_info_aspect_impl(target, ctx):
     direct_exports = make_deps(direct_export_targets, COMPILE, True)
     direct_exports_set = {str(dep.label): None for dep in direct_export_targets}
 
-    all_deps = [dep for dep in compile_deps + runtime_deps if not (dep.id in direct_exports_set)] + direct_exports
+    all_deps = [dep for dep in compile_deps + runtime_deps if not (dep.target in direct_exports_set)] + direct_exports
 
     dep_targets = direct_dep_targets + private_direct_dep_targets + runtime_dep_targets + direct_export_targets
     output_groups = dict()
@@ -174,7 +174,7 @@ def _bsp_target_info_aspect_impl(target, ctx):
     )
 
     exported_properties = dict(
-        id = target.label,
+        key = target_id,
         kind = rule_kind,
         export_deps = direct_exports,
         output_groups = output_groups,
