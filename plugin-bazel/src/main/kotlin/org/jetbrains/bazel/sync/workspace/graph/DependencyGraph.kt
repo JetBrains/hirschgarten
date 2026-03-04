@@ -182,7 +182,8 @@ class DependencyGraph(
 
   private fun getDependencies(dependencies: List<BspTargetInfo.Dependency>): Set<Label> =
     dependencies
-      .map(BspTargetInfo.Dependency::getId)
+      .map(BspTargetInfo.Dependency::getTarget)
+      .map(BspTargetInfo.TargetKey::getLabel)
       .map(Label::parse)
       .toSet()
 

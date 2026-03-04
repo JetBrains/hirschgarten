@@ -40,7 +40,7 @@ message Dependency {
     RUNTIME = 1;
   }
 
-  string id = 1;
+  TargetKey target = 1;
   DependencyType dependency_type = 2;
   bool exported = 3;
 }

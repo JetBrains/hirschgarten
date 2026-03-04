@@ -40,7 +40,7 @@ class ProjectResolverTest {
   private fun dependency(id: String): Dependency =
     Dependency
       .newBuilder()
-      .setId(id)
+      .setTarget(TargetKey.newBuilder().setLabel(id))
       .build()
 
   private fun toIdToTargetInfoMap(vararg targetIds: TargetInfo): Map<Label, TargetInfo> =

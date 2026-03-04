@@ -403,18 +403,19 @@ class ProjectResolver internal constructor(
         dependency
           .apply {
             // canonicalize the dependency id
-            val label = Label.parse(id)
+            val label = Label.parse(target.label)
 
             // Replace dependencies from maven_project_jar with their java_library counterparts
             // this is to support the macro java_export from rules_jvm_external
             // refer to its definition for more context: https://github.com/bazel-contrib/rules_jvm_external/blob/935db476ba732576a1f868b092301ce1bc44fe72/private/rules/java_export.bzl#L8
-            val target = targets[label]
-            id =
-              if (target?.kind == "maven_project_jar" && id.endsWith(projectSuffix)) {
-                id.dropLast(projectSuffix.length) + "-lib"
+            val targetInfo = targets[label]
+            val newlabel =
+              if (targetInfo?.kind == "maven_project_jar" && target.label.endsWith(projectSuffix)) {
+                target.label.dropLast(projectSuffix.length) + "-lib"
               } else {
-                id
+                target.label
               }
+            target = BspTargetInfo.TargetKey.newBuilder().setLabel(newlabel).setConfiguration(target.configuration).build()
           }.build()
       }
     }

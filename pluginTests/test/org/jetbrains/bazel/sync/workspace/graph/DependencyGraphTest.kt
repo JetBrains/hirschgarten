@@ -796,7 +796,7 @@ class DependencyGraphTest {
   private fun dependency(id: String, dependencyType: Dependency.DependencyType): Dependency =
     Dependency
       .newBuilder()
-      .setId(id)
+      .setTarget(TargetKey.newBuilder().setLabel(id))
       .setDependencyType(dependencyType)
       .build()
 
