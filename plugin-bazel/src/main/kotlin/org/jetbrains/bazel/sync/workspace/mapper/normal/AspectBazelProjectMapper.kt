@@ -267,7 +267,6 @@ internal class AspectBazelProjectMapper(
           Label.parse(target.id + "_output_jars"),
           target,
           onlyOutputJars = true,
-          containsInternalJars = true,
         )?.let { library ->
           target.label() to listOf(library)
         }
@@ -661,7 +660,6 @@ internal class AspectBazelProjectMapper(
               label = targetId,
               targetInfo = targetInfo,
               onlyOutputJars = false,
-              containsInternalJars = targetInfo.containsAnyInternalJars(),
             )?.let { library ->
               targetId to library
             }
@@ -680,7 +678,6 @@ internal class AspectBazelProjectMapper(
     label: Label,
     targetInfo: TargetInfo,
     onlyOutputJars: Boolean,
-    containsInternalJars: Boolean,
   ): Library? {
     val outputs = getTargetOutputJarPaths(targetInfo) + getIntellijPluginJars(targetInfo)
     val rawSources = getSourceJarPaths(targetInfo)
@@ -718,7 +715,7 @@ internal class AspectBazelProjectMapper(
       dependencies = targetInfo.dependenciesList.map { it.toDependencyLabel() },
       interfaceJars = interfaceJars,
       mavenCoordinates = mavenCoordinates,
-      containsInternalJars = containsInternalJars,
+      containsInternalJars = targetInfo.containsAnyInternalJars(),
     )
   }
 

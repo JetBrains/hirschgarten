@@ -16,6 +16,30 @@ import kotlin.io.path.Path
 
 @DisplayName("CompiledSourceCodeInsideJarExcludeTransformer.transform tests")
 class CompiledSourceCodeInsideJarExcludeTransformerTest {
+  private val libraryFromInternalTarget =
+    LibraryItem(
+      id = Label.synthetic("1"),
+      dependencies = emptyList(),
+      ijars = listOf(Path("/path/to/ijar.jar")),
+      jars = listOf(Path("/path/to/jar.jar")),
+      sourceJars = listOf(Path("/path/to/sourceJar.jar")),
+      mavenCoordinates = null,
+      containsInternalJars = true,
+      isLowPriority = false,
+    )
+
+  private val usualLibrary =
+    LibraryItem(
+      id = Label.synthetic("1"),
+      dependencies = emptyList(),
+      ijars = listOf(Path("/path/to/another/ijar.jar")),
+      jars = listOf(Path("/path/to/another/jar.jar")),
+      sourceJars = listOf(Path("/path/to/another/sourceJar.jar")),
+      mavenCoordinates = null,
+      containsInternalJars = false,
+      isLowPriority = false,
+    )
+
   @Test
   fun `should add correct excludes for java files`() {
     // given
@@ -41,10 +65,10 @@ class CompiledSourceCodeInsideJarExcludeTransformerTest {
     val module = createModuleWithRoots(sourceRoots)
 
     // when
-    val entity = CompiledSourceCodeInsideJarExcludeTransformer().transform(listOf(module), emptyList())
+    val entity = CompiledSourceCodeInsideJarExcludeTransformer().transform(listOf(module), listOf(libraryFromInternalTarget, usualLibrary))
 
     // then
-    entity.relativePathsInsideJarToExclude shouldBe
+    entity?.relativePathsInsideJarToExclude shouldBe
       setOf(
         "com/example/cat/Cat.java",
         "com/example/cat/Cat.class",
@@ -80,10 +104,10 @@ class CompiledSourceCodeInsideJarExcludeTransformerTest {
     val module = createModuleWithRoots(sourceRoots)
 
     // when
-    val entity = CompiledSourceCodeInsideJarExcludeTransformer().transform(listOf(module), emptyList())
+    val entity = CompiledSourceCodeInsideJarExcludeTransformer().transform(listOf(module), listOf(libraryFromInternalTarget, usualLibrary))
 
     // then
-    entity.relativePathsInsideJarToExclude shouldBe
+    entity?.relativePathsInsideJarToExclude shouldBe
       setOf(
         "com/example/cat/Cat.kt",
         "com/example/cat/Cat.class",
@@ -99,41 +123,22 @@ class CompiledSourceCodeInsideJarExcludeTransformerTest {
 
   @Test
   fun `should add correct excludes for libraries from internal target`() {
-    // given
-    val libraryFromInternalTarget =
-      LibraryItem(
-        id = Label.synthetic("1"),
-        dependencies = emptyList(),
-        ijars = listOf(Path("/path/to/ijar.jar")),
-        jars = listOf(Path("/path/to/jar.jar")),
-        sourceJars = listOf(Path("/path/to/sourceJar.jar")),
-        mavenCoordinates = null,
-        containsInternalJars = true,
-        isLowPriority = false,
-      )
-
-    val usualLibrary =
-      LibraryItem(
-        id = Label.synthetic("1"),
-        dependencies = emptyList(),
-        ijars = listOf(Path("/path/to/another/ijar.jar")),
-        jars = listOf(Path("/path/to/another/jar.jar")),
-        sourceJars = listOf(Path("/path/to/another/sourceJar.jar")),
-        mavenCoordinates = null,
-        containsInternalJars = false,
-        isLowPriority = false,
-      )
-
     // when
     val entity = CompiledSourceCodeInsideJarExcludeTransformer().transform(emptyList(), listOf(libraryFromInternalTarget, usualLibrary))
 
     // then
-    entity.librariesFromInternalTargetsUrls shouldBe
+    entity?.librariesFromInternalTargetsUrls shouldBe
       setOf(
         "jar:///path/to/ijar.jar!/",
         "jar:///path/to/jar.jar!/",
         "jar:///path/to/sourceJar.jar!/",
       )
+  }
+
+  @Test
+  fun `should not add entity if no libraries from internal targets are added`() {
+    val entity = CompiledSourceCodeInsideJarExcludeTransformer().transform(emptyList(), listOf(usualLibrary))
+    entity shouldBe null
   }
 
   private data class JavaSourceRoot(val sourcePath: Path, val packagePrefix: String = "")
