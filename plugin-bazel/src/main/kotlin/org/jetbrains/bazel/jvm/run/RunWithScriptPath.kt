@@ -10,10 +10,10 @@ import com.intellij.openapi.util.Key
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runInterruptible
-import org.jetbrains.bazel.flow.sync.bazelPaths.BazelBinPathService
 import org.jetbrains.bazel.logger.BspClientTestNotifier
 import org.jetbrains.bazel.run.BazelProcessHandler
 import org.jetbrains.bazel.server.bep.TestXmlParser
+import org.jetbrains.bazel.sync.environment.projectCtx
 import org.jetbrains.bazel.taskEvents.BazelTaskEventsService
 import org.jetbrains.bsp.protocol.TaskId
 import java.nio.file.Path
@@ -86,7 +86,7 @@ internal suspend fun runWithScriptPath(
 private fun findXmlOutputAndReport(taskId: TaskId, scriptPath: Path, project: Project) {
   val scriptContent = scriptPath.readText()
 
-  val execRoot = BazelBinPathService.getInstance(project).bazelExecPath ?: return
+  val execRoot = project.projectCtx.bazelExecPath ?: return
   val xmlPath =
     TEST_XML_OUTPUT_FILE_REGEX
       .find(scriptContent)

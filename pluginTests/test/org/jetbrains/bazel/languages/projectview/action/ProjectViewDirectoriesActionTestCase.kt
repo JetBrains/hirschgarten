@@ -34,7 +34,9 @@ abstract class ProjectViewDirectoriesActionTestCase(
 
   protected val bazelProjectView
     get() = runWithModalProgressBlocking(project, "Getting project view") {
-      project.service<ProjectViewService>().getProjectView()
+      val service = project.service<ProjectViewService>()
+      service.forceReparseCurrentProjectViewFiles()
+      service.getProjectView()
     }
 
   protected val action: AnAction get() = ActionManager.getInstance().getAction(actionId)

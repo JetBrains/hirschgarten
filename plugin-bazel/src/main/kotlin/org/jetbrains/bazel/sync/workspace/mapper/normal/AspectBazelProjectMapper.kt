@@ -33,10 +33,12 @@ import org.jetbrains.bazel.sync.workspace.languages.LanguagePlugin
 import org.jetbrains.bazel.sync.workspace.languages.LanguagePluginContext
 import org.jetbrains.bazel.sync.workspace.languages.LanguagePluginsService
 import org.jetbrains.bazel.sync.workspace.languages.scala.ScalaLanguagePlugin
+import org.jetbrains.bazel.sync.workspace.mapper.BazelResolvedWorkspaceBuilder
 import org.jetbrains.bazel.sync.workspace.model.BspMappings
 import org.jetbrains.bazel.sync.workspace.model.Library
 import org.jetbrains.bazel.sync.workspace.model.NonModuleTarget
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
+import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.BuildTargetTag
 import org.jetbrains.bsp.protocol.FeatureFlags
 import org.jetbrains.bsp.protocol.LibraryItem
@@ -207,7 +209,7 @@ internal class AspectBazelProjectMapper(
 
     val workspaceTargets = rawTargets.associateByTo(mutableMapOf()) { target -> target.id }
     nonModuleRawTargets.forEach { target -> workspaceTargets.putIfAbsent(target.id, target) }
-    return BazelResolvedWorkspace(
+    return BazelResolvedWorkspaceBuilder.build(
       targets = workspaceTargets.values.toList(),
       libraries =
         librariesToImport.values.map {
@@ -339,6 +341,7 @@ internal class AspectBazelProjectMapper(
     val inferredSourceJars =
       kotlinStdlibsJars
         .map { it.parent.resolve(it.fileName.toString().replace(".jar", "-sources.jar")) }
+        .filter { it.exists() }
         .onEach { if (it.notExists()) logNonExistingFile(it, "[kotlin stdlib]") }
         .toSet()
 

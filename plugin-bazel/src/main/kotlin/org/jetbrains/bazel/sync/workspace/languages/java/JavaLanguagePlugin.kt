@@ -42,8 +42,7 @@ class JavaLanguagePlugin internal constructor(
     val ideJavaHomeOverride = workspaceContext.ideJavaHomeOverride
     jdk = ideJavaHomeOverride?.let { Jdk(javaHome = it) } ?: jdkResolver.resolve(targets.values.asSequence())
 
-    val projectView = ProjectViewService.getInstance(project)
-      .getCachedProjectView()
+    val projectView = ProjectViewService.getInstance(project).getProjectView()
     cachedJavaSROEnable = projectView.javaSROEnable
 
     val patterns = JavaSourceRootPatternContributor.ep

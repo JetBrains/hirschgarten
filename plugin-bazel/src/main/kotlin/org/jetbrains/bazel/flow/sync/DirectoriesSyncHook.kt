@@ -9,7 +9,6 @@ import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.flow.open.exclude.BazelSymlinkExcludeService
 import org.jetbrains.bazel.sync.ProjectSyncHook
 import org.jetbrains.bazel.sync.ProjectSyncHook.ProjectSyncHookEnvironment
-import org.jetbrains.bazel.sync.projectStructure.workspaceModel.workspaceModelDiff
 import org.jetbrains.bazel.sync.withSubtask
 import org.jetbrains.bazel.workspacemodel.entities.BazelProjectDirectoriesEntity
 import org.jetbrains.bazel.workspacemodel.entities.BazelProjectDirectoriesEntityBuilder
@@ -26,8 +25,7 @@ private class DirectoriesSyncHook : ProjectSyncHook {
       val indexAllFilesInIncludedRoots = workspaceContext.indexAllFilesInDirectories
       val entity = createEntity(environment.project, directories, additionalExcludes, indexAllFilesInIncludedRoots)
 
-      environment.diff.workspaceModelDiff.mutableEntityStorage
-        .addEntity(entity)
+      environment.diff.addEntity(entity)
     }
   }
 

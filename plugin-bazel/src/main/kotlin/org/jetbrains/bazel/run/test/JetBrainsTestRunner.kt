@@ -24,7 +24,7 @@ internal fun Project.useJetBrainsTestRunner(): Boolean {
     return false
   }
   if (!isBazelProject) return false
-  return ProjectViewService.getInstance(this).getCachedProjectView().useJetBrainsTestRunner
+  return ProjectViewService.getInstance(this).getProjectView().useJetBrainsTestRunner
 }
 
 internal fun setTestFilter(project: Project, state: BazelRunConfigurationState<*>, testFilter: String?) {

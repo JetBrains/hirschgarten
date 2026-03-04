@@ -8,6 +8,7 @@ import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.Comp
 import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.JavaModuleUpdater
 import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.LibraryEntityUpdater
 import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.WorkspaceModelEntityUpdaterConfig
+import org.jetbrains.bazel.sync.environment.projectCtx
 import org.jetbrains.bazel.workspacemodel.entities.CompiledSourceCodeInsideJarExclude
 import org.jetbrains.bazel.workspacemodel.entities.JavaModule
 import org.jetbrains.bazel.workspacemodel.entities.Library
@@ -30,8 +31,10 @@ internal class WorkspaceModelUpdater(
     )
 
   init {
-    // store generated IML files outside the project directory
-    ExternalProjectsManagerImpl.getInstance(project).setStoreExternally(true)
+    if (!project.projectCtx.avoidExternalSystem) {
+      // store generated IML files outside the project directory
+      ExternalProjectsManagerImpl.getInstance(project).setStoreExternally(true)
+    }
   }
 
   suspend fun load(

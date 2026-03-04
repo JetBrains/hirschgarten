@@ -22,6 +22,7 @@ import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.label.assumeResolved
 import org.jetbrains.bazel.sync.workspace.BazelResolvedWorkspace
 import org.jetbrains.bazel.sync.workspace.languages.jvm.JVMLanguagePluginParser
+import org.jetbrains.bazel.sync.workspace.mapper.BazelResolvedWorkspaceBuilder
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bsp.protocol.BuildTargetTag
 import org.jetbrains.bsp.protocol.RawBuildTarget
@@ -44,7 +45,7 @@ class PhasedBazelProjectMapper(private val bazelPathsResolver: BazelPathsResolve
         .filterNot { it.isNoIde }
         .map { it.toBspBuildTarget(context, project) }
         .toList()
-    return BazelResolvedWorkspace(
+    return BazelResolvedWorkspaceBuilder.build(
       targets = targets,
       libraries = emptyList(),
       hasError = project.hasError,

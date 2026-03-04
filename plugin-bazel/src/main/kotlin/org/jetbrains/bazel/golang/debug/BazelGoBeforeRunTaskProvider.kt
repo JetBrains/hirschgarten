@@ -17,11 +17,11 @@ import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.config.rootDir
-import org.jetbrains.bazel.flow.sync.bazelPaths.BazelBinPathService
 import org.jetbrains.bazel.run.config.BazelRunConfiguration
 import org.jetbrains.bazel.run.state.GenericRunState
 import org.jetbrains.bazel.run.state.GenericTestState
 import org.jetbrains.bazel.server.connection.connection
+import org.jetbrains.bazel.sync.environment.projectCtx
 import org.jetbrains.bazel.target.targetUtils
 import org.jetbrains.bazel.ui.notifications.BazelBalloonNotifier
 import org.jetbrains.bsp.protocol.TaskGroupId
@@ -151,7 +151,7 @@ internal sealed class BazelGoBeforeRunTaskProvider<T : BeforeRunTask<T>> : Befor
     val workingDir: File
     val testScrDir = TEST_SRCDIR.find(text)
     val workspaceRoot = project.rootDir.toNioPath()
-    val execRoot = Path.of(BazelBinPathService.getInstance(project).bazelExecPath)
+    val execRoot = Path.of(project.projectCtx.bazelExecPath)
     if (testScrDir != null) {
       // Format is <wrapper-script> <executable> arg0 arg1 arg2 ... argN "@"
       if (args.size < 3) {
