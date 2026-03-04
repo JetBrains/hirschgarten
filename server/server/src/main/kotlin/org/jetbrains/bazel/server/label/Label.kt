@@ -7,4 +7,4 @@ import org.jetbrains.bazel.label.Label
 @ApiStatus.Internal
 fun BspTargetInfo.TargetInfo.label(): Label = Label.parse(this.key.label)
 
-internal fun BspTargetInfo.Dependency.label(): Label = Label.parse(this.id)
+internal fun BspTargetInfo.Dependency.label(): Label = Label.parse(this.target.label)
