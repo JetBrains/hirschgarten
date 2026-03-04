@@ -58,8 +58,8 @@ internal class CompiledSourceCodeInsideJarExcludeWorkspaceFileIndexContributor :
     val library = storage.resolve(entity.libraryId) ?: return
     val compiledSourceCodeInsideJarExcludeEntity = storage.resolve(entity.compiledSourceCodeInsideJarExcludeId) ?: return
 
-    val relativePathsToExclude: Set<String> = compiledSourceCodeInsideJarExcludeEntity.relativePathsInsideJarToExclude.toSet()
-    val librariesFromInternalTargetsUrls: Set<String> = compiledSourceCodeInsideJarExcludeEntity.librariesFromInternalTargetsUrls.toSet()
+    val relativePathsToExclude: Set<String> = compiledSourceCodeInsideJarExcludeEntity.relativePathsInsideJarToExclude
+    val librariesFromInternalTargetsUrls: Set<String> = compiledSourceCodeInsideJarExcludeEntity.librariesFromInternalTargetsUrls
     val internalTargetsExclusionCondition =
       InternalTargetsJarExclusionCondition(relativePathsToExclude, librariesFromInternalTargetsUrls)
 
