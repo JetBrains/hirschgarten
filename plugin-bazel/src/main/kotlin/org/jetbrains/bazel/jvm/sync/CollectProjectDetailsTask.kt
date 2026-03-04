@@ -33,8 +33,8 @@ import org.jetbrains.bazel.scala.sdk.scalaSdkExtension
 import org.jetbrains.bazel.scala.sdk.scalaSdkExtensionExists
 import org.jetbrains.bazel.sync.scope.FullProjectSync
 import org.jetbrains.bazel.sync.scope.ProjectSyncScope
+import org.jetbrains.bazel.sync.workspace.BazelResolvedWorkspace
 import org.jetbrains.bazel.sync.workspace.BazelWorkspaceResolveService
-import org.jetbrains.bazel.target.sync.projectStructure.TargetUtilsProjectStructureDiff
 import org.jetbrains.bazel.target.targetUtils
 import org.jetbrains.bazel.ui.console.syncConsole
 import org.jetbrains.bazel.ui.console.withSubtask
@@ -55,7 +55,6 @@ internal class CollectProjectDetailsTask(
   private val project: Project,
   private val taskId: TaskId,
   private val diff: MutableEntityStorage,
-  private val targetUtilsDiff: TargetUtilsProjectStructureDiff,
 ) {
   private var uniqueJavaHomes: Set<Path>? = null
 
@@ -65,6 +64,7 @@ internal class CollectProjectDetailsTask(
 
   suspend fun execute(
     project: Project,
+    workspace: BazelResolvedWorkspace,
     server: BazelServerFacade,
     syncScope: ProjectSyncScope,
     progressReporter: SequentialProgressReporter,
@@ -93,7 +93,7 @@ internal class CollectProjectDetailsTask(
     }
 
     progressReporter.sizedStep(workSize = 25, text = BazelPluginBundle.message("progress.bar.update.internal.model")) {
-      updateInternalModelSubtask(projectDetails, syncScope)
+      updateInternalModelSubtask(workspace, projectDetails, syncScope)
     }
   }
 
@@ -184,7 +184,7 @@ internal class CollectProjectDetailsTask(
         )
       }
 
-  private suspend fun updateInternalModelSubtask(projectDetails: ProjectDetails, syncScope: ProjectSyncScope) {
+  private suspend fun updateInternalModelSubtask(workspace: BazelResolvedWorkspace, projectDetails: ProjectDetails, syncScope: ProjectSyncScope) {
     project.syncConsole.withSubtask(
       taskId.subTask("calculate-project-structure"),
       BazelPluginBundle.message("console.task.model.calculate.structure"),
@@ -226,15 +226,12 @@ internal class CollectProjectDetailsTask(
                 targetIdToModuleDetails = targetIdToModuleDetails,
                 targetIdToTargetInfo = targetIdToTargetInfo,
                 // TODO: remove usage, https://youtrack.jetbrains.com/issue/BAZEL-2015
-                fileToTargets = targetUtilsDiff.fileToTarget,
+                fileToTargets = workspace.fileToTarget,
                 projectBasePath = projectBasePath,
                 project = project,
               )
             targetIdToModuleEntityMap
           }
-
-        // TODO: remove this: https://youtrack.jetbrains.com/issue/BAZEL-2015/
-        targetUtilsDiff.libraryItems = projectDetails.libraries
 
         val modulesToLoad = targetIdToModuleEntitiesMap.values.flatten().distinctBy { module -> module.getModuleName() }
 
@@ -271,7 +268,7 @@ internal class CollectProjectDetailsTask(
     }
   }
 
-  suspend fun postprocessingSubtask(targetUtilsDiff: TargetUtilsProjectStructureDiff) {
+  suspend fun postprocessingSubtask(workspace: BazelResolvedWorkspace) {
     // This order is strict as now SDKs also use the workspace model,
     // updating jdks before applying the project model will render the action to fail.
     // This will be handled properly after this ticket:

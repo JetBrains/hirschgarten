@@ -15,7 +15,6 @@ import com.intellij.platform.workspace.jps.entities.SourceRootEntity
 import com.intellij.platform.workspace.jps.entities.SourceRootTypeId
 import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.sync.ProjectSyncHook
-import org.jetbrains.bazel.sync.projectStructure.workspaceModel.workspaceModelDiff
 import org.jetbrains.bazel.workspacemodel.entities.BazelModuleEntitySource
 
 internal class WorkspaceModuleProjectSyncHook : ProjectSyncHook {
@@ -60,8 +59,7 @@ internal class WorkspaceModuleProjectSyncHook : ProjectSyncHook {
         this.contentRoots = listOf(contentRootEntity)
       }
 
-    environment.diff.workspaceModelDiff.mutableEntityStorage
-      .addEntity(moduleEntity)
+    environment.diff.addEntity(moduleEntity)
   }
 
   interface EnableWorkspaceModuleSyncHookExtension {

@@ -34,7 +34,7 @@ internal class JvmTestState(project: Project) :
 
   @com.intellij.configurationStore.Property(description = "Run with Bazel")
   @get:Attribute("runWithBazel")
-  override var runWithBazel: Boolean by property(ProjectViewService.getInstance(project).getCachedProjectView().runConfigRunWithBazel)
+  override var runWithBazel: Boolean by property(ProjectViewService.getInstance(project).getProjectView().runConfigRunWithBazel)
 
   override fun getEditor(configuration: BazelRunConfiguration): SettingsEditor<JvmTestState> = JvmTestStateEditor(configuration)
 }

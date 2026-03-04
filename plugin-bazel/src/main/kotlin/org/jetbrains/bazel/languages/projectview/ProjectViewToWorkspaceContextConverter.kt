@@ -1,6 +1,7 @@
 package org.jetbrains.bazel.languages.projectview
 
 import com.intellij.openapi.application.PathManager
+import com.intellij.openapi.components.service
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.progress.ProgressManager
@@ -15,6 +16,7 @@ import org.jetbrains.bazel.commons.constants.Constants
 import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.sync.environment.BazelApplicationContextService
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import java.io.File
 import java.io.IOException
@@ -41,7 +43,8 @@ object ProjectViewToWorkspaceContextConverter {
     val targets =
       if (projectView.deriveTargetsFromDirectories) {
         createTargetsFromDirectories(projectView.targets, projectView.directories)
-      } else {
+      }
+      else {
         projectView.targets
       }
     return WorkspaceContext(
@@ -51,7 +54,7 @@ object ProjectViewToWorkspaceContextConverter {
       syncFlags = projectView.syncFlags,
       debugFlags = getAllDebugFlags(projectView),
       bazelBinary = projectView.bazelBinary?.let { workspaceRoot.resolve(it) }
-        ?: resolveBazelBinary(workspaceRoot),
+                    ?: resolveBazelBinary(workspaceRoot),
       allowManualTargetsSync = projectView.allowManualTargetsSync,
       importDepth = projectView.importDepth,
       enabledRules = projectView.enabledRules,
@@ -92,8 +95,10 @@ object ProjectViewToWorkspaceContextConverter {
       return downloadBazelisk(bazeliskVersion) ?: throw IllegalStateException("Failed to download bazelisk $bazeliskVersion")
     }
 
-    // Otherwise try to find bazel or bazelisk on PATH
-    findBazelOnPathOrNull()?.let { return it }
+    if (!service<BazelApplicationContextService>().forceBazeliskDownload) {
+      // Otherwise try to find bazel or bazelisk on PATH
+      findBazelOnPathOrNull()?.let { return it }
+    }
 
     // If not found, try to download any version of bazelisk
     return downloadBazelisk(bazeliskVersion = null) ?: Path.of("bazel")
@@ -131,7 +136,8 @@ object ProjectViewToWorkspaceContextConverter {
     val cacheDir = Path.of(PathManager.getSystemPath(), "bazel-plugin")
     try {
       Files.createDirectories(cacheDir)
-    } catch (e: Exception) {
+    }
+    catch (e: Exception) {
       log.error("Could not create cache directory", e)
       return null
     }
@@ -164,7 +170,8 @@ object ProjectViewToWorkspaceContextConverter {
       ProgressManager.getInstance().run(task)
       log.info("Downloaded bazelisk successfully")
       return bazeliskFile
-    } catch (e: Exception) {
+    }
+    catch (e: Exception) {
       log.error("Failed to download bazelisk", e)
       Files.deleteIfExists(bazeliskFile)
       return null
@@ -217,7 +224,8 @@ object ProjectViewToWorkspaceContextConverter {
     fun mapDirectoryToTarget(buildDirectoryIdentifier: Path): Label =
       if (buildDirectoryIdentifier.pathString == ".") {
         Label.parse("//...")
-      } else {
+      }
+      else {
         Label.parse("//" + buildDirectoryIdentifier.pathString + "/...")
       }
 

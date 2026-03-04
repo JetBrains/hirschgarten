@@ -8,6 +8,7 @@ import org.jetbrains.bazel.label.Label
  * - full project syncs (all targets are re-synced)
  * - partial syncs (only a subset of targets is re-synced).
  */
+// TODO: remove completely on monolithic sync due to being unused and broken
 @ApiStatus.Internal
 sealed interface ProjectSyncScope
 
