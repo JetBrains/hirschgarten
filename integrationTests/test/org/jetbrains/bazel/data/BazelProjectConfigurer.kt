@@ -45,10 +45,22 @@ register_toolchains(
     "@zig_sdk//libc_aware/toolchain/...",
 )
 """
+    resetFileFromGit(context, "MODULE.bazel")
     if (moduleFile.exists()) {
       moduleFile.toFile().appendText("\n$toolchainConfig")
     } else {
       moduleFile.writeText(toolchainConfig)
+    }
+  }
+
+  private fun resetFileFromGit(context: IDETestContext, fileName: String) {
+    try {
+      ProcessBuilder("git", "checkout", "--", fileName)
+        .directory(context.resolvedBazelProjectHome.toFile())
+        .start()
+        .waitFor()
+    } catch (_: Exception) {
+      // Not a git repo (e.g., synthetic projects extracted from zip) — file is already clean
     }
   }
 
