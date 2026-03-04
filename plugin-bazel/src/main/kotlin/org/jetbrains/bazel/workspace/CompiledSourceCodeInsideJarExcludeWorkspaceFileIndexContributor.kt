@@ -60,8 +60,9 @@ internal class CompiledSourceCodeInsideJarExcludeWorkspaceFileIndexContributor :
 
     val relativePathsToExclude: Set<String> = compiledSourceCodeInsideJarExcludeEntity.relativePathsInsideJarToExclude
     val librariesFromInternalTargetsUrls: Set<String> = compiledSourceCodeInsideJarExcludeEntity.librariesFromInternalTargetsUrls
+    val entityId = compiledSourceCodeInsideJarExcludeEntity.excludeId.id
     val internalTargetsExclusionCondition =
-      InternalTargetsJarExclusionCondition(relativePathsToExclude, librariesFromInternalTargetsUrls)
+      InternalTargetsJarExclusionCondition(relativePathsToExclude, librariesFromInternalTargetsUrls, entityId)
 
     library.roots.forEach { libraryRoot ->
       val contentRootUrl = libraryRoot.url
@@ -82,9 +83,10 @@ internal class CompiledSourceCodeInsideJarExcludeWorkspaceFileIndexContributor :
   }
 }
 
-private data class InternalTargetsJarExclusionCondition(
+private class InternalTargetsJarExclusionCondition(
   private val relativePathsToExclude: Set<String>,
   private val librariesFromInternalTargetsUrls: Set<String>,
+  private val entityId: Int,
 ) : WorkspaceFileSetExclusionCondition {
   override fun shouldExclude(virtualFile: VirtualFile): Boolean {
     if (virtualFile.isDirectory) return false
@@ -97,6 +99,19 @@ private data class InternalTargetsJarExclusionCondition(
     val relativePath = virtualFile.getRelativePathInsideJar(rootFile)
     val relativePathWithoutNestedClass = removeNestedClass(relativePath)
     return relativePathWithoutNestedClass in relativePathsToExclude
+  }
+
+  override fun equals(other: Any?): Boolean {
+    if (this === other) return true
+    if (javaClass != other?.javaClass) return false
+
+    other as InternalTargetsJarExclusionCondition
+
+    return entityId == other.entityId
+  }
+
+  override fun hashCode(): Int {
+    return entityId
   }
 }
 
