@@ -49,9 +49,9 @@ internal object ProjectViewFileUtils {
 
     val projectViewFilePath =
       projectViewPath?.toAbsolutePath()
-        ?: System.getProperty(PROJECT_VIEW_FILE_SYSTEM_PROPERTY)?.let(Path::of)
-        ?: (if (overwrite) null else calculateLegacyManagedProjectViewFile(projectRootPath))
-        ?: calculateProjectViewFileInCurrentDirectory(projectRootPath.resolve(Constants.DOT_BAZELBSP_DIR_NAME))
+      ?: System.getProperty(PROJECT_VIEW_FILE_SYSTEM_PROPERTY)?.let(Path::of)
+      ?: (if (overwrite) null else calculateLegacyManagedProjectViewFile(projectRootPath))
+      ?: calculateProjectViewFileInCurrentDirectory(projectRootPath.resolve(Constants.DOT_BAZELBSP_DIR_NAME))
 
     setProjectViewFileContent(
       projectViewFilePath = projectViewFilePath,
@@ -65,10 +65,16 @@ internal object ProjectViewFileUtils {
   fun projectViewTemplate(
     projectRootDir: VirtualFile,
     format: String? = null,
+    forceDefaultTemplate: Boolean = false,
   ): String {
-    val rawText = projectRootDir.resolveFromRootOrRelative(PROJECTVIEW_DEFAULT_TEMPLATE_PATH)
-      ?.readText()
-      ?: INFERRED_DIRECTORY_PROJECT_VIEW_TEMPLATE
+    val rawText = if (forceDefaultTemplate) {
+      INFERRED_DIRECTORY_PROJECT_VIEW_TEMPLATE
+    }
+    else {
+        projectRootDir.resolveFromRootOrRelative(PROJECTVIEW_DEFAULT_TEMPLATE_PATH)
+          ?.readText()
+        ?: INFERRED_DIRECTORY_PROJECT_VIEW_TEMPLATE
+    }
     return rawText.format(format.orEmpty().ifBlank { "." })
   }
 
@@ -80,8 +86,8 @@ internal object ProjectViewFileUtils {
         .toList()
 
     return projectViewFilesFromRoot.firstOrNull { it.name == Constants.DEFAULT_PROJECT_VIEW_FILE_NAME }
-      ?: projectViewFilesFromRoot.firstOrNull { it.name == Constants.LEGACY_DEFAULT_PROJECT_VIEW_FILE_NAME }
-      ?: projectViewFilesFromRoot.firstOrNull()
+           ?: projectViewFilesFromRoot.firstOrNull { it.name == Constants.LEGACY_DEFAULT_PROJECT_VIEW_FILE_NAME }
+           ?: projectViewFilesFromRoot.firstOrNull()
   }
 
   /**

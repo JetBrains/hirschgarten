@@ -1,6 +1,7 @@
 package org.jetbrains.bazel.server.connection
 
 import com.intellij.openapi.components.service
+import com.intellij.openapi.components.serviceAsync
 import com.intellij.openapi.project.Project
 import org.jetbrains.bazel.bazelrunner.BazelInfoResolver
 import org.jetbrains.bazel.bazelrunner.BazelProcessLauncherProvider

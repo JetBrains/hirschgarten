@@ -49,6 +49,7 @@ import org.jetbrains.bazel.target.TargetUtils
 import org.jetbrains.bazel.target.moduleEntity
 import org.jetbrains.bazel.target.targetUtils
 import org.jetbrains.bazel.taskEvents.BazelTaskEventsService
+import org.jetbrains.bazel.ui.console.ShowConsole
 import org.jetbrains.bazel.ui.console.TaskConsole
 import org.jetbrains.bazel.ui.console.syncConsole
 import org.jetbrains.bsp.protocol.InverseSourcesParams
@@ -132,7 +133,7 @@ class BazelFileEventListener : BulkFileListenerBackgroundable {
       taskId = taskId,
       title = BazelPluginBundle.message("file.change.processing.title.multiple"),
       message = BazelPluginBundle.message("file.change.processing.message.start"),
-      showConsole = TaskConsole.ShowConsole.ON_FAIL,
+      showConsole = ShowConsole.ON_FAIL,
       cancelAction = { processingJob.cancel() },
     )
     val taskListener = BazelBuildTaskListener(syncConsole)

@@ -8,7 +8,7 @@ import org.jetbrains.bazel.workspace.indexAdditionalFiles.ProjectViewGlobSet
 private class JavaProjectViewSourceRootPatternContributor : JavaSourceRootPatternContributor {
 
   override fun getPatterns(project: Project): JavaSourceRootPatterns {
-    val projectView = ProjectViewService.getInstance(project).getCachedProjectView()
+    val projectView = ProjectViewService.getInstance(project).getProjectView()
     // excludes have `-` before
     val (excludes, includes) = projectView.javaSROPatterns.partition { it.startsWith("-") }
     return JavaSourceRootPatterns(

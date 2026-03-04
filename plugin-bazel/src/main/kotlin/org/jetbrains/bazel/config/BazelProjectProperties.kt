@@ -14,6 +14,9 @@ import com.intellij.platform.backend.workspace.WorkspaceModel
 import com.intellij.platform.backend.workspace.virtualFile
 import com.intellij.platform.backend.workspace.workspaceModel
 import com.intellij.workspaceModel.ide.impl.WorkspaceModelImpl
+import org.jetbrains.bazel.sync.environment.BazelProjectContextService
+import org.jetbrains.bazel.sync.environment.getProjectRootDirOrThrow
+import org.jetbrains.bazel.sync.environment.projectCtx
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.workspacemodel.entities.BazelProjectDirectoriesEntity
 
@@ -78,10 +81,10 @@ val Project.bazelProjectProperties: BazelProjectProperties
 
 // todo replace with an instanceof BazelProjectStoreDescriptor check in some way
 var Project.isBazelProject: Boolean
-  get() = bazelProjectProperties.isBazelProject
+  get() = projectCtx.isBazelProject
   @ApiStatus.Internal
   set(value) {
-    bazelProjectProperties.isBazelProject = value
+    projectCtx.isBazelProject = value
   }
 
 internal val Project.workspaceModelLoadedFromCache: Boolean
@@ -91,12 +94,10 @@ internal val Project.isBrokenBazelProject: Boolean
   get() = bazelProjectProperties.isBrokenBazelProject
 
 var Project.rootDir: VirtualFile
-  get() =
-    bazelProjectProperties.rootDir
-      ?: error("Bazel project root dir is not set. Reimport the project to fix this.")
+  get() = projectCtx.getProjectRootDirOrThrow()
   @ApiStatus.Internal
   set(value) {
-    bazelProjectProperties.rootDir = value
+    projectCtx.projectRootDir = value
   }
 
 internal val Project.bazelProjectName: String
@@ -109,7 +110,7 @@ internal var Project.defaultJdkName: String?
   }
 
 internal var Project.workspaceName: String?
-  get() = bazelProjectProperties.workspaceName
+  get() = projectCtx.workspaceName
   set(value) {
-    bazelProjectProperties.workspaceName = value
+    projectCtx.workspaceName = value
   }

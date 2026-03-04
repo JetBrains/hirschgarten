@@ -1,31 +1,21 @@
 package org.jetbrains.bazel.target.sync
 
-import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.sync.ProjectSyncHook
-import org.jetbrains.bazel.target.sync.projectStructure.targetUtilsDiff
-import org.jetbrains.bsp.protocol.RawBuildTarget
-import java.nio.file.Path
+import org.jetbrains.bazel.sync.environment.TargetPersistenceSpec
+import org.jetbrains.bazel.sync.environment.projectCtx
 
+// TODO: rename
 internal class TargetUtilsSyncHook : ProjectSyncHook {
   override suspend fun onSync(environment: ProjectSyncHook.ProjectSyncHookEnvironment) {
-    val bspTargets =
-      environment.resolver
-        .getOrFetchResolvedWorkspace(taskId = environment.taskId)
-        .targets
-    val targetUtilsDiff = environment.diff.targetUtilsDiff
-    targetUtilsDiff.bspTargets = bspTargets
-    targetUtilsDiff.fileToTarget = calculateFileToTarget(bspTargets)
-  }
-
-  private fun calculateFileToTarget(targets: List<RawBuildTarget>): Map<Path, List<Label>> {
-    val resultMap = HashMap<Path, MutableList<Label>>()
-    for (target in targets) {
-      for (source in target.sources) {
-        val path = source.path
-        val label = target.id
-        resultMap.computeIfAbsent(path) { ArrayList() }.add(label)
-      }
-    }
-    return resultMap
+    val project = environment.project
+    val targetPersistanceLayer = project.projectCtx.targetPersistenceLayer
+    val workspace = environment.workspace
+    val spec = TargetPersistenceSpec(
+      targets = workspace.targets,
+      libraryItems = workspace.libraries,
+      file2Target = workspace.fileToTarget,
+    )
+    targetPersistanceLayer.saveAll(project, spec)
+    targetPersistanceLayer.notifyAll(project)
   }
 }

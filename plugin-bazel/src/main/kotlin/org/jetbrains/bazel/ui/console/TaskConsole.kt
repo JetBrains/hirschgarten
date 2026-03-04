@@ -46,16 +46,7 @@ import java.nio.file.Path
 private val log = logger<TaskConsole>()
 
 @ApiStatus.Internal
-abstract class TaskConsole(
-  private val taskView: BuildProgressListener,
-  private val basePath: String,
-  private val project: Project,
-) {
-  protected val tasksInProgress: MutableSet<TaskId> = mutableSetOf()
-  private val subtaskParentMap: MutableMap<TaskId, TaskId> = linkedMapOf()
-  private val subtaskMessageMap: MutableMap<TaskId, String> = linkedMapOf()
-  private val taskPtyTerminalMap: MutableMap<TaskId, TerminalExecutionConsole> = linkedMapOf()
-
+interface TaskConsole {
   /**
    * Displays start of a task in this console.
    * Will not display anything if a task with given `taskId` is already running
@@ -66,7 +57,6 @@ abstract class TaskConsole(
    * @param cancelAction action which will be executed on cancel button click
    * @param redoAction action which will be executed on redo button click
    */
-  @Synchronized
   fun startTask(
     taskId: TaskId,
     title: String,
@@ -74,6 +64,112 @@ abstract class TaskConsole(
     cancelAction: () -> Unit = {},
     redoAction: (suspend () -> Unit)? = null,
     showConsole: ShowConsole = ShowConsole.ALWAYS,
+  )
+
+  fun hasTasksInProgress(): Boolean
+
+  /**
+   * Displays finish of a task (and all its children) in this console.
+   * Will not display anything if a task with given `taskId` is not running
+
+   * @param taskId ID of the finished task (last started task by default, if nothing passed)
+   * @param message message informing about the start of the task
+   * @param result result of the task execution (success by default, if nothing passed)
+   */
+  fun finishTask(
+    taskId: TaskId,
+    message: String,
+    result: EventResult = SuccessResultImpl(),
+  )
+
+  /**
+   * Displays start of a subtask in this console
+   *
+   * @param parentTaskId id of the task (or another subtask) being this subtask's direct parent
+   * @param subtaskId id of the newly created subtask. **Has to be unique among all running subtasks in
+   * this console - otherwise, unexpected behavior might occur**
+   * @param message will be displayed as this subtask's title until it's finished
+   */
+  fun startSubtask(
+    subtaskId: TaskId,
+    message: String,
+  )
+
+  /**
+   * Displays finishing of a subtask in this console
+   *
+   * @param subtaskId id of the subtask to be finished.
+   * If there is no such subtask running, this method will not do anything
+   * @param result result type of the subtask, default [SuccessResultImpl]
+   */
+  fun finishSubtask(
+    subtaskId: TaskId,
+    message: String? = null,
+    result: EventResult = SuccessResultImpl(),
+  )
+
+  /**
+   * Adds a diagnostic message to a particular task in this console.
+   *
+   * @param taskId id of the task (or a subtask), to which the message will be added
+   * @param path absolute path to the file concerned by the diagnostic
+   * @param line line number in given file (first line is 0)
+   * @param column column number in given file (first column is 0)
+   * @param message description of the diagnostic
+   * @param severity severity of the diagnostic
+   */
+  fun addDiagnosticMessage(
+    taskId: TaskId,
+    path: Path?,
+    line: Int,
+    column: Int,
+    message: String,
+    severity: MessageEvent.Kind,
+  )
+
+  fun addWarnMessage(taskId: TaskId, message: String)
+
+  /**
+   * Adds a message to a particular task in this console. If the message is added to a subtask, it will also be
+   * added to the subtask's parent task.
+   *
+   * @param taskId id of the task (or a subtask), to which the message will be added
+   * @param message message to be added. New line will be inserted at its end if it's not present there already
+   */
+  fun addMessage(taskId: TaskId, message: String)
+}
+
+@ApiStatus.Internal
+interface PtyAwareTaskConsole {
+  fun ptyTermSize(taskId: TaskId): TermSize?
+}
+
+@ApiStatus.Internal
+enum class ShowConsole {
+  ALWAYS,
+  ON_FAIL,
+  NEVER,
+}
+
+@ApiStatus.Internal
+abstract class BaseTaskConsole(
+  private val taskView: BuildProgressListener,
+  private val basePath: String,
+  private val project: Project,
+) : TaskConsole, PtyAwareTaskConsole {
+  protected val tasksInProgress: MutableSet<TaskId> = mutableSetOf()
+  private val subtaskParentMap: MutableMap<TaskId, TaskId> = linkedMapOf()
+  private val subtaskMessageMap: MutableMap<TaskId, String> = linkedMapOf()
+  private val taskPtyTerminalMap: MutableMap<TaskId, TerminalExecutionConsole> = linkedMapOf()
+
+  @Synchronized
+  override fun startTask(
+    taskId: TaskId,
+    title: String,
+    message: String,
+    cancelAction: () -> Unit,
+    redoAction: (suspend () -> Unit)?,
+    showConsole: ShowConsole,
   ) {
     if (tasksInProgress.add(taskId)) {
       doStartTask(
@@ -101,10 +197,12 @@ abstract class TaskConsole(
         taskDescriptor.isActivateToolWindowWhenAdded = true
         taskDescriptor.isActivateToolWindowWhenFailed = true
       }
+
       ShowConsole.ON_FAIL -> {
         taskDescriptor.isActivateToolWindowWhenAdded = false
         taskDescriptor.isActivateToolWindowWhenFailed = true
       }
+
       ShowConsole.NEVER -> {
         taskDescriptor.isActivateToolWindowWhenAdded = false
         taskDescriptor.isActivateToolWindowWhenFailed = false
@@ -183,21 +281,13 @@ abstract class TaskConsole(
 
   protected abstract fun calculateRedoAction(redoAction: (suspend () -> Unit)?): AnAction
 
-  fun hasTasksInProgress(): Boolean = tasksInProgress.isNotEmpty()
+  override fun hasTasksInProgress(): Boolean = tasksInProgress.isNotEmpty()
 
-  /**
-   * Displays finish of a task (and all its children) in this console.
-   * Will not display anything if a task with given `taskId` is not running
-
-   * @param taskId ID of the finished task (last started task by default, if nothing passed)
-   * @param message message informing about the start of the task
-   * @param result result of the task execution (success by default, if nothing passed)
-   */
   @Synchronized
-  public fun finishTask(
+  override fun finishTask(
     taskId: TaskId,
     message: String,
-    result: EventResult = SuccessResultImpl(),
+    result: EventResult,
   ) {
     if (tasksInProgress.contains(taskId)) {
       doFinishTask(taskId, message, result)
@@ -225,16 +315,8 @@ abstract class TaskConsole(
     taskView.onEvent(taskId, event)
   }
 
-  /**
-   * Displays start of a subtask in this console
-   *
-   * @param parentTaskId id of the task (or another subtask) being this subtask's direct parent
-   * @param subtaskId id of the newly created subtask. **Has to be unique among all running subtasks in
-   * this console - otherwise, unexpected behavior might occur**
-   * @param message will be displayed as this subtask's title until it's finished
-   */
   @Synchronized
-  fun startSubtask(
+  override fun startSubtask(
     subtaskId: TaskId,
     message: String,
   ) {
@@ -257,18 +339,11 @@ abstract class TaskConsole(
     taskView.onEvent(rootTaskId, event)
   }
 
-  /**
-   * Displays finishing of a subtask in this console
-   *
-   * @param subtaskId id of the subtask to be finished.
-   * If there is no such subtask running, this method will not do anything
-   * @param result result type of the subtask, default [SuccessResultImpl]
-   */
   @Synchronized
-  fun finishSubtask(
+  override fun finishSubtask(
     subtaskId: TaskId,
-    message: String? = null,
-    result: EventResult = SuccessResultImpl(),
+    message: String?,
+    result: EventResult,
   ) {
     val parentTaskId = subtaskParentMap[subtaskId] ?: return
     val rootTaskId = findActiveRootTaskId(parentTaskId) ?: return
@@ -300,18 +375,8 @@ abstract class TaskConsole(
       }
   }
 
-  /**
-   * Adds a diagnostic message to a particular task in this console.
-   *
-   * @param taskId id of the task (or a subtask), to which the message will be added
-   * @param path absolute path to the file concerned by the diagnostic
-   * @param line line number in given file (first line is 0)
-   * @param column column number in given file (first column is 0)
-   * @param message description of the diagnostic
-   * @param severity severity of the diagnostic
-   */
   @Synchronized
-  fun addDiagnosticMessage(
+  override fun addDiagnosticMessage(
     taskId: TaskId,
     path: Path?,
     line: Int,
@@ -342,7 +407,8 @@ abstract class TaskConsole(
           prepareTextToPrint(message),
           prepareTextToPrint(message),
         )
-      } else {
+      }
+      else {
         FileMessageEventImpl(
           subtaskId,
           severity,
@@ -357,21 +423,14 @@ abstract class TaskConsole(
   }
 
   @Synchronized
-  fun addWarnMessage(taskId: TaskId, message: String) {
+  override fun addWarnMessage(taskId: TaskId, message: String) {
     val rootTaskId = findActiveRootTaskId(taskId) ?: return
     val activeTaskId = findActiveTaskId(taskId) ?: return
     doAddDiagnosticMessage(rootTaskId, activeTaskId, null, message, MessageEvent.Kind.WARNING)
   }
 
-  /**
-   * Adds a message to a particular task in this console. If the message is added to a subtask, it will also be
-   * added to the subtask's parent task.
-   *
-   * @param taskId id of the task (or a subtask), to which the message will be added
-   * @param message message to be added. New line will be inserted at its end if it's not present there already
-   */
   @Synchronized
-  fun addMessage(taskId: TaskId, message: String) {
+  override fun addMessage(taskId: TaskId, message: String) {
     if (message.isBlank()) return
     val rootTaskId = findActiveRootTaskId(taskId) ?: return
     val activeTaskId = findActiveTaskId(taskId) ?: return
@@ -381,7 +440,7 @@ abstract class TaskConsole(
   private val DEFAULT_PTY_TERM_SIZE = TermSize(80, 24)
 
   @Synchronized
-  fun ptyTermSize(taskId: TaskId): TermSize? {
+  override fun ptyTermSize(taskId: TaskId): TermSize? {
     val terminal = generateSequence(taskId) { it.parent }
       .firstNotNullOfOrNull { taskPtyTerminalMap[it] } ?: return null
     return terminal.terminalWidget.terminalPanel.terminalSizeFromComponent ?: DEFAULT_PTY_TERM_SIZE
@@ -413,8 +472,30 @@ abstract class TaskConsole(
     }
   }
 
+  private inline fun doIfTaskInProgress(taskId: TaskId, action: () -> Unit) {
+    if (tasksInProgress.contains(taskId)) {
+      action()
+    }
+  }
+
+  private inline fun doUnlessTaskInProgress(taskId: TaskId, action: () -> Unit) {
+    if (!tasksInProgress.contains(taskId)) {
+      action()
+    }
+  }
+
   private fun findActiveTaskId(taskId: TaskId): TaskId? {
     var id: TaskId? = taskId
+    while (id != null) {
+      if (subtaskParentMap.containsKey(id) || tasksInProgress.contains(id))
+        return id
+      id = id.parent
+    }
+    return null
+  }
+
+  private fun findParentTaskId(taskId: TaskId): TaskId? {
+    var id: TaskId? = taskId.parent
     while (id != null) {
       if (subtaskParentMap.containsKey(id) || tasksInProgress.contains(id))
         return id
@@ -462,19 +543,13 @@ abstract class TaskConsole(
 
     override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.BGT
   }
-
-  enum class ShowConsole {
-    ALWAYS,
-    ON_FAIL,
-    NEVER,
-  }
 }
 
 internal class SyncTaskConsole(
   taskView: BuildProgressListener,
   basePath: String,
   project: Project,
-) : TaskConsole(taskView, basePath, project) {
+) : BaseTaskConsole(taskView, basePath, project) {
   override fun calculateRedoAction(redoAction: (suspend () -> Unit)?): AnAction =
     object : SuspendableAction({ BazelPluginBundle.message("resync.action.text") }, AllIcons.Actions.Refresh) {
       @Volatile
@@ -495,7 +570,7 @@ internal class BuildTaskConsole(
   taskView: BuildProgressListener,
   basePath: String,
   project: Project,
-) : TaskConsole(taskView, basePath, project) {
+) : BaseTaskConsole(taskView, basePath, project) {
   override fun calculateRedoAction(redoAction: (suspend () -> Unit)?): AnAction =
     object : SuspendableAction({ BazelPluginBundle.message("rebuild.action.text") }, AllIcons.Actions.Compile) {
       @Volatile
