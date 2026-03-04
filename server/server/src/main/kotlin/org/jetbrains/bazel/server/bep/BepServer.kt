@@ -70,9 +70,12 @@ class BepServer(
 
       LOGGER.trace("Got event {}", event)
 
-      if (customBepEventHandlers.none { it.handleEvent(event) }) {
-        handleBuildEventStreamProtosEvent(event)
-      }
+      for (customHandler in customBepEventHandlers) {
+        if (customHandler.handleEvent(event)) {
+          return
+        }
+      }  
+      handleBuildEventStreamProtosEvent(event)
     } catch (e: IOException) {
       LOGGER.error("Error deserializing BEP proto: {}", e.toString())
     }
