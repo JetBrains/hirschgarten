@@ -15,17 +15,14 @@ import com.intellij.openapi.ui.TextFieldWithBrowseButton
 import com.intellij.openapi.ui.ValidationInfo
 import com.intellij.openapi.util.SystemInfo
 import com.intellij.openapi.util.io.OSAgnosticPathUtil
-import com.intellij.openapi.vfs.VirtualFileManager
 import com.intellij.ui.components.JBCheckBox
 import com.intellij.ui.dsl.builder.Align
 import com.intellij.ui.dsl.builder.panel
 import com.intellij.ui.treeStructure.ProjectViewUpdateCause
 import org.jetbrains.bazel.buildifier.BuildifierUtil
 import org.jetbrains.bazel.config.BazelPluginBundle
-import org.jetbrains.bazel.coroutines.BazelCoroutineService
+import org.jetbrains.bazel.config.projectViewFile
 import org.jetbrains.bazel.settings.bazel.bazelProjectSettings
-import org.jetbrains.bazel.sync.scope.SecondPhaseSync
-import org.jetbrains.bazel.sync.task.ProjectSyncTask
 import java.io.IOException
 import java.nio.file.InvalidPathException
 import java.nio.file.Path
@@ -81,6 +78,7 @@ class BazelProjectSettingsConfigurable(private val project: Project) :
 
   private fun initProjectViewFileField(): TextFieldWithBrowseButton =
     TextFieldWithBrowseButton().apply {
+      isEditable = false
       val title = BazelPluginBundle.message("text.field.project.settings.select.path.title")
       val description = BazelPluginBundle.message("text.field.project.settings.select.path.description")
       addBrowseFolderListener(
@@ -90,12 +88,6 @@ class BazelProjectSettingsConfigurable(private val project: Project) :
           .withTitle(title)
           .withDescription(description),
       )
-      whenTextChanged {
-        if (text.isNotBlank()) {
-          val vFile = VirtualFileManager.getInstance().findFileByNioPath(Path(text))
-          currentProjectSettings = currentProjectSettings.withNewProjectViewPath(vFile)
-        }
-      }
     }
 
   private fun initBuildifierExecutablePathField(): TextFieldWithBrowseButton =
@@ -151,17 +143,11 @@ class BazelProjectSettingsConfigurable(private val project: Project) :
 
   override fun apply() {
     super<BoundCompositeSearchableConfigurable>.apply()
-    val isProjectViewPathChanged = currentProjectSettings.projectViewPath != project.bazelProjectSettings.projectViewPath
     val showExcludedDirectoriesAsSeparateNodeChanged =
       currentProjectSettings.showExcludedDirectoriesAsSeparateNode != project.bazelProjectSettings.showExcludedDirectoriesAsSeparateNode
 
     project.bazelProjectSettings = currentProjectSettings
 
-    if (isProjectViewPathChanged) {
-      BazelCoroutineService.getInstance(project).start {
-        ProjectSyncTask(project).sync(syncScope = SecondPhaseSync, buildProject = false)
-      }
-    }
     if (showExcludedDirectoriesAsSeparateNodeChanged) {
       ProjectView.getInstance(project).refresh(ProjectViewUpdateCause.SETTINGS)
     }
@@ -183,7 +169,7 @@ class BazelProjectSettingsConfigurable(private val project: Project) :
     ?: BazelPluginBundle.message("buildifier.executable.not.found", if (SystemInfo.isWindows) 0 else 1)
 
   private fun savedProjectViewPath() =
-    project.bazelProjectSettings.projectViewPath
+    project.projectViewFile
       ?.path.orEmpty()
 
   override fun getDisplayName(): String = BazelPluginBundle.message(DISPLAY_NAME_KEY)

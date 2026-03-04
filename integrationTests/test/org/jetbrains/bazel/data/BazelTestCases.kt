@@ -12,6 +12,7 @@ import kotlin.io.path.createSymbolicLinkPointingTo
 import kotlin.io.path.div
 import kotlin.io.path.exists
 import kotlin.io.path.isDirectory
+import kotlin.io.path.writeText
 
 object IdeaBazelCases : BaseBazelCasesParametrized(BazelTestContext.IDEA) {
     val FastBuild = withBazelProject(
@@ -249,6 +250,23 @@ object IdeaBazelCases : BaseBazelCasesParametrized(BazelTestContext.IDEA) {
         BazelProjectConfigurer.configureProjectBeforeUseWithoutBazelClean(context, createProjectView = false)
         preCacheBazelisk(context)
       },
+    )
+  )
+
+  fun bazelCustomDotIdeaLocaiton(location: String) = withBazelProject(
+    projectInfo = withDefaults(
+      repositoryUrl = "https://github.com/JetBrainsBazelBot/simpleBazelProjectsForTesting.git",
+      commitHash = "599425b1bc7b525e13849c64aa3ecc12880568b0",
+      branchName = "main",
+      relativePath = "simpleKotlinTest/MODULE.bazel",
+      configure = { context ->
+        context.resolvedBazelProjectHome.resolve(".bazelproject").writeText(
+          """
+            derive_targets_from_directories: true
+            dot_idea_directory_location: $location
+          """.trimIndent()
+        )
+        BazelProjectConfigurer.configureProjectBeforeUse(context) },
     )
   )
 }

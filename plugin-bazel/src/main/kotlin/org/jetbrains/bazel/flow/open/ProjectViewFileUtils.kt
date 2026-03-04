@@ -3,6 +3,7 @@ package org.jetbrains.bazel.flow.open
 // TODO rewrite with no VirtualFile operations!
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.readText
+import com.intellij.openapi.vfs.refreshAndFindVirtualDirectory
 import com.intellij.openapi.vfs.resolveFromRootOrRelative
 import org.jetbrains.bazel.commons.constants.Constants
 import java.nio.file.Files.isDirectory
@@ -38,6 +39,12 @@ private val INFERRED_DIRECTORY_PROJECT_VIEW_TEMPLATE =
 private val OPEN_OPTIONS = arrayOf(StandardOpenOption.WRITE, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING)
 
 object ProjectViewFileUtils {
+
+  fun getProjectViewFilePath(projectFile: Path, rootDir: Path): Path = when {
+    projectFile.extension == Constants.PROJECT_VIEW_FILE_EXTENSION -> projectFile
+    else -> calculateProjectViewFilePath(rootDir.refreshAndFindVirtualDirectory()!!, projectViewPath = null)
+  }
+
   fun calculateProjectViewFilePath(
     projectRootDir: VirtualFile,
     projectViewPath: Path?,

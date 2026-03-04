@@ -17,9 +17,9 @@ import org.jetbrains.annotations.VisibleForTesting
 import org.jetbrains.bazel.commons.constants.Constants
 import org.jetbrains.bazel.config.BazelPluginConstants
 import org.jetbrains.bazel.config.bazelProjectProperties
+import org.jetbrains.bazel.config.projectViewFile
 import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.coroutines.BazelCoroutineService
-import org.jetbrains.bazel.settings.bazel.bazelProjectSettings
 import org.jetbrains.bazel.sync.SyncCache
 import org.jetbrains.bazel.sync.scope.SecondPhaseSync
 import org.jetbrains.bazel.sync.status.SyncStatusListener
@@ -95,7 +95,7 @@ class BazelProjectAware(private val project: Project) : ExternalSystemProjectAwa
 private fun calculateBazelConfigFiles(project: Project): Set<String> {
   val rootDir = project.bazelProjectProperties.rootDir
   val searchScope = GlobalSearchScope.projectScope(project)
-  val projectView = project.bazelProjectSettings.projectViewPath
+  val projectView = project.projectViewFile
   val globalFiles = GLOBAL_CONFIG_FILES.map { rootDir?.findChild(it) }
 
   // getVirtualFilesByNames() function is private in FilenameIndex, so a mutable list is used as a workaround

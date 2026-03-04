@@ -78,7 +78,7 @@ internal class BazelProjectOpenProcessor : ProjectOpenProcessor() {
         path to null
       } else {
         val projectRootDir = findProjectFolderFromFile(path)
-        val projectViewPath = projectRootDir?.let { getProjectViewPath(it, path) }
+        val projectViewPath = projectRootDir?.let { ProjectViewFileUtils.getProjectViewFilePath(path, it) }
         projectRootDir to projectViewPath
       }
 
@@ -105,8 +105,6 @@ internal class BazelProjectOpenProcessor : ProjectOpenProcessor() {
           projectViewPath
             ?.refreshAndFindVirtualFile()
             ?.let { projectViewPath ->
-              project.bazelProjectSettings = project.bazelProjectSettings
-                .withNewProjectViewPath(projectViewPath)
               openProjectViewInEditor(project, projectViewPath)
             }
 

@@ -16,7 +16,5 @@ internal class SwitchProjectViewCommand(text: String, line: Int) : PlaybackComma
 
     val projectViewFile = project.rootDir.findFileByRelativePath(fileName)
     checkNotNull(projectViewFile) { "Project view file not found: $fileName in ${project.rootDir}" }
-
-    project.bazelProjectSettings = project.bazelProjectSettings.withNewProjectViewPath(projectViewFile)
   }
 }

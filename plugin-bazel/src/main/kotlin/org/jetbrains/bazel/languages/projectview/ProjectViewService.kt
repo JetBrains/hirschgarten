@@ -6,16 +6,15 @@ import com.intellij.openapi.components.Service
 import com.intellij.openapi.progress.runBlockingMaybeCancellable
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
-import com.intellij.openapi.vfs.VirtualFileManager
 import com.intellij.openapi.vfs.findFile
 import com.intellij.psi.PsiDocumentManager
 import com.intellij.psi.PsiFileFactory
 import com.intellij.psi.PsiManager
+import org.jetbrains.bazel.config.projectViewFile
 import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.flow.open.ProjectViewFileUtils
 import org.jetbrains.bazel.languages.projectview.base.ProjectViewLanguage
 import org.jetbrains.bazel.languages.projectview.psi.ProjectViewPsiFile
-import org.jetbrains.bazel.settings.bazel.bazelProjectSettings
 import org.jetbrains.bazel.sync.SyncCache
 
 /**
@@ -29,23 +28,7 @@ class ProjectViewService(private val project: Project) {
    * Uses caching with file modification time checking for efficiency.
    */
   suspend fun getProjectView(): ProjectView {
-    var projectViewPath = findProjectViewPath()
-
-    if (projectViewPath == null || !projectViewPath.exists()) {
-      val newProjectView = ProjectViewFileUtils.calculateProjectViewFilePath(
-        overwrite = true,
-        projectRootDir = project.rootDir,
-        projectViewPath = null,
-      )
-      projectViewPath = VirtualFileManager.getInstance()
-        .findFileByNioPath(newProjectView)
-      project.bazelProjectSettings = project.bazelProjectSettings.withNewProjectViewPath(projectViewPath)
-    }
-
-    if (projectViewPath == null) {
-      return getDefaultProjectView()
-    }
-
+    val projectViewPath = findProjectViewPath() ?: return getDefaultProjectView()
     return parseProjectViewAsync(projectViewPath) ?: getDefaultProjectView()
   }
 
@@ -61,7 +44,7 @@ class ProjectViewService(private val project: Project) {
   fun getCachedProjectView(): ProjectView = SyncCache.getInstance(project).get(cachedProjectViewComputable)
 
   private fun findProjectViewPath(): VirtualFile? {
-    val pathFromSettings = project.bazelProjectSettings.projectViewPath
+    val pathFromSettings = project.projectViewFile
     if (pathFromSettings != null && pathFromSettings.exists()) {
       return pathFromSettings
     }

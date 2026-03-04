@@ -9,7 +9,6 @@ import com.intellij.openapi.components.State
 import com.intellij.openapi.components.StateSplitterEx
 import com.intellij.openapi.components.StateStorageOperation
 import com.intellij.openapi.components.Storage
-import com.intellij.openapi.components.StoragePathMacros
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.NlsSafe
 import com.intellij.util.PathUtilRt
@@ -53,21 +52,6 @@ internal class BazelProjectStoreDescriptor(
 
   override fun testStoreDirectoryExistsForProjectRoot() = Files.isRegularFile(projectIdentityFile)
 
-  override fun customMacros(): Map<String, Path> {
-    val rootDotIdea = historicalProjectBasePath.resolve(Project.DIRECTORY_STORE_FOLDER)
-    if (Files.notExists(rootDotIdea)) {
-      return emptyMap()
-    }
-
-    val result = HashMap<String, Path>(shareableConfigFiles.size)
-    for (filePath in shareableConfigFiles) {
-      result.put(filePath, rootDotIdea.resolve(filePath))
-    }
-    result.put(StoragePathMacros.PROJECT_FILE, rootDotIdea.resolve("misc.xml"))
-    result.put(StoragePathMacros.WORKSPACE_FILE, workspaceXml)
-    return result
-  }
-
   override fun getJpsBridgeAwareStorageSpec(filePath: String, project: Project): Storage =
     FileStorageAnnotation(
       // path =
@@ -101,47 +85,3 @@ internal class BazelProjectStoreDescriptor(
       }
     }
 }
-
-@Suppress("SpellCheckingInspection")
-private val shareableConfigFiles =
-  listOf(
-    "AIAssistantCustomInstructionsStorage.xml",
-    "anchors.xml",
-    "ant.xml",
-    "checker.xml",
-    "codeInsightSettings.xml",
-    "codeStyleSettings.xml",
-    "csv-editor.xml",
-    "dependencyResolver.xml",
-    "deployment.xml",
-    "encodings.xml",
-    "excludeFromValidation.xml",
-    "externalDependencies.xml",
-    "fileColors.xml",
-    "gradle.xml",
-    "IntelliLang.xml",
-    "jarRepositories.xml",
-    "jsLibraryMappings.xml",
-    "jsonSchemas.xml",
-    "kotlinc.xml",
-    "kotlinTestDataPluginTestDataPaths.xml",
-    "ktfmt.xml",
-    "ktor.xml",
-    "php.xml",
-    "projectDictionary.xml",
-    "remote-targets.xml",
-    "scala_settings.xml",
-    "sqldialects.xml",
-    "terraform.xml",
-    "uiDesigner.xml",
-    "vcs.xml",
-    "misc.xml",
-    "watcherTasks.xml",
-    // scheme manager
-    "codeStyles",
-    "copyright",
-    "dictionaries",
-    "fileTemplates",
-    "inspectionProfiles",
-    "scopes",
-  )

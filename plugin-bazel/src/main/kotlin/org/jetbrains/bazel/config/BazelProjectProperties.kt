@@ -7,13 +7,16 @@ import com.intellij.openapi.components.Storage
 import com.intellij.openapi.components.StoragePathMacros
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.util.io.toNioPathOrNull
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.VirtualFileManager
+import com.intellij.openapi.vfs.refreshAndFindVirtualFile
 import com.intellij.platform.backend.workspace.WorkspaceModel
 import com.intellij.platform.backend.workspace.virtualFile
 import com.intellij.platform.backend.workspace.workspaceModel
 import com.intellij.workspaceModel.ide.impl.WorkspaceModelImpl
 import org.jetbrains.bazel.annotations.PublicApi
+import org.jetbrains.bazel.flow.open.ProjectViewFileUtils
 import org.jetbrains.bazel.workspacemodel.entities.BazelProjectDirectoriesEntity
 
 data class BazelProjectPropertiesState(
@@ -120,4 +123,9 @@ var Project.workspaceName: String?
   get() = bazelProjectProperties.workspaceName
   set(value) {
     bazelProjectProperties.workspaceName = value
+  }
+
+val Project.projectViewFile: VirtualFile?
+  get() = presentableUrl?.toNioPathOrNull()?.let {
+    ProjectViewFileUtils.getProjectViewFilePath(it, rootDir.toNioPath()).refreshAndFindVirtualFile()
   }

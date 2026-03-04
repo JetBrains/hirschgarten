@@ -44,13 +44,6 @@ internal class OpenBazelProjectAndSyncStartupActivity : InitProjectActivity {
     }
 
     project.initProperties(projectRootDir)
-
-    val projectViewPath = getProjectViewPath(projectRootDir, path)
-                            ?.refreshAndFindVirtualFile()
-                          ?: return
-
-    project.bazelProjectSettings = project.bazelProjectSettings
-      .withNewProjectViewPath(projectViewPath)
   }
 
   private fun shouldLinkAsBazelProject(project: Project): Boolean {

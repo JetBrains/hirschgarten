@@ -37,11 +37,11 @@ data class ProjectView(val sections: Map<SectionKey<*>, Any>, val imports: List<
   companion object {
     @RequiresReadLock
     @RequiresBackgroundThread(generateAssertion = false)
-    fun fromProjectViewPsiFile(file: ProjectViewPsiFile): ProjectView {
+    fun fromProjectViewPsiFile(file: ProjectViewPsiFile, rootDir: VirtualFile = file.project.rootDir): ProjectView {
       val rawItems = collectRawItems(file)
-      val sections = buildSectionsMap(file.project, rawItems)
+      val sections = buildSectionsMap(file.project, rootDir, rawItems)
       val imports = rawItems.filterIsInstance<RawImport>()
-        .mapNotNull { tryResolveImportFile(file.project, it.path, false) }
+        .mapNotNull { tryResolveImportFile(rootDir, it.path, false) }
         .toList()
       return ProjectView(sections, imports)
     }
@@ -66,7 +66,7 @@ data class ProjectView(val sections: Map<SectionKey<*>, Any>, val imports: List<
       return rawSections
     }
 
-    private fun buildSectionsMap(project: Project, rawItems: List<RawItem>): Map<SectionKey<*>, Any> {
+    private fun buildSectionsMap(project: Project, rootDir: VirtualFile, rawItems: List<RawItem>): Map<SectionKey<*>, Any> {
       val result = mutableMapOf<SectionKey<*>, Any>()
       for (item in rawItems) {
         when (item) {
@@ -77,8 +77,8 @@ data class ProjectView(val sections: Map<SectionKey<*>, Any>, val imports: List<
           }
 
           is RawImport -> {
-            val vFile = tryResolveImportFile(project, item.path, item.required) ?: continue
-            handleImport(project, vFile, result)
+            val vFile = tryResolveImportFile(rootDir, item.path, item.required) ?: continue
+            handleImport(project, rootDir,vFile, result)
           }
         }
       }
@@ -100,22 +100,23 @@ data class ProjectView(val sections: Map<SectionKey<*>, Any>, val imports: List<
 
     private fun handleImport(
       project: Project,
+      rootDir: VirtualFile,
       virtualFile: VirtualFile,
       into: MutableMap<SectionKey<*>, Any>,
     ) {
       val psiFile = PsiManager.getInstance(project).findFile(virtualFile) as? ProjectViewPsiFile ?: return
-      val otherProjectView = fromProjectViewPsiFile(psiFile)
+      val otherProjectView = fromProjectViewPsiFile(psiFile, rootDir)
       for ((sectionKey, value) in otherProjectView.sections) {
         mergeSection(into, sectionKey, value)
       }
     }
 
     private fun tryResolveImportFile(
-      project: Project,
+      rootDir: VirtualFile,
       pathString: String,
       required: Boolean,
     ): VirtualFile? {
-      val file = project.rootDir.resolveFromRootOrRelative(pathString)
+      val file = rootDir.resolveFromRootOrRelative(pathString)
       if (file == null && required) {
         error("Cannot find project view file requested in an import: $pathString")
       }

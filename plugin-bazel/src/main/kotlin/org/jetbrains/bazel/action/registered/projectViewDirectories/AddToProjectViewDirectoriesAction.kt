@@ -10,13 +10,13 @@ import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiDocumentManager
 import org.jetbrains.bazel.config.BazelPluginBundle.message
 import org.jetbrains.bazel.config.bazelProjectProperties
+import org.jetbrains.bazel.config.projectViewFile
 import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.languages.projectview.psi.addDirectoriesInclude
 import org.jetbrains.bazel.languages.projectview.psi.directoriesContainsInclude
 import org.jetbrains.bazel.languages.projectview.psi.getProjectViewPsiFileOrNull
 import org.jetbrains.bazel.languages.projectview.psi.isDirectoriesNullOrEmpty
 import org.jetbrains.bazel.languages.projectview.psi.removeDirectoriesExclude
-import org.jetbrains.bazel.settings.bazel.bazelProjectSettings
 import org.jetbrains.bazel.utils.findNearestParent
 import org.jetbrains.bazel.utils.selectedDirectory
 import org.jetbrains.bazel.workspace.excludedRoots
@@ -69,7 +69,7 @@ class AddToProjectViewDirectoriesAction : AnAction() {
   private fun Project.getProjectViewIfApplicableTo(e: AnActionEvent): VirtualFile? {
     if (DumbService.isDumb(this)) return null
     val directory = e.selectedDirectory ?: return null
-    val projectViewFile = bazelProjectSettings.projectViewPath ?: return null
+    val projectViewFile = projectViewFile ?: return null
     val includes = includedRoots().orEmpty()
     val excludes = excludedRoots().orEmpty()
     return when (directory) {

@@ -142,7 +142,7 @@ register_toolchains(
         $buildFlags
       """.trimIndent()
   }
-
-  private val IDETestContext.resolvedBazelProjectHome: Path
-    get() = resolvedProjectHome.takeIf { it.isDirectory() } ?: resolvedProjectHome.parent
 }
+
+val IDETestContext.resolvedBazelProjectHome: Path
+  get() = resolvedProjectHome.takeIf { it.isDirectory() } ?: resolvedProjectHome.parent

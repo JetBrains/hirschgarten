@@ -12,6 +12,7 @@ import org.jetbrains.bazel.languages.projectview.sections.DebugFlagsSection
 import org.jetbrains.bazel.languages.projectview.sections.DeriveInstrumentationFilterFromTargetsSection
 import org.jetbrains.bazel.languages.projectview.sections.DeriveTargetsFromDirectoriesSection
 import org.jetbrains.bazel.languages.projectview.sections.DirectoriesSection
+import org.jetbrains.bazel.languages.projectview.sections.DotIdeaDirectoryLocationSection
 import org.jetbrains.bazel.languages.projectview.sections.EnableNativeAndroidRulesSection
 import org.jetbrains.bazel.languages.projectview.sections.EnabledRulesSection
 import org.jetbrains.bazel.languages.projectview.sections.GazelleTargetSection
@@ -119,6 +120,9 @@ val ProjectView.preferClassJarsOverSourcelessJars: Boolean
 
 val ProjectView.runConfigRunWithBazel: Boolean
   get() = getSection(RunConfigRunWithBazelSection.KEY) ?: false
+
+val ProjectView.dotIdeaDirectoryLocation: Path?
+  get() = getSection(DotIdeaDirectoryLocationSection.KEY)
 
 /**
  * List of names of repositories that should be treated as internal because there are some targets that we want to be imported that

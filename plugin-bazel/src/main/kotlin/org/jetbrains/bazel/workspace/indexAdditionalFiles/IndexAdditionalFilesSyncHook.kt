@@ -14,8 +14,8 @@ import com.intellij.platform.workspace.storage.entities
 import com.intellij.platform.workspace.storage.url.VirtualFileUrl
 import com.intellij.platform.workspace.storage.url.VirtualFileUrlManager
 import org.jetbrains.bazel.commons.constants.Constants
+import org.jetbrains.bazel.config.projectViewFile
 import org.jetbrains.bazel.config.rootDir
-import org.jetbrains.bazel.settings.bazel.bazelProjectSettings
 import org.jetbrains.bazel.sync.ProjectSyncHook
 import org.jetbrains.bazel.sync.projectStructure.workspaceModel.workspaceModelDiff
 import org.jetbrains.bazel.sync.task.query
@@ -123,7 +123,7 @@ private class IndexAdditionalFilesSyncHook : ProjectSyncHook {
   }
 
   private fun getProjectView(project: Project, virtualFileUrlManager: VirtualFileUrlManager): VirtualFileUrl? {
-    return project.bazelProjectSettings.projectViewPath?.toVirtualFileUrl(virtualFileUrlManager)
+    return project.projectViewFile?.toVirtualFileUrl(virtualFileUrlManager)
   }
 
   private fun getWorkspaceFiles(project: Project, virtualFileUrlManager: VirtualFileUrlManager): List<VirtualFileUrl> =
