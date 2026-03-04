@@ -63,11 +63,11 @@ class FastBuildTest : IdeStarterBaseProjectTest() {
 
           val resumeProgram = x { byAccessibleName("Resume Program") }
           step("Wait for breakpoint to be hit") {
+            resumeProgram.waitFound(timeout = 3.minutes)
             waitFor(
-              timeout = 3.minutes,
-              getter = {},
-              checker = { resumeProgram.present() && resumeProgram.isEnabled() },
-            )
+              message = "Resume Program should be enabled",
+              timeout = 30.seconds,
+            ) { resumeProgram.isEnabled() }
           }
 
           step("Change code") {
