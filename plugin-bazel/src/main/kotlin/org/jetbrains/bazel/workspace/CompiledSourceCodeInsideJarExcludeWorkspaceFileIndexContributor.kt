@@ -88,13 +88,15 @@ private data class InternalTargetsJarExclusionCondition(
 ) : WorkspaceFileSetExclusionCondition {
   override fun shouldExclude(virtualFile: VirtualFile): Boolean {
     if (virtualFile.isDirectory) return false
+
     val rootFile = VfsUtilCore.getRootFile(virtualFile)
+    if (rootFile.url !in librariesFromInternalTargetsUrls) return false
+
+    if (virtualFile.hasNonJvmExtension()) return true
+
     val relativePath = virtualFile.getRelativePathInsideJar(rootFile)
     val relativePathWithoutNestedClass = removeNestedClass(relativePath)
-    if (rootFile.url in librariesFromInternalTargetsUrls) {
-      return virtualFile.hasNonJvmExtension() || relativePathWithoutNestedClass in relativePathsToExclude
-    }
-    return false
+    return relativePathWithoutNestedClass in relativePathsToExclude
   }
 }
 
