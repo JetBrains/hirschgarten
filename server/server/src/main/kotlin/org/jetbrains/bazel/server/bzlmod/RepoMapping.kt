@@ -13,6 +13,7 @@ import org.jetbrains.bazel.workspacecontext.externalRepositoriesTreatedAsInterna
 import org.jetbrains.bsp.protocol.BazelTaskLogger
 import org.jetbrains.bsp.protocol.TaskId
 import java.nio.file.Path
+import kotlin.collections.plus
 import kotlin.io.path.Path
 
 internal val rootRulesToNeededTransitiveRules = mapOf(
@@ -20,18 +21,17 @@ internal val rootRulesToNeededTransitiveRules = mapOf(
   "rules_scala" to listOf("rules_java"),
 )
 
-internal suspend fun calculateRepoMapping(
+internal suspend fun calculateRepoNameMappingOnly(
   workspaceContext: WorkspaceContext,
   bazelRunner: BazelRunner,
   bazelInfo: BazelInfo,
   taskLogger: BazelTaskLogger,
-  taskId: TaskId
+  taskId: TaskId,
 ): RepoMapping {
   if (!bazelInfo.isBzlModEnabled) {
     return RepoMappingDisabled
   }
   val moduleResolver = ModuleResolver(bazelRunner, workspaceContext, taskId)
-  val moduleCanonicalNameToLocalPath = mutableMapOf<String, Path>()
   val moduleApparentNameToCanonicalName =
     try {
       // empty string is the name of the root module
@@ -62,7 +62,35 @@ internal suspend fun calculateRepoMapping(
       .reduceOrNull { acc, map -> acc + map }
       .orEmpty()
 
-  moduleResolver.resolveModules(workspaceContext.externalRepositoriesTreatedAsInternal, bazelInfo).forEach { externalRepo, showRepoResult ->
+  return BzlmodRepoMapping(
+      mapOf(),
+      moduleApparentNameToCanonicalNameForNeededTransitiveRules + moduleApparentNameToCanonicalName,
+      mapOf(),
+    )
+}
+
+internal suspend fun extendRepoMappingByPathInfo(
+  nameMapping : RepoMapping,
+  workspaceContext: WorkspaceContext,
+  bazelRunner: BazelRunner,
+  bazelInfo: BazelInfo,
+  taskLogger: BazelTaskLogger,
+  knownResolved: Map<String, ShowRepoResult?>,
+  taskId: TaskId,
+): RepoMapping {
+  val moduleApparentNameToCanonicalName = (nameMapping as? BzlmodRepoMapping)?.apparentRepoNameToCanonicalName ?: return RepoMappingDisabled
+  val knownRepoDefinitions = knownResolved.values.filterNotNull().associateBy { it.name }
+
+  val moduleCanonicalNameToLocalPath = mutableMapOf<String, Path>()
+  val moduleResolver = ModuleResolver(bazelRunner, workspaceContext, taskId)
+
+  val (known, unknown) =workspaceContext.externalRepositoriesTreatedAsInternal.partition { name ->
+    moduleApparentNameToCanonicalName[name]?.let { knownRepoDefinitions.containsKey(it) } ?: false
+  }
+  val knownCanonicalNames = known.map { moduleApparentNameToCanonicalName[it] }
+  val resolvedModules = moduleResolver.resolveModules(unknown, bazelInfo) + knownRepoDefinitions.filter { (k,v) -> knownCanonicalNames.contains(k) }
+
+  resolvedModules.forEach { externalRepo, showRepoResult ->
     try {
       when (showRepoResult) {
         is ShowRepoResult.LocalRepository -> moduleCanonicalNameToLocalPath[showRepoResult.name] = Path(showRepoResult.path)
@@ -96,7 +124,20 @@ internal suspend fun calculateRepoMapping(
 
   return BzlmodRepoMapping(
     moduleCanonicalNameToLocalPath,
-    moduleApparentNameToCanonicalNameForNeededTransitiveRules + moduleApparentNameToCanonicalName,
+    moduleApparentNameToCanonicalName,
     moduleCanonicalNameToPath,
   )
+}
+
+
+internal suspend fun calculateRepoMapping(
+  workspaceContext: WorkspaceContext,
+  bazelRunner: BazelRunner,
+  bazelInfo: BazelInfo,
+  taskLogger: BazelTaskLogger,
+  taskId: TaskId,
+): RepoMapping {
+  return extendRepoMappingByPathInfo(
+    calculateRepoNameMappingOnly(workspaceContext, bazelRunner, bazelInfo, taskLogger, taskId),
+    workspaceContext, bazelRunner, bazelInfo, taskLogger, mapOf(), taskId)
 }

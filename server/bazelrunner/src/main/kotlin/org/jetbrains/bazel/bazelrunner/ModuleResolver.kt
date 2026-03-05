@@ -145,7 +145,7 @@ internal class ModuleResolver(
    */
   suspend fun resolveModules(unsortedModuleNames: List<String>, bazelInfo: BazelInfo): Map<String, ShowRepoResult?> {
     if (unsortedModuleNames.isEmpty()) return emptyMap() // avoid bazel call if no information is needed
-    val moduleNames = unsortedModuleNames.sorted()
+    val moduleNames = unsortedModuleNames.sorted().distinct()
     val json_output = bazelInfo.release.major >= 9
     val command =
       bazelRunner.buildBazelCommand(workspaceContext) {
