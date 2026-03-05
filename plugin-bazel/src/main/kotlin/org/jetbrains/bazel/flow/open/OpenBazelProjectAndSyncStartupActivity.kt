@@ -58,13 +58,9 @@ internal class OpenBazelProjectAndSyncStartupActivity : InitProjectActivity {
 
     // Already linked - nothing to do
     if (BazelUnlinkedProjectAware().isLinkedProject(project, externalProjectPath)) return false
-
+    if (PluginManagerCore.getPluginSet().isPluginEnabled(PluginId.getId("com.google.idea.bazel.ijwb"))) return false
     // Link if flag is set
-    if (BazelFeatureFlags.autoOpenProjectIfPresent) return true
-
-    // Link if it's a Google Bazel project (.ijwb) and Google plugin is not installed
-    val isGoogleBazelPluginEnabled = PluginManagerCore.getPluginSet().isPluginEnabled(PluginId.getId("com.google.idea.bazel.ijwb"))
-    return !isGoogleBazelPluginEnabled && externalProjectPath.endsWith(".ijwb")
+    return BazelFeatureFlags.autoOpenProjectIfPresent
   }
 }
 
