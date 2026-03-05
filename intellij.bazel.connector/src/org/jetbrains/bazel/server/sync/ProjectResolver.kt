@@ -153,9 +153,7 @@ class ProjectResolver constructor(
         bazelInfo.isBzlModEnabled,
         bazelInfo.isWorkspaceEnabled,
         taskEventsHandler,
-        bazelPathsResolver,
         workspaceContext,
-        repoMapping,
       )
 
     val externalRulesetNames =

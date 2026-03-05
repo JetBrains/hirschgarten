@@ -6,8 +6,6 @@ import com.intellij.openapi.diagnostic.logger
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.bazelrunner.BazelProcessResult
 import org.jetbrains.bazel.bazelrunner.BazelRunner
-import org.jetbrains.bazel.commons.BazelPathsResolver
-import org.jetbrains.bazel.commons.RepoMapping
 import org.jetbrains.bazel.commons.gson.bazelGson
 import org.jetbrains.bazel.label.AllRuleTargets
 import org.jetbrains.bazel.label.Label
@@ -47,9 +45,7 @@ internal class BazelExternalRulesetsQueryImpl(
   private val isBzlModEnabled: Boolean,
   private val isWorkspaceEnabled: Boolean,
   private val taskEventsHandler: BazelTaskEventsHandler,
-  private val bazelPathsResolver: BazelPathsResolver,
   private val workspaceContext: WorkspaceContext,
-  private val repoMapping: RepoMapping,
 ) : BazelExternalRulesetsQuery {
   override suspend fun fetchExternalRulesetNames(): List<String> =
     when {
