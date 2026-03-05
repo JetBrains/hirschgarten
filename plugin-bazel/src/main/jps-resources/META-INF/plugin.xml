@@ -26,6 +26,7 @@
 
   <resource-bundle>messages.BazelPluginBundle</resource-bundle>
   <dependencies>
+    <plugin id="ByteCodeViewer"/>
     <module name="intellij.libraries.grpc"/>
     <!-- region Generated dependencies - run `Generate Product Layouts` to regenerate -->
     <module name="intellij.platform.searchEverywhere"/>
