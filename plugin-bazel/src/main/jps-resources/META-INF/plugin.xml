@@ -26,7 +26,6 @@
 
   <resource-bundle>messages.BazelPluginBundle</resource-bundle>
   <dependencies>
-    <plugin id="ByteCodeViewer"/>
     <module name="intellij.libraries.grpc"/>
     <!-- region Generated dependencies - run `Generate Product Layouts` to regenerate -->
     <module name="intellij.platform.searchEverywhere"/>
@@ -37,6 +36,10 @@
     <module name="intellij.bazel.kotlin.k2"/>
   </content>
 
+  <depends
+    config-file="withBytecodeViewer.xml"
+    optional="true"
+  >ByteCodeViewer</depends>
   <depends
     config-file="withCodeWithMe.xml"
     optional="true"
@@ -173,10 +176,6 @@
     <starlarkClassParametersProvider implementation="org.jetbrains.bazel.languages.starlark.bazel.DefaultStarlarkClassParametersProvider"/>
 
     <projectViewSectionProvider implementation="org.jetbrains.bazel.languages.projectview.DefaultProjectViewSectionProvider"/>
-  </extensions>
-
-  <extensions defaultExtensionNs="ByteCodeViewer">
-    <classFileFinder implementation="org.jetbrains.bazel.bytecodeViewer.BazelBytecodeViewerClassFileFinder"/>
   </extensions>
 
   <extensions defaultExtensionNs="com.intellij">
