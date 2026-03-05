@@ -53,7 +53,7 @@ internal class DefaultBazelWorkspaceResolveService(private val project: Project)
     val workspaceContext = connection.runWithServer { server -> server.workspaceContext }
     project
       .service<LanguagePluginsService>()
-      .registerDefaultPlugins(paths.bazelPathsResolver, DefaultJvmPackageResolver())
+      .registerDefaultPlugins(paths.bazelPathsResolver, DefaultJvmPackageResolver(), workspaceContext)
     bazelMapper =
       AspectBazelProjectMapper(
         project = project,

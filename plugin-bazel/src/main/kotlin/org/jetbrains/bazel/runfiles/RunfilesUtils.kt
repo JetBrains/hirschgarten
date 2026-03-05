@@ -4,6 +4,7 @@ import com.intellij.openapi.project.Project
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.flow.sync.bazelPaths.BazelBinPathService
 import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.sync.environment.projectCtx
 import java.nio.file.Path
 import java.nio.file.Paths
 
@@ -14,5 +15,5 @@ internal object RunfilesUtils {
     Paths.get(bazelBin, *targetLabel.packagePath.pathSegments.toTypedArray(), "${targetLabel.targetName}.runfiles")
 
   private fun getBazelBinPath(project: Project): String =
-    BazelBinPathService.getInstance(project).bazelBinPath ?: error(BazelPluginBundle.message("bazel.bin.not.found"))
+    project.projectCtx.bazelBinPath ?: error(BazelPluginBundle.message("bazel.bin.not.found"))
 }

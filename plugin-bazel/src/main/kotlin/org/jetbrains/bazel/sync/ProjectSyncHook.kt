@@ -4,10 +4,11 @@ import com.intellij.openapi.extensions.ExtensionPointName
 import com.intellij.openapi.project.Project
 import com.intellij.platform.util.progress.SequentialProgressReporter
 import org.jetbrains.annotations.ApiStatus
+import com.intellij.platform.workspace.storage.MutableEntityStorage
 import org.jetbrains.bazel.info.BspTargetInfo
 import org.jetbrains.bazel.label.Label
-import org.jetbrains.bazel.sync.projectStructure.AllProjectStructuresDiff
 import org.jetbrains.bazel.sync.scope.ProjectSyncScope
+import org.jetbrains.bazel.sync.workspace.BazelResolvedWorkspace
 import org.jetbrains.bazel.sync.workspace.BazelWorkspaceResolveService
 import org.jetbrains.bazel.ui.console.withSubtask
 import org.jetbrains.bsp.protocol.BazelServerFacade
@@ -49,11 +50,21 @@ interface ProjectSyncHook {
     val project: Project,
     internal val syncScope: ProjectSyncScope,
     val server: BazelServerFacade,
+
+    @ApiStatus.Internal
+    val workspace: BazelResolvedWorkspace,
+
+    @ApiStatus.Internal
     val resolver: BazelWorkspaceResolveService,
-    internal val diff: AllProjectStructuresDiff,
+
     internal val taskId: TaskId,
+
+    @ApiStatus.Internal
+    val diff: MutableEntityStorage,
+
     val progressReporter: SequentialProgressReporter,
     internal val buildTargets: Map<Label, BspTargetInfo.TargetInfo>,
+    val deferredApplyActions: MutableList<suspend () -> Unit> = mutableListOf(),
   )
 }
 

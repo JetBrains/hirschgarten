@@ -33,10 +33,12 @@ import org.jetbrains.bazel.sync.workspace.languages.LanguagePlugin
 import org.jetbrains.bazel.sync.workspace.languages.LanguagePluginContext
 import org.jetbrains.bazel.sync.workspace.languages.LanguagePluginsService
 import org.jetbrains.bazel.sync.workspace.languages.scala.ScalaLanguagePlugin
+import org.jetbrains.bazel.sync.workspace.mapper.BazelResolvedWorkspaceBuilder
 import org.jetbrains.bazel.sync.workspace.model.BspMappings
 import org.jetbrains.bazel.sync.workspace.model.Library
 import org.jetbrains.bazel.sync.workspace.model.NonModuleTarget
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
+import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.BuildTargetTag
 import org.jetbrains.bsp.protocol.FeatureFlags
 import org.jetbrains.bsp.protocol.LibraryItem
@@ -116,13 +118,13 @@ internal class AspectBazelProjectMapper(
               targetSupportsStrictDeps = { id -> allTargets[id]?.let { targetSupportsStrictDeps(it) } == true },
               isWorkspaceTarget = { id ->
                 allTargets[id]?.let { target ->
-                  target.sourcesCount > 0 && isWorkspaceTarget(target, repoMapping, featureFlags)
+                  target.sourcesCount > 0 && isWorkspaceTarget(target, repoMapping, featureFlags, workspaceContext)
                 } == true
               },
             )
         val (targetsToImport, nonWorkspaceTargets) =
           targetsAtDepth.targets.partition {
-            isWorkspaceTarget(it, repoMapping, featureFlags)
+            isWorkspaceTarget(it, repoMapping, featureFlags, workspaceContext)
           }
         val (jvmDirectDependencies, nonJvmDirectDependencies) = targetsAtDepth.directDependencies.partition { it.getJvmTarget() }
         val jvmLibraries = (nonWorkspaceTargets + jvmDirectDependencies).associateBy { it.label() }
@@ -207,7 +209,7 @@ internal class AspectBazelProjectMapper(
 
     val workspaceTargets = rawTargets.associateByTo(mutableMapOf()) { target -> target.id }
     nonModuleRawTargets.forEach { target -> workspaceTargets.putIfAbsent(target.id, target) }
-    return BazelResolvedWorkspace(
+    return BazelResolvedWorkspaceBuilder.build(
       targets = workspaceTargets.values.toList(),
       libraries =
         librariesToImport.values.map {
@@ -339,6 +341,7 @@ internal class AspectBazelProjectMapper(
     val inferredSourceJars =
       kotlinStdlibsJars
         .map { it.parent.resolve(it.fileName.toString().replace(".jar", "-sources.jar")) }
+        .filter { it.exists() }
         .onEach { if (it.notExists()) logNonExistingFile(it, "[kotlin stdlib]") }
         .toSet()
 
@@ -777,11 +780,12 @@ internal class AspectBazelProjectMapper(
         it.relativePath.endsWith(".scala")
     }
 
-  private fun hasKnownPythonSources(targetInfo: TargetInfo) =
+  private fun hasKnownPythonSources(targetInfo: TargetInfo,
+                                    workspaceContext: WorkspaceContext) =
     targetInfo.sourcesList.any {
       it.relativePath.endsWith(".py")
     } ||
-      targetInfo.pythonTargetInfo.isCodeGenerator
+    (targetInfo.sourcesList.isEmpty() && workspaceContext.pythonCodeGeneratorRuleNames.contains(targetInfo.kind))
 
   private fun hasKnownGoSources(targetInfo: TargetInfo) =
     targetInfo.sourcesList.any {
@@ -802,6 +806,7 @@ internal class AspectBazelProjectMapper(
     target: TargetInfo,
     repoMapping: RepoMapping,
     featureFlags: FeatureFlags,
+    workspaceContext: WorkspaceContext,
   ): Boolean =
     (
       isTargetTreatedAsInternal(target.label().assumeResolved(), repoMapping) &&
@@ -820,7 +825,7 @@ internal class AspectBazelProjectMapper(
           hasKnownGoSources(target) ||
           featureFlags.isPythonSupportEnabled &&
           target.hasPythonTargetInfo() &&
-          hasKnownPythonSources(target)
+          hasKnownPythonSources(target, workspaceContext)
         ) ||
       target.hasProtobufTargetInfo()
 

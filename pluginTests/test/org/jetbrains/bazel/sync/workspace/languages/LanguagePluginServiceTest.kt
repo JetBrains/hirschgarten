@@ -10,6 +10,7 @@ import org.jetbrains.bazel.sync.workspace.languages.kotlin.KotlinLanguagePlugin
 import org.jetbrains.bazel.sync.workspace.languages.scala.ScalaLanguagePlugin
 import org.jetbrains.bazel.sync.workspace.languages.thrift.ThriftLanguagePlugin
 import org.jetbrains.bazel.workspace.model.test.framework.BazelPathsResolverMock
+import org.jetbrains.bazel.workspace.model.test.framework.mockWorkspaceContext
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
@@ -33,7 +34,7 @@ class LanguagePluginServiceTest {
     dotBazelBspDirPath = workspaceRoot.resolve(".bazelbsp")
     val bazelPathsResolver = BazelPathsResolverMock.create()
     languagePluginsService = LanguagePluginsService()
-    languagePluginsService.registerDefaultPlugins(bazelPathsResolver, DefaultJvmPackageResolver())
+    languagePluginsService.registerDefaultPlugins(bazelPathsResolver, DefaultJvmPackageResolver(), mockWorkspaceContext)
   }
 
   @Nested

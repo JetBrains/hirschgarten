@@ -100,15 +100,18 @@ org.jetbrains.bazel.sync.ProjectSyncHook
 f:org.jetbrains.bazel.sync.ProjectSyncHook$Companion
 f:org.jetbrains.bazel.sync.ProjectSyncHook$ProjectSyncHookEnvironment
 - f:component1():com.intellij.openapi.project.Project
+- f:component10():java.util.List
 - f:component3():org.jetbrains.bsp.protocol.BazelServerFacade
-- f:component4():org.jetbrains.bazel.sync.workspace.BazelWorkspaceResolveService
-- f:component7():com.intellij.platform.util.progress.SequentialProgressReporter
-- f:copy(com.intellij.openapi.project.Project,org.jetbrains.bazel.sync.scope.ProjectSyncScope,org.jetbrains.bsp.protocol.BazelServerFacade,org.jetbrains.bazel.sync.workspace.BazelWorkspaceResolveService,org.jetbrains.bazel.sync.projectStructure.AllProjectStructuresDiff,org.jetbrains.bsp.protocol.TaskId,com.intellij.platform.util.progress.SequentialProgressReporter,java.util.Map):org.jetbrains.bazel.sync.ProjectSyncHook$ProjectSyncHookEnvironment
-- bs:copy$default(org.jetbrains.bazel.sync.ProjectSyncHook$ProjectSyncHookEnvironment,com.intellij.openapi.project.Project,org.jetbrains.bazel.sync.scope.ProjectSyncScope,org.jetbrains.bsp.protocol.BazelServerFacade,org.jetbrains.bazel.sync.workspace.BazelWorkspaceResolveService,org.jetbrains.bazel.sync.projectStructure.AllProjectStructuresDiff,org.jetbrains.bsp.protocol.TaskId,com.intellij.platform.util.progress.SequentialProgressReporter,java.util.Map,I,java.lang.Object):org.jetbrains.bazel.sync.ProjectSyncHook$ProjectSyncHookEnvironment
+- f:component4():org.jetbrains.bazel.sync.workspace.BazelResolvedWorkspace
+- f:component5():org.jetbrains.bazel.sync.workspace.BazelWorkspaceResolveService
+- f:component7():com.intellij.platform.workspace.storage.MutableEntityStorage
+- f:component8():com.intellij.platform.util.progress.SequentialProgressReporter
+- f:copy(com.intellij.openapi.project.Project,org.jetbrains.bazel.sync.scope.ProjectSyncScope,org.jetbrains.bsp.protocol.BazelServerFacade,org.jetbrains.bazel.sync.workspace.BazelResolvedWorkspace,org.jetbrains.bazel.sync.workspace.BazelWorkspaceResolveService,org.jetbrains.bsp.protocol.TaskId,com.intellij.platform.workspace.storage.MutableEntityStorage,com.intellij.platform.util.progress.SequentialProgressReporter,java.util.Map,java.util.List):org.jetbrains.bazel.sync.ProjectSyncHook$ProjectSyncHookEnvironment
+- bs:copy$default(org.jetbrains.bazel.sync.ProjectSyncHook$ProjectSyncHookEnvironment,com.intellij.openapi.project.Project,org.jetbrains.bazel.sync.scope.ProjectSyncScope,org.jetbrains.bsp.protocol.BazelServerFacade,org.jetbrains.bazel.sync.workspace.BazelResolvedWorkspace,org.jetbrains.bazel.sync.workspace.BazelWorkspaceResolveService,org.jetbrains.bsp.protocol.TaskId,com.intellij.platform.workspace.storage.MutableEntityStorage,com.intellij.platform.util.progress.SequentialProgressReporter,java.util.Map,java.util.List,I,java.lang.Object):org.jetbrains.bazel.sync.ProjectSyncHook$ProjectSyncHookEnvironment
 - equals(java.lang.Object):Z
+- f:getDeferredApplyActions():java.util.List
 - f:getProgressReporter():com.intellij.platform.util.progress.SequentialProgressReporter
 - f:getProject():com.intellij.openapi.project.Project
-- f:getResolver():org.jetbrains.bazel.sync.workspace.BazelWorkspaceResolveService
 - f:getServer():org.jetbrains.bsp.protocol.BazelServerFacade
 - hashCode():I
 org.jetbrains.bazel.sync.status.SyncStatusListener

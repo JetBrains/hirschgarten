@@ -13,6 +13,7 @@ import org.jetbrains.bazel.sync.workspace.languages.protobuf.ProtobufLanguagePlu
 import org.jetbrains.bazel.sync.workspace.languages.python.PythonLanguagePlugin
 import org.jetbrains.bazel.sync.workspace.languages.scala.ScalaLanguagePlugin
 import org.jetbrains.bazel.sync.workspace.languages.thrift.ThriftLanguagePlugin
+import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 
 @Service(Service.Level.PROJECT)
 @ApiStatus.Internal
@@ -37,14 +38,14 @@ class LanguagePluginsService {
   val all
     get() = registry.values.toList()
 
-  fun registerDefaultPlugins(bazelPathsResolver: BazelPathsResolver, jvmPackageResolver: JvmPackageResolver) {
+  fun registerDefaultPlugins(bazelPathsResolver: BazelPathsResolver, jvmPackageResolver: JvmPackageResolver, workspaceContext: WorkspaceContext) {
     val javaPlugin =
       JavaLanguagePlugin(bazelPathsResolver, JdkResolver(bazelPathsResolver), jvmPackageResolver)
         .also(this::registerLangaugePlugin)
     KotlinLanguagePlugin(javaPlugin, bazelPathsResolver).also(this::registerLangaugePlugin)
     ScalaLanguagePlugin(javaPlugin, bazelPathsResolver, jvmPackageResolver).also(this::registerLangaugePlugin)
     GoLanguagePlugin(bazelPathsResolver).also(this::registerLangaugePlugin)
-    PythonLanguagePlugin(bazelPathsResolver).also(this::registerLangaugePlugin)
+    PythonLanguagePlugin(bazelPathsResolver, workspaceContext).also(this::registerLangaugePlugin)
     ThriftLanguagePlugin().also(this::registerLangaugePlugin)
     ProtobufLanguagePlugin(javaPlugin).also(this::registerLangaugePlugin)
   }
