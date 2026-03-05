@@ -25,11 +25,13 @@ import org.jetbrains.bazel.server.bsp.managers.BazelBspAspectsManagerResult
 import org.jetbrains.bazel.server.bsp.managers.BazelBspLanguageExtensionsGenerator
 import org.jetbrains.bazel.server.bsp.managers.BazelExternalRulesetsQueryImpl
 import org.jetbrains.bazel.server.bsp.managers.BazelToolchainManager
-import org.jetbrains.bazel.server.bzlmod.calculateRepoMapping
+import org.jetbrains.bazel.server.bzlmod.calculateRepoNameMappingOnly
+import org.jetbrains.bazel.server.bzlmod.extendRepoMappingByPathInfo
 import org.jetbrains.bazel.server.model.AspectSyncProject
 import org.jetbrains.bazel.server.model.PhasedSyncProject
 import org.jetbrains.bazel.server.sync.sharding.BazelBuildTargetSharder
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
+import org.jetbrains.bazel.workspacecontext.externalRepositoriesTreatedAsInternal
 import org.jetbrains.bsp.protocol.BazelTaskEventsHandler
 import org.jetbrains.bsp.protocol.FeatureFlags
 import org.jetbrains.bsp.protocol.TaskId
@@ -141,9 +143,9 @@ class ProjectResolver constructor(
   ): Pair<RepoMapping, BazelBspAspectsManagerResult> {
     // Use the already available workspaceContext and featureFlags
 
-    val repoMapping =
+    val repoMappingOnly =
       measured("Calculating external repository mapping") {
-        calculateRepoMapping(workspaceContext, bazelRunner, bazelInfo, taskEventsHandler.asLogger(taskId), taskId)
+        calculateRepoNameMappingOnly(workspaceContext, bazelRunner, bazelInfo, taskEventsHandler.asLogger(taskId), taskId)
       }
 
     val bazelExternalRulesetsQuery =
@@ -161,14 +163,20 @@ class ProjectResolver constructor(
         "Discovering supported external rules",
       ) { bazelExternalRulesetsQuery.fetchExternalRulesetNames() }
 
-    val externalRepos = (repoMapping as? BzlmodRepoMapping)?.apparentRepoNameToCanonicalName?.let {
+    val mapping = (repoMappingOnly as? BzlmodRepoMapping)?.apparentRepoNameToCanonicalName
+
+    val externalRepos = mapping?.let {
       mapping -> externalRulesetNames.mapNotNull { repoName -> mapping[repoName] }.filter {it != ""}.map {"@@" + it }
     } ?: emptyList()
 
-    val externalRulesetDefinitions =
+    val extraDefinitionsNeeded = workspaceContext.externalRepositoriesTreatedAsInternal.map {  repoName -> mapping?.get(repoName)?.let {"@@" + it} ?: repoName }
+
+    val repoDefinitions =
       measured("Looking up definitions of external rules") {
-         ModuleResolver(bazelRunner, workspaceContext, taskId).resolveModules(externalRepos, bazelInfo)
+        ModuleResolver(bazelRunner, workspaceContext, taskId).resolveModules(externalRepos + extraDefinitionsNeeded, bazelInfo)
       }
+
+    val repoMapping = extendRepoMappingByPathInfo(repoMappingOnly, workspaceContext, bazelRunner, bazelInfo, taskEventsHandler.asLogger(taskId), repoDefinitions, taskId)
 
     val ruleLanguages =
       measured(
@@ -176,7 +184,7 @@ class ProjectResolver constructor(
       ) {
         bazelBspAspectsManager.calculateRulesetLanguages(
           externalRulesetNames,
-          externalRulesetDefinitions,
+          repoDefinitions,
           bazelInfo.externalAutoloads,
           featureFlags,
         )
