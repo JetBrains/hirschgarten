@@ -310,9 +310,10 @@ interface BazelProjectPropertiesKt {
 fun UiComponent.assertSyncSucceeded() {
   val buildView = x { byType("com.intellij.build.BuildView") }
   val syncSuccessText = BazelPluginBundle.message("console.task.sync.success")
-  assert(
-    buildView.getAllTexts().any { it.text.contains(syncSuccessText) },
-  ) { "Build view does not contain sync success text ('$syncSuccessText')" }
+  val allTexts = buildView.getAllTexts().map { it.text }
+  if (allTexts.none { it.contains(syncSuccessText) }) {
+    error("Build view does not contain sync success text ('$syncSuccessText'):\n${allTexts.joinToString("\n")}")
+  }
 }
 
 fun <T : CommandChain> T.assertSyncedTargets(vararg targets: String): T {
