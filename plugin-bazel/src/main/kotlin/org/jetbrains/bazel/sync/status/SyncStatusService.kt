@@ -6,10 +6,6 @@ import java.util.concurrent.atomic.AtomicBoolean
 
 internal class SyncAlreadyInProgressException : IllegalStateException()
 
-internal class SyncFatalFailureException : IllegalStateException()
-
-internal class SyncPartialFailureException : IllegalStateException()
-
 @Service(Service.Level.PROJECT)
 internal class SyncStatusService(private val project: Project) {
   @Volatile

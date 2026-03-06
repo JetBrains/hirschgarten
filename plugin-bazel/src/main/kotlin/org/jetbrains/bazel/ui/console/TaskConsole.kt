@@ -85,7 +85,6 @@ interface TaskConsole {
   /**
    * Displays start of a subtask in this console
    *
-   * @param parentTaskId id of the task (or another subtask) being this subtask's direct parent
    * @param subtaskId id of the newly created subtask. **Has to be unique among all running subtasks in
    * this console - otherwise, unexpected behavior might occur**
    * @param message will be displayed as this subtask's title until it's finished
@@ -127,8 +126,6 @@ interface TaskConsole {
     severity: MessageEvent.Kind,
   )
 
-  fun addWarnMessage(taskId: TaskId, message: String)
-
   /**
    * Adds a message to a particular task in this console. If the message is added to a subtask, it will also be
    * added to the subtask's parent task.
@@ -137,6 +134,16 @@ interface TaskConsole {
    * @param message message to be added. New line will be inserted at its end if it's not present there already
    */
   fun addMessage(taskId: TaskId, message: String)
+
+  /**
+   * Registers new exception during task processing.
+   * NOTE: this does not add any UI elements. It is to prevent duplicate UI nodes when subtask fails
+   *
+   * @param taskId id of the task (or a subtask) whic produced an exception
+   * @param ex exception itself
+   * @return true if this exception is new and was not registered already
+   */
+  fun registerException(taskId: TaskId, ex: Throwable): Boolean
 }
 
 @ApiStatus.Internal
@@ -158,6 +165,7 @@ abstract class BaseTaskConsole(
   private val project: Project,
 ) : TaskConsole, PtyAwareTaskConsole {
   protected val tasksInProgress: MutableSet<TaskId> = mutableSetOf()
+  private val taskFailures: MutableMap<TaskId, MutableSet<Throwable>> = linkedMapOf()
   private val subtaskParentMap: MutableMap<TaskId, TaskId> = linkedMapOf()
   private val subtaskMessageMap: MutableMap<TaskId, String> = linkedMapOf()
   private val taskPtyTerminalMap: MutableMap<TaskId, TerminalExecutionConsole> = linkedMapOf()
@@ -309,6 +317,7 @@ abstract class BaseTaskConsole(
     }
     finishChildrenSubtasks(taskId, result)
     tasksInProgress.remove(taskId)
+    taskFailures.remove(taskId)
     subtaskParentMap.entries.removeAll { findActiveRootTaskId(it.value) == taskId }
     taskPtyTerminalMap.remove(taskId)
     val event = FinishBuildEventImpl(taskId, null, System.currentTimeMillis(), message, result)
@@ -423,18 +432,17 @@ abstract class BaseTaskConsole(
   }
 
   @Synchronized
-  override fun addWarnMessage(taskId: TaskId, message: String) {
-    val rootTaskId = findActiveRootTaskId(taskId) ?: return
-    val activeTaskId = findActiveTaskId(taskId) ?: return
-    doAddDiagnosticMessage(rootTaskId, activeTaskId, null, message, MessageEvent.Kind.WARNING)
-  }
-
-  @Synchronized
   override fun addMessage(taskId: TaskId, message: String) {
     if (message.isBlank()) return
     val rootTaskId = findActiveRootTaskId(taskId) ?: return
     val activeTaskId = findActiveTaskId(taskId) ?: return
     doAddMessage(activeTaskId, message)
+  }
+
+  @Synchronized
+  override fun registerException(taskId: TaskId, ex: Throwable): Boolean {
+    val rootTaskId = findActiveRootTaskId(taskId) ?: return true
+    return taskFailures.getOrPut(rootTaskId) { mutableSetOf() }.add(ex)
   }
 
   private val DEFAULT_PTY_TERM_SIZE = TermSize(80, 24)

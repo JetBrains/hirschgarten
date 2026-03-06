@@ -6,7 +6,9 @@ import com.intellij.openapi.project.Project
 import com.intellij.platform.util.progress.SequentialProgressReporter
 import com.jediterm.core.util.TermSize
 import org.jetbrains.annotations.ApiStatus
+import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bsp.protocol.TaskId
+import java.util.concurrent.TimeoutException
 
 @ApiStatus.Internal
 interface ConsoleService {
@@ -43,21 +45,34 @@ internal suspend fun <T> TaskConsole.withSubtask(
     val result = block(subtaskId)
     finishSubtask(subtaskId)
     return result
-  }
-  catch (ex: Throwable) {
-    finishSubtask(subtaskId, result = FailureResultImpl(ex))
+  } catch (ex: Throwable) {
+    val result = if (registerException(subtaskId, ex)) {
+      when (ex) {
+        is java.util.concurrent.CancellationException ->
+          FailureResultImpl(BazelPluginBundle.message("console.task.exception.cancellation.message"))
+
+        is TimeoutException ->
+          FailureResultImpl(BazelPluginBundle.message("console.task.exception.timeout.message"))
+
+        else ->
+          FailureResultImpl(ex)
+      }
+    } else {
+      FailureResultImpl()
+    }
+    finishSubtask(subtaskId, result = result)
     throw ex
   }
 }
 
-internal suspend fun <T> Project.withSubtask(
+internal suspend fun <T> TaskConsole.withSubtask(
   reporter: SequentialProgressReporter,
   subtaskId: TaskId,
   text: String,
   block: suspend (subtaskId: TaskId) -> T,
 ) {
   reporter.indeterminateStep(text) {
-    syncConsole.withSubtask(
+    withSubtask(
       subtaskId = subtaskId,
       message = text,
       block = block,
