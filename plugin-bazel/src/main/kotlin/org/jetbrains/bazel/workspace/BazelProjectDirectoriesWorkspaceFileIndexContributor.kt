@@ -5,6 +5,7 @@ import com.intellij.workspaceModel.core.fileIndex.WorkspaceFileIndexContributor
 import com.intellij.workspaceModel.core.fileIndex.WorkspaceFileKind
 import com.intellij.workspaceModel.core.fileIndex.WorkspaceFileSetRegistrar
 import com.intellij.workspaceModel.ide.toPath
+import org.jetbrains.bazel.workspace.ExcludeAllNonExplicitlyIncludedFiles.Companion.createExcludeAllNonExplicitlyIncludedFiles
 import org.jetbrains.bazel.workspacemodel.entities.BazelProjectDirectoriesEntity
 
 internal class BazelProjectDirectoriesWorkspaceFileIndexContributor : WorkspaceFileIndexContributor<BazelProjectDirectoriesEntity> {
@@ -27,6 +28,7 @@ internal class BazelProjectDirectoriesWorkspaceFileIndexContributor : WorkspaceF
       registrar.registerIndexAdditionalFiles(entity)
     }
     registrar.registerExcludedDirectories(entity)
+    registrar.excludeAllNonExplicitlyIncludedFiles(entity)
 
     registrar.registerFileSet(
       root = entity.projectRoot,
@@ -46,6 +48,17 @@ internal class BazelProjectDirectoriesWorkspaceFileIndexContributor : WorkspaceF
       )
     }
 
+  private fun WorkspaceFileSetRegistrar.registerIndexAdditionalFiles(entity: BazelProjectDirectoriesEntity) {
+    entity.indexAdditionalFiles.forEach {
+      registerNonRecursiveFileSet(
+        file = it,
+        kind = WorkspaceFileKind.CONTENT,
+        entity = entity,
+        customData = null,
+      )
+    }
+  }
+
   private fun WorkspaceFileSetRegistrar.registerExcludedDirectories(entity: BazelProjectDirectoriesEntity) {
     excludeSymlinksFromFileWatcher(entity.excludedRoots.map { it.toPath() })
     entity.excludedRoots.forEach {
@@ -56,14 +69,11 @@ internal class BazelProjectDirectoriesWorkspaceFileIndexContributor : WorkspaceF
     }
   }
 
-  private fun WorkspaceFileSetRegistrar.registerIndexAdditionalFiles(entity: BazelProjectDirectoriesEntity) {
-    entity.indexAdditionalFiles.forEach {
-      registerNonRecursiveFileSet(
-        file = it,
-        kind = WorkspaceFileKind.CONTENT,
-        entity = entity,
-        customData = null,
-      )
-    }
+  private fun WorkspaceFileSetRegistrar.excludeAllNonExplicitlyIncludedFiles(entity: BazelProjectDirectoriesEntity) {
+    registerExclusionCondition(
+      root = entity.projectRoot,
+      condition = createExcludeAllNonExplicitlyIncludedFiles(entity.includedRoots),
+      entity = entity
+    )
   }
 }
