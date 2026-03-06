@@ -1,6 +1,5 @@
 package org.jetbrains.bazel.server.connection
 
-import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import java.util.concurrent.atomic.AtomicReference
 import org.jetbrains.bazel.bazelrunner.BazelInfoResolver
@@ -10,7 +9,7 @@ import org.jetbrains.bazel.commons.BazelPathsResolver
 import org.jetbrains.bazel.config.FeatureFlagsProvider
 import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.install.EnvironmentCreator
-import org.jetbrains.bazel.languages.bazelversion.service.BazelVersionCheckerService
+import org.jetbrains.bazel.languages.bazelversion.psi.BazelVersionLiteral
 import org.jetbrains.bazel.languages.bazelversion.service.BazelVersionWorkspaceResolver
 import org.jetbrains.bazel.languages.projectview.ProjectViewService
 import org.jetbrains.bazel.languages.projectview.ProjectViewToWorkspaceContextConverter
@@ -34,7 +33,10 @@ internal class DefaultBazelServerConnection(private val project: Project) : Baze
   private val environmentCreator = EnvironmentCreator(workspaceRoot).also {
     it.create()
   }
-  private val server = AtomicReference<BaselServerFacadeImpl?>(null)
+
+  data class ServerWithVersionLiteral(val server: BaselServerFacadeImpl?, val versionLiteral: BazelVersionLiteral?)
+
+  private val serverAndVersionLiteral = AtomicReference<ServerWithVersionLiteral>(ServerWithVersionLiteral(null, null))
 
   override suspend fun <T> runWithServer(task: suspend (server: BazelServerFacade) -> T): T {
     return task(getServer())
@@ -49,16 +51,16 @@ internal class DefaultBazelServerConnection(private val project: Project) : Baze
       workspaceRoot = project.rootDir.toNioPath(),
     )
 
-    var server = this.server.get()
+    var (server, oldVersionLiteral) = this.serverAndVersionLiteral.get()
     val projectPath = project.rootDir.toNioPath()
     val resolvedVersion = BazelVersionWorkspaceResolver.resolveBazelVersionFromWorkspace(projectPath)
-    val bazelVersionUpdated = server?.bazelInfo?.release != resolvedVersion
+    val bazelVersionUpdated = oldVersionLiteral != resolvedVersion
 
     if (server == null ||
         bazelVersionUpdated ||
         server.workspaceContext != workspaceContext) {
       server = createServer(workspaceContext)
-      this.server.set(server)
+      this.serverAndVersionLiteral.set(ServerWithVersionLiteral(server, resolvedVersion))
     }
     return server
   }
