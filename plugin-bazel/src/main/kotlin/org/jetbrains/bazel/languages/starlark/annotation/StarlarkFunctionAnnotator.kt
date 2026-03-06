@@ -18,6 +18,7 @@ import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkCallExpres
 import org.jetbrains.bazel.languages.starlark.psi.expressions.arguments.StarlarkArgumentExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.arguments.StarlarkNamedArgumentExpression
 import org.jetbrains.bazel.languages.starlark.psi.functions.StarlarkArgumentList
+import org.jetbrains.bazel.languages.starlark.psi.functions.StarlarkFunctionDeclaration
 import org.jetbrains.bazel.languages.starlark.references.StarlarkNamedArgumentReference
 
 class StarlarkFunctionAnnotator : StarlarkAnnotator() {
@@ -42,8 +43,13 @@ class StarlarkFunctionAnnotator : StarlarkAnnotator() {
       element = element,
       expectedElementTypes = listOf(StarlarkElementTypes.CALL_EXPRESSION),
       expectedParentTypes = listOf(StarlarkElementTypes.EXPRESSION_STATEMENT),
-    ) &&
+    ) && !isResolvableFunction(element) &&
       (element.containingFile as? StarlarkFile)?.getBazelFileType()?.let { it == BazelFileType.BUILD || it == BazelFileType.MODULE } == true
+
+  private fun isResolvableFunction(element: PsiElement): Boolean {
+    val callExpression = element as? StarlarkCallExpression ?: return false
+    return callExpression.reference?.resolve() is StarlarkFunctionDeclaration
+  }
 
   private fun annotateGlobalFunction(element: PsiElement, holder: AnnotationHolder) {
     if (element.firstChild == null) return
