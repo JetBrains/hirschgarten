@@ -23,6 +23,7 @@ import com.intellij.tools.ide.performanceTesting.commands.CommandChain
 import com.intellij.tools.ide.performanceTesting.commands.DebugStepTypes
 import com.intellij.tools.ide.performanceTesting.commands.Keys
 import com.intellij.tools.ide.performanceTesting.commands.build
+import com.intellij.tools.ide.performanceTesting.commands.checkOnRedCode
 import com.intellij.tools.ide.performanceTesting.commands.debugStep
 import com.intellij.tools.ide.performanceTesting.commands.delayType
 import com.intellij.tools.ide.performanceTesting.commands.deleteFile
@@ -95,6 +96,9 @@ class SimpleKotlinCombinedTest : IdeStarterBaseProjectTest() {
 
   @Test @Order(2)
   fun `test results tree should display passed tests correctly with bazel runner`() = testResultsTreeWithBazelRunner()
+
+  @Test @Order(3)
+  fun `associates should be green`() = testAssociatesRedCode()
 
   @Test @Order(50)
   fun `reopening project should not trigger resync`() = reopenWithoutResync()
@@ -203,6 +207,15 @@ class SimpleKotlinCombinedTest : IdeStarterBaseProjectTest() {
           )
           takeScreenshot("afterDebugTestResultsTreeBazelRunner")
         }
+      }
+    }
+  }
+
+  private fun testAssociatesRedCode() {
+    withDriver(bgRun) {
+      step("Open A.kt and check red code") {
+        openFile("A.kt")
+        execute { checkOnRedCode() }
       }
     }
   }
