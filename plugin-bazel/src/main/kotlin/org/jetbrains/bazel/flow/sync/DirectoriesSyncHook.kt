@@ -6,9 +6,11 @@ import com.intellij.platform.backend.workspace.WorkspaceModel
 import com.intellij.platform.backend.workspace.toVirtualFileUrl
 import com.intellij.platform.workspace.storage.impl.url.toVirtualFileUrl
 import org.jetbrains.bazel.config.rootDir
-import org.jetbrains.bazel.flow.open.exclude.BazelSymlinkExcludeService
+import org.jetbrains.bazel.flow.exclude.BazelSymlinkExcludeService
 import org.jetbrains.bazel.sync.ProjectSyncHook
 import org.jetbrains.bazel.sync.ProjectSyncHook.ProjectSyncHookEnvironment
+import org.jetbrains.bazel.sync.projectStructure.workspaceModel.workspaceModelDiff
+import org.jetbrains.bazel.sync.task.query
 import org.jetbrains.bazel.sync.withSubtask
 import org.jetbrains.bazel.workspacemodel.entities.BazelProjectDirectoriesEntity
 import org.jetbrains.bazel.workspacemodel.entities.BazelProjectDirectoriesEntityBuilder
@@ -19,20 +21,25 @@ import java.nio.file.Path
 private class DirectoriesSyncHook : ProjectSyncHook {
   override suspend fun onSync(environment: ProjectSyncHookEnvironment) {
     environment.withSubtask("Collect project directories") {
-      val directories = environment.server.workspaceDirectories()
-      val workspaceContext = environment.server.workspaceContext
-      val additionalExcludes = BazelSymlinkExcludeService.getInstance(environment.project).getBazelSymlinksToExclude()
+      val directories = query("workspace/directories") { environment.server.workspaceDirectories() }
+      val workspaceContext =
+        query("workspace/context") {
+          environment.server.workspaceContext()
+        }
+
+      val additionalExcludes = BazelSymlinkExcludeService.getInstance(environment.project).getOrComputeBazelSymlinksToExclude()
       val indexAllFilesInIncludedRoots = workspaceContext.indexAllFilesInDirectories
       val entity = createEntity(environment.project, directories, additionalExcludes, indexAllFilesInIncludedRoots)
 
-      environment.diff.addEntity(entity)
+      environment.diff.workspaceModelDiff.mutableEntityStorage
+        .addEntity(entity)
     }
   }
 
   private suspend fun createEntity(
     project: Project,
     directories: WorkspaceDirectoriesResult,
-    additionalExcludes: List<Path>,
+    additionalExcludes: Set<Path>,
     indexAllFilesInIncludedRoots: Boolean,
   ): BazelProjectDirectoriesEntityBuilder {
     val virtualFileUrlManager = project.serviceAsync<WorkspaceModel>().getVirtualFileUrlManager()
