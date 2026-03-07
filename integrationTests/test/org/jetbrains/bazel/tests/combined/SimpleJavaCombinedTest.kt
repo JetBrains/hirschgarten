@@ -85,7 +85,6 @@ class SimpleJavaCombinedTest : IdeStarterBaseProjectTest() {
   fun `run gutter for test suite should contain several targets`() = runGutterTestSuite()
 
   @Test @Order(100)
-  @Disabled("BAZEL-2995 Error: 'struct' value has no field or method 'AppleDynamicFramework'")
   fun `update bazel version should not cause server to break`() = bazelVersionUpdate()
 
   @AfterAll
