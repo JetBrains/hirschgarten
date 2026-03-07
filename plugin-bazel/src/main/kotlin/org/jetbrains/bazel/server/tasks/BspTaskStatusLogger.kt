@@ -3,8 +3,9 @@ package org.jetbrains.bazel.server.tasks
 import com.intellij.build.events.impl.FailureResultImpl
 import kotlinx.coroutines.Deferred
 import org.jetbrains.bazel.commons.BazelStatus
+import org.jetbrains.bazel.config.BazelExtBundle
 import org.jetbrains.bazel.config.BazelPluginBundle
-import org.jetbrains.bazel.ui.console.TaskConsole
+import org.jetbrains.bazel.progress.TaskConsole
 import org.jetbrains.bsp.protocol.TaskId
 import java.util.concurrent.CancellationException
 import java.util.concurrent.TimeoutException
@@ -41,14 +42,14 @@ internal class BspTaskStatusLogger(
         bspBuildConsole.finishTask(
           taskId,
           BazelPluginBundle.message("console.task.exception.cancellation"),
-          FailureResultImpl(BazelPluginBundle.message("console.task.exception.cancellation.message")),
+          FailureResultImpl(BazelExtBundle.message ("console.task.exception.cancellation.message")),
         )
       }
       is TimeoutException -> {
         bspBuildConsole.finishTask(
           taskId,
           BazelPluginBundle.message("console.task.exception.timed.out"),
-          FailureResultImpl(BazelPluginBundle.message("console.task.exception.timeout.message")),
+          FailureResultImpl(BazelExtBundle.message("console.task.exception.timeout.message")),
         )
       }
       else -> {

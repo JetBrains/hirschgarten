@@ -11,8 +11,8 @@ import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.label.Package
 import org.jetbrains.bazel.label.ResolvedLabel
 import org.jetbrains.bazel.label.SingleTarget
-import org.jetbrains.bazel.languages.starlark.repomapping.canonicalRepoNameToPath
 import org.jetbrains.bazel.sync.SyncCache
+import org.jetbrains.bazel.workspace.canonicalRepoNameToPath
 import org.jetbrains.bazel.workspace.excludedRoots
 import kotlin.io.path.relativeToOrNull
 

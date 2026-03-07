@@ -10,7 +10,7 @@ import com.intellij.util.io.delete
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
 import org.jetbrains.bazel.config.rootDir
-import org.jetbrains.bazel.languages.starlark.repomapping.BazelRepoMappingService
+import org.jetbrains.bazel.languages.starlark.repomapping.PersistentBazelRepoMappingService
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
@@ -32,7 +32,7 @@ class BazelBuildTargetConsoleFilterTest : BasePlatformTestCase() {
     val virtualFileManager = VirtualFileManager.getInstance()
     project.rootDir = virtualFileManager.findFileByNioPath(Path(project.basePath!!))!!
     filter = BazelBuildTargetConsoleFilter(project)
-    BazelRepoMappingService.getInstance(project).canonicalRepoNameToPath = mapOf("" to project.rootDir.toNioPath())
+    PersistentBazelRepoMappingService.getInstance(project).canonicalRepoNameToPath = mapOf("" to project.rootDir.toNioPath())
   }
 
   @Test
@@ -93,7 +93,7 @@ class BazelBuildTargetConsoleFilterTest : BasePlatformTestCase() {
     val path = createBazelFile(externalRootDir, "plugin-bazel/src")
     val bazelTarget = "@@externalRepo//plugin-bazel/src:test_fixtures"
     val line = "$TEST_LINE_PREFIX$bazelTarget$TEST_LINE_SUFFIX"
-    BazelRepoMappingService.getInstance(project).canonicalRepoNameToPath =
+    PersistentBazelRepoMappingService.getInstance(project).canonicalRepoNameToPath =
       mapOf("externalRepo" to externalRootDir, "" to project.rootDir.toNioPath())
 
     // when
@@ -116,9 +116,9 @@ class BazelBuildTargetConsoleFilterTest : BasePlatformTestCase() {
     val bazelTarget = "@externalRepo2//plugin-bazel/src:test_fixtures"
     val line = "$TEST_LINE_PREFIX$bazelTarget$TEST_LINE_SUFFIX"
 
-    BazelRepoMappingService.getInstance(project).canonicalRepoNameToPath =
+    PersistentBazelRepoMappingService.getInstance(project).canonicalRepoNameToPath =
       mapOf("externalRepo2+" to externalRootDir, "" to project.rootDir.toNioPath())
-    BazelRepoMappingService.getInstance(project).apparentRepoNameToCanonicalName = mapOf("externalRepo2" to "externalRepo2+")
+    PersistentBazelRepoMappingService.getInstance(project).apparentRepoNameToCanonicalName = mapOf("externalRepo2" to "externalRepo2+")
 
     // when
     val result = filter.applyFilter(line, line.length + 100)
