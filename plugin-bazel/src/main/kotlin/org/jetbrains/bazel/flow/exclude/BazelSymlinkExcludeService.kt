@@ -6,14 +6,20 @@ import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.toNioPathOrNull
+import com.intellij.platform.backend.workspace.WorkspaceModel
+import com.intellij.platform.workspace.storage.impl.url.toVirtualFileUrl
+import com.intellij.util.concurrency.annotations.RequiresWriteLock
 import com.intellij.workspaceModel.core.fileIndex.impl.WorkspaceFileIndexEx
-import org.jetbrains.bazel.annotations.InternalApi
+import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.commons.symlinks.BazelSymlinksCalculator
 import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.config.bazelProjectProperties
+import org.jetbrains.bazel.workspace.bazelProjectDirectoriesEntity
 import org.jetbrains.bazel.workspace.excludeSymlinksFromFileWatcher
+import org.jetbrains.bazel.workspacemodel.entities.modifyBazelProjectDirectoriesEntity
 import java.nio.file.Path
 
+@ApiStatus.Internal
 @Service(Service.Level.PROJECT)
 class BazelSymlinkExcludeService(private val project: Project) : DumbAware {
   @Volatile
@@ -40,9 +46,10 @@ class BazelSymlinkExcludeService(private val project: Project) : DumbAware {
     return getOrComputeBazelSymlinksToExclude(bazelWorkspace)
   }
 
-  @InternalApi
+  @RequiresWriteLock
   fun addBazelSymlinksToExclude(newSymlinks: Set<Path>) {
     logger.info("Excluding newly detected Bazel symlinks: $newSymlinks")
+    addBazelSymlinksToProjectDirectoriesEntity(newSymlinks)
     addBazelSymlinksToExcludeUnderLock(newSymlinks)
     // Make sure that IntelliJ's workspace machinery will pull the most recent
     // list of excluded directories from BazelDirectoryIndexExcludePolicy immediately.
@@ -55,6 +62,18 @@ class BazelSymlinkExcludeService(private val project: Project) : DumbAware {
     excludeSymlinksFromFileWatcher(newSymlinks.toList())
     val currentSymlinks = symlinksToExclude ?: emptySet()
     return currentSymlinks.plus(newSymlinks).also { symlinksToExclude = it }
+  }
+
+  @RequiresWriteLock
+  private fun addBazelSymlinksToProjectDirectoriesEntity(newSymlinks: Set<Path>) {
+    val workspaceModel = WorkspaceModel.getInstance(project)
+    val newSymlinksUrls = newSymlinks.map { it.toVirtualFileUrl(workspaceModel.getVirtualFileUrlManager()) }
+    workspaceModel.updateProjectModel("Add new excluded symlinks") { mutableEntityStorage ->
+      val bazelProjectDirectoriesEntity = mutableEntityStorage.bazelProjectDirectoriesEntity() ?: return@updateProjectModel
+      mutableEntityStorage.modifyBazelProjectDirectoriesEntity(bazelProjectDirectoriesEntity) {
+        this.excludedRoots = this.excludedRoots.plus(newSymlinksUrls).distinct().toMutableList()
+      }
+    }
   }
 
   companion object {
