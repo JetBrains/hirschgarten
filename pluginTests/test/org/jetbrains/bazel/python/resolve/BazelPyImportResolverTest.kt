@@ -2,8 +2,6 @@ package org.jetbrains.bazel.python.resolve
 
 import com.intellij.ide.plugins.PluginManagerCore
 import com.intellij.openapi.command.WriteCommandAction
-import com.intellij.openapi.externalSystem.autoimport.AutoImportProjectTracker
-import com.intellij.openapi.util.Disposer
 import com.intellij.psi.PsiDirectory
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiManager
@@ -34,7 +32,6 @@ class BazelPyImportResolverTest : BazelBasePlatformTestCase() {
 
   override fun tearDown() {
     PluginManagerCore.loadedPlugins
-    Disposer.dispose(AutoImportProjectTracker.getInstance(project))
     super.tearDown()
   }
 

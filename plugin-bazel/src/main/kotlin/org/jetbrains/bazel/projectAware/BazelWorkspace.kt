@@ -5,6 +5,7 @@ import com.intellij.openapi.Disposable
 import com.intellij.openapi.application.EDT
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.util.Disposer
 import com.intellij.openapi.vcs.BranchChangeListener
 import com.intellij.openapi.vfs.VirtualFileManager
 import com.intellij.openapi.vfs.newvfs.BulkFileListener
@@ -17,38 +18,56 @@ import com.intellij.ui.treeStructure.ProjectViewUpdateCause
 import com.intellij.util.ui.tree.TreeUtil
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import org.jetbrains.annotations.TestOnly
 import org.jetbrains.bazel.coroutines.BazelCoroutineService
 
 @Service(Service.Level.PROJECT)
 internal class BazelWorkspace(val project: Project) : Disposable {
   private var initialized = false
+  private var initializationDisposable: Disposable? = null
 
   @Synchronized
   fun initialize() {
     if (!initialized) {
-      BazelProjectAware.initialize(this)
-      BazelProjectModuleBuildTasksTracker.initialize(this)
-      BspExternalServicesSubscriber(project).subscribe()
+      val parentDisposable = Disposer.newDisposable(BazelWorkspace::class.java.simpleName)
+      BazelProjectAware.initialize(this, parentDisposable)
+      BazelProjectModuleBuildTasksTracker.initialize(this, parentDisposable)
+      BspExternalServicesSubscriber(project).subscribe(parentDisposable)
+      initializationDisposable = parentDisposable
       initialized = true
     }
   }
+
+  @Synchronized
+  @TestOnly
+  fun resetForTest() {
+    initializationDisposable?.let(Disposer::dispose)
+    initializationDisposable = null
+    initialized = false
+  }
+
+  @TestOnly
+  fun isInitializedForTest(): Boolean = initialized
 
   companion object {
     @JvmStatic
     fun getInstance(project: Project): BazelWorkspace = project.getService(BazelWorkspace::class.java)
   }
 
-  override fun dispose() {}
+  override fun dispose() {
+    initializationDisposable?.let(Disposer::dispose)
+    initializationDisposable = null
+  }
 }
 
 internal class BspExternalServicesSubscriber(private val project: Project) {
-  fun subscribe() {
-    subscribeForConfigChanges()
-    subscribeForBranchChanges()
+  fun subscribe(parentDisposable: Disposable) {
+    subscribeForConfigChanges(parentDisposable)
+    subscribeForBranchChanges(parentDisposable)
   }
 
-  fun subscribeForConfigChanges() {
-    project.messageBus.connect().subscribe(
+  fun subscribeForConfigChanges(parentDisposable: Disposable) {
+    project.messageBus.connect(parentDisposable).subscribe(
       VirtualFileManager.VFS_CHANGES,
       object : BulkFileListener {
         override fun after(events: MutableList<out VFileEvent>) {
@@ -71,8 +90,8 @@ internal class BspExternalServicesSubscriber(private val project: Project) {
         it is VFileMoveEvent
     }
 
-  private fun subscribeForBranchChanges() {
-    project.messageBus.connect().subscribe(
+  private fun subscribeForBranchChanges(parentDisposable: Disposable) {
+    project.messageBus.connect(parentDisposable).subscribe(
       BranchChangeListener.VCS_BRANCH_CHANGED,
       object : BranchChangeListener {
         override fun branchWillChange(branchName: String) {}

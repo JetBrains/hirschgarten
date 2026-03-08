@@ -1,5 +1,6 @@
 package org.jetbrains.bazel.projectAware
 
+import com.intellij.openapi.Disposable
 import com.intellij.openapi.components.PersistentStateComponent
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.State
@@ -22,8 +23,8 @@ internal class BazelProjectModuleBuildTasksTracker : PersistentStateComponent<Ba
 
   companion object {
     @JvmStatic
-    fun initialize(workspace: BazelWorkspace) {
-      workspace.project.messageBus.connect().subscribe(
+    fun initialize(workspace: BazelWorkspace, parentDisposable: Disposable) {
+      workspace.project.messageBus.connect(parentDisposable).subscribe(
         ProjectTaskListener.TOPIC,
         object : ProjectTaskListener {
           override fun finished(result: ProjectTaskManager.Result) {
