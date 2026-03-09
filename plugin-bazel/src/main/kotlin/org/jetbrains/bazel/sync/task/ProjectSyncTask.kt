@@ -22,16 +22,14 @@ import com.intellij.platform.util.progress.reportSequentialProgress
 import com.intellij.platform.workspace.storage.MutableEntityStorage
 import com.intellij.ui.treeStructure.ProjectViewUpdateCause
 import com.intellij.util.containers.forEachLoggingErrors
-import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.async
-import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.withContext
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.action.saveAllFiles
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.config.BazelPluginConstants
 import org.jetbrains.bazel.config.rootDir
+import org.jetbrains.bazel.coroutines.BazelCoroutineService
 import org.jetbrains.bazel.languages.projectview.ProjectViewService
 import org.jetbrains.bazel.performance.bspTracer
 import org.jetbrains.bazel.run.task.BazelBuildTaskListener
@@ -80,50 +78,48 @@ class ProjectSyncTask(private val project: Project) {
             val taskListener = BazelBuildTaskListener(syncConsole)
             BazelTaskEventsService.getInstance(project).saveListener(taskId.taskGroupId, taskListener)
 
-            coroutineScope {
-              val syncJob = async(start = CoroutineStart.LAZY) {
-                preSync()
-                doSync(taskId, syncScope, buildProject)
+            val syncJob = BazelCoroutineService.getInstance(project).startAsync(lazy = true) {
+              preSync()
+              doSync(taskId, syncScope, buildProject)
+            }
+
+            syncConsole.startTask(
+              taskId = taskId,
+              title = BazelPluginBundle.message("console.task.sync.title"),
+              message = BazelPluginBundle.message("console.task.sync.in.progress"),
+              cancelAction = {
+                SyncStatusService.getInstance(project).cancel()
+                syncJob.cancel()
+              },
+              redoAction = { sync(syncScope, buildProject) },
+            )
+
+            when (val syncResult = syncJob.await()) {
+              SyncResultStatus.FAILURE -> {
+                syncConsole.finishTask(
+                  taskId,
+                  BazelPluginBundle.message("console.task.sync.fatalfailure"),
+                  FailureResultImpl(),
+                )
               }
-
-              syncConsole.startTask(
-                taskId = taskId,
-                title = BazelPluginBundle.message("console.task.sync.title"),
-                message = BazelPluginBundle.message("console.task.sync.in.progress"),
-                cancelAction = {
-                  SyncStatusService.getInstance(project).cancel()
-                  syncJob.cancel()
-                },
-                redoAction = { sync(syncScope, buildProject) },
-              )
-
-              when (val syncResult = syncJob.await()) {
-                SyncResultStatus.FAILURE -> {
-                  syncConsole.finishTask(
-                    taskId,
-                    BazelPluginBundle.message("console.task.sync.fatalfailure"),
-                    FailureResultImpl(),
-                  )
-                }
-                SyncResultStatus.PARTIAL_SUCCESS -> {
-                  syncConsole.addDiagnosticMessage(
-                    taskId,
-                    null, -1, -1,
-                    BazelPluginBundle.message("console.task.sync.partialsuccess"),
-                    MessageEvent.Kind.WARNING
-                  )
-                  syncConsole.finishTask(
-                    taskId,
-                    BazelPluginBundle.message("console.task.sync.partialsuccess"),
-                    SuccessResultImpl(true),
-                  )
-                }
-                SyncResultStatus.SUCCESS -> {
-                  syncConsole.finishTask(
-                    taskId,
-                    BazelPluginBundle.message("console.task.sync.success")
-                  )
-                }
+              SyncResultStatus.PARTIAL_SUCCESS -> {
+                syncConsole.addDiagnosticMessage(
+                  taskId,
+                  null, -1, -1,
+                  BazelPluginBundle.message("console.task.sync.partialsuccess"),
+                  MessageEvent.Kind.WARNING
+                )
+                syncConsole.finishTask(
+                  taskId,
+                  BazelPluginBundle.message("console.task.sync.partialsuccess"),
+                  SuccessResultImpl(true),
+                )
+              }
+              SyncResultStatus.SUCCESS -> {
+                syncConsole.finishTask(
+                  taskId,
+                  BazelPluginBundle.message("console.task.sync.success")
+                )
               }
             }
           }
