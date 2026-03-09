@@ -393,9 +393,9 @@ class ProjectResolver constructor(
             v
               .toBuilder()
               .apply {
-                val processedDependencies = processDependenciesList(dependenciesBuilderList, targetMap)
-                clearDependencies()
-                addAllDependencies(processedDependencies)
+                val processedDependencies = processDependenciesList(depsBuilderList, targetMap)
+                clearDeps()
+                addAllDeps(processedDependencies)
               }.build()
         }.toMap()
 
