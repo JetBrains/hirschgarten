@@ -264,10 +264,8 @@ class BazelFileEventListener : BulkFileListenerBackgroundable {
       applicableEvents.associateNewFilePathsWithExistingModules(existingModulesByEvent)
     val addedFilePaths = applicableEvents.mapNotNull { it.fileAdded }
     val bazelQueryIsRequired =
-      // Bazel query can be skipped if every file is present in any module that we don't plan to remove the file from
       addedFilePaths.any {
-        val moduleContainingFile = modulesAlreadyContainingFiles[it].orEmpty()
-        return@any modulesToRemoveFilesFrom[it].orEmpty().containsAll(moduleContainingFile)
+        modulesToRemoveFilesFrom[it]?.isNotEmpty() == true || modulesAlreadyContainingFiles[it].isNullOrEmpty()
       }
     // avoid running a Bazel query when not required (BAZEL-2458)
     if (bazelQueryIsRequired) {
