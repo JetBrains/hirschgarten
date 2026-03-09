@@ -555,7 +555,7 @@ internal class AspectBazelProjectMapper(
           .toMutableSet()
 
       val dependencies =
-        targetsToImport[targetOrLibrary]?.dependenciesList.orEmpty().map { it.label() } +
+        targetsToImport[targetOrLibrary]?.depsList.orEmpty().map { it.label() } +
           libraryDependencies[targetOrLibrary].orEmpty().map { it.label } +
           librariesToImport[targetOrLibrary]?.dependencies.orEmpty().map { it.label }
 
@@ -688,7 +688,7 @@ internal class AspectBazelProjectMapper(
     }
 
     val interfaceJars = getTargetInterfaceJarsSet(targetInfo).toSet()
-    val dependencies: List<BspTargetInfo.Dependency> = if (!onlyOutputJars) targetInfo.dependenciesList else emptyList()
+    val dependencies: List<BspTargetInfo.Dependency> = if (!onlyOutputJars) targetInfo.depsList else emptyList()
     if (!shouldCreateLibrary(
         dependencies = dependencies,
         outputs = outputs,
@@ -712,7 +712,7 @@ internal class AspectBazelProjectMapper(
       label = label,
       outputs = outputs,
       sources = sources,
-      dependencies = targetInfo.dependenciesList.map { it.toDependencyLabel() },
+      dependencies = targetInfo.depsList.map { it.toDependencyLabel() },
       interfaceJars = interfaceJars,
       mavenCoordinates = mavenCoordinates,
       containsInternalJars = targetInfo.containsAnyInternalJars(),
@@ -811,7 +811,7 @@ internal class AspectBazelProjectMapper(
           shouldImportTargetKind(target.kind) ||
             target.getJvmTarget() &&
             (
-              target.dependenciesCount > 0 ||
+              target.depsCount > 0 ||
                 hasKnownJvmSources(target)
               )
           )
@@ -914,7 +914,7 @@ internal class AspectBazelProjectMapper(
   }
 
   private fun resolveDirectDependencies(target: TargetInfo): List<DependencyLabel> =
-    target.dependenciesList.map { it.toDependencyLabel() }
+    target.depsList.map { it.toDependencyLabel() }
 
   private fun BspTargetInfo.Dependency.toDependencyLabel(): DependencyLabel =
     DependencyLabel(
