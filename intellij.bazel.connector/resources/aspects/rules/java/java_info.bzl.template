@@ -31,7 +31,7 @@ def get_javacopts(target, ctx):
             return javacopts + add_opens
     return _get_javacopts_from_context(ctx)
 
-def extract_java_toolchain(target, ctx, dep_targets, **kwargs):
+def extract_java_toolchain(target, ctx, **kwargs):
     toolchain = None
     if java_common.JavaToolchainInfo != platform_common.ToolchainInfo and java_common.JavaToolchainInfo in target:
         toolchain = target[java_common.JavaToolchainInfo]
@@ -50,11 +50,6 @@ def extract_java_toolchain(target, ctx, dep_targets, **kwargs):
             java_home = java_home,
             boot_classpath_java_home = boot_classpath_java_home,
         )
-    else:
-        for dep in dep_targets:
-            if BspAspectInfo in dep and hasattr(dep[BspAspectInfo].bsp_info, "java_toolchain_info"):
-                toolchain_info = dep[BspAspectInfo].bsp_info.java_toolchain_info
-                break
 
     if toolchain_info != None:
         result = dict(java_toolchain_info = toolchain_info)

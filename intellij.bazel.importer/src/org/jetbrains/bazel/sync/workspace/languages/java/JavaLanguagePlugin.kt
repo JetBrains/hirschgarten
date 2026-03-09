@@ -5,6 +5,7 @@ import com.intellij.util.EnvironmentUtil
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.commons.BazelPathsResolver
 import org.jetbrains.bazel.commons.LanguageClass
+import org.jetbrains.bazel.info.BspTargetInfo
 import org.jetbrains.bazel.info.BspTargetInfo.JvmTargetInfo
 import org.jetbrains.bazel.info.BspTargetInfo.TargetInfo
 import org.jetbrains.bazel.label.Label
@@ -37,8 +38,10 @@ class JavaLanguagePlugin internal constructor(
   private var cachedJavaSROEnable = false
   private var cachedSROIncludeMatchers: List<SourceRootPattern> = listOf()
   private var cachedSROExcludeMatchers: List<SourceRootPattern> = listOf()
+  private var toolchainTargets : Map<Label, TargetInfo> = mapOf()
 
   override fun prepareSync(project: Project, targets: Map<Label, TargetInfo>, workspaceContext: WorkspaceContext) {
+    toolchainTargets = targets.filter { it.value.hasJavaToolchainInfo()  }
     val ideJavaHomeOverride = workspaceContext.ideJavaHomeOverride
     jdk = ideJavaHomeOverride?.let { Jdk(javaHome = it) } ?: jdkResolver.resolve(targets.values.asSequence())
 
@@ -113,11 +116,17 @@ class JavaLanguagePlugin internal constructor(
 
   private fun getMainClass(jvmTargetInfo: JvmTargetInfo): String? = jvmTargetInfo.mainClass.takeUnless { jvmTargetInfo.mainClass.isBlank() }
 
-  private fun javaVersionFromToolchain(target: TargetInfo): String? = if (target.hasJavaToolchainInfo()) {
-    target.javaToolchainInfo.sourceVersion
-  } else {
-    null
+  private fun toolchainInfo(target: TargetInfo) : BspTargetInfo.JavaToolchainInfo? {
+    if (target.hasJavaToolchainInfo()) return target.javaToolchainInfo
+    return target.depsList.asSequence()
+      .filter { it.dependencyTypeValue == BspTargetInfo.Dependency.DependencyType.TOOLCHAIN_VALUE }
+      .mapNotNull { Label.parseOrNull(it.target.label) }
+      .mapNotNull { toolchainTargets[it] }
+      .firstOrNull { it.hasJavaToolchainInfo() }
+      ?.javaToolchainInfo
   }
+
+  private fun javaVersionFromToolchain(target: TargetInfo): String? = toolchainInfo(target)?.sourceVersion
 
   private fun javaVersionFromJavacOpts(javacOpts: List<String>): String? {
     for (i in javacOpts.indices) {
