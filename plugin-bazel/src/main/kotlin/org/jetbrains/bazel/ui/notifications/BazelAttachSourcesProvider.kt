@@ -4,14 +4,19 @@ import com.intellij.codeInsight.AttachSourcesProvider
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.WriteAction
 import com.intellij.openapi.application.invokeAndWaitIfNeeded
+import com.intellij.openapi.project.Project
 import com.intellij.openapi.roots.LibraryOrderEntry
 import com.intellij.openapi.roots.OrderRootType
 import com.intellij.openapi.roots.libraries.Library
 import com.intellij.openapi.roots.ui.configuration.LibrarySourceRootDetectorUtil
 import com.intellij.openapi.util.ActionCallback
 import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.platform.backend.workspace.WorkspaceModel
+import com.intellij.platform.workspace.jps.entities.LibraryEntity
+import com.intellij.platform.workspace.jps.entities.LibraryRootTypeId
 import com.intellij.psi.PsiFile
 import com.intellij.util.ThrowableRunnable
+import com.intellij.workspaceModel.ide.legacyBridge.findLibraryBridge
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.config.isBazelProject
 
@@ -24,11 +29,18 @@ internal class BazelAttachSourcesProvider() : AttachSourcesProvider {
 
     override fun getBusyText(): String = BazelPluginBundle.message("sources.pending.text")
 
-    override fun perform(orderEntries: List<LibraryOrderEntry>): ActionCallback =
-      ActionCallback().apply {
+    override fun perform(orderEntries: List<LibraryOrderEntry>): ActionCallback
+    = performInternal(orderEntries.mapNotNull { it.library }.distinct())
+
+    override fun perform(libraryEntities: Collection<LibraryEntity>, project: Project): ActionCallback {
+      val currentSnapshot = WorkspaceModel.getInstance(project).currentSnapshot
+      return performInternal(libraryEntities.mapNotNull { it.findLibraryBridge(currentSnapshot) })
+    }
+
+    private fun performInternal(libraries: List<Library>): ActionCallback {
+      return ActionCallback().apply {
         ApplicationManager.getApplication().executeOnPooledThread {
           try {
-            val libraries = orderEntries.mapNotNull { it.library }.distinct()
             val (libsWithEmptySources, libsWithSources) = libraries.partition { library ->
               library.getFiles(OrderRootType.SOURCES).isEmpty()
             }
@@ -63,6 +75,7 @@ internal class BazelAttachSourcesProvider() : AttachSourcesProvider {
           }
         }
       }
+    }
 
 
     private fun showError(target: String) {
@@ -82,6 +95,19 @@ internal class BazelAttachSourcesProvider() : AttachSourcesProvider {
     }
   }
 
+  override fun getLibrariesActions(
+    libraryEntities: Collection<LibraryEntity>,
+    psiFile: PsiFile
+  ): Collection<AttachSourcesProvider.AttachSourcesAction> {
+    val project = psiFile.project
+
+    return if (project.isBazelProject && containBazelSourcesForLibraries(libraryEntities)) {
+      listOf(BazelAttachSourcesAction())
+    } else {
+      emptyList()
+    }
+  }
+
   override fun getActions(
     orderEntries: MutableList<out LibraryOrderEntry>,
     psiFile: PsiFile,
@@ -92,6 +118,12 @@ internal class BazelAttachSourcesProvider() : AttachSourcesProvider {
     } else {
       emptyList()
     }
+  }
+
+  private fun containBazelSourcesForLibraries(libraries: Collection<LibraryEntity>): Boolean {
+    return libraries.asSequence()
+      .flatMap { it.roots }
+      .any { it.type == LibraryRootTypeId.SOURCES }
   }
 
   private fun containsBazelSourcesForEntries(orderEntries: List<LibraryOrderEntry>): Boolean =
