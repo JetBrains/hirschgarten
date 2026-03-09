@@ -27,6 +27,7 @@ import com.intellij.platform.workspace.storage.ImmutableEntityStorage
 import com.intellij.platform.workspace.storage.MutableEntityStorage
 import com.intellij.platform.workspace.storage.url.VirtualFileUrl
 import com.intellij.platform.workspace.storage.url.VirtualFileUrlManager
+import com.intellij.util.concurrency.annotations.RequiresReadLock
 import com.intellij.workspaceModel.ide.toPath
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Deferred
@@ -54,7 +55,6 @@ import org.jetbrains.bsp.protocol.InverseSourcesParams
 import org.jetbrains.bsp.protocol.TaskGroupId
 import org.jetbrains.bsp.protocol.TaskId
 import java.nio.file.Path
-import java.util.UUID
 import kotlin.io.path.extension
 import kotlin.io.path.name
 import kotlin.random.Random
@@ -158,17 +158,43 @@ class BazelFileEventListener : BulkFileListenerBackgroundable {
 
   private suspend fun applyAllChanges(allFileEvents: List<SimplifiedFileEvent>, context: ProcessingContext) {
     context.progressReporter.startPreparationStep()
-    removeOldFilesFromBothModels(allFileEvents, context)
-    replaceFilesInPluginModel(allFileEvents, context.targetUtils)
 
-    val mutableRemovalMap = findNewFilesInWorkspaceModel(allFileEvents, context)
-    addNewFilesToBothModels(allFileEvents, mutableRemovalMap, context)
+    val existingModulesByEvent =
+      readAction {
+        allFileEvents.associateWith { event ->
+          event.newVirtualFile?.let { newFile -> findModulesForFile(newFile, context.fileIndex) } ?: emptySet()
+        }
+      }
+    val fileEventsToProcess = allFileEvents.filter { !it.moveEventTargetFolderIsInAnyModule(existingModulesByEvent) }
+    if (fileEventsToProcess.isEmpty()) {
+      return
+    }
+
+    removeOldFilesFromBothModels(fileEventsToProcess, context)
+    replaceFilesInPluginModel(fileEventsToProcess, context.targetUtils)
+
+    val mutableRemovalMap = findNewFilesInWorkspaceModel(fileEventsToProcess, existingModulesByEvent)
+    addNewFilesToBothModels(fileEventsToProcess, existingModulesByEvent, mutableRemovalMap, context)
     applyRemovalMap(mutableRemovalMap, context)
 
     context.progressReporter.startFinalisingStep()
     context.workspaceModel.update("File event processing (Bazel)") {
       it.applyChangesFrom(context.entityStorageDiff)
     }
+  }
+
+  private fun SimplifiedFileEvent.moveEventTargetFolderIsInAnyModule(
+    existingModulesByEvent: Map<SimplifiedFileEvent, Set<ModuleEntity>>,
+  ): Boolean {
+    if (this !is SimplifiedFileEvent.Move || fileAdded == null || fileRemoved == null) return false
+    val modules = existingModulesByEvent[this] ?: return false
+    for (module in modules) {
+      val contentRootPaths = module.contentRoots.map { it.url.toPath() }
+      val contentRootContainsBothFiles =
+        contentRootPaths.any { fileAdded.parent.startsWith(it) }
+      if (contentRootContainsBothFiles) return true
+    }
+    return false
   }
 
   private fun removeOldFilesFromBothModels(
@@ -213,21 +239,19 @@ class BazelFileEventListener : BulkFileListenerBackgroundable {
     }
   }
 
-  private suspend fun findNewFilesInWorkspaceModel(
+  private fun findNewFilesInWorkspaceModel(
     allFileEvents: List<SimplifiedFileEvent>,
-    context: ProcessingContext,
+    existingModulesByEvent: Map<SimplifiedFileEvent, Set<ModuleEntity>>,
   ): Map<Path, MutableSet<ModuleEntity>> {
     val applicableEvents =
       allFileEvents.filter { it is SimplifiedFileEvent.Move || (it as? SimplifiedFileEvent.Rename)?.extensionChanged == true }
-    return applicableEvents
-      .mapNotNull { (it.fileAdded ?: return@mapNotNull null) to (it.newVirtualFile ?: return@mapNotNull null) }
-      .toMap()
-      .mapValues { findModulesForFile(it.value, context.fileIndex).toMutableSet() }
+    return applicableEvents.associateNewFilePathsWithExistingModules(existingModulesByEvent).mapValues { it.value.toMutableSet() }
   }
 
   private suspend fun addNewFilesToBothModels(
     allFileEvents: List<SimplifiedFileEvent>,
-    moduleToRemoveFilesFrom: Map<Path, MutableSet<ModuleEntity>>,
+    existingModulesByEvent: Map<SimplifiedFileEvent, Set<ModuleEntity>>,
+    modulesToRemoveFilesFrom: Map<Path, MutableSet<ModuleEntity>>,
     context: ProcessingContext,
   ) {
     val applicableEvents = allFileEvents.filter {
@@ -237,21 +261,20 @@ class BazelFileEventListener : BulkFileListenerBackgroundable {
       (it as? SimplifiedFileEvent.Rename)?.extensionChanged == true
     }
     val modulesAlreadyContainingFiles =
-      applicableEvents
-        .mapNotNull { event ->
-          event.newVirtualFile?.let { (event.fileAdded ?: return@mapNotNull null) to findModulesForFile(it, context.fileIndex) }
-        }.toMap()
+      applicableEvents.associateNewFilePathsWithExistingModules(existingModulesByEvent)
     val addedFilePaths = applicableEvents.mapNotNull { it.fileAdded }
     val bazelQueryIsRequired =
+      // Bazel query can be skipped if every file is present in any module that we don't plan to remove the file from
       addedFilePaths.any {
-        moduleToRemoveFilesFrom[it]?.isNotEmpty() == true || modulesAlreadyContainingFiles[it].isNullOrEmpty()
+        val moduleContainingFile = modulesAlreadyContainingFiles[it].orEmpty()
+        return@any modulesToRemoveFilesFrom[it].orEmpty().containsAll(moduleContainingFile)
       }
     // avoid running a Bazel query when not required (BAZEL-2458)
     if (bazelQueryIsRequired) {
       if (context.project.bazelProjectSettings.allowBazelInvocationOnFileEvents) {
         val targetsByPath =
           context.progressReporter.startQueryStep { queryTargetsForFile(context.project, addedFilePaths, context.taskId) } ?: return
-        addFileToTargets(targetsByPath, moduleToRemoveFilesFrom, modulesAlreadyContainingFiles, context)
+        addFileToTargets(targetsByPath, modulesToRemoveFilesFrom, modulesAlreadyContainingFiles, context)
       } else {
         // Bazel is not allowed to be run on file events, but it was necessary - show "Resync" button
         BazelProjectAware.notify(context.project)
@@ -264,6 +287,15 @@ class BazelFileEventListener : BulkFileListenerBackgroundable {
       }
     }
   }
+
+  private fun List<SimplifiedFileEvent>.associateNewFilePathsWithExistingModules(
+    existingModulesByEvent: Map<SimplifiedFileEvent, Set<ModuleEntity>>,
+  ): Map<Path, Set<ModuleEntity>> =
+    mapNotNull {
+      val newFilePath = it.fileAdded ?: return@mapNotNull null
+      val existingModules = existingModulesByEvent[it] ?: return@mapNotNull null
+      newFilePath to existingModules
+    }.toMap()
 
   private fun addFileToTargets(
     targetsByPath: Map<Path, List<Label>>,
@@ -353,8 +385,9 @@ private fun Label.toModuleEntity(storage: ImmutableEntityStorage, project: Proje
   storage.resolve(ModuleId(this.formatAsModuleName(project)))
 
 @Suppress("UnstableApiUsage")
-private suspend fun findModulesForFile(newFile: VirtualFile, fileIndex: ProjectFileIndex): Set<ModuleEntity> {
-  val modules = readAction { fileIndex.getModulesForFile(newFile, true) }
+@RequiresReadLock
+private fun findModulesForFile(newFile: VirtualFile, fileIndex: ProjectFileIndex): Set<ModuleEntity> {
+  val modules = fileIndex.getModulesForFile(newFile, true)
   return modules
     .mapNotNull { it.moduleEntity }
     .toSet()

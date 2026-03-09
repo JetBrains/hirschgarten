@@ -76,10 +76,10 @@ class BazelFileEventListenerTest : WorkspaceModelBaseTest() {
     project.replaceService(BazelServerService::class.java, inverseSourcesServer.serverService, disposable)
     addMockTargetToProject(project)
 
-    target1.createModule()
-    target2.createModule()
-    target3.createModule()
-    target4.createModule()
+    createModule(target1)
+    createModule(target2)
+    createModule(target3)
+    createModule(target4)
 
     project.targetUtils.setTargets(
       listOf(
@@ -370,6 +370,42 @@ class BazelFileEventListenerTest : WorkspaceModelBaseTest() {
   }
 
   @Test
+  fun `should not invoke Bazel for moves inside a module`() {
+    val root = project.rootDir.createDirectory("root_folder")
+    val sub1 = root.createDirectory("first_subfolder")
+    val sub2 = root.createDirectory("second_subfolder")
+    val file = sub1.createFile("aaa", "java")
+
+    createModule("module", listOf(root))
+
+    val moveEvent = moveEvent(file, sub2)
+    runTestWriteAction { file.move(requestor, sub2) }
+    moveEvent.process().awaitAndGetResult()
+    inverseSourcesServer.called.shouldBeFalse()
+  }
+
+  @Test
+  fun `should not invoke Bazel when files are moved to a folder already in a module`() {
+    val root = project.rootDir.createDirectory("root_folder")
+    val sub1 = root.createDirectory("first_subfolder")
+    val sub2 = root.createDirectory("second_subfolder")
+    val file1 = sub1.createFile("aaa", "java")
+    val file2 = sub1.createFile("bbb", "java")
+
+    createModule("module1", listOf(sub1))
+    createModule("module2", listOf(sub2))
+
+    val moveEvent1 = moveEvent(file1, sub2)
+    val moveEvent2 = moveEvent(file2, sub2)
+    runTestWriteAction {
+      file1.move(requestor, sub2)
+      file2.move(requestor, sub2)
+    }
+    processEvents(moveEvent1, moveEvent2).awaitAndGetResult()
+    inverseSourcesServer.called.shouldBeFalse()
+  }
+
+  @Test
   fun `should not add file to model if its parent is already there`() {
     val src = project.rootDir.createDirectory("src")
     val srcUrl = src.toVirtualFileUrl(virtualFileUrlManager)
@@ -545,8 +581,11 @@ class BazelFileEventListenerTest : WorkspaceModelBaseTest() {
 
   private fun VirtualFileUrl.belongsToTarget(target: Label): Boolean = project.targetUtils.getTargetsForPath(this.toPath()).contains(target)
 
-  private fun Label.createModule(contentRootFiles: List<VirtualFile> = emptyList()) {
-    val moduleName = this.formatAsModuleName(project)
+  private fun createModule(label: Label, contentRootFiles: List<VirtualFile> = emptyList()) {
+    createModule(label.formatAsModuleName(project), contentRootFiles)
+  }
+
+  private fun createModule(moduleName: String, contentRootFiles: List<VirtualFile> = emptyList()) {
     val entitySource = BazelModuleEntitySource(moduleName)
     val contentRoots =
       contentRootFiles.map {
@@ -634,15 +673,18 @@ private class BlockedServerSimulator : BuildServerMock() {
 }
 
 private fun Deferred<Boolean>?.assertProcessingAndAwait() {
-  val processingHappened = timeoutRunBlocking(timeout=15.seconds) { this@assertProcessingAndAwait.shouldNotBeNull().await() }
+  val processingHappened = awaitAndGetResult()
+  processingHappened.shouldNotBeNull()
   processingHappened.shouldBeTrue()
 }
 
 private fun Deferred<Boolean>?.assertNoProcessingHappened() {
-  if (this == null) return // no processing happened for this project
-  val processingHappened = timeoutRunBlocking(timeout=5.seconds) { this@assertNoProcessingHappened.await() }
-  processingHappened.shouldBeFalse()
+  val processingHappened = awaitAndGetResult(5)
+  processingHappened?.shouldBeFalse() // null is also a correct outcome when we don't want any processing to be done
 }
+
+private fun Deferred<Boolean>?.awaitAndGetResult(timeoutSeconds: Int = 15): Boolean? =
+  timeoutRunBlocking(timeout=timeoutSeconds.seconds) { this@awaitAndGetResult?.await() }
 
 private const val TARGET1 = "//src:target1"
 private const val TARGET2 = "//src:target2"
