@@ -251,6 +251,8 @@
       implementation="org.jetbrains.bazel.workspace.packageMarker.PackageMarkerEntityWorkspaceFileIndexContributor"
     />
 
+    <directoryIndexExcludePolicy implementation="org.jetbrains.bazel.flow.exclude.BazelDirectoryIndexExcludePolicy"/>
+
     <postStartupActivity implementation="org.jetbrains.bazel.startup.BazelStartupActivity" />
 
     <treeStructureProvider implementation="org.jetbrains.bazel.ui.projectTree.BazelTreeStructureProvider" />
@@ -337,7 +339,7 @@
 
     <projectStorePathCustomizer implementation="org.jetbrains.bazel.flow.open.BazelProjectStorePathCustomizer"/>
 
-    <directoryProjectConfigurator implementation="org.jetbrains.bazel.flow.open.exclude.BazelSymlinkExcludeDirectoryProjectConfigurator"/>
+    <directoryProjectConfigurator implementation="org.jetbrains.bazel.flow.exclude.BazelSymlinkExcludeDirectoryProjectConfigurator"/>
     <externalIconProvider
       implementationClass="org.jetbrains.bazel.projectAware.BazelExternalSystemIconProvider"
       key="bazel"
@@ -802,6 +804,10 @@
   </actions>
 
   <applicationListeners>
+    <listener
+      class="org.jetbrains.bazel.flow.exclude.BazelSymlinkExcludeFileListener"
+      topic="com.intellij.openapi.vfs.newvfs.BulkFileListener"
+    />
     <listener
       class="org.jetbrains.bazel.workspace.fileEvents.BazelFileEventListener"
       topic="com.intellij.openapi.vfs.newvfs.BulkFileListenerBackgroundable"
