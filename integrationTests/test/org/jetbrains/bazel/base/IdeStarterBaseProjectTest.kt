@@ -2,9 +2,12 @@ package org.jetbrains.bazel.ideStarter
 
 import com.intellij.driver.client.Driver
 import com.intellij.driver.client.Remote
+import com.intellij.driver.client.service
 import com.intellij.driver.client.utility
+import com.intellij.driver.model.RdTarget
 import com.intellij.ide.starter.driver.engine.BackgroundRun
 import com.intellij.driver.sdk.Project
+import com.intellij.driver.sdk.ProjectManager
 import com.intellij.driver.sdk.VirtualFile
 import com.intellij.driver.sdk.openEditor
 import com.intellij.driver.sdk.singleProject
@@ -278,6 +281,10 @@ fun <T : CommandChain> T.navigateToFile(
 fun IDETestContext.withBazelFeatureFlag(flag: String) = this.applyVMOptionsPatch {
   addSystemProperty(flag, "true")
 }
+
+fun Driver.singleProjectOrNull(): Project? = service<ProjectManager>(RdTarget.DEFAULT)
+  .getOpenProjects()
+  .singleOrNull()
 
 /**
  * Should be used instead of [com.intellij.driver.sdk.openFile] because this method doesn't rely on content roots
