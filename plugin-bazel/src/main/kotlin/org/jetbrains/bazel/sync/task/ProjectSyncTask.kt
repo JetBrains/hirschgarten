@@ -94,8 +94,7 @@ class ProjectSyncTask(private val project: Project) {
               redoAction = { sync(syncScope, buildProject) },
             )
 
-            val syncResult = syncJob.await()
-            when (syncResult) {
+            when (val syncResult = syncJob.await()) {
               SyncResultStatus.FAILURE -> {
                 syncConsole.finishTask(
                   taskId,
