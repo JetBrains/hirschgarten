@@ -2137,6 +2137,10 @@ public final class BspTargetInfo {
        * <code>RUNTIME = 1;</code>
        */
       RUNTIME(1),
+      /**
+       * <code>TOOLCHAIN = 2;</code>
+       */
+      TOOLCHAIN(2),
       UNRECOGNIZED(-1),
       ;
 
@@ -2148,6 +2152,10 @@ public final class BspTargetInfo {
        * <code>RUNTIME = 1;</code>
        */
       public static final int RUNTIME_VALUE = 1;
+      /**
+       * <code>TOOLCHAIN = 2;</code>
+       */
+      public static final int TOOLCHAIN_VALUE = 2;
 
 
       public final int getNumber() {
@@ -2176,6 +2184,7 @@ public final class BspTargetInfo {
         switch (value) {
           case 0: return COMPILE;
           case 1: return RUNTIME;
+          case 2: return TOOLCHAIN;
           default: return null;
         }
       }
@@ -25791,89 +25800,89 @@ java.lang.String defaultValue) {
       "is_source\030\003 \001(\010\022\021\n\troot_path\030\004 \001(\t\022\023\n\013is" +
       "_external\030\005 \001(\010\"E\n\tTargetKey\022\r\n\005label\030\001 " +
       "\001(\t\022\022\n\naspect_ids\030\003 \003(\t\022\025\n\rconfiguration" +
-      "\030\004 \001(\t\"\255\001\n\nDependency\022#\n\006target\030\001 \001(\0132\023." +
+      "\030\004 \001(\t\"\274\001\n\nDependency\022#\n\006target\030\001 \001(\0132\023." +
       "bazelbsp.TargetKey\022<\n\017dependency_type\030\002 " +
       "\001(\0162#.bazelbsp.Dependency.DependencyType" +
-      "\022\020\n\010exported\030\003 \001(\010\"*\n\016DependencyType\022\013\n\007" +
-      "COMPILE\020\000\022\013\n\007RUNTIME\020\001\"\242\001\n\nJvmOutputs\022/\n" +
-      "\013binary_jars\030\001 \003(\0132\032.bazelbsp.ArtifactLo" +
-      "cation\0222\n\016interface_jars\030\002 \003(\0132\032.bazelbs" +
-      "p.ArtifactLocation\022/\n\013source_jars\030\003 \003(\0132" +
-      "\032.bazelbsp.ArtifactLocation\"\202\001\n\rJvmTarge" +
-      "tInfo\022\021\n\tjvm_flags\030\007 \003(\t\022\022\n\nmain_class\030\010" +
-      " \001(\t\022\014\n\004args\030\t \003(\t\022\"\n\025resource_strip_pre" +
-      "fix\030\r \001(\tH\000\210\001\001B\030\n\026_resource_strip_prefix" +
-      "\"I\n\020JavaProviderInfo\0225\n\021full_compile_jar" +
-      "s\030\001 \003(\0132\032.bazelbsp.ArtifactLocation\"\260\001\n\021" +
-      "JavaToolchainInfo\022\026\n\016source_version\030\001 \001(" +
-      "\t\022\026\n\016target_version\030\002 \001(\t\022-\n\tjava_home\030\003" +
-      " \001(\0132\032.bazelbsp.ArtifactLocation\022<\n\030boot" +
-      "_classpath_java_home\030\004 \001(\0132\032.bazelbsp.Ar" +
-      "tifactLocation\"@\n\017JavaRuntimeInfo\022-\n\tjav" +
-      "a_home\030\001 \001(\0132\032.bazelbsp.ArtifactLocation" +
-      "\"\203\001\n\017ScalaTargetInfo\022\023\n\013scalac_opts\030\001 \003(" +
-      "\t\0226\n\022compiler_classpath\030\002 \003(\0132\032.bazelbsp" +
-      ".ArtifactLocation\022#\n\033scalatest_classpath" +
-      "_targets\030\004 \003(\t\"?\n\023KotlincPluginOption\022\021\n" +
-      "\tplugin_id\030d \001(\t\022\025\n\014option_value\030\310\001 \001(\t\"" +
-      "\204\001\n\021KotlincPluginInfo\022/\n\013plugin_jars\030d \003" +
-      "(\0132\032.bazelbsp.ArtifactLocation\022>\n\026kotlin" +
-      "c_plugin_options\030\310\001 \003(\0132\035.bazelbsp.Kotli" +
-      "ncPluginOption\"\243\002\n\020KotlinTargetInfo\022\030\n\020l" +
-      "anguage_version\030d \001(\t\022\024\n\013api_version\030\310\001 " +
-      "\001(\t\022\023\n\nassociates\030\254\002 \003(\t\022\025\n\014kotlinc_opts" +
-      "\030\220\003 \003(\t\022,\n\007stdlibs\030\364\003 \003(\0132\032.bazelbsp.Art" +
-      "ifactLocation\022:\n\024kotlinc_plugin_infos\030\330\004" +
-      " \003(\0132\033.bazelbsp.KotlincPluginInfo\022\024\n\013mod" +
-      "ule_name\030\274\005 \001(\t\0223\n*exported_compiler_plu" +
-      "gin_targets_from_deps\030\331\004 \003(\t\"\241\001\n\016JavaCom" +
-      "monInfo\022\022\n\njavac_opts\030\001 \003(\t\022\"\n\004jars\030\002 \003(" +
-      "\0132\024.bazelbsp.JvmOutputs\022,\n\016generated_jar" +
-      "s\030\003 \003(\0132\024.bazelbsp.JvmOutputs\022)\n\005jdeps\030\004" +
-      " \003(\0132\032.bazelbsp.ArtifactLocation\"\333\001\n\020Pyt" +
-      "honTargetInfo\022/\n\013interpreter\030\001 \001(\0132\032.baz" +
-      "elbsp.ArtifactLocation\022\017\n\007version\030\002 \001(\t\022" +
-      "\017\n\007imports\030\003 \003(\t\0225\n\021generated_sources\030\005 " +
-      "\003(\0132\032.bazelbsp.ArtifactLocation\022(\n\004main\030" +
-      "\006 \001(\0132\032.bazelbsp.ArtifactLocation\022\023\n\013mai" +
-      "n_module\030\007 \001(\t\"\336\001\n\014GoTargetInfo\022\023\n\013impor" +
-      "t_path\030\001 \001(\t\0221\n\rsdk_home_path\030\002 \001(\0132\032.ba" +
-      "zelbsp.ArtifactLocation\0225\n\021generated_sou" +
-      "rces\030\003 \003(\0132\032.bazelbsp.ArtifactLocation\0227" +
-      "\n\023generated_libraries\030\004 \003(\0132\032.bazelbsp.A" +
-      "rtifactLocation\022\026\n\016library_labels\030\005 \003(\t\"" +
-      "N\n\022ProtobufTargetInfo\0228\n\017source_mappings" +
-      "\030\003 \003(\0132\037.bazelbsp.ProtobufSourceMapping\"" +
-      "\\\n\025ProtobufSourceMapping\022\023\n\013import_path\030" +
-      "\001 \001(\t\022.\n\nproto_file\030\002 \001(\0132\032.bazelbsp.Art" +
-      "ifactLocation\"\215\010\n\nTargetInfo\022 \n\003key\030\002 \001(" +
-      "\0132\023.bazelbsp.TargetKey\022\014\n\004kind\030\024 \001(\t\022\014\n\004" +
-      "tags\030\036 \003(\t\022\"\n\004deps\030\004 \003(\0132\024.bazelbsp.Depe" +
-      "ndency\022+\n\007sources\0302 \003(\0132\032.bazelbsp.Artif" +
-      "actLocation\0225\n\021generated_sources\0303 \003(\0132\032" +
-      ".bazelbsp.ArtifactLocation\022-\n\tresources\030" +
-      "< \003(\0132\032.bazelbsp.ArtifactLocation\022*\n\003env" +
-      "\030F \003(\0132\035.bazelbsp.TargetInfo.EnvEntry\022\023\n" +
-      "\013env_inherit\030P \003(\t\022\022\n\nexecutable\030Z \001(\010\022\026" +
-      "\n\016workspace_name\030d \001(\t\0221\n\017jvm_target_inf" +
-      "o\030\350\007 \001(\0132\027.bazelbsp.JvmTargetInfo\022\023\n\njvm" +
-      "_target\030\354\007 \001(\010\022#\n\032has_api_generating_plu" +
-      "gins\030\355\007 \001(\010\022\027\n\016generator_name\030\334\013 \001(\t\0222\n\r" +
-      "java_provider\030\360\007 \001(\0132\032.bazelbsp.JavaProv" +
-      "iderInfo\022.\n\013java_common\030\357\007 \001(\0132\030.bazelbs" +
-      "p.JavaCommonInfo\0229\n\023java_toolchain_info\030" +
-      "\320\017 \001(\0132\033.bazelbsp.JavaToolchainInfo\0225\n\021j" +
-      "ava_runtime_info\030\270\027 \001(\0132\031.bazelbsp.JavaR" +
-      "untimeInfo\0225\n\021scala_target_info\030\240\037 \001(\0132\031" +
-      ".bazelbsp.ScalaTargetInfo\0227\n\022kotlin_targ" +
-      "et_info\030\3306 \001(\0132\032.bazelbsp.KotlinTargetIn" +
-      "fo\0227\n\022python_target_info\030\300> \001(\0132\032.bazelb" +
-      "sp.PythonTargetInfo\022/\n\016go_target_info\030\340]" +
-      " \001(\0132\026.bazelbsp.GoTargetInfo\022;\n\024protobuf" +
-      "_target_info\030\260m \001(\0132\034.bazelbsp.ProtobufT" +
-      "argetInfo\032*\n\010EnvEntry\022\013\n\003key\030\001 \001(\t\022\r\n\005va" +
-      "lue\030\002 \001(\t:\0028\001B\032\n\030org.jetbrains.bazel.inf" +
-      "ob\006proto3"
+      "\022\020\n\010exported\030\003 \001(\010\"9\n\016DependencyType\022\013\n\007" +
+      "COMPILE\020\000\022\013\n\007RUNTIME\020\001\022\r\n\tTOOLCHAIN\020\002\"\242\001" +
+      "\n\nJvmOutputs\022/\n\013binary_jars\030\001 \003(\0132\032.baze" +
+      "lbsp.ArtifactLocation\0222\n\016interface_jars\030" +
+      "\002 \003(\0132\032.bazelbsp.ArtifactLocation\022/\n\013sou" +
+      "rce_jars\030\003 \003(\0132\032.bazelbsp.ArtifactLocati" +
+      "on\"\202\001\n\rJvmTargetInfo\022\021\n\tjvm_flags\030\007 \003(\t\022" +
+      "\022\n\nmain_class\030\010 \001(\t\022\014\n\004args\030\t \003(\t\022\"\n\025res" +
+      "ource_strip_prefix\030\r \001(\tH\000\210\001\001B\030\n\026_resour" +
+      "ce_strip_prefix\"I\n\020JavaProviderInfo\0225\n\021f" +
+      "ull_compile_jars\030\001 \003(\0132\032.bazelbsp.Artifa" +
+      "ctLocation\"\260\001\n\021JavaToolchainInfo\022\026\n\016sour" +
+      "ce_version\030\001 \001(\t\022\026\n\016target_version\030\002 \001(\t" +
+      "\022-\n\tjava_home\030\003 \001(\0132\032.bazelbsp.ArtifactL" +
+      "ocation\022<\n\030boot_classpath_java_home\030\004 \001(" +
+      "\0132\032.bazelbsp.ArtifactLocation\"@\n\017JavaRun" +
+      "timeInfo\022-\n\tjava_home\030\001 \001(\0132\032.bazelbsp.A" +
+      "rtifactLocation\"\203\001\n\017ScalaTargetInfo\022\023\n\013s" +
+      "calac_opts\030\001 \003(\t\0226\n\022compiler_classpath\030\002" +
+      " \003(\0132\032.bazelbsp.ArtifactLocation\022#\n\033scal" +
+      "atest_classpath_targets\030\004 \003(\t\"?\n\023Kotlinc" +
+      "PluginOption\022\021\n\tplugin_id\030d \001(\t\022\025\n\014optio" +
+      "n_value\030\310\001 \001(\t\"\204\001\n\021KotlincPluginInfo\022/\n\013" +
+      "plugin_jars\030d \003(\0132\032.bazelbsp.ArtifactLoc" +
+      "ation\022>\n\026kotlinc_plugin_options\030\310\001 \003(\0132\035" +
+      ".bazelbsp.KotlincPluginOption\"\243\002\n\020Kotlin" +
+      "TargetInfo\022\030\n\020language_version\030d \001(\t\022\024\n\013" +
+      "api_version\030\310\001 \001(\t\022\023\n\nassociates\030\254\002 \003(\t\022" +
+      "\025\n\014kotlinc_opts\030\220\003 \003(\t\022,\n\007stdlibs\030\364\003 \003(\013" +
+      "2\032.bazelbsp.ArtifactLocation\022:\n\024kotlinc_" +
+      "plugin_infos\030\330\004 \003(\0132\033.bazelbsp.KotlincPl" +
+      "uginInfo\022\024\n\013module_name\030\274\005 \001(\t\0223\n*export" +
+      "ed_compiler_plugin_targets_from_deps\030\331\004 " +
+      "\003(\t\"\241\001\n\016JavaCommonInfo\022\022\n\njavac_opts\030\001 \003" +
+      "(\t\022\"\n\004jars\030\002 \003(\0132\024.bazelbsp.JvmOutputs\022," +
+      "\n\016generated_jars\030\003 \003(\0132\024.bazelbsp.JvmOut" +
+      "puts\022)\n\005jdeps\030\004 \003(\0132\032.bazelbsp.ArtifactL" +
+      "ocation\"\333\001\n\020PythonTargetInfo\022/\n\013interpre" +
+      "ter\030\001 \001(\0132\032.bazelbsp.ArtifactLocation\022\017\n" +
+      "\007version\030\002 \001(\t\022\017\n\007imports\030\003 \003(\t\0225\n\021gener" +
+      "ated_sources\030\005 \003(\0132\032.bazelbsp.ArtifactLo" +
+      "cation\022(\n\004main\030\006 \001(\0132\032.bazelbsp.Artifact" +
+      "Location\022\023\n\013main_module\030\007 \001(\t\"\336\001\n\014GoTarg" +
+      "etInfo\022\023\n\013import_path\030\001 \001(\t\0221\n\rsdk_home_" +
+      "path\030\002 \001(\0132\032.bazelbsp.ArtifactLocation\0225" +
+      "\n\021generated_sources\030\003 \003(\0132\032.bazelbsp.Art" +
+      "ifactLocation\0227\n\023generated_libraries\030\004 \003" +
+      "(\0132\032.bazelbsp.ArtifactLocation\022\026\n\016librar" +
+      "y_labels\030\005 \003(\t\"N\n\022ProtobufTargetInfo\0228\n\017" +
+      "source_mappings\030\003 \003(\0132\037.bazelbsp.Protobu" +
+      "fSourceMapping\"\\\n\025ProtobufSourceMapping\022" +
+      "\023\n\013import_path\030\001 \001(\t\022.\n\nproto_file\030\002 \001(\013" +
+      "2\032.bazelbsp.ArtifactLocation\"\215\010\n\nTargetI" +
+      "nfo\022 \n\003key\030\002 \001(\0132\023.bazelbsp.TargetKey\022\014\n" +
+      "\004kind\030\024 \001(\t\022\014\n\004tags\030\036 \003(\t\022\"\n\004deps\030\004 \003(\0132" +
+      "\024.bazelbsp.Dependency\022+\n\007sources\0302 \003(\0132\032" +
+      ".bazelbsp.ArtifactLocation\0225\n\021generated_" +
+      "sources\0303 \003(\0132\032.bazelbsp.ArtifactLocatio" +
+      "n\022-\n\tresources\030< \003(\0132\032.bazelbsp.Artifact" +
+      "Location\022*\n\003env\030F \003(\0132\035.bazelbsp.TargetI" +
+      "nfo.EnvEntry\022\023\n\013env_inherit\030P \003(\t\022\022\n\nexe" +
+      "cutable\030Z \001(\010\022\026\n\016workspace_name\030d \001(\t\0221\n" +
+      "\017jvm_target_info\030\350\007 \001(\0132\027.bazelbsp.JvmTa" +
+      "rgetInfo\022\023\n\njvm_target\030\354\007 \001(\010\022#\n\032has_api" +
+      "_generating_plugins\030\355\007 \001(\010\022\027\n\016generator_" +
+      "name\030\334\013 \001(\t\0222\n\rjava_provider\030\360\007 \001(\0132\032.ba" +
+      "zelbsp.JavaProviderInfo\022.\n\013java_common\030\357" +
+      "\007 \001(\0132\030.bazelbsp.JavaCommonInfo\0229\n\023java_" +
+      "toolchain_info\030\320\017 \001(\0132\033.bazelbsp.JavaToo" +
+      "lchainInfo\0225\n\021java_runtime_info\030\270\027 \001(\0132\031" +
+      ".bazelbsp.JavaRuntimeInfo\0225\n\021scala_targe" +
+      "t_info\030\240\037 \001(\0132\031.bazelbsp.ScalaTargetInfo" +
+      "\0227\n\022kotlin_target_info\030\3306 \001(\0132\032.bazelbsp" +
+      ".KotlinTargetInfo\0227\n\022python_target_info\030" +
+      "\300> \001(\0132\032.bazelbsp.PythonTargetInfo\022/\n\016go" +
+      "_target_info\030\340] \001(\0132\026.bazelbsp.GoTargetI" +
+      "nfo\022;\n\024protobuf_target_info\030\260m \001(\0132\034.baz" +
+      "elbsp.ProtobufTargetInfo\032*\n\010EnvEntry\022\013\n\003" +
+      "key\030\001 \001(\t\022\r\n\005value\030\002 \001(\t:\0028\001B\032\n\030org.jetb" +
+      "rains.bazel.infob\006proto3"
     };
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,

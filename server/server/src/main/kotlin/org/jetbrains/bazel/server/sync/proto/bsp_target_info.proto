@@ -38,6 +38,7 @@ message Dependency {
   enum DependencyType {
     COMPILE = 0;
     RUNTIME = 1;
+    TOOLCHAIN = 2;
   }
 
   TargetKey target = 1;
