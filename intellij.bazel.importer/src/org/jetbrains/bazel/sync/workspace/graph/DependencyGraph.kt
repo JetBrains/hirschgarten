@@ -173,8 +173,12 @@ class DependencyGraph(
   private fun getDependencies(target: BspTargetInfo.TargetInfo): Set<Label> = getDependencies(target.depsList)
 
   private fun getCompileAndRuntimeDependencies(target: BspTargetInfo.TargetInfo): Pair<Set<Label>, Set<Label>> {
+    val compileAndRuntimeDependencies = target.depsList.filter {
+      it.dependencyTypeValue == BspTargetInfo.Dependency.DependencyType.COMPILE_VALUE ||
+      it.dependencyTypeValue == BspTargetInfo.Dependency.DependencyType.RUNTIME_VALUE
+    }
     val (compile, runtime) =
-      target.depsList
+      compileAndRuntimeDependencies
         .partition { it.dependencyTypeValue == BspTargetInfo.Dependency.DependencyType.COMPILE_VALUE }
 
     return getDependencies(compile) to getDependencies(runtime)
