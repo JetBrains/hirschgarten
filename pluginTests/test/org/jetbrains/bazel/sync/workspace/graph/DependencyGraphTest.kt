@@ -788,7 +788,7 @@ class DependencyGraphTest {
     TargetInfo
       .newBuilder()
       .setKey(TargetKey.newBuilder().setLabel(id).build())
-      .addAllDependencies(
+      .addAllDeps(
         dependenciesIds.map { dependency(it, Dependency.DependencyType.COMPILE) } +
           runtimeDependenciesIds.map { dependency(it, Dependency.DependencyType.RUNTIME) },
       ).build()

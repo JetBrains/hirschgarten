@@ -162,7 +162,7 @@ def _bsp_target_info_aspect_impl(target, ctx):
         key = target_id,
         kind = rule_kind,
         tags = rule_attrs.tags,
-        dependencies = list(all_deps),
+        deps = list(all_deps),
         sources = sources,
         generated_sources = generated_sources,
         resources = resources,

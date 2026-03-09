@@ -170,11 +170,11 @@ class DependencyGraph(
       .flatMap(::collectTransitiveDependenciesAndAddTarget)
       .toSet()
 
-  private fun getDependencies(target: BspTargetInfo.TargetInfo): Set<Label> = getDependencies(target.dependenciesList)
+  private fun getDependencies(target: BspTargetInfo.TargetInfo): Set<Label> = getDependencies(target.depsList)
 
   private fun getCompileAndRuntimeDependencies(target: BspTargetInfo.TargetInfo): Pair<Set<Label>, Set<Label>> {
     val (compile, runtime) =
-      target.dependenciesList
+      target.depsList
         .partition { it.dependencyTypeValue == BspTargetInfo.Dependency.DependencyType.COMPILE_VALUE }
 
     return getDependencies(compile) to getDependencies(runtime)

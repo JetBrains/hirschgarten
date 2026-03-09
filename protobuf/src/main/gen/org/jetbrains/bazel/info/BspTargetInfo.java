@@ -20219,27 +20219,27 @@ public final class BspTargetInfo {
         getTagsBytes(int index);
 
     /**
-     * <code>repeated .bazelbsp.Dependency dependencies = 40;</code>
+     * <code>repeated .bazelbsp.Dependency deps = 4;</code>
      */
     java.util.List<org.jetbrains.bazel.info.BspTargetInfo.Dependency> 
-        getDependenciesList();
+        getDepsList();
     /**
-     * <code>repeated .bazelbsp.Dependency dependencies = 40;</code>
+     * <code>repeated .bazelbsp.Dependency deps = 4;</code>
      */
-    org.jetbrains.bazel.info.BspTargetInfo.Dependency getDependencies(int index);
+    org.jetbrains.bazel.info.BspTargetInfo.Dependency getDeps(int index);
     /**
-     * <code>repeated .bazelbsp.Dependency dependencies = 40;</code>
+     * <code>repeated .bazelbsp.Dependency deps = 4;</code>
      */
-    int getDependenciesCount();
+    int getDepsCount();
     /**
-     * <code>repeated .bazelbsp.Dependency dependencies = 40;</code>
+     * <code>repeated .bazelbsp.Dependency deps = 4;</code>
      */
     java.util.List<? extends org.jetbrains.bazel.info.BspTargetInfo.DependencyOrBuilder> 
-        getDependenciesOrBuilderList();
+        getDepsOrBuilderList();
     /**
-     * <code>repeated .bazelbsp.Dependency dependencies = 40;</code>
+     * <code>repeated .bazelbsp.Dependency deps = 4;</code>
      */
-    org.jetbrains.bazel.info.BspTargetInfo.DependencyOrBuilder getDependenciesOrBuilder(
+    org.jetbrains.bazel.info.BspTargetInfo.DependencyOrBuilder getDepsOrBuilder(
         int index);
 
     /**
@@ -20581,7 +20581,7 @@ java.lang.String defaultValue);
       kind_ = "";
       tags_ =
           com.google.protobuf.LazyStringArrayList.emptyList();
-      dependencies_ = java.util.Collections.emptyList();
+      deps_ = java.util.Collections.emptyList();
       sources_ = java.util.Collections.emptyList();
       generatedSources_ = java.util.Collections.emptyList();
       resources_ = java.util.Collections.emptyList();
@@ -20726,45 +20726,45 @@ java.lang.String defaultValue);
       return tags_.getByteString(index);
     }
 
-    public static final int DEPENDENCIES_FIELD_NUMBER = 40;
+    public static final int DEPS_FIELD_NUMBER = 4;
     @SuppressWarnings("serial")
-    private java.util.List<org.jetbrains.bazel.info.BspTargetInfo.Dependency> dependencies_;
+    private java.util.List<org.jetbrains.bazel.info.BspTargetInfo.Dependency> deps_;
     /**
-     * <code>repeated .bazelbsp.Dependency dependencies = 40;</code>
+     * <code>repeated .bazelbsp.Dependency deps = 4;</code>
      */
     @java.lang.Override
-    public java.util.List<org.jetbrains.bazel.info.BspTargetInfo.Dependency> getDependenciesList() {
-      return dependencies_;
+    public java.util.List<org.jetbrains.bazel.info.BspTargetInfo.Dependency> getDepsList() {
+      return deps_;
     }
     /**
-     * <code>repeated .bazelbsp.Dependency dependencies = 40;</code>
+     * <code>repeated .bazelbsp.Dependency deps = 4;</code>
      */
     @java.lang.Override
     public java.util.List<? extends org.jetbrains.bazel.info.BspTargetInfo.DependencyOrBuilder> 
-        getDependenciesOrBuilderList() {
-      return dependencies_;
+        getDepsOrBuilderList() {
+      return deps_;
     }
     /**
-     * <code>repeated .bazelbsp.Dependency dependencies = 40;</code>
+     * <code>repeated .bazelbsp.Dependency deps = 4;</code>
      */
     @java.lang.Override
-    public int getDependenciesCount() {
-      return dependencies_.size();
+    public int getDepsCount() {
+      return deps_.size();
     }
     /**
-     * <code>repeated .bazelbsp.Dependency dependencies = 40;</code>
+     * <code>repeated .bazelbsp.Dependency deps = 4;</code>
      */
     @java.lang.Override
-    public org.jetbrains.bazel.info.BspTargetInfo.Dependency getDependencies(int index) {
-      return dependencies_.get(index);
+    public org.jetbrains.bazel.info.BspTargetInfo.Dependency getDeps(int index) {
+      return deps_.get(index);
     }
     /**
-     * <code>repeated .bazelbsp.Dependency dependencies = 40;</code>
+     * <code>repeated .bazelbsp.Dependency deps = 4;</code>
      */
     @java.lang.Override
-    public org.jetbrains.bazel.info.BspTargetInfo.DependencyOrBuilder getDependenciesOrBuilder(
+    public org.jetbrains.bazel.info.BspTargetInfo.DependencyOrBuilder getDepsOrBuilder(
         int index) {
-      return dependencies_.get(index);
+      return deps_.get(index);
     }
 
     public static final int SOURCES_FIELD_NUMBER = 50;
@@ -21394,14 +21394,14 @@ java.lang.String defaultValue) {
       if (((bitField0_ & 0x00000001) != 0)) {
         output.writeMessage(2, getKey());
       }
+      for (int i = 0; i < deps_.size(); i++) {
+        output.writeMessage(4, deps_.get(i));
+      }
       if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(kind_)) {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 20, kind_);
       }
       for (int i = 0; i < tags_.size(); i++) {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 30, tags_.getRaw(i));
-      }
-      for (int i = 0; i < dependencies_.size(); i++) {
-        output.writeMessage(40, dependencies_.get(i));
       }
       for (int i = 0; i < sources_.size(); i++) {
         output.writeMessage(50, sources_.get(i));
@@ -21479,6 +21479,10 @@ java.lang.String defaultValue) {
         size += com.google.protobuf.CodedOutputStream
           .computeMessageSize(2, getKey());
       }
+      for (int i = 0; i < deps_.size(); i++) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(4, deps_.get(i));
+      }
       if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(kind_)) {
         size += com.google.protobuf.GeneratedMessageV3.computeStringSize(20, kind_);
       }
@@ -21489,10 +21493,6 @@ java.lang.String defaultValue) {
         }
         size += dataSize;
         size += 2 * getTagsList().size();
-      }
-      for (int i = 0; i < dependencies_.size(); i++) {
-        size += com.google.protobuf.CodedOutputStream
-          .computeMessageSize(40, dependencies_.get(i));
       }
       for (int i = 0; i < sources_.size(); i++) {
         size += com.google.protobuf.CodedOutputStream
@@ -21606,8 +21606,8 @@ java.lang.String defaultValue) {
           .equals(other.getKind())) return false;
       if (!getTagsList()
           .equals(other.getTagsList())) return false;
-      if (!getDependenciesList()
-          .equals(other.getDependenciesList())) return false;
+      if (!getDepsList()
+          .equals(other.getDepsList())) return false;
       if (!getSourcesList()
           .equals(other.getSourcesList())) return false;
       if (!getGeneratedSourcesList()
@@ -21699,9 +21699,9 @@ java.lang.String defaultValue) {
         hash = (37 * hash) + TAGS_FIELD_NUMBER;
         hash = (53 * hash) + getTagsList().hashCode();
       }
-      if (getDependenciesCount() > 0) {
-        hash = (37 * hash) + DEPENDENCIES_FIELD_NUMBER;
-        hash = (53 * hash) + getDependenciesList().hashCode();
+      if (getDepsCount() > 0) {
+        hash = (37 * hash) + DEPS_FIELD_NUMBER;
+        hash = (53 * hash) + getDepsList().hashCode();
       }
       if (getSourcesCount() > 0) {
         hash = (37 * hash) + SOURCES_FIELD_NUMBER;
@@ -21929,7 +21929,7 @@ java.lang.String defaultValue) {
         if (com.google.protobuf.GeneratedMessageV3
                 .alwaysUseFieldBuilders) {
           getKeyFieldBuilder();
-          getDependenciesFieldBuilder();
+          getDepsFieldBuilder();
           getSourcesFieldBuilder();
           getGeneratedSourcesFieldBuilder();
           getResourcesFieldBuilder();
@@ -21957,11 +21957,11 @@ java.lang.String defaultValue) {
         kind_ = "";
         tags_ =
             com.google.protobuf.LazyStringArrayList.emptyList();
-        if (dependenciesBuilder_ == null) {
-          dependencies_ = java.util.Collections.emptyList();
+        if (depsBuilder_ == null) {
+          deps_ = java.util.Collections.emptyList();
         } else {
-          dependencies_ = null;
-          dependenciesBuilder_.clear();
+          deps_ = null;
+          depsBuilder_.clear();
         }
         bitField0_ = (bitField0_ & ~0x00000008);
         if (sourcesBuilder_ == null) {
@@ -22076,14 +22076,14 @@ java.lang.String defaultValue) {
       }
 
       private void buildPartialRepeatedFields(org.jetbrains.bazel.info.BspTargetInfo.TargetInfo result) {
-        if (dependenciesBuilder_ == null) {
+        if (depsBuilder_ == null) {
           if (((bitField0_ & 0x00000008) != 0)) {
-            dependencies_ = java.util.Collections.unmodifiableList(dependencies_);
+            deps_ = java.util.Collections.unmodifiableList(deps_);
             bitField0_ = (bitField0_ & ~0x00000008);
           }
-          result.dependencies_ = dependencies_;
+          result.deps_ = deps_;
         } else {
-          result.dependencies_ = dependenciesBuilder_.build();
+          result.deps_ = depsBuilder_.build();
         }
         if (sourcesBuilder_ == null) {
           if (((bitField0_ & 0x00000010) != 0)) {
@@ -22278,29 +22278,29 @@ java.lang.String defaultValue) {
           }
           onChanged();
         }
-        if (dependenciesBuilder_ == null) {
-          if (!other.dependencies_.isEmpty()) {
-            if (dependencies_.isEmpty()) {
-              dependencies_ = other.dependencies_;
+        if (depsBuilder_ == null) {
+          if (!other.deps_.isEmpty()) {
+            if (deps_.isEmpty()) {
+              deps_ = other.deps_;
               bitField0_ = (bitField0_ & ~0x00000008);
             } else {
-              ensureDependenciesIsMutable();
-              dependencies_.addAll(other.dependencies_);
+              ensureDepsIsMutable();
+              deps_.addAll(other.deps_);
             }
             onChanged();
           }
         } else {
-          if (!other.dependencies_.isEmpty()) {
-            if (dependenciesBuilder_.isEmpty()) {
-              dependenciesBuilder_.dispose();
-              dependenciesBuilder_ = null;
-              dependencies_ = other.dependencies_;
+          if (!other.deps_.isEmpty()) {
+            if (depsBuilder_.isEmpty()) {
+              depsBuilder_.dispose();
+              depsBuilder_ = null;
+              deps_ = other.deps_;
               bitField0_ = (bitField0_ & ~0x00000008);
-              dependenciesBuilder_ = 
+              depsBuilder_ = 
                 com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders ?
-                   getDependenciesFieldBuilder() : null;
+                   getDepsFieldBuilder() : null;
             } else {
-              dependenciesBuilder_.addAllMessages(other.dependencies_);
+              depsBuilder_.addAllMessages(other.deps_);
             }
           }
         }
@@ -22477,6 +22477,19 @@ java.lang.String defaultValue) {
                 bitField0_ |= 0x00000001;
                 break;
               } // case 18
+              case 34: {
+                org.jetbrains.bazel.info.BspTargetInfo.Dependency m =
+                    input.readMessage(
+                        org.jetbrains.bazel.info.BspTargetInfo.Dependency.parser(),
+                        extensionRegistry);
+                if (depsBuilder_ == null) {
+                  ensureDepsIsMutable();
+                  deps_.add(m);
+                } else {
+                  depsBuilder_.addMessage(m);
+                }
+                break;
+              } // case 34
               case 162: {
                 kind_ = input.readStringRequireUtf8();
                 bitField0_ |= 0x00000002;
@@ -22488,19 +22501,6 @@ java.lang.String defaultValue) {
                 tags_.add(s);
                 break;
               } // case 242
-              case 322: {
-                org.jetbrains.bazel.info.BspTargetInfo.Dependency m =
-                    input.readMessage(
-                        org.jetbrains.bazel.info.BspTargetInfo.Dependency.parser(),
-                        extensionRegistry);
-                if (dependenciesBuilder_ == null) {
-                  ensureDependenciesIsMutable();
-                  dependencies_.add(m);
-                } else {
-                  dependenciesBuilder_.addMessage(m);
-                }
-                break;
-              } // case 322
               case 402: {
                 org.jetbrains.bazel.info.BspTargetInfo.ArtifactLocation m =
                     input.readMessage(
@@ -22971,244 +22971,244 @@ java.lang.String defaultValue) {
         return this;
       }
 
-      private java.util.List<org.jetbrains.bazel.info.BspTargetInfo.Dependency> dependencies_ =
+      private java.util.List<org.jetbrains.bazel.info.BspTargetInfo.Dependency> deps_ =
         java.util.Collections.emptyList();
-      private void ensureDependenciesIsMutable() {
+      private void ensureDepsIsMutable() {
         if (!((bitField0_ & 0x00000008) != 0)) {
-          dependencies_ = new java.util.ArrayList<org.jetbrains.bazel.info.BspTargetInfo.Dependency>(dependencies_);
+          deps_ = new java.util.ArrayList<org.jetbrains.bazel.info.BspTargetInfo.Dependency>(deps_);
           bitField0_ |= 0x00000008;
          }
       }
 
       private com.google.protobuf.RepeatedFieldBuilderV3<
-          org.jetbrains.bazel.info.BspTargetInfo.Dependency, org.jetbrains.bazel.info.BspTargetInfo.Dependency.Builder, org.jetbrains.bazel.info.BspTargetInfo.DependencyOrBuilder> dependenciesBuilder_;
+          org.jetbrains.bazel.info.BspTargetInfo.Dependency, org.jetbrains.bazel.info.BspTargetInfo.Dependency.Builder, org.jetbrains.bazel.info.BspTargetInfo.DependencyOrBuilder> depsBuilder_;
 
       /**
-       * <code>repeated .bazelbsp.Dependency dependencies = 40;</code>
+       * <code>repeated .bazelbsp.Dependency deps = 4;</code>
        */
-      public java.util.List<org.jetbrains.bazel.info.BspTargetInfo.Dependency> getDependenciesList() {
-        if (dependenciesBuilder_ == null) {
-          return java.util.Collections.unmodifiableList(dependencies_);
+      public java.util.List<org.jetbrains.bazel.info.BspTargetInfo.Dependency> getDepsList() {
+        if (depsBuilder_ == null) {
+          return java.util.Collections.unmodifiableList(deps_);
         } else {
-          return dependenciesBuilder_.getMessageList();
+          return depsBuilder_.getMessageList();
         }
       }
       /**
-       * <code>repeated .bazelbsp.Dependency dependencies = 40;</code>
+       * <code>repeated .bazelbsp.Dependency deps = 4;</code>
        */
-      public int getDependenciesCount() {
-        if (dependenciesBuilder_ == null) {
-          return dependencies_.size();
+      public int getDepsCount() {
+        if (depsBuilder_ == null) {
+          return deps_.size();
         } else {
-          return dependenciesBuilder_.getCount();
+          return depsBuilder_.getCount();
         }
       }
       /**
-       * <code>repeated .bazelbsp.Dependency dependencies = 40;</code>
+       * <code>repeated .bazelbsp.Dependency deps = 4;</code>
        */
-      public org.jetbrains.bazel.info.BspTargetInfo.Dependency getDependencies(int index) {
-        if (dependenciesBuilder_ == null) {
-          return dependencies_.get(index);
+      public org.jetbrains.bazel.info.BspTargetInfo.Dependency getDeps(int index) {
+        if (depsBuilder_ == null) {
+          return deps_.get(index);
         } else {
-          return dependenciesBuilder_.getMessage(index);
+          return depsBuilder_.getMessage(index);
         }
       }
       /**
-       * <code>repeated .bazelbsp.Dependency dependencies = 40;</code>
+       * <code>repeated .bazelbsp.Dependency deps = 4;</code>
        */
-      public Builder setDependencies(
+      public Builder setDeps(
           int index, org.jetbrains.bazel.info.BspTargetInfo.Dependency value) {
-        if (dependenciesBuilder_ == null) {
+        if (depsBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
           }
-          ensureDependenciesIsMutable();
-          dependencies_.set(index, value);
+          ensureDepsIsMutable();
+          deps_.set(index, value);
           onChanged();
         } else {
-          dependenciesBuilder_.setMessage(index, value);
+          depsBuilder_.setMessage(index, value);
         }
         return this;
       }
       /**
-       * <code>repeated .bazelbsp.Dependency dependencies = 40;</code>
+       * <code>repeated .bazelbsp.Dependency deps = 4;</code>
        */
-      public Builder setDependencies(
+      public Builder setDeps(
           int index, org.jetbrains.bazel.info.BspTargetInfo.Dependency.Builder builderForValue) {
-        if (dependenciesBuilder_ == null) {
-          ensureDependenciesIsMutable();
-          dependencies_.set(index, builderForValue.build());
+        if (depsBuilder_ == null) {
+          ensureDepsIsMutable();
+          deps_.set(index, builderForValue.build());
           onChanged();
         } else {
-          dependenciesBuilder_.setMessage(index, builderForValue.build());
+          depsBuilder_.setMessage(index, builderForValue.build());
         }
         return this;
       }
       /**
-       * <code>repeated .bazelbsp.Dependency dependencies = 40;</code>
+       * <code>repeated .bazelbsp.Dependency deps = 4;</code>
        */
-      public Builder addDependencies(org.jetbrains.bazel.info.BspTargetInfo.Dependency value) {
-        if (dependenciesBuilder_ == null) {
+      public Builder addDeps(org.jetbrains.bazel.info.BspTargetInfo.Dependency value) {
+        if (depsBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
           }
-          ensureDependenciesIsMutable();
-          dependencies_.add(value);
+          ensureDepsIsMutable();
+          deps_.add(value);
           onChanged();
         } else {
-          dependenciesBuilder_.addMessage(value);
+          depsBuilder_.addMessage(value);
         }
         return this;
       }
       /**
-       * <code>repeated .bazelbsp.Dependency dependencies = 40;</code>
+       * <code>repeated .bazelbsp.Dependency deps = 4;</code>
        */
-      public Builder addDependencies(
+      public Builder addDeps(
           int index, org.jetbrains.bazel.info.BspTargetInfo.Dependency value) {
-        if (dependenciesBuilder_ == null) {
+        if (depsBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
           }
-          ensureDependenciesIsMutable();
-          dependencies_.add(index, value);
+          ensureDepsIsMutable();
+          deps_.add(index, value);
           onChanged();
         } else {
-          dependenciesBuilder_.addMessage(index, value);
+          depsBuilder_.addMessage(index, value);
         }
         return this;
       }
       /**
-       * <code>repeated .bazelbsp.Dependency dependencies = 40;</code>
+       * <code>repeated .bazelbsp.Dependency deps = 4;</code>
        */
-      public Builder addDependencies(
+      public Builder addDeps(
           org.jetbrains.bazel.info.BspTargetInfo.Dependency.Builder builderForValue) {
-        if (dependenciesBuilder_ == null) {
-          ensureDependenciesIsMutable();
-          dependencies_.add(builderForValue.build());
+        if (depsBuilder_ == null) {
+          ensureDepsIsMutable();
+          deps_.add(builderForValue.build());
           onChanged();
         } else {
-          dependenciesBuilder_.addMessage(builderForValue.build());
+          depsBuilder_.addMessage(builderForValue.build());
         }
         return this;
       }
       /**
-       * <code>repeated .bazelbsp.Dependency dependencies = 40;</code>
+       * <code>repeated .bazelbsp.Dependency deps = 4;</code>
        */
-      public Builder addDependencies(
+      public Builder addDeps(
           int index, org.jetbrains.bazel.info.BspTargetInfo.Dependency.Builder builderForValue) {
-        if (dependenciesBuilder_ == null) {
-          ensureDependenciesIsMutable();
-          dependencies_.add(index, builderForValue.build());
+        if (depsBuilder_ == null) {
+          ensureDepsIsMutable();
+          deps_.add(index, builderForValue.build());
           onChanged();
         } else {
-          dependenciesBuilder_.addMessage(index, builderForValue.build());
+          depsBuilder_.addMessage(index, builderForValue.build());
         }
         return this;
       }
       /**
-       * <code>repeated .bazelbsp.Dependency dependencies = 40;</code>
+       * <code>repeated .bazelbsp.Dependency deps = 4;</code>
        */
-      public Builder addAllDependencies(
+      public Builder addAllDeps(
           java.lang.Iterable<? extends org.jetbrains.bazel.info.BspTargetInfo.Dependency> values) {
-        if (dependenciesBuilder_ == null) {
-          ensureDependenciesIsMutable();
+        if (depsBuilder_ == null) {
+          ensureDepsIsMutable();
           com.google.protobuf.AbstractMessageLite.Builder.addAll(
-              values, dependencies_);
+              values, deps_);
           onChanged();
         } else {
-          dependenciesBuilder_.addAllMessages(values);
+          depsBuilder_.addAllMessages(values);
         }
         return this;
       }
       /**
-       * <code>repeated .bazelbsp.Dependency dependencies = 40;</code>
+       * <code>repeated .bazelbsp.Dependency deps = 4;</code>
        */
-      public Builder clearDependencies() {
-        if (dependenciesBuilder_ == null) {
-          dependencies_ = java.util.Collections.emptyList();
+      public Builder clearDeps() {
+        if (depsBuilder_ == null) {
+          deps_ = java.util.Collections.emptyList();
           bitField0_ = (bitField0_ & ~0x00000008);
           onChanged();
         } else {
-          dependenciesBuilder_.clear();
+          depsBuilder_.clear();
         }
         return this;
       }
       /**
-       * <code>repeated .bazelbsp.Dependency dependencies = 40;</code>
+       * <code>repeated .bazelbsp.Dependency deps = 4;</code>
        */
-      public Builder removeDependencies(int index) {
-        if (dependenciesBuilder_ == null) {
-          ensureDependenciesIsMutable();
-          dependencies_.remove(index);
+      public Builder removeDeps(int index) {
+        if (depsBuilder_ == null) {
+          ensureDepsIsMutable();
+          deps_.remove(index);
           onChanged();
         } else {
-          dependenciesBuilder_.remove(index);
+          depsBuilder_.remove(index);
         }
         return this;
       }
       /**
-       * <code>repeated .bazelbsp.Dependency dependencies = 40;</code>
+       * <code>repeated .bazelbsp.Dependency deps = 4;</code>
        */
-      public org.jetbrains.bazel.info.BspTargetInfo.Dependency.Builder getDependenciesBuilder(
+      public org.jetbrains.bazel.info.BspTargetInfo.Dependency.Builder getDepsBuilder(
           int index) {
-        return getDependenciesFieldBuilder().getBuilder(index);
+        return getDepsFieldBuilder().getBuilder(index);
       }
       /**
-       * <code>repeated .bazelbsp.Dependency dependencies = 40;</code>
+       * <code>repeated .bazelbsp.Dependency deps = 4;</code>
        */
-      public org.jetbrains.bazel.info.BspTargetInfo.DependencyOrBuilder getDependenciesOrBuilder(
+      public org.jetbrains.bazel.info.BspTargetInfo.DependencyOrBuilder getDepsOrBuilder(
           int index) {
-        if (dependenciesBuilder_ == null) {
-          return dependencies_.get(index);  } else {
-          return dependenciesBuilder_.getMessageOrBuilder(index);
+        if (depsBuilder_ == null) {
+          return deps_.get(index);  } else {
+          return depsBuilder_.getMessageOrBuilder(index);
         }
       }
       /**
-       * <code>repeated .bazelbsp.Dependency dependencies = 40;</code>
+       * <code>repeated .bazelbsp.Dependency deps = 4;</code>
        */
       public java.util.List<? extends org.jetbrains.bazel.info.BspTargetInfo.DependencyOrBuilder> 
-           getDependenciesOrBuilderList() {
-        if (dependenciesBuilder_ != null) {
-          return dependenciesBuilder_.getMessageOrBuilderList();
+           getDepsOrBuilderList() {
+        if (depsBuilder_ != null) {
+          return depsBuilder_.getMessageOrBuilderList();
         } else {
-          return java.util.Collections.unmodifiableList(dependencies_);
+          return java.util.Collections.unmodifiableList(deps_);
         }
       }
       /**
-       * <code>repeated .bazelbsp.Dependency dependencies = 40;</code>
+       * <code>repeated .bazelbsp.Dependency deps = 4;</code>
        */
-      public org.jetbrains.bazel.info.BspTargetInfo.Dependency.Builder addDependenciesBuilder() {
-        return getDependenciesFieldBuilder().addBuilder(
+      public org.jetbrains.bazel.info.BspTargetInfo.Dependency.Builder addDepsBuilder() {
+        return getDepsFieldBuilder().addBuilder(
             org.jetbrains.bazel.info.BspTargetInfo.Dependency.getDefaultInstance());
       }
       /**
-       * <code>repeated .bazelbsp.Dependency dependencies = 40;</code>
+       * <code>repeated .bazelbsp.Dependency deps = 4;</code>
        */
-      public org.jetbrains.bazel.info.BspTargetInfo.Dependency.Builder addDependenciesBuilder(
+      public org.jetbrains.bazel.info.BspTargetInfo.Dependency.Builder addDepsBuilder(
           int index) {
-        return getDependenciesFieldBuilder().addBuilder(
+        return getDepsFieldBuilder().addBuilder(
             index, org.jetbrains.bazel.info.BspTargetInfo.Dependency.getDefaultInstance());
       }
       /**
-       * <code>repeated .bazelbsp.Dependency dependencies = 40;</code>
+       * <code>repeated .bazelbsp.Dependency deps = 4;</code>
        */
       public java.util.List<org.jetbrains.bazel.info.BspTargetInfo.Dependency.Builder> 
-           getDependenciesBuilderList() {
-        return getDependenciesFieldBuilder().getBuilderList();
+           getDepsBuilderList() {
+        return getDepsFieldBuilder().getBuilderList();
       }
       private com.google.protobuf.RepeatedFieldBuilderV3<
           org.jetbrains.bazel.info.BspTargetInfo.Dependency, org.jetbrains.bazel.info.BspTargetInfo.Dependency.Builder, org.jetbrains.bazel.info.BspTargetInfo.DependencyOrBuilder> 
-          getDependenciesFieldBuilder() {
-        if (dependenciesBuilder_ == null) {
-          dependenciesBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
+          getDepsFieldBuilder() {
+        if (depsBuilder_ == null) {
+          depsBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
               org.jetbrains.bazel.info.BspTargetInfo.Dependency, org.jetbrains.bazel.info.BspTargetInfo.Dependency.Builder, org.jetbrains.bazel.info.BspTargetInfo.DependencyOrBuilder>(
-                  dependencies_,
+                  deps_,
                   ((bitField0_ & 0x00000008) != 0),
                   getParentForChildren(),
                   isClean());
-          dependencies_ = null;
+          deps_ = null;
         }
-        return dependenciesBuilder_;
+        return depsBuilder_;
       }
 
       private java.util.List<org.jetbrains.bazel.info.BspTargetInfo.ArtifactLocation> sources_ =
@@ -25846,34 +25846,34 @@ java.lang.String defaultValue) {
       "\030\003 \003(\0132\037.bazelbsp.ProtobufSourceMapping\"" +
       "\\\n\025ProtobufSourceMapping\022\023\n\013import_path\030" +
       "\001 \001(\t\022.\n\nproto_file\030\002 \001(\0132\032.bazelbsp.Art" +
-      "ifactLocation\"\225\010\n\nTargetInfo\022 \n\003key\030\002 \001(" +
+      "ifactLocation\"\215\010\n\nTargetInfo\022 \n\003key\030\002 \001(" +
       "\0132\023.bazelbsp.TargetKey\022\014\n\004kind\030\024 \001(\t\022\014\n\004" +
-      "tags\030\036 \003(\t\022*\n\014dependencies\030( \003(\0132\024.bazel" +
-      "bsp.Dependency\022+\n\007sources\0302 \003(\0132\032.bazelb" +
-      "sp.ArtifactLocation\0225\n\021generated_sources" +
-      "\0303 \003(\0132\032.bazelbsp.ArtifactLocation\022-\n\tre" +
-      "sources\030< \003(\0132\032.bazelbsp.ArtifactLocatio" +
-      "n\022*\n\003env\030F \003(\0132\035.bazelbsp.TargetInfo.Env" +
-      "Entry\022\023\n\013env_inherit\030P \003(\t\022\022\n\nexecutable" +
-      "\030Z \001(\010\022\026\n\016workspace_name\030d \001(\t\0221\n\017jvm_ta" +
-      "rget_info\030\350\007 \001(\0132\027.bazelbsp.JvmTargetInf" +
-      "o\022\023\n\njvm_target\030\354\007 \001(\010\022#\n\032has_api_genera" +
-      "ting_plugins\030\355\007 \001(\010\022\027\n\016generator_name\030\334\013" +
-      " \001(\t\0222\n\rjava_provider\030\360\007 \001(\0132\032.bazelbsp." +
-      "JavaProviderInfo\022.\n\013java_common\030\357\007 \001(\0132\030" +
-      ".bazelbsp.JavaCommonInfo\0229\n\023java_toolcha" +
-      "in_info\030\320\017 \001(\0132\033.bazelbsp.JavaToolchainI" +
-      "nfo\0225\n\021java_runtime_info\030\270\027 \001(\0132\031.bazelb" +
-      "sp.JavaRuntimeInfo\0225\n\021scala_target_info\030" +
-      "\240\037 \001(\0132\031.bazelbsp.ScalaTargetInfo\0227\n\022kot" +
-      "lin_target_info\030\3306 \001(\0132\032.bazelbsp.Kotlin" +
-      "TargetInfo\0227\n\022python_target_info\030\300> \001(\0132" +
-      "\032.bazelbsp.PythonTargetInfo\022/\n\016go_target" +
-      "_info\030\340] \001(\0132\026.bazelbsp.GoTargetInfo\022;\n\024" +
-      "protobuf_target_info\030\260m \001(\0132\034.bazelbsp.P" +
-      "rotobufTargetInfo\032*\n\010EnvEntry\022\013\n\003key\030\001 \001" +
-      "(\t\022\r\n\005value\030\002 \001(\t:\0028\001B\032\n\030org.jetbrains.b" +
-      "azel.infob\006proto3"
+      "tags\030\036 \003(\t\022\"\n\004deps\030\004 \003(\0132\024.bazelbsp.Depe" +
+      "ndency\022+\n\007sources\0302 \003(\0132\032.bazelbsp.Artif" +
+      "actLocation\0225\n\021generated_sources\0303 \003(\0132\032" +
+      ".bazelbsp.ArtifactLocation\022-\n\tresources\030" +
+      "< \003(\0132\032.bazelbsp.ArtifactLocation\022*\n\003env" +
+      "\030F \003(\0132\035.bazelbsp.TargetInfo.EnvEntry\022\023\n" +
+      "\013env_inherit\030P \003(\t\022\022\n\nexecutable\030Z \001(\010\022\026" +
+      "\n\016workspace_name\030d \001(\t\0221\n\017jvm_target_inf" +
+      "o\030\350\007 \001(\0132\027.bazelbsp.JvmTargetInfo\022\023\n\njvm" +
+      "_target\030\354\007 \001(\010\022#\n\032has_api_generating_plu" +
+      "gins\030\355\007 \001(\010\022\027\n\016generator_name\030\334\013 \001(\t\0222\n\r" +
+      "java_provider\030\360\007 \001(\0132\032.bazelbsp.JavaProv" +
+      "iderInfo\022.\n\013java_common\030\357\007 \001(\0132\030.bazelbs" +
+      "p.JavaCommonInfo\0229\n\023java_toolchain_info\030" +
+      "\320\017 \001(\0132\033.bazelbsp.JavaToolchainInfo\0225\n\021j" +
+      "ava_runtime_info\030\270\027 \001(\0132\031.bazelbsp.JavaR" +
+      "untimeInfo\0225\n\021scala_target_info\030\240\037 \001(\0132\031" +
+      ".bazelbsp.ScalaTargetInfo\0227\n\022kotlin_targ" +
+      "et_info\030\3306 \001(\0132\032.bazelbsp.KotlinTargetIn" +
+      "fo\0227\n\022python_target_info\030\300> \001(\0132\032.bazelb" +
+      "sp.PythonTargetInfo\022/\n\016go_target_info\030\340]" +
+      " \001(\0132\026.bazelbsp.GoTargetInfo\022;\n\024protobuf" +
+      "_target_info\030\260m \001(\0132\034.bazelbsp.ProtobufT" +
+      "argetInfo\032*\n\010EnvEntry\022\013\n\003key\030\001 \001(\t\022\r\n\005va" +
+      "lue\030\002 \001(\t:\0028\001B\032\n\030org.jetbrains.bazel.inf" +
+      "ob\006proto3"
     };
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,
@@ -25986,7 +25986,7 @@ java.lang.String defaultValue) {
     internal_static_bazelbsp_TargetInfo_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_bazelbsp_TargetInfo_descriptor,
-        new java.lang.String[] { "Key", "Kind", "Tags", "Dependencies", "Sources", "GeneratedSources", "Resources", "Env", "EnvInherit", "Executable", "WorkspaceName", "JvmTargetInfo", "JvmTarget", "HasApiGeneratingPlugins", "GeneratorName", "JavaProvider", "JavaCommon", "JavaToolchainInfo", "JavaRuntimeInfo", "ScalaTargetInfo", "KotlinTargetInfo", "PythonTargetInfo", "GoTargetInfo", "ProtobufTargetInfo", });
+        new java.lang.String[] { "Key", "Kind", "Tags", "Deps", "Sources", "GeneratedSources", "Resources", "Env", "EnvInherit", "Executable", "WorkspaceName", "JvmTargetInfo", "JvmTarget", "HasApiGeneratingPlugins", "GeneratorName", "JavaProvider", "JavaCommon", "JavaToolchainInfo", "JavaRuntimeInfo", "ScalaTargetInfo", "KotlinTargetInfo", "PythonTargetInfo", "GoTargetInfo", "ProtobufTargetInfo", });
     internal_static_bazelbsp_TargetInfo_EnvEntry_descriptor =
       internal_static_bazelbsp_TargetInfo_descriptor.getNestedTypes().get(0);
     internal_static_bazelbsp_TargetInfo_EnvEntry_fieldAccessorTable = new
