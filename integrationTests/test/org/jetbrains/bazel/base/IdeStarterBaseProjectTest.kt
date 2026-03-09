@@ -2,8 +2,12 @@ package org.jetbrains.bazel.ideStarter
 
 import com.intellij.driver.client.Driver
 import com.intellij.driver.client.Remote
+import com.intellij.driver.client.service
 import com.intellij.driver.client.utility
+import com.intellij.driver.model.RdTarget
+import com.intellij.ide.starter.driver.engine.BackgroundRun
 import com.intellij.driver.sdk.Project
+import com.intellij.driver.sdk.ProjectManager
 import com.intellij.driver.sdk.VirtualFile
 import com.intellij.driver.sdk.openEditor
 import com.intellij.driver.sdk.singleProject
@@ -243,6 +247,10 @@ fun IDETestContext.withBazelFeatureFlag(flag: String) = this.applyVMOptionsPatch
   addSystemProperty(flag, "true")
 }
 
+fun Driver.singleProjectOrNull(): Project? = service<ProjectManager>(RdTarget.DEFAULT)
+  .getOpenProjects()
+  .singleOrNull()
+
 /**
  * Should be used instead of [com.intellij.driver.sdk.openFile] because this method doesn't rely on content roots
  */
@@ -267,4 +275,20 @@ val Driver.projectRootDir: VirtualFile
 @Remote("org.jetbrains.bazel.config.BazelProjectPropertiesKt", plugin = "org.jetbrains.bazel")
 interface BazelProjectPropertiesKt {
   fun getRootDir(project: Project): VirtualFile
+}
+
+fun checkIdeaLogForExceptions(context: IDETestContext) {
+  val logFile = context.paths.testHome.resolve("log").resolve("idea.log")
+  if (!logFile.toFile().exists()) return
+
+  val errors = logFile.toFile().readLines().filter {
+    it.contains("ERROR -") || it.contains("SEVERE -")
+  }
+  if (errors.isNotEmpty()) {
+    System.err.println("=== IDEA LOG EXCEPTIONS (${errors.size} found) ===")
+    errors.forEach { System.err.println(it) }
+    System.err.println("=== END IDEA LOG EXCEPTIONS ===")
+  } else {
+    println("=== IDEA LOG: no exceptions found ===")
+  }
 }

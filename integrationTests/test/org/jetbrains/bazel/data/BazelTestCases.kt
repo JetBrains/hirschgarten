@@ -58,7 +58,17 @@ object IdeaBazelCases : BaseBazelCasesParametrized(BazelTestContext.IDEA) {
       )
     )
 
-    val CompiledSourceCodeInsideJarExclude = withBazelProject(
+  val BazelLegacyPluginProject = withBazelProject(
+    projectInfo = withDefaults(
+      repositoryUrl = "https://github.com/JetBrainsBazelBot/simpleBazelProjectsForTesting.git",
+      commitHash = "24c031faaa9435a64344d604d0eee7c64038e362",
+      branchName = "main",
+      relativePath = "legacyGooglePluginTest/.ijwb",
+      configure = { context -> BazelProjectConfigurer.configureProjectBeforeUse(context) },
+    )
+  )
+
+  val CompiledSourceCodeInsideJarExclude = withBazelProject(
       projectInfo = withDefaults(
         repositoryUrl = "https://github.com/JetBrainsBazelBot/simpleBazelProjectsForTesting.git",
         commitHash = "60e9e037ca25be0734ea6760614defe228728dcb",

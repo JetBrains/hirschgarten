@@ -8,6 +8,7 @@ import kotlin.io.path.deleteRecursively
 import kotlin.io.path.div
 import kotlin.io.path.exists
 import kotlin.io.path.isDirectory
+import kotlin.io.path.name
 import kotlin.io.path.writeText
 
 object BazelProjectConfigurer {
@@ -67,5 +68,5 @@ object BazelProjectConfigurer {
   }
 
   private val IDETestContext.resolvedBazelProjectHome: Path
-    get() = resolvedProjectHome.takeIf { it.isDirectory() } ?: resolvedProjectHome.parent
+    get() = resolvedProjectHome.takeIf { it.isDirectory() && it.name != ".ijwb" } ?: resolvedProjectHome.parent
 }
