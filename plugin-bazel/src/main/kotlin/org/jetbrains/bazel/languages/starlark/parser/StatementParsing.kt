@@ -8,7 +8,7 @@ import org.jetbrains.bazel.languages.starlark.elements.StarlarkElementTypes
 import org.jetbrains.bazel.languages.starlark.elements.StarlarkTokenSets
 import org.jetbrains.bazel.languages.starlark.elements.StarlarkTokenTypes
 
-class StatementParsing(context: ParsingContext) : Parsing(context) {
+internal class StatementParsing(context: ParsingContext) : Parsing(context) {
   fun parseStatement() {
     while (atToken(StarlarkTokenTypes.STATEMENT_BREAK)) {
       builder.advanceLexer()

@@ -77,7 +77,7 @@ private class PackageMarkerEntityListener : BulkFileListener {
     )?.data
 }
 
-fun getRelatedProjects(file: VirtualFile): List<Project> =
+internal fun getRelatedProjects(file: VirtualFile): List<Project> =
   ProjectManager // ProjectLocator::getProjectsForFile only recognizes files already added to content roots
     .getInstance()
     .openProjects

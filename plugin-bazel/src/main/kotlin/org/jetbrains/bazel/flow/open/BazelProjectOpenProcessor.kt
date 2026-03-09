@@ -11,6 +11,7 @@ import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.refreshAndFindVirtualFile
 import com.intellij.openapi.vfs.toNioPathOrNull
 import com.intellij.projectImport.ProjectOpenProcessor
+import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.assets.BazelPluginIcons
 import org.jetbrains.bazel.commons.constants.Constants
 import org.jetbrains.bazel.config.BazelFeatureFlags
@@ -23,6 +24,7 @@ import javax.swing.Icon
 
 private val log = logger<BazelProjectOpenProcessor>()
 
+@ApiStatus.Internal
 val BUILD_FILE_GLOB: String = Constants.BUILD_FILE_NAMES.joinToString(
   prefix = "{",
   separator = ",",

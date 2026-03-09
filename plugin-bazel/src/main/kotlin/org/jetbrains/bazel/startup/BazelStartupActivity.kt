@@ -10,10 +10,10 @@ import com.intellij.workspaceModel.ide.impl.WorkspaceModelImpl
 import kotlinx.coroutines.flow.update
 import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.config.BazelProjectProperties
-import org.jetbrains.bazel.config.workspaceModelLoadedFromCache
 import org.jetbrains.bazel.flow.sync.bazelPaths.BazelBinPathService
 import org.jetbrains.bazel.projectAware.BazelWorkspace
 import org.jetbrains.bazel.startup.utils.BazelProjectActivity
+import org.jetbrains.bazel.sync.environment.projectCtx
 import org.jetbrains.bazel.sync.scope.SecondPhaseSync
 import org.jetbrains.bazel.sync.task.PhasedSync
 import org.jetbrains.bazel.sync.task.ProjectSyncTask
@@ -31,7 +31,7 @@ private val log = logger<BazelStartupActivity>()
  * @see org.jetbrains.bazel.flow.open.BazelProjectOpenProcessor for additional actions that
  * may run when a project is being imported for the first time.
  */
-class BazelStartupActivity : BazelProjectActivity() {
+internal class BazelStartupActivity : BazelProjectActivity() {
   override suspend fun executeForBazelProject(project: Project) {
     log.info("Executing Bazel startup activity for project: $project")
     val trackerService = project.serviceAsync<BspConfigurationTrackerService>()
@@ -43,8 +43,6 @@ class BazelStartupActivity : BazelProjectActivity() {
       resyncProjectIfNeeded(project)
 
       executeOnSyncedProject(project)
-
-      project.serviceAsync<BazelProjectProperties>().isInitialized = true
     } finally {
       trackerService.isRunning.update { false }
     }
@@ -90,8 +88,7 @@ private suspend fun isProjectInIncompleteState(project: Project): Boolean =
     !bazelExecPathExists(project)
 
 private suspend fun bazelExecPathExists(project: Project): Boolean =
-  project
-    .serviceAsync<BazelBinPathService>()
+  project.projectCtx
     .bazelExecPath
     ?.let { Path.of(it) }
     ?.isDirectory() == true

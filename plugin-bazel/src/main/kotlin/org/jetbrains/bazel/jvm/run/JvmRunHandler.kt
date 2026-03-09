@@ -21,7 +21,7 @@ import org.jetbrains.bsp.protocol.BazelServerFacade
 
 internal val COROUTINE_JVM_FLAGS_KEY = Key.create<Ref<List<String>>>("bazel.coroutine.jvm.flags")
 
-class JvmRunHandler(configuration: BazelRunConfiguration) : BazelRunHandler {
+internal class JvmRunHandler(configuration: BazelRunConfiguration) : BazelRunHandler {
   init {
     // KotlinCoroutineLibraryFinderBeforeRunTaskProvider must be run before BuildScriptBeforeRunTaskProvider
     configuration.setBeforeRunTasksFromHandler(
@@ -72,7 +72,7 @@ class JvmRunHandler(configuration: BazelRunConfiguration) : BazelRunHandler {
   }
 }
 
-class RunScriptPathCommandLineState(environment: ExecutionEnvironment, val settings: JvmRunState) :
+internal class RunScriptPathCommandLineState(environment: ExecutionEnvironment, val settings: JvmRunState) :
   JvmDebuggableCommandLineState(environment, settings.debugPort) {
   override fun createAndAddTaskListener(handler: BazelProcessHandler): BazelTaskListener = BazelRunTaskListener(handler)
 

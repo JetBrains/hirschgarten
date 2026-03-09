@@ -5,7 +5,7 @@ import com.intellij.ui.components.fields.ExtendableTextComponent
 import javax.swing.Icon
 import javax.swing.JComponent
 
-public sealed class TextComponentExtension(private val tooltip: String?, private val beforeText: Boolean) :
+internal sealed class TextComponentExtension(private val tooltip: String?, private val beforeText: Boolean) :
   ExtendableTextComponent.Extension {
   override fun isIconBeforeText(): Boolean = beforeText
 

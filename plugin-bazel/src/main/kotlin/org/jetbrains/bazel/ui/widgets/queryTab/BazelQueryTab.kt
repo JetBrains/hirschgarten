@@ -121,7 +121,7 @@ private class QueryFlagField(
   val isSelected get() = checkBox.isSelected
 }
 
-class BazelQueryTab(private val project: Project) : JPanel() {
+internal class BazelQueryTab(private val project: Project) : JPanel() {
   private val defaultFlags =
     BazelQueryCommonOptions.getAll().map { option ->
       QueryFlagField(

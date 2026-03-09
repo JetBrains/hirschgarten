@@ -8,7 +8,7 @@ import org.jetbrains.bazel.languages.starlark.elements.StarlarkElementTypes
 import org.jetbrains.bazel.languages.starlark.elements.StarlarkTokenSets
 import org.jetbrains.bazel.languages.starlark.elements.StarlarkTokenTypes
 
-class ExpressionParsing(context: ParsingContext) : Parsing(context) {
+internal class ExpressionParsing(context: ParsingContext) : Parsing(context) {
   private fun parsePrimaryExpression(isTarget: Boolean): Boolean =
     if (builder.tokenType in StarlarkTokenSets.PRIMARY_EXPRESSION_STARTERS) {
       when (builder.tokenType) {

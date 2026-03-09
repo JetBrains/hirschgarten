@@ -1,7 +1,8 @@
 package org.jetbrains.bazel.commons
 
 import com.google.devtools.build.lib.buildeventstream.BuildEventStreamProtos
-import org.jetbrains.bazel.info.BspTargetInfo.FileLocation
+import org.jetbrains.annotations.ApiStatus
+import org.jetbrains.bazel.info.BspTargetInfo.ArtifactLocation
 import org.jetbrains.bazel.label.Canonical
 import org.jetbrains.bazel.label.Main
 import org.jetbrains.bazel.label.ResolvedLabel
@@ -16,18 +17,19 @@ import kotlin.io.path.toPath
 
 private const val BAZEL_COMPONENT_SEPARATOR = "/"
 
+@ApiStatus.Internal
 class BazelPathsResolver(private val bazelInfo: BazelInfo) {
-  private val paths = ConcurrentHashMap<FileLocation, Path>()
+  private val paths = ConcurrentHashMap<ArtifactLocation, Path>()
 
   fun workspaceRoot(): Path = bazelInfo.workspaceRoot
 
-  fun resolvePaths(fileLocations: List<FileLocation>): List<Path> = fileLocations.map(::resolve)
+  fun resolvePaths(fileLocations: List<ArtifactLocation>): List<Path> = fileLocations.map(::resolve)
 
-  fun resolve(fileLocation: FileLocation): Path = paths.computeIfAbsent(fileLocation, ::doResolve)
+  fun resolve(fileLocation: ArtifactLocation): Path = paths.computeIfAbsent(fileLocation, ::doResolve)
 
   fun resolve(file: BuildEventStreamProtos.File): Path = URI.create(file.uri).toPath()
 
-  private fun doResolve(fileLocation: FileLocation): Path =
+  private fun doResolve(fileLocation: ArtifactLocation): Path =
     when {
       isAbsolute(fileLocation) -> resolveAbsolute(fileLocation)
       isMainWorkspaceSource(fileLocation) -> resolveSource(fileLocation)
@@ -35,15 +37,15 @@ class BazelPathsResolver(private val bazelInfo: BazelInfo) {
       else -> resolveOutput(fileLocation)
     }
 
-  private fun isAbsolute(fileLocation: FileLocation): Boolean {
+  private fun isAbsolute(fileLocation: ArtifactLocation): Boolean {
     val relative = fileLocation.relativePath
     return relative.startsWith("/") && Files.exists(Paths.get(relative))
   }
 
-  private fun resolveAbsolute(fileLocation: FileLocation): Path = Paths.get(fileLocation.relativePath)
+  private fun resolveAbsolute(fileLocation: ArtifactLocation): Path = Paths.get(fileLocation.relativePath)
 
-  private fun resolveExternal(fileLocation: FileLocation): Path {
-    val outputBaseRelativePath = Paths.get(fileLocation.rootExecutionPathFragment, fileLocation.relativePath)
+  private fun resolveExternal(fileLocation: ArtifactLocation): Path {
+    val outputBaseRelativePath = Paths.get(fileLocation.rootPath, fileLocation.relativePath)
     return resolveExternal(outputBaseRelativePath)
   }
 
@@ -52,8 +54,8 @@ class BazelPathsResolver(private val bazelInfo: BazelInfo) {
       .outputBase
       .resolve(outputBaseRelativePath)
 
-  fun resolveOutput(fileLocation: FileLocation): Path {
-    val execRootRelativePath = Paths.get(fileLocation.rootExecutionPathFragment, fileLocation.relativePath)
+  fun resolveOutput(fileLocation: ArtifactLocation): Path {
+    val execRootRelativePath = Paths.get(fileLocation.rootPath, fileLocation.relativePath)
     return resolveOutput(execRootRelativePath)
   }
 
@@ -65,11 +67,11 @@ class BazelPathsResolver(private val bazelInfo: BazelInfo) {
         .let { runCatching { it.toRealPath() }.getOrDefault(it) }
     }
 
-  private fun resolveSource(fileLocation: FileLocation): Path = bazelInfo.workspaceRoot.resolve(fileLocation.relativePath)
+  private fun resolveSource(fileLocation: ArtifactLocation): Path = bazelInfo.workspaceRoot.resolve(fileLocation.relativePath)
 
-  private fun isMainWorkspaceSource(fileLocation: FileLocation): Boolean = fileLocation.isSource && !fileLocation.isExternal
+  private fun isMainWorkspaceSource(fileLocation: ArtifactLocation): Boolean = fileLocation.isSource && !fileLocation.isExternal
 
-  private fun isInExternalWorkspace(fileLocation: FileLocation): Boolean = fileLocation.rootExecutionPathFragment.startsWith("external/")
+  private fun isInExternalWorkspace(fileLocation: ArtifactLocation): Boolean = fileLocation.rootPath.startsWith("external/")
 
   fun relativePathToWorkspaceAbsolute(path: Path): Path = bazelInfo.workspaceRoot.resolve(path)
 

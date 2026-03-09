@@ -7,7 +7,7 @@ import org.jetbrains.bazel.debug.connector.StarlarkDebugMessenger
 import org.jetbrains.bazel.debug.connector.StarlarkValueComputer
 import com.google.devtools.build.lib.starlarkdebugging.StarlarkDebuggingProtos as SDP
 
-class StarlarkDebuggerEvaluator(
+internal class StarlarkDebuggerEvaluator(
   private val threadId: Long,
   private val valueComputer: StarlarkValueComputer,
   private val messenger: StarlarkDebugMessenger,

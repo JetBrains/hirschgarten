@@ -3,7 +3,7 @@ package org.jetbrains.bazel.run.import
 import org.jetbrains.bazel.run.RunHandlerProvider
 import org.jetbrains.bazel.run.RunHandlerProvider.Companion.ep
 
-interface GooglePluginAwareRunHandlerProvider : RunHandlerProvider {
+internal interface GooglePluginAwareRunHandlerProvider : RunHandlerProvider {
   /**
    * Respective handler name in the Google Bazel plugin that should be used when importing run configurations.
    */

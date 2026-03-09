@@ -245,17 +245,17 @@ internal class BuildTargetTree(
   }
 }
 
-data class DirectoryNodeData(
+internal data class DirectoryNodeData(
   @JvmField val name: String,
   @JvmField val targets: List<BuildTargetTreeIdentifier>,
 )
 
-data class TargetNodeData(
+internal data class TargetNodeData(
   @JvmField val displayName: String,
   @JvmField val id: Label,
 )
 
-data class BuildTargetTreeIdentifier(
+internal data class BuildTargetTreeIdentifier(
   @JvmField val id: Label,
   @JvmField val path: List<String>,
   @JvmField val displayName: String,

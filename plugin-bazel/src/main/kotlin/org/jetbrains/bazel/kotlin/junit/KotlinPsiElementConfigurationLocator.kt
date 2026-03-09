@@ -10,7 +10,7 @@ import org.jetbrains.kotlin.asJava.toLightClass
 import org.jetbrains.kotlin.psi.KtClass
 import org.jetbrains.kotlin.psi.psiUtil.getParentOfType
 
-class KotlinPsiElementConfigurationLocator : PsiElementConfigurationLocator {
+internal class KotlinPsiElementConfigurationLocator : PsiElementConfigurationLocator {
   override fun getPsiMethod(callerPsiElement: PsiElement): PsiMethod? =
     runReadAction { callerPsiElement.parent.getRepresentativeLightMethod() }
 

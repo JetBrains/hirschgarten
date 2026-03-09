@@ -35,6 +35,7 @@ import com.jetbrains.python.sdk.PythonSdkType
 import com.jetbrains.python.sdk.PythonSdkUpdater
 import com.jetbrains.python.sdk.detectSystemWideSdks
 import com.jetbrains.python.sdk.guessedLanguageLevel
+import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.commons.LanguageClass
 import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.config.BazelPluginBundle
@@ -43,7 +44,6 @@ import org.jetbrains.bazel.magicmetamodel.formatAsModuleName
 import org.jetbrains.bazel.python.resolve.PythonResolveIndexService
 import org.jetbrains.bazel.sync.ProjectSyncHook
 import org.jetbrains.bazel.sync.ProjectSyncHook.ProjectSyncHookEnvironment
-import org.jetbrains.bazel.sync.projectStructure.workspaceModel.workspaceModelDiff
 import org.jetbrains.bazel.sync.withSubtask
 import org.jetbrains.bazel.ui.console.syncConsole
 import org.jetbrains.bazel.ui.console.withSubtask
@@ -60,14 +60,13 @@ private const val PYTHON_SOURCE_ROOT_TYPE = "python-source"
 private const val PYTHON_RESOURCE_ROOT_TYPE = "python-resource"
 private val PYTHON_MODULE_TYPE = ModuleTypeId("PYTHON_MODULE")
 
+@ApiStatus.Internal
 class PythonProjectSync : ProjectSyncHook {
   override fun isEnabled(project: Project): Boolean = BazelFeatureFlags.isPythonSupportEnabled
 
   override suspend fun onSync(environment: ProjectSyncHookEnvironment) {
     environment.withSubtask("Process Python targets") {
-      // TODO: https://youtrack.jetbrains.com/issue/BAZEL-1960
-      val workspace = environment.resolver.getOrFetchResolvedWorkspace(taskId = environment.taskId)
-      val targets = workspace.targets
+      val targets = environment.workspace.targets
       val pythonTargets = targets.calculatePythonTargets()
       val virtualFileUrlManager = environment.project.serviceAsync<WorkspaceModel>().getVirtualFileUrlManager()
 
@@ -82,7 +81,7 @@ class PythonProjectSync : ProjectSyncHook {
           calculateSourceDependencyLibrary(it.id, target.sourceDependencies, moduleSourceEntity, virtualFileUrlManager)
 
         addModuleEntityFromTarget(
-          builder = environment.diff.workspaceModelDiff.mutableEntityStorage,
+          builder = environment.diff,
           target = it as RawBuildTarget,
           moduleName = moduleName,
           entitySource = moduleSourceEntity,

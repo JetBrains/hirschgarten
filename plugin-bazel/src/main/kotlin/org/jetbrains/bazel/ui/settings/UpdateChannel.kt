@@ -10,7 +10,7 @@ private const val BAZEL_PLUGIN_MARKETPLACE_URL = BASE_PLUGIN_MARKETPLACE_URL + B
 
 private const val NIGHTLY_MARKETPLACE_CHANNEL = "nightly"
 
-enum class UpdateChannel(val displayName: String, val bazelPluginUrl: String) {
+internal enum class UpdateChannel(val displayName: String, val bazelPluginUrl: String) {
   /**
    * If we don't override plugin repositories with custom URLs,
    * the IDEA will automatically use the default channel for retrieving plugin URLs.

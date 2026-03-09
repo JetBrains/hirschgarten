@@ -15,6 +15,7 @@ import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.sync.ProjectPostSyncHook
 import org.jetbrains.bazel.sync.SyncCache
 import org.jetbrains.bazel.target.targetUtils
+import org.jetbrains.bazel.ui.console.syncConsole
 import org.jetbrains.bazel.ui.console.withSubtask
 import org.jetbrains.bsp.protocol.GoBuildTarget
 import org.jetbrains.bsp.protocol.TaskId
@@ -23,7 +24,7 @@ import org.jetbrains.bsp.protocol.utils.extractGoBuildTarget
 /** From [com.goide.inspections.GoWrongSdkConfigurationNotificationProvider].  */
 private const val DO_NOT_SHOW_NOTIFICATION_ABOUT_EMPTY_GOPATH = "DO_NOT_SHOW_NOTIFICATION_ABOUT_EMPTY_GOPATH"
 
-class GoSdkSyncHook : ProjectPostSyncHook {
+internal class GoSdkSyncHook : ProjectPostSyncHook {
   override fun isEnabled(project: Project): Boolean =
     BazelFeatureFlags.isGoSupportEnabled &&
       project.targetUtils
@@ -66,7 +67,7 @@ class GoSdkSyncHook : ProjectPostSyncHook {
     reporter: SequentialProgressReporter,
     project: Project,
     taskId: TaskId,
-  ) = project.withSubtask(
+  ) = project.syncConsole.withSubtask(
     reporter = reporter,
     subtaskId = taskId.subTask("calculate-and-add-go-sdk"),
     text = BazelPluginBundle.message("console.task.model.calculate.add.go.fetched.sdk"),

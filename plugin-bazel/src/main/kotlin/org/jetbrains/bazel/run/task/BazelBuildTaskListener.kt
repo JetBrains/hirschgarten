@@ -13,7 +13,7 @@ import org.jetbrains.bsp.protocol.CompileReport
 import org.jetbrains.bsp.protocol.TaskId
 import java.nio.file.Path
 
-class BazelBuildTaskListener(private val taskConsole: TaskConsole) : BazelTaskListener {
+internal class BazelBuildTaskListener(private val taskConsole: TaskConsole) : BazelTaskListener {
   override fun onTaskFinish(
     taskId: TaskId,
     message: String,

@@ -6,9 +6,9 @@ import org.jetbrains.bazel.assets.BazelPluginIcons
 import org.jetbrains.bazel.config.BazelPluginBundle
 import javax.swing.Icon
 
-object BazelQueryLanguage : Language("BazelQuery")
+internal object BazelQueryLanguage : Language("BazelQuery")
 
-object BazelQueryFileType : LanguageFileType(BazelQueryLanguage) {
+internal object BazelQueryFileType : LanguageFileType(BazelQueryLanguage) {
   override fun getName(): String = "BazelQuery"
 
   override fun getDescription(): String = BazelPluginBundle.message("bazelquery.language.description")

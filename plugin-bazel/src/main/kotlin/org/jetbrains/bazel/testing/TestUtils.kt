@@ -1,7 +1,10 @@
 package org.jetbrains.bazel.testing
 
+import org.jetbrains.annotations.ApiStatus
+
+@ApiStatus.Internal
 const val IS_IN_IDE_STARTER_TEST = "is.in.ide.starter.test"
 
-object TestUtils {
+internal object TestUtils {
   fun isInIdeStarterTest(): Boolean = System.getProperty(IS_IN_IDE_STARTER_TEST).toBoolean()
 }

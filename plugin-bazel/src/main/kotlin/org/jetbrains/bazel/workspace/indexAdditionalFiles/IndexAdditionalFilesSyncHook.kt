@@ -17,7 +17,6 @@ import org.jetbrains.bazel.commons.constants.Constants
 import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.settings.bazel.bazelProjectSettings
 import org.jetbrains.bazel.sync.ProjectSyncHook
-import org.jetbrains.bazel.sync.projectStructure.workspaceModel.workspaceModelDiff
 import org.jetbrains.bazel.sync.withSubtask
 import org.jetbrains.bazel.workspace.bazelProjectDirectoriesEntity
 import org.jetbrains.bazel.workspacemodel.entities.BazelProjectDirectoriesEntity
@@ -39,7 +38,7 @@ private class IndexAdditionalFilesSyncHook : ProjectSyncHook {
     environment.withSubtask("Collect additional files to index") {
       val project = environment.project
 
-      val mutableEntityStorage = environment.diff.workspaceModelDiff.mutableEntityStorage
+      val mutableEntityStorage = environment.diff
       val projectDirectoriesEntity = checkNotNull(mutableEntityStorage.bazelProjectDirectoriesEntity())
       val virtualFileUrlManager = project.serviceAsync<WorkspaceModel>().getVirtualFileUrlManager()
 

@@ -9,7 +9,7 @@ import org.jetbrains.bazel.config.isBazelProject
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkFile
 import org.jetbrains.bazel.settings.bazel.bazelProjectSettings
 
-class StarlarkFormattingActionOnSave : ActionsOnSaveFileDocumentManagerListener.DocumentUpdatingActionOnSave() {
+internal class StarlarkFormattingActionOnSave : ActionsOnSaveFileDocumentManagerListener.DocumentUpdatingActionOnSave() {
   override val presentableName: String
     get() = "buildifier"
 

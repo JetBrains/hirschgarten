@@ -5,11 +5,12 @@ import org.jetbrains.bsp.protocol.PublishDiagnosticsParams
 import org.jetbrains.bsp.protocol.TaskId
 import java.nio.file.Path
 
-class DiagnosticsService(
-  workspaceRoot: Path,
-  private val parser: DiagnosticsParser = DiagnosticsParserImpl(),
-  private val mapper: DiagnosticBspMapper = DiagnosticBspMapper(workspaceRoot),
+class DiagnosticsService internal constructor(
+  private val parser: DiagnosticsParser,
+  private val mapper: DiagnosticBspMapper,
 ) {
+  constructor(workspaceRoot: Path) : this(DiagnosticsParserImpl(), DiagnosticBspMapper(workspaceRoot))
+
   fun extractDiagnostics(
     bazelOutputLines: List<String>,
     targetLabel: Label,

@@ -6,7 +6,7 @@ import org.jetbrains.bazel.languages.projectview.ScalarSection
 import org.jetbrains.bazel.languages.projectview.SectionKey
 import java.nio.file.Path
 
-class IdeJavaHomeOverrideSection : ScalarSection<Path>() {
+internal class IdeJavaHomeOverrideSection : ScalarSection<Path>() {
   override val name = NAME
   override val sectionKey = KEY
   override val doc = "Local java home path to override to use with IDE, e.g. IntelliJ IDEA"

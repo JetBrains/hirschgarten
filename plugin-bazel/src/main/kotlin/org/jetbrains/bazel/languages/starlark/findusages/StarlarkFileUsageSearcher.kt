@@ -25,7 +25,7 @@ import org.jetbrains.bazel.languages.starlark.psi.expressions.arguments.Starlark
 import org.jetbrains.bazel.languages.starlark.psi.expressions.arguments.StarlarkNamedArgumentExpression
 import org.jetbrains.bazel.languages.starlark.references.resolveLabel
 
-class StarlarkFileUsageSearcher : QueryExecutorBase<PsiReference, SearchParameters>(true) {
+internal class StarlarkFileUsageSearcher : QueryExecutorBase<PsiReference, SearchParameters>(true) {
   override fun processQuery(params: SearchParameters, processor: Processor<in PsiReference>) {
     if (!params.project.isBazelProject) return
 

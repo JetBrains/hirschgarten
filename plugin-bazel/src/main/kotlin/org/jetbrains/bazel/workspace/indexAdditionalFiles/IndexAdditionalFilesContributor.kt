@@ -4,7 +4,7 @@ import com.intellij.openapi.extensions.ExtensionPointName
 import com.intellij.openapi.project.Project
 import com.intellij.platform.workspace.storage.url.VirtualFileUrl
 
-interface IndexAdditionalFilesContributor {
+internal interface IndexAdditionalFilesContributor {
   fun getAdditionalFiles(project: Project): List<VirtualFileUrl>
 
   companion object {

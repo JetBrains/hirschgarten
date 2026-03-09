@@ -6,7 +6,7 @@ import com.intellij.psi.FileViewProvider
 import org.jetbrains.bazel.languages.bazelrc.BazelrcFileType
 import org.jetbrains.bazel.languages.bazelrc.BazelrcLanguage
 
-class BazelrcFile(viewProvider: FileViewProvider) : PsiFileBase(viewProvider, BazelrcLanguage) {
+internal class BazelrcFile(viewProvider: FileViewProvider) : PsiFileBase(viewProvider, BazelrcLanguage) {
   override fun getFileType(): FileType = BazelrcFileType
 
   val imports: Array<BazelrcImport>

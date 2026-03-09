@@ -4,7 +4,7 @@ import com.intellij.openapi.project.Project
 import com.jetbrains.python.PyNames
 import org.jetbrains.bazel.commons.BazelPathsResolver
 import org.jetbrains.bazel.commons.LanguageClass
-import org.jetbrains.bazel.info.BspTargetInfo.FileLocation
+import org.jetbrains.bazel.info.BspTargetInfo.ArtifactLocation
 import org.jetbrains.bazel.info.BspTargetInfo.PythonTargetInfo
 import org.jetbrains.bazel.info.BspTargetInfo.TargetInfo
 import org.jetbrains.bazel.label.Label
@@ -15,7 +15,7 @@ import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bsp.protocol.PythonBuildTarget
 import java.nio.file.Path
 
-class PythonLanguagePlugin(private val bazelPathsResolver: BazelPathsResolver) : LanguagePlugin<PythonBuildTarget> {
+internal class PythonLanguagePlugin(private val bazelPathsResolver: BazelPathsResolver, private val workspaceContext: WorkspaceContext) : LanguagePlugin<PythonBuildTarget> {
   private var defaultInterpreter: Path? = null
   private var defaultVersion: String? = null
 
@@ -56,27 +56,28 @@ class PythonLanguagePlugin(private val bazelPathsResolver: BazelPathsResolver) :
         emptyList()
       }
     val pythonTarget = target.pythonTargetInfo
+    val isCodeGenerator = target.sourcesList.isEmpty() && workspaceContext.pythonCodeGeneratorRuleNames.contains(target.kind)
     return PythonBuildTarget(
       version = pythonTarget.version.takeUnless(String::isNullOrEmpty) ?: defaultVersion,
       interpreter = calculateInterpreterPath(interpreter = pythonTarget.interpreter) ?: defaultInterpreter,
       imports = pythonTarget.importsList,
-      isCodeGenerator = pythonTarget.isCodeGenerator,
-      generatedSources = pythonTarget.generatedSourcesList.mapNotNull { bazelPathsResolver.resolve(it) },
+      isCodeGenerator = isCodeGenerator,
+      generatedSources = if (isCodeGenerator) pythonTarget.generatedSourcesList.mapNotNull { bazelPathsResolver.resolve(it) } else emptyList(),
       sourceDependencies = sourceDependencies,
       mainFile = pythonTarget.main?.let { bazelPathsResolver.resolve(it) },
       mainModule = pythonTarget.mainModule
     )
   }
 
-  private fun calculateInterpreterPath(interpreter: FileLocation?): Path? =
+  private fun calculateInterpreterPath(interpreter: ArtifactLocation?): Path? =
     interpreter
       ?.takeUnless { it.relativePath.isNullOrEmpty() }
       ?.let { bazelPathsResolver.resolve(it) }
 
-  private fun getExternalSources(targetInfo: TargetInfo): List<FileLocation> =
+  private fun getExternalSources(targetInfo: TargetInfo): List<ArtifactLocation> =
     targetInfo.sourcesList.mapNotNull { it.takeIf { it.isExternal } }
 
-  private fun calculateExternalSourcePath(externalSource: FileLocation): Path {
+  private fun calculateExternalSourcePath(externalSource: ArtifactLocation): Path {
     val path = bazelPathsResolver.resolve(externalSource)
     return bazelPathsResolver.resolve(findSitePackagesSubdirectory(path) ?: path)
   }

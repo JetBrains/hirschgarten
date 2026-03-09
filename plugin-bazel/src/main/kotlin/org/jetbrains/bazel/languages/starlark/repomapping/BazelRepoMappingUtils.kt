@@ -1,6 +1,7 @@
 package org.jetbrains.bazel.languages.starlark.repomapping
 
 import com.intellij.openapi.project.Project
+import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.commons.constants.Constants.WORKSPACE_FILE_NAMES
 import org.jetbrains.bazel.label.AmbiguousEmptyTarget
 import org.jetbrains.bazel.label.Apparent
@@ -15,14 +16,14 @@ import java.nio.file.Path
 import kotlin.io.path.isRegularFile
 import kotlin.io.path.relativeToOrNull
 
-fun findContainingBazelRepo(path: Path): Path? =
+internal fun findContainingBazelRepo(path: Path): Path? =
   path.allAncestorsSequence().firstOrNull {
     WORKSPACE_FILE_NAMES.any { workspaceFileName ->
       it.resolve(workspaceFileName).isRegularFile()
     }
   }
 
-fun calculateLabel(
+internal fun calculateLabel(
   project: Project,
   buildFile: Path,
   targetName: String? = null,
@@ -53,11 +54,12 @@ private fun Path.segments(): List<String> {
  * We should show apparent labels in the UI, where possible, to avoid confusing the user with labels containing symbols such as `~` or `+`.
  * If conversion to an apparent label fails, fall back to the original label.
  */
-fun Label.toApparentLabelOrThis(project: Project): Label = toApparentLabel(project) ?: this
+internal fun Label.toApparentLabelOrThis(project: Project): Label = toApparentLabel(project) ?: this
 
 /**
  * Converts this [Label]'s repository either to [Apparent] or to [Main].
  */
+@ApiStatus.Internal
 fun Label.toApparentLabel(project: Project): ResolvedLabel? {
   if (this !is ResolvedLabel) return null
   if (this.repo !is Canonical) return this
@@ -68,6 +70,7 @@ fun Label.toApparentLabel(project: Project): ResolvedLabel? {
 /**
  * Converts this [Label]'s repository either to [Canonical] or to [Main].
  */
+@ApiStatus.Internal
 fun Label.toCanonicalLabel(project: Project): ResolvedLabel? {
   if (this !is ResolvedLabel) return null
   val repo =
@@ -81,9 +84,9 @@ fun Label.toCanonicalLabel(project: Project): ResolvedLabel? {
   return this.copy(repo = repo, target = target)
 }
 
-fun Label.toCanonicalLabelOrThis(project: Project): ResolvedLabel? = toCanonicalLabel(project) ?: this as? ResolvedLabel
+internal fun Label.toCanonicalLabelOrThis(project: Project): ResolvedLabel? = toCanonicalLabel(project) ?: this as? ResolvedLabel
 
-fun Label.singleTarget(): SingleTarget? {
+internal fun Label.singleTarget(): SingleTarget? {
   val oldTarget = target
   return when (oldTarget) {
     is AmbiguousEmptyTarget -> SingleTarget(packagePath.pathSegments.lastOrNull() ?: return null)
@@ -92,6 +95,7 @@ fun Label.singleTarget(): SingleTarget? {
   }
 }
 
+@ApiStatus.Internal
 fun Label.toShortString(project: Project): String {
   val label = this.toApparentLabelOrThis(project)
   if (label !is ResolvedLabel) return label.toString()

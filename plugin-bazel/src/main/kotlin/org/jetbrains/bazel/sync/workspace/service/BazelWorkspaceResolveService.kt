@@ -1,11 +1,13 @@
 package org.jetbrains.bazel.sync.workspace
 
 import com.intellij.openapi.project.Project
+import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.sync.scope.ProjectSyncScope
 import org.jetbrains.bazel.sync.scope.SecondPhaseSync
 import org.jetbrains.bsp.protocol.TaskId
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsResult
 
+@ApiStatus.Internal
 interface BazelWorkspaceResolveService {
   suspend fun invalidateCachedState()
 

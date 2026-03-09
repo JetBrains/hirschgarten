@@ -1,15 +1,23 @@
 package org.jetbrains.bsp.protocol
 
+import org.jetbrains.annotations.ApiStatus
+
 interface BazelTaskEventsHandler {
+  @ApiStatus.Internal
   fun onBuildTaskStart(params: TaskStartParams)
+  @ApiStatus.Internal
   fun onBuildTaskFinish(params: TaskFinishParams)
 
+  @ApiStatus.Internal
   fun onBuildLogMessage(params: LogMessageParams)
   fun onBuildPublishDiagnostics(params: PublishDiagnosticsParams)
+  @ApiStatus.Internal
   fun onPublishCoverageReport(report: CoverageReport)
+  @ApiStatus.Internal
   fun onCachedTestLog(testLog: CachedTestLog)
 }
 
+@ApiStatus.Internal
 interface BazelTaskLogger {
   fun info(message: String)
   fun message(message: String)
@@ -17,6 +25,7 @@ interface BazelTaskLogger {
   fun error(errorMessage: String)
 }
 
+@ApiStatus.Internal
 fun BazelTaskEventsHandler.asLogger(taskId: TaskId): BazelTaskLogger {
   val taskEventsHandler = this
   return object: BazelTaskLogger {

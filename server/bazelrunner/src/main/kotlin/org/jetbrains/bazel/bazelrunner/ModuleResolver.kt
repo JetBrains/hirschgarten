@@ -1,10 +1,12 @@
 package org.jetbrains.bazel.bazelrunner
 
+import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.commons.BazelInfo
 import org.jetbrains.bazel.commons.gson.bazelGson
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bsp.protocol.TaskId
 
+@ApiStatus.Internal
 sealed interface ShowRepoResult {
   val name: String
 
@@ -28,6 +30,7 @@ sealed interface ShowRepoResult {
   data class Unknown(override val name: String, val output: String) : ShowRepoResult
 }
 
+@ApiStatus.Internal
 class ModuleOutputParser {
   private fun extractAttribute(lines: List<String>, attributeName: String): String =
     lines
@@ -130,7 +133,7 @@ class ModuleOutputParser {
   }
 }
 
-class ModuleResolver(
+internal class ModuleResolver(
   private val bazelRunner: BazelRunner,
   private val workspaceContext: WorkspaceContext,
   private val taskId: TaskId,
@@ -213,7 +216,7 @@ class ModuleResolver(
   }
 }
 
-class JsonProto {
+internal class JsonProto {
   // Class representations of the relevant parts of some messages from https://github.com/bazelbuild/bazel/blob/master/src/main/protobuf/build.proto
   data class Attribute(val name: String, val stringValue: String?, val stringListValue: List<String>?)
   data class Repository(val moduleKey: String?, val canonicalName: String?, val repoRuleName: String?, val attribute: List<Attribute>)

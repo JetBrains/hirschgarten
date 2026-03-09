@@ -2,13 +2,13 @@ package org.jetbrains.bazel.python.debug
 
 import com.intellij.openapi.project.Project
 import org.jetbrains.bazel.config.BazelPluginBundle
-import org.jetbrains.bazel.flow.sync.bazelPaths.BazelBinPathService
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.runfiles.RunfilesUtils
+import org.jetbrains.bazel.sync.environment.projectCtx
 import java.nio.file.Path
 import java.nio.file.Paths
 
-object PythonDebugUtils {
+internal object PythonDebugUtils {
   fun guessRunScriptName(project: Project, target: Label): Path {
     val bazelBinPath = getBazelBinPath(project)
     val targetPackage = target.packagePath.pathSegments.toTypedArray()
@@ -37,7 +37,7 @@ object PythonDebugUtils {
   }
 
   private fun getBazelBinPath(project: Project): String =
-    BazelBinPathService.getInstance(project).bazelBinPath ?: error(BazelPluginBundle.message("bazel.bin.not.found"))
+    project.projectCtx.bazelBinPath ?: error(BazelPluginBundle.message("bazel.bin.not.found"))
 
   // TODO: BAZEL-1836
 

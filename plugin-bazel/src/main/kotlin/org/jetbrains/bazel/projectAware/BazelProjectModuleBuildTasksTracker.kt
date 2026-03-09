@@ -17,7 +17,7 @@ import org.jetbrains.bazel.buildTask.BazelProjectTaskRunner
   name = "BspProjectModuleBuildTasksTracker",
   storages = [Storage(StoragePathMacros.WORKSPACE_FILE)],
 )
-class BazelProjectModuleBuildTasksTracker : PersistentStateComponent<BazelProjectModuleBuildTasksTracker> {
+internal class BazelProjectModuleBuildTasksTracker : PersistentStateComponent<BazelProjectModuleBuildTasksTracker> {
   var lastBuiltByJps: Boolean = false
 
   companion object {

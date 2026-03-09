@@ -10,7 +10,7 @@ import org.jetbrains.bazel.action.SuspendableAction
 import org.jetbrains.bazel.languages.starlark.StarlarkBundle
 
 
-class RefreshBcrModulesAction : SuspendableAction(StarlarkBundle.message("bzlmod.action.refresh.modules")) {
+internal class RefreshBcrModulesAction : SuspendableAction(StarlarkBundle.message("bzlmod.action.refresh.modules")) {
   override suspend fun actionPerformed(project: Project, e: AnActionEvent) {
     runCatching {
       BazelModuleRegistryService.getInstance(project).refreshModuleNames()

@@ -1,10 +1,12 @@
 package org.jetbrains.bazel.commons
 
+import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.commons.constants.Constants.DOT_BAZELBSP_DIR_NAME
 import java.nio.file.Path
 import kotlin.io.path.isReadable
 import kotlin.io.path.readText
 
+@ApiStatus.Internal
 data class BazelInfo(
   val execRoot: Path,
   val outputBase: Path,
@@ -22,6 +24,7 @@ data class BazelInfo(
   fun dotBazelBsp(): Path = workspaceRoot.resolve(DOT_BAZELBSP_DIR_NAME)
 }
 
+@ApiStatus.Internal
 data class BazelRelease(val major: Int, val minor: Int = 0) {
   companion object {
     fun fromReleaseString(versionString: String): BazelRelease? = VERSION_REGEX.find(versionString)?.toBazelRelease()
@@ -61,4 +64,5 @@ data class BazelRelease(val major: Int, val minor: Int = 0) {
   }
 }
 
+@ApiStatus.Internal
 fun BazelRelease?.orFallbackVersion() = this ?: BazelRelease.FALLBACK_VERSION

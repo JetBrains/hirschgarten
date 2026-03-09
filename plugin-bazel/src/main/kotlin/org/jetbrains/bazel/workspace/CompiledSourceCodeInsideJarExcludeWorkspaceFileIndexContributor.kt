@@ -45,7 +45,7 @@ private val JVM_EXTENSIONS =
  *    This is done mainly to prevent resolve from navigating into jars instead of source code (see https://youtrack.jetbrains.com/issue/BAZEL-1672),
  *    but this also helps with indexing performance.
  */
-class CompiledSourceCodeInsideJarExcludeWorkspaceFileIndexContributor :
+internal class CompiledSourceCodeInsideJarExcludeWorkspaceFileIndexContributor :
   WorkspaceFileIndexContributor<LibraryCompiledSourceCodeInsideJarExcludeEntity> {
   override val entityClass: Class<LibraryCompiledSourceCodeInsideJarExcludeEntity>
     get() = LibraryCompiledSourceCodeInsideJarExcludeEntity::class.java
@@ -58,10 +58,11 @@ class CompiledSourceCodeInsideJarExcludeWorkspaceFileIndexContributor :
     val library = storage.resolve(entity.libraryId) ?: return
     val compiledSourceCodeInsideJarExcludeEntity = storage.resolve(entity.compiledSourceCodeInsideJarExcludeId) ?: return
 
-    val relativePathsToExclude: Set<String> = compiledSourceCodeInsideJarExcludeEntity.relativePathsInsideJarToExclude.toSet()
-    val librariesFromInternalTargetsUrls: Set<String> = compiledSourceCodeInsideJarExcludeEntity.librariesFromInternalTargetsUrls.toSet()
+    val relativePathsToExclude: Set<String> = compiledSourceCodeInsideJarExcludeEntity.relativePathsInsideJarToExclude
+    val librariesFromInternalTargetsUrls: Set<String> = compiledSourceCodeInsideJarExcludeEntity.librariesFromInternalTargetsUrls
+    val entityId = compiledSourceCodeInsideJarExcludeEntity.excludeId.id
     val internalTargetsExclusionCondition =
-      InternalTargetsJarExclusionCondition(relativePathsToExclude, librariesFromInternalTargetsUrls)
+      InternalTargetsJarExclusionCondition(relativePathsToExclude, librariesFromInternalTargetsUrls, entityId)
 
     library.roots.forEach { libraryRoot ->
       val contentRootUrl = libraryRoot.url
@@ -82,19 +83,35 @@ class CompiledSourceCodeInsideJarExcludeWorkspaceFileIndexContributor :
   }
 }
 
-private data class InternalTargetsJarExclusionCondition(
+private class InternalTargetsJarExclusionCondition(
   private val relativePathsToExclude: Set<String>,
   private val librariesFromInternalTargetsUrls: Set<String>,
+  private val entityId: Int,
 ) : WorkspaceFileSetExclusionCondition {
   override fun shouldExclude(virtualFile: VirtualFile): Boolean {
     if (virtualFile.isDirectory) return false
+
     val rootFile = VfsUtilCore.getRootFile(virtualFile)
+    if (rootFile.url !in librariesFromInternalTargetsUrls) return false
+
+    if (virtualFile.hasNonJvmExtension()) return true
+
     val relativePath = virtualFile.getRelativePathInsideJar(rootFile)
     val relativePathWithoutNestedClass = removeNestedClass(relativePath)
-    if (rootFile.url in librariesFromInternalTargetsUrls) {
-      return virtualFile.hasNonJvmExtension() || relativePathWithoutNestedClass in relativePathsToExclude
-    }
-    return false
+    return relativePathWithoutNestedClass in relativePathsToExclude
+  }
+
+  override fun equals(other: Any?): Boolean {
+    if (this === other) return true
+    if (javaClass != other?.javaClass) return false
+
+    other as InternalTargetsJarExclusionCondition
+
+    return entityId == other.entityId
+  }
+
+  override fun hashCode(): Int {
+    return entityId
   }
 }
 

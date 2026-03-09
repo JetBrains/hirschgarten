@@ -7,7 +7,7 @@ import com.intellij.testFramework.LightVirtualFile
 import org.jetbrains.bazel.languages.starlark.StarlarkFileType
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkFile
 
-class StarlarkExpressionCodeFragment(
+internal class StarlarkExpressionCodeFragment(
   project: Project,
   extensionlessName: String,
   content: String,

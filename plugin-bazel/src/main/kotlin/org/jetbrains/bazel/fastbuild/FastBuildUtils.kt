@@ -44,8 +44,8 @@ import org.jetbrains.bazel.commons.ExecUtils
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.coroutines.BazelCoroutineService
-import org.jetbrains.bazel.flow.sync.bazelPaths.BazelBinPathService
 import org.jetbrains.bazel.server.tasks.runBuildTargetTask
+import org.jetbrains.bazel.sync.environment.projectCtx
 import org.jetbrains.bazel.target.targetUtils
 import org.jetbrains.concurrency.AsyncPromise
 import org.jetbrains.concurrency.Promise
@@ -63,7 +63,7 @@ import kotlin.io.path.reader
 import kotlin.io.path.relativeTo
 import kotlin.io.path.writer
 
-object FastBuildUtils {
+internal object FastBuildUtils {
   private val logger = Logger.getInstance(FastBuildUtils::class.java)
 
   fun fastBuildFilesPromise(project: Project, files: List<VirtualFile>): Promise<ProjectTaskRunner.Result> {
@@ -133,8 +133,7 @@ object FastBuildUtils {
         } ?: continue
       val isLib = targetUtils.isLibrary(entry.value.id)
       val bazelBin =
-        BazelBinPathService.getInstance(project).bazelBinPath
-          ?: throw ExecutionException(BazelPluginBundle.message("widget.fastbuild.error.missing.path"))
+        project.projectCtx.bazelBinPath ?: throw ExecutionException(BazelPluginBundle.message("widget.fastbuild.error.missing.path"))
       val targetJar = Path.of("$bazelBin/$relativePath/${if (isLib) "lib" else ""}${entry.value.id.targetName}.jar")
 
       var fastBuildTargetStatus: FastBuildTargetStatus? = null
@@ -209,7 +208,7 @@ object FastBuildUtils {
             GeneralCommandLine(arguments).apply {
               workDirectory =
                 File(
-                  BazelBinPathService.getInstance(project).bazelExecPath
+                  project.projectCtx.bazelExecPath
                     ?: throw ExecutionException(BazelPluginBundle.message("widget.fastbuild.error.null.bazel.exec.path")),
                 )
             }

@@ -6,11 +6,11 @@ import com.intellij.ui.components.JBList
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.idea.devkit.projectRoots.IdeaJdk
 
-interface HasIntellijSdkName {
+internal interface HasIntellijSdkName {
   var intellijSdkName: String?
 }
 
-fun <T : HasIntellijSdkName> intellijSdkFragment(): SettingsEditorFragment<T, JBList<String>> {
+internal fun <T : HasIntellijSdkName> intellijSdkFragment(): SettingsEditorFragment<T, JBList<String>> {
   val jdkType = IdeaJdk.getInstance()
   val jdks = ProjectJdkTable.getInstance().getSdksOfType(jdkType).map { it.name }
 

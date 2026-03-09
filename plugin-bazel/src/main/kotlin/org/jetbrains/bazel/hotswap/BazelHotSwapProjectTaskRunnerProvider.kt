@@ -5,7 +5,7 @@ import com.intellij.task.ProjectTask
 import com.intellij.task.ProjectTaskContext
 import org.jetbrains.bazel.buildTask.AdditionalProjectTaskRunnerProvider
 
-class BazelHotSwapProjectTaskRunnerProvider : AdditionalProjectTaskRunnerProvider {
+internal class BazelHotSwapProjectTaskRunnerProvider : AdditionalProjectTaskRunnerProvider {
   override fun preRun(
     project: Project,
     projectTaskContext: ProjectTaskContext,

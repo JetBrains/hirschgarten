@@ -42,7 +42,7 @@ private fun Project.getRelativePaths(depthLimit: Int? = null, filter: (VirtualFi
 
 private const val DIRECTORIES_COMPLETION_DEPTH_LIMIT = 4
 
-class DirectoriesCompletionProvider : CompletionProvider<CompletionParameters>() {
+internal class DirectoriesCompletionProvider : CompletionProvider<CompletionParameters>() {
   private val pathsComputable =
     SyncCache.SyncCacheComputable { project ->
       project.getRelativePaths(depthLimit = DIRECTORIES_COMPLETION_DEPTH_LIMIT) { it.isDirectory }
@@ -69,7 +69,7 @@ class DirectoriesCompletionProvider : CompletionProvider<CompletionParameters>()
   }
 }
 
-class FiletypeCompletionProvider(val fileExtension: String) : CompletionProvider<CompletionParameters>() {
+internal class FiletypeCompletionProvider(val fileExtension: String) : CompletionProvider<CompletionParameters>() {
   private val pathsComputable =
     SyncCache.SyncCacheComputable { project ->
       project.getRelativePaths { it.name.endsWith(fileExtension) }

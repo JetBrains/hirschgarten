@@ -8,7 +8,7 @@ import java.nio.file.Path
 import kotlin.io.path.Path
 import kotlin.io.path.exists
 
-class JdkResolver(private val bazelPathsResolver: BazelPathsResolver) {
+internal class JdkResolver(private val bazelPathsResolver: BazelPathsResolver) {
   fun resolve(targets: Sequence<TargetInfo>): Jdk? {
     val allCandidates = targets.mapNotNull { resolveJdkData(it) }.toList()
     if (allCandidates.none()) return localJdkFallback()

@@ -7,13 +7,14 @@ import com.intellij.openapi.components.State
 import com.intellij.openapi.components.Storage
 import com.intellij.openapi.components.StoragePathMacros
 import com.intellij.openapi.project.Project
-import org.jetbrains.bazel.config.rootDir
+import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.languages.bazelversion.psi.BazelVersionLiteral
 import org.jetbrains.bazel.languages.bazelversion.psi.toBazelVersionLiteral
 import org.jetbrains.bazel.languages.bazelversion.psi.toBazelVersionStringLiteral
 
 @Service(Service.Level.PROJECT)
 @State(name = "BazelVersionCache", storages = [Storage(StoragePathMacros.CACHE_FILE)])
+@ApiStatus.Internal
 class BazelVersionCheckerService(private val project: Project) : PersistentStateComponent<BazelVersionCheckerService.State> {
   class State : BaseState() {
     var resolverId by string(null)
@@ -53,20 +54,5 @@ class BazelVersionCheckerService(private val project: Project) : PersistentState
         .firstOrNull { it.id == state.resolverId } ?: return
     currentBazelVersion = currentVersion
     latestBazelVersion = resolver.resolveLatestBazelVersion(project, currentVersion) ?: return
-  }
-
-  /**
-   * update the current version if it is different from the resolved version.
-   * @return true if the version was updated, false otherwise
-   */
-  fun updateCurrentVersion(): Boolean {
-    val projectPath = project.rootDir.toNioPath()
-    val resolvedVersion = BazelVersionWorkspaceResolver.resolveBazelVersionFromWorkspace(projectPath)
-    return if (currentBazelVersion != resolvedVersion) {
-      currentBazelVersion = resolvedVersion
-      true
-    } else {
-      false
-    }
   }
 }

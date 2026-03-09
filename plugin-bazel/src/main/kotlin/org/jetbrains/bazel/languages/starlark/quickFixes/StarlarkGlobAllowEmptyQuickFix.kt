@@ -13,7 +13,7 @@ import org.jetbrains.bazel.languages.starlark.StarlarkLanguage
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkGlobExpression
 import java.util.Locale.getDefault
 
-class StarlarkGlobAllowEmptyQuickFix(callExpression: StarlarkGlobExpression) :
+internal class StarlarkGlobAllowEmptyQuickFix(callExpression: StarlarkGlobExpression) :
   PsiUpdateModCommandAction<StarlarkGlobExpression>(callExpression) {
   override fun getFamilyName(): String = StarlarkBundle.message("quickfix.glob.allow.empty")
 

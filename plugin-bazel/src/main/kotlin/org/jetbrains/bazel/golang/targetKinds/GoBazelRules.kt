@@ -7,7 +7,7 @@ import org.jetbrains.bazel.sync.TargetKindProvider
 import org.jetbrains.bazel.sync.fromRuleName
 
 /** Contributes golang rules to [Kind].  */
-class GoBazelRules : TargetKindProvider {
+internal class GoBazelRules : TargetKindProvider {
   /** Go-specific blaze rules.  */
   enum class RuleTypes(
     val kindString: String,

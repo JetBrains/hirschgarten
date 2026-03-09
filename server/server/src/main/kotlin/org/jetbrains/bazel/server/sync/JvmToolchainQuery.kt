@@ -10,7 +10,7 @@ import org.jetbrains.bazel.server.bsp.info.BspInfo
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bsp.protocol.JvmToolchainInfo
 
-object JvmToolchainQuery {
+internal object JvmToolchainQuery {
   suspend fun jvmToolchainQueryForTarget(
     bspInfo: BspInfo,
     bazelRunner: BazelRunner,

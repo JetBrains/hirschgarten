@@ -1,5 +1,6 @@
 package org.jetbrains.bazel.server.bzlmod
 
+import kotlinx.coroutines.CancellationException
 import org.jetbrains.bazel.bazelrunner.BazelRunner
 import org.jetbrains.bazel.bazelrunner.ModuleResolver
 import org.jetbrains.bazel.bazelrunner.ShowRepoResult
@@ -14,12 +15,12 @@ import org.jetbrains.bsp.protocol.TaskId
 import java.nio.file.Path
 import kotlin.io.path.Path
 
-val rootRulesToNeededTransitiveRules = mapOf(
+internal val rootRulesToNeededTransitiveRules = mapOf(
   "rules_kotlin" to listOf("rules_java"),
   "rules_scala" to listOf("rules_java"),
 )
 
-suspend fun calculateRepoMapping(
+internal suspend fun calculateRepoMapping(
   workspaceContext: WorkspaceContext,
   bazelRunner: BazelRunner,
   bazelInfo: BazelInfo,
@@ -35,6 +36,9 @@ suspend fun calculateRepoMapping(
     try {
       // empty string is the name of the root module
       moduleResolver.getRepoMappings(listOf("")).get("").orEmpty()
+    }
+    catch (e: CancellationException) {
+      throw e
     }
     catch (e: Exception) {
       taskLogger.error(e.toString())

@@ -19,7 +19,7 @@ import com.intellij.openapi.util.Disposer
 import com.intellij.openapi.util.SystemInfo
 import io.kotest.matchers.maps.shouldContainExactly
 import org.jetbrains.bazel.action.SuspendableAction
-import org.jetbrains.bazel.ui.console.TaskConsole
+import org.jetbrains.bazel.ui.console.BaseTaskConsole
 import org.jetbrains.bazel.workspace.model.test.framework.WorkspaceModelBaseTest
 import org.jetbrains.bsp.protocol.TaskGroupId
 import org.jetbrains.bsp.protocol.TaskId
@@ -106,7 +106,7 @@ class TestTaskConsole(
   taskView: BuildProgressListener,
   basePath: String,
   project: Project,
-) : TaskConsole(taskView, basePath, project) {
+) : BaseTaskConsole(taskView, basePath, project) {
   override fun calculateRedoAction(redoAction: (suspend () -> Unit)?): AnAction =
     object : SuspendableAction({ "test" }) {
       override suspend fun actionPerformed(project: Project, e: AnActionEvent) {}

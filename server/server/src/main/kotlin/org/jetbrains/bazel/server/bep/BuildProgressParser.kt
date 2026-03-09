@@ -1,10 +1,14 @@
 package org.jetbrains.bazel.server.bep
 
+import org.jetbrains.annotations.ApiStatus
+
+@ApiStatus.Internal
 data class BuildProgress(val fraction: Double, val details: String?)
 
 /**
  * Adapted from [com.intellij.monorepo.devkit.bazel.BazelConsoleService.Output.BuildProgressOutput]
  */
+@ApiStatus.Internal
 class BuildProgressParser {
   fun parse(lines: List<String>): BuildProgress? {
     for (line in lines.reversed()) {

@@ -6,7 +6,7 @@ import com.goide.sdk.GoSdkService.getInstance
 import com.intellij.openapi.module.Module
 import com.intellij.openapi.project.Project
 
-class BazelDlvPosConverterFactory : DlvPositionConverterFactory {
+internal class BazelDlvPosConverterFactory : DlvPositionConverterFactory {
   override fun createPositionConverter(
     project: Project,
     module: Module?,

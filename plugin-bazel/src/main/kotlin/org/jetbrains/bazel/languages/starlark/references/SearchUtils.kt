@@ -15,7 +15,7 @@ import org.jetbrains.bazel.languages.starlark.psi.statements.StarlarkForStatemen
 import org.jetbrains.bazel.languages.starlark.psi.statements.StarlarkStatementContainer
 import org.jetbrains.bazel.languages.starlark.psi.statements.StarlarkStatementList
 
-object SearchUtils {
+internal object SearchUtils {
   /**
    * Invokes [processor] on each binding in the current scope as well as parent scopes of
    * [element] such that a binding is visited before any bindings it may shadow.

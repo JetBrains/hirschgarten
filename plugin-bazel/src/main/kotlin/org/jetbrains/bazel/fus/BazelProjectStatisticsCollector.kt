@@ -10,7 +10,7 @@ import com.intellij.openapi.project.Project
 import org.jetbrains.bazel.config.bazelProjectProperties
 import org.jetbrains.bazel.target.targetUtils
 
-class BazelProjectStatisticsCollector : ProjectUsagesCollector() {
+internal class BazelProjectStatisticsCollector : ProjectUsagesCollector() {
   override fun getGroup(): EventLogGroup = Const.GROUP
 
   override fun getMetrics(project: Project): Set<MetricEvent> {

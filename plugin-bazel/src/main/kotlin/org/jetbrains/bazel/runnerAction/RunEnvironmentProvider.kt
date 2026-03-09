@@ -15,7 +15,7 @@ import org.jetbrains.bsp.protocol.utils.extractJvmBuildTarget
 import java.nio.file.Path
 
 @Service(Service.Level.PROJECT)
-class RunEnvironmentProvider(private val project: Project) {
+internal class RunEnvironmentProvider(private val project: Project) {
   suspend fun getJvmEnvironmentItem(target: Label): JvmEnvironmentItem? =
     project.connection.runWithServer { server ->
       val paths = server.workspaceBazelPaths()

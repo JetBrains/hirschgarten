@@ -6,7 +6,7 @@ import org.jetbrains.bazel.languages.starlark.elements.StarlarkElementTypes
 import org.jetbrains.bazel.languages.starlark.elements.StarlarkTokenTypes
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkElement
 
-interface StarlarkArgumentElement : StarlarkElement {
+internal interface StarlarkArgumentElement : StarlarkElement {
   fun getValue(): PsiElement? {
     var childNode: ASTNode? = node.lastChildNode
     while (childNode != null) {

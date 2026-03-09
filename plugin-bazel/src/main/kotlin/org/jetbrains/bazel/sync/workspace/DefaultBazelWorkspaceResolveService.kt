@@ -25,7 +25,7 @@ import org.jetbrains.bsp.protocol.WorkspaceBuildTargetSelector
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsResult
 
 @Service(Service.Level.PROJECT)
-class DefaultBazelWorkspaceResolveService(private val project: Project) : BazelWorkspaceResolveService {
+internal class DefaultBazelWorkspaceResolveService(private val project: Project) : BazelWorkspaceResolveService {
   val connection: BazelServerConnection
     get() = BazelServerService.getInstance(project).connection
 
@@ -53,7 +53,7 @@ class DefaultBazelWorkspaceResolveService(private val project: Project) : BazelW
     val workspaceContext = connection.runWithServer { server -> server.workspaceContext }
     project
       .service<LanguagePluginsService>()
-      .registerDefaultPlugins(paths.bazelPathsResolver, DefaultJvmPackageResolver())
+      .registerDefaultPlugins(paths.bazelPathsResolver, DefaultJvmPackageResolver(), workspaceContext)
     bazelMapper =
       AspectBazelProjectMapper(
         project = project,

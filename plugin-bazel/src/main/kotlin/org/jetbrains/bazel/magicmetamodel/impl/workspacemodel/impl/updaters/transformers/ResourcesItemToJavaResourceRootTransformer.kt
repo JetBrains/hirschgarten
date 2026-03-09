@@ -1,6 +1,7 @@
 package org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.transformers
 
 import com.intellij.platform.workspace.jps.entities.SourceRootTypeId
+import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.utils.isUnder
 import org.jetbrains.bazel.workspacemodel.entities.ResourceRoot
@@ -15,6 +16,7 @@ import kotlin.collections.toList
 import kotlin.io.path.Path
 import kotlin.io.path.name
 
+@ApiStatus.Internal
 class ResourcesItemToJavaResourceRootTransformer : WorkspaceModelEntityPartitionTransformer<RawBuildTarget, ResourceRoot> {
 
   override fun transform(inputEntity: RawBuildTarget): List<ResourceRoot> {

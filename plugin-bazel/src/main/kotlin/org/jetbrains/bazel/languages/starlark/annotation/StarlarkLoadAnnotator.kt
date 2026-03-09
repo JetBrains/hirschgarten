@@ -6,7 +6,7 @@ import org.jetbrains.bazel.languages.starlark.StarlarkBundle
 import org.jetbrains.bazel.languages.starlark.elements.StarlarkElementTypes
 import org.jetbrains.bazel.languages.starlark.references.StarlarkLoadReference
 
-class StarlarkLoadAnnotator : StarlarkAnnotator() {
+internal class StarlarkLoadAnnotator : StarlarkAnnotator() {
   override fun annotate(element: PsiElement, holder: AnnotationHolder) {
     if (isLoadedSymbol(element) && isNotResolvable(element)) {
       holder.annotateError(

@@ -22,7 +22,7 @@ import org.jetbrains.bazel.taskEvents.BazelTaskListener
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.BazelServerFacade
 
-class JvmTestHandler(private val configuration: BazelRunConfiguration) : BazelRunHandler {
+internal class JvmTestHandler(private val configuration: BazelRunConfiguration) : BazelRunHandler {
   init {
     // KotlinCoroutineLibraryFinderBeforeRunTaskProvider must be run before BuildScriptBeforeRunTaskProvider
     configuration.setBeforeRunTasksFromHandler(
@@ -74,7 +74,7 @@ class JvmTestHandler(private val configuration: BazelRunConfiguration) : BazelRu
   }
 }
 
-class ScriptPathTestCommandLineState(environment: ExecutionEnvironment, val settings: JvmTestState) :
+internal class ScriptPathTestCommandLineState(environment: ExecutionEnvironment, val settings: JvmTestState) :
   JvmDebuggableCommandLineState(environment, settings.debugPort) {
   override fun createAndAddTaskListener(handler: BazelProcessHandler): BazelTaskListener =
     if (environment.project.useJetBrainsTestRunner()) {

@@ -7,7 +7,7 @@ import org.jetbrains.kotlin.idea.references.mainReference
 import org.jetbrains.kotlin.psi.KtFile
 import org.jetbrains.kotlin.psi.psiUtil.getQualifiedElementSelector
 
-class KotlinUnresolvedImportChecker : UnresolvedImportChecker {
+internal class KotlinUnresolvedImportChecker : UnresolvedImportChecker {
   override fun hasUnresolvedImport(project: Project, psiFile: PsiFile): Boolean {
     val ktFile = psiFile as? KtFile ?: return false
     val importList = ktFile.importList ?: return false

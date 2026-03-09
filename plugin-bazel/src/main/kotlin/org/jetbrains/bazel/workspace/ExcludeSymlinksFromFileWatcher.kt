@@ -1,8 +1,10 @@
 package org.jetbrains.bazel.workspace
 
+import com.intellij.openapi.components.service
 import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.openapi.vfs.impl.local.WatchRootsManager
 import org.jetbrains.bazel.config.BazelFeatureFlags
+import org.jetbrains.bazel.sync.environment.BazelApplicationContextService
 import org.jetbrains.bazel.utils.isUnder
 import java.nio.file.InvalidPathException
 import java.nio.file.Path
@@ -15,8 +17,14 @@ import java.util.NavigableMap
  * https://youtrack.jetbrains.com/issue/IJPL-199364/Excluded-symlinks-are-watched-by-WatchRootsManager
  * https://youtrack.jetbrains.com/issue/BAZEL-2235/Overly-aggressive-fsnotifier
  */
-fun excludeSymlinksFromFileWatcher(symlinksToExclude: List<Path>) {
-  if (!BazelFeatureFlags.excludeSymlinksFromFileWatcherViaReflection) return
+internal fun excludeSymlinksFromFileWatcher(symlinksToExclude: List<Path>) {
+  if (service<BazelApplicationContextService>().disableFileWatcherSymlinkExclusion) {
+    return
+  }
+
+  if (!BazelFeatureFlags.excludeSymlinksFromFileWatcherViaReflection) {
+    return
+  }
 
   val localFileSystem = LocalFileSystem.getInstance()
   val watchRootsManager: WatchRootsManager = localFileSystem.getFieldWithReflection("myWatchRootsManager")
@@ -29,7 +37,8 @@ fun excludeSymlinksFromFileWatcher(symlinksToExclude: List<Path>) {
     val symlinksByPathWithExcludes: MapWithExcludes =
       if (symlinksByPath is MapWithExcludes) {
         symlinksByPath
-      } else {
+      }
+      else {
         MapWithExcludes(symlinksByPath).also {
           watchRootsManager.setFieldWithReflection("mySymlinksByPath", it)
         }
@@ -70,7 +79,8 @@ private class MapWithExcludes(private val delegate: NavigableMap<String, Any>) :
   private fun String.toPathOrNull(): Path? =
     try {
       Path.of(this)
-    } catch (_: InvalidPathException) {
+    }
+    catch (_: InvalidPathException) {
       null
     }
 }

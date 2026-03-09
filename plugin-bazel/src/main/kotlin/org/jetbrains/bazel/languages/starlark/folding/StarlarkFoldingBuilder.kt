@@ -11,7 +11,7 @@ import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkCallExpres
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkListLiteralExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkParenthesizedExpression
 
-class StarlarkFoldingBuilder : FoldingBuilderEx() {
+internal class StarlarkFoldingBuilder : FoldingBuilderEx() {
   override fun buildFoldRegions(
     root: PsiElement,
     document: Document,

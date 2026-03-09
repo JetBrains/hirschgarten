@@ -7,7 +7,7 @@ import org.jetbrains.bazel.run.BazelProcessHandler
 import org.jetbrains.bazel.taskEvents.BazelTaskListener
 import org.jetbrains.bsp.protocol.TaskId
 
-open class BazelRunTaskListener(protected val handler: BazelProcessHandler) : BazelTaskListener {
+internal open class BazelRunTaskListener(protected val handler: BazelProcessHandler) : BazelTaskListener {
   protected val ansiEscapeDecoder = AnsiEscapeDecoder()
 
   override fun onOutputStream(taskId: TaskId?, text: String) {

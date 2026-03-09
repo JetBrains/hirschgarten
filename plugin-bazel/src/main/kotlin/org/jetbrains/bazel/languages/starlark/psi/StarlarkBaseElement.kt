@@ -8,8 +8,10 @@ import com.intellij.psi.PsiElementVisitor
 import com.intellij.psi.search.GlobalSearchScope
 import com.intellij.psi.search.SearchScope
 import com.intellij.psi.util.startOffset
+import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.languages.starlark.StarlarkFileType
 
+@ApiStatus.Internal
 abstract class StarlarkBaseElement(node: ASTNode) :
   ASTWrapperPsiElement(node),
   StarlarkElement {
@@ -25,7 +27,7 @@ abstract class StarlarkBaseElement(node: ASTNode) :
 
   override fun getUseScope(): SearchScope = GlobalSearchScope.projectScope(project).restrictByFileType(StarlarkFileType)
 
-  companion object {
+  internal companion object {
     fun TextRange.relativeTo(element: PsiElement): TextRange = shiftLeft(element.startOffset)
 
     fun GlobalSearchScope.restrictByFileType(fileType: StarlarkFileType) = GlobalSearchScope.getScopeRestrictedByFileTypes(this, fileType)

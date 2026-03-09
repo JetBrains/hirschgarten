@@ -7,7 +7,7 @@ import com.intellij.openapi.util.removeUserData
 import org.jetbrains.bazel.run.config.BazelRunConfiguration
 import java.nio.file.Files
 
-class SyntheticRunExecutionListener : ExecutionListener {
+internal class SyntheticRunExecutionListener : ExecutionListener {
   override fun processStarting(executorId: String, env: ExecutionEnvironment, handler: ProcessHandler) {
     val runConfig = env.runProfile as? BazelRunConfiguration ?: return
     val syntheticTemplate = runConfig.getUserData(SYNTHETIC_BUILD_SESSION)

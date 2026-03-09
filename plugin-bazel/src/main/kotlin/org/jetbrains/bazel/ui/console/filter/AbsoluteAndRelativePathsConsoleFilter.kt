@@ -6,6 +6,7 @@ import com.intellij.execution.filters.OpenFileHyperlinkInfo
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.io.toNioPathOrNull
 import com.intellij.openapi.vfs.VirtualFile
+import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.config.isBazelProject
 import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.utils.findCanonicalVirtualFileThatExists
@@ -37,6 +38,7 @@ private val IntellijPositionRegex = Regex(" \\((?<$LINE_GROUP_ID>\\d+):(?<$COLUM
  *    it's highly unlikely to have a non-path word in the console which has slash in it
  *    and maps to an existing file
  */
+@ApiStatus.Internal
 class AbsoluteAndRelativePathsConsoleFilter(private val project: Project) : Filter {
   override fun applyFilter(line: String, entireLength: Int): Filter.Result {
     val resultItems =
@@ -87,7 +89,7 @@ class AbsoluteAndRelativePathsConsoleFilter(private val project: Project) : Filt
   ): Int = highlightStartOffset + pathGroup.value.length + (locationRegexResult?.value?.length ?: 0)
 }
 
-class AbsoluteAndRelativePathsConsoleFilterProvider : ConsoleFilterProvider {
+internal class AbsoluteAndRelativePathsConsoleFilterProvider : ConsoleFilterProvider {
   override fun getDefaultFilters(project: Project): Array<out Filter> =
     if (project.isBazelProject) arrayOf(AbsoluteAndRelativePathsConsoleFilter(project)) else emptyArray()
 }

@@ -29,7 +29,7 @@ import kotlin.io.path.relativeTo
  * @param path the file passed to the project open processor
  */
 @RequiresBackgroundThread
-fun getProjectViewPath(
+internal fun getProjectViewPath(
   projectRootDir: Path,
   path: Path,
 ): Path? {
@@ -67,7 +67,7 @@ fun getProjectViewPath(
  * this method provides information about the real project directory to open
  */
 @RequiresBackgroundThread
-tailrec fun findProjectFolderFromFile(path: Path?): Path? = when {
+internal tailrec fun findProjectFolderFromFile(path: Path?): Path? = when {
   path == null -> null
   path.workspaceFile != null -> path
   // this is to prevent opening a file that is not an acceptable Bazel config file, #BAZEL-1940
@@ -80,7 +80,7 @@ tailrec fun findProjectFolderFromFile(path: Path?): Path? = when {
 }
 
 @RequiresBackgroundThread
-fun findProjectFolderFromVFile(projectIdentityFile: VirtualFile?): VirtualFile? =
+internal fun findProjectFolderFromVFile(projectIdentityFile: VirtualFile?): VirtualFile? =
   projectIdentityFile
     ?.toNioPathOrNull()
     ?.let { findProjectFolderFromFile(it) }
@@ -97,11 +97,11 @@ internal val Path.workspaceFile: Path?
       .firstOrNull { isRegularFile(it) }
   }
 
-fun Path.hasNameOf(vararg names: String): Boolean =
+internal fun Path.hasNameOf(vararg names: String): Boolean =
   isRegularFile(this) &&
     name in names
 
-fun Path.hasExtensionOf(vararg extensions: String): Boolean =
+internal fun Path.hasExtensionOf(vararg extensions: String): Boolean =
   isRegularFile(this) &&
     extension in extensions
 
@@ -117,7 +117,7 @@ private fun Path.getBuildFileForPackageDirectory(): Path? {
   }
 }
 
-fun Project.initProperties(projectRootDir: Path) {
+internal fun Project.initProperties(projectRootDir: Path) {
   val virtualFile = projectRootDir.refreshAndFindVirtualDirectory()
   if (virtualFile != null) {
     initProperties(virtualFile)
@@ -126,7 +126,7 @@ fun Project.initProperties(projectRootDir: Path) {
   }
 }
 
-fun Project.initProperties(projectRootDir: VirtualFile) {
+internal fun Project.initProperties(projectRootDir: VirtualFile) {
   thisLogger().debug("Initializing properties for project: $projectRootDir")
 
   this.isBazelProject = true

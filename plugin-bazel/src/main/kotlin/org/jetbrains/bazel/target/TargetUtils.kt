@@ -30,9 +30,8 @@ import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
+import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.annotations.TestOnly
-import org.jetbrains.bazel.annotations.InternalApi
-import org.jetbrains.bazel.annotations.PublicApi
 import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.coroutines.BazelCoroutineService
 import org.jetbrains.bazel.label.Label
@@ -54,8 +53,8 @@ private const val MAX_EXECUTABLE_TARGET_IDS = 10
 
 private fun nowAsDuration() = System.currentTimeMillis().toDuration(DurationUnit.MILLISECONDS)
 
-@PublicApi
 @Service(Service.Level.PROJECT)
+@ApiStatus.Internal
 class TargetUtils(private val project: Project, private val coroutineScope: CoroutineScope) : SettingsSavingComponent {
   @OptIn(AwaitCancellationAndInvoke::class)
   private val dbAsync: Deferred<TargetsCacheStorage> =
@@ -87,11 +86,9 @@ class TargetUtils(private val project: Project, private val coroutineScope: Coro
       .toList()
   }
 
-  @InternalApi
   val allTargetsAndLibrariesLabels: List<String>
     get() = allTargetsAndLibrariesLabelsCache.value
 
-  @InternalApi
   val allExecutableTargetLabels: List<String>
     get() = allExecutableTargetsCache.value
 
@@ -118,7 +115,6 @@ class TargetUtils(private val project: Project, private val coroutineScope: Coro
     db.removeFileToTarget(file)
   }
 
-  @InternalApi
   @TestOnly
   fun setTargets(targets: List<BuildTarget>) {
     db.setTargets(targets)
@@ -129,7 +125,6 @@ class TargetUtils(private val project: Project, private val coroutineScope: Coro
   fun computeFullLabelToTargetInfoMap(syncedTargetIdToTargetInfo: Map<Label, BuildTarget>): Map<Label, BuildTarget> =
     db.computeFullLabelToTargetInfoMap(syncedTargetIdToTargetInfo)
 
-  @InternalApi
   fun saveTargets(
     targets: List<RawBuildTarget>,
     fileToTarget: Map<Path, List<Label>>,
@@ -233,24 +228,20 @@ class TargetUtils(private val project: Project, private val coroutineScope: Coro
         .toHashSet()
     }
 
-  private fun notifyTargetListUpdated() {
+  fun notifyTargetListUpdated() {
     check(mutableTargetListUpdated.tryEmit(Unit))
     allTargetsAndLibrariesLabelsCache.drop()
     allExecutableTargetsCache.drop()
   }
 
-  @PublicApi
   fun allTargets(): Sequence<Label> = db.getAllTargets()
 
   fun getTotalTargetCount(): Int = db.getTotalTargetCount()
 
-  @PublicApi
   fun getTargetsForPath(path: Path): List<Label> = db.getTargetsForPath(path) ?: emptyList()
 
-  @PublicApi
   fun getTargetsForFile(file: VirtualFile): List<Label> = file.toNioPathOrNull()?.let { getTargetsForPath(it) } ?: emptyList()
 
-  @InternalApi
   fun getExecutableTargetsForFile(file: VirtualFile): List<Label> {
     val targetsForFile = getTargetsForFile(file)
     val executableDirectTargets =
@@ -265,30 +256,23 @@ class TargetUtils(private val project: Project, private val coroutineScope: Coro
   fun getExecutableTargetsForTarget(target: Label): List<Label> =
     db.getExecutableTargetsForTarget(target).orEmpty()
 
-  @PublicApi
   fun isLibrary(target: Label): Boolean = getBuildTargetForLabel(target)?.kind?.ruleType == RuleType.LIBRARY
 
-  @PublicApi
   fun getTargetForModuleId(moduleId: String): Label? = db.getTargetForModuleId(moduleId)
 
-  @PublicApi
   fun getTargetForLibraryId(libraryId: String): Label? = db.getTargetForLibraryId(libraryId)
 
   /**
    * All labels in a label-to-target map are canonical.
    * The label must be first canonicalized via toCanonicalLabel.
    */
-  @InternalApi
   fun getBuildTargetForLabel(label: Label): BuildTarget? = db.getBuildTargetForLabel(label)
 
-  @InternalApi
   fun getBuildTargetForModule(module: Module): BuildTarget? = getTargetForModuleId(module.name)?.let { getBuildTargetForLabel(it) }
 
-  @InternalApi
   fun allBuildTargets(): Sequence<BuildTarget> = db.getAllBuildTargets()
 
   // todo: avoid such methods as we load all targets into memory
-  @InternalApi
   fun allBuildTargetAsLabelToTargetMap(predicate: (BuildTarget) -> Boolean): List<Label> = db.allBuildTargetAsLabelToTargetMap(predicate)
 
   fun getTotalFileCount(): Int = db.getTotalFileCount()
@@ -296,31 +280,26 @@ class TargetUtils(private val project: Project, private val coroutineScope: Coro
 
 private val LIBRARY_MODULE_PREFIX = "_aux.libraries."
 
-@InternalApi
+@ApiStatus.Internal
 fun String.addLibraryModulePrefix() = LIBRARY_MODULE_PREFIX + this
 
-@InternalApi
-fun String.isLibraryModule() = startsWith(LIBRARY_MODULE_PREFIX)
+internal fun String.isLibraryModule() = startsWith(LIBRARY_MODULE_PREFIX)
 
-@PublicApi
 val Project.targetUtils: TargetUtils
+  @ApiStatus.Internal
   get() = service<TargetUtils>()
 
-@PublicApi
-fun Label.getModule(project: Project): Module? = project.targetUtils.getBuildTargetForLabel(this)?.getModule(project)
+internal fun Label.getModule(project: Project): Module? = project.targetUtils.getBuildTargetForLabel(this)?.getModule(project)
 
-@PublicApi
-fun Label.getModuleEntity(project: Project): ModuleEntity? = getModule(project)?.moduleEntity
+internal fun Label.getModuleEntity(project: Project): ModuleEntity? = getModule(project)?.moduleEntity
 
-val Module.moduleEntity: ModuleEntity?
-  @InternalApi
+internal val Module.moduleEntity: ModuleEntity?
   get() {
     val bridge = this as? ModuleBridge ?: return null
     return bridge.findModuleEntity(bridge.entityStorage.current)
   }
 
-@InternalApi
-fun BuildTarget.getModule(project: Project): Module? {
+internal fun BuildTarget.getModule(project: Project): Module? {
   val moduleName = this.id.formatAsModuleName(project)
   return ModuleManager.getInstance(project).findModuleByName(moduleName)
 }

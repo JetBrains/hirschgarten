@@ -5,7 +5,7 @@ import com.intellij.openapi.ui.playback.commands.PlaybackCommandCoroutineAdapter
 import com.intellij.openapi.vfs.readText
 import org.jetbrains.bazel.config.rootDir
 
-class AssertFileContentsEqualCommand(text: String, line: Int) : PlaybackCommandCoroutineAdapter(text, line) {
+internal class AssertFileContentsEqualCommand(text: String, line: Int) : PlaybackCommandCoroutineAdapter(text, line) {
   companion object {
     const val PREFIX = CMD_PREFIX + "assertFileContentsEqual"
   }

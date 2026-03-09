@@ -28,7 +28,7 @@ import org.jetbrains.concurrency.AsyncPromise
 import org.jetbrains.concurrency.Promise
 import java.net.ServerSocket
 
-class PythonBspDebugRunner : PyDebugRunner() {
+internal class PythonBspDebugRunner : PyDebugRunner() {
   override fun getRunnerId(): String = RUNNER_ID
 
   override fun canRun(executorId: String, profile: RunProfile): Boolean =

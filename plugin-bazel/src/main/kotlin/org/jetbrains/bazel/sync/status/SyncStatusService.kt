@@ -4,14 +4,10 @@ import com.intellij.openapi.components.Service
 import com.intellij.openapi.project.Project
 import java.util.concurrent.atomic.AtomicBoolean
 
-class SyncAlreadyInProgressException : IllegalStateException()
-
-class SyncFatalFailureException : IllegalStateException()
-
-class SyncPartialFailureException : IllegalStateException()
+internal class SyncAlreadyInProgressException : IllegalStateException()
 
 @Service(Service.Level.PROJECT)
-class SyncStatusService(private val project: Project) {
+internal class SyncStatusService(private val project: Project) {
   @Volatile
   private var isCanceled = false
 
@@ -41,4 +37,4 @@ class SyncStatusService(private val project: Project) {
   }
 }
 
-fun Project.isSyncInProgress() = SyncStatusService.getInstance(this).isSyncInProgress
+fun Project.isSyncInProgress(): Boolean = SyncStatusService.getInstance(this).isSyncInProgress

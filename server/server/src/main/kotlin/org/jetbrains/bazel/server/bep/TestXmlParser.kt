@@ -7,6 +7,7 @@ import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlRootElement
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlText
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
+import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.logger.BspClientTestNotifier
 import org.jetbrains.bsp.protocol.JUnitStyleTestCaseData
 import org.jetbrains.bsp.protocol.JUnitStyleTestSuiteData
@@ -17,13 +18,13 @@ import java.util.UUID
 import kotlin.io.path.readText
 
 @JacksonXmlRootElement(localName = "testsuites")
-data class TestSuites(
+internal data class TestSuites(
   @JacksonXmlElementWrapper(useWrapping = false)
   @JacksonXmlProperty(localName = "testsuite")
   val testsuite: List<TestSuite> = emptyList(),
 )
 
-data class TestSuite(
+internal data class TestSuite(
   // Individual test cases are grouped within a suite.
   @JacksonXmlProperty(isAttribute = true)
   val name: String,
@@ -53,7 +54,7 @@ data class TestSuite(
   val properties: Any? = null,
 )
 
-data class TestCase(
+internal data class TestCase(
   // Name of the test case, typically method name.
   @JacksonXmlProperty(isAttribute = true)
   val name: String,
@@ -74,7 +75,7 @@ data class TestCase(
 
 // This is a regular class due to limitations deserializing plain xml tag contents.
 // https://github.com/FasterXML/jackson-dataformat-xml/issues/615
-class TestResultDetail {
+internal class TestResultDetail {
   // Shortened error message, as provided by the test framework.
   @JacksonXmlProperty(isAttribute = true)
   var message: String? = null
@@ -90,6 +91,7 @@ class TestResultDetail {
   var content: String? = null
 }
 
+@ApiStatus.Internal
 class TestXmlParser(private var bspClientTestNotifier: BspClientTestNotifier) {
   private val fallbackTestXmlParser = FallbackTestXmlParser(bspClientTestNotifier)
 

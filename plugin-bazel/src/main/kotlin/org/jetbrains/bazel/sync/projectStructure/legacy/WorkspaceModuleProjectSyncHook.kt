@@ -15,10 +15,9 @@ import com.intellij.platform.workspace.jps.entities.SourceRootEntity
 import com.intellij.platform.workspace.jps.entities.SourceRootTypeId
 import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.sync.ProjectSyncHook
-import org.jetbrains.bazel.sync.projectStructure.workspaceModel.workspaceModelDiff
 import org.jetbrains.bazel.workspacemodel.entities.BazelModuleEntitySource
 
-class WorkspaceModuleProjectSyncHook : ProjectSyncHook {
+internal class WorkspaceModuleProjectSyncHook : ProjectSyncHook {
   /**
    * this sync hook is enabled by default, but the real check whether to run this is in the [onSync] function.
    * the reason why this workaround exists is for some logic depending on [ProjectSyncHook.ProjectSyncHookEnvironment] to work.
@@ -60,8 +59,7 @@ class WorkspaceModuleProjectSyncHook : ProjectSyncHook {
         this.contentRoots = listOf(contentRootEntity)
       }
 
-    environment.diff.workspaceModelDiff.mutableEntityStorage
-      .addEntity(moduleEntity)
+    environment.diff.addEntity(moduleEntity)
   }
 
   interface EnableWorkspaceModuleSyncHookExtension {

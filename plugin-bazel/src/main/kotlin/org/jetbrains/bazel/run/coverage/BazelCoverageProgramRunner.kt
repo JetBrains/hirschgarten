@@ -20,7 +20,7 @@ import kotlin.io.path.createParentDirectories
 
 private const val RUNNER_ID = "BazelCoverageProgramRunner"
 
-class BazelCoverageProgramRunner : GenericProgramRunner<RunnerSettings>() {
+internal class BazelCoverageProgramRunner : GenericProgramRunner<RunnerSettings>() {
   override fun getRunnerId(): String = RUNNER_ID
 
   override fun canRun(executorId: String, profile: RunProfile): Boolean {

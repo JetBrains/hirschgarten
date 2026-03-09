@@ -11,7 +11,7 @@ import org.jetbrains.bazel.server.connection.connection
 import org.jetbrains.bazel.sync.ProjectSyncHook
 import org.jetbrains.bsp.protocol.JvmToolchainInfo
 
-class ToolchainInfoSyncHook : ProjectSyncHook {
+internal class ToolchainInfoSyncHook : ProjectSyncHook {
   override fun isEnabled(project: Project): Boolean = BazelFeatureFlags.fastBuildEnabled
 
   override suspend fun onSync(environment: ProjectSyncHook.ProjectSyncHookEnvironment) {

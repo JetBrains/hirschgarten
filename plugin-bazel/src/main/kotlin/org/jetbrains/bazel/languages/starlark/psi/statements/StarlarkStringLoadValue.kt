@@ -7,7 +7,7 @@ import org.jetbrains.bazel.languages.starlark.psi.StarlarkElementVisitor
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkStringLiteralExpression
 import javax.swing.Icon
 
-class StarlarkStringLoadValue(node: ASTNode) :
+internal class StarlarkStringLoadValue(node: ASTNode) :
   StarlarkBaseElement(node),
   StarlarkLoadValue {
   override fun acceptVisitor(visitor: StarlarkElementVisitor) = visitor.visitStringLoadValue(this)

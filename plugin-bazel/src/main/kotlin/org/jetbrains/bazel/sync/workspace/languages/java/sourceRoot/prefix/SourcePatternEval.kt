@@ -1,9 +1,11 @@
 package org.jetbrains.bazel.sync.workspace.languages.java.sourceRoot.prefix
 
+import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bsp.protocol.SourceItem
 import java.nio.file.Path
 import kotlin.io.path.relativeTo
 
+@ApiStatus.Internal
 object SourcePatternEval {
   data class PatternEvalResult<T>(val included: List<T>, val excluded: List<T>)
 
@@ -41,7 +43,7 @@ object SourcePatternEval {
     excludes: List<(item: T) -> Boolean>,
   ): PatternEvalResult<T> = eval(items, { it }, includes, excludes)
 
-  fun evalSources(
+  internal fun evalSources(
     workspaceRoot: Path,
     sources: List<SourceItem>,
     includes: List<SourceRootPattern>,

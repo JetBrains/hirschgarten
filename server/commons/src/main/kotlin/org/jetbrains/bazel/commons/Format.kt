@@ -1,11 +1,13 @@
 package org.jetbrains.bazel.commons
 
+import org.jetbrains.annotations.ApiStatus
 import java.text.DecimalFormat
 import java.text.DecimalFormatSymbols
 import java.time.Duration
 import java.util.Locale
 import kotlin.math.roundToInt
 
+@ApiStatus.Internal
 object Format {
   fun duration(duration: Duration): String {
     if (duration.toSeconds() == 0L) {

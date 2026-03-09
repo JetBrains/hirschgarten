@@ -11,7 +11,7 @@ import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkCallExpres
 import org.jetbrains.bazel.languages.starlark.psi.expressions.arguments.StarlarkNamedArgumentExpression
 
 @Suppress("UnstableApiUsage")
-class BazelGlobalFunctionArgumentReference(val element: StarlarkNamedArgumentExpression) : PsiSymbolReference {
+internal class BazelGlobalFunctionArgumentReference(val element: StarlarkNamedArgumentExpression) : PsiSymbolReference {
   val textRange = element.getNameNode()?.textRange?.shiftLeft(element.startOffset)!!
 
   override fun getElement(): PsiElement = element

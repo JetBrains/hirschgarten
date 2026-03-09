@@ -12,13 +12,13 @@ import java.io.IOException
 import java.nio.file.Path
 import kotlin.io.path.reader
 
-class TargetInfoReader(private val taskLogger: BazelTaskLogger?) {
+internal class TargetInfoReader(private val taskLogger: BazelTaskLogger?) {
   suspend fun readTargetMapFromAspectOutputs(files: Set<Path>): Map<Label, TargetInfo> =
     withContext(Dispatchers.Default) {
       files.map { file -> async { readFromFile(file) } }.awaitAll()
     }.asSequence()
       .filterNotNull()
-      .groupBy { it.id }
+      .groupBy { it.key.label }
       // If any aspect has already been run on the build graph, it created shadow graph
       // containing new nodes of the same labels as the original ones. In particular,
       // this happens for all protobuf targets, for which a built-in aspect "bazel_java_proto_aspect"

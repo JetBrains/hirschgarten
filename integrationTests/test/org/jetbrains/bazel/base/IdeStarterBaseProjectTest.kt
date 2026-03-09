@@ -2,9 +2,12 @@ package org.jetbrains.bazel.ideStarter
 
 import com.intellij.driver.client.Driver
 import com.intellij.driver.client.Remote
+import com.intellij.driver.client.service
 import com.intellij.driver.client.utility
+import com.intellij.driver.model.RdTarget
 import com.intellij.ide.starter.driver.engine.BackgroundRun
 import com.intellij.driver.sdk.Project
+import com.intellij.driver.sdk.ProjectManager
 import com.intellij.driver.sdk.VirtualFile
 import com.intellij.driver.sdk.openEditor
 import com.intellij.driver.sdk.singleProject
@@ -28,6 +31,7 @@ import com.intellij.ide.starter.project.LocalProjectInfo
 import com.intellij.ide.starter.project.ProjectInfoSpec
 import com.intellij.ide.starter.runner.Starter
 import com.intellij.openapi.ui.playback.commands.AbstractCommand.CMD_PREFIX
+import com.intellij.testFramework.common.timeoutRunBlocking
 import com.intellij.tools.ide.performanceTesting.commands.CommandChain
 import com.intellij.tools.ide.performanceTesting.commands.assertCaretPosition
 import com.intellij.tools.ide.performanceTesting.commands.assertCurrentFile
@@ -48,6 +52,7 @@ import org.kodein.di.bindSingleton
 import java.io.File
 import java.net.URI
 import java.nio.file.Path
+import java.util.function.Predicate
 import kotlin.io.path.ExperimentalPathApi
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
@@ -119,7 +124,7 @@ abstract class IdeStarterBaseProjectTest {
   }
 
   @AfterEach
-  fun tearDown() {
+  fun tearDown(): Unit = timeoutRunBlocking {
     killBazelProcesses()
     killCefProcesses()
   }
@@ -157,12 +162,12 @@ abstract class IdeStarterBaseProjectTest {
   }
 
   companion object {
-    fun killBazelProcesses() {
+    suspend fun killBazelProcesses() {
       try {
         // Kill Bazel server Java processes started for the test workspace
         findAndKillProcesses(
           message = "Killing Bazel server processes",
-          filter = java.util.function.Predicate { p ->
+          filter = Predicate { p ->
             val hasServerJar = p.arguments.any { arg ->
               arg.contains("A-server.jar") || arg.endsWith("/server.jar") || arg.endsWith("\\server.jar") || arg.endsWith("-server.jar")
             }
@@ -177,7 +182,7 @@ abstract class IdeStarterBaseProjectTest {
       }
     }
 
-    fun killCefProcesses() {
+    suspend fun killCefProcesses() {
       try {
         val cefProcesses = getProcessList(java.util.function.Predicate { p ->
           p.name.contains("cef_server") &&
@@ -279,6 +284,10 @@ fun IDETestContext.withBazelFeatureFlag(flag: String) = this.applyVMOptionsPatch
   addSystemProperty(flag, "true")
 }
 
+fun Driver.singleProjectOrNull(): Project? = service<ProjectManager>(RdTarget.DEFAULT)
+  .getOpenProjects()
+  .singleOrNull()
+
 /**
  * Should be used instead of [com.intellij.driver.sdk.openFile] because this method doesn't rely on content roots
  */
@@ -308,9 +317,10 @@ interface BazelProjectPropertiesKt {
 fun UiComponent.assertSyncSucceeded() {
   val buildView = x { byType("com.intellij.build.BuildView") }
   val syncSuccessText = BazelPluginBundle.message("console.task.sync.success")
-  assert(
-    buildView.getAllTexts().any { it.text.contains(syncSuccessText) },
-  ) { "Build view does not contain sync success text ('$syncSuccessText')" }
+  val allTexts = buildView.getAllTexts().map { it.text }
+  if (allTexts.none { it.contains(syncSuccessText) }) {
+    error("Build view does not contain sync success text ('$syncSuccessText'):\n${allTexts.joinToString("\n")}")
+  }
 }
 
 fun <T : CommandChain> T.assertSyncedTargets(vararg targets: String): T {

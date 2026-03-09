@@ -4,7 +4,7 @@ import com.intellij.extapi.psi.ASTWrapperPsiElement
 import com.intellij.lang.ASTNode
 import com.intellij.psi.PsiElementVisitor
 
-abstract class BazelQueryBaseElement(node: ASTNode) :
+internal abstract class BazelQueryBaseElement(node: ASTNode) :
   ASTWrapperPsiElement(node),
   BazelQueryElement {
   override fun accept(visitor: PsiElementVisitor) {

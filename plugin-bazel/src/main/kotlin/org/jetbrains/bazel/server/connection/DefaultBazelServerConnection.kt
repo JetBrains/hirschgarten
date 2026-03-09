@@ -1,7 +1,7 @@
 package org.jetbrains.bazel.server.connection
 
-import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
+import java.util.concurrent.atomic.AtomicReference
 import org.jetbrains.bazel.bazelrunner.BazelInfoResolver
 import org.jetbrains.bazel.bazelrunner.BazelProcessLauncherProvider
 import org.jetbrains.bazel.bazelrunner.BazelRunner
@@ -9,7 +9,8 @@ import org.jetbrains.bazel.commons.BazelPathsResolver
 import org.jetbrains.bazel.config.FeatureFlagsProvider
 import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.install.EnvironmentCreator
-import org.jetbrains.bazel.languages.bazelversion.service.BazelVersionCheckerService
+import org.jetbrains.bazel.languages.bazelversion.psi.BazelVersionLiteral
+import org.jetbrains.bazel.languages.bazelversion.service.BazelVersionWorkspaceResolver
 import org.jetbrains.bazel.languages.projectview.ProjectViewService
 import org.jetbrains.bazel.languages.projectview.ProjectViewToWorkspaceContextConverter
 import org.jetbrains.bazel.server.bsp.BaselServerFacadeImpl
@@ -21,19 +22,21 @@ import org.jetbrains.bazel.server.bsp.utils.InternalAspectsResolver
 import org.jetbrains.bazel.server.sync.BazelSyncProjectProvider
 import org.jetbrains.bazel.server.sync.BspProjectMapper
 import org.jetbrains.bazel.server.sync.ExecuteService
-import org.jetbrains.bazel.server.sync.ProjectResolver
 import org.jetbrains.bazel.server.sync.firstPhase.FirstPhaseProjectResolver
+import org.jetbrains.bazel.server.sync.ProjectResolver
 import org.jetbrains.bazel.taskEvents.BazelTaskEventsService
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bsp.protocol.BazelServerFacade
-import java.util.concurrent.atomic.AtomicReference
 
-class DefaultBazelServerConnection(private val project: Project) : BazelServerConnection {
+internal class DefaultBazelServerConnection(private val project: Project) : BazelServerConnection {
   private val workspaceRoot = project.rootDir.toNioPath()
   private val environmentCreator = EnvironmentCreator(workspaceRoot).also {
     it.create()
   }
-  private val server = AtomicReference<BaselServerFacadeImpl?>(null)
+
+  data class ServerWithVersionLiteral(val server: BaselServerFacadeImpl?, val versionLiteral: BazelVersionLiteral?)
+
+  private val serverAndVersionLiteral = AtomicReference<ServerWithVersionLiteral>(ServerWithVersionLiteral(null, null))
 
   override suspend fun <T> runWithServer(task: suspend (server: BazelServerFacade) -> T): T {
     return task(getServer())
@@ -47,13 +50,17 @@ class DefaultBazelServerConnection(private val project: Project) : BazelServerCo
       projectView = ProjectViewService.getInstance(project).getProjectView(),
       workspaceRoot = project.rootDir.toNioPath(),
     )
-    val bazelVersionUpdated = project.service<BazelVersionCheckerService>().updateCurrentVersion()
-    var server = this.server.get()
+
+    var (server, oldVersionLiteral) = this.serverAndVersionLiteral.get()
+    val projectPath = project.rootDir.toNioPath()
+    val resolvedVersion = BazelVersionWorkspaceResolver.resolveBazelVersionFromWorkspace(projectPath)
+    val bazelVersionUpdated = oldVersionLiteral != resolvedVersion
+
     if (server == null ||
         bazelVersionUpdated ||
         server.workspaceContext != workspaceContext) {
       server = createServer(workspaceContext)
-      this.server.set(server)
+      this.serverAndVersionLiteral.set(ServerWithVersionLiteral(server, resolvedVersion))
     }
     return server
   }

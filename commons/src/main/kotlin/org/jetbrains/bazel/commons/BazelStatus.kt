@@ -1,5 +1,7 @@
 package org.jetbrains.bazel.commons
 
+import org.jetbrains.annotations.ApiStatus
+
 // https://bazel.build/run/scripts#exit-codes
 private const val SUCCESS_EXIT_CODE = 0
 private const val BUILD_ERROR_EXIT_CODE = 1
@@ -10,6 +12,7 @@ private const val OOM_EXIT_CODE = 33
 // specific code for bazel sync
 private const val PARTIALLY_SUCCESS_WITH_KEEP_GOING = 3
 
+@ApiStatus.Internal
 enum class BazelStatus {
   SUCCESS,
   BAD_COMMAND_LINE_ARGUMENTS,

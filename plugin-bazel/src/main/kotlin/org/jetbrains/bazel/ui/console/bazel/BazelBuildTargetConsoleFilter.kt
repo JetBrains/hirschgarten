@@ -5,11 +5,13 @@ import com.intellij.execution.filters.Filter
 import com.intellij.execution.filters.OpenFileHyperlinkInfo
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiDocumentManager
+import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.config.isBazelProject
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.label.ResolvedLabel
 import org.jetbrains.bazel.languages.starlark.references.resolveLabel
 
+@ApiStatus.Internal
 class BazelBuildTargetConsoleFilter(private val project: Project) : Filter {
   private val highlightGroupName = "highlightGroup"
 
@@ -45,7 +47,7 @@ class BazelBuildTargetConsoleFilter(private val project: Project) : Filter {
   }
 }
 
-class BazelBuildTargetConsoleFilterProvider : ConsoleFilterProvider {
+internal class BazelBuildTargetConsoleFilterProvider : ConsoleFilterProvider {
   override fun getDefaultFilters(project: Project): Array<out Filter> =
     if (project.isBazelProject) arrayOf(BazelBuildTargetConsoleFilter(project)) else emptyArray()
 }

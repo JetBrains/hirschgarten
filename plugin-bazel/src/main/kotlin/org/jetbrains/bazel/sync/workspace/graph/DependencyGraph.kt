@@ -1,9 +1,11 @@
 package org.jetbrains.bazel.sync.workspace.graph
 
+import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.info.BspTargetInfo
 import org.jetbrains.bazel.label.Label
 import java.util.PriorityQueue
 
+@ApiStatus.Internal
 class DependencyGraph(
   private val rootTargets: Set<Label> = emptySet(),
   private val idToTargetInfo: Map<Label, BspTargetInfo.TargetInfo> = emptyMap(),
@@ -180,7 +182,8 @@ class DependencyGraph(
 
   private fun getDependencies(dependencies: List<BspTargetInfo.Dependency>): Set<Label> =
     dependencies
-      .map(BspTargetInfo.Dependency::getId)
+      .map(BspTargetInfo.Dependency::getTarget)
+      .map(BspTargetInfo.TargetKey::getLabel)
       .map(Label::parse)
       .toSet()
 

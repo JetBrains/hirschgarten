@@ -14,18 +14,20 @@ import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiFile
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.config.isBazelProject
 import org.jetbrains.bazel.coroutines.BazelCoroutineService
 import javax.swing.Icon
 
 private val log = logger<SuspendableAction>()
 
-suspend fun saveAllFiles() {
+internal suspend fun saveAllFiles() {
   withContext(Dispatchers.EDT) {
     FileDocumentManager.getInstance().saveAllDocuments()
   }
 }
 
+@ApiStatus.Internal
 abstract class SuspendableAction(text: () -> String, icon: Icon? = null) :
   AnAction(text, icon),
   DumbAware {
@@ -74,6 +76,6 @@ abstract class SuspendableAction(text: () -> String, icon: Icon? = null) :
   override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.BGT
 }
 
-fun AnActionEvent.getPsiFile(): PsiFile? = CommonDataKeys.PSI_FILE.getData(dataContext)
+internal fun AnActionEvent.getPsiFile(): PsiFile? = CommonDataKeys.PSI_FILE.getData(dataContext)
 
-fun AnActionEvent.getEditor(): Editor? = CommonDataKeys.EDITOR.getData(dataContext)
+internal fun AnActionEvent.getEditor(): Editor? = CommonDataKeys.EDITOR.getData(dataContext)

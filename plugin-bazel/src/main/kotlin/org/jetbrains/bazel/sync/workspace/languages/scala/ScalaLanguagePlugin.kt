@@ -1,6 +1,7 @@
 package org.jetbrains.bazel.sync.workspace.languages.scala
 
 import com.intellij.openapi.project.Project
+import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.commons.BazelPathsResolver
 import org.jetbrains.bazel.commons.LanguageClass
 import org.jetbrains.bazel.info.BspTargetInfo
@@ -17,14 +18,15 @@ import org.jetbrains.bsp.protocol.ScalaBuildTarget
 import org.jetbrains.bsp.protocol.SourceItem
 import java.nio.file.Path
 
+@ApiStatus.Internal
 class ScalaLanguagePlugin(
   private val javaLanguagePlugin: JavaLanguagePlugin,
   private val bazelPathsResolver: BazelPathsResolver,
   private val packageResolver: JvmPackageResolver = DefaultJvmPackageResolver(),
 ) : LanguagePlugin<ScalaBuildTarget>,
   JVMPackagePrefixResolver {
-  var scalaSdks: Map<Label, ScalaSdk> = emptyMap()
-  var scalaTestJars: Map<Label, Set<Path>> = emptyMap()
+  internal var scalaSdks: Map<Label, ScalaSdk> = emptyMap()
+  internal var scalaTestJars: Map<Label, Set<Path>> = emptyMap()
 
   override fun prepareSync(project: Project, targets: Map<Label, BspTargetInfo.TargetInfo>, workspaceContext: WorkspaceContext) {
     scalaSdks =

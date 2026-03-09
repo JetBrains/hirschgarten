@@ -10,7 +10,7 @@ import org.jetbrains.bazel.languages.bazelrc.BazelrcLanguage
 
 private const val DUMMY_FILENAME = "dummy.bazelrc"
 
-class BazelrcElementGenerator(val project: Project) {
+internal class BazelrcElementGenerator(val project: Project) {
   private fun createDummyFile(contents: String): BazelrcFile {
     val factory = PsiFileFactory.getInstance(project)
     val virtualFile = LightVirtualFile(DUMMY_FILENAME, BazelrcFileType, contents)

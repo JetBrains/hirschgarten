@@ -11,7 +11,7 @@ import org.jetbrains.bazel.languages.starlark.repomapping.toShortString
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.JvmEnvironmentItem
 
-class TestWithLocalJvmRunnerAction(
+internal class TestWithLocalJvmRunnerAction(
   project: Project,
   targetInfo: BuildTarget,
   text: (() -> String)? = null,
@@ -62,7 +62,7 @@ class TestWithLocalJvmRunnerAction(
     }
 }
 
-interface LocalJvmRunnerRunConfigurationProvider {
+internal interface LocalJvmRunnerRunConfigurationProvider {
   fun provideRunConfiguration(
     configurationName: String,
     environment: JvmEnvironmentItem,

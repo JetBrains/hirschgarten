@@ -2,6 +2,7 @@ package org.jetbrains.bazel.sync.workspace.languages
 
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.diagnostic.logger
+import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.commons.BazelPathsResolver
 import org.jetbrains.bazel.commons.LanguageClass
 import org.jetbrains.bazel.sync.workspace.languages.go.GoLanguagePlugin
@@ -12,11 +13,13 @@ import org.jetbrains.bazel.sync.workspace.languages.protobuf.ProtobufLanguagePlu
 import org.jetbrains.bazel.sync.workspace.languages.python.PythonLanguagePlugin
 import org.jetbrains.bazel.sync.workspace.languages.scala.ScalaLanguagePlugin
 import org.jetbrains.bazel.sync.workspace.languages.thrift.ThriftLanguagePlugin
+import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 
 @Service(Service.Level.PROJECT)
+@ApiStatus.Internal
 class LanguagePluginsService {
   val logger = logger<LanguagePluginsService>()
-  val registry: MutableMap<LanguageClass, LanguagePlugin<*>> = mutableMapOf()
+  private val registry: MutableMap<LanguageClass, LanguagePlugin<*>> = mutableMapOf()
 
   // target data can have only one language data
   // jvm language plugins include base JavaInfo into their model BUT you have to call their plugin first
@@ -35,14 +38,14 @@ class LanguagePluginsService {
   val all
     get() = registry.values.toList()
 
-  fun registerDefaultPlugins(bazelPathsResolver: BazelPathsResolver, jvmPackageResolver: JvmPackageResolver) {
+  fun registerDefaultPlugins(bazelPathsResolver: BazelPathsResolver, jvmPackageResolver: JvmPackageResolver, workspaceContext: WorkspaceContext) {
     val javaPlugin =
       JavaLanguagePlugin(bazelPathsResolver, JdkResolver(bazelPathsResolver), jvmPackageResolver)
         .also(this::registerLangaugePlugin)
     KotlinLanguagePlugin(javaPlugin, bazelPathsResolver).also(this::registerLangaugePlugin)
     ScalaLanguagePlugin(javaPlugin, bazelPathsResolver, jvmPackageResolver).also(this::registerLangaugePlugin)
     GoLanguagePlugin(bazelPathsResolver).also(this::registerLangaugePlugin)
-    PythonLanguagePlugin(bazelPathsResolver).also(this::registerLangaugePlugin)
+    PythonLanguagePlugin(bazelPathsResolver, workspaceContext).also(this::registerLangaugePlugin)
     ThriftLanguagePlugin().also(this::registerLangaugePlugin)
     ProtobufLanguagePlugin(javaPlugin).also(this::registerLangaugePlugin)
   }

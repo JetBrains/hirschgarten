@@ -32,6 +32,7 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
+import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.annotations.VisibleForTesting
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.config.isBazelProject
@@ -48,6 +49,7 @@ import org.jetbrains.bazel.target.TargetUtils
 import org.jetbrains.bazel.target.moduleEntity
 import org.jetbrains.bazel.target.targetUtils
 import org.jetbrains.bazel.taskEvents.BazelTaskEventsService
+import org.jetbrains.bazel.ui.console.ShowConsole
 import org.jetbrains.bazel.ui.console.TaskConsole
 import org.jetbrains.bazel.ui.console.syncConsole
 import org.jetbrains.bsp.protocol.InverseSourcesParams
@@ -61,6 +63,7 @@ import kotlin.random.Random
 import kotlin.time.Duration.Companion.milliseconds
 
 @Suppress("UnstableApiUsage")
+@ApiStatus.Internal
 class BazelFileEventListener : BulkFileListenerBackgroundable {
   override fun after(events: MutableList<out VFileEvent>) {
     // unit tests trigger file event listeners normally, making them hard to test unless that is disabled
@@ -130,7 +133,7 @@ class BazelFileEventListener : BulkFileListenerBackgroundable {
       taskId = taskId,
       title = BazelPluginBundle.message("file.change.processing.title.multiple"),
       message = BazelPluginBundle.message("file.change.processing.message.start"),
-      showConsole = TaskConsole.ShowConsole.ON_FAIL,
+      showConsole = ShowConsole.ON_FAIL,
       cancelAction = { processingJob.cancel() },
     )
     val taskListener = BazelBuildTaskListener(syncConsole)

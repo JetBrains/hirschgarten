@@ -1,4 +1,4 @@
-package org.jetbrains.bazel.sync.projectStructure.workspaceModel
+package org.jetbrains.bazel.sync.projectStructure
 
 import com.intellij.openapi.components.serviceAsync
 import com.intellij.openapi.project.Project
@@ -8,12 +8,10 @@ import com.intellij.platform.diagnostic.telemetry.helpers.useWithScope
 import com.intellij.platform.workspace.storage.EntitySource
 import com.intellij.platform.workspace.storage.MutableEntityStorage
 import com.intellij.workspaceModel.ide.impl.WorkspaceModelImpl
+import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.magicmetamodel.formatAsModuleName
 import org.jetbrains.bazel.performance.bspTracer
-import org.jetbrains.bazel.sync.projectStructure.AllProjectStructuresDiff
-import org.jetbrains.bazel.sync.projectStructure.ProjectStructureDiff
-import org.jetbrains.bazel.sync.projectStructure.ProjectStructureProvider
 import org.jetbrains.bazel.sync.scope.FullProjectSync
 import org.jetbrains.bazel.sync.scope.PartialProjectSync
 import org.jetbrains.bazel.sync.scope.ProjectSyncScope
@@ -23,34 +21,31 @@ import org.jetbrains.bazel.workspacemodel.entities.BazelEntitySource
 import org.jetbrains.bazel.workspacemodel.entities.BazelModuleEntitySource
 import org.jetbrains.bsp.protocol.TaskId
 
-private const val MAX_REPLACE_WSM_ATTEMPTS = 3
-
-class WorkspaceModelProjectStructureDiff(val mutableEntityStorage: MutableEntityStorage) : ProjectStructureDiff {
-  private val postApplyActions = mutableListOf<suspend () -> Unit>()
-
-  fun addPostApplyAction(action: suspend () -> Unit) {
-    postApplyActions.add(action)
+internal class ProjectModelApplicatonTask(
+  private val project: Project,
+  private val scope: ProjectSyncScope,
+  private val taskId: TaskId,
+  private val postActions: List<suspend () -> Unit>,
+) {
+  companion object {
+    private const val MAX_REPLACE_WSM_ATTEMPTS = 3
   }
 
-  override suspend fun apply(
-    project: Project,
-    syncScope: ProjectSyncScope,
-    taskId: TaskId,
-  ) {
+  suspend fun apply(storage: MutableEntityStorage) {
     val sourceFilter: (EntitySource) -> Boolean =
-      when (syncScope) {
+      when (scope) {
         is FullProjectSync -> { entitySource -> entitySource is BazelEntitySource }
         is PartialProjectSync -> {
           val moduleNames =
             lazy {
-              syncScope.targetsToSync
+              scope.targetsToSync
                 .map { it.formatAsModuleName(project) }
             }
 
           object : (EntitySource) -> Boolean {
             override fun invoke(entitySource: EntitySource): Boolean =
               entitySource is BazelModuleEntitySource &&
-                entitySource.moduleName in moduleNames.value
+              entitySource.moduleName in moduleNames.value
           }
         }
       }
@@ -58,14 +53,14 @@ class WorkspaceModelProjectStructureDiff(val mutableEntityStorage: MutableEntity
     fun MutableEntityStorage.replaceBySource() {
       replaceBySource(
         sourceFilter = sourceFilter,
-        replaceWith = mutableEntityStorage,
+        replaceWith = storage,
       )
     }
 
     project.syncConsole.withSubtask(
       subtaskId = taskId.subTask("apply-changes-on-workspace-model"),
       message = BazelPluginBundle.message("console.task.model.apply.changes"),
-    ) { subtaskId ->
+    ) {
       bspTracer.spanBuilder("apply.changes.on.workspace.model.ms").useWithScope {
         val workspaceModel = project.serviceAsync<WorkspaceModel>() as WorkspaceModelImpl
         workspaceModel.updateWithRetry(
@@ -79,14 +74,6 @@ class WorkspaceModelProjectStructureDiff(val mutableEntityStorage: MutableEntity
       }
     }
 
-    postApplyActions.forEach { it() }
+    postActions.forEach { it() }
   }
-}
-
-val AllProjectStructuresDiff.workspaceModelDiff: WorkspaceModelProjectStructureDiff
-  get() = diffOfType(WorkspaceModelProjectStructureDiff::class.java)
-
-class WorkspaceModelProjectStructureProvider : ProjectStructureProvider<WorkspaceModelProjectStructureDiff> {
-  override fun newDiff(project: Project): WorkspaceModelProjectStructureDiff =
-    WorkspaceModelProjectStructureDiff(MutableEntityStorage.create())
 }

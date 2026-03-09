@@ -5,7 +5,7 @@ import com.intellij.execution.configurations.RunProfile
 import com.intellij.execution.executors.DefaultDebugExecutor
 import org.jetbrains.bazel.run.config.BazelRunConfiguration
 
-public class IntellijPluginDebuggerRunner : GenericDebuggerRunner() {
+internal class IntellijPluginDebuggerRunner : GenericDebuggerRunner() {
   override fun getRunnerId(): String = "org.jetbrains.bazel.intellij.IntellijPluginDebuggerRunner"
 
   override fun canRun(executorId: String, profile: RunProfile): Boolean {

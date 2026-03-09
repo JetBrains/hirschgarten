@@ -33,6 +33,7 @@ import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiManager
 import com.intellij.util.Processor
 import one.util.streamex.StreamEx
+import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.commons.LanguageClass
 import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.golang.targetKinds.GoBazelRules
@@ -67,6 +68,7 @@ import kotlin.io.path.invariantSeparatorsPathString
  *
  * Exactly one [BazelGoPackage] per go rule.
  */
+@ApiStatus.Internal
 class BazelGoPackage : GoPackage {
   private val label: Label
   private val importPath: String
@@ -413,6 +415,7 @@ class BazelGoPackage : GoPackage {
  * In IDE Starter Test, this logic does not work properly, so it is disabled.
  */
 @VisibleForTesting
+@ApiStatus.Internal
 fun toRealFile(maybeExternal: Path): Path {
   if (TestUtils.isInIdeStarterTest()) return maybeExternal
   val externalString = maybeExternal.invariantSeparatorsPathString

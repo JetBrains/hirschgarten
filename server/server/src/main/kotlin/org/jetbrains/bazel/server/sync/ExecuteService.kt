@@ -46,7 +46,7 @@ import java.nio.file.Path
 import kotlin.coroutines.cancellation.CancellationException
 import kotlin.io.path.deleteExisting
 
-class ExecuteService(
+internal class ExecuteService(
   private val project: Project,
   private val workspaceRoot: Path,
   private val taskEventsHandler: BazelTaskEventsHandler,

@@ -6,7 +6,7 @@ import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.protobuf.lang.resolve.FileResolveProvider
 import com.intellij.psi.search.GlobalSearchScope
 
-class BazelProtobufFileResolveProvider : FileResolveProvider {
+internal class BazelProtobufFileResolveProvider : FileResolveProvider {
   override fun findFile(path: String, project: Project): VirtualFile? {
     if (!path.endsWith(".proto")) {
       return null

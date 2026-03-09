@@ -1,6 +1,6 @@
 package org.jetbrains.bazel.languages.bazelquery.functions
 
-sealed class BazelQueryFunction {
+internal sealed class BazelQueryFunction {
   abstract val name: String
   abstract val description: String
   abstract val arguments: List<StandardFunctionArgument>

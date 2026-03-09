@@ -5,7 +5,7 @@ import com.intellij.psi.PsiElement
 import org.jetbrains.bazel.languages.bazelquery.elements.BazelQueryTokenTypes
 import org.jetbrains.bazel.languages.bazelquery.references.BazelQueryFlagNameReference
 
-class BazelQueryFlag(node: ASTNode) : BazelQueryBaseElement(node) {
+internal class BazelQueryFlag(node: ASTNode) : BazelQueryBaseElement(node) {
   override fun acceptVisitor(visitor: BazelQueryElementVisitor) = visitor.visitFlag(this)
 
   val name: PsiElement?

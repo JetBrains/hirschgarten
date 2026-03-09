@@ -1,3 +1,3 @@
 package org.jetbrains.bsp.protocol
 
-data class DebugSessionAddress(val uri: String)
+internal data class DebugSessionAddress(val uri: String)

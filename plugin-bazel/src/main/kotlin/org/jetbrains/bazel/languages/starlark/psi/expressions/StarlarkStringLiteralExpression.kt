@@ -23,7 +23,7 @@ import org.jetbrains.bazel.languages.starlark.references.StarlarkVisibilityRefer
 import org.jetbrains.bazel.languages.starlark.utils.StarlarkQuote
 import javax.swing.Icon
 
-fun getCompletionLookupElemenent(
+internal fun getCompletionLookupElemenent(
   name: String,
   icon: Icon,
   priority: Double = 0.0,
@@ -60,7 +60,7 @@ fun getCompletionLookupElemenent(
     priority,
   )
 
-class StarlarkStringLiteralExpression(node: ASTNode) : StarlarkBaseElement(node) {
+internal class StarlarkStringLiteralExpression(node: ASTNode) : StarlarkBaseElement(node) {
   override fun acceptVisitor(visitor: StarlarkElementVisitor) = visitor.visitStringLiteralExpression(this)
 
   fun getStringContents(): String = getQuote().unwrap(text)

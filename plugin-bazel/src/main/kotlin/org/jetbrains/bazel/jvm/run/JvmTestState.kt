@@ -24,7 +24,7 @@ import org.jetbrains.bazel.run.state.addTestFilterFragment
 import org.jetbrains.bazel.run.state.bazelParamsFragment
 import org.jetbrains.bazel.run.state.programArgumentsFragment
 
-class JvmTestState(project: Project) :
+internal class JvmTestState(project: Project) :
   AbstractGenericTestState<JvmTestState>(),
   HasDebugPort,
   HasRunWithBazel {
@@ -34,12 +34,12 @@ class JvmTestState(project: Project) :
 
   @com.intellij.configurationStore.Property(description = "Run with Bazel")
   @get:Attribute("runWithBazel")
-  override var runWithBazel: Boolean by property(ProjectViewService.getInstance(project).getCachedProjectView().runConfigRunWithBazel)
+  override var runWithBazel: Boolean by property(ProjectViewService.getInstance(project).getProjectView().runConfigRunWithBazel)
 
   override fun getEditor(configuration: BazelRunConfiguration): SettingsEditor<JvmTestState> = JvmTestStateEditor(configuration)
 }
 
-class JvmTestStateEditor(private val config: BazelRunConfiguration) :
+internal class JvmTestStateEditor(private val config: BazelRunConfiguration) :
   FragmentedSettingsEditor<JvmTestState>(config.handler?.state as JvmTestState) {
   override fun createFragments(): Collection<SettingsEditorFragment<JvmTestState, *>> =
     SettingsEditorFragmentContainer.fragments {
@@ -53,11 +53,11 @@ class JvmTestStateEditor(private val config: BazelRunConfiguration) :
     }
 }
 
-interface HasDebugPort {
+internal interface HasDebugPort {
   var debugPort: Int
 }
 
-fun <C : HasDebugPort> SettingsEditorFragmentContainer<C>.addDebugPortFragment() =
+internal fun <C : HasDebugPort> SettingsEditorFragmentContainer<C>.addDebugPortFragment() =
   addLabeledSettingsEditorFragment(
     object : LabeledSettingsFragmentInfo {
       override val settingsActionHint: String? = null

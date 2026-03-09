@@ -9,7 +9,7 @@ private val bazelTagToTagMapping =
     "manual" to Tag.MANUAL,
   )
 
-class TargetTagsResolver {
+internal class TargetTagsResolver {
   fun resolveTags(targetInfo: BspTargetInfo.TargetInfo): Set<Tag> {
     val typeTags =
       when {

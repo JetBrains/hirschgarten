@@ -12,6 +12,7 @@ import com.intellij.platform.workspace.jps.entities.modifyModuleEntity
 import com.intellij.platform.workspace.storage.MutableEntityStorage
 import com.intellij.platform.workspace.storage.impl.url.toVirtualFileUrl
 import com.intellij.pom.java.LanguageLevel
+import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.jpsCompilation.utils.JpsPaths
 import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.scalaVersionToScalaSdkName
@@ -21,13 +22,14 @@ import org.jetbrains.bazel.workspacemodel.entities.Library
 import org.jetbrains.bazel.workspacemodel.entities.Module
 import java.nio.file.Path
 
+@ApiStatus.Internal
 class JavaModuleWithSourcesUpdater(
   private val workspaceModelEntityUpdaterConfig: WorkspaceModelEntityUpdaterConfig,
   private val projectBasePath: Path,
   moduleEntities: List<Module>,
   private val libraries: Map<String, Library>,
 ) : WorkspaceModelEntityWithoutParentModuleUpdater<JavaModule, ModuleEntity> {
-  val packageMarkerEntityUpdater =
+  private val packageMarkerEntityUpdater =
     PackageMarkerEntityUpdater(
       workspaceModelEntityUpdaterConfig,
       moduleEntities,
@@ -136,6 +138,7 @@ class JavaModuleWithSourcesUpdater(
   }
 }
 
+@ApiStatus.Internal
 class JavaModuleWithoutSourcesUpdater(
   private val workspaceModelEntityUpdaterConfig: WorkspaceModelEntityUpdaterConfig,
   private val libraries: Map<String, Library> = emptyMap(),
@@ -158,6 +161,7 @@ class JavaModuleWithoutSourcesUpdater(
       } ?: listOf()
 }
 
+@ApiStatus.Internal
 class JavaModuleUpdater(
   workspaceModelEntityUpdaterConfig: WorkspaceModelEntityUpdaterConfig,
   projectBasePath: Path,
@@ -198,7 +202,7 @@ class JavaModuleUpdater(
 }
 
 // TODO: should be removed, kotlin needs a separate sync hook: https://youtrack.jetbrains.com/issue/BAZEL-1885
-interface KotlinFacetEntityUpdater {
+internal interface KotlinFacetEntityUpdater {
   fun addEntity(
     diff: MutableEntityStorage,
     entityToAdd: JavaModule,

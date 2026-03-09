@@ -1,6 +1,7 @@
 package org.jetbrains.bazel.sync.workspace.mapper.phased
 
 import com.google.devtools.build.lib.query2.proto.proto2api.Build
+import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.commons.BazelPathsResolver
 import org.jetbrains.bazel.commons.Language
 import org.jetbrains.bazel.commons.LanguageClass
@@ -21,6 +22,7 @@ import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.label.assumeResolved
 import org.jetbrains.bazel.sync.workspace.BazelResolvedWorkspace
 import org.jetbrains.bazel.sync.workspace.languages.jvm.JVMLanguagePluginParser
+import org.jetbrains.bazel.sync.workspace.mapper.BazelResolvedWorkspaceBuilder
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bsp.protocol.BuildTargetTag
 import org.jetbrains.bsp.protocol.RawBuildTarget
@@ -30,6 +32,7 @@ import kotlin.io.path.Path
 import kotlin.io.path.exists
 import kotlin.io.path.isRegularFile
 
+@ApiStatus.Internal
 class PhasedBazelProjectMapper(private val bazelPathsResolver: BazelPathsResolver, private val workspaceContext: WorkspaceContext) {
   fun resolveWorkspace(context: PhasedBazelProjectMapperContext, project: PhasedBazelMappedProject): BazelResolvedWorkspace {
     val shouldSyncManualTargets = workspaceContext.allowManualTargetsSync
@@ -42,7 +45,7 @@ class PhasedBazelProjectMapper(private val bazelPathsResolver: BazelPathsResolve
         .filterNot { it.isNoIde }
         .map { it.toBspBuildTarget(context, project) }
         .toList()
-    return BazelResolvedWorkspace(
+    return BazelResolvedWorkspaceBuilder.build(
       targets = targets,
       libraries = emptyList(),
       hasError = project.hasError,

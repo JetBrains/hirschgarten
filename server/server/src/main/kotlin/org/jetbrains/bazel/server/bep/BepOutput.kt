@@ -4,7 +4,7 @@ import com.google.common.collect.Queues
 import org.jetbrains.bazel.label.Label
 import java.nio.file.Path
 
-class BepOutput(
+internal class BepOutput(
   private val outputGroups: Map<String, Set<String>> = emptyMap(),
   private val textProtoFileSets: Map<String, TextProtoDepSet> = emptyMap(),
   private val rootTargets: Set<Label> = emptySet(),

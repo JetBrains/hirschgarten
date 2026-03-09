@@ -11,7 +11,7 @@ import org.h2.mvstore.MVStore
 import java.nio.file.Path
 
 @Service(Service.Level.PROJECT)
-class BazelModuleRegistryService(private val project: Project) : Disposable {
+internal class BazelModuleRegistryService(private val project: Project) : Disposable {
   private val store: MVStore = openStore(project.getProjectDataPath("bzlmod/module-registry.mv"))
   private val map = store.openMap<String, String>("registry")
 

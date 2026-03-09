@@ -1,11 +1,13 @@
 package org.jetbrains.bazel.magicmetamodel
 
 import com.intellij.openapi.project.Project
+import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.extensionPoints.buildTargetClassifier.TreeTargetClassifier
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.utils.StringUtils
 
+@ApiStatus.Internal
 fun Label.formatAsModuleName(project: Project): String {
   val treeTargetClassifier = TreeTargetClassifier(project)
   val targetName = treeTargetClassifier.calculateBuildTargetName(this).sanitizeName()
@@ -35,7 +37,7 @@ private fun List<String>.shortenTargetPath(targetNameLength: Int = 0): List<Stri
     this
   }
 
-fun String.sanitizeName(): String = replaceDots().filterColon()
+internal fun String.sanitizeName(): String = replaceDots().filterColon()
 
 private fun String.replaceDots(): String = this.replace('.', '-')
 
@@ -44,7 +46,7 @@ private fun String.replaceDots(): String = this.replace('.', '-')
  */
 private fun String.filterColon(): String = this.replace(":", "")
 
-fun String.shortenTargetPath(): String =
+internal fun String.shortenTargetPath(): String =
   if (BazelFeatureFlags.isShortenModuleLibraryNamesEnabled) {
     split(".").shortenTargetPath().joinToString(".")
   } else {

@@ -9,6 +9,7 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeout
 import kotlinx.coroutines.yield
+import org.jetbrains.annotations.ApiStatus
 import java.io.InputStream
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
@@ -16,6 +17,7 @@ import kotlin.time.Duration.Companion.seconds
 /**
  * Handles reading messages from a delimited input source when the source is being simultaneously written to (by another process for example)
  */
+@ApiStatus.Internal
 class DelimitedMessageReader<MessageType : Message>(
   private val inputStream: InputStream,
   private val parser: Parser<MessageType>,

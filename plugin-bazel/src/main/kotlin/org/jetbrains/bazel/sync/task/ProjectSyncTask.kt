@@ -1,5 +1,6 @@
 package org.jetbrains.bazel.sync.task
 
+import com.intellij.build.events.MessageEvent
 import com.intellij.build.events.impl.FailureResultImpl
 import com.intellij.build.events.impl.SkippedResultImpl
 import com.intellij.build.events.impl.SuccessResultImpl
@@ -9,7 +10,6 @@ import com.intellij.ide.trustedProjects.TrustedProjects
 import com.intellij.openapi.application.EDT
 import com.intellij.openapi.application.writeAction
 import com.intellij.openapi.components.serviceAsync
-import com.intellij.openapi.diagnostic.fileLogger
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.UnindexedFilesScannerExecutor
@@ -19,18 +19,17 @@ import com.intellij.platform.diagnostic.telemetry.helpers.useWithScope
 import com.intellij.platform.ide.progress.withBackgroundProgress
 import com.intellij.platform.util.progress.SequentialProgressReporter
 import com.intellij.platform.util.progress.reportSequentialProgress
+import com.intellij.platform.workspace.storage.MutableEntityStorage
 import com.intellij.ui.treeStructure.ProjectViewUpdateCause
 import com.intellij.util.containers.forEachLoggingErrors
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.async
-import kotlinx.coroutines.cancel
 import kotlinx.coroutines.withContext
+import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.action.saveAllFiles
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.config.BazelPluginConstants
 import org.jetbrains.bazel.config.rootDir
+import org.jetbrains.bazel.coroutines.BazelCoroutineService
 import org.jetbrains.bazel.languages.projectview.ProjectViewService
 import org.jetbrains.bazel.performance.bspTracer
 import org.jetbrains.bazel.run.task.BazelBuildTaskListener
@@ -41,12 +40,10 @@ import org.jetbrains.bazel.sync.ProjectPreSyncHook
 import org.jetbrains.bazel.sync.ProjectSyncHook.ProjectSyncHookEnvironment
 import org.jetbrains.bazel.sync.projectPostSyncHooks
 import org.jetbrains.bazel.sync.projectPreSyncHooks
-import org.jetbrains.bazel.sync.projectStructure.AllProjectStructuresProvider
+import org.jetbrains.bazel.sync.projectStructure.ProjectModelApplicatonTask
 import org.jetbrains.bazel.sync.projectSyncHooks
 import org.jetbrains.bazel.sync.scope.ProjectSyncScope
 import org.jetbrains.bazel.sync.status.SyncAlreadyInProgressException
-import org.jetbrains.bazel.sync.status.SyncFatalFailureException
-import org.jetbrains.bazel.sync.status.SyncPartialFailureException
 import org.jetbrains.bazel.sync.status.SyncStatusService
 import org.jetbrains.bazel.sync.workspace.BazelWorkspaceResolveService
 import org.jetbrains.bazel.taskEvents.BazelTaskEventsService
@@ -54,44 +51,82 @@ import org.jetbrains.bazel.ui.console.syncConsole
 import org.jetbrains.bazel.ui.console.withSubtask
 import org.jetbrains.bsp.protocol.TaskGroupId
 import org.jetbrains.bsp.protocol.TaskId
-import java.util.UUID
 import java.util.concurrent.CancellationException
 import kotlin.random.Random
 
 private val log = logger<ProjectSyncTask>()
 
+@ApiStatus.Internal
 class ProjectSyncTask(private val project: Project) {
   suspend fun sync(syncScope: ProjectSyncScope, buildProject: Boolean) {
     if (TrustedProjects.isProjectTrusted(project)) {
       bspTracer.spanBuilder("bsp.sync.project.ms").setAttribute("project.name", project.name).useWithScope {
-        var syncAlreadyInProgress = false
         val syncConsole = project.syncConsole
         val taskId = TaskGroupId("sync-${project.name}-${Random.nextBytes(8).toHexString()}").task("project-sync")
+
+        try {
+          project.serviceAsync<SyncStatusService>().startSync()
+        }
+        catch (_: SyncAlreadyInProgressException) {
+          return@useWithScope
+        }
+
         try {
           log.debug("Starting sync project task")
-          val taskListener = BazelBuildTaskListener(syncConsole)
-          BazelTaskEventsService.getInstance(project).saveListener(taskId.taskGroupId, taskListener)
 
           try {
+            val taskListener = BazelBuildTaskListener(syncConsole)
+            BazelTaskEventsService.getInstance(project).saveListener(taskId.taskGroupId, taskListener)
+
+            val syncJob = BazelCoroutineService.getInstance(project).startAsync(lazy = true) {
+              preSync()
+              doSync(taskId, syncScope, buildProject)
+            }
+
             syncConsole.startTask(
               taskId = taskId,
               title = BazelPluginBundle.message("console.task.sync.title"),
               message = BazelPluginBundle.message("console.task.sync.in.progress"),
               cancelAction = {
                 SyncStatusService.getInstance(project).cancel()
-                coroutineContext.cancel()
+                syncJob.cancel()
               },
               redoAction = { sync(syncScope, buildProject) },
             )
 
-            preSync()
-            doSync(taskId, syncScope, buildProject)
+            val syncResult = syncJob.await()
+            when (syncResult) {
+              SyncResultStatus.FAILURE -> {
+                syncConsole.finishTask(
+                  taskId,
+                  BazelPluginBundle.message("console.task.sync.fatalfailure"),
+                  FailureResultImpl(),
+                )
+              }
+              SyncResultStatus.PARTIAL_SUCCESS -> {
+                syncConsole.addDiagnosticMessage(
+                  taskId,
+                  null, -1, -1,
+                  BazelPluginBundle.message("console.task.sync.partialsuccess"),
+                  MessageEvent.Kind.WARNING
+                )
+                syncConsole.finishTask(
+                  taskId,
+                  BazelPluginBundle.message("console.task.sync.partialsuccess"),
+                  SuccessResultImpl(true),
+                )
+              }
+              SyncResultStatus.SUCCESS -> {
+                syncConsole.finishTask(
+                  taskId,
+                  BazelPluginBundle.message("console.task.sync.success")
+                )
+              }
+            }
           }
           finally {
             BazelTaskEventsService.getInstance(project).removeListener(taskId.taskGroupId)
           }
-
-          syncConsole.finishTask(taskId, BazelPluginBundle.message("console.task.sync.success"))
         }
         catch (e: CancellationException) {
           syncConsole.finishTask(
@@ -101,28 +136,8 @@ class ProjectSyncTask(private val project: Project) {
           )
           throw e
         }
-        catch (_: SyncAlreadyInProgressException) {
-          syncAlreadyInProgress = true
-        }
-        catch (_: SyncPartialFailureException) {
-          syncConsole.addWarnMessage(
-            taskId,
-            BazelPluginBundle.message("console.task.sync.partialsuccess"),
-          )
-          syncConsole.finishTask(
-            taskId,
-            BazelPluginBundle.message("console.task.sync.partialsuccess"),
-            SuccessResultImpl(true),
-          )
-        }
-        catch (_: SyncFatalFailureException) {
-          syncConsole.finishTask(
-            taskId,
-            BazelPluginBundle.message("console.task.sync.fatalfailure"),
-            FailureResultImpl(),
-          )
-        }
         catch (e: Exception) {
+          log.error("Error syncing project", e)
           syncConsole.finishTask(
             taskId,
             BazelPluginBundle.message("console.task.sync.failed"),
@@ -130,8 +145,9 @@ class ProjectSyncTask(private val project: Project) {
           )
         }
         finally {
-          if (!syncAlreadyInProgress) {
-            postSync()
+          SyncStatusService.getInstance(project).finishSync()
+          withContext(Dispatchers.EDT) {
+            ProjectView.getInstance(project).refresh(ProjectViewUpdateCause.PLUGIN_BAZEL)
           }
         }
       }
@@ -143,7 +159,6 @@ class ProjectSyncTask(private val project: Project) {
     saveAllFiles()
     clearSyntheticTargets()
     project.serviceAsync<ProjectViewService>().forceReparseCurrentProjectViewFiles()
-    project.serviceAsync<SyncStatusService>().startSync()
   }
 
   private suspend fun clearSyntheticTargets() {
@@ -155,51 +170,66 @@ class ProjectSyncTask(private val project: Project) {
     }
   }
 
-  private suspend fun doSync(taskId: TaskId, syncScope: ProjectSyncScope, buildProject: Boolean) {
+  private suspend fun doSync(taskId: TaskId, syncScope: ProjectSyncScope, buildProject: Boolean): SyncResultStatus {
     val syncActivityName =
       BazelPluginBundle.message(
         "console.task.sync.activity.name",
         BazelPluginConstants.BAZEL_DISPLAY_NAME,
       )
     val saveAndSyncHandler = serviceAsync<SaveAndSyncHandler>()
+    var syncResult = SyncResultStatus.FAILURE
     UnindexedFilesScannerExecutor.getInstance(project).suspendScanningAndIndexingThenExecute(syncActivityName) {
       saveAndSyncHandler.disableAutoSave().use {
         withBackgroundProgress(project, BazelPluginBundle.message("background.progress.syncing.project"), true) {
-          reportSequentialProgress {
-            executePreSyncHooks(it, taskId)
+          reportSequentialProgress { progressReporter ->
+            executePreSyncHooks(progressReporter, taskId)
             BazelServerService.getInstance(project).connection.runWithServer {
               it.bazelInfo.release.deprecated()?.let {
-                project.syncConsole.addWarnMessage(taskId, it + " Sync might give incomplete results.")
+                project.syncConsole.addDiagnosticMessage(taskId, null, -1, -1, it + " Sync might give incomplete results.", MessageEvent.Kind.WARNING)
               }
             }
-            val syncResult = executeSyncHooks(it, taskId, syncScope, buildProject)
-            executePostSyncHooks(it, taskId)
-            when (syncResult) {
-              SyncResultStatus.FAILURE -> throw SyncFatalFailureException()
-              SyncResultStatus.PARTIAL_SUCCESS -> throw SyncPartialFailureException()
-              else -> Unit
+            val storage = MutableEntityStorage.create()
+            val deferredApplyActions = mutableListOf<suspend () -> Unit>()
+            syncResult = executeSyncHooks(
+              progressReporter = progressReporter,
+              syncScope = syncScope,
+              buildProject = buildProject,
+              storage = storage,
+              taskId = taskId,
+              deferredApplyActions = deferredApplyActions,
+            )
+            if (syncResult != SyncResultStatus.FAILURE) {
+              updateProjectModel(
+                progressReporter = progressReporter,
+                syncScope = syncScope,
+                storage = storage,
+                taskId = taskId,
+                deferredApplyActions = deferredApplyActions,
+              )
             }
+            executePostSyncHooks(progressReporter = progressReporter, taskId = taskId)
           }
         }
       }
     }
     saveAndSyncHandler.scheduleProjectSave(project = project)
+    return syncResult
   }
 
   private suspend fun executePreSyncHooks(progressReporter: SequentialProgressReporter, taskId: TaskId) {
-    project.withSubtask(
+    project.syncConsole.withSubtask(
       reporter = progressReporter,
       subtaskId = taskId.subTask("pre-sync-hooks"),
       text = BazelPluginBundle.message("console.task.execute.pre.sync.hooks"),
-    ) {
+    ) { subtaskId ->
       val environment =
         ProjectPreSyncHook.ProjectPreSyncHookEnvironment(
           project = project,
-          taskId = it,
+          taskId = subtaskId,
           progressReporter = progressReporter,
         )
 
-      project.projectPreSyncHooks.forEachLoggingErrors(log) {
+      project.projectPreSyncHooks.forEachSubtask(subtaskId) {
         it.onPreSync(environment)
       }
     }
@@ -210,8 +240,9 @@ class ProjectSyncTask(private val project: Project) {
     taskId: TaskId,
     syncScope: ProjectSyncScope,
     buildProject: Boolean,
+    storage: MutableEntityStorage,
+    deferredApplyActions: MutableList<suspend () -> Unit>,
   ): SyncResultStatus {
-    val diff = AllProjectStructuresProvider(project).newDiff()
     val resolver = BazelWorkspaceResolveService.getInstance(project)
     val syncStatus =
       project.connection.runWithServer { server ->
@@ -227,24 +258,26 @@ class ProjectSyncTask(private val project: Project) {
               resolver.getOrFetchSyncedProject(build = buildProject, taskId = it)
             }
           if (bazelProject.hasError && bazelProject.targets.isEmpty()) return@use SyncResultStatus.FAILURE
-          project.withSubtask(
+          project.syncConsole.withSubtask(
             reporter = progressReporter,
             subtaskId = taskId.subTask("sync-hooks"),
             text = BazelPluginBundle.message("console.task.execute.sync.hooks"),
-          ) {
+          ) { subtaskId ->
             val environment =
               ProjectSyncHookEnvironment(
                 project = project,
                 server = server,
                 resolver = resolver,
-                diff = diff,
-                taskId = it,
+                diff = storage,
+                taskId = subtaskId,
                 progressReporter = progressReporter,
                 buildTargets = bazelProject.targets,
                 syncScope = syncScope,
+                workspace = resolver.getOrFetchResolvedWorkspace(scope = syncScope, taskId = subtaskId),
+                deferredApplyActions = deferredApplyActions,
               )
 
-            project.projectSyncHooks.forEachLoggingErrors(log) {
+            project.projectSyncHooks.forEachSubtask(subtaskId) {
               it.onSync(environment)
             }
           }
@@ -257,46 +290,73 @@ class ProjectSyncTask(private val project: Project) {
           }
         }
       }
-
-    if (syncStatus != SyncResultStatus.FAILURE) {
-      project.withSubtask(
-        reporter = progressReporter,
-        subtaskId = taskId.subTask("apply-changes"),
-        text = BazelPluginBundle.message("console.task.apply.changes"),
-      ) { diff.applyAll(syncScope, it) }
-    }
     return syncStatus
   }
 
+  private suspend fun updateProjectModel(
+    progressReporter: SequentialProgressReporter,
+    syncScope: ProjectSyncScope,
+    storage: MutableEntityStorage,
+    taskId: TaskId,
+    deferredApplyActions: MutableList<suspend () -> Unit>,
+  ) {
+    project.syncConsole.withSubtask(
+      reporter = progressReporter,
+      subtaskId = taskId.subTask("apply-changes"),
+      text = BazelPluginBundle.message("console.task.apply.changes"),
+    ) { subtaskId ->
+      val applicator = ProjectModelApplicatonTask(
+        project = project,
+        scope = syncScope,
+        taskId = subtaskId,
+        postActions = deferredApplyActions,
+      )
+      applicator.apply(storage)
+    }
+  }
+
   private suspend fun executePostSyncHooks(progressReporter: SequentialProgressReporter, taskId: TaskId) {
-    project.withSubtask(
+    project.syncConsole.withSubtask(
       reporter = progressReporter,
       subtaskId = taskId.subTask("post-sync-hooks"),
       text = BazelPluginBundle.message("console.task.execute.post.sync.hooks"),
-    ) {
+    ) { subtaskId ->
       val environment =
         ProjectPostSyncHook.ProjectPostSyncHookEnvironment(
           project = project,
-          taskId = it,
+          taskId = subtaskId,
           progressReporter = progressReporter,
         )
 
-      project.projectPostSyncHooks.forEachLoggingErrors(log) {
+      project.projectPostSyncHooks.forEachSubtask(subtaskId) {
         it.onPostSync(environment)
       }
     }
   }
 
-  private suspend fun postSync() {
-    SyncStatusService.getInstance(project).finishSync()
-    withContext(Dispatchers.EDT) {
-      ProjectView.getInstance(project).refresh(ProjectViewUpdateCause.PLUGIN_BAZEL)
+  private suspend fun <T> List<T>.forEachSubtask(taskId: TaskId, action: suspend (T) -> Unit) {
+    forEach { item ->
+      try {
+        action(item)
+      } catch (e: CancellationException) {
+        throw e
+      } catch (e: Throwable) {
+        if (project.syncConsole.registerException(taskId, e)) {
+          project.syncConsole.addDiagnosticMessage(
+            taskId,
+            null, -1, -1,
+            e.message ?: "Unknown error",
+            MessageEvent.Kind.ERROR,
+          )
+        }
+        log.error(e)
+      }
     }
   }
-}
 
-enum class SyncResultStatus {
-  SUCCESS,
-  PARTIAL_SUCCESS,
-  FAILURE,
+  private enum class SyncResultStatus {
+    SUCCESS,
+    PARTIAL_SUCCESS,
+    FAILURE,
+  }
 }

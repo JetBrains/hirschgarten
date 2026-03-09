@@ -17,11 +17,13 @@ package org.jetbrains.bazel.sync
 
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.project.Project
+import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.annotations.TestOnly
 import java.util.concurrent.ConcurrentHashMap
 
 /** Computes a cache on the project data.  */
 @Service(Service.Level.PROJECT)
+@ApiStatus.Internal
 class SyncCache(private val project: Project) {
   /** Computes a value based on the sync project data. */
   fun interface SyncCacheComputable<T : Any> {

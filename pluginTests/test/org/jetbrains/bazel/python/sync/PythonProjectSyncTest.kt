@@ -14,6 +14,7 @@ import com.intellij.platform.workspace.jps.entities.SdkDependency
 import com.intellij.platform.workspace.jps.entities.SdkId
 import com.intellij.platform.workspace.jps.entities.SourceRootEntity
 import com.intellij.platform.workspace.jps.entities.SourceRootTypeId
+import com.intellij.platform.workspace.storage.MutableEntityStorage
 import com.intellij.platform.workspace.storage.impl.url.toVirtualFileUrl
 import com.intellij.platform.workspace.storage.url.VirtualFileUrlManager
 import io.kotest.matchers.booleans.shouldBeFalse
@@ -27,8 +28,6 @@ import org.jetbrains.bazel.label.DependencyLabel
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.magicmetamodel.formatAsModuleName
 import org.jetbrains.bazel.sync.ProjectSyncHook
-import org.jetbrains.bazel.sync.projectStructure.AllProjectStructuresProvider
-import org.jetbrains.bazel.sync.projectStructure.workspaceModel.workspaceModelDiff
 import org.jetbrains.bazel.sync.scope.SecondPhaseSync
 import org.jetbrains.bazel.sync.workspace.BazelResolvedWorkspace
 import org.jetbrains.bazel.workspace.model.matchers.entries.ExpectedModuleEntity
@@ -77,14 +76,14 @@ class PythonProjectSyncTest : MockProjectBaseTest() {
     // given
     val pythonTestTargets = generateTestSet()
     val server = BuildServerMock()
+    val workspace = BazelResolvedWorkspace(
+      targets = pythonTestTargets.buildTargets,
+    )
     val resolver =
       BazelWorkspaceResolveServiceMock(
-        resolvedWorkspace =
-          BazelResolvedWorkspace(
-            targets = pythonTestTargets.buildTargets,
-          ),
+        resolvedWorkspace = workspace,
       )
-    val diff = AllProjectStructuresProvider(project).newDiff()
+    val diff = MutableEntityStorage.create()
 
     // when
     runBlocking {
@@ -100,6 +99,7 @@ class PythonProjectSyncTest : MockProjectBaseTest() {
             progressReporter = reporter,
             // TODO: not used yet, https://youtrack.jetbrains.com/issue/BAZEL-1960
             buildTargets = emptyMap(),
+            workspace = workspace,
           )
         hook.onSync(environment)
       }
@@ -107,8 +107,7 @@ class PythonProjectSyncTest : MockProjectBaseTest() {
 
     // then
     val actualModuleEntities =
-      diff.workspaceModelDiff.mutableEntityStorage
-        .entities(ModuleEntity::class.java)
+      diff.entities(ModuleEntity::class.java)
         .toList()
         .filter { it.type == ModuleTypeId("PYTHON_MODULE") }
 
@@ -121,14 +120,14 @@ class PythonProjectSyncTest : MockProjectBaseTest() {
     // given
     val pythonTestTargets = generateTestSetWithSources()
     val server = BuildServerMock()
+    val workspace = BazelResolvedWorkspace(
+      targets = pythonTestTargets.buildTargets,
+    )
     val resolver =
       BazelWorkspaceResolveServiceMock(
-        resolvedWorkspace =
-          BazelResolvedWorkspace(
-            targets = pythonTestTargets.buildTargets,
-          ),
+        resolvedWorkspace = workspace,
       )
-    val diff = AllProjectStructuresProvider(project).newDiff()
+    val diff = MutableEntityStorage.create()
 
     // when
     runBlocking {
@@ -144,6 +143,7 @@ class PythonProjectSyncTest : MockProjectBaseTest() {
             progressReporter = reporter,
             // TODO: not used yet, https://youtrack.jetbrains.com/issue/BAZEL-1960
             buildTargets = emptyMap(),
+            workspace = workspace,
           )
         hook.onSync(environment)
       }
@@ -151,8 +151,7 @@ class PythonProjectSyncTest : MockProjectBaseTest() {
 
     // then
     val actualModuleEntities =
-      diff.workspaceModelDiff.mutableEntityStorage
-        .entities(SourceRootEntity::class.java)
+      diff.entities(SourceRootEntity::class.java)
         .toList()
 
     actualModuleEntities shouldContainExactlyInAnyOrder pythonTestTargets.expectedSourceRootEntities
@@ -283,16 +282,16 @@ class PythonProjectSyncTest : MockProjectBaseTest() {
         }
       ExpectedSourceRootEntity(sourceRootEntity, contentRootEntity, parentModuleEntity)
     } +
-      target.resources.map {
-        val url = it.toVirtualFileUrl(virtualFileUrlManager)
-        val sourceRootEntity = SourceRootEntity(url, SourceRootTypeId("python-resource"), parentModuleEntity.entitySource)
-        val contentRootEntity =
-          ContentRootEntity(url, emptyList(), parentModuleEntity.entitySource) {
-            excludedUrls = emptyList()
-            sourceRoots = listOf(sourceRootEntity)
-          }
-        ExpectedSourceRootEntity(sourceRootEntity, contentRootEntity, parentModuleEntity)
-      }
+    target.resources.map {
+      val url = it.toVirtualFileUrl(virtualFileUrlManager)
+      val sourceRootEntity = SourceRootEntity(url, SourceRootTypeId("python-resource"), parentModuleEntity.entitySource)
+      val contentRootEntity =
+        ContentRootEntity(url, emptyList(), parentModuleEntity.entitySource) {
+          excludedUrls = emptyList()
+          sourceRoots = listOf(sourceRootEntity)
+        }
+      ExpectedSourceRootEntity(sourceRootEntity, contentRootEntity, parentModuleEntity)
+    }
 
   private fun List<ModuleEntity>.shouldAllHaveTheSameSDK() {
     val sdks = this.map { module -> module.dependencies.firstNotNullOfOrNull { it as? SdkDependency } }
