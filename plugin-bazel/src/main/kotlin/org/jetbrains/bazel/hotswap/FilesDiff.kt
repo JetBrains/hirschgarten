@@ -3,6 +3,7 @@ package org.jetbrains.bazel.hotswap
 import org.jetbrains.bazel.hotswap.FilesDiff.Companion.diffFiles
 import java.nio.file.Path
 import java.nio.file.attribute.FileTime
+import kotlin.io.path.exists
 import kotlin.io.path.getLastModifiedTime
 
 /**
@@ -22,7 +23,7 @@ internal data class FilesDiff(
   companion object {
     /** Diffs a collection of files based on timestamps. */
     fun diffFileTimestamps(oldState: Map<Path, FileTime>?, files: Collection<Path>): FilesDiff {
-      val newState = files.associateWith { it.getLastModifiedTime() }
+      val newState = files.filter { it.exists() }.associateWith { it.getLastModifiedTime() }
       return diffFiles(oldState, newState)
     }
 

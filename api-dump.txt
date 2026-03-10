@@ -39,6 +39,8 @@ f:org.jetbrains.bazel.fastbuild.FastBuildTargetStatus
 - f:getStatus():org.jetbrains.bazel.fastbuild.FastBuildActionStatus
 - f:getTargetJar():java.nio.file.Path
 - hashCode():I
+org.jetbrains.bazel.hotswap.HotSwapHook
+- a:onHotSwap(java.util.List,kotlin.coroutines.Continuation):java.lang.Object
 c:org.jetbrains.bazel.java.ui.gutters.BazelJavaRunLineMarkerContributor
 - org.jetbrains.bazel.ui.gutters.BazelRunLineMarkerContributor
 - <init>():V
