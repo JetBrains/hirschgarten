@@ -23,7 +23,7 @@ import com.intellij.platform.workspace.storage.impl.url.toVirtualFileUrl
 import org.jetbrains.bazel.commons.LanguageClass
 import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.commons.TargetKind
-import org.jetbrains.bazel.target.addLibraryModulePrefix
+import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.LibraryGraph
 import org.jetbrains.bazel.workspace.model.matchers.entries.ExpectedModuleEntity
 import org.jetbrains.bazel.workspace.model.matchers.entries.ExpectedSourceRootEntity
 import org.jetbrains.bazel.workspace.model.matchers.entries.shouldBeEqual
@@ -167,10 +167,10 @@ class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
                       productionOnTest = true,
                     ),
                     ModuleDependency(
-                      module = ModuleId("lib1".addLibraryModulePrefix()),
-                      exported = true,
-                      scope = DependencyScope.COMPILE,
-                      productionOnTest = true,
+                      module = ModuleId(LibraryGraph.addLibraryModulePrefix("lib1")),
+                    exported = true,
+                    scope = DependencyScope.COMPILE,
+                    productionOnTest = true,
                     ),
                     ModuleDependency(
                       module = ModuleId("module3"),
@@ -179,7 +179,7 @@ class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
                       productionOnTest = true,
                     ),
                     ModuleDependency(
-                      module = ModuleId(name = "lib2".addLibraryModulePrefix()),
+                      module = ModuleId(name = LibraryGraph.addLibraryModulePrefix("lib2")),
                       exported = true,
                       scope = DependencyScope.COMPILE,
                       productionOnTest = true,
@@ -479,13 +479,13 @@ class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
                       productionOnTest = true,
                     ),
                     ModuleDependency(
-                      module = ModuleId("lib1".addLibraryModulePrefix()),
+                      module = ModuleId(LibraryGraph.addLibraryModulePrefix("lib1")),
                       exported = true,
                       scope = DependencyScope.COMPILE,
                       productionOnTest = true,
                     ),
                     ModuleDependency(
-                      module = ModuleId("lib2".addLibraryModulePrefix()),
+                      module = ModuleId(LibraryGraph.addLibraryModulePrefix("lib2")),
                       exported = true,
                       scope = DependencyScope.COMPILE,
                       productionOnTest = true,
@@ -521,7 +521,7 @@ class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
                       productionOnTest = true,
                     ),
                     ModuleDependency(
-                      module = ModuleId("lib1".addLibraryModulePrefix()),
+                      module = ModuleId(LibraryGraph.addLibraryModulePrefix("lib1")),
                       exported = true,
                       scope = DependencyScope.COMPILE,
                       productionOnTest = true,

@@ -5,6 +5,8 @@ import com.intellij.build.SyncViewManager
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.project.Project
 import org.jetbrains.bazel.config.rootDir
+import org.jetbrains.bazel.progress.ConsoleService
+import org.jetbrains.bazel.progress.TaskConsole
 
 @Service(Service.Level.PROJECT)
 internal class DefaultConsoleService(project: Project) : ConsoleService {

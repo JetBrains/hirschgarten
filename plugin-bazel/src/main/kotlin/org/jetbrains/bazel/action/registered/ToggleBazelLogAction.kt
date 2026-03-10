@@ -4,14 +4,14 @@ import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.project.DumbAwareToggleAction
 import com.intellij.openapi.util.registry.Registry
-import org.jetbrains.bazel.config.BazelFeatureFlags
+import org.jetbrains.bazel.config.BazelConnectorFeatureFlags
 import org.jetbrains.bazel.config.isBazelProject
 
 internal class ToggleBazelLogAction : DumbAwareToggleAction() {
-  override fun isSelected(e: AnActionEvent): Boolean = Registry.`is`(BazelFeatureFlags.ENABLE_LOG)
+  override fun isSelected(e: AnActionEvent): Boolean = Registry.`is`(BazelConnectorFeatureFlags.ENABLE_LOG)
 
   override fun setSelected(e: AnActionEvent, state: Boolean) {
-    Registry.get(BazelFeatureFlags.ENABLE_LOG).setValue(state)
+    Registry.get(BazelConnectorFeatureFlags.ENABLE_LOG).setValue(state)
   }
 
   override fun update(e: AnActionEvent) {

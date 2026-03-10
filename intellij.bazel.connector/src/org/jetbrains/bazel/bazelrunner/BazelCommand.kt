@@ -1,0 +1,384 @@
+package org.jetbrains.bazel.bazelrunner
+
+import com.intellij.openapi.application.PathManager
+import com.intellij.openapi.diagnostic.logger
+import com.intellij.openapi.util.SystemInfo
+import com.jediterm.core.util.TermSize
+import org.jetbrains.annotations.ApiStatus
+import org.jetbrains.bazel.bazelrunner.params.BazelFlag
+import org.jetbrains.bazel.commons.ExcludableValue
+import org.jetbrains.bazel.label.Label
+import java.io.IOException
+import java.nio.file.Files
+import java.nio.file.Path
+import java.nio.file.StandardOpenOption
+import kotlin.io.path.createDirectories
+import kotlin.io.path.writeLines
+
+@ApiStatus.Internal
+interface HasProgramArguments {
+  // Will be forwarded directly to `bazel run <target> -- <arguments>` or set using `--test_arg=<arg>` for `bazel test`
+  val programArguments: MutableList<String>
+}
+
+@ApiStatus.Internal
+interface HasAdditionalBazelOptions {
+  // Will be forwarded directly to `bazel <command> <options>`
+  val additionalBazelOptions: MutableList<String>
+}
+
+@ApiStatus.Internal
+interface HasEnvironment {
+  // In case of `bazel test`, it will be set using `--test_env=<name=value>`
+  // In case of `bazel build`, it will be set using `--action_env=<name=value>`
+  // `bazel run` needs to be set up inside the [org.jetbrains.bazel.bazelrunner.BazelRunner]
+  val environment: MutableMap<String, String>
+
+  // In case of `bazel test, it will be set using `--test_env=<name>`
+  // In case of `bazel build`, it will be set using `--action_env=<name>`
+  // In case of `bazel run` the environment is always inherited
+  // TODO: this is not used in the current implementation
+  val inheritedEnvironment: List<String>
+}
+
+@ApiStatus.Internal
+interface HasMultipleTargets {
+  // Will be added as `bazel <command> -- target1 target2 ...`
+  val targets: MutableList<Label>
+
+  // Will be added as `bazel <command> -- <targets> -target1 -target2 ...`
+  val excludedTargets: MutableList<Label>
+
+  fun addTargetsFromExcludableList(targets: List<ExcludableValue<Label>>) {
+    targets.forEach { excludableTarget ->
+      if (excludableTarget.isIncluded()) {
+        this.targets.add(excludableTarget.value)
+      }
+      else {
+        this.excludedTargets.add(excludableTarget.value)
+      }
+    }
+  }
+
+  fun targetCommandLine(): List<String> {
+    val commandLine = mutableListOf("--")
+    commandLine.addAll(targets.map { it.toString() })
+    commandLine.addAll(excludedTargets.map { "-$it" })
+    return commandLine
+  }
+}
+
+@ApiStatus.Internal
+interface HasSingleTarget {
+  val target: Label
+}
+
+/**
+ * Immutable in contrast to [BazelCommand]
+ */
+@ApiStatus.Internal
+data class BazelCommandExecutionDescriptor(
+  val command: List<String>,
+  val ptyTermSize: TermSize?,
+  val environment: Map<String, String> = emptyMap(),
+  val finishCallback: () -> Unit = {},
+)
+
+// See https://bazel.build/reference/command-line-reference#commands
+@ApiStatus.Internal
+abstract class BazelCommand(val bazelBinary: String) {
+  // See https://bazel.build/reference/command-line-reference#startup-options
+  val startupOptions: MutableList<String> = mutableListOf()
+
+  // See https://bazel.build/reference/command-line-reference#options-common-to-all-commands and command-specific options
+  val options: MutableList<String> = mutableListOf(BazelFlag.toolTag())
+
+  var ptyTermSize: TermSize? = null
+
+  abstract fun buildExecutionDescriptor(): BazelCommandExecutionDescriptor
+
+  // See https://bazel.build/reference/command-line-reference#flag--build_event_binary_file
+  fun useBes(besOutputFile: Path) {
+    options.addAll(
+      listOf(
+        BazelFlag.buildEventBinaryFile(besOutputFile.toAbsolutePath().toString()),
+        BazelFlag.buildEventBinaryFileWait(),
+        "--bes_outerr_buffer_size=10",
+        "--build_event_publish_all_actions",
+      ),
+    )
+  }
+
+  class Run(bazelBinary: String, override val target: Label) :
+    BazelCommand(bazelBinary),
+    HasProgramArguments,
+    HasEnvironment,
+    HasSingleTarget,
+    HasAdditionalBazelOptions {
+    override val programArguments: MutableList<String> = mutableListOf()
+    override val environment: MutableMap<String, String> = mutableMapOf()
+    override val inheritedEnvironment: MutableList<String> = mutableListOf()
+    override val additionalBazelOptions: MutableList<String> = mutableListOf()
+
+    override fun buildExecutionDescriptor(): BazelCommandExecutionDescriptor {
+      val commandLine = mutableListOf<String>()
+
+      commandLine.add(bazelBinary)
+      commandLine.addAll(startupOptions)
+      commandLine.add("run")
+      commandLine.addAll(options)
+      commandLine.addAll(additionalBazelOptions)
+      commandLine.add(target.toString())
+
+      if (programArguments.isNotEmpty()) {
+        commandLine.add("--")
+        commandLine.addAll(programArguments)
+      }
+
+      // Pass environment variables here to be set inside org.jetbrains.bazel.bazelrunner.BazelRunner
+      // Run needs to be handled separately because the resulting process is not run in the sandbox
+      return BazelCommandExecutionDescriptor(commandLine, ptyTermSize, environment = environment)
+    }
+  }
+
+  class Build(bazelBinary: String) :
+    BazelCommand(bazelBinary),
+    HasEnvironment,
+    HasMultipleTargets {
+    override val targets: MutableList<Label> = mutableListOf()
+    override val excludedTargets: MutableList<Label> = mutableListOf()
+    override val environment: MutableMap<String, String> = mutableMapOf()
+    override val inheritedEnvironment: MutableList<String> = mutableListOf()
+
+    override fun buildExecutionDescriptor(): BazelCommandExecutionDescriptor {
+      val commandLine = mutableListOf(bazelBinary)
+
+      commandLine.addAll(startupOptions)
+      commandLine.add("build")
+      commandLine.addAll(options)
+      commandLine.addAll(environment.map { (key, value) -> "--action_env=$key=$value" })
+      commandLine.addAll(inheritedEnvironment.map { "--action_env=$it" })
+      val targetPatternFile = prepareTargetPatternFile()
+      commandLine.add(BazelFlag.targetPatternFile(targetPatternFile.toString()))
+
+      return BazelCommandExecutionDescriptor(
+        commandLine,
+        ptyTermSize,
+        finishCallback = {
+          try {
+            Files.deleteIfExists(targetPatternFile)
+          }
+          catch (e: IOException) {
+            log.warn("Failed to delete target pattern file", e)
+          }
+        },
+      )
+    }
+
+    fun prepareTargetPatternFile(): Path {
+      var targetPatternFile: Path? = null
+      try {
+        val tmpDir = PathManager.getTempDir().createDirectories()
+        Files.createDirectories(tmpDir)
+
+        targetPatternFile = Files.createTempFile(tmpDir, "targets-", "").also { it.toFile().deleteOnExit() }
+
+        val targetsList = (targets.map { it.toString() } + excludedTargets.map { "-$it" })
+
+        targetPatternFile.writeLines(targetsList, Charsets.UTF_8, StandardOpenOption.WRITE)
+      }
+      catch (e: IOException) {
+        targetPatternFile?.let {
+          try {
+            Files.deleteIfExists(it)
+          }
+          catch (deleteException: IOException) {
+            throw IllegalStateException("Couldn't delete file after creation failure", deleteException)
+          }
+        }
+        throw IllegalStateException("Couldn't create target pattern file", e)
+      }
+      return targetPatternFile
+    }
+
+    companion object {
+      val log = logger<BazelCommand>()
+    }
+  }
+
+  class Test(bazelBinary: String) :
+    BazelCommand(bazelBinary),
+    HasEnvironment,
+    HasMultipleTargets,
+    HasProgramArguments,
+    HasAdditionalBazelOptions {
+    override val targets: MutableList<Label> = mutableListOf()
+    override val excludedTargets: MutableList<Label> = mutableListOf()
+    override val environment: MutableMap<String, String> = mutableMapOf()
+    override val inheritedEnvironment: MutableList<String> = mutableListOf()
+    override val programArguments: MutableList<String> = mutableListOf()
+    override val additionalBazelOptions: MutableList<String> = mutableListOf()
+
+    override fun buildExecutionDescriptor(): BazelCommandExecutionDescriptor {
+      val commandLine = mutableListOf(bazelBinary)
+
+      commandLine.addAll(startupOptions)
+      commandLine.add("test")
+      commandLine.addAll(options)
+      commandLine.addAll(additionalBazelOptions)
+      commandLine.addAll(environment.map { (key, value) -> "--test_env=$key=$value" })
+      commandLine.addAll(inheritedEnvironment.map { "--test_env=$it" })
+      commandLine.addAll(programArguments.map { "--test_arg=$it" })
+      commandLine.addAll(targetCommandLine())
+
+      return BazelCommandExecutionDescriptor(commandLine, ptyTermSize)
+    }
+  }
+
+  class Coverage(bazelBinary: String) :
+    BazelCommand(bazelBinary),
+    HasEnvironment,
+    HasMultipleTargets,
+    HasProgramArguments {
+    override val targets: MutableList<Label> = mutableListOf()
+    override val excludedTargets: MutableList<Label> = mutableListOf()
+    override val environment: MutableMap<String, String> = mutableMapOf()
+    override val inheritedEnvironment: MutableList<String> = mutableListOf()
+    override val programArguments: MutableList<String> = mutableListOf()
+
+    override fun buildExecutionDescriptor(): BazelCommandExecutionDescriptor {
+      val commandLine = mutableListOf(bazelBinary)
+
+      commandLine.addAll(startupOptions)
+      commandLine.add("coverage")
+      commandLine.addAll(options)
+      commandLine.addAll(environment.map { (key, value) -> "--test_env=$key=$value" })
+      commandLine.addAll(inheritedEnvironment.map { "--test_env=$it" })
+      commandLine.addAll(programArguments.map { "--test_arg=$it" })
+      commandLine.addAll(targetCommandLine())
+
+      return BazelCommandExecutionDescriptor(commandLine, ptyTermSize)
+    }
+  }
+
+  // TODO: perhaps it's possible to install multiple targets at once?
+  class MobileInstall(bazelBinary: String, override val target: Label) :
+    BazelCommand(bazelBinary),
+    HasSingleTarget {
+    override fun buildExecutionDescriptor(): BazelCommandExecutionDescriptor {
+      val commandLine = mutableListOf(bazelBinary)
+
+      commandLine.addAll(startupOptions)
+      commandLine.add("mobile-install")
+      commandLine.addAll(options)
+      commandLine.add(target.toString())
+
+      return BazelCommandExecutionDescriptor(commandLine, ptyTermSize)
+    }
+  }
+
+  class Query(
+    bazelBinary: String,
+    private val allowManualTargetsSync: Boolean,
+  ) : BazelCommand(bazelBinary),
+      HasMultipleTargets {
+    override val targets: MutableList<Label> = mutableListOf()
+    override val excludedTargets: MutableList<Label> = mutableListOf()
+
+    override fun buildExecutionDescriptor(): BazelCommandExecutionDescriptor {
+      val commandLine = mutableListOf(bazelBinary)
+
+      commandLine.addAll(startupOptions)
+      commandLine.add("query")
+      commandLine.addAll(options)
+      commandLine.add(queryString(allowManualTargetsSync))
+
+      return BazelCommandExecutionDescriptor(commandLine, ptyTermSize)
+    }
+
+    fun queryString(allowManualTargetsSync: Boolean): String {
+      if (targets.isEmpty()) return ""
+      val includesString = targets.joinToString(separator = " + ")
+      val excludesString = excludedTargets.joinToString(separator = " - ")
+      val targetString = if (excludesString.isEmpty()) includesString else "$includesString - $excludesString"
+      return if (allowManualTargetsSync) {
+        targetString
+      }
+      else {
+        excludeManualTargetsQueryString(targetString)
+      }
+    }
+
+    private fun excludeManualTargetsQueryString(targetString: String): String =
+      if (SystemInfo.isWindows) {
+        "attr('tags', '^((?!manual).)*$', $targetString)"
+      }
+      else {
+        "attr(\"tags\", \"^((?!manual).)*$\", $targetString)"
+      }
+  }
+
+  class CQuery(bazelBinary: String) :
+    BazelCommand(bazelBinary),
+    HasMultipleTargets {
+    override val targets: MutableList<Label> = mutableListOf()
+    override val excludedTargets: MutableList<Label> = mutableListOf()
+
+    override fun buildExecutionDescriptor(): BazelCommandExecutionDescriptor {
+      val commandLine = mutableListOf(bazelBinary)
+
+      commandLine.addAll(startupOptions)
+      commandLine.add("cquery")
+      commandLine.addAll(options)
+      commandLine.addAll(targetCommandLine())
+
+      return BazelCommandExecutionDescriptor(commandLine, ptyTermSize)
+    }
+  }
+
+  class AQuery(bazelBinary: String) :
+    BazelCommand(bazelBinary),
+    HasMultipleTargets {
+    override val targets: MutableList<Label> = mutableListOf()
+    override val excludedTargets: MutableList<Label> = mutableListOf()
+
+    override fun buildExecutionDescriptor(): BazelCommandExecutionDescriptor {
+      val commandLine = mutableListOf(bazelBinary)
+
+      commandLine.addAll(startupOptions)
+      commandLine.add("aquery")
+      commandLine.addAll(options)
+      commandLine.addAll(targetCommandLine())
+
+      return BazelCommandExecutionDescriptor(commandLine, ptyTermSize)
+    }
+  }
+
+  abstract class SimpleCommand(bazelBinary: String, val command: List<String>) : BazelCommand(bazelBinary) {
+    override fun buildExecutionDescriptor(): BazelCommandExecutionDescriptor {
+      val commandLine = mutableListOf(bazelBinary)
+
+      commandLine.addAll(startupOptions)
+      commandLine.addAll(command)
+      commandLine.addAll(options)
+
+      return BazelCommandExecutionDescriptor(commandLine, ptyTermSize)
+    }
+  }
+
+  class Info(bazelBinary: String) : SimpleCommand(bazelBinary, listOf("info"))
+
+  class Clean(bazelBinary: String) : SimpleCommand(bazelBinary, listOf("clean"))
+
+  class ShutDown(bazelBinary: String) : SimpleCommand(bazelBinary, listOf("shutdown"))
+
+  class ModGraph(bazelBinary: String) : SimpleCommand(bazelBinary, listOf("mod", "graph"))
+
+  class ModPath(bazelBinary: String) : SimpleCommand(bazelBinary, listOf("mod", "path"))
+
+  class ModShowRepo(bazelBinary: String) : SimpleCommand(bazelBinary, listOf("mod", "show_repo"))
+
+  class ModDumpRepoMapping(bazelBinary: String) : SimpleCommand(bazelBinary, listOf("mod", "dump_repo_mapping"))
+
+  class QueryExpression(bazelBinary: String, expression: String) : SimpleCommand(bazelBinary, listOf("query", expression))
+}

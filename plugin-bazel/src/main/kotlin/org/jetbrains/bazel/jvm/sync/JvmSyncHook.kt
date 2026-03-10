@@ -13,6 +13,7 @@ internal class JvmSyncHook : ProjectSyncHook {
           it,
           environment.diff,
         )
+      environment.deferredApplyActions += { task.postprocessingSubtask(environment.workspace) }
       task.execute(
         project = environment.project,
         workspace = environment.workspace,
@@ -20,7 +21,6 @@ internal class JvmSyncHook : ProjectSyncHook {
         progressReporter = environment.progressReporter,
         syncScope = environment.syncScope,
       )
-      environment.deferredApplyActions += { task.postprocessingSubtask(environment.workspace) }
     }
   }
 }

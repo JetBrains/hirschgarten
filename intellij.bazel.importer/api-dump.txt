@@ -1,0 +1,65 @@
+org.jetbrains.bazel.sync.ProjectPostSyncHook
+- sf:Companion:org.jetbrains.bazel.sync.ProjectPostSyncHook$Companion
+- isEnabled(com.intellij.openapi.project.Project):Z
+- a:onPostSync(org.jetbrains.bazel.sync.ProjectPostSyncHook$ProjectPostSyncHookEnvironment,kotlin.coroutines.Continuation):java.lang.Object
+f:org.jetbrains.bazel.sync.ProjectPostSyncHook$Companion
+f:org.jetbrains.bazel.sync.ProjectPostSyncHook$ProjectPostSyncHookEnvironment
+- <init>(com.intellij.openapi.project.Project,org.jetbrains.bsp.protocol.TaskId,com.intellij.platform.util.progress.SequentialProgressReporter):V
+- f:component1():com.intellij.openapi.project.Project
+- f:component2():org.jetbrains.bsp.protocol.TaskId
+- f:component3():com.intellij.platform.util.progress.SequentialProgressReporter
+- f:copy(com.intellij.openapi.project.Project,org.jetbrains.bsp.protocol.TaskId,com.intellij.platform.util.progress.SequentialProgressReporter):org.jetbrains.bazel.sync.ProjectPostSyncHook$ProjectPostSyncHookEnvironment
+- bs:copy$default(org.jetbrains.bazel.sync.ProjectPostSyncHook$ProjectPostSyncHookEnvironment,com.intellij.openapi.project.Project,org.jetbrains.bsp.protocol.TaskId,com.intellij.platform.util.progress.SequentialProgressReporter,I,java.lang.Object):org.jetbrains.bazel.sync.ProjectPostSyncHook$ProjectPostSyncHookEnvironment
+- equals(java.lang.Object):Z
+- f:getProgressReporter():com.intellij.platform.util.progress.SequentialProgressReporter
+- f:getProject():com.intellij.openapi.project.Project
+- hashCode():I
+org.jetbrains.bazel.sync.ProjectPreSyncHook
+- sf:Companion:org.jetbrains.bazel.sync.ProjectPreSyncHook$Companion
+- isEnabled(com.intellij.openapi.project.Project):Z
+- a:onPreSync(org.jetbrains.bazel.sync.ProjectPreSyncHook$ProjectPreSyncHookEnvironment,kotlin.coroutines.Continuation):java.lang.Object
+f:org.jetbrains.bazel.sync.ProjectPreSyncHook$Companion
+f:org.jetbrains.bazel.sync.ProjectPreSyncHook$ProjectPreSyncHookEnvironment
+- <init>(com.intellij.openapi.project.Project,org.jetbrains.bsp.protocol.TaskId,com.intellij.platform.util.progress.SequentialProgressReporter):V
+- f:component1():com.intellij.openapi.project.Project
+- f:component2():org.jetbrains.bsp.protocol.TaskId
+- f:component3():com.intellij.platform.util.progress.SequentialProgressReporter
+- f:copy(com.intellij.openapi.project.Project,org.jetbrains.bsp.protocol.TaskId,com.intellij.platform.util.progress.SequentialProgressReporter):org.jetbrains.bazel.sync.ProjectPreSyncHook$ProjectPreSyncHookEnvironment
+- bs:copy$default(org.jetbrains.bazel.sync.ProjectPreSyncHook$ProjectPreSyncHookEnvironment,com.intellij.openapi.project.Project,org.jetbrains.bsp.protocol.TaskId,com.intellij.platform.util.progress.SequentialProgressReporter,I,java.lang.Object):org.jetbrains.bazel.sync.ProjectPreSyncHook$ProjectPreSyncHookEnvironment
+- equals(java.lang.Object):Z
+- f:getProgressReporter():com.intellij.platform.util.progress.SequentialProgressReporter
+- f:getProject():com.intellij.openapi.project.Project
+- f:getTaskId():org.jetbrains.bsp.protocol.TaskId
+- hashCode():I
+org.jetbrains.bazel.sync.ProjectSyncHook
+- sf:Companion:org.jetbrains.bazel.sync.ProjectSyncHook$Companion
+- isEnabled(com.intellij.openapi.project.Project):Z
+- a:onSync(org.jetbrains.bazel.sync.ProjectSyncHook$ProjectSyncHookEnvironment,kotlin.coroutines.Continuation):java.lang.Object
+f:org.jetbrains.bazel.sync.ProjectSyncHook$Companion
+f:org.jetbrains.bazel.sync.ProjectSyncHook$ProjectSyncHookEnvironment
+- f:component1():com.intellij.openapi.project.Project
+- f:component10():java.util.List
+- f:component2():org.jetbrains.bazel.sync.scope.ProjectSyncScope
+- f:component3():org.jetbrains.bsp.protocol.BazelServerFacade
+- f:component4():org.jetbrains.bazel.sync.workspace.BazelResolvedWorkspace
+- f:component5():org.jetbrains.bazel.sync.workspace.BazelWorkspaceResolveService
+- f:component6():org.jetbrains.bsp.protocol.TaskId
+- f:component7():com.intellij.platform.workspace.storage.MutableEntityStorage
+- f:component8():com.intellij.platform.util.progress.SequentialProgressReporter
+- f:copy(com.intellij.openapi.project.Project,org.jetbrains.bazel.sync.scope.ProjectSyncScope,org.jetbrains.bsp.protocol.BazelServerFacade,org.jetbrains.bazel.sync.workspace.BazelResolvedWorkspace,org.jetbrains.bazel.sync.workspace.BazelWorkspaceResolveService,org.jetbrains.bsp.protocol.TaskId,com.intellij.platform.workspace.storage.MutableEntityStorage,com.intellij.platform.util.progress.SequentialProgressReporter,java.util.Map,java.util.List):org.jetbrains.bazel.sync.ProjectSyncHook$ProjectSyncHookEnvironment
+- bs:copy$default(org.jetbrains.bazel.sync.ProjectSyncHook$ProjectSyncHookEnvironment,com.intellij.openapi.project.Project,org.jetbrains.bazel.sync.scope.ProjectSyncScope,org.jetbrains.bsp.protocol.BazelServerFacade,org.jetbrains.bazel.sync.workspace.BazelResolvedWorkspace,org.jetbrains.bazel.sync.workspace.BazelWorkspaceResolveService,org.jetbrains.bsp.protocol.TaskId,com.intellij.platform.workspace.storage.MutableEntityStorage,com.intellij.platform.util.progress.SequentialProgressReporter,java.util.Map,java.util.List,I,java.lang.Object):org.jetbrains.bazel.sync.ProjectSyncHook$ProjectSyncHookEnvironment
+- equals(java.lang.Object):Z
+- f:getDeferredApplyActions():java.util.List
+- f:getDiff():com.intellij.platform.workspace.storage.MutableEntityStorage
+- f:getProgressReporter():com.intellij.platform.util.progress.SequentialProgressReporter
+- f:getProject():com.intellij.openapi.project.Project
+- f:getResolver():org.jetbrains.bazel.sync.workspace.BazelWorkspaceResolveService
+- f:getServer():org.jetbrains.bsp.protocol.BazelServerFacade
+- f:getSyncScope():org.jetbrains.bazel.sync.scope.ProjectSyncScope
+- f:getTaskId():org.jetbrains.bsp.protocol.TaskId
+- f:getWorkspace():org.jetbrains.bazel.sync.workspace.BazelResolvedWorkspace
+- hashCode():I
+f:org.jetbrains.bazel.workspacemodel.entities.JvmBinaryJarsEntityModifications
+- sf:createJvmBinaryJarsEntity(java.util.List,com.intellij.platform.workspace.storage.EntitySource):org.jetbrains.bazel.workspacemodel.entities.JvmBinaryJarsEntityBuilder
+f:org.jetbrains.bazel.workspacemodel.entities.ScalaAddendumEntityModifications
+- sf:createScalaAddendumEntity(java.lang.String,java.util.List,java.util.List,com.intellij.platform.workspace.storage.EntitySource):org.jetbrains.bazel.workspacemodel.entities.ScalaAddendumEntityBuilder

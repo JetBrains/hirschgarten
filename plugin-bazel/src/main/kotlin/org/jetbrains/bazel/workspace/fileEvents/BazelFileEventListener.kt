@@ -40,6 +40,8 @@ import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.coroutines.BazelCoroutineService
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.magicmetamodel.formatAsModuleName
+import org.jetbrains.bazel.progress.ShowConsole
+import org.jetbrains.bazel.progress.syncConsole
 import org.jetbrains.bazel.projectAware.BazelProjectAware
 import org.jetbrains.bazel.run.task.BazelBuildTaskListener
 import org.jetbrains.bazel.server.connection.connection
@@ -49,14 +51,10 @@ import org.jetbrains.bazel.target.TargetUtils
 import org.jetbrains.bazel.target.moduleEntity
 import org.jetbrains.bazel.target.targetUtils
 import org.jetbrains.bazel.taskEvents.BazelTaskEventsService
-import org.jetbrains.bazel.ui.console.ShowConsole
-import org.jetbrains.bazel.ui.console.TaskConsole
-import org.jetbrains.bazel.ui.console.syncConsole
 import org.jetbrains.bsp.protocol.InverseSourcesParams
 import org.jetbrains.bsp.protocol.TaskGroupId
 import org.jetbrains.bsp.protocol.TaskId
 import java.nio.file.Path
-import java.util.UUID
 import kotlin.io.path.extension
 import kotlin.io.path.name
 import kotlin.random.Random
