@@ -833,7 +833,6 @@ internal class AspectBazelProjectMapper(
       "java_library",
       "java_binary",
       "java_test",
-      "java_import",
       "kt_jvm_library",
       "kt_jvm_binary",
       "kt_jvm_test",
