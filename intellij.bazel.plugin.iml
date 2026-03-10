@@ -12,6 +12,7 @@
       <sourceFolder url="file://$MODULE_DIR$/server/commons/src/main/kotlin" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/server/bazelrunner/src/main/kotlin" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/server/resources" type="java-resource" />
+      <sourceFolder url="file://$MODULE_DIR$/plugin-bazel/src/main/gen" isTestSource="false" generated="true" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
