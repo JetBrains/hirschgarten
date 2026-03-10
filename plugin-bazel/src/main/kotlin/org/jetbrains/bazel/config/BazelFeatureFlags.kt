@@ -28,7 +28,6 @@ object BazelFeatureFlags {
   private const val AUTO_OPEN_PROJECT_IF_PRESENT = "bazel.project.auto.open.if.present"
   private const val ENABLE_BAZEL_QUERY_TAB = "bazel.query.tab.enabled"
   private const val EXCLUDE_SYMLINKS_FROM_FILE_WATCHER_VIA_REFLECTION = "bazel.exclude.symlinks.from.file.watcher.via.reflection"
-  private const val FIND_IN_FILES_NON_INDEXABLE = "bazel.find.in.files.non.indexable"
   private const val SYNTHETIC_RUN_ENABLE = "bazel.run.synthetic.enable"
   private const val SYNTHETIC_RUN_DISABLE_VISIBILITY_CHECK = "bazel.run.synthetic.disable.visibility.check"
 
@@ -85,9 +84,6 @@ object BazelFeatureFlags {
 
   val excludeSymlinksFromFileWatcherViaReflection: Boolean
     get() = isEnabled(EXCLUDE_SYMLINKS_FROM_FILE_WATCHER_VIA_REFLECTION)
-
-  val findInFilesNonIndexable: Boolean
-    get() = isEnabled(FIND_IN_FILES_NON_INDEXABLE)
 
   val runConfigRunWithBazel: Boolean
     get() = isEnabled(RUN_CONFIG_RUN_WITH_BAZEL)
