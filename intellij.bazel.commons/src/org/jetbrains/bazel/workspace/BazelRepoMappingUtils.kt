@@ -1,6 +1,8 @@
 package org.jetbrains.bazel.languages.starlark.repomapping
 
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.openapi.vfs.isFile
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.commons.constants.Constants.WORKSPACE_FILE_NAMES
 import org.jetbrains.bazel.label.AmbiguousEmptyTarget
@@ -24,6 +26,14 @@ fun findContainingBazelRepo(path: Path): Path? =
   path.allAncestorsSequence().firstOrNull {
     WORKSPACE_FILE_NAMES.any { workspaceFileName ->
       it.resolve(workspaceFileName).isRegularFile()
+    }
+  }
+
+@ApiStatus.Internal
+fun findContainingBazelRepo(path: VirtualFile): VirtualFile? =
+  generateSequence(path) { it.parent }.firstOrNull {
+    WORKSPACE_FILE_NAMES.any { workspaceFileName ->
+      it.findChild(workspaceFileName)?.isFile == true
     }
   }
 
@@ -95,11 +105,10 @@ fun Label.toCanonicalLabelOrThis(project: Project): ResolvedLabel? = toCanonical
 
 @ApiStatus.Internal
 fun Label.singleTarget(): SingleTarget? {
-  val oldTarget = target
-  return when (oldTarget) {
-    is AmbiguousEmptyTarget -> SingleTarget(packagePath.pathSegments.lastOrNull() ?: return null)
+  return when (val oldTarget = target) {
+    is AmbiguousEmptyTarget -> packagePath.pathSegments.lastOrNull()?.let { SingleTarget(it) }
     is SingleTarget -> oldTarget
-    else -> return null
+    else -> null
   }
 }
 
@@ -113,7 +122,7 @@ fun Label.toShortString(project: Project): String {
   val targetPart =
     when {
       label.target is AmbiguousEmptyTarget -> ""
-      label.target is SingleTarget && (label.target as SingleTarget).targetName == (label.packagePath as? Package)?.name() -> ""
+      label.target is SingleTarget && label.target.targetName == (label.packagePath as? Package)?.name() -> ""
       else -> ":${label.target}"
     }
   return "$repoPart//$packagePart$targetPart"
