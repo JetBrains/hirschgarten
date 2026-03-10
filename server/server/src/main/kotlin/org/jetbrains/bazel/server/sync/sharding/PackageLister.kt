@@ -63,7 +63,7 @@ internal object PackageLister {
     pathResolver: BazelPathsResolver,
     bazelInfo: BazelInfo,
     featureFlags: FeatureFlags,
-    calculatedBazelSymlinks: List<Path>,
+    calculatedBazelSymlinks: Set<Path>,
     dirs: MutableList<Path>,
     output: MutableList<Label>,
   ) {
@@ -86,8 +86,8 @@ internal object PackageLister {
     )
   }
 
-  fun Path.isEligibleForTraversal(bazelInfo: BazelInfo, calculatedBazelSymlinks: List<Path>): Boolean =
-    this != bazelInfo.dotBazelBsp() && !calculatedBazelSymlinks.any { it == this }
+  fun Path.isEligibleForTraversal(bazelInfo: BazelInfo, calculatedBazelSymlinks: Set<Path>): Boolean =
+    this != bazelInfo.dotBazelBsp() && !calculatedBazelSymlinks.contains(this)
 
   fun Path.containsBuildFile(): Boolean = Constants.BUILD_FILE_NAMES.any { resolve(it).isRegularFile() }
 }
