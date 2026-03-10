@@ -4,12 +4,15 @@ import com.intellij.platform.workspace.jps.entities.ModuleEntity
 import com.intellij.platform.workspace.storage.WorkspaceEntity
 import com.intellij.platform.workspace.storage.annotations.Parent
 import com.intellij.platform.workspace.storage.url.VirtualFileUrl
+import org.jetbrains.annotations.ApiStatus
 
-internal interface JvmBinaryJarsEntity : WorkspaceEntity {
+@ApiStatus.Internal
+interface JvmBinaryJarsEntity : WorkspaceEntity {
   val jars: List<VirtualFileUrl>
 
   @Parent
   val module: ModuleEntity
 }
 
-internal val ModuleEntity.jvmBinaryJarsEntity: JvmBinaryJarsEntity? by WorkspaceEntity.extension()
+@get:ApiStatus.Internal
+val ModuleEntity.jvmBinaryJarsEntity: JvmBinaryJarsEntity? by WorkspaceEntity.extension()
