@@ -1,6 +1,8 @@
 package org.jetbrains.bazel.languages.starlark.repomapping
 
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.openapi.vfs.isFile
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.commons.constants.Constants.WORKSPACE_FILE_NAMES
 import org.jetbrains.bazel.label.AmbiguousEmptyTarget
@@ -20,6 +22,13 @@ internal fun findContainingBazelRepo(path: Path): Path? =
   path.allAncestorsSequence().firstOrNull {
     WORKSPACE_FILE_NAMES.any { workspaceFileName ->
       it.resolve(workspaceFileName).isRegularFile()
+    }
+  }
+
+internal fun findContainingBazelRepo(path: VirtualFile): VirtualFile? =
+  generateSequence(path) { it.parent }.firstOrNull {
+    WORKSPACE_FILE_NAMES.any { workspaceFileName ->
+      it.findChild(workspaceFileName)?.isFile == true
     }
   }
 
