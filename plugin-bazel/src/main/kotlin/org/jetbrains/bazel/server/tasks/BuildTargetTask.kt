@@ -9,7 +9,6 @@ import kotlinx.coroutines.coroutineScope
 import org.jetbrains.bazel.action.saveAllFiles
 import org.jetbrains.bazel.commons.BazelStatus
 import org.jetbrains.bazel.config.BazelPluginBundle
-import org.jetbrains.bazel.coroutines.BazelCoroutineService
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.languages.starlark.repomapping.toShortString
 import org.jetbrains.bazel.run.task.BazelBuildTaskListener
@@ -36,6 +35,7 @@ suspend fun runBuildTargetTask(
   project: Project,
   isDebug: Boolean,
   buildTargetTask: BuildTargetTask,
+  customRedoAction: (suspend () -> Unit)? = null,
 ): BazelStatus {
   saveAllFiles()
   return withBackgroundProgress(project, BazelPluginBundle.message("background.progress.building.targets")) {
@@ -62,8 +62,9 @@ suspend fun runBuildTargetTask(
           title = BazelPluginBundle.message("console.task.build.title"),
           message = startBuildMessage,
           cancelAction = { this@coroutineScope.cancel() },
-          redoAction = {
-            BazelCoroutineService.getInstance(project).start { runBuildTargetTask(targetIds, project, isDebug, buildTargetTask) }
+          redoAction = customRedoAction ?: {
+            runBuildTargetTask(targetIds, project, isDebug, buildTargetTask)
+            Unit
           },
         )
 
@@ -97,4 +98,5 @@ suspend fun runBuildTargetTask(
   targetIds: List<Label>,
   project: Project,
   isDebug: Boolean = false,
-): BazelStatus = runBuildTargetTask(targetIds, project, isDebug, DefaultBuildTargetTask)
+  customRedoAction: (suspend () -> Unit)? = null,
+): BazelStatus = runBuildTargetTask(targetIds, project, isDebug, DefaultBuildTargetTask, customRedoAction)

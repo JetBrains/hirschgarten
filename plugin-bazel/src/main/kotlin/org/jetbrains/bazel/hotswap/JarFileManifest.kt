@@ -15,30 +15,26 @@
  */
 package org.jetbrains.bazel.hotswap
 
-import com.intellij.execution.RunCanceledByUserException
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.util.containers.MultiMap
-import org.jetbrains.bazel.config.BazelPluginBundle
 import java.io.IOException
 import java.nio.file.Path
 import java.nio.file.attribute.FileTime
-import java.util.concurrent.ExecutionException
 import java.util.jar.JarFile
 
 /**
  * A manifest of .class file hashes for jars needed at runtime. Used for HotSwapping.
  * The implementation assumes the source for .class file can be found exclusively from jar files.
  * */
-class ClassFileManifest private constructor(
+class JarFileManifest private constructor(
   // jar file timestamps
   private val jarFileState: Map<Path, FileTime>,
   // per-jar manifest of .class file hashes
   private val jarManifests: Map<Path, JarManifest>,
 ) {
-  /** A per-jar map of .class files changed between manifests  */
-  data class Diff(val perJarModifiedClasses: MultiMap<Path, String>)
+  data class Diff(val perJarModifiedFiles: MultiMap<Path, String>)
 
-  /** .class file manifest for a single jar.  */
+  /** file manifest for a single jar.  */
   private data class JarManifest(val jar: Path, val nameToHash: Map<String, Long>) {
     companion object {
       fun build(file: Path): JarManifest? {
@@ -49,13 +45,14 @@ class ClassFileManifest private constructor(
             jar
               .entries()
               .asSequence()
-              .filter { entry -> entry.name.endsWith(".class") }
+              .filter { entry -> !entry.isDirectory }
               .associateBy(
                 keySelector = { it.name },
                 valueTransform = { it.crc },
               ),
           )
-        } catch (e: IOException) {
+        }
+        catch (e: IOException) {
           logger.warn(
             "Error reading jar file: $file",
             e,
@@ -64,71 +61,56 @@ class ClassFileManifest private constructor(
         }
       }
 
-      /** Returns the list of classes changed in the new manifest.  */
+      /** Returns the list of files changed in the new manifest. */
       fun diff(oldManifest: JarManifest?, newManifest: JarManifest): List<String> =
         newManifest
           .nameToHash
           .entries
-          .filter { it.value != oldManifest?.nameToHash[it.key] }
+          .filter {
+            val oldHash = oldManifest?.nameToHash[it.key]
+            it.value != oldHash
+          }
           .map { it.key }
     }
   }
 
   companion object {
     private val logger: Logger =
-      Logger.getInstance(ClassFileManifest::class.java)
+      Logger.getInstance(JarFileManifest::class.java)
 
-    /** Returns a per-jar map of .class files changed in the new manifest  */
-    fun modifiedClasses(oldManifest: ClassFileManifest?, newManifest: ClassFileManifest): Diff {
-      val map = MultiMap<Path, String>()
+    /** Returns a per-jar map of files changed in the new manifest  */
+    fun diffJarManifests(oldManifest: JarFileManifest?, newManifest: JarFileManifest): Diff {
+      val changedFilesMap = MultiMap<Path, String>()
       for (entry in newManifest.jarManifests.entries) {
         // quick test for object equality -- jars are often not rebuilt
         val old = oldManifest?.jarManifests[entry.key]
         if (old == entry.value) {
           continue
         }
-        val changedClasses =
+        val changedFiles =
           JarManifest.diff(
             old,
             entry.value,
           )
-        if (!changedClasses.isEmpty()) {
-          map.put(entry.key, changedClasses)
+        if (!changedFiles.isEmpty()) {
+          changedFilesMap.put(entry.key, changedFiles)
         }
       }
-      return Diff(map)
+      return Diff(perJarModifiedFiles = changedFilesMap)
     }
 
-    fun build(jars: List<Path>, previousManifest: ClassFileManifest?): ClassFileManifest {
-      try {
-        val diff =
-          FilesDiff.diffFileTimestamps(
-            previousManifest?.jarFileState,
-            jars,
-          )
-
-        val jarManifests = mutableMapOf<Path, JarManifest>()
-        jars.forEach { file ->
-          if (!diff.updatedFiles.contains(file)) {
-            previousManifest?.jarManifests?.get(file)?.let { jarManifests.put(file, it) }
-          }
+    fun build(jars: Collection<Path>, previousManifest: JarFileManifest?): JarFileManifest {
+      val diff = FilesDiff.diffFileTimestamps(previousManifest?.jarFileState, jars)
+      val jarManifests = mutableMapOf<Path, JarManifest>()
+      for (file in jars) {
+        if (!diff.updatedFiles.contains(file)) {
+          previousManifest?.jarManifests?.get(file)?.let { jarManifests[file] = it }
         }
-        buildJarManifests(diff.updatedFiles)
-          .forEach { m ->
-            jarManifests.put(
-              m.jar,
-              m,
-            )
-          }
-        return ClassFileManifest(
-          diff.newFileState,
-          jarManifests,
-        )
-      } catch (_: InterruptedException) {
-        throw RunCanceledByUserException()
-      } catch (e: ExecutionException) {
-        throw com.intellij.execution.ExecutionException(BazelPluginBundle.message("hotswap.error.parsing.jars"), e)
       }
+      for (m in buildJarManifests(diff.updatedFiles)) {
+        jarManifests[m.jar] = m
+      }
+      return JarFileManifest(diff.newFileState, jarManifests)
     }
 
     private fun buildJarManifests(jars: Collection<Path>): List<JarManifest> = jars.mapNotNull { jar -> JarManifest.build(jar) }

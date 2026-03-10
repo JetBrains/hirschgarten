@@ -130,11 +130,6 @@
     />
     <extensionPoint
       dynamic="true"
-      interface="org.jetbrains.bazel.extensionPoints.JvmBinaryJarsExtension"
-      qualifiedName="org.jetbrains.bazel.jvmBinaryJarsExtension"
-    />
-    <extensionPoint
-      dynamic="true"
       interface="org.jetbrains.bazel.runnerAction.LocalJvmRunnerRunConfigurationProvider"
       qualifiedName="org.jetbrains.bazel.localJvmRunnerRunConfigurationProvider"
     />
@@ -218,6 +213,10 @@
                     dynamic="true"/>
     <extensionPoint qualifiedName="org.jetbrains.bazel.bepEventHandlerProvider"
                     interface="org.jetbrains.bazel.server.bep.BepEventHandlerProvider"
+                    dynamic="true"
+    />
+    <extensionPoint qualifiedName="org.jetbrains.bazel.hotSwapHook"
+                    interface="org.jetbrains.bazel.hotswap.HotSwapHook"
                     dynamic="true"
     />
   </extensionPoints>
