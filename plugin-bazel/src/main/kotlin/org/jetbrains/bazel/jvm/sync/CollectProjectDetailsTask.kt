@@ -28,6 +28,8 @@ import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.tran
 import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.projectNameToJdkName
 import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.scalaVersionToScalaSdkName
 import org.jetbrains.bazel.performance.bspTracer
+import org.jetbrains.bazel.progress.syncConsole
+import org.jetbrains.bazel.progress.withSubtask
 import org.jetbrains.bazel.scala.sdk.ScalaSdk
 import org.jetbrains.bazel.scala.sdk.scalaSdkExtension
 import org.jetbrains.bazel.scala.sdk.scalaSdkExtensionExists
@@ -36,8 +38,6 @@ import org.jetbrains.bazel.sync.scope.ProjectSyncScope
 import org.jetbrains.bazel.sync.workspace.BazelResolvedWorkspace
 import org.jetbrains.bazel.sync.workspace.BazelWorkspaceResolveService
 import org.jetbrains.bazel.target.targetUtils
-import org.jetbrains.bazel.ui.console.syncConsole
-import org.jetbrains.bazel.ui.console.withSubtask
 import org.jetbrains.bazel.workspacemodel.entities.JavaModule
 import org.jetbrains.bazel.workspacemodel.entities.Module
 import org.jetbrains.bsp.protocol.BuildTarget

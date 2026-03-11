@@ -1,0 +1,15 @@
+org.jetbrains.bazel.server.bep.BepEventHandler
+- a:handleEvent(com.google.devtools.build.lib.buildeventstream.BuildEventStreamProtos$BuildEvent):Z
+f:org.jetbrains.bazel.server.bep.BepEventHandlerContext
+- <init>(org.jetbrains.bsp.protocol.BazelTaskEventsHandler,org.jetbrains.bazel.server.diagnostics.DiagnosticsService):V
+- f:getDiagnosticsService():org.jetbrains.bazel.server.diagnostics.DiagnosticsService
+- f:getTaskEventsHandler():org.jetbrains.bsp.protocol.BazelTaskEventsHandler
+org.jetbrains.bazel.server.bep.BepEventHandlerProvider
+- sf:Companion:org.jetbrains.bazel.server.bep.BepEventHandlerProvider$Companion
+- a:create(org.jetbrains.bazel.server.bep.BepEventHandlerContext):org.jetbrains.bazel.server.bep.BepEventHandler
+- s:getEP_NAME():com.intellij.openapi.extensions.ExtensionPointName
+f:org.jetbrains.bazel.server.bep.BepEventHandlerProvider$Companion
+f:org.jetbrains.bazel.server.diagnostics.DiagnosticsService
+- <init>(java.nio.file.Path):V
+- f:extractDiagnostics(java.util.List,org.jetbrains.bazel.label.Label,org.jetbrains.bsp.protocol.TaskId,Z,Z):java.util.List
+- bs:extractDiagnostics$default(org.jetbrains.bazel.server.diagnostics.DiagnosticsService,java.util.List,org.jetbrains.bazel.label.Label,org.jetbrains.bsp.protocol.TaskId,Z,Z,I,java.lang.Object):java.util.List

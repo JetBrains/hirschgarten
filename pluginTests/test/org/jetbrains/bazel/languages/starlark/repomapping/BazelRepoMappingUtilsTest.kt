@@ -12,7 +12,7 @@ import org.junit.runners.JUnit4
 class BazelRepoMappingUtilsTest : BasePlatformTestCase() {
   override fun setUp() {
     super.setUp()
-    BazelRepoMappingService.Companion.getInstance(project).apparentRepoNameToCanonicalName = mapOf("" to "", "repo" to "repo~", "repo2" to "repo2+")
+    PersistentBazelRepoMappingService.getInstance(project).apparentRepoNameToCanonicalName = mapOf("" to "", "repo" to "repo~", "repo2" to "repo2+")
   }
 
   @Test
