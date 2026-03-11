@@ -1,7 +1,7 @@
 package org.jetbrains.bazel.server.connection
 
+import com.intellij.openapi.components.serviceAsync
 import com.intellij.openapi.project.Project
-import java.util.concurrent.atomic.AtomicReference
 import org.jetbrains.bazel.bazelrunner.BazelInfoResolver
 import org.jetbrains.bazel.bazelrunner.BazelProcessLauncherProvider
 import org.jetbrains.bazel.bazelrunner.BazelRunner
@@ -11,8 +11,6 @@ import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.install.EnvironmentCreator
 import org.jetbrains.bazel.languages.bazelversion.psi.BazelVersionLiteral
 import org.jetbrains.bazel.languages.bazelversion.service.BazelVersionWorkspaceResolver
-import org.jetbrains.bazel.languages.projectview.ProjectViewService
-import org.jetbrains.bazel.languages.projectview.ProjectViewToWorkspaceContextConverter
 import org.jetbrains.bazel.server.bsp.BaselServerFacadeImpl
 import org.jetbrains.bazel.server.bsp.info.BspInfo
 import org.jetbrains.bazel.server.bsp.managers.BazelBspAspectsManager
@@ -22,11 +20,14 @@ import org.jetbrains.bazel.server.bsp.utils.InternalAspectsResolver
 import org.jetbrains.bazel.server.sync.BazelSyncProjectProvider
 import org.jetbrains.bazel.server.sync.BspProjectMapper
 import org.jetbrains.bazel.server.sync.ExecuteService
-import org.jetbrains.bazel.server.sync.firstPhase.FirstPhaseProjectResolver
 import org.jetbrains.bazel.server.sync.ProjectResolver
+import org.jetbrains.bazel.server.sync.firstPhase.FirstPhaseProjectResolver
 import org.jetbrains.bazel.taskEvents.BazelTaskEventsService
+import org.jetbrains.bazel.workspace.BazelExecutableProvider
+import org.jetbrains.bazel.workspace.WorkspaceContextProvider
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bsp.protocol.BazelServerFacade
+import java.util.concurrent.atomic.AtomicReference
 
 internal class DefaultBazelServerConnection(private val project: Project) : BazelServerConnection {
   private val workspaceRoot = project.rootDir.toNioPath()
@@ -46,11 +47,8 @@ internal class DefaultBazelServerConnection(private val project: Project) : Baze
     // ensure `.bazelbsp` directory exists and functions
     environmentCreator.create()
 
-    val workspaceContext = ProjectViewToWorkspaceContextConverter.convert(
-      projectView = ProjectViewService.getInstance(project).getProjectView(),
-      workspaceRoot = project.rootDir.toNioPath(),
-    )
-
+    val bazelExecutable = BazelExecutableProvider.computeBazelExecutableOrFail(project)
+    val workspaceContext = project.serviceAsync<WorkspaceContextProvider>().computeWorkspaceContext(project, bazelExecutable)
     var (server, oldVersionLiteral) = this.serverAndVersionLiteral.get()
     val projectPath = project.rootDir.toNioPath()
     val resolvedVersion = BazelVersionWorkspaceResolver.resolveBazelVersionFromWorkspace(projectPath)
@@ -123,7 +121,7 @@ internal class DefaultBazelServerConnection(private val project: Project) : Baze
       BspProjectMapper(
         bazelRunner = bazelRunner,
         bspInfo = bspInfo,
-        workspaceContext = workspaceContext
+        workspaceContext = workspaceContext,
       )
 
     return BaselServerFacadeImpl(
@@ -134,4 +132,8 @@ internal class DefaultBazelServerConnection(private val project: Project) : Baze
       bazelInfo = bazelInfo,
     )
   }
+}
+
+internal class BazelServerServiceImpl(project: Project) : BazelServerService {
+  override val connection: BazelServerConnection by lazy { DefaultBazelServerConnection(project) }
 }

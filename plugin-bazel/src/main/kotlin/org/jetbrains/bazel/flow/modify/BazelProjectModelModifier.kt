@@ -26,7 +26,7 @@ import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkListLitera
 import org.jetbrains.bazel.languages.starlark.references.findBuildFile
 import org.jetbrains.bazel.languages.starlark.rename.StarlarkElementGenerator
 import org.jetbrains.bazel.languages.starlark.repomapping.toShortString
-import org.jetbrains.bazel.target.addLibraryModulePrefix
+import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.LibraryGraph
 import org.jetbrains.bazel.target.targetUtils
 import org.jetbrains.bazel.ui.notifications.BazelBalloonNotifier
 import org.jetbrains.bazel.ui.widgets.jumpToBuildFile
@@ -66,7 +66,7 @@ internal class BazelProjectModelModifier(private val project: Project) : JavaPro
       val labelToInsert = library.name?.let { libraryId -> project.targetUtils.getTargetForLibraryId(libraryId) }
       if (tryAddingModuleDependencyToBuildFile(from, labelToInsert)) {
         // We should actually depend on the library module, not the library itself
-        val libraryModuleName = checkNotNull(library.name).addLibraryModulePrefix()
+        val libraryModuleName = LibraryGraph.addLibraryModulePrefix(checkNotNull(library.name))
         val libraryModule = ModuleManager.getInstance(project).findModuleByName(libraryModuleName)
         if (libraryModule != null) {
           ideaProjectModelModifier.addModuleDependency(from, libraryModule, scope, true)?.await()

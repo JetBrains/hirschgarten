@@ -10,7 +10,7 @@ import com.intellij.openapi.util.Key
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runInterruptible
-import org.jetbrains.bazel.logger.BspClientTestNotifier
+import org.jetbrains.bazel.util.BspClientTestNotifier
 import org.jetbrains.bazel.run.BazelProcessHandler
 import org.jetbrains.bazel.server.bep.TestXmlParser
 import org.jetbrains.bazel.sync.environment.projectCtx

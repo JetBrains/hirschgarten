@@ -17,11 +17,11 @@ import org.jetbrains.bazel.commons.BazelStatus
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.languages.starlark.repomapping.toShortString
+import org.jetbrains.bazel.progress.ConsoleService
 import org.jetbrains.bazel.projectAware.BazelProjectModuleBuildTasksTracker
 import org.jetbrains.bazel.run.config.HotswappableRunConfiguration
 import org.jetbrains.bazel.server.tasks.runBuildTargetTask
 import org.jetbrains.bazel.target.getModule
-import org.jetbrains.bazel.ui.console.ConsoleService
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.JvmEnvironmentItem
 import org.jetbrains.bsp.protocol.TaskGroupId

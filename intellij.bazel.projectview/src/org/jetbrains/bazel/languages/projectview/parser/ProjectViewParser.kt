@@ -1,0 +1,147 @@
+package org.jetbrains.bazel.languages.projectview.parser
+
+import com.intellij.lang.PsiBuilder
+import com.intellij.openapi.application.ApplicationManager
+import com.intellij.psi.tree.IElementType
+import org.jetbrains.bazel.config.BazelProjectViewBundle
+import org.jetbrains.bazel.languages.projectview.elements.ProjectViewElementType
+import org.jetbrains.bazel.languages.projectview.elements.ProjectViewElementTypes
+import org.jetbrains.bazel.languages.projectview.lexer.ProjectViewTokenType
+
+internal class ProjectViewParser(private val builder: PsiBuilder) {
+  fun parseFile() {
+    builder.setDebugMode(ApplicationManager.getApplication().isUnitTestMode)
+    while (!builder.eof()) {
+      if (matches(ProjectViewTokenType.NEWLINE)) {
+        continue
+      }
+      parseBlock()
+    }
+  }
+
+  /** Parse an import statement or a section. */
+  fun parseBlock() {
+    val sectionMarker = builder.mark()
+    when (getCurrentTokenType()) {
+      ProjectViewTokenType.SECTION_KEYWORD -> {
+        val sectionNameMarker = builder.mark()
+        builder.advanceLexer()
+        sectionNameMarker.done(ProjectViewElementTypes.SECTION_NAME)
+        expect(ProjectViewTokenType.COLON)
+        if (!matches(ProjectViewTokenType.NEWLINE)) {
+          parseItem(ProjectViewElementTypes.SECTION_ITEM)
+        }
+        parseListItems()
+        sectionMarker.done(ProjectViewElementTypes.SECTION)
+        return
+      }
+      ProjectViewTokenType.IMPORT_KEYWORD -> {
+        builder.advanceLexer()
+        parseItem(ProjectViewElementTypes.IMPORT_ITEM)
+        builder.advanceLexer()
+        sectionMarker.done(ProjectViewElementTypes.IMPORT)
+        return
+      }
+      ProjectViewTokenType.TRY_IMPORT_KEYWORD -> {
+        builder.advanceLexer()
+        parseItem(ProjectViewElementTypes.IMPORT_ITEM)
+        builder.advanceLexer()
+        sectionMarker.done(ProjectViewElementTypes.TRY_IMPORT)
+        return
+      }
+    }
+    // Error handling
+    when {
+      matches(ProjectViewTokenType.INDENT) ->
+        skipBlockAndError(sectionMarker, "Indented lines must be items of a list section.")
+      matches(ProjectViewTokenType.COLON) ->
+        skipBlockAndError(sectionMarker, "A line cannot begin with a colon.")
+      else -> skipBlockAndError(sectionMarker, "Unrecognized keyword: ${builder.tokenText}")
+    }
+  }
+
+  fun parseListItems() {
+    while (!builder.eof()) {
+      if (matches(ProjectViewTokenType.NEWLINE)) {
+        continue
+      }
+      if (!matches(ProjectViewTokenType.INDENT)) {
+        return
+      }
+      parseItem(ProjectViewElementTypes.SECTION_ITEM)
+    }
+  }
+
+  fun parseItem(itemType: ProjectViewElementType) {
+    val item = builder.mark()
+    skipToEndOfLine()
+    item.done(itemType)
+  }
+
+  fun skipBlockAndError(marker: PsiBuilder.Marker, message: String) {
+    while (!builder.eof()) {
+      if (builder.lookAhead(0) == ProjectViewTokenType.NEWLINE &&
+        builder.lookAhead(1) in blockHeaders
+      ) {
+        builder.advanceLexer()
+        break
+      }
+      builder.advanceLexer()
+    }
+    marker.error(message)
+  }
+
+  fun skipToEndOfLine() {
+    while (!builder.eof()) {
+      if (getCurrentTokenType() == ProjectViewTokenType.NEWLINE) {
+        return
+      }
+      builder.advanceLexer()
+    }
+  }
+
+  fun skipToNextLine() {
+    while (!builder.eof()) {
+      if (matches(ProjectViewTokenType.NEWLINE)) {
+        return
+      }
+      builder.advanceLexer()
+    }
+  }
+
+  /**
+   * Consume the current token if matches the provided token type and return true.
+   * Otherwise, return false and mark an error.
+   */
+  fun expect(type: ProjectViewTokenType): Boolean {
+    if (matches(type)) {
+      return true
+    }
+    builder.error(BazelProjectViewBundle.message("bazel.language.project.parser.error", type))
+    return false
+  }
+
+  /**
+   * Consume the current token if matches the provided token type and return true.
+   * Otherwise, return false.
+   */
+  fun matches(type: ProjectViewTokenType): Boolean {
+    if (getCurrentTokenType() == type) {
+      builder.advanceLexer()
+      return true
+    }
+    return false
+  }
+
+  fun getCurrentTokenType(): IElementType? = builder.tokenType
+
+  companion object {
+    private val blockHeaders =
+      setOf(
+        ProjectViewTokenType.IDENTIFIER,
+        ProjectViewTokenType.IMPORT_KEYWORD,
+        ProjectViewTokenType.TRY_IMPORT_KEYWORD,
+        ProjectViewTokenType.SECTION_KEYWORD,
+      )
+  }
+}

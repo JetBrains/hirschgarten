@@ -1,0 +1,91 @@
+package org.jetbrains.bazel.sync.workspace.languages.python
+
+import com.intellij.openapi.project.Project
+import org.jetbrains.bazel.commons.BazelPathsResolver
+import org.jetbrains.bazel.commons.LanguageClass
+import org.jetbrains.bazel.info.BspTargetInfo.ArtifactLocation
+import org.jetbrains.bazel.info.BspTargetInfo.PythonTargetInfo
+import org.jetbrains.bazel.info.BspTargetInfo.TargetInfo
+import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.server.label.label
+import org.jetbrains.bazel.sync.workspace.languages.LanguagePlugin
+import org.jetbrains.bazel.sync.workspace.languages.LanguagePluginContext
+import org.jetbrains.bazel.workspacecontext.WorkspaceContext
+import org.jetbrains.bsp.protocol.PythonBuildTarget
+import java.nio.file.Path
+
+internal class PythonLanguagePlugin(private val bazelPathsResolver: BazelPathsResolver, private val workspaceContext: WorkspaceContext) : LanguagePlugin<PythonBuildTarget> {
+  private var defaultInterpreter: Path? = null
+  private var defaultVersion: String? = null
+
+  override fun getSupportedLanguages(): Set<LanguageClass> = setOf(LanguageClass.PYTHON)
+
+  override fun prepareSync(project: Project, targets: Map<Label, TargetInfo>, workspaceContext: WorkspaceContext) {
+    val defaultTargetInfo = calculateDefaultTargetInfo(targets.values.asSequence())
+    defaultInterpreter =
+      defaultTargetInfo
+        ?.interpreter
+        ?.takeUnless { it.relativePath.isNullOrEmpty() }
+        ?.let { bazelPathsResolver.resolve(it) }
+    defaultVersion = defaultTargetInfo?.version
+  }
+
+  private fun calculateDefaultTargetInfo(targets: Sequence<TargetInfo>): PythonTargetInfo? =
+    targets
+      .filter(::hasPythonInterpreter)
+      .firstOrNull()
+      ?.pythonTargetInfo
+
+  private fun hasPythonInterpreter(targetInfo: TargetInfo): Boolean =
+    targetInfo.hasPythonTargetInfo() && targetInfo.pythonTargetInfo.hasInterpreter()
+
+  override suspend fun createBuildTargetData(context: LanguagePluginContext, target: TargetInfo): PythonBuildTarget? {
+    if (!target.hasPythonTargetInfo()) {
+      return null
+    }
+    val sourceDependencies =
+      if (context.target.hasPythonTargetInfo()) {
+        context.graph
+          .transitiveDependenciesWithoutRootTargets(context.target.label())
+          .flatMap(::getExternalSources)
+          .map(::calculateExternalSourcePath)
+          .distinct()
+          .toList()
+      } else {
+        emptyList()
+      }
+    val pythonTarget = target.pythonTargetInfo
+    val isCodeGenerator = target.sourcesList.isEmpty() && workspaceContext.pythonCodeGeneratorRuleNames.contains(target.kind)
+    return PythonBuildTarget(
+      version = pythonTarget.version.takeUnless(String::isNullOrEmpty) ?: defaultVersion,
+      interpreter = calculateInterpreterPath(interpreter = pythonTarget.interpreter) ?: defaultInterpreter,
+      imports = pythonTarget.importsList,
+      isCodeGenerator = isCodeGenerator,
+      generatedSources = if (isCodeGenerator) pythonTarget.generatedSourcesList.mapNotNull { bazelPathsResolver.resolve(it) } else emptyList(),
+      sourceDependencies = sourceDependencies,
+      mainFile = pythonTarget.main?.let { bazelPathsResolver.resolve(it) },
+      mainModule = pythonTarget.mainModule
+    )
+  }
+
+  private fun calculateInterpreterPath(interpreter: ArtifactLocation?): Path? =
+    interpreter
+      ?.takeUnless { it.relativePath.isNullOrEmpty() }
+      ?.let { bazelPathsResolver.resolve(it) }
+
+  private fun getExternalSources(targetInfo: TargetInfo): List<ArtifactLocation> =
+    targetInfo.sourcesList.mapNotNull { it.takeIf { it.isExternal } }
+
+  private fun calculateExternalSourcePath(externalSource: ArtifactLocation): Path {
+    val path = bazelPathsResolver.resolve(externalSource)
+    return bazelPathsResolver.resolve(findSitePackagesSubdirectory(path) ?: path)
+  }
+
+  private tailrec fun findSitePackagesSubdirectory(path: Path?): Path? =
+    when {
+      path == null -> null
+      // PyNames.SITE_PACKAGES
+      path.endsWith("site-packages") -> path
+      else -> findSitePackagesSubdirectory(path.parent)
+    }
+}

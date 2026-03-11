@@ -18,13 +18,15 @@ import kotlin.jvm.optionals.getOrNull
  * Returns the set of excluded directories, i.e., explicit excludes from project view and Bazel symlinks.
  * Returns `null` if the project has not been synced yet or no project model is present after clearing cache/IDEA update
  */
-internal fun Project.excludedRoots(): Set<VirtualFile>? =
+@ApiStatus.Internal
+fun Project.excludedRoots(): Set<VirtualFile>? =
   (WorkspaceModel.getInstance(this) as WorkspaceModelInternal).entityStorage.cachedValue(excludedRoots).getOrNull()
 
 /**
  * @see [excludedRoots]
  */
-internal fun Project.includedRoots(): Set<VirtualFile>? =
+@ApiStatus.Internal
+fun Project.includedRoots(): Set<VirtualFile>? =
   (WorkspaceModel.getInstance(this) as WorkspaceModelInternal).entityStorage.cachedValue(includedRoots).getOrNull()
 
 private val excludedRoots: CachedValue<Optional<Set<VirtualFile>>> =
