@@ -19,6 +19,8 @@ import com.intellij.ide.starter.driver.engine.BackgroundRun
 import com.intellij.ide.starter.driver.engine.runIdeWithDriver
 import com.intellij.ide.starter.ide.IDETestContext
 import com.intellij.openapi.ui.playback.commands.AbstractCommand.CMD_PREFIX
+import com.intellij.tools.ide.metrics.collector.telemetry.OpentelemetrySpanJsonParser
+import com.intellij.tools.ide.metrics.collector.telemetry.SpanFilter
 import com.intellij.tools.ide.performanceTesting.commands.CommandChain
 import com.intellij.tools.ide.performanceTesting.commands.DebugStepTypes
 import com.intellij.tools.ide.performanceTesting.commands.Keys
@@ -56,6 +58,7 @@ import org.junit.jupiter.api.Order
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.api.TestMethodOrder
+import kotlin.io.path.div
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
 
@@ -109,7 +112,7 @@ class SimpleKotlinCombinedTest : IdeStarterBaseProjectTest() {
   @Test @Order(100)
   fun `resync should recover after deleting bazelbsp directory`() = recoverDotBazelBsp()
 
-  @Test @Order(101)
+  @Test @Order(Int.MAX_VALUE)
   fun `hotswap should reload modified code during debug session`() = hotswap()
 
   @AfterAll
@@ -308,7 +311,7 @@ class SimpleKotlinCombinedTest : IdeStarterBaseProjectTest() {
   }
 
   private fun hotswap() {
-    withDriver(bgRun) {
+    val startResult = bgRun.useDriverAndCloseIde {
       ideFrame {
         step("Set breakpoints and start debug") {
           execute { openFile("SimpleKotlinTest.kt") }
@@ -353,5 +356,16 @@ class SimpleKotlinCombinedTest : IdeStarterBaseProjectTest() {
         }
       }
     }
+
+    val notificationSpanElements =
+      OpentelemetrySpanJsonParser(SpanFilter.nameEquals("show notification")).getSpanElements(
+        startResult.runContext.logsDir / "opentelemetry.json",
+      )
+    val hotSwapSuccess = notificationSpanElements.any {
+      it.tags.any { tagsPair ->
+        tagsPair.second.contains("Code has been reloaded")
+      }
+    }
+    assert(hotSwapSuccess) { "Cannot find hotswap success message" }
   }
 }
