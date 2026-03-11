@@ -4,13 +4,11 @@ import com.intellij.debugger.impl.DebuggerSession
 import com.intellij.openapi.extensions.ExtensionPointName
 import org.jetbrains.annotations.ApiStatus
 
-@ApiStatus.Internal
 interface HotSwapHook {
   suspend fun onHotSwap(sessions: List<DebuggerSession>)
 
+  @ApiStatus.Internal
   companion object {
-    @JvmStatic
-    @ApiStatus.Internal
-    val EP_NAME: ExtensionPointName<HotSwapHook> = ExtensionPointName.create("org.jetbrains.bazel.hotSwapHook")
+    internal val EP_NAME: ExtensionPointName<HotSwapHook> = ExtensionPointName.create("org.jetbrains.bazel.hotSwapHook")
   }
 }

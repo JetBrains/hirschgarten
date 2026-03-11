@@ -59,7 +59,5 @@ f:org.jetbrains.bazel.sync.ProjectSyncHook$ProjectSyncHookEnvironment
 - f:getTaskId():org.jetbrains.bsp.protocol.TaskId
 - f:getWorkspace():org.jetbrains.bazel.sync.workspace.BazelResolvedWorkspace
 - hashCode():I
-f:org.jetbrains.bazel.workspacemodel.entities.JvmBinaryJarsEntityModifications
-- sf:createJvmBinaryJarsEntity(java.util.List,com.intellij.platform.workspace.storage.EntitySource):org.jetbrains.bazel.workspacemodel.entities.JvmBinaryJarsEntityBuilder
 f:org.jetbrains.bazel.workspacemodel.entities.ScalaAddendumEntityModifications
 - sf:createScalaAddendumEntity(java.lang.String,java.util.List,java.util.List,com.intellij.platform.workspace.storage.EntitySource):org.jetbrains.bazel.workspacemodel.entities.ScalaAddendumEntityBuilder

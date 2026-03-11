@@ -23,9 +23,11 @@ import com.intellij.platform.workspace.storage.instrumentation.EntityStorageInst
 import com.intellij.platform.workspace.storage.instrumentation.MutableEntityStorageInstrumentation
 import com.intellij.platform.workspace.storage.metadata.model.EntityMetadata
 import com.intellij.platform.workspace.storage.url.VirtualFileUrl
+import org.jetbrains.annotations.ApiStatus.Internal
 import org.jetbrains.bazel.workspacemodel.entities.JvmBinaryJarsEntity
 import org.jetbrains.bazel.workspacemodel.entities.JvmBinaryJarsEntityBuilder
 
+@Internal
 @GeneratedCodeApiVersion(3)
 @GeneratedCodeImplVersion(7)
 @OptIn(WorkspaceEntityInternalApi::class)
