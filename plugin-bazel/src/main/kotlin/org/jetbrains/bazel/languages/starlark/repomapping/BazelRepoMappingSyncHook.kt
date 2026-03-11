@@ -11,46 +11,31 @@ import com.intellij.openapi.project.Project
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.annotations.TestOnly
 import org.jetbrains.bazel.commons.BzlmodRepoMapping
-import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.sync.ProjectSyncHook
 import org.jetbrains.bazel.sync.ProjectSyncHook.ProjectSyncHookEnvironment
 import org.jetbrains.bazel.sync.withSubtask
+import org.jetbrains.bazel.workspace.BazelRepoMappingService
 import java.nio.file.Path
 import kotlin.io.path.Path
 
 @TestOnly
 @ApiStatus.Internal
 fun Project.injectCanonicalRepoNameToPath(canonicalRepoNameToPath: Map<String, Path>) {
-  val service = BazelRepoMappingService.getInstance(this)
+  val service = PersistentBazelRepoMappingService.getInstance(this)
   service.canonicalRepoNameToPath = canonicalRepoNameToPath
 }
 
 @TestOnly
 @ApiStatus.Internal
 fun Project.injectCanonicalRepoNameToApparentName(canonicalRepoNameToApparentName: Map<String, String>) {
-  val service = BazelRepoMappingService.getInstance(this)
+  val service = PersistentBazelRepoMappingService.getInstance(this)
   service.canonicalRepoNameToApparentName = canonicalRepoNameToApparentName
 }
-
-internal val Project.apparentRepoNameToCanonicalName: Map<String, String>
-  get() =
-    BazelRepoMappingService.getInstance(this).apparentRepoNameToCanonicalName.takeIf { it.isNotEmpty() }
-      ?: mapOf("" to "")
-
-internal val Project.canonicalRepoNameToApparentName: Map<String, String>
-  get() =
-    BazelRepoMappingService.getInstance(this).canonicalRepoNameToApparentName.takeIf { it.isNotEmpty() }
-      ?: mapOf("" to "")
-
-internal val Project.canonicalRepoNameToPath: Map<String, Path>
-  get() =
-    BazelRepoMappingService.getInstance(this).canonicalRepoNameToPath.takeIf { it.isNotEmpty() }
-      ?: mapOf("" to rootDir.toNioPath())
 
 internal class BazelRepoMappingSyncHook : ProjectSyncHook {
   override suspend fun onSync(environment: ProjectSyncHookEnvironment) {
     environment.withSubtask("Load bazel repo mapping") {
-      val bazelRepoMappingService = BazelRepoMappingService.getInstance(environment.project)
+      val bazelRepoMappingService = PersistentBazelRepoMappingService.getInstance(environment.project)
       val bazelRepoMappingResult = environment.server.workspaceBazelRepoMapping(environment.taskId)
       when (val mapping = bazelRepoMappingResult.repoMapping) {
         is BzlmodRepoMapping -> {
@@ -70,6 +55,7 @@ data class BazelRepoMappingServiceState(
   var canonicalRepoNameToPath: Map<String, String> = emptyMap(),
 )
 
+// TODO: rethink repo mapping handling, is shouldn't be stored inside PersistentStateComponent
 @State(
   name = "BazelRepoMappingService",
   storages = [Storage(StoragePathMacros.WORKSPACE_FILE)],
@@ -77,7 +63,7 @@ data class BazelRepoMappingServiceState(
 )
 @Service(Service.Level.PROJECT)
 @ApiStatus.Internal
-class BazelRepoMappingService : PersistentStateComponent<BazelRepoMappingServiceState> {
+class PersistentBazelRepoMappingService : PersistentStateComponent<BazelRepoMappingServiceState> {
   @Volatile
   var apparentRepoNameToCanonicalName: Map<String, String> = emptyMap()
     set(value) {
@@ -103,6 +89,16 @@ class BazelRepoMappingService : PersistentStateComponent<BazelRepoMappingService
   }
 
   companion object {
-    fun getInstance(project: Project): BazelRepoMappingService = project.service<BazelRepoMappingService>()
+    fun getInstance(project: Project): PersistentBazelRepoMappingService = project.service<PersistentBazelRepoMappingService>()
   }
+}
+
+// keep this service as adapter to have explicit service registration in xml
+internal class BazelRepoMappingServiceAdapter(private val project: Project) : BazelRepoMappingService {
+  override val apparentRepoNameToCanonicalName: Map<String, String>
+    get() = project.service<PersistentBazelRepoMappingService>().apparentRepoNameToCanonicalName
+  override val canonicalRepoNameToApparentName: Map<String, String>
+    get() = project.service<PersistentBazelRepoMappingService>().canonicalRepoNameToApparentName
+  override val canonicalRepoNameToPath: Map<String, Path>
+    get() = project.service<PersistentBazelRepoMappingService>().canonicalRepoNameToPath
 }

@@ -40,6 +40,7 @@ import org.jetbrains.bazel.label.SingleTarget
 import org.jetbrains.bazel.label.assumeResolved
 import org.jetbrains.bazel.languages.starlark.repomapping.toShortString
 import org.jetbrains.bazel.magicmetamodel.formatAsModuleName
+import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.LibraryGraph
 import org.jetbrains.bazel.target.TargetsCacheStorage.Companion.openStore
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.LibraryItem
@@ -278,12 +279,7 @@ class TargetUtils(private val project: Project, private val coroutineScope: Coro
   fun getTotalFileCount(): Int = db.getTotalFileCount()
 }
 
-private val LIBRARY_MODULE_PREFIX = "_aux.libraries."
-
-@ApiStatus.Internal
-fun String.addLibraryModulePrefix() = LIBRARY_MODULE_PREFIX + this
-
-internal fun String.isLibraryModule() = startsWith(LIBRARY_MODULE_PREFIX)
+internal fun String.isLibraryModule() = startsWith(LibraryGraph.LIBRARY_MODULE_PREFIX)
 
 val Project.targetUtils: TargetUtils
   @ApiStatus.Internal

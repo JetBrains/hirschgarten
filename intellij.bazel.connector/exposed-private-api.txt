@@ -1,0 +1,2 @@
+com/google/devtools/build/lib/buildeventstream/BuildEventStreamProtos$BuildEvent
+org/jetbrains/bsp/protocol/TaskId

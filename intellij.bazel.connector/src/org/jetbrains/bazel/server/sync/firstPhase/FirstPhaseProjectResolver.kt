@@ -1,0 +1,56 @@
+package org.jetbrains.bazel.server.sync.firstPhase
+
+import com.google.devtools.build.lib.query2.proto.proto2api.Build.Target
+import kotlinx.coroutines.coroutineScope
+import org.jetbrains.annotations.ApiStatus
+import org.jetbrains.bazel.bazelrunner.BazelRunner
+import org.jetbrains.bazel.bazelrunner.params.BazelFlag
+import org.jetbrains.bazel.commons.BazelInfo
+import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.server.bzlmod.calculateRepoMapping
+import org.jetbrains.bazel.server.model.PhasedSyncProject
+import org.jetbrains.bazel.workspacecontext.WorkspaceContext
+import org.jetbrains.bsp.protocol.BazelTaskEventsHandler
+import org.jetbrains.bsp.protocol.TaskId
+import org.jetbrains.bsp.protocol.asLogger
+import java.nio.file.Path
+
+@ApiStatus.Internal
+class FirstPhaseProjectResolver(
+  private val workspaceRoot: Path,
+  private val bazelRunner: BazelRunner,
+  private val workspaceContext: WorkspaceContext,
+  private val bazelInfo: BazelInfo,
+  private val taskEventsHandler: BazelTaskEventsHandler,
+) {
+  suspend fun resolve(taskId: TaskId): PhasedSyncProject =
+    coroutineScope {
+      // Use the already available workspaceContext
+      val command =
+        bazelRunner.buildBazelCommand(workspaceContext) {
+          query {
+            options.add("--output=streamed_proto")
+            options.add(BazelFlag.keepGoing())
+
+            addTargetsFromExcludableList(workspaceContext.targets)
+          }
+        }
+
+      val bazelResult =
+        bazelRunner
+          .runBazelCommand(command, logProcessOutput = false, taskId = taskId)
+          .waitAndGetResult()
+
+      val targets = generateSequence { Target.parseDelimitedFrom(bazelResult.stdout.inputStream()) }
+      val modules = targets.associateBy { Label.parse(it.rule.name) }
+
+      val repoMapping = calculateRepoMapping(workspaceContext, bazelRunner, bazelInfo, taskEventsHandler.asLogger(taskId), taskId)
+
+      PhasedSyncProject(
+        workspaceRoot = workspaceRoot,
+        bazelRelease = bazelInfo.release,
+        modules = modules,
+        repoMapping = repoMapping
+      )
+    }
+}

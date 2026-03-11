@@ -12,11 +12,11 @@ import com.intellij.platform.util.progress.SequentialProgressReporter
 import com.intellij.util.FileContentUtilCore
 import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.config.BazelPluginBundle
+import org.jetbrains.bazel.progress.syncConsole
+import org.jetbrains.bazel.progress.withSubtask
 import org.jetbrains.bazel.sync.ProjectPostSyncHook
 import org.jetbrains.bazel.sync.SyncCache
 import org.jetbrains.bazel.target.targetUtils
-import org.jetbrains.bazel.ui.console.syncConsole
-import org.jetbrains.bazel.ui.console.withSubtask
 import org.jetbrains.bsp.protocol.GoBuildTarget
 import org.jetbrains.bsp.protocol.TaskId
 import org.jetbrains.bsp.protocol.utils.extractGoBuildTarget

@@ -2,6 +2,7 @@ package org.jetbrains.bazel.commons
 
 import io.kotest.matchers.shouldBe
 import org.jetbrains.bazel.test.framework.annotation.BazelTest
+import org.jetbrains.bazel.util.Format
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.MethodSource

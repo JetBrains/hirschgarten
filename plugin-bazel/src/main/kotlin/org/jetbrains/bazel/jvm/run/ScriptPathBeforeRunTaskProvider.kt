@@ -16,6 +16,7 @@ import org.jetbrains.bazel.commons.BazelStatus
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.jvm.run.ScriptPathBeforeRunTaskProvider.Task
 import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.progress.TaskConsole
 import org.jetbrains.bazel.run.commandLine.transformProgramArguments
 import org.jetbrains.bazel.run.config.BazelRunConfiguration
 import org.jetbrains.bazel.run.state.HasBazelParams
@@ -24,7 +25,6 @@ import org.jetbrains.bazel.server.sync.DebugHelper
 import org.jetbrains.bazel.server.tasks.BuildTargetTask
 import org.jetbrains.bazel.server.tasks.DefaultBuildTargetTask
 import org.jetbrains.bazel.server.tasks.runBuildTargetTask
-import org.jetbrains.bazel.ui.console.TaskConsole
 import org.jetbrains.bsp.protocol.DebugType
 import org.jetbrains.bsp.protocol.BazelServerFacade
 import org.jetbrains.bsp.protocol.RunParams

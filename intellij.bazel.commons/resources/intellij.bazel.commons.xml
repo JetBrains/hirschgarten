@@ -1,0 +1,10 @@
+<idea-plugin xmlns:xi="http://www.w3.org/2001/XInclude">
+
+  <xi:include href="/intellij.bazel.commons.registry.xml"/>
+
+  <extensionPoints>
+    <extensionPoint qualifiedName="org.jetbrains.bazel.bazelExecutableProvider"
+                    interface="org.jetbrains.bazel.workspace.BazelExecutableProvider"
+                    dynamic="true"/>
+  </extensionPoints>
+</idea-plugin>

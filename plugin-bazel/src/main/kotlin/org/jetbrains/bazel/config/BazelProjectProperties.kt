@@ -1,6 +1,5 @@
 package org.jetbrains.bazel.config
 
-import com.google.common.annotations.VisibleForTesting
 import com.intellij.openapi.components.PersistentStateComponent
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.State
@@ -14,7 +13,6 @@ import com.intellij.platform.backend.workspace.WorkspaceModel
 import com.intellij.platform.backend.workspace.virtualFile
 import com.intellij.platform.backend.workspace.workspaceModel
 import com.intellij.workspaceModel.ide.impl.WorkspaceModelImpl
-import org.jetbrains.bazel.sync.environment.BazelProjectContextService
 import org.jetbrains.bazel.sync.environment.getProjectRootDirOrThrow
 import org.jetbrains.bazel.sync.environment.projectCtx
 import org.jetbrains.annotations.ApiStatus

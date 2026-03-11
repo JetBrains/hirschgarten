@@ -22,26 +22,6 @@
     />
     <extensionPoint
       dynamic="true"
-      interface="org.jetbrains.bazel.sync.ProjectSyncHook"
-      qualifiedName="org.jetbrains.bazel.projectSyncHook"
-    />
-    <extensionPoint
-      dynamic="true"
-      interface="org.jetbrains.bazel.sync.ProjectPreSyncHook"
-      qualifiedName="org.jetbrains.bazel.projectPreSyncHook"
-    />
-    <extensionPoint
-      dynamic="true"
-      interface="org.jetbrains.bazel.sync.ProjectPostSyncHook"
-      qualifiedName="org.jetbrains.bazel.projectPostSyncHook"
-    />
-    <extensionPoint
-      dynamic="true"
-      interface="org.jetbrains.bazel.sync.projectStructure.ProjectStructureProvider"
-      qualifiedName="org.jetbrains.bazel.projectStructureProvider"
-    />
-    <extensionPoint
-      dynamic="true"
       interface="org.jetbrains.bazel.buildTask.AdditionalProjectTaskRunnerProvider"
       qualifiedName="org.jetbrains.bazel.additionalProjectTaskRunnerProvider"
     />
@@ -118,10 +98,6 @@
                     interface="org.jetbrains.bazel.run.test.BazelTestLocatorProvider"
                     dynamic="true"
     />
-    <extensionPoint qualifiedName="org.jetbrains.bazel.javaSourceRootPrefixContributor"
-                    interface="org.jetbrains.bazel.sync.workspace.languages.java.sourceRoot.prefix.JavaSourceRootPatternContributor"
-                    dynamic="true"
-    />
     <extensionPoint qualifiedName="org.jetbrains.bazel.indexAdditionalFilesContributor"
                     interface="org.jetbrains.bazel.workspace.indexAdditionalFiles.IndexAdditionalFilesContributor"
                     dynamic="true"
@@ -135,9 +111,6 @@
                     beanClass="com.intellij.lang.LanguageExtensionPoint">
       <with attribute="implementationClass" implements="org.jetbrains.bazel.run.synthetic.SyntheticRunTargetTemplateGenerator"/>
     </extensionPoint>
-    <extensionPoint qualifiedName="org.jetbrains.bazel.buildTargetLanguageInferenceContributor"
-                    interface="org.jetbrains.bazel.target.lang.BuildTargetLangInferenceContributor"
-                    dynamic="true"/>
     <extensionPoint qualifiedName="org.jetbrains.bazel.bazelProcessLauncherProvider"
                     interface="org.jetbrains.bazel.bazelrunner.BazelProcessLauncherProvider"
                     dynamic="true"
