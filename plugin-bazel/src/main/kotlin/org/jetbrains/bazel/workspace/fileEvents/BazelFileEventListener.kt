@@ -13,10 +13,12 @@ import com.intellij.openapi.roots.ProjectFileIndex
 import com.intellij.openapi.roots.ProjectRootManager
 import com.intellij.openapi.util.NlsSafe
 import com.intellij.openapi.vfs.LocalFileSystem
+import com.intellij.openapi.vfs.VfsUtilCore
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.newvfs.BulkFileListenerBackgroundable
 import com.intellij.openapi.vfs.newvfs.events.VFileEvent
 import com.intellij.platform.backend.workspace.WorkspaceModel
+import com.intellij.platform.backend.workspace.toVirtualFileUrl
 import com.intellij.platform.workspace.jps.entities.ContentRootEntity
 import com.intellij.platform.workspace.jps.entities.ModuleEntity
 import com.intellij.platform.workspace.jps.entities.ModuleId
@@ -28,6 +30,11 @@ import com.intellij.platform.workspace.storage.MutableEntityStorage
 import com.intellij.platform.workspace.storage.url.VirtualFileUrl
 import com.intellij.platform.workspace.storage.url.VirtualFileUrlManager
 import com.intellij.util.concurrency.annotations.RequiresReadLock
+import com.intellij.workspaceModel.core.fileIndex.WorkspaceFileIndex
+import com.intellij.workspaceModel.core.fileIndex.WorkspaceFileSetWithCustomData
+import com.intellij.workspaceModel.core.fileIndex.impl.JvmPackageRootDataInternal
+import com.intellij.workspaceModel.core.fileIndex.impl.ModuleRelatedRootData
+import com.intellij.workspaceModel.ide.legacyBridge.findModuleEntity
 import com.intellij.workspaceModel.ide.toPath
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Deferred
@@ -52,6 +59,12 @@ import org.jetbrains.bazel.target.TargetUtils
 import org.jetbrains.bazel.target.moduleEntity
 import org.jetbrains.bazel.target.targetUtils
 import org.jetbrains.bazel.taskEvents.BazelTaskEventsService
+import org.jetbrains.bazel.workspace.fileEvents.SimplifiedFileEvent.CreateDirectory
+import org.jetbrains.bazel.workspace.packageMarker.concatenatePackages
+import org.jetbrains.bazel.workspacemodel.entities.BazelDummyEntitySource
+import org.jetbrains.bazel.workspacemodel.entities.PackageMarkerEntity
+import org.jetbrains.bazel.workspacemodel.entities.PackageMarkerEntityBuilder
+import org.jetbrains.bazel.workspacemodel.entities.packageMarkerEntities
 import org.jetbrains.bsp.protocol.InverseSourcesParams
 import org.jetbrains.bsp.protocol.TaskGroupId
 import org.jetbrains.bsp.protocol.TaskId
@@ -178,6 +191,7 @@ class BazelFileEventListener : BulkFileListenerBackgroundable {
     val mutableRemovalMap = findNewFilesInWorkspaceModel(fileEventsToProcess, existingModulesByEvent)
     addNewFilesToBothModels(fileEventsToProcess, existingModulesByEvent, mutableRemovalMap, context)
     applyRemovalMap(mutableRemovalMap, context)
+    updatePackageMarkerEntities(allFileEvents, existingModulesByEvent, context)
 
     context.progressReporter.startFinalisingStep()
     context.workspaceModel.update("File event processing (Bazel)") {
@@ -331,6 +345,59 @@ class BazelFileEventListener : BulkFileListenerBackgroundable {
       contentRootsToRemove.forEach { context.entityStorageDiff.removeEntity(it) }
     }
   }
+
+  private suspend fun updatePackageMarkerEntities(
+    allFileEvents: List<SimplifiedFileEvent>,
+    existingModulesByEvent: Map<SimplifiedFileEvent, Set<ModuleEntity>>,
+    context: ProcessingContext,
+  ) {
+    allFileEvents.filterIsInstance<CreateDirectory>().filter { existingModulesByEvent[it].isNullOrEmpty() }
+      .mapNotNull { createDirectoryEvent ->
+      updatePackageMarkerEntity(createDirectoryEvent, context)
+    }.groupBy({ it.first }, { it.second }).forEach { (moduleEntity, packageMarkerEntities) ->
+      context.entityStorageDiff.modifyModuleEntity(moduleEntity) {
+        this.packageMarkerEntities += packageMarkerEntities
+      }
+    }
+  }
+
+  private suspend fun updatePackageMarkerEntity(
+    event: CreateDirectory,
+    context: ProcessingContext,
+  ): Pair<ModuleEntity, PackageMarkerEntityBuilder>? {
+    val workspaceModelIndex = WorkspaceFileIndex.getInstance(context.project)
+    val dir = event.newVirtualFile ?: return null
+    val moduleRoot = generateSequence(dir.parent) { it.parent }.firstNotNullOfOrNull { file ->
+      findModuleSourceRoot(workspaceModelIndex, file)
+    } ?: return null
+    val moduleEntity = moduleRoot.data.module.findModuleEntity(context.workspaceSnapshot) ?: return null
+    val basePackagePrefix = (moduleRoot.data as? JvmPackageRootDataInternal)?.packagePrefix ?: return null
+    val relativePackagePrefix = VfsUtilCore.getRelativePath(dir, moduleRoot.root, '.') ?: return null
+    val packagePrefix = concatenatePackages(basePackagePrefix, relativePackagePrefix)
+    return moduleEntity to PackageMarkerEntity(
+      root = dir.toVirtualFileUrl(context.urlManager),
+      packagePrefix = packagePrefix,
+      entitySource = BazelDummyEntitySource,
+    )
+  }
+
+  private suspend fun findModuleSourceRoot(
+    workspaceModelIndex: WorkspaceFileIndex,
+    file: VirtualFile,
+  ): WorkspaceFileSetWithCustomData<ModuleRelatedRootData>? =
+    readAction {
+      workspaceModelIndex.findFileSetWithCustomData(
+        file = file,
+        honorExclusion = true,
+        includeContentSets = true,
+        includeContentNonIndexableSets = true,
+        includeExternalSets = false,
+        includeExternalSourceSets = false,
+        includeExternalNonIndexableSets = false,
+        includeCustomKindSets = false,
+        customDataClass = ModuleRelatedRootData::class.java,
+      )
+    }
 }
 
 // if a project has no targets, there is no point in processing (also, it could interrupt the initial sync)

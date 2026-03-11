@@ -1,9 +1,11 @@
 package org.jetbrains.bazel.tests.kotlin
 
+import com.intellij.driver.sdk.WaitForException
 import com.intellij.driver.sdk.step
 import com.intellij.driver.sdk.ui.components.UiComponent.Companion.waitFound
 import com.intellij.driver.sdk.ui.components.common.ideFrame
 import com.intellij.driver.sdk.ui.components.elements.dialog
+import com.intellij.driver.sdk.wait
 import com.intellij.ide.starter.driver.engine.runIdeWithDriver
 import com.intellij.openapi.ui.playback.commands.AbstractCommand.CMD_PREFIX
 import com.intellij.tools.ide.performanceTesting.commands.CommandChain
@@ -40,14 +42,21 @@ class MoveKotlinFileTest : IdeStarterBaseProjectTest() {
             execute { createDirectory("subpackage") }
           }
 
+          // BazelFileEventListener has a processing delay on 250 milliseconds (PROCESSING_DELAY), but wait longer to be sure
+          wait(5.seconds)
+
           step("Move Class2.kt to subpackage") {
             execute { moveClass("Class2.kt", "subpackage") }
           }
 
-          step("Close Add file to Git popup") {
-            dialog().waitFound(timeout = 30.seconds)
-            dialog {
-              closeDialog()
+          step("Close Add file to Git popup if it appears") {
+            try {
+              dialog().waitFound(timeout = 10.seconds)
+              dialog {
+                closeDialog()
+              }
+            }
+            catch (_: WaitForException) {
             }
           }
 
