@@ -51,8 +51,8 @@ internal class BazelHotSwapManager(private val project: Project, private val cor
     oldManifest: JarFileManifest,
     newManifest: JarFileManifest,
     listener: HotSwapStatusListener?,
+    sessions: List<DebuggerSession>
   ) {
-    val sessions = getCurrentDebugSessions()
     if (sessions.isEmpty()) return
 
     val tempRoot = Path.of(PathManager.getTempPath())
@@ -64,13 +64,6 @@ internal class BazelHotSwapManager(private val project: Project, private val cor
     LOG.info(
       "hotswap: found ${diff.perJarModifiedFiles.size()} jar files with changed entries after compilation\n" +
       diff.perJarModifiedFiles.entrySet()
-        .map { "  ${it.key}: ${it.value.sorted().joinToString(" ")}" }
-        .sorted()
-        .joinToString("\n"),
-    )
-    LOG.info(
-      "hotswap: found ${diff.perJarNewFiles.size()} jar files with new entries after compilation results\n" +
-      diff.perJarNewFiles.entrySet()
         .map { "  ${it.key}: ${it.value.sorted().joinToString(" ")}" }
         .sorted()
         .joinToString("\n"),

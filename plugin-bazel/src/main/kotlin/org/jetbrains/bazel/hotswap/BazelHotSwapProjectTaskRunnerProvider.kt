@@ -1,5 +1,6 @@
 package org.jetbrains.bazel.hotswap
 
+import com.intellij.debugger.impl.DebuggerSession
 import com.intellij.debugger.ui.HotSwapStatusListener
 import com.intellij.debugger.ui.HotSwapUIImpl
 import com.intellij.openapi.project.Project
@@ -25,6 +26,7 @@ private data class HotSwapState(
   val jars: List<Path>,
   val listener: HotSwapStatusListener?,
   val oldManifest: JarFileManifest,
+  val sessions: List<DebuggerSession>,
 )
 
 private class HotSwapTask(
@@ -46,7 +48,7 @@ private class HotSwapTask(
     val sessions = BazelHotSwapManager.getInstance(project).getCurrentDebugSessions()
     if (sessions.isEmpty()) return
     val oldManifest = JarFileManifest.build(jars, previousManifest = null)
-    hotSwapState = HotSwapState(jars, listener, oldManifest)
+    hotSwapState = HotSwapState(jars, listener, oldManifest, sessions)
   }
 
   private fun getTargetJars(): List<Path> = targetsToBuild.asSequence()
@@ -59,14 +61,17 @@ private class HotSwapTask(
     .toList()
 
   override suspend fun postRun(result: BazelStatus) {
-    if (result != BazelStatus.SUCCESS) return
-
     val hotSwapState = this.hotSwapState ?: return
+    if (result != BazelStatus.SUCCESS) {
+      hotSwapState.listener?.onFailure(hotSwapState.sessions)
+      return
+    }
     val newManifest = JarFileManifest.build(hotSwapState.jars, previousManifest = hotSwapState.oldManifest)
     BazelHotSwapManager.getInstance(project).hotswapImpl(
       oldManifest = hotSwapState.oldManifest,
       newManifest = newManifest,
       listener = hotSwapState.listener,
+      sessions = hotSwapState.sessions,
     )
   }
 }

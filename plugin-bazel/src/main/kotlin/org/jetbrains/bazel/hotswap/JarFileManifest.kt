@@ -32,11 +32,8 @@ internal class JarFileManifest private constructor(
   // per-jar manifest of .class file hashes
   private val jarManifests: Map<Path, JarManifest>,
 ) {
-  data class Diff(
-    val perJarModifiedFiles: MultiMap<Path, String>,
-    val perJarNewFiles: MultiMap<Path, String>,
-  ) {
-    fun isNotEmpty(): Boolean = !perJarModifiedFiles.isEmpty || !perJarNewFiles.isEmpty
+  data class Diff(val perJarModifiedFiles: MultiMap<Path, String>, ) {
+    fun isNotEmpty(): Boolean = !perJarModifiedFiles.isEmpty
   }
 
   /** file manifest for a single jar.  */
@@ -67,22 +64,14 @@ internal class JarFileManifest private constructor(
       }
 
       /** Returns the list of files changed in the new manifest. */
-      fun diff(oldManifest: JarManifest, newManifest: JarManifest): List<String> =
+      fun diff(oldManifest: JarManifest?, newManifest: JarManifest): List<String> =
         newManifest
           .nameToHash
           .entries
           .filter {
-            val oldHash = oldManifest.nameToHash[it.key]
-            oldHash != null && it.value != oldHash
+            val oldHash = oldManifest?.nameToHash[it.key]
+            it.value != oldHash
           }
-          .map { it.key }
-
-      /** Returns the list of new files appeared in the new manifest. */
-      fun newFiles(oldManifest: JarManifest, newManifest: JarManifest): List<String> =
-        newManifest
-          .nameToHash
-          .entries
-          .filter { oldManifest.nameToHash[it.key] == null }
           .map { it.key }
     }
   }
@@ -94,30 +83,22 @@ internal class JarFileManifest private constructor(
     /** Returns a per-jar map of files changed in the new manifest  */
     fun diffJarManifests(oldManifest: JarFileManifest?, newManifest: JarFileManifest): Diff {
       val changedFilesMap = MultiMap<Path, String>()
-      val newFilesMap = MultiMap<Path, String>()
       for (entry in newManifest.jarManifests.entries) {
         // quick test for object equality -- jars are often not rebuilt
         val old = oldManifest?.jarManifests[entry.key]
-        if (old == null || old == entry.value) {
+        if (old == entry.value) {
           continue
         }
-        val changedFiles = JarManifest.diff(
-          old,
-          entry.value,
-        )
+        val changedFiles =
+          JarManifest.diff(
+            old,
+            entry.value,
+          )
         if (!changedFiles.isEmpty()) {
           changedFilesMap.put(entry.key, changedFiles)
         }
-
-        val newFiles = JarManifest.newFiles(
-          old,
-          entry.value,
-        )
-        if (!newFiles.isEmpty()) {
-          newFilesMap.put(entry.key, newFiles)
-        }
       }
-      return Diff(perJarModifiedFiles = changedFilesMap, perJarNewFiles = newFilesMap)
+      return Diff(perJarModifiedFiles = changedFilesMap)
     }
 
     fun build(jars: Collection<Path>, previousManifest: JarFileManifest?): JarFileManifest {
