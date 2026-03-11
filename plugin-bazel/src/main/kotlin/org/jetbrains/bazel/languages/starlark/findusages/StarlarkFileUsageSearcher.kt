@@ -70,6 +70,10 @@ internal class StarlarkFileUsageSearcher : QueryExecutorBase<PsiReference, Searc
           val newContent = buildNewLabelContent(element.getStringContents(), newElementName)
           return ElementManipulators.getManipulator(element)?.handleContentChange(element, range, newContent) ?: element
         }
+
+        override fun bindToElement(element: PsiElement): PsiElement {
+          return element
+        }
       }
     return reference
   }

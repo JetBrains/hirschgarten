@@ -746,9 +746,5 @@
       class="org.jetbrains.bazel.workspace.fileEvents.BazelFileEventListener"
       topic="com.intellij.openapi.vfs.newvfs.BulkFileListenerBackgroundable"
     />
-    <listener
-      class="org.jetbrains.bazel.workspace.packageMarker.PackageMarkerEntityListener"
-      topic="com.intellij.openapi.vfs.newvfs.BulkFileListener"
-    />
   </applicationListeners>
 </idea-plugin>
