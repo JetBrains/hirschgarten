@@ -9,7 +9,6 @@ import org.jetbrains.bazel.label.ResolvedLabel
 import org.jetbrains.bazel.label.assumeResolved
 import org.jetbrains.bazel.label.toPath
 import org.jetbrains.bazel.server.bsp.info.BspInfo
-import org.jetbrains.bazel.server.model.AspectSyncProject
 import org.jetbrains.bazel.server.model.BazelSyncProject
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bsp.protocol.BspJvmClasspath
@@ -143,8 +142,8 @@ class BspProjectMapper(
       uri = this.toUri().toString(),
     )
 
-  internal suspend fun inverseSources(project: AspectSyncProject, inverseSourcesParams: InverseSourcesParams): InverseSourcesResult {
-    return InverseSourcesQuery.inverseSourcesQuery(inverseSourcesParams, project.workspaceRoot, bazelRunner, workspaceContext)
+  internal suspend fun inverseSources(workspaceRoot: Path, inverseSourcesParams: InverseSourcesParams): InverseSourcesResult {
+    return InverseSourcesQuery.inverseSourcesQuery(inverseSourcesParams, workspaceRoot, bazelRunner, workspaceContext)
   }
 
   suspend fun jvmBuilderParamsForTarget(target: Label): JvmToolchainInfo =
