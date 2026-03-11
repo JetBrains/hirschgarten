@@ -30,7 +30,7 @@ internal sealed class SimplifiedFileEvent private constructor(
 
   // either of the affected files is a source file
   fun shouldBeProcessed(): Boolean =
-    fileRemoved?.extension?.let { SourceType.fromExtension(it) } != null || fileAdded?.isSourceFile() == true
+    fileRemoved?.extension?.let { SourceType.fromExtension(it) } != null || fileAdded?.isSourceFile() == true || this is CreateDirectory
 
   fun doesAffectFolder(folderPath: Path): Boolean =
     fileRemoved?.startsWith(folderPath) == true || fileAdded?.startsWith(folderPath) == true
@@ -55,7 +55,13 @@ internal sealed class SimplifiedFileEvent private constructor(
     /** @return `SimplifiedFileEvent` if it should be processed, `null` otherwise */
     fun from(event: VFileEvent): SimplifiedFileEvent? =
       when (event) {
-        is VFileCreateEvent -> Create(event)
+        is VFileCreateEvent ->
+          if (event.isDirectory) {
+            CreateDirectory(event)
+          }
+          else {
+            Create(event)
+          }
         is VFileCopyEvent -> Copy(event)
         is VFileDeleteEvent -> Delete(event)
         is VFileMoveEvent -> Move(event)
@@ -71,6 +77,9 @@ internal sealed class SimplifiedFileEvent private constructor(
   }
   class Create(originalEvent: VFileCreateEvent)
     : SimplifiedFileEvent(fileAdded = originalEvent.path, newVirtualFile = originalEvent.file)
+
+  class CreateDirectory(originalEvent: VFileCreateEvent) :
+    SimplifiedFileEvent(fileAdded = originalEvent.path, newVirtualFile = originalEvent.file)
 
   class Copy(originalEvent: VFileCopyEvent)
     : SimplifiedFileEvent(fileAdded = originalEvent.path, newVirtualFile = originalEvent.findCreatedFile())

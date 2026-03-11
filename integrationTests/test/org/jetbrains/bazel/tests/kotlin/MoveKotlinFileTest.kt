@@ -4,6 +4,7 @@ import com.intellij.driver.sdk.step
 import com.intellij.driver.sdk.ui.components.UiComponent.Companion.waitFound
 import com.intellij.driver.sdk.ui.components.common.ideFrame
 import com.intellij.driver.sdk.ui.components.elements.dialog
+import com.intellij.driver.sdk.wait
 import com.intellij.ide.starter.driver.engine.runIdeWithDriver
 import com.intellij.openapi.ui.playback.commands.AbstractCommand.CMD_PREFIX
 import com.intellij.tools.ide.performanceTesting.commands.CommandChain
@@ -39,6 +40,9 @@ class MoveKotlinFileTest : IdeStarterBaseProjectTest() {
           step("Create a new subpackage") {
             execute { createDirectory("subpackage") }
           }
+
+          // BazelFileEventListener has a processing delay on 250 milliseconds (PROCESSING_DELAY), wait for a whole second to be sure
+          wait(1.seconds)
 
           step("Move Class2.kt to subpackage") {
             execute { moveClass("Class2.kt", "subpackage") }
