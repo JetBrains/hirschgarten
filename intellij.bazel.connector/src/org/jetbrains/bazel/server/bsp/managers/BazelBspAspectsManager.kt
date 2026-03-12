@@ -132,8 +132,6 @@ class BazelBspAspectsManager(
 
   fun generateAspectsFromTemplates(
     rulesetLanguages: List<RulesetLanguage>,
-    externalRulesetNames: List<String>,
-    workspaceContext: WorkspaceContext,
     bazelRelease: BazelRelease,
     repoMapping: RepoMapping,
     bazelInfo: BazelInfo,
@@ -151,8 +149,6 @@ class BazelBspAspectsManager(
       val variableMap =
         mapOf(
           "rulesetName" to canonicalRuleName,
-          // https://github.com/JetBrains/intellij-community/tree/master/build/jvm-rules
-          "usesRulesJvm" to ("rules_jvm" in externalRulesetNames).toString(),
           "bazel8OrAbove" to bazel8OrAbove.toString(),
           "bspPath" to Constants.DOT_BAZELBSP_DIR_NAME,
       )
