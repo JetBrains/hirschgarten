@@ -300,12 +300,14 @@ internal class BazelProjectDirectoriesEntityData : WorkspaceEntityData<BazelProj
   }
 
   override fun createDetachedEntity(parents: List<WorkspaceEntityBuilder<*>>): WorkspaceEntityBuilder<*> {
-    return BazelProjectDirectoriesEntity(projectRoot,
-                                         includedRoots,
-                                         excludedRoots,
-                                         indexAllFilesInIncludedRoots,
-                                         indexAdditionalFiles,
-                                         entitySource)
+    return BazelProjectDirectoriesEntity(
+      projectRoot,
+      includedRoots,
+      excludedRoots,
+      indexAllFilesInIncludedRoots,
+      indexAdditionalFiles,
+      entitySource,
+    )
   }
 
   override fun getRequiredParents(): List<Class<out WorkspaceEntity>> {
