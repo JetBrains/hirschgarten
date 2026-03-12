@@ -43,6 +43,7 @@ class BaselServerFacadeImpl(
   private val executeService: ExecuteService,
   override val workspaceContext: WorkspaceContext,
   override val bazelInfo: BazelInfo,
+  private val bazelPathsResolver: BazelPathsResolver,
 ) : BazelServerFacade {
 
   override suspend fun runSync(build: Boolean, taskId: TaskId): WorkspaceBuildTargetsResult {
@@ -101,7 +102,7 @@ class BaselServerFacadeImpl(
     return WorkspaceBazelPathsResult(
       bazelBin = bazelInfo.bazelBin.toString(),
       executionRoot = bazelInfo.execRoot.toString(),
-      bazelPathsResolver = BazelPathsResolver(bazelInfo),
+      bazelPathsResolver = bazelPathsResolver,
     )
   }
 

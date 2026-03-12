@@ -130,6 +130,7 @@ internal class DefaultBazelServerConnection(private val project: Project) : Baze
       executeService = executeService,
       workspaceContext = workspaceContext,
       bazelInfo = bazelInfo,
+      bazelPathsResolver = bazelPathsResolver,
     )
   }
 }
