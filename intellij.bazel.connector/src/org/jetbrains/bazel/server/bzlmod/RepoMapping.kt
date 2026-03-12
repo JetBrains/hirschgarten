@@ -1,6 +1,7 @@
 package org.jetbrains.bazel.server.bzlmod
 
 import kotlinx.coroutines.CancellationException
+import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.bazelrunner.BazelRunner
 import org.jetbrains.bazel.bazelrunner.ModuleResolver
 import org.jetbrains.bazel.bazelrunner.ShowRepoResult

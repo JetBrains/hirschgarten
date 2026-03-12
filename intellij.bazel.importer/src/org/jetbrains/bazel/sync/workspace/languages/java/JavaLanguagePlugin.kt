@@ -4,7 +4,10 @@ import com.intellij.openapi.project.Project
 import com.intellij.util.EnvironmentUtil
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.commons.BazelPathsResolver
+import org.jetbrains.bazel.commons.BzlmodRepoMapping
 import org.jetbrains.bazel.commons.LanguageClass
+import org.jetbrains.bazel.commons.RepoMapping
+import org.jetbrains.bazel.commons.getLocalRepositories
 import org.jetbrains.bazel.info.BspTargetInfo
 import org.jetbrains.bazel.info.BspTargetInfo.JvmTargetInfo
 import org.jetbrains.bazel.info.BspTargetInfo.TargetInfo
@@ -40,10 +43,10 @@ class JavaLanguagePlugin internal constructor(
   private var cachedSROExcludeMatchers: List<SourceRootPattern> = listOf()
   private var toolchainTargets : Map<Label, TargetInfo> = mapOf()
 
-  override fun prepareSync(project: Project, targets: Map<Label, TargetInfo>, workspaceContext: WorkspaceContext) {
+  override fun prepareSync(project: Project, targets: Map<Label, TargetInfo>, workspaceContext: WorkspaceContext, repoMapping: RepoMapping ) {
     toolchainTargets = targets.filter { it.value.hasJavaToolchainInfo()  }
     val ideJavaHomeOverride = workspaceContext.ideJavaHomeOverride
-    jdk = ideJavaHomeOverride?.let { Jdk(javaHome = it) } ?: jdkResolver.resolve(targets.values.asSequence())
+    jdk = ideJavaHomeOverride?.let { Jdk(javaHome = it) } ?: jdkResolver.resolve(targets.values.asSequence(), repoMapping)
 
     val projectView = ProjectViewService.getInstance(project).getProjectView()
     cachedJavaSROEnable = projectView.javaSROEnable
@@ -55,12 +58,13 @@ class JavaLanguagePlugin internal constructor(
     cachedSROExcludeMatchers = patterns.flatMap { it.excludes }
   }
 
-  override suspend fun createBuildTargetData(context: LanguagePluginContext, target: TargetInfo): JvmBuildTarget? {
+  override suspend fun createBuildTargetData(context: LanguagePluginContext, target: TargetInfo, repoMapping: RepoMapping): JvmBuildTarget? {
     if (!target.getJvmTarget()) {
       return null
     }
+    val localRepositories = repoMapping.getLocalRepositories()
     val jvmTarget = target.jvmTargetInfo
-    val binaryOutputs = target.javaCommon.jarsList.flatMap { it.binaryJarsList }.map(bazelPathsResolver::resolve)
+    val binaryOutputs = target.javaCommon.jarsList.flatMap { it.binaryJarsList }.map { bazelPathsResolver.resolve(it, localRepositories) }
     val mainClass = getMainClass(jvmTarget)
 
     val jdk = jdk ?: return null

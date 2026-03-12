@@ -163,20 +163,6 @@ class BazelBspAspectsManager(
       ),
     )
 
-    // https://bazel.build/rules/lib/builtins/Label#repo_name
-    // The canonical name of the repository containing the target referred to by this label, without any leading at-signs (@).
-    val starlarkRepoMapping =
-      when (repoMapping) {
-        is BzlmodRepoMapping -> {
-          repoMapping.canonicalRepoNameToLocalPath
-            .map { (key, value) ->
-              "\"${key.dropWhile { it == '@' }}\": \"${value.invariantSeparatorsPathString}\""
-            }.joinToString(",\n", "{\n", "\n}")
-        }
-
-        is RepoMappingDisabled -> "{}"
-      }
-
     templateWriter.writeToFile(
       "utils/make_variables.bzl" + Constants.TEMPLATE_EXTENSION,
       aspectsPath.resolve("utils").resolve("make_variables.bzl"),
@@ -188,7 +174,6 @@ class BazelBspAspectsManager(
       aspectsPath.resolve("utils").resolve("utils.bzl"),
       mapOf(
         "bspPath" to Constants.DOT_BAZELBSP_DIR_NAME,
-        "repoMapping" to starlarkRepoMapping,
       ),
     )
 

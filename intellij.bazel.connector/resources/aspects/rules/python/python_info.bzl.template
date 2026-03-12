@@ -49,7 +49,7 @@ def interpreter_from_absolute_path(path):
     if path == None:
         return None
 
-    return to_file_location(path, "", False, True)
+    return to_file_location(path, "", False)
 
 def interpreter_from_file(file):
     if file == None:

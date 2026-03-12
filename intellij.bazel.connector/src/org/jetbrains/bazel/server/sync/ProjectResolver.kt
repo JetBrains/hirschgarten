@@ -121,8 +121,6 @@ class ProjectResolver constructor(
       val workspaceName = targets.values.firstOrNull()?.workspaceName ?: "_main"
       val rootTargets = aspectResult.bepOutput.rootTargets()
 
-      bazelPathsResolver.clear()
-
       return@useWithScope AspectSyncProject(
         workspaceRoot = bazelInfo.workspaceRoot,
         bazelRelease = bazelInfo.release,

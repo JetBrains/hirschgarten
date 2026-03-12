@@ -11,7 +11,7 @@ import java.net.URI
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
-import java.util.concurrent.ConcurrentHashMap
+import kotlin.String
 import kotlin.io.path.Path
 import kotlin.io.path.toPath
 
@@ -19,23 +19,36 @@ private const val BAZEL_COMPONENT_SEPARATOR = "/"
 
 @ApiStatus.Internal
 class BazelPathsResolver(private val bazelInfo: BazelInfo) {
-  private val paths = ConcurrentHashMap<ArtifactLocation, Path>()
-
   fun workspaceRoot(): Path = bazelInfo.workspaceRoot
 
-  fun resolvePaths(fileLocations: List<ArtifactLocation>): List<Path> = fileLocations.map(::resolve)
-
-  fun resolve(fileLocation: ArtifactLocation): Path = paths.computeIfAbsent(fileLocation, ::doResolve)
+  fun resolvePaths(fileLocations: List<ArtifactLocation>, localRepositories : LocalRepositoryMapping): List<Path> = fileLocations.map { resolve(it, localRepositories)}
 
   fun resolve(file: BuildEventStreamProtos.File): Path = URI.create(file.uri).toPath()
 
-  private fun doResolve(fileLocation: ArtifactLocation): Path =
-    when {
-      isAbsolute(fileLocation) -> resolveAbsolute(fileLocation)
-      isMainWorkspaceSource(fileLocation) -> resolveSource(fileLocation)
-      isInExternalWorkspace(fileLocation) -> resolveExternal(fileLocation)
-      else -> resolveOutput(fileLocation)
+  fun isExternal(fileLocation: ArtifactLocation, localRepositories : LocalRepositoryMapping): Boolean {
+    if (!(fileLocation.rootPath.startsWith("../") || fileLocation.rootPath.startsWith("external/"))) return false
+    val rootSegments = fileLocation.rootPath.split('/')
+    return !localRepositories.localRepositories.contains(rootSegments[1])
+  }
+
+  private fun mapLocalRepositories(fileLocation: ArtifactLocation, localRepositories : LocalRepositoryMapping): ArtifactLocation {
+    if (!(fileLocation.rootPath.startsWith("../") || fileLocation.rootPath.startsWith("external/"))) return fileLocation
+    val rootSegments = fileLocation.rootPath.split('/')
+    val localPath = localRepositories.localRepositories[rootSegments[1]] ?: return fileLocation
+    // Update relative path, keeping bazel's file-system hierarchy separator
+    val newRelativePath = localPath.toString().replace(File.separator, BAZEL_COMPONENT_SEPARATOR) + "/" + fileLocation.relativePath
+    return ArtifactLocation.newBuilder().setRootPath("").setRelativePath(newRelativePath).setIsSource(fileLocation.isSource).build()
+  }
+
+  fun resolve(fileLocation: ArtifactLocation, localRepositories : LocalRepositoryMapping): Path {
+    val mappedFileLocation = mapLocalRepositories(fileLocation, localRepositories)
+    return when {
+      isAbsolute(mappedFileLocation) -> resolveAbsolute(mappedFileLocation)
+      isMainWorkspaceSource(mappedFileLocation, localRepositories) -> resolveSource(mappedFileLocation)
+      isInExternalWorkspace(mappedFileLocation) -> resolveExternal(mappedFileLocation)
+      else -> resolveOutput(mappedFileLocation)
     }
+  }
 
   private fun isAbsolute(fileLocation: ArtifactLocation): Boolean {
     val relative = fileLocation.relativePath
@@ -69,17 +82,13 @@ class BazelPathsResolver(private val bazelInfo: BazelInfo) {
 
   private fun resolveSource(fileLocation: ArtifactLocation): Path = bazelInfo.workspaceRoot.resolve(fileLocation.relativePath)
 
-  private fun isMainWorkspaceSource(fileLocation: ArtifactLocation): Boolean = fileLocation.isSource && !fileLocation.isExternal
+  private fun isMainWorkspaceSource(fileLocation: ArtifactLocation, localRepositories : LocalRepositoryMapping): Boolean = fileLocation.isSource && !isExternal(fileLocation, localRepositories)
 
   private fun isInExternalWorkspace(fileLocation: ArtifactLocation): Boolean = fileLocation.rootPath.startsWith("external/")
 
   fun relativePathToWorkspaceAbsolute(path: Path): Path = bazelInfo.workspaceRoot.resolve(path)
 
   fun relativePathToExecRootAbsolute(path: Path): Path = bazelInfo.execRoot.resolve(path)
-
-  fun clear() {
-    paths.clear()
-  }
 
   /**
    * converts a path object to a relative path string with Bazel separator

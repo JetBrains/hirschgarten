@@ -17,9 +17,6 @@ message ArtifactLocation {
   // normalizes relative paths and therefore also includes the bazel-bin
   // prefix for the artifact.
   string root_path = 4;
-
-  // Whether this artifact comes from an external repository.
-  bool is_external = 5;
 }
 
 message TargetKey {
