@@ -1,18 +1,19 @@
 package org.jetbrains.bazel.sync.workspace.languages.scala
 
 import org.jetbrains.bazel.commons.BazelPathsResolver
+import org.jetbrains.bazel.commons.LocalRepositoryMapping
 import org.jetbrains.bazel.info.BspTargetInfo
 import java.nio.file.Path
 import java.util.regex.Pattern
 
 internal class ScalaSdkResolver(private val bazelPathsResolver: BazelPathsResolver) {
-  fun resolveSdk(targetInfo: BspTargetInfo.TargetInfo): ScalaSdk? {
+  fun resolveSdk(targetInfo: BspTargetInfo.TargetInfo, localRepositories : LocalRepositoryMapping): ScalaSdk? {
     if (!targetInfo.hasScalaTargetInfo()) {
       return null
     }
     val scalaTarget = targetInfo.scalaTargetInfo
     val compilerJars =
-      bazelPathsResolver.resolvePaths(scalaTarget.compilerClasspathList).sorted()
+      bazelPathsResolver.resolvePaths(scalaTarget.compilerClasspathList, localRepositories).sorted()
     val maybeVersions = compilerJars.mapNotNull(::extractVersion)
     if (maybeVersions.none()) {
       return null

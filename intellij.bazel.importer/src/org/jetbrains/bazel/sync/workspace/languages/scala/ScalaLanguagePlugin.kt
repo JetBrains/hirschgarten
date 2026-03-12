@@ -3,7 +3,10 @@ package org.jetbrains.bazel.sync.workspace.languages.scala
 import com.intellij.openapi.project.Project
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.commons.BazelPathsResolver
+import org.jetbrains.bazel.commons.BzlmodRepoMapping
 import org.jetbrains.bazel.commons.LanguageClass
+import org.jetbrains.bazel.commons.RepoMapping
+import org.jetbrains.bazel.commons.getLocalRepositories
 import org.jetbrains.bazel.info.BspTargetInfo
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.server.label.label
@@ -28,12 +31,13 @@ class ScalaLanguagePlugin(
   internal var scalaSdks: Map<Label, ScalaSdk> = emptyMap()
   internal var scalaTestJars: Map<Label, Set<Path>> = emptyMap()
 
-  override fun prepareSync(project: Project, targets: Map<Label, BspTargetInfo.TargetInfo>, workspaceContext: WorkspaceContext) {
+  override fun prepareSync(project: Project, targets: Map<Label, BspTargetInfo.TargetInfo>, workspaceContext: WorkspaceContext, repoMapping: RepoMapping) {
+    val localRepositories = repoMapping.getLocalRepositories()
     scalaSdks =
       targets.values.asSequence()
         .associateBy(
           { it.label() },
-          ScalaSdkResolver(bazelPathsResolver)::resolveSdk,
+          { ScalaSdkResolver(bazelPathsResolver).resolveSdk(it, localRepositories) }
         ).filterValuesNotNull()
     scalaTestJars =
       targets.values.asSequence()
@@ -42,7 +46,7 @@ class ScalaLanguagePlugin(
           { it.label() },
           {
             it.scalaTargetInfo.scalatestClasspathTargetsList.flatMap { targets.get(Label.parse(it))?.javaProvider?.fullCompileJarsList ?: emptyList() }
-              .map(bazelPathsResolver::resolve)
+              .map {bazelPathsResolver.resolve(it, localRepositories) }
               .toSet()
           },
         )
@@ -50,7 +54,7 @@ class ScalaLanguagePlugin(
 
   private fun <K, V> Map<K, V?>.filterValuesNotNull(): Map<K, V> = filterValues { it != null }.mapValues { it.value!! }
 
-  override suspend fun createBuildTargetData(context: LanguagePluginContext, target: BspTargetInfo.TargetInfo): ScalaBuildTarget? {
+  override suspend fun createBuildTargetData(context: LanguagePluginContext, target: BspTargetInfo.TargetInfo, repoMapping: RepoMapping): ScalaBuildTarget? {
     if (!target.hasScalaTargetInfo()) {
       return null
     }
@@ -58,7 +62,7 @@ class ScalaLanguagePlugin(
     return ScalaBuildTarget(
       scalaVersion = sdk.version,
       sdkJars = sdk.compilerJars,
-      jvmBuildTarget = javaLanguagePlugin.createBuildTargetData(context, target),
+      jvmBuildTarget = javaLanguagePlugin.createBuildTargetData(context, target, repoMapping),
       scalacOptions = target.scalaTargetInfo.scalacOptsList,
     )
   }

@@ -4,7 +4,11 @@ import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.diagnostic.logger
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.commons.BazelPathsResolver
+import org.jetbrains.bazel.commons.BzlmodRepoMapping
 import org.jetbrains.bazel.commons.LanguageClass
+import org.jetbrains.bazel.commons.LocalRepositoryMapping
+import org.jetbrains.bazel.commons.RepoMapping
+import org.jetbrains.bazel.commons.getLocalRepositories
 import org.jetbrains.bazel.info.BspTargetInfo
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.sync.workspace.languages.LanguagePlugin
@@ -24,37 +28,39 @@ class GoLanguagePlugin(private val bazelPathsResolver: BazelPathsResolver) : Lan
 
   override fun getSupportedLanguages(): Set<LanguageClass> = setOf(LanguageClass.GO)
 
-  override fun calculateAdditionalSources(targetInfo: BspTargetInfo.TargetInfo): Sequence<SourceItem> {
+  override fun calculateAdditionalSources(targetInfo: BspTargetInfo.TargetInfo, repoMapping: RepoMapping): Sequence<SourceItem> {
     if (!targetInfo.hasGoTargetInfo()) return emptySequence()
+    val localRepositories = repoMapping.getLocalRepositories()
     return targetInfo.goTargetInfo.generatedSourcesList
       .asSequence()
       .mapNotNull {
         SourceItem(
-          path = bazelPathsResolver.resolve(it),
+          path = bazelPathsResolver.resolve(it, localRepositories),
           generated = true,
         )
       }
   }
 
-  override suspend fun createBuildTargetData(context: LanguagePluginContext, target: BspTargetInfo.TargetInfo): GoBuildTarget? {
+  override suspend fun createBuildTargetData(context: LanguagePluginContext, target: BspTargetInfo.TargetInfo, repoMapping: RepoMapping): GoBuildTarget? {
     if (!target.hasGoTargetInfo()) {
       return null
     }
     val goTarget = target.goTargetInfo
+    val localRepositories = repoMapping.getLocalRepositories()
     return GoBuildTarget(
-      sdkHomePath = calculateSdkPath(goTarget.sdkHomePath),
+      sdkHomePath = calculateSdkPath(goTarget.sdkHomePath, localRepositories),
       importPath = goTarget.importPath,
-      generatedSources = goTarget.generatedSourcesList.mapNotNull { bazelPathsResolver.resolve(it) },
-      generatedLibraries = goTarget.generatedLibrariesList.mapNotNull { bazelPathsResolver.resolve(it) },
+      generatedSources = goTarget.generatedSourcesList.mapNotNull { bazelPathsResolver.resolve(it, localRepositories) },
+      generatedLibraries = goTarget.generatedLibrariesList.mapNotNull { bazelPathsResolver.resolve(it, localRepositories) },
       libraryLabels = goTarget.libraryLabelsList.mapNotNull { Label.parseOrNull(it) },
     )
   }
 
-  private fun calculateSdkPath(sdk: BspTargetInfo.ArtifactLocation?): Path? =
+  private fun calculateSdkPath(sdk: BspTargetInfo.ArtifactLocation?, localRepositories: LocalRepositoryMapping): Path? =
     sdk
       ?.takeUnless { it.relativePath.isNullOrEmpty() }
       ?.let {
-        val goBinaryPath = bazelPathsResolver.resolve(it)
+        val goBinaryPath = bazelPathsResolver.resolve(it, localRepositories)
         goBinaryPath.parent.parent
       }
 

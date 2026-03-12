@@ -3,6 +3,7 @@ package org.jetbrains.bazel.sync.workspace.languages
 import com.intellij.openapi.project.Project
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.commons.LanguageClass
+import org.jetbrains.bazel.commons.RepoMapping
 import org.jetbrains.bazel.info.BspTargetInfo
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
@@ -14,13 +15,13 @@ import java.nio.file.Path
 interface LanguagePlugin<BuildTarget : BuildTargetData> {
   fun getSupportedLanguages(): Set<LanguageClass>
 
-  fun calculateAdditionalSources(targetInfo: BspTargetInfo.TargetInfo): Sequence<SourceItem> = emptySequence()
+  fun calculateAdditionalSources(targetInfo: BspTargetInfo.TargetInfo, repoMapping: RepoMapping): Sequence<SourceItem> = emptySequence()
 
   fun resolveAdditionalResources(targetInfo: BspTargetInfo.TargetInfo): Sequence<Path> = emptySequence()
 
-  fun prepareSync(project: Project, targets: Map<Label, BspTargetInfo.TargetInfo>, workspaceContext: WorkspaceContext) {}
+  fun prepareSync(project: Project, targets: Map<Label, BspTargetInfo.TargetInfo>, workspaceContext: WorkspaceContext, repoMapping: RepoMapping) {}
 
   fun transformSources(sources: List<SourceItem>): List<SourceItem> = sources
 
-  suspend fun createBuildTargetData(context: LanguagePluginContext, target: BspTargetInfo.TargetInfo): BuildTarget?
+  suspend fun createBuildTargetData(context: LanguagePluginContext, target: BspTargetInfo.TargetInfo, repoMapping: RepoMapping): BuildTarget?
 }
