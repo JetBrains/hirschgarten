@@ -30,7 +30,7 @@ enum class Language(
       "kt_jvm_test",
       // rules_jvm from IntelliJ monorepo
       "jvm_library",
-      "jvm_binary",
+      "_jvm_library_jps",
       "jvm_resources",
     ),
     hashSetOf(JAVA.id),

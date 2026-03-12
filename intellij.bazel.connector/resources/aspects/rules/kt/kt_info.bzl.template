@@ -1,12 +1,6 @@
 load("@${rulesetName}//kotlin/internal:defs.bzl", "KtCompilerPluginInfo", "KtJvmInfo")
-#if( $usesRulesJvm == "true" )
-load("@rules_jvm//:rules/impl/kotlinc-options.bzl", "KotlincOptions", "kotlinc_options_to_flags")
-load("@rules_jvm//:rules/impl/javac-options.bzl", "JavacOptions", "javac_options_to_flags")
-#else
 load("@${rulesetName}//kotlin/internal:opts.bzl", "KotlincOptions", "kotlinc_options_to_flags")
 load("@${rulesetName}//kotlin/internal:opts.bzl", "JavacOptions", "javac_options_to_flags")
-#end
-
 load("//${bspPath}/aspects:utils/utils.bzl", "COMPILE_DEPS", "IMPORT_RULE_KIND", "collect_targets_from_attrs", "convert_struct_to_dict", "create_struct", "file_location", "filter_not_none", "is_external", "log_warn", "map", "BspAspectInfo", "update_sync_output_groups", "map_with_resolve_files")
 load("//${bspPath}/aspects:utils/jvm_common.bzl", "get_generated_jars", "to_jvm_outputs", "provider_resolve_depsets")
 

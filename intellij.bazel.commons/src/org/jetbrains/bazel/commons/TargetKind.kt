@@ -50,5 +50,5 @@ data class TargetKind(
 
   fun isJvmTarget(): Boolean = includesJava() || includesKotlin() || includesScala()
 
-  fun usesJpsExportSemantics(): Boolean = kindString == "jvm_library"
+  fun usesJpsExportSemantics(): Boolean = kindString == "jvm_library" || kindString == "_jvm_library_jps"
 }

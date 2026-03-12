@@ -38,7 +38,21 @@ private fun List<String>.shortenTargetPath(targetNameLength: Int = 0): List<Stri
     this
   }
 
-internal fun String.sanitizeName(): String = replaceDots().filterColon()
+internal fun String.sanitizeName(): String {
+  val name = replaceDots().filterColon()
+  // See BAZEL-3021 for details
+  // On the master branch, the fix is on the DevKit plugin side:
+  // https://github.com/JetBrains/intellij-community/commit/5668ed2d8ba84a84486b1adc6c0be4901f6c3146
+  // However, with 261 code freeze in place, it's nearly impossible to get QA approval to cherry-pick this change to 261,
+  // so it must be a hack on the Bazel plugin side.
+  val rulesJvmSuffixes = listOf("__jps", "__kt")
+  for (prefix in rulesJvmSuffixes) {
+    if (name.startsWith("_") && name.endsWith(prefix)) {
+      return name.substring(1, name.length - prefix.length)
+    }
+  }
+  return name
+}
 
 private fun String.replaceDots(): String = this.replace('.', '-')
 

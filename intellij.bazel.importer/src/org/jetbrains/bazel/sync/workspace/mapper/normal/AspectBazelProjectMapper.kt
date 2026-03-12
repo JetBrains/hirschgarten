@@ -38,7 +38,6 @@ import org.jetbrains.bazel.sync.workspace.model.BspMappings
 import org.jetbrains.bazel.sync.workspace.model.Library
 import org.jetbrains.bazel.sync.workspace.model.NonModuleTarget
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
-import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.BuildTargetTag
 import org.jetbrains.bsp.protocol.FeatureFlags
 import org.jetbrains.bsp.protocol.LibraryItem
@@ -838,7 +837,7 @@ internal class AspectBazelProjectMapper(
       "kt_jvm_binary",
       "kt_jvm_test",
       "jvm_library",
-      "jvm_binary",
+      "_jvm_library_jps",
       "jvm_resources",
       "scala_library",
       "scala_binary",
@@ -941,7 +940,7 @@ internal class AspectBazelProjectMapper(
       "scala_test" to setOf(LanguageClass.JAVA, LanguageClass.SCALA),
       // rules_jvm from IntelliJ monorepo
       "jvm_library" to setOf(LanguageClass.JAVA, LanguageClass.KOTLIN),
-      "jvm_binary" to setOf(LanguageClass.JAVA, LanguageClass.KOTLIN),
+      "_jvm_library_jps" to setOf(LanguageClass.JAVA, LanguageClass.KOTLIN),
       "jvm_resources" to setOf(LanguageClass.JAVA, LanguageClass.KOTLIN),
       "go_binary" to setOf(LanguageClass.GO),
       "go_test" to setOf(LanguageClass.GO),

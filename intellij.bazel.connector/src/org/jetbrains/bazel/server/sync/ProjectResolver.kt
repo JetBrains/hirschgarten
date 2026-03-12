@@ -198,8 +198,6 @@ class ProjectResolver constructor(
     measured("Realizing language aspect files from templates") {
       bazelBspAspectsManager.generateAspectsFromTemplates(
         ruleLanguages,
-        externalRulesetNames,
-        workspaceContext,
         bazelInfo.release,
         repoMapping,
         bazelInfo,
