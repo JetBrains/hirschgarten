@@ -14,11 +14,11 @@ import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.label.Main
 import org.jetbrains.bazel.label.ResolvedLabel
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkFile
-import org.jetbrains.bazel.languages.starlark.repomapping.canonicalRepoNameToPath
 import org.jetbrains.bazel.languages.starlark.repomapping.findContainingBazelRepo
 import org.jetbrains.bazel.languages.starlark.repomapping.singleTarget
 import org.jetbrains.bazel.languages.starlark.repomapping.toCanonicalLabel
 import org.jetbrains.bazel.utils.findVirtualFile
+import org.jetbrains.bazel.workspace.canonicalRepoNameToPath
 
 /**
  * @param containingFile the file that should be used as context for resolving, e.g., relative labels
@@ -121,21 +121,21 @@ private fun resolveFileTarget(
   return PsiManager.getInstance(project).findFile(targetFile)
 }
 
+// BAZEL-2280 LabelResolveUtilsKt#findReferredAbsolutePackage may not be able to resolve repo root
 private fun findReferredAbsolutePackage(
   project: Project,
   containingFile: VirtualFile?,
   label: ResolvedLabel,
 ): VirtualFile? {
   val canonicalLabel = label.toCanonicalLabel(project) ?: return null
-  val foundRepoRoot =
+  val repoRoot: VirtualFile? =
     if (canonicalLabel.repo is Main && containingFile != null) {
-      findContainingBazelRepo(containingFile.toNioPathOrNull() ?: return null)
+      findContainingBazelRepo(containingFile)
     } else {
-      project.canonicalRepoNameToPath[canonicalLabel.repoName]
+      project.canonicalRepoNameToPath[canonicalLabel.repoName]?.findVirtualFile()
     }
-
-  // BAZEL-2280 LabelResolveUtilsKt#findReferredAbsolutePackage may not be able to resolve repo root
-  val repoRoot = foundRepoRoot?.findVirtualFile() ?: return null
+  if (repoRoot == null)
+    return null
 
   return repoRoot.findFileByRelativePath(label.packagePath.toString())
 }

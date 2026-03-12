@@ -8,15 +8,14 @@ import com.intellij.platform.diagnostic.telemetry.helpers.useWithScope
 import com.intellij.platform.workspace.storage.EntitySource
 import com.intellij.platform.workspace.storage.MutableEntityStorage
 import com.intellij.workspaceModel.ide.impl.WorkspaceModelImpl
-import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.magicmetamodel.formatAsModuleName
 import org.jetbrains.bazel.performance.bspTracer
+import org.jetbrains.bazel.progress.syncConsole
+import org.jetbrains.bazel.progress.withSubtask
 import org.jetbrains.bazel.sync.scope.FullProjectSync
 import org.jetbrains.bazel.sync.scope.PartialProjectSync
 import org.jetbrains.bazel.sync.scope.ProjectSyncScope
-import org.jetbrains.bazel.ui.console.syncConsole
-import org.jetbrains.bazel.ui.console.withSubtask
 import org.jetbrains.bazel.workspacemodel.entities.BazelEntitySource
 import org.jetbrains.bazel.workspacemodel.entities.BazelModuleEntitySource
 import org.jetbrains.bsp.protocol.TaskId

@@ -1,0 +1,61 @@
+<idea-plugin>
+  <!-- region Generated dependencies - run `Generate Product Layouts` to regenerate -->
+  <dependencies>
+    <module name="intellij.bazel.commons"/>
+    <module name="intellij.bazel.connector"/>
+    <module name="intellij.bazel.projectview"/>
+  </dependencies>
+  <!-- endregion -->
+
+  <extensionPoints>
+    <extensionPoint
+      dynamic="true"
+      interface="org.jetbrains.bazel.sync.ProjectSyncHook"
+      qualifiedName="org.jetbrains.bazel.projectSyncHook"
+    />
+    <extensionPoint
+      dynamic="true"
+      interface="org.jetbrains.bazel.sync.ProjectPreSyncHook"
+      qualifiedName="org.jetbrains.bazel.projectPreSyncHook"
+    />
+    <extensionPoint
+      dynamic="true"
+      interface="org.jetbrains.bazel.sync.ProjectPostSyncHook"
+      qualifiedName="org.jetbrains.bazel.projectPostSyncHook"
+    />
+    <extensionPoint qualifiedName="org.jetbrains.bazel.javaSourceRootPrefixContributor"
+                    interface="org.jetbrains.bazel.sync.workspace.languages.java.sourceRoot.prefix.JavaSourceRootPatternContributor"
+                    dynamic="true"
+    />
+  </extensionPoints>
+
+  <extensions defaultExtensionNs="org.jetbrains.bazel">
+    <javaSourceRootPrefixContributor
+      implementation="org.jetbrains.bazel.sync.workspace.languages.java.sourceRoot.prefix.JavaProjectViewSourceRootPatternContributor"/>
+    <projectSyncHook
+      id="TargetPersistenceLayerSyncHook"
+      implementation="org.jetbrains.bazel.sync.hooks.TargetPersistenceLayerSyncHook"
+    />
+    <projectSyncHook implementation="org.jetbrains.bazel.sync.hooks.PathSyncHook"/>
+  </extensions>
+
+  <extensions defaultExtensionNs="com.intellij">
+    <projectService
+      serviceImplementation="org.jetbrains.bazel.sync.workspace.DefaultBazelWorkspaceResolveService"
+      serviceInterface="org.jetbrains.bazel.sync.workspace.BazelWorkspaceResolveService"
+    />
+    <workspaceModel.fileIndexContributor
+      implementation="org.jetbrains.bazel.workspace.BazelProjectDirectoriesWorkspaceFileIndexContributor"
+    />
+    <moduleType
+      id="BAZEL_DUMMY_MODULE_TYPE"
+      implementationClass="org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.BazelDummyModuleType"
+    />
+    <workspaceModel.fileIndexContributor
+      implementation="org.jetbrains.bazel.workspace.CompiledSourceCodeInsideJarExcludeWorkspaceFileIndexContributor"
+    />
+    <workspaceModel.fileIndexContributor
+      implementation="org.jetbrains.bazel.workspace.packageMarker.PackageMarkerEntityWorkspaceFileIndexContributor"
+    />
+  </extensions>
+</idea-plugin>

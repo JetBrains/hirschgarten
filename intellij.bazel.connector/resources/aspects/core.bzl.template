@@ -1,0 +1,215 @@
+# Copyright 2019-2024 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
+
+load("//${bspPath}/aspects:extensions.bzl", "EXTENSIONS", "REQUIRED_ASPECT_PROVIDERS", "TOOLCHAINS")
+load("//${bspPath}/aspects:utils/utils.bzl", "ALL_DEPS", "BspAspectInfo", "COMPILE_DEPS", "EXPORT_DEPS", "PRIVATE_COMPILE_DEPS", "RUNTIME_DEPS", "abs", "collect_targets_from_attrs", "create_struct", "do_starlark_string_expansion_dict", "file_location", "get_aspect_ids", "is_valid_aspect_target", "update_sync_output_groups")
+
+def create_all_extension_info(target, ctx, output_groups, dep_targets):
+    all_info = [create_extension_info(target = target, ctx = ctx, output_groups = output_groups, dep_targets = dep_targets) for create_extension_info in EXTENSIONS]
+    return [(info, exported_properties) for info, exported_properties in all_info if info != None]
+
+COMPILE = 0
+RUNTIME = 1
+TOOLCHAIN = 2
+
+# Max filename length is 255 symbols on all major OSes. Choose a smaller number to make up for additional suffixes/prefixes.
+MAX_FILENAME_LENGTH = 200
+
+def make_dep(dep, dependency_type, exported):
+    return struct(
+        target = dep[BspAspectInfo].bsp_info.key,
+        dependency_type = dependency_type,
+        exported = exported,
+    )
+
+def make_deps(deps, dependency_type, exported = False):
+    return [make_dep(dep, dependency_type, exported) for dep in deps]
+
+COMMON_INFO_FIELDS = ["java_common"]
+
+def merge_dicts(a, b):
+    result = {}
+    for k in a.keys():
+        result[k] = a.get(k, []) + b.get(k, [])
+    for k in b.keys():
+        result[k] = a.get(k, []) + b.get(k, [])
+    return result
+
+def update_info(info, new_info):
+    """info.update(new_info), but with fields in COMMON_INFO_FIELDS
+    being the list concatenation of the values in both dicts.
+    """
+    common = {}
+    for k in COMMON_INFO_FIELDS:
+        common[k] = merge_dicts(info.get(k, {}), new_info.get(k, {}))
+    info.update(new_info)
+    info.update(common)
+
+def _is_analysis_test(target):
+    """Returns if the target is an analysis test.
+
+    Rules created with analysis_test=True cannot create write actions, so the
+    aspect should skip them.
+    """
+    return AnalysisTestResultInfo in target
+
+def files_to_list(source):
+    # While the attributes 'srcs', 'deps', etc., are usually used for targets (includuding source files),
+    # this assumption can break if custom rules are used. Even if we cannot fully support such rules, we
+    # should ignore them without erroring out.
+    if type(source) != "Target":
+        return []
+    files = source[DefaultInfo].files
+    if files == None:
+        return []
+    return files.to_list()
+
+def _bsp_target_info_aspect_impl(target, ctx):
+    if target.label.name.endswith(".semanticdb") or _is_analysis_test(target):
+        return []
+
+    rule_attrs = ctx.rule.attr
+    rule_kind = ctx.rule.kind
+
+    if "no-ide" in rule_attrs.tags:
+        return []
+
+    direct_dep_targets = collect_targets_from_attrs(rule_attrs, COMPILE_DEPS)
+    compile_deps = make_deps(direct_dep_targets, COMPILE)
+
+    runtime_dep_targets = collect_targets_from_attrs(rule_attrs, RUNTIME_DEPS)
+    runtime_deps = make_deps(runtime_dep_targets, RUNTIME)
+
+    direct_export_targets = collect_targets_from_attrs(rule_attrs, EXPORT_DEPS)
+    direct_exports = make_deps(direct_export_targets, COMPILE, True)
+    direct_exports_set = {str(dep.label): None for dep in direct_export_targets}
+
+    private_direct_dep_targets = collect_targets_from_attrs(rule_attrs, PRIVATE_COMPILE_DEPS)
+    private_deps = make_deps(private_direct_dep_targets, TOOLCHAIN)
+
+    all_deps = [dep for dep in compile_deps + runtime_deps + private_deps if not (dep.target in direct_exports_set)] + direct_exports
+
+    dep_targets = direct_dep_targets + private_direct_dep_targets + runtime_dep_targets + direct_export_targets
+    output_groups = dict()
+    for dep in dep_targets:
+        dep_info = dep[BspAspectInfo]
+        for k, v in dep_info.bsp_info.output_groups.items():
+            if k.endswith("-direct-outputs"):
+                continue
+            output_groups[k] = output_groups[k] + [v] if k in output_groups else [v]
+
+    # Convert output_groups from lists to depsets after the lists are finalized. This avoids
+    # creating and growing depsets gradually, as that results in depsets many levels deep:
+    # a construct which would give the build system some trouble.
+    for k, v in output_groups.items():
+        output_groups[k] = depset(transitive = output_groups[k])
+
+    srcs_attr = getattr(ctx.rule.attr, "srcs", [])
+    sources = []
+    generated_sources = []
+
+    if type(srcs_attr) == "list":
+        all_sources = [
+            file_location(f)
+            for t in srcs_attr
+            for f in files_to_list(t)
+            if not f.is_directory
+        ]
+
+        sources = [
+            s
+            for s in all_sources
+            if s.is_source
+        ]
+
+        generated_sources = [
+            s
+            for s in all_sources
+            if not s.is_source
+        ]
+
+    resources_attr = getattr(ctx.rule.attr, "resources", None)
+    if resources_attr == None and ctx.rule.kind.endswith("_resources"):
+        # https://github.com/JetBrains/intellij-community/blob/b41a4084da5521effedd334e28896fd9d07410da/build/jvm-rules/rules/resource.bzl#L49
+        resources_attr = getattr(ctx.rule.attr, "files", None)
+
+    resources = []
+    if type(resources_attr) == "list":
+        resources = [
+            file_location(f)
+            for t in resources_attr
+            for f in files_to_list(t)
+        ]
+
+    aspect_ids = get_aspect_ids(ctx, target)
+
+    default_info = target[DefaultInfo]
+    executable = default_info and default_info.files_to_run.executable != None
+
+    env = {}
+    raw_env = getattr(rule_attrs, "env", None)
+    if type(raw_env) == "dict":
+        data_deps = []
+        data_deps += getattr(ctx.rule.attr, "data", [])
+
+        # Needed by the cmake() rule from rules_foreign_cc
+        data_deps += getattr(ctx.rule.attr, "build_data", [])
+        env = do_starlark_string_expansion_dict(ctx, "env", raw_env, data_deps)
+
+    target_id = create_struct(
+        label = str(target.label),
+        aspect_ids = [it for it in ctx.aspect_ids if not "bsp_target_info_aspect" in it],
+        configuration = getattr(ctx.configuration, "short_id", None),
+    )
+
+    info = dict(
+        key = target_id,
+        kind = rule_kind,
+        tags = rule_attrs.tags,
+        deps = list(all_deps),
+        sources = sources,
+        generated_sources = generated_sources,
+        resources = resources,
+        env = env,
+        env_inherit = getattr(rule_attrs, "env_inherit", []),
+        executable = executable,
+        workspace_name = ctx.workspace_name,
+        generator_name = getattr(rule_attrs, "generator_name", ""),
+    )
+
+    exported_properties = dict(
+        key = target_id,
+        kind = rule_kind,
+        export_deps = direct_exports,
+        output_groups = output_groups,
+    )
+
+    all_extension_info = create_all_extension_info(target, ctx, output_groups, dep_targets)
+    for (extension_info, extension_exported_properties) in all_extension_info:
+        update_info(info, extension_info)
+        if extension_exported_properties != None:
+            exported_properties.update(extension_exported_properties)
+
+    # Freeze common fields
+    for k in COMMON_INFO_FIELDS:
+        info[k] = create_struct(**(info.get(k, {})))
+
+    file_name = target.label.name
+    file_name = file_name[:MAX_FILENAME_LENGTH] + "-" + str(abs(hash(file_name)))
+    if aspect_ids:
+        file_name = file_name + "-" + str(abs(hash(".".join(aspect_ids))))
+    file_name = "bsp.%s.bsp-info.textproto" % file_name
+    info_file = ctx.actions.declare_file(file_name)
+    ctx.actions.write(info_file, proto.encode_text(create_struct(**info)))
+    update_sync_output_groups(output_groups, "bsp-target-info", depset([info_file]))
+
+    bsp_aspect_info = BspAspectInfo(bsp_info = struct(**exported_properties))
+    output_group_info = OutputGroupInfo(**output_groups)
+
+    return [bsp_aspect_info, output_group_info]
+
+bsp_target_info_aspect = aspect(
+    implementation = _bsp_target_info_aspect_impl,
+    required_aspect_providers = REQUIRED_ASPECT_PROVIDERS,
+    attr_aspects = ALL_DEPS,
+    toolchains = TOOLCHAINS,
+)

@@ -6,8 +6,8 @@ import com.intellij.build.events.impl.SkippedResultImpl
 import com.intellij.build.events.impl.SuccessResultImpl
 import org.jetbrains.bazel.commons.BazelStatus
 import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.progress.TaskConsole
 import org.jetbrains.bazel.taskEvents.BazelTaskListener
-import org.jetbrains.bazel.ui.console.TaskConsole
 import org.jetbrains.bazel.utils.findCanonicalVirtualFileThatExists
 import org.jetbrains.bsp.protocol.CompileReport
 import org.jetbrains.bsp.protocol.TaskId

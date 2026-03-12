@@ -1,5 +1,6 @@
 package org.jetbrains.bazel.sync.workspace.projectTree
 
+import com.intellij.openapi.vfs.VirtualFileManager
 import com.intellij.platform.ide.progress.ModalTaskOwner
 import com.intellij.platform.ide.progress.TaskCancellation
 import com.intellij.platform.ide.progress.runWithModalProgressBlocking
@@ -9,6 +10,7 @@ import kotlinx.coroutines.runBlocking
 import org.jetbrains.bazel.bazelrunner.BazelProcess
 import org.jetbrains.bazel.bazelrunner.BazelProcessResult
 import org.jetbrains.bazel.bazelrunner.BazelRunner
+import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.jpsCompilation.utils.JPS_COMPILED_BASE_DIRECTORY
 import org.jetbrains.bazel.languages.projectview.ProjectView
 import org.jetbrains.bazel.languages.projectview.ProjectViewToWorkspaceContextConverter
@@ -35,6 +37,8 @@ class WorkspaceDirectoriesFromProjectViewTest : BasePlatformTestCase() {
   override fun setUp() {
     super.setUp()
     workspaceRoot = createTempDirectory("workspace")
+    project.rootDir =
+      VirtualFileManager.getInstance().findFileByNioPath(workspaceRoot) ?: error("Failed to create temp dir")
     bazelRunner = createMockBazelRunner()
     bspInfo = object : BspInfo(workspaceRoot) {
       override val bazelBspDir: Path
@@ -60,7 +64,7 @@ class WorkspaceDirectoriesFromProjectViewTest : BasePlatformTestCase() {
 
     assertSameElements(
       result.includedDirectories.map { it.uri },
-      listOf(includedDir.toUri().toString())
+      listOf(includedDir.toUri().toString()),
     )
 
     assertSameElements(
@@ -68,8 +72,8 @@ class WorkspaceDirectoriesFromProjectViewTest : BasePlatformTestCase() {
       listOf(
         excludedDir.toUri().toString(),
         bspInfo.bazelBspDir.toUri().toString(),
-        workspaceRoot.resolve(JPS_COMPILED_BASE_DIRECTORY).toUri().toString()
-      )
+        workspaceRoot.resolve(JPS_COMPILED_BASE_DIRECTORY).toUri().toString(),
+      ),
     )
   }
 
@@ -87,7 +91,7 @@ class WorkspaceDirectoriesFromProjectViewTest : BasePlatformTestCase() {
         targets:
           //pkg:target
         derive_targets_from_directories: false
-      """.trimIndent()
+      """.trimIndent(),
     )
 
     val result = runMapper(psiFile)
@@ -96,8 +100,8 @@ class WorkspaceDirectoriesFromProjectViewTest : BasePlatformTestCase() {
       result.includedDirectories.map { it.uri },
       listOf(
         includedDir.toUri().toString(),
-        pkg.toUri().toString()
-      )
+        pkg.toUri().toString(),
+      ),
     )
   }
 
@@ -115,14 +119,14 @@ class WorkspaceDirectoriesFromProjectViewTest : BasePlatformTestCase() {
         targets:
           //pkg:target
         derive_targets_from_directories: true
-      """.trimIndent()
+      """.trimIndent(),
     )
 
     val result = runMapper(psiFile)
 
     assertSameElements(
       result.includedDirectories.map { it.uri },
-      listOf(includedDir.toUri().toString())
+      listOf(includedDir.toUri().toString()),
     )
   }
 
@@ -141,7 +145,7 @@ class WorkspaceDirectoriesFromProjectViewTest : BasePlatformTestCase() {
           included
         targets:
           //pkg:target
-      """.trimIndent()
+      """.trimIndent(),
     )
 
     val result = runMapper(psiFile)
@@ -151,7 +155,7 @@ class WorkspaceDirectoriesFromProjectViewTest : BasePlatformTestCase() {
       listOf(
         includedDir.toUri().toString(),
         pkg.toUri().toString(),
-      )
+      ),
     )
     assertSameElements(
       result.excludedDirectories.map { it.uri },
@@ -159,7 +163,7 @@ class WorkspaceDirectoriesFromProjectViewTest : BasePlatformTestCase() {
         subpkg.toUri().toString(),
         bspInfo.bazelBspDir.toUri().toString(),
         workspaceRoot.resolve(JPS_COMPILED_BASE_DIRECTORY).toUri().toString(),
-      )
+      ),
     )
   }
 
@@ -180,7 +184,7 @@ class WorkspaceDirectoriesFromProjectViewTest : BasePlatformTestCase() {
         targets:
           //pkg/subpkg:target
         derive_targets_from_directories: false
-      """.trimIndent()
+      """.trimIndent(),
     )
 
     val result = runMapper(psiFile)
@@ -190,7 +194,7 @@ class WorkspaceDirectoriesFromProjectViewTest : BasePlatformTestCase() {
       listOf(
         includedDir.toUri().toString(),
         subpkg.toUri().toString(),
-      )
+      ),
     )
     assertSameElements(
       result.excludedDirectories.map { it.uri },
@@ -198,7 +202,7 @@ class WorkspaceDirectoriesFromProjectViewTest : BasePlatformTestCase() {
         pkg.toUri().toString(),
         bspInfo.bazelBspDir.toUri().toString(),
         workspaceRoot.resolve(JPS_COMPILED_BASE_DIRECTORY).toUri().toString(),
-      )
+      ),
     )
   }
 
@@ -219,7 +223,7 @@ class WorkspaceDirectoriesFromProjectViewTest : BasePlatformTestCase() {
         targets:
           //pkg/subpkg:target
         derive_targets_from_directories: true
-      """.trimIndent()
+      """.trimIndent(),
     )
 
     val result = runMapper(psiFile)
@@ -228,7 +232,7 @@ class WorkspaceDirectoriesFromProjectViewTest : BasePlatformTestCase() {
       result.includedDirectories.map { it.uri },
       listOf(
         includedDir.toUri().toString(),
-      )
+      ),
     )
     assertSameElements(
       result.excludedDirectories.map { it.uri },
@@ -237,7 +241,7 @@ class WorkspaceDirectoriesFromProjectViewTest : BasePlatformTestCase() {
         subpkg.toUri().toString(),
         bspInfo.bazelBspDir.toUri().toString(),
         workspaceRoot.resolve(JPS_COMPILED_BASE_DIRECTORY).toUri().toString(),
-      )
+      ),
     )
   }
 
@@ -255,7 +259,7 @@ class WorkspaceDirectoriesFromProjectViewTest : BasePlatformTestCase() {
           included
         targets:
           //pkg/...
-      """.trimIndent()
+      """.trimIndent(),
     )
 
     val result = runMapper(psiFile)
@@ -266,14 +270,14 @@ class WorkspaceDirectoriesFromProjectViewTest : BasePlatformTestCase() {
         includedDir.toUri().toString(),
         pkg.toUri().toString(),
         subpkg.toUri().toString(),
-      )
+      ),
     )
     assertSameElements(
       result.excludedDirectories.map { it.uri },
       listOf(
         bspInfo.bazelBspDir.toUri().toString(),
         workspaceRoot.resolve(JPS_COMPILED_BASE_DIRECTORY).toUri().toString(),
-      )
+      ),
     )
   }
 
@@ -293,7 +297,7 @@ class WorkspaceDirectoriesFromProjectViewTest : BasePlatformTestCase() {
         targets:
           //pkg/...
         derive_targets_from_directories: true
-      """.trimIndent()
+      """.trimIndent(),
     )
 
     val result = runMapper(psiFile)
@@ -303,7 +307,7 @@ class WorkspaceDirectoriesFromProjectViewTest : BasePlatformTestCase() {
       listOf(
         includedDir.toUri().toString(),
         pkg.toUri().toString(),
-      )
+      ),
     )
     assertSameElements(
       result.excludedDirectories.map { it.uri },
@@ -311,7 +315,7 @@ class WorkspaceDirectoriesFromProjectViewTest : BasePlatformTestCase() {
         subpkg.toUri().toString(),
         bspInfo.bazelBspDir.toUri().toString(),
         workspaceRoot.resolve(JPS_COMPILED_BASE_DIRECTORY).toUri().toString(),
-      )
+      ),
     )
   }
 
@@ -331,7 +335,7 @@ class WorkspaceDirectoriesFromProjectViewTest : BasePlatformTestCase() {
         targets:
           //pkg/...
         derive_targets_from_directories: false
-      """.trimIndent()
+      """.trimIndent(),
     )
 
     val result = runMapper(psiFile)
@@ -342,14 +346,14 @@ class WorkspaceDirectoriesFromProjectViewTest : BasePlatformTestCase() {
         includedDir.toUri().toString(),
         pkg.toUri().toString(),
         subpkg.toUri().toString(),
-      )
+      ),
     )
     assertSameElements(
       result.excludedDirectories.map { it.uri },
       listOf(
         bspInfo.bazelBspDir.toUri().toString(),
         workspaceRoot.resolve(JPS_COMPILED_BASE_DIRECTORY).toUri().toString(),
-      )
+      ),
     )
   }
 
@@ -370,7 +374,7 @@ class WorkspaceDirectoriesFromProjectViewTest : BasePlatformTestCase() {
         targets:
           //pkg/...
         derive_targets_from_directories: false
-      """.trimIndent()
+      """.trimIndent(),
     )
 
     val result = runMapper(psiFile)
@@ -381,7 +385,7 @@ class WorkspaceDirectoriesFromProjectViewTest : BasePlatformTestCase() {
         includedDir.toUri().toString(),
         pkg.toUri().toString(),
         subpkg.toUri().toString(),
-      )
+      ),
     )
     assertSameElements(
       result.excludedDirectories.map { it.uri },
@@ -389,7 +393,7 @@ class WorkspaceDirectoriesFromProjectViewTest : BasePlatformTestCase() {
         subdir.toUri().toString(),
         bspInfo.bazelBspDir.toUri().toString(),
         workspaceRoot.resolve(JPS_COMPILED_BASE_DIRECTORY).toUri().toString(),
-      )
+      ),
     )
   }
 
@@ -419,13 +423,13 @@ class WorkspaceDirectoriesFromProjectViewTest : BasePlatformTestCase() {
   private fun runMapper(psiFile: PsiFile?): WorkspaceDirectoriesResult {
     val projectView = ProjectView.fromProjectViewPsiFile(psiFile as ProjectViewPsiFile)
     val workspaceContext = ProjectViewToWorkspaceContextConverter
-      .convert(projectView, workspaceRoot)
+      .convert(project, projectView, workspaceRoot)
     val owner = ModalTaskOwner.guess()
     val mapper = BspProjectMapper(bazelRunner, bspInfo, workspaceContext)
     return runWithModalProgressBlocking(
       owner,
       "Running Bazel Query",
-      TaskCancellation.cancellable()
+      TaskCancellation.cancellable(),
     ) {
       mapper.workspaceDirectories(workspaceRoot)
     }

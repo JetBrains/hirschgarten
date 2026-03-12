@@ -18,7 +18,7 @@ class ProjectResolverTest {
 
     val processedDependencies =
       ProjectResolver.processDependenciesList(
-        b.toBuilder().dependenciesBuilderList,
+        b.toBuilder().depsBuilderList,
         rawTargetInfoMap,
       )
     processedDependencies shouldContainExactlyInAnyOrder listOf(dependency("@@//a-lib"))
@@ -32,7 +32,7 @@ class ProjectResolverTest {
     TargetInfo
       .newBuilder()
       .setKey(TargetKey.newBuilder().setLabel(id).build())
-      .addAllDependencies(
+      .addAllDeps(
         dependenciesIds.map { dependency(it) },
       ).setKind(kind)
       .build()
