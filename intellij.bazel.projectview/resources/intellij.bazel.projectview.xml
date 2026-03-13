@@ -1,9 +1,17 @@
-<idea-plugin>
+<idea-plugin visibility="public">
   <!-- region Generated dependencies - run `Generate Product Layouts` to regenerate -->
   <dependencies>
     <module name="intellij.bazel.commons"/>
   </dependencies>
   <!-- endregion -->
+
+  <extensionPoints>
+    <extensionPoint qualifiedName="org.jetbrains.bazel.projectViewSectionProvider"
+                    interface="org.jetbrains.bazel.languages.projectview.ProjectViewSectionProvider"
+                    dynamic="true"
+    />
+  </extensionPoints>
+
   <extensions defaultExtensionNs="com.intellij">
     <projectService serviceImplementation="org.jetbrains.bazel.languages.projectview.ProjectViewWorkspaceContextProvider"
                     serviceInterface="org.jetbrains.bazel.workspace.WorkspaceContextProvider"/>

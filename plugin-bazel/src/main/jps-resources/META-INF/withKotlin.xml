@@ -9,7 +9,7 @@
 
   <extensions defaultExtensionNs="org.jetbrains.bazel">
     <syntheticRunTargetTemplateGenerator language="kotlin" implementationClass="org.jetbrains.bazel.kotlin.run.KotlinSyntheticRunTargetTemplateGenerator"/>
-    <kotlinFacetEntityUpdater implementation="org.jetbrains.bazel.kotlin.sync.BazelKotlinFacetEntityUpdater" />
+    <kotlinFacetEntityUpdater implementation="org.jetbrains.bazel.sync.BazelKotlinFacetEntityUpdater" />
     <projectPostSyncHook implementation="org.jetbrains.bazel.kotlin.sync.RefreshKotlinHighlightingPostSyncHook" />
     <sourceTypeIconProvider implementation="org.jetbrains.bazel.kotlin.configuration.KotlinSourceTypeIconProvider" />
     <bazelCoverageClassNodeDecoratorPsiElementClassifier

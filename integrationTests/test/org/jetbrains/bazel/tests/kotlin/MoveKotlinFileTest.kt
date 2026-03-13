@@ -16,6 +16,7 @@ import org.jetbrains.bazel.ideStarter.assertFileContentsEqual
 import org.jetbrains.bazel.ideStarter.checkIdeaLogForExceptions
 import org.jetbrains.bazel.ideStarter.execute
 import org.jetbrains.bazel.ideStarter.syncBazelProject
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
@@ -28,6 +29,7 @@ import kotlin.time.Duration.Companion.seconds
 class MoveKotlinFileTest : IdeStarterBaseProjectTest() {
 
   @Test
+  @Disabled("broken by external change, enable when fixed")
   fun `move Kotlin file to subpackage should update imports`() {
     val context = createContext("MoveFilesTest", IdeaBazelCases.MoveKotlinFile)
       .applyVMOptionsPatch {

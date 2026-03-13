@@ -1,10 +1,18 @@
-<idea-plugin>
+<idea-plugin visibility="public">
   <!-- region Generated dependencies - run `Generate Product Layouts` to regenerate -->
   <dependencies>
     <module name="intellij.libraries.grpc"/>
     <module name="intellij.bazel.commons"/>
   </dependencies>
   <!-- endregion -->
-  <extensions defaultExtensionNs="com.intellij">
-  </extensions>
+  <extensionPoints>
+    <extensionPoint qualifiedName="org.jetbrains.bazel.bazelProcessLauncherProvider"
+                    interface="org.jetbrains.bazel.bazelrunner.BazelProcessLauncherProvider"
+                    dynamic="true"
+    />
+    <extensionPoint qualifiedName="org.jetbrains.bazel.bepEventHandlerProvider"
+                    interface="org.jetbrains.bazel.server.bep.BepEventHandlerProvider"
+                    dynamic="true"
+    />
+  </extensionPoints>
 </idea-plugin>

@@ -15,6 +15,7 @@ import org.jetbrains.bazel.commons.LanguageClass
 import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.sync.BazelKotlinFacetEntityUpdater
 import org.jetbrains.bazel.workspace.model.test.framework.WorkspaceModelBaseTest
 import org.jetbrains.bazel.workspacemodel.entities.ContentRoot
 import org.jetbrains.bazel.workspacemodel.entities.Dependency

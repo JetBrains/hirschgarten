@@ -1,4 +1,4 @@
-<idea-plugin>
+<idea-plugin visibility="public">
   <!-- region Generated dependencies - run `Generate Product Layouts` to regenerate -->
   <dependencies>
     <module name="intellij.bazel.commons"/>
@@ -26,6 +26,16 @@
     <extensionPoint qualifiedName="org.jetbrains.bazel.javaSourceRootPrefixContributor"
                     interface="org.jetbrains.bazel.sync.workspace.languages.java.sourceRoot.prefix.JavaSourceRootPatternContributor"
                     dynamic="true"
+    />
+    <extensionPoint
+      dynamic="true"
+      interface="org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.KotlinFacetEntityUpdater"
+      qualifiedName="org.jetbrains.bazel.kotlinFacetEntityUpdater"
+    />
+    <extensionPoint
+      dynamic="true"
+      interface="org.jetbrains.bazel.scala.sdk.ScalaSdkExtension"
+      qualifiedName="org.jetbrains.bazel.scalaSdkExtension"
     />
   </extensionPoints>
 

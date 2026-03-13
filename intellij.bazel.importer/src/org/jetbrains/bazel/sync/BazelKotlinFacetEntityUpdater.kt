@@ -1,4 +1,4 @@
-package org.jetbrains.bazel.kotlin.sync
+package org.jetbrains.bazel.sync
 
 import com.intellij.platform.workspace.jps.entities.ModuleEntity
 import com.intellij.platform.workspace.jps.entities.modifyModuleEntity
@@ -27,10 +27,10 @@ import java.nio.file.Path
 @ApiStatus.Internal
 class BazelKotlinFacetEntityUpdater : KotlinFacetEntityUpdater {
   override fun addEntity(
-    diff: MutableEntityStorage,
-    entityToAdd: JavaModule,
-    parentModuleEntity: ModuleEntity,
-    projectBasePath: Path,
+      diff: MutableEntityStorage,
+      entityToAdd: JavaModule,
+      parentModuleEntity: ModuleEntity,
+      projectBasePath: Path,
   ) {
     val kotlinAddendum = entityToAdd.kotlinAddendum
     val compilerArguments = kotlinAddendum?.kotlincOptions?.toK2JVMCompilerArguments(entityToAdd, kotlinAddendum, projectBasePath)
@@ -40,9 +40,9 @@ class BazelKotlinFacetEntityUpdater : KotlinFacetEntityUpdater {
   }
 
   private fun List<String>.toK2JVMCompilerArguments(
-    entityToAdd: JavaModule,
-    kotlinAddendum: KotlinAddendum,
-    projectBasePath: Path,
+      entityToAdd: JavaModule,
+      kotlinAddendum: KotlinAddendum,
+      projectBasePath: Path,
   ) = parseCommandLineArguments(K2JVMCompilerArguments::class, this).apply {
     kotlinAddendum.languageVersion?.let { languageVersion = it }
     kotlinAddendum.apiVersion?.let { apiVersion = it }

@@ -7,11 +7,6 @@
     />
     <extensionPoint
       dynamic="true"
-      interface="org.jetbrains.bazel.scala.sdk.ScalaSdkExtension"
-      qualifiedName="org.jetbrains.bazel.scalaSdkExtension"
-    />
-    <extensionPoint
-      dynamic="true"
       interface="org.jetbrains.bazel.run.RunHandlerProvider"
       qualifiedName="org.jetbrains.bazel.runHandlerProvider"
     />
@@ -34,11 +29,6 @@
       dynamic="true"
       interface="org.jetbrains.bazel.runnerAction.LocalJvmRunnerRunConfigurationProvider"
       qualifiedName="org.jetbrains.bazel.localJvmRunnerRunConfigurationProvider"
-    />
-    <extensionPoint
-      dynamic="true"
-      interface="org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.KotlinFacetEntityUpdater"
-      qualifiedName="org.jetbrains.bazel.kotlinFacetEntityUpdater"
     />
     <extensionPoint
       dynamic="true"
@@ -85,10 +75,6 @@
                     interface="org.jetbrains.bazel.languages.starlark.bazel.StarlarkClassParametersProvider"
                     dynamic="true"
     />
-    <extensionPoint qualifiedName="org.jetbrains.bazel.projectViewSectionProvider"
-                    interface="org.jetbrains.bazel.languages.projectview.ProjectViewSectionProvider"
-                    dynamic="true"
-    />
     <extensionPoint qualifiedName="org.jetbrains.bazel.testLocatorProvider"
                     interface="org.jetbrains.bazel.run.test.BazelTestLocatorProvider"
                     dynamic="true"
@@ -106,14 +92,6 @@
                     beanClass="com.intellij.lang.LanguageExtensionPoint">
       <with attribute="implementationClass" implements="org.jetbrains.bazel.run.synthetic.SyntheticRunTargetTemplateGenerator"/>
     </extensionPoint>
-    <extensionPoint qualifiedName="org.jetbrains.bazel.bazelProcessLauncherProvider"
-                    interface="org.jetbrains.bazel.bazelrunner.BazelProcessLauncherProvider"
-                    dynamic="true"
-    />
-    <extensionPoint qualifiedName="org.jetbrains.bazel.bepEventHandlerProvider"
-                    interface="org.jetbrains.bazel.server.bep.BepEventHandlerProvider"
-                    dynamic="true"
-    />
     <extensionPoint qualifiedName="org.jetbrains.bazel.hotSwapHook"
                     interface="org.jetbrains.bazel.hotswap.HotSwapHook"
                     dynamic="true"

@@ -27,3 +27,7 @@ var Project.workspaceName: String?
   set(value) {
     projectCtx.workspaceName = value
   }
+
+val Project.bazelProjectName: String
+  @ApiStatus.Internal
+  get() = rootDir.name

@@ -2,10 +2,12 @@ package org.jetbrains.bazel.languages.projectview.base
 
 import com.intellij.openapi.fileTypes.LanguageFileType
 import com.intellij.openapi.util.IconLoader
+import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.config.BazelProjectViewBundle
 import javax.swing.Icon
 
-internal object ProjectViewFileType : LanguageFileType(ProjectViewLanguage) {
+@ApiStatus.Internal
+object ProjectViewFileType : LanguageFileType(ProjectViewLanguage) {
 
   // TODO: whole icon loading for entire bazel plugin should be moved to dedicated module
   //  this works because intellij.bazel.projectview module is in the same classloader as core module
