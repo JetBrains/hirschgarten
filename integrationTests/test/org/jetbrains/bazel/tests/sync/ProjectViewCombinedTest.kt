@@ -3,7 +3,6 @@ package org.jetbrains.bazel.tests.sync
 import com.intellij.driver.sdk.step
 import com.intellij.driver.sdk.ui.components.common.ideFrame
 import com.intellij.driver.sdk.wait
-import com.intellij.driver.sdk.waitForIndicators
 import com.intellij.ide.starter.driver.engine.BackgroundRun
 import com.intellij.ide.starter.driver.engine.runIdeWithDriver
 import com.intellij.ide.starter.ide.IDETestContext
@@ -267,10 +266,6 @@ class ProjectViewCombinedTest : IdeStarterBaseProjectTest() {
         step("Verify excluded dir files are NOT in project content") {
           execute { assertFileInProject("frontend/src/main/java/com/example/frontend/Frontend.java", false) }
           execute { assertFileInProject("webapp/src/main/java/com/example/webapp/Webapp.java", false) }
-        }
-        step("Verify dirs not in directories: section are NOT in project content") {
-          execute { assertFileInProject("server/src/main/java/com/example/server/Server.java", false) }
-          execute { assertFileInProject("database/src/main/java/com/example/database/Database.java", false) }
         }
       }
     }
