@@ -75,9 +75,7 @@ class BaselServerFacadeImpl(
   }
 
   override suspend fun buildTargetInverseSources(params: InverseSourcesParams): InverseSourcesResult {
-    val project = projectProvider.getOrLoad(params.taskId) as? AspectSyncProject
-                  ?: return InverseSourcesResult(emptyMap())
-    return bspMapper.inverseSources(project, params)
+    return bspMapper.inverseSources(bazelInfo.workspaceRoot, params)
   }
 
   override suspend fun buildTargetCompile(params: CompileParams): CompileResult = executeService.compile(params)
