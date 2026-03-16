@@ -120,7 +120,6 @@
     <orderEntry type="module" module-name="intellij.platform.ide.rpc" />
     <orderEntry type="module" module-name="intellij.terminal" />
     <orderEntry type="module" module-name="intellij.terminal.completion" />
-    <orderEntry type="module" module-name="intellij.driver.sdk" />
     <orderEntry type="module" module-name="intellij.platform.refactoring" />
     <orderEntry type="module" module-name="intellij.libraries.kotlinTestAssertionsCoreJvm" scope="TEST" />
     <orderEntry type="library" scope="TEST" name="kodein-di-jvm" level="project" />
