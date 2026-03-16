@@ -1,12 +1,12 @@
 package org.jetbrains.bazel.tests.hotswap
 
 import com.intellij.driver.sdk.step
+import com.intellij.driver.sdk.ui.components.common.codeEditor
 import com.intellij.driver.sdk.ui.components.common.editorTabs
 import com.intellij.driver.sdk.ui.components.common.gutter
 import com.intellij.driver.sdk.ui.components.common.ideFrame
 import com.intellij.driver.sdk.ui.components.elements.popup
 import com.intellij.driver.sdk.wait
-import com.intellij.driver.sdk.waitForIndicators
 import com.intellij.ide.starter.driver.engine.runIdeWithDriver
 import com.intellij.tools.ide.metrics.collector.telemetry.OpentelemetrySpanJsonParser
 import com.intellij.tools.ide.metrics.collector.telemetry.SpanFilter
@@ -22,7 +22,6 @@ import com.intellij.tools.ide.performanceTesting.commands.reloadFiles
 import com.intellij.tools.ide.performanceTesting.commands.setBreakpoint
 import com.intellij.tools.ide.performanceTesting.commands.sleep
 import com.intellij.tools.ide.performanceTesting.commands.takeScreenshot
-import org.jetbrains.bazel.config.BazelHotSwapBundle
 import org.jetbrains.bazel.data.IdeaBazelCases
 import org.jetbrains.bazel.ideStarter.IdeStarterBaseProjectTest
 import org.jetbrains.bazel.ideStarter.execute
@@ -79,7 +78,29 @@ class HotSwapTest : IdeStarterBaseProjectTest() {
               takeScreenshot("afterModifyCodeDuringDebugSession")
             }
 
-            step("Apply hotswap and continue debugging") {
+            step("Apply hotswap") {
+              execute { reloadFiles() }
+              execute { build(listOf("SimpleKotlinTest")) }
+              waitForIndicators(timeout = 30.seconds)
+              execute { takeScreenshot("finishBuildAction") }
+            }
+
+            step("Add a code comment") {
+              execute { openFile("SimpleKotlinTest.kt") }
+              codeEditor().click()
+              execute { goto(10, 35) }
+              execute { delayType(delayMs = 50, text = "// Code comment, shouldn't affect hotswap") }
+              takeScreenshot("afterAddComment")
+            }
+
+            step("Apply hotswap after adding code comment") {
+              execute { reloadFiles() }
+              execute { build(listOf("SimpleKotlinTest")) }
+              waitForIndicators(timeout = 10.seconds)
+              execute { takeScreenshot("finishBuildAfterAddingComment") }
+            }
+
+            step("Continue debugging") {
               execute { reloadFiles() }
               execute { build(listOf("SimpleKotlinTest")) }
               execute { sleep(5000) }
@@ -96,14 +117,14 @@ class HotSwapTest : IdeStarterBaseProjectTest() {
       OpentelemetrySpanJsonParser(SpanFilter.nameEquals("show notification")).getSpanElements(
         startResult.runContext.logsDir / "opentelemetry.json",
       )
-    var hotSwapSuccess = false
-    notificationSpanElements.forEach {
-      it.tags.forEach { tagsPair ->
-        if (tagsPair.second.contains(BazelHotSwapBundle.message("hotswap.message.reload.success", 1))) {
-          hotSwapSuccess = true
+    val expectedMessages = listOf("Code has been reloaded", "Loaded classes are up to date. Nothing to reload.")
+    for (expectedMessage in expectedMessages) {
+      val foundMessage = notificationSpanElements.any {
+        it.tags.any { tagsPair ->
+          tagsPair.second.contains(expectedMessage)
         }
       }
+      assert(foundMessage) { "Cannot find expected hotswap message: $expectedMessage" }
     }
-    assert(hotSwapSuccess) { "Cannot find hotswap success message" }
   }
 }
