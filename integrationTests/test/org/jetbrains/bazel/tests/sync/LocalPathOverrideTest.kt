@@ -6,6 +6,8 @@ import com.intellij.driver.sdk.ui.components.common.editorTabs
 import com.intellij.driver.sdk.ui.components.common.gutter
 import com.intellij.driver.sdk.ui.components.common.ideFrame
 import com.intellij.ide.starter.driver.engine.runIdeWithDriver
+import com.intellij.openapi.ui.playback.commands.AbstractCommand.CMD_PREFIX
+import com.intellij.tools.ide.performanceTesting.commands.CommandChain
 import com.intellij.tools.ide.performanceTesting.commands.goToDeclaration
 import com.intellij.tools.ide.performanceTesting.commands.goto
 import org.jetbrains.bazel.data.IdeaBazelCases
@@ -31,12 +33,22 @@ class LocalPathOverrideTest : IdeStarterBaseProjectTest() {
             takeScreenshot("afterSync")
           }
 
+          step("Navigate from source file") {
+            execute { openFile("Main.kt")}
+            execute { goto(6, 44)}
+            takeScreenshot("beforeSourceNavigation")
+            execute { goToDeclaration() }
+            takeScreenshot("afterSourceNavigation")
+            execute { assertCurrentFileDirectory("subproject/Utils.kt")}
+          }
+
           step("Navigate from main BUILD file") {
             execute { openFile("BUILD")}
             execute { goto(7,17)}
-            takeScreenshot("beforeNavigation")
+            takeScreenshot("beforeBuildNavigation")
             execute { goToDeclaration() }
-            takeScreenshot("afterNavigation")
+            takeScreenshot("afterBuildNavigation")
+            execute { assertCurrentFileDirectory("subproject/BUILD")}
           }
 
           step("BUILD file should contain build target") {
@@ -51,4 +63,11 @@ class LocalPathOverrideTest : IdeStarterBaseProjectTest() {
         }
       }
   }
+
+
+  private fun <T : CommandChain> T.assertCurrentFileDirectory(qualifiedName: String): T {
+    addCommand("${CMD_PREFIX}assertCurrentFileDirectory $qualifiedName")
+    return this
+  }
+
 }

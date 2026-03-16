@@ -7,5 +7,6 @@ internal class WorkspaceCommandProvider : CommandProvider {
   override fun getCommands(): Map<String, CreateCommand?> =
     mapOf(
       CheckOpenedFileNotInsideJarCommand.PREFIX to CreateCommand(::CheckOpenedFileNotInsideJarCommand),
+      AssertCurrentFileDirectory.PREFIX to CreateCommand(::AssertCurrentFileDirectory),
     )
 }
