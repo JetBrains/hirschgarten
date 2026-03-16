@@ -303,19 +303,28 @@ abstract class BazelCommand(val bazelBinary: String) {
       val excludesString = excludedTargets.joinToString(separator = " - ")
       val targetString = if (excludesString.isEmpty()) includesString else "$includesString - $excludesString"
       return if (allowManualTargetsSync) {
-        targetString
+        excludeNoIdeTargetsQueryString(targetString)
       }
       else {
-        excludeManualTargetsQueryString(targetString)
+        excludeManualAndNoIdeTargetsQueryString(targetString)
       }
+
     }
 
-    private fun excludeManualTargetsQueryString(targetString: String): String =
+    private fun excludeManualAndNoIdeTargetsQueryString(targetString: String): String =
       if (SystemInfo.isWindows) {
-        "attr('tags', '^((?!manual).)*$', $targetString)"
+        "attr('tags', '^((?!manual|no-ide).)*$', $targetString)"
       }
       else {
-        "attr(\"tags\", \"^((?!manual).)*$\", $targetString)"
+        "attr(\"tags\", \"^((?!manual|no-ide).)*$\", $targetString)"
+      }
+
+    private fun excludeNoIdeTargetsQueryString(targetString: String): String =
+      if (SystemInfo.isWindows) {
+        "attr('tags', '^((?!no-ide).)*$', $targetString)"
+      }
+      else {
+        "attr(\"tags\", \"^((?!no-ide).)*$\", $targetString)"
       }
   }
 
