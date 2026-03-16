@@ -4,11 +4,15 @@ import com.intellij.lang.annotation.AnnotationHolder
 import com.intellij.lang.annotation.Annotator
 import com.intellij.lang.annotation.HighlightSeverity
 import com.intellij.openapi.editor.colors.TextAttributesKey
+import com.intellij.openapi.project.DumbAware
 import com.intellij.psi.PsiElement
 import com.intellij.psi.tree.IElementType
 import com.intellij.psi.util.elementType
 
-internal abstract class StarlarkAnnotator : Annotator {
+/**
+ * [DumbAware] because we don't build Starlark indexes anyway
+ */
+internal abstract class StarlarkAnnotator : Annotator, DumbAware {
   protected fun checkElementAndParentType(
     element: PsiElement,
     expectedElementTypes: List<IElementType>,
