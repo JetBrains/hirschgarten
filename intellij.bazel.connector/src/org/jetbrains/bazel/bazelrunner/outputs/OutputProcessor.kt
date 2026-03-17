@@ -16,7 +16,7 @@ import kotlin.coroutines.cancellation.CancellationException
 typealias OutputHandler = (String) -> Unit
 
 @ApiStatus.Internal
-class OutputProcessor(private val process: Process, handler: OutputHandler? = null) {
+class OutputProcessor(private val process: Process, showStdout: Boolean = false, handler: OutputHandler? = null) {
   val stdoutCollector = OutputCollector()
   val stderrCollector = OutputCollector()
 
@@ -24,7 +24,8 @@ class OutputProcessor(private val process: Process, handler: OutputHandler? = nu
   private val runningProcessors = mutableListOf<Future<*>>()
 
   init {
-    start(CollectableInputStream(process.inputStream, stdoutCollector), handler)
+    val stdoutHandler = handler.takeIf { showStdout }
+    start(CollectableInputStream(process.inputStream, stdoutCollector), stdoutHandler)
     start(CollectableInputStream(process.errorStream, stderrCollector), handler)
   }
 

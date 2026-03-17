@@ -116,6 +116,12 @@
       restartRequired="true"
     />
     <registryKey
+      defaultValue="false"
+      description="If true, results of Bazel invocations (possibly long and unreadable) will be shown in the build console. Does not affect log messages like loading information, warnings and errors."
+      key="bazel.show.stdout"
+      restartRequired="false"
+    />
+    <registryKey
       defaultValue="true"
       description="If true, IDEA will terminate bazel client process tree if the bazel process was cancelled"
       key="bazel.kill.tree.on.cancel"

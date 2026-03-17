@@ -81,6 +81,7 @@ data class BazelCommandExecutionDescriptor(
   val command: List<String>,
   val ptyTermSize: TermSize?,
   val environment: Map<String, String> = emptyMap(),
+  val alwaysShowStdout: Boolean = false,
   val finishCallback: () -> Unit = {},
 )
 
@@ -137,7 +138,7 @@ abstract class BazelCommand(val bazelBinary: String) {
 
       // Pass environment variables here to be set inside org.jetbrains.bazel.bazelrunner.BazelRunner
       // Run needs to be handled separately because the resulting process is not run in the sandbox
-      return BazelCommandExecutionDescriptor(commandLine, ptyTermSize, environment = environment)
+      return BazelCommandExecutionDescriptor(commandLine, ptyTermSize, environment = environment, alwaysShowStdout = true)
     }
   }
 
@@ -231,7 +232,7 @@ abstract class BazelCommand(val bazelBinary: String) {
       commandLine.addAll(programArguments.map { "--test_arg=$it" })
       commandLine.addAll(targetCommandLine())
 
-      return BazelCommandExecutionDescriptor(commandLine, ptyTermSize)
+      return BazelCommandExecutionDescriptor(commandLine, ptyTermSize, alwaysShowStdout = true)
     }
   }
 

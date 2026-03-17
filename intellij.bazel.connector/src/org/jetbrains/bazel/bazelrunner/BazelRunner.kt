@@ -3,6 +3,7 @@ package org.jetbrains.bazel.bazelrunner
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.bazelrunner.params.BazelFlag.color
 import org.jetbrains.bazel.bazelrunner.params.BazelFlag.curses
+import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bsp.protocol.BazelTaskEventsHandler
@@ -149,9 +150,11 @@ class BazelRunner(
     }
 
     val process = bazelProcessLauncher.launchProcess(executionDescriptor)
+    val showStdout = BazelFeatureFlags.showBazelStdout || executionDescriptor.alwaysShowStdout
 
     return BazelProcess(
       process,
+      showStdout,
       outputLogger,
       finishCallback,
     ).also {
