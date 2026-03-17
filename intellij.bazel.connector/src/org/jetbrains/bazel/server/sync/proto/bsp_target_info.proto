@@ -132,10 +132,10 @@ message ProtobufSourceMapping {
 }
 
 message TargetInfo {
+  string kind = 1;
   TargetKey key = 2;
-  string kind = 20;
-  repeated string tags = 30;
   repeated Dependency deps = 4;
+  repeated string tags = 5;
   repeated ArtifactLocation sources = 50;
   repeated ArtifactLocation generated_sources = 51;
   repeated ArtifactLocation resources = 60;
