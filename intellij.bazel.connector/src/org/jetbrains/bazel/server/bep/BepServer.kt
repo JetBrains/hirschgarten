@@ -83,6 +83,7 @@ class BepServer(
 
   fun handleBuildEventStreamProtosEvent(event: BuildEventStreamProtos.BuildEvent) {
     processBuildStartedEvent(event)
+    processOptions(event)
     processProgressEvent(event)
     processBuildMetrics(event)
     processFinishedEvent(event)
@@ -211,6 +212,12 @@ class BepServer(
   private fun processBuildStartedEvent(event: BuildEventStreamProtos.BuildEvent) {
     if (event.hasStarted()) {
       consumeBuildStartedEvent(event)
+    }
+  }
+
+  private fun processOptions(event: BuildEventStreamProtos.BuildEvent) {
+    if (event.hasOptionsParsed()) {
+      bepOutputBuilder.storeOptions(event.optionsParsed.cmdLineList)
     }
   }
 
