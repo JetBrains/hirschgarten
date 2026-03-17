@@ -4,17 +4,16 @@ import com.intellij.driver.client.Remote
 import com.intellij.driver.client.service
 import com.intellij.driver.sdk.VirtualFile
 import com.intellij.driver.sdk.invokeAction
-import com.intellij.driver.sdk.openToolWindow
 import com.intellij.driver.sdk.singleProject
 import com.intellij.driver.sdk.step
 import com.intellij.driver.sdk.ui.components.UiComponent.Companion.waitFound
+import com.intellij.driver.sdk.ui.components.common.GutterIcon
 import com.intellij.driver.sdk.ui.components.common.codeEditor
+import com.intellij.driver.sdk.ui.components.common.codeEditorForFile
 import com.intellij.driver.sdk.ui.components.common.editorTabs
 import com.intellij.driver.sdk.ui.components.common.gutter
 import com.intellij.driver.sdk.ui.components.common.ideFrame
-import com.intellij.driver.sdk.ui.components.common.toolwindows.debugToolWindow
 import com.intellij.driver.sdk.ui.components.elements.popup
-import com.intellij.driver.sdk.ui.pasteText
 import com.intellij.driver.sdk.ui.ui
 import com.intellij.driver.sdk.waitFor
 import com.intellij.ide.starter.driver.engine.runIdeWithDriver
@@ -25,6 +24,7 @@ import org.jetbrains.bazel.ideStarter.checkIdeaLogForExceptions
 import org.jetbrains.bazel.ideStarter.findFile
 import org.jetbrains.bazel.ideStarter.openFile
 import org.jetbrains.bazel.ideStarter.syncBazelProject
+import org.jetbrains.bazel.ideStarter.waitForBazelDebuggerUiReady
 import org.jetbrains.bazel.ideStarter.withBazelFeatureFlag
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.ValueSource
@@ -55,36 +55,68 @@ class FastBuildTest : IdeStarterBaseProjectTest() {
 
           step("Set breakpoint") {
             openFile("Main.java")
+            val initialBreakpointCount = editorTabs()
+              .gutter()
+              .getGutterIcons()
+              .count { icon ->
+                val iconPath = icon.getIconPath()
+                iconPath.contains(GutterIcon.BREAKPOINT.path) || iconPath.contains(GutterIcon.BREAKPOINT_VALID.path)
+              }
             codeEditor {
               goToPosition(7, 1)
             }
             driver.invokeAction("ToggleLineBreakpoint")
+            waitFor(
+              message = "Breakpoint icon should appear in the gutter after ToggleLineBreakpoint",
+              timeout = 30.seconds,
+              interval = 1.seconds,
+            ) {
+              editorTabs()
+                .gutter()
+                .getGutterIcons()
+                .count { icon ->
+                  val iconPath = icon.getIconPath()
+                  iconPath.contains(GutterIcon.BREAKPOINT.path) || iconPath.contains(GutterIcon.BREAKPOINT_VALID.path)
+                } > initialBreakpointCount
+            }
           }
 
           step("Launch debug run config") {
-            editorTabs {
-              gutter().icons.first().click()
-            }
+            val runIcon = editorTabs()
+              .gutter()
+              .getGutterIcons()
+              .firstOrNull { icon ->
+                val iconPath = icon.getIconPath()
+                iconPath.contains(GutterIcon.RUN.path) ||
+                  iconPath.contains(GutterIcon.RUNSUCCESS.path) ||
+                  iconPath.contains(GutterIcon.RUNERROR.path)
+              }
+              ?: error("Run gutter icon was not found in Main.java")
+            runIcon.click()
             popup().waitOneText("Debug run").click()
           }
 
-          step("Wait for breakpoint to be hit") {
-            val resumeProgram = debugToolWindow().resumeButton
-            resumeProgram.waitFound(timeout = 3.minutes)
-            waitFor(
-              message = "Resume Program should be enabled",
-              timeout = 30.seconds,
-            ) { resumeProgram.isEnabled() }
+          step("Wait for debugger UI to be ready") {
+            waitForBazelDebuggerUiReady(sessionTimeout = 3.minutes)
           }
 
           step("Change code") {
             openFile("Calculator.java")
-            codeEditor {
-              goToPosition(5, 16)
-              // int add(int a, int b) {
-              //     return 1 + a + b;
-              ui.pasteText("1 + ")
+            val editor = codeEditorForFile("Calculator.java")
+            val originalMethodBody = "return a + b;"
+            val updatedMethodBody = "return 1 + a + b;"
+            check(editor.text.contains(originalMethodBody)) {
+              "Calculator.java did not contain the expected original method body"
             }
+            editor.text = editor.text.replace(originalMethodBody, updatedMethodBody)
+            waitFor(
+              message = "Calculator.java editor should contain the updated method body",
+              timeout = 30.seconds,
+              interval = 1.seconds,
+            ) {
+              codeEditorForFile("Calculator.java").text.contains(updatedMethodBody)
+            }
+            driver.invokeAction("SaveAll")
           }
 
           step("Apply hotswap") {
@@ -101,12 +133,8 @@ class FastBuildTest : IdeStarterBaseProjectTest() {
           }
           waitForIndicators(30.seconds)
 
-          step("Switch back to the Debug tool window") {
-            openToolWindow("Debug")
-          }
-
           step("Resume program") {
-            debugToolWindow().resumeButton.click()
+            waitForBazelDebuggerUiReady().resumeButton.click()
           }
 
           val consoleView = x { byClass("ConsoleViewImpl") }

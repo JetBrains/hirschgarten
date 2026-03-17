@@ -10,12 +10,21 @@ import com.intellij.driver.sdk.Project
 import com.intellij.driver.sdk.ProjectManager
 import com.intellij.driver.sdk.VirtualFile
 import com.intellij.driver.sdk.openEditor
+import com.intellij.driver.sdk.openToolWindow
 import com.intellij.driver.sdk.singleProject
 import com.intellij.driver.sdk.step
+import com.intellij.driver.sdk.ui.UiText.Companion.asString
 import com.intellij.driver.sdk.ui.components.UiComponent
 import com.intellij.driver.sdk.ui.components.UiComponent.Companion.waitFound
+import com.intellij.driver.sdk.ui.components.common.IdeaFrameUI
 import com.intellij.driver.sdk.ui.components.common.ideFrame
+import com.intellij.driver.sdk.ui.components.common.mainToolbar
+import com.intellij.driver.sdk.ui.components.common.restartDebugButton
+import com.intellij.driver.sdk.ui.components.common.toolwindows.DebugToolWindowUi
+import com.intellij.driver.sdk.ui.components.common.toolwindows.debugToolWindow
 import com.intellij.driver.sdk.ui.components.elements.dialog
+import com.intellij.driver.sdk.ui.components.elements.tree
+import com.intellij.driver.sdk.waitFor
 import com.intellij.driver.sdk.waitForCodeAnalysis
 import com.intellij.ide.starter.ci.CIServer
 import com.intellij.ide.starter.ci.teamcity.TeamCityCIServer
@@ -55,6 +64,7 @@ import java.nio.file.Path
 import java.util.function.Predicate
 import kotlin.io.path.ExperimentalPathApi
 import kotlin.time.Duration
+import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
 
 @OptIn(ExperimentalPathApi::class)
@@ -237,6 +247,72 @@ fun Driver.syncBazelProjectCloseDialog() {
   execute(CommandChain().takeScreenshot("openBspToolWindow"))
   execute(CommandChain().waitForBazelSync())
   execute(CommandChain().waitForSmartMode())
+}
+
+fun IdeaFrameUI.waitForBazelDebuggerUiReady(
+  sessionTimeout: Duration = 3.minutes,
+  toolWindowTimeout: Duration = 30.seconds,
+  collectingTimeout: Duration = 30.seconds,
+): DebugToolWindowUi {
+  waitFor(
+    message = "Debug session never started: Stop or Restart Debug did not appear in the main toolbar",
+    timeout = sessionTimeout,
+    interval = 1.seconds,
+  ) {
+    runCatching {
+      mainToolbar.stopButton.present() || mainToolbar.restartDebugButton.present()
+    }.getOrDefault(false)
+  }
+
+  driver.openToolWindow("Debug")
+  waitForIndicators(20.seconds)
+
+  waitFor(
+    message = "Debug tool window did not appear",
+    timeout = toolWindowTimeout,
+    interval = 1.seconds,
+  ) {
+    runCatching { debugToolWindow().present() }.getOrDefault(false)
+  }
+  val debugToolWindow = debugToolWindow()
+
+  waitFor(
+    message = "Threads & Variables tab did not appear in the Debug tool window",
+    timeout = toolWindowTimeout,
+    interval = 1.seconds,
+  ) {
+    runCatching { debugToolWindow.threadsAndVariablesTab.present() }.getOrDefault(false)
+  }
+  debugToolWindow.threadsAndVariablesTab.click()
+  waitForIndicators(20.seconds)
+
+  waitFor(
+    message = "Debugger tree did not appear in Threads & Variables",
+    timeout = toolWindowTimeout,
+    interval = 1.seconds,
+  ) {
+    runCatching { debugToolWindow.tree().present() }.getOrDefault(false)
+  }
+
+  waitFor(
+    message = "Debugger tree is still collecting data",
+    timeout = collectingTimeout,
+    interval = 1.seconds,
+  ) {
+    runCatching {
+      !debugToolWindow.tree().getAllTexts().asString().contains("Collecting", ignoreCase = true)
+    }.getOrDefault(false)
+  }
+
+  waitFor(
+    message = "Resume Program button should be enabled",
+    timeout = toolWindowTimeout,
+    interval = 1.seconds,
+  ) {
+    runCatching { debugToolWindow.resumeButton.isEnabled() }.getOrDefault(false)
+  }
+
+  return debugToolWindow
 }
 
 fun <T : CommandChain> T.openBspToolWindow(): T {
