@@ -20083,6 +20083,18 @@ public final class BspTargetInfo {
       com.google.protobuf.MessageOrBuilder {
 
     /**
+     * <code>string kind = 1;</code>
+     * @return The kind.
+     */
+    java.lang.String getKind();
+    /**
+     * <code>string kind = 1;</code>
+     * @return The bytes for kind.
+     */
+    com.google.protobuf.ByteString
+        getKindBytes();
+
+    /**
      * <code>.bazelbsp.TargetKey key = 2;</code>
      * @return Whether the key field is set.
      */
@@ -20096,43 +20108,6 @@ public final class BspTargetInfo {
      * <code>.bazelbsp.TargetKey key = 2;</code>
      */
     org.jetbrains.bazel.info.BspTargetInfo.TargetKeyOrBuilder getKeyOrBuilder();
-
-    /**
-     * <code>string kind = 20;</code>
-     * @return The kind.
-     */
-    java.lang.String getKind();
-    /**
-     * <code>string kind = 20;</code>
-     * @return The bytes for kind.
-     */
-    com.google.protobuf.ByteString
-        getKindBytes();
-
-    /**
-     * <code>repeated string tags = 30;</code>
-     * @return A list containing the tags.
-     */
-    java.util.List<java.lang.String>
-        getTagsList();
-    /**
-     * <code>repeated string tags = 30;</code>
-     * @return The count of tags.
-     */
-    int getTagsCount();
-    /**
-     * <code>repeated string tags = 30;</code>
-     * @param index The index of the element to return.
-     * @return The tags at the given index.
-     */
-    java.lang.String getTags(int index);
-    /**
-     * <code>repeated string tags = 30;</code>
-     * @param index The index of the value to return.
-     * @return The bytes of the tags at the given index.
-     */
-    com.google.protobuf.ByteString
-        getTagsBytes(int index);
 
     /**
      * <code>repeated .bazelbsp.Dependency deps = 4;</code>
@@ -20157,6 +20132,31 @@ public final class BspTargetInfo {
      */
     org.jetbrains.bazel.info.BspTargetInfo.DependencyOrBuilder getDepsOrBuilder(
         int index);
+
+    /**
+     * <code>repeated string tags = 5;</code>
+     * @return A list containing the tags.
+     */
+    java.util.List<java.lang.String>
+        getTagsList();
+    /**
+     * <code>repeated string tags = 5;</code>
+     * @return The count of tags.
+     */
+    int getTagsCount();
+    /**
+     * <code>repeated string tags = 5;</code>
+     * @param index The index of the element to return.
+     * @return The tags at the given index.
+     */
+    java.lang.String getTags(int index);
+    /**
+     * <code>repeated string tags = 5;</code>
+     * @param index The index of the value to return.
+     * @return The bytes of the tags at the given index.
+     */
+    com.google.protobuf.ByteString
+        getTagsBytes(int index);
 
     /**
      * <code>repeated .bazelbsp.ArtifactLocation sources = 50;</code>
@@ -20495,9 +20495,9 @@ java.lang.String defaultValue);
     }
     private TargetInfo() {
       kind_ = "";
+      deps_ = java.util.Collections.emptyList();
       tags_ =
           com.google.protobuf.LazyStringArrayList.emptyList();
-      deps_ = java.util.Collections.emptyList();
       sources_ = java.util.Collections.emptyList();
       generatedSources_ = java.util.Collections.emptyList();
       resources_ = java.util.Collections.emptyList();
@@ -20540,6 +20540,45 @@ java.lang.String defaultValue);
     }
 
     private int bitField0_;
+    public static final int KIND_FIELD_NUMBER = 1;
+    @SuppressWarnings("serial")
+    private volatile java.lang.Object kind_ = "";
+    /**
+     * <code>string kind = 1;</code>
+     * @return The kind.
+     */
+    @java.lang.Override
+    public java.lang.String getKind() {
+      java.lang.Object ref = kind_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        kind_ = s;
+        return s;
+      }
+    }
+    /**
+     * <code>string kind = 1;</code>
+     * @return The bytes for kind.
+     */
+    @java.lang.Override
+    public com.google.protobuf.ByteString
+        getKindBytes() {
+      java.lang.Object ref = kind_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        kind_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
     public static final int KEY_FIELD_NUMBER = 2;
     private org.jetbrains.bazel.info.BspTargetInfo.TargetKey key_;
     /**
@@ -20564,82 +20603,6 @@ java.lang.String defaultValue);
     @java.lang.Override
     public org.jetbrains.bazel.info.BspTargetInfo.TargetKeyOrBuilder getKeyOrBuilder() {
       return key_ == null ? org.jetbrains.bazel.info.BspTargetInfo.TargetKey.getDefaultInstance() : key_;
-    }
-
-    public static final int KIND_FIELD_NUMBER = 20;
-    @SuppressWarnings("serial")
-    private volatile java.lang.Object kind_ = "";
-    /**
-     * <code>string kind = 20;</code>
-     * @return The kind.
-     */
-    @java.lang.Override
-    public java.lang.String getKind() {
-      java.lang.Object ref = kind_;
-      if (ref instanceof java.lang.String) {
-        return (java.lang.String) ref;
-      } else {
-        com.google.protobuf.ByteString bs = 
-            (com.google.protobuf.ByteString) ref;
-        java.lang.String s = bs.toStringUtf8();
-        kind_ = s;
-        return s;
-      }
-    }
-    /**
-     * <code>string kind = 20;</code>
-     * @return The bytes for kind.
-     */
-    @java.lang.Override
-    public com.google.protobuf.ByteString
-        getKindBytes() {
-      java.lang.Object ref = kind_;
-      if (ref instanceof java.lang.String) {
-        com.google.protobuf.ByteString b = 
-            com.google.protobuf.ByteString.copyFromUtf8(
-                (java.lang.String) ref);
-        kind_ = b;
-        return b;
-      } else {
-        return (com.google.protobuf.ByteString) ref;
-      }
-    }
-
-    public static final int TAGS_FIELD_NUMBER = 30;
-    @SuppressWarnings("serial")
-    private com.google.protobuf.LazyStringArrayList tags_ =
-        com.google.protobuf.LazyStringArrayList.emptyList();
-    /**
-     * <code>repeated string tags = 30;</code>
-     * @return A list containing the tags.
-     */
-    public com.google.protobuf.ProtocolStringList
-        getTagsList() {
-      return tags_;
-    }
-    /**
-     * <code>repeated string tags = 30;</code>
-     * @return The count of tags.
-     */
-    public int getTagsCount() {
-      return tags_.size();
-    }
-    /**
-     * <code>repeated string tags = 30;</code>
-     * @param index The index of the element to return.
-     * @return The tags at the given index.
-     */
-    public java.lang.String getTags(int index) {
-      return tags_.get(index);
-    }
-    /**
-     * <code>repeated string tags = 30;</code>
-     * @param index The index of the value to return.
-     * @return The bytes of the tags at the given index.
-     */
-    public com.google.protobuf.ByteString
-        getTagsBytes(int index) {
-      return tags_.getByteString(index);
     }
 
     public static final int DEPS_FIELD_NUMBER = 4;
@@ -20681,6 +20644,43 @@ java.lang.String defaultValue);
     public org.jetbrains.bazel.info.BspTargetInfo.DependencyOrBuilder getDepsOrBuilder(
         int index) {
       return deps_.get(index);
+    }
+
+    public static final int TAGS_FIELD_NUMBER = 5;
+    @SuppressWarnings("serial")
+    private com.google.protobuf.LazyStringArrayList tags_ =
+        com.google.protobuf.LazyStringArrayList.emptyList();
+    /**
+     * <code>repeated string tags = 5;</code>
+     * @return A list containing the tags.
+     */
+    public com.google.protobuf.ProtocolStringList
+        getTagsList() {
+      return tags_;
+    }
+    /**
+     * <code>repeated string tags = 5;</code>
+     * @return The count of tags.
+     */
+    public int getTagsCount() {
+      return tags_.size();
+    }
+    /**
+     * <code>repeated string tags = 5;</code>
+     * @param index The index of the element to return.
+     * @return The tags at the given index.
+     */
+    public java.lang.String getTags(int index) {
+      return tags_.get(index);
+    }
+    /**
+     * <code>repeated string tags = 5;</code>
+     * @param index The index of the value to return.
+     * @return The bytes of the tags at the given index.
+     */
+    public com.google.protobuf.ByteString
+        getTagsBytes(int index) {
+      return tags_.getByteString(index);
     }
 
     public static final int SOURCES_FIELD_NUMBER = 50;
@@ -21307,17 +21307,17 @@ java.lang.String defaultValue) {
     @java.lang.Override
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
+      if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(kind_)) {
+        com.google.protobuf.GeneratedMessageV3.writeString(output, 1, kind_);
+      }
       if (((bitField0_ & 0x00000001) != 0)) {
         output.writeMessage(2, getKey());
       }
       for (int i = 0; i < deps_.size(); i++) {
         output.writeMessage(4, deps_.get(i));
       }
-      if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(kind_)) {
-        com.google.protobuf.GeneratedMessageV3.writeString(output, 20, kind_);
-      }
       for (int i = 0; i < tags_.size(); i++) {
-        com.google.protobuf.GeneratedMessageV3.writeString(output, 30, tags_.getRaw(i));
+        com.google.protobuf.GeneratedMessageV3.writeString(output, 5, tags_.getRaw(i));
       }
       for (int i = 0; i < sources_.size(); i++) {
         output.writeMessage(50, sources_.get(i));
@@ -21391,6 +21391,9 @@ java.lang.String defaultValue) {
       if (size != -1) return size;
 
       size = 0;
+      if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(kind_)) {
+        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(1, kind_);
+      }
       if (((bitField0_ & 0x00000001) != 0)) {
         size += com.google.protobuf.CodedOutputStream
           .computeMessageSize(2, getKey());
@@ -21399,16 +21402,13 @@ java.lang.String defaultValue) {
         size += com.google.protobuf.CodedOutputStream
           .computeMessageSize(4, deps_.get(i));
       }
-      if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(kind_)) {
-        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(20, kind_);
-      }
       {
         int dataSize = 0;
         for (int i = 0; i < tags_.size(); i++) {
           dataSize += computeStringSizeNoTag(tags_.getRaw(i));
         }
         size += dataSize;
-        size += 2 * getTagsList().size();
+        size += 1 * getTagsList().size();
       }
       for (int i = 0; i < sources_.size(); i++) {
         size += com.google.protobuf.CodedOutputStream
@@ -21513,17 +21513,17 @@ java.lang.String defaultValue) {
       }
       org.jetbrains.bazel.info.BspTargetInfo.TargetInfo other = (org.jetbrains.bazel.info.BspTargetInfo.TargetInfo) obj;
 
+      if (!getKind()
+          .equals(other.getKind())) return false;
       if (hasKey() != other.hasKey()) return false;
       if (hasKey()) {
         if (!getKey()
             .equals(other.getKey())) return false;
       }
-      if (!getKind()
-          .equals(other.getKind())) return false;
-      if (!getTagsList()
-          .equals(other.getTagsList())) return false;
       if (!getDepsList()
           .equals(other.getDepsList())) return false;
+      if (!getTagsList()
+          .equals(other.getTagsList())) return false;
       if (!getSourcesList()
           .equals(other.getSourcesList())) return false;
       if (!getGeneratedSourcesList()
@@ -21605,19 +21605,19 @@ java.lang.String defaultValue) {
       }
       int hash = 41;
       hash = (19 * hash) + getDescriptor().hashCode();
+      hash = (37 * hash) + KIND_FIELD_NUMBER;
+      hash = (53 * hash) + getKind().hashCode();
       if (hasKey()) {
         hash = (37 * hash) + KEY_FIELD_NUMBER;
         hash = (53 * hash) + getKey().hashCode();
       }
-      hash = (37 * hash) + KIND_FIELD_NUMBER;
-      hash = (53 * hash) + getKind().hashCode();
-      if (getTagsCount() > 0) {
-        hash = (37 * hash) + TAGS_FIELD_NUMBER;
-        hash = (53 * hash) + getTagsList().hashCode();
-      }
       if (getDepsCount() > 0) {
         hash = (37 * hash) + DEPS_FIELD_NUMBER;
         hash = (53 * hash) + getDepsList().hashCode();
+      }
+      if (getTagsCount() > 0) {
+        hash = (37 * hash) + TAGS_FIELD_NUMBER;
+        hash = (53 * hash) + getTagsList().hashCode();
       }
       if (getSourcesCount() > 0) {
         hash = (37 * hash) + SOURCES_FIELD_NUMBER;
@@ -21865,21 +21865,21 @@ java.lang.String defaultValue) {
       public Builder clear() {
         super.clear();
         bitField0_ = 0;
+        kind_ = "";
         key_ = null;
         if (keyBuilder_ != null) {
           keyBuilder_.dispose();
           keyBuilder_ = null;
         }
-        kind_ = "";
-        tags_ =
-            com.google.protobuf.LazyStringArrayList.emptyList();
         if (depsBuilder_ == null) {
           deps_ = java.util.Collections.emptyList();
         } else {
           deps_ = null;
           depsBuilder_.clear();
         }
-        bitField0_ = (bitField0_ & ~0x00000008);
+        bitField0_ = (bitField0_ & ~0x00000004);
+        tags_ =
+            com.google.protobuf.LazyStringArrayList.emptyList();
         if (sourcesBuilder_ == null) {
           sources_ = java.util.Collections.emptyList();
         } else {
@@ -21993,9 +21993,9 @@ java.lang.String defaultValue) {
 
       private void buildPartialRepeatedFields(org.jetbrains.bazel.info.BspTargetInfo.TargetInfo result) {
         if (depsBuilder_ == null) {
-          if (((bitField0_ & 0x00000008) != 0)) {
+          if (((bitField0_ & 0x00000004) != 0)) {
             deps_ = java.util.Collections.unmodifiableList(deps_);
-            bitField0_ = (bitField0_ & ~0x00000008);
+            bitField0_ = (bitField0_ & ~0x00000004);
           }
           result.deps_ = deps_;
         } else {
@@ -22032,17 +22032,17 @@ java.lang.String defaultValue) {
 
       private void buildPartial0(org.jetbrains.bazel.info.BspTargetInfo.TargetInfo result) {
         int from_bitField0_ = bitField0_;
-        int to_bitField0_ = 0;
         if (((from_bitField0_ & 0x00000001) != 0)) {
+          result.kind_ = kind_;
+        }
+        int to_bitField0_ = 0;
+        if (((from_bitField0_ & 0x00000002) != 0)) {
           result.key_ = keyBuilder_ == null
               ? key_
               : keyBuilder_.build();
           to_bitField0_ |= 0x00000001;
         }
-        if (((from_bitField0_ & 0x00000002) != 0)) {
-          result.kind_ = kind_;
-        }
-        if (((from_bitField0_ & 0x00000004) != 0)) {
+        if (((from_bitField0_ & 0x00000008) != 0)) {
           tags_.makeImmutable();
           result.tags_ = tags_;
         }
@@ -22176,29 +22176,19 @@ java.lang.String defaultValue) {
 
       public Builder mergeFrom(org.jetbrains.bazel.info.BspTargetInfo.TargetInfo other) {
         if (other == org.jetbrains.bazel.info.BspTargetInfo.TargetInfo.getDefaultInstance()) return this;
-        if (other.hasKey()) {
-          mergeKey(other.getKey());
-        }
         if (!other.getKind().isEmpty()) {
           kind_ = other.kind_;
-          bitField0_ |= 0x00000002;
+          bitField0_ |= 0x00000001;
           onChanged();
         }
-        if (!other.tags_.isEmpty()) {
-          if (tags_.isEmpty()) {
-            tags_ = other.tags_;
-            bitField0_ |= 0x00000004;
-          } else {
-            ensureTagsIsMutable();
-            tags_.addAll(other.tags_);
-          }
-          onChanged();
+        if (other.hasKey()) {
+          mergeKey(other.getKey());
         }
         if (depsBuilder_ == null) {
           if (!other.deps_.isEmpty()) {
             if (deps_.isEmpty()) {
               deps_ = other.deps_;
-              bitField0_ = (bitField0_ & ~0x00000008);
+              bitField0_ = (bitField0_ & ~0x00000004);
             } else {
               ensureDepsIsMutable();
               deps_.addAll(other.deps_);
@@ -22211,7 +22201,7 @@ java.lang.String defaultValue) {
               depsBuilder_.dispose();
               depsBuilder_ = null;
               deps_ = other.deps_;
-              bitField0_ = (bitField0_ & ~0x00000008);
+              bitField0_ = (bitField0_ & ~0x00000004);
               depsBuilder_ = 
                 com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders ?
                    getDepsFieldBuilder() : null;
@@ -22219,6 +22209,16 @@ java.lang.String defaultValue) {
               depsBuilder_.addAllMessages(other.deps_);
             }
           }
+        }
+        if (!other.tags_.isEmpty()) {
+          if (tags_.isEmpty()) {
+            tags_ = other.tags_;
+            bitField0_ |= 0x00000008;
+          } else {
+            ensureTagsIsMutable();
+            tags_.addAll(other.tags_);
+          }
+          onChanged();
         }
         if (sourcesBuilder_ == null) {
           if (!other.sources_.isEmpty()) {
@@ -22386,11 +22386,16 @@ java.lang.String defaultValue) {
               case 0:
                 done = true;
                 break;
+              case 10: {
+                kind_ = input.readStringRequireUtf8();
+                bitField0_ |= 0x00000001;
+                break;
+              } // case 10
               case 18: {
                 input.readMessage(
                     getKeyFieldBuilder().getBuilder(),
                     extensionRegistry);
-                bitField0_ |= 0x00000001;
+                bitField0_ |= 0x00000002;
                 break;
               } // case 18
               case 34: {
@@ -22406,17 +22411,12 @@ java.lang.String defaultValue) {
                 }
                 break;
               } // case 34
-              case 162: {
-                kind_ = input.readStringRequireUtf8();
-                bitField0_ |= 0x00000002;
-                break;
-              } // case 162
-              case 242: {
+              case 42: {
                 java.lang.String s = input.readStringRequireUtf8();
                 ensureTagsIsMutable();
                 tags_.add(s);
                 break;
-              } // case 242
+              } // case 42
               case 402: {
                 org.jetbrains.bazel.info.BspTargetInfo.ArtifactLocation m =
                     input.readMessage(
@@ -22583,6 +22583,78 @@ java.lang.String defaultValue) {
       }
       private int bitField0_;
 
+      private java.lang.Object kind_ = "";
+      /**
+       * <code>string kind = 1;</code>
+       * @return The kind.
+       */
+      public java.lang.String getKind() {
+        java.lang.Object ref = kind_;
+        if (!(ref instanceof java.lang.String)) {
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          kind_ = s;
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <code>string kind = 1;</code>
+       * @return The bytes for kind.
+       */
+      public com.google.protobuf.ByteString
+          getKindBytes() {
+        java.lang.Object ref = kind_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          kind_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <code>string kind = 1;</code>
+       * @param value The kind to set.
+       * @return This builder for chaining.
+       */
+      public Builder setKind(
+          java.lang.String value) {
+        if (value == null) { throw new NullPointerException(); }
+        kind_ = value;
+        bitField0_ |= 0x00000001;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>string kind = 1;</code>
+       * @return This builder for chaining.
+       */
+      public Builder clearKind() {
+        kind_ = getDefaultInstance().getKind();
+        bitField0_ = (bitField0_ & ~0x00000001);
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>string kind = 1;</code>
+       * @param value The bytes for kind to set.
+       * @return This builder for chaining.
+       */
+      public Builder setKindBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) { throw new NullPointerException(); }
+        checkByteStringIsUtf8(value);
+        kind_ = value;
+        bitField0_ |= 0x00000001;
+        onChanged();
+        return this;
+      }
+
       private org.jetbrains.bazel.info.BspTargetInfo.TargetKey key_;
       private com.google.protobuf.SingleFieldBuilderV3<
           org.jetbrains.bazel.info.BspTargetInfo.TargetKey, org.jetbrains.bazel.info.BspTargetInfo.TargetKey.Builder, org.jetbrains.bazel.info.BspTargetInfo.TargetKeyOrBuilder> keyBuilder_;
@@ -22591,7 +22663,7 @@ java.lang.String defaultValue) {
        * @return Whether the key field is set.
        */
       public boolean hasKey() {
-        return ((bitField0_ & 0x00000001) != 0);
+        return ((bitField0_ & 0x00000002) != 0);
       }
       /**
        * <code>.bazelbsp.TargetKey key = 2;</code>
@@ -22616,7 +22688,7 @@ java.lang.String defaultValue) {
         } else {
           keyBuilder_.setMessage(value);
         }
-        bitField0_ |= 0x00000001;
+        bitField0_ |= 0x00000002;
         onChanged();
         return this;
       }
@@ -22630,7 +22702,7 @@ java.lang.String defaultValue) {
         } else {
           keyBuilder_.setMessage(builderForValue.build());
         }
-        bitField0_ |= 0x00000001;
+        bitField0_ |= 0x00000002;
         onChanged();
         return this;
       }
@@ -22639,7 +22711,7 @@ java.lang.String defaultValue) {
        */
       public Builder mergeKey(org.jetbrains.bazel.info.BspTargetInfo.TargetKey value) {
         if (keyBuilder_ == null) {
-          if (((bitField0_ & 0x00000001) != 0) &&
+          if (((bitField0_ & 0x00000002) != 0) &&
             key_ != null &&
             key_ != org.jetbrains.bazel.info.BspTargetInfo.TargetKey.getDefaultInstance()) {
             getKeyBuilder().mergeFrom(value);
@@ -22650,7 +22722,7 @@ java.lang.String defaultValue) {
           keyBuilder_.mergeFrom(value);
         }
         if (key_ != null) {
-          bitField0_ |= 0x00000001;
+          bitField0_ |= 0x00000002;
           onChanged();
         }
         return this;
@@ -22659,7 +22731,7 @@ java.lang.String defaultValue) {
        * <code>.bazelbsp.TargetKey key = 2;</code>
        */
       public Builder clearKey() {
-        bitField0_ = (bitField0_ & ~0x00000001);
+        bitField0_ = (bitField0_ & ~0x00000002);
         key_ = null;
         if (keyBuilder_ != null) {
           keyBuilder_.dispose();
@@ -22672,7 +22744,7 @@ java.lang.String defaultValue) {
        * <code>.bazelbsp.TargetKey key = 2;</code>
        */
       public org.jetbrains.bazel.info.BspTargetInfo.TargetKey.Builder getKeyBuilder() {
-        bitField0_ |= 0x00000001;
+        bitField0_ |= 0x00000002;
         onChanged();
         return getKeyFieldBuilder().getBuilder();
       }
@@ -22704,195 +22776,12 @@ java.lang.String defaultValue) {
         return keyBuilder_;
       }
 
-      private java.lang.Object kind_ = "";
-      /**
-       * <code>string kind = 20;</code>
-       * @return The kind.
-       */
-      public java.lang.String getKind() {
-        java.lang.Object ref = kind_;
-        if (!(ref instanceof java.lang.String)) {
-          com.google.protobuf.ByteString bs =
-              (com.google.protobuf.ByteString) ref;
-          java.lang.String s = bs.toStringUtf8();
-          kind_ = s;
-          return s;
-        } else {
-          return (java.lang.String) ref;
-        }
-      }
-      /**
-       * <code>string kind = 20;</code>
-       * @return The bytes for kind.
-       */
-      public com.google.protobuf.ByteString
-          getKindBytes() {
-        java.lang.Object ref = kind_;
-        if (ref instanceof String) {
-          com.google.protobuf.ByteString b = 
-              com.google.protobuf.ByteString.copyFromUtf8(
-                  (java.lang.String) ref);
-          kind_ = b;
-          return b;
-        } else {
-          return (com.google.protobuf.ByteString) ref;
-        }
-      }
-      /**
-       * <code>string kind = 20;</code>
-       * @param value The kind to set.
-       * @return This builder for chaining.
-       */
-      public Builder setKind(
-          java.lang.String value) {
-        if (value == null) { throw new NullPointerException(); }
-        kind_ = value;
-        bitField0_ |= 0x00000002;
-        onChanged();
-        return this;
-      }
-      /**
-       * <code>string kind = 20;</code>
-       * @return This builder for chaining.
-       */
-      public Builder clearKind() {
-        kind_ = getDefaultInstance().getKind();
-        bitField0_ = (bitField0_ & ~0x00000002);
-        onChanged();
-        return this;
-      }
-      /**
-       * <code>string kind = 20;</code>
-       * @param value The bytes for kind to set.
-       * @return This builder for chaining.
-       */
-      public Builder setKindBytes(
-          com.google.protobuf.ByteString value) {
-        if (value == null) { throw new NullPointerException(); }
-        checkByteStringIsUtf8(value);
-        kind_ = value;
-        bitField0_ |= 0x00000002;
-        onChanged();
-        return this;
-      }
-
-      private com.google.protobuf.LazyStringArrayList tags_ =
-          com.google.protobuf.LazyStringArrayList.emptyList();
-      private void ensureTagsIsMutable() {
-        if (!tags_.isModifiable()) {
-          tags_ = new com.google.protobuf.LazyStringArrayList(tags_);
-        }
-        bitField0_ |= 0x00000004;
-      }
-      /**
-       * <code>repeated string tags = 30;</code>
-       * @return A list containing the tags.
-       */
-      public com.google.protobuf.ProtocolStringList
-          getTagsList() {
-        tags_.makeImmutable();
-        return tags_;
-      }
-      /**
-       * <code>repeated string tags = 30;</code>
-       * @return The count of tags.
-       */
-      public int getTagsCount() {
-        return tags_.size();
-      }
-      /**
-       * <code>repeated string tags = 30;</code>
-       * @param index The index of the element to return.
-       * @return The tags at the given index.
-       */
-      public java.lang.String getTags(int index) {
-        return tags_.get(index);
-      }
-      /**
-       * <code>repeated string tags = 30;</code>
-       * @param index The index of the value to return.
-       * @return The bytes of the tags at the given index.
-       */
-      public com.google.protobuf.ByteString
-          getTagsBytes(int index) {
-        return tags_.getByteString(index);
-      }
-      /**
-       * <code>repeated string tags = 30;</code>
-       * @param index The index to set the value at.
-       * @param value The tags to set.
-       * @return This builder for chaining.
-       */
-      public Builder setTags(
-          int index, java.lang.String value) {
-        if (value == null) { throw new NullPointerException(); }
-        ensureTagsIsMutable();
-        tags_.set(index, value);
-        bitField0_ |= 0x00000004;
-        onChanged();
-        return this;
-      }
-      /**
-       * <code>repeated string tags = 30;</code>
-       * @param value The tags to add.
-       * @return This builder for chaining.
-       */
-      public Builder addTags(
-          java.lang.String value) {
-        if (value == null) { throw new NullPointerException(); }
-        ensureTagsIsMutable();
-        tags_.add(value);
-        bitField0_ |= 0x00000004;
-        onChanged();
-        return this;
-      }
-      /**
-       * <code>repeated string tags = 30;</code>
-       * @param values The tags to add.
-       * @return This builder for chaining.
-       */
-      public Builder addAllTags(
-          java.lang.Iterable<java.lang.String> values) {
-        ensureTagsIsMutable();
-        com.google.protobuf.AbstractMessageLite.Builder.addAll(
-            values, tags_);
-        bitField0_ |= 0x00000004;
-        onChanged();
-        return this;
-      }
-      /**
-       * <code>repeated string tags = 30;</code>
-       * @return This builder for chaining.
-       */
-      public Builder clearTags() {
-        tags_ =
-          com.google.protobuf.LazyStringArrayList.emptyList();
-        bitField0_ = (bitField0_ & ~0x00000004);;
-        onChanged();
-        return this;
-      }
-      /**
-       * <code>repeated string tags = 30;</code>
-       * @param value The bytes of the tags to add.
-       * @return This builder for chaining.
-       */
-      public Builder addTagsBytes(
-          com.google.protobuf.ByteString value) {
-        if (value == null) { throw new NullPointerException(); }
-        checkByteStringIsUtf8(value);
-        ensureTagsIsMutable();
-        tags_.add(value);
-        bitField0_ |= 0x00000004;
-        onChanged();
-        return this;
-      }
-
       private java.util.List<org.jetbrains.bazel.info.BspTargetInfo.Dependency> deps_ =
         java.util.Collections.emptyList();
       private void ensureDepsIsMutable() {
-        if (!((bitField0_ & 0x00000008) != 0)) {
+        if (!((bitField0_ & 0x00000004) != 0)) {
           deps_ = new java.util.ArrayList<org.jetbrains.bazel.info.BspTargetInfo.Dependency>(deps_);
-          bitField0_ |= 0x00000008;
+          bitField0_ |= 0x00000004;
          }
       }
 
@@ -23042,7 +22931,7 @@ java.lang.String defaultValue) {
       public Builder clearDeps() {
         if (depsBuilder_ == null) {
           deps_ = java.util.Collections.emptyList();
-          bitField0_ = (bitField0_ & ~0x00000008);
+          bitField0_ = (bitField0_ & ~0x00000004);
           onChanged();
         } else {
           depsBuilder_.clear();
@@ -23119,12 +23008,123 @@ java.lang.String defaultValue) {
           depsBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
               org.jetbrains.bazel.info.BspTargetInfo.Dependency, org.jetbrains.bazel.info.BspTargetInfo.Dependency.Builder, org.jetbrains.bazel.info.BspTargetInfo.DependencyOrBuilder>(
                   deps_,
-                  ((bitField0_ & 0x00000008) != 0),
+                  ((bitField0_ & 0x00000004) != 0),
                   getParentForChildren(),
                   isClean());
           deps_ = null;
         }
         return depsBuilder_;
+      }
+
+      private com.google.protobuf.LazyStringArrayList tags_ =
+          com.google.protobuf.LazyStringArrayList.emptyList();
+      private void ensureTagsIsMutable() {
+        if (!tags_.isModifiable()) {
+          tags_ = new com.google.protobuf.LazyStringArrayList(tags_);
+        }
+        bitField0_ |= 0x00000008;
+      }
+      /**
+       * <code>repeated string tags = 5;</code>
+       * @return A list containing the tags.
+       */
+      public com.google.protobuf.ProtocolStringList
+          getTagsList() {
+        tags_.makeImmutable();
+        return tags_;
+      }
+      /**
+       * <code>repeated string tags = 5;</code>
+       * @return The count of tags.
+       */
+      public int getTagsCount() {
+        return tags_.size();
+      }
+      /**
+       * <code>repeated string tags = 5;</code>
+       * @param index The index of the element to return.
+       * @return The tags at the given index.
+       */
+      public java.lang.String getTags(int index) {
+        return tags_.get(index);
+      }
+      /**
+       * <code>repeated string tags = 5;</code>
+       * @param index The index of the value to return.
+       * @return The bytes of the tags at the given index.
+       */
+      public com.google.protobuf.ByteString
+          getTagsBytes(int index) {
+        return tags_.getByteString(index);
+      }
+      /**
+       * <code>repeated string tags = 5;</code>
+       * @param index The index to set the value at.
+       * @param value The tags to set.
+       * @return This builder for chaining.
+       */
+      public Builder setTags(
+          int index, java.lang.String value) {
+        if (value == null) { throw new NullPointerException(); }
+        ensureTagsIsMutable();
+        tags_.set(index, value);
+        bitField0_ |= 0x00000008;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>repeated string tags = 5;</code>
+       * @param value The tags to add.
+       * @return This builder for chaining.
+       */
+      public Builder addTags(
+          java.lang.String value) {
+        if (value == null) { throw new NullPointerException(); }
+        ensureTagsIsMutable();
+        tags_.add(value);
+        bitField0_ |= 0x00000008;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>repeated string tags = 5;</code>
+       * @param values The tags to add.
+       * @return This builder for chaining.
+       */
+      public Builder addAllTags(
+          java.lang.Iterable<java.lang.String> values) {
+        ensureTagsIsMutable();
+        com.google.protobuf.AbstractMessageLite.Builder.addAll(
+            values, tags_);
+        bitField0_ |= 0x00000008;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>repeated string tags = 5;</code>
+       * @return This builder for chaining.
+       */
+      public Builder clearTags() {
+        tags_ =
+          com.google.protobuf.LazyStringArrayList.emptyList();
+        bitField0_ = (bitField0_ & ~0x00000008);;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>repeated string tags = 5;</code>
+       * @param value The bytes of the tags to add.
+       * @return This builder for chaining.
+       */
+      public Builder addTagsBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) { throw new NullPointerException(); }
+        checkByteStringIsUtf8(value);
+        ensureTagsIsMutable();
+        tags_.add(value);
+        bitField0_ |= 0x00000008;
+        onChanged();
+        return this;
       }
 
       private java.util.List<org.jetbrains.bazel.info.BspTargetInfo.ArtifactLocation> sources_ =
@@ -25762,9 +25762,9 @@ java.lang.String defaultValue) {
       "2\037.bazelbsp.ProtobufSourceMapping\"\\\n\025Pro" +
       "tobufSourceMapping\022\023\n\013import_path\030\001 \001(\t\022" +
       ".\n\nproto_file\030\002 \001(\0132\032.bazelbsp.ArtifactL" +
-      "ocation\"\215\010\n\nTargetInfo\022 \n\003key\030\002 \001(\0132\023.ba" +
-      "zelbsp.TargetKey\022\014\n\004kind\030\024 \001(\t\022\014\n\004tags\030\036" +
-      " \003(\t\022\"\n\004deps\030\004 \003(\0132\024.bazelbsp.Dependency" +
+      "ocation\"\215\010\n\nTargetInfo\022\014\n\004kind\030\001 \001(\t\022 \n\003" +
+      "key\030\002 \001(\0132\023.bazelbsp.TargetKey\022\"\n\004deps\030\004" +
+      " \003(\0132\024.bazelbsp.Dependency\022\014\n\004tags\030\005 \003(\t" +
       "\022+\n\007sources\0302 \003(\0132\032.bazelbsp.ArtifactLoc" +
       "ation\0225\n\021generated_sources\0303 \003(\0132\032.bazel" +
       "bsp.ArtifactLocation\022-\n\tresources\030< \003(\0132" +
@@ -25902,7 +25902,7 @@ java.lang.String defaultValue) {
     internal_static_bazelbsp_TargetInfo_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_bazelbsp_TargetInfo_descriptor,
-        new java.lang.String[] { "Key", "Kind", "Tags", "Deps", "Sources", "GeneratedSources", "Resources", "Env", "EnvInherit", "Executable", "WorkspaceName", "JvmTargetInfo", "JvmTarget", "HasApiGeneratingPlugins", "GeneratorName", "JavaProvider", "JavaCommon", "JavaToolchainInfo", "JavaRuntimeInfo", "ScalaTargetInfo", "KotlinTargetInfo", "PythonTargetInfo", "GoTargetInfo", "ProtobufTargetInfo", });
+        new java.lang.String[] { "Kind", "Key", "Deps", "Tags", "Sources", "GeneratedSources", "Resources", "Env", "EnvInherit", "Executable", "WorkspaceName", "JvmTargetInfo", "JvmTarget", "HasApiGeneratingPlugins", "GeneratorName", "JavaProvider", "JavaCommon", "JavaToolchainInfo", "JavaRuntimeInfo", "ScalaTargetInfo", "KotlinTargetInfo", "PythonTargetInfo", "GoTargetInfo", "ProtobufTargetInfo", });
     internal_static_bazelbsp_TargetInfo_EnvEntry_descriptor =
       internal_static_bazelbsp_TargetInfo_descriptor.getNestedTypes().get(0);
     internal_static_bazelbsp_TargetInfo_EnvEntry_fieldAccessorTable = new
