@@ -5,6 +5,7 @@ import com.intellij.driver.client.Remote
 import com.intellij.driver.client.service
 import com.intellij.driver.client.utility
 import com.intellij.driver.model.RdTarget
+import com.intellij.driver.model.OnDispatcher
 import com.intellij.ide.starter.driver.engine.BackgroundRun
 import com.intellij.driver.sdk.Project
 import com.intellij.driver.sdk.ProjectManager
@@ -229,6 +230,7 @@ fun Driver.syncBazelProject(buildAndSync: Boolean = false) {
   if (buildAndSync) {
     execute(CommandChain().buildAndSync())
   }
+  failIfFatalIdeErrorsPresent("Bazel sync")
   execute(CommandChain().waitForSmartMode())
 }
 
@@ -247,6 +249,7 @@ fun Driver.syncBazelProjectCloseDialog() {
   }
   execute(CommandChain().takeScreenshot("openBspToolWindow"))
   execute(CommandChain().waitForBazelSync())
+  failIfFatalIdeErrorsPresent("Bazel sync")
   execute(CommandChain().waitForSmartMode())
 }
 
@@ -365,6 +368,25 @@ fun Driver.singleProjectOrNull(): Project? = service<ProjectManager>(RdTarget.DE
   .getOpenProjects()
   .singleOrNull()
 
+fun Driver.failIfFatalIdeErrorsPresent(phase: String) {
+  val fatalErrors = withContext(OnDispatcher.EDT) {
+    utility<IdeMessagePool>().getInstance().getFatalErrors(true, true)
+  }
+  if (fatalErrors.isEmpty()) return
+
+  val renderedErrors = fatalErrors.take(3).joinToString("\n\n---\n\n") { error ->
+    sequenceOf(error.getMessage(), error.getThrowableText())
+      .filterNotNull()
+      .map(String::trim)
+      .filter(String::isNotBlank)
+      .distinct()
+      .joinToString("\n")
+  }
+  val remainingErrors = fatalErrors.size - 3
+  val suffix = if (remainingErrors > 0) "\n\n... and $remainingErrors more fatal IDE error(s)" else ""
+  error("Fatal IDE errors detected during $phase:\n\n$renderedErrors$suffix")
+}
+
 /**
  * Should be used instead of [com.intellij.driver.sdk.openFile] because this method doesn't rely on content roots
  */
@@ -389,6 +411,18 @@ val Driver.projectRootDir: VirtualFile
 @Remote("org.jetbrains.bazel.config.BazelProjectPropertiesKt", plugin = "org.jetbrains.bazel/intellij.bazel.core")
 interface BazelProjectPropertiesKt {
   fun getRootDir(project: Project): VirtualFile
+}
+
+@Remote("com.intellij.diagnostic.MessagePool")
+interface IdeMessagePool {
+  fun getInstance(): IdeMessagePool
+  fun getFatalErrors(includeReadMessages: Boolean, includeSubmittedMessages: Boolean): List<IdeFatalError>
+}
+
+@Remote("com.intellij.diagnostic.AbstractMessage")
+interface IdeFatalError {
+  fun getMessage(): String?
+  fun getThrowableText(): String
 }
 
 fun UiComponent.assertSyncSucceeded() {
