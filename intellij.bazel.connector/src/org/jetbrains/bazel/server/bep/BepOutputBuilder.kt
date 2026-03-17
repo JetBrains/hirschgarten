@@ -18,6 +18,7 @@ internal class BepOutputBuilder(private val bazelPathsResolver: BazelPathsResolv
   private val outputGroups: MutableMap<String, MutableSet<String>> = HashMap()
   private val textProtoFileSets: MutableMap<String, TextProtoDepSet> = HashMap()
   private val rootTargets: MutableSet<Label> = HashSet()
+  private val options: MutableList<String> = mutableListOf()
 
   fun storeNamedSet(id: String, namedSetOfFiles: NamedSetOfFiles) {
     val textProtoDepSet =
@@ -49,11 +50,16 @@ internal class BepOutputBuilder(private val bazelPathsResolver: BazelPathsResolv
     }
   }
 
+  fun storeOptions(cmdline: List<String>) {
+    options.addAll(cmdline)
+  }
+
   fun clear() {
     outputGroups.clear()
     textProtoFileSets.clear()
     rootTargets.clear()
+    options.clear()
   }
 
-  fun build(): BepOutput = BepOutput(outputGroups, textProtoFileSets, rootTargets)
+  fun build(): BepOutput = BepOutput(outputGroups, textProtoFileSets, rootTargets, options)
 }

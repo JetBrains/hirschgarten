@@ -10,6 +10,7 @@ class BepOutput(
   private val outputGroups: Map<String, Set<String>> = emptyMap(),
   private val textProtoFileSets: Map<String, TextProtoDepSet> = emptyMap(),
   private val rootTargets: Set<Label> = emptySet(),
+  val options : List<String> = emptyList(),
 ) {
   fun rootTargets(): Set<Label> = rootTargets
 
@@ -46,5 +47,6 @@ class BepOutput(
         TextProtoDepSet(left.files + right.files, left.children + right.children)
       },
       rootTargets + anotherBepOutput.rootTargets,
+      options + anotherBepOutput.options,
     )
 }
