@@ -1,5 +1,6 @@
 package org.jetbrains.bazel.bazelrunner
 
+import com.intellij.openapi.diagnostic.logger
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.commons.BazelInfo
 import org.jetbrains.bazel.commons.BazelRelease
@@ -32,7 +33,7 @@ class BazelInfoResolver(val workspaceRoot: Path) {
     return parseBazelInfo(processResult.stdoutLines, processResult.stderrLines)
   }
 
-  fun parseBazelInfo(stdoutLines: List<String>, stderrLines: List<String>): BazelInfo {
+  private fun parseBazelInfo(stdoutLines: List<String>, stderrLines: List<String>): BazelInfo {
     val outputMap =
       stdoutLines
         .mapNotNull { line ->
@@ -50,12 +51,17 @@ class BazelInfoResolver(val workspaceRoot: Path) {
       BazelRelease.fromReleaseString(extract(RELEASE))
       ?: workspaceRoot.let { BazelRelease.fromBazelVersionFile(it) }.orFallbackVersion()
 
+    val reportedWorkspaceRoot = Paths.get(extract(WORKSPACE))
+    if (reportedWorkspaceRoot != workspaceRoot) {
+      log.error("Workspace path mismatch: given $workspaceRoot, Bazel reported $reportedWorkspaceRoot")
+    }
+
     val starlarkSemantics = parseStarlarkSemantics(extract(STARLARK_SEMANTICS), bazelReleaseVersion)
 
     return BazelInfo(
       execRoot = Paths.get(extract(EXECUTION_ROOT)),
       outputBase = Paths.get(extract(OUTPUT_BASE)),
-      workspaceRoot = Paths.get(extract(WORKSPACE)),
+      workspaceRoot = workspaceRoot,
       bazelBin = Paths.get(extract(BAZEL_BIN)),
       release = bazelReleaseVersion,
       isBzlModEnabled = starlarkSemantics.isBzlModEnabled,
@@ -123,5 +129,7 @@ class BazelInfoResolver(val workspaceRoot: Path) {
   companion object {
     private val INFO_LINE_PATTERN = "([\\w-]+): (.*)".toRegex()
     private const val INCOMPATIBLE_AUTOLOADS_PARAM = "incompatible_autoload_externally=["
+
+    private val log = logger<BazelInfoResolver>()
   }
 }

@@ -262,7 +262,6 @@ class ProjectResolver constructor(
           val shardedResult =
             BazelBuildTargetSharder.expandAndShardTargets(
               bazelPathsResolver,
-              bazelInfo,
               targetsToSync,
               workspaceContext,
               featureFlags,

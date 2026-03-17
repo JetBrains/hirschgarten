@@ -26,6 +26,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.action.saveAllFiles
+import org.jetbrains.bazel.commons.constants.Constants
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.config.BazelPluginConstants
 import org.jetbrains.bazel.config.rootDir
@@ -162,7 +163,7 @@ class ProjectSyncTask(private val project: Project) {
 
   private suspend fun clearSyntheticTargets() {
     writeAction {
-      project.rootDir.findDirectory(".bazelbsp")
+      project.rootDir.findDirectory(Constants.DOT_BAZELBSP_DIR_NAME)
         ?.findDirectory("synthetic_targets")
         ?.children
         ?.forEach { it.delete(this) }

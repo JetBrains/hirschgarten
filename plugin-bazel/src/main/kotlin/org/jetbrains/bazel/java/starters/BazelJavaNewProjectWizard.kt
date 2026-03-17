@@ -75,7 +75,7 @@ internal class BazelJavaNewProjectWizard : BuildSystemJavaNewProjectWizard {
 
     private fun gitIgnore() =
       """
-      .bazelbsp/
+      ${Constants.DOT_BAZELBSP_DIR_NAME}/
       .idea/
       bazel-bin
       bazel-genfiles
