@@ -153,8 +153,8 @@ class BspProjectMapper(private val bazelRunner: BazelRunner, private val bspInfo
       uri = this.toUri().toString(),
     )
 
-  suspend fun inverseSources(project: AspectSyncProject, inverseSourcesParams: InverseSourcesParams): InverseSourcesResult {
-    return InverseSourcesQuery.inverseSourcesQuery(inverseSourcesParams, project.workspaceRoot, bazelRunner, project.workspaceContext)
+  suspend fun inverseSources(workspaceRoot: Path, inverseSourcesParams: InverseSourcesParams, workspaceContext: WorkspaceContext): InverseSourcesResult {
+    return InverseSourcesQuery.inverseSourcesQuery(inverseSourcesParams, workspaceRoot, bazelRunner, workspaceContext)
   }
 
   suspend fun jvmBuilderParams(project: Project): JvmToolchainInfo =
