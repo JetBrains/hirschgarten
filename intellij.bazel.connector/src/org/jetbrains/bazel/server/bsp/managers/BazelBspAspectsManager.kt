@@ -14,6 +14,7 @@ import org.jetbrains.bazel.commons.RepoMapping
 import org.jetbrains.bazel.commons.RepoMappingDisabled
 import org.jetbrains.bazel.commons.TargetCollection
 import org.jetbrains.bazel.commons.constants.Constants
+import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.server.bep.BepOutput
 import org.jetbrains.bazel.server.bsp.utils.InternalAspectsResolver
 import org.jetbrains.bazel.server.sync.ExecuteService
@@ -228,10 +229,18 @@ class BazelBspAspectsManager(
 
     val flagsToUse = defaultFlags + allowManualTargetsSyncFlags + syncFlags
 
+    val emptyBuild = executeService.buildTargetsWithBep(
+      targetsSpec = TargetCollection(listOf()),
+      extraFlags = flagsToUse,
+      taskId = taskId,
+    )
+
+    val existingBuildTagFilters = emptyBuild.bepOutput.options.lastOrNull { it.startsWith("--build_tag_filters=") }?.removePrefix("--build_tag_filters=")
+
     return executeService
       .buildTargetsWithBep(
         targetsSpec = targetsSpec,
-        extraFlags = flagsToUse,
+        extraFlags = flagsToUse + listOf("--build_tag_filters=" + existingBuildTagFilters?.let { "$it," }.orEmpty() + "-no-ide"),
         taskId = taskId,
       ).let { BazelBspAspectsManagerResult(it.bepOutput, it.processResult.bazelStatus) }
   }
