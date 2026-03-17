@@ -1,6 +1,7 @@
 package org.jetbrains.bazel.data
 
 import com.intellij.ide.starter.ide.IDETestContext
+import org.jetbrains.bazel.commons.constants.Constants
 import java.nio.file.Path
 import kotlin.io.path.ExperimentalPathApi
 import kotlin.io.path.deleteIfExists
@@ -20,7 +21,7 @@ object BazelProjectConfigurer {
   @OptIn(ExperimentalPathApi::class)
   fun configureProjectBeforeUseWithoutBazelClean(context: IDETestContext, createProjectView: Boolean = true) {
     (context.resolvedBazelProjectHome / ".idea").deleteRecursively()
-    (context.resolvedBazelProjectHome / ".bazelbsp").deleteRecursively()
+    (context.resolvedBazelProjectHome / Constants.DOT_BAZELBSP_DIR_NAME).deleteRecursively()
     (context.resolvedBazelProjectHome / "build.gradle").deleteIfExists()
     (context.resolvedBazelProjectHome / "build.gradle.kts").deleteIfExists()
     (context.resolvedBazelProjectHome / "settings.gradle").deleteIfExists()

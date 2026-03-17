@@ -4,7 +4,6 @@ import io.kotest.matchers.shouldBe
 import org.jetbrains.bazel.commons.BzlmodRepoMapping
 import org.jetbrains.bazel.commons.constants.Constants
 import org.jetbrains.bazel.install.EnvironmentCreator
-import org.jetbrains.bazel.server.bsp.info.BspInfo
 import org.jetbrains.bazel.server.bsp.utils.InternalAspectsResolver
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
@@ -14,11 +13,6 @@ import kotlin.io.path.createTempDirectory
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class BazelBspLanguageExtensionsGeneratorTest {
-  internal class BspInfoMock(private val dotBazelBspPath: Path, projectRootPath: Path) : BspInfo(projectRootPath) {
-    override val bazelBspDir: Path
-      get() = dotBazelBspPath
-  }
-
   internal class BazelExternalRulesetsQueryMock(private val rulesetNames: List<String>) : BazelExternalRulesetsQuery {
     override suspend fun fetchExternalRulesetNames(): List<String> = rulesetNames
   }
@@ -134,7 +128,7 @@ class BazelBspLanguageExtensionsGeneratorTest {
     val dotBazelBspPath = EnvironmentCreator(tempRoot).create()
 
     dotBazelBspAspectsPath = dotBazelBspPath.resolve("aspects")
-    internalAspectsResolverMock = InternalAspectsResolver(BspInfoMock(dotBazelBspPath, tempRoot))
+    internalAspectsResolverMock = InternalAspectsResolver(tempRoot)
   }
 
   @Test

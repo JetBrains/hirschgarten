@@ -18,7 +18,7 @@ import kotlin.io.path.readText
 
 fun String.label() = Label.parse(this)
 
-val mockContext =
+private val mockContext =
   WorkspaceContext(
     targets =
       listOf(

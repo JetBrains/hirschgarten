@@ -3,12 +3,13 @@ package org.jetbrains.bazel.server.sync
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.bazelrunner.BazelRunner
 import org.jetbrains.bazel.commons.ExcludableValue
+import org.jetbrains.bazel.commons.constants.Constants
 import org.jetbrains.bazel.jpsCompilation.utils.JPS_COMPILED_BASE_DIRECTORY
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.label.ResolvedLabel
 import org.jetbrains.bazel.label.assumeResolved
 import org.jetbrains.bazel.label.toPath
-import org.jetbrains.bazel.server.bsp.info.BspInfo
+import org.jetbrains.bazel.server.model.AspectSyncProject
 import org.jetbrains.bazel.server.model.BazelSyncProject
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bsp.protocol.BspJvmClasspath
@@ -23,15 +24,15 @@ import kotlin.io.path.isRegularFile
 
 @ApiStatus.Internal
 class BspProjectMapper(
+  private val workspaceRoot: Path,
   private val bazelRunner: BazelRunner,
-  private val bspInfo: BspInfo,
   private val workspaceContext: WorkspaceContext,
 ) {
-  suspend fun workspaceDirectories(workspaceRoot: Path): WorkspaceDirectoriesResult {
+  suspend fun workspaceDirectories(): WorkspaceDirectoriesResult {
     // bazel symlinks exclusion logic is now taken care by BazelSymlinkExcludeService,
     // so there is no need for excluding them here anymore
-    val additionalDirectoriesToExclude = computeAdditionalDirectoriesToExclude(workspaceRoot)
-    val (includedDirectories, excludedDirectories) = getProjectDirs(workspaceRoot)
+    val additionalDirectoriesToExclude = computeAdditionalDirectoriesToExclude()
+    val (includedDirectories, excludedDirectories) = getProjectDirs()
 
     return WorkspaceDirectoriesResult(
       includedDirectories = includedDirectories.map { it.toDirectoryItem() },
@@ -45,9 +46,7 @@ class BspProjectMapper(
     val excluded: Set<Path>,
   )
 
-  private suspend fun getProjectDirs(
-    workspaceRoot: Path,
-  ): ProjectDirs {
+  private suspend fun getProjectDirs(): ProjectDirs {
     val included = mutableSetOf<Path>()
     val excluded = mutableSetOf<Path>()
 
@@ -131,9 +130,9 @@ class BspProjectMapper(
 
   fun workspaceBazelRepoMapping(project: BazelSyncProject): WorkspaceBazelRepoMappingResult = WorkspaceBazelRepoMappingResult(project.repoMapping)
 
-  private fun computeAdditionalDirectoriesToExclude(workspaceRoot: Path): List<Path> =
+  private fun computeAdditionalDirectoriesToExclude(): List<Path> =
     listOf(
-      bspInfo.bazelBspDir,
+      workspaceRoot.resolve(Constants.DOT_BAZELBSP_DIR_NAME),
       workspaceRoot.resolve(JPS_COMPILED_BASE_DIRECTORY),
     )
 
@@ -147,10 +146,10 @@ class BspProjectMapper(
   }
 
   suspend fun jvmBuilderParamsForTarget(target: Label): JvmToolchainInfo =
-    JvmToolchainQuery.jvmToolchainQueryForTarget(bspInfo, bazelRunner, workspaceContext, target)
+    JvmToolchainQuery.jvmToolchainQueryForTarget(bazelRunner, workspaceContext, target)
 
   suspend fun classpathQuery(target: Label): BspJvmClasspath =
-    ClasspathQuery.classPathQuery(target, bspInfo, bazelRunner, workspaceContext)
+    ClasspathQuery.classPathQuery(target, bazelRunner, workspaceContext)
 
   internal object BazelQueryRunner {
     suspend fun runQuery(

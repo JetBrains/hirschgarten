@@ -3,9 +3,9 @@ package org.jetbrains.bazel.server.sync
 import com.google.gson.JsonSyntaxException
 import com.google.gson.annotations.SerializedName
 import org.jetbrains.bazel.bazelrunner.BazelRunner
+import org.jetbrains.bazel.commons.constants.Constants
 import org.jetbrains.bazel.commons.gson.bazelGson
 import org.jetbrains.bazel.label.Label
-import org.jetbrains.bazel.server.bsp.info.BspInfo
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bsp.protocol.BspJvmClasspath
 import java.nio.file.Path
@@ -13,11 +13,10 @@ import java.nio.file.Path
 internal object ClasspathQuery {
   suspend fun classPathQuery(
     target: Label,
-    bspInfo: BspInfo,
     bazelRunner: BazelRunner,
     workspaceContext: WorkspaceContext,
   ): BspJvmClasspath {
-    val queryFile = bspInfo.bazelBspDir.resolve("aspects/runtime_classpath_query.bzl")
+    val queryFile = bazelRunner.workspaceRoot.resolve("${Constants.DOT_BAZELBSP_DIR_NAME}/aspects/runtime_classpath_query.bzl")
     val command =
       bazelRunner.buildBazelCommand(workspaceContext = workspaceContext, inheritProjectviewOptionsOverride = true) {
         cquery {

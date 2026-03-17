@@ -1,7 +1,6 @@
 package org.jetbrains.bazel.commons
 
 import org.jetbrains.annotations.ApiStatus
-import org.jetbrains.bazel.commons.constants.Constants.DOT_BAZELBSP_DIR_NAME
 import java.nio.file.Path
 import kotlin.io.path.isReadable
 import kotlin.io.path.readText
@@ -20,9 +19,7 @@ data class BazelInfo(
    * May include rule names and/or provider names.
    */
   val externalAutoloads: List<String>,
-) {
-  fun dotBazelBsp(): Path = workspaceRoot.resolve(DOT_BAZELBSP_DIR_NAME)
-}
+)
 
 @ApiStatus.Internal
 data class BazelRelease(val major: Int, val minor: Int = 0) {

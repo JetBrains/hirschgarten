@@ -3,6 +3,7 @@ package org.jetbrains.bazel.languages.projectview
 import com.intellij.openapi.project.Project
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.commons.ExcludableValue
+import org.jetbrains.bazel.commons.constants.Constants
 import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.sync.environment.getProjectRootDirOrThrow

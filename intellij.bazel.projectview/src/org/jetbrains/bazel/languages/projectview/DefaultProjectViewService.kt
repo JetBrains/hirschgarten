@@ -12,6 +12,7 @@ import com.intellij.psi.PsiDocumentManager
 import com.intellij.psi.PsiFileFactory
 import com.intellij.psi.PsiManager
 import com.intellij.util.concurrency.SynchronizedClearableLazy
+import org.jetbrains.bazel.commons.constants.Constants
 import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.flow.open.ProjectViewFileUtils
 import org.jetbrains.bazel.languages.projectview.base.ProjectViewLanguage
@@ -65,7 +66,7 @@ internal class DefaultProjectViewService(private val project: Project) : Project
     }
     val rootDir = project.rootDir
     return rootDir.findFile(".bazelproject")
-           ?: rootDir.findFileByRelativePath(".bazelbsp/.bazelproject")
+           ?: rootDir.findFileByRelativePath("${Constants.DOT_BAZELBSP_DIR_NAME}/.bazelproject")
   }
 
   private fun parseProjectView(projectViewPath: VirtualFile): ProjectView {

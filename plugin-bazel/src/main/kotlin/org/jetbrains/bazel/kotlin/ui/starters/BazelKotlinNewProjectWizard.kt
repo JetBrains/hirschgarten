@@ -75,7 +75,7 @@ internal class BazelKotlinNewProjectWizard : BuildSystemKotlinNewProjectWizard {
 
     private fun gitIgnore(): String =
       """
-      .bazelbsp/
+      ${Constants.DOT_BAZELBSP_DIR_NAME}/
       .idea/
       bazel-bin
       bazel-genfiles

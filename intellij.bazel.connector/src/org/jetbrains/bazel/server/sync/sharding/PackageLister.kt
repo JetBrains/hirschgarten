@@ -15,7 +15,6 @@
  */
 package org.jetbrains.bazel.server.sync.sharding
 
-import org.jetbrains.bazel.commons.BazelInfo
 import org.jetbrains.bazel.commons.BazelPathsResolver
 import org.jetbrains.bazel.commons.constants.Constants
 import org.jetbrains.bazel.commons.symlinks.BazelSymlinksCalculator
@@ -26,6 +25,7 @@ import java.io.File
 import java.nio.file.Path
 import kotlin.io.path.isDirectory
 import kotlin.io.path.isRegularFile
+import kotlin.io.path.name
 
 /**
  * Traverses Bazel packages specified by wildcard target patterns, expanding to a set of
@@ -38,13 +38,12 @@ internal object PackageLister {
    */
   fun expandPackageTargets(
     pathResolver: BazelPathsResolver,
-    bazelInfo: BazelInfo,
     featureFlags: FeatureFlags,
     wildcardPatterns: List<Label>,
   ): Map<Label, List<Label>> {
     val calculatedBazelSymlinks =
       BazelSymlinksCalculator.calculateBazelSymlinksToExclude(
-        bazelInfo.workspaceRoot,
+        pathResolver.workspaceRoot(),
         featureFlags.bazelSymlinksScanMaxDepth,
       )
     return wildcardPatterns
@@ -54,21 +53,20 @@ internal object PackageLister {
         if (!dir.isDirectory()) return@mapNotNull null
 
         val expandedTargets = mutableListOf<Label>()
-        traversePackageRecursively(pathResolver, bazelInfo, featureFlags, calculatedBazelSymlinks, mutableListOf(dir), expandedTargets)
+        traversePackageRecursively(pathResolver, featureFlags, calculatedBazelSymlinks, mutableListOf(dir), expandedTargets)
         pattern to expandedTargets
       }.toMap()
   }
 
   private tailrec fun traversePackageRecursively(
     pathResolver: BazelPathsResolver,
-    bazelInfo: BazelInfo,
     featureFlags: FeatureFlags,
     calculatedBazelSymlinks: Set<Path>,
     dirs: MutableList<Path>,
     output: MutableList<Label>,
   ) {
     val dir = dirs.removeFirstOrNull() ?: return
-    if (dir.isEligibleForTraversal(bazelInfo, calculatedBazelSymlinks)) {
+    if (dir.isEligibleForTraversal(pathResolver, calculatedBazelSymlinks)) {
       val path = pathResolver.getWorkspaceRelativePath(dir)
       if (dir.containsBuildFile()) {
         output.add(Label.parse("//$path:all"))
@@ -78,7 +76,6 @@ internal object PackageLister {
     }
     traversePackageRecursively(
       pathResolver,
-      bazelInfo,
       featureFlags,
       calculatedBazelSymlinks,
       dirs,
@@ -86,8 +83,9 @@ internal object PackageLister {
     )
   }
 
-  fun Path.isEligibleForTraversal(bazelInfo: BazelInfo, calculatedBazelSymlinks: Set<Path>): Boolean =
-    this != bazelInfo.dotBazelBsp() && !calculatedBazelSymlinks.contains(this)
+  private fun Path.isEligibleForTraversal(pathResolver: BazelPathsResolver, calculatedBazelSymlinks: Set<Path>): Boolean =
+    !this.isDotBazelBsp(pathResolver) && !calculatedBazelSymlinks.contains(this)
 
-  fun Path.containsBuildFile(): Boolean = Constants.BUILD_FILE_NAMES.any { resolve(it).isRegularFile() }
+  private fun Path.isDotBazelBsp(pathResolver: BazelPathsResolver): Boolean = this.name == Constants.DOT_BAZELBSP_DIR_NAME && this.parent == pathResolver.workspaceRoot()
+  private fun Path.containsBuildFile(): Boolean = Constants.BUILD_FILE_NAMES.any { resolve(it).isRegularFile() }
 }

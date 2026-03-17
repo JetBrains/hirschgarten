@@ -16,7 +16,6 @@
 package org.jetbrains.bazel.server.sync.sharding
 
 import org.jetbrains.bazel.bazelrunner.BazelRunner
-import org.jetbrains.bazel.commons.BazelInfo
 import org.jetbrains.bazel.commons.BazelPathsResolver
 import org.jetbrains.bazel.commons.BazelStatus
 import org.jetbrains.bazel.commons.TargetCollection
@@ -34,13 +33,11 @@ internal object WildcardTargetExpander {
    */
   fun expandToNonRecursiveWildcardTargets(
     pathResolver: BazelPathsResolver,
-    bazelInfo: BazelInfo,
     featureFlags: FeatureFlags,
     wildcardIncludes: List<Label>,
   ): Map<Label, List<Label>> =
     PackageLister.expandPackageTargets(
       pathResolver,
-      bazelInfo,
       featureFlags,
       wildcardIncludes,
     )

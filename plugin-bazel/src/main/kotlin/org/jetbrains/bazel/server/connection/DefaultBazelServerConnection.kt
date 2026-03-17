@@ -12,7 +12,6 @@ import org.jetbrains.bazel.install.EnvironmentCreator
 import org.jetbrains.bazel.languages.bazelversion.psi.BazelVersionLiteral
 import org.jetbrains.bazel.languages.bazelversion.service.BazelVersionWorkspaceResolver
 import org.jetbrains.bazel.server.bsp.BaselServerFacadeImpl
-import org.jetbrains.bazel.server.bsp.info.BspInfo
 import org.jetbrains.bazel.server.bsp.managers.BazelBspAspectsManager
 import org.jetbrains.bazel.server.bsp.managers.BazelBspLanguageExtensionsGenerator
 import org.jetbrains.bazel.server.bsp.managers.BazelToolchainManager
@@ -65,12 +64,11 @@ internal class DefaultBazelServerConnection(private val project: Project) : Baze
 
   private suspend fun createServer(workspaceContext: WorkspaceContext): BaselServerFacadeImpl {
     val taskEventsHandler = BazelTaskEventsService.getInstance(project)
-    val bspInfo = BspInfo(workspaceRoot)
-    val aspectsResolver = InternalAspectsResolver(bspInfo = bspInfo)
+    val aspectsResolver = InternalAspectsResolver(workspaceRoot)
     val bazelInfoResolver = BazelInfoResolver(workspaceRoot)
     val bazelProcessLauncherProvider = BazelProcessLauncherProvider.getInstance()
     val bazelProcessLauncher =
-      bazelProcessLauncherProvider.createBazelProcessLauncher(workspaceRoot, bspInfo, aspectsResolver, bazelInfoResolver)
+      bazelProcessLauncherProvider.createBazelProcessLauncher(workspaceRoot, aspectsResolver, bazelInfoResolver)
     val bazelRunner = BazelRunner(taskEventsHandler, workspaceRoot, bazelProcessLauncher)
 
     val bazelInfo = bazelInfoResolver.resolveBazelInfo(bazelRunner, workspaceContext)
@@ -119,8 +117,8 @@ internal class DefaultBazelServerConnection(private val project: Project) : Baze
 
     val bspProjectMapper =
       BspProjectMapper(
+        workspaceRoot = workspaceRoot,
         bazelRunner = bazelRunner,
-        bspInfo = bspInfo,
         workspaceContext = workspaceContext,
       )
 

@@ -2,17 +2,14 @@ package org.jetbrains.bazel.server.sync
 
 import com.google.gson.Gson
 import com.google.gson.JsonObject
-import com.google.gson.JsonSyntaxException
 import org.jetbrains.bazel.bazelrunner.BazelRunner
 import org.jetbrains.bazel.commons.ExecUtils
 import org.jetbrains.bazel.label.Label
-import org.jetbrains.bazel.server.bsp.info.BspInfo
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bsp.protocol.JvmToolchainInfo
 
 internal object JvmToolchainQuery {
   suspend fun jvmToolchainQueryForTarget(
-    bspInfo: BspInfo,
     bazelRunner: BazelRunner,
     workspaceContext: WorkspaceContext,
     target: Label,

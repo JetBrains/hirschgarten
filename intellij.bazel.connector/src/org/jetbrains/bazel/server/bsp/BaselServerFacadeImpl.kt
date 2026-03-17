@@ -89,7 +89,7 @@ class BaselServerFacadeImpl(
   override suspend fun buildTargetRunWithDebug(params: RunWithDebugParams): RunResult = executeService.runWithDebug(params)
 
   override suspend fun workspaceDirectories(): WorkspaceDirectoriesResult {
-    return bspMapper.workspaceDirectories(bazelInfo.workspaceRoot)
+    return bspMapper.workspaceDirectories()
   }
 
   override suspend fun workspaceBazelRepoMapping(taskId: TaskId): WorkspaceBazelRepoMappingResult {

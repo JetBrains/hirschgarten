@@ -2,7 +2,6 @@ package org.jetbrains.bazel.bazelrunner
 
 import com.intellij.execution.configurations.GeneralCommandLine
 import com.intellij.execution.configurations.PtyCommandLine
-import org.jetbrains.bazel.server.bsp.info.BspInfo
 import org.jetbrains.bazel.server.bsp.utils.InternalAspectsResolver
 import java.nio.file.Path
 
@@ -27,7 +26,6 @@ internal class DefaultBazelProcessLauncher(private val workspaceRoot: Path) : Ba
 internal object DefaultBazelProcessLauncherProvider : BazelProcessLauncherProvider {
   override fun createBazelProcessLauncher(
     workspaceRoot: Path,
-    bspInfo: BspInfo,
     aspectsResolver: InternalAspectsResolver,
     bazelInfoResolver: BazelInfoResolver,
   ): BazelProcessLauncher = DefaultBazelProcessLauncher(workspaceRoot)

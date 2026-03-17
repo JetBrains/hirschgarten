@@ -16,7 +16,6 @@
 package org.jetbrains.bazel.server.sync.sharding
 
 import org.jetbrains.bazel.bazelrunner.BazelRunner
-import org.jetbrains.bazel.commons.BazelInfo
 import org.jetbrains.bazel.commons.BazelPathsResolver
 import org.jetbrains.bazel.commons.BazelStatus
 import org.jetbrains.bazel.commons.ShardingApproach
@@ -44,7 +43,6 @@ internal object BazelBuildTargetSharder {
   /** Expand wildcard target patterns and partition the resulting target list.  */
   suspend fun expandAndShardTargets(
     pathResolver: BazelPathsResolver,
-    bazelInfo: BazelInfo,
     targets: TargetCollection,
     context: WorkspaceContext,
     featureFlags: FeatureFlags,
@@ -81,7 +79,6 @@ internal object BazelBuildTargetSharder {
         val expandedTargets =
           expandWildcardTargets(
             pathResolver,
-            bazelInfo,
             includes,
             excludes,
             bazelRunner,
@@ -116,7 +113,6 @@ internal object BazelBuildTargetSharder {
    */
   private suspend fun expandWildcardTargets(
     pathsResolver: BazelPathsResolver,
-    bazelInfo: BazelInfo,
     includes: List<Label>,
     excludes: List<Label>,
     bazelRunner: BazelRunner,
@@ -131,7 +127,6 @@ internal object BazelBuildTargetSharder {
     val expandedTargets: Map<Label, List<Label>> =
       WildcardTargetExpander.expandToNonRecursiveWildcardTargets(
         pathsResolver,
-        bazelInfo,
         featureFlags,
         wildcardIncludes,
       )
