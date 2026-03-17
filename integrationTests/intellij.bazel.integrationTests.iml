@@ -16,6 +16,9 @@
     <orderEntry type="module" module-name="intellij.tools.ide.starter.junit5" />
     <orderEntry type="library" scope="TEST" name="JUnit5Params" level="project" />
     <orderEntry type="module" module-name="intellij.tools.ide.starter" scope="TEST" />
+    <orderEntry type="module" module-name="intellij.tools.ide.starter.build.server.pycharm" scope="TEST" />
+    <orderEntry type="module" module-name="intellij.tools.ide.starter.build.server.idea.ultimate" scope="TEST" />
+    <orderEntry type="module" module-name="intellij.tools.ide.starter.build.server.goland" scope="TEST" />
     <orderEntry type="module" module-name="intellij.driver.model" scope="TEST" />
     <orderEntry type="module" module-name="intellij.performance.tests.core" scope="TEST" />
     <orderEntry type="module" module-name="intellij.platform.util" scope="TEST" />
