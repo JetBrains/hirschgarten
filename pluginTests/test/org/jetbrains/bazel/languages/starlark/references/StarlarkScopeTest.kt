@@ -29,7 +29,7 @@ class StarlarkScopeTest : BasePlatformTestCase() {
 
   @Test
   fun `function scope is preferred to top-level scope`() {
-    verifyTargetOfReferenceAtCaret(
+    myFixture.verifyTargetOfReferenceAtCaret(
       """
       foo = 1
       def bar():
@@ -41,7 +41,7 @@ class StarlarkScopeTest : BasePlatformTestCase() {
 
   @Test
   fun `parameters are preferred to top-level scope`() {
-    verifyTargetOfReferenceAtCaret(
+    myFixture.verifyTargetOfReferenceAtCaret(
       """
       foo = 1
       def bar(<target>foo = 2):
@@ -52,7 +52,7 @@ class StarlarkScopeTest : BasePlatformTestCase() {
 
   @Test
   fun `default values resolve to outer scope`() {
-    verifyTargetOfReferenceAtCaret(
+    myFixture.verifyTargetOfReferenceAtCaret(
       """
       <target>foo = 1
       def bar(baz = <caret>foo):
@@ -63,7 +63,7 @@ class StarlarkScopeTest : BasePlatformTestCase() {
 
   @Test
   fun `resolve to nested assignments in module block`() {
-    verifyTargetOfReferenceAtCaret(
+    myFixture.verifyTargetOfReferenceAtCaret(
       """
       if 1 != 2:
           <target>foo = 2
@@ -77,7 +77,7 @@ class StarlarkScopeTest : BasePlatformTestCase() {
 
   @Test
   fun `resolve to nested assignments in function block`() {
-    verifyTargetOfReferenceAtCaret(
+    myFixture.verifyTargetOfReferenceAtCaret(
       """
       foo = 1
       def bar():
@@ -93,7 +93,7 @@ class StarlarkScopeTest : BasePlatformTestCase() {
 
   @Test
   fun `resolve to deeply nested assignments in module block`() {
-    verifyTargetOfReferenceAtCaret(
+    myFixture.verifyTargetOfReferenceAtCaret(
       """
       if 1 != 2:
           baz()
@@ -111,7 +111,7 @@ class StarlarkScopeTest : BasePlatformTestCase() {
 
   @Test
   fun `resolve to deeply nested assignments in function block`() {
-    verifyTargetOfReferenceAtCaret(
+    myFixture.verifyTargetOfReferenceAtCaret(
       """
       foo = 1
       def bar():
@@ -133,7 +133,7 @@ class StarlarkScopeTest : BasePlatformTestCase() {
   fun `resolve to later binding in same block`() {
     // Taken from:
     // https://github.com/bazelbuild/starlark/blob/6dd78ee3a66820a8b7571239946466cc702b209e/spec.md#name-binding-and-variables
-    verifyTargetOfReferenceAtCaret(
+    myFixture.verifyTargetOfReferenceAtCaret(
       """
       y = "goodbye"
 
@@ -149,7 +149,7 @@ class StarlarkScopeTest : BasePlatformTestCase() {
 
   @Test
   fun `resolve to conditionally assigned variable`() {
-    verifyTargetOfReferenceAtCaret(
+    myFixture.verifyTargetOfReferenceAtCaret(
       """
       if 1:
           bar = 1
@@ -164,7 +164,7 @@ class StarlarkScopeTest : BasePlatformTestCase() {
 
   @Test
   fun `falls back to higher scope`() {
-    verifyTargetOfReferenceAtCaret(
+    myFixture.verifyTargetOfReferenceAtCaret(
       """
       def <target>foo():
           def bar():
@@ -215,7 +215,7 @@ class StarlarkScopeTest : BasePlatformTestCase() {
 
   @Test
   fun `not found`() {
-    verifyTargetOfReferenceAtCaret(
+    myFixture.verifyTargetOfReferenceAtCaret(
       """
       def foo():
           def bar():
@@ -227,7 +227,7 @@ class StarlarkScopeTest : BasePlatformTestCase() {
 
   @Test
   fun `does not search in inner scope`() {
-    verifyTargetOfReferenceAtCaret(
+    myFixture.verifyTargetOfReferenceAtCaret(
       """
       def foo():
           bar = 1
@@ -238,7 +238,7 @@ class StarlarkScopeTest : BasePlatformTestCase() {
 
   @Test
   fun `does not search in parameters of inner scope`() {
-    verifyTargetOfReferenceAtCaret(
+    myFixture.verifyTargetOfReferenceAtCaret(
       """
       def foo(bar = 1):
           pass
@@ -249,7 +249,7 @@ class StarlarkScopeTest : BasePlatformTestCase() {
 
   @Test
   fun `does consider expressions before dot`() {
-    verifyTargetOfReferenceAtCaret(
+    myFixture.verifyTargetOfReferenceAtCaret(
       """
       <target>baz = struct(bar = 500)
       <caret>baz.bar
@@ -259,7 +259,7 @@ class StarlarkScopeTest : BasePlatformTestCase() {
 
   @Test
   fun `does not consider expressions after dot`() {
-    verifyTargetOfReferenceAtCaret(
+    myFixture.verifyTargetOfReferenceAtCaret(
       """
       bar = 500
       baz.<caret>bar
@@ -269,7 +269,7 @@ class StarlarkScopeTest : BasePlatformTestCase() {
 
   @Test
   fun `local variable hides containing function`() {
-    verifyTargetOfReferenceAtCaret(
+    myFixture.verifyTargetOfReferenceAtCaret(
       """
       def foo():
           <target>foo = 5
@@ -280,7 +280,7 @@ class StarlarkScopeTest : BasePlatformTestCase() {
 
   @Test
   fun `reference to self`() {
-    verifyTargetOfReferenceAtCaret(
+    myFixture.verifyTargetOfReferenceAtCaret(
       """
       def <target>foo():
           print(<caret>foo)
@@ -290,7 +290,7 @@ class StarlarkScopeTest : BasePlatformTestCase() {
 
   @Test
   fun `forward reference in top-level scope`() {
-    verifyTargetOfReferenceAtCaret(
+    myFixture.verifyTargetOfReferenceAtCaret(
       """
       for i in range(10):
           if i == 9:
@@ -302,7 +302,7 @@ class StarlarkScopeTest : BasePlatformTestCase() {
 
   @Test
   fun `forward reference in function scope`() {
-    verifyTargetOfReferenceAtCaret(
+    myFixture.verifyTargetOfReferenceAtCaret(
       """
       def foo():
           for i in range(10):
@@ -315,7 +315,7 @@ class StarlarkScopeTest : BasePlatformTestCase() {
 
   @Test
   fun `comprehension reference from loop body`() {
-    verifyTargetOfReferenceAtCaret(
+    myFixture.verifyTargetOfReferenceAtCaret(
       """
       [<caret>x for <target>x, y in [(1, 2), (4, 5)] if y > 3]
       """.trimIndent(),
@@ -324,7 +324,7 @@ class StarlarkScopeTest : BasePlatformTestCase() {
 
   @Test
   fun `comprehension reference from if`() {
-    verifyTargetOfReferenceAtCaret(
+    myFixture.verifyTargetOfReferenceAtCaret(
       """
       [x for x, <target>y in [(1, 2), (4, 5)] if <caret>y > 3]
       """.trimIndent(),
@@ -333,7 +333,7 @@ class StarlarkScopeTest : BasePlatformTestCase() {
 
   @Test
   fun `first for in comprehension resolves to surrounding scope`() {
-    verifyTargetOfReferenceAtCaret(
+    myFixture.verifyTargetOfReferenceAtCaret(
       """
       <target>x = [[1]]
       [1 for x in <caret>x for x in x]
@@ -343,7 +343,7 @@ class StarlarkScopeTest : BasePlatformTestCase() {
 
   @Test
   fun `second for in comprehension resolves to comprehension scope`() {
-    verifyTargetOfReferenceAtCaret(
+    myFixture.verifyTargetOfReferenceAtCaret(
       """
       x = [[1]]
       [1 for <target>x in x for x in <caret>x]
@@ -356,7 +356,7 @@ class StarlarkScopeTest : BasePlatformTestCase() {
 
   @Test
   fun `comprehension scope f`() {
-    verifyTargetOfReferenceAtCaret(
+    myFixture.verifyTargetOfReferenceAtCaret(
       """
       def foo(<target>x):
           x += [[j(x) for x in i(x)] + h(x) for x in f(<caret>x) if g(x)]
@@ -369,7 +369,7 @@ class StarlarkScopeTest : BasePlatformTestCase() {
 
   @Test
   fun `comprehension scope g`() {
-    verifyTargetOfReferenceAtCaret(
+    myFixture.verifyTargetOfReferenceAtCaret(
       """
       def foo(x):
           x += [[j(x) for x in i(x)] + h(x) for <target>x in f(x) if g(<caret>x)]
@@ -382,7 +382,7 @@ class StarlarkScopeTest : BasePlatformTestCase() {
 
   @Test
   fun `comprehension scope h`() {
-    verifyTargetOfReferenceAtCaret(
+    myFixture.verifyTargetOfReferenceAtCaret(
       """
       def foo(x):
           x += [[j(x) for x in i(x)] + h(<caret>x) for <target>x in f(x) if g(x)]
@@ -395,7 +395,7 @@ class StarlarkScopeTest : BasePlatformTestCase() {
 
   @Test
   fun `comprehension scope i`() {
-    verifyTargetOfReferenceAtCaret(
+    myFixture.verifyTargetOfReferenceAtCaret(
       """
       def foo(x):
           x += [[j(x) for x in i(<caret>x)] + h(x) for <target>x in f(x) if g(x)]
@@ -408,7 +408,7 @@ class StarlarkScopeTest : BasePlatformTestCase() {
 
   @Test
   fun `comprehension scope j`() {
-    verifyTargetOfReferenceAtCaret(
+    myFixture.verifyTargetOfReferenceAtCaret(
       """
       def foo(x):
           x += [[j(<caret>x) for <target>x in i(x)] + h(x) for x in f(x) if g(x)]
@@ -421,7 +421,7 @@ class StarlarkScopeTest : BasePlatformTestCase() {
 
   @Test
   fun `comprehension scope k`() {
-    verifyTargetOfReferenceAtCaret(
+    myFixture.verifyTargetOfReferenceAtCaret(
       """
       def foo(<target>x):
           x += [[j(x) for x in i(x)] + h(x) for x in f(x) if g(x)]
@@ -434,7 +434,7 @@ class StarlarkScopeTest : BasePlatformTestCase() {
 
   @Test
   fun `dict comprehension with multiple fors`() {
-    verifyTargetOfReferenceAtCaret(
+    myFixture.verifyTargetOfReferenceAtCaret(
       """
       {
           <caret>k: v
@@ -445,41 +445,4 @@ class StarlarkScopeTest : BasePlatformTestCase() {
       """.trimIndent(),
     )
   }
-
-  private fun verifyTargetOfReferenceAtCaret(text: String) {
-    // given
-    val expectedLine = text.lineSequence().indexOfFirst { it.contains("<target>") }.takeIf { it != -1 }
-    val expectedColumn =
-      text
-        .lineSequence()
-        .map { it.replace("<caret>", "").indexOf("<target>") }
-        .filter { it != -1 }
-        .firstOrNull()
-    myFixture.configureByText("test.bzl", text.replace("<target>", ""))
-
-    // when
-    val reference = myFixture.file.findReferenceAt(myFixture.caretOffset)
-    if (expectedLine == null && reference == null) {
-      // If we expect no target, we may not even have a reference.
-      return
-    }
-    val resolved = reference!!.resolve()
-
-    // then
-    if (expectedLine != null) {
-      check(expectedColumn != null)
-      resolved.shouldNotBeNull()
-      resolved shouldBe instanceOf<PsiElement>()
-      resolved.line shouldBe expectedLine
-      resolved.column shouldBe expectedColumn
-    } else {
-      resolved.shouldBeNull()
-    }
-  }
-
-  val PsiElement.line: Int
-    get() = PsiDocumentManager.getInstance(project).getDocument(containingFile)!!.getLineNumber(textOffset)
-
-  val PsiElement.column: Int
-    get() = textOffset - containingFile.getLineStartOffset(line, skipWhitespace = false)!!
 }
