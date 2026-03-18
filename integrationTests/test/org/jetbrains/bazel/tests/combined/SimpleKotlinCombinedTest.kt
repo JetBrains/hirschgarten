@@ -41,6 +41,7 @@ import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.data.IdeaBazelCases
 import org.jetbrains.bazel.ideStarter.IdeStarterBaseProjectTest
 import org.jetbrains.bazel.ideStarter.assertSyncSucceeded
+import org.jetbrains.bazel.ideStarter.assertSyncedTargets
 import org.jetbrains.bazel.ideStarter.buildAndSync
 import org.jetbrains.bazel.ideStarter.checkIdeaLogForExceptions
 import org.jetbrains.bazel.ideStarter.execute
@@ -102,6 +103,9 @@ class SimpleKotlinCombinedTest : IdeStarterBaseProjectTest() {
 
   @Test @Order(3)
   fun `associates should be green`() = testAssociatesRedCode()
+
+  @Test @Order(4)
+  fun `no-ide targets handled correctly`() = testNoIde()
 
   @Test @Order(50)
   fun `reopening project should not trigger resync`() = reopenWithoutResync()
@@ -226,6 +230,16 @@ class SimpleKotlinCombinedTest : IdeStarterBaseProjectTest() {
   private fun <T : CommandChain> T.runSimpleKotlinTest(): T {
     addCommand(CMD_PREFIX + "runSimpleKotlinTest")
     return this
+  }
+
+  private fun testNoIde() {
+    withDriver(bgRun) {
+      ideFrame {
+        step("Check imported targets") {
+          execute { assertSyncedTargets("//:B", "//:C", "//:SimpleKotlinTest", "//:associates_example") }
+        }
+      }
+    }
   }
 
   private fun reopenWithoutResync() {
