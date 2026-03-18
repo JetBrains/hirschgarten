@@ -6,6 +6,7 @@ import com.intellij.driver.sdk.ui.components.common.ideFrame
 import com.intellij.driver.sdk.wait
 import com.intellij.ide.starter.driver.engine.runIdeWithDriver
 import com.intellij.ide.starter.driver.execute
+import com.intellij.ide.starter.ide.IDETestContext
 import com.intellij.tools.ide.performanceTesting.commands.checkOnRedCode
 import com.intellij.tools.ide.performanceTesting.commands.openFile
 import com.intellij.tools.ide.performanceTesting.commands.takeScreenshot
@@ -28,6 +29,8 @@ private val FILES_TO_CHECK_FOR_RED_CODE =
     "testb/testb_test.go",
   )
 
+private const val GO_LINTER_PLUGIN_ID = "com.ypwang.plugin.go-linter"
+
 /**
  * bazel test //plugin-bazel/src/test/kotlin/org/jetbrains/bazel/golang/resolve/golandSync --jvmopt="-Dbazel.ide.starter.test.cache.directory=$HOME/IdeaProjects/hirschgarten" --sandbox_writable_path=/ --action_env=PATH --java_debug --test_arg=--wrapper_script_flag=--debug=8000
  */
@@ -35,6 +38,7 @@ class GolandSyncTest : IdeStarterBaseProjectTest() {
   @Test
   fun `check basic Go support functionality`() {
     createContext("golandSync", GoLandBazelCases.GolandSync)
+      .withDisabledPlugins(setOf(GO_LINTER_PLUGIN_ID))
       .withBazelFeatureFlag(BazelFeatureFlags.BUILD_PROJECT_ON_SYNC)
       .withBazelFeatureFlag(BazelFeatureFlags.GO_SUPPORT)
       .runIdeWithDriver(runTimeout = timeout)
@@ -90,4 +94,7 @@ class GolandSyncTest : IdeStarterBaseProjectTest() {
         .takeScreenshot("fromFile_${relativePath.replace("/", "").replace(".", "")}")
         .checkOnRedCode()
     }
+
+  private fun IDETestContext.withDisabledPlugins(pluginIds: Set<String>): IDETestContext =
+    also { pluginConfigurator.disablePlugins(pluginIds) }
 }
