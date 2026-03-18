@@ -42,6 +42,25 @@ class WorkspaceDirectoriesFromProjectViewTest : BasePlatformTestCase() {
     dotBazelBspPath = workspaceRoot.resolve(".bazelbsp")
   }
 
+  fun `test should add workspace root to included directories when there is no directories section`() {
+    // GIVEN
+    val psiFile = myFixture.configureByText(
+      "Empty.bazelproject",
+      """
+        derive_targets_from_directories: false
+      """.trimIndent(),
+    )
+
+    // WHEN
+    val result = runMapper(psiFile)
+
+    // THEN
+    assertSameElements(
+      result.includedDirectories.map { it.uri },
+      listOf(workspaceRoot.toUri().toString()),
+    )
+  }
+
   fun `test should correctly identify included and excluded directories`() {
     val includedDir = workspaceRoot.resolve("included").createDirectories()
     val excludedDir = workspaceRoot.resolve("excluded").createDirectories()

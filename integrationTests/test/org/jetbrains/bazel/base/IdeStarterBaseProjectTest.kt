@@ -51,6 +51,7 @@ import com.intellij.tools.ide.performanceTesting.commands.takeScreenshot
 import com.intellij.tools.ide.performanceTesting.commands.waitForSmartMode
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.data.BazelProjectConfigurer
+import org.jetbrains.bazel.performanceImpl.FileKindCheck
 import org.jetbrains.bazel.test.compat.IntegrationTestCompat
 import org.jetbrains.bazel.testing.IS_IN_IDE_STARTER_TEST
 import org.jetbrains.bazel.tests.ui.expandedTree
@@ -420,8 +421,8 @@ fun <T : CommandChain> T.refreshFile(relativePath: String): T {
   return this
 }
 
-fun <T : CommandChain> T.assertFileInProject(relativePath: String, expectedInProject: Boolean): T {
-  addCommand(CMD_PREFIX + "assertFileInProject $relativePath $expectedInProject")
+fun <T : CommandChain> T.assertFileKind(relativePath: String, vararg expectedFileKind: FileKindCheck): T {
+  addCommand(CMD_PREFIX + "assertFileKind $relativePath ${expectedFileKind.joinToString(separator = ",")}")
   return this
 }
 

@@ -9,7 +9,7 @@ import com.intellij.ide.starter.ide.IDETestContext
 import com.intellij.tools.ide.performanceTesting.commands.waitForSmartMode
 import org.jetbrains.bazel.data.IdeaBazelCases
 import org.jetbrains.bazel.ideStarter.IdeStarterBaseProjectTest
-import org.jetbrains.bazel.ideStarter.assertFileInProject
+import org.jetbrains.bazel.ideStarter.assertFileKind
 import org.jetbrains.bazel.ideStarter.refreshFile
 import org.jetbrains.bazel.ideStarter.assertSyncSucceeded
 import org.jetbrains.bazel.ideStarter.assertSyncedTargets
@@ -20,6 +20,10 @@ import org.jetbrains.bazel.ideStarter.openFile
 import org.jetbrains.bazel.ideStarter.switchProjectView
 import org.jetbrains.bazel.ideStarter.switchProjectViewWithPreview
 import org.jetbrains.bazel.ideStarter.syncBazelProject
+import org.jetbrains.bazel.performanceImpl.FileKindCheck.INDEXABLE
+import org.jetbrains.bazel.performanceImpl.FileKindCheck.IN_CONTENT
+import org.jetbrains.bazel.performanceImpl.FileKindCheck.NON_INDEXABLE
+import org.jetbrains.bazel.performanceImpl.FileKindCheck.OUTSIDE_CONTENT
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assumptions
@@ -81,9 +85,9 @@ class ProjectViewCombinedTest : IdeStarterBaseProjectTest() {
           assertSyncSucceeded()
         }
         step("Verify all files are in project with all targets (sanity check)") {
-          execute { assertFileInProject("app/src/main/java/com/example/app/App.java", true) }
-          execute { assertFileInProject("server/src/main/java/com/example/server/Server.java", true) }
-          execute { assertFileInProject("frontend/src/main/java/com/example/frontend/Frontend.java", true) }
+          execute { assertFileKind("app/src/main/java/com/example/app/App.java", IN_CONTENT) }
+          execute { assertFileKind("server/src/main/java/com/example/server/Server.java", IN_CONTENT) }
+          execute { assertFileKind("frontend/src/main/java/com/example/frontend/Frontend.java", IN_CONTENT) }
         }
 
         step("Switch back to subset targets view") {
@@ -100,8 +104,8 @@ class ProjectViewCombinedTest : IdeStarterBaseProjectTest() {
           execute { assertSyncedTargets("//app:app", "//common:common") }
         }
         step("Verify non-target files are still in project after narrowing targets") {
-          execute { assertFileInProject("server/src/main/java/com/example/server/Server.java", true) }
-          execute { assertFileInProject("frontend/src/main/java/com/example/frontend/Frontend.java", true) }
+          execute { assertFileKind("server/src/main/java/com/example/server/Server.java", IN_CONTENT) }
+          execute { assertFileKind("frontend/src/main/java/com/example/frontend/Frontend.java", IN_CONTENT) }
         }
       }
     }
@@ -188,28 +192,28 @@ class ProjectViewCombinedTest : IdeStarterBaseProjectTest() {
         step("Verify only subset targets are synced") {
           execute { assertSyncedTargets("//app:app", "//common:common") }
         }
-        step("Verify files with matching targets are in project (sanity check)") {
-          execute { assertFileInProject("app/src/main/java/com/example/app/App.java", true) }
-          execute { assertFileInProject("common/src/main/java/com/example/common/Common.java", true) }
+        step("Verify files with matching targets are in project and indexable (sanity check)") {
+          execute { assertFileKind("app/src/main/java/com/example/app/App.java", IN_CONTENT, INDEXABLE) }
+          execute { assertFileKind("common/src/main/java/com/example/common/Common.java", IN_CONTENT, INDEXABLE) }
         }
-        step("Verify files in non-target directories are still in project") {
-          execute { assertFileInProject("server/src/main/java/com/example/server/Server.java", true) }
-          execute { assertFileInProject("client/src/main/java/com/example/client/Client.java", true) }
-          execute { assertFileInProject("database/src/main/java/com/example/database/Database.java", true) }
-          execute { assertFileInProject("frontend/src/main/java/com/example/frontend/Frontend.java", true) }
-          execute { assertFileInProject("webapp/src/main/java/com/example/webapp/Webapp.java", true) }
-          execute { assertFileInProject("tools/src/main/java/com/example/tools/Tools.java", true) }
-          execute { assertFileInProject("infra/src/main/java/com/example/infra/Infra.java", true) }
-          execute { assertFileInProject("testing/src/main/java/com/example/testing/Testing.java", true) }
+        step("Verify files in non-target directories are still in project and indexable") {
+          execute { assertFileKind("server/src/main/java/com/example/server/Server.java", IN_CONTENT, INDEXABLE) }
+          execute { assertFileKind("client/src/main/java/com/example/client/Client.java", IN_CONTENT, INDEXABLE) }
+          execute { assertFileKind("database/src/main/java/com/example/database/Database.java", IN_CONTENT, INDEXABLE) }
+          execute { assertFileKind("frontend/src/main/java/com/example/frontend/Frontend.java", IN_CONTENT, INDEXABLE) }
+          execute { assertFileKind("webapp/src/main/java/com/example/webapp/Webapp.java", IN_CONTENT, INDEXABLE) }
+          execute { assertFileKind("tools/src/main/java/com/example/tools/Tools.java", IN_CONTENT, INDEXABLE) }
+          execute { assertFileKind("infra/src/main/java/com/example/infra/Infra.java", IN_CONTENT, INDEXABLE) }
+          execute { assertFileKind("testing/src/main/java/com/example/testing/Testing.java", IN_CONTENT, INDEXABLE) }
         }
       }
     }
   }
 
   // BAZEL-1986: project view with only targets (no directories section).
-  // Only files belonging to targeted packages should be indexed — not BUILD files from other packages.
+  // All BUILD files should be indexed, so smart code features work in them properly.
   @Test @Order(101)
-  fun `non-targeted BUILD files should not be indexed when using targets-only project view`() {
+  fun `non-targeted BUILD files should also be indexed when using the targets-only project view`() {
     withDriver(bgRun) {
       ideFrame {
         step("Switch to targets-but-not-dirs view") {
@@ -225,18 +229,18 @@ class ProjectViewCombinedTest : IdeStarterBaseProjectTest() {
         step("Verify synced targets") {
           execute { assertSyncedTargets("//app:app", "//common:common", "//server:server") }
         }
-        step("Verify non-targeted BUILD files are NOT in project content") {
-          execute { assertFileInProject("frontend/BUILD.bazel", false) }
-          execute { assertFileInProject("webapp/BUILD.bazel", false) }
+        step("Verify non-targeted BUILD files ARE indexable") {
+          execute { assertFileKind("frontend/BUILD.bazel", INDEXABLE) }
+          execute { assertFileKind("webapp/BUILD.bazel", INDEXABLE) }
         }
-        step("Verify non-targeted source files are NOT in project content") {
-          execute { assertFileInProject("frontend/src/main/java/com/example/frontend/Frontend.java", false) }
-          execute { assertFileInProject("webapp/src/main/java/com/example/webapp/Webapp.java", false) }
+        step("Verify non-targeted source files are NOT indexable") {
+          execute { assertFileKind("frontend/src/main/java/com/example/frontend/Frontend.java", NON_INDEXABLE) }
+          execute { assertFileKind("webapp/src/main/java/com/example/webapp/Webapp.java", NON_INDEXABLE) }
         }
-        step("Verify targeted files ARE in project content") {
-          execute { assertFileInProject("app/src/main/java/com/example/app/App.java", true) }
-          execute { assertFileInProject("common/src/main/java/com/example/common/Common.java", true) }
-          execute { assertFileInProject("server/src/main/java/com/example/server/Server.java", true) }
+        step("Verify targeted files ARE indexable") {
+          execute { assertFileKind("app/src/main/java/com/example/app/App.java", INDEXABLE) }
+          execute { assertFileKind("common/src/main/java/com/example/common/Common.java", INDEXABLE) }
+          execute { assertFileKind("server/src/main/java/com/example/server/Server.java", INDEXABLE) }
         }
       }
     }
@@ -259,13 +263,49 @@ class ProjectViewCombinedTest : IdeStarterBaseProjectTest() {
           }
           assertSyncSucceeded()
         }
-        step("Verify included dir files ARE in project content") {
-          execute { assertFileInProject("app/src/main/java/com/example/app/App.java", true) }
-          execute { assertFileInProject("common/src/main/java/com/example/common/Common.java", true) }
+        step("Verify included dir files ARE in project content and indexable") {
+          execute { assertFileKind("app/src/main/java/com/example/app/App.java", IN_CONTENT, INDEXABLE) }
+          execute { assertFileKind("common/src/main/java/com/example/common/Common.java", IN_CONTENT, INDEXABLE) }
         }
         step("Verify excluded dir files are NOT in project content") {
-          execute { assertFileInProject("frontend/src/main/java/com/example/frontend/Frontend.java", false) }
-          execute { assertFileInProject("webapp/src/main/java/com/example/webapp/Webapp.java", false) }
+          execute { assertFileKind("frontend/src/main/java/com/example/frontend/Frontend.java", OUTSIDE_CONTENT) }
+          execute { assertFileKind("webapp/src/main/java/com/example/webapp/Webapp.java", OUTSIDE_CONTENT) }
+        }
+        step("Verify dirs not in directories: section ARE in project content and NOT indexable") {
+          execute { assertFileKind("server/src/main/java/com/example/server/Server.java", IN_CONTENT, NON_INDEXABLE) }
+          execute { assertFileKind("database/src/main/java/com/example/database/Database.java", IN_CONTENT, NON_INDEXABLE) }
+        }
+      }
+    }
+  }
+
+  // Verifies that Bazel config files like MODULE.bazel, WORKSPACE.bazel, etc. residing in the
+  // root project directory are always indexed when the projectview file doesn't contain "." in the
+  // "directories" section
+  @Test @Order(103)
+  fun `bazel configs in root project directory should be indexed`() {
+    withDriver(bgRun) {
+      ideFrame {
+        step("Switch to subset-dirs-derive-targets view") {
+          switchProjectViewWithPreview("subset-dirs-derive-targets.bazelproject")
+        }
+        step("Resync with subset-dirs-derive-targets view") {
+          execute {
+            buildAndSync()
+            waitForSmartMode()
+          }
+          assertSyncSucceeded()
+        }
+        step("Verify bazel configs in workspace root ARE in project content and indexable") {
+          execute { assertFileKind("MODULE.bazel", IN_CONTENT, INDEXABLE) }
+          execute { assertFileKind("subset-dirs-derive-targets.bazelproject", IN_CONTENT, INDEXABLE) }
+        }
+        step("Verify other files in workspace root ARE in project content and NOT indexable") {
+          execute { assertFileKind(".bazelversion", IN_CONTENT, NON_INDEXABLE) }
+          execute { assertFileKind("MODULE.bazel.lock", IN_CONTENT, NON_INDEXABLE) }
+          execute { assertFileKind("all-dirs-all-targets.bazelproject", IN_CONTENT, NON_INDEXABLE) }
+          execute { assertFileKind("build-flags-with-toolchain.bazelproject", IN_CONTENT, NON_INDEXABLE) }
+          execute { assertFileKind("targets-but-not-dirs.bazelproject", IN_CONTENT, NON_INDEXABLE) }
         }
       }
     }
@@ -274,7 +314,7 @@ class ProjectViewCombinedTest : IdeStarterBaseProjectTest() {
   // BAZEL-1451: derive_targets_from_directories: false with no targets: section.
   // The plugin should NOT silently fall back to //... (all targets).
   // Expected: zero targets synced (or an error), not a full-repo sync.
-  @Test @Order(103)
+  @Test @Order(104)
   fun `empty targets with derive_targets_from_directories false should not fallback to all targets`() {
     withDriver(bgRun) {
       ideFrame {
