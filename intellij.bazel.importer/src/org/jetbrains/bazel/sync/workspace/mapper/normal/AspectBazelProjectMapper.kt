@@ -145,10 +145,6 @@ internal class AspectBazelProjectMapper(
       measure("Create kotlin stdlibs") {
         calculateKotlinStdlibsMapper(targetsToImport, dependencyGraph)
       }
-    val kotlincPluginLibrariesMapper =
-      measure("Create kotlinc plugin libraries") {
-        calculateKotlincPluginLibrariesMapper(targetsToImport)
-      }
     val scalaLibrariesMapper =
       measure("Create scala libraries") {
         calculateScalaLibrariesMapper(targetsToImport)
@@ -159,7 +155,6 @@ internal class AspectBazelProjectMapper(
           outputJarsLibraries,
           annotationProcessorLibraries,
           kotlinStdlibsMapper,
-          kotlincPluginLibrariesMapper,
           scalaLibrariesMapper,
         )
       }
@@ -364,28 +359,6 @@ internal class AspectBazelProjectMapper(
       .map { it.kotlinTargetInfo.stdlibsList }
       .flatMap { it.resolvePaths() }
       .toSet()
-
-  private fun calculateKotlincPluginLibrariesMapper(targetsToImport: Sequence<TargetInfo>): Map<Label, List<Library>> =
-    targetsToImport
-      .filter { it.hasKotlinTargetInfo() && it.kotlinTargetInfo.kotlincPluginInfosList.isNotEmpty() }
-      .associate {
-        val pluginClasspaths =
-          it.kotlinTargetInfo.kotlincPluginInfosList
-            .flatMap { it.pluginJarsList }
-            .map { bazelPathsResolver.resolve(it) }
-            .distinct()
-        Pair(
-          it.label(),
-          pluginClasspaths.map { classpath ->
-            Library(
-              label = Label.synthetic(classpath.name),
-              outputs = setOf(classpath),
-              sources = emptySet(),
-              dependencies = emptyList(),
-            )
-          },
-        )
-      }
 
   // TODO: refactor to language-specific logic
   private fun calculateScalaLibrariesMapper(targetsToImport: Sequence<TargetInfo>): Map<Label, List<Library>> {
