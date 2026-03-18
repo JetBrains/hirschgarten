@@ -48,6 +48,8 @@ fun MutableEntityStorage.modifyScalaAddendumEntity(
   modification: ScalaAddendumEntityBuilder.() -> Unit,
 ): ScalaAddendumEntity = modifyEntity(ScalaAddendumEntityBuilder::class.java, entity, modification)
 
+@get:Internal
+@set:Internal
 var ModuleEntityBuilder.scalaAddendumEntity: ScalaAddendumEntityBuilder?
   by WorkspaceEntity.extensionBuilder(ScalaAddendumEntity::class.java)
 

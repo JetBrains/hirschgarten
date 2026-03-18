@@ -1,5 +1,4 @@
 org/jetbrains/bazel/sync/scope/ProjectSyncScope
 org/jetbrains/bazel/sync/workspace/BazelResolvedWorkspace
 org/jetbrains/bazel/sync/workspace/BazelWorkspaceResolveService
-org/jetbrains/bazel/workspacemodel/entities/ScalaAddendumEntityBuilder
 org/jetbrains/bsp/protocol/TaskId

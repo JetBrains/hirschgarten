@@ -59,6 +59,3 @@ f:org.jetbrains.bazel.sync.ProjectSyncHook$ProjectSyncHookEnvironment
 - f:getTaskId():org.jetbrains.bsp.protocol.TaskId
 - f:getWorkspace():org.jetbrains.bazel.sync.workspace.BazelResolvedWorkspace
 - hashCode():I
-f:org.jetbrains.bazel.workspacemodel.entities.ScalaAddendumEntityModifications
-- sf:getScalaAddendumEntity(com.intellij.platform.workspace.jps.entities.ModuleEntityBuilder):org.jetbrains.bazel.workspacemodel.entities.ScalaAddendumEntityBuilder
-- sf:setScalaAddendumEntity(com.intellij.platform.workspace.jps.entities.ModuleEntityBuilder,org.jetbrains.bazel.workspacemodel.entities.ScalaAddendumEntityBuilder):V
