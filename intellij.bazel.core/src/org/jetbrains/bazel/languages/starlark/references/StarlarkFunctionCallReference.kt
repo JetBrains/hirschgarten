@@ -38,25 +38,28 @@ internal class BazelDepProcessor(private val lookingForModuleName: String) : Pro
 
 internal class StarlarkFunctionCallReference(element: StarlarkCallExpression, rangeInElement: TextRange) :
   PsiReferenceBase<StarlarkCallExpression>(element, rangeInElement, true) {
-  override fun resolve(): PsiElement? =
-    myElement?.let {
-      val functionName = element.name
-      when (functionName) {
-        null -> null
-        "archive_override", "git_override" -> {
-          val moduleNameValue = getNamedArgumentValue(it, "module_name") ?: return@let null
-          val processor = BazelDepProcessor(moduleNameValue)
-          val file = it.containingFile as? StarlarkFile ?: return@let null
-          file.searchInFunctionCalls(processor)
-          processor.result.firstOrNull()
-        }
-        else -> {
-          val processor = StarlarkResolveProcessor(mutableListOf(), it)
-          SearchUtils.searchInFile(it, processor)
-          processor.result.firstOrNull()
-        }
+  override fun resolve(): PsiElement? {
+    val element = myElement ?: return null
+    when (element.name) {
+      null -> {
+        return null
+      }
+
+      "archive_override", "git_override" -> {
+        val moduleNameValue = getNamedArgumentValue(element, "module_name") ?: return null
+        val processor = BazelDepProcessor(moduleNameValue)
+        val file = element.containingFile as? StarlarkFile ?: return null
+        file.searchInFunctionCalls(processor)
+        return processor.result.firstOrNull()
+      }
+
+      else -> {
+        val processor = StarlarkResolveProcessor(mutableListOf(), element)
+        SearchUtils.searchInFile(element, processor)
+        return processor.result.firstOrNull()
       }
     }
+  }
 
   override fun getVariants(): Array<StarlarkLookupElement> = emptyArray()
 

@@ -70,6 +70,7 @@ internal object SearchUtils {
         }
     }
 
+  // return true to continue processing or false to stop.
   private fun processBindingsInScope(
     scopeRoot: PsiElement,
     element: PsiElement,
@@ -77,34 +78,34 @@ internal object SearchUtils {
     isScopeRoot: Boolean = false,
   ): Boolean =
     when (scopeRoot) {
-      is StarlarkFile -> scopeRoot.searchInLoads(processor) && scopeRoot.children.all { processBindingsInScope(it, element, processor) }
+      is StarlarkFile ->
+        scopeRoot.searchInLoads(processor) &&
+        scopeRoot.children.all { processBindingsInScope(it, element, processor) }
 
       is StarlarkCallable ->
         if (isScopeRoot) {
           scopeRoot.searchInParameters(processor) &&
-            (
-              scopeRoot !is StarlarkFunctionDeclaration ||
-                processBindingsInScope(
-                  scopeRoot.getStatementList(),
-                  element,
-                  processor,
-                )
+          scopeRoot.ifTypeof<StarlarkFunctionDeclaration> {
+            processBindingsInScope(
+              it.getStatementList(),
+              element,
+              processor,
             )
+          }
         } else {
-          scopeRoot !is StarlarkFunctionDeclaration || processor.process(scopeRoot)
+          scopeRoot.ifTypeof<StarlarkFunctionDeclaration> { processor.process(it) }
         }
 
       is StarlarkStatementContainer ->
-        scopeRoot
-          .getStatementLists()
-          .all { processBindingsInScope(it, element, processor) } &&
-          (
-            scopeRoot !is StarlarkForStatement ||
-              // Add loop variables only if this is the scope root (searching from inside
-              // this for-loop) or if element is textually after this for-loop
-              (isScopeRoot || element.textOffset > scopeRoot.textRange.endOffset) &&
-                scopeRoot.searchInLoopVariables(processor)
-          )
+        scopeRoot.getStatementLists().all { processBindingsInScope(it, element, processor) } &&
+        // Add loop variables only if this is the scope root (searching from inside
+        // this for-loop) or if element is textually after this for-loop
+        scopeRoot.ifTypeof<StarlarkForStatement> {
+          if (isScopeRoot || element.textOffset > scopeRoot.textRange.endOffset)
+            it.searchInLoopVariables(processor)
+          else
+            true
+        }
 
       is StarlarkCompExpression -> scopeRoot.searchInComprehension(processor)
       is StarlarkStatementList -> scopeRoot.children.all { processBindingsInScope(it, element, processor) }
@@ -120,4 +121,10 @@ internal object SearchUtils {
 
   private fun StarlarkCompExpression.searchInComprehension(processor: Processor<StarlarkElement>): Boolean =
     getCompVariables().all { processor.process(it) }
+
+  private inline fun <reified T : StarlarkElement> PsiElement.ifTypeof(body: (T) -> Boolean): Boolean =
+    if (this is T)
+      body(this)
+    else
+      true
 }
