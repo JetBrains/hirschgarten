@@ -18,11 +18,14 @@
     <orderEntry type="module" module-name="intellij.libraries.guava" />
     <orderEntry type="module" module-name="intellij.libraries.fastutil" />
     <orderEntry type="module" module-name="intellij.libraries.protobuf" />
-    <orderEntry type="module" module-name="intellij.bazel.commons" exported="" />
-    <orderEntry type="module" module-name="intellij.bazel.protobuf" exported="" />
-    <orderEntry type="module" module-name="intellij.bazel.connector" exported="" />
-    <orderEntry type="module" module-name="intellij.bazel.projectview" exported="" />
+    <orderEntry type="module" module-name="intellij.bazel.commons" />
+    <orderEntry type="module" module-name="intellij.bazel.protobuf" />
+    <orderEntry type="module" module-name="intellij.bazel.connector" />
+    <orderEntry type="module" module-name="intellij.bazel.projectview" />
+    <orderEntry type="module" module-name="intellij.platform.backend" />
     <orderEntry type="module" module-name="intellij.platform.core" />
+    <orderEntry type="module" module-name="intellij.platform.lang" />
+    <orderEntry type="module" module-name="intellij.platform.lang.impl" />
     <orderEntry type="module" module-name="intellij.platform.workspace.storage" />
     <orderEntry type="module" module-name="intellij.platform.workspace.jps" />
     <orderEntry type="module" module-name="intellij.platform.extensions" />
@@ -36,20 +39,15 @@
     <orderEntry type="module" module-name="intellij.platform.util.coroutines" />
     <orderEntry type="module" module-name="intellij.platform.lang.core" />
     <orderEntry type="module" module-name="intellij.platform.projectModel" />
+    <orderEntry type="module" module-name="intellij.platform.projectModel.impl" />
     <orderEntry type="module" module-name="intellij.platform.backend.workspace" />
     <orderEntry type="module" module-name="intellij.platform.externalSystem" />
     <orderEntry type="module" module-name="intellij.platform.externalSystem.impl" />
     <orderEntry type="module" module-name="intellij.platform.jps.model" />
-    <orderEntry type="module" module-name="intellij.java.impl" />
     <orderEntry type="module" module-name="intellij.libraries.kotlinx.coroutines.core" />
     <orderEntry type="module" module-name="intellij.platform.diagnostic.telemetry" />
     <orderEntry type="module" module-name="intellij.platform.diagnostic.telemetry.exporters" />
     <orderEntry type="module" module-name="intellij.platform.util.jdom" />
     <orderEntry type="module" module-name="intellij.platform.eel.provider" />
-    <orderEntry type="module" module-name="intellij.kotlin.base.facet" />
-    <orderEntry type="module" module-name="intellij.kotlin.base.projectModel" />
-    <orderEntry type="module" module-name="intellij.kotlin.base.projectStructure" />
-    <orderEntry type="module" module-name="intellij.kotlin.base.compilerConfiguration" />
-    <orderEntry type="module" module-name="intellij.kotlin.base.jps" />
   </component>
 </module>

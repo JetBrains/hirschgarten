@@ -4,8 +4,10 @@ import com.intellij.platform.workspace.jps.entities.ModuleEntity
 import com.intellij.platform.workspace.storage.WorkspaceEntity
 import com.intellij.platform.workspace.storage.annotations.Parent
 import com.intellij.platform.workspace.storage.url.VirtualFileUrl
+import org.jetbrains.annotations.ApiStatus
 
-internal interface ScalaAddendumEntity : WorkspaceEntity {
+@ApiStatus.Internal
+interface ScalaAddendumEntity : WorkspaceEntity {
   val compilerVersion: String
   val scalacOptions: List<String>
   val sdkClasspaths: List<VirtualFileUrl>
@@ -14,4 +16,5 @@ internal interface ScalaAddendumEntity : WorkspaceEntity {
   val module: ModuleEntity
 }
 
-internal val ModuleEntity.scalaAddendumEntity: ScalaAddendumEntity? by WorkspaceEntity.extension()
+@get:ApiStatus.Internal
+val ModuleEntity.scalaAddendumEntity: ScalaAddendumEntity? by WorkspaceEntity.extension()

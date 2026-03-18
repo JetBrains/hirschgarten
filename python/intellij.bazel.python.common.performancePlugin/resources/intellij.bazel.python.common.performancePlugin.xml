@@ -1,0 +1,19 @@
+<idea-plugin>
+  <dependencies>
+    <!-- region Generated dependencies - run `Generate Product Layouts` to regenerate -->
+    <plugin id="com.jetbrains.performancePlugin"/>
+    <module name="intellij.bazel.commons"/>
+    <module name="intellij.bazel.core"/>
+    <module name="intellij.bazel.python.common"/>
+    <module name="intellij.python.community.impl"/>
+    <module name="intellij.python.pydev"/>
+    <module name="intellij.python.sdk"/>
+    <!-- endregion -->
+  </dependencies>
+
+  <extensions defaultExtensionNs="com.jetbrains">
+    <performancePlugin.commandProvider
+      implementation="org.jetbrains.bazel.python.sync.ideStarter.PyCharmCheckImportedModulesProvider"
+    />
+  </extensions>
+</idea-plugin>

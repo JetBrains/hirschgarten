@@ -1,8 +1,10 @@
 <idea-plugin visibility="public">
   <!-- region Generated dependencies - run `Generate Product Layouts` to regenerate -->
   <dependencies>
-    <module name="intellij.libraries.grpc"/>
     <module name="intellij.bazel.commons"/>
+    <module name="intellij.bazel.protobuf"/>
+    <module name="intellij.libraries.grpc"/>
+    <module name="intellij.platform.backend"/>
   </dependencies>
   <!-- endregion -->
   <extensionPoints>

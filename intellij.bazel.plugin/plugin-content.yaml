@@ -1,0 +1,100 @@
+- name: lib/bazel-plugin.jar
+  modules:
+  - name: intellij.bazel.plugin
+  contentModules:
+  - name: intellij.bazel.protobuf
+  - name: intellij.bazel.resource
+- name: lib/modules/intellij.bazel.bazelisk.jar
+  contentModules:
+  - name: intellij.bazel.bazelisk
+- name: lib/modules/intellij.bazel.bytecodeViewer.jar
+  contentModules:
+  - name: intellij.bazel.bytecodeViewer
+- name: lib/modules/intellij.bazel.commons.jar
+  contentModules:
+  - name: intellij.bazel.commons
+- name: lib/modules/intellij.bazel.connector.jar
+  contentModules:
+  - name: intellij.bazel.connector
+  library: jackson-dataformat-xml
+  files:
+  - name: $MAVEN_REPOSITORY$/com/fasterxml/jackson/dataformat/jackson-dataformat-xml/2/jackson-dataformat-xml-2.jar
+  reason: <- intellij.bazel.connector
+- name: lib/modules/intellij.bazel.core.jar
+  contentModules:
+  - name: intellij.bazel.core
+- name: lib/modules/intellij.bazel.core.performancePlugin.jar
+  contentModules:
+  - name: intellij.bazel.core.performancePlugin
+- name: lib/modules/intellij.bazel.coverage.jar
+  contentModules:
+  - name: intellij.bazel.coverage
+- name: lib/modules/intellij.bazel.coverage.performancePlugin.jar
+  contentModules:
+  - name: intellij.bazel.coverage.performancePlugin
+- name: lib/modules/intellij.bazel.devkit.jar
+  contentModules:
+  - name: intellij.bazel.devkit
+- name: lib/modules/intellij.bazel.devkit.monorepo.jar
+  contentModules:
+  - name: intellij.bazel.devkit.monorepo
+- name: lib/modules/intellij.bazel.golang.common.jar
+  contentModules:
+  - name: intellij.bazel.golang.common
+- name: lib/modules/intellij.bazel.importer.jar
+  contentModules:
+  - name: intellij.bazel.importer
+- name: lib/modules/intellij.bazel.java.common.jar
+  contentModules:
+  - name: intellij.bazel.java.common
+- name: lib/modules/intellij.bazel.java.common.performancePlugin.jar
+  contentModules:
+  - name: intellij.bazel.java.common.performancePlugin
+- name: lib/modules/intellij.bazel.java.coverage.jar
+  contentModules:
+  - name: intellij.bazel.java.coverage
+- name: lib/modules/intellij.bazel.java.junit.jar
+  contentModules:
+  - name: intellij.bazel.java.junit
+- name: lib/modules/intellij.bazel.java.sync.jar
+  contentModules:
+  - name: intellij.bazel.java.sync
+- name: lib/modules/intellij.bazel.kotlin.common.jar
+  contentModules:
+  - name: intellij.bazel.kotlin.common
+- name: lib/modules/intellij.bazel.kotlin.common.performancePlugin.jar
+  contentModules:
+  - name: intellij.bazel.kotlin.common.performancePlugin
+- name: lib/modules/intellij.bazel.kotlin.coverage.jar
+  contentModules:
+  - name: intellij.bazel.kotlin.coverage
+- name: lib/modules/intellij.bazel.kotlin.junit.jar
+  contentModules:
+  - name: intellij.bazel.kotlin.junit
+- name: lib/modules/intellij.bazel.kotlin.k2.jar
+  contentModules:
+  - name: intellij.bazel.kotlin.k2
+- name: lib/modules/intellij.bazel.kotlin.projectWizard.jar
+  contentModules:
+  - name: intellij.bazel.kotlin.projectWizard
+- name: lib/modules/intellij.bazel.kotlin.sync.jar
+  contentModules:
+  - name: intellij.bazel.kotlin.sync
+- name: lib/modules/intellij.bazel.projectview.jar
+  contentModules:
+  - name: intellij.bazel.projectview
+- name: lib/modules/intellij.bazel.protoedit.jar
+  contentModules:
+  - name: intellij.bazel.protoedit
+- name: lib/modules/intellij.bazel.python.common.jar
+  contentModules:
+  - name: intellij.bazel.python.common
+- name: lib/modules/intellij.bazel.python.common.performancePlugin.jar
+  contentModules:
+  - name: intellij.bazel.python.common.performancePlugin
+- name: lib/modules/intellij.bazel.remoteDevelopment.jar
+  contentModules:
+  - name: intellij.bazel.remoteDevelopment
+- name: lib/modules/intellij.bazel.terminal.jar
+  contentModules:
+  - name: intellij.bazel.terminal

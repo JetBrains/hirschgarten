@@ -6,13 +6,16 @@ import com.intellij.ide.starter.models.IdeInfo
 import com.intellij.ide.starter.models.TestCase
 import com.intellij.ide.starter.project.ProjectInfoSpec
 import com.intellij.ide.starter.runner.AdditionalModulesForDevBuildServer
+import com.intellij.ide.starter.runner.AdditionalModulesForDevBuildServer.IdeTarget
 
 object IntegrationTestCompat {
   val requiredModules = arrayOf("intellij.bazel.plugin", "intellij.protoeditor")
+  val requiredFrontendModules = arrayOf("intellij.idea.frontend.split.customization")
   val requiredPlugins = arrayOf("org.jetbrains.bazel", "idea.plugin.protoeditor")
 
   fun onPreCreateContext() {
     AdditionalModulesForDevBuildServer.addAdditionalModules(*requiredModules)
+    AdditionalModulesForDevBuildServer.addAdditionalModules(*requiredFrontendModules, target = IdeTarget.FRONTEND)
   }
   
   fun onPostCreateContext(ctx: IDETestContext) {

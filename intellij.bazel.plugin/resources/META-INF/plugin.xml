@@ -1,0 +1,71 @@
+<idea-plugin>
+  <id>org.jetbrains.bazel</id>
+  <category>Build Tools</category>
+  <vendor>JetBrains</vendor>
+  <name>Bazel</name>
+  <description
+  ><![CDATA[
+  <p>Bazel by JetBrains for IntelliJ IDEA</p>
+
+  <p>Main features</p>
+  <ul>
+      <li>Open Bazel projects in IntelliJ IDEA</li>
+      <li>Supports Java and Kotlin</li>
+      <li>Build, run, test, debug Bazel ta rgets</li>
+      <li>Starlark syntax, completion, navigation support</li>
+      <li>Starlark debugging</li>
+      <li>Run and debug tests running in Bazel</li>
+  </ul>
+
+  <p>To learn more about how to use the features, please check <a href="https://www.jetbrains.com/help/idea/bazel.html">the documentation page</a>.</p>
+  ]]>
+  </description>
+
+  <content namespace="jetbrains">
+    <!-- core modules -->
+    <module name="intellij.bazel.connector" loading="required"/>
+    <module name="intellij.bazel.importer" loading="required"/>
+    <module name="intellij.bazel.projectview" loading="required"/>
+    <module name="intellij.bazel.commons" loading="required"/>
+    <module name="intellij.bazel.core" loading="required"/>
+    <module name="intellij.bazel.core.performancePlugin"/>
+    <module name="intellij.bazel.bazelisk" loading="required"/>
+    <module name="intellij.bazel.protobuf" loading="embedded"/>
+    <module name="intellij.bazel.resource" loading="embedded"/>
+
+    <!-- java modules -->
+    <module name="intellij.bazel.java.common"/>
+    <module name="intellij.bazel.java.common.performancePlugin"/>
+    <module name="intellij.bazel.java.coverage"/>
+    <module name="intellij.bazel.java.junit"/>
+    <module name="intellij.bazel.java.sync"/>
+
+    <!-- kotlin modules -->
+    <module name="intellij.bazel.kotlin.common"/>
+    <module name="intellij.bazel.kotlin.common.performancePlugin"/>
+    <module name="intellij.bazel.kotlin.coverage"/>
+    <module name="intellij.bazel.kotlin.junit"/>
+    <module name="intellij.bazel.kotlin.sync"/>
+    <module name="intellij.bazel.kotlin.k2"/>
+    <module name="intellij.bazel.kotlin.projectWizard"/>
+
+    <!-- go modules -->
+    <module name="intellij.bazel.golang.common"/>
+
+    <!-- python modules -->
+    <module name="intellij.bazel.python.common"/>
+    <module name="intellij.bazel.python.common.performancePlugin"/>
+
+    <!-- misc modules -->
+    <module name="intellij.bazel.bytecodeViewer"/>
+    <module name="intellij.bazel.coverage"/>
+    <module name="intellij.bazel.coverage.performancePlugin"/>
+    <module name="intellij.bazel.devkit"/>
+    <module name="intellij.bazel.devkit.monorepo"/>
+    <module name="intellij.bazel.protoedit"/>
+    <module name="intellij.bazel.remoteDevelopment"/>
+    <module name="intellij.bazel.terminal"/>
+
+  </content>
+
+</idea-plugin>

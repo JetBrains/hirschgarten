@@ -1,0 +1,27 @@
+<idea-plugin>
+  <dependencies>
+    <!-- region Generated dependencies - run `Generate Product Layouts` to regenerate -->
+    <plugin id="JUnit"/>
+    <plugin id="com.jetbrains.performancePlugin"/>
+    <module name="intellij.bazel.commons"/>
+    <module name="intellij.bazel.core"/>
+    <module name="intellij.bazel.core.performancePlugin"/>
+    <module name="intellij.bazel.java.common"/>
+    <module name="intellij.java.analysis.impl"/>
+    <module name="intellij.java.compiler"/>
+    <module name="intellij.java.compiler.impl"/>
+    <module name="intellij.java.debugger"/>
+    <module name="intellij.java.debugger.impl"/>
+    <module name="intellij.java.execution"/>
+    <module name="intellij.java.execution.impl"/>
+    <module name="intellij.java.impl"/>
+    <module name="intellij.java.psi"/>
+    <module name="intellij.java.ui"/>
+    <!-- endregion -->
+  </dependencies>
+
+  <extensions defaultExtensionNs="com.jetbrains">
+    <performancePlugin.commandProvider implementation="org.jetbrains.bazel.hotswap.ideStarter.HotSwapCommandProvider" />
+    <performancePlugin.commandProvider implementation="org.jetbrains.bazel.flow.modify.ideStarter.BazelProjectModelModifierCommandProvider"/>
+  </extensions>
+</idea-plugin>

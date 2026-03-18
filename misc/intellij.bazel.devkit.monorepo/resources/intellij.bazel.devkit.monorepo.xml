@@ -1,0 +1,12 @@
+<idea-plugin>
+  <dependencies>
+    <!-- region Generated dependencies - run `Generate Product Layouts` to regenerate -->
+    <module name="intellij.bazel.java.common"/>
+    <module name="intellij.java.debugger.impl"/>
+    <module name="intellij.monorepo.devkit"/>
+    <!-- endregion -->
+  </dependencies>
+  <extensions defaultExtensionNs="org.jetbrains.bazel">
+    <hotSwapHook implementation="com.intellij.bazel.devkit.monorepo.hotswap.MonorepoDevkitHotSwapHook"/>
+  </extensions>
+</idea-plugin>

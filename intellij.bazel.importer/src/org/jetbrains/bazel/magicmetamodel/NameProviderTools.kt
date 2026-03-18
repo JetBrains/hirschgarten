@@ -9,6 +9,9 @@ import org.jetbrains.bazel.languages.starlark.repomapping.toApparentLabelOrThis
 import org.jetbrains.bsp.protocol.utils.StringUtils
 
 @ApiStatus.Internal
+val LIBRARY_MODULE_PREFIX: String = "_aux.libraries."
+
+@ApiStatus.Internal
 fun Label.formatAsModuleName(project: Project): String {
   val targetName = targetName.sanitizeName()
   val prefix =
@@ -38,7 +41,8 @@ private fun List<String>.shortenTargetPath(targetNameLength: Int = 0): List<Stri
     this
   }
 
-internal fun String.sanitizeName(): String = replaceDots().filterColon()
+@ApiStatus.Internal
+fun String.sanitizeName(): String = replaceDots().filterColon()
 
 private fun String.replaceDots(): String = this.replace('.', '-')
 
@@ -47,7 +51,8 @@ private fun String.replaceDots(): String = this.replace('.', '-')
  */
 private fun String.filterColon(): String = this.replace(":", "")
 
-internal fun String.shortenTargetPath(): String =
+@ApiStatus.Internal
+fun String.shortenTargetPath(): String =
   if (BazelFeatureFlags.isShortenModuleLibraryNamesEnabled) {
     split(".").shortenTargetPath().joinToString(".")
   } else {

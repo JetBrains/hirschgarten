@@ -1,0 +1,109 @@
+<idea-plugin visibility="public">
+  <!-- region Generated dependencies - run `Generate Product Layouts` to regenerate -->
+  <dependencies>
+    <module name="intellij.bazel.commons"/>
+    <module name="intellij.bazel.connector"/>
+    <module name="intellij.bazel.core"/>
+    <module name="intellij.bazel.importer"/>
+    <module name="intellij.bazel.java.sync"/>
+    <module name="intellij.bazel.projectview"/>
+    <module name="intellij.java.analysis.impl"/>
+    <module name="intellij.java.compiler"/>
+    <module name="intellij.java.compiler.impl"/>
+    <module name="intellij.java.debugger"/>
+    <module name="intellij.java.debugger.impl"/>
+    <module name="intellij.java.debugger.impl.shared"/>
+    <module name="intellij.java.execution"/>
+    <module name="intellij.java.execution.impl"/>
+    <module name="intellij.java.impl"/>
+    <module name="intellij.java.psi"/>
+    <module name="intellij.java.ui"/>
+  </dependencies>
+  <!-- endregion -->
+
+  <extensionPoints>
+    <extensionPoint
+      dynamic="true"
+      interface="org.jetbrains.bazel.runnerAction.LocalJvmRunnerRunConfigurationProvider"
+      qualifiedName="org.jetbrains.bazel.localJvmRunnerRunConfigurationProvider"
+    />
+    <extensionPoint qualifiedName="org.jetbrains.bazel.hotSwapHook"
+                    interface="org.jetbrains.bazel.hotswap.HotSwapHook"
+                    dynamic="true"
+    />
+    <extensionPoint qualifiedName="org.jetbrains.bazel.starlarkClassParametersProvider"
+                    interface="org.jetbrains.bazel.languages.starlark.bazel.StarlarkClassParametersProvider"
+                    dynamic="true"
+    />
+    <extensionPoint qualifiedName="org.jetbrains.bazel.coroutinesHelper"
+                    interface="org.jetbrains.bazel.jvm.run.KotlinCoroutinesHelper"
+                    dynamic="true"/>
+  </extensionPoints>
+
+  <extensions defaultExtensionNs="org.jetbrains.bazel">
+    <testLocatorProvider id="defaultJavaLocator" implementation="org.jetbrains.bazel.jvm.run.JavaTestLocatorProvider"/>
+    <syntheticRunTargetTemplateGenerator language="JAVA"
+                                         implementationClass="org.jetbrains.bazel.java.run.JavaSyntheticRunTargetTemplateGenerator"/>
+
+    <!-- Dependency: JvmSyncHook -> TargetUtils#updateComputedFields -> toShortString -> BazelRepoMappingService -->
+    <!-- IndexAdditionalFilesSyncHook iterates over all added instances of ModuleEntity, so it has to come after JvmSyncHook -->
+    <projectSyncHook
+      implementation="org.jetbrains.bazel.jvm.sync.JvmSyncHook"
+      order="after BazelRepoMappingSyncHook, after TargetPersistenceLayerSyncHook, after DirectoriesSyncHook, before IndexAdditionalFilesSyncHook"
+    />
+
+    <sourceTypeIconProvider implementation="org.jetbrains.bazel.java.configuration.JavaSourceTypeIconProvider"/>
+
+    <bazelExperimentalSettingsProvider
+      implementation="org.jetbrains.bazel.ui.settings.BazelJVMExperimentalSettingsProvider"
+    />
+    <unresolvedImportChecker implementation="org.jetbrains.bazel.java.ui.notifications.JavaUnresolvedImportChecker"/>
+    <additionalProjectTaskRunnerProvider implementation="org.jetbrains.bazel.hotswap.BazelHotSwapProjectTaskRunnerProvider"/>
+    <projectSyncHook implementation="org.jetbrains.bazel.fastbuild.ToolchainInfoSyncHook"/>
+    <loadedTargetActionsProvider implementation="org.jetbrains.bazel.ui.widgets.JvmLoadedTargetActionsProvider"/>
+    <runHandlerProvider
+      id="JvmRunHandlerProvider"
+      implementation="org.jetbrains.bazel.jvm.run.JvmRunHandler$JvmRunHandlerProvider"
+    />
+    <runHandlerProvider
+      id="JvmTestHandlerProvider"
+      implementation="org.jetbrains.bazel.jvm.run.JvmTestHandler$JvmTestHandlerProvider"
+    />
+    <starlarkClassParametersProvider implementation="org.jetbrains.bazel.languages.starlark.bazel.DefaultStarlarkClassParametersProvider"/>
+  </extensions>
+
+  <extensions defaultExtensionNs="com.intellij">
+    <programRunner implementation="org.jetbrains.bazel.jvm.run.BazelJvmDebugRunner"/>
+    <stepsBeforeRunProvider implementation="org.jetbrains.bazel.jvm.run.ScriptPathBeforeRunTaskProvider"/>
+    <java.programPatcher implementation="org.jetbrains.bazel.java.run.BazelJvmEnvironmentProgramPatcher"/>
+    <stepsBeforeRunProvider implementation="org.jetbrains.bazel.jvm.run.KotlinCoroutineLibraryFinderBeforeRunTaskProvider"/>
+
+    <projectService
+      overrides="true"
+      serviceImplementation="org.jetbrains.bazel.java.annotation.BazelExternalAnnotationsManager"
+      serviceInterface="com.intellij.codeInsight.ExternalAnnotationsManager"
+    />
+    <runLineMarkerContributor
+      implementationClass="org.jetbrains.bazel.java.ui.gutters.BazelJavaRunLineMarkerContributor"
+      language="JAVA"
+    />
+    <newProjectWizard.java.buildSystem implementation="org.jetbrains.bazel.java.starters.BazelJavaNewProjectWizard"/>
+    <disableCompilationDependenciesResolutionTask
+      implementation="org.jetbrains.bazel.jpsCompilation.utils.DisableCompilationDependenciesResolutionImpl"
+    />
+    <projectModelModifier implementation="org.jetbrains.bazel.flow.modify.BazelProjectModelModifier"/>
+    <projectTaskRunner
+      implementation="org.jetbrains.bazel.fastbuild.BazelFastBuildProjectTaskRunner"
+      order="before BazelProjectTaskRunner"
+    />
+    <attachSourcesProvider implementation="org.jetbrains.bazel.ui.notifications.BazelAttachSourcesProvider"/>
+    <completion.contributor
+      implementationClass="org.jetbrains.bazel.languages.starlark.completion.StarlarkClassnameCompletionContributor"
+      language="Starlark"
+    />
+    <psi.referenceContributor implementation="org.jetbrains.bazel.languages.starlark.contributor.StarlarkJavaReferenceContributor"
+                              language="Starlark"/>
+    <projectService serviceImplementation="org.jetbrains.bazel.magicmetamodel.DefaultMagicMetaModelEnvironment"
+                    serviceInterface="org.jetbrains.bazel.magicmetamodel.MagicMetaModelEnvironment"/>
+  </extensions>
+</idea-plugin>

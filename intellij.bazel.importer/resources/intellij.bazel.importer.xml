@@ -4,6 +4,8 @@
     <module name="intellij.bazel.commons"/>
     <module name="intellij.bazel.connector"/>
     <module name="intellij.bazel.projectview"/>
+    <module name="intellij.bazel.protobuf"/>
+    <module name="intellij.platform.backend"/>
   </dependencies>
   <!-- endregion -->
 
@@ -29,11 +31,6 @@
     />
     <extensionPoint
       dynamic="true"
-      interface="org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.KotlinFacetEntityUpdater"
-      qualifiedName="org.jetbrains.bazel.kotlinFacetEntityUpdater"
-    />
-    <extensionPoint
-      dynamic="true"
       interface="org.jetbrains.bazel.scala.sdk.ScalaSdkExtension"
       qualifiedName="org.jetbrains.bazel.scalaSdkExtension"
     />
@@ -56,10 +53,6 @@
     />
     <workspaceModel.fileIndexContributor
       implementation="org.jetbrains.bazel.workspace.BazelProjectDirectoriesWorkspaceFileIndexContributor"
-    />
-    <moduleType
-      id="BAZEL_DUMMY_MODULE_TYPE"
-      implementationClass="org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.BazelDummyModuleType"
     />
     <workspaceModel.fileIndexContributor
       implementation="org.jetbrains.bazel.workspace.CompiledSourceCodeInsideJarExcludeWorkspaceFileIndexContributor"

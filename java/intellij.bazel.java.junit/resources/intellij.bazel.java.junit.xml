@@ -1,0 +1,33 @@
+<idea-plugin>
+  <dependencies>
+    <!-- region Generated dependencies - run `Generate Product Layouts` to regenerate -->
+    <plugin id="JUnit"/>
+    <module name="intellij.bazel.commons"/>
+    <module name="intellij.bazel.core"/>
+    <module name="intellij.bazel.java.common"/>
+    <module name="intellij.java.execution"/>
+    <module name="intellij.java.execution.impl"/>
+    <module name="intellij.java.impl"/>
+    <!-- endregion -->
+  </dependencies>
+
+  <extensionPoints>
+    <extensionPoint
+      dynamic="true"
+      interface="org.jetbrains.bazel.junit.PsiElementConfigurationLocator"
+      qualifiedName="org.jetbrains.bazel.psiElementConfigurationLocator"
+    />
+  </extensionPoints>
+
+  <extensions defaultExtensionNs="org.jetbrains.bazel">
+    <psiElementConfigurationLocator
+      implementation="org.jetbrains.bazel.java.junit.JavaPsiElementConfigurationLocator"
+    />
+    <localJvmRunnerRunConfigurationProvider
+      implementation="org.jetbrains.bazel.junit.JunitLocalJvmRunnerRunConfigurationProvider"
+    />
+  </extensions>
+  <extensions defaultExtensionNs="com.intellij">
+    <runConfigurationExtension implementation="org.jetbrains.bazel.junit.JUnitRunConfigurationExtension"/>
+  </extensions>
+</idea-plugin>

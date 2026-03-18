@@ -9,6 +9,7 @@
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
+    <orderEntry type="module" module-name="intellij.bazel.plugin.main" scope="TEST" />
     <orderEntry type="library" name="kotlin-stdlib" level="project" />
     <orderEntry type="module" module-name="intellij.ide.starter.extended" scope="TEST" />
     <orderEntry type="library" scope="TEST" name="JUnit5" level="project" />
@@ -19,7 +20,6 @@
     <orderEntry type="module" module-name="intellij.driver.model" scope="TEST" />
     <orderEntry type="module" module-name="intellij.performance.tests.core" scope="TEST" />
     <orderEntry type="module" module-name="intellij.platform.util" scope="TEST" />
-    <orderEntry type="module" module-name="intellij.bazel.plugin" scope="TEST" />
     <orderEntry type="module" module-name="intellij.protoeditor" scope="TEST" />
     <orderEntry type="module" module-name="intellij.platform.core" scope="TEST" />
     <orderEntry type="module" module-name="intellij.platform.testFramework.common" />
@@ -49,5 +49,35 @@
     <orderEntry type="module" module-name="intellij.python.pyproject.tests" scope="TEST" />
     <orderEntry type="module" module-name="intellij.python.community.services.internal.impl.tests" scope="TEST" />
     <orderEntry type="module" module-name="intellij.platform.ijent.impl.tests" scope="TEST" />
+    <orderEntry type="module" module-name="intellij.bazel" scope="TEST" />
+    <orderEntry type="module" module-name="intellij.bazel.bazelisk" scope="TEST" />
+    <orderEntry type="module" module-name="intellij.bazel.bytecodeViewer" scope="TEST" />
+    <orderEntry type="module" module-name="intellij.bazel.commons" scope="TEST" />
+    <orderEntry type="module" module-name="intellij.bazel.connector" scope="TEST" />
+    <orderEntry type="module" module-name="intellij.bazel.core" scope="TEST" />
+    <orderEntry type="module" module-name="intellij.bazel.core.performancePlugin" scope="TEST" />
+    <orderEntry type="module" module-name="intellij.bazel.coverage" scope="TEST" />
+    <orderEntry type="module" module-name="intellij.bazel.coverage.performancePlugin" scope="TEST" />
+    <orderEntry type="module" module-name="intellij.bazel.devkit" scope="TEST" />
+    <orderEntry type="module" module-name="intellij.bazel.golang.common" scope="TEST" />
+    <orderEntry type="module" module-name="intellij.bazel.importer" scope="TEST" />
+    <orderEntry type="module" module-name="intellij.bazel.java.common" scope="TEST" />
+    <orderEntry type="module" module-name="intellij.bazel.java.common.performancePlugin" scope="TEST" />
+    <orderEntry type="module" module-name="intellij.bazel.java.coverage" scope="TEST" />
+    <orderEntry type="module" module-name="intellij.bazel.java.junit" scope="TEST" />
+    <orderEntry type="module" module-name="intellij.bazel.kotlin.common" scope="TEST" />
+    <orderEntry type="module" module-name="intellij.bazel.kotlin.common.performancePlugin" scope="TEST" />
+    <orderEntry type="module" module-name="intellij.bazel.kotlin.coverage" scope="TEST" />
+    <orderEntry type="module" module-name="intellij.bazel.kotlin.junit" scope="TEST" />
+    <orderEntry type="module" module-name="intellij.bazel.kotlin.k2" scope="TEST" />
+    <orderEntry type="module" module-name="intellij.bazel.plugin" scope="TEST" />
+    <orderEntry type="module" module-name="intellij.bazel.pluginTests" scope="TEST" />
+    <orderEntry type="module" module-name="intellij.bazel.projectview" scope="TEST" />
+    <orderEntry type="module" module-name="intellij.bazel.protobuf" scope="TEST" />
+    <orderEntry type="module" module-name="intellij.bazel.protoedit" scope="TEST" />
+    <orderEntry type="module" module-name="intellij.bazel.python.common" scope="TEST" />
+    <orderEntry type="module" module-name="intellij.bazel.python.common.performancePlugin" scope="TEST" />
+    <orderEntry type="module" module-name="intellij.bazel.remoteDevelopment" scope="TEST" />
+    <orderEntry type="module" module-name="intellij.bazel.terminal" scope="TEST" />
   </component>
 </module>

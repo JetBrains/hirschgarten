@@ -1,0 +1,25 @@
+f:org.jetbrains.bazel.config.BazelProjectPropertiesKt
+- sf:getRootDir(com.intellij.openapi.project.Project):com.intellij.openapi.vfs.VirtualFile
+- sf:isBazelProject(com.intellij.openapi.project.Project):Z
+org.jetbrains.bazel.runnerAction.BazelCoverageExecutorProvider
+- sf:Companion:org.jetbrains.bazel.runnerAction.BazelCoverageExecutorProvider$Companion
+- a:createCoverageExecutor(com.intellij.openapi.project.Project):com.intellij.execution.Executor
+- a:isCoverageExecutor(com.intellij.execution.Executor):Z
+f:org.jetbrains.bazel.runnerAction.BazelCoverageExecutorProvider$Companion
+- f:getEp():com.intellij.openapi.extensions.ExtensionPointName
+org.jetbrains.bazel.sync.status.SyncStatusListener
+- sf:Companion:org.jetbrains.bazel.sync.status.SyncStatusListener$Companion
+- a:syncFinished(Z):V
+- a:syncStarted():V
+f:org.jetbrains.bazel.sync.status.SyncStatusListener$Companion
+- f:getTOPIC():com.intellij.util.messages.Topic
+f:org.jetbrains.bazel.sync.status.SyncStatusServiceKt
+- sf:isSyncInProgress(com.intellij.openapi.project.Project):Z
+a:org.jetbrains.bazel.ui.gutters.BazelRunLineMarkerContributor
+- com.intellij.execution.lineMarker.RunLineMarkerContributor
+- <init>():V
+- getExtraProgramArguments(com.intellij.psi.PsiElement):java.util.List
+- getInfo(com.intellij.psi.PsiElement):com.intellij.execution.lineMarker.RunLineMarkerContributor$Info
+- getSingleTestFilter(com.intellij.psi.PsiElement):java.lang.String
+- getSlowInfo(com.intellij.psi.PsiElement):com.intellij.execution.lineMarker.RunLineMarkerContributor$Info
+- a:shouldAddMarker(com.intellij.psi.PsiElement):Z

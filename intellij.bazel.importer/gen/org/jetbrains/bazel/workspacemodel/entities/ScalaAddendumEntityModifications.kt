@@ -11,9 +11,11 @@ import com.intellij.platform.workspace.storage.WorkspaceEntity
 import com.intellij.platform.workspace.storage.WorkspaceEntityBuilder
 import com.intellij.platform.workspace.storage.impl.containers.toMutableWorkspaceList
 import com.intellij.platform.workspace.storage.url.VirtualFileUrl
+import org.jetbrains.annotations.ApiStatus.Internal
 
+@Internal
 @GeneratedCodeApiVersion(3)
-internal interface ScalaAddendumEntityBuilder : WorkspaceEntityBuilder<ScalaAddendumEntity> {
+interface ScalaAddendumEntityBuilder : WorkspaceEntityBuilder<ScalaAddendumEntity> {
   override var entitySource: EntitySource
   var compilerVersion: String
   var scalacOptions: MutableList<String>
@@ -40,18 +42,20 @@ internal object ScalaAddendumEntityType : EntityType<ScalaAddendumEntity, ScalaA
   }
 }
 
-internal fun MutableEntityStorage.modifyScalaAddendumEntity(
+@Internal
+fun MutableEntityStorage.modifyScalaAddendumEntity(
   entity: ScalaAddendumEntity,
   modification: ScalaAddendumEntityBuilder.() -> Unit,
 ): ScalaAddendumEntity = modifyEntity(ScalaAddendumEntityBuilder::class.java, entity, modification)
 
-internal var ModuleEntityBuilder.scalaAddendumEntity: ScalaAddendumEntityBuilder?
+var ModuleEntityBuilder.scalaAddendumEntity: ScalaAddendumEntityBuilder?
   by WorkspaceEntity.extensionBuilder(ScalaAddendumEntity::class.java)
 
 
+@Internal
 @JvmOverloads
 @JvmName("createScalaAddendumEntity")
-internal fun ScalaAddendumEntity(
+fun ScalaAddendumEntity(
   compilerVersion: String,
   scalacOptions: List<String>,
   sdkClasspaths: List<VirtualFileUrl>,

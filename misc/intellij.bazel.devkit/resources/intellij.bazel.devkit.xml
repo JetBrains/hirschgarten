@@ -1,0 +1,26 @@
+<idea-plugin>
+  <!-- region Generated dependencies - run `Generate Product Layouts` to regenerate -->
+  <dependencies>
+    <module name="intellij.bazel.commons"/>
+    <module name="intellij.bazel.core"/>
+    <module name="intellij.bazel.protobuf"/>
+    <module name="intellij.devkit.core"/>
+    <module name="intellij.java.debugger.impl"/>
+    <module name="intellij.java.execution"/>
+    <module name="intellij.java.execution.impl"/>
+    <module name="intellij.java.impl"/>
+  </dependencies>
+  <!-- endregion -->
+
+  <extensions defaultExtensionNs="org.jetbrains.bazel">
+    <runHandlerProvider
+      implementation="org.jetbrains.bazel.intellij.IntellijPluginRunHandlerProvider"
+      order="before JvmRunHandlerProvider"
+    />
+  </extensions>
+  <extensions defaultExtensionNs="com.intellij">
+    <stepsBeforeRunProvider implementation="org.jetbrains.bazel.intellij.BuildPluginBeforeRunTaskProvider"/>
+    <stepsBeforeRunProvider implementation="org.jetbrains.bazel.intellij.CopyPluginToSandboxBeforeRunTaskProvider"/>
+    <programRunner implementation="org.jetbrains.bazel.intellij.IntellijPluginDebuggerRunner"/>
+  </extensions>
+</idea-plugin>

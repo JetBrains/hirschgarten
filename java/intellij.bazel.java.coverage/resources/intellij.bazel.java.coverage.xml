@@ -1,0 +1,15 @@
+<idea-plugin>
+  <dependencies>
+    <!-- region Generated dependencies - run `Generate Product Layouts` to regenerate -->
+    <module name="intellij.bazel.core"/>
+    <module name="intellij.bazel.coverage"/>
+    <module name="intellij.java"/>
+    <module name="intellij.java.impl"/>
+    <!-- endregion -->
+  </dependencies>
+
+  <extensions defaultExtensionNs="org.jetbrains.bazel">
+    <bazelCoverageClassNodeDecoratorPsiElementClassifier
+      implementation="org.jetbrains.bazel.java.coverage.JavaBazelCoverageClassNodeDecoratorPsiElementClassifier"/>
+  </extensions>
+</idea-plugin>

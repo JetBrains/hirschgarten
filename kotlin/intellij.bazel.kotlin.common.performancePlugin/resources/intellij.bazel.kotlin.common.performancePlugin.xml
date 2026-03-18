@@ -1,0 +1,23 @@
+<idea-plugin>
+  <dependencies>
+    <!-- region Generated dependencies - run `Generate Product Layouts` to regenerate -->
+    <plugin id="com.jetbrains.performancePlugin"/>
+    <module name="intellij.bazel.commons"/>
+    <module name="intellij.bazel.core"/>
+    <module name="intellij.bazel.core.performancePlugin"/>
+    <module name="intellij.bazel.java.common"/>
+    <module name="intellij.bazel.kotlin.common"/>
+    <module name="intellij.java"/>
+    <module name="intellij.java.debugger"/>
+    <module name="intellij.java.debugger.impl"/>
+    <module name="intellij.java.execution"/>
+    <module name="intellij.java.execution.impl"/>
+    <!-- endregion -->
+  </dependencies>
+
+  <extensions defaultExtensionNs="com.jetbrains">
+    <performancePlugin.commandProvider
+      implementation="org.jetbrains.bazel.kotlin.ideStarter.KotlinIdeStarterCommandProvider"
+    />
+  </extensions>
+</idea-plugin>

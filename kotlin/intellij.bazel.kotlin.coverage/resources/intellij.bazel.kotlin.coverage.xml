@@ -1,0 +1,13 @@
+<!-- @skip-dependency-generation -->
+<idea-plugin>
+  <dependencies>
+    <plugin id="org.jetbrains.kotlin"/>
+    <module name="intellij.bazel.coverage"/>
+  </dependencies>
+
+  <extensions defaultExtensionNs="org.jetbrains.bazel">
+    <bazelCoverageClassNodeDecoratorPsiElementClassifier
+      implementation="org.jetbrains.bazel.kotlin.coverage.KotlinBazelCoverageClassNodeDecoratorPsiElementClassifier"
+    />
+  </extensions>
+</idea-plugin>

@@ -1,0 +1,14 @@
+<idea-plugin>
+  <dependencies>
+    <!-- region Generated dependencies - run `Generate Product Layouts` to regenerate -->
+    <plugin id="ByteCodeViewer"/>
+    <module name="intellij.bazel.commons"/>
+    <module name="intellij.bazel.core"/>
+    <module name="intellij.java.psi"/>
+    <!-- endregion -->
+  </dependencies>
+
+  <extensions defaultExtensionNs="ByteCodeViewer">
+    <classFileFinder implementation="org.jetbrains.bazel.bytecodeViewer.BazelBytecodeViewerClassFileFinder"/>
+  </extensions>
+</idea-plugin>
