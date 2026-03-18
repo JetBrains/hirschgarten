@@ -1,14 +1,12 @@
+<!-- @skip-dependency-generation -->
 <idea-plugin visibility="public">
-  <!-- region Generated dependencies - run `Generate Product Layouts` to regenerate -->
   <dependencies>
+    <plugin id="org.jetbrains.kotlin"/>
     <module name="intellij.bazel.commons"/>
-    <module name="intellij.bazel.core"/>
     <module name="intellij.bazel.importer"/>
     <module name="intellij.bazel.java.sync"/>
-    <module name="intellij.bazel.kotlin.common"/>
     <module name="intellij.java"/>
   </dependencies>
-  <!-- endregion -->
 
   <extensions defaultExtensionNs="org.jetbrains.bazel">
     <kotlinFacetEntityUpdater implementation="org.jetbrains.bazel.sync.BazelKotlinFacetEntityUpdater"/>
