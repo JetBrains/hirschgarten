@@ -232,7 +232,7 @@ object IdeaBazelCases : BaseBazelCasesParametrized(BazelTestContext.IDEA) {
   val SimpleKotlinCombined = withBazelProject(
     projectInfo = withDefaults(
       repositoryUrl = "https://github.com/JetBrainsBazelBot/simpleBazelProjectsForTesting.git",
-      commitHash = "3302e998ef867dc11f7a2fd2f17820d188590711",
+      commitHash = "a04f768fbed444fd24cde5bfaa872cd1827bbde9",
       branchName = "main",
       relativePath = "simpleKotlinTest",
       configure = { context -> BazelProjectConfigurer.configureProjectBeforeUse(context) },
