@@ -24,11 +24,13 @@ import com.intellij.tools.ide.metrics.collector.telemetry.SpanFilter
 import com.intellij.tools.ide.performanceTesting.commands.CommandChain
 import com.intellij.tools.ide.performanceTesting.commands.DebugStepTypes
 import com.intellij.tools.ide.performanceTesting.commands.Keys
+import com.intellij.tools.ide.performanceTesting.commands.assertCurrentFile
 import com.intellij.tools.ide.performanceTesting.commands.build
 import com.intellij.tools.ide.performanceTesting.commands.checkOnRedCode
 import com.intellij.tools.ide.performanceTesting.commands.debugStep
 import com.intellij.tools.ide.performanceTesting.commands.delayType
 import com.intellij.tools.ide.performanceTesting.commands.deleteFile
+import com.intellij.tools.ide.performanceTesting.commands.goToDeclaration
 import com.intellij.tools.ide.performanceTesting.commands.goto
 import com.intellij.tools.ide.performanceTesting.commands.openFile
 import com.intellij.tools.ide.performanceTesting.commands.pressKey
@@ -236,7 +238,16 @@ class SimpleKotlinCombinedTest : IdeStarterBaseProjectTest() {
     withDriver(bgRun) {
       ideFrame {
         step("Check imported targets") {
-          execute { assertSyncedTargets("//:B", "//:C", "//:SimpleKotlinTest", "//:associates_example") }
+          execute { assertSyncedTargets("//:B", "//:C", "//:SimpleKotlinTest", "//:associates_example", "//:requires-no-ide", "//:not-ignored") }
+        }
+        step("Check navigation into no-ide sources") {
+          execute { openFile("Y.kt") }
+          takeScreenshot("afterOpenY")
+          execute { checkOnRedCode() }
+          execute { goto(2, 31) }
+          execute { goToDeclaration() }
+          takeScreenshot("afterSourceNavigation")
+          execute { assertCurrentFile("Z.kt") }
         }
       }
     }
