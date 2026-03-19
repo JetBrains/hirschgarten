@@ -747,10 +747,10 @@ internal class AspectBazelProjectMapper(
 
   private fun getTargetOutputJarsSet(targetInfo: TargetInfo, localRepositories : LocalRepositoryMapping) = getTargetOutputJarsList(targetInfo, localRepositories).toSet()
 
-  private fun getTargetOutputJarsList(targetInfo: TargetInfo, localRepositories : LocalRepositoryMapping): List<Path> {
-    return ( targetInfo.javaCommon.jarsList.flatMap { it.binaryJarsList } .map { bazelPathsResolver.resolve(it, localRepositories) }
-      + targetInfo.sourcesList .filter { it.relativePath.endsWith(".jar") } .map { bazelPathsResolver.resolve(it, localRepositories) } )
-  }
+  private fun getTargetOutputJarsList(targetInfo: TargetInfo, localRepositories: LocalRepositoryMapping) = targetInfo.javaCommon
+    .jarsList
+    .flatMap { it.binaryJarsList }
+    .map { bazelPathsResolver.resolve(it, localRepositories) }
 
   private fun getTargetInterfaceJarsSet(targetInfo: TargetInfo, localRepositories : LocalRepositoryMapping) = getTargetInterfaceJarsList(targetInfo, localRepositories).toSet()
 
@@ -831,7 +831,6 @@ internal class AspectBazelProjectMapper(
       "java_library",
       "java_binary",
       "java_test",
-      "java_import",
       "kt_jvm_library",
       "kt_jvm_binary",
       "kt_jvm_test",
