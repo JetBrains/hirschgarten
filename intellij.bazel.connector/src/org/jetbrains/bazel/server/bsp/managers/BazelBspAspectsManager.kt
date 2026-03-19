@@ -240,7 +240,7 @@ class BazelBspAspectsManager(
     return executeService
       .buildTargetsWithBep(
         targetsSpec = targetsSpec,
-        extraFlags = flagsToUse + listOf("--build_tag_filters=" + existingBuildTagFilters?.let { "$it," }.orEmpty() + "-no-ide"),
+        extraFlags = flagsToUse + listOf("--build_tag_filters=" + existingBuildTagFilters?.let { "$it," }.orEmpty() + "-${Constants.NO_IDE}"),
         taskId = taskId,
       ).let { BazelBspAspectsManagerResult(it.bepOutput, it.processResult.bazelStatus) }
   }
