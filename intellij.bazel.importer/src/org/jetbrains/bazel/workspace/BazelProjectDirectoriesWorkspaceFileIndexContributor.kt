@@ -23,9 +23,8 @@ internal class BazelProjectDirectoriesWorkspaceFileIndexContributor : WorkspaceF
      */
     if (entity.indexAllFilesInIncludedRoots) {
       registrar.registerIncludedDirectories(entity)
-    } else {
-      registrar.registerIndexAdditionalFiles(entity)
     }
+    registrar.registerIndexAdditionalFiles(entity)
     registrar.registerExcludedDirectories(entity)
 
     registrar.registerFileSet(

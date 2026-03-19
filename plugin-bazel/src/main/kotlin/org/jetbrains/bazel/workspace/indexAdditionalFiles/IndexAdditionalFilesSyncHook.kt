@@ -45,7 +45,7 @@ private class IndexAdditionalFilesSyncHook : ProjectSyncHook {
       val indexAdditionalFiles: Set<VirtualFileUrl> =
         buildSet {
           this += indexAdditionalFilesByName(environment, mutableEntityStorage, projectDirectoriesEntity, virtualFileUrlManager)
-          getProjectView(project, virtualFileUrlManager)?.let { this += it }
+          this += getProjectView(project, virtualFileUrlManager)
           this += getWorkspaceFiles(project, virtualFileUrlManager)
 
           for (contributor in IndexAdditionalFilesContributor.ep.extensionList) {
@@ -58,7 +58,7 @@ private class IndexAdditionalFilesSyncHook : ProjectSyncHook {
       }
     }
 
-  private suspend fun indexAdditionalFilesByName(
+  private fun indexAdditionalFilesByName(
     environment: ProjectSyncHook.ProjectSyncHookEnvironment,
     mutableEntityStorage: MutableEntityStorage,
     projectDirectoriesEntity: BazelProjectDirectoriesEntity,
@@ -72,28 +72,27 @@ private class IndexAdditionalFilesSyncHook : ProjectSyncHook {
       ProjectViewGlobSet(workspaceContext.indexAdditionalFilesInDirectories + INDEX_ADDITIONAL_FILES_DEFAULT)
 
     val includedRoots = projectDirectoriesEntity.includedRoots.mapNotNull { it.virtualFile }
-    val excludedRoots = projectDirectoriesEntity.excludedRoots.mapNotNull { it.virtualFile }.toSet()
+    val excludedRoots = projectDirectoriesEntity.excludedRoots.mapNotNullTo(hashSetOf()) { it.virtualFile }
     val contentRoots =
       mutableEntityStorage
         .entities<ContentRootEntity>()
         .map { it.url }
-        .mapNotNull { it.virtualFile }
-        .toSet()
+        .mapNotNullTo(hashSetOf()) { it.virtualFile }
 
     fun VirtualFile.isUnderContentRoot(): Boolean {
       var current: VirtualFile? = this
       while (current != null) {
-        if (this in contentRoots) return true
-        if (this in excludedRoots) return false
+        if (current in contentRoots) return true
+        if (current in excludedRoots) return false
         current = current.parent
       }
       return false
     }
 
     val includedRootsToIterate = includedRoots.filter { !it.isUnderContentRoot() }
-    val visited = mutableSetOf<VirtualFile>()
+    val visited = hashSetOf<VirtualFile>()
 
-    val indexAdditionalFiles = mutableSetOf<VirtualFile>()
+    val indexAdditionalFiles = hashSetOf<VirtualFile>()
     val rootDir = environment.project.rootDir
 
     for (includedRoot in includedRootsToIterate) {
@@ -117,9 +116,8 @@ private class IndexAdditionalFilesSyncHook : ProjectSyncHook {
     return indexAdditionalFiles.map { it.toVirtualFileUrl(virtualFileUrlManager) }
   }
 
-  private fun getProjectView(project: Project, virtualFileUrlManager: VirtualFileUrlManager): VirtualFileUrl? {
-    return project.bazelProjectSettings.projectViewPath?.toVirtualFileUrl(virtualFileUrlManager)
-  }
+  private fun getProjectView(project: Project, virtualFileUrlManager: VirtualFileUrlManager): List<VirtualFileUrl> =
+    listOfNotNull(project.bazelProjectSettings.projectViewPath?.toVirtualFileUrl(virtualFileUrlManager))
 
   private fun getWorkspaceFiles(project: Project, virtualFileUrlManager: VirtualFileUrlManager): List<VirtualFileUrl> =
     Constants.WORKSPACE_FILE_NAMES
