@@ -15,7 +15,9 @@ import org.jetbrains.bazel.commons.Tag
 import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.config.defaultJdkName
 import org.jetbrains.bazel.config.rootDir
+import org.jetbrains.bazel.info.BspTargetInfo
 import org.jetbrains.bazel.info.BspTargetInfo.TargetInfo
+import org.jetbrains.bazel.label.DependencyLabel
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.magicmetamodel.formatAsModuleName
 import org.jetbrains.bazel.server.connection.connection
@@ -25,6 +27,7 @@ import org.jetbrains.bazel.target.targetUtils
 import org.jetbrains.bsp.protocol.BuildTargetTag.NO_IDE
 import org.jetbrains.bsp.protocol.RawBuildTarget
 import org.jetbrains.bsp.protocol.SourceItem
+import org.jetbrains.bsp.protocol.TaskGroupId
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetParams
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetSelector
 
@@ -50,7 +53,8 @@ class UnsyncedTargetUpdater {
         val partialSyncResult = project.connection.runWithServer { server ->
           server.workspaceBuildTargets(
             WorkspaceBuildTargetParams(
-              WorkspaceBuildTargetSelector.SpecificTargets(listOf(label))
+              WorkspaceBuildTargetSelector.SpecificTargets(listOf(label)),
+              TaskGroupId.EMPTY.task("unsynced-target"),
             )
           )
         }
@@ -58,7 +62,7 @@ class UnsyncedTargetUpdater {
         // Extract the target info from the partial sync result
         val rawAspectTarget = partialSyncResult.targets[label]
         if (rawAspectTarget != null) {
-          val targetInfo = rawAspectTarget.target
+          val targetInfo = rawAspectTarget
           if (targetInfo.tagsList.contains(NO_IDE)) {
             return null
           }
@@ -79,10 +83,10 @@ class UnsyncedTargetUpdater {
             val baseDirectory = project.rootDir.toNioPath()
 
             // Convert dependencies from protobuf format to Label list
-            val targetDependencies = targetInfo.dependenciesList.map { Label.parse(it.id) }
+            val targetDependencies = targetInfo.dependenciesList.map { DependencyLabel.parse(it.id) }
 
             // Convert sources from protobuf format to SourceItem list
-            val sources = targetInfo.sourcesList.map { fileLocation ->
+            val sources = targetInfo.sourcesList.map { fileLocation: BspTargetInfo.FileLocation ->
               SourceItem(
                 path = baseDirectory.resolve(fileLocation.relativePath),
                 generated = !fileLocation.isSource,
@@ -106,7 +110,6 @@ class UnsyncedTargetUpdater {
               baseDirectory = baseDirectory,
               noBuild = false,
               data = null, // Will be set by language-specific processors in full sync
-              lowPrioritySharedSources = emptyList()
             )
             project.targetUtils.addTargets(mapOf(label to rawBuildTarget), project)
 
@@ -144,7 +147,7 @@ class UnsyncedTargetUpdater {
       storage: MutableEntityStorage,
     ): List<ModuleDependency> {
       return rawBuildTarget.dependencies.map { dependencyLabel ->
-        val baseDependencyName = dependencyLabel.formatAsModuleName(project)
+        val baseDependencyName = dependencyLabel.label.formatAsModuleName(project)
         // First, check if a module with the base name exists in the snapshot
         val baseModuleId = ModuleId(baseDependencyName)
         val baseModuleExists = snapshot.resolve(baseModuleId) != null || storage.resolve(baseModuleId) != null

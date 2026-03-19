@@ -22,6 +22,7 @@ internal open class RunSyntheticTargetAction(
   private val templateGenerator: SyntheticRunTargetTemplateGenerator,
   private val targetElement: PsiElement,
 ) : BaseRunnerAction(
+  buildTargets = listOf(target),
   text = {
     BazelRunnerActionNaming.getRunActionName(
       isDebugAction = isDebugAction,
@@ -34,8 +35,6 @@ internal open class RunSyntheticTargetAction(
   isDebugAction = isDebugAction,
   isCoverageAction = false,
 ) {
-
-  override fun getBuildTargets(project: Project): List<BuildTarget> = listOf(target)
 
   override suspend fun getRunnerSettings(
     project: Project,

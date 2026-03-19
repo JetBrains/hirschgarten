@@ -3,7 +3,6 @@
 package org.jetbrains.bazel.target
 
 import com.intellij.configurationStore.SettingsSavingComponent
-import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.ApplicationInfo
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.service
@@ -123,9 +122,6 @@ class TargetUtils(private val project: Project, private val coroutineScope: Coro
       LOG.warn("Failed to collect thread pool diagnostics", e)
     }
   }
-
-  // ...existing code...
-  private val db = openStore(storeFile = project.getProjectDataPath(getStorageFilename()), filePathSuffix = project.basePath!! + "/")
 
   // we save only once every 5 minutes, and not earlier than 5 minutes after IDEA startup
   private var lastSaved = nowAsDuration()

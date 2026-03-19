@@ -16,12 +16,10 @@ internal abstract class BazelRunnerAction(
   icon: Icon? = null,
   isDebugAction: Boolean = false,
   isCoverageAction: Boolean = false,
-) : BaseRunnerAction({ text(false) }, icon, isDebugAction, isCoverageAction) {
+) : BaseRunnerAction(targetInfos, { text(false) }, icon, isDebugAction, isCoverageAction) {
   private fun getConfigurationType(): ConfigurationType = runConfigurationType<BazelRunConfigurationType>()
 
   protected open fun RunnerAndConfigurationSettings.customizeRunConfiguration() {}
-
-  override fun getBuildTargets(project: Project): List<BuildTarget> = targetInfos
 
   override suspend fun getRunnerSettings(project: Project, buildTargets: List<BuildTarget>): RunnerAndConfigurationSettings? {
     val factory = getConfigurationType().configurationFactories.first()

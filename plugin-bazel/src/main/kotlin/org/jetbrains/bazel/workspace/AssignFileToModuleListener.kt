@@ -62,7 +62,7 @@ import org.jetbrains.bazel.workspacemodel.entities.BazelDummyEntitySource
 import org.jetbrains.bazel.workspacemodel.entities.BazelModuleEntitySource
 import org.jetbrains.bsp.protocol.InverseSourcesParams
 import org.jetbrains.bsp.protocol.InverseSourcesResult
-import org.jetbrains.bsp.protocol.TextDocumentIdentifier
+import org.jetbrains.bsp.protocol.TaskGroupId
 import java.nio.file.Path
 
 class AssignFileToModuleListener : BulkFileListener {
@@ -388,7 +388,8 @@ private suspend fun queryTargetsForFile(project: Project, fileUrl: VirtualFileUr
     try {
       askForInverseSources(project, fileUrl)
         .targets
-        .toList()
+        .values
+        .flatten()
     } catch (ex: Exception) {
       logger.debug(ex)
       null
@@ -400,7 +401,7 @@ private suspend fun queryTargetsForFile(project: Project, fileUrl: VirtualFileUr
 public suspend fun askForInverseSources(project: Project, fileUrl: VirtualFileUrl): InverseSourcesResult =
   project.connection.runWithServer { bspServer ->
     bspServer
-      .buildTargetInverseSources(InverseSourcesParams(TextDocumentIdentifier(fileUrl.toPath())))
+      .buildTargetInverseSources(InverseSourcesParams(TaskGroupId.EMPTY.task("inverse-sources"), listOf(fileUrl.toPath())))
   }
 
 // Convert a Label to a ModuleEntity, creating it from partial sync if it doesn't exist

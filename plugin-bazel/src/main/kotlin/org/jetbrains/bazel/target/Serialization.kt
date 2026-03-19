@@ -1,6 +1,5 @@
 package org.jetbrains.bazel.target
 
-import com.dynatrace.hash4j.hashing.HashValue128
 import org.h2.mvstore.DataUtils.readVarInt
 import org.h2.mvstore.MVMap
 import org.h2.mvstore.WriteBuffer
@@ -111,9 +110,8 @@ internal fun readResolvedLabel(buffer: ByteBuffer): ResolvedLabel {
   return ResolvedLabel(repo = repo, packagePath = packagePath, target = target)
 }
 
-internal fun createIdToBuildMapType(filePathSuffix: String, rootDir: Path): MVMap.Builder<HashValue128, PartialBuildTarget> {
-  val mapBuilder = MVMap.Builder<HashValue128, PartialBuildTarget>()
-  mapBuilder.setKeyType(HashValue128KeyDataType)
+internal fun createIdToBuildMapType(filePathSuffix: String, rootDir: Path): MVMap.Builder<Long, PartialBuildTarget> {
+  val mapBuilder = MVMap.Builder<Long, PartialBuildTarget>()
   mapBuilder.setValueType(
     createAnyValueDataType<PartialBuildTarget>(
       writer = { buffer, item ->

@@ -51,7 +51,7 @@ class AddFileToModuleAction :
           text = BazelPluginBundle.message("file.change.processing.step.query"),
         ) {
           try {
-            askForInverseSources(project, url).targets.toList()
+            askForInverseSources(project, url).targets.values.flatten()
           } catch (ex: Exception) {
             emptyList()
           }

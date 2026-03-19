@@ -46,22 +46,24 @@ internal object BinaryBuildTargetDataSerializer {
   }
 
   private fun serializeKotlinBuildTarget(data: KotlinBuildTarget, buffer: WriteBuffer, rootDir: Path, filePathSuffix: String) {
-    buffer.writeString(data.languageVersion)
-    buffer.writeString(data.apiVersion)
+    buffer.writeNullableString(data.languageVersion)
+    buffer.writeNullableString(data.apiVersion)
     buffer.writeStringList(data.kotlincOptions)
     buffer.writeLabelList(data.associates)
+    buffer.writeNullableString(data.moduleName)
     buffer.put(if (data.jvmBuildTarget != null) 1 else 0)
     data.jvmBuildTarget?.let { serializeJvmBuildTarget(it, buffer, rootDir, filePathSuffix) }
   }
 
   private fun deserializeKotlinBuildTarget(buffer: ByteBuffer, rootDir: Path): KotlinBuildTarget {
-    val languageVersion = buffer.readString()
-    val apiVersion = buffer.readString()
+    val languageVersion = buffer.readNullableString()
+    val apiVersion = buffer.readNullableString()
     val kotlincOptions = buffer.readStringList()
     val associates = buffer.readLabelList()
+    val moduleName = buffer.readNullableString()
     val hasJvmTarget = buffer.get() == 1.toByte()
     val jvmBuildTarget = if (hasJvmTarget) deserializeJvmBuildTarget(buffer, rootDir) else null
-    return KotlinBuildTarget(languageVersion, apiVersion, kotlincOptions, associates, jvmBuildTarget)
+    return KotlinBuildTarget(languageVersion, apiVersion, kotlincOptions, associates, moduleName, jvmBuildTarget)
   }
 
   private fun serializeJvmBuildTarget(data: JvmBuildTarget, buffer: WriteBuffer, rootDir: Path, filePathSuffix: String) {

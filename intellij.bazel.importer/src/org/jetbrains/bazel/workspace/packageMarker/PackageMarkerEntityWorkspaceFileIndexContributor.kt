@@ -32,7 +32,6 @@ private class PackageMarkerEntityWorkspaceFileIndexContributor : WorkspaceFileIn
           SourceRootTypeId("java-source"),
           entity.packagePrefix,
           false,
-          null,
         ),
     )
   }

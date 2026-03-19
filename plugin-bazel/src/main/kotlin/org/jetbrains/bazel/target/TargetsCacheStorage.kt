@@ -81,7 +81,7 @@ class TargetsCacheStorage(
     return store.hasUnsavedChanges()
   }
 
-  private fun fileToKey(file: Path): HashValue128 {
+  private fun fileToKey(file: Path): Long {
     val path = file.invariantSeparatorsPathString
     val input = if (path.startsWith(filePathSuffix)) {
       path.substring(filePathSuffix.length)
@@ -222,7 +222,7 @@ class TargetsCacheStorage(
           noBuild = info.noBuild,
         ),
       )
-      moduleIdToTarget.put(stringToHashId(label.formatAsModuleName(project)), label)
+      moduleIdToTarget.put(stringToHashId(label.formatAsModuleName(project)), computeLabelHash(label))
     }
   }
 
