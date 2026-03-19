@@ -38,6 +38,7 @@ import org.jetbrains.bazel.progress.withSubtask
 import org.jetbrains.bazel.run.task.BazelBuildTaskListener
 import org.jetbrains.bazel.server.connection.BazelServerService
 import org.jetbrains.bazel.server.connection.connection
+import org.jetbrains.bazel.server.label.label
 import org.jetbrains.bazel.sync.ProjectPostSyncHook
 import org.jetbrains.bazel.sync.ProjectPreSyncHook
 import org.jetbrains.bazel.sync.ProjectSyncHook.ProjectSyncHookEnvironment
@@ -252,10 +253,20 @@ class ProjectSyncTask(private val project: Project) {
             project.syncConsole.withSubtask(
               subtaskId = taskId.subTask("base-project-sync-subtask-id"),
               message = BazelPluginBundle.message("console.task.base.sync"),
-            ) {
+            ) { subtaskId ->
               // force full re-sync
               resolver.invalidateCachedState()
-              resolver.getOrFetchSyncedProject(build = buildProject, taskId = it)
+              resolver.getOrFetchSyncedProject(build = buildProject, taskId = subtaskId).also {
+                it.targets.values.filter { it.tagsList.any { it.equals(Constants.NO_IDE) }}.let {
+                  if (!it.isEmpty()) {
+                    project.syncConsole.addDiagnosticMessage(
+                      subtaskId, null, -1, -1,
+                      "Included ${it.size} ${Constants.NO_IDE} targets as dependencies: ${it.joinToString(",", limit = 5) { it.label().toString() }}",
+                      MessageEvent.Kind.WARNING
+                    )
+                  }
+                }
+              }
             }
           if (bazelProject.hasError && bazelProject.targets.isEmpty()) return@use SyncResultStatus.FAILURE
           project.syncConsole.withSubtask(

@@ -36,5 +36,7 @@ object Constants {
   const val DEFAULT_PROJECT_VIEW_FILE_NAME = ".bazelproject"
   const val LEGACY_DEFAULT_PROJECT_VIEW_FILE_NAME = "projectview.bazelproject"
 
+  const val NO_IDE = "no-ide"
+
   val JVM_LANGUAGES_EXTENSIONS = listOf("java", "kt", "scala")
 }
