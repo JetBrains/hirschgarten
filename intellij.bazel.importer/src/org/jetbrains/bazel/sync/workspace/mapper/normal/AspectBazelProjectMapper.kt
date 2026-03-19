@@ -874,7 +874,6 @@ internal class AspectBazelProjectMapper(
       return@withContext tasks
         .awaitAll()
         .filterNotNull()
-        .filterNot { BuildTargetTag.NO_IDE in it.tags }
     }
   }
 
