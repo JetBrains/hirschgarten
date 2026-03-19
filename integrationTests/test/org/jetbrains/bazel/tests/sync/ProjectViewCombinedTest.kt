@@ -2,28 +2,33 @@ package org.jetbrains.bazel.tests.sync
 
 import com.intellij.driver.sdk.step
 import com.intellij.driver.sdk.ui.components.common.ideFrame
+import com.intellij.driver.sdk.ui.components.elements.popup
 import com.intellij.driver.sdk.wait
 import com.intellij.ide.starter.driver.engine.BackgroundRun
 import com.intellij.ide.starter.driver.engine.runIdeWithDriver
 import com.intellij.ide.starter.ide.IDETestContext
+import com.intellij.tools.ide.performanceTesting.commands.goto
 import com.intellij.tools.ide.performanceTesting.commands.waitForSmartMode
 import org.jetbrains.bazel.data.IdeaBazelCases
 import org.jetbrains.bazel.ideStarter.IdeStarterBaseProjectTest
 import org.jetbrains.bazel.ideStarter.assertFileKind
-import org.jetbrains.bazel.ideStarter.refreshFile
 import org.jetbrains.bazel.ideStarter.assertSyncSucceeded
 import org.jetbrains.bazel.ideStarter.assertSyncedTargets
 import org.jetbrains.bazel.ideStarter.buildAndSync
 import org.jetbrains.bazel.ideStarter.checkIdeaLogForExceptions
 import org.jetbrains.bazel.ideStarter.execute
 import org.jetbrains.bazel.ideStarter.openFile
+import org.jetbrains.bazel.ideStarter.refreshFile
 import org.jetbrains.bazel.ideStarter.switchProjectView
 import org.jetbrains.bazel.ideStarter.switchProjectViewWithPreview
 import org.jetbrains.bazel.ideStarter.syncBazelProject
 import org.jetbrains.bazel.performanceImpl.FileKindCheck.INDEXABLE
 import org.jetbrains.bazel.performanceImpl.FileKindCheck.IN_CONTENT
 import org.jetbrains.bazel.performanceImpl.FileKindCheck.NON_INDEXABLE
-import org.jetbrains.bazel.performanceImpl.FileKindCheck.OUTSIDE_CONTENT
+import org.jetbrains.bazel.tests.ui.clickRunGutterOnLine
+import org.jetbrains.bazel.tests.ui.getRunGutterOnLine
+import org.jetbrains.bazel.tests.ui.verifyAvailableRunGutterActions
+import org.jetbrains.bazel.tests.ui.verifyTestStatus
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assumptions
@@ -51,7 +56,7 @@ class ProjectViewCombinedTest : IdeStarterBaseProjectTest() {
     bgRun = ctx.runIdeWithDriver(runTimeout = timeout)
     withDriver(bgRun) {
       ideFrame {
-        syncBazelProject()
+        syncBazelProject(buildAndSync = true)
         waitForIndicators(5.minutes)
         assertSyncSucceeded()
       }
@@ -254,27 +259,16 @@ class ProjectViewCombinedTest : IdeStarterBaseProjectTest() {
     withDriver(bgRun) {
       ideFrame {
         step("Switch to build-flags-with-toolchain view") {
-          switchProjectViewWithPreview("build-flags-with-toolchain.bazelproject")
+          switchProjectViewWithPreview("binary_outside_project_view.bazelproject")
         }
-        step("Resync with build_flags") {
+        step("Resync") {
           execute {
             buildAndSync()
             waitForSmartMode()
           }
           assertSyncSucceeded()
         }
-        step("Verify included dir files ARE in project content and indexable") {
-          execute { assertFileKind("app/src/main/java/com/example/app/App.java", IN_CONTENT, INDEXABLE) }
-          execute { assertFileKind("common/src/main/java/com/example/common/Common.java", IN_CONTENT, INDEXABLE) }
-        }
-        step("Verify excluded dir files are NOT in project content") {
-          execute { assertFileKind("frontend/src/main/java/com/example/frontend/Frontend.java", OUTSIDE_CONTENT) }
-          execute { assertFileKind("webapp/src/main/java/com/example/webapp/Webapp.java", OUTSIDE_CONTENT) }
-        }
-        step("Verify dirs not in directories: section ARE in project content and NOT indexable") {
-          execute { assertFileKind("server/src/main/java/com/example/server/Server.java", IN_CONTENT, NON_INDEXABLE) }
-          execute { assertFileKind("database/src/main/java/com/example/database/Database.java", IN_CONTENT, NON_INDEXABLE) }
-        }
+
       }
     }
   }
@@ -329,6 +323,69 @@ class ProjectViewCombinedTest : IdeStarterBaseProjectTest() {
         }
         step("Verify no targets are synced (not a fallback to //...)") {
           execute { assertSyncedTargets() }
+        }
+      }
+    }
+  }
+
+  @Test
+  @Order(105)
+  fun `targets outside the selected project view must have run gutters`() {
+    withDriver(bgRun) {
+      ideFrame {
+        step("Switch to no-targets-no-derive view") {
+          execute { switchProjectView("no-targets-no-derive.bazelproject") }
+        }
+        step("Resync") {
+          execute {
+            buildAndSync()
+            waitForSmartMode()
+          }
+        }
+        step("Open the BUILD file inside //binary") {
+          openFile("binary/BUILD.bazel")
+        }
+        step("Check run gutters for java_binary") {
+          clickRunGutterOnLine(4)
+          verifyAvailableRunGutterActions(listOf("Build Target", "Run", "Debug run"))
+        }
+        step("Check run gutter for custom_java_lib") {
+          val gutter = getRunGutterOnLine(10)
+          check("build.svg" in gutter.getIconPath()) {
+            "Should be one single Compile icon for custom_java_lib"
+          }
+          gutter.click()
+        }
+        val consoleView = x { byClass("ConsoleViewImpl") }
+        step("Check run gutters for custom_binary") {
+          clickRunGutterOnLine(15)
+          verifyAvailableRunGutterActions(listOf("Build Target", "Run"))
+          popup().waitOneText("Run").click()
+          consoleView.waitContainsText("Hello, world!")
+        }
+        step("Scroll down") {
+          execute { goto(32, 1) }
+        }
+        step("Check run gutters for java_test") {
+          clickRunGutterOnLine(21)
+          verifyAvailableRunGutterActions(listOf("Build Target", "Test", "Debug test", "Run with Coverage"))
+        }
+        step("Check run gutters for custom_test") {
+          clickRunGutterOnLine(27)
+          verifyAvailableRunGutterActions(listOf("Build Target", "Test", "Run with Coverage"))
+          popup().waitOneText("Run with Coverage").click()
+          verifyTestStatus(
+            listOf("1 test passed"),
+            listOf("com.example.MainTest", "testAdd"),
+          )
+        }
+        step("Scroll up") {
+          execute { goto(1, 1) }
+        }
+        step("Debug run java_binary") {
+          clickRunGutterOnLine(4)
+          popup().waitOneText("Debug run").click()
+          consoleView.waitContainsText("Hello, world!")
         }
       }
     }

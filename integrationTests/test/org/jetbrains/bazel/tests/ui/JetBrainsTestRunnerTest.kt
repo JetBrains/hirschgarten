@@ -1,9 +1,6 @@
 package org.jetbrains.bazel.tests.ui
 
 import com.intellij.driver.sdk.step
-import com.intellij.driver.sdk.ui.components.common.IdeaFrameUI
-import com.intellij.driver.sdk.ui.components.common.editorTabs
-import com.intellij.driver.sdk.ui.components.common.gutter
 import com.intellij.driver.sdk.ui.components.common.ideFrame
 import com.intellij.driver.sdk.ui.components.elements.popup
 import com.intellij.driver.sdk.wait
@@ -15,7 +12,6 @@ import org.jetbrains.bazel.ideStarter.IdeStarterBaseProjectTest
 import org.jetbrains.bazel.ideStarter.execute
 import org.jetbrains.bazel.ideStarter.syncBazelProject
 import org.junit.jupiter.api.Test
-import kotlin.time.Duration
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
 
@@ -163,23 +159,5 @@ class JetBrainsTestRunnerTest : IdeStarterBaseProjectTest() {
           }
         }
       }
-  }
-
-  /**
-   * [line] can be different depending on e.g. imports folding
-   */
-  private fun IdeaFrameUI.clickTestGutterOnLine(line: Int, testTimeout: Duration = 10.seconds) {
-    val runGutter = editorTabs()
-      .gutter()
-      .getGutterIcons()
-      .filter { it.line == line }
-      // Run gutter icons can interfere with annotations, but they are displayed first
-      .minByOrNull { it.location.x }
-    if (runGutter == null) {
-      error("Couldn't find a run gutter on line $line")
-    }
-    runGutter.click()
-    popup().waitOneText { it.text.startsWith("Test ") }.click()
-    wait(testTimeout)
   }
 }
