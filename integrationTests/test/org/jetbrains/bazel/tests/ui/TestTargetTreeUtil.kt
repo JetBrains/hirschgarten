@@ -2,14 +2,21 @@ package org.jetbrains.bazel.tests.ui
 
 import com.intellij.driver.sdk.step
 import com.intellij.driver.sdk.ui.UiText
+import com.intellij.driver.sdk.ui.components.common.GutterUiComponent
 import com.intellij.driver.sdk.ui.components.common.IdeaFrameUI
+import com.intellij.driver.sdk.ui.components.common.editorTabs
+import com.intellij.driver.sdk.ui.components.common.gutter
 import com.intellij.driver.sdk.ui.components.elements.JTreeUiComponent
+import com.intellij.driver.sdk.ui.components.elements.popup
 import com.intellij.driver.sdk.ui.components.elements.tree
 import com.intellij.driver.sdk.ui.xQuery
+import com.intellij.driver.sdk.wait
 import com.intellij.ide.starter.ide.IDETestContext
 import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.junit.jupiter.api.Assertions
+import kotlin.time.Duration
 import kotlin.time.Duration.Companion.minutes
+import kotlin.time.Duration.Companion.seconds
 
 /**
  * If we have too many test results, then part of the tree may be cut off because it doesn't fit into the screen
@@ -58,4 +65,45 @@ private fun List<UiText>.filterRelevant() =
 
 fun IDETestContext.setRunConfigRunWithBazel(runTestWithBazel: Boolean): IDETestContext = applyVMOptionsPatch {
   addSystemProperty(BazelFeatureFlags.RUN_CONFIG_RUN_WITH_BAZEL, runTestWithBazel.toString())
+}
+
+
+/**
+ * [line] can be different depending on e.g. imports folding
+ */
+fun IdeaFrameUI.clickTestGutterOnLine(line: Int, testTimeout: Duration = 10.seconds) {
+  clickRunGutterOnLine(line)
+  popup().waitOneText { it.text.startsWith("Test ") }.click()
+  wait(testTimeout)
+}
+
+/**
+ * [line] can be different depending on e.g. imports folding
+ */
+fun IdeaFrameUI.clickRunGutterOnLine(line: Int) {
+  val runGutter = getRunGutterOnLine(line)
+  runGutter.click()
+}
+
+fun IdeaFrameUI.getRunGutterOnLine(line: Int): GutterUiComponent.GutterIcon {
+  val runGutter = editorTabs()
+    .gutter()
+    .getGutterIcons()
+    .filter { it.line == line }
+    // Run gutter icons can interfere with annotations, but they are displayed first
+    .minByOrNull { it.location.x }
+  if (runGutter == null) {
+    error("Couldn't find a run gutter on line $line")
+  }
+  return runGutter
+}
+
+fun IdeaFrameUI.verifyAvailableRunGutterActions(texts: List<String>) {
+  texts.forEach { text ->
+    popup().waitAnyTextsContains(text)
+  }
+  val allTexts = popup().getAllTexts().map { it.text }
+  check(allTexts.size == texts.size) {
+    "Too many texts! Expected: $texts, actual: $allTexts"
+  }
 }
