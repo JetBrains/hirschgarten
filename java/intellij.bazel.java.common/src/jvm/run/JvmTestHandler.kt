@@ -10,6 +10,7 @@ import com.intellij.execution.runners.ProgramRunner
 import com.intellij.openapi.util.Ref
 import kotlinx.coroutines.CompletableDeferred
 import org.jetbrains.bazel.commons.RuleType
+import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.run.BazelProcessHandler
 import org.jetbrains.bazel.run.BazelRunHandler
 import org.jetbrains.bazel.run.commandLine.BazelTestCommandLineState
@@ -19,7 +20,6 @@ import org.jetbrains.bazel.run.task.BazelTestTaskListener
 import org.jetbrains.bazel.run.task.JetBrainsTestRunnerTaskListener
 import org.jetbrains.bazel.run.test.useJetBrainsTestRunner
 import org.jetbrains.bazel.taskEvents.BazelTaskListener
-import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.BazelServerFacade
 
 internal class JvmTestHandler(private val configuration: BazelRunConfiguration) : BazelRunHandler {
@@ -35,6 +35,8 @@ internal class JvmTestHandler(private val configuration: BazelRunConfiguration) 
 
   override val name: String
     get() = "Jvm Test Handler"
+
+  override val isTestHandler: Boolean = true
 
   override val state = JvmTestState(configuration.project)
 
@@ -62,12 +64,12 @@ internal class JvmTestHandler(private val configuration: BazelRunConfiguration) 
 
     override fun createRunHandler(configuration: BazelRunConfiguration): BazelRunHandler = JvmTestHandler(configuration)
 
-    override fun canRun(targetInfos: List<BuildTarget>): Boolean =
-      targetInfos.all {
-        (it.kind.isJvmTarget() && it.kind.ruleType == RuleType.TEST)
+    override fun canRun(targets: List<TargetKind>): Boolean =
+      targets.all {
+        (it.isJvmTarget() && it.ruleType == RuleType.TEST)
       }
 
-    override fun canDebug(targetInfos: List<BuildTarget>): Boolean = targetInfos.size == 1 && canRun(targetInfos)
+    override fun canDebug(targets: List<TargetKind>): Boolean = targets.size == 1 && canRun(targets)
 
     override val googleHandlerId: String = "BlazeJavaRunConfigurationHandlerProvider"
     override val isTestHandler: Boolean = true

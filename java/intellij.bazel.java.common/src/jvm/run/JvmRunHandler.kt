@@ -9,6 +9,7 @@ import com.intellij.openapi.util.Key
 import com.intellij.openapi.util.Ref
 import kotlinx.coroutines.CompletableDeferred
 import org.jetbrains.bazel.commons.RuleType
+import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.run.BazelProcessHandler
 import org.jetbrains.bazel.run.BazelRunHandler
 import org.jetbrains.bazel.run.commandLine.BazelRunCommandLineState
@@ -16,7 +17,6 @@ import org.jetbrains.bazel.run.config.BazelRunConfiguration
 import org.jetbrains.bazel.run.import.GooglePluginAwareRunHandlerProvider
 import org.jetbrains.bazel.run.task.BazelRunTaskListener
 import org.jetbrains.bazel.taskEvents.BazelTaskListener
-import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.BazelServerFacade
 
 internal val COROUTINE_JVM_FLAGS_KEY = Key.create<Ref<List<String>>>("bazel.coroutine.jvm.flags")
@@ -34,6 +34,8 @@ internal class JvmRunHandler(configuration: BazelRunConfiguration) : BazelRunHan
 
   override val name: String
     get() = "Jvm Run Handler"
+
+  override val isTestHandler: Boolean = false
 
   override val state = JvmRunState(configuration.project)
 
@@ -56,16 +58,12 @@ internal class JvmRunHandler(configuration: BazelRunConfiguration) : BazelRunHan
 
     override fun createRunHandler(configuration: BazelRunConfiguration): BazelRunHandler = JvmRunHandler(configuration)
 
-    // Explanation for this logic:
-    // Because we have android_local_test with mocked Android classes, which should be run, well, locally,
-    //  as opposed to on-device like with android_binary
-    // TODO: perhaps better solved by having a tag
-    override fun canRun(targetInfos: List<BuildTarget>): Boolean =
-      targetInfos.all {
-        it.kind.isJvmTarget() && it.kind.ruleType != RuleType.TEST
+    override fun canRun(targets: List<TargetKind>): Boolean =
+      targets.all {
+        it.isJvmTarget() && it.ruleType != RuleType.TEST
       }
 
-    override fun canDebug(targetInfos: List<BuildTarget>): Boolean = canRun(targetInfos)
+    override fun canDebug(targets: List<TargetKind>): Boolean = canRun(targets)
 
     override val googleHandlerId: String = "BlazeJavaRunConfigurationHandlerProvider"
     override val isTestHandler: Boolean = false

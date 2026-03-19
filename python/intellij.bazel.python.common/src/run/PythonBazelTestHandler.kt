@@ -3,17 +3,19 @@ package org.jetbrains.bazel.python.run
 import com.intellij.execution.runners.ExecutionEnvironment
 import org.jetbrains.bazel.commons.LanguageClass
 import org.jetbrains.bazel.commons.RuleType
+import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.run.BazelCommandLineStateBase
 import org.jetbrains.bazel.run.BazelRunHandler
 import org.jetbrains.bazel.run.commandLine.BazelTestCommandLineState
 import org.jetbrains.bazel.run.config.BazelRunConfiguration
 import org.jetbrains.bazel.run.import.GooglePluginAwareRunHandlerProvider
 import org.jetbrains.bazel.run.state.GenericTestState
-import org.jetbrains.bsp.protocol.BuildTarget
 
 internal class PythonBazelTestHandler : PythonBazelHandler<GenericTestState>() {
   override val name: String
     get() = "Python Test Handler"
+
+  override val isTestHandler: Boolean = true
 
   override val state: GenericTestState = GenericTestState()
 
@@ -26,12 +28,12 @@ internal class PythonBazelTestHandler : PythonBazelHandler<GenericTestState>() {
 
     override fun createRunHandler(configuration: BazelRunConfiguration): BazelRunHandler = PythonBazelTestHandler()
 
-    override fun canRun(targetInfos: List<BuildTarget>): Boolean =
-      targetInfos.all {
-        it.kind.languageClasses.contains(LanguageClass.PYTHON) && it.kind.ruleType == RuleType.TEST
+    override fun canRun(targets: List<TargetKind>): Boolean =
+      targets.all {
+        it.languageClasses.contains(LanguageClass.PYTHON) && it.ruleType == RuleType.TEST
       }
 
-    override fun canDebug(targetInfos: List<BuildTarget>): Boolean = canRun(targetInfos)
+    override fun canDebug(targets: List<TargetKind>): Boolean = canRun(targets)
 
     override val googleHandlerId: String = "BlazePyTestConfigurationHandlerProvider"
     override val isTestHandler: Boolean = true

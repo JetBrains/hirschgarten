@@ -9,13 +9,13 @@ import com.intellij.psi.PsiElement
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.languages.starlark.repomapping.toShortString
-import org.jetbrains.bsp.protocol.BuildTarget
+import org.jetbrains.bsp.protocol.ExecutableTarget
 import org.jetbrains.bsp.protocol.JvmEnvironmentItem
 
 @ApiStatus.Internal
 class TestWithLocalJvmRunnerAction(
   project: Project,
-  targetInfo: BuildTarget,
+  targetInfo: ExecutableTarget,
   text: (() -> String)? = null,
   isDebugMode: Boolean = false,
   includeTargetNameInText: Boolean = false,
@@ -47,7 +47,7 @@ class TestWithLocalJvmRunnerAction(
     environment: JvmEnvironmentItem,
     module: Module,
     project: Project,
-    targetInfo: BuildTarget,
+    targetInfo: ExecutableTarget,
   ): RunConfiguration? =
     if (callerPsiElement != null) {
       LocalJvmRunnerRunConfigurationProvider.ep.extensionList.firstNotNullOfOrNull {

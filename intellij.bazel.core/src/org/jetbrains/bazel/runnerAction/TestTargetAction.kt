@@ -8,12 +8,12 @@ import org.jetbrains.bazel.languages.starlark.repomapping.toShortString
 import org.jetbrains.bazel.run.config.BazelRunConfiguration
 import org.jetbrains.bazel.run.state.HasProgramArguments
 import org.jetbrains.bazel.run.test.setTestFilter
-import org.jetbrains.bsp.protocol.BuildTarget
+import org.jetbrains.bsp.protocol.ExecutableTarget
 
 @ApiStatus.Internal
 class TestTargetAction(
   project: Project,
-  targetInfos: List<BuildTarget>,
+  targetInfos: List<ExecutableTarget>,
   text: ((isRunConfigName: Boolean) -> String)? = null,
   isDebugAction: Boolean = false,
   includeTargetNameInText: Boolean = false,

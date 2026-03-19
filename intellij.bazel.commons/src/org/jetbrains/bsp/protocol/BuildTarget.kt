@@ -6,9 +6,15 @@ import org.jetbrains.bazel.label.Label
 import java.nio.file.Path
 
 @ApiStatus.Internal
-interface BuildTarget {
+interface ExecutableTarget {
   val id: Label
   val kind: TargetKind
+}
+
+@ApiStatus.Internal
+interface BuildTarget : ExecutableTarget {
+  override val id: Label
+  override val kind: TargetKind
   val baseDirectory: Path
   val data: BuildTargetData?
 

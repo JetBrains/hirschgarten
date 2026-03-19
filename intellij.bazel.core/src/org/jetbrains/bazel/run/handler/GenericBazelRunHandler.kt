@@ -13,6 +13,8 @@ internal class GenericBazelRunHandler : BazelRunHandler {
   override val name: String
     get() = "Generic BSP Run Handler"
 
+  override val isTestHandler: Boolean = false
+
   override fun getRunProfileState(executor: Executor, environment: ExecutionEnvironment): RunProfileState =
     BazelRunCommandLineState(environment, state)
 }

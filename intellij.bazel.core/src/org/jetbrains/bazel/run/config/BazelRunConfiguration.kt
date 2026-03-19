@@ -54,7 +54,7 @@ class BazelRunConfiguration internal constructor(
     val providers = selectedTargets
       .mapTo(mutableSetOf()) { target ->
         RunHandlerProvider
-          .getRunHandlerProvider(listOf(target))
+          .getRunHandlerProvider(listOf(target.kind))
           ?: throw RuntimeConfigurationError(message("runconfig.bazel.errors.target.not.supported", target.id))
       }
     if (providers.size > 1) {

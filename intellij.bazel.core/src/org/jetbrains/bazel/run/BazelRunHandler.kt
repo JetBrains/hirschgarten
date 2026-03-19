@@ -20,5 +20,7 @@ interface BazelRunHandler {
    */
   val name: String
 
+  val isTestHandler: Boolean
+
   fun getRunProfileState(executor: Executor, environment: ExecutionEnvironment): RunProfileState
 }
