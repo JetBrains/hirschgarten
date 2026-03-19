@@ -5,8 +5,7 @@ import com.intellij.psi.PsiNameIdentifierOwner
 import org.intellij.lang.annotations.Language
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.run.synthetic.MainClassSyntheticRunTargetTemplateGenerator
-import org.jetbrains.bsp.protocol.BuildTarget
-import org.jetbrains.bsp.protocol.KotlinBuildTarget
+import org.jetbrains.bsp.protocol.ExecutableTarget
 import org.jetbrains.kotlin.fileClasses.javaFileFacadeFqName
 import org.jetbrains.kotlin.idea.base.psi.KotlinPsiHeuristics
 import org.jetbrains.kotlin.psi.KtClassOrObject
@@ -23,7 +22,7 @@ class KotlinSyntheticRunTargetTemplateGenerator : MainClassSyntheticRunTargetTem
   }
 
   override fun getBuildContent(
-    target: BuildTarget,
+    target: ExecutableTarget,
     syntheticTarget: String,
     mainClass: String,
   ): String {
@@ -39,7 +38,7 @@ class KotlinSyntheticRunTargetTemplateGenerator : MainClassSyntheticRunTargetTem
     return build
   }
 
-  override fun isSupported(target: BuildTarget): Boolean = target.data is KotlinBuildTarget
+  override fun isSupported(target: ExecutableTarget): Boolean = target.kind.includesKotlin()
 
   private fun tryGetKotlinMainClassInClass(element: PsiElement): String? {
     val parent = element.getStrictParentOfType<PsiNameIdentifierOwner>() ?: return null

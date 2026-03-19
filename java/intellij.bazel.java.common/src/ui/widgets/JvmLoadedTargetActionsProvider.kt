@@ -8,13 +8,13 @@ import org.jetbrains.bazel.runnerAction.RunWithLocalJvmRunnerAction
 import org.jetbrains.bazel.runnerAction.TestWithLocalJvmRunnerAction
 import org.jetbrains.bazel.settings.bazel.bazelJVMProjectSettings
 import org.jetbrains.bazel.ui.widgets.tool.window.utils.LoadedTargetActionsProvider
-import org.jetbrains.bsp.protocol.BuildTarget
+import org.jetbrains.bsp.protocol.ExecutableTarget
 
 internal class JvmLoadedTargetActionsProvider : LoadedTargetActionsProvider {
   override fun onActionsInit(
     project: Project,
     group: DefaultActionGroup,
-    target: BuildTarget,
+    target: ExecutableTarget,
     includeTargetNameInText: Boolean,
     callerPsiElement: PsiElement?,
   ) {
@@ -37,7 +37,7 @@ internal class JvmLoadedTargetActionsProvider : LoadedTargetActionsProvider {
 
   private fun DefaultActionGroup.addLocalJvmTestActions(
     project: Project,
-    target: BuildTarget,
+    target: ExecutableTarget,
     includeTargetNameInText: Boolean,
     callerPsiElement: PsiElement?,
   ) {

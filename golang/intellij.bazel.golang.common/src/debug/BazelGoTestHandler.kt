@@ -9,6 +9,7 @@ import com.intellij.execution.runners.ExecutionEnvironment
 import com.intellij.openapi.module.Module
 import com.intellij.openapi.util.Key
 import org.jetbrains.bazel.commons.RuleType
+import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.label.Label
@@ -19,7 +20,6 @@ import org.jetbrains.bazel.run.config.BazelRunConfigurationType
 import org.jetbrains.bazel.run.import.GooglePluginAwareRunHandlerProvider
 import org.jetbrains.bazel.run.state.GenericTestState
 import org.jetbrains.bazel.sync.projectStructure.legacy.WorkspaceModuleUtils
-import org.jetbrains.bsp.protocol.BuildTarget
 import java.io.File
 import java.util.concurrent.atomic.AtomicReference
 
@@ -37,6 +37,8 @@ internal class BazelGoTestHandler(configuration: BazelRunConfiguration) : BazelR
 
   override val name: String
     get() = "Bazel Go Test Handler"
+
+  override val isTestHandler: Boolean = true
 
   override val state = GenericTestState()
 
@@ -70,10 +72,10 @@ internal class BazelGoTestHandler(configuration: BazelRunConfiguration) : BazelR
 
     override fun createRunHandler(configuration: BazelRunConfiguration): BazelGoTestHandler = BazelGoTestHandler(configuration)
 
-    override fun canRun(targetInfos: List<BuildTarget>): Boolean =
-      BazelFeatureFlags.isGoSupportEnabled && targetInfos.all { it.kind.includesGo() && it.kind.ruleType == RuleType.TEST }
+    override fun canRun(targets: List<TargetKind>): Boolean =
+      BazelFeatureFlags.isGoSupportEnabled && targets.all { it.includesGo() && it.ruleType == RuleType.TEST }
 
-    override fun canDebug(targetInfos: List<BuildTarget>): Boolean = canRun(targetInfos)
+    override fun canDebug(targets: List<TargetKind>): Boolean = canRun(targets)
 
     override val googleHandlerId: String = "BlazeGoTestConfigurationHandlerProvider"
     override val isTestHandler: Boolean = false

@@ -17,7 +17,7 @@ import kotlinx.coroutines.withContext
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.action.SuspendableAction
 import org.jetbrains.bazel.config.BazelPluginBundle
-import org.jetbrains.bsp.protocol.BuildTarget
+import org.jetbrains.bsp.protocol.ExecutableTarget
 import javax.swing.Icon
 
 @ApiStatus.Internal
@@ -30,9 +30,9 @@ abstract class BaseRunnerAction(
     text = text,
     icon = icon ?: getIcon(isDebugAction, isCoverageAction),
   ) {
-  protected abstract suspend fun getRunnerSettings(project: Project, buildTargets: List<BuildTarget>): RunnerAndConfigurationSettings?
+  protected abstract suspend fun getRunnerSettings(project: Project, targets: List<ExecutableTarget>): RunnerAndConfigurationSettings?
 
-  protected abstract fun getBuildTargets(project: Project): List<BuildTarget>
+  protected abstract fun getBuildTargets(project: Project): List<ExecutableTarget>
 
   override suspend fun actionPerformed(project: Project, e: AnActionEvent) {
     doPerformAction(project)

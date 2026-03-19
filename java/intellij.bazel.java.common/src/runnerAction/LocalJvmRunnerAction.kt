@@ -23,7 +23,7 @@ import org.jetbrains.bazel.projectAware.BazelProjectModuleBuildTasksTracker
 import org.jetbrains.bazel.run.config.HotswappableRunConfiguration
 import org.jetbrains.bazel.server.tasks.runBuildTargetTask
 import org.jetbrains.bazel.target.getModule
-import org.jetbrains.bsp.protocol.BuildTarget
+import org.jetbrains.bsp.protocol.ExecutableTarget
 import org.jetbrains.bsp.protocol.JvmEnvironmentItem
 import org.jetbrains.bsp.protocol.TaskGroupId
 import javax.swing.Icon
@@ -31,17 +31,17 @@ import kotlin.coroutines.cancellation.CancellationException
 
 @ApiStatus.Internal
 abstract class LocalJvmRunnerAction(
-  protected val targetInfo: BuildTarget,
+  protected val targetInfo: ExecutableTarget,
   text: () -> String,
   icon: Icon? = null,
   private val isDebugMode: Boolean = false,
 ) : BaseRunnerAction(text, icon, isDebugMode) {
-  override fun getBuildTargets(project: Project): List<BuildTarget> = listOf(targetInfo)
+  override fun getBuildTargets(project: Project): List<ExecutableTarget> = listOf(targetInfo)
 
   abstract suspend fun getEnvironment(project: Project): JvmEnvironmentItem?
 
-  override suspend fun getRunnerSettings(project: Project, buildTargets: List<BuildTarget>): RunnerAndConfigurationSettings? {
-    val module = targetInfo.getModule(project) ?: return null
+  override suspend fun getRunnerSettings(project: Project, targets: List<ExecutableTarget>): RunnerAndConfigurationSettings? {
+    val module = targetInfo.id.getModule(project) ?: return null
 
     if (!preBuild(project)) return null
     val environment = queryJvmEnvironment(project) ?: return null
@@ -57,7 +57,7 @@ abstract class LocalJvmRunnerAction(
     environment: JvmEnvironmentItem,
     module: Module,
     project: Project,
-    targetInfo: BuildTarget,
+    targetInfo: ExecutableTarget,
   ): RunnerAndConfigurationSettings? {
     val configurationName = calculateConfigurationName(project, targetInfo)
     val configuration = calculateConfiguration(configurationName, environment, module, project, targetInfo) ?: return null
@@ -70,7 +70,7 @@ abstract class LocalJvmRunnerAction(
     environment: JvmEnvironmentItem,
     module: Module,
     project: Project,
-    targetInfo: BuildTarget,
+    targetInfo: ExecutableTarget,
   ): RunConfiguration? {
     val mainClass =
       environment.mainClasses?.firstOrNull() ?: return null // TODO https://youtrack.jetbrains.com/issue/BAZEL-626
@@ -87,7 +87,7 @@ abstract class LocalJvmRunnerAction(
     return configuration
   }
 
-  private fun calculateConfigurationName(project: Project, targetInfo: BuildTarget): String {
+  private fun calculateConfigurationName(project: Project, targetInfo: ExecutableTarget): String {
     val targetDisplayName = targetInfo.id.toShortString(project)
     val actionNameKey =
       when {

@@ -8,7 +8,7 @@ import org.jetbrains.bazel.label.Main
 import org.jetbrains.bazel.label.Package
 import org.jetbrains.bazel.label.ResolvedLabel
 import org.jetbrains.bazel.label.SingleTarget
-import org.jetbrains.bsp.protocol.BuildTarget
+import org.jetbrains.bsp.protocol.ExecutableTarget
 
 @ApiStatus.Internal
 object SyntheticRunTargetUtils {
@@ -22,7 +22,7 @@ object SyntheticRunTargetUtils {
     )
   }
 
-  fun getTemplateGenerators(target: BuildTarget, language: Language): List<SyntheticRunTargetTemplateGenerator> =
+  fun getTemplateGenerators(target: ExecutableTarget, language: Language): List<SyntheticRunTargetTemplateGenerator> =
     SyntheticRunTargetTemplateGenerator.ep.allForLanguage(language)
       .filter { it.isSupported(target) }
 

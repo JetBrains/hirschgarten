@@ -30,6 +30,7 @@ import org.jetbrains.bazel.sync.action.ResyncTargetAction
 import org.jetbrains.bazel.ui.widgets.BazelJumpToBuildFileAction
 import org.jetbrains.bazel.ui.widgets.tool.window.actions.CopyTargetIdAction
 import org.jetbrains.bsp.protocol.BuildTarget
+import org.jetbrains.bsp.protocol.ExecutableTarget
 import java.awt.Component
 import java.awt.Point
 import java.awt.event.MouseEvent
@@ -132,14 +133,14 @@ private fun BazelRunnerAction.prepareAndPerform(project: Project) {
 @Suppress("CognitiveComplexMethod")
 internal fun DefaultActionGroup.fillWithEligibleActions(
   project: Project,
-  target: BuildTarget,
+  target: ExecutableTarget,
   includeTargetNameInText: Boolean,
   singleTestFilter: String? = null,
   testExecutableArguments: List<String> = emptyList(),
   callerPsiElement: PsiElement? = null,
 ): DefaultActionGroup {
   val kind = target.kind
-  val canBeDebugged = RunHandlerProvider.getRunHandlerProvider(listOf(target), isDebug = true) != null
+  val canBeDebugged = RunHandlerProvider.getRunHandlerProvider(listOf(target.kind), isDebug = true) != null
   // BAZEL-2292: Diagnostic logging to investigate disappearing debug gutter icons
   if (!canBeDebugged && (kind.ruleType == RuleType.BINARY || kind.ruleType == RuleType.TEST)) {
     LOG.info(
@@ -211,7 +212,7 @@ internal fun DefaultActionGroup.fillWithEligibleActions(
 }
 
 private fun DefaultActionGroup.addSyntheticRunActions(
-  target: BuildTarget,
+  target: ExecutableTarget,
   element: PsiElement,
   includeTargetNameInText: Boolean,
   canBeDebugged: Boolean,

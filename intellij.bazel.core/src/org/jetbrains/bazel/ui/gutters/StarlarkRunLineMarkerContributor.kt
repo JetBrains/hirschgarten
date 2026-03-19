@@ -21,6 +21,7 @@ import org.jetbrains.bazel.runnerAction.BuildTargetAction
 import org.jetbrains.bazel.runnerAction.RunWithCoverageAction
 import org.jetbrains.bazel.runnerAction.TestTargetAction
 import org.jetbrains.bazel.sync.action.ResyncTargetAction
+import org.jetbrains.bazel.sync.workspace.targetKind.TargetKindService
 import org.jetbrains.bazel.target.targetUtils
 import org.jetbrains.bazel.ui.widgets.tool.window.utils.fillWithEligibleActions
 
@@ -47,22 +48,19 @@ internal class StarlarkRunLineMarkerContributor : RunLineMarkerContributor() {
   private fun isTopLevelCall(element: PsiElement): Boolean =
     element.parent is StarlarkExpressionStatement && element.parent?.parent is StarlarkFile
 
-  private fun PsiElement.calculateMarkerInfo(): Info? =
-    containingFile.virtualFile?.let { virtualFile ->
-      val targetName = getTargetName() ?: return null
-      val path = virtualFile.toNioPathOrNull() ?: return null
-      val targetLabel = calculateLabel(project, path, targetName) ?: return null
-      calculateLineMarkerInfo(project, targetLabel).takeIf { it.actions.isNotEmpty() }
-    }
-
-  private fun PsiElement.getTargetName(): String? {
+  private fun PsiElement.calculateMarkerInfo(): Info? {
+    val virtualFile = containingFile.virtualFile ?: return null
     val visitor = StarlarkCallExpressionVisitor()
     this.accept(visitor)
-    return visitor.identifier
+    val ruleName = visitor.ruleName ?: return null
+    val targetName = visitor.targetName ?: return null
+    val path = virtualFile.toNioPathOrNull() ?: return null
+    val targetLabel = calculateLabel(project, path, targetName) ?: return null
+    return calculateLineMarkerInfo(project, targetLabel, ruleName).takeIf { it.actions.isNotEmpty() }
   }
 
-  private fun calculateLineMarkerInfo(project: Project, targetLabel: ResolvedLabel): Info {
-    val actions = calculateEligibleActions(project, targetLabel).toTypedArray()
+  private fun calculateLineMarkerInfo(project: Project, targetLabel: ResolvedLabel, ruleName: String): Info {
+    val actions = calculateEligibleActions(project, targetLabel, ruleName).toTypedArray()
     val onlyBuild = actions.singleOrNull() is BuildTargetAction
     return Info(
       if (onlyBuild) AllIcons.Actions.Compile else AllIcons.Actions.Execute,
@@ -70,20 +68,35 @@ internal class StarlarkRunLineMarkerContributor : RunLineMarkerContributor() {
     )
   }
 
-  private fun calculateEligibleActions(project: Project, targetLabel: ResolvedLabel): List<AnAction> = buildList {
+  private fun calculateEligibleActions(project: Project, targetLabel: ResolvedLabel, ruleName: String): List<AnAction> = buildList {
     val targetUtils = project.targetUtils
     val targetInfo = targetUtils.getBuildTargetForLabel(targetLabel)
+    val targetKind = targetInfo?.kind ?: TargetKindService.getInstance().guessFromRuleName(ruleName)
 
+    add(BuildTargetAction(targetLabel))
     targetInfo?.let {
-      add(BuildTargetAction(targetLabel))
       ResyncTargetAction.createIfEnabled(targetLabel)?.let { add(it) }
     }
 
-    val executableTargets = if (targetInfo != null) {
-      listOfNotNull(targetInfo.takeIf { targetInfo.kind.isExecutable })
-    } else {
+    val executableTargetsFromTargetUtils =
       targetUtils.getExecutableTargetsForTarget(targetLabel)
         .mapNotNull { executableLabel -> targetUtils.getBuildTargetForLabel(executableLabel) }
+        .map { NonImportedExecutableTarget(it.id, it.kind) }
+    val executableTargets = if (targetInfo != null) {
+      // If we have the targetInfo, we know for sure whether the target is executable.
+      // If it isn't executable, do not show gutter, even if executableTargetsFromTargetUtils has targets.
+      listOfNotNull(targetInfo.takeIf { targetInfo.kind.isExecutable })
+    }
+    else if (executableTargetsFromTargetUtils.isNotEmpty()) {
+      // Support cases like java_test_suite, which generates targets but isn't imported itself
+      executableTargetsFromTargetUtils
+    }
+    else if (targetKind.isExecutable) {
+      // We guessed via our heuristics that the target is executable (e.g., the rule name is my_custom_binary)
+      setOf(NonImportedExecutableTarget(targetLabel, targetKind))
+    }
+    else {
+      emptySet()
     }
 
     val testableTargets = executableTargets.filter { it.kind.ruleType == RuleType.TEST }
@@ -104,9 +117,11 @@ internal class StarlarkRunLineMarkerContributor : RunLineMarkerContributor() {
 }
 
 private class StarlarkCallExpressionVisitor : StarlarkElementVisitor() {
-  var identifier: String? = null
+  var ruleName: String? = null
+  var targetName: String? = null
 
   override fun visitCallExpression(node: StarlarkCallExpression) {
-    identifier = node.getArgumentList()?.getNameArgumentValue()
+    ruleName = node.name
+    targetName = node.getTargetName()
   }
 }

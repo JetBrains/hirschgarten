@@ -8,6 +8,7 @@ import com.intellij.execution.executors.DefaultDebugExecutor
 import com.intellij.execution.runners.ExecutionEnvironment
 import com.intellij.openapi.module.Module
 import org.jetbrains.bazel.commons.RuleType
+import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.label.Label
@@ -18,7 +19,6 @@ import org.jetbrains.bazel.run.config.BazelRunConfigurationType
 import org.jetbrains.bazel.run.import.GooglePluginAwareRunHandlerProvider
 import org.jetbrains.bazel.run.state.GenericRunState
 import org.jetbrains.bazel.sync.projectStructure.legacy.WorkspaceModuleUtils
-import org.jetbrains.bsp.protocol.BuildTarget
 import java.util.concurrent.atomic.AtomicReference
 
 internal class BazelGoRunHandler(configuration: BazelRunConfiguration) : BazelRunHandler {
@@ -32,6 +32,8 @@ internal class BazelGoRunHandler(configuration: BazelRunConfiguration) : BazelRu
 
   override val name: String
     get() = "Bazel Go Run Handler"
+
+  override val isTestHandler: Boolean = false
 
   override val state = GenericRunState()
 
@@ -64,10 +66,10 @@ internal class BazelGoRunHandler(configuration: BazelRunConfiguration) : BazelRu
 
     override fun createRunHandler(configuration: BazelRunConfiguration): BazelRunHandler = BazelGoRunHandler(configuration)
 
-    override fun canRun(targetInfos: List<BuildTarget>): Boolean =
-      BazelFeatureFlags.isGoSupportEnabled && targetInfos.all { it.kind.includesGo() && it.kind.ruleType == RuleType.BINARY }
+    override fun canRun(targets: List<TargetKind>): Boolean =
+      BazelFeatureFlags.isGoSupportEnabled && targets.all { it.includesGo() && it.ruleType == RuleType.BINARY }
 
-    override fun canDebug(targetInfos: List<BuildTarget>): Boolean = canRun(targetInfos)
+    override fun canDebug(targets: List<TargetKind>): Boolean = canRun(targets)
 
     override val googleHandlerId: String = "BlazeGoRunConfigurationHandlerProvider"
     override val isTestHandler: Boolean = false

@@ -12,11 +12,11 @@ import org.jetbrains.bazel.run.config.BazelRunConfigurationType
 import org.jetbrains.bazel.run.synthetic.GENERATE_SYNTHETIC_PROVIDER_ID
 import org.jetbrains.bazel.run.synthetic.GenerateSyntheticTargetRunTaskProvider
 import org.jetbrains.bazel.run.synthetic.SyntheticRunTargetTemplateGenerator
-import org.jetbrains.bsp.protocol.BuildTarget
+import org.jetbrains.bsp.protocol.ExecutableTarget
 
 // TODO: refactor to Execution API
 internal open class RunSyntheticTargetAction(
-  private val target: BuildTarget,
+  private val target: ExecutableTarget,
   private val isDebugAction: Boolean,
   private val includeTargetNameInText: Boolean,
   private val templateGenerator: SyntheticRunTargetTemplateGenerator,
@@ -35,11 +35,11 @@ internal open class RunSyntheticTargetAction(
   isCoverageAction = false,
 ) {
 
-  override fun getBuildTargets(project: Project): List<BuildTarget> = listOf(target)
+  override fun getBuildTargets(project: Project): List<ExecutableTarget> = listOf(target)
 
   override suspend fun getRunnerSettings(
     project: Project,
-    buildTargets: List<BuildTarget>,
+    targets: List<ExecutableTarget>,
   ): RunnerAndConfigurationSettings {
     val configurationType = runConfigurationType<BazelRunConfigurationType>()
     val factory = configurationType.configurationFactories.first()
@@ -48,10 +48,10 @@ internal open class RunSyntheticTargetAction(
       RunManager.getInstance(project).createConfiguration(name, factory)
     val config = settings.configuration as BazelRunConfiguration
 
-    val syntheticTargetIds = buildTargets.map { templateGenerator.getSyntheticTargetLabel(it, targetElement) }
+    val syntheticTargetIds = targets.map { templateGenerator.getSyntheticTargetLabel(it, targetElement) }
 
     // this runner is inferred from the original target
-    val originalTargetProvider = RunHandlerProvider.getRunHandlerProvider(listOf(target))
+    val originalTargetProvider = RunHandlerProvider.getRunHandlerProvider(listOf(target.kind))
       ?: error("Failed to get run provider")
     config.updateRunProvider(syntheticTargetIds, originalTargetProvider)
 

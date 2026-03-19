@@ -8,12 +8,12 @@ import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.languages.starlark.repomapping.toShortString
 import org.jetbrains.bazel.run.config.BazelRunConfiguration
 import org.jetbrains.bazel.run.test.setTestFilter
-import org.jetbrains.bsp.protocol.BuildTarget
+import org.jetbrains.bsp.protocol.ExecutableTarget
 
 @ApiStatus.Internal
 class RunWithCoverageAction(
   project: Project,
-  targetInfos: List<BuildTarget>,
+  targetInfos: List<ExecutableTarget>,
   text: ((isRunConfigName: Boolean) -> String)? = null,
   includeTargetNameInText: Boolean = false,
   private val singleTestFilter: String? = null,
