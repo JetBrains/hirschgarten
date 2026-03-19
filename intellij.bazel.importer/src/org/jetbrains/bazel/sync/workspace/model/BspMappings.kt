@@ -10,7 +10,6 @@ internal object BspMappings {
       Tag.TEST -> null
       Tag.LIBRARY -> null
       Tag.INTELLIJ_PLUGIN -> "intellij-plugin"
-      Tag.NO_IDE -> BuildTargetTag.NO_IDE
       Tag.MANUAL -> BuildTargetTag.MANUAL
       Tag.NO_BUILD -> null
     }

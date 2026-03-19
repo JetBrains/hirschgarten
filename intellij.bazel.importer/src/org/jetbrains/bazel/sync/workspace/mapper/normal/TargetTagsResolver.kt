@@ -5,7 +5,6 @@ import org.jetbrains.bazel.info.BspTargetInfo
 
 private val bazelTagToTagMapping =
   mapOf(
-    "no-ide" to Tag.NO_IDE,
     "manual" to Tag.MANUAL,
   )
 
