@@ -34,6 +34,12 @@
       interface="org.jetbrains.bazel.scala.sdk.ScalaSdkExtension"
       qualifiedName="org.jetbrains.bazel.scalaSdkExtension"
     />
+    <!-- dynamic="false" because of the caching in the init block of TargetKindService  -->
+    <extensionPoint
+      dynamic="false"
+      interface="org.jetbrains.bazel.sync.workspace.targetKind.TargetKindProvider"
+      qualifiedName="org.jetbrains.bazel.targetKindProvider"
+    />
   </extensionPoints>
 
   <extensions defaultExtensionNs="org.jetbrains.bazel">
@@ -44,6 +50,7 @@
       implementation="org.jetbrains.bazel.sync.hooks.TargetPersistenceLayerSyncHook"
     />
     <projectSyncHook implementation="org.jetbrains.bazel.sync.hooks.PathSyncHook"/>
+    <targetKindProvider implementation="org.jetbrains.bazel.sync.workspace.targetKind.GenericBazelRules" order="last"/>
   </extensions>
 
   <extensions defaultExtensionNs="com.intellij">

@@ -124,7 +124,7 @@ class BazelKotlinFacetEntityUpdaterTest : WorkspaceModelBaseTest() {
           ),
         kind =
           TargetKind(
-            kindString = "java_library",
+            kind = "java_library",
             ruleType = RuleType.LIBRARY,
             languageClasses = setOf(LanguageClass.JAVA),
           ),

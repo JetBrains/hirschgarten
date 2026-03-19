@@ -46,10 +46,9 @@ object TestBuildTargetFactory {
     data: BuildTargetData,
   ): RawBuildTarget = RawBuildTarget(
     id = id,
-    tags = listOf(),
     dependencies = listOf(),
     kind = TargetKind(
-      kindString = kind,
+      kind = kind,
       ruleType = ruleType,
       languageClasses = languages,
     ),

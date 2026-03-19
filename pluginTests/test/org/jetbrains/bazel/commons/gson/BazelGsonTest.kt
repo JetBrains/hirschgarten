@@ -21,11 +21,10 @@ class BazelGsonTest {
     val buildTarget =
       RawBuildTarget(
         id = Label.parse("//foo:bar"),
-        tags = listOf("tag1", "tag2"),
         dependencies = listOf(DependencyLabel.parse("//baz:qux")),
         kind =
           TargetKind(
-            kindString = "java_library",
+            kind = "java_library",
             languageClasses = setOf(LanguageClass.JAVA, LanguageClass.PYTHON),
             ruleType = RuleType.BINARY,
           ),
@@ -43,6 +42,7 @@ class BazelGsonTest {
             Path.of("/base/dir/main.py"),
             null
           ),
+        isManual = false,
       )
 
     val json = bazelGson.toJson(buildTarget)

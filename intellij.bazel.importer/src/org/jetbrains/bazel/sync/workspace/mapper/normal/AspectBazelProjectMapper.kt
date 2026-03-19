@@ -15,8 +15,6 @@ import org.jetbrains.bazel.commons.LanguageClass
 import org.jetbrains.bazel.commons.LocalRepositoryMapping
 import org.jetbrains.bazel.commons.RepoMapping
 import org.jetbrains.bazel.commons.RepoMappingDisabled
-import org.jetbrains.bazel.commons.RuleType
-import org.jetbrains.bazel.commons.Tag
 import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.commons.constants.Constants
 import org.jetbrains.bazel.commons.getLocalRepositories
@@ -36,9 +34,9 @@ import org.jetbrains.bazel.sync.workspace.languages.LanguagePluginContext
 import org.jetbrains.bazel.sync.workspace.languages.LanguagePluginsService
 import org.jetbrains.bazel.sync.workspace.languages.scala.ScalaLanguagePlugin
 import org.jetbrains.bazel.sync.workspace.mapper.BazelResolvedWorkspaceBuilder
-import org.jetbrains.bazel.sync.workspace.model.BspMappings
 import org.jetbrains.bazel.sync.workspace.model.Library
 import org.jetbrains.bazel.sync.workspace.model.NonModuleTarget
+import org.jetbrains.bazel.sync.workspace.targetKind.TargetKindService
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bsp.protocol.BuildTargetTag
 import org.jetbrains.bsp.protocol.FeatureFlags
@@ -59,7 +57,6 @@ internal class AspectBazelProjectMapper(
   private val project: Project,
   private val languagePluginsService: LanguagePluginsService,
   private val bazelPathsResolver: BazelPathsResolver,
-  private val targetTagsResolver: TargetTagsResolver,
   private val mavenCoordinatesResolver: MavenCoordinatesResolver,
 ) {
   val logger = logger<AspectBazelProjectMapper>()
@@ -71,28 +68,27 @@ internal class AspectBazelProjectMapper(
     val label: ResolvedLabel,
     val target: TargetInfo,
     val extraLibraries: Collection<Library>,
-    val tags: Set<Tag>,
+    val targetKind: TargetKind,
+    val tags: Set<String>,
     val sources: List<SourceItem>,
-    val languages: Set<LanguageClass>,
     val generatorName: String?,
   )
 
   fun TargetInfo.toIntermediateData(
-    workspaceContext: WorkspaceContext,
     extraLibraries: Map<Label, List<Library>>,
     repoMapping: RepoMapping,
+    targetKinds: Map<Label, TargetKind>,
   ): IntermediateTargetData? {
-    val languages = inferLanguages(this)
-    val languagePlugin = languagePluginsService.getLanguagePlugin(languages) ?: return null
-    val tags = targetTagsResolver.resolveTags(this).toSet()
     val label = this.label().assumeResolved()
+    val targetKind = targetKinds.getValue(label)
+    val languagePlugin = languagePluginsService.getLanguagePlugin(targetKind.languageClasses) ?: return null
     return IntermediateTargetData(
       label = label,
       target = this,
       extraLibraries = extraLibraries[label] ?: emptyList(),
-      tags = tags,
+      targetKind = targetKind,
+      tags = tagsList.toSet(),
       sources = resolveSourceSet(this, languagePlugin, repoMapping).toList(),
-      languages = languages,
       generatorName = generatorName.takeIf { it.isNotEmpty() },
     )
   }
@@ -169,6 +165,13 @@ internal class AspectBazelProjectMapper(
             .distinct()
             .associateBy { it.label }
       }
+    val targetKinds =
+      measure("Target kinds") {
+        val targetKindService = TargetKindService.getInstance()
+        allTargets.map { (label, target) ->
+          label to targetKindService.fromTargetInfo(target)
+        }.toMap()
+      }
     val extraLibrariesFromJdeps =
       measure("Libraries from jdeps") {
         jdepsLibraries(
@@ -176,7 +179,8 @@ internal class AspectBazelProjectMapper(
           librariesFromDeps,
           librariesFromDepsAndTargets,
           interfacesAndBinariesFromTargetsToImport,
-          repoMapping
+          repoMapping,
+          targetKinds,
         )
       }
     val librariesToImport =
@@ -190,7 +194,7 @@ internal class AspectBazelProjectMapper(
     val targets =
       measure("create intermediate targets") {
         // Use targetsToImport here instead of allTargets here to respect import_depth
-        createIntermediateTargetData(workspaceContext, targetsToImport, extraLibraries, repoMapping)
+        createIntermediateTargetData(targetsToImport, extraLibraries, repoMapping, targetKinds)
       }
 
     val rawTargets = measure("create raw targets") { createRawBuildTargets(targets, repoMapping, dependencyGraph) }
@@ -201,6 +205,7 @@ internal class AspectBazelProjectMapper(
           dependencyGraph,
           repoMapping,
           workspaceContext,
+          targetKinds,
         )
       nonModuleTargets.map { it.toBuildTarget() }
     }
@@ -227,15 +232,15 @@ internal class AspectBazelProjectMapper(
   }
 
   private suspend fun AspectBazelProjectMapper.createIntermediateTargetData(
-    workspaceContext: WorkspaceContext,
     targets: Sequence<TargetInfo>,
     extraLibraries: Map<Label, List<Library>>,
-    repoMapping: RepoMapping
+    repoMapping: RepoMapping,
+    targetKinds: Map<Label, TargetKind>,
   ): List<IntermediateTargetData> =
     withContext(Dispatchers.Default) {
       val tasks = targets.map {
         async {
-          it.toIntermediateData(workspaceContext, extraLibraries, repoMapping)
+          it.toIntermediateData(extraLibraries, repoMapping, targetKinds)
         }
       }
 
@@ -447,10 +452,11 @@ internal class AspectBazelProjectMapper(
     librariesToImport: Map<Label, Library>,
     interfacesAndBinariesFromTargetsToImport: Map<Label, Set<Path>>,
     repoMapping: RepoMapping,
+    targetKinds: Map<Label, TargetKind>,
   ): Map<Label, List<Library>> {
     val localRepositories = repoMapping.getLocalRepositories()
     val targetsToJdepsJars =
-      getAllJdepsDependencies(targetsToImport, libraryDependencies, librariesToImport, localRepositories)
+      getAllJdepsDependencies(targetsToImport, libraryDependencies, librariesToImport, localRepositories, targetKinds)
     val libraryNameToLibraryValueMap = HashMap<Label, Library>()
     return targetsToJdepsJars.mapValues { target ->
       val interfacesAndBinariesFromTarget =
@@ -482,15 +488,16 @@ internal class AspectBazelProjectMapper(
     targetsToImport: Map<Label, TargetInfo>,
     libraryDependencies: Map<Label, List<Library>>,
     librariesToImport: Map<Label, Library>,
-    localRepositories : LocalRepositoryMapping,
+    localRepositories: LocalRepositoryMapping,
+    targetKinds: Map<Label, TargetKind>,
   ): Map<Label, Set<Path>> {
     val jdepsJars =
       withContext(Dispatchers.IO) {
-        targetsToImport.values
-          .filter { targetSupportsJdeps(it) }
-          .map { target ->
+        targetsToImport
+          .filter { targetSupportsJdeps(targetKinds.getValue(it.key)) }
+          .map { (label, target) ->
             async {
-              target.label() to dependencyJarsFromJdepsFiles(target, localRepositories)
+              label to dependencyJarsFromJdepsFiles(target, localRepositories)
             }
           }.awaitAll()
       }.filter { it.second.isNotEmpty() }.toMap()
@@ -589,9 +596,8 @@ internal class AspectBazelProjectMapper(
    */
   private fun Deps.Dependency.isRelevant() = kind in sequenceOf(Deps.Dependency.Kind.EXPLICIT, Deps.Dependency.Kind.IMPLICIT)
 
-  private fun targetSupportsJdeps(targetInfo: TargetInfo): Boolean {
-    val languages = inferLanguages(targetInfo)
-    return setOf(LanguageClass.JAVA, LanguageClass.KOTLIN, LanguageClass.SCALA).containsAll(languages)
+  private fun targetSupportsJdeps(targetInfo: TargetKind): Boolean {
+    return setOf(LanguageClass.JAVA, LanguageClass.KOTLIN, LanguageClass.SCALA).containsAll(targetInfo.languageClasses)
   }
 
   private val replacementRegex = "[^0-9a-zA-Z]".toRegex()
@@ -616,6 +622,7 @@ internal class AspectBazelProjectMapper(
     dependencyGraph: DependencyGraph,
     repoMapping: RepoMapping,
     workspaceContext: WorkspaceContext,
+    targetKinds: Map<Label, TargetKind>,
   ): List<NonModuleTarget> {
     val allTargetsAtDepth = dependencyGraph.allTargetsAtDepth(
       workspaceContext.importDepth,
@@ -631,9 +638,9 @@ internal class AspectBazelProjectMapper(
         val targetInfo = allTargets.getValue(label)
         NonModuleTarget(
           label = label,
-          tags = targetTagsResolver.resolveTags(targetInfo),
+          targetKind = targetKinds.getValue(label),
+          tags = targetInfo.tagsList.toSet(),
           baseDirectory = bazelPathsResolver.toDirectoryPath(label.assumeResolved(), repoMapping),
-          kindString = targetInfo.kind,
           generatorName = targetInfo.generatorName.takeIf { it.isNotEmpty() },
         )
       }
@@ -890,10 +897,9 @@ internal class AspectBazelProjectMapper(
     val (extraLibraries, lowPriorityExtraLibraries) = targetData.extraLibraries.partition { !it.isLowPriority }
     val directDependencies = extraLibraries.toDependencyLabels() + resolvedDependencies + lowPriorityExtraLibraries.toDependencyLabels()
     val baseDirectory = bazelPathsResolver.toDirectoryPath(label, repoMapping)
-    val languagePlugin = languagePluginsService.getLanguagePlugin(targetData.languages) ?: return null
+    val languagePlugin = languagePluginsService.getLanguagePlugin(targetData.targetKind.languageClasses) ?: return null
     val resources = resolveResources(target, languagePlugin, localRepositories)
 
-    val tags = targetData.tags
     val targetSources = targetData.sources
 
     val context = LanguagePluginContext(target, dependencyGraph, repoMapping, targetData.sources, bazelPathsResolver)
@@ -901,15 +907,14 @@ internal class AspectBazelProjectMapper(
 
     return RawBuildTarget(
       id = label,
-      tags = tags.mapNotNull(BspMappings::toBspTag),
       dependencies = directDependencies,
-      kind = inferKind(tags, target.kind, targetData.languages),
+      kind = targetData.targetKind,
       sources = languagePlugin.transformSources(targetSources),
       resources = resources,
       baseDirectory = baseDirectory,
-      noBuild = Tag.NO_BUILD in tags,
       data = data,
       generatorName = targetData.generatorName,
+      isManual = BuildTargetTag.MANUAL in targetData.tags,
     )
   }
 
@@ -924,53 +929,6 @@ internal class AspectBazelProjectMapper(
     )
 
   private fun List<Library>.toDependencyLabels(): List<DependencyLabel> = this.map { DependencyLabel(it.label) }
-
-  // TODO: this is a re-creation of `Language.allOfKind`. To be removed when this logic is merged with client-side
-  private val languagesFromKinds: Map<String, Set<LanguageClass>> =
-    mapOf(
-      "java_library" to setOf(LanguageClass.JAVA),
-      "java_binary" to setOf(LanguageClass.JAVA),
-      "java_test" to setOf(LanguageClass.JAVA),
-      // a workaround to register this target type as Java module in IntelliJ IDEA
-      "intellij_plugin_debug_target" to setOf(LanguageClass.JAVA),
-      "kt_jvm_library" to setOf(LanguageClass.JAVA, LanguageClass.KOTLIN),
-      "kt_jvm_binary" to setOf(LanguageClass.JAVA, LanguageClass.KOTLIN),
-      "kt_jvm_test" to setOf(LanguageClass.JAVA, LanguageClass.KOTLIN),
-      "scala_library" to setOf(LanguageClass.JAVA, LanguageClass.SCALA),
-      "scala_binary" to setOf(LanguageClass.JAVA, LanguageClass.SCALA),
-      "scala_test" to setOf(LanguageClass.JAVA, LanguageClass.SCALA),
-      // rules_jvm from IntelliJ monorepo
-      "jvm_library" to setOf(LanguageClass.JAVA, LanguageClass.KOTLIN),
-      "_jvm_library_jps" to setOf(LanguageClass.JAVA, LanguageClass.KOTLIN),
-      "jvm_resources" to setOf(LanguageClass.JAVA, LanguageClass.KOTLIN),
-      "go_binary" to setOf(LanguageClass.GO),
-      "go_test" to setOf(LanguageClass.GO),
-      "go_library" to setOf(LanguageClass.GO),
-      "go_source" to setOf(LanguageClass.GO),
-      "py_binary" to setOf(LanguageClass.PYTHON),
-      "py_test" to setOf(LanguageClass.PYTHON),
-      "py_library" to setOf(LanguageClass.PYTHON),
-    )
-
-  private fun inferLanguages(target: TargetInfo): Set<LanguageClass> =
-    buildSet {
-      if (target.hasProtobufTargetInfo()) {
-        add(LanguageClass.PROTOBUF)
-      }
-      // TODO It's a hack preserved from before TargetKind refactoring, to be removed
-      if (target.getJvmTarget()) {
-        add(LanguageClass.JAVA)
-      }
-      if (target.hasPythonTargetInfo()) {
-        add(LanguageClass.PYTHON)
-      }
-      if (target.hasGoTargetInfo()) {
-        add(LanguageClass.GO)
-      }
-      languagesFromKinds[target.kind]?.let {
-        addAll(it)
-      }
-    }
 
   private fun resolveSourceSet(target: TargetInfo, languagePlugin: LanguagePlugin<*>, repoMapping: RepoMapping): Sequence<SourceItem> {
     val localRepositories = repoMapping.getLocalRepositories()
@@ -1020,38 +978,18 @@ internal class AspectBazelProjectMapper(
   }
 
   private fun NonModuleTarget.toBuildTarget(): RawBuildTarget {
-    val tags = tags.mapNotNull(BspMappings::toBspTag)
     val buildTarget =
       RawBuildTarget(
         id = label,
-        tags = tags,
-        kind = inferKind(this.tags, kindString, emptySet()),
+        kind = targetKind,
         baseDirectory = baseDirectory,
         dependencies = emptyList(),
         sources = emptyList(),
         resources = emptyList(),
         data = null,
         generatorName = generatorName,
+        isManual = BuildTargetTag.MANUAL in tags,
       )
     return buildTarget
-  }
-
-  private fun inferKind(
-    tags: Set<Tag>,
-    kindString: String,
-    languages: Set<LanguageClass>,
-  ): TargetKind {
-    val ruleType =
-      when {
-        tags.contains(Tag.TEST) -> RuleType.TEST
-        tags.contains(Tag.APPLICATION) -> RuleType.BINARY
-        tags.contains(Tag.LIBRARY) -> RuleType.LIBRARY
-        else -> RuleType.UNKNOWN
-      }
-    return TargetKind(
-      kindString = kindString,
-      languageClasses = languages,
-      ruleType = ruleType,
-    )
   }
 }

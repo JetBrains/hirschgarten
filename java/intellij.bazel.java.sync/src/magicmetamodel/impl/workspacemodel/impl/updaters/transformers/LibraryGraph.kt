@@ -62,7 +62,7 @@ class LibraryGraph(private val libraries: List<LibraryItem>) {
                 },
               kind =
                 TargetKind(
-                  kindString = "java_library",
+                  kind = "java_library",
                   ruleType = RuleType.LIBRARY,
                   languageClasses = setOf(LanguageClass.JAVA),
                 ),

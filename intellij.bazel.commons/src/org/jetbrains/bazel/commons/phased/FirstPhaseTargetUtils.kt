@@ -2,6 +2,7 @@ package org.jetbrains.bazel.commons.phased
 
 import com.google.devtools.build.lib.query2.proto.proto2api.Build.Target
 import org.jetbrains.annotations.ApiStatus
+import org.jetbrains.bsp.protocol.BuildTargetTag
 
 val Target.name: String
   @ApiStatus.Internal
@@ -48,22 +49,10 @@ internal fun Target.getStringAttribute(name: String): String? =
     .firstOrNull { it.name == name }
     ?.stringValue
 
-private const val BAZEL_MANUAL_TAG = "manual"
 val Target.isManual: Boolean
   @ApiStatus.Internal
-  get() = BAZEL_MANUAL_TAG in tags
+  get() = BuildTargetTag.MANUAL in tags
 
-private const val BAZEL_NO_IDE_TAG = "no-ide"
 val Target.isNoIde: Boolean
   @ApiStatus.Internal
-  get() = BAZEL_NO_IDE_TAG in tags
-
-// TODO: https://youtrack.jetbrains.com/issue/BAZEL-1556
-val Target.isBinary: Boolean
-  @ApiStatus.Internal
-  get() = kind.endsWith("_binary") || kind == "intellij_plugin_debug_target"
-
-// TODO: https://youtrack.jetbrains.com/issue/BAZEL-1556
-val Target.isTest: Boolean
-  @ApiStatus.Internal
-  get() = kind.endsWith("_test")
+  get() = BuildTargetTag.NO_IDE in tags

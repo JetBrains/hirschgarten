@@ -15,7 +15,6 @@ import org.jetbrains.bazel.debug.configuration.StarlarkDebugConfiguration
 import org.jetbrains.bazel.debug.configuration.StarlarkDebugConfigurationType
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.languages.starlark.repomapping.toShortString
-import org.jetbrains.bsp.protocol.BuildTarget
 
 internal class StarlarkDebugAction(private val targetId: Label) :
   SuspendableAction(
@@ -34,10 +33,6 @@ internal class StarlarkDebugAction(private val targetId: Label) :
     val configName = BazelPluginBundle.message("starlark.debug.config.template", targetId.toShortString(project))
     val factory = StarlarkDebugConfigurationType().configurationFactories.first()
     return runManager.createConfiguration(configName, factory).withTarget(targetId)
-  }
-
-  companion object {
-    fun isApplicableTo(targetInfo: BuildTarget): Boolean = !targetInfo.noBuild
   }
 }
 

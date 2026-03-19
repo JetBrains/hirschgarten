@@ -186,11 +186,10 @@ class TargetsCacheStorage(
         hashStream.computeLabelHash(info.id as ResolvedLabel),
         PartialBuildTarget(
           id = info.id,
-          tags = info.tags,
           kind = info.kind,
           baseDirectory = info.baseDirectory,
           data = info.data,
-          noBuild = info.noBuild,
+          isManual = info.isManual,
         ),
       )
     }
@@ -231,11 +230,10 @@ class TargetsCacheStorage(
         labelHash,
         PartialBuildTarget(
           id = target.id,
-          tags = target.tags,
           kind = target.kind,
           baseDirectory = target.baseDirectory,
           data = target.data,
-          noBuild = target.noBuild,
+          isManual = target.isManual,
         ),
       )
 

@@ -28,9 +28,8 @@ class ProjectDetailsToModuleDetailsTransformerTest {
       RawBuildTarget(
         targetId,
         emptyList(),
-        emptyList(),
         TargetKind(
-          kindString = "java_binary",
+          kind = "java_binary",
           ruleType = RuleType.BINARY,
           languageClasses = setOf(LanguageClass.JAVA),
         ),
@@ -70,9 +69,8 @@ class ProjectDetailsToModuleDetailsTransformerTest {
       RawBuildTarget(
         targetId,
         emptyList(),
-        emptyList(),
         TargetKind(
-          kindString = "java_binary",
+          kind = "java_binary",
           ruleType = RuleType.BINARY,
           languageClasses = setOf(LanguageClass.JAVA),
         ),
@@ -119,10 +117,9 @@ class ProjectDetailsToModuleDetailsTransformerTest {
     val target1 =
       RawBuildTarget(
         target1Id,
-        emptyList(),
         listOf(DependencyLabel(target2Id)),
         TargetKind(
-          kindString = "java_binary",
+          kind = "java_binary",
           ruleType = RuleType.BINARY,
           languageClasses = setOf(LanguageClass.JAVA),
         ),
@@ -140,9 +137,8 @@ class ProjectDetailsToModuleDetailsTransformerTest {
       RawBuildTarget(
         target2Id,
         emptyList(),
-        emptyList(),
         TargetKind(
-          kindString = "java_binary",
+          kind = "java_binary",
           ruleType = RuleType.BINARY,
           languageClasses = setOf(LanguageClass.JAVA),
         ),
@@ -158,10 +154,9 @@ class ProjectDetailsToModuleDetailsTransformerTest {
     val target3 =
       RawBuildTarget(
         target3Id,
-        emptyList(),
         listOf(DependencyLabel(target2Id)),
         TargetKind(
-          kindString = "java_binary",
+          kind = "java_binary",
           ruleType = RuleType.BINARY,
           languageClasses = setOf(LanguageClass.JAVA),
         ),
@@ -179,10 +174,9 @@ class ProjectDetailsToModuleDetailsTransformerTest {
     val target4 =
       RawBuildTarget(
         target4Id,
-        emptyList(),
         listOf(DependencyLabel(target1Id)),
         TargetKind(
-          kindString = "java_binary",
+          kind = "java_binary",
           ruleType = RuleType.BINARY,
           languageClasses = setOf(LanguageClass.JAVA),
         ),

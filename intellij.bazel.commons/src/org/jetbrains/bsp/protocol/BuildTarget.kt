@@ -11,33 +11,35 @@ interface BuildTarget {
   val kind: TargetKind
   val baseDirectory: Path
   val data: BuildTargetData?
-  val tags: List<String>
 
-  val noBuild: Boolean
+  /**
+   * From Bazel doc (https://bazel.build/reference/be/common-definitions)
+   * manual tag will exclude the target from expansion of target pattern wildcards (..., :*, :all, etc.) and test_suite rules which do not
+   * list the test explicitly when computing the set of top-level targets to build/run for the build, test, and coverage commands
+   */
+  val isManual: Boolean
 }
 
 @ApiStatus.Internal
 data class RawBuildTarget(
   override val id: Label,
-  override val tags: List<String>,
   val dependencies: List<DependencyLabel>,
   override val kind: TargetKind,
   val sources: List<SourceItem>,
   val resources: List<Path>,
   override val baseDirectory: Path,
-  override val noBuild: Boolean = false, // TODO https://youtrack.jetbrains.com/issue/BAZEL-1963
   override var data: BuildTargetData? = null,
   val generatorName: String? = null,
+  override val isManual: Boolean = false,
 ) : BuildTarget
 
 @ApiStatus.Internal
 data class PartialBuildTarget(
   override val id: Label,
-  override val tags: List<String>,
   override val kind: TargetKind,
   override val baseDirectory: Path,
   override val data: BuildTargetData? = null,
-  override val noBuild: Boolean = false,
+  override val isManual: Boolean = false,
 ) : BuildTarget
 
 // adding or removing new BuildTargetData should not cause cache invalidation, but still we don't want to write FQN per each target

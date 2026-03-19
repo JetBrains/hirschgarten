@@ -28,11 +28,10 @@ class BazelTargetCompletionTest : BasePlatformTestCase() {
       targets.map {
         RawBuildTarget(
           id = Label.parse(it),
-          tags = emptyList(),
           dependencies = emptyList(),
           kind =
             TargetKind(
-              kindString = "java_library",
+              kind = "java_library",
               ruleType = RuleType.LIBRARY,
               languageClasses = setOf(LanguageClass.JAVA),
             ),

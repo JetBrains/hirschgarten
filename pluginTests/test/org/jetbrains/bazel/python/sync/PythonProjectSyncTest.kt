@@ -37,10 +37,10 @@ import org.jetbrains.bazel.workspace.model.test.framework.BazelWorkspaceResolveS
 import org.jetbrains.bazel.workspace.model.test.framework.BuildServerMock
 import org.jetbrains.bazel.workspace.model.test.framework.MockProjectBaseTest
 import org.jetbrains.bazel.workspacemodel.entities.BazelProjectEntitySource
-import org.jetbrains.bsp.protocol.TaskGroupId
 import org.jetbrains.bsp.protocol.PythonBuildTarget
 import org.jetbrains.bsp.protocol.RawBuildTarget
 import org.jetbrains.bsp.protocol.SourceItem
+import org.jetbrains.bsp.protocol.TaskGroupId
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.nio.file.Path
@@ -222,10 +222,9 @@ class PythonProjectSyncTest : MockProjectBaseTest() {
     val target =
       RawBuildTarget(
         info.targetId,
-        listOf(info.type),
         info.dependencies.map { DependencyLabel(it) },
         TargetKind(
-          kindString = "python_binary",
+          kind = "python_binary",
           ruleType = RuleType.BINARY,
           languageClasses = setOf(LanguageClass.PYTHON),
         ),

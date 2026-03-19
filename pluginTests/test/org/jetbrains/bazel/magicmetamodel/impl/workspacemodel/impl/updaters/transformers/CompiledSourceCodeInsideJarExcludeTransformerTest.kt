@@ -148,10 +148,9 @@ class CompiledSourceCodeInsideJarExcludeTransformerTest {
       target =
         RawBuildTarget(
           Label.parse("target"),
-          listOf(),
           emptyList(),
           TargetKind(
-            kindString = "java_binary",
+            kind = "java_binary",
             ruleType = RuleType.BINARY,
             languageClasses = setOf(LanguageClass.JAVA),
           ),

@@ -165,10 +165,9 @@ class LibraryGraphTest {
 private fun mockTarget(id: String, dependencies: List<String>): RawBuildTarget =
   RawBuildTarget(
     Label.parse(id),
-    emptyList(),
     dependencies.map { DependencyLabel.parse(it) },
     TargetKind(
-      kindString = "java_binary",
+      kind = "java_binary",
       ruleType = RuleType.BINARY,
       languageClasses = setOf(),
     ),

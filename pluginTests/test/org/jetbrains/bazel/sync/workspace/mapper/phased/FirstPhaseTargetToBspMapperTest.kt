@@ -15,6 +15,7 @@ import org.jetbrains.bazel.label.DependencyLabel
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.sync.workspace.BazelResolvedWorkspace
 import org.jetbrains.bazel.workspace.model.test.framework.BazelPathsResolverMock
+import org.jetbrains.bazel.workspace.model.test.framework.WorkspaceModelBaseTest
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bsp.protocol.RawBuildTarget
 import org.jetbrains.bsp.protocol.RawPhasedTarget
@@ -78,13 +79,13 @@ private fun Path.createMockSourceFile(relativePath: String, fullPackage: String)
   return file
 }
 
-class FirstPhaseTargetToBspMapperTest {
+class FirstPhaseTargetToBspMapperTest : WorkspaceModelBaseTest() {
   private lateinit var workspaceRoot: Path
   private lateinit var bazelInfo: BazelInfo
   private lateinit var bazelPathsResolver: BazelPathsResolver
 
   @BeforeEach
-  fun beforeEach() {
+  override fun beforeEach() {
     workspaceRoot = createTempDirectory("workspaceRoot").also { it.toFile().deleteOnExit() }
     bazelInfo =
       BazelInfo(
@@ -222,11 +223,10 @@ class FirstPhaseTargetToBspMapperTest {
           // target1: unchanged
           RawBuildTarget(
             id = Label.parse("//target1"),
-            tags = listOf(),
             dependencies = listOf(DependencyLabel.parse("//dep/target1"), DependencyLabel.parse("//dep/target2")),
             kind =
               TargetKind(
-                kindString = "java_library",
+                kind = "java_library",
                 ruleType = RuleType.LIBRARY,
                 languageClasses = setOf(LanguageClass.JAVA),
               ),
@@ -243,16 +243,15 @@ class FirstPhaseTargetToBspMapperTest {
             baseDirectory = workspaceRoot.resolve(Path("target1")),
             generatorName = "generator_name_example",
           ),
-          // target2: now merges its declared language with those inferred from its .kt sources
+          // target2
           RawBuildTarget(
             id = Label.parse("//target2"),
-            tags = listOf(),
             dependencies = listOf(DependencyLabel.parse("//dep/target1"), DependencyLabel.parse("//dep/target2")),
             kind =
               TargetKind(
-                kindString = "java_binary",
+                kind = "java_binary",
                 ruleType = RuleType.BINARY,
-                languageClasses = setOf(LanguageClass.JAVA, LanguageClass.KOTLIN),
+                languageClasses = setOf(LanguageClass.JAVA),
               ),
             sources =
               listOf(
@@ -265,11 +264,10 @@ class FirstPhaseTargetToBspMapperTest {
           // // target3
           RawBuildTarget(
             id = Label.parse("//target3"),
-            tags = listOf(),
             dependencies = listOf(DependencyLabel.parse("//dep/target1"), DependencyLabel.parse("//dep/target2")),
             kind =
               TargetKind(
-                kindString = "java_test",
+                kind = "java_test",
                 ruleType = RuleType.TEST,
                 languageClasses = setOf(LanguageClass.JAVA),
               ),
@@ -284,13 +282,12 @@ class FirstPhaseTargetToBspMapperTest {
           // // target4
           RawBuildTarget(
             id = Label.parse("//target4"),
-            tags = listOf(),
             dependencies = listOf(DependencyLabel.parse("//dep/target1"), DependencyLabel.parse("//dep/target2")),
             kind =
               TargetKind(
-                kindString = "kt_jvm_library",
+                kind = "kt_jvm_library",
                 ruleType = RuleType.LIBRARY,
-                languageClasses = setOf(LanguageClass.KOTLIN),
+                languageClasses = setOf(LanguageClass.JAVA, LanguageClass.KOTLIN),
               ),
             sources = emptyList(),
             resources = emptyList(),
@@ -299,13 +296,12 @@ class FirstPhaseTargetToBspMapperTest {
           // // target5
           RawBuildTarget(
             id = Label.parse("//target5"),
-            tags = listOf(),
             dependencies = listOf(DependencyLabel.parse("//dep/target1"), DependencyLabel.parse("//dep/target2")),
             kind =
               TargetKind(
-                kindString = "kt_jvm_binary",
+                kind = "kt_jvm_binary",
                 ruleType = RuleType.BINARY,
-                languageClasses = setOf(LanguageClass.KOTLIN),
+                languageClasses = setOf(LanguageClass.JAVA, LanguageClass.KOTLIN),
               ),
             sources = emptyList(),
             resources = emptyList(),
@@ -314,13 +310,12 @@ class FirstPhaseTargetToBspMapperTest {
           // // target6
           RawBuildTarget(
             id = Label.parse("//target6"),
-            tags = listOf(),
             dependencies = listOf(DependencyLabel.parse("//dep/target1"), DependencyLabel.parse("//dep/target2")),
             kind =
               TargetKind(
-                kindString = "kt_jvm_test",
+                kind = "kt_jvm_test",
                 ruleType = RuleType.TEST,
-                languageClasses = setOf(LanguageClass.KOTLIN),
+                languageClasses = setOf(LanguageClass.JAVA, LanguageClass.KOTLIN),
               ),
             sources = emptyList(),
             resources = emptyList(),
@@ -329,11 +324,10 @@ class FirstPhaseTargetToBspMapperTest {
           // // target7: now with its created source files
           RawBuildTarget(
             id = Label.parse("//target7"),
-            tags = listOf(),
             dependencies = emptyList(),
             kind =
               TargetKind(
-                kindString = "custom_rule_with_supported_rules_library",
+                kind = "custom_rule_with_supported_rules_library",
                 ruleType = RuleType.LIBRARY,
                 languageClasses = setOf(LanguageClass.JAVA),
               ),
@@ -348,13 +342,12 @@ class FirstPhaseTargetToBspMapperTest {
           // // target8: merging its own source and the sources from filegroupSources dependency
           RawBuildTarget(
             id = Label.parse("//target8"),
-            tags = listOf(),
             dependencies = emptyList(),
             kind =
               TargetKind(
-                kindString = "java_library",
+                kind = "java_library",
                 ruleType = RuleType.LIBRARY,
-                languageClasses = setOf(LanguageClass.JAVA, LanguageClass.KOTLIN),
+                languageClasses = setOf(LanguageClass.JAVA),
               ),
             sources =
               listOf(
@@ -375,11 +368,10 @@ class FirstPhaseTargetToBspMapperTest {
           ),
           RawBuildTarget(
             id = Label.parse("//filegroupSources"),
-            tags = listOf(),
             dependencies = emptyList(),
             kind =
               TargetKind(
-                kindString = "filegroup",
+                kind = "filegroup",
                 ruleType = RuleType.LIBRARY,
                 languageClasses = setOf(LanguageClass.JAVA),
               ),

@@ -46,6 +46,7 @@ import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.LibraryItem
 import org.jetbrains.bsp.protocol.RawBuildTarget
 import java.nio.file.Path
+import kotlin.io.path.deleteIfExists
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.DurationUnit
 import kotlin.time.toDuration
@@ -54,6 +55,13 @@ private const val MAX_EXECUTABLE_TARGET_IDS = 10
 
 private fun nowAsDuration() = System.currentTimeMillis().toDuration(DurationUnit.MILLISECONDS)
 
+/**
+ * Increment when making breaking changes to [TargetsCacheStorage]
+ */
+private const val TARGETS_STORAGE_VERSION: Int = 4
+
+private fun Project.targetsStorageFile(storeVersion: Int): Path = getProjectDataPath("bazel-targets-v$storeVersion.db")
+
 @Service(Service.Level.PROJECT)
 @ApiStatus.Internal
 class TargetUtils(private val project: Project, private val coroutineScope: CoroutineScope) : SettingsSavingComponent {
@@ -61,7 +69,8 @@ class TargetUtils(private val project: Project, private val coroutineScope: Coro
   private val dbAsync: Deferred<TargetsCacheStorage> =
     BazelCoroutineService.getInstance(project).startAsync {
       withContext(Dispatchers.IO) {
-        val store = openStore(storeFile = project.getProjectDataPath("bazel-targets-v3.db"), project = project)
+        (1 until TARGETS_STORAGE_VERSION).forEach { oldVersion -> project.targetsStorageFile(oldVersion).deleteIfExists() }
+        val store = openStore(storeFile = project.targetsStorageFile(TARGETS_STORAGE_VERSION), project = project)
         coroutineScope.awaitCancellationAndInvoke(Dispatchers.IO) {
           store.close()
         }

@@ -15,7 +15,6 @@ import org.jetbrains.bazel.runnerAction.RunWithCoverageAction
 import org.jetbrains.bazel.runnerAction.TestTargetAction
 import org.jetbrains.bazel.target.targetUtils
 import org.jetbrains.bsp.protocol.BuildTarget
-import org.jetbrains.bsp.protocol.BuildTargetTag
 import javax.swing.Icon
 
 internal open class RunAllTestsBaseAction(
@@ -66,7 +65,7 @@ internal open class RunAllTestsBaseAction(
           .asSequence()
       }
     return childTargets
-      .filter { it.kind.ruleType == RuleType.TEST && !it.tags.contains(BuildTargetTag.MANUAL) }
+      .filter { it.kind.ruleType == RuleType.TEST && !it.isManual }
   }
 }
 

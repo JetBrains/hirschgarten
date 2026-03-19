@@ -14,7 +14,6 @@ import org.jetbrains.bazel.sync.workspace.languages.DefaultJvmPackageResolver
 import org.jetbrains.bazel.sync.workspace.languages.LanguagePluginsService
 import org.jetbrains.bazel.sync.workspace.mapper.normal.AspectBazelProjectMapper
 import org.jetbrains.bazel.sync.workspace.mapper.normal.MavenCoordinatesResolver
-import org.jetbrains.bazel.sync.workspace.mapper.normal.TargetTagsResolver
 import org.jetbrains.bazel.sync.workspace.mapper.phased.PhasedBazelMappedProject
 import org.jetbrains.bazel.sync.workspace.mapper.phased.PhasedBazelProjectMapper
 import org.jetbrains.bazel.sync.workspace.mapper.phased.PhasedBazelProjectMapperContext
@@ -59,7 +58,6 @@ internal class DefaultBazelWorkspaceResolveService(private val project: Project)
         project = project,
         languagePluginsService = project.service<LanguagePluginsService>(),
         bazelPathsResolver = paths.bazelPathsResolver,
-        targetTagsResolver = TargetTagsResolver(),
         mavenCoordinatesResolver = MavenCoordinatesResolver(),
       )
     phasedMapper =

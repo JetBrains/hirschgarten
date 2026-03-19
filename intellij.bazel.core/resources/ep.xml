@@ -32,11 +32,6 @@
     />
     <extensionPoint
       dynamic="true"
-      interface="org.jetbrains.bazel.sync.TargetKindProvider"
-      qualifiedName="org.jetbrains.bazel.targetKindProvider"
-    />
-    <extensionPoint
-      dynamic="true"
       interface="org.jetbrains.bazel.ui.settings.BazelSettingsProvider"
       qualifiedName="org.jetbrains.bazel.bazelExperimentalSettingsProvider"
     />

@@ -47,9 +47,9 @@ import org.jetbrains.bazel.test.framework.target.TestBuildTargetFactory
 import org.jetbrains.bazel.workspace.model.test.framework.BuildServerMock
 import org.jetbrains.bazel.workspace.model.test.framework.WorkspaceModelBaseTest
 import org.jetbrains.bazel.workspacemodel.entities.BazelModuleEntitySource
+import org.jetbrains.bsp.protocol.BazelServerFacade
 import org.jetbrains.bsp.protocol.InverseSourcesParams
 import org.jetbrains.bsp.protocol.InverseSourcesResult
-import org.jetbrains.bsp.protocol.BazelServerFacade
 import org.jetbrains.bsp.protocol.PartialBuildTarget
 import org.jetbrains.bsp.protocol.RawBuildTarget
 import org.junit.jupiter.api.BeforeEach
@@ -416,11 +416,10 @@ class BazelFileEventListenerTest : WorkspaceModelBaseTest() {
         listOf(
           RawBuildTarget(
             id = target1,
-            tags = emptyList(),
             dependencies = emptyList(),
             kind =
               TargetKind(
-                kindString = "java_library",
+                kind = "java_library",
                 ruleType = RuleType.LIBRARY,
                 languageClasses = setOf(LanguageClass.JAVA),
               ),
@@ -491,7 +490,6 @@ class BazelFileEventListenerTest : WorkspaceModelBaseTest() {
     val mockBuildTarget =
       PartialBuildTarget(
         id = mockLabel,
-        tags = emptyList(),
         kind = TargetKind("mock", emptySet(), RuleType.LIBRARY),
         baseDirectory = projectBasePath,
       )

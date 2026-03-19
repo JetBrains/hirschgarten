@@ -104,13 +104,11 @@ internal class BazelFileTargetsWidget(project: Project) : EditorBasedStatusBarPo
       ResyncTargetAction.createIfEnabled(id)?.let { resyncTargetAction -> it.add(resyncTargetAction) }
       it.add(CopyTargetIdAction.FromTargetInfo(this))
       it.addSeparator()
-      if (!noBuild) {
-        it.add(BuildTargetAction(id))
-      }
+      it.add(BuildTargetAction(id))
       it.fillWithEligibleActions(project, this, false)
       it.addSeparator()
       it.add(BazelJumpToBuildFileAction.NonXmlRegistered({ this }))
-      if (StarlarkDebugAction.isApplicableTo(this)) it.add(StarlarkDebugAction(this.id))
+      it.add(StarlarkDebugAction(this.id))
     }
 
   override fun createInstance(project: Project): StatusBarWidget = BazelFileTargetsWidget(project)

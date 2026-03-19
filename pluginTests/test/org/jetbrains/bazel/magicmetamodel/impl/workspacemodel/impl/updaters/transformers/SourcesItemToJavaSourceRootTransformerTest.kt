@@ -47,10 +47,9 @@ class SourcesItemToJavaSourceRootTransformerTest {
     val buildTargetAndSourceItem =
       RawBuildTarget(
         Label.parse("target"),
-        listOf(),
         emptyList(),
         TargetKind(
-          kindString = "java_binary",
+          kind = "java_binary",
           ruleType = RuleType.BINARY,
           languageClasses = setOf(LanguageClass.JAVA),
         ),
@@ -88,10 +87,9 @@ class SourcesItemToJavaSourceRootTransformerTest {
     val buildTargetAndSourceItem =
       RawBuildTarget(
         Label.parse("target"),
-        listOf(),
         emptyList(),
         TargetKind(
-          kindString = "java_test",
+          kind = "java_test",
           ruleType = RuleType.TEST,
           languageClasses = setOf(LanguageClass.JAVA),
         ),
@@ -137,10 +135,9 @@ class SourcesItemToJavaSourceRootTransformerTest {
     val buildTargetAndSourceItem =
       RawBuildTarget(
         Label.parse("target"),
-        listOf(),
         emptyList(),
         TargetKind(
-          kindString = "java_binary",
+          kind = "java_binary",
           ruleType = RuleType.BINARY,
           languageClasses = setOf(LanguageClass.JAVA),
         ),
@@ -193,10 +190,9 @@ class SourcesItemToJavaSourceRootTransformerTest {
     val buildTargetAndSourceItem1 =
       RawBuildTarget(
         Label.parse("target"),
-        listOf(),
         emptyList(),
         TargetKind(
-          kindString = "java_binary",
+          kind = "java_binary",
           ruleType = RuleType.BINARY,
           languageClasses = setOf(LanguageClass.JAVA),
         ),
@@ -207,10 +203,9 @@ class SourcesItemToJavaSourceRootTransformerTest {
     val buildTargetAndSourceItem2 =
       RawBuildTarget(
         Label.parse("target"),
-        listOf(),
         emptyList(),
         TargetKind(
-          kindString = "java_binary",
+          kind = "java_binary",
           ruleType = RuleType.BINARY,
           languageClasses = setOf(LanguageClass.JAVA),
         ),
@@ -264,10 +259,9 @@ class SourcesItemToJavaSourceRootTransformerTest {
     val buildTargetAndSourceItem1 =
       RawBuildTarget(
         Label.parse("target"),
-        listOf(),
         emptyList(),
         TargetKind(
-          kindString = "java_binary",
+          kind = "java_binary",
           ruleType = RuleType.BINARY,
           languageClasses = setOf(LanguageClass.JAVA),
         ),
@@ -279,10 +273,9 @@ class SourcesItemToJavaSourceRootTransformerTest {
     val buildTargetAndSourceItem2 =
       RawBuildTarget(
         Label.parse("target"),
-        listOf(),
         emptyList(),
         TargetKind(
-          kindString = "java_binary",
+          kind = "java_binary",
           ruleType = RuleType.BINARY,
           languageClasses = setOf(LanguageClass.JAVA),
         ),
