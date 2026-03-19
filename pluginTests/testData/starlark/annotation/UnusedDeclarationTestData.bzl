@@ -71,3 +71,50 @@ new_scope()
 def <weak_warning descr="Function \"_my_func_impl\" is never used">_my_func_impl</weak_warning>(_target, ctx, _):
     _foo, some_val = some(ctx)
     return some_val
+
+# Test that reassignments are not incorrectly marked as unused
+def reassignment_test():
+    # Variable reassigned in conditional block - should NOT be marked unused
+    # because references resolve to the latest binding before them
+    runfiles = create_runfiles()
+    if some_condition:
+        runfiles = runfiles.merge(other_runfiles)
+    runfiles = runfiles.merge(more_runfiles)
+    return runfiles
+
+reassignment_test()
+
+def reassignment_in_else():
+    result = 1
+    if True:
+        result = 2
+    else:
+        result = 3
+    return result
+
+reassignment_in_else()
+
+def multiple_reassignments():
+    value = initial()
+    value = transform1(value)
+    value = transform2(value)
+    return value
+
+multiple_reassignments()
+
+def unused_reassignment():
+    # Both assignments are unused because nothing reads either value
+    <weak_warning descr="Variable \"value\" is never used">value</weak_warning> = 1
+    <weak_warning descr="Variable \"value\" is never used">value</weak_warning> = 2
+
+unused_reassignment()
+
+def first_binding_unused_but_reassignment_used():
+    # The first binding is unused because its value is never read
+    # (no RHS reference on the second line, and the return resolves to line 2)
+    # but the reassignment is used because return result resolves to it
+    <weak_warning descr="Variable \"result\" is never used">result</weak_warning> = compute_initial()
+    result = compute_final()
+    return result
+
+first_binding_unused_but_reassignment_used()
