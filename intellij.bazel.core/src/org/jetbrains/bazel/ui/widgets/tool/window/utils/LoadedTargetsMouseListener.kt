@@ -92,12 +92,10 @@ internal abstract class LoadedTargetsMouseListener(private val project: Project)
       ResyncTargetAction.createIfEnabled(target.id)?.let { addAction(it) }
       addAction(copyTargetIdAction)
       addSeparator()
-      if (!target.noBuild) {
-        addAction(BuildTargetAction(target.id))
-      }
+      addAction(BuildTargetAction(target.id))
       fillWithEligibleActions(project, target, false)
       addAction(bazelJumpToBuildFileAction)
-      if (StarlarkDebugAction.isApplicableTo(target)) add(StarlarkDebugAction(target.id))
+      add(StarlarkDebugAction(target.id))
     }
 
   private fun calculatePopupGroup(targets: List<BuildTarget>): ActionGroup? {
@@ -119,7 +117,7 @@ internal abstract class LoadedTargetsMouseListener(private val project: Project)
       when {
         it.kind.ruleType == RuleType.TEST -> TestTargetAction(project = project, targetInfos = listOf(it)).prepareAndPerform(project)
         it.kind.ruleType == RuleType.BINARY -> RunTargetAction(project, targetInfo = it).prepareAndPerform(project)
-        !it.noBuild -> BuildTargetAction.buildTarget(project, it.id)
+        else -> BuildTargetAction.buildTarget(project, it.id)
       }
     }
   }
@@ -146,10 +144,10 @@ internal fun DefaultActionGroup.fillWithEligibleActions(
   if (!canBeDebugged && (kind.ruleType == RuleType.BINARY || kind.ruleType == RuleType.TEST)) {
     LOG.info(
       "Debug not available for target ${target.id}: " +
-        "kind=${kind.kindString}, " +
-        "languageClasses=${kind.languageClasses}, " +
-        "ruleType=${kind.ruleType}, " +
-        "isJvmTarget=${kind.isJvmTarget()}",
+      "kind=${kind.kind}, " +
+      "languageClasses=${kind.languageClasses}, " +
+      "ruleType=${kind.ruleType}, " +
+      "isJvmTarget=${kind.isJvmTarget()}",
     )
   }
   if (kind.ruleType == RuleType.BINARY) {

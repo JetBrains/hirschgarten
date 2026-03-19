@@ -59,7 +59,7 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
         DependencyLabel.parse("@maven//:lib1"),
       ),
       kind = TargetKind(
-        kindString = "java_binary",
+        kind = "java_binary",
         ruleType = RuleType.BINARY,
         languageClasses = setOf(LanguageClass.JAVA),
       ),
@@ -108,7 +108,7 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
         Dependency("module3.module3"),
       ),
       kind = TargetKind(
-        kindString = "java_binary",
+        kind = "java_binary",
         ruleType = RuleType.BINARY,
         languageClasses = setOf(LanguageClass.JAVA),
       ),
@@ -168,7 +168,7 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
         DependencyLabel.parse("@maven//:lib1"),
       ),
       kind = TargetKind(
-        kindString = "java_binary",
+        kind = "java_binary",
         ruleType = RuleType.BINARY,
         languageClasses = setOf(LanguageClass.JAVA),
       ),
@@ -209,7 +209,7 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
         "module5.module5",
       ),
       kind = TargetKind(
-        kindString = "java_binary",
+        kind = "java_binary",
         ruleType = RuleType.BINARY,
         languageClasses = setOf(LanguageClass.JAVA),
       ),
@@ -249,7 +249,7 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
         DependencyLabel.parse("@maven//:lib1"),
       ),
       kind = TargetKind(
-        kindString = "java_library",
+        kind = "java_library",
         ruleType = RuleType.LIBRARY,
         languageClasses = setOf(LanguageClass.JAVA),
       ),
@@ -293,7 +293,7 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
         DependencyLabel.parse("@maven//:lib1"),
       ),
       kind = TargetKind(
-        kindString = "java_test",
+        kind = "java_test",
         ruleType = RuleType.TEST,
         languageClasses = setOf(LanguageClass.JAVA),
       ),
@@ -336,7 +336,7 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
         Dependency("module3.module3"),
       ),
       kind = TargetKind(
-        kindString = "java_library",
+        kind = "java_library",
         ruleType = RuleType.LIBRARY,
         languageClasses = setOf(LanguageClass.JAVA),
       ),
@@ -367,7 +367,7 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
         Dependency("module3.module3"),
       ),
       kind = TargetKind(
-        kindString = "java_test",
+        kind = "java_test",
         ruleType = RuleType.TEST,
         languageClasses = setOf(LanguageClass.JAVA),
       ),
@@ -430,10 +430,9 @@ class ExtractJvmBuildTargetTest {
     val buildTarget =
       RawBuildTarget(
         Label.parse("target"),
-        listOf("tag1", "tag2"),
         listOf(DependencyLabel.parse("dep1"), DependencyLabel(Label.parse("dep2"))),
         TargetKind(
-          kindString = "java_binary",
+          kind = "java_binary",
           ruleType = RuleType.BINARY,
           languageClasses = setOf(LanguageClass.JAVA),
         ),

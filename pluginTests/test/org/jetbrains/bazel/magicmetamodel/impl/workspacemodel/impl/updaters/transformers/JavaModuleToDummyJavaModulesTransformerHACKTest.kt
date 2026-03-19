@@ -111,7 +111,7 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest : WorkspaceModelBaseTest()
       type = JAVA_MODULE_ENTITY_TYPE_ID_NAME,
       dependencies = listOf(Dependency("@maven//:lib1")),
       kind = TargetKind(
-        kindString = "java_library",
+        kind = "java_library",
         ruleType = RuleType.LIBRARY,
         languageClasses = setOf(LanguageClass.JAVA),
       ),
@@ -171,7 +171,7 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest : WorkspaceModelBaseTest()
         name = projectRoot1Name,
         type = JAVA_MODULE_ENTITY_TYPE_ID_NAME,
         kind = TargetKind(
-          kindString = "java_library",
+          kind = "java_library",
           ruleType = RuleType.LIBRARY,
           languageClasses = setOf(LanguageClass.JAVA),
         ),
@@ -190,7 +190,7 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest : WorkspaceModelBaseTest()
       name = projectRoot2Name,
       type = JAVA_MODULE_ENTITY_TYPE_ID_NAME,
       kind = TargetKind(
-        kindString = "java_library",
+        kind = "java_library",
         ruleType = RuleType.LIBRARY,
         languageClasses = setOf(LanguageClass.JAVA),
       ),
@@ -225,7 +225,7 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest : WorkspaceModelBaseTest()
       name = projectRootName,
       type = JAVA_MODULE_ENTITY_TYPE_ID_NAME,
       kind = TargetKind(
-        kindString = "java_library",
+        kind = "java_library",
         ruleType = RuleType.LIBRARY,
         languageClasses = setOf(LanguageClass.JAVA),
       ),
@@ -267,7 +267,7 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest : WorkspaceModelBaseTest()
       type = JAVA_MODULE_ENTITY_TYPE_ID_NAME,
       kind =
         TargetKind(
-          kindString = "java_library",
+          kind = "java_library",
           ruleType = RuleType.LIBRARY,
           languageClasses = setOf(LanguageClass.JAVA),
         ),
@@ -330,7 +330,7 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest : WorkspaceModelBaseTest()
       type = JAVA_MODULE_ENTITY_TYPE_ID_NAME,
       dependencies = listOf(Dependency("@maven//:lib1")),
       kind = TargetKind(
-        kindString = "java_library",
+        kind = "java_library",
         ruleType = RuleType.LIBRARY,
         languageClasses = setOf(LanguageClass.JAVA),
       ),
@@ -393,7 +393,7 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest : WorkspaceModelBaseTest()
       name = projectRootName,
       type = JAVA_MODULE_ENTITY_TYPE_ID_NAME,
       kind = TargetKind(
-        kindString = "java_library",
+        kind = "java_library",
         ruleType = RuleType.LIBRARY,
         languageClasses = setOf(LanguageClass.JAVA),
       ),
@@ -448,7 +448,7 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest : WorkspaceModelBaseTest()
       name = projectRootName,
       type = JAVA_MODULE_ENTITY_TYPE_ID_NAME,
       kind = TargetKind(
-        kindString = "java_library",
+        kind = "java_library",
         ruleType = RuleType.LIBRARY,
         languageClasses = setOf(LanguageClass.JAVA),
       ),
@@ -497,7 +497,7 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest : WorkspaceModelBaseTest()
       name = projectRootName,
       type = JAVA_MODULE_ENTITY_TYPE_ID_NAME,
       kind = TargetKind(
-        kindString = "java_library",
+        kind = "java_library",
         ruleType = RuleType.LIBRARY,
         languageClasses = setOf(LanguageClass.JAVA),
       ),
@@ -548,7 +548,7 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest : WorkspaceModelBaseTest()
       type = JAVA_MODULE_ENTITY_TYPE_ID_NAME,
       kind =
         TargetKind(
-          kindString = "java_library",
+          kind = "java_library",
           ruleType = RuleType.LIBRARY,
           languageClasses = setOf(LanguageClass.JAVA),
         ),
@@ -610,7 +610,7 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest : WorkspaceModelBaseTest()
       name = projectRootName,
       type = JAVA_MODULE_ENTITY_TYPE_ID_NAME,
       kind = TargetKind(
-        kindString = "java_library",
+        kind = "java_library",
         ruleType = RuleType.LIBRARY,
         languageClasses = setOf(LanguageClass.JAVA),
       ),

@@ -3,8 +3,7 @@ package org.jetbrains.bazel.golang.targetKinds
 import org.jetbrains.bazel.commons.LanguageClass
 import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.commons.TargetKind
-import org.jetbrains.bazel.sync.TargetKindProvider
-import org.jetbrains.bazel.sync.fromRuleName
+import org.jetbrains.bazel.sync.workspace.targetKind.TargetKindProvider
 
 /** Contributes golang rules to [Kind].  */
 internal class GoBazelRules : TargetKindProvider {
@@ -22,14 +21,14 @@ internal class GoBazelRules : TargetKindProvider {
     GO_LIBRARY("go_library", LanguageClass.GO, RuleType.LIBRARY),
     GO_APPENGINE_LIBRARY("go_appengine_library", LanguageClass.GO, RuleType.LIBRARY),
     GO_PROTO_LIBRARY("go_proto_library", LanguageClass.GO, RuleType.LIBRARY),
-    GO_WRAP_CC("go_wrap_cc", LanguageClass.GO, RuleType.UNKNOWN),
+    GO_WRAP_CC("go_wrap_cc", LanguageClass.GO, RuleType.LIBRARY),
     GO_WEB_TEST("go_web_test", LanguageClass.GO, RuleType.TEST),
     ;
 
     val kind: TargetKind
-      get() = TargetKind.fromRuleName(kindString)!!
+      get() = TargetKind(kindString, setOf(languageClass), ruleType)
   }
 
   override val targetKinds: Set<TargetKind>
-    get() = RuleTypes.entries.map { TargetKind(it.kindString, setOf(it.languageClass), it.ruleType) }.toSet()
+    get() = RuleTypes.entries.map { it.kind }.toSet()
 }

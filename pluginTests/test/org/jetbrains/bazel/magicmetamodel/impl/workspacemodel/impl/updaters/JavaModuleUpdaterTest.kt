@@ -99,7 +99,7 @@ class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
               ),
             kind =
               TargetKind(
-                kindString = "java_library",
+                kind = "java_library",
                 ruleType = RuleType.LIBRARY,
                 languageClasses = setOf(LanguageClass.JAVA),
               ),
@@ -349,7 +349,7 @@ class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
               ),
             kind =
               TargetKind(
-                kindString = "java_library",
+                kind = "java_library",
                 ruleType = RuleType.LIBRARY,
                 languageClasses = setOf(LanguageClass.JAVA),
               ),
@@ -415,7 +415,7 @@ class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
               ),
             kind =
               TargetKind(
-                kindString = "java_library",
+                kind = "java_library",
                 ruleType = RuleType.LIBRARY,
                 languageClasses = setOf(LanguageClass.JAVA),
               ),
@@ -745,7 +745,7 @@ class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
             dependencies = emptyList(),
             kind =
               TargetKind(
-                kindString = "java_library",
+                kind = "java_library",
                 ruleType = RuleType.LIBRARY,
                 languageClasses = setOf(LanguageClass.JAVA),
               ),
@@ -807,7 +807,7 @@ class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
             dependencies = emptyList(),
             kind =
               TargetKind(
-                kindString = "java_library",
+                kind = "java_library",
                 ruleType = RuleType.LIBRARY,
                 languageClasses = setOf(LanguageClass.JAVA),
               ),
@@ -836,7 +836,7 @@ class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
             dependencies = emptyList(),
             kind =
               TargetKind(
-                kindString = "java_library",
+                kind = "java_library",
                 ruleType = RuleType.LIBRARY,
                 languageClasses = setOf(LanguageClass.JAVA),
               ),

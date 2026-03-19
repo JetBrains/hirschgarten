@@ -4,10 +4,8 @@ import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.shouldBe
 import org.jetbrains.bazel.commons.phased.generatorName
 import org.jetbrains.bazel.commons.phased.interestingDeps
-import org.jetbrains.bazel.commons.phased.isBinary
 import org.jetbrains.bazel.commons.phased.isManual
 import org.jetbrains.bazel.commons.phased.isNoIde
-import org.jetbrains.bazel.commons.phased.isTest
 import org.jetbrains.bazel.commons.phased.kind
 import org.jetbrains.bazel.commons.phased.name
 import org.jetbrains.bazel.commons.phased.srcs
@@ -70,47 +68,5 @@ class FirstPhaseTargetUtilsTest {
 
     // when & then
     target.isNoIde shouldBe true
-  }
-
-  @Test
-  fun `isBinary should return true for binary target`() {
-    // given
-    val target =
-      createMockTarget(
-        name = "//target/name",
-        kind = "java_binary",
-      )
-
-    // when & then
-    target.isBinary shouldBe true
-    target.isTest shouldBe false
-  }
-
-  @Test
-  fun `isBinary should return true for intellij_plugin_debug_target`() {
-    // given
-    val target =
-      createMockTarget(
-        name = "//target/name",
-        kind = "intellij_plugin_debug_target",
-      )
-
-    // when & then
-    target.isBinary shouldBe true
-    target.isTest shouldBe false
-  }
-
-  @Test
-  fun `isTest should return true for test target`() {
-    // given
-    val target =
-      createMockTarget(
-        name = "//target/name",
-        kind = "java_test",
-      )
-
-    // when & then
-    target.isTest shouldBe true
-    target.isBinary shouldBe false
   }
 }

@@ -1,6 +1,5 @@
 package org.jetbrains.bazel.target
 
-import com.dynatrace.hash4j.hashing.HashValue128
 import com.intellij.openapi.diagnostic.logger
 import org.h2.mvstore.DataUtils.readVarInt
 import org.h2.mvstore.MVMap
@@ -126,15 +125,9 @@ internal fun createIdToBuildMapType(filePathSuffix: String, rootDir: Path): MVMa
     createAnyValueDataType<PartialBuildTarget>(
       writer = { buffer, item ->
         writeResolvedLabel(buffer, item.id as ResolvedLabel)
-
-        buffer.putVarInt(item.tags.size)
-        for (tag in item.tags) {
-          buffer.writeString(tag)
-        }
-
         writeTargetKind(item.kind, buffer)
         writePath(path = item.baseDirectory.invariantSeparatorsPathString, filePathSuffix = filePathSuffix, buffer = buffer)
-        buffer.put(if (item.noBuild) 1 else 0)
+        buffer.put(if (item.isManual) 1 else 0)
 
         val targetData = item.data
         if (targetData == null) {
@@ -149,11 +142,9 @@ internal fun createIdToBuildMapType(filePathSuffix: String, rootDir: Path): MVMa
       },
       reader = { buffer ->
         val id = readResolvedLabel(buffer)
-        val tags = Array(readVarInt(buffer)) { buffer.readString() }.asList()
         val kind = readTargetKind(buffer)
-
         val baseDirectory = readPath(buffer, rootDir)
-        val noBuild = buffer.get() == 1.toByte()
+        val isManual = buffer.get() == 1.toByte()
 
         val typeId = buffer.get().toInt()
         val data =
@@ -166,7 +157,7 @@ internal fun createIdToBuildMapType(filePathSuffix: String, rootDir: Path): MVMa
             buffer.get(encodedData)
             bazelGson.fromJson(ungzip(encodedData).decodeToString(), aClass)
           }
-        PartialBuildTarget(id = id, tags = tags, kind = kind, baseDirectory = baseDirectory, data = data, noBuild = noBuild)
+        PartialBuildTarget(id = id, kind = kind, baseDirectory = baseDirectory, data = data, isManual = isManual)
       },
     ),
   )
@@ -202,7 +193,7 @@ private fun readPath(buffer: ByteBuffer, rootDir: Path): Path =
   }
 
 private fun writeTargetKind(kind: TargetKind, buffer: WriteBuffer) {
-  buffer.writeString(kind.kindString)
+  buffer.writeString(kind.kind)
   buffer.putVarInt(kind.languageClasses.size)
   for (languageClass in kind.languageClasses) {
     buffer.put(languageClass.serialId.toByte())
@@ -225,7 +216,7 @@ private fun readTargetKind(buffer: ByteBuffer): TargetKind {
     }
   }
   val ruleType = RuleType.entries[buffer.get().toInt()]
-  return TargetKind(kindString = kindString, languageClasses = languageClasses, ruleType = ruleType)
+  return TargetKind(kind = kindString, languageClasses = languageClasses, ruleType = ruleType)
 }
 
 /** Returns a decompressed byte array of the given content. */

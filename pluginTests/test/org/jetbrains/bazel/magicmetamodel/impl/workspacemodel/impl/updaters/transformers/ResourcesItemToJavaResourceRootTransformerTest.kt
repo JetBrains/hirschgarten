@@ -57,7 +57,7 @@ class ResourcesItemToJavaResourceRootTransformerTest {
 
     val buildTarget = createRawBuildTarget(
       kind = TargetKind(
-        kindString = "java_test",
+        kind = "java_test",
         ruleType = RuleType.TEST,
         languageClasses = setOf(LanguageClass.JAVA),
       ),

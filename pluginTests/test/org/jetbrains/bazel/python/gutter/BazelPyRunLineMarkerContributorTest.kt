@@ -131,11 +131,10 @@ internal class BazelPyRunLineMarkerContributorTest : CodeInsightFixtureTestCase<
       listOf(
         RawBuildTarget(
           id = label,
-          tags = emptyList(),
           dependencies = emptyList(),
           kind =
             TargetKind(
-              kindString = "py_binary",
+              kind = "py_binary",
               languageClasses = setOf(LanguageClass.PYTHON),
               ruleType = RuleType.BINARY,
             ),
@@ -153,8 +152,8 @@ internal class BazelPyRunLineMarkerContributorTest : CodeInsightFixtureTestCase<
               mainFile = mainFile?.virtualFile?.toNioPath(),
               mainModule = mainModule,
             ),
-        )
-      )
+        ),
+      ),
     )
   }
 

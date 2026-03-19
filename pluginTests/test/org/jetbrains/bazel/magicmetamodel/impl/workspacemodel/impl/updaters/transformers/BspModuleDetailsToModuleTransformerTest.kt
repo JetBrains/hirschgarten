@@ -50,14 +50,13 @@ class BspModuleDetailsToModuleTransformerTest : WorkspaceModelBaseTest() {
     val target =
       RawBuildTarget(
         targetId,
-        emptyList(),
         listOf(
           DependencyLabel.parse("@maven//:test"),
           DependencyLabel.parse("@//target2"),
           DependencyLabel.parse("@//target3"),
         ),
         TargetKind(
-          kindString = "java_binary",
+          kind = "java_binary",
           ruleType = RuleType.BINARY,
           languageClasses = setOf(LanguageClass.JAVA),
         ),
@@ -101,7 +100,7 @@ class BspModuleDetailsToModuleTransformerTest : WorkspaceModelBaseTest() {
           ),
         kind =
           TargetKind(
-            kindString = "java_library",
+            kind = "java_library",
             ruleType = RuleType.LIBRARY,
             languageClasses = setOf(LanguageClass.JAVA),
           ),
@@ -118,14 +117,13 @@ class BspModuleDetailsToModuleTransformerTest : WorkspaceModelBaseTest() {
     val target =
       RawBuildTarget(
         targetId,
-        emptyList(),
         listOf(
           DependencyLabel.parse("@maven//:test"),
           DependencyLabel.parse("@//target2"),
           DependencyLabel.parse("@//target3"),
         ),
         TargetKind(
-          kindString = "java_binary",
+          kind = "java_binary",
           ruleType = RuleType.BINARY,
           languageClasses = setOf(LanguageClass.JAVA),
         ),
@@ -180,7 +178,7 @@ class BspModuleDetailsToModuleTransformerTest : WorkspaceModelBaseTest() {
           ),
         kind =
           TargetKind(
-            kindString = "java_library",
+            kind = "java_library",
             ruleType = RuleType.LIBRARY,
             languageClasses = setOf(LanguageClass.JAVA),
           ),
@@ -198,14 +196,13 @@ class BspModuleDetailsToModuleTransformerTest : WorkspaceModelBaseTest() {
     val target1 =
       RawBuildTarget(
         target1Id,
-        emptyList(),
         listOf(
           DependencyLabel.parse("@maven//:test"),
           DependencyLabel.parse("//target2"),
           DependencyLabel.parse("//target3"),
         ),
         TargetKind(
-          kindString = "java_binary",
+          kind = "java_binary",
           ruleType = RuleType.BINARY,
           languageClasses = setOf(LanguageClass.JAVA),
         ),
@@ -232,13 +229,12 @@ class BspModuleDetailsToModuleTransformerTest : WorkspaceModelBaseTest() {
     val target2 =
       RawBuildTarget(
         target2Id,
-        emptyList(),
         listOf(
           DependencyLabel.parse("@maven//:test"),
           DependencyLabel.parse("//target3"),
         ),
         TargetKind(
-          kindString = "java_binary",
+          kind = "java_binary",
           ruleType = RuleType.BINARY,
           languageClasses = setOf(LanguageClass.JAVA),
         ),
@@ -282,7 +278,7 @@ class BspModuleDetailsToModuleTransformerTest : WorkspaceModelBaseTest() {
           ),
         kind =
           TargetKind(
-            kindString = "java_library",
+            kind = "java_library",
             ruleType = RuleType.LIBRARY,
             languageClasses = setOf(LanguageClass.JAVA),
           ),
@@ -298,7 +294,7 @@ class BspModuleDetailsToModuleTransformerTest : WorkspaceModelBaseTest() {
           ),
         kind =
           TargetKind(
-            kindString = "java_library",
+            kind = "java_library",
             ruleType = RuleType.LIBRARY,
             languageClasses = setOf(LanguageClass.JAVA),
           ),
@@ -337,10 +333,9 @@ internal fun Collection<String>.toDefaultTargetsMap(): Map<Label, BuildTarget> =
     valueTransform = {
       PartialBuildTarget(
         id = Label.parse(it),
-        tags = listOf(),
         kind =
           TargetKind(
-            kindString = "java_library",
+            kind = "java_library",
             ruleType = RuleType.LIBRARY,
             languageClasses = emptySet(),
           ),

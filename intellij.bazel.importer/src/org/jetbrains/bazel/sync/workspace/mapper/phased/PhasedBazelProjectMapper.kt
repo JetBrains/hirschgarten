@@ -3,16 +3,12 @@ package org.jetbrains.bazel.sync.workspace.mapper.phased
 import com.google.devtools.build.lib.query2.proto.proto2api.Build
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.commons.BazelPathsResolver
-import org.jetbrains.bazel.commons.Language
 import org.jetbrains.bazel.commons.LanguageClass
-import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.commons.phased.generatorName
 import org.jetbrains.bazel.commons.phased.interestingDeps
-import org.jetbrains.bazel.commons.phased.isBinary
 import org.jetbrains.bazel.commons.phased.isManual
 import org.jetbrains.bazel.commons.phased.isNoIde
-import org.jetbrains.bazel.commons.phased.isTest
 import org.jetbrains.bazel.commons.phased.kind
 import org.jetbrains.bazel.commons.phased.name
 import org.jetbrains.bazel.commons.phased.resources
@@ -23,8 +19,8 @@ import org.jetbrains.bazel.label.assumeResolved
 import org.jetbrains.bazel.sync.workspace.BazelResolvedWorkspace
 import org.jetbrains.bazel.sync.workspace.languages.jvm.JVMLanguagePluginParser
 import org.jetbrains.bazel.sync.workspace.mapper.BazelResolvedWorkspaceBuilder
+import org.jetbrains.bazel.sync.workspace.targetKind.TargetKindService
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
-import org.jetbrains.bsp.protocol.BuildTargetTag
 import org.jetbrains.bsp.protocol.RawBuildTarget
 import org.jetbrains.bsp.protocol.SourceItem
 import java.nio.file.Path
@@ -56,53 +52,33 @@ class PhasedBazelProjectMapper(private val bazelPathsResolver: BazelPathsResolve
     val label = Label.parse(name).assumeResolved()
     return RawBuildTarget(
       id = label,
-      tags = inferTags(),
       dependencies = interestingDeps.map { DependencyLabel.parse(it) },
       kind = inferKind(),
       sources = calculateSources(project),
       resources = calculateResources(project),
-      noBuild = isManual, // TODO lol, it's different from the aspect sync??
       baseDirectory = bazelPathsResolver.toDirectoryPath(label, context.repoMapping),
       data = null,
       generatorName = generatorName,
+      isManual = isManual,
     )
   }
 
   private fun Build.Target.inferKind(): TargetKind {
-    val ruleType =
-      when {
-        isBinary -> RuleType.BINARY
-        isTest -> RuleType.TEST
-        else -> RuleType.LIBRARY
-      }
-
-    val languageClasses = inferLanguages().mapNotNull { LanguageClass.Companion.fromLanguage(it) }.toSet()
-
-    return TargetKind(
-      kindString = kind,
-      languageClasses = languageClasses,
-      ruleType = ruleType,
-    )
+    val targetKindService = TargetKindService.getInstance()
+    val inferredRuleKind = targetKindService.guessFromRuleName(kind)
+    if (inferredRuleKind.languageClasses.isNotEmpty()) return inferredRuleKind
+    val languagesForSources = languagesFromSources()
+    return inferredRuleKind.copy(languageClasses = languagesForSources)
   }
 
-  private fun Build.Target.inferTags(): List<String> {
-    val manualTag = if (isManual) BuildTargetTag.MANUAL else null
-
-    return listOfNotNull(manualTag)
-  }
-
-  private fun Build.Target.inferLanguages(): Set<Language> {
-    val languagesForTarget = Language.allOfKind(kind)
-    val languagesForSources = srcs.flatMap { Language.allOfSource(it) }.toHashSet()
-    return languagesForTarget + languagesForSources
+  private fun Build.Target.languagesFromSources(): Set<LanguageClass> = srcs.mapNotNullTo(hashSetOf()) {
+    LanguageClass.fromExtension(it.substringAfterLast('.'))
   }
 
   private fun Build.Target.isSupported(): Boolean {
-    val isRuleSupported = Language.allOfKind(kind).isNotEmpty()
-    val areSourcesSupported =
-      srcs
-        .map { it.substringAfterLast('.') }
-        .any { Language.allOfSource(".$it").isNotEmpty() }
+    val targetKindService = TargetKindService.getInstance()
+    val isRuleSupported = targetKindService.fromRuleName(kind) != null
+    val areSourcesSupported = languagesFromSources().isNotEmpty()
 
     return isRuleSupported || areSourcesSupported
   }

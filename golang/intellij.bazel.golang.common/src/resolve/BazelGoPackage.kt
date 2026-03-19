@@ -43,7 +43,6 @@ import org.jetbrains.bazel.languages.starlark.psi.StarlarkFile
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkCallExpression
 import org.jetbrains.bazel.languages.starlark.references.findBuildFile
 import org.jetbrains.bazel.sync.SyncCache
-import org.jetbrains.bazel.sync.hasLanguage
 import org.jetbrains.bazel.target.targetUtils
 import org.jetbrains.bazel.testing.TestUtils
 import org.jetbrains.bazel.utils.findVirtualFile
@@ -258,7 +257,7 @@ class BazelGoPackage : GoPackage {
       val targetUtils = project.targetUtils
       val builder = ImmutableMultimap.builder<Label, GoBuildTarget>()
       targetUtils.allBuildTargets().forEach { target ->
-        if (target.kind.hasLanguage(LanguageClass.GO) &&
+        if (target.kind.languageClasses.contains(LanguageClass.GO) &&
           target.kind.ruleType == RuleType.TEST
         ) {
           val goBuildTarget = extractGoBuildTarget(target) ?: return@forEach

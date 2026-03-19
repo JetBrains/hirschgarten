@@ -30,7 +30,7 @@ internal typealias Kind = TargetKind
  */
 @ApiStatus.Internal
 data class TargetKind(
-  val kindString: String,
+  val kind: String,
   val languageClasses: Set<LanguageClass> = emptySet(),
   val ruleType: RuleType,
 ) {
@@ -50,5 +50,5 @@ data class TargetKind(
 
   fun isJvmTarget(): Boolean = includesJava() || includesKotlin() || includesScala()
 
-  fun usesJpsExportSemantics(): Boolean = kindString == "jvm_library" || kindString == "_jvm_library_jps"
+  fun usesJpsExportSemantics(): Boolean = kind == "jvm_library" || kind == "_jvm_library_jps"
 }

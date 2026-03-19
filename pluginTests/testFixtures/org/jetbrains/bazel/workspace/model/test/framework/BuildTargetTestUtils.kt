@@ -25,28 +25,24 @@ import kotlin.io.path.Path
 
 fun createRawBuildTarget(
   id: Label = Label.parse("//target"),
-  tags: List<String> = emptyList(),
   dependencies: List<DependencyLabel> = emptyList(),
   kind: TargetKind = TargetKind(
-    kindString = "java_library",
+    kind = "java_library",
     ruleType = RuleType.LIBRARY,
     languageClasses = setOf(LanguageClass.JAVA),
   ),
   sources: List<SourceItem> = emptyList(),
   resources: List<Path> = emptyList(),
   baseDirectory: Path = Path("/base/dir"),
-  noBuild: Boolean = false,
   data: BuildTargetData? = null,
 ): RawBuildTarget =
   RawBuildTarget(
     id = id,
-    tags = tags,
     dependencies = dependencies,
     kind = kind,
     sources = sources,
     resources = resources,
     baseDirectory = baseDirectory,
-    noBuild = noBuild,
     data = data,
   )
 
@@ -71,7 +67,7 @@ fun createJavaModule(
   dependencies: List<Dependency> = emptyList(),
   associates: List<String> = emptyList(),
   kind: TargetKind = TargetKind(
-    kindString = "java_library",
+    kind = "java_library",
     ruleType = RuleType.LIBRARY,
     languageClasses = setOf(LanguageClass.JAVA),
   ),

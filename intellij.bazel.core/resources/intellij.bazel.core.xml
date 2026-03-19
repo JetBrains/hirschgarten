@@ -65,8 +65,6 @@
       order="last"
     />
 
-    <targetKindProvider implementation="org.jetbrains.bazel.sync.GenericBazelRules"/>
-
     <bazelVersionResolver implementation="org.jetbrains.bazel.languages.bazelversion.service.resolver.BazelGithubVersionResolver"/>
 
     <bzlmodResolver implementation="org.jetbrains.bazel.languages.starlark.bazel.bzlmod.resolver.BazelCentralRegistryModuleResolver"/>

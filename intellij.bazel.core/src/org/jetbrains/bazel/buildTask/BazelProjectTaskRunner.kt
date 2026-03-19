@@ -59,9 +59,7 @@ internal class BazelProjectTaskRunner : ProjectTaskRunner() {
   private fun obtainTargetsToBuild(project: Project, tasks: Array<out ProjectTask>): List<Label> =
     tasks
       .filterIsInstance<ModuleBuildTask>()
-      .mapNotNull { project.targetUtils.getBuildTargetForModule(it.module) }
-      .filter { !it.noBuild }
-      .map { it.id }
+      .mapNotNull { project.targetUtils.getTargetForModuleId(it.module.name) }
 
   private fun BazelStatus.toTaskRunnerResult() =
     when (this) {
