@@ -5,7 +5,6 @@
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="module" module-name="intellij.bazel.bazelisk" scope="RUNTIME" />
-    <orderEntry type="module" module-name="intellij.bazel.build" scope="RUNTIME" />
     <orderEntry type="module" module-name="intellij.bazel.bytecodeViewer" scope="RUNTIME" />
     <orderEntry type="module" module-name="intellij.bazel.commons" scope="RUNTIME" />
     <orderEntry type="module" module-name="intellij.bazel.connector" scope="RUNTIME" />

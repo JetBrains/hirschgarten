@@ -37,7 +37,6 @@
     <orderEntry type="module" module-name="intellij.libraries.kotlinx.coroutines.core" scope="TEST" />
     <orderEntry type="module" module-name="intellij.platform.buildScripts" scope="TEST" />
     <orderEntry type="module" module-name="intellij.platform.buildScripts.downloader" scope="TEST" />
-    <orderEntry type="module" module-name="intellij.bazel.build" scope="TEST" />
     <orderEntry type="module" module-name="intellij.idea.ultimate.build" scope="TEST" />
     <orderEntry type="module" module-name="intellij.idea.community.build.tasks" scope="TEST" />
     <orderEntry type="library" scope="TEST" name="tcServiceMessages" level="project" />
