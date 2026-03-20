@@ -25,6 +25,7 @@ import org.jetbrains.bazel.workspacemodel.entities.BazelDummyEntitySource
 import org.jetbrains.bazel.workspacemodel.entities.BazelModuleEntitySource
 import org.jetbrains.bazel.workspacemodel.entities.GenericModuleInfo
 import org.jetbrains.bazel.workspacemodel.entities.Library
+import org.jetbrains.bazel.workspacemodel.entities.Module
 
 private val dependencyInterner: Interner<ModuleDependencyItem> = Interner.createWeakInterner()
 private val idInterner: Interner<SymbolicEntityId<*>> = Interner.createWeakInterner()
@@ -33,6 +34,7 @@ private val idInterner: Interner<SymbolicEntityId<*>> = Interner.createWeakInter
 class ModuleEntityUpdater(
   private val workspaceModelEntityUpdaterConfig: WorkspaceModelEntityUpdaterConfig,
   private val defaultDependencies: List<ModuleDependencyItem> = ArrayList(),
+  private val modules: Map<String, Module>,
   private val libraries: Map<String, Library>,
 ) : WorkspaceModelEntityWithoutParentModuleUpdater<GenericModuleInfo, ModuleEntity> {
   override suspend fun addEntity(entityToAdd: GenericModuleInfo): ModuleEntity =
@@ -42,7 +44,7 @@ class ModuleEntityUpdater(
     val associatesDependencies = entityToAdd.associates.map { toModuleDependencyItemModuleDependency(it) }
     val usesJpsExportSemantics = entityToAdd.kind.usesJpsExportSemantics()
     val dependenciesFromEntity =
-      entityToAdd.dependencies.map { dependency ->
+      entityToAdd.dependencies.mapNotNull { dependency ->
         val runtime = dependency.isRuntimeOnly
         val libraryDependency = libraries[dependency.id]
         val exported = dependency.exported || !usesJpsExportSemantics
@@ -58,8 +60,10 @@ class ModuleEntityUpdater(
             toLibraryDependency(dependency.id, exported = true, runtime)
           }
         }
-        else {
+        else if (dependency.id in modules) {
           toModuleDependencyItemModuleDependency(dependency.id, exported = exported, runtime = runtime)
+        } else {
+          null
         }
       }
 

@@ -44,14 +44,15 @@ class WorkspaceModelUpdater(
     libraries: List<Library>,
     libraryModules: List<JavaModule>,
   ) {
+    val allModules = moduleEntities + libraryModules
     val javaModuleUpdater =
       JavaModuleUpdater(
         workspaceModelEntityUpdaterConfig,
         projectBasePath,
-        moduleEntities,
+        allModules,
         libraries,
       )
-    javaModuleUpdater.addEntities(moduleEntities.filterIsInstance<JavaModule>() + libraryModules)
+    javaModuleUpdater.addEntities(allModules.filterIsInstance<JavaModule>())
     val libraryEntityUpdater = LibraryEntityUpdater(workspaceModelEntityUpdaterConfig, importIjars)
     libraryEntityUpdater.addEntities(libraries)
   }

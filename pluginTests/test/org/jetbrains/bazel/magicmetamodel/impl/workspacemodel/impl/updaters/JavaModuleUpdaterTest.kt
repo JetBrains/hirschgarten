@@ -29,6 +29,7 @@ import org.jetbrains.bazel.workspace.model.matchers.entries.ExpectedSourceRootEn
 import org.jetbrains.bazel.workspace.model.matchers.entries.shouldBeEqual
 import org.jetbrains.bazel.workspace.model.matchers.entries.shouldContainExactlyInAnyOrder
 import org.jetbrains.bazel.workspace.model.test.framework.WorkspaceModelBaseTest
+import org.jetbrains.bazel.workspace.model.test.framework.createJavaModule
 import org.jetbrains.bazel.workspacemodel.entities.BazelProjectEntitySource
 import org.jetbrains.bazel.workspacemodel.entities.ContentRoot
 import org.jetbrains.bazel.workspacemodel.entities.Dependency
@@ -36,6 +37,7 @@ import org.jetbrains.bazel.workspacemodel.entities.GenericModuleInfo
 import org.jetbrains.bazel.workspacemodel.entities.JavaModule
 import org.jetbrains.bazel.workspacemodel.entities.JavaSourceRoot
 import org.jetbrains.bazel.workspacemodel.entities.Library
+import org.jetbrains.bazel.workspacemodel.entities.Module
 import org.jetbrains.bazel.workspacemodel.entities.ResourceRoot
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
@@ -65,6 +67,12 @@ class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
     )
   val testLibrariesByName: Map<String, Library> =
     testLibraries.associateBy { it.displayName }
+  val testModules = mapOf(
+    "module1" to createJavaModule("module1"),
+    "module2" to createJavaModule("module2"),
+    "module3" to createJavaModule("module3"),
+  )
+  val testModulesList: List<Module> = testModules.values.toList()
 
   @Nested
   @DisplayName("javaModuleWithSourcesUpdater.addEntity(entityToAdd) tests")
@@ -73,8 +81,8 @@ class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
     fun `should add one java module with sources to the workspace model`() {
       runTestForUpdaters(
         listOf(
-          { JavaModuleWithSourcesUpdater(it, it.projectBasePath, emptyList(), testLibrariesByName) },
-          { JavaModuleUpdater(it, it.projectBasePath, emptyList(), testLibraries) },
+          { JavaModuleWithSourcesUpdater(it, it.projectBasePath, testModules, testLibrariesByName) },
+          { JavaModuleUpdater(it, it.projectBasePath, testModulesList, testLibraries) },
         ),
       ) { updater ->
         // given
@@ -323,8 +331,8 @@ class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
     fun `should add multiple java module with sources to the workspace model`() {
       runTestForUpdaters(
         listOf(
-          { JavaModuleWithSourcesUpdater(it, it.projectBasePath, emptyList(), testLibrariesByName) },
-          { JavaModuleUpdater(it, it.projectBasePath, emptyList(), testLibraries) },
+          { JavaModuleWithSourcesUpdater(it, it.projectBasePath, testModules, testLibrariesByName) },
+          { JavaModuleUpdater(it, it.projectBasePath, testModulesList, testLibraries) },
         ),
       ) { updater ->
         // given
@@ -725,7 +733,7 @@ class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
     fun `should add one java module without sources to the workspace model`() {
       runTestForUpdaters(
         listOf(
-          { JavaModuleWithoutSourcesUpdater(it) },
+          { JavaModuleWithoutSourcesUpdater(it, emptyMap()) },
           { JavaModuleUpdater(it, it.projectBasePath) },
         ),
       ) { updater ->
@@ -787,7 +795,7 @@ class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
     fun `should add multiple java module without sources to the workspace model`() {
       runTestForUpdaters(
         listOf(
-          { JavaModuleWithoutSourcesUpdater(it) },
+          { JavaModuleWithoutSourcesUpdater(it, emptyMap()) },
           { JavaModuleUpdater(it, it.projectBasePath) },
         ),
       ) { updater ->
