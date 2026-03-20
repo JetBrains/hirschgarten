@@ -4,14 +4,12 @@ import com.intellij.openapi.extensions.ExtensionPointName
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.languages.projectview.language.sections.IndexAdditionalFilesInDirectoriesSection
 import org.jetbrains.bazel.languages.projectview.sections.AllowManualTargetsSyncSection
-import org.jetbrains.bazel.languages.projectview.sections.AndroidMinSdkSection
 import org.jetbrains.bazel.languages.projectview.sections.BazelBinarySection
 import org.jetbrains.bazel.languages.projectview.sections.BuildFlagsSection
 import org.jetbrains.bazel.languages.projectview.sections.DebugFlagsSection
 import org.jetbrains.bazel.languages.projectview.sections.DeriveInstrumentationFilterFromTargetsSection
 import org.jetbrains.bazel.languages.projectview.sections.DeriveTargetsFromDirectoriesSection
 import org.jetbrains.bazel.languages.projectview.sections.DirectoriesSection
-import org.jetbrains.bazel.languages.projectview.sections.EnableNativeAndroidRulesSection
 import org.jetbrains.bazel.languages.projectview.sections.EnabledRulesSection
 import org.jetbrains.bazel.languages.projectview.sections.GazelleTargetSection
 import org.jetbrains.bazel.languages.projectview.sections.IdeJavaHomeOverrideSection
@@ -44,7 +42,6 @@ internal class DefaultProjectViewSectionProvider : ProjectViewSectionProvider {
   override val sections =
     listOf(
       AllowManualTargetsSyncSection(),
-      AndroidMinSdkSection(),
       BazelBinarySection(),
       BuildFlagsSection(),
       DebugFlagsSection(),
@@ -52,7 +49,6 @@ internal class DefaultProjectViewSectionProvider : ProjectViewSectionProvider {
       DeriveTargetsFromDirectoriesSection(),
       DirectoriesSection(),
       EnabledRulesSection(),
-      EnableNativeAndroidRulesSection(),
       GazelleTargetSection(),
       IdeJavaHomeOverrideSection(),
       ImportDepthSection(),
