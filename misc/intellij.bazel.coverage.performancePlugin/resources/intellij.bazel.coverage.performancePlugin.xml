@@ -1,0 +1,18 @@
+<idea-plugin>
+  <!-- region Generated dependencies - run `Generate Product Layouts` to regenerate -->
+  <dependencies>
+    <plugin id="com.jetbrains.performancePlugin"/>
+    <module name="intellij.bazel.commons"/>
+    <module name="intellij.bazel.core"/>
+    <module name="intellij.bazel.coverage"/>
+    <module name="intellij.platform.coverage"/>
+    <module name="intellij.platform.coverage.agent"/>
+  </dependencies>
+  <!-- endregion -->
+
+  <extensions defaultExtensionNs="com.jetbrains">
+    <performancePlugin.commandProvider
+      implementation="org.jetbrains.bazel.run.coverage.ideStarter.BazelCoverageCommandProvider"
+    />
+  </extensions>
+</idea-plugin>

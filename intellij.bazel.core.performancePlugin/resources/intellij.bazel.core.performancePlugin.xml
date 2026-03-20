@@ -1,0 +1,36 @@
+<idea-plugin>
+  <!-- region Generated dependencies - run `Generate Product Layouts` to regenerate -->
+  <dependencies>
+    <plugin id="com.jetbrains.performancePlugin"/>
+    <module name="intellij.bazel.bazelisk"/>
+    <module name="intellij.bazel.commons"/>
+    <module name="intellij.bazel.connector"/>
+    <module name="intellij.bazel.core"/>
+    <module name="intellij.bazel.importer"/>
+    <module name="intellij.bazel.projectview"/>
+    <module name="intellij.bazel.protobuf"/>
+    <module name="intellij.libraries.grpc"/>
+    <module name="intellij.platform.scriptDebugger.backend"/>
+    <module name="intellij.platform.scriptDebugger.ui"/>
+    <module name="intellij.platform.searchEverywhere"/>
+  </dependencies>
+  <!-- endregion -->
+
+  <extensions defaultExtensionNs="com.jetbrains">
+    <performancePlugin.commandProvider implementation="org.jetbrains.bazel.performanceImpl.BazelCommandProvider" />
+    <performancePlugin.commandProvider implementation="org.jetbrains.bazel.workspace.ideStarter.WorkspaceCommandProvider" />
+    <performancePlugin.commandProvider
+      implementation="org.jetbrains.bazel.nonmodule.sync.ideStarter.CheckNonModuleTargetsProvider"
+    />
+    <performancePlugin.commandProvider implementation="org.jetbrains.bazel.ui.ideStarter.UITestCommandProvider" />
+    <performancePlugin.commandProvider
+      implementation="org.jetbrains.bazel.target.ideStarter.TargetOrderCommandProvider"
+    />
+    <performancePlugin.commandProvider
+      implementation="org.jetbrains.bazel.kotlin.sync.ideStarter.CheckImportedModulesProvider"
+    />
+    <performancePlugin.commandProvider
+      implementation="org.jetbrains.bazel.kotlin.sync.ideStarter.CheckTargetsInTargetWidgetProvider"
+    />
+  </extensions>
+</idea-plugin>

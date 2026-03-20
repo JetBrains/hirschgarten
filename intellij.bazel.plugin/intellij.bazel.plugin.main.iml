@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module type="JAVA_MODULE" version="4">
+  <component name="NewModuleRootManager" inherit-compiler-output="true">
+    <exclude-output />
+    <orderEntry type="inheritedJdk" />
+    <orderEntry type="sourceFolder" forTests="false" />
+    <orderEntry type="module" module-name="intellij.bazel.bazelisk" scope="RUNTIME" />
+    <orderEntry type="module" module-name="intellij.bazel.build" scope="RUNTIME" />
+    <orderEntry type="module" module-name="intellij.bazel.bytecodeViewer" scope="RUNTIME" />
+    <orderEntry type="module" module-name="intellij.bazel.commons" scope="RUNTIME" />
+    <orderEntry type="module" module-name="intellij.bazel.connector" scope="RUNTIME" />
+    <orderEntry type="module" module-name="intellij.bazel.core" scope="RUNTIME" />
+    <orderEntry type="module" module-name="intellij.bazel.core.performancePlugin" scope="RUNTIME" />
+    <orderEntry type="module" module-name="intellij.bazel.coverage" scope="RUNTIME" />
+    <orderEntry type="module" module-name="intellij.bazel.coverage.performancePlugin" scope="RUNTIME" />
+    <orderEntry type="module" module-name="intellij.bazel.devkit" scope="RUNTIME" />
+    <orderEntry type="module" module-name="intellij.bazel.golang.common" scope="RUNTIME" />
+    <orderEntry type="module" module-name="intellij.bazel.importer" scope="RUNTIME" />
+    <orderEntry type="module" module-name="intellij.bazel.java.common" scope="RUNTIME" />
+    <orderEntry type="module" module-name="intellij.bazel.java.common.performancePlugin" scope="RUNTIME" />
+    <orderEntry type="module" module-name="intellij.bazel.java.coverage" scope="RUNTIME" />
+    <orderEntry type="module" module-name="intellij.bazel.java.junit" scope="RUNTIME" />
+    <orderEntry type="module" module-name="intellij.bazel.java.sync" scope="RUNTIME" />
+    <orderEntry type="module" module-name="intellij.bazel.kotlin.common" scope="RUNTIME" />
+    <orderEntry type="module" module-name="intellij.bazel.kotlin.common.performancePlugin" scope="RUNTIME" />
+    <orderEntry type="module" module-name="intellij.bazel.kotlin.coverage" scope="RUNTIME" />
+    <orderEntry type="module" module-name="intellij.bazel.kotlin.junit" scope="RUNTIME" />
+    <orderEntry type="module" module-name="intellij.bazel.kotlin.k2" scope="RUNTIME" />
+    <orderEntry type="module" module-name="intellij.bazel.kotlin.sync" scope="RUNTIME" />
+    <orderEntry type="module" module-name="intellij.bazel.kotlin.projectWizard" scope="RUNTIME" />
+    <orderEntry type="module" module-name="intellij.bazel.plugin" scope="RUNTIME" />
+    <orderEntry type="module" module-name="intellij.bazel.projectview" scope="RUNTIME" />
+    <orderEntry type="module" module-name="intellij.bazel.protobuf" scope="RUNTIME" />
+    <orderEntry type="module" module-name="intellij.bazel.protoedit" scope="RUNTIME" />
+    <orderEntry type="module" module-name="intellij.bazel.python.common" scope="RUNTIME" />
+    <orderEntry type="module" module-name="intellij.bazel.python.common.performancePlugin" scope="RUNTIME" />
+    <orderEntry type="module" module-name="intellij.bazel.remoteDevelopment" scope="RUNTIME" />
+    <orderEntry type="module" module-name="intellij.bazel.terminal" scope="RUNTIME" />
+  </component>
+</module>

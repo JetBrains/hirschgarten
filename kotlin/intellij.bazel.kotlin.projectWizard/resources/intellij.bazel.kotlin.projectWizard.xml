@@ -1,0 +1,14 @@
+<idea-plugin>
+  <dependencies>
+    <!-- region Generated dependencies - run `Generate Product Layouts` to regenerate -->
+    <module name="intellij.bazel.commons"/>
+    <module name="intellij.bazel.core"/>
+    <module name="intellij.java.ui"/>
+    <module name="intellij.kotlin.projectWizard.idea"/>
+    <!-- endregion -->
+  </dependencies>
+
+  <extensions defaultExtensionNs="com.intellij">
+    <newProjectWizard.kotlin.buildSystem implementation="org.jetbrains.bazel.kotlin.ui.starters.BazelKotlinNewProjectWizard"/>
+  </extensions>
+</idea-plugin>

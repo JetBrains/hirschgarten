@@ -1,0 +1,59 @@
+<idea-plugin>
+  <!-- region Generated dependencies - run `Generate Product Layouts` to regenerate -->
+  <dependencies>
+    <module name="intellij.bazel.commons"/>
+    <module name="intellij.bazel.core"/>
+    <module name="intellij.bazel.importer"/>
+    <module name="intellij.go.frontback"/>
+    <module name="intellij.go.impl"/>
+    <module name="intellij.platform.scriptDebugger.backend"/>
+    <module name="intellij.platform.scriptDebugger.ui"/>
+  </dependencies>
+  <!-- endregion -->
+
+  <extensions defaultExtensionNs="com.intellij">
+    <programRunner implementation="org.jetbrains.bazel.golang.debug.BazelGoDebugRunner" />
+    <runLineMarkerContributor
+      implementationClass="org.jetbrains.bazel.golang.ui.gutters.BazelGoRunLineMarkerContributor"
+      language="go"
+      order="first"
+    />
+    <stepsBeforeRunProvider implementation="org.jetbrains.bazel.golang.debug.BazelGoBinaryBeforeRunTaskProvider" />
+    <stepsBeforeRunProvider implementation="org.jetbrains.bazel.golang.debug.BazelGoTestBeforeRunTaskProvider" />
+    <documentationProvider implementation="org.jetbrains.bazel.golang.resolve.GoPackageDocumentationProvider" />
+    <additionalLibraryRootsProvider implementation="org.jetbrains.bazel.golang.sync.GoAdditionalLibraryRootsProvider" />
+    <treeStructureProvider
+      implementation="org.jetbrains.bazel.golang.treeview.BazelGoTreeStructureProvider"
+      order="last"
+    />
+    <postStartupActivity implementation="org.jetbrains.bazel.golang.startup.GoPostStartupActivity" />
+  </extensions>
+
+  <extensions defaultExtensionNs="org.jetbrains.bazel">
+    <projectPostSyncHook implementation="org.jetbrains.bazel.golang.sync.GoSdkSyncHook" />
+    <projectPostSyncHook implementation="org.jetbrains.bazel.golang.sync.GoModuleSupportPostSyncHook" />
+    <projectPostSyncHook implementation="org.jetbrains.bazel.golang.sync.GoExternalLibraryPostSyncHook" />
+    <workspaceModuleSyncHook.enable implementation="org.jetbrains.bazel.golang.sync.GoWorkspaceModuleEnable" />
+    <runHandlerProvider implementation="org.jetbrains.bazel.golang.debug.BazelGoRunHandler$BazelGoRunHandlerProvider" />
+    <runHandlerProvider
+      implementation="org.jetbrains.bazel.golang.debug.BazelGoTestHandler$BazelGoTestHandlerProvider"
+    />
+    <targetKindProvider implementation="org.jetbrains.bazel.golang.targetKinds.GoBazelRules" />
+    <indexAdditionalFilesContributor implementation="org.jetbrains.bazel.golang.sync.GoIndexAdditionalFilesContributor"/>
+  </extensions>
+  <extensions defaultExtensionNs="com.goide">
+    <dlv.positionConverterFactory
+      implementation="org.jetbrains.bazel.golang.debug.BazelDlvPosConverterFactory"
+      order="first"
+    />
+    <packageFactory
+      implementation="org.jetbrains.bazel.golang.resolve.BazelGoPackageFactory"
+      order="first"
+    />
+    <importResolver
+      id="Bazel.ImportResolver"
+      implementation="org.jetbrains.bazel.golang.resolve.BazelGoImportResolver"
+      order="first"
+    />
+  </extensions>
+</idea-plugin>

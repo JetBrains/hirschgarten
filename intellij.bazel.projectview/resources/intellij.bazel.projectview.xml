@@ -3,6 +3,14 @@
   <dependencies>
     <module name="intellij.bazel.commons"/>
   </dependencies>
+
+  <extensionPoints>
+    <extensionPoint qualifiedName="org.jetbrains.bazel.projectViewSectionProvider"
+                    interface="org.jetbrains.bazel.languages.projectview.ProjectViewSectionProvider"
+                    dynamic="true"
+    />
+  </extensionPoints>
+
   <!-- endregion -->
   <extensions defaultExtensionNs="com.intellij">
     <projectService serviceImplementation="org.jetbrains.bazel.languages.projectview.ProjectViewWorkspaceContextProvider"

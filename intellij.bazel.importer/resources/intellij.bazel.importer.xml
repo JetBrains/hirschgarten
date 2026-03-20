@@ -1,9 +1,11 @@
-<idea-plugin>
+<idea-plugin visibility="public">
   <!-- region Generated dependencies - run `Generate Product Layouts` to regenerate -->
   <dependencies>
     <module name="intellij.bazel.commons"/>
     <module name="intellij.bazel.connector"/>
     <module name="intellij.bazel.projectview"/>
+    <module name="intellij.bazel.protobuf"/>
+    <module name="intellij.platform.backend"/>
   </dependencies>
   <!-- endregion -->
 
@@ -27,6 +29,11 @@
                     interface="org.jetbrains.bazel.sync.workspace.languages.java.sourceRoot.prefix.JavaSourceRootPatternContributor"
                     dynamic="true"
     />
+    <extensionPoint
+      dynamic="true"
+      interface="org.jetbrains.bazel.scala.sdk.ScalaSdkExtension"
+      qualifiedName="org.jetbrains.bazel.scalaSdkExtension"
+    />
   </extensionPoints>
 
   <extensions defaultExtensionNs="org.jetbrains.bazel">
@@ -46,10 +53,6 @@
     />
     <workspaceModel.fileIndexContributor
       implementation="org.jetbrains.bazel.workspace.BazelProjectDirectoriesWorkspaceFileIndexContributor"
-    />
-    <moduleType
-      id="BAZEL_DUMMY_MODULE_TYPE"
-      implementationClass="org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.BazelDummyModuleType"
     />
     <workspaceModel.fileIndexContributor
       implementation="org.jetbrains.bazel.workspace.CompiledSourceCodeInsideJarExcludeWorkspaceFileIndexContributor"

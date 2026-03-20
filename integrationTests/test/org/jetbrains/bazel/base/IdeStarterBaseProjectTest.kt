@@ -308,7 +308,7 @@ fun Driver.findFile(relativePath: String): VirtualFile? = projectRootDir.findFil
 val Driver.projectRootDir: VirtualFile
   get() = utility<BazelProjectPropertiesKt>().getRootDir(singleProject())
 
-@Remote("org.jetbrains.bazel.config.BazelProjectPropertiesKt", plugin = "org.jetbrains.bazel")
+@Remote("org.jetbrains.bazel.config.BazelProjectPropertiesKt", plugin = "org.jetbrains.bazel/intellij.bazel.core")
 interface BazelProjectPropertiesKt {
   fun getRootDir(project: Project): VirtualFile
 }

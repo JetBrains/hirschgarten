@@ -1,0 +1,53 @@
+<idea-plugin visibility="public">
+
+  <!-- region Generated dependencies - run `Generate Product Layouts` to regenerate -->
+  <dependencies>
+    <plugin id="org.jetbrains.kotlin"/>
+    <module name="intellij.bazel.commons"/>
+    <module name="intellij.bazel.core"/>
+    <module name="intellij.bazel.importer"/>
+    <module name="intellij.bazel.java.common"/>
+    <module name="intellij.java"/>
+    <module name="intellij.java.debugger"/>
+    <module name="intellij.java.debugger.impl"/>
+    <module name="intellij.java.execution"/>
+    <module name="intellij.java.execution.impl"/>
+    <module name="intellij.java.ui"/>
+  </dependencies>
+  <!-- endregion -->
+
+  <extensions defaultExtensionNs="org.jetbrains.kotlin">
+    <supportsKotlinPluginMode supportsK1="true" supportsK2="true"/>
+  </extensions>
+
+  <extensions defaultExtensionNs="org.jetbrains.kotlin">
+    <projectConfigurator
+      implementation="org.jetbrains.bazel.kotlin.configuration.BazelKotlinProjectConfigurator"
+      order="first"
+    />
+  </extensions>
+
+  <extensions defaultExtensionNs="org.jetbrains.bazel">
+    <syntheticRunTargetTemplateGenerator language="kotlin"
+                                         implementationClass="org.jetbrains.bazel.kotlin.run.KotlinSyntheticRunTargetTemplateGenerator"/>
+    <projectPostSyncHook implementation="org.jetbrains.bazel.kotlin.sync.RefreshKotlinHighlightingPostSyncHook"/>
+    <sourceTypeIconProvider implementation="org.jetbrains.bazel.kotlin.configuration.KotlinSourceTypeIconProvider"/>
+    <unresolvedImportChecker
+      implementation="org.jetbrains.bazel.kotlin.ui.notifications.KotlinUnresolvedImportChecker"
+    />
+    <testLocatorProvider
+      id="kotlinShortNameLocator"
+      implementation="org.jetbrains.bazel.jvm.run.KotlinShortNameTestLocatorProvider"
+      order="before defaultJavaLocator"
+    />
+    <coroutinesHelper implementation="org.jetbrains.bazel.jvm.run.DefaultKotlinCoroutinesHelper"/>
+  </extensions>
+
+  <extensions defaultExtensionNs="com.intellij">
+    <runLineMarkerContributor
+      implementationClass="org.jetbrains.bazel.kotlin.ui.gutters.BazelKotlinRunLineMarkerContributor"
+      language="kotlin"
+    />
+  </extensions>
+
+</idea-plugin>

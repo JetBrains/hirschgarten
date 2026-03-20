@@ -1,0 +1,51 @@
+<idea-plugin>
+  <!-- region Generated dependencies - run `Generate Product Layouts` to regenerate -->
+  <dependencies>
+    <module name="intellij.bazel.commons"/>
+    <module name="intellij.bazel.core"/>
+    <module name="intellij.bazel.importer"/>
+    <module name="intellij.python.community.impl"/>
+    <module name="intellij.python.pydev"/>
+    <module name="intellij.python.sdk"/>
+  </dependencies>
+  <!-- endregion -->
+
+  <extensions defaultExtensionNs="com.intellij">
+    <programRunner implementation="org.jetbrains.bazel.python.run.PythonBspDebugRunner" />
+    <runLineMarkerContributor
+      implementationClass="org.jetbrains.bazel.python.gutter.BazelPyRunLineMarkerContributor"
+      language="Python"
+    />
+  </extensions>
+
+  <extensions defaultExtensionNs="org.jetbrains.bazel">
+    <!-- IndexAdditionalFilesSyncHook iterates over all added instances of ModuleEntity, so it has to come after PythonProjectSync -->
+    <projectSyncHook
+      implementation="org.jetbrains.bazel.python.sync.PythonProjectSync"
+      order="before IndexAdditionalFilesSyncHook"
+    />
+
+    <sourceTypeIconProvider implementation="org.jetbrains.bazel.python.sync.PythonSourceIconProvider" />
+
+    <runHandlerProvider
+      id="PythonBazelRunHandlerProvider"
+      implementation="org.jetbrains.bazel.python.run.PythonBazelRunHandler$Provider"
+    />
+    <runHandlerProvider
+      id="PythonBazelTestHandlerProvider"
+      implementation="org.jetbrains.bazel.python.run.PythonBazelTestHandler$Provider"
+    />
+  </extensions>
+
+  <extensions defaultExtensionNs="Pythonid">
+    <importResolver implementation="org.jetbrains.bazel.python.resolve.BazelPyImportResolver" />
+  </extensions>
+
+  <extensionPoints>
+    <extensionPoint
+      dynamic="true"
+      interface="org.jetbrains.bazel.python.resolve.PythonSynonymProvider"
+      qualifiedName="org.jetbrains.bazel.python.synonymProvider"
+    />
+  </extensionPoints>
+</idea-plugin>

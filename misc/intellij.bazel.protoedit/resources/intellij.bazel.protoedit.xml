@@ -1,0 +1,18 @@
+<idea-plugin>
+  <!-- region Generated dependencies - run `Generate Product Layouts` to regenerate -->
+  <dependencies>
+    <plugin id="idea.plugin.protoeditor"/>
+    <module name="intellij.bazel.commons"/>
+    <module name="intellij.bazel.core"/>
+    <module name="intellij.bazel.importer"/>
+  </dependencies>
+  <!-- endregion -->
+
+  <extensions defaultExtensionNs="org.jetbrains.bazel">
+    <projectPostSyncHook implementation="org.jetbrains.bazel.protobuf.BazelProtobufSyncHook" />
+  </extensions>
+
+  <extensions defaultExtensionNs="com.intellij.protobuf">
+    <fileResolveProvider implementation="org.jetbrains.bazel.protobuf.BazelProtobufFileResolveProvider" />
+  </extensions>
+</idea-plugin>

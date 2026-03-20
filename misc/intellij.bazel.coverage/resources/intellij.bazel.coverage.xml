@@ -1,0 +1,45 @@
+<idea-plugin>
+  <!-- region Generated dependencies - run `Generate Product Layouts` to regenerate -->
+  <dependencies>
+    <module name="intellij.bazel.commons"/>
+    <module name="intellij.bazel.core"/>
+    <module name="intellij.platform.coverage"/>
+    <module name="intellij.platform.coverage.agent"/>
+  </dependencies>
+  <!-- endregion -->
+
+  <extensionPoints>
+    <extensionPoint
+      dynamic="true"
+      interface="org.jetbrains.bazel.run.coverage.BazelCoverageClassNodeDecoratorPsiElementClassifier"
+      qualifiedName="org.jetbrains.bazel.bazelCoverageClassNodeDecoratorPsiElementClassifier"
+    />
+  </extensionPoints>
+
+  <extensions defaultExtensionNs="com.intellij">
+    <programRunner implementation="org.jetbrains.bazel.run.coverage.BazelCoverageProgramRunner"/>
+    <coverageRunner implementation="org.jetbrains.bazel.run.coverage.BazelCoverageRunner"/>
+    <coverageEngine implementation="org.jetbrains.bazel.run.coverage.BazelCoverageEngine"/>
+    <projectViewNodeDecorator implementation="org.jetbrains.bazel.run.coverage.BazelCoverageClassNodeDecorator"/>
+  </extensions>
+
+  <extensions defaultExtensionNs="org.jetbrains.bazel">
+    <coverageExecutorProvider implementation="org.jetbrains.bazel.run.coverage.DefaultBazelCoverageExecutorProvider"/>
+  </extensions>
+
+  <actions>
+    <action class="org.jetbrains.bazel.ui.projectTree.action.RunAllTestsWithCoverageAction">
+      <add-to-group
+        anchor="after"
+        group-id="EditorPopupMenu"
+        relative-to-action="BazelRunAllTestsAction"
+      />
+      <add-to-group
+        anchor="after"
+        group-id="ProjectViewPopupMenu"
+        relative-to-action="BazelRunAllTestsAction"
+      />
+    </action>
+  </actions>
+
+</idea-plugin>

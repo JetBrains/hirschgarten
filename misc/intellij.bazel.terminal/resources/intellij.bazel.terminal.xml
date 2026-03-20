@@ -1,0 +1,16 @@
+<idea-plugin>
+  <!-- region Generated dependencies - run `Generate Product Layouts` to regenerate -->
+  <dependencies>
+    <plugin id="org.jetbrains.plugins.terminal"/>
+    <module name="intellij.bazel.commons"/>
+    <module name="intellij.bazel.core"/>
+    <module name="intellij.bazel.projectview"/>
+  </dependencies>
+  <!-- endregion -->
+
+  <extensions defaultExtensionNs="org.jetbrains.plugins.terminal">
+    <commandSpecsProvider
+      implementation="org.jetbrains.bazel.languages.bazelquery.terminal.BazelQueryCommandSpecsProvider"
+    />
+  </extensions>
+</idea-plugin>
