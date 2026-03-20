@@ -274,6 +274,19 @@ object IdeaBazelCases : BaseBazelCasesParametrized(BazelTestContext.IDEA) {
       },
     )
   )
+
+  val ProjectViewAppearance = withBazelProject(
+    projectInfo = withDefaults(
+      repositoryUrl = "https://github.com/JetBrainsBazelBot/simpleBazelProjectsForTesting.git",
+      commitHash = "bba2152c660576119e8b734cd639eec179c40231",
+      branchName = "main",
+      relativePath = "projectViewAppearanceTest",
+      configure = { context ->
+        BazelProjectConfigurer.configureProjectBeforeUseWithoutBazelClean(context, createProjectView = false)
+        preCacheBazelisk(context)
+      },
+    )
+  )
 }
 
 private fun preCacheBazelisk(context: IDETestContext) {

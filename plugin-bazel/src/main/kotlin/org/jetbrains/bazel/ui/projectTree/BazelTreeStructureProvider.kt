@@ -47,62 +47,11 @@ private class BazelTreeStructureProvider : TreeStructureProvider {
   ): Collection<AbstractTreeNode<*>> {
     val project = parent.project ?: return children
     if (!project.isBazelProject) return children
-    val newSettings = wrapViewSettings(settings)
     return when (parent) {
-      is ProjectViewProjectNode -> calculateChildrenForProjectNode(project, children, newSettings)
+      is ProjectViewProjectNode -> calculateChildrenForProjectNode(project, children, settings)
       else -> children.removeModuleAndModuleGroupNodes()
     }
   }
-
-  /**
-   * only wrap [ProjectViewSettings]
-   */
-  private fun wrapViewSettings(settings: ViewSettings): ViewSettings =
-    when (settings) {
-      is ProjectViewSettings ->
-        object : ProjectViewSettings by settings {
-          override fun isAbbreviatePackageNames(): Boolean = false
-
-          override fun isFlattenPackages(): Boolean = false
-
-          /**
-           * this is to mitigate the issue of incorrectly compacting the middle packages.
-           *
-           * Refer to [this issue](https://youtrack.jetbrains.com/issue/BAZEL-1879) for more info.
-           *
-           * TODO: remove this when the issue is addressed in IJ Platform
-           */
-          override fun isHideEmptyMiddlePackages(): Boolean = false
-
-          override fun isCompactDirectories(): Boolean = settings.isCompactDirectories
-
-          override fun isShowLibraryContents(): Boolean = settings.isShowLibraryContents
-
-          override fun isFoldersAlwaysOnTop(): Boolean = settings.isFoldersAlwaysOnTop
-
-          override fun isShowMembers(): Boolean = settings.isShowMembers
-
-          override fun isStructureView(): Boolean = settings.isStructureView
-
-          override fun isShowModules(): Boolean = settings.isShowModules
-
-          override fun isShowScratchesAndConsoles(): Boolean = settings.isShowScratchesAndConsoles
-
-          override fun isFlattenModules(): Boolean = settings.isFlattenModules
-
-          override fun isShowURL(): Boolean = settings.isShowURL
-
-          override fun isShowExcludedFiles(): Boolean = settings.isShowExcludedFiles
-
-          override fun isShowVisibilityIcons(): Boolean = settings.isShowVisibilityIcons
-
-          override fun getSortKey(): NodeSortKey = settings.sortKey
-
-          override fun isUseFileNestingRules(): Boolean = settings.isUseFileNestingRules
-        }
-
-      else -> settings
-    }
 
   private fun calculateChildrenForProjectNode(
     project: Project,
