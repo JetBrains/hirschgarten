@@ -159,6 +159,7 @@ abstract class BazelCommand(val bazelBinary: String) {
       commandLine.addAll(options)
       commandLine.addAll(environment.map { (key, value) -> "--action_env=$key=$value" })
       commandLine.addAll(inheritedEnvironment.map { "--action_env=$it" })
+      commandLine.add("--build_tag_filters=-no-ide")
       val targetPatternFile = prepareTargetPatternFile()
       commandLine.add(BazelFlag.targetPatternFile(targetPatternFile.toString()))
 
@@ -303,19 +304,28 @@ abstract class BazelCommand(val bazelBinary: String) {
       val excludesString = excludedTargets.joinToString(separator = " - ")
       val targetString = if (excludesString.isEmpty()) includesString else "$includesString - $excludesString"
       return if (allowManualTargetsSync) {
-        targetString
+        excludeNoIdeTargetsQueryString(targetString)
       }
       else {
-        excludeManualTargetsQueryString(targetString)
+        excludeManualAndNoIdeTargetsQueryString(targetString)
       }
+
     }
 
-    private fun excludeManualTargetsQueryString(targetString: String): String =
+    private fun excludeManualAndNoIdeTargetsQueryString(targetString: String): String =
       if (SystemInfo.isWindows) {
-        "attr('tags', '^((?!manual).)*$', $targetString)"
+        "attr('tags', '^((?!manual|no-ide).)*$', $targetString)"
       }
       else {
-        "attr(\"tags\", \"^((?!manual).)*$\", $targetString)"
+        "attr(\"tags\", \"^((?!manual|no-ide).)*$\", $targetString)"
+      }
+
+    private fun excludeNoIdeTargetsQueryString(targetString: String): String =
+      if (SystemInfo.isWindows) {
+        "attr('tags', '^((?!no-ide).)*$', $targetString)"
+      }
+      else {
+        "attr(\"tags\", \"^((?!no-ide).)*$\", $targetString)"
       }
   }
 
