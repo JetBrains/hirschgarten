@@ -9,8 +9,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import org.jetbrains.annotations.ApiStatus
-import org.jetbrains.bazel.bazelrunner.BazelLog
 import org.jetbrains.bazel.bazelrunner.BazelCommand
+import org.jetbrains.bazel.bazelrunner.BazelLog
 import org.jetbrains.bazel.bazelrunner.BazelProcessResult
 import org.jetbrains.bazel.bazelrunner.BazelRunner
 import org.jetbrains.bazel.bazelrunner.HasAdditionalBazelOptions
@@ -237,6 +237,7 @@ class ExecuteService(
     params.arguments?.let { (command as HasProgramArguments).programArguments.addAll(it) }
     additionalProgramArguments?.let { (command as HasProgramArguments).programArguments.addAll(it) }
     command.options.add(BazelFlag.buildEventBinaryPathConversion(false))
+    command.options.add(BazelFlag.remoteDownloadOutputsTopLevel())  // We need, e.g., test.xml downloaded when using remote execution
     with(command as HasMultipleTargets) {
       targets.addAll(targetsSpec.values)
       excludedTargets.addAll(targetsSpec.excludedValues)
