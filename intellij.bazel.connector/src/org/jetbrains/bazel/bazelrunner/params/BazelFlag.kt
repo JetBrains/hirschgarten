@@ -75,6 +75,9 @@ object BazelFlag {
   @JvmStatic
   fun targetPatternFile(file: String): String = arg("target_pattern_file", file)
 
+  @JvmStatic
+  fun remoteDownloadOutputsTopLevel(): String = arg("remote_download_outputs", "toplevel")
+
   private fun yesNoArg(name: String, enable: Boolean) = arg(name, if (enable) "yes" else "no")
 
   private fun arg(name: String, value: String) = String.format("--%s=%s", name, value)
