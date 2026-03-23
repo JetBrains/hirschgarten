@@ -126,7 +126,7 @@ internal class AspectBazelProjectMapper(
           targetsAtDepth.targets.partition {
             isWorkspaceTarget(it, repoMapping, featureFlags, workspaceContext)
           }
-        val (jvmDirectDependencies, nonJvmDirectDependencies) = targetsAtDepth.directDependencies.partition { it.getJvmTarget() }
+        val (jvmDirectDependencies, nonJvmDirectDependencies) = targetsAtDepth.directDependencies.partition { it.javaCommon.jvmTarget }
         val jvmLibraries = (nonWorkspaceTargets + jvmDirectDependencies).associateBy { it.label() }
         (targetsToImport + nonJvmDirectDependencies).asSequence() to jvmLibraries
       }
@@ -271,13 +271,13 @@ internal class AspectBazelProjectMapper(
   }
 
   private fun shouldCreateOutputJarsLibrary(targetInfo: TargetInfo, allTargets : Map<Label, TargetInfo>) =
-    !targetInfo.kind.endsWith("_resources") && targetInfo.getJvmTarget() &&
+    !targetInfo.kind.endsWith("_resources") && targetInfo.javaCommon.jvmTarget &&
       (
         targetInfo.generatedSourcesList.any { it.relativePath.endsWith(".srcjar") } ||
           (targetInfo.sourcesList.any() && !hasKnownJvmSources(targetInfo)) ||
           (targetInfo.sourcesList.none() && targetInfo.kind !in workspaceTargetKinds && !targetInfo.executable) ||
-          targetInfo.hasApiGeneratingPlugins ||
-          targetInfo.kotlinTargetInfo.exportedCompilerPluginTargetsFromDepsList.any { allTargets.get(Label.parse(it))?.hasApiGeneratingPlugins ?: false }
+          targetInfo.javaProvider.hasApiGeneratingPlugins ||
+          targetInfo.kotlinTargetInfo.exportedCompilerPluginTargetsFromDepsList.any { allTargets.get(Label.parse(it))?.javaProvider?.hasApiGeneratingPlugins ?: false }
         )
 
   private fun annotationProcessorLibraries(targetsToImport: Sequence<TargetInfo>, repoMapping: RepoMapping): Map<Label, List<LibraryItem>> {
@@ -310,7 +310,7 @@ internal class AspectBazelProjectMapper(
       for (reverseDep in dependencyGraph.getReverseDependenciesInfo(info)) {
         val reverseDepLabel = reverseDep.label()
         if (reverseDepLabel in visited) continue
-        if (!reverseDep.getJvmTarget()) continue
+        if (!reverseDep.javaCommon.jvmTarget) continue
         toProcess.add(reverseDepLabel)
         visited.add(reverseDepLabel)
       }
@@ -823,7 +823,7 @@ internal class AspectBazelProjectMapper(
       isTargetTreatedAsInternal(target.label().assumeResolved(), repoMapping) &&
         (
           shouldImportTargetKind(target.kind) ||
-            target.getJvmTarget() &&
+            target.javaCommon.jvmTarget &&
             (
               target.depsCount > 0 ||
                 hasKnownJvmSources(target)
@@ -866,7 +866,7 @@ internal class AspectBazelProjectMapper(
   // TODO BAZEL-2208
   // The only language that supports strict deps by default is Java, in Kotlin and Scala strict deps are disabled by default.
   private fun targetSupportsStrictDeps(target: TargetInfo): Boolean =
-    target.getJvmTarget() && !target.hasScalaTargetInfo() && !target.hasKotlinTargetInfo()
+    target.javaCommon.jvmTarget && !target.hasScalaTargetInfo() && !target.hasKotlinTargetInfo()
 
   private suspend fun createRawBuildTargets(
     targets: List<IntermediateTargetData>,

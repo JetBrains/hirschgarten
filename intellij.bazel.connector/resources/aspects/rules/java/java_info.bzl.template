@@ -109,9 +109,19 @@ def extract_java_runtime(target, ctx, output_groups, dep_targets, **kwargs):
         update_sync_output_groups(output_groups, "bsp-build-artifact", depset(resolve_files))
 
 
+    has_api_generating_plugins = False
+    if JavaPluginInfo in target:
+        java_plugin_info = target[JavaPluginInfo]
+        if len(java_plugin_info.api_generating_plugins.processor_classes.to_list()) > 0:
+            has_api_generating_plugins = True
+    jvm_target = False
+    if provider:
+        jvm_target = True
+
     java_common_info = dict(jdeps = [file_location(j) for j in jdeps],
                             jars = jars, generated_jars = generated_jars,
                             javac_opts = get_javacopts(target, ctx),
+                            jvm_target = jvm_target,
                        )
     info_result = dict(java_common = java_common_info)
 
@@ -120,14 +130,9 @@ def extract_java_runtime(target, ctx, output_groups, dep_targets, **kwargs):
         info_result["java_runtime_info"] = runtime_info
         export_result = dict(java_runtime_info = runtime_info)
     if provider:
-        info_result["jvm_target"] = True
         info_result["java_provider"] = struct(
-            full_compile_jars = map(file_location, getattr(provider, "full_compile_jars", depset()).to_list())
+            full_compile_jars = map(file_location, getattr(provider, "full_compile_jars", depset()).to_list()),
+            has_api_generating_plugins = has_api_generating_plugins
         )
-
-    if JavaPluginInfo in target:
-        java_plugin_info = target[JavaPluginInfo]
-        if len(java_plugin_info.api_generating_plugins.processor_classes.to_list()) > 0:
-            info_result["has_api_generating_plugins"] = True
 
     return info_result, export_result

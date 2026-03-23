@@ -100,16 +100,11 @@ def extract_kotlin_info(target, ctx, output_groups, dep_targets, **kwargs):
         update_sync_output_groups(output_groups, "bsp-build-artifact", depset(resolve_files))
 
 
-
-
     info_file = dict(kotlin_target_info = kotlin_target_info,
                      java_common = dict(javac_opts = get_additional_javac_options(ctx, target),
-                                        jars = jars, generated_jars = generated_jars),
-                     jvm_target = True,
+                                        jars = jars, generated_jars = generated_jars,
+                                        jvm_target = True),
                 )
-    if hasattr(provider, "api_generating_plugins"):
-        if len(provider.api_generating_plugins.processor_classes.to_list()) > 0:
-            info_file["has_api_generating_plugins"] = True
 
     return info_file, None
 

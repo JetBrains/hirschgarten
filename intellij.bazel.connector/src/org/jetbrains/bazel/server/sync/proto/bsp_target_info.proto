@@ -59,6 +59,7 @@ message JvmTargetInfo {
 
 message JavaProviderInfo {
   repeated ArtifactLocation full_compile_jars = 1;
+  bool has_api_generating_plugins = 2;
 }
 
 message JavaToolchainInfo {
@@ -104,6 +105,7 @@ message JavaCommonInfo {
   repeated JvmOutputs jars = 2;
   repeated JvmOutputs generated_jars = 3;
   repeated ArtifactLocation jdeps = 4;
+  bool jvm_target = 1004;
 }
 
 message PythonTargetInfo {
@@ -143,8 +145,6 @@ message TargetInfo {
   bool executable = 90;
   string workspace_name = 100;
   JvmTargetInfo jvm_target_info = 1000;
-  bool jvm_target = 1004;
-  bool has_api_generating_plugins = 1005;
   string generator_name = 1500;
   JavaProviderInfo java_provider = 1008;
   JavaCommonInfo java_common = 1007;

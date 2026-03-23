@@ -59,7 +59,7 @@ class JavaLanguagePlugin internal constructor(
   }
 
   override suspend fun createBuildTargetData(context: LanguagePluginContext, target: TargetInfo, repoMapping: RepoMapping): JvmBuildTarget? {
-    if (!target.getJvmTarget()) {
+    if (!target.javaCommon.jvmTarget) {
       return null
     }
     val localRepositories = repoMapping.getLocalRepositories()
