@@ -27,6 +27,7 @@ import org.jetbrains.bazel.label.ResolvedLabel
 import org.jetbrains.bazel.label.assumeResolved
 import org.jetbrains.bazel.performance.bspTracer
 import org.jetbrains.bazel.server.label.label
+import org.jetbrains.bazel.server.model.sourcesList
 import org.jetbrains.bazel.sync.workspace.BazelResolvedWorkspace
 import org.jetbrains.bazel.sync.workspace.graph.DependencyGraph
 import org.jetbrains.bazel.sync.workspace.languages.LanguagePlugin
@@ -116,7 +117,7 @@ internal class AspectBazelProjectMapper(
               targetSupportsStrictDeps = { id -> allTargets[id]?.let { targetSupportsStrictDeps(it) } == true },
               isWorkspaceTarget = { id ->
                 allTargets[id]?.let { target ->
-                  target.sourcesCount > 0 && isWorkspaceTarget(target, repoMapping, featureFlags, workspaceContext)
+                  target.sourcesList.any() && isWorkspaceTarget(target, repoMapping, featureFlags, workspaceContext)
                 } == true
               },
             )
@@ -284,8 +285,8 @@ internal class AspectBazelProjectMapper(
     !targetInfo.kind.endsWith("_resources") && targetInfo.getJvmTarget() &&
       (
         targetInfo.jvmTargetInfo.generatedSourcesList.any { it.relativePath.endsWith(".srcjar") } ||
-          (targetInfo.sourcesList.isNotEmpty() && !hasKnownJvmSources(targetInfo)) ||
-          (targetInfo.sourcesList.isEmpty() && targetInfo.kind !in workspaceTargetKinds && !targetInfo.executable) ||
+          (targetInfo.sourcesList.any() && !hasKnownJvmSources(targetInfo)) ||
+          (targetInfo.sourcesList.none() && targetInfo.kind !in workspaceTargetKinds && !targetInfo.executable) ||
           targetInfo.hasApiGeneratingPlugins ||
           targetInfo.kotlinTargetInfo.exportedCompilerPluginTargetsFromDepsList.any { allTargets.get(Label.parse(it))?.hasApiGeneratingPlugins ?: false }
         )
@@ -787,7 +788,7 @@ internal class AspectBazelProjectMapper(
     targetInfo.sourcesList.any {
       it.relativePath.endsWith(".py")
     } ||
-    (targetInfo.sourcesList.isEmpty() && workspaceContext.pythonCodeGeneratorRuleNames.contains(targetInfo.kind))
+    (targetInfo.sourcesList.none() && workspaceContext.pythonCodeGeneratorRuleNames.contains(targetInfo.kind))
 
   private fun hasKnownGoSources(targetInfo: TargetInfo) =
     targetInfo.sourcesList.any {

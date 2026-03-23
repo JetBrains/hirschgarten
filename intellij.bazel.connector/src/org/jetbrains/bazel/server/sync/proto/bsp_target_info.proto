@@ -138,7 +138,7 @@ message TargetInfo {
   TargetKey key = 2;
   repeated Dependency deps = 4;
   repeated string tags = 5;
-  repeated ArtifactLocation sources = 50;
+  repeated ArtifactLocation srcs = 50;
   map<string, string> env = 70;
   repeated string env_inherit = 80;
   bool executable = 90;

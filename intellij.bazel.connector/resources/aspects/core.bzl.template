@@ -93,17 +93,11 @@ def _bsp_target_info_aspect_impl(target, ctx):
     sources = []
 
     if type(srcs_attr) == "list":
-        all_sources = [
+        sources = [
             file_location(f)
             for t in srcs_attr
             for f in attr_entry_to_list(t)
             if not f.is_directory
-        ]
-
-        sources = [
-            s
-            for s in all_sources
-            if s.is_source
         ]
 
     aspect_ids = get_aspect_ids(ctx, target)
@@ -131,7 +125,7 @@ def _bsp_target_info_aspect_impl(target, ctx):
         kind = rule_kind,
         tags = rule_attrs.tags,
         deps = list(all_deps),
-        sources = sources,
+        srcs = sources,
         env = env,
         env_inherit = getattr(rule_attrs, "env_inherit", []),
         executable = executable,

@@ -12,6 +12,7 @@ import org.jetbrains.bazel.info.BspTargetInfo.PythonTargetInfo
 import org.jetbrains.bazel.info.BspTargetInfo.TargetInfo
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.server.label.label
+import org.jetbrains.bazel.server.model.sourcesList
 import org.jetbrains.bazel.sync.workspace.languages.LanguagePlugin
 import org.jetbrains.bazel.sync.workspace.languages.LanguagePluginContext
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
@@ -61,7 +62,7 @@ internal class PythonLanguagePlugin(private val bazelPathsResolver: BazelPathsRe
         emptyList()
       }
     val pythonTarget = target.pythonTargetInfo
-    val isCodeGenerator = target.sourcesList.isEmpty() && workspaceContext.pythonCodeGeneratorRuleNames.contains(target.kind)
+    val isCodeGenerator = target.sourcesList.none() && workspaceContext.pythonCodeGeneratorRuleNames.contains(target.kind)
     return PythonBuildTarget(
       version = pythonTarget.version.takeUnless(String::isNullOrEmpty) ?: defaultVersion,
       interpreter = calculateInterpreterPath(interpreter = pythonTarget.interpreter, localRepositories) ?: defaultInterpreter,
@@ -80,7 +81,7 @@ internal class PythonLanguagePlugin(private val bazelPathsResolver: BazelPathsRe
       ?.let { bazelPathsResolver.resolve(it, localRepositories) }
 
   private fun getExternalSources(targetInfo: TargetInfo, localRepositories : LocalRepositoryMapping): List<ArtifactLocation> =
-    targetInfo.sourcesList.mapNotNull { it.takeIf { bazelPathsResolver.isExternal(it, localRepositories) }}
+    targetInfo.sourcesList.mapNotNull { it.takeIf { bazelPathsResolver.isExternal(it, localRepositories) }}.toList()
 
   private fun calculateExternalSourcePath(externalSource: ArtifactLocation, localRepositories : LocalRepositoryMapping): Path {
     val path = bazelPathsResolver.resolve(externalSource, localRepositories)

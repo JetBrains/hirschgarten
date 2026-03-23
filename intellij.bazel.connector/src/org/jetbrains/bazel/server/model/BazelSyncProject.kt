@@ -47,3 +47,11 @@ data class AspectSyncProject(
     return copy(targets = newTargets)
   }
 }
+
+@get:ApiStatus.Internal
+val BspTargetInfo.TargetInfo.sourcesList : Sequence<BspTargetInfo.ArtifactLocation>
+  get() = srcsList.asSequence().filter { it.isSource}
+
+@get:ApiStatus.Internal
+val BspTargetInfo.TargetInfo.generatedSourcesList : Sequence<BspTargetInfo.ArtifactLocation>
+  get() = srcsList.asSequence().filter { !it.isSource}
