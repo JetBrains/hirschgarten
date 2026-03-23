@@ -10,6 +10,7 @@ import org.jetbrains.bsp.protocol.BazelTaskLogger
 @ApiStatus.Internal
 class BazelProcess internal constructor(
   private val process: Process,
+  private val showStdout: Boolean,
   private val logger: BazelTaskLogger? = null,
   private val finishCallback: () -> Unit = {},
 ) {
@@ -20,8 +21,9 @@ class BazelProcess internal constructor(
       val stopwatch = Stopwatch.start()
       val outputProcessor =
         OutputProcessor(
-          process,
-          if (logger != null) logger::message else null,
+          process = process,
+          showStdout = showStdout,
+          handler = if (logger != null) logger::message else null,
         )
 
       val exitCode = outputProcessor.waitForExit(killProcessTreeOnCancel = BazelConnectorFeatureFlags.killClientTreeOnCancel)

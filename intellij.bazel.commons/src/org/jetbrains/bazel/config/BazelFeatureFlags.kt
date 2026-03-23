@@ -38,6 +38,7 @@ object BazelFeatureFlags {
   @VisibleForTesting
   const val RUN_CONFIG_RUN_WITH_BAZEL = "bazel.run.config.run.with.bazel"
   private const val USE_PTY = "bazel.use.pty"
+  private const val SHOW_BAZEL_STDOUT = "bazel.show.stdout"
 
   val isPythonSupportEnabled: Boolean
     get() = isEnabled(PYTHON_SUPPORT)
@@ -95,6 +96,9 @@ object BazelFeatureFlags {
 
   val usePty: Boolean
     get() = isEnabled(USE_PTY)
+
+  val showBazelStdout: Boolean
+    get() = isEnabled(SHOW_BAZEL_STDOUT)
 
   private fun isEnabled(key: String): Boolean {
     System.getProperty(key)?.let { value ->
