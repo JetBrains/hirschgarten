@@ -283,7 +283,7 @@ internal class AspectBazelProjectMapper(
   private fun shouldCreateOutputJarsLibrary(targetInfo: TargetInfo, allTargets : Map<Label, TargetInfo>) =
     !targetInfo.kind.endsWith("_resources") && targetInfo.getJvmTarget() &&
       (
-        targetInfo.generatedSourcesList.any { it.relativePath.endsWith(".srcjar") } ||
+        targetInfo.jvmTargetInfo.generatedSourcesList.any { it.relativePath.endsWith(".srcjar") } ||
           (targetInfo.sourcesList.isNotEmpty() && !hasKnownJvmSources(targetInfo)) ||
           (targetInfo.sourcesList.isEmpty() && targetInfo.kind !in workspaceTargetKinds && !targetInfo.executable) ||
           targetInfo.hasApiGeneratingPlugins ||
@@ -741,7 +741,7 @@ internal class AspectBazelProjectMapper(
   private fun getIntellijPluginJars(targetInfo: TargetInfo, localRepositories : LocalRepositoryMapping): Set<Path> {
     // _repackaged_files is created upon calling repackaged_files in rules_intellij
     if (targetInfo.kind != "_repackaged_files") return emptySet()
-    return targetInfo.generatedSourcesList
+    return targetInfo.jvmTargetInfo.generatedSourcesList
       .resolvePaths(localRepositories)
       .filter { it.extension == "jar" }
       .toSet()
@@ -938,7 +938,7 @@ internal class AspectBazelProjectMapper(
         .map {bazelPathsResolver.resolve(it, localRepositories)}
 
     val generatedSources =
-      target.generatedSourcesList
+      target.jvmTargetInfo.generatedSourcesList
         .asSequence()
         .map {bazelPathsResolver.resolve(it, localRepositories)}
         .filter { it.extension != "srcjar" }
@@ -970,7 +970,7 @@ internal class AspectBazelProjectMapper(
   }
 
   private fun resolveResources(target: TargetInfo, languagePlugin: LanguagePlugin<*>, localRepositories : LocalRepositoryMapping) : List<Path> {
-    val resources = bazelPathsResolver.resolvePaths(target.resourcesList, localRepositories)
+    val resources = bazelPathsResolver.resolvePaths(target.jvmTargetInfo.resourcesList, localRepositories)
     val extraResources = languagePlugin.resolveAdditionalResources(target)
     return (resources.asSequence() + extraResources)
       .distinct()
