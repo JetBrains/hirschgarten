@@ -20911,27 +20911,27 @@ public final class BspTargetInfo {
         getTagsBytes(int index);
 
     /**
-     * <code>repeated .bazelbsp.ArtifactLocation sources = 50;</code>
+     * <code>repeated .bazelbsp.ArtifactLocation srcs = 50;</code>
      */
     java.util.List<org.jetbrains.bazel.info.BspTargetInfo.ArtifactLocation> 
-        getSourcesList();
+        getSrcsList();
     /**
-     * <code>repeated .bazelbsp.ArtifactLocation sources = 50;</code>
+     * <code>repeated .bazelbsp.ArtifactLocation srcs = 50;</code>
      */
-    org.jetbrains.bazel.info.BspTargetInfo.ArtifactLocation getSources(int index);
+    org.jetbrains.bazel.info.BspTargetInfo.ArtifactLocation getSrcs(int index);
     /**
-     * <code>repeated .bazelbsp.ArtifactLocation sources = 50;</code>
+     * <code>repeated .bazelbsp.ArtifactLocation srcs = 50;</code>
      */
-    int getSourcesCount();
+    int getSrcsCount();
     /**
-     * <code>repeated .bazelbsp.ArtifactLocation sources = 50;</code>
+     * <code>repeated .bazelbsp.ArtifactLocation srcs = 50;</code>
      */
     java.util.List<? extends org.jetbrains.bazel.info.BspTargetInfo.ArtifactLocationOrBuilder> 
-        getSourcesOrBuilderList();
+        getSrcsOrBuilderList();
     /**
-     * <code>repeated .bazelbsp.ArtifactLocation sources = 50;</code>
+     * <code>repeated .bazelbsp.ArtifactLocation srcs = 50;</code>
      */
-    org.jetbrains.bazel.info.BspTargetInfo.ArtifactLocationOrBuilder getSourcesOrBuilder(
+    org.jetbrains.bazel.info.BspTargetInfo.ArtifactLocationOrBuilder getSrcsOrBuilder(
         int index);
 
     /**
@@ -21202,7 +21202,7 @@ java.lang.String defaultValue);
       deps_ = java.util.Collections.emptyList();
       tags_ =
           com.google.protobuf.LazyStringArrayList.emptyList();
-      sources_ = java.util.Collections.emptyList();
+      srcs_ = java.util.Collections.emptyList();
       envInherit_ =
           com.google.protobuf.LazyStringArrayList.emptyList();
       workspaceName_ = "";
@@ -21385,45 +21385,45 @@ java.lang.String defaultValue);
       return tags_.getByteString(index);
     }
 
-    public static final int SOURCES_FIELD_NUMBER = 50;
+    public static final int SRCS_FIELD_NUMBER = 50;
     @SuppressWarnings("serial")
-    private java.util.List<org.jetbrains.bazel.info.BspTargetInfo.ArtifactLocation> sources_;
+    private java.util.List<org.jetbrains.bazel.info.BspTargetInfo.ArtifactLocation> srcs_;
     /**
-     * <code>repeated .bazelbsp.ArtifactLocation sources = 50;</code>
+     * <code>repeated .bazelbsp.ArtifactLocation srcs = 50;</code>
      */
     @java.lang.Override
-    public java.util.List<org.jetbrains.bazel.info.BspTargetInfo.ArtifactLocation> getSourcesList() {
-      return sources_;
+    public java.util.List<org.jetbrains.bazel.info.BspTargetInfo.ArtifactLocation> getSrcsList() {
+      return srcs_;
     }
     /**
-     * <code>repeated .bazelbsp.ArtifactLocation sources = 50;</code>
+     * <code>repeated .bazelbsp.ArtifactLocation srcs = 50;</code>
      */
     @java.lang.Override
     public java.util.List<? extends org.jetbrains.bazel.info.BspTargetInfo.ArtifactLocationOrBuilder> 
-        getSourcesOrBuilderList() {
-      return sources_;
+        getSrcsOrBuilderList() {
+      return srcs_;
     }
     /**
-     * <code>repeated .bazelbsp.ArtifactLocation sources = 50;</code>
+     * <code>repeated .bazelbsp.ArtifactLocation srcs = 50;</code>
      */
     @java.lang.Override
-    public int getSourcesCount() {
-      return sources_.size();
+    public int getSrcsCount() {
+      return srcs_.size();
     }
     /**
-     * <code>repeated .bazelbsp.ArtifactLocation sources = 50;</code>
+     * <code>repeated .bazelbsp.ArtifactLocation srcs = 50;</code>
      */
     @java.lang.Override
-    public org.jetbrains.bazel.info.BspTargetInfo.ArtifactLocation getSources(int index) {
-      return sources_.get(index);
+    public org.jetbrains.bazel.info.BspTargetInfo.ArtifactLocation getSrcs(int index) {
+      return srcs_.get(index);
     }
     /**
-     * <code>repeated .bazelbsp.ArtifactLocation sources = 50;</code>
+     * <code>repeated .bazelbsp.ArtifactLocation srcs = 50;</code>
      */
     @java.lang.Override
-    public org.jetbrains.bazel.info.BspTargetInfo.ArtifactLocationOrBuilder getSourcesOrBuilder(
+    public org.jetbrains.bazel.info.BspTargetInfo.ArtifactLocationOrBuilder getSrcsOrBuilder(
         int index) {
-      return sources_.get(index);
+      return srcs_.get(index);
     }
 
     public static final int ENV_FIELD_NUMBER = 70;
@@ -21939,8 +21939,8 @@ java.lang.String defaultValue) {
       for (int i = 0; i < tags_.size(); i++) {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 5, tags_.getRaw(i));
       }
-      for (int i = 0; i < sources_.size(); i++) {
-        output.writeMessage(50, sources_.get(i));
+      for (int i = 0; i < srcs_.size(); i++) {
+        output.writeMessage(50, srcs_.get(i));
       }
       com.google.protobuf.GeneratedMessageV3
         .serializeStringMapTo(
@@ -22024,9 +22024,9 @@ java.lang.String defaultValue) {
         size += dataSize;
         size += 1 * getTagsList().size();
       }
-      for (int i = 0; i < sources_.size(); i++) {
+      for (int i = 0; i < srcs_.size(); i++) {
         size += com.google.protobuf.CodedOutputStream
-          .computeMessageSize(50, sources_.get(i));
+          .computeMessageSize(50, srcs_.get(i));
       }
       for (java.util.Map.Entry<java.lang.String, java.lang.String> entry
            : internalGetEnv().getMap().entrySet()) {
@@ -22130,8 +22130,8 @@ java.lang.String defaultValue) {
           .equals(other.getDepsList())) return false;
       if (!getTagsList()
           .equals(other.getTagsList())) return false;
-      if (!getSourcesList()
-          .equals(other.getSourcesList())) return false;
+      if (!getSrcsList()
+          .equals(other.getSrcsList())) return false;
       if (!internalGetEnv().equals(
           other.internalGetEnv())) return false;
       if (!getEnvInheritList()
@@ -22221,9 +22221,9 @@ java.lang.String defaultValue) {
         hash = (37 * hash) + TAGS_FIELD_NUMBER;
         hash = (53 * hash) + getTagsList().hashCode();
       }
-      if (getSourcesCount() > 0) {
-        hash = (37 * hash) + SOURCES_FIELD_NUMBER;
-        hash = (53 * hash) + getSourcesList().hashCode();
+      if (getSrcsCount() > 0) {
+        hash = (37 * hash) + SRCS_FIELD_NUMBER;
+        hash = (53 * hash) + getSrcsList().hashCode();
       }
       if (!internalGetEnv().getMap().isEmpty()) {
         hash = (37 * hash) + ENV_FIELD_NUMBER;
@@ -22440,7 +22440,7 @@ java.lang.String defaultValue) {
                 .alwaysUseFieldBuilders) {
           getKeyFieldBuilder();
           getDepsFieldBuilder();
-          getSourcesFieldBuilder();
+          getSrcsFieldBuilder();
           getJvmTargetInfoFieldBuilder();
           getJavaProviderFieldBuilder();
           getJavaCommonFieldBuilder();
@@ -22472,11 +22472,11 @@ java.lang.String defaultValue) {
         bitField0_ = (bitField0_ & ~0x00000004);
         tags_ =
             com.google.protobuf.LazyStringArrayList.emptyList();
-        if (sourcesBuilder_ == null) {
-          sources_ = java.util.Collections.emptyList();
+        if (srcsBuilder_ == null) {
+          srcs_ = java.util.Collections.emptyList();
         } else {
-          sources_ = null;
-          sourcesBuilder_.clear();
+          srcs_ = null;
+          srcsBuilder_.clear();
         }
         bitField0_ = (bitField0_ & ~0x00000010);
         internalGetMutableEnv().clear();
@@ -22579,14 +22579,14 @@ java.lang.String defaultValue) {
         } else {
           result.deps_ = depsBuilder_.build();
         }
-        if (sourcesBuilder_ == null) {
+        if (srcsBuilder_ == null) {
           if (((bitField0_ & 0x00000010) != 0)) {
-            sources_ = java.util.Collections.unmodifiableList(sources_);
+            srcs_ = java.util.Collections.unmodifiableList(srcs_);
             bitField0_ = (bitField0_ & ~0x00000010);
           }
-          result.sources_ = sources_;
+          result.srcs_ = srcs_;
         } else {
-          result.sources_ = sourcesBuilder_.build();
+          result.srcs_ = srcsBuilder_.build();
         }
       }
 
@@ -22780,29 +22780,29 @@ java.lang.String defaultValue) {
           }
           onChanged();
         }
-        if (sourcesBuilder_ == null) {
-          if (!other.sources_.isEmpty()) {
-            if (sources_.isEmpty()) {
-              sources_ = other.sources_;
+        if (srcsBuilder_ == null) {
+          if (!other.srcs_.isEmpty()) {
+            if (srcs_.isEmpty()) {
+              srcs_ = other.srcs_;
               bitField0_ = (bitField0_ & ~0x00000010);
             } else {
-              ensureSourcesIsMutable();
-              sources_.addAll(other.sources_);
+              ensureSrcsIsMutable();
+              srcs_.addAll(other.srcs_);
             }
             onChanged();
           }
         } else {
-          if (!other.sources_.isEmpty()) {
-            if (sourcesBuilder_.isEmpty()) {
-              sourcesBuilder_.dispose();
-              sourcesBuilder_ = null;
-              sources_ = other.sources_;
+          if (!other.srcs_.isEmpty()) {
+            if (srcsBuilder_.isEmpty()) {
+              srcsBuilder_.dispose();
+              srcsBuilder_ = null;
+              srcs_ = other.srcs_;
               bitField0_ = (bitField0_ & ~0x00000010);
-              sourcesBuilder_ = 
+              srcsBuilder_ = 
                 com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders ?
-                   getSourcesFieldBuilder() : null;
+                   getSrcsFieldBuilder() : null;
             } else {
-              sourcesBuilder_.addAllMessages(other.sources_);
+              srcsBuilder_.addAllMessages(other.srcs_);
             }
           }
         }
@@ -22930,11 +22930,11 @@ java.lang.String defaultValue) {
                     input.readMessage(
                         org.jetbrains.bazel.info.BspTargetInfo.ArtifactLocation.parser(),
                         extensionRegistry);
-                if (sourcesBuilder_ == null) {
-                  ensureSourcesIsMutable();
-                  sources_.add(m);
+                if (srcsBuilder_ == null) {
+                  ensureSrcsIsMutable();
+                  srcs_.add(m);
                 } else {
-                  sourcesBuilder_.addMessage(m);
+                  srcsBuilder_.addMessage(m);
                 }
                 break;
               } // case 402
@@ -23609,244 +23609,244 @@ java.lang.String defaultValue) {
         return this;
       }
 
-      private java.util.List<org.jetbrains.bazel.info.BspTargetInfo.ArtifactLocation> sources_ =
+      private java.util.List<org.jetbrains.bazel.info.BspTargetInfo.ArtifactLocation> srcs_ =
         java.util.Collections.emptyList();
-      private void ensureSourcesIsMutable() {
+      private void ensureSrcsIsMutable() {
         if (!((bitField0_ & 0x00000010) != 0)) {
-          sources_ = new java.util.ArrayList<org.jetbrains.bazel.info.BspTargetInfo.ArtifactLocation>(sources_);
+          srcs_ = new java.util.ArrayList<org.jetbrains.bazel.info.BspTargetInfo.ArtifactLocation>(srcs_);
           bitField0_ |= 0x00000010;
          }
       }
 
       private com.google.protobuf.RepeatedFieldBuilderV3<
-          org.jetbrains.bazel.info.BspTargetInfo.ArtifactLocation, org.jetbrains.bazel.info.BspTargetInfo.ArtifactLocation.Builder, org.jetbrains.bazel.info.BspTargetInfo.ArtifactLocationOrBuilder> sourcesBuilder_;
+          org.jetbrains.bazel.info.BspTargetInfo.ArtifactLocation, org.jetbrains.bazel.info.BspTargetInfo.ArtifactLocation.Builder, org.jetbrains.bazel.info.BspTargetInfo.ArtifactLocationOrBuilder> srcsBuilder_;
 
       /**
-       * <code>repeated .bazelbsp.ArtifactLocation sources = 50;</code>
+       * <code>repeated .bazelbsp.ArtifactLocation srcs = 50;</code>
        */
-      public java.util.List<org.jetbrains.bazel.info.BspTargetInfo.ArtifactLocation> getSourcesList() {
-        if (sourcesBuilder_ == null) {
-          return java.util.Collections.unmodifiableList(sources_);
+      public java.util.List<org.jetbrains.bazel.info.BspTargetInfo.ArtifactLocation> getSrcsList() {
+        if (srcsBuilder_ == null) {
+          return java.util.Collections.unmodifiableList(srcs_);
         } else {
-          return sourcesBuilder_.getMessageList();
+          return srcsBuilder_.getMessageList();
         }
       }
       /**
-       * <code>repeated .bazelbsp.ArtifactLocation sources = 50;</code>
+       * <code>repeated .bazelbsp.ArtifactLocation srcs = 50;</code>
        */
-      public int getSourcesCount() {
-        if (sourcesBuilder_ == null) {
-          return sources_.size();
+      public int getSrcsCount() {
+        if (srcsBuilder_ == null) {
+          return srcs_.size();
         } else {
-          return sourcesBuilder_.getCount();
+          return srcsBuilder_.getCount();
         }
       }
       /**
-       * <code>repeated .bazelbsp.ArtifactLocation sources = 50;</code>
+       * <code>repeated .bazelbsp.ArtifactLocation srcs = 50;</code>
        */
-      public org.jetbrains.bazel.info.BspTargetInfo.ArtifactLocation getSources(int index) {
-        if (sourcesBuilder_ == null) {
-          return sources_.get(index);
+      public org.jetbrains.bazel.info.BspTargetInfo.ArtifactLocation getSrcs(int index) {
+        if (srcsBuilder_ == null) {
+          return srcs_.get(index);
         } else {
-          return sourcesBuilder_.getMessage(index);
+          return srcsBuilder_.getMessage(index);
         }
       }
       /**
-       * <code>repeated .bazelbsp.ArtifactLocation sources = 50;</code>
+       * <code>repeated .bazelbsp.ArtifactLocation srcs = 50;</code>
        */
-      public Builder setSources(
+      public Builder setSrcs(
           int index, org.jetbrains.bazel.info.BspTargetInfo.ArtifactLocation value) {
-        if (sourcesBuilder_ == null) {
+        if (srcsBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
           }
-          ensureSourcesIsMutable();
-          sources_.set(index, value);
+          ensureSrcsIsMutable();
+          srcs_.set(index, value);
           onChanged();
         } else {
-          sourcesBuilder_.setMessage(index, value);
+          srcsBuilder_.setMessage(index, value);
         }
         return this;
       }
       /**
-       * <code>repeated .bazelbsp.ArtifactLocation sources = 50;</code>
+       * <code>repeated .bazelbsp.ArtifactLocation srcs = 50;</code>
        */
-      public Builder setSources(
+      public Builder setSrcs(
           int index, org.jetbrains.bazel.info.BspTargetInfo.ArtifactLocation.Builder builderForValue) {
-        if (sourcesBuilder_ == null) {
-          ensureSourcesIsMutable();
-          sources_.set(index, builderForValue.build());
+        if (srcsBuilder_ == null) {
+          ensureSrcsIsMutable();
+          srcs_.set(index, builderForValue.build());
           onChanged();
         } else {
-          sourcesBuilder_.setMessage(index, builderForValue.build());
+          srcsBuilder_.setMessage(index, builderForValue.build());
         }
         return this;
       }
       /**
-       * <code>repeated .bazelbsp.ArtifactLocation sources = 50;</code>
+       * <code>repeated .bazelbsp.ArtifactLocation srcs = 50;</code>
        */
-      public Builder addSources(org.jetbrains.bazel.info.BspTargetInfo.ArtifactLocation value) {
-        if (sourcesBuilder_ == null) {
+      public Builder addSrcs(org.jetbrains.bazel.info.BspTargetInfo.ArtifactLocation value) {
+        if (srcsBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
           }
-          ensureSourcesIsMutable();
-          sources_.add(value);
+          ensureSrcsIsMutable();
+          srcs_.add(value);
           onChanged();
         } else {
-          sourcesBuilder_.addMessage(value);
+          srcsBuilder_.addMessage(value);
         }
         return this;
       }
       /**
-       * <code>repeated .bazelbsp.ArtifactLocation sources = 50;</code>
+       * <code>repeated .bazelbsp.ArtifactLocation srcs = 50;</code>
        */
-      public Builder addSources(
+      public Builder addSrcs(
           int index, org.jetbrains.bazel.info.BspTargetInfo.ArtifactLocation value) {
-        if (sourcesBuilder_ == null) {
+        if (srcsBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
           }
-          ensureSourcesIsMutable();
-          sources_.add(index, value);
+          ensureSrcsIsMutable();
+          srcs_.add(index, value);
           onChanged();
         } else {
-          sourcesBuilder_.addMessage(index, value);
+          srcsBuilder_.addMessage(index, value);
         }
         return this;
       }
       /**
-       * <code>repeated .bazelbsp.ArtifactLocation sources = 50;</code>
+       * <code>repeated .bazelbsp.ArtifactLocation srcs = 50;</code>
        */
-      public Builder addSources(
+      public Builder addSrcs(
           org.jetbrains.bazel.info.BspTargetInfo.ArtifactLocation.Builder builderForValue) {
-        if (sourcesBuilder_ == null) {
-          ensureSourcesIsMutable();
-          sources_.add(builderForValue.build());
+        if (srcsBuilder_ == null) {
+          ensureSrcsIsMutable();
+          srcs_.add(builderForValue.build());
           onChanged();
         } else {
-          sourcesBuilder_.addMessage(builderForValue.build());
+          srcsBuilder_.addMessage(builderForValue.build());
         }
         return this;
       }
       /**
-       * <code>repeated .bazelbsp.ArtifactLocation sources = 50;</code>
+       * <code>repeated .bazelbsp.ArtifactLocation srcs = 50;</code>
        */
-      public Builder addSources(
+      public Builder addSrcs(
           int index, org.jetbrains.bazel.info.BspTargetInfo.ArtifactLocation.Builder builderForValue) {
-        if (sourcesBuilder_ == null) {
-          ensureSourcesIsMutable();
-          sources_.add(index, builderForValue.build());
+        if (srcsBuilder_ == null) {
+          ensureSrcsIsMutable();
+          srcs_.add(index, builderForValue.build());
           onChanged();
         } else {
-          sourcesBuilder_.addMessage(index, builderForValue.build());
+          srcsBuilder_.addMessage(index, builderForValue.build());
         }
         return this;
       }
       /**
-       * <code>repeated .bazelbsp.ArtifactLocation sources = 50;</code>
+       * <code>repeated .bazelbsp.ArtifactLocation srcs = 50;</code>
        */
-      public Builder addAllSources(
+      public Builder addAllSrcs(
           java.lang.Iterable<? extends org.jetbrains.bazel.info.BspTargetInfo.ArtifactLocation> values) {
-        if (sourcesBuilder_ == null) {
-          ensureSourcesIsMutable();
+        if (srcsBuilder_ == null) {
+          ensureSrcsIsMutable();
           com.google.protobuf.AbstractMessageLite.Builder.addAll(
-              values, sources_);
+              values, srcs_);
           onChanged();
         } else {
-          sourcesBuilder_.addAllMessages(values);
+          srcsBuilder_.addAllMessages(values);
         }
         return this;
       }
       /**
-       * <code>repeated .bazelbsp.ArtifactLocation sources = 50;</code>
+       * <code>repeated .bazelbsp.ArtifactLocation srcs = 50;</code>
        */
-      public Builder clearSources() {
-        if (sourcesBuilder_ == null) {
-          sources_ = java.util.Collections.emptyList();
+      public Builder clearSrcs() {
+        if (srcsBuilder_ == null) {
+          srcs_ = java.util.Collections.emptyList();
           bitField0_ = (bitField0_ & ~0x00000010);
           onChanged();
         } else {
-          sourcesBuilder_.clear();
+          srcsBuilder_.clear();
         }
         return this;
       }
       /**
-       * <code>repeated .bazelbsp.ArtifactLocation sources = 50;</code>
+       * <code>repeated .bazelbsp.ArtifactLocation srcs = 50;</code>
        */
-      public Builder removeSources(int index) {
-        if (sourcesBuilder_ == null) {
-          ensureSourcesIsMutable();
-          sources_.remove(index);
+      public Builder removeSrcs(int index) {
+        if (srcsBuilder_ == null) {
+          ensureSrcsIsMutable();
+          srcs_.remove(index);
           onChanged();
         } else {
-          sourcesBuilder_.remove(index);
+          srcsBuilder_.remove(index);
         }
         return this;
       }
       /**
-       * <code>repeated .bazelbsp.ArtifactLocation sources = 50;</code>
+       * <code>repeated .bazelbsp.ArtifactLocation srcs = 50;</code>
        */
-      public org.jetbrains.bazel.info.BspTargetInfo.ArtifactLocation.Builder getSourcesBuilder(
+      public org.jetbrains.bazel.info.BspTargetInfo.ArtifactLocation.Builder getSrcsBuilder(
           int index) {
-        return getSourcesFieldBuilder().getBuilder(index);
+        return getSrcsFieldBuilder().getBuilder(index);
       }
       /**
-       * <code>repeated .bazelbsp.ArtifactLocation sources = 50;</code>
+       * <code>repeated .bazelbsp.ArtifactLocation srcs = 50;</code>
        */
-      public org.jetbrains.bazel.info.BspTargetInfo.ArtifactLocationOrBuilder getSourcesOrBuilder(
+      public org.jetbrains.bazel.info.BspTargetInfo.ArtifactLocationOrBuilder getSrcsOrBuilder(
           int index) {
-        if (sourcesBuilder_ == null) {
-          return sources_.get(index);  } else {
-          return sourcesBuilder_.getMessageOrBuilder(index);
+        if (srcsBuilder_ == null) {
+          return srcs_.get(index);  } else {
+          return srcsBuilder_.getMessageOrBuilder(index);
         }
       }
       /**
-       * <code>repeated .bazelbsp.ArtifactLocation sources = 50;</code>
+       * <code>repeated .bazelbsp.ArtifactLocation srcs = 50;</code>
        */
       public java.util.List<? extends org.jetbrains.bazel.info.BspTargetInfo.ArtifactLocationOrBuilder> 
-           getSourcesOrBuilderList() {
-        if (sourcesBuilder_ != null) {
-          return sourcesBuilder_.getMessageOrBuilderList();
+           getSrcsOrBuilderList() {
+        if (srcsBuilder_ != null) {
+          return srcsBuilder_.getMessageOrBuilderList();
         } else {
-          return java.util.Collections.unmodifiableList(sources_);
+          return java.util.Collections.unmodifiableList(srcs_);
         }
       }
       /**
-       * <code>repeated .bazelbsp.ArtifactLocation sources = 50;</code>
+       * <code>repeated .bazelbsp.ArtifactLocation srcs = 50;</code>
        */
-      public org.jetbrains.bazel.info.BspTargetInfo.ArtifactLocation.Builder addSourcesBuilder() {
-        return getSourcesFieldBuilder().addBuilder(
+      public org.jetbrains.bazel.info.BspTargetInfo.ArtifactLocation.Builder addSrcsBuilder() {
+        return getSrcsFieldBuilder().addBuilder(
             org.jetbrains.bazel.info.BspTargetInfo.ArtifactLocation.getDefaultInstance());
       }
       /**
-       * <code>repeated .bazelbsp.ArtifactLocation sources = 50;</code>
+       * <code>repeated .bazelbsp.ArtifactLocation srcs = 50;</code>
        */
-      public org.jetbrains.bazel.info.BspTargetInfo.ArtifactLocation.Builder addSourcesBuilder(
+      public org.jetbrains.bazel.info.BspTargetInfo.ArtifactLocation.Builder addSrcsBuilder(
           int index) {
-        return getSourcesFieldBuilder().addBuilder(
+        return getSrcsFieldBuilder().addBuilder(
             index, org.jetbrains.bazel.info.BspTargetInfo.ArtifactLocation.getDefaultInstance());
       }
       /**
-       * <code>repeated .bazelbsp.ArtifactLocation sources = 50;</code>
+       * <code>repeated .bazelbsp.ArtifactLocation srcs = 50;</code>
        */
       public java.util.List<org.jetbrains.bazel.info.BspTargetInfo.ArtifactLocation.Builder> 
-           getSourcesBuilderList() {
-        return getSourcesFieldBuilder().getBuilderList();
+           getSrcsBuilderList() {
+        return getSrcsFieldBuilder().getBuilderList();
       }
       private com.google.protobuf.RepeatedFieldBuilderV3<
           org.jetbrains.bazel.info.BspTargetInfo.ArtifactLocation, org.jetbrains.bazel.info.BspTargetInfo.ArtifactLocation.Builder, org.jetbrains.bazel.info.BspTargetInfo.ArtifactLocationOrBuilder> 
-          getSourcesFieldBuilder() {
-        if (sourcesBuilder_ == null) {
-          sourcesBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
+          getSrcsFieldBuilder() {
+        if (srcsBuilder_ == null) {
+          srcsBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
               org.jetbrains.bazel.info.BspTargetInfo.ArtifactLocation, org.jetbrains.bazel.info.BspTargetInfo.ArtifactLocation.Builder, org.jetbrains.bazel.info.BspTargetInfo.ArtifactLocationOrBuilder>(
-                  sources_,
+                  srcs_,
                   ((bitField0_ & 0x00000010) != 0),
                   getParentForChildren(),
                   isClean());
-          sources_ = null;
+          srcs_ = null;
         }
-        return sourcesBuilder_;
+        return srcsBuilder_;
       }
 
       private com.google.protobuf.MapField<
@@ -25766,32 +25766,31 @@ java.lang.String defaultValue) {
       "\017source_mappings\030\003 \003(\0132\037.bazelbsp.Protob" +
       "ufSourceMapping\"\\\n\025ProtobufSourceMapping" +
       "\022\023\n\013import_path\030\001 \001(\t\022.\n\nproto_file\030\002 \001(" +
-      "\0132\032.bazelbsp.ArtifactLocation\"\247\007\n\nTarget" +
+      "\0132\032.bazelbsp.ArtifactLocation\"\244\007\n\nTarget" +
       "Info\022\014\n\004kind\030\001 \001(\t\022 \n\003key\030\002 \001(\0132\023.bazelb" +
       "sp.TargetKey\022\"\n\004deps\030\004 \003(\0132\024.bazelbsp.De" +
-      "pendency\022\014\n\004tags\030\005 \003(\t\022+\n\007sources\0302 \003(\0132" +
-      "\032.bazelbsp.ArtifactLocation\022*\n\003env\030F \003(\013" +
-      "2\035.bazelbsp.TargetInfo.EnvEntry\022\023\n\013env_i" +
-      "nherit\030P \003(\t\022\022\n\nexecutable\030Z \001(\010\022\026\n\016work" +
-      "space_name\030d \001(\t\0221\n\017jvm_target_info\030\350\007 \001" +
-      "(\0132\027.bazelbsp.JvmTargetInfo\022\023\n\njvm_targe" +
-      "t\030\354\007 \001(\010\022#\n\032has_api_generating_plugins\030\355" +
-      "\007 \001(\010\022\027\n\016generator_name\030\334\013 \001(\t\0222\n\rjava_p" +
-      "rovider\030\360\007 \001(\0132\032.bazelbsp.JavaProviderIn" +
-      "fo\022.\n\013java_common\030\357\007 \001(\0132\030.bazelbsp.Java" +
-      "CommonInfo\0229\n\023java_toolchain_info\030\320\017 \001(\013" +
-      "2\033.bazelbsp.JavaToolchainInfo\0225\n\021java_ru" +
-      "ntime_info\030\270\027 \001(\0132\031.bazelbsp.JavaRuntime" +
-      "Info\0225\n\021scala_target_info\030\240\037 \001(\0132\031.bazel" +
-      "bsp.ScalaTargetInfo\0227\n\022kotlin_target_inf" +
-      "o\030\3306 \001(\0132\032.bazelbsp.KotlinTargetInfo\0227\n\022" +
-      "python_target_info\030\300> \001(\0132\032.bazelbsp.Pyt" +
-      "honTargetInfo\022/\n\016go_target_info\030\340] \001(\0132\026" +
-      ".bazelbsp.GoTargetInfo\022;\n\024protobuf_targe" +
-      "t_info\030\260m \001(\0132\034.bazelbsp.ProtobufTargetI" +
-      "nfo\032*\n\010EnvEntry\022\013\n\003key\030\001 \001(\t\022\r\n\005value\030\002 " +
-      "\001(\t:\0028\001B\032\n\030org.jetbrains.bazel.infob\006pro" +
-      "to3"
+      "pendency\022\014\n\004tags\030\005 \003(\t\022(\n\004srcs\0302 \003(\0132\032.b" +
+      "azelbsp.ArtifactLocation\022*\n\003env\030F \003(\0132\035." +
+      "bazelbsp.TargetInfo.EnvEntry\022\023\n\013env_inhe" +
+      "rit\030P \003(\t\022\022\n\nexecutable\030Z \001(\010\022\026\n\016workspa" +
+      "ce_name\030d \001(\t\0221\n\017jvm_target_info\030\350\007 \001(\0132" +
+      "\027.bazelbsp.JvmTargetInfo\022\023\n\njvm_target\030\354" +
+      "\007 \001(\010\022#\n\032has_api_generating_plugins\030\355\007 \001" +
+      "(\010\022\027\n\016generator_name\030\334\013 \001(\t\0222\n\rjava_prov" +
+      "ider\030\360\007 \001(\0132\032.bazelbsp.JavaProviderInfo\022" +
+      ".\n\013java_common\030\357\007 \001(\0132\030.bazelbsp.JavaCom" +
+      "monInfo\0229\n\023java_toolchain_info\030\320\017 \001(\0132\033." +
+      "bazelbsp.JavaToolchainInfo\0225\n\021java_runti" +
+      "me_info\030\270\027 \001(\0132\031.bazelbsp.JavaRuntimeInf" +
+      "o\0225\n\021scala_target_info\030\240\037 \001(\0132\031.bazelbsp" +
+      ".ScalaTargetInfo\0227\n\022kotlin_target_info\030\330" +
+      "6 \001(\0132\032.bazelbsp.KotlinTargetInfo\0227\n\022pyt" +
+      "hon_target_info\030\300> \001(\0132\032.bazelbsp.Python" +
+      "TargetInfo\022/\n\016go_target_info\030\340] \001(\0132\026.ba" +
+      "zelbsp.GoTargetInfo\022;\n\024protobuf_target_i" +
+      "nfo\030\260m \001(\0132\034.bazelbsp.ProtobufTargetInfo" +
+      "\032*\n\010EnvEntry\022\013\n\003key\030\001 \001(\t\022\r\n\005value\030\002 \001(\t" +
+      ":\0028\001B\032\n\030org.jetbrains.bazel.infob\006proto3"
     };
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,
@@ -25904,7 +25903,7 @@ java.lang.String defaultValue) {
     internal_static_bazelbsp_TargetInfo_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_bazelbsp_TargetInfo_descriptor,
-        new java.lang.String[] { "Kind", "Key", "Deps", "Tags", "Sources", "Env", "EnvInherit", "Executable", "WorkspaceName", "JvmTargetInfo", "JvmTarget", "HasApiGeneratingPlugins", "GeneratorName", "JavaProvider", "JavaCommon", "JavaToolchainInfo", "JavaRuntimeInfo", "ScalaTargetInfo", "KotlinTargetInfo", "PythonTargetInfo", "GoTargetInfo", "ProtobufTargetInfo", });
+        new java.lang.String[] { "Kind", "Key", "Deps", "Tags", "Srcs", "Env", "EnvInherit", "Executable", "WorkspaceName", "JvmTargetInfo", "JvmTarget", "HasApiGeneratingPlugins", "GeneratorName", "JavaProvider", "JavaCommon", "JavaToolchainInfo", "JavaRuntimeInfo", "ScalaTargetInfo", "KotlinTargetInfo", "PythonTargetInfo", "GoTargetInfo", "ProtobufTargetInfo", });
     internal_static_bazelbsp_TargetInfo_EnvEntry_descriptor =
       internal_static_bazelbsp_TargetInfo_descriptor.getNestedTypes().get(0);
     internal_static_bazelbsp_TargetInfo_EnvEntry_fieldAccessorTable = new
