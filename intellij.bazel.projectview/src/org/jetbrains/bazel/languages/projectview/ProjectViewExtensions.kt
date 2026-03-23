@@ -3,17 +3,14 @@ package org.jetbrains.bazel.languages.projectview
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.commons.ExcludableValue
 import org.jetbrains.bazel.label.Label
-import org.jetbrains.bazel.label.assumeResolved
 import org.jetbrains.bazel.languages.projectview.language.sections.IndexAdditionalFilesInDirectoriesSection
 import org.jetbrains.bazel.languages.projectview.sections.AllowManualTargetsSyncSection
-import org.jetbrains.bazel.languages.projectview.sections.AndroidMinSdkSection
 import org.jetbrains.bazel.languages.projectview.sections.BazelBinarySection
 import org.jetbrains.bazel.languages.projectview.sections.BuildFlagsSection
 import org.jetbrains.bazel.languages.projectview.sections.DebugFlagsSection
 import org.jetbrains.bazel.languages.projectview.sections.DeriveInstrumentationFilterFromTargetsSection
 import org.jetbrains.bazel.languages.projectview.sections.DeriveTargetsFromDirectoriesSection
 import org.jetbrains.bazel.languages.projectview.sections.DirectoriesSection
-import org.jetbrains.bazel.languages.projectview.sections.EnableNativeAndroidRulesSection
 import org.jetbrains.bazel.languages.projectview.sections.EnabledRulesSection
 import org.jetbrains.bazel.languages.projectview.sections.GazelleTargetSection
 import org.jetbrains.bazel.languages.projectview.sections.IdeJavaHomeOverrideSection
@@ -85,14 +82,6 @@ val ProjectView.ideJavaHomeOverride: Path?
   @ApiStatus.Internal
   get() = getSection(IdeJavaHomeOverrideSection.KEY)
 
-val ProjectView.enableNativeAndroidRules: Boolean
-  @ApiStatus.Internal
-  get() = getSection(EnableNativeAndroidRulesSection.KEY) ?: false
-
-val ProjectView.androidMinSdk: Int?
-  @ApiStatus.Internal
-  get() = getSection(AndroidMinSdkSection.KEY)
-
 val ProjectView.shardSync: Boolean
   @ApiStatus.Internal
   get() = getSection(ShardSyncSection.KEY) ?: false
@@ -148,17 +137,3 @@ val ProjectView.preferClassJarsOverSourcelessJars: Boolean
 val ProjectView.runConfigRunWithBazel: Boolean
   @ApiStatus.Internal
   get() = getSection(RunConfigRunWithBazelSection.KEY) ?: false
-
-/**
- * List of names of repositories that should be treated as internal because there are some targets that we want to be imported that
- * belong to them.
- */
-internal val ProjectView.externalRepositoriesTreatedAsInternal: List<String>
-  get() =
-    targets
-      .mapNotNull { excludableValue ->
-        excludableValue.value
-          .assumeResolved()
-          .repo.repoName
-          .takeIf { repoName -> repoName.isNotEmpty() }
-      }.distinct()
