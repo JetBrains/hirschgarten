@@ -192,6 +192,17 @@ def _is_valid_make_var(varname):
             return False
     return True
 
+def attr_entry_to_list(source):
+    # While the attributes 'srcs', 'deps', etc., are usually used for targets (includuding source files),
+    # this assumption can break if custom rules are used. Even if we cannot fully support such rules, we
+    # should ignore them without erroring out.
+    if type(source) != "Target":
+        return []
+    files = source[DefaultInfo].files
+    if files == None:
+        return []
+    return files.to_list()
+
 def map_with_resolve_files(f, xs):
     results = []
     resolve_files = []

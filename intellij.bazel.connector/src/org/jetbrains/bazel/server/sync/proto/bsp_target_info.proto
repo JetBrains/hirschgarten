@@ -54,6 +54,8 @@ message JvmTargetInfo {
   string main_class = 8;
   repeated string args = 9;
   optional string resource_strip_prefix = 13;
+  repeated ArtifactLocation generated_sources = 51;
+  repeated ArtifactLocation resources = 60;
 }
 
 message JavaProviderInfo {
@@ -137,8 +139,6 @@ message TargetInfo {
   repeated Dependency deps = 4;
   repeated string tags = 5;
   repeated ArtifactLocation sources = 50;
-  repeated ArtifactLocation generated_sources = 51;
-  repeated ArtifactLocation resources = 60;
   map<string, string> env = 70;
   repeated string env_inherit = 80;
   bool executable = 90;

@@ -1,7 +1,7 @@
 # Copyright 2019-2024 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
 
 load("//${bspPath}/aspects:extensions.bzl", "EXTENSIONS", "REQUIRED_ASPECT_PROVIDERS", "TOOLCHAINS")
-load("//${bspPath}/aspects:utils/utils.bzl", "ALL_DEPS", "BspAspectInfo", "COMPILE_DEPS", "EXPORT_DEPS", "PRIVATE_COMPILE_DEPS", "RUNTIME_DEPS", "abs", "collect_targets_from_attrs", "create_struct", "do_starlark_string_expansion_dict", "file_location", "get_aspect_ids", "is_valid_aspect_target", "update_sync_output_groups")
+load("//${bspPath}/aspects:utils/utils.bzl", "ALL_DEPS", "BspAspectInfo", "COMPILE_DEPS", "EXPORT_DEPS", "PRIVATE_COMPILE_DEPS", "RUNTIME_DEPS", "abs", "collect_targets_from_attrs", "create_struct", "do_starlark_string_expansion_dict", "file_location", "get_aspect_ids", "is_valid_aspect_target", "attr_entry_to_list", "update_sync_output_groups")
 
 def create_all_extension_info(target, ctx, output_groups, dep_targets):
     all_info = [create_extension_info(target = target, ctx = ctx, output_groups = output_groups, dep_targets = dep_targets) for create_extension_info in EXTENSIONS]
@@ -52,17 +52,6 @@ def _is_analysis_test(target):
     """
     return AnalysisTestResultInfo in target
 
-def files_to_list(source):
-    # While the attributes 'srcs', 'deps', etc., are usually used for targets (includuding source files),
-    # this assumption can break if custom rules are used. Even if we cannot fully support such rules, we
-    # should ignore them without erroring out.
-    if type(source) != "Target":
-        return []
-    files = source[DefaultInfo].files
-    if files == None:
-        return []
-    return files.to_list()
-
 def _bsp_target_info_aspect_impl(target, ctx):
     if target.label.name.endswith(".semanticdb") or _is_analysis_test(target):
         return []
@@ -102,13 +91,12 @@ def _bsp_target_info_aspect_impl(target, ctx):
 
     srcs_attr = getattr(ctx.rule.attr, "srcs", [])
     sources = []
-    generated_sources = []
 
     if type(srcs_attr) == "list":
         all_sources = [
             file_location(f)
             for t in srcs_attr
-            for f in files_to_list(t)
+            for f in attr_entry_to_list(t)
             if not f.is_directory
         ]
 
@@ -118,27 +106,7 @@ def _bsp_target_info_aspect_impl(target, ctx):
             if s.is_source
         ]
 
-        generated_sources = [
-            s
-            for s in all_sources
-            if not s.is_source
-        ]
-
-    resources_attr = getattr(ctx.rule.attr, "resources", None)
-    if resources_attr == None and ctx.rule.kind.endswith("_resources"):
-        # https://github.com/JetBrains/intellij-community/blob/b41a4084da5521effedd334e28896fd9d07410da/build/jvm-rules/rules/resource.bzl#L49
-        resources_attr = getattr(ctx.rule.attr, "files", None)
-
-    resources = []
-    if type(resources_attr) == "list":
-        resources = [
-            file_location(f)
-            for t in resources_attr
-            for f in files_to_list(t)
-        ]
-
     aspect_ids = get_aspect_ids(ctx, target)
-
     default_info = target[DefaultInfo]
     executable = default_info and default_info.files_to_run.executable != None
 
@@ -164,8 +132,6 @@ def _bsp_target_info_aspect_impl(target, ctx):
         tags = rule_attrs.tags,
         deps = list(all_deps),
         sources = sources,
-        generated_sources = generated_sources,
-        resources = resources,
         env = env,
         env_inherit = getattr(rule_attrs, "env_inherit", []),
         executable = executable,
