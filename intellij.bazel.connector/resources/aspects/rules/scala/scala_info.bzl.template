@@ -90,6 +90,7 @@ def extract_scala_info(target, ctx, output_groups, **kwargs):
 
     jars, resolve_files_jars = map_with_resolve_files(to_jvm_outputs, java_outputs)
     generated_jars, resolve_files_generated_jars = get_generated_jars(provider)
+
     result["java_common"] = dict(jars = jars, generated_jars = generated_jars)
 
     resolve_files = resolve_files_jars + resolve_files_generated_jars
@@ -101,7 +102,5 @@ def extract_scala_info(target, ctx, output_groups, **kwargs):
         update_sync_output_groups(output_groups, "bsp-build-artifact", depset(resolve_files))
 
 
-    if provider and hasattr(provider, "api_generating_plugins") and (len(provider.api_generating_plugins.processor_classes.to_list()) > 0):
-        result["has_api_generating_plugins"] = True
 
     return result, None

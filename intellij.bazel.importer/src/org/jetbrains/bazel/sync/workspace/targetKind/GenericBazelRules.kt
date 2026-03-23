@@ -43,7 +43,7 @@ private class GenericBazelRules : TargetKindProvider {
       if (target.hasProtobufTargetInfo()) {
         add(LanguageClass.PROTOBUF)
       }
-      if (target.getJvmTarget()) {
+      if (target.javaCommon.jvmTarget) {
         add(LanguageClass.JAVA)
       }
       if (target.hasPythonTargetInfo()) {

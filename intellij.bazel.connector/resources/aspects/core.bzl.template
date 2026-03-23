@@ -1,7 +1,7 @@
 # Copyright 2019-2024 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
 
 load("//${bspPath}/aspects:extensions.bzl", "EXTENSIONS", "REQUIRED_ASPECT_PROVIDERS", "TOOLCHAINS")
-load("//${bspPath}/aspects:utils/utils.bzl", "ALL_DEPS", "BspAspectInfo", "COMPILE_DEPS", "EXPORT_DEPS", "PRIVATE_COMPILE_DEPS", "RUNTIME_DEPS", "abs", "collect_targets_from_attrs", "create_struct", "do_starlark_string_expansion_dict", "file_location", "get_aspect_ids", "is_valid_aspect_target", "attr_entry_to_list", "update_sync_output_groups")
+load("//${bspPath}/aspects:utils/utils.bzl", "ALL_DEPS", "BspAspectInfo", "COMPILE_DEPS", "EXPORT_DEPS", "PRIVATE_COMPILE_DEPS", "RUNTIME_DEPS", "abs", "attr_entry_to_list", "collect_targets_from_attrs", "create_struct", "do_starlark_string_expansion_dict", "file_location", "get_aspect_ids", "is_valid_aspect_target", "update_sync_output_groups")
 
 def create_all_extension_info(target, ctx, output_groups, dep_targets):
     all_info = [create_extension_info(target = target, ctx = ctx, output_groups = output_groups, dep_targets = dep_targets) for create_extension_info in EXTENSIONS]
@@ -25,13 +25,20 @@ def make_deps(deps, dependency_type, exported = False):
     return [make_dep(dep, dependency_type, exported) for dep in deps]
 
 COMMON_INFO_FIELDS = ["java_common"]
+COMMON_BOOL_FIELDS = ["jvm_target"]
 
 def merge_dicts(a, b):
     result = {}
     for k in a.keys():
-        result[k] = a.get(k, []) + b.get(k, [])
+        if k in COMMON_BOOL_FIELDS:
+            result[k] = a.get(k, False) or b.get(k, False)
+        else:
+            result[k] = a.get(k, []) + b.get(k, [])
     for k in b.keys():
-        result[k] = a.get(k, []) + b.get(k, [])
+        if k in COMMON_BOOL_FIELDS:
+            result[k] = a.get(k, False) or b.get(k, False)
+        else:
+            result[k] = a.get(k, []) + b.get(k, [])
     return result
 
 def update_info(info, new_info):
