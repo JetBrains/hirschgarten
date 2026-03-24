@@ -54,7 +54,6 @@ message JvmTargetInfo {
   string main_class = 8;
   repeated string args = 9;
   optional string resource_strip_prefix = 13;
-  repeated ArtifactLocation generated_sources = 51;
   repeated ArtifactLocation resources = 60;
 }
 
