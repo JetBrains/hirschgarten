@@ -147,7 +147,7 @@ intellij_plugin_debug_target(
 stamped_plugin_xml(
   name = "plugin_xml_with_versions",
   plugin_xml = "plugin-bazel/src/main/jps-resources/META-INF/plugin.xml",
-  changelog_file = "plugin-bazel/CHANGELOG.md",
+  changelog_file = "CHANGELOG.md",
   since_build_numbers = {PLATFORM_VERSION: SINCE_VERSION},
   stamp_since_build = True,
   stamp_until_build = True,
