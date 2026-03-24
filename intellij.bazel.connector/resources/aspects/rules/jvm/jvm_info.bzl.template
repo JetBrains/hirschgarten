@@ -7,22 +7,6 @@ def extract_jvm_info(target, ctx, output_groups, **kwargs):
     args = getattr(ctx.rule.attr, "args", [])
     main_class = getattr(ctx.rule.attr, "main_class", None)
 
-    srcs_attr = getattr(ctx.rule.attr, "srcs", [])
-    generated_sources = []
-    if type(srcs_attr) == "list":
-        all_sources = [
-            file_location(f)
-            for t in srcs_attr
-            for f in attr_entry_to_list(t)
-            if not f.is_directory
-        ]
-
-        generated_sources = [
-            s
-            for s in all_sources
-            if not s.is_source
-        ]
-
     resources_attr = getattr(ctx.rule.attr, "resources", None)
     if resources_attr == None and ctx.rule.kind.endswith("_resources"):
         # https://github.com/JetBrains/intellij-community/blob/b41a4084da5521effedd334e28896fd9d07410da/build/jvm-rules/rules/resource.bzl#L49
@@ -48,7 +32,6 @@ def extract_jvm_info(target, ctx, output_groups, **kwargs):
         jvm_flags = jvm_flags,
         main_class = main_class,
         args = args,
-        generated_sources = generated_sources,
         resources = resources,
         resource_strip_prefix = resource_strip_prefix,
     )
