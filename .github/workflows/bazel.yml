@@ -1,0 +1,17 @@
+name: Build plugin with Bazel
+
+on:
+  push:
+  pull_request:
+jobs:
+  build:
+    name: Build plugin with Bazel
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+      - name: Install Bazel
+        uses: bazel-contrib/setup-bazel@0.19.0
+      - name: Call Bazel build
+        run: |
+          bazel build //:plugin-bazel_zip
