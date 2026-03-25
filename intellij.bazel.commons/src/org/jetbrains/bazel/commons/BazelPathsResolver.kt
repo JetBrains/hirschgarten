@@ -25,10 +25,19 @@ class BazelPathsResolver(private val bazelInfo: BazelInfo) {
 
   fun resolve(file: BuildEventStreamProtos.File): Path = URI.create(file.uri).toPath()
 
-  fun isExternal(fileLocation: ArtifactLocation, localRepositories : LocalRepositoryMapping): Boolean {
-    if (!(fileLocation.rootPath.startsWith("../") || fileLocation.rootPath.startsWith("external/"))) return false
-    val rootSegments = fileLocation.rootPath.split('/')
-    return !localRepositories.localRepositories.contains(rootSegments[1])
+  fun isExternal(
+    fileLocation: ArtifactLocation,
+    localRepositories : LocalRepositoryMapping
+  ): Boolean = when {
+      fileLocation.rootPath.startsWith("../") || fileLocation.rootPath.startsWith("external/") -> {
+        val rootSegments = fileLocation.rootPath.split('/')
+        !localRepositories.localRepositories.contains(rootSegments[1])
+      }
+      fileLocation.relativePath.startsWith("external/") -> {
+        val relativeSegments = fileLocation.relativePath.split('/')
+        !localRepositories.localRepositories.contains(relativeSegments[1])
+      }
+      else -> false
   }
 
   private fun mapLocalRepositories(fileLocation: ArtifactLocation, localRepositories : LocalRepositoryMapping): ArtifactLocation {

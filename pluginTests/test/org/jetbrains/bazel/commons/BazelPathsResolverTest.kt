@@ -46,6 +46,10 @@ class BazelPathsResolverTest {
     resolver.isExternal(nonSourceArtifact("../bar+/a/b/c", "d/E.java"), localRepositories) shouldBe true
     resolver.isExternal(nonSourceArtifact("external/foo+/a/b/c", "d/E.java"), localRepositories) shouldBe false
     resolver.isExternal(nonSourceArtifact("../foo+/a/b/c", "d/E.java"), localRepositories) shouldBe false
+
+    resolver.isExternal(nonSourceArtifact("bazel-out/k8-fastbuild/bin", "external/bar+/lib.jar"), localRepositories) shouldBe true
+    resolver.isExternal(nonSourceArtifact("bazel-out/k8-fastbuild/bin", "external/foo+/lib.jar"), localRepositories) shouldBe false
+    resolver.isExternal(nonSourceArtifact("bazel-out/k8-fastbuild/bin", "some/internal/lib.jar"), localRepositories) shouldBe false
   }
 
   @Test
