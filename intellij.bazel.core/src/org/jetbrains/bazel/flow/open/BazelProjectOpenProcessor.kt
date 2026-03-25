@@ -18,7 +18,6 @@ import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.config.BazelPluginConstants
 import org.jetbrains.bazel.settings.bazel.bazelProjectSettings
 import org.jetbrains.bazel.target.TargetUtils
-import org.jetbrains.bazel.target.targetUtils
 import java.nio.file.Path
 import javax.swing.Icon
 
@@ -91,7 +90,7 @@ internal class BazelProjectOpenProcessor : ProjectOpenProcessor() {
     }
 
     return (projectStoreBaseDir) to
-      OpenProjectTask {
+      OpenProjectTaskCompat {
         runConfigurators = true
         isRefreshVfsNeeded = !ApplicationManager.getApplication().isUnitTestMode
 

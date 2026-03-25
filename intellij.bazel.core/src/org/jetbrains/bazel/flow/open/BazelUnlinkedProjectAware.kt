@@ -1,6 +1,5 @@
 package org.jetbrains.bazel.flow.open
 
-import com.intellij.ide.impl.OpenProjectTask
 import com.intellij.ide.impl.ProjectUtil
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.application.EDT
@@ -47,7 +46,7 @@ class BazelUnlinkedProjectAware : ExternalSystemUnlinkedProjectAware {
 
       ProjectUtil.openOrImportAsync(
         file = file,
-        options = OpenProjectTask {
+        options = OpenProjectTaskCompat {
           runConfigurators = true
           isNewProject = true
           useDefaultProjectAsTemplate = true
