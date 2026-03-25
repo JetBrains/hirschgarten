@@ -4,15 +4,17 @@ org.jetbrains.bazel.sync.ProjectPostSyncHook
 - a:onPostSync(org.jetbrains.bazel.sync.ProjectPostSyncHook$ProjectPostSyncHookEnvironment,kotlin.coroutines.Continuation):java.lang.Object
 f:org.jetbrains.bazel.sync.ProjectPostSyncHook$Companion
 f:org.jetbrains.bazel.sync.ProjectPostSyncHook$ProjectPostSyncHookEnvironment
-- <init>(com.intellij.openapi.project.Project,org.jetbrains.bsp.protocol.TaskId,com.intellij.platform.util.progress.SequentialProgressReporter):V
+- <init>(com.intellij.openapi.project.Project,org.jetbrains.bsp.protocol.TaskId,com.intellij.platform.util.progress.SequentialProgressReporter,Z):V
 - f:component1():com.intellij.openapi.project.Project
 - f:component2():org.jetbrains.bsp.protocol.TaskId
 - f:component3():com.intellij.platform.util.progress.SequentialProgressReporter
-- f:copy(com.intellij.openapi.project.Project,org.jetbrains.bsp.protocol.TaskId,com.intellij.platform.util.progress.SequentialProgressReporter):org.jetbrains.bazel.sync.ProjectPostSyncHook$ProjectPostSyncHookEnvironment
-- bs:copy$default(org.jetbrains.bazel.sync.ProjectPostSyncHook$ProjectPostSyncHookEnvironment,com.intellij.openapi.project.Project,org.jetbrains.bsp.protocol.TaskId,com.intellij.platform.util.progress.SequentialProgressReporter,I,java.lang.Object):org.jetbrains.bazel.sync.ProjectPostSyncHook$ProjectPostSyncHookEnvironment
+- f:component4():Z
+- f:copy(com.intellij.openapi.project.Project,org.jetbrains.bsp.protocol.TaskId,com.intellij.platform.util.progress.SequentialProgressReporter,Z):org.jetbrains.bazel.sync.ProjectPostSyncHook$ProjectPostSyncHookEnvironment
+- bs:copy$default(org.jetbrains.bazel.sync.ProjectPostSyncHook$ProjectPostSyncHookEnvironment,com.intellij.openapi.project.Project,org.jetbrains.bsp.protocol.TaskId,com.intellij.platform.util.progress.SequentialProgressReporter,Z,I,java.lang.Object):org.jetbrains.bazel.sync.ProjectPostSyncHook$ProjectPostSyncHookEnvironment
 - equals(java.lang.Object):Z
 - f:getProgressReporter():com.intellij.platform.util.progress.SequentialProgressReporter
 - f:getProject():com.intellij.openapi.project.Project
+- f:getProjectModelUpdated():Z
 - hashCode():I
 org.jetbrains.bazel.sync.ProjectPreSyncHook
 - sf:Companion:org.jetbrains.bazel.sync.ProjectPreSyncHook$Companion

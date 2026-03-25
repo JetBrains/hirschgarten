@@ -36,12 +36,14 @@ interface ProjectPostSyncHook {
    * @param project project on which sync is executed
    * @param taskId task id which should be used in the sync console as root
    * @param progressReporter should be used to report the progress of the hook
+   * @param projectModelUpdated whether the workspace model, TargetUtils, etc., were updated during sync or not (because of a sync failure)
    */
   data class ProjectPostSyncHookEnvironment(
     val project: Project,
     @ApiStatus.Internal
     val taskId: TaskId,
     val progressReporter: SequentialProgressReporter,
+    val projectModelUpdated: Boolean,
   )
 }
 

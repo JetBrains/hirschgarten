@@ -1,5 +1,7 @@
 package org.jetbrains.bazel.tests.combined
 
+import com.intellij.driver.client.Remote
+import com.intellij.driver.client.service
 import com.intellij.driver.sdk.invokeAction
 import com.intellij.driver.sdk.step
 import com.intellij.driver.sdk.ui.components.common.editorTabs
@@ -12,6 +14,7 @@ import com.intellij.ide.starter.driver.engine.BackgroundRun
 import com.intellij.ide.starter.driver.engine.runIdeWithDriver
 import com.intellij.ide.starter.ide.IDETestContext
 import com.intellij.tools.ide.performanceTesting.commands.build
+import com.intellij.tools.ide.performanceTesting.commands.checkOnRedCode
 import com.intellij.tools.ide.performanceTesting.commands.goto
 import com.intellij.tools.ide.performanceTesting.commands.gotoLine
 import com.intellij.tools.ide.performanceTesting.commands.openFile
@@ -28,13 +31,13 @@ import org.jetbrains.bazel.ideStarter.buildAndSync
 import org.jetbrains.bazel.ideStarter.checkIdeaLogForExceptions
 import org.jetbrains.bazel.ideStarter.execute
 import org.jetbrains.bazel.ideStarter.openFile
+import org.jetbrains.bazel.ideStarter.runBazelClean
 import org.jetbrains.bazel.ideStarter.syncBazelProject
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assumptions
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.MethodOrderer
 import org.junit.jupiter.api.Order
 import org.junit.jupiter.api.Test
@@ -86,6 +89,10 @@ class SimpleJavaCombinedTest : IdeStarterBaseProjectTest() {
 
   @Test @Order(100)
   fun `update bazel version should not cause server to break`() = bazelVersionUpdate()
+
+  @Test
+  @Order(Integer.MAX_VALUE)
+  fun `bazel clean shouldn't cause red code`() = bazelClean()
 
   @AfterAll
   fun closeIde() {
@@ -188,4 +195,33 @@ class SimpleJavaCombinedTest : IdeStarterBaseProjectTest() {
       }
     }
   }
+
+  private fun bazelClean() {
+    withDriver(bgRun) {
+      ideFrame {
+        step("Run Bazel clean") {
+          execute { runBazelClean() }
+        }
+        step("VFS refresh") {
+          val virtualFileManager = service<VirtualFileManager>()
+          virtualFileManager.asyncRefresh()
+          waitForIndicators()
+        }
+        step("Open SimpleTest.java") {
+          openFile("SimpleTest.java")
+        }
+        step("Assert no red code") {
+          execute {
+            checkOnRedCode()
+          }
+        }
+      }
+    }
+  }
+}
+
+
+@Remote("com.intellij.openapi.vfs.VirtualFileManager")
+interface VirtualFileManager {
+  fun asyncRefresh(): Long
 }

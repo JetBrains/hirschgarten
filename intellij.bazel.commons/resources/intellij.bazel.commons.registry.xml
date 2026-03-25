@@ -150,5 +150,11 @@
                  key="bazel.run.synthetic.disable.visibility.check"
                  restartRequired="false"
     />
+    <registryKey defaultValue="true"
+                 description="Create hard links to Bazel output files (e.g., jars) during sync to protect
+against Bazel garbage-collecting files from disk with Remote Build Execution or when running bazel commands from terminal"
+                 key="bazel.hard.link.output.files"
+                 restartRequired="false"
+    />
   </extensions>
 </idea-plugin>

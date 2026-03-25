@@ -18,5 +18,6 @@ internal class BazelCommandProvider : CommandProvider {
       AssertFileKindCommand.PREFIX to CreateCommand(::AssertFileKindCommand),
       SwitchProjectViewCommand.PREFIX to CreateCommand(::SwitchProjectViewCommand),
       RefreshFileCommand.PREFIX to CreateCommand(::RefreshFileCommand),
+      RunBazelCleanCommand.PREFIX to CreateCommand(::RunBazelCleanCommand),
     )
 }

@@ -2,9 +2,9 @@ package org.jetbrains.bazel.sync.workspace.languages.go
 
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.diagnostic.logger
+import com.intellij.openapi.project.Project
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.commons.BazelPathsResolver
-import org.jetbrains.bazel.commons.BzlmodRepoMapping
 import org.jetbrains.bazel.commons.LanguageClass
 import org.jetbrains.bazel.commons.LocalRepositoryMapping
 import org.jetbrains.bazel.commons.RepoMapping
@@ -13,6 +13,7 @@ import org.jetbrains.bazel.info.BspTargetInfo
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.sync.workspace.languages.LanguagePlugin
 import org.jetbrains.bazel.sync.workspace.languages.LanguagePluginContext
+import org.jetbrains.bazel.sync.workspace.mapper.normal.BazelOutputFileHardLinks
 import org.jetbrains.bsp.protocol.BazelResolveLocalToRemoteParams
 import org.jetbrains.bsp.protocol.BazelResolveLocalToRemoteResult
 import org.jetbrains.bsp.protocol.BazelResolveRemoteToLocalParams
@@ -23,8 +24,9 @@ import java.nio.file.Path
 import java.nio.file.Paths
 
 @ApiStatus.Internal
-class GoLanguagePlugin(private val bazelPathsResolver: BazelPathsResolver) : LanguagePlugin<GoBuildTarget> {
+class GoLanguagePlugin(project: Project, private val bazelPathsResolver: BazelPathsResolver) : LanguagePlugin<GoBuildTarget> {
   private val logger: Logger = logger<GoLanguagePlugin>()
+  private val outputFilesCache = BazelOutputFileHardLinks.getInstance(project)
 
   override fun getSupportedLanguages(): Set<LanguageClass> = setOf(LanguageClass.GO)
 
@@ -33,9 +35,11 @@ class GoLanguagePlugin(private val bazelPathsResolver: BazelPathsResolver) : Lan
     val localRepositories = repoMapping.getLocalRepositories()
     return targetInfo.goTargetInfo.generatedSourcesList
       .asSequence()
-      .mapNotNull {
+      .map { bazelPathsResolver.resolve(it, localRepositories) }
+      .mapNotNull { outputFilesCache.createOutputFileHardLink(it) }
+      .map {
         SourceItem(
-          path = bazelPathsResolver.resolve(it, localRepositories),
+          path = it,
           generated = true,
         )
       }

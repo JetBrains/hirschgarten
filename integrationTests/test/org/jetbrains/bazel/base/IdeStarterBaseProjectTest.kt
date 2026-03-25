@@ -4,8 +4,8 @@ import com.intellij.driver.client.Driver
 import com.intellij.driver.client.Remote
 import com.intellij.driver.client.service
 import com.intellij.driver.client.utility
+import com.intellij.driver.model.OnDispatcher
 import com.intellij.driver.model.RdTarget
-import com.intellij.ide.starter.driver.engine.BackgroundRun
 import com.intellij.driver.sdk.Project
 import com.intellij.driver.sdk.ProjectManager
 import com.intellij.driver.sdk.VirtualFile
@@ -20,6 +20,7 @@ import com.intellij.driver.sdk.waitForCodeAnalysis
 import com.intellij.ide.starter.ci.CIServer
 import com.intellij.ide.starter.ci.teamcity.TeamCityCIServer
 import com.intellij.ide.starter.di.di
+import com.intellij.ide.starter.driver.engine.BackgroundRun
 import com.intellij.ide.starter.driver.execute
 import com.intellij.ide.starter.ide.IDETestContext
 import com.intellij.ide.starter.models.TestCase
@@ -260,6 +261,11 @@ fun <T : CommandChain> T.assertFileContentsEqual(expectedRelativePath: String, a
 
 fun <T : CommandChain> T.assertEitherFileContentIsEqual(actualRelativePath: String, vararg expectedRelativePaths: String): T {
   addCommand(CMD_PREFIX + "assertEitherContentsEqual $actualRelativePath ${expectedRelativePaths.joinToString(" ")}")
+  return this
+}
+
+fun <T : CommandChain> T.runBazelClean(): T {
+  addCommand(CMD_PREFIX + "runBazelClean")
   return this
 }
 

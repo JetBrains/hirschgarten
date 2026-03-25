@@ -21,7 +21,6 @@ import com.intellij.platform.util.progress.SequentialProgressReporter
 import com.intellij.platform.util.progress.reportSequentialProgress
 import com.intellij.platform.workspace.storage.MutableEntityStorage
 import com.intellij.ui.treeStructure.ProjectViewUpdateCause
-import com.intellij.util.containers.forEachLoggingErrors
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.jetbrains.annotations.ApiStatus
@@ -199,7 +198,8 @@ class ProjectSyncTask(private val project: Project) {
               taskId = taskId,
               deferredApplyActions = deferredApplyActions,
             )
-            if (syncResult != SyncResultStatus.FAILURE) {
+            val shouldUpdateProjectModel = syncResult != SyncResultStatus.FAILURE
+            if (shouldUpdateProjectModel) {
               updateProjectModel(
                 progressReporter = progressReporter,
                 syncScope = syncScope,
@@ -208,7 +208,7 @@ class ProjectSyncTask(private val project: Project) {
                 deferredApplyActions = deferredApplyActions,
               )
             }
-            executePostSyncHooks(progressReporter = progressReporter, taskId = taskId)
+            executePostSyncHooks(progressReporter = progressReporter, taskId = taskId, projectModelUpdated = shouldUpdateProjectModel)
           }
         }
       }
@@ -326,7 +326,7 @@ class ProjectSyncTask(private val project: Project) {
     }
   }
 
-  private suspend fun executePostSyncHooks(progressReporter: SequentialProgressReporter, taskId: TaskId) {
+  private suspend fun executePostSyncHooks(progressReporter: SequentialProgressReporter, taskId: TaskId, projectModelUpdated: Boolean) {
     project.syncConsole.withSubtask(
       reporter = progressReporter,
       subtaskId = taskId.subTask("post-sync-hooks"),
@@ -337,6 +337,7 @@ class ProjectSyncTask(private val project: Project) {
           project = project,
           taskId = subtaskId,
           progressReporter = progressReporter,
+          projectModelUpdated = projectModelUpdated,
         )
 
       project.projectPostSyncHooks.forEachSubtask(subtaskId) {

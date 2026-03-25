@@ -2,6 +2,7 @@ package org.jetbrains.bazel.sync.workspace.languages
 
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.diagnostic.logger
+import com.intellij.openapi.project.Project
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.commons.BazelPathsResolver
 import org.jetbrains.bazel.commons.LanguageClass
@@ -17,7 +18,7 @@ import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 
 @Service(Service.Level.PROJECT)
 @ApiStatus.Internal
-class LanguagePluginsService {
+class LanguagePluginsService(private val project: Project) {
   val logger = logger<LanguagePluginsService>()
   private val registry: MutableMap<LanguageClass, LanguagePlugin<*>> = mutableMapOf()
 
@@ -44,7 +45,7 @@ class LanguagePluginsService {
         .also(this::registerLangaugePlugin)
     KotlinLanguagePlugin(javaPlugin, bazelPathsResolver).also(this::registerLangaugePlugin)
     ScalaLanguagePlugin(javaPlugin, bazelPathsResolver, jvmPackageResolver).also(this::registerLangaugePlugin)
-    GoLanguagePlugin(bazelPathsResolver).also(this::registerLangaugePlugin)
+    GoLanguagePlugin(project, bazelPathsResolver).also(this::registerLangaugePlugin)
     PythonLanguagePlugin(bazelPathsResolver, workspaceContext).also(this::registerLangaugePlugin)
     ThriftLanguagePlugin().also(this::registerLangaugePlugin)
     ProtobufLanguagePlugin(javaPlugin).also(this::registerLangaugePlugin)
