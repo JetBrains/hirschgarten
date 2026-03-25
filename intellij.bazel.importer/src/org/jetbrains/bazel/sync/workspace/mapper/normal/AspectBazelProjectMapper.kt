@@ -36,13 +36,13 @@ import org.jetbrains.bazel.sync.workspace.languages.LanguagePluginContext
 import org.jetbrains.bazel.sync.workspace.languages.LanguagePluginsService
 import org.jetbrains.bazel.sync.workspace.languages.scala.ScalaLanguagePlugin
 import org.jetbrains.bazel.sync.workspace.mapper.BazelResolvedWorkspaceBuilder
-import org.jetbrains.bazel.sync.workspace.model.Library
 import org.jetbrains.bazel.sync.workspace.model.NonModuleTarget
 import org.jetbrains.bazel.sync.workspace.targetKind.TargetKindService
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bsp.protocol.BuildTargetTag
 import org.jetbrains.bsp.protocol.FeatureFlags
 import org.jetbrains.bsp.protocol.LibraryItem
+import org.jetbrains.bsp.protocol.MavenCoordinates
 import org.jetbrains.bsp.protocol.RawBuildTarget
 import org.jetbrains.bsp.protocol.SourceItem
 import java.nio.charset.StandardCharsets
@@ -69,7 +69,7 @@ internal class AspectBazelProjectMapper(
   data class IntermediateTargetData(
     val label: ResolvedLabel,
     val target: TargetInfo,
-    val extraLibraries: Collection<Library>,
+    val extraLibraries: Collection<LibraryItem>,
     val targetKind: TargetKind,
     val tags: Set<String>,
     val sources: List<SourceItem>,
@@ -77,7 +77,7 @@ internal class AspectBazelProjectMapper(
   )
 
   fun TargetInfo.toIntermediateData(
-    extraLibraries: Map<Label, List<Library>>,
+    extraLibraries: Map<Label, List<LibraryItem>>,
     repoMapping: RepoMapping,
     targetKinds: Map<Label, TargetKind>,
   ): IntermediateTargetData? {
@@ -165,7 +165,7 @@ internal class AspectBazelProjectMapper(
           librariesFromDeps.values
             .flatten()
             .distinct()
-            .associateBy { it.label }
+            .associateBy { it.id }
       }
     val targetKinds =
       measure("Target kinds") {
@@ -188,7 +188,7 @@ internal class AspectBazelProjectMapper(
     val librariesToImport =
       measure("Merge all libraries") {
         librariesFromDepsAndTargets +
-          extraLibrariesFromJdeps.values.flatten().associateBy { it.label }
+        extraLibrariesFromJdeps.values.flatten().associateBy { it.id }
       }
 
     val extraLibraries = concatenateMaps(librariesFromDeps, extraLibrariesFromJdeps)
@@ -216,26 +216,14 @@ internal class AspectBazelProjectMapper(
     nonModuleRawTargets.forEach { target -> workspaceTargets.putIfAbsent(target.id, target) }
     return BazelResolvedWorkspaceBuilder.build(
       targets = workspaceTargets.values.toList(),
-      libraries =
-        librariesToImport.values.map {
-          LibraryItem(
-            id = it.label,
-            dependencies = it.dependencies,
-            ijars = it.interfaceJars.toList(),
-            jars = it.outputs.toList(),
-            sourceJars = it.sources.toList(),
-            mavenCoordinates = it.mavenCoordinates,
-            containsInternalJars = it.containsInternalJars,
-            isLowPriority = it.isLowPriority,
-          )
-        },
+      libraries = librariesToImport.values.toList(),
       hasError = hasError,
     )
   }
 
   private suspend fun AspectBazelProjectMapper.createIntermediateTargetData(
     targets: Sequence<TargetInfo>,
-    extraLibraries: Map<Label, List<Library>>,
+    extraLibraries: Map<Label, List<LibraryItem>>,
     repoMapping: RepoMapping,
     targetKinds: Map<Label, TargetKind>,
   ): List<IntermediateTargetData> =
@@ -265,7 +253,7 @@ internal class AspectBazelProjectMapper(
     targetsToImport: Sequence<TargetInfo>,
     allTargets: Map<Label, TargetInfo>,
     repoMapping: RepoMapping,
-  ): Map<Label, List<Library>> {
+  ): Map<Label, List<LibraryItem>> {
     val localRepositories = repoMapping.getLocalRepositories()
     return targetsToImport
       .filter { shouldCreateOutputJarsLibrary(it, allTargets) }
@@ -292,26 +280,23 @@ internal class AspectBazelProjectMapper(
           targetInfo.kotlinTargetInfo.exportedCompilerPluginTargetsFromDepsList.any { allTargets.get(Label.parse(it))?.hasApiGeneratingPlugins ?: false }
         )
 
-  private fun annotationProcessorLibraries(targetsToImport: Sequence<TargetInfo>, repoMapping: RepoMapping): Map<Label, List<Library>> {
+  private fun annotationProcessorLibraries(targetsToImport: Sequence<TargetInfo>, repoMapping: RepoMapping): Map<Label, List<LibraryItem>> {
     val localRepositories = repoMapping.getLocalRepositories()
     return targetsToImport
       .filter { it.javaCommon.generatedJarsList.isNotEmpty() }
       .associate { targetInfo ->
         targetInfo.key.label to
-          Library(
-            label = Label.parse(targetInfo.key.label + "_generated"),
-            outputs =
-              targetInfo.javaCommon.generatedJarsList
-                .flatMap { it.binaryJarsList }
-                .map { bazelPathsResolver.resolve(it, localRepositories) }
-                .toSet(),
-            sources =
-              targetInfo.javaCommon.generatedJarsList
-                .flatMap { it.sourceJarsList }
-                .map { bazelPathsResolver.resolve(it, localRepositories) }
-                .toSet(),
+          createLibrary(
+            id = Label.parse(targetInfo.key.label + "_generated"),
             dependencies = emptyList(),
-            interfaceJars = emptySet(),
+            jars = targetInfo.javaCommon.generatedJarsList
+              .flatMap { it.binaryJarsList }
+              .map { bazelPathsResolver.resolve(it, localRepositories) }
+              .toSet(),
+            sourceJars = targetInfo.javaCommon.generatedJarsList
+              .flatMap { it.sourceJarsList }
+              .map { bazelPathsResolver.resolve(it, localRepositories) }
+              .toSet(),
           )
       }.map { Label.parse(it.key) to listOf(it.value) }
       .toMap()
@@ -337,7 +322,7 @@ internal class AspectBazelProjectMapper(
     targetsToImport: Sequence<TargetInfo>,
     dependencyGraph: DependencyGraph,
     repoMapping: RepoMapping,
-  ): Map<Label, List<Library>> {
+  ): Map<Label, List<LibraryItem>> {
     val projectLevelKotlinStdlibsLibrary = calculateProjectLevelKotlinStdlibsLibrary(targetsToImport, repoMapping)
     val kotlinDependentTargetsIds = targetsDependingOnKotlinStdlib(targetsToImport, dependencyGraph)
 
@@ -346,7 +331,7 @@ internal class AspectBazelProjectMapper(
       .orEmpty()
   }
 
-  private fun calculateProjectLevelKotlinStdlibsLibrary(targetsToImport: Sequence<TargetInfo>, repoMapping: RepoMapping): Library? {
+  private fun calculateProjectLevelKotlinStdlibsLibrary(targetsToImport: Sequence<TargetInfo>, repoMapping: RepoMapping): LibraryItem? {
     val kotlinStdlibsJars = calculateProjectLevelKotlinStdlibsJars(targetsToImport, repoMapping)
 
     // rules_kotlin does not expose source jars for jvm stdlibs, so this is the way they can be retrieved for now
@@ -358,11 +343,11 @@ internal class AspectBazelProjectMapper(
         .toSet()
 
     return if (kotlinStdlibsJars.isNotEmpty()) {
-      Library(
-        label = Label.synthetic("rules_kotlin_kotlin-stdlibs"),
-        outputs = kotlinStdlibsJars,
-        sources = inferredSourceJars,
+      createLibrary(
+        id = Label.synthetic("rules_kotlin_kotlin-stdlibs"),
         dependencies = emptyList(),
+        jars = kotlinStdlibsJars,
+        sourceJars = inferredSourceJars,
         // https://youtrack.jetbrains.com/issue/BAZEL-2284/NotNull-not-applicable-to-type-use#focus=Comments-27-12502660.0-0
         // Make sure that if the user provides Kotlin stdlib in deps then it overrides the one inferred from rules_kotlin
         isLowPriority = true,
@@ -382,7 +367,7 @@ internal class AspectBazelProjectMapper(
   }
 
   // TODO: refactor to language-specific logic
-  private fun calculateScalaLibrariesMapper(targetsToImport: Sequence<TargetInfo>): Map<Label, List<Library>> {
+  private fun calculateScalaLibrariesMapper(targetsToImport: Sequence<TargetInfo>): Map<Label, List<LibraryItem>> {
     val projectLevelScalaSdkLibraries = calculateProjectLevelScalaSdkLibraries()
     val projectLevelScalaTestLibraries = calculateProjectLevelScalaTestLibraries()
     val scalaTargets = targetsToImport.filter { it.hasScalaTargetInfo() }.map { it.label() }
@@ -404,28 +389,28 @@ internal class AspectBazelProjectMapper(
     }
   }
 
-  private fun calculateProjectLevelScalaSdkLibraries(): Map<Path, Library> =
+  private fun calculateProjectLevelScalaSdkLibraries(): Map<Path, LibraryItem> =
     getProjectLevelScalaSdkLibrariesJars().associateWith {
-      Library(
-        label = Label.synthetic(it.name),
-        outputs = setOf(it),
-        sources = emptySet(),
+      createLibrary(
+        id = Label.synthetic(it.name),
         dependencies = emptyList(),
+        jars = setOf(it),
+        sourceJars = emptySet(),
       )
     }
 
   // TODO: refactor to language-specific logic
-  private fun calculateProjectLevelScalaTestLibraries(): Map<Path, Library> {
+  private fun calculateProjectLevelScalaTestLibraries(): Map<Path, LibraryItem> {
     val scalaPlugin = languagePluginsService.getLanguagePlugin<ScalaLanguagePlugin>(LanguageClass.SCALA)
     return scalaPlugin.scalaTestJars.values
       .flatten()
       .toSet()
       .associateWith {
-        Library(
-          label = Label.synthetic(it.name),
-          outputs = setOf(it),
-          sources = emptySet(),
+        createLibrary(
+          id = Label.synthetic(it.name),
           dependencies = emptyList(),
+          jars = setOf(it),
+          sourceJars = emptySet(),
         )
       }
   }
@@ -450,16 +435,16 @@ internal class AspectBazelProjectMapper(
    */
   private suspend fun jdepsLibraries(
     targetsToImport: Map<Label, TargetInfo>,
-    libraryDependencies: Map<Label, List<Library>>,
-    librariesToImport: Map<Label, Library>,
+    libraryDependencies: Map<Label, List<LibraryItem>>,
+    librariesToImport: Map<Label, LibraryItem>,
     interfacesAndBinariesFromTargetsToImport: Map<Label, Set<Path>>,
     repoMapping: RepoMapping,
     targetKinds: Map<Label, TargetKind>,
-  ): Map<Label, List<Library>> {
+  ): Map<Label, List<LibraryItem>> {
     val localRepositories = repoMapping.getLocalRepositories()
     val targetsToJdepsJars =
       getAllJdepsDependencies(targetsToImport, libraryDependencies, librariesToImport, localRepositories, targetKinds)
-    val libraryNameToLibraryValueMap = HashMap<Label, Library>()
+    val libraryNameToLibraryValueMap = HashMap<Label, LibraryItem>()
     return targetsToJdepsJars.mapValues { target ->
       val interfacesAndBinariesFromTarget =
         interfacesAndBinariesFromTargetsToImport.getOrDefault(target.key, emptySet())
@@ -470,12 +455,11 @@ internal class AspectBazelProjectMapper(
           if (shouldSkipJdepsJar(it)) return@mapNotNull null
           val label = syntheticLabel(it)
           libraryNameToLibraryValueMap.computeIfAbsent(label) { _ ->
-            Library(
-              label = label,
+            createLibrary(
+              id = label,
               dependencies = emptyList(),
-              interfaceJars = emptySet(),
-              outputs = setOf(it),
-              sources = emptySet(),
+              jars = setOf(it),
+              sourceJars = emptySet(),
             )
           }
         }
@@ -488,8 +472,8 @@ internal class AspectBazelProjectMapper(
 
   private suspend fun getAllJdepsDependencies(
     targetsToImport: Map<Label, TargetInfo>,
-    libraryDependencies: Map<Label, List<Library>>,
-    librariesToImport: Map<Label, Library>,
+    libraryDependencies: Map<Label, List<LibraryItem>>,
+    librariesToImport: Map<Label, LibraryItem>,
     localRepositories: LocalRepositoryMapping,
     targetKinds: Map<Label, TargetKind>,
   ): Map<Label, Set<Path>> {
@@ -536,8 +520,8 @@ internal class AspectBazelProjectMapper(
   private fun getJdepsJarsFromTransitiveDependencies(
     targetOrLibrary: Label,
     targetsToImport: Map<Label, TargetInfo>,
-    libraryDependencies: Map<Label, List<Library>>,
-    librariesToImport: Map<Label, Library>,
+    libraryDependencies: Map<Label, List<LibraryItem>>,
+    librariesToImport: Map<Label, LibraryItem>,
     outputJarsFromTransitiveDepsCache: ConcurrentHashMap<Label, Set<Path>>,
     allJdepsJars: Set<Path>,
     localRepositories : LocalRepositoryMapping,
@@ -546,7 +530,7 @@ internal class AspectBazelProjectMapper(
       val jarsFromTargets =
         targetsToImport[targetOrLibrary]?.let { getTargetOutputJarsSet(it, localRepositories) + getTargetInterfaceJarsSet(it, localRepositories) }.orEmpty()
       val jarsFromLibraries =
-        librariesToImport[targetOrLibrary]?.let { it.outputs + it.interfaceJars }.orEmpty()
+        librariesToImport[targetOrLibrary]?.let { it.jars + it.ijars }.orEmpty()
       val outputJars =
         listOfNotNull(jarsFromTargets, jarsFromLibraries)
           .asSequence()
@@ -556,7 +540,7 @@ internal class AspectBazelProjectMapper(
 
       val dependencies =
         targetsToImport[targetOrLibrary]?.depsList.orEmpty().map { it.label() } +
-          libraryDependencies[targetOrLibrary].orEmpty().map { it.label } +
+        libraryDependencies[targetOrLibrary].orEmpty().map { it.id } +
           librariesToImport[targetOrLibrary]?.dependencies.orEmpty().map { it.label }
 
       dependencies.flatMapTo(outputJars) { dependency ->
@@ -652,7 +636,7 @@ internal class AspectBazelProjectMapper(
     workspaceContext: WorkspaceContext,
     targets: Map<Label, TargetInfo>,
     repoMapping: RepoMapping,
-  ): Map<Label, Library> {
+  ): Map<Label, LibraryItem> {
     val localRepositories = repoMapping.getLocalRepositories()
     return withContext(Dispatchers.Default) {
       targets
@@ -684,7 +668,7 @@ internal class AspectBazelProjectMapper(
     targetInfo: TargetInfo,
     onlyOutputJars: Boolean,
     localRepositories : LocalRepositoryMapping,
-  ): Library? {
+  ): LibraryItem? {
     val outputs = getTargetOutputJarPaths(targetInfo, localRepositories) + getIntellijPluginJars(targetInfo, localRepositories)
     val rawSources = getSourceJarPaths(targetInfo, localRepositories)
     val sources = if (workspaceContext.preferClassJarsOverSourcelessJars) {
@@ -714,14 +698,37 @@ internal class AspectBazelProjectMapper(
         null
       }
 
-    return Library(
-      label = label,
-      outputs = outputs,
-      sources = sources,
+    return createLibrary(
+      id = label,
       dependencies = targetInfo.depsList.map { it.toDependencyLabel() },
-      interfaceJars = interfaceJars,
+      ijars = interfaceJars,
+      jars = outputs,
+      sourceJars = sources,
       mavenCoordinates = mavenCoordinates,
       containsInternalJars = targetInfo.containsAnyInternalJars(localRepositories),
+    )
+  }
+
+  private fun createLibrary(
+    id: Label,
+    dependencies: List<DependencyLabel>,
+    ijars: Set<Path> = emptySet(),
+    jars: Set<Path>,
+    sourceJars: Set<Path>,
+    mavenCoordinates: MavenCoordinates? = null,
+    containsInternalJars: Boolean = false,
+    isLowPriority: Boolean = false,
+  ): LibraryItem {
+    val outputFileHardLinks = BazelOutputFileHardLinks.getInstance(project)
+    return LibraryItem(
+      id = id,
+      dependencies = dependencies,
+      ijars = outputFileHardLinks.createOutputFileHardLinks(ijars),
+      jars = outputFileHardLinks.createOutputFileHardLinks(jars),
+      sourceJars = outputFileHardLinks.createOutputFileHardLinks(sourceJars),
+      mavenCoordinates = mavenCoordinates,
+      containsInternalJars = containsInternalJars,
+      isLowPriority = isLowPriority,
     )
   }
 
@@ -930,7 +937,7 @@ internal class AspectBazelProjectMapper(
       exported = exported,
     )
 
-  private fun List<Library>.toDependencyLabels(): List<DependencyLabel> = this.map { DependencyLabel(it.label) }
+  private fun List<LibraryItem>.toDependencyLabels(): List<DependencyLabel> = this.map { DependencyLabel(it.id) }
 
   private fun resolveSourceSet(target: TargetInfo, languagePlugin: LanguagePlugin<*>, repoMapping: RepoMapping): Sequence<SourceItem> {
     val localRepositories = repoMapping.getLocalRepositories()

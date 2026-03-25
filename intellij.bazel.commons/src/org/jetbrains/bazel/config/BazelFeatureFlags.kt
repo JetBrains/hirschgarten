@@ -39,6 +39,7 @@ object BazelFeatureFlags {
   const val RUN_CONFIG_RUN_WITH_BAZEL = "bazel.run.config.run.with.bazel"
   private const val USE_PTY = "bazel.use.pty"
   private const val SHOW_BAZEL_STDOUT = "bazel.show.stdout"
+  private const val HARD_LINK_OUTPUT_FILES = "bazel.hard.link.output.files"
 
   val isPythonSupportEnabled: Boolean
     get() = isEnabled(PYTHON_SUPPORT)
@@ -99,6 +100,9 @@ object BazelFeatureFlags {
 
   val showBazelStdout: Boolean
     get() = isEnabled(SHOW_BAZEL_STDOUT)
+
+  val hardLinkOutputFiles: Boolean
+    get() = isEnabled(HARD_LINK_OUTPUT_FILES)
 
   private fun isEnabled(key: String): Boolean {
     System.getProperty(key)?.let { value ->

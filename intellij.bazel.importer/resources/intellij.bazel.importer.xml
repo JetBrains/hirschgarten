@@ -51,6 +51,7 @@
     />
     <projectSyncHook implementation="org.jetbrains.bazel.sync.hooks.PathSyncHook"/>
     <targetKindProvider implementation="org.jetbrains.bazel.sync.workspace.targetKind.GenericBazelRules" order="last"/>
+    <projectPostSyncHook implementation="org.jetbrains.bazel.sync.workspace.mapper.normal.BazelOutputFileHardLinks$PostSyncHook"/>
   </extensions>
 
   <extensions defaultExtensionNs="com.intellij">

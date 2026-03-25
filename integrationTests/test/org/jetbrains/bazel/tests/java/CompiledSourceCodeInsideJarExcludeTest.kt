@@ -36,10 +36,32 @@ class CompiledSourceCodeInsideJarExcludeTest : IdeStarterBaseProjectTest() {
           execute { waitForSmartMode() }
           waitForIndicators(5.minutes)
 
-          step("Open Main.kt and check for red code") {
-            execute { openFile("Main.kt") }
-            execute { checkOnRedCode() }
-            takeScreenshot("afterOpenMainKt")
+          step("Check that generated code works in the IDE") {
+            step("Open Main.kt and check for red code") {
+              execute { openFile("Main.kt") }
+              execute { checkOnRedCode() }
+              takeScreenshot("afterOpenMainKt")
+            }
+            step("Modify generator.bzl and Main.kt to create Cat1.java instead of Cat.java") {
+              fun insert1(line: Int, column: Int) {
+                execute { goto(line, column) }
+                execute { delayType(delayMs = 100, text = "1") }
+              }
+              execute { openFile("generator.bzl") }
+              insert1(3, 45)  // cat_java = ctx.actions.declare_file("Cat1.java")
+              insert1(6, 39)  // public class Cat1 {};
+              execute { openFile("Main.kt") }
+              insert1(1, 45)  // import org.jetbrains.bsp.example.animals.Cat1
+              insert1(4, 15)  // val cat: Cat1? = null
+            }
+            step("Build and sync after changes to generated jar") {
+              execute { buildAndSync() }
+              execute { waitForSmartMode() }
+            }
+            step("Open Main.kt and check for red code after changing generated jar") {
+              execute { openFile("Main.kt") }
+              execute { checkOnRedCode() }
+            }
           }
 
           step("Modify my_addition.kt function signature") {

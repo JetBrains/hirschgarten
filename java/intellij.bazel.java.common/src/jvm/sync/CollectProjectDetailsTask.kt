@@ -7,7 +7,6 @@ import com.intellij.openapi.components.serviceAsync
 import com.intellij.openapi.diagnostic.thisLogger
 import com.intellij.openapi.externalSystem.service.project.IdeModifiableModelsProviderImpl
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.vfs.VirtualFileManager
 import com.intellij.platform.backend.workspace.WorkspaceModel
 import com.intellij.platform.diagnostic.telemetry.helpers.use
 import com.intellij.platform.diagnostic.telemetry.helpers.useWithScope
@@ -37,11 +36,12 @@ import org.jetbrains.bazel.sync.scope.FullProjectSync
 import org.jetbrains.bazel.sync.scope.ProjectSyncScope
 import org.jetbrains.bazel.sync.workspace.BazelResolvedWorkspace
 import org.jetbrains.bazel.sync.workspace.BazelWorkspaceResolveService
+import org.jetbrains.bazel.sync.workspace.mapper.normal.refreshVfsAfterBazelBuild
 import org.jetbrains.bazel.target.targetUtils
 import org.jetbrains.bazel.workspacemodel.entities.JavaModule
 import org.jetbrains.bazel.workspacemodel.entities.Module
-import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.BazelServerFacade
+import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.TaskId
 import org.jetbrains.bsp.protocol.utils.extractJvmBuildTarget
 import org.jetbrains.bsp.protocol.utils.extractScalaBuildTarget
@@ -281,7 +281,7 @@ internal class CollectProjectDetailsTask(
       }
     addBspFetchedScalaSdks()
 
-    VirtualFileManager.getInstance().asyncRefresh()
+    refreshVfsAfterBazelBuild()
   }
 
   private suspend fun addBspFetchedJdks() =

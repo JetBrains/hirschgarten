@@ -10,6 +10,7 @@ import org.jetbrains.bazel.sync.workspace.languages.kotlin.KotlinLanguagePlugin
 import org.jetbrains.bazel.sync.workspace.languages.scala.ScalaLanguagePlugin
 import org.jetbrains.bazel.sync.workspace.languages.thrift.ThriftLanguagePlugin
 import org.jetbrains.bazel.workspace.model.test.framework.BazelPathsResolverMock
+import org.jetbrains.bazel.workspace.model.test.framework.WorkspaceModelBaseTest
 import org.jetbrains.bazel.workspace.model.test.framework.mockWorkspaceContext
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
@@ -21,19 +22,19 @@ import java.nio.file.Files
 import java.nio.file.Path
 import kotlin.io.path.createTempDirectory
 
-class LanguagePluginServiceTest {
+class LanguagePluginServiceTest : WorkspaceModelBaseTest() {
   private lateinit var languagePluginsService: LanguagePluginsService
   private lateinit var workspaceRoot: Path
   private lateinit var projectViewFile: Path
   private lateinit var dotBazelBspDirPath: Path
 
   @BeforeEach
-  fun beforeEach() {
+  override fun beforeEach() {
     workspaceRoot = createTempDirectory("workspaceRoot")
     projectViewFile = workspaceRoot.resolve("projectview.bazelproject")
     dotBazelBspDirPath = workspaceRoot.resolve(".bazelbsp")
     val bazelPathsResolver = BazelPathsResolverMock.create()
-    languagePluginsService = LanguagePluginsService()
+    languagePluginsService = LanguagePluginsService(project)
     languagePluginsService.registerDefaultPlugins(bazelPathsResolver, DefaultJvmPackageResolver(), mockWorkspaceContext)
   }
 
