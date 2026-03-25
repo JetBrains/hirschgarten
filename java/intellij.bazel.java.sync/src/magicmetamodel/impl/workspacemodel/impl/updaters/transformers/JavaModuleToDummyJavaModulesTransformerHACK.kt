@@ -47,7 +47,9 @@ class JavaModuleToDummyJavaModulesTransformerHACK(
     val buildFileDirectory = inputEntity.baseDirContentRoot?.path
     val (relevantSourceRoots, irrelevantSourceRoots) = inputEntity.sourceRoots.partition { it.isRelevant() }
     val sourceRootsForParentDirs = calculateSourceRootsForParentDirs(relevantSourceRoots)
-    val mergedSourceRootVotes = sourceRootsForParentDirs.restoreSourceRootFromPackagePrefix(limit = buildFileDirectory)
+    val mergedSourceRootVotes = sourceRootsForParentDirs
+      .restoreSourceRootFromPackagePrefix(limit = buildFileDirectory)
+      .preferShorterPrefix()
 
     if (BazelFeatureFlags.mergeSourceRoots) {
       val mergedSourceRoots =
@@ -248,6 +250,29 @@ private fun Iterable<Pair<JavaSourceRoot, Int>>.sumUpVotes(): Map<JavaSourceRoot
     result[sourceRoot] = votes + result.getOrDefault(sourceRoot, 0)
   }
   return result
+}
+
+/**
+ * Motivated by BAZEL-3050
+ * It's only relevant when there is a mix of Kotlin and Java classes - like in the issue.
+ * For example, when Kotlin sources are inside `com.example.foo` pacakge and Java sources are inside `foo` package, we prefer `foo`.
+ * Without this fix, we would prefer `com.example.foo` which leads to red references to Java code from `foo` package.
+ */
+private fun Map<JavaSourceRoot, Int>.preferShorterPrefix(): Map<JavaSourceRoot, Int> {
+  val grouped = entries.groupBy { (root, _) -> root.sourcePath to root.rootType }
+  return grouped.flatMap { (_, group) ->
+    if (group.size <= 1) return@flatMap group.map { it.toPair() }
+
+    val sorted = group.sortedByDescending { (_, votes) -> votes }
+    val first = sorted[0].key.packagePrefix
+    val second = sorted[1].key.packagePrefix
+
+    if (second.isEmpty() || first.endsWith(".$second")) {
+      listOf(sorted[1].key to group.sumOf { (_, votes) -> votes })
+    } else {
+      group.map { it.toPair() }
+    }
+  }.toMap()
 }
 
 internal fun calculateDummyJavaModuleName(sourceRoot: Path, projectBasePath: Path): String {
