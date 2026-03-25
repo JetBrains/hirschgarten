@@ -644,6 +644,87 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest : WorkspaceModelBaseTest()
       expectedMergedSourceRoots
   }
 
+  @Test
+  fun `should prefer empty prefix when longer prefix extends it`() {
+    // given
+    val projectRoot = createTempDirectory(projectBasePath, "project")
+    val projectRootName = projectRoot.name
+    val javaVersion = "11"
+    val fooPackage = createTempDirectory(projectRoot, "foo")
+    val file1Path = createTempFile(fooPackage, "File1", ".java")
+    val file2Path = createTempFile(fooPackage, "File2", ".kt")
+    val file3Path = createTempFile(fooPackage, "File3", ".kt")
+
+    val givenJavaModule = createJavaModule(
+      name = projectRootName,
+      baseDirContentRoot = ContentRoot(path = projectRoot.toAbsolutePath()),
+      sourceRoots = listOf(
+        JavaSourceRoot(sourcePath = file1Path.toAbsolutePath(), generated = false, packagePrefix = fooPackage.name, rootType = JAVA_SOURCE_ROOT_TYPE),
+        JavaSourceRoot(sourcePath = file2Path.toAbsolutePath(), generated = false, packagePrefix = "com.example.${fooPackage.name}", rootType = JAVA_SOURCE_ROOT_TYPE),
+        JavaSourceRoot(sourcePath = file3Path.toAbsolutePath(), generated = false, packagePrefix = "com.example.${fooPackage.name}", rootType = JAVA_SOURCE_ROOT_TYPE),
+      ),
+      jvmJdkName = javaVersion,
+    )
+
+    // when
+    val mergedSourceRoots = JavaModuleToDummyJavaModulesTransformerHACK(projectBasePath, emptyMap(), project).transform(givenJavaModule)
+
+    // then
+    val expectedMergedSourceRoots =
+      listOf(
+        JavaSourceRoot(
+          sourcePath = projectRoot.toAbsolutePath(),
+          generated = false,
+          packagePrefix = "",
+          rootType = JAVA_SOURCE_ROOT_TYPE,
+        ),
+      )
+
+    (mergedSourceRoots as JavaModuleToDummyJavaModulesTransformerHACK.MergedRoots).mergedSourceRoots shouldContainExactlyInAnyOrder
+      expectedMergedSourceRoots
+  }
+
+  @Test
+  fun `should prefer shorter non-empty prefix when longer prefix extends it`() {
+    // given
+    val projectRoot = createTempDirectory(projectBasePath, "module1")
+    val projectRootName = projectRoot.name
+    val javaVersion = "11"
+
+    val srcPath = createTempDirectory(projectRoot, "src")
+    val file1 = createTempFile(srcPath, "File1", ".kt")
+    val file2 = createTempFile(srcPath, "File2", ".kt")
+    val file3 = createTempFile(srcPath, "File3", ".java")
+
+    val givenJavaModule = createJavaModule(
+      name = projectRootName,
+      baseDirContentRoot = ContentRoot(path = projectRoot.toAbsolutePath()),
+      sourceRoots = listOf(
+        JavaSourceRoot(sourcePath = file1.toAbsolutePath(), generated = false, packagePrefix = "org.company.project", rootType = JAVA_SOURCE_ROOT_TYPE),
+        JavaSourceRoot(sourcePath = file2.toAbsolutePath(), generated = false, packagePrefix = "org.company.project", rootType = JAVA_SOURCE_ROOT_TYPE),
+        JavaSourceRoot(sourcePath = file3.toAbsolutePath(), generated = false, packagePrefix = "project", rootType = JAVA_SOURCE_ROOT_TYPE),
+      ),
+      jvmJdkName = javaVersion,
+    )
+
+    // when
+    val mergedSourceRoots = JavaModuleToDummyJavaModulesTransformerHACK(projectBasePath, emptyMap(), project).transform(givenJavaModule)
+
+    // then
+    val expectedMergedSourceRoots =
+      listOf(
+        JavaSourceRoot(
+          sourcePath = srcPath.toAbsolutePath(),
+          generated = false,
+          packagePrefix = "project",
+          rootType = JAVA_SOURCE_ROOT_TYPE,
+        ),
+      )
+
+    (mergedSourceRoots as JavaModuleToDummyJavaModulesTransformerHACK.MergedRoots).mergedSourceRoots shouldContainExactlyInAnyOrder
+      expectedMergedSourceRoots
+  }
+
   private fun transformIntoDummyModules(module: JavaModule, fileToTarget: Map<Path, List<Label>> = emptyMap()): List<JavaModule> =
     transformIntoDummyModules(listOf(module), fileToTarget)
 
