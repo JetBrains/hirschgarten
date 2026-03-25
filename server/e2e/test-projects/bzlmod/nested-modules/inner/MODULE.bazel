@@ -1,5 +1,0 @@
-module(
-    name = "inner",
-)
-
-bazel_dep(name = "rules_java", version = "8.6.2")

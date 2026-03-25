@@ -1,3 +1,0 @@
-module(name = "external_autoloads_project")
-
-# rules_java is missing on purpose! Don't add it

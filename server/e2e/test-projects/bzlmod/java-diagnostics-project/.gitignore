@@ -1,6 +1,0 @@
-.bazelbsp/
-.bsp/
-.idea/
-.ijwb/
-bazel-*
-MODULE.bazel.lock

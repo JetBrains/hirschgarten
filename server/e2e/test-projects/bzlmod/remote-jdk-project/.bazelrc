@@ -1,2 +1,0 @@
-build --java_runtime_version=remotejdk_11
-common --enable_bzlmod

@@ -1,3 +1,0 @@
-fun method() {
-  println("Hi!")
-}
