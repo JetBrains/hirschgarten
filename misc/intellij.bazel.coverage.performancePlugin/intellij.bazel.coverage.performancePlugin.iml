@@ -26,5 +26,6 @@
     <orderEntry type="module" module-name="intellij.platform.smRunner" />
     <orderEntry type="module" module-name="intellij.platform.coverage" />
     <orderEntry type="module" module-name="intellij.platform.coverage.agent" />
+    <orderEntry type="module" module-name="intellij.platform.editor.ui" />
   </component>
 </module>
