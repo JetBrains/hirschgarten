@@ -25,6 +25,7 @@ import org.jetbrains.bazel.ideStarter.syncBazelProject
 import org.jetbrains.bazel.performanceImpl.FileKindCheck.INDEXABLE
 import org.jetbrains.bazel.performanceImpl.FileKindCheck.IN_CONTENT
 import org.jetbrains.bazel.performanceImpl.FileKindCheck.NON_INDEXABLE
+import org.jetbrains.bazel.performanceImpl.FileKindCheck.OUTSIDE_CONTENT
 import org.jetbrains.bazel.tests.ui.clickRunGutterOnLine
 import org.jetbrains.bazel.tests.ui.getRunGutterOnLine
 import org.jetbrains.bazel.tests.ui.verifyAvailableRunGutterActions
@@ -259,16 +260,27 @@ class ProjectViewCombinedTest : IdeStarterBaseProjectTest() {
     withDriver(bgRun) {
       ideFrame {
         step("Switch to build-flags-with-toolchain view") {
-          switchProjectViewWithPreview("binary_outside_project_view.bazelproject")
+          switchProjectViewWithPreview("build-flags-with-toolchain.bazelproject")
         }
-        step("Resync") {
+        step("Resync with build_flags") {
           execute {
             buildAndSync()
             waitForSmartMode()
           }
           assertSyncSucceeded()
         }
-
+        step("Verify included dir files ARE in project content and indexable") {
+          execute { assertFileKind("app/src/main/java/com/example/app/App.java", IN_CONTENT, INDEXABLE) }
+          execute { assertFileKind("common/src/main/java/com/example/common/Common.java", IN_CONTENT, INDEXABLE) }
+        }
+        step("Verify excluded dir files are NOT in project content") {
+          execute { assertFileKind("frontend/src/main/java/com/example/frontend/Frontend.java", OUTSIDE_CONTENT) }
+          execute { assertFileKind("webapp/src/main/java/com/example/webapp/Webapp.java", OUTSIDE_CONTENT) }
+        }
+        step("Verify dirs not in directories: section ARE in project content and NOT indexable") {
+          execute { assertFileKind("server/src/main/java/com/example/server/Server.java", IN_CONTENT, NON_INDEXABLE) }
+          execute { assertFileKind("database/src/main/java/com/example/database/Database.java", IN_CONTENT, NON_INDEXABLE) }
+        }
       }
     }
   }
