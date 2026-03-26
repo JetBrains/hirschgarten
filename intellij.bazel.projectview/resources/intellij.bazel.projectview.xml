@@ -4,6 +4,8 @@
     <module name="intellij.bazel.commons"/>
   </dependencies>
 
+  <resource-bundle>messages.BazelProjectViewBundle</resource-bundle>
+
   <extensionPoints>
     <extensionPoint qualifiedName="org.jetbrains.bazel.projectViewSectionProvider"
                     interface="org.jetbrains.bazel.languages.projectview.ProjectViewSectionProvider"
