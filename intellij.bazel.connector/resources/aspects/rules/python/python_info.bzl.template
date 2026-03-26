@@ -92,7 +92,7 @@ def extract_python_info(target, ctx, output_groups, **kwargs):
     interpreter_path = interpreter_from_absolute_path(getattr(provider, "interpreter_path", None))
 
     final_interpreter = interpreter if interpreter != None else interpreter_path
-    imports = getattr(ctx.rule.attr, "imports", [])
+    imports = list(getattr(ctx.rule.attr, "imports", []))
 
     if 0 == len(sources):
         def provider_import_to_attr_import(provider_import):
