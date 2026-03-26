@@ -3,7 +3,7 @@ package org.jetbrains.bazel.languages.projectview.base
 import com.intellij.openapi.fileTypes.LanguageFileType
 import com.intellij.openapi.util.IconLoader
 import org.jetbrains.annotations.ApiStatus
-import org.jetbrains.bazel.config.BazelProjectViewBundle
+import org.jetbrains.bazel.languages.projectview.ProjectViewBundle
 import javax.swing.Icon
 
 @ApiStatus.Internal
@@ -15,7 +15,7 @@ object ProjectViewFileType : LanguageFileType(ProjectViewLanguage) {
 
   override fun getName(): String = "ProjectView"
 
-  override fun getDescription(): String = BazelProjectViewBundle.message("bazel.language.projectview.description")
+  override fun getDescription(): String = ProjectViewBundle.getMessage("bazel.language.projectview.description")
 
   override fun getDefaultExtension(): String = "bazelproject"
 
