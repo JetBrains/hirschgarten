@@ -1,24 +1,27 @@
-load("@rules_kotlin//kotlin:jvm.bzl", "kt_jvm_library")
-load("//rules_intellij/build_defs:build_defs.bzl", "intellij_module")
+### auto-generated section `iml intellij.bazel.kotlin.k2` start
+exports_files([
+  "intellij.bazel.kotlin.k2.iml",
+], visibility = ["//visibility:public"])
+### auto-generated section `iml intellij.bazel.kotlin.k2` end
 
-kt_jvm_library(
-  name = "k2_resources",
-  resources = glob(["resources/**/*"]),
-  resource_strip_prefix = "k2/resources",
+### auto-generated section `build intellij.bazel.kotlin.k2` start
+load("//rules_intellij/build_defs:build_defs.bzl", "jvm_library", "resourcegroup")
+
+resourcegroup(
+  name = "bazel-kotlin-k2_resources",
+  srcs = glob(["resources/**/*"]),
+  strip_prefix = "resources"
 )
 
-kt_jvm_library(
-  name = "k2",
+jvm_library(
+  name = "bazel-kotlin-k2",
   module_name = "intellij.bazel.kotlin.k2",
+  visibility = ["//visibility:public"],
   srcs = glob(["src/**/*.kt", "src/**/*.java", "src/**/*.form"], allow_empty = True),
+  resources = [":bazel-kotlin-k2_resources"],
   deps = [
-    ":k2_resources",
-    "//:bazel-plugin_neverlink",
+    "//intellij.bazel.core:core",
+    "//java/intellij.bazel.java.sync:bazel-java-sync",
   ]
 )
-
-intellij_module(
-  name = "intellij.bazel.kotlin.k2",
-  visibility = ["//visibility:public"],
-  deps = ["//k2"],
-)
+### auto-generated section `build intellij.bazel.kotlin.k2` end
