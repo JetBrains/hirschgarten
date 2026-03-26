@@ -9,23 +9,13 @@ By participating in this project, you are expected to uphold our [Code of Conduc
 
 ## How to Contribute
 
-1. **Follow Coding Standards**:  
+1. Set up your development environment, as described in [in this document](docs/dev/development_setup.md).
+2. **Follow Coding Standards**:  
    - write new files in Kotlin
-   - if you add new Kotlin library use `kt_jvm_library` from `@rules_kotlin//kotlin:jvm.bzl`
-   - if you add a new test (JUnit 5) please use `kt_test` from `@//rules/kotlin:junit5.bzl`, with 1-1 test file to test target mapping
 
-2. **Use the Project Formatter**:  Before submitting your changes, run the project formatter
-   ```
-   bazel run //tools/format:format
-   ```
+3. **Commit Your Changes**: Make well-formatted commit messages.
 
-3. **Write Tests**: Add tests for your changes if applicable. Document them as needed.
-
-4. **Run Tests**: Ensure all tests pass locally.
-
-5. **Commit Your Changes**: Make well-formatted commit messages.
-
-6. **Open a Pull Request**: Submit a pull request from your fork to the main Hirschgarten repository.
+4. **Open a Pull Request**: Submit a pull request from your fork to the main Hirschgarten repository.
 
 ## Pull Request Process
 

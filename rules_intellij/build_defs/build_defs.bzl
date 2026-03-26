@@ -3,22 +3,12 @@
 # It was modified by JetBrains s.r.o. and contributors
 #
 
-"""Custom build macros for IntelliJ plugin handling.
-"""
-
-load(
-    ":intellij_plugin.bzl",
-    _intellij_plugin = "intellij_plugin",
-    _intellij_module = "intellij_module",
-    _intellij_plugin_library = "intellij_plugin_library",
-    _optional_plugin_dep = "optional_plugin_dep",
-)
+"""Custom build macros for IntelliJ plugin handling."""
+load("@rules_kotlin//kotlin:jvm.bzl", "kt_jvm_library")
+load("@rules_java//java:java_single_jar.bzl", "java_single_jar")
+load("@rules_java//java:java_import.bzl", "java_import")
 
 # Re-export these symbols
-intellij_plugin = _intellij_plugin
-intellij_module = _intellij_module
-intellij_plugin_library = _intellij_plugin_library
-optional_plugin_dep = _optional_plugin_dep
 
 def merged_plugin_xml(name, srcs, **kwargs):
     """Merges N plugin.xml files together."""
@@ -156,13 +146,40 @@ def stamped_plugin_xml(
         vendor_file = vendor_file,
     ) + "> $@"
 
+    plugin_xml_out = name + "_plugin.xml"
     native.genrule(
-        name = name,
+        name = name + "_xml",
         srcs = srcs,
-        outs = [name + ".xml"],
+        outs = [plugin_xml_out],
         cmd = cmd,
         tools = [stamp_tool],
-        **kwargs
+    )
+
+    package_meta_inf_tool = "//rules_intellij/build_defs:package_meta_inf_files"
+    output_jar = name + ".jar"
+
+    args = [
+        "./$(location {package_meta_inf_tool})",
+        "--input=$(location {plugin_xml_out})",
+        "--output=$(location {output_jar})",
+    ]
+    cmd = " ".join(args).format(
+        package_meta_inf_tool = package_meta_inf_tool,
+        plugin_xml_out = plugin_xml_out,
+        output_jar = output_jar,
+    )
+
+    native.genrule(
+        name = name + "_jar_genrule",
+        srcs = [plugin_xml_out],
+        outs = [output_jar],
+        cmd = cmd,
+        tools = [package_meta_inf_tool],
+    )
+    java_import(
+        name = name,
+        jars = [output_jar],
+        **kwargs,
     )
 
 def api_version_txt(name, check_eap, application_info_json = None, **kwargs):
@@ -356,4 +373,103 @@ def unescape_filenames(name, srcs):
         srcs = srcs,
         outs = outs,
         cmd = cmd,
+    )
+
+def jvm_library(
+    name,
+    module_name,
+    srcs = [],
+    deps = [],
+    resources = [],
+    deps_to_bundle = [],
+    visibility = None,
+    plugin_zip_layout = "bazel-plugin/lib/modules",
+    intellij_platform_deps = [
+        "//rules_intellij/intellij_platform_sdk:plugin_api",
+        "//rules_intellij/third_party/code_with_me",
+        "//rules_intellij/third_party/devkit",
+        "//rules_intellij/third_party/go",
+        "//rules_intellij/third_party/performance",
+        "//rules_intellij/third_party/protobuf:protoedit",
+        "//rules_intellij/third_party/python",
+        "//rules_intellij/third_party/terminal",
+        "//rules_intellij/intellij_platform_sdk:java",
+        "//rules_intellij/intellij_platform_sdk:kotlin",
+        "//rules_intellij/intellij_platform_sdk:bytecode_viewer",
+        "//rules_intellij/intellij_platform_sdk:junit",
+    ],
+    **kwargs):
+    # Things we actually want to pack into the resulting jar, as opposed to deps which are only needed for compilation
+    deps_to_bundle = deps_to_bundle + resources
+
+    if srcs:
+        kt_jvm_library(
+            name = name,
+            srcs = srcs,
+            deps = deps + deps_to_bundle + intellij_platform_deps,
+            visibility = visibility,
+            **kwargs,
+        )
+    else:
+        kt_jvm_library(
+            name = name,
+            exports = deps,
+            visibility = visibility,
+            **kwargs,
+        )
+
+    # Create an empty kt_jvm_library that only contains the Kotlin stdlib, so that we can exclude it and not bundle it in
+    empty_kt_source_name = name + "_empty_kt.kt"
+    native.genrule(
+       name = name + "_empty_kt_file",
+       srcs = [],
+       outs = [empty_kt_source_name],
+       cmd = "touch $@",
+    )
+    empty_kt_library_name = name + "_empty_kt_library"
+    kt_jvm_library(
+        name = empty_kt_library_name,
+        srcs = [empty_kt_source_name],
+    )
+
+    deploy_env_name = name + "_deploy_env"
+    java_single_jar(
+        name = deploy_env_name,
+        # Things we are excluding from the resulting jar. E.g., if we packed deps, then every module would be duplicated several times!
+        deps = deps + [empty_kt_library_name] + intellij_platform_deps,
+    )
+
+    single_jar_name = name + "_single_jar"
+    if srcs:
+        java_single_jar(
+            name = single_jar_name,
+            deps = [name],
+            deploy_env = [deploy_env_name],
+        )
+    else:
+        java_single_jar(
+            name = single_jar_name,
+            deps = deps_to_bundle,
+            deploy_env = [deploy_env_name],
+        )
+
+    native.genrule(
+       name = name + "_renamed",
+       srcs = [single_jar_name + ".jar"],
+       outs = [module_name + ".jar"],
+       cmd = "cp $< $@",
+    )
+
+    repackaged_files(
+        name = module_name,
+        srcs = [module_name + ".jar"],
+        prefix = plugin_zip_layout,
+        visibility = visibility,
+    )
+
+def resourcegroup(name, srcs, strip_prefix):
+    kt_jvm_library(
+      name = name,
+      resources = srcs,
+      resource_strip_prefix = strip_prefix,
     )

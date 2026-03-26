@@ -5,7 +5,7 @@ Follow these steps to get your development environment ready.
 
 ### Requirements
 
-1) IntelliJ IDEA 2025.3 or later Release, Release Candidate or EAP version.
+1) IntelliJ IDEA 2026.1 or later Release, Release Candidate or EAP version.
 2) Install the [Bazel plugin](https://plugins.jetbrains.com/plugin/22977-bazel-eap-/).
 3) [Plugin DevKit](https://plugins.jetbrains.com/plugin/22851-plugin-devkit/versions/stable)
 
@@ -29,7 +29,7 @@ Follow these steps to get your development environment ready.
    Select `jbrsdk_jcef-21` in the dropdown list and click "OK".  
    Then click "OK" again.  
    <img src="../files/DEVELOPMENT_SETUP_3.png" width="600">
-7) In the target view, find `plugin-bazel-debug`, right-click and click `Run` in the context menu.
+7) In the target view, find `plugin-bazel_debug`, right-click and click `Run` in the context menu.
    <img src="../files/DEVELOPMENT_SETUP_4.png" width="600">
 8) The following plugin runs can be started by clicking "Run" button in the upper right corner, next to the now present run configuration.
 9) If you want to build a deployable plugin, run `bazel build //:plugin-bazel_zip` and then grab the built plugin at
