@@ -3,7 +3,7 @@ package org.jetbrains.bazel.languages.projectview.parser
 import com.intellij.lang.PsiBuilder
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.psi.tree.IElementType
-import org.jetbrains.bazel.config.BazelProjectViewBundle
+import org.jetbrains.bazel.languages.projectview.ProjectViewBundle
 import org.jetbrains.bazel.languages.projectview.elements.ProjectViewElementType
 import org.jetbrains.bazel.languages.projectview.elements.ProjectViewElementTypes
 import org.jetbrains.bazel.languages.projectview.lexer.ProjectViewTokenType
@@ -117,7 +117,7 @@ internal class ProjectViewParser(private val builder: PsiBuilder) {
     if (matches(type)) {
       return true
     }
-    builder.error(BazelProjectViewBundle.message("bazel.language.project.parser.error", type))
+    builder.error(ProjectViewBundle.getMessage("bazel.language.project.parser.error", type))
     return false
   }
 

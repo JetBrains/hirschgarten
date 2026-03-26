@@ -11,7 +11,7 @@ import com.intellij.psi.codeStyle.CodeStyleSettings
 import com.intellij.psi.codeStyle.CommonCodeStyleSettings
 import com.intellij.psi.codeStyle.CustomCodeStyleSettings
 import com.intellij.psi.codeStyle.LanguageCodeStyleSettingsProvider
-import org.jetbrains.bazel.config.BazelProjectViewBundle
+import org.jetbrains.bazel.languages.projectview.ProjectViewBundle
 import org.jetbrains.bazel.languages.projectview.base.ProjectViewLanguage
 
 internal class ProjectViewLanguageCodeStyleSettingsProvider : LanguageCodeStyleSettingsProvider() {
@@ -37,7 +37,7 @@ internal class ProjectViewLanguageCodeStyleSettingsProvider : LanguageCodeStyleS
 
   override fun createCustomSettings(settings: CodeStyleSettings): CustomCodeStyleSettings = ProjectViewCodeStyleSettings(settings)
 
-  override fun getConfigurableDisplayName() = BazelProjectViewBundle.message("bazel.language.codestyle.display.name")
+  override fun getConfigurableDisplayName() = ProjectViewBundle.getMessage("bazel.language.codestyle.display.name")
 
   override fun createConfigurable(settings: CodeStyleSettings, modelSettings: CodeStyleSettings): CodeStyleConfigurable =
     object : CodeStyleAbstractConfigurable(settings, modelSettings, this.configurableDisplayName) {
