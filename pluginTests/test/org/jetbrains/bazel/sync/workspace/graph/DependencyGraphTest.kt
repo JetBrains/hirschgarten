@@ -1,7 +1,6 @@
 package org.jetbrains.bazel.sync.workspace.graph
 
 import io.kotest.matchers.shouldBe
-import org.jetbrains.bazel.info.BspTargetInfo
 import org.jetbrains.bazel.info.BspTargetInfo.Dependency
 import org.jetbrains.bazel.info.BspTargetInfo.TargetInfo
 import org.jetbrains.bazel.info.BspTargetInfo.TargetKey
@@ -365,7 +364,7 @@ class DependencyGraphTest {
       val dependencyGraph = DependencyGraph(rootTargets, idToTargetInfo)
 
       // when
-      val dependencies = dependencyGraph.allTargetsAtDepth(0, setOf(Label.parse("//A"), Label.parse("//D")))
+      val dependencies = dependencyGraph.allTargetsAtDepth(0)
 
       // then
       val expectedDependencies =
@@ -413,7 +412,7 @@ class DependencyGraphTest {
       val dependencyGraph = DependencyGraph(rootTargets, idToTargetInfo)
 
       // when
-      val dependencies = dependencyGraph.allTargetsAtDepth(1, setOf(Label.parse("//A"), Label.parse("//D")))
+      val dependencies = dependencyGraph.allTargetsAtDepth(1)
 
       // then
       val expectedDependencies =
@@ -457,11 +456,11 @@ class DependencyGraphTest {
       val f = targetInfo("//f", listOf())
       val g = targetInfo("//g", listOf())
       val idToTargetInfo = toIdToTargetInfoMap(a, b, c, d, e, f, g)
-      val rootTargets = setOf(Label.parse("//A"), Label.parse("//D"))
+      val rootTargets = setOf(Label.parse("//A"))
       val dependencyGraph = DependencyGraph(rootTargets, idToTargetInfo)
 
       // when
-      val dependencies = dependencyGraph.allTargetsAtDepth(2, setOf(Label.parse("//A")))
+      val dependencies = dependencyGraph.allTargetsAtDepth(2)
 
       // then
       val expectedDependencies =
@@ -547,7 +546,7 @@ class DependencyGraphTest {
       val dependencyGraph = DependencyGraph(rootTargets, idToTargetInfo)
 
       // when
-      val dependencies = dependencyGraph.allTargetsAtDepth(10, setOf(Label.parse("//A00")))
+      val dependencies = dependencyGraph.allTargetsAtDepth(10)
 
       // then
       val expectedDependencies =
@@ -591,11 +590,11 @@ class DependencyGraphTest {
       val f = targetInfo("//f", listOf())
       val g = targetInfo("//g", listOf())
       val idToTargetInfo = toIdToTargetInfoMap(a, b, c, d, e, f, g)
-      val rootTargets = setOf(Label.parse("//A"), Label.parse("//D"))
+      val rootTargets = setOf(Label.parse("//A"))
       val dependencyGraph = DependencyGraph(rootTargets, idToTargetInfo)
 
       // when
-      val dependencies = dependencyGraph.allTargetsAtDepth(-1, setOf(Label.parse("//A")))
+      val dependencies = dependencyGraph.allTargetsAtDepth(-1)
 
       // then
       val expectedDependencies =
@@ -622,9 +621,12 @@ class DependencyGraphTest {
 
     // when
     val dependencies =
-      dependencyGraph.allTargetsAtDepth(0, setOf(Label.parse("//target")), isExternalTarget = { label ->
-        label.assumeResolved().repoName == "maven"
-      })
+      dependencyGraph.allTargetsAtDepth(
+        0,
+        isExternalTarget = { label ->
+          label.assumeResolved().repoName == "maven"
+        },
+      )
 
     // then
     val expectedDependencies =
@@ -652,7 +654,6 @@ class DependencyGraphTest {
     val dependencies =
       dependencyGraph.allTargetsAtDepth(
         0,
-        setOf(Label.parse("//target")),
         isExternalTarget = { label ->
           label.assumeResolved().repoName == "maven"
         },
@@ -676,7 +677,7 @@ class DependencyGraphTest {
     val library1 = targetInfo("@maven//library1", listOf("@maven//library2"))
     val library2 = targetInfo("@maven//library2", listOf("@maven//library3"))
     val library3 = targetInfo("@maven//library3")
-    val rootTargets = setOf(Label.parse("//target"))
+    val rootTargets = setOf(Label.parse("//target"), Label.parse("//target1"))
     val idToTargetInfo =
       toIdToTargetInfoMap(target, target1, library1, library2, library3)
     val dependencyGraph = DependencyGraph(rootTargets, idToTargetInfo)
@@ -685,7 +686,6 @@ class DependencyGraphTest {
     val dependencies =
       dependencyGraph.allTargetsAtDepth(
         0,
-        setOf(Label.parse("//target"), Label.parse("//target1")),
         targetSupportsStrictDeps = { label ->
           label == target1.label()
         },
@@ -717,7 +717,7 @@ class DependencyGraphTest {
     val dependencyGraph = DependencyGraph(rootTargets, idToTargetInfo)
 
     // when
-    val dependencies = dependencyGraph.allTargetsAtDepth(1, setOf(Label.parse("//target")))
+    val dependencies = dependencyGraph.allTargetsAtDepth(1)
 
     // then
     val expectedDependencies =
@@ -741,9 +741,12 @@ class DependencyGraphTest {
 
     // when
     val dependencies =
-      dependencyGraph.allTargetsAtDepth(1, rootTargets, isWorkspaceTarget = { label ->
-        label.toString() == "@//target"
-      })
+      dependencyGraph.allTargetsAtDepth(
+        1,
+        isWorkspaceTarget = { label ->
+          label.toString() == "@//target"
+        },
+      )
 
     // then
     val expectedDependencies =
@@ -767,9 +770,12 @@ class DependencyGraphTest {
 
     // when
     val dependencies =
-      dependencyGraph.allTargetsAtDepth(0, rootTargets, isWorkspaceTarget = { label ->
-        label.toString() == "@//target"
-      })
+      dependencyGraph.allTargetsAtDepth(
+        0,
+        isWorkspaceTarget = { label ->
+          label.toString() == "@//target"
+        },
+      )
 
     // then
     val expectedDependencies =
@@ -780,10 +786,51 @@ class DependencyGraphTest {
     dependencies shouldBe expectedDependencies
   }
 
+  @Test
+  fun `should support macros that generate a target and refer to it by an alias`() {
+    // given
+    val generatedByAlias = targetInfo("//mypackage:generatedByAlias", generatorName = "alias", dependenciesIds = listOf("//dependency"))
+    val dependency = targetInfo("//dependency")
+
+    val generatedByImportedTarget = targetInfo("//anotherpackage:generatedByImportedTarget", generatorName = "importedTarget")
+    val importedTarget = targetInfo("//anotherpackage:importedTarget")
+
+    val nonImportedTarget = targetInfo("//nonImportedTarget", generatorName = "somethingRandom")
+
+    // Alias target is in rootTargets, but not in idToTargetInfo, because the aspect is not run on aliases
+    val rootTargets = setOf(Label.parse("//mypackage:alias"), Label.parse("//anotherpackage:importedTarget"))
+    val idToTargetInfo = toIdToTargetInfoMap(generatedByAlias, dependency, generatedByImportedTarget, importedTarget, nonImportedTarget)
+    val dependencyGraph = DependencyGraph(rootTargets, idToTargetInfo)
+
+    // when
+    val dependenciesAtDepth0 = dependencyGraph.allTargetsAtDepth(0)
+    val dependenciesAtDepth1 = dependencyGraph.allTargetsAtDepth(1)
+    val transitiveDependencies = dependencyGraph.allTargetsAtDepth(-1)
+
+    // then
+    val expectedDependenciesAtDepth0 = DependencyGraph.TargetsAtDepth(
+      targets = setOf(importedTarget, generatedByAlias),
+      directDependencies = setOf(dependency),
+    )
+    val expectedDependenciesAtDepth1 = DependencyGraph.TargetsAtDepth(
+      targets = setOf(importedTarget, generatedByAlias, dependency),
+      directDependencies = setOf(),
+    )
+    val expectedTransitiveDependencies = DependencyGraph.TargetsAtDepth(
+      targets = setOf(importedTarget, generatedByAlias, dependency),
+      directDependencies = setOf(),
+    )
+
+    dependenciesAtDepth0 shouldBe expectedDependenciesAtDepth0
+    dependenciesAtDepth1 shouldBe expectedDependenciesAtDepth1
+    transitiveDependencies shouldBe expectedTransitiveDependencies
+  }
+
   private fun targetInfo(
     id: String,
     dependenciesIds: List<String> = listOf(),
     runtimeDependenciesIds: List<String> = listOf(),
+    generatorName: String = "",
   ): TargetInfo =
     TargetInfo
       .newBuilder()
@@ -791,7 +838,8 @@ class DependencyGraphTest {
       .addAllDeps(
         dependenciesIds.map { dependency(it, Dependency.DependencyType.COMPILE) } +
           runtimeDependenciesIds.map { dependency(it, Dependency.DependencyType.RUNTIME) },
-      ).build()
+      )
+      .setGeneratorName(generatorName).build()
 
   private fun dependency(id: String, dependencyType: Dependency.DependencyType): Dependency =
     Dependency
