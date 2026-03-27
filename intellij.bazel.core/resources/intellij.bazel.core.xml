@@ -283,7 +283,6 @@
 
     <projectStorePathCustomizer implementation="org.jetbrains.bazel.flow.open.BazelProjectStorePathCustomizer"/>
 
-    <directoryProjectConfigurator implementation="org.jetbrains.bazel.flow.exclude.BazelSymlinkExcludeDirectoryProjectConfigurator"/>
     <externalIconProvider
       implementationClass="org.jetbrains.bazel.projectAware.BazelExternalSystemIconProvider"
       key="bazel"
