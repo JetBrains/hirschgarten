@@ -1,6 +1,82 @@
-<idea-plugin visibility="public" xmlns:xi="http://www.w3.org/2001/XInclude">
+<idea-plugin visibility="public">
 
-  <xi:include href="/ep.xml"/>
+  <!-- Don't use <xi:include> here, it can't be compiled by open source hirschgarten rules -->
+  <extensionPoints>
+    <extensionPoint
+      dynamic="true"
+      interface="org.jetbrains.bazel.utils.SourceTypeIconProvider"
+      qualifiedName="org.jetbrains.bazel.sourceTypeIconProvider"
+    />
+    <extensionPoint
+      dynamic="true"
+      interface="org.jetbrains.bazel.run.RunHandlerProvider"
+      qualifiedName="org.jetbrains.bazel.runHandlerProvider"
+    />
+    <extensionPoint
+      dynamic="true"
+      interface="org.jetbrains.bazel.run.config.RunConfigurationExtensionManager"
+      qualifiedName="org.jetbrains.bazel.runConfigurationExtension"
+    />
+    <extensionPoint
+      dynamic="true"
+      interface="org.jetbrains.bazel.buildTask.AdditionalProjectTaskRunnerProvider"
+      qualifiedName="org.jetbrains.bazel.additionalProjectTaskRunnerProvider"
+    />
+    <extensionPoint
+      dynamic="true"
+      interface="org.jetbrains.bazel.ui.projectTree.TreeStructureSettingsProvider"
+      qualifiedName="org.jetbrains.bazel.treeStructureSettingsExtension"
+    />
+    <extensionPoint
+      dynamic="true"
+      interface="org.jetbrains.bazel.ui.notifications.UnresolvedImportChecker"
+      qualifiedName="org.jetbrains.bazel.unresolvedImportChecker"
+    />
+    <extensionPoint
+      dynamic="true"
+      interface="org.jetbrains.bazel.ui.settings.BazelSettingsProvider"
+      qualifiedName="org.jetbrains.bazel.bazelExperimentalSettingsProvider"
+    />
+    <extensionPoint
+      interface="org.jetbrains.bazel.ui.settings.BazelSettingsProvider"
+      qualifiedName="org.jetbrains.bazel.bazelGeneralSettingsProvider"
+    />
+    <extensionPoint
+      interface="org.jetbrains.bazel.sync.projectStructure.legacy.WorkspaceModuleProjectSyncHook$EnableWorkspaceModuleSyncHookExtension"
+      qualifiedName="org.jetbrains.bazel.workspaceModuleSyncHook.enable"
+    />
+    <extensionPoint qualifiedName="org.jetbrains.bazel.bazelVersionResolver"
+                    interface="org.jetbrains.bazel.languages.bazelversion.service.BazelVersionResolver"
+                    dynamic="true"
+    />
+    <extensionPoint qualifiedName="org.jetbrains.bazel.starlarkGlobalFunctionProvider"
+                    interface="org.jetbrains.bazel.languages.starlark.bazel.StarlarkGlobalFunctionProvider"
+                    dynamic="true"
+    />
+    <extensionPoint qualifiedName="org.jetbrains.bazel.testLocatorProvider"
+                    interface="org.jetbrains.bazel.run.test.BazelTestLocatorProvider"
+                    dynamic="true"
+    />
+    <extensionPoint qualifiedName="org.jetbrains.bazel.indexAdditionalFilesContributor"
+                    interface="org.jetbrains.bazel.workspace.indexAdditionalFiles.IndexAdditionalFilesContributor"
+                    dynamic="true"
+    />
+    <extensionPoint qualifiedName="org.jetbrains.bazel.bzlmodResolver"
+                    interface="org.jetbrains.bazel.languages.starlark.bazel.bzlmod.BazelModuleResolver"
+                    dynamic="true"
+    />
+    <extensionPoint qualifiedName="org.jetbrains.bazel.syntheticRunTargetTemplateGenerator"
+                    dynamic="true"
+                    beanClass="com.intellij.lang.LanguageExtensionPoint">
+      <with attribute="implementationClass" implements="org.jetbrains.bazel.run.synthetic.SyntheticRunTargetTemplateGenerator"/>
+    </extensionPoint>
+    <extensionPoint qualifiedName="org.jetbrains.bazel.loadedTargetActionsProvider"
+                    interface="org.jetbrains.bazel.ui.widgets.tool.window.utils.LoadedTargetActionsProvider"
+                    dynamic="true"/>
+    <extensionPoint qualifiedName="org.jetbrains.bazel.coverageExecutorProvider"
+                    interface="org.jetbrains.bazel.runnerAction.BazelCoverageExecutorProvider"
+                    dynamic="true"/>
+  </extensionPoints>
 
   <resource-bundle>messages.BazelPluginBundle</resource-bundle>
 

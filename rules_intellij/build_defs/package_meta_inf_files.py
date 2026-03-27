@@ -30,17 +30,13 @@ ZIP_DATE = (1980, 1, 1, 0, 0, 0)
 parser = argparse.ArgumentParser()
 
 parser.add_argument(
-    "--deploy_jar",
-    required=True,
-    help="The deploy jar to modify.",)
-parser.add_argument(
     "--output",
     required=True,
     help="The output file.",)
 parser.add_argument(
-    "meta_inf_files",
-    nargs="+",
-    help="Sequence of input file, final file name pairs",)
+    "--input",
+    required=True,
+    help="The input plugin.xml file",)
 
 
 def pairwise(t):
@@ -50,13 +46,10 @@ def pairwise(t):
 
 def main():
   args = parser.parse_args()
-
-  shutil.copyfile(args.deploy_jar, args.output)
-  output_jar = zipfile.ZipFile(args.output, "a")
-  for meta_inf_file, name in pairwise(args.meta_inf_files):
-    with open(meta_inf_file, "rb") as f:
-      zip_info = zipfile.ZipInfo("META-INF/" + name, ZIP_DATE)
-      output_jar.writestr(zip_info, f.read())
+  output_jar = zipfile.ZipFile(args.output, "w")
+  with open(args.input, "rb") as f:
+    zip_info = zipfile.ZipInfo("META-INF/plugin.xml", ZIP_DATE)
+    output_jar.writestr(zip_info, f.read())
 
 if __name__ == "__main__":
   main()

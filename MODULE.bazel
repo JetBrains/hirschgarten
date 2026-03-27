@@ -8,7 +8,7 @@ http_archive = use_repo_rule("@bazel_tools//tools/build_defs/repo:http.bzl", "ht
 
 bazel_dep(
     name = "rules_kotlin",
-    version = "2.2.2",
+    version = "2.3.20",
 )
 
 register_toolchains(
@@ -17,16 +17,17 @@ register_toolchains(
 
 # rules_kotlin depends on rules_android
 bazel_dep(name = "rules_android", version = "0.7.1")
+
 remote_android_extensions = use_extension(
     "@rules_android//bzlmod_extensions:android_extensions.bzl",
-    "remote_android_tools_extensions")
+    "remote_android_tools_extensions",
+)
 use_repo(remote_android_extensions, "android_tools")
 
 android_sdk_repository_extension = use_extension("@rules_android//rules/android_sdk_repository:rule.bzl", "android_sdk_repository_extension")
 use_repo(android_sdk_repository_extension, "androidsdk")
 
 register_toolchains("@androidsdk//:sdk-toolchain", "@androidsdk//:all")
-
 
 bazel_dep(name = "rules_java", version = "9.3.0")
 bazel_dep(name = "rules_jvm_external", version = "6.9")
@@ -45,7 +46,7 @@ maven.install(
     lock_file = "//:maven_install.json",
     repositories = [
         "https://cache-redirector.jetbrains.com/maven-central",
-    ]
+    ],
 )
 use_repo(maven, "maven")
 
@@ -79,11 +80,13 @@ bazel_dep(name = "rules_proto", version = "7.1.0")
 bazel_dep(name = "protobuf", version = "33.5")
 bazel_dep(name = "rules_cc", version = "0.2.14")
 bazel_dep(name = "rules_python", version = "1.8.3")
+
 bazel_dep(
     name = "rules_bazel_integration_test",
     version = "0.37.1",
     dev_dependency = True,
 )
+
 bazel_dep(name = "rules_foreign_cc", version = "0.15.1")
 bazel_dep(name = "abseil-cpp", version = "20260107.0")
 bazel_dep(name = "grpc-java", version = "1.78.0")
@@ -138,19 +141,19 @@ java_import(
 
 # SDK 261
 
-SDK_261_BASE_VERSION = "261.17801"
+SDK_261_BASE_VERSION = "261.22158"
 
-SDK_261_INTELLIJ_REPO_VERSION = SDK_261_BASE_VERSION + ".55"
+SDK_261_INTELLIJ_REPO_VERSION = SDK_261_BASE_VERSION + ".277"
 
-SDK_261_INTELLIJ_VERSION = SDK_261_INTELLIJ_REPO_VERSION + "-EAP"
+SDK_261_INTELLIJ_VERSION = SDK_261_INTELLIJ_REPO_VERSION
 
-SDK_261_INTELLIJ_REPOSITORY = "snapshots"  # releases or snapshots
+SDK_261_INTELLIJ_REPOSITORY = "releases"  # releases or snapshots
 
-SDK_261_PLUGIN_REPOSITORY_VERSION = SDK_261_BASE_VERSION + ".55"
+SDK_261_PLUGIN_REPOSITORY_VERSION = SDK_261_BASE_VERSION + ".277"
 
 IC_261_URL = "https://www.jetbrains.com/intellij-repository/%s/com/jetbrains/intellij/idea/ideaIC/%s/ideaIC-%s.zip" % (SDK_261_INTELLIJ_REPOSITORY, SDK_261_INTELLIJ_VERSION, SDK_261_INTELLIJ_VERSION)
 
-IC_261_SHA = "0f1bac1a5e22d6c67d985ad3f11b263451885d8abe2fe37655ef7dbac5fc58e7"
+IC_261_SHA = "1c62c1e1732224770b05fa4a6d2371918720a705fd7492b769707e52daf33741"
 
 http_archive(
     name = "intellij_ce_2026_1",
@@ -161,7 +164,7 @@ http_archive(
 
 IC_261_SOURCES_URL = "https://www.jetbrains.com/intellij-repository/%s/com/jetbrains/intellij/idea/ideaIC/%s/ideaIC-%s-sources.jar" % (SDK_261_INTELLIJ_REPOSITORY, SDK_261_INTELLIJ_VERSION, SDK_261_INTELLIJ_VERSION)
 
-IC_261_SOURCES_SHA = "39c184320dabfd102b1f2073813318e72bd7e8354a310e6dc528d68e183a3c90"
+IC_261_SOURCES_SHA = "102956cc1311233b6735e43a506b03b8ce82a8c613150ea52fa279ba03a26fe0"
 
 http_jar(
     name = "intellij_ce_2026_1_sources",
@@ -169,9 +172,11 @@ http_jar(
     url = IC_261_SOURCES_URL,
 )
 
-DEVKIT_261_URL = "https://plugins.jetbrains.com/maven/com/jetbrains/plugins/DevKit/%s/DevKit-%s.zip" % (SDK_261_PLUGIN_REPOSITORY_VERSION, SDK_261_PLUGIN_REPOSITORY_VERSION)
+DEVKIT_261_VERSION = SDK_261_BASE_VERSION + ".182"
 
-DEVKIT_261_SHA = "76a72f792271cabd3f5df863ed537709d9db08a546b9be20dc7d43114fcbcae2"
+DEVKIT_261_URL = "https://plugins.jetbrains.com/maven/com/jetbrains/plugins/DevKit/%s/DevKit-%s.zip" % (DEVKIT_261_VERSION, DEVKIT_261_VERSION)
+
+DEVKIT_261_SHA = "a0cae7b8ee12d8069e61cd4dd304bd9bd62212542b066142a108faf5c8b929b4"
 
 http_archive(
     name = "devkit_2026_1",
@@ -182,7 +187,7 @@ http_archive(
 
 PYTHON_PLUGIN_261_URL = "https://plugins.jetbrains.com/maven/com/jetbrains/plugins/PythonCore/%s/PythonCore-%s.zip" % (SDK_261_INTELLIJ_REPO_VERSION, SDK_261_INTELLIJ_REPO_VERSION)
 
-PYTHON_PLUGIN_261_SHA = "0402eecb672edbdf9f8bfc8d6c94ab7f919dd4d04e36a31731ce8482deabd464"
+PYTHON_PLUGIN_261_SHA = "86a72f85df6ee621501cff8d477ae6753978e8a330462a87b4f5df1356e5f9b3"
 
 http_archive(
     name = "python_2026_1",
@@ -193,7 +198,7 @@ http_archive(
 
 GO_PLUGIN_261_URL = "https://plugins.jetbrains.com/maven/com/jetbrains/plugins/org.jetbrains.plugins.go/%s/org.jetbrains.plugins.go-%s.zip" % (SDK_261_PLUGIN_REPOSITORY_VERSION, SDK_261_PLUGIN_REPOSITORY_VERSION)
 
-GO_PLUGIN_261_SHA = "644bc913ca17e85e62121c308486b471dfe13f25164277f3873aead77542fc53"
+GO_PLUGIN_261_SHA = "321929f1a171d281e8a44602eb2ae2c2b2a10fc597f7a904fbb2505110324fd9"
 
 http_archive(
     name = "go_2026_1",
@@ -204,7 +209,7 @@ http_archive(
 
 PERFORMANCE_PLUGIN_261_URL = "https://www.jetbrains.com/intellij-repository/%s/com/jetbrains/intellij/performanceTesting/performance-testing/%s/performance-testing-%s.jar" % (SDK_261_INTELLIJ_REPOSITORY, SDK_261_INTELLIJ_REPO_VERSION, SDK_261_INTELLIJ_REPO_VERSION)
 
-PERFORMANCE_PLUGIN_261_SHA = "bcad8fc9d2f8b7936bfa22d58e5e11b90a2b00b64ad4b99c5fd188b0b1674084"
+PERFORMANCE_PLUGIN_261_SHA = "7859344f4ec9cfc57e11151beb4d8eb1481e7b3ae44a7fd1159d1efc2bd568d8"
 
 http_jar(
     name = "performance_2026_1",
@@ -214,7 +219,7 @@ http_jar(
 
 CODE_WITH_ME_261_URL = "https://www.jetbrains.com/intellij-repository/%s/com/jetbrains/intellij/platform/backend-split/%s/backend-split-%s.jar" % (SDK_261_INTELLIJ_REPOSITORY, SDK_261_INTELLIJ_REPO_VERSION, SDK_261_INTELLIJ_REPO_VERSION)
 
-CODE_WITH_ME_261_SHA = "6d60ba3dee92050e878ec3ef641383307a45f0257b053db252552796888b50ba"
+CODE_WITH_ME_261_SHA = "28ff50726669a31b5d8321541a60690b320c45378e43402dc08077de9efbd169"
 
 http_jar(
     name = "code_with_me_2026_1",
@@ -224,7 +229,7 @@ http_jar(
 
 CODE_WITH_ME_SPLIT_261_URL = "https://www.jetbrains.com/intellij-repository/%s/com/jetbrains/intellij/platform/split/%s/split-%s.jar" % (SDK_261_INTELLIJ_REPOSITORY, SDK_261_INTELLIJ_REPO_VERSION, SDK_261_INTELLIJ_REPO_VERSION)
 
-CODE_WITH_ME_SPLIT_261_SHA = "f4c533c05081b89812cf4452db4d40156c822628d138c5f7d933cae69ee811df"
+CODE_WITH_ME_SPLIT_261_SHA = "4560d308951f011969257504e018e085f3dc258a79ec3015b021afd9fd86b012"
 
 http_jar(
     name = "code_with_me_split_2026_1",
@@ -246,11 +251,11 @@ http_jar(
     url = TERMINAL_COMPLETION_PLUGIN_261_URL,
 )
 
-PROTOEDIT_PLUGIN_261_VERSION = SDK_261_BASE_VERSION + ".36"
+PROTOEDIT_PLUGIN_261_VERSION = SDK_261_BASE_VERSION + ".185"
 
 PROTOEDIT_PLUGIN_261_URL = "https://plugins.jetbrains.com/maven/com/jetbrains/plugins/idea.plugin.protoeditor/%s/idea.plugin.protoeditor-%s.zip" % (PROTOEDIT_PLUGIN_261_VERSION, PROTOEDIT_PLUGIN_261_VERSION)
 
-PROTOEDIT_PLUGIN_261_SHA = "f56455de7f7614787efa0c98a21d69a9644b433b96ea57dfb767a08e1193c164"
+PROTOEDIT_PLUGIN_261_SHA = "e70b536e9feff8702ccb189068521a8ad1d63c9e0b464ddba6b60a585081935a"
 
 http_archive(
     name = "protoedit_2026_1",

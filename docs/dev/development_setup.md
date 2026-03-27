@@ -3,17 +3,21 @@
 This guide provides instructions for setting up and developing our Bazel plugin for JetBrains IDEA.  
 Follow these steps to get your development environment ready.
 
+### Limitations
+
+Tests (unit, integration) cannot be compiled and run from their source.
+The reason is that it's too difficult to adapt it from our internal build configuration.
+This unfortunately means you'll have to submit your PR without tests.
 ### Requirements
 
-1) IntelliJ IDEA 2025.3 or later Release, Release Candidate or EAP version.
+1) IntelliJ IDEA 2026.1 or later Release, Release Candidate or EAP version.
 2) Install the [Bazel plugin](https://plugins.jetbrains.com/plugin/22977-bazel-eap-/).
-3) [Plugin DevKit](https://plugins.jetbrains.com/plugin/22851-plugin-devkit/versions/stable)
+3) Install the [Plugin DevKit](https://plugins.jetbrains.com/plugin/22851-plugin-devkit/versions/stable) plugin.
 
 ### How to develop/debug plugins
 
 1) `git clone git@github.com:JetBrains/hirschgarten.git`
-2) Open the cloned `hirschgarten` repo in IDEA and wait for it to import.
-   Ignore errors like `@@bazel_tools//tools/cpp:cc_configure.bzl" does not export a module extension called cc_configure_extension`
+2) Open the cloned `hirschgarten/MODULE.bazel` file in IDEA. Click "Open as Project" and wait for it to import.
 3) Open "File->Project Structure". This opens the Project Structure dialog.  
    Click "SDKs".
 4) Hit the "+" button.  
@@ -29,7 +33,8 @@ Follow these steps to get your development environment ready.
    Select `jbrsdk_jcef-21` in the dropdown list and click "OK".  
    Then click "OK" again.  
    <img src="../files/DEVELOPMENT_SETUP_3.png" width="600">
-7) In the target view, find `plugin-bazel-debug`, right-click and click `Run` in the context menu.
+7) In the target view (open it via the Bazel icon on the right), find `plugin-bazel_debug`, right-click it and click `Run` in the context
+   menu.
    <img src="../files/DEVELOPMENT_SETUP_4.png" width="600">
 8) The following plugin runs can be started by clicking "Run" button in the upper right corner, next to the now present run configuration.
 9) If you want to build a deployable plugin, run `bazel build //:plugin-bazel_zip` and then grab the built plugin at

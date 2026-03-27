@@ -35,7 +35,7 @@ intellij_plugin_debug_target(
 
 """
 
-load("//rules_intellij/build_defs:build_defs.bzl", "output_path", "repackaged_files_data")
+load("//rules_intellij/build_defs:build_defs.bzl", "output_path", "repackaged_files_data", "plugin_deploy_zip")
 
 SUFFIX = ".intellij-plugin-debug-target-deploy-info"
 
@@ -130,3 +130,7 @@ intellij_plugin_debug_target = rule(
         "javaagents": attr.label_list(aspects = [_intellij_plugin_debug_target_aspect]),
     },
 )
+
+def intellij_plugin_zip_and_debug_target(name, srcs, visibility, zip_filename):
+    plugin_deploy_zip(name = name + "_zip", srcs = srcs, visibility = visibility, zip_filename = zip_filename)
+    intellij_plugin_debug_target(name = name + "_debug", deps = srcs, visibility = visibility)
