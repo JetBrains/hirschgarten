@@ -412,6 +412,43 @@ class WorkspaceDirectoriesFromProjectViewTest : BasePlatformTestCase() {
     )
   }
 
+  fun `test root non-recursive target should not exclude other directories when root is included`() {
+    // GIVEN
+    val aspectDir = workspaceRoot.resolve("aspect").createDirectories()
+    aspectDir.resolve("BUILD").createFile()
+    val aspectTestingDir = aspectDir.resolve("testing").createDirectories()
+    aspectTestingDir.resolve("BUILD").createFile()
+    workspaceRoot.resolve("BUILD").createFile()
+
+    val psiFile = myFixture.configureByText(
+      ".bazelproject",
+      """
+        directories:
+          .
+        targets:
+          //:clwb_tests
+          //aspect/testing/...
+        derive_targets_from_directories: false
+      """.trimIndent(),
+    )
+
+    // WHEN
+    val result = runMapper(psiFile)
+
+    // THEN aspect/testing and workspace root should be included
+    assertSameElements(
+      result.includedDirectories.map { it.uri },
+      aspectTestingDir.toUri().toString(),
+      workspaceRoot.toUri().toString()
+    )
+
+    // AND aspect should NOT be excluded because of 'directories: .'
+    assertDoesntContain(
+      result.excludedDirectories.map { it.uri },
+      aspectDir.toUri().toString()
+    )
+  }
+
   fun `test should not pass build flags to bazel query command`() {
     // GIVEN
     val extraToolchainsOption = "--extra_toolchains=//some_directory/non_existing_toolchain:non_existing_toolchain"
