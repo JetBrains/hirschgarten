@@ -6,6 +6,7 @@ import com.intellij.testFramework.junit5.fixture.tempPathFixture
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
+import org.jetbrains.bazel.settings.bazel.bazelProjectSettings
 import org.jetbrains.bazel.test.framework.BazelTestApplication
 import org.jetbrains.bazel.test.framework.bazelSyncCodeInsightFixture
 import org.jetbrains.bazel.test.framework.checkHighlighting
@@ -26,7 +27,9 @@ class SharedKotlinJavaPackageTest {
     withContext(Dispatchers.EDT) {
       fixture.checkHighlighting("matching_dirs/src/main/kotlin/foo/KotlinClassA.kt")
       fixture.checkHighlighting("matching_dirs/src/main/kotlin/foo/KotlinClassB.kt")
-      fixture.checkHighlighting("matching_dirs/src/main/kotlin/foo/JavaClass.java")
+      // Java file must not be first, so it's not selected by java source root optimization
+      // We need that to reproduce the issue
+      fixture.checkHighlighting("matching_dirs/src/main/kotlin/foo/ZJavaClass.java")
     }
   }
 
@@ -37,7 +40,9 @@ class SharedKotlinJavaPackageTest {
     withContext(Dispatchers.EDT) {
       fixture.checkHighlighting("non_matching_dirs/src/KotlinClassA.kt")
       fixture.checkHighlighting("non_matching_dirs/src/KotlinClassB.kt")
-      fixture.checkHighlighting("non_matching_dirs/src/JavaClass.java")
+      // Java file must not be first, so it's not selected by java source root optimization
+      // We need that to reproduce the issue
+      fixture.checkHighlighting("non_matching_dirs/src/ZJavaClass.java")
     }
   }
 }

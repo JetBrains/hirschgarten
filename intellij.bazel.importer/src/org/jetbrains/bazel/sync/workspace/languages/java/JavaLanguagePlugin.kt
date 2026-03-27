@@ -4,7 +4,6 @@ import com.intellij.openapi.project.Project
 import com.intellij.util.EnvironmentUtil
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.commons.BazelPathsResolver
-import org.jetbrains.bazel.commons.BzlmodRepoMapping
 import org.jetbrains.bazel.commons.LanguageClass
 import org.jetbrains.bazel.commons.RepoMapping
 import org.jetbrains.bazel.commons.getLocalRepositories
@@ -27,6 +26,7 @@ import org.jetbrains.bsp.protocol.JvmBuildTarget
 import org.jetbrains.bsp.protocol.SourceItem
 import java.nio.file.Path
 import kotlin.io.path.Path
+import kotlin.io.path.extension
 
 @ApiStatus.Internal
 class JavaLanguagePlugin internal constructor(
@@ -101,7 +101,9 @@ class JavaLanguagePlugin internal constructor(
         excludes = cachedSROExcludeMatchers,
       )
       if (matched.isNotEmpty()) {
-        packageInference.inferPackages(matched)
+        matched
+          .groupBy { it.path.extension }
+          .forEach { packageInference.inferPackages(it.value)  }
       }
       for (item in unmatched) {
         item.jvmPackagePrefix = packageResolver.calculateJvmPackagePrefix(item.path)
