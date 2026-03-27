@@ -1,7 +1,7 @@
 package org.company.project
 
-import project.JavaClass
+import project.ZJavaClass
 
 class KotlinClassB {
-  private val obj = JavaClass()
+  private val obj = ZJavaClass()
 }

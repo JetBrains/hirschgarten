@@ -1,7 +1,7 @@
 package com.example.foo;
 
-import foo.JavaClass;
+import foo.ZJavaClass;
 
 class KotlinClassA {
-  private val obj = JavaClass()
+  private val obj = ZJavaClass()
 }
