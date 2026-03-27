@@ -21,7 +21,7 @@ private class DirectoriesSyncHook : ProjectSyncHook {
     environment.withSubtask("Collect project directories") {
       val directories = environment.server.workspaceDirectories()
       val workspaceContext = environment.server.workspaceContext
-      val additionalExcludes = BazelSymlinkExcludeService.getInstance(environment.project).getOrComputeBazelSymlinksToExclude()
+      val additionalExcludes = BazelSymlinkExcludeService.getInstance(environment.project).scanForBazelSymlinksToExclude(environment.project.rootDir.toNioPath())
       val indexAllFilesInIncludedRoots = workspaceContext.indexAllFilesInDirectories
       val entity = createEntity(environment.project, directories, additionalExcludes, indexAllFilesInIncludedRoots)
 

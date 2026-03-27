@@ -206,6 +206,7 @@
     />
 
     <postStartupActivity implementation="org.jetbrains.bazel.startup.BazelStartupActivity"/>
+    <postStartupActivity implementation="org.jetbrains.bazel.flow.exclude.BazelSymlinkExcludeStartupActivity"/>
     <directoryIndexExcludePolicy implementation="org.jetbrains.bazel.flow.exclude.BazelDirectoryIndexExcludePolicy"/>
 
     <treeStructureProvider implementation="org.jetbrains.bazel.ui.projectTree.BazelTreeStructureProvider"/>
