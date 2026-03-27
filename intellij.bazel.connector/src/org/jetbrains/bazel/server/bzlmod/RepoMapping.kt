@@ -89,7 +89,7 @@ internal suspend fun extendRepoMappingByPathInfo(
     moduleApparentNameToCanonicalName[name]?.let { knownRepoDefinitions.containsKey(it) } ?: false
   }
   val knownCanonicalNames = known.map { moduleApparentNameToCanonicalName[it] }
-  val resolvedModules = moduleResolver.resolveModules(unknown, bazelInfo) + knownRepoDefinitions.filter { (k,v) -> knownCanonicalNames.contains(k) }
+  val resolvedModules = moduleResolver.resolveModules(unknown, bazelInfo).result + knownRepoDefinitions.filter { (k,v) -> knownCanonicalNames.contains(k) }
 
   resolvedModules.forEach { externalRepo, showRepoResult ->
     try {

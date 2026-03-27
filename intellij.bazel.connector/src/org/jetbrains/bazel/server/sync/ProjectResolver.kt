@@ -1,5 +1,7 @@
 package org.jetbrains.bazel.server.sync
 
+import com.intellij.build.events.MessageEvent
+import com.intellij.openapi.project.Project
 import com.intellij.platform.diagnostic.telemetry.helpers.useWithScope
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.ensureActive
@@ -20,6 +22,7 @@ import org.jetbrains.bazel.label.Canonical
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.label.ResolvedLabel
 import org.jetbrains.bazel.performance.bspTracer
+import org.jetbrains.bazel.progress.syncConsole
 import org.jetbrains.bazel.server.bsp.managers.BazelBspAspectsManager
 import org.jetbrains.bazel.server.bsp.managers.BazelBspAspectsManagerResult
 import org.jetbrains.bazel.server.bsp.managers.BazelBspLanguageExtensionsGenerator
@@ -63,7 +66,8 @@ class ProjectResolver constructor(
   private val bazelInfo: BazelInfo,
   private val bazelRunner: BazelRunner,
   private val bazelPathsResolver: BazelPathsResolver,
-  private val taskEventsHandler: BazelTaskEventsHandler
+  private val taskEventsHandler: BazelTaskEventsHandler,
+  private val project: Project,
 ) {
   private suspend fun <T> measured(description: String, f: suspend () -> T): T = bspTracer.spanBuilder(description).useWithScope { f() }
 
@@ -100,7 +104,7 @@ class ProjectResolver constructor(
           val needsPath = involvedRepos
             .filter { !(repoMapping.canonicalRepoNameToLocalPath.contains(it.repoName)) }
             .map { it.toString() }
-          val extraRepositoryDescriptions = ModuleResolver(bazelRunner, workspaceContext, taskId).resolveModules(needsPath, bazelInfo)
+          val extraRepositoryDescriptions = ModuleResolver(bazelRunner, workspaceContext, taskId).resolveModules(needsPath, bazelInfo).result
           val extraPaths = extraRepositoryDescriptions.map { (name, description) ->
             when (description) {
               is ShowRepoResult.LocalRepository -> mapOf(description.name to Path(description.path))
@@ -169,10 +173,17 @@ class ProjectResolver constructor(
 
     val extraDefinitionsNeeded = workspaceContext.externalRepositoriesTreatedAsInternal.map {  repoName -> mapping?.get(repoName)?.let {"@@" + it} ?: repoName }
 
-    val repoDefinitions =
+    val repoDefinitionsWithWarnings =
       measured("Looking up definitions of external rules") {
         ModuleResolver(bazelRunner, workspaceContext, taskId).resolveModules(externalRepos + extraDefinitionsNeeded, bazelInfo)
       }
+
+    repoDefinitionsWithWarnings.warnings.forEach {
+      project.syncConsole.addDiagnosticMessage(taskId, null, 0, 0, it,
+                                               MessageEvent.Kind.WARNING)
+    }
+
+    val repoDefinitions = repoDefinitionsWithWarnings.result
 
     val repoMapping = extendRepoMappingByPathInfo(repoMappingOnly, workspaceContext, bazelRunner, bazelInfo, taskEventsHandler.asLogger(taskId), repoDefinitions, taskId)
 

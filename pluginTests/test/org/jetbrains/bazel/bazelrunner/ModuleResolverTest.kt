@@ -3,6 +3,7 @@ package org.jetbrains.bazel.bazelrunner
 import io.kotest.assertions.fail
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.string.shouldContain
 import io.kotest.matchers.types.shouldBeInstanceOf
 import org.jetbrains.bazel.bazelrunner.outputs.OutputCollector
 import org.junit.jupiter.api.Test
@@ -24,11 +25,11 @@ class ModuleResolverTest {
 
     val moduleOutputParser = ModuleOutputParser()
 
-    shouldThrow<IllegalStateException> {
-      moduleOutputParser.parseShowRepoResults(result, false)
-    }.also {
-      it.message shouldBe "Failed to resolve module from bazel info. Bazel Info output:\n'$stderr'"
-    }
+    val parsed = moduleOutputParser.parseShowRepoResults(result, false, listOf("some_module"))
+
+    parsed.result shouldBe mapOf()
+    parsed.warnings.size shouldBe 1
+    parsed.warnings[0] shouldContain stderr
   }
 
   @Test
@@ -47,8 +48,9 @@ class ModuleResolverTest {
 
     val result = BazelProcessResult(makeOutputCollector(stdout), makeOutputCollector(""), 0)
 
-    val parsed = moduleOutputParser.parseShowRepoResults(result, false)
-    parsed shouldBe mapOf("@community" to ShowRepoResult.LocalRepository("community~", "community"))
+    val parsed = moduleOutputParser.parseShowRepoResults(result, false, listOf("@community"))
+    parsed.result shouldBe mapOf("@community" to ShowRepoResult.LocalRepository("community~", "community"))
+    parsed.warnings shouldBe emptyList()
   }
 
   @Test
@@ -76,7 +78,7 @@ class ModuleResolverTest {
     val result = BazelProcessResult(makeOutputCollector(stdout), makeOutputCollector(""), 0)
 
     val parsed =
-      moduleOutputParser.parseShowRepoResults(result, false).get("rules_jvm_external@6.5") ?: fail("No entry produced for rules_jvm_external")
+      moduleOutputParser.parseShowRepoResults(result, false, listOf("@rules_jvm_external")).result.get("rules_jvm_external@6.5") ?: fail("No entry produced for rules_jvm_external")
 
     parsed.shouldBeInstanceOf<ShowRepoResult.HttpArchiveRepository>()
     (parsed as ShowRepoResult.HttpArchiveRepository).urls shouldBe listOf("https://github.com/bazel-contrib/rules_jvm_external/releases/download/6.5/rules_jvm_external-6.5.tar.gz")
@@ -130,14 +132,15 @@ class ModuleResolverTest {
 
     val result = BazelProcessResult(makeOutputCollector(stdout), makeOutputCollector(""), 0)
 
-    val parsed = moduleOutputParser.parseShowRepoResults(result, false)
-    parsed shouldBe mapOf(
+    val parsed = moduleOutputParser.parseShowRepoResults(result, false, listOf("@ultimate", "@jps_to_bazel"))
+    parsed.result shouldBe mapOf(
       "community@_" to ShowRepoResult.LocalRepository("community+", "community"),
       "rules_jvm@_" to ShowRepoResult.LocalRepository("rules_jvm+", "community/build/jvm-rules"),
       "lib@_" to ShowRepoResult.LocalRepository("lib+", "community/lib"),
       "ultimate_lib@_" to ShowRepoResult.LocalRepository("ultimate_lib+", "lib"),
       "jps_to_bazel@_" to ShowRepoResult.LocalRepository("jps_to_bazel+", "community/platform/build-scripts/bazel"),
     )
+    parsed.warnings shouldBe listOf()
   }
 
   @Test
@@ -149,12 +152,13 @@ class ModuleResolverTest {
 
     val result = BazelProcessResult(makeOutputCollector(stdout), makeOutputCollector(""), 0)
 
-    val parsed = moduleOutputParser.parseShowRepoResults(result, true )
+    val parsed = moduleOutputParser.parseShowRepoResults(result, true, listOf("@some_repo", "@another_repo") )
 
-    parsed shouldBe mapOf(
+    parsed.result shouldBe mapOf(
       "bundled@_" to ShowRepoResult.LocalRepository("bundled+", "subproject"),
       "anotherbundled@_" to ShowRepoResult.LocalRepository("anotherbundled+", "the/other/subproject"),
     )
+    parsed.warnings shouldBe listOf()
   }
 
   @Test
@@ -166,12 +170,13 @@ class ModuleResolverTest {
 
     val result = BazelProcessResult(makeOutputCollector(stdout), makeOutputCollector(""), 0)
 
-    val parsed = moduleOutputParser.parseShowRepoResults(result, true )
+    val parsed = moduleOutputParser.parseShowRepoResults(result, true, listOf("@some_repo", "@another_repo") )
 
-    parsed shouldBe mapOf(
+    parsed.result shouldBe mapOf(
       "bundled@_" to ShowRepoResult.LocalRepository("bundled+", "subproject"),
       "rules_kotlin@2.2.2" to ShowRepoResult.HttpArchiveRepository("rules_kotlin+", listOf("https://github.com/bazelbuild/rules_kotlin/releases/download/v2.2.2/rules_kotlin-v2.2.2.tar.gz"))
     )
+    parsed.warnings shouldBe listOf()
 
   }
 
@@ -183,10 +188,11 @@ class ModuleResolverTest {
 
     val result = BazelProcessResult(makeOutputCollector(stdout), makeOutputCollector(""), 0)
 
-    val parsed = moduleOutputParser.parseShowRepoResults(result, true )
+    val parsed = moduleOutputParser.parseShowRepoResults(result, true, listOf("@internal") )
 
-    parsed shouldBe mapOf(
+    parsed.result shouldBe mapOf(
       "bundled@_" to ShowRepoResult.LocalRepository("bundled+", "subproject"),
     )
+    parsed.warnings shouldBe listOf()
   }
 }
