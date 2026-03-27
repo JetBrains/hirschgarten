@@ -15,6 +15,7 @@ import java.nio.file.Path
 import kotlin.collections.toList
 import kotlin.io.path.Path
 import kotlin.io.path.name
+import kotlin.io.path.walk
 
 @ApiStatus.Internal
 class ResourcesItemToJavaResourceRootTransformer : WorkspaceModelEntityPartitionTransformer<RawBuildTarget, ResourceRoot> {
@@ -23,8 +24,9 @@ class ResourcesItemToJavaResourceRootTransformer : WorkspaceModelEntityPartition
     val rootType = inputEntity.inferRootType()
     val stripPrefixes = extractStripPrefixOrNull(inputEntity) ?: defaultStripPrefixes(inputEntity)
     if (stripPrefixes.isEmpty()) return rootsForResourcesWithoutPrefix(inputEntity.resources, rootType)
-    val result = stripPrefixes.fold(MergeResult(leftovers = inputEntity.resources.toSet())) { acc, it ->
-      acc.mergeUsing(stripPrefix = it)
+    val resourcesSet = inputEntity.resources.toSet()
+    val result = stripPrefixes.fold(MergeResult(leftovers = resourcesSet)) { acc, it ->
+      acc.mergeUsing(stripPrefix = it, allResourceFiles = resourcesSet)
     }
     return result
       .merged
@@ -39,10 +41,11 @@ class ResourcesItemToJavaResourceRootTransformer : WorkspaceModelEntityPartition
     rootType: SourceRootTypeId,
   ): List<ResourceRoot> = resources.map { ResourceRoot(resourcePath = it, rootType = rootType) }
 
-  private fun MergeResult.mergeUsing(stripPrefix: Path): MergeResult {
+  private fun MergeResult.mergeUsing(stripPrefix: Path, allResourceFiles: Set<Path>): MergeResult {
     val stripPrefixAncestors = setOf(stripPrefix)
     val newLeftovers = leftovers.filterNotTo(mutableSetOf()) { it.isUnder(stripPrefixAncestors) }
     if (leftovers.size == newLeftovers.size) return this
+    if (stripPrefix.walk().any { it !in allResourceFiles }) return this
     return MergeResult(
       merged = merged.plusElement(stripPrefix),
       leftovers = newLeftovers,

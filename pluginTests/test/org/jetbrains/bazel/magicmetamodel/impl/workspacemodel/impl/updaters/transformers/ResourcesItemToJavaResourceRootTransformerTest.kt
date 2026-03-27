@@ -14,6 +14,7 @@ import org.jetbrains.bsp.protocol.BuildTargetData
 import org.jetbrains.bsp.protocol.JvmBuildTarget
 import org.jetbrains.bsp.protocol.KotlinBuildTarget
 import org.jetbrains.bsp.protocol.ScalaBuildTarget
+import org.jetbrains.bsp.protocol.SourceItem
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.DynamicTest
@@ -660,6 +661,125 @@ class ResourcesItemToJavaResourceRootTransformerTest {
     ),
   )
 
+  @Test
+  fun `should fall back to single file resource root when resource root overlaps with source root`() {
+    // given
+    val javaRoot = projectBasePath.resolve("src/main/java").createDirectories()
+    val packageDir = javaRoot.resolve("com/example").createDirectories()
+    val sourceFile = packageDir.resolve("App.java").createFile()
+    val resourceFile = packageDir.resolve("config.xml").createFile()
+
+    val buildTarget = createRawBuildTarget(
+      sources = listOf(SourceItem(path = sourceFile, generated = false)),
+      resources = listOf(resourceFile),
+      data = JvmBuildTarget(javaVersion = "17", resourceStripPrefix = null),
+    )
+
+    // when
+    val javaResources = resourcesItemToJavaResourceRootTransformer.transform(buildTarget)
+
+    // then
+    javaResources shouldHaveSingleElement ResourceRoot(
+      resourcePath = resourceFile,
+      rootType = SourceRootTypeId("java-resource"),
+    )
+  }
+
+  @Test
+  fun `should only fall back conflicting roots when some roots overlap with sources and others do not`() {
+    // given
+    val kotlinRoot = projectBasePath.resolve("src/main/kotlin").createDirectories()
+    val kotlinPackageDir = kotlinRoot.resolve("com/jetbrains").createDirectories()
+    val sourceFile = kotlinPackageDir.resolve("Main.kt").createFile()
+    val conflictingResource = kotlinPackageDir.resolve("template.html").createFile()
+
+    val resourcesRoot = projectBasePath.resolve("src/main/resources").createDirectories()
+    val safeResource = resourcesRoot.resolve("app.properties").createFile()
+
+    val buildTarget = createRawBuildTarget(
+      sources = listOf(SourceItem(path = sourceFile, generated = false)),
+      resources = listOf(conflictingResource, safeResource),
+      data = KotlinBuildTarget(
+        languageVersion = "1.8",
+        apiVersion = "1.8",
+        kotlincOptions = emptyList(),
+        associates = emptyList(),
+        jvmBuildTarget = JvmBuildTarget(javaVersion = "17", resourceStripPrefix = null),
+      ),
+    )
+
+    // when
+    val javaResources = resourcesItemToJavaResourceRootTransformer.transform(buildTarget)
+
+    // then
+    javaResources shouldContainExactlyInAnyOrder listOf(
+      ResourceRoot(resourcePath = resourcesRoot, rootType = SourceRootTypeId("java-resource")),
+      ResourceRoot(resourcePath = conflictingResource, rootType = SourceRootTypeId("java-resource")),
+    )
+  }
+
+  @Test
+  fun `should merge resource roots normally when there are no sources`() {
+    // given
+    val kotlinRoot = projectBasePath.resolve("src/main/kotlin").createDirectories()
+    val packageDir = kotlinRoot.resolve("com/jetbrains").createDirectories()
+    val resourceFile = packageDir.resolve("template.html").createFile()
+
+    val buildTarget = createRawBuildTarget(
+      sources = emptyList(),
+      resources = listOf(resourceFile),
+      data = KotlinBuildTarget(
+        languageVersion = "1.8",
+        apiVersion = "1.8",
+        kotlincOptions = emptyList(),
+        associates = emptyList(),
+        jvmBuildTarget = JvmBuildTarget(javaVersion = "17", resourceStripPrefix = null),
+      ),
+    )
+
+    // when
+    val javaResources = resourcesItemToJavaResourceRootTransformer.transform(buildTarget)
+
+    // then
+    javaResources shouldHaveSingleElement ResourceRoot(
+      resourcePath = kotlinRoot,
+      rootType = SourceRootTypeId("java-resource"),
+    )
+  }
+
+  @Test
+  fun `should fall back to single file resource roots when explicit strip prefix overlaps with source root`() {
+    // given
+    val stripPrefix = projectBasePath.resolve("sources").createDirectories()
+    val packageDir = stripPrefix.resolve("com/jetbrains").createDirectories()
+    val sourceFile = packageDir.resolve("Main.kt").createFile()
+    val resourceFile = packageDir.resolve("data.json").createFile()
+
+    val buildTarget = createRawBuildTarget(
+      sources = listOf(SourceItem(path = sourceFile, generated = false)),
+      resources = listOf(resourceFile),
+      data = KotlinBuildTarget(
+        languageVersion = "1.8",
+        apiVersion = "1.8",
+        kotlincOptions = emptyList(),
+        associates = emptyList(),
+        jvmBuildTarget = JvmBuildTarget(
+          javaVersion = "17",
+          resourceStripPrefix = stripPrefix,
+        ),
+      ),
+    )
+
+    // when
+    val javaResources = resourcesItemToJavaResourceRootTransformer.transform(buildTarget)
+
+    // then
+    javaResources shouldHaveSingleElement ResourceRoot(
+      resourcePath = resourceFile,
+      rootType = SourceRootTypeId("java-resource"),
+    )
+  }
+
   private fun shouldDetectJavaPrefixTests(vararg paths: String) = shouldDetectJavaPrefixTests(
     prefixes = paths.asList(),
     subhierarchies = listOf(""),
@@ -755,18 +875,22 @@ class ResourcesItemToJavaResourceRootTransformerTest {
     prefixes: List<String>,
     subhierarchies: List<String>,
     data: BuildTargetData?,
-  ) = prefixes.flatMap { prefix ->
-    subhierarchies.map { subhierarchy ->
-      val displayName = when {
-        subhierarchy.isEmpty() -> "prefix \'$prefix\'"
-        else -> "prefix \'$prefix\' followed by \'$subhierarchy\'"
-      }
-      DynamicTest.dynamicTest(displayName) {
-        shouldNotDetectPrefix(
-          prefix = projectBasePath.resolve(prefix),
-          subhierarchy = subhierarchy,
-          data = data,
-        )
+  ): List<DynamicTest> {
+    var index = 0
+    return prefixes.flatMap { prefix ->
+      subhierarchies.map { subhierarchy ->
+        val testProjectBase = projectBasePath.resolve("t${index++}").createDirectories()
+        val displayName = when {
+          subhierarchy.isEmpty() -> "prefix \'$prefix\'"
+          else -> "prefix \'$prefix\' followed by \'$subhierarchy\'"
+        }
+        DynamicTest.dynamicTest(displayName) {
+          shouldNotDetectPrefix(
+            prefix = testProjectBase.resolve(prefix),
+            subhierarchy = subhierarchy,
+            data = data,
+          )
+        }
       }
     }
   }
@@ -775,18 +899,22 @@ class ResourcesItemToJavaResourceRootTransformerTest {
     prefixes: List<String>,
     subhierarchies: List<String>,
     data: BuildTargetData?,
-  ) = prefixes.flatMap { prefix ->
-    subhierarchies.map { subhierarchy ->
-      val displayName = when {
-        subhierarchy.isEmpty() -> "prefix \'$prefix\'"
-        else -> "prefix \'$prefix\' followed by \'$subhierarchy\'"
-      }
-      DynamicTest.dynamicTest(displayName) {
-        shouldDetectPrefix(
-          prefix = projectBasePath.resolve(prefix),
-          subhierarchy = subhierarchy,
-          data = data,
-        )
+  ): List<DynamicTest> {
+    var index = 0
+    return prefixes.flatMap { prefix ->
+      subhierarchies.map { subhierarchy ->
+        val testProjectBase = projectBasePath.resolve("t${index++}").createDirectories()
+        val displayName = when {
+          subhierarchy.isEmpty() -> "prefix \'$prefix\'"
+          else -> "prefix \'$prefix\' followed by \'$subhierarchy\'"
+        }
+        DynamicTest.dynamicTest(displayName) {
+          shouldDetectPrefix(
+            prefix = testProjectBase.resolve(prefix),
+            subhierarchy = subhierarchy,
+            data = data,
+          )
+        }
       }
     }
   }
