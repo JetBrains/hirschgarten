@@ -4,7 +4,6 @@ import org.apache.velocity.app.VelocityEngine
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.commons.BzlmodRepoMapping
 import org.jetbrains.bazel.commons.RepoMapping
-import org.jetbrains.bazel.commons.RepoMappingDisabled
 import org.jetbrains.bazel.commons.constants.Constants
 import org.jetbrains.bazel.server.bsp.utils.FileUtils.writeIfDifferent
 import org.jetbrains.bazel.server.bsp.utils.InternalAspectsResolver
@@ -92,6 +91,7 @@ class BazelBspLanguageExtensionsGenerator(internalAspectsResolver: InternalAspec
     velocityEngine.init(props)
   }
 
+  //
   private fun calculateProperties(): Properties {
     val props = Properties()
     props["resource.loader.file.path"] = aspectsPath.toAbsolutePath().toString()
@@ -110,7 +110,8 @@ class BazelBspLanguageExtensionsGenerator(internalAspectsResolver: InternalAspec
       createLoadStatementsString(rulesetLanguages.map { it.language }, repoMapping),
       createExtensionListString(rulesetLanguages.map { it.language }),
       createToolchainListString(rulesetLanguages, toolchains),
-      createRequiredAspectProviders(rulesetLanguages.map { it.language }, repoMapping, externalAutoloads)
+      createRequiredAspectProviders(rulesetLanguages.map { it.language }, repoMapping, externalAutoloads),
+      createRequiredProviders(rulesetLanguages.map { it.language }, repoMapping, externalAutoloads),
     ).joinToString(
       separator = "\n",
       postfix = "\n",
@@ -134,6 +135,9 @@ class BazelBspLanguageExtensionsGenerator(internalAspectsResolver: InternalAspec
 
   private fun createRequiredAspectProviders(languages: List<Language>, repoMapping: RepoMapping, externalAutoloads: List<String>): String =
     languages.flatMap { it.toRequiredAspectProviders(repoMapping, externalAutoloads) }.joinToString(prefix = "REQUIRED_ASPECT_PROVIDERS = [\n ", separator = ",\n ", postfix = "\n]")
+
+  private fun createRequiredProviders(languages: List<Language>, repoMapping: RepoMapping, externalAutoloads: List<String>): String =
+    languages.flatMap { it.toRequiredAspectProviders(repoMapping, externalAutoloads) }.joinToString(prefix = "REQUIRED_PROVIDERS = [\n ", separator = ",\n ", postfix = "\n]")
 
   private fun createNewExtensionsFile(fileContent: String) {
     val file = aspectsPath.resolve(Constants.EXTENSIONS_BZL)

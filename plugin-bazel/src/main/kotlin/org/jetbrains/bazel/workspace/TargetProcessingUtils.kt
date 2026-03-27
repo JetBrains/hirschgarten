@@ -51,6 +51,7 @@ data class ProcessedTargetsResult(
  * 3. Only stripped targets (not original .testlib) are stored in target utils mapping
  */
 fun processTargetsForTestlibStripping(targets: List<Label>): ProcessedTargetsResult {
+
   val strippedLabels = mutableSetOf<Label>()
   val originalLabelsWithStrippedVersion = mutableSetOf<Label>()
 
@@ -84,7 +85,6 @@ fun processTargetsForTestlibStripping(targets: List<Label>): ProcessedTargetsRes
 
   // Filter targets for mapping - exclude original .testlib labels
   val targetsForMapping = allProcessedTargets.filterNot { originalLabelsWithStrippedVersion.contains(it) }
-
   return ProcessedTargetsResult(
     allProcessedTargets = allProcessedTargets,
     strippedLabels = strippedLabels,

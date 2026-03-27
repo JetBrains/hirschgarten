@@ -1,6 +1,6 @@
 # Copyright 2019-2024 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
 
-load("//${bspPath}/aspects:extensions.bzl", "EXTENSIONS", "REQUIRED_ASPECT_PROVIDERS", "TOOLCHAINS")
+load("//${bspPath}/aspects:extensions.bzl", "EXTENSIONS", "REQUIRED_ASPECT_PROVIDERS", "REQUIRED_PROVIDERS", "TOOLCHAINS")
 load("//${bspPath}/aspects:utils/utils.bzl", "ALL_DEPS", "BspAspectInfo", "COMPILE_DEPS", "EXPORT_DEPS", "PRIVATE_COMPILE_DEPS", "RUNTIME_DEPS", "abs", "collect_targets_from_attrs", "create_struct", "do_starlark_string_expansion_dict", "file_location", "get_aspect_ids", "is_valid_aspect_target", "update_sync_output_groups")
 
 def create_all_extension_info(target, ctx, output_groups, dep_targets):
@@ -207,6 +207,7 @@ def _bsp_target_info_aspect_impl(target, ctx):
 bsp_target_info_aspect = aspect(
     implementation = _bsp_target_info_aspect_impl,
     required_aspect_providers = REQUIRED_ASPECT_PROVIDERS,
+    required_providers = REQUIRED_PROVIDERS,
     attr_aspects = ALL_DEPS,
     toolchains = TOOLCHAINS,
 )

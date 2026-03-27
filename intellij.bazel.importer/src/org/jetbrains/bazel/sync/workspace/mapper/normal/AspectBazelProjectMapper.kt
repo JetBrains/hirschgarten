@@ -120,7 +120,7 @@ internal class AspectBazelProjectMapper(
               targetSupportsStrictDeps = { id -> allTargets[id]?.let { targetSupportsStrictDeps(it) } == true },
               isWorkspaceTarget = { id ->
                 allTargets[id]?.let { target ->
-                  target.sourcesCount > 0 && isWorkspaceTarget(target, repoMapping, featureFlags, workspaceContext)
+                  (target.sourcesCount > 0 || target.getJvmTarget()) && isWorkspaceTarget(target, repoMapping, featureFlags)
                 } == true
               },
             )
@@ -889,8 +889,8 @@ internal class AspectBazelProjectMapper(
     val resolvedDependencies = resolveDirectDependencies(target)
     // https://youtrack.jetbrains.com/issue/BAZEL-983: extra libraries can override some library versions, so they should be put before
     val (extraLibraries, lowPriorityExtraLibraries) = targetData.extraLibraries.partition { !it.isLowPriority }
-    val shardFolkDependencies = resolveShardFolkDependencies(target, dependencyGraph)
-    val directDependencies = extraLibraries.toDependencyLabels() + resolvedDependencies + lowPriorityExtraLibraries.toDependencyLabels()
+    val shardFolkDependencies: List<DependencyLabel> = resolveShardFolkDependencies(target, dependencyGraph).map { DependencyLabel(it) }
+    val directDependencies = extraLibraries.toDependencyLabels() + resolvedDependencies + lowPriorityExtraLibraries.toDependencyLabels() + shardFolkDependencies
     val baseDirectory = bazelPathsResolver.toDirectoryPath(label, repoMapping)
     val languagePlugin = languagePluginsService.getLanguagePlugin(targetData.languages) ?: return null
     val resources = resolveResources(target, languagePlugin, localRepositories)

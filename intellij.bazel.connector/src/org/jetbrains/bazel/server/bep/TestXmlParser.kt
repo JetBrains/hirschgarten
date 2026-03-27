@@ -1,14 +1,14 @@
 package org.jetbrains.bazel.server.bep
 
+import com.fasterxml.jackson.annotation.JsonCreator
+import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.dataformat.xml.XmlMapper
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlRootElement
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlText
-import com.fasterxml.jackson.module.kotlin.registerKotlinModule
-import org.jetbrains.annotations.ApiStatus
-import org.jetbrains.bazel.util.BspClientTestNotifier
+import org.jetbrains.bazel.logger.BspClientTestNotifier
 import org.jetbrains.bsp.protocol.JUnitStyleTestCaseData
 import org.jetbrains.bsp.protocol.JUnitStyleTestSuiteData
 import org.jetbrains.bsp.protocol.TaskId
@@ -18,58 +18,73 @@ import java.util.UUID
 import kotlin.io.path.readText
 
 @JacksonXmlRootElement(localName = "testsuites")
-internal data class TestSuites(
+data class TestSuites @JsonCreator constructor(
   @JacksonXmlElementWrapper(useWrapping = false)
   @JacksonXmlProperty(localName = "testsuite")
+  @JsonProperty("testsuite")
   val testsuite: List<TestSuite> = emptyList(),
 )
 
-internal data class TestSuite(
-  // Individual test cases are grouped within a suite.
+data class TestSuite @JsonCreator constructor(
   @JacksonXmlProperty(isAttribute = true)
-  val name: String,
+  @JsonProperty("name")
+  val name: String = "",
   @JacksonXmlProperty(isAttribute = true)
-  val timestamp: String,
+  @JsonProperty("timestamp")
+  val timestamp: String = "",
   @JacksonXmlProperty(isAttribute = true)
-  val hostname: String,
+  @JsonProperty("hostname")
+  val hostname: String = "",
   @JacksonXmlProperty(isAttribute = true)
-  val tests: Int,
+  @JsonProperty("tests")
+  val tests: Int = 0,
   @JacksonXmlProperty(isAttribute = true)
-  val failures: Int,
+  @JsonProperty("failures")
+  val failures: Int = 0,
   @JacksonXmlProperty(isAttribute = true)
-  val errors: Int,
+  @JsonProperty("errors")
+  val errors: Int = 0,
   @JacksonXmlProperty(isAttribute = true)
-  val time: Double,
+  @JsonProperty("time")
+  val time: Double = 0.0,
   @JacksonXmlProperty(isAttribute = true)
-  val id: Int,
+  @JsonProperty("id")
+  val id: Int = 0,
   @JacksonXmlElementWrapper(useWrapping = false)
   @JacksonXmlProperty(localName = "testcase")
+  @JsonProperty("testcase")
   val testcase: List<TestCase> = emptyList(),
   @JacksonXmlProperty(localName = "system-out")
+  @JsonProperty("system-out")
   val systemOut: Any? = null,
   @JacksonXmlProperty(localName = "system-err")
+  @JsonProperty("system-err")
   val systemErr: Any? = null,
   @JacksonXmlProperty(isAttribute = true, localName = "package")
-  val pkg: String?,
+  @JsonProperty("package")
+  val pkg: String? = null,
+  @JsonProperty("properties")
   val properties: Any? = null,
 )
 
-internal data class TestCase(
-  // Name of the test case, typically method name.
+data class TestCase @JsonCreator constructor(
   @JacksonXmlProperty(isAttribute = true)
-  val name: String,
-  // Class name corresponding to the test case.
+  @JsonProperty("name")
+  val name: String = "",
   @JacksonXmlProperty(isAttribute = true)
-  val classname: String,
-  // Time value included with the test case.
+  @JsonProperty("classname")
+  val classname: String = "",
   @JacksonXmlProperty(isAttribute = true)
-  val time: Double,
-  // One of the following will be included if test did not pass.
+  @JsonProperty("time")
+  val time: Double = 0.0,
   @JacksonXmlProperty(localName = "error")
+  @JsonProperty("error")
   val error: TestResultDetail? = null,
   @JacksonXmlProperty(localName = "failure")
+  @JsonProperty("failure")
   val failure: TestResultDetail? = null,
   @JacksonXmlProperty(localName = "skipped")
+  @JsonProperty("skipped")
   val skipped: TestResultDetail? = null,
 )
 
@@ -91,7 +106,6 @@ internal class TestResultDetail {
   var content: String? = null
 }
 
-@ApiStatus.Internal
 class TestXmlParser(private var bspClientTestNotifier: BspClientTestNotifier) {
   private val fallbackTestXmlParser = FallbackTestXmlParser(bspClientTestNotifier)
 
@@ -122,7 +136,8 @@ class TestXmlParser(private var bspClientTestNotifier: BspClientTestNotifier) {
   private fun <T> parseTestXml(testXml: Path, valueType: Class<T>): T? {
     val xmlMapper =
       XmlMapper().apply {
-        registerKotlinModule()
+        // Avoid registerKotlinModule() due to classloader conflicts in the IntelliJ plugin environment.
+        // @JsonCreator annotations on data classes handle Kotlin defaults instead.
         configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
       }
 
@@ -250,38 +265,50 @@ class TestXmlParser(private var bspClientTestNotifier: BspClientTestNotifier) {
  * **/
 private class FallbackTestXmlParser(private var bspClientTestNotifier: BspClientTestNotifier) {
   @JacksonXmlRootElement(localName = "testsuites")
-  data class IncompleteTestSuites(
+  data class IncompleteTestSuites @JsonCreator constructor(
     @JacksonXmlElementWrapper(useWrapping = false)
     @JacksonXmlProperty(localName = "testsuite")
+    @JsonProperty("testsuite")
     val testsuite: List<IncompleteTestSuite> = emptyList(),
   )
 
-  data class IncompleteTestSuite(
+  data class IncompleteTestSuite @JsonCreator constructor(
     @JacksonXmlProperty(isAttribute = true)
-    val name: String,
+    @JsonProperty("name")
+    val name: String = "",
     @JacksonXmlProperty(isAttribute = true)
-    val failures: Int,
+    @JsonProperty("failures")
+    val failures: Int = 0,
     @JacksonXmlProperty(isAttribute = true)
-    val errors: Int,
+    @JsonProperty("errors")
+    val errors: Int = 0,
     @JacksonXmlProperty(localName = "system-out")
+    @JsonProperty("system-out")
     val systemOut: String? = null,
     @JacksonXmlElementWrapper(useWrapping = false)
     @JacksonXmlProperty(localName = "testcase")
+    @JsonProperty("testcase")
     val testcase: List<IncompleteTestCase> = emptyList(),
   )
 
-  data class IncompleteTestCase(
+  data class IncompleteTestCase @JsonCreator constructor(
     @JacksonXmlProperty(isAttribute = true)
-    val name: String,
+    @JsonProperty("name")
+    val name: String = "",
     @JacksonXmlProperty(localName = "error")
+    @JsonProperty("error")
     val error: TestResultDetail? = null,
     @JacksonXmlProperty(localName = "failure")
+    @JsonProperty("failure")
     val failure: TestResultDetail? = null,
     @JacksonXmlProperty(localName = "skipped")
+    @JsonProperty("skipped")
     val skipped: TestResultDetail? = null,
     @JacksonXmlProperty(localName = "time")
+    @JsonProperty("time")
     val time: Double? = null,
     @JacksonXmlProperty(localName = "system-out")
+    @JsonProperty("system-out")
     val systemOut: String? = null,
   )
 
