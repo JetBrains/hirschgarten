@@ -19,6 +19,7 @@ import org.jetbrains.bsp.protocol.JvmToolchainInfo
 import org.jetbrains.bsp.protocol.WorkspaceBazelRepoMappingResult
 import org.jetbrains.bsp.protocol.WorkspaceDirectoriesResult
 import java.nio.file.Path
+import java.util.LinkedList
 import kotlin.io.path.isRegularFile
 
 @ApiStatus.Internal
@@ -78,32 +79,37 @@ class BspProjectMapper(
       else additionalSet.addAll(subPackages)
     }
 
-    // We need a hierarchy of collected sets to avoid cases when one directory is both included and excluded:
+    // We need a hierarchy of collected sets to avoid cases when one directory is both included and excluded.
+    // The sets are prioritized according to the following order (from lowest to highest):
     // includedAdditionally < excludedAdditionally < included < excluded < includedFromTargets < excludedFromTargets.
-    // Note that at this point, if in .bazelproject file deriveTargetsFromDirectories = true, we already have all
-    // items from the directories section in targets, so in practice (from the user point of view) the hierarchy is:
-    // includedAdditionally < excludedAdditionally < included < includedFromTargets < excluded < excludedFromTargets.
-    // When deriveTargetsFromDirectories is true we want to treat directories as if they are included as targets
-    // so then, excludes always overwrite includes.
-    // Otherwise, targets section items are stronger than directories section items (include form targets overwrites
-    // exclude from directories).
-    // This behavior is consistent with targets shown in the toolwindow.
-    includedAdditionally.removePresentIn(excludedAdditionally, included, excluded, includedFromTargets, excludedFromTargets)
-    excludedAdditionally.removePresentIn(included, excluded, includedFromTargets, excludedFromTargets)
-    included.removePresentIn(excluded, includedFromTargets, excludedFromTargets)
-    excluded.removePresentIn(includedFromTargets, excludedFromTargets)
-    includedFromTargets.removePresentIn(excludedFromTargets)
+    //
+    // Note that 'included' and 'excluded' sets (derived from the 'directories' section of the .bazelproject file)
+    // are matched resursively, meaning that if a directory is included, all its subdirectories are also
+    // included (unless overwritten by a higher priority set).
+    // All other sets (derived from the 'targets' section) are matched exactly.
+    //
+    // This hierarchy ensures that:
+    // 1. Targets section items are stronger than directories section items (e.g., including a target
+    //    overwrites an exclusion of its parent directory).
+    // 2. Excludes within the same section (directories or targets) overwrite includes.
+    // 3. Subpackages of non-recursive targets (included/excluded additionally) have the lowest priority,
+    //    ensuring they are only used as a fallback if no other rule applies.
+    //
+    // Note that if 'derive_targets_from_directories' is true, directories are also present in the targets
+    // sets, which effectively moves them to a higher priority position.
+    DirsPriority()
+      .addLast(includedAdditionally)
+      .addLast(excludedAdditionally)
+      .addLast(included, isRecursive = true)
+      .addLast(excluded, isRecursive = true)
+      .addLast(includedFromTargets)
+      .addLast(excludedFromTargets)
+      .removeShadowedPaths()
 
     return ProjectDirs(
       included = included + includedFromTargets + includedAdditionally,
       excluded = excluded + excludedFromTargets + excludedAdditionally,
     )
-  }
-
-  private fun MutableSet<Path>.removePresentIn(vararg higherPrioritySets: Set<Path>) {
-    this.removeIf { item ->
-      higherPrioritySets.any { set -> item in set }
-    }
   }
 
   private suspend fun getSubPackages(workspaceRoot: Path, workspaceContext: WorkspaceContext): Sequence<Path> {
@@ -171,5 +177,40 @@ class BspProjectMapper(
       }
       return result.stdout.decodeToString()
     }
+  }
+
+  private class DirsPriority {
+    private val prioritizedPathSets: LinkedList<PathSet> = LinkedList()
+
+    fun addLast(paths: MutableSet<Path>, isRecursive: Boolean = false): DirsPriority {
+      prioritizedPathSets.addLast(PathSet(paths, isRecursive))
+      return this
+    }
+
+    fun removeShadowedPaths() {
+      for (i in prioritizedPathSets.indices) {
+        val current = prioritizedPathSets[i]
+        val higherPrioritySets = prioritizedPathSets.subList(i + 1, prioritizedPathSets.size)
+        current.paths.removeShadowedBy(higherPrioritySets)
+      }
+    }
+
+    private fun MutableSet<Path>.removeShadowedBy(higherPrioritySets: List<PathSet>) =
+      this.removeIf { path ->
+        higherPrioritySets.any { higherPrioritySet -> higherPrioritySet.containsPath(path) }
+      }
+
+    private fun PathSet.containsPath(otherPath: Path): Boolean =
+      if (isRecursive) {
+        paths.any { otherPath.startsWith(it) }
+      }
+      else {
+        otherPath in paths
+      }
+
+    private class PathSet(
+      val paths: MutableSet<Path>,
+      val isRecursive: Boolean,
+    )
   }
 }
