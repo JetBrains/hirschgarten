@@ -1,0 +1,179 @@
+# Copyright 2019-2025 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
+
+load("//${bspPath}/aspects:utils/utils.bzl", "create_struct", "file_location", "to_file_location","update_sync_output_groups")
+
+# Ruleset Name: $rulesetName
+
+#if( $pythonEnabled == "false")
+# Not enabled
+
+#elseif( $bazel8OrAbove == "true" && $rulesetName != "" )
+# Bazel 8+: Use only the rules_python providers.
+load("@${rulesetName}//python:defs.bzl", "PyInfo")
+PyInfo_Secondary = None
+
+#elseif( $rulesetName != "" )
+# Non-Bazel 8+ workspace that has rules_python present: Support both builtin and rules_python providers.
+load("@${rulesetName}//python:defs.bzl", PyInfo_Secondary = "PyInfo")
+
+#else
+# Use only builtin providers.
+PyInfo_Secondary = None
+#end
+
+#if( $rulesetName != "" )
+PYTHON_TOOLCHAIN_TYPE = "@${rulesetName}//python:toolchain_type"
+#else
+PYTHON_TOOLCHAIN_TYPE = None
+#end
+
+CODE_GENERATOR_RULE_NAMES = ${codeGeneratorRules}
+
+def py_info_in_target(target):
+    #if( $pythonEnabled == "true" )
+    return PyInfo in target or (PyInfo_Secondary != None and PyInfo_Secondary in target)
+
+    #else
+    return False
+    #end
+
+def get_py_info(target):
+    #if( $pythonEnabled == "true" )
+    if PyInfo in target:
+        return target[PyInfo]
+    elif PyInfo_Secondary != None and PyInfo_Secondary in target:
+        return target[PyInfo_Secondary]
+    else:
+        return None
+
+    #else
+    return None
+    #end
+
+def get_py_runtime_info(ctx):
+    #if( $pythonEnabled == "true" )
+    if PYTHON_TOOLCHAIN_TYPE != None and PYTHON_TOOLCHAIN_TYPE in ctx.toolchains:
+        toolchain = ctx.toolchains[PYTHON_TOOLCHAIN_TYPE]
+        if not toolchain:
+            # Optional toolchain will be None if not present
+            return None
+        return getattr(toolchain, "py3_runtime", None)
+    else:
+        return None
+
+    #else
+    return None
+    #end
+
+def interpreter_from_absolute_path(path):
+    if path == None:
+        return None
+
+    return to_file_location(path, "", False, True)
+
+def interpreter_from_file(file):
+    if file == None:
+        return None
+
+    return file_location(file)
+
+def files_to_list(source):
+    files = source[DefaultInfo].files
+    if files == None:
+        return []
+    else:
+        return files.to_list()
+
+def get_main_file_location(ctx):
+    return file_location(getattr(ctx.rule.file, 'main', None))
+
+def get_main_module(ctx):
+    return getattr(ctx.rule.attr, 'main_module', None)
+
+def extract_python_info(target, ctx, output_groups, **kwargs):
+    if not py_info_in_target(target):
+        return None, None
+
+    src_attr = getattr(ctx.rule.attr, "srcs", [])
+    if type(src_attr) != "list":
+        return None,None
+
+    sources = [
+        file_location(f)
+        for t in src_attr
+        for f in files_to_list(t)
+        if not f.is_directory
+    ]
+    generated_sources=[]
+
+    provider = get_py_runtime_info(ctx)
+
+    interpreter = interpreter_from_file(getattr(provider, "interpreter", None))
+    interpreter_path = interpreter_from_absolute_path(getattr(provider, "interpreter_path", None))
+
+    final_interpreter = interpreter if interpreter != None else interpreter_path
+    imports = list(getattr(ctx.rule.attr, "imports", []))
+    is_code_generator = False
+
+    if 0 == len(sources) and ctx.rule.kind in CODE_GENERATOR_RULE_NAMES:
+        def provider_import_to_attr_import(provider_import):
+            """\
+            Remaps the imports from PyInfo
+
+            The imports that are supplied on the `PyInfo` are relative to the runfiles and so are
+            not the same as those which might be supplied on an attribute of `py_library`. This
+            function will remap those back so they look as if they were `imports` attributes on
+            the rule. The form of the runfiles import is `<workspace_name>/<package_dir>/<import>`.
+            The actual `workspace_name` is not interesting such that the first part can be simply
+            stripped. Next the package to the Label is stripped leaving a path that would have been
+            supplied on an `imports` attribute to a Rule.
+            """
+
+            # Other code in this file appears to assume *NIX path component separators?
+
+            provider_import_parts = provider_import.split("/")
+            package_parts = ctx.label.package.split("/")
+
+            if 0 == len(provider_import_parts):
+                return None
+
+            scratch_parts = provider_import_parts[1:]  # remove the workspace name or _main
+
+            for p in package_parts:
+                if len(scratch_parts) > 0 and scratch_parts[0] == p :
+                    scratch_parts = scratch_parts[1:]
+                else:
+                    return None
+
+            return "/".join(scratch_parts)
+
+        def provider_imports_to_attr_imports():
+            result = []
+
+            for provider_import in get_py_info(target).imports.to_list():
+                attr_import = provider_import_to_attr_import(provider_import)
+                if attr_import:
+                    result.append(attr_import)
+
+            return result
+
+        if get_py_info(target).imports:
+            imports.extend(provider_imports_to_attr_imports())
+        runfiles = target[DefaultInfo].default_runfiles
+        if runfiles and runfiles.files:
+             generated_sources.extend([f for f in runfiles.files.to_list()])
+
+
+        is_code_generator = True
+    update_sync_output_groups(output_groups, "bsp-sync-artifact", depset(generated_sources))
+    update_sync_output_groups(output_groups, "bsp-build-artifact", depset(generated_sources))
+    python_target_info = create_struct(
+        interpreter = final_interpreter,
+        version = getattr(provider, "python_version", None),
+        imports = imports,
+        is_code_generator = is_code_generator,
+        generated_sources= [file_location(f) for f in generated_sources],
+        main = get_main_file_location(ctx),
+        main_module = get_main_module(ctx),
+    )
+    return dict(python_target_info = python_target_info), None
