@@ -104,6 +104,7 @@ internal class DefaultBazelServerConnection(private val project: Project) : Baze
         bazelRunner = bazelRunner,
         bazelPathsResolver = bazelPathsResolver,
         taskEventsHandler = taskEventsHandler,
+        project = project,
       )
     val firstPhaseProjectResolver =
       FirstPhaseProjectResolver(

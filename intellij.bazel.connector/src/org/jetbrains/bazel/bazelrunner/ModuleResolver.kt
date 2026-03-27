@@ -1,10 +1,13 @@
 package org.jetbrains.bazel.bazelrunner
 
+import com.intellij.openapi.project.Project
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.commons.BazelInfo
 import org.jetbrains.bazel.commons.gson.bazelGson
+import org.jetbrains.bazel.progress.syncConsole
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bsp.protocol.TaskId
+import kotlin.collections.plus
 
 @ApiStatus.Internal
 sealed interface ShowRepoResult {
@@ -28,6 +31,11 @@ sealed interface ShowRepoResult {
    * Any other output that doesn't match the expected format but contains the name of the module.
    */
   data class Unknown(override val name: String, val output: String) : ShowRepoResult
+}
+
+@ApiStatus.Internal
+data class ResolvedModulesAndWarning(val result: Map<String, ShowRepoResult?>, val warnings: List<String>) {
+  fun updated(other: ResolvedModulesAndWarning): ResolvedModulesAndWarning = ResolvedModulesAndWarning(result + other.result, warnings + other.warnings)
 }
 
 @ApiStatus.Internal
@@ -92,44 +100,45 @@ class ModuleOutputParser {
     }
   }
 
-  fun parseJsonRepoDescription(jsonText: String): Map<String, ShowRepoResult?> {
-    if (jsonText.isEmpty()) return emptyMap() // ignore empty lines that might be included in the output
+  fun parseJsonRepoDescription(jsonText: String): ResolvedModulesAndWarning {
+    if (jsonText.isEmpty()) return ResolvedModulesAndWarning(emptyMap(), emptyList()) // ignore empty lines that might be included in the output
 
     try {
       val description = bazelGson.fromJson<JsonProto.Repository>(jsonText, JsonProto.Repository::class.java)
-      if (description.canonicalName == null) return emptyMap() // Nothing we can do with that repository
+      if (description.canonicalName == null) return ResolvedModulesAndWarning(emptyMap(), listOf("Incomplete Respository Description $description"))
       val key = description.moduleKey ?: description.canonicalName
 
       if (description.repoRuleName == "local_repository") {
         val pathValues = description.attribute.filter { it.name == "path" }.map { it.stringValue }.filterNotNull()
-        if (pathValues.isEmpty()) return mapOf(key to ShowRepoResult.Unknown(description.canonicalName, jsonText))
-        return mapOf(key to ShowRepoResult.LocalRepository(description.canonicalName, pathValues.last()))
+        if (pathValues.isEmpty()) return ResolvedModulesAndWarning(mapOf(key to ShowRepoResult.Unknown(description.canonicalName, jsonText)), listOf())
+        return ResolvedModulesAndWarning(mapOf(key to ShowRepoResult.LocalRepository(description.canonicalName, pathValues.last())), listOf())
       }
       else if (description.repoRuleName == "http_archive") {
-        return mapOf(
+        return ResolvedModulesAndWarning(mapOf(
           key to ShowRepoResult.HttpArchiveRepository(
             description.canonicalName,
             description.attribute.filter { it.name == "urls" }.flatMap { it.stringListValue ?: emptyList() },
           ),
-        )
+        ),
+          listOf())
       }
-      return mapOf(key to ShowRepoResult.Unknown(description.canonicalName, jsonText))
+      return  ResolvedModulesAndWarning(mapOf (key to ShowRepoResult.Unknown(description.canonicalName, jsonText)), listOf())
     }
     catch (ex: Throwable) {
-      throw Error("Failed to parse repository json description: $jsonText", ex)
+      return ResolvedModulesAndWarning(mapOf(), listOf("Could not parse repository json description: $jsonText"))
     }
   }
 
-  fun parseShowRepoResults(bazelProcessResult: BazelProcessResult, isJson: Boolean): Map<String, ShowRepoResult?> {
-    if (bazelProcessResult.isNotSuccess) {
-      // If the exit code is not 0, bazel prints the error message to stderr
-      error("Failed to resolve module from bazel info. Bazel Info output:\n'${bazelProcessResult.stderrLines.joinToString("\n")}'")
-    }
+  fun parseShowRepoResults(bazelProcessResult: BazelProcessResult, isJson: Boolean, moduleNames: List<String>): ResolvedModulesAndWarning {
+   val warnings =  if (bazelProcessResult.isSuccess) listOf() else
+     listOf("Project depends on broken modules; bazel failed to show_repo ${moduleNames.joinToString()}:\n" + bazelProcessResult.stderrLines.joinToString("\n"))
     if (!isJson) {
-      return splitInfoGroups(bazelProcessResult.stdoutLines).mapValues { (_, stanza) -> parseShowRepoStanza(stanza) }
+      return ResolvedModulesAndWarning(splitInfoGroups (bazelProcessResult.stdoutLines).mapValues { (_, stanza) -> parseShowRepoStanza(stanza) }, warnings)
     }
     // The output is new-line-delimited JSON, i.e., each line is a JSON description of one repository.
-    return bazelProcessResult.stdoutLines.map { parseJsonRepoDescription(it) }.reduce { acc, result -> acc + result }
+    return ResolvedModulesAndWarning(mapOf(), warnings).updated(
+    bazelProcessResult.stdoutLines.map { parseJsonRepoDescription(it) }.reduce { acc, result -> acc.updated(result) }
+    )
   }
 }
 
@@ -143,8 +152,8 @@ internal class ModuleResolver(
   /**
    * The name can be @@repo, @repo or repo. It will be resolved in the context of the main workspace.
    */
-  suspend fun resolveModules(unsortedModuleNames: List<String>, bazelInfo: BazelInfo): Map<String, ShowRepoResult?> {
-    if (unsortedModuleNames.isEmpty()) return emptyMap() // avoid bazel call if no information is needed
+  suspend fun resolveModules(unsortedModuleNames: List<String>, bazelInfo: BazelInfo): ResolvedModulesAndWarning {
+    if (unsortedModuleNames.isEmpty()) return ResolvedModulesAndWarning(emptyMap(), emptyList()) // avoid bazel call if no information is needed
     val moduleNames = unsortedModuleNames.sorted().distinct()
     val json_output = bazelInfo.release.major >= 9
     val command =
@@ -167,12 +176,15 @@ internal class ModuleResolver(
       // ask for each repository individually.
       if (moduleNames.size == 1) {
         // Failure of a request asking for a single repository, so we just answer that we don't know.
-        return mapOf(moduleNames[0] to null)
+        return ResolvedModulesAndWarning(mapOf(moduleNames[0] to null),
+                                         listOf("Bazel failed to show_repo ${moduleNames[0]}:\n" +
+                                         processResult.stdoutLines.joinToString("\n")))
       }
-      return moduleNames.map { resolveModules(listOf(it), bazelInfo) }.reduceOrNull { acc, result -> acc + result } ?: emptyMap()
+      return moduleNames.map { resolveModules(listOf(it), bazelInfo) }
+               .reduceOrNull { acc, result -> acc.updated(result) } ?: ResolvedModulesAndWarning(emptyMap(), emptyList())
     }
 
-    return moduleOutputParser.parseShowRepoResults(processResult, json_output)
+    return moduleOutputParser.parseShowRepoResults(processResult, json_output, moduleNames)
   }
 
   val gson = bazelGson

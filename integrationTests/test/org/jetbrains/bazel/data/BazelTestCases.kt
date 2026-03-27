@@ -159,6 +159,16 @@ object IdeaBazelCases : BaseBazelCasesParametrized(BazelTestContext.IDEA) {
      )
    )
 
+   val BrokenDeps = withBazelProject(
+     projectInfo = withDefaults(
+       repositoryUrl = "https://github.com/JetBrainsBazelBot/simpleBazelProjectsForTesting",
+       commitHash = "41a8dc6b668681d114d6760e7755de0daa25ab12",
+       branchName = "main",
+       relativePath = "broken",
+       configure = { context -> BazelProjectConfigurer.configureProjectBeforeUse(context) },
+     )
+   )
+
     val RunAllTestsAction = withBazelProject(
       projectInfo = withDefaults(
         repositoryUrl = "https://github.com/JetBrainsBazelBot/simpleBazelProjectsForTesting.git",
