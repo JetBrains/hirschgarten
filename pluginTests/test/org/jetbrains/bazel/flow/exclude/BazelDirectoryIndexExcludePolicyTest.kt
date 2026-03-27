@@ -1,8 +1,9 @@
 package org.jetbrains.bazel.flow.exclude
 
+import com.intellij.openapi.application.edtWriteAction
 import com.intellij.openapi.application.readAction
-import com.intellij.openapi.application.writeAction
 import com.intellij.openapi.roots.ProjectFileIndex
+import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.refreshAndFindVirtualDirectory
 import com.intellij.testFramework.junit5.TestApplication
 import com.intellij.testFramework.junit5.fixture.projectFixture
@@ -11,8 +12,10 @@ import com.intellij.testFramework.utils.vfs.refreshAndGetVirtualDirectory
 import kotlinx.coroutines.runBlocking
 import org.jetbrains.bazel.config.isBazelProject
 import org.jetbrains.bazel.config.rootDir
+import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.ValueSource
 import java.nio.file.Files
@@ -43,16 +46,36 @@ class BazelDirectoryIndexExcludePolicyTest {
   fun `should mark symlinks registered in the service as excluded from the project`(isBazelProject: Boolean) = runBlocking {
     // GIVEN
     project.isBazelProject = isBazelProject
-    writeAction {
+    edtWriteAction {
       BazelSymlinkExcludeService.getInstance(project).addBazelSymlinksToExclude(setOf(convenienceSymlink))
     }
 
     // WHEN
-    val isExcluded = readAction {
-      ProjectFileIndex.getInstance(project).isExcluded(convenienceSymlink.refreshAndGetVirtualDirectory())
-    }
+    val isExcluded = isExcluded(convenienceSymlink.refreshAndGetVirtualDirectory())
 
     // THEN
     assertTrue(isExcluded)
+  }
+
+  @Test
+  fun `should flush workspace file index cache after updating symlinks`() = runBlocking {
+    // GIVEN workspace file index cache is populated
+    val convenienceSymlinkFile = convenienceSymlink.refreshAndGetVirtualDirectory()
+    assertFalse(isExcluded(convenienceSymlinkFile))
+
+    // AND convenience symlink has been excluded
+    edtWriteAction {
+      BazelSymlinkExcludeService.getInstance(project).addBazelSymlinksToExclude(setOf(convenienceSymlink))
+    }
+
+    // WHEN the state of the file has been queried again
+    val isExcluded = isExcluded(convenienceSymlinkFile)
+
+    // THEN the cache has been flushed and symlink is now excluded
+    assertTrue(isExcluded)
+  }
+
+  private suspend fun isExcluded(file: VirtualFile) = readAction {
+    ProjectFileIndex.getInstance(project).isExcluded(file)
   }
 }

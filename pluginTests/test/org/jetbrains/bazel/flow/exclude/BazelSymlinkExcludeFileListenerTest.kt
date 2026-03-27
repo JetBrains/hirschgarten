@@ -1,6 +1,6 @@
 package org.jetbrains.bazel.flow.exclude
 
-import com.intellij.openapi.application.writeAction
+import com.intellij.openapi.application.edtWriteAction
 import com.intellij.openapi.util.io.FileAttributes
 import com.intellij.openapi.vfs.newvfs.events.VFileCreateEvent
 import com.intellij.openapi.vfs.refreshAndFindVirtualDirectory
@@ -42,17 +42,17 @@ class BazelSymlinkExcludeFileListenerTest {
     val fileCreateEvent = createFakeFileCreateEvent(realDirectory, "bazel-out")
 
     // WHEN
-    writeAction {
+    edtWriteAction {
       BazelSymlinkExcludeFileListener().before(listOf(fileCreateEvent))
     }
-    val bazelSymlinksToExclude = BazelSymlinkExcludeService.getInstance(project).getOrComputeBazelSymlinksToExclude()
+    val bazelSymlinksToExclude = BazelSymlinkExcludeService.getInstance(project).getBazelSymlinksToExclude()
 
     // THEN
     assertIterableEquals(listOf(convenientSymlink), bazelSymlinksToExclude)
   }
 
   @Test
-  fun `should not exclude symlink when it is not a bazel symlink`() {
+  fun `should not exclude symlink when it is not a bazel symlink`() = runBlocking {
     // GIVEN
     val realDirectory = tempDir.resolve("execroot/bazel-out")
     Files.createDirectories(realDirectory)
@@ -62,8 +62,10 @@ class BazelSymlinkExcludeFileListenerTest {
     val fileCreateEvent = createFakeFileCreateEvent(realDirectory, "not-a-bazel-symlink")
 
     // WHEN
-    BazelSymlinkExcludeFileListener().before(listOf(fileCreateEvent))
-    val bazelSymlinksToExclude = BazelSymlinkExcludeService.getInstance(project).getOrComputeBazelSymlinksToExclude()
+    edtWriteAction {
+      BazelSymlinkExcludeFileListener().before(listOf(fileCreateEvent))
+    }
+    val bazelSymlinksToExclude = BazelSymlinkExcludeService.getInstance(project).getBazelSymlinksToExclude()
 
     // THEN
     assertIterableEquals(emptyList<Path>(), bazelSymlinksToExclude)

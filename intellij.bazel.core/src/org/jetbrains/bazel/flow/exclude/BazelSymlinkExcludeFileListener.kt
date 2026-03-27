@@ -23,7 +23,9 @@ class BazelSymlinkExcludeFileListener : BulkFileListener {
       .filter { BazelSymlinksCalculator.isBazelSymlink(it.project.bazelProjectName, it.path) }
       .groupBy({ it.project }, { it.path })
       .forEach { (project, paths) ->
-        BazelSymlinkExcludeService.getInstance(project).addBazelSymlinksToExclude(paths.toSet())
+        val bazelSymlinkExcludeService = BazelSymlinkExcludeService.getInstance(project)
+        bazelSymlinkExcludeService.addBazelSymlinksToExclude(paths.toSet())
+        bazelSymlinkExcludeService.refreshWorkspaceModel()
       }
   }
 
