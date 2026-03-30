@@ -13,6 +13,7 @@ import com.intellij.openapi.ui.ComboBox
 import com.intellij.ui.CollectionComboBoxModel
 import com.intellij.ui.components.JBCheckBox
 import com.intellij.ui.dsl.builder.panel
+import com.intellij.ui.dsl.listCellRenderer.textListCellRenderer
 import org.jetbrains.bazel.config.BazelPluginBundle
 import javax.swing.JComponent
 
@@ -55,7 +56,7 @@ internal class BazelApplicationSettingsConfigurable : SearchableConfigurable {
 
   private fun initUpdateChannelComboBox() {
     updateChannelComboBox.model = CollectionComboBoxModel(UpdateChannel.entries)
-    updateChannelComboBox.renderer = UpdateChannel.Renderer()
+    updateChannelComboBox.renderer = textListCellRenderer("") { it.displayName }
     updateChannelComboBox.selectedItem = panelApplicationSettings.updateChannel
     updateChannelComboBox.addActionListener {
       panelApplicationSettings.updateChannel = updateChannelComboBox.selectedItem as UpdateChannel
