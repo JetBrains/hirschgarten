@@ -1,5 +1,8 @@
 # Remote execution locally
 
+For a Docker-free single-node setup that uses Bazel's in-tree remote worker, see
+[../../tools/rbe/README.md](../../tools/rbe/README.md).
+
 ## Run remote execution
 
 Config for engflow is stored in [.engflow.bazelrc](../../.engflow.bazelrc)  
