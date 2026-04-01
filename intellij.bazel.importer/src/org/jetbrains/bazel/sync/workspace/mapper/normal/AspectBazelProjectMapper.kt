@@ -861,6 +861,10 @@ internal class AspectBazelProjectMapper(
       "go_library",
       "go_binary",
       "go_test",
+      "py_proto_library",
+      "py_library",
+      "py_binary",
+      "py_test",
     )
 
   // TODO BAZEL-2208
