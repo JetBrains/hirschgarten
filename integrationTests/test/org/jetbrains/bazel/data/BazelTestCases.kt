@@ -316,7 +316,7 @@ object PyCharmBazelCases : BaseBazelCasesParametrized(BazelTestContext.PYCHARM) 
   val SimplePython = withBazelProject(
     projectInfo = withDefaults(
       repositoryUrl = "https://github.com/JetBrainsBazelBot/simpleBazelProjectsForTesting.git",
-      commitHash = "b5cdb19c0247e2c810de6bb8425d4f9293a790f5",
+      commitHash = "9c9d54ae3463b75b2f63963a48d6b78b6532389d",
       branchName = "main",
       relativePath = "simplePythonTest",
       configure = { context -> BazelProjectConfigurer.configureProjectBeforeUseWithoutBazelClean(context) },

@@ -3,7 +3,11 @@ package org.jetbrains.bazel.tests.python
 import com.intellij.driver.sdk.step
 import com.intellij.driver.sdk.ui.components.common.ideFrame
 import com.intellij.ide.starter.driver.engine.runIdeWithDriver
+import com.intellij.openapi.ui.playback.commands.AbstractCommand.CMD_PREFIX
+import com.intellij.tools.ide.performanceTesting.commands.CommandChain
 import com.intellij.tools.ide.performanceTesting.commands.checkOnRedCode
+import com.intellij.tools.ide.performanceTesting.commands.goToDeclaration
+import com.intellij.tools.ide.performanceTesting.commands.goto
 import com.intellij.tools.ide.performanceTesting.commands.openFile
 import org.jetbrains.bazel.data.PyCharmBazelCases
 import org.jetbrains.bazel.ideStarter.IdeStarterBaseProjectTest
@@ -38,7 +42,24 @@ class SimplePythonIdeStarterTest : IdeStarterBaseProjectTest() {
             execute { checkOnRedCode() }
             takeScreenshot("main.py")
           }
+          step("Check withImports/main.py") {
+            execute { openFile("withImports/main.py") }
+            takeScreenshot("withImports")
+            execute { checkOnRedCode() }
+
+            execute { goto(4,6)}
+            takeScreenshot("beforeBuildNavigation")
+            execute { goToDeclaration() }
+            takeScreenshot("afterBuildNavigation")
+            execute { assertCurrentFileDirectory("foo/foo.py")}
+          }
         }
       }
   }
+
+  private fun <T : CommandChain> T.assertCurrentFileDirectory(qualifiedName: String): T {
+    addCommand("${CMD_PREFIX}assertCurrentFileDirectory $qualifiedName")
+    return this
+  }
+
 }
