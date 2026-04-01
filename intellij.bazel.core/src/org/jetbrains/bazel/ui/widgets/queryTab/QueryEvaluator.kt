@@ -75,7 +75,6 @@ internal class QueryEvaluator(currentRunnerDirFile: VirtualFile) {
         importRunConfigurations = emptyList(),
         gazelleTarget = null,
         indexAllFilesInDirectories = false,
-        pythonCodeGeneratorRuleNames = emptyList(),
         importIjars = false,
         deriveInstrumentationFilterFromTargets = false,
         indexAdditionalFilesInDirectories = emptyList(),

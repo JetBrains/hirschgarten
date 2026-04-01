@@ -42,7 +42,6 @@ object ProjectViewToWorkspaceContextConverter {
       importRunConfigurations = projectView.importRunConfigurations,
       gazelleTarget = projectView.gazelleTarget,
       indexAllFilesInDirectories = projectView.indexAllFilesInDirectories,
-      pythonCodeGeneratorRuleNames = projectView.pythonCodeGeneratorRuleNames,
       importIjars = projectView.importIjars,
       deriveInstrumentationFilterFromTargets = projectView.deriveInstrumentationFilterFromTargets,
       indexAdditionalFilesInDirectories = projectView.indexAdditionalFilesInDirectories,

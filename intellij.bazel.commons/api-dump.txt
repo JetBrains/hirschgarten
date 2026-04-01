@@ -84,7 +84,7 @@ f:org.jetbrains.bazel.settings.bazel.BazelProjectSettings
 f:org.jetbrains.bazel.settings.bazel.BazelProjectSettingsKt
 - sf:getBazelProjectSettings(com.intellij.openapi.project.Project):org.jetbrains.bazel.settings.bazel.BazelProjectSettings
 f:org.jetbrains.bazel.workspacecontext.WorkspaceContext
-- <init>(java.util.List,java.util.List,java.util.List,java.util.List,java.util.List,java.nio.file.Path,Z,I,java.util.List,java.nio.file.Path,Z,I,java.lang.String,java.util.List,org.jetbrains.bazel.label.Label,Z,java.util.List,Z,Z,java.util.List,Z):V
+- <init>(java.util.List,java.util.List,java.util.List,java.util.List,java.util.List,java.nio.file.Path,Z,I,java.util.List,java.nio.file.Path,Z,I,java.lang.String,java.util.List,org.jetbrains.bazel.label.Label,Z,Z,Z,java.util.List,Z):V
 - f:component1():java.util.List
 - f:component10():java.nio.file.Path
 - f:component11():Z
@@ -93,12 +93,11 @@ f:org.jetbrains.bazel.workspacecontext.WorkspaceContext
 - f:component14():java.util.List
 - f:component15():org.jetbrains.bazel.label.Label
 - f:component16():Z
-- f:component17():java.util.List
+- f:component17():Z
 - f:component18():Z
-- f:component19():Z
+- f:component19():java.util.List
 - f:component2():java.util.List
-- f:component20():java.util.List
-- f:component21():Z
+- f:component20():Z
 - f:component3():java.util.List
 - f:component4():java.util.List
 - f:component5():java.util.List
@@ -106,8 +105,8 @@ f:org.jetbrains.bazel.workspacecontext.WorkspaceContext
 - f:component7():Z
 - f:component8():I
 - f:component9():java.util.List
-- f:copy(java.util.List,java.util.List,java.util.List,java.util.List,java.util.List,java.nio.file.Path,Z,I,java.util.List,java.nio.file.Path,Z,I,java.lang.String,java.util.List,org.jetbrains.bazel.label.Label,Z,java.util.List,Z,Z,java.util.List,Z):org.jetbrains.bazel.workspacecontext.WorkspaceContext
-- bs:copy$default(org.jetbrains.bazel.workspacecontext.WorkspaceContext,java.util.List,java.util.List,java.util.List,java.util.List,java.util.List,java.nio.file.Path,Z,I,java.util.List,java.nio.file.Path,Z,I,java.lang.String,java.util.List,org.jetbrains.bazel.label.Label,Z,java.util.List,Z,Z,java.util.List,Z,I,java.lang.Object):org.jetbrains.bazel.workspacecontext.WorkspaceContext
+- f:copy(java.util.List,java.util.List,java.util.List,java.util.List,java.util.List,java.nio.file.Path,Z,I,java.util.List,java.nio.file.Path,Z,I,java.lang.String,java.util.List,org.jetbrains.bazel.label.Label,Z,Z,Z,java.util.List,Z):org.jetbrains.bazel.workspacecontext.WorkspaceContext
+- bs:copy$default(org.jetbrains.bazel.workspacecontext.WorkspaceContext,java.util.List,java.util.List,java.util.List,java.util.List,java.util.List,java.nio.file.Path,Z,I,java.util.List,java.nio.file.Path,Z,I,java.lang.String,java.util.List,org.jetbrains.bazel.label.Label,Z,Z,Z,java.util.List,Z,I,java.lang.Object):org.jetbrains.bazel.workspacecontext.WorkspaceContext
 - equals(java.lang.Object):Z
 - f:getAllowManualTargetsSync():Z
 - f:getBazelBinary():java.nio.file.Path
@@ -124,7 +123,6 @@ f:org.jetbrains.bazel.workspacecontext.WorkspaceContext
 - f:getIndexAdditionalFilesInDirectories():java.util.List
 - f:getIndexAllFilesInDirectories():Z
 - f:getPreferClassJarsOverSourcelessJars():Z
-- f:getPythonCodeGeneratorRuleNames():java.util.List
 - f:getShardSync():Z
 - f:getShardingApproach():java.lang.String
 - f:getSyncFlags():java.util.List

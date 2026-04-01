@@ -32,7 +32,7 @@ enum class LanguageClass(
   TYPESCRIPT(5, "typescript", setOf("ts", "ats")),
   DART(6, "dart", setOf("dart")),
   GO(7, "go", setOf("go")),
-  PYTHON(8, "python", setOf("py", "pyw")),
+  PYTHON(8, "python", setOf("py", "pyw", "pyi")),
   SCALA(9, "scala", setOf("scala")),
   KOTLIN(10, "kotlin", setOf("kt")),
   THRIFT(11, "thrift", setOf("thrift")),

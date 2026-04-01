@@ -36,6 +36,8 @@
       id="PythonBazelTestHandlerProvider"
       implementation="org.jetbrains.bazel.python.run.PythonBazelTestHandler$Provider"
     />
+
+    <indexAdditionalFilesContributor implementation="org.jetbrains.bazel.python.sync.PythonIndexAdditionalFilesContributor"/>
   </extensions>
 
   <extensions defaultExtensionNs="Pythonid">

@@ -18,7 +18,6 @@ import org.jetbrains.bazel.languages.projectview.sections.ImportIjarsSection
 import org.jetbrains.bazel.languages.projectview.sections.ImportRunConfigurationsSection
 import org.jetbrains.bazel.languages.projectview.sections.IndexAllFilesInDirectoriesSection
 import org.jetbrains.bazel.languages.projectview.sections.PreferClassJarsOverSourcelessJarsSection
-import org.jetbrains.bazel.languages.projectview.sections.PythonCodeGeneratorRuleNamesSection
 import org.jetbrains.bazel.languages.projectview.sections.PythonDebugFlagsSection
 import org.jetbrains.bazel.languages.projectview.sections.RunConfigRunWithBazelSection
 import org.jetbrains.bazel.languages.projectview.sections.ShardSyncSection
@@ -55,7 +54,6 @@ internal class DefaultProjectViewSectionProvider : ProjectViewSectionProvider {
       ImportIjarsSection(),
       ImportRunConfigurationsSection(),
       IndexAllFilesInDirectoriesSection(),
-      PythonCodeGeneratorRuleNamesSection(),
       PythonDebugFlagsSection(),
       ShardingApproachSection(),
       ShardSyncSection(),

@@ -67,7 +67,9 @@ class PythonProjectSync : ProjectSyncHook {
   override suspend fun onSync(environment: ProjectSyncHookEnvironment) {
     environment.withSubtask("Process Python targets") {
       val targets = environment.workspace.targets
-      val pythonTargets = targets.calculatePythonTargets()
+      val pythonTargets = targets.filter {
+        it.kind.languageClasses.contains(LanguageClass.PYTHON)
+      }
       val virtualFileUrlManager = environment.project.serviceAsync<WorkspaceModel>().getVirtualFileUrlManager()
 
       val sdks = calculateAndAddSdksWithProgress(pythonTargets, environment)
@@ -82,7 +84,7 @@ class PythonProjectSync : ProjectSyncHook {
 
         addModuleEntityFromTarget(
           builder = environment.diff,
-          target = it as RawBuildTarget,
+          target = it,
           moduleName = moduleName,
           entitySource = moduleSourceEntity,
           virtualFileUrlManager = virtualFileUrlManager,
@@ -91,14 +93,9 @@ class PythonProjectSync : ProjectSyncHook {
           sourceDependencyLibrary = sourceDependencyLibrary,
         )
       }
-      environment.project.service<PythonResolveIndexService>().updatePythonResolveIndex(targets.toList())
+      environment.project.service<PythonResolveIndexService>().updatePythonResolveIndex(pythonTargets)
     }
   }
-
-  private fun List<RawBuildTarget>.calculatePythonTargets(): List<BuildTarget> =
-    this.filter {
-      it.kind.languageClasses.contains(LanguageClass.PYTHON)
-    }
 
   private suspend fun calculateAndAddSdksWithProgress(
     targets: List<BuildTarget>,
