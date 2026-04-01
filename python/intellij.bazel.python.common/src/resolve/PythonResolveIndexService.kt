@@ -1,164 +1,172 @@
 package org.jetbrains.bazel.python.resolve
 
-import com.intellij.openapi.components.PersistentStateComponent
 import com.intellij.openapi.components.Service
-import com.intellij.openapi.components.State
-import com.intellij.openapi.components.Storage
+import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.util.text.StringUtil
-import com.intellij.openapi.vfs.VirtualFile
-import com.intellij.openapi.vfs.VirtualFileManager
+import com.intellij.openapi.project.getProjectDataPath
 import com.intellij.psi.util.QualifiedName
 import com.jetbrains.python.PyNames
+import kotlinx.coroutines.awaitAll
 import org.jetbrains.bazel.commons.LanguageClass
 import org.jetbrains.bazel.config.rootDir
+import org.jetbrains.bazel.coroutines.BazelCoroutineService
 import org.jetbrains.bazel.label.ResolvedLabel
 import org.jetbrains.bazel.sync.environment.projectCtx
+import org.jetbrains.bazel.sync.workspace.mapper.normal.BazelOutputFileHardLinks
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.RawBuildTarget
 import org.jetbrains.bsp.protocol.utils.extractPythonBuildTarget
 import java.nio.file.FileSystems
-import java.nio.file.Files
 import java.nio.file.Path
+import java.nio.file.Paths
+import java.util.concurrent.atomic.AtomicReference
+import kotlin.io.path.createParentDirectories
+import kotlin.io.path.deleteIfExists
+import kotlin.io.path.exists
 import kotlin.io.path.extension
-import kotlin.io.path.isDirectory
 import kotlin.io.path.isRegularFile
+import kotlin.io.path.pathString
 import kotlin.io.path.relativeTo
+import kotlin.io.path.writer
+
+private const val PYINDEX_STORAGE_VERSION: Int = 1
+private fun Project.pyIndexStoragePath(): Path = getProjectDataPath("bazel-pyindex-v$PYINDEX_STORAGE_VERSION.db")
 
 @Service(Service.Level.PROJECT)
-@State(name = "PythonResolveIndexService", storages = [Storage("bazelPython.xml")], reportStatistic = true)
-internal class PythonResolveIndexService(private val project: Project) : PersistentStateComponent<PythonResolveIndexService.State> {
-  var resolveIndex: Map<QualifiedName, VirtualFile?> = emptyMap()
-    private set
-  private var internalResolveIndex: Map<QualifiedName, Path> = mapOf()
+internal class PythonResolveIndexService(private val project: Project) {
+  private val resolveIndexRef = AtomicReference<Map<QualifiedName, Path>>(emptyMap())
 
-  fun updatePythonResolveIndex(rawTargets: List<RawBuildTarget>) {
-    internalResolveIndex = buildIndex(rawTargets.asSequence())
-    resolveIndex =
-      internalResolveIndex.mapValues { (_, path) -> path.toVirtualFile() }
+  val resolveIndex: Map<QualifiedName, Path>
+    get() = resolveIndexRef.get()
+
+  private val outputFilesCache = BazelOutputFileHardLinks.getInstance(project)
+
+  init {
+    resolveIndexRef.set(load(project.pyIndexStoragePath()))
   }
 
-  private fun buildIndex(rawTargets: Sequence<RawBuildTarget>): Map<QualifiedName, Path> {
+  suspend fun updatePythonResolveIndex(pythonTargets: List<RawBuildTarget>) {
+    val cache = buildIndex(pythonTargets)
+
+    resolveIndexRef.set(cache)
+    store(project.pyIndexStoragePath(), cache)
+  }
+
+  private suspend fun buildIndex(pythonTargets: List<RawBuildTarget>): Map<QualifiedName, Path> {
     val executionRoot = project.projectCtx.bazelExecPath?.let { Path.of(it) } ?: return emptyMap()
     val rootDir = Path.of(project.rootDir.path)
     val bazelBin = project.projectCtx.bazelBinPath?.let { Path.of(it) } ?: return emptyMap()
-    val targets =
-      rawTargets
-        .filter {
-          it.kind.languageClasses.contains(LanguageClass.PYTHON)
-        }
-    val allPYSourcesInMainWorkspace =
-      targets
-        .flatMap {
-          it.sources
-        }.toSet()
-        .filter { it.path.extension == "py" && it.path.startsWith(rootDir) }
-        .map { it.path.relativeTo(rootDir) }
 
-    val qualifiedNamesResolverMap = mutableMapOf<QualifiedName, Path>()
+    fun Path.toExecRootRelativePath(): Path {
+      if (this.startsWith(bazelBin)) {
+        val relativePath = this.relativeTo(bazelBin)
+        if (relativePath.startsWith("external"))
+          return relativePath.subpath(2, relativePath.nameCount)
+        return relativePath
+      }
 
-    for (target in targets) {
-      val importsPaths = assembleImportsPaths(target)
-      val pythonTargetInfo = extractPythonBuildTarget(target) ?: continue
-      val fullQualifiedNameToAbsolutePath: Map<QualifiedName?, Path> =
-        if (pythonTargetInfo.isCodeGenerator) {
-          pythonTargetInfo.generatedSources
-            .flatMap { file ->
-              // some code gen rules return directories. we need to figure out what files are there
-              if (file.isDirectory()) {
-                Files
-                  .walk(file)
-                  .filter { it.isRegularFile() }
-                  .map { it.toAbsolutePath() }
-                  .toList()
-              } else {
-                listOf(file)
-              }
-            }.associateBy { path -> path.relativeTo(bazelBin).toQualifiedName() }
-            .filter { it.key != null }
-        } else if (target.id.isMainWorkspace) {
-          importsPaths
-            .flatMap { importsPath ->
-              allPYSourcesInMainWorkspace.filter { it.startsWith(importsPath) }
-            }.toSet()
-            .associate {
-              it.toQualifiedName() to rootDir.resolve(it)
-            }.filter { it.key != null }
-        } else {
-          target.sources.associate { sourceItem ->
-            val executionRootRelativePath =
-              sourceItem.path
-                .relativeTo(executionRoot)
-                .toString()
-                // if this is an absolute path pointing to $install_base/external, then we remove this prefix and point it to the same copy under execution root
-                .removePrefix("../../")
-                .let { Path.of(it) }
-                .let {
-                  if (it.startsWith("external")) {
-                    // if this is a file under external/, then we trim the "external/{repo_name}" part
-                    Path.of(it.subpath(2, it.nameCount).toString())
-                  } else {
-                    it
-                  }
-                }
-
-            executionRootRelativePath.toQualifiedName() to sourceItem.path
+      return this
+        .relativeTo(executionRoot)
+        // if this is an absolute path pointing to $install_base/external, then we remove this prefix and point it to the same copy under execution root
+        .removeParentParentPrefix()
+        .let {
+          if (it.startsWith("external")) {
+            // if this is a file under external/, then we trim the "external/{repo_name}" part
+            Path.of(it.subpath(2, it.nameCount).toString())
+          }
+          else {
+            it
           }
         }
-      val expandedFullQualifiedNameToAbsolutePath = expandFullQualifiedNameMaps(fullQualifiedNameToAbsolutePath)
+    }
 
-      // importRoots are the roots of qualified names which will be trimmed from fully qualified names
-      val importRoots = importsPaths.map { path -> QualifiedName.fromComponents(path.map { it2 -> it2.toString() }) }
-
-      for (pair in expandedFullQualifiedNameToAbsolutePath) {
-        val sourceImports =
-          assembleSourceImportsFromImportRoots(importRoots, pair.key)
-            .filter { it.componentCount > 0 }
-
-        sourceImports.forEach { qualifiedName ->
-          qualifiedNamesResolverMap.put(
-            qualifiedName,
-            pair.value,
-          )
+    val allPYSourcesInMainWorkspace =
+      pythonTargets
+        .flatMap {
+          it.sources
         }
+        .filter { it.path.isPythonFile() && it.path.startsWith(rootDir) }
+        .map { it.path.relativeTo(rootDir) }
+
+    val targetNames: List<Map<QualifiedName, Path>> = pythonTargets.map { target ->
+      BazelCoroutineService.getInstance(project).startAsync {
+        val importsPaths = assembleImportsPaths(target)
+        val sourcesRelativePathToAbsolutePath: Map<Path, Path> =
+          if (target.id.isMainWorkspace) {
+            importsPaths
+              .flatMap { importsPath -> allPYSourcesInMainWorkspace.filter { it.startsWith(importsPath) } }
+              .ifEmpty {
+                target.sources
+                  .filter { it.path.isPythonFile() && it.path.startsWith(rootDir) }
+                  .map { it.path.relativeTo(rootDir) }
+              }
+              .associateWith { path -> rootDir.resolve(path) }
+          }
+          else {
+            target.sources
+              .filter { it.path.isPythonFile() }
+              .associate { sourceItem ->
+                sourceItem.path.toExecRootRelativePath() to sourceItem.path
+              }
+          }
+        val getSourcesRelativePathToAbsolutePath: Map<Path, Path> =
+          extractPythonBuildTarget(target)?.generatedSources
+              ?.associate { path ->
+                path.toExecRootRelativePath() to (outputFilesCache.createOutputFileHardLink(path) ?: path.toAbsolutePath())
+              }
+          ?: emptyMap()
+        expandPathsToQualifiedNames(importsPaths, sourcesRelativePathToAbsolutePath + getSourcesRelativePathToAbsolutePath)
+      }
+    }.awaitAll()
+
+    val qualifiedNamesResolverMap = hashMapOf<QualifiedName, Path>()
+    for (targetData in targetNames) {
+      for ((qualifiedName, path) in targetData) {
+        qualifiedNamesResolverMap[qualifiedName] = path
       }
     }
     return qualifiedNamesResolverMap
   }
 
   /*
-   * expandFullQualifiedNameMaps will expand the map to include the parent qualified names
-   * e.g. for an entry aaa.bbb.ccc -> /aaa/bbb/ccc.py,
-   * this function will also add (aaa.bbb->/aaa/bbb) and (aaa -> /aaa) into the new map,
-   * so that pycharm won't show a red line under aaa
+   * Expand the relative->absolute path map to include the parent paths
+   * e.g. for an entry aaa/bbb/ccc.py -> /absolute/aaa/bbb/ccc.py,
+   * this function will also add (aaa/bbb -> /absolute/aaa/bbb) and (aaa -> /absolute/aaa) into the new map,
+   * so that intermediate directories are also tracked
+   *
+   * All intermediate relative paths are converted to QualifiedNames for the result map
    * */
-  private fun expandFullQualifiedNameMaps(originalMap: Map<QualifiedName?, Path>): Map<QualifiedName?, Path> {
-    val newMap = originalMap.toMutableMap()
-    for (entry in originalMap) {
-      var qualifiedName = entry.key ?: continue
-      var resolvedPath: Path = if (!entry.value.isDirectory()) entry.value.parent else entry.value
-      while (qualifiedName.componentCount > 1) {
-        qualifiedName = qualifiedName.removeLastComponent()
-        resolvedPath = resolvedPath.parent
-        if (!newMap.containsKey(qualifiedName)) {
-          newMap[qualifiedName] = resolvedPath
+  private fun expandPathsToQualifiedNames(importsPaths: List<Path>, filePaths: Map<Path, Path>): Map<QualifiedName, Path> {
+    val newMap = hashMapOf<QualifiedName, Path>()
+    for ((relativePath, absolutePath) in filePaths) {
+      val qualifiedNames = if (importsPaths.isNotEmpty()) {
+        importsPaths
+          .filter { it != relativePath && relativePath.startsWith(it) }
+          .map { relativePath.subpath(it.nameCount, relativePath.nameCount) }
+          .filter { it.nameCount > 0 }
+          .mapNotNull { it.toQualifiedName() }
+      }
+      else {
+        listOfNotNull(relativePath.toQualifiedName())
+      }
+
+      for (qualifiedName in qualifiedNames) {
+        var qName = qualifiedName
+        var qNamePath = absolutePath
+
+        while (qName.componentCount > 0) {
+          if (newMap.containsKey(qName))
+            break
+
+          newMap[qName] = qNamePath
+
+          qName = qName.removeLastComponent()
+          qNamePath = qNamePath.parent
         }
       }
     }
+
     return newMap
-  }
-
-  // assembleSourceImportsFromImportRoots returns all possible legal qualified names of a full qualified name
-  private fun assembleSourceImportsFromImportRoots(importRoots: List<QualifiedName>, sourceImport: QualifiedName?): List<QualifiedName> {
-    if (null == sourceImport || null == sourceImport.getLastComponent()) {
-      return emptyList()
-    }
-
-    val addedNames =
-      importRoots
-        .filter { it != sourceImport && sourceImport.matchesPrefix(it) }
-        .map { sourceImport.subQualifiedName(it.componentCount, sourceImport.componentCount) }
-    return addedNames + sourceImport
   }
 
   // assembleImportRoots convert "imports" attributes of a bazel python rule to actual imported paths
@@ -178,38 +186,76 @@ internal class PythonResolveIndexService(private val project: Project) : Persist
     }
   }
 
-  data class State(var index: Map<String, String> = mapOf())
+  companion object {
+    private val logger = logger<PythonResolveIndexService>()
 
-  override fun getState(): PythonResolveIndexService.State? =
-    PythonResolveIndexService.State(
-      internalResolveIndex
-        .map {
-          it.key.toString() to it.value.toString()
-        }.toMap(),
-    )
+    private fun store(storagePath: Path, map: Map<QualifiedName, Path>) {
+      if (map.isEmpty()) {
+        storagePath.deleteIfExists()
+        return
+      }
 
-  override fun loadState(state: PythonResolveIndexService.State) {
-    internalResolveIndex =
-      state.index
-        .map { pair ->
-          pair.key.split(".").let { QualifiedName.fromComponents(it) } to Path.of(pair.value)
-        }.toMap()
-    resolveIndex =
-      internalResolveIndex.mapValues { (_, path) -> path.toVirtualFile() }
+      try {
+        storagePath.createParentDirectories()
+        storagePath.writer().use { writer ->
+          for ((qName, path) in map) {
+            writer.appendLine("$qName:${path.pathString}")
+          }
+        }
+      } catch (ex: Throwable) {
+        logger.warn("Failed to store Python resolve index to $storagePath", ex)
+        storagePath.deleteIfExists()
+      }
+    }
+
+    private fun load(storagePath: Path): Map<QualifiedName, Path> {
+      if (!storagePath.exists())
+        return emptyMap()
+
+      try {
+        val result = mutableMapOf<QualifiedName, Path>()
+        storagePath.toFile().reader().use { reader ->
+          reader.forEachLine { line ->
+            val (qName, path) = line.split(":", limit = 2)
+            result[QualifiedName.fromDottedString(qName)] = Path.of(path)
+          }
+        }
+        return result
+      } catch (ex: Throwable) {
+        logger.warn("Failed to load Python resolve index from $storagePath", ex)
+        storagePath.deleteIfExists()
+        return emptyMap()
+      }
+    }
   }
 }
 
 private fun Path.toQualifiedName(): QualifiedName? {
   val separator = FileSystems.getDefault().separator
-  if (extension != "py") return null
+  if (!isPythonLanguage()) return null
 
   val relativePath =
     toString()
-      .let { StringUtil.trimEnd(it, separator + PyNames.INIT_DOT_PY) }
-      .removeSuffix(".py")
-  return QualifiedName.fromComponents(
-    relativePath.split(separator).flatMap { it.split(".") }.filter { it.isNotEmpty() },
-  )
+      .substringBeforeLast(".") // remove extension
+      .removeSuffix(separator + PyNames.INIT)
+
+  val relativePathParts = relativePath.split(separator)
+  if (relativePathParts.any { it.contains(".") }) return null
+  return QualifiedName.fromComponents(relativePathParts.flatMap { it.split(".") }.filter { it.isNotEmpty() })
 }
 
-private fun Path.toVirtualFile(): VirtualFile? = VirtualFileManager.getInstance().findFileByNioPath(this)
+private fun Path.isPythonFile(): Boolean =
+  this.isRegularFile() && this.isPythonLanguage()
+
+private fun Path.isPythonLanguage(): Boolean =
+  LanguageClass.fromExtension(this.extension) == LanguageClass.PYTHON
+
+private val parentPath = Paths.get("..")
+
+// Drop "../../" from beginning
+private fun Path.removeParentParentPrefix(): Path {
+  if (this.nameCount > 2 && this.getName(0) == parentPath && this.getName(1) == parentPath) {
+    return this.subpath(2, this.nameCount)
+  }
+  return this
+}

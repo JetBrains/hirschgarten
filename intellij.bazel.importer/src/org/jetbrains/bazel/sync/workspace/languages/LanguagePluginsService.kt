@@ -46,7 +46,7 @@ class LanguagePluginsService(private val project: Project) {
     KotlinLanguagePlugin(javaPlugin, bazelPathsResolver).also(this::registerLangaugePlugin)
     ScalaLanguagePlugin(javaPlugin, bazelPathsResolver, jvmPackageResolver).also(this::registerLangaugePlugin)
     GoLanguagePlugin(project, bazelPathsResolver).also(this::registerLangaugePlugin)
-    PythonLanguagePlugin(bazelPathsResolver, workspaceContext).also(this::registerLangaugePlugin)
+    PythonLanguagePlugin(bazelPathsResolver).also(this::registerLangaugePlugin)
     ThriftLanguagePlugin().also(this::registerLangaugePlugin)
     ProtobufLanguagePlugin(javaPlugin).also(this::registerLangaugePlugin)
   }

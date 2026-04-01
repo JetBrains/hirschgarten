@@ -3,6 +3,7 @@ package org.jetbrains.bazel.python.resolve
 import com.intellij.openapi.application.ReadAction
 import com.intellij.openapi.components.service
 import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.openapi.vfs.VirtualFileManager
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiManager
 import com.intellij.psi.util.QualifiedName
@@ -14,8 +15,6 @@ import org.jetbrains.bazel.config.rootDir
 
 @ApiStatus.Internal
 class BazelPyImportResolver : PyImportResolver {
-  val cacheKey = "PythonResolveIndex"
-
   override fun resolveImportReference(
     name: QualifiedName,
     context: PyQualifiedNameResolveContext,
@@ -105,7 +104,8 @@ class BazelPyImportResolver : PyImportResolver {
   private fun resolveShortImport(name: QualifiedName, context: PyQualifiedNameResolveContext): PsiElement? {
     val sourcesIndex = context.project.service<PythonResolveIndexService>().resolveIndex
     val path = sourcesIndex[name] ?: return null
-    return context.psiManager.findFileOrDirectory(path)
+    val vFile = VirtualFileManager.getInstance().findFileByNioPath(path) ?: return null
+    return context.psiManager.findFileOrDirectory(vFile)
   }
 }
 

@@ -146,7 +146,6 @@ internal class BazelPyRunLineMarkerContributorTest : CodeInsightFixtureTestCase<
               version = "3.8",
               interpreter = Path.of(myFixture.tempDirPath, "python3"),
               listOf(),
-              false,
               listOf(),
               listOf(),
               mainFile = mainFile?.virtualFile?.toNioPath(),

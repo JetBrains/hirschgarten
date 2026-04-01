@@ -2,7 +2,6 @@ package org.jetbrains.bazel.sync.workspace.languages.python
 
 import com.intellij.openapi.project.Project
 import org.jetbrains.bazel.commons.BazelPathsResolver
-import org.jetbrains.bazel.commons.BzlmodRepoMapping
 import org.jetbrains.bazel.commons.LanguageClass
 import org.jetbrains.bazel.commons.LocalRepositoryMapping
 import org.jetbrains.bazel.commons.RepoMapping
@@ -17,13 +16,48 @@ import org.jetbrains.bazel.sync.workspace.languages.LanguagePlugin
 import org.jetbrains.bazel.sync.workspace.languages.LanguagePluginContext
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bsp.protocol.PythonBuildTarget
+import java.nio.file.Files
 import java.nio.file.Path
+import kotlin.io.path.exists
+import kotlin.io.path.extension
+import kotlin.io.path.isDirectory
+import kotlin.io.path.nameWithoutExtension
 
-internal class PythonLanguagePlugin(private val bazelPathsResolver: BazelPathsResolver, private val workspaceContext: WorkspaceContext) : LanguagePlugin<PythonBuildTarget> {
+internal class PythonLanguagePlugin(private val bazelPathsResolver: BazelPathsResolver) : LanguagePlugin<PythonBuildTarget> {
   private var defaultInterpreter: Path? = null
   private var defaultVersion: String? = null
 
   override fun getSupportedLanguages(): Set<LanguageClass> = setOf(LanguageClass.PYTHON)
+
+  private fun PythonTargetInfo.resolveGeneratedSources(repoMapping: RepoMapping): Sequence<Path> {
+    val localRepositories = repoMapping.getLocalRepositories()
+    return generatedSourcesList
+      .asSequence()
+      .flatMap { location ->
+        val sourceFile = bazelPathsResolver.resolve(location, localRepositories)
+        // some code gen rules return directories. we need to figure out what files are there
+        if (sourceFile.isDirectory()) {
+          Files
+            .walk(sourceFile)
+            .toList()
+        }
+        else {
+          listOf(sourceFile)
+        }
+      }
+      .filter { it.extension == "py" || it.extension == "pyw" }
+      .map { sourceFile ->
+        // If type annotation exists - use it instead of generated .py file
+        // https://peps.python.org/pep-0484/#the-type-of-class-objects
+        if (sourceFile.extension == "py") {
+          val interfaceStub = sourceFile.parent.resolve("${sourceFile.nameWithoutExtension}.pyi")
+          if (interfaceStub.exists())
+            return@map interfaceStub
+        }
+
+        sourceFile
+      }
+  }
 
   override fun prepareSync(project: Project, targets: Map<Label, TargetInfo>, workspaceContext: WorkspaceContext, repoMapping: RepoMapping) {
     val localRepositories = repoMapping.getLocalRepositories()
@@ -61,17 +95,16 @@ internal class PythonLanguagePlugin(private val bazelPathsResolver: BazelPathsRe
       } else {
         emptyList()
       }
+
     val pythonTarget = target.pythonTargetInfo
-    val isCodeGenerator = target.sourcesList.none() && workspaceContext.pythonCodeGeneratorRuleNames.contains(target.kind)
     return PythonBuildTarget(
       version = pythonTarget.version.takeUnless(String::isNullOrEmpty) ?: defaultVersion,
       interpreter = calculateInterpreterPath(interpreter = pythonTarget.interpreter, localRepositories) ?: defaultInterpreter,
       imports = pythonTarget.importsList,
-      isCodeGenerator = isCodeGenerator,
-      generatedSources = if (isCodeGenerator) pythonTarget.generatedSourcesList.mapNotNull { bazelPathsResolver.resolve(it, localRepositories) } else emptyList(),
+      generatedSources = pythonTarget.resolveGeneratedSources(repoMapping).toList(),
       sourceDependencies = sourceDependencies,
       mainFile = pythonTarget.main?.let { bazelPathsResolver.resolve(it, localRepositories) },
-      mainModule = pythonTarget.mainModule
+      mainModule = pythonTarget.mainModule,
     )
   }
 

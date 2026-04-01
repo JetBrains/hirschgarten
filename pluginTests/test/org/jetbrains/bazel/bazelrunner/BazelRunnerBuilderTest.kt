@@ -48,7 +48,6 @@ private val mockContext =
     importRunConfigurations = emptyList(),
     gazelleTarget = null,
     indexAllFilesInDirectories = false,
-    pythonCodeGeneratorRuleNames = emptyList(),
     importIjars = false,
     deriveInstrumentationFilterFromTargets = false,
     indexAdditionalFilesInDirectories = emptyList(),

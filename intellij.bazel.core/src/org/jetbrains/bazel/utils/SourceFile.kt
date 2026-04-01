@@ -15,7 +15,7 @@ enum class SourceType(private val extensions: Array<String>) {
   JAVA(arrayOf("java")),
   KOTLIN(arrayOf("kt", "kts")),
   SCALA(arrayOf("scala")),
-  PYTHON(arrayOf("py")),
+  PYTHON(arrayOf("py", "pyw", "pyi")),
   GO(arrayOf("go")),
   ;
 

@@ -50,7 +50,6 @@ private fun createMockWorkspaceContext(allowManualTargetsSync: Boolean): Workspa
     importRunConfigurations = emptyList(),
     gazelleTarget = null,
     indexAllFilesInDirectories = false,
-    pythonCodeGeneratorRuleNames = emptyList(),
     importIjars = false,
     deriveInstrumentationFilterFromTargets = true,
     indexAdditionalFilesInDirectories = emptyList(),

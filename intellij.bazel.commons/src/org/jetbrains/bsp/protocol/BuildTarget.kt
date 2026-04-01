@@ -34,7 +34,7 @@ data class RawBuildTarget(
   val sources: List<SourceItem>,
   val resources: List<Path>,
   override val baseDirectory: Path,
-  override var data: BuildTargetData? = null,
+  override val data: BuildTargetData? = null,
   val generatorName: String? = null,
   override val isManual: Boolean = false,
 ) : BuildTarget
@@ -77,8 +77,8 @@ data class PythonBuildTarget(
   // imports is the attribute in bazel python rules
   // which specify a list of runfiles relative paths which will be included in PYTHONPATH
   val imports: List<String>,
-  val isCodeGenerator: Boolean,
-  val generatedSources: List<Path>,
+  // Not used after full sync. Mapping is saved in `PythonResolveIndexService`
+  @Transient @JvmField val generatedSources: List<Path>? = null,
   val sourceDependencies: List<Path> = listOf(),
   val mainFile: Path? = null,
   val mainModule: String? = null,
