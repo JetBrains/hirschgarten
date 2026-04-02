@@ -1,10 +1,12 @@
 package org.jetbrains.bazel.config
 
 import com.intellij.codeInsight.multiverse.isSharedSourceSupportEnabled
+import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.registry.Registry
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.annotations.VisibleForTesting
+import org.jetbrains.bazel.sync.environment.BazelApplicationContextService
 import org.jetbrains.bsp.protocol.FeatureFlags
 
 // FIXME: ideally each module should have its own subset of feature flags
@@ -55,7 +57,7 @@ object BazelFeatureFlags {
 
   val executeSecondPhaseOnSync: Boolean
     get() = isEnabled(EXECUTE_SECOND_PHASE_ON_SYNC)
-  
+
   val excludeCompiledSourceCodeInsideJars: Boolean
     get() = isEnabled(EXCLUDE_COMPILED_SOURCE_CODE_INSIDE_JARS)
 
@@ -103,6 +105,7 @@ object BazelFeatureFlags {
 
   val hardLinkOutputFiles: Boolean
     get() = isEnabled(HARD_LINK_OUTPUT_FILES)
+            && !service<BazelApplicationContextService>().disableHardLinksOutputFiles
 
   private fun isEnabled(key: String): Boolean {
     System.getProperty(key)?.let { value ->

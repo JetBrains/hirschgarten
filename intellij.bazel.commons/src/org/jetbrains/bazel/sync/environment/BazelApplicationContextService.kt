@@ -6,6 +6,8 @@ import org.jetbrains.annotations.ApiStatus
 interface BazelApplicationContextService {
   val disableFileWatcherSymlinkExclusion: Boolean
     get() = false
+  val disableHardLinksOutputFiles: Boolean
+    get() = false
   val forceBazeliskDownload: Boolean
     get() = false
 }
