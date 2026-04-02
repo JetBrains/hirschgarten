@@ -41,8 +41,9 @@ class FirstPhaseProjectResolver(
           .runBazelCommand(command, logProcessOutput = false, taskId = taskId)
           .waitAndGetResult()
 
-      val targets = generateSequence { Target.parseDelimitedFrom(bazelResult.stdout.inputStream()) }
-      val modules = targets.associateBy { Label.parse(it.rule.name) }
+      val inputStream = bazelResult.stdout.inputStream()
+      val targets: Sequence<Target> = generateSequence { Target.parseDelimitedFrom(inputStream) }
+      val modules: Map<Label, Target> = targets.associateBy { Label.parse(it.rule.name) }
 
       val repoMapping = calculateRepoMapping(workspaceContext, bazelRunner, bazelInfo, taskEventsHandler.asLogger(taskId), taskId)
 
