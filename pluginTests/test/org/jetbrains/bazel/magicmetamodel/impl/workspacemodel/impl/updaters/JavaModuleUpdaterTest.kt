@@ -20,6 +20,7 @@ import com.intellij.platform.workspace.jps.entities.SdkId
 import com.intellij.platform.workspace.jps.entities.SourceRootEntity
 import com.intellij.platform.workspace.jps.entities.SourceRootTypeId
 import com.intellij.platform.workspace.storage.impl.url.toVirtualFileUrl
+import io.kotest.assertions.throwables.shouldNotThrow
 import org.jetbrains.bazel.commons.LanguageClass
 import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.commons.TargetKind
@@ -722,6 +723,61 @@ class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
             expectedJavaResourceRootEntity12,
             expectedJavaResourceRootEntity21,
           )
+      }
+    }
+
+    @Test
+    fun `should handle dummy module with non-existent source path without throwing`() {
+      runTestForUpdaters(
+        listOf(
+          { JavaModuleUpdater(it, it.projectBasePath, testModulesList, testLibraries) },
+          { JavaModuleWithSourcesUpdater(it, it.projectBasePath, testModules, testLibrariesByName) },
+        ),
+      ) { updater ->
+        val module =
+          GenericModuleInfo(
+            name = "module1",
+            type = ModuleTypeId("JAVA_MODULE"),
+            isDummy = true,
+            dependencies = emptyList(),
+            kind =
+              TargetKind(
+                kind = "kt_library",
+                ruleType = RuleType.LIBRARY,
+                languageClasses = setOf(LanguageClass.KOTLIN),
+              ),
+          )
+
+        val baseDirContentRoot =
+          ContentRoot(
+            path = Path("/root/dir/example/"),
+          )
+
+        val nonExistentSourcePath = Path("/non/existent/generated/source/path")
+        val sourceRoots =
+          listOf(
+            JavaSourceRoot(
+              sourcePath = nonExistentSourcePath,
+              generated = true,
+              packagePrefix = "com.example.generated",
+              rootType = SourceRootTypeId("java-source"),
+            )
+          )
+
+        val javaModule =
+          JavaModule(
+            genericModuleInfo = module,
+            baseDirContentRoot = baseDirContentRoot,
+            sourceRoots = sourceRoots,
+            resourceRoots = emptyList(),
+            jvmJdkName = "test-proj-11",
+          )
+
+        shouldNotThrow<NoSuchFileException> {
+          runTestWriteAction<Unit> {
+            updater.addEntity(javaModule)
+          }
+        }
       }
     }
   }
