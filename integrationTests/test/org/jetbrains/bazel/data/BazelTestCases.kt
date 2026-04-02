@@ -17,7 +17,7 @@ object IdeaBazelCases : BaseBazelCasesParametrized(BazelTestContext.IDEA) {
     val FastBuild = withBazelProject(
       projectInfo = withDefaults(
         repositoryUrl = "https://github.com/JetBrainsBazelBot/simpleBazelProjectsForTesting.git",
-        commitHash = "b5cdb19c0247e2c810de6bb8425d4f9293a790f5",
+        commitHash = "af3e066604a8af0c9505b088ae5e7055ecf3b6d5",
         branchName = "main",
         relativePath = "fastBuildTest",
         configure = { context ->
@@ -31,7 +31,7 @@ object IdeaBazelCases : BaseBazelCasesParametrized(BazelTestContext.IDEA) {
     val BazelProjectModelModifier = withBazelProject(
       projectInfo = withDefaults(
         repositoryUrl = "https://github.com/JetBrainsBazelBot/simpleBazelProjectsForTesting.git",
-        commitHash = "90fcdecc4ea14ca4e453565e667f67d2cb27eb6e",
+        commitHash = "af3e066604a8af0c9505b088ae5e7055ecf3b6d5",
         branchName = "main",
         relativePath = "bazelProjectModelModifierTest",
         configure = { context -> BazelProjectConfigurer.configureProjectBeforeUse(context) },
@@ -41,7 +41,7 @@ object IdeaBazelCases : BaseBazelCasesParametrized(BazelTestContext.IDEA) {
   val BazelProjectOpenByRootDir = withBazelProject(
     projectInfo = withDefaults(
       repositoryUrl = "https://github.com/JetBrainsBazelBot/simpleBazelProjectsForTesting.git",
-      commitHash = "599425b1bc7b525e13849c64aa3ecc12880568b0",
+      commitHash = "af3e066604a8af0c9505b088ae5e7055ecf3b6d5",
       branchName = "main",
       relativePath = "simpleKotlinTest",
       configure = { context -> BazelProjectConfigurer.configureProjectBeforeUse(context) },
@@ -51,7 +51,7 @@ object IdeaBazelCases : BaseBazelCasesParametrized(BazelTestContext.IDEA) {
   val BazelProjectOpenByModuleFile = withBazelProject(
     projectInfo = withDefaults(
       repositoryUrl = "https://github.com/JetBrainsBazelBot/simpleBazelProjectsForTesting.git",
-      commitHash = "599425b1bc7b525e13849c64aa3ecc12880568b0",
+      commitHash = "af3e066604a8af0c9505b088ae5e7055ecf3b6d5",
       branchName = "main",
       relativePath = "simpleKotlinTest/MODULE.bazel",
       configure = { context -> BazelProjectConfigurer.configureProjectBeforeUse(context) },
@@ -61,7 +61,7 @@ object IdeaBazelCases : BaseBazelCasesParametrized(BazelTestContext.IDEA) {
   val BazelLegacyPluginProject = withBazelProject(
     projectInfo = withDefaults(
       repositoryUrl = "https://github.com/JetBrainsBazelBot/simpleBazelProjectsForTesting.git",
-      commitHash = "24c031faaa9435a64344d604d0eee7c64038e362",
+      commitHash = "af3e066604a8af0c9505b088ae5e7055ecf3b6d5",
       branchName = "main",
       relativePath = "legacyGooglePluginTest/.ijwb",
       configure = { context -> BazelProjectConfigurer.configureProjectBeforeUse(context) },
@@ -71,7 +71,7 @@ object IdeaBazelCases : BaseBazelCasesParametrized(BazelTestContext.IDEA) {
   val CompiledSourceCodeInsideJarExclude = withBazelProject(
       projectInfo = withDefaults(
         repositoryUrl = "https://github.com/JetBrainsBazelBot/simpleBazelProjectsForTesting.git",
-        commitHash = "9631bed77c65907263171ac8590cd4ffad95966c",
+        commitHash = "af3e066604a8af0c9505b088ae5e7055ecf3b6d5",
         branchName = "main",
         relativePath = "generatedCodeTest",
         configure = { context -> BazelProjectConfigurer.configureProjectBeforeUse(context) },
@@ -91,7 +91,7 @@ object IdeaBazelCases : BaseBazelCasesParametrized(BazelTestContext.IDEA) {
     val ProtobufResolve = withBazelProject(
       projectInfo = withDefaults(
         repositoryUrl = "https://github.com/JetBrainsBazelBot/simpleBazelProjectsForTesting.git",
-        commitHash = "11f03260cf8611309d8a8c643881e88e45815739",
+        commitHash = "af3e066604a8af0c9505b088ae5e7055ecf3b6d5",
         branchName = "main",
         relativePath = "protobufTest",
         configure = { context -> BazelProjectConfigurer.configureProjectBeforeUseWithoutBazelClean(context) },
@@ -101,7 +101,7 @@ object IdeaBazelCases : BaseBazelCasesParametrized(BazelTestContext.IDEA) {
     val SimpleScalaTest = withBazelProject(
       projectInfo = withDefaults(
         repositoryUrl = "https://github.com/JetBrainsBazelBot/simpleBazelProjectsForTesting.git",
-        commitHash = "b3991962f00c8e60bc60e5ba7287b90195baa01e",
+        commitHash = "af3e066604a8af0c9505b088ae5e7055ecf3b6d5",
         branchName = "main",
         relativePath = "simpleScalaTest",
         configure = { context -> BazelProjectConfigurer.configureProjectBeforeUse(context) },
@@ -112,7 +112,7 @@ object IdeaBazelCases : BaseBazelCasesParametrized(BazelTestContext.IDEA) {
     val BazelCoverage = withBazelProject(
       projectInfo = withDefaults(
         repositoryUrl = "https://github.com/JetBrainsBazelBot/simpleBazelProjectsForTesting.git",
-        commitHash = "90fcdecc4ea14ca4e453565e667f67d2cb27eb6e",
+        commitHash = "af3e066604a8af0c9505b088ae5e7055ecf3b6d5",
         branchName = "main",
         relativePath = "coverageTest",
         configure = { context -> BazelProjectConfigurer.configureProjectBeforeUse(context) },
@@ -122,7 +122,7 @@ object IdeaBazelCases : BaseBazelCasesParametrized(BazelTestContext.IDEA) {
     val ImportRunConfigurationsSyncHook = withBazelProject(
       projectInfo = withDefaults(
         repositoryUrl = "https://github.com/JetBrainsBazelBot/simpleBazelProjectsForTesting.git",
-        commitHash = "90fcdecc4ea14ca4e453565e667f67d2cb27eb6e",
+        commitHash = "af3e066604a8af0c9505b088ae5e7055ecf3b6d5",
         branchName = "main",
         relativePath = "importRunConfigurations",
         configure = { context -> BazelProjectConfigurer.configureProjectBeforeUseWithoutBazelClean(context, createProjectView = false) },
@@ -132,7 +132,7 @@ object IdeaBazelCases : BaseBazelCasesParametrized(BazelTestContext.IDEA) {
     val ExternalRepoResolve = withBazelProject(
       projectInfo = withDefaults(
         repositoryUrl = "https://github.com/JetBrainsBazelBot/simpleBazelProjectsForTesting.git",
-        commitHash = "b5cdb19c0247e2c810de6bb8425d4f9293a790f5",
+        commitHash = "af3e066604a8af0c9505b088ae5e7055ecf3b6d5",
         branchName = "main",
         relativePath = "starlarkResolveTest",
         configure = { context -> BazelProjectConfigurer.configureProjectBeforeUse(context) },
@@ -142,7 +142,7 @@ object IdeaBazelCases : BaseBazelCasesParametrized(BazelTestContext.IDEA) {
     val NonModuleTargets = withBazelProject(
       projectInfo = withDefaults(
         repositoryUrl = "https://github.com/JetBrainsBazelBot/simpleBazelProjectsForTesting.git",
-        commitHash = "3cee0003dcd3d9c3664b9bb3bc9161ce99fa8184",
+        commitHash = "af3e066604a8af0c9505b088ae5e7055ecf3b6d5",
         branchName = "main",
         relativePath = "nonModuleTargetsTest",
         configure = { context -> BazelProjectConfigurer.configureProjectBeforeUse(context) },
@@ -152,7 +152,7 @@ object IdeaBazelCases : BaseBazelCasesParametrized(BazelTestContext.IDEA) {
    val LocalPathOverride = withBazelProject(
      projectInfo = withDefaults(
        repositoryUrl = "https://github.com/JetBrainsBazelBot/simpleBazelProjectsForTesting",
-       commitHash = "395beb872a02605bb8da254ddedee49affbcee94",
+       commitHash = "af3e066604a8af0c9505b088ae5e7055ecf3b6d5",
        branchName = "main",
        relativePath = "localPathOverride",
        configure = { context -> BazelProjectConfigurer.configureProjectBeforeUse(context) },
@@ -172,7 +172,7 @@ object IdeaBazelCases : BaseBazelCasesParametrized(BazelTestContext.IDEA) {
     val RunAllTestsAction = withBazelProject(
       projectInfo = withDefaults(
         repositoryUrl = "https://github.com/JetBrainsBazelBot/simpleBazelProjectsForTesting.git",
-        commitHash = "b5cdb19c0247e2c810de6bb8425d4f9293a790f5",
+        commitHash = "af3e066604a8af0c9505b088ae5e7055ecf3b6d5",
         branchName = "main",
         relativePath = "runAllTests",
         configure = { context -> BazelProjectConfigurer.configureProjectBeforeUse(context) },
@@ -182,7 +182,7 @@ object IdeaBazelCases : BaseBazelCasesParametrized(BazelTestContext.IDEA) {
     val DisabledKotlinPlugin = withBazelProject(
       projectInfo = withDefaults(
         repositoryUrl = "https://github.com/JetBrainsBazelBot/simpleBazelProjectsForTesting.git",
-        commitHash = "90fcdecc4ea14ca4e453565e667f67d2cb27eb6e",
+        commitHash = "af3e066604a8af0c9505b088ae5e7055ecf3b6d5",
         branchName = "main",
         relativePath = "simpleMultiLanguageTest",
         configure = { context -> BazelProjectConfigurer.configureProjectBeforeUse(context) },
@@ -202,7 +202,7 @@ object IdeaBazelCases : BaseBazelCasesParametrized(BazelTestContext.IDEA) {
   val JetBrainsTestRunner = withBazelProject(
     projectInfo = withDefaults(
       repositoryUrl = "https://github.com/JetBrainsBazelBot/simpleBazelProjectsForTesting",
-      commitHash = "b5cdb19c0247e2c810de6bb8425d4f9293a790f5",
+      commitHash = "af3e066604a8af0c9505b088ae5e7055ecf3b6d5",
       branchName = "main",
       relativePath = "jetbrainsTestRunner",
       configure = { context -> BazelProjectConfigurer.configureProjectBeforeUse(context) },
@@ -212,7 +212,7 @@ object IdeaBazelCases : BaseBazelCasesParametrized(BazelTestContext.IDEA) {
   val LabelAllTabSESplit = withBazelProject(
     projectInfo = withDefaults(
       repositoryUrl = "https://github.com/JetBrainsBazelBot/simpleBazelProjectsForTesting",
-      commitHash = "90fcdecc4ea14ca4e453565e667f67d2cb27eb6e",
+      commitHash = "af3e066604a8af0c9505b088ae5e7055ecf3b6d5",
       branchName = "main",
       relativePath = "simpleMultiLanguageTest",
       configure = { context -> BazelProjectConfigurer.configureProjectBeforeUse(context) },
@@ -232,7 +232,7 @@ object IdeaBazelCases : BaseBazelCasesParametrized(BazelTestContext.IDEA) {
   val SyntheticRunTarget = withBazelProject(
     projectInfo = withDefaults(
       repositoryUrl = "https://github.com/JetBrainsBazelBot/simpleBazelProjectsForTesting",
-      commitHash = "b5cdb19c0247e2c810de6bb8425d4f9293a790f5",
+      commitHash = "af3e066604a8af0c9505b088ae5e7055ecf3b6d5",
       branchName = "main",
       relativePath = "syntheticRunTargetTest",
       configure = { context -> BazelProjectConfigurer.configureProjectBeforeUse(context) },
@@ -242,7 +242,7 @@ object IdeaBazelCases : BaseBazelCasesParametrized(BazelTestContext.IDEA) {
   val SimpleKotlinCombined = withBazelProject(
     projectInfo = withDefaults(
       repositoryUrl = "https://github.com/JetBrainsBazelBot/simpleBazelProjectsForTesting.git",
-      commitHash = "7f5b9b5279e28e9c74ef3efe1381bc78adbab10b",
+      commitHash = "af3e066604a8af0c9505b088ae5e7055ecf3b6d5",
       branchName = "main",
       relativePath = "simpleKotlinTest",
       configure = { context -> BazelProjectConfigurer.configureProjectBeforeUse(context) },
@@ -252,7 +252,7 @@ object IdeaBazelCases : BaseBazelCasesParametrized(BazelTestContext.IDEA) {
   val SimpleJavaCombined = withBazelProject(
     projectInfo = withDefaults(
       repositoryUrl = "https://github.com/JetBrainsBazelBot/simpleBazelProjectsForTesting.git",
-      commitHash = "2292b18f90fddc40a490a481e94225ddfa854ef0",
+      commitHash = "af3e066604a8af0c9505b088ae5e7055ecf3b6d5",
       branchName = "main",
       relativePath = "simpleJavaTest",
       configure = { context -> BazelProjectConfigurer.configureProjectBeforeUse(context) },
@@ -262,7 +262,7 @@ object IdeaBazelCases : BaseBazelCasesParametrized(BazelTestContext.IDEA) {
   val ProjectViewCombined = withBazelProject(
     projectInfo = withDefaults(
       repositoryUrl = "https://github.com/JetBrainsBazelBot/simpleBazelProjectsForTesting.git",
-      commitHash = "d30bebaa20f497089a1686a64a4d8ca5d2d069d0",
+      commitHash = "af3e066604a8af0c9505b088ae5e7055ecf3b6d5",
       branchName = "main",
       relativePath = "projectViewCombinedTest",
       configure = { context ->
@@ -314,7 +314,7 @@ object GoLandBazelCases : BaseBazelCasesParametrized(BazelTestContext.GOLAND) {
   val GolandSync = withBazelProject(
     projectInfo = withDefaults(
       repositoryUrl = "https://github.com/JetBrainsBazelBot/simpleBazelProjectsForTesting.git",
-      commitHash = "ee100511a31d6a658f0dfdf340a861e504e7f01a",
+      commitHash = "af3e066604a8af0c9505b088ae5e7055ecf3b6d5",
       branchName = "main",
       relativePath = "with_go_source",
       configure = { context -> BazelProjectConfigurer.configureProjectBeforeUse(context, createProjectView = false) },
@@ -326,7 +326,7 @@ object PyCharmBazelCases : BaseBazelCasesParametrized(BazelTestContext.PYCHARM) 
   val SimplePython = withBazelProject(
     projectInfo = withDefaults(
       repositoryUrl = "https://github.com/JetBrainsBazelBot/simpleBazelProjectsForTesting.git",
-      commitHash = "9c9d54ae3463b75b2f63963a48d6b78b6532389d",
+      commitHash = "af3e066604a8af0c9505b088ae5e7055ecf3b6d5",
       branchName = "main",
       relativePath = "simplePythonTest",
       configure = { context -> BazelProjectConfigurer.configureProjectBeforeUseWithoutBazelClean(context) },
@@ -336,7 +336,7 @@ object PyCharmBazelCases : BaseBazelCasesParametrized(BazelTestContext.PYCHARM) 
   val PyCharm = withBazelProject(
     projectInfo = withDefaults(
       repositoryUrl = "https://github.com/JetBrainsBazelBot/simpleBazelProjectsForTesting.git",
-      commitHash = "90fcdecc4ea14ca4e453565e667f67d2cb27eb6e",
+      commitHash = "af3e066604a8af0c9505b088ae5e7055ecf3b6d5",
       branchName = "main",
       relativePath = "simpleMultiLanguageTest",
       configure = { context -> BazelProjectConfigurer.configureProjectBeforeUseWithoutBazelClean(context) },
