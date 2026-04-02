@@ -19,6 +19,7 @@ import java.nio.file.Path
 import java.nio.file.SimpleFileVisitor
 import java.nio.file.attribute.BasicFileAttributes
 import kotlin.io.path.name
+import kotlin.io.path.notExists
 
 internal class PackageMarkerEntityUpdater(
   private val workspaceModelEntityUpdaterConfig: WorkspaceModelEntityUpdaterConfig,
@@ -53,6 +54,7 @@ internal class PackageMarkerEntityUpdater(
   }
 
   private fun iterateSubdirectories(entityToAdd: JavaSourceRoot): List<PackageMarkerEntityBuilder> {
+    if (entityToAdd.sourcePath.notExists()) return emptyList()
     val entities = mutableListOf<PackageMarkerEntityBuilder>()
     val visitor =
       object : SimpleFileVisitor<Path>() {
