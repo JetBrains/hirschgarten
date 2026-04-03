@@ -552,6 +552,13 @@
     />
 
     <execution.processHandlerPidProvider implementation="org.jetbrains.bazel.run.BazelProcessHandlerPidProvider"/>
+    <projectSettings service="org.jetbrains.bazel.config.BazelProjectProperties"/>
+    <applicationSettings service="org.jetbrains.bazel.ui.settings.BazelApplicationSettingsService"/>
+    <projectSettings service="org.jetbrains.bazel.languages.starlark.repomapping.PersistentBazelRepoMappingService"/>
+    <projectSettings service="org.jetbrains.bazel.flow.sync.bazelPaths.BazelBinPathService"/>
+    <projectSettings service="org.jetbrains.bazel.languages.bazelversion.service.BazelVersionCheckerService"/>
+    <projectSettings service="org.jetbrains.bazel.languages.bazelversion.service.resolver.BazelGithubGlobalCacheService"/>
+    <projectSettings service="org.jetbrains.bazel.projectAware.BazelProjectModuleBuildTasksTracker"/>
   </extensions>
 
   <actions>

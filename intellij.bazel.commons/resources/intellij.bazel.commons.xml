@@ -162,6 +162,8 @@ against Bazel garbage-collecting files from disk with Remote Build Execution or 
                  key="bazel.hard.link.output.files"
                  restartRequired="false"
     />
+    <projectSettings service="org.jetbrains.bazel.settings.bazel.BazelProjectSettingsService"/>
+    <projectSettings service="org.jetbrains.bazel.settings.bazel.BazelJVMProjectSettingsService"/>
   </extensions>
 
   <extensionPoints>
