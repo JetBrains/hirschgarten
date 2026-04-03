@@ -37,6 +37,9 @@ data class ProjectView(val sections: Map<SectionKey<*>, Any>, val imports: List<
   private data class RawImport(val path: String, val required: Boolean) : RawItem
 
   companion object {
+
+    val EMPTY: ProjectView = ProjectView(mapOf(), listOf())
+
     @RequiresReadLock
     @RequiresBackgroundThread(generateAssertion = false)
     fun fromProjectViewPsiFile(file: ProjectViewPsiFile): ProjectView {

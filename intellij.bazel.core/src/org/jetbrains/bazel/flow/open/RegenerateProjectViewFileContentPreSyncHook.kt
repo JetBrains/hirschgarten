@@ -1,5 +1,6 @@
 package org.jetbrains.bazel.flow.open
 
+import com.intellij.openapi.components.serviceAsync
 import com.intellij.openapi.vfs.isFile
 import com.intellij.openapi.vfs.refreshAndFindVirtualFile
 import com.intellij.openapi.vfs.toNioPathOrNull
@@ -12,12 +13,18 @@ internal class RegenerateProjectViewFileContentPreSyncHook : ProjectPreSyncHook 
   override suspend fun onPreSync(environment: ProjectPreSyncHook.ProjectPreSyncHookEnvironment) {
     val project = environment.project
 
-    if (!ProjectViewService.getInstance(project).allowExternalProjectViewModification) {
+    val projectViewService = project.serviceAsync<ProjectViewService>()
+    if (!projectViewService.allowExternalProjectViewModification) {
       return
     }
 
     var projectViewPath = project.bazelProjectSettings.projectViewPath
-    if (projectViewPath?.isFile == true) return
+    if (projectViewPath?.isFile == true) {
+      projectViewService.forceReparseCurrentProjectViewFiles()
+      return
+    }
+
+    projectViewService.forceReparseCurrentProjectViewFiles()
 
     projectViewPath =
       ProjectViewFileUtils.calculateProjectViewFilePath(

@@ -11,7 +11,9 @@ import com.intellij.openapi.vfs.findFile
 import com.intellij.psi.PsiDocumentManager
 import com.intellij.psi.PsiFileFactory
 import com.intellij.psi.PsiManager
-import com.intellij.util.concurrency.SynchronizedClearableLazy
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.commons.constants.Constants
 import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.flow.open.ProjectViewFileUtils
@@ -19,31 +21,22 @@ import org.jetbrains.bazel.languages.projectview.base.ProjectViewLanguage
 import org.jetbrains.bazel.languages.projectview.psi.ProjectViewPsiFile
 import org.jetbrains.bazel.settings.bazel.bazelProjectSettings
 
-internal class DefaultProjectViewService(private val project: Project) : ProjectViewService {
+@ApiStatus.Internal
+class DefaultProjectViewService(private val project: Project) : ProjectViewService {
 
-  private val cachedProjectView = SynchronizedClearableLazy {
-    runBlockingMaybeCancellable {
-      computeProjectView()
-    }
-  }
+  private val _projectViewState = MutableStateFlow(ProjectView.EMPTY)
 
   override val allowExternalProjectViewModification: Boolean = true
 
-  override fun getProjectView(): ProjectView {
-    if (ApplicationManager.getApplication().isUnitTestMode) {
-      runBlockingMaybeCancellable {
-        computeProjectView()
-      }
-    }
-    return cachedProjectView.get()
-  }
+  override val projectViewState: StateFlow<ProjectView>
+    get() = _projectViewState
 
   private suspend fun computeProjectView(): ProjectView {
     var projectViewPath = findProjectViewPath()
 
     if (projectViewPath == null || !projectViewPath.exists()) {
       val newProjectView = ProjectViewFileUtils.calculateProjectViewFilePath(
-        overwrite = true,
+        overwrite = false,
         projectRootDir = project.rootDir,
         projectViewPath = null,
       )
@@ -92,8 +85,16 @@ internal class DefaultProjectViewService(private val project: Project) : Project
     }
   }
 
+  suspend fun ensureProjectViewInitialized() {
+    if (_projectViewState.value === ProjectView.EMPTY) {
+      val newProjectView = computeProjectView()
+      _projectViewState.emit(newProjectView)
+    }
+  }
+
   override suspend fun forceReparseCurrentProjectViewFiles() {
-    cachedProjectView.drop()
+    val newProjectView = computeProjectView()
+    _projectViewState.emit(newProjectView)
 
     val projectViewPath = findProjectViewPath() ?: return
     val imports = parseProjectViewAsync(projectViewPath)?.imports ?: emptyList()

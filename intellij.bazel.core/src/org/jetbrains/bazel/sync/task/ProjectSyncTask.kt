@@ -158,7 +158,6 @@ class ProjectSyncTask(private val project: Project) {
     log.debug("Running pre sync tasks")
     saveAllFiles()
     clearSyntheticTargets()
-    project.serviceAsync<ProjectViewService>().forceReparseCurrentProjectViewFiles()
   }
 
   private suspend fun clearSyntheticTargets() {

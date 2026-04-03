@@ -1,16 +1,19 @@
 package org.jetbrains.bazel.startup
 
-import com.intellij.find.impl.FindInProjectUtil
 import com.intellij.openapi.components.serviceAsync
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.vfs.isFile
 import com.intellij.platform.backend.workspace.WorkspaceModel
 import com.intellij.util.PlatformUtils
 import com.intellij.workspaceModel.ide.impl.WorkspaceModelImpl
 import kotlinx.coroutines.flow.update
 import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.config.BazelProjectProperties
+import org.jetbrains.bazel.languages.projectview.DefaultProjectViewService
+import org.jetbrains.bazel.languages.projectview.ProjectViewService
 import org.jetbrains.bazel.projectAware.BazelWorkspace
+import org.jetbrains.bazel.settings.bazel.bazelProjectSettings
 import org.jetbrains.bazel.startup.utils.BazelProjectActivity
 import org.jetbrains.bazel.sync.environment.projectCtx
 import org.jetbrains.bazel.sync.scope.SecondPhaseSync
@@ -36,6 +39,15 @@ internal class BazelStartupActivity : BazelProjectActivity() {
     val trackerService = project.serviceAsync<BspConfigurationTrackerService>()
     try {
       trackerService.isRunning.update { true }
+
+      // when ProjectView file is known load it immediately,
+      // otherwise wait for first invocation of `RegenerateProjectViewFileContentPreSyncHook`
+      // sync hook which initializes ProjectView to correct value
+      val projectViewPath = project.bazelProjectSettings.projectViewPath
+      if (projectViewPath?.isFile == true) {
+        val projectViewService = ProjectViewService.getInstance(project) as? DefaultProjectViewService
+        projectViewService?.ensureProjectViewInitialized()
+      }
 
       executeOnEveryProjectStartup(project)
 
