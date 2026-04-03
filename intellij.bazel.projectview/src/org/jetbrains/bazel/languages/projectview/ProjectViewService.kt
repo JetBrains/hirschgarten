@@ -1,14 +1,17 @@
 package org.jetbrains.bazel.languages.projectview
 
 import com.intellij.openapi.project.Project
+import kotlinx.coroutines.flow.StateFlow
 import org.jetbrains.annotations.ApiStatus
 
 @ApiStatus.Internal
 interface ProjectViewService {
   val allowExternalProjectViewModification: Boolean
+  val projectViewState: StateFlow<ProjectView>
 
-  fun getProjectView(): ProjectView
   suspend fun forceReparseCurrentProjectViewFiles()
+
+  fun getProjectView(): ProjectView = projectViewState.value
 
   companion object {
     @JvmStatic
