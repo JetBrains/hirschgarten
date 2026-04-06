@@ -40,10 +40,9 @@ fi
 
 (
   cd "$BAZEL_SOURCE_DIR"
-  exec perl -MPOSIX=setsid -e 'setsid() or die qq(setsid failed: $!\n); exec @ARGV' "$worker_binary" "${worker_args[@]}"
-) >>"$RBE_LOG_PATH" 2>&1 </dev/null &
-
-echo "$!" > "$RBE_LAUNCHER_PID_FILE"
+  nohup "$worker_binary" "${worker_args[@]}" >>"$RBE_LOG_PATH" 2>&1 </dev/null &
+  echo "$!" > "$RBE_LAUNCHER_PID_FILE"
+)
 
 wait_for_worker
 write_runtime_config

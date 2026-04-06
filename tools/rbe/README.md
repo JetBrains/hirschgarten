@@ -22,7 +22,8 @@ That one command:
 2. Derives the upstream Bazel version from that value.
 3. Clones that exact `bazelbuild/bazel` tag into the user cache, unless it is already there.
 4. Starts Bazel's in-tree remote worker on `grpc://127.0.0.1:9092`.
-5. Writes ignored user-local bazelrc files that enable `--config=rbe-local` automatically for:
+5. Upserts a managed block in ignored user-local bazelrc files so `--config=rbe-local`
+   is enabled automatically for:
    - `<workspace>/.bazelrc-user.bazelrc`
    - `<workspace>/plugins/bazel/.user.bazelrc` when that subproject exists
 
@@ -32,10 +33,10 @@ remote cache.
 
 ## Scripts
 
-- `setup.sh` starts the worker and writes the ignored user-local bazelrc files.
+- `setup.sh` starts the worker and refreshes the managed block in the ignored user-local bazelrc files.
 - `start.sh` starts the worker without touching the bazelrc files.
 - `stop.sh` stops the worker.
-- `status.sh` prints the current worker state, cache paths, and generated bazelrc paths.
+- `status.sh` prints the current worker state, cache paths, and managed bazelrc paths.
 
 ## What gets committed vs generated
 
@@ -48,7 +49,9 @@ Generated locally and ignored by git:
 - [`ultimate/.bazelrc-user.bazelrc`](../../../../.bazelrc-user.bazelrc)
 - [`ultimate/plugins/bazel/.user.bazelrc`](../../.user.bazelrc)
 
-Delete those generated files if you want to disable this setup completely.
+`setup.sh` preserves any other content in those files and refreshes only the managed local RBE
+block. Remove that block, or delete the file entirely if it only contains the generated entries,
+to disable this setup completely.
 
 ## State location
 

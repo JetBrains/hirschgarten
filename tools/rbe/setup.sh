@@ -23,5 +23,5 @@ print_bazelrc_hook_notes
 echo
 echo "Next steps:"
 echo "  1. Open the target workspace in the IDE as usual."
-echo "  2. Run Bazel commands normally. The generated user-local bazelrc files now enable --config=rbe-local automatically and route both remote execution and remote cache to the local worker for that profile."
+echo "  2. Run Bazel commands normally. The managed user-local bazelrc entries now enable --config=rbe-local automatically and route both remote execution and remote cache to the local worker for that profile."
 echo "  3. Use $RBE_SCRIPT_DIR/stop.sh to stop the worker."
