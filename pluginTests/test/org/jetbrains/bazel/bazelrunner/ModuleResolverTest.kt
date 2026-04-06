@@ -4,8 +4,18 @@ import io.kotest.assertions.fail
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeInstanceOf
+import kotlinx.coroutines.runBlocking
 import org.jetbrains.bazel.bazelrunner.outputs.OutputCollector
+import org.jetbrains.bazel.commons.BazelInfo
+import org.jetbrains.bazel.commons.BazelRelease
+import org.jetbrains.bazel.sync.workspace.projectTree.BazelRunnerSpyStubbingHelper
+import org.jetbrains.bazel.workspacecontext.WorkspaceContext
+import org.jetbrains.bsp.protocol.TaskGroupId
 import org.junit.jupiter.api.Test
+import org.mockito.Mockito.mock
+import org.mockito.Mockito.spy
+import org.mockito.Mockito.`when`
+import java.nio.file.Path
 
 class ModuleResolverTest {
   fun makeOutputCollector(lines: String): OutputCollector =
@@ -14,6 +24,79 @@ class ModuleResolverTest {
     }
 
   val moduleOutputParser = ModuleOutputParser()
+  private val tempDir = Path.of(System.getProperty("java.io.tmpdir"))
+  private val taskId = TaskGroupId.EMPTY.task("module-resolver-test")
+  private val workspaceContext =
+    WorkspaceContext(
+      targets = emptyList(),
+      directories = emptyList(),
+      buildFlags = emptyList(),
+      syncFlags = emptyList(),
+      debugFlags = emptyList(),
+      bazelBinary = null,
+      allowManualTargetsSync = false,
+      importDepth = 0,
+      enabledRules = emptyList(),
+      ideJavaHomeOverride = null,
+      shardSync = false,
+      targetShardSize = 0,
+      shardingApproach = null,
+      importRunConfigurations = emptyList(),
+      gazelleTarget = null,
+      indexAllFilesInDirectories = false,
+      pythonCodeGeneratorRuleNames = emptyList(),
+      importIjars = false,
+      deriveInstrumentationFilterFromTargets = false,
+      indexAdditionalFilesInDirectories = emptyList(),
+      preferClassJarsOverSourcelessJars = false,
+    )
+
+  private fun makeResult(stdout: String = "", stderr: String = "", exitCode: Int = 0): BazelProcessResult =
+    BazelProcessResult(makeOutputCollector(stdout), makeOutputCollector(stderr), exitCode)
+
+  private fun bazelInfo(workspaceEnabled: Boolean = true): BazelInfo =
+    BazelInfo(
+      execRoot = tempDir,
+      outputBase = tempDir,
+      workspaceRoot = tempDir,
+      bazelBin = tempDir,
+      release = BazelRelease(7, 6),
+      isBzlModEnabled = true,
+      isWorkspaceEnabled = workspaceEnabled,
+      externalAutoloads = emptyList(),
+    )
+
+  private fun createResolver(vararg processResults: BazelProcessResult): ModuleResolver {
+    val runner = spy(BazelRunner(null, tempDir))
+    val process = mock(BazelProcess::class.java)
+
+    runBlocking {
+      `when`(process.waitAndGetResult()).thenReturn(*processResults)
+    }
+
+    BazelRunnerSpyStubbingHelper.stubRunBazelCommand(runner, process)
+    return ModuleResolver(runner, workspaceContext, taskId)
+  }
+
+  private fun localRepositoryStanza(repoArgument: String, repoName: String, path: String): String =
+    """
+      ## $repoArgument:
+      # <builtin>
+      local_repository(
+        name = "$repoName",
+        path = "$path",
+      )
+    """.trimIndent()
+
+  private fun httpArchiveStanza(repoArgument: String, repoName: String, url: String): String =
+    """
+      ## $repoArgument:
+      # <builtin>
+      http_archive(
+        name = "$repoName",
+        urls = ["$url"],
+      )
+    """.trimIndent()
 
   @Test
   fun `should throw on failed show repo invocation`() {
@@ -173,6 +256,145 @@ class ModuleResolverTest {
       "rules_kotlin@2.2.2" to ShowRepoResult.HttpArchiveRepository("rules_kotlin+", listOf("https://github.com/bazelbuild/rules_kotlin/releases/download/v2.2.2/rules_kotlin-v2.2.2.tar.gz"))
     )
 
+  }
+
+  @Test
+  fun `should correctly extract bad repo from error message`() {
+    val stderr =
+      "ERROR: In repo argument maven: Module maven does not exist in the dependency graph." +
+      "(Note that unused modules cannot be used here). Type 'bazel help mod' for syntax and help."
+    val result = BazelProcessResult(makeOutputCollector(""), makeOutputCollector(stderr), 2)
+
+    val badRepo = ModuleResolver.extractBadRepoFromError(result)
+    badRepo shouldBe "maven"
+  }
+
+  @Test
+  fun `should return null when error message has no repo argument`() {
+    val stderr = "ERROR: some unrelated bazel error"
+    val result = BazelProcessResult(makeOutputCollector(""), makeOutputCollector(stderr), 1)
+
+    val badRepo = ModuleResolver.extractBadRepoFromError(result)
+    badRepo shouldBe null
+  }
+
+  @Test
+  fun `should extract repo with @@ prefix from error`() {
+    val stderr =
+      "ERROR: In repo argument @@some_workspace_repo: Module @@some_workspace_repo does not exist in the dependency graph." +
+      "(Note that unused modules cannot be used here). Type 'bazel help mod' for syntax and help."
+    val result = BazelProcessResult(makeOutputCollector(""), makeOutputCollector(stderr), 2)
+
+    val badRepo = ModuleResolver.extractBadRepoFromError(result)
+    badRepo shouldBe "@@some_workspace_repo"
+  }
+
+  @Test
+  fun `should ignore non retryable repo argument errors`() {
+    val stderr =
+      "ERROR: In repo argument @rules_python+: invalid argument '@rules_python+': invalid user-provided repo name 'rules_python+'"
+    val result = BazelProcessResult(makeOutputCollector(""), makeOutputCollector(stderr), 2)
+
+    val badRepo = ModuleResolver.extractBadRepoFromError(result)
+    badRepo shouldBe null
+  }
+
+  @Test
+  fun `resolveModules should keep successful repos while peeling retryable failures`() {
+    val batchFailure =
+      makeResult(
+        stderr = "ERROR: In repo argument @@bad_repo: no such repo. Type 'bazel help mod' for syntax and help.",
+        exitCode = 2,
+      )
+    val batchSuccess =
+      makeResult(
+        stdout =
+          listOf(
+            httpArchiveStanza("@@good_http", "good_http+", "https://example.com/good_http.tar.gz"),
+            localRepositoryStanza("@@good_local", "good_local+", "good/local"),
+          ).joinToString("\n"),
+      )
+    val resolver = createResolver(batchFailure, batchSuccess)
+
+    val resolved = runBlocking {
+      resolver.resolveModules(listOf("@@good_local", "@@bad_repo", "@@good_http"), bazelInfo())
+    }
+
+    resolved shouldBe mapOf(
+      "@@good_http" to ShowRepoResult.HttpArchiveRepository("good_http+", listOf("https://example.com/good_http.tar.gz")),
+      "@@good_local" to ShowRepoResult.LocalRepository("good_local+", "good/local"),
+      "@@bad_repo" to null,
+    )
+  }
+
+  @Test
+  fun `resolveModules should fall back to individual lookups when batch failure is not retryable`() {
+    val batchFailure = makeResult(stderr = "ERROR: some unrelated bazel error", exitCode = 2)
+    val firstSingleSuccess =
+      makeResult(
+        stdout = httpArchiveStanza("@@good_http", "good_http+", "https://example.com/good_http.tar.gz"),
+      )
+    val secondSingleSuccess =
+      makeResult(
+        stdout = localRepositoryStanza("@@good_local", "good_local+", "good/local"),
+      )
+    val resolver = createResolver(batchFailure, firstSingleSuccess, secondSingleSuccess)
+
+    val resolved = runBlocking {
+      resolver.resolveModules(listOf("@@good_local", "@@good_http"), bazelInfo())
+    }
+
+    resolved shouldBe mapOf(
+      "@@good_http" to ShowRepoResult.HttpArchiveRepository("good_http+", listOf("https://example.com/good_http.tar.gz")),
+      "@@good_local" to ShowRepoResult.LocalRepository("good_local+", "good/local"),
+    )
+  }
+
+  @Test
+  fun `resolveModules should peel multiple retryable failures before succeeding`() {
+    val firstBatchFailure =
+      makeResult(
+        stderr = "ERROR: In repo argument @@bad_a: no such repo. Type 'bazel help mod' for syntax and help.",
+        exitCode = 2,
+      )
+    val secondBatchFailure =
+      makeResult(
+        stderr =
+          "ERROR: In repo argument @@bad_b: Module @@bad_b does not exist in the dependency graph. " +
+            "(Note that unused modules cannot be used here). Type 'bazel help mod' for syntax and help.",
+        exitCode = 2,
+      )
+    val finalSuccess =
+      makeResult(
+        stdout = localRepositoryStanza("@@good_local", "good_local+", "good/local"),
+      )
+    val resolver = createResolver(firstBatchFailure, secondBatchFailure, finalSuccess)
+
+    val resolved = runBlocking {
+      resolver.resolveModules(listOf("@@good_local", "@@bad_b", "@@bad_a"), bazelInfo())
+    }
+
+    resolved shouldBe mapOf(
+      "@@good_local" to ShowRepoResult.LocalRepository("good_local+", "good/local"),
+      "@@bad_a" to null,
+      "@@bad_b" to null,
+    )
+  }
+
+  @Test
+  fun `resolveModules should return null for single retryable failure`() {
+    val singleFailure =
+      makeResult(
+        stderr = "ERROR: In repo argument @@bad_repo: no such repo. Type 'bazel help mod' for syntax and help.",
+        exitCode = 2,
+      )
+    val resolver = createResolver(singleFailure)
+
+    val resolved = runBlocking {
+      resolver.resolveModules(listOf("@@bad_repo"), bazelInfo())
+    }
+
+    resolved shouldBe mapOf("@@bad_repo" to null)
   }
 
   @Test
