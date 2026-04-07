@@ -77,15 +77,8 @@ def extract_java_runtime(target, ctx, output_groups, dep_targets, **kwargs):
         if runtime_jdk and java_common.JavaRuntimeInfo in runtime_jdk:
             runtime = runtime_jdk[java_common.JavaRuntimeInfo]
 
-    runtime_info = None
     if runtime != None:
         java_home = to_file_location(runtime.java_home, "", False) if hasattr(runtime, "java_home") else None
-        runtime_info = create_struct(java_home = java_home)
-    else:
-        for dep in dep_targets:
-            if BspAspectInfo in dep and hasattr(dep[BspAspectInfo].bsp_info, "java_runtime_info"):
-                runtime_info = dep[BspAspectInfo].bsp_info.java_runtime_info
-                break
 
     jdeps = get_jdeps(target)
     java_outputs = []
@@ -125,14 +118,10 @@ def extract_java_runtime(target, ctx, output_groups, dep_targets, **kwargs):
                        )
     info_result = dict(java_common = java_common_info)
 
-    export_result = None
-    if runtime_info != None:
-        info_result["java_runtime_info"] = runtime_info
-        export_result = dict(java_runtime_info = runtime_info)
     if provider:
         info_result["java_provider"] = struct(
             full_compile_jars = map(file_location, getattr(provider, "full_compile_jars", depset()).to_list()),
             has_api_generating_plugins = has_api_generating_plugins
         )
 
-    return info_result, export_result
+    return info_result, None
