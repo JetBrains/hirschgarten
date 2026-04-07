@@ -52,7 +52,7 @@ def extract_scalatest_classpath_targets(rule_attr):
 def extract_scala_info(target, ctx, output_groups, **kwargs):
     kind = ctx.rule.kind
     if not kind.startswith("scala_") and not kind.startswith("thrift_"):
-        return None, None
+        return None
 
     SCALA_TOOLCHAIN = "@${rulesetName}//scala:toolchain_type"
 
@@ -103,4 +103,4 @@ def extract_scala_info(target, ctx, output_groups, **kwargs):
 
 
 
-    return result, None
+    return result

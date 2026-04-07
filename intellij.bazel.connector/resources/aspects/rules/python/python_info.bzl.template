@@ -72,11 +72,11 @@ def get_main_module(ctx):
 
 def extract_python_info(target, ctx, output_groups, **kwargs):
     if not py_info_in_target(target):
-        return None, None
+        return None
 
     src_attr = getattr(ctx.rule.attr, "srcs", [])
     if type(src_attr) != "list":
-        return None,None
+        return None
 
     sources = [
         file_location(f)
@@ -152,4 +152,4 @@ def extract_python_info(target, ctx, output_groups, **kwargs):
         main = get_main_file_location(ctx),
         main_module = get_main_module(ctx),
     )
-    return dict(python_target_info = python_target_info), None
+    return dict(python_target_info = python_target_info)

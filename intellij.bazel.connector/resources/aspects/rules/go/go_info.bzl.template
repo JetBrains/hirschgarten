@@ -19,7 +19,7 @@ def is_go_rule_kind(ctx):
 
 def extract_go_info(target, ctx, output_groups, **kwargs):
     if not is_go_rule_kind(ctx):
-        return None, None
+        return None
     extracted_import_path = get_go_import_path(ctx)
     sdk_home_path = _extract_sdk(ctx)
     sources = []
@@ -66,7 +66,7 @@ def extract_go_info(target, ctx, output_groups, **kwargs):
 
     update_sync_output_groups(output_groups, "bazel-sources-go", depset(sources))
 
-    return dict(go_target_info = result), None
+    return dict(go_target_info = result)
 
 def _extract_sdk(ctx):
     go = go_context(ctx)
