@@ -1,7 +1,6 @@
 package org.jetbrains.bazel.tests.combined
 
 import com.intellij.driver.client.Remote
-import com.intellij.driver.client.service
 import com.intellij.driver.sdk.invokeAction
 import com.intellij.driver.sdk.step
 import com.intellij.driver.sdk.ui.components.common.editorTabs
@@ -27,11 +26,11 @@ import com.intellij.tools.ide.performanceTesting.commands.waitForSmartMode
 import org.jetbrains.bazel.data.IdeaBazelCases
 import org.jetbrains.bazel.ideStarter.IdeStarterBaseProjectTest
 import org.jetbrains.bazel.ideStarter.assertSyncSucceeded
+import org.jetbrains.bazel.ideStarter.bazelClean
 import org.jetbrains.bazel.ideStarter.buildAndSync
 import org.jetbrains.bazel.ideStarter.checkIdeaLogForExceptions
 import org.jetbrains.bazel.ideStarter.execute
 import org.jetbrains.bazel.ideStarter.openFile
-import org.jetbrains.bazel.ideStarter.runBazelClean
 import org.jetbrains.bazel.ideStarter.syncBazelProject
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.AfterEach
@@ -92,7 +91,7 @@ class SimpleJavaCombinedTest : IdeStarterBaseProjectTest() {
 
   @Test
   @Order(Integer.MAX_VALUE)
-  fun `bazel clean shouldn't cause red code`() = bazelClean()
+  fun `bazel clean shouldn't cause red code`() = bazelCleanTest()
 
   @AfterAll
   fun closeIde() {
@@ -196,17 +195,10 @@ class SimpleJavaCombinedTest : IdeStarterBaseProjectTest() {
     }
   }
 
-  private fun bazelClean() {
+  private fun bazelCleanTest() {
     withDriver(bgRun) {
       ideFrame {
-        step("Run Bazel clean") {
-          execute { runBazelClean() }
-        }
-        step("VFS refresh") {
-          val virtualFileManager = service<VirtualFileManager>()
-          virtualFileManager.asyncRefresh()
-          waitForIndicators()
-        }
+        bazelClean()
         step("Open SimpleTest.java") {
           openFile("SimpleTest.java")
         }

@@ -892,7 +892,7 @@ internal class AspectBazelProjectMapper(
       targetData.librariesFromToolchains.map { DependencyLabel(it.id) }
     val baseDirectory = bazelPathsResolver.toDirectoryPath(label, repoMapping)
     val languagePlugin = languagePluginsService.getLanguagePlugin(targetData.targetKind.languageClasses) ?: return null
-    val resources = resolveResources(target, languagePlugin, localRepositories)
+    val resources = bazelPathsResolver.resolvePaths(target.jvmTargetInfo.resourcesList, localRepositories)
 
     val targetSources = targetData.sources
 
@@ -949,9 +949,7 @@ internal class AspectBazelProjectMapper(
       )
     }
 
-    val extraSources = languagePlugin.calculateAdditionalSources(target, repoMapping)
-
-    return (sourceItems + generatedSourceItems + extraSources)
+    return (sourceItems + generatedSourceItems)
       .distinctBy { it.path }
       .onEach { if (it.path.notExists()) logNonExistingFile(it.path, target.key.label) }
   }
@@ -959,14 +957,6 @@ internal class AspectBazelProjectMapper(
   private fun logNonExistingFile(file: Path, targetId: String) {
     val message = "target $targetId: $file does not exist."
     logger.warn(message)
-  }
-
-  private fun resolveResources(target: TargetInfo, languagePlugin: LanguagePlugin<*>, localRepositories : LocalRepositoryMapping) : List<Path> {
-    val resources = bazelPathsResolver.resolvePaths(target.jvmTargetInfo.resourcesList, localRepositories)
-    val extraResources = languagePlugin.resolveAdditionalResources(target)
-    return (resources.asSequence() + extraResources)
-      .distinct()
-      .toList()
   }
 
   private fun NonModuleTarget.toBuildTarget(): RawBuildTarget {

@@ -13,6 +13,7 @@ import com.intellij.tools.ide.performanceTesting.commands.takeScreenshot
 import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.data.GoLandBazelCases
 import org.jetbrains.bazel.ideStarter.IdeStarterBaseProjectTest
+import org.jetbrains.bazel.ideStarter.bazelClean
 import org.jetbrains.bazel.ideStarter.navigateToFile
 import org.jetbrains.bazel.ideStarter.syncBazelProject
 import org.jetbrains.bazel.ideStarter.withBazelFeatureFlag
@@ -77,12 +78,17 @@ class GolandSyncTest : IdeStarterBaseProjectTest() {
             takeScreenshot("navigateFromImportReferenceToBuildFileOutsideWorkspace")
           }
 
-          FILES_TO_CHECK_FOR_RED_CODE.forEach {
-            step("Check for red code in file $it") {
-              checkForRedCodeInFile(it)
-              wait(1.seconds)
+          fun checkRedCode() {
+            FILES_TO_CHECK_FOR_RED_CODE.forEach {
+              step("Check for red code in file $it") {
+                checkForRedCodeInFile(it)
+                wait(1.seconds)
+              }
             }
           }
+          checkRedCode()
+          bazelClean()
+          checkRedCode()
         }
       }
   }
