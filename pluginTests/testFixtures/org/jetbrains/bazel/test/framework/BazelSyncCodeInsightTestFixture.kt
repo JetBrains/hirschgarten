@@ -38,7 +38,7 @@ interface BazelSyncCodeInsightTestFixture : CodeInsightTestFixture {
    */
   fun copyBazelTestProject(path: String)
 
-  suspend fun performBazelSync()
+  suspend fun performBazelSync(buildProject: Boolean = false)
 }
 
 fun bazelSyncCodeInsightFixture(
@@ -69,8 +69,8 @@ class BazelSyncCodeInsightTestFixtureImpl(
     return urls.map { it.toURI().toPath() }.first { it.name.startsWith("kotlin-stdlib") }
   }
 
-  override suspend fun performBazelSync() {
-    ProjectSyncTask(project).sync(SecondPhaseSync, buildProject = false)
+  override suspend fun performBazelSync(buildProject: Boolean) {
+    ProjectSyncTask(project).sync(SecondPhaseSync, buildProject = buildProject)
   }
 
   override fun setUp() {

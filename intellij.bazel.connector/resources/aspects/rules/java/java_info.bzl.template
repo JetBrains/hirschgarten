@@ -111,8 +111,8 @@ def extract_java_runtime(target, ctx, output_groups, dep_targets, **kwargs):
 
     has_api_generating_plugins = False
     if JavaPluginInfo in target:
-        java_plugin_info = target[JavaPluginInfo]
-        if len(java_plugin_info.api_generating_plugins.processor_classes.to_list()) > 0:
+        provider = target[JavaPluginInfo]
+        if len(provider.api_generating_plugins.processor_classes.to_list()) > 0:
             has_api_generating_plugins = True
     jvm_target = False
     if provider:
