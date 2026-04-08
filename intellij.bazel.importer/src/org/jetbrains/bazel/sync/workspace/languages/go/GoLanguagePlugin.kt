@@ -3,6 +3,7 @@ package org.jetbrains.bazel.sync.workspace.languages.go
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
+import kotlinx.coroutines.awaitAll
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.commons.BazelPathsResolver
 import org.jetbrains.bazel.commons.LanguageClass
@@ -19,7 +20,6 @@ import org.jetbrains.bsp.protocol.BazelResolveLocalToRemoteResult
 import org.jetbrains.bsp.protocol.BazelResolveRemoteToLocalParams
 import org.jetbrains.bsp.protocol.BazelResolveRemoteToLocalResult
 import org.jetbrains.bsp.protocol.GoBuildTarget
-import org.jetbrains.bsp.protocol.SourceItem
 import java.nio.file.Path
 import java.nio.file.Paths
 
@@ -30,21 +30,6 @@ class GoLanguagePlugin(project: Project, private val bazelPathsResolver: BazelPa
 
   override fun getSupportedLanguages(): Set<LanguageClass> = setOf(LanguageClass.GO)
 
-  override fun calculateAdditionalSources(targetInfo: BspTargetInfo.TargetInfo, repoMapping: RepoMapping): Sequence<SourceItem> {
-    if (!targetInfo.hasGoTargetInfo()) return emptySequence()
-    val localRepositories = repoMapping.getLocalRepositories()
-    return targetInfo.goTargetInfo.generatedSourcesList
-      .asSequence()
-      .map { bazelPathsResolver.resolve(it, localRepositories) }
-      .mapNotNull { outputFilesCache.createOutputFileHardLink(it) }
-      .map {
-        SourceItem(
-          path = it,
-          generated = true,
-        )
-      }
-  }
-
   override suspend fun createBuildTargetData(context: LanguagePluginContext, target: BspTargetInfo.TargetInfo, repoMapping: RepoMapping): GoBuildTarget? {
     if (!target.hasGoTargetInfo()) {
       return null
@@ -54,8 +39,16 @@ class GoLanguagePlugin(project: Project, private val bazelPathsResolver: BazelPa
     return GoBuildTarget(
       sdkHomePath = calculateSdkPath(goTarget.sdkHomePath, localRepositories),
       importPath = goTarget.importPath,
-      generatedSources = goTarget.generatedSourcesList.mapNotNull { bazelPathsResolver.resolve(it, localRepositories) },
-      generatedLibraries = goTarget.generatedLibrariesList.mapNotNull { bazelPathsResolver.resolve(it, localRepositories) },
+      generatedSources = goTarget.generatedSourcesList
+        .map { bazelPathsResolver.resolve(it, localRepositories) }
+        .map { outputFilesCache.createOutputFileHardLinkAsync(it) }
+        .awaitAll()
+        .filterNotNull(),
+      generatedLibraries = goTarget.generatedLibrariesList
+        .map { bazelPathsResolver.resolve(it, localRepositories) }
+        .map { outputFilesCache.createOutputFileHardLinkAsync(it) }
+        .awaitAll()
+        .filterNotNull(),
       libraryLabels = goTarget.libraryLabelsList.mapNotNull { Label.parseOrNull(it) },
     )
   }

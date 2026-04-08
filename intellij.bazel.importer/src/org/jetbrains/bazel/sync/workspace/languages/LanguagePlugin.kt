@@ -9,15 +9,10 @@ import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bsp.protocol.BuildTargetData
 import org.jetbrains.bsp.protocol.SourceItem
-import java.nio.file.Path
 
 @ApiStatus.Internal
 interface LanguagePlugin<BuildTarget : BuildTargetData> {
   fun getSupportedLanguages(): Set<LanguageClass>
-
-  fun calculateAdditionalSources(targetInfo: BspTargetInfo.TargetInfo, repoMapping: RepoMapping): Sequence<SourceItem> = emptySequence()
-
-  fun resolveAdditionalResources(targetInfo: BspTargetInfo.TargetInfo): Sequence<Path> = emptySequence()
 
   fun prepareSync(project: Project, targets: Map<Label, BspTargetInfo.TargetInfo>, workspaceContext: WorkspaceContext, repoMapping: RepoMapping) {}
 

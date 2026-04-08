@@ -45,6 +45,7 @@ import org.jetbrains.bazel.data.BazelProjectConfigurer
 import org.jetbrains.bazel.performanceImpl.FileKindCheck
 import org.jetbrains.bazel.test.compat.IntegrationTestCompat
 import org.jetbrains.bazel.testing.IS_IN_IDE_STARTER_TEST
+import org.jetbrains.bazel.tests.combined.VirtualFileManager
 import org.jetbrains.bazel.tests.ui.expandedTree
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
@@ -264,11 +265,6 @@ fun <T : CommandChain> T.assertEitherFileContentIsEqual(actualRelativePath: Stri
   return this
 }
 
-fun <T : CommandChain> T.runBazelClean(): T {
-  addCommand(CMD_PREFIX + "runBazelClean")
-  return this
-}
-
 fun <T : CommandChain> T.navigateToFile(
   caretLine: Int,
   caretColumn: Int,
@@ -397,4 +393,22 @@ fun getProjectInfoFromSystemProperties(): ProjectInfoSpec {
     isReusable = true,
     configureProjectBeforeUse = ::configureProjectWithHermeticCcToolchain,
   )
+}
+
+fun Driver.bazelClean() {
+  step("Run Bazel clean") {
+    execute(project = null) { it.runBazelClean() }
+  }
+  step("VFS refresh") {
+    val virtualFileManager = service<VirtualFileManager>()
+    virtualFileManager.asyncRefresh()
+    ideFrame {
+      waitForIndicators()
+    }
+  }
+}
+
+private fun <T : CommandChain> T.runBazelClean(): T {
+  addCommand(CMD_PREFIX + "runBazelClean")
+  return this
 }
