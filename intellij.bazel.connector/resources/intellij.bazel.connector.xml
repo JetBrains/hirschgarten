@@ -16,6 +16,7 @@
     <extensionPoint qualifiedName="org.jetbrains.bazel.bepEventHandlerProvider"
                     interface="org.jetbrains.bazel.server.bep.BepEventHandlerProvider"
                     dynamic="true"
+                    area="IDEA_PROJECT"
     />
   </extensionPoints>
 </idea-plugin>

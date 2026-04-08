@@ -50,7 +50,12 @@ class BepServer(
   private val customBepEventHandlers: List<BepEventHandler>
 
   init {
-    val bepEventHandlerContext = BepEventHandlerContext(taskEventsHandler, diagnosticsService)
+    val bepEventHandlerContext = BepEventHandlerContext(
+      parentId = parentId,
+      taskEventsHandler = taskEventsHandler,
+      diagnosticsService = diagnosticsService,
+      bazelPathsResolver = bazelPathsResolver
+    )
     customBepEventHandlers = BepEventHandlerProvider.EP_NAME.extensionList.map { it.create(bepEventHandlerContext) }
   }
 
@@ -69,11 +74,6 @@ class BepServer(
 
       LOGGER.trace("Got event ${event}")
 
-      for (customHandler in customBepEventHandlers) {
-        if (customHandler.handleEvent(event)) {
-          return
-        }
-      }
       handleBuildEventStreamProtosEvent(event)
     }
     catch (e: IOException) {
@@ -82,6 +82,11 @@ class BepServer(
   }
 
   fun handleBuildEventStreamProtosEvent(event: BuildEventStreamProtos.BuildEvent) {
+    for (customHandler in customBepEventHandlers) {
+      if (customHandler.handleEvent(event)) {
+        return
+      }
+    }
     processBuildStartedEvent(event)
     processOptions(event)
     processProgressEvent(event)
