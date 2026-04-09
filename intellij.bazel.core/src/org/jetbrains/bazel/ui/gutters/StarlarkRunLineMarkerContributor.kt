@@ -11,6 +11,7 @@ import com.intellij.psi.util.elementType
 import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.config.isBazelProject
 import org.jetbrains.bazel.label.ResolvedLabel
+import org.jetbrains.bazel.languages.starlark.bazel.BazelFileType
 import org.jetbrains.bazel.languages.starlark.elements.StarlarkTokenTypes
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkElementVisitor
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkFile
@@ -50,6 +51,7 @@ internal class StarlarkRunLineMarkerContributor : RunLineMarkerContributor() {
 
   private fun PsiElement.calculateMarkerInfo(): Info? {
     val virtualFile = containingFile.virtualFile ?: return null
+    if (BazelFileType.ofFileName(virtualFile.name) != BazelFileType.BUILD) return null
     val visitor = StarlarkCallExpressionVisitor()
     this.accept(visitor)
     val ruleName = visitor.ruleName ?: return null
