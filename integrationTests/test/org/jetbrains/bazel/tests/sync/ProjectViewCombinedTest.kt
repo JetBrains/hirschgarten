@@ -1,6 +1,9 @@
 package org.jetbrains.bazel.tests.sync
 
+import com.intellij.driver.sdk.WaitForException
 import com.intellij.driver.sdk.step
+import com.intellij.driver.sdk.ui.components.common.editorTabs
+import com.intellij.driver.sdk.ui.components.common.gutter
 import com.intellij.driver.sdk.ui.components.common.ideFrame
 import com.intellij.driver.sdk.ui.components.elements.popup
 import com.intellij.driver.sdk.wait
@@ -398,6 +401,19 @@ class ProjectViewCombinedTest : IdeStarterBaseProjectTest() {
           clickRunGutterOnLine(4)
           popup().waitOneText("Debug run").click()
           consoleView.waitContainsText("Hello, world!")
+        }
+        step("Check there's no run gutters in MODULE.bazel") {
+          openFile("MODULE.bazel")
+          val gutterIcons =
+            try {
+              editorTabs()
+                .gutter()
+                .getGutterIcons()
+            }
+            catch (_: WaitForException) {
+              emptyList()
+            }
+          check(gutterIcons.isEmpty()) { "Expected no gutter icons in MODULE.bazel, got: $gutterIcons" }
         }
       }
     }
