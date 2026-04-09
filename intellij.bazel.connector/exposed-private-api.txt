@@ -1,2 +1,3 @@
 com/google/devtools/build/lib/buildeventstream/BuildEventStreamProtos$BuildEvent
+org/jetbrains/bazel/commons/BazelPathsResolver
 org/jetbrains/bsp/protocol/TaskId
