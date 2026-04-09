@@ -2,9 +2,12 @@ package org.jetbrains.bazel.server.bep
 
 import com.google.devtools.build.lib.buildeventstream.BuildEventStreamProtos
 import com.intellij.openapi.extensions.ExtensionPointName
+import com.intellij.openapi.project.Project
 import org.jetbrains.annotations.ApiStatus
+import org.jetbrains.bazel.commons.BazelPathsResolver
 import org.jetbrains.bazel.server.diagnostics.DiagnosticsService
 import org.jetbrains.bsp.protocol.BazelTaskEventsHandler
+import org.jetbrains.bsp.protocol.TaskId
 
 /**
  * Allows customizing the behavior of [BepServer.handleEvent].
@@ -20,8 +23,11 @@ interface BepEventHandlerProvider {
 }
 
 class BepEventHandlerContext(
+  val project: Project,
+  val parentId: TaskId,
   val taskEventsHandler: BazelTaskEventsHandler,
   val diagnosticsService: DiagnosticsService,
+  val bazelPathsResolver: BazelPathsResolver,
 )
 
 interface BepEventHandler {
