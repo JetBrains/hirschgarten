@@ -58,6 +58,7 @@ class BepDiagnosticsTest : MockProjectBaseTest() {
         externalAutoloads = emptyList(),
       )
     return BepServer(
+      project = project,
       taskEventsHandler = taskHandler,
       diagnosticsService = DiagnosticsService(workspaceRoot),
       parentId = TaskGroupId("originId").task(""),
@@ -192,14 +193,21 @@ src/build/NotCompiling.java:4: error: cannot find symbol
 
     val server = newBepServer(client)
 
-    val buildStartedEvent = BuildEvent.newBuilder()
-      .setBazelEvent(Any.pack(BuildEventStreamProtos.BuildEvent.newBuilder().build()))
+    val buildEventProto = BuildEventStreamProtos.BuildEvent.newBuilder().build()
+    val buildEvent = BuildEvent.newBuilder()
+      .setBazelEvent(Any.pack(buildEventProto))
       .build()
 
-    server.handleEvent(buildStartedEvent)
-    server.handleEvent(buildStartedEvent)
+    server.handleEvent(buildEvent)
+    server.handleEvent(buildEvent)
 
     handlerCalledTimes shouldBe 2
+    providerCalledTimes shouldBe 1
+
+    server.handleBuildEventStreamProtosEvent(buildEventProto)
+    server.handleBuildEventStreamProtosEvent(buildEventProto)
+
+    handlerCalledTimes shouldBe 4
     providerCalledTimes shouldBe 1
   }
 }

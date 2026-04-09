@@ -1,8 +1,11 @@
 org.jetbrains.bazel.server.bep.BepEventHandler
 - a:handleEvent(com.google.devtools.build.lib.buildeventstream.BuildEventStreamProtos$BuildEvent):Z
 f:org.jetbrains.bazel.server.bep.BepEventHandlerContext
-- <init>(org.jetbrains.bsp.protocol.BazelTaskEventsHandler,org.jetbrains.bazel.server.diagnostics.DiagnosticsService):V
+- <init>(com.intellij.openapi.project.Project,org.jetbrains.bsp.protocol.TaskId,org.jetbrains.bsp.protocol.BazelTaskEventsHandler,org.jetbrains.bazel.server.diagnostics.DiagnosticsService,org.jetbrains.bazel.commons.BazelPathsResolver):V
+- f:getBazelPathsResolver():org.jetbrains.bazel.commons.BazelPathsResolver
 - f:getDiagnosticsService():org.jetbrains.bazel.server.diagnostics.DiagnosticsService
+- f:getParentId():org.jetbrains.bsp.protocol.TaskId
+- f:getProject():com.intellij.openapi.project.Project
 - f:getTaskEventsHandler():org.jetbrains.bsp.protocol.BazelTaskEventsHandler
 org.jetbrains.bazel.server.bep.BepEventHandlerProvider
 - sf:Companion:org.jetbrains.bazel.server.bep.BepEventHandlerProvider$Companion
