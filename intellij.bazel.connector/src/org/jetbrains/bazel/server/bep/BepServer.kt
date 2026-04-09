@@ -9,6 +9,7 @@ import com.google.devtools.build.v1.PublishBuildToolEventStreamResponse
 import com.google.devtools.build.v1.PublishLifecycleEventRequest
 import com.google.protobuf.Empty
 import com.intellij.openapi.diagnostic.logger
+import com.intellij.openapi.project.Project
 import com.intellij.platform.util.progress.RawProgressReporter
 import io.grpc.stub.StreamObserver
 import org.jetbrains.annotations.ApiStatus
@@ -36,6 +37,7 @@ import kotlin.random.Random
 
 @ApiStatus.Internal
 class BepServer(
+  project: Project,
   private val taskEventsHandler: BazelTaskEventsHandler,
   private val diagnosticsService: DiagnosticsService,
   private val parentId: TaskId,
@@ -50,7 +52,7 @@ class BepServer(
   private val customBepEventHandlers: List<BepEventHandler>
 
   init {
-    val bepEventHandlerContext = BepEventHandlerContext(taskEventsHandler, diagnosticsService)
+    val bepEventHandlerContext = BepEventHandlerContext(project, parentId, taskEventsHandler, diagnosticsService, bazelPathsResolver)
     customBepEventHandlers = BepEventHandlerProvider.EP_NAME.extensionList.map { it.create(bepEventHandlerContext) }
   }
 
@@ -68,12 +70,6 @@ class BepServer(
       val event = BuildEventStreamProtos.BuildEvent.parseFrom(buildEvent.bazelEvent.value)
 
       LOGGER.trace("Got event ${event}")
-
-      for (customHandler in customBepEventHandlers) {
-        if (customHandler.handleEvent(event)) {
-          return
-        }
-      }
       handleBuildEventStreamProtosEvent(event)
     }
     catch (e: IOException) {
@@ -82,6 +78,11 @@ class BepServer(
   }
 
   fun handleBuildEventStreamProtosEvent(event: BuildEventStreamProtos.BuildEvent) {
+    for (customHandler in customBepEventHandlers) {
+      if (customHandler.handleEvent(event)) {
+        return
+      }
+    }
     processBuildStartedEvent(event)
     processOptions(event)
     processProgressEvent(event)
