@@ -108,7 +108,6 @@ abstract class IdeStarterBaseProjectTest {
       .propagateSystemProperty("bazel.project.view.file.path")
       .propagateSystemProperty("bazel.enable.log")
       .patchPathVariable()
-      .withKotlinPluginK2()
       .addIdeStarterTestMarker()
       .applyVMOptionsPatch {
         addSystemProperty("JETBRAINS_LICENSE_SERVER", "https://flsv1.labs.jb.gg")
