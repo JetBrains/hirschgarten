@@ -19,6 +19,7 @@ object Constants {
 
   const val WORKSPACE_FILE_NAME: String = "WORKSPACE"
   const val MODULE_BAZEL_FILE_NAME = "MODULE.bazel"
+  const val MODULE_BAZEL_LOCK_FILE_NAME = "MODULE.bazel.lock"
   const val BAZEL_VERSION_FILE_NAME = ".bazelversion"
   const val BAZELISK_VERSION_FILE_NAME = ".bazeliskversion"
   const val BAZELISK_RC_FILE_NAME = ".bazeliskrc"

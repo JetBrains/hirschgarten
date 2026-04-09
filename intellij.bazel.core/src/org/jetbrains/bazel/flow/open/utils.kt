@@ -73,7 +73,7 @@ internal tailrec fun findProjectFolderFromFile(path: Path?): Path? = when {
   // this is to prevent opening a file that is not an acceptable Bazel config file, #BAZEL-1940
   // TODO(Son): figure out how to write a test for it to avoid regression later
   isRegularFile(path) &&
-  !path.hasNameOf(*Constants.WORKSPACE_FILE_NAMES + Constants.BUILD_FILE_NAMES) &&
+  !path.hasNameOf(*Constants.WORKSPACE_FILE_NAMES + Constants.BUILD_FILE_NAMES + Constants.MODULE_BAZEL_LOCK_FILE_NAME) &&
   !path.hasExtensionOf(Constants.PROJECT_VIEW_FILE_EXTENSION) -> null
 
   else -> findProjectFolderFromFile(path.parent)
