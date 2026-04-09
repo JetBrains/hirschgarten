@@ -19,10 +19,14 @@ private class GenericBazelRules : TargetKindProvider {
       TargetKind("scala_library", setOf(LanguageClass.JAVA, LanguageClass.SCALA), RuleType.LIBRARY),
       TargetKind("scala_binary", setOf(LanguageClass.JAVA, LanguageClass.SCALA), RuleType.BINARY),
       TargetKind("scala_test", setOf(LanguageClass.JAVA, LanguageClass.SCALA), RuleType.TEST),
+
       // rules_jvm from IntelliJ monorepo
+      // TODO: remove these target kinds after migrating to rules_kotlin https://youtrack.jetbrains.com/issue/MRI-3218
       TargetKind("jvm_library", setOf(LanguageClass.JAVA, LanguageClass.KOTLIN), RuleType.LIBRARY),
       TargetKind("_jvm_library_jps", setOf(LanguageClass.JAVA, LanguageClass.KOTLIN), RuleType.LIBRARY),
+      TargetKind("_resourcegroup_jps", setOf(LanguageClass.JAVA, LanguageClass.KOTLIN), RuleType.LIBRARY),
       TargetKind("jvm_resources", setOf(LanguageClass.JAVA, LanguageClass.KOTLIN), RuleType.LIBRARY),
+
       TargetKind("go_binary", setOf(LanguageClass.GO), RuleType.BINARY),
       TargetKind("go_test", setOf(LanguageClass.GO), RuleType.TEST),
       TargetKind("go_library", setOf(LanguageClass.GO), RuleType.LIBRARY),
