@@ -1,9 +1,14 @@
 package org.jetbrains.bazel.languages.projectview.completion
 
 import com.intellij.openapi.application.runWriteAction
+import com.intellij.openapi.vfs.refreshAndFindVirtualDirectory
 import com.intellij.platform.backend.workspace.toVirtualFileUrl
 import com.intellij.platform.backend.workspace.workspaceModel
-import com.intellij.testFramework.fixtures.BasePlatformTestCase
+import com.intellij.platform.testFramework.junit5.codeInsight.fixture.codeInsightFixture
+import com.intellij.testFramework.junit5.TestApplication
+import com.intellij.testFramework.junit5.fixture.moduleFixture
+import com.intellij.testFramework.junit5.fixture.projectFixture
+import com.intellij.testFramework.junit5.fixture.tempPathFixture
 import io.kotest.matchers.collections.shouldContainAll
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.collections.shouldNotContain
@@ -13,26 +18,38 @@ import org.jetbrains.bazel.languages.bazelrc.flags.Flag
 import org.jetbrains.bazel.workspace.bazelProjectDirectoriesEntity
 import org.jetbrains.bazel.workspacemodel.entities.BazelProjectDirectoriesEntity
 import org.jetbrains.bazel.workspacemodel.entities.BazelProjectEntitySource
-import org.junit.Before
-import org.junit.Test
-import org.junit.runner.RunWith
-import org.junit.runners.JUnit4
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertNull
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.CsvSource
+import org.junit.jupiter.params.provider.ValueSource
 
-@RunWith(JUnit4::class)
-class ProjectViewSectionItemCompletionContributorTest : BasePlatformTestCase() {
-  @Before
+@TestApplication
+class ProjectViewSectionItemCompletionContributorTest {
+  private val tempDirFixture = tempPathFixture()
+  private val tempDir by tempDirFixture
+
+  private val projectFixture = projectFixture(pathFixture = tempDirFixture, openAfterCreation = true)
+  private val project by projectFixture
+
+  // Module fixture is unused by the test code, but the code insight fixture requires it to work.
+  private val moduleFixture = projectFixture.moduleFixture()
+
+  private val codeInsightFixture by codeInsightFixture(projectFixture, tempDirFixture)
+
+  @BeforeEach
   fun setupRootDir() {
-    val project = myFixture.project
     project.isBazelProject = true
-    project.rootDir = myFixture.tempDirFixture.getFile(".")!!
-    if (myFixture.project.bazelProjectDirectoriesEntity() == null) {
+    project.rootDir = tempDir.refreshAndFindVirtualDirectory()!!
+    if (project.bazelProjectDirectoriesEntity() == null) {
       val workspaceModel = project.workspaceModel
       val workspaceModelUrlManager = workspaceModel.getVirtualFileUrlManager()
       runWriteAction {
         workspaceModel.updateProjectModel("Add bazel project directories entity") { storage ->
           storage.addEntity(
             BazelProjectDirectoriesEntity(
-              myFixture.project.rootDir.toVirtualFileUrl(workspaceModelUrlManager),
+              project.rootDir.toVirtualFileUrl(workspaceModelUrlManager),
               emptyList(),
               emptyList(),
               false,
@@ -47,19 +64,19 @@ class ProjectViewSectionItemCompletionContributorTest : BasePlatformTestCase() {
 
   @Test
   fun `should complete sharding approach variants`() {
-    myFixture.configureByText(".bazelproject", "sharding_approach: <caret>")
-    myFixture.type("a")
+    codeInsightFixture.configureByText(".bazelproject", "sharding_approach: <caret>")
+    codeInsightFixture.type("a")
 
-    val lookups = myFixture.completeBasic().flatMap { it.allLookupStrings }
+    val lookups = codeInsightFixture.completeBasic().flatMap { it.allLookupStrings }
     lookups shouldContainAll listOf("expand_and_shard", "query_and_shard", "shard_only")
   }
 
   @Test
   fun `should complete build flags variants`() {
-    myFixture.configureByText(".bazelproject", "build_flags:\n  <caret>")
-    myFixture.type("action")
+    codeInsightFixture.configureByText(".bazelproject", "build_flags:\n  <caret>")
+    codeInsightFixture.type("action")
 
-    val lookups = myFixture.completeBasic().flatMap { it.allLookupStrings }
+    val lookups = codeInsightFixture.completeBasic().flatMap { it.allLookupStrings }
     val expectedFlags =
       Flag
         .all()
@@ -75,10 +92,10 @@ class ProjectViewSectionItemCompletionContributorTest : BasePlatformTestCase() {
 
   @Test
   fun `should complete sync flags variants`() {
-    myFixture.configureByText(".bazelproject", "sync_flags:\n  <caret>")
-    myFixture.type("b")
+    codeInsightFixture.configureByText(".bazelproject", "sync_flags:\n  <caret>")
+    codeInsightFixture.type("b")
 
-    val lookups = myFixture.completeBasic().flatMap { it.allLookupStrings }
+    val lookups = codeInsightFixture.completeBasic().flatMap { it.allLookupStrings }
     val expectedFlags =
       Flag
         .all()
@@ -94,10 +111,10 @@ class ProjectViewSectionItemCompletionContributorTest : BasePlatformTestCase() {
 
   @Test
   fun `should complete test flags variants`() {
-    myFixture.configureByText(".bazelproject", "test_flags:\n  <caret>")
-    myFixture.type("action")
+    codeInsightFixture.configureByText(".bazelproject", "test_flags:\n  <caret>")
+    codeInsightFixture.type("action")
 
-    val lookups = myFixture.completeBasic().flatMap { it.allLookupStrings }
+    val lookups = codeInsightFixture.completeBasic().flatMap { it.allLookupStrings }
     val expectedFlags =
       Flag
         .all()
@@ -113,10 +130,10 @@ class ProjectViewSectionItemCompletionContributorTest : BasePlatformTestCase() {
 
   @Test
   fun `should complete debug flags variants`() {
-    myFixture.configureByText(".bazelproject", "debug_flags:\n  <caret>")
-    myFixture.type("action")
+    codeInsightFixture.configureByText(".bazelproject", "debug_flags:\n  <caret>")
+    codeInsightFixture.type("action")
 
-    val lookups = myFixture.completeBasic().flatMap { it.allLookupStrings }
+    val lookups = codeInsightFixture.completeBasic().flatMap { it.allLookupStrings }
     val expectedFlags =
       Flag
         .all()
@@ -136,10 +153,10 @@ class ProjectViewSectionItemCompletionContributorTest : BasePlatformTestCase() {
 
   @Test
   fun `should complete python debug flags variants`() {
-    myFixture.configureByText(".bazelproject", "python_debug_flags:\n  <caret>")
-    myFixture.type("action")
+    codeInsightFixture.configureByText(".bazelproject", "python_debug_flags:\n  <caret>")
+    codeInsightFixture.type("action")
 
-    val lookups = myFixture.completeBasic().flatMap { it.allLookupStrings }
+    val lookups = codeInsightFixture.completeBasic().flatMap { it.allLookupStrings }
     val expectedFlags =
       Flag
         .all()
@@ -158,68 +175,105 @@ class ProjectViewSectionItemCompletionContributorTest : BasePlatformTestCase() {
 
   @Test
   fun `should complete build flags variants with existing flag`() {
-    myFixture.configureByText(".bazelproject", "build_flags:\n  --action_cache\n  <caret>")
-    myFixture.type("action")
+    codeInsightFixture.configureByText(".bazelproject", "build_flags:\n  --action_cache\n  <caret>")
+    codeInsightFixture.type("action")
 
-    val lookups = myFixture.completeBasic().flatMap { it.allLookupStrings }
+    val lookups = codeInsightFixture.completeBasic().flatMap { it.allLookupStrings }
     lookups shouldNotContain "--action_cache"
   }
 
   @Test
   fun `should complete boolean sections`() {
-    myFixture.configureByText(".bazelproject", "shard_sync: <caret>")
-    myFixture.type("t")
-    myFixture.completeBasic()
+    codeInsightFixture.configureByText(".bazelproject", "shard_sync: <caret>")
+    codeInsightFixture.type("t")
+    codeInsightFixture.completeBasic()
 
-    myFixture.checkResult("shard_sync: true")
+    codeInsightFixture.checkResult("shard_sync: true")
   }
 
-  @Test
-  fun `should complete directories sections`() {
-    myFixture.addFileToProject("main/BUILD", "some text")
-    myFixture.addFileToProject("module1/BUILD", "some text")
-    myFixture.addFileToProject("module2/src/BUILD", "some text")
+  @ParameterizedTest
+  @ValueSource(strings = ["m", "-m"])
+  fun `should provide completion suggestions in directories section`(incompletePath: String) {
+    // GIVEN
+    codeInsightFixture.addFileToProject("main/BUILD", "some text")
+    codeInsightFixture.addFileToProject("module1/BUILD", "some text")
+    codeInsightFixture.addFileToProject("module2/src/BUILD", "some text")
+    codeInsightFixture.configureByText(".bazelproject", "directories:\n  $incompletePath<caret>")
 
-    myFixture.configureByText(".bazelproject", "directories:\n  <caret>")
-    myFixture.type("m")
-    val lookups = myFixture.completeBasic().flatMap { it.allLookupStrings }
+    // WHEN code completion returned list of suggestions
+    val lookups = codeInsightFixture.completeBasic().flatMap { it.allLookupStrings }
 
+    // THEN
     lookups shouldContainAll listOf("main", "module1", "module2", "module2/src")
   }
 
+  @ParameterizedTest
+  @CsvSource(value = [
+    "rub, ruby",
+    "-rub, -ruby",
+    ".claud, .claude",
+    "-.claud, -.claude",
+  ])
+  fun `should autocomplete paths in directories section`(incompletePath: String, expectedPath: String) {
+    // GIVEN
+    codeInsightFixture.addFileToProject(".claude/README.md", "some text")
+    codeInsightFixture.addFileToProject("ruby/BUILD", "some text")
+    codeInsightFixture.configureByText(".bazelproject", "directories:\n  $incompletePath<caret>")
+
+    // WHEN code completion applied the only suggestion to the file
+    assertNull(codeInsightFixture.completeBasic())
+
+    // THEN
+    codeInsightFixture.checkResult("directories:\n  $expectedPath")
+  }
+
   @Test
-  fun `should complete excluded directories`() {
-    myFixture.addFileToProject("main/BUILD", "some text")
-    myFixture.addFileToProject("module1/BUILD", "some text")
-    myFixture.addFileToProject("module2/src/BUILD", "some text")
+  fun `should not suggest already present directories`() {
+    // GIVEN
+    codeInsightFixture.addFileToProject("js-graphql/BUILD", "some text")
+    codeInsightFixture.addFileToProject("js-test-common/BUILD", "some text")
+    codeInsightFixture.configureByText(
+      ".bazelproject",
+      """
+      directories:
+        js-graphql
+        js-<caret>
+      """.trimIndent()
+    )
 
-    myFixture.configureByText(".bazelproject", "directories:\n  <caret>")
-    myFixture.type("-m")
-    val lookups = myFixture.completeBasic().flatMap { it.allLookupStrings }
+    // WHEN code completion applied the only suggestion to the file
+    assertNull(codeInsightFixture.completeBasic())
 
-    lookups shouldContainAll listOf("-main", "-module1", "-module2", "-module2/src")
+    // THEN
+    codeInsightFixture.checkResult(
+      """
+      directories:
+        js-graphql
+        js-test-common
+      """.trimIndent()
+    )
   }
 
   @Test
   fun `should complete import section`() {
-    myFixture.addFileToProject("subpackage/sub.bazelproject", "")
-    myFixture.addFileToProject("otherDir/module.bazelproject", "")
+    codeInsightFixture.addFileToProject("subpackage/sub.bazelproject", "")
+    codeInsightFixture.addFileToProject("otherDir/module.bazelproject", "")
 
-    myFixture.configureByText(".bazelproject", "import <caret>")
-    myFixture.type("baz")
-    val lookups = myFixture.completeBasic().flatMap { it.allLookupStrings }
+    codeInsightFixture.configureByText(".bazelproject", "import <caret>")
+    codeInsightFixture.type("baz")
+    val lookups = codeInsightFixture.completeBasic().flatMap { it.allLookupStrings }
 
     lookups shouldContainExactlyInAnyOrder listOf("subpackage/sub.bazelproject", "otherDir/module.bazelproject")
   }
 
   @Test
   fun `should complete import run configuration section`() {
-    myFixture.addFileToProject("subpackage/config.xml", "")
-    myFixture.addFileToProject("otherDir/other_config.xml", "")
+    codeInsightFixture.addFileToProject("subpackage/config.xml", "")
+    codeInsightFixture.addFileToProject("otherDir/other_config.xml", "")
 
-    myFixture.configureByText(".bazelproject", "import_run_configurations:\n  <caret>")
-    myFixture.type("x")
-    val lookups = myFixture.completeBasic().flatMap { it.allLookupStrings }
+    codeInsightFixture.configureByText(".bazelproject", "import_run_configurations:\n  <caret>")
+    codeInsightFixture.type("x")
+    val lookups = codeInsightFixture.completeBasic().flatMap { it.allLookupStrings }
 
     lookups shouldContainExactlyInAnyOrder listOf("subpackage/config.xml", "otherDir/other_config.xml")
   }
