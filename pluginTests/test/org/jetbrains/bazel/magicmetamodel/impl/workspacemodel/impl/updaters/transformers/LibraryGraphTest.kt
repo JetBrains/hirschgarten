@@ -185,5 +185,4 @@ private fun mockLibraryItem(id: String, dependencies: List<String>): LibraryItem
     sourceJars = emptyList(),
     mavenCoordinates = null,
     containsInternalJars = false,
-    isLowPriority = false,
   )

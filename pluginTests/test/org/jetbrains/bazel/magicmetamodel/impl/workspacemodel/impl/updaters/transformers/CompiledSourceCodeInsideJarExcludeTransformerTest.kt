@@ -25,7 +25,6 @@ class CompiledSourceCodeInsideJarExcludeTransformerTest {
       sourceJars = listOf(Path("/path/to/sourceJar.jar")),
       mavenCoordinates = null,
       containsInternalJars = true,
-      isLowPriority = false,
     )
 
   private val usualLibrary =
@@ -37,7 +36,6 @@ class CompiledSourceCodeInsideJarExcludeTransformerTest {
       sourceJars = listOf(Path("/path/to/another/sourceJar.jar")),
       mavenCoordinates = null,
       containsInternalJars = false,
-      isLowPriority = false,
     )
 
   @Test

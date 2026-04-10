@@ -55,7 +55,6 @@ class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
         sourceJars = emptyList(),
         classJars = emptyList(),
         mavenCoordinates = null,
-        isLowPriority = false,
       ),
       Library(
         displayName = "lib2",
@@ -63,7 +62,6 @@ class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
         sourceJars = emptyList(),
         classJars = emptyList(),
         mavenCoordinates = null,
-        isLowPriority = false,
       ),
     )
   val testLibrariesByName: Map<String, Library> =

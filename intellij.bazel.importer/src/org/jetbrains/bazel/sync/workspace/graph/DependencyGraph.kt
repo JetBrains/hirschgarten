@@ -14,7 +14,6 @@ class DependencyGraph(
 ) {
   private val idToDirectDependenciesIds = mutableMapOf<Label, Set<Label>>()
   private val idToDirectCompileDependenciesIds = mutableMapOf<Label, Set<Label>>()
-  private val idToReverseDependenciesIds = mutableMapOf<Label, HashSet<Label>>()
   private val idToLazyTransitiveDependencies: Map<Label, Lazy<Set<BspTargetInfo.TargetInfo>>>
   private val rootTargets: MutableSet<Label> = rootTargets.toHashSet()
 
@@ -26,10 +25,6 @@ class DependencyGraph(
 
       idToDirectDependenciesIds[id] = dependencies
       idToDirectCompileDependenciesIds[id] = compile
-
-      dependencies.forEach { dep ->
-        idToReverseDependenciesIds.computeIfAbsent(dep) { hashSetOf() }.add(id)
-      }
 
       if (target.generatorName.isNotEmpty()) {
         val generatorTarget = id.assumeResolved().copy(target = SingleTarget(target.generatorName))
@@ -44,10 +39,6 @@ class DependencyGraph(
     }
     idToLazyTransitiveDependencies = createIdToLazyTransitiveDependenciesMap(idToTargetInfo)
   }
-
-  fun getReverseDependencies(id: Label): Set<Label> = idToReverseDependenciesIds[id].orEmpty()
-
-  fun getReverseDependenciesInfo(id: Label): Set<BspTargetInfo.TargetInfo> = idsToTargetInfo(idToReverseDependenciesIds[id].orEmpty())
 
   private fun createIdToLazyTransitiveDependenciesMap(
     idToTargetInfo: Map<Label, BspTargetInfo.TargetInfo>,

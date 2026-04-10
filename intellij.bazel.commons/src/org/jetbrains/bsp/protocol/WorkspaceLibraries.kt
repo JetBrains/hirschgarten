@@ -14,7 +14,6 @@ data class LibraryItem(
   val sourceJars: List<Path>,
   val mavenCoordinates: MavenCoordinates?,
   val containsInternalJars: Boolean,
-  val isLowPriority: Boolean,
 )
 
 @ApiStatus.Internal

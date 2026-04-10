@@ -40,7 +40,6 @@ val testLibraries: List<Library> =
       sourceJars = emptyList(),
       classJars = emptyList(),
       mavenCoordinates = null,
-      isLowPriority = false,
     ),
     Library(
       displayName = "lib2",
@@ -48,7 +47,6 @@ val testLibraries: List<Library> =
       sourceJars = emptyList(),
       classJars = emptyList(),
       mavenCoordinates = null,
-      isLowPriority = false,
     ),
   )
 val testLibrariesByName: Map<String, Library> =
