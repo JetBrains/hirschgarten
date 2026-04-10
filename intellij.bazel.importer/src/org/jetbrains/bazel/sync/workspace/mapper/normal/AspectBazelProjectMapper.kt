@@ -70,6 +70,7 @@ internal class AspectBazelProjectMapper(
     val label: ResolvedLabel,
     val target: TargetInfo,
     val extraLibraries: Collection<LibraryItem>,
+    val librariesFromToolchains: List<LibraryItem>,
     val targetKind: TargetKind,
     val tags: Set<String>,
     val sources: List<SourceItem>,
@@ -78,6 +79,7 @@ internal class AspectBazelProjectMapper(
 
   fun TargetInfo.toIntermediateData(
     extraLibraries: Map<Label, List<LibraryItem>>,
+    librariesFromToolchains: Map<Label, List<LibraryItem>>,
     repoMapping: RepoMapping,
     targetKinds: Map<Label, TargetKind>,
   ): IntermediateTargetData? {
@@ -88,6 +90,7 @@ internal class AspectBazelProjectMapper(
       label = label,
       target = this,
       extraLibraries = extraLibraries[label] ?: emptyList(),
+      librariesFromToolchains = librariesFromToolchains[label] ?: emptyList(),
       targetKind = targetKind,
       tags = tagsList.toSet(),
       sources = resolveSourceSet(this, languagePlugin, repoMapping).toList(),
@@ -144,7 +147,7 @@ internal class AspectBazelProjectMapper(
       }
     val kotlinStdlibsMapper =
       measure("Create kotlin stdlibs") {
-        calculateKotlinStdlibsMapper(targetsToImport, dependencyGraph, repoMapping)
+        calculateKotlinStdlibsMapper(targetsToImport, repoMapping)
       }
     val scalaLibrariesMapper =
       measure("Create scala libraries") {
@@ -155,14 +158,17 @@ internal class AspectBazelProjectMapper(
         concatenateMaps(
           outputJarsLibraries,
           annotationProcessorLibraries,
-          kotlinStdlibsMapper,
-          scalaLibrariesMapper,
         )
       }
+    val librariesFromToolchains =
+      concatenateMaps(
+        kotlinStdlibsMapper,
+        scalaLibrariesMapper,
+      )
     val librariesFromDepsAndTargets =
       measure("Libraries from targets and deps") {
         createLibraries(workspaceContext, targetsAsLibraries, repoMapping  ) +
-          librariesFromDeps.values
+        (librariesFromDeps.values.asSequence() + librariesFromToolchains.values.asSequence())
             .flatten()
             .distinct()
             .associateBy { it.id }
@@ -178,7 +184,7 @@ internal class AspectBazelProjectMapper(
       measure("Libraries from jdeps") {
         jdepsLibraries(
           targetsToImport.associateBy { it.label() },
-          librariesFromDeps,
+          concatenateMaps(librariesFromDeps, librariesFromToolchains),
           librariesFromDepsAndTargets,
           interfacesAndBinariesFromTargetsToImport,
           repoMapping,
@@ -196,7 +202,7 @@ internal class AspectBazelProjectMapper(
     val targets =
       measure("create intermediate targets") {
         // Use targetsToImport here instead of allTargets here to respect import_depth
-        createIntermediateTargetData(targetsToImport, extraLibraries, repoMapping, targetKinds)
+        createIntermediateTargetData(targetsToImport, extraLibraries, librariesFromToolchains, repoMapping, targetKinds)
       }
 
     val rawTargets = measure("create raw targets") { createRawBuildTargets(targets, repoMapping, dependencyGraph) }
@@ -224,13 +230,14 @@ internal class AspectBazelProjectMapper(
   private suspend fun AspectBazelProjectMapper.createIntermediateTargetData(
     targets: Sequence<TargetInfo>,
     extraLibraries: Map<Label, List<LibraryItem>>,
+    librariesFromToolchains: Map<Label, List<LibraryItem>>,
     repoMapping: RepoMapping,
     targetKinds: Map<Label, TargetKind>,
   ): List<IntermediateTargetData> =
     withContext(Dispatchers.Default) {
       val tasks = targets.map {
         async {
-          it.toIntermediateData(extraLibraries, repoMapping, targetKinds)
+          it.toIntermediateData(extraLibraries, librariesFromToolchains, repoMapping, targetKinds)
         }
       }
 
@@ -302,32 +309,12 @@ internal class AspectBazelProjectMapper(
       .toMap()
   }
 
-  private fun targetsDependingOnKotlinStdlib(targetsToImport: Sequence<TargetInfo>, dependencyGraph: DependencyGraph): Set<Label> {
-    val toProcess = ArrayDeque(targetsToImport.filter { it.kotlinTargetInfo != null }.map { it.label() }.toList())
-    val visited = toProcess.toMutableSet()
-    while (toProcess.isNotEmpty()) {
-      val info = toProcess.removeFirst()
-      for (reverseDep in dependencyGraph.getReverseDependenciesInfo(info)) {
-        val reverseDepLabel = reverseDep.label()
-        if (reverseDepLabel in visited) continue
-        if (!reverseDep.javaCommon.jvmTarget) continue
-        toProcess.add(reverseDepLabel)
-        visited.add(reverseDepLabel)
-      }
-    }
-    return visited
-  }
-
-  private fun calculateKotlinStdlibsMapper(
-    targetsToImport: Sequence<TargetInfo>,
-    dependencyGraph: DependencyGraph,
-    repoMapping: RepoMapping,
-  ): Map<Label, List<LibraryItem>> {
+  private fun calculateKotlinStdlibsMapper(targetsToImport: Sequence<TargetInfo>, repoMapping: RepoMapping): Map<Label, List<LibraryItem>> {
     val projectLevelKotlinStdlibsLibrary = calculateProjectLevelKotlinStdlibsLibrary(targetsToImport, repoMapping)
-    val kotlinDependentTargetsIds = targetsDependingOnKotlinStdlib(targetsToImport, dependencyGraph)
+    val kotlinTargetsIds = targetsToImport.filter { it.hasKotlinTargetInfo() }.map { it.label() }
 
     return projectLevelKotlinStdlibsLibrary
-      ?.let { stdlibsLibrary -> kotlinDependentTargetsIds.associateWith { listOf(stdlibsLibrary) } }
+      ?.let { stdlibsLibrary -> kotlinTargetsIds.associateWith { listOf(stdlibsLibrary) } }
       .orEmpty()
   }
 
@@ -348,9 +335,6 @@ internal class AspectBazelProjectMapper(
         dependencies = emptyList(),
         jars = kotlinStdlibsJars,
         sourceJars = inferredSourceJars,
-        // https://youtrack.jetbrains.com/issue/BAZEL-2284/NotNull-not-applicable-to-type-use#focus=Comments-27-12502660.0-0
-        // Make sure that if the user provides Kotlin stdlib in deps then it overrides the one inferred from rules_kotlin
-        isLowPriority = true,
       )
     } else {
       null
@@ -717,7 +701,6 @@ internal class AspectBazelProjectMapper(
     sourceJars: Set<Path>,
     mavenCoordinates: MavenCoordinates? = null,
     containsInternalJars: Boolean = false,
-    isLowPriority: Boolean = false,
   ): LibraryItem {
     val outputFileHardLinks = BazelOutputFileHardLinks.getInstance(project)
     return LibraryItem(
@@ -728,7 +711,6 @@ internal class AspectBazelProjectMapper(
       sourceJars = outputFileHardLinks.createOutputFileHardLinks(sourceJars),
       mavenCoordinates = mavenCoordinates,
       containsInternalJars = containsInternalJars,
-      isLowPriority = isLowPriority,
     )
   }
 
@@ -907,8 +889,10 @@ internal class AspectBazelProjectMapper(
     val label = targetData.label
     val resolvedDependencies = resolveDirectDependencies(target)
     // https://youtrack.jetbrains.com/issue/BAZEL-983: extra libraries can override some library versions, so they should be put before
-    val (extraLibraries, lowPriorityExtraLibraries) = targetData.extraLibraries.partition { !it.isLowPriority }
-    val directDependencies = extraLibraries.toDependencyLabels() + resolvedDependencies + lowPriorityExtraLibraries.toDependencyLabels()
+    val directDependencies =
+      targetData.extraLibraries.map { DependencyLabel(it.id) } +
+      resolvedDependencies +
+      targetData.librariesFromToolchains.map { DependencyLabel(it.id) }
     val baseDirectory = bazelPathsResolver.toDirectoryPath(label, repoMapping)
     val languagePlugin = languagePluginsService.getLanguagePlugin(targetData.targetKind.languageClasses) ?: return null
     val resources = resolveResources(target, languagePlugin, localRepositories)
@@ -940,8 +924,6 @@ internal class AspectBazelProjectMapper(
       isRuntime = dependencyType == BspTargetInfo.Dependency.DependencyType.RUNTIME,
       exported = exported,
     )
-
-  private fun List<LibraryItem>.toDependencyLabels(): List<DependencyLabel> = this.map { DependencyLabel(it.id) }
 
   private fun resolveSourceSet(target: TargetInfo, languagePlugin: LanguagePlugin<*>, repoMapping: RepoMapping): Sequence<SourceItem> {
     val localRepositories = repoMapping.getLocalRepositories()

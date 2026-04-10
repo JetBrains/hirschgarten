@@ -52,7 +52,7 @@ class ModuleEntityUpdater(
           if (!entityToAdd.isLibraryModule) {
             toModuleDependencyItemModuleDependency(
               LibraryGraph.addLibraryModulePrefix(dependency.id),
-              exported && !libraryDependency.isLowPriority,
+              exported,
               runtime,
             )
           }

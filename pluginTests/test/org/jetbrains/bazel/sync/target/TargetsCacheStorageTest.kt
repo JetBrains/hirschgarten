@@ -11,7 +11,6 @@ import org.jetbrains.bazel.magicmetamodel.formatAsModuleName
 import org.jetbrains.bazel.target.TargetsCacheStorage
 import org.jetbrains.bazel.test.framework.target.TestBuildTargetFactory
 import org.jetbrains.bazel.workspace.model.test.framework.WorkspaceModelBaseTest
-import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.LibraryItem
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
@@ -104,7 +103,6 @@ class TargetsCacheStorageTest : WorkspaceModelBaseTest() {
       sourceJars = emptyList(),
       mavenCoordinates = null,
       containsInternalJars = false,
-      isLowPriority = false,
     )
 
     storage.reset(
