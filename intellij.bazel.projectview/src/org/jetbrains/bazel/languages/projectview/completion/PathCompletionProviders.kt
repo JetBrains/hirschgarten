@@ -10,6 +10,7 @@ import com.intellij.openapi.vfs.VfsUtilCore
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.VirtualFileVisitor
 import com.intellij.psi.util.PsiTreeUtil
+import com.intellij.psi.util.startOffset
 import com.intellij.util.PlatformIcons
 import com.intellij.util.ProcessingContext
 import org.jetbrains.bazel.config.isBazelProject
@@ -58,16 +59,20 @@ internal class DirectoriesCompletionProvider : CompletionProvider<CompletionPara
     if (!project.isBazelProject) return
     val section = PsiTreeUtil.getParentOfType(parameters.position, ProjectViewPsiSection::class.java) ?: return
     val previousValues = section.getItems().map { it.text.trim() }.toSet()
-    val paths = SyncCache.getInstance(project).get(pathsComputable)
-    paths.filter { !previousValues.contains(it) }.forEach {
-      result.addElement(
+    val paths = SyncCache.getInstance(project).get(pathsComputable).filter { !previousValues.contains(it) }
+
+    val resultWithCustomPrefixMatcher = result.withPrefixMatcher(parameters.getPrefix())
+    paths.forEach {
+      resultWithCustomPrefixMatcher.addElement(
         LookupElementBuilder
           .create(it)
-          .withLookupStrings(listOf(it, "-$it"))
-          .withIcon(PlatformIcons.FILE_ICON),
+          .withIcon(PlatformIcons.FILE_ICON)
       )
     }
   }
+
+  private fun CompletionParameters.getPrefix(): String =
+    position.text.take(offset - position.startOffset).removePrefix("-")
 }
 
 internal class FiletypeCompletionProvider(val fileExtension: String) : CompletionProvider<CompletionParameters>() {
