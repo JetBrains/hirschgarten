@@ -1,55 +1,48 @@
 package org.jetbrains.bazel.sync.workspace.mapper.normal
 
 import com.intellij.openapi.application.writeAction
-import com.intellij.openapi.components.Service
-import com.intellij.openapi.components.service
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.getProjectDataPath
-import com.intellij.openapi.util.io.FileUtil
 import com.intellij.openapi.util.io.NioFiles
 import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.openapi.vfs.VfsUtilCore
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.VirtualFileManager
 import com.intellij.openapi.vfs.VirtualFileVisitor
+import com.intellij.openapi.vfs.newvfs.RefreshQueue
 import com.intellij.openapi.vfs.newvfs.impl.NullVirtualFile
 import com.intellij.util.io.createParentDirectories
-import kotlinx.coroutines.Deferred
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.awaitAll
-import kotlinx.coroutines.withContext
 import org.jetbrains.annotations.ApiStatus
+import org.jetbrains.bazel.commons.BazelInfo
 import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.config.rootDir
-import org.jetbrains.bazel.coroutines.BazelCoroutineService
-import org.jetbrains.bazel.sync.ProjectPostSyncHook
+import org.jetbrains.bazel.sync.BazelOutFileHardLinks
 import java.nio.file.Files
 import java.nio.file.Path
 import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.io.path.deleteIfExists
-import kotlin.io.path.deleteRecursively
 import kotlin.io.path.exists
 import kotlin.io.path.getLastModifiedTime
 import kotlin.io.path.relativeTo
 
-@ApiStatus.Internal
-@Service(Service.Level.PROJECT)
-class BazelOutputFileHardLinks(private val project: Project) {
+internal class DefaultBazelOutputFileHardLinks(
+  private val project: Project,
+  private val bazelInfo: BazelInfo
+): BazelOutFileHardLinks {
   private val cacheDir: Path = project.getProjectDataPath("bazel-out-hardlink")
   private val hardLinksDuringSync = ConcurrentHashMap<Path, HardLink>()
-
-  // https://bazel.build/remote/output-directories#layout
-  private var bazelOutputPath: Path? = null
-
-  // TODO: Refactor this class to be part of BazelServerFacade
-  fun setBazelOutputPath(path: Path) {
-    bazelOutputPath = path
-  }
+  private val bazelOutputPath: Path = bazelInfo.outputBase
+  private val syncRunning = AtomicBoolean(false)
 
   private class HardLink(val virtualFile: VirtualFile, val requiresRefresh: Boolean) {
     val isNull: Boolean
       get() = virtualFile == NullVirtualFile.INSTANCE
+
+    companion object {
+      val NULL = HardLink(NullVirtualFile.INSTANCE, false)
+    }
   }
 
   /**
@@ -63,17 +56,17 @@ class BazelOutputFileHardLinks(private val project: Project) {
    *
    * @return the created hard link, [originalFile] itself if it isn't an output file (e.g. a for source file), or `null` if [originalFile] doesn't exist
    */
-  fun createOutputFileHardLink(originalFile: Path): Path? {
+  override fun createOutputFileHardLink(originalFile: Path): Path? {
     if (!BazelFeatureFlags.hardLinkOutputFiles) return originalFile
+    if (!syncRunning.get()) return originalFile
 
     if (!originalFile.exists()) return null
     val file = originalFile.toRealPath()
-    if (file.startsWith(project.rootDir.toNioPath())) return file  // It's a source file, no need to hard link
+    if (file.startsWith(project.rootDir.toNioPath())) return originalFile  // It's a source file, no need to hard link
 
     // Hardlink files only under `bazel-out` directory
-    if (bazelOutputPath == null || !file.startsWith(bazelOutputPath))
-      return file
-    val bazelOutRelativePath = file.relativeTo(bazelOutputPath!!)
+    if (!file.startsWith(bazelOutputPath)) return originalFile
+    val bazelOutRelativePath = file.relativeTo(bazelOutputPath)
 
     /**
      * Don't recreate the hard link unnecessarily to avoid spamming the file watcher (and because creating a link is expensive).
@@ -99,35 +92,33 @@ class BazelOutputFileHardLinks(private val project: Project) {
         HardLink(hardLinkFile, requiresRefresh)
       } catch (e: Throwable) {
         logger.warn("Failed to create hard link for $file", e)
-        HardLink(NullVirtualFile.INSTANCE, false)
+        HardLink.NULL
       }
     }
 
     return hardLink.takeIf { !it.isNull }?.virtualFile?.toNioPath() ?: file
   }
 
-  fun createOutputFileHardLinkAsync(originalFile: Path): Deferred<Path?> {
-    return BazelCoroutineService.getInstance(project).startAsync {
-      withContext(Dispatchers.IO) {
-        createOutputFileHardLink(originalFile)
-      }
-    }
+  override fun onBeforeSync() {
+    syncRunning.set(true)
   }
 
-  suspend fun createOutputFileHardLinks(files: Collection<Path>): List<Path> =
-    files.map { createOutputFileHardLinkAsync(it) }.awaitAll().filterNotNull()
+  override suspend fun onAfterSync(projectModelUpdated: Boolean) {
+    if (syncRunning.compareAndSet(true, false)) {
+      if (!BazelFeatureFlags.hardLinkOutputFiles)
+        return
 
-  private suspend fun onPostSync(environment: ProjectPostSyncHook.ProjectPostSyncHookEnvironment) {
-    hardLinksDuringSync.values.forEach { hardLink ->
-      if (!hardLink.isNull && hardLink.requiresRefresh)
-        hardLink.virtualFile.refresh(false, false)
-    }
+      RefreshQueue.getInstance().refresh(
+        recursive = false,
+        hardLinksDuringSync.values.filter { it.requiresRefresh }.map { it.virtualFile },
+      )
 
-    if (environment.projectModelUpdated) {
-      // If sync failed and project model wasn't updated, the user will still see outputs from the previous sync and code won't be red.
-      deleteUnusedHardLinks()
+      if (projectModelUpdated) {
+        // If sync failed and project model wasn't updated, the user will still see outputs from the previous sync and code won't be red.
+        deleteUnusedHardLinks()
+      }
+      hardLinksDuringSync.clear()
     }
-    hardLinksDuringSync.clear()
   }
 
   private suspend fun deleteUnusedHardLinks() {
@@ -157,25 +148,15 @@ class BazelOutputFileHardLinks(private val project: Project) {
     )
 
     writeAction {
-      toDelete.forEach { it.delete(BazelOutputFileHardLinks) }
+      toDelete.forEach { it.delete(DefaultBazelOutputFileHardLinks) }
     }
 
     // Drop the old directory because the name is changed. Delete this code in 26.2
     NioFiles.deleteRecursively(project.getProjectDataPath("bazelOutputFilesHardLinks"))
   }
 
-  internal class PostSyncHook : ProjectPostSyncHook {
-    override suspend fun onPostSync(environment: ProjectPostSyncHook.ProjectPostSyncHookEnvironment) {
-      if (!BazelFeatureFlags.hardLinkOutputFiles) return
-      getInstance(environment.project).onPostSync(environment)
-    }
-  }
-
   companion object {
-    private val logger = logger<BazelOutputFileHardLinks>()
-
-    @JvmStatic
-    fun getInstance(project: Project): BazelOutputFileHardLinks = project.service()
+    private val logger = logger<DefaultBazelOutputFileHardLinks>()
   }
 }
 

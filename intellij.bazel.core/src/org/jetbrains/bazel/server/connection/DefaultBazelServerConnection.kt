@@ -6,7 +6,6 @@ import org.jetbrains.bazel.bazelrunner.BazelInfoResolver
 import org.jetbrains.bazel.bazelrunner.BazelProcessLauncherProvider
 import org.jetbrains.bazel.bazelrunner.BazelRunner
 import org.jetbrains.bazel.commons.BazelPathsResolver
-import org.jetbrains.bazel.config.FeatureFlagsProvider
 import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.install.EnvironmentCreator
 import org.jetbrains.bazel.languages.bazelversion.psi.BazelVersionLiteral
@@ -21,7 +20,7 @@ import org.jetbrains.bazel.server.sync.BspProjectMapper
 import org.jetbrains.bazel.server.sync.ExecuteService
 import org.jetbrains.bazel.server.sync.ProjectResolver
 import org.jetbrains.bazel.server.sync.firstPhase.FirstPhaseProjectResolver
-import org.jetbrains.bazel.sync.workspace.mapper.normal.BazelOutputFileHardLinks
+import org.jetbrains.bazel.sync.workspace.mapper.normal.DefaultBazelOutputFileHardLinks
 import org.jetbrains.bazel.taskEvents.BazelTaskEventsService
 import org.jetbrains.bazel.workspace.BazelExecutableProvider
 import org.jetbrains.bazel.workspace.WorkspaceContextProvider
@@ -75,7 +74,7 @@ internal class DefaultBazelServerConnection(private val project: Project) : Baze
     val bazelInfo = bazelInfoResolver.resolveBazelInfo(bazelRunner, workspaceContext)
     val bazelPathsResolver = BazelPathsResolver(bazelInfo)
 
-    BazelOutputFileHardLinks.getInstance(project).setBazelOutputPath(bazelInfo.outputBase)
+    val outFileHardLinks = DefaultBazelOutputFileHardLinks(project, bazelInfo)
 
     val executeService =
       ExecuteService(
@@ -102,7 +101,6 @@ internal class DefaultBazelServerConnection(private val project: Project) : Baze
         bazelToolchainManager = bazelToolchainManager,
         bazelBspLanguageExtensionsGenerator = bazelBspLanguageExtensionsGenerator,
         workspaceContext = workspaceContext,
-        featureFlags = FeatureFlagsProvider.getFeatureFlags(project),
         bazelInfo = bazelInfo,
         bazelRunner = bazelRunner,
         bazelPathsResolver = bazelPathsResolver,
@@ -133,6 +131,7 @@ internal class DefaultBazelServerConnection(private val project: Project) : Baze
       workspaceContext = workspaceContext,
       bazelInfo = bazelInfo,
       bazelPathsResolver = bazelPathsResolver,
+      outFileHardLinks = outFileHardLinks,
     )
   }
 }

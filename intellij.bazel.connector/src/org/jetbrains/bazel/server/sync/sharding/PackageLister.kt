@@ -18,9 +18,9 @@ package org.jetbrains.bazel.server.sync.sharding
 import org.jetbrains.bazel.commons.BazelPathsResolver
 import org.jetbrains.bazel.commons.constants.Constants
 import org.jetbrains.bazel.commons.symlinks.BazelSymlinksCalculator
+import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.label.toPath
-import org.jetbrains.bsp.protocol.FeatureFlags
 import java.io.File
 import java.nio.file.Path
 import kotlin.io.path.isDirectory
@@ -38,13 +38,12 @@ internal object PackageLister {
    */
   fun expandPackageTargets(
     pathResolver: BazelPathsResolver,
-    featureFlags: FeatureFlags,
     wildcardPatterns: List<Label>,
   ): Map<Label, List<Label>> {
     val calculatedBazelSymlinks =
       BazelSymlinksCalculator.calculateBazelSymlinksToExclude(
         pathResolver.workspaceRoot(),
-        featureFlags.bazelSymlinksScanMaxDepth,
+        BazelFeatureFlags.symlinkScanMaxDepth,
       )
     return wildcardPatterns
       .filter { it.isRecursive }
@@ -53,14 +52,13 @@ internal object PackageLister {
         if (!dir.isDirectory()) return@mapNotNull null
 
         val expandedTargets = mutableListOf<Label>()
-        traversePackageRecursively(pathResolver, featureFlags, calculatedBazelSymlinks, mutableListOf(dir), expandedTargets)
+        traversePackageRecursively(pathResolver, calculatedBazelSymlinks, mutableListOf(dir), expandedTargets)
         pattern to expandedTargets
       }.toMap()
   }
 
   private tailrec fun traversePackageRecursively(
     pathResolver: BazelPathsResolver,
-    featureFlags: FeatureFlags,
     calculatedBazelSymlinks: Set<Path>,
     dirs: MutableList<Path>,
     output: MutableList<Label>,
@@ -76,7 +74,6 @@ internal object PackageLister {
     }
     traversePackageRecursively(
       pathResolver,
-      featureFlags,
       calculatedBazelSymlinks,
       dirs,
       output,

@@ -16,6 +16,7 @@ import org.jetbrains.bazel.commons.BzlmodRepoMapping
 import org.jetbrains.bazel.commons.RepoMapping
 import org.jetbrains.bazel.commons.RepoMappingDisabled
 import org.jetbrains.bazel.commons.TargetCollection
+import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.info.BspTargetInfo
 import org.jetbrains.bazel.info.BspTargetInfo.TargetInfo
 import org.jetbrains.bazel.label.Canonical
@@ -36,7 +37,6 @@ import org.jetbrains.bazel.server.sync.sharding.BazelBuildTargetSharder
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bazel.workspacecontext.externalRepositoriesTreatedAsInternal
 import org.jetbrains.bsp.protocol.BazelTaskEventsHandler
-import org.jetbrains.bsp.protocol.FeatureFlags
 import org.jetbrains.bsp.protocol.TaskId
 import org.jetbrains.bsp.protocol.asLogger
 import java.nio.file.Path
@@ -57,12 +57,11 @@ private fun TargetCollection.halve(): List<TargetCollection> {
 
 /** Responsible for querying bazel and constructing Project instance  */
 @ApiStatus.Internal
-class ProjectResolver constructor(
+class ProjectResolver(
   private val bazelBspAspectsManager: BazelBspAspectsManager,
   private val bazelToolchainManager: BazelToolchainManager,
   private val bazelBspLanguageExtensionsGenerator: BazelBspLanguageExtensionsGenerator,
   private val workspaceContext: WorkspaceContext,
-  private val featureFlags: FeatureFlags,
   private val bazelInfo: BazelInfo,
   private val bazelRunner: BazelRunner,
   private val bazelPathsResolver: BazelPathsResolver,
@@ -195,7 +194,6 @@ class ProjectResolver constructor(
           externalRulesetNames,
           repoDefinitions,
           bazelInfo.externalAutoloads,
-          featureFlags,
         )
       }
 
@@ -230,14 +228,13 @@ class ProjectResolver constructor(
     val buildAspectResult =
       measured(
         "Building project with aspect",
-      ) { buildProjectWithAspect(workspaceContext, featureFlags, build, targetsToSync, phasedSyncProject, taskId) }
+      ) { buildProjectWithAspect(workspaceContext, build, targetsToSync, phasedSyncProject, taskId) }
 
     return Pair(repoMapping, buildAspectResult)
   }
 
   private suspend fun buildProjectWithAspect(
     workspaceContext: WorkspaceContext,
-    featureFlags: FeatureFlags,
     build: Boolean,
     targetsToSync: TargetCollection,
     phasedSyncProject: PhasedSyncProject?,
@@ -246,7 +243,7 @@ class ProjectResolver constructor(
     coroutineScope {
       val taskLogger = taskEventsHandler.asLogger(taskId)
       val outputGroups = mutableListOf(BSP_INFO_OUTPUT_GROUP, SYNC_ARTIFACT_OUTPUT_GROUP)
-      val languageSpecificOutputGroups = getLanguageSpecificOutputGroups(featureFlags)
+      val languageSpecificOutputGroups = getLanguageSpecificOutputGroups()
       outputGroups.addAll(languageSpecificOutputGroups)
       if (build) {
         outputGroups.add(BUILD_ARTIFACT_OUTPUT_GROUP)
@@ -275,7 +272,6 @@ class ProjectResolver constructor(
               bazelPathsResolver,
               targetsToSync,
               workspaceContext,
-              featureFlags,
               bazelRunner,
               taskLogger,
               phasedSyncProject,
@@ -286,7 +282,7 @@ class ProjectResolver constructor(
           var suggestedTargetShardSize: Int = workspaceContext.targetShardSize
           while (remainingShardedTargetsSpecs.isNotEmpty()) {
             ensureActive()
-            if (featureFlags.bazelShutDownBeforeShardBuild) {
+            if (BazelFeatureFlags.shutDownBeforeShardBuild) {
               // Prevent memory leak by forcing Bazel to shut down before it builds a shard
               // This may cause the build to become slower, but it is necessary, at least before this issue is solved
               // https://github.com/bazelbuild/bazel/issues/19412
@@ -342,8 +338,8 @@ class ProjectResolver constructor(
       return@coroutineScope res
     }
 
-  private fun getLanguageSpecificOutputGroups(featureFlags: FeatureFlags): List<String> =
-    if (featureFlags.isGoSupportEnabled) {
+  private fun getLanguageSpecificOutputGroups(): List<String> =
+    if (BazelFeatureFlags.isGoSupportEnabled) {
       listOf(GO_SOURCE_OUTPUT_GROUP)
     } else {
       emptyList()

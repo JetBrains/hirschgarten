@@ -6,6 +6,7 @@ import org.jetbrains.bazel.commons.BazelRelease
 import org.jetbrains.bazel.commons.RepoMappingDisabled
 import org.jetbrains.bazel.commons.orFallbackVersion
 import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.sync.BazelOutFileHardLinks
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bsp.protocol.AnalysisDebugParams
 import org.jetbrains.bsp.protocol.AnalysisDebugResult
@@ -86,6 +87,9 @@ open class BuildServerMock(
       true,
       emptyList(),
     )
+
+  override val outFileHardLinks: BazelOutFileHardLinks
+    get() = BazelOutFileHardLinks.NONE
 
   override suspend fun workspaceBazelPaths(): WorkspaceBazelPathsResult {
     return WorkspaceBazelPathsResult("/path/to/bazel-bin", "/path/to/bazel-out/exec", BazelPathsResolver(bazelInfo))

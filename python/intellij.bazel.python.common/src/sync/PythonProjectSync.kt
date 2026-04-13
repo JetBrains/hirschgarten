@@ -93,7 +93,7 @@ class PythonProjectSync : ProjectSyncHook {
           sourceDependencyLibrary = sourceDependencyLibrary,
         )
       }
-      environment.project.service<PythonResolveIndexService>().updatePythonResolveIndex(pythonTargets)
+      environment.project.service<PythonResolveIndexService>().updatePythonResolveIndex(pythonTargets, environment.server.outFileHardLinks)
     }
   }
 

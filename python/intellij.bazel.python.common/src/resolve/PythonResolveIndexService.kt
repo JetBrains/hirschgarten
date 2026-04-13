@@ -11,8 +11,8 @@ import org.jetbrains.bazel.commons.LanguageClass
 import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.coroutines.BazelCoroutineService
 import org.jetbrains.bazel.label.ResolvedLabel
+import org.jetbrains.bazel.sync.BazelOutFileHardLinks
 import org.jetbrains.bazel.sync.environment.projectCtx
-import org.jetbrains.bazel.sync.workspace.mapper.normal.BazelOutputFileHardLinks
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.RawBuildTarget
 import org.jetbrains.bsp.protocol.utils.extractPythonBuildTarget
@@ -39,20 +39,21 @@ internal class PythonResolveIndexService(private val project: Project) {
   val resolveIndex: Map<QualifiedName, Path>
     get() = resolveIndexRef.get()
 
-  private val outputFilesCache = BazelOutputFileHardLinks.getInstance(project)
-
   init {
     resolveIndexRef.set(load(project.pyIndexStoragePath()))
   }
 
-  suspend fun updatePythonResolveIndex(pythonTargets: List<RawBuildTarget>) {
-    val cache = buildIndex(pythonTargets)
+  suspend fun updatePythonResolveIndex(pythonTargets: List<RawBuildTarget>, outFilesHardLink: BazelOutFileHardLinks) {
+    val cache = buildIndex(pythonTargets, outFilesHardLink)
 
     resolveIndexRef.set(cache)
     store(project.pyIndexStoragePath(), cache)
   }
 
-  private suspend fun buildIndex(pythonTargets: List<RawBuildTarget>): Map<QualifiedName, Path> {
+  private suspend fun buildIndex(
+    pythonTargets: List<RawBuildTarget>,
+    outFilesHardLink: BazelOutFileHardLinks,
+  ): Map<QualifiedName, Path> {
     val executionRoot = project.projectCtx.bazelExecPath?.let { Path.of(it) } ?: return emptyMap()
     val rootDir = Path.of(project.rootDir.path)
     val bazelBin = project.projectCtx.bazelBinPath?.let { Path.of(it) } ?: return emptyMap()
@@ -112,7 +113,7 @@ internal class PythonResolveIndexService(private val project: Project) {
         val getSourcesRelativePathToAbsolutePath: Map<Path, Path> =
           extractPythonBuildTarget(target)?.generatedSources
               ?.associate { path ->
-                path.toExecRootRelativePath() to (outputFilesCache.createOutputFileHardLink(path) ?: path.toAbsolutePath())
+                path.toExecRootRelativePath() to (outFilesHardLink.createOutputFileHardLink(path) ?: path.toAbsolutePath())
               }
           ?: emptyMap()
         expandPathsToQualifiedNames(importsPaths, sourcesRelativePathToAbsolutePath + getSourcesRelativePathToAbsolutePath)

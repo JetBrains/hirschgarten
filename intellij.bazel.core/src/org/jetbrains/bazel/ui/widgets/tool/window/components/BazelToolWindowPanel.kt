@@ -13,8 +13,8 @@ import com.intellij.openapi.ui.SimpleToolWindowPanel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.jetbrains.bazel.action.SuspendableAction
+import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.config.BazelPluginBundle
-import org.jetbrains.bazel.config.FeatureFlagsProvider
 
 internal fun configureBazelToolWindowToolBar(
   model: BazelTargetsPanelModel,
@@ -32,7 +32,7 @@ internal fun configureBazelToolWindowToolBar(
       add(BazelToolWindowSettingsAction(BazelPluginBundle.message("project.settings.display.name")))
       addSeparator()
       add(actionManager.getAction("Bazel.OpenProjectViewFile"))
-      if (FeatureFlagsProvider.getFeatureFlags(project).isBazelQueryTabEnabled) {
+      if (BazelFeatureFlags.isBazelQueryTabEnabled) {
         addSeparator()
         add(actionManager.getAction("Bazel.OpenBazelQueryToolWindowAction"))
       }

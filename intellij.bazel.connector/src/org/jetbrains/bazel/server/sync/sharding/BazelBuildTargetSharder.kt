@@ -25,7 +25,6 @@ import org.jetbrains.bazel.server.model.PhasedSyncProject
 import org.jetbrains.bazel.server.sync.sharding.WildcardTargetExpander.ExpandedTargetsResult
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bsp.protocol.BazelTaskLogger
-import org.jetbrains.bsp.protocol.FeatureFlags
 import kotlin.math.min
 
 /**
@@ -45,7 +44,6 @@ internal object BazelBuildTargetSharder {
     pathResolver: BazelPathsResolver,
     targets: TargetCollection,
     context: WorkspaceContext,
-    featureFlags: FeatureFlags,
     bazelRunner: BazelRunner,
     taskLogger: BazelTaskLogger,
     firstPhaseProject: PhasedSyncProject?,
@@ -84,7 +82,6 @@ internal object BazelBuildTargetSharder {
             bazelRunner,
             taskLogger,
             context,
-            featureFlags,
           )
         if (expandedTargets.buildResult == BazelStatus.FATAL_ERROR) {
           ShardedTargetsResult(ShardedTargetList(emptyList()), expandedTargets.buildResult)
@@ -118,7 +115,6 @@ internal object BazelBuildTargetSharder {
     bazelRunner: BazelRunner,
     taskLogger: BazelTaskLogger,
     context: WorkspaceContext,
-    featureFlags: FeatureFlags,
   ): ExpandedTargetsResult {
     val wildcardIncludes = includes.filter { it.isWildcard }
     if (wildcardIncludes.isEmpty()) {
@@ -127,7 +123,6 @@ internal object BazelBuildTargetSharder {
     val expandedTargets: Map<Label, List<Label>> =
       WildcardTargetExpander.expandToNonRecursiveWildcardTargets(
         pathsResolver,
-        featureFlags,
         wildcardIncludes,
       )
 

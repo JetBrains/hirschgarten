@@ -1,13 +1,10 @@
 package org.jetbrains.bazel.config
 
-import com.intellij.codeInsight.multiverse.isSharedSourceSupportEnabled
 import com.intellij.openapi.components.service
-import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.registry.Registry
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.annotations.VisibleForTesting
 import org.jetbrains.bazel.sync.environment.BazelApplicationContextService
-import org.jetbrains.bsp.protocol.FeatureFlags
 
 // FIXME: ideally each module should have its own subset of feature flags
 //  central way of specifying feature flags is wrong
@@ -113,19 +110,4 @@ object BazelFeatureFlags {
     }
     return Registry.`is`(key)
   }
-}
-
-@ApiStatus.Internal
-object FeatureFlagsProvider {
-  fun getFeatureFlags(project: Project): FeatureFlags =
-    with(BazelFeatureFlags) {
-      FeatureFlags(
-        isPythonSupportEnabled = isPythonSupportEnabled,
-        isGoSupportEnabled = isGoSupportEnabled,
-        bazelSymlinksScanMaxDepth = symlinkScanMaxDepth,
-        bazelShutDownBeforeShardBuild = shutDownBeforeShardBuild,
-        isSharedSourceSupportEnabled = isSharedSourceSupportEnabled(project),
-        isBazelQueryTabEnabled = isBazelQueryTabEnabled,
-      )
-    }
 }
