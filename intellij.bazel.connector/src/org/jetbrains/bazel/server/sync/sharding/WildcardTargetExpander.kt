@@ -23,7 +23,6 @@ import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.server.sync.sharding.WildcardTargetExpander.ExpandedTargetsResult
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bsp.protocol.BazelTaskLogger
-import org.jetbrains.bsp.protocol.FeatureFlags
 
 /** Expands wildcard target patterns into individual Bazel targets.  */
 internal object WildcardTargetExpander {
@@ -33,12 +32,10 @@ internal object WildcardTargetExpander {
    */
   fun expandToNonRecursiveWildcardTargets(
     pathResolver: BazelPathsResolver,
-    featureFlags: FeatureFlags,
     wildcardIncludes: List<Label>,
   ): Map<Label, List<Label>> =
     PackageLister.expandPackageTargets(
       pathResolver,
-      featureFlags,
       wildcardIncludes,
     )
 

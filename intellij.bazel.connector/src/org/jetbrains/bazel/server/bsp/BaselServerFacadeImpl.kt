@@ -8,6 +8,7 @@ import org.jetbrains.bazel.server.model.AspectSyncProject
 import org.jetbrains.bazel.server.sync.BazelSyncProjectProvider
 import org.jetbrains.bazel.server.sync.BspProjectMapper
 import org.jetbrains.bazel.server.sync.ExecuteService
+import org.jetbrains.bazel.sync.BazelOutFileHardLinks
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bsp.protocol.AnalysisDebugParams
 import org.jetbrains.bsp.protocol.AnalysisDebugResult
@@ -43,6 +44,7 @@ class BaselServerFacadeImpl(
   private val executeService: ExecuteService,
   override val workspaceContext: WorkspaceContext,
   override val bazelInfo: BazelInfo,
+  override val outFileHardLinks: BazelOutFileHardLinks
 ) : BazelServerFacade {
 
   override suspend fun runSync(build: Boolean, taskId: TaskId): WorkspaceBuildTargetsResult {

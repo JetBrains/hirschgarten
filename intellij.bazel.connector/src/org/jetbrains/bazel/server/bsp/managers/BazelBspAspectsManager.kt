@@ -14,11 +14,11 @@ import org.jetbrains.bazel.commons.BzlmodRepoMapping
 import org.jetbrains.bazel.commons.RepoMapping
 import org.jetbrains.bazel.commons.TargetCollection
 import org.jetbrains.bazel.commons.constants.Constants
+import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.server.bep.BepOutput
 import org.jetbrains.bazel.server.bsp.utils.InternalAspectsResolver
 import org.jetbrains.bazel.server.sync.ExecuteService
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
-import org.jetbrains.bsp.protocol.FeatureFlags
 import org.jetbrains.bsp.protocol.TaskId
 import java.io.IOException
 import java.nio.file.Files
@@ -64,7 +64,6 @@ class BazelBspAspectsManager(
     externalRulesetNames: List<String>,
     externalRulesetDefinitions: Map<String, ShowRepoResult?>,
     externalAutoloads: List<String>,
-    featureFlags: FeatureFlags,
   ): List<RulesetLanguage> {
     val httpArchiveUpstreamURLsByCanonicalName = externalRulesetDefinitions.values.mapNotNull { definition -> (definition as? ShowRepoResult.HttpArchiveRepository)?.let { it.name to it.urls }}
     val canonicalRepoByHostLocation = httpArchiveUpstreamURLsByCanonicalName.flatMap  { (k, v) -> v.map { Pair(k, it)}}.associateBy { it.second }.mapValues { (k, v) -> v.first  }
@@ -83,8 +82,8 @@ class BazelBspAspectsManager(
           return@mapNotNull RulesetLanguage(null, language)
         }
         null
-      }.removeDisabledLanguages(featureFlags)
-      .addExternalPythonLanguageIfNeeded(externalRulesetNames, featureFlags)
+      }.removeDisabledLanguages()
+      .addExternalPythonLanguageIfNeeded(externalRulesetNames)
   }
 
   private fun Language.isBundled(externalAutoloads: List<String>): Boolean {
@@ -95,20 +94,19 @@ class BazelBspAspectsManager(
     return (rulesetNames + autoloadHints).any { it in externalAutoloads }
   }
 
-  private fun List<RulesetLanguage>.removeDisabledLanguages(featureFlags: FeatureFlags): List<RulesetLanguage> {
+  private fun List<RulesetLanguage>.removeDisabledLanguages(): List<RulesetLanguage> {
     val disabledLanguages =
       buildSet {
-        if (!featureFlags.isGoSupportEnabled) add(Language.Go)
-        if (!featureFlags.isPythonSupportEnabled) add(Language.Python)
+        if (!BazelFeatureFlags.isGoSupportEnabled) add(Language.Go)
+        if (!BazelFeatureFlags.isPythonSupportEnabled) add(Language.Python)
       }
     return filterNot { it.language in disabledLanguages }
   }
 
   private fun List<RulesetLanguage>.addExternalPythonLanguageIfNeeded(
     externalRulesetNames: List<String>,
-    featureFlags: FeatureFlags,
   ): List<RulesetLanguage> {
-    if (!featureFlags.isPythonSupportEnabled) return this
+    if (!BazelFeatureFlags.isPythonSupportEnabled) return this
     val pythonRulesetName = Language.Python.rulesetNames.firstOrNull { externalRulesetNames.contains(it) } ?: return this
     return this.filterNot { it.language == Language.Python } + RulesetLanguage(ApparentRulesetName(pythonRulesetName), Language.Python)
   }

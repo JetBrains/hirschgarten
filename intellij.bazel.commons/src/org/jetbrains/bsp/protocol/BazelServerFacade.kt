@@ -3,11 +3,16 @@ package org.jetbrains.bsp.protocol
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.commons.BazelInfo
 import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.sync.BazelOutFileHardLinks
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 
 interface BazelServerFacade {
   @get:ApiStatus.Internal
   val bazelInfo: BazelInfo
+
+  @get:ApiStatus.Internal
+  val outFileHardLinks: BazelOutFileHardLinks
+
   val workspaceContext: WorkspaceContext
 
   @ApiStatus.Internal

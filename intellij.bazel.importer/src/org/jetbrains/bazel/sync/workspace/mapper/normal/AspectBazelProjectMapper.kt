@@ -18,6 +18,7 @@ import org.jetbrains.bazel.commons.RepoMappingDisabled
 import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.commons.constants.Constants
 import org.jetbrains.bazel.commons.getLocalRepositories
+import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.info.BspTargetInfo
 import org.jetbrains.bazel.info.BspTargetInfo.ArtifactLocation
 import org.jetbrains.bazel.info.BspTargetInfo.TargetInfo
@@ -29,9 +30,10 @@ import org.jetbrains.bazel.performance.bspTracer
 import org.jetbrains.bazel.server.label.label
 import org.jetbrains.bazel.server.model.generatedSourcesList
 import org.jetbrains.bazel.server.model.sourcesList
+import org.jetbrains.bazel.sync.BazelOutFileHardLinks
+import org.jetbrains.bazel.sync.createOutputFileHardLinks
 import org.jetbrains.bazel.sync.workspace.BazelResolvedWorkspace
 import org.jetbrains.bazel.sync.workspace.graph.DependencyGraph
-import org.jetbrains.bazel.sync.workspace.languages.LanguagePlugin
 import org.jetbrains.bazel.sync.workspace.languages.LanguagePluginContext
 import org.jetbrains.bazel.sync.workspace.languages.LanguagePluginsService
 import org.jetbrains.bazel.sync.workspace.languages.scala.ScalaLanguagePlugin
@@ -39,7 +41,6 @@ import org.jetbrains.bazel.sync.workspace.mapper.BazelResolvedWorkspaceBuilder
 import org.jetbrains.bazel.sync.workspace.targetKind.TargetKindService
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bsp.protocol.BuildTargetTag
-import org.jetbrains.bsp.protocol.FeatureFlags
 import org.jetbrains.bsp.protocol.LibraryItem
 import org.jetbrains.bsp.protocol.MavenCoordinates
 import org.jetbrains.bsp.protocol.RawBuildTarget
@@ -59,6 +60,7 @@ internal class AspectBazelProjectMapper(
   private val languagePluginsService: LanguagePluginsService,
   private val bazelPathsResolver: BazelPathsResolver,
   private val mavenCoordinatesResolver: MavenCoordinatesResolver,
+  private val outFilesHardLink: BazelOutFileHardLinks,
 ) {
   val logger = logger<AspectBazelProjectMapper>()
 
@@ -84,7 +86,6 @@ internal class AspectBazelProjectMapper(
   ): IntermediateTargetData? {
     val label = this.label().assumeResolved()
     val targetKind = targetKinds.getValue(label)
-    val languagePlugin = languagePluginsService.getLanguagePlugin(targetKind.languageClasses) ?: return null
     return IntermediateTargetData(
       label = label,
       target = this,
@@ -92,7 +93,7 @@ internal class AspectBazelProjectMapper(
       librariesFromToolchains = librariesFromToolchains[label] ?: emptyList(),
       targetKind = targetKind,
       tags = tagsList.toSet(),
-      sources = resolveSourceSet(this, languagePlugin, repoMapping).toList(),
+      sources = resolveSourceSet(this, repoMapping).toList(),
       generatorName = generatorName.takeIf { it.isNotEmpty() },
     )
   }
@@ -101,7 +102,6 @@ internal class AspectBazelProjectMapper(
     allTargets: Map<Label, TargetInfo>,
     rootTargets: Set<Label>,
     workspaceContext: WorkspaceContext,
-    featureFlags: FeatureFlags,
     repoMapping: RepoMapping,
     hasError: Boolean,
   ): BazelResolvedWorkspace {
@@ -120,13 +120,13 @@ internal class AspectBazelProjectMapper(
               targetSupportsStrictDeps = { id -> allTargets[id]?.let { targetSupportsStrictDeps(it) } == true },
               isWorkspaceTarget = { id ->
                 allTargets[id]?.let { target ->
-                  target.sourcesList.any() && isWorkspaceTarget(target, repoMapping, featureFlags, workspaceContext)
+                  target.sourcesList.any() && isWorkspaceTarget(target, repoMapping, workspaceContext)
                 } == true
               },
             )
         val (targetsToImport, nonWorkspaceTargets) =
           targetsAtDepth.targets.partition {
-            isWorkspaceTarget(it, repoMapping, featureFlags, workspaceContext)
+            isWorkspaceTarget(it, repoMapping, workspaceContext)
           }
         val (jvmDirectDependencies, nonJvmDirectDependencies) = targetsAtDepth.directDependencies.partition { it.javaCommon.jvmTarget }
         val jvmLibraries = (nonWorkspaceTargets + jvmDirectDependencies).associateBy { it.label() }
@@ -234,14 +234,12 @@ internal class AspectBazelProjectMapper(
     targetKinds: Map<Label, TargetKind>,
   ): List<IntermediateTargetData> =
     withContext(Dispatchers.Default) {
-      val tasks = targets.map {
-        async {
-          it.toIntermediateData(extraLibraries, librariesFromToolchains, repoMapping, targetKinds)
+      targets
+        .map {
+          async {
+            it.toIntermediateData(extraLibraries, librariesFromToolchains, repoMapping, targetKinds)
+          }
         }
-      }
-
-      return@withContext tasks
-        .toList()
         .awaitAll()
         .filterNotNull()
     }
@@ -700,13 +698,12 @@ internal class AspectBazelProjectMapper(
     mavenCoordinates: MavenCoordinates? = null,
     containsInternalJars: Boolean = false,
   ): LibraryItem {
-    val outputFileHardLinks = BazelOutputFileHardLinks.getInstance(project)
     return LibraryItem(
       id = id,
       dependencies = dependencies,
-      ijars = outputFileHardLinks.createOutputFileHardLinks(ijars),
-      jars = outputFileHardLinks.createOutputFileHardLinks(jars),
-      sourceJars = outputFileHardLinks.createOutputFileHardLinks(sourceJars),
+      ijars = outFilesHardLink.createOutputFileHardLinks(ijars),
+      jars = outFilesHardLink.createOutputFileHardLinks(jars),
+      sourceJars = outFilesHardLink.createOutputFileHardLinks(sourceJars),
       mavenCoordinates = mavenCoordinates,
       containsInternalJars = containsInternalJars,
     )
@@ -795,29 +792,22 @@ internal class AspectBazelProjectMapper(
   private fun isWorkspaceTarget(
     target: TargetInfo,
     repoMapping: RepoMapping,
-    featureFlags: FeatureFlags,
     workspaceContext: WorkspaceContext,
   ): Boolean =
     (
       isTargetTreatedAsInternal(target.label().assumeResolved(), repoMapping) &&
-        (
-          shouldImportTargetKind(target.kind) ||
-            target.javaCommon.jvmTarget &&
-            (
-              target.depsCount > 0 ||
-                hasKnownJvmSources(target)
-              )
-          )
-      ) ||
       (
-        featureFlags.isGoSupportEnabled &&
-          target.hasGoTargetInfo() &&
-          hasKnownGoSources(target) ||
-          featureFlags.isPythonSupportEnabled &&
-          target.hasPythonTargetInfo() &&
-          hasKnownPythonSources(target, workspaceContext)
-        ) ||
-      target.hasProtobufTargetInfo()
+        shouldImportTargetKind(target.kind) ||
+        target.javaCommon.jvmTarget &&
+        (
+          target.depsCount > 0 ||
+          hasKnownJvmSources(target)
+        )
+      )
+    ) ||
+    BazelFeatureFlags.isGoSupportEnabled && target.hasGoTargetInfo() && hasKnownGoSources(target) ||
+    BazelFeatureFlags.isPythonSupportEnabled && target.hasPythonTargetInfo() && hasKnownPythonSources(target, workspaceContext) ||
+    target.hasProtobufTargetInfo()
 
   private fun shouldImportTargetKind(kind: String): Boolean = kind in workspaceTargetKinds
 
@@ -896,7 +886,7 @@ internal class AspectBazelProjectMapper(
 
     val targetSources = targetData.sources
 
-    val context = LanguagePluginContext(target, dependencyGraph, repoMapping, targetSources, bazelPathsResolver)
+    val context = LanguagePluginContext(target, dependencyGraph, repoMapping, targetSources, bazelPathsResolver, outFilesHardLink)
     val data = languagePlugin.createBuildTargetData(context, target, repoMapping)
 
     return RawBuildTarget(
@@ -922,30 +912,30 @@ internal class AspectBazelProjectMapper(
       exported = exported,
     )
 
-  private fun resolveSourceSet(target: TargetInfo, languagePlugin: LanguagePlugin<*>, repoMapping: RepoMapping): Sequence<SourceItem> {
+  private fun resolveSourceSet(target: TargetInfo, repoMapping: RepoMapping): Sequence<SourceItem> {
     val localRepositories = repoMapping.getLocalRepositories()
     val sources =
       target.sourcesList
         .asSequence()
-        .map {bazelPathsResolver.resolve(it, localRepositories)}
+        .map { bazelPathsResolver.resolve(it, localRepositories) }
 
     val generatedSources =
       target.generatedSourcesList
         .asSequence()
-        .map {bazelPathsResolver.resolve(it, localRepositories)}
+        .map { bazelPathsResolver.resolve(it, localRepositories) }
         .filter { it.extension != "srcjar" }
 
     val sourceItems = sources.map {
       SourceItem(
         path = bazelPathsResolver.resolve(it),
-        generated = false
+        generated = false,
       )
     }
 
     val generatedSourceItems = generatedSources.map {
       SourceItem(
         path = bazelPathsResolver.resolve(it),
-        generated = true
+        generated = true,
       )
     }
 

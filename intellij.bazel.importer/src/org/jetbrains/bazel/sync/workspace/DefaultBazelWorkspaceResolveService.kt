@@ -3,7 +3,6 @@ package org.jetbrains.bazel.sync.workspace
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
-import org.jetbrains.bazel.config.FeatureFlagsProvider
 import org.jetbrains.bazel.server.connection.BazelServerConnection
 import org.jetbrains.bazel.server.connection.BazelServerService
 import org.jetbrains.bazel.sync.scope.FirstPhaseSync
@@ -28,11 +27,6 @@ internal class DefaultBazelWorkspaceResolveService(private val project: Project)
   val connection: BazelServerConnection
     get() = BazelServerService.getInstance(project).connection
 
-  private val featureFlags = FeatureFlagsProvider.getFeatureFlags(project)
-
-  lateinit var bazelMapper: AspectBazelProjectMapper
-  lateinit var phasedMapper: PhasedBazelProjectMapper
-
   private var state: BazelWorkspaceSyncState = BazelWorkspaceSyncState.NotInitialized
 
   private suspend fun initWorkspace() {
@@ -53,15 +47,6 @@ internal class DefaultBazelWorkspaceResolveService(private val project: Project)
     project
       .service<LanguagePluginsService>()
       .registerDefaultPlugins(paths.bazelPathsResolver, DefaultJvmPackageResolver(), workspaceContext)
-    bazelMapper =
-      AspectBazelProjectMapper(
-        project = project,
-        languagePluginsService = project.service<LanguagePluginsService>(),
-        bazelPathsResolver = paths.bazelPathsResolver,
-        mavenCoordinatesResolver = MavenCoordinatesResolver(),
-      )
-    phasedMapper =
-      PhasedBazelProjectMapper(bazelPathsResolver = paths.bazelPathsResolver, workspaceContext = workspaceContext)
     state = BazelWorkspaceSyncState.Initialized
   }
 
@@ -101,39 +86,49 @@ internal class DefaultBazelWorkspaceResolveService(private val project: Project)
         is BazelWorkspaceSyncState.Synced -> state.bazelProject
       }
 
-    val repoMapping = connection.runWithServer { server -> server.workspaceBazelRepoMapping(taskId) }
     val workspace: BazelResolvedWorkspace =
-      when (scope) {
-        is FirstPhaseSync -> {
-          val buildTargets =
-            connection.runWithServer { server -> server.workspaceBuildPhasedTargets(WorkspaceBuildTargetPhasedParams(taskId)) }
-          val context = PhasedBazelProjectMapperContext(repoMapping.repoMapping)
-          val project =
-            PhasedBazelMappedProject(
-              targets = buildTargets.targets,
+      connection.runWithServer { server ->
+        val repoMapping = server.workspaceBazelRepoMapping(taskId)
+        when (scope) {
+          is FirstPhaseSync -> {
+            val buildTargets = server.workspaceBuildPhasedTargets(WorkspaceBuildTargetPhasedParams(taskId))
+            val context = PhasedBazelProjectMapperContext(repoMapping.repoMapping)
+            val project =
+              PhasedBazelMappedProject(
+                targets = buildTargets.targets,
+                hasError = synced.hasError,
+              )
+            val phasedMapper = PhasedBazelProjectMapper(
+              bazelPathsResolver = server.workspaceBazelPaths().bazelPathsResolver,
+              workspaceContext = server.workspaceContext)
+            phasedMapper.resolveWorkspace(context, project)
+          }
+
+          SecondPhaseSync, is PartialProjectSync -> {
+            val selector =
+              if (scope is PartialProjectSync) {
+                WorkspaceBuildTargetSelector.SpecificTargets(scope.targetsToSync)
+              }
+              else {
+                WorkspaceBuildTargetSelector.AllTargets
+              }
+            val buildTargets = server.workspaceBuildTargets(WorkspaceBuildTargetParams(selector, taskId))
+            val bazelMapper =
+              AspectBazelProjectMapper(
+                project = project,
+                languagePluginsService = project.service<LanguagePluginsService>(),
+                bazelPathsResolver = server.workspaceBazelPaths().bazelPathsResolver,
+                mavenCoordinatesResolver = MavenCoordinatesResolver(),
+                outFilesHardLink = server.outFileHardLinks
+              )
+            bazelMapper.createProject(
+              allTargets = synced.targets,
+              rootTargets = buildTargets.rootTargets,
+              workspaceContext = server.workspaceContext,
+              repoMapping = repoMapping.repoMapping,
               hasError = synced.hasError,
             )
-          phasedMapper.resolveWorkspace(context, project)
-        }
-
-        SecondPhaseSync, is PartialProjectSync -> {
-          val selector =
-            if (scope is PartialProjectSync) {
-              WorkspaceBuildTargetSelector.SpecificTargets(scope.targetsToSync)
-            }
-            else {
-              WorkspaceBuildTargetSelector.AllTargets
-            }
-          val buildTargets = connection.runWithServer { server -> server.workspaceBuildTargets(WorkspaceBuildTargetParams(selector, taskId)) }
-          val workspaceContext = connection.runWithServer { server -> server.workspaceContext }
-          bazelMapper.createProject(
-            allTargets = synced.targets,
-            rootTargets = buildTargets.rootTargets,
-            workspaceContext = workspaceContext,
-            featureFlags = featureFlags,
-            repoMapping = repoMapping.repoMapping,
-            hasError = synced.hasError,
-          )
+          }
         }
       }
     return workspace
