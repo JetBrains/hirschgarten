@@ -60,6 +60,11 @@ internal class BazelHotSwapManager(private val project: Project, private val cor
   ) {
     if (sessions.isEmpty()) return
 
+    // Notify hooks that hotswap is starting
+    HotSwapHook.EP_NAME.extensionList.forEach { hotSwapHook ->
+      hotSwapHook.onHotSwapStarted()
+    }
+
     val tempRoot = Path.of(PathManager.getTempPath())
     val tempDir = createTempDirectory(tempRoot, "class_files_")
     val diff = JarFileManifest.diffJarManifests(oldManifest = oldManifest, newManifest = newManifest)
@@ -73,6 +78,19 @@ internal class BazelHotSwapManager(private val project: Project, private val cor
         .sorted()
         .joinToString("\n"),
     )
+
+    // Report detected files to hooks and service
+    val fileInfoList = diff.perJarModifiedFiles.entrySet().map { entry ->
+      BazelHotSwapFileInfo(
+        jarPath = entry.key,
+        modifiedClasses = entry.value.filter { it.endsWith(".class") }
+          .map { deriveQualifiedClassName(it) }
+      )
+    }
+    HotSwapHook.EP_NAME.extensionList.forEach { hotSwapHook ->
+      hotSwapHook.onHotSwapFilesDetected(fileInfoList)
+    }
+
     if (hotSwapClassFiles.isNotEmpty()) {
       val progress = withContext(Dispatchers.EDT) {
         HotSwapProgressImpl(project)
@@ -94,17 +112,49 @@ internal class BazelHotSwapManager(private val project: Project, private val cor
             }
 
             listener?.onSuccess(sessions)
+
+            // Report success
+            val successStatus = BazelHotSwapStatus(
+              status = BazelHotSwapActionStatus.SUCCESS,
+              changedClassCount = hotSwapClassFiles.size
+            )
+            runBlockingCancellable {
+              HotSwapHook.EP_NAME.extensionList.forEach { hotSwapHook ->
+                hotSwapHook.onHotSwapFinished(successStatus)
+              }
+            }
           },
           progress.progressIndicator,
         )
       }
       catch (e: CancellationException) {
         listener?.onCancel(sessions)
+
+        // Report cancellation
+        val cancelledStatus = BazelHotSwapStatus(
+          status = BazelHotSwapActionStatus.CANCELLED,
+          changedClassCount = hotSwapClassFiles.size,
+          cause = e,
+        )
+        HotSwapHook.EP_NAME.extensionList.forEach { hotSwapHook ->
+          hotSwapHook.onHotSwapFinished(cancelledStatus)
+        }
+
         throw e
       }
       catch (e: Exception) {
         listener?.onFailure(sessions)
         LOG.error("Unable to hotswap", e)
+
+        // Report error
+        val errorStatus = BazelHotSwapStatus(
+          status = BazelHotSwapActionStatus.ERROR,
+          changedClassCount = hotSwapClassFiles.size,
+          cause = e,
+        )
+        HotSwapHook.EP_NAME.extensionList.forEach { hotSwapHook ->
+          hotSwapHook.onHotSwapFinished(errorStatus)
+        }
       }
       finally {
         progress.finished()
@@ -123,6 +173,15 @@ internal class BazelHotSwapManager(private val project: Project, private val cor
         notification.notify(project)
       }
       listener?.onNothingToReload(sessions)
+
+      // Report success with 0 classes (nothing to reload)
+      val upToDateStatus = BazelHotSwapStatus(
+        status = BazelHotSwapActionStatus.SUCCESS,
+        changedClassCount = 0
+      )
+      HotSwapHook.EP_NAME.extensionList.forEach { hotSwapHook ->
+        hotSwapHook.onHotSwapFinished(upToDateStatus)
+      }
     }
   }
 
