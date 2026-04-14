@@ -81,11 +81,6 @@
     <java.programPatcher implementation="org.jetbrains.bazel.java.run.BazelJvmEnvironmentProgramPatcher"/>
     <stepsBeforeRunProvider implementation="org.jetbrains.bazel.jvm.run.KotlinCoroutineLibraryFinderBeforeRunTaskProvider"/>
 
-    <projectService
-      overrides="true"
-      serviceImplementation="org.jetbrains.bazel.java.annotation.BazelExternalAnnotationsManager"
-      serviceInterface="com.intellij.codeInsight.ExternalAnnotationsManager"
-    />
     <runLineMarkerContributor
       implementationClass="org.jetbrains.bazel.java.ui.gutters.BazelJavaRunLineMarkerContributor"
       language="JAVA"
