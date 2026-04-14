@@ -1,6 +1,5 @@
 package org.jetbrains.bazel.languages.projectview
 
-import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.readAction
 import com.intellij.openapi.application.writeAction
 import com.intellij.openapi.progress.runBlockingMaybeCancellable
@@ -9,7 +8,6 @@ import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.VirtualFileManager
 import com.intellij.openapi.vfs.findFile
 import com.intellij.psi.PsiDocumentManager
-import com.intellij.psi.PsiFileFactory
 import com.intellij.psi.PsiManager
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -17,7 +15,6 @@ import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.commons.constants.Constants
 import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.flow.open.ProjectViewFileUtils
-import org.jetbrains.bazel.languages.projectview.base.ProjectViewLanguage
 import org.jetbrains.bazel.languages.projectview.psi.ProjectViewPsiFile
 import org.jetbrains.bazel.settings.bazel.bazelProjectSettings
 
@@ -79,9 +76,7 @@ class DefaultProjectViewService(private val project: Project) : ProjectViewServi
   private suspend fun getDefaultProjectView(): ProjectView {
     return readAction {
       val content = ProjectViewFileUtils.projectViewTemplate(project.rootDir)
-      val psiFile = PsiFileFactory.getInstance(project)
-        .createFileFromText(".bazelproject", ProjectViewLanguage, content) as ProjectViewPsiFile
-      ProjectView.fromProjectViewPsiFile(psiFile)
+      ProjectView.fromProjectViewContent(project, content)
     }
   }
 

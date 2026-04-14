@@ -27,6 +27,7 @@ import org.jetbrains.bazel.languages.projectview.sections.SyncFlagsSection
 import org.jetbrains.bazel.languages.projectview.sections.TargetShardSizeSection
 import org.jetbrains.bazel.languages.projectview.sections.TargetsSection
 import org.jetbrains.bazel.languages.projectview.sections.TestFlagsSection
+import org.jetbrains.bazel.languages.projectview.sections.TestSourcesSection
 import org.jetbrains.bazel.languages.projectview.sections.UseJetBrainsTestRunnerSection
 import java.nio.file.Path
 
@@ -132,3 +133,7 @@ val ProjectView.preferClassJarsOverSourcelessJars: Boolean
 val ProjectView.runConfigRunWithBazel: Boolean
   @ApiStatus.Internal
   get() = getSection(RunConfigRunWithBazelSection.KEY) ?: false
+
+val ProjectView.testSources: List<String>
+  @ApiStatus.Internal
+  get() = getSection(TestSourcesSection.KEY) ?: emptyList()

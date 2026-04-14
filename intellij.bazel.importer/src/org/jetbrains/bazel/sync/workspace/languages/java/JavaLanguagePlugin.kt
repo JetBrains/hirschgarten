@@ -11,7 +11,7 @@ import org.jetbrains.bazel.info.BspTargetInfo
 import org.jetbrains.bazel.info.BspTargetInfo.JvmTargetInfo
 import org.jetbrains.bazel.info.BspTargetInfo.TargetInfo
 import org.jetbrains.bazel.label.Label
-import org.jetbrains.bazel.languages.projectview.ProjectViewService
+import org.jetbrains.bazel.languages.projectview.projectView
 import org.jetbrains.bazel.sync.workspace.languages.JvmPackageResolver
 import org.jetbrains.bazel.sync.workspace.languages.LanguagePlugin
 import org.jetbrains.bazel.sync.workspace.languages.LanguagePluginContext
@@ -48,8 +48,7 @@ class JavaLanguagePlugin internal constructor(
     val ideJavaHomeOverride = workspaceContext.ideJavaHomeOverride
     jdk = ideJavaHomeOverride?.let { Jdk(javaHome = it) } ?: jdkResolver.resolve(targets.values.asSequence(), repoMapping)
 
-    val projectView = ProjectViewService.getInstance(project).getProjectView()
-    cachedJavaSROEnable = projectView.javaSROEnable
+    cachedJavaSROEnable = project.projectView().javaSROEnable
 
     val patterns = JavaSourceRootPatternContributor.ep
       .extensionList
@@ -93,9 +92,7 @@ class JavaLanguagePlugin internal constructor(
 
   override fun transformSources(sources: List<SourceItem>): List<SourceItem> {
     if (cachedJavaSROEnable) {
-      val root = bazelPathsResolver.workspaceRoot()
       val (matched, unmatched) = SourcePatternEval.evalSources(
-        workspaceRoot = root,
         sources = sources,
         includes = cachedSROIncludeMatchers,
         excludes = cachedSROExcludeMatchers,

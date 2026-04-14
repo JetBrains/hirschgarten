@@ -26,6 +26,7 @@ import org.jetbrains.bazel.languages.projectview.sections.SyncFlagsSection
 import org.jetbrains.bazel.languages.projectview.sections.TargetShardSizeSection
 import org.jetbrains.bazel.languages.projectview.sections.TargetsSection
 import org.jetbrains.bazel.languages.projectview.sections.TestFlagsSection
+import org.jetbrains.bazel.languages.projectview.sections.TestSourcesSection
 import org.jetbrains.bazel.languages.projectview.sections.UseJetBrainsTestRunnerSection
 
 @ApiStatus.Internal
@@ -65,6 +66,7 @@ internal class DefaultProjectViewSectionProvider : ProjectViewSectionProvider {
       UseJetBrainsTestRunnerSection(),
       PreferClassJarsOverSourcelessJarsSection(),
       RunConfigRunWithBazelSection(),
+      TestSourcesSection(),
     )
 }
 

@@ -23,6 +23,7 @@ jvm_library(
     "//intellij.bazel.commons:commons",
     "//protobuf",
     "//intellij.bazel.importer:importer",
+    "//intellij.bazel.projectview:projectview",
   ]
 )
 ### auto-generated section `build intellij.bazel.java.sync` end

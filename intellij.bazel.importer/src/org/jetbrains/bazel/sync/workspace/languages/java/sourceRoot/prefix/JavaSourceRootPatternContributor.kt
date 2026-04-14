@@ -3,10 +3,11 @@ package org.jetbrains.bazel.sync.workspace.languages.java.sourceRoot.prefix
 import com.intellij.openapi.extensions.ExtensionPointName
 import com.intellij.openapi.project.Project
 import org.jetbrains.annotations.ApiStatus
+import java.nio.file.Path
 
 @ApiStatus.Internal
 fun interface SourceRootPattern {
-  fun matches(root: String): Boolean
+  fun matches(root: Path): Boolean
 }
 
 @ApiStatus.Internal

@@ -1,25 +1,93 @@
 package org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.transformers
 
 import com.intellij.platform.workspace.jps.entities.SourceRootTypeId
+import com.intellij.testFramework.replaceService
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.shouldBe
 import org.jetbrains.bazel.commons.LanguageClass
 import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.languages.projectview.MockProjectViewService
+import org.jetbrains.bazel.languages.projectview.ProjectViewService
+import org.jetbrains.bazel.workspace.model.test.framework.WorkspaceModelBaseTest
 import org.jetbrains.bazel.workspacemodel.entities.JavaSourceRoot
 import org.jetbrains.bsp.protocol.RawBuildTarget
 import org.jetbrains.bsp.protocol.SourceItem
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import kotlin.io.path.Path
 
 @DisplayName("SourcesItemToWorkspaceModelJavaSourceRootTransformer.transform(sourcesItem)")
-class SourcesItemToJavaSourceRootTransformerTest {
-  private val projectBasePath = Path("")
-  private val projectBasePathURIStr = projectBasePath.toUri().toString()
+class SourcesItemToJavaSourceRootTransformerTest : WorkspaceModelBaseTest() {
+  private lateinit var projectBasePathURIStr: String
+  lateinit var sourcesItemToJavaSourceRootTransformer: SourcesItemToJavaSourceRootTransformer
 
-  private val sourcesItemToJavaSourceRootTransformer = SourcesItemToJavaSourceRootTransformer()
+  @BeforeEach
+  fun setUp() {
+    projectBasePathURIStr = projectBasePath.toUri().toString()
+    val projectViewContent = """
+      test_sources:
+         javatests/*
+         kotlintests/*
+    """.trimIndent()
+    project.replaceService(ProjectViewService::class.java, MockProjectViewService(project, projectViewContent), disposable)
+    sourcesItemToJavaSourceRootTransformer = SourcesItemToJavaSourceRootTransformer(project)
+  }
+
+  @Test
+  fun `should mark sources matching test_sources as test roots`() {
+    // given
+    val rootDir = projectBasePath
+    val matchingSourceItem =
+      SourceItem(
+        path = Path("$rootDir/javatests/package/File.java"),
+        generated = false,
+        jvmPackagePrefix = "package",
+      )
+    val nonMatchingSourceItem =
+      SourceItem(
+        path = Path("$rootDir/test/package/File.java"),
+        generated = false,
+        jvmPackagePrefix = "package",
+      )
+
+    val buildTargetAndSourceItem =
+      RawBuildTarget(
+        Label.parse("target"),
+        emptyList(),
+        TargetKind(
+          kind = "java_library",
+          ruleType = RuleType.LIBRARY,
+          languageClasses = setOf(LanguageClass.JAVA),
+        ),
+        listOf(matchingSourceItem, nonMatchingSourceItem),
+        emptyList(),
+        baseDirectory = Path("base/dir"),
+      )
+
+    // when
+    val javaSources = sourcesItemToJavaSourceRootTransformer.transform(buildTargetAndSourceItem)
+
+    // then
+    val expectedJavaSourceRoot1 =
+      JavaSourceRoot(
+        sourcePath = Path("$rootDir/javatests/package/File.java"),
+        generated = false,
+        packagePrefix = "package",
+        rootType = SourceRootTypeId("java-test"),
+      )
+    val expectedJavaSourceRoot2 =
+      JavaSourceRoot(
+        sourcePath = Path("$rootDir/test/package/File.java"),
+        generated = false,
+        packagePrefix = "package",
+        rootType = SourceRootTypeId("java-source"),
+      )
+
+    javaSources shouldContainExactlyInAnyOrder listOf(expectedJavaSourceRoot1, expectedJavaSourceRoot2)
+  }
 
   @Test
   fun `should return no sources roots for no sources items`() {

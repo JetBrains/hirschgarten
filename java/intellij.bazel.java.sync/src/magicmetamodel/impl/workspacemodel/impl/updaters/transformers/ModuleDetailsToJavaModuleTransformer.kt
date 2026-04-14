@@ -35,6 +35,7 @@ class ModuleDetailsToJavaModuleTransformer(
   private val resourcesItemToJavaResourceRootTransformer = ResourcesItemToJavaResourceRootTransformer()
   private val javaModuleToDummyJavaModulesTransformerHACK =
     JavaModuleToDummyJavaModulesTransformerHACK(projectBasePath, fileToTargets, project)
+  private val sourcesItemToJavaSourceRootTransformer = SourcesItemToJavaSourceRootTransformer(project)
 
   fun transform(inputEntity: ModuleDetails): List<JavaModule> {
     val javaModule =
@@ -74,7 +75,7 @@ class ModuleDetailsToJavaModuleTransformer(
   }
 
   private fun toJavaSourceRoots(inputEntity: ModuleDetails): List<JavaSourceRoot> =
-    SourcesItemToJavaSourceRootTransformer().transform(inputEntity.target)
+    sourcesItemToJavaSourceRootTransformer.transform(inputEntity.target)
 
   private fun toResourceRoots(inputEntity: ModuleDetails): List<ResourceRoot> =
     resourcesItemToJavaResourceRootTransformer.transform(inputEntity.target)

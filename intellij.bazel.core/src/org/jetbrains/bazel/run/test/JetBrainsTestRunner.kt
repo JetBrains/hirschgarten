@@ -4,7 +4,7 @@ import com.intellij.openapi.project.Project
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.annotations.VisibleForTesting
 import org.jetbrains.bazel.config.isBazelProject
-import org.jetbrains.bazel.languages.projectview.ProjectViewService
+import org.jetbrains.bazel.languages.projectview.projectView
 import org.jetbrains.bazel.languages.projectview.useJetBrainsTestRunner
 import org.jetbrains.bazel.run.BazelRunConfigurationState
 import org.jetbrains.bazel.run.state.HasEnv
@@ -25,7 +25,7 @@ fun Project.useJetBrainsTestRunner(): Boolean {
     return false
   }
   if (!isBazelProject) return false
-  return ProjectViewService.getInstance(this).getProjectView().useJetBrainsTestRunner
+  return projectView().useJetBrainsTestRunner
 }
 
 internal fun setTestFilter(project: Project, state: BazelRunConfigurationState<*>, testFilter: String?) {
