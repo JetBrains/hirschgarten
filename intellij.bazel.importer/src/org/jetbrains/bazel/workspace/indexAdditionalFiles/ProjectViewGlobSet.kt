@@ -3,6 +3,9 @@ package org.jetbrains.bazel.workspace.indexAdditionalFiles
 import com.intellij.openapi.fileTypes.FileNameMatcher
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.jps.model.fileTypes.FileNameMatcherFactory
+import java.nio.file.Path
+import kotlin.io.path.invariantSeparatorsPathString
+import kotlin.io.path.relativeToOrNull
 
 /**
  * A list of glob patterns, matching either the filename or the workspace-relative path.
@@ -10,14 +13,30 @@ import org.jetbrains.jps.model.fileTypes.FileNameMatcherFactory
  */
 @ApiStatus.Internal
 class ProjectViewGlobSet {
+  private val rootDir: Path
   private val acceptedFilenames = mutableSetOf<String>()
   private val acceptedExtensions = mutableSetOf<String>()
   private val matchers = mutableListOf<FileNameMatcher>()
 
-  constructor(patterns: List<String>) {
+  constructor(rootDir: Path, patterns: List<String>) {
+    require(rootDir.isAbsolute)
+    this.rootDir = rootDir
     for (pattern in patterns) {
       addPattern(pattern)
     }
+  }
+
+  /**
+   * @param path relative path from [rootDir] or an absolute path
+   */
+  fun matches(path: Path): Boolean {
+    val relativeFromWorkspaceRoot = if (path.isAbsolute) {
+      path.relativeToOrNull(rootDir) ?: return false
+    }
+    else {
+      path
+    }
+    return matches(relativeFromWorkspaceRoot.invariantSeparatorsPathString)
   }
 
   private fun addPattern(pattern: String) {
@@ -43,11 +62,12 @@ class ProjectViewGlobSet {
   }
 
   /**
-   * [path] should use forward slashes /
+   * @param path path from workspace root. The path must use forward slashes /
    */
-  fun matches(path: String): Boolean {
-    if (path.substringAfterLast("/") in acceptedFilenames) return true
-    if (path.substringAfterLast('.', "") in acceptedExtensions) return true
+  private fun matches(path: String): Boolean {
+    val filename = path.substringAfterLast("/")
+    if (filename in acceptedFilenames) return true
+    if (filename.substringAfterLast('.', "") in acceptedExtensions) return true
     return matchers.any { it.acceptsCharSequence(path) }
   }
 }

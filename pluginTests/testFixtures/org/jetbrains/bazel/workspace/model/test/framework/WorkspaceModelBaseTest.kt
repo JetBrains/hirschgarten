@@ -32,14 +32,14 @@ private const val JAVA_SDK_TYPE = "JavaSDK"
 @BazelTestApplication
 abstract class WorkspaceModelBaseTest {
 
-  @TestDisposable
-  lateinit var disposable: Disposable
-
   protected lateinit var workspaceEntityStorageBuilder: MutableEntityStorage
 
   @JvmField
   @RegisterExtension
   protected val projectModel: ProjectModelExtension = ProjectModelExtension()
+
+  @TestDisposable
+  lateinit var disposable: Disposable
 
   @BeforeEach
   protected open fun beforeEach() {

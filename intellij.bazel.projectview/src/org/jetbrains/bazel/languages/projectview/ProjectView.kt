@@ -3,11 +3,14 @@ package org.jetbrains.bazel.languages.projectview
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.resolveFromRootOrRelative
+import com.intellij.psi.PsiFileFactory
 import com.intellij.psi.PsiManager
 import com.intellij.util.concurrency.annotations.RequiresBackgroundThread
 import com.intellij.util.concurrency.annotations.RequiresReadLock
 import org.jetbrains.annotations.ApiStatus
+import org.jetbrains.bazel.commons.constants.Constants
 import org.jetbrains.bazel.config.rootDir
+import org.jetbrains.bazel.languages.projectview.base.ProjectViewLanguage
 import org.jetbrains.bazel.languages.projectview.psi.ProjectViewPsiFile
 import org.jetbrains.bazel.languages.projectview.psi.sections.ProjectViewPsiImport
 import org.jetbrains.bazel.languages.projectview.psi.sections.ProjectViewPsiSection
@@ -46,6 +49,14 @@ data class ProjectView(val sections: Map<SectionKey<*>, Any>, val imports: List<
         .mapNotNull { tryResolveImportFile(file.project, it.path, false) }
         .toList()
       return ProjectView(sections, imports)
+    }
+
+    @RequiresReadLock
+    @RequiresBackgroundThread(generateAssertion = false)
+    fun fromProjectViewContent(project: Project, content: String): ProjectView {
+      val psiFile = PsiFileFactory.getInstance(project)
+        .createFileFromText(Constants.DEFAULT_PROJECT_VIEW_FILE_NAME, ProjectViewLanguage, content) as ProjectViewPsiFile
+      return fromProjectViewPsiFile(psiFile)
     }
 
     private fun collectRawItems(file: ProjectViewPsiFile): List<RawItem> {

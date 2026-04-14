@@ -14,7 +14,7 @@ class SourcePatternEvalTest {
       "root/src/com/jetbrains/bazel/Class3.java",
       "root/excluded_from_pattern/Class4.java",
     )
-    val (matched, unmatched) = SourcePatternEval.evalIdentity(
+    val (matched, unmatched) = SourcePatternEval.eval(
       items = items,
       includes = listOf(Matchers.startsWith("root/src/com/jetbrains")),
       excludes = listOf(Matchers.startsWith("root/excluded_from_pattern")),
@@ -34,7 +34,7 @@ class SourcePatternEvalTest {
   @Test
   fun `test empty items list`() {
     val items = emptyList<String>()
-    val (matched, unmatched) = SourcePatternEval.evalIdentity(
+    val (matched, unmatched) = SourcePatternEval.eval(
       items = items,
       includes = listOf(Matchers.startsWith("root/src")),
       excludes = listOf(Matchers.startsWith("root/excluded")),
@@ -50,7 +50,7 @@ class SourcePatternEvalTest {
       "root/src/com/jetbrains/Class1.java",
       "root/excluded/Class2.java",
     )
-    val (matched, unmatched) = SourcePatternEval.evalIdentity(
+    val (matched, unmatched) = SourcePatternEval.eval(
       items = items,
       includes = emptyList(),
       excludes = listOf(Matchers.startsWith("root/excluded")),
@@ -71,7 +71,7 @@ class SourcePatternEvalTest {
       "root/src/com/jetbrains/Class1.java",
       "root/other/Class2.java",
     )
-    val (matched, unmatched) = SourcePatternEval.evalIdentity(
+    val (matched, unmatched) = SourcePatternEval.eval(
       items = items,
       includes = listOf(Matchers.startsWith("root/src")),
       excludes = emptyList(),
@@ -88,7 +88,7 @@ class SourcePatternEvalTest {
       "root/src/Class2.java",
       "root/src/Class3.java",
     )
-    val (matched, unmatched) = SourcePatternEval.evalIdentity(
+    val (matched, unmatched) = SourcePatternEval.eval(
       items = items,
       includes = listOf(Matchers.startsWith("root/src")),
       excludes = emptyList(),
@@ -104,7 +104,7 @@ class SourcePatternEvalTest {
       "root/excluded/Class1.java",
       "root/excluded/Class2.java",
     )
-    val (matched, unmatched) = SourcePatternEval.evalIdentity(
+    val (matched, unmatched) = SourcePatternEval.eval(
       items = items,
       includes = listOf(Matchers.startsWith("root/excluded")),
       excludes = listOf(Matchers.startsWith("root/excluded")),
@@ -120,7 +120,7 @@ class SourcePatternEvalTest {
       "root/other/Class1.java",
       "root/different/Class2.java",
     )
-    val (matched, unmatched) = SourcePatternEval.evalIdentity(
+    val (matched, unmatched) = SourcePatternEval.eval(
       items = items,
       includes = listOf(Matchers.startsWith("root/src")),
       excludes = emptyList(),
@@ -136,7 +136,7 @@ class SourcePatternEvalTest {
       "root/src/excluded/Class1.java",
       "root/src/included/Class2.java",
     )
-    val (matched, unmatched) = SourcePatternEval.evalIdentity(
+    val (matched, unmatched) = SourcePatternEval.eval(
       items = items,
       includes = listOf(Matchers.startsWith("root/src")),
       excludes = listOf(Matchers.startsWith("root/src/excluded")),
@@ -154,7 +154,7 @@ class SourcePatternEvalTest {
       "root/lib/dependency/Class3.java",
       "root/build/output/Class4.java",
     )
-    val (matched, unmatched) = SourcePatternEval.evalIdentity(
+    val (matched, unmatched) = SourcePatternEval.eval(
       items = items,
       includes = listOf(
         Matchers.startsWith("root/src"),
@@ -183,7 +183,7 @@ class SourcePatternEvalTest {
   @Test
   fun `test single item matching include`() {
     val items = listOf("root/src/Class1.java")
-    val (matched, unmatched) = SourcePatternEval.evalIdentity(
+    val (matched, unmatched) = SourcePatternEval.eval(
       items = items,
       includes = listOf(Matchers.startsWith("root/src")),
       excludes = emptyList(),

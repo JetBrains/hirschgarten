@@ -8,7 +8,7 @@ import com.intellij.openapi.options.SettingsEditor
 import com.intellij.openapi.project.Project
 import com.intellij.util.xmlb.annotations.Attribute
 import org.jetbrains.bazel.config.BazelPluginBundle
-import org.jetbrains.bazel.languages.projectview.ProjectViewService
+import org.jetbrains.bazel.languages.projectview.projectView
 import org.jetbrains.bazel.languages.projectview.runConfigRunWithBazel
 import org.jetbrains.bazel.run.config.BazelRunConfiguration
 import org.jetbrains.bazel.run.state.AbstractGenericRunState
@@ -28,7 +28,7 @@ internal class JvmRunState(project: Project) :
 
   @com.intellij.configurationStore.Property(description = "Run with Bazel")
   @get:Attribute("runWithBazel")
-  override var runWithBazel: Boolean by property(ProjectViewService.getInstance(project).getProjectView().runConfigRunWithBazel)
+  override var runWithBazel: Boolean by property(project.projectView().runConfigRunWithBazel)
 
   override fun getEditor(configuration: BazelRunConfiguration): SettingsEditor<JvmRunState> = JvmRunStateEditor(configuration)
 }

@@ -9,13 +9,11 @@ import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.VirtualFileManager
 import com.intellij.openapi.vfs.findFile
 import com.intellij.psi.PsiDocumentManager
-import com.intellij.psi.PsiFileFactory
 import com.intellij.psi.PsiManager
 import com.intellij.util.concurrency.SynchronizedClearableLazy
 import org.jetbrains.bazel.commons.constants.Constants
 import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.flow.open.ProjectViewFileUtils
-import org.jetbrains.bazel.languages.projectview.base.ProjectViewLanguage
 import org.jetbrains.bazel.languages.projectview.psi.ProjectViewPsiFile
 import org.jetbrains.bazel.settings.bazel.bazelProjectSettings
 
@@ -86,9 +84,7 @@ internal class DefaultProjectViewService(private val project: Project) : Project
   private suspend fun getDefaultProjectView(): ProjectView {
     return readAction {
       val content = ProjectViewFileUtils.projectViewTemplate(project.rootDir)
-      val psiFile = PsiFileFactory.getInstance(project)
-        .createFileFromText(".bazelproject", ProjectViewLanguage, content) as ProjectViewPsiFile
-      ProjectView.fromProjectViewPsiFile(psiFile)
+      ProjectView.fromProjectViewContent(project, content)
     }
   }
 

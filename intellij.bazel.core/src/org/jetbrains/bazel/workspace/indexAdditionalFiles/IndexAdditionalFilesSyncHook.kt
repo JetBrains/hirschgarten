@@ -5,6 +5,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VfsUtilCore
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.VirtualFileVisitor
+import com.intellij.openapi.vfs.toNioPathOrNull
 import com.intellij.platform.backend.workspace.WorkspaceModel
 import com.intellij.platform.backend.workspace.toVirtualFileUrl
 import com.intellij.platform.backend.workspace.virtualFile
@@ -69,7 +70,10 @@ private class IndexAdditionalFilesSyncHook : ProjectSyncHook {
       return emptyList()
     }
     val indexAdditionalFilesGlob =
-      ProjectViewGlobSet(workspaceContext.indexAdditionalFilesInDirectories + INDEX_ADDITIONAL_FILES_DEFAULT)
+      ProjectViewGlobSet(
+        environment.project.rootDir.toNioPath(),
+        workspaceContext.indexAdditionalFilesInDirectories + INDEX_ADDITIONAL_FILES_DEFAULT,
+      )
 
     val includedRoots = projectDirectoriesEntity.includedRoots.mapNotNull { it.virtualFile }
     val excludedRoots = projectDirectoriesEntity.excludedRoots.mapNotNullTo(hashSetOf()) { it.virtualFile }
@@ -103,8 +107,7 @@ private class IndexAdditionalFilesSyncHook : ProjectSyncHook {
             if (file in excludedRoots || file in contentRoots) return SKIP_CHILDREN
             if (!visited.add(file)) return SKIP_CHILDREN
             if (file.isDirectory) return CONTINUE
-            val relativePath = VfsUtilCore.getRelativePath(file, rootDir)
-            if (relativePath != null && indexAdditionalFilesGlob.matches(relativePath)) {
+            if (file.toNioPathOrNull()?.let { indexAdditionalFilesGlob.matches(it) } == true) {
               indexAdditionalFiles.add(file)
             }
             return CONTINUE

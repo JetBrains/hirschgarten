@@ -15,3 +15,6 @@ interface ProjectViewService {
     fun getInstance(project: Project): ProjectViewService = project.getService(ProjectViewService::class.java)
   }
 }
+
+@ApiStatus.Internal
+fun Project.projectView(): ProjectView = ProjectViewService.getInstance(this).getProjectView()
