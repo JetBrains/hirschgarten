@@ -69,6 +69,10 @@ message JavaToolchainInfo {
   ArtifactLocation boot_classpath_java_home = 4;
 }
 
+message JavaRuntimeInfo {
+  ArtifactLocation java_home = 1;
+}
+
 message ScalaTargetInfo {
   repeated string scalac_opts = 1;
   repeated ArtifactLocation compiler_classpath = 2;
@@ -145,6 +149,7 @@ message TargetInfo {
   JavaProviderInfo java_provider = 1008;
   JavaCommonInfo java_common = 1007;
   JavaToolchainInfo java_toolchain_info = 2000;
+  JavaRuntimeInfo java_runtime_info = 3000;
   ScalaTargetInfo scala_target_info = 4000;
   KotlinTargetInfo kotlin_target_info = 7000;
   PythonTargetInfo python_target_info = 8000;
