@@ -53,9 +53,9 @@ def extract_java_toolchain(target, ctx, **kwargs):
 
     if toolchain_info != None:
         result = dict(java_toolchain_info = toolchain_info)
-        return result
+        return result, result
     else:
-        return None
+        return None, None
 
 def get_jdeps(target): 
     if JavaInfo in target:
@@ -124,4 +124,4 @@ def extract_java_runtime(target, ctx, output_groups, dep_targets, **kwargs):
             has_api_generating_plugins = has_api_generating_plugins
         )
 
-    return info_result
+    return info_result, None
