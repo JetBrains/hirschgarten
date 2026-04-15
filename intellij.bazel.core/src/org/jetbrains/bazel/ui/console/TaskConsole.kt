@@ -9,6 +9,7 @@ import com.intellij.build.events.BuildEvent
 import com.intellij.build.events.EventResult
 import com.intellij.build.events.MessageEvent
 import com.intellij.build.events.OutputBuildEvent
+import com.intellij.build.events.StartBuildEvent
 import com.intellij.build.events.impl.FailureResultImpl
 import com.intellij.build.events.impl.FileMessageEventImpl
 import com.intellij.build.events.impl.FinishBuildEventImpl
@@ -16,8 +17,6 @@ import com.intellij.build.events.impl.FinishEventImpl
 import com.intellij.build.events.impl.MessageEventImpl
 import com.intellij.build.events.impl.OutputBuildEventImpl
 import com.intellij.build.events.impl.ProgressBuildEventImpl
-import com.intellij.build.events.impl.StartBuildEventImpl
-import com.intellij.build.events.impl.SuccessResultImpl
 import com.intellij.execution.ui.ConsoleView
 import com.intellij.execution.ui.ConsoleViewContentType
 import com.intellij.icons.AllIcons
@@ -92,7 +91,7 @@ abstract class BaseTaskConsole(
     redoAction: (suspend () -> Unit)?,
     showConsole: ShowConsole,
   ) {
-    val taskDescriptor = DefaultBuildDescriptor(taskId, title, basePath, System.currentTimeMillis())
+    val taskDescriptor = DefaultBuildDescriptor(taskId, taskId.taskGroupId, title, basePath, System.currentTimeMillis())
     when (showConsole) {
       ShowConsole.ALWAYS -> {
         taskDescriptor.isActivateToolWindowWhenAdded = true
@@ -112,7 +111,7 @@ abstract class BaseTaskConsole(
     addRedoActionToDescriptor(taskDescriptor, redoAction)
     addCancelActionToDescriptor(taskId, taskDescriptor, cancelAction)
     addPtyToDescriptor(taskId, taskDescriptor)
-    val startEvent = StartBuildEventImpl(taskDescriptor, message)
+    val startEvent = StartBuildEvent.builder(message, taskDescriptor).build()
     taskView.onEvent(taskId, startEvent)
   }
 

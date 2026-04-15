@@ -111,20 +111,31 @@ class BazelFileEventListener : BulkFileListenerBackgroundable {
     if (!shouldStartProcessing)
       return false
 
-    val taskId = TaskGroupId("file-event-" + Random.nextBytes(8).toHexString()).task("")
-    val processingJob = BazelCoroutineService.getInstance(project).startAsync(true) {
-      delay(PROCESSING_DELAY)
-      do {
-        val processed = queueController.withNextBatch { batch ->
-          try {
-            processEventQueue(project, batch, taskId)
-          } catch (ex: Throwable) {
-            if (ex !is CancellationException)
-              logger.error(ex)
-            throw ex
+    val jobManager = FileEventJobManager.getInstance(project)
+    val taskGroupId = jobManager.syncTaskGroupId ?: TaskGroupId("file-event-" + Random.nextBytes(8).toHexString())
+    val taskId = taskGroupId.task("file-event-processing")
+    val processingJob = jobManager.runFileEventsProcessing {
+      BazelCoroutineService.getInstance(project).startAsync(true) {
+        delay(PROCESSING_DELAY)
+        do {
+          val processed = queueController.withNextBatch { batch ->
+            try {
+              processEventQueue(project, batch, taskId)
+            }
+            catch (ex: Throwable) {
+              if (ex !is CancellationException)
+                logger.error(ex)
+              throw ex
+            }
           }
         }
-      } while (processed)
+        while (processed)
+      }
+    }
+
+    if (processingJob == null) {
+      queueController.clearAllEvents()
+      return false
     }
 
     // no need to start sync console task if no Bazel processing is allowed

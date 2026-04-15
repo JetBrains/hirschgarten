@@ -45,6 +45,12 @@ internal class FileEventQueueController {
     return true
   }
 
+  fun clearAllEvents() {
+    synchronized(this) {
+      eventQueue.clear()
+    }
+  }
+
   companion object {
     @JvmStatic
     fun getInstance(project: Project): FileEventQueueController = project.service()
