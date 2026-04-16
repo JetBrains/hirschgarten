@@ -6,12 +6,19 @@ import com.intellij.openapi.util.TextRange
 import com.intellij.openapi.vfs.VfsUtilCore
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.isFile
+import com.intellij.psi.ElementManipulators
 import com.intellij.psi.PsiElement
+import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiReferenceBase
 import com.intellij.util.PlatformIcons
+import com.intellij.util.containers.reverse
 import org.jetbrains.bazel.commons.constants.Constants.BUILD_FILE_NAMES
 import org.jetbrains.bazel.config.isBazelProject
+import org.jetbrains.bazel.label.Canonical
 import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.label.Package
+import org.jetbrains.bazel.label.ResolvedLabel
+import org.jetbrains.bazel.label.SingleTarget
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkCallExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkListLiteralExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkStringLiteralExpression
@@ -21,9 +28,14 @@ import org.jetbrains.bazel.languages.starlark.psi.expressions.getCompletionLooku
 import org.jetbrains.bazel.languages.starlark.psi.functions.StarlarkArgumentList
 import org.jetbrains.bazel.languages.starlark.psi.statements.StarlarkFilenameLoadValue
 import org.jetbrains.bazel.languages.starlark.psi.statements.StarlarkLoadStatement
+import org.jetbrains.bazel.languages.starlark.rename.StarlarkStringLiteralManipulator
+import org.jetbrains.bazel.languages.starlark.repomapping.findContainingBazelRepo
 import org.jetbrains.bazel.languages.starlark.repomapping.toShortString
 import org.jetbrains.bazel.target.targetUtils
+import org.jetbrains.bazel.workspace.canonicalRepoNameToPath
 import org.jetbrains.kotlin.psi.psiUtil.getParentOfType
+import kotlin.io.path.Path
+import kotlin.io.path.relativeToOrNull
 
 // Tested in ExternalRepoResolveTest
 internal class BazelLabelReference(element: StarlarkStringLiteralExpression, soft: Boolean) :
@@ -45,6 +57,44 @@ internal class BazelLabelReference(element: StarlarkStringLiteralExpression, sof
     if (isUseExtensionArgument()) return loadFilenameCompletion()
 
     return emptyArray()
+  }
+
+  override fun bindToElement(element: PsiElement): PsiElement? {
+    val file = (element as? PsiFile)?.virtualFile ?: return null
+    val filePath = Path(file.path)
+    val repo = findContainingBazelRepo(file) ?: return null
+    val repoPath = Path(repo.path)
+    val packagePath = findPackagePathForFileInRepo(file, repo) ?: return null
+
+    val packageName = packagePath.relativeToOrNull(repoPath) ?: return null
+    val targetName = filePath.relativeToOrNull(packagePath) ?: return null
+    val label =
+      ResolvedLabel(
+        repo = Canonical.createCanonicalOrMain(element.project.canonicalRepoNameToPath.reverse()[repoPath] ?: return null),
+        packagePath = Package(packageName.toString().split("/")),
+        target = SingleTarget(targetName.toString()),
+      )
+
+    val range = StarlarkStringLiteralManipulator().getRangeInElement(this.element)
+    val newContent = label.toShortString(element.project)
+    return ElementManipulators.getManipulator(this.element)?.handleContentChange(this.element, range, newContent)
+  }
+
+  override fun handleElementRename(newElementName: String): PsiElement {
+    val newContent = buildNewLabelContent(element.getStringContents(), newElementName)
+    val range = ElementManipulators.getValueTextRange(element)
+    return ElementManipulators.getManipulator(element)?.handleContentChange(element, range, newContent) ?: element
+  }
+
+  private fun buildNewLabelContent(oldContent: String, newFilename: String): String {
+    val label = Label.parseOrNull(oldContent)
+    val fileNameIndex =
+      if (label != null && oldContent.contains(":")) {
+        oldContent.lastIndexOf(':') + 1 + label.target.toString().lastIndexOf('/')
+      } else {
+        oldContent.lastIndexOf('/')
+      }
+    return if (fileNameIndex >= 0) oldContent.take(fileNameIndex + 1) + newFilename else newFilename
   }
 
   // Checks whether it is the value of "src", "srcs" or "hdrs".

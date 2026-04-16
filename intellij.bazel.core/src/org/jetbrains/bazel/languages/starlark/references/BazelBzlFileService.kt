@@ -14,6 +14,7 @@ import org.jetbrains.bazel.label.SingleTarget
 import org.jetbrains.bazel.sync.SyncCache
 import org.jetbrains.bazel.workspace.canonicalRepoNameToPath
 import org.jetbrains.bazel.workspace.excludedRoots
+import java.nio.file.Path
 import kotlin.io.path.relativeToOrNull
 
 @ApiStatus.Internal
@@ -38,23 +39,28 @@ private fun calculateApparentRepoNameToFiles(project: Project): Map<String, List
 
   for ((canonicalName, repoPath) in project.canonicalRepoNameToPath) {
     val root = VirtualFileManager.getInstance().findFileByNioPath(repoPath) ?: continue
+    val dirToPackagePath = mutableMapOf<VirtualFile, Path?>()
     VfsUtilCore.visitChildrenRecursively(
       root,
       object : VirtualFileVisitor<Unit>() {
         override fun visitFileEx(file: VirtualFile): Result {
           if (file in excludedRoots) return SKIP_CHILDREN
           if (file != root && file in canonicalRepoPaths) return SKIP_CHILDREN
+          if (file.isDirectory) {
+            findBuildFilePathForDirectory(file, root, dirToPackagePath)
+            return CONTINUE
+          }
           if (file.isDirectory || file.extension != "bzl") return CONTINUE
 
-          val targetName = file.name
-          val targetBaseDirectory = file.parent ?: return CONTINUE
-          val relativeTargetBaseDirectory = targetBaseDirectory.toNioPath().relativeToOrNull(repoPath) ?: return CONTINUE
+          val packagePath = findBuildFilePathForDirectory(file.parent, root, dirToPackagePath)?.parent ?: return CONTINUE
+          val packageName = packagePath.relativeToOrNull(repoPath) ?: return CONTINUE
+          val targetName = file.toNioPath().relativeToOrNull(packagePath)
 
           val label =
             ResolvedLabel(
               repo = Canonical.createCanonicalOrMain(canonicalName),
-              packagePath = Package(relativeTargetBaseDirectory.toString().split("/")),
-              target = SingleTarget(targetName),
+              packagePath = Package(packageName.toString().split("/")),
+              target = SingleTarget(targetName.toString()),
             )
           newMap[canonicalName] = newMap.getOrDefault(canonicalName, emptyList()) + label
           return CONTINUE
