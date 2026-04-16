@@ -24,8 +24,8 @@ import org.jetbrains.bazel.server.connection.connection
 import org.jetbrains.bazel.sync.environment.projectCtx
 import org.jetbrains.bazel.target.targetUtils
 import org.jetbrains.bazel.ui.notifications.BazelBalloonNotifier
-import org.jetbrains.bsp.protocol.TaskGroupId
 import org.jetbrains.bsp.protocol.RunParams
+import org.jetbrains.bsp.protocol.TaskGroupId
 import java.io.File
 import java.io.IOException
 import java.nio.file.Files
@@ -96,6 +96,7 @@ internal sealed class BazelGoBeforeRunTaskProvider<T : BeforeRunTask<T>> : Befor
     }
     val target = runConfiguration.targets.single()
 
+    // TODO: reuse ScriptPathBuildTargetTask/runWithScriptPath instead of this copy-pasted code
     val bazelParams =
       listOf(
         "--script_path=$scriptPath",

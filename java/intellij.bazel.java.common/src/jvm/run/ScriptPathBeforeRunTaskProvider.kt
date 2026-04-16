@@ -21,11 +21,9 @@ import org.jetbrains.bazel.run.commandLine.transformProgramArguments
 import org.jetbrains.bazel.run.config.BazelRunConfiguration
 import org.jetbrains.bazel.run.state.HasBazelParams
 import org.jetbrains.bazel.run.state.HasProgramArguments
-import org.jetbrains.bazel.server.sync.DebugHelper
 import org.jetbrains.bazel.server.tasks.BuildTargetTask
 import org.jetbrains.bazel.server.tasks.DefaultBuildTargetTask
 import org.jetbrains.bazel.server.tasks.runBuildTargetTask
-import org.jetbrains.bsp.protocol.DebugType
 import org.jetbrains.bsp.protocol.BazelServerFacade
 import org.jetbrains.bsp.protocol.RunParams
 import org.jetbrains.bsp.protocol.TaskId
@@ -72,7 +70,7 @@ internal class ScriptPathBeforeRunTaskProvider : BeforeRunTaskProvider<Task>() {
     val status =
       try {
         val buildTargetTask = if (scriptPath != null) {
-          ScriptPathBuildTargetTask(runConfiguration, environment, scriptPath, isDebug)
+          ScriptPathBuildTargetTask(runConfiguration, scriptPath)
         } else {
           /**
            * scriptPath is null when running tests without debug, which indicates that we should build but not pass --script_path
@@ -116,9 +114,7 @@ internal class ScriptPathBeforeRunTaskProvider : BeforeRunTaskProvider<Task>() {
 
 private class ScriptPathBuildTargetTask(
   private val runConfiguration: BazelRunConfiguration,
-  private val environment: ExecutionEnvironment,
   private val scriptPath: Path,
-  private val isDebug: Boolean,
 ) : BuildTargetTask {
   override suspend fun build(
       server: BazelServerFacade,
@@ -128,23 +124,16 @@ private class ScriptPathBuildTargetTask(
       debugFlags: List<String>,
   ): BazelStatus {
     val state = runConfiguration.handler?.state
-    val debugPort = if (isDebug) {
-      (state as? HasDebugPort)?.debugPort ?: 5005
-    } else {
-      null
-    }
     val additionalBazelParams = transformProgramArguments((state as? HasBazelParams)?.additionalBazelParams)
     val programArguments = (state as? HasProgramArguments)?.programArguments
 
     val scriptPathParam = listOf("--script_path=$scriptPath")
-    val additionalProgramArguments = debugPort?.let { DebugHelper.generateRunArguments(DebugType.JDWP(debugPort)) }
-    val coroutineDebugParams = if (isDebug) retrieveKotlinCoroutineParams(environment, runConfiguration.project) else emptyList()
     val params =
       RunParams(
         taskId = taskId,
         target = targetIds.single(),
-        arguments = programArguments?.let { transformProgramArguments(it) }.orEmpty() + additionalProgramArguments.orEmpty(),
-        additionalBazelParams = (scriptPathParam + coroutineDebugParams + additionalBazelParams).joinToString(" "),
+        arguments = programArguments?.let { transformProgramArguments(it) }.orEmpty(),
+        additionalBazelParams = (scriptPathParam + additionalBazelParams).joinToString(" "),
         /**
          * Environment variables are not written into the generated run script by Bazel, so they are handled by [runWithScriptPath].
          */

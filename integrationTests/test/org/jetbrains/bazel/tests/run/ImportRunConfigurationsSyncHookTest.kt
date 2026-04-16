@@ -1,20 +1,30 @@
 package org.jetbrains.bazel.tests.run
 
+import com.intellij.driver.sdk.setRegistry
 import com.intellij.driver.sdk.singleProject
 import com.intellij.driver.sdk.step
 import com.intellij.driver.sdk.ui.Finder
+import com.intellij.driver.sdk.ui.components.common.GutterUiComponent
 import com.intellij.driver.sdk.ui.components.common.codeEditor
+import com.intellij.driver.sdk.ui.components.common.editorTabs
+import com.intellij.driver.sdk.ui.components.common.gutter
 import com.intellij.driver.sdk.ui.components.common.ideFrame
+import com.intellij.driver.sdk.ui.components.elements.actionButton
 import com.intellij.driver.sdk.ui.components.elements.popup
+import com.intellij.driver.sdk.ui.pasteText
 import com.intellij.driver.sdk.ui.shouldBe
 import com.intellij.driver.sdk.withRetries
 import com.intellij.ide.starter.driver.engine.runIdeWithDriver
+import com.intellij.tools.ide.performanceTesting.commands.assertCurrentFile
+import com.intellij.tools.ide.performanceTesting.commands.delay
 import org.jetbrains.bazel.data.IdeaBazelCases
 import org.jetbrains.bazel.ideStarter.IdeStarterBaseProjectTest
 import org.jetbrains.bazel.ideStarter.checkIdeaLogForExceptions
+import org.jetbrains.bazel.ideStarter.execute
 import org.jetbrains.bazel.ideStarter.openFile
 import org.jetbrains.bazel.ideStarter.syncBazelProject
 import org.junit.jupiter.api.Test
+import java.awt.Point
 import java.awt.event.KeyEvent
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
@@ -89,10 +99,52 @@ class ImportRunConfigurationsSyncHookTest : IdeStarterBaseProjectTest() {
           val homeValue = System.getProperty("user.home")
           consoleView.waitContainsText("PARENT_ENV_HOME=$homeValue", timeout = 5.seconds)
         }
+
+        step("Check that running with IntelliJ Profiler works") {
+          setRegistry("linux.kernel.variables.validate.every.time", false)
+          openFile("src/com/example/Main.java")
+          codeEditor {
+            goToPosition(4, 1)
+            pasteText("import java.util.Random;\n")
+            goToPosition(12, 86)
+            pasteText(
+              "\n" + """
+              long start = System.currentTimeMillis();
+              double result = 0.0;
+              Random random = new Random();
+              while (System.currentTimeMillis() < start + 5000) {
+                  for (int i = 0; i < 1000; i++) {
+                      result += random.nextDouble();
+                  }
+              }
+              System.out.println("The result is: " + result);
+              """.trimIndent() + "\n",
+            )
+          }
+
+          val moreActionsButton = actionButton { byAccessibleName("More Actions") }
+          moreActionsButton.click()
+          popup().waitOneText("Profile 'Bazel run :main' with 'IntelliJ Profiler'").click()
+          consoleView.waitContainsText("The result is", timeout = 3.minutes)
+          waitOneContainsText("Profiler data is ready", timeout = 10.seconds)
+          takeScreenshot("beforeClickingOnGutter")
+          editorTabs().gutter().clickLine(18)  // result += random.nextDouble();
+          execute {
+            delay(500)
+            assertCurrentFile("Random.java")  // Clicking on the line tooltip will navigate to the profiler hot path
+          }
+        }
       }
     }
     checkIdeaLogForExceptions(context)
   }
+
+  private fun GutterUiComponent.clickLine(line: Int) {
+    click(pointAtLine(line))
+  }
+
+  private fun GutterUiComponent.pointAtLine(line: Int): Point =
+    Point(iconAreaOffset - 20, waitOneText(line.toString()).point.y)
 
   private fun Finder.selectRunConfiguration(currentText: String, targetText: String) {
     withRetries(message = "Click run config dropdown '$currentText' and select '$targetText'", times = 3) {

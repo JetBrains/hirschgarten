@@ -7,6 +7,7 @@ import com.intellij.openapi.externalSystem.service.execution.configuration.fragm
 import com.intellij.openapi.options.SettingsEditor
 import com.intellij.openapi.project.Project
 import com.intellij.util.xmlb.annotations.Attribute
+import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.languages.projectview.projectView
 import org.jetbrains.bazel.languages.projectview.runConfigRunWithBazel
@@ -18,7 +19,8 @@ import org.jetbrains.bazel.run.state.addRunWithBazelFragment
 import org.jetbrains.bazel.run.state.bazelParamsFragment
 import org.jetbrains.bazel.run.state.programArgumentsFragment
 
-internal class JvmRunState(project: Project) :
+@ApiStatus.Internal
+class JvmRunState(project: Project) :
   AbstractGenericRunState<JvmRunState>(),
   HasDebugPort,
   HasRunWithBazel {

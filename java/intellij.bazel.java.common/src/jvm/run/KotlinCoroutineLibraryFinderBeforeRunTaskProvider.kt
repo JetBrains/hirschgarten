@@ -77,11 +77,8 @@ internal class KotlinCoroutineLibraryFinderBeforeRunTaskProvider :
     val parameters = JavaParameters()
     addDebuggerAgent(parameters, environment.project, false)
     parameters.vmParametersList.add("-javaagent:${coroutinesJarPath}")
-    val jvmFlags = parameters.vmParametersList
-      .parameters
-      .map { "--jvmopt=$it" }
     environment.getCopyableUserData(COROUTINE_JVM_FLAGS_KEY)
-      ?.set(jvmFlags)
+      ?.set(parameters.vmParametersList.parameters)
   }
 }
 

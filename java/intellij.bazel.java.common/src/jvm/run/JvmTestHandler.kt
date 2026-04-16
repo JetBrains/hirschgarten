@@ -9,6 +9,7 @@ import com.intellij.execution.runners.ExecutionEnvironment
 import com.intellij.execution.runners.ProgramRunner
 import com.intellij.openapi.util.Ref
 import kotlinx.coroutines.CompletableDeferred
+import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.run.BazelProcessHandler
@@ -22,7 +23,8 @@ import org.jetbrains.bazel.run.test.useJetBrainsTestRunner
 import org.jetbrains.bazel.taskEvents.BazelTaskListener
 import org.jetbrains.bsp.protocol.BazelServerFacade
 
-internal class JvmTestHandler(private val configuration: BazelRunConfiguration) : BazelRunHandler {
+@ApiStatus.Internal
+class JvmTestHandler(private val configuration: BazelRunConfiguration) : BazelRunHandler {
   init {
     // KotlinCoroutineLibraryFinderBeforeRunTaskProvider must be run before BuildScriptBeforeRunTaskProvider
     configuration.setBeforeRunTasksFromHandler(
@@ -100,8 +102,11 @@ internal class ScriptPathTestCommandLineState(environment: ExecutionEnvironment,
       pidDeferred = pidDeferred,
       handler = handler,
       env = settings.env.envs,
+      additionalScriptParameters = getAdditionalJvmRunParameters(environment, settings.debugPort),
       isTest = true,
       testFilter = settings.testFilter,
-    )
+    ) { processHandler ->
+      attachJvmRunExtensions(environment, processHandler)
+    }
   }
 }

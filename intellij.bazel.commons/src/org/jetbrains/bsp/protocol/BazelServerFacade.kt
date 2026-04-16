@@ -31,6 +31,9 @@ interface BazelServerFacade {
   @ApiStatus.Internal
   suspend fun buildTargetCompile(params: CompileParams): CompileResult
 
+  /**
+   * [buildTargetRun] can also be used for debugging if you pass params into [RunParams.additionalBazelParams]
+   */
   @ApiStatus.Internal
   suspend fun buildTargetRun(params: RunParams): RunResult
 
@@ -42,9 +45,6 @@ interface BazelServerFacade {
 
   @ApiStatus.Internal
   suspend fun buildTargetAnalysisDebug(params: AnalysisDebugParams): AnalysisDebugResult
-
-  @ApiStatus.Internal
-  suspend fun buildTargetRunWithDebug(params: RunWithDebugParams): RunResult
 
   @ApiStatus.Internal
   suspend fun workspaceBazelRepoMapping(taskId: TaskId): WorkspaceBazelRepoMappingResult

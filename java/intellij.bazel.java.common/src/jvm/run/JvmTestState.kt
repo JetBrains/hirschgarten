@@ -12,6 +12,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.NlsContexts
 import com.intellij.ui.PortField
 import com.intellij.util.xmlb.annotations.Attribute
+import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.languages.projectview.projectView
 import org.jetbrains.bazel.languages.projectview.runConfigRunWithBazel
@@ -24,7 +25,8 @@ import org.jetbrains.bazel.run.state.addTestFilterFragment
 import org.jetbrains.bazel.run.state.bazelParamsFragment
 import org.jetbrains.bazel.run.state.programArgumentsFragment
 
-internal class JvmTestState(project: Project) :
+@ApiStatus.Internal
+class JvmTestState(project: Project) :
   AbstractGenericTestState<JvmTestState>(),
   HasDebugPort,
   HasRunWithBazel {
