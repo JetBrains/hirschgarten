@@ -25,6 +25,7 @@ import org.junit.runners.JUnit4
 class BazelLoadFilepathCompletionTest : CodeInsightFixtureTestCase<ModuleFixtureBuilder<ModuleFixture>>() {
   @Test
   fun `should complete basic filePath`() {
+    myFixture.tempDirFixture.createFile("BUILD.bazel", "")
     myFixture.tempDirFixture.createFile("defs_one.bzl", "")
     myFixture.tempDirFixture.createFile("defs_dir/defs_two.bzl", "")
 
@@ -40,7 +41,7 @@ class BazelLoadFilepathCompletionTest : CodeInsightFixtureTestCase<ModuleFixture
 
     val lookups = myFixture.completeBasic().flatMap { it.allLookupStrings }
 
-    lookups shouldContainAll listOf("\"//:defs_one.bzl\"", "\"//defs_dir:defs_two.bzl\"")
+    lookups shouldContainAll listOf("\"//:defs_one.bzl\"", "\"//:defs_dir/defs_two.bzl\"")
   }
 
   @get:Rule
@@ -48,6 +49,7 @@ class BazelLoadFilepathCompletionTest : CodeInsightFixtureTestCase<ModuleFixture
 
   @Test
   fun `should complete external filePath`() {
+    myFixture.tempDirFixture.createFile("BUILD.bazel", "")
     val rulesDir = tempFolder.newFolder("rules_kotlin")
     tempFolder.newFile("rules_kotlin/MODULE.bazel")
     tempFolder.newFile("rules_kotlin/BUILD.bazel")
@@ -69,7 +71,7 @@ class BazelLoadFilepathCompletionTest : CodeInsightFixtureTestCase<ModuleFixture
     lookups shouldContainAll
       listOf(
         "\"@rules_kotlin//:kt_jvm_library.bzl\"",
-        "\"@rules_kotlin//package:kt_jvm_binary.bzl\"",
+        "\"@rules_kotlin//:package/kt_jvm_binary.bzl\"",
       )
   }
 

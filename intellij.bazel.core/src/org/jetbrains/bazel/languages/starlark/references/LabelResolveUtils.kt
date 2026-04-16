@@ -1,9 +1,9 @@
 package org.jetbrains.bazel.languages.starlark.references
 
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.vfs.VfsUtilCore
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.isFile
-import com.intellij.openapi.vfs.toNioPathOrNull
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiManager
@@ -20,6 +20,8 @@ import org.jetbrains.bazel.languages.starlark.repomapping.singleTarget
 import org.jetbrains.bazel.languages.starlark.repomapping.toCanonicalLabel
 import org.jetbrains.bazel.utils.findVirtualFile
 import org.jetbrains.bazel.workspace.canonicalRepoNameToPath
+import java.nio.file.Path
+import kotlin.io.path.Path
 
 /**
  * @param containingFile the file that should be used as context for resolving, e.g., relative labels
@@ -151,3 +153,34 @@ private fun findBuildFilePsi(project: Project, packageDir: VirtualFile): Starlar
   val buildFile = findBuildFile(packageDir) ?: return null
   return PsiManager.getInstance(project).findFile(buildFile) as? StarlarkFile
 }
+
+internal fun findBuildFilePathForDirectory(
+  dir: VirtualFile,
+  repoRoot: VirtualFile,
+  cache: MutableMap<VirtualFile, Path?> = mutableMapOf(),
+): Path? =
+  cache.getOrPut(dir) {
+    val buildFile = findBuildFile(dir)
+    if (buildFile != null) {
+      Path(buildFile.path)
+    }
+    else {
+      val parent = dir.parent
+      if (parent == null || !VfsUtilCore.isAncestor(repoRoot, parent, false)) {
+        null
+      }
+      else {
+        findBuildFilePathForDirectory(parent, repoRoot, cache)
+      }
+    }
+  }
+
+internal fun findPackagePathForFileInRepo(
+  file: VirtualFile,
+  repoRoot: VirtualFile
+): Path? {
+  val dir = if (file.isDirectory) file else file.parent ?: return null
+  val buildFilePath = findBuildFilePathForDirectory(dir, repoRoot, mutableMapOf()) ?: return null
+  return buildFilePath.parent
+}
+

@@ -2,8 +2,6 @@ package org.jetbrains.bazel.languages.starlark.findusages
 
 import com.intellij.openapi.application.QueryExecutorBase
 import com.intellij.openapi.util.TextRange
-import com.intellij.psi.ElementManipulators
-import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiManager
 import com.intellij.psi.PsiReference
@@ -23,6 +21,7 @@ import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkListLitera
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkStringLiteralExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.arguments.StarlarkArgumentElement
 import org.jetbrains.bazel.languages.starlark.psi.expressions.arguments.StarlarkNamedArgumentExpression
+import org.jetbrains.bazel.languages.starlark.references.BazelLabelReference
 import org.jetbrains.bazel.languages.starlark.references.resolveLabel
 
 internal class StarlarkFileUsageSearcher : QueryExecutorBase<PsiReference, SearchParameters>(true) {
@@ -42,7 +41,7 @@ internal class StarlarkFileUsageSearcher : QueryExecutorBase<PsiReference, Searc
       PsiTreeUtil
         .collectElementsOfType(starlarkFile, StarlarkStringLiteralExpression::class.java)
         .filter { isReferringToFile(it, file, psiManager) }
-        .forEach { processor.process(getReferenceToTextOccurrence(it, file, psiManager)) }
+        .forEach { processor.process(BazelLabelReference(it, true)) }
 
       // Find all glob() calls that refer to the file
       PsiTreeUtil
@@ -52,30 +51,6 @@ internal class StarlarkFileUsageSearcher : QueryExecutorBase<PsiReference, Searc
         .mapNotNull { getReferenceToGlobCallOrNull(it, file, StarlarkGlob.forPath(baseDir)) }
         .forEach { processor.process(it) }
     }
-  }
-
-  private fun getReferenceToTextOccurrence(
-    literal: StarlarkStringLiteralExpression,
-    file: PsiFile,
-    psiManager: PsiManager,
-  ): PsiReferenceBase<StarlarkStringLiteralExpression> {
-    val range = ElementManipulators.getValueTextRange(literal)
-    val reference =
-      object : PsiReferenceBase<StarlarkStringLiteralExpression>(literal, range) {
-        override fun resolve(): PsiElement = file
-
-        override fun isReferenceTo(element: PsiElement): Boolean = psiManager.areElementsEquivalent(resolve(), element)
-
-        override fun handleElementRename(newElementName: String): PsiElement {
-          val newContent = buildNewLabelContent(element.getStringContents(), newElementName)
-          return ElementManipulators.getManipulator(element)?.handleContentChange(element, range, newContent) ?: element
-        }
-
-        override fun bindToElement(element: PsiElement): PsiElement {
-          return element
-        }
-      }
-    return reference
   }
 
   private fun getReferenceToGlobCallOrNull(
@@ -100,17 +75,6 @@ internal class StarlarkFileUsageSearcher : QueryExecutorBase<PsiReference, Searc
       return null
     }
     return PsiReferenceBase.Immediate(call, TextRange(0, call.textLength), file)
-  }
-
-  private fun buildNewLabelContent(oldContent: String, newFilename: String): String {
-    val label = Label.parseOrNull(oldContent)
-    val fileNameIndex =
-      if (label != null && oldContent.contains(":")) {
-        oldContent.lastIndexOf(':')
-      } else {
-        oldContent.lastIndexOf('/')
-      }
-    return if (fileNameIndex >= 0) oldContent.take(fileNameIndex + 1) + newFilename else newFilename
   }
 
   private fun isReferringToFile(
