@@ -13,10 +13,3 @@ data class AnalysisDebugParams(
 
 @ApiStatus.Internal
 data class AnalysisDebugResult(val statusCode: BazelStatus)
-
-@ApiStatus.Internal
-data class RunWithDebugParams(
-  val taskId: TaskId,
-  val runParams: RunParams,
-  val debug: DebugType?,
-)

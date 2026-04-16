@@ -1,5 +1,7 @@
 package org.jetbrains.bazel.sync.task
 
+import com.intellij.openapi.util.Disposer
+import com.intellij.openapi.util.use
 import com.intellij.openapi.vfs.VirtualFileManager
 import com.intellij.testFramework.registerOrReplaceServiceInstance
 import io.kotest.matchers.shouldBe
@@ -37,7 +39,7 @@ class ProjectSyncTaskTest : MockProjectBaseTest() {
   }
 
   @Test
-  fun `should call all enabled pre-sync, sync and post-sync hooks`() {
+  fun `should call all enabled pre-sync, sync and post-sync hooks`() = Disposer.newDisposable().use { disposable ->
     // given
     project.registerOrReplaceServiceInstance(BazelServerService::class.java, MockBuildServerService(BuildServerMock()), disposable)
     project.registerOrReplaceServiceInstance(

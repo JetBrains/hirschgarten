@@ -1,5 +1,7 @@
 package org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.transformers
 
+import com.intellij.openapi.Disposable
+import com.intellij.openapi.util.Disposer
 import com.intellij.platform.workspace.jps.entities.SourceRootTypeId
 import com.intellij.testFramework.replaceService
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
@@ -14,6 +16,7 @@ import org.jetbrains.bazel.workspace.model.test.framework.WorkspaceModelBaseTest
 import org.jetbrains.bazel.workspacemodel.entities.JavaSourceRoot
 import org.jetbrains.bsp.protocol.RawBuildTarget
 import org.jetbrains.bsp.protocol.SourceItem
+import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
@@ -23,6 +26,7 @@ import kotlin.io.path.Path
 class SourcesItemToJavaSourceRootTransformerTest : WorkspaceModelBaseTest() {
   private lateinit var projectBasePathURIStr: String
   lateinit var sourcesItemToJavaSourceRootTransformer: SourcesItemToJavaSourceRootTransformer
+  lateinit var replaceServiceDisposable: Disposable
 
   @BeforeEach
   fun setUp() {
@@ -32,8 +36,14 @@ class SourcesItemToJavaSourceRootTransformerTest : WorkspaceModelBaseTest() {
          javatests/*
          kotlintests/*
     """.trimIndent()
-    project.replaceService(ProjectViewService::class.java, MockProjectViewService(project, projectViewContent), disposable)
+    replaceServiceDisposable = Disposer.newDisposable()
+    project.replaceService(ProjectViewService::class.java, MockProjectViewService(project, projectViewContent), replaceServiceDisposable)
     sourcesItemToJavaSourceRootTransformer = SourcesItemToJavaSourceRootTransformer(project)
+  }
+
+  @AfterEach
+  fun tearDown() {
+    Disposer.dispose(replaceServiceDisposable)
   }
 
   @Test

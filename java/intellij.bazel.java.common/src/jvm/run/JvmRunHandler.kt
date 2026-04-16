@@ -1,13 +1,17 @@
 package org.jetbrains.bazel.jvm.run
 
 import com.intellij.execution.Executor
+import com.intellij.execution.JavaRunConfigurationExtensionManager
+import com.intellij.execution.configurations.JavaParameters
 import com.intellij.execution.configurations.RunProfileState
 import com.intellij.execution.executors.DefaultDebugExecutor
 import com.intellij.execution.executors.DefaultRunExecutor
+import com.intellij.execution.process.OSProcessHandler
 import com.intellij.execution.runners.ExecutionEnvironment
 import com.intellij.openapi.util.Key
 import com.intellij.openapi.util.Ref
 import kotlinx.coroutines.CompletableDeferred
+import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.run.BazelProcessHandler
@@ -21,9 +25,9 @@ import org.jetbrains.bsp.protocol.BazelServerFacade
 
 internal val COROUTINE_JVM_FLAGS_KEY = Key.create<Ref<List<String>>>("bazel.coroutine.jvm.flags")
 
-internal class JvmRunHandler(configuration: BazelRunConfiguration) : BazelRunHandler {
+@ApiStatus.Internal
+class JvmRunHandler(configuration: BazelRunConfiguration) : BazelRunHandler {
   init {
-    // KotlinCoroutineLibraryFinderBeforeRunTaskProvider must be run before BuildScriptBeforeRunTaskProvider
     configuration.setBeforeRunTasksFromHandler(
       listOfNotNull(
         KotlinCoroutineLibraryFinderBeforeRunTaskProvider().createTask(configuration),
@@ -87,8 +91,44 @@ internal class RunScriptPathCommandLineState(environment: ExecutionEnvironment, 
       pidDeferred,
       handler,
       settings.env.envs,
+      additionalScriptParameters = getAdditionalJvmRunParameters(environment, settings.debugPort),
       isTest = false,
       testFilter = null,
-    )
+    ) { processHandler ->
+      attachJvmRunExtensions(environment, processHandler)
+    }
   }
+}
+
+internal fun getAdditionalJvmRunParameters(environment: ExecutionEnvironment, debugPort: Int): List<String> = buildList {
+  val configuration = environment.runProfile as? BazelRunConfiguration ?: return@buildList
+
+  if (environment.executor is DefaultDebugExecutor) {
+    // https://bazel.build/reference/command-line-reference#flag--java_debug
+    // https://github.com/bazelbuild/rules_java/blob/747bddd6091a624c54a42c1ac20308190c1ad849/java/bazel/rules/java_stub_template.txt#L23
+    this += "--wrapper_script_flag=--debug=$debugPort"
+    this += retrieveKotlinCoroutineParams(environment, environment.project).map {
+      wrapVmOptionAsArg(it)
+    }
+  }
+
+  val profilerParameters = JavaParameters()
+  // JavaRunConfigurationExtensionManager has a generic-sounding name, but in practice only used for JFR/Async Profiler VM options
+  JavaRunConfigurationExtensionManager.instance.updateJavaParameters(
+    configuration,
+    profilerParameters,
+    environment.runnerSettings,
+    environment.executor,
+  )
+  this += profilerParameters.vmParametersList.parameters.map { wrapVmOptionAsArg(it) }
+}
+
+private fun wrapVmOptionAsArg(vmOption: String): String {
+  // https://github.com/bazelbuild/rules_java/blob/747bddd6091a624c54a42c1ac20308190c1ad849/java/bazel/rules/java_stub_template.txt#L33
+  return "--wrapper_script_flag=--jvm_flag=$vmOption"
+}
+
+internal fun attachJvmRunExtensions(environment: ExecutionEnvironment, processHandler: OSProcessHandler) {
+  val configuration = environment.runProfile as? BazelRunConfiguration ?: return
+  JavaRunConfigurationExtensionManager.instance.attachExtensionsToProcess(configuration, processHandler, environment.runnerSettings)
 }

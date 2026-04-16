@@ -151,9 +151,9 @@ SDK_261_INTELLIJ_REPOSITORY = "releases"  # releases or snapshots
 
 SDK_261_PLUGIN_REPOSITORY_VERSION = SDK_261_BASE_VERSION + ".277"
 
-IC_261_URL = "https://www.jetbrains.com/intellij-repository/%s/com/jetbrains/intellij/idea/ideaIC/%s/ideaIC-%s.zip" % (SDK_261_INTELLIJ_REPOSITORY, SDK_261_INTELLIJ_VERSION, SDK_261_INTELLIJ_VERSION)
+IC_261_URL = "https://www.jetbrains.com/intellij-repository/%s/com/jetbrains/intellij/idea/ideaIU/%s/ideaIU-%s.zip" % (SDK_261_INTELLIJ_REPOSITORY, SDK_261_INTELLIJ_VERSION, SDK_261_INTELLIJ_VERSION)
 
-IC_261_SHA = "1c62c1e1732224770b05fa4a6d2371918720a705fd7492b769707e52daf33741"
+IC_261_SHA = "33f9c1c316f8fe5eaa1dd965bb929d1fcd15d757ad3d4b25028ceb5c4fbcb8fd"
 
 http_archive(
     name = "intellij_ce_2026_1",
@@ -162,9 +162,9 @@ http_archive(
     url = IC_261_URL,
 )
 
-IC_261_SOURCES_URL = "https://www.jetbrains.com/intellij-repository/%s/com/jetbrains/intellij/idea/ideaIC/%s/ideaIC-%s-sources.jar" % (SDK_261_INTELLIJ_REPOSITORY, SDK_261_INTELLIJ_VERSION, SDK_261_INTELLIJ_VERSION)
+IC_261_SOURCES_URL = "https://www.jetbrains.com/intellij-repository/%s/com/jetbrains/intellij/idea/ideaIU/%s/ideaIU-%s-sources.jar" % (SDK_261_INTELLIJ_REPOSITORY, SDK_261_INTELLIJ_VERSION, SDK_261_INTELLIJ_VERSION)
 
-IC_261_SOURCES_SHA = "102956cc1311233b6735e43a506b03b8ce82a8c613150ea52fa279ba03a26fe0"
+IC_261_SOURCES_SHA = "56a2c511761f67eb7aa9d3d0d20ba6f7c70651655c009c5a08cbe74ed2fbec31"
 
 http_jar(
     name = "intellij_ce_2026_1_sources",

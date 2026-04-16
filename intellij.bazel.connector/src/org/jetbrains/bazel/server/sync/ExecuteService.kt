@@ -27,18 +27,14 @@ import org.jetbrains.bazel.server.bep.BepBuildResult
 import org.jetbrains.bazel.server.bep.BepReader
 import org.jetbrains.bazel.server.bep.BepServer
 import org.jetbrains.bazel.server.diagnostics.DiagnosticsService
-import org.jetbrains.bazel.server.sync.DebugHelper.generateRunArguments
-import org.jetbrains.bazel.server.sync.DebugHelper.generateRunOptions
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bsp.protocol.AnalysisDebugParams
 import org.jetbrains.bsp.protocol.AnalysisDebugResult
 import org.jetbrains.bsp.protocol.BazelTaskEventsHandler
 import org.jetbrains.bsp.protocol.CompileParams
 import org.jetbrains.bsp.protocol.CompileResult
-import org.jetbrains.bsp.protocol.DebugType
 import org.jetbrains.bsp.protocol.RunParams
 import org.jetbrains.bsp.protocol.RunResult
-import org.jetbrains.bsp.protocol.RunWithDebugParams
 import org.jetbrains.bsp.protocol.TaskId
 import org.jetbrains.bsp.protocol.TestParams
 import org.jetbrains.bsp.protocol.TestResult
@@ -136,16 +132,6 @@ class ExecuteService(
 
   suspend fun run(params: RunParams): RunResult = runImpl(params)
 
-  /**
-   * If `debugArguments` is empty, run task will be executed normally without any debugging options
-   */
-  suspend fun runWithDebug(params: RunWithDebugParams): RunResult {
-    val requestedDebugType = params.debug
-    val debugArguments = generateRunArguments(requestedDebugType)
-    val debugOptions = generateRunOptions(requestedDebugType)
-    return runImpl(params.runParams, debugArguments, debugOptions)
-  }
-
   private suspend fun runImpl(
     params: RunParams,
     additionalProgramArguments: List<String>? = null,
@@ -170,23 +156,7 @@ class ExecuteService(
     return RunResult(statusCode = result.processResult.bazelStatus, taskId = params.taskId)
   }
 
-  /**
-   * If `debugArguments` is empty, test task will be executed normally without any debugging options
-   */
-  suspend fun testWithDebug(params: TestParams): TestResult {
-    val debugArguments =
-      if (params.debug != null) {
-        val requestedDebugType = params.debug
-        generateRunArguments(requestedDebugType)
-      }
-      else {
-        null
-      }
-
-    return testImpl(params, debugArguments)
-  }
-
-  private suspend fun testImpl(params: TestParams, additionalProgramArguments: List<String>?): TestResult {
+  suspend fun test(params: TestParams): TestResult {
     val targetsSpec = TargetCollection(params.targets, emptyList())
     // Use the already available workspaceContext
     val command =
@@ -201,24 +171,6 @@ class ExecuteService(
             }
           }
       }
-
-    val debugType = params.debug
-
-    if (debugType is DebugType.JDWP) {
-      command.options.add(BazelFlag.javaTestDebug())
-    }
-
-    if (debugType is DebugType.GoDlv) {
-      command.options.addAll(
-        listOf(
-          BazelFlag.runUnder(
-            "dlv --listen=127.0.0.1:${debugType.port} --headless=true --api-version=2 --check-go-version=false --only-same-user=false exec",
-          ),
-          "--compilation_mode=dbg",
-          "--dynamic_mode=off",
-        ),
-      )
-    }
 
     params.additionalBazelParams?.let { additionalParams ->
       (command as HasAdditionalBazelOptions).additionalBazelOptions.addAll(additionalParams.split(" "))
@@ -235,7 +187,6 @@ class ExecuteService(
 
     params.environmentVariables?.let { (command as HasEnvironment).environment.putAll(it) }
     params.arguments?.let { (command as HasProgramArguments).programArguments.addAll(it) }
-    additionalProgramArguments?.let { (command as HasProgramArguments).programArguments.addAll(it) }
     command.options.add(BazelFlag.buildEventBinaryPathConversion(false))
     command.options.add(BazelFlag.remoteDownloadOutputsTopLevel())  // We need, e.g., test.xml downloaded when using remote execution
     with(command as HasMultipleTargets) {

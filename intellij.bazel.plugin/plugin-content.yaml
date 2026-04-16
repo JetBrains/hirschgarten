@@ -56,6 +56,9 @@
 - name: lib/modules/intellij.bazel.java.junit.jar
   contentModules:
   - name: intellij.bazel.java.junit
+- name: lib/modules/intellij.bazel.java.profiler.jar
+  contentModules:
+  - name: intellij.bazel.java.profiler
 - name: lib/modules/intellij.bazel.java.sync.jar
   contentModules:
   - name: intellij.bazel.java.sync

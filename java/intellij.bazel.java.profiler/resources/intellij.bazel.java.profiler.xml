@@ -1,0 +1,17 @@
+<idea-plugin>
+  <!-- region Generated dependencies - run `Generate Product Layouts` to regenerate -->
+  <dependencies>
+    <module name="intellij.bazel.commons"/>
+    <module name="intellij.bazel.core"/>
+    <module name="intellij.bazel.java.common"/>
+    <module name="intellij.java.execution.impl"/>
+    <module name="intellij.profiler.common"/>
+    <module name="intellij.profiler.ultimate"/>
+  </dependencies>
+  <!-- endregion -->
+  <extensions defaultExtensionNs="com.intellij">
+    <runConfigurationExtension implementation="com.intellij.bazel.java.profiler.BazelJFRConfigurationExtension"/>
+    <runConfigurationExtension implementation="com.intellij.bazel.java.profiler.BazelAsyncProfilerConfigurationExtension"/>
+    <profiler.javaProfilerStarterExtension implementation="com.intellij.bazel.java.profiler.BazelJavaProfilerStarterExtension"/>
+  </extensions>
+</idea-plugin>

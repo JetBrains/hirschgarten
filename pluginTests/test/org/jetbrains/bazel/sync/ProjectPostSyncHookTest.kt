@@ -1,5 +1,7 @@
 package org.jetbrains.bazel.sync
 
+import com.intellij.openapi.util.Disposer
+import com.intellij.openapi.util.use
 import com.intellij.testFramework.registerOrReplaceServiceInstance
 import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.collections.shouldNotContain
@@ -15,7 +17,7 @@ import org.junit.jupiter.api.Test
 @DisplayName("ProjectPostSyncHook tests")
 class ProjectPostSyncHookTest : MockProjectBaseTest() {
   @Test
-  fun `should return all enabled project post-sync hooks`() {
+  fun `should return all enabled project post-sync hooks`(): Unit = Disposer.newDisposable().use { disposable ->
     project.registerOrReplaceServiceInstance(BazelServerService::class.java, MockBuildServerService(BuildServerMock()), disposable)
 
     // given

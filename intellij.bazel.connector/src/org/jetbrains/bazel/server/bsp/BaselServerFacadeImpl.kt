@@ -12,17 +12,16 @@ import org.jetbrains.bazel.sync.BazelOutFileHardLinks
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bsp.protocol.AnalysisDebugParams
 import org.jetbrains.bsp.protocol.AnalysisDebugResult
+import org.jetbrains.bsp.protocol.BazelServerFacade
 import org.jetbrains.bsp.protocol.BspJvmClasspath
 import org.jetbrains.bsp.protocol.CompileParams
 import org.jetbrains.bsp.protocol.CompileResult
 import org.jetbrains.bsp.protocol.InverseSourcesParams
 import org.jetbrains.bsp.protocol.InverseSourcesResult
-import org.jetbrains.bsp.protocol.BazelServerFacade
 import org.jetbrains.bsp.protocol.JvmToolchainInfo
 import org.jetbrains.bsp.protocol.RawPhasedTarget
 import org.jetbrains.bsp.protocol.RunParams
 import org.jetbrains.bsp.protocol.RunResult
-import org.jetbrains.bsp.protocol.RunWithDebugParams
 import org.jetbrains.bsp.protocol.TaskId
 import org.jetbrains.bsp.protocol.TestParams
 import org.jetbrains.bsp.protocol.TestResult
@@ -85,11 +84,9 @@ class BaselServerFacadeImpl(
 
   override suspend fun buildTargetAnalysisDebug(params: AnalysisDebugParams): AnalysisDebugResult = executeService.analysisDebug(params)
 
-  override suspend fun buildTargetTest(params: TestParams): TestResult = executeService.testWithDebug(params)
+  override suspend fun buildTargetTest(params: TestParams): TestResult = executeService.test(params)
 
   override suspend fun buildTargetRun(params: RunParams): RunResult = executeService.run(params)
-
-  override suspend fun buildTargetRunWithDebug(params: RunWithDebugParams): RunResult = executeService.runWithDebug(params)
 
   override suspend fun workspaceDirectories(): WorkspaceDirectoriesResult {
     return bspMapper.workspaceDirectories()

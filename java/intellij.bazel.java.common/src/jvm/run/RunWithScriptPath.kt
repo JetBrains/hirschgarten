@@ -10,11 +10,11 @@ import com.intellij.openapi.util.Key
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runInterruptible
-import org.jetbrains.bazel.util.BspClientTestNotifier
 import org.jetbrains.bazel.run.BazelProcessHandler
 import org.jetbrains.bazel.server.bep.TestXmlParser
 import org.jetbrains.bazel.sync.environment.projectCtx
 import org.jetbrains.bazel.taskEvents.BazelTaskEventsService
+import org.jetbrains.bazel.util.BspClientTestNotifier
 import org.jetbrains.bsp.protocol.TaskId
 import java.nio.file.Path
 import kotlin.io.path.readText
@@ -33,8 +33,10 @@ internal suspend fun runWithScriptPath(
   pidDeferred: CompletableDeferred<Long?>,
   handler: BazelProcessHandler,
   env: Map<String, String>,
+  additionalScriptParameters: List<String>,
   isTest: Boolean,
   testFilter: String?,
+  processHandlerCreated: suspend (OSProcessHandler) -> Unit,
 ) {
   val parentEnvironment = if (isTest) {
     // Bazel tests don't receive the full environment because of sandboxing
@@ -47,6 +49,7 @@ internal suspend fun runWithScriptPath(
       .withExePath(scriptPath.toString())
       .withParentEnvironmentType(parentEnvironment)
       .withEnvironment(env)
+      .withParameters(additionalScriptParameters)
   if (testFilter != null) {
     commandLine.environment[BAZEL_TEST_FILTER_ENV] = testFilter
   }
@@ -74,6 +77,8 @@ internal suspend fun runWithScriptPath(
       }
     },
   )
+
+  processHandlerCreated(scriptHandler)
 
   scriptHandler.startNotify()
   runInterruptible(Dispatchers.IO) {
