@@ -37,7 +37,7 @@ def get_additional_javac_options(ctx, target):
 def extract_kotlin_info(target, ctx, output_groups, dep_targets, **kwargs):
     provider = get_kt_jvm_provider(target)
     if provider == None:
-        return None, None
+        return None
 
     rule_attrs = ctx.rule.attr
 
@@ -106,7 +106,7 @@ def extract_kotlin_info(target, ctx, output_groups, dep_targets, **kwargs):
                                         jvm_target = True),
                 )
 
-    return info_file, None
+    return info_file
 
 def extract_kt_compiler_plugin_info(plugin):
     if KtCompilerPluginInfo not in plugin:

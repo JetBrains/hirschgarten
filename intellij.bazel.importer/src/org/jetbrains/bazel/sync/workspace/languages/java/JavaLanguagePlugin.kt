@@ -46,7 +46,7 @@ class JavaLanguagePlugin internal constructor(
   override fun prepareSync(project: Project, targets: Map<Label, TargetInfo>, workspaceContext: WorkspaceContext, repoMapping: RepoMapping ) {
     toolchainTargets = targets.filter { it.value.hasJavaToolchainInfo()  }
     val ideJavaHomeOverride = workspaceContext.ideJavaHomeOverride
-    jdk = ideJavaHomeOverride?.let { Jdk(javaHome = it) } ?: jdkResolver.resolve(targets.values.asSequence(), repoMapping)
+    jdk = ideJavaHomeOverride?.let { Jdk(javaHome = it) } ?: jdkResolver.resolve(targets, repoMapping)
 
     cachedJavaSROEnable = project.projectView().javaSROEnable
 

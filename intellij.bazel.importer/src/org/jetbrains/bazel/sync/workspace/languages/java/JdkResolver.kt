@@ -3,50 +3,45 @@ package org.jetbrains.bazel.sync.workspace.languages.java
 import com.intellij.openapi.projectRoots.impl.JavaHomeFinder
 import com.intellij.platform.eel.provider.LocalEelDescriptor
 import org.jetbrains.bazel.commons.BazelPathsResolver
-import org.jetbrains.bazel.commons.BzlmodRepoMapping
 import org.jetbrains.bazel.commons.LocalRepositoryMapping
 import org.jetbrains.bazel.commons.RepoMapping
 import org.jetbrains.bazel.commons.getLocalRepositories
+import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.info.BspTargetInfo.TargetInfo
 import java.nio.file.Path
 import kotlin.io.path.Path
 import kotlin.io.path.exists
 
 internal class JdkResolver(private val bazelPathsResolver: BazelPathsResolver) {
-  fun resolve(targets: Sequence<TargetInfo>, repoMapping: RepoMapping): Jdk? {
+  fun resolve(targets: Map<Label, TargetInfo>, repoMapping: RepoMapping): Jdk? {
     val localRepositories = repoMapping.getLocalRepositories()
-    val allCandidates = targets.mapNotNull { resolveJdkData(it, localRepositories) }.toList()
+    val allCandidates = targets.values.mapNotNull { resolveJdkData(it, localRepositories, targets) }.toList()
     if (allCandidates.none()) return localJdkFallback()
     val bestJdk = allCandidates.sortByFrequency().maxBy { it.jdkType.priority }
     return Jdk(bestJdk.javaHome)
   }
 
-  private fun resolveJdkData(targetInfo: TargetInfo, localRepositories: LocalRepositoryMapping): JdkCandidate? {
-    return if (targetInfo.hasJavaToolchainInfo() && (targetInfo.javaToolchainInfo.hasBootClasspathJavaHome() || !targetInfo.hasJavaRuntimeInfo())) {
-      val javaToolchainInfo = targetInfo.javaToolchainInfo
-      val javaHome = if (javaToolchainInfo.hasBootClasspathJavaHome()) {
-        javaToolchainInfo.bootClasspathJavaHome
-      } else if (javaToolchainInfo.hasJavaHome()) {
-        javaToolchainInfo.javaHome
-      } else {
-        null
-      }
-
-      JdkCandidate(
-        jdkType = if (javaToolchainInfo.hasBootClasspathJavaHome()) JdkType.BOOT_CLASSPATH else JdkType.TOOLCHAIN,
-        javaHome = javaHome?.let{ bazelPathsResolver.resolve(it, localRepositories) }?.takeIf { it.exists() } ?: return null,
-      )
-    } else if (targetInfo.hasJavaRuntimeInfo()) {
-      val javaRuntimeInfo = targetInfo.javaRuntimeInfo
-      val javaHome = if (javaRuntimeInfo.hasJavaHome()) javaRuntimeInfo.javaHome else null
-
-      JdkCandidate(
-        jdkType = JdkType.RUNTIME,
-        javaHome = javaHome?.let{ bazelPathsResolver.resolve(it, localRepositories) }?.takeIf { it.exists() } ?: return null,
-      )
-    } else {
-      null
+  private fun resolveJdkData(
+    targetInfo: TargetInfo,
+    localRepositories: LocalRepositoryMapping,
+    targets: Map<Label, TargetInfo>,
+  ): JdkCandidate? {
+    val javaToolchainInfo = if (targetInfo.hasJavaToolchainInfo()) targetInfo.javaToolchainInfo else null
+    val (javaHome, jdkType) = when {
+        javaToolchainInfo != null && javaToolchainInfo.hasBootClasspathJavaHome() -> javaToolchainInfo.bootClasspathJavaHome to JdkType.BOOT_CLASSPATH
+        javaToolchainInfo != null && javaToolchainInfo.hasJavaHome() -> javaToolchainInfo.javaHome to JdkType.TOOLCHAIN
+        else -> targetInfo.depsList
+        .asSequence()
+        .mapNotNull { Label.parseOrNull(it.target.label) }
+        .mapNotNull { targets[it] }
+        .find { it.javaToolchainInfo.hasJavaHome() }
+        ?.let { it.javaToolchainInfo.javaHome to JdkType.RUNTIME }
+        ?: return null
     }
+    return JdkCandidate(
+          jdkType = jdkType,
+          javaHome = javaHome.let { bazelPathsResolver.resolve(it, localRepositories) }.takeIf { it.exists() } ?: return null,
+        )
   }
 
   private data class JdkCandidate(
