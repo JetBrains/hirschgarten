@@ -72,12 +72,14 @@ private class HotSwapTask(
       return
     }
     val newManifest = JarFileManifest.build(hotSwapState.jars, previousManifest = hotSwapState.oldManifest)
-    BazelHotSwapManager.getInstance(project).hotswapImpl(
-      oldManifest = hotSwapState.oldManifest,
-      newManifest = newManifest,
-      listener = hotSwapState.listener,
-      sessions = hotSwapState.sessions,
-      isAutoRun = projectTaskContext.isAutoRun,
+    BazelHotSwapManager.getInstance(project).hotswap(
+      BazelHotSwapManager.HotSwapEnvironment(
+        oldManifest = hotSwapState.oldManifest,
+        newManifest = newManifest,
+        listener = hotSwapState.listener,
+        sessions = hotSwapState.sessions,
+        isAutoRun = projectTaskContext.isAutoRun,
+      ),
     )
   }
 }

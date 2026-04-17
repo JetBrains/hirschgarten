@@ -26,7 +26,7 @@ import java.util.jar.JarFile
  * A manifest of .class file hashes for jars needed at runtime. Used for HotSwapping.
  * The implementation assumes the source for .class file can be found exclusively from jar files.
  * */
-internal class JarFileManifest private constructor(
+class JarFileManifest private constructor(
   // jar file timestamps
   private val jarFileState: Map<Path, FileTime>,
   // per-jar manifest of .class file hashes

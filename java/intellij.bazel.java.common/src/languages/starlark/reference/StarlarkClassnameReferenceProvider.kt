@@ -9,7 +9,7 @@ import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkStringLite
 import org.jetbrains.bazel.languages.starlark.psi.expressions.arguments.StarlarkNamedArgumentExpression
 import org.jetbrains.bazel.languages.starlark.references.StarlarkClassnameReference
 
-object StarlarkClassnameReferenceProvider : PsiReferenceProvider() {
+internal object StarlarkClassnameReferenceProvider : PsiReferenceProvider() {
   private fun classParametersList(): Set<String> =
     StarlarkClassParametersProvider.EP_NAME.extensionList
       .flatMap { it.getClassnameParameters() }

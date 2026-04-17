@@ -105,5 +105,8 @@
                               language="Starlark"/>
     <projectService serviceImplementation="org.jetbrains.bazel.magicmetamodel.DefaultMagicMetaModelEnvironment"
                     serviceInterface="org.jetbrains.bazel.magicmetamodel.MagicMetaModelEnvironment"/>
+    <projectService serviceInterface="org.jetbrains.bazel.hotswap.BazelHotSwapManager"
+                    serviceImplementation="org.jetbrains.bazel.hotswap.BazelHotSwapManagerImpl"
+                    open="true"/>
   </extensions>
 </idea-plugin>
