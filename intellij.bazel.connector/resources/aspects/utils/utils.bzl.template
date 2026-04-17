@@ -247,6 +247,7 @@ PRIVATE_COMPILE_DEPS = [
 
 RUNTIME_DEPS = [
     "runtime_deps",
+    "resource_jars",  # rules_kotlin specific
 ]
 
 ALL_DEPS = COMPILE_DEPS + PRIVATE_COMPILE_DEPS + RUNTIME_DEPS + EXPORT_DEPS
