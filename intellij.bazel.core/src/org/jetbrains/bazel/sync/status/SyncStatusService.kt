@@ -2,7 +2,6 @@ package org.jetbrains.bazel.sync.status
 
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.project.Project
-import java.util.concurrent.atomic.AtomicBoolean
 
 internal class SyncAlreadyInProgressException : IllegalStateException()
 
@@ -11,19 +10,32 @@ internal class SyncStatusService(private val project: Project) {
   @Volatile
   private var isCanceled = false
 
-  private val _isSyncInProgress = AtomicBoolean(false)
+  var isSyncInProgress: Boolean = false
+    private set
 
-  val isSyncInProgress: Boolean
-    get() = _isSyncInProgress.get()
+  private val syncStatusLock = Any()
+
+  fun <T> withSyncStatus(action: (syncInProgress: Boolean) -> T): T =
+    synchronized(syncStatusLock) {
+      action(isSyncInProgress)
+    }
 
   fun startSync() {
-    if (!_isSyncInProgress.compareAndSet(false, true)) throw SyncAlreadyInProgressException()
+    synchronized(syncStatusLock) {
+      if (isSyncInProgress) {
+        throw SyncAlreadyInProgressException()
+      } else {
+        isSyncInProgress = true
+      }
+    }
     isCanceled = false
     project.messageBus.syncPublisher(SyncStatusListener.TOPIC).syncStarted()
   }
 
   fun finishSync() {
-    _isSyncInProgress.set(false)
+    synchronized(syncStatusLock) {
+      isSyncInProgress = false
+    }
     project.messageBus.syncPublisher(SyncStatusListener.TOPIC).syncFinished(isCanceled)
   }
 

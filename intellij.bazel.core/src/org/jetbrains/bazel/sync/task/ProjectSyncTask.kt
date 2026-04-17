@@ -50,6 +50,7 @@ import org.jetbrains.bazel.sync.status.SyncAlreadyInProgressException
 import org.jetbrains.bazel.sync.status.SyncStatusService
 import org.jetbrains.bazel.sync.workspace.BazelWorkspaceResolveService
 import org.jetbrains.bazel.taskEvents.BazelTaskEventsService
+import org.jetbrains.bazel.workspace.fileEvents.FileEventJobManager
 import org.jetbrains.bsp.protocol.BazelServerFacade
 import org.jetbrains.bsp.protocol.TaskGroupId
 import org.jetbrains.bsp.protocol.TaskId
@@ -72,6 +73,8 @@ class ProjectSyncTask(private val project: Project) {
         catch (_: SyncAlreadyInProgressException) {
           return@useWithScope
         }
+
+        FileEventJobManager.getInstance(project).syncTaskGroupId = taskId.taskGroupId
 
         try {
           log.debug("Starting sync project task")
