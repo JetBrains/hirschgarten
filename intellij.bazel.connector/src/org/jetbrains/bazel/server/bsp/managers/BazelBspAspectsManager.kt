@@ -227,7 +227,7 @@ class BazelBspAspectsManager(
 
     val emptyBuild = executeService.buildTargetsWithBep(
       targetsSpec = TargetCollection(listOf()),
-      extraFlags = flagsToUse,
+      extraFlags = flagsToUse + listOf("--ui_event_filters=-WARNING"), // We know, we do an empty build, no need to warn; see https://github.com/bazelbuild/bazel/issues/6811
       taskId = taskId,
     )
 
