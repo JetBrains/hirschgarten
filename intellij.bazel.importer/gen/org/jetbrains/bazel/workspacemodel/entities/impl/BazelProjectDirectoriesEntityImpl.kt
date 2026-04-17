@@ -1,3 +1,5 @@
+@file:OptIn(EntityStorageInstrumentationApi::class)
+
 package org.jetbrains.bazel.workspacemodel.entities.impl
 
 import com.intellij.platform.workspace.storage.ConnectionId
@@ -271,7 +273,6 @@ internal class BazelProjectDirectoriesEntityData : WorkspaceEntityData<BazelProj
     return modifiable
   }
 
-  @OptIn(EntityStorageInstrumentationApi::class)
   override fun createEntity(snapshot: EntityStorageInstrumentation): BazelProjectDirectoriesEntity {
     val entityId = createEntityId()
     return snapshot.initializeEntity(entityId) {

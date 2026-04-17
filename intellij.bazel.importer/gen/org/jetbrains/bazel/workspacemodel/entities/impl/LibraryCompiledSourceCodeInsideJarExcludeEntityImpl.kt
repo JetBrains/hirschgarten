@@ -1,3 +1,5 @@
+@file:OptIn(EntityStorageInstrumentationApi::class)
+
 package org.jetbrains.bazel.workspacemodel.entities.impl
 
 import com.intellij.platform.workspace.jps.entities.LibraryId
@@ -213,7 +215,6 @@ internal class LibraryCompiledSourceCodeInsideJarExcludeEntityData : WorkspaceEn
     return modifiable
   }
 
-  @OptIn(EntityStorageInstrumentationApi::class)
   override fun createEntity(snapshot: EntityStorageInstrumentation): LibraryCompiledSourceCodeInsideJarExcludeEntity {
     val entityId = createEntityId()
     return snapshot.initializeEntity(entityId) {
