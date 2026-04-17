@@ -821,6 +821,7 @@ internal class AspectBazelProjectMapper(
       "kt_jvm_test",
       "jvm_library",
       "_jvm_library_jps",
+      "_resourcegroup_jps",
       "jvm_resources",
       "scala_library",
       "scala_binary",

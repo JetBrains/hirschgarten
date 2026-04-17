@@ -24,7 +24,7 @@ private class GenericBazelRules : TargetKindProvider {
       // TODO: remove these target kinds after migrating to rules_kotlin https://youtrack.jetbrains.com/issue/MRI-3218
       TargetKind("jvm_library", setOf(LanguageClass.JAVA, LanguageClass.KOTLIN), RuleType.LIBRARY),
       TargetKind("_jvm_library_jps", setOf(LanguageClass.JAVA, LanguageClass.KOTLIN), RuleType.LIBRARY),
-      TargetKind("_resourcegroup_jps", setOf(LanguageClass.JAVA, LanguageClass.KOTLIN), RuleType.LIBRARY),
+      TargetKind("_resourcegroup_jps", setOf(LanguageClass.JAVA), RuleType.LIBRARY),
       TargetKind("jvm_resources", setOf(LanguageClass.JAVA, LanguageClass.KOTLIN), RuleType.LIBRARY),
 
       TargetKind("go_binary", setOf(LanguageClass.GO), RuleType.BINARY),
