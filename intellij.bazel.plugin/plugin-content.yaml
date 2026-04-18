@@ -16,10 +16,6 @@
 - name: lib/modules/intellij.bazel.connector.jar
   contentModules:
   - name: intellij.bazel.connector
-  library: jackson-dataformat-xml
-  files:
-  - name: $MAVEN_REPOSITORY$/com/fasterxml/jackson/dataformat/jackson-dataformat-xml/2/jackson-dataformat-xml-2.jar
-  reason: <- intellij.bazel.connector
 - name: lib/modules/intellij.bazel.core.jar
   contentModules:
   - name: intellij.bazel.core

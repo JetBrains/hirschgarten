@@ -90,7 +90,7 @@
     <orderEntry type="module" module-name="intellij.libraries.grpc" />
     <orderEntry type="module" module-name="intellij.libraries.jackson" />
     <orderEntry type="module" module-name="intellij.libraries.jackson.databind" />
-    <orderEntry type="library" name="jackson-dataformat-xml" level="project" />
+    <orderEntry type="module" module-name="intellij.libraries.jackson.dataformat.xml" />
     <orderEntry type="module" module-name="intellij.libraries.jackson.module.kotlin" />
     <orderEntry type="module" module-name="intellij.libraries.kotlinx.coroutines.core" />
     <orderEntry type="library" name="slf4j-api" level="project" />

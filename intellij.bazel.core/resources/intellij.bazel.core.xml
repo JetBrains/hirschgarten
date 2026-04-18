@@ -89,6 +89,7 @@
     <module name="intellij.bazel.projectview"/>
     <module name="intellij.bazel.protobuf"/>
     <module name="intellij.libraries.grpc"/>
+    <module name="intellij.libraries.jackson.dataformat.xml"/>
     <module name="intellij.platform.searchEverywhere"/>
     <module name="intellij.platform.vcs"/>
   </dependencies>
