@@ -13,10 +13,15 @@ import com.intellij.openapi.vfs.VirtualFileVisitor
 import com.intellij.openapi.vfs.newvfs.RefreshQueue
 import com.intellij.openapi.vfs.newvfs.impl.NullVirtualFile
 import com.intellij.util.io.createParentDirectories
+import kotlinx.coroutines.Deferred
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.withContext
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.commons.BazelInfo
 import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.config.rootDir
+import org.jetbrains.bazel.coroutines.BazelCoroutineService
 import org.jetbrains.bazel.sync.BazelOutFileHardLinks
 import java.nio.file.Files
 import java.nio.file.Path
@@ -29,10 +34,10 @@ import kotlin.io.path.relativeTo
 
 internal class DefaultBazelOutputFileHardLinks(
   private val project: Project,
-  private val bazelInfo: BazelInfo
+  bazelInfo: BazelInfo,
 ): BazelOutFileHardLinks {
   private val cacheDir: Path = project.getProjectDataPath("bazel-out-hardlink")
-  private val hardLinksDuringSync = ConcurrentHashMap<Path, HardLink>()
+  private val hardLinksDuringSync = ConcurrentHashMap<Path, Deferred<HardLink>>()
   private val bazelOutputPath: Path = bazelInfo.outputBase
   private val syncRunning = AtomicBoolean(false)
 
@@ -56,12 +61,12 @@ internal class DefaultBazelOutputFileHardLinks(
    *
    * @return the created hard link, [originalFile] itself if it isn't an output file (e.g. a for source file), or `null` if [originalFile] doesn't exist
    */
-  override fun createOutputFileHardLink(originalFile: Path): Path? {
+  override suspend fun createOutputFileHardLink(originalFile: Path): Path? {
     if (!BazelFeatureFlags.hardLinkOutputFiles) return originalFile
     if (!syncRunning.get()) return originalFile
 
     if (!originalFile.exists()) return null
-    val file = originalFile.toRealPath()
+    val file = withContext(Dispatchers.IO) { originalFile.toRealPath() }
     if (file.startsWith(project.rootDir.toNioPath())) return originalFile  // It's a source file, no need to hard link
 
     // Hardlink files only under `bazel-out` directory
@@ -75,26 +80,31 @@ internal class DefaultBazelOutputFileHardLinks(
      */
     val targetHardLink = cacheDir.resolve(bazelOutRelativePath)
     val hardLink = hardLinksDuringSync.computeIfAbsent(targetHardLink) {
-      try {
-        val localFileSystem = LocalFileSystem.getInstance()
-        var requiresRefresh = true
-        val hardLinkFile = if (!targetHardLink.exists() || targetHardLink.getLastModifiedTime() != file.getLastModifiedTime()) {
-          targetHardLink.deleteIfExists()
-          targetHardLink.createParentDirectories()
-          Files.createLink(targetHardLink, file)
-          localFileSystem.refreshAndFindFileByNioFile(targetHardLink)
+      BazelCoroutineService.getInstance(project).startAsync {
+        withContext(Dispatchers.IO) {
+          try {
+            val localFileSystem = LocalFileSystem.getInstance()
+            var requiresRefresh = true
+            val hardLinkFile = if (!targetHardLink.exists() || targetHardLink.getLastModifiedTime() != file.getLastModifiedTime()) {
+              targetHardLink.deleteIfExists()
+              targetHardLink.createParentDirectories()
+              Files.createLink(targetHardLink, file)
+              localFileSystem.refreshAndFindFileByNioFile(targetHardLink)
+            }
+            else {
+              requiresRefresh = false
+              localFileSystem.findFileByNioFile(targetHardLink) ?: localFileSystem.refreshAndFindFileByNioFile(targetHardLink)
+            }
+            checkNotNull(hardLinkFile) { "Can't find virtual find for $targetHardLink" }
+            HardLink(hardLinkFile, requiresRefresh)
+          }
+          catch (e: Throwable) {
+            logger.warn("Failed to create hard link for $file", e)
+            HardLink.NULL
+          }
         }
-        else {
-          requiresRefresh = false
-          localFileSystem.findFileByNioFile(targetHardLink) ?: localFileSystem.refreshAndFindFileByNioFile(targetHardLink)
-        }
-        checkNotNull(hardLinkFile) { "Can't find virtual find for $targetHardLink" }
-        HardLink(hardLinkFile, requiresRefresh)
-      } catch (e: Throwable) {
-        logger.warn("Failed to create hard link for $file", e)
-        HardLink.NULL
       }
-    }
+    }.await()  // Use await() on a Deferred instead of a blocking computeIfAbsent to avoid thread starvation (BAZEL-3095)
 
     return hardLink.takeIf { !it.isNull }?.virtualFile?.toNioPath() ?: file
   }
@@ -110,7 +120,7 @@ internal class DefaultBazelOutputFileHardLinks(
 
       RefreshQueue.getInstance().refresh(
         recursive = false,
-        hardLinksDuringSync.values.filter { it.requiresRefresh }.map { it.virtualFile },
+        hardLinksDuringSync.values.awaitAll().filter { it.requiresRefresh }.map { it.virtualFile },
       )
 
       if (projectModelUpdated) {
@@ -126,7 +136,7 @@ internal class DefaultBazelOutputFileHardLinks(
                        ?: return
 
     val hardLinksFilesUsedDuringSync = mutableSetOf(cacheDirFile)
-    hardLinksDuringSync.values.filter { !it.isNull }.forEach { hardLink ->
+    hardLinksDuringSync.values.awaitAll().filter { !it.isNull }.forEach { hardLink ->
       var parent: VirtualFile? = hardLink.virtualFile
       while (parent != null && hardLinksFilesUsedDuringSync.add(parent)) {
         parent = parent.parent
