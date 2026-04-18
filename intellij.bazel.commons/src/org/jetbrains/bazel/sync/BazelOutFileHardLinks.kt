@@ -23,13 +23,13 @@ interface BazelOutFileHardLinks {
    *
    * @return the created hard link, [originalFile] itself if it isn't an output file (e.g. a for source file), or `null` if [originalFile] doesn't exist
    */
-  fun createOutputFileHardLink(originalFile: Path): Path?
+  suspend fun createOutputFileHardLink(originalFile: Path): Path?
 
   companion object {
     val NONE = object: BazelOutFileHardLinks {
       override fun onBeforeSync() {}
       override suspend fun onAfterSync(projectModelUpdated: Boolean) {}
-      override fun createOutputFileHardLink(originalFile: Path): Path = originalFile
+      override suspend fun createOutputFileHardLink(originalFile: Path): Path = originalFile
     }
   }
 }
