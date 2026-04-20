@@ -59,16 +59,6 @@ private class GenericBazelRules : TargetKindProvider {
     }
 
     if (inferredLanguages.isEmpty()) return null
-
-    val inferredRuleType = when {
-      target.isTest() -> RuleType.TEST
-      target.isApplication() -> RuleType.BINARY
-      else -> RuleType.LIBRARY
-    }
-    return TargetKind(target.kind, inferredLanguages, inferredRuleType)
+    return TargetKind(target.kind, inferredLanguages, target.inferRuleType())
   }
-
-  private fun TargetInfo.isTest(): Boolean = isApplication() && kind.endsWith("_test")
-
-  private fun TargetInfo.isApplication(): Boolean = executable
 }
