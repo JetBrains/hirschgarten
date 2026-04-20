@@ -24,6 +24,7 @@ import org.junit.jupiter.api.io.TempDir
 import java.nio.file.Path
 import kotlin.io.path.createDirectories
 import kotlin.io.path.createFile
+import kotlin.io.path.createSymbolicLinkPointingTo
 
 @DisplayName("ResourcesItemToJavaResourceRootTransformer.transform(resourcesItem) tests")
 class ResourcesItemToJavaResourceRootTransformerTest {
@@ -32,7 +33,7 @@ class ResourcesItemToJavaResourceRootTransformerTest {
 
   private lateinit var projectBasePath: Path
 
-  private val resourcesItemToJavaResourceRootTransformer = ResourcesItemToJavaResourceRootTransformer()
+  private val resourcesItemToJavaResourceRootTransformer = ResourcesItemToJavaResourceRootTransformer(bazelProjectName = "project")
 
   @BeforeEach
   fun beforeEach() {
@@ -776,6 +777,78 @@ class ResourcesItemToJavaResourceRootTransformerTest {
     // then
     javaResources shouldHaveSingleElement ResourceRoot(
       resourcePath = resourceFile,
+      rootType = SourceRootTypeId("java-resource"),
+    )
+  }
+
+  @Test
+  fun `should accept explicit strip prefix when directory contains a bazel symlink`() {
+    // given
+    val execrootTarget = projectBasePath.resolve("execroot/_main").createDirectories()
+    execrootTarget.resolve("generated.txt").createFile()
+    val stripPrefix = projectBasePath.resolve("mypackage").createDirectories()
+    val resourceFile = stripPrefix.resolve("config.properties").createFile()
+    stripPrefix.resolve("bazel-bin").createSymbolicLinkPointingTo(execrootTarget)
+    val buildTarget = createRawBuildTarget(
+      resources = listOf(resourceFile),
+      data = JvmBuildTarget(
+        javaVersion = "17",
+        resolvedResourceStripPrefix = stripPrefix,
+      ),
+    )
+
+    // when
+    val javaResources = resourcesItemToJavaResourceRootTransformer.transform(buildTarget)
+
+    // then
+    javaResources shouldHaveSingleElement ResourceRoot(
+      resourcePath = stripPrefix,
+      rootType = SourceRootTypeId("java-resource"),
+    )
+  }
+
+  @Test
+  fun `should accept default strip prefix when directory contains a bazel symlink`() {
+    // given
+    val srcMainResources = projectBasePath.resolve("src/main/resources").createDirectories()
+    val resourceFile = srcMainResources.resolve("app.properties").createFile()
+    val execrootTarget = projectBasePath.resolve("execroot/_main").createDirectories()
+    execrootTarget.resolve("extra.txt").createFile()
+    srcMainResources.resolve("bazel-out").createSymbolicLinkPointingTo(execrootTarget)
+    val buildTarget = createRawBuildTarget(
+      resources = listOf(resourceFile),
+      data = JvmBuildTarget(javaVersion = "17", resolvedResourceStripPrefix = null),
+    )
+
+    // when
+    val javaResources = resourcesItemToJavaResourceRootTransformer.transform(buildTarget)
+
+    // then
+    javaResources shouldHaveSingleElement ResourceRoot(
+      resourcePath = srcMainResources,
+      rootType = SourceRootTypeId("java-resource"),
+    )
+  }
+
+  @Test
+  fun `should follow non-bazel symlinks when checking strip prefix`() {
+    // given
+    val srcMainResources = projectBasePath.resolve("src/main/resources").createDirectories()
+    val realDir = projectBasePath.resolve("actual-resources").createDirectories()
+    realDir.resolve("data.xml").createFile()
+    val symlink = srcMainResources.resolve("linked").createSymbolicLinkPointingTo(realDir)
+    val resourceFile = symlink.resolve("data.xml")
+    val buildTarget = createRawBuildTarget(
+      resources = listOf(resourceFile),
+      data = JvmBuildTarget(javaVersion = "17", resolvedResourceStripPrefix = null),
+    )
+
+    // when
+    val javaResources = resourcesItemToJavaResourceRootTransformer.transform(buildTarget)
+
+    // then
+    javaResources shouldHaveSingleElement ResourceRoot(
+      resourcePath = srcMainResources,
       rootType = SourceRootTypeId("java-resource"),
     )
   }

@@ -3,6 +3,7 @@ package org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.tra
 import com.intellij.platform.workspace.jps.entities.SourceRootTypeId
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.commons.RuleType
+import org.jetbrains.bazel.commons.symlinks.BazelSymlinksCalculator
 import org.jetbrains.bazel.utils.isUnder
 import org.jetbrains.bazel.workspacemodel.entities.ResourceRoot
 import org.jetbrains.bsp.protocol.BuildTarget
@@ -11,14 +12,16 @@ import org.jetbrains.bsp.protocol.KotlinBuildTarget
 import org.jetbrains.bsp.protocol.RawBuildTarget
 import org.jetbrains.bsp.protocol.ScalaBuildTarget
 import org.jetbrains.bsp.protocol.utils.extractJvmBuildTarget
+import java.nio.file.FileVisitResult
 import java.nio.file.Path
-import kotlin.collections.toList
 import kotlin.io.path.Path
 import kotlin.io.path.name
-import kotlin.io.path.walk
+import kotlin.io.path.visitFileTree
 
 @ApiStatus.Internal
-class ResourcesItemToJavaResourceRootTransformer : WorkspaceModelEntityPartitionTransformer<RawBuildTarget, ResourceRoot> {
+class ResourcesItemToJavaResourceRootTransformer(
+  private val bazelProjectName: String,
+) : WorkspaceModelEntityPartitionTransformer<RawBuildTarget, ResourceRoot> {
 
   override fun transform(inputEntity: RawBuildTarget): List<ResourceRoot> {
     val rootType = inputEntity.inferRootType()
@@ -45,11 +48,33 @@ class ResourcesItemToJavaResourceRootTransformer : WorkspaceModelEntityPartition
     val stripPrefixAncestors = setOf(stripPrefix)
     val newLeftovers = leftovers.filterNotTo(mutableSetOf()) { it.isUnder(stripPrefixAncestors) }
     if (leftovers.size == newLeftovers.size) return this
-    if (stripPrefix.walk().any { it !in allResourceFiles }) return this
+    if (stripPrefix.containsExtraFilesIgnoringBazelSymlinks(allResourceFiles)) return this
     return MergeResult(
       merged = merged.plusElement(stripPrefix),
       leftovers = newLeftovers,
     )
+  }
+
+  private fun Path.containsExtraFilesIgnoringBazelSymlinks(files: Set<Path>): Boolean {
+    var result = false
+    visitFileTree(followLinks = true) {
+      onPreVisitDirectory { directory, _ ->
+        when {
+          BazelSymlinksCalculator.isBazelSymlink(bazelProjectName, directory) -> FileVisitResult.SKIP_SUBTREE
+          else -> FileVisitResult.CONTINUE
+        }
+      }
+      onVisitFile { file, _ ->
+        when (file) {
+          !in files -> {
+            result = true
+            FileVisitResult.TERMINATE
+          }
+          else -> FileVisitResult.CONTINUE
+        }
+      }
+    }
+    return result
   }
 
   private fun extractStripPrefixOrNull(target: RawBuildTarget) = extractJvmBuildTarget(target)
@@ -134,7 +159,7 @@ class ResourcesItemToJavaResourceRootTransformer : WorkspaceModelEntityPartition
       when (segment.name) {
         "javatests", "testsrc", "java" -> return this.takeSrcJavaOrNull(at = segmentIndex) ?: this.rootSubpath(until = segmentIndex + 1)
         "src" -> {
-          for (subSegmentIndex in segmentIndex + 1 ..< nameCount - 1) {
+          for (subSegmentIndex in segmentIndex + 1..<nameCount - 1) {
             val subSegment = getName(subSegmentIndex)
             if (subSegment.name == "src" || subSegment.name == "java" || subSegment.name == "javatests") {
               val packageCandidate = getName(subSegmentIndex + 1)
@@ -167,7 +192,7 @@ class ResourcesItemToJavaResourceRootTransformer : WorkspaceModelEntityPartition
     val first = suffix.getName(0) ?: return null
     val index = indexOf(first)
     if (index == -1) return null
-    for (i in 1 ..< suffix.nameCount) {
+    for (i in 1..<suffix.nameCount) {
       if (index + i >= nameCount) return null
       if (getName(index + i) != suffix.getName(i)) return null
     }
