@@ -91,7 +91,7 @@ class TargetKindService {
       .lazySequence()
       .firstNotNullOfOrNull { it.inferTargetKind(target) }
       ?.let { return it }
-    return TargetKind(target.kind, languageClasses = emptySet(), RuleType.LIBRARY)
+    return TargetKind(kind = target.kind, languageClasses = emptySet(), ruleType = target.inferRuleType())
   }
 
   fun guessFromRuleName(ruleName: String): TargetKind {
