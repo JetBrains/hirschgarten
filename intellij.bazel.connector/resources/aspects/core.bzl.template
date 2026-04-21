@@ -8,21 +8,21 @@ def create_all_extension_info(target, ctx, output_groups, dep_targets):
     return [info for info in all_info if info != None]
 
 COMPILE = 0
+EXPORTED_COMPILE_TIME = 3
 RUNTIME = 1
 TOOLCHAIN = 2
 
 # Max filename length is 255 symbols on all major OSes. Choose a smaller number to make up for additional suffixes/prefixes.
 MAX_FILENAME_LENGTH = 200
 
-def make_dep(dep, dependency_type, exported):
+def make_dep(dep, dependency_type):
     return struct(
         target = dep[BspAspectInfo].bsp_info.key,
         dependency_type = dependency_type,
-        exported = exported,
     )
 
-def make_deps(deps, dependency_type, exported = False):
-    return [make_dep(dep, dependency_type, exported) for dep in deps]
+def make_deps(deps, dependency_type):
+    return [make_dep(dep, dependency_type) for dep in deps]
 
 COMMON_INFO_FIELDS = ["java_common"]
 COMMON_BOOL_FIELDS = ["jvm_target"]
@@ -73,7 +73,7 @@ def _bsp_target_info_aspect_impl(target, ctx):
     runtime_deps = make_deps(runtime_dep_targets, RUNTIME)
 
     direct_export_targets = collect_targets_from_attrs(rule_attrs, EXPORT_DEPS)
-    direct_exports = make_deps(direct_export_targets, COMPILE, True)
+    direct_exports = make_deps(direct_export_targets, EXPORTED_COMPILE_TIME)
     direct_exports_set = {str(dep.label): None for dep in direct_export_targets}
 
     private_direct_dep_targets = collect_targets_from_attrs(rule_attrs, PRIVATE_COMPILE_DEPS)
