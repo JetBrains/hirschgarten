@@ -217,7 +217,7 @@ class ResourcesItemToJavaResourceRootTransformerTest {
         associates = emptyList(),
         jvmBuildTarget = JvmBuildTarget(
           javaVersion = "17",
-          resourceStripPrefix = resourceStripPrefix,
+          resolvedResourceStripPrefix = resourceStripPrefix,
         ),
       ),
     )
@@ -246,7 +246,7 @@ class ResourcesItemToJavaResourceRootTransformerTest {
         associates = emptyList(),
         jvmBuildTarget = JvmBuildTarget(
           javaVersion = "17",
-          resourceStripPrefix = null,
+          resolvedResourceStripPrefix = null,
         ),
       ),
     )
@@ -321,7 +321,7 @@ class ResourcesItemToJavaResourceRootTransformerTest {
         scalacOptions = emptyList(),
         jvmBuildTarget = JvmBuildTarget(
           javaVersion = "17",
-          resourceStripPrefix = resourceStripPrefix,
+          resolvedResourceStripPrefix = resourceStripPrefix,
         ),
       ),
     )
@@ -350,7 +350,7 @@ class ResourcesItemToJavaResourceRootTransformerTest {
         scalacOptions = emptyList(),
         jvmBuildTarget = JvmBuildTarget(
           javaVersion = "17",
-          resourceStripPrefix = null,
+          resolvedResourceStripPrefix = null,
         ),
       ),
     )
@@ -427,7 +427,7 @@ class ResourcesItemToJavaResourceRootTransformerTest {
       subhierarchy = "",
       data = JvmBuildTarget(
         javaVersion = "17",
-        resourceStripPrefix = resourceStripPrefix,
+        resolvedResourceStripPrefix = resourceStripPrefix,
       ),
     )
   }
@@ -448,7 +448,7 @@ class ResourcesItemToJavaResourceRootTransformerTest {
 
     val buildTarget = createRawBuildTarget(
       resources = listOf(srcMainResourcesFile, javaFile, javatestsFile),
-      data = JvmBuildTarget(javaVersion = "17", resourceStripPrefix = null),
+      data = JvmBuildTarget(javaVersion = "17", resolvedResourceStripPrefix = null),
     )
 
     // when
@@ -672,7 +672,7 @@ class ResourcesItemToJavaResourceRootTransformerTest {
     val buildTarget = createRawBuildTarget(
       sources = listOf(SourceItem(path = sourceFile, generated = false)),
       resources = listOf(resourceFile),
-      data = JvmBuildTarget(javaVersion = "17", resourceStripPrefix = null),
+      data = JvmBuildTarget(javaVersion = "17", resolvedResourceStripPrefix = null),
     )
 
     // when
@@ -704,7 +704,7 @@ class ResourcesItemToJavaResourceRootTransformerTest {
         apiVersion = "1.8",
         kotlincOptions = emptyList(),
         associates = emptyList(),
-        jvmBuildTarget = JvmBuildTarget(javaVersion = "17", resourceStripPrefix = null),
+        jvmBuildTarget = JvmBuildTarget(javaVersion = "17", resolvedResourceStripPrefix = null),
       ),
     )
 
@@ -733,7 +733,7 @@ class ResourcesItemToJavaResourceRootTransformerTest {
         apiVersion = "1.8",
         kotlincOptions = emptyList(),
         associates = emptyList(),
-        jvmBuildTarget = JvmBuildTarget(javaVersion = "17", resourceStripPrefix = null),
+        jvmBuildTarget = JvmBuildTarget(javaVersion = "17", resolvedResourceStripPrefix = null),
       ),
     )
 
@@ -765,7 +765,7 @@ class ResourcesItemToJavaResourceRootTransformerTest {
         associates = emptyList(),
         jvmBuildTarget = JvmBuildTarget(
           javaVersion = "17",
-          resourceStripPrefix = stripPrefix,
+          resolvedResourceStripPrefix = stripPrefix,
         ),
       ),
     )
@@ -793,14 +793,14 @@ class ResourcesItemToJavaResourceRootTransformerTest {
   private fun shouldDetectJavaPrefixTests(prefixes: List<String>, subhierarchies: List<String>) = shouldDetectPrefixTests(
     prefixes = prefixes,
     subhierarchies = subhierarchies,
-    data = JvmBuildTarget(javaVersion = "17", resourceStripPrefix = null),
+    data = JvmBuildTarget(javaVersion = "17", resolvedResourceStripPrefix = null),
   )
 
 
   private fun shouldNotDetectJavaPrefixTests(prefixes: List<String>, subhierarchies: List<String>) = shouldNotDetectPrefixTests(
     prefixes = prefixes,
     subhierarchies = subhierarchies,
-    data = JvmBuildTarget(javaVersion = "17", resourceStripPrefix = null),
+    data = JvmBuildTarget(javaVersion = "17", resolvedResourceStripPrefix = null),
   )
 
   private fun shouldDetectKotlinPrefixTests(vararg paths: String) = shouldDetectPrefixTests(
@@ -813,7 +813,7 @@ class ResourcesItemToJavaResourceRootTransformerTest {
       associates = emptyList(),
       jvmBuildTarget = JvmBuildTarget(
         javaVersion = "17",
-        resourceStripPrefix = null,
+        resolvedResourceStripPrefix = null,
       ),
     ),
   )
@@ -828,7 +828,7 @@ class ResourcesItemToJavaResourceRootTransformerTest {
       associates = emptyList(),
       jvmBuildTarget = JvmBuildTarget(
         javaVersion = "17",
-        resourceStripPrefix = null,
+        resolvedResourceStripPrefix = null,
       ),
     ),
   )
@@ -852,7 +852,7 @@ class ResourcesItemToJavaResourceRootTransformerTest {
       scalacOptions = emptyList(),
       jvmBuildTarget = JvmBuildTarget(
         javaVersion = "17",
-        resourceStripPrefix = null,
+        resolvedResourceStripPrefix = null,
       ),
     ),
   )
@@ -866,7 +866,7 @@ class ResourcesItemToJavaResourceRootTransformerTest {
       scalacOptions = emptyList(),
       jvmBuildTarget = JvmBuildTarget(
         javaVersion = "17",
-        resourceStripPrefix = null,
+        resolvedResourceStripPrefix = null,
       ),
     ),
   )

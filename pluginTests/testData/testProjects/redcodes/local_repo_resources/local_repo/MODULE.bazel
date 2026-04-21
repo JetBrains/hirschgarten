@@ -1,0 +1,3 @@
+module(name = "local_repo")
+
+bazel_dep(name = "rules_java", version = "9.3.0")

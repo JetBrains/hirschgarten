@@ -53,7 +53,7 @@ class ResourcesItemToJavaResourceRootTransformer : WorkspaceModelEntityPartition
   }
 
   private fun extractStripPrefixOrNull(target: RawBuildTarget) = extractJvmBuildTarget(target)
-    ?.resourceStripPrefix
+    ?.resolvedResourceStripPrefix
     ?.let(::setOf)
 
   private fun defaultStripPrefixes(target: RawBuildTarget) = when (target.data) {
