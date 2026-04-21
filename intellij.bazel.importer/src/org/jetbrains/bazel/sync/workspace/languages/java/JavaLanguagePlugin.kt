@@ -5,13 +5,16 @@ import com.intellij.util.EnvironmentUtil
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.commons.BazelPathsResolver
 import org.jetbrains.bazel.commons.LanguageClass
+import org.jetbrains.bazel.commons.LocalRepositoryMapping
 import org.jetbrains.bazel.commons.RepoMapping
 import org.jetbrains.bazel.commons.getLocalRepositories
 import org.jetbrains.bazel.info.BspTargetInfo
 import org.jetbrains.bazel.info.BspTargetInfo.JvmTargetInfo
 import org.jetbrains.bazel.info.BspTargetInfo.TargetInfo
 import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.label.ResolvedLabel
 import org.jetbrains.bazel.languages.projectview.projectView
+import org.jetbrains.bazel.server.label.label
 import org.jetbrains.bazel.sync.workspace.languages.JvmPackageResolver
 import org.jetbrains.bazel.sync.workspace.languages.LanguagePlugin
 import org.jetbrains.bazel.sync.workspace.languages.LanguagePluginContext
@@ -25,7 +28,6 @@ import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bsp.protocol.JvmBuildTarget
 import org.jetbrains.bsp.protocol.SourceItem
 import java.nio.file.Path
-import kotlin.io.path.Path
 import kotlin.io.path.extension
 
 @ApiStatus.Internal
@@ -80,13 +82,7 @@ class JavaLanguagePlugin internal constructor(
       mainClass = mainClass,
       jvmArgs = jvmTarget.jvmFlagsList,
       programArgs = jvmTarget.argsList,
-      resourceStripPrefix = when {
-        jvmTarget.hasResourceStripPrefix() -> jvmTarget
-          .resourceStripPrefix
-          .ifEmpty { null }
-          ?.let { bazelPathsResolver.resolve(Path(it)) }
-        else -> null
-      }
+      resolvedResourceStripPrefix = target.resolveResourceStripPrefixToAbsolutePath(localRepositories)
     )
   }
 
@@ -142,5 +138,16 @@ class JavaLanguagePlugin internal constructor(
       }
     }
     return null
+  }
+
+  private fun TargetInfo.resolveResourceStripPrefixToAbsolutePath(repositories: LocalRepositoryMapping): Path? {
+    if (!hasJvmTargetInfo()) return null
+    val prefix = jvmTargetInfo.resourceStripPrefix.ifEmpty { null } ?: return null
+    val workspaceRoot = bazelPathsResolver.workspaceRoot()
+    val repoPath = when (val label = label()) {
+      is ResolvedLabel -> repositories.localRepositories[label.repoName]?.let(workspaceRoot::resolve) ?: workspaceRoot
+      else -> workspaceRoot
+    }
+    return repoPath.resolve(prefix)
   }
 }
