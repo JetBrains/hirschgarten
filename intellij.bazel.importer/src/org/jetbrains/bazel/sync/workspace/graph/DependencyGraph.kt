@@ -27,7 +27,8 @@ class DependencyGraph(
 
       idToDirectDependenciesIds[id] = deps.map { it.second }.toSet()
       idToDirectCompileDependenciesIds[id] = deps
-        .filter { it.first == BspTargetInfo.Dependency.DependencyType.COMPILE_VALUE }
+        .filter { it.first == BspTargetInfo.Dependency.DependencyType.COMPILE_VALUE ||
+                  it.first == BspTargetInfo.Dependency.DependencyType.EXPORTED_COMPILE_TIME_VALUE }
         .map { it.second }.toSet()
 
       for ((_, dependency) in deps) {
