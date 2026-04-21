@@ -68,6 +68,10 @@
       id="ProjectViewSectionDocumentationTargetProvider"
       implementation="org.jetbrains.bazel.languages.projectview.documentation.ProjectViewSectionDocumentationTargetProvider"
     />
+
+    <platform.backend.documentation.lookupElementTargetProvider
+      id="ProjectViewSectionLookupElementDocumentationTargetProvider"
+      implementation="org.jetbrains.bazel.languages.projectview.documentation.ProjectViewSectionLookupElementDocumentationTargetProvider"/>
   </extensions>
 
   <extensions defaultExtensionNs="org.jetbrains.bazel">
