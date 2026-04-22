@@ -130,6 +130,7 @@
     <orderEntry type="module" module-name="intellij.python.community.plugin" />
     <orderEntry type="module" module-name="intellij.python.plugin" />
     <orderEntry type="module" module-name="intellij.python.community.plugin.modules" />
+    <orderEntry type="module" module-name="intellij.python.community.aliasProvider" scope="TEST" />
     <orderEntry type="module" module-name="intellij.java.plugin" />
     <orderEntry type="module" module-name="intellij.java.debugger" />
     <orderEntry type="module" module-name="intellij.java.debugger.impl" />
