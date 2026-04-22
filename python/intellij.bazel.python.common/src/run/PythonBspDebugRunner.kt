@@ -11,7 +11,6 @@ import com.intellij.openapi.application.ReadAction
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import com.intellij.xdebugger.XDebugSession
-import com.intellij.xdebugger.XSessionStartedResult
 import com.jetbrains.python.debugger.PyDebugProcess
 import com.jetbrains.python.debugger.PyDebugRunner
 import com.jetbrains.python.run.PythonCommandLineState
@@ -51,16 +50,16 @@ internal class PythonBspDebugRunner : PyDebugRunner() {
     return promise
   }
 
-  override fun createSessionEx(state: RunProfileState, environment: ExecutionEnvironment): Promise<XSessionStartedResult> {
+  override fun createSession(state: RunProfileState, environment: ExecutionEnvironment): Promise<XDebugSession> {
     val debugState = state as? PythonDebugCommandLineState ?: error(BazelPluginBundle.message("python.debug.error.wrong.state"))
     val nativeState = debugState.asPythonState()
     val target = state.target ?: error(BazelPluginBundle.message("python.debug.error.no.id"))
-    val promise = AsyncPromise<XSessionStartedResult>()
+    val promise = AsyncPromise<XDebugSession>()
     buildTargetInDebugMode(
       environment.project,
       target,
     ) {
-      super.createSessionEx(nativeState, environment).onSuccess { promise.setResult(it) }.onError { promise.setError(it) }
+      super.createSession(nativeState, environment).onSuccess { promise.setResult(it) }.onError { promise.setError(it) }
     }
     return promise
   }
