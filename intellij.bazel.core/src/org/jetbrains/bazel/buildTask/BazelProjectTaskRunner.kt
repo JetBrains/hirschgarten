@@ -3,7 +3,7 @@ package org.jetbrains.bazel.buildTask
 import com.intellij.ide.trustedProjects.TrustedProjects
 import com.intellij.openapi.extensions.ExtensionPointName
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.rd.util.toPromise
+import org.jetbrains.concurrency.toPromiseWithoutLogError
 import com.intellij.task.ModuleBuildTask
 import com.intellij.task.ProjectTask
 import com.intellij.task.ProjectTaskContext
@@ -12,7 +12,6 @@ import com.intellij.task.ProjectTaskRunner
 import com.intellij.task.TaskRunnerResults
 import com.intellij.task.impl.ProjectTaskList
 import com.intellij.workspaceModel.ide.legacyBridge.findModuleEntity
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.commons.BazelStatus
 import org.jetbrains.bazel.config.isBazelProject
@@ -35,7 +34,6 @@ internal class BazelProjectTaskRunner : ProjectTaskRunner() {
       else -> false
     }
 
-  @OptIn(ExperimentalCoroutinesApi::class)
   override fun run(
     project: Project,
     projectTaskContext: ProjectTaskContext,
@@ -55,7 +53,7 @@ internal class BazelProjectTaskRunner : ProjectTaskRunner() {
     )
     additionalTasks.forEach { it.postRun(result) }
     result.toTaskRunnerResult()
-  }.toPromise()
+  }.toPromiseWithoutLogError()
 
   private fun obtainTargetsToBuild(tasks: Array<out ProjectTask>): List<Label> =
     tasks.filterIsInstance<ModuleBuildTask>()
