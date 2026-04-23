@@ -6,8 +6,7 @@ import com.intellij.ide.starter.extended.ide.CacheRedirectorPublicIdeDownloader
 import com.intellij.ide.starter.ide.InstalledIde
 import com.intellij.ide.starter.ide.installer.StandardInstaller
 import com.intellij.ide.starter.models.IdeInfo
-import com.intellij.ide.starter.models.IdeInfoType
-import com.intellij.tools.ide.starter.build.server.idea.ultimate.IdeaUltimate
+import com.intellij.tools.ide.starter.product.idea.ultimate.IdeaUltimate
 import jetbrains.buildServer.messages.serviceMessages.PublishArtifacts
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
