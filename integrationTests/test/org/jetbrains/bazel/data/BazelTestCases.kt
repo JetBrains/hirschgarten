@@ -295,7 +295,17 @@ object IdeaBazelCases : BaseBazelCasesParametrized(BazelTestContext.IDEA) {
         BazelProjectConfigurer.configureProjectBeforeUseWithoutBazelClean(context, createProjectView = false)
         preCacheBazelisk(context)
       },
-    )
+    ),
+  )
+
+  val ImportDepthZeroTest = withBazelProject(
+    projectInfo = withDefaults(
+      repositoryUrl = "https://github.com/JetBrainsBazelBot/simpleBazelProjectsForTesting.git",
+      commitHash = "4a16c2bd18310a30f9a8d9ae716a68c136eb19cf",
+      branchName = "main",
+      relativePath = "importDepthZero",
+      configure = { context -> BazelProjectConfigurer.configureProjectBeforeUse(context, createProjectView = false) },
+    ),
   )
 }
 

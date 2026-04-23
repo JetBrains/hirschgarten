@@ -57,7 +57,26 @@ def extract_java_toolchain(target, ctx, **kwargs):
     else:
         return None
 
-def get_jdeps(target): 
+# See https://github.com/bazelbuild/bazel/pull/26898
+# --experimental_inmemory_jdeps_files is true by default, which means jdeps won't be stored on disk with remote execution.
+# So we just "materialize" the in-memory file by copying it onto disk.
+def get_jdeps(ctx, target):
+    jdeps = get_raw_jdeps(target)
+    materialized_jdeps = []
+    for raw_jdeps_file in jdeps:
+        materialized_jdeps_file = ctx.actions.declare_file("materialized_" + raw_jdeps_file.basename)
+        ctx.actions.run_shell(
+            inputs = [raw_jdeps_file],
+            outputs = [materialized_jdeps_file],
+            progress_message = "(IntelliJ Bazel plugin) Materializing jdeps %s" % raw_jdeps_file,
+            mnemonic = "IJBazelPluginMaterializeJdeps",
+            command = "cp '%s' '%s'" % (raw_jdeps_file.path, materialized_jdeps_file.path),
+            use_default_shell_env = True,
+        )
+        materialized_jdeps.append(materialized_jdeps_file)
+    return materialized_jdeps
+
+def get_raw_jdeps(target):
     if JavaInfo in target:
         return [jo.jdeps for jo in target[JavaInfo].java_outputs if jo.jdeps != None]
     return []
@@ -80,7 +99,7 @@ def extract_java_runtime(target, ctx, output_groups, dep_targets, **kwargs):
     if runtime != None:
         java_home = to_file_location(runtime.java_home, "", False) if hasattr(runtime, "java_home") else None
 
-    jdeps = get_jdeps(target)
+    jdeps = get_jdeps(ctx, target)
     java_outputs = []
     provider = None
     if JavaInfo in target:
