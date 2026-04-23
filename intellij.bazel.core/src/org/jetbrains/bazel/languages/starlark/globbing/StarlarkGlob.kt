@@ -6,8 +6,6 @@ import com.google.common.cache.CacheBuilder
 import com.google.common.cache.CacheLoader
 import com.google.common.collect.Lists
 import com.intellij.openapi.application.ApplicationManager
-import com.intellij.openapi.application.readAction
-import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.progress.checkCanceled
 import com.intellij.openapi.progress.runBlockingCancellable
 import com.intellij.openapi.project.ProjectLocator
@@ -218,6 +216,10 @@ object StarlarkGlob {
      * If set, the given predicate is called for every directory encountered. If it returns false,
      * the corresponding item is not returned in the output and directories are not traversed
      * either.
+     *
+     * The predicate must be pure and fast, and it must not access PSI, indexes or other APIs
+     * that require a read action. It should only use VFS-level information available from
+     * {@link com.intellij.openapi.vfs.VirtualFile}.
      */
     fun setDirectoryFilter(pathFilter: Predicate<VirtualFile>): Builder {
       this.pathFilter = pathFilter
@@ -303,7 +305,7 @@ object StarlarkGlob {
       base: VirtualFile,
       patterns: Collection<String>,
     ): Set<VirtualFile> {
-      val baseIsDirectory = readAction { base.isDirectory }
+      val baseIsDirectory = base.isDirectory
 
       // We do a dumb loop, even though it will likely duplicate work
       // (e.g., readdir calls). In order to optimize, we would need
@@ -339,7 +341,7 @@ object StarlarkGlob {
       idx: Int,
     ) {
       checkCanceled()
-      if (baseIsDirectory && !readAction { dirPred.test(base) }) {
+      if (baseIsDirectory && !dirPred.test(base) ) {
         return
       }
 
@@ -372,10 +374,9 @@ object StarlarkGlob {
 
       if (!pattern.contains("*") && !pattern.contains("?")) {
         checkCanceled()
-        val (child, childIsDir, childIsFile) = readAction {
-          val child = base.findChild(pattern) ?: return@readAction null
-          Triple(child, child.isDirectory, child.isFile)
-        } ?: return
+        val child = base.findChild(pattern) ?: return
+        val childIsDir = child.isDirectory
+        val childIsFile = child.isFile
         if (!childIsDir && !childIsFile) {
           // The file is a dangling symlink, fifo, does not exist, etc.
           return
@@ -391,14 +392,13 @@ object StarlarkGlob {
         return
       }
 
-      val childrenSnapshots = readAction {
-        ProgressManager.checkCanceled()
-        val children = getChildren(base) ?: return@readAction null
-        children.map { child -> Triple(child, child.name, child.isDirectory) }
-      } ?: return
+      val children = getChildren(base) ?: return
 
-      for ((child, childName, childIsDir) in childrenSnapshots) {
+      for (child in children) {
         checkCanceled()
+
+        val childName = child.name
+        val childIsDir = child.isDirectory
 
         if ("**" == pattern && childIsDir) {
           // Recurse without shifting the pattern.

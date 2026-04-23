@@ -34,22 +34,34 @@ internal class StarlarkFileUsageSearcher : QueryExecutorBase<PsiReference, Searc
     if (starlarkFiles.isEmpty()) return
 
     starlarkFiles.forEach { virtualFile ->
-      val starlarkFile = psiManager.findFile(virtualFile) as? StarlarkFile ?: return
-      val baseDir = starlarkFile.virtualFile.parent ?: return
+      val starlarkFile = psiManager.findFile(virtualFile) as? StarlarkFile ?: return@forEach
+      val baseDir = virtualFile.parent ?: return@forEach
 
-      // Find all text occurrences that refer to the file
-      PsiTreeUtil
-        .collectElementsOfType(starlarkFile, StarlarkStringLiteralExpression::class.java)
-        .filter { isReferringToFile(it, file, psiManager) }
-        .forEach { processor.process(BazelLabelReference(it, true)) }
+      val shouldContinue = PsiTreeUtil.processElements(starlarkFile) { element ->
+        when (element) {
+          is StarlarkStringLiteralExpression -> {
+            if (isReferringToFile(element, file, starlarkFile, psiManager)) {
+              val ref = BazelLabelReference(element, true)
+              if (!processor.process(ref)) {
+                return@processElements false
+              }
+            }
+          }
+          is StarlarkCallExpression -> {
+            if (element.firstChild?.text == "glob") {
+              val ref = getReferenceToGlobCallOrNull(element, file, StarlarkGlob.forPath(baseDir))
+              if (ref != null && !processor.process(ref)) {
+                return@processElements false
+              }
+            }
+          }
+        }
+        true
+      }
 
-      // Find all glob() calls that refer to the file
-      PsiTreeUtil
-        .collectElementsOfType(starlarkFile, StarlarkCallExpression::class.java)
-        .asSequence()
-        .filter { it.firstChild?.text == "glob" }
-        .mapNotNull { getReferenceToGlobCallOrNull(it, file, StarlarkGlob.forPath(baseDir)) }
-        .forEach { processor.process(it) }
+      if (!shouldContinue) {
+        return
+      }
     }
   }
 
@@ -80,11 +92,12 @@ internal class StarlarkFileUsageSearcher : QueryExecutorBase<PsiReference, Searc
   private fun isReferringToFile(
     literal: StarlarkStringLiteralExpression,
     targetFile: PsiFile,
+    contextFile: PsiFile,
     psiManager: PsiManager,
   ): Boolean {
     val label = Label.parseOrNull(literal.getStringContents()) ?: return false
-    val contextFile = literal.containingFile.originalFile.virtualFile ?: return false
-    val resolvedElement = resolveLabel(targetFile.project, label, contextFile, acceptOnlyFileTarget = true)
+    val contextVFile = contextFile.originalFile.virtualFile ?: return false
+    val resolvedElement = resolveLabel(targetFile.project, label, contextVFile, acceptOnlyFileTarget = true)
     return when (resolvedElement) {
       is PsiFile -> psiManager.areElementsEquivalent(resolvedElement, targetFile)
       else -> false
