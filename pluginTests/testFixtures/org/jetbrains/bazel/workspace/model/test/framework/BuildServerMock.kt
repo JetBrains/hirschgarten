@@ -22,7 +22,6 @@ import org.jetbrains.bsp.protocol.RunResult
 import org.jetbrains.bsp.protocol.TaskId
 import org.jetbrains.bsp.protocol.TestParams
 import org.jetbrains.bsp.protocol.TestResult
-import org.jetbrains.bsp.protocol.WorkspaceBazelPathsResult
 import org.jetbrains.bsp.protocol.WorkspaceBazelRepoMappingResult
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetParams
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetPhasedParams
@@ -76,8 +75,8 @@ open class BuildServerMock(
 
   override val bazelInfo =
     BazelInfo(
-      execRoot = Paths.get(""),
-      outputBase = Paths.get(""),
+      execRoot = Paths.get("bazel-out/exec"),
+      outputBase = Paths.get("bazel-out"),
       workspaceRoot = Paths.get(""),
       bazelBin = Path("bazel-bin"),
       release = BazelRelease.fromReleaseString("release 6.0.0").orFallbackVersion(),
@@ -86,12 +85,11 @@ open class BuildServerMock(
       emptyList(),
     )
 
+  override val bazelPathsResolver: BazelPathsResolver
+    get() = BazelPathsResolver(bazelInfo)
+
   override val outFileHardLinks: BazelOutFileHardLinks
     get() = BazelOutFileHardLinks.NONE
-
-  override suspend fun workspaceBazelPaths(): WorkspaceBazelPathsResult {
-    return WorkspaceBazelPathsResult("/path/to/bazel-bin", "/path/to/bazel-out/exec", BazelPathsResolver(bazelInfo))
-  }
 
   override suspend fun workspaceName(taskId: TaskId): WorkspaceNameResult = WorkspaceNameResult("_main")
 

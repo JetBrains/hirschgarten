@@ -202,19 +202,18 @@ class JavaModuleToDummyJavaModulesTransformerHACK(
     javaAddendum = javaModule.javaAddendum,
   )
 
+  /**
+   * Returns a map from a restored source root to the number of "votes", i.e., the number of original source files that "voted" for that root.
+   */
+  private fun calculateSourceRootsForParentDirs(sourceRoots: List<JavaSourceRoot>): Map<JavaSourceRoot, Int> =
+    sourceRoots
+      .asSequence()
+      .filter { root -> !root.generated && root.sourcePath.startsWith(projectBasePath) }
+      .mapNotNull {
+        sourceRootForParentDir(it)
+      }.groupingBy { it }
+      .eachCount()
 }
-
-/**
- * Returns a map from a restored source root to the number of "votes", i.e., the number of original source files that "voted" for that root.
- */
-private fun calculateSourceRootsForParentDirs(sourceRoots: List<JavaSourceRoot>): Map<JavaSourceRoot, Int> =
-  sourceRoots
-    .asSequence()
-    .filter { root -> !root.generated }
-    .mapNotNull {
-      sourceRootForParentDir(it)
-    }.groupingBy { it }
-    .eachCount()
 
 private fun sourceRootForParentDir(sourceRoot: JavaSourceRoot): JavaSourceRoot? {
   if (sourceRoot.sourcePath.isDirectory()) return null

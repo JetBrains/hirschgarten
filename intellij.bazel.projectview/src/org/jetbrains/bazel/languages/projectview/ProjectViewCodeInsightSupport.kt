@@ -15,7 +15,7 @@ import org.jetbrains.bazel.label.Label
 //  decouple IJ code analysis stuff from target utils
 @ApiStatus.Internal
 interface ProjectViewCodeInsightSupport {
-  val allTargetsAndLibrariesLabels: Sequence<String>
+  val allTargetLabels: Sequence<String>
   val excludedRoots: Set<VirtualFile>
 
   fun resolvePsiFromLabel(label: Label, containingFile: VirtualFile? = null, acceptOnlyFileTarget: Boolean = false): PsiElement?

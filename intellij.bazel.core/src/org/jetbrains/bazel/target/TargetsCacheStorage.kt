@@ -83,25 +83,6 @@ class TargetsCacheStorage(
       .hashBytesToLong(input.toByteArray())
   }
 
-  fun getAllTargetsAndLibrariesLabelsCache(): List<String> {
-    val result = ArrayList<String>(labelToTargetInfo.size + libraryIdToTarget.size)
-    run {
-      val cursor = labelToTargetInfo.cursor(null)
-      while (cursor.hasNext()) {
-        cursor.next()
-        result.add(cursor.value.id.toShortString(project))
-      }
-    }
-    run {
-      val cursor = libraryIdToTarget.cursor(null)
-      while (cursor.hasNext()) {
-        cursor.next()
-        result.add(cursor.value.toShortString(project))
-      }
-    }
-    return result
-  }
-
   fun getAllBuildTargets(): Sequence<BuildTarget> =
     sequence {
       val cursor = labelToTargetInfo.cursor(null)
@@ -190,6 +171,7 @@ class TargetsCacheStorage(
           baseDirectory = info.baseDirectory,
           data = info.data,
           isManual = info.isManual,
+          isWorkspace = info.isWorkspace
         ),
       )
     }
@@ -198,7 +180,7 @@ class TargetsCacheStorage(
   fun reset(
     fileToTarget: Map<Path, List<Label>>,
     executableTargets: Map<ResolvedLabel, List<Label>>,
-    libraryItems: List<LibraryItem>,
+    libraryToTarget: Map<String, Label>,
     targets: List<BuildTarget>,
   ) {
     val hashStream = Hashing.xxh3_64()
@@ -216,8 +198,8 @@ class TargetsCacheStorage(
     }
 
     this.libraryIdToTarget.clear()
-    for (library in libraryItems) {
-      this.libraryIdToTarget.put(stringToHashId(library.id.formatAsModuleName(project)), library.id)
+    for (library in libraryToTarget.entries) {
+      this.libraryIdToTarget.put(stringToHashId(library.key), library.value)
     }
 
     this.moduleIdToTarget.clear()
@@ -234,6 +216,7 @@ class TargetsCacheStorage(
           baseDirectory = target.baseDirectory,
           data = target.data,
           isManual = target.isManual,
+          isWorkspace = target.isWorkspace
         ),
       )
 

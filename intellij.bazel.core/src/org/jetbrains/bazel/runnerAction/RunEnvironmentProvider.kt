@@ -20,10 +20,9 @@ import java.nio.file.Path
 class RunEnvironmentProvider(private val project: Project) {
   suspend fun getJvmEnvironmentItem(target: Label): JvmEnvironmentItem? =
     project.connection.runWithServer { server ->
-      val paths = server.workspaceBazelPaths()
       return@runWithServer this.project.targetUtils
         .getBuildTargetForLabel(target)
-        ?.getJvmEnvironmentItem(paths.bazelPathsResolver, server, target)
+        ?.getJvmEnvironmentItem(server.bazelPathsResolver, server, target)
     }
 
   private suspend fun BuildTarget.getJvmEnvironmentItem(

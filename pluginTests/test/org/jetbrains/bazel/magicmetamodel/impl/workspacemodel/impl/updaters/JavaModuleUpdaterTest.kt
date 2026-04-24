@@ -10,6 +10,9 @@ import com.intellij.java.workspace.entities.javaSettings
 import com.intellij.java.workspace.entities.javaSourceRoots
 import com.intellij.platform.workspace.jps.entities.ContentRootEntity
 import com.intellij.platform.workspace.jps.entities.DependencyScope
+import com.intellij.platform.workspace.jps.entities.LibraryDependency
+import com.intellij.platform.workspace.jps.entities.LibraryId
+import com.intellij.platform.workspace.jps.entities.LibraryTableId
 import com.intellij.platform.workspace.jps.entities.ModuleDependency
 import com.intellij.platform.workspace.jps.entities.ModuleEntity
 import com.intellij.platform.workspace.jps.entities.ModuleId
@@ -24,7 +27,6 @@ import io.kotest.assertions.throwables.shouldNotThrow
 import org.jetbrains.bazel.commons.LanguageClass
 import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.commons.TargetKind
-import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.LibraryGraph
 import org.jetbrains.bazel.workspace.model.matchers.entries.ExpectedModuleEntity
 import org.jetbrains.bazel.workspace.model.matchers.entries.ExpectedSourceRootEntity
 import org.jetbrains.bazel.workspace.model.matchers.entries.shouldBeEqual
@@ -173,11 +175,10 @@ class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
                       scope = DependencyScope.COMPILE,
                       productionOnTest = true,
                     ),
-                    ModuleDependency(
-                      module = ModuleId(LibraryGraph.addLibraryModulePrefix("lib1")),
-                    exported = true,
-                    scope = DependencyScope.COMPILE,
-                    productionOnTest = true,
+                    LibraryDependency(
+                      LibraryId("lib1", LibraryTableId.ProjectLibraryTableId),
+                      exported = true,
+                      scope = DependencyScope.COMPILE,
                     ),
                     ModuleDependency(
                       module = ModuleId("module3"),
@@ -185,11 +186,10 @@ class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
                       scope = DependencyScope.COMPILE,
                       productionOnTest = true,
                     ),
-                    ModuleDependency(
-                      module = ModuleId(name = LibraryGraph.addLibraryModulePrefix("lib2")),
+                    LibraryDependency(
+                      LibraryId("lib2", LibraryTableId.ProjectLibraryTableId),
                       exported = true,
                       scope = DependencyScope.COMPILE,
-                      productionOnTest = true,
                     ),
                     SdkDependency(SdkId("test-proj-11", "JavaSDK")),
                     ModuleSourceDependency,
@@ -485,17 +485,15 @@ class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
                       scope = DependencyScope.COMPILE,
                       productionOnTest = true,
                     ),
-                    ModuleDependency(
-                      module = ModuleId(LibraryGraph.addLibraryModulePrefix("lib1")),
+                    LibraryDependency(
+                      LibraryId("lib1", LibraryTableId.ProjectLibraryTableId),
                       exported = true,
                       scope = DependencyScope.COMPILE,
-                      productionOnTest = true,
                     ),
-                    ModuleDependency(
-                      module = ModuleId(LibraryGraph.addLibraryModulePrefix("lib2")),
+                    LibraryDependency(
+                      LibraryId("lib2", LibraryTableId.ProjectLibraryTableId),
                       exported = true,
                       scope = DependencyScope.COMPILE,
-                      productionOnTest = true,
                     ),
                     SdkDependency(SdkId("test-proj-11", "JavaSDK")),
                     ModuleSourceDependency,
@@ -527,11 +525,10 @@ class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
                       scope = DependencyScope.COMPILE,
                       productionOnTest = true,
                     ),
-                    ModuleDependency(
-                      module = ModuleId(LibraryGraph.addLibraryModulePrefix("lib1")),
+                    LibraryDependency(
+                      LibraryId("lib1", LibraryTableId.ProjectLibraryTableId),
                       exported = true,
                       scope = DependencyScope.COMPILE,
-                      productionOnTest = true,
                     ),
                     SdkDependency(SdkId("test-proj-11", "JavaSDK")),
                     ModuleSourceDependency,

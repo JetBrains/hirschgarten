@@ -141,7 +141,7 @@ internal class BazelPyRunLineMarkerContributorTest : CodeInsightFixtureTestCase<
           sources = emptyList(),
           resources = emptyList(),
           baseDirectory = Path.of(myFixture.tempDirPath, "base_dir"),
-          data =
+          data = listOf(
             PythonBuildTarget(
               version = "3.8",
               interpreter = Path.of(myFixture.tempDirPath, "python3"),
@@ -151,6 +151,7 @@ internal class BazelPyRunLineMarkerContributorTest : CodeInsightFixtureTestCase<
               mainFile = mainFile?.virtualFile?.toNioPath(),
               mainModule = mainModule,
             ),
+          ),
         ),
       ),
     )

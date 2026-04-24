@@ -16,19 +16,13 @@ data class LibraryItem(
   val containsInternalJars: Boolean,
 )
 
+@get:ApiStatus.Internal
+val LibraryItem.allJars: List<Path>
+  get() = ijars + jars + sourceJars
+
 @ApiStatus.Internal
 data class MavenCoordinates(
   val groupId: String,
   val artifactId: String,
   val version: String,
 )
-
-internal data class GoLibraryItem(
-  val id: Label,
-  val goImportPath: String? = null,
-  val goRoot: Path? = null,
-)
-
-internal data class WorkspaceLibrariesResult(val libraries: List<LibraryItem>)
-
-internal data class WorkspaceGoLibrariesResult(val libraries: List<GoLibraryItem>)

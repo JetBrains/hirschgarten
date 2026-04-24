@@ -10,6 +10,7 @@ import org.jetbrains.bazel.magicmetamodel.ProjectDetails
 import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.ModuleDetails
 import org.jetbrains.bazel.workspace.model.test.framework.BazelTestApplication
 import org.jetbrains.bsp.protocol.JvmBuildTarget
+import org.jetbrains.bsp.protocol.JvmDependency
 import org.jetbrains.bsp.protocol.RawBuildTarget
 import org.jetbrains.bsp.protocol.SourceItem
 import org.junit.jupiter.api.DisplayName
@@ -45,7 +46,7 @@ class ProjectDetailsToModuleDetailsTransformerTest {
       )
 
     // when
-    val transformer = ProjectDetailsToModuleDetailsTransformer(projectDetails, LibraryGraph(emptyList()))
+    val transformer = ProjectDetailsToModuleDetailsTransformer(projectDetails)
     val actualModuleDetails = transformer.moduleDetailsForTargetId(target.id)
 
     // then
@@ -77,11 +78,12 @@ class ProjectDetailsToModuleDetailsTransformerTest {
         listOf(SourceItem(Path("/root/dir/example/package/File1.java"), false)),
         listOf(Path("/root/dir/resource/File.txt")),
         baseDirectory = Path("base/dir"),
-        data =
+        data = listOf(
           JvmBuildTarget(
             javaVersion = "",
             javacOpts = listOf("opt1", "opt2", "opt3"),
-          ),
+          )
+        ),
       )
 
     val projectDetails =
@@ -92,7 +94,7 @@ class ProjectDetailsToModuleDetailsTransformerTest {
       )
 
     // when
-    val transformer = ProjectDetailsToModuleDetailsTransformer(projectDetails, LibraryGraph(emptyList()))
+    val transformer = ProjectDetailsToModuleDetailsTransformer(projectDetails)
     val actualModuleDetails = transformer.moduleDetailsForTargetId(target.id)
 
     // then
@@ -126,11 +128,13 @@ class ProjectDetailsToModuleDetailsTransformerTest {
         listOf(SourceItem(Path("/root/dir1/example/package/File1.java"), false)),
         listOf(Path("/root/dir1/resource/File.txt")),
         baseDirectory = Path("base/dir"),
-        data =
+        data = listOf(
           JvmBuildTarget(
             javaVersion = "",
             javacOpts = target1JavacOptionsItem,
-          ),
+            jvmDependencies = listOf(JvmDependency.ModuleDependency(DependencyLabel(target2Id)))
+          )
+        ),
       )
 
     val target2 =
@@ -163,11 +167,13 @@ class ProjectDetailsToModuleDetailsTransformerTest {
         emptyList(),
         emptyList(),
         baseDirectory = Path("base/dir"),
-        data =
+        data = listOf(
           JvmBuildTarget(
             javaVersion = "",
             javacOpts = target3JavacOptionsItem,
-          ),
+            jvmDependencies = listOf(JvmDependency.ModuleDependency(DependencyLabel(target2Id)))
+          )
+        ),
       )
 
     val target4Id = Label.parse("target4")
@@ -185,6 +191,12 @@ class ProjectDetailsToModuleDetailsTransformerTest {
         ),
         emptyList(),
         baseDirectory = Path("base/dir"),
+        data = listOf(
+          JvmBuildTarget(
+            javaVersion = "",
+            jvmDependencies = listOf(JvmDependency.ModuleDependency(DependencyLabel(target1Id)))
+          )
+        )
       )
     val projectDetails =
       ProjectDetails(
@@ -194,7 +206,7 @@ class ProjectDetailsToModuleDetailsTransformerTest {
       )
 
     // when
-    val transformer = ProjectDetailsToModuleDetailsTransformer(projectDetails, LibraryGraph(emptyList()))
+    val transformer = ProjectDetailsToModuleDetailsTransformer(projectDetails)
     val actualModuleDetails1 = transformer.moduleDetailsForTargetId(target1.id)
     val actualModuleDetails2 = transformer.moduleDetailsForTargetId(target2.id)
     val actualModuleDetails3 = transformer.moduleDetailsForTargetId(target3.id)

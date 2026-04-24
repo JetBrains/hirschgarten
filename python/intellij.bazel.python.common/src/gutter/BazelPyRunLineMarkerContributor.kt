@@ -12,6 +12,7 @@ import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.target.targetUtils
 import org.jetbrains.bazel.ui.gutters.BazelRunLineMarkerContributor
 import org.jetbrains.bsp.protocol.PythonBuildTarget
+import org.jetbrains.bsp.protocol.utils.extractPythonBuildTarget
 import kotlin.io.path.isRegularFile
 
 @ApiStatus.Internal
@@ -28,7 +29,7 @@ class BazelPyRunLineMarkerContributor : BazelRunLineMarkerContributor() {
     val fileNioPath = virtualFile.toNioPathOrNull()
     return targetUtils.getTargetsForFile(virtualFile).any {
       val buildTarget = targetUtils.getBuildTargetForLabel(it) ?: return@any false
-      val pythonBuildTargetData = buildTarget.data as? PythonBuildTarget ?: return@any false
+      val pythonBuildTargetData = extractPythonBuildTarget(buildTarget) ?: return@any false
       if (pythonBuildTargetData.hasMainFileDefined()) {
         pythonBuildTargetData.mainFile == fileNioPath
       } else if (pythonBuildTargetData.mainModule.isNullOrEmpty()) {

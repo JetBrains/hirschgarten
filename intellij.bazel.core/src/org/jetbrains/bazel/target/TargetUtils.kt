@@ -43,7 +43,6 @@ import org.jetbrains.bazel.magicmetamodel.LIBRARY_MODULE_PREFIX
 import org.jetbrains.bazel.magicmetamodel.formatAsModuleName
 import org.jetbrains.bazel.target.TargetsCacheStorage.Companion.openStore
 import org.jetbrains.bsp.protocol.BuildTarget
-import org.jetbrains.bsp.protocol.LibraryItem
 import org.jetbrains.bsp.protocol.RawBuildTarget
 import java.nio.file.Path
 import kotlin.io.path.deleteIfExists
@@ -58,7 +57,7 @@ private fun nowAsDuration() = System.currentTimeMillis().toDuration(DurationUnit
 /**
  * Increment when making breaking changes to [TargetsCacheStorage]
  */
-private const val TARGETS_STORAGE_VERSION: Int = 4
+private const val TARGETS_STORAGE_VERSION: Int = 6
 
 private fun Project.targetsStorageFile(storeVersion: Int): Path = getProjectDataPath("bazel-targets-v$storeVersion.db")
 
@@ -84,9 +83,9 @@ class TargetUtils(private val project: Project, private val coroutineScope: Coro
   // we save only once every 5 minutes, and not earlier than 5 minutes after IDEA startup
   private var lastSaved = nowAsDuration()
 
-  private val allTargetsAndLibrariesLabelsCache =
+  private val allTargetsShortLabelsCacheCache =
     SynchronizedClearableLazy {
-      db.getAllTargetsAndLibrariesLabelsCache()
+      db.getAllTargets().map { it.toShortString(project) }.toList()
     }
 
   private val allExecutableTargetsCache = SynchronizedClearableLazy {
@@ -96,8 +95,8 @@ class TargetUtils(private val project: Project, private val coroutineScope: Coro
       .toList()
   }
 
-  val allTargetsAndLibrariesLabels: List<String>
-    get() = allTargetsAndLibrariesLabelsCache.value
+  val allTargetShortLabels: List<String>
+    get() = allTargetsShortLabelsCacheCache.value
 
   val allExecutableTargetLabels: List<String>
     get() = allExecutableTargetsCache.value
@@ -138,7 +137,7 @@ class TargetUtils(private val project: Project, private val coroutineScope: Coro
   fun saveTargets(
     targets: List<RawBuildTarget>,
     fileToTarget: Map<Path, List<Label>>,
-    libraryItems: List<LibraryItem>,
+    libraryToTarget: Map<String, Label>,
   ) {
     ThreadingAssertions.assertBackgroundThread()
 
@@ -152,7 +151,7 @@ class TargetUtils(private val project: Project, private val coroutineScope: Coro
     db.reset(
       fileToTarget = fileToTarget,
       executableTargets = executableTargets,
-      libraryItems = libraryItems,
+      libraryToTarget = libraryToTarget,
       targets = targets,
     )
 
@@ -240,7 +239,7 @@ class TargetUtils(private val project: Project, private val coroutineScope: Coro
 
   fun notifyTargetListUpdated() {
     check(mutableTargetListUpdated.tryEmit(Unit))
-    allTargetsAndLibrariesLabelsCache.drop()
+    allTargetsShortLabelsCacheCache.drop()
     allExecutableTargetsCache.drop()
   }
 

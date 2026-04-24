@@ -5,6 +5,7 @@ import org.jetbrains.bazel.commons.LanguageClass
 import org.jetbrains.bazel.sync.ProjectPostSyncHook
 import org.jetbrains.bazel.target.targetUtils
 import org.jetbrains.bsp.protocol.ProtobufBuildTarget
+import org.jetbrains.bsp.protocol.utils.extractProtobufBuildTarget
 import java.nio.file.Path
 
 internal class BazelProtobufSyncHook : ProjectPostSyncHook {
@@ -16,7 +17,7 @@ internal class BazelProtobufSyncHook : ProjectPostSyncHook {
       .allBuildTargets()
       .filter { it.kind.languageClasses.contains(LanguageClass.PROTOBUF) }
       .forEach {
-        val protoData = it.data as? ProtobufBuildTarget ?: return@forEach
+        val protoData = extractProtobufBuildTarget(it) ?: return@forEach
         for ((importPath, absolutePath) in protoData.sources) {
           store.putProtoIndexData(BazelProtobufSyncIndexData(importPath = importPath, absolutePath = Path.of(absolutePath)))
         }

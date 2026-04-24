@@ -9,7 +9,7 @@ import org.jetbrains.bsp.protocol.ProtobufBuildTarget
 import org.jetbrains.bsp.protocol.PythonBuildTarget
 import org.jetbrains.bsp.protocol.ScalaBuildTarget
 
-private inline fun <reified Data> extractData(target: BuildTarget): Data? = target.data as? Data
+private inline fun <reified Data> extractData(target: BuildTarget): Data? = target.data.filterIsInstance<Data>().singleOrNull()
 
 @ApiStatus.Internal
 fun extractPythonBuildTarget(target: BuildTarget): PythonBuildTarget? = extractData(target)
@@ -27,8 +27,4 @@ fun extractKotlinBuildTarget(target: BuildTarget): KotlinBuildTarget? = extractD
 fun extractProtobufBuildTarget(target: BuildTarget): ProtobufBuildTarget? = extractData(target)
 
 @ApiStatus.Internal
-fun extractJvmBuildTarget(target: BuildTarget): JvmBuildTarget? =
-  extractData(target)
-    ?: extractKotlinBuildTarget(target)?.jvmBuildTarget
-    ?: extractScalaBuildTarget(target)?.jvmBuildTarget
-    ?: extractProtobufBuildTarget(target)?.jvmBuildTarget
+fun extractJvmBuildTarget(target: BuildTarget): JvmBuildTarget? = extractData(target)

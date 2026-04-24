@@ -211,12 +211,14 @@ class ResourcesItemToJavaResourceRootTransformerTest {
     shouldDetectPrefix(
       prefix = resourceStripPrefix,
       subhierarchy = "",
-      data = KotlinBuildTarget(
-        languageVersion = "1.8",
-        apiVersion = "1.8",
-        kotlincOptions = emptyList(),
-        associates = emptyList(),
-        jvmBuildTarget = JvmBuildTarget(
+      data = listOf(
+        KotlinBuildTarget(
+          languageVersion = "1.8",
+          apiVersion = "1.8",
+          kotlincOptions = emptyList(),
+          associates = emptyList(),
+        ),
+        JvmBuildTarget(
           javaVersion = "17",
           resolvedResourceStripPrefix = resourceStripPrefix,
         ),
@@ -240,12 +242,14 @@ class ResourcesItemToJavaResourceRootTransformerTest {
 
     val buildTarget = createRawBuildTarget(
       resources = listOf(srcMainResourcesFile, srcMainJavaFile, kotlinFile),
-      data = KotlinBuildTarget(
-        languageVersion = "1.8",
-        apiVersion = "1.8",
-        kotlincOptions = emptyList(),
-        associates = emptyList(),
-        jvmBuildTarget = JvmBuildTarget(
+      data = listOf(
+        KotlinBuildTarget(
+          languageVersion = "1.8",
+          apiVersion = "1.8",
+          kotlincOptions = emptyList(),
+          associates = emptyList(),
+        ),
+        JvmBuildTarget(
           javaVersion = "17",
           resolvedResourceStripPrefix = null,
         ),
@@ -316,11 +320,13 @@ class ResourcesItemToJavaResourceRootTransformerTest {
     shouldDetectPrefix(
       prefix = resourceStripPrefix,
       subhierarchy = "",
-      data = ScalaBuildTarget(
-        scalaVersion = "2.13",
-        sdkJars = emptyList(),
-        scalacOptions = emptyList(),
-        jvmBuildTarget = JvmBuildTarget(
+      data = listOf(
+        ScalaBuildTarget(
+          scalaVersion = "2.13",
+          sdkJars = emptyList(),
+          scalacOptions = emptyList(),
+        ),
+        JvmBuildTarget(
           javaVersion = "17",
           resolvedResourceStripPrefix = resourceStripPrefix,
         ),
@@ -345,11 +351,13 @@ class ResourcesItemToJavaResourceRootTransformerTest {
 
     val buildTarget = createRawBuildTarget(
       resources = listOf(srcMainResourcesFile, srcTestJavaFile, externalFile),
-      data = ScalaBuildTarget(
-        scalaVersion = "2.13",
-        sdkJars = emptyList(),
-        scalacOptions = emptyList(),
-        jvmBuildTarget = JvmBuildTarget(
+      data = listOf(
+        ScalaBuildTarget(
+          scalaVersion = "2.13",
+          sdkJars = emptyList(),
+          scalacOptions = emptyList(),
+        ),
+        JvmBuildTarget(
           javaVersion = "17",
           resolvedResourceStripPrefix = null,
         ),
@@ -426,11 +434,11 @@ class ResourcesItemToJavaResourceRootTransformerTest {
     shouldDetectPrefix(
       prefix = resourceStripPrefix,
       subhierarchy = "",
-      data = JvmBuildTarget(
+      data = listOf(JvmBuildTarget(
         javaVersion = "17",
         resolvedResourceStripPrefix = resourceStripPrefix,
       ),
-    )
+    ))
   }
 
   @Test
@@ -449,7 +457,7 @@ class ResourcesItemToJavaResourceRootTransformerTest {
 
     val buildTarget = createRawBuildTarget(
       resources = listOf(srcMainResourcesFile, javaFile, javatestsFile),
-      data = JvmBuildTarget(javaVersion = "17", resolvedResourceStripPrefix = null),
+      data = listOf(JvmBuildTarget(javaVersion = "17", resolvedResourceStripPrefix = null)),
     )
 
     // when
@@ -673,7 +681,7 @@ class ResourcesItemToJavaResourceRootTransformerTest {
     val buildTarget = createRawBuildTarget(
       sources = listOf(SourceItem(path = sourceFile, generated = false)),
       resources = listOf(resourceFile),
-      data = JvmBuildTarget(javaVersion = "17", resolvedResourceStripPrefix = null),
+      data = listOf(JvmBuildTarget(javaVersion = "17", resolvedResourceStripPrefix = null)),
     )
 
     // when
@@ -700,12 +708,14 @@ class ResourcesItemToJavaResourceRootTransformerTest {
     val buildTarget = createRawBuildTarget(
       sources = listOf(SourceItem(path = sourceFile, generated = false)),
       resources = listOf(conflictingResource, safeResource),
-      data = KotlinBuildTarget(
-        languageVersion = "1.8",
-        apiVersion = "1.8",
-        kotlincOptions = emptyList(),
-        associates = emptyList(),
-        jvmBuildTarget = JvmBuildTarget(javaVersion = "17", resolvedResourceStripPrefix = null),
+      data = listOf(
+        KotlinBuildTarget(
+          languageVersion = "1.8",
+          apiVersion = "1.8",
+          kotlincOptions = emptyList(),
+          associates = emptyList(),
+        ),
+        JvmBuildTarget(javaVersion = "17", resolvedResourceStripPrefix = null),
       ),
     )
 
@@ -729,12 +739,14 @@ class ResourcesItemToJavaResourceRootTransformerTest {
     val buildTarget = createRawBuildTarget(
       sources = emptyList(),
       resources = listOf(resourceFile),
-      data = KotlinBuildTarget(
-        languageVersion = "1.8",
-        apiVersion = "1.8",
-        kotlincOptions = emptyList(),
-        associates = emptyList(),
-        jvmBuildTarget = JvmBuildTarget(javaVersion = "17", resolvedResourceStripPrefix = null),
+      data = listOf(
+        KotlinBuildTarget(
+          languageVersion = "1.8",
+          apiVersion = "1.8",
+          kotlincOptions = emptyList(),
+          associates = emptyList(),
+        ),
+        JvmBuildTarget(javaVersion = "17", resolvedResourceStripPrefix = null),
       ),
     )
 
@@ -759,12 +771,14 @@ class ResourcesItemToJavaResourceRootTransformerTest {
     val buildTarget = createRawBuildTarget(
       sources = listOf(SourceItem(path = sourceFile, generated = false)),
       resources = listOf(resourceFile),
-      data = KotlinBuildTarget(
-        languageVersion = "1.8",
-        apiVersion = "1.8",
-        kotlincOptions = emptyList(),
-        associates = emptyList(),
-        jvmBuildTarget = JvmBuildTarget(
+      data = listOf(
+        KotlinBuildTarget(
+          languageVersion = "1.8",
+          apiVersion = "1.8",
+          kotlincOptions = emptyList(),
+          associates = emptyList(),
+        ),
+        JvmBuildTarget(
           javaVersion = "17",
           resolvedResourceStripPrefix = stripPrefix,
         ),
@@ -791,9 +805,11 @@ class ResourcesItemToJavaResourceRootTransformerTest {
     stripPrefix.resolve("bazel-bin").createSymbolicLinkPointingTo(execrootTarget)
     val buildTarget = createRawBuildTarget(
       resources = listOf(resourceFile),
-      data = JvmBuildTarget(
-        javaVersion = "17",
-        resolvedResourceStripPrefix = stripPrefix,
+      data = listOf(
+        JvmBuildTarget(
+          javaVersion = "17",
+          resolvedResourceStripPrefix = stripPrefix,
+        ),
       ),
     )
 
@@ -817,7 +833,7 @@ class ResourcesItemToJavaResourceRootTransformerTest {
     srcMainResources.resolve("bazel-out").createSymbolicLinkPointingTo(execrootTarget)
     val buildTarget = createRawBuildTarget(
       resources = listOf(resourceFile),
-      data = JvmBuildTarget(javaVersion = "17", resolvedResourceStripPrefix = null),
+      data = listOf(JvmBuildTarget(javaVersion = "17", resolvedResourceStripPrefix = null)),
     )
 
     // when
@@ -840,7 +856,7 @@ class ResourcesItemToJavaResourceRootTransformerTest {
     val resourceFile = symlink.resolve("data.xml")
     val buildTarget = createRawBuildTarget(
       resources = listOf(resourceFile),
-      data = JvmBuildTarget(javaVersion = "17", resolvedResourceStripPrefix = null),
+      data = listOf(JvmBuildTarget(javaVersion = "17", resolvedResourceStripPrefix = null)),
     )
 
     // when
@@ -866,25 +882,27 @@ class ResourcesItemToJavaResourceRootTransformerTest {
   private fun shouldDetectJavaPrefixTests(prefixes: List<String>, subhierarchies: List<String>) = shouldDetectPrefixTests(
     prefixes = prefixes,
     subhierarchies = subhierarchies,
-    data = JvmBuildTarget(javaVersion = "17", resolvedResourceStripPrefix = null),
+    data = listOf(JvmBuildTarget(javaVersion = "17", resolvedResourceStripPrefix = null)),
   )
 
 
   private fun shouldNotDetectJavaPrefixTests(prefixes: List<String>, subhierarchies: List<String>) = shouldNotDetectPrefixTests(
     prefixes = prefixes,
     subhierarchies = subhierarchies,
-    data = JvmBuildTarget(javaVersion = "17", resolvedResourceStripPrefix = null),
+    data = listOf(JvmBuildTarget(javaVersion = "17", resolvedResourceStripPrefix = null)),
   )
 
   private fun shouldDetectKotlinPrefixTests(vararg paths: String) = shouldDetectPrefixTests(
     prefixes = paths.asList(),
     subhierarchies = listOf(""),
-    data = KotlinBuildTarget(
-      languageVersion = "1.8",
-      apiVersion = "1.8",
-      kotlincOptions = emptyList(),
-      associates = emptyList(),
-      jvmBuildTarget = JvmBuildTarget(
+    data = listOf(
+      KotlinBuildTarget(
+        languageVersion = "1.8",
+        apiVersion = "1.8",
+        kotlincOptions = emptyList(),
+        associates = emptyList(),
+      ),
+      JvmBuildTarget(
         javaVersion = "17",
         resolvedResourceStripPrefix = null,
       ),
@@ -894,12 +912,14 @@ class ResourcesItemToJavaResourceRootTransformerTest {
   private fun shouldNotDetectKotlinPrefixTests(vararg paths: String) = shouldNotDetectPrefixTests(
     prefixes = paths.asList(),
     subhierarchies = listOf(""),
-    data = KotlinBuildTarget(
-      languageVersion = "1.8",
-      apiVersion = "1.8",
-      kotlincOptions = emptyList(),
-      associates = emptyList(),
-      jvmBuildTarget = JvmBuildTarget(
+    data = listOf(
+      KotlinBuildTarget(
+        languageVersion = "1.8",
+        apiVersion = "1.8",
+        kotlincOptions = emptyList(),
+        associates = emptyList(),
+      ),
+      JvmBuildTarget(
         javaVersion = "17",
         resolvedResourceStripPrefix = null,
       ),
@@ -919,11 +939,13 @@ class ResourcesItemToJavaResourceRootTransformerTest {
   private fun shouldNotDetectScalaPrefixTests(prefixes: List<String>, subhierarchies: List<String>) = shouldNotDetectPrefixTests(
     prefixes = prefixes,
     subhierarchies = subhierarchies,
-    data = ScalaBuildTarget(
-      scalaVersion = "2.13",
-      sdkJars = emptyList(),
-      scalacOptions = emptyList(),
-      jvmBuildTarget = JvmBuildTarget(
+    data = listOf(
+      ScalaBuildTarget(
+        scalaVersion = "2.13",
+        sdkJars = emptyList(),
+        scalacOptions = emptyList(),
+      ),
+      JvmBuildTarget(
         javaVersion = "17",
         resolvedResourceStripPrefix = null,
       ),
@@ -933,11 +955,13 @@ class ResourcesItemToJavaResourceRootTransformerTest {
   private fun shouldDetectScalaPrefixTests(prefixes: List<String>, subhierarchies: List<String>) = shouldDetectPrefixTests(
     prefixes = prefixes,
     subhierarchies = subhierarchies,
-    data = ScalaBuildTarget(
-      scalaVersion = "2.13",
-      sdkJars = emptyList(),
-      scalacOptions = emptyList(),
-      jvmBuildTarget = JvmBuildTarget(
+    data = listOf(
+      ScalaBuildTarget(
+        scalaVersion = "2.13",
+        sdkJars = emptyList(),
+        scalacOptions = emptyList(),
+      ),
+      JvmBuildTarget(
         javaVersion = "17",
         resolvedResourceStripPrefix = null,
       ),
@@ -947,7 +971,7 @@ class ResourcesItemToJavaResourceRootTransformerTest {
   private fun shouldNotDetectPrefixTests(
     prefixes: List<String>,
     subhierarchies: List<String>,
-    data: BuildTargetData?,
+    data: List<BuildTargetData>,
   ): List<DynamicTest> {
     var index = 0
     return prefixes.flatMap { prefix ->
@@ -971,7 +995,7 @@ class ResourcesItemToJavaResourceRootTransformerTest {
   private fun shouldDetectPrefixTests(
     prefixes: List<String>,
     subhierarchies: List<String>,
-    data: BuildTargetData?,
+    data: List<BuildTargetData>,
   ): List<DynamicTest> {
     var index = 0
     return prefixes.flatMap { prefix ->
@@ -995,7 +1019,7 @@ class ResourcesItemToJavaResourceRootTransformerTest {
   private fun shouldDetectPrefix(
     prefix: Path,
     subhierarchy: String,
-    data: BuildTargetData?,
+    data: List<BuildTargetData>,
   ) {
     // given
     val subdirectories = prefix.resolve(subhierarchy).createDirectories()
@@ -1014,7 +1038,7 @@ class ResourcesItemToJavaResourceRootTransformerTest {
   private fun shouldNotDetectPrefix(
     prefix: Path,
     subhierarchy: String,
-    data: BuildTargetData?,
+    data: List<BuildTargetData>,
   ) {
     // given
     val resourcesDir = prefix

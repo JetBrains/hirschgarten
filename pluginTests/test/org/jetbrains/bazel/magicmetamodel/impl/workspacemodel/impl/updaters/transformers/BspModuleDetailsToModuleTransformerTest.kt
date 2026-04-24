@@ -340,6 +340,8 @@ internal fun Collection<String>.toDefaultTargetsMap(): Map<Label, BuildTarget> =
             languageClasses = emptySet(),
           ),
         baseDirectory = Path("base/dir"),
+        isManual = false,
+        isWorkspace = true,
       )
     },
   )

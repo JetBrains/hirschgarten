@@ -1,7 +1,6 @@
 package org.jetbrains.bazel.sync.workspace
 
 import com.intellij.openapi.components.Service
-import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import org.jetbrains.bazel.server.connection.BazelServerConnection
 import org.jetbrains.bazel.server.connection.BazelServerService
@@ -9,10 +8,7 @@ import org.jetbrains.bazel.sync.scope.FirstPhaseSync
 import org.jetbrains.bazel.sync.scope.PartialProjectSync
 import org.jetbrains.bazel.sync.scope.ProjectSyncScope
 import org.jetbrains.bazel.sync.scope.SecondPhaseSync
-import org.jetbrains.bazel.sync.workspace.languages.DefaultJvmPackageResolver
-import org.jetbrains.bazel.sync.workspace.languages.LanguagePluginsService
 import org.jetbrains.bazel.sync.workspace.mapper.normal.AspectBazelProjectMapper
-import org.jetbrains.bazel.sync.workspace.mapper.normal.MavenCoordinatesResolver
 import org.jetbrains.bazel.sync.workspace.mapper.phased.PhasedBazelMappedProject
 import org.jetbrains.bazel.sync.workspace.mapper.phased.PhasedBazelProjectMapper
 import org.jetbrains.bazel.sync.workspace.mapper.phased.PhasedBazelProjectMapperContext
@@ -27,28 +23,7 @@ internal class DefaultBazelWorkspaceResolveService(private val project: Project)
   val connection: BazelServerConnection
     get() = BazelServerService.getInstance(project).connection
 
-  private var state: BazelWorkspaceSyncState = BazelWorkspaceSyncState.NotInitialized
-
-  private suspend fun initWorkspace() {
-    when (this.state) {
-      // workspace is already initialized - abort
-      BazelWorkspaceSyncState.Initialized,
-      BazelWorkspaceSyncState.Unsynced,
-      is BazelWorkspaceSyncState.Resolved,
-      is BazelWorkspaceSyncState.Synced,
-      -> return
-
-      BazelWorkspaceSyncState.NotInitialized -> {
-        // fall through
-      }
-    }
-    val paths = connection.runWithServer { server -> server.workspaceBazelPaths() }
-    val workspaceContext = connection.runWithServer { server -> server.workspaceContext }
-    project
-      .service<LanguagePluginsService>()
-      .registerDefaultPlugins(paths.bazelPathsResolver, DefaultJvmPackageResolver(), workspaceContext)
-    state = BazelWorkspaceSyncState.Initialized
-  }
+  private var state: BazelWorkspaceSyncState = BazelWorkspaceSyncState.Unsynced
 
   private suspend fun syncWorkspace(build: Boolean, taskId: TaskId): WorkspaceBuildTargetsResult {
     when (val state = state) {
@@ -56,11 +31,8 @@ internal class DefaultBazelWorkspaceResolveService(private val project: Project)
       is BazelWorkspaceSyncState.Resolved -> return state.bazelProject
       is BazelWorkspaceSyncState.Synced -> return state.bazelProject
 
-      // if the workspace hasn't been initialized - initialize and proceed
-      BazelWorkspaceSyncState.NotInitialized -> initWorkspace()
-
       // workspace is in a correct state to sync - proceed
-      BazelWorkspaceSyncState.Unsynced, BazelWorkspaceSyncState.Initialized -> {
+      BazelWorkspaceSyncState.Unsynced -> {
         // fall through
       }
     }
@@ -77,8 +49,6 @@ internal class DefaultBazelWorkspaceResolveService(private val project: Project)
         -> return state.resolvedWorkspace
 
         // workspace is not in the correct state - try to pull the required state
-        is BazelWorkspaceSyncState.NotInitialized,
-        BazelWorkspaceSyncState.Initialized,
         BazelWorkspaceSyncState.Unsynced,
         -> syncWorkspace(false, taskId)
 
@@ -99,7 +69,7 @@ internal class DefaultBazelWorkspaceResolveService(private val project: Project)
                 hasError = synced.hasError,
               )
             val phasedMapper = PhasedBazelProjectMapper(
-              bazelPathsResolver = server.workspaceBazelPaths().bazelPathsResolver,
+              bazelPathsResolver = server.bazelPathsResolver,
               workspaceContext = server.workspaceContext)
             phasedMapper.resolveWorkspace(context, project)
           }
@@ -116,15 +86,11 @@ internal class DefaultBazelWorkspaceResolveService(private val project: Project)
             val bazelMapper =
               AspectBazelProjectMapper(
                 project = project,
-                languagePluginsService = project.service<LanguagePluginsService>(),
-                bazelPathsResolver = server.workspaceBazelPaths().bazelPathsResolver,
-                mavenCoordinatesResolver = MavenCoordinatesResolver(),
-                outFilesHardLink = server.outFileHardLinks
+                server = server,
               )
             bazelMapper.createProject(
               allTargets = synced.targets,
               rootTargets = buildTargets.rootTargets,
-              workspaceContext = server.workspaceContext,
               repoMapping = repoMapping.repoMapping,
               hasError = synced.hasError,
             )
@@ -136,11 +102,7 @@ internal class DefaultBazelWorkspaceResolveService(private val project: Project)
   }
 
   override suspend fun invalidateCachedState() {
-    when (state) {
-      is BazelWorkspaceSyncState.Resolved -> state = BazelWorkspaceSyncState.Initialized
-      is BazelWorkspaceSyncState.Synced -> state = BazelWorkspaceSyncState.Initialized
-      else -> {}
-    }
+    state = BazelWorkspaceSyncState.Unsynced
   }
 
   override suspend fun getOrFetchResolvedWorkspace(scope: ProjectSyncScope, taskId: TaskId): BazelResolvedWorkspace =
@@ -157,13 +119,7 @@ internal class DefaultBazelWorkspaceResolveService(private val project: Project)
   private sealed interface BazelWorkspaceSyncState {
     sealed class Nothing(val reason: String) : BazelWorkspaceSyncState
 
-    object NotInitialized : Nothing("project is not initialized")
-
-    // for example when project is being opened
-    // TODO: we can avoid this state by serializing project state and restoring it on project open
     object Unsynced : Nothing("project is not synced")
-
-    object Initialized : Nothing("project is not synced")
 
     // project only has raw target data
     data class Synced(val bazelProject: WorkspaceBuildTargetsResult) : BazelWorkspaceSyncState

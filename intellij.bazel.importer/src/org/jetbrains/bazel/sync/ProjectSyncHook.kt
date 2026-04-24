@@ -40,7 +40,6 @@ interface ProjectSyncHook {
   /**
    * @param project project on which sync is executed
    * @param server BSP server which is used during sync
-   * @param capabilities capabilities of used BSP server
    * @param diff diff which was prepared before sync and which should be updated in the hook
    * @param taskId task id which should be used in the sync console as root
    * @param progressReporter should be used to report the progress of the hook

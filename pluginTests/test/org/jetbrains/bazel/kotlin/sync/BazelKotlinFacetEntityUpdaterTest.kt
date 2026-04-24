@@ -47,15 +47,14 @@ class BazelKotlinFacetEntityUpdaterTest : WorkspaceModelBaseTest() {
           kotlincOptions = listOf("-opt-in=com.example.ExperimentalApi"),
           associates = listOf("//target4", "//target5").map { Label.parse(it) },
           moduleName = "kotlin-module",
-          jvmBuildTarget =
-            JvmBuildTarget(
-              javaHome = javaHome,
-              javaVersion = javaVersion,
-            ),
         )
+      val jvmBuildTarget = JvmBuildTarget(
+        javaHome = javaHome,
+        javaVersion = javaVersion,
+      )
 
       // when
-      val retrievedFacetSettings = addToWorkspaceModelAndGetFacet(kotlinBuildTarget)
+      val retrievedFacetSettings = addToWorkspaceModelAndGetFacet(kotlinBuildTarget, jvmBuildTarget)
 
       // then
       retrievedFacetSettings.additionalVisibleModuleNames shouldBe kotlinBuildTarget.associates.map { it.toString() }
@@ -88,15 +87,14 @@ class BazelKotlinFacetEntityUpdaterTest : WorkspaceModelBaseTest() {
           kotlincOptions = listOf("-language-version=1.8", "-api-version=1.9"),
           associates = emptyList(),
           moduleName = "kotlin-module",
-          jvmBuildTarget =
-            JvmBuildTarget(
-              javaHome = javaHome,
-              javaVersion = javaVersion,
-            ),
         )
+      val jvmBuildTarget = JvmBuildTarget(
+        javaHome = javaHome,
+        javaVersion = javaVersion,
+      )
 
       // when
-      val retrievedFacetSettings = addToWorkspaceModelAndGetFacet(kotlinBuildTarget)
+      val retrievedFacetSettings = addToWorkspaceModelAndGetFacet(kotlinBuildTarget, jvmBuildTarget)
 
       // then
       retrievedFacetSettings
@@ -112,7 +110,7 @@ class BazelKotlinFacetEntityUpdaterTest : WorkspaceModelBaseTest() {
     }
   }
 
-  private fun addToWorkspaceModelAndGetFacet(kotlinBuildTarget: KotlinBuildTarget): IKotlinFacetSettings {
+  private fun addToWorkspaceModelAndGetFacet(kotlinBuildTarget: KotlinBuildTarget, jvmBuildTarget: JvmBuildTarget): IKotlinFacetSettings {
     val module =
       GenericModuleInfo(
         name = "module1",
@@ -141,7 +139,7 @@ class BazelKotlinFacetEntityUpdaterTest : WorkspaceModelBaseTest() {
         baseDirContentRoot = baseDirContentRoot,
         sourceRoots = listOf(),
         resourceRoots = listOf(),
-        jvmJdkName = "${projectBasePath.name}-${kotlinBuildTarget.jvmBuildTarget!!.javaVersion}",
+        jvmJdkName = "${projectBasePath.name}-${jvmBuildTarget.javaVersion}",
         kotlinAddendum =
           KotlinAddendum(
             languageVersion = kotlinBuildTarget.languageVersion,

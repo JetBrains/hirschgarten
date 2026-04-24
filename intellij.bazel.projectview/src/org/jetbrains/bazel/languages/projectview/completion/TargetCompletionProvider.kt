@@ -33,7 +33,7 @@ internal class TargetCompletionProvider : CompletionProvider<CompletionParameter
 
     result.withPrefixMatcher(ProjectViewPrefixMatcher(prefix)).run {
       addAllElements(
-        project.service<ProjectViewCodeInsightSupport>().allTargetsAndLibrariesLabels.map { labelLookupElement(it) }
+        project.service<ProjectViewCodeInsightSupport>().allTargetLabels.map { labelLookupElement(it) }
           .toList(),
       )
     }

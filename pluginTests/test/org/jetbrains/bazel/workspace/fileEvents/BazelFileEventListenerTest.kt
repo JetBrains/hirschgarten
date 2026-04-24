@@ -429,7 +429,7 @@ class BazelFileEventListenerTest : WorkspaceModelBaseTest() {
           ),
         ),
       fileToTarget = emptyMap(),
-      libraryItems = emptyList(),
+      libraryToTarget = emptyMap(),
     )
 
     val sourceRoot =
@@ -492,6 +492,8 @@ class BazelFileEventListenerTest : WorkspaceModelBaseTest() {
         id = mockLabel,
         kind = TargetKind("mock", emptySet(), RuleType.LIBRARY),
         baseDirectory = projectBasePath,
+        isManual = false,
+        isWorkspace = true,
       )
     project.targetUtils.setTargets(listOf(mockBuildTarget))
   }

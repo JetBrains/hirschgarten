@@ -22,7 +22,6 @@ import org.jetbrains.bazel.magicmetamodel.ProjectDetails
 import org.jetbrains.bazel.magicmetamodel.impl.TargetIdToModuleEntitiesMap
 import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.WorkspaceModelUpdater
 import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.CompiledSourceCodeInsideJarExcludeTransformer
-import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.LibraryGraph
 import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.ProjectDetailsToModuleDetailsTransformer
 import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.projectNameToJdkName
 import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.scalaVersionToScalaSdkName
@@ -39,6 +38,7 @@ import org.jetbrains.bazel.sync.workspace.BazelWorkspaceResolveService
 import org.jetbrains.bazel.sync.workspace.mapper.normal.refreshVfsAfterBazelBuild
 import org.jetbrains.bazel.target.targetUtils
 import org.jetbrains.bazel.workspacemodel.entities.JavaModule
+import org.jetbrains.bazel.workspacemodel.entities.Library
 import org.jetbrains.bazel.workspacemodel.entities.Module
 import org.jetbrains.bsp.protocol.BazelServerFacade
 import org.jetbrains.bsp.protocol.BuildTarget
@@ -191,21 +191,12 @@ internal class CollectProjectDetailsTask(
     ) {
       coroutineScope {
         val projectBasePath = project.rootDir.toNioPath()
-        val libraryGraph = LibraryGraph(projectDetails.libraries.orEmpty())
 
-        val libraries =
-          bspTracer.spanBuilder("create.libraries.ms").use {
-            libraryGraph.createLibraries(project)
-          }
-
-        val libraryModules =
-          bspTracer.spanBuilder("create.library.modules.ms").use {
-            libraryGraph.createLibraryModules(project, projectDetails.defaultJdkName)
-          }
+        val libraries = projectDetails.libraries.map { Library.fromLibraryItem(it, project) }
 
         val targetIdToModuleDetails =
           bspTracer.spanBuilder("create.module.details.ms").use {
-            val transformer = ProjectDetailsToModuleDetailsTransformer(projectDetails, libraryGraph)
+            val transformer = ProjectDetailsToModuleDetailsTransformer(projectDetails)
             projectDetails.targetIds.associateWith { transformer.moduleDetailsForTargetId(it) }
           }
 
@@ -260,7 +251,7 @@ internal class CollectProjectDetailsTask(
               importIjars = projectDetails.workspaceContext?.importIjars ?: false,
             )
 
-          workspaceModelUpdater.load(modulesToLoad, libraries, libraryModules)
+          workspaceModelUpdater.load(modulesToLoad, libraries)
           compiledSourceCodeInsideJarToExclude?.let { workspaceModelUpdater.loadCompiledSourceCodeInsideJarExclude(it) }
           javacOptions = calculateAllJavacOptions(modulesToLoad)
         }
@@ -333,7 +324,7 @@ internal suspend fun calculateProjectDetailsWithCapabilities(
       ProjectDetails(
         targetIds = targets.map { it.id },
         targets = targets.toSet(),
-        libraries = workspace.libraries,
+        libraries = workspace.targets.mapNotNull { extractJvmBuildTarget(it) }.flatMap { it.libraries }.distinctBy { it.id },
         workspaceContext = workspaceContext,
       )
     } catch (e: Exception) {

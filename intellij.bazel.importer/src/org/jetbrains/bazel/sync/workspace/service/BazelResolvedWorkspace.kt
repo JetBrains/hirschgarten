@@ -9,7 +9,6 @@ import java.nio.file.Path
 @ApiStatus.Internal
 data class BazelResolvedWorkspace(
   val targets: List<RawBuildTarget>,
-  val libraries: List<LibraryItem> = listOf(),
   val fileToTarget: Map<Path, List<Label>> = mapOf(),
   val hasError: Boolean = false,
 )

@@ -7,12 +7,11 @@ import org.jetbrains.bazel.commons.symlinks.BazelSymlinksCalculator
 import org.jetbrains.bazel.utils.isUnder
 import org.jetbrains.bazel.workspacemodel.entities.ResourceRoot
 import org.jetbrains.bsp.protocol.BuildTarget
-import org.jetbrains.bsp.protocol.JvmBuildTarget
-import org.jetbrains.bsp.protocol.KotlinBuildTarget
 import org.jetbrains.bsp.protocol.RawBuildTarget
-import org.jetbrains.bsp.protocol.ScalaBuildTarget
 import org.jetbrains.bsp.protocol.utils.extractJvmBuildTarget
 import java.nio.file.FileVisitResult
+import org.jetbrains.bsp.protocol.utils.extractKotlinBuildTarget
+import org.jetbrains.bsp.protocol.utils.extractScalaBuildTarget
 import java.nio.file.Path
 import kotlin.io.path.Path
 import kotlin.io.path.name
@@ -81,11 +80,13 @@ class ResourcesItemToJavaResourceRootTransformer(
     ?.resolvedResourceStripPrefix
     ?.let(::setOf)
 
-  private fun defaultStripPrefixes(target: RawBuildTarget) = when (target.data) {
-    is JvmBuildTarget -> defaultStripPrefixesJava(target)
-    is KotlinBuildTarget -> defaultStripPrefixesKotlin(target)
-    is ScalaBuildTarget -> defaultStripPrefixesScala(target)
-    else -> emptySet()
+  private fun defaultStripPrefixes(target: RawBuildTarget): Set<Path> {
+    return when {
+      extractKotlinBuildTarget(target) != null -> defaultStripPrefixesKotlin(target)
+      extractScalaBuildTarget(target) != null -> defaultStripPrefixesScala(target)
+      extractJvmBuildTarget(target) != null -> defaultStripPrefixesJava(target)
+      else -> emptySet()
+    }
   }
 
   /**

@@ -108,7 +108,7 @@ class TargetsCacheStorageTest : WorkspaceModelBaseTest() {
     storage.reset(
       fileToTarget = mapOf<Path, List<Label>>(file to listOf(label1)),
       executableTargets = mapOf<ResolvedLabel, List<Label>>(label1 to listOf(label2)),
-      libraryItems = listOf(libraryItem),
+      libraryToTarget = mapOf(libraryItem.id.formatAsModuleName(project) to libraryItem.id),
       targets = listOf(TestBuildTargetFactory.createSimpleJavaLibraryTarget(id = label1),
                        TestBuildTargetFactory.createSimpleJavaLibraryTarget(id = label2)),
     )

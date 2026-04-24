@@ -2,6 +2,7 @@ package org.jetbrains.bsp.protocol
 
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.commons.BazelInfo
+import org.jetbrains.bazel.commons.BazelPathsResolver
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.sync.BazelOutFileHardLinks
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
@@ -12,6 +13,9 @@ interface BazelServerFacade {
 
   @get:ApiStatus.Internal
   val outFileHardLinks: BazelOutFileHardLinks
+
+  @get:ApiStatus.Internal
+  val bazelPathsResolver: BazelPathsResolver
 
   val workspaceContext: WorkspaceContext
 
@@ -48,9 +52,6 @@ interface BazelServerFacade {
 
   @ApiStatus.Internal
   suspend fun workspaceBazelRepoMapping(taskId: TaskId): WorkspaceBazelRepoMappingResult
-
-  @ApiStatus.Internal
-  suspend fun workspaceBazelPaths(): WorkspaceBazelPathsResult
 
   @ApiStatus.Internal
   suspend fun workspaceName(taskId: TaskId): WorkspaceNameResult
