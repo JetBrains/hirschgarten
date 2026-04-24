@@ -1,9 +1,12 @@
 package org.jetbrains.bazel.workspacemodel.entities
 
+import com.intellij.openapi.project.Project
 import com.intellij.platform.workspace.jps.entities.ModuleTypeId
 import com.intellij.platform.workspace.jps.entities.SourceRootTypeId
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.commons.TargetKind
+import org.jetbrains.bazel.magicmetamodel.formatAsModuleName
+import org.jetbrains.bsp.protocol.LibraryItem
 import org.jetbrains.bsp.protocol.MavenCoordinates
 import java.nio.file.Path
 import kotlin.io.path.extension
@@ -36,6 +39,16 @@ data class Library(
 ) : WorkspaceModelEntity(),
   ResourceRootEntity {
   companion object {
+
+    fun fromLibraryItem(libraryItem: LibraryItem, project: Project): Library =
+      Library(
+        displayName = libraryItem.id.formatAsModuleName(project),
+        iJars = libraryItem.ijars,
+        classJars = libraryItem.jars,
+        sourceJars = libraryItem.sourceJars,
+        mavenCoordinates = libraryItem.mavenCoordinates,
+      )
+
     fun formatJarString(jar: Path): String =
       if (jar.extension == "jar") {
         "jar://$jar!/"
@@ -56,8 +69,7 @@ data class GenericModuleInfo(
   val dependencies: List<Dependency>,
   val kind: TargetKind,
   val associates: List<String> = listOf(),
-  val isDummy: Boolean = false,
-  val isLibraryModule: Boolean = false,
+  val isDummy: Boolean = false
 ) : WorkspaceModelEntity()
 
 @ApiStatus.Internal

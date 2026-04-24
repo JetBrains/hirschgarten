@@ -2,6 +2,7 @@ package org.jetbrains.bazel.performance
 
 import com.intellij.platform.diagnostic.telemetry.Scope
 import com.intellij.platform.diagnostic.telemetry.TelemetryManager
+import com.intellij.platform.diagnostic.telemetry.helpers.useWithScope
 import io.opentelemetry.api.metrics.Meter
 import io.opentelemetry.api.trace.Tracer
 import org.jetbrains.annotations.ApiStatus
@@ -19,3 +20,7 @@ val bspTracer: Tracer = TelemetryManager.getTracer(bspScope)
 @JvmField
 @ApiStatus.Internal
 val bspMeter: Meter = TelemetryManager.getMeter(bspScope)
+
+@ApiStatus.Internal
+suspend fun <T> measure(description: String, body: suspend () -> T): T =
+  bspTracer.spanBuilder(description).useWithScope { body() }

@@ -64,7 +64,7 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
         languageClasses = setOf(LanguageClass.JAVA),
       ),
       baseDirectory = projectRoot,
-      data = JvmBuildTarget(javaHome, javaVersion),
+      data = listOf(JvmBuildTarget(javaHome, javaVersion)),
       sources = listOf(
         SourceItem(
           path = file1APath,
@@ -152,12 +152,11 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
             Label.parse("module4"),
             Label.parse("module5"),
           ),
-        jvmBuildTarget =
-          JvmBuildTarget(
-            javaHome = javaHome,
-            javaVersion = javaVersion,
-          ),
       )
+    val jvmBuildTarget = JvmBuildTarget(
+      javaHome = javaHome,
+      javaVersion = javaVersion,
+    )
 
     val buildTargetId = Label.parse("module1")
     val buildTarget = createRawBuildTarget(
@@ -173,7 +172,7 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
         languageClasses = setOf(LanguageClass.JAVA),
       ),
       baseDirectory = projectRoot,
-      data = kotlinBuildTarget,
+      data = listOf(kotlinBuildTarget, jvmBuildTarget),
     )
 
     createTempFile(projectBasePath, "resource", "File.txt")
@@ -437,7 +436,7 @@ class ExtractJvmBuildTargetTest {
           languageClasses = setOf(LanguageClass.JAVA),
         ),
         baseDirectory = Path("/base/dir"),
-        data = data,
+        data = listOfNotNull(data),
         sources = listOf(SourceItem(Path("\$WORKSPACE/src/Main.java"), false)),
         resources = emptyList(),
       )

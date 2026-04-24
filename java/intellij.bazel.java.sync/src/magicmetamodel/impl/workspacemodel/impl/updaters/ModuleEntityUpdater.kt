@@ -19,7 +19,6 @@ import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.jpsCompilation.utils.JpsConstants
 import org.jetbrains.bazel.jpsCompilation.utils.JpsPaths
 import org.jetbrains.bazel.magicmetamodel.MagicMetaModelEnvironment
-import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.LibraryGraph
 import org.jetbrains.bazel.settings.bazel.bazelJVMProjectSettings
 import org.jetbrains.bazel.workspacemodel.entities.BazelDummyEntitySource
 import org.jetbrains.bazel.workspacemodel.entities.BazelModuleEntitySource
@@ -45,26 +44,28 @@ class ModuleEntityUpdater(
     val usesJpsExportSemantics = entityToAdd.kind.usesJpsExportSemantics()
     val dependenciesFromEntity =
       entityToAdd.dependencies.mapNotNull { dependency ->
-        val runtime = dependency.isRuntimeOnly
+        // Libraries may have the same name as its container module.
+        // Prefer module dependency and use the library only inside the containing module to prevent dependency loop
+
+        val moduleDependency = modules[dependency.id]?.takeIf { entityToAdd.name != dependency.id }
+        if (moduleDependency != null) {
+          val exported = dependency.exported || !usesJpsExportSemantics
+          return@mapNotNull toModuleDependencyItemModuleDependency(
+            dependency.id,
+            exported = exported,
+            runtime = dependency.isRuntimeOnly
+          )
+        }
+
         val libraryDependency = libraries[dependency.id]
-        val exported = dependency.exported || !usesJpsExportSemantics
         if (libraryDependency != null) {
-          if (!entityToAdd.isLibraryModule) {
-            toModuleDependencyItemModuleDependency(
-              LibraryGraph.addLibraryModulePrefix(dependency.id),
-              exported,
-              runtime,
-            )
-          }
-          else {
-            toLibraryDependency(dependency.id, exported = true, runtime)
-          }
+          return@mapNotNull toLibraryDependency(
+            dependency.id,
+            exported = true /*dependency.exported*/, // why?
+            runtime = dependency.isRuntimeOnly)
         }
-        else if (dependency.id in modules) {
-          toModuleDependencyItemModuleDependency(dependency.id, exported = exported, runtime = runtime)
-        } else {
-          null
-        }
+
+        null
       }
 
     val dependencies =

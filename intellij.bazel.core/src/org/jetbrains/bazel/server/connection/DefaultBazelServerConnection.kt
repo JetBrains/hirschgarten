@@ -131,6 +131,7 @@ internal class DefaultBazelServerConnection(private val project: Project) : Baze
       workspaceContext = workspaceContext,
       bazelInfo = bazelInfo,
       outFileHardLinks = outFileHardLinks,
+      bazelPathsResolver = bazelPathsResolver
     )
   }
 }

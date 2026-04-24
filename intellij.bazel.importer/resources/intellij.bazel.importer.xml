@@ -40,6 +40,16 @@
       interface="org.jetbrains.bazel.sync.workspace.targetKind.TargetKindProvider"
       qualifiedName="org.jetbrains.bazel.targetKindProvider"
     />
+    <extensionPoint
+      dynamic="true"
+      interface="org.jetbrains.bazel.sync.workspace.languages.LanguagePlugin"
+      qualifiedName="org.jetbrains.bazel.languagePlugin"
+    />
+    <extensionPoint
+      dynamic="true"
+      interface="org.jetbrains.bazel.sync.workspace.languages.java.JvmLanguagePluginMixin"
+      qualifiedName="org.jetbrains.bazel.jvmLanguagePlugin"
+    />
   </extensionPoints>
 
   <extensions defaultExtensionNs="org.jetbrains.bazel">
@@ -51,6 +61,15 @@
     />
     <projectSyncHook implementation="org.jetbrains.bazel.sync.hooks.PathSyncHook"/>
     <targetKindProvider implementation="org.jetbrains.bazel.sync.workspace.targetKind.GenericBazelRules" order="last"/>
+
+    <languagePlugin implementation="org.jetbrains.bazel.sync.workspace.languages.protobuf.ProtobufLanguagePlugin"
+                    order="before JavaLanguagePlugin"/>
+    <languagePlugin implementation="org.jetbrains.bazel.sync.workspace.languages.java.JavaLanguagePlugin"/>
+    <languagePlugin implementation="org.jetbrains.bazel.sync.workspace.languages.go.GoLanguagePlugin"/>
+    <languagePlugin implementation="org.jetbrains.bazel.sync.workspace.languages.python.PythonLanguagePlugin"/>
+
+    <jvmLanguagePlugin implementation="org.jetbrains.bazel.sync.workspace.languages.kotlin.KotlinLanguagePlugin"/>
+    <jvmLanguagePlugin implementation="org.jetbrains.bazel.sync.workspace.languages.scala.ScalaLanguagePlugin"/>
   </extensions>
 
   <extensions defaultExtensionNs="com.intellij">

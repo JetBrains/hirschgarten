@@ -128,11 +128,10 @@ internal fun createIdToBuildMapType(filePathSuffix: String, rootDir: Path): MVMa
         writeTargetKind(item.kind, buffer)
         writePath(path = item.baseDirectory.invariantSeparatorsPathString, filePathSuffix = filePathSuffix, buffer = buffer)
         buffer.put(if (item.isManual) 1 else 0)
+        buffer.put(if (item.isWorkspace) 1 else 0)
 
-        val targetData = item.data
-        if (targetData == null) {
-          buffer.putVarInt(0)
-        } else {
+        buffer.putVarInt(item.data.size)
+        for (targetData in item.data) {
           val aClass = targetData.javaClass
           BuildDataTargetTypeRegistry.writeClassId(aClass, buffer)
           val data = gzip(bazelGson.toJson(targetData, aClass).encodeToByteArray())
@@ -145,19 +144,25 @@ internal fun createIdToBuildMapType(filePathSuffix: String, rootDir: Path): MVMa
         val kind = readTargetKind(buffer)
         val baseDirectory = readPath(buffer, rootDir)
         val isManual = buffer.get() == 1.toByte()
+        val isWorkspace = buffer.get() == 1.toByte()
 
-        val typeId = buffer.get().toInt()
-        val data =
-          if (typeId == 0) {
-            null
-          } else {
-            val aClass = BuildDataTargetTypeRegistry.getClass(typeId)
-            val dataSize = readVarInt(buffer)
-            val encodedData = ByteArray(dataSize)
-            buffer.get(encodedData)
-            bazelGson.fromJson(ungzip(encodedData).decodeToString(), aClass)
-          }
-        PartialBuildTarget(id = id, kind = kind, baseDirectory = baseDirectory, data = data, isManual = isManual)
+        val dataCount = readVarInt(buffer)
+        val data = (0 until dataCount).map {
+          val typeId = buffer.get().toInt()
+          val aClass = BuildDataTargetTypeRegistry.getClass(typeId)
+          val dataSize = readVarInt(buffer)
+          val encodedData = ByteArray(dataSize)
+          buffer.get(encodedData)
+          bazelGson.fromJson(ungzip(encodedData).decodeToString(), aClass)
+        }
+        PartialBuildTarget(
+          id = id,
+          kind = kind,
+          baseDirectory = baseDirectory,
+          data = data,
+          isManual = isManual,
+          isWorkspace = isWorkspace
+        )
       },
     ),
   )

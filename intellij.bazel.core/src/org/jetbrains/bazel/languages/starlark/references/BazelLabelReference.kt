@@ -159,7 +159,7 @@ internal class BazelLabelReference(element: StarlarkStringLiteralExpression, sof
   private fun targetCompletion(): Array<LookupElement> {
     val project = element.project
     return project.targetUtils
-      .allTargetsAndLibrariesLabels
+      .allTargetShortLabels
       .map { getCompletionLookupElemenent(it, PlatformIcons.PACKAGE_ICON) }
       .toTypedArray()
   }

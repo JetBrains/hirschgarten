@@ -9,10 +9,9 @@ import java.nio.file.Path
 
 internal object BazelResolvedWorkspaceBuilder {
 
-  fun build(targets: List<RawBuildTarget>, libraries: List<LibraryItem>, hasError: Boolean): BazelResolvedWorkspace {
+  fun build(targets: List<RawBuildTarget>, hasError: Boolean): BazelResolvedWorkspace {
     return BazelResolvedWorkspace(
       targets = targets,
-      libraries = libraries,
       fileToTarget = calculateFileToTarget(targets),
       hasError = hasError,
     )

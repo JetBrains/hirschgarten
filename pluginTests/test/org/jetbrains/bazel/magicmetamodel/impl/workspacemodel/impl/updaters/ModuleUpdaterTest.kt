@@ -17,7 +17,6 @@ import org.jetbrains.bazel.commons.LanguageClass
 import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.magicmetamodel.LIBRARY_MODULE_PREFIX
-import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.LibraryGraph
 import org.jetbrains.bazel.workspace.model.matchers.entries.ExpectedModuleEntity
 import org.jetbrains.bazel.workspace.model.matchers.entries.shouldBeEqual
 import org.jetbrains.bazel.workspace.model.matchers.entries.shouldContainExactlyInAnyOrder
@@ -122,11 +121,10 @@ internal class ModuleUpdaterTest : WorkspaceModelBaseTest() {
                   scope = DependencyScope.COMPILE,
                   productionOnTest = true,
                 ),
-                ModuleDependency(
-                  module = ModuleId(name = LibraryGraph.addLibraryModulePrefix("lib1")),
-                exported = true,
-                scope = DependencyScope.COMPILE,
-                productionOnTest = true,
+                LibraryDependency(
+                  LibraryId("lib1", LibraryTableId.ProjectLibraryTableId),
+                  exported = true,
+                  scope = DependencyScope.COMPILE,
                 ),
                 ModuleDependency(
                   module = ModuleId("module3"),
@@ -134,11 +132,10 @@ internal class ModuleUpdaterTest : WorkspaceModelBaseTest() {
                   scope = DependencyScope.COMPILE,
                   productionOnTest = true,
                 ),
-                ModuleDependency(
-                  module = ModuleId(name = LibraryGraph.addLibraryModulePrefix("lib2")),
+                LibraryDependency(
+                  LibraryId("lib2", LibraryTableId.ProjectLibraryTableId),
                   exported = true,
                   scope = DependencyScope.COMPILE,
-                  productionOnTest = true,
                 ),
                 SdkDependency(SdkId("11", "JavaSDK")),
                 ModuleSourceDependency,
@@ -220,17 +217,15 @@ internal class ModuleUpdaterTest : WorkspaceModelBaseTest() {
                   scope = DependencyScope.COMPILE,
                   productionOnTest = true,
                 ),
-                ModuleDependency(
-                  module = ModuleId(LibraryGraph.addLibraryModulePrefix("lib1")),
+                LibraryDependency(
+                  LibraryId("lib1", LibraryTableId.ProjectLibraryTableId),
                   exported = true,
                   scope = DependencyScope.COMPILE,
-                  productionOnTest = true,
                 ),
-                ModuleDependency(
-                  module = ModuleId(LibraryGraph.addLibraryModulePrefix("lib2")),
+                LibraryDependency(
+                  LibraryId("lib2", LibraryTableId.ProjectLibraryTableId),
                   exported = true,
                   scope = DependencyScope.COMPILE,
-                  productionOnTest = true,
                 ),
                 SdkDependency(SdkId("11", "JavaSDK")),
                 ModuleSourceDependency,
@@ -253,11 +248,10 @@ internal class ModuleUpdaterTest : WorkspaceModelBaseTest() {
                   scope = DependencyScope.COMPILE,
                   productionOnTest = true,
                 ),
-                ModuleDependency(
-                  module = ModuleId(LibraryGraph.addLibraryModulePrefix("lib1")),
+                LibraryDependency(
+                  LibraryId("lib1", LibraryTableId.ProjectLibraryTableId),
                   exported = true,
                   scope = DependencyScope.COMPILE,
-                  productionOnTest = true,
                 ),
                 SdkDependency(SdkId("11", "JavaSDK")),
                 ModuleSourceDependency,
@@ -316,11 +310,10 @@ internal class ModuleUpdaterTest : WorkspaceModelBaseTest() {
                   scope = DependencyScope.COMPILE,
                   productionOnTest = true,
                 ),
-                ModuleDependency(
-                  module = ModuleId(LibraryGraph.addLibraryModulePrefix("lib1")),
+                LibraryDependency(
+                  LibraryId("lib1", LibraryTableId.ProjectLibraryTableId),
                   exported = true,
                   scope = DependencyScope.COMPILE,
-                  productionOnTest = true,
                 ),
                 SdkDependency(SdkId("11", "JavaSDK")),
                 ModuleSourceDependency,
@@ -364,7 +357,6 @@ internal class ModuleUpdaterTest : WorkspaceModelBaseTest() {
             ruleType = RuleType.LIBRARY,
             languageClasses = setOf(LanguageClass.JAVA),
           ),
-        isLibraryModule = true,
       )
 
     // when

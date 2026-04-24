@@ -12,9 +12,9 @@ internal class PathSyncHook : ProjectSyncHook {
       coroutineScope {
           environment.withSubtask("Collect bazel workspace info") {
               val projectCtxService = environment.project.serviceAsync<BazelProjectContextService>()
-              val bazelBinPathResult = environment.server.workspaceBazelPaths()
-              projectCtxService.bazelBinPath = bazelBinPathResult.bazelBin
-              projectCtxService.bazelExecPath = bazelBinPathResult.executionRoot
+              val bazelInfo = environment.server.bazelInfo
+              projectCtxService.bazelBinPath = bazelInfo.bazelBin.toString()
+              projectCtxService.bazelExecPath = bazelInfo.execRoot.toString()
               val bazelWorkspaceResult = environment.server.workspaceName(environment.taskId)
               environment.project.workspaceName = bazelWorkspaceResult.workspaceName
           }

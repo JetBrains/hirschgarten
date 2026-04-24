@@ -25,7 +25,6 @@ import org.jetbrains.bsp.protocol.RunResult
 import org.jetbrains.bsp.protocol.TaskId
 import org.jetbrains.bsp.protocol.TestParams
 import org.jetbrains.bsp.protocol.TestResult
-import org.jetbrains.bsp.protocol.WorkspaceBazelPathsResult
 import org.jetbrains.bsp.protocol.WorkspaceBazelRepoMappingResult
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetParams
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetPhasedParams
@@ -43,6 +42,7 @@ class BaselServerFacadeImpl(
   private val executeService: ExecuteService,
   override val workspaceContext: WorkspaceContext,
   override val bazelInfo: BazelInfo,
+  override val bazelPathsResolver: BazelPathsResolver,
   override val outFileHardLinks: BazelOutFileHardLinks
 ) : BazelServerFacade {
 
@@ -94,14 +94,6 @@ class BaselServerFacadeImpl(
   override suspend fun workspaceBazelRepoMapping(taskId: TaskId): WorkspaceBazelRepoMappingResult {
     val project = projectProvider.getOrLoad(taskId)
     return bspMapper.workspaceBazelRepoMapping(project)
-  }
-
-  override suspend fun workspaceBazelPaths(): WorkspaceBazelPathsResult {
-    return WorkspaceBazelPathsResult(
-      bazelBin = bazelInfo.bazelBin.toString(),
-      executionRoot = bazelInfo.execRoot.toString(),
-      bazelPathsResolver = BazelPathsResolver(bazelInfo),
-    )
   }
 
   override suspend fun workspaceName(taskId: TaskId): WorkspaceNameResult {

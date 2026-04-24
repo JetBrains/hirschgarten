@@ -43,7 +43,6 @@ class PhasedBazelProjectMapper(private val bazelPathsResolver: BazelPathsResolve
         .toList()
     return BazelResolvedWorkspaceBuilder.build(
       targets = targets,
-      libraries = emptyList(),
       hasError = project.hasError,
     )
   }
@@ -57,9 +56,10 @@ class PhasedBazelProjectMapper(private val bazelPathsResolver: BazelPathsResolve
       sources = calculateSources(project),
       resources = calculateResources(project),
       baseDirectory = bazelPathsResolver.toDirectoryPath(label, context.repoMapping),
-      data = null,
+      data = emptyList(),
       generatorName = generatorName,
       isManual = isManual,
+      isWorkspace = true, // TODO
     )
   }
 

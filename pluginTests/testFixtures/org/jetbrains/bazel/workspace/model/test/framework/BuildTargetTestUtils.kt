@@ -34,7 +34,7 @@ fun createRawBuildTarget(
   sources: List<SourceItem> = emptyList(),
   resources: List<Path> = emptyList(),
   baseDirectory: Path = Path("/base/dir"),
-  data: BuildTargetData? = null,
+  data: List<BuildTargetData> = emptyList(),
 ): RawBuildTarget =
   RawBuildTarget(
     id = id,

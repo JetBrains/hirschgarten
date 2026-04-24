@@ -18,12 +18,6 @@ internal class CheckImportedModules(text: String, line: Int) : PlaybackCommandCo
         "java.binary",
         "java.library",
         "java.test",
-        // TODO: it shouldn't be here, but still server - client separation makes it a bit difficult to disable kotlin in 100%
-        // https://youtrack.jetbrains.com/issue/BAZEL-1885
-        "_aux.libraries.rules_kotlin_kotlin-stdlibs",
-        "_aux.libraries.cpp.binary",
-        "_aux.libraries.cpp.test",
-        "_aux.libraries.rules_cc.link_extra_lib",
       )
     val actualModulesNames = modules.map { it.name }.toSet()
     check(actualModulesNames == expectedModulesNames) { "Expected modules: $expectedModulesNames, actual: $actualModulesNames" }

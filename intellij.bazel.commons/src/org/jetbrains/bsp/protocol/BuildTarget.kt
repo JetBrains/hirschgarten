@@ -16,7 +16,7 @@ interface BuildTarget : ExecutableTarget {
   override val id: Label
   override val kind: TargetKind
   val baseDirectory: Path
-  val data: BuildTargetData?
+  val data: List<BuildTargetData>
 
   /**
    * From Bazel doc (https://bazel.build/reference/be/common-definitions)
@@ -24,6 +24,11 @@ interface BuildTarget : ExecutableTarget {
    * list the test explicitly when computing the set of top-level targets to build/run for the build, test, and coverage commands
    */
   val isManual: Boolean
+
+  /**
+   * Indicates if this target belongs to workspace, or counted as "external"
+   */
+  val isWorkspace: Boolean
 }
 
 @ApiStatus.Internal
@@ -34,9 +39,10 @@ data class RawBuildTarget(
   val sources: List<SourceItem>,
   val resources: List<Path>,
   override val baseDirectory: Path,
-  override val data: BuildTargetData? = null,
+  override val data: List<BuildTargetData> = emptyList(),
   val generatorName: String? = null,
   override val isManual: Boolean = false,
+  override val isWorkspace: Boolean = true,
 ) : BuildTarget
 
 @ApiStatus.Internal
@@ -44,8 +50,9 @@ data class PartialBuildTarget(
   override val id: Label,
   override val kind: TargetKind,
   override val baseDirectory: Path,
-  override val data: BuildTargetData? = null,
-  override val isManual: Boolean = false,
+  override val data: List<BuildTargetData> = emptyList(),
+  override val isManual: Boolean,
+  override val isWorkspace: Boolean
 ) : BuildTarget
 
 // adding or removing new BuildTargetData should not cause cache invalidation, but still we don't want to write FQN per each target
@@ -66,7 +73,6 @@ data class KotlinBuildTarget(
   val kotlincOptions: List<String>,
   val associates: List<Label>,
   val moduleName: String? = null,
-  val jvmBuildTarget: JvmBuildTarget? = null,
 ) : BuildTargetData
 
 @ClassDiscriminator(2)
@@ -89,7 +95,6 @@ data class PythonBuildTarget(
 data class ScalaBuildTarget(
   val scalaVersion: String,
   val sdkJars: List<Path>,
-  val jvmBuildTarget: JvmBuildTarget? = null,
   val scalacOptions: List<String>,
 ) : BuildTargetData
 
@@ -107,7 +112,17 @@ data class JvmBuildTarget(
   val jvmArgs: List<String> = listOf(),
   val programArgs: List<String> = listOf(),
   val resolvedResourceStripPrefix: Path? = null,
+  @Transient @JvmField val libraries: List<LibraryItem> = emptyList(),
+  @Transient @JvmField val jvmDependencies: List<JvmDependency> = emptyList(),
 ) : BuildTargetData
+
+@ApiStatus.Internal
+sealed interface JvmDependency {
+  val dependency: DependencyLabel
+
+  class LibraryDependency(override val dependency: DependencyLabel) : JvmDependency
+  class ModuleDependency(override val dependency: DependencyLabel) : JvmDependency
+}
 
 @ClassDiscriminator(5)
 @ApiStatus.Internal
@@ -125,9 +140,4 @@ data class GoBuildTarget(
 @ApiStatus.Internal
 data class ProtobufBuildTarget(
   val sources: Map<String, String>, // import path -> real file
-  val jvmBuildTarget: JvmBuildTarget? = null,
 ) : BuildTargetData
-
-@ClassDiscriminator(8)
-@ApiStatus.Internal
-object VoidBuildTarget : BuildTargetData

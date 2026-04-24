@@ -135,7 +135,9 @@ private suspend fun updateVisibleTargets(
   targetPanel: Deferred<BazelTargetsPanel>,
 ) {
   // First, apply the filter
-  val filteredTargets = targetUtils.allBuildTargetAsLabelToTargetMap(model.targetFilter.predicate)
+  val filteredTargets = targetUtils.allBuildTargetAsLabelToTargetMap { target ->
+    target.isWorkspace && model.targetFilter.predicate(target)
+  }
   val hasAnyTargets = targetUtils.getTotalTargetCount() > 0
   // Then, apply the search query
   var searchRegex: Regex?

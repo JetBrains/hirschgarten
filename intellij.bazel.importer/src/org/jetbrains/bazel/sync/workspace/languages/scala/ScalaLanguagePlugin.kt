@@ -2,75 +2,138 @@ package org.jetbrains.bazel.sync.workspace.languages.scala
 
 import com.intellij.openapi.project.Project
 import org.jetbrains.annotations.ApiStatus
-import org.jetbrains.bazel.commons.BazelPathsResolver
-import org.jetbrains.bazel.commons.BzlmodRepoMapping
 import org.jetbrains.bazel.commons.LanguageClass
 import org.jetbrains.bazel.commons.RepoMapping
 import org.jetbrains.bazel.commons.getLocalRepositories
-import org.jetbrains.bazel.info.BspTargetInfo
+import org.jetbrains.bazel.info.BspTargetInfo.TargetInfo
 import org.jetbrains.bazel.label.Label
-import org.jetbrains.bazel.server.label.label
-import org.jetbrains.bazel.sync.workspace.languages.DefaultJvmPackageResolver
-import org.jetbrains.bazel.sync.workspace.languages.JvmPackageResolver
-import org.jetbrains.bazel.sync.workspace.languages.LanguagePlugin
-import org.jetbrains.bazel.sync.workspace.languages.LanguagePluginContext
-import org.jetbrains.bazel.sync.workspace.languages.java.JavaLanguagePlugin
-import org.jetbrains.bazel.sync.workspace.languages.jvm.JVMPackagePrefixResolver
-import org.jetbrains.bazel.workspacecontext.WorkspaceContext
+import org.jetbrains.bazel.label.label
+import org.jetbrains.bazel.sync.createOutputFileHardLinks
+import org.jetbrains.bazel.sync.workspace.graph.DependencyGraph
+import org.jetbrains.bazel.sync.workspace.languages.java.JvmLanguagePluginMixin
+import org.jetbrains.bsp.protocol.BazelServerFacade
+import org.jetbrains.bsp.protocol.BuildTargetData
+import org.jetbrains.bsp.protocol.LibraryItem
 import org.jetbrains.bsp.protocol.ScalaBuildTarget
-import org.jetbrains.bsp.protocol.SourceItem
 import java.nio.file.Path
+import kotlin.io.path.name
 
 @ApiStatus.Internal
-class ScalaLanguagePlugin(
-  private val javaLanguagePlugin: JavaLanguagePlugin,
-  private val bazelPathsResolver: BazelPathsResolver,
-  private val packageResolver: JvmPackageResolver = DefaultJvmPackageResolver(),
-) : LanguagePlugin<ScalaBuildTarget>,
-  JVMPackagePrefixResolver {
-  internal var scalaSdks: Map<Label, ScalaSdk> = emptyMap()
-  internal var scalaTestJars: Map<Label, Set<Path>> = emptyMap()
-
-  override fun prepareSync(project: Project, targets: Map<Label, BspTargetInfo.TargetInfo>, workspaceContext: WorkspaceContext, repoMapping: RepoMapping) {
-    val localRepositories = repoMapping.getLocalRepositories()
-    scalaSdks =
-      targets.values.asSequence()
-        .associateBy(
-          { it.label() },
-          { ScalaSdkResolver(bazelPathsResolver).resolveSdk(it, localRepositories) }
-        ).filterValuesNotNull()
-    scalaTestJars =
-      targets.values.asSequence()
-        .filter { it.hasScalaTargetInfo() }
-        .associateBy(
-          { it.label() },
-          {
-            it.scalaTargetInfo.scalatestClasspathTargetsList.flatMap { targets.get(Label.parse(it))?.javaProvider?.fullCompileJarsList ?: emptyList() }
-              .map {bazelPathsResolver.resolve(it, localRepositories) }
-              .toSet()
-          },
-        )
-  }
-
-  private fun <K, V> Map<K, V?>.filterValuesNotNull(): Map<K, V> = filterValues { it != null }.mapValues { it.value!! }
-
-  override suspend fun createBuildTargetData(context: LanguagePluginContext, target: BspTargetInfo.TargetInfo, repoMapping: RepoMapping): ScalaBuildTarget? {
-    if (!target.hasScalaTargetInfo()) {
-      return null
-    }
-    val sdk = scalaSdks[target.label()] ?: return null
-    return ScalaBuildTarget(
-      scalaVersion = sdk.version,
-      sdkJars = sdk.compilerJars,
-      jvmBuildTarget = javaLanguagePlugin.createBuildTargetData(context, target, repoMapping),
-      scalacOptions = target.scalaTargetInfo.scalacOptsList,
-    )
-  }
-
+class ScalaLanguagePlugin: JvmLanguagePluginMixin {
   override fun getSupportedLanguages(): Set<LanguageClass> = setOf(LanguageClass.SCALA)
+  override fun createProjectMapper(project: Project, server: BazelServerFacade) = Mapper(server)
 
-  override fun resolveJvmPackagePrefix(source: Path): String? = packageResolver.calculateJvmPackagePrefix(source, true)
+  class Mapper(private val server: BazelServerFacade) : JvmLanguagePluginMixin.Mapper {
 
-  override fun transformSources(sources: List<SourceItem>): List<SourceItem> = javaLanguagePlugin.transformSources(sources)
+    private var scalaSdks: Map<Label, ScalaSdk> = emptyMap()
+    private var scalaTestJars: Map<Label, Set<Path>> = emptyMap()
 
+    override suspend fun prepareSync(
+      graph: DependencyGraph,
+      targetsToImport: Map<Label, TargetInfo>,
+      repoMapping: RepoMapping,
+    ) {
+      val localRepositories = repoMapping.getLocalRepositories()
+      scalaSdks =
+        graph.idToTargetInfo.values
+          .associateBy(
+            { it.label() },
+            { ScalaSdkResolver(server.bazelPathsResolver).resolveSdk(it, localRepositories) },
+          ).filterValuesNotNull()
+
+      scalaTestJars =
+        graph.idToTargetInfo.values
+          .filter { it.hasScalaTargetInfo() }
+          .associateBy(
+            { it.label() },
+            {
+              it.scalaTargetInfo.scalatestClasspathTargetsList.flatMap {
+                graph.idToTargetInfo.get(Label.parse(it))?.javaProvider?.fullCompileJarsList ?: emptyList()
+              }
+                .map { server.bazelPathsResolver.resolve(it, localRepositories) }
+                .toSet()
+            },
+          )
+    }
+
+    private fun <K, V> Map<K, V?>.filterValuesNotNull(): Map<K, V> = filterValues { it != null }.mapValues { it.value!! }
+
+    override suspend fun createBuildTargetData(
+      target: TargetInfo,
+      targetsToImport: Map<Label, TargetInfo>,
+      graph: DependencyGraph,
+      repoMapping: RepoMapping,
+    ): List<BuildTargetData> {
+      if (!target.hasScalaTargetInfo()) {
+        return emptyList()
+      }
+      val sdk = scalaSdks[target.label()] ?: return emptyList()
+      return listOf(ScalaBuildTarget(
+        scalaVersion = sdk.version,
+        sdkJars = sdk.compilerJars,
+        scalacOptions = target.scalaTargetInfo.scalacOptsList,
+      ))
+    }
+
+    override suspend fun toolchainLibraries(
+      targetsToImport: Map<Label, TargetInfo>,
+      repoMapping: RepoMapping,
+    ): Map<Label, List<LibraryItem>> {
+      val projectLevelScalaSdkLibraries = calculateProjectLevelScalaSdkLibraries()
+      val projectLevelScalaTestLibraries = calculateProjectLevelScalaTestLibraries()
+      val scalaTargets = targetsToImport.filter { it.value.hasScalaTargetInfo() }.map { it.key }
+      return scalaTargets.associateWith {
+        val sdkLibraries =
+          scalaSdks[it]
+            ?.compilerJars
+            ?.mapNotNull {
+              projectLevelScalaSdkLibraries[it]
+            }.orEmpty()
+        val testLibraries =
+          scalaTestJars[it]
+            ?.mapNotNull {
+              projectLevelScalaTestLibraries[it]
+            }.orEmpty()
+
+        (sdkLibraries + testLibraries).distinct()
+      }
+    }
+
+    private suspend fun calculateProjectLevelScalaSdkLibraries(): Map<Path, LibraryItem> =
+      getProjectLevelScalaSdkLibrariesJars().associateWith {
+        createLibrary(id = Label.synthetic(it.name), jar = it)
+      }
+
+    private suspend fun calculateProjectLevelScalaTestLibraries(): Map<Path, LibraryItem> {
+      return scalaTestJars.values
+        .flatten()
+        .toSet()
+        .associateWith {
+          createLibrary(id = Label.synthetic(it.name), jar = it)
+        }
+    }
+
+    private fun getProjectLevelScalaSdkLibrariesJars(): Set<Path> {
+      return scalaSdks.values
+        .toSet()
+        .flatMap {
+          it.compilerJars
+        }.toSet()
+    }
+
+    private suspend fun createLibrary(
+      id: Label,
+      jar: Path,
+    ): LibraryItem {
+      return LibraryItem(
+        id = id,
+        dependencies = emptyList(),
+        ijars = emptyList(),
+        jars = server.outFileHardLinks.createOutputFileHardLinks(listOf(jar)),
+        sourceJars = emptyList(),
+        mavenCoordinates = null,
+        containsInternalJars = false,
+      )
+    }
+  }
 }
