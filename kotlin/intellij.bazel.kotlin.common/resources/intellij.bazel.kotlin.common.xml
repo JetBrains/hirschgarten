@@ -31,7 +31,6 @@
     <syntheticRunTargetTemplateGenerator language="kotlin"
                                          implementationClass="org.jetbrains.bazel.kotlin.run.KotlinSyntheticRunTargetTemplateGenerator"/>
     <projectPostSyncHook implementation="org.jetbrains.bazel.kotlin.sync.RefreshKotlinHighlightingPostSyncHook"/>
-    <sourceTypeIconProvider implementation="org.jetbrains.bazel.kotlin.configuration.KotlinSourceTypeIconProvider"/>
     <unresolvedImportChecker
       implementation="org.jetbrains.bazel.kotlin.ui.notifications.KotlinUnresolvedImportChecker"
     />

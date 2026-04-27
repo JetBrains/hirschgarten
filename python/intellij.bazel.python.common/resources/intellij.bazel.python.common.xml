@@ -25,8 +25,6 @@
       order="before IndexAdditionalFilesSyncHook"
     />
 
-    <sourceTypeIconProvider implementation="org.jetbrains.bazel.python.sync.PythonSourceIconProvider" />
-
     <runHandlerProvider
       id="PythonBazelRunHandlerProvider"
       implementation="org.jetbrains.bazel.python.run.PythonBazelRunHandler$Provider"

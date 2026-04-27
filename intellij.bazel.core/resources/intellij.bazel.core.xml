@@ -4,11 +4,6 @@
   <extensionPoints>
     <extensionPoint
       dynamic="true"
-      interface="org.jetbrains.bazel.utils.SourceTypeIconProvider"
-      qualifiedName="org.jetbrains.bazel.sourceTypeIconProvider"
-    />
-    <extensionPoint
-      dynamic="true"
       interface="org.jetbrains.bazel.run.RunHandlerProvider"
       qualifiedName="org.jetbrains.bazel.runHandlerProvider"
     />

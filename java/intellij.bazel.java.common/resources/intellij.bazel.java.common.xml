@@ -52,8 +52,6 @@
       order="after BazelRepoMappingSyncHook, after TargetPersistenceLayerSyncHook, after DirectoriesSyncHook, before IndexAdditionalFilesSyncHook"
     />
 
-    <sourceTypeIconProvider implementation="org.jetbrains.bazel.java.configuration.JavaSourceTypeIconProvider"/>
-
     <bazelExperimentalSettingsProvider
       implementation="org.jetbrains.bazel.ui.settings.BazelJVMExperimentalSettingsProvider"
     />
