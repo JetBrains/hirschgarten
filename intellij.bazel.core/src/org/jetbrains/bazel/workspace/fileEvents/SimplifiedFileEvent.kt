@@ -11,8 +11,7 @@ import com.intellij.openapi.vfs.newvfs.events.VFileEvent
 import com.intellij.openapi.vfs.newvfs.events.VFileMoveEvent
 import com.intellij.openapi.vfs.newvfs.events.VFilePropertyChangeEvent
 import com.intellij.util.concurrency.annotations.RequiresReadLock
-import org.jetbrains.bazel.utils.SourceType
-import org.jetbrains.bazel.utils.isSourceFile
+import org.jetbrains.bazel.commons.LanguageClass
 import java.nio.file.Path
 import kotlin.io.path.exists
 import kotlin.io.path.extension
@@ -30,7 +29,9 @@ internal sealed class SimplifiedFileEvent private constructor(
 
   // either of the affected files is a source file
   fun shouldBeProcessed(): Boolean =
-    fileRemoved?.extension?.let { SourceType.fromExtension(it) } != null || fileAdded?.isSourceFile() == true || this is CreateDirectory
+    fileRemoved?.extension?.let { LanguageClass.fromExtension(it) } != null ||
+    fileAdded?.extension?.let { LanguageClass.fromExtension(it) } != null ||
+    this is CreateDirectory
 
   fun doesAffectFolder(folderPath: Path): Boolean =
     fileRemoved?.startsWith(folderPath) == true || fileAdded?.startsWith(folderPath) == true
