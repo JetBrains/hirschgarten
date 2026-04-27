@@ -1,15 +1,19 @@
 package org.jetbrains.bazel.workspace
 
 import com.intellij.openapi.components.service
+import com.intellij.openapi.diagnostic.fileLogger
 import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.openapi.vfs.impl.local.WatchRootsManager
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.sync.environment.BazelApplicationContextService
 import org.jetbrains.bazel.utils.isUnder
+import java.lang.reflect.Field
 import java.nio.file.InvalidPathException
 import java.nio.file.Path
 import java.util.NavigableMap
+
+private val LOG = fileLogger()
 
 /**
  * WatchRootsManager doesn't check whether the symlinks it's watching are excluded.
@@ -20,6 +24,15 @@ import java.util.NavigableMap
  */
 @ApiStatus.Internal
 fun excludeSymlinksFromFileWatcher(symlinksToExclude: List<Path>) {
+  try {
+    tryExcludeSymlinksFromFileWatcher(symlinksToExclude)
+  }
+  catch (e: Throwable) {
+    LOG.error("Couldn't exclude symlinks $symlinksToExclude from FileWatcher", e)
+  }
+}
+
+private fun tryExcludeSymlinksFromFileWatcher(symlinksToExclude: List<Path>) {
   if (service<BazelApplicationContextService>().disableFileWatcherSymlinkExclusion) {
     return
   }
@@ -46,21 +59,27 @@ fun excludeSymlinksFromFileWatcher(symlinksToExclude: List<Path>) {
         }
       }
 
-    symlinksByPathWithExcludes.addExcludes(symlinksToExclude)
+    symlinksByPathWithExcludes.addExcludes(
+      symlinksToExclude +
+      symlinksToExclude.mapNotNull { runCatching { it.toRealPath() }.getOrNull() },  // Also exclude directories to which the symlinks resolve
+    )
   }
 }
 
 private fun <T> Any.getFieldWithReflection(field: String): T =
-  this::class.java
-    .getDeclaredField(field)
+  this.declaredFieldInThisOrSuper(field)
     .apply { isAccessible = true }
     .get(this) as T
 
 private fun Any.setFieldWithReflection(field: String, newValue: Any) =
-  this::class.java
-    .getDeclaredField(field)
+  this.declaredFieldInThisOrSuper(field)
     .apply { isAccessible = true }
     .set(this, newValue)
+
+private fun Any.declaredFieldInThisOrSuper(field: String): Field =
+  generateSequence(this::class.java) { it.superclass }.firstNotNullOf {
+    runCatching { it.getDeclaredField(field) }.getOrNull()
+  }
 
 private class MapWithExcludes(private val delegate: NavigableMap<String, Any>) : NavigableMap<String, Any> by delegate {
   private val excludes = mutableSetOf<Path>()
