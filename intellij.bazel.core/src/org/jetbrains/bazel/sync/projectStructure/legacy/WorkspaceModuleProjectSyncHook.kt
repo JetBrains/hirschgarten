@@ -18,6 +18,8 @@ import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.sync.ProjectSyncHook
 import org.jetbrains.bazel.workspacemodel.entities.BazelModuleEntitySource
 
+internal val GENERIC_SOURCE_ROOT_TYPE_ID = SourceRootTypeId("generic-source")
+
 @ApiStatus.Internal
 class WorkspaceModuleProjectSyncHook : ProjectSyncHook {
   /**
@@ -38,7 +40,7 @@ class WorkspaceModuleProjectSyncHook : ProjectSyncHook {
       includedDirectories.map { includedDirectory ->
         SourceRootEntity(
           url = includedDirectory,
-          rootTypeId = SourceRootTypeId("generic-source"),
+          rootTypeId = GENERIC_SOURCE_ROOT_TYPE_ID,
           entitySource = moduleEntitySource,
         )
       }
