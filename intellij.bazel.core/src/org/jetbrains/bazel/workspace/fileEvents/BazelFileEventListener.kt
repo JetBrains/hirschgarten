@@ -54,6 +54,7 @@ import org.jetbrains.bazel.projectAware.BazelProjectAware
 import org.jetbrains.bazel.run.task.BazelBuildTaskListener
 import org.jetbrains.bazel.server.connection.connection
 import org.jetbrains.bazel.settings.bazel.bazelProjectSettings
+import org.jetbrains.bazel.sync.projectStructure.legacy.GENERIC_SOURCE_ROOT_TYPE_ID
 import org.jetbrains.bazel.sync.status.SyncStatusService
 import org.jetbrains.bazel.target.TargetUtils
 import org.jetbrains.bazel.target.moduleEntity
@@ -339,7 +340,7 @@ class BazelFileEventListener : BulkFileListenerBackgroundable {
         val moduleContainsContentRootForRemoval = moduleRemovalsForFile?.remove(module) == true
         val fileAlreadyInModule = modulesAlreadyContainingFile.contains(module)
         if (!moduleContainsContentRootForRemoval && !fileAlreadyInModule) {
-          fileUrl.addToModule(context.entityStorageDiff, module, filePath.extension)
+          addFileToModule(fileUrl, context.entityStorageDiff, module)
         }
       }
       context.targetUtils.addFileToTargetIdEntry(filePath, targets)
@@ -496,35 +497,29 @@ private fun addToPluginModelByModules(filePath: Path, modules: Set<ModuleEntity>
 // the .toUri() conversion is necessary to contain file:// schema, which is present in VirtualFile.toVirtualFileUrl() results
 private fun Path.toVirtualFileUrl(manager: VirtualFileUrlManager): VirtualFileUrl = manager.getOrCreateFromUrl(this.toUri().toString())
 
-private fun VirtualFileUrl.addToModule(
+private fun addFileToModule(
+  url: VirtualFileUrl,
   entityStorageDiff: MutableEntityStorage,
-  module: ModuleEntity,
-  extension: String?,
+  module: ModuleEntity
 ) {
-  if (module.contentRoots.any { it.url == this }) return // we don't want to duplicate content roots
+  if (module.contentRoots.any { it.url == url }) return // we don't want to duplicate content roots
 
-  // TODO: https://youtrack.jetbrains.com/issue/BAZEL-1917
-  val sourceRootType =
-    when (extension) {
-      "java" -> SourceRootTypeId("java-source")
-      "kt" -> SourceRootTypeId("kotlin-source")
-      "py" -> SourceRootTypeId("python-source")
-      else -> {
-        logger.warn("Bazel recognised a file as a source, but we failed to parse its extension: .$extension")
-        SourceRootTypeId("unknown-source")
-      }
-    }
+  // Heuristics: get the source root type based on the exisiting files in module
+  val extension = url.fileName.substringAfterLast(".")
+  val sourceRootType = module.contentRoots.firstOrNull {
+    it.url.fileName.substringAfterLast(".") == extension
+  }?.sourceRoots?.firstOrNull()?.rootTypeId ?: GENERIC_SOURCE_ROOT_TYPE_ID
 
   val sourceRoot =
     SourceRootEntity(
-      url = this,
+      url = url,
       entitySource = module.entitySource,
       rootTypeId = sourceRootType,
     )
 
   val contentRootEntity =
     ContentRootEntity(
-      url = this,
+      url = url,
       excludedPatterns = emptyList(),
       entitySource = module.entitySource,
     ) {
