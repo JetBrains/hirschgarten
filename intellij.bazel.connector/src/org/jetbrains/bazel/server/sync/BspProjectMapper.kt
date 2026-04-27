@@ -29,15 +29,10 @@ class BspProjectMapper(
   private val workspaceContext: WorkspaceContext,
 ) {
   suspend fun workspaceDirectories(): WorkspaceDirectoriesResult {
-    // bazel symlinks exclusion logic is now taken care by BazelSymlinkExcludeService,
-    // so there is no need for excluding them here anymore
-    val additionalDirectoriesToExclude = computeAdditionalDirectoriesToExclude()
     val (includedDirectories, excludedDirectories) = getProjectDirs()
-
     return WorkspaceDirectoriesResult(
       includedDirectories = includedDirectories.map { it.toDirectoryItem() },
-      excludedDirectories = excludedDirectories.map { it.toDirectoryItem() } +
-                            additionalDirectoriesToExclude.map { it.toDirectoryItem() },
+      excludedDirectories = excludedDirectories.map { it.toDirectoryItem() },
     )
   }
 
@@ -47,6 +42,7 @@ class BspProjectMapper(
   )
 
   private suspend fun getProjectDirs(): ProjectDirs {
+    val excludedTechnicalDirectories = getTechnicalDirectoriesToExclude()
     val included = mutableSetOf<Path>()
     val excluded = mutableSetOf<Path>()
 
@@ -81,7 +77,7 @@ class BspProjectMapper(
 
     // We need a hierarchy of collected sets to avoid cases when one directory is both included and excluded.
     // The sets are prioritized according to the following order (from lowest to highest):
-    // includedAdditionally < excludedAdditionally < included < excluded < includedFromTargets < excludedFromTargets.
+    // includedAdditionally < excludedAdditionally < included < excluded < includedFromTargets < excludedFromTargets < excludedTechnicalDirectories.
     //
     // Note that 'included' and 'excluded' sets (derived from the 'directories' section of the .bazelproject file)
     // are matched resursively, meaning that if a directory is included, all its subdirectories are also
@@ -104,11 +100,12 @@ class BspProjectMapper(
       .addLast(excluded, isRecursive = true)
       .addLast(includedFromTargets)
       .addLast(excludedFromTargets)
+      .addLast(excludedTechnicalDirectories, isRecursive = true)
       .removeShadowedPaths()
 
     return ProjectDirs(
       included = included + includedFromTargets + includedAdditionally,
-      excluded = excluded + excludedFromTargets + excludedAdditionally,
+      excluded = excluded + excludedFromTargets + excludedAdditionally + excludedTechnicalDirectories,
     )
   }
 
@@ -135,8 +132,9 @@ class BspProjectMapper(
 
   fun workspaceBazelRepoMapping(project: BazelSyncProject): WorkspaceBazelRepoMappingResult = WorkspaceBazelRepoMappingResult(project.repoMapping)
 
-  private fun computeAdditionalDirectoriesToExclude(): List<Path> =
-    listOf(
+  // bazel symlinks exclusion logic is taken care by BazelSymlinkExcludeService
+  private fun getTechnicalDirectoriesToExclude(): MutableSet<Path> =
+    mutableSetOf(
       workspaceRoot.resolve(Constants.DOT_BAZELBSP_DIR_NAME),
       workspaceRoot.resolve(JPS_COMPILED_BASE_DIRECTORY),
     )
