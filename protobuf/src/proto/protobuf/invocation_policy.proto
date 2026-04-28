@@ -16,7 +16,7 @@ syntax = "proto2";
 
 package blaze.invocation_policy;
 
-import "third_party/bazel/src/main/protobuf/strategy_policy.proto";
+import "src/proto/protobuf/strategy_policy.proto";
 
 // option java_api_version = 2;
 option java_package = "com.google.devtools.build.lib.runtime.proto";

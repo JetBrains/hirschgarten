@@ -19,7 +19,7 @@ syntax = "proto2";
 
 package blaze_query;
 
-import "third_party/bazel/src/main/protobuf/stardoc_output.proto";
+import "src/proto/protobuf/stardoc_output.proto";
 
 // option cc_api_version = 2;
 // option java_api_version = 1;

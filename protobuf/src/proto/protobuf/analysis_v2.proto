@@ -16,7 +16,7 @@ syntax = "proto3";
 
 package analysis;
 
-import "third_party/bazel/src/main/protobuf/build.proto";
+import "src/proto/protobuf/build.proto";
 
 option java_outer_classname = "AnalysisProtosV2";
 option java_package = "com.google.devtools.build.lib.analysis";
