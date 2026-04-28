@@ -3,7 +3,6 @@ package org.jetbrains.bazel.server.sync
 import com.intellij.execution.process.OSProcessUtil.killProcess
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
-import com.intellij.platform.util.progress.reportRawProgress
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
@@ -51,13 +50,14 @@ class ExecuteService(
   private val bazelRunner: BazelRunner,
   private val workspaceContext: WorkspaceContext,
   private val bazelPathsResolver: BazelPathsResolver,
+  private val rawProgressReporterProvider: RawProgressReporterProvider = RawProgressReporterProvider.current(),
 ) {
   private suspend fun runWithBepServer(
     command: BazelCommand,
     taskId: TaskId,
-    pidDeferred: CompletableDeferred<Long?>? = null
-  ): BepBuildResult = coroutineScope {
-    reportRawProgress { rawProgressReporter ->
+    pidDeferred: CompletableDeferred<Long?>? = null,
+  ): BepBuildResult = rawProgressReporterProvider { rawProgressReporter ->
+    coroutineScope {
       val eventFile: Path =
         Files.createTempFile("bazel-bep-output", null).toAbsolutePath()
 
@@ -74,7 +74,7 @@ class ExecuteService(
 
         val bazelProcess = bazelRunner.runBazelCommand(
           executionDescriptor,
-          taskId = taskId
+          taskId = taskId,
         )
         pidDeferred?.complete(bazelProcess.pid)
         val processResult = bazelProcess.waitAndGetResult()
@@ -225,7 +225,7 @@ class ExecuteService(
   suspend fun buildTargetsWithBep(
     targetsSpec: TargetCollection,
     extraFlags: List<String> = emptyList(),
-    taskId: TaskId
+    taskId: TaskId,
   ): BepBuildResult {
     val command =
       bazelRunner.buildBazelCommand(workspaceContext) {
