@@ -5,6 +5,9 @@ import com.intellij.openapi.util.NlsSafe
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.isFile
 import org.jetbrains.annotations.ApiStatus
+import org.jetbrains.bazel.commons.BzlmodRepoMapping
+import org.jetbrains.bazel.commons.RepoMapping
+import org.jetbrains.bazel.commons.RepoMappingDisabled
 import org.jetbrains.bazel.commons.constants.Constants.WORKSPACE_FILE_NAMES
 import org.jetbrains.bazel.label.AmbiguousEmptyTarget
 import org.jetbrains.bazel.label.Apparent
@@ -73,6 +76,9 @@ private fun Path.segments(): List<String> {
 @ApiStatus.Internal
 fun Label.toApparentLabelOrThis(project: Project): Label = toApparentLabel(project) ?: this
 
+@ApiStatus.Internal
+fun Label.toApparentLabelOrThis(repoMapping: RepoMapping): Label = toApparentLabel(repoMapping) ?: this
+
 /**
  * Converts this [Label]'s repository either to [Apparent] or to [Main].
  */
@@ -81,6 +87,17 @@ fun Label.toApparentLabel(project: Project): ResolvedLabel? {
   if (this !is ResolvedLabel) return null
   if (this.repo !is Canonical) return this
   val apparentRepoName = project.canonicalRepoNameToApparentName[this.repo.repoName] ?: return null
+  return this.copy(repo = Apparent(apparentRepoName))
+}
+
+@ApiStatus.Internal
+fun Label.toApparentLabel(repoMapping: RepoMapping): ResolvedLabel? {
+  if (this !is ResolvedLabel) return null
+  if (this.repo !is Canonical) return this
+  val apparentRepoName = when (repoMapping) {
+                           is BzlmodRepoMapping -> repoMapping.canonicalRepoNameToApparentName[this.repo.repoName]
+                           RepoMappingDisabled -> null
+                         } ?: return null
   return this.copy(repo = Apparent(apparentRepoName))
 }
 
@@ -93,7 +110,8 @@ fun Label.toCanonicalLabel(project: Project): ResolvedLabel? {
   val repo =
     if (repo !is Apparent) {
       repo
-    } else {
+    }
+    else {
       val canonicalRepoName = project.apparentRepoNameToCanonicalName[repo.repoName] ?: return null
       Canonical.createCanonicalOrMain(canonicalRepoName)
     }

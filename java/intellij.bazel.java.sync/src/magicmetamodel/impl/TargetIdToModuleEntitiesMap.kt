@@ -1,17 +1,18 @@
 package org.jetbrains.bazel.magicmetamodel.impl
 
-import com.intellij.openapi.project.Project
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.withContext
 import org.jetbrains.annotations.ApiStatus
+import org.jetbrains.bazel.commons.RepoMapping
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.magicmetamodel.ProjectDetails
 import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.ModuleDetails
 import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.ModuleDetailsToJavaModuleTransformer
 import org.jetbrains.bazel.sync.workspace.languages.java.sourceRoot.JvmPackagePrefixCalculator
 import org.jetbrains.bazel.sync.workspace.languages.java.sourceRoot.JvmPackagePrefixes
+import org.jetbrains.bazel.workspace.indexAdditionalFiles.ProjectViewGlobSet
 import org.jetbrains.bazel.workspacemodel.entities.Module
 import org.jetbrains.bsp.protocol.BuildTarget
 import java.nio.file.Path
@@ -25,15 +26,19 @@ object TargetIdToModuleEntitiesMap {
     packagePrefixes: JvmPackagePrefixCalculator,
     fileToTargets: Map<Path, List<Label>>,
     projectBasePath: Path,
-    project: Project,
+    repoMapping: RepoMapping,
+    projectName: String,
+    testSourcesGlob: ProjectViewGlobSet
   ): Map<Label, List<Module>> {
     val moduleDetailsToJavaModuleTransformer =
       ModuleDetailsToJavaModuleTransformer(
         targetIdToTargetInfo,
         fileToTargets,
         projectBasePath,
+        repoMapping,
+        projectName,
+        testSourcesGlob,
         packagePrefixes,
-        project,
       )
 
     return withContext(Dispatchers.Default) {

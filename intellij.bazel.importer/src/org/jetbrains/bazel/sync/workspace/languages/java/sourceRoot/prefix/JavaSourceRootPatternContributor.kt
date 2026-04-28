@@ -15,7 +15,15 @@ interface JavaSourceRootPatternContributor {
   fun getPatterns(project: Project): JavaSourceRootPatterns
 
   companion object {
-    val ep = ExtensionPointName<JavaSourceRootPatternContributor>("org.jetbrains.bazel.javaSourceRootPrefixContributor")
+    val EP_NAME: ExtensionPointName<JavaSourceRootPatternContributor> = ExtensionPointName("org.jetbrains.bazel.javaSourceRootPrefixContributor")
+
+    fun allSourceRootPatterns(project: Project): JavaSourceRootPatterns {
+      val patterns = EP_NAME.extensionList.map { it.getPatterns(project) }
+      return JavaSourceRootPatterns(
+        includes = patterns.flatMap { it.includes },
+        excludes = patterns.flatMap { it.excludes }
+      )
+    }
   }
 }
 

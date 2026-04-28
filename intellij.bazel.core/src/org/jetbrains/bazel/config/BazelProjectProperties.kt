@@ -36,7 +36,6 @@ data class BazelProjectPropertiesState(
 class BazelProjectProperties(private val project: Project) : PersistentStateComponent<BazelProjectPropertiesState> {
   var isBazelProject: Boolean = false
   var rootDir: VirtualFile? = null
-  var defaultJdkName: String? = null
   var isBrokenBazelProject: Boolean = false
   var workspaceName: String? = null
 
@@ -46,14 +45,12 @@ class BazelProjectProperties(private val project: Project) : PersistentStateComp
   override fun getState(): BazelProjectPropertiesState =
     BazelProjectPropertiesState(
       isBazelProject = isBazelProject,
-      rootDirUrl = rootDir?.url,
-      defaultJdkName = defaultJdkName,
+      rootDirUrl = rootDir?.url
     )
 
   override fun loadState(state: BazelProjectPropertiesState) {
     isBazelProject = state.isBazelProject
     rootDir = state.rootDirUrl?.let { VirtualFileManager.getInstance().findFileByUrl(it) }
-    defaultJdkName = state.defaultJdkName
   }
 
   override fun noStateLoaded() {
@@ -101,14 +98,6 @@ var Project.rootDir: VirtualFile
 val Project.bazelProjectName: String
   @ApiStatus.Internal
   get() = rootDir.name
-
-var Project.defaultJdkName: String?
-  @ApiStatus.Internal
-  get() = bazelProjectProperties.defaultJdkName
-  @ApiStatus.Internal
-  set(value) {
-    bazelProjectProperties.defaultJdkName = value
-  }
 
 internal var Project.workspaceName: String?
   get() = projectCtx.workspaceName

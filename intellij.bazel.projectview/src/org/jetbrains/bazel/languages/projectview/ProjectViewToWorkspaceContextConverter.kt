@@ -42,7 +42,6 @@ object ProjectViewToWorkspaceContextConverter {
       importRunConfigurations = projectView.importRunConfigurations,
       gazelleTarget = projectView.gazelleTarget,
       indexAllFilesInDirectories = projectView.indexAllFilesInDirectories,
-      importIjars = projectView.importIjars,
       deriveInstrumentationFilterFromTargets = projectView.deriveInstrumentationFilterFromTargets,
       indexAdditionalFilesInDirectories = projectView.indexAdditionalFilesInDirectories,
       preferClassJarsOverSourcelessJars = projectView.preferClassJarsOverSourcelessJars,

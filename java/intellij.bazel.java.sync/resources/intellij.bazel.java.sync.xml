@@ -10,6 +10,8 @@
   </dependencies>
   <!-- endregion -->
 
+  <resource-bundle>messages.BazelJavaBackendBundle</resource-bundle>
+
   <extensionPoints>
     <extensionPoint
       dynamic="true"
@@ -17,6 +19,12 @@
       qualifiedName="org.jetbrains.bazel.kotlinFacetEntityUpdater"
     />
   </extensionPoints>
+
+  <extensions defaultExtensionNs="org.jetbrains.bazel">
+    <syncWorkspaceImporter implementation="org.jetbrains.bazel.workspace.importer.JavaBazelWorkspaceImporter"/>
+    <syncWorkspaceImporter implementation="org.jetbrains.bazel.workspace.importer.ScalaBazelWorkspaceImporter"/>
+  </extensions>
+
   <extensions defaultExtensionNs="com.intellij">
     <moduleType
       id="BAZEL_DUMMY_MODULE_TYPE"

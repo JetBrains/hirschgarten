@@ -4,6 +4,7 @@ import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import org.jetbrains.annotations.ApiStatus
+import org.jetbrains.bazel.config.rootDir
 
 @ApiStatus.Internal
 interface BazelProjectContextService {
@@ -29,3 +30,7 @@ val Project.projectCtx: BazelProjectContextService
 fun BazelProjectContextService.getProjectRootDirOrThrow(): VirtualFile {
   return projectRootDir ?: error("Project root directory is not initialized")
 }
+
+val Project.bazelProjectName: String
+  @ApiStatus.Internal
+  get() = rootDir.name

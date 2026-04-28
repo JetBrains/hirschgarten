@@ -1,10 +1,11 @@
 package org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.transformers
 
-import com.intellij.openapi.project.Project
 import com.intellij.platform.workspace.jps.entities.ModuleTypeId
 import org.jetbrains.annotations.ApiStatus
+import org.jetbrains.bazel.commons.RepoMapping
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.ModuleDetails
+import org.jetbrains.bazel.workspace.indexAdditionalFiles.ProjectViewGlobSet
 import org.jetbrains.bazel.sync.environment.getProjectRootDirOrThrow
 import org.jetbrains.bazel.sync.environment.projectCtx
 import org.jetbrains.bazel.sync.workspace.languages.java.sourceRoot.JvmPackagePrefixCalculator
@@ -30,15 +31,17 @@ class ModuleDetailsToJavaModuleTransformer(
   targetsMap: Map<Label, BuildTarget>,
   fileToTargets: Map<Path, List<Label>>,
   projectBasePath: Path,
+  repoMapping: RepoMapping,
+  private val projectName: String,
+  testSourcesGlob: ProjectViewGlobSet,
   packagePrefixes: JvmPackagePrefixCalculator,
-  private val project: Project,
 ) {
-  private val bspModuleDetailsToModuleTransformer = BspModuleDetailsToModuleTransformer(targetsMap, project)
+  private val bspModuleDetailsToModuleTransformer = BspModuleDetailsToModuleTransformer(targetsMap, repoMapping)
   private val type = ModuleTypeId("JAVA_MODULE")
   private val resourcesItemToJavaResourceRootTransformer = ResourcesItemToJavaResourceRootTransformer()
   private val javaModuleToDummyJavaModulesTransformerHACK =
-    JavaModuleToDummyJavaModulesTransformerHACK(projectBasePath, fileToTargets, project)
-  private val sourcesItemToJavaSourceRootTransformer = SourcesItemToJavaSourceRootTransformer(project, packagePrefixes)
+    JavaModuleToDummyJavaModulesTransformerHACK(projectBasePath, fileToTargets)
+  private val sourcesItemToJavaSourceRootTransformer = SourcesItemToJavaSourceRootTransformer(testSourcesGlob, packagePrefixes)
 
   fun transform(inputEntity: ModuleDetails): List<JavaModule> {
     val javaModule =
@@ -106,7 +109,7 @@ class ModuleDetailsToJavaModuleTransformer(
   private fun ModuleDetails.toJdkName(): String? = extractJvmBuildTarget(this.target).toJdkName()
 
   private fun JvmBuildTarget?.toJdkName(): String? =
-    this?.javaHome?.let { project.projectCtx.getProjectRootDirOrThrow().name.projectNameToJdkName(it) }
+    this?.javaHome?.let { projectName.projectNameToJdkName(it) }
 
   private fun toKotlinAddendum(inputEntity: ModuleDetails): KotlinAddendum? {
     val kotlinBuildTarget = extractKotlinBuildTarget(inputEntity.target) ?: return null

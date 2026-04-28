@@ -1,6 +1,5 @@
 package org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters
 
-import com.intellij.openapi.components.service
 import com.intellij.platform.workspace.jps.entities.DependencyScope
 import com.intellij.platform.workspace.jps.entities.LibraryDependency
 import com.intellij.platform.workspace.jps.entities.LibraryId
@@ -12,14 +11,9 @@ import com.intellij.platform.workspace.jps.entities.ModuleId
 import com.intellij.platform.workspace.storage.EntitySource
 import com.intellij.platform.workspace.storage.MutableEntityStorage
 import com.intellij.platform.workspace.storage.SymbolicEntityId
-import com.intellij.platform.workspace.storage.impl.url.toVirtualFileUrl
 import com.intellij.util.containers.Interner
-import com.intellij.workspaceModel.ide.legacyBridge.LegacyBridgeJpsEntitySourceFactory
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.jpsCompilation.utils.JpsConstants
-import org.jetbrains.bazel.jpsCompilation.utils.JpsPaths
-import org.jetbrains.bazel.magicmetamodel.MagicMetaModelEnvironment
-import org.jetbrains.bazel.settings.bazel.bazelJVMProjectSettings
 import org.jetbrains.bazel.workspacemodel.entities.BazelDummyEntitySource
 import org.jetbrains.bazel.workspacemodel.entities.BazelModuleEntitySource
 import org.jetbrains.bazel.workspacemodel.entities.GenericModuleInfo
@@ -87,18 +81,8 @@ class ModuleEntityUpdater(
 
   private fun toEntitySource(entityToAdd: GenericModuleInfo): EntitySource =
     when {
-      entityToAdd.isDummy -> BazelDummyEntitySource
-      !workspaceModelEntityUpdaterConfig.project.bazelJVMProjectSettings.enableBuildWithJps ||
       entityToAdd.kind.languageClasses.any { it !in JpsConstants.SUPPORTED_LANGUAGES } -> BazelModuleEntitySource(entityToAdd.name)
-
-      else ->
-        LegacyBridgeJpsEntitySourceFactory.getInstance(workspaceModelEntityUpdaterConfig.project).createEntitySourceForModule(
-          JpsPaths
-            .getJpsImlModulesPath(workspaceModelEntityUpdaterConfig.projectBasePath)
-            .toVirtualFileUrl(workspaceModelEntityUpdaterConfig.virtualFileUrlManager),
-          workspaceModelEntityUpdaterConfig.project.service<MagicMetaModelEnvironment>()
-            .externalProjectModelSource,
-        )
+      else -> BazelDummyEntitySource
     }
 
   private fun toModuleDependencyItemModuleDependency(

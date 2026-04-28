@@ -7,10 +7,13 @@ import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
 import org.jetbrains.annotations.TestOnly
 import org.jetbrains.bazel.commons.LanguageClass
+import org.jetbrains.bazel.commons.RepoMappingDisabled
 import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.commons.TargetKind
+import org.jetbrains.bazel.config.bazelProjectName
 import org.jetbrains.bazel.label.DependencyLabel
 import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.workspace.indexAdditionalFiles.ProjectViewGlobSet
 import org.jetbrains.bazel.workspace.model.test.framework.WorkspaceModelBaseTest
 import org.jetbrains.bazel.workspacemodel.entities.Dependency
 import org.jetbrains.bazel.workspacemodel.entities.GenericModuleInfo
@@ -32,7 +35,7 @@ class BspModuleDetailsToModuleTransformerTest : WorkspaceModelBaseTest() {
     val modules =
       BspModuleDetailsToModuleTransformer(
         mapOf(),
-        project,
+        RepoMappingDisabled,
       ).transform(
         emptyBspModuleDetails,
       )
@@ -83,7 +86,7 @@ class BspModuleDetailsToModuleTransformerTest : WorkspaceModelBaseTest() {
     val module =
       BspModuleDetailsToModuleTransformer(
         targetsMap,
-        project,
+        RepoMappingDisabled,
       ).transform(
         bspModuleDetails,
       )
@@ -155,7 +158,7 @@ class BspModuleDetailsToModuleTransformerTest : WorkspaceModelBaseTest() {
     val module =
       BspModuleDetailsToModuleTransformer(
         targetsMap,
-        project,
+        RepoMappingDisabled,
       ).transform(
         bspModuleDetails,
       )
@@ -261,7 +264,7 @@ class BspModuleDetailsToModuleTransformerTest : WorkspaceModelBaseTest() {
     val modules =
       BspModuleDetailsToModuleTransformer(
         targetsMap,
-        project,
+        RepoMappingDisabled,
       ).transform(
         bspModuleDetails,
       )

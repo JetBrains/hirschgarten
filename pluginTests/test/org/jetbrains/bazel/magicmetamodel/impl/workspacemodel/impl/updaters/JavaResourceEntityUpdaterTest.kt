@@ -10,6 +10,7 @@ import org.jetbrains.bazel.workspace.model.matchers.entries.ExpectedSourceRootEn
 import org.jetbrains.bazel.workspace.model.matchers.entries.shouldBeEqual
 import org.jetbrains.bazel.workspace.model.matchers.entries.shouldContainExactlyInAnyOrder
 import org.jetbrains.bazel.workspace.model.test.framework.WorkspaceModelWithParentJavaModuleBaseTest
+import org.jetbrains.bazel.workspacemodel.entities.BazelDummyEntitySource
 import org.jetbrains.bazel.workspacemodel.entities.ResourceRoot
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
@@ -26,7 +27,7 @@ class JavaResourceEntityUpdaterTest : WorkspaceModelWithParentJavaModuleBaseTest
     super.beforeEach()
 
     val workspaceModelEntityUpdaterConfig =
-      WorkspaceModelEntityUpdaterConfig(workspaceEntityStorageBuilder, virtualFileUrlManager, projectBasePath, project)
+      WorkspaceModelEntityUpdaterConfig(workspaceEntityStorageBuilder, virtualFileUrlManager, projectBasePath, BazelDummyEntitySource)
     javaResourceEntityUpdater = JavaResourceEntityUpdater(workspaceModelEntityUpdaterConfig)
   }
 

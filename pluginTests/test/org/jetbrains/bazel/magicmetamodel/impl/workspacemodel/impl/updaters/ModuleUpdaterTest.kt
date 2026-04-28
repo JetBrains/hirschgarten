@@ -22,6 +22,7 @@ import org.jetbrains.bazel.workspace.model.matchers.entries.shouldBeEqual
 import org.jetbrains.bazel.workspace.model.matchers.entries.shouldContainExactlyInAnyOrder
 import org.jetbrains.bazel.workspace.model.test.framework.WorkspaceModelBaseTest
 import org.jetbrains.bazel.workspace.model.test.framework.createJavaModule
+import org.jetbrains.bazel.workspacemodel.entities.BazelDummyEntitySource
 import org.jetbrains.bazel.workspacemodel.entities.BazelProjectEntitySource
 import org.jetbrains.bazel.workspacemodel.entities.Dependency
 import org.jetbrains.bazel.workspacemodel.entities.GenericModuleInfo
@@ -74,7 +75,7 @@ internal class ModuleUpdaterTest : WorkspaceModelBaseTest() {
     super.beforeEach()
 
     val workspaceModelEntityUpdaterConfig =
-      WorkspaceModelEntityUpdaterConfig(workspaceEntityStorageBuilder, virtualFileUrlManager, projectBasePath, project)
+      WorkspaceModelEntityUpdaterConfig(workspaceEntityStorageBuilder, virtualFileUrlManager, projectBasePath, BazelDummyEntitySource)
 
     moduleEntityUpdater = ModuleEntityUpdater(workspaceModelEntityUpdaterConfig, defaultDependencies, testModules, testLibrariesByName)
   }
@@ -339,7 +340,7 @@ internal class ModuleUpdaterTest : WorkspaceModelBaseTest() {
     )
 
     val workspaceModelEntityUpdaterConfig =
-      WorkspaceModelEntityUpdaterConfig(workspaceEntityStorageBuilder, virtualFileUrlManager, projectBasePath, project)
+      WorkspaceModelEntityUpdaterConfig(workspaceEntityStorageBuilder, virtualFileUrlManager, projectBasePath, BazelDummyEntitySource)
     val updater = ModuleEntityUpdater(workspaceModelEntityUpdaterConfig, defaultDependencies, modulesWithLibraryModules, testLibrariesByName)
 
     val libraryModule =

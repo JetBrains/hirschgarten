@@ -5,7 +5,6 @@
     <module name="intellij.bazel.connector"/>
     <module name="intellij.bazel.core"/>
     <module name="intellij.bazel.importer"/>
-    <module name="intellij.bazel.java.sync"/>
     <module name="intellij.bazel.projectview"/>
     <module name="intellij.java.analysis.impl"/>
     <module name="intellij.java.compiler"/>
@@ -45,12 +44,7 @@
     <syntheticRunTargetTemplateGenerator language="JAVA"
                                          implementationClass="org.jetbrains.bazel.java.run.JavaSyntheticRunTargetTemplateGenerator"/>
 
-    <!-- Dependency: JvmSyncHook -> TargetUtils#updateComputedFields -> toShortString -> BazelRepoMappingService -->
-    <!-- IndexAdditionalFilesSyncHook iterates over all added instances of ModuleEntity, so it has to come after JvmSyncHook -->
-    <projectSyncHook
-      implementation="org.jetbrains.bazel.jvm.sync.JvmSyncHook"
-      order="after BazelRepoMappingSyncHook, after TargetPersistenceLayerSyncHook, after DirectoriesSyncHook, before IndexAdditionalFilesSyncHook"
-    />
+    <sourceTypeIconProvider implementation="org.jetbrains.bazel.java.configuration.JavaSourceTypeIconProvider"/>
 
     <bazelExperimentalSettingsProvider
       implementation="org.jetbrains.bazel.ui.settings.BazelJVMExperimentalSettingsProvider"
@@ -101,8 +95,6 @@
     />
     <psi.referenceContributor implementation="org.jetbrains.bazel.languages.starlark.contributor.StarlarkJavaReferenceContributor"
                               language="Starlark"/>
-    <projectService serviceImplementation="org.jetbrains.bazel.magicmetamodel.DefaultMagicMetaModelEnvironment"
-                    serviceInterface="org.jetbrains.bazel.magicmetamodel.MagicMetaModelEnvironment"/>
     <projectService serviceInterface="org.jetbrains.bazel.hotswap.BazelHotSwapManager"
                     serviceImplementation="org.jetbrains.bazel.hotswap.BazelHotSwapManagerImpl"
                     open="true"/>

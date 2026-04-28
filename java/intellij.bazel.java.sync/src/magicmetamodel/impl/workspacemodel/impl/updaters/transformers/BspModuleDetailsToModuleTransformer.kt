@@ -1,8 +1,8 @@
 package org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.transformers
 
-import com.intellij.openapi.project.Project
 import com.intellij.platform.workspace.jps.entities.ModuleTypeId
 import org.jetbrains.annotations.ApiStatus
+import org.jetbrains.bazel.commons.RepoMapping
 import org.jetbrains.bazel.label.DependencyLabel
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.magicmetamodel.formatAsModuleName
@@ -20,17 +20,18 @@ data class BspModuleDetails(
 )
 
 @ApiStatus.Internal
-class BspModuleDetailsToModuleTransformer(private val targetsMap: Map<Label, BuildTarget>, private val project: Project) :
+class BspModuleDetailsToModuleTransformer(private val targetsMap: Map<Label, BuildTarget>,
+                                          private val repoMapping: RepoMapping) :
   WorkspaceModelEntityTransformer<BspModuleDetails, GenericModuleInfo> {
   override fun transform(inputEntity: BspModuleDetails): GenericModuleInfo =
     GenericModuleInfo(
-      name = inputEntity.target.id.formatAsModuleName(project),
+      name = inputEntity.target.id.formatAsModuleName(repoMapping),
       type = inputEntity.type,
-      dependencies = inputEntity.dependencies.map { Dependency(it.label.formatAsModuleName(project), it.isRuntime, it.exported) },
+      dependencies = inputEntity.dependencies.map { Dependency(it.label.formatAsModuleName(repoMapping), it.isRuntime, it.exported) },
       kind = inputEntity.target.kind,
       associates =
         inputEntity.associates.mapNotNull {
-          targetsMap[it]?.id?.formatAsModuleName(project)
+          targetsMap[it]?.id?.formatAsModuleName(repoMapping)
         },
     )
 }

@@ -66,7 +66,7 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest : WorkspaceModelBaseTest()
     )
 
     // when
-    val mergedSourceRoots = JavaModuleToDummyJavaModulesTransformerHACK(projectBasePath, emptyMap(), project).transform(givenJavaModule)
+    val mergedSourceRoots = JavaModuleToDummyJavaModulesTransformerHACK(projectBasePath, emptyMap()).transform(givenJavaModule)
 
     // then
     val expectedMergedSourceRoots =
@@ -140,7 +140,7 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest : WorkspaceModelBaseTest()
     )
 
     // when
-    val mergedSourceRoots = JavaModuleToDummyJavaModulesTransformerHACK(projectBasePath, emptyMap(), project).transform(givenJavaModule)
+    val mergedSourceRoots = JavaModuleToDummyJavaModulesTransformerHACK(projectBasePath, emptyMap()).transform(givenJavaModule)
 
     // then
     val expectedMergedSourceRoots =
@@ -290,7 +290,7 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest : WorkspaceModelBaseTest()
     )
 
     // when
-    val mergedSourceRoots = JavaModuleToDummyJavaModulesTransformerHACK(projectBasePath, emptyMap(), project).transform(givenJavaModule)
+    val mergedSourceRoots = JavaModuleToDummyJavaModulesTransformerHACK(projectBasePath, emptyMap()).transform(givenJavaModule)
 
     // then
     val expectedMergedSourceRoots =
@@ -359,7 +359,7 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest : WorkspaceModelBaseTest()
     )
 
     // when
-    val mergedSourceRoots = JavaModuleToDummyJavaModulesTransformerHACK(projectBasePath, emptyMap(), project).transform(givenJavaModule)
+    val mergedSourceRoots = JavaModuleToDummyJavaModulesTransformerHACK(projectBasePath, emptyMap()).transform(givenJavaModule)
 
     // then
     val expectedMergedSourceRoots =
@@ -416,7 +416,7 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest : WorkspaceModelBaseTest()
     )
 
     // when
-    val mergedSourceRoots = JavaModuleToDummyJavaModulesTransformerHACK(projectBasePath, emptyMap(), project).transform(givenJavaModule)
+    val mergedSourceRoots = JavaModuleToDummyJavaModulesTransformerHACK(projectBasePath, emptyMap()).transform(givenJavaModule)
 
     // then
     val expectedMergedSourceRoots =
@@ -465,7 +465,7 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest : WorkspaceModelBaseTest()
     )
 
     // when
-    val mergedSourceRoots = JavaModuleToDummyJavaModulesTransformerHACK(projectBasePath, emptyMap(), project).transform(givenJavaModule)
+    val mergedSourceRoots = JavaModuleToDummyJavaModulesTransformerHACK(projectBasePath, emptyMap()).transform(givenJavaModule)
 
     // then
     val expectedMergedSourceRoots =
@@ -577,7 +577,7 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest : WorkspaceModelBaseTest()
     )
 
     // when
-    val mergedSourceRoots = JavaModuleToDummyJavaModulesTransformerHACK(projectBasePath, emptyMap(), project).transform(givenJavaModule)
+    val mergedSourceRoots = JavaModuleToDummyJavaModulesTransformerHACK(projectBasePath, emptyMap()).transform(givenJavaModule)
 
     // then
     val expectedMergedSourceRoots =
@@ -627,7 +627,7 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest : WorkspaceModelBaseTest()
     )
 
     // when
-    val mergedSourceRoots = JavaModuleToDummyJavaModulesTransformerHACK(projectBasePath, emptyMap(), project).transform(givenJavaModule)
+    val mergedSourceRoots = JavaModuleToDummyJavaModulesTransformerHACK(projectBasePath, emptyMap()).transform(givenJavaModule)
 
     // then
     val expectedMergedSourceRoots =
@@ -667,7 +667,7 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest : WorkspaceModelBaseTest()
     )
 
     // when
-    val mergedSourceRoots = JavaModuleToDummyJavaModulesTransformerHACK(projectBasePath, emptyMap(), project).transform(givenJavaModule)
+    val mergedSourceRoots = JavaModuleToDummyJavaModulesTransformerHACK(projectBasePath, emptyMap()).transform(givenJavaModule)
 
     // then
     val expectedMergedSourceRoots =
@@ -708,7 +708,7 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest : WorkspaceModelBaseTest()
     )
 
     // when
-    val mergedSourceRoots = JavaModuleToDummyJavaModulesTransformerHACK(projectBasePath, emptyMap(), project).transform(givenJavaModule)
+    val mergedSourceRoots = JavaModuleToDummyJavaModulesTransformerHACK(projectBasePath, emptyMap()).transform(givenJavaModule)
 
     // then
     val expectedMergedSourceRoots =
@@ -731,7 +731,7 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest : WorkspaceModelBaseTest()
   private fun transformIntoDummyModules(modules: List<JavaModule>, fileToTarget: Map<Path, List<Label>> = emptyMap()): List<JavaModule> =
     modules
       .flatMap { module ->
-        val result = JavaModuleToDummyJavaModulesTransformerHACK(projectBasePath, fileToTarget, project).transform(module)
+        val result = JavaModuleToDummyJavaModulesTransformerHACK(projectBasePath, fileToTarget).transform(module)
         (result as JavaModuleToDummyJavaModulesTransformerHACK.DummyModulesToAdd).dummyModules
       }.distinctBy { it.getModuleName() }
 }

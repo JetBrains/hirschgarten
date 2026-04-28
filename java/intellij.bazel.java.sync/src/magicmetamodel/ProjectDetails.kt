@@ -11,7 +11,6 @@ class ProjectDetails(
   val targetIds: List<Label>,
   val targets: Set<RawBuildTarget>,
   val libraries: List<LibraryItem> = emptyList(),
-  val workspaceContext: WorkspaceContext? = null,
 ) {
   var defaultJdkName: String? = null
 }

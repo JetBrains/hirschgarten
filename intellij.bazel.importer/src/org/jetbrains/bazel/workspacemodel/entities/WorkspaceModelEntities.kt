@@ -4,6 +4,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.platform.workspace.jps.entities.ModuleTypeId
 import com.intellij.platform.workspace.jps.entities.SourceRootTypeId
 import org.jetbrains.annotations.ApiStatus
+import org.jetbrains.bazel.commons.RepoMapping
 import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.magicmetamodel.formatAsModuleName
 import org.jetbrains.bsp.protocol.LibraryItem
@@ -40,13 +41,14 @@ data class Library(
   ResourceRootEntity {
   companion object {
 
-    fun fromLibraryItem(libraryItem: LibraryItem, project: Project): Library =
+    fun fromLibraryItem(repoMapping: RepoMapping, libraryItem: LibraryItem, project: Project): Library =
       Library(
-        displayName = libraryItem.id.formatAsModuleName(project),
+        displayName = libraryItem.id.formatAsModuleName(repoMapping),
         iJars = libraryItem.ijars,
         classJars = libraryItem.jars,
         sourceJars = libraryItem.sourceJars,
         mavenCoordinates = libraryItem.mavenCoordinates,
+        containerTarget = libraryItem.id,
       )
 
     fun formatJarString(jar: Path): String =

@@ -57,7 +57,6 @@ data class WorkspaceContext(
   val importRunConfigurations: List<String>,
   val gazelleTarget: Label?,
   val indexAllFilesInDirectories: Boolean,
-  val importIjars: Boolean,
   val deriveInstrumentationFilterFromTargets: Boolean,
   val indexAdditionalFilesInDirectories: List<String>,
   val preferClassJarsOverSourcelessJars: Boolean,

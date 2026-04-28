@@ -23,12 +23,17 @@ import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.label.ResolvedLabel
 import org.jetbrains.bazel.label.label
 import org.jetbrains.bazel.label.toDependencyLabel
+import org.jetbrains.bazel.languages.projectview.importIjars
+import org.jetbrains.bazel.languages.projectview.projectView
+import org.jetbrains.bazel.languages.projectview.testSources
 import org.jetbrains.bazel.performance.measure
 import org.jetbrains.bazel.server.model.generatedSourcesList
 import org.jetbrains.bazel.server.model.sourcesList
 import org.jetbrains.bazel.sync.workspace.graph.DependencyGraph
 import org.jetbrains.bazel.sync.workspace.languages.LanguagePlugin
+import org.jetbrains.bazel.sync.workspace.languages.java.sourceRoot.SourceRootOptimizationMode
 import org.jetbrains.bazel.sync.workspace.mapper.normal.MavenCoordinatesResolver
+import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceSyncConfig
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bsp.protocol.BazelServerFacade
 import org.jetbrains.bsp.protocol.BuildTargetData
@@ -50,6 +55,11 @@ import kotlin.io.path.name
 interface JvmLanguagePluginMixin {
   fun getSupportedLanguages(): Set<LanguageClass>
   fun createProjectMapper(project: Project, server: BazelServerFacade): Mapper
+
+  /**
+   * @see [LanguagePlugin.createSyncConfigs]
+   */
+  suspend fun createSyncConfigs(project: Project, workspaceContext: WorkspaceContext): List<WorkspaceSyncConfig> = listOf()
 
   interface Mapper {
     suspend fun prepareSync(
@@ -81,6 +91,20 @@ interface JvmLanguagePluginMixin {
 class JavaLanguagePlugin: LanguagePlugin {
   override fun getSupportedLanguages(): Set<LanguageClass> = setOf(LanguageClass.JAVA) + JvmLanguagePluginMixin.mixins.flatMap { it.getSupportedLanguages() }
   override fun createProjectMapper(project: Project, server: BazelServerFacade) = Mapper(project, server)
+  override suspend fun createSyncConfigs(project: Project, workspaceContext: WorkspaceContext): List<WorkspaceSyncConfig> {
+    return JvmLanguagePluginMixin.mixins.flatMap { it.createSyncConfigs(project, workspaceContext) } +
+           JavaWorkspaceSyncConfig(
+             testSourcesPatterns = project.projectView().testSources,
+
+             // RC: we bypass `WorkspaceContext` here completely
+             importIjars = project.projectView().importIjars,
+
+             // RC: as you can see we pass `SourceRootOptimizationMode` as `WorkspaceSyncConfig`
+             //  property, so can compare it against previous snapshot and assess whatever it has changes
+             //  thus performing automatic full importer invalidation
+             sourceRootOptimizationMode = SourceRootOptimizationMode.createFromProject(project),
+           )
+  }
 
   class Mapper(private val project: Project, private val server: BazelServerFacade) : LanguagePlugin.Mapper {
     private val mixins: List<JvmLanguagePluginMixin.Mapper> = JvmLanguagePluginMixin.mixins.map { it.createProjectMapper(project, server) }
