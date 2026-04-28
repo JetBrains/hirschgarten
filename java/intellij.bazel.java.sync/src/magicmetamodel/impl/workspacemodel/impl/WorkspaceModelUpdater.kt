@@ -1,7 +1,6 @@
 package org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl
 
-import com.intellij.openapi.externalSystem.service.project.manage.ExternalProjectsManagerImpl
-import com.intellij.openapi.project.Project
+import com.intellij.platform.workspace.storage.EntitySource
 import com.intellij.platform.workspace.storage.MutableEntityStorage
 import com.intellij.platform.workspace.storage.url.VirtualFileUrlManager
 import org.jetbrains.annotations.ApiStatus
@@ -9,8 +8,8 @@ import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.Comp
 import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.JavaModuleUpdater
 import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.LibraryEntityUpdater
 import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.WorkspaceModelEntityUpdaterConfig
-import org.jetbrains.bazel.sync.environment.projectCtx
 import org.jetbrains.bazel.workspacemodel.entities.CompiledSourceCodeInsideJarExclude
+import org.jetbrains.bazel.workspacemodel.entities.CompiledSourceCodeInsideJarExcludeEntity
 import org.jetbrains.bazel.workspacemodel.entities.JavaModule
 import org.jetbrains.bazel.workspacemodel.entities.Library
 import org.jetbrains.bazel.workspacemodel.entities.Module
@@ -21,23 +20,17 @@ class WorkspaceModelUpdater(
   workspaceEntityStorageBuilder: MutableEntityStorage,
   private val virtualFileUrlManager: VirtualFileUrlManager,
   private val projectBasePath: Path,
-  project: Project,
   private val importIjars: Boolean,
+  private val entitySource: EntitySource,
+  private val currentExcludeEntity: CompiledSourceCodeInsideJarExcludeEntity?
 ) {
   private val workspaceModelEntityUpdaterConfig =
     WorkspaceModelEntityUpdaterConfig(
       workspaceEntityStorageBuilder = workspaceEntityStorageBuilder,
       virtualFileUrlManager = virtualFileUrlManager,
       projectBasePath = projectBasePath,
-      project = project,
+      entitySource = entitySource,
     )
-
-  init {
-    if (!project.projectCtx.avoidExternalSystem) {
-      // store generated IML files outside the project directory
-      ExternalProjectsManagerImpl.getInstance(project).setStoreExternally(true)
-    }
-  }
 
   suspend fun load(
     moduleEntities: List<Module>,
@@ -56,7 +49,7 @@ class WorkspaceModelUpdater(
   }
 
   suspend fun loadCompiledSourceCodeInsideJarExclude(exclude: CompiledSourceCodeInsideJarExclude) {
-    val updater = CompiledSourceCodeInsideJarExcludeEntityUpdater(workspaceModelEntityUpdaterConfig)
+    val updater = CompiledSourceCodeInsideJarExcludeEntityUpdater(workspaceModelEntityUpdaterConfig, currentExcludeEntity)
     updater.addEntity(exclude)
   }
 }

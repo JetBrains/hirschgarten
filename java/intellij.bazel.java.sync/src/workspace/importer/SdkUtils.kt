@@ -1,4 +1,4 @@
-package org.jetbrains.bazel.jvm.sync
+package org.jetbrains.bazel.workspace.importer
 
 import com.intellij.openapi.application.writeAction
 import com.intellij.openapi.externalSystem.service.execution.ExternalSystemJdkProvider
@@ -14,6 +14,7 @@ import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.tran
 import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.projectNameToJdkName
 import java.nio.file.Path
 
+// TODO: check if I can remove this completely, probably yes
 internal object SdkUtils {
   suspend fun addJdkIfNeeded(projectName: String, javaHome: Path) {
     val jdkName = projectName.projectNameToJdkName(javaHome)

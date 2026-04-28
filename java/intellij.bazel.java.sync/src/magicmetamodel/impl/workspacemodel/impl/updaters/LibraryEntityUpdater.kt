@@ -4,7 +4,6 @@ import com.intellij.configurationStore.serialize
 import com.intellij.externalSystem.ImportedLibraryProperties
 import com.intellij.externalSystem.ImportedLibraryType
 import com.intellij.java.library.MavenCoordinates
-import com.intellij.openapi.components.service
 import com.intellij.openapi.util.JDOMUtil
 import com.intellij.platform.workspace.jps.entities.LibraryEntity
 import com.intellij.platform.workspace.jps.entities.LibraryId
@@ -16,11 +15,7 @@ import com.intellij.platform.workspace.jps.entities.LibraryTypeId
 import com.intellij.platform.workspace.jps.entities.libraryProperties
 import com.intellij.platform.workspace.storage.EntitySource
 import com.intellij.platform.workspace.storage.MutableEntityStorage
-import com.intellij.workspaceModel.ide.legacyBridge.LegacyBridgeJpsEntitySourceFactory
 import org.jetbrains.annotations.ApiStatus
-import org.jetbrains.bazel.magicmetamodel.MagicMetaModelEnvironment
-import org.jetbrains.bazel.settings.bazel.bazelJVMProjectSettings
-import org.jetbrains.bazel.workspacemodel.entities.BazelProjectEntitySource
 import org.jetbrains.bazel.workspacemodel.entities.Library
 import org.jetbrains.jps.model.serialization.library.JpsLibraryTableSerializer
 import java.nio.file.Path
@@ -45,8 +40,7 @@ class LibraryEntityUpdater(
 
   private fun addProjectLibraryEntity(builder: MutableEntityStorage, entityToAdd: Library): LibraryEntity {
     val tableId = LibraryTableId.ProjectLibraryTableId
-    val entitySource = calculateLibraryEntitySource(workspaceModelEntityUpdaterConfig)
-    return addLibraryEntity(builder, entityToAdd, tableId, entitySource)
+    return addLibraryEntity(builder, entityToAdd, tableId, workspaceModelEntityUpdaterConfig.entitySource)
   }
 
   private fun addLibraryEntity(
@@ -115,16 +109,3 @@ class LibraryEntityUpdater(
     return JDOMUtil.writeElement(libPropertiesElement)
   }
 }
-
-// FIXME: this shouldn't exists, JPS project model construction is possible without using legacy bridges
-@ApiStatus.Internal
-fun calculateLibraryEntitySource(workspaceModelEntityUpdaterConfig: WorkspaceModelEntityUpdaterConfig): EntitySource =
-  when {
-    !workspaceModelEntityUpdaterConfig.project.bazelJVMProjectSettings.enableBuildWithJps -> BazelProjectEntitySource
-    else ->
-      LegacyBridgeJpsEntitySourceFactory
-        .getInstance(workspaceModelEntityUpdaterConfig.project)
-        .createEntitySourceForProjectLibrary(
-          workspaceModelEntityUpdaterConfig.project.service<MagicMetaModelEnvironment>().externalProjectModelSource
-        )
-  }

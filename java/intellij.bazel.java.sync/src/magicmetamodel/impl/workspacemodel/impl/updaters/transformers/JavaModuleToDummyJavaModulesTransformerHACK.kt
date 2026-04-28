@@ -1,6 +1,5 @@
 package org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.transformers
 
-import com.intellij.openapi.project.Project
 import com.intellij.platform.workspace.jps.entities.ModuleTypeId
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.commons.LanguageClass
@@ -35,7 +34,6 @@ import kotlin.io.path.pathString
 class JavaModuleToDummyJavaModulesTransformerHACK(
   private val projectBasePath: Path,
   private val fileToTargets: Map<Path, List<Label>>,
-  private val project: Project,
 ) {
   sealed interface Result
 

@@ -1,6 +1,5 @@
 package org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters
 
-import com.intellij.platform.backend.workspace.WorkspaceModel
 import com.intellij.platform.workspace.jps.entities.LibraryEntity
 import com.intellij.platform.workspace.storage.entities
 import org.jetbrains.bazel.workspacemodel.entities.BazelProjectEntitySource
@@ -9,16 +8,10 @@ import org.jetbrains.bazel.workspacemodel.entities.CompiledSourceCodeInsideJarEx
 import org.jetbrains.bazel.workspacemodel.entities.CompiledSourceCodeInsideJarExcludeId
 import org.jetbrains.bazel.workspacemodel.entities.LibraryCompiledSourceCodeInsideJarExcludeEntity
 
-internal class CompiledSourceCodeInsideJarExcludeEntityUpdater(private val workspaceModelEntityUpdaterConfig: WorkspaceModelEntityUpdaterConfig) :
+internal class CompiledSourceCodeInsideJarExcludeEntityUpdater(private val workspaceModelEntityUpdaterConfig: WorkspaceModelEntityUpdaterConfig,
+                                                               private val currentExcludeEntity: CompiledSourceCodeInsideJarExcludeEntity?) :
   WorkspaceModelEntityWithoutParentModuleUpdater<CompiledSourceCodeInsideJarExclude, CompiledSourceCodeInsideJarExcludeEntity> {
   override suspend fun addEntity(entityToAdd: CompiledSourceCodeInsideJarExclude): CompiledSourceCodeInsideJarExcludeEntity {
-    val currentExcludeEntity =
-      WorkspaceModel
-        .getInstance(workspaceModelEntityUpdaterConfig.project)
-        .currentSnapshot
-        .entities<CompiledSourceCodeInsideJarExcludeEntity>()
-        .firstOrNull()
-
     val excludeEntityId =
       if (currentExcludeEntity == null) {
         0

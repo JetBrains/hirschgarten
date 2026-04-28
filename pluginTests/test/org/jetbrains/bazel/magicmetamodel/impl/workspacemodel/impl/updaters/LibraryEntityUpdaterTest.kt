@@ -8,6 +8,7 @@ import org.jetbrains.bazel.workspace.model.matchers.entries.ExpectedLibraryEntit
 import org.jetbrains.bazel.workspace.model.matchers.entries.shouldBeEqual
 import org.jetbrains.bazel.workspace.model.matchers.entries.shouldContainExactlyInAnyOrder
 import org.jetbrains.bazel.workspace.model.test.framework.WorkspaceModelBaseTest
+import org.jetbrains.bazel.workspacemodel.entities.BazelDummyEntitySource
 import org.jetbrains.bazel.workspacemodel.entities.Library
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
@@ -25,7 +26,7 @@ internal class LibraryEntityUpdaterTest : WorkspaceModelBaseTest() {
     super.beforeEach()
 
     workspaceModelEntityUpdaterConfig =
-      WorkspaceModelEntityUpdaterConfig(workspaceEntityStorageBuilder, virtualFileUrlManager, projectBasePath, project)
+      WorkspaceModelEntityUpdaterConfig(workspaceEntityStorageBuilder, virtualFileUrlManager, projectBasePath, BazelDummyEntitySource)
     libraryEntityUpdater = LibraryEntityUpdater(workspaceModelEntityUpdaterConfig, importIjars = false)
   }
 
@@ -63,7 +64,7 @@ internal class LibraryEntityUpdaterTest : WorkspaceModelBaseTest() {
             tableId = LibraryTableId.ProjectLibraryTableId,
             name = "BSP: file:///dependency/test/1.0.0/test-1.0.0.jar",
             roots = listOf(expectedLibrarySourcesRoot, expectedLibraryClassesRoot),
-            entitySource = calculateLibraryEntitySource(workspaceModelEntityUpdaterConfig),
+            entitySource = BazelDummyEntitySource,
           ),
       )
 
@@ -114,7 +115,7 @@ internal class LibraryEntityUpdaterTest : WorkspaceModelBaseTest() {
             tableId = LibraryTableId.ProjectLibraryTableId,
             name = "BSP: file:///dependency/test/1.0.0/test-1.0.0.jar",
             roots = listOf(expectedLibrarySourcesRoot1, expectedLibraryClassesRoot1),
-            entitySource = calculateLibraryEntitySource(workspaceModelEntityUpdaterConfig),
+            entitySource = BazelDummyEntitySource,
           ),
       )
 
@@ -135,7 +136,7 @@ internal class LibraryEntityUpdaterTest : WorkspaceModelBaseTest() {
             tableId = LibraryTableId.ProjectLibraryTableId,
             name = "BSP: file:///dependency/test2/2.0.0/test2-2.0.0.jar",
             roots = listOf(expectedLibrarySourcesRoot2, expectedLibraryClassesRoot2),
-            entitySource = calculateLibraryEntitySource(workspaceModelEntityUpdaterConfig),
+            entitySource = BazelDummyEntitySource,
           ),
       )
 
@@ -179,7 +180,7 @@ internal class LibraryEntityUpdaterTest : WorkspaceModelBaseTest() {
             tableId = LibraryTableId.ProjectLibraryTableId,
             name = "BSP: file:///dependency/test/1.0.0/test-1.0.0.jar",
             roots = listOf(expectedLibrarySourcesRoot, expectedLibraryClassesRoot),
-            entitySource = calculateLibraryEntitySource(workspaceModelEntityUpdaterConfig),
+            entitySource = BazelDummyEntitySource,
           ),
       )
 

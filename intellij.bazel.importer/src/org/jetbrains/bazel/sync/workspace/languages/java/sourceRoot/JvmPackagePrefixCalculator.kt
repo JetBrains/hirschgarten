@@ -9,8 +9,8 @@ import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.languages.projectview.projectView
 import org.jetbrains.bazel.sync.workspace.languages.DefaultJvmPackageResolver
 import org.jetbrains.bazel.sync.workspace.languages.java.sourceRoot.prefix.JavaSourceRootPatternContributor
+import org.jetbrains.bazel.sync.workspace.languages.java.sourceRoot.prefix.JavaSourceRootPatterns
 import org.jetbrains.bazel.sync.workspace.languages.java.sourceRoot.prefix.SourcePatternEval
-import org.jetbrains.bazel.sync.workspace.languages.java.sourceRoot.prefix.SourceRootPattern
 import org.jetbrains.bazel.sync.workspace.languages.java.sourceRoot.projectview.javaSROEnable
 import org.jetbrains.bsp.protocol.JvmBuildTarget
 import org.jetbrains.bsp.protocol.RawBuildTarget
@@ -29,24 +29,38 @@ interface JvmPackagePrefixCalculator {
 }
 
 @ApiStatus.Internal
-class DefaultJvmPackagePrefixCalculator(project: Project): JvmPackagePrefixCalculator {
+sealed interface SourceRootOptimizationMode {
+  /**
+   * Disable source root optimization for all source files.
+   */
+  data object Disabled : SourceRootOptimizationMode
+
+  /**
+   * Enable source root optimization for files according to [patterns].
+   * Optimization algorithm assumes that the source root layout follows a multi-root maven directory structure.
+   */
+  data class MavenLayout(val patterns: JavaSourceRootPatterns) : SourceRootOptimizationMode
+
+  companion object {
+    fun createFromProject(project: Project): SourceRootOptimizationMode = if (project.projectView().javaSROEnable) {
+      MavenLayout(
+        patterns = JavaSourceRootPatternContributor.allSourceRootPatterns(project),
+      )
+    }
+    else {
+      Disabled
+    }
+  }
+}
+
+@ApiStatus.Internal
+class DefaultJvmPackagePrefixCalculator(
+  val sourceRootOptimizationMode: SourceRootOptimizationMode,
+) : JvmPackagePrefixCalculator {
   private val packageResolver = DefaultJvmPackageResolver()
   private val packageInference = JavaSourceRootPackageInference(packageResolver)
 
-  private val cachedJavaSROEnable = project.projectView().javaSROEnable
-  private val cachedSROIncludeMatchers: List<SourceRootPattern>
-  private val cachedSROExcludeMatchers: List<SourceRootPattern>
-
   private val cache = ConcurrentHashMap<Label, JvmPackagePrefixes>()
-
-  init {
-    val patterns = JavaSourceRootPatternContributor.ep
-      .extensionList
-      .map { it.getPatterns(project) }
-    cachedSROIncludeMatchers = patterns.flatMap { it.includes }
-    cachedSROExcludeMatchers = patterns.flatMap { it.excludes }
-  }
-
 
   suspend fun calculate(targets: Collection<RawBuildTarget>) {
     coroutineScope {
@@ -70,32 +84,35 @@ class DefaultJvmPackagePrefixCalculator(project: Project): JvmPackagePrefixCalcu
     val sources = target.sources.filter { !it.generated && it.path.extension != "srcjar" }
 
     val result = HashMap<Path, String>()
-    if (cachedJavaSROEnable) {
-      val (matched, unmatched) = SourcePatternEval.eval(
-        items = sources,
-        includes = cachedSROIncludeMatchers.map { { src -> it.matches(src.path) } },
-        excludes = cachedSROExcludeMatchers.map { { src -> it.matches(src.path) } },
-      )
-      if (matched.isNotEmpty()) {
-        matched
-          .groupBy { it.path.extension }
-          .forEach { result.putAll(packageInference.inferPackages(it.value.map { it.path })) }
+    when (sourceRootOptimizationMode) {
+      SourceRootOptimizationMode.Disabled -> {
+        for (src in sources) {
+          val prefix = packageResolver.calculateJvmPackagePrefix(src.path)
+          if (prefix != null)
+            result[src.path] = prefix
+        }
       }
 
-      for (src in unmatched) {
-        val prefix = packageResolver.calculateJvmPackagePrefix(src.path)
-        if (prefix != null)
-          result[src.path] = prefix
-      }
-    }
-    else {
-      for (src in sources) {
-        val prefix = packageResolver.calculateJvmPackagePrefix(src.path)
-        if (prefix != null)
-          result[src.path] = prefix
-      }
-    }
+      is SourceRootOptimizationMode.MavenLayout -> {
+        val patterns = sourceRootOptimizationMode.patterns
+        val (matched, unmatched) = SourcePatternEval.eval(
+          items = sources,
+          includes = patterns.includes.map { { src -> it.matches(src.path) } },
+          excludes = patterns.excludes.map { { src -> it.matches(src.path) } },
+        )
+        if (matched.isNotEmpty()) {
+          matched
+            .groupBy { it.path.extension }
+            .forEach { result.putAll(packageInference.inferPackages(it.value.map { it.path })) }
+        }
 
+        for (src in unmatched) {
+          val prefix = packageResolver.calculateJvmPackagePrefix(src.path)
+          if (prefix != null)
+            result[src.path] = prefix
+        }
+      }
+    }
     return result
   }
 }

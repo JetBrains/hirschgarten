@@ -26,7 +26,6 @@ val mockWorkspaceContext =
     importRunConfigurations = emptyList(),
     gazelleTarget = null,
     indexAllFilesInDirectories = false,
-    importIjars = false,
     deriveInstrumentationFilterFromTargets = true,
     indexAdditionalFilesInDirectories = emptyList(),
     preferClassJarsOverSourcelessJars = true,

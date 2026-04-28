@@ -4,11 +4,14 @@ import com.intellij.platform.workspace.jps.entities.SourceRootTypeId
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.shouldBe
 import org.jetbrains.bazel.commons.LanguageClass
+import org.jetbrains.bazel.commons.RepoMappingDisabled
 import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.commons.TargetKind
+import org.jetbrains.bazel.config.bazelProjectName
 import org.jetbrains.bazel.label.DependencyLabel
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.sync.workspace.languages.java.sourceRoot.JvmPackagePrefixes
+import org.jetbrains.bazel.workspace.indexAdditionalFiles.ProjectViewGlobSet
 import org.jetbrains.bazel.workspace.model.test.framework.WorkspaceModelBaseTest
 import org.jetbrains.bazel.workspace.model.test.framework.createJavaModule
 import org.jetbrains.bazel.workspace.model.test.framework.createModuleDetails
@@ -98,6 +101,9 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
         targetsMap,
         emptyMap(),
         projectBasePath,
+        RepoMappingDisabled,
+        projectName = project.bazelProjectName,
+        testSourcesGlob = ProjectViewGlobSet.EMPTY,
         MockJvmPrefixCalculator(
           buildTargetId to JvmPackagePrefixes(
             mapOf(
@@ -106,7 +112,6 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
             ),
           ),
         ),
-        project,
       ).transform(moduleDetails).first()
 
     // then
@@ -202,8 +207,10 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
         targetsMap,
         emptyMap(),
         projectBasePath,
+        RepoMappingDisabled,
+        projectName = project.bazelProjectName,
+        testSourcesGlob = ProjectViewGlobSet.EMPTY,
         MockJvmPrefixCalculator(),
-        project,
       ).transform(moduleDetails).first()
 
     // then
@@ -330,6 +337,9 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
           targetsMap,
           emptyMap(),
           projectBasePath,
+          RepoMappingDisabled,
+          projectName = project.bazelProjectName,
+          testSourcesGlob = ProjectViewGlobSet.EMPTY,
           MockJvmPrefixCalculator(
             buildTargetId1 to JvmPackagePrefixes(
               mapOf(
@@ -343,7 +353,6 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
               ),
             )
           ),
-          project,
         ).transform(entity).first()
       }
 

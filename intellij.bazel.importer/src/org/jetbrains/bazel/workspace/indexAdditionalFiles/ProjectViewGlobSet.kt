@@ -13,10 +13,18 @@ import kotlin.io.path.relativeToOrNull
  */
 @ApiStatus.Internal
 class ProjectViewGlobSet {
-  private val rootDir: Path
+  companion object {
+    val EMPTY: ProjectViewGlobSet = ProjectViewGlobSet()
+  }
+
+  private val rootDir: Path?
   private val acceptedFilenames = mutableSetOf<String>()
   private val acceptedExtensions = mutableSetOf<String>()
   private val matchers = mutableListOf<FileNameMatcher>()
+
+  private constructor() {
+    rootDir = null
+  }
 
   constructor(rootDir: Path, patterns: List<String>) {
     require(rootDir.isAbsolute)
@@ -30,12 +38,14 @@ class ProjectViewGlobSet {
    * @param path relative path from [rootDir] or an absolute path
    */
   fun matches(path: Path): Boolean {
-    val relativeFromWorkspaceRoot = if (path.isAbsolute) {
-      path.relativeToOrNull(rootDir) ?: return false
-    }
-    else {
-      path
-    }
+    val relativeFromWorkspaceRoot = rootDir?.let {
+      if (path.isAbsolute) {
+        path.relativeToOrNull(rootDir) ?: return false
+      }
+      else {
+        path
+      }
+    } ?: path
     return matches(relativeFromWorkspaceRoot.invariantSeparatorsPathString)
   }
 
@@ -44,7 +54,8 @@ class ProjectViewGlobSet {
       if ("*" !in pattern && "?" !in pattern) {
         acceptedFilenames.add(pattern)
         return
-      } else if (pattern.startsWith("*.")) {
+      }
+      else if (pattern.startsWith("*.")) {
         if (pattern.indexOfAny("*?".toCharArray(), startIndex = 2) == -1) {
           acceptedExtensions.add(pattern.substring(2))
           return

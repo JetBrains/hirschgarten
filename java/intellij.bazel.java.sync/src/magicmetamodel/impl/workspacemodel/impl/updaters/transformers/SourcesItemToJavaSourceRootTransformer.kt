@@ -1,6 +1,5 @@
 package org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.transformers
 
-import com.intellij.openapi.project.Project
 import com.intellij.platform.workspace.jps.entities.SourceRootTypeId
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.commons.RuleType
@@ -23,11 +22,9 @@ internal val JAVA_TEST_RESOURCE_ROOT_TYPE = SourceRootTypeId("java-test-resource
 
 @ApiStatus.Internal
 class SourcesItemToJavaSourceRootTransformer(
-  project: Project,
+  private val testSourcesGlob: ProjectViewGlobSet,
   private val packagePrefixes: JvmPackagePrefixCalculator
 ) : WorkspaceModelEntityPartitionTransformer<RawBuildTarget, JavaSourceRoot> {
-  private val testSourcesGlob = ProjectViewGlobSet(project.rootDir.toNioPath(), project.projectView().testSources)
-
   override fun transform(inputEntity: RawBuildTarget): List<JavaSourceRoot> {
     val jvmPackagePrefixes = packagePrefixes.get(inputEntity)
     return SourceItemToSourceRootTransformer

@@ -2,6 +2,7 @@ package org.jetbrains.bazel.magicmetamodel
 
 import com.intellij.openapi.project.Project
 import org.jetbrains.annotations.ApiStatus
+import org.jetbrains.bazel.commons.RepoMapping
 import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.label.ResolvedLabel
@@ -16,6 +17,18 @@ fun Label.formatAsModuleName(project: Project): String {
   val targetName = targetName.sanitizeName()
   val prefix =
     this.toApparentLabelOrThis(project)
+      .let { listOf((it as? ResolvedLabel)?.repoName.orEmpty()) + it.packagePath.pathSegments }
+      .filter { pathSegment -> pathSegment.isNotEmpty() }
+      .shortenTargetPath(targetName.length)
+      .joinToString(".") { pathElement -> pathElement.sanitizeName() }
+  return if (prefix.isBlank()) targetName else "$prefix.$targetName"
+}
+
+@ApiStatus.Internal
+fun Label.formatAsModuleName(repoMapping: RepoMapping): String {
+  val targetName = targetName.sanitizeName()
+  val prefix =
+    this.toApparentLabelOrThis(repoMapping)
       .let { listOf((it as? ResolvedLabel)?.repoName.orEmpty()) + it.packagePath.pathSegments }
       .filter { pathSegment -> pathSegment.isNotEmpty() }
       .shortenTargetPath(targetName.length)

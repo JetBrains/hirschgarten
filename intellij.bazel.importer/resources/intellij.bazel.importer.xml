@@ -50,6 +50,11 @@
       interface="org.jetbrains.bazel.sync.workspace.languages.java.JvmLanguagePluginMixin"
       qualifiedName="org.jetbrains.bazel.jvmLanguagePlugin"
     />
+    <extensionPoint
+      dynamic="true"
+      interface="org.jetbrains.bazel.sync.workspace.importer.BazelWorkspaceImporter"
+      qualifiedName="org.jetbrains.bazel.syncWorkspaceImporter"
+    />
   </extensionPoints>
 
   <extensions defaultExtensionNs="org.jetbrains.bazel">
@@ -64,7 +69,8 @@
 
     <languagePlugin implementation="org.jetbrains.bazel.sync.workspace.languages.protobuf.ProtobufLanguagePlugin"
                     order="before JavaLanguagePlugin"/>
-    <languagePlugin implementation="org.jetbrains.bazel.sync.workspace.languages.java.JavaLanguagePlugin"/>
+    <languagePlugin id="JavaLanguagePlugin"
+                    implementation="org.jetbrains.bazel.sync.workspace.languages.java.JavaLanguagePlugin"/>
     <languagePlugin implementation="org.jetbrains.bazel.sync.workspace.languages.go.GoLanguagePlugin"/>
     <languagePlugin implementation="org.jetbrains.bazel.sync.workspace.languages.python.PythonLanguagePlugin"/>
 

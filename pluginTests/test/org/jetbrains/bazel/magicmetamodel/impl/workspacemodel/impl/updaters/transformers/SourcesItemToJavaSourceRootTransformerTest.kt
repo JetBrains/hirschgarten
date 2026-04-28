@@ -9,10 +9,14 @@ import io.kotest.matchers.shouldBe
 import org.jetbrains.bazel.commons.LanguageClass
 import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.commons.TargetKind
+import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.languages.projectview.MockProjectViewService
 import org.jetbrains.bazel.languages.projectview.ProjectViewService
 import org.jetbrains.bazel.sync.workspace.languages.java.sourceRoot.JvmPackagePrefixes
+import org.jetbrains.bazel.languages.projectview.projectView
+import org.jetbrains.bazel.languages.projectview.testSources
+import org.jetbrains.bazel.workspace.indexAdditionalFiles.ProjectViewGlobSet
 import org.jetbrains.bazel.workspace.model.test.framework.WorkspaceModelBaseTest
 import org.jetbrains.bazel.workspacemodel.entities.JavaSourceRoot
 import org.jetbrains.bsp.protocol.RawBuildTarget
@@ -26,6 +30,7 @@ import kotlin.io.path.Path
 @DisplayName("SourcesItemToWorkspaceModelJavaSourceRootTransformer.transform(sourcesItem)")
 class SourcesItemToJavaSourceRootTransformerTest : WorkspaceModelBaseTest() {
   private lateinit var projectBasePathURIStr: String
+  private lateinit var testSourcesGlob: ProjectViewGlobSet
   lateinit var replaceServiceDisposable: Disposable
 
   @BeforeEach
@@ -38,6 +43,7 @@ class SourcesItemToJavaSourceRootTransformerTest : WorkspaceModelBaseTest() {
     """.trimIndent()
     replaceServiceDisposable = Disposer.newDisposable()
     project.replaceService(ProjectViewService::class.java, MockProjectViewService(project, projectViewContent), replaceServiceDisposable)
+    testSourcesGlob = ProjectViewGlobSet(project.rootDir.toNioPath(), project.projectView().testSources)
   }
 
   @AfterEach
@@ -76,7 +82,7 @@ class SourcesItemToJavaSourceRootTransformerTest : WorkspaceModelBaseTest() {
 
     // when
     val javaSources = SourcesItemToJavaSourceRootTransformer(
-      project,
+      testSourcesGlob,
       MockJvmPrefixCalculator(
         buildTargetAndSourceItem.id to JvmPackagePrefixes(
           mapOf(
@@ -112,7 +118,7 @@ class SourcesItemToJavaSourceRootTransformerTest : WorkspaceModelBaseTest() {
     val emptySources = listOf<RawBuildTarget>()
 
     // when
-    val javaSources = SourcesItemToJavaSourceRootTransformer(project, MockJvmPrefixCalculator()).transform(emptySources)
+    val javaSources = SourcesItemToJavaSourceRootTransformer(testSourcesGlob, MockJvmPrefixCalculator()).transform(emptySources)
 
     // then
     javaSources shouldBe emptyList()
@@ -144,7 +150,7 @@ class SourcesItemToJavaSourceRootTransformerTest : WorkspaceModelBaseTest() {
 
     // when
     val javaSources = SourcesItemToJavaSourceRootTransformer(
-      project,
+      testSourcesGlob,
       MockJvmPrefixCalculator(
         buildTargetAndSourceItem.id to JvmPackagePrefixes(
           mapOf(
@@ -192,7 +198,7 @@ class SourcesItemToJavaSourceRootTransformerTest : WorkspaceModelBaseTest() {
 
     // when
     val javaSources = SourcesItemToJavaSourceRootTransformer(
-      project,
+      testSourcesGlob,
       MockJvmPrefixCalculator(
         buildTargetAndSourceItem.id to JvmPackagePrefixes(
           mapOf(
@@ -247,7 +253,7 @@ class SourcesItemToJavaSourceRootTransformerTest : WorkspaceModelBaseTest() {
 
     // when
     val javaSources = SourcesItemToJavaSourceRootTransformer(
-      project,
+      testSourcesGlob,
       MockJvmPrefixCalculator(
         buildTargetAndSourceItem.id to JvmPackagePrefixes(
           mapOf(
@@ -325,7 +331,7 @@ class SourcesItemToJavaSourceRootTransformerTest : WorkspaceModelBaseTest() {
 
     // when
     val javaSources = SourcesItemToJavaSourceRootTransformer(
-      project,
+      testSourcesGlob,
       MockJvmPrefixCalculator(
         buildTargetAndSourceItem1.id to JvmPackagePrefixes(
           mapOf(
@@ -408,7 +414,7 @@ class SourcesItemToJavaSourceRootTransformerTest : WorkspaceModelBaseTest() {
 
     // when
     val javaSources = SourcesItemToJavaSourceRootTransformer(
-      project,
+      testSourcesGlob,
       MockJvmPrefixCalculator(
         buildTargetAndSourceItem1.id to JvmPackagePrefixes(
           mapOf(

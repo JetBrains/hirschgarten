@@ -33,6 +33,7 @@ import org.jetbrains.bazel.workspace.model.matchers.entries.shouldBeEqual
 import org.jetbrains.bazel.workspace.model.matchers.entries.shouldContainExactlyInAnyOrder
 import org.jetbrains.bazel.workspace.model.test.framework.WorkspaceModelBaseTest
 import org.jetbrains.bazel.workspace.model.test.framework.createJavaModule
+import org.jetbrains.bazel.workspacemodel.entities.BazelDummyEntitySource
 import org.jetbrains.bazel.workspacemodel.entities.BazelProjectEntitySource
 import org.jetbrains.bazel.workspacemodel.entities.ContentRoot
 import org.jetbrains.bazel.workspacemodel.entities.Dependency
@@ -756,7 +757,7 @@ class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
               generated = true,
               packagePrefix = "com.example.generated",
               rootType = SourceRootTypeId("java-source"),
-            )
+            ),
           )
 
         val javaModule =
@@ -955,7 +956,8 @@ class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
   ) = updaters
     .forEach {
       beforeEach()
-      val updater = it(WorkspaceModelEntityUpdaterConfig(workspaceEntityStorageBuilder, virtualFileUrlManager, projectBasePath, project))
+      val updater =
+        it(WorkspaceModelEntityUpdaterConfig(workspaceEntityStorageBuilder, virtualFileUrlManager, projectBasePath, BazelDummyEntitySource))
       test(updater)
     }
 }
