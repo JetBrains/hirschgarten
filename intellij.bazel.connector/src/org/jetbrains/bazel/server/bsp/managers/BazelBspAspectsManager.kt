@@ -78,20 +78,12 @@ class BazelBspAspectsManager(
         rulesetName?.let {
           return@mapNotNull RulesetLanguage(ApparentRulesetName(it), language)
         }
-        if (language.isBundled(externalAutoloads)) {
+        if (language.isBundledFor(bazelRelease, externalAutoloads)) {
           return@mapNotNull RulesetLanguage(null, language)
         }
         null
       }.removeDisabledLanguages()
       .addExternalPythonLanguageIfNeeded(externalRulesetNames)
-  }
-
-  private fun Language.isBundled(externalAutoloads: List<String>): Boolean {
-    if (!isBundled) return false
-    // Bundled in Bazel version < 8
-    if (bazelRelease.major < 8) return true
-    // If a language is autoloaded in Bazel version >= 8, it effectively restores the old "bundled" behavior.
-    return (rulesetNames + autoloadHints).any { it in externalAutoloads }
   }
 
   private fun List<RulesetLanguage>.removeDisabledLanguages(): List<RulesetLanguage> {
