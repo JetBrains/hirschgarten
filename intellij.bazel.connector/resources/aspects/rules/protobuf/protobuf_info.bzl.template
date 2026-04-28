@@ -1,8 +1,13 @@
 load("//${bspPath}/aspects:utils/utils.bzl", "create_struct")
 load("//${bspPath}/aspects:rules/protobuf/proto_common.bzl", "extract_source_mappings")
 
+#if( $bazel8OrAbove == "true")
+# Bazel 8+: Use the external protobuf providers discovered from the workspace.
 load("@${rulesetName}//bazel/common:proto_info.bzl", "ProtoInfo")
 load("@${rulesetName}//bazel/common:proto_common.bzl", "proto_common")
+#else
+# Bazel < 8 exposes native proto_library support through top-level ProtoInfo and proto_common.
+#end
 
 def has_protoinfo_in_target(target):
     return ProtoInfo in target

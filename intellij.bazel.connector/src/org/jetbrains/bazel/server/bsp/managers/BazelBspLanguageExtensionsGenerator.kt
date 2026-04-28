@@ -2,6 +2,7 @@ package org.jetbrains.bazel.server.bsp.managers
 
 import org.apache.velocity.app.VelocityEngine
 import org.jetbrains.annotations.ApiStatus
+import org.jetbrains.bazel.commons.BazelRelease
 import org.jetbrains.bazel.commons.BzlmodRepoMapping
 import org.jetbrains.bazel.commons.RepoMapping
 import org.jetbrains.bazel.commons.RepoMappingDisabled
@@ -15,6 +16,13 @@ enum class Language(
   private val fileName: String,
   val rulesetNames: List<String>,
   val functions: List<String>,
+  /**
+   * Whether Bazel exposes this language natively before the Bazel 8 external rules migration.
+   *
+   * For Bazel 8 and later, bundled languages are only enabled when this language has explicit
+   * autoload hints and Bazel reports matching external autoloads, which preserves the external-rules
+   * path for languages such as protobuf.
+   */
   val isBundled: Boolean,
   val autoloadHints: List<String> = emptyList(),
   val importsFromRuleSet: Map<String, List<String>> = emptyMap(),
@@ -52,8 +60,20 @@ enum class Language(
   RulesProto("//" + Constants.DOT_BAZELBSP_DIR_NAME + "/aspects:rules/protobuf/rules_proto_info.bzl", listOf("rules_proto"), listOf("extract_rules_proto_info"),
            false, emptyList(), emptyMap(), emptyList(), listOf("https://github.com/bazelbuild/rules_proto")),
   Protobuf("//" + Constants.DOT_BAZELBSP_DIR_NAME + "/aspects:rules/protobuf/protobuf_info.bzl", listOf("protobuf"), listOf("extract_protobuf_info"),
-           false, emptyList(), emptyMap(), emptyList(), listOf("https://github.com/protocolbuffers/protobuf/")),
+           true, emptyList(), emptyMap(), emptyList(), listOf("https://github.com/protocolbuffers/protobuf/")),
   ;
+
+  fun isBundledFor(bazelRelease: BazelRelease, externalAutoloads: List<String>): Boolean {
+    if (!isBundled) return false
+    if (bazelRelease.major < 8) return true
+    // Bazel 8+ only restores the bundled path for languages that opt in via [autoloadHints].
+    // Languages without [autoloadHints] (e.g. Protobuf) must instead be discovered as an
+    // external ruleset by name. Match against both [rulesetNames] and [autoloadHints]
+    // because --incompatible_autoload_externally accepts ruleset names (e.g. "rules_java")
+    // as well as individual symbol names (e.g. "JavaInfo", "PyInfo").
+    if (autoloadHints.isEmpty()) return false
+    return (rulesetNames + autoloadHints).any { it in externalAutoloads }
+  }
 
   fun toLoadStatement(): String =
     this.functions.joinToString(
