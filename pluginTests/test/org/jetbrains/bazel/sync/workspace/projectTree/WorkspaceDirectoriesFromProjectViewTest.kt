@@ -449,6 +449,29 @@ class WorkspaceDirectoriesFromProjectViewTest : BasePlatformTestCase() {
     )
   }
 
+  fun `test should not include aspects directory when all directories are imported and targets are derived`() {
+    // GIVEN
+    val aspectsDir = workspaceRoot.resolve(".bazelbsp/aspects").createDirectories()
+    aspectsDir.resolve("BUILD").createFile()
+
+    val psiFile = myFixture.configureByText(
+      ".bazelproject",
+      """
+        directories: .
+        derive_targets_from_directories: true
+      """.trimIndent(),
+    )
+
+    // WHEN
+    val result = runMapper(psiFile)
+
+    // THEN
+    assertDoesntContain(
+      result.includedDirectories.map { it.uri },
+      aspectsDir.toUri().toString()
+    )
+  }
+
   fun `test should not pass build flags to bazel query command`() {
     // GIVEN
     val extraToolchainsOption = "--extra_toolchains=//some_directory/non_existing_toolchain:non_existing_toolchain"
@@ -500,6 +523,7 @@ class WorkspaceDirectoriesFromProjectViewTest : BasePlatformTestCase() {
         if (Files.exists(p)) lines += rel
       }
 
+      addIfExists(".bazelbsp/aspects/BUILD")
       addIfExists("included/BUILD")
       addIfExists("excluded/BUILD")
       addIfExists("pkg/BUILD")
