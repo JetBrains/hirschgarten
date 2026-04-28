@@ -1,25 +1,20 @@
 package org.jetbrains.bazel.runnerAction
 
+import com.intellij.execution.Executor
+import com.intellij.execution.executors.DefaultRunExecutor
 import com.intellij.openapi.project.Project
 import org.jetbrains.annotations.ApiStatus
+import org.jetbrains.bazel.languages.starlark.repomapping.toShortString
 import org.jetbrains.bsp.protocol.ExecutableTarget
 
 @ApiStatus.Internal
-open class RunTargetAction(
+class RunTargetAction(
   project: Project,
-  targetInfo: ExecutableTarget,
-  isDebugAction: Boolean = false,
-  includeTargetNameInText: Boolean = false,
+  target: ExecutableTarget,
+  executor: Executor = DefaultRunExecutor.getRunExecutorInstance(),
 ) : BazelRunnerAction(
-  targetInfos = listOf(targetInfo),
-  text = {
-    BazelRunnerActionNaming.getRunActionName(
-      isDebugAction = isDebugAction,
-      isRunConfigName = it,
-      includeTargetNameInText = includeTargetNameInText,
-      project = project,
-      target = targetInfo.id,
-    )
-  },
-  isDebugAction = isDebugAction,
+  project,
+  targets = listOf(target),
+  executor = executor,
+  configurationName = target.id.toShortString(project),
 )

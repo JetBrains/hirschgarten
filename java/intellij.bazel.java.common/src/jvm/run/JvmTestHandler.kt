@@ -20,6 +20,7 @@ import org.jetbrains.bazel.run.import.GooglePluginAwareRunHandlerProvider
 import org.jetbrains.bazel.run.task.BazelTestTaskListener
 import org.jetbrains.bazel.run.task.JetBrainsTestRunnerTaskListener
 import org.jetbrains.bazel.run.test.useJetBrainsTestRunner
+import org.jetbrains.bazel.runnerAction.COVERAGE_EXECUTOR_ID
 import org.jetbrains.bazel.taskEvents.BazelTaskListener
 import org.jetbrains.bsp.protocol.BazelServerFacade
 
@@ -47,11 +48,13 @@ class JvmTestHandler(private val configuration: BazelRunConfiguration) : BazelRu
       environment.putCopyableUserData(COROUTINE_JVM_FLAGS_KEY, Ref())
     }
     /**
-     * 1. Allow the user to disable --script_path because it screws up test result caching
-     * 2. Tests with coverage must be run with `bazel coverage`, because running with --script_path just runs the tests normally
-     * 3. Because `bazel run` only supports one target, so does `bazel run --script_path`
+     * 1. Because `bazel run` only supports one target, so does `bazel run --script_path`
+     * 2. Allow the user to disable --script_path because it screws up test result caching
+     * 3. Tests with coverage must be run with `bazel coverage`, because running with --script_path just runs the tests normally
      */
-    return if (((!state.runWithBazel && executor is DefaultRunExecutor) || executor is DefaultDebugExecutor) && configuration.targets.size == 1) {
+    return if (configuration.targets.size == 1 &&
+               ((!state.runWithBazel && executor is DefaultRunExecutor)
+                || (executor !is DefaultRunExecutor && executor.id != COVERAGE_EXECUTOR_ID))) {
       environment.putCopyableUserData(SCRIPT_PATH_KEY, Ref())
       ScriptPathTestCommandLineState(environment, state)
     }
@@ -70,8 +73,6 @@ class JvmTestHandler(private val configuration: BazelRunConfiguration) : BazelRu
       targets.all {
         (it.isJvmTarget() && it.ruleType == RuleType.TEST)
       }
-
-    override fun canDebug(targets: List<TargetKind>): Boolean = targets.size == 1 && canRun(targets)
 
     override val googleHandlerId: String = "BlazeJavaRunConfigurationHandlerProvider"
     override val isTestHandler: Boolean = true

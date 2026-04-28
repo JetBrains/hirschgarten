@@ -67,8 +67,6 @@ class JvmRunHandler(configuration: BazelRunConfiguration) : BazelRunHandler {
         it.isJvmTarget() && it.ruleType != RuleType.TEST
       }
 
-    override fun canDebug(targets: List<TargetKind>): Boolean = canRun(targets)
-
     override val googleHandlerId: String = "BlazeJavaRunConfigurationHandlerProvider"
     override val isTestHandler: Boolean = false
   }

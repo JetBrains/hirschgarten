@@ -16,7 +16,7 @@ import org.jetbrains.bazel.run.state.AbstractGenericTestState
 import org.jetbrains.bazel.run.task.BazelTestTaskListener
 import org.jetbrains.bazel.run.task.JetBrainsTestRunnerTaskListener
 import org.jetbrains.bazel.run.test.useJetBrainsTestRunner
-import org.jetbrains.bazel.runnerAction.BazelCoverageExecutorProvider
+import org.jetbrains.bazel.runnerAction.COVERAGE_EXECUTOR_ID
 import org.jetbrains.bazel.target.targetUtils
 import org.jetbrains.bazel.taskEvents.BazelTaskListener
 import org.jetbrains.bazel.utils.filterPathsThatDontContainEachOther2
@@ -50,7 +50,7 @@ class BazelTestCommandLineState(environment: ExecutionEnvironment, val state: Ab
     }
 
     val coverageInstrumentationFilter =
-      if (BazelCoverageExecutorProvider.ep.extensionList.any { it.isCoverageExecutor(environment.executor) }) {
+      if (environment.executor.id == COVERAGE_EXECUTOR_ID) {
         getCoverageInstrumentationFilter(configuration.project)
       } else {
         null

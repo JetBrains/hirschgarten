@@ -1,6 +1,8 @@
 package org.jetbrains.bazel.runnerAction
 
+import com.intellij.execution.Executor
 import com.intellij.execution.configurations.RunConfiguration
+import com.intellij.execution.executors.DefaultRunExecutor
 import com.intellij.openapi.components.service
 import com.intellij.openapi.extensions.ExtensionPointName
 import com.intellij.openapi.module.Module
@@ -16,31 +18,19 @@ import org.jetbrains.bsp.protocol.JvmEnvironmentItem
 class TestWithLocalJvmRunnerAction(
   project: Project,
   targetInfo: ExecutableTarget,
-  text: (() -> String)? = null,
-  isDebugMode: Boolean = false,
-  includeTargetNameInText: Boolean = false,
+  executor: Executor = DefaultRunExecutor.getRunExecutorInstance(),
   private val callerPsiElement: PsiElement? = null,
 ) : LocalJvmRunnerAction(
-    targetInfo = targetInfo,
-    text = {
-      if (text != null) {
-        text()
-      } else if (isDebugMode) {
-        BazelPluginBundle.message(
-          "target.debug.with.jvm.runner.action.text",
-          if (includeTargetNameInText) targetInfo.id.toShortString(project) else "",
-        )
-      } else {
-        BazelPluginBundle.message(
-          "target.test.with.jvm.runner.action.text",
-          if (includeTargetNameInText) targetInfo.id.toShortString(project) else "",
-        )
-      }
-    },
-    isDebugMode = isDebugMode,
+  project = project,
+  target = targetInfo,
+  configurationName = BazelPluginBundle.message(
+    "target.run.with.jvm.runner.action.text",
+    targetInfo.id.toShortString(project),
+  ),
+  executor = executor,
   ) {
   override suspend fun getEnvironment(project: Project): JvmEnvironmentItem? =
-    project.service<RunEnvironmentProvider>().getJvmEnvironmentItem(targetInfo.id)
+    project.service<RunEnvironmentProvider>().getJvmEnvironmentItem(target.id)
 
   override fun calculateConfiguration(
     configurationName: String,

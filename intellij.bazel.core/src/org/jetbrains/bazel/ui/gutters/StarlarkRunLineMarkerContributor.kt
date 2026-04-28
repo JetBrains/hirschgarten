@@ -1,5 +1,6 @@
 package org.jetbrains.bazel.ui.gutters
 
+import com.intellij.execution.ExecutionBundle
 import com.intellij.execution.lineMarker.RunLineMarkerContributor
 import com.intellij.icons.AllIcons
 import com.intellij.openapi.actionSystem.AnAction
@@ -18,9 +19,10 @@ import org.jetbrains.bazel.languages.starlark.psi.StarlarkFile
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkCallExpression
 import org.jetbrains.bazel.languages.starlark.psi.statements.StarlarkExpressionStatement
 import org.jetbrains.bazel.languages.starlark.repomapping.calculateLabel
+import org.jetbrains.bazel.languages.starlark.repomapping.toShortString
 import org.jetbrains.bazel.runnerAction.BuildTargetAction
-import org.jetbrains.bazel.runnerAction.RunWithCoverageAction
 import org.jetbrains.bazel.runnerAction.TestTargetAction
+import org.jetbrains.bazel.runnerAction.getTestExecutors
 import org.jetbrains.bazel.sync.action.ResyncTargetAction
 import org.jetbrains.bazel.sync.workspace.targetKind.TargetKindService
 import org.jetbrains.bazel.target.targetUtils
@@ -33,18 +35,19 @@ internal class StarlarkRunLineMarkerContributor : RunLineMarkerContributor() {
     val grandParent = element.parent?.parent ?: return null
     return if (element.shouldAddMarker(grandParent)) {
       grandParent.calculateMarkerInfo()
-    } else {
+    }
+    else {
       null
     }
   }
 
   private fun PsiElement.shouldAddMarker(grandParent: PsiElement): Boolean =
     this.project.isBazelProject &&
-      this.elementType == StarlarkTokenTypes.IDENTIFIER &&
-      grandParent is StarlarkCallExpression &&
-      isTopLevelCall(
-        grandParent,
-      )
+    this.elementType == StarlarkTokenTypes.IDENTIFIER &&
+    grandParent is StarlarkCallExpression &&
+    isTopLevelCall(
+      grandParent,
+    )
 
   private fun isTopLevelCall(element: PsiElement): Boolean =
     element.parent is StarlarkExpressionStatement && element.parent?.parent is StarlarkFile
@@ -103,15 +106,22 @@ internal class StarlarkRunLineMarkerContributor : RunLineMarkerContributor() {
 
     val testableTargets = executableTargets.filter { it.kind.ruleType == RuleType.TEST }
     if (testableTargets.size > 1) {
-      add(TestTargetAction(project, testableTargets))
-      add(RunWithCoverageAction(project, testableTargets))
+      for (executor in getTestExecutors()) {
+        add(
+          TestTargetAction(
+            project = project,
+            targets = testableTargets,
+            executor = executor,
+            configurationName = ExecutionBundle.message("test.in.scope.presentable.text", targetLabel.toShortString(project)),
+          ),
+        )
+      }
     }
 
     val executeActions = executableTargets.flatMap { executableTarget ->
       DefaultActionGroup().fillWithEligibleActions(
         project,
         executableTarget,
-        includeTargetNameInText = executableTarget.id != targetLabel,
       ).childActionsOrStubs.toList()
     }
     addAll(executeActions)

@@ -93,7 +93,7 @@ class FastBuildTest : IdeStarterBaseProjectTest() {
               }
               ?: error("Run gutter icon was not found in Main.java")
             runIcon.click()
-            popup().waitOneText("Debug run").click()
+            popup().waitOneText("Debug '//:main'").click()
           }
 
           step("Wait for debugger UI to be ready") {

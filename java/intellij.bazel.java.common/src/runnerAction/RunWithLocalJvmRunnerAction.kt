@@ -1,5 +1,7 @@
 package org.jetbrains.bazel.runnerAction
 
+import com.intellij.execution.Executor
+import com.intellij.execution.executors.DefaultRunExecutor
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import org.jetbrains.annotations.ApiStatus
@@ -10,30 +12,18 @@ import org.jetbrains.bsp.protocol.JvmEnvironmentItem
 
 @ApiStatus.Internal
 class RunWithLocalJvmRunnerAction(
-    project: Project,
-    targetInfo: ExecutableTarget,
-    text: (() -> String)? = null,
-    isDebugMode: Boolean = false,
-    includeTargetNameInText: Boolean = false,
+  project: Project,
+  targetInfo: ExecutableTarget,
+  executor: Executor = DefaultRunExecutor.getRunExecutorInstance(),
 ) : LocalJvmRunnerAction(
-    targetInfo = targetInfo,
-    text = {
-      if (text != null) {
-        text()
-      } else if (isDebugMode) {
-        BazelPluginBundle.message(
-          "target.debug.with.jvm.runner.action.text",
-          if (includeTargetNameInText) targetInfo.id.toShortString(project) else "",
-        )
-      } else {
-        BazelPluginBundle.message(
-          "target.run.with.jvm.runner.action.text",
-          if (includeTargetNameInText) targetInfo.id.toShortString(project) else "",
-        )
-      }
-    },
-    isDebugMode = isDebugMode,
-  ) {
+  project = project,
+  target = targetInfo,
+  executor = executor,
+  configurationName = BazelPluginBundle.message(
+    "target.run.with.jvm.runner.action.text",
+    targetInfo.id.toShortString(project),
+  ),
+) {
   override suspend fun getEnvironment(project: Project): JvmEnvironmentItem? =
-    project.service<RunEnvironmentProvider>().getJvmEnvironmentItem(targetInfo.id)
+    project.service<RunEnvironmentProvider>().getJvmEnvironmentItem(target.id)
 }

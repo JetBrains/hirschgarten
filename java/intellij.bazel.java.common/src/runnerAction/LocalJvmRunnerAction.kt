@@ -1,10 +1,12 @@
 package org.jetbrains.bazel.runnerAction
 
 import com.intellij.build.events.impl.FailureResultImpl
+import com.intellij.execution.Executor
 import com.intellij.execution.RunnerAndConfigurationSettings
 import com.intellij.execution.ShortenCommandLine
 import com.intellij.execution.application.ApplicationConfiguration
 import com.intellij.execution.configurations.RunConfiguration
+import com.intellij.execution.executors.DefaultDebugExecutor
 import com.intellij.execution.impl.RunManagerImpl
 import com.intellij.execution.impl.RunnerAndConfigurationSettingsImpl
 import com.intellij.openapi.module.Module
@@ -17,7 +19,6 @@ import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.commons.BazelStatus
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.label.Label
-import org.jetbrains.bazel.languages.starlark.repomapping.toShortString
 import org.jetbrains.bazel.progress.ConsoleService
 import org.jetbrains.bazel.projectAware.BazelProjectModuleBuildTasksTracker
 import org.jetbrains.bazel.run.config.HotswappableRunConfiguration
@@ -26,30 +27,28 @@ import org.jetbrains.bazel.target.getModule
 import org.jetbrains.bsp.protocol.ExecutableTarget
 import org.jetbrains.bsp.protocol.JvmEnvironmentItem
 import org.jetbrains.bsp.protocol.TaskGroupId
-import javax.swing.Icon
 import kotlin.coroutines.cancellation.CancellationException
 
 @ApiStatus.Internal
 abstract class LocalJvmRunnerAction(
-  protected val targetInfo: ExecutableTarget,
-  text: () -> String,
-  icon: Icon? = null,
-  private val isDebugMode: Boolean = false,
-) : BaseRunnerAction(text, icon, isDebugMode) {
-  override fun getBuildTargets(project: Project): List<ExecutableTarget> = listOf(targetInfo)
+  private val project: Project,
+  protected val target: ExecutableTarget,
+  configurationName: String,
+  private val executor: Executor,
+) : BaseRunnerAction(executor, configurationName) {
 
   abstract suspend fun getEnvironment(project: Project): JvmEnvironmentItem?
 
-  override suspend fun getRunnerSettings(project: Project, targets: List<ExecutableTarget>): RunnerAndConfigurationSettings? {
-    val module = targetInfo.id.getModule(project) ?: return null
+  override suspend fun getRunnerSettings(): RunnerAndConfigurationSettings? {
+    val module = target.id.getModule(project) ?: return null
 
     if (!preBuild(project)) return null
     val environment = queryJvmEnvironment(project) ?: return null
-    return calculateConfigurationSettings(environment, module, project, targetInfo)
+    return calculateConfigurationSettings(environment, module, project, target)
   }
 
   private suspend fun preBuild(project: Project): Boolean {
-    val statusCode = runBuildTargetTask(listOf(targetInfo.id), project, isDebugMode)
+    val statusCode = runBuildTargetTask(listOf(target.id), project, isDebug = executor.id == DefaultDebugExecutor.EXECUTOR_ID)
     return statusCode == BazelStatus.SUCCESS
   }
 
@@ -59,8 +58,8 @@ abstract class LocalJvmRunnerAction(
     project: Project,
     targetInfo: ExecutableTarget,
   ): RunnerAndConfigurationSettings? {
-    val configurationName = calculateConfigurationName(project, targetInfo)
-    val configuration = calculateConfiguration(configurationName, environment, module, project, targetInfo) ?: return null
+    val configuration =
+      calculateConfiguration(this@LocalJvmRunnerAction.configurationName, environment, module, project, targetInfo) ?: return null
     val runManager = RunManagerImpl.getInstanceImpl(project)
     return RunnerAndConfigurationSettingsImpl(runManager, configuration)
   }
@@ -85,17 +84,6 @@ abstract class LocalJvmRunnerAction(
         shortenCommandLine = ShortenCommandLine.MANIFEST
       }
     return configuration
-  }
-
-  private fun calculateConfigurationName(project: Project, targetInfo: ExecutableTarget): String {
-    val targetDisplayName = targetInfo.id.toShortString(project)
-    val actionNameKey =
-      when {
-        isDebugMode -> "target.debug.with.jvm.runner.config.name"
-        this is TestWithLocalJvmRunnerAction -> "target.test.with.jvm.runner.config.name"
-        else -> "target.run.with.jvm.runner.config.name"
-      }
-    return BazelPluginBundle.message(actionNameKey, targetDisplayName)
   }
 
   private suspend fun queryJvmEnvironment(project: Project): JvmEnvironmentItem? {

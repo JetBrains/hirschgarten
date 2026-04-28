@@ -14,8 +14,6 @@ internal class GenericTestHandlerProvider : GooglePluginAwareRunHandlerProvider 
 
   override fun canRun(targets: List<TargetKind>): Boolean = targets.all { it.ruleType == RuleType.TEST }
 
-  override fun canDebug(targets: List<TargetKind>): Boolean = false
-
   override val googleHandlerId: String = "BlazeCommandGenericRunConfigurationHandlerProvider"
   override val isTestHandler: Boolean = true
 }

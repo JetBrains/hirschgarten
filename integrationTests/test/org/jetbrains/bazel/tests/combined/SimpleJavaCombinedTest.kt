@@ -32,6 +32,7 @@ import org.jetbrains.bazel.ideStarter.checkIdeaLogForExceptions
 import org.jetbrains.bazel.ideStarter.execute
 import org.jetbrains.bazel.ideStarter.openFile
 import org.jetbrains.bazel.ideStarter.syncBazelProject
+import org.jetbrains.bazel.tests.ui.verifyAvailableRunGutterActions
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assumptions
@@ -179,16 +180,21 @@ class SimpleJavaCombinedTest : IdeStarterBaseProjectTest() {
             .getGutterIcons()
             .first()
             .click()
-          val expectedTexts = listOf(
-            "Run all tests",
-            "Test //:SimpleTest",
-            "Test //:Simple2Test",
+          verifyAvailableRunGutterActions(
+            listOf(
+              "Build Target",
+              "Run 'Tests in '//:SimpleJavaTest''",
+              "Run 'Tests in '//:SimpleJavaTest'' with Coverage",
+              "Run '//:Simple2Test'",
+              "Debug '//:Simple2Test'",
+              "Run '//:Simple2Test' with Coverage",
+              "Profile '//:Simple2Test' with 'IntelliJ Profiler'",
+              "Run '//:SimpleTest'",
+              "Debug '//:SimpleTest'",
+              "Run '//:SimpleTest' with Coverage",
+              "Profile '//:SimpleTest' with 'IntelliJ Profiler'",
+            ),
           )
-          for (text in expectedTexts) {
-            step("Checking that run gutter contains run config with name: $text") {
-              popup().waitAnyTextsContains(text)
-            }
-          }
           popup().close()
         }
       }

@@ -13,6 +13,4 @@ internal class IntellijPluginRunHandlerProvider : RunHandlerProvider {
 
   override fun canRun(targets: List<TargetKind>): Boolean =
     targets.singleOrNull()?.kind == "intellij_plugin_debug_target"
-
-  override fun canDebug(targets: List<TargetKind>): Boolean = canRun(targets)
 }
