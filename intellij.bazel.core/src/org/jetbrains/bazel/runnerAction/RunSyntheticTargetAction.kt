@@ -1,11 +1,14 @@
 package org.jetbrains.bazel.runnerAction
 
 import com.intellij.execution.BeforeRunTaskProvider
+import com.intellij.execution.Executor
 import com.intellij.execution.RunManager
 import com.intellij.execution.RunnerAndConfigurationSettings
 import com.intellij.execution.configurations.runConfigurationType
+import com.intellij.execution.executors.DefaultRunExecutor
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElement
+import org.jetbrains.bazel.languages.starlark.repomapping.toShortString
 import org.jetbrains.bazel.run.RunHandlerProvider
 import org.jetbrains.bazel.run.config.BazelRunConfiguration
 import org.jetbrains.bazel.run.config.BazelRunConfigurationType
@@ -15,45 +18,28 @@ import org.jetbrains.bazel.run.synthetic.SyntheticRunTargetTemplateGenerator
 import org.jetbrains.bsp.protocol.ExecutableTarget
 
 // TODO: refactor to Execution API
-internal open class RunSyntheticTargetAction(
+internal class RunSyntheticTargetAction(
+  private val project: Project,
   private val target: ExecutableTarget,
-  private val isDebugAction: Boolean,
-  private val includeTargetNameInText: Boolean,
+  executor: Executor = DefaultRunExecutor.getRunExecutorInstance(),
   private val templateGenerator: SyntheticRunTargetTemplateGenerator,
   private val targetElement: PsiElement,
-) : BaseRunnerAction(
-  text = {
-    BazelRunnerActionNaming.getRunActionName(
-      isDebugAction = isDebugAction,
-      isRunConfigName = false,
-      includeTargetNameInText = includeTargetNameInText,
-      project = targetElement.project,
-      target = target.id,
-    )
-  },
-  isDebugAction = isDebugAction,
-  isCoverageAction = false,
-) {
+) : BaseRunnerAction(executor = executor, configurationName = target.id.toShortString(project)) {
 
-  override fun getBuildTargets(project: Project): List<ExecutableTarget> = listOf(target)
-
-  override suspend fun getRunnerSettings(
-    project: Project,
-    targets: List<ExecutableTarget>,
-  ): RunnerAndConfigurationSettings {
+  override suspend fun getRunnerSettings(): RunnerAndConfigurationSettings {
     val configurationType = runConfigurationType<BazelRunConfigurationType>()
     val factory = configurationType.configurationFactories.first()
-    val name = templateGenerator.getRunnerActionName(getRunConfigurationName(), target, targetElement)
+    val name = templateGenerator.getRunnerActionName(configurationName, target, targetElement)
     val settings =
       RunManager.getInstance(project).createConfiguration(name, factory)
     val config = settings.configuration as BazelRunConfiguration
 
-    val syntheticTargetIds = targets.map { templateGenerator.getSyntheticTargetLabel(it, targetElement) }
+    val syntheticTargetId = templateGenerator.getSyntheticTargetLabel(target, targetElement)
 
     // this runner is inferred from the original target
     val originalTargetProvider = RunHandlerProvider.getRunHandlerProvider(listOf(target.kind))
       ?: error("Failed to get run provider")
-    config.updateRunProvider(syntheticTargetIds, originalTargetProvider)
+    config.updateRunProvider(listOf(syntheticTargetId), originalTargetProvider)
 
     val provider = BeforeRunTaskProvider.getProvider(project, GENERATE_SYNTHETIC_PROVIDER_ID)
     if (provider is GenerateSyntheticTargetRunTaskProvider) {
@@ -69,13 +55,4 @@ internal open class RunSyntheticTargetAction(
     settings.isTemporary = true
     return settings
   }
-
-  protected open fun getRunConfigurationName(): String =
-    BazelRunnerActionNaming.getRunActionName(
-      isDebugAction = isDebugAction,
-      isRunConfigName = true,
-      includeTargetNameInText = includeTargetNameInText,
-      project = targetElement.project,
-      target = target.id,
-    )
 }

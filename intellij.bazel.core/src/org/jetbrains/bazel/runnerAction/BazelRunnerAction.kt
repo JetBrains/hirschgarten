@@ -1,5 +1,6 @@
 package org.jetbrains.bazel.runnerAction
 
+import com.intellij.execution.Executor
 import com.intellij.execution.RunManager
 import com.intellij.execution.RunnerAndConfigurationSettings
 import com.intellij.execution.configurations.ConfigurationType
@@ -10,27 +11,27 @@ import org.jetbrains.bazel.run.RunHandlerProvider
 import org.jetbrains.bazel.run.config.BazelRunConfiguration
 import org.jetbrains.bazel.run.config.BazelRunConfigurationType
 import org.jetbrains.bsp.protocol.ExecutableTarget
-import javax.swing.Icon
 
 @ApiStatus.Internal
 abstract class BazelRunnerAction(
-  private val targetInfos: List<ExecutableTarget>,
-  private val text: (isRunConfigName: Boolean) -> String,
-  icon: Icon? = null,
-  isDebugAction: Boolean = false,
-  isCoverageAction: Boolean = false,
-) : BaseRunnerAction({ text(false) }, icon, isDebugAction, isCoverageAction) {
+  private val project: Project,
+  private val targets: List<ExecutableTarget>,
+  executor: Executor,
+  configurationName: String,
+) : BaseRunnerAction(executor, configurationName) {
+
   private fun getConfigurationType(): ConfigurationType = runConfigurationType<BazelRunConfigurationType>()
 
   protected open fun RunnerAndConfigurationSettings.customizeRunConfiguration() {}
 
-  override fun getBuildTargets(project: Project): List<ExecutableTarget> = targetInfos
+  override suspend fun getRunnerSettings(): RunnerAndConfigurationSettings? {
+    return createRunConfiguration()
+  }
 
-  override suspend fun getRunnerSettings(project: Project, targets: List<ExecutableTarget>): RunnerAndConfigurationSettings? {
+  fun createRunConfiguration(): RunnerAndConfigurationSettings {
     val factory = getConfigurationType().configurationFactories.first()
-    val name = text(true)
     val settings =
-      RunManager.getInstance(project).createConfiguration(name, factory)
+      RunManager.getInstance(project).createConfiguration(configurationName, factory)
     (settings.configuration as BazelRunConfiguration)
       .updateTargets(targets.map { it.id }, RunHandlerProvider.getRunHandlerProvider(targets.map { it.kind }))
 

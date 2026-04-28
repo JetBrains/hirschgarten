@@ -73,7 +73,13 @@ fun IDETestContext.setRunConfigRunWithBazel(runTestWithBazel: Boolean): IDETestC
  */
 fun IdeaFrameUI.clickTestGutterOnLine(line: Int, testTimeout: Duration = 10.seconds) {
   clickRunGutterOnLine(line)
-  popup().waitOneText { it.text.startsWith("Test ") }.click()
+  val allRunTexts = popup().getAllTexts { it.text.startsWith("Run ") }.sortedBy { it.point.y }
+  check(allRunTexts.isNotEmpty()) {
+    "Couldn't find a text in the popup starting with 'Run ', got: ${
+      popup().getAllTexts().map { it.text }
+    }"
+  }
+  allRunTexts.first().click()
   wait(testTimeout)
 }
 
@@ -81,6 +87,7 @@ fun IdeaFrameUI.clickTestGutterOnLine(line: Int, testTimeout: Duration = 10.seco
  * [line] can be different depending on e.g. imports folding
  */
 fun IdeaFrameUI.clickRunGutterOnLine(line: Int) {
+  keyboard { escape() }  // close a previous run gutter if one exists
   val runGutter = getRunGutterOnLine(line)
   runGutter.click()
 }
@@ -102,8 +109,11 @@ fun IdeaFrameUI.verifyAvailableRunGutterActions(texts: List<String>) {
   texts.forEach { text ->
     popup().waitAnyTextsContains(text)
   }
-  val allTexts = popup().getAllTexts().map { it.text }
+  val allTexts = popup().getAllTexts().sortedBy { it.point.y }.map { it.text }
   check(allTexts.size == texts.size) {
     "Too many texts! Expected: $texts, actual: $allTexts"
+  }
+  check(allTexts.zip(texts).all { (expected, actual) -> expected in actual }) {
+    "Texts are correct, but the order is wrong! Expected $texts, actual: $allTexts"
   }
 }

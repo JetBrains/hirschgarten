@@ -1,9 +1,10 @@
 package org.jetbrains.bazel.runnerAction
 
+import com.intellij.execution.Executor
 import com.intellij.execution.RunnerAndConfigurationSettings
+import com.intellij.execution.executors.DefaultRunExecutor
 import com.intellij.openapi.project.Project
 import org.jetbrains.annotations.ApiStatus
-import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.languages.starlark.repomapping.toShortString
 import org.jetbrains.bazel.run.config.BazelRunConfiguration
 import org.jetbrains.bazel.run.state.HasProgramArguments
@@ -13,39 +14,32 @@ import org.jetbrains.bsp.protocol.ExecutableTarget
 @ApiStatus.Internal
 class TestTargetAction(
   project: Project,
-  targetInfos: List<ExecutableTarget>,
-  text: ((isRunConfigName: Boolean) -> String)? = null,
-  isDebugAction: Boolean = false,
-  includeTargetNameInText: Boolean = false,
+  targets: List<ExecutableTarget>,
+  executor: Executor = DefaultRunExecutor.getRunExecutorInstance(),
+  configurationName: String,
   private val singleTestFilter: String? = null,
   private val testExecutableArguments: List<String> = emptyList(),
 ) : BazelRunnerAction(
-  targetInfos = targetInfos,
-  text = { isRunConfigName ->
-    if (text != null) {
-      text(isRunConfigName || includeTargetNameInText)
-    } else if (isDebugAction && !isRunConfigName && !includeTargetNameInText) {
-      BazelPluginBundle.message(
-        "target.debug.test.action.text",
-        "",
-      )
-    } else if (targetInfos.size == 1) {
-      BazelPluginBundle.message(
-        "target.test.action.text",
-        if (isRunConfigName ||
-          includeTargetNameInText
-        ) {
-          targetInfos.single().id.toShortString(project)
-        } else {
-          ""
-        },
-      )
-    } else {
-      BazelPluginBundle.message("action.run.all.tests")
-    }
-  },
-  isDebugAction = isDebugAction,
+  project = project,
+  targets = targets,
+  executor = executor,
+  configurationName = configurationName,
 ) {
+  constructor(
+    project: Project,
+    target: ExecutableTarget,
+    executor: Executor = DefaultRunExecutor.getRunExecutorInstance(),
+    singleTestFilter: String? = null,
+    testExecutableArguments: List<String> = emptyList(),
+  ) : this(
+    project = project,
+    targets = listOf(target),
+    executor = executor,
+    configurationName = target.id.toShortString(project),
+    singleTestFilter = singleTestFilter,
+    testExecutableArguments = testExecutableArguments,
+  )
+
   override fun RunnerAndConfigurationSettings.customizeRunConfiguration() {
     (configuration as BazelRunConfiguration).handler?.apply {
       setTestFilter(configuration.project, state, singleTestFilter)
@@ -61,3 +55,15 @@ class TestTargetAction(
       "\"$escaped\""
     }
 }
+
+@ApiStatus.Internal
+fun getTestExecutors(): List<Executor> = listOfNotNull(
+  DefaultRunExecutor.getRunExecutorInstance(),
+  getCoverageExecutor(),
+)
+
+@ApiStatus.Internal
+const val COVERAGE_EXECUTOR_ID: String = "Coverage"
+
+@ApiStatus.Internal
+fun getCoverageExecutor(): Executor? = Executor.EXECUTOR_EXTENSION_NAME.findFirstSafe { it.id == COVERAGE_EXECUTOR_ID }

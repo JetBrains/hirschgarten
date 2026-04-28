@@ -27,23 +27,14 @@ interface RunHandlerProvider {
    */
   fun canRun(targets: List<TargetKind>): Boolean
 
-  /**
-   * Returns true if this provider can create a {@link BspRunHandler} for debugging the given targets.
-   */
-  fun canDebug(targets: List<TargetKind>): Boolean
-
   companion object {
     val ep: ExtensionPointName<RunHandlerProvider> =
       ExtensionPointName.create("org.jetbrains.bazel.runHandlerProvider")
 
     /** Finds a BspRunHandlerProvider that will be able to create a BspRunHandler for the given targets */
-    fun getRunHandlerProvider(targets: List<TargetKind>, isDebug: Boolean = false): RunHandlerProvider? =
+    fun getRunHandlerProvider(targets: List<TargetKind>): RunHandlerProvider? =
       ep.extensionList.firstOrNull {
-        if (isDebug) {
-          it.canDebug(targets)
-        } else {
-          it.canRun(targets)
-        }
+        it.canRun(targets)
       }
 
     /** Finds a BspRunHandlerProvider that will be able to create a BspRunHandler for the given targets.

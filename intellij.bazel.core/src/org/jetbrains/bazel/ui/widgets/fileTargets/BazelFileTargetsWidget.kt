@@ -105,7 +105,7 @@ internal class BazelFileTargetsWidget(project: Project) : EditorBasedStatusBarPo
       it.add(CopyTargetIdAction.FromTargetInfo(this))
       it.addSeparator()
       it.add(BuildTargetAction(id))
-      it.fillWithEligibleActions(project, this, false)
+      it.fillWithEligibleActions(project, this)
       it.addSeparator()
       it.add(BazelJumpToBuildFileAction.NonXmlRegistered({ this }))
       it.add(StarlarkDebugAction(this.id))

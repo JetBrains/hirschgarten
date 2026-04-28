@@ -7,7 +7,8 @@ import com.intellij.openapi.ui.playback.PlaybackContext
 import com.intellij.openapi.ui.playback.commands.PlaybackCommandCoroutineAdapter
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withTimeoutOrNull
-import org.jetbrains.bazel.runnerAction.RunWithCoverageAction
+import org.jetbrains.bazel.runnerAction.TestTargetAction
+import org.jetbrains.bazel.runnerAction.getCoverageExecutor
 import org.jetbrains.bazel.target.targetUtils
 
 internal class RunTestWithCoverageCommand(text: String, line: Int) : PlaybackCommandCoroutineAdapter(text, line) {
@@ -22,7 +23,7 @@ internal class RunTestWithCoverageCommand(text: String, line: Int) : PlaybackCom
     val target = checkNotNull(targetUtils.getTargetsForFile(virtualFile).singleOrNull()) { "Expected one target for $virtualFile" }
     val targetInfo = checkNotNull(targetUtils.getBuildTargetForLabel(target))
 
-    RunWithCoverageAction(project, listOf(targetInfo)).doPerformAction(project)
+    TestTargetAction(project, targetInfo, executor = checkNotNull(getCoverageExecutor())).doPerformAction(project)
 
     val coverageDataManager = CoverageDataManager.getInstance(project)
     withTimeoutOrNull(60000) {

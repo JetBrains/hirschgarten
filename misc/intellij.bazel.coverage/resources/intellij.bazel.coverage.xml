@@ -23,10 +23,6 @@
     <projectViewNodeDecorator implementation="org.jetbrains.bazel.run.coverage.BazelCoverageClassNodeDecorator"/>
   </extensions>
 
-  <extensions defaultExtensionNs="org.jetbrains.bazel">
-    <coverageExecutorProvider implementation="org.jetbrains.bazel.run.coverage.DefaultBazelCoverageExecutorProvider"/>
-  </extensions>
-
   <actions>
     <action class="org.jetbrains.bazel.ui.projectTree.action.RunAllTestsWithCoverageAction">
       <add-to-group

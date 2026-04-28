@@ -1,12 +1,6 @@
 f:org.jetbrains.bazel.config.BazelProjectPropertiesKt
 - sf:getRootDir(com.intellij.openapi.project.Project):com.intellij.openapi.vfs.VirtualFile
 - sf:isBazelProject(com.intellij.openapi.project.Project):Z
-org.jetbrains.bazel.runnerAction.BazelCoverageExecutorProvider
-- sf:Companion:org.jetbrains.bazel.runnerAction.BazelCoverageExecutorProvider$Companion
-- a:createCoverageExecutor(com.intellij.openapi.project.Project):com.intellij.execution.Executor
-- a:isCoverageExecutor(com.intellij.execution.Executor):Z
-f:org.jetbrains.bazel.runnerAction.BazelCoverageExecutorProvider$Companion
-- f:getEp():com.intellij.openapi.extensions.ExtensionPointName
 org.jetbrains.bazel.sync.status.SyncStatusListener
 - sf:Companion:org.jetbrains.bazel.sync.status.SyncStatusListener$Companion
 - a:syncFinished(Z):V

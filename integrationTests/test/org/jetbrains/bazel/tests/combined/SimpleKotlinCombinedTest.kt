@@ -167,7 +167,7 @@ class SimpleKotlinCombinedTest : IdeStarterBaseProjectTest() {
             .getGutterIcons()
             .first()
             .click()
-          popup().waitOneContainsText("Debug test").click()
+          popup().waitOneContainsText("Debug '//:SimpleKotlinTest'").click()
           wait(15.seconds)
         }
         step("Verify debug test status and results tree") {
@@ -206,7 +206,7 @@ class SimpleKotlinCombinedTest : IdeStarterBaseProjectTest() {
             .getGutterIcons()
             .first()
             .click()
-          popup().waitOneContainsText("Debug test").click()
+          popup().waitOneContainsText("Debug '//:SimpleKotlinTest'").click()
           wait(15.seconds)
         }
         step("Verify debug test status and results tree") {
@@ -349,7 +349,7 @@ class SimpleKotlinCombinedTest : IdeStarterBaseProjectTest() {
             .getGutterIcons()
             .first { it.getIconPath().contains("run") }
             .click()
-          popup().waitOneContainsText("Debug test").click()
+          popup().waitOneContainsText("Debug '//:SimpleKotlinTest'").click()
 
           wait(30.seconds)
 
