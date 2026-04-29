@@ -108,7 +108,6 @@ class TargetsCacheStorageTest : WorkspaceModelBaseTest() {
     storage.reset(
       fileToTarget = mapOf<Path, List<Label>>(file to listOf(label1)),
       executableTargets = mapOf<ResolvedLabel, List<Label>>(label1 to listOf(label2)),
-      libraryToTarget = mapOf(libraryItem.id.formatAsModuleName(project) to libraryItem.id),
       targets = listOf(TestBuildTargetFactory.createSimpleJavaLibraryTarget(id = label1),
                        TestBuildTargetFactory.createSimpleJavaLibraryTarget(id = label2)),
     )
@@ -116,13 +115,6 @@ class TargetsCacheStorageTest : WorkspaceModelBaseTest() {
     // files
     storage.getTargetsForPath(file)!!.shouldContainExactly(listOf(label1))
     storage.getExecutableTargetsForTarget(label1)!!.shouldContainExactly(listOf(label2))
-
-    // libraries and modules are stored under hashed ids derived from formatted module/library names
-    val libraryId = label1.formatAsModuleName(project)
-    storage.getTargetForLibraryId(libraryId) shouldBe label1
-
-    val moduleResolved = storage.getTargetForModuleId(libraryId)
-    moduleResolved shouldBe label1
 
     // targets
     storage.getAllTargets().toList().size shouldBe 2

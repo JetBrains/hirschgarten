@@ -7,49 +7,50 @@ import com.intellij.platform.workspace.storage.EntitySource
 import com.intellij.platform.workspace.storage.EntityType
 import com.intellij.platform.workspace.storage.GeneratedCodeApiVersion
 import com.intellij.platform.workspace.storage.MutableEntityStorage
+import com.intellij.platform.workspace.storage.SymbolicEntityId
+import com.intellij.platform.workspace.storage.WorkspaceEntity
 import com.intellij.platform.workspace.storage.WorkspaceEntityBuilder
+import com.intellij.platform.workspace.storage.WorkspaceEntityWithSymbolicId
+import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.annotations.ApiStatus.Internal
 
 @Internal
 @GeneratedCodeApiVersion(3)
-interface LibraryCompiledSourceCodeInsideJarExcludeEntityBuilder : WorkspaceEntityBuilder<LibraryCompiledSourceCodeInsideJarExcludeEntity> {
-  override var entitySource: EntitySource
-  var libraryId: LibraryId
-  var compiledSourceCodeInsideJarExcludeId: CompiledSourceCodeInsideJarExcludeId
+interface LibraryCompiledSourceCodeInsideJarExcludeEntityBuilder: WorkspaceEntityBuilder<LibraryCompiledSourceCodeInsideJarExcludeEntity>{
+override var entitySource: EntitySource
+var libraryId: LibraryId
+var compiledSourceCodeInsideJarExcludeId: CompiledSourceCodeInsideJarExcludeId
 }
 
-internal object LibraryCompiledSourceCodeInsideJarExcludeEntityType :
-  EntityType<LibraryCompiledSourceCodeInsideJarExcludeEntity, LibraryCompiledSourceCodeInsideJarExcludeEntityBuilder>() {
-  override val entityClass: Class<LibraryCompiledSourceCodeInsideJarExcludeEntity> get() = LibraryCompiledSourceCodeInsideJarExcludeEntity::class.java
-  operator fun invoke(
-    libraryId: LibraryId,
-    compiledSourceCodeInsideJarExcludeId: CompiledSourceCodeInsideJarExcludeId,
-    entitySource: EntitySource,
-    init: (LibraryCompiledSourceCodeInsideJarExcludeEntityBuilder.() -> Unit)? = null,
-  ): LibraryCompiledSourceCodeInsideJarExcludeEntityBuilder {
-    val builder = builder()
-    builder.libraryId = libraryId
-    builder.compiledSourceCodeInsideJarExcludeId = compiledSourceCodeInsideJarExcludeId
-    builder.entitySource = entitySource
-    init?.invoke(builder)
-    return builder
-  }
+internal object LibraryCompiledSourceCodeInsideJarExcludeEntityType : EntityType<LibraryCompiledSourceCodeInsideJarExcludeEntity, LibraryCompiledSourceCodeInsideJarExcludeEntityBuilder>(){
+override val entityClass: Class<LibraryCompiledSourceCodeInsideJarExcludeEntity> get() = LibraryCompiledSourceCodeInsideJarExcludeEntity::class.java
+operator fun invoke(
+libraryId: LibraryId,
+compiledSourceCodeInsideJarExcludeId: CompiledSourceCodeInsideJarExcludeId,
+entitySource: EntitySource,
+init: (LibraryCompiledSourceCodeInsideJarExcludeEntityBuilder.() -> Unit)? = null,
+): LibraryCompiledSourceCodeInsideJarExcludeEntityBuilder{
+val builder = builder()
+builder.libraryId = libraryId
+builder.compiledSourceCodeInsideJarExcludeId = compiledSourceCodeInsideJarExcludeId
+builder.entitySource = entitySource
+init?.invoke(builder)
+return builder
+}
 }
 
 @Internal
 fun MutableEntityStorage.modifyLibraryCompiledSourceCodeInsideJarExcludeEntity(
-  entity: LibraryCompiledSourceCodeInsideJarExcludeEntity,
-  modification: LibraryCompiledSourceCodeInsideJarExcludeEntityBuilder.() -> Unit,
-): LibraryCompiledSourceCodeInsideJarExcludeEntity =
-  modifyEntity(LibraryCompiledSourceCodeInsideJarExcludeEntityBuilder::class.java, entity, modification)
+entity: LibraryCompiledSourceCodeInsideJarExcludeEntity,
+modification: LibraryCompiledSourceCodeInsideJarExcludeEntityBuilder.() -> Unit,
+): LibraryCompiledSourceCodeInsideJarExcludeEntity = modifyEntity(LibraryCompiledSourceCodeInsideJarExcludeEntityBuilder::class.java, entity, modification)
 
 @Internal
 @JvmOverloads
 @JvmName("createLibraryCompiledSourceCodeInsideJarExcludeEntity")
 fun LibraryCompiledSourceCodeInsideJarExcludeEntity(
-  libraryId: LibraryId,
-  compiledSourceCodeInsideJarExcludeId: CompiledSourceCodeInsideJarExcludeId,
-  entitySource: EntitySource,
-  init: (LibraryCompiledSourceCodeInsideJarExcludeEntityBuilder.() -> Unit)? = null,
-): LibraryCompiledSourceCodeInsideJarExcludeEntityBuilder =
-  LibraryCompiledSourceCodeInsideJarExcludeEntityType(libraryId, compiledSourceCodeInsideJarExcludeId, entitySource, init)
+libraryId: LibraryId,
+compiledSourceCodeInsideJarExcludeId: CompiledSourceCodeInsideJarExcludeId,
+entitySource: EntitySource,
+init: (LibraryCompiledSourceCodeInsideJarExcludeEntityBuilder.() -> Unit)? = null,
+): LibraryCompiledSourceCodeInsideJarExcludeEntityBuilder = LibraryCompiledSourceCodeInsideJarExcludeEntityType(libraryId, compiledSourceCodeInsideJarExcludeId, entitySource, init)

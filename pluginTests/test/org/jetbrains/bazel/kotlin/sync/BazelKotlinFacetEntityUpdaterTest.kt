@@ -113,6 +113,7 @@ class BazelKotlinFacetEntityUpdaterTest : WorkspaceModelBaseTest() {
   private fun addToWorkspaceModelAndGetFacet(kotlinBuildTarget: KotlinBuildTarget, jvmBuildTarget: JvmBuildTarget): IKotlinFacetSettings {
     val module =
       GenericModuleInfo(
+        label = Label.parse("//module1"),
         name = "module1",
         type = ModuleTypeId("JAVA_MODULE"),
         dependencies =

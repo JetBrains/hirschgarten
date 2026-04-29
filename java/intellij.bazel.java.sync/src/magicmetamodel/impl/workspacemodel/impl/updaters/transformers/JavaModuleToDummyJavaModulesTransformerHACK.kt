@@ -180,6 +180,7 @@ class JavaModuleToDummyJavaModulesTransformerHACK(
   ) = JavaModule(
     genericModuleInfo =
       GenericModuleInfo(
+        label = javaModule.genericModuleInfo.label,
         name = name,
         type = ModuleTypeId(BazelDummyModuleType.ID),
         kind =

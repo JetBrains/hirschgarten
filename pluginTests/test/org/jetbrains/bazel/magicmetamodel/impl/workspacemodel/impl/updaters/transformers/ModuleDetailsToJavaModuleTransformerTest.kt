@@ -117,6 +117,7 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
     // then
     val expectedJavaModule = createJavaModule(
       name = "module1.module1",
+      label = buildTargetId,
       dependencies = listOf(
         Dependency("module2.module2"),
         Dependency("module3.module3"),
@@ -216,6 +217,7 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
     // then
     val expectedJavaModule = createJavaModule(
       name = "module1.module1",
+      label = buildTargetId,
       dependencies = listOf(
         Dependency("module2.module2"),
         Dependency("module3.module3"),
@@ -359,6 +361,7 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
     // then
     val expectedJavaModule1 = createJavaModule(
       name = "module1.module1",
+      label = buildTargetId1,
       dependencies = listOf(
         Dependency("module2.module2"),
         Dependency("module3.module3"),
@@ -391,6 +394,7 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
 
     val expectedJavaModule2 = createJavaModule(
       name = "module2.module2",
+      label = buildTargetId2,
       dependencies = listOf(
         Dependency("module3.module3"),
       ),

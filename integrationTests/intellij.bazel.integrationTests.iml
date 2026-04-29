@@ -71,5 +71,11 @@
     <orderEntry type="module" module-name="intellij.bazel.python.common.performancePlugin" scope="TEST" />
     <orderEntry type="module" module-name="intellij.bazel.remoteDevelopment" scope="TEST" />
     <orderEntry type="module" module-name="intellij.bazel.terminal" scope="TEST" />
+    <orderEntry type="module" module-name="intellij.bazel.java.sync" scope="TEST" />
+    <orderEntry type="module" module-name="intellij.bazel.devkit.monorepo" scope="TEST" />
+    <orderEntry type="module" module-name="intellij.bazel.java.profiler" scope="TEST" />
+    <orderEntry type="module" module-name="intellij.bazel.kotlin.projectWizard" scope="TEST" />
+    <orderEntry type="module" module-name="intellij.bazel.kotlin.sync" scope="TEST" />
+    <orderEntry type="module" module-name="intellij.bazel.resource" scope="TEST" />
   </component>
 </module>

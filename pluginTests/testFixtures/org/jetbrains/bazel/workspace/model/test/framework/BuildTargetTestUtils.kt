@@ -63,6 +63,7 @@ fun createModuleDetails(
 
 fun createJavaModule(
   name: String = "module",
+  label: Label = Label.parse("//${name.replace(".", "_")}"),
   type: String = JAVA_MODULE_ENTITY_TYPE_ID_NAME,
   dependencies: List<Dependency> = emptyList(),
   associates: List<String> = emptyList(),
@@ -82,6 +83,7 @@ fun createJavaModule(
 ): JavaModule =
   JavaModule(
     genericModuleInfo = GenericModuleInfo(
+      label = label,
       name = name,
       type = ModuleTypeId(type),
       dependencies = dependencies,

@@ -47,6 +47,9 @@ import org.jetbrains.bazel.test.framework.target.TestBuildTargetFactory
 import org.jetbrains.bazel.workspace.model.test.framework.BuildServerMock
 import org.jetbrains.bazel.workspace.model.test.framework.WorkspaceModelBaseTest
 import org.jetbrains.bazel.workspacemodel.entities.BazelModuleEntitySource
+import org.jetbrains.bazel.workspacemodel.entities.BazelModuleExtensionEntity
+import org.jetbrains.bazel.workspacemodel.entities.WorkspaceModelTargetLabel
+import org.jetbrains.bazel.workspacemodel.entities.bazelModuleExtension
 import org.jetbrains.bsp.protocol.BazelServerFacade
 import org.jetbrains.bsp.protocol.InverseSourcesParams
 import org.jetbrains.bsp.protocol.InverseSourcesResult
@@ -376,7 +379,7 @@ class BazelFileEventListenerTest : WorkspaceModelBaseTest() {
     val sub2 = root.createDirectory("second_subfolder")
     val file = sub1.createFile("aaa", "java")
 
-    createModule("module", listOf(root))
+    createModule(Label.parse("//module1"), listOf(root))
 
     val moveEvent = moveEvent(file, sub2)
     runTestWriteAction { file.move(requestor, sub2) }
@@ -392,8 +395,8 @@ class BazelFileEventListenerTest : WorkspaceModelBaseTest() {
     val file1 = sub1.createFile("aaa", "java")
     val file2 = sub1.createFile("bbb", "java")
 
-    createModule("module1", listOf(sub1))
-    createModule("module2", listOf(sub2))
+    createModule(Label.parse("//module1"), listOf(sub1))
+    createModule(Label.parse("//module2"), listOf(sub2))
 
     val moveEvent1 = moveEvent(file1, sub2)
     val moveEvent2 = moveEvent(file2, sub2)
@@ -429,7 +432,6 @@ class BazelFileEventListenerTest : WorkspaceModelBaseTest() {
           ),
         ),
       fileToTarget = emptyMap(),
-      libraryToTarget = emptyMap(),
     )
 
     val sourceRoot =
@@ -582,10 +584,7 @@ class BazelFileEventListenerTest : WorkspaceModelBaseTest() {
   private fun VirtualFileUrl.belongsToTarget(target: Label): Boolean = project.targetUtils.getTargetsForPath(this.toPath()).contains(target)
 
   private fun createModule(label: Label, contentRootFiles: List<VirtualFile> = emptyList()) {
-    createModule(label.formatAsModuleName(project), contentRootFiles)
-  }
-
-  private fun createModule(moduleName: String, contentRootFiles: List<VirtualFile> = emptyList()) {
+    val moduleName = label.formatAsModuleName(project)
     val entitySource = BazelModuleEntitySource(moduleName)
     val contentRoots =
       contentRootFiles.map {
@@ -602,6 +601,10 @@ class BazelFileEventListenerTest : WorkspaceModelBaseTest() {
         entitySource = entitySource,
       ) {
         this.contentRoots = contentRoots
+        this.bazelModuleExtension = BazelModuleExtensionEntity(
+          label = WorkspaceModelTargetLabel(label),
+          entitySource = entitySource,
+        )
       }
     runTestWriteAction { workspaceModel.updateProjectModel { it.addEntity(module) } }
   }

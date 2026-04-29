@@ -19,6 +19,5 @@ interface BazelTargetPersistenceLayer {
 @ApiStatus.Internal
 data class TargetPersistenceSpec(
   val targets: List<RawBuildTarget>,
-  val libraryNameToModule: Map<String, Label>,
   val file2Target: Map<Path, List<Label>>,
 )

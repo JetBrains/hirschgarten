@@ -57,7 +57,6 @@ import org.jetbrains.bazel.settings.bazel.bazelProjectSettings
 import org.jetbrains.bazel.sync.projectStructure.legacy.GENERIC_SOURCE_ROOT_TYPE_ID
 import org.jetbrains.bazel.sync.status.SyncStatusService
 import org.jetbrains.bazel.target.TargetUtils
-import org.jetbrains.bazel.target.moduleEntity
 import org.jetbrains.bazel.target.targetUtils
 import org.jetbrains.bazel.taskEvents.BazelTaskEventsService
 import org.jetbrains.bazel.workspace.fileEvents.SimplifiedFileEvent.CreateDirectory
@@ -65,6 +64,7 @@ import org.jetbrains.bazel.workspace.packageMarker.concatenatePackages
 import org.jetbrains.bazel.workspacemodel.entities.BazelDummyEntitySource
 import org.jetbrains.bazel.workspacemodel.entities.PackageMarkerEntity
 import org.jetbrains.bazel.workspacemodel.entities.PackageMarkerEntityBuilder
+import org.jetbrains.bazel.workspacemodel.entities.bazelModuleExtension
 import org.jetbrains.bazel.workspacemodel.entities.packageMarkerEntities
 import org.jetbrains.bsp.protocol.InverseSourcesParams
 import org.jetbrains.bsp.protocol.TaskGroupId
@@ -467,8 +467,7 @@ private fun Label.toModuleEntity(storage: ImmutableEntityStorage, project: Proje
 @RequiresReadLock
 private fun findModulesForFile(newFile: VirtualFile, fileIndex: ProjectFileIndex): Set<ModuleEntity> {
   val modules = fileIndex.getModulesForFile(newFile, true)
-  return modules
-    .mapNotNull { it.moduleEntity }
+  return modules.mapNotNull { it.findModuleEntity() }
     .toSet()
 }
 
@@ -488,7 +487,7 @@ private suspend fun queryTargetsForFile(project: Project, filePaths: List<Path>,
   }
 
 private fun addToPluginModelByModules(filePath: Path, modules: Set<ModuleEntity>, targetUtils: TargetUtils) {
-  val targets = modules.mapNotNull { targetUtils.getTargetForModuleId(it.name) }
+  val targets = modules.mapNotNull { it.bazelModuleExtension }.map { it.label.toLabel() }
   if (targets.isNotEmpty()) {
     targetUtils.addFileToTargetIdEntry(filePath, targets)
   }

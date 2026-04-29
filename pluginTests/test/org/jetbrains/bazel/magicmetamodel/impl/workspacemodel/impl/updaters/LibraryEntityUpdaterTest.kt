@@ -4,6 +4,7 @@ import com.intellij.platform.workspace.jps.entities.LibraryEntity
 import com.intellij.platform.workspace.jps.entities.LibraryRoot
 import com.intellij.platform.workspace.jps.entities.LibraryRootTypeId
 import com.intellij.platform.workspace.jps.entities.LibraryTableId
+import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.workspace.model.matchers.entries.ExpectedLibraryEntity
 import org.jetbrains.bazel.workspace.model.matchers.entries.shouldBeEqual
 import org.jetbrains.bazel.workspace.model.matchers.entries.shouldContainExactlyInAnyOrder
@@ -38,6 +39,7 @@ internal class LibraryEntityUpdaterTest : WorkspaceModelBaseTest() {
         displayName = "BSP: file:///dependency/test/1.0.0/test-1.0.0.jar",
         sourceJars = listOf(Path("/dependency/test/1.0.0/test-1.0.0-sources.jar")),
         classJars = listOf(Path("/dependency/test/1.0.0/test-1.0.0.jar")),
+        containerTarget = Label.parse("//sdk1")
       )
 
     // when
@@ -80,6 +82,7 @@ internal class LibraryEntityUpdaterTest : WorkspaceModelBaseTest() {
         displayName = "BSP: file:///dependency/test/1.0.0/test-1.0.0.jar",
         sourceJars = listOf(Path("/dependency/test1/1.0.0/test1-1.0.0-sources.jar")),
         classJars = listOf(Path("/dependency/test1/1.0.0/test1-1.0.0.jar")),
+        containerTarget = Label.parse("//sdk1")
       )
 
     val library2 =
@@ -87,6 +90,7 @@ internal class LibraryEntityUpdaterTest : WorkspaceModelBaseTest() {
         displayName = "BSP: file:///dependency/test2/2.0.0/test2-2.0.0.jar",
         sourceJars = listOf(Path("/dependency/test2/2.0.0/test2-2.0.0-sources.jar")),
         classJars = listOf(Path("/dependency/test2/2.0.0/test2-2.0.0.jar")),
+        containerTarget = Label.parse("//sdk2")
       )
 
     val libraries = listOf(library1, library2)
@@ -154,6 +158,7 @@ internal class LibraryEntityUpdaterTest : WorkspaceModelBaseTest() {
         displayName = "BSP: file:///dependency/test/1.0.0/test-1.0.0.jar",
         sourceJars = listOf(Path("/dependency/test/1.0.0/test-1.0.0-sources.jar")),
         classJars = listOf(Path("/dependency/test/1.0.0/test-1.0.0.jar")),
+        containerTarget = Label.parse("//sdk1")
       )
 
     // when

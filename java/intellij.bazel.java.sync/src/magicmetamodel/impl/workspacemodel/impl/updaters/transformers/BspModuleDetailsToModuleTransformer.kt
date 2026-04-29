@@ -25,6 +25,7 @@ class BspModuleDetailsToModuleTransformer(private val targetsMap: Map<Label, Bui
   WorkspaceModelEntityTransformer<BspModuleDetails, GenericModuleInfo> {
   override fun transform(inputEntity: BspModuleDetails): GenericModuleInfo =
     GenericModuleInfo(
+      label = inputEntity.target.id,
       name = inputEntity.target.id.formatAsModuleName(repoMapping),
       type = inputEntity.type,
       dependencies = inputEntity.dependencies.map { Dependency(it.label.formatAsModuleName(repoMapping), it.isRuntime, it.exported) },
