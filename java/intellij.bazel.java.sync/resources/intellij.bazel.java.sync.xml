@@ -5,6 +5,7 @@
     <module name="intellij.bazel.importer"/>
     <module name="intellij.bazel.projectview"/>
     <module name="intellij.bazel.protobuf"/>
+    <module name="intellij.java.compiler.impl"/>
     <module name="intellij.java.impl"/>
     <module name="intellij.platform.backend"/>
   </dependencies>

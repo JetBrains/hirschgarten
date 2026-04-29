@@ -27,6 +27,7 @@ import io.kotest.assertions.throwables.shouldNotThrow
 import org.jetbrains.bazel.commons.LanguageClass
 import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.commons.TargetKind
+import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.workspace.model.matchers.entries.ExpectedModuleEntity
 import org.jetbrains.bazel.workspace.model.matchers.entries.ExpectedSourceRootEntity
 import org.jetbrains.bazel.workspace.model.matchers.entries.shouldBeEqual
@@ -58,6 +59,7 @@ class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
         sourceJars = emptyList(),
         classJars = emptyList(),
         mavenCoordinates = null,
+        containerTarget = Label.parse("//lib1")
       ),
       Library(
         displayName = "lib2",
@@ -65,6 +67,7 @@ class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
         sourceJars = emptyList(),
         classJars = emptyList(),
         mavenCoordinates = null,
+        containerTarget = Label.parse("//lib2")
       ),
     )
   val testLibrariesByName: Map<String, Library> =
@@ -90,6 +93,7 @@ class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
         // given
         val module =
           GenericModuleInfo(
+            label = Label.parse("//module1"),
             name = "module1",
             type = ModuleTypeId("JAVA_MODULE"),
             dependencies =
@@ -338,6 +342,7 @@ class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
         // given
         val module1 =
           GenericModuleInfo(
+            label = Label.parse("//module1"),
             name = "module1",
             type = ModuleTypeId("JAVA_MODULE"),
             dependencies =
@@ -406,6 +411,7 @@ class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
 
         val module2 =
           GenericModuleInfo(
+            label = Label.parse("//module1"),
             name = "module2",
             type = ModuleTypeId("JAVA_MODULE"),
             dependencies =
@@ -732,6 +738,7 @@ class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
       ) { updater ->
         val module =
           GenericModuleInfo(
+            label = Label.parse("//module1"),
             name = "module1",
             type = ModuleTypeId("JAVA_MODULE"),
             isDummy = true,
@@ -801,6 +808,7 @@ class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
                 ruleType = RuleType.LIBRARY,
                 languageClasses = setOf(LanguageClass.JAVA),
               ),
+            label = Label.parse("//module1"),
           )
 
         val baseDirContentRootPath = Path("/root/dir/")
@@ -854,6 +862,7 @@ class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
         // given
         val module1 =
           GenericModuleInfo(
+            label = Label.parse("//module1"),
             name = "module1",
             type = ModuleTypeId("JAVA_MODULE"),
             dependencies = emptyList(),
@@ -883,6 +892,7 @@ class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
 
         val module2 =
           GenericModuleInfo(
+            label = Label.parse("//module2"),
             name = "module2",
             type = ModuleTypeId("JAVA_MODULE"),
             dependencies = emptyList(),

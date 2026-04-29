@@ -16,7 +16,10 @@ import com.intellij.platform.workspace.jps.entities.libraryProperties
 import com.intellij.platform.workspace.storage.EntitySource
 import com.intellij.platform.workspace.storage.MutableEntityStorage
 import org.jetbrains.annotations.ApiStatus
+import org.jetbrains.bazel.workspacemodel.entities.BazelLibraryExtensionEntity
 import org.jetbrains.bazel.workspacemodel.entities.Library
+import org.jetbrains.bazel.workspacemodel.entities.WorkspaceModelTargetLabel
+import org.jetbrains.bazel.workspacemodel.entities.bazelLibraryExtension
 import org.jetbrains.jps.model.serialization.library.JpsLibraryTableSerializer
 import java.nio.file.Path
 
@@ -65,6 +68,11 @@ class LibraryEntityUpdater(
           LibraryPropertiesEntity(entitySource) {
             propertiesXmlTag = toLibraryPropertiesXml(entityToAdd)
           }
+        this.bazelLibraryExtension = BazelLibraryExtensionEntity(
+          entitySource = entitySource,
+          label = WorkspaceModelTargetLabel(entityToAdd.containerTarget),
+          isSynthetic = entityToAdd.containerTarget.isSynthetic,
+        )
       }
 
     return builder.addEntity(libraryEntity)

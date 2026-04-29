@@ -11,6 +11,7 @@ import com.intellij.task.ProjectTaskManager
 import com.intellij.task.ProjectTaskRunner
 import com.intellij.task.TaskRunnerResults
 import com.intellij.task.impl.ProjectTaskList
+import com.intellij.workspaceModel.ide.legacyBridge.findModuleEntity
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.commons.BazelStatus
@@ -19,7 +20,7 @@ import org.jetbrains.bazel.coroutines.BazelCoroutineService
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.server.tasks.runBuildTargetTask
 import org.jetbrains.bazel.settings.bazel.bazelJVMProjectSettings
-import org.jetbrains.bazel.target.targetUtils
+import org.jetbrains.bazel.workspacemodel.entities.bazelModuleExtension
 import org.jetbrains.concurrency.Promise
 
 internal class BazelProjectTaskRunner : ProjectTaskRunner() {
@@ -40,7 +41,7 @@ internal class BazelProjectTaskRunner : ProjectTaskRunner() {
     projectTaskContext: ProjectTaskContext,
     vararg tasks: ProjectTask,
   ): Promise<Result> = BazelCoroutineService.getInstance(project).startAsync {
-    val targetsToBuild = obtainTargetsToBuild(project, tasks)
+    val targetsToBuild = obtainTargetsToBuild(tasks)
     val additionalTasks = AdditionalProjectTaskRunnerProvider.ep.extensionList.mapNotNull {
       it.createTask(project, projectTaskContext, targetsToBuild)
     }
@@ -56,10 +57,10 @@ internal class BazelProjectTaskRunner : ProjectTaskRunner() {
     result.toTaskRunnerResult()
   }.toPromise()
 
-  private fun obtainTargetsToBuild(project: Project, tasks: Array<out ProjectTask>): List<Label> =
-    tasks
-      .filterIsInstance<ModuleBuildTask>()
-      .mapNotNull { project.targetUtils.getTargetForModuleId(it.module.name) }
+  private fun obtainTargetsToBuild(tasks: Array<out ProjectTask>): List<Label> =
+    tasks.filterIsInstance<ModuleBuildTask>()
+      .mapNotNull { it.module.findModuleEntity() }
+      .mapNotNull { it.bazelModuleExtension?.label?.toLabel() }
 
   private fun BazelStatus.toTaskRunnerResult() =
     when (this) {

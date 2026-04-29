@@ -14,7 +14,6 @@ internal class TargetUtilsTargetPersistanceLayer : BazelTargetPersistenceLayer {
     project.targetUtils.saveTargets(
       targets = spec.targets,
       fileToTarget = spec.file2Target,
-      libraryToTarget = spec.libraryNameToModule,
     )
   }
 

@@ -94,6 +94,7 @@ class BspModuleDetailsToModuleTransformerTest : WorkspaceModelBaseTest() {
     // then
     val expectedModule =
       GenericModuleInfo(
+        label = Label.parse("//target1/target1"),
         name = "target1.target1",
         type = ModuleTypeId("JAVA_MODULE"),
         dependencies =
@@ -166,6 +167,7 @@ class BspModuleDetailsToModuleTransformerTest : WorkspaceModelBaseTest() {
     // then
     val expectedModule =
       GenericModuleInfo(
+        label = Label.parse("//target1/target1"),
         name = "target1.target1",
         type = ModuleTypeId("JAVA_MODULE"),
         dependencies =
@@ -272,6 +274,7 @@ class BspModuleDetailsToModuleTransformerTest : WorkspaceModelBaseTest() {
     // then
     val expectedModule1 =
       GenericModuleInfo(
+        label = Label.parse("//target1/target1"),
         name = "target1.target1",
         type = ModuleTypeId("JAVA_MODULE"),
         dependencies =
@@ -289,6 +292,7 @@ class BspModuleDetailsToModuleTransformerTest : WorkspaceModelBaseTest() {
 
     val expectedModule2 =
       GenericModuleInfo(
+        label = Label.parse("//target2/target2"),
         name = "target2.target2",
         type = ModuleTypeId("JAVA_MODULE"),
         dependencies =

@@ -6,6 +6,7 @@ import com.intellij.platform.workspace.jps.entities.SourceRootTypeId
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.commons.RepoMapping
 import org.jetbrains.bazel.commons.TargetKind
+import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.magicmetamodel.formatAsModuleName
 import org.jetbrains.bsp.protocol.LibraryItem
 import org.jetbrains.bsp.protocol.MavenCoordinates
@@ -37,6 +38,7 @@ data class Library(
   val sourceJars: List<Path> = listOf(),
   val classJars: List<Path> = listOf(),
   val mavenCoordinates: MavenCoordinates? = null,
+  val containerTarget: Label
 ) : WorkspaceModelEntity(),
   ResourceRootEntity {
   companion object {
@@ -66,6 +68,7 @@ This class holds basic module data that are not language-specific
  */
 @ApiStatus.Internal
 data class GenericModuleInfo(
+  val label: Label,
   val name: String,
   val type: ModuleTypeId,
   val dependencies: List<Dependency>,

@@ -16,9 +16,12 @@ import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.jpsCompilation.utils.JpsConstants
 import org.jetbrains.bazel.workspacemodel.entities.BazelDummyEntitySource
 import org.jetbrains.bazel.workspacemodel.entities.BazelModuleEntitySource
+import org.jetbrains.bazel.workspacemodel.entities.BazelModuleExtensionEntity
 import org.jetbrains.bazel.workspacemodel.entities.GenericModuleInfo
 import org.jetbrains.bazel.workspacemodel.entities.Library
 import org.jetbrains.bazel.workspacemodel.entities.Module
+import org.jetbrains.bazel.workspacemodel.entities.WorkspaceModelTargetLabel
+import org.jetbrains.bazel.workspacemodel.entities.bazelModuleExtension
 
 private val dependencyInterner: Interner<ModuleDependencyItem> = Interner.createWeakInterner()
 private val idInterner: Interner<SymbolicEntityId<*>> = Interner.createWeakInterner()
@@ -47,7 +50,7 @@ class ModuleEntityUpdater(
           return@mapNotNull toModuleDependencyItemModuleDependency(
             dependency.id,
             exported = exported,
-            runtime = dependency.isRuntimeOnly
+            runtime = dependency.isRuntimeOnly,
           )
         }
 
@@ -55,8 +58,9 @@ class ModuleEntityUpdater(
         if (libraryDependency != null) {
           return@mapNotNull toLibraryDependency(
             dependency.id,
-            exported = true /*dependency.exported*/, // why?
-            runtime = dependency.isRuntimeOnly)
+            exported = true, /*dependency.exported*/ // why?
+            runtime = dependency.isRuntimeOnly,
+          )
         }
 
         null
@@ -74,6 +78,10 @@ class ModuleEntityUpdater(
         entitySource = toEntitySource(entityToAdd),
       ) {
         this.type = entityToAdd.type
+        this.bazelModuleExtension = BazelModuleExtensionEntity(
+          label = WorkspaceModelTargetLabel(entityToAdd.label),
+          entitySource = toEntitySource(entityToAdd),
+        )
       }
 
     return builder.addEntity(moduleEntityBuilder)

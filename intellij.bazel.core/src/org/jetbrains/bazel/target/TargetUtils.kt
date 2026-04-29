@@ -8,6 +8,7 @@ import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.service
 import com.intellij.openapi.module.Module
 import com.intellij.openapi.module.ModuleManager
+import com.intellij.openapi.progress.runBlockingMaybeCancellable
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.getProjectDataPath
 import com.intellij.openapi.vfs.VirtualFile
@@ -17,8 +18,7 @@ import com.intellij.util.AwaitCancellationAndInvoke
 import com.intellij.util.awaitCancellationAndInvoke
 import com.intellij.util.concurrency.SynchronizedClearableLazy
 import com.intellij.util.concurrency.ThreadingAssertions
-import com.intellij.workspaceModel.ide.impl.legacyBridge.module.findModuleEntity
-import com.intellij.workspaceModel.ide.legacyBridge.ModuleBridge
+import com.intellij.workspaceModel.ide.legacyBridge.findModuleEntity
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Dispatchers
@@ -78,7 +78,7 @@ class TargetUtils(private val project: Project, private val coroutineScope: Coro
     }
 
   private val db: TargetsCacheStorage
-    get() = runBlocking { dbAsync.await() }
+    get() = runBlockingMaybeCancellable { dbAsync.await() }
 
   // we save only once every 5 minutes, and not earlier than 5 minutes after IDEA startup
   private var lastSaved = nowAsDuration()
@@ -130,14 +130,9 @@ class TargetUtils(private val project: Project, private val coroutineScope: Coro
     notifyTargetListUpdated()
   }
 
-  // todo expensive operation
-  fun computeFullLabelToTargetInfoMap(syncedTargetIdToTargetInfo: Map<Label, BuildTarget>): Map<Label, BuildTarget> =
-    db.computeFullLabelToTargetInfoMap(syncedTargetIdToTargetInfo)
-
   fun saveTargets(
     targets: List<RawBuildTarget>,
     fileToTarget: Map<Path, List<Label>>,
-    libraryToTarget: Map<String, Label>,
   ) {
     ThreadingAssertions.assertBackgroundThread()
 
@@ -151,7 +146,6 @@ class TargetUtils(private val project: Project, private val coroutineScope: Coro
     db.reset(
       fileToTarget = fileToTarget,
       executableTargets = executableTargets,
-      libraryToTarget = libraryToTarget,
       targets = targets,
     )
 
@@ -267,17 +261,11 @@ class TargetUtils(private val project: Project, private val coroutineScope: Coro
 
   fun isLibrary(target: Label): Boolean = getBuildTargetForLabel(target)?.kind?.ruleType == RuleType.LIBRARY
 
-  fun getTargetForModuleId(moduleId: String): Label? = db.getTargetForModuleId(moduleId)
-
-  fun getTargetForLibraryId(libraryId: String): Label? = db.getTargetForLibraryId(libraryId)
-
   /**
    * All labels in a label-to-target map are canonical.
    * The label must be first canonicalized via toCanonicalLabel.
    */
   fun getBuildTargetForLabel(label: Label): BuildTarget? = db.getBuildTargetForLabel(label)
-
-  fun getBuildTargetForModule(module: Module): BuildTarget? = getTargetForModuleId(module.name)?.let { getBuildTargetForLabel(it) }
 
   fun allBuildTargets(): Sequence<BuildTarget> = db.getAllBuildTargets()
 
@@ -287,8 +275,6 @@ class TargetUtils(private val project: Project, private val coroutineScope: Coro
   fun getTotalFileCount(): Int = db.getTotalFileCount()
 }
 
-internal fun String.isLibraryModule() = startsWith(LIBRARY_MODULE_PREFIX)
-
 val Project.targetUtils: TargetUtils
   @ApiStatus.Internal
   get() = service<TargetUtils>()
@@ -297,13 +283,7 @@ val Project.targetUtils: TargetUtils
 fun Label.getModule(project: Project): Module? = project.targetUtils.getBuildTargetForLabel(this)?.getModule(project)
 
 @ApiStatus.Internal
-fun Label.getModuleEntity(project: Project): ModuleEntity? = getModule(project)?.moduleEntity
-
-internal val Module.moduleEntity: ModuleEntity?
-  get() {
-    val bridge = this as? ModuleBridge ?: return null
-    return bridge.findModuleEntity(bridge.entityStorage.current)
-  }
+fun Label.getModuleEntity(project: Project): ModuleEntity? = getModule(project)?.findModuleEntity()
 
 @ApiStatus.Internal
 fun BuildTarget.getModule(project: Project): Module? {
