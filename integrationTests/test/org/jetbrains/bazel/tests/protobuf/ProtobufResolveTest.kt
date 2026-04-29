@@ -3,13 +3,18 @@ package org.jetbrains.bazel.tests.protobuf
 import com.intellij.driver.sdk.step
 import com.intellij.driver.sdk.ui.components.common.ideFrame
 import com.intellij.ide.starter.driver.engine.runIdeWithDriver
+import com.intellij.openapi.ui.playback.commands.AbstractCommand.CMD_PREFIX
+import com.intellij.tools.ide.performanceTesting.commands.CommandChain
 import com.intellij.tools.ide.performanceTesting.commands.checkOnRedCode
+import com.intellij.tools.ide.performanceTesting.commands.goToDeclaration
+import com.intellij.tools.ide.performanceTesting.commands.goto
 import com.intellij.tools.ide.performanceTesting.commands.openFile
 import org.jetbrains.bazel.data.IdeaBazelCases
 import org.jetbrains.bazel.ideStarter.IdeStarterBaseProjectTest
 import org.jetbrains.bazel.ideStarter.buildAndSync
 import org.jetbrains.bazel.ideStarter.execute
 import org.jetbrains.bazel.ideStarter.syncBazelProject
+import org.jetbrains.intellij.build.impl.getOrCreateTopElement
 import org.junit.jupiter.api.Test
 import kotlin.time.Duration.Companion.minutes
 
@@ -39,6 +44,11 @@ class ProtobufResolveTest : IdeStarterBaseProjectTest() {
             execute { openFile("pure/libB/lib_b.proto") }
             takeScreenshot("afterPureLibBProtoOpenFile")
             execute { checkOnRedCode() }
+            execute { goto(10,14)}
+            takeScreenshot("beforePureNavigation")
+            execute { goToDeclaration() }
+            takeScreenshot("afterPureNavigation")
+            execute { assertCurrentFileDirectory("pure/libA/lib_a.proto")}
 
             execute { openFile("pure/consumerJava/Main.java") }
             takeScreenshot("afterPureLibAConsumerJavaOpenFile")
@@ -53,6 +63,11 @@ class ProtobufResolveTest : IdeStarterBaseProjectTest() {
             execute { openFile("prefix/libB/lib_b.proto") }
             takeScreenshot("afterPrefixLibBProtoOpenFile")
             execute { checkOnRedCode() }
+            execute { goto(10,14)}
+            takeScreenshot("beforePrefixNavigation")
+            execute { goToDeclaration() }
+            takeScreenshot("afterPrefixNavigation")
+            execute { assertCurrentFileDirectory("prefix/libA/lib_a.proto")}
 
             execute { openFile("prefix/consumerJava/Main.java") }
             takeScreenshot("afterPrefixLibAConsumerJavaOpenFile")
@@ -67,6 +82,11 @@ class ProtobufResolveTest : IdeStarterBaseProjectTest() {
             execute { openFile("stripped1/libB/lib_b.proto") }
             takeScreenshot("afterStripped1LibBProtoOpenFile")
             execute { checkOnRedCode() }
+            execute { goto(10,14)}
+            takeScreenshot("beforeStripped1Navigation")
+            execute { goToDeclaration() }
+            takeScreenshot("afterStripped2Navigation")
+            execute { assertCurrentFileDirectory("stripped1/libA/src/package/lib_a.proto")}
 
             execute { openFile("stripped1/consumerJava/Main.java") }
             takeScreenshot("afterStripped1LibAConsumerJavaOpenFile")
@@ -81,6 +101,11 @@ class ProtobufResolveTest : IdeStarterBaseProjectTest() {
             execute { openFile("stripped2/libB/lib_b.proto") }
             takeScreenshot("afterStripped2LibBProtoOpenFile")
             execute { checkOnRedCode() }
+            execute { goto(10,14)}
+            takeScreenshot("beforeStripped2Navigation")
+            execute { goToDeclaration() }
+            takeScreenshot("afterStripped2Navigation")
+            execute { assertCurrentFileDirectory("stripped2/libA/src/package/lib_a.proto")}
 
             execute { openFile("stripped2/consumerJava/Main.java") }
             takeScreenshot("afterStripped2LibAConsumerJavaOpenFile")
@@ -89,4 +114,10 @@ class ProtobufResolveTest : IdeStarterBaseProjectTest() {
         }
       }
   }
+
+  private fun <T : CommandChain> T.assertCurrentFileDirectory(qualifiedName: String): T {
+    addCommand("${CMD_PREFIX}assertCurrentFileDirectory $qualifiedName")
+    return this
+  }
+
 }
