@@ -31,12 +31,12 @@ import org.jetbrains.bazel.progress.withSubtask
 import org.jetbrains.bazel.scala.sdk.ScalaSdk
 import org.jetbrains.bazel.scala.sdk.scalaSdkExtension
 import org.jetbrains.bazel.scala.sdk.scalaSdkExtensionExists
+import org.jetbrains.bazel.sync.refreshVfsAfterBazelBuild
 import org.jetbrains.bazel.sync.scope.FullProjectSync
 import org.jetbrains.bazel.sync.scope.ProjectSyncScope
 import org.jetbrains.bazel.sync.workspace.BazelResolvedWorkspace
 import org.jetbrains.bazel.sync.workspace.BazelWorkspaceResolveService
 import org.jetbrains.bazel.sync.workspace.languages.java.sourceRoot.DefaultJvmPackagePrefixCalculator
-import org.jetbrains.bazel.sync.workspace.mapper.normal.refreshVfsAfterBazelBuild
 import org.jetbrains.bazel.target.targetUtils
 import org.jetbrains.bazel.workspacemodel.entities.JavaModule
 import org.jetbrains.bazel.workspacemodel.entities.Library
@@ -281,7 +281,7 @@ internal class CollectProjectDetailsTask(
       }
     addBspFetchedScalaSdks()
 
-    refreshVfsAfterBazelBuild()
+    refreshVfsAfterBazelBuild(project)
   }
 
   private suspend fun addBspFetchedJdks() =

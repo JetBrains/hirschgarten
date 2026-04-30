@@ -8,7 +8,6 @@ import com.intellij.openapi.util.io.NioFiles
 import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.openapi.vfs.VfsUtilCore
 import com.intellij.openapi.vfs.VirtualFile
-import com.intellij.openapi.vfs.VirtualFileManager
 import com.intellij.openapi.vfs.VirtualFileVisitor
 import com.intellij.openapi.vfs.newvfs.RefreshQueue
 import com.intellij.openapi.vfs.newvfs.impl.NullVirtualFile
@@ -17,7 +16,6 @@ import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.withContext
-import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.commons.BazelInfo
 import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.config.rootDir
@@ -36,11 +34,22 @@ internal class DefaultBazelOutputFileHardLinks(
   private val project: Project,
   bazelInfo: BazelInfo,
 ): BazelOutFileHardLinks {
-  private val cacheDir: Path = project.getProjectDataPath("bazel-out-hardlink")
+  private val bazelOutputBase: Path = bazelInfo.outputBase
+
+  /**
+   * We can only create hard links in the same filesystem and same partition as Bazel's output base (BAZEL-3113).
+   * To guarantee this we create hard links in Bazel's output base itself, see [Bazel docs](https://bazel.build/remote/output-directories#layout-diagram).
+   * A side effect of this is that upon `bazel clean --expunge` in a workspace, the respective hard links will be deleted,
+   * thereby preventing overly high disk usage. However, in that case the IDE will get red code.
+   * Regular `bazel clean` or `--remote_download_minimal` won't have an effect as they only affect execroot, not the whole output base.
+   */
+  private val cacheDir: Path = bazelOutputBase.resolve("intellij-hardlinks")
   private val hardLinksDuringSync = ConcurrentHashMap<Path, Deferred<HardLink>>()
-  private val bazelOutputPath: Path = bazelInfo.outputBase
   private val syncRunning = AtomicBoolean(false)
 
+  @Volatile
+  override var allHardLinksCreatedSuccessfully: Boolean = true
+    private set
   private class HardLink(val virtualFile: VirtualFile, val requiresRefresh: Boolean) {
     val isNull: Boolean
       get() = virtualFile == NullVirtualFile.INSTANCE
@@ -69,9 +78,9 @@ internal class DefaultBazelOutputFileHardLinks(
     val file = withContext(Dispatchers.IO) { originalFile.toRealPath() }
     if (file.startsWith(project.rootDir.toNioPath())) return originalFile  // It's a source file, no need to hard link
 
-    // Hardlink files only under `bazel-out` directory
-    if (!file.startsWith(bazelOutputPath)) return originalFile
-    val bazelOutRelativePath = file.relativeTo(bazelOutputPath)
+    // Hardlink only Bazel output files
+    if (!file.startsWith(bazelOutputBase)) return originalFile
+    val bazelOutRelativePath = file.relativeTo(bazelOutputBase)
 
     /**
      * Don't recreate the hard link unnecessarily to avoid spamming the file watcher (and because creating a link is expensive).
@@ -100,6 +109,7 @@ internal class DefaultBazelOutputFileHardLinks(
           }
           catch (e: Throwable) {
             logger.warn("Failed to create hard link for $file", e)
+            allHardLinksCreatedSuccessfully = false
             HardLink.NULL
           }
         }
@@ -111,6 +121,7 @@ internal class DefaultBazelOutputFileHardLinks(
 
   override fun onBeforeSync() {
     syncRunning.set(true)
+    allHardLinksCreatedSuccessfully = true
   }
 
   override suspend fun onAfterSync(projectModelUpdated: Boolean) {
@@ -161,23 +172,12 @@ internal class DefaultBazelOutputFileHardLinks(
       toDelete.forEach { it.delete(DefaultBazelOutputFileHardLinks) }
     }
 
-    // Drop the old directory because the name is changed. Delete this code in 26.2
+    // Drop the old cache directories because the name is changed. Delete this code in 26.2
     NioFiles.deleteRecursively(project.getProjectDataPath("bazelOutputFilesHardLinks"))
+    NioFiles.deleteRecursively(project.getProjectDataPath("bazel-out-hardlink"))
   }
 
   companion object {
     private val logger = logger<DefaultBazelOutputFileHardLinks>()
   }
-}
-
-@ApiStatus.Internal
-fun refreshVfsAfterBazelBuild() {
-  if (BazelFeatureFlags.hardLinkOutputFiles) {
-    // asyncRefresh() refreshes the whole VFS, which includes all projects that have ever been opened in the IDE, not just the current one.
-    // That can lead to long UI freezes, which is why asyncRefresh() is now deprecated in IJ platform.
-    // On the other hand, BazelOutputFileHardLinks handles VFS refresh granularly:
-    // only on project sync, and only for changed Bazel outputs that are used in the current project.
-    return
-  }
-  VirtualFileManager.getInstance().asyncRefresh()
 }
