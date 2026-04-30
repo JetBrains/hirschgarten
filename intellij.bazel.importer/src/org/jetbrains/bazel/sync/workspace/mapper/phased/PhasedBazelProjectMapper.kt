@@ -17,7 +17,6 @@ import org.jetbrains.bazel.label.DependencyLabel
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.label.assumeResolved
 import org.jetbrains.bazel.sync.workspace.BazelResolvedWorkspace
-import org.jetbrains.bazel.sync.workspace.languages.jvm.JVMLanguagePluginParser
 import org.jetbrains.bazel.sync.workspace.mapper.BazelResolvedWorkspaceBuilder
 import org.jetbrains.bazel.sync.workspace.targetKind.TargetKindService
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
@@ -90,7 +89,6 @@ class PhasedBazelProjectMapper(private val bazelPathsResolver: BazelPathsResolve
         SourceItem(
           path = it,
           generated = false,
-          jvmPackagePrefix = JVMLanguagePluginParser.calculateJVMSourceRootAndAdditionalData(it),
         )
       }
     val itemsFromDependencies = srcs.calculateModuleDependencies(project).flatMap { it.calculateSources(project) }

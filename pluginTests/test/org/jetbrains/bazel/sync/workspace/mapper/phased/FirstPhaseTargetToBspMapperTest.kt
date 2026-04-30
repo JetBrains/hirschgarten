@@ -231,14 +231,20 @@ class FirstPhaseTargetToBspMapperTest : WorkspaceModelBaseTest() {
               ),
             sources =
               listOf(
-                SourceItem(target1Src1, false, "com.example"),
-                SourceItem(target1Src2, false, "com.example.a"),
+                SourceItem(target1Src1, false),
+                SourceItem(target1Src2, false),
               ),
             resources =
               listOf(
                 target1Resource1,
                 target1Resource2,
               ),
+            //data = listOf(
+            //  JvmPackagePrefixData(mapOf(
+            //    target1Src1 to "com.example",
+            //    target1Src2 to "com.example.a",
+            //  ))
+            //),
             baseDirectory = workspaceRoot.resolve(Path("target1")),
             generatorName = "generator_name_example",
           ),
@@ -254,11 +260,17 @@ class FirstPhaseTargetToBspMapperTest : WorkspaceModelBaseTest() {
               ),
             sources =
               listOf(
-                SourceItem(target2Src1, false, "com.example"),
-                SourceItem(target2Src2, false, "com.example"),
+                SourceItem(target2Src1, false),
+                SourceItem(target2Src2, false),
               ),
             resources = emptyList(),
             baseDirectory = workspaceRoot.resolve(Path("target2")),
+            //data = listOf(
+            //  JvmPackagePrefixData(mapOf(
+            //    target2Src1 to "com.example",
+            //    target2Src2 to "com.example",
+            //  ))
+            //),
           ),
           // // target3
           RawBuildTarget(
@@ -332,10 +344,16 @@ class FirstPhaseTargetToBspMapperTest : WorkspaceModelBaseTest() {
               ),
             sources =
               listOf(
-                SourceItem(target7Src1, false, "com.example"),
-                SourceItem(target7Src2, false, "com.example.a"),
+                SourceItem(target7Src1, false),
+                SourceItem(target7Src2, false),
               ),
             resources = emptyList(),
+            //data = listOf(
+            //  JvmPackagePrefixData(mapOf(
+            //    target7Src1 to "com.example",
+            //    target7Src2 to "com.example.a",
+            //  ))
+            //),
             baseDirectory = workspaceRoot.resolve(Path("target7")),
           ),
           // // target8: merging its own source and the sources from filegroupSources dependency
@@ -351,10 +369,10 @@ class FirstPhaseTargetToBspMapperTest : WorkspaceModelBaseTest() {
             sources =
               listOf(
                 // note: the direct mapping for "//target8:src1.kt" becomes workspaceRoot/target8/src1.kt
-                SourceItem(target8Src1, false, "com.example"),
+                SourceItem(target8Src1, false),
                 // then the dependency from filegroupSources (its own direct source items)
-                SourceItem(fgSrc1, false, "com.fg"),
-                SourceItem(fgSrc2, false, "com.fg"),
+                SourceItem(fgSrc1, false),
+                SourceItem(fgSrc2, false),
               ),
             resources =
               listOf(
@@ -363,6 +381,11 @@ class FirstPhaseTargetToBspMapperTest : WorkspaceModelBaseTest() {
                 workspaceRoot.resolve("filegroupResources/file1.txt"),
                 workspaceRoot.resolve("filegroupResources/file2.txt"),
               ),
+            //data = listOf(
+            //  JvmPackagePrefixData(mapOf(
+            //    target8Src1 to "com.example"
+            //  ))
+            //),
             baseDirectory = workspaceRoot.resolve(Path("target8")),
           ),
           RawBuildTarget(
@@ -376,10 +399,16 @@ class FirstPhaseTargetToBspMapperTest : WorkspaceModelBaseTest() {
               ),
             sources =
               listOf(
-                SourceItem(fgSrc1, false, "com.fg"),
-                SourceItem(fgSrc2, false, "com.fg"),
+                SourceItem(fgSrc1, false),
+                SourceItem(fgSrc2, false),
               ),
             resources = emptyList(),
+            //data = listOf(
+            //  JvmPackagePrefixData(mapOf(
+            //    fgSrc1 to "com.fg",
+            //    fgSrc2 to "com.fg",
+            //  ))
+            //),
             baseDirectory = workspaceRoot.resolve(Path("filegroupSources")),
           ),
         )

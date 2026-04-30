@@ -35,6 +35,7 @@ import org.jetbrains.bazel.sync.scope.FullProjectSync
 import org.jetbrains.bazel.sync.scope.ProjectSyncScope
 import org.jetbrains.bazel.sync.workspace.BazelResolvedWorkspace
 import org.jetbrains.bazel.sync.workspace.BazelWorkspaceResolveService
+import org.jetbrains.bazel.sync.workspace.languages.java.sourceRoot.DefaultJvmPackagePrefixCalculator
 import org.jetbrains.bazel.sync.workspace.mapper.normal.refreshVfsAfterBazelBuild
 import org.jetbrains.bazel.target.targetUtils
 import org.jetbrains.bazel.workspacemodel.entities.JavaModule
@@ -194,6 +195,12 @@ internal class CollectProjectDetailsTask(
 
         val libraries = projectDetails.libraries.map { Library.fromLibraryItem(it, project) }
 
+        val jvmPackagePrefixes = bspTracer.spanBuilder("calculate.jvm.package.prefixes").use {
+          DefaultJvmPackagePrefixCalculator(project).also {
+            it.calculate(workspace.targets)
+          }
+        }
+
         val targetIdToModuleDetails =
           bspTracer.spanBuilder("create.module.details.ms").use {
             val transformer = ProjectDetailsToModuleDetailsTransformer(projectDetails)
@@ -216,6 +223,7 @@ internal class CollectProjectDetailsTask(
                 projectDetails = projectDetails,
                 targetIdToModuleDetails = targetIdToModuleDetails,
                 targetIdToTargetInfo = targetIdToTargetInfo,
+                packagePrefixes = jvmPackagePrefixes,
                 // TODO: remove usage, https://youtrack.jetbrains.com/issue/BAZEL-2015
                 fileToTargets = workspace.fileToTarget,
                 projectBasePath = projectBasePath,
@@ -232,6 +240,7 @@ internal class CollectProjectDetailsTask(
               CompiledSourceCodeInsideJarExcludeTransformer().transform(
                 targetIdToModuleDetails.values,
                 projectDetails.libraries,
+                jvmPackagePrefixes
               )
             } else {
               null

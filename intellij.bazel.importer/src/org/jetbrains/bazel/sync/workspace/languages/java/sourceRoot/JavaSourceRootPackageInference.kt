@@ -3,7 +3,6 @@ package org.jetbrains.bazel.sync.workspace.languages.java.sourceRoot
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.commons.constants.Constants
 import org.jetbrains.bazel.sync.workspace.languages.JvmPackageResolver
-import org.jetbrains.bsp.protocol.SourceItem
 import java.nio.file.Path
 import kotlin.io.path.extension
 
@@ -21,45 +20,52 @@ import kotlin.io.path.extension
 @ApiStatus.Internal
 class JavaSourceRootPackageInference(val packageResolver: JvmPackageResolver) {
 
-  fun inferPackages(sources: List<SourceItem>) {
-    if (sources.isEmpty()) {
-      return
+  fun inferPackages(paths: List<Path>): Map<Path, String> {
+    if (paths.isEmpty()) {
+      return emptyMap()
     }
 
-    val supportedSources = sources.filter { Constants.JVM_LANGUAGES_EXTENSIONS.contains(it.path.extension) }
+    val supportedSources = paths.filter { Constants.JVM_LANGUAGES_EXTENSIONS.contains(it.extension) }
     if (supportedSources.isEmpty()) {
-      return
+      return emptyMap()
     }
 
     if (supportedSources.size == 1) {
-      val firstSource = supportedSources.first()
-      firstSource.jvmPackagePrefix = packageResolver.calculateJvmPackagePrefix(firstSource.path)
-      return
+      val path = supportedSources.first()
+      val prefix = packageResolver.calculateJvmPackagePrefix(path)
+                   ?: return emptyMap()
+      return mapOf(path to prefix)
     }
 
     val tree = SourceItemPropagationPrefixTree()
-    for (item in supportedSources) {
-      val segments = item.path.asSequence()
-        .map { it.toString() }
-      tree.push(segments, item)
+    for (path in supportedSources) {
+      tree.push(path)
     }
 
     tree.propagateJavaPackages { packageResolver.calculateJvmPackagePrefix(it) }
+    return tree.jvmPackagePrefixes
   }
 }
 
 internal class SourceItemPropagationPrefixTree {
-  private data class Node(
+  val jvmPackagePrefixes = HashMap<Path, String>()
+
+  private class Node(
     val segment: String,
-    var item: SourceItem?,
     val children: MutableList<Node> = mutableListOf(),
-  )
+  ) {
+    var pathForPrefixCalculation: Path? = null
+  }
 
-  private var root = Node("", null)
+  private val root = Node("")
 
-  fun push(path: Sequence<String>, data: SourceItem) {
+  fun push(path: Path) {
+    val segments = path.map { it.toString() }
+    if (segments.isEmpty())
+      return
+
     var current = root
-    for (segment in path) {
+    for (segment in segments) {
       var node: Node? = null
       for (child in current.children) {
         if (child.segment == segment) {
@@ -68,26 +74,24 @@ internal class SourceItemPropagationPrefixTree {
         }
       }
       if (node == null) {
-        node = Node(segment, null)
+        node = Node(segment)
         current.children.add(node)
       }
       current = node
     }
-    current.item = data
+    current.pathForPrefixCalculation = path
   }
 
   fun propagateJavaPackages(slowPackageResolver: (item: Path) -> String?) {
     val queue = ArrayDeque<Node>()
     queue.add(root)
-    while (true) {
-      val node = queue.removeFirstOrNull()
-      if (node == null) {
-        break
-      }
+    while (queue.isNotEmpty()) {
+      val node = queue.removeFirst()
+
       // we want to start propagation from roots
       // so if we find subtree whose child has existing file
       // we start propagation from it
-      if (node.children.any { it.item != null && it.item?.jvmPackagePrefix == null }) {
+      if (node.children.any { it.pathForPrefixCalculation != null && !jvmPackagePrefixes.containsKey(it.pathForPrefixCalculation) }) {
         // propagate in every subtree to handle
         // having multiple root packages in single source root
         //    src/com/jetbrains/...
@@ -103,27 +107,23 @@ internal class SourceItemPropagationPrefixTree {
   private fun propagateInSubtree(subtreeRoot: Node, slowPackageResolver: (item: Path) -> String?) {
     // find subtree package reference
     // it can be any file in specific directory
-    val rootSourceFile = subtreeRoot.children.firstOrNull { it.item != null }?.item ?: return
-    val resolvedPackage = slowPackageResolver(rootSourceFile.path) ?: return
+    val rootSourceFile = subtreeRoot.children.firstNotNullOfOrNull { it.pathForPrefixCalculation } ?: return
+    val resolvedPackage = slowPackageResolver(rootSourceFile) ?: return
     // propagate all files in subtree in relation to root source file
     propagateFromRootSourceFileInSubtree(subtreeRoot, rootSourceFile, resolvedPackage)
   }
 
-  private fun propagateFromRootSourceFileInSubtree(subtreeRoot: Node, rootSourceFile: SourceItem, resolvedPackage: String) {
-    val rootPath = rootSourceFile.path.parent
+  private fun propagateFromRootSourceFileInSubtree(subtreeRoot: Node, rootSourceFile: Path, resolvedPackage: String) {
+    val rootPath = rootSourceFile.parent
 
     val queue = ArrayDeque<Node>()
     queue.add(subtreeRoot)
 
-    while (true) {
-      val node = queue.removeFirstOrNull()
-      if (node == null) {
-        break
-      }
-      val item = node.item
-      if (item != null) {
-        val currentParentPath = item.path.parent
-        item.jvmPackagePrefix = calculatePackageFromPaths(rootPath, currentParentPath, resolvedPackage)
+    while (queue.isNotEmpty()) {
+      val node = queue.removeFirst()
+      val path = node.pathForPrefixCalculation
+      if (path != null) {
+        jvmPackagePrefixes[path] = calculatePackageFromPaths(rootPath, path.parent, resolvedPackage)
       }
 
       queue.addAll(node.children)

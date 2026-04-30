@@ -23,19 +23,12 @@ import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.label.ResolvedLabel
 import org.jetbrains.bazel.label.label
 import org.jetbrains.bazel.label.toDependencyLabel
-import org.jetbrains.bazel.languages.projectview.projectView
 import org.jetbrains.bazel.performance.measure
 import org.jetbrains.bazel.server.model.generatedSourcesList
 import org.jetbrains.bazel.server.model.sourcesList
 import org.jetbrains.bazel.sync.createOutputFileHardLinks
 import org.jetbrains.bazel.sync.workspace.graph.DependencyGraph
-import org.jetbrains.bazel.sync.workspace.languages.DefaultJvmPackageResolver
 import org.jetbrains.bazel.sync.workspace.languages.LanguagePlugin
-import org.jetbrains.bazel.sync.workspace.languages.java.sourceRoot.JavaSourceRootPackageInference
-import org.jetbrains.bazel.sync.workspace.languages.java.sourceRoot.prefix.JavaSourceRootPatternContributor
-import org.jetbrains.bazel.sync.workspace.languages.java.sourceRoot.prefix.SourcePatternEval
-import org.jetbrains.bazel.sync.workspace.languages.java.sourceRoot.prefix.SourceRootPattern
-import org.jetbrains.bazel.sync.workspace.languages.java.sourceRoot.projectview.javaSROEnable
 import org.jetbrains.bazel.sync.workspace.mapper.normal.MavenCoordinatesResolver
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bsp.protocol.BazelServerFacade
@@ -44,13 +37,11 @@ import org.jetbrains.bsp.protocol.JvmBuildTarget
 import org.jetbrains.bsp.protocol.JvmDependency
 import org.jetbrains.bsp.protocol.LibraryItem
 import org.jetbrains.bsp.protocol.MavenCoordinates
-import org.jetbrains.bsp.protocol.SourceItem
 import org.jetbrains.bsp.protocol.allJars
 import java.nio.charset.StandardCharsets
 import java.nio.file.Path
 import java.nio.file.Paths
 import java.util.concurrent.ConcurrentHashMap
-import kotlin.collections.plus
 import kotlin.io.path.exists
 import kotlin.io.path.extension
 import kotlin.io.path.inputStream
@@ -96,18 +87,11 @@ class JavaLanguagePlugin: LanguagePlugin {
     private val mixins: List<JvmLanguagePluginMixin.Mapper> = JvmLanguagePluginMixin.mixins.map { it.createProjectMapper(project, server) }
 
     private val bazelPathsResolver = server.bazelPathsResolver
-    private val packageResolver = DefaultJvmPackageResolver()
     private val jdkResolver = JdkResolver(bazelPathsResolver)
     private val outFilesHardLink = server.outFileHardLinks
 
-    private val packageInference = JavaSourceRootPackageInference(packageResolver)
     private var jdk: Jdk? = null
-
-    private var cachedJavaSROEnable = false
-    private var cachedSROIncludeMatchers: List<SourceRootPattern> = listOf()
-    private var cachedSROExcludeMatchers: List<SourceRootPattern> = listOf()
     private var toolchainTargets: Map<Label, TargetInfo> = mapOf()
-
     private var extraLibDependencies: Map<Label, List<DependencyLabel>> = mapOf()
     private var toolchainDependencies: Map<Label, List<DependencyLabel>> = mapOf()
     private var allLibraries: Map<Label, List<LibraryItem>> = mapOf()
@@ -122,14 +106,6 @@ class JavaLanguagePlugin: LanguagePlugin {
       toolchainTargets = graph.idToTargetInfo.filter { it.value.hasJavaToolchainInfo() }
       val ideJavaHomeOverride = server.workspaceContext.ideJavaHomeOverride
       jdk = ideJavaHomeOverride?.let { Jdk(javaHome = it) } ?: jdkResolver.resolve(graph.idToTargetInfo, repoMapping)
-
-      cachedJavaSROEnable = project.projectView().javaSROEnable
-
-      val patterns = JavaSourceRootPatternContributor.ep
-        .extensionList
-        .map { it.getPatterns(project) }
-      cachedSROIncludeMatchers = patterns.flatMap { it.includes }
-      cachedSROExcludeMatchers = patterns.flatMap { it.excludes }
 
       calculateAllLibraries(
         graph,
@@ -272,35 +248,6 @@ class JavaLanguagePlugin: LanguagePlugin {
       repoMapping: RepoMapping,
     ): Map<Label, List<LibraryItem>> {
       return concatenateMaps(mixins.map { it.toolchainLibraries(targetsToImport, repoMapping) })
-    }
-
-    override suspend fun transformSources(sources: List<SourceItem>): List<SourceItem> {
-      val result = sources.filter { src ->
-        !src.generated || src.path.extension != "srcjar"
-      }
-
-      if (cachedJavaSROEnable) {
-        val (matched, unmatched) = SourcePatternEval.evalSources(
-          sources = result,
-          includes = cachedSROIncludeMatchers,
-          excludes = cachedSROExcludeMatchers,
-        )
-        if (matched.isNotEmpty()) {
-          matched
-            .groupBy { it.path.extension }
-            .forEach { packageInference.inferPackages(it.value) }
-        }
-        for (item in unmatched) {
-          item.jvmPackagePrefix = packageResolver.calculateJvmPackagePrefix(item.path)
-        }
-      }
-      else {
-        for (item in result) {
-          item.jvmPackagePrefix = packageResolver.calculateJvmPackagePrefix(item.path)
-        }
-      }
-
-      return result
     }
 
     private fun getMainClass(jvmTargetInfo: JvmTargetInfo): String? =
@@ -733,14 +680,14 @@ class JavaLanguagePlugin: LanguagePlugin {
   }
 
   companion object {
-    fun <K, V> concatenateMaps(maps: Collection<Map<K, List<V>>>): Map<K, List<V>> =
-      maps
-        .flatMap { it.keys }
-        .distinct()
-        .associateWith { key ->
-          maps.flatMap { it[key].orEmpty() }
-        }
-
     const val OUTPUT_JARS_SUFFIX = "_output_jars"
   }
 }
+
+private fun <K, V> concatenateMaps(maps: Collection<Map<K, List<V>>>): Map<K, List<V>> =
+  maps
+    .flatMap { it.keys }
+    .distinct()
+    .associateWith { key ->
+      maps.flatMap { it[key].orEmpty() }
+    }

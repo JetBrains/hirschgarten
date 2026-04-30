@@ -7,9 +7,10 @@ import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.languages.projectview.projectView
 import org.jetbrains.bazel.languages.projectview.testSources
+import org.jetbrains.bazel.sync.workspace.languages.java.sourceRoot.JvmPackagePrefixCalculator
+import org.jetbrains.bazel.sync.workspace.languages.java.sourceRoot.JvmPackagePrefixes
 import org.jetbrains.bazel.workspace.indexAdditionalFiles.ProjectViewGlobSet
 import org.jetbrains.bazel.workspacemodel.entities.JavaSourceRoot
-import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.RawBuildTarget
 
 @ApiStatus.Internal
@@ -21,16 +22,20 @@ val JAVA_RESOURCE_ROOT_TYPE = SourceRootTypeId("java-resource")
 internal val JAVA_TEST_RESOURCE_ROOT_TYPE = SourceRootTypeId("java-test-resource")
 
 @ApiStatus.Internal
-class SourcesItemToJavaSourceRootTransformer(project: Project) : WorkspaceModelEntityPartitionTransformer<RawBuildTarget, JavaSourceRoot> {
+class SourcesItemToJavaSourceRootTransformer(
+  project: Project,
+  private val packagePrefixes: JvmPackagePrefixCalculator
+) : WorkspaceModelEntityPartitionTransformer<RawBuildTarget, JavaSourceRoot> {
   private val testSourcesGlob = ProjectViewGlobSet(project.rootDir.toNioPath(), project.projectView().testSources)
 
   override fun transform(inputEntity: RawBuildTarget): List<JavaSourceRoot> {
+    val jvmPackagePrefixes = packagePrefixes.get(inputEntity)
     return SourceItemToSourceRootTransformer
       .transform(inputEntity.sources)
-      .map { toJavaSourceRoot(it, inputEntity) }
+      .map { toJavaSourceRoot(it, jvmPackagePrefixes, inputEntity) }
   }
 
-  private fun toJavaSourceRoot(sourceRoot: SourceRoot, buildTarget: BuildTarget): JavaSourceRoot {
+  private fun toJavaSourceRoot(sourceRoot: SourceRoot, prefixes: JvmPackagePrefixes, buildTarget: RawBuildTarget): JavaSourceRoot {
     val rootType = if (buildTarget.kind.ruleType == RuleType.TEST || testSourcesGlob.matches(sourceRoot.sourcePath)) {
       JAVA_TEST_SOURCE_ROOT_TYPE
     }
@@ -40,7 +45,7 @@ class SourcesItemToJavaSourceRootTransformer(project: Project) : WorkspaceModelE
     return JavaSourceRoot(
       sourcePath = sourceRoot.sourcePath,
       generated = sourceRoot.generated,
-      packagePrefix = sourceRoot.jvmPackagePrefix ?: "",
+      packagePrefix = prefixes[sourceRoot.sourcePath] ?: "",
       rootType = rootType,
     )
   }

@@ -8,6 +8,8 @@ import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.ModuleDetails
 import org.jetbrains.bazel.sync.environment.getProjectRootDirOrThrow
 import org.jetbrains.bazel.sync.environment.projectCtx
+import org.jetbrains.bazel.sync.workspace.languages.java.sourceRoot.JvmPackagePrefixCalculator
+import org.jetbrains.bazel.sync.workspace.languages.java.sourceRoot.JvmPackagePrefixes
 import org.jetbrains.bazel.workspacemodel.entities.ContentRoot
 import org.jetbrains.bazel.workspacemodel.entities.GenericModuleInfo
 import org.jetbrains.bazel.workspacemodel.entities.JavaAddendum
@@ -29,6 +31,7 @@ class ModuleDetailsToJavaModuleTransformer(
   targetsMap: Map<Label, BuildTarget>,
   fileToTargets: Map<Path, List<Label>>,
   projectBasePath: Path,
+  packagePrefixes: JvmPackagePrefixCalculator,
   private val project: Project,
 ) {
   private val bspModuleDetailsToModuleTransformer = BspModuleDetailsToModuleTransformer(targetsMap, project)
@@ -36,7 +39,7 @@ class ModuleDetailsToJavaModuleTransformer(
   private val resourcesItemToJavaResourceRootTransformer = ResourcesItemToJavaResourceRootTransformer(project.bazelProjectName)
   private val javaModuleToDummyJavaModulesTransformerHACK =
     JavaModuleToDummyJavaModulesTransformerHACK(projectBasePath, fileToTargets, project)
-  private val sourcesItemToJavaSourceRootTransformer = SourcesItemToJavaSourceRootTransformer(project)
+  private val sourcesItemToJavaSourceRootTransformer = SourcesItemToJavaSourceRootTransformer(project, packagePrefixes)
 
   fun transform(inputEntity: ModuleDetails): List<JavaModule> {
     val javaModule =

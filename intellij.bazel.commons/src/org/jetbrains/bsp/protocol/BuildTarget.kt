@@ -98,7 +98,6 @@ data class ScalaBuildTarget(
   val scalacOptions: List<String>,
 ) : BuildTargetData
 
-// TODO: change to interface
 @ClassDiscriminator(4)
 @ApiStatus.Internal
 data class JvmBuildTarget(

@@ -28,10 +28,6 @@ interface LanguagePlugin {
       repoMapping: RepoMapping,
     ) {}
 
-    suspend fun transformSources(
-      sources: List<SourceItem>
-    ): List<SourceItem> = sources
-
     suspend fun createBuildTargetData(
       target: TargetInfo,
       targetsToImport: Map<Label, TargetInfo>,

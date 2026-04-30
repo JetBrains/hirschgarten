@@ -4,7 +4,6 @@ import io.kotest.matchers.comparables.shouldBeLessThan
 import io.kotest.matchers.shouldBe
 import org.jetbrains.bazel.sync.workspace.languages.JvmPackageResolver
 import org.jetbrains.bazel.sync.workspace.languages.java.sourceRoot.JavaSourceRootPackageInference
-import org.jetbrains.bsp.protocol.SourceItem
 import org.junit.jupiter.api.Test
 import java.nio.file.Path
 
@@ -22,16 +21,16 @@ class JavaSourceRootPackageInferenceTest {
       "src/main/java/my/package/subpackage/subpkg/SubpackageClass.java" to "my.package.subpackage.subpkg",
     )
 
-    JavaSourceRootPackageInference(packageResolver = resolver)
+    val inferred = JavaSourceRootPackageInference(packageResolver = resolver)
       .inferPackages(sources)
 
-    sources[0].jvmPackagePrefix shouldBe "my.package"
-    sources[1].jvmPackagePrefix shouldBe "my.package"
-    sources[2].jvmPackagePrefix shouldBe "my.package"
-    sources[3].jvmPackagePrefix shouldBe "my.package.subpackage"
-    sources[4].jvmPackagePrefix shouldBe "my.package.subpackage"
-    sources[5].jvmPackagePrefix shouldBe "my.package.subpackage"
-    sources[6].jvmPackagePrefix shouldBe "my.package.subpackage.subpkg"
+    inferred[sources[0]] shouldBe "my.package"
+    inferred[sources[1]] shouldBe "my.package"
+    inferred[sources[2]] shouldBe "my.package"
+    inferred[sources[3]] shouldBe "my.package.subpackage"
+    inferred[sources[4]] shouldBe "my.package.subpackage"
+    inferred[sources[5]] shouldBe "my.package.subpackage"
+    inferred[sources[6]] shouldBe "my.package.subpackage.subpkg"
   }
 
   @Test
@@ -42,12 +41,12 @@ class JavaSourceRootPackageInferenceTest {
       "src/com/pkg/sub/Sub2.java" to "com.other_pkg",
     )
 
-    JavaSourceRootPackageInference(packageResolver = resolver)
+    val inferred = JavaSourceRootPackageInference(packageResolver = resolver)
       .inferPackages(sources)
 
-    sources[0].jvmPackagePrefix shouldBe "com.pkg"
-    sources[1].jvmPackagePrefix shouldBe "com.pkg.sub"
-    sources[2].jvmPackagePrefix shouldBe "com.pkg.sub"
+    inferred[sources[0]] shouldBe "com.pkg"
+    inferred[sources[1]] shouldBe "com.pkg.sub"
+    inferred[sources[2]] shouldBe "com.pkg.sub"
   }
 
   @Test
@@ -58,12 +57,12 @@ class JavaSourceRootPackageInferenceTest {
       "src/main/java/com/company/project/module/feature/impl/sub/deep/DeepClass.java" to "com.company.project.module.feature.impl.sub.deep",
     )
 
-    JavaSourceRootPackageInference(packageResolver = resolver)
+    val inferred = JavaSourceRootPackageInference(packageResolver = resolver)
       .inferPackages(sources)
 
-    sources[0].jvmPackagePrefix shouldBe "com.company.project.module.feature.impl"
-    sources[1].jvmPackagePrefix shouldBe "com.company.project.module.feature.impl.sub"
-    sources[2].jvmPackagePrefix shouldBe "com.company.project.module.feature.impl.sub.deep"
+    inferred[sources[0]] shouldBe "com.company.project.module.feature.impl"
+    inferred[sources[1]] shouldBe "com.company.project.module.feature.impl.sub"
+    inferred[sources[2]] shouldBe "com.company.project.module.feature.impl.sub.deep"
   }
 
   @Test
@@ -73,11 +72,11 @@ class JavaSourceRootPackageInferenceTest {
       "AnotherRoot.java" to "",
     )
 
-    JavaSourceRootPackageInference(packageResolver = resolver)
+    val inferred = JavaSourceRootPackageInference(packageResolver = resolver)
       .inferPackages(sources)
 
-    sources[0].jvmPackagePrefix shouldBe ""
-    sources[1].jvmPackagePrefix shouldBe ""
+    inferred[sources[0]] shouldBe ""
+    inferred[sources[1]] shouldBe ""
   }
 
   @Test
@@ -88,27 +87,27 @@ class JavaSourceRootPackageInferenceTest {
       "src/main/scala/com/pkg/ScalaClass.scala" to "com.pkg",
     )
 
-    JavaSourceRootPackageInference(packageResolver = resolver)
+    val inferred = JavaSourceRootPackageInference(packageResolver = resolver)
       .inferPackages(sources)
 
-    sources[0].jvmPackagePrefix shouldBe "com.pkg"
-    sources[1].jvmPackagePrefix shouldBe "com.pkg"
-    sources[2].jvmPackagePrefix shouldBe "com.pkg"
+    inferred[sources[0]] shouldBe "com.pkg"
+    inferred[sources[1]] shouldBe "com.pkg"
+    inferred[sources[2]] shouldBe "com.pkg"
   }
 
   @Test
   fun `test package resolver returns null`() {
     val sources = listOf(
-      SourceItem(path = Path.of("src/main/java/Class.java"), generated = false),
+      Path.of("src/main/java/Class.java"),
     )
     val resolver = object : JvmPackageResolver {
       override fun calculateJvmPackagePrefix(source: Path, multipleLines: Boolean): String? = null
     }
 
-    JavaSourceRootPackageInference(packageResolver = resolver)
+    val inferred = JavaSourceRootPackageInference(packageResolver = resolver)
       .inferPackages(sources)
 
-    sources[0].jvmPackagePrefix shouldBe null
+    inferred.size shouldBe 0
   }
 
   @Test
@@ -119,12 +118,12 @@ class JavaSourceRootPackageInferenceTest {
       "src/com/pkg/Class3.java" to "com.different",
     )
 
-    JavaSourceRootPackageInference(packageResolver = resolver)
+    val inferred = JavaSourceRootPackageInference(packageResolver = resolver)
       .inferPackages(sources)
 
-    sources[0].jvmPackagePrefix shouldBe "com.pkg"
-    sources[1].jvmPackagePrefix shouldBe "com.pkg"
-    sources[2].jvmPackagePrefix shouldBe "com.pkg"
+    inferred[sources[0]] shouldBe "com.pkg"
+    inferred[sources[1]] shouldBe "com.pkg"
+    inferred[sources[2]] shouldBe "com.pkg"
   }
 
   @Test
@@ -136,13 +135,13 @@ class JavaSourceRootPackageInferenceTest {
       "src/main/java/com/pkg2/sub/SubClass2.java" to "com.pkg2.sub",
     )
 
-    JavaSourceRootPackageInference(packageResolver = resolver)
+    val inferred = JavaSourceRootPackageInference(packageResolver = resolver)
       .inferPackages(sources)
 
-    sources[0].jvmPackagePrefix shouldBe "com.pkg1"
-    sources[1].jvmPackagePrefix shouldBe "com.pkg1.sub"
-    sources[2].jvmPackagePrefix shouldBe "com.pkg2"
-    sources[3].jvmPackagePrefix shouldBe "com.pkg2.sub"
+    inferred[sources[0]] shouldBe "com.pkg1"
+    inferred[sources[1]] shouldBe "com.pkg1.sub"
+    inferred[sources[2]] shouldBe "com.pkg2"
+    inferred[sources[3]] shouldBe "com.pkg2.sub"
   }
 
   @Test
@@ -152,11 +151,11 @@ class JavaSourceRootPackageInferenceTest {
       "src/subdir/Class2.java" to "subdir",
     )
 
-    JavaSourceRootPackageInference(packageResolver = resolver)
+    val inferred = JavaSourceRootPackageInference(packageResolver = resolver)
       .inferPackages(sources)
 
-    sources[0].jvmPackagePrefix shouldBe ""
-    sources[1].jvmPackagePrefix shouldBe "subdir"
+    inferred[sources[0]] shouldBe ""
+    inferred[sources[1]] shouldBe "subdir"
   }
 
   @Test
@@ -168,13 +167,13 @@ class JavaSourceRootPackageInferenceTest {
       "src/main/java/com/example/feature2/impl/ImplClass2.java" to "com.example.feature2.impl",
     )
 
-    JavaSourceRootPackageInference(packageResolver = resolver)
+    val inferred = JavaSourceRootPackageInference(packageResolver = resolver)
       .inferPackages(sources)
 
-    sources[0].jvmPackagePrefix shouldBe "com.example.feature1"
-    sources[1].jvmPackagePrefix shouldBe "com.example.feature1.impl"
-    sources[2].jvmPackagePrefix shouldBe "com.example.feature2"
-    sources[3].jvmPackagePrefix shouldBe "com.example.feature2.impl"
+    inferred[sources[0]] shouldBe "com.example.feature1"
+    inferred[sources[1]] shouldBe "com.example.feature1.impl"
+    inferred[sources[2]] shouldBe "com.example.feature2"
+    inferred[sources[3]] shouldBe "com.example.feature2.impl"
   }
 
   @Test
@@ -223,14 +222,14 @@ class JavaSourceRootPackageInferenceTest {
   private fun setupSources(
     vararg paths: Pair<String, String>,
     resolver: (pkgs: Map<Path, String>) -> JvmPackageResolver = { MockJvmPackageResolver(it) },
-  ): Pair<List<SourceItem>, JvmPackageResolver> {
-    val sources = paths.map { (path, _) -> SourceItem(path = Path.of(path), generated = false) }
+  ): Pair<List<Path>, JvmPackageResolver> {
+    val sources = paths.map { (path, _) -> Path.of(path) }
     val pkgs = paths.associate { (path, pkg) -> Path.of(path) to pkg }
     return sources to resolver(pkgs)
   }
 
   open class MockJvmPackageResolver(
-    private val pkgs: Map<Path, String>,
+    val pkgs: Map<Path, String>,
   ) : JvmPackageResolver {
     override fun calculateJvmPackagePrefix(source: Path, multipleLines: Boolean): String? = pkgs[source]
   }

@@ -8,6 +8,7 @@ import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.label.DependencyLabel
 import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.sync.workspace.languages.java.sourceRoot.JvmPackagePrefixes
 import org.jetbrains.bazel.workspace.model.test.framework.WorkspaceModelBaseTest
 import org.jetbrains.bazel.workspace.model.test.framework.createJavaModule
 import org.jetbrains.bazel.workspace.model.test.framework.createModuleDetails
@@ -64,17 +65,17 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
         languageClasses = setOf(LanguageClass.JAVA),
       ),
       baseDirectory = projectRoot,
-      data = listOf(JvmBuildTarget(javaHome, javaVersion)),
+      data = listOf(
+        JvmBuildTarget(javaHome, javaVersion),
+      ),
       sources = listOf(
         SourceItem(
           path = file1APath,
           generated = false,
-          jvmPackagePrefix = "${packageA1Path.name}.${packageA2Path.name}",
         ),
         SourceItem(
           path = file2APath,
           generated = false,
-          jvmPackagePrefix = "${packageA1Path.name}.${packageA2Path.name}",
         ),
       ),
       resources = listOf(resourceFilePath),
@@ -97,6 +98,14 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
         targetsMap,
         emptyMap(),
         projectBasePath,
+        MockJvmPrefixCalculator(
+          buildTargetId to JvmPackagePrefixes(
+            mapOf(
+              file1APath to "${packageA1Path.name}.${packageA2Path.name}",
+              file2APath to "${packageA1Path.name}.${packageA2Path.name}",
+            ),
+          ),
+        ),
         project,
       ).transform(moduleDetails).first()
 
@@ -193,6 +202,7 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
         targetsMap,
         emptyMap(),
         projectBasePath,
+        MockJvmPrefixCalculator(),
         project,
       ).transform(moduleDetails).first()
 
@@ -257,12 +267,10 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
         SourceItem(
           path = file1APath,
           generated = false,
-          jvmPackagePrefix = "${packageA1Path.name}.${packageA2Path.name}",
         ),
         SourceItem(
           path = file2APath,
           generated = false,
-          jvmPackagePrefix = "${packageA1Path.name}.${packageA2Path.name}",
         ),
       ),
       resources = listOf(resourceFilePath11, resourceFilePath12),
@@ -301,7 +309,6 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
         SourceItem(
           path = dir1CPath,
           generated = false,
-          jvmPackagePrefix = "${packageC1Path.name}.${packageC2Path.name}",
         ),
       ),
       resources = listOf(resourceDirPath21),
@@ -323,6 +330,19 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
           targetsMap,
           emptyMap(),
           projectBasePath,
+          MockJvmPrefixCalculator(
+            buildTargetId1 to JvmPackagePrefixes(
+              mapOf(
+                file1APath to "${packageA1Path.name}.${packageA2Path.name}",
+                file2APath to "${packageA1Path.name}.${packageA2Path.name}",
+              ),
+            ),
+            buildTargetId2 to JvmPackagePrefixes(
+              mapOf(
+                dir1CPath to "${packageC1Path.name}.${packageC2Path.name}",
+              ),
+            )
+          ),
           project,
         ).transform(entity).first()
       }

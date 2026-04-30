@@ -10,6 +10,8 @@ import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.magicmetamodel.ProjectDetails
 import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.ModuleDetails
 import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.ModuleDetailsToJavaModuleTransformer
+import org.jetbrains.bazel.sync.workspace.languages.java.sourceRoot.JvmPackagePrefixCalculator
+import org.jetbrains.bazel.sync.workspace.languages.java.sourceRoot.JvmPackagePrefixes
 import org.jetbrains.bazel.workspacemodel.entities.Module
 import org.jetbrains.bsp.protocol.BuildTarget
 import java.nio.file.Path
@@ -20,6 +22,7 @@ object TargetIdToModuleEntitiesMap {
     projectDetails: ProjectDetails,
     targetIdToModuleDetails: Map<Label, ModuleDetails>,
     targetIdToTargetInfo: Map<Label, BuildTarget>,
+    packagePrefixes: JvmPackagePrefixCalculator,
     fileToTargets: Map<Path, List<Label>>,
     projectBasePath: Path,
     project: Project,
@@ -29,6 +32,7 @@ object TargetIdToModuleEntitiesMap {
         targetIdToTargetInfo,
         fileToTargets,
         projectBasePath,
+        packagePrefixes,
         project,
       )
 
