@@ -1,5 +1,6 @@
 package org.jetbrains.bazel.tests.run
 
+import com.intellij.driver.sdk.getNotifications
 import com.intellij.driver.sdk.setRegistry
 import com.intellij.driver.sdk.singleProject
 import com.intellij.driver.sdk.step
@@ -13,6 +14,7 @@ import com.intellij.driver.sdk.ui.components.elements.actionButton
 import com.intellij.driver.sdk.ui.components.elements.popup
 import com.intellij.driver.sdk.ui.pasteText
 import com.intellij.driver.sdk.ui.shouldBe
+import com.intellij.driver.sdk.waitFor
 import com.intellij.driver.sdk.withRetries
 import com.intellij.ide.starter.driver.engine.runIdeWithDriver
 import com.intellij.tools.ide.performanceTesting.commands.assertCurrentFile
@@ -23,6 +25,8 @@ import org.jetbrains.bazel.ideStarter.checkIdeaLogForExceptions
 import org.jetbrains.bazel.ideStarter.execute
 import org.jetbrains.bazel.ideStarter.openFile
 import org.jetbrains.bazel.ideStarter.syncBazelProject
+import org.jetbrains.bazel.tests.ui.clickRunGutterOnLine
+import org.jetbrains.bazel.tests.ui.verifyAvailableRunGutterActions
 import org.junit.jupiter.api.Test
 import java.awt.Point
 import java.awt.event.KeyEvent
@@ -100,6 +104,22 @@ class ImportRunConfigurationsSyncHookTest : IdeStarterBaseProjectTest() {
           consoleView.waitContainsText("PARENT_ENV_HOME=$homeValue", timeout = 5.seconds)
         }
 
+        fun waitForProfilerDataReadyBubbleAppearAndClose() =
+          step("Wait for 'Profiler data is ready' bubble and then wait for it to disappear") {
+            val text = "Profiler data is ready"
+            waitOneContainsText(text, timeout = 1.minutes)
+            getNotifications().forEach {
+              it.hideBalloon()
+            }
+            // Wait here for the popup to close in case if we run the profiler again and rely on the bubble for completion
+            waitFor(
+              message = "Should not have $text",
+              timeout = 1.minutes,
+              getter = { getAllTexts() },
+              checker = { it.none { it.text.contains(text) } },
+            )
+          }
+
         step("Check that running with IntelliJ Profiler works") {
           setRegistry("linux.kernel.variables.validate.every.time", false)
           openFile("src/com/example/Main.java")
@@ -126,9 +146,46 @@ class ImportRunConfigurationsSyncHookTest : IdeStarterBaseProjectTest() {
           moreActionsButton.click()
           popup().waitOneText("Profile 'Bazel run :main' with 'IntelliJ Profiler'").click()
           consoleView.waitContainsText("The result is", timeout = 3.minutes)
-          waitOneContainsText("Profiler data is ready", timeout = 10.seconds)
+          waitForProfilerDataReadyBubbleAppearAndClose()
+
           takeScreenshot("beforeClickingOnGutter")
           editorTabs().gutter().clickLine(18)  // result += random.nextDouble();
+          execute {
+            delay(500)
+            assertCurrentFile("Random.java")  // Clicking on the line tooltip will navigate to the profiler hot path
+          }
+
+          step("Check that run gutters exist") {
+            openFile("src/com/example/Main.java")
+            clickRunGutterOnLine(6)
+            verifyAvailableRunGutterActions(listOf("Run '//:main'", "Debug '//:main'", "Profile '//:main' with 'IntelliJ Profiler'"))
+          }
+        }
+        step("Check that running test by gutter with IntelliJ Profiler works") {
+          openFile("src/com/example/CalculatorTest.java")
+          codeEditor {
+            goToPosition(4, 1)
+            pasteText("import java.util.Random;")
+            goToPosition(9, 28)
+            pasteText(
+              "\n" + """
+              long start = System.currentTimeMillis();
+              double result = 0.0;
+              Random random = new Random();
+              while (System.currentTimeMillis() < start + 5000) {
+                  for (int i = 0; i < 1000; i++) {
+                      result += random.nextDouble();
+                  }
+              }
+              assertEquals(0, result == 0.0 ? 1 : 0);
+              """.trimIndent() + "\n",
+            )
+          }
+          clickRunGutterOnLine(8)
+          popup().waitOneText("Profile '//:calculator_test' with 'IntelliJ Profiler'").click()
+          waitForProfilerDataReadyBubbleAppearAndClose()
+          takeScreenshot("beforeClickingOnGutter")
+          editorTabs().gutter().clickLine(15)  // result += random.nextDouble();
           execute {
             delay(500)
             assertCurrentFile("Random.java")  // Clicking on the line tooltip will navigate to the profiler hot path

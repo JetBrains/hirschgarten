@@ -33,8 +33,6 @@ internal class PythonBazelRunHandler : PythonBazelHandler<GenericRunState>() {
         it.languageClasses.contains(LanguageClass.PYTHON) && it.ruleType == RuleType.BINARY
       }
 
-    override fun canDebug(targets: List<TargetKind>): Boolean = canRun(targets)
-
     override val googleHandlerId: String = "BlazePyRunConfigurationHandlerProvider"
     override val isTestHandler: Boolean = false
   }

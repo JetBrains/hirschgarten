@@ -1,5 +1,6 @@
 package org.jetbrains.bazel.performanceImpl.baseCommand
 
+import com.intellij.execution.executors.DefaultDebugExecutor
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.playback.PlaybackContext
 import com.intellij.openapi.ui.playback.commands.PlaybackCommandCoroutineAdapter
@@ -18,9 +19,9 @@ internal abstract class DebugLocalJvmRunnerActionCommand(text: String, line: Int
     val id = getTargetId(project) ?: return
     val targetInfo = project.targetUtils.getBuildTargetForLabel(id) ?: return
     if (targetInfo.kind.ruleType == RuleType.TEST) {
-      TestWithLocalJvmRunnerAction(project, targetInfo, isDebugMode = true).doPerformAction(project)
+      TestWithLocalJvmRunnerAction(project, targetInfo, executor = DefaultDebugExecutor.getDebugExecutorInstance()).doPerformAction(project)
     } else {
-      RunWithLocalJvmRunnerAction(project, targetInfo, isDebugMode = true).doPerformAction(project)
+      RunWithLocalJvmRunnerAction(project, targetInfo, executor = DefaultDebugExecutor.getDebugExecutorInstance()).doPerformAction(project)
     }
   }
 

@@ -100,16 +100,20 @@ internal class BazelFileTargetsWidget(project: Project) : EditorBasedStatusBarPo
   }
 
   private fun BuildTarget.calculatePopupGroup(): ActionGroup =
-    DefaultActionGroup(id.toShortString(project), true).also {
+    createActionGroup(id.toShortString(project)).also {
       ResyncTargetAction.createIfEnabled(id)?.let { resyncTargetAction -> it.add(resyncTargetAction) }
       it.add(CopyTargetIdAction.FromTargetInfo(this))
       it.addSeparator()
       it.add(BuildTargetAction(id))
-      it.fillWithEligibleActions(project, this, false)
+      it.fillWithEligibleActions(project, this)
       it.addSeparator()
       it.add(BazelJumpToBuildFileAction.NonXmlRegistered({ this }))
       it.add(StarlarkDebugAction(this.id))
     }
+
+  private fun createActionGroup(name: String) =
+    DefaultActionGroup(name, true)
+      .apply { templatePresentation.setText(name, false) } // BAZEL-3104 - do not parse label as mnemonic text
 
   override fun createInstance(project: Project): StatusBarWidget = BazelFileTargetsWidget(project)
 }

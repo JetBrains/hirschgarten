@@ -15,7 +15,6 @@ interface LoadedTargetActionsProvider {
     project: Project,
     group: DefaultActionGroup,
     target: ExecutableTarget,
-    includeTargetNameInText: Boolean,
     callerPsiElement: PsiElement?,
   )
 

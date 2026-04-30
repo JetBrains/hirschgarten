@@ -6,7 +6,6 @@ import com.intellij.openapi.actionSystem.DefaultActionGroup
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElement
 import com.intellij.psi.impl.source.tree.LeafPsiElement
-import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.config.isBazelProject
 import org.jetbrains.bazel.target.targetUtils
@@ -67,7 +66,7 @@ abstract class BazelRunLineMarkerContributor : RunLineMarkerContributor() {
     val singleTestFilter =
       if (hasTestTarget) getSingleTestFilter(psiElement) else null // no need to call the function if there are no tests among the targets
     return targetInfos
-      .flatMap { it.calculateEligibleActions(project, singleTestFilter, testExecutableArguments, targetInfos.size > 1, psiElement) }
+      .flatMap { it.calculateEligibleActions(project, singleTestFilter, testExecutableArguments, psiElement) }
       .takeIf { it.isNotEmpty() }
       ?.let {
         BazelRunLineMarkerInfo(
@@ -81,7 +80,6 @@ abstract class BazelRunLineMarkerContributor : RunLineMarkerContributor() {
     project: Project,
     singleTestFilter: String?,
     testExecutableArguments: List<String>,
-    includeTargetNameInText: Boolean,
     psiElement: PsiElement,
   ): List<AnAction> =
     if (this == null) {
@@ -91,7 +89,6 @@ abstract class BazelRunLineMarkerContributor : RunLineMarkerContributor() {
         .fillWithEligibleActions(
           project,
           this,
-          includeTargetNameInText,
           singleTestFilter,
           testExecutableArguments,
           psiElement,

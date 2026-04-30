@@ -3,11 +3,8 @@ package org.jetbrains.bazel.runnerAction
 import com.intellij.execution.Executor
 import com.intellij.execution.RunManagerEx
 import com.intellij.execution.RunnerAndConfigurationSettings
-import com.intellij.execution.executors.DefaultDebugExecutor
-import com.intellij.execution.executors.DefaultRunExecutor
 import com.intellij.execution.runners.ExecutionEnvironmentBuilder
 import com.intellij.execution.runners.ProgramRunner
-import com.intellij.icons.AllIcons
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.application.EDT
 import com.intellij.openapi.project.Project
@@ -17,22 +14,16 @@ import kotlinx.coroutines.withContext
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.action.SuspendableAction
 import org.jetbrains.bazel.config.BazelPluginBundle
-import org.jetbrains.bsp.protocol.ExecutableTarget
-import javax.swing.Icon
 
 @ApiStatus.Internal
 abstract class BaseRunnerAction(
-  text: () -> String,
-  icon: Icon? = null,
-  private val isDebugAction: Boolean = false,
-  private val isCoverageAction: Boolean = false,
+  private val executor: Executor,
+  protected val configurationName: String,
 ) : SuspendableAction(
-    text = text,
-    icon = icon ?: getIcon(isDebugAction, isCoverageAction),
-  ) {
-  protected abstract suspend fun getRunnerSettings(project: Project, targets: List<ExecutableTarget>): RunnerAndConfigurationSettings?
-
-  protected abstract fun getBuildTargets(project: Project): List<ExecutableTarget>
+  text = executor.getStartActionText(configurationName),
+  icon = executor.icon,
+) {
+  protected abstract suspend fun getRunnerSettings(): RunnerAndConfigurationSettings?
 
   override suspend fun actionPerformed(project: Project, e: AnActionEvent) {
     doPerformAction(project)
@@ -40,9 +31,8 @@ abstract class BaseRunnerAction(
 
   suspend fun doPerformAction(project: Project) {
     try {
-      val settings = getRunnerSettings(project, this.getBuildTargets(project)) ?: return
+      val settings = getRunnerSettings() ?: return
       RunManagerEx.getInstanceEx(project).setTemporaryConfiguration(settings)
-      val executor = getExecutor(project)
       val runner = ProgramRunner.getRunner(executor.id, settings.configuration)
 
       if (runner != null) {
@@ -59,27 +49,5 @@ abstract class BaseRunnerAction(
         Messages.showErrorDialog(project, e.toString(), BazelPluginBundle.message("widget.side.menu.error.title"))
       }
     }
-  }
-
-  private fun getExecutor(project: Project): Executor {
-    require(!isDebugAction || !isCoverageAction) { "Coverage with debug not supported" }
-    return if (isDebugAction) {
-      DefaultDebugExecutor.getDebugExecutorInstance()
-    } else if (isCoverageAction) {
-      BazelCoverageExecutorProvider.ep.extensionList
-        .map { it.createCoverageExecutor(project) }
-        .firstOrNull() ?: error("Can't get Coverage executor")
-    } else {
-      DefaultRunExecutor.getRunExecutorInstance()
-    }
-  }
-
-  companion object {
-    private fun getIcon(isDebugAction: Boolean, isCoverageAction: Boolean): Icon =
-      when {
-        isCoverageAction -> AllIcons.General.RunWithCoverage
-        isDebugAction -> AllIcons.Actions.StartDebugger
-        else -> AllIcons.Actions.Execute
-      }
   }
 }

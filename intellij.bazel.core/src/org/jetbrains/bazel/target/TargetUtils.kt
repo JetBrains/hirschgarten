@@ -50,7 +50,7 @@ import kotlin.time.Duration.Companion.minutes
 import kotlin.time.DurationUnit
 import kotlin.time.toDuration
 
-private const val MAX_EXECUTABLE_TARGET_IDS = 10
+private const val MAX_EXECUTABLE_TARGET_IDS = 5
 
 private fun nowAsDuration() = System.currentTimeMillis().toDuration(DurationUnit.MILLISECONDS)
 
@@ -206,7 +206,7 @@ class TargetUtils(private val project: Project, private val coroutineScope: Coro
         }
       }
     }
-    return result
+    return result.mapValues { (_, executableTargets) -> executableTargets.sortedBy { it.toString() } }
   }
 
   private fun calculateTransitivelyExecutableTargets(

@@ -20,5 +20,5 @@ fun BspTargetInfo.Dependency.toDependencyLabel(): DependencyLabel =
   DependencyLabel(
     label = label(),
     isRuntime = dependencyType == BspTargetInfo.Dependency.DependencyType.RUNTIME,
-    exported = exported,
+    exported =  dependencyType == BspTargetInfo.Dependency.DependencyType.EXPORTED_COMPILE_TIME,
   )

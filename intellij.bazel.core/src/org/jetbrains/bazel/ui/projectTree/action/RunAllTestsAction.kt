@@ -11,8 +11,8 @@ import com.intellij.openapi.vfs.toNioPathOrNull
 import org.jetbrains.bazel.action.SuspendableAction
 import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.config.BazelPluginBundle
-import org.jetbrains.bazel.runnerAction.RunWithCoverageAction
 import org.jetbrains.bazel.runnerAction.TestTargetAction
+import org.jetbrains.bazel.runnerAction.getCoverageExecutor
 import org.jetbrains.bazel.target.targetUtils
 import org.jetbrains.bsp.protocol.BuildTarget
 import javax.swing.Icon
@@ -20,7 +20,7 @@ import javax.swing.Icon
 internal open class RunAllTestsBaseAction(
   text: () -> String,
   icon: Icon,
-  private val createAction: (project: Project, targets: List<BuildTarget>, directoryName: String) -> SuspendableAction,
+  private val createAction: (project: Project, targets: List<BuildTarget>, directoryName: String) -> SuspendableAction?,
 ) : SuspendableAction(
     text = text,
     icon = icon,
@@ -32,7 +32,7 @@ internal open class RunAllTestsBaseAction(
         readAction { getAllTestTargetInfos(project, e) },
         e.getCurrentPath()?.name.orEmpty(),
       )
-    action.actionPerformed(e)
+    action?.actionPerformed(e)
   }
 
   override fun update(project: Project, e: AnActionEvent) {
@@ -77,9 +77,7 @@ internal class RunAllTestsAction :
       TestTargetAction(
         project,
         targets,
-        text = {
-          BazelPluginBundle.message("action.run.all.tests.under", directoryName)
-        },
+        configurationName = BazelPluginBundle.message("action.run.all.tests.under", directoryName),
       )
     },
   )
@@ -89,8 +87,22 @@ internal class RunAllTestsWithCoverageAction :
     text = { BazelPluginBundle.message("action.run.all.tests.with.coverage") },
     icon = AllIcons.General.RunWithCoverage,
     createAction = { project, targets, directoryName ->
-      RunWithCoverageAction(project, targets, text = {
-        BazelPluginBundle.message("action.run.all.tests.under.with.coverage", directoryName)
-      })
+      getCoverageExecutor()?.let { executor ->
+        TestTargetAction(
+          project,
+          targets,
+          executor = executor,
+          configurationName = BazelPluginBundle.message("action.run.all.tests.under.with.coverage", directoryName),
+        )
+      }
     },
-  )
+  ) {
+  override fun update(project: Project, e: AnActionEvent) {
+    if (getCoverageExecutor() == null) {
+      e.presentation.isEnabledAndVisible = false
+    }
+    else {
+      super.update(project, e)
+    }
+  }
+}

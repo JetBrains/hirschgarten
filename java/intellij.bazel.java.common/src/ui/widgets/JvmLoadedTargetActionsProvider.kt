@@ -1,5 +1,6 @@
 package org.jetbrains.bazel.ui.widgets
 
+import com.intellij.execution.executors.DefaultDebugExecutor
 import com.intellij.openapi.actionSystem.DefaultActionGroup
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElement
@@ -15,21 +16,20 @@ internal class JvmLoadedTargetActionsProvider : LoadedTargetActionsProvider {
     project: Project,
     group: DefaultActionGroup,
     target: ExecutableTarget,
-    includeTargetNameInText: Boolean,
     callerPsiElement: PsiElement?,
   ) {
     val kind = target.kind
     if (project.bazelJVMProjectSettings.enableLocalJvmActions && kind.isJvmTarget()) {
       if (kind.ruleType == RuleType.BINARY) {
-        group.addAction(RunWithLocalJvmRunnerAction(project, target, includeTargetNameInText = includeTargetNameInText))
-        group.addAction(RunWithLocalJvmRunnerAction(project, target, isDebugMode = true, includeTargetNameInText = includeTargetNameInText))
+        group.addAction(RunWithLocalJvmRunnerAction(project, target))
+        group.addAction(RunWithLocalJvmRunnerAction(project, target, executor = DefaultDebugExecutor.getDebugExecutorInstance()))
       }
       if (kind.ruleType == RuleType.TEST) {
         if (callerPsiElement != null) { // called from gutter
-          group.addLocalJvmTestActions(project, target, includeTargetNameInText, callerPsiElement)
+          group.addLocalJvmTestActions(project, target, callerPsiElement)
         }
         else if (!project.bazelJVMProjectSettings.useIntellijTestRunner) { // called from target tree widget
-          group.addLocalJvmTestActions(project, target, includeTargetNameInText, null)
+          group.addLocalJvmTestActions(project, target, null)
         }
       }
     }
@@ -38,18 +38,16 @@ internal class JvmLoadedTargetActionsProvider : LoadedTargetActionsProvider {
   private fun DefaultActionGroup.addLocalJvmTestActions(
     project: Project,
     target: ExecutableTarget,
-    includeTargetNameInText: Boolean,
     callerPsiElement: PsiElement?,
   ) {
     addAction(
-      TestWithLocalJvmRunnerAction(project, target, includeTargetNameInText = includeTargetNameInText, callerPsiElement = callerPsiElement),
+      TestWithLocalJvmRunnerAction(project, target, callerPsiElement = callerPsiElement),
     )
     addAction(
       TestWithLocalJvmRunnerAction(
         project,
         target,
-        isDebugMode = true,
-        includeTargetNameInText = includeTargetNameInText,
+        executor = DefaultDebugExecutor.getDebugExecutorInstance(),
         callerPsiElement = callerPsiElement,
       ),
     )

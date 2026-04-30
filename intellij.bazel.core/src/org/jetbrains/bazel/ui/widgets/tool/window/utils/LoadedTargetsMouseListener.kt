@@ -2,30 +2,27 @@ package org.jetbrains.bazel.ui.widgets.tool.window.utils
 
 import com.intellij.codeInsight.hints.presentation.MouseButton
 import com.intellij.codeInsight.hints.presentation.mouseButton
-import com.intellij.icons.AllIcons
+import com.intellij.execution.ExecutionBundle
+import com.intellij.execution.Executor
+import com.intellij.execution.actions.RunConfigurationsComboBoxAction
+import com.intellij.execution.runners.ProgramRunner
 import com.intellij.openapi.actionSystem.ActionGroup
 import com.intellij.openapi.actionSystem.ActionManager
 import com.intellij.openapi.actionSystem.ActionPlaces
-import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.DefaultActionGroup
-import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElement
 import com.intellij.ui.PopupHandler
-import org.jetbrains.bazel.action.SuspendableAction
 import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.config.BazelFeatureFlags
-import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.coroutines.BazelCoroutineService
 import org.jetbrains.bazel.debug.actions.StarlarkDebugAction
-import org.jetbrains.bazel.run.RunHandlerProvider
 import org.jetbrains.bazel.run.synthetic.SyntheticRunTargetUtils
 import org.jetbrains.bazel.runnerAction.BazelRunnerAction
 import org.jetbrains.bazel.runnerAction.BuildTargetAction
-import org.jetbrains.bazel.runnerAction.RunSyntheticTargetAction
 import org.jetbrains.bazel.runnerAction.RunTargetAction
-import org.jetbrains.bazel.runnerAction.RunWithCoverageAction
 import org.jetbrains.bazel.runnerAction.TestTargetAction
+import org.jetbrains.bazel.runnerAction.getTestExecutors
 import org.jetbrains.bazel.sync.action.ResyncTargetAction
 import org.jetbrains.bazel.ui.widgets.BazelJumpToBuildFileAction
 import org.jetbrains.bazel.ui.widgets.tool.window.actions.CopyTargetIdAction
@@ -34,8 +31,6 @@ import org.jetbrains.bsp.protocol.ExecutableTarget
 import java.awt.Component
 import java.awt.Point
 import java.awt.event.MouseEvent
-
-private val LOG = logger<LoadedTargetsMouseListener>()
 
 internal abstract class LoadedTargetsMouseListener(private val project: Project) : PopupHandler() {
   abstract fun isPointSelectable(point: Point): Boolean
@@ -94,21 +89,30 @@ internal abstract class LoadedTargetsMouseListener(private val project: Project)
       addAction(copyTargetIdAction)
       addSeparator()
       addAction(BuildTargetAction(target.id))
-      fillWithEligibleActions(project, target, false)
+      fillWithEligibleActions(project, target)
       addAction(bazelJumpToBuildFileAction)
       add(StarlarkDebugAction(target.id))
     }
 
   private fun calculatePopupGroup(targets: List<BuildTarget>): ActionGroup? {
     val testTargets = targets.filter { it.kind.ruleType == RuleType.TEST }
-    return if (testTargets.isEmpty()) {
-      null
-    } else {
-      DefaultActionGroup().apply {
-        addAction(RunAllTestsActionInTargetTreeAction(testTargets, getSelectedComponentName()))
-        addAction(RunAllTestsActionWithCoverageInTargetTreeAction(testTargets, getSelectedComponentName()))
-      }
+    if (testTargets.isEmpty()) {
+      return null
     }
+    val directoryName = getSelectedComponentName()
+    val group = DefaultActionGroup()
+    val configurationName = ExecutionBundle.message("test.in.scope.presentable.text", directoryName)
+    for (executor in getTestExecutors()) {
+      group.addAction(
+        TestTargetAction(
+          project,
+          targets,
+          executor = executor,
+          configurationName = configurationName,
+        ),
+      )
+    }
+    return group
   }
 
   private fun MouseEvent.isDoubleClick(): Boolean = this.mouseButton == MouseButton.Left && this.clickCount == 2
@@ -116,8 +120,8 @@ internal abstract class LoadedTargetsMouseListener(private val project: Project)
   private fun onDoubleClick() {
     getSelectedBuildTarget()?.also {
       when {
-        it.kind.ruleType == RuleType.TEST -> TestTargetAction(project = project, targetInfos = listOf(it)).prepareAndPerform(project)
-        it.kind.ruleType == RuleType.BINARY -> RunTargetAction(project, targetInfo = it).prepareAndPerform(project)
+        it.kind.ruleType == RuleType.TEST -> TestTargetAction(project, target = it).prepareAndPerform(project)
+        it.kind.ruleType == RuleType.BINARY -> RunTargetAction(project, target = it).prepareAndPerform(project)
         else -> BuildTargetAction.buildTarget(project, it.id)
       }
     }
@@ -134,67 +138,37 @@ private fun BazelRunnerAction.prepareAndPerform(project: Project) {
 internal fun DefaultActionGroup.fillWithEligibleActions(
   project: Project,
   target: ExecutableTarget,
-  includeTargetNameInText: Boolean,
   singleTestFilter: String? = null,
   testExecutableArguments: List<String> = emptyList(),
   callerPsiElement: PsiElement? = null,
 ): DefaultActionGroup {
   val kind = target.kind
-  val canBeDebugged = RunHandlerProvider.getRunHandlerProvider(listOf(target.kind), isDebug = true) != null
-  // BAZEL-2292: Diagnostic logging to investigate disappearing debug gutter icons
-  if (!canBeDebugged && (kind.ruleType == RuleType.BINARY || kind.ruleType == RuleType.TEST)) {
-    LOG.info(
-      "Debug not available for target ${target.id}: " +
-      "kind=${kind.kind}, " +
-      "languageClasses=${kind.languageClasses}, " +
-      "ruleType=${kind.ruleType}, " +
-      "isJvmTarget=${kind.isJvmTarget()}",
-    )
-  }
+
+  val supportedExecutors = getSupportedExecutors(project, target)
+
   if (kind.ruleType == RuleType.BINARY) {
-    addAction(RunTargetAction(project, target, includeTargetNameInText = includeTargetNameInText))
-    if (canBeDebugged) {
-      addAction(RunTargetAction(project, target, isDebugAction = true, includeTargetNameInText = includeTargetNameInText))
+    for (executor in supportedExecutors) {
+      addAction(RunTargetAction(project, target, executor))
     }
   }
 
   if (kind.ruleType == RuleType.TEST) {
-    addAction(
-      TestTargetAction(
-        project,
-        listOf(target),
-        includeTargetNameInText = includeTargetNameInText,
-        singleTestFilter = singleTestFilter,
-        testExecutableArguments = testExecutableArguments,
-      ),
-    )
-    if (canBeDebugged) {
+    for (executor in supportedExecutors) {
       addAction(
         TestTargetAction(
           project,
-          listOf(target),
-          isDebugAction = true,
-          includeTargetNameInText = includeTargetNameInText,
+          target,
+          executor = executor,
           singleTestFilter = singleTestFilter,
           testExecutableArguments = testExecutableArguments,
         ),
       )
     }
-    addAction(
-      RunWithCoverageAction(
-        project,
-        listOf(target),
-        includeTargetNameInText = includeTargetNameInText,
-        singleTestFilter = singleTestFilter,
-      ),
-    )
   }
 
-  if (BazelFeatureFlags.syntheticRunEnable) {
-    if (target.kind.ruleType == RuleType.LIBRARY) {
-      if (callerPsiElement != null) {
-        addSyntheticRunActions(target, callerPsiElement, includeTargetNameInText, canBeDebugged)
-      }
+  if (BazelFeatureFlags.syntheticRunEnable && target.kind.ruleType == RuleType.LIBRARY) {
+    if (callerPsiElement != null) {
+      SyntheticRunTargetUtils.addSyntheticRunActions(this, project, target, callerPsiElement)
     }
   }
 
@@ -203,7 +177,6 @@ internal fun DefaultActionGroup.fillWithEligibleActions(
       project = project,
       group = this,
       target = target,
-      includeTargetNameInText = includeTargetNameInText,
       callerPsiElement = callerPsiElement,
     )
   }
@@ -211,63 +184,14 @@ internal fun DefaultActionGroup.fillWithEligibleActions(
   return this
 }
 
-private fun DefaultActionGroup.addSyntheticRunActions(
-  target: ExecutableTarget,
-  element: PsiElement,
-  includeTargetNameInText: Boolean,
-  canBeDebugged: Boolean,
-) {
-  val language = element.language
-  for (generator in SyntheticRunTargetUtils.getTemplateGenerators(target, language)) {
-      val action = RunSyntheticTargetAction(
-        target = target,
-        isDebugAction = false,
-        includeTargetNameInText = includeTargetNameInText,
-        templateGenerator = generator,
-        targetElement = element,
-      )
-      addAction(action)
-      if (canBeDebugged) {
-        val action = RunSyntheticTargetAction(
-          target = target,
-          isDebugAction = true,
-          includeTargetNameInText = includeTargetNameInText,
-          templateGenerator = generator,
-          targetElement = element,
-        )
-        addAction(action)
-      }
+internal fun getSupportedExecutors(project: Project, target: ExecutableTarget): List<Executor> {
+  if (!target.kind.isExecutable) return emptyList()
+  val runConfiguration = RunTargetAction(project, target).createRunConfiguration()
+  val supportedExecutors = mutableListOf<Executor>()
+  RunConfigurationsComboBoxAction.forAllExecutors { executor ->
+    if (ProgramRunner.getRunner(executor.id, runConfiguration.configuration) != null) {
+      supportedExecutors.add(executor)
     }
-}
-
-internal class RunAllTestsActionInTargetTreeAction(private val targets: List<BuildTarget>, private val directoryName: String) :
-  SuspendableAction(
-    text = { BazelPluginBundle.message("action.run.all.tests") },
-    icon = AllIcons.Actions.Execute,
-  ) {
-  override suspend fun actionPerformed(project: Project, e: AnActionEvent) {
-    TestTargetAction(
-      project,
-      targets,
-      text = {
-        BazelPluginBundle.message("action.run.all.tests.under", directoryName)
-      },
-    ).actionPerformed(e)
   }
-}
-
-internal class RunAllTestsActionWithCoverageInTargetTreeAction(private val targets: List<BuildTarget>, private val directoryName: String) :
-  SuspendableAction(
-    text = { BazelPluginBundle.message("action.run.all.tests.with.coverage") },
-    icon = AllIcons.General.RunWithCoverage,
-  ) {
-  override suspend fun actionPerformed(project: Project, e: AnActionEvent) {
-    RunWithCoverageAction(
-      project,
-      targets,
-      text = {
-        BazelPluginBundle.message("action.run.all.tests.under.with.coverage", directoryName)
-      },
-    ).actionPerformed(e)
-  }
+  return supportedExecutors
 }

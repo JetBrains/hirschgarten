@@ -1,6 +1,7 @@
 package org.jetbrains.bazel.languages.starlark.repomapping
 
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.util.NlsSafe
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.isFile
 import org.jetbrains.annotations.ApiStatus
@@ -112,6 +113,7 @@ fun Label.singleTarget(): SingleTarget? {
   }
 }
 
+@NlsSafe
 @ApiStatus.Internal
 fun Label.toShortString(project: Project): String {
   val label = this.toApparentLabelOrThis(project)

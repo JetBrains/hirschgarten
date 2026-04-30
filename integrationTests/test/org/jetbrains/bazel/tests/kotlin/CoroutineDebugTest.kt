@@ -57,7 +57,7 @@ class CoroutineDebugTest : IdeStarterBaseProjectTest() {
               .getGutterIcons()
               .first { it.getIconPath().contains("run") }
               .click()
-            popup().waitOneContainsText("Debug test").click()
+            popup().waitOneContainsText("Debug '//src/test/org/example:TestCoroutine'").click()
           }
 
           step("Check if async stack trace is displayed") {

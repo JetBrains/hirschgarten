@@ -362,7 +362,14 @@ class ProjectViewCombinedTest : IdeStarterBaseProjectTest() {
         }
         step("Check run gutters for java_binary") {
           clickRunGutterOnLine(4)
-          verifyAvailableRunGutterActions(listOf("Build Target", "Run", "Debug run"))
+          verifyAvailableRunGutterActions(
+            listOf(
+              "Build Target",
+              "Run '//binary:java_binary'",
+              "Debug '//binary:java_binary'",
+              "Profile '//binary:java_binary' with 'IntelliJ Profiler'",
+            ),
+          )
         }
         step("Check run gutter for custom_java_lib") {
           val gutter = getRunGutterOnLine(10)
@@ -374,8 +381,8 @@ class ProjectViewCombinedTest : IdeStarterBaseProjectTest() {
         val consoleView = x { byClass("ConsoleViewImpl") }
         step("Check run gutters for custom_binary") {
           clickRunGutterOnLine(15)
-          verifyAvailableRunGutterActions(listOf("Build Target", "Run"))
-          popup().waitOneText("Run").click()
+          verifyAvailableRunGutterActions(listOf("Build Target", "Run '//binary:custom_binary'"))
+          popup().waitOneText("Run '//binary:custom_binary'").click()
           consoleView.waitContainsText("Hello, world!")
         }
         step("Scroll down") {
@@ -383,12 +390,20 @@ class ProjectViewCombinedTest : IdeStarterBaseProjectTest() {
         }
         step("Check run gutters for java_test") {
           clickRunGutterOnLine(21)
-          verifyAvailableRunGutterActions(listOf("Build Target", "Test", "Debug test", "Run with Coverage"))
+          verifyAvailableRunGutterActions(
+            listOf(
+              "Build Target",
+              "Run '//binary:java_test'",
+              "Debug '//binary:java_test'",
+              "Run '//binary:java_test' with Coverage",
+              "Profile '//binary:java_test' with 'IntelliJ Profiler'",
+            ),
+          )
         }
         step("Check run gutters for custom_test") {
           clickRunGutterOnLine(27)
-          verifyAvailableRunGutterActions(listOf("Build Target", "Test", "Run with Coverage"))
-          popup().waitOneText("Run with Coverage").click()
+          verifyAvailableRunGutterActions(listOf("Build Target", "Run '//binary:custom_test'", "Run '//binary:custom_test' with Coverage"))
+          popup().waitOneText("Run '//binary:custom_test' with Coverage").click()
           verifyTestStatus(
             listOf("1 test passed"),
             listOf("com.example.MainTest", "testAdd"),
@@ -399,7 +414,7 @@ class ProjectViewCombinedTest : IdeStarterBaseProjectTest() {
         }
         step("Debug run java_binary") {
           clickRunGutterOnLine(4)
-          popup().waitOneText("Debug run").click()
+          popup().waitOneText("Debug '//binary:java_binary'").click()
           consoleView.waitContainsText("Hello, world!")
         }
         step("Check there's no run gutters in MODULE.bazel") {

@@ -33,8 +33,6 @@ internal class PythonBazelTestHandler : PythonBazelHandler<GenericTestState>() {
         it.languageClasses.contains(LanguageClass.PYTHON) && it.ruleType == RuleType.TEST
       }
 
-    override fun canDebug(targets: List<TargetKind>): Boolean = canRun(targets)
-
     override val googleHandlerId: String = "BlazePyTestConfigurationHandlerProvider"
     override val isTestHandler: Boolean = true
   }

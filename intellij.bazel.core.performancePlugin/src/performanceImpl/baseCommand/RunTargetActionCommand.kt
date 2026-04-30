@@ -18,7 +18,7 @@ internal abstract class RunTargetActionCommand(text: String, line: Int) : Playba
     val id = getTargetId(project) ?: return
     val targetInfo = project.targetUtils.getBuildTargetForLabel(id) ?: return
     if (targetInfo.kind.ruleType == RuleType.TEST) {
-      TestTargetAction(project, listOf(targetInfo)).doPerformAction(project)
+      TestTargetAction(project, targetInfo).doPerformAction(project)
     } else {
       RunTargetAction(project, targetInfo).doPerformAction(project)
     }
