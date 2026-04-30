@@ -15,7 +15,7 @@ import org.jetbrains.bazel.progress.ConsoleService
 import org.jetbrains.bazel.progress.TaskConsole
 import org.jetbrains.bazel.run.task.BazelBuildTaskListener
 import org.jetbrains.bazel.server.connection.connection
-import org.jetbrains.bazel.sync.workspace.mapper.normal.refreshVfsAfterBazelBuild
+import org.jetbrains.bazel.sync.refreshVfsAfterBazelBuild
 import org.jetbrains.bazel.taskEvents.BazelTaskEventsService
 import org.jetbrains.bsp.protocol.BazelServerFacade
 import org.jetbrains.bsp.protocol.CompileParams
@@ -80,7 +80,7 @@ suspend fun runBuildTargetTask(
       }
     }
   }.also {
-    refreshVfsAfterBazelBuild()
+    refreshVfsAfterBazelBuild(project)
   }
 }
 
