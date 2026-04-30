@@ -60,7 +60,6 @@ def extract_go_info(target, ctx, output_groups, **kwargs):
         import_path = extracted_import_path,
         sdk_home_path = sdk_home_path,
         generated_sources = [file_location(f) for f in sources],
-        generated_libraries = [],
         library_labels = library_labels,
     )
 
