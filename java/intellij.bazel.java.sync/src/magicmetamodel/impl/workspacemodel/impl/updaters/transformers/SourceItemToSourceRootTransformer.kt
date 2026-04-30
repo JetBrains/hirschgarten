@@ -2,6 +2,7 @@ package org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.tra
 
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.workspacemodel.entities.WorkspaceModelEntity
+import org.jetbrains.bsp.protocol.RawBuildTarget
 import org.jetbrains.bsp.protocol.SourceItem
 import java.nio.file.Path
 
@@ -9,7 +10,6 @@ import java.nio.file.Path
 data class SourceRoot(
   val sourcePath: Path,
   val generated: Boolean,
-  val jvmPackagePrefix: String? = null,
 ) : WorkspaceModelEntity()
 
 @ApiStatus.Internal
@@ -21,7 +21,6 @@ object SourceItemToSourceRootTransformer :
     return SourceRoot(
       sourcePath = sourcePath,
       generated = inputEntity.generated,
-      jvmPackagePrefix = inputEntity.jvmPackagePrefix,
     )
   }
 }

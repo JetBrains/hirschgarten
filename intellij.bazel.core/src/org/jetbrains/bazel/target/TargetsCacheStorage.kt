@@ -27,10 +27,8 @@ import org.jetbrains.bazel.label.Package
 import org.jetbrains.bazel.label.ResolvedLabel
 import org.jetbrains.bazel.label.SingleTarget
 import org.jetbrains.bazel.languages.starlark.repomapping.toCanonicalLabelOrThis
-import org.jetbrains.bazel.languages.starlark.repomapping.toShortString
 import org.jetbrains.bazel.magicmetamodel.formatAsModuleName
 import org.jetbrains.bsp.protocol.BuildTarget
-import org.jetbrains.bsp.protocol.LibraryItem
 import org.jetbrains.bsp.protocol.PartialBuildTarget
 import java.nio.ByteBuffer
 import java.nio.file.Path
