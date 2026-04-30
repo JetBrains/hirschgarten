@@ -49,9 +49,6 @@ class GoLanguagePlugin: LanguagePlugin {
           generatedSources = server.outFileHardLinks.createOutputFileHardLinks(
             goTarget.generatedSourcesList.map { server.bazelPathsResolver.resolve(it, localRepositories) },
           ),
-          generatedLibraries = server.outFileHardLinks.createOutputFileHardLinks(
-            goTarget.generatedLibrariesList.map { server.bazelPathsResolver.resolve(it, localRepositories) },
-          ),
           libraryLabels = goTarget.libraryLabelsList.mapNotNull { Label.parseOrNull(it) },
         ),
       )
