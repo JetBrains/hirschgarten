@@ -76,7 +76,6 @@ interface JvmLanguagePluginMixin {
     suspend fun createBuildTargetData(
       target: TargetInfo,
       targetsToImport: Map<Label, TargetInfo>,
-      graph: DependencyGraph,
       repoMapping: RepoMapping,
     ): List<BuildTargetData> = emptyList()
   }
@@ -143,7 +142,7 @@ class JavaLanguagePlugin: LanguagePlugin {
       graph: DependencyGraph,
       repoMapping: RepoMapping,
     ): List<BuildTargetData> {
-      return mixins.flatMap { it.createBuildTargetData(target, targetsToImport, graph, repoMapping) } +
+      return mixins.flatMap { it.createBuildTargetData(target, targetsToImport, repoMapping) } +
              listOfNotNull(createJvmBuildTargetData(target, repoMapping))
     }
 
