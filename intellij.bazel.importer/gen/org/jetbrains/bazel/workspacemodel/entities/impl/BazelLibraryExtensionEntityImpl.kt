@@ -1,3 +1,5 @@
+@file:OptIn(EntityStorageInstrumentationApi::class)
+
 package org.jetbrains.bazel.workspacemodel.entities.impl
 
 import com.intellij.platform.workspace.jps.entities.LibraryEntity
@@ -14,11 +16,10 @@ import com.intellij.platform.workspace.storage.impl.EntityLink
 import com.intellij.platform.workspace.storage.impl.ModifiableWorkspaceEntityBase
 import com.intellij.platform.workspace.storage.impl.WorkspaceEntityBase
 import com.intellij.platform.workspace.storage.impl.WorkspaceEntityData
-import com.intellij.platform.workspace.storage.impl.extractOneToOneParent
-import com.intellij.platform.workspace.storage.impl.updateOneToOneParentOfChild
 import com.intellij.platform.workspace.storage.instrumentation.EntityStorageInstrumentation
 import com.intellij.platform.workspace.storage.instrumentation.EntityStorageInstrumentationApi
 import com.intellij.platform.workspace.storage.instrumentation.MutableEntityStorageInstrumentation
+import com.intellij.platform.workspace.storage.instrumentation.instrumentation
 import com.intellij.platform.workspace.storage.metadata.model.EntityMetadata
 import org.jetbrains.annotations.ApiStatus.Internal
 import org.jetbrains.bazel.workspacemodel.entities.BazelLibraryExtensionEntity
@@ -40,7 +41,8 @@ internal class BazelLibraryExtensionEntityImpl(private val dataSource: BazelLibr
   }
 
   override val library: LibraryEntity
-    get() = snapshot.extractOneToOneParent(LIBRARY_CONNECTION_ID, this)!!
+    get() = snapshot.instrumentation.getParent(LIBRARY_CONNECTION_ID, this) as? LibraryEntity
+            ?: error("Parent library not found for BazelLibraryExtensionEntity")
   override val label: WorkspaceModelTargetLabel
     get() {
       readField("label")
@@ -95,7 +97,7 @@ internal class BazelLibraryExtensionEntityImpl(private val dataSource: BazelLibr
         error("Field WorkspaceEntity#entitySource should be initialized")
       }
       if (_diff != null) {
-        if (_diff.extractOneToOneParent<WorkspaceEntityBase>(LIBRARY_CONNECTION_ID, this) == null) {
+        if (_diff.instrumentation.getParentBuilder(LIBRARY_CONNECTION_ID, this) == null) {
           error("Field BazelLibraryExtensionEntity#library should be initialized")
         }
       }
@@ -135,12 +137,13 @@ internal class BazelLibraryExtensionEntityImpl(private val dataSource: BazelLibr
       get() {
         val _diff = diff
         return if (_diff != null) {
-          @OptIn(EntityStorageInstrumentationApi::class)
           ((_diff as MutableEntityStorageInstrumentation).getParentBuilder(LIBRARY_CONNECTION_ID, this) as? LibraryEntityBuilder)
-          ?: (this.entityLinks[EntityLink(false, LIBRARY_CONNECTION_ID)]!! as LibraryEntityBuilder)
+          ?: (this.entityLinks[EntityLink(false, LIBRARY_CONNECTION_ID)] as? LibraryEntityBuilder)
+          ?: error("library is null for BazelLibraryExtensionEntity")
         }
         else {
-          this.entityLinks[EntityLink(false, LIBRARY_CONNECTION_ID)]!! as LibraryEntityBuilder
+          (this.entityLinks[EntityLink(false, LIBRARY_CONNECTION_ID)] as? LibraryEntityBuilder)
+          ?: error("library is null for BazelLibraryExtensionEntity")
         }
       }
       set(value) {
@@ -154,7 +157,7 @@ internal class BazelLibraryExtensionEntityImpl(private val dataSource: BazelLibr
           _diff.addEntity(value as ModifiableWorkspaceEntityBase<WorkspaceEntity, *>)
         }
         if (_diff != null && (value !is ModifiableWorkspaceEntityBase<*, *> || value.diff != null)) {
-          _diff.updateOneToOneParentOfChild(LIBRARY_CONNECTION_ID, this, value)
+          _diff.instrumentation.addChild(LIBRARY_CONNECTION_ID, value, this)
         }
         else {
           if (value is ModifiableWorkspaceEntityBase<*, *>) {
@@ -202,7 +205,6 @@ internal class BazelLibraryExtensionEntityData : WorkspaceEntityData<BazelLibrar
     return modifiable
   }
 
-  @OptIn(EntityStorageInstrumentationApi::class)
   override fun createEntity(snapshot: EntityStorageInstrumentation): BazelLibraryExtensionEntity {
     val entityId = createEntityId()
     return snapshot.initializeEntity(entityId) {

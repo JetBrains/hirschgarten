@@ -1,3 +1,5 @@
+@file:OptIn(EntityStorageInstrumentationApi::class)
+
 package org.jetbrains.bazel.workspacemodel.entities.impl
 
 import com.intellij.platform.workspace.jps.entities.ModuleEntity
@@ -14,11 +16,10 @@ import com.intellij.platform.workspace.storage.impl.EntityLink
 import com.intellij.platform.workspace.storage.impl.ModifiableWorkspaceEntityBase
 import com.intellij.platform.workspace.storage.impl.WorkspaceEntityBase
 import com.intellij.platform.workspace.storage.impl.WorkspaceEntityData
-import com.intellij.platform.workspace.storage.impl.extractOneToOneParent
-import com.intellij.platform.workspace.storage.impl.updateOneToOneParentOfChild
 import com.intellij.platform.workspace.storage.instrumentation.EntityStorageInstrumentation
 import com.intellij.platform.workspace.storage.instrumentation.EntityStorageInstrumentationApi
 import com.intellij.platform.workspace.storage.instrumentation.MutableEntityStorageInstrumentation
+import com.intellij.platform.workspace.storage.instrumentation.instrumentation
 import com.intellij.platform.workspace.storage.metadata.model.EntityMetadata
 import org.jetbrains.annotations.ApiStatus.Internal
 import org.jetbrains.bazel.workspacemodel.entities.BazelModuleExtensionEntity
@@ -40,7 +41,8 @@ internal class BazelModuleExtensionEntityImpl(private val dataSource: BazelModul
   }
 
   override val module: ModuleEntity
-    get() = snapshot.extractOneToOneParent(MODULE_CONNECTION_ID, this)!!
+    get() = snapshot.instrumentation.getParent(MODULE_CONNECTION_ID, this) as? ModuleEntity
+            ?: error("Parent module not found for BazelModuleExtensionEntity")
   override val label: WorkspaceModelTargetLabel
     get() {
       readField("label")
@@ -89,7 +91,7 @@ internal class BazelModuleExtensionEntityImpl(private val dataSource: BazelModul
         error("Field WorkspaceEntity#entitySource should be initialized")
       }
       if (_diff != null) {
-        if (_diff.extractOneToOneParent<WorkspaceEntityBase>(MODULE_CONNECTION_ID, this) == null) {
+        if (_diff.instrumentation.getParentBuilder(MODULE_CONNECTION_ID, this) == null) {
           error("Field BazelModuleExtensionEntity#module should be initialized")
         }
       }
@@ -128,12 +130,13 @@ internal class BazelModuleExtensionEntityImpl(private val dataSource: BazelModul
       get() {
         val _diff = diff
         return if (_diff != null) {
-          @OptIn(EntityStorageInstrumentationApi::class)
           ((_diff as MutableEntityStorageInstrumentation).getParentBuilder(MODULE_CONNECTION_ID, this) as? ModuleEntityBuilder)
-          ?: (this.entityLinks[EntityLink(false, MODULE_CONNECTION_ID)]!! as ModuleEntityBuilder)
+          ?: (this.entityLinks[EntityLink(false, MODULE_CONNECTION_ID)] as? ModuleEntityBuilder)
+          ?: error("module is null for BazelModuleExtensionEntity")
         }
         else {
-          this.entityLinks[EntityLink(false, MODULE_CONNECTION_ID)]!! as ModuleEntityBuilder
+          (this.entityLinks[EntityLink(false, MODULE_CONNECTION_ID)] as? ModuleEntityBuilder)
+          ?: error("module is null for BazelModuleExtensionEntity")
         }
       }
       set(value) {
@@ -147,7 +150,7 @@ internal class BazelModuleExtensionEntityImpl(private val dataSource: BazelModul
           _diff.addEntity(value as ModifiableWorkspaceEntityBase<WorkspaceEntity, *>)
         }
         if (_diff != null && (value !is ModifiableWorkspaceEntityBase<*, *> || value.diff != null)) {
-          _diff.updateOneToOneParentOfChild(MODULE_CONNECTION_ID, this, value)
+          _diff.instrumentation.addChild(MODULE_CONNECTION_ID, value, this)
         }
         else {
           if (value is ModifiableWorkspaceEntityBase<*, *>) {
@@ -186,7 +189,6 @@ internal class BazelModuleExtensionEntityData : WorkspaceEntityData<BazelModuleE
     return modifiable
   }
 
-  @OptIn(EntityStorageInstrumentationApi::class)
   override fun createEntity(snapshot: EntityStorageInstrumentation): BazelModuleExtensionEntity {
     val entityId = createEntityId()
     return snapshot.initializeEntity(entityId) {
