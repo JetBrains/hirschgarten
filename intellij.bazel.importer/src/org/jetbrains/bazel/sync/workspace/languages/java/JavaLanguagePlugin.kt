@@ -26,7 +26,6 @@ import org.jetbrains.bazel.label.toDependencyLabel
 import org.jetbrains.bazel.performance.measure
 import org.jetbrains.bazel.server.model.generatedSourcesList
 import org.jetbrains.bazel.server.model.sourcesList
-import org.jetbrains.bazel.sync.createOutputFileHardLinks
 import org.jetbrains.bazel.sync.workspace.graph.DependencyGraph
 import org.jetbrains.bazel.sync.workspace.languages.LanguagePlugin
 import org.jetbrains.bazel.sync.workspace.mapper.normal.MavenCoordinatesResolver
