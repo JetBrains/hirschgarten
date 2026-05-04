@@ -3,6 +3,7 @@
 package org.jetbrains.bazel.workspace.fileEvents
 
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.util.registry.Registry
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.VirtualFileManager
 import com.intellij.openapi.vfs.newvfs.events.ChildInfo
@@ -76,6 +77,8 @@ class BazelFileEventListenerTest : WorkspaceModelBaseTest() {
     project.isBazelProject = true
     project.rootDir = VirtualFileManager.getInstance().findFileByNioPath(Path(project.basePath!!))!!
     inverseSourcesServer = InverseSourcesServer(projectBasePath)
+
+
     project.replaceService(BazelServerService::class.java, inverseSourcesServer.serverService, disposable)
     addMockTargetToProject(project)
 
@@ -565,7 +568,9 @@ class BazelFileEventListenerTest : WorkspaceModelBaseTest() {
   private fun VFileEvent.process(): Deferred<Boolean>? = processEvents(this)
 
   private fun processEvents(vararg events: VFileEvent): Deferred<Boolean>? =
-    BazelFileEventListener().process(events.toList())[project.locationHash]
+    object : BazelFileEventListener() {
+      override val allowBazelQuery: Boolean = true
+    }.process(events.toList())[project.locationHash]
 
   private fun VirtualFile.assertFileBelongsToTargets(vararg expectedBelongingStatus: Pair<Label, Boolean>) {
     this.toVirtualFileUrl(virtualFileUrlManager).assertFileBelongsToTargets(*expectedBelongingStatus)

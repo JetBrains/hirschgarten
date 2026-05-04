@@ -43,7 +43,6 @@ internal class BazelProjectSettingsConfigurable(private val project: Project) :
   private val projectViewPathField: TextFieldWithBrowseButton
   private val buildifierExecutablePathField: TextFieldWithBrowseButton
   private val runBuildifierOnSaveCheckBox: JBCheckBox
-  private val allowBazelInvocationOnFileEventsCheckBox: JBCheckBox
 
   private var currentProjectSettings = project.bazelProjectSettings
 
@@ -51,7 +50,6 @@ internal class BazelProjectSettingsConfigurable(private val project: Project) :
     projectViewPathField = initProjectViewFileField()
     buildifierExecutablePathField = initBuildifierExecutablePathField()
     runBuildifierOnSaveCheckBox = initRunBuildifierOnSaveCheckBox()
-    allowBazelInvocationOnFileEventsCheckBox = initAllowBazelInvocationOnFileEventsCheckBox()
   }
 
   override fun getDependencies(): List<BaseExtensionPointName<*>> = listOf(BazelGeneralSettingsProvider.ep)
@@ -68,7 +66,6 @@ internal class BazelProjectSettingsConfigurable(private val project: Project) :
         cell(buildifierExecutablePathField).align(Align.FILL).validationInfo { buildifierExecutableValidationInfo() }
       }
       row { cell(runBuildifierOnSaveCheckBox).align(Align.FILL) }
-      row { cell(allowBazelInvocationOnFileEventsCheckBox).align(Align.FILL) }
 
       // add settings from extensions
       configurables
@@ -123,14 +120,6 @@ internal class BazelProjectSettingsConfigurable(private val project: Project) :
       isSelected = currentProjectSettings.runBuildifierOnSave
       addItemListener {
         currentProjectSettings = currentProjectSettings.copy(runBuildifierOnSave = isSelected)
-      }
-    }
-
-  private fun initAllowBazelInvocationOnFileEventsCheckBox(): JBCheckBox =
-    JBCheckBox(BazelPluginBundle.message("project.settings.plugin.file.event.invoke.bazel.checkbox.text")).apply {
-      isSelected = currentProjectSettings.allowBazelInvocationOnFileEvents
-      addItemListener {
-        currentProjectSettings = currentProjectSettings.copy(allowBazelInvocationOnFileEvents = isSelected)
       }
     }
 
