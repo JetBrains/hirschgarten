@@ -29,7 +29,6 @@ import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkListLitera
 import org.jetbrains.bazel.languages.starlark.references.findBuildFile
 import org.jetbrains.bazel.languages.starlark.rename.StarlarkElementGenerator
 import org.jetbrains.bazel.languages.starlark.repomapping.toShortString
-import org.jetbrains.bazel.sync.workspace.languages.java.JavaLanguagePlugin.Companion.OUTPUT_JARS_SUFFIX
 import org.jetbrains.bazel.ui.notifications.BazelBalloonNotifier
 import org.jetbrains.bazel.ui.widgets.jumpToBuildFile
 import org.jetbrains.bazel.workspacemodel.entities.bazelLibraryExtension
@@ -74,7 +73,7 @@ internal class BazelProjectModelModifier(private val project: Project) : JavaPro
       }
       if (tryAddingModuleDependencyToBuildFile(from, extension.label.toLabel())) {
         // We should actually depend on the library module, not the library itself
-        val libraryModuleName = checkNotNull(library.name).removeSuffix(OUTPUT_JARS_SUFFIX)
+        val libraryModuleName = checkNotNull(library.name)
         val libraryModule = ModuleManager.getInstance(project).findModuleByName(libraryModuleName)
         if (libraryModule != null) {
           ideaProjectModelModifier.addModuleDependency(from, libraryModule, scope, true)?.await()
