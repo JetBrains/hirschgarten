@@ -74,9 +74,8 @@ org.jetbrains.bazel.label.TargetType
 f:org.jetbrains.bazel.settings.bazel.BazelProjectSettings
 - f:component1():com.intellij.openapi.vfs.VirtualFile
 - f:component3():Z
-- f:component4():Z
-- f:copy(com.intellij.openapi.vfs.VirtualFile,java.nio.file.Path,Z,Z):org.jetbrains.bazel.settings.bazel.BazelProjectSettings
-- bs:copy$default(org.jetbrains.bazel.settings.bazel.BazelProjectSettings,com.intellij.openapi.vfs.VirtualFile,java.nio.file.Path,Z,Z,I,java.lang.Object):org.jetbrains.bazel.settings.bazel.BazelProjectSettings
+- f:copy(com.intellij.openapi.vfs.VirtualFile,java.nio.file.Path,Z):org.jetbrains.bazel.settings.bazel.BazelProjectSettings
+- bs:copy$default(org.jetbrains.bazel.settings.bazel.BazelProjectSettings,com.intellij.openapi.vfs.VirtualFile,java.nio.file.Path,Z,I,java.lang.Object):org.jetbrains.bazel.settings.bazel.BazelProjectSettings
 - equals(java.lang.Object):Z
 - f:getProjectViewPath():com.intellij.openapi.vfs.VirtualFile
 - hashCode():I

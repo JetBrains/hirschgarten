@@ -40,6 +40,8 @@ object BazelFeatureFlags {
   private const val SHOW_BAZEL_STDOUT = "bazel.show.stdout"
   private const val HARD_LINK_OUTPUT_FILES = "bazel.hard.link.output.files"
 
+  private const val QUERY_ON_FILE_EVENTS = "bazel.query.on.file.events"
+
   val isPythonSupportEnabled: Boolean
     get() = isEnabled(PYTHON_SUPPORT)
 
@@ -103,6 +105,10 @@ object BazelFeatureFlags {
   val hardLinkOutputFiles: Boolean
     get() = isEnabled(HARD_LINK_OUTPUT_FILES)
             && !service<BazelApplicationContextService>().disableHardLinksOutputFiles
+
+  val queryBazelOnFileEvents: Boolean
+    get() = isEnabled(QUERY_ON_FILE_EVENTS)
+
 
   private fun isEnabled(key: String): Boolean {
     System.getProperty(key)?.let { value ->

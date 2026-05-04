@@ -23,7 +23,6 @@ import com.intellij.platform.workspace.jps.entities.ContentRootEntity
 import com.intellij.platform.workspace.jps.entities.ModuleEntity
 import com.intellij.platform.workspace.jps.entities.ModuleId
 import com.intellij.platform.workspace.jps.entities.SourceRootEntity
-import com.intellij.platform.workspace.jps.entities.SourceRootTypeId
 import com.intellij.platform.workspace.jps.entities.modifyModuleEntity
 import com.intellij.platform.workspace.storage.ImmutableEntityStorage
 import com.intellij.platform.workspace.storage.MutableEntityStorage
@@ -42,6 +41,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.annotations.VisibleForTesting
+import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.config.isBazelProject
 import org.jetbrains.bazel.config.rootDir
@@ -53,7 +53,6 @@ import org.jetbrains.bazel.progress.syncConsole
 import org.jetbrains.bazel.projectAware.BazelProjectAware
 import org.jetbrains.bazel.run.task.BazelBuildTaskListener
 import org.jetbrains.bazel.server.connection.connection
-import org.jetbrains.bazel.settings.bazel.bazelProjectSettings
 import org.jetbrains.bazel.sync.projectStructure.legacy.GENERIC_SOURCE_ROOT_TYPE_ID
 import org.jetbrains.bazel.sync.status.SyncStatusService
 import org.jetbrains.bazel.target.TargetUtils
@@ -70,14 +69,12 @@ import org.jetbrains.bsp.protocol.InverseSourcesParams
 import org.jetbrains.bsp.protocol.TaskGroupId
 import org.jetbrains.bsp.protocol.TaskId
 import java.nio.file.Path
-import kotlin.io.path.extension
 import kotlin.io.path.name
 import kotlin.random.Random
 import kotlin.time.Duration.Companion.milliseconds
 
-@Suppress("UnstableApiUsage")
 @ApiStatus.Internal
-class BazelFileEventListener : BulkFileListenerBackgroundable {
+open class BazelFileEventListener : BulkFileListenerBackgroundable {
   override fun after(events: MutableList<out VFileEvent>) {
     // unit tests trigger file event listeners normally, making them hard to test unless that is disabled
     if (!ApplicationManager.getApplication().isUnitTestMode) {
@@ -103,6 +100,9 @@ class BazelFileEventListener : BulkFileListenerBackgroundable {
       }
     }.mapKeys { it.key.locationHash }
   }
+
+  protected open val allowBazelQuery: Boolean
+    get() = BazelFeatureFlags.queryBazelOnFileEvents
 
   /** @return `true` if processing has been performed in this function execution, `false` if it was omitted for any reason */
   private suspend fun processEventsForProject(project: Project, events: List<SimplifiedFileEvent>): Boolean {
@@ -140,7 +140,7 @@ class BazelFileEventListener : BulkFileListenerBackgroundable {
     }
 
     // no need to start sync console task if no Bazel processing is allowed
-    if (project.bazelProjectSettings.allowBazelInvocationOnFileEvents) {
+    if (allowBazelQuery) {
       startSyncConsoleTask(project, processingJob, taskId)
     }
     try {
@@ -297,7 +297,7 @@ class BazelFileEventListener : BulkFileListenerBackgroundable {
       }
     // avoid running a Bazel query when not required (BAZEL-2458)
     if (bazelQueryIsRequired) {
-      if (context.project.bazelProjectSettings.allowBazelInvocationOnFileEvents) {
+      if (allowBazelQuery) {
         val targetsByPath =
           context.progressReporter.startQueryStep { queryTargetsForFile(context.project, addedFilePaths, context.taskId) } ?: return
         addFileToTargets(targetsByPath, modulesToRemoveFilesFrom, modulesAlreadyContainingFiles, context)
@@ -363,14 +363,18 @@ class BazelFileEventListener : BulkFileListenerBackgroundable {
     existingModulesByEvent: Map<SimplifiedFileEvent, Set<ModuleEntity>>,
     context: ProcessingContext,
   ) {
-    allFileEvents.filterIsInstance<CreateDirectory>().filter { existingModulesByEvent[it].isNullOrEmpty() }
+    allFileEvents
+      .filterIsInstance<CreateDirectory>()
+      .filter { existingModulesByEvent[it].isNullOrEmpty() }
       .mapNotNull { createDirectoryEvent ->
-      updatePackageMarkerEntity(createDirectoryEvent, context)
-    }.groupBy({ it.first }, { it.second }).forEach { (moduleEntity, packageMarkerEntities) ->
-      context.entityStorageDiff.modifyModuleEntity(moduleEntity) {
-        this.packageMarkerEntities += packageMarkerEntities
+        updatePackageMarkerEntity(createDirectoryEvent, context)
       }
-    }
+      .groupBy({ it.first }, { it.second })
+      .forEach { (moduleEntity, packageMarkerEntities) ->
+        context.entityStorageDiff.modifyModuleEntity(moduleEntity) {
+          this.packageMarkerEntities += packageMarkerEntities
+        }
+      }
   }
 
   private suspend fun updatePackageMarkerEntity(
@@ -463,7 +467,6 @@ private suspend fun prepareProcessingContext(
 private fun Label.toModuleEntity(storage: ImmutableEntityStorage, project: Project): ModuleEntity? =
   storage.resolve(ModuleId(this.formatAsModuleName(project)))
 
-@Suppress("UnstableApiUsage")
 @RequiresReadLock
 private fun findModulesForFile(newFile: VirtualFile, fileIndex: ProjectFileIndex): Set<ModuleEntity> {
   val modules = fileIndex.getModulesForFile(newFile, true)

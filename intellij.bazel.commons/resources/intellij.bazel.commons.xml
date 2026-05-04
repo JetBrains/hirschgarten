@@ -157,9 +157,13 @@
                  restartRequired="false"
     />
     <registryKey defaultValue="true"
-                 description="Create hard links to Bazel output files (e.g., jars) during sync to protect
-against Bazel garbage-collecting files from disk with Remote Build Execution or when running bazel commands from terminal"
+                 description="Create hard links to Bazel output files (e.g., jars) during sync to protect against Bazel garbage-collecting files from disk with Remote Build Execution or when running bazel commands from terminal"
                  key="bazel.hard.link.output.files"
+                 restartRequired="false"
+    />
+    <registryKey defaultValue="false"
+                 description="Allow Bazel query invocation when processing file events"
+                 key="bazel.query.on.file.events"
                  restartRequired="false"
     />
     <projectSettings service="org.jetbrains.bazel.settings.bazel.BazelProjectSettingsService"/>
