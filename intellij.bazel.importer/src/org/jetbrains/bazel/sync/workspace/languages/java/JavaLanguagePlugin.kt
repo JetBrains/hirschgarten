@@ -700,10 +700,6 @@ class JavaLanguagePlugin: LanguagePlugin {
       return repoPath.resolve(prefix)
     }
   }
-
-  companion object {
-    const val OUTPUT_JARS_SUFFIX = "_output_jars"
-  }
 }
 
 private fun <K, V> concatenateMaps(maps: Collection<Map<K, List<V>>>): Map<K, List<V>> =
