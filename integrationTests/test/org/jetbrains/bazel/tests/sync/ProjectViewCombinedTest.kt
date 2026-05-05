@@ -25,6 +25,10 @@ import org.jetbrains.bazel.ideStarter.refreshFile
 import org.jetbrains.bazel.ideStarter.switchProjectView
 import org.jetbrains.bazel.ideStarter.switchProjectViewWithPreview
 import org.jetbrains.bazel.ideStarter.syncBazelProject
+import org.jetbrains.bazel.performanceImpl.FileKindCheck.IN_TARGETS
+import org.jetbrains.bazel.performanceImpl.FileKindCheck.NOT_IN_TARGETS
+import org.jetbrains.bazel.performanceImpl.FileKindCheck.IN_WSM
+import org.jetbrains.bazel.performanceImpl.FileKindCheck.NOT_IN_WSM
 import org.jetbrains.bazel.performanceImpl.FileKindCheck.INDEXABLE
 import org.jetbrains.bazel.performanceImpl.FileKindCheck.IN_CONTENT
 import org.jetbrains.bazel.performanceImpl.FileKindCheck.NON_INDEXABLE
@@ -202,18 +206,18 @@ class ProjectViewCombinedTest : IdeStarterBaseProjectTest() {
           execute { assertSyncedTargets("//app:app", "//common:common") }
         }
         step("Verify files with matching targets are in project and indexable (sanity check)") {
-          execute { assertFileKind("app/src/main/java/com/example/app/App.java", IN_CONTENT, INDEXABLE) }
-          execute { assertFileKind("common/src/main/java/com/example/common/Common.java", IN_CONTENT, INDEXABLE) }
+          execute { assertFileKind("app/src/main/java/com/example/app/App.java", IN_TARGETS, IN_WSM, IN_CONTENT, INDEXABLE) }
+          execute { assertFileKind("common/src/main/java/com/example/common/Common.java", IN_TARGETS, IN_WSM, IN_CONTENT, INDEXABLE) }
         }
         step("Verify files in non-target directories are still in project and indexable") {
-          execute { assertFileKind("server/src/main/java/com/example/server/Server.java", IN_CONTENT, INDEXABLE) }
-          execute { assertFileKind("client/src/main/java/com/example/client/Client.java", IN_CONTENT, INDEXABLE) }
-          execute { assertFileKind("database/src/main/java/com/example/database/Database.java", IN_CONTENT, INDEXABLE) }
-          execute { assertFileKind("frontend/src/main/java/com/example/frontend/Frontend.java", IN_CONTENT, INDEXABLE) }
-          execute { assertFileKind("webapp/src/main/java/com/example/webapp/Webapp.java", IN_CONTENT, INDEXABLE) }
-          execute { assertFileKind("tools/src/main/java/com/example/tools/Tools.java", IN_CONTENT, INDEXABLE) }
-          execute { assertFileKind("infra/src/main/java/com/example/infra/Infra.java", IN_CONTENT, INDEXABLE) }
-          execute { assertFileKind("testing/src/main/java/com/example/testing/Testing.java", IN_CONTENT, INDEXABLE) }
+          execute { assertFileKind("server/src/main/java/com/example/server/Server.java", NOT_IN_TARGETS, NOT_IN_WSM, IN_CONTENT, INDEXABLE) }
+          execute { assertFileKind("client/src/main/java/com/example/client/Client.java", NOT_IN_TARGETS, NOT_IN_WSM, IN_CONTENT, INDEXABLE) }
+          execute { assertFileKind("database/src/main/java/com/example/database/Database.java", NOT_IN_TARGETS, NOT_IN_WSM, IN_CONTENT, INDEXABLE) }
+          execute { assertFileKind("frontend/src/main/java/com/example/frontend/Frontend.java", NOT_IN_TARGETS, NOT_IN_WSM, IN_CONTENT, INDEXABLE) }
+          execute { assertFileKind("webapp/src/main/java/com/example/webapp/Webapp.java", NOT_IN_TARGETS, NOT_IN_WSM, IN_CONTENT, INDEXABLE) }
+          execute { assertFileKind("tools/src/main/java/com/example/tools/Tools.java", NOT_IN_TARGETS, NOT_IN_WSM, IN_CONTENT, INDEXABLE) }
+          execute { assertFileKind("infra/src/main/java/com/example/infra/Infra.java", NOT_IN_TARGETS, NOT_IN_WSM, IN_CONTENT, INDEXABLE) }
+          execute { assertFileKind("testing/src/main/java/com/example/testing/Testing.java", NOT_IN_TARGETS, NOT_IN_WSM, IN_CONTENT, INDEXABLE) }
         }
       }
     }

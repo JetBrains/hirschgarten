@@ -41,6 +41,7 @@ object BazelFeatureFlags {
   private const val HARD_LINK_OUTPUT_FILES = "bazel.hard.link.output.files"
 
   private const val QUERY_ON_FILE_EVENTS = "bazel.query.on.file.events"
+  private const val HIGHLIGHT_UNSYNCED_SOURCE_FILES = "bazel.highlight.unsynced.source.files"
 
   val isPythonSupportEnabled: Boolean
     get() = isEnabled(PYTHON_SUPPORT)
@@ -108,6 +109,9 @@ object BazelFeatureFlags {
 
   val queryBazelOnFileEvents: Boolean
     get() = isEnabled(QUERY_ON_FILE_EVENTS)
+
+  val highlightUnsyncedSourceFiles: Boolean
+    get() = isEnabled(HIGHLIGHT_UNSYNCED_SOURCE_FILES)
 
 
   private fun isEnabled(key: String): Boolean {
