@@ -527,10 +527,10 @@
       </components>
     </obsoleteStorage>
     <projectViewNodeDecorator implementation="org.jetbrains.bazel.settings.ProjectViewFileNodeDecorator"/>
-    <projectViewNodeDecorator implementation="org.jetbrains.bazel.sync.status.unsynced.UnsyncedSourceFileNodeDecorator"/>
-    <editorTabColorProvider implementation="org.jetbrains.bazel.sync.status.unsynced.UnsyncedSourceFileEditorTabColorProvider"/>
-    <editorTabTitleProvider implementation="org.jetbrains.bazel.sync.status.unsynced.UnsyncedSourceFileEditorTabTitleProvider"/>
-    <editorNotificationProvider implementation="org.jetbrains.bazel.sync.status.unsynced.UnsyncedSourceFileNotificationProvider"/>
+    <projectViewNodeDecorator implementation="org.jetbrains.bazel.ui.unsynced.UnsyncedSourceFileNodeDecorator"/>
+    <editorTabColorProvider implementation="org.jetbrains.bazel.ui.unsynced.UnsyncedSourceFileEditorTabColorProvider"/>
+    <editorTabTitleProvider implementation="org.jetbrains.bazel.ui.unsynced.UnsyncedSourceFileEditorTabTitleProvider"/>
+    <editorNotificationProvider implementation="org.jetbrains.bazel.ui.unsynced.UnsyncedSourceFileNotificationProvider"/>
     <referencesSearch implementation="org.jetbrains.bazel.languages.starlark.findusages.StarlarkStringUsageSearcher"/>
     <referencesSearch implementation="org.jetbrains.bazel.languages.starlark.findusages.StarlarkFileUsageSearcher"/>
     <usageTypeProvider implementation="org.jetbrains.bazel.languages.starlark.findusages.StarlarkUsageTypeProvider"/>

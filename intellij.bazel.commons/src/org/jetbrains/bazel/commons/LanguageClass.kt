@@ -18,9 +18,12 @@ package org.jetbrains.bazel.commons
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap
 import org.jetbrains.annotations.ApiStatus
 
-/** Language classes.
- * serialId is being used in serialization - keep it unchanged
- * */
+/**
+ * Supported languages/technologies
+ *
+ * NOTE: serialId is being used in serialization - keep it unchanged
+ *
+ */
 @ApiStatus.Internal
 enum class LanguageClass(
   val serialId: Int,
@@ -28,14 +31,10 @@ enum class LanguageClass(
   private val recognizedFilenameExtensions: Set<String>,
 ) {
   JAVA(2, "java", setOf("java")),
-  JAVASCRIPT(4, "javascript", setOf("js", "applejs")),
-  TYPESCRIPT(5, "typescript", setOf("ts", "ats")),
-  DART(6, "dart", setOf("dart")),
   GO(7, "go", setOf("go")),
   PYTHON(8, "python", setOf("py", "pyw", "pyi")),
   SCALA(9, "scala", setOf("scala")),
   KOTLIN(10, "kotlin", setOf("kt")),
-  THRIFT(11, "thrift", setOf("thrift")),
   PROTOBUF(12, "protobuf", setOf("proto", "protodevel")),
   ;
 
