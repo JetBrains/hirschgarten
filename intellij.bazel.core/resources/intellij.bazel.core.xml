@@ -19,11 +19,6 @@
     />
     <extensionPoint
       dynamic="true"
-      interface="org.jetbrains.bazel.ui.projectTree.TreeStructureSettingsProvider"
-      qualifiedName="org.jetbrains.bazel.treeStructureSettingsExtension"
-    />
-    <extensionPoint
-      dynamic="true"
       interface="org.jetbrains.bazel.ui.notifications.UnresolvedImportChecker"
       qualifiedName="org.jetbrains.bazel.unresolvedImportChecker"
     />
