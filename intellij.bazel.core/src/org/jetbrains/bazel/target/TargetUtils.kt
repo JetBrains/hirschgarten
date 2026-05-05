@@ -78,7 +78,7 @@ class TargetUtils(private val project: Project, private val coroutineScope: Coro
     }
 
   private val db: TargetsCacheStorage
-    get() = runBlockingMaybeCancellable { dbAsync.await() }
+    get() = runBlocking { dbAsync.await() }
 
   // we save only once every 5 minutes, and not earlier than 5 minutes after IDEA startup
   private var lastSaved = nowAsDuration()
