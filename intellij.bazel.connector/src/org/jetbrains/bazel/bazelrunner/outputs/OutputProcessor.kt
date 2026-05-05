@@ -103,7 +103,7 @@ class OutputProcessor(private val process: Process, showStdout: Boolean = false,
           if (killProcessTreeOnCancel) {
             OSProcessUtil.killProcessTree(process)
           } else {
-            OSProcessUtil.killProcess(process)
+            process.destroyForcibly()
           }
         } catch (_: Throwable) {
         }
