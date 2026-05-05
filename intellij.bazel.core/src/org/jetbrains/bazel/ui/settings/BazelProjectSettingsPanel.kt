@@ -43,7 +43,6 @@ internal class BazelProjectSettingsConfigurable(private val project: Project) :
   private val projectViewPathField: TextFieldWithBrowseButton
   private val buildifierExecutablePathField: TextFieldWithBrowseButton
   private val runBuildifierOnSaveCheckBox: JBCheckBox
-  private val showExcludedDirectoriesAsSeparateNodeCheckBox: JBCheckBox
   private val allowBazelInvocationOnFileEventsCheckBox: JBCheckBox
 
   private var currentProjectSettings = project.bazelProjectSettings
@@ -52,7 +51,6 @@ internal class BazelProjectSettingsConfigurable(private val project: Project) :
     projectViewPathField = initProjectViewFileField()
     buildifierExecutablePathField = initBuildifierExecutablePathField()
     runBuildifierOnSaveCheckBox = initRunBuildifierOnSaveCheckBox()
-    showExcludedDirectoriesAsSeparateNodeCheckBox = initShowExcludedDirectoriesAsSeparateNodeCheckBox()
     allowBazelInvocationOnFileEventsCheckBox = initAllowBazelInvocationOnFileEventsCheckBox()
   }
 
@@ -70,7 +68,6 @@ internal class BazelProjectSettingsConfigurable(private val project: Project) :
         cell(buildifierExecutablePathField).align(Align.FILL).validationInfo { buildifierExecutableValidationInfo() }
       }
       row { cell(runBuildifierOnSaveCheckBox).align(Align.FILL) }
-      row { cell(showExcludedDirectoriesAsSeparateNodeCheckBox).align(Align.FILL) }
       row { cell(allowBazelInvocationOnFileEventsCheckBox).align(Align.FILL) }
 
       // add settings from extensions
@@ -129,14 +126,6 @@ internal class BazelProjectSettingsConfigurable(private val project: Project) :
       }
     }
 
-  private fun initShowExcludedDirectoriesAsSeparateNodeCheckBox(): JBCheckBox =
-    JBCheckBox(BazelPluginBundle.message("project.settings.plugin.show.excluded.directories.as.separate.node.checkbox.text")).apply {
-      isSelected = currentProjectSettings.showExcludedDirectoriesAsSeparateNode
-      addItemListener {
-        currentProjectSettings = currentProjectSettings.copy(showExcludedDirectoriesAsSeparateNode = isSelected)
-      }
-    }
-
   private fun initAllowBazelInvocationOnFileEventsCheckBox(): JBCheckBox =
     JBCheckBox(BazelPluginBundle.message("project.settings.plugin.file.event.invoke.bazel.checkbox.text")).apply {
       isSelected = currentProjectSettings.allowBazelInvocationOnFileEvents
@@ -152,8 +141,6 @@ internal class BazelProjectSettingsConfigurable(private val project: Project) :
   override fun apply() {
     super<BoundCompositeSearchableConfigurable>.apply()
     val isProjectViewPathChanged = currentProjectSettings.projectViewPath != project.bazelProjectSettings.projectViewPath
-    val showExcludedDirectoriesAsSeparateNodeChanged =
-      currentProjectSettings.showExcludedDirectoriesAsSeparateNode != project.bazelProjectSettings.showExcludedDirectoriesAsSeparateNode
 
     project.bazelProjectSettings = currentProjectSettings
 
@@ -162,9 +149,6 @@ internal class BazelProjectSettingsConfigurable(private val project: Project) :
         ProjectSyncTask(project).sync(syncScope = SecondPhaseSync, buildProject = false)
       }
     }
-    if (showExcludedDirectoriesAsSeparateNodeChanged) {
-      ProjectView.getInstance(project).refresh(ProjectViewUpdateCause.SETTINGS)
-    }
   }
 
   override fun reset() {
@@ -172,8 +156,6 @@ internal class BazelProjectSettingsConfigurable(private val project: Project) :
     projectViewPathField.text = savedProjectViewPath()
     buildifierExecutablePathField.text = getBuildifierExecPathPlaceholderMessage()
     runBuildifierOnSaveCheckBox.isSelected = project.bazelProjectSettings.runBuildifierOnSave
-
-    showExcludedDirectoriesAsSeparateNodeCheckBox.isSelected = project.bazelProjectSettings.showExcludedDirectoriesAsSeparateNode
 
     currentProjectSettings = project.bazelProjectSettings
   }
@@ -205,7 +187,6 @@ internal class BazelProjectSettingsConfigurable(private val project: Project) :
       listOf(
         "project.settings.buildifier.label",
         "project.settings.project.view.label",
-        "project.settings.plugin.show.excluded.directories.as.separate.node.checkbox.text",
         "project.settings.plugin.file.event.invoke.bazel.checkbox.text",
         "project.settings.plugin.title",
         "project.settings.plugin.run.buildifier.on.save.checkbox.text",
