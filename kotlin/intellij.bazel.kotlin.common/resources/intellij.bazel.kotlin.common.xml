@@ -17,10 +17,6 @@
   <!-- endregion -->
 
   <extensions defaultExtensionNs="org.jetbrains.kotlin">
-    <supportsKotlinPluginMode supportsK1="true" supportsK2="true"/>
-  </extensions>
-
-  <extensions defaultExtensionNs="org.jetbrains.kotlin">
     <projectConfigurator
       implementation="org.jetbrains.bazel.kotlin.configuration.BazelKotlinProjectConfigurator"
       order="first"
