@@ -29,6 +29,7 @@ import org.jetbrains.bazel.workspacemodel.entities.Dependency
 import org.jetbrains.bazel.workspacemodel.entities.GenericModuleInfo
 import org.jetbrains.bazel.workspacemodel.entities.Library
 import org.jetbrains.bazel.workspacemodel.entities.Module
+import org.jetbrains.bsp.protocol.StrictDependencyCheckedType
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
@@ -93,11 +94,13 @@ internal class ModuleUpdaterTest : WorkspaceModelBaseTest() {
         type = ModuleTypeId("JAVA_MODULE"),
         dependencies =
           listOf(
-            Dependency("module2"),
-            Dependency("lib1"),
-            Dependency("module3"),
-            Dependency("lib2"),
+            Dependency("module2", Label.parse("//module2"), exported = true),
+            Dependency("lib1", Label.parse("//lib1"), exported = true),
+            Dependency("module3", Label.parse("//module3"), exported = true),
+            Dependency("lib2", Label.parse("//lib2"), exported = true),
           ),
+        strictDependenciesCheck = StrictDependencyCheckedType.OFF,
+        strictDependencies = emptyList(),
         kind =
           TargetKind(
             kind = "java_library",
@@ -165,11 +168,13 @@ internal class ModuleUpdaterTest : WorkspaceModelBaseTest() {
         type = ModuleTypeId("JAVA_MODULE"),
         dependencies =
           listOf(
-            Dependency("module2"),
-            Dependency("module3"),
-            Dependency("lib1"),
-            Dependency("lib2"),
+            Dependency("module2", Label.parse("//module2"), exported = true),
+            Dependency("module3", Label.parse("//module3"), exported = true),
+            Dependency("lib1", Label.parse("//lib1"), exported = true),
+            Dependency("lib2", Label.parse("//lib2"), exported = true),
           ),
+        strictDependenciesCheck = StrictDependencyCheckedType.OFF,
+        strictDependencies = emptyList(),
         kind =
           TargetKind(
             kind = "java_library",
@@ -185,9 +190,11 @@ internal class ModuleUpdaterTest : WorkspaceModelBaseTest() {
         type = ModuleTypeId("JAVA_MODULE"),
         dependencies =
           listOf(
-            Dependency("module3"),
-            Dependency("lib1"),
+            Dependency("module3", Label.parse("//module3"), exported = true),
+            Dependency("lib1", Label.parse("//lib1"), exported = true),
           ),
+        strictDependenciesCheck = StrictDependencyCheckedType.OFF,
+        strictDependencies = emptyList(),
         kind =
           TargetKind(
             kind = "java_library",
@@ -285,11 +292,13 @@ internal class ModuleUpdaterTest : WorkspaceModelBaseTest() {
         type = ModuleTypeId("JAVA_MODULE"),
         dependencies =
           listOf(
-            Dependency("module2"),
-            Dependency("unknown_module"),
-            Dependency("lib1"),
-            Dependency("unknown_lib"),
+            Dependency("module2", Label.parse("//module2"), exported = true),
+            Dependency("unknown_module", Label.parse("//unknown_module"), exported = true),
+            Dependency("lib1", Label.parse("//lib1"), exported = true),
+            Dependency("unknown_lib", Label.parse("//unknown_lib"), exported = true),
           ),
+        strictDependenciesCheck = StrictDependencyCheckedType.OFF,
+        strictDependencies = emptyList(),
         kind =
           TargetKind(
             kind = "java_library",
@@ -357,9 +366,11 @@ internal class ModuleUpdaterTest : WorkspaceModelBaseTest() {
         type = ModuleTypeId("JAVA_MODULE"),
         dependencies =
           listOf(
-            Dependency("lib1", isRuntimeOnly = false, exported = true),  // self-dep: library name without prefix
-            Dependency(libModuleName2, isRuntimeOnly = false, exported = true),  // inter-library dep: prefixed name
+            Dependency("lib1", Label.parse("//lib1"), exported = true),  // self-dep: library name without prefix
+            Dependency(libModuleName2, Label.parse("//$libModuleName2"), exported = true),  // inter-library dep: prefixed name
           ),
+        strictDependenciesCheck = StrictDependencyCheckedType.OFF,
+        strictDependencies = emptyList(),
         kind =
           TargetKind(
             kind = "java_library",

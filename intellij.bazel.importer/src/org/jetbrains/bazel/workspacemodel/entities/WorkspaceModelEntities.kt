@@ -1,6 +1,7 @@
 package org.jetbrains.bazel.workspacemodel.entities
 
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.roots.DependencyScope
 import com.intellij.platform.workspace.jps.entities.ModuleTypeId
 import com.intellij.platform.workspace.jps.entities.SourceRootTypeId
 import org.jetbrains.annotations.ApiStatus
@@ -10,6 +11,7 @@ import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.magicmetamodel.formatAsModuleName
 import org.jetbrains.bsp.protocol.LibraryItem
 import org.jetbrains.bsp.protocol.MavenCoordinates
+import org.jetbrains.bsp.protocol.StrictDependencyCheckedType
 import java.nio.file.Path
 import kotlin.io.path.extension
 
@@ -72,6 +74,8 @@ data class GenericModuleInfo(
   val name: String,
   val type: ModuleTypeId,
   val dependencies: List<Dependency>,
+  val strictDependenciesCheck: StrictDependencyCheckedType,
+  val strictDependencies: List<Label>,
   val kind: TargetKind,
   val associates: List<String> = listOf(),
   val isDummy: Boolean = false
@@ -80,8 +84,9 @@ data class GenericModuleInfo(
 @ApiStatus.Internal
 data class Dependency(
   val id: String,
-  val isRuntimeOnly: Boolean = false,
-  val exported: Boolean = false,
+  val label: Label,
+  val scope: DependencyScope = DependencyScope.COMPILE,
+  val exported: Boolean = false
 )
 
 @ApiStatus.Internal

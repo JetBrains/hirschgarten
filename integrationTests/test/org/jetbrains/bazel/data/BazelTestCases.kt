@@ -307,6 +307,16 @@ object IdeaBazelCases : BaseBazelCasesParametrized(BazelTestContext.IDEA) {
       configure = { context -> BazelProjectConfigurer.configureProjectBeforeUse(context, createProjectView = false) },
     ),
   )
+
+  val ProtobufStrictDepsTest = withBazelProject(
+    projectInfo = withDefaults(
+      repositoryUrl = "https://github.com/JetBrainsBazelBot/simpleBazelProjectsForTesting.git",
+      commitHash = "46d46f8d4854df35df0d26bdfdf8d972b391eb09",
+      branchName = "main",
+      relativePath = "protobufStrictDepsTest",
+      configure = { context -> BazelProjectConfigurer.configureProjectBeforeUse(context, createProjectView = false) },
+    ),
+  )
 }
 
 private fun preCacheBazelisk(context: IDETestContext) {

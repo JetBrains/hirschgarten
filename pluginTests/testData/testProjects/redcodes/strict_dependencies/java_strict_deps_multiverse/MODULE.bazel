@@ -1,0 +1,17 @@
+module(
+    name = "null",
+    version = "0.1.0",
+)
+
+bazel_dep(name = "rules_java", version = "8.10.0")
+bazel_dep(name = "rules_jvm_external", version = "6.7")
+
+bazel_dep(name = "hermetic_cc_toolchain", version = "4.0.1")
+
+toolchains = use_extension("@hermetic_cc_toolchain//toolchain:ext.bzl", "toolchains")
+use_repo(toolchains, "zig_sdk")
+
+register_toolchains(
+    "@zig_sdk//toolchain/...",
+    "@zig_sdk//libc_aware/toolchain/..."
+)

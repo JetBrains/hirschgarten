@@ -17,17 +17,20 @@ interface BazelModuleExtensionEntityBuilder : WorkspaceEntityBuilder<BazelModule
   override var entitySource: EntitySource
   var module: ModuleEntityBuilder
   var label: WorkspaceModelTargetLabel
+  var strictDependencies: WorkspaceModelTargetLabelList
 }
 
 internal object BazelModuleExtensionEntityType : EntityType<BazelModuleExtensionEntity, BazelModuleExtensionEntityBuilder>() {
   override val entityClass: Class<BazelModuleExtensionEntity> get() = BazelModuleExtensionEntity::class.java
   operator fun invoke(
     label: WorkspaceModelTargetLabel,
+    strictDependencies: WorkspaceModelTargetLabelList,
     entitySource: EntitySource,
     init: (BazelModuleExtensionEntityBuilder.() -> Unit)? = null,
   ): BazelModuleExtensionEntityBuilder {
     val builder = builder()
     builder.label = label
+    builder.strictDependencies = strictDependencies
     builder.entitySource = entitySource
     init?.invoke(builder)
     return builder
@@ -51,6 +54,7 @@ var ModuleEntityBuilder.bazelModuleExtension: BazelModuleExtensionEntityBuilder?
 @JvmName("createBazelModuleExtensionEntity")
 fun BazelModuleExtensionEntity(
   label: WorkspaceModelTargetLabel,
+  strictDependencies: WorkspaceModelTargetLabelList,
   entitySource: EntitySource,
   init: (BazelModuleExtensionEntityBuilder.() -> Unit)? = null,
-): BazelModuleExtensionEntityBuilder = BazelModuleExtensionEntityType(label, entitySource, init)
+): BazelModuleExtensionEntityBuilder = BazelModuleExtensionEntityType(label, strictDependencies, entitySource, init)

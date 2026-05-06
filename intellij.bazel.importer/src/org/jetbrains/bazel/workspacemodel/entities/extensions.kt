@@ -6,6 +6,7 @@ import com.intellij.platform.workspace.storage.WorkspaceEntity
 import com.intellij.platform.workspace.storage.annotations.Parent
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.label.Label
+import org.jetbrains.bsp.protocol.StrictDependencyCheckedType
 
 @ApiStatus.Internal
 interface BazelModuleExtensionEntity : WorkspaceEntity {
@@ -13,6 +14,7 @@ interface BazelModuleExtensionEntity : WorkspaceEntity {
   val module: ModuleEntity
 
   val label: WorkspaceModelTargetLabel
+  val strictDependencies: WorkspaceModelTargetLabelList
 }
 
 @ApiStatus.Internal
@@ -36,3 +38,6 @@ class WorkspaceModelTargetLabel(private val label: String) {
 
   fun toLabel(): Label = Label.parse(label)
 }
+
+@ApiStatus.Internal
+class WorkspaceModelTargetLabelList(val check: StrictDependencyCheckedType, val labels: List<String>)

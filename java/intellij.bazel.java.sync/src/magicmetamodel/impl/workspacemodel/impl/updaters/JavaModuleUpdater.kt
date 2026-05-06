@@ -96,7 +96,9 @@ class JavaModuleWithSourcesUpdater(
     }
     if (scalaSdkExtensionExists()) {
       entityToAdd.scalaAddendum?.also { addendum ->
-        returnDependencies.add(toLibraryDependency(addendum.scalaVersion.scalaVersionToScalaSdkName(), exported = false))
+        returnDependencies.add(toLibraryDependency(
+          addendum.scalaVersion.scalaVersionToScalaSdkName(), exported = false
+        ))
       }
     }
 

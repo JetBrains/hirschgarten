@@ -23,11 +23,11 @@ internal class BazelBuildTaskListener(private val taskConsole: TaskConsole) : Ba
     when (data) {
       is CompileReport -> {
         if (data.errors == 0 && status == BazelStatus.SUCCESS) {
-          taskConsole.finishSubtask(taskId, message, FailureResultImpl())
+          taskConsole.finishSubtask(taskId, message, SuccessResultImpl())
         } else if (status == BazelStatus.CANCEL) {
           taskConsole.finishSubtask(taskId, message, SkippedResultImpl())
         } else {
-          taskConsole.finishSubtask(taskId, message, SuccessResultImpl())
+          taskConsole.finishSubtask(taskId, message, FailureResultImpl())
         }
       }
 

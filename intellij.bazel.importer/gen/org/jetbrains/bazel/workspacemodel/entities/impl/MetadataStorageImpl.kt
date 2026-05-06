@@ -270,6 +270,59 @@ internal object MetadataStorageImpl : MetadataStorageBase() {
           ),
           withDefault = false,
         ),
+        OwnPropertyMetadata(
+          isComputable = false,
+          isKey = false,
+          isOpen = false,
+          name = "strictDependencies",
+          valueType = ValueTypeMetadata.SimpleType.CustomType(
+            isNullable = false,
+            typeMetadata = FinalClassMetadata.ClassMetadata(
+              fqName = "org.jetbrains.bazel.workspacemodel.entities.WorkspaceModelTargetLabelList",
+              properties = listOf(
+                OwnPropertyMetadata(
+                  isComputable = false,
+                  isKey = false,
+                  isOpen = false,
+                  name = "check",
+                  valueType = ValueTypeMetadata.SimpleType.CustomType(
+                    isNullable = false,
+                    typeMetadata = FinalClassMetadata.EnumClassMetadata(
+                      fqName = "org.jetbrains.bsp.protocol.StrictDependencyCheckedType",
+                      properties = listOf(),
+                      supertypes = listOf(
+                        "java.io.Serializable",
+                        "kotlin.Comparable",
+                        "kotlin.Enum",
+                      ),
+                      values = listOf(
+                        "ERROR",
+                        "OFF",
+                        "WARNING",
+                      ),
+                    ),
+                  ),
+                  withDefault = false,
+                ),
+                OwnPropertyMetadata(
+                  isComputable = false,
+                  isKey = false,
+                  isOpen = false,
+                  name = "labels",
+                  valueType = ValueTypeMetadata.SimpleType.CustomType(
+                    isNullable = false,
+                    typeMetadata = FinalClassMetadata.KnownClass(
+                      fqName = "kotlin.Array",
+                    ),
+                  ),
+                  withDefault = false,
+                ),
+              ),
+              supertypes = listOf(),
+            ),
+          ),
+          withDefault = false,
+        ),
       ),
       extProperties = listOf(
         ExtPropertyMetadata(
@@ -954,7 +1007,7 @@ internal object MetadataStorageImpl : MetadataStorageBase() {
 
   override fun initializeMetadataHash() {
     addMetadataHash(typeFqn = "org.jetbrains.bazel.workspacemodel.entities.BazelLibraryExtensionEntity", metadataHash = -2026061674)
-    addMetadataHash(typeFqn = "org.jetbrains.bazel.workspacemodel.entities.BazelModuleExtensionEntity", metadataHash = 1865694634)
+    addMetadataHash(typeFqn = "org.jetbrains.bazel.workspacemodel.entities.BazelModuleExtensionEntity", metadataHash = 1807510791)
     addMetadataHash(typeFqn = "org.jetbrains.bazel.workspacemodel.entities.BazelProjectDirectoriesEntity", metadataHash = 1532901196)
     addMetadataHash(
       typeFqn = "org.jetbrains.bazel.workspacemodel.entities.CompiledSourceCodeInsideJarExcludeEntity",
@@ -968,6 +1021,8 @@ internal object MetadataStorageImpl : MetadataStorageBase() {
     addMetadataHash(typeFqn = "org.jetbrains.bazel.workspacemodel.entities.PackageMarkerEntity", metadataHash = -1844349399)
     addMetadataHash(typeFqn = "org.jetbrains.bazel.workspacemodel.entities.ScalaAddendumEntity", metadataHash = 950673911)
     addMetadataHash(typeFqn = "org.jetbrains.bazel.workspacemodel.entities.WorkspaceModelTargetLabel", metadataHash = -582088477)
+    addMetadataHash(typeFqn = "org.jetbrains.bazel.workspacemodel.entities.WorkspaceModelTargetLabelList", metadataHash = -443902307)
+    addMetadataHash(typeFqn = "org.jetbrains.bsp.protocol.StrictDependencyCheckedType", metadataHash = -2089160899)
     addMetadataHash(typeFqn = "org.jetbrains.bazel.workspacemodel.entities.CompiledSourceCodeInsideJarExcludeId", metadataHash = -914279954)
     addMetadataHash(typeFqn = "com.intellij.platform.workspace.jps.entities.LibraryId", metadataHash = 1783065412)
     addMetadataHash(typeFqn = "com.intellij.platform.workspace.jps.entities.LibraryTableId", metadataHash = 1939585583)

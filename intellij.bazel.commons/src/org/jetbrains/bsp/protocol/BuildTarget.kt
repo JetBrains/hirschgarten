@@ -115,7 +115,15 @@ data class JvmBuildTarget(
   val resolvedResourceStripPrefix: Path? = null,
   @Transient @JvmField val libraries: List<LibraryItem> = emptyList(),
   @Transient @JvmField val jvmDependencies: List<JvmDependency> = emptyList(),
+  val checkStrictDependencies: StrictDependencyCheckedType = StrictDependencyCheckedType.OFF,
 ) : BuildTargetData
+
+@ApiStatus.Internal
+enum class StrictDependencyCheckedType {
+  OFF,
+  WARNING,
+  ERROR,
+}
 
 @ApiStatus.Internal
 sealed interface JvmDependency {

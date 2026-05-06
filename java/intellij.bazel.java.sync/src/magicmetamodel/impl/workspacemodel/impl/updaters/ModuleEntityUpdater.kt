@@ -1,6 +1,6 @@
 package org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters
 
-import com.intellij.platform.workspace.jps.entities.DependencyScope
+import com.intellij.openapi.roots.DependencyScope
 import com.intellij.platform.workspace.jps.entities.LibraryDependency
 import com.intellij.platform.workspace.jps.entities.LibraryId
 import com.intellij.platform.workspace.jps.entities.LibraryTableId
@@ -21,7 +21,9 @@ import org.jetbrains.bazel.workspacemodel.entities.GenericModuleInfo
 import org.jetbrains.bazel.workspacemodel.entities.Library
 import org.jetbrains.bazel.workspacemodel.entities.Module
 import org.jetbrains.bazel.workspacemodel.entities.WorkspaceModelTargetLabel
+import org.jetbrains.bazel.workspacemodel.entities.WorkspaceModelTargetLabelList
 import org.jetbrains.bazel.workspacemodel.entities.bazelModuleExtension
+import com.intellij.platform.workspace.jps.entities.DependencyScope as EntitiesDependencyScope
 
 private val dependencyInterner: Interner<ModuleDependencyItem> = Interner.createWeakInterner()
 private val idInterner: Interner<SymbolicEntityId<*>> = Interner.createWeakInterner()
@@ -37,8 +39,7 @@ class ModuleEntityUpdater(
     addModuleEntity(workspaceModelEntityUpdaterConfig.workspaceEntityStorageBuilder, entityToAdd)
 
   private fun addModuleEntity(builder: MutableEntityStorage, entityToAdd: GenericModuleInfo): ModuleEntity {
-    val associatesDependencies = entityToAdd.associates.map { toModuleDependencyItemModuleDependency(it) }
-    val usesJpsExportSemantics = entityToAdd.kind.usesJpsExportSemantics()
+    val associatesDependencies = entityToAdd.associates.map { toModuleDependencyItemModuleDependency(it, exported = true) }
     val dependenciesFromEntity =
       entityToAdd.dependencies.mapNotNull { dependency ->
         // Libraries may have the same name as its container module.
@@ -46,11 +47,10 @@ class ModuleEntityUpdater(
 
         val moduleDependency = modules[dependency.id]?.takeIf { entityToAdd.name != dependency.id }
         if (moduleDependency != null) {
-          val exported = dependency.exported || !usesJpsExportSemantics
           return@mapNotNull toModuleDependencyItemModuleDependency(
             dependency.id,
-            exported = exported,
-            runtime = dependency.isRuntimeOnly,
+            exported = dependency.exported,
+            scope = dependency.scope,
           )
         }
 
@@ -58,8 +58,8 @@ class ModuleEntityUpdater(
         if (libraryDependency != null) {
           return@mapNotNull toLibraryDependency(
             dependency.id,
-            exported = true, /*dependency.exported*/ // why?
-            runtime = dependency.isRuntimeOnly,
+            exported = dependency.exported,
+            scope = dependency.scope,
           )
         }
 
@@ -80,6 +80,11 @@ class ModuleEntityUpdater(
         this.type = entityToAdd.type
         this.bazelModuleExtension = BazelModuleExtensionEntity(
           label = WorkspaceModelTargetLabel(entityToAdd.label),
+          strictDependencies =
+            WorkspaceModelTargetLabelList(
+              entityToAdd.strictDependenciesCheck,
+              entityToAdd.strictDependencies.map { it.toString() },
+            ),
           entitySource = toEntitySource(entityToAdd),
         )
       }
@@ -95,20 +100,20 @@ class ModuleEntityUpdater(
 
   private fun toModuleDependencyItemModuleDependency(
     moduleName: String,
-    exported: Boolean = true,
-    runtime: Boolean = false,
+    exported: Boolean,
+    scope: DependencyScope = DependencyScope.COMPILE,
   ): ModuleDependency =
     dependencyInterner.intern(
       ModuleDependency(
         module = idInterner.intern(ModuleId(moduleName)) as ModuleId,
         exported = exported,
-        scope = dependencyScope(runtime),
+        scope = scope.toEntityDependencyScope(),
         productionOnTest = true,
       ),
     ) as ModuleDependency
 }
 
-internal fun toLibraryDependency(libraryName: String, exported: Boolean = true, runtime: Boolean = false): LibraryDependency =
+internal fun toLibraryDependency(libraryName: String, exported: Boolean, scope: DependencyScope = DependencyScope.COMPILE): LibraryDependency =
   dependencyInterner.intern(
     LibraryDependency(
       library =
@@ -118,10 +123,14 @@ internal fun toLibraryDependency(libraryName: String, exported: Boolean = true, 
             tableId = LibraryTableId.ProjectLibraryTableId, // treat all libraries as project-level libraries
           ),
         ) as LibraryId,
-      exported = exported, // TODO https://youtrack.jetbrains.com/issue/BAZEL-632
-      scope = dependencyScope(runtime),
+      exported = exported,
+      scope = scope.toEntityDependencyScope(),
     ),
   ) as LibraryDependency
 
-private fun dependencyScope(runtime: Boolean): DependencyScope =
-  if (runtime) DependencyScope.RUNTIME else DependencyScope.COMPILE
+private fun com.intellij.openapi.roots.DependencyScope.toEntityDependencyScope(): EntitiesDependencyScope = when (this) {
+  com.intellij.openapi.roots.DependencyScope.COMPILE -> EntitiesDependencyScope.COMPILE
+  com.intellij.openapi.roots.DependencyScope.RUNTIME -> EntitiesDependencyScope.RUNTIME
+  com.intellij.openapi.roots.DependencyScope.PROVIDED -> EntitiesDependencyScope.PROVIDED
+  com.intellij.openapi.roots.DependencyScope.TEST -> EntitiesDependencyScope.TEST
+}

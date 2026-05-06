@@ -11,6 +11,7 @@ import org.jetbrains.bazel.sync.workspace.languages.java.sourceRoot.JvmPackagePr
 import org.jetbrains.bsp.protocol.LibraryItem
 import org.jetbrains.bsp.protocol.RawBuildTarget
 import org.jetbrains.bsp.protocol.SourceItem
+import org.jetbrains.bsp.protocol.StrictDependencyCheckedType
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import java.nio.file.Path
@@ -185,6 +186,8 @@ class CompiledSourceCodeInsideJarExcludeTransformerTest {
         ),
       javacOptions = listOf(),
       dependencies = emptyList(),
+      strictDependenciesCheck = StrictDependencyCheckedType.OFF,
+      strictDependencies = emptyList(),
       defaultJdkName = null,
       jvmBinaryJars = emptyList(),
     )

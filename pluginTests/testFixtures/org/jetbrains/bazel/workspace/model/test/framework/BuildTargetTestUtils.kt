@@ -20,6 +20,7 @@ import org.jetbrains.bazel.workspacemodel.entities.ScalaAddendum
 import org.jetbrains.bsp.protocol.BuildTargetData
 import org.jetbrains.bsp.protocol.RawBuildTarget
 import org.jetbrains.bsp.protocol.SourceItem
+import org.jetbrains.bsp.protocol.StrictDependencyCheckedType
 import java.nio.file.Path
 import kotlin.io.path.Path
 
@@ -57,6 +58,8 @@ fun createModuleDetails(
     target = target,
     javacOptions = javacOptions,
     dependencies = dependencies,
+    strictDependenciesCheck = StrictDependencyCheckedType.OFF,
+    strictDependencies = emptyList(),
     defaultJdkName = defaultJdkName,
     jvmBinaryJars = jvmBinaryJars,
   )
@@ -87,6 +90,8 @@ fun createJavaModule(
       name = name,
       type = ModuleTypeId(type),
       dependencies = dependencies,
+      strictDependenciesCheck = StrictDependencyCheckedType.OFF,
+      strictDependencies = emptyList(),
       associates = associates,
       kind = kind,
     ),

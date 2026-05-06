@@ -20,6 +20,7 @@ import org.jetbrains.bazel.workspacemodel.entities.ContentRoot
 import org.jetbrains.bazel.workspacemodel.entities.GenericModuleInfo
 import org.jetbrains.bazel.workspacemodel.entities.JavaModule
 import org.jetbrains.bazel.workspacemodel.entities.JavaSourceRoot
+import org.jetbrains.bsp.protocol.StrictDependencyCheckedType
 import java.io.File
 import java.nio.file.Path
 import kotlin.io.path.Path
@@ -178,7 +179,9 @@ class JavaModuleToDummyJavaModulesTransformerHACK(
             ruleType = RuleType.LIBRARY,
             languageClasses = setOf(LanguageClass.JAVA, LanguageClass.SCALA, LanguageClass.KOTLIN),
           ),
+        strictDependenciesCheck = StrictDependencyCheckedType.OFF,
         dependencies = emptyList(),
+        strictDependencies = emptyList(),
         isDummy = true,
       ),
     baseDirContentRoot = ContentRoot(path = sourceRoot.sourcePath),

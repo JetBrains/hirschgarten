@@ -17,9 +17,6 @@ package org.jetbrains.bazel.commons
 
 import org.jetbrains.annotations.ApiStatus
 
-// For compatibility with OG
-internal typealias Kind = TargetKind
-
 /**
  * A set of recognized bazel rule names, together with [LanguageClass] and [RuleType].
  * Language-specific extensions can provide their own set of rule names, as well as heuristics to
@@ -49,7 +46,4 @@ data class TargetKind(
   fun includesGo(): Boolean = languageClasses.contains(LanguageClass.GO)
 
   fun isJvmTarget(): Boolean = includesJava() || includesKotlin() || includesScala()
-
-  @Deprecated("TODO: drop this semantic from ultimate rules")
-  fun usesJpsExportSemantics(): Boolean = kind == "jvm_library" || kind == "_jvm_library_jps"
 }
