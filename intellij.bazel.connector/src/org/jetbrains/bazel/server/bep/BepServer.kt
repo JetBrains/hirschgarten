@@ -19,6 +19,7 @@ import org.jetbrains.bazel.commons.constants.Constants
 import org.jetbrains.bazel.label.AllRuleTargets
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.label.SyntheticLabel
+import org.jetbrains.bazel.server.BazelTestFileNames
 import org.jetbrains.bazel.server.diagnostics.DiagnosticsService
 import org.jetbrains.bazel.util.BspClientTestNotifier
 import org.jetbrains.bsp.protocol.BazelTaskEventsHandler
@@ -129,7 +130,7 @@ class BepServer(
 
       val coverageReport =
         testResult.testActionOutputList
-          .find { it.name == "test.lcov" }
+          .find { it.name == BazelTestFileNames.COVERAGE.filename }
           ?.let { bazelPathsResolver.resolve(it) }
       if (coverageReport != null) {
         taskEventsHandler.onPublishCoverageReport(
@@ -143,7 +144,7 @@ class BepServer(
       if (testResult.cachedLocally) {
         val testLog =
           testResult.testActionOutputList
-            .find { it.name == "test.log" }
+            .find { it.name == BazelTestFileNames.LOG.filename }
             ?.let { bazelPathsResolver.resolve(it) }
 
         if (testLog != null) {
@@ -156,7 +157,7 @@ class BepServer(
         }
       }
 
-      val testXml = testResult.testActionOutputList.find { it.name == "test.xml" }?.let { bazelPathsResolver.resolve(it) }
+      val testXml = testResult.testActionOutputList.find { it.name == BazelTestFileNames.XML.filename }?.let { bazelPathsResolver.resolve(it) }
       if (testXml != null) {
         // Test cases identified and sent to the client by TestXmlParser.
         TestXmlParser(bspClientTestNotifier).parseAndReport(taskId, testXml)
