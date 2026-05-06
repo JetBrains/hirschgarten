@@ -188,7 +188,8 @@ class ExecuteService(
     params.environmentVariables?.let { (command as HasEnvironment).environment.putAll(it) }
     params.arguments?.let { (command as HasProgramArguments).programArguments.addAll(it) }
     command.options.add(BazelFlag.buildEventBinaryPathConversion(false))
-    command.options.add(BazelFlag.remoteDownloadOutputsTopLevel())  // We need, e.g., test.xml downloaded when using remote execution
+    // Ensure all test xml, log, and lcov files are downloaded even when remote_download_outputs=minimal is set
+    command.options.add(BazelFlag.remoteDownloadRegex(".*/test\\.(xml|log|lcov)"))
     with(command as HasMultipleTargets) {
       targets.addAll(targetsSpec.values)
       excludedTargets.addAll(targetsSpec.excludedValues)

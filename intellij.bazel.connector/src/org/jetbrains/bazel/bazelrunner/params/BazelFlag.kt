@@ -78,6 +78,9 @@ object BazelFlag {
   @JvmStatic
   fun remoteDownloadOutputsTopLevel(): String = arg("remote_download_outputs", "toplevel")
 
+  @JvmStatic
+  fun remoteDownloadRegex(pattern: String): String = arg("remote_download_regex", pattern)
+
   private fun yesNoArg(name: String, enable: Boolean) = arg(name, if (enable) "yes" else "no")
 
   private fun arg(name: String, value: String) = String.format("--%s=%s", name, value)
