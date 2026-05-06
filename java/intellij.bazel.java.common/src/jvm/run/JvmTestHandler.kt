@@ -56,7 +56,7 @@ class JvmTestHandler(private val configuration: BazelRunConfiguration) : BazelRu
                ((!state.runWithBazel && executor is DefaultRunExecutor)
                 || (executor !is DefaultRunExecutor && executor.id != COVERAGE_EXECUTOR_ID))) {
       environment.putCopyableUserData(SCRIPT_PATH_KEY, Ref())
-      ScriptPathTestCommandLineState(environment, state)
+      ScriptPathTestCommandLineState(environment, state, configuration)
     }
     else {
       BazelTestCommandLineState(environment, state)
@@ -79,8 +79,12 @@ class JvmTestHandler(private val configuration: BazelRunConfiguration) : BazelRu
   }
 }
 
-internal class ScriptPathTestCommandLineState(environment: ExecutionEnvironment, val settings: JvmTestState) :
-  JvmDebuggableCommandLineState(environment, settings.debugPort) {
+internal class ScriptPathTestCommandLineState(
+  environment: ExecutionEnvironment,
+  val settings: JvmTestState,
+  configuration: BazelRunConfiguration,
+) :
+  JvmDebuggableCommandLineState(environment, settings.debugPort, configuration) {
   override fun createAndAddTaskListener(handler: BazelProcessHandler): BazelTaskListener =
     if (environment.project.useJetBrainsTestRunner()) {
       JetBrainsTestRunnerTaskListener(handler)

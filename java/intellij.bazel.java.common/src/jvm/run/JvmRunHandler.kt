@@ -26,7 +26,7 @@ import org.jetbrains.bsp.protocol.BazelServerFacade
 internal val COROUTINE_JVM_FLAGS_KEY = Key.create<Ref<List<String>>>("bazel.coroutine.jvm.flags")
 
 @ApiStatus.Internal
-class JvmRunHandler(configuration: BazelRunConfiguration) : BazelRunHandler {
+class JvmRunHandler(private val configuration: BazelRunConfiguration) : BazelRunHandler {
   init {
     configuration.setBeforeRunTasksFromHandler(
       listOfNotNull(
@@ -52,7 +52,7 @@ class JvmRunHandler(configuration: BazelRunConfiguration) : BazelRunHandler {
     }
     else {
       environment.putCopyableUserData(SCRIPT_PATH_KEY, Ref())
-      RunScriptPathCommandLineState(environment, state)
+      RunScriptPathCommandLineState(environment, state, configuration)
     }
   }
 
@@ -72,8 +72,12 @@ class JvmRunHandler(configuration: BazelRunConfiguration) : BazelRunHandler {
   }
 }
 
-internal class RunScriptPathCommandLineState(environment: ExecutionEnvironment, val settings: JvmRunState) :
-  JvmDebuggableCommandLineState(environment, settings.debugPort) {
+internal class RunScriptPathCommandLineState(
+  environment: ExecutionEnvironment,
+  private val settings: JvmRunState,
+  configuration: BazelRunConfiguration,
+) :
+  JvmDebuggableCommandLineState(environment, settings.debugPort, configuration) {
   override fun createAndAddTaskListener(handler: BazelProcessHandler): BazelTaskListener = BazelRunTaskListener(handler)
 
   override suspend fun startBsp(

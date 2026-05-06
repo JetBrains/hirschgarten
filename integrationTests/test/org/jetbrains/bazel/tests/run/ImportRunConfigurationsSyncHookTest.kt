@@ -132,7 +132,7 @@ class ImportRunConfigurationsSyncHookTest : IdeStarterBaseProjectTest() {
               long start = System.currentTimeMillis();
               double result = 0.0;
               Random random = new Random();
-              while (System.currentTimeMillis() < start + 5000) {
+              while (System.currentTimeMillis() < start + 10000) {
                   for (int i = 0; i < 1000; i++) {
                       result += random.nextDouble();
                   }
@@ -145,6 +145,8 @@ class ImportRunConfigurationsSyncHookTest : IdeStarterBaseProjectTest() {
           val moreActionsButton = actionButton { byAccessibleName("More Actions") }
           moreActionsButton.click()
           popup().waitOneText("Profile 'Bazel run :main' with 'IntelliJ Profiler'").click()
+          waitContainsText("Stop Recording and Show Results")  // check that the "Performance" UI tab appears
+          waitContainsText("CPU")  // check that the "Performance" UI tab appears
           consoleView.waitContainsText("The result is", timeout = 3.minutes)
           waitForProfilerDataReadyBubbleAppearAndClose()
 

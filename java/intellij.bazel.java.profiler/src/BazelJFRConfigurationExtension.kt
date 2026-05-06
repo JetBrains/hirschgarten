@@ -4,7 +4,7 @@ import com.intellij.execution.configurations.RunConfigurationBase
 import com.intellij.execution.process.OSProcessHandler
 import com.intellij.execution.process.ProcessHandler
 import com.intellij.profiler.api.configurations.ProfilerConfigurationState
-import com.intellij.profiler.ultimate.NewProcessStartedExternallyCommunicator
+import com.intellij.profiler.ultimate.NewProcessStartedWithProfilerCommunicator
 import com.intellij.profiler.ultimate.jfr.JFRConfigurationExtensionBase
 import com.intellij.profiler.ultimate.jfr.JFRProfilerProcess
 import com.intellij.profiler.ultimate.jfr.RecordingConfiguration
@@ -22,7 +22,7 @@ internal class BazelJFRConfigurationExtension : JFRConfigurationExtensionBase() 
   ) {
     if (handler !is OSProcessHandler) return
 
-    val communicator = NewProcessStartedExternallyCommunicator(runConfiguration.name, handler)
+    val communicator = NewProcessStartedWithProfilerCommunicator(runConfiguration.name, handler)
     val process = JFRProfilerProcess(
       runConfiguration.project,
       communicator,
