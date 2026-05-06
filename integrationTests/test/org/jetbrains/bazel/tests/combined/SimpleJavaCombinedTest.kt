@@ -87,6 +87,9 @@ class SimpleJavaCombinedTest : IdeStarterBaseProjectTest() {
   @Test @Order(3)
   fun `run gutter for test suite should contain several targets`() = runGutterTestSuite()
 
+  @Test @Order(4)
+  fun `build and sync should succeed`() = buildAndSyncTest()
+
   @Test @Order(100)
   fun `update bazel version should not cause server to break`() = bazelVersionUpdate()
 
@@ -137,6 +140,22 @@ class SimpleJavaCombinedTest : IdeStarterBaseProjectTest() {
             bytecodeKeywords.all { text.contains(it) }
           }
         }
+      }
+    }
+  }
+
+  private fun buildAndSyncTest() {
+    withDriver(bgRun) {
+      ideFrame {
+        step("Build and sync") {
+          sdkExecute {
+            it
+              .buildAndSync()
+              .waitForSmartMode()
+              .takeScreenshot("afterBuildAndSync")
+          }
+        }
+        assertSyncSucceeded()
       }
     }
   }
