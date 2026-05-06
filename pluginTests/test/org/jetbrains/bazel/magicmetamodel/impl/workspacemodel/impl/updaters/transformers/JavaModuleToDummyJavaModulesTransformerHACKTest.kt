@@ -35,8 +35,8 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest : WorkspaceModelBaseTest()
     val givenJavaModule = createJavaModule(
       name = "module1",
       dependencies = listOf(
-        Dependency("module2"),
-        Dependency("module3"),
+        Dependency("module2", Label.parse("//module2")),
+      Dependency("module3", Label.parse("//module3")),
       ),
       baseDirContentRoot = ContentRoot(path = projectRoot.toAbsolutePath()),
       sourceRoots = listOf(
@@ -105,7 +105,7 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest : WorkspaceModelBaseTest()
     val givenJavaModule = createJavaModule(
       name = "module1",
       type = JAVA_MODULE_ENTITY_TYPE_ID_NAME,
-      dependencies = listOf(Dependency("@maven//:lib1")),
+      dependencies = listOf(Dependency("@maven//:lib1", Label.parse("@maven//:lib1"))),
       kind = TargetKind(
         kind = "java_library",
         ruleType = RuleType.LIBRARY,
@@ -316,7 +316,7 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest : WorkspaceModelBaseTest()
     val givenJavaModule = createJavaModule(
       name = "module1",
       type = JAVA_MODULE_ENTITY_TYPE_ID_NAME,
-      dependencies = listOf(Dependency("@maven//:lib1")),
+      dependencies = listOf(Dependency("@maven//:lib1", Label.parse("@maven//:lib1"))),
       kind = TargetKind(
         kind = "java_library",
         ruleType = RuleType.LIBRARY,

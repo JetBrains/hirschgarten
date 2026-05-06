@@ -17,6 +17,8 @@ package org.jetbrains.bazel.commons
 
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap
 import org.jetbrains.annotations.ApiStatus
+import java.nio.file.Path
+import kotlin.io.path.extension
 
 /**
  * Supported languages/technologies
@@ -67,6 +69,8 @@ enum class LanguageClass(
 
     /** Returns the LanguageClass associated with the given filename extension, if it's recognized.  */
     fun fromExtension(filenameExtension: String): LanguageClass? = RECOGNIZED_EXTENSIONS[filenameExtension]
+    fun fromPath(path: Path): LanguageClass? = RECOGNIZED_EXTENSIONS[path.extension]
+    fun fromPath(path: String): LanguageClass? = RECOGNIZED_EXTENSIONS[path.substringAfterLast(".", missingDelimiterValue = "")]
 
     fun fromSerialId(id: Int): LanguageClass? = VALUE_BY_SERIAL_ID.get(id)
   }

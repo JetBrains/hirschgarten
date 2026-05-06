@@ -13,7 +13,9 @@ import com.intellij.openapi.roots.JavaProjectModelModifier
 import com.intellij.openapi.roots.impl.IdeaProjectModelModifier
 import com.intellij.openapi.roots.libraries.Library
 import com.intellij.openapi.roots.libraries.LibraryTablesRegistrar
+import com.intellij.platform.backend.workspace.WorkspaceModel
 import com.intellij.platform.backend.workspace.workspaceModel
+import com.intellij.platform.workspace.jps.entities.modifyModuleEntity
 import com.intellij.pom.java.LanguageLevel
 import com.intellij.workspaceModel.ide.legacyBridge.findLibraryEntity
 import com.intellij.workspaceModel.ide.legacyBridge.findModuleEntity
@@ -31,8 +33,11 @@ import org.jetbrains.bazel.languages.starlark.rename.StarlarkElementGenerator
 import org.jetbrains.bazel.languages.starlark.repomapping.toShortString
 import org.jetbrains.bazel.ui.notifications.BazelBalloonNotifier
 import org.jetbrains.bazel.ui.widgets.jumpToBuildFile
+import org.jetbrains.bazel.workspacemodel.entities.BazelModuleExtensionEntity
+import org.jetbrains.bazel.workspacemodel.entities.WorkspaceModelTargetLabelList
 import org.jetbrains.bazel.workspacemodel.entities.bazelLibraryExtension
 import org.jetbrains.bazel.workspacemodel.entities.bazelModuleExtension
+import org.jetbrains.bsp.protocol.StrictDependencyCheckedType
 import org.jetbrains.concurrency.AsyncPromise
 import org.jetbrains.concurrency.Promise
 import org.jetbrains.concurrency.await
@@ -49,9 +54,12 @@ internal class BazelProjectModelModifier(private val project: Project) : JavaPro
     exported: Boolean,
   ): Promise<Void>? =
     asyncPromise {
-      val labelToInsert = to.findModuleEntity()?.let { it.bazelModuleExtension?.label?.toLabel() }
+      val labelToInsert = to.findModuleEntity()
+        ?.bazelModuleExtension
+        ?.label?.toLabel()
       if (tryAddingModuleDependencyToBuildFile(from, labelToInsert)) {
         // We used to do a partial resync here, but simply modifying the project model is quicker
+        addToStrictDependenciesList(from, labelToInsert)
         ideaProjectModelModifier.addModuleDependency(from, to, scope, true)?.await()
       } else {
         from.jumpToBuildFile()
@@ -66,12 +74,12 @@ internal class BazelProjectModelModifier(private val project: Project) : JavaPro
     exported: Boolean,
   ): Promise<Void>? =
     asyncPromise {
-      val extension = library.findLibraryEntity(from.project.workspaceModel.currentSnapshot)
-        ?.bazelLibraryExtension ?: return@asyncPromise
-      if (extension.isSynthetic) {
-        return@asyncPromise
-      }
-      if (tryAddingModuleDependencyToBuildFile(from, extension.label.toLabel())) {
+      val labelToInsert = library.findLibraryEntity(from.project.workspaceModel.currentSnapshot)
+        ?.bazelLibraryExtension
+        ?.takeIf { !it.isSynthetic }
+        ?.label?.toLabel()
+      if (tryAddingModuleDependencyToBuildFile(from, labelToInsert)) {
+        addToStrictDependenciesList(from, labelToInsert)
         // We should actually depend on the library module, not the library itself
         val libraryModuleName = checkNotNull(library.name)
         val libraryModule = ModuleManager.getInstance(project).findModuleByName(libraryModuleName)
@@ -129,6 +137,25 @@ internal class BazelProjectModelModifier(private val project: Project) : JavaPro
       }
     }
     return insertSuccessful
+  }
+
+  private suspend fun addToStrictDependenciesList(from: Module, labelToInsert: Label?) {
+    if (labelToInsert == null)
+      return
+
+    val moduleEntity = from.findModuleEntity()
+    val bazelModuleExt = moduleEntity?.bazelModuleExtension ?: return
+    if (bazelModuleExt.strictDependencies.check == StrictDependencyCheckedType.OFF) return // Module does not use strict deps
+
+    WorkspaceModel.getInstance(project).update("Add $labelToInsert to strict dependencies list") { builder ->
+      builder.modifyModuleEntity(moduleEntity) {
+        this.bazelModuleExtension = BazelModuleExtensionEntity(
+          label = bazelModuleExt.label,
+          strictDependencies = WorkspaceModelTargetLabelList(bazelModuleExt.strictDependencies.check, bazelModuleExt.strictDependencies.labels + labelToInsert.toString()),
+          entitySource = bazelModuleExt.entitySource
+        )
+      }
+    }
   }
 
   private fun notifyAutomaticDependencyAdditionFailure() {

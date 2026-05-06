@@ -25,6 +25,7 @@ import org.jetbrains.annotations.ApiStatus.Internal
 import org.jetbrains.bazel.workspacemodel.entities.BazelModuleExtensionEntity
 import org.jetbrains.bazel.workspacemodel.entities.BazelModuleExtensionEntityBuilder
 import org.jetbrains.bazel.workspacemodel.entities.WorkspaceModelTargetLabel
+import org.jetbrains.bazel.workspacemodel.entities.WorkspaceModelTargetLabelList
 
 @Internal
 @GeneratedCodeApiVersion(3)
@@ -47,6 +48,11 @@ internal class BazelModuleExtensionEntityImpl(private val dataSource: BazelModul
     get() {
       readField("label")
       return dataSource.label
+    }
+  override val strictDependencies: WorkspaceModelTargetLabelList
+    get() {
+      readField("strictDependencies")
+      return dataSource.strictDependencies
     }
 
   override val entitySource: EntitySource
@@ -103,6 +109,9 @@ internal class BazelModuleExtensionEntityImpl(private val dataSource: BazelModul
       if (!getEntityData().isLabelInitialized()) {
         error("Field BazelModuleExtensionEntity#label should be initialized")
       }
+      if (!getEntityData().isStrictDependenciesInitialized()) {
+        error("Field BazelModuleExtensionEntity#strictDependencies should be initialized")
+      }
     }
 
     override fun connectionIdList(): List<ConnectionId> {
@@ -114,6 +123,7 @@ internal class BazelModuleExtensionEntityImpl(private val dataSource: BazelModul
       dataSource as BazelModuleExtensionEntity
       if (this.entitySource != dataSource.entitySource) this.entitySource = dataSource.entitySource
       if (this.label != dataSource.label) this.label = dataSource.label
+      if (this.strictDependencies != dataSource.strictDependencies) this.strictDependencies = dataSource.strictDependencies
       updateChildToParentReferences(parents)
     }
 
@@ -170,6 +180,14 @@ internal class BazelModuleExtensionEntityImpl(private val dataSource: BazelModul
         changedProperty.add("label")
 
       }
+    override var strictDependencies: WorkspaceModelTargetLabelList
+      get() = getEntityData().strictDependencies
+      set(value) {
+        checkModificationAllowed()
+        getEntityData(true).strictDependencies = value
+        changedProperty.add("strictDependencies")
+
+      }
 
     override fun getEntityClass(): Class<BazelModuleExtensionEntity> = BazelModuleExtensionEntity::class.java
   }
@@ -179,8 +197,10 @@ internal class BazelModuleExtensionEntityImpl(private val dataSource: BazelModul
 @OptIn(WorkspaceEntityInternalApi::class)
 internal class BazelModuleExtensionEntityData : WorkspaceEntityData<BazelModuleExtensionEntity>() {
   lateinit var label: WorkspaceModelTargetLabel
+  lateinit var strictDependencies: WorkspaceModelTargetLabelList
 
   internal fun isLabelInitialized(): Boolean = ::label.isInitialized
+  internal fun isStrictDependenciesInitialized(): Boolean = ::strictDependencies.isInitialized
 
   override fun wrapAsModifiable(diff: MutableEntityStorage): WorkspaceEntityBuilder<BazelModuleExtensionEntity> {
     val modifiable = BazelModuleExtensionEntityImpl.Builder(null)
@@ -208,7 +228,7 @@ internal class BazelModuleExtensionEntityData : WorkspaceEntityData<BazelModuleE
   }
 
   override fun createDetachedEntity(parents: List<WorkspaceEntityBuilder<*>>): WorkspaceEntityBuilder<*> {
-    return BazelModuleExtensionEntity(label, entitySource) {
+    return BazelModuleExtensionEntity(label, strictDependencies, entitySource) {
       parents.filterIsInstance<ModuleEntityBuilder>().singleOrNull()?.let { this.module = it }
     }
   }
@@ -225,6 +245,7 @@ internal class BazelModuleExtensionEntityData : WorkspaceEntityData<BazelModuleE
     other as BazelModuleExtensionEntityData
     if (this.entitySource != other.entitySource) return false
     if (this.label != other.label) return false
+    if (this.strictDependencies != other.strictDependencies) return false
     return true
   }
 
@@ -233,18 +254,21 @@ internal class BazelModuleExtensionEntityData : WorkspaceEntityData<BazelModuleE
     if (this.javaClass != other.javaClass) return false
     other as BazelModuleExtensionEntityData
     if (this.label != other.label) return false
+    if (this.strictDependencies != other.strictDependencies) return false
     return true
   }
 
   override fun hashCode(): Int {
     var result = entitySource.hashCode()
     result = 31 * result + label.hashCode()
+    result = 31 * result + strictDependencies.hashCode()
     return result
   }
 
   override fun hashCodeIgnoringEntitySource(): Int {
     var result = javaClass.hashCode()
     result = 31 * result + label.hashCode()
+    result = 31 * result + strictDependencies.hashCode()
     return result
   }
 }

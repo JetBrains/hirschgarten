@@ -3,6 +3,7 @@ package org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.tra
 import com.intellij.platform.workspace.jps.entities.SourceRootTypeId
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.shouldBe
+import org.jetbrains.annotations.TestOnly
 import org.jetbrains.bazel.commons.LanguageClass
 import org.jetbrains.bazel.commons.RepoMappingDisabled
 import org.jetbrains.bazel.commons.RuleType
@@ -22,9 +23,11 @@ import org.jetbrains.bazel.workspacemodel.entities.JavaAddendum
 import org.jetbrains.bazel.workspacemodel.entities.JavaSourceRoot
 import org.jetbrains.bazel.workspacemodel.entities.KotlinAddendum
 import org.jetbrains.bazel.workspacemodel.entities.ResourceRoot
+import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.BuildTargetData
 import org.jetbrains.bsp.protocol.JvmBuildTarget
 import org.jetbrains.bsp.protocol.KotlinBuildTarget
+import org.jetbrains.bsp.protocol.PartialBuildTarget
 import org.jetbrains.bsp.protocol.RawBuildTarget
 import org.jetbrains.bsp.protocol.SourceItem
 import org.jetbrains.bsp.protocol.utils.extractJvmBuildTarget
@@ -119,8 +122,8 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
       name = "module1.module1",
       label = buildTargetId,
       dependencies = listOf(
-        Dependency("module2.module2"),
-        Dependency("module3.module3"),
+        Dependency("module2.module2", Label.parse("module2"), ),
+        Dependency("module3.module3", Label.parse("module3"), ),
       ),
       kind = TargetKind(
         kind = "java_binary",
@@ -219,8 +222,8 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
       name = "module1.module1",
       label = buildTargetId,
       dependencies = listOf(
-        Dependency("module2.module2"),
-        Dependency("module3.module3"),
+        Dependency("module2.module2", Label.parse("module2"), ),
+        Dependency("module3.module3", Label.parse("module3"), ),
       ),
       associates = listOf(
         "module4.module4",
@@ -363,8 +366,8 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
       name = "module1.module1",
       label = buildTargetId1,
       dependencies = listOf(
-        Dependency("module2.module2"),
-        Dependency("module3.module3"),
+        Dependency("module2.module2", Label.parse("module2"), ),
+        Dependency("module3.module3", Label.parse("module3"), ),
       ),
       kind = TargetKind(
         kind = "java_library",
@@ -396,7 +399,7 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
       name = "module2.module2",
       label = buildTargetId2,
       dependencies = listOf(
-        Dependency("module3.module3"),
+        Dependency("module3.module3", Label.parse("module3"), ),
       ),
       kind = TargetKind(
         kind = "java_test",
@@ -476,3 +479,23 @@ class ExtractJvmBuildTargetTest {
     return buildTarget
   }
 }
+
+@TestOnly
+internal fun Collection<String>.toDefaultTargetsMap(): Map<Label, BuildTarget> =
+  associateBy(
+    keySelector = { Label.parse(it) },
+    valueTransform = {
+      PartialBuildTarget(
+        id = Label.parse(it),
+        kind =
+          TargetKind(
+            kind = "java_library",
+            ruleType = RuleType.LIBRARY,
+            languageClasses = emptySet(),
+          ),
+        baseDirectory = Path("base/dir"),
+        isManual = false,
+        isWorkspace = true,
+      )
+    },
+  )

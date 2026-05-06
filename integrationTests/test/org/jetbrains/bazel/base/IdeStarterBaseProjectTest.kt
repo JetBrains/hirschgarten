@@ -108,6 +108,7 @@ abstract class IdeStarterBaseProjectTest {
       .propagateSystemProperty("bazel.project.view.file.path")
       .propagateSystemProperty("bazel.enable.log")
       .patchPathVariable()
+      .enableCppToolchainDetectionForNestedBazel()
       .addIdeStarterTestMarker()
       .applyVMOptionsPatch {
         addSystemProperty("JETBRAINS_LICENSE_SERVER", "https://flsv1.labs.jb.gg")
@@ -162,6 +163,14 @@ abstract class IdeStarterBaseProjectTest {
     applyVMOptionsPatch {
       withEnv("PATH", path)
       withEnv("HOME", System.getProperty("user.home"))
+    }
+    return this
+  }
+
+  private fun IDETestContext.enableCppToolchainDetectionForNestedBazel(): IDETestContext {
+    applyVMOptionsPatch {
+      withEnv("BAZEL_DO_NOT_DETECT_CPP_TOOLCHAIN", "0")
+      withEnv("BAZEL_NO_APPLE_CPP_TOOLCHAIN", "0")
     }
     return this
   }

@@ -50,12 +50,14 @@ import org.jetbrains.bazel.workspace.model.test.framework.WorkspaceModelBaseTest
 import org.jetbrains.bazel.workspacemodel.entities.BazelModuleEntitySource
 import org.jetbrains.bazel.workspacemodel.entities.BazelModuleExtensionEntity
 import org.jetbrains.bazel.workspacemodel.entities.WorkspaceModelTargetLabel
+import org.jetbrains.bazel.workspacemodel.entities.WorkspaceModelTargetLabelList
 import org.jetbrains.bazel.workspacemodel.entities.bazelModuleExtension
 import org.jetbrains.bsp.protocol.BazelServerFacade
 import org.jetbrains.bsp.protocol.InverseSourcesParams
 import org.jetbrains.bsp.protocol.InverseSourcesResult
 import org.jetbrains.bsp.protocol.PartialBuildTarget
 import org.jetbrains.bsp.protocol.RawBuildTarget
+import org.jetbrains.bsp.protocol.StrictDependencyCheckedType
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.nio.file.Path
@@ -613,6 +615,7 @@ class BazelFileEventListenerTest : WorkspaceModelBaseTest() {
         this.contentRoots = contentRoots
         this.bazelModuleExtension = BazelModuleExtensionEntity(
           label = WorkspaceModelTargetLabel(label),
+          strictDependencies = WorkspaceModelTargetLabelList(StrictDependencyCheckedType.OFF, emptyList()),
           entitySource = entitySource,
         )
       }

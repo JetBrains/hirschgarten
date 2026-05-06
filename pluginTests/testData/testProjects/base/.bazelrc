@@ -1,0 +1,2 @@
+common --action_env BAZEL_DO_NOT_DETECT_CPP_TOOLCHAIN=0
+common --action_env BAZEL_NO_APPLE_CPP_TOOLCHAIN=0

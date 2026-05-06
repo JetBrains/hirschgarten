@@ -5,6 +5,7 @@ import org.jetbrains.bazel.commons.LanguageClass
 import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.label.DependencyLabel
+import org.jetbrains.bazel.label.DependencyLabelKind
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.magicmetamodel.ProjectDetails
 import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.ModuleDetails
@@ -13,6 +14,7 @@ import org.jetbrains.bsp.protocol.JvmBuildTarget
 import org.jetbrains.bsp.protocol.JvmDependency
 import org.jetbrains.bsp.protocol.RawBuildTarget
 import org.jetbrains.bsp.protocol.SourceItem
+import org.jetbrains.bsp.protocol.StrictDependencyCheckedType
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import kotlin.io.path.Path
@@ -55,6 +57,8 @@ class ProjectDetailsToModuleDetailsTransformerTest {
         target = target,
         javacOptions = listOf(),
         dependencies = emptyList(),
+        strictDependenciesCheck = StrictDependencyCheckedType.OFF,
+        strictDependencies = emptyList(),
         defaultJdkName = null,
         jvmBinaryJars = emptyList(),
       )
@@ -103,6 +107,8 @@ class ProjectDetailsToModuleDetailsTransformerTest {
         target = target,
         javacOptions = listOf("opt1", "opt2", "opt3"),
         dependencies = emptyList(),
+        strictDependenciesCheck = StrictDependencyCheckedType.OFF,
+        strictDependencies = emptyList(),
         defaultJdkName = null,
         jvmBinaryJars = emptyList(),
       )
@@ -217,7 +223,9 @@ class ProjectDetailsToModuleDetailsTransformerTest {
       ModuleDetails(
         target = target1,
         javacOptions = target1JavacOptionsItem,
-        dependencies = listOf(DependencyLabel(target2Id)),
+        dependencies = listOf(DependencyLabel(target2Id, kind = DependencyLabelKind.EXPORTED_COMPILE_TIME)),
+        strictDependenciesCheck = StrictDependencyCheckedType.OFF,
+        strictDependencies = emptyList(),
         defaultJdkName = null,
         jvmBinaryJars = emptyList(),
       )
@@ -226,6 +234,8 @@ class ProjectDetailsToModuleDetailsTransformerTest {
         target = target2,
         javacOptions = listOf(),
         dependencies = emptyList(),
+        strictDependenciesCheck = StrictDependencyCheckedType.OFF,
+        strictDependencies = emptyList(),
         defaultJdkName = null,
         jvmBinaryJars = emptyList(),
       )
@@ -233,7 +243,9 @@ class ProjectDetailsToModuleDetailsTransformerTest {
       ModuleDetails(
         target = target3,
         javacOptions = target3JavacOptionsItem,
-        dependencies = listOf(DependencyLabel(target2Id)),
+        dependencies = listOf(DependencyLabel(target2Id, kind = DependencyLabelKind.EXPORTED_COMPILE_TIME)),
+        strictDependenciesCheck = StrictDependencyCheckedType.OFF,
+        strictDependencies = emptyList(),
         defaultJdkName = null,
         jvmBinaryJars = emptyList(),
       )
@@ -241,7 +253,9 @@ class ProjectDetailsToModuleDetailsTransformerTest {
       ModuleDetails(
         target = target4,
         javacOptions = listOf(),
-        dependencies = listOf(DependencyLabel(target1Id)),
+        dependencies = listOf(DependencyLabel(target1Id, kind = DependencyLabelKind.EXPORTED_COMPILE_TIME)),
+        strictDependenciesCheck = StrictDependencyCheckedType.OFF,
+        strictDependencies = emptyList(),
         defaultJdkName = null,
         jvmBinaryJars = emptyList(),
       )

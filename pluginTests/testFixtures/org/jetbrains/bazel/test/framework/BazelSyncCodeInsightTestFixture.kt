@@ -1,6 +1,13 @@
 package org.jetbrains.bazel.test.framework
 
+import com.intellij.build.BuildViewManager
+import com.intellij.build.SyncViewManager
+import com.intellij.build.events.BuildEvent
+import com.intellij.build.events.FailureResult
+import com.intellij.build.events.FinishEvent
+import com.intellij.build.events.MessageEvent
 import com.intellij.openapi.application.WriteAction
+import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.projectRoots.ProjectJdkTable
 import com.intellij.platform.testFramework.junit5.codeInsight.fixture.codeInsightFixture
@@ -9,10 +16,14 @@ import com.intellij.testFramework.fixtures.IdeaProjectTestFixture
 import com.intellij.testFramework.fixtures.TempDirTestFixture
 import com.intellij.testFramework.fixtures.impl.CodeInsightTestFixtureImpl
 import com.intellij.testFramework.junit5.fixture.TestFixture
+import com.intellij.testFramework.replaceService
 import com.intellij.util.lang.UrlClassLoader
+import org.jetbrains.bazel.progress.ConsoleService
+import org.jetbrains.bazel.progress.TaskConsole
 import org.jetbrains.bazel.project.BazelProjectFixtures.initializeBazelProject
 import org.jetbrains.bazel.sync.scope.SecondPhaseSync
 import org.jetbrains.bazel.sync.task.ProjectSyncTask
+import org.jetbrains.bazel.ui.console.task.TestTaskConsole
 import java.nio.file.Path
 import kotlin.io.path.Path
 import kotlin.io.path.copyTo
@@ -56,6 +67,10 @@ class BazelSyncCodeInsightTestFixtureImpl(
   private val tempDir: Path
     get() = Path(tempDirPath)
 
+  init {
+    project.replaceService(ConsoleService::class.java, TestConsoleService(project), project)
+  }
+
   override fun copyBazelTestProject(path: String) {
     val testProjectsPath = BazelPathManager.testProjectsRoot.relativeTo(Path(testDataPath))
     copyDirectoryToProject("${testProjectsPath}/base", "")
@@ -92,5 +107,54 @@ class BazelSyncCodeInsightTestFixtureImpl(
     finally {
       super.tearDown()
     }
+  }
+}
+
+private class TestConsoleService(project: Project) : ConsoleService {
+  override val buildConsole: TaskConsole
+  override val syncConsole: TaskConsole
+
+  private val log = logger<TestConsoleService>()
+
+  private fun onEventImpl(buildId: Any, event: BuildEvent) {
+    if (event is FinishEvent && event.result is FailureResult) {
+      val failure = event.result as FailureResult
+      log.error(
+        "Bazel build finished with error:" +
+        failure.failures.joinToString(";") {
+          "${it.message} ${it.description}"
+        },
+        failure.failures.firstOrNull()?.error,
+      )
+    }
+    if (event is MessageEvent) {
+      when (event.kind) {
+        MessageEvent.Kind.ERROR -> log.warn("Bazel build error: ${event.message}")
+        MessageEvent.Kind.WARNING -> log.warn("Bazel build warning: ${event.message}")
+        else -> log.warn("Bazel build message: ${event.message}")
+      }
+    }
+  }
+
+  init {
+    buildConsole = TestTaskConsole(
+      object : BuildViewManager(project) {
+        override fun onEvent(buildId: Any, event: BuildEvent) {
+          onEventImpl(buildId, event)
+          super.onEvent(buildId, event)
+        }
+      },
+      "", project,
+    )
+
+    syncConsole = TestTaskConsole(
+      object : SyncViewManager(project) {
+        override fun onEvent(buildId: Any, event: BuildEvent) {
+          onEventImpl(buildId, event)
+          super.onEvent(buildId, event)
+        }
+      },
+      "", project,
+    )
   }
 }

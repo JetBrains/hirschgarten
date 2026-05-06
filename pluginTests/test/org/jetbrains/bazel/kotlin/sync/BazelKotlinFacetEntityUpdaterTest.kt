@@ -24,6 +24,7 @@ import org.jetbrains.bazel.workspacemodel.entities.JavaModule
 import org.jetbrains.bazel.workspacemodel.entities.KotlinAddendum
 import org.jetbrains.bsp.protocol.JvmBuildTarget
 import org.jetbrains.bsp.protocol.KotlinBuildTarget
+import org.jetbrains.bsp.protocol.StrictDependencyCheckedType
 import org.jetbrains.kotlin.cli.common.arguments.K2JVMCompilerArguments
 import org.jetbrains.kotlin.config.IKotlinFacetSettings
 import org.jetbrains.kotlin.idea.facet.KotlinFacetType
@@ -118,9 +119,11 @@ class BazelKotlinFacetEntityUpdaterTest : WorkspaceModelBaseTest() {
         type = ModuleTypeId("JAVA_MODULE"),
         dependencies =
           listOf(
-            Dependency("module2"),
-            Dependency("module3"),
+            Dependency("module2", Label.parse("//module2")),
+            Dependency("module3", Label.parse("//module3")),
           ),
+        strictDependenciesCheck = StrictDependencyCheckedType.OFF,
+        strictDependencies = emptyList(),
         kind =
           TargetKind(
             kind = "java_library",

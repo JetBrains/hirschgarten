@@ -23,6 +23,8 @@
   </dependencies>
   <!-- endregion -->
 
+  <resource-bundle>messages.JavaInspectionsBundle</resource-bundle>
+
   <extensionPoints>
     <extensionPoint
       dynamic="true"
@@ -49,8 +51,6 @@
     <testLocatorProvider id="defaultJavaLocator" implementation="org.jetbrains.bazel.jvm.run.JavaTestLocatorProvider"/>
     <syntheticRunTargetTemplateGenerator language="JAVA"
                                          implementationClass="org.jetbrains.bazel.java.run.JavaSyntheticRunTargetTemplateGenerator"/>
-
-    <sourceTypeIconProvider implementation="org.jetbrains.bazel.java.configuration.JavaSourceTypeIconProvider"/>
 
     <bazelExperimentalSettingsProvider
       implementation="org.jetbrains.bazel.ui.settings.BazelJVMExperimentalSettingsProvider"
@@ -101,5 +101,13 @@
     <projectService serviceInterface="org.jetbrains.bazel.hotswap.BazelHotSwapManager"
                     serviceImplementation="org.jetbrains.bazel.hotswap.BazelHotSwapManagerImpl"
                     open="true"/>
+
+    <localInspection language="JAVA"
+                     groupKey="bazel.inspection.group.name"
+                     shortName="JavaStrictDependencies"
+                     enabledByDefault="true" level="ERROR"
+                     implementationClass="org.jetbrains.bazel.inspections.JavaStrictDependenciesInspection"
+                     key="inspections.display.name.javastrictdeps"/>
+
   </extensions>
 </idea-plugin>
