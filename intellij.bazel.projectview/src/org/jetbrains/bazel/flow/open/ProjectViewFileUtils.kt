@@ -1,6 +1,7 @@
 package org.jetbrains.bazel.flow.open
 
 // TODO rewrite with no VirtualFile operations!
+import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.readText
 import com.intellij.openapi.vfs.resolveFromRootOrRelative
@@ -38,6 +39,8 @@ private val INFERRED_DIRECTORY_PROJECT_VIEW_TEMPLATE =
 
 private val OPEN_OPTIONS = arrayOf(StandardOpenOption.WRITE, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING)
 
+private val log = logger<ProjectViewFileUtils>()
+
 @ApiStatus.Internal
 object ProjectViewFileUtils {
   fun calculateProjectViewFilePath(
@@ -49,11 +52,23 @@ object ProjectViewFileUtils {
     // todo should be the actual parameter
     val projectRootPath = projectRootDir.toNioPath()
 
+    log.info("calculateProjectViewFilePath: projectRootPath=$projectRootPath, projectViewPath=$projectViewPath, overwrite=$overwrite")
+
+    val fromArg = projectViewPath?.toAbsolutePath()
+    val fromProperty = System.getProperty(PROJECT_VIEW_FILE_SYSTEM_PROPERTY)?.let(Path::of)
+    val fromBazelbsp = if (overwrite) null else calculateExistingBazelbspProjectViewFile(projectRootPath)
+    val fromLegacy = if (overwrite || fromBazelbsp != null) null else calculateLegacyManagedProjectViewFile(projectRootPath)
+
+    log.info("calculateProjectViewFilePath: fromArg=$fromArg, fromProperty=$fromProperty, fromBazelbsp=$fromBazelbsp, fromLegacy=$fromLegacy")
+
     val projectViewFilePath =
-      projectViewPath?.toAbsolutePath()
-      ?: System.getProperty(PROJECT_VIEW_FILE_SYSTEM_PROPERTY)?.let(Path::of)
-      ?: (if (overwrite) null else calculateLegacyManagedProjectViewFile(projectRootPath))
+      fromArg
+      ?: fromProperty
+      ?: fromBazelbsp
+      ?: fromLegacy
       ?: calculateProjectViewFileInCurrentDirectory(projectRootPath.resolve(Constants.DOT_BAZELBSP_DIR_NAME))
+
+    log.info("calculateProjectViewFilePath: selected=$projectViewFilePath")
 
     setProjectViewFileContent(
       projectViewFilePath = projectViewFilePath,
@@ -80,12 +95,21 @@ object ProjectViewFileUtils {
     return rawText.format(format.orEmpty().ifBlank { "." })
   }
 
+  private fun calculateExistingBazelbspProjectViewFile(projectRootDir: Path): Path? {
+    val file = calculateProjectViewFileInCurrentDirectory(projectRootDir.resolve(Constants.DOT_BAZELBSP_DIR_NAME))
+    val exists = isRegularFile(file)
+    log.info("calculateExistingBazelbspProjectViewFile: candidate=$file, exists=$exists")
+    return if (exists) file else null
+  }
+
   private fun calculateLegacyManagedProjectViewFile(projectRootDir: Path): Path? {
     val projectViewFilesFromRoot =
       list(projectRootDir)
         .filter { isRegularFile(it) }
         .filter { it.extension == Constants.PROJECT_VIEW_FILE_EXTENSION }
         .toList()
+
+    log.info("calculateLegacyManagedProjectViewFile: candidates=$projectViewFilesFromRoot")
 
     return projectViewFilesFromRoot.firstOrNull { it.name == Constants.DEFAULT_PROJECT_VIEW_FILE_NAME }
            ?: projectViewFilesFromRoot.firstOrNull { it.name == Constants.LEGACY_DEFAULT_PROJECT_VIEW_FILE_NAME }

@@ -2,6 +2,7 @@ package org.jetbrains.bazel.languages.projectview
 
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.readAction
+import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.application.writeAction
 import com.intellij.openapi.progress.runBlockingMaybeCancellable
 import com.intellij.openapi.project.Project
@@ -18,6 +19,8 @@ import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.flow.open.ProjectViewFileUtils
 import org.jetbrains.bazel.languages.projectview.psi.ProjectViewPsiFile
 import org.jetbrains.bazel.settings.bazel.bazelProjectSettings
+
+private val log = logger<DefaultProjectViewService>()
 
 @ApiStatus.Internal
 class DefaultProjectViewService(private val project: Project) : ProjectViewService {
@@ -52,12 +55,15 @@ class DefaultProjectViewService(private val project: Project) : ProjectViewServi
 
   private fun findProjectViewPath(): VirtualFile? {
     val pathFromSettings = project.bazelProjectSettings.projectViewPath
+    log.info("DefaultProjectViewService.findProjectViewPath: pathFromSettings=$pathFromSettings, exists=${pathFromSettings?.exists()}")
     if (pathFromSettings != null && pathFromSettings.exists()) {
       return pathFromSettings
     }
     val rootDir = project.rootDir
-    return rootDir.findFile(".bazelproject")
-           ?: rootDir.findFileByRelativePath("${Constants.DOT_BAZELBSP_DIR_NAME}/.bazelproject")
+    val result = rootDir.findFile(".bazelproject")
+                 ?: rootDir.findFileByRelativePath("${Constants.DOT_BAZELBSP_DIR_NAME}/.bazelproject")
+    log.info("DefaultProjectViewService.findProjectViewPath: result=$result")
+    return result
   }
 
   private fun parseProjectView(projectViewPath: VirtualFile): ProjectView {
