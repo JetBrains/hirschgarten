@@ -47,6 +47,7 @@ class ProjectSyncTaskTest : MockProjectBaseTest() {
       BazelWorkspaceResolveServiceMock(
         resolvedWorkspace =
           BazelResolvedWorkspace(
+            rootTargets = setOf(),
             targets = listOf(),
           ),
         bazelProject = WorkspaceBuildTargetsResult(mapOf(), setOf()),

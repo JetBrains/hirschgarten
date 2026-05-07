@@ -11,6 +11,8 @@ import java.nio.file.Path
  * Immutable workspace snapshot, describing fixed input scope for [BazelWorkspaceImporter]
  *
  * @property targets Full set of [WorkspaceTarget]
+ * @property configurations All used bazel configurations
+ * @property targetGraph Immutable representation of bazel target graph
  * @property syncConfigs Set of sync configs used by [BazelWorkspaceImporter] in later stage
  * @property repoMapping Bazel repo mapping
  * @property hasError Did previous steps ended with partial failure
@@ -18,6 +20,8 @@ import java.nio.file.Path
 @ApiStatus.Internal
 data class WorkspaceSnapshot(
   val targets: Map<WorkspaceTargetKey, WorkspaceTarget>,
+  val configurations: Map<WorkspaceConfigurationId, WorkspaceConfiguration>,
+  val targetGraph: WorkspaceTargetGraph,
 
   // MAYBE RC: this feels wrong, for persistent version I'm going to make this prettier
   val fileToTarget: Map<Path, List<WorkspaceTargetKey>> = mapOf(),
@@ -35,31 +39,45 @@ data class WorkspaceSnapshot(
 @ApiStatus.Internal
 data class WorkspaceTargetKey(
   val label: Label,
-  val configuration: WorkspaceConfiguration = WorkspaceConfiguration.EMPTY,
+  val configuration: WorkspaceConfigurationId = WorkspaceConfigurationId.EMPTY,
 )
 
 @ApiStatus.Internal
 @JvmInline
-value class WorkspaceConfiguration(val configurationHash: String? = null) {
+value class WorkspaceConfigurationId private constructor(val configurationHash: String? = null) {
   companion object {
-    val EMPTY: WorkspaceConfiguration = WorkspaceConfiguration(null)
+    val EMPTY: WorkspaceConfigurationId = WorkspaceConfigurationId(null)
+
+    // RC: force `WorkspaceConfigurationId` normalization to avoid
+    //  unexpected failing equality checks, don't ask how I know...
+    fun of(configurationHash: String?): WorkspaceConfigurationId = when {
+      configurationHash.isNullOrBlank() -> EMPTY
+      else -> WorkspaceConfigurationId(configurationHash)
+    }
   }
 }
 
 /**
+ * Definition of bazel configuration
+ *
+ * @property id Unique configuration identifier
+ */
+// TODO: fill with useful properties
+@ApiStatus.Internal
+data class WorkspaceConfiguration(
+  val id: WorkspaceConfigurationId,
+)
+
+/**
  * Immutable [RawBuildTarget] representation
  *
+ * @property targetKey Target key
  * @property rawBuildTarget Inner target representation
- * @property structuralHash Hash defining structural changes of [rawBuildTarget], file content changes doesn't affect it
- * @property contentHash Hash defined by content of files used by [rawBuildTarget]
  */
 @ApiStatus.Internal
 data class WorkspaceTarget(
+  val targetKey: WorkspaceTargetKey,
   val rawBuildTarget: RawBuildTarget,
-
-  // RC: both `structuralHash` and `contentHash` are WIP
-  val structuralHash: Long = 0,
-  val contentHash: Long = 0,
 )
 
 /**

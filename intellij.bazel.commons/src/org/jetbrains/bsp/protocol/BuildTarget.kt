@@ -31,6 +31,7 @@ interface BuildTarget : ExecutableTarget {
   val isWorkspace: Boolean
 }
 
+// TODO: move to backend-only code
 @ApiStatus.Internal
 data class RawBuildTarget(
   override val id: Label,
@@ -41,6 +42,7 @@ data class RawBuildTarget(
   override val baseDirectory: Path,
   override val data: List<BuildTargetData> = emptyList(),
   val generatorName: String? = null,
+  val configurationId: String? = null,
   override val isManual: Boolean = false,
   override val isWorkspace: Boolean = true,
   val isTestOnly: Boolean = false,
