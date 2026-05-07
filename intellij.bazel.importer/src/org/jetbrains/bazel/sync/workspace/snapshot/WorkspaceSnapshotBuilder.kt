@@ -8,6 +8,7 @@ import org.jetbrains.bazel.sync.environment.bazelProjectName
 import org.jetbrains.bazel.sync.workspace.BazelResolvedWorkspace
 import org.jetbrains.bazel.sync.workspace.languages.LanguagePlugin
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
+import org.jetbrains.bsp.protocol.RawBuildTarget
 
 @ApiStatus.Internal
 object WorkspaceSnapshotBuilder {
@@ -21,12 +22,20 @@ object WorkspaceSnapshotBuilder {
       projectRootDir = project.rootDir.toNioPath(),
       projectName = project.bazelProjectName,
     )
+    val targets = resolved.targets
+      .map {
+        WorkspaceTarget(
+          targetKey = it.targetKey,
+          rawBuildTarget = it,
+        )
+      }
+      .associateBy { it.targetKey }
     return WorkspaceSnapshot(
-      targets = resolved.targets
-        .map { WorkspaceTarget(rawBuildTarget = it) }
-        .associateBy { WorkspaceTargetKey(label = it.rawBuildTarget.id) },
+      targets = targets,
+      configurations = mapOf(), // TODO: fetch configurations from bazel
+      targetGraph = WorkspaceTargetGraphBuilder.build(resolved.rootTargets, targets.values),
       fileToTarget = resolved.fileToTarget
-        .mapValues { (_, value) -> value.map { WorkspaceTargetKey(label = it) } },
+        .mapValues { (_, value) -> value.map { it.targetKey } },
       syncConfigs = listOf(commonSyncConfig) + LanguagePlugin.EP_NAME.extensionList
         .flatMap { it.createSyncConfigs(project, workspaceContext) },
       repoMapping = repoMapping,

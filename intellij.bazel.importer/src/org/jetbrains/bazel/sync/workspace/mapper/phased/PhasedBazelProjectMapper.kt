@@ -41,6 +41,7 @@ class PhasedBazelProjectMapper(private val bazelPathsResolver: BazelPathsResolve
         .map { it.toBspBuildTarget(context, project) }
         .toList()
     return BazelResolvedWorkspaceBuilder.build(
+      rootTargets = targets.map { it.id }.toSet(),
       targets = targets,
       hasError = project.hasError,
     )

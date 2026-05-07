@@ -30,6 +30,7 @@ import org.jetbrains.bazel.magicmetamodel.formatAsModuleName
 import org.jetbrains.bazel.sync.ProjectSyncHook
 import org.jetbrains.bazel.sync.scope.SecondPhaseSync
 import org.jetbrains.bazel.sync.workspace.BazelResolvedWorkspace
+import org.jetbrains.bazel.sync.workspace.mapper.BazelResolvedWorkspaceBuilder
 import org.jetbrains.bazel.workspace.model.matchers.entries.ExpectedModuleEntity
 import org.jetbrains.bazel.workspace.model.matchers.entries.ExpectedSourceRootEntity
 import org.jetbrains.bazel.workspace.model.matchers.entries.shouldContainExactlyInAnyOrder
@@ -47,7 +48,7 @@ import java.nio.file.Path
 import kotlin.io.path.Path
 
 private data class PythonTestSet(
-  val buildTargets: List<RawBuildTarget>,
+  val workspace: BazelResolvedWorkspace,
   val expectedModuleEntities: List<ExpectedModuleEntity>,
   val expectedSourceRootEntities: List<ExpectedSourceRootEntity>,
 )
@@ -76,12 +77,9 @@ class PythonProjectSyncTest : MockProjectBaseTest() {
     // given
     val pythonTestTargets = generateTestSet()
     val server = BuildServerMock()
-    val workspace = BazelResolvedWorkspace(
-      targets = pythonTestTargets.buildTargets,
-    )
     val resolver =
       BazelWorkspaceResolveServiceMock(
-        resolvedWorkspace = workspace,
+        resolvedWorkspace = pythonTestTargets.workspace,
       )
     val diff = MutableEntityStorage.create()
 
@@ -99,7 +97,7 @@ class PythonProjectSyncTest : MockProjectBaseTest() {
             progressReporter = reporter,
             // TODO: not used yet, https://youtrack.jetbrains.com/issue/BAZEL-1960
             buildTargets = emptyMap(),
-            workspace = workspace,
+            workspace = pythonTestTargets.workspace,
           )
         hook.onSync(environment)
       }
@@ -120,12 +118,9 @@ class PythonProjectSyncTest : MockProjectBaseTest() {
     // given
     val pythonTestTargets = generateTestSetWithSources()
     val server = BuildServerMock()
-    val workspace = BazelResolvedWorkspace(
-      targets = pythonTestTargets.buildTargets,
-    )
     val resolver =
       BazelWorkspaceResolveServiceMock(
-        resolvedWorkspace = workspace,
+        resolvedWorkspace = pythonTestTargets.workspace,
       )
     val diff = MutableEntityStorage.create()
 
@@ -143,7 +138,7 @@ class PythonProjectSyncTest : MockProjectBaseTest() {
             progressReporter = reporter,
             // TODO: not used yet, https://youtrack.jetbrains.com/issue/BAZEL-1960
             buildTargets = emptyMap(),
-            workspace = workspace,
+            workspace = pythonTestTargets.workspace,
           )
         hook.onSync(environment)
       }
@@ -182,9 +177,12 @@ class PythonProjectSyncTest : MockProjectBaseTest() {
     val expectedModuleEntity2 = generateExpectedModuleEntity(pythonLibrary1, emptyList())
     val expectedModuleEntity3 = generateExpectedModuleEntity(pythonLibrary2, emptyList())
     return PythonTestSet(
-      targets,
-      listOf(expectedModuleEntity1, expectedModuleEntity2, expectedModuleEntity3),
-      emptyList(),
+      workspace = BazelResolvedWorkspaceBuilder.build(
+        rootTargets = targets.map { it.id }.toSet(),
+        targets = targets,
+      ),
+      expectedModuleEntities = listOf(expectedModuleEntity1, expectedModuleEntity2, expectedModuleEntity3),
+      expectedSourceRootEntities = emptyList(),
     )
   }
 
@@ -208,9 +206,12 @@ class PythonProjectSyncTest : MockProjectBaseTest() {
     val expectedContentRootEntities =
       generateExpectedSourceRootEntities(target, expectedModuleEntity.moduleEntity)
     return PythonTestSet(
-      listOf(target),
-      listOf(expectedModuleEntity),
-      expectedContentRootEntities,
+      workspace = BazelResolvedWorkspaceBuilder.build(
+        rootTargets = setOf(target.id),
+        targets = listOf(target),
+      ),
+      expectedModuleEntities = listOf(expectedModuleEntity),
+      expectedSourceRootEntities = expectedContentRootEntities,
     )
   }
 
@@ -235,7 +236,7 @@ class PythonProjectSyncTest : MockProjectBaseTest() {
             interpreter = Path(PYTHON_INTERPRETER),
             listOf(),
             listOf(),
-          )
+          ),
         ),
         sources = sources,
         resources = resources,

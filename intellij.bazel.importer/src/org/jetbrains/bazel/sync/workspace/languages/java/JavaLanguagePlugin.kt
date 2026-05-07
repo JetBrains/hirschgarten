@@ -19,6 +19,7 @@ import org.jetbrains.bazel.info.BspTargetInfo.ArtifactLocation
 import org.jetbrains.bazel.info.BspTargetInfo.JvmTargetInfo
 import org.jetbrains.bazel.info.BspTargetInfo.TargetInfo
 import org.jetbrains.bazel.label.DependencyLabel
+import org.jetbrains.bazel.label.DependencyLabelKind
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.label.ResolvedLabel
 import org.jetbrains.bazel.label.label
@@ -260,7 +261,7 @@ class JavaLanguagePlugin: LanguagePlugin {
 
       val extraLibraries = concatenateMaps(listOf(librariesFromDeps, extraLibrariesFromJdeps))
 
-      extraLibDependencies = extraLibraries.mapValues { (_, libs) -> libs.map { DependencyLabel(it.id, exported = true) } }
+      extraLibDependencies = extraLibraries.mapValues { (_, libs) -> libs.map { DependencyLabel(it.id, kind = DependencyLabelKind.EXPORTED_COMPILE_TIME) } }
       toolchainDependencies = librariesFromToolchains.mapValues { (_, libs) -> libs.map { DependencyLabel(it.id) } }
       allLibraries = concatenateMaps(listOf(importDependenciesAsLibraries, extraLibraries, librariesFromToolchains))
     }

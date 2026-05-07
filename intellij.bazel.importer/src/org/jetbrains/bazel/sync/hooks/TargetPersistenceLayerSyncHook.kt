@@ -12,8 +12,8 @@ internal class TargetPersistenceLayerSyncHook : ProjectSyncHook {
     val workspace = environment.workspace
 
     val spec = TargetPersistenceSpec(
-        targets = workspace.targets,
-        file2Target = workspace.fileToTarget,
+      targets = workspace.targets,
+      file2Target = workspace.fileToTarget.mapValues { it -> it.value.map { it.id }.distinct() },
     )
     targetPersistanceLayer.saveAll(project, spec)
     targetPersistanceLayer.notifyAll(project)

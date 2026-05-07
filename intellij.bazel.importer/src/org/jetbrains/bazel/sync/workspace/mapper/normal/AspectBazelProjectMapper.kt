@@ -66,6 +66,7 @@ internal class AspectBazelProjectMapper(
     }
 
     return BazelResolvedWorkspaceBuilder.build(
+      rootTargets = rootTargets,
       targets = rawTargets,
       hasError = hasError,
     )
@@ -82,11 +83,11 @@ internal class AspectBazelProjectMapper(
         targetsToImport.values.map { target ->
           async {
             createRawBuildTarget(
-              target,
-              targetsToImport,
-              repoMapping,
-              dependencyGraph,
-              localRepositories,
+              target = target,
+              targetsToImport = targetsToImport,
+              repoMapping = repoMapping,
+              dependencyGraph = dependencyGraph,
+              localRepositories = localRepositories,
             )
           }
         }
@@ -119,6 +120,7 @@ internal class AspectBazelProjectMapper(
 
     return RawBuildTarget(
       id = label,
+      configurationId = target.key.configuration,
       dependencies = target.depsList.map { it.toDependencyLabel() },
       kind = targetKind,
       sources = resolveSourceSet(target, repoMapping).toList(),
