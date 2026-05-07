@@ -9,11 +9,6 @@
     />
     <extensionPoint
       dynamic="true"
-      interface="org.jetbrains.bazel.run.config.RunConfigurationExtensionManager"
-      qualifiedName="org.jetbrains.bazel.runConfigurationExtension"
-    />
-    <extensionPoint
-      dynamic="true"
       interface="org.jetbrains.bazel.buildTask.AdditionalProjectTaskRunnerProvider"
       qualifiedName="org.jetbrains.bazel.additionalProjectTaskRunnerProvider"
     />

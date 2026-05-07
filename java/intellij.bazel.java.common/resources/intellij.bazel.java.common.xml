@@ -37,6 +37,9 @@
     <extensionPoint qualifiedName="org.jetbrains.bazel.coroutinesHelper"
                     interface="org.jetbrains.bazel.jvm.run.KotlinCoroutinesHelper"
                     dynamic="true"/>
+    <extensionPoint qualifiedName="org.jetbrains.bazel.runWithScriptPathExtension"
+                    interface="org.jetbrains.bazel.jvm.run.RunWithScriptPathExtension"
+                    dynamic="true"/>
   </extensionPoints>
 
   <extensions defaultExtensionNs="org.jetbrains.bazel">
@@ -62,6 +65,8 @@
       implementation="org.jetbrains.bazel.jvm.run.JvmTestHandler$JvmTestHandlerProvider"
     />
     <starlarkClassParametersProvider implementation="org.jetbrains.bazel.languages.starlark.bazel.DefaultStarlarkClassParametersProvider"/>
+    <runWithScriptPathExtension implementation="org.jetbrains.bazel.jvm.run.DefaultRunWithScriptPathExtension"/>
+    <runWithScriptPathExtension implementation="org.jetbrains.bazel.jvm.run.DebugRunWithScriptPathExtension"/>
   </extensions>
 
   <extensions defaultExtensionNs="com.intellij">

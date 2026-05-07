@@ -162,6 +162,12 @@ class BazelRunConfiguration internal constructor(
     }
 
     doVisibilityCheck = bspElement.getAttributeValue(CHECK_VISIBILITY_ATTR)?.toBoolean() ?: true
+
+    try {
+      handler?.extensionsManager?.readExternal(this, element)
+    } catch (e: Throwable) {
+      logger.warn("CoverageJavaRunConfigurationExtension may throw if 'Run with Bazel' is used. Fixed in master", e)
+    }
   }
 
   // TODO: ideally we'd use an existing serialization mechanism like https://plugins.jetbrains.com/docs/intellij/persisting-state-of-components.html
@@ -172,6 +178,11 @@ class BazelRunConfiguration internal constructor(
     val bspState = createBspElement() ?: return
     element.removeChildren(BSP_STATE_TAG)
     element.addContent(bspState)
+    try {
+      handler?.extensionsManager?.writeExternal(this, element)
+    } catch (e: Throwable) {
+      logger.warn("CoverageJavaRunConfigurationExtension may throw if 'Run with Bazel' is used. Fixed in master", e)
+    }
   }
 
   /**

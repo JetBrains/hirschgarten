@@ -148,7 +148,7 @@ internal fun DefaultActionGroup.fillWithEligibleActions(
 
   if (kind.ruleType == RuleType.BINARY) {
     for (executor in supportedExecutors) {
-      addAction(RunTargetAction(project, target, executor))
+      addAction(RunTargetAction(project, target, executor, callerPsiElement))
     }
   }
 
@@ -161,6 +161,7 @@ internal fun DefaultActionGroup.fillWithEligibleActions(
           executor = executor,
           singleTestFilter = singleTestFilter,
           testExecutableArguments = testExecutableArguments,
+          callerPsiElement = callerPsiElement,
         ),
       )
     }

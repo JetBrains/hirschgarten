@@ -9,8 +9,9 @@ internal class RunConfigRunWithBazelSection : BooleanScalarSection() {
   override val sectionKey: SectionKey<Boolean> = KEY
   override val doc: String =
     "If enabled, will invoke Bazel for running. This means the Bazel lock is consumed and run configurations can't be run in parallel. " +
+    "This also means JVM languages don't get native IDEA coverage experience. " +
     "The advantage is that Bazel test result caching and/or Remote build execution (RBE) can be used. " +
-    "Note: this setting is ignored when debugging. " +
+    "Note: this setting is ignored when debugging/profiling. " +
     "The default is \"true\""
   override val default: Boolean
     get() = BazelFeatureFlags.runConfigRunWithBazel

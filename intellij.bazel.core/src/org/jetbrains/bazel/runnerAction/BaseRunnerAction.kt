@@ -40,7 +40,9 @@ abstract class BaseRunnerAction(
           ExecutionEnvironmentBuilder(project, executor)
             .runnerAndSettings(runner, settings)
             .build()
-        withContext(Dispatchers.EDT) { runner.execute(executionEnvironment) }
+        withContext(Dispatchers.EDT) {
+          runner.execute(executionEnvironment)
+        }
       } else {
         error("Runner not found for executor ${executor.id}")
       }

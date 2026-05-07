@@ -6,7 +6,6 @@ import com.jetbrains.performancePlugin.CreateCommand
 internal class BazelCoverageCommandProvider : CommandProvider {
   override fun getCommands(): Map<String, CreateCommand?> =
     mapOf(
-      RunTestWithCoverageCommand.PREFIX to CreateCommand(::RunTestWithCoverageCommand),
       AssertCoverageCommand.PREFIX to CreateCommand(::AssertCoverageCommand),
     )
 }
