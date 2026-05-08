@@ -3,6 +3,7 @@ package org.jetbrains.bazel.sync.hooks
 import org.jetbrains.bazel.sync.ProjectSyncHook
 import org.jetbrains.bazel.sync.environment.TargetPersistenceSpec
 import org.jetbrains.bazel.sync.environment.projectCtx
+import org.jetbrains.bazel.sync.scope.PartialProjectSync
 
 // TODO: rename
 internal class TargetPersistenceLayerSyncHook : ProjectSyncHook {
@@ -15,7 +16,11 @@ internal class TargetPersistenceLayerSyncHook : ProjectSyncHook {
         targets = workspace.targets,
         file2Target = workspace.fileToTarget,
     )
-    targetPersistanceLayer.saveAll(project, spec)
+    if (environment.syncScope is PartialProjectSync) {
+      targetPersistanceLayer.mergePartial(project, spec)
+    } else {
+      targetPersistanceLayer.saveAll(project, spec)
+    }
     targetPersistanceLayer.notifyAll(project)
   }
 }

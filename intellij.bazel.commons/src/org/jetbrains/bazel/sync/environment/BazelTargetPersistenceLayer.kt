@@ -13,6 +13,7 @@ import java.nio.file.Path
 @ApiStatus.Internal
 interface BazelTargetPersistenceLayer {
   suspend fun saveAll(project: Project, spec: TargetPersistenceSpec)
+  suspend fun mergePartial(project: Project, spec: TargetPersistenceSpec)
   suspend fun notifyAll(project: Project)
 }
 

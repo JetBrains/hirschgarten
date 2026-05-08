@@ -16,6 +16,7 @@ import com.intellij.platform.workspace.jps.entities.SourceRootTypeId
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.sync.ProjectSyncHook
+import org.jetbrains.bazel.sync.scope.PartialProjectSync
 import org.jetbrains.bazel.workspacemodel.entities.BazelModuleEntitySource
 
 internal val GENERIC_SOURCE_ROOT_TYPE_ID = SourceRootTypeId("generic-source")
@@ -29,6 +30,7 @@ class WorkspaceModuleProjectSyncHook : ProjectSyncHook {
   override fun isEnabled(project: Project): Boolean = true
 
   override suspend fun onSync(environment: ProjectSyncHook.ProjectSyncHookEnvironment) {
+    if (environment.syncScope is PartialProjectSync) return
     val project = environment.project
     if (!EnableWorkspaceModuleSyncHookExtension.EP.extensionList.any { it.isEnabled(environment) }) return
     val moduleEntitySource = BazelModuleEntitySource(WORKSPACE_MODULE_NAME)

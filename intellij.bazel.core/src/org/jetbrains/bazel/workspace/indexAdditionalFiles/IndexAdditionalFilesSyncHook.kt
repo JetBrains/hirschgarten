@@ -18,6 +18,7 @@ import org.jetbrains.bazel.commons.constants.Constants
 import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.settings.bazel.bazelProjectSettings
 import org.jetbrains.bazel.sync.ProjectSyncHook
+import org.jetbrains.bazel.sync.scope.PartialProjectSync
 import org.jetbrains.bazel.sync.withSubtask
 import org.jetbrains.bazel.workspace.bazelProjectDirectoriesEntity
 import org.jetbrains.bazel.workspacemodel.entities.BazelProjectDirectoriesEntity
@@ -35,7 +36,8 @@ private val INDEX_ADDITIONAL_FILES_DEFAULT =
  *    so that "Go to file by name" is quicker, see https://youtrack.jetbrains.com/issue/IJPL-207088
  */
 private class IndexAdditionalFilesSyncHook : ProjectSyncHook {
-  override suspend fun onSync(environment: ProjectSyncHook.ProjectSyncHookEnvironment) =
+  override suspend fun onSync(environment: ProjectSyncHook.ProjectSyncHookEnvironment) {
+    if (environment.syncScope is PartialProjectSync) return
     environment.withSubtask("Collect additional files to index") {
       val project = environment.project
 
@@ -58,6 +60,7 @@ private class IndexAdditionalFilesSyncHook : ProjectSyncHook {
         this.indexAdditionalFiles += indexAdditionalFiles
       }
     }
+  }
 
   private fun indexAdditionalFilesByName(
     environment: ProjectSyncHook.ProjectSyncHookEnvironment,

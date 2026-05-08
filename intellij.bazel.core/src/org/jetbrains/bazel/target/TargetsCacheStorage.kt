@@ -190,6 +190,44 @@ class TargetsCacheStorage(
     }
   }
 
+  fun mergePartial(
+    fileToTarget: Map<Path, List<Label>>,
+    executableTargets: Map<ResolvedLabel, List<Label>>,
+    libraryItems: List<LibraryItem>,
+    targets: List<BuildTarget>,
+  ) {
+    val hashStream = Hashing.xxh3_64()
+      .hashStream()
+
+    for ((file, targets) in fileToTarget) {
+      this.fileToTargets.put(fileToKey(file), targets.map { hashStream.computeLabelHash(it as ResolvedLabel) })
+    }
+
+    for ((label, targets) in executableTargets) {
+      this.targetToExecutableTargets.put(hashStream.computeLabelHash(label), targets.map { hashStream.computeLabelHash(it as ResolvedLabel) })
+    }
+
+    for (library in libraryItems) {
+      this.libraryIdToTarget.put(stringToHashId(library.id.formatAsModuleName(project)), library.id)
+    }
+
+    for (target in targets) {
+      val label = target.id as ResolvedLabel
+      val labelHash = hashStream.computeLabelHash(label)
+      this.labelToTargetInfo.put(
+        labelHash,
+        PartialBuildTarget(
+          id = target.id,
+          kind = target.kind,
+          baseDirectory = target.baseDirectory,
+          data = target.data,
+          isManual = target.isManual,
+        ),
+      )
+      this.moduleIdToTarget.put(stringToHashId(label.formatAsModuleName(project)), labelHash)
+    }
+  }
+
   fun getTotalFileCount(): Int = fileToTargets.size
 
   fun close() {

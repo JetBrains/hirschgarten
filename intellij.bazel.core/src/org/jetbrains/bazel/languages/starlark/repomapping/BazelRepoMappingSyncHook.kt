@@ -13,6 +13,7 @@ import org.jetbrains.annotations.TestOnly
 import org.jetbrains.bazel.commons.BzlmodRepoMapping
 import org.jetbrains.bazel.sync.ProjectSyncHook
 import org.jetbrains.bazel.sync.ProjectSyncHook.ProjectSyncHookEnvironment
+import org.jetbrains.bazel.sync.scope.PartialProjectSync
 import org.jetbrains.bazel.sync.withSubtask
 import org.jetbrains.bazel.workspace.BazelRepoMappingService
 import java.nio.file.Path
@@ -34,6 +35,7 @@ fun Project.injectCanonicalRepoNameToApparentName(canonicalRepoNameToApparentNam
 
 internal class BazelRepoMappingSyncHook : ProjectSyncHook {
   override suspend fun onSync(environment: ProjectSyncHookEnvironment) {
+    if (environment.syncScope is PartialProjectSync) return
     environment.withSubtask("Load bazel repo mapping") {
       val bazelRepoMappingService = PersistentBazelRepoMappingService.getInstance(environment.project)
       val bazelRepoMappingResult = environment.server.workspaceBazelRepoMapping(environment.taskId)

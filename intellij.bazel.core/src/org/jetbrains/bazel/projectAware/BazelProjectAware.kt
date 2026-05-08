@@ -16,15 +16,20 @@ import com.intellij.util.concurrency.annotations.RequiresReadLock
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.annotations.VisibleForTesting
 import org.jetbrains.bazel.commons.constants.Constants
+import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.config.BazelPluginConstants
 import org.jetbrains.bazel.config.bazelProjectProperties
 import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.coroutines.BazelCoroutineService
+import org.jetbrains.bazel.server.connection.connection
 import org.jetbrains.bazel.settings.bazel.bazelProjectSettings
 import org.jetbrains.bazel.sync.SyncCache
+import org.jetbrains.bazel.sync.scope.PartialProjectSync
 import org.jetbrains.bazel.sync.scope.SecondPhaseSync
 import org.jetbrains.bazel.sync.status.SyncStatusListener
 import org.jetbrains.bazel.sync.task.ProjectSyncTask
+import org.jetbrains.bsp.protocol.InverseSourcesParams
+import org.jetbrains.bsp.protocol.TaskGroupId
 
 @ApiStatus.Internal
 class BazelProjectAware(private val project: Project) : ExternalSystemProjectAware {
@@ -43,9 +48,32 @@ class BazelProjectAware(private val project: Project) : ExternalSystemProjectAwa
   override fun reloadProject(context: ExternalSystemProjectReloadContext) {
     if (context.isExplicitReload) {
       BazelCoroutineService.getInstance(project).start {
-        ProjectSyncTask(project).sync(syncScope = SecondPhaseSync, buildProject = false)
+        val syncScope = if (BazelFeatureFlags.enablePartialSync) {
+          resolvePartialSyncScope()
+        } else {
+          null
+        }
+        ProjectSyncTask(project).sync(syncScope = syncScope ?: SecondPhaseSync, buildProject = false)
       }
     }
+  }
+
+  private suspend fun resolvePartialSyncScope(): PartialProjectSync? {
+    val changedBuildFiles = ChangedBuildFilesTracker.getInstance(project).consumeChangedFiles()
+    if (changedBuildFiles.isEmpty()) return null
+    if (changedBuildFiles.size > MAX_CHANGED_BUILD_FILES) return null
+
+    val taskId = TaskGroupId("partial-sync-resolve").task("resolve-targets")
+    val affectedTargets = try {
+      project.connection.runWithServer {
+        it.buildTargetInverseSources(InverseSourcesParams(taskId, changedBuildFiles.toList()))
+      }.targets.values.flatten().distinct()
+    } catch (_: Exception) {
+      return null
+    }
+
+    if (affectedTargets.isEmpty() || affectedTargets.size > MAX_PARTIAL_SYNC_TARGETS) return null
+    return PartialProjectSync(targetsToSync = affectedTargets)
   }
 
   override fun subscribe(listener: ExternalSystemProjectListener, parentDisposable: Disposable) {
@@ -119,3 +147,6 @@ private val GLOBAL_CONFIG_FILES: Array<String> = Constants.WORKSPACE_FILE_NAMES 
 
 // Bazel config files to look for in all project directories
 private val LOCAL_CONFIG_FILES: Set<String> = Constants.BUILD_FILE_NAMES.toSet()
+
+private const val MAX_PARTIAL_SYNC_TARGETS = 50
+private const val MAX_CHANGED_BUILD_FILES = 20

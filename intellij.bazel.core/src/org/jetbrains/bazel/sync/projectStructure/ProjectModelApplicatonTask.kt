@@ -9,6 +9,7 @@ import com.intellij.platform.workspace.storage.EntitySource
 import com.intellij.platform.workspace.storage.MutableEntityStorage
 import com.intellij.workspaceModel.ide.impl.WorkspaceModelImpl
 import org.jetbrains.bazel.config.BazelPluginBundle
+import org.jetbrains.bazel.magicmetamodel.formatAsModuleName
 import org.jetbrains.bazel.performance.bspTracer
 import org.jetbrains.bazel.progress.syncConsole
 import org.jetbrains.bazel.progress.withSubtask
@@ -16,6 +17,7 @@ import org.jetbrains.bazel.sync.scope.FullProjectSync
 import org.jetbrains.bazel.sync.scope.PartialProjectSync
 import org.jetbrains.bazel.sync.scope.ProjectSyncScope
 import org.jetbrains.bazel.workspacemodel.entities.BazelEntitySource
+import org.jetbrains.bazel.workspacemodel.entities.BazelModuleEntitySource
 import org.jetbrains.bsp.protocol.TaskId
 
 internal class ProjectModelApplicatonTask(
@@ -32,7 +34,13 @@ internal class ProjectModelApplicatonTask(
     val sourceFilter: (EntitySource) -> Boolean =
       when (scope) {
         is FullProjectSync -> { entitySource -> entitySource is BazelEntitySource }
-        is PartialProjectSync -> error("not supported")
+        is PartialProjectSync -> {
+          val moduleNames = scope.targetsToSync.map { it.formatAsModuleName(project) }.toSet()
+          val filter: (EntitySource) -> Boolean = { entitySource ->
+            entitySource is BazelModuleEntitySource && entitySource.moduleName in moduleNames
+          }
+          filter
+        }
       }
 
     fun MutableEntityStorage.replaceBySource() {

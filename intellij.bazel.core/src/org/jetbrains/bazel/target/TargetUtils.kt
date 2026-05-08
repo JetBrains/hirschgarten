@@ -159,6 +159,35 @@ class TargetUtils(private val project: Project, private val coroutineScope: Coro
     }
   }
 
+  fun mergeTargets(
+    targets: List<RawBuildTarget>,
+    fileToTarget: Map<Path, List<Label>>,
+    libraryItems: List<LibraryItem>,
+  ) {
+    ThreadingAssertions.assertBackgroundThread()
+
+    val executableTargets =
+      calculateExecutableTargets(
+        targets = fileToTarget.flatMap { it.value }.distinct(),
+        targetDirectDependentsGraph = calculateDirectDependentsGraph(targets),
+        labelToTargetInfo = targets.associateByTo(HashMap(targets.size)) { it.id },
+      )
+
+    db.mergePartial(
+      fileToTarget = fileToTarget,
+      executableTargets = executableTargets,
+      libraryItems = libraryItems,
+      targets = targets,
+    )
+
+    notifyTargetListUpdated()
+
+    coroutineScope.launch(Dispatchers.IO + NonCancellable) {
+      db.save()
+      lastSaved = nowAsDuration()
+    }
+  }
+
   private fun calculateDirectDependentsGraph(targets: List<RawBuildTarget>): Map<Label, Set<Label>> {
     val targetIdToDirectDependentIds = hashMapOf<Label, MutableSet<Label>>()
     for (targetInfo in targets) {

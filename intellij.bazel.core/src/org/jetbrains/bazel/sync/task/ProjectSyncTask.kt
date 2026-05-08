@@ -43,6 +43,7 @@ import org.jetbrains.bazel.sync.projectPostSyncHooks
 import org.jetbrains.bazel.sync.projectPreSyncHooks
 import org.jetbrains.bazel.sync.projectStructure.ProjectModelApplicatonTask
 import org.jetbrains.bazel.sync.projectSyncHooks
+import org.jetbrains.bazel.sync.scope.FullProjectSync
 import org.jetbrains.bazel.sync.scope.ProjectSyncScope
 import org.jetbrains.bazel.sync.status.SyncAlreadyInProgressException
 import org.jetbrains.bazel.sync.status.SyncStatusService
@@ -86,7 +87,7 @@ class ProjectSyncTask(private val project: Project) {
             BazelTaskEventsService.getInstance(project).saveListener(taskId.taskGroupId, taskListener)
 
             val syncJob = BazelCoroutineService.getInstance(project).startAsync(lazy = true) {
-              preSync()
+              preSync(syncScope)
               doSync(taskId, syncScope, buildProject)
             }
 
@@ -160,10 +161,12 @@ class ProjectSyncTask(private val project: Project) {
     }
   }
 
-  private suspend fun preSync() {
+  private suspend fun preSync(syncScope: ProjectSyncScope) {
     log.debug("Running pre sync tasks")
     saveAllFiles()
-    clearSyntheticTargets()
+    if (syncScope is FullProjectSync) {
+      clearSyntheticTargets()
+    }
   }
 
   private suspend fun clearSyntheticTargets() {
@@ -279,8 +282,10 @@ class ProjectSyncTask(private val project: Project) {
             subtaskId = taskId.subTask("base-project-sync-subtask-id"),
             message = BazelPluginBundle.message("console.task.base.sync"),
           ) { subtaskId ->
-            // force full re-sync
-            resolver.invalidateCachedState()
+            if (syncScope is FullProjectSync) {
+              // force full re-sync
+              resolver.invalidateCachedState()
+            }
             resolver.getOrFetchSyncedProject(build = buildProject, taskId = subtaskId).also {
               it.targets.values.filter { it.tagsList.any { it.equals(Constants.NO_IDE) }}.let {
                 if (!it.isEmpty()) {

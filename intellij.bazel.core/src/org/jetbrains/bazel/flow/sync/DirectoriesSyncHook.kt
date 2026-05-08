@@ -9,6 +9,7 @@ import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.flow.exclude.BazelSymlinkExcludeService
 import org.jetbrains.bazel.sync.ProjectSyncHook
 import org.jetbrains.bazel.sync.ProjectSyncHook.ProjectSyncHookEnvironment
+import org.jetbrains.bazel.sync.scope.PartialProjectSync
 import org.jetbrains.bazel.sync.withSubtask
 import org.jetbrains.bazel.workspacemodel.entities.BazelProjectDirectoriesEntity
 import org.jetbrains.bazel.workspacemodel.entities.BazelProjectDirectoriesEntityBuilder
@@ -18,6 +19,7 @@ import java.nio.file.Path
 
 private class DirectoriesSyncHook : ProjectSyncHook {
   override suspend fun onSync(environment: ProjectSyncHookEnvironment) {
+    if (environment.syncScope is PartialProjectSync) return
     environment.withSubtask("Collect project directories") {
       val directories = environment.server.workspaceDirectories()
       val workspaceContext = environment.server.workspaceContext

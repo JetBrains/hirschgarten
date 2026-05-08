@@ -19,6 +19,7 @@ import org.jetbrains.bazel.run.state.HasBazelParams
 import org.jetbrains.bazel.run.state.HasEnv
 import org.jetbrains.bazel.run.state.HasProgramArguments
 import org.jetbrains.bazel.sync.ProjectSyncHook
+import org.jetbrains.bazel.sync.scope.PartialProjectSync
 import org.jetbrains.bazel.sync.withSubtask
 import java.nio.file.Path
 
@@ -28,6 +29,7 @@ internal class ImportRunConfigurationsSyncHook : ProjectSyncHook {
   private val log = logger<ImportRunConfigurationsSyncHook>()
 
   override suspend fun onSync(environment: ProjectSyncHook.ProjectSyncHookEnvironment) {
+    if (environment.syncScope is PartialProjectSync) return
     environment.withSubtask("Import run configurations") {
       val project = environment.project
       val workspaceContext = environment.server.workspaceContext
