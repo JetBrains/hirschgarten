@@ -1,6 +1,7 @@
 package org.jetbrains.bazel.languages.starlark.psi.expressions
 
 import com.intellij.lang.ASTNode
+import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiReference
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.languages.starlark.elements.StarlarkElementType
@@ -10,6 +11,7 @@ import org.jetbrains.bazel.languages.starlark.psi.StarlarkBaseElement
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkElementVisitor
 import org.jetbrains.bazel.languages.starlark.references.StarlarkLocalVariableElement
 import org.jetbrains.bazel.languages.starlark.references.StarlarkLocalVariableReference
+import org.jetbrains.bazel.languages.starlark.references.StarlarkQualifiedReferenceExpressionReference
 
 @ApiStatus.Internal
 class StarlarkReferenceExpression(node: ASTNode) :
@@ -20,7 +22,7 @@ class StarlarkReferenceExpression(node: ASTNode) :
   override fun getReference(): PsiReference? =
     when {
       isThrowaway() -> null
-      containsDot() -> null
+      isQualified() -> StarlarkQualifiedReferenceExpressionReference(this)
       hasParentOfType(StarlarkElementTypes.CALL_EXPRESSION) && !isBeforeDot() -> null
       else -> StarlarkLocalVariableReference(this, false)
     }
@@ -29,11 +31,19 @@ class StarlarkReferenceExpression(node: ASTNode) :
 
   override fun getNameNode(): ASTNode? = node.findChildByType(StarlarkTokenTypes.IDENTIFIER)
 
+  /**
+   * If the expression is qualified (of the form "a.b") return the part the qualifier applies to ("a") as PsiElement
+   */
+  fun getQualifierExpression(): PsiElement? {
+    if (!isQualified()) return null
+    return node.firstChildNode?.psi
+  }
+
   private fun hasParentOfType(type: StarlarkElementType): Boolean = node.treeParent?.elementType == type
 
-  private fun isBeforeDot(): Boolean = node.treeNext?.text == "."
+  private fun isBeforeDot(): Boolean = generateSequence(node.treeNext) { it.treeNext }.any { it.elementType == StarlarkTokenTypes.DOT }
 
   private fun isThrowaway(): Boolean = name == "_"
 
-  private fun containsDot(): Boolean = node.text.contains('.')
+  private fun isQualified(): Boolean = node.findChildByType(StarlarkTokenTypes.DOT) != null
 }

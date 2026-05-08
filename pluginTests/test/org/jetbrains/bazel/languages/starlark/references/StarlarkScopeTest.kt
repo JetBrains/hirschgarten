@@ -261,6 +261,87 @@ class StarlarkScopeTest : BasePlatformTestCase() {
   }
 
   @Test
+  fun `does consider reference into struct`() {
+    myFixture.verifyTargetOfReferenceAtCaret(
+      """
+      baz = struct(foo = 42, <target>bar = 4711)
+      baz.<caret>bar
+      """.trimIndent(),
+    )
+  }
+
+  @Test
+  fun `does resolve definition through struct access`() {
+    myFixture.verifyTargetOfReferenceAtCaret(
+      """
+      def _increment(x):
+          return x + 1
+          
+      def <target>_double(x):
+          return x * 2
+          
+      math = struct(inc = _increment, dbl = _double)
+      
+      math.<caret>dbl(42)
+      """.trimIndent()
+    )
+  }
+
+  @Test
+  fun `does resolve struct itself`() {
+    myFixture.verifyTargetOfReferenceAtCaret(
+      """
+      def _increment(x):
+          return x + 1
+          
+      def _double(x):
+          return x * 2
+          
+      <target>math = struct(inc = _increment, dbl = _double)
+      
+      <caret>math.dbl(42)
+      """.trimIndent()
+    )
+  }
+
+  @Test
+  fun `resolves nested structs`() {
+    myFixture.verifyTargetOfReferenceAtCaret(
+      """
+      def _increment(x):
+          return x + 1
+          
+      def <target>_double(x):
+          return x * 2
+          
+      math = struct(inc = _increment, dbl = _double)
+      
+      lib = struct(m = math, version = "1.2.3")
+      
+      lib.m.<caret>dbl(42)
+      """.trimIndent()
+    )
+  }
+  @Test
+  fun `resolves inner part of nested structs`() {
+    myFixture.verifyTargetOfReferenceAtCaret(
+      """
+      def _increment(x):
+          return x + 1
+          
+      def _double(x):
+          return x * 2
+          
+      <target>math = struct(inc = _increment, dbl = _double)
+      
+      lib = struct(m = math, version = "1.2.3")
+      
+      lib.<caret>m.dbl(42)
+      """.trimIndent()
+    )
+  }
+
+  @Test
   fun `local variable hides containing function`() {
     myFixture.verifyTargetOfReferenceAtCaret(
       """
