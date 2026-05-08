@@ -5,6 +5,7 @@ import com.intellij.testFramework.junit5.TestApplication
 import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.nulls.shouldBeNull
 import io.kotest.matchers.shouldBe
+import org.jetbrains.bazel.label.DependencyLabel
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.label.ResolvedLabel
 import org.jetbrains.bazel.magicmetamodel.formatAsModuleName
@@ -122,9 +123,60 @@ class TargetsCacheStorageTest : WorkspaceModelBaseTest() {
   }
 
   @Test
+  fun `mergePartial replaces only requested targets and removes stale file mappings`() {
+    val replacedLabel: ResolvedLabel = Label.parse("@//lib:core") as ResolvedLabel
+    val retainedLabel: ResolvedLabel = Label.parse("@//app:tool") as ResolvedLabel
+
+    val oldFile = projectBasePath.resolve("lib/Old.kt")
+    val sharedFile = projectBasePath.resolve("shared/Shared.kt")
+    val retainedFile = projectBasePath.resolve("app/Tool.kt")
+    val newSharedFile = projectBasePath.resolve("lib/New.kt")
+
+    storage.reset(
+      fileToTarget = mapOf(
+        oldFile to listOf(replacedLabel),
+        sharedFile to listOf(replacedLabel, retainedLabel),
+        retainedFile to listOf(retainedLabel),
+        newSharedFile to listOf(retainedLabel),
+      ),
+      executableTargets = mapOf(
+        replacedLabel to listOf(replacedLabel),
+        retainedLabel to listOf(replacedLabel),
+      ),
+      targets = listOf(
+        TestBuildTargetFactory.createSimpleJavaLibraryTarget(id = replacedLabel),
+        TestBuildTargetFactory.createSimpleJavaLibraryTarget(id = retainedLabel),
+      ),
+    )
+
+    storage.mergePartial(
+      targetsToReplace = listOf(replacedLabel),
+      fileToTarget = mapOf(newSharedFile to listOf(replacedLabel)),
+      executableTargets = mapOf(retainedLabel to listOf(retainedLabel)),
+      targets = listOf(TestBuildTargetFactory.createSimpleKotlinLibraryTarget(id = replacedLabel)),
+    )
+
+    storage.getTargetsForPath(oldFile).shouldBeNull()
+    storage.getTargetsForPath(sharedFile)!!.shouldContainExactly(listOf(retainedLabel))
+    storage.getTargetsForPath(retainedFile)!!.shouldContainExactly(listOf(retainedLabel))
+    storage.getTargetsForPath(newSharedFile)!!.shouldContainExactly(listOf(retainedLabel, replacedLabel))
+    storage.getBuildTargetForLabel(replacedLabel)!!.kind.kind shouldBe "kt_jvm_library"
+    storage.getBuildTargetForLabel(retainedLabel)!!.id shouldBe retainedLabel
+    storage.getExecutableTargetsForTarget(replacedLabel).shouldBeNull()
+    storage.getExecutableTargetsForTarget(retainedLabel)!!.shouldContainExactly(listOf(retainedLabel))
+    storage.getTotalTargetCount() shouldBe 2
+  }
+
+  @Test
   fun `persistence after save and reopen`() {
     val label: ResolvedLabel = Label.parse("@//persist:me") as ResolvedLabel
-    val target = TestBuildTargetFactory.createSimpleJavaLibraryTarget(id = label)
+    val dependency: ResolvedLabel = Label.parse("@//persist:dep") as ResolvedLabel
+    val target =
+      TestBuildTargetFactory.createSimpleJavaLibraryTarget(id = label)
+        .copy(
+          dependencies = listOf(DependencyLabel(dependency, isRuntime = true, exported = true)),
+          generatorName = "generated_me",
+        )
 
     storage.setTargets(listOf(target))
     storage.save()
@@ -135,5 +187,7 @@ class TargetsCacheStorageTest : WorkspaceModelBaseTest() {
 
     val restored = storage.getBuildTargetForLabel(label)
     restored!!.id shouldBe label
+    restored.dependencies shouldBe listOf(DependencyLabel(dependency, isRuntime = true, exported = true))
+    restored.generatorName shouldBe "generated_me"
   }
 }

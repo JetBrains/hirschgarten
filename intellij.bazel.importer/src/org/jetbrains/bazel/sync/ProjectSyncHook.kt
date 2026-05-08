@@ -9,6 +9,7 @@ import org.jetbrains.bazel.info.BspTargetInfo
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.progress.syncConsole
 import org.jetbrains.bazel.progress.withSubtask
+import org.jetbrains.bazel.sync.scope.PartialProjectSync
 import org.jetbrains.bazel.sync.scope.ProjectSyncScope
 import org.jetbrains.bazel.sync.workspace.BazelResolvedWorkspace
 import org.jetbrains.bazel.sync.workspace.BazelWorkspaceResolveService
@@ -26,6 +27,12 @@ interface ProjectSyncHook {
    * It will always be called before each `onSync` call.
    */
   fun isEnabled(project: Project): Boolean = true
+
+  /**
+   * Partial sync passes only a subset of targets through the sync pipeline. Hooks which update
+   * project-wide state should keep the default and run only during full syncs.
+   */
+  fun supportsPartialSync(): Boolean = false
 
   /**
    * Method which will be called during sync. It can perform any type of activity that is part of sync.
@@ -67,6 +74,10 @@ val Project.projectSyncHooks: List<ProjectSyncHook>
     ProjectSyncHook.ep
       .extensionList
       .filter { it.isEnabled(this) }
+
+@ApiStatus.Internal
+fun Project.projectSyncHooksForScope(syncScope: ProjectSyncScope): List<ProjectSyncHook> =
+  projectSyncHooks.filter { syncScope !is PartialProjectSync || it.supportsPartialSync() }
 
 @ApiStatus.Internal
 suspend fun <T> ProjectSyncHook.ProjectSyncHookEnvironment.withSubtask(text: String, block: suspend (subtaskId: TaskId) -> T) =

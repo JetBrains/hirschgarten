@@ -3,7 +3,6 @@ package org.jetbrains.bazel.sync.environment
 import com.intellij.openapi.project.Project
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.label.Label
-import org.jetbrains.bsp.protocol.LibraryItem
 import org.jetbrains.bsp.protocol.RawBuildTarget
 import java.nio.file.Path
 
@@ -13,6 +12,7 @@ import java.nio.file.Path
 @ApiStatus.Internal
 interface BazelTargetPersistenceLayer {
   suspend fun saveAll(project: Project, spec: TargetPersistenceSpec)
+  suspend fun mergePartial(project: Project, targetsToReplace: Collection<Label>, spec: TargetPersistenceSpec)
   suspend fun notifyAll(project: Project)
 }
 

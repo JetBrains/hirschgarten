@@ -46,7 +46,12 @@ internal class DefaultBazelWorkspaceResolveService(private val project: Project)
       when (val state = state) {
         // workspace is already resolved - return the available state and avoid recomputation
         is BazelWorkspaceSyncState.Resolved,
-        -> return state.resolvedWorkspace
+        -> {
+          if (scope !is PartialProjectSync) {
+            return state.resolvedWorkspace
+          }
+          state.bazelProject
+        }
 
         // workspace is not in the correct state - try to pull the required state
         BazelWorkspaceSyncState.Unsynced,
@@ -98,7 +103,14 @@ internal class DefaultBazelWorkspaceResolveService(private val project: Project)
         }
       }
     return workspace
-      .also { state = BazelWorkspaceSyncState.Resolved(synced, it) }
+      .also {
+        state =
+          if (scope is PartialProjectSync) {
+            BazelWorkspaceSyncState.Synced(synced)
+          } else {
+            BazelWorkspaceSyncState.Resolved(synced, it)
+          }
+      }
   }
 
   override suspend fun invalidateCachedState() {

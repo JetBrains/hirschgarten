@@ -1,9 +1,9 @@
 package org.jetbrains.bazel.target.sync
 
 import com.intellij.openapi.project.Project
+import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.sync.environment.BazelTargetPersistenceLayer
 import org.jetbrains.bazel.sync.environment.TargetPersistenceSpec
-import org.jetbrains.bazel.sync.status.SyncStatusListener
 import org.jetbrains.bazel.target.targetUtils
 
 internal class TargetUtilsTargetPersistanceLayer : BazelTargetPersistenceLayer {
@@ -12,6 +12,18 @@ internal class TargetUtilsTargetPersistanceLayer : BazelTargetPersistenceLayer {
     spec: TargetPersistenceSpec,
   ) {
     project.targetUtils.saveTargets(
+      targets = spec.targets,
+      fileToTarget = spec.file2Target,
+    )
+  }
+
+  override suspend fun mergePartial(
+    project: Project,
+    targetsToReplace: Collection<Label>,
+    spec: TargetPersistenceSpec,
+  ) {
+    project.targetUtils.mergeTargets(
+      targetsToReplace = targetsToReplace,
       targets = spec.targets,
       fileToTarget = spec.file2Target,
     )

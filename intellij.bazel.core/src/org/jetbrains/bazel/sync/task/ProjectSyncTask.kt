@@ -30,6 +30,7 @@ import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.config.BazelPluginConstants
 import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.coroutines.BazelCoroutineService
+import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.label.label
 import org.jetbrains.bazel.performance.bspTracer
 import org.jetbrains.bazel.progress.syncConsole
@@ -42,7 +43,9 @@ import org.jetbrains.bazel.sync.ProjectSyncHook.ProjectSyncHookEnvironment
 import org.jetbrains.bazel.sync.projectPostSyncHooks
 import org.jetbrains.bazel.sync.projectPreSyncHooks
 import org.jetbrains.bazel.sync.projectStructure.ProjectModelApplicatonTask
-import org.jetbrains.bazel.sync.projectSyncHooks
+import org.jetbrains.bazel.sync.projectSyncHooksForScope
+import org.jetbrains.bazel.sync.scope.FullProjectSync
+import org.jetbrains.bazel.sync.scope.PartialProjectSync
 import org.jetbrains.bazel.sync.scope.ProjectSyncScope
 import org.jetbrains.bazel.sync.status.SyncAlreadyInProgressException
 import org.jetbrains.bazel.sync.status.SyncStatusService
@@ -86,7 +89,7 @@ class ProjectSyncTask(private val project: Project) {
             BazelTaskEventsService.getInstance(project).saveListener(taskId.taskGroupId, taskListener)
 
             val syncJob = BazelCoroutineService.getInstance(project).startAsync(lazy = true) {
-              preSync()
+              preSync(syncScope)
               doSync(taskId, syncScope, buildProject)
             }
 
@@ -160,10 +163,12 @@ class ProjectSyncTask(private val project: Project) {
     }
   }
 
-  private suspend fun preSync() {
+  private suspend fun preSync(syncScope: ProjectSyncScope) {
     log.debug("Running pre sync tasks")
     saveAllFiles()
-    clearSyntheticTargets()
+    if (syncScope is FullProjectSync) {
+      clearSyntheticTargets()
+    }
   }
 
   private suspend fun clearSyntheticTargets() {
@@ -202,7 +207,7 @@ class ProjectSyncTask(private val project: Project) {
 
                 val storage = MutableEntityStorage.create()
                 val deferredApplyActions = mutableListOf<suspend () -> Unit>()
-                syncResult = executeSyncHooks(
+                val syncHooksResult = executeSyncHooks(
                   progressReporter = progressReporter,
                   syncScope = syncScope,
                   buildProject = buildProject,
@@ -217,6 +222,7 @@ class ProjectSyncTask(private val project: Project) {
                     builder = storage
                   ),
                 )
+                syncResult = syncHooksResult.status
                 shouldUpdateProjectModel = syncResult != SyncResultStatus.FAILURE
                 if (shouldUpdateProjectModel) {
                   updateProjectModel(
@@ -225,6 +231,7 @@ class ProjectSyncTask(private val project: Project) {
                     storage = storage,
                     taskId = taskId,
                     deferredApplyActions = deferredApplyActions,
+                    targetsToReplace = syncHooksResult.targetsToReplace,
                   )
                 }
               } finally {
@@ -269,9 +276,9 @@ class ProjectSyncTask(private val project: Project) {
     server: BazelServerFacade,
     importerHelper: WorkspaceImporterHelper,
     deferredApplyActions: MutableList<suspend () -> Unit>,
-  ): SyncResultStatus {
+  ): SyncHooksResult {
     val resolver = BazelWorkspaceResolveService.getInstance(project)
-    val syncStatus =
+    val syncHooksResult =
       bspTracer.spanBuilder("collect.project.details.ms").use {
         // if this bazel build fails, we still want the sync hooks to be executed
         val bazelProject =
@@ -279,8 +286,10 @@ class ProjectSyncTask(private val project: Project) {
             subtaskId = taskId.subTask("base-project-sync-subtask-id"),
             message = BazelPluginBundle.message("console.task.base.sync"),
           ) { subtaskId ->
-            // force full re-sync
-            resolver.invalidateCachedState()
+            if (syncScope is FullProjectSync) {
+              // force full re-sync
+              resolver.invalidateCachedState()
+            }
             resolver.getOrFetchSyncedProject(build = buildProject, taskId = subtaskId).also {
               it.targets.values.filter { it.tagsList.any { it.equals(Constants.NO_IDE) }}.let {
                 if (!it.isEmpty()) {
@@ -293,13 +302,17 @@ class ProjectSyncTask(private val project: Project) {
               }
             }
           }
-        if (bazelProject.hasError && bazelProject.targets.isEmpty()) return@use SyncResultStatus.FAILURE
+        if (bazelProject.hasError && bazelProject.targets.isEmpty()) return@use SyncHooksResult(SyncResultStatus.FAILURE)
+        var targetsToReplace = emptySet<Label>()
         project.syncConsole.withSubtask(
           reporter = progressReporter,
           subtaskId = taskId.subTask("sync-hooks"),
           text = BazelPluginBundle.message("console.task.execute.sync.hooks"),
         ) { subtaskId ->
           val resolvedWorkspace = resolver.getOrFetchResolvedWorkspace(scope = syncScope, taskId = subtaskId)
+          if (syncScope is PartialProjectSync) {
+            targetsToReplace = (syncScope.targetsToSync + resolvedWorkspace.targets.map { it.id }).toSet()
+          }
           val workspaceSnapshot = WorkspaceSnapshotBuilder.build(
             project = project,
             workspaceContext = server.workspaceContext,
@@ -322,21 +335,23 @@ class ProjectSyncTask(private val project: Project) {
               deferredApplyActions = deferredApplyActions,
             )
           // then sync hooks
-          project.projectSyncHooks.forEachSubtask(subtaskId) {
+          project.projectSyncHooksForScope(syncScope).forEachSubtask(subtaskId) {
             it.onSync(environment)
           }
-          deferredApplyActions += { importerHelper.invokeLate(progressReporter, workspaceSnapshot) }
+          if (syncScope is FullProjectSync) {
+            deferredApplyActions += { importerHelper.invokeLate(progressReporter, workspaceSnapshot) }
+          }
         }
 
         if (bazelProject.hasError) {
-          SyncResultStatus.PARTIAL_SUCCESS
+          SyncHooksResult(SyncResultStatus.PARTIAL_SUCCESS, targetsToReplace)
         }
         else {
-          SyncResultStatus.SUCCESS
+          SyncHooksResult(SyncResultStatus.SUCCESS, targetsToReplace)
         }
       }
 
-    return syncStatus
+    return syncHooksResult
   }
 
   private suspend fun updateProjectModel(
@@ -345,6 +360,7 @@ class ProjectSyncTask(private val project: Project) {
     storage: MutableEntityStorage,
     taskId: TaskId,
     deferredApplyActions: MutableList<suspend () -> Unit>,
+    targetsToReplace: Set<Label>,
   ) {
     project.syncConsole.withSubtask(
       reporter = progressReporter,
@@ -356,6 +372,7 @@ class ProjectSyncTask(private val project: Project) {
         scope = syncScope,
         taskId = subtaskId,
         postActions = deferredApplyActions,
+        targetsToReplace = targetsToReplace,
       )
       applicator.apply(storage)
     }
@@ -406,4 +423,9 @@ class ProjectSyncTask(private val project: Project) {
     PARTIAL_SUCCESS,
     FAILURE,
   }
+
+  private data class SyncHooksResult(
+    val status: SyncResultStatus,
+    val targetsToReplace: Set<Label> = emptySet(),
+  )
 }

@@ -13,10 +13,13 @@ import org.jetbrains.bazel.impl.flow.sync.DisabledTestProjectSyncHook
 import org.jetbrains.bazel.impl.flow.sync.TestProjectPostSyncHook
 import org.jetbrains.bazel.impl.flow.sync.TestProjectPreSyncHook
 import org.jetbrains.bazel.impl.flow.sync.TestProjectSyncHook
+import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.server.connection.BazelServerService
 import org.jetbrains.bazel.sync.ProjectPostSyncHook
 import org.jetbrains.bazel.sync.ProjectPreSyncHook
 import org.jetbrains.bazel.sync.ProjectSyncHook
+import org.jetbrains.bazel.sync.ProjectSyncHook.ProjectSyncHookEnvironment
+import org.jetbrains.bazel.sync.scope.PartialProjectSync
 import org.jetbrains.bazel.sync.scope.SecondPhaseSync
 import org.jetbrains.bazel.sync.workspace.BazelResolvedWorkspace
 import org.jetbrains.bazel.sync.workspace.BazelWorkspaceResolveService
@@ -86,5 +89,43 @@ class ProjectSyncTaskTest : MockProjectBaseTest() {
 
     postSyncHook.wasCalled shouldBe true
     disabledPostSyncHook.wasCalled shouldBe false
+  }
+
+  @Test
+  fun `partial sync should call only partial-aware sync hooks`() = Disposer.newDisposable().use { disposable ->
+    project.registerOrReplaceServiceInstance(BazelServerService::class.java, MockBuildServerService(BuildServerMock()), disposable)
+    project.registerOrReplaceServiceInstance(
+      BazelWorkspaceResolveService::class.java,
+      BazelWorkspaceResolveServiceMock(
+        resolvedWorkspace =
+          BazelResolvedWorkspace(
+            targets = listOf(),
+          ),
+        bazelProject = WorkspaceBuildTargetsResult(mapOf(), setOf()),
+      ),
+      disposable,
+    )
+
+    val partialAwareHook = PartialAwareTestProjectSyncHook()
+    ProjectSyncHook.ep.registerExtension(partialAwareHook)
+    val fullOnlyHook = TestProjectSyncHook()
+    ProjectSyncHook.ep.registerExtension(fullOnlyHook)
+
+    runBlocking {
+      ProjectSyncTask(project).sync(syncScope = PartialProjectSync(listOf(Label.parse("//foo:bar"))), false)
+    }
+
+    partialAwareHook.wasCalled shouldBe true
+    fullOnlyHook.wasCalled shouldBe false
+  }
+
+  private class PartialAwareTestProjectSyncHook : ProjectSyncHook {
+    var wasCalled: Boolean = false
+
+    override fun supportsPartialSync(): Boolean = true
+
+    override suspend fun onSync(environment: ProjectSyncHookEnvironment) {
+      wasCalled = true
+    }
   }
 }

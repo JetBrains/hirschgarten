@@ -15,6 +15,7 @@ import org.jetbrains.bazel.label.AllRuleTargetsAndFiles
 import org.jetbrains.bazel.label.AmbiguousEmptyTarget
 import org.jetbrains.bazel.label.Apparent
 import org.jetbrains.bazel.label.Canonical
+import org.jetbrains.bazel.label.DependencyLabel
 import org.jetbrains.bazel.label.Main
 import org.jetbrains.bazel.label.Package
 import org.jetbrains.bazel.label.ResolvedLabel
@@ -125,8 +126,16 @@ internal fun createIdToBuildMapType(filePathSuffix: String, rootDir: Path): MVMa
     createAnyValueDataType<PartialBuildTarget>(
       writer = { buffer, item ->
         writeResolvedLabel(buffer, item.id as ResolvedLabel)
+        buffer.putVarInt(item.dependencies.size)
+        for (dependency in item.dependencies) {
+          writeResolvedLabel(buffer, dependency.label as ResolvedLabel)
+          buffer.put(if (dependency.isRuntime) 1 else 0)
+          buffer.put(if (dependency.exported) 1 else 0)
+        }
         writeTargetKind(item.kind, buffer)
         writePath(path = item.baseDirectory.invariantSeparatorsPathString, filePathSuffix = filePathSuffix, buffer = buffer)
+        buffer.put(if (item.generatorName == null) 0 else 1)
+        item.generatorName?.let { buffer.writeString(it) }
         buffer.put(if (item.isManual) 1 else 0)
         buffer.put(if (item.isWorkspace) 1 else 0)
 
@@ -141,8 +150,23 @@ internal fun createIdToBuildMapType(filePathSuffix: String, rootDir: Path): MVMa
       },
       reader = { buffer ->
         val id = readResolvedLabel(buffer)
+        val dependencies =
+          (0 until readVarInt(buffer)).map {
+            DependencyLabel(
+              label = readResolvedLabel(buffer),
+              isRuntime = buffer.get() == 1.toByte(),
+              exported = buffer.get() == 1.toByte(),
+            )
+          }
         val kind = readTargetKind(buffer)
         val baseDirectory = readPath(buffer, rootDir)
+        val generatorName =
+          if (buffer.get() == 1.toByte()) {
+            buffer.readString()
+          }
+          else {
+            null
+          }
         val isManual = buffer.get() == 1.toByte()
         val isWorkspace = buffer.get() == 1.toByte()
 
@@ -157,9 +181,11 @@ internal fun createIdToBuildMapType(filePathSuffix: String, rootDir: Path): MVMa
         }
         PartialBuildTarget(
           id = id,
+          dependencies = dependencies,
           kind = kind,
           baseDirectory = baseDirectory,
           data = data,
+          generatorName = generatorName,
           isManual = isManual,
           isWorkspace = isWorkspace
         )

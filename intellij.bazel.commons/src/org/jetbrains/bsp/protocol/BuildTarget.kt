@@ -15,8 +15,10 @@ interface ExecutableTarget {
 interface BuildTarget : ExecutableTarget {
   override val id: Label
   override val kind: TargetKind
+  val dependencies: List<DependencyLabel>
   val baseDirectory: Path
   val data: List<BuildTargetData>
+  val generatorName: String?
 
   /**
    * From Bazel doc (https://bazel.build/reference/be/common-definitions)
@@ -34,13 +36,13 @@ interface BuildTarget : ExecutableTarget {
 @ApiStatus.Internal
 data class RawBuildTarget(
   override val id: Label,
-  val dependencies: List<DependencyLabel>,
+  override val dependencies: List<DependencyLabel>,
   override val kind: TargetKind,
   val sources: List<SourceItem>,
   val resources: List<Path>,
   override val baseDirectory: Path,
   override val data: List<BuildTargetData> = emptyList(),
-  val generatorName: String? = null,
+  override val generatorName: String? = null,
   override val isManual: Boolean = false,
   override val isWorkspace: Boolean = true,
 ) : BuildTarget
@@ -48,9 +50,11 @@ data class RawBuildTarget(
 @ApiStatus.Internal
 data class PartialBuildTarget(
   override val id: Label,
+  override val dependencies: List<DependencyLabel> = emptyList(),
   override val kind: TargetKind,
   override val baseDirectory: Path,
   override val data: List<BuildTargetData> = emptyList(),
+  override val generatorName: String? = null,
   override val isManual: Boolean,
   override val isWorkspace: Boolean
 ) : BuildTarget

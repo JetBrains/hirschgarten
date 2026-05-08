@@ -38,6 +38,7 @@ import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.label.ResolvedLabel
 import org.jetbrains.bazel.label.SingleTarget
 import org.jetbrains.bazel.label.assumeResolved
+import org.jetbrains.bazel.languages.starlark.repomapping.toCanonicalLabelOrThis
 import org.jetbrains.bazel.languages.starlark.repomapping.toShortString
 import org.jetbrains.bazel.magicmetamodel.LIBRARY_MODULE_PREFIX
 import org.jetbrains.bazel.magicmetamodel.formatAsModuleName
@@ -57,7 +58,7 @@ private fun nowAsDuration() = System.currentTimeMillis().toDuration(DurationUnit
 /**
  * Increment when making breaking changes to [TargetsCacheStorage]
  */
-private const val TARGETS_STORAGE_VERSION: Int = 6
+private const val TARGETS_STORAGE_VERSION: Int = 7
 
 private fun Project.targetsStorageFile(storeVersion: Int): Path = getProjectDataPath("bazel-targets-v$storeVersion.db")
 
@@ -159,7 +160,42 @@ class TargetUtils(private val project: Project, private val coroutineScope: Coro
     }
   }
 
-  private fun calculateDirectDependentsGraph(targets: List<RawBuildTarget>): Map<Label, Set<Label>> {
+  fun mergeTargets(
+    targetsToReplace: Collection<Label>,
+    targets: List<RawBuildTarget>,
+    fileToTarget: Map<Path, List<Label>>,
+  ) {
+    ThreadingAssertions.assertBackgroundThread()
+    val resolvedTargetsToReplace = targetsToReplace.mapNotNull { it.toCanonicalLabelOrThis(project) }.toSet()
+
+    val mergedTargets =
+      db.getAllBuildTargets()
+        .filter { it.id !in resolvedTargetsToReplace }
+        .toList() + targets
+
+    val executableTargets =
+      calculateExecutableTargets(
+        targets = mergedTargets.map { it.id },
+        targetDirectDependentsGraph = calculateDirectDependentsGraph(mergedTargets),
+        labelToTargetInfo = mergedTargets.associateByTo(HashMap(mergedTargets.size)) { it.id },
+      )
+
+    db.mergePartial(
+      targetsToReplace = resolvedTargetsToReplace,
+      fileToTarget = fileToTarget,
+      executableTargets = executableTargets,
+      targets = targets,
+    )
+
+    notifyTargetListUpdated()
+
+    coroutineScope.launch(Dispatchers.IO + NonCancellable) {
+      db.save()
+      lastSaved = nowAsDuration()
+    }
+  }
+
+  private fun calculateDirectDependentsGraph(targets: List<BuildTarget>): Map<Label, Set<Label>> {
     val targetIdToDirectDependentIds = hashMapOf<Label, MutableSet<Label>>()
     for (targetInfo in targets) {
       val dependencies = targetInfo.dependencies
@@ -175,7 +211,7 @@ class TargetUtils(private val project: Project, private val coroutineScope: Coro
   private fun calculateExecutableTargets(
     targets: List<Label>,
     targetDirectDependentsGraph: Map<Label, Set<Label>>,
-    labelToTargetInfo: Map<Label, RawBuildTarget>,
+    labelToTargetInfo: Map<Label, BuildTarget>,
   ): Map<ResolvedLabel, List<Label>> {
     val targetToTransitiveRevertedDependenciesCache = mutableMapOf<Label, Set<Label>>()
     val result = mutableMapOf<ResolvedLabel, MutableList<Label>>()

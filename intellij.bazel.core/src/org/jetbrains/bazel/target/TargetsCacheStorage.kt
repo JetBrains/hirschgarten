@@ -12,7 +12,6 @@ import com.intellij.util.io.mvstore.openOrResetMap
 import org.h2.mvstore.DataUtils.readVarInt
 import org.h2.mvstore.MVMap
 import org.h2.mvstore.MVStore
-import org.h2.mvstore.WriteBuffer
 import org.h2.mvstore.type.LongDataType
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.label.AllPackagesBeneath
@@ -27,10 +26,8 @@ import org.jetbrains.bazel.label.Package
 import org.jetbrains.bazel.label.ResolvedLabel
 import org.jetbrains.bazel.label.SingleTarget
 import org.jetbrains.bazel.languages.starlark.repomapping.toCanonicalLabelOrThis
-import org.jetbrains.bazel.magicmetamodel.formatAsModuleName
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.PartialBuildTarget
-import java.nio.ByteBuffer
 import java.nio.file.Path
 import kotlin.io.path.invariantSeparatorsPathString
 
@@ -142,9 +139,11 @@ class TargetsCacheStorage(
         hashStream.computeLabelHash(info.id as ResolvedLabel),
         PartialBuildTarget(
           id = info.id,
+          dependencies = info.dependencies,
           kind = info.kind,
           baseDirectory = info.baseDirectory,
           data = info.data,
+          generatorName = info.generatorName,
           isManual = info.isManual,
           isWorkspace = info.isWorkspace
         ),
@@ -180,14 +179,86 @@ class TargetsCacheStorage(
         labelHash,
         PartialBuildTarget(
           id = target.id,
+          dependencies = target.dependencies,
           kind = target.kind,
           baseDirectory = target.baseDirectory,
           data = target.data,
+          generatorName = target.generatorName,
           isManual = target.isManual,
           isWorkspace = target.isWorkspace
         ),
       )
     }
+  }
+
+  fun mergePartial(
+    targetsToReplace: Collection<ResolvedLabel>,
+    fileToTarget: Map<Path, List<Label>>,
+    executableTargets: Map<ResolvedLabel, List<Label>>,
+    targets: List<BuildTarget>,
+  ) {
+    val hashStream = Hashing.xxh3_64()
+      .hashStream()
+    val targetHashesToReplace =
+      targetsToReplace
+        .mapTo(hashSetOf()) { hashStream.computeLabelHash(it) }
+
+    removeTargetsFromFileMap(targetHashesToReplace)
+
+    for ((file, labels) in fileToTarget) {
+      val fileKey = fileToKey(file)
+      val retainedLabels = this.fileToTargets.get(fileKey).orEmpty()
+      val syncedLabels = labels.map { hashStream.computeLabelHash(it as ResolvedLabel) }
+      this.fileToTargets.put(fileKey, (retainedLabels + syncedLabels).distinct())
+    }
+
+    this.targetToExecutableTargets.clear()
+    targetHashesToReplace.forEach { this.labelToTargetInfo.remove(it) }
+
+    for ((label, executableLabels) in executableTargets) {
+      this.targetToExecutableTargets.put(hashStream.computeLabelHash(label), executableLabels.map { hashStream.computeLabelHash(it as ResolvedLabel) })
+    }
+
+    for (target in targets) {
+      val label = target.id as ResolvedLabel
+      val labelHash = hashStream.computeLabelHash(label)
+      this.labelToTargetInfo.put(
+        labelHash,
+        PartialBuildTarget(
+          id = target.id,
+          dependencies = target.dependencies,
+          kind = target.kind,
+          baseDirectory = target.baseDirectory,
+          data = target.data,
+          generatorName = target.generatorName,
+          isManual = target.isManual,
+          isWorkspace = target.isWorkspace
+        ),
+      )
+    }
+  }
+
+  private fun removeTargetsFromFileMap(targetHashesToReplace: Set<Long>) {
+    if (targetHashesToReplace.isEmpty()) return
+
+    val cursor = fileToTargets.cursor(null)
+    val keysToRemove = mutableListOf<Long>()
+    val updatedEntries = mutableListOf<Pair<Long, List<Long>>>()
+
+    while (cursor.hasNext()) {
+      cursor.next()
+      val retainedTargets = cursor.value.filter { it !in targetHashesToReplace }
+      if (retainedTargets.size == cursor.value.size) continue
+
+      if (retainedTargets.isEmpty()) {
+        keysToRemove += cursor.key
+      } else {
+        updatedEntries += cursor.key to retainedTargets
+      }
+    }
+
+    keysToRemove.forEach { fileToTargets.remove(it) }
+    updatedEntries.forEach { (file, targets) -> fileToTargets.put(file, targets) }
   }
 
   fun getTotalFileCount(): Int = fileToTargets.size
