@@ -20,12 +20,6 @@
   </extensions>
 
   <extensions defaultExtensionNs="org.jetbrains.bazel">
-    <!-- IndexAdditionalFilesSyncHook iterates over all added instances of ModuleEntity, so it has to come after PythonProjectSync -->
-    <projectSyncHook
-      implementation="org.jetbrains.bazel.python.sync.PythonProjectSync"
-      order="before IndexAdditionalFilesSyncHook"
-    />
-
     <runHandlerProvider
       id="PythonBazelRunHandlerProvider"
       implementation="org.jetbrains.bazel.python.run.PythonBazelRunHandler$Provider"
@@ -34,19 +28,5 @@
       id="PythonBazelTestHandlerProvider"
       implementation="org.jetbrains.bazel.python.run.PythonBazelTestHandler$Provider"
     />
-
-    <indexAdditionalFilesContributor implementation="org.jetbrains.bazel.python.sync.PythonIndexAdditionalFilesContributor"/>
   </extensions>
-
-  <extensions defaultExtensionNs="Pythonid">
-    <importResolver implementation="org.jetbrains.bazel.python.resolve.BazelPyImportResolver" />
-  </extensions>
-
-  <extensionPoints>
-    <extensionPoint
-      dynamic="true"
-      interface="org.jetbrains.bazel.python.resolve.PythonSynonymProvider"
-      qualifiedName="org.jetbrains.bazel.python.synonymProvider"
-    />
-  </extensionPoints>
 </idea-plugin>

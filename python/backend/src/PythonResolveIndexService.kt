@@ -1,4 +1,4 @@
-package org.jetbrains.bazel.python.resolve
+package com.intellij.bazel.python.backend
 
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.diagnostic.logger
@@ -20,6 +20,7 @@ import java.nio.file.FileSystems
 import java.nio.file.Path
 import java.nio.file.Paths
 import java.util.concurrent.atomic.AtomicReference
+import kotlin.collections.iterator
 import kotlin.io.path.createParentDirectories
 import kotlin.io.path.deleteIfExists
 import kotlin.io.path.exists

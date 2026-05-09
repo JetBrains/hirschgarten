@@ -1,5 +1,6 @@
 package org.jetbrains.bazel.python.sync
 
+import com.intellij.openapi.vfs.VirtualFileManager
 import com.intellij.openapi.application.edtWriteAction
 import com.intellij.openapi.diagnostic.fileLogger
 import com.intellij.openapi.projectRoots.ProjectJdkTable

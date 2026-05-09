@@ -1,4 +1,4 @@
-package org.jetbrains.bazel.python.resolve
+package com.intellij.bazel.python.backend
 
 import com.intellij.openapi.application.ReadAction
 import com.intellij.openapi.components.service

@@ -1,5 +1,7 @@
 package org.jetbrains.bazel.python.resolve
 
+import com.intellij.bazel.python.backend.BazelPyImportResolver
+import com.intellij.bazel.python.backend.PythonSynonymProvider
 import com.intellij.ide.plugins.PluginManagerCore
 import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.externalSystem.autoimport.AutoImportProjectTracker
