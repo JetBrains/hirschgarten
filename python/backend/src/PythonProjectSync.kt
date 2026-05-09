@@ -1,4 +1,4 @@
-package org.jetbrains.bazel.python.sync
+package com.intellij.bazel.python.backend
 
 import com.intellij.openapi.components.service
 import com.intellij.openapi.components.serviceAsync
@@ -40,12 +40,10 @@ import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.annotations.VisibleForTesting
 import org.jetbrains.bazel.commons.LanguageClass
 import org.jetbrains.bazel.config.BazelFeatureFlags
-import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.magicmetamodel.formatAsModuleName
 import org.jetbrains.bazel.progress.syncConsole
 import org.jetbrains.bazel.progress.withSubtask
-import org.jetbrains.bazel.python.resolve.PythonResolveIndexService
 import org.jetbrains.bazel.sync.ProjectSyncHook
 import org.jetbrains.bazel.sync.ProjectSyncHook.ProjectSyncHookEnvironment
 import org.jetbrains.bazel.sync.withSubtask
@@ -57,6 +55,7 @@ import org.jetbrains.bsp.protocol.TaskId
 import org.jetbrains.bsp.protocol.utils.StringUtils
 import org.jetbrains.bsp.protocol.utils.extractPythonBuildTarget
 import java.nio.file.Path
+import kotlin.collections.get
 import kotlin.io.path.pathString
 
 private const val PYTHON_SDK_ID = "PythonSDK"
@@ -110,10 +109,10 @@ class PythonProjectSync : ProjectSyncHook {
     targets: List<BuildTarget>,
     environment: ProjectSyncHookEnvironment,
   ): Map<Label, Sdk?> =
-    environment.progressReporter.indeterminateStep(text = BazelPluginBundle.message("progress.bar.calculate.python.sdk.infos")) {
+    environment.progressReporter.indeterminateStep(text = BazelPythonBackendBundle.message("progress.bar.calculate.python.sdk.infos")) {
       environment.project.syncConsole.withSubtask(
         subtaskId = environment.taskId.subTask("calculate-and-add-all-python-sdk-infos"),
-        message = BazelPluginBundle.message("console.task.model.calculate.python.sdks"),
+        message = BazelPythonBackendBundle.message("console.task.model.calculate.python.sdks"),
       ) {
         calculateAndAddSdks(targets, environment.project)
       }

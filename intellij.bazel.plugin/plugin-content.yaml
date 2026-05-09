@@ -79,6 +79,9 @@
 - name: lib/modules/intellij.bazel.protoedit.jar
   contentModules:
   - name: intellij.bazel.protoedit
+- name: lib/modules/intellij.bazel.python.backend.jar
+  contentModules:
+  - name: intellij.bazel.python.backend
 - name: lib/modules/intellij.bazel.python.common.jar
   contentModules:
   - name: intellij.bazel.python.common

@@ -53,6 +53,7 @@
     <!-- python modules -->
     <module name="intellij.bazel.python.common"/>
     <module name="intellij.bazel.python.common.performancePlugin"/>
+    <module name="intellij.bazel.python.backend"/>
 
     <!-- misc modules -->
     <module name="intellij.bazel.bytecodeViewer"/>
