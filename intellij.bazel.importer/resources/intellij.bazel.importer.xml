@@ -55,6 +55,10 @@
       interface="org.jetbrains.bazel.sync.workspace.importer.BazelWorkspaceImporter"
       qualifiedName="org.jetbrains.bazel.syncWorkspaceImporter"
     />
+    <extensionPoint qualifiedName="org.jetbrains.bazel.indexAdditionalFilesContributor"
+                    interface="org.jetbrains.bazel.workspace.indexAdditionalFiles.IndexAdditionalFilesContributor"
+                    dynamic="true"
+    />
   </extensionPoints>
 
   <extensions defaultExtensionNs="org.jetbrains.bazel">
