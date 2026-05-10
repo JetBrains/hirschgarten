@@ -1,12 +1,10 @@
 package com.intellij.bazel.python.backend
 
-import com.intellij.openapi.components.service
 import com.intellij.openapi.components.serviceAsync
-import com.intellij.openapi.diagnostic.fileLogger
+import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.projectRoots.ProjectJdkTable
 import com.intellij.openapi.projectRoots.Sdk
-import com.intellij.platform.backend.workspace.WorkspaceModel
 import com.intellij.platform.workspace.jps.entities.ContentRootEntity
 import com.intellij.platform.workspace.jps.entities.ContentRootEntityBuilder
 import com.intellij.platform.workspace.jps.entities.DependencyScope
@@ -31,31 +29,36 @@ import com.intellij.platform.workspace.storage.impl.url.toVirtualFileUrl
 import com.intellij.platform.workspace.storage.url.VirtualFileUrlManager
 import com.intellij.python.community.services.systemPython.SystemPythonService
 import com.jetbrains.python.PythonBinary
-import com.jetbrains.python.Result
 import com.jetbrains.python.errorProcessing.PyResult
 import com.jetbrains.python.sdk.ModuleOrProject.ProjectOnly
 import com.jetbrains.python.sdk.PythonSdkType
 import com.jetbrains.python.sdk.createLocalSdkGuessingTypeByPath
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.annotations.VisibleForTesting
-import org.jetbrains.bazel.commons.LanguageClass
-import org.jetbrains.bazel.config.BazelFeatureFlags
+import org.jetbrains.bazel.commons.RepoMapping
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.magicmetamodel.formatAsModuleName
-import org.jetbrains.bazel.progress.syncConsole
+import org.jetbrains.bazel.progress.TaskConsole
 import org.jetbrains.bazel.progress.withSubtask
-import org.jetbrains.bazel.sync.ProjectSyncHook
-import org.jetbrains.bazel.sync.ProjectSyncHook.ProjectSyncHookEnvironment
-import org.jetbrains.bazel.sync.withSubtask
+import org.jetbrains.bazel.server.connection.connection
+import org.jetbrains.bazel.sync.workspace.importer.BazelWorkspaceImporter
+import org.jetbrains.bazel.sync.workspace.importer.WorkspaceImporterContext
+import org.jetbrains.bazel.sync.workspace.importer.WorkspaceImporterPhase
+import org.jetbrains.bazel.sync.workspace.importer.WorkspaceImporterResult
+import org.jetbrains.bazel.sync.workspace.languages.python.PythonWorkspaceSyncConfig
+import org.jetbrains.bazel.sync.workspace.snapshot.CommonWorkspaceSyncConfig
+import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceSnapshot
+import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
+import org.jetbrains.bazel.sync.workspace.snapshot.allTargets
+import org.jetbrains.bazel.sync.workspace.snapshot.filterBuildTarget
+import org.jetbrains.bazel.sync.workspace.snapshot.hasBuildData
 import org.jetbrains.bazel.workspacemodel.entities.BazelModuleEntitySource
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.PythonBuildTarget
 import org.jetbrains.bsp.protocol.RawBuildTarget
 import org.jetbrains.bsp.protocol.TaskId
 import org.jetbrains.bsp.protocol.utils.StringUtils
-import org.jetbrains.bsp.protocol.utils.extractPythonBuildTarget
 import java.nio.file.Path
-import kotlin.collections.get
 import kotlin.io.path.pathString
 
 private const val PYTHON_SDK_ID = "PythonSDK"
@@ -63,81 +66,136 @@ private const val PYTHON_SOURCE_ROOT_TYPE = "python-source"
 private const val PYTHON_RESOURCE_ROOT_TYPE = "python-resource"
 private val PYTHON_MODULE_TYPE = ModuleTypeId("PYTHON_MODULE")
 
-private val logger = fileLogger()
+internal class BazelPythonWorkspaceImporter : BazelWorkspaceImporter {
+  companion object {
+    internal val logger = logger<BazelPythonWorkspaceImporter>()
+  }
 
-@ApiStatus.Internal
-class PythonProjectSync : ProjectSyncHook {
-  override fun isEnabled(project: Project): Boolean = BazelFeatureFlags.isPythonSupportEnabled
+  private lateinit var commonSyncConfig: CommonWorkspaceSyncConfig
+  private lateinit var pythonSyncConfig: PythonWorkspaceSyncConfig
 
-  override suspend fun onSync(environment: ProjectSyncHookEnvironment) {
-    environment.withSubtask("Process Python targets") {
-      val targets = environment.workspace.targets
-      val pythonTargets = targets.filter {
-        it.kind.languageClasses.contains(LanguageClass.PYTHON)
-      }
-      val virtualFileUrlManager = environment.project.serviceAsync<WorkspaceModel>().getVirtualFileUrlManager()
+  private var defaultInterpreter: Path? = null
+  private var defaultVersion: String? = null
+  private var pySourceDeps: Map<WorkspaceTargetKey, List<Path>> = mapOf()
+  private var pySdks: Map<WorkspaceTargetKey, Sdk?> = mapOf()
+  private var pyDefaultSdk: Sdk? = null
 
-      val sdks = calculateAndAddSdksWithProgress(pythonTargets, environment)
-
-      var defaultSystemSdk: Sdk? = null
-      pythonTargets.forEach {
-        val moduleName = it.id.formatAsModuleName(environment.project)
-        val moduleSourceEntity = BazelModuleEntitySource(moduleName)
-        val target = extractPythonBuildTarget(it) ?: return@forEach
-        val sourceDependencyLibrary =
-          calculateSourceDependencyLibrary(it.id, target.sourceDependencies, moduleSourceEntity, virtualFileUrlManager)
-
-        val sdk = sdks[it.id] ?: defaultSystemSdk ?: getSystemSdk(environment.taskId, environment.project)?.also { systemSdk ->
-          defaultSystemSdk = systemSdk
-        }
-        addModuleEntityFromTarget(
-          builder = environment.diff,
-          target = it,
-          moduleName = moduleName,
-          entitySource = moduleSourceEntity,
-          virtualFileUrlManager = virtualFileUrlManager,
-          project = environment.project,
-          sdk = sdk,
-          sourceDependencyLibrary = sourceDependencyLibrary,
-        )
-      }
-      environment.project.service<PythonResolveIndexService>().updatePythonResolveIndex(pythonTargets, environment.server.outFileHardLinks)
+  override suspend fun import(
+    context: WorkspaceImporterContext,
+    phase: WorkspaceImporterPhase,
+    snapshot: WorkspaceSnapshot,
+  ): Result<WorkspaceImporterResult> = runCatching {
+    when (phase) {
+      WorkspaceImporterPhase.Initialize -> onInitialize(context, snapshot)
+      is WorkspaceImporterPhase.WorkspaceApply -> onWorkspaceApply(context, snapshot, phase.builder, context.vfuManager)
+      WorkspaceImporterPhase.PostProcessing -> onPostProcessing(context, snapshot)
+      else -> WorkspaceImporterResult.Success
     }
+  }
+
+  private suspend fun onInitialize(context: WorkspaceImporterContext, snapshot: WorkspaceSnapshot): WorkspaceImporterResult {
+    commonSyncConfig = snapshot.syncConfigs.filterIsInstance<CommonWorkspaceSyncConfig>()
+                         .firstOrNull() ?: throw IllegalStateException()
+    pythonSyncConfig = snapshot.syncConfigs.filterIsInstance<PythonWorkspaceSyncConfig>()
+                         .firstOrNull() ?: throw IllegalStateException()
+
+    if (!pythonSyncConfig.isPythonSupportEnabled) {
+      return WorkspaceImporterResult.Abort
+    }
+
+    val defaultPythonTarget = snapshot.allTargets
+      .filterBuildTarget<PythonBuildTarget>()
+      .filter { (_, pythonTarget) -> pythonTarget.interpreter != null }
+      .map { (_, pythonTarget) -> pythonTarget }
+      .firstOrNull()
+    defaultInterpreter = defaultPythonTarget?.interpreter
+    defaultVersion = defaultPythonTarget?.version
+
+    // MAYBE RC: obvious incremental caching candidate...
+    pySourceDeps = snapshot.allTargets.filterBuildTarget<PythonBuildTarget>()
+      .associate { (target, _) ->
+        target.targetKey to snapshot.targetGraph.findAllTransitiveSuccessorsWithoutRootTargets(target.targetKey)
+          .filterBuildTarget<PythonBuildTarget>()
+          .flatMap { (_, pythonTarget) -> pythonTarget.externalSources ?: listOf() }
+          .toList()
+      }
+
+    pySdks = calculateAndAddSdksWithProgress(context, snapshot)
+    pyDefaultSdk = getSystemSdk(context.taskId, context.project, context.taskConsole)
+
+    return WorkspaceImporterResult.Success
+  }
+
+  private suspend fun onWorkspaceApply(
+    context: WorkspaceImporterContext, snapshot: WorkspaceSnapshot,
+    builder: MutableEntityStorage, vfuManager: VirtualFileUrlManager,
+  ): WorkspaceImporterResult {
+    for ((target, pyTarget) in snapshot.allTargets.filterBuildTarget<PythonBuildTarget>()) {
+      val targetKey = target.targetKey
+      val moduleName = targetKey.label.formatAsModuleName(snapshot.repoMapping)
+      val moduleSourceEntity = BazelModuleEntitySource(moduleName)
+      val sourceDeps = pySourceDeps[target.targetKey] ?: emptyList()
+      val sourceDependencyLibrary =
+        calculateSourceDependencyLibrary(targetKey.label, sourceDeps, moduleSourceEntity, vfuManager)
+
+      addModuleEntityFromTarget(
+        builder = builder,
+        repoMapping = snapshot.repoMapping,
+        target = target.rawBuildTarget,
+        moduleName = moduleName,
+        entitySource = moduleSourceEntity,
+        virtualFileUrlManager = vfuManager,
+        sdk = pySdks[targetKey] ?: pyDefaultSdk,
+        sourceDependencyLibrary = sourceDependencyLibrary,
+      )
+    }
+    return WorkspaceImporterResult.Success
+  }
+
+  private suspend fun onPostProcessing(context: WorkspaceImporterContext, snapshot: WorkspaceSnapshot): WorkspaceImporterResult {
+    val pyTargets = snapshot.allTargets
+      .filter { it.hasBuildData<PythonBuildTarget>() }
+      .map { it.rawBuildTarget }
+      .toList()
+    context.project.connection.runWithServer { server ->
+      context.project.serviceAsync<PythonResolveIndexService>()
+        .updatePythonResolveIndex(pyTargets, server.outFileHardLinks)
+    }
+    return WorkspaceImporterResult.Success
   }
 
   private suspend fun calculateAndAddSdksWithProgress(
-    targets: List<BuildTarget>,
-    environment: ProjectSyncHookEnvironment,
-  ): Map<Label, Sdk?> =
-    environment.progressReporter.indeterminateStep(text = BazelPythonBackendBundle.message("progress.bar.calculate.python.sdk.infos")) {
-      environment.project.syncConsole.withSubtask(
-        subtaskId = environment.taskId.subTask("calculate-and-add-all-python-sdk-infos"),
+    context: WorkspaceImporterContext,
+    snapshot: WorkspaceSnapshot,
+  ): Map<WorkspaceTargetKey, Sdk?> =
+    context.progressReporter.indeterminateStep(text = BazelPythonBackendBundle.message("progress.bar.calculate.python.sdk.infos")) {
+      context.taskConsole.withSubtask(
+        subtaskId = context.taskId.subTask("calculate-and-add-all-python-sdk-infos"),
         message = BazelPythonBackendBundle.message("console.task.model.calculate.python.sdks"),
       ) {
-        calculateAndAddSdks(targets, environment.project)
+        calculateAndAddSdks(context, snapshot)
       }
     }
 
-  private suspend fun calculateAndAddSdks(targets: List<BuildTarget>, project: Project): Map<Label, Sdk?> {
-    val pythonTargetsByLabel =
-      targets
-        .associateWith { extractPythonBuildTarget(it) }
-        .mapKeys { it.key.id }
-    val sdksByPythonTarget =
-      pythonTargetsByLabel.values
-        .filterNotNull()
-        .filter { it.interpreter != null }
-        .distinct()
-        .associateWith { findOrAddSdk(it, project) }
-
-    return pythonTargetsByLabel.mapValues { sdksByPythonTarget[it.value] }
+  // MAYBE RC: we probably should postpone sdk table modification
+  //   to post processing step for now its fine
+  private suspend fun calculateAndAddSdks(
+    context: WorkspaceImporterContext,
+    snapshot: WorkspaceSnapshot,
+  ): Map<WorkspaceTargetKey, Sdk?> {
+    return snapshot.allTargets.filterBuildTarget<PythonBuildTarget>()
+      .filter { (_, pyTarget) -> (pyTarget.interpreter) != null }
+      .associateBy { (target, _) -> target.targetKey }
+      .mapValues { (_, value) -> findOrAddSdk(value.second, context.project) }
   }
 
-  private suspend fun findOrAddSdk(pythonTarget: PythonBuildTarget, project: Project): Sdk {
+  private suspend fun findOrAddSdk(pythonTarget: PythonBuildTarget, project: Project): Sdk? {
     // Before this change we had toString() here so in case of null there would be "null"
     // This !! fails fast
     // TODO: Make make interpreter non-null
-    val interpreter = pythonTarget.interpreter!!
+    val interpreter = pythonTarget.interpreter
+                      ?: defaultInterpreter
+                      ?: return null
     val sdkName = chooseSdkName(interpreter, project.name)
     val sdkTable = ProjectJdkTable.getInstance()
 
@@ -145,12 +203,12 @@ class PythonProjectSync : ProjectSyncHook {
     if (existingSdk != null) return existingSdk
 
     return when (val r = createSdkFromPython(interpreter, project, sdkName)) {
-      is Result.Failure -> {
-        // TODO: Process error somehow
-        error("Failed to create SDK for $interpreter: ${r.error}")
+      is com.jetbrains.python.Result.Failure -> {
+        logger.warn("Failed to create SDK for $interpreter: ${r.error}")
+        null
       }
 
-      is Result.Success -> r.result
+      is com.jetbrains.python.Result.Success -> r.result
     }
   }
 
@@ -182,11 +240,11 @@ class PythonProjectSync : ProjectSyncHook {
 
   private fun addModuleEntityFromTarget(
     builder: MutableEntityStorage,
+    repoMapping: RepoMapping,
     target: RawBuildTarget,
     moduleName: String,
     entitySource: BazelModuleEntitySource,
     virtualFileUrlManager: VirtualFileUrlManager,
-    project: Project,
     sdk: Sdk?,
     sourceDependencyLibrary: LibraryEntityBuilder? = null,
   ): ModuleEntity {
@@ -201,7 +259,7 @@ class PythonProjectSync : ProjectSyncHook {
     val dependencies =
       target.dependencies.map {
         ModuleDependency(
-          module = ModuleId(it.label.formatAsModuleName(project)),
+          module = ModuleId(it.label.formatAsModuleName(repoMapping)),
           exported = true,
           scope = DependencyScope.COMPILE,  // Python does not have the runtime/compile scope separation
           productionOnTest = true,
@@ -280,28 +338,28 @@ class PythonProjectSync : ProjectSyncHook {
         this.sourceRoots = listOf(resourceRootEntity)
       }
     }
-}
 
-private suspend fun createSdkFromPython(
-  interpreter: Path,
-  project: Project,
-  sdkName: String?,
-): PyResult<Sdk> = createLocalSdkGuessingTypeByPath(interpreter, ProjectOnly(project), sdkName)
+  private suspend fun createSdkFromPython(
+    interpreter: Path,
+    project: Project,
+    sdkName: String?,
+  ): PyResult<Sdk> = createLocalSdkGuessingTypeByPath(interpreter, ProjectOnly(project), sdkName)
 
-private suspend fun getSystemSdk(taskId: TaskId, project: Project): Sdk? {
-  val systemPython = SystemPythonService().findSystemPythons().firstOrNull { it.pythonInfo.languageLevel.isPy3K }
-                     ?: run {
-                       project.syncConsole.addMessage(taskId, BazelPluginBundle.message("python.not.found"))
-                       return null
-                     }
-  logger.info("Detecting system SDK, found python $systemPython")
-  return when (val r = createSdkFromPython(systemPython.pythonBinary, project, sdkName = null)) {
-    is Result.Failure -> {
-      project.syncConsole.addMessage(taskId, BazelPluginBundle.message("python.cant.create.sdk", systemPython.pythonBinary, r.error.message))
-      null
+  private suspend fun getSystemSdk(taskId: TaskId, project: Project, taskConsole: TaskConsole): Sdk? {
+    val systemPython = SystemPythonService().findSystemPythons().firstOrNull { it.pythonInfo.languageLevel.isPy3K }
+                       ?: run {
+                         taskConsole.addMessage(taskId, BazelPythonBackendBundle.message("python.not.found"))
+                         return null
+                       }
+    logger.info("Detecting system SDK, found python $systemPython")
+    return when (val result = createSdkFromPython(systemPython.pythonBinary, project, sdkName = null)) {
+      is com.jetbrains.python.Result.Failure -> {
+        taskConsole.addMessage(taskId, BazelPythonBackendBundle.message("python.cant.create.sdk", systemPython.pythonBinary, result.error.message))
+        null
+      }
+
+      is com.jetbrains.python.Result.Success -> result.result
     }
-
-    is Result.Success -> r.result
   }
 }
 
@@ -309,4 +367,3 @@ private suspend fun getSystemSdk(taskId: TaskId, project: Project): Sdk? {
 @VisibleForTesting
 fun chooseSdkName(interpreter: PythonBinary, projectName: String): String =
   "$projectName-python-${StringUtils.md5Hash(interpreter.pathString, 5)}"
-

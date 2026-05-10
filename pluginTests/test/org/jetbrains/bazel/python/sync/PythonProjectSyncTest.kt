@@ -1,6 +1,6 @@
 package org.jetbrains.bazel.python.sync
 
-import com.intellij.openapi.vfs.VirtualFileManager
+import com.intellij.bazel.python.backend.chooseSdkName
 import com.intellij.openapi.application.edtWriteAction
 import com.intellij.openapi.diagnostic.fileLogger
 import com.intellij.openapi.projectRoots.ProjectJdkTable
@@ -28,22 +28,23 @@ import io.kotest.matchers.booleans.shouldBeFalse
 import io.kotest.matchers.shouldBe
 import kotlinx.coroutines.runBlocking
 import org.jetbrains.bazel.commons.LanguageClass
+import org.jetbrains.bazel.commons.RepoMappingDisabled
 import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.label.DependencyLabel
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.magicmetamodel.formatAsModuleName
+import org.jetbrains.bazel.progress.syncConsole
 import org.jetbrains.bazel.project.BazelProjectFixtures.initializeBazelProject
-import org.jetbrains.bazel.sync.ProjectSyncHook
-import org.jetbrains.bazel.sync.scope.SecondPhaseSync
 import org.jetbrains.bazel.sync.workspace.BazelResolvedWorkspace
-import org.jetbrains.bazel.sync.workspace.mapper.BazelResolvedWorkspaceBuilder
+import org.jetbrains.bazel.sync.workspace.importer.WorkspaceImporterHelper
+import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceSnapshot
+import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceSnapshotBuilder
 import org.jetbrains.bazel.workspace.model.matchers.entries.ExpectedModuleEntity
 import org.jetbrains.bazel.workspace.model.matchers.entries.ExpectedSourceRootEntity
 import org.jetbrains.bazel.workspace.model.matchers.entries.shouldContainExactlyInAnyOrder
-import org.jetbrains.bazel.workspace.model.test.framework.BazelWorkspaceResolveServiceMock
-import org.jetbrains.bazel.workspace.model.test.framework.BuildServerMock
 import org.jetbrains.bazel.workspace.model.test.framework.MockProjectBaseTest
+import org.jetbrains.bazel.workspace.model.test.framework.mockWorkspaceContext
 import org.jetbrains.bazel.workspacemodel.entities.BazelProjectEntitySource
 import org.jetbrains.bsp.protocol.PythonBuildTarget
 import org.jetbrains.bsp.protocol.RawBuildTarget
@@ -56,7 +57,7 @@ import java.nio.file.Path
 import kotlin.io.path.Path
 
 private data class PythonTestSet(
-  val workspace: BazelResolvedWorkspace,
+  val workspaceSnapshot: WorkspaceSnapshot,
   val expectedModuleEntities: List<ExpectedModuleEntity>,
   val expectedSourceRootEntities: List<ExpectedSourceRootEntity>,
 )
@@ -68,8 +69,8 @@ private data class GeneratedTargetInfo(
   val resourcesItems: List<String> = listOf(),
 )
 
+// TODO: convert it to real `BazelWorkspaceImporter` test fixture
 class PythonProjectSyncTest : MockProjectBaseTest() {
-  lateinit var hook: ProjectSyncHook
   lateinit var virtualFileUrlManager: VirtualFileUrlManager
   lateinit var pythonBinary: PythonBinary
 
@@ -80,7 +81,6 @@ class PythonProjectSyncTest : MockProjectBaseTest() {
   @BeforeEach
   fun beforeEach() {
     // given
-    hook = PythonProjectSync()
     initializeBazelProject(project, projectDir.get())
     virtualFileUrlManager = WorkspaceModel.getInstance(project).getVirtualFileUrlManager()
 
@@ -106,32 +106,10 @@ class PythonProjectSyncTest : MockProjectBaseTest() {
   fun `should add module with dependencies to workspace model diff`() {
     // given
     val pythonTestTargets = generateTestSet()
-    val server = BuildServerMock()
-    val resolver =
-      BazelWorkspaceResolveServiceMock(
-        resolvedWorkspace = pythonTestTargets.workspace,
-      )
-    val diff = MutableEntityStorage.create()
 
     // when
-    runBlocking {
-      reportSequentialProgress { reporter ->
-        val environment =
-          ProjectSyncHook.ProjectSyncHookEnvironment(
-            project = project,
-            syncScope = SecondPhaseSync,
-            server = server,
-            resolver = resolver,
-            diff = diff,
-            taskId = TaskGroupId.EMPTY.task("test"),
-            progressReporter = reporter,
-            // TODO: not used yet, https://youtrack.jetbrains.com/issue/BAZEL-1960
-            buildTargets = emptyMap(),
-            workspace = pythonTestTargets.workspace,
-          )
-        hook.onSync(environment)
-      }
-    }
+    val diff = MutableEntityStorage.create()
+    runPythonImporter(pythonTestTargets.workspaceSnapshot, diff)
 
     // then
     val actualModuleEntities =
@@ -147,32 +125,10 @@ class PythonProjectSyncTest : MockProjectBaseTest() {
   fun `should add module with sources to workspace model diff`() {
     // given
     val pythonTestTargets = generateTestSetWithSources()
-    val server = BuildServerMock()
-    val resolver =
-      BazelWorkspaceResolveServiceMock(
-        resolvedWorkspace = pythonTestTargets.workspace,
-      )
-    val diff = MutableEntityStorage.create()
 
     // when
-    runBlocking {
-      reportSequentialProgress { reporter ->
-        val environment =
-          ProjectSyncHook.ProjectSyncHookEnvironment(
-            project = project,
-            syncScope = SecondPhaseSync,
-            server = server,
-            resolver = resolver,
-            diff = diff,
-            taskId = TaskGroupId.EMPTY.task("test"),
-            progressReporter = reporter,
-            // TODO: not used yet, https://youtrack.jetbrains.com/issue/BAZEL-1960
-            buildTargets = emptyMap(),
-            workspace = pythonTestTargets.workspace,
-          )
-        hook.onSync(environment)
-      }
-    }
+    val diff = MutableEntityStorage.create()
+    runPythonImporter(pythonTestTargets.workspaceSnapshot, diff)
 
     // then
     val actualModuleEntities =
@@ -182,20 +138,34 @@ class PythonProjectSyncTest : MockProjectBaseTest() {
     actualModuleEntities shouldContainExactlyInAnyOrder pythonTestTargets.expectedSourceRootEntities
   }
 
+  private fun runPythonImporter(snapshot: WorkspaceSnapshot, builder: MutableEntityStorage) = runBlocking {
+    //ExtensionTestUtil.maskExtensions(BazelWorkspaceImporter.EP_NAME, listOf(...))
+    reportSequentialProgress { reporter ->
+      val helper = WorkspaceImporterHelper(
+        project = project,
+        taskConsole = project.syncConsole,
+        progressReporter = reporter,
+        taskId = TaskGroupId.EMPTY.task("test"),
+        builder = builder
+      )
+      helper.invoke(reporter, snapshot)
+    }
+  }
+
   private fun generateTestSet(): PythonTestSet {
     val pythonLibrary1 =
       GeneratedTargetInfo(
-        targetId = Label.parse("@@server.lib:lib1"),
+        targetId = Label.parse("@@server.lib//:lib1"),
         type = "library",
       )
     val pythonLibrary2 =
       GeneratedTargetInfo(
-        targetId = Label.parse("@@server/lib:lib2"),
+        targetId = Label.parse("@@server//lib:lib2"),
         type = "library",
       )
     val pythonBinary =
       GeneratedTargetInfo(
-        targetId = Label.parse("@@server:main_app"),
+        targetId = Label.parse("@@server//:main_app"),
         type = "PYTHON_MODULE",
         dependencies = listOf(pythonLibrary1.targetId, pythonLibrary2.targetId),
       )
@@ -207,19 +177,16 @@ class PythonProjectSyncTest : MockProjectBaseTest() {
     val expectedModuleEntity2 = generateExpectedModuleEntity(pythonLibrary1, emptyList())
     val expectedModuleEntity3 = generateExpectedModuleEntity(pythonLibrary2, emptyList())
     return PythonTestSet(
-      workspace = BazelResolvedWorkspaceBuilder.build(
-        rootTargets = targets.map { it.id }.toSet(),
-        targets = targets,
-      ),
-      expectedModuleEntities = listOf(expectedModuleEntity1, expectedModuleEntity2, expectedModuleEntity3),
-      expectedSourceRootEntities = emptyList(),
+      generateWorkspaceSnapshot(targets),
+      listOf(expectedModuleEntity1, expectedModuleEntity2, expectedModuleEntity3),
+      emptyList(),
     )
   }
 
   private fun generateTestSetWithSources(): PythonTestSet {
     val pythonBinary =
       GeneratedTargetInfo(
-        targetId = Label.parse("@@server:main_app"),
+        targetId = Label.parse("@@server//:main_app"),
         type = "PYTHON_MODULE",
         dependencies = listOf(),
       )
@@ -236,12 +203,9 @@ class PythonProjectSyncTest : MockProjectBaseTest() {
     val expectedContentRootEntities =
       generateExpectedSourceRootEntities(target, expectedModuleEntity.moduleEntity)
     return PythonTestSet(
-      workspace = BazelResolvedWorkspaceBuilder.build(
-        rootTargets = setOf(target.id),
-        targets = listOf(target),
-      ),
-      expectedModuleEntities = listOf(expectedModuleEntity),
-      expectedSourceRootEntities = expectedContentRootEntities,
+      generateWorkspaceSnapshot(listOf(target)),
+      listOf(expectedModuleEntity),
+      expectedContentRootEntities,
     )
   }
 
@@ -267,6 +231,7 @@ class PythonProjectSyncTest : MockProjectBaseTest() {
             interpreter = pythonBinary,
             listOf(),
             listOf(),
+            externalSources = listOf(),
           ),
         ),
         sources = sources,
@@ -274,6 +239,18 @@ class PythonProjectSyncTest : MockProjectBaseTest() {
       )
 
     return target
+  }
+
+  private fun generateWorkspaceSnapshot(targets: List<RawBuildTarget>): WorkspaceSnapshot = runBlocking {
+    WorkspaceSnapshotBuilder.build(
+      project = project,
+      workspaceContext = mockWorkspaceContext,
+      repoMapping = RepoMappingDisabled,
+      resolved = BazelResolvedWorkspace(
+        rootTargets = targets.map { it.id }.toSet(),
+        targets = targets,
+      ),
+    )
   }
 
   private fun generateExpectedModuleEntity(

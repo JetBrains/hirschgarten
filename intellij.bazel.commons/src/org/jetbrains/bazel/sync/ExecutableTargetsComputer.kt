@@ -26,8 +26,8 @@ object ExecutableTargetsComputer {
           labelToTargetInfo = labelToTargetInfo,
           target = label,
         )
-        if (executables.isNotEmpty()) {
-          result[label as ResolvedLabel] = executables.toMutableList()
+        if (label is ResolvedLabel && executables.isNotEmpty()) {
+          result[label] = executables.toMutableList()
         }
       }
     labelToTargetInfo.forEach { (label, target) ->
