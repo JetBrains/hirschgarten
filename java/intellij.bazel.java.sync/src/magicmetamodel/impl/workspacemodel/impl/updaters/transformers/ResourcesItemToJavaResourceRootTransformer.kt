@@ -4,6 +4,7 @@ import com.intellij.platform.workspace.jps.entities.SourceRootTypeId
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.commons.symlinks.BazelSymlinksCalculator
+import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.utils.isUnder
 import org.jetbrains.bazel.workspacemodel.entities.ResourceRoot
 import org.jetbrains.bsp.protocol.BuildTarget
@@ -20,6 +21,7 @@ import kotlin.io.path.visitFileTree
 @ApiStatus.Internal
 class ResourcesItemToJavaResourceRootTransformer(
   private val bazelProjectName: String,
+  private val testTargets: Set<Label> = emptySet(),
 ) : WorkspaceModelEntityPartitionTransformer<RawBuildTarget, ResourceRoot> {
 
   override fun transform(inputEntity: RawBuildTarget): List<ResourceRoot> {
@@ -202,10 +204,12 @@ class ResourcesItemToJavaResourceRootTransformer(
 
   private fun Path.rootSubpath(until: Int) = root?.resolve(subpath(0, until)) ?: subpath(0, until)
 
-  private fun BuildTarget.inferRootType(): SourceRootTypeId = when (kind.ruleType) {
-    RuleType.TEST -> JAVA_TEST_RESOURCE_ROOT_TYPE
-    else -> JAVA_RESOURCE_ROOT_TYPE
-  }
+  private fun BuildTarget.inferRootType(): SourceRootTypeId =
+    if (kind.ruleType == RuleType.TEST || id in testTargets) {
+      JAVA_TEST_RESOURCE_ROOT_TYPE
+    } else {
+      JAVA_RESOURCE_ROOT_TYPE
+    }
 
   private data class MergeResult(
     val merged: List<Path> = emptyList(),

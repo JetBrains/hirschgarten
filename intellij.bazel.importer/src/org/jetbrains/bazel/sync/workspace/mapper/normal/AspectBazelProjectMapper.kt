@@ -129,6 +129,7 @@ internal class AspectBazelProjectMapper(
       isManual = BuildTargetTag.MANUAL in target.tagsList,
       isWorkspace = label.isMainWorkspace ||
                     localRepositories.localRepositories.containsKey(label.assumeResolved().repoName),
+      isTestOnly = target.testonly,
     )
   }
 

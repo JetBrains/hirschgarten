@@ -4,6 +4,7 @@ import com.intellij.platform.workspace.jps.entities.SourceRootTypeId
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.config.rootDir
+import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.languages.projectview.projectView
 import org.jetbrains.bazel.languages.projectview.testSources
 import org.jetbrains.bazel.sync.workspace.languages.java.sourceRoot.JvmPackagePrefixCalculator
@@ -23,7 +24,8 @@ internal val JAVA_TEST_RESOURCE_ROOT_TYPE = SourceRootTypeId("java-test-resource
 @ApiStatus.Internal
 class SourcesItemToJavaSourceRootTransformer(
   private val testSourcesGlob: ProjectViewGlobSet,
-  private val packagePrefixes: JvmPackagePrefixCalculator
+  private val packagePrefixes: JvmPackagePrefixCalculator,
+  private val testTargets: Set<Label> = emptySet(),
 ) : WorkspaceModelEntityPartitionTransformer<RawBuildTarget, JavaSourceRoot> {
   override fun transform(inputEntity: RawBuildTarget): List<JavaSourceRoot> {
     val jvmPackagePrefixes = packagePrefixes.get(inputEntity)
@@ -33,12 +35,12 @@ class SourcesItemToJavaSourceRootTransformer(
   }
 
   private fun toJavaSourceRoot(sourceRoot: SourceRoot, prefixes: JvmPackagePrefixes, buildTarget: RawBuildTarget): JavaSourceRoot {
-    val rootType = if (buildTarget.kind.ruleType == RuleType.TEST || testSourcesGlob.matches(sourceRoot.sourcePath)) {
-      JAVA_TEST_SOURCE_ROOT_TYPE
-    }
-    else {
-      JAVA_SOURCE_ROOT_TYPE
-    }
+    val rootType =
+      if (buildTarget.kind.ruleType == RuleType.TEST || buildTarget.id in testTargets || testSourcesGlob.matches(sourceRoot.sourcePath)) {
+        JAVA_TEST_SOURCE_ROOT_TYPE
+      } else {
+        JAVA_SOURCE_ROOT_TYPE
+      }
     return JavaSourceRoot(
       sourcePath = sourceRoot.sourcePath,
       generated = sourceRoot.generated,

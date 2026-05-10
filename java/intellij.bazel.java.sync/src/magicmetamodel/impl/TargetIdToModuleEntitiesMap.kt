@@ -28,7 +28,8 @@ object TargetIdToModuleEntitiesMap {
     projectBasePath: Path,
     repoMapping: RepoMapping,
     projectName: String,
-    testSourcesGlob: ProjectViewGlobSet
+    testSourcesGlob: ProjectViewGlobSet,
+    testTargets: Set<Label> = emptySet(),
   ): Map<Label, List<Module>> {
     val moduleDetailsToJavaModuleTransformer =
       ModuleDetailsToJavaModuleTransformer(
@@ -39,6 +40,7 @@ object TargetIdToModuleEntitiesMap {
         projectName,
         testSourcesGlob,
         packagePrefixes,
+        testTargets = testTargets,
       )
 
     return withContext(Dispatchers.Default) {

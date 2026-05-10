@@ -7,9 +7,11 @@ import com.intellij.platform.workspace.storage.EntitySource
 import com.intellij.platform.workspace.storage.MutableEntityStorage
 import com.intellij.platform.workspace.storage.entities
 import kotlinx.coroutines.coroutineScope
+import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.config.BazelJavaBackendBundle
 import org.jetbrains.bazel.config.bazelProjectName
+import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.magicmetamodel.ProjectDetails
 import org.jetbrains.bazel.magicmetamodel.impl.TargetIdToModuleEntitiesMap
 import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.WorkspaceModelUpdater
@@ -27,11 +29,14 @@ import org.jetbrains.bazel.sync.workspace.languages.java.JavaWorkspaceSyncConfig
 import org.jetbrains.bazel.sync.workspace.languages.java.sourceRoot.DefaultJvmPackagePrefixCalculator
 import org.jetbrains.bazel.sync.workspace.snapshot.CommonWorkspaceSyncConfig
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceSnapshot
+import org.jetbrains.bazel.target.TargetUtils
+import org.jetbrains.bazel.target.targetUtils
 import org.jetbrains.bazel.workspace.indexAdditionalFiles.ProjectViewGlobSet
 import org.jetbrains.bazel.workspacemodel.entities.CompiledSourceCodeInsideJarExcludeEntity
 import org.jetbrains.bazel.workspacemodel.entities.JavaModule
 import org.jetbrains.bazel.workspacemodel.entities.Library
 import org.jetbrains.bazel.workspacemodel.entities.Module
+import org.jetbrains.bsp.protocol.RawBuildTarget
 import org.jetbrains.bsp.protocol.utils.extractJvmBuildTarget
 import java.nio.file.Path
 import kotlin.collections.first
@@ -161,6 +166,7 @@ internal class JavaBazelWorkspaceImporter : BazelWorkspaceImporter {
       bspTracer.spanBuilder("create.target.id.to.module.entities.map.ms").use {
         val targetIdToTargetInfo =
           (projectDetails.targets).associateBy { it.id }
+        val testTargets = calculateTargetsToMarkAsTest(projectDetails.targets, targetIdToTargetInfo, context.project.targetUtils)
         val targetIdToModuleEntityMap =
           TargetIdToModuleEntitiesMap(
             projectDetails = projectDetails,
@@ -174,6 +180,7 @@ internal class JavaBazelWorkspaceImporter : BazelWorkspaceImporter {
             projectName = commonSyncConfig.projectName,
             testSourcesGlob = ProjectViewGlobSet(commonSyncConfig.projectRootDir, javaSyncConfig.testSourcesPatterns),
             packagePrefixes = jvmPackagePrefixes,
+            testTargets = testTargets,
           )
         targetIdToModuleEntityMap
       }
@@ -212,6 +219,25 @@ internal class JavaBazelWorkspaceImporter : BazelWorkspaceImporter {
       javacOptions = calculateAllJavacOptions(modulesToLoad)
     }
   }
+
+  private fun calculateTargetsToMarkAsTest(
+    targets: Set<RawBuildTarget>,
+    labelToTargetInfo: Map<Label, RawBuildTarget>,
+    targetUtils: TargetUtils,
+  ): Set<Label> {
+    val (testTargets, nonTestTargets) =
+      targets.partition { it.isTestTarget() }
+    val libraryTargets = nonTestTargets.filter { it.kind.ruleType == RuleType.LIBRARY }.map { it.id }
+    val directTestDependencies = libraryTargets.filter { library ->
+      val executables = targetUtils.getExecutableTargetsForTarget(library).mapNotNull { labelToTargetInfo[it] }
+      return@filter executables.isNotEmpty()
+                    && executables.all { it.isTestTarget() || it.id == library }
+                    && executables.any { it.sources.isEmpty() && it.id.packagePath == library.packagePath }
+    }.toSet()
+    return testTargets.map { it.id }.toSet() + directTestDependencies
+  }
+
+  private fun RawBuildTarget.isTestTarget(): Boolean = isTestOnly || kind.ruleType == RuleType.TEST
 
   private fun calculateAllJavacOptions(modulesToLoad: List<Module>): HashMap<String, String> {
     val javacOptions = HashMap<String, String>()

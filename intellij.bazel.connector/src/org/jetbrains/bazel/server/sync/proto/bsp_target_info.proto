@@ -139,6 +139,7 @@ message TargetInfo {
   repeated string env_inherit = 80;
   bool executable = 90;
   string workspace_name = 100;
+  bool testonly = 101;
   JvmTargetInfo jvm_target_info = 1000;
   string generator_name = 1500;
   JavaProviderInfo java_provider = 1008;

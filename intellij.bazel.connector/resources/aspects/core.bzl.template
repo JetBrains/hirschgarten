@@ -110,6 +110,7 @@ def _bsp_target_info_aspect_impl(target, ctx):
     aspect_ids = get_aspect_ids(ctx, target)
     default_info = target[DefaultInfo]
     executable = default_info and default_info.files_to_run.executable != None
+    testonly = getattr(rule_attrs, "testonly", False)
 
     env = {}
     raw_env = getattr(rule_attrs, "env", None)
@@ -136,6 +137,7 @@ def _bsp_target_info_aspect_impl(target, ctx):
         env = env,
         env_inherit = getattr(rule_attrs, "env_inherit", []),
         executable = executable,
+        testonly = testonly,
         workspace_name = ctx.workspace_name,
         generator_name = getattr(rule_attrs, "generator_name", ""),
     )
