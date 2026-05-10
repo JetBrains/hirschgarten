@@ -87,7 +87,7 @@ data class PythonBuildTarget(
   val imports: List<String>,
   // Not used after full sync. Mapping is saved in `PythonResolveIndexService`
   @Transient @JvmField val generatedSources: List<Path>? = null,
-  val sourceDependencies: List<Path> = listOf(),
+  @Transient @JvmField val externalSources: List<Path>? = null,
   val mainFile: Path? = null,
   val mainModule: String? = null,
 ) : BuildTargetData

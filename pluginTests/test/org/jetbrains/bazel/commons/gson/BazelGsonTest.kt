@@ -37,7 +37,7 @@ class BazelGsonTest {
             interpreter = Path.of("/usr/bin/python3"),
             listOf(),
             null,
-            listOf(),
+            null,
             Path.of("/base/dir/main.py"),
             null
           )

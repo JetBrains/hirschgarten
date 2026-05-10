@@ -5,14 +5,16 @@ import org.jetbrains.bazel.commons.LanguageClass
 import org.jetbrains.bazel.commons.LocalRepositoryMapping
 import org.jetbrains.bazel.commons.RepoMapping
 import org.jetbrains.bazel.commons.getLocalRepositories
+import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.info.BspTargetInfo.ArtifactLocation
 import org.jetbrains.bazel.info.BspTargetInfo.PythonTargetInfo
 import org.jetbrains.bazel.info.BspTargetInfo.TargetInfo
 import org.jetbrains.bazel.label.Label
-import org.jetbrains.bazel.label.label
 import org.jetbrains.bazel.server.model.sourcesList
 import org.jetbrains.bazel.sync.workspace.graph.DependencyGraph
 import org.jetbrains.bazel.sync.workspace.languages.LanguagePlugin
+import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceSyncConfig
+import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bsp.protocol.BazelServerFacade
 import org.jetbrains.bsp.protocol.BuildTargetData
 import org.jetbrains.bsp.protocol.PythonBuildTarget
@@ -23,42 +25,18 @@ import kotlin.io.path.extension
 import kotlin.io.path.isDirectory
 import kotlin.io.path.nameWithoutExtension
 
-internal class PythonLanguagePlugin: LanguagePlugin {
+internal class PythonLanguagePlugin : LanguagePlugin {
   override fun getSupportedLanguages(): Set<LanguageClass> = setOf(LanguageClass.PYTHON)
   override fun createProjectMapper(project: Project, server: BazelServerFacade) = Mapper(server)
 
+  override suspend fun createSyncConfigs(project: Project, workspaceContext: WorkspaceContext): List<WorkspaceSyncConfig> {
+    val config = PythonWorkspaceSyncConfig(
+      isPythonSupportEnabled = BazelFeatureFlags.isPythonSupportEnabled,
+    )
+    return listOf(config)
+  }
+
   class Mapper(private val server: BazelServerFacade) : LanguagePlugin.Mapper {
-    private var defaultInterpreter: Path? = null
-    private var defaultVersion: String? = null
-
-    private var pyExternalSources: Map<Label, List<Path>> = emptyMap()
-
-    override suspend fun prepareSync(
-      graph: DependencyGraph,
-      targetsToImport: Map<Label, TargetInfo>,
-      repoMapping: RepoMapping,
-    ) {
-      val localRepositories = repoMapping.getLocalRepositories()
-      val defaultTargetInfo = graph.idToTargetInfo.values.firstOrNull(::hasPythonInterpreter)?.pythonTargetInfo
-      defaultInterpreter =
-        defaultTargetInfo
-          ?.interpreter
-          ?.takeUnless { it.relativePath.isNullOrEmpty() }
-          ?.let { server.bazelPathsResolver.resolve(it, localRepositories) }
-      defaultVersion = defaultTargetInfo?.version
-
-      pyExternalSources = graph.idToTargetInfo
-        .filter { it.value.hasPythonTargetInfo() }
-        .mapValues { entry ->
-          getExternalSources(entry.value, localRepositories).map {
-            calculateExternalSourcePath(it, localRepositories)
-          }
-        }
-    }
-
-    private fun hasPythonInterpreter(targetInfo: TargetInfo): Boolean =
-      targetInfo.hasPythonTargetInfo() && targetInfo.pythonTargetInfo.hasInterpreter()
-
     override suspend fun createBuildTargetData(
       target: TargetInfo,
       targetsToImport: Map<Label, TargetInfo>,
@@ -68,21 +46,16 @@ internal class PythonLanguagePlugin: LanguagePlugin {
       if (!target.hasPythonTargetInfo()) {
         return emptyList()
       }
-
       val localRepositories = repoMapping.getLocalRepositories()
-      val sourceDependencies: List<Path> = graph
-        .transitiveDependenciesWithoutRootTargets(target.label())
-        .flatMap { pyExternalSources[it.label()].orEmpty() }
-        .distinct()
-
       val pythonTarget = target.pythonTargetInfo
       return listOf(
         PythonBuildTarget(
-          version = pythonTarget.version.takeUnless(String::isNullOrEmpty) ?: defaultVersion,
-          interpreter = calculateInterpreterPath(interpreter = pythonTarget.interpreter, localRepositories) ?: defaultInterpreter,
+          version = pythonTarget.version.takeUnless(String::isNullOrEmpty),
+          interpreter = calculateInterpreterPath(interpreter = pythonTarget.interpreter, localRepositories),
           imports = pythonTarget.importsList,
           generatedSources = pythonTarget.resolveGeneratedSources(repoMapping).toList(),
-          sourceDependencies = sourceDependencies,
+          externalSources = getExternalSources(target, localRepositories)
+            .map { calculateExternalSourcePath(it, localRepositories) },
           mainFile = pythonTarget.main?.let { server.bazelPathsResolver.resolve(it, localRepositories) },
           mainModule = pythonTarget.mainModule,
         ),
