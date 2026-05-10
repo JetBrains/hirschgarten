@@ -176,7 +176,6 @@ internal class BazelProjectSettingsConfigurable(private val project: Project) :
       listOf(
         "project.settings.buildifier.label",
         "project.settings.project.view.label",
-        "project.settings.plugin.file.event.invoke.bazel.checkbox.text",
         "project.settings.plugin.title",
         "project.settings.plugin.run.buildifier.on.save.checkbox.text",
       )
