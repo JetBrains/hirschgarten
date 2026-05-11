@@ -113,12 +113,13 @@ def extract_java_runtime(target, ctx, output_groups, dep_targets, **kwargs):
     # For java_proto_library, java_outputs is empty because the compiled class jars
     # (libproto-speed.jar) are produced by bazel_java_proto_aspect running in a
     # config-transitioned context and are not surfaced through java_outputs. Fall back
-    # to full_compile_jars filtered to class jars (excluding -hjar.jar interface jars)
-    # so the IDE can index the generated proto classes.
+    # to full_compile_jars filtered to class jars owned by THIS package only — using
+    # full_compile_jars unfiltered would include all transitive proto dependency jars,
+    # flooding the project model with duplicate entries.
     if not jars and provider and ctx.rule.kind == "java_proto_library":
         full_compile = [
             f for f in getattr(provider, "full_compile_jars", depset()).to_list()
-            if not f.basename.endswith("-hjar.jar")
+            if not f.basename.endswith("-hjar.jar") and f.owner.package == ctx.label.package
         ]
         if full_compile:
             jars = [struct(
