@@ -58,6 +58,7 @@ import org.jetbrains.bazel.sync.status.SyncStatusService
 import org.jetbrains.bazel.target.TargetUtils
 import org.jetbrains.bazel.target.targetUtils
 import org.jetbrains.bazel.taskEvents.BazelTaskEventsService
+import org.jetbrains.bazel.ui.unsynced.refreshAllFilesPresentation
 import org.jetbrains.bazel.workspace.fileEvents.SimplifiedFileEvent.CreateDirectory
 import org.jetbrains.bazel.workspace.packageMarker.concatenatePackages
 import org.jetbrains.bazel.workspacemodel.entities.BazelDummyEntitySource
@@ -118,19 +119,22 @@ open class BazelFileEventListener : BulkFileListenerBackgroundable {
     val processingJob = jobManager.runFileEventsProcessing {
       BazelCoroutineService.getInstance(project).startAsync(true) {
         delay(PROCESSING_DELAY)
-        do {
-          val processed = queueController.withNextBatch { batch ->
-            try {
-              processEventQueue(project, batch, taskId)
+        try {
+          do {
+            val processed = queueController.withNextBatch { batch ->
+              try {
+                processEventQueue(project, batch, taskId)
+              }
+              catch (ex: Throwable) {
+                if (ex !is CancellationException)
+                  logger.error(ex)
+                throw ex
+              }
             }
-            catch (ex: Throwable) {
-              if (ex !is CancellationException)
-                logger.error(ex)
-              throw ex
-            }
-          }
+          } while (processed)
+        } finally {
+          refreshAllFilesPresentation(project)
         }
-        while (processed)
       }
     }
 
