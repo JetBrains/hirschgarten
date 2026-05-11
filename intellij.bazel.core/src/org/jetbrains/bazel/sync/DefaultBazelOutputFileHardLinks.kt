@@ -80,7 +80,6 @@ internal class DefaultBazelOutputFileHardLinks(
         // configuration-transition output dir that was not downloaded). Retain the original
         // path so the library entry stays registered; IntelliJ's VFS will surface any access
         // errors rather than silently losing the jar from the classpath.
-        logger.warn("Output file does not exist, retaining original path: $originalFile")
         (retainedPaths ?: mutableListOf<Path>().also { retainedPaths = it }).add(originalFile)
         continue
       }
