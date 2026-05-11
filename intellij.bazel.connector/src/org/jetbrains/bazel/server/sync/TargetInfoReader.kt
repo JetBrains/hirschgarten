@@ -25,11 +25,34 @@ internal class TargetInfoReader(private val taskLogger: BazelTaskLogger?) {
       // is run. In order to correctly address this issue, we would have to provide separate
       // entities (TargetInfos) for each target and each ruleset (or language) instead of just
       // entity-per-label. As long as we don't have it, in case of a conflict we just take the entity
-      // that contains JvmTargetInfo as currently it's the most important one for us. Later, we sort by
-      // shortest size to get a stable result, which should be the default config.
-      .mapValues {
-        it.value.filter{ it.javaCommon.jvmTarget }.minByOrNull { targetInfo -> targetInfo.serializedSize } ?: it.value.first()
-      }.mapKeys { Label.parse(it.key) }
+      // that contains JvmTargetInfo as currently it's the most important one for us.
+      //
+      // Among JVM nodes, prefer nodes with actual jar content. For java_proto_library the real
+      // compilation artifacts live in a configuration-transition output directory (-ST-<hash>), and
+      // the shadow graph may also produce a smaller, jar-less node for the same label. Picking the
+      // jar-less node (as "smallest size") leaves the library empty and breaks IDE indexing.
+      // Within each group we still sort by size for a stable result when all nodes are equivalent.
+      .mapValues { resolveConflict(it.value) }
+      .mapKeys { Label.parse(it.key) }
+
+  companion object {
+    /**
+     * Selects the most representative [TargetInfo] when multiple nodes share the same label.
+     *
+     * Multiple nodes arise when Bazel's shadow graph is involved — most commonly for
+     * `java_proto_library`, where the built-in `bazel_java_proto_aspect` produces additional
+     * nodes in a configuration-transition output directory (`-ST-<hash>`). Among JVM nodes we
+     * prefer those that actually contain jar artifacts, because the shadow-graph nodes without
+     * jars are empty shells that would cause the library to be dropped from IntelliJ's classpath.
+     * Within each preference tier we pick the smallest node for a stable, deterministic result.
+     */
+    internal fun resolveConflict(candidates: List<TargetInfo>): TargetInfo {
+      val jvmTargets = candidates.filter { it.javaCommon.jvmTarget }
+      return jvmTargets.filter { it.javaCommon.jarsList.isNotEmpty() }.minByOrNull { it.serializedSize }
+        ?: jvmTargets.minByOrNull { it.serializedSize }
+        ?: candidates.first()
+    }
+  }
 
   private fun readFromFile(file: Path): TargetInfo? {
     val builder = TargetInfo.newBuilder()

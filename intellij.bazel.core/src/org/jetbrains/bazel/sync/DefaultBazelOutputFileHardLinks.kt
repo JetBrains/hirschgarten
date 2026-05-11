@@ -75,7 +75,15 @@ internal class DefaultBazelOutputFileHardLinks(
     }
 
     for (originalFile in files) {
-      val realFile = realPaths[originalFile]?.await() ?: continue
+      val realFile = realPaths[originalFile]?.await() ?: run {
+        // File does not exist on disk (e.g. a jar produced by a java_proto_library in a
+        // configuration-transition output dir that was not downloaded). Retain the original
+        // path so the library entry stays registered; IntelliJ's VFS will surface any access
+        // errors rather than silently losing the jar from the classpath.
+        logger.warn("Output file does not exist, retaining original path: $originalFile")
+        (retainedPaths ?: mutableListOf<Path>().also { retainedPaths = it }).add(originalFile)
+        continue
+      }
 
       if (realFile.startsWith(project.rootDir.toNioPath())) {
         // It's a source file, no need to hard link
