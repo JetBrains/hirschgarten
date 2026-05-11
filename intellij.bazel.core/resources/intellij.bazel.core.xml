@@ -172,11 +172,6 @@
       serviceInterface="org.jetbrains.bazel.progress.ConsoleService"
     />
 
-    <projectService
-      overrides="true"
-      serviceImplementation="org.jetbrains.bazel.services.BazelBaseProjectDirectories"
-      serviceInterface="com.intellij.openapi.project.BaseProjectDirectories"
-    />
     <moduleService
       overrides="true"
       serviceImplementation="org.jetbrains.bazel.services.BazelModuleFileIndex"
