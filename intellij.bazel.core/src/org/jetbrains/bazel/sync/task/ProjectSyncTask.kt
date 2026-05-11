@@ -11,6 +11,7 @@ import com.intellij.openapi.application.EDT
 import com.intellij.openapi.application.writeAction
 import com.intellij.openapi.components.serviceAsync
 import com.intellij.openapi.diagnostic.logger
+import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.UnindexedFilesScannerExecutor
 import com.intellij.openapi.vfs.findDirectory
@@ -52,6 +53,7 @@ import org.jetbrains.bazel.sync.workspace.importer.WorkspaceImporterHelper
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceSnapshot
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceSnapshotBuilder
 import org.jetbrains.bazel.taskEvents.BazelTaskEventsService
+import org.jetbrains.bazel.ui.unsynced.refreshAllFilesPresentation
 import org.jetbrains.bazel.workspace.fileEvents.FileEventJobManager
 import org.jetbrains.bsp.protocol.BazelServerFacade
 import org.jetbrains.bsp.protocol.TaskGroupId
@@ -153,9 +155,7 @@ class ProjectSyncTask(private val project: Project) {
         }
         finally {
           SyncStatusService.getInstance(project).finishSync()
-          withContext(Dispatchers.EDT) {
-            ProjectView.getInstance(project).refresh(ProjectViewUpdateCause.PLUGIN_BAZEL)
-          }
+          refreshAllFilesPresentation(project)
         }
       }
     }

@@ -18,6 +18,7 @@ import com.intellij.util.ui.tree.TreeUtil
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.jetbrains.bazel.coroutines.BazelCoroutineService
+import org.jetbrains.bazel.ui.unsynced.refreshAllFilesPresentation
 
 @Service(Service.Level.PROJECT)
 internal class BazelWorkspace(val project: Project) : Disposable {
@@ -53,11 +54,7 @@ internal class BspExternalServicesSubscriber(private val project: Project) {
       object : BulkFileListener {
         override fun after(events: MutableList<out VFileEvent>) {
           if (shouldRefreshProjectView(events)) {
-            BazelCoroutineService.getInstance(project).start {
-              withContext(Dispatchers.EDT) {
-                ProjectView.getInstance(project).refresh(ProjectViewUpdateCause.PLUGIN_BAZEL)
-              }
-            }
+            refreshAllFilesPresentation(project)
           }
         }
       },

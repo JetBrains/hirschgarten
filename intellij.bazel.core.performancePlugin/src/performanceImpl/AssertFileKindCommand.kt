@@ -11,6 +11,7 @@ import com.intellij.workspaceModel.ide.legacyBridge.findModuleEntity
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.target.targetUtils
+import org.jetbrains.bazel.ui.unsynced.showAsUnsyncedSourceFile
 
 internal class AssertFileKindCommand(text: String, line: Int) : PlaybackCommandCoroutineAdapter(text, line) {
   companion object {
@@ -89,7 +90,22 @@ enum class FileKindCheck {
       !WorkspaceFileIndex.getInstance(project).isInContent(file)
 
     override fun displayName(): String = "outside project content"
-  };
+  },
+
+  SHOW_AS_SYNCED {
+    override fun verify(project: Project, file: VirtualFile): Boolean =
+      !showAsUnsyncedSourceFile(project, file)
+
+    override fun displayName(): String = "show as synced"
+  },
+  SHOW_AS_UNSYNCED {
+    override fun verify(project: Project, file: VirtualFile): Boolean =
+      showAsUnsyncedSourceFile(project, file)
+
+    override fun displayName(): String = "show as unsynced"
+  },
+
+  ;
 
   abstract fun verify(project: Project, file: VirtualFile): Boolean
 

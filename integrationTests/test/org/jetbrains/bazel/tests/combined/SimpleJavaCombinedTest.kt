@@ -14,6 +14,7 @@ import com.intellij.ide.starter.driver.engine.runIdeWithDriver
 import com.intellij.ide.starter.ide.IDETestContext
 import com.intellij.tools.ide.performanceTesting.commands.build
 import com.intellij.tools.ide.performanceTesting.commands.checkOnRedCode
+import com.intellij.tools.ide.performanceTesting.commands.createJavaFile
 import com.intellij.tools.ide.performanceTesting.commands.goto
 import com.intellij.tools.ide.performanceTesting.commands.gotoLine
 import com.intellij.tools.ide.performanceTesting.commands.openFile
@@ -25,6 +26,7 @@ import com.intellij.tools.ide.performanceTesting.commands.takeScreenshot
 import com.intellij.tools.ide.performanceTesting.commands.waitForSmartMode
 import org.jetbrains.bazel.data.IdeaBazelCases
 import org.jetbrains.bazel.ideStarter.IdeStarterBaseProjectTest
+import org.jetbrains.bazel.ideStarter.assertFileKind
 import org.jetbrains.bazel.ideStarter.assertSyncSucceeded
 import org.jetbrains.bazel.ideStarter.bazelClean
 import org.jetbrains.bazel.ideStarter.buildAndSync
@@ -32,6 +34,8 @@ import org.jetbrains.bazel.ideStarter.checkIdeaLogForExceptions
 import org.jetbrains.bazel.ideStarter.execute
 import org.jetbrains.bazel.ideStarter.openFile
 import org.jetbrains.bazel.ideStarter.syncBazelProject
+import org.jetbrains.bazel.performanceImpl.FileKindCheck
+import org.jetbrains.bazel.performanceImpl.FileKindCheck.INDEXABLE
 import org.jetbrains.bazel.tests.ui.verifyAvailableRunGutterActions
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.AfterEach
@@ -89,6 +93,9 @@ class SimpleJavaCombinedTest : IdeStarterBaseProjectTest() {
 
   @Test @Order(4)
   fun `build and sync should succeed`() = buildAndSyncTest()
+
+  @Test @Order(5)
+  fun `add new file should show it as unsynced`() = addUnsyncedFileTest()
 
   @Test @Order(100)
   fun `update bazel version should not cause server to break`() = bazelVersionUpdate()
@@ -215,6 +222,27 @@ class SimpleJavaCombinedTest : IdeStarterBaseProjectTest() {
             ),
           )
           popup().close()
+        }
+      }
+    }
+  }
+
+  private fun addUnsyncedFileTest() {
+    withDriver(bgRun) {
+      ideFrame {
+        step("Create new java file Simple3Test.java and check if it is unsynced") {
+          execute { createJavaFile("Simple3Test", "", "class") }
+          execute { assertFileKind("Simple3Test.java", FileKindCheck.SHOW_AS_UNSYNCED) }
+        }
+
+        step("Resync project and check if the file is synced") {
+          sdkExecute {
+            it
+              .buildAndSync()
+              .waitForSmartMode()
+              .takeScreenshot("afterResync")
+          }
+          execute { assertFileKind("Simple3Test.java", FileKindCheck.SHOW_AS_SYNCED) }
         }
       }
     }
