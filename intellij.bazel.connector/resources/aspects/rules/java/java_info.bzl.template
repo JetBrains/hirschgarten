@@ -109,6 +109,25 @@ def extract_java_runtime(target, ctx, output_groups, dep_targets, **kwargs):
         elif hasattr(provider, "outputs") and provider.outputs:
             java_outputs = provider.outputs.jars
     jars, resolve_files_jars = map_with_resolve_files(to_jvm_outputs, java_outputs)
+
+    # For java_proto_library, java_outputs is empty because the compiled class jars
+    # (libproto-speed.jar) are produced by bazel_java_proto_aspect running in a
+    # config-transitioned context and are not surfaced through java_outputs. Fall back
+    # to full_compile_jars filtered to class jars (excluding -hjar.jar interface jars)
+    # so the IDE can index the generated proto classes.
+    if not jars and provider and ctx.rule.kind == "java_proto_library":
+        full_compile = [
+            f for f in getattr(provider, "full_compile_jars", depset()).to_list()
+            if not f.basename.endswith("-hjar.jar")
+        ]
+        if full_compile:
+            jars = [struct(
+                binary_jars = [file_location(f)],
+                interface_jars = [],
+                source_jars = [],
+            ) for f in full_compile]
+            resolve_files_jars = full_compile
+
     generated_jars, resolve_files_generated_jars = get_generated_jars(provider)
     
     resolve_files = resolve_files_jars + resolve_files_generated_jars
