@@ -3,14 +3,13 @@ package org.jetbrains.bazel.languages.projectview
 import com.intellij.openapi.project.Project
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.commons.ExcludableValue
-import org.jetbrains.bazel.commons.constants.Constants
 import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.sync.environment.getProjectRootDirOrThrow
 import org.jetbrains.bazel.sync.environment.projectCtx
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import java.nio.file.Path
-import kotlin.io.path.pathString
+import kotlin.io.path.invariantSeparatorsPathString
 
 @ApiStatus.Internal
 object ProjectViewToWorkspaceContextConverter {
@@ -73,13 +72,18 @@ object ProjectViewToWorkspaceContextConverter {
     fun hasEmptyIncludedAndNonEmptyExcluded(list: List<ExcludableValue<*>>): Boolean =
       list.none { it.isIncluded() } && list.any { !it.isIncluded() }
 
-    fun mapDirectoryToTarget(buildDirectoryIdentifier: Path): Label =
-      if (buildDirectoryIdentifier.pathString == ".") {
+    fun mapDirectoryToTarget(buildDirectoryIdentifier: Path): Label? {
+      if (buildDirectoryIdentifier.isAbsolute) return null
+      val buildDirectoryPath = buildDirectoryIdentifier.invariantSeparatorsPathString
+      if (buildDirectoryPath.isEmpty()) return null
+
+      return if (buildDirectoryPath == ".") {
         Label.parse("//...")
       }
       else {
-        Label.parse("//" + buildDirectoryIdentifier.pathString + "/...")
+        Label.parse("//$buildDirectoryPath/...")
       }
+    }
 
     when {
       dirs.isEmpty() -> return targets
@@ -92,11 +96,13 @@ object ProjectViewToWorkspaceContextConverter {
         val directoriesValues =
           dirs
             .filter { it.isIncluded() }
-            .map { ExcludableValue.included(mapDirectoryToTarget(it.value)) }
+            .mapNotNull { mapDirectoryToTarget(it.value) }
+            .map { ExcludableValue.included(it) }
         val directoriesExcludedValues =
           dirs
             .filter { !it.isIncluded() }
-            .map { ExcludableValue.excluded(mapDirectoryToTarget(it.value)) }
+            .mapNotNull { mapDirectoryToTarget(it.value) }
+            .map { ExcludableValue.excluded(it) }
         return targets + directoriesValues + directoriesExcludedValues
       }
     }
