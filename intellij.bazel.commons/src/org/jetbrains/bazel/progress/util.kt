@@ -3,6 +3,7 @@ package org.jetbrains.bazel.progress
 import com.intellij.build.events.impl.FailureResultImpl
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.util.NlsContexts
 import com.intellij.platform.util.progress.SequentialProgressReporter
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.config.BazelExtBundle
@@ -16,7 +17,7 @@ val Project.syncConsole: TaskConsole
 @ApiStatus.Internal
 suspend fun <T> TaskConsole.withSubtask(
   subtaskId: TaskId,
-  message: String,
+  @NlsContexts.ProgressTitle message: String,
   block: suspend (subtaskId: TaskId) -> T,
 ): T {
   startSubtask(subtaskId, message)

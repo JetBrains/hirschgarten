@@ -2,6 +2,8 @@ package org.jetbrains.bazel.sync.workspace.importer
 
 import com.intellij.openapi.extensions.ExtensionPointName
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.util.NlsContexts
+import com.intellij.platform.util.progress.SequentialProgressReporter
 import com.intellij.platform.workspace.storage.EntitySource
 import com.intellij.platform.workspace.storage.ImmutableEntityStorage
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceSnapshot
@@ -29,6 +31,17 @@ import org.jetbrains.bsp.protocol.TaskId
  */
 @ApiStatus.Internal
 interface BazelWorkspaceImporter {
+
+  /**
+   * Mark [BazelWorkspaceImporter] as named
+   */
+  interface Named : BazelWorkspaceImporter {
+
+    /**
+     * Internalized [BazelWorkspaceImporter] importer name
+     */
+    val importerName: @NlsContexts.ProgressTitle String
+  }
 
   /**
    * Perform phased workspace import. Adhear to rules found in [WorkspaceImporterPhase] documentation.
@@ -70,6 +83,7 @@ sealed interface WorkspaceImporterResult {
  *
  * @property project Current project, don't use [project] to collect data that can change [BazelWorkspaceImporter] behavior
  * @property taskConsole Current [TaskConsole]
+ * @property progressReporter Current [SequentialProgressReporter]
  * @property taskId Importer specific [TaskId]
  * @property vfuManager [VirtualFileUrlManager] that shall be used for workspace model building
  */
@@ -77,6 +91,7 @@ sealed interface WorkspaceImporterResult {
 data class WorkspaceImporterContext(
   val project: Project,
   val taskConsole: TaskConsole,
+  val progressReporter: SequentialProgressReporter,
   val taskId: TaskId,
   val vfuManager: VirtualFileUrlManager,
   val currentSnapshot: ImmutableEntityStorage

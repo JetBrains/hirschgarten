@@ -74,7 +74,7 @@ internal class Junit5TestVisualOutputParser(private val bspClientTestNotifier: B
         val newNode =
           TestResultTreeNode(
             name = testName,
-            taskId = (parent?.taskId ?: parentId).subTask(testName + "-" + Random.nextBytes(8).toHexString()),
+            taskId = (parent?.taskId ?: parentId).uniqueSubTask(testName),
             status = testLineMatcher.group("result").toTestStatus(),
             messageLines = mutableListOf(testLineMatcher.group("message")),
             indent = indent,

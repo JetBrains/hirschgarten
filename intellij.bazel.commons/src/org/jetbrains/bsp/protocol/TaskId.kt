@@ -1,6 +1,7 @@
 package org.jetbrains.bsp.protocol
 
 import org.jetbrains.annotations.ApiStatus
+import kotlin.random.Random
 
 @ApiStatus.Internal
 data class TaskGroupId(val id: String) {
@@ -40,5 +41,7 @@ data class TaskId(val taskGroupId: TaskGroupId, val id: String, val parent: Task
     return taskGroupId.id + ":" + sb.toString()
   }
 
-  fun subTask(id: String) = TaskId(taskGroupId, id, this)
+  fun subTask(id: String): TaskId = TaskId(taskGroupId, id, this)
+
+  fun uniqueSubTask(prefix: String): TaskId = subTask("$prefix-${Random.nextBytes(8).toHexString()}")
 }
