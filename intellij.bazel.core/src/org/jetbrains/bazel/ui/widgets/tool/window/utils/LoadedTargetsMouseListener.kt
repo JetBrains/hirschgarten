@@ -17,6 +17,7 @@ import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.coroutines.BazelCoroutineService
 import org.jetbrains.bazel.debug.actions.StarlarkDebugAction
+import org.jetbrains.bazel.run.test.normalizeBazelTestFilter
 import org.jetbrains.bazel.run.synthetic.SyntheticRunTargetUtils
 import org.jetbrains.bazel.runnerAction.BazelRunnerAction
 import org.jetbrains.bazel.runnerAction.BuildTargetAction
@@ -143,6 +144,13 @@ internal fun DefaultActionGroup.fillWithEligibleActions(
   callerPsiElement: PsiElement? = null,
 ): DefaultActionGroup {
   val kind = target.kind
+  // Only imported BuildTargets carry Scala suite metadata; future synthetic ExecutableTargets may not.
+  val targetSingleTestFilter =
+    if (target is BuildTarget) {
+      normalizeBazelTestFilter(project, target, singleTestFilter, testExecutableArguments)
+    } else {
+      singleTestFilter
+    }
 
   val supportedExecutors = getSupportedExecutors(project, target)
 
@@ -159,7 +167,7 @@ internal fun DefaultActionGroup.fillWithEligibleActions(
           project,
           target,
           executor = executor,
-          singleTestFilter = singleTestFilter,
+          singleTestFilter = targetSingleTestFilter,
           testExecutableArguments = testExecutableArguments,
           callerPsiElement = callerPsiElement,
         ),

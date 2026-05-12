@@ -96,6 +96,8 @@ data class ScalaBuildTarget(
   val scalaVersion: String,
   val sdkJars: List<Path>,
   val scalacOptions: List<String>,
+  val testSuiteClass: String? = null,
+  val testSuiteLabel: String? = null,
 ) : BuildTargetData
 
 @ClassDiscriminator(4)

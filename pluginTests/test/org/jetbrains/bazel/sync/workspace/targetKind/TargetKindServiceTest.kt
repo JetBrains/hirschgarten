@@ -4,12 +4,14 @@ import io.kotest.matchers.nulls.shouldBeNull
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeSameInstanceAs
 import org.jetbrains.bazel.commons.LanguageClass.JAVA
+import org.jetbrains.bazel.commons.LanguageClass.SCALA
 import org.jetbrains.bazel.commons.RuleType.BINARY
 import org.jetbrains.bazel.commons.RuleType.LIBRARY
 import org.jetbrains.bazel.commons.RuleType.TEST
 import org.jetbrains.bazel.commons.RuleType.UNKNOWN
 import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.info.BspTargetInfo.JavaCommonInfo
+import org.jetbrains.bazel.info.BspTargetInfo.ScalaTargetInfo
 import org.jetbrains.bazel.info.BspTargetInfo.TargetInfo
 import org.jetbrains.bazel.test.framework.BazelTestApplication
 import org.junit.jupiter.api.Test
@@ -27,6 +29,12 @@ class TargetKindServiceTest {
   }
 
   @Test
+  fun `fromTargetInfo resolves scala_junit_test as Scala test`() {
+    val target = targetInfo("scala_junit_test")
+    service.fromTargetInfo(target) shouldBe TargetKind("scala_junit_test", setOf(JAVA, SCALA), TEST)
+  }
+
+  @Test
   fun `fromTargetInfo resolves known kind with transition prefix`() {
     val target = targetInfo("_transition_java_library")
     service.fromTargetInfo(target) shouldBe TargetKind("java_library", setOf(JAVA), LIBRARY)
@@ -36,6 +44,12 @@ class TargetKindServiceTest {
   fun `fromTargetInfo infers library for unknown jvm kind when not executable`() {
     val target = targetInfo("custom_lib", executable = false, jvmTarget = true)
     service.fromTargetInfo(target) shouldBe TargetKind("custom_lib", setOf(JAVA), LIBRARY)
+  }
+
+  @Test
+  fun `fromTargetInfo infers Scala language from aspect data`() {
+    val target = targetInfo("custom_scala_test", executable = true, jvmTarget = true, scalaTarget = true)
+    service.fromTargetInfo(target) shouldBe TargetKind("custom_scala_test", setOf(JAVA, SCALA), TEST)
   }
 
   @Test
@@ -148,6 +162,7 @@ private fun targetInfo(
   kind: String,
   executable: Boolean = false,
   jvmTarget: Boolean = false,
+  scalaTarget: Boolean = false,
 ): TargetInfo =
   TargetInfo.newBuilder()
     .setKind(kind)
@@ -155,6 +170,9 @@ private fun targetInfo(
     .apply {
       if (jvmTarget) {
         javaCommon = JavaCommonInfo.newBuilder().setJvmTarget(true).build()
+      }
+      if (scalaTarget) {
+        scalaTargetInfo = ScalaTargetInfo.newBuilder().build()
       }
     }
     .build()

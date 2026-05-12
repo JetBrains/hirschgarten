@@ -74,6 +74,12 @@ def extract_scala_info(target, ctx, output_groups, **kwargs):
         common_scalac_opts = []
     scala_info["scalac_opts"] = common_scalac_opts + getattr(ctx.rule.attr, "scalacopts", [])
     scala_info["scalatest_classpath_targets"] = extract_scalatest_classpath_targets(rule_attr)
+    suite_class = getattr(rule_attr, "suite_class", None)
+    if suite_class != None:
+        scala_info["test_suite_class"] = suite_class
+    suite_label = getattr(rule_attr, "suite_label", None)
+    if suite_label != None:
+        scala_info["test_suite_label"] = str(getattr(suite_label, "label", suite_label))
 
     result = dict(scala_target_info = struct(**scala_info)) 
 

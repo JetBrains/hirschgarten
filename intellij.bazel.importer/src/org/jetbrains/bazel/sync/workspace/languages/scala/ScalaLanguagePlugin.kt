@@ -70,6 +70,8 @@ class ScalaLanguagePlugin: JvmLanguagePluginMixin {
         scalaVersion = sdk.version,
         sdkJars = sdk.compilerJars,
         scalacOptions = target.scalaTargetInfo.scalacOptsList,
+        testSuiteClass = target.scalaTargetInfo.testSuiteClass.ifEmpty { null },
+        testSuiteLabel = target.scalaTargetInfo.testSuiteLabel.ifEmpty { null },
       ))
     }
 

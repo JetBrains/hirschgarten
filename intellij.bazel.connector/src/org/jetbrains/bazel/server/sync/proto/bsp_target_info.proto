@@ -73,6 +73,8 @@ message ScalaTargetInfo {
   repeated string scalac_opts = 1;
   repeated ArtifactLocation compiler_classpath = 2;
   repeated string scalatest_classpath_targets = 4;
+  string test_suite_class = 5;
+  string test_suite_label = 6;
 }
 
 message KotlincPluginOption {
