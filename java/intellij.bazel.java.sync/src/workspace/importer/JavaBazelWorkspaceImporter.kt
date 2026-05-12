@@ -2,6 +2,7 @@ package org.jetbrains.bazel.workspace.importer
 
 import com.intellij.compiler.impl.javaCompiler.javac.JavacConfiguration
 import com.intellij.openapi.externalSystem.service.project.manage.ExternalProjectsManagerImpl
+import com.intellij.openapi.util.NlsContexts
 import com.intellij.platform.diagnostic.telemetry.helpers.use
 import com.intellij.platform.workspace.storage.EntitySource
 import com.intellij.platform.workspace.storage.MutableEntityStorage
@@ -41,12 +42,15 @@ import kotlin.collections.joinToString
 // TODO: fix this JDK table mess, I'm sure this can be done in better way,
 //  wait if we have multiple JDKs in single workspace for some case???
 // RC: for now this just wraps 'purified' MMM
-internal class JavaBazelWorkspaceImporter : BazelWorkspaceImporter {
+internal class JavaBazelWorkspaceImporter : BazelWorkspaceImporter, BazelWorkspaceImporter.Named {
   private var javacOptions: Map<String, String>? = null
   private lateinit var projectDetails: ProjectDetails
   private lateinit var uniqueJavaHomes: Set<Path>
   private lateinit var commonSyncConfig: CommonWorkspaceSyncConfig
   private lateinit var javaSyncConfig: JavaWorkspaceSyncConfig
+
+  override val importerName: @NlsContexts.ProgressTitle String
+    get() = BazelJavaBackendBundle.message("workspace.java.importer.name")
 
   override suspend fun import(
     context: WorkspaceImporterContext,

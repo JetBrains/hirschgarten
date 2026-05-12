@@ -164,7 +164,7 @@ class BepServer(
       }
       else {
         // Send a generic notification if individual tests cannot be processed.
-        val childId = taskId.subTask("test-" + Random.nextBytes(8).toHexString())
+        val childId = taskId.uniqueSubTask("test")
         bspClientTestNotifier.startTest("Test", childId, isSuite = true)
         bspClientTestNotifier.finishTest("Test", childId, testStatus, "Test finished")
       }

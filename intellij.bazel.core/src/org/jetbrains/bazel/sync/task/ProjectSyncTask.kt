@@ -215,6 +215,7 @@ class ProjectSyncTask(private val project: Project) {
                   importerHelper = WorkspaceImporterHelper(
                     project = project,
                     taskConsole = project.syncConsole,
+                    progressReporter = progressReporter,
                     taskId = taskId,
                     builder = storage
                   ),
