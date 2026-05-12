@@ -61,12 +61,41 @@ value class WorkspaceConfigurationId private constructor(val configurationHash: 
  * Definition of bazel configuration
  *
  * @property id Unique configuration identifier
+ * @property summary Configuration summary taken from BEP
+ * @property fragments Bazel configuration fragments
  */
-// TODO: fill with useful properties
 @ApiStatus.Internal
 data class WorkspaceConfiguration(
   val id: WorkspaceConfigurationId,
+  val summary: WorkspaceConfigurationSummary,
+  val fragments: List<WorkspaceConfigurationFragment>,
 )
+
+/**
+ * Bazel configuration summary emitted from BEP message
+ *
+ * @property mnemonic Platform mnemonic
+ * @property platformName Platform name
+ * @property cpu Platform cpu
+ * @property makeVariables Bazel make variables, `bazel info --show_make_env`
+ * @property isTool Whether this configuration is used for building tools
+ */
+@ApiStatus.Internal
+data class WorkspaceConfigurationSummary(
+  val mnemonic: String,
+  val platformName: String,
+  val cpu: String,
+  val makeVariables: Map<String, String>,
+  val isTool: Boolean,
+)
+
+/**
+ * Marker interface for bazel configuration fragments
+ *
+ * **NOTE:** Each rule-specific fragment definition shall live in dedicated module
+ */
+@ApiStatus.Internal
+interface WorkspaceConfigurationFragment
 
 /**
  * Immutable [RawBuildTarget] representation
