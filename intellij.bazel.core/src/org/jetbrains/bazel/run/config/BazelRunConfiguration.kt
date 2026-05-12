@@ -162,6 +162,8 @@ class BazelRunConfiguration internal constructor(
     }
 
     doVisibilityCheck = bspElement.getAttributeValue(CHECK_VISIBILITY_ATTR)?.toBoolean() ?: true
+
+    handler?.extensionsManager?.readExternal(this, element)
   }
 
   // TODO: ideally we'd use an existing serialization mechanism like https://plugins.jetbrains.com/docs/intellij/persisting-state-of-components.html
@@ -172,6 +174,7 @@ class BazelRunConfiguration internal constructor(
     val bspState = createBspElement() ?: return
     element.removeChildren(BSP_STATE_TAG)
     element.addContent(bspState)
+    handler?.extensionsManager?.writeExternal(this, element)
   }
 
   /**

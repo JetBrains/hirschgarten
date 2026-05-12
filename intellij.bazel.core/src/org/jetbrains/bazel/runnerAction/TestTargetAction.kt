@@ -4,6 +4,7 @@ import com.intellij.execution.Executor
 import com.intellij.execution.RunnerAndConfigurationSettings
 import com.intellij.execution.executors.DefaultRunExecutor
 import com.intellij.openapi.project.Project
+import com.intellij.psi.PsiElement
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.languages.starlark.repomapping.toShortString
 import org.jetbrains.bazel.run.config.BazelRunConfiguration
@@ -19,11 +20,13 @@ class TestTargetAction(
   configurationName: String,
   private val singleTestFilter: String? = null,
   private val testExecutableArguments: List<String> = emptyList(),
+  callerPsiElement: PsiElement? = null,
 ) : BazelRunnerAction(
   project = project,
   targets = targets,
   executor = executor,
   configurationName = configurationName,
+  callerPsiElement = callerPsiElement,
 ) {
   constructor(
     project: Project,
@@ -31,6 +34,7 @@ class TestTargetAction(
     executor: Executor = DefaultRunExecutor.getRunExecutorInstance(),
     singleTestFilter: String? = null,
     testExecutableArguments: List<String> = emptyList(),
+    callerPsiElement: PsiElement? = null,
   ) : this(
     project = project,
     targets = listOf(target),
@@ -38,6 +42,7 @@ class TestTargetAction(
     configurationName = target.id.toShortString(project),
     singleTestFilter = singleTestFilter,
     testExecutableArguments = testExecutableArguments,
+    callerPsiElement = callerPsiElement,
   )
 
   override fun RunnerAndConfigurationSettings.customizeRunConfiguration() {

@@ -1,13 +1,10 @@
 package org.jetbrains.bazel.jvm.run
 
-import com.intellij.execution.ui.CommonParameterFragments
-import com.intellij.execution.ui.FragmentedSettingsEditor
 import com.intellij.execution.ui.SettingsEditorFragment
 import com.intellij.execution.ui.SettingsEditorFragmentType
 import com.intellij.openapi.externalSystem.service.execution.configuration.fragments.SettingsEditorFragmentContainer
 import com.intellij.openapi.externalSystem.service.execution.configuration.fragments.addLabeledSettingsEditorFragment
 import com.intellij.openapi.externalSystem.service.ui.util.LabeledSettingsFragmentInfo
-import com.intellij.openapi.options.SettingsEditor
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.NlsContexts
 import com.intellij.ui.PortField
@@ -38,14 +35,8 @@ class JvmTestState(project: Project) :
   @get:Attribute("runWithBazel")
   override var runWithBazel: Boolean by property(project.projectView().runConfigRunWithBazel)
 
-  override fun getEditor(configuration: BazelRunConfiguration): SettingsEditor<JvmTestState> = JvmTestStateEditor(configuration)
-}
-
-internal class JvmTestStateEditor(private val config: BazelRunConfiguration) :
-  FragmentedSettingsEditor<JvmTestState>(config.handler?.state as JvmTestState) {
-  override fun createFragments(): Collection<SettingsEditorFragment<JvmTestState, *>> =
+  override fun createFragments(configuration: BazelRunConfiguration): Collection<SettingsEditorFragment<BazelRunConfiguration, *>> =
     SettingsEditorFragmentContainer.fragments {
-      add(CommonParameterFragments.createHeader(BazelPluginBundle.message("jvm.runner.test.header")))
       addDebugPortFragment()
       add(bazelParamsFragment())
       addTestFilterFragment()
@@ -59,7 +50,10 @@ internal interface HasDebugPort {
   var debugPort: Int
 }
 
-internal fun <C : HasDebugPort> SettingsEditorFragmentContainer<C>.addDebugPortFragment() =
+private val BazelRunConfiguration.debugPortState: HasDebugPort?
+  get() = handler?.state as? HasDebugPort
+
+internal fun SettingsEditorFragmentContainer<BazelRunConfiguration>.addDebugPortFragment() =
   addLabeledSettingsEditorFragment(
     object : LabeledSettingsFragmentInfo {
       override val settingsActionHint: String? = null
@@ -73,6 +67,6 @@ internal fun <C : HasDebugPort> SettingsEditorFragmentContainer<C>.addDebugPortF
     {
       PortField()
     },
-    { state, component -> component.number = state.debugPort },
-    { state, component -> state.debugPort = component.number },
+    { configuration, component -> component.number = configuration.debugPortState?.debugPort ?: 0 },
+    { configuration, component -> configuration.debugPortState?.debugPort = component.number },
   )

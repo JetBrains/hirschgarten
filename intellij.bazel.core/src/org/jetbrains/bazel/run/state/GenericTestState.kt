@@ -1,13 +1,9 @@
 package org.jetbrains.bazel.run.state
 
-import com.intellij.execution.ui.CommonParameterFragments
-import com.intellij.execution.ui.FragmentedSettingsEditor
 import com.intellij.execution.ui.SettingsEditorFragment
 import com.intellij.openapi.externalSystem.service.execution.configuration.fragments.SettingsEditorFragmentContainer
-import com.intellij.openapi.options.SettingsEditor
 import com.intellij.util.xmlb.annotations.Attribute
 import org.jetbrains.annotations.ApiStatus
-import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.run.BazelRunConfigurationState
 import org.jetbrains.bazel.run.config.BazelRunConfiguration
 
@@ -38,15 +34,8 @@ open class AbstractGenericTestState<T : AbstractGenericTestState<T>> :
   @com.intellij.configurationStore.Property(description = "Bazel parameters")
   override var additionalBazelParams: String? by string()
 
-  override fun getEditor(configuration: BazelRunConfiguration): SettingsEditor<T> = GenericTestStateEditor(configuration)
-}
-
-internal class GenericTestStateEditor<T : AbstractGenericTestState<T>>(private val config: BazelRunConfiguration) :
-  FragmentedSettingsEditor<T>(config.handler?.state as T) {
-  override fun createFragments(): Collection<SettingsEditorFragment<T, *>> =
+  override fun createFragments(configuration: BazelRunConfiguration): Collection<SettingsEditorFragment<BazelRunConfiguration, *>> =
     SettingsEditorFragmentContainer.fragments {
-      add(CommonParameterFragments.createHeader(BazelPluginBundle.message("state.generic.test.configuration.header")))
-
       add(bazelParamsFragment())
       addTestFilterFragment()
       add(programArgumentsFragment())

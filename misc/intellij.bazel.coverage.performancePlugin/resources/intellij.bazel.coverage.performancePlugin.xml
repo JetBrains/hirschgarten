@@ -1,10 +1,12 @@
 <idea-plugin>
   <!-- region Generated dependencies - run `Generate Product Layouts` to regenerate -->
   <dependencies>
+    <plugin id="Coverage"/>
     <plugin id="com.jetbrains.performancePlugin"/>
     <module name="intellij.bazel.commons"/>
     <module name="intellij.bazel.core"/>
     <module name="intellij.bazel.coverage"/>
+    <module name="intellij.java.psi"/>
     <module name="intellij.platform.coverage"/>
     <module name="intellij.platform.coverage.agent"/>
   </dependencies>

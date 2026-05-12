@@ -112,11 +112,11 @@ object IdeaBazelCases : BaseBazelCasesParametrized(BazelTestContext.IDEA) {
     val BazelCoverage = withBazelProject(
       projectInfo = withDefaults(
         repositoryUrl = "https://github.com/JetBrainsBazelBot/simpleBazelProjectsForTesting.git",
-        commitHash = "af3e066604a8af0c9505b088ae5e7055ecf3b6d5",
+        commitHash = "cb47ad3072495dd9811da4ae2f346566f8b0c7cf",
         branchName = "main",
         relativePath = "coverageTest",
         configure = { context -> BazelProjectConfigurer.configureProjectBeforeUse(context) },
-      )
+      ),
     )
 
     val ImportRunConfigurationsSyncHook = withBazelProject(

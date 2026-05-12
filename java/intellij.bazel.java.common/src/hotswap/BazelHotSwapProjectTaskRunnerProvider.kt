@@ -4,8 +4,6 @@ import com.intellij.debugger.impl.DebuggerSession
 import com.intellij.debugger.ui.HotSwapStatusListener
 import com.intellij.debugger.ui.HotSwapUIImpl
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.vfs.toNioPathOrNull
-import com.intellij.platform.backend.workspace.virtualFile
 import com.intellij.task.ProjectTaskContext
 import org.jetbrains.bazel.buildTask.AdditionalProjectTask
 import org.jetbrains.bazel.buildTask.AdditionalProjectTaskRunnerProvider
@@ -13,6 +11,7 @@ import org.jetbrains.bazel.commons.BazelStatus
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.target.getModuleEntity
 import org.jetbrains.bazel.workspacemodel.entities.jvmBinaryJarsEntity
+import java.net.URI
 import java.nio.file.Path
 
 internal class BazelHotSwapProjectTaskRunnerProvider : AdditionalProjectTaskRunnerProvider {
@@ -55,9 +54,9 @@ private class HotSwapTask(
     .map { it.getModuleEntity(project) }
     .mapNotNull { it?.jvmBinaryJarsEntity }
     .flatMap { it.jars }
-    .mapNotNull { it.virtualFile }
+    .map { URI.create(it.url) }  // Don't use VFS here as we're dealing with files in bazel-out
     .distinct()
-    .mapNotNull { it.toNioPathOrNull() }
+    .mapNotNull { Path.of(it) }
     .toList()
 
   override suspend fun postRun(result: BazelStatus) {

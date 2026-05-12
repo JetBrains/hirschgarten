@@ -2,10 +2,11 @@ package org.jetbrains.bazel.jvm.run
 
 import com.intellij.execution.Executor
 import com.intellij.execution.JavaRunConfigurationExtensionManager
+import com.intellij.execution.configuration.RunConfigurationExtensionsManager
 import com.intellij.execution.configurations.JavaParameters
+import com.intellij.execution.configurations.RunConfigurationBase
 import com.intellij.execution.configurations.RunProfileState
 import com.intellij.execution.executors.DefaultDebugExecutor
-import com.intellij.execution.executors.DefaultRunExecutor
 import com.intellij.execution.process.OSProcessHandler
 import com.intellij.execution.runners.ExecutionEnvironment
 import com.intellij.openapi.util.Key
@@ -47,14 +48,17 @@ class JvmRunHandler(private val configuration: BazelRunConfiguration) : BazelRun
     if (executor is DefaultDebugExecutor) {
       environment.putCopyableUserData(COROUTINE_JVM_FLAGS_KEY, Ref())
     }
-    return if (state.runWithBazel && executor is DefaultRunExecutor) {
-      BazelRunCommandLineState(environment, state)
-    }
-    else {
+    return if (RunWithScriptPathExtension.shouldRunWithScriptPath(executor, configuration)) {
       environment.putCopyableUserData(SCRIPT_PATH_KEY, Ref())
       RunScriptPathCommandLineState(environment, state, configuration)
     }
+    else {
+      BazelRunCommandLineState(environment, state)
+    }
   }
+
+  override val extensionsManager: RunConfigurationExtensionsManager<in RunConfigurationBase<*>, *>
+    get() = JavaRunConfigurationExtensionManager.instance
 
   class JvmRunHandlerProvider : GooglePluginAwareRunHandlerProvider {
     override val id: String
@@ -115,7 +119,7 @@ internal fun getAdditionalJvmRunParameters(environment: ExecutionEnvironment, de
   }
 
   val profilerParameters = JavaParameters()
-  // JavaRunConfigurationExtensionManager has a generic-sounding name, but in practice only used for JFR/Async Profiler VM options
+  // Add Java options for, e.g., Profiler or Coverage
   JavaRunConfigurationExtensionManager.instance.updateJavaParameters(
     configuration,
     profilerParameters,
