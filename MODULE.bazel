@@ -40,7 +40,7 @@ bazel_dep(name = "googleapis", version = "0.0.0-20250730-f6801ce4")
 maven = use_extension("@rules_jvm_external//:extensions.bzl", "maven")
 maven.install(
     artifacts = [
-        "com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.20.0",
+        "com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.19.0",
         "com.google.protobuf:protobuf-java:3.24.4",
     ],
     lock_file = "//:maven_install.json",
@@ -239,15 +239,21 @@ http_jar(
 
 TERMINAL_PLUGIN_261_URL = "https://www.jetbrains.com/intellij-repository/%s/com/jetbrains/intellij/terminal/terminal/%s/terminal-%s.jar" % (SDK_261_INTELLIJ_REPOSITORY, SDK_261_INTELLIJ_REPO_VERSION, SDK_261_INTELLIJ_REPO_VERSION)
 
+TERMINAL_PLUGIN_261_SHA = "e47713c820fd6139119d839e99b9e522414c92c1824fda1fa830e0585949a8ad"
+
 http_jar(
     name = "terminal_2026_1",
+    sha256 = TERMINAL_PLUGIN_261_SHA,
     url = TERMINAL_PLUGIN_261_URL,
 )
 
 TERMINAL_COMPLETION_PLUGIN_261_URL = "https://www.jetbrains.com/intellij-repository/%s/com/jetbrains/intellij/terminal/terminal-completion/%s/terminal-completion-%s.jar" % (SDK_261_INTELLIJ_REPOSITORY, SDK_261_INTELLIJ_REPO_VERSION, SDK_261_INTELLIJ_REPO_VERSION)
 
+TERMINAL_COMPLETION_PLUGIN_261_SHA = "916405cf02f1030e7bc7fca91cb1ac0cf07cb6a311b67cb5f116116e063643ae"
+
 http_jar(
     name = "terminal_completion_2026_1",
+    sha256 = TERMINAL_COMPLETION_PLUGIN_261_SHA,
     url = TERMINAL_COMPLETION_PLUGIN_261_URL,
 )
 
@@ -262,4 +268,14 @@ http_archive(
     build_file_content = _PROTOEDIT_BUILD_FILE,
     sha256 = PROTOEDIT_PLUGIN_261_SHA,
     url = PROTOEDIT_PLUGIN_261_URL,
+)
+
+JAVA_COVERAGE_261_URL = "https://www.jetbrains.com/intellij-repository/%s/com/jetbrains/intellij/java/java-coverage/%s/java-coverage-%s.jar" % (SDK_261_INTELLIJ_REPOSITORY, SDK_261_INTELLIJ_REPO_VERSION, SDK_261_INTELLIJ_REPO_VERSION)
+
+JAVA_COVERAGE_261_SHA = "397aea90ab9010eda213c9b99d1b7f080172033f6121555f9c7921a0aff6729d"
+
+http_jar(
+    name = "java_coverage_2026_1",
+    sha256 = JAVA_COVERAGE_261_SHA,
+    url = JAVA_COVERAGE_261_URL,
 )
