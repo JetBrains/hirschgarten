@@ -393,6 +393,7 @@ def jvm_library(
         "//rules_intellij/third_party/protobuf:protoedit",
         "//rules_intellij/third_party/python",
         "//rules_intellij/third_party/terminal",
+        "//rules_intellij/third_party/coverage",
         "//rules_intellij/intellij_platform_sdk:java",
         "//rules_intellij/intellij_platform_sdk:kotlin",
         "//rules_intellij/intellij_platform_sdk:bytecode_viewer",
