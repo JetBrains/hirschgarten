@@ -22,6 +22,8 @@ jvm_library(
   deps = [
     "//intellij.bazel.core:core",
     "//misc/intellij.bazel.coverage:bazel-coverage",
+    "//java/intellij.bazel.java.common:bazel-java-common",
+    "//intellij.bazel.commons:commons",
   ]
 )
 ### auto-generated section `build intellij.bazel.java.coverage` end

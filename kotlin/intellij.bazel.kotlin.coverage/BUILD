@@ -21,6 +21,7 @@ jvm_library(
   resources = [":bazel-kotlin-coverage_resources"],
   deps = [
     "//misc/intellij.bazel.coverage:bazel-coverage",
+    "//java/intellij.bazel.java.coverage:bazel-java-coverage",
   ]
 )
 ### auto-generated section `build intellij.bazel.kotlin.coverage` end
