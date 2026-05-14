@@ -17,6 +17,7 @@ import com.intellij.testFramework.fixtures.TempDirTestFixture
 import com.intellij.testFramework.fixtures.impl.CodeInsightTestFixtureImpl
 import com.intellij.testFramework.junit5.fixture.TestFixture
 import com.intellij.testFramework.replaceService
+import com.intellij.util.lang.UrlClassLoader
 import org.jetbrains.bazel.progress.ConsoleService
 import org.jetbrains.bazel.progress.TaskConsole
 import org.jetbrains.bazel.project.BazelProjectFixtures.initializeBazelProject
@@ -25,7 +26,14 @@ import org.jetbrains.bazel.sync.task.ProjectSyncTask
 import org.jetbrains.bazel.ui.console.task.TestTaskConsole
 import java.nio.file.Path
 import kotlin.io.path.Path
+import kotlin.io.path.copyTo
+import kotlin.io.path.createDirectories
+import kotlin.io.path.createParentDirectories
+import kotlin.io.path.exists
+import kotlin.io.path.name
 import kotlin.io.path.relativeTo
+import kotlin.io.path.toPath
+import kotlin.io.path.writeText
 
 /**
  * This fixture provides necessary functionality to perform a full Bazel sync in tests without a full IDE.
@@ -56,6 +64,10 @@ class BazelSyncCodeInsightTestFixtureImpl(
   projectFixture: IdeaProjectTestFixture,
   tempDirTestFixture: TempDirTestFixture,
 ) : CodeInsightTestFixtureImpl(projectFixture, tempDirTestFixture), BazelSyncCodeInsightTestFixture {
+  private companion object {
+    const val BAZEL_SETTINGS_START = "# BEGIN IntelliJ Bazel unit-test settings"
+    const val BAZEL_SETTINGS_END = "# END IntelliJ Bazel unit-test settings"
+  }
 
   private var testProjectPath: Path? = null
 
@@ -70,7 +82,63 @@ class BazelSyncCodeInsightTestFixtureImpl(
     val testProjectsPath = BazelPathManager.testProjectsRoot.relativeTo(Path(testDataPath))
     copyDirectoryToProject("${testProjectsPath}/base", "")
     copyDirectoryToProject("${testProjectsPath}/$path", "")
+    configureBazelCaches(path)
+    findKotlinStdlibInClasspath().copyTo(tempDir.resolve("toolchains").resolve("kotlin-stdlib.jar").createParentDirectories())
     testProjectPath = BazelPathManager.testProjectsRoot.resolve(path)
+  }
+
+  private fun configureBazelCaches(testProjectPath: String) {
+    val cacheRoot = testCacheRoot()
+      .resolve(testProjectPath.replace('/', '_').replace('\\', '_'))
+      .createDirectories()
+
+    val bazeliskCache = cacheRoot.resolve("bazelisk").createDirectories()
+    tempDir.resolve(".bazeliskrc").writeText("BAZELISK_HOME=${bazeliskCache.toBazelPath()}\n")
+
+    val repositoryCache = cacheRoot.resolve("repository-cache").createDirectories()
+    val diskCache = cacheRoot.resolve("disk-cache").createDirectories()
+    val outputUserRoot = cacheRoot.resolve("output-user-root").createDirectories()
+    val lines = listOf(
+      "startup --output_user_root=${outputUserRoot.toBazelPath()}",
+      "common --repository_cache=${repositoryCache.toBazelPath()}",
+      "common --disk_cache=${diskCache.toBazelPath()}",
+    )
+    writeManagedBazelrcBlock(tempDir.resolve(".bazelrc"), lines)
+  }
+
+  private fun testCacheRoot(): Path =
+    System.getenv("BAZEL_PLUGIN_TEST_CACHE_ROOT")
+      ?.let { Path.of(it) }
+      ?: System.getProperty("bazel.plugin.test.cache.root")
+        ?.let { Path.of(it) }
+      ?: System.getProperty("agent.persistent.cache")
+        ?.takeIf { it.isNotBlank() }
+        ?.let { Path.of(it, "bazel-plugin-test-cache") }
+      ?: System.getenv("AGENT_PERSISTENT_CACHE")
+        ?.takeIf { it.isNotBlank() }
+        ?.let { Path.of(it, "bazel-plugin-test-cache") }
+      ?: Path.of(System.getProperty("user.home"), ".cache", "bazel-plugin-tests")
+
+  private fun writeManagedBazelrcBlock(bazelrc: Path, lines: List<String>) {
+    val existingContent = if (bazelrc.exists()) bazelrc.toFile().readText() else ""
+    val managedBlockPattern =
+      Regex("""(?s)\n?\Q$BAZEL_SETTINGS_START\E.*?\Q$BAZEL_SETTINGS_END\E\n?""")
+    val baseContent = existingContent.replace(managedBlockPattern, "\n").trimEnd()
+    val managedBlock = buildString {
+      appendLine(BAZEL_SETTINGS_START)
+      lines.forEach(::appendLine)
+      appendLine(BAZEL_SETTINGS_END)
+    }
+    val separator = if (baseContent.isBlank()) "" else "\n\n"
+    bazelrc.writeText(baseContent + separator + managedBlock)
+  }
+
+  private fun Path.toBazelPath(): String =
+    toAbsolutePath().toString().replace('\\', '/')
+
+  private fun findKotlinStdlibInClasspath(): Path {
+    val urls = (this::class.java.classLoader as UrlClassLoader).urls
+    return urls.map { it.toURI().toPath() }.first { it.name.startsWith("kotlin-stdlib") }
   }
 
   override suspend fun performBazelSync(buildProject: Boolean) {
