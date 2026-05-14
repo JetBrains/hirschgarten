@@ -99,9 +99,9 @@ class BazelSyncCodeInsightTestFixtureImpl(
     val diskCache = cacheRoot.resolve("disk-cache").createDirectories()
     val outputUserRoot = cacheRoot.resolve("output-user-root").createDirectories()
     val lines = listOf(
-      "startup --output_user_root=${outputUserRoot.toBazelPath()}",
-      "common --repository_cache=${repositoryCache.toBazelPath()}",
-      "common --disk_cache=${diskCache.toBazelPath()}",
+      "startup --output_user_root=${outputUserRoot.toBazelRcPath()}",
+      "common --repository_cache=${repositoryCache.toBazelRcPath()}",
+      "common --disk_cache=${diskCache.toBazelRcPath()}",
     )
     writeManagedBazelrcBlock(tempDir.resolve(".bazelrc"), lines)
   }
@@ -135,6 +135,9 @@ class BazelSyncCodeInsightTestFixtureImpl(
 
   private fun Path.toBazelPath(): String =
     toAbsolutePath().toString().replace('\\', '/')
+
+  private fun Path.toBazelRcPath(): String =
+    "'${toBazelPath().replace("'", "'\\''")}'"
 
   private fun findKotlinStdlibInClasspath(): Path {
     val urls = (this::class.java.classLoader as UrlClassLoader).urls
