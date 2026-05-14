@@ -2,6 +2,7 @@ package org.jetbrains.bazel.utils
 
 import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.openapi.vfs.VirtualFileManager
 import org.jetbrains.annotations.ApiStatus
 import java.nio.file.Path
 
@@ -67,10 +68,13 @@ fun Set<Path>.filterPathsThatDontContainEachOther(): List<Path> = filter { path 
 fun Set<List<String>>.filterPathsThatDontContainEachOther2(): List<List<String>> = filter { path -> !path.dropLast(1).isUnder(this) }
 
 @ApiStatus.Internal
-fun Path.refreshAndFindVirtualFile(): VirtualFile? = LocalFileSystem.getInstance().refreshAndFindFileByNioFile(this)
+fun Path.refreshAndFindVirtualFile(): VirtualFile? = VirtualFileManager.getInstance().refreshAndFindFileByNioPath(this)
 
 @ApiStatus.Internal
-fun Path.findVirtualFile(): VirtualFile? = LocalFileSystem.getInstance().findFileByNioFile(this)
+fun Path.findVirtualFileLocal(): VirtualFile? = LocalFileSystem.getInstance().findFileByNioFile(this)
+
+@ApiStatus.Internal
+fun Path.findVirtualFile(): VirtualFile? = VirtualFileManager.getInstance().findFileByNioPath(this)
 
 @ApiStatus.Internal
 fun Path.findCanonicalVirtualFileThatExists(): VirtualFile? = findVirtualFile()
