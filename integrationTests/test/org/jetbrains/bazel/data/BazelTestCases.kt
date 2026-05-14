@@ -91,7 +91,7 @@ object IdeaBazelCases : BaseBazelCasesParametrized(BazelTestContext.IDEA) {
     val ProtobufResolve = withBazelProject(
       projectInfo = withDefaults(
         repositoryUrl = "https://github.com/JetBrainsBazelBot/simpleBazelProjectsForTesting.git",
-        commitHash = "af3e066604a8af0c9505b088ae5e7055ecf3b6d5",
+        commitHash = "6b8eb8de37dbb91e2906d6a059596101c22762f8",
         branchName = "main",
         relativePath = "protobufTest",
         configure = { context -> BazelProjectConfigurer.configureProjectBeforeUseWithoutBazelClean(context) },
