@@ -1,9 +1,7 @@
 package org.jetbrains.bazel.intellij
 
-import com.intellij.execution.ui.FragmentedSettingsEditor
 import com.intellij.execution.ui.SettingsEditorFragment
 import com.intellij.openapi.externalSystem.service.execution.configuration.fragments.SettingsEditorFragmentContainer
-import com.intellij.openapi.options.SettingsEditor
 import org.jetbrains.bazel.run.BazelRunConfigurationState
 import org.jetbrains.bazel.run.config.BazelRunConfiguration
 import org.jetbrains.bazel.run.state.HasIntellijSdkName
@@ -27,16 +25,11 @@ internal class IntellijPluginRunHandlerState :
   @com.intellij.configurationStore.Property(description = "IntelliJ SDK name")
   override var intellijSdkName: String? by string()
 
-  override fun getEditor(configuration: BazelRunConfiguration): SettingsEditor<IntellijPluginRunHandlerState> =
-    IntellijPluginRunHandlerStateEditor(configuration)
-}
-
-internal class IntellijPluginRunHandlerStateEditor(private val config: BazelRunConfiguration) :
-  FragmentedSettingsEditor<IntellijPluginRunHandlerState>(config.handler?.state as IntellijPluginRunHandlerState) {
-  override fun createFragments(): Collection<SettingsEditorFragment<IntellijPluginRunHandlerState, *>> =
+  override fun createFragments(configuration: BazelRunConfiguration): Collection<SettingsEditorFragment<BazelRunConfiguration, *>> =
     SettingsEditorFragmentContainer.fragments {
       add(programArgumentsFragment())
       add(vmOptions())
       add(intellijSdkFragment())
     }
 }
+

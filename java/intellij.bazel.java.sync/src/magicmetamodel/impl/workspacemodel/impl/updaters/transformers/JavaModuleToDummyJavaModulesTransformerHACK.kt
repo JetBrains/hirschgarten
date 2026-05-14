@@ -1,5 +1,10 @@
 package org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.transformers
 
+import com.intellij.openapi.diagnostic.logger
+import com.intellij.openapi.vfs.VfsUtilCore
+import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.openapi.vfs.VirtualFileVisitor
+import com.intellij.openapi.vfs.refreshAndFindVirtualFileOrDirectory
 import com.intellij.platform.workspace.jps.entities.ModuleTypeId
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.commons.LanguageClass
@@ -10,21 +15,20 @@ import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.magicmetamodel.sanitizeName
 import org.jetbrains.bazel.magicmetamodel.shortenTargetPath
-import org.jetbrains.bazel.utils.allAncestorsSequence
-import org.jetbrains.bazel.utils.isUnder
+import org.jetbrains.bazel.utils.findVirtualFile
 import org.jetbrains.bazel.workspacemodel.entities.ContentRoot
 import org.jetbrains.bazel.workspacemodel.entities.GenericModuleInfo
 import org.jetbrains.bazel.workspacemodel.entities.JavaModule
 import org.jetbrains.bazel.workspacemodel.entities.JavaSourceRoot
 import java.io.File
-import java.nio.file.Files
-import java.nio.file.NoSuchFileException
 import java.nio.file.Path
 import kotlin.io.path.Path
 import kotlin.io.path.extension
 import kotlin.io.path.isDirectory
 import kotlin.io.path.name
 import kotlin.io.path.pathString
+
+private val log = logger<JavaModuleToDummyJavaModulesTransformerHACK>()
 
 /**
  * This is a HACK for letting single source Java files to be resolved normally
@@ -45,16 +49,20 @@ class JavaModuleToDummyJavaModulesTransformerHACK(
     val buildFileDirectory = inputEntity.baseDirContentRoot?.path
     val (relevantSourceRoots, irrelevantSourceRoots) = inputEntity.sourceRoots.partition { it.isRelevant() }
     val sourceRootsForParentDirs = calculateSourceRootsForParentDirs(relevantSourceRoots)
+    val relevantSourceRootFiles = relevantSourceRoots.mapNotNullTo(mutableSetOf()) { it.sourcePath.findOrRefreshVirtualFile() }
     val mergedSourceRootVotes = sourceRootsForParentDirs
-      .restoreSourceRootFromPackagePrefix(limit = buildFileDirectory)
-      .preferShorterPrefix()
+      .restoreSourceRootFromPackagePrefix(
+        relevantExtensions = Constants.JVM_LANGUAGES_EXTENSIONS,
+        limit = buildFileDirectory,
+        knownFiles = relevantSourceRootFiles,
+      ).preferShorterPrefix()
 
     if (BazelFeatureFlags.mergeSourceRoots) {
       val mergedSourceRoots =
         tryMergeSources(
-          relevantSourceRoots,
-          mergedSourceRootVotes,
-          sourceRootsForParentDirs,
+          sourceRootFiles = relevantSourceRootFiles,
+          mergeSourceRootVotes = mergedSourceRootVotes,
+          sourceRootsForParentDirsVotes = sourceRootsForParentDirs,
         )
       if (mergedSourceRoots != null) {
         return MergedRoots(mergedSourceRoots = mergedSourceRoots + irrelevantSourceRoots)
@@ -65,7 +73,10 @@ class JavaModuleToDummyJavaModulesTransformerHACK(
         mergedSourceRootVotes
       }
       else {
-        mergedSourceRootVotes.restoreSourceRootFromPackagePrefix(limit = null)
+        mergedSourceRootVotes.restoreSourceRootFromPackagePrefix(
+          relevantExtensions = Constants.JVM_LANGUAGES_EXTENSIONS,
+          knownFiles = relevantSourceRootFiles,
+        )
       }.keys.toList()
     return DummyModulesToAdd(
       dummySourceRoots
@@ -83,19 +94,18 @@ class JavaModuleToDummyJavaModulesTransformerHACK(
     this.sourcePath.extension in Constants.JVM_LANGUAGES_EXTENSIONS || this.sourcePath.isDirectory()
 
   private fun tryMergeSources(
-    sourceRoots: List<JavaSourceRoot>,
+    sourceRootFiles: Set<VirtualFile>,
     mergeSourceRootVotes: Map<JavaSourceRoot, Int>,
     sourceRootsForParentDirsVotes: Map<JavaSourceRoot, Int>,
   ): List<JavaSourceRoot>? {
-    val originalSourceRoots: Set<Path> = sourceRoots.map { it.sourcePath }.toSet()
-    if (originalSourceRoots.any { it.isSharedBetweenSeveralTargets() }) {
+    if (sourceRootFiles.any { it.isSharedBetweenSeveralTargets() }) {
       return null
     }
 
-    return tryMergeSources(originalSourceRoots, mergeSourceRootVotes) ?: tryMergeSources(originalSourceRoots, sourceRootsForParentDirsVotes)
+    return tryMergeSources(sourceRootFiles, mergeSourceRootVotes) ?: tryMergeSources(sourceRootFiles, sourceRootsForParentDirsVotes)
   }
 
-  private fun tryMergeSources(originalSourceRoots: Set<Path>, mergeSourceRootVotes: Map<JavaSourceRoot, Int>): List<JavaSourceRoot>? {
+  private fun tryMergeSources(originalSourceRoots: Set<VirtualFile>, mergeSourceRootVotes: Map<JavaSourceRoot, Int>): List<JavaSourceRoot>? {
     val sourceRootsSortedByVotes: List<JavaSourceRoot> =
       mergeSourceRootVotes.entries
         // Prefer test roots over production roots, e.g., if some utility target is in the same package as a java_test
@@ -108,24 +118,24 @@ class JavaModuleToDummyJavaModulesTransformerHACK(
         .sortedByDescending { (_, votes) -> votes }
         .map { (sourceRoot, _) -> sourceRoot }
     val mergedSourceRoots = mutableListOf<JavaSourceRoot>()
-    val mergedSourceRootPaths = mutableSetOf<Path>()
-    val parentsOfMergedSourceRoots = mutableSetOf<Path>()
+    val mergedSourceRootFiles = mutableSetOf<VirtualFile>()
+    val parentsOfMergedSourceRoots = mutableSetOf<VirtualFile>()
 
     for (sourceRoot in sourceRootsSortedByVotes) {
-      val sourcePath = sourceRoot.sourcePath
+      val sourceRootFile = sourceRoot.sourcePath.findOrRefreshVirtualFile() ?: continue
       // Make sure no source path is a parent of another one
-      if (sourcePath.isUnder(mergedSourceRootPaths)) continue
-      if (sourcePath in parentsOfMergedSourceRoots) continue
+      if (VfsUtilCore.isUnder(sourceRootFile, mergedSourceRootFiles)) continue
+      if (sourceRootFile in parentsOfMergedSourceRoots) continue
 
       mergedSourceRoots.add(sourceRoot)
-      mergedSourceRootPaths.add(sourcePath)
-      parentsOfMergedSourceRoots.addAll(sourcePath.allAncestorsSequence())
+      mergedSourceRootFiles.add(sourceRootFile)
+      parentsOfMergedSourceRoots.addAll(sourceRootFile.allAncestorsSequence())
     }
 
-    if (originalSourceRoots.any { !it.isUnder(mergedSourceRootPaths) }) return null
+    if (originalSourceRoots.any { !VfsUtilCore.isUnder(it, mergedSourceRootFiles) }) return null
 
     if (mergedRootsCoverNewFiles(
-        mergedRoots = mergedSourceRootPaths,
+        mergedRoots = mergedSourceRootFiles,
         originalRoots = originalSourceRoots,
         relevantExtensions = Constants.JVM_LANGUAGES_EXTENSIONS,
       )
@@ -141,37 +151,16 @@ class JavaModuleToDummyJavaModulesTransformerHACK(
    * IDEA will only consider the inner source root because of how the workspace model works.
    * This can cause red code, e.g., on https://github.com/bazelbuild/bazel
    */
-  private fun Path.isSharedBetweenSeveralTargets(): Boolean = (fileToTargets[this]?.size ?: 0) > 1
+  private fun VirtualFile.isSharedBetweenSeveralTargets(): Boolean = (fileToTargets[toNioPath()]?.size ?: 0) > 1
 
   /**
    * @param relevantExtensions consider new files only with the specified extensions, or `null` to consider all new files
    */
   private fun mergedRootsCoverNewFiles(
-    mergedRoots: Collection<Path>,
-    originalRoots: Set<Path>,
-    relevantExtensions: List<String>? = null,
-  ): Boolean {
-    for (mergedRoot in mergedRoots) {
-      val childrenStream = try {
-        Files.walk(mergedRoot)
-      }
-      catch (_: NoSuchFileException) {
-        return true
-      }
-      childrenStream.use { children ->
-        for (fileUnderRoot in children) {
-          if (fileUnderRoot.isDirectory()) continue
-          if (relevantExtensions != null) {
-            val extension = fileUnderRoot.extension
-            if (extension !in relevantExtensions) continue
-          }
-          val newSourceFileCovered = fileUnderRoot !in originalRoots
-          if (newSourceFileCovered) return true
-        }
-      }
-    }
-    return false
-  }
+    mergedRoots: Collection<VirtualFile>,
+    originalRoots: Set<VirtualFile>,
+    relevantExtensions: List<String>,
+  ): Boolean = mergedRoots.any { it.containsUnknownRelevantFile(originalRoots, relevantExtensions) }
 
   private fun calculateDummyJavaSourceModule(
     name: String,
@@ -227,20 +216,58 @@ private fun sourceRootForParentDir(sourceRoot: JavaSourceRoot): JavaSourceRoot? 
   )
 }
 
-private fun Map<JavaSourceRoot, Int>.restoreSourceRootFromPackagePrefix(limit: Path?): Map<JavaSourceRoot, Int> =
-  map { (sourceRoot, votes) ->
-    sourceRoot.restoreSourceRootFromPackagePrefix(limit) to votes
-  }.sumUpVotes()
+private fun Map<JavaSourceRoot, Int>.restoreSourceRootFromPackagePrefix(
+  relevantExtensions: List<String>,
+  limit: Path? = null,
+  knownFiles: Set<VirtualFile> = emptySet(),
+): Map<JavaSourceRoot, Int> = this
+    .map { (sourceRoot, votes) -> sourceRoot.restoreSourceRootFromPackagePrefix(relevantExtensions, limit, knownFiles) to votes }
+    .sumUpVotes()
 
-private fun JavaSourceRoot.restoreSourceRootFromPackagePrefix(limit: Path?): JavaSourceRoot {
+private fun JavaSourceRoot.restoreSourceRootFromPackagePrefix(
+  relevantExtensions: List<String>,
+  limit: Path? = null,
+  knownFiles: Set<VirtualFile> = emptySet(),
+): JavaSourceRoot {
   val segments = this.packagePrefix.split('.').toMutableList()
   var sourcePath: Path = this.sourcePath
   while (sourcePath != limit && segments.lastOrNull() == sourcePath.name) {
-    sourcePath = sourcePath.parent ?: break
+    sourcePath.parent ?: break
+    if (sourcePath.siblingsContainUnknownRelevantFiles(relevantExtensions, knownFiles)) break
+    sourcePath = sourcePath.parent
     segments.removeLast()
   }
   return copy(sourcePath = sourcePath, packagePrefix = segments.joinToString("."))
 }
+
+private fun Path.siblingsContainUnknownRelevantFiles(
+  relevantExtensions: List<String>,
+  knownFiles: Set<VirtualFile>,
+): Boolean {
+  val dir = parent.findOrRefreshVirtualFile() ?: return false
+  val thisFile = this.findOrRefreshVirtualFile()
+  return dir.children.any { it != thisFile && it.containsUnknownRelevantFile(knownFiles, relevantExtensions) }
+}
+
+private fun VirtualFile.containsUnknownRelevantFile(knownFiles: Set<VirtualFile>, relevantExtensions: List<String>): Boolean {
+  var found = false
+  VfsUtilCore.visitChildrenRecursively(this, object : VirtualFileVisitor<Unit>(NO_FOLLOW_SYMLINKS) {
+    override fun visitFile(file: VirtualFile): Boolean {
+      if (file.isDirectory || file.extension !in relevantExtensions || file in knownFiles) return true
+      found = true
+      return false
+    }
+  })
+  return found
+}
+
+private fun Path.findOrRefreshVirtualFile():  VirtualFile? {
+  val file = this.findVirtualFile() ?: this.refreshAndFindVirtualFileOrDirectory()
+  if (file == null) log.warn("Failed to find or refresh virtual file for path: $this!")
+  return file
+}
+
+private fun VirtualFile.allAncestorsSequence(): Sequence<VirtualFile> = generateSequence(this) { it.parent }
 
 private fun Iterable<Pair<JavaSourceRoot, Int>>.sumUpVotes(): Map<JavaSourceRoot, Int> {
   val result = mutableMapOf<JavaSourceRoot, Int>()

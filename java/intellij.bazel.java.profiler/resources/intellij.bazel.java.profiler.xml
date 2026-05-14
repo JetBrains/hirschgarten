@@ -14,4 +14,7 @@
     <runConfigurationExtension implementation="com.intellij.bazel.java.profiler.BazelAsyncProfilerConfigurationExtension"/>
     <profiler.javaProfilerStarterExtension implementation="com.intellij.bazel.java.profiler.BazelJavaProfilerStarterExtension"/>
   </extensions>
+  <extensions defaultExtensionNs="org.jetbrains.bazel">
+    <runWithScriptPathExtension implementation="com.intellij.bazel.java.profiler.ProfilerRunWithScriptPathExtension"/>
+  </extensions>
 </idea-plugin>

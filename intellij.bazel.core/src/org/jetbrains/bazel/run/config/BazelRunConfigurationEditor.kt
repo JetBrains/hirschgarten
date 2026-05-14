@@ -6,33 +6,30 @@ import com.intellij.execution.ui.CommonParameterFragments
 import com.intellij.execution.ui.CommonTags
 import com.intellij.execution.ui.RunConfigurationFragmentedEditor
 import com.intellij.execution.ui.SettingsEditorFragment
-import com.intellij.execution.ui.SettingsEditorFragmentType
 import com.intellij.openapi.externalSystem.service.execution.configuration.fragments.SettingsEditorFragmentContainer
 import com.intellij.openapi.externalSystem.service.execution.configuration.fragments.addLabeledSettingsEditorFragment
-import com.intellij.openapi.externalSystem.service.execution.configuration.fragments.addSettingsEditorFragment
 import com.intellij.openapi.externalSystem.service.ui.util.LabeledSettingsFragmentInfo
-import com.intellij.openapi.externalSystem.service.ui.util.SettingsFragmentInfo
-import com.intellij.openapi.options.SettingsEditor
-import com.intellij.openapi.util.Disposer
 import com.intellij.ui.TextFieldWithAutoCompletion
 import com.intellij.util.textCompletion.TextFieldWithCompletion
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.assets.BazelPluginIcons
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.label.Label
-import org.jetbrains.bazel.run.BazelRunConfigurationState
+import org.jetbrains.bazel.run.BazelRunHandler
 import org.jetbrains.bazel.target.targetUtils
 
 /**
  * The base editor for a Bazel run configuration.
  * Takes care of targets, the common settings and sets up the handler-specific settings editor.
+ * handler changes won't be affected in the UI until the editor is recreated, see https://youtrack.jetbrains.com/issue/BAZEL-2834
  */
 @ApiStatus.Internal
-class BazelRunConfigurationEditor(private val runConfiguration: BazelRunConfiguration) :
-  RunConfigurationFragmentedEditor<BazelRunConfiguration>(
-    runConfiguration,
-    RunConfigurationExtensionManager.getInstance(),
-  ) {
+class BazelRunConfigurationEditor(
+  private val runConfiguration: BazelRunConfiguration,
+  val handler: BazelRunHandler? = runConfiguration.handler,
+) :
+  RunConfigurationFragmentedEditor<BazelRunConfiguration>(runConfiguration, handler?.extensionsManager) {
+
   override fun createRunFragments(): List<SettingsEditorFragment<BazelRunConfiguration, *>> =
     SettingsEditorFragmentContainer.fragments {
       add(CommonTags.parallelRun())
@@ -48,34 +45,9 @@ class BazelRunConfigurationEditor(private val runConfiguration: BazelRunConfigur
   }
 
   private fun SettingsEditorFragmentContainer<BazelRunConfiguration>.addStateEditorFragment() {
-    val handler = runConfiguration.handler ?: return
+    val handler = handler ?: return
     this.add(CommonParameterFragments.createHeader(BazelPluginBundle.message("runconfig.header")))
-    val stateEditor: SettingsEditor<BazelRunConfigurationState<*>> =
-      handler.state.getEditor(
-        runConfiguration,
-      ) as SettingsEditor<BazelRunConfigurationState<*>>
-    Disposer.register(this@BazelRunConfigurationEditor, stateEditor)
-
-    this.addSettingsEditorFragment(
-      settingsFragmentInfo = object : SettingsFragmentInfo {
-        override val settingsId: String = "bsp.state.editor"
-        override val settingsName: String = "Handler settings"
-        override val settingsGroup: String = "BSP"
-        override val settingsPriority: Int = 1
-        override val settingsType: SettingsEditorFragmentType = SettingsEditorFragmentType.EDITOR
-        override val settingsHint: String? = null
-        override val settingsActionHint: String? = null
-      },
-      createComponent = { stateEditor.component },
-      reset = { config, _ ->
-        val state = config.handler?.state ?: return@addSettingsEditorFragment
-        stateEditor.resetFrom(state)
-      },
-      apply = { config, _ ->
-        val state = config.handler?.state ?: return@addSettingsEditorFragment
-        stateEditor.applyTo(state)
-      },
-    )
+    this.addAll(handler.state.createFragments(runConfiguration))
   }
 
   private fun SettingsEditorFragmentContainer<BazelRunConfiguration>.addBspTargetFragment() {

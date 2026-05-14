@@ -1,11 +1,14 @@
 package org.jetbrains.bazel.run.coverage.ideStarter
 
 import com.intellij.coverage.CoverageDataManager
+import com.intellij.coverage.analysis.JavaCoverageAnnotator
 import com.intellij.openapi.application.readAction
 import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.ui.playback.PlaybackContext
 import com.intellij.openapi.ui.playback.commands.PlaybackCommandCoroutineAdapter
+import com.intellij.psi.PsiClass
 import com.intellij.psi.PsiDocumentManager
+import com.intellij.psi.util.childrenOfType
 
 internal class AssertCoverageCommand(text: String, line: Int) : PlaybackCommandCoroutineAdapter(text, line) {
   companion object {
@@ -21,7 +24,16 @@ internal class AssertCoverageCommand(text: String, line: Int) : PlaybackCommandC
     val annotator = suite.getAnnotator(project)
 
     val expectedCoverageString = extractCommandArgument(PREFIX)
-    val actualCoverageString = annotator.getFileCoverageInformationString(psiFile, suite, coverageDataManager)
+    val actualCoverageString = readAction {
+      if (annotator is JavaCoverageAnnotator) {
+        val psiClass = psiFile.childrenOfType<PsiClass>().first()
+        annotator.getClassCoverageInformationString(psiClass.qualifiedName, coverageDataManager)
+      }
+      else {
+        annotator.getFileCoverageInformationString(psiFile, suite, coverageDataManager)
+      }
+    }
+
     check(expectedCoverageString == actualCoverageString) {
       "Expected coverage string: '$expectedCoverageString', actual: '$actualCoverageString'"
     }

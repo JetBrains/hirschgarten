@@ -2,9 +2,11 @@ package org.jetbrains.bazel.jvm.run
 
 import com.intellij.execution.ExecutionResult
 import com.intellij.execution.Executor
+import com.intellij.execution.JavaRunConfigurationExtensionManager
+import com.intellij.execution.configuration.RunConfigurationExtensionsManager
+import com.intellij.execution.configurations.RunConfigurationBase
 import com.intellij.execution.configurations.RunProfileState
 import com.intellij.execution.executors.DefaultDebugExecutor
-import com.intellij.execution.executors.DefaultRunExecutor
 import com.intellij.execution.runners.ExecutionEnvironment
 import com.intellij.execution.runners.ProgramRunner
 import com.intellij.openapi.util.Ref
@@ -20,7 +22,6 @@ import org.jetbrains.bazel.run.import.GooglePluginAwareRunHandlerProvider
 import org.jetbrains.bazel.run.task.BazelTestTaskListener
 import org.jetbrains.bazel.run.task.JetBrainsTestRunnerTaskListener
 import org.jetbrains.bazel.run.test.useJetBrainsTestRunner
-import org.jetbrains.bazel.runnerAction.COVERAGE_EXECUTOR_ID
 import org.jetbrains.bazel.taskEvents.BazelTaskListener
 import org.jetbrains.bsp.protocol.BazelServerFacade
 
@@ -47,21 +48,17 @@ class JvmTestHandler(private val configuration: BazelRunConfiguration) : BazelRu
     if (executor is DefaultDebugExecutor) {
       environment.putCopyableUserData(COROUTINE_JVM_FLAGS_KEY, Ref())
     }
-    /**
-     * 1. Because `bazel run` only supports one target, so does `bazel run --script_path`
-     * 2. Allow the user to disable --script_path because it screws up test result caching
-     * 3. Tests with coverage must be run with `bazel coverage`, because running with --script_path just runs the tests normally
-     */
-    return if (configuration.targets.size == 1 &&
-               ((!state.runWithBazel && executor is DefaultRunExecutor)
-                || (executor !is DefaultRunExecutor && executor.id != COVERAGE_EXECUTOR_ID))) {
+    return if (RunWithScriptPathExtension.shouldRunWithScriptPath(executor, configuration)) {
       environment.putCopyableUserData(SCRIPT_PATH_KEY, Ref())
-      ScriptPathTestCommandLineState(environment, state)
+      ScriptPathTestCommandLineState(environment, state, configuration)
     }
     else {
       BazelTestCommandLineState(environment, state)
     }
   }
+
+  override val extensionsManager: RunConfigurationExtensionsManager<in RunConfigurationBase<*>, *>
+    get() = JavaRunConfigurationExtensionManager.instance
 
   class JvmTestHandlerProvider : GooglePluginAwareRunHandlerProvider {
     override val id: String
@@ -79,8 +76,12 @@ class JvmTestHandler(private val configuration: BazelRunConfiguration) : BazelRu
   }
 }
 
-internal class ScriptPathTestCommandLineState(environment: ExecutionEnvironment, val settings: JvmTestState) :
-  JvmDebuggableCommandLineState(environment, settings.debugPort) {
+internal class ScriptPathTestCommandLineState(
+  environment: ExecutionEnvironment,
+  val settings: JvmTestState,
+  configuration: BazelRunConfiguration,
+) :
+  JvmDebuggableCommandLineState(environment, settings.debugPort, configuration) {
   override fun createAndAddTaskListener(handler: BazelProcessHandler): BazelTaskListener =
     if (environment.project.useJetBrainsTestRunner()) {
       JetBrainsTestRunnerTaskListener(handler)

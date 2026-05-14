@@ -1,14 +1,10 @@
 package org.jetbrains.bazel.jvm.run
 
-import com.intellij.execution.ui.CommonParameterFragments
-import com.intellij.execution.ui.FragmentedSettingsEditor
 import com.intellij.execution.ui.SettingsEditorFragment
 import com.intellij.openapi.externalSystem.service.execution.configuration.fragments.SettingsEditorFragmentContainer
-import com.intellij.openapi.options.SettingsEditor
 import com.intellij.openapi.project.Project
 import com.intellij.util.xmlb.annotations.Attribute
 import org.jetbrains.annotations.ApiStatus
-import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.languages.projectview.projectView
 import org.jetbrains.bazel.languages.projectview.runConfigRunWithBazel
 import org.jetbrains.bazel.run.config.BazelRunConfiguration
@@ -32,14 +28,8 @@ class JvmRunState(project: Project) :
   @get:Attribute("runWithBazel")
   override var runWithBazel: Boolean by property(project.projectView().runConfigRunWithBazel)
 
-  override fun getEditor(configuration: BazelRunConfiguration): SettingsEditor<JvmRunState> = JvmRunStateEditor(configuration)
-}
-
-internal class JvmRunStateEditor(private val config: BazelRunConfiguration) :
-  FragmentedSettingsEditor<JvmRunState>(config.handler?.state as JvmRunState) {
-  override fun createFragments(): Collection<SettingsEditorFragment<JvmRunState, *>> =
+  override fun createFragments(configuration: BazelRunConfiguration): Collection<SettingsEditorFragment<BazelRunConfiguration, *>> =
     SettingsEditorFragmentContainer.fragments {
-      add(CommonParameterFragments.createHeader(BazelPluginBundle.message("jvm.runner.header")))
       addDebugPortFragment()
       add(bazelParamsFragment())
       add(programArgumentsFragment())

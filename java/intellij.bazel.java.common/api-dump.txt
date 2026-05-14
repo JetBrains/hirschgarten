@@ -51,7 +51,10 @@ f:org.jetbrains.bazel.hotswap.BazelHotSwapManager$HotSwapEnvironment
 - f:getSessions():java.util.List
 - f:isAutoRun():Z
 org.jetbrains.bazel.hotswap.HotSwapHook
+- sf:Companion:org.jetbrains.bazel.hotswap.HotSwapHook$Companion
 - a:onHotSwap(java.util.List,kotlin.coroutines.Continuation):java.lang.Object
+f:org.jetbrains.bazel.hotswap.HotSwapHook$Companion
+- f:getEP_NAME():com.intellij.openapi.extensions.ExtensionPointName
 f:org.jetbrains.bazel.hotswap.JarFileManifest
 - sf:Companion:org.jetbrains.bazel.hotswap.JarFileManifest$Companion
 f:org.jetbrains.bazel.hotswap.JarFileManifest$Companion

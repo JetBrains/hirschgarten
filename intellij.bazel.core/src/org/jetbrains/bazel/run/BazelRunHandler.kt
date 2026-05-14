@@ -1,6 +1,8 @@
 package org.jetbrains.bazel.run
 
 import com.intellij.execution.Executor
+import com.intellij.execution.configuration.RunConfigurationExtensionsManager
+import com.intellij.execution.configurations.RunConfigurationBase
 import com.intellij.execution.configurations.RunProfileState
 import com.intellij.execution.runners.ExecutionEnvironment
 import org.jetbrains.annotations.ApiStatus
@@ -23,4 +25,7 @@ interface BazelRunHandler {
   val isTestHandler: Boolean
 
   fun getRunProfileState(executor: Executor, environment: ExecutionEnvironment): RunProfileState
+
+  val extensionsManager: RunConfigurationExtensionsManager<in RunConfigurationBase<*>, *>?
+    get() = null
 }

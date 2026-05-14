@@ -1,13 +1,16 @@
 <!-- @skip-dependency-generation -->
 <idea-plugin>
   <dependencies>
+    <!-- "Generate Product Layouts" doesn't automatically insert the Kotlin plugin dependency for some reason -->
     <plugin id="org.jetbrains.kotlin"/>
     <module name="intellij.bazel.coverage"/>
+    <module name="intellij.bazel.java.coverage"/>
   </dependencies>
 
   <extensions defaultExtensionNs="org.jetbrains.bazel">
     <bazelCoverageClassNodeDecoratorPsiElementClassifier
       implementation="org.jetbrains.bazel.kotlin.coverage.KotlinBazelCoverageClassNodeDecoratorPsiElementClassifier"
     />
+    <fullyQualifiedNameProvider implementation="org.jetbrains.bazel.kotlin.coverage.KotlinFullyQualifiedNameProvider"/>
   </extensions>
 </idea-plugin>

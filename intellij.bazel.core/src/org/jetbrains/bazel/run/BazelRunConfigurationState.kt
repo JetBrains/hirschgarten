@@ -3,8 +3,8 @@ package org.jetbrains.bazel.run
 import com.intellij.configurationStore.deserializeInto
 import com.intellij.configurationStore.serializeObjectInto
 import com.intellij.execution.ui.FragmentedSettings
+import com.intellij.execution.ui.SettingsEditorFragment
 import com.intellij.openapi.components.BaseState
-import com.intellij.openapi.options.SettingsEditor
 import com.intellij.openapi.util.InvalidDataException
 import com.intellij.openapi.util.WriteExternalException
 import com.intellij.util.xmlb.annotations.XCollection
@@ -31,5 +31,5 @@ abstract class BazelRunConfigurationState<T : BazelRunConfigurationState<T>> :
   @get:XCollection(propertyElementName = "selectedOptions")
   override var selectedOptions: MutableList<FragmentedSettings.Option> by list()
 
-  abstract fun getEditor(configuration: BazelRunConfiguration): SettingsEditor<T>
+  abstract fun createFragments(configuration: BazelRunConfiguration): Collection<SettingsEditorFragment<BazelRunConfiguration, *>>
 }

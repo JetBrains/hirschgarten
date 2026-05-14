@@ -2,6 +2,7 @@ package org.jetbrains.bazel.tests.run
 
 import com.intellij.driver.sdk.step
 import com.intellij.driver.sdk.ui.components.common.ideFrame
+import com.intellij.driver.sdk.ui.components.elements.popup
 import com.intellij.ide.starter.driver.engine.runIdeWithDriver
 import com.intellij.openapi.ui.playback.commands.AbstractCommand.CMD_PREFIX
 import com.intellij.tools.ide.performanceTesting.commands.CommandChain
@@ -11,7 +12,10 @@ import org.jetbrains.bazel.data.IdeaBazelCases
 import org.jetbrains.bazel.ideStarter.IdeStarterBaseProjectTest
 import org.jetbrains.bazel.ideStarter.execute
 import org.jetbrains.bazel.ideStarter.syncBazelProject
-import org.junit.jupiter.api.Test
+import org.jetbrains.bazel.tests.ui.clickRunGutterOnLine
+import org.jetbrains.bazel.tests.ui.setRunConfigRunWithBazel
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.ValueSource
 import kotlin.time.Duration.Companion.minutes
 
 /**
@@ -21,35 +25,52 @@ import kotlin.time.Duration.Companion.minutes
  */
 class BazelCoverageTest : IdeStarterBaseProjectTest() {
 
-  @Test
-  fun `run test with coverage and verify results`() {
-    createContext("bazelCoverage", IdeaBazelCases.BazelCoverage)
+  @ParameterizedTest
+  @ValueSource(booleans = [false, true])
+  fun `run test with coverage and verify results`(runConfigRunWithBazel: Boolean) {
+    createContext("bazelCoverage-${if (runConfigRunWithBazel) "withBazel" else "withoutBazel"}", IdeaBazelCases.BazelCoverage)
+      .setRunConfigRunWithBazel(runConfigRunWithBazel)
       .runIdeWithDriver(runTimeout = timeout)
       .useDriverAndCloseIde {
         ideFrame {
           syncBazelProject()
           waitForIndicators(5.minutes)
 
+          val expectedCoverageTabText = if (runConfigRunWithBazel) {
+            "Statistics, %"
+          }
+          else {
+            "Line, %"
+          }
+
           step("Run test with coverage") {
             execute { openFile("src/test/com/example/CalculatorTest.java") }
-            execute { runTestWithCoverage() }
+            clickRunGutterOnLine(4)
+            popup().waitOneText("Run '//src/test/com/example:calculator_test' with Coverage").click()
+            waitOneText(expectedCoverageTabText, timeout = 1.minutes)
+            if (!runConfigRunWithBazel) {
+              // When running with default IDEA coverage, respect the default include filter for packages
+              waitNoTexts("org.other_package")
+            }
             takeScreenshot("afterRunTestWithCoverage")
+          }
+
+          val expectedCoverageText = if (runConfigRunWithBazel) {
+            "50% lines covered"
+          }
+          else {
+            "50% methods, 50% lines covered"  // More detailed native IDEA coverage with a Java agent
           }
 
           step("Verify coverage results") {
             execute { openFile("src/main/com/example/Calculator.java") }
-            execute { assertCoverage("50% lines covered") }
+            execute { assertCoverage(expectedCoverageText) }
             execute { delay(1000) }
             takeScreenshot("afterAssertCoverage")
           }
         }
       }
   }
-}
-
-fun <T : CommandChain> T.runTestWithCoverage(): T {
-  addCommand(CMD_PREFIX + "runTestWithCoverage")
-  return this
 }
 
 fun <T : CommandChain> T.assertCoverage(coverageInformationString: String): T {
