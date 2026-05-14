@@ -51,6 +51,7 @@ import kotlin.io.path.exists
 import kotlin.io.path.extension
 import kotlin.io.path.inputStream
 import kotlin.io.path.name
+import kotlin.io.path.relativeToOrSelf
 
 @ApiStatus.Internal
 interface JvmLanguagePluginMixin {
@@ -539,10 +540,11 @@ class JavaLanguagePlugin: LanguagePlugin {
     private val replacementRegex = "[^0-9a-zA-Z]".toRegex()
 
     private fun syntheticLabel(lib: Path): Label {
+      val relativeLibPath = lib.relativeToOrSelf(bazelPathsResolver.bazelBin())
       val shaOfPath =
         Hashing
           .sha256()
-          .hashString(lib.toString(), StandardCharsets.UTF_8)
+          .hashString(relativeLibPath.toString(), StandardCharsets.UTF_8)
           .toString()
           .take(7) // just in case of a conflict in filename
       return Label.synthetic(

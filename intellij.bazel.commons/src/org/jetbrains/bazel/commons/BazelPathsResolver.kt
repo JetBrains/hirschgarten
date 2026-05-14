@@ -20,6 +20,8 @@ private const val BAZEL_COMPONENT_SEPARATOR = "/"
 class BazelPathsResolver(private val bazelInfo: BazelInfo) {
   fun workspaceRoot(): Path = bazelInfo.workspaceRoot
 
+  fun bazelBin(): Path = bazelInfo.bazelBin
+
   fun resolvePaths(fileLocations: List<ArtifactLocation>, localRepositories : LocalRepositoryMapping): List<Path> = fileLocations.map { resolve(it, localRepositories)}
 
   fun resolve(file: BuildEventStreamProtos.File): Path = URI.create(file.uri).toPath()
