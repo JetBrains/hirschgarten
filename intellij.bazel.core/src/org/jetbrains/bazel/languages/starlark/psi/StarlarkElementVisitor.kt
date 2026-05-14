@@ -121,7 +121,7 @@ open class StarlarkElementVisitor : PsiElementVisitor() {
     visitElement(node)
   }
 
-  internal fun visitForStatement(node: StarlarkForStatement) {
+  internal open fun visitForStatement(node: StarlarkForStatement) {
     visitElement(node)
   }
 
@@ -133,7 +133,7 @@ open class StarlarkElementVisitor : PsiElementVisitor() {
     visitElement(node)
   }
 
-  internal fun visitIfStatement(node: StarlarkIfStatement) {
+  internal open fun visitIfStatement(node: StarlarkIfStatement) {
     visitElement(node)
   }
 

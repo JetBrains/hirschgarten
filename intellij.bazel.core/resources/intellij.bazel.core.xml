@@ -406,6 +406,14 @@
                      level="ERROR"
                      implementationClass="org.jetbrains.bazel.languages.starlark.inspection.StarlarkGlobalVariableImmutabilityInspection"/>
 
+    <localInspection language="Starlark"
+                     key="inspection.display.name.starlark.statement.container.placement.check"
+                     groupPath="Bazel"
+                     groupKey="starlark.inspection.group.name"
+                     enabledByDefault="true"
+                     level="ERROR"
+                     implementationClass="org.jetbrains.bazel.languages.starlark.inspection.StarlarkStatementContainerPlacementInspection"/>
+
     <fileType
       extensions="bazelquery"
       fieldName="INSTANCE"
