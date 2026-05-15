@@ -11,11 +11,14 @@ import com.intellij.ui.JBColor
 import org.jetbrains.bazel.languages.starlark.StarlarkBundle
 import org.jetbrains.bazel.languages.starlark.elements.StarlarkTokenTypes
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkNamedElement
+import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkParenthesizedExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkTargetExpression
+import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkTupleExpression
 import org.jetbrains.bazel.languages.starlark.psi.functions.StarlarkFunctionDeclaration
 import org.jetbrains.bazel.languages.starlark.psi.functions.StarlarkKeywordVariadicParameter
 import org.jetbrains.bazel.languages.starlark.psi.functions.StarlarkParameter
 import org.jetbrains.bazel.languages.starlark.psi.functions.StarlarkVariadicParameter
+import org.jetbrains.bazel.languages.starlark.psi.statements.StarlarkAssignmentStatement
 import org.jetbrains.bazel.languages.starlark.psi.statements.StarlarkNamedLoadValue
 import java.awt.Font
 
@@ -23,40 +26,55 @@ private val UNUSED_TEXT_ATTRIBUTES = TextAttributes(JBColor.GRAY, null, null, nu
 
 internal class StarlarkDeclarationAnnotator : StarlarkAnnotator() {
   override fun annotate(element: PsiElement, holder: AnnotationHolder) {
-    if (isDeclaration(element) &&
-      hasNoUsages(element.parent) &&
-      isNotUsage(element)
-    ) {
+    if (element.isUnusedDeclaration()) {
       holder.annotateUnused(element, (element.parent as? StarlarkNamedElement)?.name ?: "")
     }
   }
 
-  private fun isDeclaration(element: PsiElement): Boolean =
-    element.elementType == StarlarkTokenTypes.IDENTIFIER &&
-      element.parent is StarlarkNamedElement &&
-      element.parent !is StarlarkVariadicParameter &&
-      element.parent !is StarlarkKeywordVariadicParameter
+  private fun PsiElement.isUnusedDeclaration(): Boolean {
+    if (!isDeclaration()) return false
+    val parent = this.parent
+    // Not a variable — unused if it does not refer to anything and is also unreferenced.
+    if (parent !is StarlarkTargetExpression) return parent.reference?.resolve() == null && parent.isUnreferenced()
+    // If a variable is not inside assignment, we consider it a fresh declaration
+    if (!parent.isInsideAssignStatement()) return parent.isUnreferenced()
+    val originalAssignment = parent.reference.resolve() ?: return parent.isUnreferenced()
+    // A reassignment is unused only when the canonical (first) binding itself is
+    // unreferenced — i.e. nothing besides other reassignments refers to it.
+    return originalAssignment.isUnreferenced()
+  }
 
-  private fun hasNoUsages(element: PsiElement): Boolean {
-    val scope =
-      if (element.isTopLevelTarget() || element.isTopLevelFunction()) {
-        element.useScope
-      } else if (((element as? StarlarkNamedElement)?.name ?: "").startsWith("_")) {
-        return false
-      } else {
-        GlobalSearchScope.fileScope(element.containingFile)
-      }
-    return ReferencesSearch.search(element, scope).asIterable().none()
+  private fun PsiElement.isDeclaration(): Boolean =
+    elementType == StarlarkTokenTypes.IDENTIFIER &&
+    parent is StarlarkNamedElement &&
+    parent !is StarlarkVariadicParameter &&
+    parent !is StarlarkKeywordVariadicParameter
+
+  private fun PsiElement.isUnreferenced(): Boolean {
+    val scope = when {
+      isTopLevelTarget() || isTopLevelFunction() -> this.useScope
+      ((this as? StarlarkNamedElement)?.name ?: "").startsWith("_") -> return false
+      else -> GlobalSearchScope.fileScope(this.containingFile)
+    }
+    val references = ReferencesSearch.search(this, scope)
+    if (this !is StarlarkTargetExpression) return references.none()
+    // Variable is unreferenced if only reassignments refer to it.
+    return references.none { it.element !is StarlarkTargetExpression }
   }
 
   private fun PsiElement.isTopLevelTarget() = this is StarlarkTargetExpression && isTopLevel()
 
   private fun PsiElement.isTopLevelFunction() = this is StarlarkFunctionDeclaration && isTopLevel()
 
-  private fun isNotUsage(element: PsiElement): Boolean {
-    // StarlarkTargetExpression is always a declaration (assignment target, loop variable)
-    if (element.parent is StarlarkTargetExpression) return true
-    return element.parent.reference?.resolve() == null
+  private fun StarlarkTargetExpression.isInsideAssignStatement(): Boolean {
+    var current: PsiElement = this
+    while (true) {
+      when (current.parent) {
+        is StarlarkAssignmentStatement -> return true
+        is StarlarkTupleExpression, is StarlarkParenthesizedExpression -> current = current.parent
+        else -> return false
+      }
+    }
   }
 
   private fun AnnotationHolder.annotateUnused(element: PsiElement, name: String) =
