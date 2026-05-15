@@ -10,8 +10,6 @@ import com.intellij.driver.sdk.wait
 import com.intellij.driver.sdk.waitFor
 import com.intellij.ide.starter.driver.engine.runIdeWithDriver
 import com.intellij.ide.starter.driver.execute
-import com.intellij.openapi.ui.playback.commands.AbstractCommand.CMD_PREFIX
-import com.intellij.tools.ide.performanceTesting.commands.CommandChain
 import com.intellij.tools.ide.performanceTesting.commands.openFile
 import com.intellij.tools.ide.performanceTesting.commands.setBreakpoint
 import org.jetbrains.bazel.config.BazelFeatureFlags
@@ -37,10 +35,6 @@ class CoroutineDebugTest : IdeStarterBaseProjectTest() {
         ideFrame {
           syncBazelProject()
           waitForIndicators(5.minutes)
-
-          step("Enable Kotlin Coroutine Debug") {
-            execute { it.enableKotlinCoroutineDebug() }
-          }
 
           step("Open TestCoroutine.kt and set breakpoint") {
             execute {
@@ -81,9 +75,4 @@ class CoroutineDebugTest : IdeStarterBaseProjectTest() {
         }
       }
   }
-}
-
-private fun <T : CommandChain> T.enableKotlinCoroutineDebug(): T {
-  addCommand(CMD_PREFIX + "enableKotlinCoroutineDebug")
-  return this
 }
