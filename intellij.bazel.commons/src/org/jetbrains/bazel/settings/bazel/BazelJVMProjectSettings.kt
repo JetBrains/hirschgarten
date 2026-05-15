@@ -17,14 +17,12 @@ import org.jetbrains.annotations.ApiStatus
  * */
 @ApiStatus.Internal
 data class BazelJVMProjectSettings(
-  var hotSwapEnabled: Boolean = true,
-  var enableLocalJvmActions: Boolean = false,
-  var enableBuildWithJps: Boolean = false,
-  var useIntellijTestRunner: Boolean = false,
-  var enableKotlinCoroutineDebug: Boolean = false,
-) {
-  fun withNewHotSwapEnabled(newHotSwapEnabled: Boolean): BazelJVMProjectSettings = copy(hotSwapEnabled = newHotSwapEnabled)
-}
+  val hotSwapEnabled: Boolean = true,
+  val enableLocalJvmActions: Boolean = false,
+  val enableBuildWithJps: Boolean = false,
+  val useIntellijTestRunner: Boolean = false,
+  val enableKotlinCoroutineDebug: Boolean = true,
+)
 
 @State(
   name = "BazelJVMProjectSettingsService",
@@ -34,20 +32,13 @@ data class BazelJVMProjectSettings(
 @Service(Service.Level.PROJECT)
 internal class BazelJVMProjectSettingsService :
   DumbAware,
-  PersistentStateComponent<BazelJVMProjectSettings> {
-  var settings: BazelJVMProjectSettings = BazelJVMProjectSettings()
+  PersistentStateComponent<BazelJVMProjectSettingsState> {
+  var settings: BazelJVMProjectSettingsState = BazelJVMProjectSettingsState()
 
-  override fun getState(): BazelJVMProjectSettings = settings
+  override fun getState(): BazelJVMProjectSettingsState = settings
 
-  override fun loadState(settingsState: BazelJVMProjectSettings) {
-    this.settings =
-      BazelJVMProjectSettings(
-        hotSwapEnabled = settingsState.hotSwapEnabled,
-        enableLocalJvmActions = settingsState.enableLocalJvmActions,
-        enableBuildWithJps = settingsState.enableBuildWithJps,
-        useIntellijTestRunner = settingsState.useIntellijTestRunner,
-        enableKotlinCoroutineDebug = settingsState.enableKotlinCoroutineDebug,
-      )
+  override fun loadState(settingsState: BazelJVMProjectSettingsState) {
+    this.settings = settingsState
   }
 
   companion object {
@@ -56,10 +47,37 @@ internal class BazelJVMProjectSettingsService :
   }
 }
 
+/**
+ * State for XML serialization
+ */
+internal data class BazelJVMProjectSettingsState(
+  var hotSwapEnabled: Boolean = true,
+  var enableLocalJvmActions: Boolean = false,
+  var enableBuildWithJps: Boolean = false,
+  var useIntellijTestRunner: Boolean = false,
+  var enableKotlinCoroutineDebugV2: Boolean = true,  // Default was changed from false to true, "v2" to avoid loading the old key
+)
+
 var Project.bazelJVMProjectSettings: BazelJVMProjectSettings
   @ApiStatus.Internal
-  get() = BazelJVMProjectSettingsService.getInstance(this).settings.copy()
+  get() = with(BazelJVMProjectSettingsService.getInstance(this).settings) {
+    BazelJVMProjectSettings(
+      hotSwapEnabled = hotSwapEnabled,
+      enableLocalJvmActions = enableLocalJvmActions,
+      enableBuildWithJps = enableBuildWithJps,
+      useIntellijTestRunner = useIntellijTestRunner,
+      enableKotlinCoroutineDebug = enableKotlinCoroutineDebugV2,
+    )
+  }
   @ApiStatus.Internal
   set(value) {
-    BazelJVMProjectSettingsService.getInstance(this).settings = value.copy()
+    BazelJVMProjectSettingsService.getInstance(this).settings = with(value) {
+      BazelJVMProjectSettingsState(
+        hotSwapEnabled = hotSwapEnabled,
+        enableLocalJvmActions = enableLocalJvmActions,
+        enableBuildWithJps = enableBuildWithJps,
+        useIntellijTestRunner = useIntellijTestRunner,
+        enableKotlinCoroutineDebugV2 = enableKotlinCoroutineDebug,
+      )
+    }
   }

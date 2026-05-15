@@ -92,7 +92,7 @@ internal class BazelJVMExperimentalConfigurable(private val project: Project) : 
       isEnabled = !BazelFeatureFlags.fastBuildEnabled
       isSelected = currentJVMProjectSettings.hotSwapEnabled
       addItemListener {
-        currentJVMProjectSettings = currentJVMProjectSettings.withNewHotSwapEnabled(isSelected)
+        currentJVMProjectSettings = currentJVMProjectSettings.copy(hotSwapEnabled = isSelected)
       }
     }
 
