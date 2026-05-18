@@ -132,7 +132,7 @@ public final class BspTargetInfo {
       if (ref instanceof java.lang.String) {
         return (java.lang.String) ref;
       } else {
-        com.google.protobuf.ByteString bs =
+        com.google.protobuf.ByteString bs = 
             (com.google.protobuf.ByteString) ref;
         java.lang.String s = bs.toStringUtf8();
         relativePath_ = s;
@@ -154,7 +154,7 @@ public final class BspTargetInfo {
         getRelativePathBytes() {
       java.lang.Object ref = relativePath_;
       if (ref instanceof java.lang.String) {
-        com.google.protobuf.ByteString b =
+        com.google.protobuf.ByteString b = 
             com.google.protobuf.ByteString.copyFromUtf8(
                 (java.lang.String) ref);
         relativePath_ = b;
@@ -198,7 +198,7 @@ public final class BspTargetInfo {
       if (ref instanceof java.lang.String) {
         return (java.lang.String) ref;
       } else {
-        com.google.protobuf.ByteString bs =
+        com.google.protobuf.ByteString bs = 
             (com.google.protobuf.ByteString) ref;
         java.lang.String s = bs.toStringUtf8();
         rootPath_ = s;
@@ -220,7 +220,7 @@ public final class BspTargetInfo {
         getRootPathBytes() {
       java.lang.Object ref = rootPath_;
       if (ref instanceof java.lang.String) {
-        com.google.protobuf.ByteString b =
+        com.google.protobuf.ByteString b = 
             com.google.protobuf.ByteString.copyFromUtf8(
                 (java.lang.String) ref);
         rootPath_ = b;
@@ -641,7 +641,7 @@ public final class BspTargetInfo {
           getRelativePathBytes() {
         java.lang.Object ref = relativePath_;
         if (ref instanceof String) {
-          com.google.protobuf.ByteString b =
+          com.google.protobuf.ByteString b = 
               com.google.protobuf.ByteString.copyFromUtf8(
                   (java.lang.String) ref);
           relativePath_ = b;
@@ -787,7 +787,7 @@ public final class BspTargetInfo {
           getRootPathBytes() {
         java.lang.Object ref = rootPath_;
         if (ref instanceof String) {
-          com.google.protobuf.ByteString b =
+          com.google.protobuf.ByteString b = 
               com.google.protobuf.ByteString.copyFromUtf8(
                   (java.lang.String) ref);
           rootPath_ = b;
@@ -1050,7 +1050,7 @@ public final class BspTargetInfo {
       if (ref instanceof java.lang.String) {
         return (java.lang.String) ref;
       } else {
-        com.google.protobuf.ByteString bs =
+        com.google.protobuf.ByteString bs = 
             (com.google.protobuf.ByteString) ref;
         java.lang.String s = bs.toStringUtf8();
         label_ = s;
@@ -1066,7 +1066,7 @@ public final class BspTargetInfo {
         getLabelBytes() {
       java.lang.Object ref = label_;
       if (ref instanceof java.lang.String) {
-        com.google.protobuf.ByteString b =
+        com.google.protobuf.ByteString b = 
             com.google.protobuf.ByteString.copyFromUtf8(
                 (java.lang.String) ref);
         label_ = b;
@@ -1151,7 +1151,7 @@ public final class BspTargetInfo {
       if (ref instanceof java.lang.String) {
         return (java.lang.String) ref;
       } else {
-        com.google.protobuf.ByteString bs =
+        com.google.protobuf.ByteString bs = 
             (com.google.protobuf.ByteString) ref;
         java.lang.String s = bs.toStringUtf8();
         configuration_ = s;
@@ -1172,7 +1172,7 @@ public final class BspTargetInfo {
         getConfigurationBytes() {
       java.lang.Object ref = configuration_;
       if (ref instanceof java.lang.String) {
-        com.google.protobuf.ByteString b =
+        com.google.protobuf.ByteString b = 
             com.google.protobuf.ByteString.copyFromUtf8(
                 (java.lang.String) ref);
         configuration_ = b;
@@ -1596,7 +1596,7 @@ public final class BspTargetInfo {
           getLabelBytes() {
         java.lang.Object ref = label_;
         if (ref instanceof String) {
-          com.google.protobuf.ByteString b =
+          com.google.protobuf.ByteString b = 
               com.google.protobuf.ByteString.copyFromUtf8(
                   (java.lang.String) ref);
           label_ = b;
@@ -1834,7 +1834,7 @@ public final class BspTargetInfo {
           getConfigurationBytes() {
         java.lang.Object ref = configuration_;
         if (ref instanceof String) {
-          com.google.protobuf.ByteString b =
+          com.google.protobuf.ByteString b = 
               com.google.protobuf.ByteString.copyFromUtf8(
                   (java.lang.String) ref);
           configuration_ = b;
@@ -4532,7 +4532,7 @@ public final class BspTargetInfo {
       if (ref instanceof java.lang.String) {
         return (java.lang.String) ref;
       } else {
-        com.google.protobuf.ByteString bs =
+        com.google.protobuf.ByteString bs = 
             (com.google.protobuf.ByteString) ref;
         java.lang.String s = bs.toStringUtf8();
         mainClass_ = s;
@@ -4548,7 +4548,7 @@ public final class BspTargetInfo {
         getMainClassBytes() {
       java.lang.Object ref = mainClass_;
       if (ref instanceof java.lang.String) {
-        com.google.protobuf.ByteString b =
+        com.google.protobuf.ByteString b = 
             com.google.protobuf.ByteString.copyFromUtf8(
                 (java.lang.String) ref);
         mainClass_ = b;
@@ -4616,7 +4616,7 @@ public final class BspTargetInfo {
       if (ref instanceof java.lang.String) {
         return (java.lang.String) ref;
       } else {
-        com.google.protobuf.ByteString bs =
+        com.google.protobuf.ByteString bs = 
             (com.google.protobuf.ByteString) ref;
         java.lang.String s = bs.toStringUtf8();
         resourceStripPrefix_ = s;
@@ -4632,7 +4632,7 @@ public final class BspTargetInfo {
         getResourceStripPrefixBytes() {
       java.lang.Object ref = resourceStripPrefix_;
       if (ref instanceof java.lang.String) {
-        com.google.protobuf.ByteString b =
+        com.google.protobuf.ByteString b = 
             com.google.protobuf.ByteString.copyFromUtf8(
                 (java.lang.String) ref);
         resourceStripPrefix_ = b;
@@ -5327,7 +5327,7 @@ public final class BspTargetInfo {
           getMainClassBytes() {
         java.lang.Object ref = mainClass_;
         if (ref instanceof String) {
-          com.google.protobuf.ByteString b =
+          com.google.protobuf.ByteString b = 
               com.google.protobuf.ByteString.copyFromUtf8(
                   (java.lang.String) ref);
           mainClass_ = b;
@@ -5517,7 +5517,7 @@ public final class BspTargetInfo {
           getResourceStripPrefixBytes() {
         java.lang.Object ref = resourceStripPrefix_;
         if (ref instanceof String) {
-          com.google.protobuf.ByteString b =
+          com.google.protobuf.ByteString b = 
               com.google.protobuf.ByteString.copyFromUtf8(
                   (java.lang.String) ref);
           resourceStripPrefix_ = b;
@@ -6831,7 +6831,7 @@ public final class BspTargetInfo {
       if (ref instanceof java.lang.String) {
         return (java.lang.String) ref;
       } else {
-        com.google.protobuf.ByteString bs =
+        com.google.protobuf.ByteString bs = 
             (com.google.protobuf.ByteString) ref;
         java.lang.String s = bs.toStringUtf8();
         sourceVersion_ = s;
@@ -6847,7 +6847,7 @@ public final class BspTargetInfo {
         getSourceVersionBytes() {
       java.lang.Object ref = sourceVersion_;
       if (ref instanceof java.lang.String) {
-        com.google.protobuf.ByteString b =
+        com.google.protobuf.ByteString b = 
             com.google.protobuf.ByteString.copyFromUtf8(
                 (java.lang.String) ref);
         sourceVersion_ = b;
@@ -6870,7 +6870,7 @@ public final class BspTargetInfo {
       if (ref instanceof java.lang.String) {
         return (java.lang.String) ref;
       } else {
-        com.google.protobuf.ByteString bs =
+        com.google.protobuf.ByteString bs = 
             (com.google.protobuf.ByteString) ref;
         java.lang.String s = bs.toStringUtf8();
         targetVersion_ = s;
@@ -6886,7 +6886,7 @@ public final class BspTargetInfo {
         getTargetVersionBytes() {
       java.lang.Object ref = targetVersion_;
       if (ref instanceof java.lang.String) {
-        com.google.protobuf.ByteString b =
+        com.google.protobuf.ByteString b = 
             com.google.protobuf.ByteString.copyFromUtf8(
                 (java.lang.String) ref);
         targetVersion_ = b;
@@ -7406,7 +7406,7 @@ public final class BspTargetInfo {
           getSourceVersionBytes() {
         java.lang.Object ref = sourceVersion_;
         if (ref instanceof String) {
-          com.google.protobuf.ByteString b =
+          com.google.protobuf.ByteString b = 
               com.google.protobuf.ByteString.copyFromUtf8(
                   (java.lang.String) ref);
           sourceVersion_ = b;
@@ -7478,7 +7478,7 @@ public final class BspTargetInfo {
           getTargetVersionBytes() {
         java.lang.Object ref = targetVersion_;
         if (ref instanceof String) {
-          com.google.protobuf.ByteString b =
+          com.google.protobuf.ByteString b = 
               com.google.protobuf.ByteString.copyFromUtf8(
                   (java.lang.String) ref);
           targetVersion_ = b;
@@ -9416,7 +9416,7 @@ public final class BspTargetInfo {
       if (ref instanceof java.lang.String) {
         return (java.lang.String) ref;
       } else {
-        com.google.protobuf.ByteString bs =
+        com.google.protobuf.ByteString bs = 
             (com.google.protobuf.ByteString) ref;
         java.lang.String s = bs.toStringUtf8();
         pluginId_ = s;
@@ -9432,7 +9432,7 @@ public final class BspTargetInfo {
         getPluginIdBytes() {
       java.lang.Object ref = pluginId_;
       if (ref instanceof java.lang.String) {
-        com.google.protobuf.ByteString b =
+        com.google.protobuf.ByteString b = 
             com.google.protobuf.ByteString.copyFromUtf8(
                 (java.lang.String) ref);
         pluginId_ = b;
@@ -9455,7 +9455,7 @@ public final class BspTargetInfo {
       if (ref instanceof java.lang.String) {
         return (java.lang.String) ref;
       } else {
-        com.google.protobuf.ByteString bs =
+        com.google.protobuf.ByteString bs = 
             (com.google.protobuf.ByteString) ref;
         java.lang.String s = bs.toStringUtf8();
         optionValue_ = s;
@@ -9471,7 +9471,7 @@ public final class BspTargetInfo {
         getOptionValueBytes() {
       java.lang.Object ref = optionValue_;
       if (ref instanceof java.lang.String) {
-        com.google.protobuf.ByteString b =
+        com.google.protobuf.ByteString b = 
             com.google.protobuf.ByteString.copyFromUtf8(
                 (java.lang.String) ref);
         optionValue_ = b;
@@ -9856,7 +9856,7 @@ public final class BspTargetInfo {
           getPluginIdBytes() {
         java.lang.Object ref = pluginId_;
         if (ref instanceof String) {
-          com.google.protobuf.ByteString b =
+          com.google.protobuf.ByteString b = 
               com.google.protobuf.ByteString.copyFromUtf8(
                   (java.lang.String) ref);
           pluginId_ = b;
@@ -9928,7 +9928,7 @@ public final class BspTargetInfo {
           getOptionValueBytes() {
         java.lang.Object ref = optionValue_;
         if (ref instanceof String) {
-          com.google.protobuf.ByteString b =
+          com.google.protobuf.ByteString b = 
               com.google.protobuf.ByteString.copyFromUtf8(
                   (java.lang.String) ref);
           optionValue_ = b;
@@ -11416,7 +11416,7 @@ public final class BspTargetInfo {
       if (ref instanceof java.lang.String) {
         return (java.lang.String) ref;
       } else {
-        com.google.protobuf.ByteString bs =
+        com.google.protobuf.ByteString bs = 
             (com.google.protobuf.ByteString) ref;
         java.lang.String s = bs.toStringUtf8();
         languageVersion_ = s;
@@ -11432,7 +11432,7 @@ public final class BspTargetInfo {
         getLanguageVersionBytes() {
       java.lang.Object ref = languageVersion_;
       if (ref instanceof java.lang.String) {
-        com.google.protobuf.ByteString b =
+        com.google.protobuf.ByteString b = 
             com.google.protobuf.ByteString.copyFromUtf8(
                 (java.lang.String) ref);
         languageVersion_ = b;
@@ -11455,7 +11455,7 @@ public final class BspTargetInfo {
       if (ref instanceof java.lang.String) {
         return (java.lang.String) ref;
       } else {
-        com.google.protobuf.ByteString bs =
+        com.google.protobuf.ByteString bs = 
             (com.google.protobuf.ByteString) ref;
         java.lang.String s = bs.toStringUtf8();
         apiVersion_ = s;
@@ -11471,7 +11471,7 @@ public final class BspTargetInfo {
         getApiVersionBytes() {
       java.lang.Object ref = apiVersion_;
       if (ref instanceof java.lang.String) {
-        com.google.protobuf.ByteString b =
+        com.google.protobuf.ByteString b = 
             com.google.protobuf.ByteString.copyFromUtf8(
                 (java.lang.String) ref);
         apiVersion_ = b;
@@ -11650,7 +11650,7 @@ public final class BspTargetInfo {
       if (ref instanceof java.lang.String) {
         return (java.lang.String) ref;
       } else {
-        com.google.protobuf.ByteString bs =
+        com.google.protobuf.ByteString bs = 
             (com.google.protobuf.ByteString) ref;
         java.lang.String s = bs.toStringUtf8();
         moduleName_ = s;
@@ -11666,7 +11666,7 @@ public final class BspTargetInfo {
         getModuleNameBytes() {
       java.lang.Object ref = moduleName_;
       if (ref instanceof java.lang.String) {
-        com.google.protobuf.ByteString b =
+        com.google.protobuf.ByteString b = 
             com.google.protobuf.ByteString.copyFromUtf8(
                 (java.lang.String) ref);
         moduleName_ = b;
@@ -12369,7 +12369,7 @@ public final class BspTargetInfo {
           getLanguageVersionBytes() {
         java.lang.Object ref = languageVersion_;
         if (ref instanceof String) {
-          com.google.protobuf.ByteString b =
+          com.google.protobuf.ByteString b = 
               com.google.protobuf.ByteString.copyFromUtf8(
                   (java.lang.String) ref);
           languageVersion_ = b;
@@ -12441,7 +12441,7 @@ public final class BspTargetInfo {
           getApiVersionBytes() {
         java.lang.Object ref = apiVersion_;
         if (ref instanceof String) {
-          com.google.protobuf.ByteString b =
+          com.google.protobuf.ByteString b = 
               com.google.protobuf.ByteString.copyFromUtf8(
                   (java.lang.String) ref);
           apiVersion_ = b;
@@ -13215,7 +13215,7 @@ public final class BspTargetInfo {
           getModuleNameBytes() {
         java.lang.Object ref = moduleName_;
         if (ref instanceof String) {
-          com.google.protobuf.ByteString b =
+          com.google.protobuf.ByteString b = 
               com.google.protobuf.ByteString.copyFromUtf8(
                   (java.lang.String) ref);
           moduleName_ = b;
@@ -15440,7 +15440,7 @@ public final class BspTargetInfo {
       if (ref instanceof java.lang.String) {
         return (java.lang.String) ref;
       } else {
-        com.google.protobuf.ByteString bs =
+        com.google.protobuf.ByteString bs = 
             (com.google.protobuf.ByteString) ref;
         java.lang.String s = bs.toStringUtf8();
         version_ = s;
@@ -15456,7 +15456,7 @@ public final class BspTargetInfo {
         getVersionBytes() {
       java.lang.Object ref = version_;
       if (ref instanceof java.lang.String) {
-        com.google.protobuf.ByteString b =
+        com.google.protobuf.ByteString b = 
             com.google.protobuf.ByteString.copyFromUtf8(
                 (java.lang.String) ref);
         version_ = b;
@@ -15583,7 +15583,7 @@ public final class BspTargetInfo {
       if (ref instanceof java.lang.String) {
         return (java.lang.String) ref;
       } else {
-        com.google.protobuf.ByteString bs =
+        com.google.protobuf.ByteString bs = 
             (com.google.protobuf.ByteString) ref;
         java.lang.String s = bs.toStringUtf8();
         mainModule_ = s;
@@ -15599,7 +15599,7 @@ public final class BspTargetInfo {
         getMainModuleBytes() {
       java.lang.Object ref = mainModule_;
       if (ref instanceof java.lang.String) {
-        com.google.protobuf.ByteString b =
+        com.google.protobuf.ByteString b = 
             com.google.protobuf.ByteString.copyFromUtf8(
                 (java.lang.String) ref);
         mainModule_ = b;
@@ -16300,7 +16300,7 @@ public final class BspTargetInfo {
           getVersionBytes() {
         java.lang.Object ref = version_;
         if (ref instanceof String) {
-          com.google.protobuf.ByteString b =
+          com.google.protobuf.ByteString b = 
               com.google.protobuf.ByteString.copyFromUtf8(
                   (java.lang.String) ref);
           version_ = b;
@@ -16844,7 +16844,7 @@ public final class BspTargetInfo {
           getMainModuleBytes() {
         java.lang.Object ref = mainModule_;
         if (ref instanceof String) {
-          com.google.protobuf.ByteString b =
+          com.google.protobuf.ByteString b = 
               com.google.protobuf.ByteString.copyFromUtf8(
                   (java.lang.String) ref);
           mainModule_ = b;
@@ -17087,7 +17087,7 @@ public final class BspTargetInfo {
       if (ref instanceof java.lang.String) {
         return (java.lang.String) ref;
       } else {
-        com.google.protobuf.ByteString bs =
+        com.google.protobuf.ByteString bs = 
             (com.google.protobuf.ByteString) ref;
         java.lang.String s = bs.toStringUtf8();
         importPath_ = s;
@@ -17103,7 +17103,7 @@ public final class BspTargetInfo {
         getImportPathBytes() {
       java.lang.Object ref = importPath_;
       if (ref instanceof java.lang.String) {
-        com.google.protobuf.ByteString b =
+        com.google.protobuf.ByteString b = 
             com.google.protobuf.ByteString.copyFromUtf8(
                 (java.lang.String) ref);
         importPath_ = b;
@@ -17725,7 +17725,7 @@ public final class BspTargetInfo {
           getImportPathBytes() {
         java.lang.Object ref = importPath_;
         if (ref instanceof String) {
-          com.google.protobuf.ByteString b =
+          com.google.protobuf.ByteString b = 
               com.google.protobuf.ByteString.copyFromUtf8(
                   (java.lang.String) ref);
           importPath_ = b;
@@ -19170,7 +19170,7 @@ public final class BspTargetInfo {
       if (ref instanceof java.lang.String) {
         return (java.lang.String) ref;
       } else {
-        com.google.protobuf.ByteString bs =
+        com.google.protobuf.ByteString bs = 
             (com.google.protobuf.ByteString) ref;
         java.lang.String s = bs.toStringUtf8();
         importPath_ = s;
@@ -19186,7 +19186,7 @@ public final class BspTargetInfo {
         getImportPathBytes() {
       java.lang.Object ref = importPath_;
       if (ref instanceof java.lang.String) {
-        com.google.protobuf.ByteString b =
+        com.google.protobuf.ByteString b = 
             com.google.protobuf.ByteString.copyFromUtf8(
                 (java.lang.String) ref);
         importPath_ = b;
@@ -19618,7 +19618,7 @@ public final class BspTargetInfo {
           getImportPathBytes() {
         java.lang.Object ref = importPath_;
         if (ref instanceof String) {
-          com.google.protobuf.ByteString b =
+          com.google.protobuf.ByteString b = 
               com.google.protobuf.ByteString.copyFromUtf8(
                   (java.lang.String) ref);
           importPath_ = b;
@@ -20247,7 +20247,7 @@ java.lang.String defaultValue);
       if (ref instanceof java.lang.String) {
         return (java.lang.String) ref;
       } else {
-        com.google.protobuf.ByteString bs =
+        com.google.protobuf.ByteString bs = 
             (com.google.protobuf.ByteString) ref;
         java.lang.String s = bs.toStringUtf8();
         kind_ = s;
@@ -20263,7 +20263,7 @@ java.lang.String defaultValue);
         getKindBytes() {
       java.lang.Object ref = kind_;
       if (ref instanceof java.lang.String) {
-        com.google.protobuf.ByteString b =
+        com.google.protobuf.ByteString b = 
             com.google.protobuf.ByteString.copyFromUtf8(
                 (java.lang.String) ref);
         kind_ = b;
@@ -20558,7 +20558,7 @@ java.lang.String defaultValue) {
       if (ref instanceof java.lang.String) {
         return (java.lang.String) ref;
       } else {
-        com.google.protobuf.ByteString bs =
+        com.google.protobuf.ByteString bs = 
             (com.google.protobuf.ByteString) ref;
         java.lang.String s = bs.toStringUtf8();
         workspaceName_ = s;
@@ -20574,7 +20574,7 @@ java.lang.String defaultValue) {
         getWorkspaceNameBytes() {
       java.lang.Object ref = workspaceName_;
       if (ref instanceof java.lang.String) {
-        com.google.protobuf.ByteString b =
+        com.google.protobuf.ByteString b = 
             com.google.protobuf.ByteString.copyFromUtf8(
                 (java.lang.String) ref);
         workspaceName_ = b;
@@ -20623,7 +20623,7 @@ java.lang.String defaultValue) {
       if (ref instanceof java.lang.String) {
         return (java.lang.String) ref;
       } else {
-        com.google.protobuf.ByteString bs =
+        com.google.protobuf.ByteString bs = 
             (com.google.protobuf.ByteString) ref;
         java.lang.String s = bs.toStringUtf8();
         generatorName_ = s;
@@ -20639,7 +20639,7 @@ java.lang.String defaultValue) {
         getGeneratorNameBytes() {
       java.lang.Object ref = generatorName_;
       if (ref instanceof java.lang.String) {
-        com.google.protobuf.ByteString b =
+        com.google.protobuf.ByteString b = 
             com.google.protobuf.ByteString.copyFromUtf8(
                 (java.lang.String) ref);
         generatorName_ = b;
@@ -21948,7 +21948,7 @@ java.lang.String defaultValue) {
           getKindBytes() {
         java.lang.Object ref = kind_;
         if (ref instanceof String) {
-          com.google.protobuf.ByteString b =
+          com.google.protobuf.ByteString b = 
               com.google.protobuf.ByteString.copyFromUtf8(
                   (java.lang.String) ref);
           kind_ = b;
@@ -23002,7 +23002,7 @@ java.lang.String defaultValue) {
           getWorkspaceNameBytes() {
         java.lang.Object ref = workspaceName_;
         if (ref instanceof String) {
-          com.google.protobuf.ByteString b =
+          com.google.protobuf.ByteString b = 
               com.google.protobuf.ByteString.copyFromUtf8(
                   (java.lang.String) ref);
           workspaceName_ = b;
@@ -23195,7 +23195,7 @@ java.lang.String defaultValue) {
           getGeneratorNameBytes() {
         java.lang.Object ref = generatorName_;
         if (ref instanceof String) {
-          com.google.protobuf.ByteString b =
+          com.google.protobuf.ByteString b = 
               com.google.protobuf.ByteString.copyFromUtf8(
                   (java.lang.String) ref);
           generatorName_ = b;
