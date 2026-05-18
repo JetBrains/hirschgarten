@@ -2,8 +2,6 @@ package org.jetbrains.bazel.redcodes
 
 import com.intellij.mock.MockDocument
 import com.intellij.openapi.application.EDT
-import com.intellij.openapi.application.WriteAction
-import com.intellij.psi.PsiManager
 import com.intellij.testFramework.ExpectedHighlightingData
 import com.intellij.testFramework.junit5.fixture.projectFixture
 import com.intellij.testFramework.junit5.fixture.tempPathFixture
@@ -83,6 +81,33 @@ class JavaStrictDependenciesTest {
   @Test
   fun testStrictDepsWithMultiverse2() = runBlocking(Dispatchers.Default) {
     fixture.copyBazelTestProject("redcodes/strict_dependencies/java_strict_deps_multiverse")
+    fixture.enableInspections(JavaStrictDependenciesInspection())
+    fixture.performBazelSync()
+    withContext(Dispatchers.EDT) {
+
+      fixture.checkHighlighting(
+        "Main.java", "main2",
+        expected = ExpectedHighlightingData(
+          MockDocument().apply {
+            replaceText(
+              """
+                class Main {
+                  public void foo() {
+                    <error descr="Using type B from an indirect dependency @//:lib_b2">B</error> b = new A().bar();
+                  }
+                }
+               """.trimIndent(),
+              1,
+            )
+          },
+        ).also { it.init() },
+      )
+    }
+  }
+
+  @Test
+  fun testStrictDepsWithDeepMultiverse() = runBlocking(Dispatchers.Default) {
+    fixture.copyBazelTestProject("redcodes/strict_dependencies/java_strict_deps_deep_multiverse")
     fixture.enableInspections(JavaStrictDependenciesInspection())
     fixture.performBazelSync()
     withContext(Dispatchers.EDT) {
