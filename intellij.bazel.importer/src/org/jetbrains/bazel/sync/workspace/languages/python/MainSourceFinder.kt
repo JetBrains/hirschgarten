@@ -3,9 +3,9 @@ package org.jetbrains.bazel.sync.workspace.languages.python
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.commons.BazelPathsResolver
 import org.jetbrains.bazel.commons.LocalRepositoryMapping
-import org.jetbrains.bazel.info.BspTargetInfo.ArtifactLocation
-import org.jetbrains.bazel.info.BspTargetInfo.PythonTargetInfo
-import org.jetbrains.bazel.info.BspTargetInfo.TargetInfo
+import com.google.devtools.intellij.aspect.Common.ArtifactLocation
+import com.google.devtools.intellij.ideinfo.IntellijIdeInfo.TargetIdeInfo
+import com.google.devtools.intellij.ideinfo.IntellijIdeInfo.PythonTargetInfo
 import org.jetbrains.bazel.label.label
 import java.nio.file.Path
 import kotlin.collections.plus
@@ -14,7 +14,7 @@ import kotlin.io.path.nameWithoutExtension
 @ApiStatus.Internal
 object MainSourceFinder {
   fun findMainFile(
-    target: TargetInfo,
+    target: TargetIdeInfo,
     pythonTarget: PythonTargetInfo,
     pathsResolver: BazelPathsResolver,
     localRepositories: LocalRepositoryMapping,
@@ -29,7 +29,7 @@ object MainSourceFinder {
     return artifactLocation?.let { pathsResolver.resolve(it, localRepositories) }
   }
 
-  private fun findMainFileAmongSources(target: TargetInfo): ArtifactLocation? {
+  private fun findMainFileAmongSources(target: TargetIdeInfo): ArtifactLocation? {
     val sources = target.srcsList
     if (sources.size == 1) {
       return sources.single()

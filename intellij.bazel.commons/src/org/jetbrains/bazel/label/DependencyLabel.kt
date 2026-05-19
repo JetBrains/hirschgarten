@@ -1,8 +1,8 @@
 package org.jetbrains.bazel.label
 
+import com.google.devtools.intellij.ideinfo.IntellijIdeInfo
+import com.google.devtools.intellij.ideinfo.IntellijIdeInfo.Dependency.DependencyType
 import org.jetbrains.annotations.ApiStatus
-import org.jetbrains.bazel.info.BspTargetInfo
-import org.jetbrains.bazel.info.BspTargetInfo.Dependency.DependencyType
 
 // TODO: move to backend-only entity and use WorkspaceConfigurationId
 @ApiStatus.Internal
@@ -38,7 +38,7 @@ enum class DependencyLabelKind {
 }
 
 @ApiStatus.Internal
-fun BspTargetInfo.Dependency.toDependencyLabel(): DependencyLabel =
+fun IntellijIdeInfo.Dependency.toDependencyLabel(): DependencyLabel =
   DependencyLabel(
     label = label(),
     kind = when (dependencyType) {
@@ -52,5 +52,5 @@ fun BspTargetInfo.Dependency.toDependencyLabel(): DependencyLabel =
 
 
 @ApiStatus.Internal
-fun BspTargetInfo.Dependency.isCompile(): Boolean =
-  dependencyType == DependencyType.COMPILE || dependencyType == DependencyType.EXPORTED_COMPILE_TIME
+fun IntellijIdeInfo.Dependency.isCompile(): Boolean =
+  dependencyType == DependencyType.COMPILE_TIME || dependencyType == DependencyType.EXPORTED_COMPILE_TIME

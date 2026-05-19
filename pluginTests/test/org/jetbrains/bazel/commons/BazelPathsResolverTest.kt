@@ -1,7 +1,7 @@
 package org.jetbrains.bazel.commons
 
+import com.google.devtools.intellij.aspect.Common.ArtifactLocation
 import io.kotest.matchers.shouldBe
-import org.jetbrains.bazel.info.BspTargetInfo
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.label.assumeResolved
 import org.junit.jupiter.api.Test
@@ -27,10 +27,10 @@ class BazelPathsResolverTest {
   }
 
   fun sourceArtifact(root: String, relativePath: String) =
-    BspTargetInfo.ArtifactLocation.newBuilder().setRootPath(root).setRelativePath(relativePath).setIsSource(true).build()
+    ArtifactLocation.newBuilder().setRootPath(root).setRelativePath(relativePath).setIsSource(true).build()
 
   fun nonSourceArtifact(root: String, relativePath: String) =
-    BspTargetInfo.ArtifactLocation.newBuilder().setRootPath(root).setRelativePath(relativePath).build()
+    ArtifactLocation.newBuilder().setRootPath(root).setRelativePath(relativePath).build()
 
   @Test
   fun isExternalRecognizesLocalRepositories() {

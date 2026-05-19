@@ -1,5 +1,9 @@
 package org.jetbrains.bazel.server.sync
 
+import com.google.devtools.intellij.ideinfo.IntellijIdeInfo
+import com.google.devtools.intellij.ideinfo.IntellijIdeInfo.TargetIdeInfo
+import com.intellij.aspect.lib.Rules
+import com.intellij.aspect.lib.Aspects
 import com.intellij.build.events.MessageEvent
 import com.intellij.openapi.project.Project
 import com.intellij.platform.diagnostic.telemetry.helpers.useWithScope
@@ -17,8 +21,6 @@ import org.jetbrains.bazel.commons.RepoMapping
 import org.jetbrains.bazel.commons.RepoMappingDisabled
 import org.jetbrains.bazel.commons.TargetCollection
 import org.jetbrains.bazel.config.BazelFeatureFlags
-import org.jetbrains.bazel.info.BspTargetInfo
-import org.jetbrains.bazel.info.BspTargetInfo.TargetInfo
 import org.jetbrains.bazel.label.Canonical
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.label.ResolvedLabel
@@ -102,7 +104,8 @@ class ProjectResolver(
           val needsPath = involvedRepos
             .filter { !(repoMapping.canonicalRepoNameToLocalPath.contains(it.repoName)) }
             .map { it.toString() }
-          val extraRepositoryDescriptions = ModuleResolver(bazelRunner, workspaceContext, taskId).resolveModules(needsPath, bazelInfo).result
+          val extraRepositoryDescriptions =
+            ModuleResolver(bazelRunner, workspaceContext, taskId).resolveModules(needsPath, bazelInfo).result
           val extraPaths = extraRepositoryDescriptions.map { (name, description) ->
             when (description) {
               is ShowRepoResult.LocalRepository -> mapOf(description.name to Path(description.path))
@@ -165,11 +168,12 @@ class ProjectResolver(
 
     val mapping = (repoMappingOnly as? BzlmodRepoMapping)?.apparentRepoNameToCanonicalName
 
-    val externalRepos = mapping?.let {
-      mapping -> externalRulesetNames.mapNotNull { repoName -> mapping[repoName] }.filter {it != ""}.map {"@@" + it }
+    val externalRepos = mapping?.let { mapping ->
+      externalRulesetNames.mapNotNull { repoName -> mapping[repoName] }.filter { it != "" }.map { "@@" + it }
     } ?: emptyList()
 
-    val extraDefinitionsNeeded = workspaceContext.externalRepositoriesTreatedAsInternal.map {  repoName -> mapping?.get(repoName)?.let {"@@" + it} ?: repoName }
+    val extraDefinitionsNeeded =
+      workspaceContext.externalRepositoriesTreatedAsInternal.map { repoName -> mapping?.get(repoName)?.let { "@@" + it } ?: repoName }
 
     val repoDefinitionsWithWarnings =
       measured("Looking up definitions of external rules") {
@@ -177,13 +181,23 @@ class ProjectResolver(
       }
 
     repoDefinitionsWithWarnings.warnings.forEach {
-      project.syncConsole.addDiagnosticMessage(taskId, null, 0, 0, it,
-                                               MessageEvent.Kind.WARNING)
+      project.syncConsole.addDiagnosticMessage(
+        taskId, null, 0, 0, it,
+        MessageEvent.Kind.WARNING,
+      )
     }
 
     val repoDefinitions = repoDefinitionsWithWarnings.result
 
-    val repoMapping = extendRepoMappingByPathInfo(repoMappingOnly, workspaceContext, bazelRunner, bazelInfo, taskEventsHandler.asLogger(taskId), repoDefinitions, taskId)
+    val repoMapping = extendRepoMappingByPathInfo(
+      repoMappingOnly,
+      workspaceContext,
+      bazelRunner,
+      bazelInfo,
+      taskEventsHandler.asLogger(taskId),
+      repoDefinitions,
+      taskId,
+    )
 
     val ruleLanguages =
       measured(
@@ -196,22 +210,12 @@ class ProjectResolver(
         )
       }
 
-    val toolchains =
-      measured(
-        "Mapping languages to toolchains",
-      ) { ruleLanguages.associateWith { bazelToolchainManager.getToolchain(it) } }
-
     measured("Realizing language aspect files from templates") {
-      bazelBspAspectsManager.generateAspectsFromTemplates(
+      bazelBspAspectsManager.deployIntelliJAspect(
         ruleLanguages,
         bazelInfo.release,
         repoMapping,
-        bazelInfo,
       )
-    }
-
-    measured("Generating language extensions file") {
-      bazelBspLanguageExtensionsGenerator.generateLanguageExtensions(ruleLanguages, toolchains, repoMapping, bazelInfo.externalAutoloads)
     }
 
     measured("Run Gazelle target") {
@@ -224,41 +228,48 @@ class ProjectResolver(
       requestedTargetsToSync
         ?.let { TargetCollection(it, emptyList()) } ?: TargetCollection.fromExcludableList(workspaceContext.targets)
 
+    val syncLanguages = ruleLanguages.filter {
+      it.calculateCanonicalName(repoMapping) != null // XXX drop the filtering!!
+    }.map { it.language.aspectLanguage }.toSet()
+
     val buildAspectResult =
       measured(
         "Building project with aspect",
-      ) { buildProjectWithAspect(workspaceContext, build, targetsToSync, allTargets, taskId) }
+      ) { buildProjectWithAspect(workspaceContext, syncLanguages, build, targetsToSync, allTargets, taskId) }
 
     return Pair(repoMapping, buildAspectResult)
   }
 
   private suspend fun buildProjectWithAspect(
     workspaceContext: WorkspaceContext,
+    languages: Set<Rules>,
     build: Boolean,
     targetsToSync: TargetCollection,
     allTargets: List<Label>? /* all known targets, if any, from first phase */,
     taskId: TaskId,
   ): BazelBspAspectsManagerResult =
     coroutineScope {
+      val aspects = Aspects.forRules(languages).map { it.toString() }
       val taskLogger = taskEventsHandler.asLogger(taskId)
-      val outputGroups = mutableListOf(BSP_INFO_OUTPUT_GROUP, SYNC_ARTIFACT_OUTPUT_GROUP)
+      val outputGroups = mutableListOf(INFO_OUTPUT_GROUP, SYNC_ARTIFACT_OUTPUT_GROUP, BSP_ARTIFACT_OUTPUT_GROUP)
       val languageSpecificOutputGroups = getLanguageSpecificOutputGroups()
       outputGroups.addAll(languageSpecificOutputGroups)
       if (build) {
         outputGroups.add(BUILD_ARTIFACT_OUTPUT_GROUP)
+        outputGroups.add(BSP_BUILD_ARTIFACT_OUTPUT_GROUP)
       }
       val nonShardBuild =
         suspend {
           bazelBspAspectsManager
             .fetchFilesFromOutputGroups(
               targetsSpec = targetsToSync,
-              aspect = ASPECT_NAME,
+              aspects = aspects,
               outputGroups = outputGroups,
               workspaceContext = workspaceContext,
               taskId = taskId,
             ).also {
               if (it.status == BazelStatus.OOM_ERROR) {
-                taskLogger.warn("Bazel ran out of memory during sync. To mitigate, consider enabling shard sync in your project view file: `shard_sync: true`", )
+                taskLogger.warn("Bazel ran out of memory during sync. To mitigate, consider enabling shard sync in your project view file: `shard_sync: true`")
                 taskLogger.message("---")
               }
             }
@@ -295,14 +306,15 @@ class ProjectResolver(
               bazelBspAspectsManager
                 .fetchFilesFromOutputGroups(
                   targetsSpec = shardedTargetsSpec,
-                  aspect = ASPECT_NAME,
+                  aspects = aspects,
                   outputGroups = outputGroups,
                   workspaceContext = workspaceContext,
                   taskId = taskId,
                 )
             if (result.isFailure) {
               taskLogger.warn("Failed to build $shardName")
-            } else {
+            }
+            else {
               taskLogger.message("Finished building $shardName")
             }
             if (result.status == BazelStatus.OOM_ERROR) {
@@ -315,7 +327,8 @@ class ProjectResolver(
                 )
                 remainingShardedTargetsSpecs = remainingShardedTargetsSpecs.flatMap { it.halve() }.toMutableList()
                 remainingShardedTargetsSpecs.addAll(0, halvedTargetsSpec)
-              } catch (e: IllegalTargetsSizeException) {
+              }
+              catch (e: IllegalTargetsSizeException) {
                 taskLogger.error("Cannot split targets further: ${e.message}")
                 throw e
               }
@@ -326,11 +339,12 @@ class ProjectResolver(
             ++shardNumber
           }
           if (suggestedTargetShardSize != workspaceContext.targetShardSize) {
-            taskLogger.message("Bazel ran out of memory during sync. To mitigate, consider setting shard size in your project view file: `target_shard_size: $suggestedTargetShardSize`", )
+            taskLogger.message("Bazel ran out of memory during sync. To mitigate, consider setting shard size in your project view file: `target_shard_size: $suggestedTargetShardSize`")
             taskLogger.message("---")
           }
           shardedBuildResult
-        } else {
+        }
+        else {
           nonShardBuild()
         }
 
@@ -340,7 +354,8 @@ class ProjectResolver(
   private fun getLanguageSpecificOutputGroups(): List<String> =
     if (BazelFeatureFlags.isGoSupportEnabled) {
       listOf(GO_SOURCE_OUTPUT_GROUP)
-    } else {
+    }
+    else {
       emptyList()
     }
 
@@ -369,23 +384,24 @@ class ProjectResolver(
   internal suspend fun extractAspectOutputPaths(buildAspectResult: BazelBspAspectsManagerResult): Set<Path> =
     measured(
       "Reading aspect output paths",
-    ) { buildAspectResult.bepOutput.filesByOutputGroupNameTransitive(BSP_INFO_OUTPUT_GROUP) }
+    ) { buildAspectResult.bepOutput.filesByOutputGroupNameTransitive(INFO_OUTPUT_GROUP) }
 
   companion object {
-    private const val ASPECT_NAME = "bsp_target_info_aspect"
-    private const val BSP_INFO_OUTPUT_GROUP = "bsp-target-info"
+    private const val INFO_OUTPUT_GROUP = "intellij-info"
 
     // this output group is for artifacts which are needed during no-build sync
-    private const val SYNC_ARTIFACT_OUTPUT_GROUP = "bsp-sync-artifact"
+    private const val SYNC_ARTIFACT_OUTPUT_GROUP = "intellij-sync-java"
+    private const val BSP_ARTIFACT_OUTPUT_GROUP = "bsp-sync-artifacts"
 
     // this output group is for artifacts which are only needed during build
-    private const val BUILD_ARTIFACT_OUTPUT_GROUP = "bsp-build-artifact"
+    private const val BUILD_ARTIFACT_OUTPUT_GROUP = "intellij-build-java"
+    private const val BSP_BUILD_ARTIFACT_OUTPUT_GROUP = "bsp-build-artifacts"
 
     // language-specific output groups
     private const val GO_SOURCE_OUTPUT_GROUP = "bazel-sources-go"
 
     @JvmStatic
-    fun processTargetMap(targetMap: Map<Label, TargetInfo>): Map<Label, TargetInfo> =
+    fun processTargetMap(targetMap: Map<Label, TargetIdeInfo>): Map<Label, TargetIdeInfo> =
       targetMap
         .map { (_, v) ->
           // our target-information already contains labels in canonical form
@@ -402,9 +418,9 @@ class ProjectResolver(
 
     @JvmStatic
     fun processDependenciesList(
-      dependenciesBuilderList: List<BspTargetInfo.Dependency.Builder>,
-      targets: Map<Label, TargetInfo>,
-    ): List<BspTargetInfo.Dependency> {
+      dependenciesBuilderList: List<IntellijIdeInfo.Dependency.Builder>,
+      targets: Map<Label, TargetIdeInfo>,
+    ): List<IntellijIdeInfo.Dependency> {
       val projectSuffix = "-project"
       return dependenciesBuilderList.map { dependency ->
         dependency
@@ -419,10 +435,11 @@ class ProjectResolver(
             val newlabel =
               if (targetInfo?.kind == "maven_project_jar" && target.label.endsWith(projectSuffix)) {
                 target.label.dropLast(projectSuffix.length) + "-lib"
-              } else {
+              }
+              else {
                 target.label
               }
-            target = BspTargetInfo.TargetKey.newBuilder().setLabel(newlabel).setConfiguration(target.configuration).build()
+            target = IntellijIdeInfo.TargetKey.newBuilder().setLabel(newlabel).setConfiguration(target.configuration).build()
           }.build()
       }
     }

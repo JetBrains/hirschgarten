@@ -1,14 +1,14 @@
 package org.jetbrains.bazel.sync.workspace.languages.python
 
+import com.google.devtools.intellij.aspect.Common.ArtifactLocation
+import com.google.devtools.intellij.ideinfo.IntellijIdeInfo
+import com.google.devtools.intellij.ideinfo.IntellijIdeInfo.TargetIdeInfo
 import com.intellij.openapi.project.Project
 import org.jetbrains.bazel.commons.LanguageClass
 import org.jetbrains.bazel.commons.LocalRepositoryMapping
 import org.jetbrains.bazel.commons.RepoMapping
 import org.jetbrains.bazel.commons.getLocalRepositories
 import org.jetbrains.bazel.config.BazelFeatureFlags
-import org.jetbrains.bazel.info.BspTargetInfo.ArtifactLocation
-import org.jetbrains.bazel.info.BspTargetInfo.PythonTargetInfo
-import org.jetbrains.bazel.info.BspTargetInfo.TargetInfo
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.label.assumeResolved
 import org.jetbrains.bazel.label.label
@@ -41,8 +41,8 @@ internal class PythonLanguagePlugin : LanguagePlugin {
 
   class Mapper(private val server: BazelServerFacade) : LanguagePlugin.Mapper {
     override suspend fun createBuildTargetData(
-      target: TargetInfo,
-      targetsToImport: Map<Label, TargetInfo>,
+      target: TargetIdeInfo,
+      targetsToImport: Map<Label, TargetIdeInfo>,
       graph: DependencyGraph,
       repoMapping: RepoMapping,
     ): List<BuildTargetData> {
@@ -83,7 +83,7 @@ internal class PythonLanguagePlugin : LanguagePlugin {
         ?.takeUnless { it.relativePath.isNullOrEmpty() }
         ?.let { server.bazelPathsResolver.resolve(it, localRepositories) }
 
-    private fun getExternalSources(targetInfo: TargetInfo, localRepositories: LocalRepositoryMapping): List<ArtifactLocation> =
+    private fun getExternalSources(targetInfo: TargetIdeInfo, localRepositories: LocalRepositoryMapping): List<ArtifactLocation> =
       targetInfo.sourcesList.mapNotNull { it.takeIf { server.bazelPathsResolver.isExternal(it, localRepositories) } }.toList()
 
     private fun calculateExternalSourcePath(externalSource: ArtifactLocation, localRepositories: LocalRepositoryMapping): Path {
@@ -91,7 +91,7 @@ internal class PythonLanguagePlugin : LanguagePlugin {
       return server.bazelPathsResolver.resolve(findSitePackagesSubdirectory(path) ?: path)
     }
 
-    private fun PythonTargetInfo.resolveGeneratedSources(repoMapping: RepoMapping): Sequence<Path> {
+    private fun IntellijIdeInfo.PythonTargetInfo.resolveGeneratedSources(repoMapping: RepoMapping): Sequence<Path> {
       val localRepositories = repoMapping.getLocalRepositories()
       return generatedSourcesList
         .asSequence()

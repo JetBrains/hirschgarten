@@ -1,7 +1,7 @@
 package org.jetbrains.bazel.sync.workspace.graph
 
+import com.google.devtools.intellij.ideinfo.IntellijIdeInfo.TargetIdeInfo
 import org.jetbrains.annotations.ApiStatus
-import org.jetbrains.bazel.info.BspTargetInfo
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.label.SingleTarget
 import org.jetbrains.bazel.label.assumeResolved
@@ -11,10 +11,10 @@ import org.jetbrains.bazel.label.label
 @ApiStatus.Internal
 class DependencyGraph(
   rootTargets: Set<Label> = emptySet(),
-  val idToTargetInfo: Map<Label, BspTargetInfo.TargetInfo> = emptyMap(),
+  val idToTargetInfo: Map<Label, TargetIdeInfo> = emptyMap(),
 ) {
   private val rootTargets: MutableSet<Label> = rootTargets.toHashSet()
-  private val idToTransitiveDependencies = HashMap<Label, Set<BspTargetInfo.TargetInfo>>()
+  private val idToTransitiveDependencies = HashMap<Label, Set<TargetIdeInfo>>()
 
   init {
     idToTargetInfo.entries.forEach { (id, target) ->
@@ -31,7 +31,7 @@ class DependencyGraph(
     }
   }
 
-  private fun calculateTransitiveDependenciesForTarget(targetInfo: BspTargetInfo.TargetInfo): Set<BspTargetInfo.TargetInfo> {
+  private fun calculateTransitiveDependenciesForTarget(targetInfo: TargetIdeInfo): Set<TargetIdeInfo> {
     return idToTransitiveDependencies.getOrPut(targetInfo.label()) {
       targetInfo.depsList.filter { it.isCompile() }
         .flatMap { dependency ->
@@ -41,7 +41,7 @@ class DependencyGraph(
     }
   }
 
-  private fun idsToTargetInfo(dependencies: Collection<Label>): Set<BspTargetInfo.TargetInfo> =
+  private fun idsToTargetInfo(dependencies: Collection<Label>): Set<TargetIdeInfo> =
     dependencies.mapNotNull(idToTargetInfo::get).toSet()
 
   fun allTargetsAtDepth(
@@ -49,7 +49,7 @@ class DependencyGraph(
     // If include runtime dependencies in traversing. Default value simulates previous behavior
     runtimeDependencies: Boolean = maxDepth < 0,
     predicate: (Label) -> Boolean = { true }
-  ): Set<BspTargetInfo.TargetInfo> {
+  ): Set<TargetIdeInfo> {
     val depth = mutableMapOf<Label, Int>()
     val toVisit = ArrayDeque<Label>()
 
@@ -82,16 +82,16 @@ class DependencyGraph(
     return idsToTargetInfo(depth.keys)
   }
 
-  fun transitiveDependenciesWithoutRootTargets(target: BspTargetInfo.TargetInfo): Set<BspTargetInfo.TargetInfo> =
+  fun transitiveDependenciesWithoutRootTargets(target: TargetIdeInfo): Set<TargetIdeInfo> =
     target.depsList.map { it.label() }
       .filterNot { rootTargets.contains(it) }
       .flatMap(::collectTransitiveDependenciesAndAddTarget)
       .toSet()
 
-  fun transitiveDependenciesWithoutRootTargets(targetId: Label): Set<BspTargetInfo.TargetInfo> =
+  fun transitiveDependenciesWithoutRootTargets(targetId: Label): Set<TargetIdeInfo> =
     idToTargetInfo[targetId]?.let { transitiveDependenciesWithoutRootTargets(it) } ?: emptySet()
 
-  private fun collectTransitiveDependenciesAndAddTarget(targetId: Label): Set<BspTargetInfo.TargetInfo> {
+  private fun collectTransitiveDependenciesAndAddTarget(targetId: Label): Set<TargetIdeInfo> {
     val target = idToTargetInfo[targetId] ?: return emptySet()
     return calculateTransitiveDependenciesForTarget(target) + target
   }

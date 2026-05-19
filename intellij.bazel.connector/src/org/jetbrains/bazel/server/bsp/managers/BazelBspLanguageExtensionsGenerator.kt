@@ -1,11 +1,11 @@
 package org.jetbrains.bazel.server.bsp.managers
 
+import com.intellij.aspect.lib.Rules
 import org.apache.velocity.app.VelocityEngine
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.commons.BazelRelease
 import org.jetbrains.bazel.commons.BzlmodRepoMapping
 import org.jetbrains.bazel.commons.RepoMapping
-import org.jetbrains.bazel.commons.RepoMappingDisabled
 import org.jetbrains.bazel.commons.constants.Constants
 import org.jetbrains.bazel.server.bsp.utils.FileUtils.writeIfDifferent
 import org.jetbrains.bazel.server.bsp.utils.InternalAspectsResolver
@@ -13,6 +13,7 @@ import java.util.Properties
 
 @ApiStatus.Internal
 enum class Language(
+  val aspectLanguage: Rules,
   private val fileName: String,
   val rulesetNames: List<String>,
   val functions: List<String>,
@@ -33,6 +34,7 @@ enum class Language(
   val hostLocations: List<String> = emptyList(),
 ) {
   Java(
+    Rules.JAVA,
     "//" + Constants.DOT_BAZELBSP_DIR_NAME + "/aspects:rules/java/java_info.bzl",
     listOf("rules_java"),
     listOf("extract_java_toolchain", "extract_java_runtime"),
@@ -42,24 +44,36 @@ enum class Language(
     listOf(listOf("JavaInfo")),
     listOf("https://github.com/bazelbuild/rules_java/"),
   ),
-  Python("//" + Constants.DOT_BAZELBSP_DIR_NAME + "/aspects:rules/python/python_info.bzl", listOf("rules_python"), listOf("extract_python_info"),
+  Python(
+    Rules.PYTHON,
+    "//" + Constants.DOT_BAZELBSP_DIR_NAME + "/aspects:rules/python/python_info.bzl", listOf("rules_python"), listOf("extract_python_info"),
          true, listOf("PyInfo"), mapOf(), listOf(), listOf("https://github.com/bazel-contrib/rules_python/")),
-  Scala("//" + Constants.DOT_BAZELBSP_DIR_NAME + "/aspects:rules/scala/scala_info.bzl", listOf("io_bazel_rules_scala", "rules_scala"), listOf("extract_scala_info"),
+    Languages.PYTHON,
+    listOf("rules_python"), listOf("extract_python_info"),
+    true, listOf("PyInfo"), listOf("https://github.com/bazel-contrib/rules_python/")),
+  Scala(
+    Rules.SCALA,
+    "//" + Constants.DOT_BAZELBSP_DIR_NAME + "/aspects:rules/scala/scala_info.bzl", listOf("rules_scala", "io_bazel_rules_scala"), listOf("extract_scala_info"),
         false, listOf(), mapOf(), listOf(), listOf("https://github.com/bazel-contrib/rules_scala/")),
-  Kotlin("//" + Constants.DOT_BAZELBSP_DIR_NAME + "/aspects:rules/kt/kt_info.bzl", listOf("io_bazel_rules_kotlin", "rules_kotlin"), listOf("extract_kotlin_info"),
+  Kotlin(
+    Rules.KOTLIN,
+    "//" + Constants.DOT_BAZELBSP_DIR_NAME + "/aspects:rules/kt/kt_info.bzl", listOf("rules_kotlin", "io_bazel_rules_kotlin"), listOf("extract_kotlin_info"),
          false, listOf(), mapOf(), listOf(), listOf("https://github.com/bazelbuild/rules_kotlin/")),
-  Jvm(
-    "//" + Constants.DOT_BAZELBSP_DIR_NAME + "/aspects:rules/jvm/jvm_info.bzl",
-    Java.rulesetNames + Scala.rulesetNames + Kotlin.rulesetNames,
-    listOf("extract_jvm_info"),
-    true,
-    Java.autoloadHints + Scala.autoloadHints + Kotlin.autoloadHints,
-  ),
-  Go("//" + Constants.DOT_BAZELBSP_DIR_NAME + "/aspects:rules/go/go_info.bzl", listOf("rules_go", "io_bazel_rules_go"), listOf("extract_go_info"),
+  Go(
+    Rules.GO,
+    "//" + Constants.DOT_BAZELBSP_DIR_NAME + "/aspects:rules/go/go_info.bzl", listOf("rules_go", "io_bazel_rules_go"), listOf("extract_go_info"),
      false, listOf(), mapOf(), listOf(),listOf("https://github.com/bazel-contrib/rules_go/")),
-  RulesProto("//" + Constants.DOT_BAZELBSP_DIR_NAME + "/aspects:rules/protobuf/rules_proto_info.bzl", listOf("rules_proto"), listOf("extract_rules_proto_info"),
+  RulesProto(
+    Rules.PROTO, // XXX Need to support rules_proto as well
+    "//" + Constants.DOT_BAZELBSP_DIR_NAME + "/aspects:rules/protobuf/rules_proto_info.bzl", listOf("rules_proto"), listOf("extract_rules_proto_info"),
            false, emptyList(), emptyMap(), emptyList(), listOf("https://github.com/bazelbuild/rules_proto")),
-  Protobuf("//" + Constants.DOT_BAZELBSP_DIR_NAME + "/aspects:rules/protobuf/protobuf_info.bzl", listOf("protobuf"), listOf("extract_protobuf_info"),
+    Languages.PROTO, // XXX Need to support rules_proto as well
+    listOf("rules_proto"), listOf("extract_rules_proto_info"),
+    false, emptyList(),
+    listOf("https://github.com/bazelbuild/rules_proto")),
+  Protobuf(
+    Rules.PROTO,
+    "//" + Constants.DOT_BAZELBSP_DIR_NAME + "/aspects:rules/protobuf/protobuf_info.bzl", listOf("protobuf"), listOf("extract_protobuf_info"),
            true, emptyList(), emptyMap(), emptyList(), listOf("https://github.com/protocolbuffers/protobuf/")),
   ;
 

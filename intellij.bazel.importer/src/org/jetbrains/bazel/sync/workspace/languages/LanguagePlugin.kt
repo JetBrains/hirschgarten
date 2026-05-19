@@ -1,12 +1,12 @@
 package org.jetbrains.bazel.sync.workspace.languages
 
+import com.google.devtools.intellij.ideinfo.IntellijIdeInfo
 import com.intellij.openapi.extensions.ExtensionPointName
 import com.intellij.openapi.project.Project
 import com.intellij.util.IncorrectOperationException
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.commons.LanguageClass
 import org.jetbrains.bazel.commons.RepoMapping
-import org.jetbrains.bazel.info.BspTargetInfo.TargetInfo
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.sync.workspace.graph.DependencyGraph
 import org.jetbrains.bazel.sync.workspace.importer.BazelWorkspaceImporter
@@ -38,13 +38,13 @@ interface LanguagePlugin {
   interface Mapper {
     suspend fun prepareSync(
       graph: DependencyGraph,
-      targetsToImport: Map<Label, TargetInfo>,
+      targetsToImport: Map<Label, IntellijIdeInfo.TargetIdeInfo>,
       repoMapping: RepoMapping,
     ) {}
 
     suspend fun createBuildTargetData(
-      target: TargetInfo,
-      targetsToImport: Map<Label, TargetInfo>,
+      target: IntellijIdeInfo.TargetIdeInfo,
+      targetsToImport: Map<Label, IntellijIdeInfo.TargetIdeInfo>,
       graph: DependencyGraph,
       repoMapping: RepoMapping,
     ): List<BuildTargetData>

@@ -1,5 +1,6 @@
 package org.jetbrains.bazel.sync.workspace.languages.java
 
+import com.google.devtools.intellij.ideinfo.IntellijIdeInfo.TargetIdeInfo
 import com.intellij.openapi.projectRoots.impl.JavaHomeFinder
 import com.intellij.platform.eel.provider.LocalEelDescriptor
 import org.jetbrains.bazel.commons.BazelPathsResolver
@@ -7,13 +8,12 @@ import org.jetbrains.bazel.commons.LocalRepositoryMapping
 import org.jetbrains.bazel.commons.RepoMapping
 import org.jetbrains.bazel.commons.getLocalRepositories
 import org.jetbrains.bazel.label.Label
-import org.jetbrains.bazel.info.BspTargetInfo.TargetInfo
 import java.nio.file.Path
 import kotlin.io.path.Path
 import kotlin.io.path.exists
 
 internal class JdkResolver(private val bazelPathsResolver: BazelPathsResolver) {
-  fun resolve(targets: Map<Label, TargetInfo>, repoMapping: RepoMapping): Jdk? {
+  fun resolve(targets: Map<Label, TargetIdeInfo>, repoMapping: RepoMapping): Jdk? {
     val localRepositories = repoMapping.getLocalRepositories()
     val allCandidates = targets.values.mapNotNull { resolveJdkData(it, localRepositories, targets) }.toList()
     if (allCandidates.none()) return localJdkFallback()
@@ -22,9 +22,9 @@ internal class JdkResolver(private val bazelPathsResolver: BazelPathsResolver) {
   }
 
   private fun resolveJdkData(
-    targetInfo: TargetInfo,
+    targetInfo: TargetIdeInfo,
     localRepositories: LocalRepositoryMapping,
-    targets: Map<Label, TargetInfo>,
+    targets: Map<Label, TargetIdeInfo>,
   ): JdkCandidate? {
     val javaToolchainInfo = if (targetInfo.hasJavaToolchainInfo()) targetInfo.javaToolchainInfo else null
     val (javaHome, jdkType) = when {

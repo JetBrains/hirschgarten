@@ -1,9 +1,9 @@
 package org.jetbrains.bazel.sync.workspace.targetKind
 
+import com.google.devtools.intellij.ideinfo.IntellijIdeInfo.TargetIdeInfo
 import org.jetbrains.bazel.commons.LanguageClass
 import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.commons.TargetKind
-import org.jetbrains.bazel.info.BspTargetInfo.TargetInfo
 
 private class GenericBazelRules : TargetKindProvider {
   override val targetKinds: Set<TargetKind> =
@@ -43,7 +43,7 @@ private class GenericBazelRules : TargetKindProvider {
       TargetKind("sh_binary", setOf(), RuleType.BINARY),
     )
 
-  override fun inferTargetKind(target: TargetInfo): TargetKind? {
+  override fun inferTargetKind(target: TargetIdeInfo): TargetKind? {
     val inferredLanguages = buildSet {
       if (target.hasProtobufTargetInfo()) {
         add(LanguageClass.PROTOBUF)

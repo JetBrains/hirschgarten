@@ -15,13 +15,13 @@
  */
 package org.jetbrains.bazel.sync.workspace.targetKind
 
+import com.google.devtools.intellij.ideinfo.IntellijIdeInfo
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.service
 import com.intellij.openapi.extensions.ExtensionPointName
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.commons.TargetKind
-import org.jetbrains.bazel.info.BspTargetInfo
 import java.util.Collections
 
 /**
@@ -41,7 +41,7 @@ interface TargetKindProvider {
    * example, any rule name starting with 'kt_jvm_' might be parsed as a kotlin rule of unknown
    * [RuleType].
    */
-  fun inferTargetKind(target: BspTargetInfo.TargetInfo): TargetKind? = null
+  fun inferTargetKind(target: IntellijIdeInfo.TargetIdeInfo): TargetKind? = null
 
   companion object {
     val ep: ExtensionPointName<TargetKindProvider> =
@@ -85,7 +85,7 @@ class TargetKindService {
     return stringToKind[ruleName]
   }
 
-  fun fromTargetInfo(target: BspTargetInfo.TargetInfo): TargetKind {
+  fun fromTargetInfo(target: IntellijIdeInfo.TargetIdeInfo): TargetKind {
     fromRuleName(target.kind)?.let { return it }
     TargetKindProvider.ep
       .lazySequence()

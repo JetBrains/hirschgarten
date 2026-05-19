@@ -10,7 +10,7 @@ class InternalAspectsResolver(
   val workspaceRoot: Path,
 ) {
   private val dotBazelBspDir: Path = workspaceRoot.resolve(Constants.DOT_BAZELBSP_DIR_NAME)
-  private val prefix: String = "//${Constants.DOT_BAZELBSP_DIR_NAME}/aspects:core.bzl%"
+  private val prefix: String = "//${Constants.DOT_BAZELBSP_DIR_NAME}/"
 
   val aspectsPath: Path = dotBazelBspDir.resolve(Constants.ASPECTS_ROOT)
   fun resolveLabel(aspect: String): String = prefix + aspect

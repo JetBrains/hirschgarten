@@ -1,5 +1,8 @@
 package org.jetbrains.bazel.server.bsp.managers
 
+import com.intellij.aspect.lib.AspectConfig
+import com.intellij.aspect.lib.Rules
+import com.intellij.aspect.lib.deployAspectZip
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.bazelrunner.ShowRepoResult
 import org.jetbrains.bazel.bazelrunner.params.BazelFlag.aspect
@@ -22,6 +25,7 @@ import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bsp.protocol.TaskId
 import java.io.IOException
 import java.nio.file.Files
+import java.nio.file.Path
 import kotlin.io.path.exists
 
 @ApiStatus.Internal
@@ -119,6 +123,38 @@ class BazelBspAspectsManager(
     throw IllegalStateException("${bazelIgnore} mentions ${Constants.DOT_BAZELBSP_DIR_NAME} which is needed for sync by the bazel plugin.")
   }
 
+  fun deployIntelliJAspect(
+    rulesetLanguages: List<RulesetLanguage>,
+    bazelRelease: BazelRelease,
+    repoMapping: RepoMapping,
+  ) {
+    val ruleNameMapping = rulesetLanguages.mapNotNull {
+      // As the versions of rules_java for bazel 7 do not provide full information, we
+      // prefer to the builtin rules.
+      if ((it.language == Language.Java) && (bazelRelease.major <= 7)) return@mapNotNull null
+      val canonicalRuleName = it.calculateCanonicalName(repoMapping) ?: return@mapNotNull null
+      it.language.aspectLanguage to "@${canonicalRuleName}"
+    }.toMap()
+
+    // Languages for which the built-in rule set (bazel 8 and earlier) is used.
+    // As the versions of rules_java for bazel 7 do not provide full information, we
+    // prefer to the builtin rules.
+    val builtInLanguages = rulesetLanguages.filter {
+      it.calculateCanonicalName(repoMapping) == null
+    }.map { it.language.aspectLanguage }.toSet() + (if (bazelRelease.major <= 7) setOf(Rules.JAVA) else setOf())
+
+    deployAspectZip(
+     aspectsResolver.workspaceRoot,
+     Path.of(Constants.DOT_BAZELBSP_DIR_NAME),
+     AspectConfig(
+       "${bazelRelease.major}",
+       ruleNameMapping,
+       builtInLanguages,
+     ),
+    )
+
+  }
+
   fun generateAspectsFromTemplates(
     rulesetLanguages: List<RulesetLanguage>,
     bazelRelease: BazelRelease,
@@ -199,7 +235,7 @@ class BazelBspAspectsManager(
 
   suspend fun fetchFilesFromOutputGroups(
     targetsSpec: TargetCollection,
-    aspect: String,
+    aspects: List<String>,
     outputGroups: List<String>,
     workspaceContext: WorkspaceContext,
     taskId: TaskId,
@@ -207,7 +243,7 @@ class BazelBspAspectsManager(
     if (targetsSpec.values.isEmpty()) return BazelBspAspectsManagerResult(BepOutput(), BazelStatus.SUCCESS)
     val defaultFlags =
       listOf(
-        aspect(aspectsResolver.resolveLabel(aspect)),
+        aspect(aspects.map { aspectsResolver.resolveLabel(it)}.joinToString (",")),
         outputGroups(outputGroups),
         keepGoing(),
       )

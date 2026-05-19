@@ -1,13 +1,13 @@
 package org.jetbrains.bazel.sync.workspace.languages.scala
 
+import com.google.devtools.intellij.ideinfo.IntellijIdeInfo.TargetIdeInfo
 import org.jetbrains.bazel.commons.BazelPathsResolver
 import org.jetbrains.bazel.commons.LocalRepositoryMapping
-import org.jetbrains.bazel.info.BspTargetInfo
 import java.nio.file.Path
 import java.util.regex.Pattern
 
 internal class ScalaSdkResolver(private val bazelPathsResolver: BazelPathsResolver) {
-  fun resolveSdk(targetInfo: BspTargetInfo.TargetInfo, localRepositories : LocalRepositoryMapping): ScalaSdk? {
+  fun resolveSdk(targetInfo: TargetIdeInfo, localRepositories : LocalRepositoryMapping): ScalaSdk? {
     if (!targetInfo.hasScalaTargetInfo()) {
       return null
     }

@@ -31,13 +31,7 @@ class EnvironmentCreator(private val projectRootDir: Path) {
 
   private fun createDotBazelBspFiles(dotBazelBspDir: Path) {
     createGitIgnoreFile(dotBazelBspDir)
-    copyAspects(dotBazelBspDir)
     createEmptyBuildFile(dotBazelBspDir)
-  }
-
-  private fun copyAspects(dotBazelBspDir: Path) {
-    val destinationAspectsPath = dotBazelBspDir.resolve(Constants.ASPECTS_ROOT)
-    copyAspectsFromResources(destinationAspectsPath)
   }
 
   private fun createEmptyBuildFile(dotBazelBspDir: Path) {

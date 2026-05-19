@@ -1,8 +1,8 @@
 package org.jetbrains.bazel.commons
 
 import com.google.devtools.build.lib.buildeventstream.BuildEventStreamProtos
+import com.google.devtools.intellij.aspect.Common.ArtifactLocation
 import org.jetbrains.annotations.ApiStatus
-import org.jetbrains.bazel.info.BspTargetInfo.ArtifactLocation
 import org.jetbrains.bazel.label.Canonical
 import org.jetbrains.bazel.label.Main
 import org.jetbrains.bazel.label.ResolvedLabel

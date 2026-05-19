@@ -1,9 +1,9 @@
 package org.jetbrains.bazel.sync.workspace.targetKind
 
+import com.google.devtools.intellij.ideinfo.IntellijIdeInfo.TargetIdeInfo
 import org.jetbrains.bazel.commons.RuleType
-import org.jetbrains.bazel.info.BspTargetInfo
 
-internal fun BspTargetInfo.TargetInfo.inferRuleType(): RuleType = when {
+internal fun TargetIdeInfo.inferRuleType(): RuleType = when {
   !hasExecutableInfo() -> RuleType.LIBRARY
   kind.endsWith("_test") -> RuleType.TEST
   else -> RuleType.BINARY

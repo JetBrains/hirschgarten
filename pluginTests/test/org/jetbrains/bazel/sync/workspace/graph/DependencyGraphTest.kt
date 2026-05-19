@@ -1,10 +1,10 @@
 package org.jetbrains.bazel.sync.workspace.graph
 
+import com.google.devtools.intellij.aspect.Common.ArtifactLocation
+import com.google.devtools.intellij.ideinfo.IntellijIdeInfo.TargetIdeInfo
+import com.google.devtools.intellij.ideinfo.IntellijIdeInfo.TargetKey
+import com.google.devtools.intellij.ideinfo.IntellijIdeInfo.Dependency
 import io.kotest.matchers.shouldBe
-import org.jetbrains.bazel.info.BspTargetInfo
-import org.jetbrains.bazel.info.BspTargetInfo.Dependency
-import org.jetbrains.bazel.info.BspTargetInfo.TargetInfo
-import org.jetbrains.bazel.info.BspTargetInfo.TargetKey
 import org.jetbrains.bazel.label.Label
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
@@ -688,17 +688,17 @@ class DependencyGraphTest {
     runtimeDependenciesIds: List<String> = listOf(),
     addSrcs: Boolean = true,
     generatorName: String = "",
-  ): TargetInfo =
-    TargetInfo
+  ): TargetIdeInfo =
+    TargetIdeInfo
       .newBuilder()
       .setKey(TargetKey.newBuilder().setLabel(id).build())
       .addAllDeps(
-        dependenciesIds.map { dependency(it, Dependency.DependencyType.COMPILE) } +
+        dependenciesIds.map { dependency(it, Dependency.DependencyType.COMPILE_TIME) } +
           runtimeDependenciesIds.map { dependency(it, Dependency.DependencyType.RUNTIME) },
       )
       .apply {
         if (addSrcs) {
-          addSrcs(BspTargetInfo.ArtifactLocation.newBuilder().build())
+          addSrcs(ArtifactLocation.newBuilder().build())
         }
       }
       .setGeneratorName(generatorName).build()
@@ -710,6 +710,6 @@ class DependencyGraphTest {
       .setDependencyType(dependencyType)
       .build()
 
-  private fun toIdToTargetInfoMap(vararg targetIds: TargetInfo): Map<Label, TargetInfo> =
+  private fun toIdToTargetInfoMap(vararg targetIds: TargetIdeInfo): Map<Label, TargetIdeInfo> =
     targetIds.associateBy { targetId -> Label.parse(targetId.key.label) }
 }

@@ -12,10 +12,10 @@ class InternalAspectsResolverTest {
 
     // when
     val internalAspectsResolver = createAspectsResolver(bspProjectRoot)
-    val aspectLabel = internalAspectsResolver.resolveLabel("get_classpath")
+    val aspectLabel = internalAspectsResolver.resolveLabel("module.bzl%lang_aspect")
 
     // then
-    aspectLabel shouldBe "//.bazelbsp/aspects:core.bzl%get_classpath"
+    aspectLabel shouldBe "//.bazelbsp/module.bzl%lang_aspect"
   }
 
   @Test
@@ -25,10 +25,10 @@ class InternalAspectsResolverTest {
 
     // when
     val internalAspectsResolver = createAspectsResolver(bspProjectRoot)
-    val aspectLabel = internalAspectsResolver.resolveLabel("get_classpath")
+    val aspectLabel = internalAspectsResolver.resolveLabel("module.bzl%lang_aspect")
 
     // then
-    aspectLabel shouldBe "//.bazelbsp/aspects:core.bzl%get_classpath"
+    aspectLabel shouldBe "//.bazelbsp/module.bzl%lang_aspect"
   }
 
   private fun createAspectsResolver(bspProjectRoot: String): InternalAspectsResolver =

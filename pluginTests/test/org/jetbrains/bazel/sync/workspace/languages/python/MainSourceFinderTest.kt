@@ -1,5 +1,7 @@
 package org.jetbrains.bazel.sync.workspace.languages.python
 
+import com.google.devtools.intellij.aspect.Common
+import com.google.devtools.intellij.ideinfo.IntellijIdeInfo
 import io.kotest.assertions.throwables.shouldNotThrowAny
 import io.kotest.matchers.nulls.shouldBeNull
 import io.kotest.matchers.shouldBe
@@ -7,7 +9,6 @@ import org.jetbrains.bazel.commons.BazelInfo
 import org.jetbrains.bazel.commons.BazelPathsResolver
 import org.jetbrains.bazel.commons.BazelRelease
 import org.jetbrains.bazel.commons.LocalRepositoryMapping
-import org.jetbrains.bazel.info.BspTargetInfo
 import org.junit.jupiter.api.Test
 import java.nio.file.Path
 import kotlin.io.path.Path
@@ -165,7 +166,7 @@ private val mockBazelInfo =
 
 private val bazelPathsResolver = BazelPathsResolver(mockBazelInfo)
 
-private fun findMainFile(targetInfo: BspTargetInfo.TargetInfo): Path? =
+private fun findMainFile(targetInfo: IntellijIdeInfo.TargetIdeInfo): Path? =
   MainSourceFinder.findMainFile(targetInfo, targetInfo.pythonTargetInfo, bazelPathsResolver, localRepositoryMapping)
 
 private fun createTargetInfo(
@@ -173,22 +174,22 @@ private fun createTargetInfo(
   sources: List<String>,
   mainFileRelativePath: String?,
   repo: String? = null,
-): BspTargetInfo.TargetInfo {
+): IntellijIdeInfo.TargetIdeInfo {
   val repoRootPath = if (repo != null) "external/$repo" else ""
-  return BspTargetInfo.TargetInfo.newBuilder()
+  return IntellijIdeInfo.TargetIdeInfo.newBuilder()
     .setKey(targetKey(label))
     .addAllSrcs(sources.map { artifactLocation(it, repoRootPath) })
     .setPythonTargetInfo(pythonInfo(mainFileRelativePath, repoRootPath))
     .build()
 }
 
-private fun artifactLocation(pathRelativeToPackage: String, rootPath: String = ""): BspTargetInfo.ArtifactLocation {
+private fun artifactLocation(pathRelativeToPackage: String, rootPath: String = ""): Common.ArtifactLocation {
   val fullRelativePath =
     when (pathRelativeToPackage.isBlank()) {
       true -> ""
       false -> "$PACKAGE_STRING/$pathRelativeToPackage"
     }
-  return BspTargetInfo.ArtifactLocation.newBuilder()
+  return Common.ArtifactLocation.newBuilder()
     .setRootPath(rootPath)
     .setRelativePath(fullRelativePath)
     .setIsSource(true)
@@ -196,10 +197,10 @@ private fun artifactLocation(pathRelativeToPackage: String, rootPath: String = "
 }
 
 private fun targetKey(label: String) =
-  BspTargetInfo.TargetKey.newBuilder().setLabel(label).build()
+  IntellijIdeInfo.TargetKey.newBuilder().setLabel(label).build()
 
 private fun pythonInfo(mainFileRelativePath: String?, rootPath: String = "") =
-  BspTargetInfo.PythonTargetInfo.newBuilder()
+  IntellijIdeInfo.PythonTargetInfo.newBuilder()
     .apply {
       val mainValue = mainFileRelativePath?.let { artifactLocation(it, rootPath) }
       if (mainValue != null) {

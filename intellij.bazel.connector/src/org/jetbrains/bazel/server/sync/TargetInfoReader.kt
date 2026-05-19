@@ -1,21 +1,20 @@
 package org.jetbrains.bazel.server.sync
 
-import com.google.protobuf.TextFormat
+import com.google.devtools.intellij.ideinfo.IntellijIdeInfo.TargetIdeInfo
+import com.intellij.aspect.lib.readTargetFromFile
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.withContext
-import org.jetbrains.bazel.info.BspTargetInfo.TargetInfo
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bsp.protocol.BazelTaskLogger
-import java.io.IOException
 import java.nio.file.Path
-import kotlin.io.path.reader
 
 internal class TargetInfoReader(private val taskLogger: BazelTaskLogger?) {
-  suspend fun readTargetMapFromAspectOutputs(files: Set<Path>): Map<Label, TargetInfo> =
+  suspend fun readTargetMapFromAspectOutputs(files: Set<Path>): Map<Label, TargetIdeInfo> =
     withContext(Dispatchers.Default) {
-      files.map { file -> async { readFromFile(file) } }.awaitAll()
+      files.map { file -> async {
+        readTargetFromFile(file, { msg -> taskLogger?.error("Could not read target info $file: ${msg}") }) } }.awaitAll()
     }.asSequence()
       .filterNotNull()
       .groupBy { it.key.label }
@@ -26,27 +25,11 @@ internal class TargetInfoReader(private val taskLogger: BazelTaskLogger?) {
       // entities (TargetInfos) for each target and each ruleset (or language) instead of just
       // entity-per-label. As long as we don't have it, in case of a conflict we just take the entity
       // that contains JvmTargetInfo as currently it's the most important one for us. Later, we sort by
-      // shortest size to get a stable result, which should be the default config.
+      // shortest size to get a stable result, which should be the default config. For java toolchains,
+      // we prefer the non-exec one.
       .mapValues {
-        it.value.filter{ it.javaCommon.jvmTarget }.minByOrNull { targetInfo -> targetInfo.serializedSize } ?: it.value.first()
+        it.value.filter{ it.javaCommon.jvmTarget }.minByOrNull { targetInfo -> targetInfo.serializedSize }
+        ?: it.value.filter { it.hasJavaToolchainInfo() && !it.javaToolchainInfo.isExecConfig }.minByOrNull { targetInfo -> targetInfo.serializedSize }
+        ?: it.value.first()
       }.mapKeys { Label.parse(it.key) }
-
-  private fun readFromFile(file: Path): TargetInfo? {
-    val builder = TargetInfo.newBuilder()
-    val parser =
-      TextFormat.Parser
-        .newBuilder()
-        .setAllowUnknownFields(true)
-        .build()
-    try {
-      file.reader().use {
-        parser.merge(it, builder)
-      }
-    } catch (e: IOException) {
-      // Can happen if one output path is a prefix of another, then Bazel can't create both
-      taskLogger?.error("[WARN] Could not read target info $file: ${e.message}")
-      return null
-    }
-    return builder.build()
-  }
 }

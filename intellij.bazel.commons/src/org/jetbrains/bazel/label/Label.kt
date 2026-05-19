@@ -1,8 +1,8 @@
 package org.jetbrains.bazel.label
 
 import com.intellij.util.containers.Interner
+import com.google.devtools.intellij.ideinfo.IntellijIdeInfo
 import org.jetbrains.annotations.ApiStatus
-import org.jetbrains.bazel.info.BspTargetInfo
 import org.jetbrains.bazel.label.Label.Companion.synthetic
 import java.nio.file.Path
 import java.util.concurrent.ConcurrentHashMap
@@ -302,7 +302,7 @@ private fun joinPackagePathAndTarget(packagePath: PackageType, target: TargetTyp
   }
 
 @ApiStatus.Internal
-fun BspTargetInfo.TargetInfo.label(): Label = Label.parse(this.key.label)
+fun IntellijIdeInfo.TargetIdeInfo.label(): Label = Label.parse(this.key.label)
 
 @ApiStatus.Internal
-fun BspTargetInfo.Dependency.label(): Label = Label.parse(this.target.label)
+fun IntellijIdeInfo.Dependency.label(): Label = Label.parse(this.target.label)

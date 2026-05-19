@@ -1,11 +1,11 @@
 package org.jetbrains.bazel.sync.workspace.languages.protobuf
 
+import com.google.devtools.intellij.ideinfo.IntellijIdeInfo
+import com.google.devtools.intellij.ideinfo.IntellijIdeInfo.TargetIdeInfo
 import com.intellij.openapi.project.Project
 import org.jetbrains.bazel.commons.LanguageClass
 import org.jetbrains.bazel.commons.RepoMapping
 import org.jetbrains.bazel.commons.getLocalRepositories
-import org.jetbrains.bazel.info.BspTargetInfo
-import org.jetbrains.bazel.info.BspTargetInfo.TargetInfo
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.sync.workspace.graph.DependencyGraph
 import org.jetbrains.bazel.sync.workspace.languages.LanguagePlugin
@@ -21,8 +21,8 @@ internal class ProtobufLanguagePlugin : LanguagePlugin {
   class Mapper(private val server: BazelServerFacade) : LanguagePlugin.Mapper {
 
     override suspend fun createBuildTargetData(
-      target: TargetInfo,
-      targetsToImport: Map<Label, TargetInfo>,
+      target: TargetIdeInfo,
+      targetsToImport: Map<Label, TargetIdeInfo>,
       graph: DependencyGraph,
       repoMapping: RepoMapping,
     ): List<BuildTargetData> {
@@ -32,7 +32,7 @@ internal class ProtobufLanguagePlugin : LanguagePlugin {
       val localRepositories = repoMapping.getLocalRepositories()
       val sources =
         target.protobufTargetInfo.sourceMappingsList
-          .associate<BspTargetInfo.ProtobufSourceMapping, String, String> {
+          .associate<IntellijIdeInfo.ProtobufSourceMapping, String, String> {
             it.importPath to server.bazelPathsResolver.resolve(it.protoFile, localRepositories).absolutePathString()
           }
       return listOf(

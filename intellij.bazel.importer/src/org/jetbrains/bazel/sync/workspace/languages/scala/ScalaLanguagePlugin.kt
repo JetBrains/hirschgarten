@@ -1,11 +1,11 @@
 package org.jetbrains.bazel.sync.workspace.languages.scala
 
+import com.google.devtools.intellij.ideinfo.IntellijIdeInfo.TargetIdeInfo
 import com.intellij.openapi.project.Project
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.commons.LanguageClass
 import org.jetbrains.bazel.commons.RepoMapping
 import org.jetbrains.bazel.commons.getLocalRepositories
-import org.jetbrains.bazel.info.BspTargetInfo.TargetInfo
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.label.label
 import org.jetbrains.bazel.sync.workspace.graph.DependencyGraph
@@ -29,7 +29,7 @@ class ScalaLanguagePlugin: JvmLanguagePluginMixin {
 
     override suspend fun prepareSync(
       graph: DependencyGraph,
-      targetsToImport: Map<Label, TargetInfo>,
+      targetsToImport: Map<Label, TargetIdeInfo>,
       repoMapping: RepoMapping,
     ) {
       val localRepositories = repoMapping.getLocalRepositories()
@@ -58,8 +58,8 @@ class ScalaLanguagePlugin: JvmLanguagePluginMixin {
     private fun <K, V> Map<K, V?>.filterValuesNotNull(): Map<K, V> = filterValues { it != null }.mapValues { it.value!! }
 
     override suspend fun createBuildTargetData(
-      target: TargetInfo,
-      targetsToImport: Map<Label, TargetInfo>,
+      target: TargetIdeInfo,
+      targetsToImport: Map<Label, TargetIdeInfo>,
       repoMapping: RepoMapping,
     ): List<BuildTargetData> {
       if (!target.hasScalaTargetInfo()) {
@@ -74,7 +74,7 @@ class ScalaLanguagePlugin: JvmLanguagePluginMixin {
     }
 
     override suspend fun toolchainLibraries(
-      targetsToImport: Map<Label, TargetInfo>,
+      targetsToImport: Map<Label, TargetIdeInfo>,
       repoMapping: RepoMapping,
     ): Map<Label, List<LibraryItem>> {
       val projectLevelScalaSdkLibraries = calculateProjectLevelScalaSdkLibraries()

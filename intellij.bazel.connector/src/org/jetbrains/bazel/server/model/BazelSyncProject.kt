@@ -1,11 +1,12 @@
 package org.jetbrains.bazel.server.model
 
+import com.google.devtools.intellij.aspect.Common.ArtifactLocation
 import com.google.devtools.build.lib.query2.proto.proto2api.Build.Target
+import com.google.devtools.intellij.ideinfo.IntellijIdeInfo
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.commons.BazelRelease
 import org.jetbrains.bazel.commons.RepoMapping
 import org.jetbrains.bazel.commons.RepoMappingDisabled
-import org.jetbrains.bazel.info.BspTargetInfo
 import org.jetbrains.bazel.label.Label
 import java.nio.file.Path
 
@@ -26,7 +27,7 @@ data class AspectSyncProject(
   val repoMapping: RepoMapping = RepoMappingDisabled,
   val workspaceName: String,
   val hasError: Boolean = false,
-  val targets: Map<Label, BspTargetInfo.TargetInfo>,
+  val targets: Map<Label, IntellijIdeInfo.TargetIdeInfo>,
   val rootTargets: Set<Label>,
 ) {
   operator fun plus(project: AspectSyncProject): AspectSyncProject {
@@ -43,9 +44,9 @@ data class AspectSyncProject(
 }
 
 @get:ApiStatus.Internal
-val BspTargetInfo.TargetInfo.sourcesList: Sequence<BspTargetInfo.ArtifactLocation>
+val IntellijIdeInfo.TargetIdeInfo.sourcesList: Sequence<ArtifactLocation>
   get() = srcsList.asSequence().filter { it.isSource }
 
 @get:ApiStatus.Internal
-val BspTargetInfo.TargetInfo.generatedSourcesList: Sequence<BspTargetInfo.ArtifactLocation>
+val IntellijIdeInfo.TargetIdeInfo.generatedSourcesList: Sequence<ArtifactLocation>
   get() = srcsList.asSequence().filter { !it.isSource }

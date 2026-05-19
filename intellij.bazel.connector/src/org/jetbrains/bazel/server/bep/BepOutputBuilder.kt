@@ -26,7 +26,6 @@ internal class BepOutputBuilder(private val bazelPathsResolver: BazelPathsResolv
         files =
           namedSetOfFiles
             .filesList
-            .filter { it.name.endsWith(Constants.ASPECT_OUTPUT_EXTENSION) }
             .map { it.toLocalPath() },
         children = namedSetOfFiles.fileSetsList.map { it.id },
       )

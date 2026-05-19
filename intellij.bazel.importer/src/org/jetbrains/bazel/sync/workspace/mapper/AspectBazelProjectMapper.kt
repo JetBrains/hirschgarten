@@ -1,5 +1,7 @@
 package org.jetbrains.bazel.sync.workspace.mapper.normal
 
+import com.google.devtools.intellij.aspect.Common.ArtifactLocation
+import com.google.devtools.intellij.ideinfo.IntellijIdeInfo.TargetIdeInfo
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import kotlinx.coroutines.Dispatchers
@@ -10,8 +12,6 @@ import org.jetbrains.bazel.commons.LocalRepositoryMapping
 import org.jetbrains.bazel.commons.RepoMapping
 import org.jetbrains.bazel.commons.constants.Constants
 import org.jetbrains.bazel.commons.getLocalRepositories
-import org.jetbrains.bazel.info.BspTargetInfo
-import org.jetbrains.bazel.info.BspTargetInfo.TargetInfo
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.label.assumeResolved
 import org.jetbrains.bazel.label.label
@@ -37,7 +37,7 @@ internal class AspectBazelProjectMapper(
   private val workspaceContext = server.workspaceContext
 
   suspend fun mapTargets(
-    allTargets: Map<Label, TargetInfo>,
+    allTargets: Map<Label, TargetIdeInfo>,
     rootTargets: Set<Label>,
     repoMapping: RepoMapping
   ): List<RawBuildTarget> {
@@ -46,7 +46,7 @@ internal class AspectBazelProjectMapper(
         DependencyGraph(rootTargets, allTargets)
       }
 
-    val targetsToImport: Map<Label, TargetInfo> =
+    val targetsToImport: Map<Label, TargetIdeInfo> =
       measure("Select targets") {
         dependencyGraph.allTargetsAtDepth(
           workspaceContext.importDepth,
@@ -67,7 +67,7 @@ internal class AspectBazelProjectMapper(
   }
 
   private suspend fun createRawBuildTargets(
-    targetsToImport: Map<Label, TargetInfo>,
+    targetsToImport: Map<Label, TargetIdeInfo>,
     repoMapping: RepoMapping,
     dependencyGraph: DependencyGraph,
   ): List<RawBuildTarget> {
@@ -91,8 +91,8 @@ internal class AspectBazelProjectMapper(
   }
 
   private suspend fun createRawBuildTarget(
-    target: TargetInfo,
-    targetsToImport: Map<Label, TargetInfo>,
+    target: TargetIdeInfo,
+    targetsToImport: Map<Label, TargetIdeInfo>,
     repoMapping: RepoMapping,
     dependencyGraph: DependencyGraph,
     localRepositories: LocalRepositoryMapping,
@@ -111,8 +111,8 @@ internal class AspectBazelProjectMapper(
 
     val resources = bazelPathsResolver.resolvePaths(target.jvmTargetInfo.resourcesList, localRepositories)
 
-    fun resolveSourceSet(target: TargetInfo, filter: (BspTargetInfo.ArtifactLocation) -> Boolean): List<Path> {
-      return target.srcsList.filter(filter).mapNotNull { src: BspTargetInfo.ArtifactLocation ->
+    fun resolveSourceSet(target: TargetIdeInfo, filter: (ArtifactLocation) -> Boolean): List<Path> {
+      return target.srcsList.filter(filter).mapNotNull { src: ArtifactLocation ->
         val path = bazelPathsResolver.resolve(src, localRepositories)
         if (!path.exists()) {
           logger.warn("target ${target.key.label}: $path does not exist.")

@@ -1,5 +1,8 @@
 package org.jetbrains.bazel.sync.workspace.targetKind
 
+import com.google.devtools.intellij.ideinfo.IntellijIdeInfo.JavaCommonInfo
+import com.google.devtools.intellij.ideinfo.IntellijIdeInfo.TargetIdeInfo
+import com.google.devtools.intellij.ideinfo.IntellijIdeInfo.ExecutableInfo
 import io.kotest.matchers.nulls.shouldBeNull
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeSameInstanceAs
@@ -9,9 +12,6 @@ import org.jetbrains.bazel.commons.RuleType.LIBRARY
 import org.jetbrains.bazel.commons.RuleType.TEST
 import org.jetbrains.bazel.commons.RuleType.UNKNOWN
 import org.jetbrains.bazel.commons.TargetKind
-import org.jetbrains.bazel.info.BspTargetInfo
-import org.jetbrains.bazel.info.BspTargetInfo.JavaCommonInfo
-import org.jetbrains.bazel.info.BspTargetInfo.TargetInfo
 import org.jetbrains.bazel.test.framework.BazelTestApplication
 import org.junit.jupiter.api.Test
 
@@ -149,15 +149,17 @@ private fun targetInfo(
   kind: String,
   executable: Boolean = false,
   jvmTarget: Boolean = false,
-): TargetInfo =
-  TargetInfo.newBuilder()
-    .setKind(kind)
-    .apply {
-      if (executable) {
-        setExecutableInfo(BspTargetInfo.ExecutableInfo.getDefaultInstance())
+): TargetIdeInfo {
+  val builder =
+    TargetIdeInfo.newBuilder()
+      .setKind(kind)
+      .apply {
+        if (executable) {
+          setExecutableInfo(ExecutableInfo.getDefaultInstance())
+        }
+        if (jvmTarget) {
+          javaCommon = JavaCommonInfo.newBuilder().setJvmTarget(true).build()
+        }
       }
-      if (jvmTarget) {
-        javaCommon = JavaCommonInfo.newBuilder().setJvmTarget(true).build()
-      }
-    }
-    .build()
+  return builder.build()
+}

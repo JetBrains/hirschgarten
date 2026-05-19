@@ -1,5 +1,7 @@
 package org.jetbrains.bazel.sync.workspace.languages.go
 
+import com.google.devtools.intellij.aspect.Common
+import com.google.devtools.intellij.ideinfo.IntellijIdeInfo.TargetIdeInfo
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
@@ -9,8 +11,6 @@ import org.jetbrains.bazel.commons.LanguageClass
 import org.jetbrains.bazel.commons.LocalRepositoryMapping
 import org.jetbrains.bazel.commons.RepoMapping
 import org.jetbrains.bazel.commons.getLocalRepositories
-import org.jetbrains.bazel.info.BspTargetInfo
-import org.jetbrains.bazel.info.BspTargetInfo.TargetInfo
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.sync.workspace.graph.DependencyGraph
 import org.jetbrains.bazel.sync.workspace.languages.LanguagePlugin
@@ -32,8 +32,8 @@ class GoLanguagePlugin: LanguagePlugin {
   class Mapper(private val server: BazelServerFacade) : LanguagePlugin.Mapper {
 
     override suspend fun createBuildTargetData(
-      target: TargetInfo,
-      targetsToImport: Map<Label, TargetInfo>,
+      target: TargetIdeInfo,
+      targetsToImport: Map<Label, TargetIdeInfo>,
       graph: DependencyGraph,
       repoMapping: RepoMapping,
     ): List<BuildTargetData> {
@@ -54,7 +54,7 @@ class GoLanguagePlugin: LanguagePlugin {
       )
     }
 
-    private fun calculateSdkPath(sdk: BspTargetInfo.ArtifactLocation?, localRepositories: LocalRepositoryMapping): Path? =
+    private fun calculateSdkPath(sdk: Common.ArtifactLocation?, localRepositories: LocalRepositoryMapping): Path? =
       sdk
         ?.takeUnless { it.relativePath.isNullOrEmpty() }
         ?.let {
