@@ -62,13 +62,13 @@ class GolandSyncTest : IdeStarterBaseProjectTest() {
 
           step("Open a source file and navigate from the import reference to a BUILD file in the workspace") {
             execute { it.openFile("testa/src.go") }
-            execute { it.navigateToFile(4, 64, "BUILD.bazel", 5, 1) }
+            execute { it.navigateToFile(4, 64, "BUILD.bazel", 6, 12) }
             takeScreenshot("navigateFromImportReferenceToBuildFileInWorkspace")
           }
 
           step("Open a source file and navigate from the import reference to a BUILD file outside of the workspace") {
             execute { it.openFile("testb/testb_test.go") }
-            execute { it.navigateToFile(6, 36, "BUILD.bazel", 3, 1) }
+            execute { it.navigateToFile(6, 36, "BUILD.bazel", 4, 12) }
             takeScreenshot("navigateFromImportReferenceToBuildFileOutsideWorkspace")
           }
 

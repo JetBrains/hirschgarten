@@ -40,7 +40,7 @@ internal class StarlarkFunctionCallReference(element: StarlarkCallExpression, ra
   PsiReferenceBase<StarlarkCallExpression>(element, rangeInElement, true) {
   override fun resolve(): PsiElement? {
     val element = myElement ?: return null
-    when (element.name) {
+    when (element.getCalledFunctionName()) {
       null -> {
         return null
       }
@@ -54,7 +54,7 @@ internal class StarlarkFunctionCallReference(element: StarlarkCallExpression, ra
       }
 
       else -> {
-        val processor = StarlarkResolveProcessor(mutableListOf(), element)
+        val processor = StarlarkResolveProcessor(mutableListOf(), element, element.getCalledFunctionName())
         SearchUtils.searchInFile(element, processor)
         return processor.result.firstOrNull()
       }

@@ -11,11 +11,12 @@ import org.jetbrains.bazel.languages.starlark.psi.StarlarkElement
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkNamedElement
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkReferenceExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkTargetExpression
+import org.jetbrains.bazel.languages.starlark.psi.expressions.isRuleTarget
 import org.jetbrains.bazel.languages.starlark.psi.functions.StarlarkFunctionDeclaration
 
 internal class StarlarkFindUsagesProvider : FindUsagesProvider {
   override fun canFindUsagesFor(psiElement: PsiElement): Boolean =
-    psiElement is StarlarkNamedElement || psiElement is StarlarkReferenceExpression
+    psiElement is StarlarkNamedElement || psiElement is StarlarkReferenceExpression || psiElement.isRuleTarget()
 
   override fun getHelpId(psiElement: PsiElement): String =
     when (psiElement) {
@@ -25,9 +26,10 @@ internal class StarlarkFindUsagesProvider : FindUsagesProvider {
 
   @Suppress("HardCodedStringLiteral")
   override fun getType(element: PsiElement): String =
-    when (element) {
-      is StarlarkFunctionDeclaration -> "function"
-      is StarlarkTargetExpression, is StarlarkReferenceExpression -> "variable"
+    when {
+      element.isRuleTarget() -> "target"
+      element is StarlarkFunctionDeclaration -> "function"
+      element is StarlarkTargetExpression || element is StarlarkReferenceExpression -> "variable"
       else -> ""
     }
 

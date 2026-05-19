@@ -6,11 +6,13 @@ import com.intellij.codeInsight.lookup.LookupElement
 import com.intellij.codeInsight.lookup.LookupElementBuilder
 import com.intellij.lang.ASTNode
 import com.intellij.openapi.util.TextRange
+import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiReference
 import com.intellij.psi.impl.source.resolve.reference.ReferenceProvidersRegistry
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkBaseElement
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkElementVisitor
+import org.jetbrains.bazel.languages.starlark.psi.StarlarkFile
 import org.jetbrains.bazel.languages.starlark.psi.expressions.arguments.StarlarkArgumentExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.arguments.StarlarkNamedArgumentExpression
 import org.jetbrains.bazel.languages.starlark.psi.functions.StarlarkArgumentList
@@ -22,6 +24,8 @@ import org.jetbrains.bazel.languages.starlark.references.StarlarkLoadReference
 import org.jetbrains.bazel.languages.starlark.references.StarlarkVisibilityReference
 import org.jetbrains.bazel.languages.starlark.utils.StarlarkQuote
 import javax.swing.Icon
+import kotlin.contracts.ExperimentalContracts
+import kotlin.contracts.contract
 
 @ApiStatus.Internal
 fun getCompletionLookupElemenent(
@@ -63,6 +67,7 @@ fun getCompletionLookupElemenent(
 
 @ApiStatus.Internal
 class StarlarkStringLiteralExpression(node: ASTNode) : StarlarkBaseElement(node) {
+
   override fun acceptVisitor(visitor: StarlarkElementVisitor) = visitor.visitStringLiteralExpression(this)
 
   fun getStringContents(): String = getQuote().unwrap(text)
@@ -70,6 +75,19 @@ class StarlarkStringLiteralExpression(node: ASTNode) : StarlarkBaseElement(node)
   fun getStringContentsOffset(): TextRange = getQuote().rangeWithinQuotes(text)
 
   fun getQuote(): StarlarkQuote = StarlarkQuote.ofString(text)
+
+  /**
+   * Detects whether this string literal is the value of the target name attribute.
+   * It ensures that this value represents the whole name - any string concatenation or variable usage is rejected.
+   */
+  fun isTargetNameAttributeValue(): Boolean {
+    val parent = parent as? StarlarkNamedArgumentExpression ?: return false
+    if (!parent.isNameArgument()) return false
+    val argList = parent.parent as? StarlarkArgumentList ?: return false
+    if (argList.parent !is StarlarkCallExpression) return false
+    val file = containingFile as? StarlarkFile ?: return false
+    return file.isBuildFile()
+  }
 
   override fun getReferences(): Array<PsiReference> {
     val contributedReferences = ReferenceProvidersRegistry.getReferencesFromProviders(this)

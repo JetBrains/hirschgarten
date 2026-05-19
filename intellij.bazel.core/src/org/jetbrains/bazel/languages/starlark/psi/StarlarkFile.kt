@@ -25,7 +25,7 @@ open class StarlarkFile(viewProvider: FileViewProvider) :
   fun findRuleTarget(targetName: String): StarlarkCallExpression? =
     findChildrenByClass(StarlarkExpressionStatement::class.java)
       .mapNotNull { it.callExpressionOrNull() }
-      .firstOrNull { it.getArgumentList()?.getNameArgumentValue() == targetName }
+      .firstOrNull { it.isRuleTarget() && it.getNameAttributeValue() == targetName }
 
   internal fun searchInLoads(processor: Processor<StarlarkElement>): Boolean =
     findChildrenByClass(StarlarkLoadStatement::class.java).flatMap { it.getLoadedSymbolsPsi() }.all(processor::process)

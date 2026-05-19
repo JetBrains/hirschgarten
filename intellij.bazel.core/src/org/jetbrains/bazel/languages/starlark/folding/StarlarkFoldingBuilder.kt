@@ -46,7 +46,7 @@ internal class StarlarkFoldingBuilder : FoldingBuilderEx() {
 
   private fun getCallExpressionPlaceholder(callExpression: StarlarkCallExpression): String {
     val functionName = callExpression.getNameNode()?.text ?: "unknown_rule"
-    val targetName = callExpression.getTargetName() ?: ""
+    val targetName = callExpression.getNameAttributeValue() ?: ""
     return "$functionName($targetName)"
   }
 
