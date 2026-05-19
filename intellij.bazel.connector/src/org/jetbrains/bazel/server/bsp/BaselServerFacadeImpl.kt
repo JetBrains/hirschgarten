@@ -13,7 +13,6 @@ import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bsp.protocol.AnalysisDebugParams
 import org.jetbrains.bsp.protocol.AnalysisDebugResult
 import org.jetbrains.bsp.protocol.BazelServerFacade
-import org.jetbrains.bsp.protocol.BspJvmClasspath
 import org.jetbrains.bsp.protocol.CompileParams
 import org.jetbrains.bsp.protocol.CompileResult
 import org.jetbrains.bsp.protocol.InverseSourcesParams
@@ -33,7 +32,6 @@ import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsResult
 import org.jetbrains.bsp.protocol.WorkspaceDirectoriesResult
 import org.jetbrains.bsp.protocol.WorkspaceNameResult
 import org.jetbrains.bsp.protocol.WorkspacePhasedBuildTargetsResult
-import org.jetbrains.bsp.protocol.WorkspaceTargetClasspathQueryParams
 
 @ApiStatus.Internal
 class BaselServerFacadeImpl(
@@ -100,10 +98,6 @@ class BaselServerFacadeImpl(
     val project = projectProvider.getOrLoad(taskId) as? AspectSyncProject
                   ?: return WorkspaceNameResult(null)
     return WorkspaceNameResult(project.workspaceName)
-  }
-
-  override suspend fun workspaceTargetClasspathQuery(params: WorkspaceTargetClasspathQueryParams): BspJvmClasspath {
-    return bspMapper.classpathQuery(params.target)
   }
 
   override suspend fun jvmToolchainInfoForTarget(target: Label): JvmToolchainInfo {

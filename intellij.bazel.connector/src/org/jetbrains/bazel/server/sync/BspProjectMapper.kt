@@ -10,7 +10,6 @@ import org.jetbrains.bazel.label.assumeResolved
 import org.jetbrains.bazel.label.toPath
 import org.jetbrains.bazel.server.model.BazelSyncProject
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
-import org.jetbrains.bsp.protocol.BspJvmClasspath
 import org.jetbrains.bsp.protocol.DirectoryItem
 import org.jetbrains.bsp.protocol.InverseSourcesParams
 import org.jetbrains.bsp.protocol.InverseSourcesResult
@@ -148,9 +147,6 @@ class BspProjectMapper(
 
   suspend fun jvmBuilderParamsForTarget(target: Label): JvmToolchainInfo =
     JvmToolchainQuery.jvmToolchainQueryForTarget(bazelRunner, workspaceContext, target)
-
-  suspend fun classpathQuery(target: Label): BspJvmClasspath =
-    ClasspathQuery.classPathQuery(target, bazelRunner, workspaceContext)
 
   internal object BazelQueryRunner {
     suspend fun runQuery(
