@@ -18,7 +18,6 @@ import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.config.BazelPluginConstants
 import org.jetbrains.bazel.settings.bazel.bazelProjectSettings
 import org.jetbrains.bazel.target.TargetUtils
-import org.jetbrains.bazel.target.targetUtils
 import java.nio.file.Path
 import javax.swing.Icon
 
@@ -101,9 +100,6 @@ internal class BazelProjectOpenProcessor : ProjectOpenProcessor() {
         this.createModule = Registry.`is`("bazel.create.fake.module.on.project.import")
 
         beforeOpen = { project ->
-          // todo gets invoked twice
-          project.initProperties(projectRootDir)
-
           projectViewPath
             ?.refreshAndFindVirtualFile()
             ?.let { projectViewPath ->

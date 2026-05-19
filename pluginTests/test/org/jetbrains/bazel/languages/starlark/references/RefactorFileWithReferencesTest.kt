@@ -2,9 +2,8 @@ package org.jetbrains.bazel.languages.starlark.references
 
 import com.intellij.openapi.components.service
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
-import org.jetbrains.bazel.config.isBazelProject
-import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.languages.starlark.repomapping.PersistentBazelRepoMappingService
+import org.jetbrains.bazel.project.BazelProjectFixtures.initializeBazelProject
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -12,7 +11,6 @@ import org.junit.runners.JUnit4
 import java.lang.reflect.Field
 import java.nio.file.Path
 import kotlin.io.path.Path
-
 
 @RunWith(JUnit4::class)
 internal class RefactorFileWithReferencesTest : BasePlatformTestCase()  {
@@ -22,9 +20,8 @@ internal class RefactorFileWithReferencesTest : BasePlatformTestCase()  {
 
   @Before
   fun setupBuildEnvironment() {
-    project.isBazelProject = true
+    initializeBazelProject(project, myFixture.tempDirPath)
   }
-
 
   @Test
   fun `rename kotlin file should update label in build file`() {
@@ -503,7 +500,6 @@ internal class RefactorFileWithReferencesTest : BasePlatformTestCase()  {
   private fun setupRepoMappings() {
     val tempRoot = myFixture.tempDirFixture.getFile(".")!!
     rootPath = Path(tempRoot.path)
-    project.rootDir = tempRoot
 
     persistent = project.service<PersistentBazelRepoMappingService>()
     canonicalRepoNameToPath = persistent::class.java.getDeclaredField("canonicalRepoNameToPath")

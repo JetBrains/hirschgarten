@@ -3,7 +3,7 @@ package org.jetbrains.bazel.languages.starlark.completion
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.collections.shouldNotContainAnyOf
-import org.jetbrains.bazel.config.isBazelProject
+import org.jetbrains.bazel.project.BazelProjectFixtures.initializeBazelProject
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -13,7 +13,7 @@ import org.junit.runners.JUnit4
 class StarlarkFileCompletionTest : BasePlatformTestCase() {
   @Before
   fun beforeEach() {
-    project.isBazelProject = true
+    initializeBazelProject(project, myFixture.tempDirPath)
   }
 
   @Test

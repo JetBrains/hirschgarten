@@ -1,15 +1,13 @@
 package org.jetbrains.bazel.flow.exclude
 
-import com.intellij.openapi.vfs.refreshAndFindVirtualDirectory
 import com.intellij.platform.backend.workspace.virtualFile
 import com.intellij.platform.backend.workspace.workspaceModel
 import com.intellij.testFramework.junit5.TestApplication
 import com.intellij.testFramework.junit5.fixture.projectFixture
 import com.intellij.testFramework.junit5.fixture.tempPathFixture
-import com.intellij.testFramework.utils.vfs.refreshAndGetVirtualDirectory
+import com.intellij.testFramework.refreshVfs
 import kotlinx.coroutines.runBlocking
-import org.jetbrains.bazel.config.isBazelProject
-import org.jetbrains.bazel.config.rootDir
+import org.jetbrains.bazel.project.BazelProjectFixtures.initializeBazelProject
 import org.jetbrains.bazel.workspace.bazelProjectDirectoriesEntity
 import org.jetbrains.bazel.workspacemodel.entities.BazelProjectDirectoriesEntityFixtures.emptyBazelDirectoryWorkspaceEntity
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -29,10 +27,8 @@ internal class BazelSymlinkExcludeStartupActivityTest {
 
   @BeforeEach
   fun setUp() {
-    project.isBazelProject = true
-    project.rootDir = tempDir.refreshAndFindVirtualDirectory()!!
+    initializeBazelProject(project, tempDir)
     Files.createFile(tempDir.resolve("MODULE.bazel"))
-    tempDir.refreshAndGetVirtualDirectory()
   }
 
   @Test
@@ -61,6 +57,7 @@ internal class BazelSymlinkExcludeStartupActivityTest {
     Files.createDirectories(realDirectory)
     val convenientSymlink = tempDir.resolve(name)
     Files.createSymbolicLink(convenientSymlink, realDirectory)
+    tempDir.refreshVfs()
     return convenientSymlink
   }
 }

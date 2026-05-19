@@ -8,9 +8,9 @@ import com.intellij.testFramework.fixtures.BasePlatformTestCase
 import com.intellij.testFramework.fixtures.CodeInsightTestFixture
 import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
-import org.jetbrains.bazel.config.isBazelProject
 import org.jetbrains.bazel.java.ui.gutters.BazelJavaRunLineMarkerContributor
 import org.jetbrains.bazel.kotlin.ui.gutters.BazelKotlinRunLineMarkerContributor
+import org.jetbrains.bazel.project.BazelProjectFixtures.initializeBazelProject
 import org.jetbrains.bazel.run.test.forceDisableJetBrainsTestRunner
 import org.jetbrains.kotlin.psi.KtClass
 import org.jetbrains.kotlin.psi.KtClassBody
@@ -29,7 +29,7 @@ class BazelRunLineMarkerContributorTest : BasePlatformTestCase() {
   }
 
   private fun CodeInsightTestFixture.setBuildTool() {
-    project.isBazelProject = true
+    initializeBazelProject(project, myFixture.tempDirPath)
     forceDisableJetBrainsTestRunner = true
   }
 

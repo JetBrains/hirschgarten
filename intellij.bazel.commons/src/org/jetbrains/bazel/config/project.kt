@@ -6,27 +6,11 @@ import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.sync.environment.getProjectRootDirOrThrow
 import org.jetbrains.bazel.sync.environment.projectCtx
 
-var Project.isBazelProject: Boolean
+val Project.isBazelProject: Boolean
   get() = projectCtx.isBazelProject
-  @ApiStatus.Internal
-  set(value) {
-    projectCtx.isBazelProject = value
-  }
 
-var Project.rootDir: VirtualFile
+val Project.rootDir: VirtualFile
   get() = projectCtx.getProjectRootDirOrThrow()
-  @ApiStatus.Internal
-  set(value) {
-    projectCtx.projectRootDir = value
-  }
-
-var Project.workspaceName: String?
-  @ApiStatus.Internal
-  get() = projectCtx.workspaceName
-  @ApiStatus.Internal
-  set(value) {
-    projectCtx.workspaceName = value
-  }
 
 val Project.bazelProjectName: String
   @ApiStatus.Internal

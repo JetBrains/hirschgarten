@@ -5,7 +5,6 @@ import com.intellij.testFramework.fixtures.CodeInsightFixtureTestCase
 import com.intellij.testFramework.fixtures.ModuleFixture
 import io.kotest.matchers.collections.shouldContainExactly
 import org.jetbrains.bazel.commons.ExcludableValue
-import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.languages.projectview.ProjectView
 import org.jetbrains.bazel.languages.projectview.psi.ProjectViewPsiFile
@@ -13,6 +12,7 @@ import org.jetbrains.bazel.languages.projectview.sections.DirectoriesSection
 import org.jetbrains.bazel.languages.projectview.sections.ImportDepthSection
 import org.jetbrains.bazel.languages.projectview.sections.ShardSyncSection
 import org.jetbrains.bazel.languages.projectview.sections.TargetsSection
+import org.jetbrains.bazel.project.BazelProjectFixtures.initializeBazelProject
 import org.jetbrains.bazel.test.framework.annotation.BazelTest
 import org.junit.Test
 import kotlin.io.path.Path
@@ -20,10 +20,13 @@ import kotlin.io.path.Path
 //@RunWith(JUnit4::class)
 @BazelTest
 class ProjectViewImportTest : CodeInsightFixtureTestCase<ModuleFixtureBuilder<ModuleFixture>>() {
+  override fun setUp() {
+    super.setUp()
+    initializeBazelProject(project, myFixture.tempDirPath)
+  }
+
   @Test
   fun `test import no overlap`() {
-    project.rootDir = myFixture.tempDirFixture.findOrCreateDir(".")
-
     myFixture.addFileToProject(
       "A.bazelproject",
       """
@@ -62,8 +65,6 @@ class ProjectViewImportTest : CodeInsightFixtureTestCase<ModuleFixtureBuilder<Mo
 
   @Test
   fun `test import full overlap`() {
-    project.rootDir = myFixture.tempDirFixture.findOrCreateDir(".")
-
     myFixture.addFileToProject(
       "A.bazelproject",
       """
@@ -98,8 +99,6 @@ class ProjectViewImportTest : CodeInsightFixtureTestCase<ModuleFixtureBuilder<Mo
 
   @Test
   fun `test import full overlap import first`() {
-    project.rootDir = myFixture.tempDirFixture.findOrCreateDir(".")
-
     myFixture.addFileToProject(
       "A.bazelproject",
       """

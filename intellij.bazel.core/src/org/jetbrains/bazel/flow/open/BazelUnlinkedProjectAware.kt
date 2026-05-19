@@ -25,16 +25,11 @@ import kotlinx.coroutines.withContext
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.config.BazelPluginConstants
 import org.jetbrains.bazel.config.isBazelProject
-import org.jetbrains.bazel.config.isBrokenBazelProject
 import java.nio.file.Path
 
 @ApiStatus.Internal
 class BazelUnlinkedProjectAware : ExternalSystemUnlinkedProjectAware {
   companion object {
-    // See https://youtrack.jetbrains.com/issue/BAZEL-1500. Broken projects are handled by OpenBrokenBazelProjectStartupActivity already.
-    val Project.isLinkedBazelProject: Boolean
-      get() = isBazelProject || isBrokenBazelProject
-
     /**
      * Closes the current project and reopens it as a Bazel project.
      * Must be called from application-level scope (use [BazelApplicationCoroutineScopeService.launch]).
@@ -63,7 +58,7 @@ class BazelUnlinkedProjectAware : ExternalSystemUnlinkedProjectAware {
     BazelOpenProjectProvider().isProjectFile(buildFile)
 
   override fun isLinkedProject(project: Project, externalProjectPath: String): Boolean =
-    project.isLinkedBazelProject
+    project.isBazelProject
 
   override suspend fun linkAndLoadProjectAsync(project: Project, externalProjectPath: String) {
     val service = serviceAsync<BazelApplicationCoroutineScopeService>()

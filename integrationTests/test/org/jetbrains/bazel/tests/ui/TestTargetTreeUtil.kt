@@ -67,6 +67,10 @@ fun IDETestContext.setRunConfigRunWithBazel(runTestWithBazel: Boolean): IDETestC
   addSystemProperty(BazelFeatureFlags.RUN_CONFIG_RUN_WITH_BAZEL, runTestWithBazel.toString())
 }
 
+fun IDETestContext.setAutoOpenProjectIfPresent(autoOpenProjectIfPresent: Boolean): IDETestContext = applyVMOptionsPatch {
+  addSystemProperty(BazelFeatureFlags.AUTO_OPEN_PROJECT_IF_PRESENT, autoOpenProjectIfPresent.toString())
+}
+
 
 /**
  * [line] can be different depending on e.g. imports folding

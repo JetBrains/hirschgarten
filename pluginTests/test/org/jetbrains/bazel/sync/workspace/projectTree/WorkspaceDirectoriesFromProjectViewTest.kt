@@ -1,6 +1,5 @@
 package org.jetbrains.bazel.sync.workspace.projectTree
 
-import com.intellij.openapi.vfs.VirtualFileManager
 import com.intellij.platform.ide.progress.ModalTaskOwner
 import com.intellij.platform.ide.progress.TaskCancellation
 import com.intellij.platform.ide.progress.runWithModalProgressBlocking
@@ -10,11 +9,11 @@ import kotlinx.coroutines.runBlocking
 import org.jetbrains.bazel.bazelrunner.BazelProcess
 import org.jetbrains.bazel.bazelrunner.BazelProcessResult
 import org.jetbrains.bazel.bazelrunner.BazelRunner
-import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.jpsCompilation.utils.JPS_COMPILED_BASE_DIRECTORY
 import org.jetbrains.bazel.languages.projectview.ProjectView
 import org.jetbrains.bazel.languages.projectview.ProjectViewToWorkspaceContextConverter
 import org.jetbrains.bazel.languages.projectview.psi.ProjectViewPsiFile
+import org.jetbrains.bazel.project.BazelProjectFixtures.initializeBazelProject
 import org.jetbrains.bazel.server.sync.BspProjectMapper
 import org.jetbrains.bazel.sync.workspace.projectTree.BazelRunnerSpyStubbingHelper.captureBazelCommandFromMock
 import org.jetbrains.bsp.protocol.WorkspaceDirectoriesResult
@@ -36,8 +35,7 @@ class WorkspaceDirectoriesFromProjectViewTest : BasePlatformTestCase() {
   override fun setUp() {
     super.setUp()
     workspaceRoot = createTempDirectory("workspace")
-    project.rootDir =
-      VirtualFileManager.getInstance().findFileByNioPath(workspaceRoot) ?: error("Failed to create temp dir")
+    initializeBazelProject(project, workspaceRoot)
     bazelRunner = createMockBazelRunner()
     dotBazelBspPath = workspaceRoot.resolve(".bazelbsp")
   }

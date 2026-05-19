@@ -6,8 +6,8 @@ import com.intellij.testFramework.fixtures.BasePlatformTestCase
 import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.instanceOf
-import org.jetbrains.bazel.config.isBazelProject
 import org.jetbrains.bazel.languages.starlark.bazel.StarlarkClassParametersProvider
+import org.jetbrains.bazel.project.BazelProjectFixtures.initializeBazelProject
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -17,7 +17,7 @@ import org.junit.runners.JUnit4
 class StarlarkClassnameReferenceTest : BasePlatformTestCase() {
   @Before
   fun beforeEach() {
-    project.isBazelProject = true
+    initializeBazelProject(project, myFixture.tempDirPath)
   }
 
   @Test

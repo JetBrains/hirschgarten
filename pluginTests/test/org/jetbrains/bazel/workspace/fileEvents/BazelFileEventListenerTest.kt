@@ -3,9 +3,7 @@
 package org.jetbrains.bazel.workspace.fileEvents
 
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.util.registry.Registry
 import com.intellij.openapi.vfs.VirtualFile
-import com.intellij.openapi.vfs.VirtualFileManager
 import com.intellij.openapi.vfs.newvfs.events.ChildInfo
 import com.intellij.openapi.vfs.newvfs.events.VFileContentChangeEvent
 import com.intellij.openapi.vfs.newvfs.events.VFileCopyEvent
@@ -25,6 +23,7 @@ import com.intellij.platform.workspace.storage.ImmutableEntityStorage
 import com.intellij.platform.workspace.storage.url.VirtualFileUrl
 import com.intellij.testFramework.common.timeoutRunBlocking
 import com.intellij.testFramework.replaceService
+import com.intellij.testFramework.utils.vfs.refreshAndGetVirtualDirectory
 import com.intellij.testFramework.workspaceModel.updateProjectModel
 import com.intellij.workspaceModel.ide.toPath
 import io.kotest.matchers.booleans.shouldBeFalse
@@ -41,6 +40,7 @@ import org.jetbrains.bazel.config.isBazelProject
 import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.magicmetamodel.formatAsModuleName
+import org.jetbrains.bazel.project.BazelProjectFixtures.deinitializeBazelProject
 import org.jetbrains.bazel.server.connection.BazelServerConnection
 import org.jetbrains.bazel.server.connection.BazelServerService
 import org.jetbrains.bazel.target.targetUtils
@@ -74,8 +74,6 @@ class BazelFileEventListenerTest : WorkspaceModelBaseTest() {
   @BeforeEach
   override fun beforeEach() {
     super.beforeEach()
-    project.isBazelProject = true
-    project.rootDir = VirtualFileManager.getInstance().findFileByNioPath(Path(project.basePath!!))!!
     inverseSourcesServer = InverseSourcesServer(projectBasePath)
 
 
@@ -369,8 +367,15 @@ class BazelFileEventListenerTest : WorkspaceModelBaseTest() {
 
   @Test
   fun `should ignore non-Bazel projects`() {
-    project.isBazelProject = false
-    val file = project.rootDir.createDirectory("src").createFile("aaa", "java")
+    // GIVEN
+    deinitializeBazelProject(project)
+    project.isBazelProject.shouldBeFalse()
+
+    val file = projectBasePath.refreshAndGetVirtualDirectory()
+      .createDirectory("src")
+      .createFile("aaa", "java")
+
+    // THEN
     createEvent(file).process().assertNoProcessingHappened()
     deleteEvent(file).process().assertNoProcessingHappened()
   }

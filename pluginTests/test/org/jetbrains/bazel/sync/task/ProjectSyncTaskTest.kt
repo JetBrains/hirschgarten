@@ -2,17 +2,16 @@ package org.jetbrains.bazel.sync.task
 
 import com.intellij.openapi.util.Disposer
 import com.intellij.openapi.util.use
-import com.intellij.openapi.vfs.VirtualFileManager
 import com.intellij.testFramework.registerOrReplaceServiceInstance
 import io.kotest.matchers.shouldBe
 import kotlinx.coroutines.runBlocking
-import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.impl.flow.sync.DisabledTestProjectPostSyncHook
 import org.jetbrains.bazel.impl.flow.sync.DisabledTestProjectPreSyncHook
 import org.jetbrains.bazel.impl.flow.sync.DisabledTestProjectSyncHook
 import org.jetbrains.bazel.impl.flow.sync.TestProjectPostSyncHook
 import org.jetbrains.bazel.impl.flow.sync.TestProjectPreSyncHook
 import org.jetbrains.bazel.impl.flow.sync.TestProjectSyncHook
+import org.jetbrains.bazel.project.BazelProjectFixtures.initializeBazelProject
 import org.jetbrains.bazel.server.connection.BazelServerService
 import org.jetbrains.bazel.sync.ProjectPostSyncHook
 import org.jetbrains.bazel.sync.ProjectPreSyncHook
@@ -28,14 +27,13 @@ import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsResult
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
-import kotlin.io.path.Path
 
 @DisplayName("ProjectSyncTask tests")
 class ProjectSyncTaskTest : MockProjectBaseTest() {
 
   @BeforeEach
   fun beforeAll() {
-    project.rootDir = VirtualFileManager.getInstance().findFileByNioPath(Path(project.basePath!!))!!
+    initializeBazelProject(project, projectDir.get())
   }
 
   @Test

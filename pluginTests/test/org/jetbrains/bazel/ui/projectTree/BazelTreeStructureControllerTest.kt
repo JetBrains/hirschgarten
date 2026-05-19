@@ -10,8 +10,7 @@ import com.intellij.platform.backend.workspace.workspaceModel
 import com.intellij.testFramework.junit5.TestApplication
 import com.intellij.testFramework.junit5.fixture.projectFixture
 import com.intellij.testFramework.junit5.fixture.tempPathFixture
-import org.jetbrains.bazel.config.isBazelProject
-import org.jetbrains.bazel.config.rootDir
+import org.jetbrains.bazel.project.BazelProjectFixtures.initializeBazelProject
 import org.jetbrains.bazel.ui.projectTree.BazelTreeNodeType.EXCLUDED
 import org.jetbrains.bazel.ui.projectTree.BazelTreeNodeType.ROOT
 import org.jetbrains.bazel.ui.projectTree.BazelTreeNodeType.UNIMPORTED
@@ -35,9 +34,8 @@ internal class BazelTreeStructureControllerTest {
   private val project by projectFixture
 
   @BeforeEach
-  fun setupRootDir() {
-    project.isBazelProject = true
-    project.rootDir = tempDir.refreshAndFindVirtualDirectory()!!
+  fun initializeBazelProject() {
+    initializeBazelProject(project, tempDir)
   }
 
   @Nested

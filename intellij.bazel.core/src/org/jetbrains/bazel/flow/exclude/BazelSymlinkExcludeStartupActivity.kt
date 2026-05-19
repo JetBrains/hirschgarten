@@ -6,7 +6,7 @@ import com.intellij.openapi.project.guessProjectDir
 import com.intellij.openapi.startup.ProjectActivity
 import com.intellij.openapi.vfs.toNioPathOrNull
 import org.jetbrains.annotations.ApiStatus
-import org.jetbrains.bazel.config.bazelProjectProperties
+import org.jetbrains.bazel.sync.environment.projectCtx
 import java.nio.file.Path
 
 /**
@@ -26,7 +26,7 @@ class BazelSymlinkExcludeStartupActivity : ProjectActivity {
   }
 
   private fun Project.guessBazelWorkspaceDir(): Path? {
-    val virtualFile = bazelProjectProperties.rootDir ?: guessProjectDir()
+    val virtualFile = projectCtx.projectRootDir ?: guessProjectDir()
     return virtualFile?.toNioPathOrNull()
   }
 }

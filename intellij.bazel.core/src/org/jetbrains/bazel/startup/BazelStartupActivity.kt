@@ -9,7 +9,6 @@ import com.intellij.util.PlatformUtils
 import com.intellij.workspaceModel.ide.impl.WorkspaceModelImpl
 import kotlinx.coroutines.flow.update
 import org.jetbrains.bazel.config.BazelFeatureFlags
-import org.jetbrains.bazel.config.BazelProjectProperties
 import org.jetbrains.bazel.languages.projectview.DefaultProjectViewService
 import org.jetbrains.bazel.languages.projectview.ProjectViewService
 import org.jetbrains.bazel.projectAware.BazelWorkspace
@@ -90,7 +89,6 @@ private fun executeOnSyncedProject(project: Project) {
  */
 private suspend fun isProjectInIncompleteState(project: Project): Boolean =
   project.serviceAsync<TargetUtils>().getTotalTargetCount() == 0 ||
-    project.serviceAsync<BazelProjectProperties>().isBrokenBazelProject ||
     !PlatformUtils.isGoIde() &&
     !(project.serviceAsync<WorkspaceModel>() as WorkspaceModelImpl).loadedFromCache ||
     !bazelExecPathExists(project)

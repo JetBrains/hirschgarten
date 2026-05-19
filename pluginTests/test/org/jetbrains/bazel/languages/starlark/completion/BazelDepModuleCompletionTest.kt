@@ -6,8 +6,8 @@ import com.intellij.testFramework.fixtures.BasePlatformTestCase
 import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.collections.shouldContainExactly
-import org.jetbrains.bazel.config.isBazelProject
 import org.jetbrains.bazel.languages.starlark.bazel.bzlmod.BazelModuleResolver
+import org.jetbrains.bazel.project.BazelProjectFixtures.initializeBazelProject
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -17,7 +17,7 @@ import org.junit.runners.JUnit4
 class BazelDepModuleCompletionTest : BasePlatformTestCase() {
   @Before
   fun beforeEach() {
-    project.isBazelProject = true
+    initializeBazelProject(project, myFixture.tempDirPath)
     ExtensionTestUtil.maskExtensions(BazelModuleResolver.EP_NAME, listOf(provider), testRootDisposable)
   }
 

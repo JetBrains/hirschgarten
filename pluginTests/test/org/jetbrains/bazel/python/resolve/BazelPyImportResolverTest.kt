@@ -8,24 +8,27 @@ import com.intellij.psi.PsiDirectory
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiManager
 import com.intellij.psi.util.QualifiedName
-import com.intellij.testFramework.LightPlatformTestCase
 import com.intellij.testFramework.LightProjectDescriptor
 import com.intellij.testFramework.fixtures.DefaultLightProjectDescriptor
+import com.intellij.testFramework.fixtures.TempDirTestFixture
+import com.intellij.testFramework.fixtures.impl.TempDirTestFixtureImpl
 import com.jetbrains.python.psi.PyFile
 import com.jetbrains.python.psi.resolve.PyQualifiedNameResolveContextImpl
 import io.kotest.matchers.nulls.shouldBeNull
 import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeInstanceOf
-import org.jetbrains.bazel.config.isBazelProject
+import org.jetbrains.bazel.config.rootDir
+import org.jetbrains.bazel.project.BazelProjectFixtures.deinitializeBazelProject
 import org.jetbrains.bazel.test.framework.BazelBasePlatformTestCase
-
 
 class BazelPyImportResolverTest : BazelBasePlatformTestCase() {
 
   override fun getProjectDescriptor(): LightProjectDescriptor? {
     return DefaultLightProjectDescriptor()
   }
+
+  override fun createTempDirTestFixture(): TempDirTestFixture = TempDirTestFixtureImpl()
 
   override fun setUp() {
     super.setUp()
@@ -72,7 +75,7 @@ class BazelPyImportResolverTest : BazelBasePlatformTestCase() {
   }
 
   fun testShouldIgnoreNonBazelProject() {
-    project.isBazelProject = false
+    deinitializeBazelProject(project)
     val result = tryResolve("file1")
     result.shouldBeNull()
   }
@@ -144,7 +147,7 @@ class BazelPyImportResolverTest : BazelBasePlatformTestCase() {
    */
   private fun prepareFiles() {
     WriteCommandAction.runWriteCommandAction(project) {
-      val root = LightPlatformTestCase.getSourceRoot()
+      val root = project.rootDir
 
       root.createChildData(this, "file1.py")
       root.createChildData(this, "file2.java")

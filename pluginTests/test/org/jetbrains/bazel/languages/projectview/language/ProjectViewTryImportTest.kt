@@ -6,10 +6,10 @@ import com.intellij.testFramework.fixtures.ModuleFixture
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.collections.shouldContainExactly
 import org.jetbrains.bazel.commons.ExcludableValue
-import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.languages.projectview.ProjectView
 import org.jetbrains.bazel.languages.projectview.psi.ProjectViewPsiFile
 import org.jetbrains.bazel.languages.projectview.sections.DirectoriesSection
+import org.jetbrains.bazel.project.BazelProjectFixtures.initializeBazelProject
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
@@ -20,11 +20,14 @@ import kotlin.io.path.Path
  */
 @RunWith(JUnit4::class)
 class ProjectViewTryImportTest : CodeInsightFixtureTestCase<ModuleFixtureBuilder<ModuleFixture>>() {
+  override fun setUp() {
+    super.setUp()
+    initializeBazelProject(project, myFixture.tempDirPath)
+  }
+
   @Test
   fun `test try_import missing file is ignored`() {
     // Ensure imports resolve from project root
-    project.rootDir = myFixture.tempDirFixture.findOrCreateDir(".")
-
     val psiFile =
       myFixture.configureByText(
         "Main.bazelproject",
@@ -46,8 +49,6 @@ class ProjectViewTryImportTest : CodeInsightFixtureTestCase<ModuleFixtureBuilder
 
   @Test
   fun `test try_import present merges collections`() {
-    project.rootDir = myFixture.tempDirFixture.findOrCreateDir(".")
-
     myFixture.addFileToProject(
       "Imported.bazelproject",
       """
@@ -79,8 +80,6 @@ class ProjectViewTryImportTest : CodeInsightFixtureTestCase<ModuleFixtureBuilder
 
   @Test
   fun `test required import missing throws helpful error`() {
-    project.rootDir = myFixture.tempDirFixture.findOrCreateDir(".")
-
     val psiFile =
       myFixture.configureByText(
         "Main.bazelproject",

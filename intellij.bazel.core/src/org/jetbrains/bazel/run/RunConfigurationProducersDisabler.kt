@@ -3,11 +3,11 @@ package org.jetbrains.bazel.run
 import com.intellij.execution.RunConfigurationProducerSuppressor
 import com.intellij.execution.actions.RunConfigurationProducer
 import com.intellij.openapi.project.Project
-import org.jetbrains.bazel.flow.open.BazelUnlinkedProjectAware.Companion.isLinkedBazelProject
+import org.jetbrains.bazel.config.isBazelProject
 
-private class BazelRunConfigurationProducerSuppressor : RunConfigurationProducerSuppressor {
+internal class BazelRunConfigurationProducerSuppressor : RunConfigurationProducerSuppressor {
   override fun shouldSuppress(producer: RunConfigurationProducer<*>, project: Project): Boolean =
-    project.isLinkedBazelProject &&
+    project.isBazelProject &&
       producer::class.java.name in producersNames
 
   private val producersNames = setOf(

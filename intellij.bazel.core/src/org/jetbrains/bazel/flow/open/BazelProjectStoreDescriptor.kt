@@ -13,11 +13,13 @@ import com.intellij.openapi.components.StoragePathMacros
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.NlsSafe
 import com.intellij.util.PathUtilRt
+import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.commons.constants.Constants
 import java.nio.file.Files
 import java.nio.file.Path
 
-internal class BazelProjectStoreDescriptor(
+@ApiStatus.Internal
+class BazelProjectStoreDescriptor(
   override val projectIdentityFile: Path,
   override val dotIdea: Path,
   override val historicalProjectBasePath: Path,

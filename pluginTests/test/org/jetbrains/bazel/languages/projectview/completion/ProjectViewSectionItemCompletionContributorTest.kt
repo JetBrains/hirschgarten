@@ -1,8 +1,6 @@
 package org.jetbrains.bazel.languages.projectview.completion
 
 import com.intellij.openapi.application.runWriteAction
-import com.intellij.openapi.vfs.refreshAndFindVirtualDirectory
-import com.intellij.platform.backend.workspace.toVirtualFileUrl
 import com.intellij.platform.backend.workspace.workspaceModel
 import com.intellij.platform.testFramework.junit5.codeInsight.fixture.codeInsightFixture
 import com.intellij.testFramework.junit5.TestApplication
@@ -12,12 +10,10 @@ import com.intellij.testFramework.junit5.fixture.tempPathFixture
 import io.kotest.matchers.collections.shouldContainAll
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.collections.shouldNotContain
-import org.jetbrains.bazel.config.isBazelProject
-import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.languages.bazelrc.flags.Flag
+import org.jetbrains.bazel.project.BazelProjectFixtures.initializeBazelProject
 import org.jetbrains.bazel.workspace.bazelProjectDirectoriesEntity
-import org.jetbrains.bazel.workspacemodel.entities.BazelProjectDirectoriesEntity
-import org.jetbrains.bazel.workspacemodel.entities.BazelProjectEntitySource
+import org.jetbrains.bazel.workspacemodel.entities.BazelProjectDirectoriesEntityFixtures.emptyBazelDirectoryWorkspaceEntity
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertNull
@@ -40,23 +36,12 @@ class ProjectViewSectionItemCompletionContributorTest {
 
   @BeforeEach
   fun setupRootDir() {
-    project.isBazelProject = true
-    project.rootDir = tempDir.refreshAndFindVirtualDirectory()!!
+    initializeBazelProject(project, tempDir)
     if (project.bazelProjectDirectoriesEntity() == null) {
       val workspaceModel = project.workspaceModel
-      val workspaceModelUrlManager = workspaceModel.getVirtualFileUrlManager()
       runWriteAction {
         workspaceModel.updateProjectModel("Add bazel project directories entity") { storage ->
-          storage.addEntity(
-            BazelProjectDirectoriesEntity(
-              project.rootDir.toVirtualFileUrl(workspaceModelUrlManager),
-              emptyList(),
-              emptyList(),
-              false,
-              emptyList(),
-              BazelProjectEntitySource,
-            ),
-          )
+          storage.addEntity(emptyBazelDirectoryWorkspaceEntity(project))
         }
       }
     }

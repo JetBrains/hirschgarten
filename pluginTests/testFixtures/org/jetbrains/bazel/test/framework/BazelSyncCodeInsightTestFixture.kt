@@ -10,7 +10,7 @@ import com.intellij.testFramework.fixtures.TempDirTestFixture
 import com.intellij.testFramework.fixtures.impl.CodeInsightTestFixtureImpl
 import com.intellij.testFramework.junit5.fixture.TestFixture
 import com.intellij.util.lang.UrlClassLoader
-import org.jetbrains.bazel.config.bazelProjectProperties
+import org.jetbrains.bazel.project.BazelProjectFixtures.initializeBazelProject
 import org.jetbrains.bazel.sync.scope.SecondPhaseSync
 import org.jetbrains.bazel.sync.task.ProjectSyncTask
 import java.nio.file.Path
@@ -75,7 +75,7 @@ class BazelSyncCodeInsightTestFixtureImpl(
 
   override fun setUp() {
     super.setUp()
-    project.bazelProjectProperties.rootDir = virtualFileOf(tempDirPath)
+    initializeBazelProject(project, tempDir)
   }
 
   override fun tearDown() {

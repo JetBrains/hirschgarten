@@ -1,6 +1,5 @@
 package org.jetbrains.bazel.python.sync
 
-import com.intellij.openapi.vfs.VirtualFileManager
 import com.intellij.platform.backend.workspace.WorkspaceModel
 import com.intellij.platform.util.progress.reportSequentialProgress
 import com.intellij.platform.workspace.jps.entities.ContentRootEntity
@@ -23,10 +22,10 @@ import kotlinx.coroutines.runBlocking
 import org.jetbrains.bazel.commons.LanguageClass
 import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.commons.TargetKind
-import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.label.DependencyLabel
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.magicmetamodel.formatAsModuleName
+import org.jetbrains.bazel.project.BazelProjectFixtures.initializeBazelProject
 import org.jetbrains.bazel.sync.ProjectSyncHook
 import org.jetbrains.bazel.sync.scope.SecondPhaseSync
 import org.jetbrains.bazel.sync.workspace.BazelResolvedWorkspace
@@ -68,7 +67,7 @@ class PythonProjectSyncTest : MockProjectBaseTest() {
   fun beforeEach() {
     // given
     hook = PythonProjectSync()
-    project.rootDir = VirtualFileManager.getInstance().findFileByNioPath(Path(project.basePath!!))!!
+    initializeBazelProject(project, projectDir.get())
     virtualFileUrlManager = WorkspaceModel.getInstance(project).getVirtualFileUrlManager()
   }
 

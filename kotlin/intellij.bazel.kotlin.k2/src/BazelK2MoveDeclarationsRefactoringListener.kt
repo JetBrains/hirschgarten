@@ -6,7 +6,7 @@ import com.intellij.openapi.roots.ContentEntry
 import com.intellij.openapi.roots.ModuleRootManager
 import com.intellij.openapi.roots.ProjectFileIndex
 import com.intellij.psi.PsiElement
-import org.jetbrains.bazel.flow.open.BazelUnlinkedProjectAware.Companion.isLinkedBazelProject
+import org.jetbrains.bazel.config.isBazelProject
 import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.BazelDummyModuleType
 import org.jetbrains.kotlin.idea.k2.refactoring.move.descriptor.K2MoveDescriptor
 import org.jetbrains.kotlin.idea.k2.refactoring.move.descriptor.K2MoveTargetDescriptor
@@ -27,7 +27,7 @@ internal class BazelK2MoveDeclarationsRefactoringListener : K2MoveDeclarationsRe
 
   override fun beforeMove(moveDescriptor: K2MoveDescriptor.Declarations) {
     val project = moveDescriptor.project
-    if (!project.isLinkedBazelProject) return
+    if (!project.isBazelProject) return
 
     val target = moveDescriptor.target as? K2MoveTargetDescriptor.File ?: return
 
