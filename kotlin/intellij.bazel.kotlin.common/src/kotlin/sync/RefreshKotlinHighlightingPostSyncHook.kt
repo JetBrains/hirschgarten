@@ -2,6 +2,7 @@ package org.jetbrains.bazel.kotlin.sync
 
 import com.intellij.openapi.application.edtWriteAction
 import org.jetbrains.bazel.sync.ProjectPostSyncHook
+import org.jetbrains.kotlin.analysis.api.KaPlatformInterface
 import org.jetbrains.kotlin.analysis.api.platform.modification.publishGlobalModuleStateModificationEvent
 
 /**
@@ -10,6 +11,7 @@ import org.jetbrains.kotlin.analysis.api.platform.modification.publishGlobalModu
 internal class RefreshKotlinHighlightingPostSyncHook : ProjectPostSyncHook {
   override suspend fun onPostSync(environment: ProjectPostSyncHook.ProjectPostSyncHookEnvironment) {
     edtWriteAction {
+      @OptIn(KaPlatformInterface::class)
       environment.project.publishGlobalModuleStateModificationEvent()
     }
   }
