@@ -85,7 +85,7 @@ class BazelKotlinFacetEntityUpdater : KotlinFacetEntityUpdater {
     } ?: ""
     this.compilerSettings =
       CompilerSettingsData(
-        additionalArguments = kotlincOpts?.joinToString(" ") ?: "",
+        additionalArguments = "",  // We already set arguments via this.compilerArguments. Don't duplicate to avoid red code
         scriptTemplates = "",
         scriptTemplatesClasspath = "",
         copyJsLibraryFiles = false,
