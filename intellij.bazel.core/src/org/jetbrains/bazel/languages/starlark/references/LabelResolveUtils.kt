@@ -76,12 +76,7 @@ private fun resolveBuildFileOrSourceFile(
 
 private fun resolveBuildFileTarget(buildFile: StarlarkFile, label: Label): PsiElement? {
   val target = label.singleTarget() ?: return null
-  val ruleTarget = buildFile.findRuleTarget(target.targetName) ?: return null
-  return ruleTarget
-    .getArgumentList()
-    ?.getNameArgument()
-    ?.getValue()
-    ?.let { return it }
+  return buildFile.findRuleTarget(target.targetName)
 }
 
 @ApiStatus.Internal

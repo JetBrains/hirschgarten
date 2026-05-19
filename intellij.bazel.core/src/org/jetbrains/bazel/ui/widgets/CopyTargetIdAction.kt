@@ -70,7 +70,7 @@ internal class CopyTargetIdAction : SuspendableAction({ BazelPluginBundle.messag
   }
 
   private fun StarlarkCallExpression.calculateTargetId(): String? {
-    val targetName = getTargetName() ?: return null
+    val targetName = getNameAttributeValue() ?: return null
     val containingFile = containingFile?.virtualFile?.toNioPathOrNull() ?: return null
     return calculateLabel(project, containingFile, targetName)?.toShortString(project)
   }
@@ -120,7 +120,7 @@ internal class CopyTargetIdAction : SuspendableAction({ BazelPluginBundle.messag
     val starlarkCallExpression = starlarkReferenceExpression?.parent ?: return false
     return starlarkCallExpression is StarlarkCallExpression &&
       isTopLevelCall(starlarkCallExpression) &&
-      starlarkCallExpression.getTargetName() != null
+      starlarkCallExpression.getNameAttributeValue() != null
   }
 
   private fun isTopLevelCall(element: PsiElement): Boolean =

@@ -17,7 +17,7 @@ internal class StarlarkLocalVariableReference(element: StarlarkLocalVariableElem
   PsiReferenceBase<StarlarkLocalVariableElement>(element, TextRange(0, element.textLength), soft) {
   override fun resolve(): PsiElement? =
     myElement?.let {
-      val processor = StarlarkResolveProcessor(mutableListOf(), it)
+      val processor = StarlarkResolveProcessor(mutableListOf(), it, it.name)
       SearchUtils.searchInFile(it, processor)
       processor.result.firstOrNull()
     }

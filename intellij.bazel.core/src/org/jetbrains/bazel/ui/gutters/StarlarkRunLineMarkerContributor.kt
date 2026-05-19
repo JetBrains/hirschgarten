@@ -133,7 +133,7 @@ private class StarlarkCallExpressionVisitor : StarlarkElementVisitor() {
   var targetName: String? = null
 
   override fun visitCallExpression(node: StarlarkCallExpression) {
-    ruleName = node.name
-    targetName = node.getTargetName()
+    ruleName = node.getCalledFunctionName()
+    targetName = node.getNameAttributeValue()
   }
 }

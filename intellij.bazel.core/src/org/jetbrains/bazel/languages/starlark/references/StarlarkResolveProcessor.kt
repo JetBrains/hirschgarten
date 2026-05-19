@@ -5,21 +5,25 @@ import org.jetbrains.bazel.languages.starlark.psi.StarlarkElement
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkNamedElement
 import org.jetbrains.bazel.languages.starlark.psi.statements.StarlarkStringLoadValue
 
-internal class StarlarkResolveProcessor(val result: MutableList<StarlarkElement>, private val referenceElement: StarlarkElement) :
+internal class StarlarkResolveProcessor(
+  val result: MutableList<StarlarkElement>,
+  private val referenceElement: StarlarkElement,
+  private val nameToResolve: String?,
+) :
   Processor<StarlarkElement> {
   override fun process(currentElement: StarlarkElement): Boolean =
     when {
       currentElement == referenceElement -> true
-      currentElement.isTargetElement(referenceElement) -> !result.add(currentElement)
-      currentElement.isLoadTargetElement(referenceElement) -> addLoadTarget(currentElement as StarlarkStringLoadValue)
+      currentElement.isTargetElement() -> !result.add(currentElement)
+      currentElement.isLoadTargetElement() -> addLoadTarget(currentElement as StarlarkStringLoadValue)
       else -> true
     }
 
-  private fun StarlarkElement.isTargetElement(referenceElement: StarlarkElement): Boolean =
-    this is StarlarkNamedElement && referenceElement.name == this.name
+  private fun StarlarkElement.isTargetElement(): Boolean =
+    this is StarlarkNamedElement && nameToResolve == this.name
 
-  private fun StarlarkElement.isLoadTargetElement(referenceElement: StarlarkElement): Boolean =
-    this is StarlarkStringLoadValue && referenceElement.name == this.getImportedSymbolName()
+  private fun StarlarkElement.isLoadTargetElement(): Boolean =
+    this is StarlarkStringLoadValue && nameToResolve == this.getImportedSymbolName()
 
   private fun addLoadTarget(element: StarlarkStringLoadValue): Boolean {
     val resolved = element.getStringExpression()?.reference?.resolve() as? StarlarkNamedElement ?: return true

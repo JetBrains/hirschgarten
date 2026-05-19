@@ -56,7 +56,7 @@ class BazelGoPackageImportReferencesTest : MockProjectBaseTest() {
     val fooBarBazRule = mockRule("baz", fooBarBuild)
     val importReferences = BazelGoPackage.getImportReferences(label, fooBarBazRule, "foo/bar/baz")
     importReferences shouldBe
-      arrayOf(
+      arrayOf<PsiElement>(
         fooDirectory, // foo
         fooBarDirectory, // bar
         fooBarBazRule, // baz
@@ -109,7 +109,7 @@ class BazelGoPackageImportReferencesTest : MockProjectBaseTest() {
     val fooBarBazRule = mockRule("baz", fooBarBuild)
     val importReferences = BazelGoPackage.getImportReferences(label, fooBarBazRule, "github.com/user/foo/bar/baz")
     importReferences shouldBe
-      arrayOf(
+      arrayOf<PsiElement>(
         externalGithubDirectory, // github.com
         externalGithubUserDirectory, // user
         fooDirectory, // foo
@@ -129,7 +129,7 @@ class BazelGoPackageImportReferencesTest : MockProjectBaseTest() {
     val fooBarBazRule = mockRule("baz", fooBarBuild)
     val importReferences = BazelGoPackage.getImportReferences(label, fooBarBazRule, "github.com/user/foo/bar/baz")
     importReferences shouldBe
-      arrayOf(
+      arrayOf<PsiElement?>(
         null, // github.com
         null, // user
         fooDirectory, // foo
@@ -147,7 +147,7 @@ class BazelGoPackageImportReferencesTest : MockProjectBaseTest() {
     val fooBarBazRule = mockRule("baz", fooBarBuild)
     val importReferences = BazelGoPackage.getImportReferences(label, fooBarBazRule, "github.com/user/foo/bar/baz")
     importReferences shouldBe
-      arrayOf(
+      arrayOf<PsiElement?>(
         null, // github.com
         null, // user
         fooDirectory, // foo
@@ -193,7 +193,7 @@ class BazelGoPackageImportReferencesTest : MockProjectBaseTest() {
 
   private fun mockRule(name: String, buildFile: StarlarkFile): StarlarkCallExpression {
     val rule = mock(StarlarkCallExpression::class.java)
-    `when`(rule.name).thenReturn(name)
+    `when`(rule.getCalledFunctionName()).thenReturn(name)
     `when`(rule.parent).thenReturn(buildFile)
     `when`(rule.containingFile).thenReturn(buildFile)
     return rule
