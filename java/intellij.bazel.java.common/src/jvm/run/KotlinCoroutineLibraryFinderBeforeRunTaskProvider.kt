@@ -11,21 +11,19 @@ import com.intellij.execution.runners.ExecutionEnvironment
 import com.intellij.openapi.actionSystem.DataContext
 import com.intellij.openapi.progress.runBlockingMaybeCancellable
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.roots.OrderEnumerator
+import com.intellij.openapi.roots.OrderRootType
 import com.intellij.openapi.util.Key
-import com.intellij.openapi.vfs.findFile
+import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.platform.ide.progress.withBackgroundProgress
+import com.intellij.util.PathsList
 import com.intellij.util.text.SemVer
 import org.jetbrains.bazel.config.BazelPluginBundle
-import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.run.config.BazelRunConfiguration
-import org.jetbrains.bazel.server.connection.connection
 import org.jetbrains.bazel.settings.bazel.bazelJVMProjectSettings
+import org.jetbrains.bazel.target.getModule
 import org.jetbrains.bazel.target.targetUtils
-import org.jetbrains.bsp.protocol.BspJvmClasspath
-import org.jetbrains.bsp.protocol.WorkspaceTargetClasspathQueryParams
-import java.nio.file.Path
-import kotlin.io.path.pathString
 
 private const val PROVIDER_NAME = "KotlinCoroutineLibraryFinderBeforeRunTaskProvider"
 
@@ -66,8 +64,7 @@ internal class KotlinCoroutineLibraryFinderBeforeRunTaskProvider :
       withBackgroundProgress(project, BazelPluginBundle.message("background.task.description.preparing.for.debugging.kotlin", target)) {
         val result = project.findClassPathByTargetLabel(targetInfo.id)
         val coroutinesJarPath = result.findLatestCoroutinesJarRootRelativePath() ?: return@withBackgroundProgress
-        val coroutinesJarAbsolutePath = project.rootDir.findFile(coroutinesJarPath.pathString)?.path ?: return@withBackgroundProgress
-        calculateKotlinCoroutineParams(environment, coroutinesJarAbsolutePath)
+        calculateKotlinCoroutineParams(environment, coroutinesJarPath.path)
       }
     }
     return true
@@ -93,11 +90,19 @@ internal fun attachCoroutinesDebuggerConnection(runConfiguration: RunConfigurati
 
 private val MIN_COROUTINES_VERSION = SemVer.parseFromText("1.3.8")
 
-private suspend fun Project.findClassPathByTargetLabel(label: Label): BspJvmClasspath = connection.runWithServer {
-  it.workspaceTargetClasspathQuery(WorkspaceTargetClasspathQueryParams(label))
+private fun Project.findClassPathByTargetLabel(label: Label): List<VirtualFile> {
+  val module = label.getModule(this) ?: return emptyList()
+  val jars = PathsList()
+  OrderEnumerator
+    .orderEntries(module)
+    .recursively()
+    .withoutSdk()
+    .roots(OrderRootType.CLASSES)
+    .collectPaths(jars)
+  return jars.virtualFiles
 }
 
-private fun BspJvmClasspath.findLatestCoroutinesJarRootRelativePath(): Path? {
+private fun List<VirtualFile>.findLatestCoroutinesJarRootRelativePath(): VirtualFile? {
   val (path, version) = findLatestJarByName("kotlinx-coroutines-core-jvm")
     ?: findLatestJarByName("kotlin-coroutines-core")
     ?: return null
@@ -105,17 +110,16 @@ private fun BspJvmClasspath.findLatestCoroutinesJarRootRelativePath(): Path? {
   return path
 }
 
-private fun BspJvmClasspath.findLatestJarByName(name: String): Pair<Path, SemVer>? {
-  return buildSet { addAll(compileClasspath); addAll(runtimeClasspath) }
+private fun List<VirtualFile>.findLatestJarByName(name: String): Pair<VirtualFile, SemVer>? {
+  return this
     .mapNotNull { it.extractPathWithVersionBy(name) }
     .maxByOrNull { (_, version) -> version }
 }
 
-private fun Path.extractPathWithVersionBy(name: String): Pair<Path, SemVer>? {
-  val lastElement = lastOrNull() ?: return null
-  val lastElementString = lastElement.pathString
-  if (!lastElementString.contains(name)) return null
-  val rawVersion = lastElement.pathString.substringAfterLast("$name-").substringBefore(".jar")
+private fun VirtualFile.extractPathWithVersionBy(expectedName: String): Pair<VirtualFile, SemVer>? {
+  val name = this.name
+  if (!name.contains(expectedName)) return null
+  val rawVersion = name.substringAfterLast("$expectedName-").substringBefore(".jar")
   val version = SemVer.parseFromText(rawVersion) ?: return null
   return this to version
 }

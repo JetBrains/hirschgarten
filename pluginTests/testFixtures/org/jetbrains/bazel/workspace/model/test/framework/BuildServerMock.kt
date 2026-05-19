@@ -11,7 +11,6 @@ import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bsp.protocol.AnalysisDebugParams
 import org.jetbrains.bsp.protocol.AnalysisDebugResult
 import org.jetbrains.bsp.protocol.BazelServerFacade
-import org.jetbrains.bsp.protocol.BspJvmClasspath
 import org.jetbrains.bsp.protocol.CompileParams
 import org.jetbrains.bsp.protocol.CompileResult
 import org.jetbrains.bsp.protocol.InverseSourcesParams
@@ -29,7 +28,6 @@ import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsResult
 import org.jetbrains.bsp.protocol.WorkspaceDirectoriesResult
 import org.jetbrains.bsp.protocol.WorkspaceNameResult
 import org.jetbrains.bsp.protocol.WorkspacePhasedBuildTargetsResult
-import org.jetbrains.bsp.protocol.WorkspaceTargetClasspathQueryParams
 import java.nio.file.Paths
 import kotlin.io.path.Path
 
@@ -41,11 +39,9 @@ open class BuildServerMock(
   private val testResult: TestResult? = null,
   private val workspaceDirectoriesResult: WorkspaceDirectoriesResult = WorkspaceDirectoriesResult(listOf(), listOf()),
   private val analysisDebugResult: AnalysisDebugResult? = null,
-  private val runResultWithDebug: RunResult? = null,
   private val workspaceBazelRepoMappingResult: WorkspaceBazelRepoMappingResult? = WorkspaceBazelRepoMappingResult(RepoMappingDisabled),
   private val workspaceBuildTargetsResult: WorkspaceBuildTargetsResult? = null,
   private val workspacePhasedBuildTargetsResult: WorkspacePhasedBuildTargetsResult? = null,
-  private val jvmClasspathResult: BspJvmClasspath? = null,
 ) : BazelServerFacade {
   override suspend fun runSync(build: Boolean, taskId: TaskId): WorkspaceBuildTargetsResult = wrapInFuture(bazelProject)
 
@@ -92,9 +88,6 @@ open class BuildServerMock(
     get() = BazelOutFileHardLinks.NONE
 
   override suspend fun workspaceName(taskId: TaskId): WorkspaceNameResult = WorkspaceNameResult("_main")
-
-  override suspend fun workspaceTargetClasspathQuery(params: WorkspaceTargetClasspathQueryParams): BspJvmClasspath =
-    wrapInFuture(jvmClasspathResult)
 
   override suspend fun jvmToolchainInfoForTarget(target: Label): JvmToolchainInfo =
     JvmToolchainInfo("/path/to/java/home", "/path/to/bazel/toolchain", emptyList())

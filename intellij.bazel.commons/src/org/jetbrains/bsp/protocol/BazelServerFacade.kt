@@ -57,8 +57,5 @@ interface BazelServerFacade {
   suspend fun workspaceName(taskId: TaskId): WorkspaceNameResult
 
   @ApiStatus.Internal
-  suspend fun workspaceTargetClasspathQuery(params: WorkspaceTargetClasspathQueryParams): BspJvmClasspath
-
-  @ApiStatus.Internal
   suspend fun jvmToolchainInfoForTarget(target: Label): JvmToolchainInfo
 }
