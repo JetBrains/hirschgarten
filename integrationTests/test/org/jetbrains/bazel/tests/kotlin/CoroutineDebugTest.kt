@@ -57,7 +57,9 @@ class CoroutineDebugTest : IdeStarterBaseProjectTest() {
           step("Check if async stack trace is displayed") {
             waitOneContainsText("secondLevel:30", timeout = 1.minutes)
             waitFor(message = "Async stack traces to appear", timeout = 30.seconds, interval = 2.seconds) {
-              x("//div[@class='Splitter']").verticalScrollBar { scrollBlockDown(6) }
+              runCatching {
+                x("//div[@class='Splitter']").verticalScrollBar { scrollBlockDown(6) }
+              }
               val text = x("//div[@class='XDebuggerFramesList']").getAllTexts()
               text.count { it.text.contains("Async stack trace") } >= 2
             }
@@ -67,8 +69,12 @@ class CoroutineDebugTest : IdeStarterBaseProjectTest() {
           step("Check thread dump for coroutine thread") {
             x("//div[@class='JBRunnerTabs']//div[@tooltiptext='More']").click()
             popup().waitOneContainsText("Get Thread Dump").click()
-            waitFor(message = "Thread dump to contain coroutine:2", timeout = 30.seconds, interval = 2.seconds) {
-              x("//div[@class='ThreadDumpPanel']").getAllTexts().any { it.text == "coroutine:2" }
+            val threadDumpPanel = x("//div[@class='ThreadDumpPanel']")
+            threadDumpPanel.waitOneContainsText("Dumped Coroutines").click()
+            waitFor(message = "Thread dump to contain coroutine #2", timeout = 30.seconds, interval = 2.seconds) {
+              threadDumpPanel.getAllTexts().any {
+                it.text.contains("coroutine:2") || it.text.contains("coroutine#2")
+              }
             }
             takeScreenshot("threadDumpPanel")
           }
