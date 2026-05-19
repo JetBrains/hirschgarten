@@ -5,7 +5,6 @@ import com.intellij.platform.workspace.jps.entities.modifyModuleEntity
 import com.intellij.platform.workspace.storage.MutableEntityStorage
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.commons.RuleType
-import org.jetbrains.bazel.jpsCompilation.utils.JpsPaths
 import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.KotlinFacetEntityUpdater
 import org.jetbrains.bazel.workspacemodel.entities.JavaModule
 import org.jetbrains.bazel.workspacemodel.entities.KotlinAddendum
@@ -33,16 +32,14 @@ class BazelKotlinFacetEntityUpdater : KotlinFacetEntityUpdater {
     projectBasePath: Path,
   ) {
     val kotlinAddendum = entityToAdd.kotlinAddendum
-    val compilerArguments = kotlinAddendum?.kotlincOptions?.toK2JVMCompilerArguments(entityToAdd, kotlinAddendum, projectBasePath)
+    val compilerArguments = kotlinAddendum?.kotlincOptions?.toK2JVMCompilerArguments(kotlinAddendum)
     val kotlinSettingsEntity =
       calculateKotlinSettingsEntity(entityToAdd, compilerArguments, parentModuleEntity, kotlinAddendum?.kotlincOptions)
     diff.addKotlinSettingsEntity(parentModuleEntity, kotlinSettingsEntity)
   }
 
   private fun List<String>.toK2JVMCompilerArguments(
-    entityToAdd: JavaModule,
     kotlinAddendum: KotlinAddendum,
-    projectBasePath: Path,
   ) = parseCommandLineArguments(K2JVMCompilerArguments::class, this).apply {
     kotlinAddendum.languageVersion?.let { languageVersion = it }
     kotlinAddendum.apiVersion?.let { apiVersion = it }
@@ -50,7 +47,6 @@ class BazelKotlinFacetEntityUpdater : KotlinFacetEntityUpdater {
 
     autoAdvanceLanguageVersion = false
     autoAdvanceApiVersion = false
-    friendPaths = entityToAdd.toJpsFriendPaths(projectBasePath).toTypedArray()
   }
 
   private fun calculateKotlinSettingsEntity(
@@ -96,16 +92,6 @@ class BazelKotlinFacetEntityUpdater : KotlinFacetEntityUpdater {
         JvmPlatforms.jvmPlatformByTargetVersion(jvmTarget).serializeComponentPlatforms()
       }
     } ?: ""
-  }
-
-  private fun JavaModule.toJpsFriendPaths(projectBasePath: Path): List<String> {
-    val associateModules = toAssociateModules()
-
-    if (associateModules.isEmpty()) return listOf()
-
-    return associateModules.map { module ->
-      JpsPaths.getJpsCompiledProductionPath(projectBasePath, module).toString()
-    }
   }
 
   private fun JavaModule.toAssociateModules(): Set<String> =

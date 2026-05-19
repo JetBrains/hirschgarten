@@ -15,23 +15,15 @@
  */
 package org.jetbrains.bazel.hotswap
 
-import com.intellij.execution.executors.DefaultDebugExecutor
-import com.intellij.execution.runners.ExecutionEnvironment
 import com.intellij.openapi.project.Project
 import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.config.isBazelProject
-import org.jetbrains.bazel.run.config.HotswappableRunConfiguration
 import org.jetbrains.bazel.settings.bazel.bazelJVMProjectSettings
 
 /** Helper methods for HotSwapping  */
 internal object HotSwapUtils {
-  fun canHotSwap(env: ExecutionEnvironment, project: Project): Boolean = isHotSwapEligible(project) && isDebugging(env)
-
   fun isHotSwapEligible(project: Project): Boolean =
     project.isBazelProject &&
       project.bazelJVMProjectSettings.hotSwapEnabled &&
       !BazelFeatureFlags.fastBuildEnabled
-
-  private fun isDebugging(environment: ExecutionEnvironment): Boolean =
-    environment.executor is DefaultDebugExecutor && environment.runProfile is HotswappableRunConfiguration
 }

@@ -19,7 +19,6 @@ import org.jetbrains.bazel.config.isBazelProject
 import org.jetbrains.bazel.coroutines.BazelCoroutineService
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.server.tasks.runBuildTargetTask
-import org.jetbrains.bazel.settings.bazel.bazelJVMProjectSettings
 import org.jetbrains.bazel.workspacemodel.entities.bazelModuleExtension
 import org.jetbrains.concurrency.Promise
 
@@ -30,10 +29,7 @@ internal class BazelProjectTaskRunner : ProjectTaskRunner() {
     canRun(projectTask)
 
   override fun canRun(projectTask: ProjectTask): Boolean =
-    when (projectTask) {
-      is ModuleBuildTask -> !projectTask.module.project.bazelJVMProjectSettings.enableBuildWithJps
-      else -> false
-    }
+    projectTask is ModuleBuildTask
 
   @OptIn(ExperimentalCoroutinesApi::class)
   override fun run(

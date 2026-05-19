@@ -11,17 +11,14 @@ import com.intellij.platform.workspace.jps.entities.SdkDependency
 import com.intellij.platform.workspace.jps.entities.SdkId
 import com.intellij.platform.workspace.jps.entities.modifyModuleEntity
 import com.intellij.platform.workspace.storage.MutableEntityStorage
-import com.intellij.platform.workspace.storage.impl.url.toVirtualFileUrl
 import com.intellij.pom.java.LanguageLevel
 import org.jetbrains.annotations.ApiStatus
-import org.jetbrains.bazel.jpsCompilation.utils.JpsPaths
 import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.scalaVersionToScalaSdkName
 import org.jetbrains.bazel.scala.sdk.scalaSdkExtensionExists
 import org.jetbrains.bazel.workspacemodel.entities.JavaModule
 import org.jetbrains.bazel.workspacemodel.entities.Library
 import org.jetbrains.bazel.workspacemodel.entities.Module
 import java.nio.file.Path
-import kotlin.collections.associateBy
 
 @ApiStatus.Internal
 class JavaModuleWithSourcesUpdater(
@@ -110,22 +107,12 @@ class JavaModuleWithSourcesUpdater(
     entityToAdd: JavaModule,
     moduleEntity: ModuleEntity,
   ) {
-    val compilerOutput =
-      JpsPaths
-        .getJpsCompiledProductionPath(projectBasePath, entityToAdd.genericModuleInfo.name)
-        .toVirtualFileUrl(workspaceModelEntityUpdaterConfig.virtualFileUrlManager)
-    val testCompilerOutput =
-      JpsPaths
-        .getJpsCompiledTestPath(projectBasePath, entityToAdd.genericModuleInfo.name)
-        .toVirtualFileUrl(workspaceModelEntityUpdaterConfig.virtualFileUrlManager)
     val entity =
       JavaModuleSettingsEntity(
         inheritedCompilerOutput = false,
         excludeOutput = true,
         entitySource = moduleEntity.entitySource,
       ) {
-        this.compilerOutput = compilerOutput
-        this.compilerOutputForTests = testCompilerOutput
         this.languageLevelId = LanguageLevel.parse(entityToAdd.javaAddendum?.languageVersion)?.name
       }
 

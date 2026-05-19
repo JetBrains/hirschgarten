@@ -173,15 +173,6 @@ internal fun DefaultActionGroup.fillWithEligibleActions(
     }
   }
 
-  for (provider in LoadedTargetActionsProvider.ep.extensionList) {
-    provider.onActionsInit(
-      project = project,
-      group = this,
-      target = target,
-      callerPsiElement = callerPsiElement,
-    )
-  }
-
   return this
 }
 

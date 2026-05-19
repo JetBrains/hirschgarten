@@ -2,7 +2,6 @@ package org.jetbrains.bazel.projectAware
 
 import com.intellij.ide.projectView.ProjectView
 import com.intellij.openapi.Disposable
-import com.intellij.openapi.application.EDT
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vcs.BranchChangeListener
@@ -13,11 +12,7 @@ import com.intellij.openapi.vfs.newvfs.events.VFileCreateEvent
 import com.intellij.openapi.vfs.newvfs.events.VFileEvent
 import com.intellij.openapi.vfs.newvfs.events.VFileMoveEvent
 import com.intellij.ui.tree.TreeVisitor
-import com.intellij.ui.treeStructure.ProjectViewUpdateCause
 import com.intellij.util.ui.tree.TreeUtil
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
-import org.jetbrains.bazel.coroutines.BazelCoroutineService
 import org.jetbrains.bazel.ui.unsynced.refreshAllFilesPresentation
 
 @Service(Service.Level.PROJECT)
@@ -28,7 +23,6 @@ internal class BazelWorkspace(val project: Project) : Disposable {
   fun initialize() {
     if (!initialized) {
       BazelProjectAware.initialize(this)
-      BazelProjectModuleBuildTasksTracker.initialize(this)
       BspExternalServicesSubscriber(project).subscribe()
       initialized = true
     }

@@ -53,9 +53,6 @@
 - name: lib/modules/intellij.bazel.java.coverage.jar
   contentModules:
   - name: intellij.bazel.java.coverage
-- name: lib/modules/intellij.bazel.java.junit.jar
-  contentModules:
-  - name: intellij.bazel.java.junit
 - name: lib/modules/intellij.bazel.java.profiler.jar
   contentModules:
   - name: intellij.bazel.java.profiler
@@ -71,9 +68,6 @@
 - name: lib/modules/intellij.bazel.kotlin.coverage.jar
   contentModules:
   - name: intellij.bazel.kotlin.coverage
-- name: lib/modules/intellij.bazel.kotlin.junit.jar
-  contentModules:
-  - name: intellij.bazel.kotlin.junit
 - name: lib/modules/intellij.bazel.kotlin.k2.jar
   contentModules:
   - name: intellij.bazel.kotlin.k2
