@@ -1,5 +1,8 @@
 package org.jetbrains.bazel.python.sync
 
+import com.intellij.openapi.application.edtWriteAction
+import com.intellij.openapi.diagnostic.fileLogger
+import com.intellij.openapi.projectRoots.ProjectJdkTable
 import com.intellij.platform.backend.workspace.WorkspaceModel
 import com.intellij.platform.util.progress.reportSequentialProgress
 import com.intellij.platform.workspace.jps.entities.ContentRootEntity
@@ -16,6 +19,10 @@ import com.intellij.platform.workspace.jps.entities.SourceRootTypeId
 import com.intellij.platform.workspace.storage.MutableEntityStorage
 import com.intellij.platform.workspace.storage.impl.url.toVirtualFileUrl
 import com.intellij.platform.workspace.storage.url.VirtualFileUrlManager
+import com.intellij.python.community.services.systemPython.SystemPythonService
+import com.intellij.testFramework.common.timeoutRunBlocking
+import com.jetbrains.python.PythonBinary
+import com.jetbrains.python.sdk.PythonSdkUtil
 import io.kotest.matchers.booleans.shouldBeFalse
 import io.kotest.matchers.shouldBe
 import kotlinx.coroutines.runBlocking
@@ -41,6 +48,7 @@ import org.jetbrains.bsp.protocol.PythonBuildTarget
 import org.jetbrains.bsp.protocol.RawBuildTarget
 import org.jetbrains.bsp.protocol.SourceItem
 import org.jetbrains.bsp.protocol.TaskGroupId
+import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.nio.file.Path
@@ -62,6 +70,11 @@ private data class GeneratedTargetInfo(
 class PythonProjectSyncTest : MockProjectBaseTest() {
   lateinit var hook: ProjectSyncHook
   lateinit var virtualFileUrlManager: VirtualFileUrlManager
+  lateinit var pythonBinary: PythonBinary
+
+  private companion object {
+    val logger = fileLogger()
+  }
 
   @BeforeEach
   fun beforeEach() {
@@ -69,6 +82,23 @@ class PythonProjectSyncTest : MockProjectBaseTest() {
     hook = PythonProjectSync()
     initializeBazelProject(project, projectDir.get())
     virtualFileUrlManager = WorkspaceModel.getInstance(project).getVirtualFileUrlManager()
+
+    // Python plugin validates file.
+    // The real python should have been used, but in absence of it this path is good enough as most agents on TC are Ubuntu
+    pythonBinary =
+      timeoutRunBlocking { SystemPythonService().findSystemPythons().firstOrNull()?.pythonBinary ?: Path.of("/usr/bin/python3") }
+    logger.info("Found python $pythonBinary for project ${project.name}")
+  }
+
+  // Drop SDKs created by this test
+  @AfterEach
+  fun cleanupSdk(): Unit = timeoutRunBlocking {
+    edtWriteAction {
+      val table = ProjectJdkTable.getInstance()
+      for (sdk in PythonSdkUtil.getAllSdks()) {
+        table.removeJdk(sdk)
+      }
+    }
   }
 
   @Test
@@ -107,7 +137,7 @@ class PythonProjectSyncTest : MockProjectBaseTest() {
       diff.entities(ModuleEntity::class.java)
         .toList()
         .filter { it.type == ModuleTypeId("PYTHON_MODULE") }
-
+    logger.info("Checking for project ${project.name}")
     actualModuleEntities shouldContainExactlyInAnyOrder pythonTestTargets.expectedModuleEntities
     actualModuleEntities.shouldAllHaveTheSameSDK()
   }
@@ -219,6 +249,7 @@ class PythonProjectSyncTest : MockProjectBaseTest() {
     sources: List<SourceItem>,
     resources: List<Path>,
   ): RawBuildTarget {
+
     val target =
       RawBuildTarget(
         info.targetId,
@@ -232,7 +263,7 @@ class PythonProjectSyncTest : MockProjectBaseTest() {
         data = listOf(
           PythonBuildTarget(
             version = "3",
-            interpreter = Path(PYTHON_INTERPRETER),
+            interpreter = pythonBinary,
             listOf(),
             listOf(),
           ),
@@ -248,7 +279,8 @@ class PythonProjectSyncTest : MockProjectBaseTest() {
     targetInfo: GeneratedTargetInfo,
     dependenciesTargetInfo: List<GeneratedTargetInfo>,
   ): ExpectedModuleEntity {
-    val sdkDependency: ModuleDependencyItem = SdkDependency(SdkId("${project.name}-python-$PYTHON_INTERPRETER_MD5", "PythonSDK"))
+    val sdkName = chooseSdkName(pythonBinary, project.name)
+    val sdkDependency: ModuleDependencyItem = SdkDependency(SdkId(sdkName, "PythonSDK"))
     val moduleDependencies: List<ModuleDependencyItem> =
       dependenciesTargetInfo.map {
         ModuleDependency(
@@ -298,6 +330,3 @@ class PythonProjectSyncTest : MockProjectBaseTest() {
     sdks.distinct().size shouldBe 1
   }
 }
-
-private const val PYTHON_INTERPRETER = "/path/to/interpreter"
-private const val PYTHON_INTERPRETER_MD5 = "efdb3"
