@@ -33,7 +33,7 @@ import kotlin.time.Duration.Companion.seconds
 
 /**
  * ```sh
- * bazel test //plugin-bazel/src/test/kotlin/org/jetbrains/bazel/fastbuild --jvmopt="-Dbazel.ide.starter.test.cache.directory=$HOME/IdeaProjects/hirschgarten" --sandbox_writable_path=/ --action_env=PATH --java_debug --test_arg=--wrapper_script_flag=--debug=8000
+ * bazel test //plugins/bazel/integrationTests:integrationTests_test --test_env=JB_TEST_FILTER=org.jetbrains.bazel.tests.fastbuild.FastBuildTest --test_output=errors --nocache_test_results
  * ```
  */
 // TODO(Dan): rename to HotSwapTest
