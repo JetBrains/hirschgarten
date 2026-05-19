@@ -18,9 +18,6 @@ import org.jetbrains.annotations.ApiStatus
 @ApiStatus.Internal
 data class BazelJVMProjectSettings(
   val hotSwapEnabled: Boolean = true,
-  val enableLocalJvmActions: Boolean = false,
-  val enableBuildWithJps: Boolean = false,
-  val useIntellijTestRunner: Boolean = false,
   val enableKotlinCoroutineDebug: Boolean = true,
 )
 
@@ -52,9 +49,6 @@ internal class BazelJVMProjectSettingsService :
  */
 internal data class BazelJVMProjectSettingsState(
   var hotSwapEnabled: Boolean = true,
-  var enableLocalJvmActions: Boolean = false,
-  var enableBuildWithJps: Boolean = false,
-  var useIntellijTestRunner: Boolean = false,
   var enableKotlinCoroutineDebugV2: Boolean = true,  // Default was changed from false to true, "v2" to avoid loading the old key
 )
 
@@ -63,9 +57,6 @@ var Project.bazelJVMProjectSettings: BazelJVMProjectSettings
   get() = with(BazelJVMProjectSettingsService.getInstance(this).settings) {
     BazelJVMProjectSettings(
       hotSwapEnabled = hotSwapEnabled,
-      enableLocalJvmActions = enableLocalJvmActions,
-      enableBuildWithJps = enableBuildWithJps,
-      useIntellijTestRunner = useIntellijTestRunner,
       enableKotlinCoroutineDebug = enableKotlinCoroutineDebugV2,
     )
   }
@@ -74,9 +65,6 @@ var Project.bazelJVMProjectSettings: BazelJVMProjectSettings
     BazelJVMProjectSettingsService.getInstance(this).settings = with(value) {
       BazelJVMProjectSettingsState(
         hotSwapEnabled = hotSwapEnabled,
-        enableLocalJvmActions = enableLocalJvmActions,
-        enableBuildWithJps = enableBuildWithJps,
-        useIntellijTestRunner = useIntellijTestRunner,
         enableKotlinCoroutineDebugV2 = enableKotlinCoroutineDebug,
       )
     }

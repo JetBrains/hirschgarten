@@ -4,7 +4,6 @@ import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.bazelrunner.BazelRunner
 import org.jetbrains.bazel.commons.ExcludableValue
 import org.jetbrains.bazel.commons.constants.Constants
-import org.jetbrains.bazel.jpsCompilation.utils.JPS_COMPILED_BASE_DIRECTORY
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.label.ResolvedLabel
 import org.jetbrains.bazel.label.assumeResolved
@@ -136,7 +135,6 @@ class BspProjectMapper(
   private fun getTechnicalDirectoriesToExclude(): MutableSet<Path> =
     mutableSetOf(
       workspaceRoot.resolve(Constants.DOT_BAZELBSP_DIR_NAME),
-      workspaceRoot.resolve(JPS_COMPILED_BASE_DIRECTORY),
     )
 
   private fun Path.toDirectoryItem() =

@@ -13,7 +13,6 @@ import com.intellij.platform.workspace.storage.MutableEntityStorage
 import com.intellij.platform.workspace.storage.SymbolicEntityId
 import com.intellij.util.containers.Interner
 import org.jetbrains.annotations.ApiStatus
-import org.jetbrains.bazel.jpsCompilation.utils.JpsConstants
 import org.jetbrains.bazel.workspacemodel.entities.BazelDummyEntitySource
 import org.jetbrains.bazel.workspacemodel.entities.BazelModuleEntitySource
 import org.jetbrains.bazel.workspacemodel.entities.BazelModuleExtensionEntity
@@ -94,7 +93,7 @@ class ModuleEntityUpdater(
 
   private fun toEntitySource(entityToAdd: GenericModuleInfo): EntitySource =
     when {
-      entityToAdd.kind.languageClasses.any { it !in JpsConstants.SUPPORTED_LANGUAGES } -> BazelModuleEntitySource(entityToAdd.name)
+      entityToAdd.kind.isJvmTarget() -> BazelModuleEntitySource(entityToAdd.name)
       else -> BazelDummyEntitySource
     }
 

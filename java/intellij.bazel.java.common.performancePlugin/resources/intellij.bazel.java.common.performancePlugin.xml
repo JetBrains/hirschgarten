@@ -21,7 +21,6 @@
   </dependencies>
 
   <extensions defaultExtensionNs="com.jetbrains">
-    <performancePlugin.commandProvider implementation="org.jetbrains.bazel.hotswap.ideStarter.HotSwapCommandProvider" />
     <performancePlugin.commandProvider implementation="org.jetbrains.bazel.flow.modify.ideStarter.BazelProjectModelModifierCommandProvider"/>
   </extensions>
 </idea-plugin>

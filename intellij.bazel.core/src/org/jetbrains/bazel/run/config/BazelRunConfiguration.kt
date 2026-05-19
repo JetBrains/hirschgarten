@@ -33,8 +33,7 @@ class BazelRunConfiguration internal constructor(
   configurationType: BazelRunConfigurationType,
 ) : LocatableConfigurationBase<RunProfileState>(project, configurationType, name),
   RunConfigurationWithSuppressedDefaultDebugAction,
-  SMRunnerConsolePropertiesProvider,
-  HotswappableRunConfiguration {
+    SMRunnerConsolePropertiesProvider {
   private val logger: Logger = logger<BazelRunConfiguration>()
 
   var targets: List<Label> = emptyList()
@@ -197,8 +196,6 @@ class BazelRunConfiguration internal constructor(
 
   override fun createTestConsoleProperties(executor: Executor): SMTRunnerConsoleProperties =
     BazelTestConsoleProperties(this, executor)
-
-  override fun getAffectedTargets(): List<Label> = targets
 
   override fun suggestedName(): @NlsActions.ActionText String = targets.joinToString(" ")
 

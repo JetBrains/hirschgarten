@@ -9,7 +9,6 @@ import kotlinx.coroutines.runBlocking
 import org.jetbrains.bazel.bazelrunner.BazelProcess
 import org.jetbrains.bazel.bazelrunner.BazelProcessResult
 import org.jetbrains.bazel.bazelrunner.BazelRunner
-import org.jetbrains.bazel.jpsCompilation.utils.JPS_COMPILED_BASE_DIRECTORY
 import org.jetbrains.bazel.languages.projectview.ProjectView
 import org.jetbrains.bazel.languages.projectview.ProjectViewToWorkspaceContextConverter
 import org.jetbrains.bazel.languages.projectview.psi.ProjectViewPsiFile
@@ -85,7 +84,6 @@ class WorkspaceDirectoriesFromProjectViewTest : BasePlatformTestCase() {
       listOf(
         excludedDir.toUri().toString(),
         dotBazelBspPath.toUri().toString(),
-        workspaceRoot.resolve(JPS_COMPILED_BASE_DIRECTORY).toUri().toString(),
       ),
     )
   }
@@ -175,7 +173,6 @@ class WorkspaceDirectoriesFromProjectViewTest : BasePlatformTestCase() {
       listOf(
         subpkg.toUri().toString(),
         dotBazelBspPath.toUri().toString(),
-        workspaceRoot.resolve(JPS_COMPILED_BASE_DIRECTORY).toUri().toString(),
       ),
     )
   }
@@ -214,7 +211,6 @@ class WorkspaceDirectoriesFromProjectViewTest : BasePlatformTestCase() {
       listOf(
         pkg.toUri().toString(),
         dotBazelBspPath.toUri().toString(),
-        workspaceRoot.resolve(JPS_COMPILED_BASE_DIRECTORY).toUri().toString(),
       ),
     )
   }
@@ -253,7 +249,6 @@ class WorkspaceDirectoriesFromProjectViewTest : BasePlatformTestCase() {
         pkg.toUri().toString(),
         subpkg.toUri().toString(),
         dotBazelBspPath.toUri().toString(),
-        workspaceRoot.resolve(JPS_COMPILED_BASE_DIRECTORY).toUri().toString(),
       ),
     )
   }
@@ -289,7 +284,6 @@ class WorkspaceDirectoriesFromProjectViewTest : BasePlatformTestCase() {
       result.excludedDirectories.map { it.uri },
       listOf(
         dotBazelBspPath.toUri().toString(),
-        workspaceRoot.resolve(JPS_COMPILED_BASE_DIRECTORY).toUri().toString(),
       ),
     )
   }
@@ -327,7 +321,6 @@ class WorkspaceDirectoriesFromProjectViewTest : BasePlatformTestCase() {
       listOf(
         subpkg.toUri().toString(),
         dotBazelBspPath.toUri().toString(),
-        workspaceRoot.resolve(JPS_COMPILED_BASE_DIRECTORY).toUri().toString(),
       ),
     )
   }
@@ -365,7 +358,6 @@ class WorkspaceDirectoriesFromProjectViewTest : BasePlatformTestCase() {
       result.excludedDirectories.map { it.uri },
       listOf(
         dotBazelBspPath.toUri().toString(),
-        workspaceRoot.resolve(JPS_COMPILED_BASE_DIRECTORY).toUri().toString(),
       ),
     )
   }
@@ -405,7 +397,6 @@ class WorkspaceDirectoriesFromProjectViewTest : BasePlatformTestCase() {
       listOf(
         subdir.toUri().toString(),
         dotBazelBspPath.toUri().toString(),
-        workspaceRoot.resolve(JPS_COMPILED_BASE_DIRECTORY).toUri().toString(),
       ),
     )
   }

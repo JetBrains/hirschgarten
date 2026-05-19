@@ -55,9 +55,6 @@
                     beanClass="com.intellij.lang.LanguageExtensionPoint">
       <with attribute="implementationClass" implements="org.jetbrains.bazel.run.synthetic.SyntheticRunTargetTemplateGenerator"/>
     </extensionPoint>
-    <extensionPoint qualifiedName="org.jetbrains.bazel.loadedTargetActionsProvider"
-                    interface="org.jetbrains.bazel.ui.widgets.tool.window.utils.LoadedTargetActionsProvider"
-                    dynamic="true"/>
   </extensionPoints>
 
   <resource-bundle>messages.BazelPluginBundle</resource-bundle>
@@ -582,7 +579,6 @@
     <projectSettings service="org.jetbrains.bazel.flow.sync.bazelPaths.BazelBinPathService"/>
     <projectSettings service="org.jetbrains.bazel.languages.bazelversion.service.BazelVersionCheckerService"/>
     <projectSettings service="org.jetbrains.bazel.languages.bazelversion.service.resolver.BazelGithubGlobalCacheService"/>
-    <projectSettings service="org.jetbrains.bazel.projectAware.BazelProjectModuleBuildTasksTracker"/>
   </extensions>
 
   <actions>

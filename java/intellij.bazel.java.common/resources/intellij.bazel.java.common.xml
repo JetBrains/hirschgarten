@@ -26,11 +26,6 @@
   <resource-bundle>messages.JavaInspectionsBundle</resource-bundle>
 
   <extensionPoints>
-    <extensionPoint
-      dynamic="true"
-      interface="org.jetbrains.bazel.runnerAction.LocalJvmRunnerRunConfigurationProvider"
-      qualifiedName="org.jetbrains.bazel.localJvmRunnerRunConfigurationProvider"
-    />
     <extensionPoint qualifiedName="org.jetbrains.bazel.hotSwapHook"
                     interface="org.jetbrains.bazel.hotswap.HotSwapHook"
                     dynamic="true"
@@ -58,7 +53,6 @@
     <unresolvedImportChecker implementation="org.jetbrains.bazel.java.ui.notifications.JavaUnresolvedImportChecker"/>
     <additionalProjectTaskRunnerProvider implementation="org.jetbrains.bazel.hotswap.BazelHotSwapProjectTaskRunnerProvider"/>
     <projectSyncHook implementation="org.jetbrains.bazel.fastbuild.ToolchainInfoSyncHook"/>
-    <loadedTargetActionsProvider implementation="org.jetbrains.bazel.ui.widgets.JvmLoadedTargetActionsProvider"/>
     <runHandlerProvider
       id="JvmRunHandlerProvider"
       implementation="org.jetbrains.bazel.jvm.run.JvmRunHandler$JvmRunHandlerProvider"
@@ -75,7 +69,6 @@
   <extensions defaultExtensionNs="com.intellij">
     <programRunner implementation="org.jetbrains.bazel.jvm.run.BazelJvmDebugRunner"/>
     <stepsBeforeRunProvider implementation="org.jetbrains.bazel.jvm.run.ScriptPathBeforeRunTaskProvider"/>
-    <java.programPatcher implementation="org.jetbrains.bazel.java.run.BazelJvmEnvironmentProgramPatcher"/>
     <stepsBeforeRunProvider implementation="org.jetbrains.bazel.jvm.run.KotlinCoroutineLibraryFinderBeforeRunTaskProvider"/>
 
     <runLineMarkerContributor
@@ -83,9 +76,6 @@
       language="JAVA"
     />
     <newProjectWizard.java.buildSystem implementation="org.jetbrains.bazel.java.starters.BazelJavaNewProjectWizard"/>
-    <disableCompilationDependenciesResolutionTask
-      implementation="org.jetbrains.bazel.jpsCompilation.utils.DisableCompilationDependenciesResolutionImpl"
-    />
     <projectModelModifier implementation="org.jetbrains.bazel.flow.modify.BazelProjectModelModifier"/>
     <projectTaskRunner
       implementation="org.jetbrains.bazel.fastbuild.BazelFastBuildProjectTaskRunner"
