@@ -3,7 +3,6 @@ package org.jetbrains.bazel.buildTask
 import com.intellij.ide.trustedProjects.TrustedProjects
 import com.intellij.openapi.extensions.ExtensionPointName
 import com.intellij.openapi.project.Project
-import org.jetbrains.concurrency.toPromiseWithoutLogError
 import com.intellij.task.ModuleBuildTask
 import com.intellij.task.ProjectTask
 import com.intellij.task.ProjectTaskContext
@@ -21,14 +20,16 @@ import org.jetbrains.bazel.server.tasks.runBuildTargetTask
 import org.jetbrains.bazel.settings.bazel.bazelJVMProjectSettings
 import org.jetbrains.bazel.workspacemodel.entities.bazelModuleExtension
 import org.jetbrains.concurrency.Promise
+import org.jetbrains.concurrency.toPromiseWithoutLogError
 
 internal class BazelProjectTaskRunner : ProjectTaskRunner() {
-  override fun canRun(project: Project, projectTask: ProjectTask): Boolean =
+  // obsolete, kept for compatibility with 261.*
+  @Suppress("removal", "OVERRIDE_DEPRECATION")
+  override fun canRun(projectTask: ProjectTask): Boolean = false
+
+  override fun canRun(project: Project, projectTask: ProjectTask, context: ProjectTaskContext?): Boolean =
     project.isBazelProject &&
     TrustedProjects.isProjectTrusted(project) &&
-    canRun(projectTask)
-
-  override fun canRun(projectTask: ProjectTask): Boolean =
     when (projectTask) {
       is ModuleBuildTask -> !projectTask.module.project.bazelJVMProjectSettings.enableBuildWithJps
       else -> false

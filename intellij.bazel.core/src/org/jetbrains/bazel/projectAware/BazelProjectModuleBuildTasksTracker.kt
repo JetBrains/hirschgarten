@@ -5,6 +5,7 @@ import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.State
 import com.intellij.openapi.components.Storage
 import com.intellij.openapi.components.StoragePathMacros
+import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import com.intellij.task.ModuleBuildTask
 import com.intellij.task.ProjectTaskListener
@@ -31,7 +32,7 @@ class BazelProjectModuleBuildTasksTracker : PersistentStateComponent<BazelProjec
           override fun finished(result: ProjectTaskManager.Result) {
             // only concern successful task for updating info
             if (result.isModuleBuildTaskRunSuccessfully()) {
-              getInstance(workspace.project).lastBuiltByJps = !result.isRunByBsp()
+              getInstance(workspace.project).lastBuiltByJps = !result.isRunByBsp(workspace.project)
             }
           }
         },
@@ -41,16 +42,16 @@ class BazelProjectModuleBuildTasksTracker : PersistentStateComponent<BazelProjec
     /**
      * Assume that any tasks that satisfy BspProjectTaskRunner().canRun were run by BspProjectTaskRunner
      */
-    private fun ProjectTaskManager.Result.isRunByBsp() = anyTaskMatches { task, _ -> BazelProjectTaskRunner().canRun(task) }
+    private fun ProjectTaskManager.Result.isRunByBsp(project: Project) = anyTaskMatches { task, _ ->
+      BazelProjectTaskRunner().canRun(project, task, null)
+    }
 
-    private fun ProjectTaskManager.Result.isModuleBuildTaskRunSuccessfully() =
-      anyTaskMatches { task, state -> task is ModuleBuildTask && (!state.isFailed || !state.isSkipped) }
+    private fun ProjectTaskManager.Result.isModuleBuildTaskRunSuccessfully() = anyTaskMatches { task, state ->
+      task is ModuleBuildTask && (!state.isFailed || !state.isSkipped)
+    }
 
     @JvmStatic
-    fun getInstance(project: Project): BazelProjectModuleBuildTasksTracker =
-      project.getService(
-        BazelProjectModuleBuildTasksTracker::class.java,
-      )
+    fun getInstance(project: Project): BazelProjectModuleBuildTasksTracker = project.service<BazelProjectModuleBuildTasksTracker>()
   }
 
   override fun getState(): BazelProjectModuleBuildTasksTracker = this
