@@ -1,12 +1,11 @@
 package org.jetbrains.bazel.python.sync
 
-import com.intellij.openapi.application.writeAction
 import com.intellij.openapi.components.service
 import com.intellij.openapi.components.serviceAsync
+import com.intellij.openapi.diagnostic.fileLogger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.projectRoots.ProjectJdkTable
 import com.intellij.openapi.projectRoots.Sdk
-import com.intellij.openapi.projectRoots.impl.ProjectJdkImpl
 import com.intellij.platform.backend.workspace.WorkspaceModel
 import com.intellij.platform.workspace.jps.entities.ContentRootEntity
 import com.intellij.platform.workspace.jps.entities.ContentRootEntityBuilder
@@ -30,12 +29,15 @@ import com.intellij.platform.workspace.storage.EntitySource
 import com.intellij.platform.workspace.storage.MutableEntityStorage
 import com.intellij.platform.workspace.storage.impl.url.toVirtualFileUrl
 import com.intellij.platform.workspace.storage.url.VirtualFileUrlManager
-import com.jetbrains.python.sdk.PyDetectedSdk
+import com.intellij.python.community.services.systemPython.SystemPythonService
+import com.jetbrains.python.PythonBinary
+import com.jetbrains.python.Result
+import com.jetbrains.python.errorProcessing.PyResult
+import com.jetbrains.python.sdk.ModuleOrProject.ProjectOnly
 import com.jetbrains.python.sdk.PythonSdkType
-import com.jetbrains.python.sdk.PythonSdkUpdater
-import com.jetbrains.python.sdk.detectSystemWideSdks
-import com.jetbrains.python.sdk.guessedLanguageLevel
+import com.jetbrains.python.sdk.createLocalSdkGuessingTypeByPath
 import org.jetbrains.annotations.ApiStatus
+import org.jetbrains.annotations.VisibleForTesting
 import org.jetbrains.bazel.commons.LanguageClass
 import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.config.BazelPluginBundle
@@ -47,18 +49,22 @@ import org.jetbrains.bazel.python.resolve.PythonResolveIndexService
 import org.jetbrains.bazel.sync.ProjectSyncHook
 import org.jetbrains.bazel.sync.ProjectSyncHook.ProjectSyncHookEnvironment
 import org.jetbrains.bazel.sync.withSubtask
-import org.jetbrains.bsp.protocol.utils.StringUtils
 import org.jetbrains.bazel.workspacemodel.entities.BazelModuleEntitySource
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.PythonBuildTarget
 import org.jetbrains.bsp.protocol.RawBuildTarget
+import org.jetbrains.bsp.protocol.TaskId
+import org.jetbrains.bsp.protocol.utils.StringUtils
 import org.jetbrains.bsp.protocol.utils.extractPythonBuildTarget
 import java.nio.file.Path
+import kotlin.io.path.pathString
 
 private const val PYTHON_SDK_ID = "PythonSDK"
 private const val PYTHON_SOURCE_ROOT_TYPE = "python-source"
 private const val PYTHON_RESOURCE_ROOT_TYPE = "python-resource"
 private val PYTHON_MODULE_TYPE = ModuleTypeId("PYTHON_MODULE")
+
+private val logger = fileLogger()
 
 @ApiStatus.Internal
 class PythonProjectSync : ProjectSyncHook {
@@ -73,8 +79,8 @@ class PythonProjectSync : ProjectSyncHook {
       val virtualFileUrlManager = environment.project.serviceAsync<WorkspaceModel>().getVirtualFileUrlManager()
 
       val sdks = calculateAndAddSdksWithProgress(pythonTargets, environment)
-      val defaultSdk = getSystemSdk()
 
+      var defaultSystemSdk: Sdk? = null
       pythonTargets.forEach {
         val moduleName = it.id.formatAsModuleName(environment.project)
         val moduleSourceEntity = BazelModuleEntitySource(moduleName)
@@ -82,6 +88,9 @@ class PythonProjectSync : ProjectSyncHook {
         val sourceDependencyLibrary =
           calculateSourceDependencyLibrary(it.id, target.sourceDependencies, moduleSourceEntity, virtualFileUrlManager)
 
+        val sdk = sdks[it.id] ?: defaultSystemSdk ?: getSystemSdk(environment.taskId, environment.project)?.also { systemSdk ->
+          defaultSystemSdk = systemSdk
+        }
         addModuleEntityFromTarget(
           builder = environment.diff,
           target = it,
@@ -89,7 +98,7 @@ class PythonProjectSync : ProjectSyncHook {
           entitySource = moduleSourceEntity,
           virtualFileUrlManager = virtualFileUrlManager,
           project = environment.project,
-          sdk = sdks[it.id] ?: defaultSdk,
+          sdk = sdk,
           sourceDependencyLibrary = sourceDependencyLibrary,
         )
       }
@@ -126,33 +135,25 @@ class PythonProjectSync : ProjectSyncHook {
   }
 
   private suspend fun findOrAddSdk(pythonTarget: PythonBuildTarget, project: Project): Sdk {
-    val sdkName = chooseSdkName(pythonTarget, project.name)
+    // Before this change we had toString() here so in case of null there would be "null"
+    // This !! fails fast
+    // TODO: Make make interpreter non-null
+    val interpreter = pythonTarget.interpreter!!
+    val sdkName = chooseSdkName(interpreter, project.name)
     val sdkTable = ProjectJdkTable.getInstance()
 
     val existingSdk = sdkTable.findJdk(sdkName, PythonSdkType.getInstance().toString())
     if (existingSdk != null) return existingSdk
 
-    val sdk =
-      ProjectJdkImpl(
-        sdkName,
-        PythonSdkType.getInstance(),
-        pythonTarget.interpreter.toString(),
-        pythonTarget.version,
-      )
+    return when (val r = createSdkFromPython(interpreter, project, sdkName)) {
+      is Result.Failure -> {
+        // TODO: Process error somehow
+        error("Failed to create SDK for $interpreter: ${r.error}")
+      }
 
-    return sdk.also { addSdkToTable(it, project) }
-  }
-
-  private suspend fun addSdkToTable(sdk: Sdk, project: Project): Sdk {
-    writeAction {
-      ProjectJdkTable.getInstance().addJdk(sdk)
-      PythonSdkUpdater.scheduleUpdate(sdk, project)
+      is Result.Success -> r.result
     }
-    return sdk
   }
-
-  private fun chooseSdkName(interpreter: PythonBuildTarget, projectName: String): String =
-    "$projectName-python-${StringUtils.md5Hash(interpreter.interpreter.toString(), 5)}"
 
   private fun calculateSourceDependencyLibrary(
     target: Label,
@@ -174,7 +175,8 @@ class PythonProjectSync : ProjectSyncHook {
         roots = roots,
         entitySource = entitySource,
       )
-    } else {
+    }
+    else {
       null
     }
   }
@@ -281,9 +283,31 @@ class PythonProjectSync : ProjectSyncHook {
     }
 }
 
-private fun getSystemSdk(): PyDetectedSdk? =
-  detectSystemWideSdks(null, emptyList())
-    .filter { it.homePath != null }
-    .let { sdks ->
-      sdks.firstOrNull { it.guessedLanguageLevel?.isPy3K == true } ?: sdks.firstOrNull()
+private suspend fun createSdkFromPython(
+  interpreter: Path,
+  project: Project,
+  sdkName: String?,
+): PyResult<Sdk> = createLocalSdkGuessingTypeByPath(interpreter, ProjectOnly(project), sdkName)
+
+private suspend fun getSystemSdk(taskId: TaskId, project: Project): Sdk? {
+  val systemPython = SystemPythonService().findSystemPythons().firstOrNull { it.pythonInfo.languageLevel.isPy3K }
+                     ?: run {
+                       project.syncConsole.addMessage(taskId, BazelPluginBundle.message("python.not.found"))
+                       return null
+                     }
+  logger.info("Detecting system SDK, found python $systemPython")
+  return when (val r = createSdkFromPython(systemPython.pythonBinary, project, sdkName = null)) {
+    is Result.Failure -> {
+      project.syncConsole.addMessage(taskId, BazelPluginBundle.message("python.cant.create.sdk", systemPython.pythonBinary, r.error.message))
+      null
     }
+
+    is Result.Success -> r.result
+  }
+}
+
+@ApiStatus.Internal
+@VisibleForTesting
+fun chooseSdkName(interpreter: PythonBinary, projectName: String): String =
+  "$projectName-python-${StringUtils.md5Hash(interpreter.pathString, 5)}"
+
