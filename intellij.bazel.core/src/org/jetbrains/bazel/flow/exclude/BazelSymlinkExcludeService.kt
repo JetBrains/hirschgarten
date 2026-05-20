@@ -10,12 +10,18 @@ import com.intellij.platform.backend.workspace.WorkspaceModel
 import com.intellij.platform.diagnostic.telemetry.helpers.useWithScope
 import com.intellij.platform.workspace.storage.impl.url.toVirtualFileUrl
 import com.intellij.util.concurrency.ThreadingAssertions
+import com.intellij.util.concurrency.annotations.RequiresBackgroundThread
 import com.intellij.util.concurrency.annotations.RequiresWriteLock
 import com.intellij.workspaceModel.core.fileIndex.impl.WorkspaceFileIndexEx
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.async
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.launch
 import org.jetbrains.annotations.ApiStatus
+import org.jetbrains.annotations.VisibleForTesting
 import org.jetbrains.bazel.commons.symlinks.BazelSymlinksCalculator
 import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.performance.bspTracer
@@ -24,6 +30,7 @@ import org.jetbrains.bazel.workspace.excludeSymlinksFromFileWatcher
 import org.jetbrains.bazel.workspacemodel.entities.NonIndexableVirtualFileUrl
 import org.jetbrains.bazel.workspacemodel.entities.modifyBazelProjectDirectoriesEntity
 import java.nio.file.Path
+import kotlin.time.Duration.Companion.seconds
 
 @ApiStatus.Internal
 @Service(Service.Level.PROJECT)
@@ -31,8 +38,19 @@ class BazelSymlinkExcludeService(
   private val project: Project,
   private val coroutineScope: CoroutineScope
 ) : DumbAware {
+  private val symlinkUpdatesFlow: MutableSharedFlow<Unit> = MutableSharedFlow(replay = 1)
+
   @Volatile
   private var symlinksToExclude: Set<Path> = emptySet()
+
+  init {
+    // batch bulk symlink updates
+    coroutineScope.launch(Dispatchers.Default) {
+      @OptIn(FlowPreview::class)
+      symlinkUpdatesFlow.debounce(1.seconds)
+        .collect { refreshWorkspaceModel() }
+    }
+  }
 
   fun getBazelSymlinksToExclude(): Set<Path> = symlinksToExclude
 
@@ -64,17 +82,18 @@ class BazelSymlinkExcludeService(
     // list of excluded directories from BazelDirectoryIndexExcludePolicy immediately.
     // Otherwise, LVCS can start iterating over Bazel's symlinks, effectively freezing the IDE.
     WorkspaceFileIndexEx.getInstance(project).indexData.resetCustomContributors()
+    symlinkUpdatesFlow.tryEmit(Unit)
   }
 
-  @RequiresWriteLock
-  fun refreshWorkspaceModel() {
-    ThreadingAssertions.assertWriteAccess()
+  @VisibleForTesting
+  @RequiresBackgroundThread
+  suspend fun refreshWorkspaceModel() {
     logger.info("Refreshing workspace model with excluded symlinks")
     val workspaceModel = WorkspaceModel.getInstance(project)
     val newSymlinksUrls = symlinksToExclude.map { it.toVirtualFileUrl(workspaceModel.getVirtualFileUrlManager()) }
       .map { NonIndexableVirtualFileUrl(it) }
-    workspaceModel.updateProjectModel("Add new excluded symlinks") { mutableEntityStorage ->
-      val bazelProjectDirectoriesEntity = mutableEntityStorage.bazelProjectDirectoriesEntity() ?: return@updateProjectModel
+    workspaceModel.update("Add new excluded symlinks") { mutableEntityStorage ->
+      val bazelProjectDirectoriesEntity = mutableEntityStorage.bazelProjectDirectoriesEntity() ?: return@update
       mutableEntityStorage.modifyBazelProjectDirectoriesEntity(bazelProjectDirectoriesEntity) {
         this.excludedRoots = this.excludedRoots.plus(newSymlinksUrls).distinct().toMutableList()
       }
