@@ -20,6 +20,7 @@ import com.intellij.platform.workspace.storage.url.VirtualFileUrl
 import org.jetbrains.annotations.ApiStatus.Internal
 import org.jetbrains.bazel.workspacemodel.entities.BazelProjectDirectoriesEntity
 import org.jetbrains.bazel.workspacemodel.entities.BazelProjectDirectoriesEntityBuilder
+import org.jetbrains.bazel.workspacemodel.entities.NonIndexableVirtualFileUrl
 
 @Internal
 @GeneratedCodeApiVersion(3)
@@ -39,12 +40,12 @@ internal class BazelProjectDirectoriesEntityImpl(private val dataSource: BazelPr
       readField("projectRoot")
       return dataSource.projectRoot
     }
-  override val includedRoots: List<VirtualFileUrl>
+  override val includedRoots: List<NonIndexableVirtualFileUrl>
     get() {
       readField("includedRoots")
       return dataSource.includedRoots
     }
-  override val excludedRoots: List<VirtualFileUrl>
+  override val excludedRoots: List<NonIndexableVirtualFileUrl>
     get() {
       readField("excludedRoots")
       return dataSource.excludedRoots
@@ -54,7 +55,7 @@ internal class BazelProjectDirectoriesEntityImpl(private val dataSource: BazelPr
       readField("indexAllFilesInIncludedRoots")
       return dataSource.indexAllFilesInIncludedRoots
     }
-  override val indexAdditionalFiles: List<VirtualFileUrl>
+  override val indexAdditionalFiles: List<NonIndexableVirtualFileUrl>
     get() {
       readField("indexAdditionalFiles")
       return dataSource.indexAdditionalFiles
@@ -93,9 +94,6 @@ internal class BazelProjectDirectoriesEntityImpl(private val dataSource: BazelPr
 // Builder may switch to snapshot at any moment and lock entity data to modification
       this.currentEntityData = null
       index(this, "projectRoot", this.projectRoot)
-      index(this, "includedRoots", this.includedRoots)
-      index(this, "excludedRoots", this.excludedRoots)
-      index(this, "indexAdditionalFiles", this.indexAdditionalFiles)
 // Process linked entities that are connected without a builder
       processLinkedEntities(builder)
       checkInitialization() // TODO uncomment and check failed tests
@@ -171,12 +169,11 @@ internal class BazelProjectDirectoriesEntityImpl(private val dataSource: BazelPr
         val _diff = diff
         if (_diff != null) index(this, "projectRoot", value)
       }
-    private val includedRootsUpdater: (value: List<VirtualFileUrl>) -> Unit = { value ->
-      val _diff = diff
-      if (_diff != null) index(this, "includedRoots", value)
+    private val includedRootsUpdater: (value: List<NonIndexableVirtualFileUrl>) -> Unit = { value ->
+
       changedProperty.add("includedRoots")
     }
-    override var includedRoots: MutableList<VirtualFileUrl>
+    override var includedRoots: MutableList<NonIndexableVirtualFileUrl>
       get() {
         val collection_includedRoots = getEntityData().includedRoots
         if (collection_includedRoots !is MutableWorkspaceList) return collection_includedRoots
@@ -193,12 +190,11 @@ internal class BazelProjectDirectoriesEntityImpl(private val dataSource: BazelPr
         getEntityData(true).includedRoots = value
         includedRootsUpdater.invoke(value)
       }
-    private val excludedRootsUpdater: (value: List<VirtualFileUrl>) -> Unit = { value ->
-      val _diff = diff
-      if (_diff != null) index(this, "excludedRoots", value)
+    private val excludedRootsUpdater: (value: List<NonIndexableVirtualFileUrl>) -> Unit = { value ->
+
       changedProperty.add("excludedRoots")
     }
-    override var excludedRoots: MutableList<VirtualFileUrl>
+    override var excludedRoots: MutableList<NonIndexableVirtualFileUrl>
       get() {
         val collection_excludedRoots = getEntityData().excludedRoots
         if (collection_excludedRoots !is MutableWorkspaceList) return collection_excludedRoots
@@ -222,12 +218,11 @@ internal class BazelProjectDirectoriesEntityImpl(private val dataSource: BazelPr
         getEntityData(true).indexAllFilesInIncludedRoots = value
         changedProperty.add("indexAllFilesInIncludedRoots")
       }
-    private val indexAdditionalFilesUpdater: (value: List<VirtualFileUrl>) -> Unit = { value ->
-      val _diff = diff
-      if (_diff != null) index(this, "indexAdditionalFiles", value)
+    private val indexAdditionalFilesUpdater: (value: List<NonIndexableVirtualFileUrl>) -> Unit = { value ->
+
       changedProperty.add("indexAdditionalFiles")
     }
-    override var indexAdditionalFiles: MutableList<VirtualFileUrl>
+    override var indexAdditionalFiles: MutableList<NonIndexableVirtualFileUrl>
       get() {
         val collection_indexAdditionalFiles = getEntityData().indexAdditionalFiles
         if (collection_indexAdditionalFiles !is MutableWorkspaceList) return collection_indexAdditionalFiles
@@ -253,10 +248,10 @@ internal class BazelProjectDirectoriesEntityImpl(private val dataSource: BazelPr
 @OptIn(WorkspaceEntityInternalApi::class)
 internal class BazelProjectDirectoriesEntityData : WorkspaceEntityData<BazelProjectDirectoriesEntity>() {
   lateinit var projectRoot: VirtualFileUrl
-  lateinit var includedRoots: MutableList<VirtualFileUrl>
-  lateinit var excludedRoots: MutableList<VirtualFileUrl>
+  lateinit var includedRoots: MutableList<NonIndexableVirtualFileUrl>
+  lateinit var excludedRoots: MutableList<NonIndexableVirtualFileUrl>
   var indexAllFilesInIncludedRoots: Boolean = false
-  lateinit var indexAdditionalFiles: MutableList<VirtualFileUrl>
+  lateinit var indexAdditionalFiles: MutableList<NonIndexableVirtualFileUrl>
 
   internal fun isProjectRootInitialized(): Boolean = ::projectRoot.isInitialized
   internal fun isIncludedRootsInitialized(): Boolean = ::includedRoots.isInitialized

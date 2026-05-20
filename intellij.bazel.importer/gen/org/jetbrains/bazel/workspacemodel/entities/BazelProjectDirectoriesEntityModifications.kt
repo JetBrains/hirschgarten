@@ -16,20 +16,20 @@ import org.jetbrains.annotations.ApiStatus.Internal
 interface BazelProjectDirectoriesEntityBuilder : WorkspaceEntityBuilder<BazelProjectDirectoriesEntity> {
   override var entitySource: EntitySource
   var projectRoot: VirtualFileUrl
-  var includedRoots: MutableList<VirtualFileUrl>
-  var excludedRoots: MutableList<VirtualFileUrl>
+  var includedRoots: MutableList<NonIndexableVirtualFileUrl>
+  var excludedRoots: MutableList<NonIndexableVirtualFileUrl>
   var indexAllFilesInIncludedRoots: Boolean
-  var indexAdditionalFiles: MutableList<VirtualFileUrl>
+  var indexAdditionalFiles: MutableList<NonIndexableVirtualFileUrl>
 }
 
 internal object BazelProjectDirectoriesEntityType : EntityType<BazelProjectDirectoriesEntity, BazelProjectDirectoriesEntityBuilder>() {
   override val entityClass: Class<BazelProjectDirectoriesEntity> get() = BazelProjectDirectoriesEntity::class.java
   operator fun invoke(
     projectRoot: VirtualFileUrl,
-    includedRoots: List<VirtualFileUrl>,
-    excludedRoots: List<VirtualFileUrl>,
+    includedRoots: List<NonIndexableVirtualFileUrl>,
+    excludedRoots: List<NonIndexableVirtualFileUrl>,
     indexAllFilesInIncludedRoots: Boolean,
-    indexAdditionalFiles: List<VirtualFileUrl>,
+    indexAdditionalFiles: List<NonIndexableVirtualFileUrl>,
     entitySource: EntitySource,
     init: (BazelProjectDirectoriesEntityBuilder.() -> Unit)? = null,
   ): BazelProjectDirectoriesEntityBuilder {
@@ -56,10 +56,10 @@ fun MutableEntityStorage.modifyBazelProjectDirectoriesEntity(
 @JvmName("createBazelProjectDirectoriesEntity")
 fun BazelProjectDirectoriesEntity(
   projectRoot: VirtualFileUrl,
-  includedRoots: List<VirtualFileUrl>,
-  excludedRoots: List<VirtualFileUrl>,
+  includedRoots: List<NonIndexableVirtualFileUrl>,
+  excludedRoots: List<NonIndexableVirtualFileUrl>,
   indexAllFilesInIncludedRoots: Boolean,
-  indexAdditionalFiles: List<VirtualFileUrl>,
+  indexAdditionalFiles: List<NonIndexableVirtualFileUrl>,
   entitySource: EntitySource,
   init: (BazelProjectDirectoriesEntityBuilder.() -> Unit)? = null,
 ): BazelProjectDirectoriesEntityBuilder = BazelProjectDirectoriesEntityType(

@@ -27,6 +27,7 @@ import org.jetbrains.bazel.languages.projectview.directories
 import org.jetbrains.bazel.project.BazelProjectFixtures.initializeBazelProject
 import org.jetbrains.bazel.settings.bazel.bazelProjectSettings
 import org.jetbrains.bazel.workspacemodel.entities.BazelProjectDirectoriesEntityFixtures.emptyBazelDirectoryWorkspaceEntity
+import org.jetbrains.bazel.workspacemodel.entities.NonIndexableVirtualFileUrl
 import kotlin.io.path.pathString
 
 abstract class ProjectViewDirectoriesActionTestCase(
@@ -75,8 +76,8 @@ abstract class ProjectViewDirectoriesActionTestCase(
         )
       }
       val entity = emptyBazelDirectoryWorkspaceEntity(project).also {
-        it.includedRoots = includes.mapTo(arrayListOf()) { it.toVirtualFileUrl(manager) }
-        it.excludedRoots = excludes.mapTo(arrayListOf()) { it.toVirtualFileUrl(manager) }
+        it.includedRoots = includes.mapTo(arrayListOf()) { NonIndexableVirtualFileUrl(it.toVirtualFileUrl(manager)) }
+        it.excludedRoots = excludes.mapTo(arrayListOf()) { NonIndexableVirtualFileUrl(it.toVirtualFileUrl(manager)) }
       }
       writeAction { workspaceModel.updateProjectModel { updater -> updater.addEntity(entity) } }
     }

@@ -39,7 +39,7 @@ internal class PackageMarkerEntityUpdater(
       .entities<BazelProjectDirectoriesEntity>()
       .firstOrNull()?.excludedRoots
       .orEmpty()
-      .map { it.toPath() }
+      .map { it.url.toPath() }
       .toSet()
 
   override suspend fun addEntities(entitiesToAdd: List<JavaSourceRoot>, parentModuleEntity: ModuleEntity): List<PackageMarkerEntity> {
