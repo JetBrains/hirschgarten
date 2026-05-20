@@ -20,6 +20,7 @@ import org.jetbrains.bazel.ui.projectTree.BazelTreeStructureContext.Companion.bu
 import org.jetbrains.bazel.workspace.bazelProjectDirectoriesEntity
 import org.jetbrains.bazel.workspace.excludedRoots
 import org.jetbrains.bazel.workspace.includedRoots
+import org.jetbrains.bazel.workspacemodel.entities.NonIndexableVirtualFileUrl
 
 @ApiStatus.Internal
 @Service(Service.Level.PROJECT)
@@ -139,11 +140,11 @@ private data class BazelTreeStructureContext(
       )
     }
 
-    private fun directoriesContainingDirectories(roots: List<VirtualFileUrl>): Set<VirtualFile> {
+    private fun directoriesContainingDirectories(roots: List<NonIndexableVirtualFileUrl>): Set<VirtualFile> {
       val result =
         roots
           .asSequence()
-          .mapNotNull { it.virtualFile }
+          .mapNotNull { it.url.virtualFile }
           .mapNotNull { if (it.isDirectory) it else it.parent }
           .toMutableSet()
 

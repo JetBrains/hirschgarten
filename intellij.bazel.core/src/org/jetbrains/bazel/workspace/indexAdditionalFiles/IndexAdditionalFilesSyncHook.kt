@@ -21,6 +21,7 @@ import org.jetbrains.bazel.sync.ProjectSyncHook
 import org.jetbrains.bazel.sync.withSubtask
 import org.jetbrains.bazel.workspace.bazelProjectDirectoriesEntity
 import org.jetbrains.bazel.workspacemodel.entities.BazelProjectDirectoriesEntity
+import org.jetbrains.bazel.workspacemodel.entities.NonIndexableVirtualFileUrl
 import org.jetbrains.bazel.workspacemodel.entities.modifyBazelProjectDirectoriesEntity
 
 private val INDEX_ADDITIONAL_FILES_DEFAULT =
@@ -55,7 +56,7 @@ internal class IndexAdditionalFilesSyncHook : ProjectSyncHook {
         }
 
       mutableEntityStorage.modifyBazelProjectDirectoriesEntity(projectDirectoriesEntity) {
-        this.indexAdditionalFiles += indexAdditionalFiles
+        this.indexAdditionalFiles += indexAdditionalFiles.map { NonIndexableVirtualFileUrl(it) }
       }
     }
 
@@ -75,8 +76,8 @@ internal class IndexAdditionalFilesSyncHook : ProjectSyncHook {
         workspaceContext.indexAdditionalFilesInDirectories + INDEX_ADDITIONAL_FILES_DEFAULT,
       )
 
-    val includedRoots = projectDirectoriesEntity.includedRoots.mapNotNull { it.virtualFile }
-    val excludedRoots = projectDirectoriesEntity.excludedRoots.mapNotNullTo(hashSetOf()) { it.virtualFile }
+    val includedRoots = projectDirectoriesEntity.includedRoots.mapNotNull { it.url.virtualFile }
+    val excludedRoots = projectDirectoriesEntity.excludedRoots.mapNotNullTo(hashSetOf()) { it.url.virtualFile }
     val contentRoots =
       mutableEntityStorage
         .entities<ContentRootEntity>()

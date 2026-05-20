@@ -21,6 +21,7 @@ import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.performance.bspTracer
 import org.jetbrains.bazel.workspace.bazelProjectDirectoriesEntity
 import org.jetbrains.bazel.workspace.excludeSymlinksFromFileWatcher
+import org.jetbrains.bazel.workspacemodel.entities.NonIndexableVirtualFileUrl
 import org.jetbrains.bazel.workspacemodel.entities.modifyBazelProjectDirectoriesEntity
 import java.nio.file.Path
 
@@ -71,6 +72,7 @@ class BazelSymlinkExcludeService(
     logger.info("Refreshing workspace model with excluded symlinks")
     val workspaceModel = WorkspaceModel.getInstance(project)
     val newSymlinksUrls = symlinksToExclude.map { it.toVirtualFileUrl(workspaceModel.getVirtualFileUrlManager()) }
+      .map { NonIndexableVirtualFileUrl(it) }
     workspaceModel.updateProjectModel("Add new excluded symlinks") { mutableEntityStorage ->
       val bazelProjectDirectoriesEntity = mutableEntityStorage.bazelProjectDirectoriesEntity() ?: return@updateProjectModel
       mutableEntityStorage.modifyBazelProjectDirectoriesEntity(bazelProjectDirectoriesEntity) {

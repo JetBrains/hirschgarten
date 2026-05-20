@@ -48,7 +48,7 @@ internal class BazelSymlinkExcludeStartupActivityTest {
     assertEquals(setOf(convenientSymlink), bazelSymlinkExcludeService.getBazelSymlinksToExclude())
 
     // AND
-    val actualPaths = project.bazelProjectDirectoriesEntity()!!.excludedRoots.mapNotNull { it.virtualFile?.toNioPath() }
+    val actualPaths = project.bazelProjectDirectoriesEntity()!!.excludedRoots.mapNotNull { it.url.virtualFile?.toNioPath() }
     assertIterableEquals(listOf(convenientSymlink), actualPaths)
   }
 
