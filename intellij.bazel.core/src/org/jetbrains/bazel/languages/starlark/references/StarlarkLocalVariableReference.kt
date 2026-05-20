@@ -1,8 +1,8 @@
 package org.jetbrains.bazel.languages.starlark.references
 
-import com.intellij.lang.ASTNode
 import com.intellij.openapi.util.TextRange
 import com.intellij.psi.PsiElement
+import com.intellij.psi.PsiNameIdentifierOwner
 import com.intellij.psi.PsiReferenceBase
 import org.jetbrains.bazel.languages.starlark.completion.StarlarkCompletionProcessor
 import org.jetbrains.bazel.languages.starlark.completion.lookups.StarlarkLookupElement
@@ -11,7 +11,7 @@ import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkTargetExpr
 import org.jetbrains.bazel.languages.starlark.rename.RenameUtils
 
 internal interface StarlarkLocalVariableElement : StarlarkElement {
-  fun getNameNode(): ASTNode?
+  fun getNameIdentifier(): PsiElement?
 }
 
 internal class StarlarkLocalVariableReference(
@@ -39,7 +39,7 @@ internal class StarlarkLocalVariableReference(
     } ?: emptyArray()
 
   override fun handleElementRename(name: String): PsiElement {
-    val oldNode = myElement.getNameNode() ?: return myElement
+    val oldNode = myElement.getNameIdentifier()?.node ?: return myElement
     val newNode = RenameUtils.createNewName(myElement.project, name)
     myElement.node.replaceChild(oldNode, newNode)
     return myElement

@@ -59,8 +59,7 @@ internal class StarlarkRunLineMarkerContributor : RunLineMarkerContributor() {
     this.accept(visitor)
     val ruleName = visitor.ruleName ?: return null
     val targetName = visitor.targetName ?: return null
-    val path = virtualFile.toNioPathOrNull() ?: return null
-    val targetLabel = calculateLabel(project, path, targetName) ?: return null
+    val targetLabel = calculateLabel(project, virtualFile, targetName) ?: return null
     return calculateLineMarkerInfo(project, targetLabel, ruleName).takeIf { it.actions.isNotEmpty() }
   }
 

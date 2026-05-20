@@ -9,7 +9,6 @@ import com.intellij.openapi.components.serviceAsync
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.ProjectManager
-import com.intellij.openapi.roots.ProjectFileIndex
 import com.intellij.openapi.roots.ProjectRootManager
 import com.intellij.openapi.util.NlsSafe
 import com.intellij.openapi.vfs.LocalFileSystem
@@ -28,7 +27,6 @@ import com.intellij.platform.workspace.storage.ImmutableEntityStorage
 import com.intellij.platform.workspace.storage.MutableEntityStorage
 import com.intellij.platform.workspace.storage.url.VirtualFileUrl
 import com.intellij.platform.workspace.storage.url.VirtualFileUrlManager
-import com.intellij.util.concurrency.annotations.RequiresReadLock
 import com.intellij.workspaceModel.core.fileIndex.WorkspaceFileIndex
 import com.intellij.workspaceModel.core.fileIndex.WorkspaceFileSetWithCustomData
 import com.intellij.workspaceModel.core.fileIndex.impl.JvmPackageRootDataInternal
@@ -47,6 +45,7 @@ import org.jetbrains.bazel.config.isBazelProject
 import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.coroutines.BazelCoroutineService
 import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.languages.starlark.utils.StarlarkSrcsListEval
 import org.jetbrains.bazel.magicmetamodel.formatAsModuleName
 import org.jetbrains.bazel.progress.ShowConsole
 import org.jetbrains.bazel.progress.syncConsole
@@ -104,6 +103,9 @@ open class BazelFileEventListener : BulkFileListenerBackgroundable {
 
   protected open val allowBazelQuery: Boolean
     get() = BazelFeatureFlags.queryBazelOnFileEvents
+
+  protected open val allowPsiEvaluation: Boolean
+    get() = BazelFeatureFlags.evaluatePsiOnFileEvents
 
   /** @return `true` if processing has been performed in this function execution, `false` if it was omitted for any reason */
   private suspend fun processEventsForProject(project: Project, events: List<SimplifiedFileEvent>): Boolean {
@@ -190,11 +192,18 @@ open class BazelFileEventListener : BulkFileListenerBackgroundable {
   private suspend fun applyAllChanges(allFileEvents: List<SimplifiedFileEvent>, context: ProcessingContext) {
     context.progressReporter.startPreparationStep()
 
-    val existingModulesByEvent =
+    val existingModulesByEvent: Map<SimplifiedFileEvent, Set<ModuleEntity>> =
       readAction {
-        allFileEvents.associateWith { event ->
-          event.newVirtualFile?.let { newFile -> findModulesForFile(newFile, context.fileIndex) } ?: emptySet()
+        val result = HashMap<SimplifiedFileEvent, Set<ModuleEntity>>()
+        val fileIndex = ProjectRootManager.getInstance(context.project).fileIndex
+        for (event in allFileEvents) {
+          val newFile = event.newVirtualFile ?: continue
+          val modules = fileIndex.getModulesForFile(newFile, true).mapNotNull { it.findModuleEntity() }
+          if (modules.isNotEmpty()) {
+            result[event] = modules.toSet()
+          }
         }
+        result
       }
     val fileEventsToProcess = allFileEvents.filter { !it.moveEventTargetFolderIsInAnyModule(existingModulesByEvent) }
     if (fileEventsToProcess.isEmpty()) {
@@ -221,9 +230,9 @@ open class BazelFileEventListener : BulkFileListenerBackgroundable {
     if (this !is SimplifiedFileEvent.Move || fileAdded == null || fileRemoved == null) return false
     val modules = existingModulesByEvent[this] ?: return false
     for (module in modules) {
-      val contentRootPaths = module.contentRoots.map { it.url.toPath() }
-      val contentRootContainsBothFiles =
-        contentRootPaths.any { fileAdded.parent.startsWith(it) }
+      val contentRootContainsBothFiles = module.contentRoots.any { contentRoot ->
+        fileAdded.parent.startsWith(contentRoot.url.toPath())
+      }
       if (contentRootContainsBothFiles) return true
     }
     return false
@@ -292,26 +301,51 @@ open class BazelFileEventListener : BulkFileListenerBackgroundable {
       it is SimplifiedFileEvent.Copy ||
       (it as? SimplifiedFileEvent.Rename)?.extensionChanged == true
     }
+
     val modulesAlreadyContainingFiles =
       applicableEvents.associateNewFilePathsWithExistingModules(existingModulesByEvent)
-    val addedFilePaths = applicableEvents.mapNotNull { it.fileAdded }
+    val addedFiles: Map<Path, VirtualFile> =
+      applicableEvents.mapNotNull {
+        val fileAdded = it.fileAdded ?: return@mapNotNull null
+        val vFile = it.newVirtualFile ?: return@mapNotNull null
+        fileAdded to vFile
+      }.toMap()
     val bazelQueryIsRequired =
-      addedFilePaths.any {
-        modulesToRemoveFilesFrom[it]?.isNotEmpty() == true || modulesAlreadyContainingFiles[it].isNullOrEmpty()
+      addedFiles.any {
+        modulesToRemoveFilesFrom[it.key]?.isNotEmpty() == true || modulesAlreadyContainingFiles[it.key].isNullOrEmpty()
       }
     // avoid running a Bazel query when not required (BAZEL-2458)
     if (bazelQueryIsRequired) {
-      if (allowBazelQuery) {
-        val targetsByPath =
-          context.progressReporter.startQueryStep { queryTargetsForFile(context.project, addedFilePaths, context.taskId) } ?: return
-        addFileToTargets(targetsByPath, modulesToRemoveFilesFrom, modulesAlreadyContainingFiles, context)
+      val targetsByPath: Map<Path, List<Label>> = if (allowBazelQuery) {
+        val queryResult = context.progressReporter.startQueryStep {
+          queryTargetsForFile(context.project, addedFiles.keys.toList(), context.taskId)
+        } ?: return
+        queryResult
+      } else if (allowPsiEvaluation) {
+        // Heuristically evaluate targets by looking into PSI
+        var evaluationFailed = false
+        val eval = StarlarkSrcsListEval(context.project)
+        addedFiles.mapNotNull { (path, vFile) ->
+          val targets = readAction { eval.findTargetsForSourceFile(vFile) }
+          if (targets.isEmpty()) {
+            // Cannot determine the targets for file - show "Resync" button
+            evaluationFailed = true
+            return@mapNotNull null
+          }
+          path to targets
+        }.toMap().also {
+          if (evaluationFailed) {
+            BazelProjectAware.notify(context.project)
+          }
+        }
       } else {
-        // Bazel is not allowed to be run on file events, but it was necessary - show "Resync" button
         BazelProjectAware.notify(context.project)
+        emptyMap()
       }
+      addFileToTargets(targetsByPath, modulesToRemoveFilesFrom, modulesAlreadyContainingFiles, context)
     } else {
       context.progressReporter.skipQueryStep()
-      for (filePath in addedFilePaths) {
+      for (filePath in addedFiles.keys) {
         val modules = modulesAlreadyContainingFiles[filePath] ?: continue
         addToPluginModelByModules(filePath, modules, context.targetUtils)
       }
@@ -463,20 +497,12 @@ private suspend fun prepareProcessingContext(
     entityStorageDiff = entityStorageDiff,
     targetUtils = project.serviceAsync<TargetUtils>(),
     taskId = taskId,
-    fileIndex = ProjectRootManager.getInstance(project).fileIndex,
     progressReporter = bazelReporter,
   )
 }
 
 private fun Label.toModuleEntity(storage: ImmutableEntityStorage, project: Project): ModuleEntity? =
   storage.resolve(ModuleId(this.formatAsModuleName(project)))
-
-@RequiresReadLock
-private fun findModulesForFile(newFile: VirtualFile, fileIndex: ProjectFileIndex): Set<ModuleEntity> {
-  val modules = fileIndex.getModulesForFile(newFile, true)
-  return modules.mapNotNull { it.findModuleEntity() }
-    .toSet()
-}
 
 private suspend fun queryTargetsForFile(project: Project, filePaths: List<Path>, taskId: TaskId): Map<Path, List<Label>>? =
   if (!project.serviceAsync<SyncStatusService>().isSyncInProgress) {
@@ -547,6 +573,5 @@ private data class ProcessingContext(
   val entityStorageDiff: MutableEntityStorage,
   val targetUtils: TargetUtils,
   val taskId: TaskId,
-  val fileIndex: ProjectFileIndex,
   val progressReporter: BazelFileEventProgressReporter,
 )

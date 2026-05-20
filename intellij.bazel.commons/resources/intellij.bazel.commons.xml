@@ -162,6 +162,11 @@
                  restartRequired="false"
     />
     <registryKey defaultValue="true"
+                 description="Evaluate targets for file with Starlark PSI when processing file events"
+                 key="bazel.evaluate.psi.on.file.events"
+                 restartRequired="false"
+    />
+    <registryKey defaultValue="true"
                  description="Highlight unsynced source files"
                  key="bazel.highlight.unsynced.source.files"
                  restartRequired="false"

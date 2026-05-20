@@ -96,7 +96,7 @@ class StarlarkFileFindUsagesTest : StarlarkFindUsagesTestCase() {
       """.trimIndent(),
     )
 
-    val usages = myFixture.findUsages(ktFile).mapNotNull { it.element?.text }
+    val usages = myFixture.findUsages(ktFile).mapNotNull { it.element?.parent?.text }
     usages.shouldContain(
       """
       glob(["**/*.kt"])

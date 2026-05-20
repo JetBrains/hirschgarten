@@ -16,7 +16,7 @@ internal class StarlarkQualifiedReferenceExpressionReference (element: StarlarkR
     val qualifiedPartResolved = element.getQualifierExpression()?.reference?.resolve() ?: return null
     val assignment = qualifiedPartResolved.parent as? StarlarkAssignmentStatement ?: return null
     val assignedValue = assignment.getChildOfType<StarlarkCallExpression>() ?: return null
-    if (assignedValue.getNameNode()?.text != "struct") return null
+    if (assignedValue.getCalledFunctionName() != "struct") return null
     val definition = assignedValue.getArgumentList()?.getKeywordArgument(identifier) ?: return null
 
     return (definition.lastChild as? StarlarkReferenceExpression)?.reference?.resolve() ?: definition

@@ -15,6 +15,7 @@ import org.jetbrains.bazel.sync.SyncCache
 import org.jetbrains.bazel.workspace.canonicalRepoNameToPath
 import org.jetbrains.bazel.workspace.excludedRoots
 import java.nio.file.Path
+import kotlin.io.path.Path
 import kotlin.io.path.relativeToOrNull
 
 @ApiStatus.Internal
@@ -70,3 +71,24 @@ private fun calculateApparentRepoNameToFiles(project: Project): Map<String, List
   }
   return newMap
 }
+
+private fun findBuildFilePathForDirectory(
+  dir: VirtualFile,
+  repoRoot: VirtualFile,
+  cache: MutableMap<VirtualFile, Path?> = mutableMapOf(),
+): Path? =
+  cache.getOrPut(dir) {
+    val buildFile = findBuildFile(dir)
+    if (buildFile != null) {
+      buildFile.toNioPath()
+    }
+    else {
+      val parent = dir.parent
+      if (parent == null || !VfsUtilCore.isAncestor(repoRoot, parent, false)) {
+        null
+      }
+      else {
+        findBuildFilePathForDirectory(parent, repoRoot, cache)
+      }
+    }
+  }

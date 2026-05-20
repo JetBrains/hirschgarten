@@ -9,14 +9,15 @@ import org.jetbrains.bazel.languages.starlark.documentation.BazelGlobalFunctionD
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkBaseElement.Companion.relativeTo
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkCallExpression
 
-@Suppress("UnstableApiUsage")
 internal class BazelGlobalFunctionReference(private val element: StarlarkCallExpression, private val rule: BazelGlobalFunction) :
   PsiSymbolReference {
-  val textRange = element.getNameNode()?.textRange?.relativeTo(element)!!
 
-  override fun getElement(): PsiElement = element
+  override fun getElement(): PsiElement =
+    element
 
-  override fun getRangeInElement(): TextRange = textRange
+  override fun getRangeInElement(): TextRange =
+    element.getCalledExpression()?.textRange?.relativeTo(element) ?: TextRange.EMPTY_RANGE
 
-  override fun resolveReference(): Collection<Symbol?> = listOf(BazelGlobalFunctionDocumentationSymbol(rule, element.project))
+  override fun resolveReference(): Collection<Symbol?> =
+    listOf(BazelGlobalFunctionDocumentationSymbol(rule, element.project))
 }

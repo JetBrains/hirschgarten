@@ -17,7 +17,6 @@ import org.jetbrains.bazel.languages.starlark.psi.StarlarkElementVisitor
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkFile
 import org.jetbrains.bazel.languages.starlark.psi.functions.StarlarkArgumentList
 import org.jetbrains.bazel.languages.starlark.references.BazelGlobalFunctionReference
-import org.jetbrains.bazel.languages.starlark.references.StarlarkFunctionCallReference
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.contract
 
@@ -47,12 +46,6 @@ class StarlarkCallExpression(node: ASTNode) :
 
   override fun getUseScope(): SearchScope = if (isRuleTarget()) project.starlarkProjectScope() else super.getUseScope()
 
-  override fun getReference(): PsiReference? =
-    getNameNode()?.let {
-      val range = it.textRange.relativeTo(this)
-      StarlarkFunctionCallReference(this, range)
-    }
-
   override fun getName(): String? = if (isRuleTarget()) getNameAttributeValue() else null
 
   override fun setName(name: String): PsiElement {
@@ -78,14 +71,9 @@ class StarlarkCallExpression(node: ASTNode) :
     return file.isBuildFile()
   }
 
-  fun getNameNode(): ASTNode? = getNamePsi()?.node
-
-  internal fun getNamePsi(): StarlarkReferenceExpression? = findChildByType(StarlarkElementTypes.REFERENCE_EXPRESSION)
-
   fun getNameAttributeValue(): String? = nameArgumentStringLiteral()?.getStringContents()
-
-  fun getCalledFunctionName(): String? = getNameNode()?.text
-
+  fun getCalledFunctionName(): String? = (getCalledExpression() as? StarlarkReferenceExpression)?.text
+  fun getCalledExpression(): PsiElement? = findChildByType(StarlarkElementTypes.EXPRESSIONS)
   fun getArgumentList(): StarlarkArgumentList? = findChildrenByClass(StarlarkArgumentList::class.java).firstOrNull()
 
   override fun getOwnReferences(): Collection<PsiSymbolReference> {
@@ -93,7 +81,7 @@ class StarlarkCallExpression(node: ASTNode) :
     val function = BazelGlobalFunctions.getFunctionByName(name) ?: return emptyList()
     return listOfNotNull(
       BazelGlobalFunctionReference(this, function),
-      reference?.let { PsiSymbolService.getInstance().asSymbolReference(it) },
+      getCalledExpression()?.reference?.let { PsiSymbolService.getInstance().asSymbolReference(it) },
     )
   }
 

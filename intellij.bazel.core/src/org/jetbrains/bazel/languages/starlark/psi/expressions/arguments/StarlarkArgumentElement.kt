@@ -2,11 +2,13 @@ package org.jetbrains.bazel.languages.starlark.psi.expressions.arguments
 
 import com.intellij.lang.ASTNode
 import com.intellij.psi.PsiElement
+import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.languages.starlark.elements.StarlarkElementTypes
 import org.jetbrains.bazel.languages.starlark.elements.StarlarkTokenTypes
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkElement
 
-internal interface StarlarkArgumentElement : StarlarkElement {
+@ApiStatus.Internal
+interface StarlarkArgumentElement : StarlarkElement {
   fun getValue(): PsiElement? {
     var childNode: ASTNode? = node.lastChildNode
     while (childNode != null) {

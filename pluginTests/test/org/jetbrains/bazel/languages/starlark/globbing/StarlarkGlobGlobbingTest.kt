@@ -23,7 +23,8 @@ internal class StarlarkGlobGlobbingTest : BasePlatformTestCase() {
       StarlarkGlob
         .forPath(baseDir)
         .addPatterns(listOf("*.java"))
-        .glob()
+        .build()
+        .execute()
 
     assertEquals(setOf("include1.java", "include2.java"), result.relativePathsFrom(baseDir))
   }
@@ -40,7 +41,8 @@ internal class StarlarkGlobGlobbingTest : BasePlatformTestCase() {
         .forPath(baseDir)
         .addPatterns(listOf("*.java"))
         .addExcludes(listOf("exclude.java"))
-        .glob()
+        .build()
+        .execute()
 
     assertEquals(setOf("include.java"), result.relativePathsFrom(baseDir))
   }
@@ -57,7 +59,8 @@ internal class StarlarkGlobGlobbingTest : BasePlatformTestCase() {
         .forPath(baseDir)
         .addPatterns(listOf("*"))
         .addExcludes(listOf("*.java"))
-        .glob()
+        .build()
+        .execute()
 
     assertEquals(setOf("include.kt"), result.relativePathsFrom(baseDir))
   }
@@ -73,7 +76,8 @@ internal class StarlarkGlobGlobbingTest : BasePlatformTestCase() {
     val result = StarlarkGlob
         .forPath(baseDir)
         .addPatterns(listOf("**/*.kt"))
-        .glob()
+      .build()
+      .execute()
 
     assertEquals(setOf("root.kt", "dir1/file1.kt", "dir2/subdir/file2.kt"), result.relativePathsFrom(baseDir))
   }
@@ -90,7 +94,8 @@ internal class StarlarkGlobGlobbingTest : BasePlatformTestCase() {
         .forPath(baseDir)
         .addPatterns(listOf("**"))
         .setExcludeDirectories(true)
-        .glob()
+        .build()
+        .execute()
 
     val relPaths = result.relativePathsFrom(baseDir)
     assertEquals(setOf("file.kt"), relPaths)
@@ -107,7 +112,8 @@ internal class StarlarkGlobGlobbingTest : BasePlatformTestCase() {
     val result =
       StarlarkGlob
         .forPath(baseDir)
-        .glob()
+        .build()
+        .execute()
 
     assertEquals(emptySet<String>(), result.relativePathsFrom(baseDir))
   }
@@ -125,7 +131,8 @@ internal class StarlarkGlobGlobbingTest : BasePlatformTestCase() {
       StarlarkGlob
         .forPath(baseDir)
         .addPatterns(listOf("x/**/y.kt"))
-        .glob()
+        .build()
+        .execute()
 
     assertEquals(
       setOf(
@@ -151,7 +158,8 @@ internal class StarlarkGlobGlobbingTest : BasePlatformTestCase() {
         .forPath(baseDir)
         .addPatterns(listOf("**/*.kt"))
         .addExcludes(listOf("dir/exclude/**"))
-        .glob()
+        .build()
+        .execute()
 
     assertEquals(setOf("dir/include1.kt", "dir/sub/include2.kt"), result.relativePathsFrom(baseDir))
   }
@@ -168,7 +176,8 @@ internal class StarlarkGlobGlobbingTest : BasePlatformTestCase() {
         .forPath(baseDir)
         .addPatterns(listOf("**/*.txt"))
         .setDirectoryFilter { dir -> dir.name != "skipDir" }
-        .glob()
+        .build()
+        .execute()
 
     assertEquals(setOf("include/visible.txt"), result.relativePathsFrom(baseDir))
   }
