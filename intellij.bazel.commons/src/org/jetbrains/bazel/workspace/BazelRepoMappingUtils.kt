@@ -2,6 +2,7 @@ package org.jetbrains.bazel.languages.starlark.repomapping
 
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.NlsSafe
+import com.intellij.openapi.vfs.VfsUtil
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.isFile
 import org.jetbrains.annotations.ApiStatus
@@ -17,48 +18,38 @@ import org.jetbrains.bazel.label.Main
 import org.jetbrains.bazel.label.Package
 import org.jetbrains.bazel.label.ResolvedLabel
 import org.jetbrains.bazel.label.SingleTarget
-import org.jetbrains.bazel.utils.allAncestorsSequence
 import org.jetbrains.bazel.workspace.apparentRepoNameToCanonicalName
 import org.jetbrains.bazel.workspace.canonicalRepoNameToApparentName
 import org.jetbrains.bazel.workspace.canonicalRepoNameToPath
 import java.nio.file.Path
-import kotlin.io.path.isRegularFile
-import kotlin.io.path.relativeToOrNull
-
-@ApiStatus.Internal
-fun findContainingBazelRepo(path: Path): Path? =
-  path.allAncestorsSequence().firstOrNull {
-    WORKSPACE_FILE_NAMES.any { workspaceFileName ->
-      it.resolve(workspaceFileName).isRegularFile()
-    }
-  }
 
 @ApiStatus.Internal
 fun findContainingBazelRepo(path: VirtualFile): VirtualFile? =
-  generateSequence(path) { it.parent }.firstOrNull {
+  generateSequence(path) { it.parent }.firstOrNull { repoDir ->
     WORKSPACE_FILE_NAMES.any { workspaceFileName ->
-      it.findChild(workspaceFileName)?.isFile == true
+      repoDir.findChild(workspaceFileName)?.isFile == true
     }
   }
 
 @ApiStatus.Internal
 fun calculateLabel(
   project: Project,
-  buildFile: Path,
+  buildFile: VirtualFile,
   targetName: String? = null,
 ): ResolvedLabel? {
   val targetBaseDirectory = buildFile.parent ?: return null
-  val containingRepoPath = findContainingBazelRepo(targetBaseDirectory) ?: return null
+  val containingRepoDirectory = findContainingBazelRepo(targetBaseDirectory) ?: return null
+  val containingRepoPath = Path.of(containingRepoDirectory.path)
   val containingCanonicalRepoName =
     project.canonicalRepoNameToPath.entries
       .firstOrNull { (_, repoPath) ->
         repoPath == containingRepoPath
       }?.key ?: return null
 
-  val relativeTargetBaseDirectory = targetBaseDirectory.relativeToOrNull(containingRepoPath) ?: return null
+  val relativeTargetBaseDirectory = VfsUtil.getRelativePath(targetBaseDirectory, containingRepoDirectory, '/') ?: return null
   return ResolvedLabel(
     repo = Canonical.createCanonicalOrMain(containingCanonicalRepoName),
-    packagePath = Package(relativeTargetBaseDirectory.segments()),
+    packagePath = Package(relativeTargetBaseDirectory.split('/').filter { it.isNotEmpty() }),
     target = targetName?.let { SingleTarget(targetName) } ?: AmbiguousEmptyTarget,
   )
 }

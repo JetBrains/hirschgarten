@@ -71,7 +71,7 @@ internal class CopyTargetIdAction : SuspendableAction({ BazelPluginBundle.messag
 
   private fun StarlarkCallExpression.calculateTargetId(): String? {
     val targetName = getNameAttributeValue() ?: return null
-    val containingFile = containingFile?.virtualFile?.toNioPathOrNull() ?: return null
+    val containingFile = containingFile?.virtualFile ?: return null
     return calculateLabel(project, containingFile, targetName)?.toShortString(project)
   }
 

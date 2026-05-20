@@ -2,7 +2,7 @@ package org.jetbrains.bazel.bazelrunner
 
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.bazelrunner.outputs.OutputProcessor
-import org.jetbrains.bazel.config.BazelConnectorFeatureFlags
+import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.util.Format
 import org.jetbrains.bazel.util.Stopwatch
 import org.jetbrains.bsp.protocol.BazelTaskLogger
@@ -26,7 +26,7 @@ class BazelProcess internal constructor(
           handler = if (logger != null) logger::message else null,
         )
 
-      val exitCode = outputProcessor.waitForExit(killProcessTreeOnCancel = BazelConnectorFeatureFlags.killClientTreeOnCancel)
+      val exitCode = outputProcessor.waitForExit(killProcessTreeOnCancel = BazelFeatureFlags.killClientTreeOnCancel)
       val duration = stopwatch.stop()
       logger?.info("Command completed in ${Format.duration(duration)} (exit code $exitCode)")
 

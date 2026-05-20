@@ -4,8 +4,6 @@ import com.intellij.openapi.util.registry.Registry
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.annotations.VisibleForTesting
 
-// FIXME: ideally each module should have its own subset of feature flags
-//  central way of specifying feature flags is wrong
 @ApiStatus.Internal
 object BazelFeatureFlags {
   private const val PYTHON_SUPPORT = "bsp.python.support"
@@ -39,7 +37,12 @@ object BazelFeatureFlags {
   private const val HARD_LINK_OUTPUT_FILES = "bazel.hard.link.output.files"
 
   private const val QUERY_ON_FILE_EVENTS = "bazel.query.on.file.events"
+  private const val EVALUATE_PSI_ON_FILE_EVENTS = "bazel.evaluate.psi.on.file.events"
   private const val HIGHLIGHT_UNSYNCED_SOURCE_FILES = "bazel.highlight.unsynced.source.files"
+
+  const val ENABLE_LOG: String = "bazel.enable.log"
+  private const val KILL_TREE_ON_CANCEL = "bazel.kill.tree.on.cancel"
+  private const val KILL_SERVER_ON_CANCEL = "bazel.kill.server.on.cancel"
 
   val isPythonSupportEnabled: Boolean
     get() = isEnabled(PYTHON_SUPPORT)
@@ -107,9 +110,20 @@ object BazelFeatureFlags {
   val queryBazelOnFileEvents: Boolean
     get() = isEnabled(QUERY_ON_FILE_EVENTS)
 
+  val evaluatePsiOnFileEvents: Boolean
+    get() = isEnabled(EVALUATE_PSI_ON_FILE_EVENTS)
+
   val highlightUnsyncedSourceFiles: Boolean
     get() = isEnabled(HIGHLIGHT_UNSYNCED_SOURCE_FILES)
 
+  val killServerOnCancel: Boolean
+    get() = Registry.`is`(KILL_SERVER_ON_CANCEL)
+
+  val killClientTreeOnCancel: Boolean
+    get() = Registry.`is`(KILL_TREE_ON_CANCEL)
+
+  val isLogEnabled: Boolean
+    get() = Registry.`is`(ENABLE_LOG)
 
   private fun isEnabled(key: String): Boolean {
     System.getProperty(key)?.let { value ->

@@ -2,6 +2,7 @@ package org.jetbrains.bazel.languages.starlark.elements
 
 import com.intellij.lang.ASTNode
 import com.intellij.psi.PsiElement
+import com.intellij.psi.tree.TokenSet
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkBinaryExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkCallExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkConditionalExpression
@@ -113,7 +114,7 @@ internal object StarlarkElementTypes {
   val TUPLE_EXPRESSION = StarlarkElementType("TUPLE_EXPRESSION")
 
   val EXPRESSIONS =
-    setOf(
+    TokenSet.create(
       ARGUMENT_EXPRESSION,
       ARGUMENT_LIST,
       BINARY_EXPRESSION,

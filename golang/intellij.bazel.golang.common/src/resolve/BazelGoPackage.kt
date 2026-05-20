@@ -373,7 +373,7 @@ class BazelGoPackage : GoPackage {
     navigableElement?.takeIf { it.isValid }?.let { return it }
     if (label is ResolvedLabel) {
       val buildFile = findBuildFile(project, label, null)
-      buildFile?.also { navigableElement = it }?.findRuleTarget(label.targetName)?.also { navigableElement = it }
+      buildFile?.also { navigableElement = it }?.findTargetRule(label.targetName)?.also { navigableElement = it }
     }
 
     return navigableElement

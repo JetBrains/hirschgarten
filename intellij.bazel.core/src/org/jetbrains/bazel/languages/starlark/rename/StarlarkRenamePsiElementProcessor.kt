@@ -44,7 +44,7 @@ internal class StarlarkRenamePsiElementProcessor : RenamePsiElementProcessor() {
 
   private fun findRuleTargetConflicts(callExpr: StarlarkCallExpression, newName: String, conflicts: MultiMap<PsiElement, String>) {
     val buildFile = callExpr.containingFile as? StarlarkFile ?: return
-    val existingTarget = buildFile.findRuleTarget(newName) ?: return
+    val existingTarget = buildFile.findTargetRule(newName) ?: return
     if (existingTarget != callExpr) {
       conflicts.putValue(existingTarget, StarlarkBundle.message("rename.target.conflict.already.exists", newName, buildFile.name))
     }

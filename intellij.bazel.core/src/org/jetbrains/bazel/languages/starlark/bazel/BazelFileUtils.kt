@@ -13,8 +13,7 @@ private const val MIN_SEGMENTS_NUMBER = 1
 
 internal object BazelFileUtils {
   fun getContainingDirectoryPresentablePath(project: Project, file: VirtualFile): String? {
-    val buildFile = file.toNioPathOrNull() ?: return null
-    val relativeDir = calculateLabel(project, buildFile)?.toApparentLabelOrThis(project) as? ResolvedLabel ?: return null
+    val relativeDir = calculateLabel(project, file)?.toApparentLabelOrThis(project) as? ResolvedLabel ?: return null
     if (relativeDir.repo is Main && relativeDir.packagePath.pathSegments.isEmpty()) return null
     val presentablePath = truncatePathHead(relativeDir)
     return "${file.nameWithoutExtension} ($presentablePath)"

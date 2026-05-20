@@ -15,6 +15,7 @@ import org.jetbrains.bazel.languages.starlark.elements.StarlarkTokenTypes
 import org.jetbrains.bazel.languages.starlark.highlighting.StarlarkHighlightingColors
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkFile
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkCallExpression
+import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkReferenceExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.arguments.StarlarkArgumentExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.arguments.StarlarkNamedArgumentExpression
 import org.jetbrains.bazel.languages.starlark.psi.functions.StarlarkArgumentList
@@ -48,7 +49,7 @@ internal class StarlarkFunctionAnnotator : StarlarkAnnotator() {
 
   private fun resolvesToFunction(element: PsiElement): Boolean {
     val callExpression = element as? StarlarkCallExpression ?: return false
-    return callExpression.reference?.resolve() is StarlarkFunctionDeclaration
+    return (callExpression.getCalledExpression() as? StarlarkReferenceExpression)?.reference?.resolve() is StarlarkFunctionDeclaration
   }
 
   private fun annotateGlobalFunction(element: PsiElement, holder: AnnotationHolder) {
@@ -138,7 +139,7 @@ internal class StarlarkFunctionAnnotator : StarlarkAnnotator() {
   private fun ListIterator<BazelGlobalFunctionParameter>.nextOrNull() = if (hasNext()) next() else null
 
   private fun checkDependencyOverrideResolution(element: PsiElement, holder: AnnotationHolder) {
-    val reference = (element as? StarlarkCallExpression)?.reference ?: return
+    val reference = (element as? StarlarkCallExpression)?.getCalledExpression()?.reference ?: return
     if (reference.resolve() == null) {
       holder.annotateError(
         element = element.firstChild,

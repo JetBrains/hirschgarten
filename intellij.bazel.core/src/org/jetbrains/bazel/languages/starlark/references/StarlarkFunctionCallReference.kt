@@ -8,6 +8,7 @@ import org.jetbrains.bazel.languages.starlark.completion.lookups.StarlarkLookupE
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkElement
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkFile
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkCallExpression
+import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkReferenceExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkStringLiteralExpression
 import org.jetbrains.bazel.languages.starlark.rename.RenameUtils
 
@@ -21,10 +22,10 @@ private fun getNamedArgumentValue(element: StarlarkCallExpression, argName: Stri
       }?.getValue() as? StarlarkStringLiteralExpression
   )?.getStringContents()
 
-internal class BazelDepProcessor(private val lookingForModuleName: String) : Processor<StarlarkElement> {
+private class BazelDepProcessor(private val lookingForModuleName: String) : Processor<StarlarkElement> {
   val result: MutableList<StarlarkElement> = mutableListOf()
 
-  private fun getFunctionName(element: StarlarkCallExpression): String? = element.getNamePsi()?.text
+  private fun getFunctionName(element: StarlarkCallExpression): String? = element.getCalledFunctionName()
 
   override fun process(element: StarlarkElement): Boolean {
     if (element !is StarlarkCallExpression) return true
@@ -36,17 +37,18 @@ internal class BazelDepProcessor(private val lookingForModuleName: String) : Pro
   }
 }
 
-internal class StarlarkFunctionCallReference(element: StarlarkCallExpression, rangeInElement: TextRange) :
-  PsiReferenceBase<StarlarkCallExpression>(element, rangeInElement, true) {
+internal class StarlarkFunctionCallReference(element: StarlarkReferenceExpression, rangeInElement: TextRange) :
+  PsiReferenceBase<StarlarkReferenceExpression>(element, rangeInElement, true) {
   override fun resolve(): PsiElement? {
     val element = myElement ?: return null
-    when (element.getCalledFunctionName()) {
+    val callExpression = element.parent as? StarlarkCallExpression ?: return null
+    when (val calledFunctionName = element.text) {
       null -> {
         return null
       }
 
       "archive_override", "git_override" -> {
-        val moduleNameValue = getNamedArgumentValue(element, "module_name") ?: return null
+        val moduleNameValue = getNamedArgumentValue(callExpression, "module_name") ?: return null
         val processor = BazelDepProcessor(moduleNameValue)
         val file = element.containingFile as? StarlarkFile ?: return null
         file.searchInFunctionCalls(processor)
@@ -54,7 +56,7 @@ internal class StarlarkFunctionCallReference(element: StarlarkCallExpression, ra
       }
 
       else -> {
-        val processor = StarlarkResolveProcessor(mutableListOf(), element, element.getCalledFunctionName())
+        val processor = StarlarkResolveProcessor(mutableListOf(), element, calledFunctionName)
         SearchUtils.searchInFile(element, processor)
         return processor.result.firstOrNull()
       }
@@ -64,10 +66,9 @@ internal class StarlarkFunctionCallReference(element: StarlarkCallExpression, ra
   override fun getVariants(): Array<StarlarkLookupElement> = emptyArray()
 
   override fun handleElementRename(name: String): PsiElement {
-    val namePsi = myElement.getNamePsi() ?: return myElement
-    val oldNode = namePsi.getNameNode() ?: return myElement
+    val oldNode = myElement.getNameIdentifier()?.node ?: return myElement
     val newNode = RenameUtils.createNewName(myElement.project, name)
-    namePsi.node.replaceChild(oldNode, newNode)
+    myElement.node.replaceChild(oldNode, newNode)
     return myElement
   }
 }

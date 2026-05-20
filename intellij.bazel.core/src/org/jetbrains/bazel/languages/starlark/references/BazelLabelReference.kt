@@ -34,6 +34,7 @@ import org.jetbrains.bazel.languages.starlark.repomapping.toShortString
 import org.jetbrains.bazel.target.targetUtils
 import org.jetbrains.bazel.workspace.canonicalRepoNameToPath
 import org.jetbrains.kotlin.psi.psiUtil.getParentOfType
+import java.nio.file.Path
 import kotlin.io.path.Path
 import kotlin.io.path.relativeToOrNull
 
@@ -64,7 +65,8 @@ internal class BazelLabelReference(element: StarlarkStringLiteralExpression, sof
     val filePath = Path(file.path)
     val repo = findContainingBazelRepo(file) ?: return null
     val repoPath = Path(repo.path)
-    val packagePath = findPackagePathForFileInRepo(file, repo) ?: return null
+    val packagePath = findBuildFilePathFor(file, repo)?.parent?.path?.let { Path.of(it) }
+                      ?: return null
 
     val packageName = packagePath.relativeToOrNull(repoPath) ?: return null
     val targetName = filePath.relativeToOrNull(packagePath) ?: return null
@@ -189,7 +191,7 @@ internal class BazelLabelReference(element: StarlarkStringLiteralExpression, sof
 
   private fun isUseExtensionArgument(): Boolean =
     (((element.parent as? StarlarkArgumentExpression)?.parent as? StarlarkArgumentList)?.parent as? StarlarkCallExpression)
-      ?.getNamePsi()?.text == "use_extension"
+      ?.getCalledFunctionName() == "use_extension"
 
   companion object {
   }

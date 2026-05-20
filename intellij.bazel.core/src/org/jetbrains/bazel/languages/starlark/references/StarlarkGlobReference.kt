@@ -10,10 +10,7 @@ import com.intellij.psi.PsiManager
 import com.intellij.psi.PsiPolyVariantReference
 import com.intellij.psi.PsiPolyVariantReferenceBase
 import com.intellij.psi.ResolveResult
-import org.jetbrains.bazel.languages.starlark.globbing.StarlarkGlob
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkGlobExpression
-import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkListLiteralExpression
-import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkStringLiteralExpression
 
 internal class StarlarkGlobReference(element: StarlarkGlobExpression) :
   PsiPolyVariantReferenceBase<StarlarkGlobExpression>(
@@ -22,28 +19,10 @@ internal class StarlarkGlobReference(element: StarlarkGlobExpression) :
   ),
   PsiPolyVariantReference {
   override fun multiResolve(incompleteCode: Boolean): Array<out ResolveResult> {
-    val containingDirectory = element.containingFile.parent?.virtualFile
-    if (containingDirectory == null) {
-      return ResolveResult.EMPTY_ARRAY
-    }
-    val includes = resolveListContents(element.getIncludes())
-    val excludes = resolveListContents(element.getExcludes())
-
-    val directoriesExcluded = element.areDirectoriesExcluded()
-    if (includes.isEmpty()) {
-      return ResolveResult.EMPTY_ARRAY
-    }
     val project = element.getProject()
 
     try {
-      val files: List<VirtualFile> =
-        StarlarkGlob
-          .forPath(containingDirectory)
-          .addPatterns(includes)
-          .addExcludes(excludes)
-          .setExcludeDirectories(directoriesExcluded)
-          .setDirectoryFilter(directoryFilter(containingDirectory.path))
-          .glob()
+      val files: List<VirtualFile> = element.getGlob()?.execute() ?: emptyList()
 
       val results: MutableList<ResolveResult> = arrayListOf()
       for (file in files) {
@@ -64,22 +43,7 @@ internal class StarlarkGlobReference(element: StarlarkGlobExpression) :
     return if (vf.isDirectory) manager.findDirectory(vf) else manager.findFile(vf)
   }
 
-  private fun directoryFilter(base: String): (VirtualFile) -> Boolean =
-    { file ->
-      file.path == base || findBuildFile(file) == null
-    }
-
-  private fun resolveListContents(expr: PsiElement?): List<String> {
-    if (expr !is StarlarkListLiteralExpression) {
-      return listOf()
-    }
-    val children = expr.getElements()
-    val strings: MutableList<String> = mutableListOf()
-    for (child in children) {
-      if (child is StarlarkStringLiteralExpression) {
-        strings.add(child.getStringContents())
-      }
-    }
-    return strings
+  override fun handleElementRename(newElementName: String): PsiElement? {
+    return myElement
   }
 }

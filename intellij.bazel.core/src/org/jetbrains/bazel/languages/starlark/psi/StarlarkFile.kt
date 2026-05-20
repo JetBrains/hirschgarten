@@ -22,10 +22,15 @@ open class StarlarkFile(viewProvider: FileViewProvider) :
 
   internal fun getBazelFileType(): BazelFileType = BazelFileType.ofFileName(name)
 
-  fun findRuleTarget(targetName: String): StarlarkCallExpression? =
+  fun getTargetRules(): List<StarlarkCallExpression> =
     findChildrenByClass(StarlarkExpressionStatement::class.java)
       .mapNotNull { it.callExpressionOrNull() }
-      .firstOrNull { it.isRuleTarget() && it.getNameAttributeValue() == targetName }
+      .filter { it.isRuleTarget() }
+
+  fun findTargetRule(targetName: String): StarlarkCallExpression? =
+    getTargetRules().firstOrNull {
+      it.getNameAttributeValue() == targetName
+    }
 
   internal fun searchInLoads(processor: Processor<StarlarkElement>): Boolean =
     findChildrenByClass(StarlarkLoadStatement::class.java).flatMap { it.getLoadedSymbolsPsi() }.all(processor::process)
