@@ -17,7 +17,6 @@ import com.intellij.testFramework.fixtures.TempDirTestFixture
 import com.intellij.testFramework.fixtures.impl.CodeInsightTestFixtureImpl
 import com.intellij.testFramework.junit5.fixture.TestFixture
 import com.intellij.testFramework.replaceService
-import com.intellij.util.lang.UrlClassLoader
 import org.jetbrains.bazel.progress.ConsoleService
 import org.jetbrains.bazel.progress.TaskConsole
 import org.jetbrains.bazel.project.BazelProjectFixtures.initializeBazelProject
@@ -26,11 +25,7 @@ import org.jetbrains.bazel.sync.task.ProjectSyncTask
 import org.jetbrains.bazel.ui.console.task.TestTaskConsole
 import java.nio.file.Path
 import kotlin.io.path.Path
-import kotlin.io.path.copyTo
-import kotlin.io.path.createParentDirectories
-import kotlin.io.path.name
 import kotlin.io.path.relativeTo
-import kotlin.io.path.toPath
 
 /**
  * This fixture provides necessary functionality to perform a full Bazel sync in tests without a full IDE.
@@ -75,13 +70,7 @@ class BazelSyncCodeInsightTestFixtureImpl(
     val testProjectsPath = BazelPathManager.testProjectsRoot.relativeTo(Path(testDataPath))
     copyDirectoryToProject("${testProjectsPath}/base", "")
     copyDirectoryToProject("${testProjectsPath}/$path", "")
-    findKotlinStdlibInClasspath().copyTo(tempDir.resolve("toolchains").resolve("kotlin-stdlib.jar").createParentDirectories())
     testProjectPath = BazelPathManager.testProjectsRoot.resolve(path)
-  }
-
-  private fun findKotlinStdlibInClasspath(): Path {
-    val urls = (this::class.java.classLoader as UrlClassLoader).urls
-    return urls.map { it.toURI().toPath() }.first { it.name.startsWith("kotlin-stdlib") }
   }
 
   override suspend fun performBazelSync(buildProject: Boolean) {
