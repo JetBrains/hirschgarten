@@ -76,9 +76,7 @@ class BazelSymlinkExcludeServiceTest {
     }
 
     // WHEN
-    edtWriteAction {
-      bazelSymlinkExcludeService.refreshWorkspaceModel()
-    }
+    bazelSymlinkExcludeService.refreshWorkspaceModel()
 
     // THEN
     val actualPaths = project.bazelProjectDirectoriesEntity()!!.excludedRoots.mapNotNull { it.url.virtualFile?.toNioPath() }
