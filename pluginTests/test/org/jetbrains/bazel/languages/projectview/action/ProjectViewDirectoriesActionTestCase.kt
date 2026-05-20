@@ -7,7 +7,7 @@ import com.intellij.openapi.actionSystem.DataContext
 import com.intellij.openapi.actionSystem.Presentation
 import com.intellij.openapi.actionSystem.ex.ActionUtil
 import com.intellij.openapi.actionSystem.impl.SimpleDataContext
-import com.intellij.openapi.application.writeAction
+import com.intellij.openapi.application.edtWriteAction
 import com.intellij.openapi.components.service
 import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.vfs.VirtualFile
@@ -67,7 +67,7 @@ abstract class ProjectViewDirectoriesActionTestCase(
     val root = myFixture.tempDirFixture.findOrCreateDir(".")
     val bazelProjectView = bazelProjectView
     runWithModalProgressBlocking(project, "Syncing project view...") {
-      val (includes, excludes) = writeAction {
+      val (includes, excludes) = edtWriteAction {
         val (includedDirs, excludedDirs) = bazelProjectView.directories.partition { it.isIncluded() }
         Pair(
           includedDirs.map { root.findOrCreateDirectory(it.value.pathString) },
@@ -78,7 +78,7 @@ abstract class ProjectViewDirectoriesActionTestCase(
         it.includedRoots = includes.mapTo(arrayListOf()) { it.toVirtualFileUrl(manager) }
         it.excludedRoots = excludes.mapTo(arrayListOf()) { it.toVirtualFileUrl(manager) }
       }
-      writeAction { workspaceModel.updateProjectModel { updater -> updater.addEntity(entity) } }
+      edtWriteAction { workspaceModel.updateProjectModel { updater -> updater.addEntity(entity) } }
     }
   }
 

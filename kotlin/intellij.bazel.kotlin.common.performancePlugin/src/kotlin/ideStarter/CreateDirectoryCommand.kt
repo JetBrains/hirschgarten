@@ -1,6 +1,6 @@
 package org.jetbrains.bazel.kotlin.ideStarter
 
-import com.intellij.openapi.application.writeAction
+import com.intellij.openapi.application.edtWriteAction
 import com.intellij.openapi.ui.playback.PlaybackContext
 import com.intellij.openapi.ui.playback.commands.PlaybackCommandCoroutineAdapter
 import com.intellij.openapi.vfs.LocalFileSystem
@@ -13,7 +13,7 @@ internal class CreateDirectoryCommand(text: String, line: Int) : PlaybackCommand
   }
 
   override suspend fun doExecute(context: PlaybackContext): Unit =
-    writeAction {
+    edtWriteAction {
       val directoryPath =
         try {
           extractCommandArgument(PREFIX)

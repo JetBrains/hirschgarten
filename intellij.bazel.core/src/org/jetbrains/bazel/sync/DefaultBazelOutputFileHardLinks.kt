@@ -1,6 +1,6 @@
 package org.jetbrains.bazel.sync.workspace.mapper.normal
 
-import com.intellij.openapi.application.writeAction
+import com.intellij.openapi.application.edtWriteAction
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.getProjectDataPath
@@ -182,7 +182,7 @@ internal class DefaultBazelOutputFileHardLinks(
       },
     )
 
-    writeAction {
+    edtWriteAction {
       toDelete.forEach { it.delete(DefaultBazelOutputFileHardLinks) }
     }
 

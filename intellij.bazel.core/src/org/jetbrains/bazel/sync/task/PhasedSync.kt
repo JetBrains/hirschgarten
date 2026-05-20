@@ -1,6 +1,6 @@
 package org.jetbrains.bazel.sync.task
 
-import com.intellij.openapi.application.writeAction
+import com.intellij.openapi.application.edtWriteAction
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.IncompleteDependenciesService
 import com.intellij.openapi.project.IncompleteDependenciesService.IncompleteDependenciesAccessToken
@@ -15,7 +15,7 @@ internal class PhasedSync(private val project: Project) {
     try {
       ProjectSyncTask(project).sync(FirstPhaseSync, false)
       incompleteState =
-        writeAction {
+        edtWriteAction {
           project.service<IncompleteDependenciesService>().enterIncompleteState(this)
         }
 
@@ -24,7 +24,7 @@ internal class PhasedSync(private val project: Project) {
       }
     } finally {
       if (incompleteState != null && BazelFeatureFlags.executeSecondPhaseOnSync) {
-        writeAction { incompleteState.finish() }
+        edtWriteAction { incompleteState.finish() }
       }
     }
   }

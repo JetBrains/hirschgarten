@@ -1,6 +1,6 @@
 package org.jetbrains.bazel.workspace.importer
 
-import com.intellij.openapi.application.writeAction
+import com.intellij.openapi.application.edtWriteAction
 import com.intellij.openapi.externalSystem.service.project.IdeModifiableModelsProviderImpl
 import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.scalaVersionToScalaSdkName
 import org.jetbrains.bazel.scala.sdk.ScalaSdk
@@ -33,7 +33,7 @@ internal class ScalaBazelWorkspaceImporter : BazelWorkspaceImporter {
       WorkspaceImporterPhase.PostProcessing -> {
         scalaSdkExtension()?.let { extension ->
           val modifiableProvider = IdeModifiableModelsProviderImpl(context.project)
-          writeAction {
+          edtWriteAction {
             scalaSdks?.forEach { extension.addScalaSdk(it, modifiableProvider) }
             modifiableProvider.commit()
           }

@@ -1,7 +1,7 @@
 package org.jetbrains.bazel.flow.open
 
 import com.intellij.openapi.application.WriteAction
-import com.intellij.openapi.application.writeAction
+import com.intellij.openapi.application.edtWriteAction
 import com.intellij.openapi.components.serviceAsync
 import com.intellij.openapi.module.Module
 import com.intellij.openapi.project.Project
@@ -43,7 +43,7 @@ private suspend fun removeFakeModulesAndLibraries(project: Project) {
   if (!project.isBazelProject) return
 
   val workspaceModel = project.serviceAsync<WorkspaceModel>()
-  writeAction {
+  edtWriteAction {
     updateProjectModel(workspaceModel)
   }
 }

@@ -1,6 +1,6 @@
 package org.jetbrains.bazel.workspace.importer
 
-import com.intellij.openapi.application.writeAction
+import com.intellij.openapi.application.edtWriteAction
 import com.intellij.openapi.externalSystem.service.execution.ExternalSystemJdkProvider
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.projectRoots.JavaSdk
@@ -29,7 +29,7 @@ internal object SdkUtils {
     val sdkTable = ProjectJdkTable.getInstance()
     val existingSdk = sdkTable.findJdk(sdk.name, sdk.sdkType.name)
     if (existingSdk == null || existingSdk.homePath != sdk.homePath) {
-      writeAction {
+      edtWriteAction {
         existingSdk?.let { sdkTable.removeJdk(existingSdk) }
         sdkTable.addJdk(sdk)
       }
@@ -42,14 +42,14 @@ internal object SdkUtils {
     getAllAvailableJdks()
       .filter { it.name.startsWith(jdkPrefix) && !isValidJdk(it) }
       .let { invalidJdks ->
-        writeAction {
+        edtWriteAction {
           invalidJdks.forEach { sdkTable.removeJdk(it) }
         }
       }
 
     // We don't need the project SDK anyway. If the user sets it manually, it can cause red code, so remove it upon sync.
     val rootManager = ProjectRootManager.getInstance(project)
-    writeAction { rootManager.projectSdk = null }
+    edtWriteAction { rootManager.projectSdk = null }
   }
 
   private fun isValidJdk(sdk: Sdk): Boolean {

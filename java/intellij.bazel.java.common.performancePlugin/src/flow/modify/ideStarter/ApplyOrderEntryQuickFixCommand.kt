@@ -3,7 +3,7 @@ package org.jetbrains.bazel.flow.modify.ideStarter
 import com.intellij.codeInsight.daemon.impl.quickfix.OrderEntryFix
 import com.intellij.codeInsight.intention.IntentionAction
 import com.intellij.openapi.application.readAction
-import com.intellij.openapi.application.writeAction
+import com.intellij.openapi.application.edtWriteAction
 import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.ui.playback.PlaybackContext
 import com.intellij.openapi.ui.playback.commands.PlaybackCommandCoroutineAdapter
@@ -37,7 +37,7 @@ internal class ApplyOrderEntryQuickFixCommand(text: String, line: Int) : Playbac
           }
         fix
       }
-    writeAction {
+    edtWriteAction {
       fix.invoke(project, editor, psiFile)
     }
   }

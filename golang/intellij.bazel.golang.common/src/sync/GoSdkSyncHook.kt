@@ -5,7 +5,7 @@ import com.goide.sdk.GoSdkService
 import com.goide.sdk.GoSdkUtil
 import com.intellij.ide.util.PropertiesComponent
 import com.intellij.openapi.application.backgroundWriteAction
-import com.intellij.openapi.application.writeAction
+import com.intellij.openapi.application.edtWriteAction
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFileManager
 import com.intellij.platform.util.progress.SequentialProgressReporter
@@ -17,7 +17,6 @@ import org.jetbrains.bazel.progress.withSubtask
 import org.jetbrains.bazel.sync.ProjectPostSyncHook
 import org.jetbrains.bazel.sync.SyncCache
 import org.jetbrains.bazel.target.targetUtils
-import org.jetbrains.bsp.protocol.GoBuildTarget
 import org.jetbrains.bsp.protocol.TaskId
 import org.jetbrains.bsp.protocol.utils.extractGoBuildTarget
 
@@ -53,7 +52,7 @@ internal class GoSdkSyncHook : ProjectPostSyncHook {
     val virtualFileManager = VirtualFileManager.getInstance()
     val filesToReparse = generatedSources.mapNotNull { virtualFileManager.findFileByNioPath(it) }
     if (filesToReparse.isNotEmpty()) {
-      writeAction {
+      edtWriteAction {
         filesToReparse.forEach { it.refresh(false, false) }
       }
       backgroundWriteAction {
@@ -81,6 +80,6 @@ internal class GoSdkSyncHook : ProjectPostSyncHook {
 
   private suspend fun GoSdk.setAsUsed(project: Project) {
     val goSdkService = GoSdkService.getInstance(project)
-    writeAction { goSdkService.setSdk(this) }
+    edtWriteAction { goSdkService.setSdk(this) }
   }
 }

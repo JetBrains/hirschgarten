@@ -1,6 +1,6 @@
 package org.jetbrains.bazel.golang.sync
 
-import com.intellij.openapi.application.writeAction
+import com.intellij.openapi.application.edtWriteAction
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
@@ -63,7 +63,7 @@ internal class GoExternalLibraryManager(private val project: Project) {
     return libraryFiles
   }
 
-  private suspend fun fireLibraryChanged(library: GoExternalSyntheticLibrary) = writeAction {
+  private suspend fun fireLibraryChanged(library: GoExternalSyntheticLibrary) = edtWriteAction {
     AdditionalLibraryRootsListener.fireAdditionalLibraryChanged(
       project,
       library.presentableText,

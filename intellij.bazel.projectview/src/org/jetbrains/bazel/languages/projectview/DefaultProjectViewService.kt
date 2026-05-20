@@ -1,7 +1,7 @@
 package org.jetbrains.bazel.languages.projectview
 
 import com.intellij.openapi.application.readAction
-import com.intellij.openapi.application.writeAction
+import com.intellij.openapi.application.edtWriteAction
 import com.intellij.openapi.progress.runBlockingMaybeCancellable
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
@@ -94,7 +94,7 @@ class DefaultProjectViewService(private val project: Project) : ProjectViewServi
     val projectViewPath = findProjectViewPath() ?: return
     val imports = parseProjectViewAsync(projectViewPath)?.imports ?: emptyList()
 
-    writeAction {
+    edtWriteAction {
       PsiDocumentManager.getInstance(project)
         .reparseFiles(imports + projectViewPath, false)
     }
