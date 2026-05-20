@@ -132,6 +132,8 @@
     <runConfigurationProducer implementation="org.jetbrains.bazel.run.test.BazelRerunTestConfigurationProducer"/>
     <stepsBeforeRunProvider implementation="org.jetbrains.bazel.run.synthetic.GenerateSyntheticTargetRunTaskProvider"/>
 
+    <vfs.asyncListener implementation="org.jetbrains.bazel.flow.exclude.BazelSymlinkExcludeFileListener"/>
+
     <projectService serviceImplementation="org.jetbrains.bazel.languages.starlark.repomapping.BazelRepoMappingServiceAdapter"
                     serviceInterface="org.jetbrains.bazel.workspace.BazelRepoMappingService"/>
     <projectService
@@ -727,10 +729,6 @@
   </actions>
 
   <applicationListeners>
-    <listener
-      class="org.jetbrains.bazel.flow.exclude.BazelSymlinkExcludeFileListener"
-      topic="com.intellij.openapi.vfs.newvfs.BulkFileListener"
-    />
     <listener
       class="org.jetbrains.bazel.workspace.fileEvents.BazelFileEventListener"
       topic="com.intellij.openapi.vfs.newvfs.BulkFileListenerBackgroundable"

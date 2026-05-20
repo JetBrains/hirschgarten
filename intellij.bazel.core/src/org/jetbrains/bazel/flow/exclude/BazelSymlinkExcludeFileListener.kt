@@ -3,6 +3,7 @@ package org.jetbrains.bazel.flow.exclude
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.ProjectManager
 import com.intellij.openapi.util.io.toNioPathOrNull
+import com.intellij.openapi.vfs.AsyncFileListener
 import com.intellij.openapi.vfs.newvfs.BulkFileListener
 import com.intellij.openapi.vfs.newvfs.events.VFileCreateEvent
 import com.intellij.openapi.vfs.newvfs.events.VFileEvent
@@ -13,20 +14,24 @@ import org.jetbrains.bazel.config.isBazelProject
 import java.nio.file.Path
 
 @ApiStatus.Internal
-class BazelSymlinkExcludeFileListener : BulkFileListener {
-  override fun before(events: List<VFileEvent>) {
-    events
+class BazelSymlinkExcludeFileListener : AsyncFileListener {
+  override fun prepareChange(events: List<VFileEvent>): AsyncFileListener.ChangeApplier? {
+    val project2Paths = events
       .asSequence()
       .filterIsInstance<VFileCreateEvent>()
       .filter { it.attributes?.isSymLink ?: false }
       .flatMap { it.toListOfProjectAndPath() }
       .filter { BazelSymlinksCalculator.isBazelSymlink(it.project.bazelProjectName, it.path) }
       .groupBy({ it.project }, { it.path })
-      .forEach { (project, paths) ->
-        val bazelSymlinkExcludeService = BazelSymlinkExcludeService.getInstance(project)
-        bazelSymlinkExcludeService.addBazelSymlinksToExclude(paths.toSet())
-        bazelSymlinkExcludeService.refreshWorkspaceModel()
+      .toList()
+    return object : AsyncFileListener.ChangeApplier {
+      override fun beforeVfsChange() {
+        for ((project, paths) in project2Paths) {
+          val bazelSymlinkExcludeService = BazelSymlinkExcludeService.getInstance(project)
+          bazelSymlinkExcludeService.addBazelSymlinksToExclude(paths.toSet())
+        }
       }
+    }
   }
 
   private fun VFileCreateEvent.toListOfProjectAndPath(): List<ProjectAndPath> {
