@@ -43,6 +43,7 @@ internal class BazelSymlinkExcludeStartupActivityTest {
 
     // WHEN
     BazelSymlinkExcludeStartupActivity().execute(project)
+    bazelSymlinkExcludeService.refreshWorkspaceModel()
 
     // THEN
     assertEquals(setOf(convenientSymlink), bazelSymlinkExcludeService.getBazelSymlinksToExclude())
