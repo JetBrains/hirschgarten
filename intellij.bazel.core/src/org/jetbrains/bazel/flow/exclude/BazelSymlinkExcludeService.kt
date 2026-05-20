@@ -1,6 +1,6 @@
 package org.jetbrains.bazel.flow.exclude
 
-import com.intellij.openapi.application.edtWriteAction
+import com.intellij.openapi.application.backgroundWriteAction
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.service
 import com.intellij.openapi.diagnostic.logger
@@ -11,6 +11,7 @@ import com.intellij.platform.diagnostic.telemetry.helpers.useWithScope
 import com.intellij.platform.workspace.storage.impl.url.toVirtualFileUrl
 import com.intellij.util.concurrency.ThreadingAssertions
 import com.intellij.util.concurrency.annotations.RequiresBackgroundThread
+import com.intellij.util.concurrency.annotations.RequiresReadLockAbsence
 import com.intellij.util.concurrency.annotations.RequiresWriteLock
 import com.intellij.workspaceModel.core.fileIndex.impl.WorkspaceFileIndexEx
 import kotlinx.coroutines.CoroutineScope
@@ -64,7 +65,7 @@ class BazelSymlinkExcludeService(
 
     if (computedSymlinks.isNotEmpty()) {
       logger.info("Found bazel symlinks to exclude during workspace scan: $computedSymlinks")
-      edtWriteAction {
+      backgroundWriteAction {
         addBazelSymlinksToExclude(computedSymlinks)
       }
     }
@@ -87,6 +88,7 @@ class BazelSymlinkExcludeService(
 
   @VisibleForTesting
   @RequiresBackgroundThread
+  @RequiresReadLockAbsence
   suspend fun refreshWorkspaceModel() {
     logger.info("Refreshing workspace model with excluded symlinks")
     val workspaceModel = WorkspaceModel.getInstance(project)
