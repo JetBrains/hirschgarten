@@ -71,7 +71,7 @@ class BazelSyncCodeInsightTestFixtureImpl(
 
   private var testProjectPath: Path? = null
 
-  private val tempDir: Path
+  private val projectRoot: Path
     get() = Path(tempDirPath)
 
   init {
@@ -83,7 +83,7 @@ class BazelSyncCodeInsightTestFixtureImpl(
     copyDirectoryToProject("${testProjectsPath}/base", "")
     copyDirectoryToProject("${testProjectsPath}/$path", "")
     configureBazelCaches(path)
-    findKotlinStdlibInClasspath().copyTo(tempDir.resolve("toolchains").resolve("kotlin-stdlib.jar").createParentDirectories())
+    findKotlinStdlibInClasspath().copyTo(projectRoot.resolve("toolchains").resolve("kotlin-stdlib.jar").createParentDirectories())
     testProjectPath = BazelPathManager.testProjectsRoot.resolve(path)
   }
 
@@ -93,7 +93,7 @@ class BazelSyncCodeInsightTestFixtureImpl(
       .createDirectories()
 
     val bazeliskCache = cacheRoot.resolve("bazelisk").createDirectories()
-    tempDir.resolve(".bazeliskrc").writeText("BAZELISK_HOME=${bazeliskCache.toBazelPath()}\n")
+    projectRoot.resolve(".bazeliskrc").writeText("BAZELISK_HOME=${bazeliskCache.toBazelPath()}\n")
 
     val repositoryCache = cacheRoot.resolve("repository-cache").createDirectories()
     val diskCache = cacheRoot.resolve("disk-cache").createDirectories()
@@ -103,7 +103,7 @@ class BazelSyncCodeInsightTestFixtureImpl(
       "common --repository_cache=${repositoryCache.toBazelRcPath()}",
       "common --disk_cache=${diskCache.toBazelRcPath()}",
     )
-    writeManagedBazelrcBlock(tempDir.resolve(".bazelrc"), lines)
+    writeManagedBazelrcBlock(projectRoot.resolve(".bazelrc"), lines)
   }
 
   private fun testCacheRoot(): Path =
@@ -150,7 +150,7 @@ class BazelSyncCodeInsightTestFixtureImpl(
 
   override fun setUp() {
     super.setUp()
-    initializeBazelProject(project, tempDir)
+    initializeBazelProject(project, projectRoot)
   }
 
   override fun tearDown() {
