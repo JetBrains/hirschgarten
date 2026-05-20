@@ -106,8 +106,8 @@ class BazelSyncCodeInsightTestFixtureImpl(
     writeManagedBazelrcBlock(projectRoot.resolve(".bazelrc"), lines)
   }
 
-  private fun testCacheRoot(): Path =
-    System.getenv("BAZEL_PLUGIN_TEST_CACHE_ROOT")
+  private fun testCacheRoot(): Path {
+    val cacheRoot = System.getenv("BAZEL_PLUGIN_TEST_CACHE_ROOT")
       ?.let { Path.of(it) }
       ?: System.getProperty("bazel.plugin.test.cache.root")
         ?.let { Path.of(it) }
@@ -118,6 +118,8 @@ class BazelSyncCodeInsightTestFixtureImpl(
         ?.takeIf { it.isNotBlank() }
         ?.let { Path.of(it, "bazel-plugin-test-cache") }
       ?: Path.of(System.getProperty("user.home"), ".cache", "bazel-plugin-tests")
+    return cacheRoot.toAbsolutePath()
+  }
 
   private fun writeManagedBazelrcBlock(bazelrc: Path, lines: List<String>) {
     val existingContent = if (bazelrc.exists()) bazelrc.toFile().readText() else ""
