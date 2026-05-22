@@ -169,7 +169,7 @@ open class StarlarkElementVisitor : PsiElementVisitor() {
     visitElement(node)
   }
 
-  internal fun visitNamedLoadValue(node: StarlarkNamedLoadValue) {
+  internal open fun visitNamedLoadValue(node: StarlarkNamedLoadValue) {
     visitElement(node)
   }
 
@@ -177,7 +177,7 @@ open class StarlarkElementVisitor : PsiElementVisitor() {
     visitElement(node)
   }
 
-  internal fun visitStringLoadValue(node: StarlarkStringLoadValue) {
+  internal open fun visitStringLoadValue(node: StarlarkStringLoadValue) {
     visitElement(node)
   }
 
