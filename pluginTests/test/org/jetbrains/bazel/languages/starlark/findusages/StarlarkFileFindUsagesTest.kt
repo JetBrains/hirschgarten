@@ -2,8 +2,8 @@ package org.jetbrains.bazel.languages.starlark.findusages
 
 import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.collections.shouldContain
-import org.jetbrains.bazel.config.isBazelProject
 import org.jetbrains.bazel.languages.starlark.fixtures.StarlarkFindUsagesTestCase
+import org.jetbrains.bazel.project.BazelProjectFixtures.initializeBazelProject
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -13,7 +13,7 @@ import org.junit.runners.JUnit4
 class StarlarkFileFindUsagesTest : StarlarkFindUsagesTestCase() {
   @Before
   fun setupBuildEnvironment() {
-    project.isBazelProject = true
+    initializeBazelProject(project, myFixture.tempDirPath)
   }
 
   @Test

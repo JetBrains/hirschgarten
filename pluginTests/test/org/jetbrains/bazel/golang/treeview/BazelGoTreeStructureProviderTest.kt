@@ -34,9 +34,9 @@ import com.intellij.psi.impl.FakePsiElement
 import com.intellij.psi.search.PsiElementProcessor
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
-import org.jetbrains.bazel.config.isBazelProject
 import org.jetbrains.bazel.golang.resolve.BazelGoPackageFactory.Companion.fileToImportPathMapComputable
 import org.jetbrains.bazel.golang.sync.GoExternalSyntheticLibrary
+import org.jetbrains.bazel.project.BazelProjectFixtures.initializeBazelProject
 import org.jetbrains.bazel.sync.SyncCache
 import org.jetbrains.bazel.workspace.model.test.framework.MockProjectBaseTest
 import org.junit.jupiter.api.BeforeEach
@@ -52,7 +52,7 @@ class BazelGoTreeStructureProviderTest : MockProjectBaseTest() {
 
   @BeforeEach
   fun beforeEach() {
-    project.isBazelProject = true
+    initializeBazelProject(project, projectDir.get())
     rootNode = createRootNode()
     fileToImportPathMap = ConcurrentHashMap<Path, String>()
     SyncCache.getInstance(project).clear()

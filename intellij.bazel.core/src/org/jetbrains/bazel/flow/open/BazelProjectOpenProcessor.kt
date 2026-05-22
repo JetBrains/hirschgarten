@@ -100,9 +100,6 @@ internal class BazelProjectOpenProcessor : ProjectOpenProcessor() {
         this.createModule = Registry.`is`("bazel.create.fake.module.on.project.import")
 
         beforeOpen = { project ->
-          // todo gets invoked twice
-          project.initProperties(projectRootDir)
-
           projectViewPath
             ?.refreshAndFindVirtualFile()
             ?.let { projectViewPath ->

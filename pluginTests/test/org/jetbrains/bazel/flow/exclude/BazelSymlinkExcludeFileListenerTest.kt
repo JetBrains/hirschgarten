@@ -3,14 +3,12 @@ package org.jetbrains.bazel.flow.exclude
 import com.intellij.openapi.application.edtWriteAction
 import com.intellij.openapi.util.io.FileAttributes
 import com.intellij.openapi.vfs.newvfs.events.VFileCreateEvent
-import com.intellij.openapi.vfs.refreshAndFindVirtualDirectory
 import com.intellij.testFramework.junit5.TestApplication
 import com.intellij.testFramework.junit5.fixture.projectFixture
 import com.intellij.testFramework.junit5.fixture.tempPathFixture
 import com.intellij.testFramework.utils.vfs.refreshAndGetVirtualDirectory
 import kotlinx.coroutines.runBlocking
-import org.jetbrains.bazel.config.isBazelProject
-import org.jetbrains.bazel.config.rootDir
+import org.jetbrains.bazel.project.BazelProjectFixtures.initializeBazelProject
 import org.junit.jupiter.api.Assertions.assertIterableEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -27,8 +25,7 @@ class BazelSymlinkExcludeFileListenerTest {
 
   @BeforeEach
   fun setUp() {
-    project.isBazelProject = true
-    project.rootDir = tempDir.refreshAndFindVirtualDirectory()!!
+    initializeBazelProject(project, tempDir)
   }
 
   @Test

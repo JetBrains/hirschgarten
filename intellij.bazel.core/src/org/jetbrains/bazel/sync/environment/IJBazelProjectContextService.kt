@@ -3,28 +3,27 @@ package org.jetbrains.bazel.sync.environment
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
-import org.jetbrains.bazel.config.BazelProjectProperties
+import com.intellij.project.stateStore
+import org.jetbrains.bazel.flow.open.BazelProjectStoreDescriptor
 import org.jetbrains.bazel.flow.sync.bazelPaths.BazelBinPathService
+import org.jetbrains.bazel.project.BazelProjectProperties.Companion.bazelProjectProperties
 import org.jetbrains.bazel.target.sync.TargetUtilsTargetPersistanceLayer
+import org.jetbrains.bazel.utils.findVirtualFile
 
 internal class IJBazelProjectContextService(private val project: Project) : BazelProjectContextService {
-  private val propsService
-    get() = project.service<BazelProjectProperties>()
-
   override var isBazelProject: Boolean
-    get() = propsService.isBazelProject
-    set(value) {
-      propsService.isBazelProject = value
-    }
+    get() = project.stateStore.storeDescriptor is BazelProjectStoreDescriptor
+    set(_) = throw UnsupportedOperationException()
   override var projectRootDir: VirtualFile?
-    get() = propsService.rootDir
-    set(value) {
-      propsService.rootDir = value
+    get() {
+      val bazelProjectStoreDescriptor = project.stateStore.storeDescriptor as? BazelProjectStoreDescriptor
+      return bazelProjectStoreDescriptor?.historicalProjectBasePath?.findVirtualFile()
     }
+    set(_) = throw UnsupportedOperationException()
   override var workspaceName: String?
-    get() = propsService.workspaceName
+    get() = project.bazelProjectProperties.workspaceName
     set(value) {
-      propsService.workspaceName = value
+      project.bazelProjectProperties.workspaceName = value
     }
   override var bazelBinPath: String?
     get() = project.service<BazelBinPathService>().bazelBinPath

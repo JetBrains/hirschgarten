@@ -1,17 +1,11 @@
 package org.jetbrains.bazel.languages.starlark.references
 
-import com.intellij.psi.PsiDocumentManager
-import com.intellij.psi.PsiElement
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
 import com.intellij.testFramework.fixtures.IdeaTestFixtureFactory
 import com.intellij.testFramework.fixtures.TempDirTestFixture
-import io.kotest.matchers.nulls.shouldBeNull
 import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
-import io.kotest.matchers.types.instanceOf
-import org.jetbrains.bazel.config.isBazelProject
-import org.jetbrains.bazel.config.rootDir
-import org.jetbrains.kotlin.idea.base.psi.getLineStartOffset
+import org.jetbrains.bazel.project.BazelProjectFixtures.initializeBazelProject
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -19,12 +13,11 @@ import org.junit.runners.JUnit4
 
 @RunWith(JUnit4::class)
 class StarlarkScopeTest : BasePlatformTestCase() {
-  override fun createTempDirTestFixture(): TempDirTestFixture? = IdeaTestFixtureFactory.getFixtureFactory().createTempDirTestFixture()
+  override fun createTempDirTestFixture(): TempDirTestFixture = IdeaTestFixtureFactory.getFixtureFactory().createTempDirTestFixture()
 
   @Before
   fun beforeEach() {
-    project.isBazelProject = true
-    project.rootDir = myFixture.tempDirFixture.getFile(".")!!
+    initializeBazelProject(project, myFixture.tempDirPath)
   }
 
   @Test

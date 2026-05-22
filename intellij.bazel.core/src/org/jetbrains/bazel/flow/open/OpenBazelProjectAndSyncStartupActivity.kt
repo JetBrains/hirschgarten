@@ -8,10 +8,12 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.guessProjectDir
 import com.intellij.openapi.startup.InitProjectActivity
 import com.intellij.openapi.vfs.refreshAndFindVirtualFile
+import com.intellij.openapi.vfs.toNioPathOrNull
 import com.intellij.project.ProjectStoreOwner
 import org.jetbrains.bazel.config.BazelFeatureFlags
-import org.jetbrains.bazel.config.BazelProjectProperties
+import org.jetbrains.bazel.flow.open.BazelUnlinkedProjectAware.Companion.closeAndReopenAsBazelProject
 import org.jetbrains.bazel.settings.bazel.bazelProjectSettings
+import org.jetbrains.bazel.sync.environment.projectCtx
 
 // todo rename to ImportBazelProjectAndSyncStartupActivity
 internal class OpenBazelProjectAndSyncStartupActivity : InitProjectActivity {
@@ -20,8 +22,10 @@ internal class OpenBazelProjectAndSyncStartupActivity : InitProjectActivity {
     // This handles headless mode with -Dbazel.project.auto.open.if.present=true
     if (shouldLinkAsBazelProject(project)) {
       val projectFolder = findProjectFolderFromVFile(project.guessProjectDir()) ?: return
-      BazelOpenProjectProvider().linkToExistingProjectAsync(projectFolder, project)
-      // BazelStartupActivity will handle sync since isBazelProject will be true
+      val workspaceFile = projectFolder.toNioPathOrNull()?.workspaceFile ?: return
+      serviceAsync<BazelApplicationCoroutineScopeService>().launch {
+        closeAndReopenAsBazelProject(project, workspaceFile)
+      }
       return
     }
 
@@ -33,7 +37,7 @@ internal class OpenBazelProjectAndSyncStartupActivity : InitProjectActivity {
 
     // todo remove rootDir!
     // todo check workspace model emptiness
-    if (project.serviceAsync<BazelProjectProperties>().rootDir != null) return
+    if (project.projectCtx.projectRootDir != null) return
 
     // todo duplicates org.jetbrains.bazel.flow.open.BazelProjectOpenProcessor.calculateOpenProjectTask
     val path = storeDescriptor.projectIdentityFile
@@ -42,8 +46,6 @@ internal class OpenBazelProjectAndSyncStartupActivity : InitProjectActivity {
       logger.warn("Unable to find project root directory for Bazel project: ${project.name}")
       return
     }
-
-    project.initProperties(projectRootDir)
 
     val projectViewPath = getProjectViewPath(projectRootDir, path)
                             ?.refreshAndFindVirtualFile()

@@ -2,7 +2,6 @@ package org.jetbrains.bazel.flow.open
 
 import com.intellij.openapi.application.WriteAction
 import com.intellij.openapi.application.writeAction
-import com.intellij.openapi.components.service
 import com.intellij.openapi.components.serviceAsync
 import com.intellij.openapi.module.Module
 import com.intellij.openapi.project.Project
@@ -14,14 +13,14 @@ import com.intellij.platform.workspace.jps.entities.LibraryEntity
 import com.intellij.platform.workspace.jps.entities.ModuleEntity
 import com.intellij.util.concurrency.annotations.RequiresWriteLock
 import com.intellij.workspaceModel.ide.JpsProjectLoadingManager
-import org.jetbrains.bazel.config.BazelProjectProperties
+import org.jetbrains.bazel.config.isBazelProject
 import org.jetbrains.bazel.workspacemodel.entities.BazelModuleEntitySource
 
 /**
  * Clean up any modules showing up due to the platform hack
  * https://youtrack.jetbrains.com/issue/IDEA-321160/Platform-solution-for-the-initial-state-of-the-project-model-on-the-first-open
  */
-private class CounterPlatformProjectConfigurator : DirectoryProjectConfigurator.AsyncDirectoryProjectConfigurator() {
+internal class CounterPlatformProjectConfigurator : DirectoryProjectConfigurator.AsyncDirectoryProjectConfigurator() {
   override suspend fun configure(
     project: Project,
     baseDir: VirtualFile,
@@ -41,7 +40,7 @@ internal suspend fun configureProjectCounterPlatform(project: Project) {
 }
 
 private suspend fun removeFakeModulesAndLibraries(project: Project) {
-  if (!project.serviceAsync<BazelProjectProperties>().isBazelProject) return
+  if (!project.isBazelProject) return
 
   val workspaceModel = project.serviceAsync<WorkspaceModel>()
   writeAction {
@@ -50,7 +49,7 @@ private suspend fun removeFakeModulesAndLibraries(project: Project) {
 }
 
 private fun removeFakeModulesAndLibrariesBlocking(project: Project) {
-  if (!project.service<BazelProjectProperties>().isBazelProject) {
+  if (!project.isBazelProject) {
     return
   }
 

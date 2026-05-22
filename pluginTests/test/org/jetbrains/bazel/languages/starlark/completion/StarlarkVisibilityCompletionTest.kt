@@ -9,8 +9,8 @@ import io.kotest.matchers.collections.shouldNotContain
 import org.jetbrains.bazel.commons.LanguageClass
 import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.commons.TargetKind
-import org.jetbrains.bazel.config.isBazelProject
 import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.project.BazelProjectFixtures.initializeBazelProject
 import org.jetbrains.bazel.target.targetUtils
 import org.jetbrains.bsp.protocol.RawBuildTarget
 import org.junit.Before
@@ -23,7 +23,7 @@ import kotlin.io.path.Path
 class StarlarkVisibilityCompletionTest : BasePlatformTestCase() {
   @Before
   fun beforeEach() {
-    project.isBazelProject = true
+    initializeBazelProject(project, myFixture.tempDirPath)
   }
 
   private fun setTargets(targets: List<String>) {

@@ -4,14 +4,12 @@ import com.intellij.openapi.application.edtWriteAction
 import com.intellij.openapi.application.readAction
 import com.intellij.openapi.roots.ProjectFileIndex
 import com.intellij.openapi.vfs.VirtualFile
-import com.intellij.openapi.vfs.refreshAndFindVirtualDirectory
 import com.intellij.testFramework.junit5.TestApplication
 import com.intellij.testFramework.junit5.fixture.projectFixture
 import com.intellij.testFramework.junit5.fixture.tempPathFixture
 import com.intellij.testFramework.utils.vfs.refreshAndGetVirtualDirectory
 import kotlinx.coroutines.runBlocking
-import org.jetbrains.bazel.config.isBazelProject
-import org.jetbrains.bazel.config.rootDir
+import org.jetbrains.bazel.project.BazelProjectFixtures.initializeBazelProject
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
@@ -33,8 +31,6 @@ class BazelDirectoryIndexExcludePolicyTest {
 
   @BeforeEach
   fun setUp() {
-    project.isBazelProject = true
-    project.rootDir = tempDir.refreshAndFindVirtualDirectory()!!
     val realDirectory = tempDir.resolve("execroot/bazel-out")
     Files.createDirectories(realDirectory)
     convenienceSymlink = tempDir.resolve("bazel-out")
@@ -45,7 +41,9 @@ class BazelDirectoryIndexExcludePolicyTest {
   @ValueSource(booleans = [true, false])
   fun `should mark symlinks registered in the service as excluded from the project`(isBazelProject: Boolean) = runBlocking {
     // GIVEN
-    project.isBazelProject = isBazelProject
+    if (isBazelProject) {
+      initializeBazelProject(project, tempDir)
+    }
     edtWriteAction {
       BazelSymlinkExcludeService.getInstance(project).addBazelSymlinksToExclude(setOf(convenienceSymlink))
     }
@@ -60,6 +58,7 @@ class BazelDirectoryIndexExcludePolicyTest {
   @Test
   fun `should flush workspace file index cache after updating symlinks`() = runBlocking {
     // GIVEN workspace file index cache is populated
+    initializeBazelProject(project, tempDir)
     val convenienceSymlinkFile = convenienceSymlink.refreshAndGetVirtualDirectory()
     assertFalse(isExcluded(convenienceSymlinkFile))
 

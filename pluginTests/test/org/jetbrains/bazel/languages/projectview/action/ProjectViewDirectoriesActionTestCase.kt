@@ -18,14 +18,15 @@ import com.intellij.platform.ide.progress.runWithModalProgressBlocking
 import com.intellij.testFramework.LightProjectDescriptor
 import com.intellij.testFramework.TestActionEvent
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
+import com.intellij.testFramework.fixtures.TempDirTestFixture
+import com.intellij.testFramework.fixtures.impl.TempDirTestFixtureImpl
 import com.intellij.testFramework.workspaceModel.updateProjectModel
 import org.intellij.lang.annotations.Language
-import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.languages.projectview.ProjectViewService
 import org.jetbrains.bazel.languages.projectview.directories
+import org.jetbrains.bazel.project.BazelProjectFixtures.initializeBazelProject
 import org.jetbrains.bazel.settings.bazel.bazelProjectSettings
-import org.jetbrains.bazel.workspacemodel.entities.BazelDummyEntitySource
-import org.jetbrains.bazel.workspacemodel.entities.BazelProjectDirectoriesEntity
+import org.jetbrains.bazel.workspacemodel.entities.BazelProjectDirectoriesEntityFixtures.emptyBazelDirectoryWorkspaceEntity
 import kotlin.io.path.pathString
 
 abstract class ProjectViewDirectoriesActionTestCase(
@@ -43,10 +44,12 @@ abstract class ProjectViewDirectoriesActionTestCase(
 
   override fun setUp() {
     super.setUp()
-    project.rootDir = myFixture.tempDirFixture.findOrCreateDir(".")
+    initializeBazelProject(project, myFixture.tempDirPath)
   }
 
   override fun getProjectDescriptor() = LightProjectDescriptor()
+
+  override fun createTempDirTestFixture(): TempDirTestFixture = TempDirTestFixtureImpl()
 
   protected fun testPresentationOn(context: DataContext): Presentation {
     val event = TestActionEvent.createTestEvent(context)
@@ -71,14 +74,10 @@ abstract class ProjectViewDirectoriesActionTestCase(
           excludedDirs.map { root.findOrCreateDirectory(it.value.pathString) },
         )
       }
-      val entity = BazelProjectDirectoriesEntity(
-        projectRoot = root.toVirtualFileUrl(manager),
-        includedRoots = includes.map { it.toVirtualFileUrl(manager) },
-        excludedRoots = excludes.map { it.toVirtualFileUrl(manager) },
-        indexAllFilesInIncludedRoots = false,
-        indexAdditionalFiles = emptyList(),
-        entitySource = BazelDummyEntitySource,
-      )
+      val entity = emptyBazelDirectoryWorkspaceEntity(project).also {
+        it.includedRoots = includes.mapTo(arrayListOf()) { it.toVirtualFileUrl(manager) }
+        it.excludedRoots = excludes.mapTo(arrayListOf()) { it.toVirtualFileUrl(manager) }
+      }
       writeAction { workspaceModel.updateProjectModel { updater -> updater.addEntity(entity) } }
     }
   }

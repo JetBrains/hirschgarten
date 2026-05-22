@@ -3,8 +3,6 @@ package org.jetbrains.bazel.ideStarter
 import com.intellij.driver.client.Driver
 import com.intellij.driver.client.Remote
 import com.intellij.driver.client.service
-import com.intellij.driver.client.utility
-import com.intellij.driver.model.OnDispatcher
 import com.intellij.driver.model.RdTarget
 import com.intellij.driver.sdk.Project
 import com.intellij.driver.sdk.ProjectManager
@@ -392,12 +390,16 @@ fun Driver.openFile(relativePath: String, waitForCodeAnalysis: Boolean = true): 
  */
 fun Driver.findFile(relativePath: String): VirtualFile? = projectRootDir.findFileByRelativePath(relativePath)
 
-val Driver.projectRootDir: VirtualFile
-  get() = utility<BazelProjectPropertiesKt>().getRootDir(singleProject())
+val Driver.isBazelProject: Boolean
+  get() = service<BazelProjectContextService>(singleProject()).isBazelProject
 
-@Remote("org.jetbrains.bazel.config.BazelProjectPropertiesKt", plugin = "org.jetbrains.bazel/intellij.bazel.core")
-interface BazelProjectPropertiesKt {
-  fun getRootDir(project: Project): VirtualFile
+val Driver.projectRootDir: VirtualFile
+  get() = service<BazelProjectContextService>(singleProject()).projectRootDir
+
+@Remote("org.jetbrains.bazel.sync.environment.BazelProjectContextService", plugin = "org.jetbrains.bazel/intellij.bazel.commons")
+interface BazelProjectContextService {
+  var isBazelProject: Boolean
+  var projectRootDir: VirtualFile
 }
 
 fun UiComponent.assertSyncSucceeded() {

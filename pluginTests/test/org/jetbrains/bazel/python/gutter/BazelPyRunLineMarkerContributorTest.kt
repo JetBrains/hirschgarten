@@ -11,8 +11,8 @@ import io.kotest.matchers.nulls.shouldBeNull
 import org.jetbrains.bazel.commons.LanguageClass
 import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.commons.TargetKind
-import org.jetbrains.bazel.config.isBazelProject
 import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.project.BazelProjectFixtures.initializeBazelProject
 import org.jetbrains.bazel.target.targetUtils
 import org.jetbrains.bsp.protocol.PythonBuildTarget
 import org.jetbrains.bsp.protocol.RawBuildTarget
@@ -28,7 +28,7 @@ internal class BazelPyRunLineMarkerContributorTest : CodeInsightFixtureTestCase<
 
   @Before
   fun beforeEach() {
-    project.isBazelProject = true
+    initializeBazelProject(project, myFixture.tempDirPath)
   }
 
   @Test

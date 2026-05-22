@@ -3,18 +3,16 @@ package org.jetbrains.bazel.languages.starlark.completion
 import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.util.io.toNioPathOrNull
 import com.intellij.platform.backend.workspace.workspaceModel
-import com.intellij.platform.workspace.storage.impl.url.toVirtualFileUrl
 import com.intellij.testFramework.IndexingTestUtil
 import com.intellij.testFramework.builders.ModuleFixtureBuilder
 import com.intellij.testFramework.fixtures.CodeInsightFixtureTestCase
 import com.intellij.testFramework.fixtures.ModuleFixture
 import io.kotest.matchers.collections.shouldContainAll
-import org.jetbrains.bazel.config.isBazelProject
 import org.jetbrains.bazel.languages.starlark.references.getCanonicalRepoNameToBzlFiles
 import org.jetbrains.bazel.languages.starlark.repomapping.injectCanonicalRepoNameToApparentName
 import org.jetbrains.bazel.languages.starlark.repomapping.injectCanonicalRepoNameToPath
-import org.jetbrains.bazel.workspacemodel.entities.BazelProjectDirectoriesEntity
-import org.jetbrains.bazel.workspacemodel.entities.BazelProjectEntitySource
+import org.jetbrains.bazel.project.BazelProjectFixtures.initializeBazelProject
+import org.jetbrains.bazel.workspacemodel.entities.BazelProjectDirectoriesEntityFixtures.emptyBazelDirectoryWorkspaceEntity
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
@@ -108,23 +106,11 @@ class BazelLoadFilepathCompletionTest : CodeInsightFixtureTestCase<ModuleFixture
   }
 
   fun prepareProject() {
-    project.isBazelProject = true
-    val myRootPath = myFixture.tempDirFixture.tempDirPath.toNioPathOrNull()!!
-
-    val myRootPathUrl = myRootPath.toVirtualFileUrl(project.workspaceModel.getVirtualFileUrlManager())
-
-    val entity =
-      BazelProjectDirectoriesEntity(
-        projectRoot = myRootPathUrl,
-        includedRoots = listOf(myRootPathUrl.append("excluded")),
-        excludedRoots = emptyList(),
-        indexAllFilesInIncludedRoots = false,
-        indexAdditionalFiles = emptyList(),
-        entitySource = BazelProjectEntitySource,
-      )
-
+    initializeBazelProject(project, myFixture.tempDirPath)
     WriteCommandAction.runWriteCommandAction(project) {
-      project.workspaceModel.updateProjectModel("add BazelProjectDirectoriesEntity") { it.addEntity(entity) }
+      project.workspaceModel.updateProjectModel("add BazelProjectDirectoriesEntity") {
+        it.addEntity(emptyBazelDirectoryWorkspaceEntity(project))
+      }
     }
 
     IndexingTestUtil.forceSkipWaiting

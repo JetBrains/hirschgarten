@@ -1,8 +1,7 @@
 package org.jetbrains.bazel.languages.starlark.annotation
 
-import org.jetbrains.bazel.config.isBazelProject
-import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.languages.starlark.fixtures.StarlarkAnnotatorTestCase
+import org.jetbrains.bazel.project.BazelProjectFixtures.initializeBazelProject
 
 class StarlarkFunctionAnnotatorTest : StarlarkAnnotatorTestCase() {
   fun testFunctionAnnotator() {
@@ -16,8 +15,7 @@ class StarlarkFunctionAnnotatorTest : StarlarkAnnotatorTestCase() {
   }
 
   fun testUnresolvedNameInGlobalFunction() {
-    project.isBazelProject = true
-    project.rootDir = myFixture.tempDirFixture.getFile(".")!!
+    initializeBazelProject(project, myFixture.tempDirPath)
 
     myFixture.addFileToProject(
       "MODULE.bazel",
@@ -44,8 +42,7 @@ class StarlarkFunctionAnnotatorTest : StarlarkAnnotatorTestCase() {
   }
 
   fun testCustomMacroPseudoCollision() {
-    project.isBazelProject = true
-    project.rootDir = myFixture.tempDirFixture.getFile(".")!!
+    initializeBazelProject(project, myFixture.tempDirPath)
 
     myFixture.addFileToProject(
       "def.bzl",

@@ -3,19 +3,20 @@ package org.jetbrains.bazel.languages.projectview.references
 import com.intellij.testFramework.builders.ModuleFixtureBuilder
 import com.intellij.testFramework.fixtures.CodeInsightFixtureTestCase
 import com.intellij.testFramework.fixtures.ModuleFixture
-import org.jetbrains.bazel.config.isBazelProject
-import org.jetbrains.bazel.config.rootDir
+import org.jetbrains.bazel.project.BazelProjectFixtures.initializeBazelProject
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
 
 @RunWith(JUnit4::class)
 class ProjectViewLabelReferenceTest : CodeInsightFixtureTestCase<ModuleFixtureBuilder<ModuleFixture>>() {
+  override fun setUp() {
+    super.setUp()
+    initializeBazelProject(project, myFixture.tempDirPath)
+  }
+
   @Test
   fun `targets should return a reference and resolve`() {
-    project.isBazelProject = true
-    project.rootDir = myFixture.tempDirFixture.getFile(".")!!
-
     myFixture.addFileToProject(
       "BUILD",
       """
@@ -38,9 +39,6 @@ class ProjectViewLabelReferenceTest : CodeInsightFixtureTestCase<ModuleFixtureBu
 
   @Test
   fun `should not resolve non-existing targets`() {
-    project.isBazelProject = true
-    project.rootDir = myFixture.tempDirFixture.getFile(".")!!
-
     myFixture.configureByText(
       ".bazelproject",
       """

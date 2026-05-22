@@ -4,11 +4,8 @@ import com.intellij.execution.filters.Filter
 import com.intellij.execution.filters.OpenFileHyperlinkInfo
 import com.intellij.openapi.application.readAction
 import com.intellij.openapi.vfs.LocalFileSystem
-import com.intellij.platform.backend.workspace.virtualFile
-import com.intellij.platform.workspace.storage.impl.url.toVirtualFileUrl
 import io.kotest.matchers.shouldBe
 import kotlinx.coroutines.runBlocking
-import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.workspace.model.test.framework.WorkspaceModelBaseTest
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -23,8 +20,8 @@ class AbsoluteAndRelativePathsConsoleFilterTest : WorkspaceModelBaseTest() {
 
   @BeforeEach
   override fun beforeEach() {
+    super.beforeEach()
     // given
-    project.rootDir = projectBasePath.toVirtualFileUrl(virtualFileUrlManager).virtualFile!!
     filter = AbsoluteAndRelativePathsConsoleFilter(project)
   }
 

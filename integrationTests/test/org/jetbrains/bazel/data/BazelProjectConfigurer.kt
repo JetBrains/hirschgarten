@@ -19,8 +19,14 @@ object BazelProjectConfigurer {
   }
 
   @OptIn(ExperimentalPathApi::class)
-  fun configureProjectBeforeUseWithoutBazelClean(context: IDETestContext, createProjectView: Boolean = true) {
-    (context.resolvedBazelProjectHome / ".idea").deleteRecursively()
+  fun configureProjectBeforeUseWithoutBazelClean(
+    context: IDETestContext,
+    removeDotIdea: Boolean = true,
+    createProjectView: Boolean = true
+  ) {
+    if (removeDotIdea) {
+      (context.resolvedBazelProjectHome / ".idea").deleteRecursively()
+    }
     (context.resolvedBazelProjectHome / Constants.DOT_BAZELBSP_DIR_NAME).deleteRecursively()
     (context.resolvedBazelProjectHome / "build.gradle").deleteIfExists()
     (context.resolvedBazelProjectHome / "build.gradle.kts").deleteIfExists()

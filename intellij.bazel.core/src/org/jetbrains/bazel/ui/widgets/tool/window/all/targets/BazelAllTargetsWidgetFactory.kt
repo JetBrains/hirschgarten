@@ -27,7 +27,6 @@ import kotlinx.coroutines.withContext
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.assets.BazelPluginIcons
 import org.jetbrains.bazel.config.BazelPluginConstants
-import org.jetbrains.bazel.config.BazelProjectProperties
 import org.jetbrains.bazel.config.isBazelProject
 import org.jetbrains.bazel.languages.starlark.repomapping.toShortString
 import org.jetbrains.bazel.target.TargetUtils
@@ -41,7 +40,7 @@ private class BazelAllTargetsWidgetFactory :
   DumbAware {
   private val contentRequested = Semaphore(permits = 1, acquiredPermits = 1)
 
-  override suspend fun isApplicableAsync(project: Project): Boolean = project.serviceAsync<BazelProjectProperties>().isBazelProject
+  override suspend fun isApplicableAsync(project: Project): Boolean = project.isBazelProject
 
   override fun shouldBeAvailable(project: Project): Boolean = project.isBazelProject
 
@@ -57,7 +56,7 @@ private class BazelAllTargetsWidgetFactory :
     coroutineScope {
       launch(Dispatchers.EDT) {
         // double-check again
-        val isBazelProject = toolWindow.project.serviceAsync<BazelProjectProperties>().isBazelProject
+        val isBazelProject = toolWindow.project.isBazelProject
         toolWindow.setAvailable(isBazelProject)
         if (isBazelProject && !toolWindowManager.isStripeButtonShow(toolWindow)) {
           // the only way to force adding a stripe button is to show the tool window, due to a platform API limitation

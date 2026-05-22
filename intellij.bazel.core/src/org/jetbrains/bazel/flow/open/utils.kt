@@ -13,8 +13,6 @@ import com.intellij.util.concurrency.annotations.RequiresBackgroundThread
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.jetbrains.bazel.commons.constants.Constants
-import org.jetbrains.bazel.config.isBazelProject
-import org.jetbrains.bazel.config.rootDir
 import java.io.IOException
 import java.nio.file.Files.isDirectory
 import java.nio.file.Files.isRegularFile
@@ -115,22 +113,6 @@ private fun Path.getBuildFileForPackageDirectory(): Path? {
     thisLogger().warn("Cannot retrieve Bazel BUILD file from directory: $this", e)
     null
   }
-}
-
-internal fun Project.initProperties(projectRootDir: Path) {
-  val virtualFile = projectRootDir.refreshAndFindVirtualDirectory()
-  if (virtualFile != null) {
-    initProperties(virtualFile)
-  } else {
-    thisLogger().warn("Unable to initialize project properties for project root directory: $projectRootDir")
-  }
-}
-
-internal fun Project.initProperties(projectRootDir: VirtualFile) {
-  thisLogger().debug("Initializing properties for project: $projectRootDir")
-
-  this.isBazelProject = true
-  this.rootDir = projectRootDir
 }
 
 internal suspend fun openProjectViewInEditor(

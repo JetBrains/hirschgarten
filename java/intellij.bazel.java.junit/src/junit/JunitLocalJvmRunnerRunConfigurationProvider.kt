@@ -13,10 +13,10 @@ import com.intellij.psi.PsiClass
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiMethod
 import org.jetbrains.annotations.ApiStatus
-import org.jetbrains.bazel.config.workspaceName
 import org.jetbrains.bazel.runfiles.RunfilesUtils
 import org.jetbrains.bazel.runnerAction.LocalJvmRunnerRunConfigurationProvider
 import org.jetbrains.bazel.settings.bazel.bazelJVMProjectSettings
+import org.jetbrains.bazel.sync.environment.projectCtx
 import org.jetbrains.bsp.protocol.JvmEnvironmentItem
 
 internal class JunitLocalJvmRunnerRunConfigurationProvider : LocalJvmRunnerRunConfigurationProvider {
@@ -70,7 +70,7 @@ internal class JunitLocalJvmRunnerRunConfigurationProvider : LocalJvmRunnerRunCo
   private fun defineDefaultBazelEnvs(project: Project, environment: JvmEnvironmentItem): Map<String, String> =
     mapOf(
       "TEST_SRCDIR" to RunfilesUtils.calculateTargetRunfiles(project, environment.target).toString(),
-      ("TEST_WORKSPACE" to (project.workspaceName ?: "_main")),
+      ("TEST_WORKSPACE" to (project.projectCtx.workspaceName ?: "_main")),
     )
 }
 

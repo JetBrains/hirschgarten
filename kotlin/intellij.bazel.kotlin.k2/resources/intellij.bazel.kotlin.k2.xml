@@ -1,14 +1,15 @@
 <idea-plugin visibility="internal">
 
+  <!-- region Generated dependencies - run `Generate Product Layouts` to regenerate -->
   <dependencies>
     <plugin id="com.intellij.modules.kotlin.k2"/>
-    <!-- region Generated dependencies - run `Generate Product Layouts` to regenerate -->
+    <module name="intellij.java.psi"/>
+    <module name="intellij.bazel.commons"/>
     <module name="intellij.bazel.core"/>
     <module name="intellij.bazel.java.sync"/>
-    <module name="intellij.java.psi"/>
     <module name="intellij.kotlin.refactorings.move"/>
-    <!-- endregion -->
   </dependencies>
+  <!-- endregion -->
 
   <projectListeners>
     <listener class="org.jetbrains.bazel.kotlin.k2.BazelK2MoveDeclarationsRefactoringListener"

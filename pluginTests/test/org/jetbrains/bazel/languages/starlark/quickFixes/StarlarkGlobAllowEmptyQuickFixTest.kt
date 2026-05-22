@@ -2,8 +2,8 @@ package org.jetbrains.bazel.languages.starlark.quickFixes
 
 import com.intellij.openapi.vfs.newvfs.impl.VfsRootAccess
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
-import org.jetbrains.bazel.config.isBazelProject
 import org.jetbrains.bazel.languages.starlark.StarlarkBundle
+import org.jetbrains.bazel.project.BazelProjectFixtures.initializeBazelProject
 import org.jetbrains.bazel.test.framework.BazelPathManager
 import org.junit.Before
 import org.junit.Test
@@ -17,7 +17,7 @@ class StarlarkGlobAllowEmptyQuickFixTest : BasePlatformTestCase() {
 
   @Before
   fun beforeEach() {
-    project.isBazelProject = true
+    initializeBazelProject(project, myFixture.tempDirPath)
     VfsRootAccess.allowRootAccess(this.testRootDisposable, this.testDataPath)
   }
 

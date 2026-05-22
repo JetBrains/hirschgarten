@@ -20,7 +20,7 @@ import com.intellij.testFramework.replaceService
 import com.intellij.util.lang.UrlClassLoader
 import org.jetbrains.bazel.progress.ConsoleService
 import org.jetbrains.bazel.progress.TaskConsole
-import org.jetbrains.bazel.config.bazelProjectProperties
+import org.jetbrains.bazel.project.BazelProjectFixtures.initializeBazelProject
 import org.jetbrains.bazel.sync.scope.SecondPhaseSync
 import org.jetbrains.bazel.sync.task.ProjectSyncTask
 import org.jetbrains.bazel.ui.console.task.TestTaskConsole
@@ -90,7 +90,7 @@ class BazelSyncCodeInsightTestFixtureImpl(
 
   override fun setUp() {
     super.setUp()
-    project.bazelProjectProperties.rootDir = virtualFileOf(tempDirPath)
+    initializeBazelProject(project, tempDir)
   }
 
   override fun tearDown() {

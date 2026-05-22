@@ -4,18 +4,17 @@ import com.intellij.execution.filters.OpenFileHyperlinkInfo
 import com.intellij.openapi.application.runWriteAction
 import com.intellij.openapi.util.io.findOrCreateFile
 import com.intellij.openapi.vfs.LocalFileSystem
-import com.intellij.openapi.vfs.VirtualFileManager
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
 import com.intellij.util.io.delete
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
 import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.languages.starlark.repomapping.PersistentBazelRepoMappingService
+import org.jetbrains.bazel.project.BazelProjectFixtures.initializeBazelProject
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
 import java.nio.file.Path
-import kotlin.io.path.Path
 import kotlin.io.path.createDirectories
 import kotlin.io.path.createTempDirectory
 import kotlin.io.path.writeText
@@ -29,8 +28,7 @@ class BazelBuildTargetConsoleFilterTest : BasePlatformTestCase() {
 
   override fun setUp() {
     super.setUp()
-    val virtualFileManager = VirtualFileManager.getInstance()
-    project.rootDir = virtualFileManager.findFileByNioPath(Path(project.basePath!!))!!
+    initializeBazelProject(project, myFixture.tempDirPath)
     filter = BazelBuildTargetConsoleFilter(project)
     PersistentBazelRepoMappingService.getInstance(project).canonicalRepoNameToPath = mapOf("" to project.rootDir.toNioPath())
   }

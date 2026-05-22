@@ -23,8 +23,6 @@ internal class BazelOpenProjectProvider : AbstractOpenProjectProvider() {
 
   public override suspend fun linkProject(projectFile: VirtualFile, project: Project) {
     log.debug { "Link BazelBsp project $projectFile to existing project ${project.name}" }
-    // todo it is incorrect
-    project.initProperties(projectFile)
     configureProjectCounterPlatform(project)
   }
 }

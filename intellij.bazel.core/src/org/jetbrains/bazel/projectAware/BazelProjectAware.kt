@@ -17,7 +17,6 @@ import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.annotations.VisibleForTesting
 import org.jetbrains.bazel.commons.constants.Constants
 import org.jetbrains.bazel.config.BazelPluginConstants
-import org.jetbrains.bazel.config.bazelProjectProperties
 import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.coroutines.BazelCoroutineService
 import org.jetbrains.bazel.settings.bazel.bazelProjectSettings
@@ -95,10 +94,10 @@ class BazelProjectAware(private val project: Project) : ExternalSystemProjectAwa
 
 @RequiresReadLock
 private fun calculateBazelConfigFiles(project: Project): Set<String> {
-  val rootDir = project.bazelProjectProperties.rootDir
+  val rootDir = project.rootDir
   val searchScope = GlobalSearchScope.projectScope(project)
   val projectView = project.bazelProjectSettings.projectViewPath
-  val globalFiles = GLOBAL_CONFIG_FILES.map { rootDir?.findChild(it) }
+  val globalFiles = GLOBAL_CONFIG_FILES.map { rootDir.findChild(it) }
 
   // getVirtualFilesByNames() function is private in FilenameIndex, so a mutable list is used as a workaround
   val localFiles = mutableListOf<VirtualFile>()

@@ -7,14 +7,13 @@ import com.intellij.execution.BeforeRunTaskProvider
 import com.intellij.execution.configurations.RunConfiguration
 import com.intellij.execution.runners.ExecutionEnvironment
 import com.intellij.openapi.actionSystem.DataContext
-import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Key
 import org.jetbrains.bazel.config.BazelPluginBundle
-import org.jetbrains.bazel.config.BazelProjectProperties
 import org.jetbrains.bazel.flow.sync.bazelPaths.BazelBinPathService
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.run.config.BazelRunConfiguration
+import org.jetbrains.bazel.sync.environment.projectCtx
 import org.jetbrains.bazel.target.targetUtils
 import org.jetbrains.bazel.ui.notifications.BazelBalloonNotifier
 import java.io.IOException
@@ -85,7 +84,7 @@ internal class CopyPluginToSandboxBeforeRunTaskProvider : BeforeRunTaskProvider<
    */
   private fun guessDeployInfoPath(project: Project, targetLabel: Label): Path? {
     val bazelBinPath = BazelBinPathService.getInstance(project).bazelBinPath ?: return null
-    val workspaceRoot = project.service<BazelProjectProperties>().rootDir?.toNioPath() ?: return null
+    val workspaceRoot = project.projectCtx.projectRootDir?.toNioPath() ?: return null
 
     val targetInfo = project.targetUtils.getBuildTargetForLabel(targetLabel) ?: return null
 
