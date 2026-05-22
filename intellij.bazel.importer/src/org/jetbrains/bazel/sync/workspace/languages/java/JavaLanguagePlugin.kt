@@ -416,7 +416,7 @@ class JavaLanguagePlugin: LanguagePlugin {
           targetInfo.key.label to
             createLibrary(
               id = Label.synthetic(targetInfo.key.label + "_generated"),
-              dependencies = emptyList(),
+              ijars = emptySet(),
               jars = targetInfo.javaCommon.generatedJarsList
                 .flatMap { it.binaryJarsList }
                 .map { bazelPathsResolver.resolve(it, localRepositories) }
@@ -460,7 +460,7 @@ class JavaLanguagePlugin: LanguagePlugin {
             libraryNameToLibraryValueMap.getOrPut(label) {
               createLibrary(
                 id = label,
-                dependencies = emptyList(),
+                ijars = emptySet(),
                 jars = setOf(it),
                 sourceJars = emptySet(),
               )
@@ -645,7 +645,6 @@ class JavaLanguagePlugin: LanguagePlugin {
 
       return createLibrary(
         id = label,
-        dependencies = targetInfo.dependencies(),
         ijars = interfaceJars,
         jars = outputs,
         sourceJars = sources,
@@ -656,16 +655,14 @@ class JavaLanguagePlugin: LanguagePlugin {
 
     private fun createLibrary(
       id: Label,
-      dependencies: List<DependencyLabel>,
-      ijars: Set<Path> = emptySet(),
-      jars: Set<Path>,
-      sourceJars: Set<Path>,
+      ijars: Collection<Path>,
+      jars: Collection<Path>,
+      sourceJars: Collection<Path>,
       mavenCoordinates: MavenCoordinates? = null,
       containsInternalJars: Boolean = false,
     ): LibraryItem {
       return LibraryItem(
         id = id,
-        dependencies = dependencies,
         ijars = ijars.toList(),
         jars = jars.toList(),
         sourceJars = sourceJars.toList(),

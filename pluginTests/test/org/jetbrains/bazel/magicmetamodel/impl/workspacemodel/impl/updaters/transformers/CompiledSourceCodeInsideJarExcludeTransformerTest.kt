@@ -22,7 +22,6 @@ class CompiledSourceCodeInsideJarExcludeTransformerTest {
   private val libraryFromInternalTarget =
     LibraryItem(
       id = Label.synthetic("1"),
-      dependencies = emptyList(),
       ijars = listOf(Path("/path/to/ijar.jar")),
       jars = listOf(Path("/path/to/jar.jar")),
       sourceJars = listOf(Path("/path/to/sourceJar.jar")),
@@ -33,7 +32,6 @@ class CompiledSourceCodeInsideJarExcludeTransformerTest {
   private val usualLibrary =
     LibraryItem(
       id = Label.synthetic("1"),
-      dependencies = emptyList(),
       ijars = listOf(Path("/path/to/another/ijar.jar")),
       jars = listOf(Path("/path/to/another/jar.jar")),
       sourceJars = listOf(Path("/path/to/another/sourceJar.jar")),

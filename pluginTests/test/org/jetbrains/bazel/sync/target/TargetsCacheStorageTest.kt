@@ -7,11 +7,9 @@ import io.kotest.matchers.nulls.shouldBeNull
 import io.kotest.matchers.shouldBe
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.label.ResolvedLabel
-import org.jetbrains.bazel.magicmetamodel.formatAsModuleName
 import org.jetbrains.bazel.target.TargetsCacheStorage
 import org.jetbrains.bazel.test.framework.target.TestBuildTargetFactory
 import org.jetbrains.bazel.workspace.model.test.framework.WorkspaceModelBaseTest
-import org.jetbrains.bsp.protocol.LibraryItem
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
@@ -93,17 +91,6 @@ class TargetsCacheStorageTest : WorkspaceModelBaseTest() {
     val label2: ResolvedLabel = Label.parse("@//bin:tool") as ResolvedLabel
 
     val file = projectBasePath.resolve("lib/Core.kt")
-
-    // minimal library item – other fields are irrelevant for mapping id -> label
-    val libraryItem = LibraryItem(
-      id = label1,
-      dependencies = emptyList(),
-      ijars = emptyList(),
-      jars = emptyList(),
-      sourceJars = emptyList(),
-      mavenCoordinates = null,
-      containsInternalJars = false,
-    )
 
     storage.reset(
       fileToTarget = mapOf<Path, List<Label>>(file to listOf(label1)),

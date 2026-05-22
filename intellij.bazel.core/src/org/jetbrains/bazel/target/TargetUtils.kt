@@ -51,7 +51,7 @@ private fun nowAsDuration() = System.currentTimeMillis().toDuration(DurationUnit
 /**
  * Increment when making breaking changes to [TargetsCacheStorage]
  */
-private const val TARGETS_STORAGE_VERSION: Int = 6
+private const val TARGETS_STORAGE_VERSION: Int = 7
 
 private fun Project.targetsStorageFile(storeVersion: Int): Path = getProjectDataPath("bazel-targets-v$storeVersion.db")
 
