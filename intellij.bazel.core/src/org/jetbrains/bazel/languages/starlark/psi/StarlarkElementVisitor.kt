@@ -157,7 +157,7 @@ open class StarlarkElementVisitor : PsiElementVisitor() {
     visitElement(node)
   }
 
-  internal fun visitLoadStatement(node: StarlarkLoadStatement) {
+  internal open fun visitLoadStatement(node: StarlarkLoadStatement) {
     visitElement(node)
   }
 

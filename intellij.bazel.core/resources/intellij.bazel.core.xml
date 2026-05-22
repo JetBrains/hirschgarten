@@ -414,6 +414,14 @@
                      level="ERROR"
                      implementationClass="org.jetbrains.bazel.languages.starlark.inspection.StarlarkStatementContainerPlacementInspection"/>
 
+    <localInspection language="Starlark"
+                     key="inspection.display.name.starlark.load.placement.check"
+                     groupPath="Bazel"
+                     groupKey="starlark.inspection.group.name"
+                     enabledByDefault="true"
+                     level="ERROR"
+                     implementationClass="org.jetbrains.bazel.languages.starlark.inspection.StarlarkLoadPlacementInspection"/>
+
     <fileType
       extensions="bazelquery"
       fieldName="INSTANCE"
