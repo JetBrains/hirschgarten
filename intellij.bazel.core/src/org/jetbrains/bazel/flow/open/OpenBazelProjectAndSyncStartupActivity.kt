@@ -1,7 +1,6 @@
 package org.jetbrains.bazel.flow.open
 
 import com.intellij.ide.plugins.PluginManagerCore
-import com.intellij.openapi.components.serviceAsync
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.extensions.PluginId
 import com.intellij.openapi.project.Project
@@ -11,7 +10,8 @@ import com.intellij.openapi.vfs.refreshAndFindVirtualFile
 import com.intellij.openapi.vfs.toNioPathOrNull
 import com.intellij.project.ProjectStoreOwner
 import org.jetbrains.bazel.config.BazelFeatureFlags
-import org.jetbrains.bazel.flow.open.BazelUnlinkedProjectAware.Companion.closeAndReopenAsBazelProject
+import org.jetbrains.bazel.config.isBazelProject
+import org.jetbrains.bazel.coroutines.BazelApplicationCoroutineScopeService
 import org.jetbrains.bazel.settings.bazel.bazelProjectSettings
 import org.jetbrains.bazel.sync.environment.projectCtx
 
@@ -23,7 +23,7 @@ internal class OpenBazelProjectAndSyncStartupActivity : InitProjectActivity {
     if (shouldLinkAsBazelProject(project)) {
       val projectFolder = findProjectFolderFromVFile(project.guessProjectDir()) ?: return
       val workspaceFile = projectFolder.toNioPathOrNull()?.workspaceFile ?: return
-      serviceAsync<BazelApplicationCoroutineScopeService>().launch {
+      BazelApplicationCoroutineScopeService.getInstance().launch {
         closeAndReopenAsBazelProject(project, workspaceFile)
       }
       return
@@ -56,10 +56,8 @@ internal class OpenBazelProjectAndSyncStartupActivity : InitProjectActivity {
   }
 
   private fun shouldLinkAsBazelProject(project: Project): Boolean {
-    val externalProjectPath = project.basePath.orEmpty()
-
     // Already linked - nothing to do
-    if (BazelUnlinkedProjectAware().isLinkedProject(project, externalProjectPath)) return false
+    if (project.isBazelProject) return false
     if (PluginManagerCore.getPluginSet().isPluginEnabled(PluginId.getId("com.google.idea.bazel.ijwb"))) return false
     // Link if flag is set
     return BazelFeatureFlags.autoOpenProjectIfPresent

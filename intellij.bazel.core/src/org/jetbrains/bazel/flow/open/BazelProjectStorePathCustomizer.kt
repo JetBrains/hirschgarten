@@ -9,7 +9,7 @@ import com.intellij.openapi.vfs.LocalFileSystem
 import org.jetbrains.bazel.commons.constants.Constants
 import java.nio.file.Path
 
-private class BazelProjectStorePathCustomizer : ProjectStorePathCustomizer {
+internal class BazelProjectStorePathCustomizer : ProjectStorePathCustomizer {
   override fun getStoreDirectoryPath(projectRoot: Path): ProjectStoreDescriptor? {
     // do not use isDirectory, as we also want to check that the file exists
     if (!projectRoot.hasNameOf(*Constants.SUPPORTED_CONFIG_FILE_NAMES) &&

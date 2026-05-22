@@ -1,11 +1,16 @@
 package org.jetbrains.bazel.flow.open
 
+import com.intellij.ide.impl.OpenProjectTask
+import com.intellij.ide.impl.ProjectUtil
 import com.intellij.openapi.application.EDT
+import com.intellij.openapi.components.serviceAsync
 import com.intellij.openapi.diagnostic.thisLogger
 import com.intellij.openapi.fileEditor.ex.FileEditorManagerEx
 import com.intellij.openapi.fileEditor.impl.FileEditorOpenOptions
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.project.ProjectManager
 import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.openapi.vfs.isFile
 import com.intellij.openapi.vfs.refreshAndFindVirtualDirectory
 import com.intellij.openapi.vfs.refreshAndFindVirtualFileOrDirectory
 import com.intellij.openapi.vfs.toNioPathOrNull
@@ -13,6 +18,7 @@ import com.intellij.util.concurrency.annotations.RequiresBackgroundThread
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.jetbrains.bazel.commons.constants.Constants
+import org.jetbrains.bazel.coroutines.BazelApplicationCoroutineScopeService
 import java.io.IOException
 import java.nio.file.Files.isDirectory
 import java.nio.file.Files.isRegularFile
@@ -115,6 +121,11 @@ private fun Path.getBuildFileForPackageDirectory(): Path? {
   }
 }
 
+internal fun VirtualFile.isBazelWorkspaceFile(): Boolean {
+  if (!isFile) return false
+  return name in Constants.WORKSPACE_FILE_NAMES || extension == Constants.PROJECT_VIEW_FILE_EXTENSION
+}
+
 internal suspend fun openProjectViewInEditor(
   project: Project,
   file: VirtualFile,
@@ -130,4 +141,25 @@ internal suspend fun openProjectViewInEditor(
       ),
     )
   }
+}
+
+/**
+ * Closes the current project and reopens it as a Bazel project.
+ * Must be called from application-level scope (use [BazelApplicationCoroutineScopeService.launch]).
+ */
+internal suspend fun closeAndReopenAsBazelProject(project: Project, file: Path) {
+  val projectManager = serviceAsync<ProjectManager>()
+  withContext(Dispatchers.EDT) {
+    projectManager.closeAndDispose(project)
+  }
+
+  ProjectUtil.openOrImportAsync(
+    file = file,
+    options = OpenProjectTask {
+      runConfigurators = true
+      isNewProject = true
+      useDefaultProjectAsTemplate = true
+      forceOpenInNewFrame = true
+    },
+  )
 }

@@ -6,7 +6,6 @@ import com.intellij.openapi.components.service
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.ex.ProjectManagerEx
-import com.intellij.openapi.util.registry.Registry
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.refreshAndFindVirtualFile
 import com.intellij.openapi.vfs.toNioPathOrNull
@@ -97,7 +96,7 @@ internal class BazelProjectOpenProcessor : ProjectOpenProcessor() {
         this.projectRootDir = projectRootDir
         this.forceOpenInNewFrame = forceOpenInNewFrame
         this.projectToClose = projectToClose
-        this.createModule = Registry.`is`("bazel.create.fake.module.on.project.import")
+        this.createModule = false
 
         beforeOpen = { project ->
           projectViewPath
