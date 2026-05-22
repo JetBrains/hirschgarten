@@ -267,7 +267,7 @@ internal class ProtobufGeneratorConsistencyTest {
     Files.createDirectories(cacheDir)
 
     val downloadUrl = "https://cache-redirector.jetbrains.com/" +
-                      "https://repo1.maven.org/maven2/io/grpc/protoc-gen-grpc-java/$GRPC_VERSION/$artifactName"
+                      "repo1.maven.org/maven2/io/grpc/protoc-gen-grpc-java/$GRPC_VERSION/$artifactName"
 
     if (!HttpClient.download(HttpGet(downloadUrl), executable, retries = 1)) {
       error("failed to download grpc-java plugin")
