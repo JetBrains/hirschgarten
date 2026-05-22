@@ -8,7 +8,6 @@ import java.nio.file.Path
 @ApiStatus.Internal
 data class LibraryItem(
   val id: Label,
-  val dependencies: List<DependencyLabel>,
   val ijars: List<Path>,
   val jars: List<Path>,
   val sourceJars: List<Path>,

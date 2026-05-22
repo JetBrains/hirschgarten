@@ -5,36 +5,19 @@ import org.jetbrains.bazel.info.BspTargetInfo
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.label.SingleTarget
 import org.jetbrains.bazel.label.assumeResolved
+import org.jetbrains.bazel.label.isCompile
 import org.jetbrains.bazel.label.label
-
 
 @ApiStatus.Internal
 class DependencyGraph(
   rootTargets: Set<Label> = emptySet(),
   val idToTargetInfo: Map<Label, BspTargetInfo.TargetInfo> = emptyMap(),
 ) {
-  private val idToIncomingDependenciesIds = mutableMapOf<Label, MutableSet<Label>>()
-  private val idToDirectDependenciesIds = mutableMapOf<Label, Set<Label>>()
-  private val idToDirectCompileDependenciesIds = mutableMapOf<Label, Set<Label>>()
-  private val idToLazyTransitiveDependencies: Map<Label, Lazy<Set<BspTargetInfo.TargetInfo>>>
   private val rootTargets: MutableSet<Label> = rootTargets.toHashSet()
+  private val idToTransitiveDependencies = HashMap<Label, Set<BspTargetInfo.TargetInfo>>()
 
   init {
-
     idToTargetInfo.entries.forEach { (id, target) ->
-      val deps: List<Pair<Int /* BspTargetInfo.Dependency.DependencyType*/, Label>> =
-        target.depsList.map { it.dependencyTypeValue to it.label() }
-
-      idToDirectDependenciesIds[id] = deps.map { it.second }.toSet()
-      idToDirectCompileDependenciesIds[id] = deps
-        .filter { it.first == BspTargetInfo.Dependency.DependencyType.COMPILE_VALUE ||
-                  it.first == BspTargetInfo.Dependency.DependencyType.EXPORTED_COMPILE_TIME_VALUE }
-        .map { it.second }.toSet()
-
-      for ((_, dependency) in deps) {
-        idToIncomingDependenciesIds.getOrPut(dependency) { hashSetOf() }.add(id)
-      }
-
       if (target.generatorName.isNotEmpty()) {
         val generatorTarget = id.assumeResolved().copy(target = SingleTarget(target.generatorName))
         // Support macros that generate a target and refer to it by an alias, see https://youtrack.jetbrains.com/issue/BAZEL-3048
@@ -46,46 +29,34 @@ class DependencyGraph(
         }
       }
     }
-    idToLazyTransitiveDependencies = createIdToLazyTransitiveDependenciesMap(idToTargetInfo)
   }
-
-  private fun createIdToLazyTransitiveDependenciesMap(
-    idToTargetInfo: Map<Label, BspTargetInfo.TargetInfo>,
-  ): Map<Label, Lazy<Set<BspTargetInfo.TargetInfo>>> =
-    idToTargetInfo.mapValues { (_, targetInfo) ->
-      lazy {
-        calculateTransitiveDependenciesForTarget(targetInfo)
-      }
-    }
 
   private fun calculateTransitiveDependenciesForTarget(targetInfo: BspTargetInfo.TargetInfo): Set<BspTargetInfo.TargetInfo> {
-    val dependencies = idToDirectCompileDependenciesIds[targetInfo.label()].orEmpty()
-    val strictlyTransitiveDependencies = calculateStrictlyTransitiveDependencies(dependencies)
-    val directDependencies = idsToTargetInfo(dependencies)
-    return strictlyTransitiveDependencies + directDependencies
+    return idToTransitiveDependencies.getOrPut(targetInfo.label()) {
+      targetInfo.depsList.filter { it.isCompile() }
+        .flatMap { dependency ->
+          val target = idToTargetInfo[dependency.label()] ?: return@flatMap emptySet()
+          calculateTransitiveDependenciesForTarget(target) + target
+        }.toSet()
+    }
   }
-
-  private fun calculateStrictlyTransitiveDependencies(dependencies: Set<Label>): Set<BspTargetInfo.TargetInfo> =
-    dependencies
-      .flatMap {
-        idToLazyTransitiveDependencies[it]?.value.orEmpty()
-      }.toSet()
 
   private fun idsToTargetInfo(dependencies: Collection<Label>): Set<BspTargetInfo.TargetInfo> =
     dependencies.mapNotNull(idToTargetInfo::get).toSet()
 
   fun allTargetsAtDepth(
     maxDepth: Int,
-    // If include runtime dependencies in traversing. Default value simulates previous behaviour
+    // If include runtime dependencies in traversing. Default value simulates previous behavior
     runtimeDependencies: Boolean = maxDepth < 0,
     predicate: (Label) -> Boolean = { true }
   ): Set<BspTargetInfo.TargetInfo> {
     val depth = mutableMapOf<Label, Int>()
     val toVisit = ArrayDeque<Label>()
 
-    fun dependencies(target: Label): Collection<Label> {
-      return (if (runtimeDependencies) idToDirectDependenciesIds[target] else idToDirectCompileDependenciesIds[target])
-        .orEmpty()
+    fun dependencies(target: Label): List<Label> {
+      return idToTargetInfo[target]?.depsList?.filter {
+        runtimeDependencies || it.isCompile()
+      }?.map { it.label() } ?: emptyList()
     }
 
     fun bfs(rootTargets: Collection<Label>) {
@@ -111,24 +82,17 @@ class DependencyGraph(
     return idsToTargetInfo(depth.keys)
   }
 
-  fun transitiveDependenciesWithoutRootTargets(targetId: Label): Set<BspTargetInfo.TargetInfo> =
-    idToDirectDependenciesIds[targetId].orEmpty()
+  fun transitiveDependenciesWithoutRootTargets(target: BspTargetInfo.TargetInfo): Set<BspTargetInfo.TargetInfo> =
+    target.depsList.map { it.label() }
       .filterNot { rootTargets.contains(it) }
       .flatMap(::collectTransitiveDependenciesAndAddTarget)
       .toSet()
 
-  private fun collectTransitiveDependenciesAndAddTarget(targetId: Label): Set<BspTargetInfo.TargetInfo> {
-    val target = idToTargetInfo[targetId]?.let(::setOf).orEmpty()
-    val dependencies =
-      idToLazyTransitiveDependencies[targetId]
-        ?.let(::setOf)
-        .orEmpty()
-        .map(Lazy<Set<BspTargetInfo.TargetInfo>>::value)
-        .flatten()
-        .toSet()
-    return dependencies + target
-  }
+  fun transitiveDependenciesWithoutRootTargets(targetId: Label): Set<BspTargetInfo.TargetInfo> =
+    idToTargetInfo[targetId]?.let { transitiveDependenciesWithoutRootTargets(it) } ?: emptySet()
 
-  fun getIncomingDependencies(targetId: Label): Set<Label> =
-    idToIncomingDependenciesIds[targetId] ?: emptySet()
+  private fun collectTransitiveDependenciesAndAddTarget(targetId: Label): Set<BspTargetInfo.TargetInfo> {
+    val target = idToTargetInfo[targetId] ?: return emptySet()
+    return calculateTransitiveDependenciesForTarget(target) + target
+  }
 }

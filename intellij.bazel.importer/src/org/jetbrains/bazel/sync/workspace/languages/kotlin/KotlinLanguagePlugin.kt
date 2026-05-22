@@ -89,7 +89,6 @@ class KotlinLanguagePlugin: JvmLanguagePluginMixin {
       return if (kotlinStdlibJars.isNotEmpty()) {
         LibraryItem(
           id = Label.synthetic("rules_kotlin_kotlin-stdlibs"),
-          dependencies = emptyList(),
           jars = server.outFileHardLinks.createOutputFileHardLinks(kotlinStdlibJars),
           sourceJars = server.outFileHardLinks.createOutputFileHardLinks(inferredSourceJars),
           ijars = emptyList(),

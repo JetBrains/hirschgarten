@@ -49,3 +49,8 @@ fun BspTargetInfo.Dependency.toDependencyLabel(): DependencyLabel =
     },
     configuration = this.target.configuration.ifEmpty { null }
   )
+
+
+@ApiStatus.Internal
+fun BspTargetInfo.Dependency.isCompile(): Boolean =
+  dependencyType == DependencyType.COMPILE || dependencyType == DependencyType.EXPORTED_COMPILE_TIME
