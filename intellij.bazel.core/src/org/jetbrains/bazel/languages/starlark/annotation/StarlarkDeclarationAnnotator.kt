@@ -4,7 +4,6 @@ import com.intellij.lang.annotation.AnnotationHolder
 import com.intellij.lang.annotation.HighlightSeverity
 import com.intellij.openapi.editor.markup.TextAttributes
 import com.intellij.psi.PsiElement
-import com.intellij.psi.search.GlobalSearchScope
 import com.intellij.psi.search.searches.ReferencesSearch
 import com.intellij.psi.util.elementType
 import com.intellij.ui.JBColor
@@ -51,20 +50,24 @@ internal class StarlarkDeclarationAnnotator : StarlarkAnnotator() {
     parent !is StarlarkKeywordVariadicParameter
 
   private fun PsiElement.isUnreferenced(): Boolean {
-    val scope = when {
-      isTopLevelTarget() || isTopLevelFunction() -> this.useScope
-      ((this as? StarlarkNamedElement)?.name ?: "").startsWith("_") -> return false
-      else -> GlobalSearchScope.fileScope(this.containingFile)
-    }
-    val references = ReferencesSearch.search(this, scope)
+    if (!isStarlarkTopLevel() && isExplicitlyUnused()) return false
+    val references = ReferencesSearch.search(this, useScope)
     if (this !is StarlarkTargetExpression) return references.none()
     // Variable is unreferenced if only reassignments refer to it.
     return references.none { it.element !is StarlarkTargetExpression }
   }
 
-  private fun PsiElement.isTopLevelTarget() = this is StarlarkTargetExpression && isTopLevel()
+  // In Starlark, _-prefixed names signal intentionally unused declarations (like Python's _ convention).
+  private fun PsiElement.isExplicitlyUnused() = when (this) {
+    is StarlarkNamedElement -> name?.startsWith("_") == true
+    else -> false
+  }
 
-  private fun PsiElement.isTopLevelFunction() = this is StarlarkFunctionDeclaration && isTopLevel()
+  private fun PsiElement.isStarlarkTopLevel() = when (this) {
+    is StarlarkTargetExpression -> isTopLevel()
+    is StarlarkFunctionDeclaration -> isTopLevel()
+    else -> false
+  }
 
   private fun StarlarkTargetExpression.isInsideAssignStatement(): Boolean {
     var current: PsiElement = this
