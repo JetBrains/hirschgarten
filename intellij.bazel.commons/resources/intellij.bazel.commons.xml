@@ -74,11 +74,6 @@
       key="bazel.shutdown.before.shard.build"
     />
     <registryKey
-      defaultValue="false"
-      description="Create fake module on project import"
-      key="bazel.create.fake.module.on.project.import"
-    />
-    <registryKey
       defaultValue="true"
       description="Add the whole directory to IntelliJ project model instead of individual files when it's possible"
       key="bazel.merge.source.roots"

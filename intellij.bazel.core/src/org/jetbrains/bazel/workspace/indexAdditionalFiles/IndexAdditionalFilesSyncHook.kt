@@ -34,7 +34,7 @@ private val INDEX_ADDITIONAL_FILES_DEFAULT =
  * 2. Loads all non-indexable files that happen to be under `directories:` (and not excluded) into the VFS,
  *    so that "Go to file by name" is quicker, see https://youtrack.jetbrains.com/issue/IJPL-207088
  */
-private class IndexAdditionalFilesSyncHook : ProjectSyncHook {
+internal class IndexAdditionalFilesSyncHook : ProjectSyncHook {
   override suspend fun onSync(environment: ProjectSyncHook.ProjectSyncHookEnvironment) =
     environment.withSubtask("Collect additional files to index") {
       val project = environment.project
