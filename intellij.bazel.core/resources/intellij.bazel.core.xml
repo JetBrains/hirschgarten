@@ -435,6 +435,14 @@
                      level="ERROR"
                      implementationClass="org.jetbrains.bazel.languages.starlark.inspection.StarlarkLoadPrivateSymbolInspection"/>
 
+    <localInspection language="Starlark"
+                     key="inspection.display.name.starlark.load.duplicate.symbols.check"
+                     groupPath="Bazel"
+                     groupKey="starlark.inspection.group.name"
+                     enabledByDefault="true"
+                     level="ERROR"
+                     implementationClass="org.jetbrains.bazel.languages.starlark.inspection.StarlarkLoadDuplicateSymbolsInspection"/>
+
     <fileType
       extensions="bazelquery"
       fieldName="INSTANCE"
