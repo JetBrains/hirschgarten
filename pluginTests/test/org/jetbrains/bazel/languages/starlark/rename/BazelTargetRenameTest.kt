@@ -108,7 +108,7 @@ class BazelTargetRenameTest : BasePlatformTestCase() {
       "README.md",
       """
       # Project
-      This project uses core_lib for core functionality.
+      This project uses `core_lib` for core functionality.
       """.trimIndent(),
     )
     val readmeContentBefore = readme.text

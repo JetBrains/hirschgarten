@@ -1,11 +1,9 @@
 package org.jetbrains.bazel.languages.starlark.findusages
 
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
-import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.collections.shouldHaveSingleElement
 import io.kotest.matchers.collections.shouldHaveSize
-import io.kotest.matchers.string.shouldStartWith
 import org.jetbrains.bazel.project.BazelProjectFixtures
 import org.junit.Before
 import org.junit.Test
@@ -116,12 +114,11 @@ class BazelTargetFindUsagesTest : BasePlatformTestCase() {
       "README.md",
       """
       # Project
-      This project uses core_lib for core functionality.
+      This project uses `core_lib` for core functionality.
       """.trimIndent(),
     )
 
-    val usages = myFixture.findBazelTargetUsages("core_lib")
-    usages shouldHaveSize 0
+    myFixture.findBazelTargetUsages("core_lib").shouldBeEmpty()
   }
 
   @Test
@@ -168,7 +165,6 @@ class BazelTargetFindUsagesTest : BasePlatformTestCase() {
           )
       """.trimIndent(),
     )
-    val error = shouldThrow<AssertionError> { myFixture.findBazelTargetUsages("lib") }
-    error.message shouldStartWith "Cannot find handler"
+    myFixture.findBazelTargetUsages("lib").shouldBeEmpty()
   }
 }

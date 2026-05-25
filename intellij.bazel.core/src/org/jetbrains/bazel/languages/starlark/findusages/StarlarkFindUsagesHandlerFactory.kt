@@ -7,19 +7,19 @@ import com.intellij.openapi.application.ReadAction
 import com.intellij.psi.PsiElement
 import com.intellij.psi.search.SearchScope
 import com.intellij.psi.search.searches.ReferencesSearch.SearchParameters
-import org.jetbrains.bazel.languages.starlark.psi.expressions.isRuleTarget
+import org.jetbrains.bazel.languages.starlark.psi.StarlarkElement
 
-internal class BazelTargetFindUsagesHandlerFactory : FindUsagesHandlerFactory() {
+internal class StarlarkFindUsagesHandlerFactory : FindUsagesHandlerFactory() {
 
-  override fun canFindUsages(element: PsiElement): Boolean = element.isRuleTarget()
+  override fun canFindUsages(element: PsiElement): Boolean = element is StarlarkElement
 
   override fun createFindUsagesHandler(
     element: PsiElement,
     forHighlightUsages: Boolean,
-  ): FindUsagesHandler = BazelTargetFindUsagesHandler(element)
+  ): FindUsagesHandler = StarlarkFindUsagesHandler(element)
 }
 
-private class BazelTargetFindUsagesHandler(element: PsiElement) : FindUsagesHandler(element) {
+private class StarlarkFindUsagesHandler(element: PsiElement) : FindUsagesHandler(element) {
 
   override fun isSearchForTextOccurrencesAvailable(psiElement: PsiElement, isSingleFile: Boolean): Boolean = false
 
@@ -28,7 +28,7 @@ private class BazelTargetFindUsagesHandler(element: PsiElement) : FindUsagesHand
    * Without this we might receive a search scope that is enlarged with [com.intellij.psi.search.UseScopeEnlarger],
    * which leads to unnecessary noise like e.g., Markdown file results.
    *
-   * Analogous limitation must be done in [org.jetbrains.bazel.languages.starlark.rename.BazelTargetRenamePsiElementProcessor] for consistency.
+   * Analogous limitation must be done in [org.jetbrains.bazel.languages.starlark.rename.StarlarkRenamePsiElementProcessor] for consistency.
    */
   override fun createSearchParameters(
     target: PsiElement,
