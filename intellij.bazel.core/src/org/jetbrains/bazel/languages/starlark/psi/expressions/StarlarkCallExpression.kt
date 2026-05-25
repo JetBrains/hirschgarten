@@ -7,7 +7,9 @@ import com.intellij.psi.ElementManipulators
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiNameIdentifierOwner
 import com.intellij.psi.PsiReference
+import com.intellij.psi.search.SearchScope
 import org.jetbrains.annotations.ApiStatus
+import org.jetbrains.bazel.languages.starlark.starlarkProjectScope
 import org.jetbrains.bazel.languages.starlark.bazel.BazelGlobalFunctions
 import org.jetbrains.bazel.languages.starlark.elements.StarlarkElementTypes
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkBaseElement
@@ -42,6 +44,8 @@ class StarlarkCallExpression(node: ASTNode) :
   StarlarkBaseElement(node),
   PsiNameIdentifierOwner {
   override fun acceptVisitor(visitor: StarlarkElementVisitor) = visitor.visitCallExpression(this)
+
+  override fun getUseScope(): SearchScope = if (isRuleTarget()) project.starlarkProjectScope() else super.getUseScope()
 
   override fun getReference(): PsiReference? =
     getNameNode()?.let {
