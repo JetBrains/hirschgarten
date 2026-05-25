@@ -573,8 +573,8 @@
     <referencesSearch implementation="org.jetbrains.bazel.languages.starlark.findusages.StarlarkStringUsageSearcher"/>
     <referencesSearch implementation="org.jetbrains.bazel.languages.starlark.findusages.StarlarkFileUsageSearcher"/>
     <referencesSearch implementation="org.jetbrains.bazel.languages.starlark.findusages.BazelTargetReferenceSearcher"/>
-    <findUsagesHandlerFactory implementation="org.jetbrains.bazel.languages.starlark.findusages.BazelTargetFindUsagesHandlerFactory"/>
-    <renamePsiElementProcessor implementation="org.jetbrains.bazel.languages.starlark.rename.BazelTargetRenamePsiElementProcessor"/>
+    <findUsagesHandlerFactory implementation="org.jetbrains.bazel.languages.starlark.findusages.StarlarkFindUsagesHandlerFactory"/>
+    <renamePsiElementProcessor implementation="org.jetbrains.bazel.languages.starlark.rename.StarlarkRenamePsiElementProcessor"/>
     <renameInputValidator implementation="org.jetbrains.bazel.languages.starlark.rename.BazelTargetRenameInputValidator"/>
     <usageTypeProvider implementation="org.jetbrains.bazel.languages.starlark.findusages.StarlarkUsageTypeProvider"/>
     <xdebugger.breakpointType implementation="org.jetbrains.bazel.debug.platform.StarlarkBreakpointType"/>
