@@ -8,7 +8,6 @@ import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.service
 import com.intellij.openapi.module.Module
 import com.intellij.openapi.module.ModuleManager
-import com.intellij.openapi.progress.runBlockingMaybeCancellable
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.getProjectDataPath
 import com.intellij.openapi.vfs.VirtualFile
@@ -39,7 +38,6 @@ import org.jetbrains.bazel.label.ResolvedLabel
 import org.jetbrains.bazel.label.SingleTarget
 import org.jetbrains.bazel.label.assumeResolved
 import org.jetbrains.bazel.languages.starlark.repomapping.toShortString
-import org.jetbrains.bazel.magicmetamodel.LIBRARY_MODULE_PREFIX
 import org.jetbrains.bazel.magicmetamodel.formatAsModuleName
 import org.jetbrains.bazel.target.TargetsCacheStorage.Companion.openStore
 import org.jetbrains.bsp.protocol.BuildTarget
@@ -79,6 +77,22 @@ class TargetUtils(private val project: Project, private val coroutineScope: Coro
 
   private val db: TargetsCacheStorage
     get() = runBlocking { dbAsync.await() }
+
+  /**
+   * Checks if the storage is initialized and loaded
+   */
+  fun isLoaded(): Boolean = dbAsync.isCompleted
+
+  /**
+   * Executes the given body when the storage is loaded (or immediately if storage is already loaded)
+   */
+  fun onLoaded(body: () -> Unit) {
+    dbAsync.invokeOnCompletion { cause ->
+      if (cause == null) {
+        body()
+      }
+    }
+  }
 
   // we save only once every 5 minutes, and not earlier than 5 minutes after IDEA startup
   private var lastSaved = nowAsDuration()
