@@ -110,6 +110,8 @@ def _bsp_target_info_aspect_impl(target, ctx):
     aspect_ids = get_aspect_ids(ctx, target)
     default_info = target[DefaultInfo]
     executable = default_info and default_info.files_to_run.executable != None
+    executable_file = file_location(default_info.files_to_run.executable) if default_info else None
+    runfiles_manifest = file_location(default_info.files_to_run.runfiles_manifest) if default_info else None
     testonly = getattr(rule_attrs, "testonly", False)
 
     env = {}
@@ -128,6 +130,15 @@ def _bsp_target_info_aspect_impl(target, ctx):
         configuration = getattr(ctx.configuration, "short_id", None),
     )
 
+    is_executable = default_info and default_info.files_to_run.executable != None
+    if is_executable:
+        executable_info = create_struct(
+            executable_file = file_location(default_info.files_to_run.executable),
+            runfiles_manifest = file_location(default_info.files_to_run.runfiles_manifest)
+        )
+    else:
+        executable_info = None
+
     info = dict(
         key = target_id,
         kind = rule_kind,
@@ -136,7 +147,7 @@ def _bsp_target_info_aspect_impl(target, ctx):
         srcs = sources,
         env = env,
         env_inherit = getattr(rule_attrs, "env_inherit", []),
-        executable = executable,
+        executable_info = executable_info,
         testonly = testonly,
         workspace_name = ctx.workspace_name,
         generator_name = getattr(rule_attrs, "generator_name", ""),

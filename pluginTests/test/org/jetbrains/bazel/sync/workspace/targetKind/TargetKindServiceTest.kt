@@ -9,6 +9,7 @@ import org.jetbrains.bazel.commons.RuleType.LIBRARY
 import org.jetbrains.bazel.commons.RuleType.TEST
 import org.jetbrains.bazel.commons.RuleType.UNKNOWN
 import org.jetbrains.bazel.commons.TargetKind
+import org.jetbrains.bazel.info.BspTargetInfo
 import org.jetbrains.bazel.info.BspTargetInfo.JavaCommonInfo
 import org.jetbrains.bazel.info.BspTargetInfo.TargetInfo
 import org.jetbrains.bazel.test.framework.BazelTestApplication
@@ -151,8 +152,10 @@ private fun targetInfo(
 ): TargetInfo =
   TargetInfo.newBuilder()
     .setKind(kind)
-    .setExecutable(executable)
     .apply {
+      if (executable) {
+        setExecutableInfo(BspTargetInfo.ExecutableInfo.getDefaultInstance())
+      }
       if (jvmTarget) {
         javaCommon = JavaCommonInfo.newBuilder().setJvmTarget(true).build()
       }

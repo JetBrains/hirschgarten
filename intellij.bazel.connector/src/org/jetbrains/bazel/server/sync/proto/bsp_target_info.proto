@@ -43,6 +43,11 @@ message Dependency {
   DependencyType dependency_type = 2;
 }
 
+message ExecutableInfo {
+  ArtifactLocation executable_file = 1;
+  ArtifactLocation runfiles_manifest = 2;
+}
+
 message JvmOutputs {
   repeated ArtifactLocation binary_jars = 1;
   repeated ArtifactLocation interface_jars = 2;
@@ -137,7 +142,7 @@ message TargetInfo {
   repeated ArtifactLocation srcs = 50;
   map<string, string> env = 70;
   repeated string env_inherit = 80;
-  bool executable = 90;
+  ExecutableInfo executable_info = 93;
   string workspace_name = 100;
   bool testonly = 101;
   JvmTargetInfo jvm_target_info = 1000;
