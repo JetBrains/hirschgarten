@@ -16,7 +16,16 @@
       interface="org.jetbrains.bazel.run.coverage.BazelCoverageClassNodeDecoratorPsiElementClassifier"
       qualifiedName="org.jetbrains.bazel.bazelCoverageClassNodeDecoratorPsiElementClassifier"
     />
+    <extensionPoint
+      dynamic="true"
+      interface="org.jetbrains.bazel.run.coverage.BazelCoverageReportParser"
+      qualifiedName="org.jetbrains.bazel.bazelCoverageReportParser"
+    />
   </extensionPoints>
+
+  <extensions defaultExtensionNs="org.jetbrains.bazel">
+    <bazelCoverageReportParser implementation="org.jetbrains.bazel.run.coverage.LcovBazelCoverageReportParser" order="last"/>
+  </extensions>
 
   <extensions defaultExtensionNs="com.intellij">
     <programRunner id="bazelCoverageProgramRunner" implementation="org.jetbrains.bazel.run.coverage.BazelCoverageProgramRunner"/>

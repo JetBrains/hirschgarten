@@ -13,6 +13,8 @@
     <orderEntry type="module" module-name="intellij.libraries.stream" />
     <orderEntry type="module" module-name="intellij.bazel.core" />
     <orderEntry type="module" module-name="intellij.bazel.commons" />
+    <orderEntry type="module" module-name="intellij.bazel.coverage" />
+    <orderEntry type="module" module-name="intellij.platform.coverage" />
     <orderEntry type="module" module-name="intellij.bazel.connector" />
     <orderEntry type="module" module-name="intellij.bazel.importer" />
     <orderEntry type="module" module-name="intellij.platform.core" />
