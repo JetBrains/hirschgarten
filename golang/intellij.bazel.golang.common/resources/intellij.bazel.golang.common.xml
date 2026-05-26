@@ -4,9 +4,11 @@
     <module name="intellij.bazel.commons"/>
     <module name="intellij.bazel.connector"/>
     <module name="intellij.bazel.core"/>
+    <module name="intellij.bazel.coverage"/>
     <module name="intellij.bazel.importer"/>
     <module name="intellij.go.frontback"/>
     <module name="intellij.go.impl"/>
+    <module name="intellij.platform.coverage"/>
     <module name="intellij.platform.scriptDebugger.backend"/>
     <module name="intellij.platform.scriptDebugger.ui"/>
     <module name="intellij.platform.smRunner"/>
@@ -38,6 +40,7 @@
     <runHandlerProvider
       implementation="org.jetbrains.bazel.golang.debug.BazelGoTestHandler$BazelGoTestHandlerProvider"
     />
+    <bazelCoverageReportParser implementation="org.jetbrains.bazel.golang.coverage.BazelGoCoverageReportParser"/>
     <targetKindProvider implementation="org.jetbrains.bazel.golang.targetKinds.GoBazelRules" />
     <languageClassProvider implementation="org.jetbrains.bazel.golang.GoLanguageClassProvider" />
     <languagePlugin implementation="org.jetbrains.bazel.golang.sync.GoLanguagePlugin"/>
