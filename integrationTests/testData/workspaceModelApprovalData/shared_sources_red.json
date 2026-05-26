@@ -1,0 +1,198 @@
+[
+  {
+    "entities": [
+      {
+        "contentRoots": [],
+        "contentRootsCount": 0,
+        "dependencies": [
+          {
+            "fqName": "com.intellij.platform.workspace.jps.entities.ModuleSourceDependency"
+          },
+          {
+            "sdk": {
+              "name": "shared_sources_red-jdk-4b64c",
+              "presentableName": "shared_sources_red-jdk-4b64c",
+              "type": "JavaSDK"
+            }
+          }
+        ],
+        "dependenciesCount": 2,
+        "entitySource": {
+          "entitySourceFqName": "org.jetbrains.bazel.workspacemodel.entities.BazelModuleEntitySource",
+          "virtualFileUrl": null
+        },
+        "facets": [],
+        "facetsCount": 0,
+        "fqName": "com.intellij.platform.workspace.jps.entities.ModuleEntity",
+        "name": "_aux.synthetic",
+        "type": {
+          "name": "BAZEL_DUMMY_MODULE_TYPE"
+        }
+      },
+      {
+        "contentRoots": [
+          {
+            "entitySource": {
+              "entitySourceFqName": "org.jetbrains.bazel.workspacemodel.entities.BazelModuleEntitySource",
+              "virtualFileUrl": null
+            },
+            "excludedPatterns": [],
+            "excludedPatternsCount": 0,
+            "excludedUrls": [],
+            "excludedUrlsCount": 0,
+            "fqName": "com.intellij.platform.workspace.jps.entities.ContentRootEntity",
+            "sourceRoots": [
+              {
+                "entitySource": {
+                  "entitySourceFqName": "org.jetbrains.bazel.workspacemodel.entities.BazelModuleEntitySource",
+                  "virtualFileUrl": null
+                },
+                "fqName": "com.intellij.platform.workspace.jps.entities.SourceRootEntity",
+                "rootTypeId": {
+                  "name": "java-source"
+                },
+                "url": "file://ClassA.java"
+              }
+            ],
+            "sourceRootsCount": 1,
+            "url": "file://ClassA.java"
+          },
+          {
+            "entitySource": {
+              "entitySourceFqName": "org.jetbrains.bazel.workspacemodel.entities.BazelModuleEntitySource",
+              "virtualFileUrl": null
+            },
+            "excludedPatterns": [],
+            "excludedPatternsCount": 0,
+            "excludedUrls": [],
+            "excludedUrlsCount": 0,
+            "fqName": "com.intellij.platform.workspace.jps.entities.ContentRootEntity",
+            "sourceRoots": [
+              {
+                "entitySource": {
+                  "entitySourceFqName": "org.jetbrains.bazel.workspacemodel.entities.BazelModuleEntitySource",
+                  "virtualFileUrl": null
+                },
+                "fqName": "com.intellij.platform.workspace.jps.entities.SourceRootEntity",
+                "rootTypeId": {
+                  "name": "java-source"
+                },
+                "url": "file://Main.java"
+              }
+            ],
+            "sourceRootsCount": 1,
+            "url": "file://Main.java"
+          }
+        ],
+        "contentRootsCount": 2,
+        "dependencies": [
+          {
+            "fqName": "com.intellij.platform.workspace.jps.entities.ModuleSourceDependency"
+          },
+          {
+            "sdk": {
+              "name": "shared_sources_red-jdk-4b64c",
+              "presentableName": "shared_sources_red-jdk-4b64c",
+              "type": "JavaSDK"
+            }
+          }
+        ],
+        "dependenciesCount": 2,
+        "entitySource": {
+          "entitySourceFqName": "org.jetbrains.bazel.workspacemodel.entities.BazelModuleEntitySource",
+          "virtualFileUrl": null
+        },
+        "facets": [],
+        "facetsCount": 0,
+        "fqName": "com.intellij.platform.workspace.jps.entities.ModuleEntity",
+        "name": "a",
+        "type": {
+          "name": "JAVA_MODULE"
+        }
+      },
+      {
+        "contentRoots": [
+          {
+            "entitySource": {
+              "entitySourceFqName": "org.jetbrains.bazel.workspacemodel.entities.BazelModuleEntitySource",
+              "virtualFileUrl": null
+            },
+            "excludedPatterns": [],
+            "excludedPatternsCount": 0,
+            "excludedUrls": [],
+            "excludedUrlsCount": 0,
+            "fqName": "com.intellij.platform.workspace.jps.entities.ContentRootEntity",
+            "sourceRoots": [
+              {
+                "entitySource": {
+                  "entitySourceFqName": "org.jetbrains.bazel.workspacemodel.entities.BazelModuleEntitySource",
+                  "virtualFileUrl": null
+                },
+                "fqName": "com.intellij.platform.workspace.jps.entities.SourceRootEntity",
+                "rootTypeId": {
+                  "name": "java-source"
+                },
+                "url": "file://ClassB.java"
+              }
+            ],
+            "sourceRootsCount": 1,
+            "url": "file://ClassB.java"
+          },
+          {
+            "entitySource": {
+              "entitySourceFqName": "org.jetbrains.bazel.workspacemodel.entities.BazelModuleEntitySource",
+              "virtualFileUrl": null
+            },
+            "excludedPatterns": [],
+            "excludedPatternsCount": 0,
+            "excludedUrls": [],
+            "excludedUrlsCount": 0,
+            "fqName": "com.intellij.platform.workspace.jps.entities.ContentRootEntity",
+            "sourceRoots": [
+              {
+                "entitySource": {
+                  "entitySourceFqName": "org.jetbrains.bazel.workspacemodel.entities.BazelModuleEntitySource",
+                  "virtualFileUrl": null
+                },
+                "fqName": "com.intellij.platform.workspace.jps.entities.SourceRootEntity",
+                "rootTypeId": {
+                  "name": "java-source"
+                },
+                "url": "file://Main.java"
+              }
+            ],
+            "sourceRootsCount": 1,
+            "url": "file://Main.java"
+          }
+        ],
+        "contentRootsCount": 2,
+        "dependencies": [
+          {
+            "fqName": "com.intellij.platform.workspace.jps.entities.ModuleSourceDependency"
+          },
+          {
+            "sdk": {
+              "name": "shared_sources_red-jdk-4b64c",
+              "presentableName": "shared_sources_red-jdk-4b64c",
+              "type": "JavaSDK"
+            }
+          }
+        ],
+        "dependenciesCount": 2,
+        "entitySource": {
+          "entitySourceFqName": "org.jetbrains.bazel.workspacemodel.entities.BazelModuleEntitySource",
+          "virtualFileUrl": null
+        },
+        "facets": [],
+        "facetsCount": 0,
+        "fqName": "com.intellij.platform.workspace.jps.entities.ModuleEntity",
+        "name": "b",
+        "type": {
+          "name": "JAVA_MODULE"
+        }
+      }
+    ],
+    "rootEntitiesCount": 3,
+    "rootEntityName": "ModuleEntity"
+  }
+]

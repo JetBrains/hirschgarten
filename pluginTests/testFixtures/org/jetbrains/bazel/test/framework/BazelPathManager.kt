@@ -20,6 +20,15 @@ object BazelPathManager {
       .resolve("testProjects")
   }
 
+  val integrationTestProjectRoot: Path by lazy {
+    pluginSourceRoot.resolve("integrationTests")
+  }
+
+  val integrationTestDataRoot: Path by lazy {
+    integrationTestProjectRoot.resolve("testData")
+  }
+
   fun getTestFixture(path: String) = getTestFixturePath(path).toString()
   fun getTestFixturePath(path: String): Path = testDataRoot.resolve(path)
+  fun getIntegrationTestFixturePath(path: String): Path = integrationTestDataRoot.resolve(path)
 }

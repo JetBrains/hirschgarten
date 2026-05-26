@@ -1,0 +1,2027 @@
+[
+  {
+    "entities": [
+      {
+        "compiledSourceCodeInsideJarExcludeId": {
+          "id": 0,
+          "presentableName": "CompiledSourceCodeInsideJarExcludeId(id=0)"
+        },
+        "entitySource": {
+          "entitySourceFqName": "org.jetbrains.bazel.workspacemodel.entities.BazelProjectEntitySource",
+          "virtualFileUrl": null
+        },
+        "fqName": "org.jetbrains.bazel.workspacemodel.entities.LibraryCompiledSourceCodeInsideJarExcludeEntity",
+        "libraryId": {
+          "codeCache": null,
+          "name": "contrib_rules_jvm.java.src.com.github.bazel_contrib.contrib_rules_jvm.junit5.junit5",
+          "presentableName": "contrib_rules_jvm.java.src.com.github.bazel_contrib.contrib_rules_jvm.junit5.junit5",
+          "tableId": {
+            "fqName": "com.intellij.platform.workspace.jps.entities.LibraryTableId$ProjectLibraryTableId",
+            "level": "project"
+          }
+        }
+      },
+      {
+        "compiledSourceCodeInsideJarExcludeId": {
+          "id": 0,
+          "presentableName": "CompiledSourceCodeInsideJarExcludeId(id=0)"
+        },
+        "entitySource": {
+          "entitySourceFqName": "org.jetbrains.bazel.workspacemodel.entities.BazelProjectEntitySource",
+          "virtualFileUrl": null
+        },
+        "fqName": "org.jetbrains.bazel.workspacemodel.entities.LibraryCompiledSourceCodeInsideJarExcludeEntity",
+        "libraryId": {
+          "codeCache": null,
+          "name": "forwarded.fwd",
+          "presentableName": "forwarded.fwd",
+          "tableId": {
+            "fqName": "com.intellij.platform.workspace.jps.entities.LibraryTableId$ProjectLibraryTableId",
+            "level": "project"
+          }
+        }
+      },
+      {
+        "compiledSourceCodeInsideJarExcludeId": {
+          "id": 0,
+          "presentableName": "CompiledSourceCodeInsideJarExcludeId(id=0)"
+        },
+        "entitySource": {
+          "entitySourceFqName": "org.jetbrains.bazel.workspacemodel.entities.BazelProjectEntitySource",
+          "virtualFileUrl": null
+        },
+        "fqName": "org.jetbrains.bazel.workspacemodel.entities.LibraryCompiledSourceCodeInsideJarExcludeEntity",
+        "libraryId": {
+          "codeCache": null,
+          "name": "forwarded.nested/fwd",
+          "presentableName": "forwarded.nested/fwd",
+          "tableId": {
+            "fqName": "com.intellij.platform.workspace.jps.entities.LibraryTableId$ProjectLibraryTableId",
+            "level": "project"
+          }
+        }
+      },
+      {
+        "compiledSourceCodeInsideJarExcludeId": {
+          "id": 0,
+          "presentableName": "CompiledSourceCodeInsideJarExcludeId(id=0)"
+        },
+        "entitySource": {
+          "entitySourceFqName": "org.jetbrains.bazel.workspacemodel.entities.BazelProjectEntitySource",
+          "virtualFileUrl": null
+        },
+        "fqName": "org.jetbrains.bazel.workspacemodel.entities.LibraryCompiledSourceCodeInsideJarExcludeEntity",
+        "libraryId": {
+          "codeCache": null,
+          "name": "maven.junit_junit",
+          "presentableName": "maven.junit_junit",
+          "tableId": {
+            "fqName": "com.intellij.platform.workspace.jps.entities.LibraryTableId$ProjectLibraryTableId",
+            "level": "project"
+          }
+        }
+      },
+      {
+        "compiledSourceCodeInsideJarExcludeId": {
+          "id": 0,
+          "presentableName": "CompiledSourceCodeInsideJarExcludeId(id=0)"
+        },
+        "entitySource": {
+          "entitySourceFqName": "org.jetbrains.bazel.workspacemodel.entities.BazelProjectEntitySource",
+          "virtualFileUrl": null
+        },
+        "fqName": "org.jetbrains.bazel.workspacemodel.entities.LibraryCompiledSourceCodeInsideJarExcludeEntity",
+        "libraryId": {
+          "codeCache": null,
+          "name": "maven.org_apiguardian_apiguardian_api",
+          "presentableName": "maven.org_apiguardian_apiguardian_api",
+          "tableId": {
+            "fqName": "com.intellij.platform.workspace.jps.entities.LibraryTableId$ProjectLibraryTableId",
+            "level": "project"
+          }
+        }
+      },
+      {
+        "compiledSourceCodeInsideJarExcludeId": {
+          "id": 0,
+          "presentableName": "CompiledSourceCodeInsideJarExcludeId(id=0)"
+        },
+        "entitySource": {
+          "entitySourceFqName": "org.jetbrains.bazel.workspacemodel.entities.BazelProjectEntitySource",
+          "virtualFileUrl": null
+        },
+        "fqName": "org.jetbrains.bazel.workspacemodel.entities.LibraryCompiledSourceCodeInsideJarExcludeEntity",
+        "libraryId": {
+          "codeCache": null,
+          "name": "maven.org_hamcrest_hamcrest_core",
+          "presentableName": "maven.org_hamcrest_hamcrest_core",
+          "tableId": {
+            "fqName": "com.intellij.platform.workspace.jps.entities.LibraryTableId$ProjectLibraryTableId",
+            "level": "project"
+          }
+        }
+      },
+      {
+        "compiledSourceCodeInsideJarExcludeId": {
+          "id": 0,
+          "presentableName": "CompiledSourceCodeInsideJarExcludeId(id=0)"
+        },
+        "entitySource": {
+          "entitySourceFqName": "org.jetbrains.bazel.workspacemodel.entities.BazelProjectEntitySource",
+          "virtualFileUrl": null
+        },
+        "fqName": "org.jetbrains.bazel.workspacemodel.entities.LibraryCompiledSourceCodeInsideJarExcludeEntity",
+        "libraryId": {
+          "codeCache": null,
+          "name": "maven.org_junit_jupiter_junit_jupiter_api",
+          "presentableName": "maven.org_junit_jupiter_junit_jupiter_api",
+          "tableId": {
+            "fqName": "com.intellij.platform.workspace.jps.entities.LibraryTableId$ProjectLibraryTableId",
+            "level": "project"
+          }
+        }
+      },
+      {
+        "compiledSourceCodeInsideJarExcludeId": {
+          "id": 0,
+          "presentableName": "CompiledSourceCodeInsideJarExcludeId(id=0)"
+        },
+        "entitySource": {
+          "entitySourceFqName": "org.jetbrains.bazel.workspacemodel.entities.BazelProjectEntitySource",
+          "virtualFileUrl": null
+        },
+        "fqName": "org.jetbrains.bazel.workspacemodel.entities.LibraryCompiledSourceCodeInsideJarExcludeEntity",
+        "libraryId": {
+          "codeCache": null,
+          "name": "maven.org_junit_jupiter_junit_jupiter_engine",
+          "presentableName": "maven.org_junit_jupiter_junit_jupiter_engine",
+          "tableId": {
+            "fqName": "com.intellij.platform.workspace.jps.entities.LibraryTableId$ProjectLibraryTableId",
+            "level": "project"
+          }
+        }
+      },
+      {
+        "compiledSourceCodeInsideJarExcludeId": {
+          "id": 0,
+          "presentableName": "CompiledSourceCodeInsideJarExcludeId(id=0)"
+        },
+        "entitySource": {
+          "entitySourceFqName": "org.jetbrains.bazel.workspacemodel.entities.BazelProjectEntitySource",
+          "virtualFileUrl": null
+        },
+        "fqName": "org.jetbrains.bazel.workspacemodel.entities.LibraryCompiledSourceCodeInsideJarExcludeEntity",
+        "libraryId": {
+          "codeCache": null,
+          "name": "maven.org_junit_jupiter_junit_jupiter_params",
+          "presentableName": "maven.org_junit_jupiter_junit_jupiter_params",
+          "tableId": {
+            "fqName": "com.intellij.platform.workspace.jps.entities.LibraryTableId$ProjectLibraryTableId",
+            "level": "project"
+          }
+        }
+      },
+      {
+        "compiledSourceCodeInsideJarExcludeId": {
+          "id": 0,
+          "presentableName": "CompiledSourceCodeInsideJarExcludeId(id=0)"
+        },
+        "entitySource": {
+          "entitySourceFqName": "org.jetbrains.bazel.workspacemodel.entities.BazelProjectEntitySource",
+          "virtualFileUrl": null
+        },
+        "fqName": "org.jetbrains.bazel.workspacemodel.entities.LibraryCompiledSourceCodeInsideJarExcludeEntity",
+        "libraryId": {
+          "codeCache": null,
+          "name": "maven.org_junit_platform_junit_platform_commons",
+          "presentableName": "maven.org_junit_platform_junit_platform_commons",
+          "tableId": {
+            "fqName": "com.intellij.platform.workspace.jps.entities.LibraryTableId$ProjectLibraryTableId",
+            "level": "project"
+          }
+        }
+      },
+      {
+        "compiledSourceCodeInsideJarExcludeId": {
+          "id": 0,
+          "presentableName": "CompiledSourceCodeInsideJarExcludeId(id=0)"
+        },
+        "entitySource": {
+          "entitySourceFqName": "org.jetbrains.bazel.workspacemodel.entities.BazelProjectEntitySource",
+          "virtualFileUrl": null
+        },
+        "fqName": "org.jetbrains.bazel.workspacemodel.entities.LibraryCompiledSourceCodeInsideJarExcludeEntity",
+        "libraryId": {
+          "codeCache": null,
+          "name": "maven.org_junit_platform_junit_platform_engine",
+          "presentableName": "maven.org_junit_platform_junit_platform_engine",
+          "tableId": {
+            "fqName": "com.intellij.platform.workspace.jps.entities.LibraryTableId$ProjectLibraryTableId",
+            "level": "project"
+          }
+        }
+      },
+      {
+        "compiledSourceCodeInsideJarExcludeId": {
+          "id": 0,
+          "presentableName": "CompiledSourceCodeInsideJarExcludeId(id=0)"
+        },
+        "entitySource": {
+          "entitySourceFqName": "org.jetbrains.bazel.workspacemodel.entities.BazelProjectEntitySource",
+          "virtualFileUrl": null
+        },
+        "fqName": "org.jetbrains.bazel.workspacemodel.entities.LibraryCompiledSourceCodeInsideJarExcludeEntity",
+        "libraryId": {
+          "codeCache": null,
+          "name": "maven.org_junit_platform_junit_platform_launcher",
+          "presentableName": "maven.org_junit_platform_junit_platform_launcher",
+          "tableId": {
+            "fqName": "com.intellij.platform.workspace.jps.entities.LibraryTableId$ProjectLibraryTableId",
+            "level": "project"
+          }
+        }
+      },
+      {
+        "compiledSourceCodeInsideJarExcludeId": {
+          "id": 0,
+          "presentableName": "CompiledSourceCodeInsideJarExcludeId(id=0)"
+        },
+        "entitySource": {
+          "entitySourceFqName": "org.jetbrains.bazel.workspacemodel.entities.BazelProjectEntitySource",
+          "virtualFileUrl": null
+        },
+        "fqName": "org.jetbrains.bazel.workspacemodel.entities.LibraryCompiledSourceCodeInsideJarExcludeEntity",
+        "libraryId": {
+          "codeCache": null,
+          "name": "maven.org_junit_platform_junit_platform_reporting",
+          "presentableName": "maven.org_junit_platform_junit_platform_reporting",
+          "tableId": {
+            "fqName": "com.intellij.platform.workspace.jps.entities.LibraryTableId$ProjectLibraryTableId",
+            "level": "project"
+          }
+        }
+      },
+      {
+        "compiledSourceCodeInsideJarExcludeId": {
+          "id": 0,
+          "presentableName": "CompiledSourceCodeInsideJarExcludeId(id=0)"
+        },
+        "entitySource": {
+          "entitySourceFqName": "org.jetbrains.bazel.workspacemodel.entities.BazelProjectEntitySource",
+          "virtualFileUrl": null
+        },
+        "fqName": "org.jetbrains.bazel.workspacemodel.entities.LibraryCompiledSourceCodeInsideJarExcludeEntity",
+        "libraryId": {
+          "codeCache": null,
+          "name": "maven.org_opentest4j_opentest4j",
+          "presentableName": "maven.org_opentest4j_opentest4j",
+          "tableId": {
+            "fqName": "com.intellij.platform.workspace.jps.entities.LibraryTableId$ProjectLibraryTableId",
+            "level": "project"
+          }
+        }
+      },
+      {
+        "compiledSourceCodeInsideJarExcludeId": {
+          "id": 0,
+          "presentableName": "CompiledSourceCodeInsideJarExcludeId(id=0)"
+        },
+        "entitySource": {
+          "entitySourceFqName": "org.jetbrains.bazel.workspacemodel.entities.BazelProjectEntitySource",
+          "virtualFileUrl": null
+        },
+        "fqName": "org.jetbrains.bazel.workspacemodel.entities.LibraryCompiledSourceCodeInsideJarExcludeEntity",
+        "libraryId": {
+          "codeCache": null,
+          "name": "maven.org_opentest4j_reporting_open_test_reporting_tooling_spi",
+          "presentableName": "maven.org_opentest4j_reporting_open_test_reporting_tooling_spi",
+          "tableId": {
+            "fqName": "com.intellij.platform.workspace.jps.entities.LibraryTableId$ProjectLibraryTableId",
+            "level": "project"
+          }
+        }
+      }
+    ],
+    "rootEntitiesCount": 15,
+    "rootEntityName": "LibraryCompiledSourceCodeInsideJarExcludeEntity"
+  },
+  {
+    "entities": [
+      {
+        "contentRoots": [],
+        "contentRootsCount": 0,
+        "dependencies": [
+          {
+            "exported": true,
+            "library": {
+              "codeCache": null,
+              "name": "contrib_rules_jvm.java.src.com.github.bazel_contrib.contrib_rules_jvm.junit5.junit5",
+              "presentableName": "contrib_rules_jvm.java.src.com.github.bazel_contrib.contrib_rules_jvm.junit5.junit5",
+              "tableId": {
+                "fqName": "com.intellij.platform.workspace.jps.entities.LibraryTableId$ProjectLibraryTableId",
+                "level": "project"
+              }
+            },
+            "scope": "COMPILE"
+          },
+          {
+            "exported": true,
+            "module": "Unknown \"FinalClassMetadata.KnownClass\": com.intellij.platform.workspace.jps.entities.ModuleId",
+            "productionOnTest": true,
+            "scope": "Unknown \"FinalClassMetadata.KnownClass\": com.intellij.platform.workspace.jps.entities.DependencyScope"
+          },
+          {
+            "sdk": {
+              "name": "simpleJavaTest-jdk-4b64c",
+              "presentableName": "simpleJavaTest-jdk-4b64c",
+              "type": "JavaSDK"
+            }
+          }
+        ],
+        "dependenciesCount": 3,
+        "entitySource": {
+          "entitySourceFqName": "org.jetbrains.bazel.workspacemodel.entities.BazelModuleEntitySource",
+          "virtualFileUrl": null
+        },
+        "facets": [],
+        "facetsCount": 0,
+        "fqName": "com.intellij.platform.workspace.jps.entities.ModuleEntity",
+        "name": "contrib_rules_jvm.java.src.com.github.bazel_contrib.contrib_rules_jvm.junit5.junit5",
+        "type": {
+          "name": "JAVA_MODULE"
+        }
+      },
+      {
+        "contentRoots": [],
+        "contentRootsCount": 0,
+        "dependencies": [
+          {
+            "exported": true,
+            "library": {
+              "codeCache": null,
+              "name": "forwarded.fwd",
+              "presentableName": "forwarded.fwd",
+              "tableId": {
+                "fqName": "com.intellij.platform.workspace.jps.entities.LibraryTableId$ProjectLibraryTableId",
+                "level": "project"
+              }
+            },
+            "scope": "COMPILE"
+          },
+          {
+            "sdk": {
+              "name": "simpleJavaTest-jdk-4b64c",
+              "presentableName": "simpleJavaTest-jdk-4b64c",
+              "type": "JavaSDK"
+            }
+          }
+        ],
+        "dependenciesCount": 2,
+        "entitySource": {
+          "entitySourceFqName": "org.jetbrains.bazel.workspacemodel.entities.BazelModuleEntitySource",
+          "virtualFileUrl": null
+        },
+        "facets": [],
+        "facetsCount": 0,
+        "fqName": "com.intellij.platform.workspace.jps.entities.ModuleEntity",
+        "name": "forwarded.fwd",
+        "type": {
+          "name": "JAVA_MODULE"
+        }
+      },
+      {
+        "contentRoots": [],
+        "contentRootsCount": 0,
+        "dependencies": [
+          {
+            "exported": true,
+            "library": {
+              "codeCache": null,
+              "name": "forwarded.nested/fwd",
+              "presentableName": "forwarded.nested/fwd",
+              "tableId": {
+                "fqName": "com.intellij.platform.workspace.jps.entities.LibraryTableId$ProjectLibraryTableId",
+                "level": "project"
+              }
+            },
+            "scope": "COMPILE"
+          },
+          {
+            "sdk": {
+              "name": "simpleJavaTest-jdk-4b64c",
+              "presentableName": "simpleJavaTest-jdk-4b64c",
+              "type": "JavaSDK"
+            }
+          }
+        ],
+        "dependenciesCount": 2,
+        "entitySource": {
+          "entitySourceFqName": "org.jetbrains.bazel.workspacemodel.entities.BazelModuleEntitySource",
+          "virtualFileUrl": null
+        },
+        "facets": [],
+        "facetsCount": 0,
+        "fqName": "com.intellij.platform.workspace.jps.entities.ModuleEntity",
+        "name": "forwarded.nested/fwd",
+        "type": {
+          "name": "JAVA_MODULE"
+        }
+      },
+      {
+        "contentRoots": [],
+        "contentRootsCount": 0,
+        "dependencies": [
+          {
+            "exported": true,
+            "library": {
+              "codeCache": null,
+              "name": "maven.junit_junit",
+              "presentableName": "maven.junit_junit",
+              "tableId": {
+                "fqName": "com.intellij.platform.workspace.jps.entities.LibraryTableId$ProjectLibraryTableId",
+                "level": "project"
+              }
+            },
+            "scope": "COMPILE"
+          },
+          {
+            "exported": true,
+            "module": "Unknown \"FinalClassMetadata.KnownClass\": com.intellij.platform.workspace.jps.entities.ModuleId",
+            "productionOnTest": true,
+            "scope": "Unknown \"FinalClassMetadata.KnownClass\": com.intellij.platform.workspace.jps.entities.DependencyScope"
+          },
+          {
+            "sdk": {
+              "name": "simpleJavaTest-jdk-4b64c",
+              "presentableName": "simpleJavaTest-jdk-4b64c",
+              "type": "JavaSDK"
+            }
+          }
+        ],
+        "dependenciesCount": 3,
+        "entitySource": {
+          "entitySourceFqName": "org.jetbrains.bazel.workspacemodel.entities.BazelModuleEntitySource",
+          "virtualFileUrl": null
+        },
+        "facets": [],
+        "facetsCount": 0,
+        "fqName": "com.intellij.platform.workspace.jps.entities.ModuleEntity",
+        "name": "maven.junit_junit",
+        "type": {
+          "name": "JAVA_MODULE"
+        }
+      },
+      {
+        "contentRoots": [],
+        "contentRootsCount": 0,
+        "dependencies": [
+          {
+            "exported": true,
+            "library": {
+              "codeCache": null,
+              "name": "maven.org_apiguardian_apiguardian_api",
+              "presentableName": "maven.org_apiguardian_apiguardian_api",
+              "tableId": {
+                "fqName": "com.intellij.platform.workspace.jps.entities.LibraryTableId$ProjectLibraryTableId",
+                "level": "project"
+              }
+            },
+            "scope": "COMPILE"
+          },
+          {
+            "sdk": {
+              "name": "simpleJavaTest-jdk-4b64c",
+              "presentableName": "simpleJavaTest-jdk-4b64c",
+              "type": "JavaSDK"
+            }
+          }
+        ],
+        "dependenciesCount": 2,
+        "entitySource": {
+          "entitySourceFqName": "org.jetbrains.bazel.workspacemodel.entities.BazelModuleEntitySource",
+          "virtualFileUrl": null
+        },
+        "facets": [],
+        "facetsCount": 0,
+        "fqName": "com.intellij.platform.workspace.jps.entities.ModuleEntity",
+        "name": "maven.org_apiguardian_apiguardian_api",
+        "type": {
+          "name": "JAVA_MODULE"
+        }
+      },
+      {
+        "contentRoots": [],
+        "contentRootsCount": 0,
+        "dependencies": [
+          {
+            "exported": true,
+            "library": {
+              "codeCache": null,
+              "name": "maven.org_hamcrest_hamcrest_core",
+              "presentableName": "maven.org_hamcrest_hamcrest_core",
+              "tableId": {
+                "fqName": "com.intellij.platform.workspace.jps.entities.LibraryTableId$ProjectLibraryTableId",
+                "level": "project"
+              }
+            },
+            "scope": "COMPILE"
+          },
+          {
+            "sdk": {
+              "name": "simpleJavaTest-jdk-4b64c",
+              "presentableName": "simpleJavaTest-jdk-4b64c",
+              "type": "JavaSDK"
+            }
+          }
+        ],
+        "dependenciesCount": 2,
+        "entitySource": {
+          "entitySourceFqName": "org.jetbrains.bazel.workspacemodel.entities.BazelModuleEntitySource",
+          "virtualFileUrl": null
+        },
+        "facets": [],
+        "facetsCount": 0,
+        "fqName": "com.intellij.platform.workspace.jps.entities.ModuleEntity",
+        "name": "maven.org_hamcrest_hamcrest_core",
+        "type": {
+          "name": "JAVA_MODULE"
+        }
+      },
+      {
+        "contentRoots": [],
+        "contentRootsCount": 0,
+        "dependencies": [
+          {
+            "exported": true,
+            "library": {
+              "codeCache": null,
+              "name": "maven.org_junit_jupiter_junit_jupiter_api",
+              "presentableName": "maven.org_junit_jupiter_junit_jupiter_api",
+              "tableId": {
+                "fqName": "com.intellij.platform.workspace.jps.entities.LibraryTableId$ProjectLibraryTableId",
+                "level": "project"
+              }
+            },
+            "scope": "COMPILE"
+          },
+          {
+            "exported": true,
+            "module": "Unknown \"FinalClassMetadata.KnownClass\": com.intellij.platform.workspace.jps.entities.ModuleId",
+            "productionOnTest": true,
+            "scope": "Unknown \"FinalClassMetadata.KnownClass\": com.intellij.platform.workspace.jps.entities.DependencyScope"
+          },
+          {
+            "exported": true,
+            "module": "Unknown \"FinalClassMetadata.KnownClass\": com.intellij.platform.workspace.jps.entities.ModuleId",
+            "productionOnTest": true,
+            "scope": "Unknown \"FinalClassMetadata.KnownClass\": com.intellij.platform.workspace.jps.entities.DependencyScope"
+          },
+          {
+            "exported": true,
+            "module": "Unknown \"FinalClassMetadata.KnownClass\": com.intellij.platform.workspace.jps.entities.ModuleId",
+            "productionOnTest": true,
+            "scope": "Unknown \"FinalClassMetadata.KnownClass\": com.intellij.platform.workspace.jps.entities.DependencyScope"
+          },
+          {
+            "sdk": {
+              "name": "simpleJavaTest-jdk-4b64c",
+              "presentableName": "simpleJavaTest-jdk-4b64c",
+              "type": "JavaSDK"
+            }
+          }
+        ],
+        "dependenciesCount": 5,
+        "entitySource": {
+          "entitySourceFqName": "org.jetbrains.bazel.workspacemodel.entities.BazelModuleEntitySource",
+          "virtualFileUrl": null
+        },
+        "facets": [],
+        "facetsCount": 0,
+        "fqName": "com.intellij.platform.workspace.jps.entities.ModuleEntity",
+        "name": "maven.org_junit_jupiter_junit_jupiter_api",
+        "type": {
+          "name": "JAVA_MODULE"
+        }
+      },
+      {
+        "contentRoots": [],
+        "contentRootsCount": 0,
+        "dependencies": [
+          {
+            "exported": true,
+            "library": {
+              "codeCache": null,
+              "name": "maven.org_junit_jupiter_junit_jupiter_engine",
+              "presentableName": "maven.org_junit_jupiter_junit_jupiter_engine",
+              "tableId": {
+                "fqName": "com.intellij.platform.workspace.jps.entities.LibraryTableId$ProjectLibraryTableId",
+                "level": "project"
+              }
+            },
+            "scope": "COMPILE"
+          },
+          {
+            "exported": true,
+            "module": "Unknown \"FinalClassMetadata.KnownClass\": com.intellij.platform.workspace.jps.entities.ModuleId",
+            "productionOnTest": true,
+            "scope": "Unknown \"FinalClassMetadata.KnownClass\": com.intellij.platform.workspace.jps.entities.DependencyScope"
+          },
+          {
+            "exported": true,
+            "module": "Unknown \"FinalClassMetadata.KnownClass\": com.intellij.platform.workspace.jps.entities.ModuleId",
+            "productionOnTest": true,
+            "scope": "Unknown \"FinalClassMetadata.KnownClass\": com.intellij.platform.workspace.jps.entities.DependencyScope"
+          },
+          {
+            "exported": true,
+            "module": "Unknown \"FinalClassMetadata.KnownClass\": com.intellij.platform.workspace.jps.entities.ModuleId",
+            "productionOnTest": true,
+            "scope": "Unknown \"FinalClassMetadata.KnownClass\": com.intellij.platform.workspace.jps.entities.DependencyScope"
+          },
+          {
+            "sdk": {
+              "name": "simpleJavaTest-jdk-4b64c",
+              "presentableName": "simpleJavaTest-jdk-4b64c",
+              "type": "JavaSDK"
+            }
+          }
+        ],
+        "dependenciesCount": 5,
+        "entitySource": {
+          "entitySourceFqName": "org.jetbrains.bazel.workspacemodel.entities.BazelModuleEntitySource",
+          "virtualFileUrl": null
+        },
+        "facets": [],
+        "facetsCount": 0,
+        "fqName": "com.intellij.platform.workspace.jps.entities.ModuleEntity",
+        "name": "maven.org_junit_jupiter_junit_jupiter_engine",
+        "type": {
+          "name": "JAVA_MODULE"
+        }
+      },
+      {
+        "contentRoots": [],
+        "contentRootsCount": 0,
+        "dependencies": [
+          {
+            "exported": true,
+            "library": {
+              "codeCache": null,
+              "name": "maven.org_junit_jupiter_junit_jupiter_params",
+              "presentableName": "maven.org_junit_jupiter_junit_jupiter_params",
+              "tableId": {
+                "fqName": "com.intellij.platform.workspace.jps.entities.LibraryTableId$ProjectLibraryTableId",
+                "level": "project"
+              }
+            },
+            "scope": "COMPILE"
+          },
+          {
+            "exported": true,
+            "module": "Unknown \"FinalClassMetadata.KnownClass\": com.intellij.platform.workspace.jps.entities.ModuleId",
+            "productionOnTest": true,
+            "scope": "Unknown \"FinalClassMetadata.KnownClass\": com.intellij.platform.workspace.jps.entities.DependencyScope"
+          },
+          {
+            "exported": true,
+            "module": "Unknown \"FinalClassMetadata.KnownClass\": com.intellij.platform.workspace.jps.entities.ModuleId",
+            "productionOnTest": true,
+            "scope": "Unknown \"FinalClassMetadata.KnownClass\": com.intellij.platform.workspace.jps.entities.DependencyScope"
+          },
+          {
+            "sdk": {
+              "name": "simpleJavaTest-jdk-4b64c",
+              "presentableName": "simpleJavaTest-jdk-4b64c",
+              "type": "JavaSDK"
+            }
+          }
+        ],
+        "dependenciesCount": 4,
+        "entitySource": {
+          "entitySourceFqName": "org.jetbrains.bazel.workspacemodel.entities.BazelModuleEntitySource",
+          "virtualFileUrl": null
+        },
+        "facets": [],
+        "facetsCount": 0,
+        "fqName": "com.intellij.platform.workspace.jps.entities.ModuleEntity",
+        "name": "maven.org_junit_jupiter_junit_jupiter_params",
+        "type": {
+          "name": "JAVA_MODULE"
+        }
+      },
+      {
+        "contentRoots": [],
+        "contentRootsCount": 0,
+        "dependencies": [
+          {
+            "exported": true,
+            "library": {
+              "codeCache": null,
+              "name": "maven.org_junit_platform_junit_platform_commons",
+              "presentableName": "maven.org_junit_platform_junit_platform_commons",
+              "tableId": {
+                "fqName": "com.intellij.platform.workspace.jps.entities.LibraryTableId$ProjectLibraryTableId",
+                "level": "project"
+              }
+            },
+            "scope": "COMPILE"
+          },
+          {
+            "exported": true,
+            "module": "Unknown \"FinalClassMetadata.KnownClass\": com.intellij.platform.workspace.jps.entities.ModuleId",
+            "productionOnTest": true,
+            "scope": "Unknown \"FinalClassMetadata.KnownClass\": com.intellij.platform.workspace.jps.entities.DependencyScope"
+          },
+          {
+            "sdk": {
+              "name": "simpleJavaTest-jdk-4b64c",
+              "presentableName": "simpleJavaTest-jdk-4b64c",
+              "type": "JavaSDK"
+            }
+          }
+        ],
+        "dependenciesCount": 3,
+        "entitySource": {
+          "entitySourceFqName": "org.jetbrains.bazel.workspacemodel.entities.BazelModuleEntitySource",
+          "virtualFileUrl": null
+        },
+        "facets": [],
+        "facetsCount": 0,
+        "fqName": "com.intellij.platform.workspace.jps.entities.ModuleEntity",
+        "name": "maven.org_junit_platform_junit_platform_commons",
+        "type": {
+          "name": "JAVA_MODULE"
+        }
+      },
+      {
+        "contentRoots": [],
+        "contentRootsCount": 0,
+        "dependencies": [
+          {
+            "exported": true,
+            "library": {
+              "codeCache": null,
+              "name": "maven.org_junit_platform_junit_platform_engine",
+              "presentableName": "maven.org_junit_platform_junit_platform_engine",
+              "tableId": {
+                "fqName": "com.intellij.platform.workspace.jps.entities.LibraryTableId$ProjectLibraryTableId",
+                "level": "project"
+              }
+            },
+            "scope": "COMPILE"
+          },
+          {
+            "exported": true,
+            "module": "Unknown \"FinalClassMetadata.KnownClass\": com.intellij.platform.workspace.jps.entities.ModuleId",
+            "productionOnTest": true,
+            "scope": "Unknown \"FinalClassMetadata.KnownClass\": com.intellij.platform.workspace.jps.entities.DependencyScope"
+          },
+          {
+            "exported": true,
+            "module": "Unknown \"FinalClassMetadata.KnownClass\": com.intellij.platform.workspace.jps.entities.ModuleId",
+            "productionOnTest": true,
+            "scope": "Unknown \"FinalClassMetadata.KnownClass\": com.intellij.platform.workspace.jps.entities.DependencyScope"
+          },
+          {
+            "exported": true,
+            "module": "Unknown \"FinalClassMetadata.KnownClass\": com.intellij.platform.workspace.jps.entities.ModuleId",
+            "productionOnTest": true,
+            "scope": "Unknown \"FinalClassMetadata.KnownClass\": com.intellij.platform.workspace.jps.entities.DependencyScope"
+          },
+          {
+            "sdk": {
+              "name": "simpleJavaTest-jdk-4b64c",
+              "presentableName": "simpleJavaTest-jdk-4b64c",
+              "type": "JavaSDK"
+            }
+          }
+        ],
+        "dependenciesCount": 5,
+        "entitySource": {
+          "entitySourceFqName": "org.jetbrains.bazel.workspacemodel.entities.BazelModuleEntitySource",
+          "virtualFileUrl": null
+        },
+        "facets": [],
+        "facetsCount": 0,
+        "fqName": "com.intellij.platform.workspace.jps.entities.ModuleEntity",
+        "name": "maven.org_junit_platform_junit_platform_engine",
+        "type": {
+          "name": "JAVA_MODULE"
+        }
+      },
+      {
+        "contentRoots": [],
+        "contentRootsCount": 0,
+        "dependencies": [
+          {
+            "exported": true,
+            "library": {
+              "codeCache": null,
+              "name": "maven.org_junit_platform_junit_platform_launcher",
+              "presentableName": "maven.org_junit_platform_junit_platform_launcher",
+              "tableId": {
+                "fqName": "com.intellij.platform.workspace.jps.entities.LibraryTableId$ProjectLibraryTableId",
+                "level": "project"
+              }
+            },
+            "scope": "COMPILE"
+          },
+          {
+            "exported": true,
+            "module": "Unknown \"FinalClassMetadata.KnownClass\": com.intellij.platform.workspace.jps.entities.ModuleId",
+            "productionOnTest": true,
+            "scope": "Unknown \"FinalClassMetadata.KnownClass\": com.intellij.platform.workspace.jps.entities.DependencyScope"
+          },
+          {
+            "exported": true,
+            "module": "Unknown \"FinalClassMetadata.KnownClass\": com.intellij.platform.workspace.jps.entities.ModuleId",
+            "productionOnTest": true,
+            "scope": "Unknown \"FinalClassMetadata.KnownClass\": com.intellij.platform.workspace.jps.entities.DependencyScope"
+          },
+          {
+            "sdk": {
+              "name": "simpleJavaTest-jdk-4b64c",
+              "presentableName": "simpleJavaTest-jdk-4b64c",
+              "type": "JavaSDK"
+            }
+          }
+        ],
+        "dependenciesCount": 4,
+        "entitySource": {
+          "entitySourceFqName": "org.jetbrains.bazel.workspacemodel.entities.BazelModuleEntitySource",
+          "virtualFileUrl": null
+        },
+        "facets": [],
+        "facetsCount": 0,
+        "fqName": "com.intellij.platform.workspace.jps.entities.ModuleEntity",
+        "name": "maven.org_junit_platform_junit_platform_launcher",
+        "type": {
+          "name": "JAVA_MODULE"
+        }
+      },
+      {
+        "contentRoots": [],
+        "contentRootsCount": 0,
+        "dependencies": [
+          {
+            "exported": true,
+            "library": {
+              "codeCache": null,
+              "name": "maven.org_junit_platform_junit_platform_reporting",
+              "presentableName": "maven.org_junit_platform_junit_platform_reporting",
+              "tableId": {
+                "fqName": "com.intellij.platform.workspace.jps.entities.LibraryTableId$ProjectLibraryTableId",
+                "level": "project"
+              }
+            },
+            "scope": "COMPILE"
+          },
+          {
+            "exported": true,
+            "module": "Unknown \"FinalClassMetadata.KnownClass\": com.intellij.platform.workspace.jps.entities.ModuleId",
+            "productionOnTest": true,
+            "scope": "Unknown \"FinalClassMetadata.KnownClass\": com.intellij.platform.workspace.jps.entities.DependencyScope"
+          },
+          {
+            "exported": true,
+            "module": "Unknown \"FinalClassMetadata.KnownClass\": com.intellij.platform.workspace.jps.entities.ModuleId",
+            "productionOnTest": true,
+            "scope": "Unknown \"FinalClassMetadata.KnownClass\": com.intellij.platform.workspace.jps.entities.DependencyScope"
+          },
+          {
+            "exported": true,
+            "module": "Unknown \"FinalClassMetadata.KnownClass\": com.intellij.platform.workspace.jps.entities.ModuleId",
+            "productionOnTest": true,
+            "scope": "Unknown \"FinalClassMetadata.KnownClass\": com.intellij.platform.workspace.jps.entities.DependencyScope"
+          },
+          {
+            "sdk": {
+              "name": "simpleJavaTest-jdk-4b64c",
+              "presentableName": "simpleJavaTest-jdk-4b64c",
+              "type": "JavaSDK"
+            }
+          }
+        ],
+        "dependenciesCount": 5,
+        "entitySource": {
+          "entitySourceFqName": "org.jetbrains.bazel.workspacemodel.entities.BazelModuleEntitySource",
+          "virtualFileUrl": null
+        },
+        "facets": [],
+        "facetsCount": 0,
+        "fqName": "com.intellij.platform.workspace.jps.entities.ModuleEntity",
+        "name": "maven.org_junit_platform_junit_platform_reporting",
+        "type": {
+          "name": "JAVA_MODULE"
+        }
+      },
+      {
+        "contentRoots": [],
+        "contentRootsCount": 0,
+        "dependencies": [
+          {
+            "exported": true,
+            "library": {
+              "codeCache": null,
+              "name": "maven.org_opentest4j_opentest4j",
+              "presentableName": "maven.org_opentest4j_opentest4j",
+              "tableId": {
+                "fqName": "com.intellij.platform.workspace.jps.entities.LibraryTableId$ProjectLibraryTableId",
+                "level": "project"
+              }
+            },
+            "scope": "COMPILE"
+          },
+          {
+            "sdk": {
+              "name": "simpleJavaTest-jdk-4b64c",
+              "presentableName": "simpleJavaTest-jdk-4b64c",
+              "type": "JavaSDK"
+            }
+          }
+        ],
+        "dependenciesCount": 2,
+        "entitySource": {
+          "entitySourceFqName": "org.jetbrains.bazel.workspacemodel.entities.BazelModuleEntitySource",
+          "virtualFileUrl": null
+        },
+        "facets": [],
+        "facetsCount": 0,
+        "fqName": "com.intellij.platform.workspace.jps.entities.ModuleEntity",
+        "name": "maven.org_opentest4j_opentest4j",
+        "type": {
+          "name": "JAVA_MODULE"
+        }
+      },
+      {
+        "contentRoots": [],
+        "contentRootsCount": 0,
+        "dependencies": [
+          {
+            "exported": true,
+            "library": {
+              "codeCache": null,
+              "name": "maven.org_opentest4j_reporting_open_test_reporting_tooling_spi",
+              "presentableName": "maven.org_opentest4j_reporting_open_test_reporting_tooling_spi",
+              "tableId": {
+                "fqName": "com.intellij.platform.workspace.jps.entities.LibraryTableId$ProjectLibraryTableId",
+                "level": "project"
+              }
+            },
+            "scope": "COMPILE"
+          },
+          {
+            "exported": true,
+            "module": "Unknown \"FinalClassMetadata.KnownClass\": com.intellij.platform.workspace.jps.entities.ModuleId",
+            "productionOnTest": true,
+            "scope": "Unknown \"FinalClassMetadata.KnownClass\": com.intellij.platform.workspace.jps.entities.DependencyScope"
+          },
+          {
+            "sdk": {
+              "name": "simpleJavaTest-jdk-4b64c",
+              "presentableName": "simpleJavaTest-jdk-4b64c",
+              "type": "JavaSDK"
+            }
+          }
+        ],
+        "dependenciesCount": 3,
+        "entitySource": {
+          "entitySourceFqName": "org.jetbrains.bazel.workspacemodel.entities.BazelModuleEntitySource",
+          "virtualFileUrl": null
+        },
+        "facets": [],
+        "facetsCount": 0,
+        "fqName": "com.intellij.platform.workspace.jps.entities.ModuleEntity",
+        "name": "maven.org_opentest4j_reporting_open_test_reporting_tooling_spi",
+        "type": {
+          "name": "JAVA_MODULE"
+        }
+      },
+      {
+        "contentRoots": [],
+        "contentRootsCount": 0,
+        "dependencies": [
+          {
+            "exported": true,
+            "module": "Unknown \"FinalClassMetadata.KnownClass\": com.intellij.platform.workspace.jps.entities.ModuleId",
+            "productionOnTest": true,
+            "scope": "Unknown \"FinalClassMetadata.KnownClass\": com.intellij.platform.workspace.jps.entities.DependencyScope"
+          },
+          {
+            "exported": true,
+            "module": "Unknown \"FinalClassMetadata.KnownClass\": com.intellij.platform.workspace.jps.entities.ModuleId",
+            "productionOnTest": true,
+            "scope": "Unknown \"FinalClassMetadata.KnownClass\": com.intellij.platform.workspace.jps.entities.DependencyScope"
+          },
+          {
+            "exported": true,
+            "module": "Unknown \"FinalClassMetadata.KnownClass\": com.intellij.platform.workspace.jps.entities.ModuleId",
+            "productionOnTest": true,
+            "scope": "Unknown \"FinalClassMetadata.KnownClass\": com.intellij.platform.workspace.jps.entities.DependencyScope"
+          },
+          {
+            "sdk": {
+              "name": "simpleJavaTest-jdk-4b64c",
+              "presentableName": "simpleJavaTest-jdk-4b64c",
+              "type": "JavaSDK"
+            }
+          }
+        ],
+        "dependenciesCount": 4,
+        "entitySource": {
+          "entitySourceFqName": "org.jetbrains.bazel.workspacemodel.entities.BazelModuleEntitySource",
+          "virtualFileUrl": null
+        },
+        "facets": [],
+        "facetsCount": 0,
+        "fqName": "com.intellij.platform.workspace.jps.entities.ModuleEntity",
+        "name": "SimpleJavaTest-test-runtime-deps-lib",
+        "type": {
+          "name": "JAVA_MODULE"
+        }
+      },
+      {
+        "contentRoots": [],
+        "contentRootsCount": 0,
+        "dependencies": [
+          {
+            "exported": true,
+            "module": "Unknown \"FinalClassMetadata.KnownClass\": com.intellij.platform.workspace.jps.entities.ModuleId",
+            "productionOnTest": true,
+            "scope": "Unknown \"FinalClassMetadata.KnownClass\": com.intellij.platform.workspace.jps.entities.DependencyScope"
+          },
+          {
+            "exported": true,
+            "module": "Unknown \"FinalClassMetadata.KnownClass\": com.intellij.platform.workspace.jps.entities.ModuleId",
+            "productionOnTest": true,
+            "scope": "Unknown \"FinalClassMetadata.KnownClass\": com.intellij.platform.workspace.jps.entities.DependencyScope"
+          },
+          {
+            "sdk": {
+              "name": "simpleJavaTest-jdk-4b64c",
+              "presentableName": "simpleJavaTest-jdk-4b64c",
+              "type": "JavaSDK"
+            }
+          }
+        ],
+        "dependenciesCount": 3,
+        "entitySource": {
+          "entitySourceFqName": "org.jetbrains.bazel.workspacemodel.entities.BazelModuleEntitySource",
+          "virtualFileUrl": null
+        },
+        "facets": [],
+        "facetsCount": 0,
+        "fqName": "com.intellij.platform.workspace.jps.entities.ModuleEntity",
+        "name": "SimpleJavaTest-test-deps-lib",
+        "type": {
+          "name": "JAVA_MODULE"
+        }
+      },
+      {
+        "contentRoots": [],
+        "contentRootsCount": 0,
+        "dependencies": [
+          {
+            "fqName": "com.intellij.platform.workspace.jps.entities.ModuleSourceDependency"
+          },
+          {
+            "sdk": {
+              "name": "simpleJavaTest-jdk-4b64c",
+              "presentableName": "simpleJavaTest-jdk-4b64c",
+              "type": "JavaSDK"
+            }
+          }
+        ],
+        "dependenciesCount": 2,
+        "entitySource": {
+          "entitySourceFqName": "org.jetbrains.bazel.workspacemodel.entities.BazelModuleEntitySource",
+          "virtualFileUrl": null
+        },
+        "facets": [],
+        "facetsCount": 0,
+        "fqName": "com.intellij.platform.workspace.jps.entities.ModuleEntity",
+        "name": "_aux.synthetic",
+        "type": {
+          "name": "BAZEL_DUMMY_MODULE_TYPE"
+        }
+      },
+      {
+        "contentRoots": [],
+        "contentRootsCount": 0,
+        "dependencies": [
+          {
+            "fqName": "com.intellij.platform.workspace.jps.entities.ModuleSourceDependency"
+          },
+          {
+            "sdk": {
+              "name": "simpleJavaTest-jdk-4b64c",
+              "presentableName": "simpleJavaTest-jdk-4b64c",
+              "type": "JavaSDK"
+            }
+          }
+        ],
+        "dependenciesCount": 2,
+        "entitySource": {
+          "entitySourceFqName": "org.jetbrains.bazel.workspacemodel.entities.BazelModuleEntitySource",
+          "virtualFileUrl": null
+        },
+        "facets": [],
+        "facetsCount": 0,
+        "fqName": "com.intellij.platform.workspace.jps.entities.ModuleEntity",
+        "name": "_aux.synthetic.basenameConflict",
+        "type": {
+          "name": "BAZEL_DUMMY_MODULE_TYPE"
+        }
+      },
+      {
+        "contentRoots": [
+          {
+            "entitySource": {
+              "entitySourceFqName": "org.jetbrains.bazel.workspacemodel.entities.BazelModuleEntitySource",
+              "virtualFileUrl": null
+            },
+            "excludedPatterns": [],
+            "excludedPatternsCount": 0,
+            "excludedUrls": [],
+            "excludedUrlsCount": 0,
+            "fqName": "com.intellij.platform.workspace.jps.entities.ContentRootEntity",
+            "sourceRoots": [
+              {
+                "entitySource": {
+                  "entitySourceFqName": "org.jetbrains.bazel.workspacemodel.entities.BazelModuleEntitySource",
+                  "virtualFileUrl": null
+                },
+                "fqName": "com.intellij.platform.workspace.jps.entities.SourceRootEntity",
+                "rootTypeId": {
+                  "name": "java-source"
+                },
+                "url": "file://external/contrib_rules_jvm~/java/src/com/github/bazel_contrib/contrib_rules_jvm/junit5/SystemExitToggle.java"
+              }
+            ],
+            "sourceRootsCount": 1,
+            "url": "file://external/contrib_rules_jvm~/java/src/com/github/bazel_contrib/contrib_rules_jvm/junit5/SystemExitToggle.java"
+          }
+        ],
+        "contentRootsCount": 1,
+        "dependencies": [
+          {
+            "fqName": "com.intellij.platform.workspace.jps.entities.ModuleSourceDependency"
+          },
+          {
+            "sdk": {
+              "name": "simpleJavaTest-jdk-4b64c",
+              "presentableName": "simpleJavaTest-jdk-4b64c",
+              "type": "JavaSDK"
+            }
+          }
+        ],
+        "dependenciesCount": 2,
+        "entitySource": {
+          "entitySourceFqName": "org.jetbrains.bazel.workspacemodel.entities.BazelModuleEntitySource",
+          "virtualFileUrl": null
+        },
+        "facets": [],
+        "facetsCount": 0,
+        "fqName": "com.intellij.platform.workspace.jps.entities.ModuleEntity",
+        "name": "contrib_rules_jvm.java.src.com.github.bazel_contrib.contrib_rules_jvm.junit5.system-exit-toggle",
+        "type": {
+          "name": "JAVA_MODULE"
+        }
+      },
+      {
+        "contentRoots": [
+          {
+            "entitySource": {
+              "entitySourceFqName": "org.jetbrains.bazel.workspacemodel.entities.BazelModuleEntitySource",
+              "virtualFileUrl": null
+            },
+            "excludedPatterns": [],
+            "excludedPatternsCount": 0,
+            "excludedUrls": [],
+            "excludedUrlsCount": 0,
+            "fqName": "com.intellij.platform.workspace.jps.entities.ContentRootEntity",
+            "sourceRoots": [
+              {
+                "entitySource": {
+                  "entitySourceFqName": "org.jetbrains.bazel.workspacemodel.entities.BazelModuleEntitySource",
+                  "virtualFileUrl": null
+                },
+                "fqName": "com.intellij.platform.workspace.jps.entities.SourceRootEntity",
+                "rootTypeId": {
+                  "name": "java-source"
+                },
+                "url": "file://external/contrib_rules_jvm~/java/src/com/github/bazel_contrib/contrib_rules_jvm/junit5/agent/AgentSystemExitToggle.java"
+              }
+            ],
+            "sourceRootsCount": 1,
+            "url": "file://external/contrib_rules_jvm~/java/src/com/github/bazel_contrib/contrib_rules_jvm/junit5/agent/AgentSystemExitToggle.java"
+          }
+        ],
+        "contentRootsCount": 1,
+        "dependencies": [
+          {
+            "exported": true,
+            "module": "Unknown \"FinalClassMetadata.KnownClass\": com.intellij.platform.workspace.jps.entities.ModuleId",
+            "productionOnTest": true,
+            "scope": "Unknown \"FinalClassMetadata.KnownClass\": com.intellij.platform.workspace.jps.entities.DependencyScope"
+          },
+          {
+            "exported": true,
+            "module": "Unknown \"FinalClassMetadata.KnownClass\": com.intellij.platform.workspace.jps.entities.ModuleId",
+            "productionOnTest": true,
+            "scope": "Unknown \"FinalClassMetadata.KnownClass\": com.intellij.platform.workspace.jps.entities.DependencyScope"
+          },
+          {
+            "fqName": "com.intellij.platform.workspace.jps.entities.ModuleSourceDependency"
+          },
+          {
+            "sdk": {
+              "name": "simpleJavaTest-jdk-4b64c",
+              "presentableName": "simpleJavaTest-jdk-4b64c",
+              "type": "JavaSDK"
+            }
+          }
+        ],
+        "dependenciesCount": 4,
+        "entitySource": {
+          "entitySourceFqName": "org.jetbrains.bazel.workspacemodel.entities.BazelModuleEntitySource",
+          "virtualFileUrl": null
+        },
+        "facets": [],
+        "facetsCount": 0,
+        "fqName": "com.intellij.platform.workspace.jps.entities.ModuleEntity",
+        "name": "contrib_rules_jvm.java.src.com.github.bazel_contrib.contrib_rules_jvm.junit5.agent.toggle",
+        "type": {
+          "name": "JAVA_MODULE"
+        }
+      },
+      {
+        "contentRoots": [
+          {
+            "entitySource": {
+              "entitySourceFqName": "org.jetbrains.bazel.workspacemodel.entities.BazelModuleEntitySource",
+              "virtualFileUrl": null
+            },
+            "excludedPatterns": [],
+            "excludedPatternsCount": 0,
+            "excludedUrls": [],
+            "excludedUrlsCount": 0,
+            "fqName": "com.intellij.platform.workspace.jps.entities.ContentRootEntity",
+            "sourceRoots": [
+              {
+                "entitySource": {
+                  "entitySourceFqName": "org.jetbrains.bazel.workspacemodel.entities.BazelModuleEntitySource",
+                  "virtualFileUrl": null
+                },
+                "fqName": "com.intellij.platform.workspace.jps.entities.SourceRootEntity",
+                "rootTypeId": {
+                  "name": "java-source"
+                },
+                "url": "file://external/contrib_rules_jvm~/java/src/com/github/bazel_contrib/contrib_rules_jvm/junit5/agent/SystemExitAgent.java"
+              }
+            ],
+            "sourceRootsCount": 1,
+            "url": "file://external/contrib_rules_jvm~/java/src/com/github/bazel_contrib/contrib_rules_jvm/junit5/agent/SystemExitAgent.java"
+          }
+        ],
+        "contentRootsCount": 1,
+        "dependencies": [
+          {
+            "fqName": "com.intellij.platform.workspace.jps.entities.ModuleSourceDependency"
+          },
+          {
+            "sdk": {
+              "name": "simpleJavaTest-jdk-4b64c",
+              "presentableName": "simpleJavaTest-jdk-4b64c",
+              "type": "JavaSDK"
+            }
+          }
+        ],
+        "dependenciesCount": 2,
+        "entitySource": {
+          "entitySourceFqName": "org.jetbrains.bazel.workspacemodel.entities.BazelModuleEntitySource",
+          "virtualFileUrl": null
+        },
+        "facets": [],
+        "facetsCount": 0,
+        "fqName": "com.intellij.platform.workspace.jps.entities.ModuleEntity",
+        "name": "contrib_rules_jvm.java.src.com.github.bazel_contrib.contrib_rules_jvm.junit5.agent.agent_core",
+        "type": {
+          "name": "JAVA_MODULE"
+        }
+      },
+      {
+        "contentRoots": [
+          {
+            "entitySource": {
+              "entitySourceFqName": "org.jetbrains.bazel.workspacemodel.entities.BazelModuleEntitySource",
+              "virtualFileUrl": null
+            },
+            "excludedPatterns": [],
+            "excludedPatternsCount": 0,
+            "excludedUrls": [],
+            "excludedUrlsCount": 0,
+            "fqName": "com.intellij.platform.workspace.jps.entities.ContentRootEntity",
+            "sourceRoots": [
+              {
+                "entitySource": {
+                  "entitySourceFqName": "org.jetbrains.bazel.workspacemodel.entities.BazelModuleEntitySource",
+                  "virtualFileUrl": null
+                },
+                "fqName": "com.intellij.platform.workspace.jps.entities.SourceRootEntity",
+                "rootTypeId": {
+                  "name": "java-test"
+                },
+                "url": "file://Simple2Test.java"
+              }
+            ],
+            "sourceRootsCount": 1,
+            "url": "file://Simple2Test.java"
+          }
+        ],
+        "contentRootsCount": 1,
+        "dependencies": [
+          {
+            "exported": false,
+            "module": "Unknown \"FinalClassMetadata.KnownClass\": com.intellij.platform.workspace.jps.entities.ModuleId",
+            "productionOnTest": true,
+            "scope": "Unknown \"FinalClassMetadata.KnownClass\": com.intellij.platform.workspace.jps.entities.DependencyScope"
+          },
+          {
+            "exported": false,
+            "module": "Unknown \"FinalClassMetadata.KnownClass\": com.intellij.platform.workspace.jps.entities.ModuleId",
+            "productionOnTest": true,
+            "scope": "Unknown \"FinalClassMetadata.KnownClass\": com.intellij.platform.workspace.jps.entities.DependencyScope"
+          },
+          {
+            "exported": true,
+            "module": "Unknown \"FinalClassMetadata.KnownClass\": com.intellij.platform.workspace.jps.entities.ModuleId",
+            "productionOnTest": true,
+            "scope": "Unknown \"FinalClassMetadata.KnownClass\": com.intellij.platform.workspace.jps.entities.DependencyScope"
+          },
+          {
+            "fqName": "com.intellij.platform.workspace.jps.entities.ModuleSourceDependency"
+          },
+          {
+            "sdk": {
+              "name": "simpleJavaTest-jdk-4b64c",
+              "presentableName": "simpleJavaTest-jdk-4b64c",
+              "type": "JavaSDK"
+            }
+          }
+        ],
+        "dependenciesCount": 5,
+        "entitySource": {
+          "entitySourceFqName": "org.jetbrains.bazel.workspacemodel.entities.BazelModuleEntitySource",
+          "virtualFileUrl": null
+        },
+        "facets": [],
+        "facetsCount": 0,
+        "fqName": "com.intellij.platform.workspace.jps.entities.ModuleEntity",
+        "name": "Simple2Test",
+        "type": {
+          "name": "JAVA_MODULE"
+        }
+      },
+      {
+        "contentRoots": [
+          {
+            "entitySource": {
+              "entitySourceFqName": "org.jetbrains.bazel.workspacemodel.entities.BazelModuleEntitySource",
+              "virtualFileUrl": null
+            },
+            "excludedPatterns": [],
+            "excludedPatternsCount": 0,
+            "excludedUrls": [],
+            "excludedUrlsCount": 0,
+            "fqName": "com.intellij.platform.workspace.jps.entities.ContentRootEntity",
+            "sourceRoots": [
+              {
+                "entitySource": {
+                  "entitySourceFqName": "org.jetbrains.bazel.workspacemodel.entities.BazelModuleEntitySource",
+                  "virtualFileUrl": null
+                },
+                "fqName": "com.intellij.platform.workspace.jps.entities.SourceRootEntity",
+                "rootTypeId": {
+                  "name": "java-test"
+                },
+                "url": "file://SimpleTest.java"
+              }
+            ],
+            "sourceRootsCount": 1,
+            "url": "file://SimpleTest.java"
+          }
+        ],
+        "contentRootsCount": 1,
+        "dependencies": [
+          {
+            "exported": false,
+            "module": "Unknown \"FinalClassMetadata.KnownClass\": com.intellij.platform.workspace.jps.entities.ModuleId",
+            "productionOnTest": true,
+            "scope": "Unknown \"FinalClassMetadata.KnownClass\": com.intellij.platform.workspace.jps.entities.DependencyScope"
+          },
+          {
+            "exported": false,
+            "module": "Unknown \"FinalClassMetadata.KnownClass\": com.intellij.platform.workspace.jps.entities.ModuleId",
+            "productionOnTest": true,
+            "scope": "Unknown \"FinalClassMetadata.KnownClass\": com.intellij.platform.workspace.jps.entities.DependencyScope"
+          },
+          {
+            "exported": true,
+            "module": "Unknown \"FinalClassMetadata.KnownClass\": com.intellij.platform.workspace.jps.entities.ModuleId",
+            "productionOnTest": true,
+            "scope": "Unknown \"FinalClassMetadata.KnownClass\": com.intellij.platform.workspace.jps.entities.DependencyScope"
+          },
+          {
+            "fqName": "com.intellij.platform.workspace.jps.entities.ModuleSourceDependency"
+          },
+          {
+            "sdk": {
+              "name": "simpleJavaTest-jdk-4b64c",
+              "presentableName": "simpleJavaTest-jdk-4b64c",
+              "type": "JavaSDK"
+            }
+          }
+        ],
+        "dependenciesCount": 5,
+        "entitySource": {
+          "entitySourceFqName": "org.jetbrains.bazel.workspacemodel.entities.BazelModuleEntitySource",
+          "virtualFileUrl": null
+        },
+        "facets": [],
+        "facetsCount": 0,
+        "fqName": "com.intellij.platform.workspace.jps.entities.ModuleEntity",
+        "name": "SimpleTest",
+        "type": {
+          "name": "JAVA_MODULE"
+        }
+      },
+      {
+        "contentRoots": [
+          {
+            "entitySource": {
+              "entitySourceFqName": "org.jetbrains.bazel.workspacemodel.entities.BazelModuleEntitySource",
+              "virtualFileUrl": null
+            },
+            "excludedPatterns": [],
+            "excludedPatternsCount": 0,
+            "excludedUrls": [],
+            "excludedUrlsCount": 0,
+            "fqName": "com.intellij.platform.workspace.jps.entities.ContentRootEntity",
+            "sourceRoots": [
+              {
+                "entitySource": {
+                  "entitySourceFqName": "org.jetbrains.bazel.workspacemodel.entities.BazelModuleEntitySource",
+                  "virtualFileUrl": null
+                },
+                "fqName": "com.intellij.platform.workspace.jps.entities.SourceRootEntity",
+                "rootTypeId": {
+                  "name": "java-test"
+                },
+                "url": "file://basenameConflict/SimpleTest.java"
+              }
+            ],
+            "sourceRootsCount": 1,
+            "url": "file://basenameConflict/SimpleTest.java"
+          }
+        ],
+        "contentRootsCount": 1,
+        "dependencies": [
+          {
+            "exported": true,
+            "module": "Unknown \"FinalClassMetadata.KnownClass\": com.intellij.platform.workspace.jps.entities.ModuleId",
+            "productionOnTest": true,
+            "scope": "Unknown \"FinalClassMetadata.KnownClass\": com.intellij.platform.workspace.jps.entities.DependencyScope"
+          },
+          {
+            "fqName": "com.intellij.platform.workspace.jps.entities.ModuleSourceDependency"
+          },
+          {
+            "sdk": {
+              "name": "simpleJavaTest-jdk-4b64c",
+              "presentableName": "simpleJavaTest-jdk-4b64c",
+              "type": "JavaSDK"
+            }
+          }
+        ],
+        "dependenciesCount": 3,
+        "entitySource": {
+          "entitySourceFqName": "org.jetbrains.bazel.workspacemodel.entities.BazelModuleEntitySource",
+          "virtualFileUrl": null
+        },
+        "facets": [],
+        "facetsCount": 0,
+        "fqName": "com.intellij.platform.workspace.jps.entities.ModuleEntity",
+        "name": "basenameConflict.basename",
+        "type": {
+          "name": "JAVA_MODULE"
+        }
+      },
+      {
+        "contentRoots": [
+          {
+            "entitySource": {
+              "entitySourceFqName": "org.jetbrains.bazel.workspacemodel.entities.BazelModuleEntitySource",
+              "virtualFileUrl": null
+            },
+            "excludedPatterns": [],
+            "excludedPatternsCount": 0,
+            "excludedUrls": [],
+            "excludedUrlsCount": 0,
+            "fqName": "com.intellij.platform.workspace.jps.entities.ContentRootEntity",
+            "sourceRoots": [
+              {
+                "entitySource": {
+                  "entitySourceFqName": "org.jetbrains.bazel.workspacemodel.entities.BazelModuleEntitySource",
+                  "virtualFileUrl": null
+                },
+                "fqName": "com.intellij.platform.workspace.jps.entities.SourceRootEntity",
+                "rootTypeId": {
+                  "name": "java-test"
+                },
+                "url": "file://basenameConflict/nested"
+              }
+            ],
+            "sourceRootsCount": 1,
+            "url": "file://basenameConflict/nested"
+          }
+        ],
+        "contentRootsCount": 1,
+        "dependencies": [
+          {
+            "exported": true,
+            "module": "Unknown \"FinalClassMetadata.KnownClass\": com.intellij.platform.workspace.jps.entities.ModuleId",
+            "productionOnTest": true,
+            "scope": "Unknown \"FinalClassMetadata.KnownClass\": com.intellij.platform.workspace.jps.entities.DependencyScope"
+          },
+          {
+            "fqName": "com.intellij.platform.workspace.jps.entities.ModuleSourceDependency"
+          },
+          {
+            "sdk": {
+              "name": "simpleJavaTest-jdk-4b64c",
+              "presentableName": "simpleJavaTest-jdk-4b64c",
+              "type": "JavaSDK"
+            }
+          }
+        ],
+        "dependenciesCount": 3,
+        "entitySource": {
+          "entitySourceFqName": "org.jetbrains.bazel.workspacemodel.entities.BazelModuleEntitySource",
+          "virtualFileUrl": null
+        },
+        "facets": [],
+        "facetsCount": 0,
+        "fqName": "com.intellij.platform.workspace.jps.entities.ModuleEntity",
+        "name": "basenameConflict.nested/basename",
+        "type": {
+          "name": "JAVA_MODULE"
+        }
+      }
+    ],
+    "rootEntitiesCount": 26,
+    "rootEntityName": "ModuleEntity"
+  },
+  {
+    "entities": [
+      {
+        "entitySource": {
+          "entitySourceFqName": "org.jetbrains.bazel.workspacemodel.entities.BazelProjectEntitySource",
+          "virtualFileUrl": null
+        },
+        "excludeId": {
+          "id": 0,
+          "presentableName": "CompiledSourceCodeInsideJarExcludeId(id=0)"
+        },
+        "fqName": "org.jetbrains.bazel.workspacemodel.entities.CompiledSourceCodeInsideJarExcludeEntity"
+      }
+    ],
+    "rootEntitiesCount": 1,
+    "rootEntityName": "CompiledSourceCodeInsideJarExcludeEntity"
+  },
+  {
+    "entities": [
+      {
+        "entitySource": {
+          "entitySourceFqName": "org.jetbrains.bazel.workspacemodel.entities.BazelProjectEntitySource",
+          "virtualFileUrl": null
+        },
+        "excludedRoots": [],
+        "excludedRootsCount": 0,
+        "fqName": "com.intellij.platform.workspace.jps.entities.LibraryEntity",
+        "name": "contrib_rules_jvm.java.src.com.github.bazel_contrib.contrib_rules_jvm.junit5.junit5",
+        "roots": [
+          {
+            "inclusionOptions": "ROOT_ITSELF",
+            "type": {
+              "name": "CLASSES"
+            },
+            "url": "jar://bazel-out/darwin_arm64-fastbuild/bin/external/contrib_rules_jvm~/java/src/com/github/bazel_contrib/contrib_rules_jvm/junit5/junit5-runner.jar!"
+          }
+        ],
+        "rootsCount": 1,
+        "tableId": {
+          "fqName": "com.intellij.platform.workspace.jps.entities.LibraryTableId$ProjectLibraryTableId",
+          "level": "project"
+        },
+        "typeId": {
+          "name": "java-imported"
+        }
+      },
+      {
+        "entitySource": {
+          "entitySourceFqName": "org.jetbrains.bazel.workspacemodel.entities.BazelProjectEntitySource",
+          "virtualFileUrl": null
+        },
+        "excludedRoots": [],
+        "excludedRootsCount": 0,
+        "fqName": "com.intellij.platform.workspace.jps.entities.LibraryEntity",
+        "name": "forwarded.fwd",
+        "roots": [
+          {
+            "inclusionOptions": "ROOT_ITSELF",
+            "type": {
+              "name": "CLASSES"
+            },
+            "url": "jar://bazel-out/darwin_arm64-fastbuild/bin/basenameConflict/basename.jar!"
+          },
+          {
+            "inclusionOptions": "ROOT_ITSELF",
+            "type": {
+              "name": "SOURCES"
+            },
+            "url": "jar://bazel-out/darwin_arm64-fastbuild/bin/basenameConflict/basename-src.jar!"
+          }
+        ],
+        "rootsCount": 2,
+        "tableId": {
+          "fqName": "com.intellij.platform.workspace.jps.entities.LibraryTableId$ProjectLibraryTableId",
+          "level": "project"
+        },
+        "typeId": {
+          "name": "java-imported"
+        }
+      },
+      {
+        "entitySource": {
+          "entitySourceFqName": "org.jetbrains.bazel.workspacemodel.entities.BazelProjectEntitySource",
+          "virtualFileUrl": null
+        },
+        "excludedRoots": [],
+        "excludedRootsCount": 0,
+        "fqName": "com.intellij.platform.workspace.jps.entities.LibraryEntity",
+        "name": "forwarded.nested/fwd",
+        "roots": [
+          {
+            "inclusionOptions": "ROOT_ITSELF",
+            "type": {
+              "name": "CLASSES"
+            },
+            "url": "jar://bazel-out/darwin_arm64-fastbuild/bin/basenameConflict/nested/basename.jar!"
+          },
+          {
+            "inclusionOptions": "ROOT_ITSELF",
+            "type": {
+              "name": "SOURCES"
+            },
+            "url": "jar://bazel-out/darwin_arm64-fastbuild/bin/basenameConflict/nested/basename-src.jar!"
+          }
+        ],
+        "rootsCount": 2,
+        "tableId": {
+          "fqName": "com.intellij.platform.workspace.jps.entities.LibraryTableId$ProjectLibraryTableId",
+          "level": "project"
+        },
+        "typeId": {
+          "name": "java-imported"
+        }
+      },
+      {
+        "entitySource": {
+          "entitySourceFqName": "org.jetbrains.bazel.workspacemodel.entities.BazelProjectEntitySource",
+          "virtualFileUrl": null
+        },
+        "excludedRoots": [],
+        "excludedRootsCount": 0,
+        "fqName": "com.intellij.platform.workspace.jps.entities.LibraryEntity",
+        "name": "maven.junit_junit",
+        "roots": [
+          {
+            "inclusionOptions": "ROOT_ITSELF",
+            "type": {
+              "name": "CLASSES"
+            },
+            "url": "jar://bazel-out/darwin_arm64-fastbuild/bin/external/rules_jvm_external~~maven~maven/v1/https/repo1.maven.org/maven2/junit/junit/4.13.2/processed_junit-4.13.2.jar!"
+          }
+        ],
+        "rootsCount": 1,
+        "tableId": {
+          "fqName": "com.intellij.platform.workspace.jps.entities.LibraryTableId$ProjectLibraryTableId",
+          "level": "project"
+        },
+        "typeId": {
+          "name": "java-imported"
+        }
+      },
+      {
+        "entitySource": {
+          "entitySourceFqName": "org.jetbrains.bazel.workspacemodel.entities.BazelProjectEntitySource",
+          "virtualFileUrl": null
+        },
+        "excludedRoots": [],
+        "excludedRootsCount": 0,
+        "fqName": "com.intellij.platform.workspace.jps.entities.LibraryEntity",
+        "name": "maven.org_apiguardian_apiguardian_api",
+        "roots": [
+          {
+            "inclusionOptions": "ROOT_ITSELF",
+            "type": {
+              "name": "CLASSES"
+            },
+            "url": "jar://bazel-out/darwin_arm64-fastbuild/bin/external/rules_jvm_external~~maven~maven/v1/https/repo1.maven.org/maven2/org/apiguardian/apiguardian-api/1.1.2/processed_apiguardian-api-1.1.2.jar!"
+          }
+        ],
+        "rootsCount": 1,
+        "tableId": {
+          "fqName": "com.intellij.platform.workspace.jps.entities.LibraryTableId$ProjectLibraryTableId",
+          "level": "project"
+        },
+        "typeId": {
+          "name": "java-imported"
+        }
+      },
+      {
+        "entitySource": {
+          "entitySourceFqName": "org.jetbrains.bazel.workspacemodel.entities.BazelProjectEntitySource",
+          "virtualFileUrl": null
+        },
+        "excludedRoots": [],
+        "excludedRootsCount": 0,
+        "fqName": "com.intellij.platform.workspace.jps.entities.LibraryEntity",
+        "name": "maven.org_hamcrest_hamcrest_core",
+        "roots": [
+          {
+            "inclusionOptions": "ROOT_ITSELF",
+            "type": {
+              "name": "CLASSES"
+            },
+            "url": "jar://bazel-out/darwin_arm64-fastbuild/bin/external/rules_jvm_external~~maven~maven/v1/https/repo1.maven.org/maven2/org/hamcrest/hamcrest-core/1.3/processed_hamcrest-core-1.3.jar!"
+          }
+        ],
+        "rootsCount": 1,
+        "tableId": {
+          "fqName": "com.intellij.platform.workspace.jps.entities.LibraryTableId$ProjectLibraryTableId",
+          "level": "project"
+        },
+        "typeId": {
+          "name": "java-imported"
+        }
+      },
+      {
+        "entitySource": {
+          "entitySourceFqName": "org.jetbrains.bazel.workspacemodel.entities.BazelProjectEntitySource",
+          "virtualFileUrl": null
+        },
+        "excludedRoots": [],
+        "excludedRootsCount": 0,
+        "fqName": "com.intellij.platform.workspace.jps.entities.LibraryEntity",
+        "name": "maven.org_junit_jupiter_junit_jupiter_api",
+        "roots": [
+          {
+            "inclusionOptions": "ROOT_ITSELF",
+            "type": {
+              "name": "CLASSES"
+            },
+            "url": "jar://bazel-out/darwin_arm64-fastbuild/bin/external/rules_jvm_external~~maven~maven/v1/https/repo1.maven.org/maven2/org/junit/jupiter/junit-jupiter-api/5.12.1/processed_junit-jupiter-api-5.12.1.jar!"
+          }
+        ],
+        "rootsCount": 1,
+        "tableId": {
+          "fqName": "com.intellij.platform.workspace.jps.entities.LibraryTableId$ProjectLibraryTableId",
+          "level": "project"
+        },
+        "typeId": {
+          "name": "java-imported"
+        }
+      },
+      {
+        "entitySource": {
+          "entitySourceFqName": "org.jetbrains.bazel.workspacemodel.entities.BazelProjectEntitySource",
+          "virtualFileUrl": null
+        },
+        "excludedRoots": [],
+        "excludedRootsCount": 0,
+        "fqName": "com.intellij.platform.workspace.jps.entities.LibraryEntity",
+        "name": "maven.org_junit_jupiter_junit_jupiter_engine",
+        "roots": [
+          {
+            "inclusionOptions": "ROOT_ITSELF",
+            "type": {
+              "name": "CLASSES"
+            },
+            "url": "jar://bazel-out/darwin_arm64-fastbuild/bin/external/rules_jvm_external~~maven~maven/v1/https/repo1.maven.org/maven2/org/junit/jupiter/junit-jupiter-engine/5.12.1/processed_junit-jupiter-engine-5.12.1.jar!"
+          }
+        ],
+        "rootsCount": 1,
+        "tableId": {
+          "fqName": "com.intellij.platform.workspace.jps.entities.LibraryTableId$ProjectLibraryTableId",
+          "level": "project"
+        },
+        "typeId": {
+          "name": "java-imported"
+        }
+      },
+      {
+        "entitySource": {
+          "entitySourceFqName": "org.jetbrains.bazel.workspacemodel.entities.BazelProjectEntitySource",
+          "virtualFileUrl": null
+        },
+        "excludedRoots": [],
+        "excludedRootsCount": 0,
+        "fqName": "com.intellij.platform.workspace.jps.entities.LibraryEntity",
+        "name": "maven.org_junit_jupiter_junit_jupiter_params",
+        "roots": [
+          {
+            "inclusionOptions": "ROOT_ITSELF",
+            "type": {
+              "name": "CLASSES"
+            },
+            "url": "jar://bazel-out/darwin_arm64-fastbuild/bin/external/rules_jvm_external~~maven~maven/v1/https/repo1.maven.org/maven2/org/junit/jupiter/junit-jupiter-params/5.12.1/processed_junit-jupiter-params-5.12.1.jar!"
+          }
+        ],
+        "rootsCount": 1,
+        "tableId": {
+          "fqName": "com.intellij.platform.workspace.jps.entities.LibraryTableId$ProjectLibraryTableId",
+          "level": "project"
+        },
+        "typeId": {
+          "name": "java-imported"
+        }
+      },
+      {
+        "entitySource": {
+          "entitySourceFqName": "org.jetbrains.bazel.workspacemodel.entities.BazelProjectEntitySource",
+          "virtualFileUrl": null
+        },
+        "excludedRoots": [],
+        "excludedRootsCount": 0,
+        "fqName": "com.intellij.platform.workspace.jps.entities.LibraryEntity",
+        "name": "maven.org_junit_platform_junit_platform_commons",
+        "roots": [
+          {
+            "inclusionOptions": "ROOT_ITSELF",
+            "type": {
+              "name": "CLASSES"
+            },
+            "url": "jar://bazel-out/darwin_arm64-fastbuild/bin/external/rules_jvm_external~~maven~maven/v1/https/repo1.maven.org/maven2/org/junit/platform/junit-platform-commons/1.12.1/processed_junit-platform-commons-1.12.1.jar!"
+          }
+        ],
+        "rootsCount": 1,
+        "tableId": {
+          "fqName": "com.intellij.platform.workspace.jps.entities.LibraryTableId$ProjectLibraryTableId",
+          "level": "project"
+        },
+        "typeId": {
+          "name": "java-imported"
+        }
+      },
+      {
+        "entitySource": {
+          "entitySourceFqName": "org.jetbrains.bazel.workspacemodel.entities.BazelProjectEntitySource",
+          "virtualFileUrl": null
+        },
+        "excludedRoots": [],
+        "excludedRootsCount": 0,
+        "fqName": "com.intellij.platform.workspace.jps.entities.LibraryEntity",
+        "name": "maven.org_junit_platform_junit_platform_engine",
+        "roots": [
+          {
+            "inclusionOptions": "ROOT_ITSELF",
+            "type": {
+              "name": "CLASSES"
+            },
+            "url": "jar://bazel-out/darwin_arm64-fastbuild/bin/external/rules_jvm_external~~maven~maven/v1/https/repo1.maven.org/maven2/org/junit/platform/junit-platform-engine/1.12.1/processed_junit-platform-engine-1.12.1.jar!"
+          }
+        ],
+        "rootsCount": 1,
+        "tableId": {
+          "fqName": "com.intellij.platform.workspace.jps.entities.LibraryTableId$ProjectLibraryTableId",
+          "level": "project"
+        },
+        "typeId": {
+          "name": "java-imported"
+        }
+      },
+      {
+        "entitySource": {
+          "entitySourceFqName": "org.jetbrains.bazel.workspacemodel.entities.BazelProjectEntitySource",
+          "virtualFileUrl": null
+        },
+        "excludedRoots": [],
+        "excludedRootsCount": 0,
+        "fqName": "com.intellij.platform.workspace.jps.entities.LibraryEntity",
+        "name": "maven.org_junit_platform_junit_platform_launcher",
+        "roots": [
+          {
+            "inclusionOptions": "ROOT_ITSELF",
+            "type": {
+              "name": "CLASSES"
+            },
+            "url": "jar://bazel-out/darwin_arm64-fastbuild/bin/external/rules_jvm_external~~maven~maven/v1/https/repo1.maven.org/maven2/org/junit/platform/junit-platform-launcher/1.12.1/processed_junit-platform-launcher-1.12.1.jar!"
+          }
+        ],
+        "rootsCount": 1,
+        "tableId": {
+          "fqName": "com.intellij.platform.workspace.jps.entities.LibraryTableId$ProjectLibraryTableId",
+          "level": "project"
+        },
+        "typeId": {
+          "name": "java-imported"
+        }
+      },
+      {
+        "entitySource": {
+          "entitySourceFqName": "org.jetbrains.bazel.workspacemodel.entities.BazelProjectEntitySource",
+          "virtualFileUrl": null
+        },
+        "excludedRoots": [],
+        "excludedRootsCount": 0,
+        "fqName": "com.intellij.platform.workspace.jps.entities.LibraryEntity",
+        "name": "maven.org_junit_platform_junit_platform_reporting",
+        "roots": [
+          {
+            "inclusionOptions": "ROOT_ITSELF",
+            "type": {
+              "name": "CLASSES"
+            },
+            "url": "jar://bazel-out/darwin_arm64-fastbuild/bin/external/rules_jvm_external~~maven~maven/v1/https/repo1.maven.org/maven2/org/junit/platform/junit-platform-reporting/1.12.1/processed_junit-platform-reporting-1.12.1.jar!"
+          }
+        ],
+        "rootsCount": 1,
+        "tableId": {
+          "fqName": "com.intellij.platform.workspace.jps.entities.LibraryTableId$ProjectLibraryTableId",
+          "level": "project"
+        },
+        "typeId": {
+          "name": "java-imported"
+        }
+      },
+      {
+        "entitySource": {
+          "entitySourceFqName": "org.jetbrains.bazel.workspacemodel.entities.BazelProjectEntitySource",
+          "virtualFileUrl": null
+        },
+        "excludedRoots": [],
+        "excludedRootsCount": 0,
+        "fqName": "com.intellij.platform.workspace.jps.entities.LibraryEntity",
+        "name": "maven.org_opentest4j_opentest4j",
+        "roots": [
+          {
+            "inclusionOptions": "ROOT_ITSELF",
+            "type": {
+              "name": "CLASSES"
+            },
+            "url": "jar://bazel-out/darwin_arm64-fastbuild/bin/external/rules_jvm_external~~maven~maven/v1/https/repo1.maven.org/maven2/org/opentest4j/opentest4j/1.3.0/processed_opentest4j-1.3.0.jar!"
+          }
+        ],
+        "rootsCount": 1,
+        "tableId": {
+          "fqName": "com.intellij.platform.workspace.jps.entities.LibraryTableId$ProjectLibraryTableId",
+          "level": "project"
+        },
+        "typeId": {
+          "name": "java-imported"
+        }
+      },
+      {
+        "entitySource": {
+          "entitySourceFqName": "org.jetbrains.bazel.workspacemodel.entities.BazelProjectEntitySource",
+          "virtualFileUrl": null
+        },
+        "excludedRoots": [],
+        "excludedRootsCount": 0,
+        "fqName": "com.intellij.platform.workspace.jps.entities.LibraryEntity",
+        "name": "maven.org_opentest4j_reporting_open_test_reporting_tooling_spi",
+        "roots": [
+          {
+            "inclusionOptions": "ROOT_ITSELF",
+            "type": {
+              "name": "CLASSES"
+            },
+            "url": "jar://bazel-out/darwin_arm64-fastbuild/bin/external/rules_jvm_external~~maven~maven/v1/https/repo1.maven.org/maven2/org/opentest4j/reporting/open-test-reporting-tooling-spi/0.2.0/processed_open-test-reporting-tooling-spi-0.2.0.jar!"
+          }
+        ],
+        "rootsCount": 1,
+        "tableId": {
+          "fqName": "com.intellij.platform.workspace.jps.entities.LibraryTableId$ProjectLibraryTableId",
+          "level": "project"
+        },
+        "typeId": {
+          "name": "java-imported"
+        }
+      }
+    ],
+    "rootEntitiesCount": 15,
+    "rootEntityName": "LibraryEntity"
+  }
+]
