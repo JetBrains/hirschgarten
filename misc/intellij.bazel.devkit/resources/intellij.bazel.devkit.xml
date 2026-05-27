@@ -9,6 +9,8 @@
     <module name="intellij.java.execution"/>
     <module name="intellij.java.execution.impl"/>
     <module name="intellij.java.impl"/>
+    <module name="intellij.platform.smRunner"/>
+    <module name="intellij.platform.testRunner"/>
   </dependencies>
   <!-- endregion -->
 

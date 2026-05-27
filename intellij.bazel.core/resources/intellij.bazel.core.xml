@@ -66,6 +66,8 @@
     <module name="intellij.libraries.grpc"/>
     <module name="intellij.libraries.jackson.dataformat.xml"/>
     <module name="intellij.platform.searchEverywhere"/>
+    <module name="intellij.platform.smRunner"/>
+    <module name="intellij.platform.testRunner"/>
     <module name="intellij.platform.vcs"/>
   </dependencies>
   <!-- endregion -->

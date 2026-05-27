@@ -5,6 +5,8 @@
     <module name="intellij.bazel.core"/>
     <module name="intellij.bazel.java.common"/>
     <module name="intellij.java.execution.impl"/>
+    <module name="intellij.platform.smRunner"/>
+    <module name="intellij.platform.testRunner"/>
     <module name="intellij.profiler.common"/>
     <module name="intellij.profiler.ultimate"/>
   </dependencies>
