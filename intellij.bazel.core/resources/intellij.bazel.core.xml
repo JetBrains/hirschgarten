@@ -279,6 +279,8 @@
       implementationClass="org.jetbrains.bazel.languages.starlark.parser.StarlarkParserDefinition"
       language="Starlark"
     />
+    <fileBasedIndex implementation="org.jetbrains.bazel.languages.starlark.index.StarlarkLoadsIndexExtension"/>
+
     <lang.syntaxHighlighterFactory
       implementationClass="org.jetbrains.bazel.languages.starlark.highlighting.StarlarkSyntaxHighlighterFactory"
       language="Starlark"

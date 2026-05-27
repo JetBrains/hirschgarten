@@ -41,8 +41,8 @@ class StarlarkLoadDuplicateSymbolsInspection : LocalInspectionTool() {
 
     private fun extractBinding(value: StarlarkLoadValue): LoadBinding? = when (value) {
       is StarlarkStringLoadValue -> {
-        val localPsi = value.getStringExpression() ?: return null
-        val localName = value.getImportedSymbolName() ?: return null
+        val localPsi = value.getLoadValueExpression() ?: return null
+        val localName = localPsi.getStringContents()
         LoadBinding(localName, localPsi)
       }
       is StarlarkNamedLoadValue -> {

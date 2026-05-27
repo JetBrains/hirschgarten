@@ -8,7 +8,6 @@ import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.languages.starlark.StarlarkBundle
 import org.jetbrains.bazel.languages.starlark.StarlarkFileType
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkElementVisitor
-import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkStringLiteralExpression
 import org.jetbrains.bazel.languages.starlark.psi.statements.StarlarkNamedLoadValue
 import org.jetbrains.bazel.languages.starlark.psi.statements.StarlarkStringLoadValue
 
@@ -21,7 +20,7 @@ class StarlarkLoadPrivateSymbolInspection : LocalInspectionTool() {
 
   class LoadPrivateSymbolVisitor(private val holder: ProblemsHolder) : StarlarkElementVisitor() {
     override fun visitStringLoadValue(node: StarlarkStringLoadValue) {
-      val name = node.getStringExpression()?.getStringContents() ?: return
+      val name = node.getLoadValueExpressionContent() ?: return
       if (name.firstOrNull() == '_') {
         holder.registerProblem(
           node,
@@ -31,7 +30,7 @@ class StarlarkLoadPrivateSymbolInspection : LocalInspectionTool() {
     }
 
     override fun visitNamedLoadValue(node: StarlarkNamedLoadValue) {
-      val name = (node.lastChild as? StarlarkStringLiteralExpression)?.getStringContents() ?: return
+      val name = node.getLoadValueExpressionContent() ?: return
       if (name.firstOrNull() == '_') {
         holder.registerProblem(
           node,

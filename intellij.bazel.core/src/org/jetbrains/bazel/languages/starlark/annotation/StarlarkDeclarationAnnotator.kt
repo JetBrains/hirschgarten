@@ -3,16 +3,20 @@ package org.jetbrains.bazel.languages.starlark.annotation
 import com.intellij.lang.annotation.AnnotationHolder
 import com.intellij.lang.annotation.HighlightSeverity
 import com.intellij.openapi.editor.markup.TextAttributes
+import com.intellij.openapi.project.DumbService
 import com.intellij.psi.PsiElement
+import com.intellij.psi.search.GlobalSearchScope
+import com.intellij.psi.search.LocalSearchScope
 import com.intellij.psi.search.searches.ReferencesSearch
 import com.intellij.psi.util.elementType
 import com.intellij.ui.JBColor
 import org.jetbrains.bazel.languages.starlark.StarlarkBundle
 import org.jetbrains.bazel.languages.starlark.elements.StarlarkTokenTypes
+import org.jetbrains.bazel.languages.starlark.index.StarlarkLoadsIndex
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkNamedElement
-import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkParenthesizedExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkTargetExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkTupleExpression
+import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkParenthesizedExpression
 import org.jetbrains.bazel.languages.starlark.psi.functions.StarlarkFunctionDeclaration
 import org.jetbrains.bazel.languages.starlark.psi.functions.StarlarkKeywordVariadicParameter
 import org.jetbrains.bazel.languages.starlark.psi.functions.StarlarkParameter
@@ -51,7 +55,12 @@ internal class StarlarkDeclarationAnnotator : StarlarkAnnotator() {
 
   private fun PsiElement.isUnreferenced(): Boolean {
     if (!isStarlarkTopLevel() && isExplicitlyUnused()) return false
-    val references = ReferencesSearch.search(this, useScope)
+    val scope = useScope
+    if (scope is GlobalSearchScope && DumbService.isDumb(project)) return false
+    if (scope is GlobalSearchScope && this is StarlarkNamedElement && StarlarkLoadsIndex.isLoaded(this, scope)) return false
+    // if not accessed externally, check for local usages
+    val limitedScope = scope.intersectWith(LocalSearchScope(this.containingFile))
+    val references = ReferencesSearch.search(this, limitedScope)
     if (this !is StarlarkTargetExpression) return references.none()
     // Variable is unreferenced if only reassignments refer to it.
     return references.none { it.element !is StarlarkTargetExpression }
