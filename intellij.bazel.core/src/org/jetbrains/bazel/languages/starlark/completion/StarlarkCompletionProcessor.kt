@@ -33,7 +33,7 @@ internal class StarlarkCompletionProcessor(
     }
 
   private fun processLoadValue(stringLoadValue: StarlarkStringLoadValue) {
-    stringLoadValue.getImportedSymbolName()?.let {
+    stringLoadValue.getLoadValueExpressionContent()?.let {
       results.putIfAbsent(it, StarlarkLoadLookupElement(stringLoadValue))
     }
   }

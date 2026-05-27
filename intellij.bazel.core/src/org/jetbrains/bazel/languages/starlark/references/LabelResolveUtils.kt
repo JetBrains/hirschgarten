@@ -50,6 +50,34 @@ internal fun resolveLabel(
   }
 }
 
+/**
+ * Resolves a single Bazel file target [label] to the [VirtualFile] it points to.
+ * It only considers regular files. If label points to target or directory, it returns null.
+ *
+ * Unlike [resolveLabel], this method works entirely at the VFS level and never touches PSI.
+ */
+@ApiStatus.Internal
+fun resolveFileTargetToVirtualFile(
+  project: Project,
+  label: Label,
+  containingFile: VirtualFile? = null,
+): VirtualFile? = when (label) {
+  is ResolvedLabel -> {
+    val packageDir = findReferredAbsolutePackage(project, containingFile, label)
+    packageDir
+      ?.findFileByRelativePath(label.targetName)
+      ?.takeIf { it.isFile }
+  }
+  else -> {
+    val containingPackage = findContainingPackage(containingFile)
+    val referred = containingPackage?.findFileByRelativePath(label.packagePath.toString())
+    if (referred != null && referred.isFile && label.target is AmbiguousEmptyTarget) referred
+    else referred
+      ?.findFileByRelativePath(label.targetName)
+      ?.takeIf { it.isFile }
+  }
+}
+
 private sealed interface BuildFileOrSourceFile
 
 private class BuildFilePsi(val file: StarlarkFile) : BuildFileOrSourceFile
@@ -159,4 +187,3 @@ internal fun findBuildFilePathFor(
     findBuildFile(it)
   }
 }
-
