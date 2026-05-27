@@ -10,6 +10,7 @@ import com.intellij.platform.workspace.storage.entities
 import kotlinx.coroutines.coroutineScope
 import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.config.BazelJavaBackendBundle
+import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.magicmetamodel.ProjectDetails
 import org.jetbrains.bazel.magicmetamodel.impl.TargetIdToModuleEntitiesMap
 import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.WorkspaceModelUpdater
@@ -163,8 +164,8 @@ internal class JavaBazelWorkspaceImporter : BazelWorkspaceImporter, BazelWorkspa
 
     val targetIdToModuleEntitiesMap =
       bspTracer.spanBuilder("create.target.id.to.module.entities.map.ms").use {
-        val targetIdToTargetInfo =
-          (projectDetails.targets).associateBy { it.id }
+        val targetIdToTargetInfo = (projectDetails.targets).associateBy { it.id }
+        val testTargets = TestTargetClassifier.calculateTargetsToMarkAsTest(projectDetails.targets, targetIdToTargetInfo)
         val targetIdToModuleEntityMap =
           TargetIdToModuleEntitiesMap(
             projectDetails = projectDetails,
@@ -178,6 +179,7 @@ internal class JavaBazelWorkspaceImporter : BazelWorkspaceImporter, BazelWorkspa
             projectName = commonSyncConfig.projectName,
             testSourcesGlob = ProjectViewGlobSet(commonSyncConfig.projectRootDir, javaSyncConfig.testSourcesPatterns),
             packagePrefixes = jvmPackagePrefixes,
+            testTargets = testTargets,
           )
         targetIdToModuleEntityMap
       }

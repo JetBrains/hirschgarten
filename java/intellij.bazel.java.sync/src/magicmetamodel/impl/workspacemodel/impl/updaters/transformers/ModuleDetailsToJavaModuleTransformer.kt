@@ -36,12 +36,13 @@ class ModuleDetailsToJavaModuleTransformer(
   private val projectName: String,
   testSourcesGlob: ProjectViewGlobSet,
   packagePrefixes: JvmPackagePrefixCalculator,
+  testTargets: Set<Label> = emptySet(),
 ) {
   private val type = ModuleTypeId("JAVA_MODULE")
-  private val resourcesItemToJavaResourceRootTransformer = ResourcesItemToJavaResourceRootTransformer()
+  private val resourcesItemToJavaResourceRootTransformer = ResourcesItemToJavaResourceRootTransformer(testTargets)
   private val javaModuleToDummyJavaModulesTransformerHACK =
     JavaModuleToDummyJavaModulesTransformerHACK(projectBasePath, fileToTargets)
-  private val sourcesItemToJavaSourceRootTransformer = SourcesItemToJavaSourceRootTransformer(testSourcesGlob, packagePrefixes)
+  private val sourcesItemToJavaSourceRootTransformer = SourcesItemToJavaSourceRootTransformer(testSourcesGlob, packagePrefixes, testTargets)
 
   fun transform(inputEntity: ModuleDetails): List<JavaModule> {
     val javaModule =

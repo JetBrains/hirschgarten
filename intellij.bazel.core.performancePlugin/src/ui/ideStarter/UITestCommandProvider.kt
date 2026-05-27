@@ -7,5 +7,6 @@ internal class UITestCommandProvider : CommandProvider {
   override fun getCommands(): Map<String, CreateCommand> =
     mapOf(
       RunSimpleKotlinTestCommand.PREFIX to CreateCommand(::RunSimpleKotlinTestCommand),
+      TestSourceCheckCommand.PREFIX to CreateCommand(::TestSourceCheckCommand),
     )
 }

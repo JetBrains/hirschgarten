@@ -45,6 +45,7 @@ data class RawBuildTarget(
   val configurationId: String? = null,
   override val isManual: Boolean = false,
   override val isWorkspace: Boolean = true,
+  val isTestOnly: Boolean = false,
 ) : BuildTarget
 
 @ApiStatus.Internal

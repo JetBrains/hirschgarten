@@ -189,6 +189,16 @@ object IdeaBazelCases : BaseBazelCasesParametrized(BazelTestContext.IDEA) {
       )
     )
 
+    val TestSourcesMarking = withBazelProject(
+      projectInfo = withDefaults(
+        repositoryUrl = "https://github.com/JetBrainsBazelBot/simpleBazelProjectsForTesting.git",
+        commitHash = "d1effc797ee6138fe627f87d821102af635e4582",
+        branchName = "main",
+        relativePath = "testSourcesMarking",
+        configure = { context -> BazelProjectConfigurer.configureProjectBeforeUse(context) },
+      )
+    )
+
     val DisabledKotlinPlugin = withBazelProject(
       projectInfo = withDefaults(
         repositoryUrl = "https://github.com/JetBrainsBazelBot/simpleBazelProjectsForTesting.git",
