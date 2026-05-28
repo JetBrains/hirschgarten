@@ -18,7 +18,6 @@ import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import kotlin.io.path.Path
 
-@DisplayName("LibraryBuilder.write tests")
 internal class LibraryBuilderTest : WorkspaceModelBaseTest() {
   @Test
   fun `should add one project library`() {

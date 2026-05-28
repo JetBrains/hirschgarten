@@ -5,6 +5,7 @@ import com.intellij.platform.workspace.jps.entities.LibraryEntity
 import com.intellij.platform.workspace.storage.MutableEntityStorage
 import com.intellij.platform.workspace.storage.entities
 import org.jetbrains.annotations.ApiStatus
+import org.jetbrains.annotations.VisibleForTesting
 import org.jetbrains.bazel.sync.workspace.languages.java.sourceRoot.JvmPackagePrefixCalculator
 import org.jetbrains.bazel.workspacemodel.entities.BazelProjectEntitySource
 import org.jetbrains.bazel.workspacemodel.entities.CompiledSourceCodeInsideJarExcludeEntity
@@ -78,7 +79,8 @@ object CompiledSourceCodeInsideJarExcludeBuilder {
     }
   }
 
-  private fun calculateRelativePathsInsideJarToExclude(
+  @VisibleForTesting
+  fun calculateRelativePathsInsideJarToExclude(
     targets: Collection<RawBuildTarget>,
     packagePrefixes: JvmPackagePrefixCalculator,
   ): Set<String> {
@@ -110,7 +112,8 @@ object CompiledSourceCodeInsideJarExcludeBuilder {
     return result
   }
 
-  private fun calculateLibrariesFromInternalTargetsUrls(libraryItems: List<LibraryItem>): Set<String> =
+  @VisibleForTesting
+  fun calculateLibrariesFromInternalTargetsUrls(libraryItems: List<LibraryItem>): Set<String> =
     libraryItems
       .asSequence()
       .filter { it.containsInternalJars }
