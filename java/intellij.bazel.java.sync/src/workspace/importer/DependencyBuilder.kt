@@ -4,17 +4,13 @@ import com.intellij.openapi.roots.DependencyScope
 import com.intellij.platform.workspace.jps.entities.LibraryDependency
 import com.intellij.platform.workspace.jps.entities.LibraryId
 import com.intellij.platform.workspace.jps.entities.LibraryTableId
-import com.intellij.platform.workspace.jps.entities.ModuleDependency
 import com.intellij.platform.workspace.jps.entities.ModuleDependencyItem
-import com.intellij.platform.workspace.jps.entities.ModuleId
 import com.intellij.platform.workspace.storage.SymbolicEntityId
 import com.intellij.util.containers.Interner
 import org.jetbrains.annotations.ApiStatus
-import org.jetbrains.bazel.commons.RepoMapping
 import org.jetbrains.bazel.label.DependencyLabel
 import org.jetbrains.bazel.label.DependencyLabelKind
 import org.jetbrains.bazel.label.Label
-import org.jetbrains.bazel.magicmetamodel.formatAsModuleName
 import org.jetbrains.bsp.protocol.JvmDependency
 import org.jetbrains.bsp.protocol.RawBuildTarget
 import org.jetbrains.bsp.protocol.StrictDependencyCheckedType
@@ -63,38 +59,6 @@ class DependencyBuilder(private val targets: Collection<RawBuildTarget>) {
     )
   }
 
-  /**
-   * Converts dependency labels to workspace-model [ModuleDependencyItem]s, respecting the
-   * monorepo-style preference for module-over-library when both exist with the same id.
-   */
-  fun toModuleDependencyItems(
-    moduleName: String,
-    resolved: Resolved,
-    repoMapping: RepoMapping,
-    knownModuleNames: Set<String>,
-    knownLibraryNames: Set<String>,
-    associates: List<String>,
-    defaultDependencies: List<ModuleDependencyItem>,
-  ): List<ModuleDependencyItem> {
-    val dependenciesFromEntity = resolved.dependencies.mapNotNull { dep ->
-      val depModuleName = dep.label.formatAsModuleName(repoMapping)
-      val scope = if (dep.isRuntime) DependencyScope.RUNTIME else DependencyScope.COMPILE
-      // Libraries may have the same name as their container module.
-      // Prefer module dependency and use the library only inside the containing module to prevent dependency loops.
-      val asModule = depModuleName.takeIf { it in knownModuleNames && it != moduleName }
-      if (asModule != null) {
-        return@mapNotNull toModuleDependency(asModule, exported = dep.exported, scope = scope)
-      }
-      val asLibrary = depModuleName.takeIf { it in knownLibraryNames }
-      if (asLibrary != null) {
-        return@mapNotNull toLibraryDependency(asLibrary, exported = dep.exported, scope = scope)
-      }
-      null
-    }
-    val associatesDependencies = associates.map { toModuleDependency(it, exported = true) }
-    return defaultDependencies + dependenciesFromEntity + associatesDependencies
-  }
-
   private fun checkStrictDependencies(target: RawBuildTarget): StrictDependencyCheckedType {
     if (!target.isWorkspace) return StrictDependencyCheckedType.OFF
     return extractJvmBuildTarget(target)?.checkStrictDependencies ?: StrictDependencyCheckedType.OFF
@@ -130,20 +94,6 @@ class DependencyBuilder(private val targets: Collection<RawBuildTarget>) {
 
 private fun DependencyLabel.export(): DependencyLabel =
   if (this.kind == DependencyLabelKind.COMPILE) this.copy(kind = DependencyLabelKind.EXPORTED_COMPILE_TIME) else this
-
-private fun toModuleDependency(
-  moduleName: String,
-  exported: Boolean,
-  scope: DependencyScope = DependencyScope.COMPILE,
-): ModuleDependency =
-  dependencyInterner.intern(
-    ModuleDependency(
-      module = idInterner.intern(ModuleId(moduleName)) as ModuleId,
-      exported = exported,
-      scope = scope.toEntityDependencyScope(),
-      productionOnTest = true,
-    ),
-  ) as ModuleDependency
 
 internal fun toLibraryDependency(
   libraryName: String,
