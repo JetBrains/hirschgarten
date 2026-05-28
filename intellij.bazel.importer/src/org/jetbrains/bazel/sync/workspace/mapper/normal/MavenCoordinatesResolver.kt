@@ -1,31 +1,36 @@
 package org.jetbrains.bazel.sync.workspace.mapper.normal
 
+import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bsp.protocol.MavenCoordinates
 import java.nio.file.Path
+import kotlin.io.path.extension
 
-internal object MavenCoordinatesResolver {
+@ApiStatus.Internal
+object MavenCoordinatesResolver {
   fun resolveMavenCoordinates(libraryLabel: Label, outputJar: Path): MavenCoordinates? {
     /* For example:
-     * @@rules_jvm_external~override~maven~maven//:org_apache_commons_commons_lang3
-     * @maven//:org_scala_lang_scala_library
-     **/
-    val orgStart =
+     * @@rules_jvm_external~override~maven~maven//:org_apache_commons_commons_lang3 -> org
+     * @maven//:com_google_auto_service_auto_service_annotations -> com
+     */
+    val topLevelDomain =
       libraryLabel
-        .toString()
-        .split("//:")
-        .lastOrNull()
-        ?.split('_')
-        ?.firstOrNull() ?: "org"
-    // Matches the Maven group (organization), artifact, and version in the Bazel dependency
+        .targetName
+        .split('_', limit = 2)
+        .firstOrNull() ?: "org"
+    // Match the Maven group (organization), artifact, and version in the Bazel dependency
     // string such as .../execroot/monorepo/bazel-out/k8-fastbuild/bin/external/maven/com/google/guava/guava/31.1-jre/processed_guava-31.1-jre.jar
     // bazel-out/k8-fastbuild/bin/external/rules_jvm_external~~maven~name/v1/https/repo1.maven.org/maven2/com/google/auto/service/auto-service-annotations/1.1.1/header_auto-service-annotations-1.1.1.jar
-    val regexPattern = """.*/($orgStart/.+)/([^/]+)/([^/]+)/[^/]+.jar""".toRegex()
-    val matchResult = regexPattern.find(outputJar.toString())
-    // If a match is found, group values are extracted; otherwise, null is returned
-    return matchResult?.let {
-      val (organization, artifact, version) = it.destructured
-      MavenCoordinates(organization.replace("/", "."), artifact, version)
-    }
+    if (outputJar.extension != "jar") return null
+
+    val pathSegments = (0..<outputJar.nameCount).map { i -> outputJar.getName(i).toString() }
+    val organizationFromIndex = pathSegments.indexOf(topLevelDomain).takeIf { it != -1 } ?: return null
+    val organizationToIndex = pathSegments.size - 3
+    if (organizationFromIndex >= organizationToIndex) return null
+    val organization = pathSegments.subList(organizationFromIndex, organizationToIndex).joinToString(".")
+
+    val artifact = pathSegments[pathSegments.size - 3]
+    val version = pathSegments[pathSegments.size - 2]
+    return MavenCoordinates(organization, artifact, version)
   }
 }

@@ -86,8 +86,6 @@ class BazelPathsResolver(private val bazelInfo: BazelInfo) {
     when {
       execRootRelativePath.startsWith("external") -> resolveExternal(execRootRelativePath)
       else -> bazelInfo.execRoot.resolve(execRootRelativePath)
-        // If this path actually resolves to the local workspace, not bazel-out, then resolve it
-        .let { runCatching { it.toRealPath() }.getOrDefault(it) }
     }
 
   private fun resolveSource(fileLocation: ArtifactLocation): Path = bazelInfo.workspaceRoot.resolve(fileLocation.relativePath)

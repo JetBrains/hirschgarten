@@ -74,10 +74,11 @@ internal class DefaultBazelOutputFileHardLinks(
       }
     }
 
+    val rootDirPath = project.rootDir.toNioPath()
     for (originalFile in files) {
       val realFile = realPaths[originalFile]?.await() ?: continue
 
-      if (realFile.startsWith(project.rootDir.toNioPath())) {
+      if (realFile.startsWith(rootDirPath)) {
         // It's a source file, no need to hard link
         (retainedPaths ?: mutableListOf<Path>().also { retainedPaths = it }).add(originalFile)
         continue

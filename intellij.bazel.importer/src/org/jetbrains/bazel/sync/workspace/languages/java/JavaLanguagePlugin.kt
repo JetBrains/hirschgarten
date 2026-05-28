@@ -4,6 +4,7 @@ import com.google.common.hash.Hashing
 import com.google.devtools.build.lib.view.proto.Deps
 import com.intellij.openapi.extensions.ExtensionPointName
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.util.Ref
 import com.intellij.util.EnvironmentUtil
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
@@ -48,7 +49,6 @@ import java.nio.charset.StandardCharsets
 import java.nio.file.Path
 import java.nio.file.Paths
 import java.util.concurrent.ConcurrentHashMap
-import kotlin.collections.mapNotNull
 import kotlin.io.path.exists
 import kotlin.io.path.extension
 import kotlin.io.path.inputStream
@@ -227,6 +227,8 @@ class JavaLanguagePlugin: LanguagePlugin {
       repoMapping: RepoMapping,
     ) {
       val localRepositories = repoMapping.getLocalRepositories()
+      // Avoid creating the same LibraryItem instance several times to avoid O(N^2) (BAZEL-3203)
+      val libraryItemByIdCache = hashMapOf<Label, Ref<LibraryItem?>>()
 
       val importDependenciesAsLibraries: Map<Label, List<LibraryItem>> =
         targetsToImport.mapValues { (_, target) ->
@@ -239,13 +241,17 @@ class JavaLanguagePlugin: LanguagePlugin {
               val libTargetInfo = graph.idToTargetInfo[label]
                                   ?: return@mapNotNull null
 
-              createLibrary(
-                server.workspaceContext,
-                label,
-                libTargetInfo,
-                onlyOutputJars = false,
-                localRepositories,
-              )
+              libraryItemByIdCache.getOrPut(label) {
+                Ref(
+                  createLibrary(
+                    server.workspaceContext,
+                    label,
+                    libTargetInfo,
+                    onlyOutputJars = false,
+                    localRepositories,
+                  ),
+                )
+              }.get()
             }
         }
 
