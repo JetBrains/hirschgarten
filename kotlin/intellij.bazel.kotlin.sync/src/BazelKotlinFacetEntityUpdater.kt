@@ -4,10 +4,8 @@ import com.intellij.platform.workspace.jps.entities.ModuleEntity
 import com.intellij.platform.workspace.jps.entities.modifyModuleEntity
 import com.intellij.platform.workspace.storage.MutableEntityStorage
 import org.jetbrains.annotations.ApiStatus
-import org.jetbrains.bazel.commons.RuleType
-import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.KotlinFacetEntityUpdater
-import org.jetbrains.bazel.workspacemodel.entities.JavaModule
-import org.jetbrains.bazel.workspacemodel.entities.KotlinAddendum
+import org.jetbrains.bazel.workspace.importer.KotlinFacetEntityUpdater
+import org.jetbrains.bazel.workspace.importer.KotlinOptions
 import org.jetbrains.kotlin.cli.common.arguments.K2JVMCompilerArguments
 import org.jetbrains.kotlin.cli.common.arguments.parseCommandLineArguments
 import org.jetbrains.kotlin.config.JvmTarget
@@ -21,39 +19,38 @@ import org.jetbrains.kotlin.idea.workspaceModel.KotlinSettingsEntity
 import org.jetbrains.kotlin.idea.workspaceModel.KotlinSettingsEntityBuilder
 import org.jetbrains.kotlin.idea.workspaceModel.kotlinSettings
 import org.jetbrains.kotlin.platform.jvm.JvmPlatforms
-import java.nio.file.Path
 
 @ApiStatus.Internal
 class BazelKotlinFacetEntityUpdater : KotlinFacetEntityUpdater {
   override fun addEntity(
     diff: MutableEntityStorage,
-    entityToAdd: JavaModule,
     parentModuleEntity: ModuleEntity,
-    projectBasePath: Path,
+    kotlinOptions: KotlinOptions?,
+    isTestModule: Boolean,
+    associates: Set<String>,
   ) {
-    val kotlinAddendum = entityToAdd.kotlinAddendum
-    val compilerArguments = kotlinAddendum?.kotlincOptions?.toK2JVMCompilerArguments(kotlinAddendum)
+    val compilerArguments = kotlinOptions?.kotlincOptions?.toK2JVMCompilerArguments(kotlinOptions)
     val kotlinSettingsEntity =
-      calculateKotlinSettingsEntity(entityToAdd, compilerArguments, parentModuleEntity, kotlinAddendum?.kotlincOptions)
+      calculateKotlinSettingsEntity(compilerArguments, parentModuleEntity, isTestModule, associates)
     diff.addKotlinSettingsEntity(parentModuleEntity, kotlinSettingsEntity)
   }
 
   private fun List<String>.toK2JVMCompilerArguments(
-    kotlinAddendum: KotlinAddendum,
+    kotlinOptions: KotlinOptions,
   ) = parseCommandLineArguments(K2JVMCompilerArguments::class, this).apply {
-    kotlinAddendum.languageVersion?.let { languageVersion = it }
-    kotlinAddendum.apiVersion?.let { apiVersion = it }
-    moduleName = kotlinAddendum.moduleName
+    kotlinOptions.languageVersion?.let { languageVersion = it }
+    kotlinOptions.apiVersion?.let { apiVersion = it }
+    moduleName = kotlinOptions.moduleName
 
     autoAdvanceLanguageVersion = false
     autoAdvanceApiVersion = false
   }
 
   private fun calculateKotlinSettingsEntity(
-    entityToAdd: JavaModule,
     compilerArguments: K2JVMCompilerArguments?,
     parentModuleEntity: ModuleEntity,
-    kotlincOpts: List<String>?,
+    isTestModule: Boolean,
+    associates: Set<String>,
   ) = KotlinSettingsEntity(
     moduleId = parentModuleEntity.symbolicId,
     name = KotlinFacetType.NAME,
@@ -62,9 +59,9 @@ class BazelKotlinFacetEntityUpdater : KotlinFacetEntityUpdater {
     useProjectSettings = false,
     implementedModuleNames = emptyList(),
     dependsOnModuleNames = emptyList(), // Gradle specific
-    additionalVisibleModuleNames = entityToAdd.toAssociateModules().toMutableSet(),
+    additionalVisibleModuleNames = associates.toMutableSet(),
     sourceSetNames = emptyList(),
-    isTestModule = entityToAdd.genericModuleInfo.kind.ruleType == RuleType.TEST,
+    isTestModule = isTestModule,
     externalProjectId = "",
     isHmppEnabled = false,
     pureKotlinSourceFolders = emptyList(),
@@ -93,10 +90,6 @@ class BazelKotlinFacetEntityUpdater : KotlinFacetEntityUpdater {
       }
     } ?: ""
   }
-
-  private fun JavaModule.toAssociateModules(): Set<String> =
-    this.genericModuleInfo.associates
-      .toSet()
 
   private fun MutableEntityStorage.addKotlinSettingsEntity(
     parentModuleEntity: ModuleEntity,

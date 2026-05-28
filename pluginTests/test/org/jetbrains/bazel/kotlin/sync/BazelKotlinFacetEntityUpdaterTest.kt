@@ -16,6 +16,7 @@ import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.sync.BazelKotlinFacetEntityUpdater
+import org.jetbrains.bazel.workspace.importer.KotlinOptions
 import org.jetbrains.bazel.workspace.model.test.framework.WorkspaceModelBaseTest
 import org.jetbrains.bazel.workspacemodel.entities.ContentRoot
 import org.jetbrains.bazel.workspacemodel.entities.Dependency
@@ -177,6 +178,20 @@ class BazelKotlinFacetEntityUpdaterTest : WorkspaceModelBaseTest() {
     parentEntity: ModuleEntity,
     builder: MutableEntityStorage,
   ) = runBlocking {
-    BazelKotlinFacetEntityUpdater().addEntity(builder, javaModule, parentEntity, projectBasePath)
+    val kotlinOptions = javaModule.kotlinAddendum?.let {
+      KotlinOptions(
+        languageVersion = it.languageVersion,
+        apiVersion = it.apiVersion,
+        moduleName = it.moduleName,
+        kotlincOptions = it.kotlincOptions,
+      )
+    }
+    BazelKotlinFacetEntityUpdater().addEntity(
+      diff = builder,
+      parentModuleEntity = parentEntity,
+      kotlinOptions = kotlinOptions,
+      isTestModule = javaModule.genericModuleInfo.kind.ruleType == RuleType.TEST,
+      associates = javaModule.genericModuleInfo.associates.toSet(),
+    )
   }
 }

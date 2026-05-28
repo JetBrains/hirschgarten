@@ -3,7 +3,6 @@ package org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters
 
 import com.intellij.java.workspace.entities.JavaModuleSettingsEntity
 import com.intellij.java.workspace.entities.javaSettings
-import com.intellij.openapi.extensions.ExtensionPointName
 import com.intellij.platform.workspace.jps.entities.ModuleDependencyItem
 import com.intellij.platform.workspace.jps.entities.ModuleEntity
 import com.intellij.platform.workspace.jps.entities.ModuleSourceDependency
@@ -13,17 +12,18 @@ import com.intellij.platform.workspace.jps.entities.modifyModuleEntity
 import com.intellij.platform.workspace.storage.MutableEntityStorage
 import com.intellij.pom.java.LanguageLevel
 import org.jetbrains.annotations.ApiStatus
+import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.scalaVersionToScalaSdkName
 import org.jetbrains.bazel.scala.sdk.scalaSdkExtensionExists
+import org.jetbrains.bazel.workspace.importer.KotlinFacetEntityUpdater
+import org.jetbrains.bazel.workspace.importer.KotlinOptions
 import org.jetbrains.bazel.workspacemodel.entities.JavaModule
 import org.jetbrains.bazel.workspacemodel.entities.Library
 import org.jetbrains.bazel.workspacemodel.entities.Module
-import java.nio.file.Path
 
 @ApiStatus.Internal
 class JavaModuleWithSourcesUpdater(
   private val workspaceModelEntityUpdaterConfig: WorkspaceModelEntityUpdaterConfig,
-  private val projectBasePath: Path,
   private val modules: Map<String, Module>,
   private val libraries: Map<String, Library>,
 ) : WorkspaceModelEntityWithoutParentModuleUpdater<JavaModule, ModuleEntity> {
@@ -77,9 +77,17 @@ class JavaModuleWithSourcesUpdater(
     if (entityToAdd.genericModuleInfo.kind.includesKotlin()) {
       KotlinFacetEntityUpdater.ep.extensionList.firstOrNull()?.addEntity(
         diff = workspaceModelEntityUpdaterConfig.workspaceEntityStorageBuilder,
-        entityToAdd = entityToAdd,
         parentModuleEntity = moduleEntity,
-        projectBasePath = projectBasePath,
+        kotlinOptions = entityToAdd.kotlinAddendum?.let {
+          KotlinOptions(
+            languageVersion = it.languageVersion,
+            apiVersion = it.apiVersion,
+            moduleName = it.moduleName,
+            kotlincOptions = it.kotlincOptions,
+          )
+        },
+        isTestModule = entityToAdd.genericModuleInfo.kind.ruleType == RuleType.TEST,
+        associates = entityToAdd.genericModuleInfo.associates.toSet(),
       )
     }
 
@@ -157,7 +165,6 @@ class JavaModuleWithoutSourcesUpdater(
 @ApiStatus.Internal
 class JavaModuleUpdater(
   workspaceModelEntityUpdaterConfig: WorkspaceModelEntityUpdaterConfig,
-  projectBasePath: Path,
   moduleEntities: List<Module> = emptyList(),
   libraries: List<Library> = emptyList(),
 ) : WorkspaceModelEntityWithoutParentModuleUpdater<JavaModule, ModuleEntity> {
@@ -166,7 +173,6 @@ class JavaModuleUpdater(
   private val javaModuleWithSourcesUpdater =
     JavaModuleWithSourcesUpdater(
       workspaceModelEntityUpdaterConfig,
-      projectBasePath,
       modulesByName,
       librariesByName,
     )
@@ -193,19 +199,4 @@ class JavaModuleUpdater(
 
   private suspend fun JavaModule.addKotlinModuleIfPossible(): ModuleEntity? =
     if (KotlinFacetEntityUpdater.ep.extensionList.isNotEmpty()) javaModuleWithSourcesUpdater.addEntity(this) else null
-}
-
-// TODO: should be removed, kotlin needs a separate sync hook: https://youtrack.jetbrains.com/issue/BAZEL-1885
-@ApiStatus.Internal
-interface KotlinFacetEntityUpdater {
-  fun addEntity(
-    diff: MutableEntityStorage,
-    entityToAdd: JavaModule,
-    parentModuleEntity: ModuleEntity,
-    projectBasePath: Path,
-  )
-
-  companion object {
-    val ep = ExtensionPointName.create<KotlinFacetEntityUpdater>("org.jetbrains.bazel.kotlinFacetEntityUpdater")
-  }
 }

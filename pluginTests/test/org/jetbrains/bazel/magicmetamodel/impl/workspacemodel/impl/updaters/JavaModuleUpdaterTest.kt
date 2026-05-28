@@ -87,8 +87,8 @@ class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
     fun `should add one java module with sources to the workspace model`() {
       runTestForUpdaters(
         listOf(
-          { JavaModuleWithSourcesUpdater(it, it.projectBasePath, testModules, testLibrariesByName) },
-          { JavaModuleUpdater(it, it.projectBasePath, testModulesList, testLibraries) },
+          { JavaModuleWithSourcesUpdater(it, testModules, testLibrariesByName) },
+          { JavaModuleUpdater(it, testModulesList, testLibraries) },
         ),
       ) { updater ->
         // given
@@ -338,8 +338,8 @@ class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
     fun `should add multiple java module with sources to the workspace model`() {
       runTestForUpdaters(
         listOf(
-          { JavaModuleWithSourcesUpdater(it, it.projectBasePath, testModules, testLibrariesByName) },
-          { JavaModuleUpdater(it, it.projectBasePath, testModulesList, testLibraries) },
+          { JavaModuleWithSourcesUpdater(it, testModules, testLibrariesByName) },
+          { JavaModuleUpdater(it, testModulesList, testLibraries) },
         ),
       ) { updater ->
         // given
@@ -739,8 +739,8 @@ class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
     fun `should handle dummy module with non-existent source path without throwing`() {
       runTestForUpdaters(
         listOf(
-          { JavaModuleUpdater(it, it.projectBasePath, testModulesList, testLibraries) },
-          { JavaModuleWithSourcesUpdater(it, it.projectBasePath, testModules, testLibrariesByName) },
+          { JavaModuleUpdater(it, testModulesList, testLibraries) },
+          { JavaModuleWithSourcesUpdater(it, testModules, testLibrariesByName) },
         ),
       ) { updater ->
         val module =
@@ -802,7 +802,7 @@ class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
       runTestForUpdaters(
         listOf(
           { JavaModuleWithoutSourcesUpdater(it, emptyMap()) },
-          { JavaModuleUpdater(it, it.projectBasePath) },
+          { JavaModuleUpdater(it) },
         ),
       ) { updater ->
         // given
@@ -867,7 +867,7 @@ class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
       runTestForUpdaters(
         listOf(
           { JavaModuleWithoutSourcesUpdater(it, emptyMap()) },
-          { JavaModuleUpdater(it, it.projectBasePath) },
+          { JavaModuleUpdater(it) },
         ),
       ) { updater ->
         // given
