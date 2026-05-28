@@ -1,7 +1,7 @@
 package org.jetbrains.bazel.languages.starlark.annotation
 
+import com.intellij.codeInsight.daemon.SyntheticPsiFileSupport
 import org.jetbrains.bazel.languages.starlark.fixtures.StarlarkAnnotatorTestCase
-import org.jetbrains.bazel.project.BazelProjectFixtures.initializeBazelProject
 
 class StarlarkUnusedDeclarationTest : StarlarkAnnotatorTestCase() {
 
@@ -52,6 +52,19 @@ class StarlarkUnusedDeclarationTest : StarlarkAnnotatorTestCase() {
     myFixture.addFileToProject("MODULE.bazel", "module(name = \"test\")")
     myFixture.addFileToProject("BUILD.bazel", "")
     myFixture.configureByFile("PublicFunctionNotLoadedTestData.bzl")
+    myFixture.checkHighlighting(false, false, true)
+  }
+
+  fun testPublicDeclarationsInSyntheticFilesAreNotUnused() {
+    val psiFile = myFixture.configureByFile("UnusedPublicDeclarationSyntheticFileTestData.bzl")
+    SyntheticPsiFileSupport.markFile(psiFile.virtualFile)
+    myFixture.checkHighlighting(false, false, true)
+  }
+
+
+  fun testLocalDeclarationsInSyntheticFilesAreUnused() {
+    val psiFile = myFixture.configureByFile("UnusedLocalDeclarationSyntheticFileTestData.bzl")
+    SyntheticPsiFileSupport.markFile(psiFile.virtualFile)
     myFixture.checkHighlighting(false, false, true)
   }
 }
