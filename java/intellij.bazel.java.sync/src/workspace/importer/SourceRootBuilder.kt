@@ -29,7 +29,8 @@ val JAVA_TEST_SOURCE_ROOT_TYPE: SourceRootTypeId = SourceRootTypeId("java-test")
 @ApiStatus.Internal
 val JAVA_RESOURCE_ROOT_TYPE: SourceRootTypeId = SourceRootTypeId("java-resource")
 
-internal val JAVA_TEST_RESOURCE_ROOT_TYPE: SourceRootTypeId = SourceRootTypeId("java-test-resource")
+@ApiStatus.Internal
+val JAVA_TEST_RESOURCE_ROOT_TYPE: SourceRootTypeId = SourceRootTypeId("java-test-resource")
 
 @ApiStatus.Internal
 object SourceRootBuilder {
