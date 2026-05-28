@@ -34,6 +34,16 @@ class JavaStrictDependenciesTest {
   }
 
   @Test
+  fun testStrictDepsWithCustomExportingRule() = runBlocking(Dispatchers.Default) {
+    fixture.copyBazelTestProject("redcodes/strict_dependencies/java_strict_deps_custom_rule_export")
+    fixture.enableInspections(JavaStrictDependenciesInspection())
+    fixture.performBazelSync()
+    withContext(Dispatchers.EDT) {
+      fixture.checkHighlighting("src/main/com/example/a/A.java")
+    }
+  }
+
+  @Test
   fun testStrictDepsWithKotlinSources() = runBlocking(Dispatchers.Default) {
     fixture.copyBazelTestProject("redcodes/strict_dependencies/java_strict_deps_kotlin")
     fixture.enableInspections(JavaStrictDependenciesInspection())
