@@ -90,6 +90,8 @@ interface JvmLanguagePluginMixin {
   }
 }
 
+private typealias DependencyLabelPatcher = (DependencyLabel) -> DependencyLabel
+
 @ApiStatus.Internal
 class JavaLanguagePlugin: LanguagePlugin {
   override fun getSupportedLanguages(): Set<LanguageClass> = setOf(LanguageClass.JAVA) + JvmLanguagePluginMixin.mixins.flatMap { it.getSupportedLanguages() }
@@ -122,11 +124,17 @@ class JavaLanguagePlugin: LanguagePlugin {
     private var toolchainDependencies: Map<Label, List<DependencyLabel>> = mapOf()
     private var allLibraries: Map<Label, List<LibraryItem>> = mapOf()
 
+    private lateinit var repoMapping: RepoMapping
+    private lateinit var allTargets: Map<Label, TargetInfo>
+
     override suspend fun prepareSync(
       graph: DependencyGraph,
       targetsToImport: Map<Label, TargetInfo>,
       repoMapping: RepoMapping,
     ) {
+      this.repoMapping = repoMapping
+      this.allTargets = graph.idToTargetInfo
+
       mixins.forEach { it.prepareSync(graph, targetsToImport, repoMapping) }
 
       toolchainTargets = graph.idToTargetInfo.filter { it.value.hasJavaToolchainInfo() }
@@ -134,9 +142,7 @@ class JavaLanguagePlugin: LanguagePlugin {
       jdk = ideJavaHomeOverride?.let { Jdk(javaHome = it) } ?: jdkResolver.resolve(graph.idToTargetInfo, repoMapping)
 
       calculateAllLibraries(
-        graph,
         targetsToImport.filterValues { it.javaCommon.jvmTarget },
-        repoMapping,
       )
     }
 
@@ -197,34 +203,59 @@ class JavaLanguagePlugin: LanguagePlugin {
       )
     }
 
+    private val dependenciesCache = ConcurrentHashMap<Label, List<DependencyLabel>>()
+
     private fun TargetInfo.dependencies(): List<DependencyLabel> {
       val target = this
-
-      // Well-known targets which include generated libraries as dependencies.
-      // They must be exported, but this is not returned from aspects:
-      // https://bazel.build/reference/be/protocol-buffer#proto_library_args
-      if (target.kind == "java_proto_library") {
-        return target.depsList.map {
-          it.toDependencyLabel().copy(kind = DependencyLabelKind.EXPORTED_COMPILE_TIME)
+      return dependenciesCache.computeIfAbsent(target.label()) F@{
+        // Well-known targets which include generated libraries as dependencies.
+        // They must be exported, but this is not returned from aspects:
+        // https://bazel.build/reference/be/protocol-buffer#proto_library_args
+        if (target.kind == "java_proto_library") {
+          return@F target.depsList.map {
+            it.toDependencyLabel().copy(kind = DependencyLabelKind.EXPORTED_COMPILE_TIME)
+          }
         }
-      }
 
-      // Scala proto libraries do not have meaningful dependencies despite somethign might return from aspects
-      // The entire transitive closure of libraries, which is used by compiler,
-      // is returned in targetInfo.javaProvider.fullCompileJarsList
-      if (target.kind == "scala_proto_library") {
-        return emptyList()
-      }
+        // Scala proto libraries do not have meaningful dependencies despite somethign might return from aspects
+        // The entire transitive closure of libraries, which is used by compiler,
+        // is returned in targetInfo.javaProvider.fullCompileJarsList
+        if (target.kind == "scala_proto_library") {
+          return@F emptyList()
+        }
 
-      return target.depsList.map {
-        it.toDependencyLabel()
+        // https://youtrack.jetbrains.com/issue/BAZEL-3218
+        // Some custom rules declare the dependent output jar as its own,
+        // thus making the dependency effectively exported
+        val exportByOutputJarsPatcher: DependencyLabelPatcher =
+          if (target.kind in wellKnownTargetKinds) {
+            // Well known rules have well known behavior
+            { it }
+          } else {
+            val localRepositories = repoMapping.getLocalRepositories()
+
+            fun TargetInfo.outputJars(): Set<Path> = this.javaCommon.jarsList.flatMap { it.binaryJarsList }
+              .map { bazelPathsResolver.resolve(it, localRepositories) }
+              .toSet()
+
+            val outputJars = target.outputJars();
+            DependencyLabelPatcher@{ dependency ->
+              val depJars = allTargets[dependency.label]?.outputJars() ?: emptySet()
+              if (outputJars.intersect(depJars).isNotEmpty())
+                return@DependencyLabelPatcher dependency.copy(kind = DependencyLabelKind.EXPORTED_COMPILE_TIME)
+
+              dependency
+            }
+          }
+
+        return@F target.depsList.map {
+          exportByOutputJarsPatcher(it.toDependencyLabel())
+        }
       }
     }
 
     private suspend fun calculateAllLibraries(
-      graph: DependencyGraph,
       targetsToImport: Map<Label, TargetInfo>,
-      repoMapping: RepoMapping,
     ) {
       val localRepositories = repoMapping.getLocalRepositories()
       // Avoid creating the same LibraryItem instance several times to avoid O(N^2) (BAZEL-3203)
@@ -238,7 +269,7 @@ class JavaLanguagePlugin: LanguagePlugin {
               if (targetsToImport.containsKey(label))
                 return@mapNotNull null // Dependency target is imported, no need to create library
 
-              val libTargetInfo = graph.idToTargetInfo[label]
+              val libTargetInfo = allTargets[label]
                                   ?: return@mapNotNull null
 
               libraryItemByIdCache.getOrPut(label) {
@@ -257,20 +288,20 @@ class JavaLanguagePlugin: LanguagePlugin {
 
       val interfacesAndBinariesFromTargetsToImport: Map<Label, Set<Path>> =
         measure("Collect interfaces and classes from targets to import") {
-          collectInterfacesAndClasses(targetsToImport.values, repoMapping)
+          collectInterfacesAndClasses(targetsToImport.values)
         }
       val outputJarsLibraries: Map<Label, List<LibraryItem>> =
         measure("Create output jars libraries") {
-          calculateOutputJarsLibraries(server.workspaceContext, targetsToImport.values, graph.idToTargetInfo, repoMapping)
+          calculateOutputJarsLibraries(server.workspaceContext, targetsToImport.values)
         }
       val annotationProcessorLibraries: Map<Label, List<LibraryItem>> =
         measure("Create AP libraries") {
-          annotationProcessorLibraries(targetsToImport.values, repoMapping)
+          annotationProcessorLibraries(targetsToImport.values)
         }
 
       val librariesFromToolchains: Map<Label, List<LibraryItem>> =
         measure("Create toolchain libraries") {
-          calculateToolchainLibraries(targetsToImport, repoMapping)
+          calculateToolchainLibraries(targetsToImport)
         }
 
       val librariesFromDeps: Map<Label, List<LibraryItem>> =
@@ -289,7 +320,6 @@ class JavaLanguagePlugin: LanguagePlugin {
             targetsToImport,
             librariesFromDepsAndTargets,
             interfacesAndBinariesFromTargetsToImport,
-            repoMapping,
           )
         }
 
@@ -324,7 +354,6 @@ class JavaLanguagePlugin: LanguagePlugin {
 
     suspend fun calculateToolchainLibraries(
       targetsToImport: Map<Label, TargetInfo>,
-      repoMapping: RepoMapping,
     ): Map<Label, List<LibraryItem>> {
       return concatenateMaps(mixins.map { it.toolchainLibraries(targetsToImport, repoMapping) })
     }
@@ -369,12 +398,12 @@ class JavaLanguagePlugin: LanguagePlugin {
       (
         targetInfo.generatedSourcesList.any { it.relativePath.endsWith(".srcjar") } ||
         (targetInfo.sourcesList.any() && !hasKnownJvmSources(targetInfo)) ||
-        (targetInfo.sourcesList.none() && targetInfo.kind !in workspaceTargetKinds && !targetInfo.hasExecutableInfo()) ||
+        (targetInfo.sourcesList.none() && targetInfo.kind !in wellKnownTargetKinds && !targetInfo.hasExecutableInfo()) ||
         targetInfo.javaProvider.hasApiGeneratingPlugins ||
         targetInfo.kotlinTargetInfo.exportedCompilerPluginTargetsFromDepsList.any { allTargets[Label.parse(it)]?.javaProvider?.hasApiGeneratingPlugins ?: false }
       )
 
-    private val workspaceTargetKinds =
+    private val wellKnownTargetKinds =
       setOf(
         "java_library",
         "java_binary",
@@ -395,8 +424,6 @@ class JavaLanguagePlugin: LanguagePlugin {
     private fun calculateOutputJarsLibraries(
       workspaceContext: WorkspaceContext,
       targetsToImport: Collection<TargetInfo>,
-      allTargets: Map<Label, TargetInfo>,
-      repoMapping: RepoMapping,
     ): Map<Label, List<LibraryItem>> {
       val localRepositories = repoMapping.getLocalRepositories()
       return targetsToImport
@@ -414,7 +441,7 @@ class JavaLanguagePlugin: LanguagePlugin {
         }.toMap()
     }
 
-    private fun annotationProcessorLibraries(targetsToImport: Collection<TargetInfo>, repoMapping: RepoMapping): Map<Label, List<LibraryItem>> {
+    private fun annotationProcessorLibraries(targetsToImport: Collection<TargetInfo>): Map<Label, List<LibraryItem>> {
       val localRepositories = repoMapping.getLocalRepositories()
       return targetsToImport
         .filter { it.javaCommon.generatedJarsList.isNotEmpty() }
@@ -448,7 +475,6 @@ class JavaLanguagePlugin: LanguagePlugin {
       targetsToImport: Map<Label, TargetInfo>,
       libraryDependencies: Map<Label, List<LibraryItem>>,
       interfacesAndBinariesFromTargetsToImport: Map<Label, Set<Path>>,
-      repoMapping: RepoMapping,
     ): Map<Label, List<LibraryItem>> {
       val localRepositories = repoMapping.getLocalRepositories()
       val targetsToJdepsJars: Map<Label, Set<Path>> =
@@ -726,7 +752,7 @@ class JavaLanguagePlugin: LanguagePlugin {
         .map { bazelPathsResolver.resolve(it, localRepositories) }
 
 
-    private fun collectInterfacesAndClasses(targets: Collection<TargetInfo>, repoMapping: RepoMapping): Map<Label, Set<Path>> {
+    private fun collectInterfacesAndClasses(targets: Collection<TargetInfo>): Map<Label, Set<Path>> {
       val localRepositories = repoMapping.getLocalRepositories()
       return targets.associate { target ->
         target.label() to
