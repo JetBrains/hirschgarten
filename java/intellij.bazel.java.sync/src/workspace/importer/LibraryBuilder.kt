@@ -1,0 +1,102 @@
+package org.jetbrains.bazel.workspace.importer
+
+import com.intellij.configurationStore.serialize
+import com.intellij.externalSystem.ImportedLibraryProperties
+import com.intellij.externalSystem.ImportedLibraryType
+import com.intellij.java.library.MavenCoordinates
+import com.intellij.openapi.util.JDOMUtil
+import com.intellij.platform.workspace.jps.entities.LibraryEntity
+import com.intellij.platform.workspace.jps.entities.LibraryId
+import com.intellij.platform.workspace.jps.entities.LibraryPropertiesEntity
+import com.intellij.platform.workspace.jps.entities.LibraryRoot
+import com.intellij.platform.workspace.jps.entities.LibraryRootTypeId
+import com.intellij.platform.workspace.jps.entities.LibraryTableId
+import com.intellij.platform.workspace.jps.entities.LibraryTypeId
+import com.intellij.platform.workspace.jps.entities.libraryProperties
+import com.intellij.platform.workspace.storage.EntitySource
+import com.intellij.platform.workspace.storage.MutableEntityStorage
+import com.intellij.platform.workspace.storage.url.VirtualFileUrlManager
+import org.jetbrains.annotations.ApiStatus
+import org.jetbrains.bazel.commons.RepoMapping
+import org.jetbrains.bazel.magicmetamodel.formatAsModuleName
+import org.jetbrains.bazel.workspacemodel.entities.BazelLibraryExtensionEntity
+import org.jetbrains.bazel.workspacemodel.entities.WorkspaceModelTargetLabel
+import org.jetbrains.bazel.workspacemodel.entities.bazelLibraryExtension
+import org.jetbrains.bsp.protocol.LibraryItem
+import org.jetbrains.jps.model.serialization.library.JpsLibraryTableSerializer
+import java.nio.file.Path
+
+@ApiStatus.Internal
+object LibraryBuilder {
+  fun write(
+    libraryItems: List<LibraryItem>,
+    repoMapping: RepoMapping,
+    importIjars: Boolean,
+    virtualFileUrlManager: VirtualFileUrlManager,
+    entitySource: EntitySource,
+    storage: MutableEntityStorage,
+  ): List<LibraryEntity> = libraryItems.map { write(it, repoMapping, importIjars, virtualFileUrlManager, entitySource, storage) }
+
+  fun write(
+    libraryItem: LibraryItem,
+    repoMapping: RepoMapping,
+    importIjars: Boolean,
+    virtualFileUrlManager: VirtualFileUrlManager,
+    entitySource: EntitySource,
+    storage: MutableEntityStorage,
+  ): LibraryEntity {
+    val tableId = LibraryTableId.ProjectLibraryTableId
+    val displayName = libraryItem.id.formatAsModuleName(repoMapping)
+    val existing = storage.resolve(LibraryId(displayName, tableId))
+    if (existing != null) {
+      return existing
+    }
+
+    val sourcesRoots = libraryItem.sourceJars
+      .map { it.toLibraryRoot(virtualFileUrlManager, LibraryRootTypeId.SOURCES) }
+    val classesRoots = libraryItem.classesOrIJars(importIjars)
+      .map { it.toLibraryRoot(virtualFileUrlManager, LibraryRootTypeId.COMPILED) }
+
+    val libraryEntity =
+      LibraryEntity(
+        name = displayName,
+        tableId = tableId,
+        roots = sourcesRoots + classesRoots,
+        entitySource = entitySource,
+      ) {
+        this.excludedRoots = arrayListOf()
+        this.typeId = LibraryTypeId(ImportedLibraryType.IMPORTED_LIBRARY_KIND.kindId)
+        this.libraryProperties =
+          LibraryPropertiesEntity(entitySource) {
+            propertiesXmlTag = libraryItem.mavenCoordinates?.toLibraryPropertiesXml()
+          }
+        this.bazelLibraryExtension = BazelLibraryExtensionEntity(
+          entitySource = entitySource,
+          label = WorkspaceModelTargetLabel(libraryItem.id),
+          isSynthetic = libraryItem.id.isSynthetic,
+        )
+      }
+
+    return storage.addEntity(libraryEntity)
+  }
+
+  private fun LibraryItem.classesOrIJars(importIjars: Boolean): List<Path> =
+    if (importIjars) ijars.ifEmpty { jars } else jars.ifEmpty { ijars }
+
+  private fun Path.toLibraryRoot(virtualFileUrlManager: VirtualFileUrlManager, type: LibraryRootTypeId): LibraryRoot =
+    LibraryRoot(
+      url = toJarUrlString().toResolvedVirtualFileUrl(virtualFileUrlManager),
+      type = type,
+    )
+
+  private fun org.jetbrains.bsp.protocol.MavenCoordinates.toLibraryPropertiesXml(): String? {
+    val element =
+      serialize(
+        ImportedLibraryProperties(
+          MavenCoordinates(groupId, artifactId, version),
+        ).state,
+      ) ?: return null
+    element.name = JpsLibraryTableSerializer.PROPERTIES_TAG
+    return JDOMUtil.writeElement(element)
+  }
+}
