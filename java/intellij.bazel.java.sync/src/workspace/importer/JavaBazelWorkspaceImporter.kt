@@ -7,16 +7,10 @@ import com.intellij.platform.diagnostic.telemetry.helpers.use
 import com.intellij.platform.workspace.storage.EntitySource
 import com.intellij.platform.workspace.storage.MutableEntityStorage
 import com.intellij.platform.workspace.storage.entities
-import kotlinx.coroutines.coroutineScope
 import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.config.BazelJavaBackendBundle
 import org.jetbrains.bazel.label.Label
-import org.jetbrains.bazel.magicmetamodel.ProjectDetails
-import org.jetbrains.bazel.magicmetamodel.impl.TargetIdToModuleEntitiesMap
-import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.WorkspaceModelUpdater
-import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.CompiledSourceCodeInsideJarExcludeTransformer
-import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.ProjectDetailsToModuleDetailsTransformer
-import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.projectNameToJdkName
+import org.jetbrains.bazel.magicmetamodel.formatAsModuleName
 import org.jetbrains.bazel.performance.bspTracer
 import org.jetbrains.bazel.progress.withSubtask
 import org.jetbrains.bazel.sync.environment.bazelProjectName
@@ -31,24 +25,19 @@ import org.jetbrains.bazel.sync.workspace.snapshot.CommonWorkspaceSyncConfig
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceSnapshot
 import org.jetbrains.bazel.workspace.indexAdditionalFiles.ProjectViewGlobSet
 import org.jetbrains.bazel.workspacemodel.entities.CompiledSourceCodeInsideJarExcludeEntity
-import org.jetbrains.bazel.workspacemodel.entities.JavaModule
-import org.jetbrains.bazel.workspacemodel.entities.Library
-import org.jetbrains.bazel.workspacemodel.entities.Module
+import org.jetbrains.bsp.protocol.LibraryItem
+import org.jetbrains.bsp.protocol.RawBuildTarget
 import org.jetbrains.bsp.protocol.utils.extractJvmBuildTarget
 import java.nio.file.Path
-import kotlin.collections.first
-import kotlin.collections.isNotEmpty
-import kotlin.collections.joinToString
 
-// TODO: fix this JDK table mess, I'm sure this can be done in better way,
-//  wait if we have multiple JDKs in single workspace for some case???
-// RC: for now this just wraps 'purified' MMM
 internal class JavaBazelWorkspaceImporter : BazelWorkspaceImporter, BazelWorkspaceImporter.Named {
   private var javacOptions: Map<String, String>? = null
-  private lateinit var projectDetails: ProjectDetails
+  private lateinit var targets: List<RawBuildTarget>
+  private lateinit var libraryItems: List<LibraryItem>
   private lateinit var uniqueJavaHomes: Set<Path>
   private lateinit var commonSyncConfig: CommonWorkspaceSyncConfig
   private lateinit var javaSyncConfig: JavaWorkspaceSyncConfig
+  private var defaultJdkName: String? = null
 
   override val importerName: @NlsContexts.ProgressTitle String
     get() = BazelJavaBackendBundle.message("workspace.java.importer.name")
@@ -67,7 +56,6 @@ internal class JavaBazelWorkspaceImporter : BazelWorkspaceImporter, BazelWorkspa
   }
 
   fun onInitialize(context: WorkspaceImporterContext, snapshot: WorkspaceSnapshot): WorkspaceImporterResult {
-    // TODO: move is somewhere else
     if (!context.project.projectCtx.avoidExternalSystem) {
       // store generated IML files outside the project directory
       ExternalProjectsManagerImpl.getInstance(context.project).setStoreExternally(true)
@@ -75,35 +63,25 @@ internal class JavaBazelWorkspaceImporter : BazelWorkspaceImporter, BazelWorkspa
 
     commonSyncConfig = snapshot.syncConfigs.filterIsInstance<CommonWorkspaceSyncConfig>()
                          .firstOrNull() ?: throw IllegalStateException()
-
     javaSyncConfig = snapshot.syncConfigs.filterIsInstance<JavaWorkspaceSyncConfig>()
                        .firstOrNull() ?: throw IllegalStateException()
 
-    val targets = snapshot.targets.map { (_, target) -> target.rawBuildTarget }
+    targets = snapshot.targets.map { (_, target) -> target.rawBuildTarget }
+    libraryItems = targets.mapNotNull { extractJvmBuildTarget(it) }
+      .flatMap { it.libraries }
+      .distinctBy { it.id }
 
-    // init project details
-    projectDetails = ProjectDetails(
-      targetIds = targets.map { it.id },
-      targets = targets.toSet(),
-      libraries = targets.mapNotNull { extractJvmBuildTarget(it) }
-        .flatMap { it.libraries }
-        .distinctBy { it.id },
-    )
-
-    // TODO: check why is this even needed, cannot I just a SdkEntity to project workspace model
-    //  and avoid global global JDK table at all?
-    // compute JDKs
-    uniqueJavaHomes = projectDetails.targets
+    // TODO: check why is this even needed - can't we just write SdkEntity into the project workspace model
+    //  and avoid the global JDK table altogether?
+    uniqueJavaHomes = targets
       .mapNotNull(::extractJvmBuildTarget)
       .map { requireNotNull(it.javaHome) { "javaHome is null but expected not to be null for $it" } }
       .toSet()
-    uniqueJavaHomes.also {
-      if (it.isNotEmpty()) {
-        projectDetails.defaultJdkName = context.project.bazelProjectName.projectNameToJdkName(it.first())
-      }
-      else {
-        projectDetails.defaultJdkName = SdkUtils.getProjectJdkOrMostRecentJdk(context.project)?.name
-      }
+    defaultJdkName = if (uniqueJavaHomes.isNotEmpty()) {
+      context.project.bazelProjectName.projectNameToJdkName(uniqueJavaHomes.first())
+    }
+    else {
+      SdkUtils.getProjectJdkOrMostRecentJdk(context.project)?.name
     }
     return WorkspaceImporterResult.Success
   }
@@ -116,7 +94,7 @@ internal class JavaBazelWorkspaceImporter : BazelWorkspaceImporter, BazelWorkspa
       context.taskId.subTask("update-internal-model"),
       BazelJavaBackendBundle.message("workspace.java.importer.update.internal.model"),
     ) {
-      updateInternalModelSubtask(context, projectDetails, snapshot, builder, entitySource)
+      updateInternalModelSubtask(context, snapshot, builder, entitySource)
     }
     return WorkspaceImporterResult.Success
   }
@@ -143,95 +121,76 @@ internal class JavaBazelWorkspaceImporter : BazelWorkspaceImporter, BazelWorkspa
 
   private suspend fun updateInternalModelSubtask(
     context: WorkspaceImporterContext,
-    projectDetails: ProjectDetails,
     snapshot: WorkspaceSnapshot,
     builder: MutableEntityStorage,
     entitySource: EntitySource,
-  ) = coroutineScope {
-    val libraries = projectDetails.libraries.map { Library.fromLibraryItem(snapshot.repoMapping, it, context.project) }
-
-    val targetIdToModuleDetails =
-      bspTracer.spanBuilder("create.module.details.ms").use {
-        val transformer = ProjectDetailsToModuleDetailsTransformer(projectDetails)
-        projectDetails.targetIds.associateWith { transformer.moduleDetailsForTargetId(it) }
-      }
-
-    val jvmPackagePrefixes = DefaultJvmPackagePrefixCalculator(
+  ) {
+    val packagePrefixes = DefaultJvmPackagePrefixCalculator(
       sourceRootOptimizationMode = javaSyncConfig.sourceRootOptimizationMode,
-    ).also {
-      it.calculate(projectDetails.targets)
+    ).also { it.calculate(targets) }
+
+    val targetIndex: Map<Label, RawBuildTarget> = targets.associateBy { it.id }
+    val testTargets = TestTargetClassifier.calculateTargetsToMarkAsTest(targets.toSet(), targetIndex)
+
+    val importContext = ImportContext(
+      targets = targets,
+      libraries = libraryItems,
+      repoMapping = snapshot.repoMapping,
+      projectName = commonSyncConfig.projectName,
+      projectBasePath = commonSyncConfig.projectRootDir,
+      defaultJdkName = defaultJdkName,
+      testSourcesGlob = ProjectViewGlobSet(commonSyncConfig.projectRootDir, javaSyncConfig.testSourcesPatterns),
+      testTargets = testTargets,
+      packagePrefixes = packagePrefixes,
+      fileToTargets = snapshot.fileToTarget.mapValues { (_, v) -> v.map { it.label } },
+      virtualFileUrlManager = context.vfuManager,
+    )
+
+    bspTracer.spanBuilder("load.libraries.ms").use {
+      LibraryBuilder.write(
+        libraryItems = libraryItems,
+        repoMapping = snapshot.repoMapping,
+        importIjars = javaSyncConfig.importIjars,
+        virtualFileUrlManager = context.vfuManager,
+        entitySource = entitySource,
+        storage = builder,
+      )
     }
 
-    val targetIdToModuleEntitiesMap =
-      bspTracer.spanBuilder("create.target.id.to.module.entities.map.ms").use {
-        val targetIdToTargetInfo = (projectDetails.targets).associateBy { it.id }
-        val testTargets = TestTargetClassifier.calculateTargetsToMarkAsTest(projectDetails.targets, targetIdToTargetInfo)
-        val targetIdToModuleEntityMap =
-          TargetIdToModuleEntitiesMap(
-            projectDetails = projectDetails,
-            targetIdToModuleDetails = targetIdToModuleDetails,
-            targetIdToTargetInfo = targetIdToTargetInfo,
-            // TODO: remove usage, https://youtrack.jetbrains.com/issue/BAZEL-2015
-            // MAYBE RC: why is it needed?
-            fileToTargets = snapshot.fileToTarget.mapValues { (_, v) -> v.map { it.label } },
-            projectBasePath = commonSyncConfig.projectRootDir,
-            repoMapping = snapshot.repoMapping,
-            projectName = commonSyncConfig.projectName,
-            testSourcesGlob = ProjectViewGlobSet(commonSyncConfig.projectRootDir, javaSyncConfig.testSourcesPatterns),
-            packagePrefixes = jvmPackagePrefixes,
-            testTargets = testTargets,
-          )
-        targetIdToModuleEntityMap
-      }
-
-    val modulesToLoad = targetIdToModuleEntitiesMap.values.flatten().distinctBy { module -> module.getModuleName() }
-
-    val compiledSourceCodeInsideJarToExclude =
-      bspTracer.spanBuilder("calculate.non.generated.class.files.to.exclude").use {
-        if (BazelFeatureFlags.excludeCompiledSourceCodeInsideJars) {
-          CompiledSourceCodeInsideJarExcludeTransformer().transform(
-            targetIdToModuleDetails.values,
-            projectDetails.libraries,
-            packagePrefixes = jvmPackagePrefixes,
-          )
-        }
-        else {
-          null
-        }
-      }
-
     bspTracer.spanBuilder("load.modules.ms").use {
-      val workspaceModelUpdater =
-        WorkspaceModelUpdater(
-          workspaceEntityStorageBuilder = builder,
-          virtualFileUrlManager = context.vfuManager,
-          projectBasePath = commonSyncConfig.projectRootDir,
-          importIjars = javaSyncConfig.importIjars,
-          entitySource = entitySource,
+      JvmTargetEntitiesBuilder(importContext).writeAll(builder)
+    }
+
+    if (BazelFeatureFlags.excludeCompiledSourceCodeInsideJars) {
+      bspTracer.spanBuilder("calculate.non.generated.class.files.to.exclude").use {
+        CompiledSourceCodeInsideJarExcludeBuilder.write(
+          targets = targets,
+          libraries = libraryItems,
+          packagePrefixes = packagePrefixes,
+          storage = builder,
           currentExcludeEntity = context.currentSnapshot
             .entities<CompiledSourceCodeInsideJarExcludeEntity>()
             .firstOrNull(),
         )
-
-      workspaceModelUpdater.load(modulesToLoad, libraries)
-      compiledSourceCodeInsideJarToExclude?.let { workspaceModelUpdater.loadCompiledSourceCodeInsideJarExclude(it) }
-      javacOptions = calculateAllJavacOptions(modulesToLoad)
-    }
-  }
-
-  private fun calculateAllJavacOptions(modulesToLoad: List<Module>): HashMap<String, String> {
-    val javacOptions = HashMap<String, String>()
-    for (module in modulesToLoad) {
-      if (module is JavaModule) {
-        val options = module.javaAddendum?.javacOptions
-        if (options != null && options.isNotEmpty()) {
-          if (options.size == 1 && options[0] == "-proc:none") {
-            continue
-          }
-          javacOptions[module.getModuleName()] = options.joinToString(" ")
-        }
       }
     }
-    return javacOptions
+
+    javacOptions = calculateAllJavacOptions(snapshot)
+  }
+
+  private fun calculateAllJavacOptions(snapshot: WorkspaceSnapshot): HashMap<String, String> {
+    val result = HashMap<String, String>()
+    for (target in targets) {
+      val jvm = extractJvmBuildTarget(target) ?: continue
+      val options = jvm.javacOpts
+      if (options.isEmpty()) {
+        continue
+      }
+      if (options.size == 1 && options[0] == "-proc:none") {
+        continue
+      }
+      result[target.id.formatAsModuleName(snapshot.repoMapping)] = options.joinToString(" ")
+    }
+    return result
   }
 }
