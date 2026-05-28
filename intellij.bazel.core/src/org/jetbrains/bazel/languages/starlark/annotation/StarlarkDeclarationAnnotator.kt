@@ -1,5 +1,6 @@
 package org.jetbrains.bazel.languages.starlark.annotation
 
+import com.intellij.codeInsight.daemon.SyntheticPsiFileSupport
 import com.intellij.lang.annotation.AnnotationHolder
 import com.intellij.lang.annotation.HighlightSeverity
 import com.intellij.openapi.editor.markup.TextAttributes
@@ -54,9 +55,8 @@ internal class StarlarkDeclarationAnnotator : StarlarkAnnotator() {
     parent !is StarlarkKeywordVariadicParameter
 
   private fun PsiElement.isUnreferenced(): Boolean {
-    if (!isStarlarkTopLevel() && isExplicitlyUnused()) return false
+    if (shouldSkipUnreferencedCheck()) return false
     val scope = useScope
-    if (scope is GlobalSearchScope && DumbService.isDumb(project)) return false
     if (scope is GlobalSearchScope && this is StarlarkNamedElement && StarlarkLoadsIndex.isLoaded(this, scope)) return false
     // if not accessed externally, check for local usages
     val limitedScope = scope.intersectWith(LocalSearchScope(this.containingFile))
@@ -64,6 +64,13 @@ internal class StarlarkDeclarationAnnotator : StarlarkAnnotator() {
     if (this !is StarlarkTargetExpression) return references.none()
     // Variable is unreferenced if only reassignments refer to it.
     return references.none { it.element !is StarlarkTargetExpression }
+  }
+
+  private fun PsiElement.shouldSkipUnreferencedCheck(): Boolean {
+    if (!isStarlarkTopLevel() && isExplicitlyUnused()) return true
+    // it should be possible to always check local declarations usage
+    if (useScope !is GlobalSearchScope) return false
+    return DumbService.isDumb(project) || SyntheticPsiFileSupport.isOutsiderFile(containingFile.virtualFile)
   }
 
   // In Starlark, _-prefixed names signal intentionally unused declarations (like Python's _ convention).
