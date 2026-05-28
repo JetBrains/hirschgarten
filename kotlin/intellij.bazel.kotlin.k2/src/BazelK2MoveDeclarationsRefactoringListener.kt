@@ -7,7 +7,7 @@ import com.intellij.openapi.roots.ModuleRootManager
 import com.intellij.openapi.roots.ProjectFileIndex
 import com.intellij.psi.PsiElement
 import org.jetbrains.bazel.config.isBazelProject
-import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.BazelDummyModuleType
+import org.jetbrains.bazel.workspace.importer.BazelDummyModuleType
 import org.jetbrains.kotlin.idea.k2.refactoring.move.descriptor.K2MoveDescriptor
 import org.jetbrains.kotlin.idea.k2.refactoring.move.descriptor.K2MoveTargetDescriptor
 import org.jetbrains.kotlin.idea.k2.refactoring.move.processor.K2MoveDeclarationsRefactoringListener

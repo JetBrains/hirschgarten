@@ -9,9 +9,7 @@ import com.intellij.openapi.projectRoots.Sdk
 import com.intellij.openapi.projectRoots.impl.ProjectJdkImpl
 import com.intellij.openapi.roots.OrderRootType
 import com.intellij.openapi.roots.ProjectRootManager
-import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.projectNameToBaseJdkName
-import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.projectNameToJdkName
-import org.jetbrains.bazel.sync.environment.bazelProjectName
+import org.jetbrains.bazel.config.bazelProjectName
 import java.nio.file.Path
 
 // TODO: check if I can remove this completely, probably yes

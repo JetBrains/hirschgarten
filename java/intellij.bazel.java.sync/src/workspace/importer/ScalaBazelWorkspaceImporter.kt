@@ -2,7 +2,6 @@ package org.jetbrains.bazel.workspace.importer
 
 import com.intellij.openapi.application.writeAction
 import com.intellij.openapi.externalSystem.service.project.IdeModifiableModelsProviderImpl
-import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.scalaVersionToScalaSdkName
 import org.jetbrains.bazel.scala.sdk.ScalaSdk
 import org.jetbrains.bazel.scala.sdk.scalaSdkExtension
 import org.jetbrains.bazel.scala.sdk.scalaSdkExtensionExists
