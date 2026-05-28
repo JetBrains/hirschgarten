@@ -1,4 +1,4 @@
-package org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.transformers
+package org.jetbrains.bazel.workspace.importer
 
 import com.intellij.icons.AllIcons
 import com.intellij.ide.util.projectWizard.EmptyModuleBuilder

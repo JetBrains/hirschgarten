@@ -82,9 +82,8 @@ class ImportContext(
  * Writes the full set of JVM workspace-model entities for all [ImportContext.targets] (plus any dummy modules
  * they split into) directly into the supplied [MutableEntityStorage].
  *
- * Combines what used to live across
- * [org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.ModuleDetailsToJavaModuleTransformer],
- * [org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.JavaModuleUpdater] and friends.
+ * Combines what used to live across the deleted MMM transformer + updater hierarchy
+ * (ModuleDetailsToJavaModuleTransformer, JavaModuleUpdater, ModuleEntityUpdater and friends).
  *
  * Runs two passes: first resolves every target into a [TargetPlan] (pure, no writes) so the dummy modules know
  * which directories are already covered by real source roots; then writes all entities sequentially.
@@ -92,7 +91,7 @@ class ImportContext(
 @ApiStatus.Internal
 class JvmTargetEntitiesBuilder(private val ctx: ImportContext) {
   private val javaModuleType = ModuleTypeId("JAVA_MODULE")
-  private val dummyModuleType = ModuleTypeId(BAZEL_DUMMY_MODULE_TYPE_ID)
+  private val dummyModuleType = ModuleTypeId(BazelDummyModuleType.ID)
   private val resolverParallelism = Runtime.getRuntime().availableProcessors() * 2
   private val resolverBatchSize = 512
 
@@ -441,11 +440,6 @@ class JvmTargetEntitiesBuilder(private val ctx: ImportContext) {
       val dummies: List<DummyModuleSplitter.DummyModule>,
       val resourceRoots: List<ResourceRootBuilder.ResolvedResourceRoot>,
     ) : TargetPlan
-  }
-
-  companion object {
-    // Duplicated from BazelDummyModuleType.ID so that this file does not depend on the MMM tree.
-    private const val BAZEL_DUMMY_MODULE_TYPE_ID = "BAZEL_DUMMY_MODULE_TYPE"
   }
 }
 
