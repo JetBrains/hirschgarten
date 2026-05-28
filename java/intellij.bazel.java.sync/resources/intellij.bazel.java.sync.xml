@@ -16,7 +16,7 @@
   <extensionPoints>
     <extensionPoint
       dynamic="true"
-      interface="org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.KotlinFacetEntityUpdater"
+      interface="org.jetbrains.bazel.workspace.importer.KotlinFacetEntityUpdater"
       qualifiedName="org.jetbrains.bazel.kotlinFacetEntityUpdater"
     />
   </extensionPoints>

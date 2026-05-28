@@ -9,6 +9,9 @@ import com.intellij.openapi.application.readAction
 import com.intellij.openapi.components.serviceAsync
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.ex.ProjectManagerEx
+import com.intellij.openapi.projectRoots.ProjectJdkTable
+import com.intellij.openapi.projectRoots.impl.ProjectJdkImpl
+import com.intellij.openapi.util.Disposer
 import com.intellij.testFramework.UsefulTestCase
 import com.intellij.testFramework.common.timeoutRunBlocking
 import com.intellij.testFramework.junit5.SystemProperty
@@ -173,6 +176,9 @@ internal class WorkspaceImportApprovalTests {
     // projectManager.openProjectAsync(projectDir, projectOpenTask.withProject(project)) ?: fail { "cannot open project" }
     try {
       doWorkspaceModelTest(project, testCase.data)
+      ProjectJdkTable.getInstance().allJdks
+        .filterIsInstance<ProjectJdkImpl>()
+        .forEach { Disposer.dispose(it) }
     }
     finally {
       projectManager.forceCloseProjectAsync(project, save = false)

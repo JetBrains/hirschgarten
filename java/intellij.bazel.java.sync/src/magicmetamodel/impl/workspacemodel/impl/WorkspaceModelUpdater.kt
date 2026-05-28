@@ -39,7 +39,6 @@ class WorkspaceModelUpdater(
     val javaModuleUpdater =
       JavaModuleUpdater(
         workspaceModelEntityUpdaterConfig,
-        projectBasePath,
         moduleEntities,
         libraries,
       )
