@@ -4,18 +4,14 @@ import com.intellij.ide.impl.OpenProjectTask
 import com.intellij.ide.starter.models.IdeInfo
 import com.intellij.ide.starter.models.TestCase
 import com.intellij.ide.starter.project.GitHubProject
+import com.intellij.ide.starter.project.LocalProjectInfo
 import com.intellij.ide.starter.project.ReusableLocalProjectInfo
 import com.intellij.openapi.application.readAction
-import com.intellij.openapi.components.serviceAsync
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.ex.ProjectManagerEx
-import com.intellij.openapi.projectRoots.ProjectJdkTable
-import com.intellij.openapi.projectRoots.impl.ProjectJdkImpl
-import com.intellij.openapi.util.Disposer
 import com.intellij.testFramework.UsefulTestCase
 import com.intellij.testFramework.common.timeoutRunBlocking
 import com.intellij.testFramework.junit5.SystemProperty
-import com.intellij.testFramework.junit5.TestApplication
 import com.intellij.testFramework.junit5.fixture.projectFixture
 import com.intellij.testFramework.replaceService
 import com.intellij.tools.ide.starter.product.idea.ultimate.IdeaUltimate
@@ -42,7 +38,7 @@ import kotlin.io.path.readText
 import kotlin.io.path.writeText
 import kotlin.time.Duration.Companion.hours
 
-@TestApplication
+@ApprovalTestApplication
 internal class WorkspaceImportApprovalTests {
 
   companion object {
@@ -80,6 +76,23 @@ internal class WorkspaceImportApprovalTests {
           projectView = { projectDir -> projectDir.resolve("community.bazelproject") },
         ),
       ),
+
+      ApprovalTestCase(
+        project = TestCase(
+          ideInfo = IdeInfo.IdeaUltimate,
+          projectInfo = LocalProjectInfo(
+            projectDir = Path.of(System.getProperty("bazel.workspace.approval.test.ultimate.path")),
+            isReusable = true,
+          ),
+        ),
+        data = object : WorkspaceImportApprovalTestData(
+          name = "JetbrainsIntellijUltimate",
+          projectView = { projectDir -> projectDir.resolve("ultimate.bazelproject") },
+        ) {
+          override val expectedWorkspaceModelFile: Path
+            get() = Path.of(System.getProperty("bazel.workspace.approval.test.ultimate.golden"))
+        },
+      ),
     ) + discoverRedcodesTestCases()
 
     fun discoverRedcodesTestCases(): List<ApprovalTestCase> {
@@ -115,8 +128,12 @@ internal class WorkspaceImportApprovalTests {
       }
     }
 
-    val namedApprovalTestCases = approvalTestCases.map { Named.of(it.data.name, it) }
-
+    val allApprovalTestCases = approvalTestCases.map { Named.of(it.data.name, it) }
+    val allApprovalTestCasesWithoutUltimate = allApprovalTestCases.filter { it.name != "JetbrainsIntellijUltimate" }
+    val ultimateApprovalTestCases = allApprovalTestCases.filter { it.name == "JetbrainsIntellijUltimate" }
+    val selectedApprovalTestCases =
+      if (System.getProperty("bazel.workspace.approval.test.only.ultimate").toBoolean()) ultimateApprovalTestCases
+      else allApprovalTestCasesWithoutUltimate
   }
 
   @BeforeEach
@@ -131,7 +148,7 @@ internal class WorkspaceImportApprovalTests {
   }
 
   @ParameterizedTest(name = "{0}")
-  @FieldSource("namedApprovalTestCases")
+  @FieldSource("selectedApprovalTestCases")
   @SystemProperty("NO_FS_ROOTS_ACCESS_CHECK", "true")
   fun `test workspace model matches expected values`(testCase: ApprovalTestCase) = timeoutRunBlocking(timeout = 1.hours) {
     Assumptions.assumeTrue(!testCase.data.heavy || System.getProperty("bazel.workspace.approval.test.run.heavy").toBoolean())
@@ -176,9 +193,6 @@ internal class WorkspaceImportApprovalTests {
     // projectManager.openProjectAsync(projectDir, projectOpenTask.withProject(project)) ?: fail { "cannot open project" }
     try {
       doWorkspaceModelTest(project, testCase.data)
-      ProjectJdkTable.getInstance().allJdks
-        .filterIsInstance<ProjectJdkImpl>()
-        .forEach { Disposer.dispose(it) }
     }
     finally {
       projectManager.forceCloseProjectAsync(project, save = false)
