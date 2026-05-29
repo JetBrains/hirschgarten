@@ -10,7 +10,7 @@ import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.install.EnvironmentCreator
 import org.jetbrains.bazel.languages.bazelversion.psi.BazelVersionLiteral
 import org.jetbrains.bazel.languages.bazelversion.service.BazelVersionWorkspaceResolver
-import org.jetbrains.bazel.server.bsp.BaselServerFacadeImpl
+import org.jetbrains.bazel.server.bsp.BazelServerFacadeImpl
 import org.jetbrains.bazel.server.bsp.managers.BazelBspAspectsManager
 import org.jetbrains.bazel.server.bsp.managers.BazelBspLanguageExtensionsGenerator
 import org.jetbrains.bazel.server.bsp.managers.BazelToolchainManager
@@ -34,7 +34,7 @@ internal class DefaultBazelServerConnection(private val project: Project) : Baze
     it.create()
   }
 
-  data class ServerWithVersionLiteral(val server: BaselServerFacadeImpl?, val versionLiteral: BazelVersionLiteral?)
+  data class ServerWithVersionLiteral(val server: BazelServerFacadeImpl?, val versionLiteral: BazelVersionLiteral?)
 
   private val serverAndVersionLiteral = AtomicReference<ServerWithVersionLiteral>(ServerWithVersionLiteral(null, null))
 
@@ -42,7 +42,7 @@ internal class DefaultBazelServerConnection(private val project: Project) : Baze
     return task(getServer())
   }
 
-  private suspend fun getServer(): BaselServerFacadeImpl {
+  private suspend fun getServer(): BazelServerFacadeImpl {
     // ensure `.bazelbsp` directory exists and functions
     environmentCreator.create()
 
@@ -62,7 +62,7 @@ internal class DefaultBazelServerConnection(private val project: Project) : Baze
     return server
   }
 
-  private suspend fun createServer(workspaceContext: WorkspaceContext): BaselServerFacadeImpl {
+  private suspend fun createServer(workspaceContext: WorkspaceContext): BazelServerFacadeImpl {
     val taskEventsHandler = BazelTaskEventsService.getInstance(project)
     val aspectsResolver = InternalAspectsResolver(workspaceRoot)
     val bazelInfoResolver = BazelInfoResolver(workspaceRoot)
@@ -122,9 +122,10 @@ internal class DefaultBazelServerConnection(private val project: Project) : Baze
         workspaceRoot = workspaceRoot,
         bazelRunner = bazelRunner,
         workspaceContext = workspaceContext,
+        bazelPathsResolver = bazelPathsResolver,
       )
 
-    return BaselServerFacadeImpl(
+    return BazelServerFacadeImpl(
       bspMapper = bspProjectMapper,
       projectProvider = projectProvider,
       executeService = executeService,

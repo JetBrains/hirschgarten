@@ -9,12 +9,20 @@ import kotlinx.coroutines.runBlocking
 import org.jetbrains.bazel.bazelrunner.BazelProcess
 import org.jetbrains.bazel.bazelrunner.BazelProcessResult
 import org.jetbrains.bazel.bazelrunner.BazelRunner
+import org.jetbrains.bazel.commons.BazelInfo
+import org.jetbrains.bazel.commons.BazelPathsResolver
+import org.jetbrains.bazel.commons.BazelRelease
+import org.jetbrains.bazel.commons.BzlmodRepoMapping
+import org.jetbrains.bazel.commons.RepoMapping
+import org.jetbrains.bazel.commons.RepoMappingDisabled
+import org.jetbrains.bazel.commons.orFallbackVersion
 import org.jetbrains.bazel.languages.projectview.ProjectView
 import org.jetbrains.bazel.languages.projectview.ProjectViewToWorkspaceContextConverter
 import org.jetbrains.bazel.languages.projectview.psi.ProjectViewPsiFile
 import org.jetbrains.bazel.project.BazelProjectFixtures.initializeBazelProject
 import org.jetbrains.bazel.server.sync.BspProjectMapper
 import org.jetbrains.bazel.sync.workspace.projectTree.BazelRunnerSpyStubbingHelper.captureBazelCommandFromMock
+import org.jetbrains.bsp.protocol.TaskGroupId
 import org.jetbrains.bsp.protocol.WorkspaceDirectoriesResult
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.spy
@@ -461,6 +469,34 @@ class WorkspaceDirectoriesFromProjectViewTest : BasePlatformTestCase() {
     )
   }
 
+  fun `test should include target directory from mapped external repository`() {
+    // GIVEN
+    val toolboxDir = workspaceRoot.resolve("toolbox").createDirectories()
+    val communityKernelDir = workspaceRoot.resolve("community/fleet/kernel").createDirectories()
+    val psiFile = myFixture.configureByText(
+      "Targets.bazelproject",
+      """
+        directories:
+          toolbox
+        targets:
+          @community//fleet/kernel:...
+        derive_targets_from_directories: false
+      """.trimIndent(),
+    )
+
+    // WHEN
+    val result = runMapper(psiFile, createRepoMapping("community", "community+", workspaceRoot.resolve("community")))
+
+    // THEN
+    assertSameElements(
+      result.includedDirectories.map { it.uri },
+      listOf(
+        toolboxDir.toUri().toString(),
+        communityKernelDir.toUri().toString(),
+      ),
+    )
+  }
+
   fun `test should not pass build flags to bazel query command`() {
     // GIVEN
     val extraToolchainsOption = "--extra_toolchains=//some_directory/non_existing_toolchain:non_existing_toolchain"
@@ -484,20 +520,42 @@ class WorkspaceDirectoriesFromProjectViewTest : BasePlatformTestCase() {
     assertDoesntContain(bazelCommand.options, extraToolchainsOption)
   }
 
-  private fun runMapper(psiFile: PsiFile?): WorkspaceDirectoriesResult {
+  private fun runMapper(
+    psiFile: PsiFile?,
+    repoMapping: RepoMapping = RepoMappingDisabled,
+  ): WorkspaceDirectoriesResult {
     val projectView = ProjectView.fromProjectViewPsiFile(psiFile as ProjectViewPsiFile)
     val workspaceContext = ProjectViewToWorkspaceContextConverter
       .convert(project, projectView, workspaceRoot)
     val owner = ModalTaskOwner.guess()
-    val mapper = BspProjectMapper(workspaceRoot, bazelRunner, workspaceContext)
+    val mapper = BspProjectMapper(workspaceRoot, bazelRunner, workspaceContext, BazelPathsResolver(createBazelInfo()))
     return runWithModalProgressBlocking(
       owner,
       "Running Bazel Query",
       TaskCancellation.cancellable(),
     ) {
-      mapper.workspaceDirectories()
+      mapper.workspaceDirectories(repoMapping, TaskGroupId.EMPTY.task(""))
     }
   }
+
+  private fun createRepoMapping(apparentName: String, canonicalName: String, path: Path): BzlmodRepoMapping =
+    BzlmodRepoMapping(
+      canonicalRepoNameToLocalPath = mapOf(canonicalName to workspaceRoot.relativize(path)),
+      apparentRepoNameToCanonicalName = mapOf("" to "", apparentName to canonicalName),
+      canonicalRepoNameToPath = mapOf("" to workspaceRoot, canonicalName to path),
+    )
+
+  private fun createBazelInfo(): BazelInfo =
+    BazelInfo(
+      execRoot = workspaceRoot.resolve("bazel-exec"),
+      outputBase = workspaceRoot.resolve("bazel-out"),
+      workspaceRoot = workspaceRoot,
+      bazelBin = workspaceRoot.resolve("bazel-bin"),
+      release = BazelRelease.fromReleaseString("release 9.0.0").orFallbackVersion(),
+      true,
+      false,
+      emptyList(),
+    )
 
   private fun createMockBazelRunner(): BazelRunner {
     val realRunner = BazelRunner(null, workspaceRoot)

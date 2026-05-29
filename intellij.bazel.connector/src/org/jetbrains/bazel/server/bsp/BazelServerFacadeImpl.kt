@@ -34,7 +34,7 @@ import org.jetbrains.bsp.protocol.WorkspaceNameResult
 import org.jetbrains.bsp.protocol.WorkspacePhasedBuildTargetsResult
 
 @ApiStatus.Internal
-class BaselServerFacadeImpl(
+class BazelServerFacadeImpl(
   private val bspMapper: BspProjectMapper,
   private val projectProvider: BazelSyncProjectProvider,
   private val executeService: ExecuteService,
@@ -50,18 +50,19 @@ class BaselServerFacadeImpl(
   }
 
   override suspend fun workspaceBuildTargets(params: WorkspaceBuildTargetParams): WorkspaceBuildTargetsResult {
-    val project: AspectSyncProject = when (val selector = params.selector) {
-      WorkspaceBuildTargetSelector.AllTargets -> {
+    val project: AspectSyncProject =
+      when (val selector = params.selector) {
+        WorkspaceBuildTargetSelector.AllTargets -> {
           projectProvider.getOrLoad(params.taskId) as? AspectSyncProject
-      }
+        }
 
-      is WorkspaceBuildTargetSelector.SpecificTargets -> {
+        is WorkspaceBuildTargetSelector.SpecificTargets -> {
           projectProvider.updateAndGet(
             targetsToSync = selector.targets,
             taskId = params.taskId,
           )
-      }
-    } ?: return WorkspaceBuildTargetsResult(emptyMap(), setOf())
+        }
+      } ?: return WorkspaceBuildTargetsResult(emptyMap(), setOf())
     return project.asWorkspaceTargets()
   }
 
@@ -85,13 +86,13 @@ class BaselServerFacadeImpl(
 
   override suspend fun buildTargetRun(params: RunParams): RunResult = executeService.run(params)
 
-  override suspend fun workspaceDirectories(): WorkspaceDirectoriesResult {
-    return bspMapper.workspaceDirectories()
+  override suspend fun workspaceDirectories(taskId: TaskId): WorkspaceDirectoriesResult {
+    return bspMapper.workspaceDirectories(projectProvider.getOrLoad(taskId).repoMapping, taskId)
   }
 
   override suspend fun workspaceBazelRepoMapping(taskId: TaskId): WorkspaceBazelRepoMappingResult {
-    val project = projectProvider.getOrLoad(taskId)
-    return bspMapper.workspaceBazelRepoMapping(project)
+    val repoMapping = projectProvider.getOrLoad(taskId).repoMapping
+    return WorkspaceBazelRepoMappingResult(repoMapping)
   }
 
   override suspend fun workspaceName(taskId: TaskId): WorkspaceNameResult {
