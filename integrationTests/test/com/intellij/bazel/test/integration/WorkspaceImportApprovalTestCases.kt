@@ -2,12 +2,11 @@ package com.intellij.bazel.test.integration
 
 import com.intellij.ide.starter.extended.config.Const.SSH_GIT_SPACE_PREFIX
 import com.intellij.ide.starter.extended.data.PlatformGitProject
-import com.intellij.ide.starter.models.IdeInfo
+import com.intellij.ide.starter.ide.IdeProductProvider
 import com.intellij.ide.starter.project.GitHubProject
 import com.intellij.ide.starter.project.TestCaseTemplate
-import com.intellij.tools.ide.starter.product.idea.ultimate.IdeaUltimate
 
-object WorkspaceImportApprovalTestCases : TestCaseTemplate(IdeInfo.IdeaUltimate) {
+object WorkspaceImportApprovalTestCases : TestCaseTemplate(IdeProductProvider.IU) {
 
   private fun simpleBazelProjectsForTesting(name: String) = withProject(
     GitHubProject.fromGithub(
