@@ -2,11 +2,13 @@ package org.jetbrains.bazel.languages.starlark.psi.expressions.arguments
 
 import com.intellij.lang.ASTNode
 import com.intellij.psi.PsiReference
+import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkBaseElement
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkElementVisitor
 import org.jetbrains.bazel.languages.starlark.references.StarlarkArgumentReference
 
-internal class StarlarkArgumentExpression(node: ASTNode) :
+@ApiStatus.Internal
+class StarlarkArgumentExpression(node: ASTNode) :
   StarlarkBaseElement(node),
   StarlarkArgumentElement {
   override fun acceptVisitor(visitor: StarlarkElementVisitor) = visitor.visitArgumentExpression(this)

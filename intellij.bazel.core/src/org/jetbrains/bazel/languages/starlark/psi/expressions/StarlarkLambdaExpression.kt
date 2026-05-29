@@ -1,6 +1,7 @@
 package org.jetbrains.bazel.languages.starlark.psi.expressions
 
 import com.intellij.lang.ASTNode
+import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkBaseElement
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkElementVisitor
 import org.jetbrains.bazel.languages.starlark.psi.functions.StarlarkCallable
@@ -9,7 +10,8 @@ import org.jetbrains.bazel.languages.starlark.psi.functions.StarlarkOptionalPara
 import org.jetbrains.bazel.languages.starlark.psi.functions.StarlarkParameter
 import org.jetbrains.bazel.languages.starlark.psi.functions.StarlarkParameterList
 
-internal class StarlarkLambdaExpression(node: ASTNode) :
+@ApiStatus.Internal
+class StarlarkLambdaExpression(node: ASTNode) :
   StarlarkBaseElement(node),
   StarlarkCallable {
   override fun acceptVisitor(visitor: StarlarkElementVisitor) = visitor.visitLambdaExpression(this)

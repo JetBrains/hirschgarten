@@ -57,27 +57,27 @@ import org.jetbrains.bazel.languages.starlark.psi.statements.StarlarkStringLoadV
 
 @ApiStatus.Internal
 open class StarlarkElementVisitor : PsiElementVisitor() {
-  internal fun visitArgumentExpression(node: StarlarkArgumentExpression) {
+  open fun visitArgumentExpression(node: StarlarkArgumentExpression) {
     visitElement(node)
   }
 
-  internal fun visitArgumentList(node: StarlarkArgumentList) {
+  open fun visitArgumentList(node: StarlarkArgumentList) {
     visitElement(node)
   }
 
-  internal fun visitAssignmentStatement(node: StarlarkAssignmentStatement) {
+  open fun visitAssignmentStatement(node: StarlarkAssignmentStatement) {
     visitElement(node)
   }
 
-  internal fun visitAugAssignmentStatement(node: StarlarkAugAssignmentStatement) {
+  open fun visitAugAssignmentStatement(node: StarlarkAugAssignmentStatement) {
     visitElement(node)
   }
 
-  internal fun visitBinaryExpression(node: StarlarkBinaryExpression) {
+  open fun visitBinaryExpression(node: StarlarkBinaryExpression) {
     visitElement(node)
   }
 
-  internal fun visitBreakStatement(node: StarlarkBreakStatement) {
+  open fun visitBreakStatement(node: StarlarkBreakStatement) {
     visitElement(node)
   }
 
@@ -85,183 +85,183 @@ open class StarlarkElementVisitor : PsiElementVisitor() {
     visitElement(node)
   }
 
-  internal fun visitConditionalExpression(node: StarlarkConditionalExpression) {
+  open fun visitConditionalExpression(node: StarlarkConditionalExpression) {
     visitElement(node)
   }
 
-  internal fun visitContinueStatement(node: StarlarkContinueStatement) {
+  open fun visitContinueStatement(node: StarlarkContinueStatement) {
     visitElement(node)
   }
 
-  internal fun visitDictCompExpression(node: StarlarkDictCompExpression) {
+  open fun visitDictCompExpression(node: StarlarkDictCompExpression) {
     visitElement(node)
   }
 
-  internal fun visitDictLiteralExpression(node: StarlarkDictLiteralExpression) {
+  open fun visitDictLiteralExpression(node: StarlarkDictLiteralExpression) {
     visitElement(node)
   }
 
-  internal fun visitDoubleStarExpression(node: StarlarkDoubleStarExpression) {
+  open fun visitDoubleStarExpression(node: StarlarkDoubleStarExpression) {
     visitElement(node)
   }
 
-  internal fun visitEmptyExpression(node: StarlarkEmptyExpression) {
+  open fun visitEmptyExpression(node: StarlarkEmptyExpression) {
     visitElement(node)
   }
 
-  internal fun visitExpressionStatement(node: StarlarkExpressionStatement) {
+  open fun visitExpressionStatement(node: StarlarkExpressionStatement) {
     visitElement(node)
   }
 
-  internal fun visitFalseLiteralExpression(node: StarlarkFalseLiteralExpression) {
+  open fun visitFalseLiteralExpression(node: StarlarkFalseLiteralExpression) {
     visitElement(node)
   }
 
-  internal fun visitFloatLiteralExpression(node: StarlarkFloatLiteralExpression) {
+  open fun visitFloatLiteralExpression(node: StarlarkFloatLiteralExpression) {
     visitElement(node)
   }
 
-  internal open fun visitForStatement(node: StarlarkForStatement) {
+  open fun visitForStatement(node: StarlarkForStatement) {
     visitElement(node)
   }
 
-  internal open fun visitFunctionDeclaration(node: StarlarkFunctionDeclaration) {
+  open fun visitFunctionDeclaration(node: StarlarkFunctionDeclaration) {
     visitElement(node)
   }
 
-  internal fun visitGeneratorExpression(node: StarlarkGeneratorExpression) {
+  open fun visitGeneratorExpression(node: StarlarkGeneratorExpression) {
     visitElement(node)
   }
 
-  internal open fun visitIfStatement(node: StarlarkIfStatement) {
+  open fun visitIfStatement(node: StarlarkIfStatement) {
     visitElement(node)
   }
 
-  internal fun visitIntegerLiteralExpression(node: StarlarkIntegerLiteralExpression) {
+  open fun visitIntegerLiteralExpression(node: StarlarkIntegerLiteralExpression) {
     visitElement(node)
   }
 
-  internal fun visitKeyValueExpression(node: StarlarkKeyValueExpression) {
+  open fun visitKeyValueExpression(node: StarlarkKeyValueExpression) {
     visitElement(node)
   }
 
-  internal fun visitLambdaExpression(node: StarlarkLambdaExpression) {
+  open fun visitLambdaExpression(node: StarlarkLambdaExpression) {
     visitElement(node)
   }
 
-  internal fun visitListCompExpression(node: StarlarkListCompExpression) {
+  open fun visitListCompExpression(node: StarlarkListCompExpression) {
     visitElement(node)
   }
 
-  internal fun visitListLiteralExpression(node: StarlarkListLiteralExpression) {
+  open fun visitListLiteralExpression(node: StarlarkListLiteralExpression) {
     visitElement(node)
   }
 
-  internal open fun visitLoadStatement(node: StarlarkLoadStatement) {
+  open fun visitLoadStatement(node: StarlarkLoadStatement) {
     visitElement(node)
   }
 
-  internal fun visitFilenameLoadValue(node: StarlarkFilenameLoadValue) {
+  open fun visitFilenameLoadValue(node: StarlarkFilenameLoadValue) {
     visitElement(node)
   }
 
-  internal fun visitNamedArgumentExpression(node: StarlarkNamedArgumentExpression) {
+  open fun visitNamedArgumentExpression(node: StarlarkNamedArgumentExpression) {
     visitElement(node)
   }
 
-  internal open fun visitNamedLoadValue(node: StarlarkNamedLoadValue) {
+  open fun visitNamedLoadValue(node: StarlarkNamedLoadValue) {
     visitElement(node)
   }
 
-  internal fun visitNoneLiteralExpression(node: StarlarkNoneLiteralExpression) {
+  open fun visitNoneLiteralExpression(node: StarlarkNoneLiteralExpression) {
     visitElement(node)
   }
 
-  internal open fun visitStringLoadValue(node: StarlarkStringLoadValue) {
+  open fun visitStringLoadValue(node: StarlarkStringLoadValue) {
     visitElement(node)
   }
 
-  internal fun visitMandatoryParameter(node: StarlarkMandatoryParameter) {
+  open fun visitMandatoryParameter(node: StarlarkMandatoryParameter) {
     visitElement(node)
   }
 
-  internal fun visitOptionalParameter(node: StarlarkOptionalParameter) {
+  open fun visitOptionalParameter(node: StarlarkOptionalParameter) {
     visitElement(node)
   }
 
-  internal fun visitVariadicParameter(node: StarlarkVariadicParameter) {
+  open fun visitVariadicParameter(node: StarlarkVariadicParameter) {
     visitElement(node)
   }
 
-  internal fun visitKeywordVariadicParameter(node: StarlarkKeywordVariadicParameter) {
+  open fun visitKeywordVariadicParameter(node: StarlarkKeywordVariadicParameter) {
     visitElement(node)
   }
 
-  internal fun visitParameterList(node: StarlarkParameterList) {
+  open fun visitParameterList(node: StarlarkParameterList) {
     visitElement(node)
   }
 
-  internal fun visitParenthesizedExpression(node: StarlarkParenthesizedExpression) {
+  open fun visitParenthesizedExpression(node: StarlarkParenthesizedExpression) {
     visitElement(node)
   }
 
-  internal fun visitPassStatement(node: StarlarkPassStatement) {
+  open fun visitPassStatement(node: StarlarkPassStatement) {
     visitElement(node)
   }
 
-  internal fun visitPrefixExpression(node: StarlarkPrefixExpression) {
+  open fun visitPrefixExpression(node: StarlarkPrefixExpression) {
     visitElement(node)
   }
 
-  internal fun visitReferenceExpression(node: StarlarkReferenceExpression) {
+  open fun visitReferenceExpression(node: StarlarkReferenceExpression) {
     visitElement(node)
   }
 
-  internal fun visitReturnStatement(node: StarlarkReturnStatement) {
+  open fun visitReturnStatement(node: StarlarkReturnStatement) {
     visitElement(node)
   }
 
-  internal fun visitSliceExpression(node: StarlarkSliceExpression) {
+  open fun visitSliceExpression(node: StarlarkSliceExpression) {
     visitElement(node)
   }
 
-  internal fun visitSliceItem(node: StarlarkSliceItem) {
+  open fun visitSliceItem(node: StarlarkSliceItem) {
     visitElement(node)
   }
 
-  internal fun visitStarArgumentExpression(node: StarlarkStarArgumentExpression) {
+  open fun visitStarArgumentExpression(node: StarlarkStarArgumentExpression) {
     visitElement(node)
   }
 
-  internal fun visitStarExpression(node: StarlarkStarExpression) {
+  open fun visitStarExpression(node: StarlarkStarExpression) {
     visitElement(node)
   }
 
-  internal fun visitStatementListImpl(node: StarlarkStatementList) {
+  open fun visitStatementListImpl(node: StarlarkStatementList) {
     visitElement(node)
   }
 
-  internal fun visitStringLiteralExpression(node: StarlarkStringLiteralExpression) {
+  open fun visitStringLiteralExpression(node: StarlarkStringLiteralExpression) {
     visitElement(node)
   }
 
-  internal fun visitSubscriptionExpression(node: StarlarkSubscriptionExpression) {
+  open fun visitSubscriptionExpression(node: StarlarkSubscriptionExpression) {
     visitElement(node)
   }
 
-  internal fun visitTargetExpression(node: StarlarkTargetExpression) {
+  open fun visitTargetExpression(node: StarlarkTargetExpression) {
     visitElement(node)
   }
 
-  internal fun visitTrueLiteralExpression(node: StarlarkTrueLiteralExpression) {
+  open fun visitTrueLiteralExpression(node: StarlarkTrueLiteralExpression) {
     visitElement(node)
   }
 
-  internal fun visitTupleExpression(node: StarlarkTupleExpression) {
+  open fun visitTupleExpression(node: StarlarkTupleExpression) {
     visitElement(node)
   }
 
-  internal fun visitGlobExpression(node: StarlarkGlobExpression) {
+  open fun visitGlobExpression(node: StarlarkGlobExpression) {
     visitElement(node)
   }
 }

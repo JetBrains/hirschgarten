@@ -10,9 +10,11 @@ import com.intellij.psi.PsiManager
 import com.intellij.psi.PsiPolyVariantReference
 import com.intellij.psi.PsiPolyVariantReferenceBase
 import com.intellij.psi.ResolveResult
+import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkGlobExpression
 
-internal class StarlarkGlobReference(element: StarlarkGlobExpression) :
+@ApiStatus.Internal
+class StarlarkGlobReference(element: StarlarkGlobExpression) :
   PsiPolyVariantReferenceBase<StarlarkGlobExpression>(
     element,
     TextRange(0, element.textLength),

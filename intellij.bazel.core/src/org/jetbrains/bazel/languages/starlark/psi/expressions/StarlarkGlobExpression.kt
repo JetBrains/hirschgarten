@@ -16,7 +16,7 @@ import org.jetbrains.bazel.languages.starlark.references.StarlarkGlobReference
 import org.jetbrains.bazel.languages.starlark.references.findBuildFile
 
 @ApiStatus.Internal
-internal class StarlarkGlobExpression(node: ASTNode) : StarlarkBaseElement(node) {
+class StarlarkGlobExpression(node: ASTNode) : StarlarkBaseElement(node) {
 
   override fun acceptVisitor(visitor: StarlarkElementVisitor) = visitor.visitGlobExpression(this)
 
