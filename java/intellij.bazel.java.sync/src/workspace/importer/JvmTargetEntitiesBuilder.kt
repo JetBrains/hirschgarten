@@ -265,8 +265,12 @@ class JvmTargetEntitiesBuilder(private val ctx: ImportContext) {
     // facet EP is absent (kotlin plugin disabled), `JavaModuleUpdater.addKotlinModuleIfPossible` returned
     // null and the dummies were silently dropped, preserve that here
     if (KotlinFacetEntityUpdater.ep.extensionList.isNotEmpty()) {
-      plan.dummies.filterNot { it.name in writtenNames }
-        .forEach { dummy -> writeDummy(target, dummy, plan, packageMarkerBuilder, storage) }
+      for (dummy in plan.dummies) {
+        if (!writtenNames.add(dummy.name)) {
+          continue
+        }
+        writeDummy(target, dummy, plan, packageMarkerBuilder, storage)
+      }
     }
   }
 
