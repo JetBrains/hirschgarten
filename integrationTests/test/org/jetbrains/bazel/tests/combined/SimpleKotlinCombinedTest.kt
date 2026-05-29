@@ -15,8 +15,6 @@ import com.intellij.driver.sdk.ui.components.elements.popup
 import com.intellij.driver.sdk.ui.xQuery
 import com.intellij.driver.sdk.wait
 import com.intellij.driver.sdk.waitFor
-import com.intellij.ide.starter.driver.engine.BackgroundRun
-import com.intellij.ide.starter.driver.engine.runIdeWithDriver
 import com.intellij.ide.starter.ide.IDETestContext
 import com.intellij.openapi.ui.playback.commands.AbstractCommand.CMD_PREFIX
 import com.intellij.tools.ide.metrics.collector.telemetry.OpentelemetrySpanJsonParser
@@ -41,58 +39,22 @@ import com.intellij.tools.ide.performanceTesting.commands.takeScreenshot
 import com.intellij.tools.ide.performanceTesting.commands.waitForSmartMode
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.data.IdeaBazelCases
-import org.jetbrains.bazel.ideStarter.IdeStarterBaseProjectTest
 import org.jetbrains.bazel.ideStarter.assertSyncSucceeded
 import org.jetbrains.bazel.ideStarter.assertSyncedTargets
 import org.jetbrains.bazel.ideStarter.buildAndSync
-import org.jetbrains.bazel.ideStarter.checkIdeaLogForExceptions
 import org.jetbrains.bazel.ideStarter.execute
 import org.jetbrains.bazel.ideStarter.openFile
-import org.jetbrains.bazel.ideStarter.syncBazelProject
 import org.jetbrains.bazel.tests.ui.expandedTree
 import org.jetbrains.bazel.tests.ui.verifyTestStatus
-import org.junit.jupiter.api.AfterAll
-import org.junit.jupiter.api.AfterEach
-import org.junit.jupiter.api.Assumptions
-import org.junit.jupiter.api.BeforeAll
-import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.MethodOrderer
 import org.junit.jupiter.api.Order
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.TestInstance
-import org.junit.jupiter.api.TestMethodOrder
 import kotlin.io.path.div
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
 
-@TestInstance(TestInstance.Lifecycle.PER_CLASS)
-@TestMethodOrder(MethodOrderer.OrderAnnotation::class)
-class SimpleKotlinCombinedTest : IdeStarterBaseProjectTest() {
-  private lateinit var bgRun: BackgroundRun
-  private lateinit var ctx: IDETestContext
-
-  @BeforeAll
-  fun startIdeAndSync() {
-    ctx = createContext("simpleKotlinCombined", IdeaBazelCases.SimpleKotlinCombined)
-    bgRun = ctx.runIdeWithDriver(runTimeout = timeout)
-    withDriver(bgRun) {
-      ideFrame {
-        syncBazelProject()
-        waitForIndicators(5.minutes)
-        assertSyncSucceeded()
-      }
-    }
-  }
-
-  @BeforeEach
-  fun skipIfCriticalFailed() = Assumptions.assumeFalse(criticalProblemOccurred)
-
-  @AfterEach
-  fun checkIdeState() {
-    if (!criticalProblemOccurred && ::bgRun.isInitialized && !bgRun.driver.isConnected) {
-      criticalProblemOccurred = true
-    }
-  }
+class SimpleKotlinCombinedTest : IdeStarterCombinedBaseTest() {
+  override fun createContext(): IDETestContext =
+    createContext("simpleKotlinCombined", IdeaBazelCases.SimpleKotlinCombined)
 
   @Test @Order(0)
   fun `pty terminal should have correct output after sync`() = ptyTerminal()
@@ -120,12 +82,6 @@ class SimpleKotlinCombinedTest : IdeStarterBaseProjectTest() {
 
   @Test @Order(Int.MAX_VALUE)
   fun `hotswap should reload modified code during debug session`() = hotswap()
-
-  @AfterAll
-  fun closeIde() {
-    if (::bgRun.isInitialized) bgRun.closeIdeAndWait()
-    if (::ctx.isInitialized) checkIdeaLogForExceptions(ctx)
-  }
 
   private fun ptyTerminal() {
     withDriver(bgRun) {

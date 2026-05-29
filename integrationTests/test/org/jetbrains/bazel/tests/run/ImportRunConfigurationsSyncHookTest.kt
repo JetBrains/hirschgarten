@@ -4,46 +4,48 @@ import com.intellij.driver.sdk.getNotifications
 import com.intellij.driver.sdk.setRegistry
 import com.intellij.driver.sdk.singleProject
 import com.intellij.driver.sdk.step
-import com.intellij.driver.sdk.ui.Finder
+import com.intellij.driver.sdk.ui.components.UiComponent.Companion.waitFound
 import com.intellij.driver.sdk.ui.components.common.GutterUiComponent
+import com.intellij.driver.sdk.ui.components.common.IdeaFrameUI
 import com.intellij.driver.sdk.ui.components.common.codeEditor
+import com.intellij.driver.sdk.ui.components.common.dialogs.editRunConfigurationsDialog
 import com.intellij.driver.sdk.ui.components.common.editorTabs
 import com.intellij.driver.sdk.ui.components.common.gutter
 import com.intellij.driver.sdk.ui.components.common.ideFrame
+import com.intellij.driver.sdk.ui.components.common.popups.runConfigurationsList
+import com.intellij.driver.sdk.ui.components.common.popups.runConfigurationsPopup
 import com.intellij.driver.sdk.ui.components.elements.actionButton
+import com.intellij.driver.sdk.ui.components.elements.list
 import com.intellij.driver.sdk.ui.components.elements.popup
 import com.intellij.driver.sdk.ui.pasteText
 import com.intellij.driver.sdk.ui.shouldBe
 import com.intellij.driver.sdk.waitFor
 import com.intellij.driver.sdk.withRetries
-import com.intellij.ide.starter.driver.engine.runIdeWithDriver
+import com.intellij.ide.starter.ide.IDETestContext
 import com.intellij.tools.ide.performanceTesting.commands.assertCurrentFile
 import com.intellij.tools.ide.performanceTesting.commands.delay
 import org.jetbrains.bazel.data.IdeaBazelCases
-import org.jetbrains.bazel.ideStarter.IdeStarterBaseProjectTest
-import org.jetbrains.bazel.ideStarter.checkIdeaLogForExceptions
 import org.jetbrains.bazel.ideStarter.execute
 import org.jetbrains.bazel.ideStarter.openFile
 import org.jetbrains.bazel.ideStarter.syncBazelProject
+import org.jetbrains.bazel.tests.combined.IdeStarterCombinedBaseTest
 import org.jetbrains.bazel.tests.ui.clickRunGutterOnLine
 import org.jetbrains.bazel.tests.ui.verifyAvailableRunGutterActions
+import org.junit.jupiter.api.Order
 import org.junit.jupiter.api.Test
 import java.awt.Point
 import java.awt.event.KeyEvent
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
 
-/**
- * ```sh
- * bazel test //plugins/bazel/integrationTests:integrationTests_test --test_env=JB_TEST_FILTER=org.jetbrains.bazel.tests.run.ImportRunConfigurationsSyncHookTest --test_output=errors --nocache_test_results
- * ```
- */
-class ImportRunConfigurationsSyncHookTest : IdeStarterBaseProjectTest() {
+class ImportRunConfigurationsSyncHookTest : IdeStarterCombinedBaseTest() {
+  override fun createContext(): IDETestContext =
+    createContext("importRunConfigurationsSyncHook", IdeaBazelCases.ImportRunConfigurationsSyncHook)
 
   @Test
+  @Order(1)
   fun `imported run configurations should execute and show build diagnostics`() {
-    val context = createContext("importRunConfigurationsSyncHook", IdeaBazelCases.ImportRunConfigurationsSyncHook)
-    context.runIdeWithDriver(runTimeout = timeout).useDriverAndCloseIde {
+    withDriver(bgRun) {
       ideFrame {
         syncBazelProject(buildAndSync = true)
         waitForIndicators(5.minutes)
@@ -52,7 +54,7 @@ class ImportRunConfigurationsSyncHookTest : IdeStarterBaseProjectTest() {
           // Clicking the run config widget sometimes focuses it without opening the dropdown,
           // especially after focus was elsewhere (editor, build tool window). Retry the click
           // until the popup actually appears. ~9% flake rate observed without retries.
-          selectRunConfiguration(currentText = "Remote JVM", targetText = "Bazel test CalculatorTest")
+          selectRunConfiguration(targetText = "Bazel test CalculatorTest")
         }
 
         step("Check build diagnostics with run configs") {
@@ -82,7 +84,7 @@ class ImportRunConfigurationsSyncHookTest : IdeStarterBaseProjectTest() {
         }
 
         step("Select Bazel run configuration") {
-          selectRunConfiguration(currentText = "Bazel test CalculatorTest", targetText = "Bazel run :main")
+          selectRunConfiguration("Bazel run :main")
         }
 
         step("Execute the run configuration") { x { byAccessibleName("Run 'Bazel run :main'") }.click() }
@@ -102,6 +104,45 @@ class ImportRunConfigurationsSyncHookTest : IdeStarterBaseProjectTest() {
           // IDE receives HOME from System.getProperty("user.home") via IdeStarterBaseProjectTest.patchPathVariable()
           val homeValue = System.getProperty("user.home")
           consoleView.waitContainsText("PARENT_ENV_HOME=$homeValue", timeout = 5.seconds)
+        }
+      }
+    }
+  }
+
+  @Test
+  @Order(2)
+  fun `creating new run configuration shows target-specific UI`() {
+    withDriver(bgRun) {
+      ideFrame {
+        runConfigurationsPopup {
+          list().clickItem("Edit Configurations", fullMatch = false)
+        }
+
+        editRunConfigurationsDialog {
+          waitFound()
+          addNewRunConfiguration("Bazel", "New run config")
+
+          Thread.sleep(3000)
+          val jvmSpecificRunConfigText = "Debug port"
+          waitNoTexts(jvmSpecificRunConfigText)
+
+          val targetsField = x { byClass("EditorComponentImpl") }.waitFound()
+          targetsField.click()
+          keyboard { typeText("//:main", 0) }
+
+          waitContainsText(jvmSpecificRunConfigText)
+        }
+      }
+    }
+  }
+
+  @Test
+  @Order(Int.MAX_VALUE)
+  fun `check that running with profiler works`() {
+    withDriver(bgRun) {
+      ideFrame {
+        step("Select Bazel run configuration") {
+          selectRunConfiguration("Bazel run :main")
         }
 
         fun waitForProfilerDataReadyBubbleAppearAndClose() =
@@ -147,6 +188,7 @@ class ImportRunConfigurationsSyncHookTest : IdeStarterBaseProjectTest() {
           popup().waitOneText("Profile 'Bazel run :main' with 'IntelliJ Profiler'").click()
           waitContainsText("Stop Recording and Show Results")  // check that the "Performance" UI tab appears
           waitContainsText("CPU")  // check that the "Performance" UI tab appears
+          val consoleView = x { byClass("ConsoleViewImpl") }
           consoleView.waitContainsText("The result is", timeout = 3.minutes)
           waitForProfilerDataReadyBubbleAppearAndClose()
 
@@ -195,7 +237,6 @@ class ImportRunConfigurationsSyncHookTest : IdeStarterBaseProjectTest() {
         }
       }
     }
-    checkIdeaLogForExceptions(context)
   }
 
   private fun GutterUiComponent.clickLine(line: Int) {
@@ -205,10 +246,13 @@ class ImportRunConfigurationsSyncHookTest : IdeStarterBaseProjectTest() {
   private fun GutterUiComponent.pointAtLine(line: Int): Point =
     Point(iconAreaOffset - 20, waitOneText(line.toString()).point.y)
 
-  private fun Finder.selectRunConfiguration(currentText: String, targetText: String) {
-    withRetries(message = "Click run config dropdown '$currentText' and select '$targetText'", times = 3) {
-      x { byVisibleText(currentText) }.click()
-      popup().waitOneText(targetText, timeout = 5.seconds).click()
+  private fun IdeaFrameUI.selectRunConfiguration(targetText: String) {
+    withRetries(message = "Select run configuration '$targetText'", times = 3) {
+      runConfigurationsPopup {
+        runConfigurationsList {
+          clickItem(targetText, fullMatch = false)
+        }
+      }
     }
   }
 }
