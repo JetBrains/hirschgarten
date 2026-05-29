@@ -32,7 +32,7 @@ class WorkspaceModuleProjectSyncHook : ProjectSyncHook {
     val project = environment.project
     if (!EnableWorkspaceModuleSyncHookExtension.EP.extensionList.any { it.isEnabled(environment) }) return
     val moduleEntitySource = BazelModuleEntitySource(WORKSPACE_MODULE_NAME)
-    val directories = environment.server.workspaceDirectories()
+    val directories = environment.server.workspaceDirectories(environment.taskId)
     val virtualFileUrlManager = project.serviceAsync<WorkspaceModel>().getVirtualFileUrlManager()
     val includedDirectories = directories.includedDirectories.map { it.uri }.map { virtualFileUrlManager.getOrCreateFromUrl(it) }
     val excludedDirectories = directories.excludedDirectories.map { it.uri }.map { virtualFileUrlManager.getOrCreateFromUrl(it) }

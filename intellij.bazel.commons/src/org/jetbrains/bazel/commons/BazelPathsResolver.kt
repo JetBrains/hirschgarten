@@ -6,6 +6,7 @@ import org.jetbrains.bazel.info.BspTargetInfo.ArtifactLocation
 import org.jetbrains.bazel.label.Canonical
 import org.jetbrains.bazel.label.Main
 import org.jetbrains.bazel.label.ResolvedLabel
+import org.jetbrains.bazel.label.toPath
 import java.io.File
 import java.net.URI
 import java.nio.file.Files
@@ -22,26 +23,29 @@ class BazelPathsResolver(private val bazelInfo: BazelInfo) {
 
   fun bazelBin(): Path = bazelInfo.bazelBin
 
-  fun resolvePaths(fileLocations: List<ArtifactLocation>, localRepositories : LocalRepositoryMapping): List<Path> = fileLocations.map { resolve(it, localRepositories)}
+  fun resolvePaths(fileLocations: List<ArtifactLocation>, localRepositories: LocalRepositoryMapping): List<Path> =
+    fileLocations.map { resolve(it, localRepositories) }
 
   fun resolve(file: BuildEventStreamProtos.File): Path = URI.create(file.uri).toPath()
 
   fun isExternal(
     fileLocation: ArtifactLocation,
-    localRepositories : LocalRepositoryMapping
+    localRepositories: LocalRepositoryMapping
   ): Boolean = when {
-      fileLocation.rootPath.startsWith("../") || fileLocation.rootPath.startsWith("external/") -> {
-        val rootSegments = fileLocation.rootPath.split('/')
-        !localRepositories.localRepositories.contains(rootSegments[1])
-      }
-      fileLocation.relativePath.startsWith("external/") -> {
-        val relativeSegments = fileLocation.relativePath.split('/')
-        !localRepositories.localRepositories.contains(relativeSegments[1])
-      }
-      else -> false
+    fileLocation.rootPath.startsWith("../") || fileLocation.rootPath.startsWith("external/") -> {
+      val rootSegments = fileLocation.rootPath.split('/')
+      !localRepositories.localRepositories.contains(rootSegments[1])
+    }
+
+    fileLocation.relativePath.startsWith("external/") -> {
+      val relativeSegments = fileLocation.relativePath.split('/')
+      !localRepositories.localRepositories.contains(relativeSegments[1])
+    }
+
+    else -> false
   }
 
-  private fun mapLocalRepositories(fileLocation: ArtifactLocation, localRepositories : LocalRepositoryMapping): ArtifactLocation {
+  private fun mapLocalRepositories(fileLocation: ArtifactLocation, localRepositories: LocalRepositoryMapping): ArtifactLocation {
     if (!(fileLocation.rootPath.startsWith("../") || fileLocation.rootPath.startsWith("external/"))) return fileLocation
     val rootSegments = fileLocation.rootPath.split('/')
     val localPath = localRepositories.localRepositories[rootSegments[1]] ?: return fileLocation
@@ -50,7 +54,7 @@ class BazelPathsResolver(private val bazelInfo: BazelInfo) {
     return ArtifactLocation.newBuilder().setRootPath("").setRelativePath(newRelativePath).setIsSource(fileLocation.isSource).build()
   }
 
-  fun resolve(fileLocation: ArtifactLocation, localRepositories : LocalRepositoryMapping): Path {
+  fun resolve(fileLocation: ArtifactLocation, localRepositories: LocalRepositoryMapping): Path {
     val mappedFileLocation = mapLocalRepositories(fileLocation, localRepositories)
     return when {
       isAbsolute(mappedFileLocation) -> resolveAbsolute(mappedFileLocation)
@@ -90,7 +94,8 @@ class BazelPathsResolver(private val bazelInfo: BazelInfo) {
 
   private fun resolveSource(fileLocation: ArtifactLocation): Path = bazelInfo.workspaceRoot.resolve(fileLocation.relativePath)
 
-  private fun isMainWorkspaceSource(fileLocation: ArtifactLocation, localRepositories : LocalRepositoryMapping): Boolean = fileLocation.isSource && !isExternal(fileLocation, localRepositories)
+  private fun isMainWorkspaceSource(fileLocation: ArtifactLocation, localRepositories: LocalRepositoryMapping): Boolean =
+    fileLocation.isSource && !isExternal(fileLocation, localRepositories)
 
   private fun isInExternalWorkspace(fileLocation: ArtifactLocation): Boolean = fileLocation.rootPath.startsWith("external/")
 
@@ -124,7 +129,7 @@ class BazelPathsResolver(private val bazelInfo: BazelInfo) {
 
   fun toDirectoryPath(label: ResolvedLabel, repoMapping: RepoMapping): Path {
     val repoPath = (repoMapping as? BzlmodRepoMapping)?.let { label.toRepoPath(repoMapping) } ?: label.toRepoPathForBazel7()
-    return repoPath.resolve(label.packagePath.toString())
+    return repoPath.resolve(label.packagePath.toPath())
   }
 
   private fun ResolvedLabel.toRepoPath(repoMapping: BzlmodRepoMapping): Path? {
@@ -141,6 +146,6 @@ class BazelPathsResolver(private val bazelInfo: BazelInfo) {
     if (repo is Main) {
       bazelInfo.workspaceRoot
     } else {
-      relativePathToExecRootAbsolute(Path("external", repo.repoName, *packagePath.pathSegments.toTypedArray()))
+      relativePathToExecRootAbsolute(Path("external", repo.repoName))
     }
 }

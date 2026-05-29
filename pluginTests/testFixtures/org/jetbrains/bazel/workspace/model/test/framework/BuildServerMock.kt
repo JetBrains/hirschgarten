@@ -60,7 +60,7 @@ open class BuildServerMock(
 
   override suspend fun buildTargetTest(testParams: TestParams): TestResult = wrapInFuture(testResult)
 
-  override suspend fun workspaceDirectories(): WorkspaceDirectoriesResult = wrapInFuture(workspaceDirectoriesResult)
+  override suspend fun workspaceDirectories(taskId: TaskId): WorkspaceDirectoriesResult = wrapInFuture(workspaceDirectoriesResult)
 
   override suspend fun buildTargetAnalysisDebug(params: AnalysisDebugParams): AnalysisDebugResult = wrapInFuture(analysisDebugResult)
 

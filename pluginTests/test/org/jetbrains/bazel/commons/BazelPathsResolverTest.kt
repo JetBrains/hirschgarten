@@ -2,6 +2,8 @@ package org.jetbrains.bazel.commons
 
 import io.kotest.matchers.shouldBe
 import org.jetbrains.bazel.info.BspTargetInfo
+import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.label.assumeResolved
 import org.junit.jupiter.api.Test
 import java.nio.file.Paths
 import kotlin.io.path.Path
@@ -9,7 +11,7 @@ import kotlin.test.assertEquals
 
 class BazelPathsResolverTest {
 
-  fun newResolver() : BazelPathsResolver {
+  fun newResolver(): BazelPathsResolver {
     val bazelInfo =
       BazelInfo(
         execRoot = Paths.get("bazel-exec"),
@@ -61,8 +63,29 @@ class BazelPathsResolverTest {
     assertEquals(Path("workspace/bar/baz/a/b/E.java"), resolver.resolve(sourceArtifact("", "bar/baz/a/b/E.java"), localRepositories))
     assertEquals(Path("workspace/bar/baz/a/b/E.java"), resolver.resolve(sourceArtifact("external/foo+", "a/b/E.java"), localRepositories))
 
-    assertEquals(Path("bazel-exec/a/b/c/d/E.java"), resolver.resolve(nonSourceArtifact("a/b","c/d/E.java"), localRepositories))
-    assertEquals(Path("bazel-out/external/bar+/c/d/E.java"), resolver.resolve(nonSourceArtifact("external/bar+", "c/d/E.java"), localRepositories))
-    assertEquals(Path("bazel-exec/bar/baz/c/d/E.java"), resolver.resolve(nonSourceArtifact("external/foo+", "c/d/E.java"), localRepositories))
+    assertEquals(Path("bazel-exec/a/b/c/d/E.java"), resolver.resolve(nonSourceArtifact("a/b", "c/d/E.java"), localRepositories))
+    assertEquals(Path("bazel-out/external/bar+/c/d/E.java"),
+                 resolver.resolve(nonSourceArtifact("external/bar+", "c/d/E.java"), localRepositories))
+    assertEquals(Path("bazel-exec/bar/baz/c/d/E.java"),
+                 resolver.resolve(nonSourceArtifact("external/foo+", "c/d/E.java"), localRepositories))
+  }
+
+  @Test
+  fun directoryPathUsesRepoMapping() {
+    val resolver = newResolver()
+    val repoMapping = BzlmodRepoMapping(
+      canonicalRepoNameToLocalPath = mapOf("community+" to Path("community")),
+      apparentRepoNameToCanonicalName = mapOf("community" to "community+"),
+      canonicalRepoNameToPath = mapOf("community+" to Path("workspace/community")),
+    )
+
+    assertEquals(
+      Path("workspace/community/fleet/kernel"),
+      resolver.toDirectoryPath(Label.parse("@community//fleet/kernel:...").assumeResolved(), repoMapping),
+    )
+    assertEquals(
+      Path("workspace/community/fleet/kernel"),
+      resolver.toDirectoryPath(Label.parse("@community//fleet/kernel/...").assumeResolved(), repoMapping),
+    )
   }
 }

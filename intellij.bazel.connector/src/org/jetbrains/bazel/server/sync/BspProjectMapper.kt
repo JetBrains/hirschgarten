@@ -2,19 +2,19 @@ package org.jetbrains.bazel.server.sync
 
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.bazelrunner.BazelRunner
+import org.jetbrains.bazel.commons.BazelPathsResolver
 import org.jetbrains.bazel.commons.ExcludableValue
+import org.jetbrains.bazel.commons.RepoMapping
 import org.jetbrains.bazel.commons.constants.Constants
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.label.ResolvedLabel
 import org.jetbrains.bazel.label.assumeResolved
-import org.jetbrains.bazel.label.toPath
-import org.jetbrains.bazel.server.model.BazelSyncProject
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bsp.protocol.DirectoryItem
 import org.jetbrains.bsp.protocol.InverseSourcesParams
 import org.jetbrains.bsp.protocol.InverseSourcesResult
 import org.jetbrains.bsp.protocol.JvmToolchainInfo
-import org.jetbrains.bsp.protocol.WorkspaceBazelRepoMappingResult
+import org.jetbrains.bsp.protocol.TaskId
 import org.jetbrains.bsp.protocol.WorkspaceDirectoriesResult
 import java.nio.file.Path
 import java.util.LinkedList
@@ -25,9 +25,10 @@ class BspProjectMapper(
   private val workspaceRoot: Path,
   private val bazelRunner: BazelRunner,
   private val workspaceContext: WorkspaceContext,
+  private val bazelPathsResolver: BazelPathsResolver,
 ) {
-  suspend fun workspaceDirectories(): WorkspaceDirectoriesResult {
-    val (includedDirectories, excludedDirectories) = getProjectDirs()
+  suspend fun workspaceDirectories(repoMapping: RepoMapping, taskId: TaskId): WorkspaceDirectoriesResult {
+    val (includedDirectories, excludedDirectories) = getProjectDirs(repoMapping, taskId)
     return WorkspaceDirectoriesResult(
       includedDirectories = includedDirectories.map { it.toDirectoryItem() },
       excludedDirectories = excludedDirectories.map { it.toDirectoryItem() },
@@ -39,7 +40,7 @@ class BspProjectMapper(
     val excluded: Set<Path>,
   )
 
-  private suspend fun getProjectDirs(): ProjectDirs {
+  private suspend fun getProjectDirs(repoMapping: RepoMapping, taskId: TaskId): ProjectDirs {
     val excludedTechnicalDirectories = getTechnicalDirectoriesToExclude()
     val included = mutableSetOf<Path>()
     val excluded = mutableSetOf<Path>()
@@ -59,10 +60,10 @@ class BspProjectMapper(
     val excludedAdditionally = mutableSetOf<Path>()
     val includedAdditionally = mutableSetOf<Path>()
 
-    val allSubPackages = getSubPackages(workspaceRoot, workspaceContext)
+    val allSubPackages = getSubPackages(workspaceContext, repoMapping, taskId)
     for (target in workspaceContext.targets) {
-      val path = workspaceRoot.resolve(target.value.packagePath.toPath()).normalize()
-      val subPackages = allSubPackages.filter { it.startsWith(path) && it != path }.toSet()
+      val path = target.value.assumeResolved().toDirectoryPath(repoMapping)
+      val subPackages = allSubPackages.filter { it.startsWith(path) && it != path }
       val (targetSet, additionalSet) = when (target) {
         is ExcludableValue.Included<Label> -> includedFromTargets to excludedAdditionally
         is ExcludableValue.Excluded<Label> -> excludedFromTargets to includedAdditionally
@@ -107,28 +108,49 @@ class BspProjectMapper(
     )
   }
 
-  private suspend fun getSubPackages(workspaceRoot: Path, workspaceContext: WorkspaceContext): Sequence<Path> {
+  private suspend fun getSubPackages(workspaceContext: WorkspaceContext, repoMapping: RepoMapping, taskId: TaskId): List<Path> {
     val patterns = workspaceContext.targets.map { it.value.assumeResolved() }.distinct()
-    val out = runBazelBuildfilesQuery(workspaceContext, patterns)
-    if (out.isBlank()) return emptySequence()
-    return out.lineSequence()
-        .map { it.trim() }
-        .filter { it.isNotEmpty() }
-        .mapNotNull { workspaceRoot.resolve(Label.parse(it).packagePath.toPath()).normalize() }
-        .map { if (it.isRegularFile()) it.parent else it }
+    val out = runBazelBuildfilesQuery(workspaceContext, patterns, taskId)
+    if (out.isBlank())
+      return emptyList()
+
+    val result = ArrayList<Path>()
+    for (line in out.lines()) {
+      if (line.isBlank())
+        continue
+
+      val labelPath = Label.parseOrNull(line.trim())?.assumeResolved()?.toDirectoryPath(repoMapping)
+                      ?: continue
+      val dirPath = if (labelPath.isRegularFile()) labelPath.parent else labelPath
+      result.add(dirPath)
+    }
+    return result
   }
 
-  private suspend fun runBazelBuildfilesQuery(workspaceContext: WorkspaceContext, patterns: List<ResolvedLabel>): String {
+  private fun ResolvedLabel.toDirectoryPath(repoMapping: RepoMapping): Path =
+    bazelPathsResolver.toDirectoryPath(this, repoMapping).normalize()
+
+  private suspend fun runBazelBuildfilesQuery(workspaceContext: WorkspaceContext, patterns: List<ResolvedLabel>, taskId: TaskId): String {
     if (patterns.isEmpty()) return ""
     val expr = buildString {
       append("buildfiles(set(")
       patterns.joinTo(this, separator = " ") { it.toString() }
       append("))")
     }
-    return BazelQueryRunner.runQuery(expr, bazelRunner, workspaceContext)
-  }
 
-  fun workspaceBazelRepoMapping(project: BazelSyncProject): WorkspaceBazelRepoMappingResult = WorkspaceBazelRepoMappingResult(project.repoMapping)
+    val command = bazelRunner.buildBazelCommand(workspaceContext) {
+      queryExpression(expr) {
+        options.add("--keep_going")
+      }
+    }
+    val process = bazelRunner.runBazelCommand(command, logProcessOutput = false, taskId = taskId)
+    val result = process.waitAndGetResult()
+
+    if (result.isNotSuccess) {
+      throw RuntimeException("bazel query failed: ${result.stderrLines.joinToString("\n")}")
+    }
+    return result.stdout.decodeToString()
+  }
 
   // bazel symlinks exclusion logic is taken care by BazelSymlinkExcludeService
   private fun getTechnicalDirectoriesToExclude(): MutableSet<Path> =
@@ -148,28 +170,6 @@ class BspProjectMapper(
   suspend fun jvmBuilderParamsForTarget(target: Label): JvmToolchainInfo =
     JvmToolchainQuery.jvmToolchainQueryForTarget(bazelRunner, workspaceContext, target)
 
-  internal object BazelQueryRunner {
-    suspend fun runQuery(
-      expr: String,
-      bazelRunner: BazelRunner,
-      workspaceContext: WorkspaceContext,
-      extraOptions: List<String> = emptyList(),
-    ): String {
-      val command = bazelRunner.buildBazelCommand(workspaceContext) {
-        queryExpression(expr) {
-          options.add("--keep_going")
-          options.addAll(extraOptions)
-        }
-      }
-      val process = bazelRunner.runBazelCommand(command, logProcessOutput = false, taskId = null)
-      val result = process.waitAndGetResult()
-
-      if (result.isNotSuccess) {
-        throw RuntimeException("bazel query failed: ${result.stderr}")
-      }
-      return result.stdout.decodeToString()
-    }
-  }
 
   private class DirsPriority {
     private val prioritizedPathSets: LinkedList<PathSet> = LinkedList()
