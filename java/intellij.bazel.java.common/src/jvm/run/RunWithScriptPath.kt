@@ -1,5 +1,6 @@
 package org.jetbrains.bazel.jvm.run
 
+import com.intellij.debugger.impl.attach.JavaDebuggerAttachUtil
 import com.intellij.execution.configurations.GeneralCommandLine
 import com.intellij.execution.process.AnsiEscapeDecoder
 import com.intellij.execution.process.OSProcessHandler
@@ -9,7 +10,9 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Key
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.runInterruptible
+import kotlinx.coroutines.withTimeoutOrNull
 import org.jetbrains.bazel.run.BazelProcessHandler
 import org.jetbrains.bazel.server.bep.TestXmlParser
 import org.jetbrains.bazel.sync.environment.projectCtx
@@ -18,6 +21,8 @@ import org.jetbrains.bazel.util.BspClientTestNotifier
 import org.jetbrains.bsp.protocol.TaskId
 import java.nio.file.Path
 import kotlin.io.path.readText
+import kotlin.time.Duration.Companion.milliseconds
+import kotlin.time.Duration.Companion.seconds
 
 // See: https://bazel.build/reference/test-encyclopedia
 private const val BAZEL_TEST_FILTER_ENV = "TESTBRIDGE_TEST_ONLY"
@@ -81,8 +86,19 @@ internal suspend fun runWithScriptPath(
   processHandlerCreated(scriptHandler)
 
   scriptHandler.startNotify()
+
+  val pid: Long = scriptHandler.process.pid()
+  // We run the bash script generated via --script_path, which then starts the JVM via Unix's exec: https://en.wikipedia.org/wiki/Exec_(system_call)
+  // Since the PID of the bash process is the same as that of the JVM, we wait for bash script completion before returning the pid to IDEA
+  withTimeoutOrNull(5.seconds) {
+    while (scriptHandler.process.isAlive) {
+      if (JavaDebuggerAttachUtil.isAttachable(pid.toString())) break
+      delay(50.milliseconds)
+    }
+  }
+
   runInterruptible(Dispatchers.IO) {
-    pidDeferred.complete(scriptHandler.process.pid())
+    pidDeferred.complete(pid)
     scriptHandler.waitFor()
     findXmlOutputAndReport(taskId, scriptPath, project)
   }
