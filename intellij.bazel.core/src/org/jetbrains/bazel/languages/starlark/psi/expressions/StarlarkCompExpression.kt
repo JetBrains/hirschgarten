@@ -1,9 +1,11 @@
 package org.jetbrains.bazel.languages.starlark.psi.expressions
 
 import com.intellij.lang.ASTNode
+import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkBaseElement
 
-internal abstract class StarlarkCompExpression(node: ASTNode) : StarlarkBaseElement(node) {
+@ApiStatus.Internal
+abstract class StarlarkCompExpression(node: ASTNode) : StarlarkBaseElement(node) {
   fun getCompVariables(): List<StarlarkTargetExpression> =
     getCompVariableTuples().flatMap { it.getTargetExpressions() } +
       findChildrenByClass(StarlarkTargetExpression::class.java).toList()

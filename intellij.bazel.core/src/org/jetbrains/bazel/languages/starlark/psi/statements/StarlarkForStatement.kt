@@ -1,13 +1,15 @@
 package org.jetbrains.bazel.languages.starlark.psi.statements
 
 import com.intellij.lang.ASTNode
+import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkBaseElement
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkElementVisitor
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkParenthesizedExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkTargetExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkTupleExpression
 
-internal class StarlarkForStatement(node: ASTNode) :
+@ApiStatus.Internal
+class StarlarkForStatement(node: ASTNode) :
   StarlarkBaseElement(node),
   StarlarkStatementContainer {
   override fun acceptVisitor(visitor: StarlarkElementVisitor) = visitor.visitForStatement(this)
