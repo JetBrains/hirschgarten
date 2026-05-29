@@ -15,6 +15,7 @@ import com.intellij.driver.sdk.ui.components.common.ideFrame
 import com.intellij.driver.sdk.ui.components.common.popups.runConfigurationsList
 import com.intellij.driver.sdk.ui.components.common.popups.runConfigurationsPopup
 import com.intellij.driver.sdk.ui.components.elements.actionButton
+import com.intellij.driver.sdk.ui.components.elements.button
 import com.intellij.driver.sdk.ui.components.elements.list
 import com.intellij.driver.sdk.ui.components.elements.popup
 import com.intellij.driver.sdk.ui.pasteText
@@ -78,7 +79,7 @@ class ImportRunConfigurationsSyncHookTest : IdeStarterCombinedBaseTest() {
             codeEditor {
               // Return back the semicolon ;
               goToPosition(5, 22)
-              keyboard { key(KeyEvent.VK_SEMICOLON) }
+              pasteText(";")
             }
           }
         }
@@ -120,17 +121,32 @@ class ImportRunConfigurationsSyncHookTest : IdeStarterCombinedBaseTest() {
 
         editRunConfigurationsDialog {
           waitFound()
-          addNewRunConfiguration("Bazel", "New run config")
+          try {
+            addNewRunConfiguration("Bazel", "New run config")
 
-          Thread.sleep(3000)
-          val jvmSpecificRunConfigText = "Debug port"
-          waitNoTexts(jvmSpecificRunConfigText)
+            val jvmSpecificRunConfigText = "Debug port"
+            waitContainsText("Targets to run:")
+            waitFor(message = "Target-specific settings should not be shown before a target is entered") {
+              !hasText(jvmSpecificRunConfigText)
+            }
 
-          val targetsField = x { byClass("EditorComponentImpl") }.waitFound()
-          targetsField.click()
-          keyboard { typeText("//:main", 0) }
+            val targetsField = x { byClass("EditorComponentImpl") }.waitFound()
+            targetsField.click()
+            targetsField.pasteText("//:main")
 
-          waitContainsText(jvmSpecificRunConfigText)
+            waitContainsText(jvmSpecificRunConfigText)
+
+            targetsField.click()
+            keyboard {
+              repeat("//:main".length) { backspace() }
+            }
+            targetsField.pasteText("//:calculator_test")
+
+            waitContainsText("Test filter:")
+          }
+          finally {
+            button("Cancel").click()
+          }
         }
       }
     }
