@@ -1,2 +1,10 @@
 <idea-plugin visibility="public">
+  <dependencies>
+    <module name="intellij.aiCodeReview.api"/>
+  </dependencies>
+
+  <extensions defaultExtensionNs="com.intellij">
+    <aiCodeReview.skillBundleProvider order="last"
+        implementation="com.intellij.aiCodeReview.bundledSkills.DefaultBundledReviewSkillBundleProvider"/>
+  </extensions>
 </idea-plugin>
