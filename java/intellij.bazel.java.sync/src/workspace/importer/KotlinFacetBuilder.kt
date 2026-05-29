@@ -5,6 +5,8 @@ import com.intellij.platform.workspace.storage.MutableEntityStorage
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bsp.protocol.KotlinBuildTarget
 
+// RC: replaces the kotlin-facet EP call previously inlined in `JavaModuleUpdater` (the `kind.includesKotlin()` branch
+// and `addKotlinModuleIfPossible`); also owns the new `KotlinOptions` bag that replaces `KotlinAddendum`
 @ApiStatus.Internal
 object KotlinFacetBuilder {
   fun write(

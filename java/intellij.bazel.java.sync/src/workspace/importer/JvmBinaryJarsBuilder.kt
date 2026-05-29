@@ -10,6 +10,7 @@ import org.jetbrains.bazel.workspacemodel.entities.JvmBinaryJarsEntity
 import org.jetbrains.bazel.workspacemodel.entities.jvmBinaryJarsEntity
 import java.nio.file.Path
 
+// RC: replaces `JvmBinaryJarsEntityUpdater`
 @ApiStatus.Internal
 object JvmBinaryJarsBuilder {
   fun write(

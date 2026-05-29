@@ -26,6 +26,8 @@ import org.jetbrains.bsp.protocol.LibraryItem
 import org.jetbrains.jps.model.serialization.library.JpsLibraryTableSerializer
 import java.nio.file.Path
 
+// RC: replaces `LibraryEntityUpdater`; goes straight from `LibraryItem` to `LibraryEntity` + `BazelLibraryExtensionEntity`,
+// dropping the old `Library` wrapper
 @ApiStatus.Internal
 object LibraryBuilder {
   fun write(

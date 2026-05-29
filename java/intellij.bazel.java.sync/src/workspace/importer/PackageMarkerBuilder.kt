@@ -29,6 +29,7 @@ import kotlin.io.path.notExists
  * skip them; therefore one [PackageMarkerBuilder] should be constructed per import pass with
  * the full list of non-dummy source roots up front.
  */
+// RC: replaces `PackageMarkerEntityUpdater`; `alreadyVisitedDirectories` matches the old `alreadyVisitedDirectories` seed
 @ApiStatus.Internal
 class PackageMarkerBuilder(
   alreadyCoveredDirectories: Set<Path>,

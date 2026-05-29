@@ -14,6 +14,8 @@ data class KotlinOptions(
 )
 
 // TODO: should be removed, kotlin needs a separate sync hook: https://youtrack.jetbrains.com/issue/BAZEL-1885
+// RC: EP interface moved out of `JavaModuleUpdater` and reshaped to take `KotlinOptions` + `ModuleEntity`
+// instead of the old `JavaModule` wrapper
 @ApiStatus.Internal
 interface KotlinFacetEntityUpdater {
   fun addEntity(

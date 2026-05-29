@@ -51,6 +51,7 @@ import com.intellij.platform.workspace.jps.entities.DependencyScope as EntitiesD
  * shared per-import-pass context for [JvmTargetEntitiesBuilder] and the per-aspect builders it calls.
  * build it once per import; reuse across all per-target invocations.
  */
+// RC: replaces `ProjectDetails` + the per-target `ModuleDetails` intermediates
 @ApiStatus.Internal
 class ImportContext(
   val targets: Collection<RawBuildTarget>,
@@ -82,12 +83,12 @@ class ImportContext(
  * Writes the full set of JVM workspace-model entities for all [ImportContext.targets] (plus any dummy modules
  * they split into) directly into the supplied [MutableEntityStorage].
  *
- * Combines what used to live across the deleted MMM transformer + updater hierarchy
- * (ModuleDetailsToJavaModuleTransformer, JavaModuleUpdater, ModuleEntityUpdater and friends).
- *
  * Runs two passes: first resolves every target into a [TargetPlan] (pure, no writes) so the dummy modules know
  * which directories are already covered by real source roots; then writes all entities sequentially.
  */
+// RC: the spine - replaces `ProjectDetailsToModuleDetailsTransformer` + `TargetIdToModuleEntitiesMap` +
+// `ModuleDetailsToJavaModuleTransformer` + `JavaModuleUpdater` + `ModuleEntityUpdater`, and drops the
+// `JavaModule` / `GenericModuleInfo` / `JavaAddendum` / `Dependency` wrappers
 @ApiStatus.Internal
 class JvmTargetEntitiesBuilder(private val ctx: ImportContext) {
   private val javaModuleType = ModuleTypeId("JAVA_MODULE")
