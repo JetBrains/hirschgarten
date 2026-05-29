@@ -228,9 +228,7 @@ class ProjectResolver(
       requestedTargetsToSync
         ?.let { TargetCollection(it, emptyList()) } ?: TargetCollection.fromExcludableList(workspaceContext.targets)
 
-    val syncLanguages = ruleLanguages.filter {
-      it.calculateCanonicalName(repoMapping) != null // XXX drop the filtering!!
-    }.map { it.language.aspectLanguage }.toSet()
+    val syncLanguages = ruleLanguages.map { it.language.aspectLanguage }.toSet()
 
     val buildAspectResult =
       measured(
