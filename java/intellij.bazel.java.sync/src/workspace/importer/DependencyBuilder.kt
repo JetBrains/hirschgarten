@@ -27,6 +27,8 @@ private val idInterner: Interner<SymbolicEntityId<*>> = Interner.createWeakInter
  * Intended construction lifecycle: one [DependencyBuilder] per import pass, shared across all
  * per-target builds so the strict-dependency closure is memoized once.
  */
+// RC: replaces the dependency-resolution and exported-closure slice of `ProjectDetailsToModuleDetailsTransformer`
+// (incl. its `DependenciesClosure` memo), plus the `Dependency` wrapper
 @ApiStatus.Internal
 class DependencyBuilder(private val targets: Collection<RawBuildTarget>) {
   private val targetsIndex: Map<Label, RawBuildTarget> = targets.associateBy { it.id }

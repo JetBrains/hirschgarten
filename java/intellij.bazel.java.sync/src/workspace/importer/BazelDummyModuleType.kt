@@ -9,6 +9,7 @@ import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.config.BazelImporterBundle
 import javax.swing.Icon
 
+// RC: moved from old MMM transformers package, was `BazelDummyModuleType`
 @ApiStatus.Internal
 class BazelDummyModuleType : InternalModuleType<BazelDummyModuleBuilder>(ID) {
   companion object {

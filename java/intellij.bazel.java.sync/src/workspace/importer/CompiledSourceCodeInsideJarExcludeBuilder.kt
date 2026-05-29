@@ -17,6 +17,7 @@ import java.util.Locale
 import kotlin.io.path.invariantSeparatorsPathString
 
 // https://youtrack.jetbrains.com/issue/BAZEL-1672
+// RC: replaces `CompiledSourceCodeInsideJarExcludeTransformer` + `CompiledSourceCodeInsideJarExcludeEntityUpdater`
 @ApiStatus.Internal
 object CompiledSourceCodeInsideJarExcludeBuilder {
   /**

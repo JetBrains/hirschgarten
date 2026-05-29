@@ -32,6 +32,9 @@ val JAVA_RESOURCE_ROOT_TYPE: SourceRootTypeId = SourceRootTypeId("java-resource"
 @ApiStatus.Internal
 val JAVA_TEST_RESOURCE_ROOT_TYPE: SourceRootTypeId = SourceRootTypeId("java-test-resource")
 
+// RC: replaces `SourcesItemToJavaSourceRootTransformer` + `SourceItemToSourceRootTransformer` +
+// `JavaSourceEntityUpdater` + the source-side of `ContentRootEntityUpdater`;
+// the `JavaSourceRoot` / `ContentRoot` / `GenericSourceRoot` wrappers are dropped
 @ApiStatus.Internal
 object SourceRootBuilder {
   data class ResolvedSourceRoot(

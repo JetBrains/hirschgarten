@@ -28,6 +28,8 @@ import kotlin.io.path.Path as KPath
 import kotlin.io.path.name
 import kotlin.io.path.visitFileTree
 
+// RC: replaces `ResourcesItemToJavaResourceRootTransformer` + `JavaResourceEntityUpdater`;
+// the strip-prefix merging logic is moved as-is, the `ResourceRoot` wrapper is dropped
 @ApiStatus.Internal
 object ResourceRootBuilder {
   data class ResolvedResourceRoot(

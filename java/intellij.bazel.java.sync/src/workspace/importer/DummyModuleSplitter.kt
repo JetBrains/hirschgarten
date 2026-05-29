@@ -33,6 +33,8 @@ private val log = logger<DummyModuleSplitter>()
  * Run as part of per-target build, before any entity is written: the spine consumes the [Result]
  * to know what source roots the main module should get and what dummy modules to add.
  */
+// RC: replaces `JavaModuleToDummyJavaModulesTransformerHACK`; the merge/vote/restore logic is moved as-is,
+// but the result no longer carries the `JavaModule` wrapper - the spine writes the entities directly
 @ApiStatus.Internal
 class DummyModuleSplitter(
   private val projectBasePath: Path,

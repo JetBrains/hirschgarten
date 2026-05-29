@@ -10,6 +10,8 @@ import org.jetbrains.bazel.workspacemodel.entities.ScalaAddendumEntity
 import org.jetbrains.bazel.workspacemodel.entities.scalaAddendumEntity
 import org.jetbrains.bsp.protocol.ScalaBuildTarget
 
+// RC: replaces `ScalaAddendumEntityUpdater`; the old `ScalaAddendum` wrapper is dropped,
+// we go straight from `ScalaBuildTarget` to `ScalaAddendumEntity`
 @ApiStatus.Internal
 object ScalaAddendumBuilder {
   fun write(
