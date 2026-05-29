@@ -12,6 +12,12 @@ import org.jetbrains.bsp.protocol.utils.StringUtils
 @ApiStatus.Internal
 val LIBRARY_MODULE_PREFIX: String = "_aux.libraries."
 
+// TODO: I really don't like `formatAsModuleName`, it suppose to construct `ModuleEntity`/`LibraryEntity`
+//  name from label, but it misused e.g., in TargetUtils by using it to create key in module to target map,
+//  this is bad because we end up with multiple places that "define" global module name, it isn't great
+//  ideal solution would include obtaining those names only within backend modules and using those values as
+//  source of truth
+
 @ApiStatus.Internal
 fun Label.formatAsModuleName(project: Project): String {
   val targetName = targetName.sanitizeName()
