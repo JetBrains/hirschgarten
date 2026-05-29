@@ -14,7 +14,6 @@ import org.jetbrains.bazel.workspace.model.matchers.entries.shouldContainExactly
 import org.jetbrains.bazel.workspace.model.test.framework.WorkspaceModelBaseTest
 import org.jetbrains.bazel.workspacemodel.entities.BazelDummyEntitySource
 import org.jetbrains.bsp.protocol.LibraryItem
-import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import kotlin.io.path.Path
 
@@ -32,16 +31,15 @@ internal class LibraryBuilderTest : WorkspaceModelBaseTest() {
       )
 
     val returned =
-      runTestWriteAction {
-        LibraryBuilder.write(
-          libraryItem = libraryItem,
-          repoMapping = RepoMappingDisabled,
-          importIjars = false,
-          virtualFileUrlManager = virtualFileUrlManager,
-          entitySource = BazelDummyEntitySource,
-          storage = workspaceEntityStorageBuilder,
-        )
-      }
+      LibraryBuilder.write(
+        libraryItem = libraryItem,
+        repoMapping = RepoMappingDisabled,
+        importIjars = false,
+        virtualFileUrlManager = virtualFileUrlManager,
+        entitySource = BazelDummyEntitySource,
+        storage = workspaceEntityStorageBuilder,
+      )
+
 
     val expectedName = libraryItem.id.formatAsModuleName(RepoMappingDisabled)
     val expected =
@@ -90,16 +88,14 @@ internal class LibraryBuilderTest : WorkspaceModelBaseTest() {
       )
 
     val returned =
-      runTestWriteAction {
-        LibraryBuilder.write(
-          libraryItems = listOf(item1, item2),
-          repoMapping = RepoMappingDisabled,
-          importIjars = false,
-          virtualFileUrlManager = virtualFileUrlManager,
-          entitySource = BazelDummyEntitySource,
-          storage = workspaceEntityStorageBuilder,
-        )
-      }
+      LibraryBuilder.write(
+        libraryItems = listOf(item1, item2),
+        repoMapping = RepoMappingDisabled,
+        importIjars = false,
+        virtualFileUrlManager = virtualFileUrlManager,
+        entitySource = BazelDummyEntitySource,
+        storage = workspaceEntityStorageBuilder,
+      )
 
     val expected1 =
       ExpectedLibraryEntity(
@@ -156,10 +152,8 @@ internal class LibraryBuilderTest : WorkspaceModelBaseTest() {
         containsInternalJars = false,
       )
 
-    runTestWriteAction {
-      LibraryBuilder.write(item, RepoMappingDisabled, false, virtualFileUrlManager, BazelDummyEntitySource, workspaceEntityStorageBuilder)
-      LibraryBuilder.write(item, RepoMappingDisabled, false, virtualFileUrlManager, BazelDummyEntitySource, workspaceEntityStorageBuilder)
-    }
+    LibraryBuilder.write(item, RepoMappingDisabled, false, virtualFileUrlManager, BazelDummyEntitySource, workspaceEntityStorageBuilder)
+    LibraryBuilder.write(item, RepoMappingDisabled, false, virtualFileUrlManager, BazelDummyEntitySource, workspaceEntityStorageBuilder)
 
     loadedEntries(LibraryEntity::class.java).size shouldBe 1
   }

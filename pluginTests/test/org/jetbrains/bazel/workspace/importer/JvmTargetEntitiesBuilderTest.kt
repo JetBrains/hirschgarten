@@ -3,7 +3,7 @@ package org.jetbrains.bazel.workspace.importer
 import com.intellij.platform.workspace.jps.entities.LibraryEntity
 import com.intellij.platform.workspace.jps.entities.ModuleEntity
 import com.intellij.platform.workspace.jps.entities.SourceRootEntity
-import com.intellij.testFramework.runInEdtAndWait
+import com.intellij.testFramework.common.timeoutRunBlocking
 import org.jetbrains.bazel.commons.LanguageClass
 import org.jetbrains.bazel.commons.RepoMappingDisabled
 import org.jetbrains.bazel.commons.RuleType
@@ -30,77 +30,72 @@ import kotlin.io.path.Path
 internal class JvmTargetEntitiesBuilderTest : WorkspaceModelBaseTest() {
 
   @Test
-  fun `writes a single java module with no sources or resources`() {
-    runInEdtAndWait {
-      val target = createRawBuildTarget(
-        id = Label.parse("//foo"),
-        kind = TargetKind(kind = "java_library", ruleType = RuleType.LIBRARY, languageClasses = setOf(LanguageClass.JAVA)),
-      )
+  fun `writes a single java module with no sources or resources`() = timeoutRunBlocking {
+    val target = createRawBuildTarget(
+      id = Label.parse("//foo"),
+      kind = TargetKind(kind = "java_library", ruleType = RuleType.LIBRARY, languageClasses = setOf(LanguageClass.JAVA)),
+    )
 
-      runTestWriteAction { runImport(targets = listOf(target)) }
+    runImport(targets = listOf(target))
 
-      val modules = loadedEntries(ModuleEntity::class.java)
-      check(modules.size == 1) { "expected 1 module, got ${modules.size}: $modules" }
-      check(modules[0].name == target.id.formatAsModuleNameTest()) {
-        "unexpected module name ${modules[0].name}"
-      }
+    val modules = loadedEntries(ModuleEntity::class.java)
+    check(modules.size == 1) { "expected 1 module, got ${modules.size}: $modules" }
+    check(modules[0].name == target.id.formatAsModuleNameTest()) {
+      "unexpected module name ${modules[0].name}"
     }
   }
 
   @Test
-  fun `writes a java module with one source root`() {
-    runInEdtAndWait {
-      val sourcePath = projectBasePath.resolve("src/Foo.java")
-      sourcePath.toFile().parentFile.mkdirs()
-      sourcePath.toFile().writeText("class Foo {}")
-      val target = createRawBuildTarget(
-        id = Label.parse("//foo"),
-        kind = TargetKind(kind = "java_library", ruleType = RuleType.LIBRARY, languageClasses = setOf(LanguageClass.JAVA)),
-        sources = listOf(SourceItem(path = sourcePath, generated = false)),
-        baseDirectory = projectBasePath,
-      )
+  fun `writes a java module with one source root`() = timeoutRunBlocking {
 
-      runTestWriteAction { runImport(targets = listOf(target)) }
+    val sourcePath = projectBasePath.resolve("src/Foo.java")
+    sourcePath.toFile().parentFile.mkdirs()
+    sourcePath.toFile().writeText("class Foo {}")
+    val target = createRawBuildTarget(
+      id = Label.parse("//foo"),
+      kind = TargetKind(kind = "java_library", ruleType = RuleType.LIBRARY, languageClasses = setOf(LanguageClass.JAVA)),
+      sources = listOf(SourceItem(path = sourcePath, generated = false)),
+      baseDirectory = projectBasePath,
+    )
 
-      val modules = loadedEntries(ModuleEntity::class.java)
-      check(modules.size == 1) { "expected 1 module, got ${modules.size}" }
-      val sourceRoots = loadedEntries(SourceRootEntity::class.java)
-      check(sourceRoots.isNotEmpty()) { "expected at least one source root" }
-    }
+    runImport(targets = listOf(target))
+
+    val modules = loadedEntries(ModuleEntity::class.java)
+    check(modules.size == 1) { "expected 1 module, got ${modules.size}" }
+    val sourceRoots = loadedEntries(SourceRootEntity::class.java)
+    check(sourceRoots.isNotEmpty()) { "expected at least one source root" }
   }
 
   @Test
-  fun `writes libraries and modules referencing them`() {
-    runInEdtAndWait {
-      val libLabel = Label.parse("//libfoo")
-      val libraryItem = LibraryItem(
-        id = libLabel,
-        ijars = emptyList(),
-        jars = listOf(Path("/dep/foo.jar")),
-        sourceJars = emptyList(),
-        mavenCoordinates = null,
-        containsInternalJars = false,
-      )
-      val target = createRawBuildTarget(
-        id = Label.parse("//app"),
-        kind = TargetKind(kind = "java_library", ruleType = RuleType.LIBRARY, languageClasses = setOf(LanguageClass.JAVA)),
-        dependencies = listOf(
-          DependencyLabel(label = libLabel, kind = DependencyLabelKind.COMPILE),
+  fun `writes libraries and modules referencing them`() = timeoutRunBlocking {
+    val libLabel = Label.parse("//libfoo")
+    val libraryItem = LibraryItem(
+      id = libLabel,
+      ijars = emptyList(),
+      jars = listOf(Path("/dep/foo.jar")),
+      sourceJars = emptyList(),
+      mavenCoordinates = null,
+      containsInternalJars = false,
+    )
+    val target = createRawBuildTarget(
+      id = Label.parse("//app"),
+      kind = TargetKind(kind = "java_library", ruleType = RuleType.LIBRARY, languageClasses = setOf(LanguageClass.JAVA)),
+      dependencies = listOf(
+        DependencyLabel(label = libLabel, kind = DependencyLabelKind.COMPILE),
+      ),
+      data = listOf(
+        JvmBuildTarget(
+          javaHome = Path("/fake/jdk"),
+          javaVersion = "11",
+          libraries = listOf(libraryItem),
         ),
-        data = listOf(
-          JvmBuildTarget(
-            javaHome = Path("/fake/jdk"),
-            javaVersion = "11",
-            libraries = listOf(libraryItem),
-          ),
-        ),
-      )
+      ),
+    )
 
-      runTestWriteAction { runImport(targets = listOf(target), libraries = listOf(libraryItem)) }
+    runImport(targets = listOf(target), libraries = listOf(libraryItem))
 
-      check(loadedEntries(LibraryEntity::class.java).isNotEmpty()) { "expected a library entity" }
-      check(loadedEntries(ModuleEntity::class.java).isNotEmpty()) { "expected a module entity" }
-    }
+    check(loadedEntries(LibraryEntity::class.java).isNotEmpty()) { "expected a library entity" }
+    check(loadedEntries(ModuleEntity::class.java).isNotEmpty()) { "expected a module entity" }
   }
 
   private fun Label.formatAsModuleNameTest(): String = this.formatAsModuleName(RepoMappingDisabled)
@@ -134,11 +129,5 @@ internal class JvmTargetEntitiesBuilderTest : WorkspaceModelBaseTest() {
       storage = workspaceEntityStorageBuilder,
     )
     JvmTargetEntitiesBuilder(ctx).writeAll(workspaceEntityStorageBuilder)
-  }
-
-  private fun runTestWriteAction(action: suspend () -> Unit) {
-    com.intellij.openapi.command.WriteCommandAction.runWriteCommandAction(project) {
-      runBlocking { action() }
-    }
   }
 }
