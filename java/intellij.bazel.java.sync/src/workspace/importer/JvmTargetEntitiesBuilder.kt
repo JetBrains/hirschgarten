@@ -246,6 +246,11 @@ class JvmTargetEntitiesBuilder(private val ctx: ImportContext) {
     }
 
     if (plan.kotlinTarget != null) {
+      // TODO: migrate `KotlinFacetBuilder` and `KotlinFacetEntityUpdater` to language-agnostic
+      //  extension point which can modify `ModuleEntity` based on `WorkspaceTarget/RawBuildTarget` passed
+      //  by that we can completely get rid of language-specific logic from shared JVM importer
+      //  this would remove both `KotlinFacetBuilder` and `ScalaAddendumBuilder` and make possible moving ep
+      //  implementation to separate modules
       KotlinFacetBuilder.write(
         kotlinBuildTarget = plan.kotlinTarget,
         isTestModule = target.kind.ruleType == RuleType.TEST,
@@ -255,11 +260,12 @@ class JvmTargetEntitiesBuilder(private val ctx: ImportContext) {
       )
     }
 
-    for (dummy in plan.dummies) {
-      if (!writtenNames.add(dummy.name)) {
-        continue
-      }
-      writeDummy(target, dummy, plan, packageMarkerBuilder, storage)
+    // matches old MMM behavior: dummy modules' hardcoded kind always includesKotlin(), so when the kotlin
+    // facet EP is absent (kotlin plugin disabled), `JavaModuleUpdater.addKotlinModuleIfPossible` returned
+    // null and the dummies were silently dropped, preserve that here
+    if (KotlinFacetEntityUpdater.ep.extensionList.isNotEmpty()) {
+      plan.dummies.filterNot { it.name in writtenNames }
+        .forEach { dummy -> writeDummy(target, dummy, plan, packageMarkerBuilder, storage) }
     }
   }
 
