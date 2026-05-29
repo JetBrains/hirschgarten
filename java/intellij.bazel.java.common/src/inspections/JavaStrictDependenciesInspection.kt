@@ -83,7 +83,7 @@ class JavaStrictDependenciesInspection: LocalInspectionTool() {
     if (file == null)
       return null
 
-    val multiverseModule =  (file.codeInsightContext as ModuleContext).getModule()?.findModuleEntity()?.bazelModuleExtension
+    val multiverseModule =  (file.codeInsightContext as? ModuleContext)?.getModule()?.findModuleEntity()?.bazelModuleExtension
     if (multiverseModule != null)
       return multiverseModule
 
