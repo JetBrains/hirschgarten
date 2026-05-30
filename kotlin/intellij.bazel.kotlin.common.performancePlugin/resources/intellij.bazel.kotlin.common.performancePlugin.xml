@@ -12,6 +12,7 @@
     <module name="intellij.java.debugger.impl"/>
     <module name="intellij.java.execution"/>
     <module name="intellij.java.execution.impl"/>
+    <module name="intellij.kotlin.jvm.debugger.coroutines"/>
     <module name="intellij.platform.smRunner"/>
   </dependencies>
   <!-- endregion -->
