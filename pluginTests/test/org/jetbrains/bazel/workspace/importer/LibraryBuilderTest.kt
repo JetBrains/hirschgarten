@@ -88,7 +88,7 @@ internal class LibraryBuilderTest : WorkspaceModelBaseTest() {
       )
 
     val returned =
-      LibraryBuilder.write(
+      LibraryBuilder.writeAll(
         libraryItems = listOf(item1, item2),
         repoMapping = RepoMappingDisabled,
         importIjars = false,

@@ -32,6 +32,7 @@ import org.jetbrains.bazel.workspace.indexAdditionalFiles.ProjectViewGlobSet
 import org.jetbrains.bazel.workspacemodel.entities.BazelDummyEntitySource
 import org.jetbrains.bazel.workspacemodel.entities.BazelModuleEntitySource
 import org.jetbrains.bazel.workspacemodel.entities.BazelModuleExtensionEntity
+import org.jetbrains.bazel.workspacemodel.entities.CompiledSourceCodeInsideJarExcludeEntity
 import org.jetbrains.bazel.workspacemodel.entities.WorkspaceModelTargetLabel
 import org.jetbrains.bazel.workspacemodel.entities.WorkspaceModelTargetLabelList
 import org.jetbrains.bazel.workspacemodel.entities.bazelModuleExtension
@@ -65,6 +66,10 @@ class ImportContext(
   val packagePrefixes: JvmPackagePrefixCalculator,
   val fileToTargets: Map<Path, List<Label>>,
   val virtualFileUrlManager: VirtualFileUrlManager,
+  val importIJars: Boolean,
+  val entitySource: EntitySource,
+  val excludeCompiledSourceCodeInsideJars: Boolean,
+  val currentCompiledSourceExcludeEntity: CompiledSourceCodeInsideJarExcludeEntity?,
 ) {
   val moduleNamesByLabel: Map<Label, String> = targets.associate { it.id to it.id.formatAsModuleName(repoMapping) }
 
@@ -97,6 +102,16 @@ class JvmTargetEntitiesBuilder(private val ctx: ImportContext) {
   private val resolverBatchSize = 512
 
   suspend fun writeAll(storage: MutableEntityStorage): Unit = coroutineScope {
+    // phase 0: write independent libraries
+    LibraryBuilder.writeAll(
+      libraryItems = ctx.libraries,
+      repoMapping = ctx.repoMapping,
+      importIjars = ctx.importIJars,
+      virtualFileUrlManager = ctx.virtualFileUrlManager,
+      entitySource = ctx.entitySource,
+      storage = storage,
+    )
+
     // phase 1: resolve every target. no storage writes.
     val dispatcher = Dispatchers.Default.limitedParallelism(resolverParallelism)
     val plans: List<Pair<RawBuildTarget, TargetPlan>> = ctx.targets.chunked(resolverBatchSize)
@@ -121,6 +136,17 @@ class JvmTargetEntitiesBuilder(private val ctx: ImportContext) {
     val writtenNames = mutableSetOf<String>()
     for ((target, plan) in plans) {
       writeOne(target, plan, packageMarkerBuilder, writtenNames, storage)
+    }
+
+    // phase 3: compute excluded sources inside Jars
+    if (ctx.excludeCompiledSourceCodeInsideJars) {
+      CompiledSourceCodeInsideJarExcludeBuilder.write(
+        targets = ctx.targets,
+        libraries = ctx.libraries,
+        packagePrefixes = ctx.packagePrefixes,
+        storage = storage,
+        currentExcludeEntity = ctx.currentCompiledSourceExcludeEntity
+      )
     }
   }
 

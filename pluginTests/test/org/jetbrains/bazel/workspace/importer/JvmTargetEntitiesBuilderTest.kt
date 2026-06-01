@@ -21,8 +21,9 @@ import org.jetbrains.bazel.workspace.model.test.framework.createRawBuildTarget
 import org.jetbrains.bsp.protocol.JvmBuildTarget
 import org.jetbrains.bsp.protocol.LibraryItem
 import org.jetbrains.bsp.protocol.SourceItem
-import kotlinx.coroutines.runBlocking
 import org.jetbrains.bazel.workspacemodel.entities.BazelDummyEntitySource
+import org.jetbrains.bazel.workspacemodel.entities.BazelEntitySource
+import org.jetbrains.bazel.workspacemodel.entities.BazelProjectEntitySource
 import org.jetbrains.bsp.protocol.RawBuildTarget
 import org.junit.jupiter.api.Test
 import kotlin.io.path.Path
@@ -119,8 +120,12 @@ internal class JvmTargetEntitiesBuilderTest : WorkspaceModelBaseTest() {
       packagePrefixes = jvmPackagePrefixes,
       fileToTargets = emptyMap(),
       virtualFileUrlManager = virtualFileUrlManager,
+      importIJars = false,
+      entitySource = BazelProjectEntitySource,
+      excludeCompiledSourceCodeInsideJars = true,
+      currentCompiledSourceExcludeEntity = null,
     )
-    LibraryBuilder.write(
+    LibraryBuilder.writeAll(
       libraryItems = libraries,
       repoMapping = RepoMappingDisabled,
       importIjars = false,

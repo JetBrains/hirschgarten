@@ -144,35 +144,16 @@ internal class JavaBazelWorkspaceImporter : BazelWorkspaceImporter, BazelWorkspa
       packagePrefixes = packagePrefixes,
       fileToTargets = snapshot.fileToTarget.mapValues { (_, v) -> v.map { it.label } },
       virtualFileUrlManager = context.vfuManager,
+      importIJars = javaSyncConfig.importIjars,
+      entitySource = entitySource,
+      excludeCompiledSourceCodeInsideJars = javaSyncConfig.excludeCompiledSourceCodeInsideJars,
+      currentCompiledSourceExcludeEntity = context.currentSnapshot
+        .entities<CompiledSourceCodeInsideJarExcludeEntity>()
+        .firstOrNull(),
     )
-
-    bspTracer.spanBuilder("load.libraries.ms").use {
-      LibraryBuilder.write(
-        libraryItems = libraryItems,
-        repoMapping = snapshot.repoMapping,
-        importIjars = javaSyncConfig.importIjars,
-        virtualFileUrlManager = context.vfuManager,
-        entitySource = entitySource,
-        storage = builder,
-      )
-    }
 
     bspTracer.spanBuilder("load.modules.ms").use {
       JvmTargetEntitiesBuilder(importContext).writeAll(builder)
-    }
-
-    if (BazelFeatureFlags.excludeCompiledSourceCodeInsideJars) {
-      bspTracer.spanBuilder("calculate.non.generated.class.files.to.exclude").use {
-        CompiledSourceCodeInsideJarExcludeBuilder.write(
-          targets = targets,
-          libraries = libraryItems,
-          packagePrefixes = packagePrefixes,
-          storage = builder,
-          currentExcludeEntity = context.currentSnapshot
-            .entities<CompiledSourceCodeInsideJarExcludeEntity>()
-            .firstOrNull(),
-        )
-      }
     }
 
     javacOptions = calculateAllJavacOptions(snapshot)
