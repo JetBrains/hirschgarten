@@ -30,7 +30,7 @@ import java.nio.file.Path
 // dropping the old `Library` wrapper
 @ApiStatus.Internal
 object LibraryBuilder {
-  fun write(
+  fun writeAll(
     libraryItems: List<LibraryItem>,
     repoMapping: RepoMapping,
     importIjars: Boolean,

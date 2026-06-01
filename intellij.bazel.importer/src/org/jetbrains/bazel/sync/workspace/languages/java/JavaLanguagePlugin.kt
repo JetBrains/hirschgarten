@@ -15,6 +15,7 @@ import org.jetbrains.bazel.commons.LanguageClass
 import org.jetbrains.bazel.commons.LocalRepositoryMapping
 import org.jetbrains.bazel.commons.RepoMapping
 import org.jetbrains.bazel.commons.getLocalRepositories
+import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.info.BspTargetInfo
 import org.jetbrains.bazel.info.BspTargetInfo.ArtifactLocation
 import org.jetbrains.bazel.info.BspTargetInfo.JvmTargetInfo
@@ -107,6 +108,7 @@ class JavaLanguagePlugin: LanguagePlugin {
              //  property, so can compare it against previous snapshot and assess whatever it has changes
              //  thus performing automatic full importer invalidation
              sourceRootOptimizationMode = SourceRootOptimizationMode.createFromProject(project),
+             excludeCompiledSourceCodeInsideJars = BazelFeatureFlags.excludeCompiledSourceCodeInsideJars,
            )
   }
 
