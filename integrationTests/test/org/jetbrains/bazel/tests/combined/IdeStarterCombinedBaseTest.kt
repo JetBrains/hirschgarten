@@ -6,9 +6,9 @@ import com.intellij.ide.starter.driver.engine.BackgroundRun
 import com.intellij.ide.starter.driver.engine.runIdeWithDriver
 import com.intellij.ide.starter.ide.IDETestContext
 import org.jetbrains.bazel.ideStarter.IdeStarterBaseProjectTest
-import org.jetbrains.bazel.ideStarter.assertSyncSucceeded
 import org.jetbrains.bazel.ideStarter.checkIdeaLogForExceptions
 import org.jetbrains.bazel.ideStarter.syncBazelProject
+import org.jetbrains.bazel.ideStarter.waitForSyncSucceeded
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assumptions
@@ -39,7 +39,7 @@ abstract class IdeStarterCombinedBaseTest : IdeStarterBaseProjectTest() {
       ideFrame {
         syncBazelProject()
         waitForIndicators(5.minutes)
-        assertSyncSucceeded()
+        waitForSyncSucceeded()
       }
     }
   }

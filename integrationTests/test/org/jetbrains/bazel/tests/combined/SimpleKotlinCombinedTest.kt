@@ -39,11 +39,11 @@ import com.intellij.tools.ide.performanceTesting.commands.takeScreenshot
 import com.intellij.tools.ide.performanceTesting.commands.waitForSmartMode
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.data.IdeaBazelCases
-import org.jetbrains.bazel.ideStarter.assertSyncSucceeded
 import org.jetbrains.bazel.ideStarter.assertSyncedTargets
 import org.jetbrains.bazel.ideStarter.buildAndSync
 import org.jetbrains.bazel.ideStarter.execute
 import org.jetbrains.bazel.ideStarter.openFile
+import org.jetbrains.bazel.ideStarter.waitForSyncSucceeded
 import org.jetbrains.bazel.tests.ui.expandedTree
 import org.jetbrains.bazel.tests.ui.verifyTestStatus
 import org.junit.jupiter.api.Order
@@ -281,11 +281,7 @@ class SimpleKotlinCombinedTest : IdeStarterCombinedBaseTest() {
 
       step("Check that the sync finishes successfully") {
         ideFrame {
-          try {
-            assertSyncSucceeded()
-          } catch (e: Exception) {
-            assert(e is WaitForException) { "Unknown exception: ${e.message}" }
-          }
+          waitForSyncSucceeded()
         }
       }
     }

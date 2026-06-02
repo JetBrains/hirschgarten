@@ -454,13 +454,10 @@ interface IdeFatalError {
   fun getThrowableText(): String
 }
 
-fun UiComponent.assertSyncSucceeded() {
+fun UiComponent.waitForSyncSucceeded() {
   val buildView = x { byType("com.intellij.build.BuildView") }
   val syncSuccessText = BazelPluginBundle.message("console.task.sync.success")
-  val allTexts = buildView.getAllTexts().map { it.text }
-  if (allTexts.none { it.contains(syncSuccessText) }) {
-    error("Build view does not contain sync success text ('$syncSuccessText'):\n${allTexts.joinToString("\n")}")
-  }
+  buildView.waitOneText { it.text.contains(syncSuccessText) }
 }
 
 fun <T : CommandChain> T.assertSyncedTargets(vararg targets: String): T {

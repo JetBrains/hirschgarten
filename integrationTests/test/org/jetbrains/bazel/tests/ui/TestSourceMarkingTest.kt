@@ -8,10 +8,10 @@ import com.intellij.openapi.ui.playback.commands.PlaybackCommandCoroutineAdapter
 import com.intellij.tools.ide.performanceTesting.commands.CommandChain
 import org.jetbrains.bazel.data.IdeaBazelCases
 import org.jetbrains.bazel.ideStarter.IdeStarterBaseProjectTest
-import org.jetbrains.bazel.ideStarter.assertSyncSucceeded
 import org.jetbrains.bazel.ideStarter.checkIdeaLogForExceptions
 import org.jetbrains.bazel.ideStarter.execute
 import org.jetbrains.bazel.ideStarter.syncBazelProject
+import org.jetbrains.bazel.ideStarter.waitForSyncSucceeded
 import org.junit.jupiter.api.Test
 import kotlin.time.Duration.Companion.minutes
 
@@ -25,7 +25,7 @@ internal class TestSourceMarkingTest : IdeStarterBaseProjectTest() {
         ideFrame {
           syncBazelProject()
           waitForIndicators(5.minutes)
-          assertSyncSucceeded()
+          waitForSyncSucceeded()
 
           step("Check sources marked as tests") {
             // a library used only in a test target in the same package

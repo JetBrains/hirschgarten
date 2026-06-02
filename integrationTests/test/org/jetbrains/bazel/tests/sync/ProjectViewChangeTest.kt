@@ -8,7 +8,6 @@ import com.intellij.tools.ide.performanceTesting.commands.takeScreenshot
 import com.intellij.tools.ide.performanceTesting.commands.waitForSmartMode
 import org.jetbrains.bazel.data.IdeaBazelCases
 import org.jetbrains.bazel.ideStarter.IdeStarterBaseProjectTest
-import org.jetbrains.bazel.ideStarter.assertSyncSucceeded
 import org.jetbrains.bazel.ideStarter.assertSyncedTargets
 import org.jetbrains.bazel.ideStarter.buildAndSync
 import org.jetbrains.bazel.ideStarter.checkIdeaLogForExceptions
@@ -16,6 +15,7 @@ import org.jetbrains.bazel.ideStarter.execute
 import org.jetbrains.bazel.ideStarter.openFile
 import org.jetbrains.bazel.ideStarter.switchProjectView
 import org.jetbrains.bazel.ideStarter.syncBazelProject
+import org.jetbrains.bazel.ideStarter.waitForSyncSucceeded
 import org.junit.jupiter.api.Test
 import kotlin.io.path.div
 import kotlin.io.path.writeText
@@ -33,7 +33,7 @@ class ProjectViewChangeTest : IdeStarterBaseProjectTest() {
         ideFrame {
           syncBazelProject()
           waitForIndicators(5.minutes)
-          assertSyncSucceeded()
+          waitForSyncSucceeded()
 
           step("Verify initial targets — lib_a and lib_b only") {
             execute { assertSyncedTargets("//:lib_a", "//:lib_b") }
@@ -54,7 +54,7 @@ class ProjectViewChangeTest : IdeStarterBaseProjectTest() {
               waitForSmartMode()
               takeScreenshot("afterResyncModified")
             }
-            assertSyncSucceeded()
+            waitForSyncSucceeded()
             execute { assertSyncedTargets("//:lib_a", "//:lib_b", "//:lib_c") }
           }
         }
@@ -74,7 +74,7 @@ class ProjectViewChangeTest : IdeStarterBaseProjectTest() {
         ideFrame {
           syncBazelProject()
           waitForIndicators(5.minutes)
-          assertSyncSucceeded()
+          waitForSyncSucceeded()
 
           step("Verify initial targets — lib_a and lib_b from default view") {
             execute { assertSyncedTargets("//:lib_a", "//:lib_b") }
@@ -92,7 +92,7 @@ class ProjectViewChangeTest : IdeStarterBaseProjectTest() {
               waitForSmartMode()
               takeScreenshot("afterResyncSwitched")
             }
-            assertSyncSucceeded()
+            waitForSyncSucceeded()
             execute { assertSyncedTargets("//:lib_c", "//:lib_d") }
           }
         }

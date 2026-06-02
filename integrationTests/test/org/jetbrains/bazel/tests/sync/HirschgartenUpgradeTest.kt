@@ -1,13 +1,13 @@
 package org.jetbrains.bazel.tests.sync
 
 import com.intellij.driver.sdk.WaitForException
-import com.intellij.ide.starter.ide.IDETestContext
 import com.intellij.driver.sdk.invokeAction
 import com.intellij.driver.sdk.step
 import com.intellij.driver.sdk.ui.components.common.ideFrame
 import com.intellij.driver.sdk.ui.components.common.welcomeScreen
 import com.intellij.driver.sdk.wait
 import com.intellij.ide.starter.driver.engine.runIdeWithDriver
+import com.intellij.ide.starter.ide.IDETestContext
 import com.intellij.ide.starter.project.GitProjectInfo
 import com.intellij.ide.starter.project.LocalProjectInfo
 import com.intellij.ide.starter.project.ProjectInfoSpec
@@ -17,19 +17,19 @@ import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.data.BazelProjectConfigurer
 import org.jetbrains.bazel.data.IdeaBazelCases
 import org.jetbrains.bazel.ideStarter.IdeStarterBaseProjectTest
-import org.jetbrains.bazel.ideStarter.assertSyncSucceeded
 import org.jetbrains.bazel.ideStarter.checkIdeaLogForExceptions
 import org.jetbrains.bazel.ideStarter.execute
 import org.jetbrains.bazel.ideStarter.syncBazelProject
+import org.jetbrains.bazel.ideStarter.waitForSyncSucceeded
 import org.jetbrains.bazel.test.compat.IntegrationTestCompat
 import org.junit.jupiter.api.Assumptions
 import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable
 import org.junit.jupiter.api.MethodOrderer
 import org.junit.jupiter.api.Order
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.api.TestMethodOrder
+import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable
 import java.nio.file.Path
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
@@ -74,7 +74,7 @@ class HirschgartenUpgradeTest : IdeStarterBaseProjectTest() {
         ideFrame {
           syncBazelProject()
           waitForIndicators(10.minutes)
-          assertSyncSucceeded()
+          waitForSyncSucceeded()
 
           step("Save target order after initial import") {
             execute { saveTargetOrder() }

@@ -15,7 +15,6 @@ import com.intellij.tools.ide.performanceTesting.commands.waitForSmartMode
 import org.jetbrains.bazel.data.IdeaBazelCases
 import org.jetbrains.bazel.ideStarter.IdeStarterBaseProjectTest
 import org.jetbrains.bazel.ideStarter.assertFileKind
-import org.jetbrains.bazel.ideStarter.assertSyncSucceeded
 import org.jetbrains.bazel.ideStarter.assertSyncedTargets
 import org.jetbrains.bazel.ideStarter.buildAndSync
 import org.jetbrains.bazel.ideStarter.checkIdeaLogForExceptions
@@ -25,13 +24,14 @@ import org.jetbrains.bazel.ideStarter.refreshFile
 import org.jetbrains.bazel.ideStarter.switchProjectView
 import org.jetbrains.bazel.ideStarter.switchProjectViewWithPreview
 import org.jetbrains.bazel.ideStarter.syncBazelProject
-import org.jetbrains.bazel.performanceImpl.FileKindCheck.IN_TARGETS
-import org.jetbrains.bazel.performanceImpl.FileKindCheck.NOT_IN_TARGETS
-import org.jetbrains.bazel.performanceImpl.FileKindCheck.IN_WSM
-import org.jetbrains.bazel.performanceImpl.FileKindCheck.NOT_IN_WSM
+import org.jetbrains.bazel.ideStarter.waitForSyncSucceeded
 import org.jetbrains.bazel.performanceImpl.FileKindCheck.INDEXABLE
 import org.jetbrains.bazel.performanceImpl.FileKindCheck.IN_CONTENT
+import org.jetbrains.bazel.performanceImpl.FileKindCheck.IN_TARGETS
+import org.jetbrains.bazel.performanceImpl.FileKindCheck.IN_WSM
 import org.jetbrains.bazel.performanceImpl.FileKindCheck.NON_INDEXABLE
+import org.jetbrains.bazel.performanceImpl.FileKindCheck.NOT_IN_TARGETS
+import org.jetbrains.bazel.performanceImpl.FileKindCheck.NOT_IN_WSM
 import org.jetbrains.bazel.performanceImpl.FileKindCheck.OUTSIDE_CONTENT
 import org.jetbrains.bazel.tests.ui.clickRunGutterOnLine
 import org.jetbrains.bazel.tests.ui.getRunGutterOnLine
@@ -66,7 +66,7 @@ class ProjectViewCombinedTest : IdeStarterBaseProjectTest() {
       ideFrame {
         syncBazelProject(buildAndSync = true)
         waitForIndicators(5.minutes)
-        assertSyncSucceeded()
+        waitForSyncSucceeded()
       }
     }
   }
@@ -95,7 +95,7 @@ class ProjectViewCombinedTest : IdeStarterBaseProjectTest() {
             buildAndSync()
             waitForSmartMode()
           }
-          assertSyncSucceeded()
+          waitForSyncSucceeded()
         }
         step("Verify all files are in project with all targets (sanity check)") {
           execute { assertFileKind("app/src/main/java/com/example/app/App.java", IN_CONTENT) }
@@ -111,7 +111,7 @@ class ProjectViewCombinedTest : IdeStarterBaseProjectTest() {
             buildAndSync()
             waitForSmartMode()
           }
-          assertSyncSucceeded()
+          waitForSyncSucceeded()
         }
         step("Verify only subset targets are synced") {
           execute { assertSyncedTargets("//app:app", "//common:common") }
@@ -138,7 +138,7 @@ class ProjectViewCombinedTest : IdeStarterBaseProjectTest() {
             buildAndSync()
             waitForSmartMode()
           }
-          assertSyncSucceeded()
+          waitForSyncSucceeded()
         }
         step("Verify initial targets from default project view") {
           execute { assertSyncedTargets("//app:app", "//common:common") }
@@ -161,7 +161,7 @@ class ProjectViewCombinedTest : IdeStarterBaseProjectTest() {
             buildAndSync()
             waitForSmartMode()
           }
-          assertSyncSucceeded()
+          waitForSyncSucceeded()
           execute { assertSyncedTargets("//app:app", "//common:common", "//server:server") }
         }
         step("Restore default project view and resync to clean state") {
@@ -179,7 +179,7 @@ class ProjectViewCombinedTest : IdeStarterBaseProjectTest() {
             buildAndSync()
             waitForSmartMode()
           }
-          assertSyncSucceeded()
+          waitForSyncSucceeded()
           execute { assertSyncedTargets("//app:app", "//common:common") }
         }
       }
@@ -200,7 +200,7 @@ class ProjectViewCombinedTest : IdeStarterBaseProjectTest() {
             buildAndSync()
             waitForSmartMode()
           }
-          assertSyncSucceeded()
+          waitForSyncSucceeded()
         }
         step("Verify only subset targets are synced") {
           execute { assertSyncedTargets("//app:app", "//common:common") }
@@ -237,7 +237,7 @@ class ProjectViewCombinedTest : IdeStarterBaseProjectTest() {
             buildAndSync()
             waitForSmartMode()
           }
-          assertSyncSucceeded()
+          waitForSyncSucceeded()
         }
         step("Verify synced targets") {
           execute { assertSyncedTargets("//app:app", "//common:common", "//server:server") }
@@ -274,7 +274,7 @@ class ProjectViewCombinedTest : IdeStarterBaseProjectTest() {
             buildAndSync()
             waitForSmartMode()
           }
-          assertSyncSucceeded()
+          waitForSyncSucceeded()
         }
         step("Verify included dir files ARE in project content and indexable") {
           execute { assertFileKind("app/src/main/java/com/example/app/App.java", IN_CONTENT, INDEXABLE) }
@@ -307,7 +307,7 @@ class ProjectViewCombinedTest : IdeStarterBaseProjectTest() {
             buildAndSync()
             waitForSmartMode()
           }
-          assertSyncSucceeded()
+          waitForSyncSucceeded()
         }
         step("Verify bazel configs in workspace root ARE in project content and indexable") {
           execute { assertFileKind("MODULE.bazel", IN_CONTENT, INDEXABLE) }
