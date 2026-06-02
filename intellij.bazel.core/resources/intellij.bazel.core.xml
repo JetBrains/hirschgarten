@@ -291,6 +291,7 @@
     <fileBasedIndex implementation="org.jetbrains.bazel.languages.starlark.index.StarlarkLoadsIndexExtension"/>
 
     <useScopeOptimizer implementation="org.jetbrains.bazel.languages.starlark.findusages.StarlarkUseScopeOptimizer"/>
+    <useScopeEnlarger implementation="org.jetbrains.bazel.languages.starlark.findusages.StarlarkFileUseScopeEnlarger"/>
     <lang.syntaxHighlighterFactory
       implementationClass="org.jetbrains.bazel.languages.starlark.highlighting.StarlarkSyntaxHighlighterFactory"
       language="Starlark"
