@@ -29,6 +29,7 @@ class BazelGsonTest {
             ruleType = RuleType.BINARY,
           ),
         sources = emptyList(),
+        generatedSources = emptyList(),
         resources = emptyList(),
         baseDirectory = Path.of("/base/dir"),
         data = listOf(

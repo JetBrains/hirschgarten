@@ -57,6 +57,8 @@ import org.jetbrains.bazel.workspacemodel.entities.BazelModuleEntitySource
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.PythonBuildTarget
 import org.jetbrains.bsp.protocol.RawBuildTarget
+import org.jetbrains.bsp.protocol.TaskId
+import org.jetbrains.bsp.protocol.allSources
 import org.jetbrains.bsp.protocol.utils.StringUtils
 import java.nio.file.Path
 import kotlin.io.path.pathString
@@ -275,8 +277,8 @@ internal class BazelPythonWorkspaceImporter : BazelWorkspaceImporter {
     entitySource: BazelModuleEntitySource,
     virtualFileUrlManager: VirtualFileUrlManager,
   ): List<ContentRootEntityBuilder> =
-    target.sources.map { source ->
-      val sourceUrl = source.path.toVirtualFileUrl(virtualFileUrlManager)
+    target.allSources.map { source ->
+      val sourceUrl = source.toVirtualFileUrl(virtualFileUrlManager)
       val sourceRootEntity =
         SourceRootEntity(
           url = sourceUrl,
@@ -291,7 +293,7 @@ internal class BazelPythonWorkspaceImporter : BazelWorkspaceImporter {
         this.excludedUrls = emptyList()
         this.sourceRoots = listOf(sourceRootEntity)
       }
-    }
+    }.toList()
 
   private fun getResourceContentRootEntities(
     target: RawBuildTarget,

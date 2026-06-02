@@ -18,12 +18,10 @@ import org.jetbrains.bazel.sync.workspace.languages.java.sourceRoot.SourceRootOp
 import org.jetbrains.bazel.workspace.indexAdditionalFiles.ProjectViewGlobSet
 import org.jetbrains.bazel.workspace.model.test.framework.WorkspaceModelBaseTest
 import org.jetbrains.bazel.workspace.model.test.framework.createRawBuildTarget
+import org.jetbrains.bazel.workspacemodel.entities.BazelDummyEntitySource
+import org.jetbrains.bazel.workspacemodel.entities.BazelProjectEntitySource
 import org.jetbrains.bsp.protocol.JvmBuildTarget
 import org.jetbrains.bsp.protocol.LibraryItem
-import org.jetbrains.bsp.protocol.SourceItem
-import org.jetbrains.bazel.workspacemodel.entities.BazelDummyEntitySource
-import org.jetbrains.bazel.workspacemodel.entities.BazelEntitySource
-import org.jetbrains.bazel.workspacemodel.entities.BazelProjectEntitySource
 import org.jetbrains.bsp.protocol.RawBuildTarget
 import org.junit.jupiter.api.Test
 import kotlin.io.path.Path
@@ -55,7 +53,7 @@ internal class JvmTargetEntitiesBuilderTest : WorkspaceModelBaseTest() {
     val target = createRawBuildTarget(
       id = Label.parse("//foo"),
       kind = TargetKind(kind = "java_library", ruleType = RuleType.LIBRARY, languageClasses = setOf(LanguageClass.JAVA)),
-      sources = listOf(SourceItem(path = sourcePath, generated = false)),
+      sources = listOf(sourcePath),
       baseDirectory = projectBasePath,
     )
 

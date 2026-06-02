@@ -414,6 +414,7 @@ class WorkspaceTargetGraphTest {
           languageClasses = setOf(LanguageClass.JAVA),
         ),
         sources = emptyList(),
+        generatedSources = emptyList(),
         resources = emptyList(),
         baseDirectory = Path.of("/tmp"),
         generatorName = generatorName,

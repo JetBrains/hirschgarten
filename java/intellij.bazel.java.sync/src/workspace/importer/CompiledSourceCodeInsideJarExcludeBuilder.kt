@@ -89,9 +89,7 @@ object CompiledSourceCodeInsideJarExcludeBuilder {
     for (target in targets) {
       val jvmPackagePrefixes = packagePrefixes.get(target)
       for (sourceRoot in target.sources) {
-        if (sourceRoot.generated) continue
-
-        val sourceName = sourceRoot.path.fileName.toString()
+        val sourceName = sourceRoot.fileName.toString()
         val classNames =
           when {
             sourceName.endsWith(".java") -> listOf(sourceName, sourceName.removeSuffix(".java") + ".class")
@@ -104,7 +102,7 @@ object CompiledSourceCodeInsideJarExcludeBuilder {
             else -> continue
           }
 
-        val packagePrefix = jvmPackagePrefixes[sourceRoot.path]?.replace(".", "/") ?: ""
+        val packagePrefix = jvmPackagePrefixes[sourceRoot]?.replace(".", "/") ?: ""
         classNames.forEach { className ->
           result.add(if (packagePrefix.isNotEmpty()) "$packagePrefix/$className" else className)
         }

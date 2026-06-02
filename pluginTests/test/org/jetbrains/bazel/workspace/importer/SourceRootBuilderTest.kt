@@ -11,8 +11,6 @@ import org.jetbrains.bazel.sync.workspace.languages.java.sourceRoot.JvmPackagePr
 import org.jetbrains.bazel.workspace.indexAdditionalFiles.ProjectViewGlobSet
 import org.jetbrains.bazel.workspace.model.test.framework.createRawBuildTarget
 import org.jetbrains.bsp.protocol.RawBuildTarget
-import org.jetbrains.bsp.protocol.SourceItem
-import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import java.nio.file.Path
 import kotlin.io.path.Path
@@ -24,7 +22,7 @@ class SourceRootBuilderTest {
     val target = libraryTarget(
       label = "//target",
       ruleType = RuleType.TEST,
-      sources = listOf(SourceItem(path = sourcePath, generated = false)),
+      sources = listOf(sourcePath),
     )
 
     val roots = SourceRootBuilder.resolve(
@@ -42,7 +40,7 @@ class SourceRootBuilderTest {
     val sourcePath = Path("/project/main/Foo.java")
     val target = libraryTarget(
       label = "//target",
-      sources = listOf(SourceItem(path = sourcePath, generated = false)),
+      sources = listOf(sourcePath),
     )
 
     val roots = SourceRootBuilder.resolve(
@@ -61,7 +59,7 @@ class SourceRootBuilderTest {
     val targetId = Label.parse("//target")
     val target = libraryTarget(
       label = "//target",
-      sources = listOf(SourceItem(path = sourcePath, generated = false)),
+      sources = listOf(sourcePath),
     )
 
     val roots = SourceRootBuilder.resolve(
@@ -81,10 +79,7 @@ class SourceRootBuilderTest {
     val nonMatchingPath = projectRoot.resolve("main/package/File.java")
     val target = libraryTarget(
       label = "//target",
-      sources = listOf(
-        SourceItem(path = matchingPath, generated = false),
-        SourceItem(path = nonMatchingPath, generated = false),
-      ),
+      sources = listOf(matchingPath, nonMatchingPath),
     )
     val glob = ProjectViewGlobSet(projectRoot, listOf("javatests/*"))
 
@@ -105,10 +100,8 @@ class SourceRootBuilderTest {
     val handPath = Path("/project/main/Hand.java")
     val target = libraryTarget(
       label = "//target",
-      sources = listOf(
-        SourceItem(path = generatedPath, generated = true),
-        SourceItem(path = handPath, generated = false),
-      ),
+      sources = listOf(handPath),
+      generatedSources = listOf(generatedPath),
     )
 
     val roots = SourceRootBuilder.resolve(
@@ -128,10 +121,7 @@ class SourceRootBuilderTest {
     val withoutPrefix = Path("/project/main/Bar.java")
     val target = libraryTarget(
       label = "//target",
-      sources = listOf(
-        SourceItem(path = withPrefix, generated = false),
-        SourceItem(path = withoutPrefix, generated = false),
-      ),
+      sources = listOf(withPrefix, withoutPrefix),
     )
     val prefixes = fixedPrefixes(mapOf(withPrefix to "com.example"))
 
@@ -149,7 +139,8 @@ class SourceRootBuilderTest {
   private fun libraryTarget(
     label: String,
     ruleType: RuleType = RuleType.LIBRARY,
-    sources: List<SourceItem> = emptyList(),
+    sources: List<Path> = emptyList(),
+    generatedSources: List<Path> = emptyList(),
   ): RawBuildTarget = createRawBuildTarget(
     id = Label.parse(label),
     kind = TargetKind(
@@ -158,6 +149,7 @@ class SourceRootBuilderTest {
       languageClasses = setOf(LanguageClass.JAVA),
     ),
     sources = sources,
+    generatedSources = generatedSources,
   )
 
   private fun fixedPrefixes(map: Map<Path, String>): JvmPackagePrefixCalculator =

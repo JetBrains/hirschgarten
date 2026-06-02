@@ -10,8 +10,6 @@ import org.jetbrains.bazel.sync.workspace.languages.java.sourceRoot.JvmPackagePr
 import org.jetbrains.bazel.workspace.model.test.framework.createRawBuildTarget
 import org.jetbrains.bsp.protocol.LibraryItem
 import org.jetbrains.bsp.protocol.RawBuildTarget
-import org.jetbrains.bsp.protocol.SourceItem
-import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import java.nio.file.Path
 import kotlin.io.path.Path
@@ -21,7 +19,7 @@ class CompiledSourceCodeInsideJarExcludeBuilderTest {
   @Test
   fun `should emit Java source name plus matching class file when source is a java file`() {
     val sourcePath = Path("/repo/com/example/Foo.java")
-    val target = targetWithSources(listOf(SourceItem(path = sourcePath, generated = false)))
+    val target = targetWithSources(listOf(sourcePath))
     val prefixes = fixedPrefixes(mapOf(sourcePath to "com.example"))
 
     val result = CompiledSourceCodeInsideJarExcludeBuilder
@@ -36,7 +34,7 @@ class CompiledSourceCodeInsideJarExcludeBuilderTest {
   @Test
   fun `should emit Kotlin source name plus matching class and file-class for a kt file`() {
     val sourcePath = Path("/repo/com/example/main.kt")
-    val target = targetWithSources(listOf(SourceItem(path = sourcePath, generated = false)))
+    val target = targetWithSources(listOf(sourcePath))
     val prefixes = fixedPrefixes(mapOf(sourcePath to "com.example"))
 
     val result = CompiledSourceCodeInsideJarExcludeBuilder
@@ -52,31 +50,31 @@ class CompiledSourceCodeInsideJarExcludeBuilderTest {
   @Test
   fun `should skip generated sources`() {
     val sourcePath = Path("/repo/com/example/Generated.java")
-    val target = targetWithSources(listOf(SourceItem(path = sourcePath, generated = true)))
+    val target = targetWithSources(sources = emptyList(), genSources =  listOf(sourcePath))
     val prefixes = fixedPrefixes(mapOf(sourcePath to "com.example"))
 
     val result = CompiledSourceCodeInsideJarExcludeBuilder
       .calculateRelativePathsInsideJarToExclude(listOf(target), prefixes)
 
-    result shouldContainExactlyInAnyOrder emptySet<String>()
+    result shouldContainExactlyInAnyOrder emptySet()
   }
 
   @Test
   fun `should skip sources whose extension is neither java nor kt`() {
     val sourcePath = Path("/repo/com/example/script.scala")
-    val target = targetWithSources(listOf(SourceItem(path = sourcePath, generated = false)))
+    val target = targetWithSources(listOf(sourcePath))
     val prefixes = fixedPrefixes(mapOf(sourcePath to "com.example"))
 
     val result = CompiledSourceCodeInsideJarExcludeBuilder
       .calculateRelativePathsInsideJarToExclude(listOf(target), prefixes)
 
-    result shouldContainExactlyInAnyOrder emptySet<String>()
+    result shouldContainExactlyInAnyOrder emptySet()
   }
 
   @Test
   fun `should omit the package directory prefix when no prefix is configured for the source`() {
     val sourcePath = Path("/repo/Foo.java")
-    val target = targetWithSources(listOf(SourceItem(path = sourcePath, generated = false)))
+    val target = targetWithSources(listOf(sourcePath))
     val prefixes = fixedPrefixes(emptyMap())
 
     val result = CompiledSourceCodeInsideJarExcludeBuilder
@@ -88,7 +86,7 @@ class CompiledSourceCodeInsideJarExcludeBuilderTest {
   @Test
   fun `should capitalize only the first character of kt file-class names`() {
     val sourcePath = Path("/repo/com/example/myUtil.kt")
-    val target = targetWithSources(listOf(SourceItem(path = sourcePath, generated = false)))
+    val target = targetWithSources(listOf(sourcePath))
     val prefixes = fixedPrefixes(mapOf(sourcePath to "com.example"))
 
     val result = CompiledSourceCodeInsideJarExcludeBuilder
@@ -149,7 +147,7 @@ class CompiledSourceCodeInsideJarExcludeBuilderTest {
     )
   }
 
-  private fun targetWithSources(sources: List<SourceItem>): RawBuildTarget = createRawBuildTarget(
+  private fun targetWithSources(sources: List<Path>, genSources: List<Path> = emptyList()): RawBuildTarget = createRawBuildTarget(
     id = Label.parse("//target"),
     kind = TargetKind(
       kind = "java_library",
@@ -157,6 +155,7 @@ class CompiledSourceCodeInsideJarExcludeBuilderTest {
       languageClasses = setOf(LanguageClass.JAVA),
     ),
     sources = sources,
+    generatedSources = genSources,
   )
 
   private fun fixedPrefixes(map: Map<Path, String>): JvmPackagePrefixCalculator =

@@ -13,9 +13,7 @@ import org.jetbrains.bsp.protocol.JvmBuildTarget
 import org.jetbrains.bsp.protocol.KotlinBuildTarget
 import org.jetbrains.bsp.protocol.RawBuildTarget
 import org.jetbrains.bsp.protocol.ScalaBuildTarget
-import org.jetbrains.bsp.protocol.SourceItem
 import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.DynamicTest
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestFactory
@@ -257,7 +255,7 @@ class ResourceRootBuilderTest {
     val resourceFile = packageDir.resolve("config.xml").createFile()
 
     val target = javaTarget(
-      sources = listOf(SourceItem(path = sourceFile, generated = false)),
+      sources = listOf(sourceFile),
       resources = listOf(resourceFile),
     )
 
@@ -276,7 +274,7 @@ class ResourceRootBuilderTest {
     val safeResource = resourcesRoot.resolve("app.properties").createFile()
 
     val target = kotlinTarget(
-      sources = listOf(SourceItem(path = sourceFile, generated = false)),
+      sources = listOf(sourceFile),
       resources = listOf(conflictingResource, safeResource),
     )
 
@@ -306,7 +304,7 @@ class ResourceRootBuilderTest {
     val resourceFile = packageDir.resolve("data.json").createFile()
 
     val target = kotlinTarget(
-      sources = listOf(SourceItem(path = sourceFile, generated = false)),
+      sources = listOf(sourceFile),
       resources = listOf(resourceFile),
       data = listOf(
         KotlinBuildTarget(
@@ -439,7 +437,7 @@ class ResourceRootBuilderTest {
   private fun javaTarget(
     label: String = "//target",
     ruleType: RuleType = RuleType.LIBRARY,
-    sources: List<SourceItem> = emptyList(),
+    sources: List<Path> = emptyList(),
     resources: List<Path> = emptyList(),
     data: List<BuildTargetData> = listOf(JvmBuildTarget(javaVersion = "")),
   ): RawBuildTarget = createRawBuildTarget(
@@ -456,7 +454,7 @@ class ResourceRootBuilderTest {
 
   private fun kotlinTarget(
     label: String = "//target",
-    sources: List<SourceItem> = emptyList(),
+    sources: List<Path> = emptyList(),
     resources: List<Path> = emptyList(),
     data: List<BuildTargetData> = listOf(
       KotlinBuildTarget(
@@ -481,7 +479,7 @@ class ResourceRootBuilderTest {
 
   private fun scalaTarget(
     label: String = "//target",
-    sources: List<SourceItem> = emptyList(),
+    sources: List<Path> = emptyList(),
     resources: List<Path> = emptyList(),
     data: List<BuildTargetData> = listOf(
       ScalaBuildTarget(
