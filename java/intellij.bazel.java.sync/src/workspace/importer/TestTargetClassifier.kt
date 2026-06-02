@@ -33,12 +33,16 @@ object TestTargetClassifier {
     val directTestDependencies = libraryTargets.filter { library ->
       val executables = executableTargets[library]?.mapNotNull { labelToTargetInfo[it] }.orEmpty()
       val executablesWithoutSelfReference = executables.filterNot { it.id == library }
-      return@filter executablesWithoutSelfReference.isNotEmpty()
+      val directExecutables = executablesWithoutSelfReference.filter { it.dependsOn(library) }
+      return@filter directExecutables.isNotEmpty()
                     && executablesWithoutSelfReference.all { it.isTestTarget() }
-                    && executablesWithoutSelfReference.any { it.sources.isEmpty() && it.id.packagePath == library.packagePath }
+                    && directExecutables.any { it.sources.isEmpty() && it.id.packagePath == library.packagePath }
     }.toSet()
     return testTargets.map { it.id }.toSet() + directTestDependencies
   }
 
   private fun RawBuildTarget.isTestTarget(): Boolean = isTestOnly || kind.ruleType == RuleType.TEST
+
+  private fun RawBuildTarget.dependsOn(label: Label): Boolean =
+    dependencies.any { it.label == label }
 }
