@@ -27,15 +27,13 @@ import com.intellij.tools.ide.performanceTesting.commands.waitForSmartMode
 import org.jetbrains.bazel.data.IdeaBazelCases
 import org.jetbrains.bazel.ideStarter.IdeStarterBaseProjectTest
 import org.jetbrains.bazel.ideStarter.assertFileKind
-import org.jetbrains.bazel.ideStarter.assertSyncSucceeded
 import org.jetbrains.bazel.ideStarter.bazelClean
 import org.jetbrains.bazel.ideStarter.buildAndSync
 import org.jetbrains.bazel.ideStarter.checkIdeaLogForExceptions
 import org.jetbrains.bazel.ideStarter.execute
 import org.jetbrains.bazel.ideStarter.openFile
-import org.jetbrains.bazel.ideStarter.syncBazelProject
+import org.jetbrains.bazel.ideStarter.waitForSyncSucceeded
 import org.jetbrains.bazel.performanceImpl.FileKindCheck
-import org.jetbrains.bazel.performanceImpl.FileKindCheck.INDEXABLE
 import org.jetbrains.bazel.tests.ui.verifyAvailableRunGutterActions
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.AfterEach
@@ -66,7 +64,7 @@ class SimpleJavaCombinedTest : IdeStarterBaseProjectTest() {
     bgRun = ctx.runIdeWithDriver(runTimeout = timeout)
     withDriver(bgRun) {
       ideFrame {
-        syncBazelProject()
+        waitForSyncSucceeded()
         waitForIndicators(5.minutes)
       }
     }
@@ -162,7 +160,7 @@ class SimpleJavaCombinedTest : IdeStarterBaseProjectTest() {
               .takeScreenshot("afterBuildAndSync")
           }
         }
-        assertSyncSucceeded()
+        waitForSyncSucceeded()
       }
     }
   }
@@ -188,7 +186,7 @@ class SimpleJavaCombinedTest : IdeStarterBaseProjectTest() {
               .waitForSmartMode()
               .takeScreenshot("afterResync")
           }
-          assertSyncSucceeded()
+          waitForSyncSucceeded()
         }
       }
     }

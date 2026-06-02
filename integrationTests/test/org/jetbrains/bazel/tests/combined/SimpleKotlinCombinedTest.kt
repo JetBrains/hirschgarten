@@ -42,13 +42,13 @@ import com.intellij.tools.ide.performanceTesting.commands.waitForSmartMode
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.data.IdeaBazelCases
 import org.jetbrains.bazel.ideStarter.IdeStarterBaseProjectTest
-import org.jetbrains.bazel.ideStarter.assertSyncSucceeded
 import org.jetbrains.bazel.ideStarter.assertSyncedTargets
 import org.jetbrains.bazel.ideStarter.buildAndSync
 import org.jetbrains.bazel.ideStarter.checkIdeaLogForExceptions
 import org.jetbrains.bazel.ideStarter.execute
 import org.jetbrains.bazel.ideStarter.openFile
 import org.jetbrains.bazel.ideStarter.syncBazelProject
+import org.jetbrains.bazel.ideStarter.waitForSyncSucceeded
 import org.jetbrains.bazel.tests.ui.expandedTree
 import org.jetbrains.bazel.tests.ui.verifyTestStatus
 import org.junit.jupiter.api.AfterAll
@@ -79,7 +79,7 @@ class SimpleKotlinCombinedTest : IdeStarterBaseProjectTest() {
       ideFrame {
         syncBazelProject()
         waitForIndicators(5.minutes)
-        assertSyncSucceeded()
+        waitForSyncSucceeded()
       }
     }
   }
@@ -325,11 +325,7 @@ class SimpleKotlinCombinedTest : IdeStarterBaseProjectTest() {
 
       step("Check that the sync finishes successfully") {
         ideFrame {
-          try {
-            assertSyncSucceeded()
-          } catch (e: Exception) {
-            assert(e is WaitForException) { "Unknown exception: ${e.message}" }
-          }
+          waitForSyncSucceeded()
         }
       }
     }
