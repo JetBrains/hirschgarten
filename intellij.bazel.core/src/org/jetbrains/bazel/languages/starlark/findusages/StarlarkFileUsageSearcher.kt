@@ -5,7 +5,7 @@ import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiManager
 import com.intellij.psi.PsiReference
 import com.intellij.psi.search.FileTypeIndex
-import com.intellij.psi.search.GlobalSearchScope
+import com.intellij.psi.search.GlobalSearchScopeUtil
 import com.intellij.psi.search.searches.ReferencesSearch.SearchParameters
 import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.util.Processor
@@ -20,13 +20,17 @@ import org.jetbrains.bazel.languages.starlark.psi.expressions.arguments.Starlark
 import org.jetbrains.bazel.languages.starlark.references.BazelLabelReference
 import org.jetbrains.bazel.languages.starlark.references.resolveLabel
 
+/**
+ * Finds file usages in Starlark files. Requires [StarlarkFileUseScopeEnlarger] to enlarge the scope of the [PsiFile] with Starlark files.
+ */
 internal class StarlarkFileUsageSearcher : QueryExecutorBase<PsiReference, SearchParameters>(true) {
   override fun processQuery(params: SearchParameters, processor: Processor<in PsiReference>) {
     if (!params.project.isBazelProject) return
 
     val psiManager = PsiManager.getInstance(params.project)
     val file = params.elementToSearch as? PsiFile ?: return
-    val starlarkFiles = FileTypeIndex.getFiles(StarlarkFileType, GlobalSearchScope.projectScope(params.project))
+    val scope = GlobalSearchScopeUtil.toGlobalSearchScope(params.effectiveSearchScope, params.project)
+    val starlarkFiles = FileTypeIndex.getFiles(StarlarkFileType, scope)
     if (starlarkFiles.isEmpty()) return
 
     starlarkFiles.forEach { virtualFile ->
