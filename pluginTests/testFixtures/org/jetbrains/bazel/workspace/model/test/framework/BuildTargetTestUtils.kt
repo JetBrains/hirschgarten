@@ -7,7 +7,6 @@ import org.jetbrains.bazel.label.DependencyLabel
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bsp.protocol.BuildTargetData
 import org.jetbrains.bsp.protocol.RawBuildTarget
-import org.jetbrains.bsp.protocol.SourceItem
 import java.nio.file.Path
 import kotlin.io.path.Path
 
@@ -19,7 +18,8 @@ fun createRawBuildTarget(
     ruleType = RuleType.LIBRARY,
     languageClasses = setOf(LanguageClass.JAVA),
   ),
-  sources: List<SourceItem> = emptyList(),
+  sources: List<Path> = emptyList(),
+  generatedSources: List<Path> = emptyList(),
   resources: List<Path> = emptyList(),
   baseDirectory: Path = Path("/base/dir"),
   data: List<BuildTargetData> = emptyList(),
@@ -29,6 +29,7 @@ fun createRawBuildTarget(
     dependencies = dependencies,
     kind = kind,
     sources = sources,
+    generatedSources = generatedSources,
     resources = resources,
     baseDirectory = baseDirectory,
     data = data,

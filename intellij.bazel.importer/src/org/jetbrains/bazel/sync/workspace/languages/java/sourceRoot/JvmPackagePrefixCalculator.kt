@@ -81,15 +81,15 @@ class DefaultJvmPackagePrefixCalculator(
   }
 
   private fun calculateForTarget(target: RawBuildTarget): Map<Path, String> {
-    val sources = target.sources.filter { !it.generated && it.path.extension != "srcjar" }
+    val sources = target.sources.filter { it.extension != "srcjar" }
 
     val result = HashMap<Path, String>()
     when (sourceRootOptimizationMode) {
       SourceRootOptimizationMode.Disabled -> {
         for (src in sources) {
-          val prefix = packageResolver.calculateJvmPackagePrefix(src.path)
+          val prefix = packageResolver.calculateJvmPackagePrefix(src)
           if (prefix != null)
-            result[src.path] = prefix
+            result[src] = prefix
         }
       }
 
@@ -97,19 +97,19 @@ class DefaultJvmPackagePrefixCalculator(
         val patterns = sourceRootOptimizationMode.patterns
         val (matched, unmatched) = SourcePatternEval.eval(
           items = sources,
-          includes = patterns.includes.map { { src -> it.matches(src.path) } },
-          excludes = patterns.excludes.map { { src -> it.matches(src.path) } },
+          includes = patterns.includes.map { { src -> it.matches(src) } },
+          excludes = patterns.excludes.map { { src -> it.matches(src) } },
         )
         if (matched.isNotEmpty()) {
           matched
-            .groupBy { it.path.extension }
-            .forEach { result.putAll(packageInference.inferPackages(it.value.map { it.path })) }
+            .groupBy { it.extension }
+            .forEach { result.putAll(packageInference.inferPackages(it.value)) }
         }
 
         for (src in unmatched) {
-          val prefix = packageResolver.calculateJvmPackagePrefix(src.path)
+          val prefix = packageResolver.calculateJvmPackagePrefix(src)
           if (prefix != null)
-            result[src.path] = prefix
+            result[src] = prefix
         }
       }
     }

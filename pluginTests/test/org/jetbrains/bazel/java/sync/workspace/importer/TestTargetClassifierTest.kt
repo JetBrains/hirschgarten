@@ -10,7 +10,6 @@ import org.jetbrains.bazel.label.ResolvedLabel
 import org.jetbrains.bazel.label.assumeResolved
 import org.jetbrains.bazel.workspace.importer.TestTargetClassifier
 import org.jetbrains.bsp.protocol.RawBuildTarget
-import org.jetbrains.bsp.protocol.SourceItem
 import org.junit.jupiter.api.Test
 import java.nio.file.Path
 
@@ -132,11 +131,16 @@ private fun createTarget(
   resources: List<String> = emptyList(),
   isTestOnly: Boolean = false,
 ): RawBuildTarget {
-  val label = Label.parse(id)
-  val deps = dependencies.map { DependencyLabel(it.id) }
-  val sourceItems = sources.map { SourceItem(sourceRoot.resolve(it), generated = false) }
-  val resourceItems = resources.map { resourceRoot.resolve(it) }
-  return RawBuildTarget(label, deps, kind, sourceItems, resourceItems, baseDir, isTestOnly = isTestOnly)
+  return RawBuildTarget(
+    id = Label.parse(id),
+    dependencies = dependencies.map { DependencyLabel(it.id) },
+    kind = kind,
+    sources = sources.map { sourceRoot.resolve(it) },
+    generatedSources = emptyList(),
+    resources = resources.map { resourceRoot.resolve(it) },
+    baseDirectory = baseDir,
+    isTestOnly = isTestOnly,
+  )
 }
 
 private fun classify(targets: Set<RawBuildTarget>, executableTargets: Map<ResolvedLabel, List<Label>> = emptyMap()): List<RawBuildTarget> {

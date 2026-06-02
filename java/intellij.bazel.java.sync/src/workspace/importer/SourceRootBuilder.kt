@@ -51,20 +51,21 @@ object SourceRootBuilder {
     testTargets: Set<Label>,
   ): List<ResolvedSourceRoot> {
     val prefixes = packagePrefixes.get(target)
-    return target.sources.map { sourceItem ->
-      val rootType = when {
-        target.kind.ruleType == RuleType.TEST -> JAVA_TEST_SOURCE_ROOT_TYPE
-        target.id in testTargets -> JAVA_TEST_SOURCE_ROOT_TYPE
-        testSourcesGlob.matches(sourceItem.path) -> JAVA_TEST_SOURCE_ROOT_TYPE
-        else -> JAVA_SOURCE_ROOT_TYPE
-      }
+    fun Path.convert(generated: Boolean) =
       ResolvedSourceRoot(
-        sourcePath = sourceItem.path,
-        generated = sourceItem.generated,
-        packagePrefix = prefixes[sourceItem.path] ?: "",
-        rootType = rootType,
+        sourcePath = this,
+        generated = generated,
+        packagePrefix = prefixes[this] ?: "",
+        rootType = when {
+          target.kind.ruleType == RuleType.TEST -> JAVA_TEST_SOURCE_ROOT_TYPE
+          target.id in testTargets -> JAVA_TEST_SOURCE_ROOT_TYPE
+          testSourcesGlob.matches(this) -> JAVA_TEST_SOURCE_ROOT_TYPE
+          else -> JAVA_SOURCE_ROOT_TYPE
+        },
       )
-    }
+
+    return target.sources.map { it.convert(generated = false) } +
+           target.generatedSources.map { it.convert(generated = true) }
   }
 
   /**

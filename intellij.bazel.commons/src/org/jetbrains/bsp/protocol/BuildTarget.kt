@@ -4,6 +4,7 @@ import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.label.DependencyLabel
 import org.jetbrains.bazel.label.Label
 import java.nio.file.Path
+import kotlin.plus
 
 @ApiStatus.Internal
 interface ExecutableTarget {
@@ -37,7 +38,8 @@ data class RawBuildTarget(
   override val id: Label,
   val dependencies: List<DependencyLabel>,
   override val kind: TargetKind,
-  val sources: List<SourceItem>,
+  val sources: List<Path>,
+  val generatedSources: List<Path>,
   val resources: List<Path>,
   override val baseDirectory: Path,
   override val data: List<BuildTargetData> = emptyList(),
@@ -47,6 +49,10 @@ data class RawBuildTarget(
   override val isWorkspace: Boolean = true,
   val isTestOnly: Boolean = false,
 ) : BuildTarget
+
+@get:ApiStatus.Internal
+val RawBuildTarget.allSources: Sequence<Path>
+  get() = sources.asSequence() + generatedSources.asSequence()
 
 @ApiStatus.Internal
 data class PartialBuildTarget(

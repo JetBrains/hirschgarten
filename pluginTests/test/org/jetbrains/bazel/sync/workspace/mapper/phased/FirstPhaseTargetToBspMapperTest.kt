@@ -19,7 +19,6 @@ import org.jetbrains.bazel.workspace.model.test.framework.WorkspaceModelBaseTest
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bsp.protocol.RawBuildTarget
 import org.jetbrains.bsp.protocol.RawPhasedTarget
-import org.jetbrains.bsp.protocol.SourceItem
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
@@ -228,11 +227,8 @@ class FirstPhaseTargetToBspMapperTest : WorkspaceModelBaseTest() {
                 ruleType = RuleType.LIBRARY,
                 languageClasses = setOf(LanguageClass.JAVA),
               ),
-            sources =
-              listOf(
-                SourceItem(target1Src1, false),
-                SourceItem(target1Src2, false),
-              ),
+            sources = listOf(target1Src1, target1Src2),
+            generatedSources = emptyList(),
             resources =
               listOf(
                 target1Resource1,
@@ -257,11 +253,8 @@ class FirstPhaseTargetToBspMapperTest : WorkspaceModelBaseTest() {
                 ruleType = RuleType.BINARY,
                 languageClasses = setOf(LanguageClass.JAVA),
               ),
-            sources =
-              listOf(
-                SourceItem(target2Src1, false),
-                SourceItem(target2Src2, false),
-              ),
+            sources = listOf(target2Src1, target2Src2),
+            generatedSources = emptyList(),
             resources = emptyList(),
             baseDirectory = workspaceRoot.resolve(Path("target2")),
             //data = listOf(
@@ -282,6 +275,7 @@ class FirstPhaseTargetToBspMapperTest : WorkspaceModelBaseTest() {
                 languageClasses = setOf(LanguageClass.JAVA),
               ),
             sources = emptyList(),
+            generatedSources = emptyList(),
             resources =
               listOf(
                 target3Resource1,
@@ -300,6 +294,7 @@ class FirstPhaseTargetToBspMapperTest : WorkspaceModelBaseTest() {
                 languageClasses = setOf(LanguageClass.JAVA, LanguageClass.KOTLIN),
               ),
             sources = emptyList(),
+            generatedSources = emptyList(),
             resources = emptyList(),
             baseDirectory = workspaceRoot.resolve(Path("target4")),
           ),
@@ -314,6 +309,7 @@ class FirstPhaseTargetToBspMapperTest : WorkspaceModelBaseTest() {
                 languageClasses = setOf(LanguageClass.JAVA, LanguageClass.KOTLIN),
               ),
             sources = emptyList(),
+            generatedSources = emptyList(),
             resources = emptyList(),
             baseDirectory = workspaceRoot.resolve(Path("target5")),
           ),
@@ -328,6 +324,7 @@ class FirstPhaseTargetToBspMapperTest : WorkspaceModelBaseTest() {
                 languageClasses = setOf(LanguageClass.JAVA, LanguageClass.KOTLIN),
               ),
             sources = emptyList(),
+            generatedSources = emptyList(),
             resources = emptyList(),
             baseDirectory = workspaceRoot.resolve(Path("target6")),
           ),
@@ -341,11 +338,8 @@ class FirstPhaseTargetToBspMapperTest : WorkspaceModelBaseTest() {
                 ruleType = RuleType.LIBRARY,
                 languageClasses = setOf(LanguageClass.JAVA),
               ),
-            sources =
-              listOf(
-                SourceItem(target7Src1, false),
-                SourceItem(target7Src2, false),
-              ),
+            sources = listOf(target7Src1, target7Src2),
+            generatedSources = emptyList(),
             resources = emptyList(),
             //data = listOf(
             //  JvmPackagePrefixData(mapOf(
@@ -368,11 +362,12 @@ class FirstPhaseTargetToBspMapperTest : WorkspaceModelBaseTest() {
             sources =
               listOf(
                 // note: the direct mapping for "//target8:src1.kt" becomes workspaceRoot/target8/src1.kt
-                SourceItem(target8Src1, false),
+                target8Src1,
                 // then the dependency from filegroupSources (its own direct source items)
-                SourceItem(fgSrc1, false),
-                SourceItem(fgSrc2, false),
+                fgSrc1,
+                fgSrc2,
               ),
+            generatedSources = emptyList(),
             resources =
               listOf(
                 target8Resource1,
@@ -396,11 +391,8 @@ class FirstPhaseTargetToBspMapperTest : WorkspaceModelBaseTest() {
                 ruleType = RuleType.LIBRARY,
                 languageClasses = setOf(LanguageClass.JAVA),
               ),
-            sources =
-              listOf(
-                SourceItem(fgSrc1, false),
-                SourceItem(fgSrc2, false),
-              ),
+            sources = listOf(fgSrc1, fgSrc2, ),
+            generatedSources = emptyList(),
             resources = emptyList(),
             //data = listOf(
             //  JvmPackagePrefixData(mapOf(

@@ -41,6 +41,7 @@ import org.jetbrains.bsp.protocol.LibraryItem
 import org.jetbrains.bsp.protocol.RawBuildTarget
 import org.jetbrains.bsp.protocol.ScalaBuildTarget
 import org.jetbrains.bsp.protocol.StrictDependencyCheckedType
+import org.jetbrains.bsp.protocol.allSources
 import org.jetbrains.bsp.protocol.utils.StringUtils
 import org.jetbrains.bsp.protocol.utils.extractJvmBuildTarget
 import org.jetbrains.bsp.protocol.utils.extractKotlinBuildTarget
@@ -169,7 +170,7 @@ class JvmTargetEntitiesBuilder(private val ctx: ImportContext) {
     val kotlinTarget = extractKotlinBuildTarget(target)
     val associates = kotlinTarget?.associates?.distinct()?.mapNotNull { ctx.moduleNamesByLabel[it] }.orEmpty()
 
-    val hasSources = target.sources.isNotEmpty()
+    val hasSources = target.allSources.any()
     val hasResources = target.resources.isNotEmpty()
     val isJavaKotlin = target.kind.includesJava() || target.kind.includesKotlin()
 

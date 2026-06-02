@@ -437,6 +437,7 @@ class BazelFileEventListenerTest : WorkspaceModelBaseTest() {
                 languageClasses = setOf(LanguageClass.JAVA),
               ),
             sources = emptyList(),
+            generatedSources = emptyList(),
             resources = emptyList(),
             baseDirectory = Path("/"),
           ),

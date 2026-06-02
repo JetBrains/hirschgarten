@@ -21,7 +21,6 @@ import org.jetbrains.bazel.sync.workspace.mapper.BazelResolvedWorkspaceBuilder
 import org.jetbrains.bazel.sync.workspace.targetKind.TargetKindService
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bsp.protocol.RawBuildTarget
-import org.jetbrains.bsp.protocol.SourceItem
 import java.nio.file.Path
 import kotlin.io.path.Path
 import kotlin.io.path.exists
@@ -54,6 +53,7 @@ class PhasedBazelProjectMapper(private val bazelPathsResolver: BazelPathsResolve
       dependencies = interestingDeps.map { DependencyLabel.parse(it) },
       kind = inferKind(),
       sources = calculateSources(project),
+      generatedSources = emptyList(),
       resources = calculateResources(project),
       baseDirectory = bazelPathsResolver.toDirectoryPath(label, context.repoMapping),
       data = emptyList(),
@@ -83,17 +83,10 @@ class PhasedBazelProjectMapper(private val bazelPathsResolver: BazelPathsResolve
     return isRuleSupported || areSourcesSupported
   }
 
-  private fun Build.Target.calculateSources(project: PhasedBazelMappedProject): List<SourceItem> {
+  private fun Build.Target.calculateSources(project: PhasedBazelMappedProject): List<Path> {
     val sourceFiles = srcs.calculateFiles()
-    val sources =
-      sourceFiles.map {
-        SourceItem(
-          path = it,
-          generated = false,
-        )
-      }
     val itemsFromDependencies = srcs.calculateModuleDependencies(project).flatMap { it.calculateSources(project) }
-    return (sources + itemsFromDependencies).distinct()
+    return (sourceFiles + itemsFromDependencies).distinct()
   }
 
   private fun Build.Target.calculateResources(project: PhasedBazelMappedProject): List<Path> {

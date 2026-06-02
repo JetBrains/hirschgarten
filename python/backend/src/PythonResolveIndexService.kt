@@ -15,6 +15,7 @@ import org.jetbrains.bazel.sync.BazelOutFileHardLinks
 import org.jetbrains.bazel.sync.environment.projectCtx
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.RawBuildTarget
+import org.jetbrains.bsp.protocol.allSources
 import org.jetbrains.bsp.protocol.utils.extractPythonBuildTarget
 import java.nio.file.FileSystems
 import java.nio.file.Path
@@ -84,11 +85,9 @@ internal class PythonResolveIndexService(private val project: Project) {
 
     val allPYSourcesInMainWorkspace =
       pythonTargets
-        .flatMap {
-          it.sources
-        }
-        .filter { it.path.isPythonFile() && it.path.startsWith(rootDir) }
-        .map { it.path.relativeTo(rootDir) }
+        .flatMap { it.allSources }
+        .filter { it.isPythonFile() && it.startsWith(rootDir) }
+        .map { it.relativeTo(rootDir) }
 
     val targetNames: List<Map<QualifiedName, Path>> = pythonTargets.map { target ->
       BazelCoroutineService.getInstance(project).startAsync {
@@ -96,20 +95,19 @@ internal class PythonResolveIndexService(private val project: Project) {
         val sourcesRelativePathToAbsolutePath: Map<Path, Path> =
           if (target.id.isMainWorkspace) {
             importsPaths
-              .flatMap { importsPath -> allPYSourcesInMainWorkspace.filter { it.startsWith(importsPath) } }
+              .flatMap { importsPath -> allPYSourcesInMainWorkspace.filter { it.startsWith(importsPath) }.toList() }
               .ifEmpty {
-                target.sources
-                  .filter { it.path.isPythonFile() && it.path.startsWith(rootDir) }
-                  .map { it.path.relativeTo(rootDir) }
+                target.allSources
+                  .filter { it.isPythonFile() && it.startsWith(rootDir) }
+                  .map { it.relativeTo(rootDir) }
+                  .toList()
               }
               .associateWith { path -> rootDir.resolve(path) }
           }
           else {
-            target.sources
-              .filter { it.path.isPythonFile() }
-              .associate { sourceItem ->
-                sourceItem.path.toExecRootRelativePath() to sourceItem.path
-              }
+            target.allSources
+              .filter { it.isPythonFile() }
+              .associateBy { sourceItem -> sourceItem.toExecRootRelativePath() }
           }
         val getSourcesRelativePathToAbsolutePath: Map<Path, Path> =
           extractPythonBuildTarget(target)?.generatedSources

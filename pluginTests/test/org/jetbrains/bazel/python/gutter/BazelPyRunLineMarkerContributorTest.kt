@@ -366,6 +366,7 @@ internal class BazelPyRunLineMarkerContributorTest : CodeInsightFixtureTestCase<
               ruleType = ruleType,
             ),
           sources = emptyList(),
+          generatedSources = emptyList(),
           resources = emptyList(),
           baseDirectory = Path.of(myFixture.tempDirPath, "base_dir"),
           data = listOf(

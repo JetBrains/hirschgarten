@@ -140,6 +140,7 @@ class DependencyBuilderTest {
         languageClasses = setOf(LanguageClass.JAVA),
       ),
       sources = emptyList(),
+      generatedSources = emptyList(),
       resources = emptyList(),
       baseDirectory = kotlin.io.path.Path("base/dir"),
       data = listOf(
