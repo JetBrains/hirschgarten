@@ -5,6 +5,6 @@
 
   <extensions defaultExtensionNs="com.intellij">
     <aiCodeReview.skillBundleProvider order="last"
-        implementation="com.intellij.aiCodeReview.bundledSkills.DefaultBundledReviewSkillBundleProvider"/>
+        implementation="com.intellij.aiCodeReview.skills.DefaultBundledReviewSkillBundleProvider"/>
   </extensions>
 </idea-plugin>
