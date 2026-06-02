@@ -4,6 +4,7 @@ import com.intellij.driver.sdk.getNotifications
 import com.intellij.driver.sdk.setRegistry
 import com.intellij.driver.sdk.singleProject
 import com.intellij.driver.sdk.step
+import com.intellij.driver.sdk.ui.UiText.Companion.asString
 import com.intellij.driver.sdk.ui.components.UiComponent.Companion.waitFound
 import com.intellij.driver.sdk.ui.components.common.GutterUiComponent
 import com.intellij.driver.sdk.ui.components.common.IdeaFrameUI
@@ -224,8 +225,9 @@ class ImportRunConfigurationsSyncHookTest : IdeStarterCombinedBaseTest() {
           val moreActionsButton = actionButton { byAccessibleName("More Actions") }
           moreActionsButton.click()
           popup().waitOneText("Profile 'Bazel run :main' with 'IntelliJ Profiler'").click()
-          waitContainsText("Stop Recording and Show Results")  // check that the "Performance" UI tab appears
-          waitContainsText("CPU")  // check that the "Performance" UI tab appears
+          waitForBazelBuildBeforeProfilerUi("//:main")
+          waitContainsText("Stop Recording and Show Results")
+          waitContainsText("CPU")
           val consoleView = x { byClass("ConsoleViewImpl") }
           consoleView.waitContainsText("The result is", timeout = 3.minutes)
           waitForProfilerDataReadyBubbleAppearAndClose()
@@ -293,4 +295,34 @@ class ImportRunConfigurationsSyncHookTest : IdeStarterCombinedBaseTest() {
       }
     }
   }
+
+  private fun IdeaFrameUI.waitForBazelBuildBeforeProfilerUi(target: String) =
+    step("Wait for Bazel build $target before checking profiler UI") {
+      val profilerControlText = "Stop Recording and Show Results"
+      val buildingText = "Bazel: Build: Building $target..."
+      waitFor(
+        message = "Bazel build $target should start or profiler UI should appear",
+        timeout = 30.seconds,
+        interval = 1.seconds,
+        getter = { getAllTexts().asString() },
+        checker = { text ->
+          buildingText in text || profilerControlText in text
+        },
+      )
+      if (profilerControlText in getAllTexts().asString()) return@step
+
+      waitFor(
+        message = "Bazel build $target should finish before profiler UI is checked",
+        timeout = 3.minutes,
+        interval = 2.seconds,
+        getter = { getAllTexts().asString() },
+        checker = { text ->
+          val buildFinished =
+            buildingText !in text &&
+              "Building target(s)..." !in text &&
+              ("Successfully completed." in text || "Build completed successfully" in text)
+          profilerControlText in text || buildFinished
+        },
+      )
+    }
 }
