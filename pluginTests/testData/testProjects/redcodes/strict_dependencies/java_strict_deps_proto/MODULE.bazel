@@ -10,17 +10,23 @@ bazel_dep(name = "rules_java", version = "8.3.0")
 
 # Keep this fixture on the same protobuf line as simpleBazelProjectsForTesting/protobufTest.
 # rules_jvm_external otherwise upgrades protobuf to 33.x, whose upb tools fail with Zig on Linux CI.
-single_version_override(module_name = "protobuf", version = "32.0")
-single_version_override(module_name = "bazel_worker_api", version = "0.0.6")
+single_version_override(
+    module_name = "protobuf",
+    version = "32.0",
+)
+
+single_version_override(
+    module_name = "bazel_worker_api",
+    version = "0.0.6",
+)
 
 maven = use_extension("@rules_jvm_external//:extensions.bzl", "maven")
 maven.install(
-  artifacts = [
-    "com.google.protobuf:protobuf-java:4.28.3",
-    "com.google.protobuf:protobuf-java-util:4.28.3",
-  ],
+    artifacts = [
+        "com.google.protobuf:protobuf-java:4.28.3",
+        "com.google.protobuf:protobuf-java-util:4.28.3",
+    ],
 )
-
 use_repo(maven, "maven")
 
 ### Hermetic CC Toolchain

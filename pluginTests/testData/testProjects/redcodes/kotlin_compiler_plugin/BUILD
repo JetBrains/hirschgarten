@@ -1,5 +1,5 @@
-load("@rules_kotlin//kotlin:kotlin.bzl", "kt_jvm_library")
 load("@rules_kotlin//kotlin:core.bzl", "kt_compiler_plugin")
+load("@rules_kotlin//kotlin:kotlin.bzl", "kt_jvm_library")
 
 kt_compiler_plugin(
     name = "serialization_plugin",

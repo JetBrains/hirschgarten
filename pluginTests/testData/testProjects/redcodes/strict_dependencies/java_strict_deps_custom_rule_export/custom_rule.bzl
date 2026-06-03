@@ -17,4 +17,3 @@ custom_java_library = rule(
     },
     provides = [JavaInfo],
 )
-

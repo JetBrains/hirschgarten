@@ -12,8 +12,8 @@ register_toolchains(
 
 maven = use_extension("@rules_jvm_external//:extensions.bzl", "maven")
 maven.install(
-    fetch_sources = True,
     artifacts = ["org.jetbrains:annotations:26.1.0"],
+    fetch_sources = True,
     lock_file = "//:maven_install.json",
 )
 use_repo(maven, "maven")

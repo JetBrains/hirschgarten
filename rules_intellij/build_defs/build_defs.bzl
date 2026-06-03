@@ -4,9 +4,10 @@
 #
 
 """Custom build macros for IntelliJ plugin handling."""
-load("@rules_kotlin//kotlin:jvm.bzl", "kt_jvm_library")
-load("@rules_java//java:java_single_jar.bzl", "java_single_jar")
+
 load("@rules_java//java:java_import.bzl", "java_import")
+load("@rules_java//java:java_single_jar.bzl", "java_single_jar")
+load("@rules_kotlin//kotlin:jvm.bzl", "kt_jvm_library")
 
 # Re-export these symbols
 
@@ -179,7 +180,7 @@ def stamped_plugin_xml(
     java_import(
         name = name,
         jars = [output_jar],
-        **kwargs,
+        **kwargs
     )
 
 def api_version_txt(name, check_eap, application_info_json = None, **kwargs):
@@ -376,30 +377,30 @@ def unescape_filenames(name, srcs):
     )
 
 def jvm_library(
-    name,
-    module_name,
-    srcs = [],
-    deps = [],
-    resources = [],
-    deps_to_bundle = [],
-    visibility = None,
-    plugin_zip_layout = "bazel-plugin/lib/modules",
-    intellij_platform_deps = [
-        "//rules_intellij/intellij_platform_sdk:plugin_api",
-        "//rules_intellij/third_party/code_with_me",
-        "//rules_intellij/third_party/devkit",
-        "//rules_intellij/third_party/go",
-        "//rules_intellij/third_party/performance",
-        "//rules_intellij/third_party/protobuf:protoedit",
-        "//rules_intellij/third_party/python",
-        "//rules_intellij/third_party/terminal",
-        "//rules_intellij/third_party/coverage",
-        "//rules_intellij/intellij_platform_sdk:java",
-        "//rules_intellij/intellij_platform_sdk:kotlin",
-        "//rules_intellij/intellij_platform_sdk:bytecode_viewer",
-        "//rules_intellij/intellij_platform_sdk:junit",
-    ],
-    **kwargs):
+        name,
+        module_name,
+        srcs = [],
+        deps = [],
+        resources = [],
+        deps_to_bundle = [],
+        visibility = None,
+        plugin_zip_layout = "bazel-plugin/lib/modules",
+        intellij_platform_deps = [
+            "//rules_intellij/intellij_platform_sdk:plugin_api",
+            "//rules_intellij/third_party/code_with_me",
+            "//rules_intellij/third_party/devkit",
+            "//rules_intellij/third_party/go",
+            "//rules_intellij/third_party/performance",
+            "//rules_intellij/third_party/protobuf:protoedit",
+            "//rules_intellij/third_party/python",
+            "//rules_intellij/third_party/terminal",
+            "//rules_intellij/third_party/coverage",
+            "//rules_intellij/intellij_platform_sdk:java",
+            "//rules_intellij/intellij_platform_sdk:kotlin",
+            "//rules_intellij/intellij_platform_sdk:bytecode_viewer",
+            "//rules_intellij/intellij_platform_sdk:junit",
+        ],
+        **kwargs):
     # Things we actually want to pack into the resulting jar, as opposed to deps which are only needed for compilation
     deps_to_bundle = deps_to_bundle + resources
 
@@ -409,23 +410,23 @@ def jvm_library(
             srcs = srcs,
             deps = deps + deps_to_bundle + intellij_platform_deps,
             visibility = visibility,
-            **kwargs,
+            **kwargs
         )
     else:
         kt_jvm_library(
             name = name,
             exports = deps,
             visibility = visibility,
-            **kwargs,
+            **kwargs
         )
 
     # Create an empty kt_jvm_library that only contains the Kotlin stdlib, so that we can exclude it and not bundle it in
     empty_kt_source_name = name + "_empty_kt.kt"
     native.genrule(
-       name = name + "_empty_kt_file",
-       srcs = [],
-       outs = [empty_kt_source_name],
-       cmd = "touch $@",
+        name = name + "_empty_kt_file",
+        srcs = [],
+        outs = [empty_kt_source_name],
+        cmd = "touch $@",
     )
     empty_kt_library_name = name + "_empty_kt_library"
     kt_jvm_library(
@@ -455,10 +456,10 @@ def jvm_library(
         )
 
     native.genrule(
-       name = name + "_renamed",
-       srcs = [single_jar_name + ".jar"],
-       outs = [module_name + ".jar"],
-       cmd = "cp $< $@",
+        name = name + "_renamed",
+        srcs = [single_jar_name + ".jar"],
+        outs = [module_name + ".jar"],
+        cmd = "cp $< $@",
     )
 
     repackaged_files(
@@ -470,7 +471,7 @@ def jvm_library(
 
 def resourcegroup(name, srcs, strip_prefix):
     kt_jvm_library(
-      name = name,
-      resources = srcs,
-      resource_strip_prefix = strip_prefix,
+        name = name,
+        resources = srcs,
+        resource_strip_prefix = strip_prefix,
     )
