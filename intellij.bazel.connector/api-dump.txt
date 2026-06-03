@@ -10,7 +10,6 @@ f:org.jetbrains.bazel.server.bep.BepEventHandlerContext
 org.jetbrains.bazel.server.bep.BepEventHandlerProvider
 - sf:Companion:org.jetbrains.bazel.server.bep.BepEventHandlerProvider$Companion
 - a:create(org.jetbrains.bazel.server.bep.BepEventHandlerContext):org.jetbrains.bazel.server.bep.BepEventHandler
-- s:getEP_NAME():com.intellij.openapi.extensions.ExtensionPointName
 f:org.jetbrains.bazel.server.bep.BepEventHandlerProvider$Companion
 f:org.jetbrains.bazel.server.diagnostics.DiagnosticsService
 - <init>(java.nio.file.Path):V

@@ -1,10 +1,9 @@
 package org.jetbrains.bazel.languages.starlark.psi.expressions
 
 import com.intellij.lang.ASTNode
+import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiElement
-import org.jetbrains.bazel.languages.bazelversion.psi.toSemVer
-import org.jetbrains.bazel.languages.bazelversion.service.BazelVersionCheckerService
-import org.jetbrains.bazel.languages.starlark.StarlarkConstants.ALLOW_EMPTY_KEYWORD
+import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.languages.starlark.elements.StarlarkElementTypes
 import org.jetbrains.bazel.languages.starlark.globbing.StarlarkGlob
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkBaseElement
@@ -14,12 +13,10 @@ import org.jetbrains.bazel.languages.starlark.psi.expressions.arguments.Starlark
 import org.jetbrains.bazel.languages.starlark.psi.expressions.arguments.StarlarkNamedArgumentExpression
 import org.jetbrains.bazel.languages.starlark.psi.functions.StarlarkArgumentList
 import org.jetbrains.bazel.languages.starlark.references.StarlarkGlobReference
-import kotlin.concurrent.Volatile
+import org.jetbrains.bazel.languages.starlark.references.findBuildFile
 
-internal class StarlarkGlobExpression(node: ASTNode) : StarlarkBaseElement(node) {
-
-  val bazelVersion: Int?
-    get() = node.psi.project.getService(BazelVersionCheckerService::class.java).currentBazelVersion?.toSemVer()?.major
+@ApiStatus.Internal
+class StarlarkGlobExpression(node: ASTNode) : StarlarkBaseElement(node) {
 
   override fun acceptVisitor(visitor: StarlarkElementVisitor) = visitor.visitGlobExpression(this)
 
@@ -28,7 +25,7 @@ internal class StarlarkGlobExpression(node: ASTNode) : StarlarkBaseElement(node)
 
   fun getArguments(): Array<StarlarkArgumentElement> {
     val argList = getArgList()
-    if (argList == null) return arrayOf()
+    if (argList == null) return emptyArray()
     return argList.getArguments()
   }
 
@@ -45,72 +42,49 @@ internal class StarlarkGlobExpression(node: ASTNode) : StarlarkBaseElement(node)
         arg = allArgs[0]
       }
     }
-    return getArgValue(arg)
+    return arg?.getValue()
   }
 
-  fun getExcludes(): PsiElement? = getArgValue(getKeywordArgument("exclude"))
-
-  private fun getArgValue(arg: StarlarkArgumentElement?): PsiElement? = arg?.getValue()
+  fun getExcludes(): PsiElement? = getKeywordArgument("exclude")?.getValue()
 
   fun areDirectoriesExcluded(): Boolean {
     val arg = getKeywordArgument("exclude_directories")
     if (arg != null) {
       // '0' and '1' are the only accepted values
-      val value = getArgValue(arg)
+      val value = arg.getValue()
       return value == null || !value.text.equals("0")
     }
     return true
   }
 
-  @Volatile
-  private var reference: StarlarkGlobReference? = null
+  override fun getReference(): StarlarkGlobReference {
+    return StarlarkGlobReference(this)
+  }
 
-  override fun getReference(): StarlarkGlobReference? {
-    val ref: StarlarkGlobReference? = reference
-    if (ref != null) {
-      return ref
-    }
-    synchronized(this) {
-      if (reference == null) {
-        reference = StarlarkGlobReference(this)
+  private val glob: Lazy<StarlarkGlob?> = lazy(LazyThreadSafetyMode.SYNCHRONIZED) {
+    val containingDirectory = containingFile.parent?.virtualFile ?: return@lazy null
+
+    fun listContents(expr: PsiElement?): List<String> {
+      if (expr !is StarlarkListLiteralExpression) {
+        return emptyList()
       }
-      return reference
+      return expr.getElements().filterIsInstance<StarlarkStringLiteralExpression>().map {
+        it.getStringContents()
+      }
     }
-  }
 
-  /**
-   * The glob is valid if it resolves to a non-empty set of files,
-   * or the 'allow_empty' argument is set to true.
-   */
-  fun isGlobValid(): Boolean {
-    if (isAllowedEmpty()) return true
-
-    val matchedFiles = StarlarkGlobReference(this).multiResolve(false)
-    return matchedFiles.isNotEmpty()
-  }
-
-  /**
-   * The pattern is valid if matches at least one file
-   * or the 'allow_empty' argument is set to true.
-   */
-  fun isPatternValid(element: StarlarkStringLiteralExpression): Boolean {
-    if (isAllowedEmpty()) return true
-    val pattern = element.getStringContents()
-    val containingDirectory = containingFile.parent?.virtualFile ?: return true
-    return try {
-      StarlarkGlob
-        .forPath(containingDirectory)
-        .addPattern(pattern)
-        .glob()
-        .isNotEmpty()
-    } catch (e: IllegalArgumentException) {
-      true
+    fun directoryFilter(base: String): (VirtualFile) -> Boolean = { dir ->
+      dir.path == base || findBuildFile(dir) == null
     }
+
+    StarlarkGlob
+      .forPath(containingDirectory)
+      .addPatterns(listContents(getIncludes()))
+      .addExcludes(listContents(getExcludes()))
+      .setExcludeDirectories(areDirectoriesExcluded())
+      .setDirectoryFilter(directoryFilter(containingDirectory.path))
+      .build()
   }
 
-  private fun isAllowedEmpty(): Boolean {
-    val defaultAllowEmptyTrue =  bazelVersion?.let { it < 8 } ?: false
-    val allowEmpty: String? = getArgValue(getKeywordArgument(ALLOW_EMPTY_KEYWORD))?.text
-    return allowEmpty?.lowercase()?.toBooleanStrictOrNull() ?: defaultAllowEmptyTrue
-  }
+  fun getGlob(): StarlarkGlob?  = glob.value
 }

@@ -89,7 +89,7 @@ class BazelSyncCodeInsightTestFixtureImpl(
 
   private fun configureBazelCaches(testProjectPath: String) {
     val cacheRoot = testCacheRoot()
-      .resolve(testProjectPath.replace('/', '_').replace('\\', '_'))
+      .resolve(cacheGroup(testProjectPath))
       .createDirectories()
 
     val bazeliskCache = cacheRoot.resolve("bazelisk").createDirectories()
@@ -98,13 +98,23 @@ class BazelSyncCodeInsightTestFixtureImpl(
     val repositoryCache = cacheRoot.resolve("repository-cache").createDirectories()
     val diskCache = cacheRoot.resolve("disk-cache").createDirectories()
     val outputUserRoot = cacheRoot.resolve("output-user-root").createDirectories()
+    val outputBase = cacheRoot.resolve("output-bases").resolve(cacheKey(testProjectPath)).createDirectories()
     val lines = listOf(
+      "startup --max_idle_secs=${bazelServerMaxIdleSeconds()}",
       "startup --output_user_root=${outputUserRoot.toBazelRcPath()}",
+      "startup --output_base=${outputBase.toBazelRcPath()}",
       "common --repository_cache=${repositoryCache.toBazelRcPath()}",
       "common --disk_cache=${diskCache.toBazelRcPath()}",
     )
     writeManagedBazelrcBlock(projectRoot.resolve(".bazelrc"), lines)
   }
+
+  private fun bazelServerMaxIdleSeconds(): Int =
+    System.getenv("BAZEL_PLUGIN_TEST_BAZEL_MAX_IDLE_SECONDS")
+      ?.toIntOrNull()
+      ?: System.getProperty("bazel.plugin.test.bazel.max.idle.seconds")
+        ?.toIntOrNull()
+      ?: 7200
 
   private fun testCacheRoot(): Path {
     val cacheRoot = System.getenv("BAZEL_PLUGIN_TEST_CACHE_ROOT")
@@ -117,8 +127,37 @@ class BazelSyncCodeInsightTestFixtureImpl(
       ?: System.getenv("AGENT_PERSISTENT_CACHE")
         ?.takeIf { it.isNotBlank() }
         ?.let { Path.of(it, "bazel-plugin-test-cache") }
-      ?: Path.of(System.getProperty("user.home"), ".cache", "bazel-plugin-tests")
+      ?: localDefaultCacheRoot()
     return cacheRoot.toAbsolutePath()
+  }
+
+  private fun cacheGroup(testProjectPath: String): String =
+    if (testProjectPath.startsWith("redcodes/")) "redcodes" else cacheKey(testProjectPath)
+
+  private fun cacheKey(testProjectPath: String): String =
+    testProjectPath.replace('/', '_').replace('\\', '_')
+
+  private fun localDefaultCacheRoot(): Path {
+    val userHome = Path.of(System.getProperty("user.home"))
+    val osName = System.getProperty("os.name")
+    return when {
+      osName.startsWith("Mac", ignoreCase = true) ->
+        userHome.resolve("Library").resolve("Caches").resolve("JetBrains").resolve("bazel-plugin-tests")
+      osName.startsWith("Windows", ignoreCase = true) -> {
+        val localAppData = System.getenv("LOCALAPPDATA")
+          ?.takeIf { it.isNotBlank() }
+          ?.let { Path.of(it) }
+          ?: userHome.resolve("AppData").resolve("Local")
+        localAppData.resolve("JetBrains").resolve("bazel-plugin-tests")
+      }
+      else -> {
+        val cacheHome = System.getenv("XDG_CACHE_HOME")
+          ?.takeIf { it.isNotBlank() }
+          ?.let { Path.of(it) }
+          ?: userHome.resolve(".cache")
+        cacheHome.resolve("JetBrains").resolve("bazel-plugin-tests")
+      }
+    }
   }
 
   private fun writeManagedBazelrcBlock(bazelrc: Path, lines: List<String>) {

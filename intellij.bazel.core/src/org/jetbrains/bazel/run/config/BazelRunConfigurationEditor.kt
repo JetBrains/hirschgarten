@@ -21,7 +21,7 @@ import org.jetbrains.bazel.target.targetUtils
 /**
  * The base editor for a Bazel run configuration.
  * Takes care of targets, the common settings and sets up the handler-specific settings editor.
- * handler changes won't be affected in the UI until the editor is recreated, see https://youtrack.jetbrains.com/issue/BAZEL-2834
+ * handler changes won't be affected in the UI until the editor is recreated
  */
 @ApiStatus.Internal
 class BazelRunConfigurationEditor(

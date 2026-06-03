@@ -5,6 +5,8 @@
     <module name="intellij.bazel.core"/>
     <module name="intellij.platform.coverage"/>
     <module name="intellij.platform.coverage.agent"/>
+    <module name="intellij.platform.smRunner"/>
+    <module name="intellij.platform.testRunner"/>
   </dependencies>
   <!-- endregion -->
 

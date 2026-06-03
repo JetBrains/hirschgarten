@@ -9,8 +9,6 @@ import com.intellij.driver.sdk.ui.components.common.ideFrame
 import com.intellij.driver.sdk.ui.components.elements.popup
 import com.intellij.driver.sdk.ui.shouldBe
 import com.intellij.driver.sdk.waitFor
-import com.intellij.ide.starter.driver.engine.BackgroundRun
-import com.intellij.ide.starter.driver.engine.runIdeWithDriver
 import com.intellij.ide.starter.ide.IDETestContext
 import com.intellij.tools.ide.performanceTesting.commands.build
 import com.intellij.tools.ide.performanceTesting.commands.checkOnRedCode
@@ -25,62 +23,26 @@ import com.intellij.tools.ide.performanceTesting.commands.sleep
 import com.intellij.tools.ide.performanceTesting.commands.takeScreenshot
 import com.intellij.tools.ide.performanceTesting.commands.waitForSmartMode
 import org.jetbrains.bazel.data.IdeaBazelCases
-import org.jetbrains.bazel.ideStarter.IdeStarterBaseProjectTest
 import org.jetbrains.bazel.ideStarter.assertFileKind
 import org.jetbrains.bazel.ideStarter.assertSyncSucceeded
 import org.jetbrains.bazel.ideStarter.bazelClean
 import org.jetbrains.bazel.ideStarter.buildAndSync
-import org.jetbrains.bazel.ideStarter.checkIdeaLogForExceptions
 import org.jetbrains.bazel.ideStarter.execute
 import org.jetbrains.bazel.ideStarter.openFile
-import org.jetbrains.bazel.ideStarter.syncBazelProject
 import org.jetbrains.bazel.performanceImpl.FileKindCheck
-import org.jetbrains.bazel.performanceImpl.FileKindCheck.INDEXABLE
 import org.jetbrains.bazel.tests.ui.verifyAvailableRunGutterActions
-import org.junit.jupiter.api.AfterAll
-import org.junit.jupiter.api.AfterEach
-import org.junit.jupiter.api.Assumptions
-import org.junit.jupiter.api.BeforeAll
-import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.MethodOrderer
 import org.junit.jupiter.api.Order
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.TestInstance
-import org.junit.jupiter.api.TestMethodOrder
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
 import com.intellij.ide.starter.driver.execute as sdkExecute
 
-@TestInstance(TestInstance.Lifecycle.PER_CLASS)
-@TestMethodOrder(MethodOrderer.OrderAnnotation::class)
-class SimpleJavaCombinedTest : IdeStarterBaseProjectTest() {
-  private lateinit var bgRun: BackgroundRun
-  private lateinit var ctx: IDETestContext
-
-  @BeforeAll
-  fun startIdeAndSync() {
-    ctx = createContext("simpleJavaCombined", IdeaBazelCases.SimpleJavaCombined)
+class SimpleJavaCombinedTest : IdeStarterCombinedBaseTest() {
+  override fun createContext(): IDETestContext =
+    createContext("simpleJavaCombined", IdeaBazelCases.SimpleJavaCombined)
       .applyVMOptionsPatch {
         addSystemProperty("expose.ui.hierarchy.url", "true")
       }
-    bgRun = ctx.runIdeWithDriver(runTimeout = timeout)
-    withDriver(bgRun) {
-      ideFrame {
-        syncBazelProject()
-        waitForIndicators(5.minutes)
-      }
-    }
-  }
-
-  @BeforeEach
-  fun skipIfCriticalFailed() = Assumptions.assumeFalse(criticalProblemOccurred)
-
-  @AfterEach
-  fun checkIdeState() {
-    if (!criticalProblemOccurred && ::bgRun.isInitialized && !bgRun.driver.isConnected) {
-      criticalProblemOccurred = true
-    }
-  }
 
   @Test @Order(1)
   fun `project view files should open automatically after sync`() = projectViewOpen()
@@ -103,12 +65,6 @@ class SimpleJavaCombinedTest : IdeStarterBaseProjectTest() {
   @Test
   @Order(Integer.MAX_VALUE)
   fun `bazel clean shouldn't cause red code`() = bazelCleanTest()
-
-  @AfterAll
-  fun closeIde() {
-    if (::bgRun.isInitialized) bgRun.closeIdeAndWait()
-    if (::ctx.isInitialized) checkIdeaLogForExceptions(ctx)
-  }
 
   private fun projectViewOpen() {
     withDriver(bgRun) {

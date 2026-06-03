@@ -131,7 +131,7 @@ data class ProjectView(val sections: Map<SectionKey<*>, Any>, val imports: List<
       pathString: String,
       required: Boolean,
     ): VirtualFile? {
-      val file = project.rootDir.resolveFromRootOrRelative(pathString)
+      val file = project.rootDir.findChild(pathString)
       if (file == null && required) {
         error("Cannot find project view file requested in an import: $pathString")
       }

@@ -1,7 +1,13 @@
 package org.jetbrains.bazel.languages.starlark.findusages
 
+import com.intellij.psi.search.LocalSearchScope
+import com.intellij.psi.search.searches.ReferencesSearch
 import io.kotest.matchers.collections.shouldBeEmpty
+import io.kotest.matchers.collections.shouldBeSingleton
 import io.kotest.matchers.collections.shouldContain
+import io.kotest.matchers.collections.shouldHaveSingleElement
+import io.kotest.matchers.collections.shouldHaveSize
+import io.kotest.matchers.shouldBe
 import org.jetbrains.bazel.languages.starlark.fixtures.StarlarkFindUsagesTestCase
 import org.jetbrains.bazel.project.BazelProjectFixtures.initializeBazelProject
 import org.junit.Before
@@ -96,7 +102,7 @@ class StarlarkFileFindUsagesTest : StarlarkFindUsagesTestCase() {
       """.trimIndent(),
     )
 
-    val usages = myFixture.findUsages(ktFile).mapNotNull { it.element?.text }
+    val usages = myFixture.findUsages(ktFile).mapNotNull { it.element?.parent?.text }
     usages.shouldContain(
       """
       glob(["**/*.kt"])
@@ -154,5 +160,38 @@ class StarlarkFileFindUsagesTest : StarlarkFindUsagesTestCase() {
 
     val usages = myFixture.findUsages(ktFile)
     usages.shouldBeEmpty()
+  }
+
+  @Test
+  fun `should respect local search scope and not return references from other files`() {
+    myFixture.addFileToProject("MODULE.bazel", "")
+    val javaFile = myFixture.addFileToProject(
+      "com/example/MyClass.java",
+      """
+        package com.example;
+        public class MyClass {}
+        """.trimIndent(),
+    )
+    val buildFile1 = myFixture.addFileToProject(
+      "BUILD",
+      """
+        java_binary(
+            name = "target1",
+            srcs = ["com/example/MyClass.java"],
+        )
+        """.trimIndent(),
+    )
+    myFixture.addFileToProject(
+      "other/BUILD",
+      """
+      java_binary(
+          name = "target2",
+          srcs = ["//:com/example/MyClass.java"],
+      )
+      """.trimIndent(),
+    )
+    val localScope = LocalSearchScope(buildFile1)
+    val usages = ReferencesSearch.search(javaFile, localScope).findAll()
+    usages.shouldBeSingleton { it.element.containingFile shouldBe buildFile1.containingFile }
   }
 }

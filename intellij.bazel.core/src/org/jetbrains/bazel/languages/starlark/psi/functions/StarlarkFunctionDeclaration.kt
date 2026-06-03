@@ -1,8 +1,10 @@
 package org.jetbrains.bazel.languages.starlark.psi.functions
 
 import com.intellij.lang.ASTNode
+import com.intellij.psi.search.SearchScope
 import com.intellij.util.PlatformIcons
 import org.jetbrains.annotations.ApiStatus
+import org.jetbrains.bazel.languages.starlark.starlarkProjectScope
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkElementVisitor
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkFile
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkNamedElement
@@ -17,6 +19,11 @@ class StarlarkFunctionDeclaration(node: ASTNode) :
 
   override fun getIcon(flags: Int): Icon? = PlatformIcons.FUNCTION_ICON
 
+  override fun getUseScope(): SearchScope = when {
+    isTopLevel() && !isFilePrivate() -> project.starlarkProjectScope()
+    else -> super.getUseScope()
+  }
+
   fun isTopLevel(): Boolean = parent is StarlarkFile
 
   override fun getNamedParameters(): List<StarlarkParameter> =
@@ -25,4 +32,6 @@ class StarlarkFunctionDeclaration(node: ASTNode) :
   override fun getParameters(): List<StarlarkParameter> = findChildByClass(StarlarkParameterList::class.java)?.getParameters().orEmpty()
 
   internal fun getStatementList(): StarlarkStatementList = findChildByClass(StarlarkStatementList::class.java)!!
+
+  private fun isFilePrivate() = name?.startsWith("_") == true
 }

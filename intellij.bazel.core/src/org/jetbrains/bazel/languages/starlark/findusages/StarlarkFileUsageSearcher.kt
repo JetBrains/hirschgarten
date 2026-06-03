@@ -1,36 +1,36 @@
 package org.jetbrains.bazel.languages.starlark.findusages
 
 import com.intellij.openapi.application.QueryExecutorBase
-import com.intellij.openapi.util.TextRange
 import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiManager
 import com.intellij.psi.PsiReference
-import com.intellij.psi.PsiReferenceBase
 import com.intellij.psi.search.FileTypeIndex
-import com.intellij.psi.search.GlobalSearchScope
+import com.intellij.psi.search.GlobalSearchScopeUtil
 import com.intellij.psi.search.searches.ReferencesSearch.SearchParameters
 import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.util.Processor
 import org.jetbrains.bazel.config.isBazelProject
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.languages.starlark.StarlarkFileType
-import org.jetbrains.bazel.languages.starlark.globbing.StarlarkGlob
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkFile
-import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkCallExpression
+import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkGlobExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkListLiteralExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkStringLiteralExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.arguments.StarlarkArgumentElement
-import org.jetbrains.bazel.languages.starlark.psi.expressions.arguments.StarlarkNamedArgumentExpression
 import org.jetbrains.bazel.languages.starlark.references.BazelLabelReference
 import org.jetbrains.bazel.languages.starlark.references.resolveLabel
 
+/**
+ * Finds file usages in Starlark files. Requires [StarlarkFileUseScopeEnlarger] to enlarge the scope of the [PsiFile] with Starlark files.
+ */
 internal class StarlarkFileUsageSearcher : QueryExecutorBase<PsiReference, SearchParameters>(true) {
   override fun processQuery(params: SearchParameters, processor: Processor<in PsiReference>) {
     if (!params.project.isBazelProject) return
 
     val psiManager = PsiManager.getInstance(params.project)
     val file = params.elementToSearch as? PsiFile ?: return
-    val starlarkFiles = FileTypeIndex.getFiles(StarlarkFileType, GlobalSearchScope.projectScope(params.project))
+    val scope = GlobalSearchScopeUtil.toGlobalSearchScope(params.effectiveSearchScope, params.project)
+    val starlarkFiles = FileTypeIndex.getFiles(StarlarkFileType, scope)
     if (starlarkFiles.isEmpty()) return
 
     starlarkFiles.forEach { virtualFile ->
@@ -47,10 +47,11 @@ internal class StarlarkFileUsageSearcher : QueryExecutorBase<PsiReference, Searc
               }
             }
           }
-          is StarlarkCallExpression -> {
-            if (element.firstChild?.text == "glob") {
-              val ref = getReferenceToGlobCallOrNull(element, file, StarlarkGlob.forPath(baseDir))
-              if (ref != null && !processor.process(ref)) {
+
+          is StarlarkGlobExpression -> {
+            if (element.getGlob()?.match(file.virtualFile) == true) {
+              val ref = element.reference
+              if (!processor.process(ref)) {
                 return@processElements false
               }
             }
@@ -63,30 +64,6 @@ internal class StarlarkFileUsageSearcher : QueryExecutorBase<PsiReference, Searc
         return
       }
     }
-  }
-
-  private fun getReferenceToGlobCallOrNull(
-    call: StarlarkCallExpression,
-    file: PsiFile,
-    globBuilder: StarlarkGlob.Builder,
-  ): PsiReferenceBase<StarlarkCallExpression>? {
-    val arguments = call.getArgumentList()?.getArguments() ?: return null
-
-    val includeArgument = arguments.firstOrNull { it !is StarlarkNamedArgumentExpression || it.name == "include" } ?: return null
-    val includePatterns = extractPatterns(includeArgument)
-    if (includePatterns.isEmpty()) return null
-
-    val excludeArgument = arguments.filterIsInstance<StarlarkNamedArgumentExpression>().firstOrNull { it.name == "exclude" }
-    val excludePatterns = excludeArgument?.let { extractPatterns(it) } ?: emptyList()
-
-    val files = globBuilder
-      .addPatterns(includePatterns)
-      .addExcludes(excludePatterns)
-      .glob()
-    if (!files.contains(file.virtualFile)) {
-      return null
-    }
-    return PsiReferenceBase.Immediate(call, TextRange(0, call.textLength), file)
   }
 
   private fun isReferringToFile(

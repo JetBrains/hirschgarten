@@ -46,14 +46,12 @@ import kotlin.time.Duration.Companion.minutes
 import kotlin.time.DurationUnit
 import kotlin.time.toDuration
 
-private const val MAX_EXECUTABLE_TARGET_IDS = 5
-
 private fun nowAsDuration() = System.currentTimeMillis().toDuration(DurationUnit.MILLISECONDS)
 
 /**
  * Increment when making breaking changes to [TargetsCacheStorage]
  */
-private const val TARGETS_STORAGE_VERSION: Int = 6
+private const val TARGETS_STORAGE_VERSION: Int = 7
 
 private fun Project.targetsStorageFile(storeVersion: Int): Path = getProjectDataPath("bazel-targets-v$storeVersion.db")
 
@@ -75,6 +73,22 @@ class TargetUtils(private val project: Project, private val coroutineScope: Coro
 
   private val db: TargetsCacheStorage
     get() = runBlocking { dbAsync.await() }
+
+  /**
+   * Checks if the storage is initialized and loaded
+   */
+  fun isLoaded(): Boolean = dbAsync.isCompleted
+
+  /**
+   * Executes the given body when the storage is loaded (or immediately if storage is already loaded)
+   */
+  fun onLoaded(body: () -> Unit) {
+    dbAsync.invokeOnCompletion { cause ->
+      if (cause == null) {
+        body()
+      }
+    }
+  }
 
   // we save only once every 5 minutes, and not earlier than 5 minutes after IDEA startup
   private var lastSaved = nowAsDuration()

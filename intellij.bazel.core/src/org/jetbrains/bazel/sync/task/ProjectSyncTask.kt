@@ -45,7 +45,6 @@ import org.jetbrains.bazel.sync.workspace.BazelWorkspaceResolveService
 import org.jetbrains.bazel.sync.workspace.importer.WorkspaceImporterHelper
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceSnapshotBuilder
 import org.jetbrains.bazel.taskEvents.BazelTaskEventsService
-import org.jetbrains.bazel.ui.unsynced.refreshAllFilesPresentation
 import org.jetbrains.bazel.workspace.fileEvents.FileEventJobManager
 import org.jetbrains.bsp.protocol.BazelServerFacade
 import org.jetbrains.bsp.protocol.TaskGroupId
@@ -147,7 +146,6 @@ class ProjectSyncTask(private val project: Project) {
         }
         finally {
           SyncStatusService.getInstance(project).finishSync()
-          refreshAllFilesPresentation(project)
         }
       }
     }

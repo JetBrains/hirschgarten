@@ -5,10 +5,12 @@
     <module name="intellij.bazel.commons"/>
     <module name="intellij.bazel.core"/>
     <module name="intellij.bazel.importer"/>
+    <module name="intellij.platform.smRunner"/>
+    <module name="intellij.platform.testRunner"/>
     <module name="intellij.python.community.impl"/>
+    <module name="intellij.python.community.services.systemPython"/>
     <module name="intellij.python.pydev"/>
     <module name="intellij.python.sdk"/>
-    <module name="intellij.python.community.services.systemPython"/>
   </dependencies>
   <!-- endregion -->
 

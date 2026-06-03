@@ -7,7 +7,7 @@ import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
 
 @RunWith(JUnit4::class)
-class StarlarkArgumentCompletionTest : StarlarkCompletionTestCase() {
+class StarlarkFileFindUsagesTest : StarlarkCompletionTestCase() {
   @Test
   fun `should complete arguments in function call (excluding variadic ones)`() {
     myFixture.configureByFile("ArgumentCompletion.bzl")

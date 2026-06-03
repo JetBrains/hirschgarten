@@ -125,7 +125,6 @@ class ScalaLanguagePlugin: JvmLanguagePluginMixin {
     ): LibraryItem {
       return LibraryItem(
         id = id,
-        dependencies = emptyList(),
         ijars = emptyList(),
         jars = server.outFileHardLinks.createOutputFileHardLinks(listOf(jar)),
         sourceJars = emptyList(),

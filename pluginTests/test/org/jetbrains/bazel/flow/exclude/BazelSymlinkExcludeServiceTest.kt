@@ -76,12 +76,10 @@ class BazelSymlinkExcludeServiceTest {
     }
 
     // WHEN
-    edtWriteAction {
-      bazelSymlinkExcludeService.refreshWorkspaceModel()
-    }
+    bazelSymlinkExcludeService.refreshWorkspaceModel()
 
     // THEN
-    val actualPaths = project.bazelProjectDirectoriesEntity()!!.excludedRoots.mapNotNull { it.virtualFile?.toNioPath() }
+    val actualPaths = project.bazelProjectDirectoriesEntity()!!.excludedRoots.mapNotNull { it.url.virtualFile?.toNioPath() }
     assertIterableEquals(listOf(convenientSymlink), actualPaths)
   }
 

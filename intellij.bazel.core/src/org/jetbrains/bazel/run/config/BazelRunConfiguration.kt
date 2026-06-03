@@ -10,11 +10,14 @@ import com.intellij.execution.configurations.RuntimeConfigurationError
 import com.intellij.execution.runners.ExecutionEnvironment
 import com.intellij.execution.testframework.sm.runner.SMRunnerConsolePropertiesProvider
 import com.intellij.execution.testframework.sm.runner.SMTRunnerConsoleProperties
+import com.intellij.openapi.Disposable
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.diagnostic.logger
+import com.intellij.openapi.options.SettingsEditor
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Key
 import com.intellij.openapi.util.NlsActions
+import com.intellij.util.EventDispatcher
 import org.jdom.Element
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.config.BazelPluginBundle.message
@@ -24,6 +27,7 @@ import org.jetbrains.bazel.run.RunHandlerProvider
 import org.jetbrains.bazel.run.synthetic.SyntheticRunTaskMarker
 import org.jetbrains.bazel.run.test.BazelTestConsoleProperties
 import org.jetbrains.bazel.target.targetUtils
+import java.util.EventListener
 
 // Use BazelRunConfigurationType.createTemplateConfiguration(project) to create a new BazelRunConfiguration.
 @ApiStatus.Internal
@@ -88,6 +92,8 @@ class BazelRunConfiguration internal constructor(
   var handler: BazelRunHandler? = null
     private set
 
+  private val handlerChangedEventDispatcher = EventDispatcher.create(BazelRunHandlerChangedListener::class.java)
+
   private fun updateHandlerIfDifferentProvider(newProvider: RunHandlerProvider) {
     if (newProvider == handlerProvider) return
     updateHandler(newProvider)
@@ -95,14 +101,22 @@ class BazelRunConfiguration internal constructor(
 
   private fun updateHandler(newProvider: RunHandlerProvider) {
     val bspBeforeChange = createBspElement()
+    val providerChanged = newProvider != handlerProvider
     handlerProvider = newProvider
-    handler = newProvider.createRunHandler(this)
-    bspBeforeChange ?: return
-    val oldHandlerState = bspBeforeChange.getChild(HANDLER_STATE_TAG) ?: return
-    try {
-      handler?.state?.readExternal(oldHandlerState)
-    } catch (e: Exception) {
-      logger.error("Failed to read BSP state", e)
+    val newRunHandler = newProvider.createRunHandler(this)
+    this.handler = newRunHandler
+    if (bspBeforeChange != null) {
+      val oldHandlerState = bspBeforeChange.getChild(HANDLER_STATE_TAG) ?: return
+      try {
+        newRunHandler.state.readExternal(oldHandlerState)
+      }
+      catch (e: Exception) {
+        logger.error("Failed to read BSP state", e)
+      }
+    }
+
+    if (providerChanged) {
+      handlerChangedEventDispatcher.multicaster.onRunHandlerChanged(newRunHandler)
     }
   }
 
@@ -115,7 +129,7 @@ class BazelRunConfiguration internal constructor(
     return result
   }
 
-  override fun getConfigurationEditor(): BazelRunConfigurationEditor = BazelRunConfigurationEditor(this)
+  override fun getConfigurationEditor(): SettingsEditor<BazelRunConfiguration> = BazelRunConfigurationDynamicEditor(this)
 
   override fun getState(executor: Executor, environment: ExecutionEnvironment): RunProfileState? =
     handler?.getRunProfileState(executor, environment)
@@ -215,6 +229,14 @@ class BazelRunConfiguration internal constructor(
 
       setAttribute(CHECK_VISIBILITY_ATTR, doVisibilityCheck.toString())
     }
+  }
+
+  fun addOnRunHandlerChangedListener(listener: BazelRunHandlerChangedListener, parentDisposable: Disposable) {
+    handlerChangedEventDispatcher.addListener(listener, parentDisposable)
+  }
+
+  interface BazelRunHandlerChangedListener : EventListener {
+    fun onRunHandlerChanged(newRunHandler: BazelRunHandler)
   }
 
   companion object {

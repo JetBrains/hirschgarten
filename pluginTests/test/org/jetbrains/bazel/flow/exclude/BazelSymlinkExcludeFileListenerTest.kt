@@ -1,7 +1,10 @@
 package org.jetbrains.bazel.flow.exclude
 
+import com.intellij.openapi.application.backgroundWriteAction
 import com.intellij.openapi.application.edtWriteAction
+import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.util.io.FileAttributes
+import com.intellij.openapi.vfs.newvfs.RefreshQueue
 import com.intellij.openapi.vfs.newvfs.events.VFileCreateEvent
 import com.intellij.testFramework.junit5.TestApplication
 import com.intellij.testFramework.junit5.fixture.projectFixture
@@ -39,9 +42,7 @@ class BazelSymlinkExcludeFileListenerTest {
     val fileCreateEvent = createFakeFileCreateEvent(realDirectory, "bazel-out")
 
     // WHEN
-    edtWriteAction {
-      BazelSymlinkExcludeFileListener().before(listOf(fileCreateEvent))
-    }
+    backgroundWriteAction { RefreshQueue.getInstance().processEvents(false, listOf(fileCreateEvent)) }
     val bazelSymlinksToExclude = BazelSymlinkExcludeService.getInstance(project).getBazelSymlinksToExclude()
 
     // THEN
@@ -59,9 +60,7 @@ class BazelSymlinkExcludeFileListenerTest {
     val fileCreateEvent = createFakeFileCreateEvent(realDirectory, "not-a-bazel-symlink")
 
     // WHEN
-    edtWriteAction {
-      BazelSymlinkExcludeFileListener().before(listOf(fileCreateEvent))
-    }
+    backgroundWriteAction { RefreshQueue.getInstance().processEvents(false, listOf(fileCreateEvent)) }
     val bazelSymlinksToExclude = BazelSymlinkExcludeService.getInstance(project).getBazelSymlinksToExclude()
 
     // THEN

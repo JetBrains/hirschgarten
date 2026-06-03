@@ -66,6 +66,8 @@
     <module name="intellij.libraries.grpc"/>
     <module name="intellij.libraries.jackson.dataformat.xml"/>
     <module name="intellij.platform.searchEverywhere"/>
+    <module name="intellij.platform.smRunner"/>
+    <module name="intellij.platform.testRunner"/>
     <module name="intellij.platform.vcs"/>
   </dependencies>
   <!-- endregion -->
@@ -102,6 +104,7 @@
       order="after DirectoriesSyncHook"
     />
 
+    <projectPostSyncHook implementation="org.jetbrains.bazel.workspace.CleanupLabelsCacheSyncHook"/>
     <projectPostSyncHook implementation="org.jetbrains.bazel.ui.widgets.fileTargets.BazelFileTargetsWidgetSyncHook"/>
     <projectPostSyncHook implementation="org.jetbrains.bazel.flow.sync.RemoveExcludedVcsMappingsSyncHook"/>
     <projectPostSyncHook implementation="org.jetbrains.bazel.workspace.SyncCacheClearProjectSyncHook"/>
@@ -131,6 +134,8 @@
     <runConfigurationProducerSuppressor implementation="org.jetbrains.bazel.run.BazelRunConfigurationProducerSuppressor"/>
     <runConfigurationProducer implementation="org.jetbrains.bazel.run.test.BazelRerunTestConfigurationProducer"/>
     <stepsBeforeRunProvider implementation="org.jetbrains.bazel.run.synthetic.GenerateSyntheticTargetRunTaskProvider"/>
+
+    <vfs.asyncListener implementation="org.jetbrains.bazel.flow.exclude.BazelSymlinkExcludeFileListener"/>
 
     <projectService serviceImplementation="org.jetbrains.bazel.languages.starlark.repomapping.BazelRepoMappingServiceAdapter"
                     serviceInterface="org.jetbrains.bazel.workspace.BazelRepoMappingService"/>
@@ -186,9 +191,6 @@
       implementation="org.jetbrains.bazel.flow.open.CounterPlatformProjectConfigurator"
       order="last"
     />
-    <!--    <projectService serviceInterface="com.intellij.openapi.roots.SingleFileSourcesTracker"-->
-    <!--                    serviceImplementation="org.jetbrains.bazel.services.SingleFileSourcesTrackerImpl"-->
-    <!--                    overrides="true"/>-->
     <statusBarWidgetFactory
       id="BazelFileTargetsWidget"
       implementation="org.jetbrains.bazel.ui.widgets.fileTargets.BazelFileTargetsWidgetFactory"
@@ -276,6 +278,10 @@
       implementationClass="org.jetbrains.bazel.languages.starlark.parser.StarlarkParserDefinition"
       language="Starlark"
     />
+    <fileBasedIndex implementation="org.jetbrains.bazel.languages.starlark.index.StarlarkLoadsIndexExtension"/>
+
+    <useScopeOptimizer implementation="org.jetbrains.bazel.languages.starlark.findusages.StarlarkUseScopeOptimizer"/>
+    <useScopeEnlarger implementation="org.jetbrains.bazel.languages.starlark.findusages.StarlarkFileUseScopeEnlarger"/>
     <lang.syntaxHighlighterFactory
       implementationClass="org.jetbrains.bazel.languages.starlark.highlighting.StarlarkSyntaxHighlighterFactory"
       language="Starlark"
@@ -430,6 +436,14 @@
                      level="ERROR"
                      implementationClass="org.jetbrains.bazel.languages.starlark.inspection.StarlarkLoadDuplicateSymbolsInspection"/>
 
+    <localInspection language="Starlark"
+                     key="inspection.display.name.starlark.control.flow.context.check"
+                     groupPath="Bazel"
+                     groupKey="starlark.inspection.group.name"
+                     enabledByDefault="true"
+                     level="ERROR"
+                     implementationClass="org.jetbrains.bazel.languages.starlark.inspection.StarlarkControlFlowContextInspection"/>
+
     <fileType
       extensions="bazelquery"
       fieldName="INSTANCE"
@@ -570,8 +584,8 @@
     <referencesSearch implementation="org.jetbrains.bazel.languages.starlark.findusages.StarlarkStringUsageSearcher"/>
     <referencesSearch implementation="org.jetbrains.bazel.languages.starlark.findusages.StarlarkFileUsageSearcher"/>
     <referencesSearch implementation="org.jetbrains.bazel.languages.starlark.findusages.BazelTargetReferenceSearcher"/>
-    <findUsagesHandlerFactory implementation="org.jetbrains.bazel.languages.starlark.findusages.BazelTargetFindUsagesHandlerFactory"/>
-    <renamePsiElementProcessor implementation="org.jetbrains.bazel.languages.starlark.rename.BazelTargetRenamePsiElementProcessor"/>
+    <findUsagesHandlerFactory implementation="org.jetbrains.bazel.languages.starlark.findusages.StarlarkFindUsagesHandlerFactory"/>
+    <renamePsiElementProcessor implementation="org.jetbrains.bazel.languages.starlark.rename.StarlarkRenamePsiElementProcessor"/>
     <renameInputValidator implementation="org.jetbrains.bazel.languages.starlark.rename.BazelTargetRenameInputValidator"/>
     <usageTypeProvider implementation="org.jetbrains.bazel.languages.starlark.findusages.StarlarkUsageTypeProvider"/>
     <xdebugger.breakpointType implementation="org.jetbrains.bazel.debug.platform.StarlarkBreakpointType"/>
@@ -727,10 +741,6 @@
   </actions>
 
   <applicationListeners>
-    <listener
-      class="org.jetbrains.bazel.flow.exclude.BazelSymlinkExcludeFileListener"
-      topic="com.intellij.openapi.vfs.newvfs.BulkFileListener"
-    />
     <listener
       class="org.jetbrains.bazel.workspace.fileEvents.BazelFileEventListener"
       topic="com.intellij.openapi.vfs.newvfs.BulkFileListenerBackgroundable"

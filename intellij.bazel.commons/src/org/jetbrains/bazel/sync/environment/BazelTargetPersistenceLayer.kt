@@ -3,7 +3,6 @@ package org.jetbrains.bazel.sync.environment
 import com.intellij.openapi.project.Project
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.label.Label
-import org.jetbrains.bsp.protocol.LibraryItem
 import org.jetbrains.bsp.protocol.RawBuildTarget
 import java.nio.file.Path
 

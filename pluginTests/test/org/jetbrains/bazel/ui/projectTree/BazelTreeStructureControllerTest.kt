@@ -16,6 +16,7 @@ import org.jetbrains.bazel.ui.projectTree.BazelTreeNodeType.ROOT
 import org.jetbrains.bazel.ui.projectTree.BazelTreeNodeType.UNIMPORTED
 import org.jetbrains.bazel.workspace.bazelProjectDirectoriesEntity
 import org.jetbrains.bazel.workspacemodel.entities.BazelProjectDirectoriesEntityFixtures.emptyBazelDirectoryWorkspaceEntity
+import org.jetbrains.bazel.workspacemodel.entities.NonIndexableVirtualFileUrl
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertNull
@@ -113,7 +114,7 @@ internal class BazelTreeStructureControllerTest {
       val unimportedDir = createDirectory("unimportedDir")
       updateWorkspaceModel(
         included = setOf(includedDir),
-        excluded = setOf(excludedDir)
+        excluded = setOf(excludedDir),
       )
 
       // THEN
@@ -128,7 +129,7 @@ internal class BazelTreeStructureControllerTest {
       val parentDir = createDirectory("parentDir")
       updateWorkspaceModel(
         included = setOf(createDirectory("parentDir/includedDir")),
-        excluded = setOf(createDirectory("parentDir/excludedDir"))
+        excluded = setOf(createDirectory("parentDir/excludedDir")),
       )
       createDirectory("parentDir/unimportedDir")
 
@@ -159,7 +160,7 @@ internal class BazelTreeStructureControllerTest {
       val file = createFile("parentDir/README.md")
       updateWorkspaceModel(
         included = setOf(includedDir),
-        excluded = setOf(excludedParentDir)
+        excluded = setOf(excludedParentDir),
       )
 
       // THEN - parentDir is visible under ROOT and EXCLUDED, because it's excluded and contains included directory
@@ -190,14 +191,18 @@ internal class BazelTreeStructureControllerTest {
 
   private fun updateWorkspaceModel(
     included: Set<VirtualFile> = emptySet(),
-    excluded: Set<VirtualFile> = emptySet()
+    excluded: Set<VirtualFile> = emptySet(),
   ) {
     val workspaceModel = project.workspaceModel
     val workspaceModelUrlManager = workspaceModel.getVirtualFileUrlManager()
 
     val newWorkspaceEntity = emptyBazelDirectoryWorkspaceEntity(project).also { entity ->
-      entity.includedRoots = included.map { it.toVirtualFileUrl(workspaceModelUrlManager) }.toMutableList()
-      entity.excludedRoots = excluded.map { it.toVirtualFileUrl(workspaceModelUrlManager) }.toMutableList()
+      entity.includedRoots = included.map { it.toVirtualFileUrl(workspaceModelUrlManager) }
+        .map { NonIndexableVirtualFileUrl(it) }
+        .toMutableList()
+      entity.excludedRoots = excluded.map { it.toVirtualFileUrl(workspaceModelUrlManager) }
+        .map { NonIndexableVirtualFileUrl(it) }
+        .toMutableList()
     }
 
     runWriteAction {

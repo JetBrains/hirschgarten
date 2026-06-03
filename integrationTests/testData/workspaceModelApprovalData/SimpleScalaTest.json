@@ -1,0 +1,1743 @@
+[
+  {
+    "entities": [
+      {
+        "contentRoots": [],
+        "contentRootsCount": 0,
+        "dependencies": [
+          {
+            "exported": true,
+            "library": {
+              "codeCache": null,
+              "name": "rules_scala.scala.private.toolchain_deps.scala_xml",
+              "presentableName": "rules_scala.scala.private.toolchain_deps.scala_xml",
+              "tableId": {
+                "fqName": "com.intellij.platform.workspace.jps.entities.LibraryTableId$ProjectLibraryTableId",
+                "level": "project"
+              }
+            },
+            "scope": "COMPILE"
+          },
+          {
+            "sdk": {
+              "name": "simpleScalaTest-jdk-4b64c",
+              "presentableName": "simpleScalaTest-jdk-4b64c",
+              "type": "JavaSDK"
+            }
+          }
+        ],
+        "dependenciesCount": 2,
+        "entitySource": {
+          "entitySourceFqName": "org.jetbrains.bazel.workspacemodel.entities.BazelModuleEntitySource",
+          "virtualFileUrl": null
+        },
+        "facets": [],
+        "facetsCount": 0,
+        "fqName": "com.intellij.platform.workspace.jps.entities.ModuleEntity",
+        "name": "rules_scala.scala.private.toolchain_deps.scala_xml",
+        "type": {
+          "name": "JAVA_MODULE"
+        }
+      },
+      {
+        "contentRoots": [],
+        "contentRootsCount": 0,
+        "dependencies": [
+          {
+            "exported": true,
+            "library": {
+              "codeCache": null,
+              "name": "rules_scala.testing.toolchain.scalatest_classpath",
+              "presentableName": "rules_scala.testing.toolchain.scalatest_classpath",
+              "tableId": {
+                "fqName": "com.intellij.platform.workspace.jps.entities.LibraryTableId$ProjectLibraryTableId",
+                "level": "project"
+              }
+            },
+            "scope": "COMPILE"
+          },
+          {
+            "sdk": {
+              "name": "simpleScalaTest-jdk-4b64c",
+              "presentableName": "simpleScalaTest-jdk-4b64c",
+              "type": "JavaSDK"
+            }
+          }
+        ],
+        "dependenciesCount": 2,
+        "entitySource": {
+          "entitySourceFqName": "org.jetbrains.bazel.workspacemodel.entities.BazelModuleEntitySource",
+          "virtualFileUrl": null
+        },
+        "facets": [],
+        "facetsCount": 0,
+        "fqName": "com.intellij.platform.workspace.jps.entities.ModuleEntity",
+        "name": "rules_scala.testing.toolchain.scalatest_classpath",
+        "type": {
+          "name": "JAVA_MODULE"
+        }
+      },
+      {
+        "contentRoots": [
+          {
+            "entitySource": {
+              "entitySourceFqName": "org.jetbrains.bazel.workspacemodel.entities.BazelModuleEntitySource",
+              "virtualFileUrl": null
+            },
+            "excludedPatterns": [],
+            "excludedPatternsCount": 0,
+            "excludedUrls": [],
+            "excludedUrlsCount": 0,
+            "fqName": "com.intellij.platform.workspace.jps.entities.ContentRootEntity",
+            "sourceRoots": [
+              {
+                "entitySource": {
+                  "entitySourceFqName": "org.jetbrains.bazel.workspacemodel.entities.BazelModuleEntitySource",
+                  "virtualFileUrl": null
+                },
+                "fqName": "com.intellij.platform.workspace.jps.entities.SourceRootEntity",
+                "rootTypeId": {
+                  "name": "java-source"
+                },
+                "url": "file://external/rules_java+/java/runfiles/src/main/java/com/google/devtools/build/runfiles/AutoBazelRepository.java"
+              }
+            ],
+            "sourceRootsCount": 1,
+            "url": "file://external/rules_java+/java/runfiles/src/main/java/com/google/devtools/build/runfiles/AutoBazelRepository.java"
+          }
+        ],
+        "contentRootsCount": 1,
+        "dependencies": [
+          {
+            "fqName": "com.intellij.platform.workspace.jps.entities.ModuleSourceDependency"
+          },
+          {
+            "sdk": {
+              "name": "simpleScalaTest-jdk-4b64c",
+              "presentableName": "simpleScalaTest-jdk-4b64c",
+              "type": "JavaSDK"
+            }
+          }
+        ],
+        "dependenciesCount": 2,
+        "entitySource": {
+          "entitySourceFqName": "org.jetbrains.bazel.workspacemodel.entities.BazelModuleEntitySource",
+          "virtualFileUrl": null
+        },
+        "facets": [],
+        "facetsCount": 0,
+        "fqName": "com.intellij.platform.workspace.jps.entities.ModuleEntity",
+        "name": "rules_java.java.runfiles.src.main.java.com.google.devtools.build.runfiles.auto_bazel_repository",
+        "type": {
+          "name": "JAVA_MODULE"
+        }
+      },
+      {
+        "contentRoots": [
+          {
+            "entitySource": {
+              "entitySourceFqName": "org.jetbrains.bazel.workspacemodel.entities.BazelModuleEntitySource",
+              "virtualFileUrl": null
+            },
+            "excludedPatterns": [],
+            "excludedPatternsCount": 0,
+            "excludedUrls": [],
+            "excludedUrlsCount": 0,
+            "fqName": "com.intellij.platform.workspace.jps.entities.ContentRootEntity",
+            "sourceRoots": [
+              {
+                "entitySource": {
+                  "entitySourceFqName": "org.jetbrains.bazel.workspacemodel.entities.BazelModuleEntitySource",
+                  "virtualFileUrl": null
+                },
+                "fqName": "com.intellij.platform.workspace.jps.entities.SourceRootEntity",
+                "rootTypeId": {
+                  "name": "java-source"
+                },
+                "url": "file://external/rules_java+/java/runfiles/src/main/java/com/google/devtools/build/runfiles/Runfiles.java"
+              }
+            ],
+            "sourceRootsCount": 1,
+            "url": "file://external/rules_java+/java/runfiles/src/main/java/com/google/devtools/build/runfiles/Runfiles.java"
+          },
+          {
+            "entitySource": {
+              "entitySourceFqName": "org.jetbrains.bazel.workspacemodel.entities.BazelModuleEntitySource",
+              "virtualFileUrl": null
+            },
+            "excludedPatterns": [],
+            "excludedPatternsCount": 0,
+            "excludedUrls": [],
+            "excludedUrlsCount": 0,
+            "fqName": "com.intellij.platform.workspace.jps.entities.ContentRootEntity",
+            "sourceRoots": [
+              {
+                "entitySource": {
+                  "entitySourceFqName": "org.jetbrains.bazel.workspacemodel.entities.BazelModuleEntitySource",
+                  "virtualFileUrl": null
+                },
+                "fqName": "com.intellij.platform.workspace.jps.entities.SourceRootEntity",
+                "rootTypeId": {
+                  "name": "java-source"
+                },
+                "url": "file://external/rules_java+/java/runfiles/src/main/java/com/google/devtools/build/runfiles/Util.java"
+              }
+            ],
+            "sourceRootsCount": 1,
+            "url": "file://external/rules_java+/java/runfiles/src/main/java/com/google/devtools/build/runfiles/Util.java"
+          }
+        ],
+        "contentRootsCount": 2,
+        "dependencies": [
+          {
+            "exported": true,
+            "module": "Unknown \"FinalClassMetadata.KnownClass\": com.intellij.platform.workspace.jps.entities.ModuleId",
+            "productionOnTest": true,
+            "scope": "Unknown \"FinalClassMetadata.KnownClass\": com.intellij.platform.workspace.jps.entities.DependencyScope"
+          },
+          {
+            "fqName": "com.intellij.platform.workspace.jps.entities.ModuleSourceDependency"
+          },
+          {
+            "sdk": {
+              "name": "simpleScalaTest-jdk-4b64c",
+              "presentableName": "simpleScalaTest-jdk-4b64c",
+              "type": "JavaSDK"
+            }
+          }
+        ],
+        "dependenciesCount": 3,
+        "entitySource": {
+          "entitySourceFqName": "org.jetbrains.bazel.workspacemodel.entities.BazelModuleEntitySource",
+          "virtualFileUrl": null
+        },
+        "facets": [],
+        "facetsCount": 0,
+        "fqName": "com.intellij.platform.workspace.jps.entities.ModuleEntity",
+        "name": "rules_java.java.runfiles.src.main.java.com.google.devtools.build.runfiles.runfiles",
+        "type": {
+          "name": "JAVA_MODULE"
+        }
+      },
+      {
+        "contentRoots": [
+          {
+            "entitySource": {
+              "entitySourceFqName": "org.jetbrains.bazel.workspacemodel.entities.BazelModuleEntitySource",
+              "virtualFileUrl": null
+            },
+            "excludedPatterns": [],
+            "excludedPatternsCount": 0,
+            "excludedUrls": [],
+            "excludedUrlsCount": 0,
+            "fqName": "com.intellij.platform.workspace.jps.entities.ContentRootEntity",
+            "sourceRoots": [
+              {
+                "entitySource": {
+                  "entitySourceFqName": "org.jetbrains.bazel.workspacemodel.entities.BazelModuleEntitySource",
+                  "virtualFileUrl": null
+                },
+                "fqName": "com.intellij.platform.workspace.jps.entities.SourceRootEntity",
+                "rootTypeId": {
+                  "name": "java-source"
+                },
+                "url": "file://external/rules_scala+/scala/support/JUnitXmlReporter.scala"
+              }
+            ],
+            "sourceRootsCount": 1,
+            "url": "file://external/rules_scala+/scala/support/JUnitXmlReporter.scala"
+          }
+        ],
+        "contentRootsCount": 1,
+        "dependencies": [
+          {
+            "exported": true,
+            "library": {
+              "codeCache": null,
+              "name": "scala-compiler-2-13-17-jar",
+              "presentableName": "scala-compiler-2-13-17-jar",
+              "tableId": {
+                "fqName": "com.intellij.platform.workspace.jps.entities.LibraryTableId$ProjectLibraryTableId",
+                "level": "project"
+              }
+            },
+            "scope": "COMPILE"
+          },
+          {
+            "exported": true,
+            "library": {
+              "codeCache": null,
+              "name": "scala-library-2-13-18-jar",
+              "presentableName": "scala-library-2-13-18-jar",
+              "tableId": {
+                "fqName": "com.intellij.platform.workspace.jps.entities.LibraryTableId$ProjectLibraryTableId",
+                "level": "project"
+              }
+            },
+            "scope": "COMPILE"
+          },
+          {
+            "exported": true,
+            "library": {
+              "codeCache": null,
+              "name": "scala-reflect-2-13-18-jar",
+              "presentableName": "scala-reflect-2-13-18-jar",
+              "tableId": {
+                "fqName": "com.intellij.platform.workspace.jps.entities.LibraryTableId$ProjectLibraryTableId",
+                "level": "project"
+              }
+            },
+            "scope": "COMPILE"
+          },
+          {
+            "exported": true,
+            "module": "Unknown \"FinalClassMetadata.KnownClass\": com.intellij.platform.workspace.jps.entities.ModuleId",
+            "productionOnTest": true,
+            "scope": "Unknown \"FinalClassMetadata.KnownClass\": com.intellij.platform.workspace.jps.entities.DependencyScope"
+          },
+          {
+            "exported": true,
+            "module": "Unknown \"FinalClassMetadata.KnownClass\": com.intellij.platform.workspace.jps.entities.ModuleId",
+            "productionOnTest": true,
+            "scope": "Unknown \"FinalClassMetadata.KnownClass\": com.intellij.platform.workspace.jps.entities.DependencyScope"
+          },
+          {
+            "fqName": "com.intellij.platform.workspace.jps.entities.ModuleSourceDependency"
+          },
+          {
+            "sdk": {
+              "name": "simpleScalaTest-jdk-4b64c",
+              "presentableName": "simpleScalaTest-jdk-4b64c",
+              "type": "JavaSDK"
+            }
+          }
+        ],
+        "dependenciesCount": 7,
+        "entitySource": {
+          "entitySourceFqName": "org.jetbrains.bazel.workspacemodel.entities.BazelModuleEntitySource",
+          "virtualFileUrl": null
+        },
+        "facets": [],
+        "facetsCount": 0,
+        "fqName": "com.intellij.platform.workspace.jps.entities.ModuleEntity",
+        "name": "rules_scala.scala.support.test_reporter",
+        "type": {
+          "name": "JAVA_MODULE"
+        }
+      },
+      {
+        "contentRoots": [
+          {
+            "entitySource": {
+              "entitySourceFqName": "org.jetbrains.bazel.workspacemodel.entities.BazelModuleEntitySource",
+              "virtualFileUrl": null
+            },
+            "excludedPatterns": [],
+            "excludedPatternsCount": 0,
+            "excludedUrls": [],
+            "excludedUrlsCount": 0,
+            "fqName": "com.intellij.platform.workspace.jps.entities.ContentRootEntity",
+            "sourceRoots": [
+              {
+                "entitySource": {
+                  "entitySourceFqName": "org.jetbrains.bazel.workspacemodel.entities.BazelModuleEntitySource",
+                  "virtualFileUrl": null
+                },
+                "fqName": "com.intellij.platform.workspace.jps.entities.SourceRootEntity",
+                "rootTypeId": {
+                  "name": "java-source"
+                },
+                "url": "file://external/rules_scala+/src/java/io/bazel/rulesscala/scala_test/Runner.java"
+              }
+            ],
+            "sourceRootsCount": 1,
+            "url": "file://external/rules_scala+/src/java/io/bazel/rulesscala/scala_test/Runner.java"
+          }
+        ],
+        "contentRootsCount": 1,
+        "dependencies": [
+          {
+            "exported": true,
+            "library": {
+              "codeCache": null,
+              "name": "@@rules_scala+//src/java/io/bazel/rulesscala/scala_testrunner_generated",
+              "presentableName": "@@rules_scala+//src/java/io/bazel/rulesscala/scala_testrunner_generated",
+              "tableId": {
+                "fqName": "com.intellij.platform.workspace.jps.entities.LibraryTableId$ProjectLibraryTableId",
+                "level": "project"
+              }
+            },
+            "scope": "COMPILE"
+          },
+          {
+            "exported": true,
+            "module": "Unknown \"FinalClassMetadata.KnownClass\": com.intellij.platform.workspace.jps.entities.ModuleId",
+            "productionOnTest": true,
+            "scope": "Unknown \"FinalClassMetadata.KnownClass\": com.intellij.platform.workspace.jps.entities.DependencyScope"
+          },
+          {
+            "exported": true,
+            "module": "Unknown \"FinalClassMetadata.KnownClass\": com.intellij.platform.workspace.jps.entities.ModuleId",
+            "productionOnTest": true,
+            "scope": "Unknown \"FinalClassMetadata.KnownClass\": com.intellij.platform.workspace.jps.entities.DependencyScope"
+          },
+          {
+            "fqName": "com.intellij.platform.workspace.jps.entities.ModuleSourceDependency"
+          },
+          {
+            "sdk": {
+              "name": "simpleScalaTest-jdk-4b64c",
+              "presentableName": "simpleScalaTest-jdk-4b64c",
+              "type": "JavaSDK"
+            }
+          }
+        ],
+        "dependenciesCount": 5,
+        "entitySource": {
+          "entitySourceFqName": "org.jetbrains.bazel.workspacemodel.entities.BazelModuleEntitySource",
+          "virtualFileUrl": null
+        },
+        "facets": [],
+        "facetsCount": 0,
+        "fqName": "com.intellij.platform.workspace.jps.entities.ModuleEntity",
+        "name": "rules_scala.src.java.io.bazel.rulesscala.scala_test.runner",
+        "type": {
+          "name": "JAVA_MODULE"
+        }
+      },
+      {
+        "contentRoots": [
+          {
+            "entitySource": {
+              "entitySourceFqName": "org.jetbrains.bazel.workspacemodel.entities.BazelModuleEntitySource",
+              "virtualFileUrl": null
+            },
+            "excludedPatterns": [],
+            "excludedPatternsCount": 0,
+            "excludedUrls": [],
+            "excludedUrlsCount": 0,
+            "fqName": "com.intellij.platform.workspace.jps.entities.ContentRootEntity",
+            "sourceRoots": [
+              {
+                "entitySource": {
+                  "entitySourceFqName": "org.jetbrains.bazel.workspacemodel.entities.BazelModuleEntitySource",
+                  "virtualFileUrl": null
+                },
+                "fqName": "com.intellij.platform.workspace.jps.entities.SourceRootEntity",
+                "rootTypeId": {
+                  "name": "java-source"
+                },
+                "url": "file://src/main/com/example/foo"
+              }
+            ],
+            "sourceRootsCount": 1,
+            "url": "file://src/main/com/example/foo"
+          }
+        ],
+        "contentRootsCount": 1,
+        "dependencies": [
+          {
+            "exported": true,
+            "library": {
+              "codeCache": null,
+              "name": "scala-compiler-2-13-17-jar",
+              "presentableName": "scala-compiler-2-13-17-jar",
+              "tableId": {
+                "fqName": "com.intellij.platform.workspace.jps.entities.LibraryTableId$ProjectLibraryTableId",
+                "level": "project"
+              }
+            },
+            "scope": "COMPILE"
+          },
+          {
+            "exported": true,
+            "library": {
+              "codeCache": null,
+              "name": "scala-library-2-13-18-jar",
+              "presentableName": "scala-library-2-13-18-jar",
+              "tableId": {
+                "fqName": "com.intellij.platform.workspace.jps.entities.LibraryTableId$ProjectLibraryTableId",
+                "level": "project"
+              }
+            },
+            "scope": "COMPILE"
+          },
+          {
+            "exported": true,
+            "library": {
+              "codeCache": null,
+              "name": "scala-reflect-2-13-18-jar",
+              "presentableName": "scala-reflect-2-13-18-jar",
+              "tableId": {
+                "fqName": "com.intellij.platform.workspace.jps.entities.LibraryTableId$ProjectLibraryTableId",
+                "level": "project"
+              }
+            },
+            "scope": "COMPILE"
+          },
+          {
+            "fqName": "com.intellij.platform.workspace.jps.entities.ModuleSourceDependency"
+          },
+          {
+            "sdk": {
+              "name": "simpleScalaTest-jdk-4b64c",
+              "presentableName": "simpleScalaTest-jdk-4b64c",
+              "type": "JavaSDK"
+            }
+          }
+        ],
+        "dependenciesCount": 5,
+        "entitySource": {
+          "entitySourceFqName": "org.jetbrains.bazel.workspacemodel.entities.BazelModuleEntitySource",
+          "virtualFileUrl": null
+        },
+        "facets": [],
+        "facetsCount": 0,
+        "fqName": "com.intellij.platform.workspace.jps.entities.ModuleEntity",
+        "name": "src.main.com.example.foo.example-lib",
+        "type": {
+          "name": "JAVA_MODULE"
+        }
+      },
+      {
+        "contentRoots": [
+          {
+            "entitySource": {
+              "entitySourceFqName": "org.jetbrains.bazel.workspacemodel.entities.BazelModuleEntitySource",
+              "virtualFileUrl": null
+            },
+            "excludedPatterns": [],
+            "excludedPatternsCount": 0,
+            "excludedUrls": [],
+            "excludedUrlsCount": 0,
+            "fqName": "com.intellij.platform.workspace.jps.entities.ContentRootEntity",
+            "sourceRoots": [
+              {
+                "entitySource": {
+                  "entitySourceFqName": "org.jetbrains.bazel.workspacemodel.entities.BazelModuleEntitySource",
+                  "virtualFileUrl": null
+                },
+                "fqName": "com.intellij.platform.workspace.jps.entities.SourceRootEntity",
+                "rootTypeId": {
+                  "name": "java-test"
+                },
+                "url": "file://src/test/com/example/foo"
+              }
+            ],
+            "sourceRootsCount": 1,
+            "url": "file://src/test/com/example/foo"
+          }
+        ],
+        "contentRootsCount": 1,
+        "dependencies": [
+          {
+            "exported": false,
+            "module": "Unknown \"FinalClassMetadata.KnownClass\": com.intellij.platform.workspace.jps.entities.ModuleId",
+            "productionOnTest": true,
+            "scope": "Unknown \"FinalClassMetadata.KnownClass\": com.intellij.platform.workspace.jps.entities.DependencyScope"
+          },
+          {
+            "exported": false,
+            "module": "Unknown \"FinalClassMetadata.KnownClass\": com.intellij.platform.workspace.jps.entities.ModuleId",
+            "productionOnTest": true,
+            "scope": "Unknown \"FinalClassMetadata.KnownClass\": com.intellij.platform.workspace.jps.entities.DependencyScope"
+          },
+          {
+            "exported": false,
+            "module": "Unknown \"FinalClassMetadata.KnownClass\": com.intellij.platform.workspace.jps.entities.ModuleId",
+            "productionOnTest": true,
+            "scope": "Unknown \"FinalClassMetadata.KnownClass\": com.intellij.platform.workspace.jps.entities.DependencyScope"
+          },
+          {
+            "exported": true,
+            "library": {
+              "codeCache": null,
+              "name": "librunner-jar",
+              "presentableName": "librunner-jar",
+              "tableId": {
+                "fqName": "com.intellij.platform.workspace.jps.entities.LibraryTableId$ProjectLibraryTableId",
+                "level": "project"
+              }
+            },
+            "scope": "COMPILE"
+          },
+          {
+            "exported": true,
+            "library": {
+              "codeCache": null,
+              "name": "scala-compiler-2-13-17-jar",
+              "presentableName": "scala-compiler-2-13-17-jar",
+              "tableId": {
+                "fqName": "com.intellij.platform.workspace.jps.entities.LibraryTableId$ProjectLibraryTableId",
+                "level": "project"
+              }
+            },
+            "scope": "COMPILE"
+          },
+          {
+            "exported": true,
+            "library": {
+              "codeCache": null,
+              "name": "scala-library-2-13-18-jar",
+              "presentableName": "scala-library-2-13-18-jar",
+              "tableId": {
+                "fqName": "com.intellij.platform.workspace.jps.entities.LibraryTableId$ProjectLibraryTableId",
+                "level": "project"
+              }
+            },
+            "scope": "COMPILE"
+          },
+          {
+            "exported": true,
+            "library": {
+              "codeCache": null,
+              "name": "scala-reflect-2-13-18-jar",
+              "presentableName": "scala-reflect-2-13-18-jar",
+              "tableId": {
+                "fqName": "com.intellij.platform.workspace.jps.entities.LibraryTableId$ProjectLibraryTableId",
+                "level": "project"
+              }
+            },
+            "scope": "COMPILE"
+          },
+          {
+            "exported": true,
+            "library": {
+              "codeCache": null,
+              "name": "scalactic_2-13-3-2-19-jar",
+              "presentableName": "scalactic_2-13-3-2-19-jar",
+              "tableId": {
+                "fqName": "com.intellij.platform.workspace.jps.entities.LibraryTableId$ProjectLibraryTableId",
+                "level": "project"
+              }
+            },
+            "scope": "COMPILE"
+          },
+          {
+            "exported": true,
+            "library": {
+              "codeCache": null,
+              "name": "scalatest-compatible-3-2-19-jar",
+              "presentableName": "scalatest-compatible-3-2-19-jar",
+              "tableId": {
+                "fqName": "com.intellij.platform.workspace.jps.entities.LibraryTableId$ProjectLibraryTableId",
+                "level": "project"
+              }
+            },
+            "scope": "COMPILE"
+          },
+          {
+            "exported": true,
+            "library": {
+              "codeCache": null,
+              "name": "scalatest-core_2-13-3-2-19-jar",
+              "presentableName": "scalatest-core_2-13-3-2-19-jar",
+              "tableId": {
+                "fqName": "com.intellij.platform.workspace.jps.entities.LibraryTableId$ProjectLibraryTableId",
+                "level": "project"
+              }
+            },
+            "scope": "COMPILE"
+          },
+          {
+            "exported": true,
+            "library": {
+              "codeCache": null,
+              "name": "scalatest-diagrams_2-13-3-2-19-jar",
+              "presentableName": "scalatest-diagrams_2-13-3-2-19-jar",
+              "tableId": {
+                "fqName": "com.intellij.platform.workspace.jps.entities.LibraryTableId$ProjectLibraryTableId",
+                "level": "project"
+              }
+            },
+            "scope": "COMPILE"
+          },
+          {
+            "exported": true,
+            "library": {
+              "codeCache": null,
+              "name": "scalatest-featurespec_2-13-3-2-19-jar",
+              "presentableName": "scalatest-featurespec_2-13-3-2-19-jar",
+              "tableId": {
+                "fqName": "com.intellij.platform.workspace.jps.entities.LibraryTableId$ProjectLibraryTableId",
+                "level": "project"
+              }
+            },
+            "scope": "COMPILE"
+          },
+          {
+            "exported": true,
+            "library": {
+              "codeCache": null,
+              "name": "scalatest-flatspec_2-13-3-2-19-jar",
+              "presentableName": "scalatest-flatspec_2-13-3-2-19-jar",
+              "tableId": {
+                "fqName": "com.intellij.platform.workspace.jps.entities.LibraryTableId$ProjectLibraryTableId",
+                "level": "project"
+              }
+            },
+            "scope": "COMPILE"
+          },
+          {
+            "exported": true,
+            "library": {
+              "codeCache": null,
+              "name": "scalatest-freespec_2-13-3-2-19-jar",
+              "presentableName": "scalatest-freespec_2-13-3-2-19-jar",
+              "tableId": {
+                "fqName": "com.intellij.platform.workspace.jps.entities.LibraryTableId$ProjectLibraryTableId",
+                "level": "project"
+              }
+            },
+            "scope": "COMPILE"
+          },
+          {
+            "exported": true,
+            "library": {
+              "codeCache": null,
+              "name": "scalatest-funspec_2-13-3-2-19-jar",
+              "presentableName": "scalatest-funspec_2-13-3-2-19-jar",
+              "tableId": {
+                "fqName": "com.intellij.platform.workspace.jps.entities.LibraryTableId$ProjectLibraryTableId",
+                "level": "project"
+              }
+            },
+            "scope": "COMPILE"
+          },
+          {
+            "exported": true,
+            "library": {
+              "codeCache": null,
+              "name": "scalatest-funsuite_2-13-3-2-19-jar",
+              "presentableName": "scalatest-funsuite_2-13-3-2-19-jar",
+              "tableId": {
+                "fqName": "com.intellij.platform.workspace.jps.entities.LibraryTableId$ProjectLibraryTableId",
+                "level": "project"
+              }
+            },
+            "scope": "COMPILE"
+          },
+          {
+            "exported": true,
+            "library": {
+              "codeCache": null,
+              "name": "scalatest-matchers-core_2-13-3-2-19-jar",
+              "presentableName": "scalatest-matchers-core_2-13-3-2-19-jar",
+              "tableId": {
+                "fqName": "com.intellij.platform.workspace.jps.entities.LibraryTableId$ProjectLibraryTableId",
+                "level": "project"
+              }
+            },
+            "scope": "COMPILE"
+          },
+          {
+            "exported": true,
+            "library": {
+              "codeCache": null,
+              "name": "scalatest-mustmatchers_2-13-3-2-19-jar",
+              "presentableName": "scalatest-mustmatchers_2-13-3-2-19-jar",
+              "tableId": {
+                "fqName": "com.intellij.platform.workspace.jps.entities.LibraryTableId$ProjectLibraryTableId",
+                "level": "project"
+              }
+            },
+            "scope": "COMPILE"
+          },
+          {
+            "exported": true,
+            "library": {
+              "codeCache": null,
+              "name": "scalatest-propspec_2-13-3-2-19-jar",
+              "presentableName": "scalatest-propspec_2-13-3-2-19-jar",
+              "tableId": {
+                "fqName": "com.intellij.platform.workspace.jps.entities.LibraryTableId$ProjectLibraryTableId",
+                "level": "project"
+              }
+            },
+            "scope": "COMPILE"
+          },
+          {
+            "exported": true,
+            "library": {
+              "codeCache": null,
+              "name": "scalatest-refspec_2-13-3-2-19-jar",
+              "presentableName": "scalatest-refspec_2-13-3-2-19-jar",
+              "tableId": {
+                "fqName": "com.intellij.platform.workspace.jps.entities.LibraryTableId$ProjectLibraryTableId",
+                "level": "project"
+              }
+            },
+            "scope": "COMPILE"
+          },
+          {
+            "exported": true,
+            "library": {
+              "codeCache": null,
+              "name": "scalatest-shouldmatchers_2-13-3-2-19-jar",
+              "presentableName": "scalatest-shouldmatchers_2-13-3-2-19-jar",
+              "tableId": {
+                "fqName": "com.intellij.platform.workspace.jps.entities.LibraryTableId$ProjectLibraryTableId",
+                "level": "project"
+              }
+            },
+            "scope": "COMPILE"
+          },
+          {
+            "exported": true,
+            "library": {
+              "codeCache": null,
+              "name": "scalatest-wordspec_2-13-3-2-19-jar",
+              "presentableName": "scalatest-wordspec_2-13-3-2-19-jar",
+              "tableId": {
+                "fqName": "com.intellij.platform.workspace.jps.entities.LibraryTableId$ProjectLibraryTableId",
+                "level": "project"
+              }
+            },
+            "scope": "COMPILE"
+          },
+          {
+            "exported": true,
+            "library": {
+              "codeCache": null,
+              "name": "scalatest_2-13-3-2-19-jar",
+              "presentableName": "scalatest_2-13-3-2-19-jar",
+              "tableId": {
+                "fqName": "com.intellij.platform.workspace.jps.entities.LibraryTableId$ProjectLibraryTableId",
+                "level": "project"
+              }
+            },
+            "scope": "COMPILE"
+          },
+          {
+            "exported": true,
+            "library": {
+              "codeCache": null,
+              "name": "test_reporter-jar",
+              "presentableName": "test_reporter-jar",
+              "tableId": {
+                "fqName": "com.intellij.platform.workspace.jps.entities.LibraryTableId$ProjectLibraryTableId",
+                "level": "project"
+              }
+            },
+            "scope": "COMPILE"
+          },
+          {
+            "exported": true,
+            "module": "Unknown \"FinalClassMetadata.KnownClass\": com.intellij.platform.workspace.jps.entities.ModuleId",
+            "productionOnTest": true,
+            "scope": "Unknown \"FinalClassMetadata.KnownClass\": com.intellij.platform.workspace.jps.entities.DependencyScope"
+          },
+          {
+            "fqName": "com.intellij.platform.workspace.jps.entities.ModuleSourceDependency"
+          },
+          {
+            "sdk": {
+              "name": "simpleScalaTest-jdk-4b64c",
+              "presentableName": "simpleScalaTest-jdk-4b64c",
+              "type": "JavaSDK"
+            }
+          }
+        ],
+        "dependenciesCount": 27,
+        "entitySource": {
+          "entitySourceFqName": "org.jetbrains.bazel.workspacemodel.entities.BazelModuleEntitySource",
+          "virtualFileUrl": null
+        },
+        "facets": [],
+        "facetsCount": 0,
+        "fqName": "com.intellij.platform.workspace.jps.entities.ModuleEntity",
+        "name": "src.test.com.example.foo.test",
+        "type": {
+          "name": "JAVA_MODULE"
+        }
+      }
+    ],
+    "rootEntitiesCount": 8,
+    "rootEntityName": "ModuleEntity"
+  },
+  {
+    "entities": [
+      {
+        "entitySource": {
+          "entitySourceFqName": "org.jetbrains.bazel.workspacemodel.entities.BazelProjectEntitySource",
+          "virtualFileUrl": null
+        },
+        "excludedRoots": [],
+        "excludedRootsCount": 0,
+        "fqName": "com.intellij.platform.workspace.jps.entities.LibraryEntity",
+        "name": "@@rules_scala+//src/java/io/bazel/rulesscala/scala_testrunner_generated",
+        "roots": [
+          {
+            "inclusionOptions": "ROOT_ITSELF",
+            "type": {
+              "name": "CLASSES"
+            },
+            "url": "jar://bazel-out/darwin_arm64-opt-exec/bin/external/rules_scala+/src/java/io/bazel/rulesscala/scala_test/librunner-gen.jar!"
+          },
+          {
+            "inclusionOptions": "ROOT_ITSELF",
+            "type": {
+              "name": "SOURCES"
+            },
+            "url": "jar://bazel-out/darwin_arm64-opt-exec/bin/external/rules_scala+/src/java/io/bazel/rulesscala/scala_test/librunner-gensrc.jar!"
+          }
+        ],
+        "rootsCount": 2,
+        "tableId": {
+          "fqName": "com.intellij.platform.workspace.jps.entities.LibraryTableId$ProjectLibraryTableId",
+          "level": "project"
+        },
+        "typeId": {
+          "name": "java-imported"
+        }
+      },
+      {
+        "entitySource": {
+          "entitySourceFqName": "org.jetbrains.bazel.workspacemodel.entities.BazelProjectEntitySource",
+          "virtualFileUrl": null
+        },
+        "excludedRoots": [],
+        "excludedRootsCount": 0,
+        "fqName": "com.intellij.platform.workspace.jps.entities.LibraryEntity",
+        "name": "librunner-jar",
+        "roots": [
+          {
+            "inclusionOptions": "ROOT_ITSELF",
+            "type": {
+              "name": "CLASSES"
+            },
+            "url": "jar://bazel-out/darwin_arm64-opt-exec/bin/external/rules_scala+/src/java/io/bazel/rulesscala/scala_test/librunner.jar!"
+          }
+        ],
+        "rootsCount": 1,
+        "tableId": {
+          "fqName": "com.intellij.platform.workspace.jps.entities.LibraryTableId$ProjectLibraryTableId",
+          "level": "project"
+        },
+        "typeId": {
+          "name": "java-imported"
+        }
+      },
+      {
+        "entitySource": {
+          "entitySourceFqName": "org.jetbrains.bazel.workspacemodel.entities.BazelProjectEntitySource",
+          "virtualFileUrl": null
+        },
+        "excludedRoots": [],
+        "excludedRootsCount": 0,
+        "fqName": "com.intellij.platform.workspace.jps.entities.LibraryEntity",
+        "name": "rules_scala.scala.private.toolchain_deps.scala_xml",
+        "roots": [
+          {
+            "inclusionOptions": "ROOT_ITSELF",
+            "type": {
+              "name": "CLASSES"
+            },
+            "url": "jar://external/rules_scala++scala_deps+io_bazel_rules_scala_scala_xml_2_13_17/scala-xml_2.13-2.1.0.jar!"
+          },
+          {
+            "inclusionOptions": "ROOT_ITSELF",
+            "type": {
+              "name": "SOURCES"
+            },
+            "url": "jar://external/rules_scala++scala_deps+io_bazel_rules_scala_scala_xml_2_13_17/scala-xml_2.13-2.1.0-src.jar!"
+          }
+        ],
+        "rootsCount": 2,
+        "tableId": {
+          "fqName": "com.intellij.platform.workspace.jps.entities.LibraryTableId$ProjectLibraryTableId",
+          "level": "project"
+        },
+        "typeId": {
+          "name": "java-imported"
+        }
+      },
+      {
+        "entitySource": {
+          "entitySourceFqName": "org.jetbrains.bazel.workspacemodel.entities.BazelProjectEntitySource",
+          "virtualFileUrl": null
+        },
+        "excludedRoots": [],
+        "excludedRootsCount": 0,
+        "fqName": "com.intellij.platform.workspace.jps.entities.LibraryEntity",
+        "name": "rules_scala.testing.toolchain.scalatest_classpath",
+        "roots": [
+          {
+            "inclusionOptions": "ROOT_ITSELF",
+            "type": {
+              "name": "CLASSES"
+            },
+            "url": "jar://external/rules_scala++scala_deps+io_bazel_rules_scala_scalactic_2_13_17/scalactic_2.13-3.2.19.jar!"
+          },
+          {
+            "inclusionOptions": "ROOT_ITSELF",
+            "type": {
+              "name": "CLASSES"
+            },
+            "url": "jar://external/rules_scala++scala_deps+io_bazel_rules_scala_scalatest_2_13_17/scalatest_2.13-3.2.19.jar!"
+          },
+          {
+            "inclusionOptions": "ROOT_ITSELF",
+            "type": {
+              "name": "CLASSES"
+            },
+            "url": "jar://external/rules_scala++scala_deps+io_bazel_rules_scala_scalatest_compatible_2_13_17/scalatest-compatible-3.2.19.jar!"
+          },
+          {
+            "inclusionOptions": "ROOT_ITSELF",
+            "type": {
+              "name": "CLASSES"
+            },
+            "url": "jar://external/rules_scala++scala_deps+io_bazel_rules_scala_scalatest_core_2_13_17/scalatest-core_2.13-3.2.19.jar!"
+          },
+          {
+            "inclusionOptions": "ROOT_ITSELF",
+            "type": {
+              "name": "CLASSES"
+            },
+            "url": "jar://external/rules_scala++scala_deps+io_bazel_rules_scala_scalatest_diagrams_2_13_17/scalatest-diagrams_2.13-3.2.19.jar!"
+          },
+          {
+            "inclusionOptions": "ROOT_ITSELF",
+            "type": {
+              "name": "CLASSES"
+            },
+            "url": "jar://external/rules_scala++scala_deps+io_bazel_rules_scala_scalatest_featurespec_2_13_17/scalatest-featurespec_2.13-3.2.19.jar!"
+          },
+          {
+            "inclusionOptions": "ROOT_ITSELF",
+            "type": {
+              "name": "CLASSES"
+            },
+            "url": "jar://external/rules_scala++scala_deps+io_bazel_rules_scala_scalatest_flatspec_2_13_17/scalatest-flatspec_2.13-3.2.19.jar!"
+          },
+          {
+            "inclusionOptions": "ROOT_ITSELF",
+            "type": {
+              "name": "CLASSES"
+            },
+            "url": "jar://external/rules_scala++scala_deps+io_bazel_rules_scala_scalatest_freespec_2_13_17/scalatest-freespec_2.13-3.2.19.jar!"
+          },
+          {
+            "inclusionOptions": "ROOT_ITSELF",
+            "type": {
+              "name": "CLASSES"
+            },
+            "url": "jar://external/rules_scala++scala_deps+io_bazel_rules_scala_scalatest_funspec_2_13_17/scalatest-funspec_2.13-3.2.19.jar!"
+          },
+          {
+            "inclusionOptions": "ROOT_ITSELF",
+            "type": {
+              "name": "CLASSES"
+            },
+            "url": "jar://external/rules_scala++scala_deps+io_bazel_rules_scala_scalatest_funsuite_2_13_17/scalatest-funsuite_2.13-3.2.19.jar!"
+          },
+          {
+            "inclusionOptions": "ROOT_ITSELF",
+            "type": {
+              "name": "CLASSES"
+            },
+            "url": "jar://external/rules_scala++scala_deps+io_bazel_rules_scala_scalatest_matchers_core_2_13_17/scalatest-matchers-core_2.13-3.2.19.jar!"
+          },
+          {
+            "inclusionOptions": "ROOT_ITSELF",
+            "type": {
+              "name": "CLASSES"
+            },
+            "url": "jar://external/rules_scala++scala_deps+io_bazel_rules_scala_scalatest_mustmatchers_2_13_17/scalatest-mustmatchers_2.13-3.2.19.jar!"
+          },
+          {
+            "inclusionOptions": "ROOT_ITSELF",
+            "type": {
+              "name": "CLASSES"
+            },
+            "url": "jar://external/rules_scala++scala_deps+io_bazel_rules_scala_scalatest_propspec_2_13_17/scalatest-propspec_2.13-3.2.19.jar!"
+          },
+          {
+            "inclusionOptions": "ROOT_ITSELF",
+            "type": {
+              "name": "CLASSES"
+            },
+            "url": "jar://external/rules_scala++scala_deps+io_bazel_rules_scala_scalatest_refspec_2_13_17/scalatest-refspec_2.13-3.2.19.jar!"
+          },
+          {
+            "inclusionOptions": "ROOT_ITSELF",
+            "type": {
+              "name": "CLASSES"
+            },
+            "url": "jar://external/rules_scala++scala_deps+io_bazel_rules_scala_scalatest_shouldmatchers_2_13_17/scalatest-shouldmatchers_2.13-3.2.19.jar!"
+          },
+          {
+            "inclusionOptions": "ROOT_ITSELF",
+            "type": {
+              "name": "CLASSES"
+            },
+            "url": "jar://external/rules_scala++scala_deps+io_bazel_rules_scala_scalatest_wordspec_2_13_17/scalatest-wordspec_2.13-3.2.19.jar!"
+          },
+          {
+            "inclusionOptions": "ROOT_ITSELF",
+            "type": {
+              "name": "SOURCES"
+            },
+            "url": "jar://external/rules_scala++scala_deps+io_bazel_rules_scala_scalactic_2_13_17/scalactic_2.13-3.2.19-src.jar!"
+          },
+          {
+            "inclusionOptions": "ROOT_ITSELF",
+            "type": {
+              "name": "SOURCES"
+            },
+            "url": "jar://external/rules_scala++scala_deps+io_bazel_rules_scala_scalatest_2_13_17/scalatest_2.13-3.2.19-src.jar!"
+          },
+          {
+            "inclusionOptions": "ROOT_ITSELF",
+            "type": {
+              "name": "SOURCES"
+            },
+            "url": "jar://external/rules_scala++scala_deps+io_bazel_rules_scala_scalatest_compatible_2_13_17/scalatest-compatible-3.2.19-src.jar!"
+          },
+          {
+            "inclusionOptions": "ROOT_ITSELF",
+            "type": {
+              "name": "SOURCES"
+            },
+            "url": "jar://external/rules_scala++scala_deps+io_bazel_rules_scala_scalatest_core_2_13_17/scalatest-core_2.13-3.2.19-src.jar!"
+          },
+          {
+            "inclusionOptions": "ROOT_ITSELF",
+            "type": {
+              "name": "SOURCES"
+            },
+            "url": "jar://external/rules_scala++scala_deps+io_bazel_rules_scala_scalatest_diagrams_2_13_17/scalatest-diagrams_2.13-3.2.19-src.jar!"
+          },
+          {
+            "inclusionOptions": "ROOT_ITSELF",
+            "type": {
+              "name": "SOURCES"
+            },
+            "url": "jar://external/rules_scala++scala_deps+io_bazel_rules_scala_scalatest_featurespec_2_13_17/scalatest-featurespec_2.13-3.2.19-src.jar!"
+          },
+          {
+            "inclusionOptions": "ROOT_ITSELF",
+            "type": {
+              "name": "SOURCES"
+            },
+            "url": "jar://external/rules_scala++scala_deps+io_bazel_rules_scala_scalatest_flatspec_2_13_17/scalatest-flatspec_2.13-3.2.19-src.jar!"
+          },
+          {
+            "inclusionOptions": "ROOT_ITSELF",
+            "type": {
+              "name": "SOURCES"
+            },
+            "url": "jar://external/rules_scala++scala_deps+io_bazel_rules_scala_scalatest_freespec_2_13_17/scalatest-freespec_2.13-3.2.19-src.jar!"
+          },
+          {
+            "inclusionOptions": "ROOT_ITSELF",
+            "type": {
+              "name": "SOURCES"
+            },
+            "url": "jar://external/rules_scala++scala_deps+io_bazel_rules_scala_scalatest_funspec_2_13_17/scalatest-funspec_2.13-3.2.19-src.jar!"
+          },
+          {
+            "inclusionOptions": "ROOT_ITSELF",
+            "type": {
+              "name": "SOURCES"
+            },
+            "url": "jar://external/rules_scala++scala_deps+io_bazel_rules_scala_scalatest_funsuite_2_13_17/scalatest-funsuite_2.13-3.2.19-src.jar!"
+          },
+          {
+            "inclusionOptions": "ROOT_ITSELF",
+            "type": {
+              "name": "SOURCES"
+            },
+            "url": "jar://external/rules_scala++scala_deps+io_bazel_rules_scala_scalatest_matchers_core_2_13_17/scalatest-matchers-core_2.13-3.2.19-src.jar!"
+          },
+          {
+            "inclusionOptions": "ROOT_ITSELF",
+            "type": {
+              "name": "SOURCES"
+            },
+            "url": "jar://external/rules_scala++scala_deps+io_bazel_rules_scala_scalatest_mustmatchers_2_13_17/scalatest-mustmatchers_2.13-3.2.19-src.jar!"
+          },
+          {
+            "inclusionOptions": "ROOT_ITSELF",
+            "type": {
+              "name": "SOURCES"
+            },
+            "url": "jar://external/rules_scala++scala_deps+io_bazel_rules_scala_scalatest_propspec_2_13_17/scalatest-propspec_2.13-3.2.19-src.jar!"
+          },
+          {
+            "inclusionOptions": "ROOT_ITSELF",
+            "type": {
+              "name": "SOURCES"
+            },
+            "url": "jar://external/rules_scala++scala_deps+io_bazel_rules_scala_scalatest_refspec_2_13_17/scalatest-refspec_2.13-3.2.19-src.jar!"
+          },
+          {
+            "inclusionOptions": "ROOT_ITSELF",
+            "type": {
+              "name": "SOURCES"
+            },
+            "url": "jar://external/rules_scala++scala_deps+io_bazel_rules_scala_scalatest_shouldmatchers_2_13_17/scalatest-shouldmatchers_2.13-3.2.19-src.jar!"
+          },
+          {
+            "inclusionOptions": "ROOT_ITSELF",
+            "type": {
+              "name": "SOURCES"
+            },
+            "url": "jar://external/rules_scala++scala_deps+io_bazel_rules_scala_scalatest_wordspec_2_13_17/scalatest-wordspec_2.13-3.2.19-src.jar!"
+          }
+        ],
+        "rootsCount": 32,
+        "tableId": {
+          "fqName": "com.intellij.platform.workspace.jps.entities.LibraryTableId$ProjectLibraryTableId",
+          "level": "project"
+        },
+        "typeId": {
+          "name": "java-imported"
+        }
+      },
+      {
+        "entitySource": {
+          "entitySourceFqName": "org.jetbrains.bazel.workspacemodel.entities.BazelProjectEntitySource",
+          "virtualFileUrl": null
+        },
+        "excludedRoots": [],
+        "excludedRootsCount": 0,
+        "fqName": "com.intellij.platform.workspace.jps.entities.LibraryEntity",
+        "name": "scala-compiler-2-13-17-jar",
+        "roots": [
+          {
+            "inclusionOptions": "ROOT_ITSELF",
+            "type": {
+              "name": "CLASSES"
+            },
+            "url": "jar://external/rules_scala++scala_deps+io_bazel_rules_scala_scala_compiler_2_13_17/scala-compiler-2.13.17.jar!"
+          }
+        ],
+        "rootsCount": 1,
+        "tableId": {
+          "fqName": "com.intellij.platform.workspace.jps.entities.LibraryTableId$ProjectLibraryTableId",
+          "level": "project"
+        },
+        "typeId": {
+          "name": "java-imported"
+        }
+      },
+      {
+        "entitySource": {
+          "entitySourceFqName": "org.jetbrains.bazel.workspacemodel.entities.BazelProjectEntitySource",
+          "virtualFileUrl": null
+        },
+        "excludedRoots": [],
+        "excludedRootsCount": 0,
+        "fqName": "com.intellij.platform.workspace.jps.entities.LibraryEntity",
+        "name": "scala-library-2-13-18-jar",
+        "roots": [
+          {
+            "inclusionOptions": "ROOT_ITSELF",
+            "type": {
+              "name": "CLASSES"
+            },
+            "url": "jar://external/rules_scala++scala_deps+io_bazel_rules_scala_scala_library_2_13_17/scala-library-2.13.18.jar!"
+          }
+        ],
+        "rootsCount": 1,
+        "tableId": {
+          "fqName": "com.intellij.platform.workspace.jps.entities.LibraryTableId$ProjectLibraryTableId",
+          "level": "project"
+        },
+        "typeId": {
+          "name": "java-imported"
+        }
+      },
+      {
+        "entitySource": {
+          "entitySourceFqName": "org.jetbrains.bazel.workspacemodel.entities.BazelProjectEntitySource",
+          "virtualFileUrl": null
+        },
+        "excludedRoots": [],
+        "excludedRootsCount": 0,
+        "fqName": "com.intellij.platform.workspace.jps.entities.LibraryEntity",
+        "name": "scala-reflect-2-13-18-jar",
+        "roots": [
+          {
+            "inclusionOptions": "ROOT_ITSELF",
+            "type": {
+              "name": "CLASSES"
+            },
+            "url": "jar://external/rules_scala++scala_deps+io_bazel_rules_scala_scala_reflect_2_13_17/scala-reflect-2.13.18.jar!"
+          }
+        ],
+        "rootsCount": 1,
+        "tableId": {
+          "fqName": "com.intellij.platform.workspace.jps.entities.LibraryTableId$ProjectLibraryTableId",
+          "level": "project"
+        },
+        "typeId": {
+          "name": "java-imported"
+        }
+      },
+      {
+        "entitySource": {
+          "entitySourceFqName": "org.jetbrains.bazel.workspacemodel.entities.BazelProjectEntitySource",
+          "virtualFileUrl": null
+        },
+        "excludedRoots": [],
+        "excludedRootsCount": 0,
+        "fqName": "com.intellij.platform.workspace.jps.entities.LibraryEntity",
+        "name": "scalactic_2-13-3-2-19-jar",
+        "roots": [
+          {
+            "inclusionOptions": "ROOT_ITSELF",
+            "type": {
+              "name": "CLASSES"
+            },
+            "url": "jar://external/rules_scala++scala_deps+io_bazel_rules_scala_scalactic_2_13_17/scalactic_2.13-3.2.19.jar!"
+          }
+        ],
+        "rootsCount": 1,
+        "tableId": {
+          "fqName": "com.intellij.platform.workspace.jps.entities.LibraryTableId$ProjectLibraryTableId",
+          "level": "project"
+        },
+        "typeId": {
+          "name": "java-imported"
+        }
+      },
+      {
+        "entitySource": {
+          "entitySourceFqName": "org.jetbrains.bazel.workspacemodel.entities.BazelProjectEntitySource",
+          "virtualFileUrl": null
+        },
+        "excludedRoots": [],
+        "excludedRootsCount": 0,
+        "fqName": "com.intellij.platform.workspace.jps.entities.LibraryEntity",
+        "name": "scalatest-compatible-3-2-19-jar",
+        "roots": [
+          {
+            "inclusionOptions": "ROOT_ITSELF",
+            "type": {
+              "name": "CLASSES"
+            },
+            "url": "jar://external/rules_scala++scala_deps+io_bazel_rules_scala_scalatest_compatible_2_13_17/scalatest-compatible-3.2.19.jar!"
+          }
+        ],
+        "rootsCount": 1,
+        "tableId": {
+          "fqName": "com.intellij.platform.workspace.jps.entities.LibraryTableId$ProjectLibraryTableId",
+          "level": "project"
+        },
+        "typeId": {
+          "name": "java-imported"
+        }
+      },
+      {
+        "entitySource": {
+          "entitySourceFqName": "org.jetbrains.bazel.workspacemodel.entities.BazelProjectEntitySource",
+          "virtualFileUrl": null
+        },
+        "excludedRoots": [],
+        "excludedRootsCount": 0,
+        "fqName": "com.intellij.platform.workspace.jps.entities.LibraryEntity",
+        "name": "scalatest-core_2-13-3-2-19-jar",
+        "roots": [
+          {
+            "inclusionOptions": "ROOT_ITSELF",
+            "type": {
+              "name": "CLASSES"
+            },
+            "url": "jar://external/rules_scala++scala_deps+io_bazel_rules_scala_scalatest_core_2_13_17/scalatest-core_2.13-3.2.19.jar!"
+          }
+        ],
+        "rootsCount": 1,
+        "tableId": {
+          "fqName": "com.intellij.platform.workspace.jps.entities.LibraryTableId$ProjectLibraryTableId",
+          "level": "project"
+        },
+        "typeId": {
+          "name": "java-imported"
+        }
+      },
+      {
+        "entitySource": {
+          "entitySourceFqName": "org.jetbrains.bazel.workspacemodel.entities.BazelProjectEntitySource",
+          "virtualFileUrl": null
+        },
+        "excludedRoots": [],
+        "excludedRootsCount": 0,
+        "fqName": "com.intellij.platform.workspace.jps.entities.LibraryEntity",
+        "name": "scalatest-diagrams_2-13-3-2-19-jar",
+        "roots": [
+          {
+            "inclusionOptions": "ROOT_ITSELF",
+            "type": {
+              "name": "CLASSES"
+            },
+            "url": "jar://external/rules_scala++scala_deps+io_bazel_rules_scala_scalatest_diagrams_2_13_17/scalatest-diagrams_2.13-3.2.19.jar!"
+          }
+        ],
+        "rootsCount": 1,
+        "tableId": {
+          "fqName": "com.intellij.platform.workspace.jps.entities.LibraryTableId$ProjectLibraryTableId",
+          "level": "project"
+        },
+        "typeId": {
+          "name": "java-imported"
+        }
+      },
+      {
+        "entitySource": {
+          "entitySourceFqName": "org.jetbrains.bazel.workspacemodel.entities.BazelProjectEntitySource",
+          "virtualFileUrl": null
+        },
+        "excludedRoots": [],
+        "excludedRootsCount": 0,
+        "fqName": "com.intellij.platform.workspace.jps.entities.LibraryEntity",
+        "name": "scalatest-featurespec_2-13-3-2-19-jar",
+        "roots": [
+          {
+            "inclusionOptions": "ROOT_ITSELF",
+            "type": {
+              "name": "CLASSES"
+            },
+            "url": "jar://external/rules_scala++scala_deps+io_bazel_rules_scala_scalatest_featurespec_2_13_17/scalatest-featurespec_2.13-3.2.19.jar!"
+          }
+        ],
+        "rootsCount": 1,
+        "tableId": {
+          "fqName": "com.intellij.platform.workspace.jps.entities.LibraryTableId$ProjectLibraryTableId",
+          "level": "project"
+        },
+        "typeId": {
+          "name": "java-imported"
+        }
+      },
+      {
+        "entitySource": {
+          "entitySourceFqName": "org.jetbrains.bazel.workspacemodel.entities.BazelProjectEntitySource",
+          "virtualFileUrl": null
+        },
+        "excludedRoots": [],
+        "excludedRootsCount": 0,
+        "fqName": "com.intellij.platform.workspace.jps.entities.LibraryEntity",
+        "name": "scalatest-flatspec_2-13-3-2-19-jar",
+        "roots": [
+          {
+            "inclusionOptions": "ROOT_ITSELF",
+            "type": {
+              "name": "CLASSES"
+            },
+            "url": "jar://external/rules_scala++scala_deps+io_bazel_rules_scala_scalatest_flatspec_2_13_17/scalatest-flatspec_2.13-3.2.19.jar!"
+          }
+        ],
+        "rootsCount": 1,
+        "tableId": {
+          "fqName": "com.intellij.platform.workspace.jps.entities.LibraryTableId$ProjectLibraryTableId",
+          "level": "project"
+        },
+        "typeId": {
+          "name": "java-imported"
+        }
+      },
+      {
+        "entitySource": {
+          "entitySourceFqName": "org.jetbrains.bazel.workspacemodel.entities.BazelProjectEntitySource",
+          "virtualFileUrl": null
+        },
+        "excludedRoots": [],
+        "excludedRootsCount": 0,
+        "fqName": "com.intellij.platform.workspace.jps.entities.LibraryEntity",
+        "name": "scalatest-freespec_2-13-3-2-19-jar",
+        "roots": [
+          {
+            "inclusionOptions": "ROOT_ITSELF",
+            "type": {
+              "name": "CLASSES"
+            },
+            "url": "jar://external/rules_scala++scala_deps+io_bazel_rules_scala_scalatest_freespec_2_13_17/scalatest-freespec_2.13-3.2.19.jar!"
+          }
+        ],
+        "rootsCount": 1,
+        "tableId": {
+          "fqName": "com.intellij.platform.workspace.jps.entities.LibraryTableId$ProjectLibraryTableId",
+          "level": "project"
+        },
+        "typeId": {
+          "name": "java-imported"
+        }
+      },
+      {
+        "entitySource": {
+          "entitySourceFqName": "org.jetbrains.bazel.workspacemodel.entities.BazelProjectEntitySource",
+          "virtualFileUrl": null
+        },
+        "excludedRoots": [],
+        "excludedRootsCount": 0,
+        "fqName": "com.intellij.platform.workspace.jps.entities.LibraryEntity",
+        "name": "scalatest-funspec_2-13-3-2-19-jar",
+        "roots": [
+          {
+            "inclusionOptions": "ROOT_ITSELF",
+            "type": {
+              "name": "CLASSES"
+            },
+            "url": "jar://external/rules_scala++scala_deps+io_bazel_rules_scala_scalatest_funspec_2_13_17/scalatest-funspec_2.13-3.2.19.jar!"
+          }
+        ],
+        "rootsCount": 1,
+        "tableId": {
+          "fqName": "com.intellij.platform.workspace.jps.entities.LibraryTableId$ProjectLibraryTableId",
+          "level": "project"
+        },
+        "typeId": {
+          "name": "java-imported"
+        }
+      },
+      {
+        "entitySource": {
+          "entitySourceFqName": "org.jetbrains.bazel.workspacemodel.entities.BazelProjectEntitySource",
+          "virtualFileUrl": null
+        },
+        "excludedRoots": [],
+        "excludedRootsCount": 0,
+        "fqName": "com.intellij.platform.workspace.jps.entities.LibraryEntity",
+        "name": "scalatest-funsuite_2-13-3-2-19-jar",
+        "roots": [
+          {
+            "inclusionOptions": "ROOT_ITSELF",
+            "type": {
+              "name": "CLASSES"
+            },
+            "url": "jar://external/rules_scala++scala_deps+io_bazel_rules_scala_scalatest_funsuite_2_13_17/scalatest-funsuite_2.13-3.2.19.jar!"
+          }
+        ],
+        "rootsCount": 1,
+        "tableId": {
+          "fqName": "com.intellij.platform.workspace.jps.entities.LibraryTableId$ProjectLibraryTableId",
+          "level": "project"
+        },
+        "typeId": {
+          "name": "java-imported"
+        }
+      },
+      {
+        "entitySource": {
+          "entitySourceFqName": "org.jetbrains.bazel.workspacemodel.entities.BazelProjectEntitySource",
+          "virtualFileUrl": null
+        },
+        "excludedRoots": [],
+        "excludedRootsCount": 0,
+        "fqName": "com.intellij.platform.workspace.jps.entities.LibraryEntity",
+        "name": "scalatest-matchers-core_2-13-3-2-19-jar",
+        "roots": [
+          {
+            "inclusionOptions": "ROOT_ITSELF",
+            "type": {
+              "name": "CLASSES"
+            },
+            "url": "jar://external/rules_scala++scala_deps+io_bazel_rules_scala_scalatest_matchers_core_2_13_17/scalatest-matchers-core_2.13-3.2.19.jar!"
+          }
+        ],
+        "rootsCount": 1,
+        "tableId": {
+          "fqName": "com.intellij.platform.workspace.jps.entities.LibraryTableId$ProjectLibraryTableId",
+          "level": "project"
+        },
+        "typeId": {
+          "name": "java-imported"
+        }
+      },
+      {
+        "entitySource": {
+          "entitySourceFqName": "org.jetbrains.bazel.workspacemodel.entities.BazelProjectEntitySource",
+          "virtualFileUrl": null
+        },
+        "excludedRoots": [],
+        "excludedRootsCount": 0,
+        "fqName": "com.intellij.platform.workspace.jps.entities.LibraryEntity",
+        "name": "scalatest-mustmatchers_2-13-3-2-19-jar",
+        "roots": [
+          {
+            "inclusionOptions": "ROOT_ITSELF",
+            "type": {
+              "name": "CLASSES"
+            },
+            "url": "jar://external/rules_scala++scala_deps+io_bazel_rules_scala_scalatest_mustmatchers_2_13_17/scalatest-mustmatchers_2.13-3.2.19.jar!"
+          }
+        ],
+        "rootsCount": 1,
+        "tableId": {
+          "fqName": "com.intellij.platform.workspace.jps.entities.LibraryTableId$ProjectLibraryTableId",
+          "level": "project"
+        },
+        "typeId": {
+          "name": "java-imported"
+        }
+      },
+      {
+        "entitySource": {
+          "entitySourceFqName": "org.jetbrains.bazel.workspacemodel.entities.BazelProjectEntitySource",
+          "virtualFileUrl": null
+        },
+        "excludedRoots": [],
+        "excludedRootsCount": 0,
+        "fqName": "com.intellij.platform.workspace.jps.entities.LibraryEntity",
+        "name": "scalatest-propspec_2-13-3-2-19-jar",
+        "roots": [
+          {
+            "inclusionOptions": "ROOT_ITSELF",
+            "type": {
+              "name": "CLASSES"
+            },
+            "url": "jar://external/rules_scala++scala_deps+io_bazel_rules_scala_scalatest_propspec_2_13_17/scalatest-propspec_2.13-3.2.19.jar!"
+          }
+        ],
+        "rootsCount": 1,
+        "tableId": {
+          "fqName": "com.intellij.platform.workspace.jps.entities.LibraryTableId$ProjectLibraryTableId",
+          "level": "project"
+        },
+        "typeId": {
+          "name": "java-imported"
+        }
+      },
+      {
+        "entitySource": {
+          "entitySourceFqName": "org.jetbrains.bazel.workspacemodel.entities.BazelProjectEntitySource",
+          "virtualFileUrl": null
+        },
+        "excludedRoots": [],
+        "excludedRootsCount": 0,
+        "fqName": "com.intellij.platform.workspace.jps.entities.LibraryEntity",
+        "name": "scalatest-refspec_2-13-3-2-19-jar",
+        "roots": [
+          {
+            "inclusionOptions": "ROOT_ITSELF",
+            "type": {
+              "name": "CLASSES"
+            },
+            "url": "jar://external/rules_scala++scala_deps+io_bazel_rules_scala_scalatest_refspec_2_13_17/scalatest-refspec_2.13-3.2.19.jar!"
+          }
+        ],
+        "rootsCount": 1,
+        "tableId": {
+          "fqName": "com.intellij.platform.workspace.jps.entities.LibraryTableId$ProjectLibraryTableId",
+          "level": "project"
+        },
+        "typeId": {
+          "name": "java-imported"
+        }
+      },
+      {
+        "entitySource": {
+          "entitySourceFqName": "org.jetbrains.bazel.workspacemodel.entities.BazelProjectEntitySource",
+          "virtualFileUrl": null
+        },
+        "excludedRoots": [],
+        "excludedRootsCount": 0,
+        "fqName": "com.intellij.platform.workspace.jps.entities.LibraryEntity",
+        "name": "scalatest-shouldmatchers_2-13-3-2-19-jar",
+        "roots": [
+          {
+            "inclusionOptions": "ROOT_ITSELF",
+            "type": {
+              "name": "CLASSES"
+            },
+            "url": "jar://external/rules_scala++scala_deps+io_bazel_rules_scala_scalatest_shouldmatchers_2_13_17/scalatest-shouldmatchers_2.13-3.2.19.jar!"
+          }
+        ],
+        "rootsCount": 1,
+        "tableId": {
+          "fqName": "com.intellij.platform.workspace.jps.entities.LibraryTableId$ProjectLibraryTableId",
+          "level": "project"
+        },
+        "typeId": {
+          "name": "java-imported"
+        }
+      },
+      {
+        "entitySource": {
+          "entitySourceFqName": "org.jetbrains.bazel.workspacemodel.entities.BazelProjectEntitySource",
+          "virtualFileUrl": null
+        },
+        "excludedRoots": [],
+        "excludedRootsCount": 0,
+        "fqName": "com.intellij.platform.workspace.jps.entities.LibraryEntity",
+        "name": "scalatest-wordspec_2-13-3-2-19-jar",
+        "roots": [
+          {
+            "inclusionOptions": "ROOT_ITSELF",
+            "type": {
+              "name": "CLASSES"
+            },
+            "url": "jar://external/rules_scala++scala_deps+io_bazel_rules_scala_scalatest_wordspec_2_13_17/scalatest-wordspec_2.13-3.2.19.jar!"
+          }
+        ],
+        "rootsCount": 1,
+        "tableId": {
+          "fqName": "com.intellij.platform.workspace.jps.entities.LibraryTableId$ProjectLibraryTableId",
+          "level": "project"
+        },
+        "typeId": {
+          "name": "java-imported"
+        }
+      },
+      {
+        "entitySource": {
+          "entitySourceFqName": "org.jetbrains.bazel.workspacemodel.entities.BazelProjectEntitySource",
+          "virtualFileUrl": null
+        },
+        "excludedRoots": [],
+        "excludedRootsCount": 0,
+        "fqName": "com.intellij.platform.workspace.jps.entities.LibraryEntity",
+        "name": "scalatest_2-13-3-2-19-jar",
+        "roots": [
+          {
+            "inclusionOptions": "ROOT_ITSELF",
+            "type": {
+              "name": "CLASSES"
+            },
+            "url": "jar://external/rules_scala++scala_deps+io_bazel_rules_scala_scalatest_2_13_17/scalatest_2.13-3.2.19.jar!"
+          }
+        ],
+        "rootsCount": 1,
+        "tableId": {
+          "fqName": "com.intellij.platform.workspace.jps.entities.LibraryTableId$ProjectLibraryTableId",
+          "level": "project"
+        },
+        "typeId": {
+          "name": "java-imported"
+        }
+      },
+      {
+        "entitySource": {
+          "entitySourceFqName": "org.jetbrains.bazel.workspacemodel.entities.BazelProjectEntitySource",
+          "virtualFileUrl": null
+        },
+        "excludedRoots": [],
+        "excludedRootsCount": 0,
+        "fqName": "com.intellij.platform.workspace.jps.entities.LibraryEntity",
+        "name": "test_reporter-jar",
+        "roots": [
+          {
+            "inclusionOptions": "ROOT_ITSELF",
+            "type": {
+              "name": "CLASSES"
+            },
+            "url": "jar://bazel-out/darwin_arm64-fastbuild/bin/external/rules_scala+/scala/support/test_reporter.jar!"
+          }
+        ],
+        "rootsCount": 1,
+        "tableId": {
+          "fqName": "com.intellij.platform.workspace.jps.entities.LibraryTableId$ProjectLibraryTableId",
+          "level": "project"
+        },
+        "typeId": {
+          "name": "java-imported"
+        }
+      }
+    ],
+    "rootEntitiesCount": 24,
+    "rootEntityName": "LibraryEntity"
+  }
+]

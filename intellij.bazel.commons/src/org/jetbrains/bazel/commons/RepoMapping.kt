@@ -23,4 +23,4 @@ data object RepoMappingDisabled : RepoMapping
 data class LocalRepositoryMapping(val localRepositories: Map<String, Path>)
 
 @ApiStatus.Internal
-fun RepoMapping.getLocalRepositories() = LocalRepositoryMapping((this as? BzlmodRepoMapping)?.canonicalRepoNameToLocalPath ?: mapOf())
+fun RepoMapping.getLocalRepositories() = LocalRepositoryMapping((this as? BzlmodRepoMapping)?.canonicalRepoNameToLocalPath ?: emptyMap())

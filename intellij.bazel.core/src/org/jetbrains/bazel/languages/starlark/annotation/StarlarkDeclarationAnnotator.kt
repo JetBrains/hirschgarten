@@ -1,19 +1,23 @@
 package org.jetbrains.bazel.languages.starlark.annotation
 
+import com.intellij.codeInsight.daemon.SyntheticPsiFileSupport
 import com.intellij.lang.annotation.AnnotationHolder
 import com.intellij.lang.annotation.HighlightSeverity
 import com.intellij.openapi.editor.markup.TextAttributes
+import com.intellij.openapi.project.DumbService
 import com.intellij.psi.PsiElement
 import com.intellij.psi.search.GlobalSearchScope
+import com.intellij.psi.search.LocalSearchScope
 import com.intellij.psi.search.searches.ReferencesSearch
 import com.intellij.psi.util.elementType
 import com.intellij.ui.JBColor
 import org.jetbrains.bazel.languages.starlark.StarlarkBundle
 import org.jetbrains.bazel.languages.starlark.elements.StarlarkTokenTypes
+import org.jetbrains.bazel.languages.starlark.index.StarlarkLoadsIndex
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkNamedElement
-import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkParenthesizedExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkTargetExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkTupleExpression
+import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkParenthesizedExpression
 import org.jetbrains.bazel.languages.starlark.psi.functions.StarlarkFunctionDeclaration
 import org.jetbrains.bazel.languages.starlark.psi.functions.StarlarkKeywordVariadicParameter
 import org.jetbrains.bazel.languages.starlark.psi.functions.StarlarkParameter
@@ -51,20 +55,35 @@ internal class StarlarkDeclarationAnnotator : StarlarkAnnotator() {
     parent !is StarlarkKeywordVariadicParameter
 
   private fun PsiElement.isUnreferenced(): Boolean {
-    val scope = when {
-      isTopLevelTarget() || isTopLevelFunction() -> this.useScope
-      ((this as? StarlarkNamedElement)?.name ?: "").startsWith("_") -> return false
-      else -> GlobalSearchScope.fileScope(this.containingFile)
-    }
-    val references = ReferencesSearch.search(this, scope)
+    if (shouldSkipUnreferencedCheck()) return false
+    val scope = useScope
+    if (scope is GlobalSearchScope && this is StarlarkNamedElement && StarlarkLoadsIndex.isLoaded(this, scope)) return false
+    // if not accessed externally, check for local usages
+    val limitedScope = scope.intersectWith(LocalSearchScope(this.containingFile))
+    val references = ReferencesSearch.search(this, limitedScope)
     if (this !is StarlarkTargetExpression) return references.none()
     // Variable is unreferenced if only reassignments refer to it.
     return references.none { it.element !is StarlarkTargetExpression }
   }
 
-  private fun PsiElement.isTopLevelTarget() = this is StarlarkTargetExpression && isTopLevel()
+  private fun PsiElement.shouldSkipUnreferencedCheck(): Boolean {
+    if (!isStarlarkTopLevel() && isExplicitlyUnused()) return true
+    // it should be possible to always check local declarations usage
+    if (useScope !is GlobalSearchScope) return false
+    return DumbService.isDumb(project) || SyntheticPsiFileSupport.isOutsiderFile(containingFile.virtualFile)
+  }
 
-  private fun PsiElement.isTopLevelFunction() = this is StarlarkFunctionDeclaration && isTopLevel()
+  // In Starlark, _-prefixed names signal intentionally unused declarations (like Python's _ convention).
+  private fun PsiElement.isExplicitlyUnused() = when (this) {
+    is StarlarkNamedElement -> name?.startsWith("_") == true
+    else -> false
+  }
+
+  private fun PsiElement.isStarlarkTopLevel() = when (this) {
+    is StarlarkTargetExpression -> isTopLevel()
+    is StarlarkFunctionDeclaration -> isTopLevel()
+    else -> false
+  }
 
   private fun StarlarkTargetExpression.isInsideAssignStatement(): Boolean {
     var current: PsiElement = this

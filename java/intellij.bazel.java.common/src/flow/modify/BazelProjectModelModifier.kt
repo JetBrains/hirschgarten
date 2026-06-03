@@ -99,10 +99,10 @@ internal class BazelProjectModelModifier(private val project: Project) : JavaPro
 
   private suspend fun tryAddingModuleDependencyToBuildFile(from: Module, labelToInsert: Label?): Boolean {
     if (labelToInsert !is ResolvedLabel) return false
-    val targetRuleLabel = from.findModuleEntity()?.let { it.bazelModuleExtension?.label?.toLabel()  }
-                            ?.assumeResolved() ?: return false
+    val targetRuleLabel: ResolvedLabel = from.findModuleEntity()?.bazelModuleExtension?.label?.toLabel()?.assumeResolved()
+                                         ?: return false
     val targetBuildFile = readAction { findBuildFile(from.project, targetRuleLabel) } ?: return false
-    val ruleTarget = readAction { targetBuildFile.findRuleTarget(targetRuleLabel.targetName) } ?: return false
+    val ruleTarget = readAction { targetBuildFile.findTargetRule(targetRuleLabel.targetName) } ?: return false
     val argList = readAction { ruleTarget.getArgumentList() } ?: return false
     val depsArg = readAction { argList.getDepsArgument() }
     var updatedDepsArg = depsArg
@@ -116,7 +116,7 @@ internal class BazelProjectModelModifier(private val project: Project) : JavaPro
       // After creating the deps argument, we need to re-fetch it
       updatedDepsArg = readAction { argList.getDepsArgument() }
     }
-    val depsList =
+    val depsList: StarlarkListLiteralExpression? =
       readAction {
         updatedDepsArg?.children?.filterIsInstance<StarlarkListLiteralExpression>()?.firstOrNull()
       }

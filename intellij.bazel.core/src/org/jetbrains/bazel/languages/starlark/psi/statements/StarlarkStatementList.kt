@@ -1,11 +1,13 @@
 package org.jetbrains.bazel.languages.starlark.psi.statements
 
 import com.intellij.lang.ASTNode
+import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkBaseElement
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkElementVisitor
 import org.jetbrains.bazel.languages.starlark.psi.functions.StarlarkFunctionDeclaration
 
-internal class StarlarkStatementList(node: ASTNode) : StarlarkBaseElement(node) {
+@ApiStatus.Internal
+class StarlarkStatementList(node: ASTNode) : StarlarkBaseElement(node) {
   override fun acceptVisitor(visitor: StarlarkElementVisitor) = visitor.visitStatementListImpl(this)
 
   fun getAssignments(): List<StarlarkAssignmentStatement> = findChildrenByClass(StarlarkAssignmentStatement::class.java).toList()

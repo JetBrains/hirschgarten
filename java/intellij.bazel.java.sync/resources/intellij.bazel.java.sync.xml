@@ -16,7 +16,7 @@
   <extensionPoints>
     <extensionPoint
       dynamic="true"
-      interface="org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.KotlinFacetEntityUpdater"
+      interface="org.jetbrains.bazel.workspace.importer.KotlinFacetEntityUpdater"
       qualifiedName="org.jetbrains.bazel.kotlinFacetEntityUpdater"
     />
   </extensionPoints>
@@ -29,7 +29,7 @@
   <extensions defaultExtensionNs="com.intellij">
     <moduleType
       id="BAZEL_DUMMY_MODULE_TYPE"
-      implementationClass="org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.BazelDummyModuleType"
+      implementationClass="org.jetbrains.bazel.workspace.importer.BazelDummyModuleType"
     />
   </extensions>
 </idea-plugin>

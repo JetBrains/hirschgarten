@@ -1,6 +1,7 @@
 package org.jetbrains.bazel.ui.gutters
 
 import com.intellij.execution.lineMarker.RunLineMarkerContributor
+import com.intellij.icons.AllIcons
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.DefaultActionGroup
 import com.intellij.openapi.project.Project
@@ -11,9 +12,10 @@ import org.jetbrains.bazel.config.isBazelProject
 import org.jetbrains.bazel.target.targetUtils
 import org.jetbrains.bazel.ui.widgets.tool.window.utils.fillWithEligibleActions
 import org.jetbrains.bsp.protocol.BuildTarget
+import javax.swing.Icon
 
-private class BazelRunLineMarkerInfo(text: String, actions: List<AnAction>) :
-  RunLineMarkerContributor.Info(null, actions.toTypedArray(), { text }) {
+private class BazelRunLineMarkerInfo(text: String, icon: Icon?, actions: List<AnAction>) :
+  RunLineMarkerContributor.Info(icon, actions.toTypedArray(), { text }) {
   override fun shouldReplace(other: RunLineMarkerContributor.Info): Boolean = true
 }
 
@@ -26,11 +28,16 @@ abstract class BazelRunLineMarkerContributor : RunLineMarkerContributor() {
       null
     }
 
-  override fun getSlowInfo(element: PsiElement): Info? = getInfo(element)
+  override fun getSlowInfo(element: PsiElement): Info? = null
 
   abstract fun PsiElement.shouldAddMarker(): Boolean
 
   open fun getSingleTestFilter(element: PsiElement): String? = null
+
+  protected val executeRunLineMarkerIcon: Icon // execute icon, provided here in order not to depend on AllIcons in other modules
+    get() = AllIcons.Actions.Execute
+
+  open fun getRunLineMarkerIcon(element: PsiElement): Icon? = null
 
   /**
    * Allows adding additional test runner arguments.
@@ -71,6 +78,7 @@ abstract class BazelRunLineMarkerContributor : RunLineMarkerContributor() {
       ?.let {
         BazelRunLineMarkerInfo(
           text = "Run",
+          icon = getRunLineMarkerIcon(psiElement),
           actions = it,
         )
       }

@@ -1,6 +1,6 @@
 <idea-plugin>
+  <!-- region Generated dependencies - run `Generate Product Layouts` to regenerate -->
   <dependencies>
-    <!-- region Generated dependencies - run `Generate Product Layouts` to regenerate -->
     <plugin id="JUnit"/>
     <plugin id="com.jetbrains.performancePlugin"/>
     <module name="intellij.bazel.commons"/>
@@ -17,8 +17,9 @@
     <module name="intellij.java.impl"/>
     <module name="intellij.java.psi"/>
     <module name="intellij.java.ui"/>
-    <!-- endregion -->
+    <module name="intellij.platform.smRunner"/>
   </dependencies>
+  <!-- endregion -->
 
   <extensions defaultExtensionNs="com.jetbrains">
     <performancePlugin.commandProvider implementation="org.jetbrains.bazel.flow.modify.ideStarter.BazelProjectModelModifierCommandProvider"/>

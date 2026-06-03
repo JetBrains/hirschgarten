@@ -34,7 +34,7 @@ private val excludedRoots: CachedValue<Optional<Set<VirtualFile>>> =
     val bazelProjectDirectories =
       storage.bazelProjectDirectoriesEntity()
         ?: return@CachedValue Optional.empty()
-    Optional.of(bazelProjectDirectories.excludedRoots.toVirtualFileSet())
+    Optional.of(bazelProjectDirectories.excludedRoots.map { it.url }.toVirtualFileSet())
   }
 
 private val includedRoots: CachedValue<Optional<Set<VirtualFile>>> =
@@ -42,7 +42,7 @@ private val includedRoots: CachedValue<Optional<Set<VirtualFile>>> =
     val bazelProjectDirectories =
       storage.bazelProjectDirectoriesEntity()
         ?: return@CachedValue Optional.empty()
-    Optional.of(bazelProjectDirectories.includedRoots.toVirtualFileSet())
+    Optional.of(bazelProjectDirectories.includedRoots.map { it.url }.toVirtualFileSet())
   }
 
 @ApiStatus.Internal

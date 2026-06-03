@@ -143,7 +143,11 @@ internal object LabelSerializer : TypeAdapter<Label?>() {
   override fun read(jsonReader: JsonReader): Label? = jsonReader.nextString().let { Label.parseOrNull(it) }
 
   override fun write(out: JsonWriter, value: Label?) {
-    out.value(value.toString())
+    if (value == null) {
+      out.nullValue()
+    } else {
+      out.value(value.toString())
+    }
   }
 }
 
@@ -151,6 +155,10 @@ internal object PathSerializer : TypeAdapter<Path?>() {
   override fun read(jsonReader: JsonReader): Path? = jsonReader.nextString()?.let { Path.of(it) }
 
   override fun write(out: JsonWriter, value: Path?) {
-    out.value(value.toString())
+    if (value == null) {
+      out.nullValue()
+    } else {
+      out.value(value.toString())
+    }
   }
 }

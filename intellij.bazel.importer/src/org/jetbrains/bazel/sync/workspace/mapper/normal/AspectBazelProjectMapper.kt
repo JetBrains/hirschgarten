@@ -10,6 +10,7 @@ import org.jetbrains.bazel.commons.LocalRepositoryMapping
 import org.jetbrains.bazel.commons.RepoMapping
 import org.jetbrains.bazel.commons.constants.Constants
 import org.jetbrains.bazel.commons.getLocalRepositories
+import org.jetbrains.bazel.info.BspTargetInfo
 import org.jetbrains.bazel.info.BspTargetInfo.TargetInfo
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.label.assumeResolved
@@ -20,13 +21,12 @@ import org.jetbrains.bazel.sync.workspace.BazelResolvedWorkspace
 import org.jetbrains.bazel.sync.workspace.graph.DependencyGraph
 import org.jetbrains.bazel.sync.workspace.languages.createLanguageProjectMappers
 import org.jetbrains.bazel.sync.workspace.mapper.BazelResolvedWorkspaceBuilder
-import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceSnapshot
 import org.jetbrains.bazel.sync.workspace.targetKind.TargetKindService
 import org.jetbrains.bsp.protocol.BazelServerFacade
 import org.jetbrains.bsp.protocol.BuildTargetData
 import org.jetbrains.bsp.protocol.BuildTargetTag
 import org.jetbrains.bsp.protocol.RawBuildTarget
-import org.jetbrains.bsp.protocol.SourceItem
+import java.nio.file.Path
 import kotlin.io.path.exists
 
 internal class AspectBazelProjectMapper(
@@ -118,12 +118,24 @@ internal class AspectBazelProjectMapper(
 
     val resources = bazelPathsResolver.resolvePaths(target.jvmTargetInfo.resourcesList, localRepositories)
 
+    fun resolveSourceSet(target: TargetInfo, filter: (BspTargetInfo.ArtifactLocation) -> Boolean): List<Path> {
+      return target.srcsList.filter(filter).mapNotNull { src: BspTargetInfo.ArtifactLocation ->
+        val path = bazelPathsResolver.resolve(src, localRepositories)
+        if (!path.exists()) {
+          logger.warn("target ${target.key.label}: $path does not exist.")
+          return@mapNotNull null
+        }
+        path
+      }.distinct()
+    }
+
     return RawBuildTarget(
       id = label,
       configurationId = target.key.configuration,
       dependencies = target.depsList.map { it.toDependencyLabel() },
       kind = targetKind,
-      sources = resolveSourceSet(target, repoMapping).toList(),
+      sources = resolveSourceSet(target) { it.isSource },
+      generatedSources = resolveSourceSet(target) { !it.isSource },
       resources = resources,
       baseDirectory = baseDirectory,
       data = buildData,
@@ -133,21 +145,6 @@ internal class AspectBazelProjectMapper(
                     localRepositories.localRepositories.containsKey(label.assumeResolved().repoName),
       isTestOnly = target.testonly,
     )
-  }
-
-  private fun resolveSourceSet(target: TargetInfo, repoMapping: RepoMapping): List<SourceItem> {
-    val localRepositories = repoMapping.getLocalRepositories()
-    return target.srcsList.mapNotNull { src ->
-      val path = bazelPathsResolver.resolve(src, localRepositories)
-      if (!path.exists()) {
-        logger.warn("target ${target.key.label}: $path does not exist.")
-        return@mapNotNull null
-      }
-      SourceItem(
-        path = path,
-        generated = !src.isSource,
-      )
-    }.distinctBy { it.path }
   }
 
   companion object {

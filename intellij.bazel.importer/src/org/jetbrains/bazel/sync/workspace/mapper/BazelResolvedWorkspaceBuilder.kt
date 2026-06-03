@@ -4,8 +4,8 @@ import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.sync.workspace.BazelResolvedWorkspace
 import org.jetbrains.bsp.protocol.BuildTarget
-import org.jetbrains.bsp.protocol.LibraryItem
 import org.jetbrains.bsp.protocol.RawBuildTarget
+import org.jetbrains.bsp.protocol.allSources
 import java.nio.file.Path
 
 @ApiStatus.Internal
@@ -24,9 +24,8 @@ object BazelResolvedWorkspaceBuilder {
     val resultMap = HashMap<Path, MutableList<RawBuildTarget>>()
     for (target in targets) {
       target as RawBuildTarget
-      for (source in target.sources) {
-        val path = source.path
-        resultMap.computeIfAbsent(path) { ArrayList() }.add(target)
+      for (source in target.allSources) {
+        resultMap.computeIfAbsent(source) { ArrayList() }.add(target)
       }
     }
     return resultMap

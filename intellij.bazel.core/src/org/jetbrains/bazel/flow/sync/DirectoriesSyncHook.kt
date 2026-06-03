@@ -13,13 +13,14 @@ import org.jetbrains.bazel.sync.withSubtask
 import org.jetbrains.bazel.workspacemodel.entities.BazelProjectDirectoriesEntity
 import org.jetbrains.bazel.workspacemodel.entities.BazelProjectDirectoriesEntityBuilder
 import org.jetbrains.bazel.workspacemodel.entities.BazelProjectEntitySource
+import org.jetbrains.bazel.workspacemodel.entities.NonIndexableVirtualFileUrl
 import org.jetbrains.bsp.protocol.WorkspaceDirectoriesResult
 import java.nio.file.Path
 
 private class DirectoriesSyncHook : ProjectSyncHook {
   override suspend fun onSync(environment: ProjectSyncHookEnvironment) {
     environment.withSubtask("Collect project directories") {
-      val directories = environment.server.workspaceDirectories()
+      val directories = environment.server.workspaceDirectories(environment.taskId)
       val workspaceContext = environment.server.workspaceContext
       val additionalExcludes = BazelSymlinkExcludeService.getInstance(environment.project).scanForBazelSymlinksToExclude(environment.project.rootDir.toNioPath())
       val indexAllFilesInIncludedRoots = workspaceContext.indexAllFilesInDirectories
@@ -40,12 +41,12 @@ private class DirectoriesSyncHook : ProjectSyncHook {
     val includedRoots = directories.includedDirectories.map { IdeaVFSUtil.toVirtualFileUrl(it.uri, virtualFileUrlManager) }
     val excludedRoots =
       directories.excludedDirectories.map { IdeaVFSUtil.toVirtualFileUrl(it.uri, virtualFileUrlManager) } +
-        additionalExcludes.map { it.toVirtualFileUrl(virtualFileUrlManager) }
+      additionalExcludes.map { it.toVirtualFileUrl(virtualFileUrlManager) }
 
     return BazelProjectDirectoriesEntity(
       projectRoot = project.rootDir.toVirtualFileUrl(virtualFileUrlManager),
-      includedRoots = includedRoots,
-      excludedRoots = excludedRoots,
+      includedRoots = includedRoots.map { NonIndexableVirtualFileUrl(it) },
+      excludedRoots = excludedRoots.map { NonIndexableVirtualFileUrl(it) },
       indexAllFilesInIncludedRoots = indexAllFilesInIncludedRoots,
       indexAdditionalFiles = emptyList(), // Set inside IndexAdditionalFilesSyncHook
       entitySource = BazelProjectEntitySource,

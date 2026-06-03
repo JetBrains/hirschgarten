@@ -106,4 +106,23 @@ internal object StarlarkTokenSets {
       StarlarkTokenTypes.TILDE,
       StarlarkTokenTypes.NOT_KEYWORD,
     )
+
+  val BINARY_OPERATIONS =
+    TokenSet.orSet(
+      TokenSet.create(
+        StarlarkTokenTypes.AND_KEYWORD,
+        StarlarkTokenTypes.AND,
+        StarlarkTokenTypes.OR_KEYWORD,
+        StarlarkTokenTypes.OR,
+        StarlarkTokenTypes.XOR,
+        StarlarkTokenTypes.EXP,
+        StarlarkTokenTypes.NOT_KEYWORD,
+        StarlarkTokenTypes.IN_KEYWORD,
+        StarlarkTokenTypes.IS_KEYWORD,
+      ),
+      ADDITIVE_OPERATIONS,
+      COMPARISON_OPERATIONS,
+      MULTIPLICATIVE_OPERATIONS,
+      SHIFT_OPERATIONS,
+    )
 }

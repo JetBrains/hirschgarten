@@ -1,20 +1,34 @@
+// Copyright 2014 The Bazel Authors. All rights reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//    http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 package org.jetbrains.bazel.languages.starlark.globbing
 
-import com.google.common.base.Splitter
 import com.google.common.cache.Cache
 import com.google.common.cache.CacheBuilder
 import com.google.common.cache.CacheLoader
-import com.google.common.collect.Lists
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.progress.checkCanceled
 import com.intellij.openapi.progress.runBlockingCancellable
 import com.intellij.openapi.project.ProjectLocator
+import com.intellij.openapi.vfs.VfsUtil
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.isFile
 import com.intellij.platform.ide.progress.ModalTaskOwner
 import com.intellij.platform.ide.progress.TaskCancellation
 import com.intellij.platform.ide.progress.runWithModalProgressBlocking
 import com.intellij.util.concurrency.annotations.RequiresBlockingContext
+import com.intellij.util.containers.tail
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
@@ -29,261 +43,112 @@ import java.util.regex.PatternSyntaxException
  * Implementation of a subset of UNIX-style file globbing, expanding "*" and "?" as wildcards, but
  * not [a-z] ranges.
  *
- *
  * `**` gets special treatment in include patterns. If it is used as a complete path
  * segment it matches the filenames in subdirectories recursively.
  *
  * Largely copied from old Bazel plugin's UnixGlob.java
  */
 @ApiStatus.Internal
-object StarlarkGlob {
-  /**
-   * Checks that each pattern is valid, splits it into segments and checks that each segment
-   * contains only valid wildcards.
-   *
-   * @return list of segment arrays
-   */
-  private fun checkAndSplitPatterns(patterns: Collection<String>): List<Array<String>> {
-    val list: MutableList<Array<String>> = Lists.newArrayListWithCapacity(patterns.size)
-    for (pattern in patterns) {
-      val error = GlobPatternValidator.validate(pattern)
-      require(error == null) { error!! }
+class StarlarkGlob private constructor(
+  private val base: VirtualFile,
+  private val patterns: List<List<String>>,
+  private val excludes: List<List<String>>,
+  private val excludeDirectories: Boolean,
+  private val pathFilter: Predicate<VirtualFile>,
+) {
 
-      val segments: Iterable<String> = Splitter.on('/').split(pattern)
-      list.add(segments.toList().toTypedArray())
-    }
-    return list
-  }
-
-  /** Calls [matches(pattern, str, null)][.matches]  */
-  fun matches(pattern: String, str: String): Boolean =
-    try {
-      matches(pattern, str, null)
-    }
-    catch (_: PatternSyntaxException) {
-      false
-    }
+  private val cache: Cache<String, Pattern> =
+    CacheBuilder
+      .newBuilder()
+      .build(
+        object : CacheLoader<String, Pattern>() {
+          override fun load(wildcard: String): Pattern = makePatternFromWildcard(wildcard)
+        },
+      )
 
   /**
-   * Returns whether `str` matches the glob pattern `pattern`. This method may use the
-   * `patternCache` to speed up the matching process.
-   *
-   * @param pattern a glob pattern
-   * @param str the string to match
-   * @param patternCache a cache from patterns to compiled Pattern objects, or `null` to skip
-   * caching
+   * Checks if given file matches the glob pattern.
    */
-  private fun matches(
-    pattern: String,
-    str: String,
-    patternCache: Cache<String, Pattern>?,
-  ): Boolean {
-    if (pattern.isEmpty() || str.isEmpty()) {
-      return false
+  fun match(file: VirtualFile): Boolean {
+    if (file.isDirectory && excludeDirectories) return false
+    val relativePath = VfsUtil.getRelativePath(file, base)
+                       ?: return false // relative path is null when file is not under base
+
+    var subDir = base
+    for (segment in relativePath.split("/").dropLast(1)) {
+      subDir = subDir.findChild(segment) ?: return false
+      if (!pathFilter.test(subDir))
+        return false
     }
 
-    // Common case: **
-    if (pattern == "**") {
-      return true
-    }
-
-    // Common case: *
-    if (pattern == "*") {
-      return true
-    }
-
-    // If a filename starts with '.', this char must be matched explicitly.
-    if (str[0] == '.' && pattern[0] != '.') {
-      return false
-    }
-
-    // Common case: *.xyz
-    if (pattern[0] == '*' && pattern.lastIndexOf('*') == 0) {
-      return str.endsWith(pattern.substring(1))
-    }
-    // Common case: xyz*!!
-    val lastIndex = pattern.length - 1
-    // The first clause of this if statement is unnecessary, but is an
-    // optimization--charAt runs faster than indexOf.!!!!
-    if (pattern[lastIndex] == '*' && pattern.indexOf('*') == lastIndex) {
-      return str.startsWith(pattern.substring(0, lastIndex))
-    }
-
-    var regex = patternCache?.getIfPresent(pattern)
-    if (regex == null) {
-      regex = makePatternFromWildcard(pattern)
-      patternCache?.put(pattern, regex)
-    }
-    return regex.matcher(str).matches()
+    return match(relativePath)
   }
 
   /**
-   * Returns a regular expression implementing a matcher for "pattern", in which "*" and "?" are
-   * wildcards.
-   *
-   *
-   * e.g. "foo*bar?.java" -> "foo.*bar.\\.java"
+   * Checks if the given relative path matches the glob pattern.
    */
-  private fun makePatternFromWildcard(pattern: String): Pattern {
-    val regexp = StringBuilder()
-    var i = 0
-    val len = pattern.length
-    while (i < len) {
-      val c = pattern[i]
-      when (c) {
-        '*' -> {
-          var toIncrement = 0
-          if (len > i + 1 && pattern[i + 1] == '*') {
-            // The pattern '**' is interpreted to match 0 or more directory separators, not 1 or
-            // more. We skip the next * and then find a trailing/leading '/' and get rid of it.
-            toIncrement = 1
-            if (len > i + 2 && pattern[i + 2] == '/') {
-              // We have '**/' -- skip the '/'.
-              toIncrement = 2
-            }
-            else if (len == i + 2 && i > 0 && pattern[i - 1] == '/') {
-              // We have '/**' -- remove the '/'.
-              regexp.delete(regexp.length - 1, regexp.length)
-            }
-          }
-          regexp.append(".*")
-          i += toIncrement
-        }
-
-        '?' -> regexp.append('.')
-        '^', '$', '|', '+', '{', '}', '[', ']', '\\', '.' -> {
-          regexp.append('\\')
-          regexp.append(c)
-        }
-
-        else -> regexp.append(c)
-      }
-      i++
+  fun match(relativePath: String): Boolean {
+    val included = patterns.any { include -> matchGlobPattern(include, relativePath) }
+    if (included) {
+      val excluded = excludes.any { exclude -> matchGlobPattern(exclude, relativePath) }
+      return !excluded
     }
-    return Pattern.compile(regexp.toString())
+    return false
   }
 
-  fun forPath(path: VirtualFile): Builder = Builder(path)
-
-  /** Builder class for UnixGlob.  */
-  class Builder(private val base: VirtualFile) {
-    private val patterns: MutableList<String> = ArrayList()
-    private val excludes: MutableList<String> = ArrayList()
-    private var excludeDirectories = false
-    private var pathFilter: Predicate<VirtualFile> = Predicate { true }
-
-    /**
-     * Adds a pattern to include to the glob builder.
-     *
-     *
-     * For a description of the syntax of the patterns, see [StarlarkGlob].
-     */
-    @Suppress("unused")
-    fun addPattern(pattern: String): Builder {
-      this.patterns.add(pattern)
-      return this
+  /**
+   * Executes the glob.
+   */
+  @RequiresBlockingContext
+  fun execute(): List<VirtualFile> {
+    if (!base.exists() || patterns.isEmpty()) {
+      return emptyList()
     }
 
-    /**
-     * Adds a pattern to include to the glob builder.
-     *
-     *
-     * For a description of the syntax of the patterns, see [StarlarkGlob].
-     */
-    fun addPatterns(patterns: Collection<String>): Builder {
-      this.patterns.addAll(patterns)
-      return this
-    }
-
-    /**
-     * Adds patterns to exclude from the results to the glob builder.
-     *
-     *
-     * For a description of the syntax of the patterns, see [StarlarkGlob].
-     */
-    fun addExcludes(excludes: Collection<String>): Builder {
-      this.excludes.addAll(excludes)
-      return this
-    }
-
-    /** If set to true, directories are not returned in the glob result.  */
-    fun setExcludeDirectories(excludeDirectories: Boolean): Builder {
-      this.excludeDirectories = excludeDirectories
-      return this
-    }
-
-    /**
-     * If set, the given predicate is called for every directory encountered. If it returns false,
-     * the corresponding item is not returned in the output and directories are not traversed
-     * either.
-     *
-     * The predicate must be pure and fast, and it must not access PSI, indexes or other APIs
-     * that require a read action. It should only use VFS-level information available from
-     * {@link com.intellij.openapi.vfs.VirtualFile}.
-     */
-    fun setDirectoryFilter(pathFilter: Predicate<VirtualFile>): Builder {
-      this.pathFilter = pathFilter
-      return this
-    }
-
-    /**
-     * Executes the glob.
-     */
-    @RequiresBlockingContext
-    fun glob(): List<VirtualFile> {
-      if (!base.exists() || patterns.isEmpty()) {
-        return emptyList()
-      }
-
-      // If called on EDT, use modal progress to avoid freezing the UI completely.
-      if (ApplicationManager.getApplication().isDispatchThread) {
-        val project = ProjectLocator.getInstance().guessProjectForFile(base)
-        val owner = project?.let { ModalTaskOwner.project(it) } ?: ModalTaskOwner.guess()
-        return runWithModalProgressBlocking(
-          owner,
-          StarlarkBundle.message("progress.globbing"),
-          TaskCancellation.cancellable(),
-        ) {
-          globSuspend()
-        }
-      }
-
-      return runBlockingCancellable {
-        globSuspend()
+    // If called on EDT, use modal progress to avoid freezing the UI completely.
+    if (ApplicationManager.getApplication().isDispatchThread) {
+      val project = ProjectLocator.getInstance().guessProjectForFile(base)
+      val owner = project?.let { ModalTaskOwner.project(it) } ?: ModalTaskOwner.guess()
+      return runWithModalProgressBlocking(
+        owner,
+        StarlarkBundle.message("progress.globbing"),
+        TaskCancellation.cancellable(),
+      ) {
+        executeSuspend()
       }
     }
 
-    suspend fun globSuspend(): List<VirtualFile> {
-      if (!base.exists() || patterns.isEmpty()) {
-        return emptyList()
-      }
-      checkCanceled()
-
-      val included = GlobVisitor(excludeDirectories, pathFilter)
-        .globAsync(base, patterns)
-      val excluded = GlobVisitor(excludeDirectories, pathFilter)
-        .globAsync(base, excludes)
-
-      return (included - excluded).sortedBy { it.path }
+    return runBlockingCancellable {
+      executeSuspend()
     }
+  }
+
+  suspend fun executeSuspend(): List<VirtualFile> {
+    if (!base.exists() || patterns.isEmpty()) {
+      return emptyList()
+    }
+    checkCanceled()
+
+    val included = GlobVisitor(excludeDirectories, pathFilter)
+      .globAsync(base, patterns)
+    if (included.isEmpty()) {
+      return emptyList()
+    }
+
+    val excluded = GlobVisitor(excludeDirectories, pathFilter)
+      .globAsync(base, excludes)
+
+    return (included - excluded).sortedBy { it.path }
   }
 
   /**
    * GlobVisitor executes a glob using parallelism, which is useful when the glob() requires many
    * readdir() calls on high latency filesystems.
    */
-  private class GlobVisitor(
+  private inner class GlobVisitor(
     private val excludeDirectories: Boolean,
     private val dirPred: Predicate<VirtualFile>,
   ) {
-    private val cache: Cache<String, Pattern> =
-      CacheBuilder
-        .newBuilder()
-        .build(
-          object : CacheLoader<String, Pattern>() {
-            override fun load(wildcard: String): Pattern = makePatternFromWildcard(wildcard)
-          },
-        )
     private val results: MutableSet<VirtualFile> = ConcurrentHashMap.newKeySet()
 
     /**
@@ -303,7 +168,7 @@ object StarlarkGlob {
      */
     suspend fun globAsync(
       base: VirtualFile,
-      patterns: Collection<String>,
+      patterns: Collection<List<String>>,
     ): Set<VirtualFile> {
       val baseIsDirectory = base.isDirectory
 
@@ -312,7 +177,7 @@ object StarlarkGlob {
       // to keep track of which patterns shared sub-patterns and which did not
       // (for example consider the glob [*/*.java, sub/*.java, */*.txt]).
       return coroutineScope {
-        checkAndSplitPatterns(patterns).forEach { splitPattern ->
+        patterns.forEach { splitPattern ->
           launch {
             reallyGlob(
               base,
@@ -337,7 +202,7 @@ object StarlarkGlob {
     suspend fun CoroutineScope.reallyGlob(
       base: VirtualFile,
       baseIsDirectory: Boolean,
-      patternParts: Array<String>,
+      patternParts: List<String>,
       idx: Int,
     ) {
       checkCanceled()
@@ -434,5 +299,261 @@ object StarlarkGlob {
     }
 
     fun getChildren(file: VirtualFile?): Array<VirtualFile>? = file?.children
+  }
+
+  private fun matchGlobPattern(
+    patternParts: List<String>,
+    path: String,
+  ): Boolean {
+    val pathPart = path.substringBefore("/")
+    val pathTail = path.substringAfter("/", "")
+    val isDirectory = pathTail.isNotEmpty()
+
+    if (patternParts.isEmpty()) { // Base case.
+      if (!(excludeDirectories && isDirectory)) {
+        return true
+      }
+      return false
+    }
+
+    //if (!isDirectory) {
+    //  // Nothing to find here.
+    //  return false
+    //}
+
+    val pattern = patternParts.first()
+
+    // ** is special: it can match nothing at all.
+    // For example, x/** matches x, **/y matches y, and x/**/y matches x/y.
+    if ("**" == pattern) {
+      if (matchGlobPattern(patternParts.tail(), path))
+        return true
+    }
+
+    if (!pattern.contains("*") && !pattern.contains("?")) {
+      if (pathPart != pattern)
+        return false
+
+      matchGlobPattern(patternParts.tail(), pathTail)
+    }
+
+    if ("**" == pattern && isDirectory) {
+      // Recurse without shifting the pattern.
+      if (matchGlobPattern(patternParts, pathTail))
+        return true
+    }
+
+    if (matches(pattern, pathPart, cache)) {
+      // Recurse and consume one segment of the pattern.
+      if (isDirectory) {
+        if (matchGlobPattern(patternParts.tail(), pathTail))
+          return true
+      }
+      else {
+        if (patternParts.size == 1)
+          return true
+      }
+    }
+
+    return false
+  }
+
+
+  /** Builder class for UnixGlob.  */
+  class Builder(private val base: VirtualFile) {
+    private val patterns: MutableList<String> = ArrayList()
+    private val excludes: MutableList<String> = ArrayList()
+    private var excludeDirectories = true
+    private var pathFilter: Predicate<VirtualFile> = Predicate { true }
+
+    /**
+     * Adds a pattern to include to the glob builder.
+     *
+     *
+     * For a description of the syntax of the patterns, see [StarlarkGlob].
+     */
+    @Suppress("unused")
+    fun addPattern(pattern: String): Builder {
+      this.patterns.add(pattern)
+      return this
+    }
+
+    /**
+     * Adds a pattern to include to the glob builder.
+     *
+     *
+     * For a description of the syntax of the patterns, see [StarlarkGlob].
+     */
+    fun addPatterns(patterns: Collection<String>): Builder {
+      this.patterns.addAll(patterns)
+      return this
+    }
+
+    /**
+     * Adds patterns to exclude from the results to the glob builder.
+     *
+     *
+     * For a description of the syntax of the patterns, see [StarlarkGlob].
+     */
+    fun addExcludes(excludes: Collection<String>): Builder {
+      this.excludes.addAll(excludes)
+      return this
+    }
+
+    /** If set to true, directories are not returned in the glob result.  */
+    fun setExcludeDirectories(excludeDirectories: Boolean): Builder {
+      this.excludeDirectories = excludeDirectories
+      return this
+    }
+
+    /**
+     * If set, the given predicate is called for every directory encountered. If it returns false,
+     * the corresponding item is not returned in the output and directories are not traversed
+     * either.
+     *
+     * The predicate must be pure and fast, and it must not access PSI, indexes or other APIs
+     * that require a read action. It should only use VFS-level information available from
+     * {@link com.intellij.openapi.vfs.VirtualFile}.
+     */
+    fun setDirectoryFilter(pathFilter: Predicate<VirtualFile>): Builder {
+      this.pathFilter = pathFilter
+      return this
+    }
+
+    /**
+     * Construct glob of this builder
+     */
+    fun build(): StarlarkGlob {
+      return StarlarkGlob(base, checkAndSplitPatterns(patterns), checkAndSplitPatterns(excludes), excludeDirectories, pathFilter)
+    }
+  }
+
+  companion object {
+    /**
+     * Checks that each pattern is valid, splits it into segments and checks that each segment
+     * contains only valid wildcards.
+     *
+     * @return list of segment arrays
+     */
+    private fun checkAndSplitPatterns(patterns: Collection<String>): List<List<String>> {
+      return patterns.map { checkAndSplitPattern(it) }
+    }
+
+    private fun checkAndSplitPattern(pattern: String): List<String> {
+      val error = GlobPatternValidator.validate(pattern)
+      if (error != null)
+        throw IllegalArgumentException(error)
+
+      return pattern.split('/')
+    }
+
+    /** Calls [matches(pattern, str, null)][.matches]  */
+    fun matches(pattern: String, str: String): Boolean =
+      try {
+        matches(pattern, str, null)
+      }
+      catch (_: PatternSyntaxException) {
+        false
+      }
+
+    /**
+     * Returns whether `str` matches the glob pattern `pattern`. This method may use the
+     * `patternCache` to speed up the matching process.
+     *
+     * @param pattern a glob pattern
+     * @param str the string to match
+     * @param patternCache a cache from patterns to compiled Pattern objects, or `null` to skip
+     * caching
+     */
+    private fun matches(
+      pattern: String,
+      str: String,
+      patternCache: Cache<String, Pattern>?,
+    ): Boolean {
+      if (pattern.isEmpty() || str.isEmpty()) {
+        return false
+      }
+
+      // Common case: **
+      if (pattern == "**") {
+        return true
+      }
+
+      // Common case: *
+      if (pattern == "*") {
+        return true
+      }
+
+      // If a filename starts with '.', this char must be matched explicitly.
+      if (str[0] == '.' && pattern[0] != '.') {
+        return false
+      }
+
+      // Common case: *.xyz
+      if (pattern[0] == '*' && pattern.lastIndexOf('*') == 0) {
+        return str.endsWith(pattern.substring(1))
+      }
+      // Common case: xyz*!!
+      val lastIndex = pattern.length - 1
+      // The first clause of this if statement is unnecessary, but is an
+      // optimization--charAt runs faster than indexOf.!!!!
+      if (pattern[lastIndex] == '*' && pattern.indexOf('*') == lastIndex) {
+        return str.startsWith(pattern.substring(0, lastIndex))
+      }
+
+      var regex = patternCache?.getIfPresent(pattern)
+      if (regex == null) {
+        regex = makePatternFromWildcard(pattern)
+        patternCache?.put(pattern, regex)
+      }
+      return regex.matcher(str).matches()
+    }
+
+    /**
+     * Returns a regular expression implementing a matcher for "pattern", in which "*" and "?" are
+     * wildcards.
+     *
+     *
+     * e.g. "foo*bar?.java" -> "foo.*bar.\\.java"
+     */
+    private fun makePatternFromWildcard(pattern: String): Pattern {
+      val regexp = StringBuilder()
+      var i = 0
+      val len = pattern.length
+      while (i < len) {
+        when (val c = pattern[i]) {
+          '*' -> {
+            var toIncrement = 0
+            if (len > i + 1 && pattern[i + 1] == '*') {
+              // The pattern '**' is interpreted to match 0 or more directory separators, not 1 or
+              // more. We skip the next * and then find a trailing/leading '/' and get rid of it.
+              toIncrement = 1
+              if (len > i + 2 && pattern[i + 2] == '/') {
+                // We have '**/' -- skip the '/'.
+                toIncrement = 2
+              }
+              else if (len == i + 2 && i > 0 && pattern[i - 1] == '/') {
+                // We have '/**' -- remove the '/'.
+                regexp.delete(regexp.length - 1, regexp.length)
+              }
+            }
+            regexp.append(".*")
+            i += toIncrement
+          }
+
+          '?' -> regexp.append('.')
+          '^', '$', '|', '+', '{', '}', '[', ']', '\\', '.' -> {
+            regexp.append('\\')
+            regexp.append(c)
+          }
+
+          else -> regexp.append(c)
+        }
+        i++
+      }
+      return Pattern.compile(regexp.toString())
+    }
+
+    fun forPath(path: VirtualFile): Builder = Builder(path)
   }
 }

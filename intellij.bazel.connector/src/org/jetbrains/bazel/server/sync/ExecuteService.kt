@@ -20,7 +20,7 @@ import org.jetbrains.bazel.bazelrunner.params.BazelFlag
 import org.jetbrains.bazel.commons.BazelPathsResolver
 import org.jetbrains.bazel.commons.BazelStatus
 import org.jetbrains.bazel.commons.TargetCollection
-import org.jetbrains.bazel.config.BazelConnectorFeatureFlags
+import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.server.BazelTestFileNames
 import org.jetbrains.bazel.server.bep.BepBuildResult
@@ -94,7 +94,7 @@ class ExecuteService(
         BepBuildResult(processResult, bepOutput)
       }
       catch (e: CancellationException) {
-        if (BazelConnectorFeatureFlags.killServerOnCancel) {
+        if (BazelFeatureFlags.killServerOnCancel) {
           val serverPid = bepReader?.serverPid?.get() ?: 0
           if (serverPid > 0) {
             killProcess(serverPid.toInt())

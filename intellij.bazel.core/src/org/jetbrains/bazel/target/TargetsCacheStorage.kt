@@ -168,7 +168,7 @@ class TargetsCacheStorage(
 
     this.targetToExecutableTargets.clear()
     for ((label, targets) in executableTargets) {
-      this.targetToExecutableTargets.put(hashStream.computeLabelHash(label), targets.map { hashStream.computeLabelHash(it as ResolvedLabel) })
+        this.targetToExecutableTargets.put(hashStream.computeLabelHash(label), targets.map { hashStream.computeLabelHash(it as ResolvedLabel) })
     }
 
     this.labelToTargetInfo.clear()

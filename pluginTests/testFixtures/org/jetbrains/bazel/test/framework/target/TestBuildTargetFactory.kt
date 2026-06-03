@@ -47,15 +47,16 @@ object TestBuildTargetFactory {
     data: List<BuildTargetData>,
   ): RawBuildTarget = RawBuildTarget(
     id = id,
-    dependencies = listOf(),
+    dependencies = emptyList(),
     kind = TargetKind(
       kind = kind,
       ruleType = ruleType,
       languageClasses = languages,
     ),
     data = data,
-    sources = listOf(),
-    resources = listOf(),
+    sources = emptyList(),
+    generatedSources = emptyList(),
+    resources = emptyList(),
     baseDirectory = Path("base/dir"),
   )
 }

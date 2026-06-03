@@ -45,7 +45,7 @@ interface BazelServerFacade {
   suspend fun buildTargetTest(params: TestParams): TestResult
 
   @ApiStatus.Internal
-  suspend fun workspaceDirectories(): WorkspaceDirectoriesResult
+  suspend fun workspaceDirectories(taskId: TaskId): WorkspaceDirectoriesResult
 
   @ApiStatus.Internal
   suspend fun buildTargetAnalysisDebug(params: AnalysisDebugParams): AnalysisDebugResult

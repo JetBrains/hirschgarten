@@ -7,7 +7,9 @@ import com.intellij.psi.ElementManipulators
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiNameIdentifierOwner
 import com.intellij.psi.PsiReference
+import com.intellij.psi.search.SearchScope
 import org.jetbrains.annotations.ApiStatus
+import org.jetbrains.bazel.languages.starlark.starlarkProjectScope
 import org.jetbrains.bazel.languages.starlark.bazel.BazelGlobalFunctions
 import org.jetbrains.bazel.languages.starlark.elements.StarlarkElementTypes
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkBaseElement
@@ -15,7 +17,6 @@ import org.jetbrains.bazel.languages.starlark.psi.StarlarkElementVisitor
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkFile
 import org.jetbrains.bazel.languages.starlark.psi.functions.StarlarkArgumentList
 import org.jetbrains.bazel.languages.starlark.references.BazelGlobalFunctionReference
-import org.jetbrains.bazel.languages.starlark.references.StarlarkFunctionCallReference
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.contract
 
@@ -43,11 +44,7 @@ class StarlarkCallExpression(node: ASTNode) :
   PsiNameIdentifierOwner {
   override fun acceptVisitor(visitor: StarlarkElementVisitor) = visitor.visitCallExpression(this)
 
-  override fun getReference(): PsiReference? =
-    getNameNode()?.let {
-      val range = it.textRange.relativeTo(this)
-      StarlarkFunctionCallReference(this, range)
-    }
+  override fun getUseScope(): SearchScope = if (isRuleTarget()) project.starlarkProjectScope() else super.getUseScope()
 
   override fun getName(): String? = if (isRuleTarget()) getNameAttributeValue() else null
 
@@ -74,14 +71,9 @@ class StarlarkCallExpression(node: ASTNode) :
     return file.isBuildFile()
   }
 
-  fun getNameNode(): ASTNode? = getNamePsi()?.node
-
-  internal fun getNamePsi(): StarlarkReferenceExpression? = findChildByType(StarlarkElementTypes.REFERENCE_EXPRESSION)
-
   fun getNameAttributeValue(): String? = nameArgumentStringLiteral()?.getStringContents()
-
-  fun getCalledFunctionName(): String? = getNameNode()?.text
-
+  fun getCalledFunctionName(): String? = (getCalledExpression() as? StarlarkReferenceExpression)?.text
+  fun getCalledExpression(): PsiElement? = findChildByType(StarlarkElementTypes.EXPRESSIONS)
   fun getArgumentList(): StarlarkArgumentList? = findChildrenByClass(StarlarkArgumentList::class.java).firstOrNull()
 
   override fun getOwnReferences(): Collection<PsiSymbolReference> {
@@ -89,7 +81,7 @@ class StarlarkCallExpression(node: ASTNode) :
     val function = BazelGlobalFunctions.getFunctionByName(name) ?: return emptyList()
     return listOfNotNull(
       BazelGlobalFunctionReference(this, function),
-      reference?.let { PsiSymbolService.getInstance().asSymbolReference(it) },
+      getCalledExpression()?.reference?.let { PsiSymbolService.getInstance().asSymbolReference(it) },
     )
   }
 

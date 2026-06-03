@@ -10,8 +10,8 @@ java_library(
 
 java_plugin(
     name = "processor",
-    processor_class = "com.example.processor.HelperProcessor",
     generates_api = True,
-    deps = [":lib"],
+    processor_class = "com.example.processor.HelperProcessor",
     visibility = ["//visibility:public"],
+    deps = [":lib"],
 )

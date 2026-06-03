@@ -4,11 +4,10 @@ import com.intellij.lang.ASTNode
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiReference
 import org.jetbrains.annotations.ApiStatus
-import org.jetbrains.bazel.languages.starlark.elements.StarlarkElementType
-import org.jetbrains.bazel.languages.starlark.elements.StarlarkElementTypes
 import org.jetbrains.bazel.languages.starlark.elements.StarlarkTokenTypes
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkBaseElement
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkElementVisitor
+import org.jetbrains.bazel.languages.starlark.references.StarlarkFunctionCallReference
 import org.jetbrains.bazel.languages.starlark.references.StarlarkLocalVariableElement
 import org.jetbrains.bazel.languages.starlark.references.StarlarkLocalVariableReference
 import org.jetbrains.bazel.languages.starlark.references.StarlarkQualifiedReferenceExpressionReference
@@ -23,13 +22,17 @@ class StarlarkReferenceExpression(node: ASTNode) :
     when {
       isThrowaway() -> null
       isQualified() -> StarlarkQualifiedReferenceExpressionReference(this)
-      hasParentOfType(StarlarkElementTypes.CALL_EXPRESSION) && !isBeforeDot() -> null
+      (parent as? StarlarkCallExpression)?.getCalledExpression() == this && !isBeforeDot() -> {
+        when (val identifier = getNameIdentifier()) {
+          null -> null
+          else -> StarlarkFunctionCallReference(this,  identifier.textRangeInParent)
+        }
+      }
       else -> StarlarkLocalVariableReference(this, false)
     }
 
-  override fun getName(): String? = getNameNode()?.text
-
-  override fun getNameNode(): ASTNode? = node.findChildByType(StarlarkTokenTypes.IDENTIFIER)
+  override fun getNameIdentifier(): PsiElement? = findChildByType(StarlarkTokenTypes.IDENTIFIER)
+  override fun getName(): String? = getNameIdentifier()?.text
 
   /**
    * If the expression is qualified (of the form "a.b") return the part the qualifier applies to ("a") as PsiElement
@@ -38,8 +41,6 @@ class StarlarkReferenceExpression(node: ASTNode) :
     if (!isQualified()) return null
     return node.firstChildNode?.psi
   }
-
-  private fun hasParentOfType(type: StarlarkElementType): Boolean = node.treeParent?.elementType == type
 
   private fun isBeforeDot(): Boolean = generateSequence(node.treeNext) { it.treeNext }.any { it.elementType == StarlarkTokenTypes.DOT }
 

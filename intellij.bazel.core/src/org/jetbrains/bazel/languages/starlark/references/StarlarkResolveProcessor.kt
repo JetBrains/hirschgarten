@@ -23,10 +23,10 @@ internal class StarlarkResolveProcessor(
     this is StarlarkNamedElement && nameToResolve == this.name
 
   private fun StarlarkElement.isLoadTargetElement(): Boolean =
-    this is StarlarkStringLoadValue && nameToResolve == this.getImportedSymbolName()
+    this is StarlarkStringLoadValue && nameToResolve == this.getLoadValueExpressionContent()
 
   private fun addLoadTarget(element: StarlarkStringLoadValue): Boolean {
-    val resolved = element.getStringExpression()?.reference?.resolve() as? StarlarkNamedElement ?: return true
+    val resolved = element.getLoadValueExpression()?.reference?.resolve() as? StarlarkNamedElement ?: return true
     return !result.add(resolved)
   }
 }

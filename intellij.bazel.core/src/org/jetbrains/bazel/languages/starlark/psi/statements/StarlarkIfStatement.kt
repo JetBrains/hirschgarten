@@ -1,10 +1,12 @@
 package org.jetbrains.bazel.languages.starlark.psi.statements
 
 import com.intellij.lang.ASTNode
+import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkBaseElement
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkElementVisitor
 
-internal class StarlarkIfStatement(node: ASTNode) :
+@ApiStatus.Internal
+class StarlarkIfStatement(node: ASTNode) :
   StarlarkBaseElement(node),
   StarlarkStatementContainer {
   override fun acceptVisitor(visitor: StarlarkElementVisitor) = visitor.visitIfStatement(this)

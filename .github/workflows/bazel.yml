@@ -2,6 +2,9 @@ name: Build plugin with Bazel
 
 on:
   push:
+    branches:
+      # Matches three-digit branches, e.g. 261, 262
+      - '[0-9][0-9][0-9]'
   pull_request:
 jobs:
   build:

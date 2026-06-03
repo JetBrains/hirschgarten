@@ -38,7 +38,7 @@ internal class BazelProjectDirectoriesWorkspaceFileIndexContributor : WorkspaceF
   private fun WorkspaceFileSetRegistrar.registerIncludedDirectories(entity: BazelProjectDirectoriesEntity) =
     entity.includedRoots.forEach {
       registerFileSet(
-        root = it,
+        root = it.url,
         kind = WorkspaceFileKind.CONTENT,
         entity = entity,
         customData = null,
@@ -46,10 +46,10 @@ internal class BazelProjectDirectoriesWorkspaceFileIndexContributor : WorkspaceF
     }
 
   private fun WorkspaceFileSetRegistrar.registerExcludedDirectories(entity: BazelProjectDirectoriesEntity) {
-    excludeSymlinksFromFileWatcher(entity.excludedRoots.map { it.toPath() })
+    excludeSymlinksFromFileWatcher(entity.excludedRoots.map { it.url.toPath() })
     entity.excludedRoots.forEach {
       registerExcludedRoot(
-        excludedRoot = it,
+        excludedRoot = it.url,
         entity = entity,
       )
     }
@@ -58,7 +58,7 @@ internal class BazelProjectDirectoriesWorkspaceFileIndexContributor : WorkspaceF
   private fun WorkspaceFileSetRegistrar.registerIndexAdditionalFiles(entity: BazelProjectDirectoriesEntity) {
     entity.indexAdditionalFiles.forEach {
       registerNonRecursiveFileSet(
-        file = it,
+        file = it.url,
         kind = WorkspaceFileKind.CONTENT,
         entity = entity,
         customData = null,

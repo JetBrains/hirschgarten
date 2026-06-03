@@ -20,9 +20,6 @@ class BazelSymlinkExcludeStartupActivity : ProjectActivity {
     val bazelWorkspace = project.guessBazelWorkspaceDir() ?: return
     val bazelSymlinkExcludeService = BazelSymlinkExcludeService.getInstance(project)
     bazelSymlinkExcludeService.scanForBazelSymlinksToExclude(bazelWorkspace)
-    edtWriteAction {
-      bazelSymlinkExcludeService.refreshWorkspaceModel()
-    }
   }
 
   private fun Project.guessBazelWorkspaceDir(): Path? {

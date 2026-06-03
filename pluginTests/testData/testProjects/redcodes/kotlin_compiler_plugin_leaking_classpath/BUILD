@@ -1,6 +1,6 @@
-load("@rules_kotlin//kotlin:kotlin.bzl", "kt_jvm_library")
-load("@rules_kotlin//kotlin:core.bzl", "kt_compiler_plugin")
 load("@rules_java//java:java_import.bzl", "java_import")
+load("@rules_kotlin//kotlin:core.bzl", "kt_compiler_plugin")
+load("@rules_kotlin//kotlin:kotlin.bzl", "kt_jvm_library")
 
 java_import(
     name = "compiler_plugin_jar",

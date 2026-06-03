@@ -66,7 +66,7 @@ internal class BazelDepCompletionProvider : CompletionProvider<CompletionParamet
     }
   }
 
-  private fun getFunctionName(callExpression: StarlarkCallExpression): String? = callExpression.getNamePsi()?.text
+  private fun getFunctionName(callExpression: StarlarkCallExpression): String? = callExpression.getCalledFunctionName()
 
   private fun getArgumentName(stringLiteral: StarlarkStringLiteralExpression, callExpression: StarlarkCallExpression): String? {
     val arguments = callExpression.getArgumentList()?.getArguments() ?: return null

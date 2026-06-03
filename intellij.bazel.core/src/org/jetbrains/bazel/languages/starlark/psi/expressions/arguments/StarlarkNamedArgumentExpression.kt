@@ -28,6 +28,8 @@ class StarlarkNamedArgumentExpression(node: ASTNode) :
 
   fun getNameNode(): ASTNode? = node.findChildByType(StarlarkTokenTypes.IDENTIFIER)
 
+  fun isSrcsArgument(): Boolean = containsArgumentWithName("srcs")
+
   fun isNameArgument(): Boolean = containsArgumentWithName("name")
 
   fun isDepsArgument(): Boolean = containsArgumentWithName("deps")

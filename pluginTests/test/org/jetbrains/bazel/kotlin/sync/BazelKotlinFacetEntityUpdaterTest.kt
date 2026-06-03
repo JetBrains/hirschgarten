@@ -3,7 +3,6 @@ package org.jetbrains.bazel.kotlin.sync
 import com.intellij.facet.FacetManager
 import com.intellij.openapi.module.ModuleManager
 import com.intellij.platform.workspace.jps.entities.ModuleEntity
-import com.intellij.platform.workspace.jps.entities.ModuleTypeId
 import com.intellij.platform.workspace.storage.MutableEntityStorage
 import com.intellij.testFramework.runInEdtAndWait
 import io.kotest.matchers.collections.shouldHaveSingleElement
@@ -11,26 +10,17 @@ import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeInstanceOf
 import kotlinx.coroutines.runBlocking
-import org.jetbrains.bazel.commons.LanguageClass
-import org.jetbrains.bazel.commons.RuleType
-import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.sync.BazelKotlinFacetEntityUpdater
+import org.jetbrains.bazel.workspace.importer.KotlinOptions
 import org.jetbrains.bazel.workspace.model.test.framework.WorkspaceModelBaseTest
-import org.jetbrains.bazel.workspacemodel.entities.ContentRoot
-import org.jetbrains.bazel.workspacemodel.entities.Dependency
-import org.jetbrains.bazel.workspacemodel.entities.GenericModuleInfo
-import org.jetbrains.bazel.workspacemodel.entities.JavaModule
-import org.jetbrains.bazel.workspacemodel.entities.KotlinAddendum
 import org.jetbrains.bsp.protocol.JvmBuildTarget
 import org.jetbrains.bsp.protocol.KotlinBuildTarget
-import org.jetbrains.bsp.protocol.StrictDependencyCheckedType
 import org.jetbrains.kotlin.cli.common.arguments.K2JVMCompilerArguments
 import org.jetbrains.kotlin.config.IKotlinFacetSettings
 import org.jetbrains.kotlin.idea.facet.KotlinFacetType
 import org.junit.jupiter.api.Test
 import kotlin.io.path.Path
-import kotlin.io.path.name
 
 class BazelKotlinFacetEntityUpdaterTest : WorkspaceModelBaseTest() {
 
@@ -111,72 +101,45 @@ class BazelKotlinFacetEntityUpdaterTest : WorkspaceModelBaseTest() {
     }
   }
 
-  private fun addToWorkspaceModelAndGetFacet(kotlinBuildTarget: KotlinBuildTarget, jvmBuildTarget: JvmBuildTarget): IKotlinFacetSettings {
-    val module =
-      GenericModuleInfo(
-        label = Label.parse("//module1"),
-        name = "module1",
-        type = ModuleTypeId("JAVA_MODULE"),
-        dependencies =
-          listOf(
-            Dependency("module2", Label.parse("//module2")),
-            Dependency("module3", Label.parse("//module3")),
-          ),
-        strictDependenciesCheck = StrictDependencyCheckedType.OFF,
-        strictDependencies = emptyList(),
-        kind =
-          TargetKind(
-            kind = "java_library",
-            ruleType = RuleType.LIBRARY,
-            languageClasses = setOf(LanguageClass.JAVA),
-          ),
-        associates = kotlinBuildTarget.associates.map { it.toString() },
-      )
-
-    val baseDirContentRoot =
-      ContentRoot(
-        path = projectBasePath.toAbsolutePath(),
-      )
-    val javaModule =
-      JavaModule(
-        genericModuleInfo = module,
-        baseDirContentRoot = baseDirContentRoot,
-        sourceRoots = listOf(),
-        resourceRoots = listOf(),
-        jvmJdkName = "${projectBasePath.name}-${jvmBuildTarget.javaVersion}",
-        kotlinAddendum =
-          KotlinAddendum(
-            languageVersion = kotlinBuildTarget.languageVersion,
-            apiVersion = kotlinBuildTarget.apiVersion,
-            moduleName = kotlinBuildTarget.moduleName,
-            kotlincOptions = kotlinBuildTarget.kotlincOptions,
-          ),
-      )
+  private fun addToWorkspaceModelAndGetFacet(
+    kotlinBuildTarget: KotlinBuildTarget,
+    jvmBuildTarget: JvmBuildTarget,
+  ): IKotlinFacetSettings {
+    @Suppress("UNUSED_VARIABLE")
+    val unused = jvmBuildTarget // reserved for future SDK plumbing in this fixture
+    val moduleName = "module1"
 
     updateWorkspaceModel {
-      val returnedModuleEntity =
-        addEmptyJavaModuleEntity(
-          module.name,
-          it,
-        )
-      addKotlinFacetEntity(javaModule, returnedModuleEntity, it)
+      val returnedModuleEntity = addEmptyJavaModuleEntity(moduleName, it)
+      addKotlinFacetEntity(kotlinBuildTarget, returnedModuleEntity, it)
     }
 
     val moduleManager = ModuleManager.getInstance(project)
-    val retrievedModule = moduleManager.findModuleByName(module.name)
+    val retrievedModule = moduleManager.findModuleByName(moduleName)
     retrievedModule.shouldNotBeNull()
     val facetManager = FacetManager.getInstance(retrievedModule)
     val facet = facetManager.getFacetByType(KotlinFacetType.TYPE_ID)
     facet.shouldNotBeNull()
-    val retrievedFacetSettings = facet.configuration.settings
-    return retrievedFacetSettings
+    return facet.configuration.settings
   }
 
   private fun addKotlinFacetEntity(
-    javaModule: JavaModule,
+    kotlinBuildTarget: KotlinBuildTarget,
     parentEntity: ModuleEntity,
     builder: MutableEntityStorage,
   ) = runBlocking {
-    BazelKotlinFacetEntityUpdater().addEntity(builder, javaModule, parentEntity, projectBasePath)
+    val kotlinOptions = KotlinOptions(
+      languageVersion = kotlinBuildTarget.languageVersion,
+      apiVersion = kotlinBuildTarget.apiVersion,
+      moduleName = kotlinBuildTarget.moduleName,
+      kotlincOptions = kotlinBuildTarget.kotlincOptions,
+    )
+    BazelKotlinFacetEntityUpdater().addEntity(
+      diff = builder,
+      parentModuleEntity = parentEntity,
+      kotlinOptions = kotlinOptions,
+      isTestModule = false,
+      associates = kotlinBuildTarget.associates.map { it.toString() }.toSet(),
+    )
   }
 }

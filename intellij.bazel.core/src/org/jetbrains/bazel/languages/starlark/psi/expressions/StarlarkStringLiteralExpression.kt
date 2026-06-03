@@ -133,7 +133,7 @@ class StarlarkStringLiteralExpression(node: ASTNode) : StarlarkBaseElement(node)
 
   fun argumentListContext(): StarlarkArgumentList? = (parent as? StarlarkArgumentExpression)?.parent as? StarlarkArgumentList
 
-  fun isUseExtensionArgument(): Boolean = (argumentListContext()?.parent as? StarlarkCallExpression)?.getNamePsi()?.text == "use_extension"
+  fun isUseExtensionArgument(): Boolean = (argumentListContext()?.parent as? StarlarkCallExpression)?.getCalledFunctionName() == "use_extension"
 
   fun useExtensionLoadedFileName(): StarlarkStringLiteralExpression? {
     val arguments = argumentListContext()?.getArguments() ?: return null

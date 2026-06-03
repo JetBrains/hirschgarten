@@ -48,8 +48,8 @@ import org.jetbrains.bazel.workspace.model.test.framework.mockWorkspaceContext
 import org.jetbrains.bazel.workspacemodel.entities.BazelProjectEntitySource
 import org.jetbrains.bsp.protocol.PythonBuildTarget
 import org.jetbrains.bsp.protocol.RawBuildTarget
-import org.jetbrains.bsp.protocol.SourceItem
 import org.jetbrains.bsp.protocol.TaskGroupId
+import org.jetbrains.bsp.protocol.allSources
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -171,7 +171,7 @@ class PythonProjectSyncTest : MockProjectBaseTest() {
       )
 
     val targetInfos = listOf(pythonLibrary1, pythonLibrary2, pythonBinary)
-    val targets = targetInfos.map { generateTarget(it, emptyList(), emptyList()) }
+    val targets = targetInfos.map { generateTarget(it, emptyList(), emptyList(), emptyList()) }
 
     val expectedModuleEntity1 = generateExpectedModuleEntity(pythonBinary, listOf(pythonLibrary1, pythonLibrary2))
     val expectedModuleEntity2 = generateExpectedModuleEntity(pythonLibrary1, emptyList())
@@ -194,14 +194,14 @@ class PythonProjectSyncTest : MockProjectBaseTest() {
     val target =
       generateTarget(
         pythonBinary,
-        listOf(SourceItem(Path("/SomeSourceItemFile"), true)),
+        emptyList(),
+        listOf(Path("/SomeSourceItemFile")),
         listOf(Path("/Resource1"), Path("/Resource2"), Path("/Resource3")),
       )
 
     val expectedModuleEntity = generateExpectedModuleEntity(pythonBinary, emptyList())
 
-    val expectedContentRootEntities =
-      generateExpectedSourceRootEntities(target, expectedModuleEntity.moduleEntity)
+    val expectedContentRootEntities = generateExpectedSourceRootEntities(target, expectedModuleEntity.moduleEntity)
     return PythonTestSet(
       generateWorkspaceSnapshot(listOf(target)),
       listOf(expectedModuleEntity),
@@ -211,7 +211,8 @@ class PythonProjectSyncTest : MockProjectBaseTest() {
 
   private fun generateTarget(
     info: GeneratedTargetInfo,
-    sources: List<SourceItem>,
+    sources: List<Path>,
+    generatedSources: List<Path>,
     resources: List<Path>,
   ): RawBuildTarget {
 
@@ -235,6 +236,7 @@ class PythonProjectSyncTest : MockProjectBaseTest() {
           ),
         ),
         sources = sources,
+        generatedSources = generatedSources,
         resources = resources,
       )
 
@@ -281,8 +283,8 @@ class PythonProjectSyncTest : MockProjectBaseTest() {
   }
 
   private fun generateExpectedSourceRootEntities(target: RawBuildTarget, parentModuleEntity: ModuleEntity): List<ExpectedSourceRootEntity> =
-    target.sources.map {
-      val url = it.path.toVirtualFileUrl(virtualFileUrlManager)
+    (target.allSources.map {
+      val url = it.toVirtualFileUrl(virtualFileUrlManager)
       val sourceRootEntity = SourceRootEntity(url, SourceRootTypeId("python-source"), parentModuleEntity.entitySource)
       val contentRootEntity =
         ContentRootEntity(url, emptyList(), parentModuleEntity.entitySource) {
@@ -291,16 +293,16 @@ class PythonProjectSyncTest : MockProjectBaseTest() {
         }
       ExpectedSourceRootEntity(sourceRootEntity, contentRootEntity, parentModuleEntity)
     } +
-    target.resources.map {
-      val url = it.toVirtualFileUrl(virtualFileUrlManager)
-      val sourceRootEntity = SourceRootEntity(url, SourceRootTypeId("python-resource"), parentModuleEntity.entitySource)
-      val contentRootEntity =
-        ContentRootEntity(url, emptyList(), parentModuleEntity.entitySource) {
-          excludedUrls = emptyList()
-          sourceRoots = listOf(sourceRootEntity)
-        }
-      ExpectedSourceRootEntity(sourceRootEntity, contentRootEntity, parentModuleEntity)
-    }
+     target.resources.map {
+       val url = it.toVirtualFileUrl(virtualFileUrlManager)
+       val sourceRootEntity = SourceRootEntity(url, SourceRootTypeId("python-resource"), parentModuleEntity.entitySource)
+       val contentRootEntity =
+         ContentRootEntity(url, emptyList(), parentModuleEntity.entitySource) {
+           excludedUrls = emptyList()
+           sourceRoots = listOf(sourceRootEntity)
+         }
+       ExpectedSourceRootEntity(sourceRootEntity, contentRootEntity, parentModuleEntity)
+     }).toList()
 
   private fun List<ModuleEntity>.shouldAllHaveTheSameSDK() {
     val sdks = this.map { module -> module.dependencies.firstNotNullOfOrNull { it as? SdkDependency } }

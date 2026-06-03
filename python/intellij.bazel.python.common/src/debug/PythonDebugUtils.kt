@@ -1,18 +1,42 @@
 package org.jetbrains.bazel.python.debug
 
 import com.intellij.openapi.project.Project
-import org.jetbrains.bazel.config.BazelPluginBundle
+import com.intellij.openapi.vfs.LocalFileSystem
+import com.intellij.openapi.vfs.toNioPathOrNull
+import com.jetbrains.python.PythonFileType
+import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.label.Label
-import org.jetbrains.bazel.runfiles.RunfilesUtils
-import org.jetbrains.bazel.sync.environment.projectCtx
+import org.jetbrains.bazel.target.targetUtils
+import org.jetbrains.bazel.utils.isUnder
+import org.jetbrains.bsp.protocol.PythonBuildTarget
 import java.nio.file.Path
 import java.nio.file.Paths
+import kotlin.io.path.name
 
 internal object PythonDebugUtils {
-  fun guessRunScriptName(project: Project, target: Label): Path {
-    val bazelBinPath = getBazelBinPath(project)
-    val targetPackage = target.packagePath.pathSegments.toTypedArray()
-    return Paths.get(bazelBinPath, *targetPackage, target.targetName)
+  data class PythonDebugInfo (
+    val pythonFile: Path,
+    val environmentVariables: Map<String, String> = emptyMap(),
+  )
+
+  fun preparePythonDebug(project: Project, target: Label): PythonDebugInfo? {
+    val pythonTargetData = getPythonTargetData(project, target) ?: return null
+    val runnerScript = pythonTargetData.runnerScript ?: return null
+    val scriptType = LocalFileSystem.getInstance().refreshAndFindFileByNioFile(runnerScript)?.fileType ?: return null
+
+    if (scriptType is PythonFileType) {
+      return PythonDebugInfo(runnerScript)
+    } else {
+      val pythonMain = pythonTargetData.mainFile ?: return null
+      val runfiles = pythonTargetData.findRunFileRoot() ?: return null
+      val envs = mapOf(
+        "BAZEL_TARGET" to target.toString(),
+        "BAZEL_WORKSPACE" to "_main",
+        "BAZEL_TARGET_NAME" to target.targetName,
+        "PYTHONPATH" to runfiles.toString(),
+      )
+      return PythonDebugInfo(pythonMain, envs)
+    }
   }
 
   fun findRealSourceFile(
@@ -20,46 +44,25 @@ internal object PythonDebugUtils {
     target: Label,
     file: String,
   ): String {
-    val bazelBin = getBazelBinPath(project)
-    val filePath = Paths.get(file)
-    val possibleRunFileLocations =
-      guessPossibleWorkspaceNames(bazelBin)
-        .map { RunfilesUtils.calculateTargetRunfiles(bazelBin, target).resolve(it) }
-
-    for (runFileLocation in possibleRunFileLocations) {
-      if (filePath.startsWith(runFileLocation)) {
-        val basePath = project.basePath ?: error(BazelPluginBundle.message("project.base.path.not.found"))
-        val fileRelativePath = filePath.subpath(runFileLocation.nameCount, filePath.nameCount).toString()
-        return Paths.get(basePath, fileRelativePath).toString()
-      }
+    val rootDir = project.rootDir.toNioPathOrNull() ?: return file
+    val filePath = Paths.get(file).toRealPath()
+    if (filePath.isUnder(setOf(rootDir))) {
+      // after resolving symlinks, path is inside the project - no need to search elsewhere
+      return filePath.toString()
     }
-    return file // none of the runfile locations worked, it's probably an external source (that is expected, it's not a failure)
+
+    val runFileSourceRoot = getPythonTargetData(project, target)?.findRunFileRoot()
+    if (runFileSourceRoot != null && filePath.startsWith(runFileSourceRoot)) {
+      val fileRelativePath = filePath.subpath(runFileSourceRoot.nameCount, filePath.nameCount).toString()
+      return rootDir.resolve(fileRelativePath).toString()
+    }
+
+    return file
   }
 
-  private fun getBazelBinPath(project: Project): String =
-    project.projectCtx.bazelBinPath ?: error(BazelPluginBundle.message("bazel.bin.not.found"))
+  private fun getPythonTargetData(project: Project, target: Label): PythonBuildTarget? =
+    project.targetUtils.getBuildTargetForLabel(target)?.data?.firstNotNullOfOrNull { it as? PythonBuildTarget }
 
-  // TODO: BAZEL-1836
-
-  /**
-   * This function tries to guess the workspace name (one defined in the `WORKSPACE` file if one exists).
-   * Bazel runfile path contains this name in it,
-   * as mentioned in [Bazel documentation](https://bazel.build/rules/lib/globals/workspace#workspace):
-   *
-   * 1. `"_main"` is the workspace name in all projects with bzlmod enabled
-   * (as per [WorkspaceNameFunction in Bazel code](https://github.com/bazelbuild/bazel/blob/3dcf191b86975577b1643b572d24b0ecebf5bef7/src/main/java/com/google/devtools/build/lib/skyframe/WorkspaceNameFunction.java#L50))
-   * 2. `bazel-out` path usually contains the workspace name
-   */
-  private fun guessPossibleWorkspaceNames(bazelBinPath: String): Sequence<String> =
-    sequence {
-      yield("_main") // lazy sequence is being used, so in many cases nothing else will be calculated
-      val fromBazelBin =
-        "execroot.(?<workspace>.*).bazel-out"
-          .toRegex()
-          .find(bazelBinPath)
-          ?.groups
-          ?.get(1)
-          ?.value
-      fromBazelBin?.let { yield(it) }
-    }
+  private fun PythonBuildTarget.findRunFileRoot(): Path? =
+    this.runnerScript?.let { it.parent?.resolve("${it.name}.runfiles")?.resolve("_main") }
 }

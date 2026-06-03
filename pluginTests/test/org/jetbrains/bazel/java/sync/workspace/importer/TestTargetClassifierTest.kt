@@ -10,11 +10,10 @@ import org.jetbrains.bazel.label.ResolvedLabel
 import org.jetbrains.bazel.label.assumeResolved
 import org.jetbrains.bazel.workspace.importer.TestTargetClassifier
 import org.jetbrains.bsp.protocol.RawBuildTarget
-import org.jetbrains.bsp.protocol.SourceItem
 import org.junit.jupiter.api.Test
 import java.nio.file.Path
 
-class TestSourceFinderTest {
+class TestTargetClassifierTest {
   @Test
   fun `should mark test target`() {
     val sources = listOf("Test.java")
@@ -66,9 +65,9 @@ class TestSourceFinderTest {
 
   @Test
   fun `should not mark library used in a non-test target`() {
-    val binary = createTarget("//aaa/bbb:binary", javaBinary, sources = listOf("Binary.java"))
-    val test = createTarget("//aaa/bbb:test", javaTest)
-    val library = createTarget("//aaa/bbb:library", javaLibrary, sources = listOf("Library.java"), dependencies = listOf(binary, test))
+    val library = createTarget("//aaa/bbb:library", javaLibrary, sources = listOf("Library.java"))
+    val binary = createTarget("//aaa/bbb:binary", javaBinary, dependencies = listOf(library), sources = listOf("Binary.java"))
+    val test = createTarget("//aaa/bbb:test", javaTest, dependencies = listOf(library))
     val targetSet = setOf(binary, test, library)
     val executableTargets =
       mapOf(library.id.assumeResolved() to listOf(binary.id, test.id))
@@ -79,8 +78,8 @@ class TestSourceFinderTest {
 
   @Test
   fun `should not mark library used in test target that has its own sources`() {
-    val test = createTarget("//aaa/bbb:test", javaTest, sources = listOf("Test.java"))
-    val library = createTarget("//aaa/bbb:library", javaLibrary, sources = listOf("Library.java"), dependencies = listOf(test))
+    val library = createTarget("//aaa/bbb:library", javaLibrary, sources = listOf("Library.java"))
+    val test = createTarget("//aaa/bbb:test", javaTest, dependencies = listOf(library), sources = listOf("Test.java"))
     val targetSet = setOf(test, library)
     val executableTargets =
       mapOf(library.id.assumeResolved() to listOf(test.id))
@@ -91,8 +90,8 @@ class TestSourceFinderTest {
 
   @Test
   fun `should mark library used in test target without own sources`() {
-    val test = createTarget("//aaa/bbb:test", javaTest)
-    val library = createTarget("//aaa/bbb:library", javaLibrary, sources = listOf("Library.java"), dependencies = listOf(test))
+    val library = createTarget("//aaa/bbb:library", javaLibrary, sources = listOf("Library.java"))
+    val test = createTarget("//aaa/bbb:test", javaTest, dependencies = listOf(library))
     val targetSet = setOf(test, library)
     val executableTargets =
       mapOf(library.id.assumeResolved() to listOf(test.id))
@@ -103,16 +102,29 @@ class TestSourceFinderTest {
 
   @Test
   fun `should mark library used in multiple test targets, some without own sources`() {
-    val test1 = createTarget("//aaa/bbb:test1", javaTest)
-    val test2 = createTarget("//aaa/bbb:test2", javaTest, sources = listOf("Test.java"))
-    val test3 = createTarget("//aaa/bbb:test3", javaTest)
-    val library = createTarget("//aaa/bbb:library", javaLibrary, sources = listOf("Library.java"), dependencies = listOf(test1, test2, test3))
+    val library = createTarget("//aaa/bbb:library", javaLibrary, sources = listOf("Library.java"))
+    val test1 = createTarget("//aaa/bbb:test1", javaTest, dependencies = listOf(library))
+    val test2 = createTarget("//aaa/bbb:test2", javaTest, dependencies = listOf(library), sources = listOf("Test.java"))
+    val test3 = createTarget("//aaa/bbb:test3", javaTest, dependencies = listOf(library))
     val targetSet = setOf(test1, test2, test3, library)
     val executableTargets =
       mapOf(library.id.assumeResolved() to listOf(test1.id, test2.id, test3.id))
 
     classify(targetSet, executableTargets) shouldContain library
     classifyWithSelfReference(targetSet, executableTargets) shouldContain library
+  }
+
+  @Test
+  fun `should not mark library used in test target transitively`() {
+    val library = createTarget("//aaa/bbb:library", javaLibrary, sources = listOf("Library.java"))
+    val intermediateLibrary = createTarget("//aaa/bbb:intermediate", javaLibrary, dependencies = listOf(library))
+    val test = createTarget("//aaa/bbb:test", javaTest, dependencies = listOf(intermediateLibrary))
+    val targetSet = setOf(test, intermediateLibrary, library)
+    val executableTargets =
+      mapOf(library.id.assumeResolved() to listOf(test.id))
+
+    classify(targetSet, executableTargets) shouldNotContain library
+    classifyWithSelfReference(targetSet, executableTargets) shouldNotContain library
   }
 }
 
@@ -132,11 +144,16 @@ private fun createTarget(
   resources: List<String> = emptyList(),
   isTestOnly: Boolean = false,
 ): RawBuildTarget {
-  val label = Label.parse(id)
-  val deps = dependencies.map { DependencyLabel(it.id) }
-  val sourceItems = sources.map { SourceItem(sourceRoot.resolve(it), generated = false) }
-  val resourceItems = resources.map { resourceRoot.resolve(it) }
-  return RawBuildTarget(label, deps, kind, sourceItems, resourceItems, baseDir, isTestOnly = isTestOnly)
+  return RawBuildTarget(
+    id = Label.parse(id),
+    dependencies = dependencies.map { DependencyLabel(it.id) },
+    kind = kind,
+    sources = sources.map { sourceRoot.resolve(it) },
+    generatedSources = emptyList(),
+    resources = resources.map { resourceRoot.resolve(it) },
+    baseDirectory = baseDir,
+    isTestOnly = isTestOnly,
+  )
 }
 
 private fun classify(targets: Set<RawBuildTarget>, executableTargets: Map<ResolvedLabel, List<Label>> = emptyMap()): List<RawBuildTarget> {

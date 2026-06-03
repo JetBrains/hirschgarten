@@ -9,16 +9,7 @@ import org.jetbrains.bazel.commons.LanguageClass
 import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.commons.gson.bazelGson
-import org.jetbrains.bazel.label.AllPackagesBeneath
-import org.jetbrains.bazel.label.AllRuleTargets
-import org.jetbrains.bazel.label.AllRuleTargetsAndFiles
-import org.jetbrains.bazel.label.AmbiguousEmptyTarget
-import org.jetbrains.bazel.label.Apparent
-import org.jetbrains.bazel.label.Canonical
-import org.jetbrains.bazel.label.Main
-import org.jetbrains.bazel.label.Package
-import org.jetbrains.bazel.label.ResolvedLabel
-import org.jetbrains.bazel.label.SingleTarget
+import org.jetbrains.bazel.label.Label
 import org.jetbrains.bsp.protocol.PartialBuildTarget
 import java.io.ByteArrayOutputStream
 import java.nio.ByteBuffer
@@ -52,70 +43,12 @@ internal fun ByteBuffer.readString(): String {
   return String(bytes)
 }
 
-internal fun writeResolvedLabel(buffer: WriteBuffer, label: ResolvedLabel) {
-  when (val repo = label.repo) {
-    Main -> buffer.put(0)
-    is Canonical -> {
-      buffer.put(1)
-      buffer.writeString(repo.repoName)
-    }
-
-    is Apparent -> {
-      buffer.put(2)
-      buffer.writeString(repo.repoName)
-    }
-  }
-
-  val packagePath = label.packagePath
-  when (packagePath) {
-    is AllPackagesBeneath -> buffer.put(0)
-    is Package -> buffer.put(1)
-  }
-  buffer.putVarInt(packagePath.pathSegments.size)
-  for (value in packagePath.pathSegments) {
-    buffer.writeString(value)
-  }
-
-  when (val target = label.target) {
-    AmbiguousEmptyTarget -> buffer.put(0)
-    AllRuleTargets -> buffer.put(1)
-    AllRuleTargetsAndFiles -> buffer.put(2)
-    is SingleTarget -> {
-      buffer.put(3)
-      buffer.writeString(target.targetName)
-    }
-  }
+internal fun writeLabel(buffer: WriteBuffer, label: Label) {
+  buffer.writeString(label.toString())
 }
 
-internal fun readResolvedLabel(buffer: ByteBuffer): ResolvedLabel {
-  val repoType = buffer.get()
-  val repo =
-    when (repoType.toInt()) {
-      0 -> Main
-      1 -> Canonical.createCanonicalOrMain(buffer.readString())
-      2 -> Apparent(buffer.readString())
-      else -> throw IllegalStateException("Unexpected repo type $repoType")
-    }
-
-  val packageType = buffer.get()
-  val packagePath =
-    when (packageType.toInt()) {
-      0 -> AllPackagesBeneath(Array(readVarInt(buffer)) { buffer.readString() }.asList())
-      1 -> Package(Array(readVarInt(buffer)) { buffer.readString() }.asList())
-      else -> throw IllegalStateException("Unexpected package type $packageType")
-    }
-
-  val targetType = buffer.get()
-  val target =
-    when (targetType.toInt()) {
-      0 -> AmbiguousEmptyTarget
-      1 -> AllRuleTargets
-      2 -> AllRuleTargetsAndFiles
-      3 -> SingleTarget(buffer.readString())
-      else -> throw IllegalStateException("Unexpected target type $targetType")
-    }
-
-  return ResolvedLabel(repo = repo, packagePath = packagePath, target = target)
+internal fun readLabel(buffer: ByteBuffer): Label {
+  return Label.parse(buffer.readString())
 }
 
 internal fun createIdToBuildMapType(filePathSuffix: String, rootDir: Path): MVMap.Builder<Long, PartialBuildTarget> {
@@ -124,7 +57,7 @@ internal fun createIdToBuildMapType(filePathSuffix: String, rootDir: Path): MVMa
   mapBuilder.setValueType(
     createAnyValueDataType<PartialBuildTarget>(
       writer = { buffer, item ->
-        writeResolvedLabel(buffer, item.id as ResolvedLabel)
+        writeLabel(buffer, item.id)
         writeTargetKind(item.kind, buffer)
         writePath(path = item.baseDirectory.invariantSeparatorsPathString, filePathSuffix = filePathSuffix, buffer = buffer)
         buffer.put(if (item.isManual) 1 else 0)
@@ -140,7 +73,7 @@ internal fun createIdToBuildMapType(filePathSuffix: String, rootDir: Path): MVMa
         }
       },
       reader = { buffer ->
-        val id = readResolvedLabel(buffer)
+        val id = readLabel(buffer)
         val kind = readTargetKind(buffer)
         val baseDirectory = readPath(buffer, rootDir)
         val isManual = buffer.get() == 1.toByte()

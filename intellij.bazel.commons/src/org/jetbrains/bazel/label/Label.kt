@@ -1,8 +1,11 @@
 package org.jetbrains.bazel.label
 
+import com.intellij.util.containers.Interner
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.info.BspTargetInfo
+import org.jetbrains.bazel.label.Label.Companion.synthetic
 import java.nio.file.Path
+import java.util.concurrent.ConcurrentHashMap
 import kotlin.io.path.Path
 
 private const val SYNTHETIC_TAG = "[synthetic]"
@@ -68,7 +71,6 @@ data class Package(override val pathSegments: List<String>) : PackageType {
   override fun toString(): String = pathSegments.joinToString(PATH_SEGMENT_SEPARATOR)
 
   fun parent(): Package = Package(pathSegments.dropLast(1))
-
   fun name(): String = pathSegments.lastOrNull() ?: ""
 }
 
@@ -133,11 +135,11 @@ data class ResolvedLabel(
 }
 
 /**
- * Synthethic label is a label of a target which is not present in the Bazel target graph.
+ * Synthetic label is a label of a target which is not present in the Bazel target graph.
  */
 @ApiStatus.Internal
 data class SyntheticLabel(override val target: TargetType) : Label {
-  override val packagePath: PackageType = Package(listOf())
+  override val packagePath: PackageType = Package(emptyList())
 
   override fun toString(): String = "$target$SYNTHETIC_TAG"
 }
@@ -205,48 +207,15 @@ sealed interface Label : Comparable<Label> {
     @ApiStatus.Internal
     fun synthetic(targetName: String): Label = SyntheticLabel(SingleTarget(targetName.removeSuffix(SYNTHETIC_TAG)))
 
+    private var parser = LabelParser()
+
+    @ApiStatus.Internal
+    fun cleanInternCache() {
+      parser = LabelParser()
+    }
+
     fun parse(value: String): Label {
-      if (value.endsWith(SYNTHETIC_TAG)) return synthetic(value)
-      val normalized = value.trim().trimStart('@')
-      if (normalized.contains(" ")) throw IllegalArgumentException("Label $normalized cannot have whitespaces")
-      val repoName = normalized.substringBefore("//", "")
-      val pathAndName = normalized.substringAfter("//")
-      val packagePath = pathAndName.substringBefore(":")
-      val packageSegments = packagePath.split(PATH_SEGMENT_SEPARATOR).filter { it.isNotEmpty() }
-      val packageType =
-        if (packageSegments.lastOrNull() == ALL_PACKAGES_BENEATH) {
-          AllPackagesBeneath(packageSegments.dropLast(1))
-        } else {
-          Package(packageSegments)
-        }
-      val targetName = pathAndName.substringAfter(":", packagePath.substringAfterLast(PATH_SEGMENT_SEPARATOR))
-
-      val target =
-        when {
-          targetName == WILDCARD -> AllRuleTargetsAndFiles
-          targetName == ALL_TARGETS -> AllRuleTargetsAndFiles
-          targetName == ALL -> AllRuleTargets
-          targetName == ALL_PACKAGES_BENEATH -> AllRuleTargets // Special case for //...:...
-          pathAndName.contains(":") -> SingleTarget(targetName)
-          else -> AmbiguousEmptyTarget
-        }
-
-      if (packageType is AllPackagesBeneath && target is SingleTarget) {
-        throw IllegalArgumentException("Cannot have a single target in a wildcard package")
-      }
-
-      if (!value.contains("//")) {
-        return RelativeLabel(packageType, target)
-      }
-
-      val repo =
-        when {
-          repoName.isEmpty() -> Main
-          value.startsWith("@@") -> Canonical(repoName)
-          else -> Apparent(repoName)
-        }
-
-      return ResolvedLabel(repo, packageType, target)
+      return parser.parse(value)
     }
 
     fun parseOrNull(value: String?): Label? =
@@ -259,6 +228,63 @@ sealed interface Label : Comparable<Label> {
 }
 
 @ApiStatus.Internal
+class LabelParser {
+  private val partsIntern = Interner.createStringInterner()
+  private val labelIntern = ConcurrentHashMap<String, Label>()
+
+  fun parse(value: String): Label {
+    return labelIntern.computeIfAbsent(value) {
+      parseImpl(value)
+    }
+  }
+
+  private fun parseImpl(value: String): Label {
+    if (value.endsWith(SYNTHETIC_TAG)) return synthetic(value)
+    val normalized = value.trim().trimStart('@')
+    if (normalized.contains(" ")) throw IllegalArgumentException("Label $normalized cannot have whitespaces")
+    val repoName = normalized.substringBefore("//", "")
+    val pathAndName = normalized.substringAfter("//")
+    val packagePath = pathAndName.substringBefore(":")
+    val packageSegments = packagePath.split(PATH_SEGMENT_SEPARATOR).mapNotNull { if (it.isEmpty()) null else partsIntern.intern(it) }
+    val packageType =
+      if (packageSegments.lastOrNull() == ALL_PACKAGES_BENEATH) {
+        AllPackagesBeneath(packageSegments.dropLast(1))
+      } else {
+        Package(packageSegments)
+      }
+    val targetName = pathAndName.substringAfter(":", packagePath.substringAfterLast(PATH_SEGMENT_SEPARATOR))
+
+    val target =
+      when {
+        targetName == WILDCARD -> AllRuleTargetsAndFiles
+        targetName == ALL_TARGETS -> AllRuleTargetsAndFiles
+        targetName == ALL -> AllRuleTargets
+        targetName == ALL_PACKAGES_BENEATH -> AllRuleTargets // Special case for //...:...
+        pathAndName.contains(":") -> SingleTarget(targetName)
+        else -> AmbiguousEmptyTarget
+      }
+
+    if (packageType is AllPackagesBeneath && target is SingleTarget) {
+      throw IllegalArgumentException("Cannot have a single target in a wildcard package")
+    }
+
+    if (!value.contains("//")) {
+      return RelativeLabel(packageType, target)
+    }
+
+    val repo =
+      when {
+        repoName.isEmpty() -> Main
+        value.startsWith("@@") -> Canonical(partsIntern.intern(repoName))
+        else -> Apparent(partsIntern.intern(repoName))
+      }
+
+    return ResolvedLabel(repo, packageType, target)
+  }
+
+}
+
+@ApiStatus.Internal
 fun Label.asRelative(): RelativeLabel? = this as? RelativeLabel
 
 @ApiStatus.Internal
@@ -266,7 +292,7 @@ fun Label.assumeResolved(): ResolvedLabel =
   when (this) {
     is ResolvedLabel -> this
     is SyntheticLabel -> error("Cannot resolve synthetic label $this")
-    is RelativeLabel -> this.resolve(ResolvedLabel(Main, Package(listOf()), SingleTarget("")))
+    is RelativeLabel -> this.resolve(ResolvedLabel(Main, Package(emptyList()), SingleTarget("")))
   }
 
 private fun joinPackagePathAndTarget(packagePath: PackageType, target: TargetType) =

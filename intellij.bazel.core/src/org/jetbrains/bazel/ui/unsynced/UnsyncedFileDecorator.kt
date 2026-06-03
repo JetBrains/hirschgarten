@@ -1,5 +1,6 @@
 package org.jetbrains.bazel.ui.unsynced
 
+import com.intellij.configurationStore.SettingsSavingComponent
 import com.intellij.ide.projectView.PresentationData
 import com.intellij.ide.projectView.ProjectView
 import com.intellij.ide.projectView.ProjectViewNode
@@ -7,6 +8,7 @@ import com.intellij.ide.projectView.ProjectViewNodeDecorator
 import com.intellij.openapi.application.EDT
 import com.intellij.openapi.application.ReadAction
 import com.intellij.openapi.application.readAction
+import com.intellij.openapi.components.Service
 import com.intellij.openapi.fileEditor.FileEditor
 import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.fileEditor.impl.EditorTabColorProvider
@@ -19,6 +21,7 @@ import com.intellij.ui.EditorNotificationProvider
 import com.intellij.ui.JBColor
 import com.intellij.ui.SimpleTextAttributes
 import com.intellij.ui.treeStructure.ProjectViewUpdateCause
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.jetbrains.annotations.ApiStatus
@@ -30,6 +33,7 @@ import org.jetbrains.bazel.config.isBazelProject
 import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.coroutines.BazelCoroutineService
 import org.jetbrains.bazel.sync.scope.SecondPhaseSync
+import org.jetbrains.bazel.sync.status.SyncStatusListener
 import org.jetbrains.bazel.sync.status.isSyncInProgress
 import org.jetbrains.bazel.sync.task.ProjectSyncTask
 import org.jetbrains.bazel.target.targetUtils
@@ -136,6 +140,8 @@ fun showAsUnsyncedSourceFile(project: Project, file: VirtualFile): Boolean {
   if (isResource) return false
 
   val targetUtils = project.targetUtils
+  if (!targetUtils.isLoaded()) return false
+
   return targetUtils.getTargetsForFile(file).isEmpty()
 }
 
@@ -150,5 +156,26 @@ fun refreshAllFilesPresentation(project: Project) {
         }
       }
     }
+  }
+}
+
+@Service(Service.Level.PROJECT)
+internal class UnsyncedFilesRefresher(private val project: Project) {
+  init {
+    project.targetUtils.onLoaded {
+      refreshAllFilesPresentation(project)
+    }
+
+    project.messageBus.connect().subscribe(
+      SyncStatusListener.TOPIC,
+      object : SyncStatusListener {
+        override fun syncStarted() {
+        }
+
+        override fun syncFinished(canceled: Boolean) {
+          refreshAllFilesPresentation(project)
+        }
+      },
+    )
   }
 }

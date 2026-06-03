@@ -14,6 +14,7 @@
     <module name="intellij.platform.scriptDebugger.backend"/>
     <module name="intellij.platform.scriptDebugger.ui"/>
     <module name="intellij.platform.searchEverywhere"/>
+    <module name="intellij.platform.smRunner"/>
     <module name="intellij.platform.vcs"/>
   </dependencies>
   <!-- endregion -->

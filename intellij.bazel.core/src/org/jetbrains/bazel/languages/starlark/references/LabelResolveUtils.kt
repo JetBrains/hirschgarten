@@ -20,8 +20,6 @@ import org.jetbrains.bazel.languages.starlark.repomapping.singleTarget
 import org.jetbrains.bazel.languages.starlark.repomapping.toCanonicalLabel
 import org.jetbrains.bazel.utils.findVirtualFile
 import org.jetbrains.bazel.workspace.canonicalRepoNameToPath
-import java.nio.file.Path
-import kotlin.io.path.Path
 
 /**
  * @param containingFile the file that should be used as context for resolving, e.g., relative labels
@@ -46,9 +44,37 @@ internal fun resolveLabel(
       // Fall back to the BUILD file, as opposed to a specific target inside it.
       // The reference may still be valid, e.g., if a macro in the file creates a target with a custom name,
       // in which case we can't determine which macro actually corresponds to the target with that name.
-      return buildFile.takeIf { !acceptOnlyFileTarget }
+      buildFile.takeIf { !acceptOnlyFileTarget }
     }
     is SourceFile -> PsiManager.getInstance(project).findFile(buildOrSource.file)
+  }
+}
+
+/**
+ * Resolves a single Bazel file target [label] to the [VirtualFile] it points to.
+ * It only considers regular files. If label points to target or directory, it returns null.
+ *
+ * Unlike [resolveLabel], this method works entirely at the VFS level and never touches PSI.
+ */
+@ApiStatus.Internal
+fun resolveFileTargetToVirtualFile(
+  project: Project,
+  label: Label,
+  containingFile: VirtualFile? = null,
+): VirtualFile? = when (label) {
+  is ResolvedLabel -> {
+    val packageDir = findReferredAbsolutePackage(project, containingFile, label)
+    packageDir
+      ?.findFileByRelativePath(label.targetName)
+      ?.takeIf { it.isFile }
+  }
+  else -> {
+    val containingPackage = findContainingPackage(containingFile)
+    val referred = containingPackage?.findFileByRelativePath(label.packagePath.toString())
+    if (referred != null && referred.isFile && label.target is AmbiguousEmptyTarget) referred
+    else referred
+      ?.findFileByRelativePath(label.targetName)
+      ?.takeIf { it.isFile }
   }
 }
 
@@ -76,7 +102,7 @@ private fun resolveBuildFileOrSourceFile(
 
 private fun resolveBuildFileTarget(buildFile: StarlarkFile, label: Label): PsiElement? {
   val target = label.singleTarget() ?: return null
-  return buildFile.findRuleTarget(target.targetName)
+  return buildFile.findTargetRule(target.targetName)
 }
 
 @ApiStatus.Internal
@@ -149,33 +175,15 @@ private fun findBuildFilePsi(project: Project, packageDir: VirtualFile): Starlar
   return PsiManager.getInstance(project).findFile(buildFile) as? StarlarkFile
 }
 
-internal fun findBuildFilePathForDirectory(
-  dir: VirtualFile,
-  repoRoot: VirtualFile,
-  cache: MutableMap<VirtualFile, Path?> = mutableMapOf(),
-): Path? =
-  cache.getOrPut(dir) {
-    val buildFile = findBuildFile(dir)
-    if (buildFile != null) {
-      Path(buildFile.path)
-    }
-    else {
-      val parent = dir.parent
-      if (parent == null || !VfsUtilCore.isAncestor(repoRoot, parent, false)) {
-        null
-      }
-      else {
-        findBuildFilePathForDirectory(parent, repoRoot, cache)
-      }
-    }
-  }
-
-internal fun findPackagePathForFileInRepo(
+internal fun findBuildFilePathFor(
   file: VirtualFile,
   repoRoot: VirtualFile
-): Path? {
-  val dir = if (file.isDirectory) file else file.parent ?: return null
-  val buildFilePath = findBuildFilePathForDirectory(dir, repoRoot, mutableMapOf()) ?: return null
-  return buildFilePath.parent
-}
+): VirtualFile? {
+  if (!VfsUtilCore.isAncestor(repoRoot, file, false))
+    return null
 
+  val dir = if (file.isDirectory) file else file.parent ?: return null
+  return generateSequence(dir) { it.takeIf { it != repoRoot }?.parent }.firstNotNullOfOrNull {
+    findBuildFile(it)
+  }
+}

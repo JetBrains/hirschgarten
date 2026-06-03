@@ -13,7 +13,7 @@ internal object GlobPatternValidator {
   fun validate(pattern: String): String? {
     val error = checkPatternForError(pattern)
     if (error != null) {
-      return "Invalid glob pattern: " + error
+      return "Invalid glob pattern: $error"
     }
     return null
   }
@@ -22,13 +22,12 @@ internal object GlobPatternValidator {
     if (pattern.isEmpty()) {
       return "pattern cannot be empty"
     }
-    if (pattern.get(0) == '/') {
+    if (pattern[0] == '/') {
       return "pattern cannot be absolute"
     }
-    for (i in 0..<pattern.length) {
-      val c = pattern.get(i)
+    for (c in pattern) {
       when (c) {
-        '(', ')', '{', '}', '[', ']' -> return "illegal character '" + c + "'"
+        '(', ')', '{', '}', '[', ']' -> return "illegal character '$c'"
         else -> {}
       }
     }
@@ -38,7 +37,7 @@ internal object GlobPatternValidator {
         return "empty segment not permitted"
       }
       if (segment == "." || segment == "..") {
-        return "segment '" + segment + "' not permitted"
+        return "segment '$segment' not permitted"
       }
       if (segment.contains("**") && segment != "**") {
         return "recursive wildcard must be its own segment"
