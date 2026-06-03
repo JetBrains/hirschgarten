@@ -20,6 +20,7 @@ import org.jetbrains.bazel.server.sync.BspProjectMapper
 import org.jetbrains.bazel.server.sync.ExecuteService
 import org.jetbrains.bazel.server.sync.ProjectResolver
 import org.jetbrains.bazel.server.sync.firstPhase.FirstPhaseProjectResolver
+import org.jetbrains.bazel.sync.BazelEnvironmentService
 import org.jetbrains.bazel.sync.workspace.mapper.normal.DefaultBazelOutputFileHardLinks
 import org.jetbrains.bazel.taskEvents.BazelTaskEventsService
 import org.jetbrains.bazel.workspace.BazelExecutableProvider
@@ -68,7 +69,7 @@ internal class DefaultBazelServerConnection(private val project: Project) : Baze
     val bazelInfoResolver = BazelInfoResolver(workspaceRoot)
     val bazelProcessLauncherProvider = BazelProcessLauncherProvider.getInstance()
     val bazelProcessLauncher =
-      bazelProcessLauncherProvider.createBazelProcessLauncher(workspaceRoot, aspectsResolver, bazelInfoResolver)
+      bazelProcessLauncherProvider.createBazelProcessLauncher(workspaceRoot, BazelEnvironmentService.getInstance(project).getEnvironment())
     val bazelRunner = BazelRunner(taskEventsHandler, workspaceRoot, bazelProcessLauncher)
 
     val bazelInfo = bazelInfoResolver.resolveBazelInfo(bazelRunner, workspaceContext)

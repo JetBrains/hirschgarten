@@ -1,10 +1,14 @@
 package org.jetbrains.bazel.ui.widgets.queryTab
 
+import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
+import kotlinx.coroutines.runBlocking
 import org.jetbrains.bazel.bazelrunner.BazelProcess
+import org.jetbrains.bazel.bazelrunner.BazelProcessLauncherProvider
 import org.jetbrains.bazel.bazelrunner.BazelProcessResult
 import org.jetbrains.bazel.bazelrunner.BazelRunner
 import org.jetbrains.bazel.commons.ExcludableValue
+import org.jetbrains.bazel.sync.BazelEnvironmentService
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bsp.protocol.TaskGroupId
 import java.util.concurrent.atomic.AtomicBoolean
@@ -39,7 +43,7 @@ internal class BazelFlag(value: String) {
   }
 }
 
-internal class QueryEvaluator(currentRunnerDirFile: VirtualFile) {
+internal class QueryEvaluator(private val project: Project, currentRunnerDirFile: VirtualFile) {
   private var bazelRunner: BazelRunner
   private var workspaceContext: WorkspaceContext
 
@@ -80,7 +84,13 @@ internal class QueryEvaluator(currentRunnerDirFile: VirtualFile) {
         preferClassJarsOverSourcelessJars = false,
       )
 
-    return Pair(BazelRunner(null, workspaceRoot), emptyWorkspaceContext)
+    val bazelProcessLauncherProvider = BazelProcessLauncherProvider.getInstance()
+    val bazelProcessLauncher =
+      bazelProcessLauncherProvider.createBazelProcessLauncher(
+        workspaceRoot,
+        runBlocking { BazelEnvironmentService.getInstance(project).getEnvironment() },
+      )
+    return Pair(BazelRunner(null, workspaceRoot, bazelProcessLauncher), emptyWorkspaceContext)
   }
 
   // Starts a process which evaluates a given query.

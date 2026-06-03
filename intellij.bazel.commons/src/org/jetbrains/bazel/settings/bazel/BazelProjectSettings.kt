@@ -31,9 +31,9 @@ data class BazelProjectSettings @ApiStatus.Internal constructor(
     copy(buildifierExecutablePath = newBuildifierExecutablePath)
 
   @ApiStatus.Internal
-  fun getBuildifierPathString(): String? =
+  fun getBuildifierPathString(project: Project): String? =
     buildifierExecutablePath?.takeIf { it.exists() }?.toAbsolutePath()?.toString()
-      ?: BuildifierUtil.detectBuildifierExecutable()
+    ?: BuildifierUtil.detectBuildifierExecutable(project)
 }
 
 internal data class BazelProjectSettingsState(

@@ -1,7 +1,6 @@
 package org.jetbrains.bazel.ui.settings
 
 import com.intellij.execution.Platform
-import com.intellij.ide.projectView.ProjectView
 import com.intellij.openapi.extensions.BaseExtensionPointName
 import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory
 import com.intellij.openapi.observable.util.whenTextChanged
@@ -19,7 +18,6 @@ import com.intellij.openapi.vfs.VirtualFileManager
 import com.intellij.ui.components.JBCheckBox
 import com.intellij.ui.dsl.builder.Align
 import com.intellij.ui.dsl.builder.panel
-import com.intellij.ui.treeStructure.ProjectViewUpdateCause
 import org.jetbrains.bazel.buildifier.BuildifierUtil
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.coroutines.BazelCoroutineService
@@ -112,7 +110,7 @@ internal class BazelProjectSettingsConfigurable(private val project: Project) :
   private fun buildifierExecutableValidationInfo(): ValidationInfo? =
     validateBuildifierExecutable(
       buildifierExecutablePathField.text.takeIf { it.isNotBlank() }
-      ?: BuildifierUtil.detectBuildifierExecutable(),
+      ?: BuildifierUtil.detectBuildifierExecutable(project),
     )
 
   private fun initRunBuildifierOnSaveCheckBox(): JBCheckBox =
@@ -150,7 +148,7 @@ internal class BazelProjectSettingsConfigurable(private val project: Project) :
   }
 
   private fun getBuildifierExecPathPlaceholderMessage(): String =
-    currentProjectSettings.getBuildifierPathString()
+    currentProjectSettings.getBuildifierPathString(project)
     ?: BazelPluginBundle.message("buildifier.executable.not.found", if (SystemInfo.isWindows) 0 else 1)
 
   private fun savedProjectViewPath() =

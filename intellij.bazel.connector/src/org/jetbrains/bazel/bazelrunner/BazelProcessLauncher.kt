@@ -2,7 +2,6 @@ package org.jetbrains.bazel.bazelrunner
 
 import com.intellij.openapi.extensions.ExtensionPointName
 import org.jetbrains.annotations.ApiStatus
-import org.jetbrains.bazel.server.bsp.utils.InternalAspectsResolver
 import java.nio.file.Path
 
 @ApiStatus.Internal
@@ -14,8 +13,7 @@ interface BazelProcessLauncher {
 interface BazelProcessLauncherProvider {
   fun createBazelProcessLauncher(
     workspaceRoot: Path,
-    aspectsResolver: InternalAspectsResolver,
-    bazelInfoResolver: BazelInfoResolver,
+    parentEnvironment: Map<String, String>,
   ): BazelProcessLauncher
 
   companion object {

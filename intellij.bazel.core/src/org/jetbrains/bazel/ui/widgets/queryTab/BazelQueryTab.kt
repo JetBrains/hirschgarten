@@ -132,7 +132,7 @@ internal class BazelQueryTab(private val project: Project) : JPanel() {
     }
 
   // Bazel Runner
-  private val queryEvaluator = QueryEvaluator(project.baseDir)
+  private val queryEvaluator = QueryEvaluator(project, project.baseDir)
 
   private class EvaluateQueryAction(private val tab: BazelQueryTab) : AnAction() {
     override fun actionPerformed(e: AnActionEvent) {

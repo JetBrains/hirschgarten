@@ -20,7 +20,7 @@ import kotlin.io.path.pathString
 class BazelRunner(
   private val taskEventsHandler: BazelTaskEventsHandler?,
   val workspaceRoot: Path,
-  val bazelProcessLauncher: BazelProcessLauncher = DefaultBazelProcessLauncher(workspaceRoot),
+  private val bazelProcessLauncher: BazelProcessLauncher,
 ) {
   class CommandBuilder(workspaceContext: WorkspaceContext) {
     private val bazelBinary = workspaceContext.bazelBinary?.pathString ?: "bazel"
