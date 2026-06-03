@@ -1028,6 +1028,102 @@ WARNING: Delegated to the 'execute' command.
     }
   }
 
+  @Test
+  fun `empty testsuites element reports nothing and returns zero`(
+    @TempDir tempDir: Path,
+  ) {
+    // Go tests via rules_go without verbose output produce an empty <testsuites> on success.
+    // Nothing is reported, so parseAndReport must return 0 — BepServer then shows a target-level node
+    // instead of leaving the user with "No tests were found".
+    val sampleContents = "<testsuites></testsuites>"
+
+    val client = MockBuildTaskEventsHandler()
+    val notifier = BspClientTestNotifier(client)
+
+    val reported = TestXmlParser(notifier).parseAndReport(TaskGroupId.EMPTY.task(""), writeTempFile(tempDir, sampleContents))
+
+    reported shouldBe 0
+    client.taskStartCalls.size shouldBe 0
+  }
+
+  @Test
+  fun `suite with tests but no testcases is skipped and returns zero`(
+    @TempDir tempDir: Path,
+  ) {
+    // A well-formed suite with tests > 0 but no <testcase> children is skipped (aggregation / filtered
+    // suites). parseAndReport returns 0 so the caller can fall back to a target-level result.
+    val sampleContents =
+      """
+      <?xml version='1.0' encoding='UTF-8'?>
+      <testsuites>
+        <testsuite name='//src/go/mypackage:mypackage_test' timestamp='2026-01-15T10:00:00Z' hostname='localhost' tests='3' failures='0' errors='0' time='1.234' package='' id='0'>
+          <properties />
+          <system-out />
+          <system-err />
+        </testsuite>
+      </testsuites>
+      """.trimIndent()
+
+    val client = MockBuildTaskEventsHandler()
+    val notifier = BspClientTestNotifier(client)
+
+    val reported = TestXmlParser(notifier).parseAndReport(TaskGroupId.EMPTY.task(""), writeTempFile(tempDir, sampleContents))
+
+    reported shouldBe 0
+    client.taskStartCalls.size shouldBe 0
+  }
+
+  @Test
+  fun `passing suite with testcases is reported and counted`(
+    @TempDir tempDir: Path,
+  ) {
+    val sampleContents =
+      """
+      <?xml version='1.0' encoding='UTF-8'?>
+      <testsuites>
+        <testsuite name='//src/go/passing:passing_test' timestamp='2026-01-15T10:00:00Z' hostname='localhost' tests='1' failures='0' errors='0' time='0.5' package='' id='0'>
+          <testcase name='TestSomething' classname='passing_test' time='0.5' />
+        </testsuite>
+      </testsuites>
+      """.trimIndent()
+
+    val client = MockBuildTaskEventsHandler()
+    val notifier = BspClientTestNotifier(client)
+
+    val reported = TestXmlParser(notifier).parseAndReport(TaskGroupId.EMPTY.task(""), writeTempFile(tempDir, sampleContents))
+
+    reported shouldBe 1
+    val expectedNames = listOf("//src/go/passing:passing_test", "TestSomething")
+    val finishes = client.taskFinishCalls.filter { it.data is TestFinish }
+    finishes.map { (it.data as TestFinish).displayName } shouldContainExactlyInAnyOrder expectedNames
+  }
+
+  @Test
+  fun `fallback parser path reports suites and returns non-zero count`(
+    @TempDir tempDir: Path,
+  ) {
+    // Missing the `id` attribute makes the strict primary parser fail, so this goes through the
+    // lenient fallback parser. parseAndReport must still return a non-zero count so the caller does
+    // not wrongly emit a target-level fallback on top of the per-test results.
+    val sampleContents =
+      """
+      <?xml version="1.0" encoding="utf-8"?>
+      <testsuites>
+        <testsuite name="test_suite" errors="0" failures="0" skipped="0" tests="1" time="0.01" timestamp="2024-05-17T19:23:31" hostname="test-host">
+          <testcase classname="com.example.Test" name="test_method" time="0.01" />
+        </testsuite>
+      </testsuites>
+      """.trimIndent()
+
+    val client = MockBuildTaskEventsHandler()
+    val notifier = BspClientTestNotifier(client)
+
+    val reported = TestXmlParser(notifier).parseAndReport(TaskGroupId.EMPTY.task(""), writeTempFile(tempDir, sampleContents))
+
+    reported shouldBe 1
+    client.taskStartCalls.size shouldBe 2
+  }
+
   private fun writeTempFile(tempDir: Path, contents: String): Path {
     val tempFile = tempDir.resolve("tempFile.xml")
     tempFile.writeText(contents)

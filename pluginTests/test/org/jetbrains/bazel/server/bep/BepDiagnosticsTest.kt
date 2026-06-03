@@ -3,6 +3,7 @@ package org.jetbrains.bazel.server.bep
 import com.google.devtools.build.lib.buildeventstream.BuildEventStreamProtos
 import com.google.devtools.build.v1.BuildEvent
 import com.google.protobuf.Any
+import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
 import org.jetbrains.bazel.commons.BazelInfo
 import org.jetbrains.bazel.commons.BazelPathsResolver
@@ -18,6 +19,8 @@ import org.jetbrains.bsp.protocol.PublishDiagnosticsParams
 import org.jetbrains.bsp.protocol.TaskFinishParams
 import org.jetbrains.bsp.protocol.TaskGroupId
 import org.jetbrains.bsp.protocol.TaskStartParams
+import org.jetbrains.bsp.protocol.TestFinish
+import org.jetbrains.bsp.protocol.TestStatus
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
@@ -28,6 +31,7 @@ import kotlin.io.path.Path
 class BepDiagnosticsTest : MockProjectBaseTest() {
   private class MockBuildTaskEventsHandler : BazelTaskEventsHandler {
     val buildPublishDiagnostics: MutableList<PublishDiagnosticsParams> = mutableListOf()
+    val taskFinishCalls: MutableList<TaskFinishParams> = mutableListOf()
 
     override fun onBuildLogMessage(p0: LogMessageParams) {}
 
@@ -37,7 +41,9 @@ class BepDiagnosticsTest : MockProjectBaseTest() {
 
     override fun onBuildTaskStart(p0: TaskStartParams) {}
 
-    override fun onBuildTaskFinish(p0: TaskFinishParams) {}
+    override fun onBuildTaskFinish(p0: TaskFinishParams) {
+      taskFinishCalls.add(p0)
+    }
 
     override fun onPublishCoverageReport(report: CoverageReport) {}
 
@@ -209,5 +215,59 @@ src/build/NotCompiling.java:4: error: cannot find symbol
 
     handlerCalledTimes shouldBe 4
     providerCalledTimes shouldBe 1
+  }
+
+  @ParameterizedTest
+  @ValueSource(booleans = [true, false])
+  fun `empty test xml reports a target-level node with the target label and status`(passed: Boolean) {
+    val client = MockBuildTaskEventsHandler()
+    val server = newBepServer(client)
+    val label = "//src/go/demo:demo_test"
+
+    val startedEvent =
+      BuildEventStreamProtos.BuildEvent
+        .newBuilder()
+        .apply {
+          idBuilder.testResultBuilder.label = label
+          started =
+            startedBuilder
+              .apply {
+                uuid = "uuid"
+                command = Constants.BAZEL_TEST_COMMAND
+              }.build()
+        }.build()
+    server.handleBuildEventStreamProtosEvent(startedEvent)
+
+    // rules_go without verbose output writes an empty <testsuites> for a passing target.
+    val testXml = Files.createTempFile("test", ".xml")
+    Files.write(testXml, "<testsuites></testsuites>".toByteArray())
+
+    val testResultEvent =
+      BuildEventStreamProtos.BuildEvent
+        .newBuilder()
+        .apply {
+          idBuilder.testResultBuilder.label = label
+          testResult =
+            testResultBuilder
+              .apply {
+                status = if (passed) BuildEventStreamProtos.TestStatus.PASSED else BuildEventStreamProtos.TestStatus.FAILED
+                addTestActionOutput(
+                  BuildEventStreamProtos.File
+                    .newBuilder()
+                    .apply {
+                      name = "test.xml"
+                      uri = testXml.toUri().toString()
+                    }.build(),
+                )
+              }.build()
+        }.build()
+    server.handleBuildEventStreamProtosEvent(testResultEvent)
+
+    val finish =
+      client.taskFinishCalls
+        .mapNotNull { it.data as? TestFinish }
+        .find { it.displayName == label }
+    finish.shouldNotBeNull()
+    finish.status shouldBe if (passed) TestStatus.PASSED else TestStatus.FAILED
   }
 }
