@@ -249,6 +249,8 @@ class PythonProjectSyncTest : MockProjectBaseTest() {
       workspaceContext = mockWorkspaceContext,
       repoMapping = RepoMappingDisabled,
       resolved = BazelResolvedWorkspace(
+        workspaceName = null,
+        repoMapping = RepoMappingDisabled,
         rootTargets = targets.map { it.id }.toSet(),
         targets = targets,
       ),

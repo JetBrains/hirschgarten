@@ -1,3 +1,5 @@
+org.jetbrains.bazel.server.BazelServerFacade
+- a:getWorkspaceContext():org.jetbrains.bazel.workspacecontext.WorkspaceContext
 org.jetbrains.bazel.server.bep.BepEventHandler
 - a:handleEvent(com.google.devtools.build.lib.buildeventstream.BuildEventStreamProtos$BuildEvent):Z
 f:org.jetbrains.bazel.server.bep.BepEventHandlerContext

@@ -19,10 +19,10 @@ import org.jetbrains.bazel.coroutines.BazelCoroutineService
 import org.jetbrains.bazel.run.config.BazelRunConfiguration
 import org.jetbrains.bazel.run.test.BazelRerunFailedTestsAction
 import org.jetbrains.bazel.run.test.useJetBrainsTestRunner
-import org.jetbrains.bazel.server.connection.connection
+import org.jetbrains.bazel.server.connection
 import org.jetbrains.bazel.taskEvents.BazelTaskEventsService
 import org.jetbrains.bazel.taskEvents.BazelTaskListener
-import org.jetbrains.bsp.protocol.BazelServerFacade
+import org.jetbrains.bazel.server.BazelServerFacade
 import org.jetbrains.bsp.protocol.TaskGroupId
 import kotlin.random.Random
 

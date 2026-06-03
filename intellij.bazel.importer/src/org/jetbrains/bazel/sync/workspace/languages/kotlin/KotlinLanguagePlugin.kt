@@ -10,9 +10,8 @@ import org.jetbrains.bazel.commons.getLocalRepositories
 import org.jetbrains.bazel.info.BspTargetInfo
 import org.jetbrains.bazel.info.BspTargetInfo.TargetInfo
 import org.jetbrains.bazel.label.Label
-import org.jetbrains.bazel.sync.workspace.graph.DependencyGraph
 import org.jetbrains.bazel.sync.workspace.languages.java.JvmLanguagePluginMixin
-import org.jetbrains.bsp.protocol.BazelServerFacade
+import org.jetbrains.bazel.server.BazelServerFacade
 import org.jetbrains.bsp.protocol.BuildTargetData
 import org.jetbrains.bsp.protocol.KotlinBuildTarget
 import org.jetbrains.bsp.protocol.LibraryItem
@@ -23,7 +22,7 @@ import kotlin.io.path.notExists
 @ApiStatus.Internal
 class KotlinLanguagePlugin: JvmLanguagePluginMixin {
   override fun getSupportedLanguages(): Set<LanguageClass> = setOf(LanguageClass.KOTLIN)
-  override fun createProjectMapper(project: Project, server: BazelServerFacade) = Mapper(server)
+  override fun createProjectMapper(project: Project, server: BazelServerFacade): Mapper = Mapper(server)
 
   class Mapper(private val server: BazelServerFacade) : JvmLanguagePluginMixin.Mapper {
     override suspend fun createBuildTargetData(

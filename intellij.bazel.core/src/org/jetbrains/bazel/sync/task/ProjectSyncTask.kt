@@ -7,8 +7,11 @@ import com.intellij.build.events.impl.SuccessResultImpl
 import com.intellij.ide.SaveAndSyncHandler
 import com.intellij.ide.trustedProjects.TrustedProjects
 import com.intellij.openapi.application.edtWriteAction
+import com.intellij.openapi.components.service
 import com.intellij.openapi.components.serviceAsync
 import com.intellij.openapi.diagnostic.logger
+import com.intellij.openapi.project.IncompleteDependenciesService
+import com.intellij.openapi.project.IncompleteDependenciesService.IncompleteDependenciesAccessToken
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.UnindexedFilesScannerExecutor
 import com.intellij.openapi.vfs.findDirectory
@@ -21,32 +24,36 @@ import com.intellij.platform.workspace.storage.MutableEntityStorage
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.action.saveAllFiles
 import org.jetbrains.bazel.commons.constants.Constants
+import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.config.BazelPluginConstants
 import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.coroutines.BazelCoroutineService
-import org.jetbrains.bazel.label.label
+import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.performance.bspTracer
 import org.jetbrains.bazel.progress.syncConsole
 import org.jetbrains.bazel.progress.withSubtask
 import org.jetbrains.bazel.run.task.BazelBuildTaskListener
-import org.jetbrains.bazel.server.connection.BazelServerService
+import org.jetbrains.bazel.server.BazelServerService
 import org.jetbrains.bazel.sync.ProjectPostSyncHook
 import org.jetbrains.bazel.sync.ProjectPreSyncHook
 import org.jetbrains.bazel.sync.ProjectSyncHook.ProjectSyncHookEnvironment
 import org.jetbrains.bazel.sync.projectPostSyncHooks
 import org.jetbrains.bazel.sync.projectPreSyncHooks
-import org.jetbrains.bazel.sync.projectStructure.ProjectModelApplicatonTask
+import org.jetbrains.bazel.sync.projectStructure.ProjectModelApplicationTask
 import org.jetbrains.bazel.sync.projectSyncHooks
+import org.jetbrains.bazel.sync.scope.FirstPhaseSync
 import org.jetbrains.bazel.sync.scope.ProjectSyncScope
 import org.jetbrains.bazel.sync.status.SyncAlreadyInProgressException
 import org.jetbrains.bazel.sync.status.SyncStatusService
-import org.jetbrains.bazel.sync.workspace.BazelWorkspaceResolveService
 import org.jetbrains.bazel.sync.workspace.importer.WorkspaceImporterHelper
+import org.jetbrains.bazel.sync.workspace.mapper.BazelWorkspaceResolver
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceSnapshotBuilder
 import org.jetbrains.bazel.taskEvents.BazelTaskEventsService
 import org.jetbrains.bazel.workspace.fileEvents.FileEventJobManager
-import org.jetbrains.bsp.protocol.BazelServerFacade
+import org.jetbrains.bazel.server.BazelServerFacade
+import org.jetbrains.bazel.sync.scope.PartialProjectSync
+import org.jetbrains.bazel.sync.scope.SecondPhaseSync
 import org.jetbrains.bsp.protocol.TaskGroupId
 import org.jetbrains.bsp.protocol.TaskId
 import java.util.concurrent.CancellationException
@@ -57,7 +64,34 @@ private val log = logger<ProjectSyncTask>()
 // TODO: some parts of this logic should be moved to `backend` module
 @ApiStatus.Internal
 class ProjectSyncTask(private val project: Project) {
-  suspend fun sync(syncScope: ProjectSyncScope, buildProject: Boolean) {
+  suspend fun fullSync(buildProject: Boolean) {
+    sync(SecondPhaseSync, buildProject)
+  }
+
+  suspend fun phasedSync(runSecondPhase: Boolean, buildProject: Boolean) {
+    var incompleteState: IncompleteDependenciesAccessToken? = null
+    try {
+      sync(FirstPhaseSync, false)
+      incompleteState =
+        edtWriteAction {
+          project.service<IncompleteDependenciesService>().enterIncompleteState(this)
+        }
+
+      if (runSecondPhase) {
+        sync(SecondPhaseSync, buildProject)
+      }
+    } finally {
+      if (incompleteState != null && runSecondPhase) {
+        edtWriteAction { incompleteState.finish() }
+      }
+    }
+  }
+
+  suspend fun partialSync(targets: List<Label>, buildProject: Boolean) {
+    sync(PartialProjectSync(targetsToSync = targets), buildProject = buildProject)
+  }
+
+  private suspend fun sync(syncScope: ProjectSyncScope, buildProject: Boolean) {
     if (TrustedProjects.isProjectTrusted(project)) {
       bspTracer.spanBuilder("bsp.sync.project.ms").setAttribute("project.name", project.name).useWithScope {
         val syncConsole = project.syncConsole
@@ -252,6 +286,9 @@ class ProjectSyncTask(private val project: Project) {
     }
   }
 
+  // remember from first phase to second phase for proper sharding
+  private var allKnownTargets: List<Label>? = null
+
   private suspend fun executeSyncHooks(
     progressReporter: SequentialProgressReporter,
     taskId: TaskId,
@@ -262,73 +299,64 @@ class ProjectSyncTask(private val project: Project) {
     importerHelper: WorkspaceImporterHelper,
     deferredApplyActions: MutableList<suspend () -> Unit>,
   ): SyncResultStatus {
-    val resolver = BazelWorkspaceResolveService.getInstance(project)
-    val syncStatus =
-      bspTracer.spanBuilder("collect.project.details.ms").use {
-        // if this bazel build fails, we still want the sync hooks to be executed
-        val bazelProject =
-          project.syncConsole.withSubtask(
-            subtaskId = taskId.subTask("base-project-sync-subtask-id"),
-            message = BazelPluginBundle.message("console.task.base.sync"),
-          ) { subtaskId ->
-            // force full re-sync
-            resolver.invalidateCachedState()
-            resolver.getOrFetchSyncedProject(build = buildProject, taskId = subtaskId).also {
-              it.targets.values.filter { it.tagsList.any { it.equals(Constants.NO_IDE) }}.let {
-                if (!it.isEmpty()) {
-                  project.syncConsole.addDiagnosticMessage(
-                    subtaskId, null, -1, -1,
-                    "Included ${it.size} ${Constants.NO_IDE} targets as dependencies: ${it.joinToString(",", limit = 5) { it.label().toString() }}",
-                    MessageEvent.Kind.WARNING
-                  )
-                }
-              }
-            }
-          }
-        if (bazelProject.hasError && bazelProject.targets.isEmpty()) return@use SyncResultStatus.FAILURE
+    return bspTracer.spanBuilder("collect.project.details.ms").use {
+      // if this bazel build fails, we still want the sync hooks to be executed
+      val resolvedWorkspace =
         project.syncConsole.withSubtask(
-          reporter = progressReporter,
-          subtaskId = taskId.subTask("sync-hooks"),
-          text = BazelPluginBundle.message("console.task.execute.sync.hooks"),
+          subtaskId = taskId.subTask("base-project-sync-subtask-id"),
+          message = BazelPluginBundle.message("console.task.base.sync"),
         ) { subtaskId ->
-          val resolvedWorkspace = resolver.getOrFetchResolvedWorkspace(scope = syncScope, taskId = subtaskId)
-          val workspaceSnapshot = WorkspaceSnapshotBuilder.build(
-            project = project,
-            workspaceContext = server.workspaceContext,
-            repoMapping = server.workspaceBazelRepoMapping(taskId).repoMapping,
-            resolved = resolvedWorkspace
+          BazelWorkspaceResolver.fetchWorkspace(
+            project,
+            scope = syncScope,
+            build = buildProject,
+            allKnownTargets = allKnownTargets,
+            taskId = subtaskId,
           )
-          // importers first
-          importerHelper.invoke(progressReporter, workspaceSnapshot)
-          val environment =
-            ProjectSyncHookEnvironment(
-              project = project,
-              server = server,
-              resolver = resolver,
-              diff = storage,
-              taskId = subtaskId,
-              progressReporter = progressReporter,
-              buildTargets = bazelProject.targets,
-              syncScope = syncScope,
-              workspace = resolvedWorkspace,
-              deferredApplyActions = deferredApplyActions,
-            )
-          // then sync hooks
-          project.projectSyncHooks.forEachSubtask(subtaskId) {
-            it.onSync(environment)
-          }
-          deferredApplyActions += { importerHelper.invokeLate(progressReporter, workspaceSnapshot) }
         }
+      if (resolvedWorkspace.hasError && resolvedWorkspace.targets.isEmpty())
+        return@use SyncResultStatus.FAILURE
+      if (syncScope == FirstPhaseSync) {
+        allKnownTargets = resolvedWorkspace.targets.map { it.id }
+      }
 
-        if (bazelProject.hasError) {
+      project.syncConsole.withSubtask(
+        reporter = progressReporter,
+        subtaskId = taskId.subTask("sync-hooks"),
+        text = BazelPluginBundle.message("console.task.execute.sync.hooks"),
+      ) { subtaskId ->
+        val workspaceSnapshot = WorkspaceSnapshotBuilder.build(
+          project = project,
+          workspaceContext = server.workspaceContext,
+          repoMapping = resolvedWorkspace.repoMapping,
+          resolved = resolvedWorkspace,
+        )
+        // importers first
+        importerHelper.invoke(progressReporter, workspaceSnapshot)
+        val environment =
+          ProjectSyncHookEnvironment(
+            project = project,
+            server = server,
+            diff = storage,
+            taskId = subtaskId,
+            progressReporter = progressReporter,
+            syncScope = syncScope,
+            workspace = resolvedWorkspace,
+            deferredApplyActions = deferredApplyActions,
+          )
+        // then sync hooks
+        project.projectSyncHooks.forEachSubtask(subtaskId) {
+          it.onSync(environment)
+        }
+        deferredApplyActions += { importerHelper.invokeLate(progressReporter, workspaceSnapshot) }
+        if (resolvedWorkspace.hasError) {
           SyncResultStatus.PARTIAL_SUCCESS
         }
         else {
           SyncResultStatus.SUCCESS
         }
       }
-
-    return syncStatus
+    }
   }
 
   private suspend fun updateProjectModel(
@@ -343,7 +371,7 @@ class ProjectSyncTask(private val project: Project) {
       subtaskId = taskId.subTask("apply-changes"),
       text = BazelPluginBundle.message("console.task.apply.changes"),
     ) { subtaskId ->
-      val applicator = ProjectModelApplicatonTask(
+      val applicator = ProjectModelApplicationTask(
         project = project,
         scope = syncScope,
         taskId = subtaskId,

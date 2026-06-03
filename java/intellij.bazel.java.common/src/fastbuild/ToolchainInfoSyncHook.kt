@@ -7,7 +7,7 @@ import com.intellij.openapi.project.Project
 import kotlinx.coroutines.runBlocking
 import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.label.Label
-import org.jetbrains.bazel.server.connection.connection
+import org.jetbrains.bazel.server.connection
 import org.jetbrains.bazel.sync.ProjectSyncHook
 import org.jetbrains.bsp.protocol.JvmToolchainInfo
 

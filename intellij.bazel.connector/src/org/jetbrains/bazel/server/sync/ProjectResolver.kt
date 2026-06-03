@@ -32,7 +32,6 @@ import org.jetbrains.bazel.server.bsp.managers.BazelToolchainManager
 import org.jetbrains.bazel.server.bzlmod.calculateRepoNameMappingOnly
 import org.jetbrains.bazel.server.bzlmod.extendRepoMappingByPathInfo
 import org.jetbrains.bazel.server.model.AspectSyncProject
-import org.jetbrains.bazel.server.model.PhasedSyncProject
 import org.jetbrains.bazel.server.sync.sharding.BazelBuildTargetSharder
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bazel.workspacecontext.externalRepositoriesTreatedAsInternal
@@ -73,11 +72,11 @@ class ProjectResolver(
   internal suspend fun resolve(
     build: Boolean,
     requestedTargetsToSync: List<Label>?,
-    phasedSyncProject: PhasedSyncProject?,
+    allTargets: List<Label>? /* all known targets, if any, from first phase */,
     taskId: TaskId,
   ): AspectSyncProject {
     return bspTracer.spanBuilder("Resolve project").useWithScope {
-      val buildAspectResult = buildProjectWithAspectAndSetup(build, requestedTargetsToSync, phasedSyncProject, taskId)
+      val buildAspectResult = buildProjectWithAspectAndSetup(build, requestedTargetsToSync, allTargets, taskId)
       val repoMapping = buildAspectResult.first
       val aspectResult = buildAspectResult.second
 
@@ -139,7 +138,7 @@ class ProjectResolver(
   private suspend fun buildProjectWithAspectAndSetup(
     build: Boolean,
     requestedTargetsToSync: List<Label>?,
-    phasedSyncProject: PhasedSyncProject?,
+    allTargets: List<Label>? /* all known targets, if any, from first phase */,
     taskId: TaskId,
   ): Pair<RepoMapping, BazelBspAspectsManagerResult> {
     // Use the already available workspaceContext and featureFlags
@@ -228,7 +227,7 @@ class ProjectResolver(
     val buildAspectResult =
       measured(
         "Building project with aspect",
-      ) { buildProjectWithAspect(workspaceContext, build, targetsToSync, phasedSyncProject, taskId) }
+      ) { buildProjectWithAspect(workspaceContext, build, targetsToSync, allTargets, taskId) }
 
     return Pair(repoMapping, buildAspectResult)
   }
@@ -237,7 +236,7 @@ class ProjectResolver(
     workspaceContext: WorkspaceContext,
     build: Boolean,
     targetsToSync: TargetCollection,
-    phasedSyncProject: PhasedSyncProject?,
+    allTargets: List<Label>? /* all known targets, if any, from first phase */,
     taskId: TaskId,
   ): BazelBspAspectsManagerResult =
     coroutineScope {
@@ -274,7 +273,7 @@ class ProjectResolver(
               workspaceContext,
               bazelRunner,
               taskLogger,
-              phasedSyncProject,
+              allTargets,
             )
           var remainingShardedTargetsSpecs = shardedResult.targets.toTargetCollections().toMutableList()
           var shardNumber = 1

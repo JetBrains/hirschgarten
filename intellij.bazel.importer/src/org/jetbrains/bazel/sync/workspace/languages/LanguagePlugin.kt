@@ -12,7 +12,7 @@ import org.jetbrains.bazel.sync.workspace.graph.DependencyGraph
 import org.jetbrains.bazel.sync.workspace.importer.BazelWorkspaceImporter
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceSyncConfig
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
-import org.jetbrains.bsp.protocol.BazelServerFacade
+import org.jetbrains.bazel.server.BazelServerFacade
 import org.jetbrains.bsp.protocol.BuildTargetData
 
 @ApiStatus.Internal

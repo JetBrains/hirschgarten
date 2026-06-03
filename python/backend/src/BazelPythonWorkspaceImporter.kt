@@ -40,7 +40,7 @@ import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.magicmetamodel.formatAsModuleName
 import org.jetbrains.bazel.progress.TaskConsole
 import org.jetbrains.bazel.progress.withSubtask
-import org.jetbrains.bazel.server.connection.connection
+import org.jetbrains.bazel.server.connection
 import org.jetbrains.bazel.sync.workspace.importer.BazelWorkspaceImporter
 import org.jetbrains.bazel.sync.workspace.importer.WorkspaceImporterContext
 import org.jetbrains.bazel.sync.workspace.importer.WorkspaceImporterPhase

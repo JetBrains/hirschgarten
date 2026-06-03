@@ -1,7 +1,6 @@
 package org.jetbrains.bazel.sync.workspace.languages.python
 
 import com.intellij.openapi.project.Project
-import org.jetbrains.bazel.commons.BazelPathsResolver
 import org.jetbrains.bazel.commons.LanguageClass
 import org.jetbrains.bazel.commons.LocalRepositoryMapping
 import org.jetbrains.bazel.commons.RepoMapping
@@ -16,7 +15,7 @@ import org.jetbrains.bazel.sync.workspace.graph.DependencyGraph
 import org.jetbrains.bazel.sync.workspace.languages.LanguagePlugin
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceSyncConfig
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
-import org.jetbrains.bsp.protocol.BazelServerFacade
+import org.jetbrains.bazel.server.BazelServerFacade
 import org.jetbrains.bsp.protocol.BuildTargetData
 import org.jetbrains.bsp.protocol.PythonBuildTarget
 import java.nio.file.Files

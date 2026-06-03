@@ -21,7 +21,6 @@ import org.jetbrains.bazel.commons.BazelStatus
 import org.jetbrains.bazel.commons.ShardingApproach
 import org.jetbrains.bazel.commons.TargetCollection
 import org.jetbrains.bazel.label.Label
-import org.jetbrains.bazel.server.model.PhasedSyncProject
 import org.jetbrains.bazel.server.sync.sharding.WildcardTargetExpander.ExpandedTargetsResult
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bsp.protocol.BazelTaskLogger
@@ -46,11 +45,11 @@ internal object BazelBuildTargetSharder {
     context: WorkspaceContext,
     bazelRunner: BazelRunner,
     taskLogger: BazelTaskLogger,
-    firstPhaseProject: PhasedSyncProject?,
+    allTargets: List<Label>? /* all known targets, if any, from first phase */,
   ): ShardedTargetsResult {
-    if (firstPhaseProject != null) {
+    if (allTargets != null) {
       return ShardedTargetsResult(
-        shardTargetsToBatches(firstPhaseProject.modules.keys.toList(), emptyList(), getTargetShardSize(context)),
+        shardTargetsToBatches(allTargets, emptyList(), getTargetShardSize(context)),
         BazelStatus.SUCCESS,
       )
     }

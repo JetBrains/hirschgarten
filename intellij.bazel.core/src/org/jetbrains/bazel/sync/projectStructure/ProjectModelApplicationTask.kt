@@ -18,7 +18,7 @@ import org.jetbrains.bazel.sync.scope.ProjectSyncScope
 import org.jetbrains.bazel.workspacemodel.entities.BazelEntitySource
 import org.jetbrains.bsp.protocol.TaskId
 
-internal class ProjectModelApplicatonTask(
+internal class ProjectModelApplicationTask(
   private val project: Project,
   private val scope: ProjectSyncScope,
   private val taskId: TaskId,

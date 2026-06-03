@@ -21,10 +21,10 @@ import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.contentOrNull
 import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.progress.syncConsole
-import org.jetbrains.bazel.server.connection.BazelServerService
+import org.jetbrains.bazel.server.BazelServerService
 import org.jetbrains.bazel.sync.scope.SecondPhaseSync
-import org.jetbrains.bazel.sync.workspace.BazelWorkspaceResolveService
 import org.jetbrains.bazel.sync.workspace.importer.WorkspaceImporterHelper
+import org.jetbrains.bazel.sync.workspace.mapper.BazelWorkspaceResolver
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceSnapshotBuilder
 import org.jetbrains.bazel.workspace.model.test.framework.mockWorkspaceContext
 import org.jetbrains.bsp.protocol.TaskGroupId
@@ -100,16 +100,13 @@ internal suspend fun doWorkspaceModelTest(
 ) {
   val taskId = TaskGroupId.EMPTY.task("main")
   val server = BazelServerService.getInstance(project).connection
-  val resolveService = BazelWorkspaceResolveService.getInstance(project)
-  resolveService.getOrFetchSyncedProject(build = false, taskId = taskId)
-  val resolvedWorkspace = resolveService.getOrFetchResolvedWorkspace(scope = SecondPhaseSync, taskId = taskId)
-
+  val resolvedWorkspace = BazelWorkspaceResolver.fetchWorkspace(project, scope = SecondPhaseSync, build = false, allKnownTargets = null, taskId = taskId)
   resolvedWorkspace.targets.shouldNotBeEmpty()
 
   val workspaceSnapshot = WorkspaceSnapshotBuilder.build(
     project = project,
     workspaceContext = mockWorkspaceContext,
-    repoMapping = server.runWithServer { it.workspaceBazelRepoMapping(taskId).repoMapping },
+    repoMapping = resolvedWorkspace.repoMapping,
     resolved = resolvedWorkspace,
   )
   val builder = MutableEntityStorage.create()

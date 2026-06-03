@@ -51,8 +51,8 @@ suspend fun <T> TaskConsole.withSubtask(
   subtaskId: TaskId,
   text: String,
   block: suspend (subtaskId: TaskId) -> T,
-) {
-  reporter.indeterminateStep(text) {
+): T {
+  return reporter.indeterminateStep(text) {
     withSubtask(
       subtaskId = subtaskId,
       message = text,

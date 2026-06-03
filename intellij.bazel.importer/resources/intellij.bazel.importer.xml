@@ -83,10 +83,6 @@
   </extensions>
 
   <extensions defaultExtensionNs="com.intellij">
-    <projectService
-      serviceImplementation="org.jetbrains.bazel.sync.workspace.DefaultBazelWorkspaceResolveService"
-      serviceInterface="org.jetbrains.bazel.sync.workspace.BazelWorkspaceResolveService"
-    />
     <workspaceModel.fileIndexContributor
       implementation="org.jetbrains.bazel.workspace.BazelProjectDirectoriesWorkspaceFileIndexContributor"
     />

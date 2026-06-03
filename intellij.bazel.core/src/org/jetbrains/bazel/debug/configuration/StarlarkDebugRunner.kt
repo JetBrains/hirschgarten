@@ -28,11 +28,11 @@ import org.jetbrains.bazel.debug.connector.StarlarkDebugSessionManager
 import org.jetbrains.bazel.debug.connector.StarlarkSocketConnector
 import org.jetbrains.bazel.debug.console.StarlarkDebugTaskListener
 import org.jetbrains.bazel.label.Label
-import org.jetbrains.bazel.server.connection.connection
+import org.jetbrains.bazel.server.connection
 import org.jetbrains.bazel.taskEvents.BazelTaskEventsService
 import org.jetbrains.bsp.protocol.AnalysisDebugParams
 import org.jetbrains.bsp.protocol.AnalysisDebugResult
-import org.jetbrains.bsp.protocol.BazelServerFacade
+import org.jetbrains.bazel.server.BazelServerFacade
 import org.jetbrains.bsp.protocol.TaskGroupId
 import org.jetbrains.concurrency.AsyncPromise
 import org.jetbrains.concurrency.Promise

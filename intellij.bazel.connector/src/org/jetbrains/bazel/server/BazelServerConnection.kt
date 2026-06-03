@@ -1,8 +1,7 @@
-package org.jetbrains.bazel.server.connection
+package org.jetbrains.bazel.server
 
 import com.intellij.openapi.project.Project
 import org.jetbrains.annotations.ApiStatus
-import org.jetbrains.bsp.protocol.BazelServerFacade
 
 /**
  * The BSP connection, implementation should keep all the information

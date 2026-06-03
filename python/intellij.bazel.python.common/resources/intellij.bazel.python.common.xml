@@ -3,6 +3,7 @@
   <dependencies>
     <plugin id="com.intellij.modules.python"/>
     <module name="intellij.bazel.commons"/>
+    <module name="intellij.bazel.connector"/>
     <module name="intellij.bazel.core"/>
     <module name="intellij.bazel.importer"/>
     <module name="intellij.platform.smRunner"/>

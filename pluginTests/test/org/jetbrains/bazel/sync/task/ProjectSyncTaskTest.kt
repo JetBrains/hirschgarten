@@ -5,6 +5,7 @@ import com.intellij.openapi.util.use
 import com.intellij.testFramework.registerOrReplaceServiceInstance
 import io.kotest.matchers.shouldBe
 import kotlinx.coroutines.runBlocking
+import org.jetbrains.bazel.commons.BazelRelease
 import org.jetbrains.bazel.impl.flow.sync.DisabledTestProjectPostSyncHook
 import org.jetbrains.bazel.impl.flow.sync.DisabledTestProjectPreSyncHook
 import org.jetbrains.bazel.impl.flow.sync.DisabledTestProjectSyncHook
@@ -12,21 +13,19 @@ import org.jetbrains.bazel.impl.flow.sync.TestProjectPostSyncHook
 import org.jetbrains.bazel.impl.flow.sync.TestProjectPreSyncHook
 import org.jetbrains.bazel.impl.flow.sync.TestProjectSyncHook
 import org.jetbrains.bazel.project.BazelProjectFixtures.initializeBazelProject
-import org.jetbrains.bazel.server.connection.BazelServerService
+import org.jetbrains.bazel.server.BazelServerService
+import org.jetbrains.bazel.server.model.AspectSyncProject
 import org.jetbrains.bazel.sync.ProjectPostSyncHook
 import org.jetbrains.bazel.sync.ProjectPreSyncHook
 import org.jetbrains.bazel.sync.ProjectSyncHook
 import org.jetbrains.bazel.sync.scope.SecondPhaseSync
-import org.jetbrains.bazel.sync.workspace.BazelResolvedWorkspace
-import org.jetbrains.bazel.sync.workspace.BazelWorkspaceResolveService
-import org.jetbrains.bazel.workspace.model.test.framework.BazelWorkspaceResolveServiceMock
 import org.jetbrains.bazel.workspace.model.test.framework.BuildServerMock
 import org.jetbrains.bazel.workspace.model.test.framework.MockBuildServerService
 import org.jetbrains.bazel.workspace.model.test.framework.MockProjectBaseTest
-import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsResult
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
+import kotlin.io.path.Path
 
 @DisplayName("ProjectSyncTask tests")
 class ProjectSyncTaskTest : MockProjectBaseTest() {
@@ -39,19 +38,19 @@ class ProjectSyncTaskTest : MockProjectBaseTest() {
   @Test
   fun `should call all enabled pre-sync, sync and post-sync hooks`() = Disposer.newDisposable().use { disposable ->
     // given
-    project.registerOrReplaceServiceInstance(BazelServerService::class.java, MockBuildServerService(BuildServerMock()), disposable)
     project.registerOrReplaceServiceInstance(
-      BazelWorkspaceResolveService::class.java,
-      BazelWorkspaceResolveServiceMock(
-        resolvedWorkspace =
-          BazelResolvedWorkspace(
-            rootTargets = setOf(),
-            targets = listOf(),
-          ),
-        bazelProject = WorkspaceBuildTargetsResult(mapOf(), setOf()),
-      ),
-      disposable,
-    )
+      BazelServerService::class.java,
+      MockBuildServerService(
+        BuildServerMock(
+          aspectSyncProject = AspectSyncProject(
+            workspaceRoot = Path(""),
+            bazelRelease = BazelRelease(9, 0),
+            workspaceName = "",
+            targets = emptyMap(),
+            rootTargets = emptySet(),
+          )
+        )),
+      disposable)
 
     // pre-sync hooks
     val preSyncHook = TestProjectPreSyncHook()
@@ -73,7 +72,7 @@ class ProjectSyncTaskTest : MockProjectBaseTest() {
 
     // when
     runBlocking {
-      ProjectSyncTask(project).sync(syncScope = SecondPhaseSync, false)
+      ProjectSyncTask(project).fullSync(false)
     }
 
     // then

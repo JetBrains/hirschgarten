@@ -2,10 +2,10 @@ package org.jetbrains.bazel.workspace.model.test.framework
 
 import org.jetbrains.bazel.commons.ExcludableValue
 import org.jetbrains.bazel.label.Label
-import org.jetbrains.bazel.server.connection.BazelServerConnection
-import org.jetbrains.bazel.server.connection.BazelServerService
+import org.jetbrains.bazel.server.BazelServerConnection
+import org.jetbrains.bazel.server.BazelServerService
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
-import org.jetbrains.bsp.protocol.BazelServerFacade
+import org.jetbrains.bazel.server.BazelServerFacade
 import kotlin.io.path.Path
 
 val mockWorkspaceContext =

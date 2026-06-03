@@ -17,12 +17,10 @@ import org.jetbrains.bazel.label.assumeResolved
 import org.jetbrains.bazel.label.label
 import org.jetbrains.bazel.label.toDependencyLabel
 import org.jetbrains.bazel.performance.measure
-import org.jetbrains.bazel.sync.workspace.BazelResolvedWorkspace
 import org.jetbrains.bazel.sync.workspace.graph.DependencyGraph
 import org.jetbrains.bazel.sync.workspace.languages.createLanguageProjectMappers
-import org.jetbrains.bazel.sync.workspace.mapper.BazelResolvedWorkspaceBuilder
 import org.jetbrains.bazel.sync.workspace.targetKind.TargetKindService
-import org.jetbrains.bsp.protocol.BazelServerFacade
+import org.jetbrains.bazel.server.BazelServerFacade
 import org.jetbrains.bsp.protocol.BuildTargetData
 import org.jetbrains.bsp.protocol.BuildTargetTag
 import org.jetbrains.bsp.protocol.RawBuildTarget
@@ -37,12 +35,11 @@ internal class AspectBazelProjectMapper(
   private val langMappers = createLanguageProjectMappers(project, server)
   private val workspaceContext = server.workspaceContext
 
-  suspend fun createProject(
+  suspend fun mapTargets(
     allTargets: Map<Label, TargetInfo>,
     rootTargets: Set<Label>,
-    repoMapping: RepoMapping,
-    hasError: Boolean,
-  ): BazelResolvedWorkspace {
+    repoMapping: RepoMapping
+  ): List<RawBuildTarget> {
     val dependencyGraph =
       measure("Build dependency tree") {
         DependencyGraph(rootTargets, allTargets)
@@ -61,15 +58,11 @@ internal class AspectBazelProjectMapper(
       it.prepareSync(dependencyGraph, targetsToImport, repoMapping)
     }
 
-    val rawTargets = measure("create raw targets") {
+    val rawTargets: List<RawBuildTarget> = measure("create raw targets") {
       createRawBuildTargets(targetsToImport, repoMapping, dependencyGraph)
     }
 
-    return BazelResolvedWorkspaceBuilder.build(
-      rootTargets = rootTargets,
-      targets = rawTargets,
-      hasError = hasError,
-    )
+    return rawTargets
   }
 
   private suspend fun createRawBuildTargets(
@@ -106,7 +99,6 @@ internal class AspectBazelProjectMapper(
     val label = target.label().assumeResolved()
     val targetKind = TargetKindService.getInstance().fromTargetInfo(target)
     val baseDirectory = bazelPathsResolver.toDirectoryPath(label, repoMapping)
-    val localRepositories = repoMapping.getLocalRepositories()
 
     val buildData = ArrayList<BuildTargetData>()
 

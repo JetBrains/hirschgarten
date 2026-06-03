@@ -186,7 +186,7 @@ class BazelSyncCodeInsightTestFixtureImpl(
   }
 
   override suspend fun performBazelSync(buildProject: Boolean) {
-    ProjectSyncTask(project).sync(SecondPhaseSync, buildProject = buildProject)
+    ProjectSyncTask(project).fullSync(buildProject = buildProject)
   }
 
   override fun setUp() {

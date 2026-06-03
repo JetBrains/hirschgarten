@@ -133,7 +133,7 @@ internal class BazelProjectSettingsConfigurable(private val project: Project) :
 
     if (isProjectViewPathChanged) {
       BazelCoroutineService.getInstance(project).start {
-        ProjectSyncTask(project).sync(syncScope = SecondPhaseSync, buildProject = false)
+        ProjectSyncTask(project).fullSync(buildProject = false)
       }
     }
   }
