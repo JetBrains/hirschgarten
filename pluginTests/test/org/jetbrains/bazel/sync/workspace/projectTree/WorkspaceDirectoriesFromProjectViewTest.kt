@@ -9,6 +9,7 @@ import kotlinx.coroutines.runBlocking
 import org.jetbrains.bazel.bazelrunner.BazelProcess
 import org.jetbrains.bazel.bazelrunner.BazelProcessResult
 import org.jetbrains.bazel.bazelrunner.BazelRunner
+import org.jetbrains.bazel.bazelrunner.mockBazelProcessLauncher
 import org.jetbrains.bazel.commons.BazelInfo
 import org.jetbrains.bazel.commons.BazelPathsResolver
 import org.jetbrains.bazel.commons.BazelRelease
@@ -558,7 +559,7 @@ class WorkspaceDirectoriesFromProjectViewTest : BasePlatformTestCase() {
     )
 
   private fun createMockBazelRunner(): BazelRunner {
-    val realRunner = BazelRunner(null, workspaceRoot)
+    val realRunner = BazelRunner(null, workspaceRoot, mockBazelProcessLauncher)
     val runner = spy(realRunner)
 
     fun mockBuildfilesOutput(): String {

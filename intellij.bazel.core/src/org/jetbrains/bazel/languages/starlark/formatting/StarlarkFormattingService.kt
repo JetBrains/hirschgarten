@@ -43,13 +43,13 @@ internal class StarlarkFormattingService : AsyncDocumentFormattingService() {
   override fun canFormat(file: PsiFile): Boolean {
     val virtualFile = file.virtualFile ?: return false
     if (!FileTypeRegistry.getInstance().isFileOfType(virtualFile, StarlarkFileType)) return false
-    return file.project.bazelProjectSettings.getBuildifierPathString() != null
+    return file.project.bazelProjectSettings.getBuildifierPathString(file.project) != null
   }
 
   override fun createFormattingTask(request: AsyncFormattingRequest): FormattingTask? {
     val formattingContext = request.context
     val project = formattingContext.project
-    val buildifierPath = project.bazelProjectSettings.getBuildifierPathString() ?: return null
+    val buildifierPath = project.bazelProjectSettings.getBuildifierPathString(request.context.project) ?: return null
 
     if (!checkDocumentExists(request)) {
       LOG.warn("Document for file ${request.context.containingFile.name} is null")

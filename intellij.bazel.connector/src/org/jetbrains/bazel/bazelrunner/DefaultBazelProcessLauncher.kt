@@ -1,11 +1,12 @@
 package org.jetbrains.bazel.bazelrunner
 
 import com.intellij.execution.configurations.GeneralCommandLine
+import com.intellij.execution.configurations.GeneralCommandLine.ParentEnvironmentType
 import com.intellij.execution.configurations.PtyCommandLine
-import org.jetbrains.bazel.server.bsp.utils.InternalAspectsResolver
 import java.nio.file.Path
 
-internal class DefaultBazelProcessLauncher(private val workspaceRoot: Path) : BazelProcessLauncher {
+internal class DefaultBazelProcessLauncher(private val workspaceRoot: Path, private val parentEnvironment: Map<String, String>) :
+  BazelProcessLauncher {
   override fun launchProcess(executionDescriptor: BazelCommandExecutionDescriptor): Process {
     val ptyTermSize = executionDescriptor.ptyTermSize
     val commandLine = if (ptyTermSize != null) {
@@ -15,8 +16,9 @@ internal class DefaultBazelProcessLauncher(private val workspaceRoot: Path) : Ba
     else {
       GeneralCommandLine(executionDescriptor.command)
     }
+    commandLine.withParentEnvironmentType(ParentEnvironmentType.NONE)
+    commandLine.withEnvironment(parentEnvironment + executionDescriptor.environment)
     commandLine.withWorkingDirectory(workspaceRoot)
-    commandLine.withEnvironment(executionDescriptor.environment)
     commandLine.withRedirectErrorStream(false)
 
     return commandLine.createProcess()
@@ -26,7 +28,6 @@ internal class DefaultBazelProcessLauncher(private val workspaceRoot: Path) : Ba
 internal object DefaultBazelProcessLauncherProvider : BazelProcessLauncherProvider {
   override fun createBazelProcessLauncher(
     workspaceRoot: Path,
-    aspectsResolver: InternalAspectsResolver,
-    bazelInfoResolver: BazelInfoResolver,
-  ): BazelProcessLauncher = DefaultBazelProcessLauncher(workspaceRoot)
+    parentEnvironment: Map<String, String>,
+  ): BazelProcessLauncher = DefaultBazelProcessLauncher(workspaceRoot, parentEnvironment)
 }

@@ -66,8 +66,14 @@ val mockBazelInfo =
     externalAutoloads = emptyList(),
   )
 
-val bazelRunner = BazelRunner(null, mockBazelInfo.workspaceRoot)
-val bazelRunnerWithBazelInfo = BazelRunner(null, mockBazelInfo.workspaceRoot)
+val mockBazelProcessLauncher = object : BazelProcessLauncher {
+  override fun launchProcess(executionDescriptor: BazelCommandExecutionDescriptor): Process {
+    throw NotImplementedError()
+  }
+}
+
+val bazelRunner = BazelRunner(null, mockBazelInfo.workspaceRoot, mockBazelProcessLauncher)
+val bazelRunnerWithBazelInfo = BazelRunner(null, mockBazelInfo.workspaceRoot, mockBazelProcessLauncher)
 
 fun splitOfTargetPattern(cmds : List<String>) : Pair<List<String>, List<String>> {
   cmds.indexOf("--") shouldBe -1

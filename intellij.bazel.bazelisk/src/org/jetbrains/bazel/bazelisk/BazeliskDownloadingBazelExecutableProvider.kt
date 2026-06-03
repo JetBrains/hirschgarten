@@ -12,16 +12,14 @@ import com.intellij.util.io.HttpRequests
 import com.intellij.util.system.CpuArch
 import com.intellij.util.system.OS
 import org.jetbrains.bazel.commons.constants.Constants
+import org.jetbrains.bazel.sync.BazelEnvironmentService
 import org.jetbrains.bazel.sync.environment.BazelApplicationContextService
 import org.jetbrains.bazel.sync.environment.BazelProjectContextService
 import org.jetbrains.bazel.sync.environment.getProjectRootDirOrThrow
 import org.jetbrains.bazel.workspace.BazelExecutableProvider
-import java.io.File
 import java.io.IOException
 import java.nio.file.Files
 import java.nio.file.Path
-import kotlin.io.path.exists
-import kotlin.io.path.isExecutable
 import kotlin.io.path.readText
 
 internal class BazeliskDownloadingBazelExecutableProvider : BazelExecutableProvider {
@@ -40,7 +38,7 @@ internal class BazeliskDownloadingBazelExecutableProvider : BazelExecutableProvi
 
     if (!service<BazelApplicationContextService>().forceBazeliskDownload) {
       // Otherwise try to find bazel or bazelisk on PATH
-      findBazelOnPathOrNull()?.let { return it }
+      BazelEnvironmentService.getInstance(project).findInPath("bazel", "bazelisk")?.let { return it }
     }
 
     // If not found, try to download any version of bazelisk
@@ -56,20 +54,6 @@ internal class BazeliskDownloadingBazelExecutableProvider : BazelExecutableProvi
       .getOrNull()
       ?.trim()
       ?.takeIf { it.isNotEmpty() }
-  }
-
-  private fun findBazelOnPathOrNull(): Path? =
-    splitPath()
-      .flatMap { listOf(bazelFile(it, "bazel"), bazelFile(it, "bazelisk")) }
-      .filterNotNull()
-      .firstOrNull()
-
-  private fun splitPath(): List<String> = System.getenv("PATH")?.split(File.pathSeparator).orEmpty()
-
-  private fun bazelFile(pathStr: String, executable: String): Path? {
-    val executableName = if (OS.CURRENT == OS.Windows) "$executable.exe" else executable
-    val path = Path.of(pathStr, executableName)
-    return if (path.exists() && path.isExecutable()) path else null
   }
 
   private fun downloadBazelisk(bazeliskVersion: String?): Path? {
