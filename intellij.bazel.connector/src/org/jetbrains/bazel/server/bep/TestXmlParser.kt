@@ -100,20 +100,20 @@ class TestXmlParser(private var bspClientTestNotifier: BspClientTestNotifier) {
    * Parent-child relationship is identified within each suite based on the TaskId.
    * @param parentId TaskId associated with the test execution.
    * @param testXml Uri corresponding to the test result xml file to be processed.
+   * @return how many test suites were handed to the client (each is expected to emit at least one
+   * event). Zero means nothing was reported — e.g. an empty `<testsuites>`, every suite skipped, or
+   * the file could not be read/parsed — so the caller may report a target-level result instead.
    */
-  fun parseAndReport(parentId: TaskId, testXml: Path) {
+  fun parseAndReport(parentId: TaskId, testXml: Path): Int {
     val testSuites = parseTestXml(testXml, TestSuites::class.java)
     if (testSuites != null) {
-      testSuites
-        .testsuite
-        .forEach { processSuite(parentId, it) }
-    } else {
-      val fallbackTestSuites =
-        parseTestXml(testXml, FallbackTestXmlParser.IncompleteTestSuites::class.java)
-      fallbackTestSuites?.testsuite?.forEach {
-        fallbackTestXmlParser.processIncompleteInfoSuite(parentId, it)
-      }
+      return testSuites.testsuite.sumOf { processSuite(parentId, it) }
     }
+    val fallbackTestSuites =
+      parseTestXml(testXml, FallbackTestXmlParser.IncompleteTestSuites::class.java)
+    val fallbackSuites = fallbackTestSuites?.testsuite ?: return 0
+    fallbackSuites.forEach { fallbackTestXmlParser.processIncompleteInfoSuite(parentId, it) }
+    return fallbackSuites.size
   }
 
   /**
@@ -126,14 +126,11 @@ class TestXmlParser(private var bspClientTestNotifier: BspClientTestNotifier) {
         configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
       }
 
-    var rawContent = testXml.readText()
-    // Single empty tag does not deserialize properly, replace with empty pair.
-    rawContent = rawContent.replace("<skipped />", "<skipped></skipped>")
-    val testSuites: T? =
-      runCatching {
-        xmlMapper.readValue(rawContent, valueType)
-      }.onFailure { }.getOrNull()
-    return testSuites
+    return runCatching {
+      // Single empty tag does not deserialize properly, replace with empty pair.
+      val rawContent = testXml.readText().replace("<skipped />", "<skipped></skipped>")
+      xmlMapper.readValue(rawContent, valueType)
+    }.getOrNull()
   }
 
   /**
@@ -147,11 +144,13 @@ class TestXmlParser(private var bspClientTestNotifier: BspClientTestNotifier) {
    *
    * @param parentId TaskId of the parent test suite or test case.
    * @param suite TestSuite to be processed.
+   * @return 1 if the suite was reported, 0 if it was skipped (the caller may then report a
+   * target-level result instead).
    */
-  private fun processSuite(parentId: TaskId, suite: TestSuite) {
+  private fun processSuite(parentId: TaskId, suite: TestSuite): Int {
     val suiteStatus =
       when {
-        suite.tests > 0 && suite.testcase.isEmpty() -> return
+        suite.tests > 0 && suite.testcase.isEmpty() -> return 0
         suite.failures > 0 -> TestStatus.FAILED
         suite.errors > 0 -> TestStatus.FAILED
         else -> TestStatus.PASSED
@@ -171,6 +170,7 @@ class TestXmlParser(private var bspClientTestNotifier: BspClientTestNotifier) {
       suite.systemOut.toString(),
       suiteData,
     )
+    return 1
   }
 
   /**

@@ -190,15 +190,17 @@ class BepServer(
 
       val testXml =
         testResult.testActionOutputList.find { it.name == BazelTestFileNames.XML.filename }?.let { bazelPathsResolver.resolve(it) }
-      if (testXml != null) {
-        // Test cases identified and sent to the client by TestXmlParser.
-        TestXmlParser(bspClientTestNotifier).parseAndReport(taskId, testXml)
-      }
-      else {
-        // Send a generic notification if individual tests cannot be processed.
+      // Test cases identified and sent to the client by TestXmlParser.
+      val reportedSuites = testXml?.let { TestXmlParser(bspClientTestNotifier).parseAndReport(taskId, it) } ?: 0
+      if (reportedSuites == 0) {
+        // Nothing was reported per-test: the XML is missing, or present but empty / all-skipped.
+        // Go tests via rules_go without verbose output don't emit <testcase> entries, so the parser
+        // reports nothing. Fall back to a single target-level node so the target shows its status
+        // instead of "No tests were found".
+        val targetName = event.id.testResult.label?.takeIf { it.isNotBlank() } ?: "Test"
         val childId = taskId.uniqueSubTask("test")
-        bspClientTestNotifier.startTest("Test", childId, isSuite = true)
-        bspClientTestNotifier.finishTest("Test", childId, testStatus, "Test finished")
+        bspClientTestNotifier.startTest(targetName, childId, isSuite = true)
+        bspClientTestNotifier.finishTest(targetName, childId, testStatus, "Test finished")
       }
     }
   }
