@@ -127,13 +127,13 @@ private class ScriptPathBuildTargetTask(
     val additionalBazelParams = transformProgramArguments((state as? HasBazelParams)?.additionalBazelParams)
     val programArguments = (state as? HasProgramArguments)?.programArguments
 
-    val scriptPathParam = listOf("--script_path=$scriptPath")
+    val scriptPathParams = listOf("--script_path=$scriptPath", "--test_sharding_strategy=disabled")
     val params =
       RunParams(
         taskId = taskId,
         target = targetIds.single(),
         arguments = programArguments?.let { transformProgramArguments(it) }.orEmpty(),
-        additionalBazelParams = (scriptPathParam + additionalBazelParams).joinToString(" "),
+        additionalBazelParams = (scriptPathParams + additionalBazelParams).joinToString(" "),
         /**
          * Environment variables are not written into the generated run script by Bazel, so they are handled by [runWithScriptPath].
          */

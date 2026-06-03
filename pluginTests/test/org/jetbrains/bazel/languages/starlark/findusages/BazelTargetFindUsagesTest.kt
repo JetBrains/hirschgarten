@@ -167,4 +167,82 @@ class BazelTargetFindUsagesTest : BasePlatformTestCase() {
     )
     myFixture.findBazelTargetUsages("lib").shouldBeEmpty()
   }
+
+  @Test
+  fun `should find default target shorthand usage`() {
+    myFixture.addFileToProject("MODULE.bazel", "")
+    val libFile = myFixture.addFileToProject(
+      "core/BUILD",
+      """
+      java_library(
+          name = "core",
+          srcs = ["Core.java"],
+      )
+      """.trimIndent(),
+    )
+    myFixture.addFileToProject(
+      "app/BUILD",
+      """
+      java_binary(
+          name = "app",
+          deps = ["//core"],
+      )
+      """.trimIndent(),
+    )
+    myFixture.openFileInEditor(libFile.virtualFile)
+    val usages = myFixture.findBazelTargetUsages("core")
+    usages.shouldHaveSingleElement { it.element?.text == "\"//core\"" }
+  }
+
+  @Test
+  fun `should find default target shorthand usage with multi-segment package`() {
+    myFixture.addFileToProject("MODULE.bazel", "")
+    val libFile = myFixture.addFileToProject(
+      "lib/bar/BUILD",
+      """
+      java_library(
+          name = "bar",
+          srcs = ["Bar.java"],
+      )
+      """.trimIndent(),
+    )
+    myFixture.addFileToProject(
+      "app/BUILD",
+      """
+      java_binary(
+          name = "app",
+          deps = ["//lib/bar"],
+      )
+      """.trimIndent(),
+    )
+    myFixture.openFileInEditor(libFile.virtualFile)
+    val usages = myFixture.findBazelTargetUsages("bar")
+    usages.shouldHaveSingleElement { it.element?.text == "\"//lib/bar\"" }
+  }
+
+  @Test
+  fun `should find usage from root package target`() {
+    myFixture.addFileToProject("MODULE.bazel", "")
+    val libFile = myFixture.addFileToProject(
+      "BUILD",
+      """
+      java_library(
+          name = "lib",
+          srcs = ["Lib.java"],
+      )
+      """.trimIndent(),
+    )
+    myFixture.addFileToProject(
+      "sub/BUILD",
+      """
+      java_binary(
+          name = "app",
+          deps = ["//:lib"],
+      )
+      """.trimIndent(),
+    )
+    myFixture.openFileInEditor(libFile.virtualFile)
+    val usages = myFixture.findBazelTargetUsages("lib")
+    usages.shouldHaveSingleElement { it.element?.text == "\"//:lib\"" }
+  }
 }
