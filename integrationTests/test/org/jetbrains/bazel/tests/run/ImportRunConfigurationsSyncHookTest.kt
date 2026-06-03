@@ -20,6 +20,7 @@ import com.intellij.driver.sdk.ui.components.elements.list
 import com.intellij.driver.sdk.ui.components.elements.popup
 import com.intellij.driver.sdk.ui.pasteText
 import com.intellij.driver.sdk.ui.shouldBe
+import com.intellij.driver.sdk.wait
 import com.intellij.driver.sdk.waitFor
 import com.intellij.driver.sdk.withRetries
 import com.intellij.ide.starter.ide.IDETestContext
@@ -32,6 +33,7 @@ import org.jetbrains.bazel.ideStarter.syncBazelProject
 import org.jetbrains.bazel.tests.combined.IdeStarterCombinedBaseTest
 import org.jetbrains.bazel.tests.ui.clickRunGutterOnLine
 import org.jetbrains.bazel.tests.ui.verifyAvailableRunGutterActions
+import org.jetbrains.bazel.tests.ui.verifyTestStatus
 import org.junit.jupiter.api.Order
 import org.junit.jupiter.api.Test
 import java.awt.Point
@@ -148,6 +150,26 @@ class ImportRunConfigurationsSyncHookTest : IdeStarterCombinedBaseTest() {
             button("Cancel").click()
           }
         }
+      }
+    }
+  }
+
+  @Test
+  @Order(3)
+  fun `debugging a java_test works with shard_size`() {
+    withDriver(bgRun) {
+      ideFrame {
+        syncBazelProject(buildAndSync = true)
+        waitForIndicators(5.minutes)
+        step("Select Bazel test configuration") {
+          selectRunConfiguration(targetText = "Bazel test CalculatorTest")
+        }
+        step("Run test in Debug") { x { byAccessibleName("Debug 'Bazel test CalculatorTest'") }.click() }
+        wait(15.seconds)
+        verifyTestStatus(
+          listOf("2 tests passed"),
+          listOf("com.example.CalculatorTest", "testAdd", "testMultiply"),
+        )
       }
     }
   }

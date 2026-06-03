@@ -132,11 +132,11 @@ object IdeaBazelCases : BaseBazelCasesParametrized(BazelTestContext.IDEA) {
     val ImportRunConfigurationsSyncHook = withBazelProject(
       projectInfo = withDefaults(
         repositoryUrl = "https://github.com/JetBrainsBazelBot/simpleBazelProjectsForTesting.git",
-        commitHash = "af3e066604a8af0c9505b088ae5e7055ecf3b6d5",
+        commitHash = "f67bf92d35792cf6464ec31f13958507d6ad96c9",
         branchName = "main",
         relativePath = "importRunConfigurations",
         configure = { context -> BazelProjectConfigurer.configureProjectBeforeUseWithoutBazelClean(context, createProjectView = false) },
-      )
+      ),
     )
 
     val ExternalRepoResolve = withBazelProject(
