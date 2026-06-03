@@ -37,7 +37,6 @@ class WorkspaceImporterHelper(
     currentSnapshot = workspaceModel.currentSnapshot,
   )
   private val toSkip = mutableSetOf<BazelWorkspaceImporter>()
-  private val toApply = mutableMapOf<BazelWorkspaceImporter, MutableEntityStorage>()
 
   suspend fun invoke(reporter: SequentialProgressReporter, snapshot: WorkspaceSnapshot) {
     taskConsole.withSubtask(
@@ -71,13 +70,13 @@ class WorkspaceImporterHelper(
           if (ep in toSkip) {
             return@forEach
           }
-          val builder = MutableEntityStorage.create()
           ep.runContextual(taskId, context, WorkspaceImporterPhase.WorkspaceApply(builder, BazelProjectEntitySource), snapshot)
             .onFailure { toSkip += ep }
             .onSuccess { result ->
               when (result) {
                 WorkspaceImporterResult.Abort -> toSkip += ep
-                WorkspaceImporterResult.Success -> toApply += ep to builder
+                WorkspaceImporterResult.Success -> { /* noop */
+                }
               }
             }
         }
@@ -92,7 +91,7 @@ class WorkspaceImporterHelper(
             return@forEach
           }
           ep.runContextual(taskId, context, WorkspaceImporterPhase.Finalize, snapshot)
-            .onFailure { toApply -= ep }
+            .onFailure { /* noop */ }
             .onSuccess { result ->
               when (result) {
                 WorkspaceImporterResult.Abort -> toSkip += ep
@@ -103,8 +102,6 @@ class WorkspaceImporterHelper(
             }
         }
       }
-
-      toApply.forEach { (_, storage) -> builder.applyChangesFrom(storage) }
     }
   }
 
