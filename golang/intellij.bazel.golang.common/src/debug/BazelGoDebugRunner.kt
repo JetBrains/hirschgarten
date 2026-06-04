@@ -10,15 +10,18 @@ import com.intellij.execution.ExecutionResult
 import com.intellij.execution.configurations.RunProfile
 import com.intellij.execution.configurations.RunProfileState
 import com.intellij.execution.executors.DefaultDebugExecutor
+import com.intellij.execution.process.ProcessHandler
 import com.intellij.execution.runners.ExecutionEnvironment
 import com.intellij.execution.ui.RunContentDescriptor
 import com.intellij.openapi.application.ReadAction
 import com.intellij.openapi.progress.ProgressManager
+import com.intellij.openapi.util.Condition
 import com.intellij.xdebugger.XDebugProcess
 import com.intellij.xdebugger.XDebugProcessStarter
 import com.intellij.xdebugger.XDebugSession
 import com.intellij.xdebugger.XDebuggerManager
 import com.intellij.xdebugger.impl.XDebugSessionImpl
+import org.jetbrains.annotations.VisibleForTesting
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.run.config.BazelRunConfiguration
 import org.jetbrains.concurrency.Promise
@@ -65,7 +68,19 @@ private class BazelDebugProcessStarter(
     }
     val connection = DlvRemoteVmConnection(DlvDisconnectOption.KILL)
     val process = DlvDebugProcess(session, connection, executionResult, true)
-    connection.open(state.debugServerAddress)
+    connection.open(state.debugServerAddress, delveAttachStopCondition(executionResult.processHandler))
     return process
   }
 }
+
+/**
+ * Builds the stop condition for the Delve debugger attach. With a Delve [processHandler] the attach is
+ * process-bound — `RemoteVmConnection.open` retries until Delve is reachable or its process exits
+ * (`doOpen` uses `maxAttemptCount = -1`) — instead of the default bounded ~19s connect window. This path
+ * opens the connection right after launching Delve (unlike the standard `GoDebugStarter`, which waits for
+ * `getDebugClientAddress()`), so on a slow Delve startup the bounded window races the port opening. Returns
+ * `null` (bounded window) when no process handler is available.
+ */
+@VisibleForTesting
+fun delveAttachStopCondition(processHandler: ProcessHandler?): Condition<Void>? =
+  processHandler?.let { handler -> Condition<Void> { handler.isProcessTerminating || handler.isProcessTerminated } }
