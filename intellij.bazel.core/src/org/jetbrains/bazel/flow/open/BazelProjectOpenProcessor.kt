@@ -130,7 +130,9 @@ internal class BazelProjectOpenProcessor : ProjectOpenProcessor() {
    * The project is only eligible to be opened with Bazel Plugin if workspace files can be reached from the given vFile
    */
   override fun canOpenProject(file: VirtualFile): Boolean {
-    if (file.isDirectory && file.findChild(Project.DIRECTORY_STORE_FOLDER) != null) return false
+    if (!BazelFeatureFlags.autoOpenProjectIfPresent &&
+        file.isDirectory &&
+        file.findChild(Project.DIRECTORY_STORE_FOLDER) != null) return false
 
     return findProjectFolderFromVFile(file) != null
   }
