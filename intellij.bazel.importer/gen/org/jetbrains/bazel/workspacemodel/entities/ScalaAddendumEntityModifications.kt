@@ -12,6 +12,7 @@ import com.intellij.platform.workspace.storage.WorkspaceEntityBuilder
 import com.intellij.platform.workspace.storage.impl.containers.toMutableWorkspaceList
 import com.intellij.platform.workspace.storage.url.VirtualFileUrl
 import org.jetbrains.annotations.ApiStatus.Internal
+import org.jetbrains.bazel.workspacemodel.entities.impl.ScalaAddendumEntityImpl
 
 @Internal
 @GeneratedCodeApiVersion(3)
@@ -25,6 +26,7 @@ interface ScalaAddendumEntityBuilder : WorkspaceEntityBuilder<ScalaAddendumEntit
 
 internal object ScalaAddendumEntityType : EntityType<ScalaAddendumEntity, ScalaAddendumEntityBuilder>() {
   override val entityClass: Class<ScalaAddendumEntity> get() = ScalaAddendumEntity::class.java
+  override val entityImplBuilderClass: Class<*> get() = ScalaAddendumEntityImpl.Builder::class.java
   operator fun invoke(
     compilerVersion: String,
     scalacOptions: List<String>,

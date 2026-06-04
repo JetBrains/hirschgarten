@@ -11,6 +11,7 @@ import com.intellij.platform.workspace.storage.WorkspaceEntity
 import com.intellij.platform.workspace.storage.WorkspaceEntityBuilder
 import com.intellij.platform.workspace.storage.url.VirtualFileUrl
 import org.jetbrains.annotations.ApiStatus.Internal
+import org.jetbrains.bazel.workspacemodel.entities.impl.PackageMarkerEntityImpl
 
 @Internal
 @GeneratedCodeApiVersion(3)
@@ -23,6 +24,7 @@ interface PackageMarkerEntityBuilder : WorkspaceEntityBuilder<PackageMarkerEntit
 
 internal object PackageMarkerEntityType : EntityType<PackageMarkerEntity, PackageMarkerEntityBuilder>() {
   override val entityClass: Class<PackageMarkerEntity> get() = PackageMarkerEntity::class.java
+  override val entityImplBuilderClass: Class<*> get() = PackageMarkerEntityImpl.Builder::class.java
   operator fun invoke(
     root: VirtualFileUrl,
     packagePrefix: String,

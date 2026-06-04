@@ -10,6 +10,7 @@ import com.intellij.platform.workspace.storage.WorkspaceEntityBuilder
 import com.intellij.platform.workspace.storage.impl.containers.toMutableWorkspaceList
 import com.intellij.platform.workspace.storage.url.VirtualFileUrl
 import org.jetbrains.annotations.ApiStatus.Internal
+import org.jetbrains.bazel.workspacemodel.entities.impl.BazelProjectDirectoriesEntityImpl
 
 @Internal
 @GeneratedCodeApiVersion(3)
@@ -24,6 +25,7 @@ interface BazelProjectDirectoriesEntityBuilder : WorkspaceEntityBuilder<BazelPro
 
 internal object BazelProjectDirectoriesEntityType : EntityType<BazelProjectDirectoriesEntity, BazelProjectDirectoriesEntityBuilder>() {
   override val entityClass: Class<BazelProjectDirectoriesEntity> get() = BazelProjectDirectoriesEntity::class.java
+  override val entityImplBuilderClass: Class<*> get() = BazelProjectDirectoriesEntityImpl.Builder::class.java
   operator fun invoke(
     projectRoot: VirtualFileUrl,
     includedRoots: List<NonIndexableVirtualFileUrl>,

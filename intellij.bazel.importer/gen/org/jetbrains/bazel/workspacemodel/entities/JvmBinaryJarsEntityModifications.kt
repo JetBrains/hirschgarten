@@ -12,6 +12,7 @@ import com.intellij.platform.workspace.storage.WorkspaceEntityBuilder
 import com.intellij.platform.workspace.storage.impl.containers.toMutableWorkspaceList
 import com.intellij.platform.workspace.storage.url.VirtualFileUrl
 import org.jetbrains.annotations.ApiStatus.Internal
+import org.jetbrains.bazel.workspacemodel.entities.impl.JvmBinaryJarsEntityImpl
 
 @Internal
 @GeneratedCodeApiVersion(3)
@@ -23,6 +24,7 @@ interface JvmBinaryJarsEntityBuilder : WorkspaceEntityBuilder<JvmBinaryJarsEntit
 
 internal object JvmBinaryJarsEntityType : EntityType<JvmBinaryJarsEntity, JvmBinaryJarsEntityBuilder>() {
   override val entityClass: Class<JvmBinaryJarsEntity> get() = JvmBinaryJarsEntity::class.java
+  override val entityImplBuilderClass: Class<*> get() = JvmBinaryJarsEntityImpl.Builder::class.java
   operator fun invoke(
     jars: List<VirtualFileUrl>,
     entitySource: EntitySource,

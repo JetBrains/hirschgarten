@@ -10,6 +10,7 @@ import com.intellij.platform.workspace.storage.MutableEntityStorage
 import com.intellij.platform.workspace.storage.WorkspaceEntity
 import com.intellij.platform.workspace.storage.WorkspaceEntityBuilder
 import org.jetbrains.annotations.ApiStatus.Internal
+import org.jetbrains.bazel.workspacemodel.entities.impl.BazelModuleExtensionEntityImpl
 
 @Internal
 @GeneratedCodeApiVersion(3)
@@ -22,6 +23,7 @@ interface BazelModuleExtensionEntityBuilder : WorkspaceEntityBuilder<BazelModule
 
 internal object BazelModuleExtensionEntityType : EntityType<BazelModuleExtensionEntity, BazelModuleExtensionEntityBuilder>() {
   override val entityClass: Class<BazelModuleExtensionEntity> get() = BazelModuleExtensionEntity::class.java
+  override val entityImplBuilderClass: Class<*> get() = BazelModuleExtensionEntityImpl.Builder::class.java
   operator fun invoke(
     label: WorkspaceModelTargetLabel,
     strictDependencies: WorkspaceModelTargetLabelList,

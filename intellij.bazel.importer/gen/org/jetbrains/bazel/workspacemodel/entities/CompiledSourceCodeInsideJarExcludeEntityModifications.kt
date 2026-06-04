@@ -9,6 +9,7 @@ import com.intellij.platform.workspace.storage.MutableEntityStorage
 import com.intellij.platform.workspace.storage.WorkspaceEntityBuilder
 import com.intellij.platform.workspace.storage.impl.containers.toMutableWorkspaceSet
 import org.jetbrains.annotations.ApiStatus.Internal
+import org.jetbrains.bazel.workspacemodel.entities.impl.CompiledSourceCodeInsideJarExcludeEntityImpl
 
 @Internal
 @GeneratedCodeApiVersion(3)
@@ -22,6 +23,7 @@ interface CompiledSourceCodeInsideJarExcludeEntityBuilder : WorkspaceEntityBuild
 internal object CompiledSourceCodeInsideJarExcludeEntityType :
   EntityType<CompiledSourceCodeInsideJarExcludeEntity, CompiledSourceCodeInsideJarExcludeEntityBuilder>() {
   override val entityClass: Class<CompiledSourceCodeInsideJarExcludeEntity> get() = CompiledSourceCodeInsideJarExcludeEntity::class.java
+  override val entityImplBuilderClass: Class<*> get() = CompiledSourceCodeInsideJarExcludeEntityImpl.Builder::class.java
   operator fun invoke(
     relativePathsInsideJarToExclude: Set<String>,
     librariesFromInternalTargetsUrls: Set<String>,
