@@ -1,0 +1,2 @@
+f:org.jetbrains.bazel.golang.debug.BazelGoDebugRunnerKt
+- sf:delveAttachStopCondition(com.intellij.execution.process.ProcessHandler):com.intellij.openapi.util.Condition
