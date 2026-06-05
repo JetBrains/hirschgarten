@@ -14,6 +14,7 @@ import com.intellij.platform.workspace.storage.impl.url.toVirtualFileUrl
 import com.intellij.platform.workspace.storage.url.VirtualFileUrlManager
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.commons.RuleType
+import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.sync.workspace.languages.java.sourceRoot.JvmPackagePrefixCalculator
 import org.jetbrains.bazel.workspace.indexAdditionalFiles.ProjectViewGlobSet
@@ -77,47 +78,46 @@ object SourceRootBuilder {
   fun write(
     sourceRoots: List<ResolvedSourceRoot>,
     parentModuleEntity: ModuleEntity,
+    projectBasePath: Path,
     virtualFileUrlManager: VirtualFileUrlManager,
     storage: MutableEntityStorage,
-    singleContentRoot: Boolean = false,
   ) {
     if (sourceRoots.isEmpty()) {
       return
     }
-    val contentRoots = if (singleContentRoot) {
-      val commonPath = sourceRoots.first().sourcePath.parent
-      val single = addContentRoots(listOf(commonPath), parentModuleEntity, virtualFileUrlManager, storage).single()
-      List(sourceRoots.size) { single }
-    }
-    else {
-      addContentRoots(sourceRoots.map { it.sourcePath }, parentModuleEntity, virtualFileUrlManager, storage)
-    }
-    val sourceRootEntities = (contentRoots zip sourceRoots).map { (contentRoot, resolved) ->
-      addSourceRootEntity(storage, contentRoot, resolved.sourcePath, resolved.rootType, virtualFileUrlManager)
-    }
-    for ((sourceRootEntity, resolved) in sourceRootEntities zip sourceRoots) {
-      addJavaSourceRootPropertiesEntity(storage, sourceRootEntity, resolved.generated, resolved.packagePrefix)
+
+    sourceRoots.groupBy { root ->
+      if (BazelFeatureFlags.mergeSourceRoots || // sources were merged earlier, now we just need to create a source root for each path
+          root.sourcePath.parent == projectBasePath) { // don't create a content root for project root dir to avoid excessive indexing
+        root.sourcePath
+      }
+      else root.sourcePath.parent
+    }.forEach { (commonParentDir, sourceRoots) ->
+      val commonContentRoot = addContentRoot(commonParentDir, parentModuleEntity, virtualFileUrlManager, storage)
+      for (sourceRoot in sourceRoots) {
+        val sourceRootEntity = addSourceRootEntity(storage, commonContentRoot, sourceRoot.sourcePath, sourceRoot.rootType, virtualFileUrlManager)
+        addJavaSourceRootPropertiesEntity(storage, sourceRootEntity, sourceRoot.generated, sourceRoot.packagePrefix)
+      }
     }
   }
 
-  private fun addContentRoots(
-    paths: List<Path>,
+  private fun addContentRoot(
+    path: Path,
     parentModuleEntity: ModuleEntity,
     virtualFileUrlManager: VirtualFileUrlManager,
     storage: MutableEntityStorage,
-  ): List<ContentRootEntity> {
+  ): ContentRootEntity {
     val entitySource = parentModuleEntity.entitySource
-    val entities = paths.map { path ->
+    val entity =
       ContentRootEntity(
         url = path.toResolvedVirtualFileUrl(virtualFileUrlManager),
         excludedPatterns = emptyList(),
         entitySource = entitySource,
       )
-    }
     val updated = storage.modifyModuleEntity(parentModuleEntity) {
-      contentRoots += entities
+      contentRoots += entity
     }
-    return updated.contentRoots.takeLast(entities.size)
+    return updated.contentRoots.last()
   }
 
   private fun addSourceRootEntity(

@@ -267,7 +267,7 @@ class JvmTargetEntitiesBuilder(private val ctx: ImportContext) {
     }
 
     ResourceRootBuilder.write(plan.resourceRoots, moduleEntity, ctx.virtualFileUrlManager, storage)
-    SourceRootBuilder.write(plan.mainSourceRoots, moduleEntity, ctx.virtualFileUrlManager, storage)
+    SourceRootBuilder.write(plan.mainSourceRoots, moduleEntity, ctx.projectBasePath, ctx.virtualFileUrlManager, storage)
 
     if (plan.jvmBinaryJars.isNotEmpty()) {
       JvmBinaryJarsBuilder.write(plan.jvmBinaryJars, moduleEntity, ctx.virtualFileUrlManager, storage)

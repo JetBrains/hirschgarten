@@ -1,8 +1,11 @@
 package org.jetbrains.bazel.workspace.importer
 
+import com.intellij.openapi.util.registry.Registry
+import com.intellij.platform.workspace.jps.entities.ContentRootEntity
 import com.intellij.platform.workspace.jps.entities.LibraryEntity
 import com.intellij.platform.workspace.jps.entities.ModuleEntity
 import com.intellij.platform.workspace.jps.entities.SourceRootEntity
+import com.intellij.platform.workspace.storage.impl.url.toVirtualFileUrl
 import com.intellij.testFramework.common.timeoutRunBlocking
 import org.jetbrains.bazel.commons.LanguageClass
 import org.jetbrains.bazel.commons.RepoMappingDisabled
@@ -24,7 +27,9 @@ import org.jetbrains.bsp.protocol.JvmBuildTarget
 import org.jetbrains.bsp.protocol.LibraryItem
 import org.jetbrains.bsp.protocol.RawBuildTarget
 import org.junit.jupiter.api.Test
+import java.nio.file.Files
 import kotlin.io.path.Path
+import kotlin.io.path.writeText
 
 internal class JvmTargetEntitiesBuilderTest : WorkspaceModelBaseTest() {
 
@@ -97,7 +102,98 @@ internal class JvmTargetEntitiesBuilderTest : WorkspaceModelBaseTest() {
     check(loadedEntries(ModuleEntity::class.java).isNotEmpty()) { "expected a module entity" }
   }
 
+  @Test
+  fun `groups sources sharing a parent directory under one content root`() = timeoutRunBlocking {
+    disableMergeSourceRoots()
+    val srcDir = projectBasePath.resolve("src/main")
+    Files.createDirectories(srcDir)
+    val fooPath = srcDir.resolve("Foo.java")
+    val barPath = srcDir.resolve("Bar.java")
+    fooPath.writeText("class Foo {}")
+    barPath.writeText("class Bar {}")
+    val target = createRawBuildTarget(
+      id = Label.parse("//foo"),
+      kind = TargetKind(kind = "java_library", ruleType = RuleType.LIBRARY, languageClasses = setOf(LanguageClass.JAVA)),
+      sources = listOf(fooPath, barPath),
+      baseDirectory = projectBasePath,
+    )
+
+    runImport(targets = listOf(target))
+
+    val contentRoots = loadedEntries(ContentRootEntity::class.java)
+    check(contentRoots.size == 1) {
+      "expected 1 content root, got ${contentRoots.size}: ${contentRoots.map { it.url }}"
+    }
+    check(contentRoots[0].url == srcDir.toVirtualFileUrl(virtualFileUrlManager)) {
+      "expected content root URL ${srcDir.toVirtualFileUrl(virtualFileUrlManager)}, got ${contentRoots[0].url}"
+    }
+    check(contentRoots[0].sourceRoots.size == 2) {
+      "expected 2 source roots under the shared content root, got ${contentRoots[0].sourceRoots.size}"
+    }
+  }
+
+  @Test
+  fun `keeps separate content roots for sources in different parent directories`() = timeoutRunBlocking {
+    disableMergeSourceRoots()
+    val mainDir = projectBasePath.resolve("src/main")
+    val testDir = projectBasePath.resolve("src/test")
+    Files.createDirectories(mainDir)
+    Files.createDirectories(testDir)
+    val mainPath = mainDir.resolve("Foo.java")
+    val testPath = testDir.resolve("Bar.java")
+    mainPath.writeText("class Foo {}")
+    testPath.writeText("class Bar {}")
+    val target = createRawBuildTarget(
+      id = Label.parse("//foo"),
+      kind = TargetKind(kind = "java_library", ruleType = RuleType.LIBRARY, languageClasses = setOf(LanguageClass.JAVA)),
+      sources = listOf(mainPath, testPath),
+      baseDirectory = projectBasePath,
+    )
+
+    runImport(targets = listOf(target))
+
+    val contentRoots = loadedEntries(ContentRootEntity::class.java)
+    val urls = contentRoots.map { it.url }.toSet()
+    val expected = setOf(
+      mainDir.toVirtualFileUrl(virtualFileUrlManager),
+      testDir.toVirtualFileUrl(virtualFileUrlManager),
+    )
+    check(urls == expected) { "expected content root URLs $expected, got $urls" }
+    for (cr in contentRoots) {
+      check(cr.sourceRoots.size == 1) {
+        "expected exactly one source root under ${cr.url}, got ${cr.sourceRoots.size}"
+      }
+    }
+  }
+
+  @Test
+  fun `places content root at the source path when the source lives directly under projectBasePath`() = timeoutRunBlocking {
+    disableMergeSourceRoots()
+    val sourcePath = projectBasePath.resolve("Foo.java")
+    sourcePath.writeText("class Foo {}")
+    val target = createRawBuildTarget(
+      id = Label.parse("//foo"),
+      kind = TargetKind(kind = "java_library", ruleType = RuleType.LIBRARY, languageClasses = setOf(LanguageClass.JAVA)),
+      sources = listOf(sourcePath),
+      baseDirectory = projectBasePath,
+    )
+
+    runImport(targets = listOf(target))
+
+    val contentRoots = loadedEntries(ContentRootEntity::class.java)
+    check(contentRoots.size == 1) { "expected 1 content root, got ${contentRoots.size}" }
+    check(contentRoots[0].url == sourcePath.toVirtualFileUrl(virtualFileUrlManager)) {
+      "expected content root at source path ${sourcePath.toVirtualFileUrl(virtualFileUrlManager)}, " +
+        "got ${contentRoots[0].url}"
+    }
+  }
+
   private fun Label.formatAsModuleNameTest(): String = this.formatAsModuleName(RepoMappingDisabled)
+
+  // BAZEL-3205 grouping logic in SourceRootBuilder.write() only fires when this flag is off.
+  private fun disableMergeSourceRoots() {
+    Registry.get("bazel.merge.source.roots").setValue(false, disposable)
+  }
 
   private suspend fun runImport(
     targets: List<RawBuildTarget>,
