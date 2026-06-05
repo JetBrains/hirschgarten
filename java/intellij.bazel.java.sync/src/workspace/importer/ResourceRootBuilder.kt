@@ -25,6 +25,7 @@ import org.jetbrains.bsp.protocol.utils.extractScalaBuildTarget
 import java.nio.file.FileVisitResult
 import java.nio.file.Path
 import kotlin.io.path.Path as KPath
+import kotlin.io.path.isDirectory
 import kotlin.io.path.name
 import kotlin.io.path.visitFileTree
 
@@ -35,25 +36,41 @@ object ResourceRootBuilder {
   data class ResolvedResourceRoot(
     val resourcePath: Path,
     val rootType: SourceRootTypeId,
+    val relativeOutputPath: String = DEFAULT_RELATIVE_OUTPUT_PATH,
   )
 
   fun resolve(
     target: RawBuildTarget,
     bazelProjectName: String,
     testTargets: Set<Label>,
+    sourceContentRoots: List<Path> = emptyList(),
   ): List<ResolvedResourceRoot> {
     val rootType = target.inferRootType(testTargets)
     val stripPrefixes = extractStripPrefixOrNull(target) ?: defaultStripPrefixes(target)
-    val resourcesList = target.resources.getFiles().toList()
-    if (stripPrefixes.isEmpty()) {
-      return rootsForResourcesWithoutPrefix(resourcesList, rootType)
+    val aggressiveCeiling = target.aggressiveCollapseCeiling()
+    val resourceFiles = target.resources.getFiles().toList()
+    val canCollapseTopology = resourceFiles.any { it.startsWith(aggressiveCeiling) }
+    if (stripPrefixes.isEmpty() && !canCollapseTopology) {
+      return rootsForResourcesWithoutPrefix(resourceFiles, rootType, sourceContentRoots)
     }
-    val resourcesSet = resourcesList.toSet()
+    val resourcesSet = resourceFiles.toSet()
+    val dirtinessCache = DirtinessCache(resourcesSet, bazelProjectName)
     val result = stripPrefixes.fold(MergeResult(leftovers = resourcesSet)) { acc, prefix ->
-      acc.mergeUsing(prefix, resourcesSet, bazelProjectName)
+      acc.mergeUsing(prefix, dirtinessCache)
     }
-    return result.merged.map { ResolvedResourceRoot(resourcePath = it, rootType = rootType) } +
-      rootsForResourcesWithoutPrefix(result.leftovers.toList(), rootType)
+    val leftoverPaths = collapseLeftoversByTopology(
+      leftovers = result.leftovers,
+      alreadyMerged = result.merged,
+      aggressiveCeiling = aggressiveCeiling,
+      dirtinessCache = dirtinessCache,
+    )
+    return (result.merged + leftoverPaths).map { path ->
+      ResolvedResourceRoot(
+        resourcePath = path,
+        rootType = rootType,
+        relativeOutputPath = computeRelativeOutputPath(rootForFqnComputation(path), sourceContentRoots),
+      )
+    }
   }
 
   fun write(
@@ -69,8 +86,8 @@ object ResourceRootBuilder {
     val sourceRoots = (resources zip contentRoots).map { (resource, contentRoot) ->
       addSourceRootEntity(storage, contentRoot, resource, parentModuleEntity, virtualFileUrlManager)
     }
-    for (sourceRoot in sourceRoots) {
-      addJavaResourceRootPropertiesEntity(storage, sourceRoot)
+    for ((sourceRoot, resource) in sourceRoots zip resources) {
+      addJavaResourceRootPropertiesEntity(storage, sourceRoot, resource.relativeOutputPath)
     }
   }
 
@@ -123,10 +140,11 @@ object ResourceRootBuilder {
   private fun addJavaResourceRootPropertiesEntity(
     storage: MutableEntityStorage,
     sourceRoot: SourceRootEntity,
+    relativeOutputPath: String,
   ) {
     val entity = JavaResourceRootPropertiesEntity(
       generated = DEFAULT_GENERATED,
-      relativeOutputPath = DEFAULT_RELATIVE_OUTPUT_PATH,
+      relativeOutputPath = relativeOutputPath,
       entitySource = sourceRoot.entitySource,
     )
     storage.modifySourceRootEntity(sourceRoot) {
@@ -137,13 +155,136 @@ object ResourceRootBuilder {
   private fun rootsForResourcesWithoutPrefix(
     resources: List<Path>,
     rootType: SourceRootTypeId,
-  ): List<ResolvedResourceRoot> = resources.map { ResolvedResourceRoot(resourcePath = it, rootType = rootType) }
+    sourceContentRoots: List<Path>,
+  ): List<ResolvedResourceRoot> = resources.map { path ->
+    ResolvedResourceRoot(
+      resourcePath = path,
+      rootType = rootType,
+      relativeOutputPath = computeRelativeOutputPath(path.parent ?: path, sourceContentRoots),
+    )
+  }
 
-  private fun MergeResult.mergeUsing(stripPrefix: Path, allResourceFiles: Set<Path>, bazelProjectName: String): MergeResult {
+  /**
+   * The reference point for computing `relativeOutputPath`. For a directory resource root the
+   * directory itself is the reference; for a file-level root the file's parent is, so a file at
+   * `kotlin/messages/XXX.properties` and a directory root at `kotlin/messages/` produce the same
+   * relative output path when both sit inside a source root at `kotlin/`.
+   */
+  private fun rootForFqnComputation(path: Path): Path =
+    if (path.isDirectory()) path else path.parent ?: path
+
+  /**
+   * When a resource root sits strictly inside one of the module's source content roots, expose
+   * the path-from-enclosing-source-root as the resource's package prefix. This keeps `getResource`
+   * / `@PropertyKey` resolution behaving as if the source root still owned the subtree - a pure
+   * Java-visibility fix, not a content-root layout change.
+   */
+  private fun computeRelativeOutputPath(referencePath: Path, sourceContentRoots: List<Path>): String {
+    val enclosing = sourceContentRoots
+                      .filter { referencePath != it && referencePath.startsWith(it) }
+                      .maxByOrNull { it.nameCount } ?: return DEFAULT_RELATIVE_OUTPUT_PATH
+    val relative = enclosing.relativize(referencePath)
+    return (0 until relative.nameCount).joinToString("/") { relative.getName(it).name }
+  }
+
+  private fun collapseLeftoversByTopology(
+    leftovers: Set<Path>,
+    alreadyMerged: List<Path>,
+    aggressiveCeiling: Path,
+    dirtinessCache: DirtinessCache,
+  ): List<Path> {
+    val collapsed = LinkedHashSet<Path>()
+    val byParent = leftovers.groupBy { it.parent }
+    for ((parent, group) in byParent) {
+      val collapseTarget = if (parent == null) {
+        null
+      }
+      else {
+        val aggressive = findHighestCollapseAncestor(parent, aggressiveCeiling, alreadyMerged, dirtinessCache)
+        aggressive ?: parent.takeIf { canCollapseStrictly(it, byParent, alreadyMerged, dirtinessCache) }
+      }
+      if (collapseTarget != null) {
+        collapsed.add(collapseTarget)
+      }
+      else {
+        collapsed.addAll(group)
+      }
+    }
+    return collapsed.toList()
+  }
+
+  private fun canCollapseStrictly(
+    parent: Path,
+    byParent: Map<Path?, List<Path>>,
+    alreadyMerged: List<Path>,
+    dirtinessCache: DirtinessCache,
+  ): Boolean {
+    // any other leftover group sitting in a subdirectory of parent would have its classpath
+    // name change if we collapsed here, so refuse. Cheap O(P) over the byParent keyset
+    // instead of O(N) over allResourceFiles.
+    val hasNestedLeftoverGroup = byParent.any { (otherParent, _) ->
+      otherParent != null && otherParent != parent && otherParent.startsWith(parent)
+    }
+    return !hasNestedLeftoverGroup && canCollapseToPath(parent, alreadyMerged, dirtinessCache)
+  }
+
+  /**
+   * Aggressive mode: walk up from the leftover's immediate parent toward the ceiling and pick the
+   * highest path that still satisfies cleanliness (see DirtinessCache) / no-overlap / no-source-nesting.
+   */
+  private fun findHighestCollapseAncestor(
+    immediateParent: Path,
+    ceiling: Path,
+    alreadyMerged: List<Path>,
+    dirtinessCache: DirtinessCache,
+  ): Path? {
+    if (!immediateParent.startsWith(ceiling)) {
+      return null
+    }
+    var best: Path? = null
+    var candidate: Path? = immediateParent
+    while (candidate != null && candidate.startsWith(ceiling)) {
+      if (!canCollapseToPath(candidate, alreadyMerged, dirtinessCache)) {
+        break
+      }
+      best = candidate
+      if (candidate == ceiling) {
+        break
+      }
+      candidate = candidate.parent
+    }
+    return best
+  }
+
+  private fun canCollapseToPath(
+    parent: Path,
+    alreadyMerged: List<Path>,
+    dirtinessCache: DirtinessCache,
+  ): Boolean {
+    // no source-content-root rejection: a resource root nested inside a source content root is
+    // fine because we set `relativeOutputPath` on the resulting root so its files keep the same
+    // FQN they would have had through the enclosing source root.
+    val overlapsMerged = alreadyMerged.any { it.startsWith(parent) || parent.startsWith(it) }
+    return !overlapsMerged && !dirtinessCache.isDirty(parent)
+  }
+
+  private class DirtinessCache(
+    private val allResourceFiles: Set<Path>,
+    private val bazelProjectName: String,
+  ) {
+    private val cache = HashMap<Path, Boolean>()
+    fun isDirty(path: Path): Boolean = cache.getOrPut(path) {
+      path.containsExtraFilesIgnoringBazelSymlinks(allResourceFiles, bazelProjectName)
+    }
+  }
+
+  private fun RawBuildTarget.aggressiveCollapseCeiling(): Path = baseDirectory
+
+  private fun MergeResult.mergeUsing(stripPrefix: Path, dirtinessCache: DirtinessCache): MergeResult {
     val stripPrefixAncestors = setOf(stripPrefix)
     val newLeftovers = leftovers.filterNotTo(mutableSetOf()) { it.isUnder(stripPrefixAncestors) }
     if (leftovers.size == newLeftovers.size) return this
-    if (stripPrefix.containsExtraFilesIgnoringBazelSymlinks(allResourceFiles, bazelProjectName)) return this
+    if (dirtinessCache.isDirty(stripPrefix)) return this
     return MergeResult(
       merged = merged.plusElement(stripPrefix),
       leftovers = newLeftovers,
@@ -165,6 +306,7 @@ object ResourceRootBuilder {
             result = true
             FileVisitResult.TERMINATE
           }
+
           else -> FileVisitResult.CONTINUE
         }
       }

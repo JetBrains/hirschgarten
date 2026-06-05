@@ -3,6 +3,7 @@ package org.jetbrains.bazel.workspace.importer
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.collections.shouldHaveSingleElement
 import io.kotest.matchers.collections.shouldNotContain
+import io.kotest.matchers.shouldBe
 import org.jetbrains.bazel.commons.LanguageClass
 import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.commons.TargetKind
@@ -356,6 +357,222 @@ class ResourceRootBuilderTest {
     roots.map { it.resourcePath } shouldHaveSingleElement srcMainResources
   }
 
+  @Test
+  fun `should collapse leftover resources sharing a clean immediate parent directory`() {
+    val gateRoot = projectRoot.resolve("src/main/resources").createDirectories()
+    val gateResource = gateRoot.resolve("app.properties").createFile()
+    val leftoversParent = projectRoot.resolve("extra/data").createDirectories()
+    val leftovers = ('a'..'e').map { leftoversParent.resolve("$it.txt").createFile() }
+
+    val target = javaTarget(resources = listOf(gateResource) + leftovers)
+
+    val roots = ResourceRootBuilder.resolve(target, projectName, emptySet())
+
+    roots.map { it.resourcePath } shouldContainExactlyInAnyOrder listOf(gateRoot, leftoversParent)
+  }
+
+  @Test
+  fun `should not collapse a parent that has resource files nested in subdirectories`() {
+    val gateRoot = projectRoot.resolve("src/main/resources").createDirectories()
+    val gateResource = gateRoot.resolve("x.txt").createFile()
+    val area = projectRoot.resolve("area").createDirectories()
+    val flat = area.resolve("a.txt").createFile()
+    val nestedParent = area.resolve("sub").createDirectories()
+    val nested = nestedParent.resolve("b.txt").createFile()
+
+    val target = javaTarget(resources = listOf(gateResource, flat, nested))
+
+    val roots = ResourceRootBuilder.resolve(target, projectName, emptySet())
+
+    roots.map { it.resourcePath } shouldContainExactlyInAnyOrder listOf(gateRoot, flat, nestedParent)
+  }
+
+  @Test
+  fun `should collapse to the immediate parent even when the grandparent is dirty`() {
+    val gateRoot = projectRoot.resolve("src/main/resources").createDirectories()
+    val gateResource = gateRoot.resolve("x.txt").createFile()
+    val extra = projectRoot.resolve("extra").createDirectories()
+    val data = extra.resolve("data").createDirectories()
+    val leftover = data.resolve("y.txt").createFile()
+    extra.resolve("README.md").createFile()
+
+    val target = javaTarget(resources = listOf(gateResource, leftover))
+
+    val roots = ResourceRootBuilder.resolve(target, projectName, emptySet())
+
+    roots.map { it.resourcePath } shouldContainExactlyInAnyOrder listOf(gateRoot, data)
+  }
+
+  @Test
+  fun `should collapse a leftover whose immediate parent does not overlap a merged prefix`() {
+    val gateRoot = projectRoot.resolve("src/main/resources").createDirectories()
+    val gateResource = gateRoot.resolve("x.txt").createFile()
+    val extras = projectRoot.resolve("src/extras").createDirectories()
+    val leftover = extras.resolve("y.txt").createFile()
+
+    val target = kotlinTarget(resources = listOf(gateResource, leftover))
+
+    val roots = ResourceRootBuilder.resolve(target, projectName, emptySet())
+
+    roots.map { it.resourcePath } shouldContainExactlyInAnyOrder listOf(gateRoot, extras)
+  }
+
+  @Test
+  fun `should fall back to single-file root when the leftover's parent is dirty`() {
+    val gateRoot = projectRoot.resolve("src/main/resources").createDirectories()
+    val gateResource = gateRoot.resolve("x.txt").createFile()
+    val pkg = projectRoot.resolve("pkg").createDirectories()
+    val leftover = pkg.resolve("y.txt").createFile()
+    pkg.resolve("Helper.kt").createFile()
+
+    val target = javaTarget(resources = listOf(gateResource, leftover))
+
+    val roots = ResourceRootBuilder.resolve(target, projectName, emptySet())
+
+    roots.map { it.resourcePath } shouldContainExactlyInAnyOrder listOf(gateRoot, leftover)
+  }
+
+  @Test
+  fun `should collapse a large fan-out of leftovers into per-immediate-parent roots`() {
+    val gateRoot = projectRoot.resolve("src/main/resources").createDirectories()
+    val gateResource = gateRoot.resolve("app.properties").createFile()
+    val assets = projectRoot.resolve("assets").createDirectories()
+    val img = assets.resolve("img").createDirectories()
+    val data = assets.resolve("data").createDirectories()
+    val imgFiles = (1..25).map { img.resolve("$it.png").createFile() }
+    val dataFiles = (1..25).map { data.resolve("$it.json").createFile() }
+
+    val target = javaTarget(resources = listOf(gateResource) + imgFiles + dataFiles)
+
+    val roots = ResourceRootBuilder.resolve(target, projectName, emptySet())
+
+    roots.map { it.resourcePath } shouldContainExactlyInAnyOrder listOf(gateRoot, img, data)
+  }
+
+  @Test
+  fun `should keep leftovers from independent subtrees as separate roots when their common ancestor is dirty`() {
+    val gateRoot = projectRoot.resolve("src/main/resources").createDirectories()
+    val gateResource = gateRoot.resolve("x.txt").createFile()
+    val unrelated = projectRoot.resolve("unrelated").createDirectories()
+    val areaA = unrelated.resolve("area-a").createDirectories()
+    val areaB = unrelated.resolve("area-b").createDirectories()
+    val a1 = areaA.resolve("1.txt").createFile()
+    val a2 = areaA.resolve("2.txt").createFile()
+    val b1 = areaB.resolve("1.txt").createFile()
+    val b2 = areaB.resolve("2.txt").createFile()
+    unrelated.resolve("README.md").createFile()
+
+    val target = javaTarget(resources = listOf(gateResource, a1, a2, b1, b2))
+
+    val roots = ResourceRootBuilder.resolve(target, projectName, emptySet())
+
+    roots.map { it.resourcePath } shouldContainExactlyInAnyOrder listOf(gateRoot, areaA, areaB)
+  }
+
+  @Test
+  fun `should collapse inside a source content root and set relativeOutputPath so the FQN is preserved`() {
+    val gateRoot = projectRoot.resolve("src/main/resources").createDirectories()
+    val gateResource = gateRoot.resolve("app.properties").createFile()
+    val kotlinRoot = projectRoot.resolve("src/main/kotlin").createDirectories()
+    val messages = kotlinRoot.resolve("messages").createDirectories()
+    val bundle1 = messages.resolve("KotlinBundle.properties").createFile()
+    val bundle2 = messages.resolve("KotlinBundle1.properties").createFile()
+    val sourceFile = kotlinRoot.resolve("com/example/Module.kt").also { it.parent.createDirectories() }.createFile()
+
+    val target = kotlinTarget(
+      sources = listOf(sourceFile),
+      resources = listOf(gateResource, bundle1, bundle2),
+    )
+
+    val roots = ResourceRootBuilder.resolve(
+      target = target,
+      bazelProjectName = projectName,
+      testTargets = emptySet(),
+      sourceContentRoots = listOf(kotlinRoot),
+    )
+
+    roots.map { it.resourcePath } shouldContainExactlyInAnyOrder listOf(gateRoot, messages)
+    val messagesRoot = roots.single { it.resourcePath == messages }
+    messagesRoot.relativeOutputPath shouldBe "messages"
+    val gateRootResolved = roots.single { it.resourcePath == gateRoot }
+    gateRootResolved.relativeOutputPath shouldBe ""
+  }
+
+  @Test
+  fun `should aggressively collapse a clean filegroup target up to its base directory`() {
+    val baseDir = projectRoot.resolve("pkg").createDirectories()
+    val flat = baseDir.resolve("a.txt").createFile()
+    val nested = baseDir.resolve("sub/b.txt").also { it.parent.createDirectories() }.createFile()
+    val deeper = baseDir.resolve("sub/deeper/c.txt").also { it.parent.createDirectories() }.createFile()
+
+    val target = filegroupTarget(resources = listOf(flat, nested, deeper), baseDirectory = baseDir)
+
+    val roots = ResourceRootBuilder.resolve(target, projectName, emptySet())
+
+    roots.map { it.resourcePath } shouldContainExactlyInAnyOrder listOf(baseDir)
+  }
+
+  @Test
+  fun `should stop the aggressive climb at the first dirty ancestor under the ceiling`() {
+    val baseDir = projectRoot.resolve("pkg").createDirectories()
+    val component = baseDir.resolve("component").createDirectories()
+    component.resolve("Module.java").createFile()
+    val testResources = component.resolve("test-resources").createDirectories()
+    val input = testResources.resolve("input").createDirectories()
+    val output = testResources.resolve("output").createDirectories()
+    val inputRes = input.resolve("a.txt").createFile()
+    val outputRes = output.resolve("b.txt").createFile()
+
+    val target = filegroupTarget(resources = listOf(inputRes, outputRes), baseDirectory = baseDir)
+
+    val roots = ResourceRootBuilder.resolve(target, projectName, emptySet())
+
+    roots.map { it.resourcePath } shouldContainExactlyInAnyOrder listOf(testResources)
+  }
+
+  @Test
+  fun `should not climb a filegroup target above its base directory`() {
+    val baseDir = projectRoot.resolve("pkg").createDirectories()
+    val nested = baseDir.resolve("sub/x.txt").also { it.parent.createDirectories() }.createFile()
+
+    val target = filegroupTarget(resources = listOf(nested), baseDirectory = baseDir)
+
+    val roots = ResourceRootBuilder.resolve(target, projectName, emptySet())
+
+    roots.map { it.resourcePath } shouldContainExactlyInAnyOrder listOf(baseDir)
+  }
+
+  @Test
+  fun `should produce per-subtree roots for a filegroup whose ceiling has a dirty sibling`() {
+    val baseDir = projectRoot.resolve("pkg").createDirectories()
+    val areaA = baseDir.resolve("area-a").createDirectories()
+    val areaB = baseDir.resolve("area-b").createDirectories()
+    val a = areaA.resolve("x.txt").createFile()
+    val b = areaB.resolve("y.txt").createFile()
+    baseDir.resolve("README.md").createFile()
+
+    val target = filegroupTarget(resources = listOf(a, b), baseDirectory = baseDir)
+
+    val roots = ResourceRootBuilder.resolve(target, projectName, emptySet())
+
+    roots.map { it.resourcePath } shouldContainExactlyInAnyOrder listOf(areaA, areaB)
+  }
+
+  @Test
+  fun `should collapse a large filegroup fan-out into a single root (scale)`() {
+    val baseDir = projectRoot.resolve("pkg").createDirectories()
+    val data1 = baseDir.resolve("data1").createDirectories()
+    val data2 = baseDir.resolve("data2").createDirectories()
+    val files1 = (1..200).map { data1.resolve("$it.txt").createFile() }
+    val files2 = (1..200).map { data2.resolve("$it.json").createFile() }
+
+    val target = filegroupTarget(resources = files1 + files2, baseDirectory = baseDir)
+
+    val roots = ResourceRootBuilder.resolve(target, projectName, emptySet())
+
+    roots.map { it.resourcePath } shouldContainExactlyInAnyOrder listOf(baseDir)
+  }
+
   private fun shouldDetectJavaPrefix(vararg prefixes: String): List<DynamicTest> = prefixes.mapIndexed { i, prefix ->
     DynamicTest.dynamicTest("Java prefix '$prefix'") {
       val testRoot = projectRoot.resolve("java-detect-$i").createDirectories()
@@ -498,5 +715,21 @@ class ResourceRootBuilderTest {
     sources = sources,
     resources = resources,
     data = data,
+  )
+
+  private fun filegroupTarget(
+    label: String = "//target",
+    resources: List<Path> = emptyList(),
+    baseDirectory: Path,
+  ): RawBuildTarget = createRawBuildTarget(
+    id = Label.parse(label),
+    kind = TargetKind(
+      kind = "filegroup",
+      ruleType = RuleType.LIBRARY,
+      languageClasses = emptySet(),
+    ),
+    resources = resources,
+    baseDirectory = baseDirectory,
+    data = emptyList(),
   )
 }
