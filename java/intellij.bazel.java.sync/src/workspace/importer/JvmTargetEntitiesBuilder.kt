@@ -199,7 +199,12 @@ class JvmTargetEntitiesBuilder(private val ctx: ImportContext) {
           is DummyModuleSplitter.DummyModulesToAdd -> splitResult.originalSourceRoots
         }
         val dummies = (splitResult as? DummyModuleSplitter.DummyModulesToAdd)?.dummies.orEmpty()
-        val resourceRoots = ResourceRootBuilder.resolve(target, ctx.projectName, ctx.testTargets)
+        val resourceRoots = ResourceRootBuilder.resolve(
+          target = target,
+          bazelProjectName = ctx.projectName,
+          testTargets = ctx.testTargets,
+          sourceContentRoots = mainSourceRoots.map { it.sourcePath },
+        )
         TargetPlan.Full(
           moduleName = moduleName,
           resolvedDeps = resolvedDeps,
