@@ -444,6 +444,14 @@
                      level="ERROR"
                      implementationClass="org.jetbrains.bazel.languages.starlark.inspection.StarlarkControlFlowContextInspection"/>
 
+    <localInspection language="Starlark"
+                     key="inspection.display.name.starlark.function.parameter.validation.check"
+                     groupPath="Bazel"
+                     groupKey="starlark.inspection.group.name"
+                     enabledByDefault="true"
+                     level="ERROR"
+                     implementationClass="org.jetbrains.bazel.languages.starlark.inspection.StarlarkFunctionParameterValidationInspection"/>
+
     <fileType
       extensions="bazelquery"
       fieldName="INSTANCE"
