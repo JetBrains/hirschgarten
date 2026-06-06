@@ -53,6 +53,7 @@ import org.jetbrains.bazel.workspacemodel.entities.WorkspaceModelTargetLabel
 import org.jetbrains.bazel.workspacemodel.entities.WorkspaceModelTargetLabelList
 import org.jetbrains.bazel.workspacemodel.entities.bazelModuleExtension
 import org.jetbrains.bazel.server.BazelServerFacade
+import org.jetbrains.bsp.protocol.SourceFileCollection
 import org.jetbrains.bsp.protocol.InverseSourcesParams
 import org.jetbrains.bsp.protocol.InverseSourcesResult
 import org.jetbrains.bsp.protocol.PartialBuildTarget
@@ -436,9 +437,9 @@ class BazelFileEventListenerTest : WorkspaceModelBaseTest() {
                 ruleType = RuleType.LIBRARY,
                 languageClasses = setOf(LanguageClass.JAVA),
               ),
-            sources = emptyList(),
-            generatedSources = emptyList(),
-            resources = emptyList(),
+            sources = SourceFileCollection.EMPTY,
+            generatedSources = SourceFileCollection.EMPTY,
+            resources = SourceFileCollection.EMPTY,
             baseDirectory = Path("/"),
           ),
         ),

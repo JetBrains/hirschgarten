@@ -8,16 +8,16 @@ import com.intellij.platform.workspace.storage.url.VirtualFileUrlManager
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.workspacemodel.entities.JvmBinaryJarsEntity
 import org.jetbrains.bazel.workspacemodel.entities.jvmBinaryJarsEntity
-import java.nio.file.Path
+import org.jetbrains.bsp.protocol.SourceFileCollection
 
 // RC: replaces `JvmBinaryJarsEntityUpdater`
 @ApiStatus.Internal
 object JvmBinaryJarsBuilder {
   fun write(
-    binaryJars: List<Path>,
-    parentModuleEntity: ModuleEntity,
-    virtualFileUrlManager: VirtualFileUrlManager,
-    storage: MutableEntityStorage,
+      binaryJars: SourceFileCollection,
+      parentModuleEntity: ModuleEntity,
+      virtualFileUrlManager: VirtualFileUrlManager,
+      storage: MutableEntityStorage,
   ) {
     if (binaryJars.isEmpty()) {
       return
@@ -25,7 +25,9 @@ object JvmBinaryJarsBuilder {
     val entity =
       JvmBinaryJarsEntity(
         entitySource = parentModuleEntity.entitySource,
-        jars = binaryJars.map { it.toVirtualFileUrl(virtualFileUrlManager) },
+        jars = binaryJars.getFiles()
+          .map { it.toVirtualFileUrl(virtualFileUrlManager) }
+          .toList(),
       )
     storage.modifyModuleEntity(parentModuleEntity) {
       this.jvmBinaryJarsEntity = entity

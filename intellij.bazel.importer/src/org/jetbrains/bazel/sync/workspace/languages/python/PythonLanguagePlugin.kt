@@ -10,9 +10,12 @@ import org.jetbrains.bazel.info.BspTargetInfo.ArtifactLocation
 import org.jetbrains.bazel.info.BspTargetInfo.PythonTargetInfo
 import org.jetbrains.bazel.info.BspTargetInfo.TargetInfo
 import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.label.assumeResolved
+import org.jetbrains.bazel.label.label
 import org.jetbrains.bazel.server.model.sourcesList
 import org.jetbrains.bazel.sync.workspace.graph.DependencyGraph
 import org.jetbrains.bazel.sync.workspace.languages.LanguagePlugin
+import org.jetbrains.bazel.sync.workspace.snapshot.SourceFileCollectionBuilder
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceSyncConfig
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bazel.server.BazelServerFacade
@@ -46,12 +49,14 @@ internal class PythonLanguagePlugin : LanguagePlugin {
       if (!target.hasPythonTargetInfo()) {
         return emptyList()
       }
+      val baseDirectory = server.bazelPathsResolver.toDirectoryPath(target.label().assumeResolved(), repoMapping)
       val localRepositories = repoMapping.getLocalRepositories()
       val pythonTarget = target.pythonTargetInfo
       val runnerScript =
         if (target.hasExecutableInfo()) {
           server.bazelPathsResolver.resolve(target.executableInfo.executableFile, localRepositories)
-        } else {
+        }
+        else {
           null
         }
       return listOf(
@@ -59,9 +64,13 @@ internal class PythonLanguagePlugin : LanguagePlugin {
           version = pythonTarget.version.takeUnless(String::isNullOrEmpty),
           interpreter = calculateInterpreterPath(interpreter = pythonTarget.interpreter, localRepositories),
           imports = pythonTarget.importsList,
-          generatedSources = pythonTarget.resolveGeneratedSources(repoMapping).toList(),
+          generatedSources = SourceFileCollectionBuilder.build(
+            relativeRoot = baseDirectory,
+            paths = pythonTarget.resolveGeneratedSources(repoMapping),
+          ),
           externalSources = getExternalSources(target, localRepositories)
-            .map { calculateExternalSourcePath(it, localRepositories) },
+            .map { calculateExternalSourcePath(it, localRepositories) }
+            .let { SourceFileCollectionBuilder.build(relativeRoot = baseDirectory, paths = it) },
           mainFile = MainSourceFinder.findMainFile(target, pythonTarget, server.bazelPathsResolver, localRepositories),
           mainModule = pythonTarget.mainModule,
           runnerScript = runnerScript,

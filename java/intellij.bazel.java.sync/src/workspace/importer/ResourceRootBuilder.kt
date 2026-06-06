@@ -44,10 +44,11 @@ object ResourceRootBuilder {
   ): List<ResolvedResourceRoot> {
     val rootType = target.inferRootType(testTargets)
     val stripPrefixes = extractStripPrefixOrNull(target) ?: defaultStripPrefixes(target)
+    val resourcesList = target.resources.getFiles().toList()
     if (stripPrefixes.isEmpty()) {
-      return rootsForResourcesWithoutPrefix(target.resources, rootType)
+      return rootsForResourcesWithoutPrefix(resourcesList, rootType)
     }
-    val resourcesSet = target.resources.toSet()
+    val resourcesSet = resourcesList.toSet()
     val result = stripPrefixes.fold(MergeResult(leftovers = resourcesSet)) { acc, prefix ->
       acc.mergeUsing(prefix, resourcesSet, bazelProjectName)
     }
@@ -182,15 +183,20 @@ object ResourceRootBuilder {
     else -> emptySet()
   }
 
-  private fun defaultStripPrefixesJava(target: RawBuildTarget) = target
+  private fun defaultStripPrefixesJava(target: RawBuildTarget): MutableSet<Path> = target
     .resources
+    .getFiles()
     .mapNotNullTo(mutableSetOf()) { it.takeSrcResourcesPrefixOrNull() ?: it.takeJavaLayoutPrefixOrNull() }
 
-  private fun defaultStripPrefixesKotlin(target: RawBuildTarget): Set<Path> = kotlinConventionalSegments
-    .flatMapTo(mutableSetOf()) { target.resources.findPrefixesEndingWith(it) }
+  private fun defaultStripPrefixesKotlin(target: RawBuildTarget): Set<Path> {
+    val resources = target.resources.getFiles().toList()
+    return kotlinConventionalSegments
+      .flatMapTo(mutableSetOf()) { resources.findPrefixesEndingWith(it) }
+  }
 
   private fun defaultStripPrefixesScala(target: RawBuildTarget): Set<Path> {
-    val externalPrefixes = target.resources.mapNotNullTo(mutableSetOf()) { resource ->
+    val resources = target.resources.getFiles().toList()
+    val externalPrefixes = resources.mapNotNullTo(mutableSetOf()) { resource ->
       val index = resource.indexOfFirst { it.name == "external" }
       val next = index + 1
       if (index == -1) return@mapNotNullTo null
@@ -198,7 +204,7 @@ object ResourceRootBuilder {
       resource.rootSubpath(until = next + 1)
     }
     val conventionalPrefixes = scalaConventionalSegments
-      .flatMapTo(mutableSetOf()) { target.resources.findPrefixesEndingWith(it) }
+      .flatMapTo(mutableSetOf()) { resources.findPrefixesEndingWith(it) }
     return externalPrefixes + conventionalPrefixes
   }
 

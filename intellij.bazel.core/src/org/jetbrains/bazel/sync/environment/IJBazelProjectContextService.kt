@@ -7,7 +7,6 @@ import com.intellij.project.stateStore
 import org.jetbrains.bazel.flow.open.BazelProjectStoreDescriptor
 import org.jetbrains.bazel.flow.sync.bazelPaths.BazelBinPathService
 import org.jetbrains.bazel.project.BazelProjectProperties.Companion.bazelProjectProperties
-import org.jetbrains.bazel.target.sync.TargetUtilsTargetPersistanceLayer
 import org.jetbrains.bazel.utils.findVirtualFile
 
 internal class IJBazelProjectContextService(private val project: Project) : BazelProjectContextService {
@@ -36,5 +35,4 @@ internal class IJBazelProjectContextService(private val project: Project) : Baze
       project.service<BazelBinPathService>().bazelExecPath = value
     }
   override val avoidExternalSystem: Boolean = false
-  override val targetPersistenceLayer: BazelTargetPersistenceLayer = TargetUtilsTargetPersistanceLayer()
 }

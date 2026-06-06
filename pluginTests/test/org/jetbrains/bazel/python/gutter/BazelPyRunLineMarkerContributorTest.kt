@@ -17,6 +17,7 @@ import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.project.BazelProjectFixtures.initializeBazelProject
 import org.jetbrains.bazel.target.targetUtils
+import org.jetbrains.bsp.protocol.SourceFileCollection
 import org.jetbrains.bsp.protocol.PythonBuildTarget
 import org.jetbrains.bsp.protocol.RawBuildTarget
 import org.junit.Before
@@ -365,17 +366,17 @@ internal class BazelPyRunLineMarkerContributorTest : CodeInsightFixtureTestCase<
               languageClasses = setOf(LanguageClass.PYTHON),
               ruleType = ruleType,
             ),
-          sources = emptyList(),
-          generatedSources = emptyList(),
-          resources = emptyList(),
+          sources = SourceFileCollection.EMPTY,
+          generatedSources = SourceFileCollection.EMPTY,
+          resources = SourceFileCollection.EMPTY,
           baseDirectory = Path.of(myFixture.tempDirPath, "base_dir"),
           data = listOf(
             PythonBuildTarget(
               version = "3.8",
               interpreter = Path.of(myFixture.tempDirPath, "python3"),
               listOf(),
-              listOf(),
-              listOf(),
+              SourceFileCollection.EMPTY,
+              SourceFileCollection.EMPTY,
               mainFile = mainFile?.virtualFile?.toNioPath(),
               mainModule = mainModule,
             ),

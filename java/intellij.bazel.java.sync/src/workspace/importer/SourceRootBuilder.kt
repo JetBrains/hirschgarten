@@ -65,8 +65,8 @@ object SourceRootBuilder {
         },
       )
 
-    return target.sources.map { it.convert(generated = false) } +
-           target.generatedSources.map { it.convert(generated = true) }
+    return (target.sources.getFiles().map { it.convert(generated = false) } +
+            target.generatedSources.getFiles().map { it.convert(generated = true) }).toList()
   }
 
   /**

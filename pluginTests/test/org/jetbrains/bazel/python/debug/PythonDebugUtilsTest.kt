@@ -14,6 +14,7 @@ import org.jetbrains.bazel.project.BazelProjectFixtures.initializeBazelProject
 import org.jetbrains.bazel.target.targetUtils
 import org.jetbrains.bsp.protocol.PythonBuildTarget
 import org.jetbrains.bsp.protocol.RawBuildTarget
+import org.jetbrains.bsp.protocol.SourceFileCollection
 import java.io.File
 import java.nio.file.Files
 import java.nio.file.Path
@@ -148,9 +149,9 @@ class PythonDebugUtilsTest {
             languageClasses = setOf(LanguageClass.PYTHON),
             ruleType = ruleType,
           ),
-          sources = emptyList(),
-          generatedSources = emptyList(),
-          resources = emptyList(),
+          sources = SourceFileCollection.EMPTY,
+          generatedSources = SourceFileCollection.EMPTY,
+          resources = SourceFileCollection.EMPTY,
           baseDirectory = tempDir.resolve(target.packagePath.toString()),
           data = listOf(
             PythonBuildTarget(

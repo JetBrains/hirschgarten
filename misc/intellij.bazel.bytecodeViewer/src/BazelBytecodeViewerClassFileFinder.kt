@@ -29,7 +29,7 @@ internal class BazelBytecodeViewerClassFileFinder : BytecodeViewerClassFileFinde
     return targetUtils.getTargetsForFile(vFile)
       .asSequence()
       .mapNotNull { targetUtils.getBuildTargetForLabel(it) }
-      .flatMap { extractJvmBuildTarget(it)?.binaryOutputs ?: listOf() }
+      .flatMap { extractJvmBuildTarget(it)?.binaryOutputs?.getFiles() ?: sequenceOf() }
       .map { it.toCompiledClassesVFSRoot(project)?.toFullClassPath(targetElement, containing) }
       .firstOrNull()
   }

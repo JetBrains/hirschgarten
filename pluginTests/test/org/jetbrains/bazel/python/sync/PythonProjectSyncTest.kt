@@ -38,6 +38,7 @@ import org.jetbrains.bazel.progress.syncConsole
 import org.jetbrains.bazel.project.BazelProjectFixtures.initializeBazelProject
 import org.jetbrains.bazel.sync.workspace.BazelResolvedWorkspace
 import org.jetbrains.bazel.sync.workspace.importer.WorkspaceImporterHelper
+import org.jetbrains.bazel.sync.workspace.snapshot.SourceFileCollectionBuilder
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceSnapshot
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceSnapshotBuilder
 import org.jetbrains.bazel.workspace.model.matchers.entries.ExpectedModuleEntity
@@ -46,6 +47,7 @@ import org.jetbrains.bazel.workspace.model.matchers.entries.shouldContainExactly
 import org.jetbrains.bazel.workspace.model.test.framework.MockProjectBaseTest
 import org.jetbrains.bazel.workspace.model.test.framework.mockWorkspaceContext
 import org.jetbrains.bazel.workspacemodel.entities.BazelProjectEntitySource
+import org.jetbrains.bsp.protocol.SourceFileCollection
 import org.jetbrains.bsp.protocol.PythonBuildTarget
 import org.jetbrains.bsp.protocol.RawBuildTarget
 import org.jetbrains.bsp.protocol.TaskGroupId
@@ -231,13 +233,13 @@ class PythonProjectSyncTest : MockProjectBaseTest() {
             version = "3",
             interpreter = pythonBinary,
             listOf(),
-            listOf(),
-            externalSources = listOf(),
+            SourceFileCollection.EMPTY,
+            externalSources = SourceFileCollection.EMPTY,
           ),
         ),
-        sources = sources,
-        generatedSources = generatedSources,
-        resources = resources,
+        sources = SourceFileCollectionBuilder.build(sources),
+        generatedSources = SourceFileCollectionBuilder.build(generatedSources),
+        resources = SourceFileCollectionBuilder.build(resources),
       )
 
     return target
@@ -295,7 +297,7 @@ class PythonProjectSyncTest : MockProjectBaseTest() {
         }
       ExpectedSourceRootEntity(sourceRootEntity, contentRootEntity, parentModuleEntity)
     } +
-     target.resources.map {
+     target.resources.getFiles().map {
        val url = it.toVirtualFileUrl(virtualFileUrlManager)
        val sourceRootEntity = SourceRootEntity(url, SourceRootTypeId("python-resource"), parentModuleEntity.entitySource)
        val contentRootEntity =

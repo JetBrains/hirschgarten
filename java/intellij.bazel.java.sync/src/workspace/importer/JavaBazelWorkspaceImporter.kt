@@ -142,7 +142,7 @@ internal class JavaBazelWorkspaceImporter : BazelWorkspaceImporter, BazelWorkspa
       testSourcesGlob = ProjectViewGlobSet(commonSyncConfig.projectRootDir, javaSyncConfig.testSourcesPatterns),
       testTargets = testTargets,
       packagePrefixes = packagePrefixes,
-      fileToTargets = snapshot.fileToTarget.mapValues { (_, v) -> v.map { it.label } },
+      fileToTargets = snapshot.fileToTarget,
       virtualFileUrlManager = context.vfuManager,
       importIJars = javaSyncConfig.importIjars,
       entitySource = entitySource,

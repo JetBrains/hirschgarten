@@ -1,15 +1,18 @@
 package org.jetbrains.bazel.target
 
+import com.google.gson.Gson
 import com.intellij.openapi.diagnostic.logger
 import org.h2.mvstore.DataUtils.readVarInt
 import org.h2.mvstore.MVMap
 import org.h2.mvstore.WriteBuffer
 import org.h2.mvstore.type.LongDataType
+import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.commons.LanguageClass
 import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.commons.gson.bazelGson
 import org.jetbrains.bazel.label.Label
+import org.jetbrains.bsp.protocol.SourceFileCollection
 import org.jetbrains.bsp.protocol.PartialBuildTarget
 import java.io.ByteArrayOutputStream
 import java.nio.ByteBuffer
@@ -20,6 +23,11 @@ import java.util.zip.GZIPOutputStream
 import kotlin.io.path.invariantSeparatorsPathString
 
 private val LOG = logger<PartialBuildTarget>()
+
+@get:ApiStatus.Internal
+val targetUtilsGson: Gson = bazelGson.newBuilder()
+  .registerTypeAdapter(SourceFileCollection::class.java, SourceFileCollectionGsonAdapter)
+  .create()
 
 internal fun WriteBuffer.writeString(value: String) {
   if (value.isEmpty()) {
@@ -67,7 +75,7 @@ internal fun createIdToBuildMapType(filePathSuffix: String, rootDir: Path): MVMa
         for (targetData in item.data) {
           val aClass = targetData.javaClass
           BuildDataTargetTypeRegistry.writeClassId(aClass, buffer)
-          val data = gzip(bazelGson.toJson(targetData, aClass).encodeToByteArray())
+          val data = gzip(targetUtilsGson.toJson(targetData, aClass).encodeToByteArray())
           buffer.putVarInt(data.size)
           buffer.put(data)
         }
@@ -86,7 +94,7 @@ internal fun createIdToBuildMapType(filePathSuffix: String, rootDir: Path): MVMa
           val dataSize = readVarInt(buffer)
           val encodedData = ByteArray(dataSize)
           buffer.get(encodedData)
-          bazelGson.fromJson(ungzip(encodedData).decodeToString(), aClass)
+          targetUtilsGson.fromJson(ungzip(encodedData).decodeToString(), aClass)
         }
         PartialBuildTarget(
           id = id,
@@ -169,3 +177,4 @@ private fun gzip(content: ByteArray): ByteArray {
   GZIPOutputStream(byteArrayOutputStream).use { it.write(content) }
   return byteArrayOutputStream.toByteArray()
 }
+

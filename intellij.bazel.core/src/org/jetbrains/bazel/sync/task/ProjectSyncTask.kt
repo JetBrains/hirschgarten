@@ -47,15 +47,19 @@ import org.jetbrains.bazel.sync.scope.ProjectSyncScope
 import org.jetbrains.bazel.sync.status.SyncAlreadyInProgressException
 import org.jetbrains.bazel.sync.status.SyncStatusService
 import org.jetbrains.bazel.sync.workspace.importer.WorkspaceImporterHelper
-import org.jetbrains.bazel.sync.workspace.mapper.BazelWorkspaceResolver
+import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceSnapshot
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceSnapshotBuilder
+import org.jetbrains.bazel.sync.workspace.snapshot.allTargets
+import org.jetbrains.bazel.target.targetUtils
 import org.jetbrains.bazel.taskEvents.BazelTaskEventsService
 import org.jetbrains.bazel.workspace.fileEvents.FileEventJobManager
 import org.jetbrains.bazel.server.BazelServerFacade
 import org.jetbrains.bazel.sync.scope.PartialProjectSync
 import org.jetbrains.bazel.sync.scope.SecondPhaseSync
+import org.jetbrains.bazel.sync.workspace.mapper.BazelWorkspaceResolver
 import org.jetbrains.bsp.protocol.TaskGroupId
 import org.jetbrains.bsp.protocol.TaskId
+import org.jetbrains.bsp.protocol.allSources
 import java.util.concurrent.CancellationException
 import kotlin.random.Random
 
@@ -137,12 +141,13 @@ class ProjectSyncTask(private val project: Project) {
                   FailureResultImpl(),
                 )
               }
+
               SyncResultStatus.PARTIAL_SUCCESS -> {
                 syncConsole.addDiagnosticMessage(
                   taskId,
                   null, -1, -1,
                   BazelPluginBundle.message("console.task.sync.partialsuccess"),
-                  MessageEvent.Kind.WARNING
+                  MessageEvent.Kind.WARNING,
                 )
                 syncConsole.finishTask(
                   taskId,
@@ -150,10 +155,11 @@ class ProjectSyncTask(private val project: Project) {
                   SuccessResultImpl(true),
                 )
               }
+
               SyncResultStatus.SUCCESS -> {
                 syncConsole.finishTask(
                   taskId,
-                  BazelPluginBundle.message("console.task.sync.success")
+                  BazelPluginBundle.message("console.task.sync.success"),
                 )
               }
             }
@@ -240,7 +246,7 @@ class ProjectSyncTask(private val project: Project) {
                     taskConsole = project.syncConsole,
                     progressReporter = progressReporter,
                     taskId = taskId,
-                    builder = storage
+                    builder = storage,
                   ),
                 )
                 shouldUpdateProjectModel = syncResult != SyncResultStatus.FAILURE
@@ -253,7 +259,8 @@ class ProjectSyncTask(private val project: Project) {
                     deferredApplyActions = deferredApplyActions,
                   )
                 }
-              } finally {
+              }
+              finally {
                 server.outFileHardLinks.onAfterSync(shouldUpdateProjectModel)
               }
             }
@@ -344,6 +351,7 @@ class ProjectSyncTask(private val project: Project) {
             workspace = resolvedWorkspace,
             deferredApplyActions = deferredApplyActions,
           )
+        saveTargetStorage(workspaceSnapshot)
         // then sync hooks
         project.projectSyncHooks.forEachSubtask(subtaskId) {
           it.onSync(environment)
@@ -357,6 +365,20 @@ class ProjectSyncTask(private val project: Project) {
         }
       }
     }
+  }
+
+  // TODO: remove this after proper `WorkspaceSnapshot` persistance
+  private fun saveTargetStorage(snapshot: WorkspaceSnapshot) {
+    project.targetUtils.saveTargets(
+      targets = snapshot.allTargets
+        .map { it.rawBuildTarget }
+        .toList(),
+      fileToTarget = snapshot.allTargets
+        .flatMap { target -> target.rawBuildTarget.allSources.map { source -> source to target } }
+        .groupBy(keySelector = { it.first }, valueTransform = { it.second.targetKey.label })
+        .toMap(),
+    )
+    project.targetUtils.notifyTargetListUpdated()
   }
 
   private suspend fun updateProjectModel(
@@ -405,9 +427,11 @@ class ProjectSyncTask(private val project: Project) {
     forEach { item ->
       try {
         action(item)
-      } catch (e: CancellationException) {
+      }
+      catch (e: CancellationException) {
         throw e
-      } catch (e: Throwable) {
+      }
+      catch (e: Throwable) {
         if (project.syncConsole.registerException(taskId, e)) {
           project.syncConsole.addDiagnosticMessage(
             taskId,

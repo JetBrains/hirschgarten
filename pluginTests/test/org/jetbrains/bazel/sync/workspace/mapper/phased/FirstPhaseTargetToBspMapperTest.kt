@@ -15,6 +15,8 @@ import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.workspace.model.test.framework.BazelPathsResolverMock
 import org.jetbrains.bazel.workspace.model.test.framework.WorkspaceModelBaseTest
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
+import org.jetbrains.bazel.sync.workspace.snapshot.SourceFileCollectionBuilder
+import org.jetbrains.bsp.protocol.SourceFileCollection
 import org.jetbrains.bsp.protocol.RawBuildTarget
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
@@ -213,13 +215,15 @@ class FirstPhaseTargetToBspMapperTest : WorkspaceModelBaseTest() {
                 ruleType = RuleType.LIBRARY,
                 languageClasses = setOf(LanguageClass.JAVA),
               ),
-            sources = listOf(target1Src1, target1Src2),
-            generatedSources = emptyList(),
-            resources =
-              listOf(
-                target1Resource1,
-                target1Resource2,
-              ),
+            sources = SourceFileCollectionBuilder.build(
+              relativeRoot = workspaceRoot.resolve(Path("target1")),
+              paths = listOf(target1Src1, target1Src2),
+            ),
+            generatedSources = SourceFileCollection.EMPTY,
+            resources = SourceFileCollectionBuilder.build(
+              relativeRoot = workspaceRoot.resolve(Path("target1")),
+              paths = listOf(target1Resource1, target1Resource2),
+            ),
             //data = listOf(
             //  JvmPackagePrefixData(mapOf(
             //    target1Src1 to "com.example",
@@ -239,9 +243,12 @@ class FirstPhaseTargetToBspMapperTest : WorkspaceModelBaseTest() {
                 ruleType = RuleType.BINARY,
                 languageClasses = setOf(LanguageClass.JAVA),
               ),
-            sources = listOf(target2Src1, target2Src2),
-            generatedSources = emptyList(),
-            resources = emptyList(),
+            sources = SourceFileCollectionBuilder.build(
+              relativeRoot = workspaceRoot.resolve(Path("target2")),
+              paths = listOf(target2Src1, target2Src2),
+            ),
+            generatedSources = SourceFileCollection.EMPTY,
+            resources = SourceFileCollection.EMPTY,
             baseDirectory = workspaceRoot.resolve(Path("target2")),
             //data = listOf(
             //  JvmPackagePrefixData(mapOf(
@@ -260,13 +267,12 @@ class FirstPhaseTargetToBspMapperTest : WorkspaceModelBaseTest() {
                 ruleType = RuleType.TEST,
                 languageClasses = setOf(LanguageClass.JAVA),
               ),
-            sources = emptyList(),
-            generatedSources = emptyList(),
-            resources =
-              listOf(
-                target3Resource1,
-                target3Resource2,
-              ),
+            sources = SourceFileCollection.EMPTY,
+            generatedSources = SourceFileCollection.EMPTY,
+            resources = SourceFileCollectionBuilder.build(
+              relativeRoot = workspaceRoot.resolve(Path("target3")),
+              paths = listOf(target3Resource1, target3Resource2),
+            ),
             baseDirectory = workspaceRoot.resolve(Path("target3")),
           ),
           // // target4
@@ -279,9 +285,9 @@ class FirstPhaseTargetToBspMapperTest : WorkspaceModelBaseTest() {
                 ruleType = RuleType.LIBRARY,
                 languageClasses = setOf(LanguageClass.JAVA, LanguageClass.KOTLIN),
               ),
-            sources = emptyList(),
-            generatedSources = emptyList(),
-            resources = emptyList(),
+            sources = SourceFileCollection.EMPTY,
+            generatedSources = SourceFileCollection.EMPTY,
+            resources = SourceFileCollection.EMPTY,
             baseDirectory = workspaceRoot.resolve(Path("target4")),
           ),
           // // target5
@@ -294,9 +300,9 @@ class FirstPhaseTargetToBspMapperTest : WorkspaceModelBaseTest() {
                 ruleType = RuleType.BINARY,
                 languageClasses = setOf(LanguageClass.JAVA, LanguageClass.KOTLIN),
               ),
-            sources = emptyList(),
-            generatedSources = emptyList(),
-            resources = emptyList(),
+            sources = SourceFileCollection.EMPTY,
+            generatedSources = SourceFileCollection.EMPTY,
+            resources = SourceFileCollection.EMPTY,
             baseDirectory = workspaceRoot.resolve(Path("target5")),
           ),
           // // target6
@@ -309,9 +315,9 @@ class FirstPhaseTargetToBspMapperTest : WorkspaceModelBaseTest() {
                 ruleType = RuleType.TEST,
                 languageClasses = setOf(LanguageClass.JAVA, LanguageClass.KOTLIN),
               ),
-            sources = emptyList(),
-            generatedSources = emptyList(),
-            resources = emptyList(),
+            sources = SourceFileCollection.EMPTY,
+            generatedSources = SourceFileCollection.EMPTY,
+            resources = SourceFileCollection.EMPTY,
             baseDirectory = workspaceRoot.resolve(Path("target6")),
           ),
           // // target7: now with its created source files
@@ -324,9 +330,12 @@ class FirstPhaseTargetToBspMapperTest : WorkspaceModelBaseTest() {
                 ruleType = RuleType.LIBRARY,
                 languageClasses = setOf(LanguageClass.JAVA),
               ),
-            sources = listOf(target7Src1, target7Src2),
-            generatedSources = emptyList(),
-            resources = emptyList(),
+            sources = SourceFileCollectionBuilder.build(
+              relativeRoot = workspaceRoot.resolve(Path("target7")),
+              paths = listOf(target7Src1, target7Src2),
+            ),
+            generatedSources = SourceFileCollection.EMPTY,
+            resources = SourceFileCollection.EMPTY,
             //data = listOf(
             //  JvmPackagePrefixData(mapOf(
             //    target7Src1 to "com.example",
@@ -345,22 +354,22 @@ class FirstPhaseTargetToBspMapperTest : WorkspaceModelBaseTest() {
                 ruleType = RuleType.LIBRARY,
                 languageClasses = setOf(LanguageClass.JAVA),
               ),
-            sources =
-              listOf(
-                // note: the direct mapping for "//target8:src1.kt" becomes workspaceRoot/target8/src1.kt
-                target8Src1,
-                // then the dependency from filegroupSources (its own direct source items)
-                fgSrc1,
-                fgSrc2,
-              ),
-            generatedSources = emptyList(),
-            resources =
-              listOf(
+            sources = SourceFileCollectionBuilder.build(
+              relativeRoot = workspaceRoot.resolve(Path("target8")),
+              // note: the direct mapping for "//target8:src1.kt" becomes workspaceRoot/target8/src1.kt
+              // then the dependency from filegroupSources (its own direct source items)
+              paths = listOf(target8Src1, fgSrc1, fgSrc2),
+            ),
+            generatedSources = SourceFileCollection.EMPTY,
+            resources = SourceFileCollectionBuilder.build(
+              relativeRoot = workspaceRoot.resolve(Path("target8")),
+              paths = listOf(
                 target8Resource1,
                 // resources merged from filegroupResources dependency
                 workspaceRoot.resolve("filegroupResources/file1.txt"),
                 workspaceRoot.resolve("filegroupResources/file2.txt"),
               ),
+            ),
             //data = listOf(
             //  JvmPackagePrefixData(mapOf(
             //    target8Src1 to "com.example"
@@ -377,9 +386,12 @@ class FirstPhaseTargetToBspMapperTest : WorkspaceModelBaseTest() {
                 ruleType = RuleType.LIBRARY,
                 languageClasses = setOf(LanguageClass.JAVA),
               ),
-            sources = listOf(fgSrc1, fgSrc2, ),
-            generatedSources = emptyList(),
-            resources = emptyList(),
+            sources = SourceFileCollectionBuilder.build(
+              relativeRoot = workspaceRoot.resolve(Path("filegroupSources")),
+              paths = listOf(fgSrc1, fgSrc2),
+            ),
+            generatedSources = SourceFileCollection.EMPTY,
+            resources = SourceFileCollection.EMPTY,
             //data = listOf(
             //  JvmPackagePrefixData(mapOf(
             //    fgSrc1 to "com.fg",

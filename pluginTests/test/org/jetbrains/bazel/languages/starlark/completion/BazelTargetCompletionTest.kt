@@ -9,6 +9,7 @@ import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.project.BazelProjectFixtures.initializeBazelProject
 import org.jetbrains.bazel.target.targetUtils
+import org.jetbrains.bsp.protocol.SourceFileCollection
 import org.jetbrains.bsp.protocol.RawBuildTarget
 import org.junit.Before
 import org.junit.Test
@@ -35,9 +36,9 @@ class BazelTargetCompletionTest : BasePlatformTestCase() {
               ruleType = RuleType.LIBRARY,
               languageClasses = setOf(LanguageClass.JAVA),
             ),
-          sources = emptyList(),
-          generatedSources = emptyList(),
-          resources = emptyList(),
+          sources = SourceFileCollection.EMPTY,
+          generatedSources = SourceFileCollection.EMPTY,
+          resources = SourceFileCollection.EMPTY,
           baseDirectory = Path("/"),
         )
       },

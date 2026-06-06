@@ -24,6 +24,7 @@ import org.jetbrains.bazel.label.DependencyLabel
 import org.jetbrains.bazel.label.DependencyLabelKind
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.label.ResolvedLabel
+import org.jetbrains.bazel.label.assumeResolved
 import org.jetbrains.bazel.label.label
 import org.jetbrains.bazel.label.toDependencyLabel
 import org.jetbrains.bazel.languages.projectview.importIjars
@@ -36,6 +37,7 @@ import org.jetbrains.bazel.sync.workspace.graph.DependencyGraph
 import org.jetbrains.bazel.sync.workspace.languages.LanguagePlugin
 import org.jetbrains.bazel.sync.workspace.languages.java.sourceRoot.SourceRootOptimizationMode
 import org.jetbrains.bazel.sync.workspace.mapper.normal.MavenCoordinatesResolver
+import org.jetbrains.bazel.sync.workspace.snapshot.SourceFileCollectionBuilder
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceSyncConfig
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bazel.server.BazelServerFacade
@@ -71,11 +73,12 @@ interface JvmLanguagePluginMixin {
       graph: DependencyGraph,
       targetsToImport: Map<Label, TargetInfo>,
       repoMapping: RepoMapping,
-    ) {}
+    ) {
+    }
 
     suspend fun toolchainLibraries(
       targetsToImport: Map<Label, TargetInfo>,
-      repoMapping: RepoMapping
+      repoMapping: RepoMapping,
     ): Map<Label, List<LibraryItem>> = emptyMap()
 
     suspend fun createBuildTargetData(
@@ -94,8 +97,10 @@ interface JvmLanguagePluginMixin {
 private typealias DependencyLabelPatcher = (DependencyLabel) -> DependencyLabel
 
 @ApiStatus.Internal
-class JavaLanguagePlugin: LanguagePlugin {
-  override fun getSupportedLanguages(): Set<LanguageClass> = setOf(LanguageClass.JAVA) + JvmLanguagePluginMixin.mixins.flatMap { it.getSupportedLanguages() }
+class JavaLanguagePlugin : LanguagePlugin {
+  override fun getSupportedLanguages(): Set<LanguageClass> =
+    setOf(LanguageClass.JAVA) + JvmLanguagePluginMixin.mixins.flatMap { it.getSupportedLanguages() }
+
   override fun createProjectMapper(project: Project, server: BazelServerFacade) = Mapper(project, server)
   override suspend fun createSyncConfigs(project: Project, workspaceContext: WorkspaceContext): List<WorkspaceSyncConfig> {
     return JvmLanguagePluginMixin.mixins.flatMap { it.createSyncConfigs(project, workspaceContext) } +
@@ -165,6 +170,7 @@ class JavaLanguagePlugin: LanguagePlugin {
       if (!target.javaCommon.jvmTarget) {
         return null
       }
+      val baseDirectory = server.bazelPathsResolver.toDirectoryPath(target.label().assumeResolved(), repoMapping)
       val localRepositories = repoMapping.getLocalRepositories()
       val jvmTarget = target.jvmTargetInfo
       val binaryOutputs = target.javaCommon.jarsList.flatMap { it.binaryJarsList }.map { bazelPathsResolver.resolve(it, localRepositories) }
@@ -183,7 +189,7 @@ class JavaLanguagePlugin: LanguagePlugin {
         javaVersion = javaVersion.orEmpty(),
         javaHome = javaHome,
         javacOpts = target.javaCommon.javacOptsList,
-        binaryOutputs = binaryOutputs,
+        binaryOutputs = SourceFileCollectionBuilder.build(relativeRoot = baseDirectory, paths = binaryOutputs),
         environmentVariables = environmentVariables,
         mainClass = mainClass,
         jvmArgs = jvmTarget.jvmFlagsList,
@@ -233,7 +239,8 @@ class JavaLanguagePlugin: LanguagePlugin {
           if (target.kind in wellKnownTargetKinds) {
             // Well known rules have well known behavior
             { it }
-          } else {
+          }
+          else {
             val localRepositories = repoMapping.getLocalRepositories()
 
             fun TargetInfo.outputJars(): Set<Path> = this.javaCommon.jarsList.flatMap { it.binaryJarsList }
@@ -327,7 +334,8 @@ class JavaLanguagePlugin: LanguagePlugin {
 
       val extraLibraries = concatenateMaps(listOf(librariesFromDeps, extraLibrariesFromJdeps))
 
-      extraLibDependencies = extraLibraries.mapValues { (_, libs) -> libs.map { DependencyLabel(it.id, kind = DependencyLabelKind.EXPORTED_COMPILE_TIME) } }
+      extraLibDependencies =
+        extraLibraries.mapValues { (_, libs) -> libs.map { DependencyLabel(it.id, kind = DependencyLabelKind.EXPORTED_COMPILE_TIME) } }
       toolchainDependencies = librariesFromToolchains.mapValues { (_, libs) -> libs.map { DependencyLabel(it.id) } }
       allLibraries = concatenateMaps(listOf(importDependenciesAsLibraries, extraLibraries, librariesFromToolchains))
     }
@@ -395,14 +403,16 @@ class JavaLanguagePlugin: LanguagePlugin {
         it.relativePath.endsWith(".scala")
       }
 
-    fun shouldCreateOutputJarsLibrary(targetInfo: TargetInfo, allTargets : Map<Label, TargetInfo>) =
+    fun shouldCreateOutputJarsLibrary(targetInfo: TargetInfo, allTargets: Map<Label, TargetInfo>) =
       !targetInfo.kind.endsWith("_resources") && targetInfo.javaCommon.jvmTarget &&
       (
         targetInfo.generatedSourcesList.any { it.relativePath.endsWith(".srcjar") } ||
         (targetInfo.sourcesList.any() && !hasKnownJvmSources(targetInfo)) ||
         (targetInfo.sourcesList.none() && targetInfo.kind !in wellKnownTargetKinds && !targetInfo.hasExecutableInfo()) ||
         targetInfo.javaProvider.hasApiGeneratingPlugins ||
-        targetInfo.kotlinTargetInfo.exportedCompilerPluginTargetsFromDepsList.any { allTargets[Label.parse(it)]?.javaProvider?.hasApiGeneratingPlugins ?: false }
+        targetInfo.kotlinTargetInfo.exportedCompilerPluginTargetsFromDepsList.any {
+          allTargets[Label.parse(it)]?.javaProvider?.hasApiGeneratingPlugins ?: false
+        }
       )
 
     private val wellKnownTargetKinds =
@@ -436,7 +446,7 @@ class JavaLanguagePlugin: LanguagePlugin {
             target.label(), // Label.parse(target.key.label+ OUTPUT_JARS_SUFFIX),
             target,
             onlyOutputJars = true,
-            localRepositories
+            localRepositories,
           )?.let { library ->
             target.label() to listOf(library)
           }
@@ -541,7 +551,7 @@ class JavaLanguagePlugin: LanguagePlugin {
                   outputJarsFromTransitiveDepsCache,
                   allJdepsJars,
                   localRepositories,
-                  visited = hashSetOf()
+                  visited = hashSetOf(),
                 )
               targetLabel to jarsFromJdeps - transitiveJdepsJars
             }
@@ -557,8 +567,8 @@ class JavaLanguagePlugin: LanguagePlugin {
       libraryDependencies: Map<Label, List<LibraryItem>>,
       outputJarsFromTransitiveDepsCache: ConcurrentHashMap<Label, Set<Path>>,
       allJdepsJars: Set<Path>,
-      localRepositories : LocalRepositoryMapping,
-      visited: MutableSet<Label>
+      localRepositories: LocalRepositoryMapping,
+      visited: MutableSet<Label>,
     ): Set<Path> {
       val cached = outputJarsFromTransitiveDepsCache[target]
       if (cached != null)
@@ -595,7 +605,7 @@ class JavaLanguagePlugin: LanguagePlugin {
       return outputJars
     }
 
-    private fun dependencyJarsFromJdepsFiles(targetInfo: TargetInfo, localRepositories : LocalRepositoryMapping): Set<Path> =
+    private fun dependencyJarsFromJdepsFiles(targetInfo: TargetInfo, localRepositories: LocalRepositoryMapping): Set<Path> =
       targetInfo.javaCommon.jdepsList
         .flatMap { jdeps ->
           val path = bazelPathsResolver.resolve(jdeps, localRepositories)
@@ -609,7 +619,8 @@ class JavaLanguagePlugin: LanguagePlugin {
               .filter { it.isRelevant() }
               .map { bazelPathsResolver.resolveOutput(Paths.get(it.path)) }
               .toList()
-          } else {
+          }
+          else {
             emptySet()
           }
         }.toSet()
@@ -638,8 +649,13 @@ class JavaLanguagePlugin: LanguagePlugin {
       )
     }
 
-    private fun TargetInfo.containsAnyInternalJars(localRepositories : LocalRepositoryMapping) = javaCommon.jarsList.any { jars ->
-      jars.sourceJarsList.any { !bazelPathsResolver.isExternal(it, localRepositories) } && jars.binaryJarsList.any { !bazelPathsResolver.isExternal(it, localRepositories) }
+    private fun TargetInfo.containsAnyInternalJars(localRepositories: LocalRepositoryMapping) = javaCommon.jarsList.any { jars ->
+      jars.sourceJarsList.any {
+        !bazelPathsResolver.isExternal(
+          it,
+          localRepositories,
+        )
+      } && jars.binaryJarsList.any { !bazelPathsResolver.isExternal(it, localRepositories) }
     }
 
     private fun createLibrary(
@@ -647,13 +663,14 @@ class JavaLanguagePlugin: LanguagePlugin {
       label: Label,
       targetInfo: TargetInfo,
       onlyOutputJars: Boolean,
-      localRepositories : LocalRepositoryMapping,
+      localRepositories: LocalRepositoryMapping,
     ): LibraryItem? {
       val outputs = getTargetOutputJarsList(targetInfo, localRepositories).toSet() + getIntellijPluginJars(targetInfo, localRepositories)
       val rawSources = getSourceJarPaths(targetInfo, localRepositories)
       val sources = if (workspaceContext.preferClassJarsOverSourcelessJars) {
         rawSources - outputs
-      } else {
+      }
+      else {
         rawSources
       }
 
@@ -673,7 +690,8 @@ class JavaLanguagePlugin: LanguagePlugin {
           outputs.firstOrNull()?.let { outputJar ->
             MavenCoordinatesResolver.resolveMavenCoordinates(label, outputJar)
           }
-        } else {
+        }
+        else {
           null
         }
 
@@ -721,7 +739,7 @@ class JavaLanguagePlugin: LanguagePlugin {
 
     private fun Collection<Path>.isEmptyJarList(): Boolean = isEmpty() || singleOrNull()?.name == "empty.jar"
 
-    private fun getIntellijPluginJars(targetInfo: TargetInfo, localRepositories : LocalRepositoryMapping): Set<Path> {
+    private fun getIntellijPluginJars(targetInfo: TargetInfo, localRepositories: LocalRepositoryMapping): Set<Path> {
       // _repackaged_files is created upon calling repackaged_files in rules_intellij
       if (targetInfo.kind != "_repackaged_files") return emptySet()
       return targetInfo.generatedSourcesList.toList()
@@ -730,7 +748,7 @@ class JavaLanguagePlugin: LanguagePlugin {
         .toSet()
     }
 
-    private fun getSourceJarPaths(targetInfo: TargetInfo, localRepositories : LocalRepositoryMapping) =
+    private fun getSourceJarPaths(targetInfo: TargetInfo, localRepositories: LocalRepositoryMapping) =
       targetInfo.javaCommon.jarsList
         .flatMap { it.sourceJarsList }
         .resolvePaths(localRepositories)
@@ -748,7 +766,7 @@ class JavaLanguagePlugin: LanguagePlugin {
         .map { bazelPathsResolver.resolve(it, localRepositories) }
     }
 
-    private fun getTargetInterfaceJarsList(targetInfo: TargetInfo, localRepositories : LocalRepositoryMapping) =
+    private fun getTargetInterfaceJarsList(targetInfo: TargetInfo, localRepositories: LocalRepositoryMapping) =
       targetInfo.javaCommon.jarsList
         .flatMap { it.interfaceJarsList }
         .map { bazelPathsResolver.resolve(it, localRepositories) }
@@ -763,7 +781,7 @@ class JavaLanguagePlugin: LanguagePlugin {
       }
     }
 
-    private fun List<ArtifactLocation>.resolvePaths(localRepositories : LocalRepositoryMapping) =
+    private fun List<ArtifactLocation>.resolvePaths(localRepositories: LocalRepositoryMapping) =
       map { bazelPathsResolver.resolve(it, localRepositories) }.toSet()
 
     private fun TargetInfo.resolveResourceStripPrefixToAbsolutePath(repositories: LocalRepositoryMapping): Path? {

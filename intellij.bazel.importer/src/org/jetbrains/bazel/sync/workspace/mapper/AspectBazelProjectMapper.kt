@@ -19,6 +19,7 @@ import org.jetbrains.bazel.label.toDependencyLabel
 import org.jetbrains.bazel.performance.measure
 import org.jetbrains.bazel.sync.workspace.graph.DependencyGraph
 import org.jetbrains.bazel.sync.workspace.languages.createLanguageProjectMappers
+import org.jetbrains.bazel.sync.workspace.snapshot.SourceFileCollectionBuilder
 import org.jetbrains.bazel.sync.workspace.targetKind.TargetKindService
 import org.jetbrains.bazel.server.BazelServerFacade
 import org.jetbrains.bsp.protocol.BuildTargetData
@@ -50,7 +51,7 @@ internal class AspectBazelProjectMapper(
         dependencyGraph.allTargetsAtDepth(
           workspaceContext.importDepth,
           // Ignore .bazelbsp and all its dependencies (if any)
-          predicate = { label -> label.packagePath.pathSegments.firstOrNull() != Constants.DOT_BAZELBSP_DIR_NAME }
+          predicate = { label -> label.packagePath.pathSegments.firstOrNull() != Constants.DOT_BAZELBSP_DIR_NAME },
         ).associateBy { it.label() }
       }
 
@@ -69,7 +70,7 @@ internal class AspectBazelProjectMapper(
     targetsToImport: Map<Label, TargetInfo>,
     repoMapping: RepoMapping,
     dependencyGraph: DependencyGraph,
-  ):List<RawBuildTarget> {
+  ): List<RawBuildTarget> {
     val localRepositories = repoMapping.getLocalRepositories()
     return withContext(Dispatchers.Default) {
       val tasks =
@@ -94,7 +95,7 @@ internal class AspectBazelProjectMapper(
     targetsToImport: Map<Label, TargetInfo>,
     repoMapping: RepoMapping,
     dependencyGraph: DependencyGraph,
-    localRepositories : LocalRepositoryMapping,
+    localRepositories: LocalRepositoryMapping,
   ): RawBuildTarget {
     val label = target.label().assumeResolved()
     val targetKind = TargetKindService.getInstance().fromTargetInfo(target)
@@ -126,9 +127,9 @@ internal class AspectBazelProjectMapper(
       configurationId = target.key.configuration,
       dependencies = target.depsList.map { it.toDependencyLabel() },
       kind = targetKind,
-      sources = resolveSourceSet(target) { it.isSource },
-      generatedSources = resolveSourceSet(target) { !it.isSource },
-      resources = resources,
+      sources = SourceFileCollectionBuilder.build(relativeRoot = baseDirectory, paths = resolveSourceSet(target) { it.isSource }),
+      generatedSources = SourceFileCollectionBuilder.build(relativeRoot = baseDirectory, paths = resolveSourceSet(target) { !it.isSource }),
+      resources = SourceFileCollectionBuilder.build(relativeRoot = baseDirectory, paths = resources),
       baseDirectory = baseDirectory,
       data = buildData,
       generatorName = target.generatorName,

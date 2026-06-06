@@ -7,6 +7,7 @@ import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.label.DependencyLabel
 import org.jetbrains.bazel.label.DependencyLabelKind
 import org.jetbrains.bazel.label.Label
+import org.jetbrains.bsp.protocol.SourceFileCollection
 import org.jetbrains.bsp.protocol.RawBuildTarget
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
@@ -413,9 +414,9 @@ class WorkspaceTargetGraphTest {
           ruleType = RuleType.LIBRARY,
           languageClasses = setOf(LanguageClass.JAVA),
         ),
-        sources = emptyList(),
-        generatedSources = emptyList(),
-        resources = emptyList(),
+        sources = SourceFileCollection.EMPTY,
+        generatedSources = SourceFileCollection.EMPTY,
+        resources = SourceFileCollection.EMPTY,
         baseDirectory = Path.of("/tmp"),
         generatorName = generatorName,
       ),

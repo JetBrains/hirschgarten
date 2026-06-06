@@ -117,7 +117,7 @@ internal class BazelPythonWorkspaceImporter : BazelWorkspaceImporter {
       .associate { (target, _) ->
         target.targetKey to snapshot.targetGraph.findAllTransitiveSuccessorsWithoutRootTargets(target.targetKey)
           .filterBuildTarget<PythonBuildTarget>()
-          .flatMap { (_, pythonTarget) -> pythonTarget.externalSources ?: listOf() }
+          .flatMap { (_, pythonTarget) -> pythonTarget.externalSources?.getFiles() ?: sequenceOf() }
           .toList()
       }
 
@@ -322,7 +322,7 @@ internal class BazelPythonWorkspaceImporter : BazelWorkspaceImporter {
     entitySource: BazelModuleEntitySource,
     virtualFileUrlManager: VirtualFileUrlManager,
   ): List<ContentRootEntityBuilder> =
-    target.resources.map { resource ->
+    target.resources.getFiles().map { resource ->
       val resourceUrl = resource.toVirtualFileUrl(virtualFileUrlManager)
       val resourceRootEntity =
         SourceRootEntity(
@@ -338,7 +338,7 @@ internal class BazelPythonWorkspaceImporter : BazelWorkspaceImporter {
         this.excludedUrls = emptyList()
         this.sourceRoots = listOf(resourceRootEntity)
       }
-    }
+    }.toList()
 
   private suspend fun createSdkFromPython(
     interpreter: Path,
