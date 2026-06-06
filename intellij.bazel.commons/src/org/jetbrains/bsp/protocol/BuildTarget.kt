@@ -4,7 +4,6 @@ import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.label.DependencyLabel
 import org.jetbrains.bazel.label.Label
 import java.nio.file.Path
-import kotlin.plus
 
 @ApiStatus.Internal
 interface ExecutableTarget {
@@ -38,9 +37,9 @@ data class RawBuildTarget(
   override val id: Label,
   val dependencies: List<DependencyLabel>,
   override val kind: TargetKind,
-  val sources: List<Path>,
-  val generatedSources: List<Path>,
-  val resources: List<Path>,
+  val sources: SourceFileCollection,
+  val generatedSources: SourceFileCollection,
+  val resources: SourceFileCollection,
   override val baseDirectory: Path,
   override val data: List<BuildTargetData> = emptyList(),
   val generatorName: String? = null,
@@ -52,7 +51,7 @@ data class RawBuildTarget(
 
 @get:ApiStatus.Internal
 val RawBuildTarget.allSources: Sequence<Path>
-  get() = sources.asSequence() + generatedSources.asSequence()
+  get() = sources.getFiles() + generatedSources.getFiles()
 
 @ApiStatus.Internal
 data class PartialBuildTarget(
@@ -93,8 +92,8 @@ data class PythonBuildTarget(
   // which specify a list of runfiles relative paths which will be included in PYTHONPATH
   val imports: List<String>,
   // Not used after full sync. Mapping is saved in `PythonResolveIndexService`
-  @Transient @JvmField val generatedSources: List<Path>? = null,
-  @Transient @JvmField val externalSources: List<Path>? = null,
+  @Transient @JvmField val generatedSources: SourceFileCollection? = null,
+  @Transient @JvmField val externalSources: SourceFileCollection? = null,
   val mainFile: Path? = null,
   val mainModule: String? = null,
   val runnerScript: Path? = null,
@@ -115,7 +114,7 @@ data class JvmBuildTarget(
   @Transient @JvmField val javaHome: Path? = null,
   val javaVersion: String,
   val javacOpts: List<String> = listOf(),
-  val binaryOutputs: List<Path> = listOf(),
+  val binaryOutputs: SourceFileCollection = SourceFileCollection.EMPTY,
   val environmentVariables: Map<String, String> = mapOf(),
   val mainClass: String? = null,
   val jvmArgs: List<String> = listOf(),

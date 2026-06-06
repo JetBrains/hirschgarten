@@ -18,8 +18,6 @@ interface BazelProjectContextService {
 
   val avoidExternalSystem: Boolean
     get() = false
-
-  val targetPersistenceLayer: BazelTargetPersistenceLayer
 }
 
 val Project.projectCtx: BazelProjectContextService

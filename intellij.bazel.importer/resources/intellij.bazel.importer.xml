@@ -64,10 +64,6 @@
   <extensions defaultExtensionNs="org.jetbrains.bazel">
     <javaSourceRootPrefixContributor
       implementation="org.jetbrains.bazel.sync.workspace.languages.java.sourceRoot.prefix.JavaProjectViewSourceRootPatternContributor"/>
-    <projectSyncHook
-      id="TargetPersistenceLayerSyncHook"
-      implementation="org.jetbrains.bazel.sync.hooks.TargetPersistenceLayerSyncHook"
-    />
     <projectSyncHook implementation="org.jetbrains.bazel.sync.hooks.PathSyncHook"/>
     <targetKindProvider implementation="org.jetbrains.bazel.sync.workspace.targetKind.GenericBazelRules" order="last"/>
 

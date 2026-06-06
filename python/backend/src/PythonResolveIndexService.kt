@@ -110,7 +110,7 @@ internal class PythonResolveIndexService(private val project: Project) {
               .associateBy { sourceItem -> sourceItem.toExecRootRelativePath() }
           }
         val getSourcesRelativePathToAbsolutePath: Map<Path, Path> =
-          extractPythonBuildTarget(target)?.generatedSources
+          extractPythonBuildTarget(target)?.generatedSources?.getFiles()
               ?.associate { path ->
                 path.toExecRootRelativePath() to (outFilesHardLink.createOutputFileHardLink(path) ?: path.toAbsolutePath())
               }

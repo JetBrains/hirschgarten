@@ -9,11 +9,11 @@ import org.jetbrains.bazel.label.DependencyLabel
 import org.jetbrains.bazel.label.DependencyLabelKind
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.workspace.model.test.framework.createRawBuildTarget
+import org.jetbrains.bsp.protocol.SourceFileCollection
 import org.jetbrains.bsp.protocol.JvmBuildTarget
 import org.jetbrains.bsp.protocol.JvmDependency
 import org.jetbrains.bsp.protocol.RawBuildTarget
 import org.jetbrains.bsp.protocol.StrictDependencyCheckedType
-import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 
 class DependencyBuilderTest {
@@ -139,9 +139,9 @@ class DependencyBuilderTest {
         ruleType = RuleType.LIBRARY,
         languageClasses = setOf(LanguageClass.JAVA),
       ),
-      sources = emptyList(),
-      generatedSources = emptyList(),
-      resources = emptyList(),
+      sources = SourceFileCollection.EMPTY,
+      generatedSources = SourceFileCollection.EMPTY,
+      resources = SourceFileCollection.EMPTY,
       baseDirectory = kotlin.io.path.Path("base/dir"),
       data = listOf(
         JvmBuildTarget(

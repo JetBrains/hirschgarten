@@ -4,6 +4,7 @@ import org.jetbrains.bazel.commons.LanguageClass
 import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.label.Label
+import org.jetbrains.bsp.protocol.SourceFileCollection
 import org.jetbrains.bsp.protocol.BuildTargetData
 import org.jetbrains.bsp.protocol.JvmBuildTarget
 import org.jetbrains.bsp.protocol.KotlinBuildTarget
@@ -54,9 +55,9 @@ object TestBuildTargetFactory {
       languageClasses = languages,
     ),
     data = data,
-    sources = emptyList(),
-    generatedSources = emptyList(),
-    resources = emptyList(),
+    sources = SourceFileCollection.EMPTY,
+    generatedSources = SourceFileCollection.EMPTY,
+    resources = SourceFileCollection.EMPTY,
     baseDirectory = Path("base/dir"),
   )
 }

@@ -18,6 +18,7 @@ import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.label.assumeResolved
 import org.jetbrains.bazel.sync.workspace.BazelResolvedWorkspace
 import org.jetbrains.bazel.sync.workspace.mapper.BazelResolvedWorkspaceBuilder
+import org.jetbrains.bazel.sync.workspace.snapshot.SourceFileCollectionBuilder
 import org.jetbrains.bazel.sync.workspace.targetKind.TargetKindService
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bsp.protocol.RawBuildTarget
@@ -48,14 +49,15 @@ class PhasedBazelProjectMapper(private val bazelPathsResolver: BazelPathsResolve
 
   private fun Build.Target.toBspBuildTarget(context: PhasedBazelProjectMapperContext, project: PhasedBazelMappedProject): RawBuildTarget {
     val label = Label.parse(name).assumeResolved()
+    val baseDirectory = bazelPathsResolver.toDirectoryPath(label, context.repoMapping)
     return RawBuildTarget(
       id = label,
       dependencies = interestingDeps.map { DependencyLabel.parse(it) },
       kind = inferKind(),
-      sources = calculateSources(project),
-      generatedSources = emptyList(),
-      resources = calculateResources(project),
-      baseDirectory = bazelPathsResolver.toDirectoryPath(label, context.repoMapping),
+      sources = SourceFileCollectionBuilder.build(relativeRoot = baseDirectory, paths = calculateSources(project)),
+      generatedSources = SourceFileCollectionBuilder.build(relativeRoot = baseDirectory, paths = emptyList()),
+      resources = SourceFileCollectionBuilder.build(relativeRoot = baseDirectory, paths = calculateResources(project)),
+      baseDirectory = baseDirectory,
       data = emptyList(),
       generatorName = generatorName,
       isManual = isManual,

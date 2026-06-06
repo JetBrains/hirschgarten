@@ -28,6 +28,7 @@ import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.magicmetamodel.formatAsModuleName
 import org.jetbrains.bazel.scala.sdk.scalaSdkExtensionExists
 import org.jetbrains.bazel.sync.workspace.languages.java.sourceRoot.JvmPackagePrefixCalculator
+import org.jetbrains.bazel.sync.workspace.snapshot.File2TargetMap
 import org.jetbrains.bazel.workspace.indexAdditionalFiles.ProjectViewGlobSet
 import org.jetbrains.bazel.workspacemodel.entities.BazelDummyEntitySource
 import org.jetbrains.bazel.workspacemodel.entities.BazelModuleEntitySource
@@ -36,6 +37,7 @@ import org.jetbrains.bazel.workspacemodel.entities.CompiledSourceCodeInsideJarEx
 import org.jetbrains.bazel.workspacemodel.entities.WorkspaceModelTargetLabel
 import org.jetbrains.bazel.workspacemodel.entities.WorkspaceModelTargetLabelList
 import org.jetbrains.bazel.workspacemodel.entities.bazelModuleExtension
+import org.jetbrains.bsp.protocol.SourceFileCollection
 import org.jetbrains.bsp.protocol.KotlinBuildTarget
 import org.jetbrains.bsp.protocol.LibraryItem
 import org.jetbrains.bsp.protocol.RawBuildTarget
@@ -65,7 +67,7 @@ class ImportContext(
   val testSourcesGlob: ProjectViewGlobSet,
   val testTargets: Set<Label>,
   val packagePrefixes: JvmPackagePrefixCalculator,
-  val fileToTargets: Map<Path, List<Label>>,
+  val fileToTargets: File2TargetMap,
   val virtualFileUrlManager: VirtualFileUrlManager,
   val importIJars: Boolean,
   val entitySource: EntitySource,
@@ -165,13 +167,13 @@ class JvmTargetEntitiesBuilder(private val ctx: ImportContext) {
     val jdkName = jdkNameFor(target)
     val javaLangVersion = extractJvmBuildTarget(target)?.javaVersion
     val javacOptions = extractJvmBuildTarget(target)?.javacOpts.orEmpty()
-    val jvmBinaryJars = extractJvmBuildTarget(target)?.binaryOutputs.orEmpty()
+    val jvmBinaryJars = extractJvmBuildTarget(target)?.binaryOutputs ?: SourceFileCollection.EMPTY
     val scalaTarget = extractScalaBuildTarget(target)
     val kotlinTarget = extractKotlinBuildTarget(target)
     val associates = kotlinTarget?.associates?.distinct()?.mapNotNull { ctx.moduleNamesByLabel[it] }.orEmpty()
 
     val hasSources = target.allSources.any()
-    val hasResources = target.resources.isNotEmpty()
+    val hasResources = !target.resources.isEmpty()
     val isJavaKotlin = target.kind.includesJava() || target.kind.includesKotlin()
 
     return when {
@@ -269,7 +271,7 @@ class JvmTargetEntitiesBuilder(private val ctx: ImportContext) {
     ResourceRootBuilder.write(plan.resourceRoots, moduleEntity, ctx.virtualFileUrlManager, storage)
     SourceRootBuilder.write(plan.mainSourceRoots, moduleEntity, ctx.virtualFileUrlManager, storage)
 
-    if (plan.jvmBinaryJars.isNotEmpty()) {
+    if (!plan.jvmBinaryJars.isEmpty()) {
       JvmBinaryJarsBuilder.write(plan.jvmBinaryJars, moduleEntity, ctx.virtualFileUrlManager, storage)
     }
 
@@ -470,7 +472,7 @@ class JvmTargetEntitiesBuilder(private val ctx: ImportContext) {
       override val jdkName: String?,
       override val javaLangVersion: String?,
       val javacOptions: List<String>,
-      val jvmBinaryJars: List<Path>,
+      val jvmBinaryJars: SourceFileCollection,
       val scalaTarget: ScalaBuildTarget?,
       val kotlinTarget: KotlinBuildTarget?,
       val associates: List<String>,

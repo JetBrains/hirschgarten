@@ -15,6 +15,7 @@ import org.jetbrains.bazel.magicmetamodel.formatAsModuleName
 import org.jetbrains.bazel.sync.workspace.languages.java.sourceRoot.DefaultJvmPackagePrefixCalculator
 import org.jetbrains.bazel.sync.workspace.languages.java.sourceRoot.JvmPackagePrefixCalculator
 import org.jetbrains.bazel.sync.workspace.languages.java.sourceRoot.SourceRootOptimizationMode
+import org.jetbrains.bazel.sync.workspace.snapshot.File2TargetMap
 import org.jetbrains.bazel.workspace.indexAdditionalFiles.ProjectViewGlobSet
 import org.jetbrains.bazel.workspace.model.test.framework.WorkspaceModelBaseTest
 import org.jetbrains.bazel.workspace.model.test.framework.createRawBuildTarget
@@ -116,7 +117,7 @@ internal class JvmTargetEntitiesBuilderTest : WorkspaceModelBaseTest() {
       testSourcesGlob = ProjectViewGlobSet(projectBasePath, emptyList()),
       testTargets = emptySet(),
       packagePrefixes = jvmPackagePrefixes,
-      fileToTargets = emptyMap(),
+      fileToTargets = File2TargetMap.EMPTY,
       virtualFileUrlManager = virtualFileUrlManager,
       importIJars = false,
       entitySource = BazelProjectEntitySource,

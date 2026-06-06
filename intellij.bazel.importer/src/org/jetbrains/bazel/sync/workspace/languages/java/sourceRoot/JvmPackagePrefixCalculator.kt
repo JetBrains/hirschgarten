@@ -81,7 +81,7 @@ class DefaultJvmPackagePrefixCalculator(
   }
 
   private fun calculateForTarget(target: RawBuildTarget): Map<Path, String> {
-    val sources = target.sources.filter { it.extension != "srcjar" }
+    val sources = target.sources.getFiles().filter { it.extension != "srcjar" }.toList()
 
     val result = HashMap<Path, String>()
     when (sourceRootOptimizationMode) {

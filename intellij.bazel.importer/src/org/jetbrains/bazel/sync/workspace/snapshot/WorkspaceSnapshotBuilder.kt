@@ -18,8 +18,9 @@ object WorkspaceSnapshotBuilder {
     repoMapping: RepoMapping,
     resolved: BazelResolvedWorkspace,
   ): WorkspaceSnapshot {
+    val workspaceRoot = project.rootDir.toNioPath()
     val commonSyncConfig = CommonWorkspaceSyncConfig(
-      projectRootDir = project.rootDir.toNioPath(),
+      projectRootDir = workspaceRoot,
       projectName = project.bazelProjectName,
     )
     val targets = resolved.targets
@@ -34,8 +35,7 @@ object WorkspaceSnapshotBuilder {
       targets = targets,
       configurations = mapOf(), // TODO: fetch configurations from bazel
       targetGraph = WorkspaceTargetGraphBuilder.build(resolved.rootTargets, targets.values),
-      fileToTarget = resolved.fileToTarget
-        .mapValues { (_, value) -> value.map { it.targetKey } },
+      fileToTarget = File2TargetMapBuilder.build(workspaceRoot = workspaceRoot, targets = targets.values),
       syncConfigs = listOf(commonSyncConfig) + LanguagePlugin.EP_NAME.extensionList
         .flatMap { it.createSyncConfigs(project, workspaceContext) },
       repoMapping = repoMapping,

@@ -22,9 +22,7 @@ data class WorkspaceSnapshot(
   val targets: Map<WorkspaceTargetKey, WorkspaceTarget>,
   val configurations: Map<WorkspaceConfigurationId, WorkspaceConfiguration>,
   val targetGraph: WorkspaceTargetGraph,
-
-  // MAYBE RC: this feels wrong, for persistent version I'm going to make this prettier
-  val fileToTarget: Map<Path, List<WorkspaceTargetKey>> = mapOf(),
+  val fileToTarget: File2TargetMap,
   val syncConfigs: List<WorkspaceSyncConfig>,
   val repoMapping: RepoMapping,
   val hasError: Boolean,

@@ -8,9 +8,10 @@ import com.intellij.openapi.vfs.refreshAndFindVirtualFileOrDirectory
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.commons.constants.Constants
 import org.jetbrains.bazel.config.BazelFeatureFlags
-import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.magicmetamodel.sanitizeName
 import org.jetbrains.bazel.magicmetamodel.shortenTargetPath
+import org.jetbrains.bazel.sync.workspace.snapshot.File2TargetMap
+import org.jetbrains.bazel.sync.workspace.snapshot.get
 import org.jetbrains.bazel.utils.findVirtualFile
 import java.io.File
 import java.nio.file.Path
@@ -38,7 +39,7 @@ private val log = logger<DummyModuleSplitter>()
 @ApiStatus.Internal
 class DummyModuleSplitter(
   private val projectBasePath: Path,
-  private val fileToTargets: Map<Path, List<Label>>,
+  private val fileToTargets: File2TargetMap,
 ) {
   sealed interface Result
 
@@ -83,7 +84,8 @@ class DummyModuleSplitter(
     val dummySourceRoots =
       if (baseDirectory == null) {
         mergedSourceRootVotes
-      } else {
+      }
+      else {
         mergedSourceRootVotes.restoreSourceRootFromPackagePrefix(
           relevantExtensions = Constants.JVM_LANGUAGES_EXTENSIONS,
           knownFiles = relevantSourceRootFiles,
@@ -113,7 +115,7 @@ class DummyModuleSplitter(
       return null
     }
     return tryMergeSources(sourceRootFiles, mergeSourceRootVotes)
-      ?: tryMergeSources(sourceRootFiles, sourceRootsForParentDirsVotes)
+           ?: tryMergeSources(sourceRootFiles, sourceRootsForParentDirsVotes)
   }
 
   private fun tryMergeSources(
@@ -162,7 +164,9 @@ class DummyModuleSplitter(
    * If after merging sources one source root becomes a parent of another, IDEA only considers the inner root
    * because of how the workspace model works. This can cause red code, e.g., on https://github.com/bazelbuild/bazel .
    */
-  private fun VirtualFile.isSharedBetweenSeveralTargets(): Boolean = (fileToTargets[toNioPath()]?.size ?: 0) > 1
+  private fun VirtualFile.isSharedBetweenSeveralTargets(): Boolean = fileToTargets[toNioPath()].asSequence()
+                                                                       .distinctBy { it.label }
+                                                                       .count() > 1
 
   private fun mergedRootsCoverNewFiles(
     mergedRoots: Collection<VirtualFile>,
@@ -232,13 +236,16 @@ private fun Path.siblingsContainUnknownRelevantFiles(
 
 private fun VirtualFile.containsUnknownRelevantFile(knownFiles: Set<VirtualFile>, relevantExtensions: List<String>): Boolean {
   var found = false
-  VfsUtilCore.visitChildrenRecursively(this, object : VirtualFileVisitor<Unit>(NO_FOLLOW_SYMLINKS) {
-    override fun visitFile(file: VirtualFile): Boolean {
-      if (file.isDirectory || file.extension !in relevantExtensions || file in knownFiles) return true
-      found = true
-      return false
-    }
-  })
+  VfsUtilCore.visitChildrenRecursively(
+    this,
+    object : VirtualFileVisitor<Unit>(NO_FOLLOW_SYMLINKS) {
+      override fun visitFile(file: VirtualFile): Boolean {
+        if (file.isDirectory || file.extension !in relevantExtensions || file in knownFiles) return true
+        found = true
+        return false
+      }
+    },
+  )
   return found
 }
 
@@ -275,7 +282,8 @@ private fun Map<SourceRootBuilder.ResolvedSourceRoot, Int>.preferShorterPrefix()
 
     if (second.isEmpty() || first.endsWith(".$second")) {
       listOf(sorted[1].key to group.sumOf { (_, votes) -> votes })
-    } else {
+    }
+    else {
       group.map { it.toPair() }
     }
   }.toMap()

@@ -8,7 +8,9 @@ import org.jetbrains.bazel.label.DependencyLabel
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.label.ResolvedLabel
 import org.jetbrains.bazel.label.assumeResolved
+import org.jetbrains.bazel.sync.workspace.snapshot.SourceFileCollectionBuilder
 import org.jetbrains.bazel.workspace.importer.TestTargetClassifier
+import org.jetbrains.bsp.protocol.SourceFileCollection
 import org.jetbrains.bsp.protocol.RawBuildTarget
 import org.junit.jupiter.api.Test
 import java.nio.file.Path
@@ -148,9 +150,9 @@ private fun createTarget(
     id = Label.parse(id),
     dependencies = dependencies.map { DependencyLabel(it.id) },
     kind = kind,
-    sources = sources.map { sourceRoot.resolve(it) },
-    generatedSources = emptyList(),
-    resources = resources.map { resourceRoot.resolve(it) },
+    sources = SourceFileCollectionBuilder.build(relativeRoot = baseDir, paths = sources.map { sourceRoot.resolve(it) }),
+    generatedSources = SourceFileCollection.EMPTY,
+    resources = SourceFileCollectionBuilder.build(relativeRoot = baseDir, paths = resources.map { resourceRoot.resolve(it) }),
     baseDirectory = baseDir,
     isTestOnly = isTestOnly,
   )

@@ -88,7 +88,7 @@ object CompiledSourceCodeInsideJarExcludeBuilder {
     val result = HashSet<String>()
     for (target in targets) {
       val jvmPackagePrefixes = packagePrefixes.get(target)
-      for (sourceRoot in target.sources) {
+      for (sourceRoot in target.sources.getFiles()) {
         val sourceName = sourceRoot.fileName.toString()
         val classNames =
           when {
