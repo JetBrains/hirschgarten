@@ -12,8 +12,10 @@ f:org.jetbrains.bazel.sync.status.SyncStatusServiceKt
 a:org.jetbrains.bazel.ui.gutters.BazelRunLineMarkerContributor
 - com.intellij.execution.lineMarker.RunLineMarkerContributor
 - <init>():V
+- pf:getExecuteRunLineMarkerIcon():javax.swing.Icon
 - getExtraProgramArguments(com.intellij.psi.PsiElement):java.util.List
 - getInfo(com.intellij.psi.PsiElement):com.intellij.execution.lineMarker.RunLineMarkerContributor$Info
+- getRunLineMarkerIcon(com.intellij.psi.PsiElement):javax.swing.Icon
 - getSingleTestFilter(com.intellij.psi.PsiElement):java.lang.String
 - getSlowInfo(com.intellij.psi.PsiElement):com.intellij.execution.lineMarker.RunLineMarkerContributor$Info
 - a:shouldAddMarker(com.intellij.psi.PsiElement):Z
