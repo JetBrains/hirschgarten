@@ -39,10 +39,10 @@ internal class PythonBspDebugRunner : PyDebugRunner() {
 
   override fun execute(environment: ExecutionEnvironment, state: RunProfileState): Promise<RunContentDescriptor?> {
     val debugState = state as? PythonDebugCommandLineState ?: error(BazelPluginBundle.message("python.debug.error.wrong.state"))
-    val nativeState = debugState.asPythonState()
     val target = state.target ?: error(BazelPluginBundle.message("python.debug.error.no.id"))
     val promise = AsyncPromise<RunContentDescriptor?>()
     buildTargetInDebugMode(environment.project, target) {
+      val nativeState = debugState.asPythonState()
       val superResult = ReadAction.compute<Promise<RunContentDescriptor?>, Throwable> { super.execute(environment, nativeState) }
       superResult.onSuccess { promise.setResult(it) }
       superResult.onError { promise.setError(it) }
@@ -52,13 +52,10 @@ internal class PythonBspDebugRunner : PyDebugRunner() {
 
   override fun createSession(state: RunProfileState, environment: ExecutionEnvironment): Promise<XDebugSession> {
     val debugState = state as? PythonDebugCommandLineState ?: error(BazelPluginBundle.message("python.debug.error.wrong.state"))
-    val nativeState = debugState.asPythonState()
     val target = state.target ?: error(BazelPluginBundle.message("python.debug.error.no.id"))
     val promise = AsyncPromise<XDebugSession>()
-    buildTargetInDebugMode(
-      environment.project,
-      target,
-    ) {
+    buildTargetInDebugMode(environment.project, target) {
+      val nativeState = debugState.asPythonState()
       super.createSession(nativeState, environment).onSuccess { promise.setResult(it) }.onError { promise.setError(it) }
     }
     return promise

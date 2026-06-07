@@ -97,6 +97,7 @@ data class PythonBuildTarget(
   @Transient @JvmField val externalSources: List<Path>? = null,
   val mainFile: Path? = null,
   val mainModule: String? = null,
+  val runnerScript: Path? = null,
 ) : BuildTargetData
 
 @ClassDiscriminator(3)

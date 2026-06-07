@@ -1,6 +1,7 @@
 package org.jetbrains.bazel.sync.workspace.languages.python
 
 import com.intellij.openapi.project.Project
+import org.jetbrains.bazel.commons.BazelPathsResolver
 import org.jetbrains.bazel.commons.LanguageClass
 import org.jetbrains.bazel.commons.LocalRepositoryMapping
 import org.jetbrains.bazel.commons.RepoMapping
@@ -48,6 +49,12 @@ internal class PythonLanguagePlugin : LanguagePlugin {
       }
       val localRepositories = repoMapping.getLocalRepositories()
       val pythonTarget = target.pythonTargetInfo
+      val runnerScript =
+        if (target.hasExecutableInfo()) {
+          server.bazelPathsResolver.resolve(target.executableInfo.executableFile, localRepositories)
+        } else {
+          null
+        }
       return listOf(
         PythonBuildTarget(
           version = pythonTarget.version.takeUnless(String::isNullOrEmpty),
@@ -56,8 +63,9 @@ internal class PythonLanguagePlugin : LanguagePlugin {
           generatedSources = pythonTarget.resolveGeneratedSources(repoMapping).toList(),
           externalSources = getExternalSources(target, localRepositories)
             .map { calculateExternalSourcePath(it, localRepositories) },
-          mainFile = pythonTarget.main?.let { server.bazelPathsResolver.resolve(it, localRepositories) },
+          mainFile = MainSourceFinder.findMainFile(target, pythonTarget, server.bazelPathsResolver, localRepositories),
           mainModule = pythonTarget.mainModule,
+          runnerScript = runnerScript,
         ),
       )
     }

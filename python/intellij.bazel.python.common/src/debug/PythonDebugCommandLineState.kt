@@ -26,10 +26,9 @@ import org.jetbrains.bazel.taskEvents.BazelTaskListener
 import org.jetbrains.bsp.protocol.CompileParams
 import org.jetbrains.bsp.protocol.BazelServerFacade
 
-internal class PythonDebugCommandLineState(environment: ExecutionEnvironment, private val programArguments: String?) :
+internal class PythonDebugCommandLineState(private val environment: ExecutionEnvironment, private val programArguments: String?) :
   BazelCommandLineStateBase(environment) {
   val target: Label? = (environment.runProfile as? BazelRunConfiguration)?.targets?.singleOrNull()
-  private val scriptName = target?.let { PythonDebugUtils.guessRunScriptName(environment.project, it) }
 
   override fun createAndAddTaskListener(handler: BazelProcessHandler): BazelTaskListener = BazelRunTaskListener(handler)
 
@@ -51,23 +50,27 @@ internal class PythonDebugCommandLineState(environment: ExecutionEnvironment, pr
 
   fun asPythonState(): PythonCommandLineState = PythonScriptCommandLineState(pythonConfig(), environment)
 
-  private fun pythonConfig(): PythonRunConfiguration =
+  private fun pythonConfig(): PythonRunConfiguration {
+    val debugInfo = target?.let {
+      PythonDebugUtils.preparePythonDebug(environment.project, it)
+    }
     if (target == null) {
       error(BazelPluginBundle.message("python.debug.error.no.id"))
-    } else if (scriptName == null) {
-      error(BazelPluginBundle.message("python.debug.error.no.script", target))
-    } else {
-      val templateConfig =
-        PythonConfigurationType
-          .getInstance()
-          .factory
-          .createTemplateConfiguration(environment.project)
-          as PythonRunConfiguration // should always succeed; that's what PythonConfigurationFactory produces
-      templateConfig.also {
-        it.scriptName = scriptName.toAbsolutePath().toString()
-        it.sdk = getSdkForTarget(environment.project, target)
-      }
+    } else if (debugInfo == null) {
+      error(BazelPluginBundle.message("python.debug.error.other", target))
     }
+    val templateConfig =
+      PythonConfigurationType
+        .getInstance()
+        .factory
+        .createTemplateConfiguration(environment.project)
+        as PythonRunConfiguration // should always succeed; that's what PythonConfigurationFactory produces
+    return templateConfig.also {
+      it.scriptName = debugInfo.pythonFile.toAbsolutePath().toString()
+      it.envs = debugInfo.environmentVariables
+      it.sdk = getSdkForTarget(environment.project, target)
+    }
+  }
 }
 
 private fun getSdkForTarget(project: Project, target: Label): Sdk {

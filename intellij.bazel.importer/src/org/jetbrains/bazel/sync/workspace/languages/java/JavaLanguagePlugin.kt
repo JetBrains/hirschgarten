@@ -399,7 +399,7 @@ class JavaLanguagePlugin: LanguagePlugin {
       (
         targetInfo.generatedSourcesList.any { it.relativePath.endsWith(".srcjar") } ||
         (targetInfo.sourcesList.any() && !hasKnownJvmSources(targetInfo)) ||
-        (targetInfo.sourcesList.none() && targetInfo.kind !in wellKnownTargetKinds && !targetInfo.executable) ||
+        (targetInfo.sourcesList.none() && targetInfo.kind !in wellKnownTargetKinds && !targetInfo.hasExecutableInfo()) ||
         targetInfo.javaProvider.hasApiGeneratingPlugins ||
         targetInfo.kotlinTargetInfo.exportedCompilerPluginTargetsFromDepsList.any { allTargets[Label.parse(it)]?.javaProvider?.hasApiGeneratingPlugins ?: false }
       )
