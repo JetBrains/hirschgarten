@@ -1,8 +1,11 @@
 - name: lib/bazel-plugin.jar
   modules:
   - name: intellij.bazel.plugin
+- name: lib/intellij.bazel.protobuf.jar
   contentModules:
   - name: intellij.bazel.protobuf
+- name: lib/intellij.bazel.resource.jar
+  contentModules:
   - name: intellij.bazel.resource
 - name: lib/modules/intellij.bazel.bazelisk.jar
   contentModules:
