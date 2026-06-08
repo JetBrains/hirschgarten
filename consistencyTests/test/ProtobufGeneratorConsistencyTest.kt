@@ -69,14 +69,7 @@ internal class ProtobufGeneratorConsistencyTest {
       .toList()
 
     // custom protos
-    return listOf(
-      ProtobufOutput(
-        relativePath = "intellij.bazel.connector/src/org/jetbrains/bazel/server/sync/proto/bsp_target_info.proto",
-      ),
-      ProtobufOutput(
-        relativePath = "misc/intellij.bazel.devkit/src/intellij/proto/intellij_plugin_deploy_target_info.proto",
-      ),
-    ) + thirdPartyProtos
+    return thirdPartyProtos
   }
 
   @OptIn(ExperimentalPathApi::class)
