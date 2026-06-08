@@ -5,7 +5,6 @@ import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.isFile
 import com.intellij.platform.backend.workspace.WorkspaceModel
-import com.intellij.util.PlatformUtils
 import com.intellij.workspaceModel.ide.impl.WorkspaceModelImpl
 import kotlinx.coroutines.flow.update
 import org.jetbrains.bazel.config.BazelFeatureFlags
@@ -85,13 +84,8 @@ private suspend fun resyncProjectIfNeeded(project: Project) {
 private fun executeOnSyncedProject(project: Project) {
 }
 
-/**
- * [workspaceModelLoadedFromCache] is always false with GoLand
- * TODO: BAZEL-2038
- */
 private suspend fun isProjectInIncompleteState(project: Project): Boolean =
   project.serviceAsync<TargetUtils>().getTotalTargetCount() == 0 ||
-    !PlatformUtils.isGoIde() &&
     !(project.serviceAsync<WorkspaceModel>() as WorkspaceModelImpl).loadedFromCache ||
     !bazelExecPathExists(project)
 
