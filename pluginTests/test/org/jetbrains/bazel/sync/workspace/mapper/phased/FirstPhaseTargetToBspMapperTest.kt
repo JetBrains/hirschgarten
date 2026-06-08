@@ -1,6 +1,5 @@
 package org.jetbrains.bazel.sync.workspace.mapper.phased
 
-import com.google.devtools.build.lib.query2.proto.proto2api.Build
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import org.jetbrains.bazel.commons.BazelInfo
 import org.jetbrains.bazel.commons.BazelPathsResolver
@@ -13,12 +12,10 @@ import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.commons.orFallbackVersion
 import org.jetbrains.bazel.label.DependencyLabel
 import org.jetbrains.bazel.label.Label
-import org.jetbrains.bazel.sync.workspace.BazelResolvedWorkspace
 import org.jetbrains.bazel.workspace.model.test.framework.BazelPathsResolverMock
 import org.jetbrains.bazel.workspace.model.test.framework.WorkspaceModelBaseTest
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bsp.protocol.RawBuildTarget
-import org.jetbrains.bsp.protocol.RawPhasedTarget
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
@@ -52,15 +49,6 @@ private fun createMockWorkspaceContext(allowManualTargetsSync: Boolean): Workspa
     deriveInstrumentationFilterFromTargets = true,
     indexAdditionalFilesInDirectories = emptyList(),
     preferClassJarsOverSourcelessJars = true,
-  )
-
-private fun createMockProject(lightweightModules: List<Build.Target>): PhasedBazelMappedProject =
-  PhasedBazelMappedProject(
-    targets =
-      lightweightModules
-        .map { RawPhasedTarget(it) }
-        .associateBy { Label.parse(it.target.rule.name) },
-    hasError = false,
   )
 
 // Helper: creates a mock source file at the given relative path with the given package.
@@ -182,7 +170,6 @@ class FirstPhaseTargetToBspMapperTest : WorkspaceModelBaseTest() {
             kind = "unsupported_target",
           ),
         )
-      val project = createMockProject(targets)
 
       // Create source files for all targets that should have sources:
       val target1Src1 = workspaceRoot.createMockSourceFile("target1/src1.java", "com.example")
@@ -211,11 +198,10 @@ class FirstPhaseTargetToBspMapperTest : WorkspaceModelBaseTest() {
       // when
       val workspaceContext = createMockWorkspaceContext(false)
       val mapper = PhasedBazelProjectMapper(BazelPathsResolverMock.create(workspaceRoot), workspaceContext)
-      val context = PhasedBazelProjectMapperContext(RepoMappingDisabled)
-      val result: BazelResolvedWorkspace = mapper.resolveWorkspace(context, project)
+      val resultTargets = mapper.mapTargets(RepoMappingDisabled, targets.associateBy { Label.parse(it.rule.name) })
 
       // then: update expected build targets as per the new merged behavior
-      result.targets shouldContainExactlyInAnyOrder
+      resultTargets shouldContainExactlyInAnyOrder
         listOf(
           // target1: unchanged
           RawBuildTarget(
@@ -420,16 +406,14 @@ class FirstPhaseTargetToBspMapperTest : WorkspaceModelBaseTest() {
             tags = listOf("manual"),
           ),
         )
-      val project = createMockProject(targets)
 
       // when
       val mapper = PhasedBazelProjectMapper(BazelPathsResolverMock.create(), createMockWorkspaceContext(true))
-      val context = PhasedBazelProjectMapperContext(RepoMappingDisabled)
-      val result: BazelResolvedWorkspace = mapper.resolveWorkspace(context, project)
+      val resultTargets = mapper.mapTargets(RepoMappingDisabled, targets.associateBy { Label.parse(it.rule.name) })
 
       // then
       val strings =
-        result.targets
+        resultTargets
           .map { it.id.toString() }
       strings shouldContainExactlyInAnyOrder
         listOf(

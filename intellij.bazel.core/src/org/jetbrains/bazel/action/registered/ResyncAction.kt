@@ -4,14 +4,13 @@ import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.project.Project
 import org.jetbrains.bazel.action.SuspendableAction
 import org.jetbrains.bazel.config.BazelPluginBundle
-import org.jetbrains.bazel.sync.scope.SecondPhaseSync
 import org.jetbrains.bazel.sync.status.isSyncInProgress
 import org.jetbrains.bazel.sync.task.ProjectSyncTask
 import org.jetbrains.bazel.ui.console.isBuildInProgress
 
 internal class ResyncAction : SuspendableAction({ BazelPluginBundle.message("resync.action.text") }) {
   override suspend fun actionPerformed(project: Project, e: AnActionEvent) {
-    ProjectSyncTask(project).sync(syncScope = SecondPhaseSync, buildProject = false)
+    ProjectSyncTask(project).fullSync(buildProject = false)
   }
 
   override fun update(project: Project, e: AnActionEvent) {

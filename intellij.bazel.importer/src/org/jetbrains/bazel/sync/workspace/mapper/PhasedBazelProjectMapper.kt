@@ -4,6 +4,7 @@ import com.google.devtools.build.lib.query2.proto.proto2api.Build
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.commons.BazelPathsResolver
 import org.jetbrains.bazel.commons.LanguageClass
+import org.jetbrains.bazel.commons.RepoMapping
 import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.commons.phased.generatorName
 import org.jetbrains.bazel.commons.phased.interestingDeps
@@ -16,8 +17,6 @@ import org.jetbrains.bazel.commons.phased.srcs
 import org.jetbrains.bazel.label.DependencyLabel
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.label.assumeResolved
-import org.jetbrains.bazel.sync.workspace.BazelResolvedWorkspace
-import org.jetbrains.bazel.sync.workspace.mapper.BazelResolvedWorkspaceBuilder
 import org.jetbrains.bazel.sync.workspace.targetKind.TargetKindService
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bsp.protocol.RawBuildTarget
@@ -27,35 +26,37 @@ import kotlin.io.path.exists
 import kotlin.io.path.isRegularFile
 
 @ApiStatus.Internal
-class PhasedBazelProjectMapper(private val bazelPathsResolver: BazelPathsResolver, private val workspaceContext: WorkspaceContext) {
-  fun resolveWorkspace(context: PhasedBazelProjectMapperContext, project: PhasedBazelMappedProject): BazelResolvedWorkspace {
+class PhasedBazelProjectMapper(
+  private val bazelPathsResolver: BazelPathsResolver,
+  private val workspaceContext: WorkspaceContext
+) {
+  fun mapTargets(
+    repoMapping: RepoMapping,
+    targets: Map<Label, Build.Target>
+  ): List<RawBuildTarget> {
     val shouldSyncManualTargets = workspaceContext.allowManualTargetsSync
-    val targets =
-      project.targets
+    val targets: List<RawBuildTarget> =
+      targets
         .asSequence()
-        .map { it.value.target }
+        .map { it.value }
         .filter { it.isSupported() }
         .filter { shouldSyncManualTargets || !it.isManual }
         .filterNot { it.isNoIde }
-        .map { it.toBspBuildTarget(context, project) }
+        .map { it.toBspBuildTarget(repoMapping, targets) }
         .toList()
-    return BazelResolvedWorkspaceBuilder.build(
-      rootTargets = targets.map { it.id }.toSet(),
-      targets = targets,
-      hasError = project.hasError,
-    )
+    return targets
   }
 
-  private fun Build.Target.toBspBuildTarget(context: PhasedBazelProjectMapperContext, project: PhasedBazelMappedProject): RawBuildTarget {
+  private fun Build.Target.toBspBuildTarget(repoMapping: RepoMapping, targets: Map<Label, Build.Target>): RawBuildTarget {
     val label = Label.parse(name).assumeResolved()
     return RawBuildTarget(
       id = label,
       dependencies = interestingDeps.map { DependencyLabel.parse(it) },
       kind = inferKind(),
-      sources = calculateSources(project),
+      sources = calculateSources(targets),
       generatedSources = emptyList(),
-      resources = calculateResources(project),
-      baseDirectory = bazelPathsResolver.toDirectoryPath(label, context.repoMapping),
+      resources = calculateResources(targets),
+      baseDirectory = bazelPathsResolver.toDirectoryPath(label, repoMapping),
       data = emptyList(),
       generatorName = generatorName,
       isManual = isManual,
@@ -83,21 +84,21 @@ class PhasedBazelProjectMapper(private val bazelPathsResolver: BazelPathsResolve
     return isRuleSupported || areSourcesSupported
   }
 
-  private fun Build.Target.calculateSources(project: PhasedBazelMappedProject): List<Path> {
+  private fun Build.Target.calculateSources(targets: Map<Label, Build.Target>): List<Path> {
     val sourceFiles = srcs.calculateFiles()
-    val itemsFromDependencies = srcs.calculateModuleDependencies(project).flatMap { it.calculateSources(project) }
+    val itemsFromDependencies = srcs.calculateModuleDependencies(targets).flatMap { it.calculateSources(targets) }
     return (sourceFiles + itemsFromDependencies).distinct()
   }
 
-  private fun Build.Target.calculateResources(project: PhasedBazelMappedProject): List<Path> {
+  private fun Build.Target.calculateResources(targets: Map<Label, Build.Target>): List<Path> {
     val directResources = resources.calculateFiles()
-    val resourcesFromDependencies = resources.calculateModuleDependencies(project).flatMap { it.calculateResources(project) }
+    val resourcesFromDependencies = resources.calculateModuleDependencies(targets).flatMap { it.calculateResources(targets) }
     return (directResources + resourcesFromDependencies).distinct()
   }
 
-  private fun List<String>.calculateModuleDependencies(project: PhasedBazelMappedProject): List<Build.Target> =
+  private fun List<String>.calculateModuleDependencies(targets: Map<Label, Build.Target>): List<Build.Target> =
     mapNotNull { Label.parseOrNull(it) }
-      .mapNotNull { project.targets[it]?.target }
+      .mapNotNull { targets[it] }
 
   private fun List<String>.calculateFiles(): List<Path> =
     map { it.bazelFileFormatToPath() }

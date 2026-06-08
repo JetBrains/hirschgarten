@@ -125,8 +125,6 @@ f:org.jetbrains.bazel.workspacecontext.WorkspaceContext
 - f:getTargetShardSize():I
 - f:getTargets():java.util.List
 - hashCode():I
-org.jetbrains.bsp.protocol.BazelServerFacade
-- a:getWorkspaceContext():org.jetbrains.bazel.workspacecontext.WorkspaceContext
 org.jetbrains.bsp.protocol.BazelTaskEventsHandler
 - a:onBuildPublishDiagnostics(org.jetbrains.bsp.protocol.PublishDiagnosticsParams):V
 f:org.jetbrains.bsp.protocol.PublishDiagnosticsParams

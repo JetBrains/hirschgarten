@@ -10,12 +10,12 @@ import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.install.EnvironmentCreator
 import org.jetbrains.bazel.languages.bazelversion.psi.BazelVersionLiteral
 import org.jetbrains.bazel.languages.bazelversion.service.BazelVersionWorkspaceResolver
+import org.jetbrains.bazel.server.BazelServerConnection
 import org.jetbrains.bazel.server.bsp.BazelServerFacadeImpl
 import org.jetbrains.bazel.server.bsp.managers.BazelBspAspectsManager
 import org.jetbrains.bazel.server.bsp.managers.BazelBspLanguageExtensionsGenerator
 import org.jetbrains.bazel.server.bsp.managers.BazelToolchainManager
 import org.jetbrains.bazel.server.bsp.utils.InternalAspectsResolver
-import org.jetbrains.bazel.server.sync.BazelSyncProjectProvider
 import org.jetbrains.bazel.server.sync.BspProjectMapper
 import org.jetbrains.bazel.server.sync.ExecuteService
 import org.jetbrains.bazel.server.sync.ProjectResolver
@@ -26,7 +26,8 @@ import org.jetbrains.bazel.taskEvents.BazelTaskEventsService
 import org.jetbrains.bazel.workspace.BazelExecutableProvider
 import org.jetbrains.bazel.workspace.WorkspaceContextProvider
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
-import org.jetbrains.bsp.protocol.BazelServerFacade
+import org.jetbrains.bazel.server.BazelServerFacade
+import org.jetbrains.bazel.server.BazelServerService
 import java.util.concurrent.atomic.AtomicReference
 
 internal class DefaultBazelServerConnection(private val project: Project) : BazelServerConnection {
@@ -116,7 +117,6 @@ internal class DefaultBazelServerConnection(private val project: Project) : Baze
         bazelInfo = bazelInfo,
         taskEventsHandler = taskEventsHandler,
       )
-    val projectProvider = BazelSyncProjectProvider(projectResolver, firstPhaseProjectResolver)
 
     val bspProjectMapper =
       BspProjectMapper(
@@ -128,7 +128,8 @@ internal class DefaultBazelServerConnection(private val project: Project) : Baze
 
     return BazelServerFacadeImpl(
       bspMapper = bspProjectMapper,
-      projectProvider = projectProvider,
+      projectResolver = projectResolver,
+      firstPhaseProjectResolver = firstPhaseProjectResolver,
       executeService = executeService,
       workspaceContext = workspaceContext,
       bazelInfo = bazelInfo,

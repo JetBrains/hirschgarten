@@ -13,6 +13,6 @@ internal class BuildAndSyncCommand(text: String, line: Int) : PlaybackCommandCor
 
   override suspend fun doExecute(context: PlaybackContext) =
     coroutineScope {
-      ProjectSyncTask(context.project).sync(syncScope = SecondPhaseSync, buildProject = true)
+      ProjectSyncTask(context.project).fullSync(buildProject = true)
     }
 }

@@ -23,7 +23,7 @@ import org.jetbrains.bazel.run.task.BazelTestTaskListener
 import org.jetbrains.bazel.run.task.JetBrainsTestRunnerTaskListener
 import org.jetbrains.bazel.run.test.useJetBrainsTestRunner
 import org.jetbrains.bazel.taskEvents.BazelTaskListener
-import org.jetbrains.bsp.protocol.BazelServerFacade
+import org.jetbrains.bazel.server.BazelServerFacade
 
 @ApiStatus.Internal
 class JvmTestHandler(private val configuration: BazelRunConfiguration) : BazelRunHandler {

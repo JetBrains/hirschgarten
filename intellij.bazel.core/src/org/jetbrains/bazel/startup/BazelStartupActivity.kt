@@ -15,8 +15,6 @@ import org.jetbrains.bazel.projectAware.BazelWorkspace
 import org.jetbrains.bazel.settings.bazel.bazelProjectSettings
 import org.jetbrains.bazel.startup.utils.BazelProjectActivity
 import org.jetbrains.bazel.sync.environment.projectCtx
-import org.jetbrains.bazel.sync.scope.SecondPhaseSync
-import org.jetbrains.bazel.sync.task.PhasedSync
 import org.jetbrains.bazel.sync.task.ProjectSyncTask
 import org.jetbrains.bazel.target.TargetUtils
 import org.jetbrains.bazel.ui.settings.BazelApplicationSettingsService
@@ -66,17 +64,21 @@ private suspend fun executeOnEveryProjectStartup(project: Project) {
 }
 
 private suspend fun resyncProjectIfNeeded(project: Project) {
-  if (isProjectInIncompleteState(project)) {
-    if (serviceAsync<BazelApplicationSettingsService>().settings.enablePhasedSync) {
-      log.info("Running Bazel phased sync task")
-      PhasedSync(project).sync()
-    } else {
-      log.info("Running Bazel sync task")
-      ProjectSyncTask(project).sync(
-        syncScope = SecondPhaseSync,
-        buildProject = BazelFeatureFlags.isBuildProjectOnSyncEnabled,
-      )
-    }
+  if (!isProjectInIncompleteState(project))
+    return
+
+  val projectSyncTask = ProjectSyncTask(project)
+  if (serviceAsync<BazelApplicationSettingsService>().settings.enablePhasedSync) {
+    log.info("Running Bazel phased sync task")
+    projectSyncTask.phasedSync(
+      runSecondPhase = BazelFeatureFlags.executeSecondPhaseOnSync,
+      buildProject = BazelFeatureFlags.isBuildProjectOnSyncEnabled,
+    )
+  } else {
+    log.info("Running Bazel sync task")
+    projectSyncTask.fullSync(
+      buildProject = BazelFeatureFlags.isBuildProjectOnSyncEnabled,
+    )
   }
 }
 

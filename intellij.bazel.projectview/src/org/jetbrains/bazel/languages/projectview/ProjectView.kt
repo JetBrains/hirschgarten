@@ -2,7 +2,6 @@ package org.jetbrains.bazel.languages.projectview
 
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
-import com.intellij.openapi.vfs.resolveFromRootOrRelative
 import com.intellij.psi.PsiFileFactory
 import com.intellij.psi.PsiManager
 import com.intellij.util.concurrency.annotations.RequiresBackgroundThread
@@ -131,7 +130,7 @@ data class ProjectView(val sections: Map<SectionKey<*>, Any>, val imports: List<
       pathString: String,
       required: Boolean,
     ): VirtualFile? {
-      val file = project.rootDir.findChild(pathString)
+      val file = project.rootDir.findFileByRelativePath(pathString)
       if (file == null && required) {
         error("Cannot find project view file requested in an import: $pathString")
       }

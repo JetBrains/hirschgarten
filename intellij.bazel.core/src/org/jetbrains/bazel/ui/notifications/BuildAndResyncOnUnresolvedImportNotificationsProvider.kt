@@ -73,7 +73,7 @@ internal class BuildAndResyncOnUnresolvedImportNotificationsProvider :
 
       createActionLabel(BazelPluginBundle.message("build.and.resync.action.text")) {
         BazelCoroutineService.getInstance(project).start {
-          ProjectSyncTask(project).sync(syncScope = SecondPhaseSync, buildProject = true)
+          ProjectSyncTask(project).fullSync(buildProject = true)
         }
       }
       val virtualFile = fileEditor.file

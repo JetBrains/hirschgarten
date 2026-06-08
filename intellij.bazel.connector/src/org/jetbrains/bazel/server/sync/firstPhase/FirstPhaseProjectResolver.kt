@@ -51,7 +51,8 @@ class FirstPhaseProjectResolver(
         workspaceRoot = workspaceRoot,
         bazelRelease = bazelInfo.release,
         modules = modules,
-        repoMapping = repoMapping
+        repoMapping = repoMapping,
+        hasError = bazelResult.isNotSuccess
       )
     }
 }

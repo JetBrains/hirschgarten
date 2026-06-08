@@ -10,31 +10,25 @@ import org.jetbrains.bazel.label.Label
 import java.nio.file.Path
 
 @ApiStatus.Internal
-sealed interface BazelSyncProject {
-  val workspaceRoot: Path
-  val bazelRelease: BazelRelease
-  val repoMapping: RepoMapping
-}
-
-@ApiStatus.Internal
 data class PhasedSyncProject(
-  override val workspaceRoot: Path,
-  override val bazelRelease: BazelRelease,
-  override val repoMapping: RepoMapping,
+  val workspaceRoot: Path,
+  val bazelRelease: BazelRelease,
+  val repoMapping: RepoMapping,
   val modules: Map<Label, Target>,
-) : BazelSyncProject
+  val hasError: Boolean = false,
+)
 
 /** Project is the internal model of the project. Bazel/Aspect Model -> Project -> BSP Model  */
 @ApiStatus.Internal
 data class AspectSyncProject(
-  override val workspaceRoot: Path,
-  override val bazelRelease: BazelRelease,
-  override val repoMapping: RepoMapping = RepoMappingDisabled,
+  val workspaceRoot: Path,
+  val bazelRelease: BazelRelease,
+  val repoMapping: RepoMapping = RepoMappingDisabled,
   val workspaceName: String,
   val hasError: Boolean = false,
   val targets: Map<Label, BspTargetInfo.TargetInfo>,
   val rootTargets: Set<Label>,
-) : BazelSyncProject {
+) {
   operator fun plus(project: AspectSyncProject): AspectSyncProject {
     if (workspaceRoot != project.workspaceRoot) {
       error("Cannot add projects with different workspace roots: $workspaceRoot and ${project.workspaceRoot}")
@@ -49,9 +43,9 @@ data class AspectSyncProject(
 }
 
 @get:ApiStatus.Internal
-val BspTargetInfo.TargetInfo.sourcesList : Sequence<BspTargetInfo.ArtifactLocation>
-  get() = srcsList.asSequence().filter { it.isSource}
+val BspTargetInfo.TargetInfo.sourcesList: Sequence<BspTargetInfo.ArtifactLocation>
+  get() = srcsList.asSequence().filter { it.isSource }
 
 @get:ApiStatus.Internal
-val BspTargetInfo.TargetInfo.generatedSourcesList : Sequence<BspTargetInfo.ArtifactLocation>
-  get() = srcsList.asSequence().filter { !it.isSource}
+val BspTargetInfo.TargetInfo.generatedSourcesList: Sequence<BspTargetInfo.ArtifactLocation>
+  get() = srcsList.asSequence().filter { !it.isSource }

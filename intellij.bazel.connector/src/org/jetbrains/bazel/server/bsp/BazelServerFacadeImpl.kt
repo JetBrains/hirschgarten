@@ -3,40 +3,39 @@ package org.jetbrains.bazel.server.bsp
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.commons.BazelInfo
 import org.jetbrains.bazel.commons.BazelPathsResolver
+import org.jetbrains.bazel.commons.RepoMapping
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.server.model.AspectSyncProject
-import org.jetbrains.bazel.server.sync.BazelSyncProjectProvider
+import org.jetbrains.bazel.server.model.PhasedSyncProject
 import org.jetbrains.bazel.server.sync.BspProjectMapper
 import org.jetbrains.bazel.server.sync.ExecuteService
+import org.jetbrains.bazel.server.sync.ProjectResolver
+import org.jetbrains.bazel.server.sync.firstPhase.FirstPhaseProjectResolver
 import org.jetbrains.bazel.sync.BazelOutFileHardLinks
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bsp.protocol.AnalysisDebugParams
 import org.jetbrains.bsp.protocol.AnalysisDebugResult
-import org.jetbrains.bsp.protocol.BazelServerFacade
+import org.jetbrains.bazel.server.BazelServerFacade
 import org.jetbrains.bsp.protocol.CompileParams
 import org.jetbrains.bsp.protocol.CompileResult
 import org.jetbrains.bsp.protocol.InverseSourcesParams
 import org.jetbrains.bsp.protocol.InverseSourcesResult
 import org.jetbrains.bsp.protocol.JvmToolchainInfo
-import org.jetbrains.bsp.protocol.RawPhasedTarget
 import org.jetbrains.bsp.protocol.RunParams
 import org.jetbrains.bsp.protocol.RunResult
 import org.jetbrains.bsp.protocol.TaskId
 import org.jetbrains.bsp.protocol.TestParams
 import org.jetbrains.bsp.protocol.TestResult
-import org.jetbrains.bsp.protocol.WorkspaceBazelRepoMappingResult
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetParams
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetPhasedParams
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetSelector
-import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsResult
 import org.jetbrains.bsp.protocol.WorkspaceDirectoriesResult
-import org.jetbrains.bsp.protocol.WorkspaceNameResult
-import org.jetbrains.bsp.protocol.WorkspacePhasedBuildTargetsResult
 
 @ApiStatus.Internal
 class BazelServerFacadeImpl(
   private val bspMapper: BspProjectMapper,
-  private val projectProvider: BazelSyncProjectProvider,
+  private val projectResolver: ProjectResolver,
+  private val firstPhaseProjectResolver: FirstPhaseProjectResolver,
   private val executeService: ExecuteService,
   override val workspaceContext: WorkspaceContext,
   override val bazelInfo: BazelInfo,
@@ -44,34 +43,21 @@ class BazelServerFacadeImpl(
   override val outFileHardLinks: BazelOutFileHardLinks
 ) : BazelServerFacade {
 
-  override suspend fun runSync(build: Boolean, taskId: TaskId): WorkspaceBuildTargetsResult {
-    val project = projectProvider.refreshAndGet(build = build, taskId = taskId)
-    return project.asWorkspaceTargets()
-  }
-
-  override suspend fun workspaceBuildTargets(params: WorkspaceBuildTargetParams): WorkspaceBuildTargetsResult {
-    val project: AspectSyncProject =
-      when (val selector = params.selector) {
-        WorkspaceBuildTargetSelector.AllTargets -> {
-          projectProvider.getOrLoad(params.taskId) as? AspectSyncProject
-        }
-
-        is WorkspaceBuildTargetSelector.SpecificTargets -> {
-          projectProvider.updateAndGet(
-            targetsToSync = selector.targets,
-            taskId = params.taskId,
-          )
-        }
-      } ?: return WorkspaceBuildTargetsResult(emptyMap(), setOf())
-    return project.asWorkspaceTargets()
-  }
-
-  override suspend fun workspaceBuildPhasedTargets(params: WorkspaceBuildTargetPhasedParams): WorkspacePhasedBuildTargetsResult {
-    val project = projectProvider.bazelQueryRefreshAndGet(params.taskId)
-    val targets = project.modules.mapValues {
-      RawPhasedTarget(it.value)
+  override suspend fun workspaceBuildTargets(params: WorkspaceBuildTargetParams): AspectSyncProject {
+    val targetsToSync = when (val selector = params.selector) {
+      WorkspaceBuildTargetSelector.AllTargets -> null
+      is WorkspaceBuildTargetSelector.SpecificTargets -> selector.targets
     }
-    return WorkspacePhasedBuildTargetsResult(targets)
+    return projectResolver.resolve(
+      build = params.build,
+      targetsToSync,
+      params.allTargets,
+      params.taskId
+    )
+  }
+
+  override suspend fun workspaceBuildPhasedTargets(params: WorkspaceBuildTargetPhasedParams): PhasedSyncProject {
+    return firstPhaseProjectResolver.resolve(params.taskId)
   }
 
   override suspend fun buildTargetInverseSources(params: InverseSourcesParams): InverseSourcesResult {
@@ -86,28 +72,11 @@ class BazelServerFacadeImpl(
 
   override suspend fun buildTargetRun(params: RunParams): RunResult = executeService.run(params)
 
-  override suspend fun workspaceDirectories(taskId: TaskId): WorkspaceDirectoriesResult {
-    return bspMapper.workspaceDirectories(projectProvider.getOrLoad(taskId).repoMapping, taskId)
-  }
-
-  override suspend fun workspaceBazelRepoMapping(taskId: TaskId): WorkspaceBazelRepoMappingResult {
-    val repoMapping = projectProvider.getOrLoad(taskId).repoMapping
-    return WorkspaceBazelRepoMappingResult(repoMapping)
-  }
-
-  override suspend fun workspaceName(taskId: TaskId): WorkspaceNameResult {
-    val project = projectProvider.getOrLoad(taskId) as? AspectSyncProject
-                  ?: return WorkspaceNameResult(null)
-    return WorkspaceNameResult(project.workspaceName)
+  override suspend fun workspaceDirectories(repoMapping: RepoMapping, taskId: TaskId): WorkspaceDirectoriesResult {
+    return bspMapper.workspaceDirectories(repoMapping, taskId)
   }
 
   override suspend fun jvmToolchainInfoForTarget(target: Label): JvmToolchainInfo {
     return bspMapper.jvmBuilderParamsForTarget(target)
   }
 }
-
-private fun AspectSyncProject.asWorkspaceTargets() = WorkspaceBuildTargetsResult(
-  targets = targets,
-  rootTargets = rootTargets,
-  hasError = hasError,
-)

@@ -11,4 +11,8 @@ sealed interface WorkspaceBuildTargetSelector {
 }
 
 @ApiStatus.Internal
-data class WorkspaceBuildTargetParams(val selector: WorkspaceBuildTargetSelector, val taskId: TaskId)
+data class WorkspaceBuildTargetParams(
+  val selector: WorkspaceBuildTargetSelector,
+  val build: Boolean,
+  val allTargets: List<Label>?, /* all known targets, if any, from first phase */
+  val taskId: TaskId)

@@ -231,7 +231,7 @@
 
     <projectService
       serviceImplementation="org.jetbrains.bazel.server.connection.BazelServerServiceImpl"
-      serviceInterface="org.jetbrains.bazel.server.connection.BazelServerService"
+      serviceInterface="org.jetbrains.bazel.server.BazelServerService"
     />
 
     <consoleFilterProvider implementation="org.jetbrains.bazel.ui.console.BazelBuildTargetConsoleFilterProvider"/>

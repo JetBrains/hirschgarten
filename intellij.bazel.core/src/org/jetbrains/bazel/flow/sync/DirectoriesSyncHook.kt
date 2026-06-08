@@ -20,7 +20,7 @@ import java.nio.file.Path
 private class DirectoriesSyncHook : ProjectSyncHook {
   override suspend fun onSync(environment: ProjectSyncHookEnvironment) {
     environment.withSubtask("Collect project directories") {
-      val directories = environment.server.workspaceDirectories(environment.taskId)
+      val directories = environment.server.workspaceDirectories(environment.workspace.repoMapping, environment.taskId)
       val workspaceContext = environment.server.workspaceContext
       val additionalExcludes = BazelSymlinkExcludeService.getInstance(environment.project).scanForBazelSymlinksToExclude(environment.project.rootDir.toNioPath())
       val indexAllFilesInIncludedRoots = workspaceContext.indexAllFilesInDirectories

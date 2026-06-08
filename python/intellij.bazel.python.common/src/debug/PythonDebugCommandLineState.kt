@@ -23,8 +23,8 @@ import org.jetbrains.bazel.run.commandLine.transformProgramArguments
 import org.jetbrains.bazel.run.config.BazelRunConfiguration
 import org.jetbrains.bazel.run.task.BazelRunTaskListener
 import org.jetbrains.bazel.taskEvents.BazelTaskListener
+import org.jetbrains.bazel.server.BazelServerFacade
 import org.jetbrains.bsp.protocol.CompileParams
-import org.jetbrains.bsp.protocol.BazelServerFacade
 
 internal class PythonDebugCommandLineState(private val environment: ExecutionEnvironment, private val programArguments: String?) :
   BazelCommandLineStateBase(environment) {
@@ -33,9 +33,9 @@ internal class PythonDebugCommandLineState(private val environment: ExecutionEnv
   override fun createAndAddTaskListener(handler: BazelProcessHandler): BazelTaskListener = BazelRunTaskListener(handler)
 
   override suspend fun startBsp(
-      server: BazelServerFacade,
-      pidDeferred: CompletableDeferred<Long?>,
-      handler: BazelProcessHandler,
+    server: BazelServerFacade,
+    pidDeferred: CompletableDeferred<Long?>,
+    handler: BazelProcessHandler,
   ) {
     val configuration = BazelRunConfiguration.get(environment)
     val targetId = configuration.targets.single()

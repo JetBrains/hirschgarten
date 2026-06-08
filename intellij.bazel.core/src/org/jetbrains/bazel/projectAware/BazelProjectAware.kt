@@ -21,7 +21,6 @@ import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.coroutines.BazelCoroutineService
 import org.jetbrains.bazel.settings.bazel.bazelProjectSettings
 import org.jetbrains.bazel.sync.SyncCache
-import org.jetbrains.bazel.sync.scope.SecondPhaseSync
 import org.jetbrains.bazel.sync.status.SyncStatusListener
 import org.jetbrains.bazel.sync.task.ProjectSyncTask
 
@@ -42,7 +41,7 @@ class BazelProjectAware(private val project: Project) : ExternalSystemProjectAwa
   override fun reloadProject(context: ExternalSystemProjectReloadContext) {
     if (context.isExplicitReload) {
       BazelCoroutineService.getInstance(project).start {
-        ProjectSyncTask(project).sync(syncScope = SecondPhaseSync, buildProject = false)
+        ProjectSyncTask(project).fullSync(buildProject = false)
       }
     }
   }

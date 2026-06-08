@@ -3,16 +3,13 @@ package org.jetbrains.bazel.sync
 import com.intellij.openapi.extensions.ExtensionPointName
 import com.intellij.openapi.project.Project
 import com.intellij.platform.util.progress.SequentialProgressReporter
-import org.jetbrains.annotations.ApiStatus
 import com.intellij.platform.workspace.storage.MutableEntityStorage
-import org.jetbrains.bazel.info.BspTargetInfo
-import org.jetbrains.bazel.label.Label
+import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.progress.syncConsole
 import org.jetbrains.bazel.progress.withSubtask
 import org.jetbrains.bazel.sync.scope.ProjectSyncScope
 import org.jetbrains.bazel.sync.workspace.BazelResolvedWorkspace
-import org.jetbrains.bazel.sync.workspace.BazelWorkspaceResolveService
-import org.jetbrains.bsp.protocol.BazelServerFacade
+import org.jetbrains.bazel.server.BazelServerFacade
 import org.jetbrains.bsp.protocol.TaskId
 
 /**
@@ -43,7 +40,6 @@ interface ProjectSyncHook {
    * @param diff diff which was prepared before sync and which should be updated in the hook
    * @param taskId task id which should be used in the sync console as root
    * @param progressReporter should be used to report the progress of the hook
-   * @param buildTargets base info about all the available targets in the project
    */
   @ConsistentCopyVisibility
   data class ProjectSyncHookEnvironment @ApiStatus.Internal constructor(
@@ -51,12 +47,9 @@ interface ProjectSyncHook {
     val syncScope: ProjectSyncScope,
     val server: BazelServerFacade,
     val workspace: BazelResolvedWorkspace,
-    val resolver: BazelWorkspaceResolveService,
-    // TODO: exposed public API: TaskId
     val taskId: TaskId,
     val diff: MutableEntityStorage,
     val progressReporter: SequentialProgressReporter,
-    internal val buildTargets: Map<Label, BspTargetInfo.TargetInfo>,
     val deferredApplyActions: MutableList<suspend () -> Unit> = mutableListOf(),
   )
 }

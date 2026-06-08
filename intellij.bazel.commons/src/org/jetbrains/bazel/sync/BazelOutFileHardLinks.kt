@@ -1,14 +1,6 @@
 package org.jetbrains.bazel.sync
 
-import com.intellij.openapi.project.Project
-import com.intellij.openapi.vfs.VirtualFileManager
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.async
-import kotlinx.coroutines.awaitAll
-import kotlinx.coroutines.coroutineScope
 import org.jetbrains.annotations.ApiStatus
-import org.jetbrains.bazel.config.BazelFeatureFlags
-import org.jetbrains.bazel.server.connection.connection
 import java.nio.file.Path
 
 @ApiStatus.Internal
@@ -61,16 +53,4 @@ interface BazelOutFileHardLinks {
         get() = false
     }
   }
-}
-
-@ApiStatus.Internal
-suspend fun refreshVfsAfterBazelBuild(project: Project) {
-  if (BazelFeatureFlags.hardLinkOutputFiles && project.connection.runWithServer { it.outFileHardLinks.allHardLinksCreatedSuccessfully }) {
-    // asyncRefresh() refreshes the whole VFS, which includes all projects that have ever been opened in the IDE, not just the current one.
-    // That can lead to long UI freezes, which is why asyncRefresh() is now deprecated in IJ platform.
-    // On the other hand, BazelOutputFileHardLinks handles VFS refresh granularly:
-    // only on project sync, and only for changed Bazel outputs that are used in the current project.
-    return
-  }
-  VirtualFileManager.getInstance().asyncRefresh()
 }

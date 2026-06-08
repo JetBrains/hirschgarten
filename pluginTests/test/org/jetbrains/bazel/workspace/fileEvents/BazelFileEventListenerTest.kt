@@ -41,8 +41,8 @@ import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.magicmetamodel.formatAsModuleName
 import org.jetbrains.bazel.project.BazelProjectFixtures.deinitializeBazelProject
-import org.jetbrains.bazel.server.connection.BazelServerConnection
-import org.jetbrains.bazel.server.connection.BazelServerService
+import org.jetbrains.bazel.server.BazelServerConnection
+import org.jetbrains.bazel.server.BazelServerService
 import org.jetbrains.bazel.target.targetUtils
 import org.jetbrains.bazel.test.framework.target.TestBuildTargetFactory
 import org.jetbrains.bazel.workspace.model.test.framework.BuildServerMock
@@ -52,7 +52,7 @@ import org.jetbrains.bazel.workspacemodel.entities.BazelModuleExtensionEntity
 import org.jetbrains.bazel.workspacemodel.entities.WorkspaceModelTargetLabel
 import org.jetbrains.bazel.workspacemodel.entities.WorkspaceModelTargetLabelList
 import org.jetbrains.bazel.workspacemodel.entities.bazelModuleExtension
-import org.jetbrains.bsp.protocol.BazelServerFacade
+import org.jetbrains.bazel.server.BazelServerFacade
 import org.jetbrains.bsp.protocol.InverseSourcesParams
 import org.jetbrains.bsp.protocol.InverseSourcesResult
 import org.jetbrains.bsp.protocol.PartialBuildTarget

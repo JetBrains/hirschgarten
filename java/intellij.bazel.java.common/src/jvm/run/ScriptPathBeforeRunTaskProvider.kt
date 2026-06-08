@@ -24,7 +24,7 @@ import org.jetbrains.bazel.run.state.HasProgramArguments
 import org.jetbrains.bazel.server.tasks.BuildTargetTask
 import org.jetbrains.bazel.server.tasks.DefaultBuildTargetTask
 import org.jetbrains.bazel.server.tasks.runBuildTargetTask
-import org.jetbrains.bsp.protocol.BazelServerFacade
+import org.jetbrains.bazel.server.BazelServerFacade
 import org.jetbrains.bsp.protocol.RunParams
 import org.jetbrains.bsp.protocol.TaskId
 import java.nio.file.Files

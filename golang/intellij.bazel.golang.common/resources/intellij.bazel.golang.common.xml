@@ -2,6 +2,7 @@
   <!-- region Generated dependencies - run `Generate Product Layouts` to regenerate -->
   <dependencies>
     <module name="intellij.bazel.commons"/>
+    <module name="intellij.bazel.connector"/>
     <module name="intellij.bazel.core"/>
     <module name="intellij.bazel.importer"/>
     <module name="intellij.go.frontback"/>

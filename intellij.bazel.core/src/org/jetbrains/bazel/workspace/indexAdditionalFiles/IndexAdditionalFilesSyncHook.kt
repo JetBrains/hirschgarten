@@ -36,7 +36,7 @@ private val INDEX_ADDITIONAL_FILES_DEFAULT =
  *    so that "Go to file by name" is quicker, see https://youtrack.jetbrains.com/issue/IJPL-207088
  */
 internal class IndexAdditionalFilesSyncHook : ProjectSyncHook {
-  override suspend fun onSync(environment: ProjectSyncHook.ProjectSyncHookEnvironment) =
+  override suspend fun onSync(environment: ProjectSyncHook.ProjectSyncHookEnvironment) {
     environment.withSubtask("Collect additional files to index") {
       val project = environment.project
 
@@ -59,6 +59,7 @@ internal class IndexAdditionalFilesSyncHook : ProjectSyncHook {
         this.indexAdditionalFiles += indexAdditionalFiles.map { NonIndexableVirtualFileUrl(it) }
       }
     }
+  }
 
   private fun indexAdditionalFilesByName(
     environment: ProjectSyncHook.ProjectSyncHookEnvironment,

@@ -93,7 +93,7 @@ internal class UnsyncedSourceFileNotificationProvider : EditorNotificationProvid
       }
       createActionLabel(BazelPluginBundle.message("resync.action.text")) {
         BazelCoroutineService.getInstance(project).start {
-          ProjectSyncTask(project).sync(syncScope = SecondPhaseSync, buildProject = false)
+          ProjectSyncTask(project).fullSync(buildProject = false)
         }
       }
     }

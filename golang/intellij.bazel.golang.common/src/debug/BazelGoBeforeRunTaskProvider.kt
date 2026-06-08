@@ -20,7 +20,7 @@ import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.run.config.BazelRunConfiguration
 import org.jetbrains.bazel.run.state.GenericRunState
 import org.jetbrains.bazel.run.state.GenericTestState
-import org.jetbrains.bazel.server.connection.connection
+import org.jetbrains.bazel.server.connection
 import org.jetbrains.bazel.sync.environment.projectCtx
 import org.jetbrains.bazel.target.targetUtils
 import org.jetbrains.bazel.ui.notifications.BazelBalloonNotifier

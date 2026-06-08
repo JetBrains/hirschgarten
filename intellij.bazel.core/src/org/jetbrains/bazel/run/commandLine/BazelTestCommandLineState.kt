@@ -20,7 +20,7 @@ import org.jetbrains.bazel.runnerAction.COVERAGE_EXECUTOR_ID
 import org.jetbrains.bazel.target.targetUtils
 import org.jetbrains.bazel.taskEvents.BazelTaskListener
 import org.jetbrains.bazel.utils.filterPathsThatDontContainEachOther2
-import org.jetbrains.bsp.protocol.BazelServerFacade
+import org.jetbrains.bazel.server.BazelServerFacade
 import org.jetbrains.bsp.protocol.TestParams
 import java.nio.file.Path
 

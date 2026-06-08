@@ -51,7 +51,7 @@ import org.jetbrains.bazel.progress.ShowConsole
 import org.jetbrains.bazel.progress.syncConsole
 import org.jetbrains.bazel.projectAware.BazelProjectAware
 import org.jetbrains.bazel.run.task.BazelBuildTaskListener
-import org.jetbrains.bazel.server.connection.connection
+import org.jetbrains.bazel.server.connection
 import org.jetbrains.bazel.sync.projectStructure.legacy.GENERIC_SOURCE_ROOT_TYPE_ID
 import org.jetbrains.bazel.sync.status.SyncStatusService
 import org.jetbrains.bazel.target.TargetUtils
