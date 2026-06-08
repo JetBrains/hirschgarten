@@ -94,4 +94,27 @@ class ProjectViewTryImportTest : CodeInsightFixtureTestCase<ModuleFixtureBuilder
       }
     assertTrue(ex.toString().contains("Cannot find project view file requested in an import: not_there.bazelproject"))
   }
+
+  @Test
+  fun `import should work with subdirectories`() {
+    myFixture.addFileToProject(
+      "subdirectory/imported.bazelproject",
+      """
+      directories:
+        dirA
+      """.trimIndent(),
+    )
+
+    val psiFile =
+      myFixture.configureByText(
+        "main.bazelproject",
+        """
+        import subdirectory/imported.bazelproject
+        """.trimIndent(),
+      )
+
+    val projectView = ProjectView.fromProjectViewPsiFile(psiFile as ProjectViewPsiFile)
+
+    projectView.getSection(DirectoriesSection.KEY)!! shouldContainExactly listOf(ExcludableValue.included(Path("dirA")))
+  }
 }
