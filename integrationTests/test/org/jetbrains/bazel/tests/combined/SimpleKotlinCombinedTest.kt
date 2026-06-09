@@ -1,7 +1,6 @@
 package org.jetbrains.bazel.tests.combined
 
 import com.intellij.driver.client.Driver
-import com.intellij.driver.sdk.WaitForException
 import com.intellij.driver.sdk.invokeAction
 import com.intellij.driver.sdk.setRegistry
 import com.intellij.driver.sdk.step
@@ -37,13 +36,13 @@ import com.intellij.tools.ide.performanceTesting.commands.setBreakpoint
 import com.intellij.tools.ide.performanceTesting.commands.sleep
 import com.intellij.tools.ide.performanceTesting.commands.takeScreenshot
 import com.intellij.tools.ide.performanceTesting.commands.waitForSmartMode
-import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.data.IdeaBazelCases
 import org.jetbrains.bazel.ideStarter.assertSyncedTargets
 import org.jetbrains.bazel.ideStarter.buildAndSync
 import org.jetbrains.bazel.ideStarter.execute
 import org.jetbrains.bazel.ideStarter.openFile
 import org.jetbrains.bazel.ideStarter.waitForSyncSucceeded
+import org.jetbrains.bazel.tests.sync.verifyNoSyncOnReopen
 import org.jetbrains.bazel.tests.ui.expandedTree
 import org.jetbrains.bazel.tests.ui.verifyTestStatus
 import org.junit.jupiter.api.Order
@@ -220,23 +219,7 @@ class SimpleKotlinCombinedTest : IdeStarterCombinedBaseTest() {
         welcomeScreen { clickRecentProject("simpleKotlinTest") }
         takeScreenshot("afterClickingRecentProject")
       }
-
-      step("Verify no sync happens on reopen") {
-        ideFrame {
-          wait(20.seconds)
-          try {
-            val buildView = x { byType("com.intellij.build.BuildView") }
-            assert(
-              !buildView.getAllTexts().any {
-                it.text.contains(BazelPluginBundle.message("console.task.sync.in.progress"))
-              },
-            ) { "Build view contains sync text" }
-          } catch (e: Exception) {
-            assert(e is WaitForException) { "Unknown exception: ${e.message}" }
-          }
-        }
-        takeScreenshot("afterReopeningProject")
-      }
+      verifyNoSyncOnReopen()
     }
   }
 
