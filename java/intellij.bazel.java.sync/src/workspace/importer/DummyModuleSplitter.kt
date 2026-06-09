@@ -1,9 +1,9 @@
 package org.jetbrains.bazel.workspace.importer
 
 import com.intellij.openapi.diagnostic.logger
+import com.intellij.openapi.vfs.VFileProperty
 import com.intellij.openapi.vfs.VfsUtilCore
 import com.intellij.openapi.vfs.VirtualFile
-import com.intellij.openapi.vfs.VirtualFileVisitor
 import com.intellij.openapi.vfs.refreshAndFindVirtualFileOrDirectory
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.commons.constants.Constants
@@ -63,12 +63,10 @@ class DummyModuleSplitter(
     val (relevantSourceRoots, irrelevantSourceRoots) = sourceRoots.partition { it.isRelevant() }
     val sourceRootsForParentDirs = calculateSourceRootsForParentDirs(relevantSourceRoots)
     val relevantSourceRootFiles = relevantSourceRoots.mapNotNullTo(mutableSetOf()) { it.sourcePath.findOrRefreshVirtualFile() }
+    val finder = UnknownFileFinder(knownFiles = relevantSourceRootFiles, relevantExtensions = Constants.JVM_LANGUAGES_EXTENSIONS)
     val mergedSourceRootVotes = sourceRootsForParentDirs
-      .restoreSourceRootFromPackagePrefix(
-        relevantExtensions = Constants.JVM_LANGUAGES_EXTENSIONS,
-        limit = baseDirectory,
-        knownFiles = relevantSourceRootFiles,
-      ).preferShorterPrefix()
+      .restoreSourceRootFromPackagePrefix(finder, limit = baseDirectory)
+      .preferShorterPrefix()
 
     if (BazelFeatureFlags.mergeSourceRoots) {
       val mergedSourceRoots =
@@ -76,6 +74,7 @@ class DummyModuleSplitter(
           sourceRootFiles = relevantSourceRootFiles,
           mergeSourceRootVotes = mergedSourceRootVotes,
           sourceRootsForParentDirsVotes = sourceRootsForParentDirs,
+          finder = finder,
         )
       if (mergedSourceRoots != null) {
         return MergedRoots(mergedSourceRoots = mergedSourceRoots + irrelevantSourceRoots)
@@ -86,10 +85,7 @@ class DummyModuleSplitter(
         mergedSourceRootVotes
       }
       else {
-        mergedSourceRootVotes.restoreSourceRootFromPackagePrefix(
-          relevantExtensions = Constants.JVM_LANGUAGES_EXTENSIONS,
-          knownFiles = relevantSourceRootFiles,
-        )
+        mergedSourceRootVotes.restoreSourceRootFromPackagePrefix(finder)
       }.keys.toList()
     val dummies = dummySourceRoots
       .map { root ->
@@ -110,17 +106,19 @@ class DummyModuleSplitter(
     sourceRootFiles: Set<VirtualFile>,
     mergeSourceRootVotes: Map<SourceRootBuilder.ResolvedSourceRoot, Int>,
     sourceRootsForParentDirsVotes: Map<SourceRootBuilder.ResolvedSourceRoot, Int>,
+    finder: UnknownFileFinder,
   ): List<SourceRootBuilder.ResolvedSourceRoot>? {
     if (sourceRootFiles.any { it.isSharedBetweenSeveralTargets() }) {
       return null
     }
-    return tryMergeSources(sourceRootFiles, mergeSourceRootVotes)
-           ?: tryMergeSources(sourceRootFiles, sourceRootsForParentDirsVotes)
+    return tryMergeSources(sourceRootFiles, mergeSourceRootVotes, finder)
+           ?: tryMergeSources(sourceRootFiles, sourceRootsForParentDirsVotes, finder)
   }
 
   private fun tryMergeSources(
     originalSourceRoots: Set<VirtualFile>,
     mergeSourceRootVotes: Map<SourceRootBuilder.ResolvedSourceRoot, Int>,
+    finder: UnknownFileFinder,
   ): List<SourceRootBuilder.ResolvedSourceRoot>? {
     val sourceRootsSortedByVotes: List<SourceRootBuilder.ResolvedSourceRoot> =
       mergeSourceRootVotes.entries
@@ -148,12 +146,7 @@ class DummyModuleSplitter(
 
     if (originalSourceRoots.any { !VfsUtilCore.isUnder(it, mergedSourceRootFiles) }) return null
 
-    if (mergedRootsCoverNewFiles(
-        mergedRoots = mergedSourceRootFiles,
-        originalRoots = originalSourceRoots,
-        relevantExtensions = Constants.JVM_LANGUAGES_EXTENSIONS,
-      )
-    ) {
+    if (mergedRootsCoverNewFiles(mergedSourceRootFiles, finder)) {
       return null
     }
 
@@ -170,9 +163,8 @@ class DummyModuleSplitter(
 
   private fun mergedRootsCoverNewFiles(
     mergedRoots: Collection<VirtualFile>,
-    originalRoots: Set<VirtualFile>,
-    relevantExtensions: List<String>,
-  ): Boolean = mergedRoots.any { it.containsUnknownRelevantFile(originalRoots, relevantExtensions) }
+    finder: UnknownFileFinder,
+  ): Boolean = mergedRoots.any { finder.containsUnknownMemo(it) }
 
   /**
    * Returns a map from a restored source root to the number of "votes" - the number of original source files
@@ -202,51 +194,70 @@ private fun sourceRootForParentDir(sourceRoot: SourceRootBuilder.ResolvedSourceR
 }
 
 private fun Map<SourceRootBuilder.ResolvedSourceRoot, Int>.restoreSourceRootFromPackagePrefix(
-  relevantExtensions: List<String>,
+  finder: UnknownFileFinder,
   limit: Path? = null,
-  knownFiles: Set<VirtualFile> = emptySet(),
 ): Map<SourceRootBuilder.ResolvedSourceRoot, Int> = this
-  .map { (sourceRoot, votes) -> sourceRoot.restoreSourceRootFromPackagePrefix(relevantExtensions, limit, knownFiles) to votes }
+  .map { (sourceRoot, votes) -> sourceRoot.restoreSourceRootFromPackagePrefix(finder, limit) to votes }
   .sumUpVotes()
 
 private fun SourceRootBuilder.ResolvedSourceRoot.restoreSourceRootFromPackagePrefix(
-  relevantExtensions: List<String>,
+  finder: UnknownFileFinder,
   limit: Path? = null,
-  knownFiles: Set<VirtualFile> = emptySet(),
 ): SourceRootBuilder.ResolvedSourceRoot {
   val segments = packagePrefix.split('.').toMutableList()
   var sourcePath: Path = this.sourcePath
   while (sourcePath != limit && segments.lastOrNull() == sourcePath.name) {
     sourcePath.parent ?: break
-    if (sourcePath.siblingsContainUnknownRelevantFiles(relevantExtensions, knownFiles)) break
+    if (sourcePath.siblingsContainUnknownRelevantFiles(finder)) break
     sourcePath = sourcePath.parent
     segments.removeLast()
   }
   return copy(sourcePath = sourcePath, packagePrefix = segments.joinToString("."))
 }
 
-private fun Path.siblingsContainUnknownRelevantFiles(
-  relevantExtensions: List<String>,
-  knownFiles: Set<VirtualFile>,
-): Boolean {
+private fun Path.siblingsContainUnknownRelevantFiles(finder: UnknownFileFinder): Boolean {
   val dir = parent.findOrRefreshVirtualFile() ?: return false
   val thisFile = this.findOrRefreshVirtualFile()
-  return dir.children.any { it != thisFile && it.containsUnknownRelevantFile(knownFiles, relevantExtensions) }
+  return dir.children.any { it != thisFile && finder.containsUnknownMemo(it) }
 }
 
-private fun VirtualFile.containsUnknownRelevantFile(knownFiles: Set<VirtualFile>, relevantExtensions: List<String>): Boolean {
-  var found = false
-  VfsUtilCore.visitChildrenRecursively(
-    this,
-    object : VirtualFileVisitor<Unit>(NO_FOLLOW_SYMLINKS) {
-      override fun visitFile(file: VirtualFile): Boolean {
-        if (file.isDirectory || file.extension !in relevantExtensions || file in knownFiles) return true
-        found = true
-        return false
+/**
+ * Memoize file tree traversal, avoids unnecessary recursively traversing file tree,
+ * before time complexity was O(N * M * K), where N is amount of source roots, M
+ * is average prefix length and K is amount of files in subtree.
+ *
+ * This simple memoization reduce that to O(N) where N is size
+ * of some file subtree (hard to actually define what size subtree)
+ *
+ * Before optimization issue was especially apparent for LSP where VFS for
+ * workspace importers is NOT cached and each VFS IO operation touches real file system.
+ */
+private class UnknownFileFinder(
+  private val knownFiles: Set<VirtualFile>,
+  private val relevantExtensions: List<String>,
+) {
+  private val cache = HashMap<VirtualFile, Boolean>()
+
+  fun containsUnknownMemo(file: VirtualFile): Boolean = cache.getOrPut(file) {
+    if (!file.isDirectory) {
+      return@getOrPut file.extension in relevantExtensions && file !in knownFiles
+    }
+    @Suppress("UnsafeVfsRecursion") // symlinks are ignored, so it's safe
+    for (child in file.children ?: return@getOrPut false) {
+      if (child.`is`(VFileProperty.SYMLINK)) {
+        continue
       }
-    },
-  )
-  return found
+      if (child.isDirectory) {
+        if (containsUnknownMemo(child)) {
+          return@getOrPut true
+        }
+      }
+      else if (child.extension in relevantExtensions && child !in knownFiles) {
+        return@getOrPut true
+      }
+    }
+    false
+  }
 }
 
 private fun Path.findOrRefreshVirtualFile(): VirtualFile? {
