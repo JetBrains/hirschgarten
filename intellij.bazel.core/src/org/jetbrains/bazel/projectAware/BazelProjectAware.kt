@@ -8,6 +8,7 @@ import com.intellij.openapi.externalSystem.autoimport.ExternalSystemProjectListe
 import com.intellij.openapi.externalSystem.autoimport.ExternalSystemProjectReloadContext
 import com.intellij.openapi.externalSystem.autoimport.ExternalSystemProjectTracker
 import com.intellij.openapi.externalSystem.autoimport.ExternalSystemRefreshStatus
+import com.intellij.openapi.externalSystem.autoimport.ExternalSystemSettingsFilesModificationContext
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.search.FilenameIndex
@@ -45,6 +46,13 @@ class BazelProjectAware(private val project: Project) : ExternalSystemProjectAwa
         ProjectSyncTask(project).sync(syncScope = SecondPhaseSync, buildProject = false)
       }
     }
+  }
+
+  override fun isIgnoredSettingsFileEvent(path: String, context: ExternalSystemSettingsFilesModificationContext): Boolean {
+    // We use FilenameIndex, which just means "files that have been loaded into VFS", so that means
+    // it's random whether non-indexable files outside the loaded .bazelproject will be in it.
+    // Don't mark the project as needing reload just because a new file appeared in FilenameIndex, but still respect UPDATE events.
+    return context.event == ExternalSystemSettingsFilesModificationContext.Event.CREATE
   }
 
   override fun subscribe(listener: ExternalSystemProjectListener, parentDisposable: Disposable) {
