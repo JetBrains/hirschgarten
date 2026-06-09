@@ -3,6 +3,7 @@ package org.jetbrains.bazel.workspace.importer
 import com.intellij.java.workspace.entities.JavaModuleSettingsEntity
 import com.intellij.java.workspace.entities.javaSettings
 import com.intellij.openapi.roots.DependencyScope
+import com.intellij.platform.util.progress.RawProgressReporter
 import com.intellij.platform.workspace.jps.entities.ModuleDependency
 import com.intellij.platform.workspace.jps.entities.ModuleDependencyItem
 import com.intellij.platform.workspace.jps.entities.ModuleEntity
@@ -24,6 +25,7 @@ import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.commons.RepoMapping
 import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.commons.TargetKind
+import org.jetbrains.bazel.config.BazelJavaBackendBundle
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.magicmetamodel.formatAsModuleName
 import org.jetbrains.bazel.scala.sdk.scalaSdkExtensionExists
@@ -47,6 +49,7 @@ import org.jetbrains.bsp.protocol.utils.extractJvmBuildTarget
 import org.jetbrains.bsp.protocol.utils.extractKotlinBuildTarget
 import org.jetbrains.bsp.protocol.utils.extractScalaBuildTarget
 import java.nio.file.Path
+import java.util.concurrent.atomic.AtomicInteger
 import com.intellij.platform.workspace.jps.entities.DependencyScope as EntitiesDependencyScope
 
 /**
@@ -71,6 +74,7 @@ class ImportContext(
   val entitySource: EntitySource,
   val excludeCompiledSourceCodeInsideJars: Boolean,
   val currentCompiledSourceExcludeEntity: CompiledSourceCodeInsideJarExcludeEntity?,
+  val progressReporter: RawProgressReporter? = null,
 ) {
   val moduleNamesByLabel: Map<Label, String> = targets.associate { it.id to it.id.formatAsModuleName(repoMapping) }
 
@@ -103,6 +107,12 @@ class JvmTargetEntitiesBuilder(private val ctx: ImportContext) {
   private val resolverBatchSize = 512
 
   suspend fun writeAll(storage: MutableEntityStorage): Unit = coroutineScope {
+    val resolvedTargets = AtomicInteger()
+
+    ctx.progressReporter?.details(null)
+    ctx.progressReporter?.text(BazelJavaBackendBundle.message("workspace.java.importer.writing.libraries"))
+    ctx.progressReporter?.fraction(0.0)
+
     // phase 0: write independent libraries
     LibraryBuilder.writeAll(
       libraryItems = ctx.libraries,
@@ -113,16 +123,25 @@ class JvmTargetEntitiesBuilder(private val ctx: ImportContext) {
       storage = storage,
     )
 
+    ctx.progressReporter?.text(BazelJavaBackendBundle.message("workspace.java.importer.resolving.targets", ctx.targets.size))
+    ctx.progressReporter?.fraction(0.0)
+
     // phase 1: resolve every target. no storage writes.
     val dispatcher = Dispatchers.Default.limitedParallelism(resolverParallelism)
-    val plans: List<Pair<RawBuildTarget, TargetPlan>> = ctx.targets.chunked(resolverBatchSize)
+    val batches = ctx.targets.chunked(resolverBatchSize)
+    val plans: List<Pair<RawBuildTarget, TargetPlan>> = batches
       .map { batch ->
         async(dispatcher) {
-          batch.mapNotNull { it to (resolve(it) ?: return@mapNotNull null) }
+          batch.map { it to (resolve(it) ?: return@map null) }
+            .onEach { ctx.progressReporter?.fraction(resolvedTargets.incrementAndGet().toDouble() / ctx.targets.size) }
+            .filterNotNull()
         }
       }
       .awaitAll()
       .flatten()
+
+    ctx.progressReporter?.text(BazelJavaBackendBundle.message("workspace.java.importer.computing.packages"))
+    ctx.progressReporter?.fraction(0.0)
 
     // collect every directory already covered by a real (non-dummy) source root, so dummy package markers
     // don't re-walk them. matches PackageMarkerEntityUpdater's `alreadyVisitedDirectories` initialization.
@@ -134,9 +153,11 @@ class JvmTargetEntitiesBuilder(private val ctx: ImportContext) {
     // phase 2: write entities sequentially.
     // `writtenNames` preserves the original `distinctBy { it.getModuleName() }` semantics: if two targets
     // (or dummies) end up with the same module name, the first one wins and the rest are skipped.
+    ctx.progressReporter?.text(BazelJavaBackendBundle.message("workspace.java.importer.building.model"))
     val writtenNames = mutableSetOf<String>()
-    for ((target, plan) in plans) {
+    plans.forEachIndexed { index, (target, plan) ->
       writeOne(target, plan, packageMarkerBuilder, writtenNames, storage)
+      ctx.progressReporter?.fraction((index + 1).toDouble() / plans.size)
     }
 
     // phase 3: compute excluded sources inside Jars
@@ -146,9 +167,11 @@ class JvmTargetEntitiesBuilder(private val ctx: ImportContext) {
         libraries = ctx.libraries,
         packagePrefixes = ctx.packagePrefixes,
         storage = storage,
-        currentExcludeEntity = ctx.currentCompiledSourceExcludeEntity
+        currentExcludeEntity = ctx.currentCompiledSourceExcludeEntity,
       )
     }
+
+    ctx.progressReporter?.text(null)
   }
 
   /**
