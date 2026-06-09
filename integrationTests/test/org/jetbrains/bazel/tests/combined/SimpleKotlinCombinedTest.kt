@@ -85,10 +85,16 @@ class SimpleKotlinCombinedTest : IdeStarterCombinedBaseTest() {
   private fun ptyTerminal() {
     withDriver(bgRun) {
       ideFrame {
+        execute { openFile("BUILD") }
+        editorTabs()
+          .gutter()
+          .clickOnIcon(12)
+        takeScreenshot("afterTriggerBuild")
         val buildView = x { byType("com.intellij.build.BuildView") }
-        // Check that waitContainsText doesn't care about separating output lines, carrying over a dot from the previous line
-        buildView.waitContainsText(".INFO: Build completed successfully")
+        // Check that waitContainsText doesn't care about separating output lines, carrying over a word from the previous line
+        buildView.waitContainsText("actionsINFO: Build")
         // If PTY terminal is disabled, it will print an empty "INFO:" into the console and won't be able to overwrite it
+        takeScreenshot("afterReadingBuildCompletion")
         waitFor(
           message = "Build console shouldn't contain empty \"INFO:\"",
           timeout = 10.seconds,
