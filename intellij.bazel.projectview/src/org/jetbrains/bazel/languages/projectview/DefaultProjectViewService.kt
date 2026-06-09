@@ -2,12 +2,15 @@ package org.jetbrains.bazel.languages.projectview
 
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.readAction
+import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.application.writeAction
 import com.intellij.openapi.progress.runBlockingMaybeCancellable
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.VirtualFileManager
 import com.intellij.openapi.vfs.findFile
+import com.intellij.openapi.vfs.refreshAndFindVirtualFile
+import com.intellij.openapi.vfs.toNioPathOrNull
 import com.intellij.psi.PsiDocumentManager
 import com.intellij.psi.PsiManager
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -18,6 +21,9 @@ import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.flow.open.ProjectViewFileUtils
 import org.jetbrains.bazel.languages.projectview.psi.ProjectViewPsiFile
 import org.jetbrains.bazel.settings.bazel.bazelProjectSettings
+import java.nio.file.Files
+
+private val log = logger<DefaultProjectViewService>()
 
 @ApiStatus.Internal
 class DefaultProjectViewService(private val project: Project) : ProjectViewService {
@@ -52,12 +58,15 @@ class DefaultProjectViewService(private val project: Project) : ProjectViewServi
 
   private fun findProjectViewPath(): VirtualFile? {
     val pathFromSettings = project.bazelProjectSettings.projectViewPath
+    log.info("DefaultProjectViewService.findProjectViewPath: pathFromSettings=$pathFromSettings, exists=${pathFromSettings?.exists()}")
     if (pathFromSettings != null && pathFromSettings.exists()) {
       return pathFromSettings
     }
     val rootDir = project.rootDir
-    return rootDir.findFile(".bazelproject")
-           ?: rootDir.findFileByRelativePath("${Constants.DOT_BAZELBSP_DIR_NAME}/.bazelproject")
+    val result = rootDir.findFile(".bazelproject")
+                 ?: rootDir.findFileByRelativePath("${Constants.DOT_BAZELBSP_DIR_NAME}/.bazelproject")
+    log.info("DefaultProjectViewService.findProjectViewPath: result=$result")
+    return result
   }
 
   private fun parseProjectView(projectViewPath: VirtualFile): ProjectView {
@@ -67,10 +76,34 @@ class DefaultProjectViewService(private val project: Project) : ProjectViewServi
   }
 
   private suspend fun parseProjectViewAsync(projectViewPath: VirtualFile): ProjectView? {
+    // Ensure import files are loaded into VFS before entering the read action.
+    // resolveFromRootOrRelative (used inside fromProjectViewPsiFile) only searches the
+    // in-memory VFS cache, so on first open of a large monorepo the imported file may
+    // not be present yet, silently causing the import to fail and the sync to fall back
+    // to the whole workspace.
+    preRefreshImports(projectViewPath)
     return readAction {
       val psi = PsiManager.getInstance(project).findFile(projectViewPath) as? ProjectViewPsiFile
                 ?: return@readAction null
       ProjectView.fromProjectViewPsiFile(psi)
+    }
+  }
+
+  private fun preRefreshImports(projectViewPath: VirtualFile) {
+    val workspaceRoot = project.rootDir.toNioPathOrNull() ?: return
+    val content = try {
+      projectViewPath.inputStream.reader().readText()
+    } catch (_: Exception) {
+      return
+    }
+    val importRegex = Regex("""^(?:try_)?import\s+(\S+)""", RegexOption.MULTILINE)
+    for (match in importRegex.findAll(content)) {
+      val importPath = match.groupValues[1]
+      val candidate = workspaceRoot.resolve(importPath).normalize()
+      log.info("DefaultProjectViewService.preRefreshImports: refreshing import candidate=$candidate")
+      if (Files.isRegularFile(candidate)) {
+        candidate.refreshAndFindVirtualFile()
+      }
     }
   }
 
