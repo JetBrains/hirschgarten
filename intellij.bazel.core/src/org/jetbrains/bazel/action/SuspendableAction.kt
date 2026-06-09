@@ -11,6 +11,7 @@ import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.vfs.newvfs.ManagingFS
 import com.intellij.psi.PsiFile
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -25,6 +26,8 @@ internal suspend fun saveAllFiles() {
   withContext(Dispatchers.EDT) {
     FileDocumentManager.getInstance().saveAllDocuments()
   }
+  // Flush VFS before calling Bazel: https://blog.jetbrains.com/platform/2026/06/async-vfs-content-writes-what-plugin-authors-need-to-know/
+  ManagingFS.getInstance().flushPendingUpdatesOrNotify()
 }
 
 @ApiStatus.Internal
