@@ -1,6 +1,5 @@
 package org.jetbrains.bazel.ui.unsynced
 
-import com.intellij.configurationStore.SettingsSavingComponent
 import com.intellij.ide.projectView.PresentationData
 import com.intellij.ide.projectView.ProjectView
 import com.intellij.ide.projectView.ProjectViewNode
@@ -21,7 +20,6 @@ import com.intellij.ui.EditorNotificationProvider
 import com.intellij.ui.JBColor
 import com.intellij.ui.SimpleTextAttributes
 import com.intellij.ui.treeStructure.ProjectViewUpdateCause
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.jetbrains.annotations.ApiStatus
@@ -32,11 +30,11 @@ import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.config.isBazelProject
 import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.coroutines.BazelCoroutineService
-import org.jetbrains.bazel.sync.scope.SecondPhaseSync
 import org.jetbrains.bazel.sync.status.SyncStatusListener
 import org.jetbrains.bazel.sync.status.isSyncInProgress
 import org.jetbrains.bazel.sync.task.ProjectSyncTask
 import org.jetbrains.bazel.target.targetUtils
+import org.jetbrains.bazel.workspace.fileEvents.FileEventQueueController
 import org.jetbrains.jps.model.java.JavaResourceRootType
 import java.awt.Color
 import java.util.function.Function
@@ -115,7 +113,7 @@ internal class UnsyncedSourceFileNodeDecorator(private val project: Project) : P
 }
 
 private fun isApplicableFor(project: Project): Boolean =
-  project.isBazelProject && BazelFeatureFlags.highlightUnsyncedSourceFiles && !project.isSyncInProgress()
+  project.isBazelProject && BazelFeatureFlags.highlightUnsyncedSourceFiles
 
 @ApiStatus.Internal
 fun showAsUnsyncedSourceFile(project: Project, file: VirtualFile): Boolean {
@@ -128,6 +126,9 @@ fun showAsUnsyncedSourceFile(project: Project, file: VirtualFile): Boolean {
   catch (_: UnsupportedOperationException) {
     return false
   }
+
+  if (project.isSyncInProgress()) return false
+  if (!FileEventQueueController.getInstance(project).isIdle()) return false
 
   // TODO: support .bazelignore
   // https://bazel.build/run/bazelrc#bazelignore
@@ -170,6 +171,8 @@ internal class UnsyncedFilesRefresher(private val project: Project) {
       SyncStatusListener.TOPIC,
       object : SyncStatusListener {
         override fun syncStarted() {
+          // Cleanup all "unsynced" presentations early
+          refreshAllFilesPresentation(project)
         }
 
         override fun syncFinished(canceled: Boolean) {

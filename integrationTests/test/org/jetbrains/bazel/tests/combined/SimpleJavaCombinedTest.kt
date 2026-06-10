@@ -186,8 +186,12 @@ class SimpleJavaCombinedTest : IdeStarterCombinedBaseTest() {
   private fun addUnsyncedFileTest() {
     withDriver(bgRun) {
       ideFrame {
+        execute { buildAndSync() }
+        waitForIndicators(10.minutes)
+
         step("Create new java file Simple3Test.java and check if it is unsynced") {
           execute { createJavaFile("Simple3Test", "", "class") }
+          Thread.sleep(5.seconds.inWholeMilliseconds) // Make BazelFileEventsListener do its job
           execute { assertFileKind("Simple3Test.java", FileKindCheck.SHOW_AS_UNSYNCED) }
         }
 

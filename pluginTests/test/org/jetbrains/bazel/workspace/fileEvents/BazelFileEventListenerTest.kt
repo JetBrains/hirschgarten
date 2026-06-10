@@ -29,10 +29,7 @@ import com.intellij.workspaceModel.ide.toPath
 import io.kotest.matchers.booleans.shouldBeFalse
 import io.kotest.matchers.booleans.shouldBeTrue
 import io.kotest.matchers.nulls.shouldNotBeNull
-import io.kotest.matchers.shouldBe
 import kotlinx.coroutines.Deferred
-import kotlinx.coroutines.sync.Mutex
-import kotlinx.coroutines.sync.withLock
 import org.jetbrains.bazel.commons.LanguageClass
 import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.commons.TargetKind
@@ -41,30 +38,46 @@ import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.magicmetamodel.formatAsModuleName
 import org.jetbrains.bazel.project.BazelProjectFixtures.deinitializeBazelProject
-import org.jetbrains.bazel.server.BazelServerConnection
 import org.jetbrains.bazel.server.BazelServerService
 import org.jetbrains.bazel.target.targetUtils
 import org.jetbrains.bazel.test.framework.target.TestBuildTargetFactory
 import org.jetbrains.bazel.workspace.model.test.framework.BuildServerMock
+import org.jetbrains.bazel.workspace.model.test.framework.MockBuildServerService
 import org.jetbrains.bazel.workspace.model.test.framework.WorkspaceModelBaseTest
 import org.jetbrains.bazel.workspacemodel.entities.BazelModuleEntitySource
 import org.jetbrains.bazel.workspacemodel.entities.BazelModuleExtensionEntity
 import org.jetbrains.bazel.workspacemodel.entities.WorkspaceModelTargetLabel
 import org.jetbrains.bazel.workspacemodel.entities.WorkspaceModelTargetLabelList
 import org.jetbrains.bazel.workspacemodel.entities.bazelModuleExtension
-import org.jetbrains.bazel.server.BazelServerFacade
-import org.jetbrains.bsp.protocol.SourceFileCollection
-import org.jetbrains.bsp.protocol.InverseSourcesParams
-import org.jetbrains.bsp.protocol.InverseSourcesResult
 import org.jetbrains.bsp.protocol.PartialBuildTarget
 import org.jetbrains.bsp.protocol.RawBuildTarget
+import org.jetbrains.bsp.protocol.SourceFileCollection
 import org.jetbrains.bsp.protocol.StrictDependencyCheckedType
+import org.jetbrains.bsp.protocol.TaskId
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.nio.file.Path
+import java.util.concurrent.atomic.AtomicInteger
 import kotlin.io.path.Path
 import kotlin.io.path.relativeTo
+import kotlin.test.assertEquals
 import kotlin.time.Duration.Companion.seconds
+
+private const val TARGET1 = "//src:target1"
+private const val TARGET2 = "//src:target2"
+private const val TARGET3 = "//src/package:target3"
+private const val TARGET4 = "//src:target4"
+
+private val inverseSourcesData: Map<String, List<Label>> =
+  mapOf(
+    "src/aaa.java" to listOf(TARGET1, TARGET2),
+    "src/package/aaa.java" to listOf(TARGET3, TARGET2),
+    "src/bbb.java" to listOf(TARGET1, TARGET4),
+    "src/aaa.kt" to listOf(TARGET4),
+
+    "src/dir1/aaa.java" to listOf(TARGET1),
+    "src/dir2/aaa.java" to listOf(TARGET2),
+  ).mapValues { it.value.map { target -> Label.parse(target) } }
 
 class BazelFileEventListenerTest : WorkspaceModelBaseTest() {
   private val target1 = Label.parse(TARGET1)
@@ -72,15 +85,14 @@ class BazelFileEventListenerTest : WorkspaceModelBaseTest() {
   private val target3 = Label.parse(TARGET3)
   private val target4 = Label.parse(TARGET4)
   private val requestor = this
-  private lateinit var inverseSourcesServer: InverseSourcesServer
 
   @BeforeEach
   override fun beforeEach() {
     super.beforeEach()
-    inverseSourcesServer = InverseSourcesServer(projectBasePath)
 
+    BazelFileEventListener.enableListener(false) // disable default listener
 
-    project.replaceService(BazelServerService::class.java, inverseSourcesServer.serverService, disposable)
+    project.replaceService(BazelServerService::class.java, MockBuildServerService(BuildServerMock()), disposable)
     addMockTargetToProject(project)
 
     createModule(target1)
@@ -140,7 +152,6 @@ class BazelFileEventListenerTest : WorkspaceModelBaseTest() {
   fun `source file rename without extension change`() {
     val file = project.rootDir.createDirectory("src").createFile("aaa", "java")
     createEvent(file).process().assertProcessingAndAwait()
-    inverseSourcesServer.called = false // file creation processing is just for technical purposes
 
     file.assertFileBelongsToTargets(
       target1 to true,
@@ -156,9 +167,8 @@ class BazelFileEventListenerTest : WorkspaceModelBaseTest() {
 
     file.assertFileBelongsToTargets(
       target1 to true,
-      target2 to true,
+      target2 to false,
     )
-    inverseSourcesServer.called.shouldBeFalse()
   }
 
   @Test
@@ -176,6 +186,29 @@ class BazelFileEventListenerTest : WorkspaceModelBaseTest() {
     val moveEvent = moveEvent(file, pack)
     runTestWriteAction { file.move(requestor, pack) }
     moveEvent.process().assertProcessingAndAwait()
+    file.assertFileBelongsToTargets(
+      target1 to false,
+      target2 to true,
+    )
+  }
+
+  @Test
+  fun `source file move between modules`() {
+    val src = project.rootDir.createDirectory("src")
+    val sub1 = src.createDirectory("dir1")
+    val sub2 = src.createDirectory("dir2")
+    val file = sub1.createFile("aaa", "java")
+
+    createEvent(file).process().assertProcessingAndAwait()
+    file.assertFileBelongsToTargets(
+      target1 to true,
+      target2 to false,
+    )
+
+    val moveEvent = moveEvent(file, sub2)
+    runTestWriteAction { file.move(requestor, sub2) }
+    moveEvent.process().awaitAndGetResult()
+
     file.assertFileBelongsToTargets(
       target1 to false,
       target2 to true,
@@ -384,42 +417,6 @@ class BazelFileEventListenerTest : WorkspaceModelBaseTest() {
   }
 
   @Test
-  fun `should not invoke Bazel for moves inside a module`() {
-    val root = project.rootDir.createDirectory("root_folder")
-    val sub1 = root.createDirectory("first_subfolder")
-    val sub2 = root.createDirectory("second_subfolder")
-    val file = sub1.createFile("aaa", "java")
-
-    createModule(Label.parse("//module1"), listOf(root))
-
-    val moveEvent = moveEvent(file, sub2)
-    runTestWriteAction { file.move(requestor, sub2) }
-    moveEvent.process().awaitAndGetResult()
-    inverseSourcesServer.called.shouldBeFalse()
-  }
-
-  @Test
-  fun `should not invoke Bazel when files are moved to a folder already in a module`() {
-    val root = project.rootDir.createDirectory("root_folder")
-    val sub1 = root.createDirectory("first_subfolder")
-    val sub2 = root.createDirectory("second_subfolder")
-    val file1 = sub1.createFile("aaa", "java")
-    val file2 = sub1.createFile("bbb", "java")
-
-    createModule(Label.parse("//module1"), listOf(sub1))
-    createModule(Label.parse("//module2"), listOf(sub2))
-
-    val moveEvent1 = moveEvent(file1, sub2)
-    val moveEvent2 = moveEvent(file2, sub2)
-    runTestWriteAction {
-      file1.move(requestor, sub2)
-      file2.move(requestor, sub2)
-    }
-    processEvents(moveEvent1, moveEvent2).awaitAndGetResult()
-    inverseSourcesServer.called.shouldBeFalse()
-  }
-
-  @Test
   fun `should not add file to model if its parent is already there`() {
     val src = project.rootDir.createDirectory("src")
     val srcUrl = src.toVirtualFileUrl(virtualFileUrlManager)
@@ -470,33 +467,10 @@ class BazelFileEventListenerTest : WorkspaceModelBaseTest() {
     val fileUrl = file.toVirtualFileUrl(virtualFileUrlManager)
     createEvent(file).process().assertProcessingAndAwait()
 
-    // Calling Bazel is too slow, we can skip it in this case
-    inverseSourcesServer.called.shouldBeFalse()
-
     // should not be added to target1's model
     doesModuleContainFile(target1, fileUrl).shouldBeFalse()
     // but the rest of the actions should happen normally
     fileUrl.belongsToTarget(target1).shouldBeTrue()
-  }
-
-  @Test
-  fun `should not start a new processing if another is ongoing`() {
-    val blockedServer = BlockedServerSimulator()
-    project.replaceService(BazelServerService::class.java, blockedServer.serverService, disposable)
-
-    val src = project.rootDir.createDirectory("src")
-
-    val fileA = src.createFile("aaa", "java")
-    val eventA = createEvent(fileA).process()
-    Thread.sleep(1_000)
-
-    val fileB = src.createFile("bbb", "java")
-    val eventB = createEvent(fileB).process()
-
-    blockedServer.unblock()
-
-    eventA.assertProcessingAndAwait()
-    eventB.assertNoProcessingHappened()
   }
 
   private fun addMockTargetToProject(project: Project) {
@@ -576,26 +550,38 @@ class BazelFileEventListenerTest : WorkspaceModelBaseTest() {
 
   private fun VFileEvent.process(): Deferred<Boolean>? = processEvents(this)
 
+  private val invertedSourcesQueryCount = AtomicInteger(0)
+
   private fun processEvents(vararg events: VFileEvent): Deferred<Boolean>? =
     object : BazelFileEventListener() {
-      override val allowBazelQuery: Boolean = true
+      override suspend fun invertedSourcesQuery(
+        project: Project,
+        taskId: TaskId,
+        files: Collection<PathAndVFile>,
+      ): Map<Path, List<Label>> {
+        invertedSourcesQueryCount.incrementAndGet()
+        return files.map { it.path }.associateWith {
+          inverseSourcesData.getOrDefault(it.relativeTo(projectBasePath).toString(), emptyList())
+        }
+      }
     }.process(events.toList())[project.locationHash]
 
   private fun VirtualFile.assertFileBelongsToTargets(vararg expectedBelongingStatus: Pair<Label, Boolean>) {
-    this.toVirtualFileUrl(virtualFileUrlManager).assertFileBelongsToTargets(*expectedBelongingStatus)
-  }
+    val vFile = this
+    val vfUrl = vFile.toVirtualFileUrl(virtualFileUrlManager)
+    val relativePath = Path.of(vFile.path).relativeTo(projectBasePath)
 
-  private fun VirtualFileUrl.assertFileBelongsToTargets(vararg expectedBelongingStatus: Pair<Label, Boolean>) {
-    expectedBelongingStatus.forEach { (target, shouldBeAdded) ->
-      // separate variables help with debugging
-      val projectModel = doesModuleContainFile(target, this)
-      val ourModel = this.belongsToTarget(target)
-      projectModel.shouldBe(shouldBeAdded)
-      ourModel.shouldBe(shouldBeAdded)
+    for ((target, shouldBeAdded) in expectedBelongingStatus) {
+      val projectModel = doesModuleContainFile(target, vfUrl)
+      assertEquals(shouldBeAdded, projectModel, "File $relativePath in project model for $target")
+
+      val ourModel = vfUrl.belongsToTarget(target)
+      assertEquals(shouldBeAdded, ourModel, "File $relativePath in $target")
     }
   }
 
-  private fun VirtualFileUrl.belongsToTarget(target: Label): Boolean = project.targetUtils.getTargetsForPath(this.toPath()).contains(target)
+  private fun VirtualFileUrl.belongsToTarget(target: Label): Boolean =
+    project.targetUtils.getTargetsForPath(this.toPath()).contains(target)
 
   private fun createModule(label: Label, contentRootFiles: List<VirtualFile> = emptyList()) {
     val moduleName = label.formatAsModuleName(project)
@@ -636,60 +622,6 @@ class BazelFileEventListenerTest : WorkspaceModelBaseTest() {
   }
 }
 
-private class InverseSourcesServer(private val projectBasePath: Path) : BuildServerMock() {
-  var called: Boolean = false
-
-  private val inverseSourcesData =
-    mapOf(
-      "src/aaa.java" to listOf(TARGET1, TARGET2),
-      "src/package/aaa.java" to listOf(TARGET3, TARGET2),
-      "src/bbb.java" to listOf(TARGET1, TARGET4),
-      "src/aaa.kt" to listOf(TARGET4),
-    ).mapValues { it.value.map { target -> Label.parse(target) } }
-
-  private val connection =
-    object : BazelServerConnection {
-      override suspend fun <T> runWithServer(task: suspend (BazelServerFacade) -> T): T = task(this@InverseSourcesServer)
-    }
-
-  val serverService =
-    object : BazelServerService {
-      override val connection: BazelServerConnection = this@InverseSourcesServer.connection
-    }
-
-  override suspend fun buildTargetInverseSources(inverseSourcesParams: InverseSourcesParams): InverseSourcesResult {
-    called = true
-    val results = inverseSourcesParams.files.associateWith {
-      inverseSourcesData.getOrDefault(it.relativeTo(projectBasePath).toString(), emptyList())
-    }
-    return InverseSourcesResult(results)
-  }
-}
-
-/** Not supposed to provide any valuable information - only simulates Bazel being blocked */
-private class BlockedServerSimulator : BuildServerMock() {
-  private val lock = Mutex(true)
-
-  private val connection =
-    object : BazelServerConnection {
-      override suspend fun <T> runWithServer(task: suspend (BazelServerFacade) -> T): T = task(this@BlockedServerSimulator)
-    }
-
-  val serverService =
-    object : BazelServerService {
-      override val connection: BazelServerConnection = this@BlockedServerSimulator.connection
-    }
-
-  override suspend fun buildTargetInverseSources(inverseSourcesParams: InverseSourcesParams): InverseSourcesResult =
-    lock.withLock {
-      InverseSourcesResult(emptyMap())
-    }
-
-  fun unblock() {
-    lock.unlock()
-  }
-}
-
 private fun Deferred<Boolean>?.assertProcessingAndAwait() {
   val processingHappened = awaitAndGetResult()
   processingHappened.shouldNotBeNull()
@@ -703,8 +635,3 @@ private fun Deferred<Boolean>?.assertNoProcessingHappened() {
 
 private fun Deferred<Boolean>?.awaitAndGetResult(timeoutSeconds: Int = 15): Boolean? =
   timeoutRunBlocking(timeout=timeoutSeconds.seconds) { this@awaitAndGetResult?.await() }
-
-private const val TARGET1 = "//src:target1"
-private const val TARGET2 = "//src:target2"
-private const val TARGET3 = "//src/package:target3"
-private const val TARGET4 = "//src:target4"

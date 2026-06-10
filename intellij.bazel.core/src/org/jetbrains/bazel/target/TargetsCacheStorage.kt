@@ -124,7 +124,7 @@ class TargetsCacheStorage(
       targetToExecutableTargets.get(computeLabelHash(it))
     }?.mapNotNull { labelToTargetInfo.get(it)?.id }
 
-  fun addFileToTarget(file: Path, targets: List<Label>) {
+  fun addFileToTarget(file: Path, targets: Collection<Label>) {
     fileToTargets.put(fileToKey(file), targets.map { computeLabelHash(it as ResolvedLabel) })
   }
 

@@ -3,16 +3,18 @@ package org.jetbrains.bazel.workspace.fileEvents
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
+import org.jetbrains.annotations.ApiStatus
 import java.util.concurrent.atomic.AtomicBoolean
 
 @Service(Service.Level.PROJECT)
-internal class FileEventQueueController {
+@ApiStatus.Internal
+class FileEventQueueController {
   // synchronized collections do not guarantee thread-safety on clear(), hence manual synchronization
   private val eventQueue = ArrayList<List<SimplifiedFileEvent>>()
   private val processingBatch = AtomicBoolean(false)
 
   /** @return `true` if caller should start processing events, `false` otherwise */
-  fun addEvents(events: List<SimplifiedFileEvent>): Boolean {
+  internal fun addEvents(events: List<SimplifiedFileEvent>): Boolean {
     synchronized(this) {
       val wasEmpty = eventQueue.isEmpty()
       eventQueue.add(events)
@@ -21,7 +23,7 @@ internal class FileEventQueueController {
   }
 
   /** @return `true` if there was another batch to process, `false` otherwise */
-  suspend fun withNextBatch(body: suspend (List<SimplifiedFileEvent>) -> Unit): Boolean {
+  internal suspend fun withNextBatch(body: suspend (List<SimplifiedFileEvent>) -> Unit): Boolean {
     val batch =
       synchronized(this) {
         val batch = eventQueue.flatten().takeIf { it.isNotEmpty() }
@@ -48,6 +50,12 @@ internal class FileEventQueueController {
   fun clearAllEvents() {
     synchronized(this) {
       eventQueue.clear()
+    }
+  }
+
+  fun isIdle(): Boolean {
+    return synchronized(this) {
+      !processingBatch.get() && eventQueue.isEmpty()
     }
   }
 

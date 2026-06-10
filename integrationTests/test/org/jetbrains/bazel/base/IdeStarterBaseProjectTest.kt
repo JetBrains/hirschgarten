@@ -369,8 +369,8 @@ fun <T : CommandChain> T.navigateToFile(
     .assertCurrentFile(expectedFilename)
     .assertCaretPosition(expectedCaretLine, expectedCaretColumn)
 
-fun IDETestContext.withBazelFeatureFlag(flag: String) = this.applyVMOptionsPatch {
-  addSystemProperty(flag, "true")
+fun IDETestContext.withBazelFeatureFlag(flag: String, value: Boolean = true) = this.applyVMOptionsPatch {
+  addSystemProperty(flag, if (value) "true" else "false")
 }
 
 fun Driver.singleProjectOrNull(): Project? = service<ProjectManager>(RdTarget.DEFAULT)

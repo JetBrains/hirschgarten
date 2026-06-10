@@ -126,7 +126,7 @@ class TargetUtils(private val project: Project, private val coroutineScope: Coro
     }
   }
 
-  fun addFileToTargetIdEntry(file: Path, targets: List<Label>) {
+  fun addFileToTargetIdEntry(file: Path, targets: Collection<Label>) {
     db.addFileToTarget(file, targets)
   }
 

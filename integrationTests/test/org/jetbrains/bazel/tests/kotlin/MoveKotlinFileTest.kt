@@ -10,12 +10,16 @@ import com.intellij.ide.starter.driver.engine.runIdeWithDriver
 import com.intellij.openapi.ui.playback.commands.AbstractCommand.CMD_PREFIX
 import com.intellij.tools.ide.performanceTesting.commands.CommandChain
 import com.intellij.tools.ide.performanceTesting.commands.saveDocumentsAndSettings
+import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.data.IdeaBazelCases
 import org.jetbrains.bazel.ideStarter.IdeStarterBaseProjectTest
 import org.jetbrains.bazel.ideStarter.assertFileContentsEqual
+import org.jetbrains.bazel.ideStarter.assertFileKind
 import org.jetbrains.bazel.ideStarter.checkIdeaLogForExceptions
 import org.jetbrains.bazel.ideStarter.execute
 import org.jetbrains.bazel.ideStarter.syncBazelProject
+import org.jetbrains.bazel.ideStarter.withBazelFeatureFlag
+import org.jetbrains.bazel.performanceImpl.FileKindCheck
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import kotlin.time.Duration.Companion.minutes
@@ -29,12 +33,12 @@ import kotlin.time.Duration.Companion.seconds
 class MoveKotlinFileTest : IdeStarterBaseProjectTest() {
 
   @Test
-  @Disabled("broken by external change, enable when fixed")
   fun `move Kotlin file to subpackage should update imports`() {
     val context = createContext("MoveFilesTest", IdeaBazelCases.MoveKotlinFile)
       .applyVMOptionsPatch {
         skipRefactoringDialogs()
       }
+      .withBazelFeatureFlag(BazelFeatureFlags.MERGE_SOURCE_ROOTS, false)
     context
       .runIdeWithDriver(runTimeout = timeout).useDriverAndCloseIde {
         ideFrame {
@@ -65,13 +69,18 @@ class MoveKotlinFileTest : IdeStarterBaseProjectTest() {
           execute { saveDocumentsAndSettings() }
 
           step("Check that Class2.kt is correct after move") {
-            execute { assertFileContentsEqual("expected/Class2.kt", "subpackage/Class2.kt") }
+            execute {
+              assertFileContentsEqual("expected/Class2.kt", "subpackage/Class2.kt")
+              assertFileKind("subpackage/Class2.kt", FileKindCheck.SHOW_AS_UNSYNCED)
+            }
           }
 
           step("Check that Class1.java is correct after move") {
-            execute { assertFileContentsEqual("expected/Class1.java", "Class1.java") }
+            execute {
+              assertFileContentsEqual("expected/Class1.java", "Class1.java")
+              assertFileKind("Class1.java", FileKindCheck.IN_WSM, FileKindCheck.IN_TARGETS)
+            }
           }
-
         }
       }
     checkIdeaLogForExceptions(context)

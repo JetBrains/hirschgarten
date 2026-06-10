@@ -1,5 +1,6 @@
 package org.jetbrains.bazel.workspace.fileEvents
 
+import com.intellij.openapi.project.Project
 import com.intellij.openapi.roots.ProjectFileIndex
 import com.intellij.openapi.util.io.toNioPathOrNull
 import com.intellij.openapi.vfs.LocalFileSystem
@@ -73,14 +74,19 @@ internal sealed class SimplifiedFileEvent private constructor(
             null
           }
         }
+
         else -> null
       }?.takeIf { it.shouldBeProcessed() }
   }
-  class Create(originalEvent: VFileCreateEvent)
-    : SimplifiedFileEvent(fileAdded = originalEvent.path, newVirtualFile = originalEvent.file)
+
+  class Create(path: String, vFile: VirtualFile?)
+    : SimplifiedFileEvent(fileAdded = path, newVirtualFile = vFile) {
+    constructor(originalEvent: VFileCreateEvent): this(originalEvent.path, originalEvent.file)
+  }
 
   class CreateDirectory(originalEvent: VFileCreateEvent) :
-    SimplifiedFileEvent(fileAdded = originalEvent.path, newVirtualFile = originalEvent.file)
+    SimplifiedFileEvent(fileAdded = originalEvent.path, newVirtualFile = originalEvent.file) {
+  }
 
   class Copy(originalEvent: VFileCopyEvent)
     : SimplifiedFileEvent(fileAdded = originalEvent.path, newVirtualFile = originalEvent.findCreatedFile())
@@ -92,6 +98,5 @@ internal sealed class SimplifiedFileEvent private constructor(
 
   class Rename(originalEvent: VFilePropertyChangeEvent)
     : SimplifiedFileEvent(fileRemoved = originalEvent.oldPath, fileAdded = originalEvent.newPath, newVirtualFile = originalEvent.file) {
-    val extensionChanged = fileRemoved?.extension.orEmpty() != fileAdded?.extension.orEmpty()
   }
 }
