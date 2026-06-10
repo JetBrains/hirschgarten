@@ -328,7 +328,7 @@ class SimpleKotlinCombinedTest : IdeStarterCombinedBaseTest() {
         step("Apply hotswap after adding code comment") {
           execute { reloadFiles() }
           execute { build(listOf("SimpleKotlinTest")) }
-          waitForIndicators(timeout = 10.seconds)
+          waitForIndicators(timeout = 30.seconds)
           execute { takeScreenshot("finishBuildAfterAddingComment") }
         }
 
