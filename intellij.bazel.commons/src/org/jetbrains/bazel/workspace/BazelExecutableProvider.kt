@@ -19,7 +19,7 @@ interface BazelExecutableProvider {
           return executable
         }
       }
-      error("Failed to find bazel executable")
+      error("Failed to find bazel executable: 'bazel'/'bazelisk' is not on PATH and bazelisk could not be downloaded (see idea.log)")
     }
   }
 }

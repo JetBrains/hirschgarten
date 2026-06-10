@@ -25,6 +25,8 @@ import kotlin.io.path.readText
 internal class BazeliskDownloadingBazelExecutableProvider : BazelExecutableProvider {
   companion object {
     private val log = logger<BazeliskDownloadingBazelExecutableProvider>()
+    private const val MAX_DOWNLOAD_ATTEMPTS = 3
+    private const val RETRY_BACKOFF_MS = 2000L
   }
 
   override suspend fun computeBazelExecutable(project: Project): Path? {
@@ -42,7 +44,7 @@ internal class BazeliskDownloadingBazelExecutableProvider : BazelExecutableProvi
     }
 
     // If not found, try to download any version of bazelisk
-    return downloadBazelisk(bazeliskVersion = null) ?: Path.of("bazel")
+    return downloadBazelisk(bazeliskVersion = null)
   }
 
   /**
@@ -87,7 +89,7 @@ internal class BazeliskDownloadingBazelExecutableProvider : BazelExecutableProvi
             indicator.text = BazelBazeliskBundle.message("bazel.project.downloading.bazelisk.binary")
             indicator.isIndeterminate = false
 
-            HttpRequests.request(downloadUrl).saveToFile(bazeliskFile, indicator)
+            downloadWithRetry(downloadUrl, bazeliskFile, indicator)
 
             indicator.text = BazelBazeliskBundle.message("bazel.project.downloading.bazelisk.setting_permissions")
             NioFiles.setExecutable(bazeliskFile)
@@ -102,6 +104,27 @@ internal class BazeliskDownloadingBazelExecutableProvider : BazelExecutableProvi
       log.error("Failed to download bazelisk", e)
       Files.deleteIfExists(bazeliskFile)
       return null
+    }
+  }
+
+  private fun downloadWithRetry(
+    downloadUrl: String,
+    bazeliskFile: Path,
+    indicator: ProgressIndicator,
+  ) {
+    var attempt = 1
+    while (true) {
+      try {
+        HttpRequests.request(downloadUrl).saveToFile(bazeliskFile, indicator)
+        return
+      }
+      catch (e: IOException) {
+        if (attempt >= MAX_DOWNLOAD_ATTEMPTS) throw e
+        log.warn("Attempt $attempt of $MAX_DOWNLOAD_ATTEMPTS to download bazelisk from $downloadUrl failed, retrying", e)
+        Files.deleteIfExists(bazeliskFile)
+        Thread.sleep(attempt * RETRY_BACKOFF_MS)
+        attempt++
+      }
     }
   }
 
