@@ -52,7 +52,7 @@ internal class FilterActionGroup(private val model: BazelTargetsPanelModel) :
     Toggleable.setSelected(e.presentation, model.targetFilter != TargetFilter.OFF)
   }
 
-  override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.EDT
+  override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.BGT
 }
 
 private class FilterChangeAction(
@@ -69,5 +69,5 @@ private class FilterChangeAction(
     }
   }
 
-  override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.EDT
+  override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.BGT
 }

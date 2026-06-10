@@ -15,6 +15,7 @@ internal class BazelTargetsPanelModel(private val updateRequests: MutableSharedF
       updateTargets()
     }
 
+  @Volatile
   internal var targetFilter = TargetFilter.OFF
     set(value) {
       field = value
