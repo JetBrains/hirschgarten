@@ -67,6 +67,7 @@ internal class PythonDebugCommandLineState(private val environment: ExecutionEnv
         as PythonRunConfiguration // should always succeed; that's what PythonConfigurationFactory produces
     return templateConfig.also {
       it.scriptName = debugInfo.pythonFile.toAbsolutePath().toString()
+      it.workingDirectory = debugInfo.workingDirectory.toAbsolutePath().toString()
       it.envs = debugInfo.environmentVariables
       it.sdk = getSdkForTarget(environment.project, target)
     }
