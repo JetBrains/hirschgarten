@@ -131,7 +131,9 @@ class FastBuildTest : IdeStarterBaseProjectTest() {
               reloadButton.click()
             }
           }
-          waitForIndicators(30.seconds)
+          // compile() above is async; classic hotswap runs a full Bazel rebuild under a progress indicator,
+          // and waitForIndicators(waitSmartLongEnough) needs 10 consecutive quiet seconds on top of the build time
+          waitForIndicators(2.minutes)
 
           step("Resume program") {
             waitForBazelDebuggerUiReady().resumeButton.click()
