@@ -1,8 +1,7 @@
 package org.jetbrains.bazel.languages.projectview
 
-import com.intellij.openapi.application.ApplicationManager
+import com.intellij.openapi.application.edtWriteAction
 import com.intellij.openapi.application.readAction
-import com.intellij.openapi.application.writeAction
 import com.intellij.openapi.progress.runBlockingMaybeCancellable
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
@@ -23,8 +22,6 @@ import org.jetbrains.bazel.settings.bazel.bazelProjectSettings
 class DefaultProjectViewService(private val project: Project) : ProjectViewService {
 
   private val _projectViewState = MutableStateFlow(ProjectView.EMPTY)
-
-  override val allowExternalProjectViewModification: Boolean = true
 
   override val projectViewState: StateFlow<ProjectView>
     get() = _projectViewState
@@ -95,7 +92,7 @@ class DefaultProjectViewService(private val project: Project) : ProjectViewServi
     val projectViewPath = findProjectViewPath() ?: return
     val imports = parseProjectViewAsync(projectViewPath)?.imports ?: emptyList()
 
-    writeAction {
+    edtWriteAction {
       PsiDocumentManager.getInstance(project)
         .reparseFiles(imports + projectViewPath, false)
     }

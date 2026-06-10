@@ -6,7 +6,6 @@ import org.jetbrains.annotations.ApiStatus
 
 @ApiStatus.Internal
 interface ProjectViewService {
-  val allowExternalProjectViewModification: Boolean
   val projectViewState: StateFlow<ProjectView>
 
   suspend fun forceReparseCurrentProjectViewFiles()

@@ -12,11 +12,7 @@ import org.jetbrains.bazel.sync.ProjectPreSyncHook
 internal class RegenerateProjectViewFileContentPreSyncHook : ProjectPreSyncHook {
   override suspend fun onPreSync(environment: ProjectPreSyncHook.ProjectPreSyncHookEnvironment) {
     val project = environment.project
-
     val projectViewService = project.serviceAsync<ProjectViewService>()
-    if (!projectViewService.allowExternalProjectViewModification) {
-      return
-    }
 
     var projectViewPath = project.bazelProjectSettings.projectViewPath
     if (projectViewPath?.isFile == true) {
