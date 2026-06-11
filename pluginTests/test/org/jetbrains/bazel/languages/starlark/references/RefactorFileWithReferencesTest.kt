@@ -496,6 +496,44 @@ internal class RefactorFileWithReferencesTest : BasePlatformTestCase()  {
   }
 
 
+  @Test
+  fun `Move File should not change glob pattern in BUILD file`() {
+    myFixture.addFileToProject("MODULE.bazel", "")
+    myFixture.addFileToProject("BUILD", "")
+    myFixture.addFileToProject(
+      "com/example/A.kt",
+      """
+        package com.example
+        class A
+        """.trimIndent(),
+    )
+    myFixture.addFileToProject(
+      "com/example/BUILD",
+      """
+      kt_jvm_test(
+          name = "test_example",
+          srcs = glob(["*.kt"]),
+          testonly = True,
+      )
+      """.trimIndent(),
+    )
+
+    myFixture.moveFile("com/example/A.kt", "com")
+
+    myFixture.checkResult(
+      "com/example/BUILD",
+      """
+      kt_jvm_test(
+          name = "test_example",
+          srcs = glob(["*.kt"]),
+          testonly = True,
+      )
+      """.trimIndent(),
+      true,
+    )
+  }
+
+
   // For Move File tests we need to set up project repo mappings
   private fun setupRepoMappings() {
     val tempRoot = myFixture.tempDirFixture.getFile(".")!!
