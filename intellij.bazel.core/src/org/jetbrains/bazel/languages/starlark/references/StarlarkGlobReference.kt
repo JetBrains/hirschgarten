@@ -45,7 +45,7 @@ class StarlarkGlobReference(element: StarlarkGlobExpression) :
     return if (vf.isDirectory) manager.findDirectory(vf) else manager.findFile(vf)
   }
 
-  override fun handleElementRename(newElementName: String): PsiElement? {
-    return myElement
-  }
+  override fun handleElementRename(newElementName: String): PsiElement? = myElement
+
+  override fun bindToElement(element: PsiElement): PsiElement = myElement
 }
