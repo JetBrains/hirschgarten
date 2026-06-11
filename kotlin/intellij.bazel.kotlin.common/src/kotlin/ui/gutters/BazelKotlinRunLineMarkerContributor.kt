@@ -11,7 +11,7 @@ import org.jetbrains.kotlin.psi.KtNamedFunction
 import org.jetbrains.kotlin.psi.psiUtil.getNonStrictParentOfType
 
 @ApiStatus.Internal
-class BazelKotlinRunLineMarkerContributor : BazelJavaRunLineMarkerContributor() {
+open class BazelKotlinRunLineMarkerContributor : BazelJavaRunLineMarkerContributor() {
   override fun PsiNameIdentifierOwner.getClassName(): String? = this.getNonStrictParentOfType<KtClassOrObject>()?.name
 
   override fun PsiNameIdentifierOwner.getFullyQualifiedClassName(): String? {

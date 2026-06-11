@@ -14,13 +14,15 @@ import kotlinx.coroutines.withContext
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.action.SuspendableAction
 import org.jetbrains.bazel.config.BazelPluginBundle
+import org.jetbrains.bazel.config.isBazelProject
 
 @ApiStatus.Internal
 abstract class BaseRunnerAction(
+  project: Project,
   private val executor: Executor,
   protected val configurationName: String,
 ) : SuspendableAction(
-  text = executor.getStartActionText(configurationName),
+  text = getActionText(project, executor, configurationName),
   icon = executor.icon,
 ) {
   protected abstract suspend fun getRunnerSettings(): RunnerAndConfigurationSettings?
@@ -49,6 +51,20 @@ abstract class BaseRunnerAction(
     } catch (e: Exception) {
       withContext(Dispatchers.EDT) {
         Messages.showErrorDialog(project, e.toString(), BazelPluginBundle.message("widget.side.menu.error.title"))
+      }
+    }
+  }
+
+  companion object {
+    private fun getActionText(project: Project, executor: Executor, configurationName: String): String {
+      val normalText = executor.getStartActionText(configurationName)
+      return if (project.isBazelProject) {
+        // E.g.: Debug `//src:binary`
+        normalText
+      }
+      else {
+        // Ultimate monorepo opened via Monorepo DevKit: add a clarifying text, e.g.: Debug `src:binary` (Bazel)
+        "$normalText (Bazel)"
       }
     }
   }

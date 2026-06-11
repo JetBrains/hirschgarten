@@ -23,7 +23,7 @@ abstract class BazelRunnerAction(
   executor: Executor,
   configurationName: String,
   private val callerPsiElement: PsiElement? = null,
-) : BaseRunnerAction(executor, configurationName) {
+) : BaseRunnerAction(project, executor, configurationName) {
 
   private fun getConfigurationType(): ConfigurationType = runConfigurationType<BazelRunConfigurationType>()
 
@@ -51,4 +51,7 @@ abstract class BazelRunnerAction(
     }
     return settings
   }
+
+  override val enabledOnlyInBazelProjects: Boolean
+    get() = false
 }

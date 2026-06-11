@@ -3,7 +3,6 @@ package org.jetbrains.bazel.run.test
 import com.intellij.openapi.project.Project
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.annotations.VisibleForTesting
-import org.jetbrains.bazel.config.isBazelProject
 import org.jetbrains.bazel.languages.projectview.projectView
 import org.jetbrains.bazel.languages.projectview.useJetBrainsTestRunner
 import org.jetbrains.bazel.run.BazelRunConfigurationState
@@ -24,7 +23,6 @@ fun Project.useJetBrainsTestRunner(): Boolean {
   if (forceDisableJetBrainsTestRunner) {
     return false
   }
-  if (!isBazelProject) return false
   return projectView().useJetBrainsTestRunner
 }
 
