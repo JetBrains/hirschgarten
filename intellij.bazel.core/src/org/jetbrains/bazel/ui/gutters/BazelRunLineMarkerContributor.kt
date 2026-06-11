@@ -7,26 +7,35 @@ import com.intellij.openapi.actionSystem.DefaultActionGroup
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElement
 import com.intellij.psi.impl.source.tree.LeafPsiElement
+import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.config.isBazelProject
 import org.jetbrains.bazel.target.targetUtils
 import org.jetbrains.bazel.ui.widgets.tool.window.utils.fillWithEligibleActions
-import org.jetbrains.bsp.protocol.BuildTarget
+import org.jetbrains.bsp.protocol.ExecutableTarget
 import javax.swing.Icon
 
-private class BazelRunLineMarkerInfo(text: String, icon: Icon?, actions: List<AnAction>) :
+private class BazelRunLineMarkerInfo(
+  text: String,
+  icon: Icon?,
+  actions: List<AnAction>,
+  private val shouldReplaceOtherMarkers: Boolean,
+) :
   RunLineMarkerContributor.Info(icon, actions.toTypedArray(), { text }) {
-  override fun shouldReplace(other: RunLineMarkerContributor.Info): Boolean = true
+  override fun shouldReplace(other: RunLineMarkerContributor.Info): Boolean = shouldReplaceOtherMarkers
 }
 
 abstract class BazelRunLineMarkerContributor : RunLineMarkerContributor() {
   override fun getInfo(element: PsiElement): Info? =
     // gutter icons are only allowed to be added to leaf elements
-    if (element is LeafPsiElement && element.project.isBazelProject && element.shouldAddMarker()) {
+    if (element is LeafPsiElement && isProjectApplicable(element.project) && element.shouldAddMarker()) {
       element.calculateLineMarkerInfo()
     } else {
       null
     }
+
+  @ApiStatus.Internal
+  protected open fun isProjectApplicable(project: Project): Boolean = project.isBazelProject
 
   override fun getSlowInfo(element: PsiElement): Info? = null
 
@@ -45,27 +54,31 @@ abstract class BazelRunLineMarkerContributor : RunLineMarkerContributor() {
    */
   open fun getExtraProgramArguments(element: PsiElement): List<String> = emptyList()
 
-  private fun PsiElement.calculateLineMarkerInfo(): Info? =
-    containingFile.virtualFile?.let { url ->
-      val targetUtils = project.targetUtils
-      val normalTargets = targetUtils.getTargetsForFile(url)
-        .mapNotNull { targetUtils.getBuildTargetForLabel(it) }
-      val executableTargets = targetUtils.getExecutableTargetsForFile(url)
-        .mapNotNull { targetUtils.getBuildTargetForLabel(it) }
-      val targets = (normalTargets + executableTargets)
-        .distinctBy { it.id }
-      calculateLineMarkerInfo(
-        project = project,
-        targetInfos = targets,
-        hasTestTarget = targets.any { it.kind.ruleType == RuleType.TEST },
-        testExecutableArguments = getExtraProgramArguments(this),
-        psiElement = this,
-      )
-    }
+  private fun PsiElement.calculateLineMarkerInfo(): Info? {
+    val targets = getTargets(this)
+    return calculateLineMarkerInfo(
+      project = project,
+      targetInfos = targets,
+      hasTestTarget = targets.any { it.kind.ruleType == RuleType.TEST },
+      testExecutableArguments = getExtraProgramArguments(this),
+      psiElement = this,
+    )
+  }
+
+  @ApiStatus.Internal
+  open fun getTargets(element: PsiElement): List<ExecutableTarget> {
+    val targetUtils = element.project.targetUtils
+    val containingFile = element.containingFile?.virtualFile ?: return emptyList()
+    val normalTargets = targetUtils.getTargetsForFile(containingFile)
+      .mapNotNull { targetUtils.getBuildTargetForLabel(it) }
+    val executableTargets = targetUtils.getExecutableTargetsForFile(containingFile)
+      .mapNotNull { targetUtils.getBuildTargetForLabel(it) }
+    return (normalTargets + executableTargets).distinctBy { it.id }
+  }
 
   private fun calculateLineMarkerInfo(
     project: Project,
-    targetInfos: List<BuildTarget>,
+    targetInfos: List<ExecutableTarget>,
     hasTestTarget: Boolean,
     testExecutableArguments: List<String>,
     psiElement: PsiElement,
@@ -80,11 +93,12 @@ abstract class BazelRunLineMarkerContributor : RunLineMarkerContributor() {
           text = "Run",
           icon = getRunLineMarkerIcon(psiElement),
           actions = it,
+          shouldReplaceOtherMarkers = project.isBazelProject,
         )
       }
   }
 
-  private fun BuildTarget?.calculateEligibleActions(
+  private fun ExecutableTarget?.calculateEligibleActions(
     project: Project,
     singleTestFilter: String?,
     testExecutableArguments: List<String>,

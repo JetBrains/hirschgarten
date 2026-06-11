@@ -61,10 +61,14 @@ abstract class SuspendableAction(text: () -> String, icon: Icon? = null) :
     }
   }
 
+  protected open val enabledOnlyInBazelProjects: Boolean
+    get() = true
+
   private fun doUpdate(project: Project, e: AnActionEvent) {
     if (TrustedProjects.isProjectTrusted(project)) {
-      e.presentation.isVisible = project.isBazelProject
-      if (project.isBazelProject) {
+      val enabled = project.isBazelProject || !enabledOnlyInBazelProjects
+      e.presentation.isVisible = enabled
+      if (enabled) {
         update(project, e)
       }
     } else {

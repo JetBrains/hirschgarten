@@ -1,0 +1,84 @@
+package com.intellij.bazel.devkit.monorepo.run
+
+import com.intellij.monorepo.devkit.bazel.BazelTargetsInfoCache
+import com.intellij.monorepo.devkit.bazel.useBazelCompile
+import com.intellij.openapi.diagnostic.fileLogger
+import com.intellij.openapi.project.Project
+import com.intellij.openapi.roots.ProjectFileIndex
+import com.intellij.openapi.startup.ProjectActivity
+import com.intellij.psi.PsiElement
+import org.jetbrains.bazel.config.isBazelProject
+import org.jetbrains.bazel.config.rootDir
+import org.jetbrains.bazel.java.ui.gutters.BazelJavaRunLineMarkerContributor
+import org.jetbrains.bazel.kotlin.ui.gutters.BazelKotlinRunLineMarkerContributor
+import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.languages.projectview.ProjectViewService
+import org.jetbrains.bazel.settings.bazel.bazelProjectSettings
+import org.jetbrains.bazel.sync.workspace.targetKind.TargetKindService
+import org.jetbrains.bazel.ui.gutters.NonImportedExecutableTarget
+import org.jetbrains.bsp.protocol.ExecutableTarget
+
+private val LOG = fileLogger()
+
+internal class MonorepoBazelJavaRunLineMarkerContributor : BazelJavaRunLineMarkerContributor() {
+  override fun isProjectApplicable(project: Project): Boolean = MonorepoRunLineMarkerContributorUtil.isProjectApplicable(project)
+
+  override fun getTargets(element: PsiElement): List<ExecutableTarget> = MonorepoRunLineMarkerContributorUtil.getTargets(element)
+}
+
+internal class MonorepoBazelKotlinRunLineMarkerContributor : BazelKotlinRunLineMarkerContributor() {
+  override fun isProjectApplicable(project: Project): Boolean = MonorepoRunLineMarkerContributorUtil.isProjectApplicable(project)
+
+  override fun getTargets(element: PsiElement): List<ExecutableTarget> = MonorepoRunLineMarkerContributorUtil.getTargets(element)
+}
+
+internal class MonorepoProjectViewStartupActivity : ProjectActivity {
+  override suspend fun execute(project: Project) {
+    if (!MonorepoRunLineMarkerContributorUtil.isProjectApplicable(project)) return
+
+    // Set the project view. This is needed for these fields:
+    // use_jetbrains_test_runner: true
+    // run_config_run_with_bazel: false
+    val rootDir = project.rootDir
+    val projectViewPath = sequenceOf(rootDir.findChild("ultimate.bazelproject"), rootDir.findChild("community.bazelproject"))
+      .firstOrNull { it != null && it.exists() }
+    if (projectViewPath == null) {
+      LOG.warn("Missing project view path")
+      return
+    }
+    project.bazelProjectSettings = project.bazelProjectSettings
+      .withNewProjectViewPath(projectViewPath)
+    ProjectViewService.getInstance(project).forceReparseCurrentProjectViewFiles()
+  }
+}
+
+private object MonorepoRunLineMarkerContributorUtil {
+  fun isProjectApplicable(project: Project): Boolean =
+    useBazelCompile(project) && !project.isBazelProject
+
+  fun getTargets(element: PsiElement): List<ExecutableTarget> {
+    val project = element.project
+    val containingFile = element.containingFile?.virtualFile ?: return emptyList()
+    val projectFileIndex = ProjectFileIndex.getInstance(project)
+    val module = projectFileIndex.getModuleForFile(containingFile) ?: return emptyList()
+
+    val bazelInfo = try {
+      BazelTargetsInfoCache.getInstance(project).targetsInfo.getModuleDescription(module.name)
+    }
+    catch (e: Throwable) {
+      // Targets file can be missing if JPS to Bazel hasn't run. But we can't run JPS to Bazel synchronously while getting run gutters :)
+      LOG.warn(e)
+      return emptyList()
+    }
+
+    val kind = TargetKindService.getInstance().guessFromRuleName("kt_jvm_test")
+    return listOfNotNull(
+      bazelInfo.testTargets.firstOrNull()?.let { target ->
+        NonImportedExecutableTarget(
+          id = Label.parse(target.removeSuffix("_lib.jar")),
+          kind = kind,
+        )
+      },
+    )
+  }
+}

@@ -10,9 +10,19 @@
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="library" name="kotlin-stdlib" level="project" />
     <orderEntry type="module" module-name="intellij.bazel.java.common" />
-    <orderEntry type="module" module-name="intellij.platform.core" />
-    <orderEntry type="module" module-name="intellij.monorepo.devkit" />
-    <orderEntry type="module" module-name="intellij.platform.debugger" />
     <orderEntry type="module" module-name="intellij.java.debugger.impl" />
+    <orderEntry type="module" module-name="intellij.platform.core" />
+    <orderEntry type="module" module-name="intellij.platform.debugger" />
+    <orderEntry type="module" module-name="intellij.monorepo.devkit" />
+    <orderEntry type="module" module-name="intellij.bazel.core" />
+    <orderEntry type="module" module-name="intellij.platform.execution.impl" />
+    <orderEntry type="module" module-name="intellij.bazel.commons" />
+    <orderEntry type="module" module-name="intellij.platform.util" />
+    <orderEntry type="module" module-name="intellij.monorepo.devkit.bazel" />
+    <orderEntry type="module" module-name="intellij.platform.projectModel" />
+    <orderEntry type="module" module-name="intellij.bazel.importer" />
+    <orderEntry type="module" module-name="intellij.platform.analysis" />
+    <orderEntry type="module" module-name="intellij.bazel.projectview" />
+    <orderEntry type="module" module-name="intellij.bazel.kotlin.common" />
   </component>
 </module>

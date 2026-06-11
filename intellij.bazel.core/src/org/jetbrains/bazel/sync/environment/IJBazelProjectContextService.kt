@@ -2,6 +2,7 @@ package org.jetbrains.bazel.sync.environment
 
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.project.guessProjectDir
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.project.stateStore
 import org.jetbrains.bazel.flow.open.BazelProjectStoreDescriptor
@@ -13,10 +14,16 @@ internal class IJBazelProjectContextService(private val project: Project) : Baze
   override var isBazelProject: Boolean
     get() = project.stateStore.storeDescriptor is BazelProjectStoreDescriptor
     set(_) = throw UnsupportedOperationException()
+
+  private val projectRootDirFallback: VirtualFile? by lazy {
+    // Fallback for running a Bazel run configuration in a non-Bazel project
+    project.guessProjectDir()
+  }
+
   override var projectRootDir: VirtualFile?
     get() {
       val bazelProjectStoreDescriptor = project.stateStore.storeDescriptor as? BazelProjectStoreDescriptor
-      return bazelProjectStoreDescriptor?.historicalProjectBasePath?.findVirtualFile()
+      return bazelProjectStoreDescriptor?.historicalProjectBasePath?.findVirtualFile() ?: projectRootDirFallback
     }
     set(_) = throw UnsupportedOperationException()
   override var workspaceName: String?

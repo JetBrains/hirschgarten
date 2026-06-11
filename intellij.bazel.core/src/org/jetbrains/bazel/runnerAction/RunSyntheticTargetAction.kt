@@ -24,7 +24,7 @@ internal class RunSyntheticTargetAction(
   executor: Executor = DefaultRunExecutor.getRunExecutorInstance(),
   private val templateGenerator: SyntheticRunTargetTemplateGenerator,
   private val targetElement: PsiElement,
-) : BaseRunnerAction(executor = executor, configurationName = target.id.toShortString(project)) {
+) : BaseRunnerAction(project, executor = executor, configurationName = target.id.toShortString(project)) {
 
   override suspend fun getRunnerSettings(): RunnerAndConfigurationSettings {
     val configurationType = runConfigurationType<BazelRunConfigurationType>()
