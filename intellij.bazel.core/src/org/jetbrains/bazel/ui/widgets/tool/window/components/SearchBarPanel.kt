@@ -11,6 +11,7 @@ import org.jetbrains.bazel.ui.widgets.tool.window.utils.SimpleAction
 import org.jetbrains.bazel.ui.widgets.tool.window.utils.SimpleDocumentListener
 import org.jetbrains.bazel.ui.widgets.tool.window.utils.TextComponentExtension
 import java.awt.BorderLayout
+import java.awt.event.KeyEvent
 import javax.swing.JComponent
 
 internal class SearchBarPanel(private val model: BazelTargetsPanelModel) : JBPanel<SearchBarPanel>(BorderLayout()) {
@@ -32,8 +33,8 @@ internal class SearchBarPanel(private val model: BazelTargetsPanelModel) : JBPan
     toggleRegexAction.registerCustomShortcutSet(BspShortcuts.regexMode, this)
   }
 
-  private fun prepareTextField(): ExtendableTextField {
-    val newField = ExtendableTextField()
+  private fun prepareTextField(): TextFieldWithKeyProcessing {
+    val newField = TextFieldWithKeyProcessing()
     val matchCaseExtension =
       TextComponentExtension.Switch(
         // MatchCaseHovered icon matches the ShowAsTree icon better than the normal Regex; on new UI both icons look the same
@@ -100,5 +101,19 @@ internal class SearchBarPanel(private val model: BazelTargetsPanelModel) : JBPan
     toggleRegexAction.registerCustomShortcutSet(BspShortcuts.regexMode, component)
   }
 
+  override fun requestFocus() {
+    textField.requestFocus()
+  }
+
+  public override fun processKeyEvent(event: KeyEvent) {
+    textField.onKeyPressed(event)
+  }
+
   fun isEmpty(): Boolean = textField.text.isEmpty()
+}
+
+private class TextFieldWithKeyProcessing : ExtendableTextField() {
+  fun onKeyPressed(e: KeyEvent) {
+    processKeyEvent(e)
+  }
 }

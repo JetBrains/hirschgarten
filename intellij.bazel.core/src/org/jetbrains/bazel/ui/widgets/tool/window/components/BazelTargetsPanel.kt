@@ -5,11 +5,16 @@ import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.JBPanel
 import com.intellij.ui.components.JBScrollPane
 import com.intellij.util.concurrency.annotations.RequiresEdt
+import com.intellij.util.ui.UIUtil
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.ui.widgets.tool.window.utils.BspShortcuts
 import org.jetbrains.bazel.ui.widgets.tool.window.utils.SimpleAction
 import java.awt.BorderLayout
+import java.awt.event.KeyAdapter
+import java.awt.event.KeyEvent
+import java.awt.event.MouseAdapter
+import java.awt.event.MouseEvent
 import javax.swing.SwingConstants
 
 internal class BazelTargetsPanel(project: Project, model: BazelTargetsPanelModel) : JBPanel<BazelTargetsPanel>(BorderLayout()) {
@@ -24,6 +29,9 @@ internal class BazelTargetsPanel(project: Project, model: BazelTargetsPanelModel
     )
 
   init {
+    targetTree.addKeyListener(SearchKeyAdapter())
+    message.addMouseListener(SearchBarFocusAdapter())
+
     searchBarPanel.isEnabled = true
     searchBarPanel.registerSearchShortcutsOn(scrollPane)
     registerMoveDownShortcut(searchBarPanel)
@@ -94,5 +102,24 @@ internal class BazelTargetsPanel(project: Project, model: BazelTargetsPanelModel
         requestFocus()
       }
     action.registerCustomShortcutSet(BspShortcuts.fromSearchBarToTargets, searchBarPanel)
+  }
+
+  private inner class SearchKeyAdapter : KeyAdapter() {
+    override fun keyTyped(e: KeyEvent) {
+      if (!e.isConsumed && UIUtil.isReallyTypedEvent(e)) {
+        searchBarPanel.requestFocus()
+        searchBarPanel.processKeyEvent(e)
+        e.consume()
+      }
+    }
+  }
+
+  private inner class SearchBarFocusAdapter : MouseAdapter() {
+    override fun mouseClicked(e: MouseEvent?) {
+      if (e != null && !e.isConsumed && e.button == MouseEvent.BUTTON1) {
+        searchBarPanel.requestFocus()
+        e.consume()
+      }
+    }
   }
 }
