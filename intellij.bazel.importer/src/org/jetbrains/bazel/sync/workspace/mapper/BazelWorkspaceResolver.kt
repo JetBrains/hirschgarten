@@ -46,7 +46,6 @@ object BazelWorkspaceResolver {
             repoMapping = phasedSyncProject.repoMapping,
             rootTargets = targets.map { it.id }.toSet(),
             targets = targets,
-            fileToTarget = calculateFileToTarget(targets),
             hasError = phasedSyncProject.hasError,
           )
         }
@@ -92,22 +91,11 @@ object BazelWorkspaceResolver {
             repoMapping = syncProject.repoMapping,
             rootTargets = syncProject.rootTargets,
             targets = targets,
-            fileToTarget = calculateFileToTarget(targets),
             hasError = syncProject.hasError,
           )
         }
       }
     }
-  }
-
-  private fun calculateFileToTarget(targets: List<RawBuildTarget>): Map<Path, List<RawBuildTarget>> {
-    val resultMap = HashMap<Path, MutableList<RawBuildTarget>>()
-    for (target in targets) {
-      for (source in target.allSources) {
-        resultMap.computeIfAbsent(source) { ArrayList() }.add(target)
-      }
-    }
-    return resultMap
   }
 
 }

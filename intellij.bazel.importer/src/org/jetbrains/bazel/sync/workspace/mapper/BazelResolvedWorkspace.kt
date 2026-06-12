@@ -13,6 +13,5 @@ data class BazelResolvedWorkspace(
   val repoMapping: RepoMapping,
   val rootTargets: Set<Label>,
   val targets: List<RawBuildTarget>,
-  val fileToTarget: Map<Path, List<RawBuildTarget>> = mapOf(),
   val hasError: Boolean = false,
 )
