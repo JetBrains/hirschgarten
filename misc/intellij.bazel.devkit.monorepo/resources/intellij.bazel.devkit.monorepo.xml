@@ -25,6 +25,10 @@
       implementationClass="com.intellij.bazel.devkit.monorepo.run.MonorepoBazelKotlinRunLineMarkerContributor"
       language="kotlin"
     />
+    <runLineMarkerContributor
+      implementationClass="com.intellij.bazel.devkit.monorepo.run.MonorepoStarlarkRunLineMarkerContributor"
+      language="Starlark"
+    />
     <postStartupActivity implementation="com.intellij.bazel.devkit.monorepo.run.MonorepoProjectViewStartupActivity"/>
   </extensions>
 </idea-plugin>

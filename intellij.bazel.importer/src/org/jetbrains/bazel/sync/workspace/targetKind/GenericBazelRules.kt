@@ -26,6 +26,7 @@ private class GenericBazelRules : TargetKindProvider {
       TargetKind("_jvm_library_jps", setOf(LanguageClass.JAVA, LanguageClass.KOTLIN), RuleType.LIBRARY),
       TargetKind("_resourcegroup_jps", setOf(LanguageClass.JAVA), RuleType.LIBRARY),
       TargetKind("jvm_resources", setOf(LanguageClass.JAVA, LanguageClass.KOTLIN), RuleType.LIBRARY),
+      TargetKind("jps_test", setOf(LanguageClass.JAVA, LanguageClass.KOTLIN), RuleType.TEST),
 
       TargetKind("go_binary", setOf(LanguageClass.GO), RuleType.BINARY),
       TargetKind("go_test", setOf(LanguageClass.GO), RuleType.TEST),

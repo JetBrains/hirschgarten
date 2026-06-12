@@ -6,9 +6,9 @@ import com.intellij.icons.AllIcons
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.DefaultActionGroup
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.vfs.toNioPathOrNull
 import com.intellij.psi.PsiElement
 import com.intellij.psi.util.elementType
+import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.config.isBazelProject
 import org.jetbrains.bazel.label.ResolvedLabel
@@ -28,10 +28,15 @@ import org.jetbrains.bazel.sync.workspace.targetKind.TargetKindService
 import org.jetbrains.bazel.target.targetUtils
 import org.jetbrains.bazel.ui.widgets.tool.window.utils.fillWithEligibleActions
 
-internal class StarlarkRunLineMarkerContributor : RunLineMarkerContributor() {
+@ApiStatus.Internal
+open class StarlarkRunLineMarkerContributor : RunLineMarkerContributor() {
   override fun isDumbAware(): Boolean = true
 
+  protected open fun isProjectApplicable(project: Project): Boolean =
+    project.isBazelProject
+
   override fun getInfo(element: PsiElement): Info? {
+    if (!isProjectApplicable(element.project)) return null
     val grandParent = element.parent?.parent ?: return null
     return if (element.shouldAddMarker(grandParent)) {
       grandParent.calculateMarkerInfo()
@@ -42,7 +47,6 @@ internal class StarlarkRunLineMarkerContributor : RunLineMarkerContributor() {
   }
 
   private fun PsiElement.shouldAddMarker(grandParent: PsiElement): Boolean =
-    this.project.isBazelProject &&
     this.elementType == StarlarkTokenTypes.IDENTIFIER &&
     grandParent is StarlarkCallExpression &&
     isTopLevelCall(

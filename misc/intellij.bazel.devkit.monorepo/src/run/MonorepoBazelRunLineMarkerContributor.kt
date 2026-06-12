@@ -13,9 +13,11 @@ import org.jetbrains.bazel.java.ui.gutters.BazelJavaRunLineMarkerContributor
 import org.jetbrains.bazel.kotlin.ui.gutters.BazelKotlinRunLineMarkerContributor
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.languages.projectview.ProjectViewService
+import org.jetbrains.bazel.languages.starlark.repomapping.PersistentBazelRepoMappingService
 import org.jetbrains.bazel.settings.bazel.bazelProjectSettings
 import org.jetbrains.bazel.sync.workspace.targetKind.TargetKindService
 import org.jetbrains.bazel.ui.gutters.NonImportedExecutableTarget
+import org.jetbrains.bazel.ui.gutters.StarlarkRunLineMarkerContributor
 import org.jetbrains.bsp.protocol.ExecutableTarget
 
 private val LOG = fileLogger()
@@ -32,14 +34,26 @@ internal class MonorepoBazelKotlinRunLineMarkerContributor : BazelKotlinRunLineM
   override fun getTargets(element: PsiElement): List<ExecutableTarget> = MonorepoRunLineMarkerContributorUtil.getTargets(element)
 }
 
+internal class MonorepoStarlarkRunLineMarkerContributor : StarlarkRunLineMarkerContributor() {
+  override fun isProjectApplicable(project: Project): Boolean =
+    MonorepoRunLineMarkerContributorUtil.isProjectApplicable(project)
+}
+
 internal class MonorepoProjectViewStartupActivity : ProjectActivity {
   override suspend fun execute(project: Project) {
     if (!MonorepoRunLineMarkerContributorUtil.isProjectApplicable(project)) return
 
+    // Set the mapping to support community repo targets
+    val rootDir = project.rootDir
+    val rootDirPath = rootDir.toNioPath()
+    val mapping = PersistentBazelRepoMappingService.getInstance(project)
+    mapping.canonicalRepoNameToPath = mapOf("community+" to rootDirPath.resolve("community"), "" to rootDirPath)
+    mapping.apparentRepoNameToCanonicalName = mapOf("community" to "community+", "" to "")
+    mapping.canonicalRepoNameToApparentName = mapOf("community+" to "community", "" to "")
+
     // Set the project view. This is needed for these fields:
     // use_jetbrains_test_runner: true
     // run_config_run_with_bazel: false
-    val rootDir = project.rootDir
     val projectViewPath = sequenceOf(rootDir.findChild("ultimate.bazelproject"), rootDir.findChild("community.bazelproject"))
       .firstOrNull { it != null && it.exists() }
     if (projectViewPath == null) {
@@ -71,7 +85,7 @@ private object MonorepoRunLineMarkerContributorUtil {
       return emptyList()
     }
 
-    val kind = TargetKindService.getInstance().guessFromRuleName("kt_jvm_test")
+    val kind = TargetKindService.getInstance().guessFromRuleName("jps_test")
     return listOfNotNull(
       bazelInfo.testTargets.firstOrNull()?.let { target ->
         NonImportedExecutableTarget(
