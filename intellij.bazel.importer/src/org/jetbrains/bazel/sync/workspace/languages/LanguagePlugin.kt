@@ -14,9 +14,12 @@ import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceSyncConfig
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bazel.server.BazelServerFacade
 import org.jetbrains.bsp.protocol.BuildTargetData
+import kotlin.reflect.KClass
 
 @ApiStatus.Internal
 interface LanguagePlugin {
+  val providedBuildTargetTypes: Set<KClass<out BuildTargetData>>
+
   fun getSupportedLanguages(): Set<LanguageClass>
   fun createProjectMapper(project: Project, server: BazelServerFacade): Mapper
 

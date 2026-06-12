@@ -71,7 +71,7 @@ data class PartialBuildTarget(
 annotation class ClassDiscriminator(val id: Short)
 
 @ApiStatus.Internal
-sealed interface BuildTargetData
+interface BuildTargetData
 
 @ClassDiscriminator(1)
 @ApiStatus.Internal

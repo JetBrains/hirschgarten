@@ -20,6 +20,7 @@ import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceSyncConfig
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bazel.server.BazelServerFacade
 import org.jetbrains.bsp.protocol.BuildTargetData
+import org.jetbrains.bsp.protocol.KotlinBuildTarget
 import org.jetbrains.bsp.protocol.PythonBuildTarget
 import java.nio.file.Files
 import java.nio.file.Path
@@ -27,8 +28,12 @@ import kotlin.io.path.exists
 import kotlin.io.path.extension
 import kotlin.io.path.isDirectory
 import kotlin.io.path.nameWithoutExtension
+import kotlin.reflect.KClass
 
 internal class PythonLanguagePlugin : LanguagePlugin {
+  override val providedBuildTargetTypes: Set<KClass<out BuildTargetData>>
+    get() = setOf(PythonBuildTarget::class)
+
   override fun getSupportedLanguages(): Set<LanguageClass> = setOf(LanguageClass.PYTHON)
   override fun createProjectMapper(project: Project, server: BazelServerFacade) = Mapper(server)
 

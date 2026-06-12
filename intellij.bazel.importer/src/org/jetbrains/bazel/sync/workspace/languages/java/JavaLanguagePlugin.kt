@@ -57,9 +57,12 @@ import kotlin.io.path.extension
 import kotlin.io.path.inputStream
 import kotlin.io.path.name
 import kotlin.io.path.relativeToOrSelf
+import kotlin.reflect.KClass
 
 @ApiStatus.Internal
 interface JvmLanguagePluginMixin {
+  val providedBuildTargetTypes: Set<KClass<out BuildTargetData>>
+
   fun getSupportedLanguages(): Set<LanguageClass>
   fun createProjectMapper(project: Project, server: BazelServerFacade): Mapper
 
@@ -98,6 +101,9 @@ private typealias DependencyLabelPatcher = (DependencyLabel) -> DependencyLabel
 
 @ApiStatus.Internal
 class JavaLanguagePlugin : LanguagePlugin {
+  override val providedBuildTargetTypes: Set<KClass<out BuildTargetData>>
+    get() = setOf(JvmBuildTarget::class) + JvmLanguagePluginMixin.mixins.flatMap { it.providedBuildTargetTypes }.toSet()
+
   override fun getSupportedLanguages(): Set<LanguageClass> =
     setOf(LanguageClass.JAVA) + JvmLanguagePluginMixin.mixins.flatMap { it.getSupportedLanguages() }
 

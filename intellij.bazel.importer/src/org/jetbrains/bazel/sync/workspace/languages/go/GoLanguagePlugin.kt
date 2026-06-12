@@ -23,9 +23,13 @@ import org.jetbrains.bsp.protocol.BuildTargetData
 import org.jetbrains.bsp.protocol.GoBuildTarget
 import java.nio.file.Path
 import java.nio.file.Paths
+import kotlin.reflect.KClass
 
 @ApiStatus.Internal
 class GoLanguagePlugin: LanguagePlugin {
+  override val providedBuildTargetTypes: Set<KClass<out BuildTargetData>>
+    get() = setOf(GoBuildTarget::class)
+
   override fun getSupportedLanguages(): Set<LanguageClass> = setOf(LanguageClass.GO)
   override fun createProjectMapper(project: Project, server: BazelServerFacade) = Mapper(server)
 

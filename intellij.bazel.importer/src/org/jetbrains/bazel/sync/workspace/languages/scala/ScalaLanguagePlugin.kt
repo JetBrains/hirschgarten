@@ -12,13 +12,18 @@ import org.jetbrains.bazel.sync.workspace.graph.DependencyGraph
 import org.jetbrains.bazel.sync.workspace.languages.java.JvmLanguagePluginMixin
 import org.jetbrains.bazel.server.BazelServerFacade
 import org.jetbrains.bsp.protocol.BuildTargetData
+import org.jetbrains.bsp.protocol.KotlinBuildTarget
 import org.jetbrains.bsp.protocol.LibraryItem
 import org.jetbrains.bsp.protocol.ScalaBuildTarget
 import java.nio.file.Path
 import kotlin.io.path.name
+import kotlin.reflect.KClass
 
 @ApiStatus.Internal
 class ScalaLanguagePlugin: JvmLanguagePluginMixin {
+  override val providedBuildTargetTypes: Set<KClass<out BuildTargetData>>
+    get() = setOf(ScalaBuildTarget::class)
+
   override fun getSupportedLanguages(): Set<LanguageClass> = setOf(LanguageClass.SCALA)
   override fun createProjectMapper(project: Project, server: BazelServerFacade): Mapper = Mapper(server)
 

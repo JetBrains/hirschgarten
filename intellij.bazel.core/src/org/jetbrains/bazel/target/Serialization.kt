@@ -1,6 +1,7 @@
 package org.jetbrains.bazel.target
 
 import com.google.gson.Gson
+import com.intellij.openapi.components.service
 import com.intellij.openapi.diagnostic.logger
 import org.h2.mvstore.DataUtils.readVarInt
 import org.h2.mvstore.MVMap
@@ -12,6 +13,7 @@ import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.commons.gson.bazelGson
 import org.jetbrains.bazel.label.Label
+import org.jetbrains.bsp.protocol.BuildTargetData
 import org.jetbrains.bsp.protocol.SourceFileCollection
 import org.jetbrains.bsp.protocol.PartialBuildTarget
 import java.io.ByteArrayOutputStream
@@ -59,8 +61,10 @@ internal fun readLabel(buffer: ByteBuffer): Label {
   return Label.parse(buffer.readString())
 }
 
+@Suppress("UsePropertyAccessSyntax")
 internal fun createIdToBuildMapType(filePathSuffix: String, rootDir: Path): MVMap.Builder<Long, PartialBuildTarget> {
   val mapBuilder = MVMap.Builder<Long, PartialBuildTarget>()
+  val buildDataRegistryService = service<BuildDataTargetTypeRegistry>()
   mapBuilder.setKeyType(LongDataType.INSTANCE)
   mapBuilder.setValueType(
     createAnyValueDataType<PartialBuildTarget>(
@@ -74,7 +78,7 @@ internal fun createIdToBuildMapType(filePathSuffix: String, rootDir: Path): MVMa
         buffer.putVarInt(item.data.size)
         for (targetData in item.data) {
           val aClass = targetData.javaClass
-          BuildDataTargetTypeRegistry.writeClassId(aClass, buffer)
+          buildDataRegistryService.writeClassId(aClass, buffer)
           val data = gzip(targetUtilsGson.toJson(targetData, aClass).encodeToByteArray())
           buffer.putVarInt(data.size)
           buffer.put(data)
@@ -90,7 +94,7 @@ internal fun createIdToBuildMapType(filePathSuffix: String, rootDir: Path): MVMa
         val dataCount = readVarInt(buffer)
         val data = (0 until dataCount).map {
           val typeId = buffer.get().toInt()
-          val aClass = BuildDataTargetTypeRegistry.getClass(typeId)
+          val aClass = buildDataRegistryService.getClass(typeId)
           val dataSize = readVarInt(buffer)
           val encodedData = ByteArray(dataSize)
           buffer.get(encodedData)
@@ -102,7 +106,7 @@ internal fun createIdToBuildMapType(filePathSuffix: String, rootDir: Path): MVMa
           baseDirectory = baseDirectory,
           data = data,
           isManual = isManual,
-          isWorkspace = isWorkspace
+          isWorkspace = isWorkspace,
         )
       },
     ),
@@ -122,9 +126,11 @@ private fun writePath(
   if (path.startsWith(filePathSuffix)) {
     buffer.put(RELATIVE_PATH)
     buffer.writeString(path.substring(filePathSuffix.length))
-  } else if (path.length == (filePathSuffix.length - 1) && filePathSuffix.startsWith(path)) {
+  }
+  else if (path.length == (filePathSuffix.length - 1) && filePathSuffix.startsWith(path)) {
     buffer.put(ROOT_PATH)
-  } else {
+  }
+  else {
     buffer.put(ABSOLUTE_PATH)
     buffer.writeString(path)
   }
@@ -156,7 +162,8 @@ private fun readTargetKind(buffer: ByteBuffer): TargetKind {
     val languageClass = LanguageClass.fromSerialId(serialId)
     if (languageClass != null) {
       languageClasses.add(languageClass)
-    } else {
+    }
+    else {
       // BAZEL-2292: Log unknown serialIds to diagnose potential database corruption
       LOG.debug("Unknown LanguageClass serialId $serialId for kind '$kindString' - possible database corruption")
     }

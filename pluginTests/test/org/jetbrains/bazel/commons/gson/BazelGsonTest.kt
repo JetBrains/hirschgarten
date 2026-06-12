@@ -1,15 +1,13 @@
 package org.jetbrains.bazel.commons.gson
 
-import org.jetbrains.bazel.commons.LanguageClass
-import org.jetbrains.bazel.commons.RuleType
-import org.jetbrains.bazel.commons.TargetKind
-import org.jetbrains.bazel.label.DependencyLabel
+import io.kotest.assertions.throwables.shouldThrow
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.sync.workspace.snapshot.SourceFileCollectionBuilder
 import org.jetbrains.bazel.target.targetUtilsGson
+import org.jetbrains.bsp.protocol.BuildTargetData
+import org.jetbrains.bsp.protocol.JvmBuildTarget
 import org.jetbrains.bsp.protocol.SourceFileCollection
 import org.jetbrains.bsp.protocol.PythonBuildTarget
-import org.jetbrains.bsp.protocol.RawBuildTarget
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
@@ -20,38 +18,21 @@ import java.util.stream.Stream
 
 class BazelGsonTest {
   @Test
-  fun `test BuildTarget serialization`() {
-    val buildTarget =
-      RawBuildTarget(
-        id = Label.parse("//foo:bar"),
-        dependencies = listOf(DependencyLabel.parse("//baz:qux")),
-        kind =
-          TargetKind(
-            kind = "java_library",
-            languageClasses = setOf(LanguageClass.JAVA, LanguageClass.PYTHON),
-            ruleType = RuleType.BINARY,
-          ),
-        sources = SourceFileCollection.EMPTY,
-        generatedSources = SourceFileCollection.EMPTY,
-        resources = SourceFileCollection.EMPTY,
-        baseDirectory = Path.of("/base/dir"),
-        data = listOf(
-          PythonBuildTarget(
-            version = "3.8",
-            interpreter = Path.of("/usr/bin/python3"),
-            listOf(),
-            null,
-            null,
-            Path.of("/base/dir/main.py"),
-            null,
-          ),
-        ),
-        isManual = false,
+  fun `test PythonBuildTarget serialization`() {
+    val target =
+      PythonBuildTarget(
+        version = "3.8",
+        interpreter = Path.of("/usr/bin/python3"),
+        listOf(),
+        null,
+        null,
+        Path.of("/base/dir/main.py"),
+        null,
       )
 
-    val json = targetUtilsGson.toJson(buildTarget)
-    val deserializedBuildTarget = targetUtilsGson.fromJson(json, RawBuildTarget::class.java)
-    assertEquals(buildTarget, deserializedBuildTarget)
+    val json = targetUtilsGson.toJson(target, PythonBuildTarget::class.java)
+    val deserialized = targetUtilsGson.fromJson(json, PythonBuildTarget::class.java)
+    assertEquals(target, deserialized)
   }
 
   @ParameterizedTest

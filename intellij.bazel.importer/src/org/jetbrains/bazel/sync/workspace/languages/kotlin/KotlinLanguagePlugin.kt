@@ -18,9 +18,13 @@ import org.jetbrains.bsp.protocol.LibraryItem
 import java.nio.file.Path
 import kotlin.io.path.exists
 import kotlin.io.path.notExists
+import kotlin.reflect.KClass
 
 @ApiStatus.Internal
 class KotlinLanguagePlugin: JvmLanguagePluginMixin {
+  override val providedBuildTargetTypes: Set<KClass<out BuildTargetData>>
+    get() = setOf(KotlinBuildTarget::class)
+
   override fun getSupportedLanguages(): Set<LanguageClass> = setOf(LanguageClass.KOTLIN)
   override fun createProjectMapper(project: Project, server: BazelServerFacade): Mapper = Mapper(server)
 

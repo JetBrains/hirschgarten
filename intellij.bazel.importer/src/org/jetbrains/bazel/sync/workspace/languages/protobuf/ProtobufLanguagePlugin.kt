@@ -11,10 +11,15 @@ import org.jetbrains.bazel.sync.workspace.graph.DependencyGraph
 import org.jetbrains.bazel.sync.workspace.languages.LanguagePlugin
 import org.jetbrains.bazel.server.BazelServerFacade
 import org.jetbrains.bsp.protocol.BuildTargetData
+import org.jetbrains.bsp.protocol.GoBuildTarget
 import org.jetbrains.bsp.protocol.ProtobufBuildTarget
 import kotlin.io.path.absolutePathString
+import kotlin.reflect.KClass
 
 internal class ProtobufLanguagePlugin : LanguagePlugin {
+  override val providedBuildTargetTypes: Set<KClass<out BuildTargetData>>
+    get() = setOf(ProtobufBuildTarget::class)
+
   override fun getSupportedLanguages(): Set<LanguageClass> = setOf(LanguageClass.PROTOBUF)
   override fun createProjectMapper(project: Project, server: BazelServerFacade) = Mapper(server)
 
