@@ -3,6 +3,7 @@
   <dependencies>
     <module name="intellij.bazel.commons"/>
     <module name="intellij.bazel.core"/>
+    <module name="intellij.bazel.importer"/>
     <module name="intellij.bazel.protobuf"/>
     <module name="intellij.devkit.core"/>
     <module name="intellij.java.debugger.impl"/>
@@ -19,6 +20,7 @@
       implementation="org.jetbrains.bazel.intellij.IntellijPluginRunHandlerProvider"
       order="before JvmRunHandlerProvider"
     />
+    <targetKindProvider implementation="org.jetbrains.bazel.intellij.IntelliJMonorepoBazelRules"/>
   </extensions>
   <extensions defaultExtensionNs="com.intellij">
     <stepsBeforeRunProvider implementation="org.jetbrains.bazel.intellij.BuildPluginBeforeRunTaskProvider"/>
