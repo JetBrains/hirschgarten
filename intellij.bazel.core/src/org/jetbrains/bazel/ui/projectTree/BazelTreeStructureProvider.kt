@@ -42,7 +42,10 @@ private class BazelTreeStructureProvider : TreeStructureProvider {
     if (!project.isBazelProject) return children
     return when (parent) {
       is ProjectViewProjectNode -> calculateChildrenForProjectNode(project, children, settings)
-      else -> children.removeModuleAndModuleGroupNodes()
+      else -> children.removeModuleAndModuleGroupNodes().map {
+        if (it is PsiDirectoryNode) BazelDirectoryNode(project, it.value, settings, it.filter)
+        else it
+      }
     }
   }
 
@@ -92,6 +95,9 @@ private class BazelDirectoryNode(
   viewSettings: ViewSettings?,
   private val filter: PsiFileSystemItemFilter? = null,
 ) : PsiDirectoryNode(project, directory, viewSettings, filter) {
+
+  override fun shouldShowModuleName(): Boolean = false
+
   private fun PsiDirectory.calculateCustomChildrenNodes(project: Project, settings: ViewSettings?): Collection<AbstractTreeNode<*>>? =
     if (project.shouldNotCalculateCustomNodes()) {
       null

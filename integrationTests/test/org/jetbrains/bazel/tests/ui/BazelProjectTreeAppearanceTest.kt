@@ -1,5 +1,6 @@
 package org.jetbrains.bazel.tests.ui
 
+import com.intellij.driver.sdk.setRegistry
 import com.intellij.driver.sdk.step
 import com.intellij.driver.sdk.ui.components.common.ideFrame
 import com.intellij.driver.sdk.ui.components.common.toolwindows.projectView
@@ -7,6 +8,7 @@ import com.intellij.driver.sdk.ui.components.elements.JTreeUiComponent
 import com.intellij.driver.sdk.ui.components.elements.popupMenu
 import com.intellij.driver.sdk.ui.should
 import com.intellij.ide.starter.driver.engine.runIdeWithDriver
+import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.data.IdeaBazelCases
 import org.jetbrains.bazel.ideStarter.IdeStarterBaseProjectTest
 import org.jetbrains.bazel.ideStarter.syncBazelProject
@@ -247,6 +249,39 @@ class BazelProjectTreeAppearanceTest : IdeStarterBaseProjectTest() {
                 paths.none {
                   checkPathAboveLast(it.path, "com", listOf("java", "main", "src", "common"))
                 }
+              }
+            }
+          }
+        }
+      }
+  }
+
+  @Test
+  fun `module names in brackets are not shown on content roots`() {
+    createContext("bazelProjectTreeAppearance", IdeaBazelCases.ProjectViewAppearance)
+      .runIdeWithDriver(runTimeout = timeout)
+      .useDriverAndCloseIde {
+        setRegistry(BazelFeatureFlags.MERGE_SOURCE_ROOTS, false.toString())
+
+        ideFrame {
+          syncBazelProject()
+          waitForIndicators(5.minutes)
+
+          leftToolWindowToolbar.projectButton.open()
+
+          projectView {
+            step("Expand common/src/main/java") {
+              expandPath(projectViewTree, "common")
+            }
+
+            step("Directories in common/src/main/java path have no module info") {
+              val violating = projectViewTree.collectExpandedPaths()
+                .filter { it.path.contains("common") }
+                .filter { info ->
+                  info.path.last().contains(" ")
+                }
+              check(violating.isEmpty()) {
+                "Module info found on directory nodes: ${violating.map { it.path }}"
               }
             }
           }

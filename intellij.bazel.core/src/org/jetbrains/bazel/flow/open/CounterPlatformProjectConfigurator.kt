@@ -19,6 +19,9 @@ import org.jetbrains.bazel.workspacemodel.entities.BazelModuleEntitySource
 /**
  * Clean up any modules showing up due to the platform hack
  * https://youtrack.jetbrains.com/issue/IDEA-321160/Platform-solution-for-the-initial-state-of-the-project-model-on-the-first-open
+ *
+ * This is not needed in most of the cases, but there are still rare project configurators that
+ * may create a module via [com.intellij.openapi.project.impl.CreateModuleKt.getOrInitializeModule]
  */
 internal class CounterPlatformProjectConfigurator : DirectoryProjectConfigurator.AsyncDirectoryProjectConfigurator() {
   override suspend fun configure(
