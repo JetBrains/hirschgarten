@@ -183,7 +183,7 @@ class ProjectResolver(
 
     repoDefinitionsWithWarnings.warnings.forEach {
       project.syncConsole.addDiagnosticMessage(
-        taskId, null, 0, 0, it,
+        taskId, null, 0, 0, it, null,
         MessageEvent.Kind.WARNING,
       )
     }

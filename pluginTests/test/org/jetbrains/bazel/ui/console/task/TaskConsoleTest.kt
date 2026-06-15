@@ -310,21 +310,21 @@ class TaskConsoleTest : WorkspaceModelBaseTest() {
     // when
     taskConsole.startTask(task, "Test", "started")
 
-    taskConsole.addDiagnosticMessage(task, fileURI, 10, 20, "Diagnostic 1", Kind.ERROR)
-    taskConsole.addDiagnosticMessage(task, fileURI, 10, 20, "Diagnostic 2", Kind.WARNING)
-    taskConsole.addDiagnosticMessage(task, fileURI, 10, 20, "Diagnostic 3", Kind.INFO)
+    taskConsole.addDiagnosticMessage(task, fileURI, 10, 20, "Diagnostic 1", null, Kind.ERROR)
+    taskConsole.addDiagnosticMessage(task, fileURI, 10, 20, "Diagnostic 2", null, Kind.WARNING)
+    taskConsole.addDiagnosticMessage(task, fileURI, 10, 20, "Diagnostic 3", null, Kind.INFO)
 
     // blank message, should be omitted
-    taskConsole.addDiagnosticMessage(task, fileURI, 10, 20, "\t    \n   ", Kind.ERROR)
+    taskConsole.addDiagnosticMessage(task, fileURI, 10, 20, "\t    \n   ", null, Kind.ERROR)
 
     // non-existent originId, should be omitted
-    taskConsole.addDiagnosticMessage(TaskGroupId("wrong").task("task"), fileURI, 10, 20, "Diagnostic 5", Kind.ERROR)
+    taskConsole.addDiagnosticMessage(TaskGroupId("wrong").task("task"), fileURI, 10, 20, "Diagnostic 5", null, Kind.ERROR)
 
     // negative line and column numbers, should be sent nevertheless
-    taskConsole.addDiagnosticMessage(task, fileURI, -4, -8, "Diagnostic 6", Kind.ERROR)
+    taskConsole.addDiagnosticMessage(task, fileURI, -4, -8, "Diagnostic 6", null, Kind.ERROR)
 
     // fileURI without `file://`, should be sent correctly
-    taskConsole.addDiagnosticMessage(task, Path("/home/directory/project/src/test/Start.kt"), 10, 20, "Diagnostic 7", Kind.WARNING)
+    taskConsole.addDiagnosticMessage(task, Path("/home/directory/project/src/test/Start.kt"), 10, 20, "Diagnostic 7", null, Kind.WARNING)
 
     taskConsole.finishTask(task, "finished", SuccessResultImpl())
 

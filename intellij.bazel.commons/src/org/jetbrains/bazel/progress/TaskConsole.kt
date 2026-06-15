@@ -77,7 +77,8 @@ interface TaskConsole {
    * @param path absolute path to the file concerned by the diagnostic
    * @param line line number in given file (first line is 0)
    * @param column column number in given file (first column is 0)
-   * @param message description of the diagnostic
+   * @param message message of the diagnostic
+   * @param description description of the diagnostic
    * @param severity severity of the diagnostic
    */
   fun addDiagnosticMessage(
@@ -86,6 +87,7 @@ interface TaskConsole {
     line: Int,
     column: Int,
     message: String,
+    description: String?,
     severity: MessageEvent.Kind,
   )
 

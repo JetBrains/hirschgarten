@@ -283,13 +283,14 @@ abstract class BaseTaskConsole(
     line: Int,
     column: Int,
     message: String,
+    description: String?,
     severity: MessageEvent.Kind,
   ) {
     if (message.isBlank()) return
     val rootTaskId = findActiveRootTaskId(taskId) ?: return
     val activeTaskId = findActiveTaskId(taskId) ?: return
-    val filePosition = path?.let { FilePosition(path.toFile(), line, column) }
-    doAddDiagnosticMessage(rootTaskId, activeTaskId, filePosition, message, severity)
+    val filePosition = path?.let { FilePosition(path, line, column) }
+    doAddDiagnosticMessage(rootTaskId, activeTaskId, filePosition, message, description, severity)
   }
 
   private fun doAddDiagnosticMessage(
@@ -297,16 +298,17 @@ abstract class BaseTaskConsole(
     subtaskId: TaskId,
     filePosition: FilePosition?,
     message: String,
+    description: String?,
     severity: MessageEvent.Kind,
   ) {
     val event =
-      if (filePosition?.file == null) {
+      if (filePosition?.path == null) {
         MessageEventImpl(
           subtaskId,
           severity,
           null,
           prepareTextToPrint(message),
-          prepareTextToPrint(message),
+          description ?: prepareTextToPrint(message),
         )
       }
       else {
@@ -315,7 +317,7 @@ abstract class BaseTaskConsole(
           severity,
           null,
           prepareTextToPrint(message),
-          null,
+          description,
           filePosition,
         )
       }

@@ -1,5 +1,6 @@
 package org.jetbrains.bazel.sync.workspace.mapper
 
+import com.google.devtools.intellij.ideinfo.IntellijIdeInfo
 import com.intellij.build.events.MessageEvent
 import com.intellij.openapi.project.Project
 import org.jetbrains.annotations.ApiStatus
@@ -13,15 +14,11 @@ import org.jetbrains.bazel.sync.scope.PartialProjectSync
 import org.jetbrains.bazel.sync.scope.ProjectSyncScope
 import org.jetbrains.bazel.sync.scope.SecondPhaseSync
 import org.jetbrains.bazel.sync.workspace.BazelResolvedWorkspace
-import org.jetbrains.bazel.sync.workspace.mapper.normal.AspectBazelProjectMapper
 import org.jetbrains.bazel.sync.workspace.mapper.phased.PhasedBazelProjectMapper
-import org.jetbrains.bsp.protocol.RawBuildTarget
 import org.jetbrains.bsp.protocol.TaskId
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetParams
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetPhasedParams
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetSelector
-import org.jetbrains.bsp.protocol.allSources
-import java.nio.file.Path
 
 @ApiStatus.Internal
 object BazelWorkspaceResolver {
@@ -60,20 +57,7 @@ object BazelWorkspaceResolver {
             }
 
           val syncProject = server.workspaceBuildTargets(WorkspaceBuildTargetParams(selector, build, allKnownTargets, taskId))
-
-          syncProject.targets.values.filter { it.tagsList.any { it.equals(Constants.NO_IDE) } }.let {
-            if (!it.isEmpty()) {
-              project.syncConsole.addDiagnosticMessage(
-                taskId, null, -1, -1,
-                "Included ${it.size} ${Constants.NO_IDE} targets as dependencies: ${
-                  it.joinToString(",", limit = 5) {
-                    it.label().toString()
-                  }
-                }",
-                MessageEvent.Kind.WARNING,
-              )
-            }
-          }
+          reportImportedNoIdeTargets(project, taskId, syncProject.targets.values)
 
           val bazelMapper =
             AspectBazelProjectMapper(
@@ -98,4 +82,21 @@ object BazelWorkspaceResolver {
     }
   }
 
+  private fun reportImportedNoIdeTargets(
+    project: Project,
+    taskId: TaskId,
+    targets: Collection<IntellijIdeInfo.TargetIdeInfo>
+  ) {
+    val noIdeTargets = targets.filter { target -> target.tagsList.any { it.equals(Constants.NO_IDE) } }
+    if (noIdeTargets.isNotEmpty()) {
+      project.syncConsole.addDiagnosticMessage(
+        taskId, null, -1, -1,
+        message = "Included ${noIdeTargets.size} ${Constants.NO_IDE} targets as dependencies",
+        description = noIdeTargets.joinToString(",", limit = 5) {
+          it.label().toString()
+        },
+        MessageEvent.Kind.WARNING,
+      )
+    }
+  }
 }
