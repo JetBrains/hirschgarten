@@ -1,8 +1,10 @@
 package org.jetbrains.bazel.languages.starlark.annotation
 
 import com.intellij.lang.annotation.AnnotationHolder
+import com.intellij.lang.annotation.Annotator
 import com.intellij.lang.annotation.HighlightSeverity
 import com.intellij.openapi.components.service
+import com.intellij.openapi.project.DumbAware
 import com.intellij.psi.PsiElement
 import com.intellij.psi.util.parentOfType
 import org.jetbrains.bazel.languages.bazelversion.psi.toSemVer
@@ -15,7 +17,7 @@ import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkGlobExpres
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkStringLiteralExpression
 import org.jetbrains.bazel.languages.starlark.quickFixes.StarlarkGlobAllowEmptyQuickFix
 
-internal class StarlarkGlobAnnotator : StarlarkAnnotator() {
+internal class StarlarkGlobAnnotator : Annotator, DumbAware {
   override fun annotate(element: PsiElement, holder: AnnotationHolder) {
     if (element is StarlarkGlobExpression && !isGlobValid(element)) {
       holder

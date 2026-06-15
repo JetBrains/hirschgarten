@@ -2,8 +2,10 @@ package org.jetbrains.bazel.languages.starlark.annotation
 
 import com.intellij.codeInsight.daemon.SyntheticPsiFileSupport
 import com.intellij.lang.annotation.AnnotationHolder
+import com.intellij.lang.annotation.Annotator
 import com.intellij.lang.annotation.HighlightSeverity
 import com.intellij.openapi.editor.markup.TextAttributes
+import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.project.DumbService
 import com.intellij.psi.PsiElement
 import com.intellij.psi.search.GlobalSearchScope
@@ -28,7 +30,7 @@ import java.awt.Font
 
 private val UNUSED_TEXT_ATTRIBUTES = TextAttributes(JBColor.GRAY, null, null, null, Font.PLAIN)
 
-internal class StarlarkDeclarationAnnotator : StarlarkAnnotator() {
+internal class StarlarkDeclarationAnnotator : Annotator, DumbAware {
   override fun annotate(element: PsiElement, holder: AnnotationHolder) {
     if (element.isUnusedDeclaration()) {
       holder.annotateUnused(element, (element.parent as? StarlarkNamedElement)?.name ?: "")

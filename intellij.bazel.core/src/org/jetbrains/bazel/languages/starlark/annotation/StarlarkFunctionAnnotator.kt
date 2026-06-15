@@ -1,73 +1,58 @@
 package org.jetbrains.bazel.languages.starlark.annotation
 
 import com.intellij.lang.annotation.AnnotationHolder
+import com.intellij.lang.annotation.Annotator
+import com.intellij.openapi.project.DumbAware
 import com.intellij.psi.PsiElement
 import com.intellij.psi.util.elementType
 import org.jetbrains.bazel.languages.starlark.StarlarkBundle
-import org.jetbrains.bazel.languages.starlark.bazel.BazelFileType
 import org.jetbrains.bazel.languages.starlark.bazel.BazelGlobalFunction
 import org.jetbrains.bazel.languages.starlark.bazel.BazelGlobalFunctionParameter
 import org.jetbrains.bazel.languages.starlark.bazel.BazelGlobalFunctions
 import org.jetbrains.bazel.languages.starlark.bazel.isKwArgs
 import org.jetbrains.bazel.languages.starlark.bazel.isVarArgs
-import org.jetbrains.bazel.languages.starlark.elements.StarlarkElementTypes
 import org.jetbrains.bazel.languages.starlark.elements.StarlarkTokenTypes
-import org.jetbrains.bazel.languages.starlark.highlighting.StarlarkHighlightingColors
-import org.jetbrains.bazel.languages.starlark.psi.StarlarkFile
+import org.jetbrains.bazel.languages.starlark.highlighting.starlarkSemanticHighlightingColor
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkCallExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkReferenceExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.arguments.StarlarkArgumentExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.arguments.StarlarkNamedArgumentExpression
+import org.jetbrains.bazel.languages.starlark.psi.expressions.isBazelFileTopLevelCall
 import org.jetbrains.bazel.languages.starlark.psi.functions.StarlarkArgumentList
 import org.jetbrains.bazel.languages.starlark.psi.functions.StarlarkFunctionDeclaration
 import org.jetbrains.bazel.languages.starlark.references.StarlarkNamedArgumentReference
 
-internal class StarlarkFunctionAnnotator : StarlarkAnnotator() {
+internal class StarlarkFunctionAnnotator : Annotator, DumbAware {
+
   override fun annotate(element: PsiElement, holder: AnnotationHolder) {
-    when {
-      isFunctionDeclaration(element) -> holder.mark(element, StarlarkHighlightingColors.FUNCTION_DECLARATION)
-      isNamedArgument(element) -> annotateNamedArgument(element, holder)
-      isGlobalFunctionReference(element) -> annotateGlobalFunction(element, holder)
-      else -> {}
-    }
+    val highlighting = element.starlarkSemanticHighlightingColor()
+    if (highlighting != null) holder.annotateSilentInfo(element, highlighting)
+    validateNamedArguments(element, holder)
+    validateGlobalFunctionArguments(element, holder)
   }
 
-  private fun isFunctionDeclaration(element: PsiElement): Boolean =
-    checkElementAndParentType(
-      element = element,
-      expectedElementTypes = listOf(StarlarkTokenTypes.IDENTIFIER),
-      expectedParentTypes = listOf(StarlarkElementTypes.FUNCTION_DECLARATION),
-    )
-
-  private fun isGlobalFunctionReference(element: PsiElement): Boolean =
-    checkElementAndParentType(
-      element = element,
-      expectedElementTypes = listOf(StarlarkElementTypes.CALL_EXPRESSION),
-      expectedParentTypes = listOf(StarlarkElementTypes.EXPRESSION_STATEMENT),
-    ) && (element.containingFile as? StarlarkFile)?.getBazelFileType()?.let { it == BazelFileType.BUILD || it == BazelFileType.MODULE } == true
-
-  private fun resolvesToFunction(element: PsiElement): Boolean {
-    val callExpression = element as? StarlarkCallExpression ?: return false
-    return (callExpression.getCalledExpression() as? StarlarkReferenceExpression)?.reference?.resolve() is StarlarkFunctionDeclaration
+  private fun validateNamedArguments(element: PsiElement, holder: AnnotationHolder) {
+    if (element.elementType != StarlarkTokenTypes.IDENTIFIER) return
+    val reference = (element.parent.reference as? StarlarkNamedArgumentReference) ?: return
+    if (reference.resolveFunction() == null) return
+    if (reference.resolve() != null) return
+    holder.annotateError(element, StarlarkBundle.message("annotator.named.parameter.not.found", element.text))
   }
 
-  private fun annotateGlobalFunction(element: PsiElement, holder: AnnotationHolder) {
-    if (element.firstChild == null) return
-    val functionName = element.firstChild.text
-    holder.mark(element.firstChild, StarlarkHighlightingColors.FUNCTION_DECLARATION)
-    if (resolvesToFunction(element)) return
-    val function = BazelGlobalFunctions.getFunctionByName(functionName)
-    if (function != null) {
-      doAnnotateGlobalFunction(function, element, holder)
-      if (function.name == "git_override" || function.name == "archive_override") {
-        checkDependencyOverrideResolution(element, holder)
-      }
+  private fun validateGlobalFunctionArguments(element: PsiElement, holder: AnnotationHolder) {
+    if (!element.isBazelFileTopLevelCall()) return
+    if (element.resolvesToFunctionDeclaration()) return
+    val functionName = element.firstChild?.text ?: return
+    val function = BazelGlobalFunctions.getFunctionByName(functionName) ?: return
+    doAnnotateGlobalFunction(function, element, holder)
+    if (function.name == "git_override" || function.name == "archive_override") {
+      checkDependencyOverrideResolution(element, holder)
     }
   }
 
   private fun doAnnotateGlobalFunction(
     function: BazelGlobalFunction,
-    element: PsiElement,
+    element: StarlarkCallExpression,
     holder: AnnotationHolder,
   ) {
     val arguments = element.lastChild as? StarlarkArgumentList ?: return
@@ -147,25 +132,6 @@ internal class StarlarkFunctionAnnotator : StarlarkAnnotator() {
     }
   }
 
-  private fun isNamedArgument(element: PsiElement): Boolean =
-    checkElementAndParentType(
-      element = element,
-      expectedElementTypes = listOf(StarlarkTokenTypes.IDENTIFIER, StarlarkTokenTypes.EQ),
-      expectedParentTypes = listOf(StarlarkElementTypes.NAMED_ARGUMENT_EXPRESSION),
-    )
-
-  private fun annotateNamedArgument(element: PsiElement, holder: AnnotationHolder) {
-    if (isNotResolvedNamedArgument(element)) {
-      if (element.elementType == StarlarkTokenTypes.IDENTIFIER) {
-        holder.annotateError(element, StarlarkBundle.message("annotator.named.parameter.not.found", element.text))
-      }
-    } else {
-      holder.mark(element, StarlarkHighlightingColors.NAMED_ARGUMENT)
-    }
-  }
-
-  private fun isNotResolvedNamedArgument(element: PsiElement): Boolean {
-    val reference = (element.parent.reference as? StarlarkNamedArgumentReference) ?: return false
-    return reference.resolveFunction() != null && reference.resolve() == null
-  }
+  private fun StarlarkCallExpression.resolvesToFunctionDeclaration(): Boolean =
+    (getCalledExpression() as? StarlarkReferenceExpression)?.reference?.resolve() is StarlarkFunctionDeclaration
 }

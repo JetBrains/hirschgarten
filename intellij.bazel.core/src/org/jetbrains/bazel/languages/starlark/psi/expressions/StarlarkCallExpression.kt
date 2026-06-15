@@ -5,10 +5,12 @@ import com.intellij.model.psi.PsiSymbolReference
 import com.intellij.model.psi.PsiSymbolService
 import com.intellij.psi.ElementManipulators
 import com.intellij.psi.PsiElement
+import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiNameIdentifierOwner
-import com.intellij.psi.PsiReference
 import com.intellij.psi.search.SearchScope
+import com.intellij.psi.util.elementType
 import org.jetbrains.annotations.ApiStatus
+import org.jetbrains.bazel.languages.starlark.bazel.BazelFileType
 import org.jetbrains.bazel.languages.starlark.starlarkProjectScope
 import org.jetbrains.bazel.languages.starlark.bazel.BazelGlobalFunctions
 import org.jetbrains.bazel.languages.starlark.elements.StarlarkElementTypes
@@ -29,6 +31,19 @@ import kotlin.contracts.contract
 fun PsiElement.isRuleTarget(): Boolean {
   contract { returns(true) implies (this@isRuleTarget is StarlarkCallExpression) }
   return this is StarlarkCallExpression && isRuleTarget()
+}
+
+/**
+ * Whether this call expression is a top-level function call in a BUILD or MODULE.bazel file.
+ */
+@OptIn(ExperimentalContracts::class)
+internal fun PsiElement.isBazelFileTopLevelCall(): Boolean {
+  contract { returns(true) implies (this@isBazelFileTopLevelCall is StarlarkCallExpression) }
+  if (this !is StarlarkCallExpression) return false
+  // when StarlarkCallExpression is a top-level call, it is a child of StarlarkExpressionStatement, which is a child of the StarlarkFile
+  val file = parent?.parent as? StarlarkFile ?: return false
+  val fileType = file.getBazelFileType()
+  return fileType == BazelFileType.BUILD || fileType == BazelFileType.MODULE
 }
 
 /**
