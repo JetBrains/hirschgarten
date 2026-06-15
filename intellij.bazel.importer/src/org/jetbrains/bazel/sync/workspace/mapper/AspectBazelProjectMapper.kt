@@ -1,4 +1,4 @@
-package org.jetbrains.bazel.sync.workspace.mapper.normal
+package org.jetbrains.bazel.sync.workspace.mapper
 
 import com.google.devtools.intellij.aspect.Common.ArtifactLocation
 import com.google.devtools.intellij.ideinfo.IntellijIdeInfo.TargetIdeInfo
@@ -8,6 +8,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.withContext
+import org.jetbrains.bazel.commons.LanguageClass
 import org.jetbrains.bazel.commons.LocalRepositoryMapping
 import org.jetbrains.bazel.commons.RepoMapping
 import org.jetbrains.bazel.commons.constants.Constants
@@ -17,16 +18,17 @@ import org.jetbrains.bazel.label.assumeResolved
 import org.jetbrains.bazel.label.label
 import org.jetbrains.bazel.label.toDependencyLabel
 import org.jetbrains.bazel.performance.measure
+import org.jetbrains.bazel.server.BazelServerFacade
 import org.jetbrains.bazel.sync.workspace.graph.DependencyGraph
 import org.jetbrains.bazel.sync.workspace.languages.createLanguageProjectMappers
 import org.jetbrains.bazel.sync.workspace.snapshot.SourceFileCollectionBuilder
 import org.jetbrains.bazel.sync.workspace.targetKind.TargetKindService
-import org.jetbrains.bazel.server.BazelServerFacade
 import org.jetbrains.bsp.protocol.BuildTargetData
 import org.jetbrains.bsp.protocol.BuildTargetTag
 import org.jetbrains.bsp.protocol.RawBuildTarget
 import java.nio.file.Path
 import kotlin.io.path.exists
+import kotlin.io.path.extension
 
 internal class AspectBazelProjectMapper(
   project: Project,
@@ -110,12 +112,13 @@ internal class AspectBazelProjectMapper(
     }
 
     val resources = bazelPathsResolver.resolvePaths(target.jvmTargetInfo.resourcesList, localRepositories)
+    val missingFilesReporter = MissingFilesReporter(label)
 
-    fun resolveSourceSet(target: TargetIdeInfo, filter: (ArtifactLocation) -> Boolean): List<Path> {
+    fun resolveSourceSet(filter: (ArtifactLocation) -> Boolean): List<Path> {
       return target.srcsList.filter(filter).mapNotNull { src: ArtifactLocation ->
         val path = bazelPathsResolver.resolve(src, localRepositories)
         if (!path.exists()) {
-          logger.warn("target ${target.key.label}: $path does not exist.")
+          missingFilesReporter.add(src, path)
           return@mapNotNull null
         }
         path
@@ -127,8 +130,8 @@ internal class AspectBazelProjectMapper(
       configurationId = target.key.configuration,
       dependencies = target.depsList.map { it.toDependencyLabel() },
       kind = targetKind,
-      sources = SourceFileCollectionBuilder.build(relativeRoot = baseDirectory, paths = resolveSourceSet(target) { it.isSource }),
-      generatedSources = SourceFileCollectionBuilder.build(relativeRoot = baseDirectory, paths = resolveSourceSet(target) { !it.isSource }),
+      sources = SourceFileCollectionBuilder.build(relativeRoot = baseDirectory, paths = resolveSourceSet { it.isSource }),
+      generatedSources = SourceFileCollectionBuilder.build(relativeRoot = baseDirectory, paths = resolveSourceSet { !it.isSource }),
       resources = SourceFileCollectionBuilder.build(relativeRoot = baseDirectory, paths = resources),
       baseDirectory = baseDirectory,
       data = buildData,
@@ -137,7 +140,28 @@ internal class AspectBazelProjectMapper(
       isWorkspace = label.isMainWorkspace ||
                     localRepositories.localRepositories.containsKey(label.assumeResolved().repoName),
       isTestOnly = target.testonly,
-    )
+    ).also {
+      missingFilesReporter.report()
+    }
+  }
+
+  private class MissingFilesReporter(val target: Label) {
+    private val missingSources = ArrayList<Path>()
+
+    fun add(src: ArtifactLocation, path: Path) {
+      // Do not report missing generated sources or unknown languages/file types
+      if (missingSources.size < 3 && src.isSource && LanguageClass.fromExtension(path.extension) != null)
+        missingSources.add(path)
+    }
+
+    fun report() {
+      if (missingSources.isNotEmpty()) {
+        logger.warn(
+          "target ${target} has ${missingSources.size} missing source files: " +
+          missingSources.joinToString { it.toString() },
+        )
+      }
+    }
   }
 
   companion object {

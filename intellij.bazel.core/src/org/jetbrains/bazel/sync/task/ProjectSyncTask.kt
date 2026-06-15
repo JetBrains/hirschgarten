@@ -146,7 +146,8 @@ class ProjectSyncTask(private val project: Project) {
                 syncConsole.addDiagnosticMessage(
                   taskId,
                   null, -1, -1,
-                  BazelPluginBundle.message("console.task.sync.partialsuccess"),
+                  message = BazelPluginBundle.message("console.task.sync.partialsuccess"),
+                  description = null,
                   MessageEvent.Kind.WARNING,
                 )
                 syncConsole.finishTask(
@@ -226,7 +227,8 @@ class ProjectSyncTask(private val project: Project) {
                 server.bazelInfo.release.deprecated()?.let { deprecated ->
                   project.syncConsole.addDiagnosticMessage(
                     taskId, null, -1, -1,
-                    "$deprecated Sync might give incomplete results.",
+                    message = "$deprecated Sync might give incomplete results.",
+                    description = null,
                     MessageEvent.Kind.WARNING,
                   )
                 }
@@ -436,7 +438,8 @@ class ProjectSyncTask(private val project: Project) {
           project.syncConsole.addDiagnosticMessage(
             taskId,
             null, -1, -1,
-            e.message ?: "Unknown error",
+            message = e.message ?: "Unknown error",
+            description = null,
             MessageEvent.Kind.ERROR,
           )
         }

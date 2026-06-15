@@ -53,6 +53,7 @@ internal class BazelBuildTaskListener(private val taskConsole: TaskConsole) : Ba
       line = line,
       column = character,
       message = message,
+      description = null,
       severity = severity,
     )
   }
