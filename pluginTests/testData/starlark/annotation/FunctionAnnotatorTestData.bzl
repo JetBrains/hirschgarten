@@ -1,6 +1,6 @@
-def <info>square</info>(x):
+def <info descr="null" textAttributesKey="STARLARK_FUNCTION_DECLARATION">square</info>(x):
     return x * x
 
-square(<info>x</info> <info>=</info> 3)
+square(<info descr="null" textAttributesKey="STARLARK_NAMED_ARGUMENT">x</info> <info descr="null" textAttributesKey="STARLARK_NAMED_ARGUMENT">=</info> 3)
 
 square(3)

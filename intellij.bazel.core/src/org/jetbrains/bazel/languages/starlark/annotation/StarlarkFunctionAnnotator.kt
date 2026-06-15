@@ -44,8 +44,7 @@ internal class StarlarkFunctionAnnotator : StarlarkAnnotator() {
       element = element,
       expectedElementTypes = listOf(StarlarkElementTypes.CALL_EXPRESSION),
       expectedParentTypes = listOf(StarlarkElementTypes.EXPRESSION_STATEMENT),
-    ) && !resolvesToFunction(element) &&
-      (element.containingFile as? StarlarkFile)?.getBazelFileType()?.let { it == BazelFileType.BUILD || it == BazelFileType.MODULE } == true
+    ) && (element.containingFile as? StarlarkFile)?.getBazelFileType()?.let { it == BazelFileType.BUILD || it == BazelFileType.MODULE } == true
 
   private fun resolvesToFunction(element: PsiElement): Boolean {
     val callExpression = element as? StarlarkCallExpression ?: return false
@@ -56,7 +55,7 @@ internal class StarlarkFunctionAnnotator : StarlarkAnnotator() {
     if (element.firstChild == null) return
     val functionName = element.firstChild.text
     holder.mark(element.firstChild, StarlarkHighlightingColors.FUNCTION_DECLARATION)
-
+    if (resolvesToFunction(element)) return
     val function = BazelGlobalFunctions.getFunctionByName(functionName)
     if (function != null) {
       doAnnotateGlobalFunction(function, element, holder)
