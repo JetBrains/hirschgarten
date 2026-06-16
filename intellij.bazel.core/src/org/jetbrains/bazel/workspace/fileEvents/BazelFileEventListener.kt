@@ -14,7 +14,6 @@ import com.intellij.openapi.util.NlsSafe
 import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.openapi.vfs.VfsUtilCore
 import com.intellij.openapi.vfs.VirtualFile
-import com.intellij.openapi.vfs.VirtualFileManager
 import com.intellij.openapi.vfs.newvfs.BulkFileListenerBackgroundable
 import com.intellij.openapi.vfs.newvfs.events.VFileEvent
 import com.intellij.platform.backend.workspace.WorkspaceModel
@@ -306,18 +305,20 @@ open class BazelFileEventListener : BulkFileListenerBackgroundable {
       queryResult ?: emptyMap()
     } else if (allowPsiEvaluation) {
       // Heuristically evaluate targets by looking into PSI
-      var evaluationFailed = false
+      val emptyEvaluation = ArrayList<Path>()
       val eval = StarlarkSrcsListEval(project)
+
       files.mapNotNull { file ->
         val targets = readAction { eval.findTargetsForSourceFile(file.vFile) }
         if (targets.isEmpty()) {
-          // Cannot determine the targets for file - show "Resync" button
-          evaluationFailed = true
+          // Cannot determine the targets for file - show "Resync" button.
+          emptyEvaluation.add(file.path)
           return@mapNotNull null
         }
         file.path to targets
       }.toMap().also {
-        if (evaluationFailed) {
+        if (emptyEvaluation.isNotEmpty()) {
+          logger.warn("Cannot evaluate targets for ${emptyEvaluation.size} new files. Show \"Sync Bazel changes\" button. ${emptyEvaluation.take(3).joinToString()}")
           BazelProjectAware.notify(project)
         }
       }
