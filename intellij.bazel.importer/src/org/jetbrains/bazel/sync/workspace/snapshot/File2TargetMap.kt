@@ -8,7 +8,7 @@ import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.annotations.VisibleForTesting
 import org.jetbrains.bsp.protocol.allSources
 import java.nio.file.Path
-import kotlin.io.path.relativeTo
+import kotlin.io.path.relativeToOrNull
 import kotlin.io.path.relativeToOrSelf
 
 /**
@@ -26,7 +26,7 @@ class File2TargetMap internal constructor(
 
   fun getTargetsByFile(path: Path): List<WorkspaceTargetKey> {
     // try relative path first
-    val relativePath = workspaceRoot?.let { path.relativeTo(it) }
+    val relativePath = workspaceRoot?.let { path.relativeToOrNull(it) }
     if (relativePath != null) {
       hash2Targets.get(hashFilePath(relativePath))
         ?.let { return it }
