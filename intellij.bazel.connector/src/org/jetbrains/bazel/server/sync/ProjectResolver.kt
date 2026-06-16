@@ -28,9 +28,7 @@ import org.jetbrains.bazel.performance.bspTracer
 import org.jetbrains.bazel.progress.syncConsole
 import org.jetbrains.bazel.server.bsp.managers.BazelBspAspectsManager
 import org.jetbrains.bazel.server.bsp.managers.BazelBspAspectsManagerResult
-import org.jetbrains.bazel.server.bsp.managers.BazelBspLanguageExtensionsGenerator
 import org.jetbrains.bazel.server.bsp.managers.BazelExternalRulesetsQueryImpl
-import org.jetbrains.bazel.server.bsp.managers.BazelToolchainManager
 import org.jetbrains.bazel.server.bzlmod.calculateRepoNameMappingOnly
 import org.jetbrains.bazel.server.bzlmod.extendRepoMappingByPathInfo
 import org.jetbrains.bazel.server.model.AspectSyncProject
@@ -60,8 +58,6 @@ private fun TargetCollection.halve(): List<TargetCollection> {
 @ApiStatus.Internal
 class ProjectResolver(
   private val bazelBspAspectsManager: BazelBspAspectsManager,
-  private val bazelToolchainManager: BazelToolchainManager,
-  private val bazelBspLanguageExtensionsGenerator: BazelBspLanguageExtensionsGenerator,
   private val workspaceContext: WorkspaceContext,
   private val bazelInfo: BazelInfo,
   private val bazelRunner: BazelRunner,

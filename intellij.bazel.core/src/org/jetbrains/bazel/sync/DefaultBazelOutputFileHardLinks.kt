@@ -1,6 +1,7 @@
 package org.jetbrains.bazel.sync.workspace.mapper.normal
 
 import com.intellij.openapi.application.edtWriteAction
+import com.intellij.openapi.components.service
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.getProjectDataPath
@@ -23,6 +24,7 @@ import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.coroutines.BazelCoroutineService
 import org.jetbrains.bazel.sync.BazelOutFileHardLinks
+import org.jetbrains.bazel.sync.environment.BazelApplicationContextService
 import java.nio.file.Files
 import java.nio.file.Path
 import java.util.concurrent.ConcurrentHashMap
@@ -60,7 +62,6 @@ internal class DefaultBazelOutputFileHardLinks(
 
   override suspend fun createOutputFileHardLinks(files: Collection<Path>): List<Path> {
     if (files.isEmpty()) return emptyList()
-    if (!BazelFeatureFlags.hardLinkOutputFiles) return files.toList()
     if (!syncRunning.get()) return files.toList()
 
     var retainedPaths: MutableList<Path>? = null
@@ -141,9 +142,6 @@ internal class DefaultBazelOutputFileHardLinks(
 
   override suspend fun onAfterSync(projectModelUpdated: Boolean) {
     if (syncRunning.compareAndSet(true, false)) {
-      if (!BazelFeatureFlags.hardLinkOutputFiles)
-        return
-
       RefreshQueue.getInstance().refresh(
         recursive = false,
         hardLinksDuringSync.values.awaitAll().filter { it.requiresRefresh }.map { it.virtualFile },

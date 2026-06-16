@@ -1,11 +1,13 @@
 package org.jetbrains.bazel.server.connection
 
+import com.intellij.openapi.components.service
 import com.intellij.openapi.components.serviceAsync
 import com.intellij.openapi.project.Project
 import org.jetbrains.bazel.bazelrunner.BazelInfoResolver
 import org.jetbrains.bazel.bazelrunner.BazelProcessLauncherProvider
 import org.jetbrains.bazel.bazelrunner.BazelRunner
 import org.jetbrains.bazel.commons.BazelPathsResolver
+import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.install.EnvironmentCreator
 import org.jetbrains.bazel.languages.bazelversion.psi.BazelVersionLiteral
@@ -13,9 +15,6 @@ import org.jetbrains.bazel.languages.bazelversion.service.BazelVersionWorkspaceR
 import org.jetbrains.bazel.server.BazelServerConnection
 import org.jetbrains.bazel.server.bsp.BazelServerFacadeImpl
 import org.jetbrains.bazel.server.bsp.managers.BazelBspAspectsManager
-import org.jetbrains.bazel.server.bsp.managers.BazelBspLanguageExtensionsGenerator
-import org.jetbrains.bazel.server.bsp.managers.BazelToolchainManager
-import org.jetbrains.bazel.server.bsp.utils.InternalAspectsResolver
 import org.jetbrains.bazel.server.sync.BspProjectMapper
 import org.jetbrains.bazel.server.sync.ExecuteService
 import org.jetbrains.bazel.server.sync.ProjectResolver
@@ -28,6 +27,8 @@ import org.jetbrains.bazel.workspace.WorkspaceContextProvider
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bazel.server.BazelServerFacade
 import org.jetbrains.bazel.server.BazelServerService
+import org.jetbrains.bazel.sync.BazelOutFileHardLinks
+import org.jetbrains.bazel.sync.environment.BazelApplicationContextService
 import java.util.concurrent.atomic.AtomicReference
 
 internal class DefaultBazelServerConnection(private val project: Project) : BazelServerConnection {
@@ -66,7 +67,6 @@ internal class DefaultBazelServerConnection(private val project: Project) : Baze
 
   private suspend fun createServer(workspaceContext: WorkspaceContext): BazelServerFacadeImpl {
     val taskEventsHandler = BazelTaskEventsService.getInstance(project)
-    val aspectsResolver = InternalAspectsResolver(workspaceRoot)
     val bazelInfoResolver = BazelInfoResolver(workspaceRoot)
     val bazelProcessLauncherProvider = BazelProcessLauncherProvider.getInstance()
     val bazelProcessLauncher =
@@ -76,7 +76,12 @@ internal class DefaultBazelServerConnection(private val project: Project) : Baze
     val bazelInfo = bazelInfoResolver.resolveBazelInfo(bazelRunner, workspaceContext)
     val bazelPathsResolver = BazelPathsResolver(bazelInfo)
 
-    val outFileHardLinks = DefaultBazelOutputFileHardLinks(project, bazelInfo)
+    val outFileHardLinks =
+      if (BazelFeatureFlags.hardLinkOutputFiles &&
+          !service<BazelApplicationContextService>().disableHardLinksOutputFiles)
+        DefaultBazelOutputFileHardLinks(project, bazelInfo)
+      else
+        BazelOutFileHardLinks.NONE
 
     val executeService =
       ExecuteService(
@@ -90,18 +95,14 @@ internal class DefaultBazelServerConnection(private val project: Project) : Baze
 
     val bazelBspAspectsManager =
       BazelBspAspectsManager(
+        workspaceRoot = workspaceRoot,
         executeService = executeService,
-        aspectsResolver = aspectsResolver,
         bazelRelease = bazelInfo.release,
       )
-    val bazelToolchainManager = BazelToolchainManager()
-    val bazelBspLanguageExtensionsGenerator = BazelBspLanguageExtensionsGenerator(aspectsResolver)
 
     val projectResolver =
       ProjectResolver(
         bazelBspAspectsManager = bazelBspAspectsManager,
-        bazelToolchainManager = bazelToolchainManager,
-        bazelBspLanguageExtensionsGenerator = bazelBspLanguageExtensionsGenerator,
         workspaceContext = workspaceContext,
         bazelInfo = bazelInfo,
         bazelRunner = bazelRunner,

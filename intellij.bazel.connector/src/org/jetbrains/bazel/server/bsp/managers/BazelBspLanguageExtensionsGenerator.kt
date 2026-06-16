@@ -1,13 +1,8 @@
 package org.jetbrains.bazel.server.bsp.managers
 
 import com.intellij.aspect.lib.Rules
-import org.apache.velocity.app.VelocityEngine
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.commons.BazelRelease
-import org.jetbrains.bazel.commons.BzlmodRepoMapping
-import org.jetbrains.bazel.commons.RepoMapping
-import org.jetbrains.bazel.server.bsp.utils.InternalAspectsResolver
-import java.util.Properties
 
 @ApiStatus.Internal
 enum class Language(
@@ -73,28 +68,4 @@ enum class Language(
     if (autoloadHints.isEmpty()) return false
     return (rulesetNames + autoloadHints).any { it in externalAutoloads }
   }
-
-  private fun toCanonicalRuleName(repoMapping: RepoMapping) : String? {
-    val toCanonical = (repoMapping as? BzlmodRepoMapping)?.apparentRepoNameToCanonicalName ?: return null
-    return rulesetNames.filter { it in toCanonical }.firstOrNull()?.let { "@@" + toCanonical[it] }
-  }
-}
-
-@ApiStatus.Internal
-class BazelBspLanguageExtensionsGenerator(internalAspectsResolver: InternalAspectsResolver) {
-  private val aspectsPath = internalAspectsResolver.aspectsPath
-  private val velocityEngine = VelocityEngine()
-
-  init {
-    val props = calculateProperties()
-    velocityEngine.init(props)
-  }
-
-  private fun calculateProperties(): Properties {
-    val props = Properties()
-    props["resource.loader.file.path"] = aspectsPath.toAbsolutePath().toString()
-    props.setProperty("runtime.log.logsystem.class", "org.apache.velocity.runtime.log.NullLogSystem")
-    return props
-  }
-
 }
