@@ -306,9 +306,11 @@
       language="Starlark"
       implementationClass="org.jetbrains.bazel.languages.starlark.findusages.BazelRuleTargetCallElementEvaluator"
     />
-    <lang.documentationProvider
-      language="Starlark"
-      implementationClass="org.jetbrains.bazel.languages.starlark.documentation.BazelTargetDocumentationProvider"
+    <platform.backend.documentation.psiTargetProvider
+      implementation="org.jetbrains.bazel.languages.starlark.documentation.BazelRuleCallPsiDocumentationTargetProvider"
+    />
+    <platform.backend.documentation.linkHandler
+      implementation="org.jetbrains.bazel.languages.starlark.documentation.BazelRuleCallDocumentationLinkHandler"
     />
     <lang.elementManipulator
       forClass="org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkStringLiteralExpression"

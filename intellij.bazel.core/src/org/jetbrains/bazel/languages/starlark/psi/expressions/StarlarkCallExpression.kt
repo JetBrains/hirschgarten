@@ -3,6 +3,7 @@ package org.jetbrains.bazel.languages.starlark.psi.expressions
 import com.intellij.lang.ASTNode
 import com.intellij.model.psi.PsiSymbolReference
 import com.intellij.model.psi.PsiSymbolService
+import com.intellij.navigation.ItemPresentation
 import com.intellij.psi.ElementManipulators
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
@@ -10,8 +11,10 @@ import com.intellij.psi.PsiNameIdentifierOwner
 import com.intellij.psi.search.SearchScope
 import com.intellij.psi.util.elementType
 import org.jetbrains.annotations.ApiStatus
+import org.jetbrains.bazel.assets.BazelPluginIcons
 import org.jetbrains.bazel.languages.starlark.bazel.BazelFileType
 import org.jetbrains.bazel.languages.starlark.starlarkProjectScope
+import javax.swing.Icon
 import org.jetbrains.bazel.languages.starlark.bazel.BazelGlobalFunctions
 import org.jetbrains.bazel.languages.starlark.elements.StarlarkElementTypes
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkBaseElement
@@ -52,7 +55,6 @@ internal fun PsiElement.isBazelFileTopLevelCall(): Boolean {
  * and the containing file is a BUILD file.
  * It's communicated to the IntelliJ platform by [org.jetbrains.bazel.languages.starlark.findusages.BazelRuleTargetCallElementEvaluator].
  */
-@Suppress("UnstableApiUsage")
 @ApiStatus.Internal
 class StarlarkCallExpression(node: ASTNode) :
   StarlarkBaseElement(node),
@@ -80,6 +82,11 @@ class StarlarkCallExpression(node: ASTNode) :
 
   override fun getTextOffset(): Int = nameIdentifier?.textOffset ?: super.getTextOffset()
 
+  override fun getPresentation(): ItemPresentation? = when {
+      isRuleTarget() ->  BazelTargetPresentation(this)
+      else -> null
+  }
+
   fun isRuleTarget(): Boolean {
     if (getNameAttributeValue() == null) return false
     val file = containingFile as? StarlarkFile ?: return false
@@ -103,4 +110,16 @@ class StarlarkCallExpression(node: ASTNode) :
   private fun nameArgumentStringLiteral(): StarlarkStringLiteralExpression? = getArgumentList()
     ?.getNameArgument()
     ?.getValue() as? StarlarkStringLiteralExpression
+}
+
+private class BazelTargetPresentation(private val target: StarlarkCallExpression) : ItemPresentation {
+  override fun getPresentableText(): String? = target.getNameAttributeValue()
+
+  override fun getIcon(unused: Boolean): Icon = BazelPluginIcons.bazel
+
+  override fun getLocationString(): String? {
+    val virtualFile = target.containingFile?.virtualFile ?: return null
+    val basePath = target.project.basePath ?: return virtualFile.presentableUrl
+    return virtualFile.path.removePrefix("$basePath/")
+  }
 }
