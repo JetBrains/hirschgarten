@@ -27,8 +27,11 @@ def get_kotlin_plugins(target, ctx, dep_targets):
     return depset(direct = direct_plugins, transitive = dep_plugins).to_list()
 
 def get_additional_javac_options(ctx, target):
-    kotlin_toolchain = ctx.toolchains[KOTLIN_TOOLCHAIN_TYPE]
-    toolchain_javac_opts = kotlin_toolchain.javac_options
+    if KOTLIN_TOOLCHAIN_TYPE in ctx.toolchains:
+        kotlin_toolchain = ctx.toolchains[KOTLIN_TOOLCHAIN_TYPE]
+        toolchain_javac_opts = kotlin_toolchain.javac_options
+    else:
+        toolchain_javac_opts = None
     javac_opts_target = getattr(ctx.rule.attr, "javac_opts", None)
     javac_opts = javac_opts_target[JavacOptions] if javac_opts_target and JavacOptions in javac_opts_target else toolchain_javac_opts
 

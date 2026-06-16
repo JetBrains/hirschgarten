@@ -61,7 +61,7 @@ def extract_scala_info(target, ctx, output_groups, **kwargs):
     rule_attr = ctx.rule.attr
 
     # check of _scala_toolchain is necessary, because SCALA_TOOLCHAIN will always be present
-    if hasattr(rule_attr, "_scala_toolchain"):
+    if hasattr(rule_attr, "_scala_toolchain") and SCALA_TOOLCHAIN in ctx.toolchains:
         common_scalac_opts = ctx.toolchains[SCALA_TOOLCHAIN].scalacopts
         if hasattr(rule_attr, "_scalac"):
             scalac = rule_attr._scalac
