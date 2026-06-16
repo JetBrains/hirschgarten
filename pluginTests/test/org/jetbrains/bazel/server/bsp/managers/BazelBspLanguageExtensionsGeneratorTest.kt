@@ -2,15 +2,8 @@ package org.jetbrains.bazel.server.bsp.managers
 
 import io.kotest.matchers.shouldBe
 import org.jetbrains.bazel.commons.BazelRelease
-import org.jetbrains.bazel.commons.BzlmodRepoMapping
-import org.jetbrains.bazel.commons.constants.Constants
-import org.jetbrains.bazel.install.EnvironmentCreator
-import org.jetbrains.bazel.server.bsp.utils.InternalAspectsResolver
-import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
-import java.nio.file.Path
-import kotlin.io.path.createTempDirectory
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class BazelBspLanguageExtensionsGeneratorTest {

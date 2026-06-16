@@ -10,7 +10,6 @@ import org.jetbrains.bazel.bazelrunner.params.BazelFlag.buildManualTests
 import org.jetbrains.bazel.bazelrunner.params.BazelFlag.keepGoing
 import org.jetbrains.bazel.bazelrunner.params.BazelFlag.outputGroups
 import org.jetbrains.bazel.bazelrunner.params.BazelFlag.remoteDownloadOutputsTopLevel
-import org.jetbrains.bazel.commons.BazelInfo
 import org.jetbrains.bazel.commons.BazelRelease
 import org.jetbrains.bazel.commons.BazelStatus
 import org.jetbrains.bazel.commons.BzlmodRepoMapping
@@ -19,14 +18,10 @@ import org.jetbrains.bazel.commons.TargetCollection
 import org.jetbrains.bazel.commons.constants.Constants
 import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.server.bep.BepOutput
-import org.jetbrains.bazel.server.bsp.utils.InternalAspectsResolver
 import org.jetbrains.bazel.server.sync.ExecuteService
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bsp.protocol.TaskId
-import java.io.IOException
-import java.nio.file.Files
 import java.nio.file.Path
-import kotlin.io.path.exists
 
 @ApiStatus.Internal
 data class BazelBspAspectsManagerResult(val bepOutput: BepOutput, val status: BazelStatus) {
@@ -47,23 +42,15 @@ sealed interface RuleSetName
 data class ApparentRulesetName(val name: String) : RuleSetName
 internal data class CanonicalRulesetName(val name: String) : RuleSetName
 
-internal fun RuleSetName.asReponame() = when (this) {
-  is CanonicalRulesetName -> "@${name}"
-  is ApparentRulesetName -> name
-}
-
 @ApiStatus.Internal
 data class RulesetLanguage(val rulesetName: RuleSetName?, val language: Language)
 
 @ApiStatus.Internal
 class BazelBspAspectsManager(
+  private val workspaceRoot: Path,
   private val executeService: ExecuteService,
-  private val aspectsResolver: InternalAspectsResolver,
   private val bazelRelease: BazelRelease,
 ) {
-  private val aspectsPath = aspectsResolver.aspectsPath
-  private val templateWriter = TemplateWriter(aspectsPath)
-
   fun calculateRulesetLanguages(
     externalRulesetNames: List<String>,
     externalRulesetDefinitions: Map<String, ShowRepoResult?>,
@@ -107,22 +94,6 @@ class BazelBspAspectsManager(
     return this.filterNot { it.language == Language.Python } + RulesetLanguage(ApparentRulesetName(pythonRulesetName), Language.Python)
   }
 
-  fun detectBazelIgnoreAndErrorOut(
-    bazelInfo: BazelInfo,
-  ) {
-    val bazelIgnore = bazelInfo.workspaceRoot.resolve(Constants.BAZEL_IGNORE_FILE_NAME)
-    if (!bazelIgnore.exists()) return
-
-    val lines = try {
-      Files.lines(bazelIgnore).map { it.trim() }.toList()
-    } catch (_: IOException) {
-      return
-    }
-    if (!lines.contains(Constants.DOT_BAZELBSP_DIR_NAME)) return
-
-    throw IllegalStateException("${bazelIgnore} mentions ${Constants.DOT_BAZELBSP_DIR_NAME} which is needed for sync by the bazel plugin.")
-  }
-
   fun deployIntelliJAspect(
     rulesetLanguages: List<RulesetLanguage>,
     bazelRelease: BazelRelease,
@@ -144,7 +115,7 @@ class BazelBspAspectsManager(
     }.map { it.language.aspectLanguage }.toSet() + (if (bazelRelease.major <= 7) setOf(Rules.JAVA) else setOf())
 
     deployAspectZip(
-     aspectsResolver.workspaceRoot,
+     workspaceRoot,
      Path.of(Constants.DOT_BAZELBSP_DIR_NAME),
      AspectConfig(
        "${bazelRelease.major}",
@@ -178,7 +149,7 @@ class BazelBspAspectsManager(
     if (targetsSpec.values.isEmpty()) return BazelBspAspectsManagerResult(BepOutput(), BazelStatus.SUCCESS)
     val defaultFlags =
       listOf(
-        aspect(aspects.map { aspectsResolver.resolveLabel(it)}.joinToString (",")),
+        aspect(aspects.map { resolveAspectLabel(it)}.joinToString (",")),
         outputGroups(outputGroups),
         keepGoing(),
       )
@@ -212,4 +183,6 @@ class BazelBspAspectsManager(
         taskId = taskId,
       ).let { BazelBspAspectsManagerResult(it.bepOutput, it.processResult.bazelStatus) }
   }
+
+  private fun resolveAspectLabel(aspect: String): String = "//${Constants.DOT_BAZELBSP_DIR_NAME}/$aspect"
 }

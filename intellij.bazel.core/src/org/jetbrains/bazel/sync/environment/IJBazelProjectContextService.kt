@@ -1,45 +1,53 @@
 package org.jetbrains.bazel.sync.environment
 
-import com.intellij.openapi.components.service
+import com.intellij.openapi.components.PersistentStateComponent
+import com.intellij.openapi.components.Storage
+import com.intellij.openapi.components.StoragePathMacros
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.guessProjectDir
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.project.stateStore
 import org.jetbrains.bazel.flow.open.BazelProjectStoreDescriptor
-import org.jetbrains.bazel.flow.sync.bazelPaths.BazelBinPathService
-import org.jetbrains.bazel.project.BazelProjectProperties.Companion.bazelProjectProperties
 import org.jetbrains.bazel.utils.findVirtualFile
 
-internal class IJBazelProjectContextService(private val project: Project) : BazelProjectContextService {
+@com.intellij.openapi.components.State(
+  name = "BazelProjectContextService",
+  storages = [Storage(StoragePathMacros.WORKSPACE_FILE)],
+  reportStatistic = true,
+)
+internal class IJBazelProjectContextService(private val project: Project)
+  : BazelProjectContextService, PersistentStateComponent<IJBazelProjectContextService.State> {
+
+  override var bazelBinPath: String? = null
+  override var bazelExecPath: String? = null
+  override var workspaceName: String? = null
+
   override var isBazelProject: Boolean
     get() = project.stateStore.storeDescriptor is BazelProjectStoreDescriptor
     set(_) = throw UnsupportedOperationException()
 
-  private val projectRootDirFallback: VirtualFile? by lazy {
-    // Fallback for running a Bazel run configuration in a non-Bazel project
-    project.guessProjectDir()
-  }
-
   override var projectRootDir: VirtualFile?
     get() {
       val bazelProjectStoreDescriptor = project.stateStore.storeDescriptor as? BazelProjectStoreDescriptor
-      return bazelProjectStoreDescriptor?.historicalProjectBasePath?.findVirtualFile() ?: projectRootDirFallback
+      return bazelProjectStoreDescriptor?.historicalProjectBasePath?.findVirtualFile()
+             // Fallback for running a Bazel run configuration in a non-Bazel project
+             ?: project.guessProjectDir()
     }
     set(_) = throw UnsupportedOperationException()
-  override var workspaceName: String?
-    get() = project.bazelProjectProperties.workspaceName
-    set(value) {
-      project.bazelProjectProperties.workspaceName = value
-    }
-  override var bazelBinPath: String?
-    get() = project.service<BazelBinPathService>().bazelBinPath
-    set(value) {
-      project.service<BazelBinPathService>().bazelBinPath = value
-    }
-  override var bazelExecPath: String?
-    get() = project.service<BazelBinPathService>().bazelExecPath
-    set(value) {
-      project.service<BazelBinPathService>().bazelExecPath = value
-    }
+
   override val avoidExternalSystem: Boolean = false
+
+  override fun getState(): State = State(bazelBinPath, bazelExecPath, workspaceName)
+
+  override fun loadState(state: State) {
+    bazelBinPath = state.bazelBin
+    bazelExecPath = state.execRoot
+    workspaceName = state.workspaceName
+  }
+
+  data class State(
+    var bazelBin: String? = null,
+    var execRoot: String? = null,
+    var workspaceName: String? = null
+  )
 }

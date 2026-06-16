@@ -1,10 +1,8 @@
 package org.jetbrains.bazel.config
 
-import com.intellij.openapi.components.service
 import com.intellij.openapi.util.registry.Registry
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.annotations.VisibleForTesting
-import org.jetbrains.bazel.sync.environment.BazelApplicationContextService
 
 @ApiStatus.Internal
 object BazelFeatureFlags {
@@ -109,7 +107,6 @@ object BazelFeatureFlags {
 
   val hardLinkOutputFiles: Boolean
     get() = isEnabled(HARD_LINK_OUTPUT_FILES)
-            && !service<BazelApplicationContextService>().disableHardLinksOutputFiles
 
   val queryBazelOnFileEvents: Boolean
     get() = isEnabled(QUERY_ON_FILE_EVENTS)
