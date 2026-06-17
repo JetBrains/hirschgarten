@@ -34,22 +34,36 @@ import kotlin.io.path.writer
 private const val PYINDEX_STORAGE_VERSION: Int = 1
 private fun Project.pyIndexStoragePath(): Path = getProjectDataPath("bazel-pyindex-v$PYINDEX_STORAGE_VERSION.db")
 
+private data class ResolveIndexSnapshot(
+  val qualifiedNamesToPaths: Map<QualifiedName, Path>,
+  val shortestQualifiedNamesByPath: Map<Path, QualifiedName>,
+)
+
 @Service(Service.Level.PROJECT)
 internal class PythonResolveIndexService(private val project: Project) {
-  private val resolveIndexRef = AtomicReference<Map<QualifiedName, Path>>(emptyMap())
+  private val resolveIndexSnapshotRef = AtomicReference(ResolveIndexSnapshot(emptyMap(), emptyMap()))
 
   val resolveIndex: Map<QualifiedName, Path>
-    get() = resolveIndexRef.get()
+    get() = resolveIndexSnapshotRef.get().qualifiedNamesToPaths
+
+  fun findShortestQualifiedName(path: Path): QualifiedName? =
+    resolveIndexSnapshotRef.get().shortestQualifiedNamesByPath[path]
 
   init {
-    resolveIndexRef.set(load(project.pyIndexStoragePath()))
+    updateResolveIndexSnapshot(load(project.pyIndexStoragePath()))
   }
 
   suspend fun updatePythonResolveIndex(pythonTargets: List<RawBuildTarget>, outFilesHardLink: BazelOutFileHardLinks) {
-    val cache = buildIndex(pythonTargets, outFilesHardLink)
+    val nameToPathIndex = buildIndex(pythonTargets, outFilesHardLink)
 
-    resolveIndexRef.set(cache)
-    store(project.pyIndexStoragePath(), cache)
+    updateResolveIndexSnapshot(nameToPathIndex)
+    store(project.pyIndexStoragePath(), nameToPathIndex)
+  }
+
+  private fun updateResolveIndexSnapshot(newNameToPathIndex: Map<QualifiedName, Path>) {
+    val pathToNameIndex = buildShortestQualifiedNamesByPath(newNameToPathIndex)
+    val newSnapshot = ResolveIndexSnapshot(newNameToPathIndex, pathToNameIndex)
+    resolveIndexSnapshotRef.set(newSnapshot)
   }
 
   private suspend fun buildIndex(
@@ -184,6 +198,18 @@ internal class PythonResolveIndexService(private val project: Project) {
     return ideInfo.imports.map {
       buildParentPath.resolve(it).normalize()
     }
+  }
+
+  private fun buildShortestQualifiedNamesByPath(resolveIndex: Map<QualifiedName, Path>): Map<Path, QualifiedName> {
+    val result = hashMapOf<Path, QualifiedName>()
+    for ((qualifiedName, path) in resolveIndex) {
+      val existingQualifiedName = result[path]
+      if (existingQualifiedName == null || qualifiedName.componentCount < existingQualifiedName.componentCount) {
+        // keep the shortest matching qualified name
+        result[path] = qualifiedName
+      }
+    }
+    return result
   }
 
   companion object {

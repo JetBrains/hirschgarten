@@ -28,6 +28,10 @@
     <importResolver implementation="com.intellij.bazel.python.backend.BazelPyImportResolver" />
   </extensions>
 
+  <extensions defaultExtensionNs="com.intellij">
+    <moduleRendererFactory implementation="com.intellij.bazel.python.backend.BazelPythonModuleRendererFactory" order="before platform"/>
+  </extensions>
+
   <extensions defaultExtensionNs="org.jetbrains.bazel">
     <indexAdditionalFilesContributor implementation="com.intellij.bazel.python.backend.PythonIndexAdditionalFilesContributor"/>
     <syncWorkspaceImporter implementation="com.intellij.bazel.python.backend.BazelPythonWorkspaceImporter"/>
