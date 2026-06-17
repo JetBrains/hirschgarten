@@ -53,9 +53,15 @@ import org.jetbrains.bazel.sync.workspace.snapshot.allTargets
 import org.jetbrains.bazel.sync.workspace.snapshot.filterBuildTarget
 import org.jetbrains.bazel.sync.workspace.snapshot.hasBuildData
 import org.jetbrains.bazel.workspacemodel.entities.BazelModuleEntitySource
+import org.jetbrains.bazel.workspacemodel.entities.BazelModuleExtensionEntity
+import org.jetbrains.bazel.workspacemodel.entities.WorkspaceModelTargetLabel
+import org.jetbrains.bazel.workspacemodel.entities.WorkspaceModelTargetLabelList
+import org.jetbrains.bazel.workspacemodel.entities.WorkspaceModelTargetSourceRootTypeId
+import org.jetbrains.bazel.workspacemodel.entities.bazelModuleExtension
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.PythonBuildTarget
 import org.jetbrains.bsp.protocol.RawBuildTarget
+import org.jetbrains.bsp.protocol.StrictDependencyCheckedType
 import org.jetbrains.bsp.protocol.TaskId
 import org.jetbrains.bsp.protocol.allSources
 import org.jetbrains.bsp.protocol.utils.StringUtils
@@ -127,7 +133,7 @@ internal class BazelPythonWorkspaceImporter : BazelWorkspaceImporter {
     return WorkspaceImporterResult.Success
   }
 
-  private suspend fun onWorkspaceApply(
+  private fun onWorkspaceApply(
     context: WorkspaceImporterContext, snapshot: WorkspaceSnapshot,
     builder: MutableEntityStorage, vfuManager: VirtualFileUrlManager,
   ): WorkspaceImporterResult {
@@ -277,6 +283,15 @@ internal class BazelPythonWorkspaceImporter : BazelWorkspaceImporter {
       ) {
         this.type = PYTHON_MODULE_TYPE
         this.contentRoots = contentRoots
+        this.bazelModuleExtension = BazelModuleExtensionEntity(
+          label = WorkspaceModelTargetLabel(target.id),
+          rootTypeId = WorkspaceModelTargetSourceRootTypeId(SourceRootTypeId(PYTHON_SOURCE_ROOT_TYPE)),
+          strictDependencies = WorkspaceModelTargetLabelList(
+            StrictDependencyCheckedType.OFF,
+            emptyList(),
+          ),
+          entitySource = entitySource,
+        )
       },
     )
   }

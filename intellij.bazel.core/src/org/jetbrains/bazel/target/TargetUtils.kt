@@ -80,6 +80,13 @@ class TargetUtils(private val project: Project, private val coroutineScope: Coro
   fun isLoaded(): Boolean = dbAsync.isCompleted
 
   /**
+   * Await loads
+   */
+  suspend fun awaitLoaded() {
+    dbAsync.await()
+  }
+
+  /**
    * Executes the given body when the storage is loaded (or immediately if storage is already loaded)
    */
   fun onLoaded(body: () -> Unit) {

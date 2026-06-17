@@ -35,12 +35,14 @@ import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.config.isBazelProject
 import org.jetbrains.bazel.config.rootDir
+import org.jetbrains.bazel.coroutines.BazelCoroutineService
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.magicmetamodel.formatAsModuleName
 import org.jetbrains.bazel.project.BazelProjectFixtures.deinitializeBazelProject
 import org.jetbrains.bazel.server.BazelServerService
 import org.jetbrains.bazel.target.targetUtils
 import org.jetbrains.bazel.test.framework.target.TestBuildTargetFactory
+import org.jetbrains.bazel.workspace.importer.JAVA_SOURCE_ROOT_TYPE
 import org.jetbrains.bazel.workspace.model.test.framework.BuildServerMock
 import org.jetbrains.bazel.workspace.model.test.framework.MockBuildServerService
 import org.jetbrains.bazel.workspace.model.test.framework.WorkspaceModelBaseTest
@@ -48,6 +50,7 @@ import org.jetbrains.bazel.workspacemodel.entities.BazelModuleEntitySource
 import org.jetbrains.bazel.workspacemodel.entities.BazelModuleExtensionEntity
 import org.jetbrains.bazel.workspacemodel.entities.WorkspaceModelTargetLabel
 import org.jetbrains.bazel.workspacemodel.entities.WorkspaceModelTargetLabelList
+import org.jetbrains.bazel.workspacemodel.entities.WorkspaceModelTargetSourceRootTypeId
 import org.jetbrains.bazel.workspacemodel.entities.bazelModuleExtension
 import org.jetbrains.bsp.protocol.PartialBuildTarget
 import org.jetbrains.bsp.protocol.RawBuildTarget
@@ -90,9 +93,8 @@ class BazelFileEventListenerTest : WorkspaceModelBaseTest() {
   override fun beforeEach() {
     super.beforeEach()
 
-    BazelFileEventListener.enableListener(false) // disable default listener
-
     project.replaceService(BazelServerService::class.java, MockBuildServerService(BuildServerMock()), disposable)
+    project.replaceService(BazelFileEventProcessor::class.java, MockBazelFileEventProcessor, disposable)
     addMockTargetToProject(project)
 
     createModule(target1)
@@ -548,23 +550,24 @@ class BazelFileEventListenerTest : WorkspaceModelBaseTest() {
 
   private fun contentChangeEvent(file: VirtualFile) = VFileContentChangeEvent(requestor, file, 0, 0)
 
-  private fun VFileEvent.process(): Deferred<Boolean>? = processEvents(this)
+  private fun VFileEvent.process(): Deferred<Boolean> = processEvents(this)
 
   private val invertedSourcesQueryCount = AtomicInteger(0)
 
-  private fun processEvents(vararg events: VFileEvent): Deferred<Boolean>? =
-    object : BazelFileEventListener() {
-      override suspend fun invertedSourcesQuery(
-        project: Project,
-        taskId: TaskId,
-        files: Collection<PathAndVFile>,
-      ): Map<Path, List<Label>> {
-        invertedSourcesQueryCount.incrementAndGet()
-        return files.map { it.path }.associateWith {
-          inverseSourcesData.getOrDefault(it.relativeTo(projectBasePath).toString(), emptyList())
+  private fun processEvents(vararg events: VFileEvent): Deferred<Boolean> =
+    BazelCoroutineService.getInstance(project).startAsync {
+      object : DefaultBazelFileEventProcessor(project) {
+        override suspend fun invertedSourcesQuery(
+          taskId: TaskId,
+          files: Collection<PathAndVFile>,
+        ): Map<Path, List<Label>> {
+          invertedSourcesQueryCount.incrementAndGet()
+          return files.map { it.path }.associateWith {
+            inverseSourcesData.getOrDefault(it.relativeTo(projectBasePath).toString(), emptyList())
+          }
         }
-      }
-    }.process(events.toList())[project.locationHash]
+      }.process(events.toList())
+    }
 
   private fun VirtualFile.assertFileBelongsToTargets(vararg expectedBelongingStatus: Pair<Label, Boolean>) {
     val vFile = this
@@ -603,6 +606,7 @@ class BazelFileEventListenerTest : WorkspaceModelBaseTest() {
         this.contentRoots = contentRoots
         this.bazelModuleExtension = BazelModuleExtensionEntity(
           label = WorkspaceModelTargetLabel(label),
+          rootTypeId = WorkspaceModelTargetSourceRootTypeId(JAVA_SOURCE_ROOT_TYPE),
           strictDependencies = WorkspaceModelTargetLabelList(StrictDependencyCheckedType.OFF, emptyList()),
           entitySource = entitySource,
         )
@@ -635,3 +639,9 @@ private fun Deferred<Boolean>?.assertNoProcessingHappened() {
 
 private fun Deferred<Boolean>?.awaitAndGetResult(timeoutSeconds: Int = 15): Boolean? =
   timeoutRunBlocking(timeout=timeoutSeconds.seconds) { this@awaitAndGetResult?.await() }
+
+private object MockBazelFileEventProcessor: BazelFileEventProcessor {
+  override suspend fun process(events: List<VFileEvent>): Boolean {
+    return false
+  }
+}

@@ -17,6 +17,7 @@ import org.jetbrains.bazel.workspacemodel.entities.impl.BazelModuleExtensionEnti
 interface BazelModuleExtensionEntityBuilder : WorkspaceEntityBuilder<BazelModuleExtensionEntity> {
   override var entitySource: EntitySource
   var module: ModuleEntityBuilder
+  var rootTypeId: WorkspaceModelTargetSourceRootTypeId
   var label: WorkspaceModelTargetLabel
   var strictDependencies: WorkspaceModelTargetLabelList
 }
@@ -25,12 +26,14 @@ internal object BazelModuleExtensionEntityType : EntityType<BazelModuleExtension
   override val entityClass: Class<BazelModuleExtensionEntity> get() = BazelModuleExtensionEntity::class.java
   override val entityImplBuilderClass: Class<*> get() = BazelModuleExtensionEntityImpl.Builder::class.java
   operator fun invoke(
+    rootTypeId: WorkspaceModelTargetSourceRootTypeId,
     label: WorkspaceModelTargetLabel,
     strictDependencies: WorkspaceModelTargetLabelList,
     entitySource: EntitySource,
     init: (BazelModuleExtensionEntityBuilder.() -> Unit)? = null,
   ): BazelModuleExtensionEntityBuilder {
     val builder = builder()
+    builder.rootTypeId = rootTypeId
     builder.label = label
     builder.strictDependencies = strictDependencies
     builder.entitySource = entitySource
@@ -55,8 +58,9 @@ var ModuleEntityBuilder.bazelModuleExtension: BazelModuleExtensionEntityBuilder?
 @JvmOverloads
 @JvmName("createBazelModuleExtensionEntity")
 fun BazelModuleExtensionEntity(
+  rootTypeId: WorkspaceModelTargetSourceRootTypeId,
   label: WorkspaceModelTargetLabel,
   strictDependencies: WorkspaceModelTargetLabelList,
   entitySource: EntitySource,
   init: (BazelModuleExtensionEntityBuilder.() -> Unit)? = null,
-): BazelModuleExtensionEntityBuilder = BazelModuleExtensionEntityType(label, strictDependencies, entitySource, init)
+): BazelModuleExtensionEntityBuilder = BazelModuleExtensionEntityType(rootTypeId, label, strictDependencies, entitySource, init)

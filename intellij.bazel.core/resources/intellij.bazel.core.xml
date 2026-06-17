@@ -154,6 +154,11 @@
       serviceInterface="org.jetbrains.bazel.languages.projectview.ProjectViewService"
     />
 
+    <projectService
+      serviceImplementation="org.jetbrains.bazel.workspace.fileEvents.DefaultBazelFileEventProcessor"
+      serviceInterface="org.jetbrains.bazel.workspace.fileEvents.BazelFileEventProcessor"
+    />
+
     <projectService serviceImplementation="org.jetbrains.bazel.languages.projectview.TargetUtilsProjectViewCodeInsightSupport"
                     serviceInterface="org.jetbrains.bazel.languages.projectview.ProjectViewCodeInsightSupport"/>
 

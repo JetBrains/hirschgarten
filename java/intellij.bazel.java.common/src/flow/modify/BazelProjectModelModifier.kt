@@ -151,6 +151,7 @@ internal class BazelProjectModelModifier(private val project: Project) : JavaPro
       builder.modifyModuleEntity(moduleEntity) {
         this.bazelModuleExtension = BazelModuleExtensionEntity(
           label = bazelModuleExt.label,
+          rootTypeId = bazelModuleExt.rootTypeId,
           strictDependencies = WorkspaceModelTargetLabelList(bazelModuleExt.strictDependencies.check, bazelModuleExt.strictDependencies.labels + labelToInsert.toString()),
           entitySource = bazelModuleExt.entitySource
         )

@@ -12,6 +12,7 @@ import com.intellij.platform.workspace.jps.entities.ModuleSourceDependency
 import com.intellij.platform.workspace.jps.entities.ModuleTypeId
 import com.intellij.platform.workspace.jps.entities.SdkDependency
 import com.intellij.platform.workspace.jps.entities.SdkId
+import com.intellij.platform.workspace.jps.entities.SourceRootTypeId
 import com.intellij.platform.workspace.jps.entities.modifyModuleEntity
 import com.intellij.platform.workspace.storage.EntitySource
 import com.intellij.platform.workspace.storage.MutableEntityStorage
@@ -38,6 +39,7 @@ import org.jetbrains.bazel.workspacemodel.entities.BazelModuleExtensionEntity
 import org.jetbrains.bazel.workspacemodel.entities.CompiledSourceCodeInsideJarExcludeEntity
 import org.jetbrains.bazel.workspacemodel.entities.WorkspaceModelTargetLabel
 import org.jetbrains.bazel.workspacemodel.entities.WorkspaceModelTargetLabelList
+import org.jetbrains.bazel.workspacemodel.entities.WorkspaceModelTargetSourceRootTypeId
 import org.jetbrains.bazel.workspacemodel.entities.bazelModuleExtension
 import org.jetbrains.bsp.protocol.SourceFileCollection
 import org.jetbrains.bsp.protocol.KotlinBuildTarget
@@ -272,7 +274,7 @@ class JvmTargetEntitiesBuilder(private val ctx: ImportContext) {
       emptyList()
     }
     val deps = baseDeps + dependenciesAsItems(plan.moduleName, plan.resolvedDeps, scalaSdkDep = null)
-    addModuleEntity(target, plan.moduleName, plan.resolvedDeps, deps, storage)
+    addModuleEntity(target, plan.moduleName, plan.resolvedDeps, JAVA_SOURCE_ROOT_TYPE, deps, storage)
   }
 
   private fun writeFull(
@@ -289,7 +291,8 @@ class JvmTargetEntitiesBuilder(private val ctx: ImportContext) {
                dependenciesAsItems(plan.moduleName, plan.resolvedDeps, scalaSdkDep) +
                associatesDeps
 
-    val moduleEntity = addModuleEntity(target, plan.moduleName, plan.resolvedDeps, deps, storage)
+    val defaultRootTypeId = if (target.kind.ruleType == RuleType.TEST) JAVA_TEST_SOURCE_ROOT_TYPE else JAVA_SOURCE_ROOT_TYPE
+    val moduleEntity = addModuleEntity(target, plan.moduleName, plan.resolvedDeps, defaultRootTypeId, deps, storage)
     addJavaModuleSettings(moduleEntity, plan.javaLangVersion, storage)
 
     if (plan.scalaTarget != null) {
@@ -349,6 +352,7 @@ class JvmTargetEntitiesBuilder(private val ctx: ImportContext) {
         this.type = dummyModuleType
         this.bazelModuleExtension = BazelModuleExtensionEntity(
           label = WorkspaceModelTargetLabel(parentTarget.id),
+          rootTypeId = WorkspaceModelTargetSourceRootTypeId(JAVA_SOURCE_ROOT_TYPE),
           strictDependencies = WorkspaceModelTargetLabelList(StrictDependencyCheckedType.OFF, emptyList()),
           entitySource = entitySource,
         )
@@ -382,6 +386,7 @@ class JvmTargetEntitiesBuilder(private val ctx: ImportContext) {
     target: RawBuildTarget,
     moduleName: String,
     resolvedDeps: DependencyBuilder.Resolved,
+    defaultRootTypeId: SourceRootTypeId,
     dependencies: List<ModuleDependencyItem>,
     storage: MutableEntityStorage,
   ): ModuleEntity {
@@ -395,6 +400,7 @@ class JvmTargetEntitiesBuilder(private val ctx: ImportContext) {
         this.type = javaModuleType
         this.bazelModuleExtension = BazelModuleExtensionEntity(
           label = WorkspaceModelTargetLabel(target.id),
+          rootTypeId = WorkspaceModelTargetSourceRootTypeId(defaultRootTypeId),
           strictDependencies = WorkspaceModelTargetLabelList(
             resolvedDeps.strictDependenciesCheck,
             resolvedDeps.strictDependencies.map { it.toString() },
