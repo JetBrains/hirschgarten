@@ -6,6 +6,8 @@ import com.intellij.openapi.diagnostic.logger
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.bazelrunner.BazelProcessResult
 import org.jetbrains.bazel.bazelrunner.BazelRunner
+import org.jetbrains.bazel.commons.BzlmodRepoMapping
+import org.jetbrains.bazel.commons.RepoMapping
 import org.jetbrains.bazel.commons.gson.bazelGson
 import org.jetbrains.bazel.label.AllRuleTargets
 import org.jetbrains.bazel.label.Label
@@ -46,6 +48,7 @@ internal class BazelExternalRulesetsQueryImpl(
   private val isWorkspaceEnabled: Boolean,
   private val taskEventsHandler: BazelTaskEventsHandler,
   private val workspaceContext: WorkspaceContext,
+  private val repoMapping: RepoMapping,
 ) : BazelExternalRulesetsQuery {
   override suspend fun fetchExternalRulesetNames(): List<String> =
     when {
@@ -57,6 +60,7 @@ internal class BazelExternalRulesetsQueryImpl(
           isBzlModEnabled,
           taskEventsHandler,
           workspaceContext,
+          repoMapping,
         ).fetchExternalRulesetNames() +
           BazelWorkspaceExternalRulesetsQueryImpl(
             taskId,
@@ -142,6 +146,7 @@ internal class BazelBzlModExternalRulesetsQueryImpl(
   private val isBzlModEnabled: Boolean,
   private val taskEventsHandler: BazelTaskEventsHandler,
   private val workspaceContext: WorkspaceContext,
+  private val repoMapping: RepoMapping,
 ) : BazelExternalRulesetsQuery {
   private val gson = bazelGson
 
@@ -186,9 +191,8 @@ internal class BazelBzlModExternalRulesetsQueryImpl(
         rootRulesToNeededTransitiveRules
           .filterKeys { it in directDependencyNames }
           .flatMap { it.value.flatMap { transitiveDep -> graph.includedByDirectDeps(it.key, transitiveDep) } }
-
-      val directDepsApparentNames = graph.dependencies.map { it.apparentName }
-      val indirectDepsApparentNames = indirectDeps.map { it.apparentName }
+      val directDepsApparentNames = graph.dependencies.mapNotNull { it.toApparentName(repoMapping) }
+      val indirectDepsApparentNames = indirectDeps.mapNotNull { it.toApparentName(repoMapping) }
       val moduleName = graph.name?.ifEmpty { null }
       // We include the current module name to handle the edge case for the rules_kotlin repository.
       // In this scenario, the Bazel module does not declare a dependency on rules_kotlin because the module itself *is* rules_kotlin.
@@ -208,14 +212,22 @@ internal class BazelBzlModExternalRulesetsQueryImpl(
 private fun getQueryFailedMessage(result: BazelProcessResult): String = "Bazel query failed with output:\n${result.stderrLines.joinToString("\n")}"
 
 @ApiStatus.Internal
-data class BzlmodDependency(val key: String, val name: String, val apparentName: String, val dependencies: List<BzlmodDependency>)
+data class BzlmodDependency(val key: String, val name: String?, val apparentName: String?, val dependencies: List<BzlmodDependency>) {
+  fun toApparentName(repoMapping: RepoMapping): String? {
+    if (apparentName != null) return apparentName
+    // Bazel 7.4.1 and lower don't provide apparentName in the graph JSON output
+    val repoMapping = (repoMapping as? BzlmodRepoMapping) ?: return null
+    return repoMapping.canonicalRepoNameToApparentName[key.substringBefore("@") + "~"]
+           ?: repoMapping.canonicalRepoNameToApparentName[key.substringBefore("@") + "+"]
+  }
+}
 
 @ApiStatus.Internal
 data class BzlmodGraph(
   val name: String?,
   val dependencies: List<BzlmodDependency>,
 ) {
-  fun getAllDirectRulesetDependencyNames() = dependencies.map { it.name }
+  fun getAllDirectRulesetDependencyNames(): List<String> = dependencies.mapNotNull { it.name }
 
   fun includedByDirectDeps(rootRulesetName: String, transitiveRulesetName: String): List<BzlmodDependency> =
     dependencies.find { it.name == rootRulesetName }?.dependencies?.filter { it.name == transitiveRulesetName } ?: emptyList()
