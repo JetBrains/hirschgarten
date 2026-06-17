@@ -1,9 +1,13 @@
 package org.jetbrains.bazel.python.sync
 
 import com.intellij.bazel.python.backend.chooseSdkName
+import com.intellij.ide.util.ModuleRendererFactory
 import com.intellij.openapi.application.edtWriteAction
+import com.intellij.openapi.application.runReadActionBlocking
 import com.intellij.openapi.diagnostic.fileLogger
 import com.intellij.openapi.projectRoots.ProjectJdkTable
+import com.intellij.openapi.vfs.LocalFileSystem
+import com.intellij.psi.PsiManager
 import com.intellij.platform.backend.workspace.WorkspaceModel
 import com.intellij.platform.util.progress.reportSequentialProgress
 import com.intellij.platform.workspace.jps.entities.ContentRootEntity
@@ -22,7 +26,9 @@ import com.intellij.platform.workspace.storage.impl.url.toVirtualFileUrl
 import com.intellij.platform.workspace.storage.url.VirtualFileUrlManager
 import com.intellij.python.community.services.systemPython.SystemPythonService
 import com.intellij.testFramework.common.timeoutRunBlocking
+import com.intellij.testFramework.registerOrReplaceServiceInstance
 import com.jetbrains.python.PythonBinary
+import com.jetbrains.python.psi.PyFile
 import com.jetbrains.python.sdk.PythonSdkUtil
 import io.kotest.matchers.booleans.shouldBeFalse
 import io.kotest.matchers.shouldBe
@@ -36,6 +42,8 @@ import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.magicmetamodel.formatAsModuleName
 import org.jetbrains.bazel.progress.syncConsole
 import org.jetbrains.bazel.project.BazelProjectFixtures.initializeBazelProject
+import org.jetbrains.bazel.server.BazelServerService
+import org.jetbrains.bazel.sync.environment.projectCtx
 import org.jetbrains.bazel.sync.workspace.BazelResolvedWorkspace
 import org.jetbrains.bazel.sync.workspace.importer.WorkspaceImporterHelper
 import org.jetbrains.bazel.sync.workspace.snapshot.SourceFileCollectionBuilder
@@ -44,6 +52,8 @@ import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceSnapshotBuilder
 import org.jetbrains.bazel.workspace.model.matchers.entries.ExpectedModuleEntity
 import org.jetbrains.bazel.workspace.model.matchers.entries.ExpectedSourceRootEntity
 import org.jetbrains.bazel.workspace.model.matchers.entries.shouldContainExactlyInAnyOrder
+import org.jetbrains.bazel.workspace.model.test.framework.BuildServerMock
+import org.jetbrains.bazel.workspace.model.test.framework.MockBuildServerService
 import org.jetbrains.bazel.workspace.model.test.framework.MockProjectBaseTest
 import org.jetbrains.bazel.workspace.model.test.framework.mockWorkspaceContext
 import org.jetbrains.bazel.workspacemodel.entities.BazelProjectEntitySource
@@ -57,6 +67,8 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.nio.file.Path
 import kotlin.io.path.Path
+import kotlin.io.path.createDirectories
+import kotlin.io.path.writeText
 
 private data class PythonTestSet(
   val workspaceSnapshot: WorkspaceSnapshot,
@@ -68,6 +80,7 @@ private data class GeneratedTargetInfo(
   val targetId: Label,
   val type: String,
   val dependencies: List<Label> = listOf(),
+  val imports: List<String> = listOf(),
   val resourcesItems: List<String> = listOf(),
 )
 
@@ -140,7 +153,111 @@ class PythonProjectSyncTest : MockProjectBaseTest() {
     actualModuleEntities shouldContainExactlyInAnyOrder pythonTestTargets.expectedSourceRootEntities
   }
 
-  private fun runPythonImporter(snapshot: WorkspaceSnapshot, builder: MutableEntityStorage) = runBlocking {
+  @Test
+  fun `should render Python symbols with package location in Bazel project`() {
+    val pyFile = createPythonFile(
+      relativePath = "aaa/bbb.py",
+      text = """
+        class Foo:
+            def bar(self):
+                pass
+      """.trimIndent(),
+    )
+    runReadActionBlocking {
+      val pyClass = pyFile.findTopLevelClass("Foo")!!
+      val method = pyClass.findMethodByName("bar", false, null)!!
+
+      renderModuleLocationText(pyClass) shouldBe "(aaa.bbb)"
+      renderModuleLocationText(method) shouldBe "(Foo in aaa.bbb)"
+    }
+  }
+
+  @Test
+  fun `should render Python symbols with package location from Bazel imports`() {
+    val relativePath = "src/aaa/bbb.py"
+    val pyFile = createPythonFile(
+      relativePath = relativePath,
+      text = """
+        class Foo:
+            def bar(self):
+                pass
+      """.trimIndent(),
+    )
+    val pythonBinary =
+      GeneratedTargetInfo(
+        targetId = Label.parse("@@server//:main_app"),
+        type = "PYTHON_MODULE",
+        imports = listOf("src"),
+      )
+    val target =
+      generateTarget(
+        pythonBinary,
+        sources = listOf(projectDir.get().resolve(relativePath)),
+        generatedSources = emptyList(),
+        resources = emptyList(),
+      )
+
+    project.projectCtx.bazelExecPath = projectDir.get().toString()
+    project.projectCtx.bazelBinPath = projectDir.get().resolve("bazel-bin").toString()
+    project.registerOrReplaceServiceInstance(BazelServerService::class.java, MockBuildServerService(BuildServerMock()), disposable)
+    runPythonImporter(generateWorkspaceSnapshot(listOf(target)), MutableEntityStorage.create(), runPostProcessing = true)
+
+    runReadActionBlocking {
+      val pyClass = pyFile.findTopLevelClass("Foo")!!
+      val method = pyClass.findMethodByName("bar", false, null)!!
+
+      renderModuleLocationText(pyClass) shouldBe "(aaa.bbb)"
+      renderModuleLocationText(method) shouldBe "(Foo in aaa.bbb)"
+    }
+  }
+
+  @Test
+  fun `should render shortest Python package location from Bazel imports`() {
+    val relativePath = "src/app/aaa/bbb.py"
+    val pyFile = createPythonFile(
+      relativePath = relativePath,
+      text = """
+        class Foo:
+            def bar(self):
+                pass
+      """.trimIndent(),
+    )
+    val pythonBinary =
+      GeneratedTargetInfo(
+        targetId = Label.parse("@@server//:main_app"),
+        type = "PYTHON_MODULE",
+        imports = listOf("src", "src/app"),
+      )
+    val target =
+      generateTarget(
+        pythonBinary,
+        sources = listOf(projectDir.get().resolve(relativePath)),
+        generatedSources = emptyList(),
+        resources = emptyList(),
+      )
+
+    project.projectCtx.bazelExecPath = projectDir.get().toString()
+    project.projectCtx.bazelBinPath = projectDir.get().resolve("bazel-bin").toString()
+    project.registerOrReplaceServiceInstance(BazelServerService::class.java, MockBuildServerService(BuildServerMock()), disposable)
+    runPythonImporter(generateWorkspaceSnapshot(listOf(target)), MutableEntityStorage.create(), runPostProcessing = true)
+
+    runReadActionBlocking {
+      val pyClass = pyFile.findTopLevelClass("Foo")!!
+      val method = pyClass.findMethodByName("bar", false, null)!!
+
+      renderModuleLocationText(pyClass) shouldBe "(aaa.bbb)"
+      renderModuleLocationText(method) shouldBe "(Foo in aaa.bbb)"
+    }
+  }
+
+  private fun renderModuleLocationText(element: Any): String =
+    ModuleRendererFactory.findInstance(element).getModuleTextWithIcon(element)!!.text
+
+  private fun runPythonImporter(
+    snapshot: WorkspaceSnapshot,
+    builder: MutableEntityStorage,
+    runPostProcessing: Boolean = false,
+  ) = runBlocking {
     //ExtensionTestUtil.maskExtensions(BazelWorkspaceImporter.EP_NAME, listOf(...))
     reportSequentialProgress { reporter ->
       val helper = WorkspaceImporterHelper(
@@ -151,6 +268,9 @@ class PythonProjectSyncTest : MockProjectBaseTest() {
         builder = builder
       )
       helper.invoke(reporter, snapshot)
+      if (runPostProcessing) {
+        helper.invokeLate(reporter, snapshot)
+      }
     }
   }
 
@@ -232,7 +352,7 @@ class PythonProjectSyncTest : MockProjectBaseTest() {
           PythonBuildTarget(
             version = "3",
             interpreter = pythonBinary,
-            listOf(),
+            info.imports,
             SourceFileCollection.EMPTY,
             externalSources = SourceFileCollection.EMPTY,
           ),
@@ -312,5 +432,15 @@ class PythonProjectSyncTest : MockProjectBaseTest() {
     val sdks = this.map { module -> module.dependencies.firstNotNullOfOrNull { it as? SdkDependency } }
     sdks.any { it == null }.shouldBeFalse()
     sdks.distinct().size shouldBe 1
+  }
+
+  private fun createPythonFile(relativePath: String, text: String): PyFile {
+    val path = projectDir.get().resolve(relativePath)
+    path.parent.createDirectories()
+    path.writeText(text)
+    val virtualFile = LocalFileSystem.getInstance().refreshAndFindFileByNioFile(path)!!
+    return runReadActionBlocking {
+      PsiManager.getInstance(project).findFile(virtualFile) as PyFile
+    }
   }
 }
