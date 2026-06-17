@@ -2,6 +2,7 @@ package org.jetbrains.bazel.workspacemodel.entities
 
 import com.intellij.platform.workspace.jps.entities.LibraryEntity
 import com.intellij.platform.workspace.jps.entities.ModuleEntity
+import com.intellij.platform.workspace.jps.entities.SourceRootTypeId
 import com.intellij.platform.workspace.storage.WorkspaceEntity
 import com.intellij.platform.workspace.storage.annotations.Parent
 import org.jetbrains.annotations.ApiStatus
@@ -13,6 +14,7 @@ interface BazelModuleExtensionEntity : WorkspaceEntity {
   @Parent
   val module: ModuleEntity
 
+  val rootTypeId: WorkspaceModelTargetSourceRootTypeId
   val label: WorkspaceModelTargetLabel
   val strictDependencies: WorkspaceModelTargetLabelList
 }
@@ -41,3 +43,6 @@ class WorkspaceModelTargetLabel(private val label: String) {
 
 @ApiStatus.Internal
 class WorkspaceModelTargetLabelList(val check: StrictDependencyCheckedType, val labels: List<String>)
+
+@ApiStatus.Internal
+class WorkspaceModelTargetSourceRootTypeId(val default: SourceRootTypeId?)
