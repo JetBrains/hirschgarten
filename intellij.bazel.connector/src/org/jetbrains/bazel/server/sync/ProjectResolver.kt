@@ -2,8 +2,9 @@ package org.jetbrains.bazel.server.sync
 
 import com.google.devtools.intellij.ideinfo.IntellijIdeInfo
 import com.google.devtools.intellij.ideinfo.IntellijIdeInfo.TargetIdeInfo
-import com.intellij.aspect.lib.Rules
 import com.intellij.aspect.lib.Aspects
+import com.intellij.aspect.lib.Rules
+import com.intellij.aspect.lib.OutputGroups
 import com.intellij.build.events.MessageEvent
 import com.intellij.openapi.project.Project
 import com.intellij.platform.diagnostic.telemetry.helpers.useWithScope
@@ -246,12 +247,9 @@ class ProjectResolver(
     coroutineScope {
       val aspects = Aspects.forRules(languages).map { it.toString() }
       val taskLogger = taskEventsHandler.asLogger(taskId)
-      val outputGroups = mutableListOf(INFO_OUTPUT_GROUP, SYNC_ARTIFACT_OUTPUT_GROUP, BSP_ARTIFACT_OUTPUT_GROUP)
-      val languageSpecificOutputGroups = getLanguageSpecificOutputGroups()
-      outputGroups.addAll(languageSpecificOutputGroups)
+      val outputGroups = mutableListOf(OutputGroups.INFO.groupName, OutputGroups.SYNC.groupName)
       if (build) {
-        outputGroups.add(BUILD_ARTIFACT_OUTPUT_GROUP)
-        outputGroups.add(BSP_BUILD_ARTIFACT_OUTPUT_GROUP)
+        outputGroups.add(OutputGroups.BUILD.groupName)
       }
       val nonShardBuild =
         suspend {
@@ -346,14 +344,6 @@ class ProjectResolver(
       return@coroutineScope res
     }
 
-  private fun getLanguageSpecificOutputGroups(): List<String> =
-    if (BazelFeatureFlags.isGoSupportEnabled) {
-      listOf(GO_SOURCE_OUTPUT_GROUP)
-    }
-    else {
-      emptyList()
-    }
-
   private suspend fun runBazelShutDown(workspaceContext: WorkspaceContext, taskId: TaskId) {
     bazelRunner.run {
       val command =
@@ -379,22 +369,9 @@ class ProjectResolver(
   internal suspend fun extractAspectOutputPaths(buildAspectResult: BazelBspAspectsManagerResult): Set<Path> =
     measured(
       "Reading aspect output paths",
-    ) { buildAspectResult.bepOutput.filesByOutputGroupNameTransitive(INFO_OUTPUT_GROUP) }
+    ) { buildAspectResult.bepOutput.filesByOutputGroupNameTransitive(OutputGroups.INFO.groupName) }
 
   companion object {
-    private const val INFO_OUTPUT_GROUP = "intellij-info"
-
-    // this output group is for artifacts which are needed during no-build sync
-    private const val SYNC_ARTIFACT_OUTPUT_GROUP = "intellij-sync-java"
-    private const val BSP_ARTIFACT_OUTPUT_GROUP = "bsp-sync-artifacts"
-
-    // this output group is for artifacts which are only needed during build
-    private const val BUILD_ARTIFACT_OUTPUT_GROUP = "intellij-build-java"
-    private const val BSP_BUILD_ARTIFACT_OUTPUT_GROUP = "bsp-build-artifacts"
-
-    // language-specific output groups
-    private const val GO_SOURCE_OUTPUT_GROUP = "bazel-sources-go"
-
     @JvmStatic
     fun processTargetMap(targetMap: Map<Label, TargetIdeInfo>): Map<Label, TargetIdeInfo> =
       targetMap
