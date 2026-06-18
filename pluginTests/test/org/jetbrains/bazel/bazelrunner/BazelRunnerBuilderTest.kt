@@ -40,7 +40,6 @@ private val mockContext =
     bazelBinary = Path("bazel"),
     allowManualTargetsSync = true,
     importDepth = 2,
-    enabledRules = listOf("rule1", "rule2"),
     ideJavaHomeOverride = Path("java_home"),
     shardSync = false,
     targetShardSize = 1000,

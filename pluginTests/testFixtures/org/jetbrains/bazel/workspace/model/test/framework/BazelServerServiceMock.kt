@@ -18,7 +18,6 @@ val mockWorkspaceContext =
     bazelBinary = Path("bazel"),
     allowManualTargetsSync = true,
     importDepth = -1,
-    enabledRules = emptyList(),
     ideJavaHomeOverride = Path("java_home"),
     shardSync = false,
     targetShardSize = 1000,
