@@ -33,7 +33,6 @@ object ProjectViewToWorkspaceContextConverter {
                     ?: bazelExecutable,
       allowManualTargetsSync = projectView.allowManualTargetsSync,
       importDepth = projectView.importDepth,
-      enabledRules = projectView.enabledRules,
       ideJavaHomeOverride = projectView.ideJavaHomeOverride,
       shardSync = projectView.shardSync,
       targetShardSize = projectView.targetShardSize,

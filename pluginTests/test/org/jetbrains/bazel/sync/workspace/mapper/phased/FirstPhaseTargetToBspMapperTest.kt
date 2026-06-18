@@ -40,7 +40,6 @@ private fun createMockWorkspaceContext(allowManualTargetsSync: Boolean): Workspa
     bazelBinary = Path("bazel"),
     allowManualTargetsSync = allowManualTargetsSync,
     importDepth = -1,
-    enabledRules = emptyList(),
     ideJavaHomeOverride = Path("java_home"),
     shardSync = false,
     targetShardSize = 1000,

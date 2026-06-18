@@ -71,7 +71,6 @@ internal class QueryEvaluator(private val project: Project, currentRunnerDirFile
         bazelBinary = null,
         allowManualTargetsSync = false,
         importDepth = 1,
-        enabledRules = emptyList(),
         ideJavaHomeOverride = null,
         shardSync = false,
         targetShardSize = 1000,

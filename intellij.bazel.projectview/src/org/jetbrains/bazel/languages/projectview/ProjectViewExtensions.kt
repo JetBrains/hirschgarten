@@ -11,7 +11,6 @@ import org.jetbrains.bazel.languages.projectview.sections.DebugFlagsSection
 import org.jetbrains.bazel.languages.projectview.sections.DeriveInstrumentationFilterFromTargetsSection
 import org.jetbrains.bazel.languages.projectview.sections.DeriveTargetsFromDirectoriesSection
 import org.jetbrains.bazel.languages.projectview.sections.DirectoriesSection
-import org.jetbrains.bazel.languages.projectview.sections.EnabledRulesSection
 import org.jetbrains.bazel.languages.projectview.sections.GazelleTargetSection
 import org.jetbrains.bazel.languages.projectview.sections.IdeJavaHomeOverrideSection
 import org.jetbrains.bazel.languages.projectview.sections.ImportDepthSection
@@ -73,10 +72,6 @@ val ProjectView.deriveTargetsFromDirectories: Boolean
 val ProjectView.importDepth: Int
   @ApiStatus.Internal
   get() = getSection(ImportDepthSection.KEY) ?: -1
-
-val ProjectView.enabledRules: List<String>
-  @ApiStatus.Internal
-  get() = getSection(EnabledRulesSection.KEY) ?: emptyList()
 
 val ProjectView.ideJavaHomeOverride: Path?
   @ApiStatus.Internal

@@ -32,15 +32,6 @@ interface BazelExternalRulesetsQuery {
   suspend fun fetchExternalRulesetNames(): List<String>
 }
 
-internal class BazelEnabledRulesetsQueryImpl(private val enabledRules: List<String>) : BazelExternalRulesetsQuery {
-  override suspend fun fetchExternalRulesetNames(): List<String> {
-    val specifiedRules = enabledRules
-    val neededTransitiveRules = specifiedRules.mapNotNull { rootRulesToNeededTransitiveRules[it] }.flatten()
-
-    return (specifiedRules + neededTransitiveRules).distinct()
-  }
-}
-
 internal class BazelExternalRulesetsQueryImpl(
   private val taskId: TaskId,
   private val bazelRunner: BazelRunner,
@@ -51,25 +42,21 @@ internal class BazelExternalRulesetsQueryImpl(
   private val repoMapping: RepoMapping,
 ) : BazelExternalRulesetsQuery {
   override suspend fun fetchExternalRulesetNames(): List<String> =
-    when {
-      workspaceContext.enabledRules.isNotEmpty() -> BazelEnabledRulesetsQueryImpl(workspaceContext.enabledRules).fetchExternalRulesetNames()
-      else ->
-        BazelBzlModExternalRulesetsQueryImpl(
-          taskId,
-          bazelRunner,
-          isBzlModEnabled,
-          taskEventsHandler,
-          workspaceContext,
-          repoMapping,
-        ).fetchExternalRulesetNames() +
-          BazelWorkspaceExternalRulesetsQueryImpl(
-            taskId,
-            bazelRunner,
-            isWorkspaceEnabled,
-            taskEventsHandler,
-            workspaceContext,
-          ).fetchExternalRulesetNames()
-    }
+    BazelBzlModExternalRulesetsQueryImpl(
+      taskId,
+      bazelRunner,
+      isBzlModEnabled,
+      taskEventsHandler,
+      workspaceContext,
+      repoMapping,
+    ).fetchExternalRulesetNames() +
+    BazelWorkspaceExternalRulesetsQueryImpl(
+      taskId,
+      bazelRunner,
+      isWorkspaceEnabled,
+      taskEventsHandler,
+      workspaceContext,
+    ).fetchExternalRulesetNames()
 }
 
 internal class BazelWorkspaceExternalRulesetsQueryImpl(
@@ -108,7 +95,7 @@ internal class BazelWorkspaceExternalRulesetsQueryImpl(
                   .parse(result.stdout.inputStream())
                   .calculateEligibleRules()
               } catch (e: Exception) {
-                log?.error("Failed to parse string to xml", e)
+                log.error("Failed to parse string to xml", e)
                 null
               }
             }
@@ -179,7 +166,7 @@ internal class BazelBzlModExternalRulesetsQueryImpl(
           try {
             JsonParser.parseReader(result.stdout.inputStream().reader())
           } catch (e: Exception) {
-            log?.error("Failed to parse string to json", e)
+            log.error("Failed to parse string to json", e)
             null
           }
         } as? JsonObject

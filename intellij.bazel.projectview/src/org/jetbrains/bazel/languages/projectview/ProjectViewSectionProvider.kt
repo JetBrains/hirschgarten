@@ -10,7 +10,6 @@ import org.jetbrains.bazel.languages.projectview.sections.DebugFlagsSection
 import org.jetbrains.bazel.languages.projectview.sections.DeriveInstrumentationFilterFromTargetsSection
 import org.jetbrains.bazel.languages.projectview.sections.DeriveTargetsFromDirectoriesSection
 import org.jetbrains.bazel.languages.projectview.sections.DirectoriesSection
-import org.jetbrains.bazel.languages.projectview.sections.EnabledRulesSection
 import org.jetbrains.bazel.languages.projectview.sections.GazelleTargetSection
 import org.jetbrains.bazel.languages.projectview.sections.IdeJavaHomeOverrideSection
 import org.jetbrains.bazel.languages.projectview.sections.ImportDepthSection
@@ -48,7 +47,6 @@ internal class DefaultProjectViewSectionProvider : ProjectViewSectionProvider {
       DeriveInstrumentationFilterFromTargetsSection(),
       DeriveTargetsFromDirectoriesSection(),
       DirectoriesSection(),
-      EnabledRulesSection(),
       GazelleTargetSection(),
       IdeJavaHomeOverrideSection(),
       ImportDepthSection(),

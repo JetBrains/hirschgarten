@@ -44,10 +44,6 @@ data class WorkspaceContext(
    */
   val importDepth: Int,
   /**
-   * Parameter determining which rules should be used by Bazel BSP, if empty Bazel is queried.
-   */
-  val enabledRules: List<String>,
-  /**
    * Parameter determining the java home path that should be used with the local IDE
    */
   val ideJavaHomeOverride: Path?,
