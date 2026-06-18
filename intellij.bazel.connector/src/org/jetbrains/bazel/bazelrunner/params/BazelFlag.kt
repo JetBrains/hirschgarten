@@ -12,6 +12,8 @@ object BazelFlag {
 
   @JvmStatic fun keepGoing() = flag("keep_going")
 
+  @JvmStatic fun noRunValidations() = flag("norun_validations")
+
   @JvmStatic fun javaTestDebug() = flag("java_debug")
 
   @JvmStatic fun outputGroups(groups: List<String>) = arg("output_groups", groups.joinToString(","))
