@@ -8,6 +8,7 @@ import org.jetbrains.bazel.bazelrunner.ShowRepoResult
 import org.jetbrains.bazel.bazelrunner.params.BazelFlag.aspect
 import org.jetbrains.bazel.bazelrunner.params.BazelFlag.buildManualTests
 import org.jetbrains.bazel.bazelrunner.params.BazelFlag.keepGoing
+import org.jetbrains.bazel.bazelrunner.params.BazelFlag.noRunValidations
 import org.jetbrains.bazel.bazelrunner.params.BazelFlag.outputGroups
 import org.jetbrains.bazel.bazelrunner.params.BazelFlag.remoteDownloadOutputsTopLevel
 import org.jetbrains.bazel.commons.BazelRelease
@@ -152,6 +153,8 @@ class BazelBspAspectsManager(
         aspect(aspects.map { resolveAspectLabel(it)}.joinToString (",")),
         outputGroups(outputGroups),
         keepGoing(),
+        // Validations don't contribute to the project model and only slow down sync, so disable them.
+        noRunValidations(),
       )
     val allowManualTargetsSyncFlags = if (workspaceContext.allowManualTargetsSync) listOf(buildManualTests()) else emptyList()
     val syncFlags = workspaceContext.syncFlags
