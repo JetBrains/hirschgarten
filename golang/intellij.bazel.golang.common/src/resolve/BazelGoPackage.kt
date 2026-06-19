@@ -274,8 +274,8 @@ class BazelGoPackage : GoPackage {
         return getWrapCcGoFiles(target)
       }
       val sources = mutableSetOf<Path>()
-      val targetSources = extractGoBuildTarget(target)?.generatedSources
-      val librarySources = libraryToTestMap[target.id].flatMap { it.generatedSources }
+      val targetSources = extractGoBuildTarget(target)?.sources
+      val librarySources = libraryToTestMap[target.id].flatMap { it.sources }
 
       (targetSources.orEmpty() + librarySources).toCollection(sources)
 
@@ -284,7 +284,7 @@ class BazelGoPackage : GoPackage {
 
     private fun getWrapCcGoFiles(target: BuildTarget): ImmutableSet<Path> {
       val goBuildTarget = extractGoBuildTarget(target) ?: return ImmutableSet.of()
-      return goBuildTarget.generatedSources.stream().collect(toImmutableSet())
+      return goBuildTarget.sources.stream().collect(toImmutableSet())
     }
 
     private fun getPackageName(

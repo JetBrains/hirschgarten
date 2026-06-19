@@ -14,7 +14,7 @@ internal class GoIndexAdditionalFilesContributor : IndexAdditionalFilesContribut
     return project.targetUtils
       .allBuildTargets()
       .mapNotNull { extractGoBuildTarget(it) }
-      .flatMap { it.generatedSources }
+      .flatMap { it.sources }
       .map { it.toVirtualFileUrl(vFileUrlManager) }
       .toList()
   }
