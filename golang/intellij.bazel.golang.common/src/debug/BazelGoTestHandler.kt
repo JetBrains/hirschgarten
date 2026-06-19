@@ -12,6 +12,7 @@ import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.config.BazelPluginBundle
+import org.jetbrains.bazel.golang.workspace.GoWorkspaceModuleUtil
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.run.BazelRunHandler
 import org.jetbrains.bazel.run.commandLine.BazelTestCommandLineState
@@ -19,7 +20,6 @@ import org.jetbrains.bazel.run.config.BazelRunConfiguration
 import org.jetbrains.bazel.run.config.BazelRunConfigurationType
 import org.jetbrains.bazel.run.import.GooglePluginAwareRunHandlerProvider
 import org.jetbrains.bazel.run.state.GenericTestState
-import org.jetbrains.bazel.sync.projectStructure.legacy.WorkspaceModuleUtils
 import java.io.File
 import java.util.concurrent.atomic.AtomicReference
 
@@ -48,7 +48,7 @@ internal class BazelGoTestHandler(configuration: BazelRunConfiguration) : BazelR
         environment.putCopyableUserData(EXECUTABLE_KEY, AtomicReference())
         val target = getTargetId(environment)
         val project = environment.project
-        val module = WorkspaceModuleUtils.findModule(project) ?: error("Could not find module for target $target")
+        val module = GoWorkspaceModuleUtil.findModule(project) ?: error("Could not find module for target $target")
         GoTestWithDebugCommandLineState(
           environment = environment,
           module = module,

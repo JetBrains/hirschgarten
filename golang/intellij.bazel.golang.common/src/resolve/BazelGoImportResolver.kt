@@ -141,7 +141,7 @@ private val goTargetMapComputable: SyncCache.SyncCacheComputable<Map<String, Lab
       .mapValues { (_, targets) ->
         // duplicates are possible (e.g., same target with different aspects)
         // choose the one with the most sources (though they're probably the same)
-        targets.maxByOrNull { extractGoBuildTarget(it)?.generatedSources?.size ?: 0 }?.id
+        targets.maxByOrNull { extractGoBuildTarget(it)?.sources?.size ?: 0 }?.id
       }.filterValues { it != null }
       .mapValues { (_, id) -> id!! }
   }

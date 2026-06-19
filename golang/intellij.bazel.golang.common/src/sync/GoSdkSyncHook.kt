@@ -30,7 +30,7 @@ internal class GoSdkSyncHook : ProjectPostSyncHook {
         .allBuildTargets()
         .filter { it.id.isMainWorkspace }
         .mapNotNull { extractGoBuildTarget(it) }
-        .any { it.generatedSources.isNotEmpty() }
+        .any { it.sources.isNotEmpty() }
 
   override suspend fun onPostSync(environment: ProjectPostSyncHook.ProjectPostSyncHookEnvironment) {
     val project = environment.project
@@ -44,7 +44,7 @@ internal class GoSdkSyncHook : ProjectPostSyncHook {
     val generatedSources = project.targetUtils
       .allBuildTargets()
       .mapNotNull { extractGoBuildTarget(it) }
-      .flatMap { it.generatedSources }
+      .flatMap { it.sources }
       .toSet()
 
     SyncCache.getInstance(project).clear()

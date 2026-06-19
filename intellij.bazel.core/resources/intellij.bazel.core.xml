@@ -26,10 +26,6 @@
       interface="org.jetbrains.bazel.ui.settings.BazelSettingsProvider"
       qualifiedName="org.jetbrains.bazel.bazelGeneralSettingsProvider"
     />
-    <extensionPoint
-      interface="org.jetbrains.bazel.sync.projectStructure.legacy.WorkspaceModuleProjectSyncHook$EnableWorkspaceModuleSyncHookExtension"
-      qualifiedName="org.jetbrains.bazel.workspaceModuleSyncHook.enable"
-    />
     <extensionPoint qualifiedName="org.jetbrains.bazel.bazelVersionResolver"
                     interface="org.jetbrains.bazel.languages.bazelversion.service.BazelVersionResolver"
                     dynamic="true"
@@ -92,9 +88,6 @@
       implementation="org.jetbrains.bazel.languages.starlark.repomapping.BazelRepoMappingSyncHook"
     />
     <projectSyncHook implementation="org.jetbrains.bazel.run.import.ImportRunConfigurationsSyncHook"/>
-    <projectSyncHook
-      implementation="org.jetbrains.bazel.sync.projectStructure.legacy.WorkspaceModuleProjectSyncHook"
-    />
     <projectSyncHook
       id="IndexAdditionalFilesSyncHook"
       implementation="org.jetbrains.bazel.workspace.indexAdditionalFiles.IndexAdditionalFilesSyncHook"

@@ -145,7 +145,7 @@ sealed interface JvmDependency {
 data class GoBuildTarget(
   @Transient @JvmField val sdkHomePath: Path? = null,
   val importPath: String,
-  val generatedSources: List<Path>,
+  val sources: List<Path>,
   val libraryLabels: List<Label>,
 ) : BuildTargetData
 

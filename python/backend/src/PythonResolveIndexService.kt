@@ -21,7 +21,6 @@ import java.nio.file.FileSystems
 import java.nio.file.Path
 import java.nio.file.Paths
 import java.util.concurrent.atomic.AtomicReference
-import kotlin.collections.iterator
 import kotlin.io.path.createParentDirectories
 import kotlin.io.path.deleteIfExists
 import kotlin.io.path.exists
@@ -93,7 +92,7 @@ internal class PythonResolveIndexService(private val project: Project) {
       BazelCoroutineService.getInstance(project).startAsync {
         val importsPaths = assembleImportsPaths(target)
         val sourcesRelativePathToAbsolutePath: Map<Path, Path> =
-          if (target.id.isMainWorkspace) {
+          if (target.isWorkspace) {
             importsPaths
               .flatMap { importsPath -> allPYSourcesInMainWorkspace.filter { it.startsWith(importsPath) }.toList() }
               .ifEmpty {

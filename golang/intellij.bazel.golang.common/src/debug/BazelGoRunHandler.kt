@@ -11,6 +11,7 @@ import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.config.BazelPluginBundle
+import org.jetbrains.bazel.golang.workspace.GoWorkspaceModuleUtil
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.run.BazelRunHandler
 import org.jetbrains.bazel.run.commandLine.BazelRunCommandLineState
@@ -18,7 +19,6 @@ import org.jetbrains.bazel.run.config.BazelRunConfiguration
 import org.jetbrains.bazel.run.config.BazelRunConfigurationType
 import org.jetbrains.bazel.run.import.GooglePluginAwareRunHandlerProvider
 import org.jetbrains.bazel.run.state.GenericRunState
-import org.jetbrains.bazel.sync.projectStructure.legacy.WorkspaceModuleUtils
 import java.util.concurrent.atomic.AtomicReference
 
 internal class BazelGoRunHandler(configuration: BazelRunConfiguration) : BazelRunHandler {
@@ -42,7 +42,7 @@ internal class BazelGoRunHandler(configuration: BazelRunConfiguration) : BazelRu
       executor is DefaultDebugExecutor -> {
         environment.putCopyableUserData(EXECUTABLE_KEY, AtomicReference())
         val target = getTargetId(environment)
-        val module = WorkspaceModuleUtils.findModule(environment.project) ?: error("Could not find module for target $target")
+        val module = GoWorkspaceModuleUtil.findModule(environment.project) ?: error("Could not find module for target $target")
         GoRunWithDebugCommandLineState(
           environment = environment,
           module = module,
