@@ -1,26 +1,24 @@
 package org.jetbrains.bazel.protobuf
 
 import com.intellij.openapi.components.serviceAsync
-import org.jetbrains.bazel.commons.LanguageClass
-import org.jetbrains.bazel.sync.ProjectPostSyncHook
-import org.jetbrains.bazel.target.targetUtils
+import org.jetbrains.bazel.sync.ProjectSyncHook
 import org.jetbrains.bsp.protocol.ProtobufBuildTarget
 import org.jetbrains.bsp.protocol.utils.extractProtobufBuildTarget
 import java.nio.file.Path
 
-internal class BazelProtobufSyncHook : ProjectPostSyncHook {
-  override suspend fun onPostSync(environment: ProjectPostSyncHook.ProjectPostSyncHookEnvironment) {
-    val store = environment.project.serviceAsync<BazelProtobufSyncService>().store
+internal class BazelProtobufSyncHook : ProjectSyncHook {
+  override suspend fun onSync(environment: ProjectSyncHook.ProjectSyncHookEnvironment) {
+    val store = environment.project.serviceAsync<BazelProtobufIndexService>().store
 
     store.clearProtoIndexData()
-    environment.project.targetUtils
-      .allBuildTargets()
-      .filter { it.kind.languageClasses.contains(LanguageClass.PROTOBUF) }
-      .forEach {
-        val protoData = extractProtobufBuildTarget(it) ?: return@forEach
+    environment.workspace
+      .targets
+      .mapNotNull { extractProtobufBuildTarget(it) }
+      .forEach { protoData: ProtobufBuildTarget ->
         for ((importPath, absolutePath) in protoData.sources) {
-          store.putProtoIndexData(BazelProtobufSyncIndexData(importPath = importPath, absolutePath = Path.of(absolutePath)))
+          store.putProtoFullPath(importPath, Path.of(absolutePath))
         }
       }
+    store.save()
   }
 }
