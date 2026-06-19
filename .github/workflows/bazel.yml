@@ -13,6 +13,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6
+      - name: Verify .iml files have corresponding BUILD files
+        run: .github/workflows/check_project_structure.sh
       - name: Install Bazel
         uses: bazel-contrib/setup-bazel@0.19.0
       - name: Call Bazel build
