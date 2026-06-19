@@ -12,7 +12,7 @@ internal class  BazelProtobufFileResolveProvider : FileResolveProvider {
       return null
     }
     return project
-      .service<BazelProtobufSyncService>()
+      .service<BazelProtobufIndexService>()
       .getRealProtoFile(path)
   }
 

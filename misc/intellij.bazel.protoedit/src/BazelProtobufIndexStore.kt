@@ -6,41 +6,38 @@ import com.intellij.openapi.project.getProjectDataPath
 import com.intellij.util.io.mvstore.createOrResetMvStore
 import com.intellij.util.io.mvstore.openOrResetMap
 import org.h2.mvstore.MVMap
-import org.h2.mvstore.type.DataType
 import org.h2.mvstore.type.StringDataType
+import java.nio.file.Path
 
 internal class BazelProtobufIndexStore(val project: Project) {
   private val store =
     createOrResetMvStore(
-      file = project.getProjectDataPath("bazel-protobuf-target-index.db"),
+      file = project.getProjectDataPath("bazel-protobuf-index-v1.db"),
       readOnly = false,
       logSupplier = { logger<BazelProtobufIndexStore>() },
     )
 
-  private val protoPathToIndexData: MVMap<String, BazelProtobufSyncIndexData> =
-    openStringToObjectMap(
-      "protoPathToIndexData",
-      BazelProtobufSyncIndexDataType,
-    )
+  private val protoPathToFullPath: MVMap<String, String> =
+    openStringToStringMap("protoPathToFullPath")
 
-  private fun <V> openStringToObjectMap(name: String, dataType: DataType<V>): MVMap<String, V> {
-    val builder = MVMap.Builder<String, V>()
+  private fun openStringToStringMap(name: String): MVMap<String, String> {
+    val builder = MVMap.Builder<String, String>()
     builder.setKeyType(StringDataType.INSTANCE)
-    builder.setValueType(dataType)
+    builder.setValueType(StringDataType.INSTANCE)
     return openOrResetMap(store = store, name = name, mapBuilder = builder, logSupplier = { logger<BazelProtobufIndexStore>() })
   }
 
-  fun putProtoIndexData(data: BazelProtobufSyncIndexData) {
-    protoPathToIndexData[data.importPath] = data
+  fun putProtoFullPath(protoPath: String, fullPath: Path) {
+    protoPathToFullPath[protoPath] = fullPath.toString()
   }
 
-  fun getProtoIndexData(protoPath: String): BazelProtobufSyncIndexData? = protoPathToIndexData[protoPath]
+  fun getProtoFullPath(protoPath: String): Path? = protoPathToFullPath[protoPath]?.let { Path.of(it) }
 
   fun clearProtoIndexData() {
-    protoPathToIndexData.clear()
+    protoPathToFullPath.clear()
   }
 
-  fun saveIfNeeded() {
+  fun save() {
     if (store.hasUnsavedChanges()) {
       store.commit()
     }

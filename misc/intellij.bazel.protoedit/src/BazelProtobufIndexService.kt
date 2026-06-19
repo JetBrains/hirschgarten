@@ -1,6 +1,5 @@
 package org.jetbrains.bazel.protobuf
 
-import com.intellij.configurationStore.SettingsSavingComponent
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
@@ -10,26 +9,22 @@ import com.intellij.platform.workspace.storage.impl.url.toVirtualFileUrl
 import java.io.IOException
 
 @Service(Service.Level.PROJECT)
-internal class BazelProtobufSyncService(val project: Project) : SettingsSavingComponent {
+internal class BazelProtobufIndexService(val project: Project) {
   val store = BazelProtobufIndexStore(project)
 
   fun getRealProtoFile(importPath: String): VirtualFile? {
-    val data = store.getProtoIndexData(importPath) ?: return null
+    val fullPath = store.getProtoFullPath(importPath) ?: return null
     val vfsManager = WorkspaceModel.getInstance(project).getVirtualFileUrlManager()
     // handle case when bazel hadn't created protobuf symlinks yet
     // or user deleted file referenced by symlink
     val realPath =
       try {
-        data.absolutePath.toRealPath()
+        fullPath.toRealPath()
       } catch (_: IOException) {
-        data.absolutePath
+        fullPath
       }
     return realPath
       .toVirtualFileUrl(vfsManager)
       .virtualFile
-  }
-
-  override suspend fun save() {
-    store.saveIfNeeded()
   }
 }
