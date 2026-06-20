@@ -172,9 +172,7 @@
     <orderEntry type="module" module-name="intellij.libraries.assertj.core" scope="TEST" />
     <orderEntry type="library" scope="TEST" name="kotlin-test" level="project" />
     <orderEntry type="module" module-name="intellij.libraries.kotlinx.coroutines.core" scope="TEST" />
-    <orderEntry type="library" scope="TEST" name="grpc-core" level="project" />
-    <orderEntry type="library" scope="TEST" name="grpc-protobuf" level="project" />
-    <orderEntry type="library" scope="TEST" name="grpc-stub" level="project" />
+    <orderEntry type="module" module-name="intellij.libraries.grpc" scope="TEST" />
     <orderEntry type="module" module-name="intellij.libraries.kotlinx.coroutines.test" />
     <orderEntry type="module" module-name="intellij.libraries.jediterm.core" />
     <orderEntry type="library" name="google.protobuf.java.util" level="project" />
