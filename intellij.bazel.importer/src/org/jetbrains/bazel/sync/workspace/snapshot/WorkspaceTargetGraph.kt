@@ -247,7 +247,11 @@ object WorkspaceTargetGraphBuilder {
       rootTargetIds = rootTargetIds,
       targetKey2TargetId = targetKey2TargetId,
       id2WorkspaceTarget = id2WorkspaceTarget,
-      id2CompileSuccessors = buildSuccessorIds { it.kind == DependencyLabelKind.COMPILE || it.kind == DependencyLabelKind.EXPORTED_COMPILE_TIME },
+      id2CompileSuccessors = buildSuccessorIds {
+        it.kind == DependencyLabelKind.COMPILE ||
+          it.kind == DependencyLabelKind.COMPILE_NON_EXPORTED ||
+          it.kind == DependencyLabelKind.EXPORTED_COMPILE_TIME
+      },
       id2AllSuccessors = buildSuccessorIds { true },
     )
   }

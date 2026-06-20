@@ -59,6 +59,33 @@ internal class WorkspaceImportApprovalTests {
       ),
       ApprovalTestCase(WorkspaceImportApprovalTestCases.SimpleScalaTest, WorkspaceImportApprovalTestData("SimpleScalaTest")),
 
+      // Regression: a jdeps-derived sourceless library must not shadow an in-project source module.
+      // //src/main/com/example/a:A is an in-scope source module, but import_depth=0 demotes the
+      // re-exporting //src/main/com/example/mid:M to an out-of-scope library, so A's header jar appears
+      // in B's .jdeps without A being on B's transitive dependency path. Before the fix in
+      // JavaLanguagePlugin.jdepsDependencies this leaked A's header jar back in as a sourceless library
+      // that shadowed A's sources; the fix instead emits a non-exported module dependency B -> A. The
+      // golden must contain modules for A, B and C, B depending on A as a (non-exported) module, and NO
+      // sourceless library holding A's header jar. //src/main/com/example/c:C is a dependent of B that
+      // uses A indirectly -- a manual demo that A is unresolved in C (B does not re-export it) and
+      // IntelliJ offers "Add dependency on module 'A'" (it deliberately does not compile).
+      ApprovalTestCase(
+        project = TestCase(
+          ideInfo = IdeInfo.IdeaUltimate,
+          projectInfo = ReusableLocalProjectInfo(
+            projectDir = BazelPathManager.testProjectsRoot.resolve("jdeps_library_shadows_module"),
+          ),
+        ),
+        data = WorkspaceImportApprovalTestData(
+          name = "JdepsLibraryShadowsModule",
+          projectView = { projectDir -> projectDir.resolve(".bazelproject") },
+          onProjectInit = { projectDir ->
+            setupRemoteJdk(projectDir, "21")
+            projectDir.resolve(".bazelversion").writeText("8.7.0")
+          },
+        ),
+      ),
+
       // community
       ApprovalTestCase(
         project = TestCase(
