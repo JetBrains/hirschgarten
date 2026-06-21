@@ -48,6 +48,7 @@ class ProjectSyncTaskTest : MockProjectBaseTest() {
             workspaceName = "",
             targets = emptyMap(),
             rootTargets = emptySet(),
+            configurations = emptyMap()
           )
         )),
       disposable)

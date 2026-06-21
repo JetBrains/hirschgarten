@@ -4,6 +4,7 @@ import org.jetbrains.bazel.commons.LanguageClass
 import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
 import org.jetbrains.bsp.protocol.SourceFileCollection
 import org.jetbrains.bsp.protocol.BuildTargetData
 import org.jetbrains.bsp.protocol.JvmBuildTarget
@@ -47,7 +48,7 @@ object TestBuildTargetFactory {
     languages: Set<LanguageClass>,
     data: List<BuildTargetData>,
   ): RawBuildTarget = RawBuildTarget(
-    id = id,
+    key = WorkspaceTargetKey(label = id),
     dependencies = emptyList(),
     kind = TargetKind(
       kind = kind,

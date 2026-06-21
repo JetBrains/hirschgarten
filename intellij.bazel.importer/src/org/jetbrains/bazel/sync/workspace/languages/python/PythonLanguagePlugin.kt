@@ -19,6 +19,7 @@ import org.jetbrains.bazel.sync.workspace.snapshot.SourceFileCollectionBuilder
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceSyncConfig
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bazel.server.BazelServerFacade
+import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
 import org.jetbrains.bsp.protocol.BuildTargetData
 import org.jetbrains.bsp.protocol.KotlinBuildTarget
 import org.jetbrains.bsp.protocol.PythonBuildTarget
@@ -47,7 +48,7 @@ internal class PythonLanguagePlugin : LanguagePlugin {
   class Mapper(private val server: BazelServerFacade) : LanguagePlugin.Mapper {
     override suspend fun createBuildTargetData(
       target: TargetIdeInfo,
-      targetsToImport: Map<Label, TargetIdeInfo>,
+      targetsToImport: Map<WorkspaceTargetKey, TargetIdeInfo>,
       graph: DependencyGraph,
       repoMapping: RepoMapping,
     ): List<BuildTargetData> {

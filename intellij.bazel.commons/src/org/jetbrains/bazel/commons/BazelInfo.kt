@@ -19,6 +19,9 @@ data class BazelInfo(
    * May include rule names and/or provider names.
    */
   val externalAutoloads: List<String>,
+
+  /** `true` when plugin should support configurations  */
+  val isConfigurationSupportEnabled: Boolean = false
 )
 
 @ApiStatus.Internal
@@ -40,9 +43,9 @@ data class BazelRelease(val major: Int, val minor: Int = 0) {
 
     private val BAZEL_VERSION_REGEX = """^(\d+)\.(\d+)""".toRegex()
 
-    private val VERSION_REGEX = """(?<=release )(\d+)\.(\d+)(?=[0-9.]*)""".toRegex()
+    private val VERSION_REGEX = """(?:release )?(\d+)\.(\d+)(?=[0-9.]*)""".toRegex()
 
-    internal val FALLBACK_VERSION = BazelRelease(7, 5)
+    val FALLBACK_VERSION: BazelRelease = BazelRelease(7, 5)
 
     internal val OLDEST_SUPPORTED_MAJOR = 7
 

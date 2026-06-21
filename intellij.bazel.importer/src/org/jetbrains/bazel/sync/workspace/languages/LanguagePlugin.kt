@@ -13,6 +13,7 @@ import org.jetbrains.bazel.sync.workspace.importer.BazelWorkspaceImporter
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceSyncConfig
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bazel.server.BazelServerFacade
+import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
 import org.jetbrains.bsp.protocol.BuildTargetData
 import kotlin.reflect.KClass
 
@@ -41,13 +42,14 @@ interface LanguagePlugin {
   interface Mapper {
     suspend fun prepareSync(
       graph: DependencyGraph,
-      targetsToImport: Map<Label, IntellijIdeInfo.TargetIdeInfo>,
+      targetsToImport: Map<WorkspaceTargetKey, IntellijIdeInfo.TargetIdeInfo>,
       repoMapping: RepoMapping,
-    ) {}
+    ) {
+    }
 
     suspend fun createBuildTargetData(
       target: IntellijIdeInfo.TargetIdeInfo,
-      targetsToImport: Map<Label, IntellijIdeInfo.TargetIdeInfo>,
+      targetsToImport: Map<WorkspaceTargetKey, IntellijIdeInfo.TargetIdeInfo>,
       graph: DependencyGraph,
       repoMapping: RepoMapping,
     ): List<BuildTargetData>

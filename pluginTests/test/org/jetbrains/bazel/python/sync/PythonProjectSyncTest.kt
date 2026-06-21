@@ -49,6 +49,7 @@ import org.jetbrains.bazel.sync.workspace.importer.WorkspaceImporterHelper
 import org.jetbrains.bazel.sync.workspace.snapshot.SourceFileCollectionBuilder
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceSnapshot
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceSnapshotBuilder
+import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
 import org.jetbrains.bazel.workspace.model.matchers.entries.ExpectedModuleEntity
 import org.jetbrains.bazel.workspace.model.matchers.entries.ExpectedSourceRootEntity
 import org.jetbrains.bazel.workspace.model.matchers.entries.shouldContainExactlyInAnyOrder
@@ -340,8 +341,8 @@ class PythonProjectSyncTest : MockProjectBaseTest() {
 
     val target =
       RawBuildTarget(
-        info.targetId,
-        info.dependencies.map { DependencyLabel(it) },
+        key = WorkspaceTargetKey(label = info.targetId),
+        info.dependencies.map { DependencyLabel(WorkspaceTargetKey(label = it)) },
         TargetKind(
           kind = "python_binary",
           ruleType = RuleType.BINARY,
@@ -373,8 +374,9 @@ class PythonProjectSyncTest : MockProjectBaseTest() {
       resolved = BazelResolvedWorkspace(
         workspaceName = null,
         repoMapping = RepoMappingDisabled,
-        rootTargets = targets.map { it.id }.toSet(),
+        rootTargets = targets.map { it.key }.toSet(),
         targets = targets,
+        configurations = emptyMap()
       ),
     )
   }

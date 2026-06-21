@@ -3,19 +3,20 @@ package org.jetbrains.bazel.label
 import com.google.devtools.intellij.ideinfo.IntellijIdeInfo
 import com.google.devtools.intellij.ideinfo.IntellijIdeInfo.Dependency.DependencyType
 import org.jetbrains.annotations.ApiStatus
+import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
+import org.jetbrains.bazel.sync.workspace.snapshot.toWorkspaceTargetKey
 
 // TODO: move to backend-only entity and use WorkspaceConfigurationId
 @ApiStatus.Internal
 data class DependencyLabel(
-  val label: Label,
-  val configuration: String? = null,
+  val targetKey: WorkspaceTargetKey,
   val kind: DependencyLabelKind = DependencyLabelKind.COMPILE,
 ) {
   companion object {
     @ApiStatus.Obsolete
     fun parse(value: String, isRuntime: Boolean = false): DependencyLabel =
       DependencyLabel(
-        Label.parse(value),
+        targetKey = WorkspaceTargetKey(label = Label.parse(value)),
         kind = if (isRuntime) {
           DependencyLabelKind.RUNTIME
         }
@@ -40,14 +41,13 @@ enum class DependencyLabelKind {
 @ApiStatus.Internal
 fun IntellijIdeInfo.Dependency.toDependencyLabel(): DependencyLabel =
   DependencyLabel(
-    label = label(),
+    targetKey = target.toWorkspaceTargetKey(),
     kind = when (dependencyType) {
       DependencyType.EXPORTED_COMPILE_TIME -> DependencyLabelKind.EXPORTED_COMPILE_TIME
       DependencyType.RUNTIME -> DependencyLabelKind.RUNTIME
       DependencyType.TOOLCHAIN -> DependencyLabelKind.TOOLCHAIN
       else -> DependencyLabelKind.COMPILE
     },
-    configuration = this.target.configuration.ifEmpty { null }
   )
 
 

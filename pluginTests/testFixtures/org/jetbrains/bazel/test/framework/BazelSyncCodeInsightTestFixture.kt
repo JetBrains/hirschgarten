@@ -52,6 +52,8 @@ interface BazelSyncCodeInsightTestFixture : CodeInsightTestFixture {
    */
   fun copyBazelTestProject(path: String)
 
+  fun setBazelVersion(version: String)
+
   suspend fun performBazelSync(buildProject: Boolean = false)
 }
 
@@ -85,6 +87,10 @@ class BazelSyncCodeInsightTestFixtureImpl(
     configureBazelCaches(path)
     findKotlinStdlibInClasspath().copyTo(projectRoot.resolve("toolchains").resolve("kotlin-stdlib.jar").createParentDirectories())
     testProjectPath = BazelPathManager.testProjectsRoot.resolve(path)
+  }
+
+  override fun setBazelVersion(version: String) {
+    projectRoot.resolve(".bazelversion").writeText(version)
   }
 
   private fun configureBazelCaches(testProjectPath: String) {

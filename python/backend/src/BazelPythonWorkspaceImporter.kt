@@ -266,7 +266,7 @@ internal class BazelPythonWorkspaceImporter : BazelWorkspaceImporter {
     val dependencies =
       target.dependencies.map {
         ModuleDependency(
-          module = ModuleId(it.label.formatAsModuleName(repoMapping)),
+          module = ModuleId(it.targetKey.label.formatAsModuleName(repoMapping)),
           exported = true,
           scope = DependencyScope.COMPILE,  // Python does not have the runtime/compile scope separation
           productionOnTest = true,

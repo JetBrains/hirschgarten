@@ -8,6 +8,7 @@ import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.label.DependencyLabel
 import org.jetbrains.bazel.label.DependencyLabelKind
 import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
 import org.jetbrains.bazel.workspace.model.test.framework.createRawBuildTarget
 import org.jetbrains.bsp.protocol.SourceFileCollection
 import org.jetbrains.bsp.protocol.JvmBuildTarget
@@ -36,13 +37,13 @@ class DependencyBuilderTest {
     val depLabel = Label.parse("//other")
     val target = jvmTarget(
       label = "//target",
-      jvmDependencies = listOf(JvmDependency.ModuleDependency(DependencyLabel(depLabel))),
+      jvmDependencies = listOf(JvmDependency.ModuleDependency(DependencyLabel(depLabel.asKey()))),
     )
 
     val resolved = DependencyBuilder(listOf(target)).resolve(target)
 
     resolved.dependencies shouldContainExactlyInAnyOrder listOf(
-      DependencyLabel(depLabel, kind = DependencyLabelKind.EXPORTED_COMPILE_TIME),
+      DependencyLabel(depLabel.asKey(), kind = DependencyLabelKind.EXPORTED_COMPILE_TIME),
     )
   }
 
@@ -52,13 +53,13 @@ class DependencyBuilderTest {
     val target = jvmTarget(
       label = "//target",
       kind = "jvm_library",
-      jvmDependencies = listOf(JvmDependency.ModuleDependency(DependencyLabel(depLabel))),
+      jvmDependencies = listOf(JvmDependency.ModuleDependency(DependencyLabel(depLabel.asKey()))),
     )
 
     val resolved = DependencyBuilder(listOf(target)).resolve(target)
 
     resolved.dependencies shouldContainExactlyInAnyOrder listOf(
-      DependencyLabel(depLabel, kind = DependencyLabelKind.COMPILE),
+      DependencyLabel(depLabel.asKey(), kind = DependencyLabelKind.COMPILE),
     )
   }
 
@@ -68,13 +69,13 @@ class DependencyBuilderTest {
     val target = jvmTarget(
       label = "//target",
       kind = "_jvm_library_jps",
-      jvmDependencies = listOf(JvmDependency.ModuleDependency(DependencyLabel(depLabel))),
+      jvmDependencies = listOf(JvmDependency.ModuleDependency(DependencyLabel(depLabel.asKey()))),
     )
 
     val resolved = DependencyBuilder(listOf(target)).resolve(target)
 
     resolved.dependencies shouldContainExactlyInAnyOrder listOf(
-      DependencyLabel(depLabel, kind = DependencyLabelKind.COMPILE),
+      DependencyLabel(depLabel.asKey(), kind = DependencyLabelKind.COMPILE),
     )
   }
 
@@ -84,13 +85,13 @@ class DependencyBuilderTest {
     val target = jvmTarget(
       label = "//target",
       kind = "jvm_library",
-      jvmDependencies = listOf(JvmDependency.LibraryDependency(DependencyLabel(libLabel))),
+      jvmDependencies = listOf(JvmDependency.LibraryDependency(DependencyLabel(libLabel.asKey()))),
     )
 
     val resolved = DependencyBuilder(listOf(target)).resolve(target)
 
     resolved.dependencies shouldContainExactlyInAnyOrder listOf(
-      DependencyLabel(libLabel, kind = DependencyLabelKind.EXPORTED_COMPILE_TIME),
+      DependencyLabel(libLabel.asKey(), kind = DependencyLabelKind.EXPORTED_COMPILE_TIME),
     )
   }
 
@@ -101,16 +102,16 @@ class DependencyBuilderTest {
     val target = jvmTarget(
       label = "//target",
       jvmDependencies = listOf(
-        JvmDependency.ModuleDependency(DependencyLabel(runtimeLabel, kind = DependencyLabelKind.RUNTIME)),
-        JvmDependency.ModuleDependency(DependencyLabel(exportedLabel, kind = DependencyLabelKind.EXPORTED_COMPILE_TIME)),
+        JvmDependency.ModuleDependency(DependencyLabel(runtimeLabel.asKey(), kind = DependencyLabelKind.RUNTIME)),
+        JvmDependency.ModuleDependency(DependencyLabel(exportedLabel.asKey(), kind = DependencyLabelKind.EXPORTED_COMPILE_TIME)),
       ),
     )
 
     val resolved = DependencyBuilder(listOf(target)).resolve(target)
 
     resolved.dependencies shouldContainExactlyInAnyOrder listOf(
-      DependencyLabel(runtimeLabel, kind = DependencyLabelKind.RUNTIME),
-      DependencyLabel(exportedLabel, kind = DependencyLabelKind.EXPORTED_COMPILE_TIME),
+      DependencyLabel(runtimeLabel.asKey(), kind = DependencyLabelKind.RUNTIME),
+      DependencyLabel(exportedLabel.asKey(), kind = DependencyLabelKind.EXPORTED_COMPILE_TIME),
     )
   }
 
@@ -119,20 +120,20 @@ class DependencyBuilderTest {
     val depLabel = Label.parse("//other")
     val target = createRawBuildTarget(
       id = Label.parse("//target"),
-      dependencies = listOf(DependencyLabel(depLabel)),
+      dependencies = listOf(DependencyLabel(depLabel.asKey())),
     )
 
     val resolved = DependencyBuilder(listOf(target)).resolve(target)
 
     resolved.dependencies shouldContainExactlyInAnyOrder listOf(
-      DependencyLabel(depLabel, kind = DependencyLabelKind.COMPILE),
+      DependencyLabel(depLabel.asKey(), kind = DependencyLabelKind.COMPILE),
     )
   }
 
   @Test
   fun `strictDependenciesCheck should be OFF when target is not in workspace`() {
     val target = RawBuildTarget(
-      id = Label.parse("@external//some:target"),
+      key = WorkspaceTargetKey(label = Label.parse("@external//some:target")),
       dependencies = emptyList(),
       kind = TargetKind(
         kind = "java_library",
@@ -178,11 +179,11 @@ class DependencyBuilderTest {
     val targetA = jvmTarget(
       label = a.toString(),
       checkStrictDependencies = StrictDependencyCheckedType.WARNING,
-      jvmDependencies = listOf(JvmDependency.ModuleDependency(DependencyLabel(b, kind = DependencyLabelKind.EXPORTED_COMPILE_TIME))),
+      jvmDependencies = listOf(JvmDependency.ModuleDependency(DependencyLabel(b.asKey(), kind = DependencyLabelKind.EXPORTED_COMPILE_TIME))),
     )
     val targetB = jvmTarget(
       label = b.toString(),
-      jvmDependencies = listOf(JvmDependency.ModuleDependency(DependencyLabel(c, kind = DependencyLabelKind.EXPORTED_COMPILE_TIME))),
+      jvmDependencies = listOf(JvmDependency.ModuleDependency(DependencyLabel(c.asKey(), kind = DependencyLabelKind.EXPORTED_COMPILE_TIME))),
     )
     val targetC = jvmTarget(label = c.toString())
 
@@ -202,11 +203,11 @@ class DependencyBuilderTest {
     val targetA = jvmTarget(
       label = a.toString(),
       checkStrictDependencies = StrictDependencyCheckedType.WARNING,
-      jvmDependencies = listOf(JvmDependency.ModuleDependency(DependencyLabel(b))),
+      jvmDependencies = listOf(JvmDependency.ModuleDependency(DependencyLabel(b.asKey()))),
     )
     val targetB = jvmTarget(
       label = b.toString(),
-      jvmDependencies = listOf(JvmDependency.ModuleDependency(DependencyLabel(c, kind = DependencyLabelKind.EXPORTED_COMPILE_TIME))),
+      jvmDependencies = listOf(JvmDependency.ModuleDependency(DependencyLabel(c.asKey(), kind = DependencyLabelKind.EXPORTED_COMPILE_TIME))),
     )
     val targetC = jvmTarget(label = c.toString())
 
@@ -225,11 +226,11 @@ class DependencyBuilderTest {
     val targetA = jvmTarget(
       label = a.toString(),
       checkStrictDependencies = StrictDependencyCheckedType.WARNING,
-      jvmDependencies = listOf(JvmDependency.ModuleDependency(DependencyLabel(b))),
+      jvmDependencies = listOf(JvmDependency.ModuleDependency(DependencyLabel(b.asKey()))),
     )
     val targetB = jvmTarget(
       label = b.toString(),
-      jvmDependencies = listOf(JvmDependency.ModuleDependency(DependencyLabel(c))),
+      jvmDependencies = listOf(JvmDependency.ModuleDependency(DependencyLabel(c.asKey()))),
     )
     val targetC = jvmTarget(label = c.toString())
 
@@ -237,6 +238,8 @@ class DependencyBuilderTest {
 
     resolved.strictDependencies shouldContainExactlyInAnyOrder listOf(b)
   }
+
+  private fun Label.asKey(): WorkspaceTargetKey = WorkspaceTargetKey(label = this)
 
   private fun jvmTarget(
     label: String,

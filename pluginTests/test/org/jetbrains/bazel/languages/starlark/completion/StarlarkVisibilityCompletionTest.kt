@@ -11,6 +11,7 @@ import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.project.BazelProjectFixtures.initializeBazelProject
+import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
 import org.jetbrains.bazel.target.targetUtils
 import org.jetbrains.bsp.protocol.SourceFileCollection
 import org.jetbrains.bsp.protocol.RawBuildTarget
@@ -31,7 +32,7 @@ class StarlarkVisibilityCompletionTest : BasePlatformTestCase() {
     project.targetUtils.setTargets(
       targets.map {
         RawBuildTarget(
-          id = Label.parse(it),
+          key = WorkspaceTargetKey(label = Label.parse(it)),
           dependencies = emptyList(),
           kind =
             TargetKind(

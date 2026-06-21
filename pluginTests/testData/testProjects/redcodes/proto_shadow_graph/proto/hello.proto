@@ -1,0 +1,10 @@
+syntax = "proto3";
+
+package hello;
+
+option java_package = "hello";
+option java_outer_classname = "HelloOuterClass";
+
+message Hello {
+  string name = 1;
+}

@@ -11,8 +11,10 @@ import org.jetbrains.bazel.label.label
 import org.jetbrains.bazel.sync.workspace.graph.DependencyGraph
 import org.jetbrains.bazel.sync.workspace.languages.java.JvmLanguagePluginMixin
 import org.jetbrains.bazel.server.BazelServerFacade
+import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceConfigurationId
+import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
+import org.jetbrains.bazel.sync.workspace.snapshot.toWorkspaceTargetKey
 import org.jetbrains.bsp.protocol.BuildTargetData
-import org.jetbrains.bsp.protocol.KotlinBuildTarget
 import org.jetbrains.bsp.protocol.LibraryItem
 import org.jetbrains.bsp.protocol.ScalaBuildTarget
 import java.nio.file.Path
@@ -20,7 +22,7 @@ import kotlin.io.path.name
 import kotlin.reflect.KClass
 
 @ApiStatus.Internal
-class ScalaLanguagePlugin: JvmLanguagePluginMixin {
+class ScalaLanguagePlugin : JvmLanguagePluginMixin {
   override val providedBuildTargetTypes: Set<KClass<out BuildTargetData>>
     get() = setOf(ScalaBuildTarget::class)
 
@@ -34,7 +36,7 @@ class ScalaLanguagePlugin: JvmLanguagePluginMixin {
 
     override suspend fun prepareSync(
       graph: DependencyGraph,
-      targetsToImport: Map<Label, TargetIdeInfo>,
+      targetsToImport: Map<WorkspaceTargetKey, TargetIdeInfo>,
       repoMapping: RepoMapping,
     ) {
       val localRepositories = repoMapping.getLocalRepositories()
@@ -50,9 +52,10 @@ class ScalaLanguagePlugin: JvmLanguagePluginMixin {
           .filter { it.hasScalaTargetInfo() }
           .associateBy(
             { it.label() },
-            {
-              it.scalaTargetInfo.scalatestClasspathTargetsList.flatMap {
-                graph.idToTargetInfo.get(Label.parse(it))?.javaProvider?.fullCompileJarsList ?: emptyList()
+            { target ->
+              target.scalaTargetInfo.scalatestClasspathTargetsList.flatMap {
+                graph.idToTargetInfo[target.key.toWorkspaceTargetKey().copy(label = Label.parse(it))]?.javaProvider?.fullCompileJarsList
+                ?: emptyList()
               }
                 .map { server.bazelPathsResolver.resolve(it, localRepositories) }
                 .toSet()
@@ -64,18 +67,20 @@ class ScalaLanguagePlugin: JvmLanguagePluginMixin {
 
     override suspend fun createBuildTargetData(
       target: TargetIdeInfo,
-      targetsToImport: Map<Label, TargetIdeInfo>,
+      targetsToImport: Map<WorkspaceTargetKey, TargetIdeInfo>,
       repoMapping: RepoMapping,
     ): List<BuildTargetData> {
       if (!target.hasScalaTargetInfo()) {
         return emptyList()
       }
       val sdk = scalaSdks[target.label()] ?: return emptyList()
-      return listOf(ScalaBuildTarget(
-        scalaVersion = sdk.version,
-        sdkJars = sdk.compilerJars,
-        scalacOptions = target.scalaTargetInfo.scalacOptsList,
-      ))
+      return listOf(
+        ScalaBuildTarget(
+          scalaVersion = sdk.version,
+          sdkJars = sdk.compilerJars,
+          scalacOptions = target.scalaTargetInfo.scalacOptsList,
+        ),
+      )
     }
 
     override suspend fun toolchainLibraries(

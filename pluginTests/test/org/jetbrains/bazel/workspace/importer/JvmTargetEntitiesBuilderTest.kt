@@ -19,6 +19,7 @@ import org.jetbrains.bazel.sync.workspace.languages.java.sourceRoot.DefaultJvmPa
 import org.jetbrains.bazel.sync.workspace.languages.java.sourceRoot.JvmPackagePrefixCalculator
 import org.jetbrains.bazel.sync.workspace.languages.java.sourceRoot.SourceRootOptimizationMode
 import org.jetbrains.bazel.sync.workspace.snapshot.File2TargetMap
+import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
 import org.jetbrains.bazel.workspace.indexAdditionalFiles.ProjectViewGlobSet
 import org.jetbrains.bazel.workspace.model.test.framework.WorkspaceModelBaseTest
 import org.jetbrains.bazel.workspace.model.test.framework.createRawBuildTarget
@@ -86,7 +87,7 @@ internal class JvmTargetEntitiesBuilderTest : WorkspaceModelBaseTest() {
       id = Label.parse("//app"),
       kind = TargetKind(kind = "java_library", ruleType = RuleType.LIBRARY, languageClasses = setOf(LanguageClass.JAVA)),
       dependencies = listOf(
-        DependencyLabel(label = libLabel, kind = DependencyLabelKind.COMPILE),
+        DependencyLabel(targetKey = WorkspaceTargetKey(label = libLabel), kind = DependencyLabelKind.COMPILE),
       ),
       data = listOf(
         JvmBuildTarget(

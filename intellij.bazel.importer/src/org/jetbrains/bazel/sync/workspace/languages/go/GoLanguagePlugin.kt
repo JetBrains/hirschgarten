@@ -19,6 +19,7 @@ import org.jetbrains.bsp.protocol.BazelResolveLocalToRemoteParams
 import org.jetbrains.bsp.protocol.BazelResolveLocalToRemoteResult
 import org.jetbrains.bsp.protocol.BazelResolveRemoteToLocalParams
 import org.jetbrains.bsp.protocol.BazelResolveRemoteToLocalResult
+import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
 import org.jetbrains.bsp.protocol.BuildTargetData
 import org.jetbrains.bsp.protocol.GoBuildTarget
 import java.nio.file.Path
@@ -37,7 +38,7 @@ class GoLanguagePlugin: LanguagePlugin {
 
     override suspend fun createBuildTargetData(
       target: TargetIdeInfo,
-      targetsToImport: Map<Label, TargetIdeInfo>,
+      targetsToImport: Map<WorkspaceTargetKey, TargetIdeInfo>,
       graph: DependencyGraph,
       repoMapping: RepoMapping,
     ): List<BuildTargetData> {

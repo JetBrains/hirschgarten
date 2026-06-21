@@ -72,15 +72,15 @@ class DependencyBuilder(private val targets: Collection<RawBuildTarget>) {
     val fDependencies: ((Label) -> List<DependencyLabel>) = dependencies@ { label ->
       val jvmTarget = targetsIndex[label]?.let { extractJvmBuildTarget(it) } ?: return@dependencies emptyList()
       jvmTarget.jvmDependencies.map { it.dependency }
-        .filter { it.label != label /* filter out module dependency on library */ }
+        .filter { it.targetKey.label != label /* filter out module dependency on library */ }
     }
 
     val exportedDependenciesClosure = DependenciesClosure { label ->
-      fDependencies(label).filter { it.exported }.map { it.label }
+      fDependencies(label).filter { it.exported }.map { it.targetKey.label }
     }
 
     return strictTargets.associateWith { targetId ->
-      fDependencies(targetId).flatMap { exportedDependenciesClosure[it.label] + it.label }.distinct()
+      fDependencies(targetId).flatMap { exportedDependenciesClosure[it.targetKey.label] + it.targetKey.label }.distinct()
     }
   }
 

@@ -27,6 +27,7 @@ import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.label.ResolvedLabel
 import org.jetbrains.bazel.performance.bspTracer
 import org.jetbrains.bazel.progress.syncConsole
+import org.jetbrains.bazel.server.bep.BepOutput
 import org.jetbrains.bazel.server.bsp.managers.BazelBspAspectsManager
 import org.jetbrains.bazel.server.bsp.managers.BazelBspAspectsManagerResult
 import org.jetbrains.bazel.server.bsp.managers.BazelExternalRulesetsQueryImpl
@@ -34,6 +35,9 @@ import org.jetbrains.bazel.server.bzlmod.calculateRepoNameMappingOnly
 import org.jetbrains.bazel.server.bzlmod.extendRepoMappingByPathInfo
 import org.jetbrains.bazel.server.model.AspectSyncProject
 import org.jetbrains.bazel.server.sync.sharding.BazelBuildTargetSharder
+import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceConfigurationId
+import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
+import org.jetbrains.bazel.sync.workspace.snapshot.toWorkspaceTargetKey
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bazel.workspacecontext.externalRepositoriesTreatedAsInternal
 import org.jetbrains.bsp.protocol.BazelTaskEventsHandler
@@ -71,7 +75,7 @@ class ProjectResolver(
   internal suspend fun resolve(
     build: Boolean,
     requestedTargetsToSync: List<Label>?,
-    allTargets: List<Label>? /* all known targets, if any, from first phase */,
+    allTargets: List<Label>?, /* all known targets, if any, from first phase */
     taskId: TaskId,
   ): AspectSyncProject {
     return bspTracer.spanBuilder("Resolve project").useWithScope {
@@ -87,7 +91,7 @@ class ProjectResolver(
           val rawTargetsMap =
             TargetInfoReader(taskEventsHandler.asLogger(taskId))
               .readTargetMapFromAspectOutputs(aspectOutputs)
-          processTargetMap(rawTargetsMap)
+          processTargetMap(rawTargetsMap, aspectResult.bepOutput)
         }
 
       val newRepoMapping = when (repoMapping) {
@@ -97,7 +101,7 @@ class ProjectResolver(
           // them are local repositories and update our mapping to local paths accordingly.
           // Additionally, for those newly discovered local repositories, update the path to
           // point to the source tree (rather than the output map).
-          val involvedRepos = targets.keys.mapNotNull { (it as? ResolvedLabel)?.repo as? Canonical }.distinct()
+          val involvedRepos = targets.keys.mapNotNull { (it.label as? ResolvedLabel)?.repo as? Canonical }.distinct()
           val needsPath = involvedRepos
             .filter { !(repoMapping.canonicalRepoNameToLocalPath.contains(it.repoName)) }
             .map { it.toString() }
@@ -131,6 +135,7 @@ class ProjectResolver(
         hasError = aspectResult.isFailure,
         targets = targets,
         rootTargets = rootTargets,
+        configurations = aspectResult.bepOutput.configurations,
       )
     }
   }
@@ -138,7 +143,7 @@ class ProjectResolver(
   private suspend fun buildProjectWithAspectAndSetup(
     build: Boolean,
     requestedTargetsToSync: List<Label>?,
-    allTargets: List<Label>? /* all known targets, if any, from first phase */,
+    allTargets: List<Label>?, /* all known targets, if any, from first phase */
     taskId: TaskId,
   ): Pair<RepoMapping, BazelBspAspectsManagerResult> {
     // Use the already available workspaceContext and featureFlags
@@ -241,7 +246,7 @@ class ProjectResolver(
     languages: Set<Rules>,
     build: Boolean,
     targetsToSync: TargetCollection,
-    allTargets: List<Label>? /* all known targets, if any, from first phase */,
+    allTargets: List<Label>?, /* all known targets, if any, from first phase */
     taskId: TaskId,
   ): BazelBspAspectsManagerResult =
     coroutineScope {
@@ -373,37 +378,43 @@ class ProjectResolver(
 
   companion object {
     @JvmStatic
-    fun processTargetMap(targetMap: Map<Label, TargetIdeInfo>): Map<Label, TargetIdeInfo> =
+    fun processTargetMap(
+      targetMap: Map<WorkspaceTargetKey, TargetIdeInfo>,
+      bepOutput: BepOutput,
+    ): Map<WorkspaceTargetKey, TargetIdeInfo> =
       targetMap
-        .map { (_, v) ->
+        .mapKeys { (key, _) -> key.copy(configuration = patchConfigurationId(bepOutput, key.configuration)) }
+        .mapValues { (k, v) ->
           // our target-information already contains labels in canonical form
-          val label = Label.parse(v.key.label)
-          label to
-            v
-              .toBuilder()
-              .apply {
-                val processedDependencies = processDependenciesList(depsBuilderList, targetMap)
-                clearDeps()
-                addAllDeps(processedDependencies)
-              }.build()
+          v.toBuilder()
+            .apply {
+              val processedDependencies = processDependenciesList(depsBuilderList, targetMap, bepOutput)
+              clearDeps()
+              addAllDeps(processedDependencies)
+
+              // update key
+              key = IntellijIdeInfo.TargetKey.newBuilder()
+                .setLabel(k.label.toString())
+                .setConfiguration(k.configuration.configurationChecksum.orEmpty())
+                .addAllAspectIds(k.aspectIds.ids)
+                .build()
+            }.build()
         }.toMap()
 
     @JvmStatic
     fun processDependenciesList(
       dependenciesBuilderList: List<IntellijIdeInfo.Dependency.Builder>,
-      targets: Map<Label, TargetIdeInfo>,
+      targets: Map<WorkspaceTargetKey, TargetIdeInfo>,
+      bepOutput: BepOutput,
     ): List<IntellijIdeInfo.Dependency> {
       val projectSuffix = "-project"
       return dependenciesBuilderList.map { dependency ->
         dependency
           .apply {
-            // canonicalize the dependency id
-            val label = Label.parse(target.label)
-
             // Replace dependencies from maven_project_jar with their java_library counterparts
             // this is to support the macro java_export from rules_jvm_external
             // refer to its definition for more context: https://github.com/bazel-contrib/rules_jvm_external/blob/935db476ba732576a1f868b092301ce1bc44fe72/private/rules/java_export.bzl#L8
-            val targetInfo = targets[label]
+            val targetInfo = targets[dependency.target.toWorkspaceTargetKey()]
             val newlabel =
               if (targetInfo?.kind == "maven_project_jar" && target.label.endsWith(projectSuffix)) {
                 target.label.dropLast(projectSuffix.length) + "-lib"
@@ -411,7 +422,15 @@ class ProjectResolver(
               else {
                 target.label
               }
-            target = IntellijIdeInfo.TargetKey.newBuilder().setLabel(newlabel).setConfiguration(target.configuration).build()
+            val configurationId = patchConfigurationId(
+              bepOutput = bepOutput,
+              configurationId = WorkspaceConfigurationId.of(target.configuration),
+            )
+            target = IntellijIdeInfo.TargetKey.newBuilder()
+              .setLabel(newlabel)
+              .setConfiguration(configurationId.configurationChecksum.orEmpty())
+              .addAllAspectIds(target.aspectIdsList)
+              .build()
           }.build()
       }
     }

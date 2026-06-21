@@ -44,5 +44,5 @@ object TestTargetClassifier {
   private fun RawBuildTarget.isTestTarget(): Boolean = isTestOnly || kind.ruleType == RuleType.TEST
 
   private fun RawBuildTarget.dependsOn(label: Label): Boolean =
-    dependencies.any { it.label == label }
+    dependencies.any { it.targetKey.label == label }
 }

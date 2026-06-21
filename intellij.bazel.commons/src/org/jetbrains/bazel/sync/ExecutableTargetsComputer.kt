@@ -8,6 +8,7 @@ import org.jetbrains.bazel.label.assumeResolved
 import org.jetbrains.bsp.protocol.RawBuildTarget
 import kotlin.collections.forEach
 
+// TODO: migrate to WorkspaceTargetKey
 @ApiStatus.Internal
 object ExecutableTargetsComputer {
   fun calculateExecutableTargets(
@@ -48,7 +49,7 @@ object ExecutableTargetsComputer {
       val dependencies = targetInfo.dependencies
       for (dependency in dependencies) {
         targetIdToDirectDependentIds
-          .computeIfAbsent(dependency.label) { hashSetOf<Label>() }
+          .computeIfAbsent(dependency.targetKey.label) { hashSetOf() }
           .add(targetInfo.id)
       }
     }

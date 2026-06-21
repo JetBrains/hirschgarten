@@ -18,6 +18,7 @@ import org.jetbrains.bazel.label.DependencyLabel
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.label.assumeResolved
 import org.jetbrains.bazel.sync.workspace.snapshot.SourceFileCollectionBuilder
+import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
 import org.jetbrains.bazel.sync.workspace.targetKind.TargetKindService
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bsp.protocol.RawBuildTarget
@@ -52,7 +53,7 @@ class PhasedBazelProjectMapper(
     val label = Label.parse(name).assumeResolved()
     val baseDirectory = bazelPathsResolver.toDirectoryPath(label, repoMapping)
     return RawBuildTarget(
-      id = label,
+      key = WorkspaceTargetKey(label = label),
       dependencies = interestingDeps.map { DependencyLabel.parse(it) },
       kind = inferKind(),
       sources = SourceFileCollectionBuilder.build(relativeRoot = baseDirectory, paths = calculateSources(targets)),

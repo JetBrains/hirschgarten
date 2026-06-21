@@ -10,6 +10,7 @@ import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.sync.workspace.graph.DependencyGraph
 import org.jetbrains.bazel.sync.workspace.languages.LanguagePlugin
 import org.jetbrains.bazel.server.BazelServerFacade
+import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
 import org.jetbrains.bsp.protocol.BuildTargetData
 import org.jetbrains.bsp.protocol.GoBuildTarget
 import org.jetbrains.bsp.protocol.ProtobufBuildTarget
@@ -27,7 +28,7 @@ internal class ProtobufLanguagePlugin : LanguagePlugin {
 
     override suspend fun createBuildTargetData(
       target: TargetIdeInfo,
-      targetsToImport: Map<Label, TargetIdeInfo>,
+      targetsToImport: Map<WorkspaceTargetKey, TargetIdeInfo>,
       graph: DependencyGraph,
       repoMapping: RepoMapping,
     ): List<BuildTargetData> {

@@ -46,6 +46,7 @@ import org.jetbrains.bazel.workspace.importer.JAVA_SOURCE_ROOT_TYPE
 import org.jetbrains.bazel.workspace.model.test.framework.BuildServerMock
 import org.jetbrains.bazel.workspace.model.test.framework.MockBuildServerService
 import org.jetbrains.bazel.workspace.model.test.framework.WorkspaceModelBaseTest
+import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
 import org.jetbrains.bazel.workspacemodel.entities.BazelModuleEntitySource
 import org.jetbrains.bazel.workspacemodel.entities.BazelModuleExtensionEntity
 import org.jetbrains.bazel.workspacemodel.entities.WorkspaceModelTargetLabel
@@ -428,7 +429,7 @@ class BazelFileEventListenerTest : WorkspaceModelBaseTest() {
       targets =
         listOf(
           RawBuildTarget(
-            id = target1,
+            key = WorkspaceTargetKey(label = target1),
             dependencies = emptyList(),
             kind =
               TargetKind(

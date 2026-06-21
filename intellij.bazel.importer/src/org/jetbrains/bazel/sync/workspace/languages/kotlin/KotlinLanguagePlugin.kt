@@ -12,6 +12,7 @@ import org.jetbrains.bazel.commons.getLocalRepositories
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.sync.workspace.languages.java.JvmLanguagePluginMixin
 import org.jetbrains.bazel.server.BazelServerFacade
+import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
 import org.jetbrains.bsp.protocol.BuildTargetData
 import org.jetbrains.bsp.protocol.KotlinBuildTarget
 import org.jetbrains.bsp.protocol.LibraryItem
@@ -31,7 +32,7 @@ class KotlinLanguagePlugin: JvmLanguagePluginMixin {
   class Mapper(private val server: BazelServerFacade) : JvmLanguagePluginMixin.Mapper {
     override suspend fun createBuildTargetData(
       target: TargetIdeInfo,
-      targetsToImport: Map<Label, TargetIdeInfo>,
+      targetsToImport: Map<WorkspaceTargetKey, TargetIdeInfo>,
       repoMapping: RepoMapping,
     ): List<BuildTargetData> {
       if (!target.hasKotlinTargetInfo()) {
