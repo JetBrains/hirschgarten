@@ -5,7 +5,9 @@ import com.google.devtools.intellij.ideinfo.IntellijIdeInfo.TargetIdeInfo
 import com.google.devtools.intellij.ideinfo.IntellijIdeInfo.TargetKey
 import com.google.devtools.intellij.ideinfo.IntellijIdeInfo.Dependency
 import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.server.bep.BepOutput
 import org.jetbrains.bazel.server.sync.ProjectResolver
+import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
 import org.junit.jupiter.api.Test
 
 class ProjectResolverTest {
@@ -18,8 +20,9 @@ class ProjectResolverTest {
 
     val processedDependencies =
       ProjectResolver.processDependenciesList(
-        b.toBuilder().depsBuilderList,
-        rawTargetInfoMap,
+        dependenciesBuilderList = b.toBuilder().depsBuilderList,
+        targets = rawTargetInfoMap,
+        bepOutput = BepOutput()
       )
     processedDependencies shouldContainExactlyInAnyOrder listOf(dependency("@@//a-lib"))
   }
@@ -43,6 +46,6 @@ class ProjectResolverTest {
       .setTarget(TargetKey.newBuilder().setLabel(id))
       .build()
 
-  private fun toIdToTargetInfoMap(vararg targetIds: TargetIdeInfo): Map<Label, TargetIdeInfo> =
-    targetIds.associateBy { targetId -> Label.parse(targetId.key.label) }
+  private fun toIdToTargetInfoMap(vararg targetIds: TargetIdeInfo): Map<WorkspaceTargetKey, TargetIdeInfo> =
+    targetIds.associateBy { targetId -> WorkspaceTargetKey(label = Label.parse(targetId.key.label)) }
 }

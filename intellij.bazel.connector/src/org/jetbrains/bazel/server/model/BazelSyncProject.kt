@@ -8,6 +8,9 @@ import org.jetbrains.bazel.commons.BazelRelease
 import org.jetbrains.bazel.commons.RepoMapping
 import org.jetbrains.bazel.commons.RepoMappingDisabled
 import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceConfiguration
+import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceConfigurationId
+import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
 import java.nio.file.Path
 
 @ApiStatus.Internal
@@ -27,8 +30,9 @@ data class AspectSyncProject(
   val repoMapping: RepoMapping = RepoMappingDisabled,
   val workspaceName: String,
   val hasError: Boolean = false,
-  val targets: Map<Label, IntellijIdeInfo.TargetIdeInfo>,
-  val rootTargets: Set<Label>,
+  val targets: Map<WorkspaceTargetKey, IntellijIdeInfo.TargetIdeInfo>,
+  val rootTargets: Set<WorkspaceTargetKey>,
+  val configurations: Map<WorkspaceConfigurationId, WorkspaceConfiguration>
 ) {
   operator fun plus(project: AspectSyncProject): AspectSyncProject {
     if (workspaceRoot != project.workspaceRoot) {

@@ -22,6 +22,8 @@ import org.jetbrains.bazel.server.BazelServerFacade
 import org.jetbrains.bazel.sync.workspace.graph.DependencyGraph
 import org.jetbrains.bazel.sync.workspace.languages.createLanguageProjectMappers
 import org.jetbrains.bazel.sync.workspace.snapshot.SourceFileCollectionBuilder
+import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
+import org.jetbrains.bazel.sync.workspace.snapshot.toWorkspaceTargetKey
 import org.jetbrains.bazel.sync.workspace.targetKind.TargetKindService
 import org.jetbrains.bsp.protocol.BuildTargetData
 import org.jetbrains.bsp.protocol.BuildTargetTag
@@ -39,22 +41,22 @@ internal class AspectBazelProjectMapper(
   private val workspaceContext = server.workspaceContext
 
   suspend fun mapTargets(
-    allTargets: Map<Label, TargetIdeInfo>,
-    rootTargets: Set<Label>,
-    repoMapping: RepoMapping
+    allTargets: Map<WorkspaceTargetKey, TargetIdeInfo>,
+    rootTargets: Set<WorkspaceTargetKey>,
+    repoMapping: RepoMapping,
   ): List<RawBuildTarget> {
     val dependencyGraph =
       measure("Build dependency tree") {
         DependencyGraph(rootTargets, allTargets)
       }
 
-    val targetsToImport: Map<Label, TargetIdeInfo> =
+    val targetsToImport: Map<WorkspaceTargetKey, TargetIdeInfo> =
       measure("Select targets") {
         dependencyGraph.allTargetsAtDepth(
           workspaceContext.importDepth,
           // Ignore .bazelbsp and all its dependencies (if any)
-          predicate = { label -> label.packagePath.pathSegments.firstOrNull() != Constants.DOT_BAZELBSP_DIR_NAME },
-        ).associateBy { it.label() }
+          predicate = { key -> key.label.packagePath.pathSegments.firstOrNull() != Constants.DOT_BAZELBSP_DIR_NAME },
+        ).associateBy { it.key.toWorkspaceTargetKey() }
       }
 
     langMappers.all().forEach {
@@ -69,7 +71,7 @@ internal class AspectBazelProjectMapper(
   }
 
   private suspend fun createRawBuildTargets(
-    targetsToImport: Map<Label, TargetIdeInfo>,
+    targetsToImport: Map<WorkspaceTargetKey, TargetIdeInfo>,
     repoMapping: RepoMapping,
     dependencyGraph: DependencyGraph,
   ): List<RawBuildTarget> {
@@ -94,7 +96,7 @@ internal class AspectBazelProjectMapper(
 
   private suspend fun createRawBuildTarget(
     target: TargetIdeInfo,
-    targetsToImport: Map<Label, TargetIdeInfo>,
+    targetsToImport: Map<WorkspaceTargetKey, TargetIdeInfo>,
     repoMapping: RepoMapping,
     dependencyGraph: DependencyGraph,
     localRepositories: LocalRepositoryMapping,
@@ -126,8 +128,7 @@ internal class AspectBazelProjectMapper(
     }
 
     return RawBuildTarget(
-      id = label,
-      configurationId = target.key.configuration,
+      key = target.key.toWorkspaceTargetKey(),
       dependencies = target.depsList.map { it.toDependencyLabel() },
       kind = targetKind,
       sources = SourceFileCollectionBuilder.build(relativeRoot = baseDirectory, paths = resolveSourceSet { it.isSource }),

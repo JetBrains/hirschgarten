@@ -14,6 +14,7 @@ import com.intellij.platform.util.progress.RawProgressReporter
 import io.grpc.stub.StreamObserver
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.commons.BazelPathsResolver
+import org.jetbrains.bazel.commons.BazelRelease
 import org.jetbrains.bazel.commons.BazelStatus
 import org.jetbrains.bazel.commons.constants.Constants
 import org.jetbrains.bazel.label.AllRuleTargets
@@ -21,6 +22,12 @@ import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.label.SyntheticLabel
 import org.jetbrains.bazel.server.BazelTestFileNames
 import org.jetbrains.bazel.server.diagnostics.DiagnosticsService
+import org.jetbrains.bazel.server.sync.isConfigurationSupportEnabled
+import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceAspectIds
+import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceConfiguration
+import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceConfigurationId
+import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceConfigurationSummary
+import org.jetbrains.bazel.sync.workspace.snapshot.workspaceTargetKey
 import org.jetbrains.bazel.util.BspClientTestNotifier
 import org.jetbrains.bsp.protocol.BazelTaskEventsHandler
 import org.jetbrains.bsp.protocol.CachedTestLog
@@ -34,7 +41,6 @@ import org.jetbrains.bsp.protocol.TestStatus
 import java.io.IOException
 import java.nio.file.FileSystemNotFoundException
 import java.nio.file.Files
-import kotlin.random.Random
 
 @ApiStatus.Internal
 class BepServer(
@@ -95,6 +101,26 @@ class BepServer(
     processAbortedEvent(event)
     processTestResult(event)
     processTestSummary(event)
+    processConfiguration(event)
+  }
+
+  private fun processConfiguration(event: BuildEventStreamProtos.BuildEvent) {
+    if (!event.hasConfiguration()) {
+      return
+    }
+    val config = event.configuration
+    val workspaceConfiguration = WorkspaceConfiguration(
+      id = WorkspaceConfigurationId.of(event.id.configuration.id),
+      summary = WorkspaceConfigurationSummary(
+        mnemonic = config.mnemonic,
+        platformName = config.platformName,
+        cpu = config.cpu,
+        makeVariables = config.makeVariableMap,
+        isTool = config.isTool,
+      ),
+      fragments = emptyList(),
+    )
+    bepOutputBuilder.storeConfiguration(workspaceConfiguration)
   }
 
   private fun processTestResult(event: BuildEventStreamProtos.BuildEvent) {
@@ -157,7 +183,8 @@ class BepServer(
         }
       }
 
-      val testXml = testResult.testActionOutputList.find { it.name == BazelTestFileNames.XML.filename }?.let { bazelPathsResolver.resolve(it) }
+      val testXml =
+        testResult.testActionOutputList.find { it.name == BazelTestFileNames.XML.filename }?.let { bazelPathsResolver.resolve(it) }
       if (testXml != null) {
         // Test cases identified and sent to the client by TestXmlParser.
         TestXmlParser(bspClientTestNotifier).parseAndReport(taskId, testXml)
@@ -262,6 +289,9 @@ class BepServer(
   private fun consumeBuildStartedEvent(event: BuildEventStreamProtos.BuildEvent) {
     bepOutputBuilder.clear()
 
+    bepOutputBuilder.buildToolVersion =
+      BazelRelease.fromReleaseString(event.started.buildToolVersion) ?: BazelRelease.FALLBACK_VERSION
+
     val taskId = parentId.subTask("started-" + event.started.uuid)
     val startParams = TaskStartParams(taskId, eventTime = event.started.startTimeMillis)
     val target =
@@ -284,6 +314,7 @@ class BepServer(
       this.bspClientTestNotifier = bspClientTestNotifier
       bspClientTestNotifier.beginTestTarget(target, taskId)
     }
+
     startedEvent = taskId
   }
 
@@ -381,16 +412,39 @@ class BepServer(
   }
 
   private fun consumeCompletedEvent(event: BuildEventStreamProtos.BuildEvent) {
-    val eventLabel = Label.parseOrNull(event.id.targetCompleted.label)
-    val label =
-      eventLabel ?: run {
-        LOGGER.warn("No target label found in event ${event}")
-        return
-      }
+    val eventTargetKey = event.id.workspaceTargetKey
+                         ?: run {
+                           LOGGER.warn("No target key found in event ${event}")
+                           return
+                         }
     val targetComplete = event.completed
     val outputGroups = targetComplete.outputGroupList
     LOGGER.trace("Consuming target completed event ${targetComplete}")
-    bepOutputBuilder.storeTargetOutputGroups(label, outputGroups)
+
+    bepOutputBuilder.storeTargetOutputGroups(
+      target = eventTargetKey.copy(
+        // when configurations aren't supported, simply use `EMPTY` configuration IDs everywhere
+        configuration = if (bepOutputBuilder.buildToolVersion.isConfigurationSupportEnabled) {
+          eventTargetKey.configuration
+        }
+        else {
+          WorkspaceConfigurationId.EMPTY
+        },
+
+        // match behavior of the aspect, remove intellij aspect entries
+        aspectIds = WorkspaceAspectIds.of(
+          aspectIds = eventTargetKey.aspectIds.ids
+            .filter f@{ aspectId ->
+              if (!aspectId.contains('%')) {
+                return@f true
+              }
+              val (_, name) = aspectId.split('%')
+              return@f !name.removePrefix("_").startsWith("intellij")
+            },
+        ),
+      ),
+      outputGroups = outputGroups,
+    )
   }
 
   private fun processAbortedEvent(event: BuildEventStreamProtos.BuildEvent) {

@@ -8,12 +8,14 @@ import org.jetbrains.bazel.commons.LocalRepositoryMapping
 import org.jetbrains.bazel.commons.RepoMapping
 import org.jetbrains.bazel.commons.getLocalRepositories
 import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
+import org.jetbrains.bazel.sync.workspace.snapshot.toWorkspaceTargetKey
 import java.nio.file.Path
 import kotlin.io.path.Path
 import kotlin.io.path.exists
 
 internal class JdkResolver(private val bazelPathsResolver: BazelPathsResolver) {
-  fun resolve(targets: Map<Label, TargetIdeInfo>, repoMapping: RepoMapping): Jdk? {
+  fun resolve(targets: Map<WorkspaceTargetKey, TargetIdeInfo>, repoMapping: RepoMapping): Jdk? {
     val localRepositories = repoMapping.getLocalRepositories()
     val allCandidates = targets.values.mapNotNull { resolveJdkData(it, localRepositories, targets) }.toList()
     if (allCandidates.none()) return localJdkFallback()
@@ -24,7 +26,7 @@ internal class JdkResolver(private val bazelPathsResolver: BazelPathsResolver) {
   private fun resolveJdkData(
     targetInfo: TargetIdeInfo,
     localRepositories: LocalRepositoryMapping,
-    targets: Map<Label, TargetIdeInfo>,
+    targets: Map<WorkspaceTargetKey, TargetIdeInfo>,
   ): JdkCandidate? {
     val javaToolchainInfo = if (targetInfo.hasJavaToolchainInfo()) targetInfo.javaToolchainInfo else null
     val (javaHome, jdkType) = when {
@@ -32,7 +34,7 @@ internal class JdkResolver(private val bazelPathsResolver: BazelPathsResolver) {
         javaToolchainInfo != null && javaToolchainInfo.hasJavaHome() -> javaToolchainInfo.javaHome to JdkType.TOOLCHAIN
         else -> targetInfo.depsList
         .asSequence()
-        .mapNotNull { Label.parseOrNull(it.target.label) }
+        .mapNotNull { it.target.toWorkspaceTargetKey() }
         .mapNotNull { targets[it] }
         .find { it.javaToolchainInfo.hasJavaHome() }
         ?.let { it.javaToolchainInfo.javaHome to JdkType.RUNTIME }

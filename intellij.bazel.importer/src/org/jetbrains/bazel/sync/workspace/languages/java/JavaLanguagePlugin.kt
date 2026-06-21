@@ -41,6 +41,7 @@ import org.jetbrains.bazel.sync.workspace.snapshot.SourceFileCollectionBuilder
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceSyncConfig
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bazel.server.BazelServerFacade
+import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
 import org.jetbrains.bsp.protocol.BuildTargetData
 import org.jetbrains.bsp.protocol.JvmBuildTarget
 import org.jetbrains.bsp.protocol.JvmDependency
@@ -74,7 +75,7 @@ interface JvmLanguagePluginMixin {
   interface Mapper {
     suspend fun prepareSync(
       graph: DependencyGraph,
-      targetsToImport: Map<Label, TargetIdeInfo>,
+      targetsToImport: Map<WorkspaceTargetKey, TargetIdeInfo>,
       repoMapping: RepoMapping,
     ) {
     }
@@ -86,7 +87,7 @@ interface JvmLanguagePluginMixin {
 
     suspend fun createBuildTargetData(
       target: TargetIdeInfo,
-      targetsToImport: Map<Label, TargetIdeInfo>,
+      targetsToImport: Map<WorkspaceTargetKey, TargetIdeInfo>,
       repoMapping: RepoMapping,
     ): List<BuildTargetData> = emptyList()
   }
@@ -142,26 +143,26 @@ class JavaLanguagePlugin : LanguagePlugin {
 
     override suspend fun prepareSync(
       graph: DependencyGraph,
-      targetsToImport: Map<Label, TargetIdeInfo>,
+      targetsToImport: Map<WorkspaceTargetKey, TargetIdeInfo>,
       repoMapping: RepoMapping,
     ) {
       this.repoMapping = repoMapping
-      this.allTargets = graph.idToTargetInfo
+      this.allTargets = graph.idToTargetInfo.collapseByAspectHeuristic()
 
       mixins.forEach { it.prepareSync(graph, targetsToImport, repoMapping) }
 
-      toolchainTargets = graph.idToTargetInfo.filter { it.value.hasJavaToolchainInfo() }
+      toolchainTargets = graph.idToTargetInfo.filter { it.value.hasJavaToolchainInfo() }.collapseByAspectHeuristic()
       val ideJavaHomeOverride = server.workspaceContext.ideJavaHomeOverride
       jdk = ideJavaHomeOverride?.let { Jdk(javaHome = it) } ?: jdkResolver.resolve(graph.idToTargetInfo, repoMapping)
 
       calculateAllLibraries(
-        targetsToImport.filterValues { it.javaCommon.jvmTarget },
+        targetsToImport.filterValues { it.javaCommon.jvmTarget }.collapseByAspectHeuristic(),
       )
     }
 
     override suspend fun createBuildTargetData(
       target: TargetIdeInfo,
-      targetsToImport: Map<Label, TargetIdeInfo>,
+      targetsToImport: Map<WorkspaceTargetKey, TargetIdeInfo>,
       graph: DependencyGraph,
       repoMapping: RepoMapping,
     ): List<BuildTargetData> {
@@ -207,7 +208,7 @@ class JavaLanguagePlugin : LanguagePlugin {
         jvmDependencies =
           extraLibDependencies[label].orEmpty().map { JvmDependency.LibraryDependency(it) } +
           target.dependencies().map {
-            if (targetLibraries.containsKey(it.label))
+            if (targetLibraries.containsKey(it.targetKey.label))
               JvmDependency.LibraryDependency(it)
             else
               JvmDependency.ModuleDependency(it)
@@ -255,7 +256,7 @@ class JavaLanguagePlugin : LanguagePlugin {
 
             val outputJars = target.outputJars();
             DependencyLabelPatcher@{ dependency ->
-              val depJars = allTargets[dependency.label]?.outputJars() ?: emptySet()
+              val depJars = allTargets[dependency.targetKey.label]?.outputJars() ?: emptySet()
               if (outputJars.intersect(depJars).isNotEmpty())
                 return@DependencyLabelPatcher dependency.copy(kind = DependencyLabelKind.EXPORTED_COMPILE_TIME)
 
@@ -280,7 +281,7 @@ class JavaLanguagePlugin : LanguagePlugin {
         targetsToImport.mapValues { (_, target) ->
           target.dependencies()
             .mapNotNull { dependency ->
-              val label = dependency.label
+              val label = dependency.targetKey.label
               if (targetsToImport.containsKey(label))
                 return@mapNotNull null // Dependency target is imported, no need to create library
 
@@ -341,8 +342,16 @@ class JavaLanguagePlugin : LanguagePlugin {
       val extraLibraries = concatenateMaps(listOf(librariesFromDeps, extraLibrariesFromJdeps))
 
       extraLibDependencies =
-        extraLibraries.mapValues { (_, libs) -> libs.map { DependencyLabel(it.id, kind = DependencyLabelKind.EXPORTED_COMPILE_TIME) } }
-      toolchainDependencies = librariesFromToolchains.mapValues { (_, libs) -> libs.map { DependencyLabel(it.id) } }
+        extraLibraries.mapValues { (_, libs) ->
+          libs.map {
+            DependencyLabel(
+              targetKey = WorkspaceTargetKey(label = it.id),
+              kind = DependencyLabelKind.EXPORTED_COMPILE_TIME,
+            )
+          }
+        }
+      toolchainDependencies =
+        librariesFromToolchains.mapValues { (_, libs) -> libs.map { DependencyLabel(targetKey = WorkspaceTargetKey(label = it.id)) } }
       allLibraries = concatenateMaps(listOf(importDependenciesAsLibraries, extraLibraries, librariesFromToolchains))
     }
 
@@ -592,7 +601,7 @@ class JavaLanguagePlugin : LanguagePlugin {
           .toMutableSet()
 
       val dependencies =
-        targetsToImport[target]?.dependencies().orEmpty().map { it.label } +
+        targetsToImport[target]?.dependencies().orEmpty().map { it.targetKey.label } +
         libraryDependencies[target].orEmpty().filter { it.id != target }.map { it.id }
 
       dependencies.flatMapTo(outputJars) { dependency ->
@@ -810,3 +819,29 @@ private fun <K, V> concatenateMaps(maps: Collection<Map<K, List<V>>>): Map<K, Li
     .associateWith { key ->
       maps.flatMap { it[key].orEmpty() }
     }
+
+// ported from `TargetInfoReader`, also comment from `TargetInfoReader`:
+//   If any aspect has already been run on the build graph, it created shadow graph
+//   containing new nodes of the same labels as the original ones. In particular,
+//   this happens for all protobuf targets, for which a built-in aspect "bazel_java_proto_aspect"
+//   is run. In order to correctly address this issue, we would have to provide separate
+//   entities (TargetInfos) for each target and each ruleset (or language) instead of just
+//   entity-per-label. As long as we don't have it, in case of a conflict we just take the entity
+//   that contains JvmTargetInfo as currently it's the most important one for us. Later, we sort by
+//   shortest size to get a stable result, which should be the default config. For java toolchains,
+//   we prefer the non-exec one.
+// TODO (Krystian): this is here temporarily, this will be removed after
+//   making JVM resolvers work on `WorkspaceTargetKey` and `WorkspaceTargetGraph`
+private fun Map<WorkspaceTargetKey, TargetIdeInfo>.collapseByAspectHeuristic(): Map<Label, TargetIdeInfo> =
+  entries
+    .groupBy({ it.key.label }, { it.value })
+    .mapValues { (_, group) -> guessBestShadowTarget(group) }
+
+private fun guessBestShadowTarget(group: List<TargetIdeInfo>): TargetIdeInfo {
+  if (group.size == 1) {
+    return group.single()
+  }
+  return group.filter { it.javaCommon.jvmTarget }.minByOrNull { it.serializedSize }
+         ?: group.filter { it.hasJavaToolchainInfo() && !it.javaToolchainInfo.isExecConfig }.minByOrNull { it.serializedSize }
+         ?: group.first()
+}

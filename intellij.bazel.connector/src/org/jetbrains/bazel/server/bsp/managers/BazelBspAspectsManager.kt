@@ -39,6 +39,7 @@ data class BazelBspAspectsManagerResult(val bepOutput: BepOutput, val status: Ba
 
 @ApiStatus.Internal
 sealed interface RuleSetName
+
 @ApiStatus.Internal
 data class ApparentRulesetName(val name: String) : RuleSetName
 internal data class CanonicalRulesetName(val name: String) : RuleSetName
@@ -57,15 +58,18 @@ class BazelBspAspectsManager(
     externalRulesetDefinitions: Map<String, ShowRepoResult?>,
     externalAutoloads: List<String>,
   ): List<RulesetLanguage> {
-    val httpArchiveUpstreamURLsByCanonicalName = externalRulesetDefinitions.values.mapNotNull { definition -> (definition as? ShowRepoResult.HttpArchiveRepository)?.let { it.name to it.urls }}
-    val canonicalRepoByHostLocation = httpArchiveUpstreamURLsByCanonicalName.flatMap  { (k, v) -> v.map { Pair(k, it)}}.associateBy { it.second }.mapValues { (k, v) -> v.first  }
+    val httpArchiveUpstreamURLsByCanonicalName =
+      externalRulesetDefinitions.values.mapNotNull { definition -> (definition as? ShowRepoResult.HttpArchiveRepository)?.let { it.name to it.urls } }
+    val canonicalRepoByHostLocation =
+      httpArchiveUpstreamURLsByCanonicalName.flatMap { (k, v) -> v.map { Pair(k, it) } }.associateBy { it.second }
+        .mapValues { (k, v) -> v.first }
     return Language
       .entries
       .mapNotNull { language ->
         language.hostLocations.firstNotNullOfOrNull { location -> canonicalRepoByHostLocation.keys.firstOrNull { it.startsWith(location) } }
           ?.let {
-          return@mapNotNull RulesetLanguage(canonicalRepoByHostLocation[it]?.let { CanonicalRulesetName(it) }, language)
-        }
+            return@mapNotNull RulesetLanguage(canonicalRepoByHostLocation[it]?.let { CanonicalRulesetName(it) }, language)
+          }
         val rulesetName = language.rulesetNames.firstOrNull { it in externalRulesetNames }
         rulesetName?.let {
           return@mapNotNull RulesetLanguage(ApparentRulesetName(it), language)
@@ -116,13 +120,13 @@ class BazelBspAspectsManager(
     }.map { it.language.aspectLanguage }.toSet() + (if (bazelRelease.major <= 7) setOf(Rules.JAVA) else setOf())
 
     deployAspectZip(
-     workspaceRoot,
-     Path.of(Constants.DOT_BAZELBSP_DIR_NAME),
-     AspectConfig(
-       "${bazelRelease.major}",
-       ruleNameMapping,
-       builtInLanguages,
-     ),
+      workspaceRoot,
+      Path.of(Constants.DOT_BAZELBSP_DIR_NAME),
+      AspectConfig(
+        "${bazelRelease.major}",
+        ruleNameMapping,
+        builtInLanguages,
+      ),
     )
 
   }
@@ -131,11 +135,11 @@ class BazelBspAspectsManager(
     when {
       // If the name is already a conical one, we can take it; however we have the canonical name without
       // prefix, so we have to add @ to indicate it as canonical, as the template adds a single @ as prefix.
-      (rulesetName as? CanonicalRulesetName) != null-> "@${rulesetName.name}"
+      (rulesetName as? CanonicalRulesetName) != null -> "@${rulesetName.name}"
       // bazel mod dump_repo_mapping returns everything without @@
       // and in aspects we have a @ prefix
-      repoMapping is BzlmodRepoMapping && (rulesetName as? ApparentRulesetName)!= null ->
-        repoMapping.apparentRepoNameToCanonicalName[rulesetName.name ]?.let { "@$it" } ?: rulesetName.name
+      repoMapping is BzlmodRepoMapping && (rulesetName as? ApparentRulesetName) != null ->
+        repoMapping.apparentRepoNameToCanonicalName[rulesetName.name]?.let { "@$it" } ?: rulesetName.name
 
       else -> (rulesetName as? ApparentRulesetName)?.name
     }
@@ -150,7 +154,7 @@ class BazelBspAspectsManager(
     if (targetsSpec.values.isEmpty()) return BazelBspAspectsManagerResult(BepOutput(), BazelStatus.SUCCESS)
     val defaultFlags =
       listOf(
-        aspect(aspects.map { resolveAspectLabel(it)}.joinToString (",")),
+        aspect(aspects.map { resolveAspectLabel(it) }.joinToString(",")),
         outputGroups(outputGroups),
         keepGoing(),
         // Validations don't contribute to the project model and only slow down sync, so disable them.
@@ -173,7 +177,8 @@ class BazelBspAspectsManager(
     val remoteDownloadOverride =
       if (options.lastOrNull { it.startsWith("--remote_download_outputs=") } == "--remote_download_outputs=minimal") {
         listOf(remoteDownloadOutputsTopLevel())
-      } else {
+      }
+      else {
         // Do not modify the value if remote_download_outputs is set to a higher value or the default (toplevel) is used
         emptyList()
       }
@@ -182,9 +187,15 @@ class BazelBspAspectsManager(
       .buildTargetsWithBep(
         targetsSpec = targetsSpec,
         extraFlags = flagsToUse + remoteDownloadOverride +
-          listOf("--build_tag_filters=" + existingBuildTagFilters?.let { "$it," }.orEmpty() + "-${Constants.NO_IDE}"),
+                     listOf("--build_tag_filters=" + existingBuildTagFilters?.let { "$it," }.orEmpty() + "-${Constants.NO_IDE}"),
         taskId = taskId,
-      ).let { BazelBspAspectsManagerResult(it.bepOutput, it.processResult.bazelStatus) }
+      ).let {
+        val bepOutput = it.bepOutput
+        if (bepOutput.buildToolVersion == BazelRelease.FALLBACK_VERSION) {
+          bepOutput.buildToolVersion = bazelRelease
+        }
+        BazelBspAspectsManagerResult(bepOutput, it.processResult.bazelStatus)
+      }
   }
 
   private fun resolveAspectLabel(aspect: String): String = "//${Constants.DOT_BAZELBSP_DIR_NAME}/$aspect"

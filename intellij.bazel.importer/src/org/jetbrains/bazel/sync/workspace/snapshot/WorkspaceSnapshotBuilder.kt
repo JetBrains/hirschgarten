@@ -26,14 +26,14 @@ object WorkspaceSnapshotBuilder {
     val targets = resolved.targets
       .map {
         WorkspaceTarget(
-          targetKey = it.targetKey,
+          targetKey = it.key,
           rawBuildTarget = it,
         )
       }
       .associateBy { it.targetKey }
     return WorkspaceSnapshot(
       targets = targets,
-      configurations = mapOf(), // TODO: fetch configurations from bazel
+      configurations = resolved.configurations,
       targetGraph = WorkspaceTargetGraphBuilder.build(resolved.rootTargets, targets.values),
       fileToTarget = File2TargetMapBuilder.build(workspaceRoot = workspaceRoot, targets = targets.values),
       syncConfigs = listOf(commonSyncConfig) + LanguagePlugin.EP_NAME.extensionList

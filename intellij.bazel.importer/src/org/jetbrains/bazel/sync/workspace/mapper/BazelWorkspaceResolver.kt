@@ -47,9 +47,10 @@ object BazelWorkspaceResolver {
           BazelResolvedWorkspace(
             workspaceName = null,
             repoMapping = phasedSyncProject.repoMapping,
-            rootTargets = targets.map { it.id }.toSet(),
+            rootTargets = targets.map { it.key }.toSet(),
             targets = targets,
             hasError = phasedSyncProject.hasError,
+            configurations = emptyMap(),
           )
         }
 
@@ -84,6 +85,7 @@ object BazelWorkspaceResolver {
             rootTargets = syncProject.rootTargets,
             targets = targets,
             hasError = syncProject.hasError,
+            configurations = syncProject.configurations,
           )
         }
       }

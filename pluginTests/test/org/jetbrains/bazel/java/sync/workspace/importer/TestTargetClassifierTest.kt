@@ -9,6 +9,7 @@ import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.label.ResolvedLabel
 import org.jetbrains.bazel.label.assumeResolved
 import org.jetbrains.bazel.sync.workspace.snapshot.SourceFileCollectionBuilder
+import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
 import org.jetbrains.bazel.workspace.importer.TestTargetClassifier
 import org.jetbrains.bsp.protocol.SourceFileCollection
 import org.jetbrains.bsp.protocol.RawBuildTarget
@@ -147,8 +148,8 @@ private fun createTarget(
   isTestOnly: Boolean = false,
 ): RawBuildTarget {
   return RawBuildTarget(
-    id = Label.parse(id),
-    dependencies = dependencies.map { DependencyLabel(it.id) },
+    key = WorkspaceTargetKey(label = Label.parse(id)),
+    dependencies = dependencies.map { DependencyLabel(it.key) },
     kind = kind,
     sources = SourceFileCollectionBuilder.build(relativeRoot = baseDir, paths = sources.map { sourceRoot.resolve(it) }),
     generatedSources = SourceFileCollection.EMPTY,

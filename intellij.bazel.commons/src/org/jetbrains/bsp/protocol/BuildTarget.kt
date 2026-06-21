@@ -3,6 +3,7 @@ import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.label.DependencyLabel
 import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
 import java.nio.file.Path
 
 @ApiStatus.Internal
@@ -13,6 +14,8 @@ interface ExecutableTarget {
 
 @ApiStatus.Internal
 interface BuildTarget : ExecutableTarget {
+
+  // TODO: migrate to WorkspaceTargetKey
   override val id: Label
   override val kind: TargetKind
   val baseDirectory: Path
@@ -34,7 +37,7 @@ interface BuildTarget : ExecutableTarget {
 // TODO: move to backend-only code
 @ApiStatus.Internal
 data class RawBuildTarget(
-  override val id: Label,
+  val key: WorkspaceTargetKey,
   val dependencies: List<DependencyLabel>,
   override val kind: TargetKind,
   val sources: SourceFileCollection,
@@ -43,11 +46,13 @@ data class RawBuildTarget(
   override val baseDirectory: Path,
   override val data: List<BuildTargetData> = emptyList(),
   val generatorName: String? = null,
-  val configurationId: String? = null,
   override val isManual: Boolean = false,
   override val isWorkspace: Boolean = true,
   val isTestOnly: Boolean = false,
-) : BuildTarget
+) : BuildTarget {
+  override val id: Label
+    get() = key.label
+}
 
 @get:ApiStatus.Internal
 val RawBuildTarget.allSources: Sequence<Path>

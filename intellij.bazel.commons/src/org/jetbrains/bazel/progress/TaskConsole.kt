@@ -83,11 +83,11 @@ interface TaskConsole {
    */
   fun addDiagnosticMessage(
     taskId: TaskId,
-    path: Path?,
-    line: Int,
-    column: Int,
+    path: Path? = null,
+    line: Int = -1,
+    column: Int = -1,
     message: String,
-    description: String?,
+    description: String? = null,
     severity: MessageEvent.Kind,
   )
 

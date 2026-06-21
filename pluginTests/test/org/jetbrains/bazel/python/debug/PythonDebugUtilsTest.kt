@@ -11,6 +11,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.project.BazelProjectFixtures.initializeBazelProject
+import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
 import org.jetbrains.bazel.target.targetUtils
 import org.jetbrains.bsp.protocol.PythonBuildTarget
 import org.jetbrains.bsp.protocol.RawBuildTarget
@@ -142,7 +143,7 @@ class PythonDebugUtilsTest {
     project.targetUtils.setTargets(
       listOf(
         RawBuildTarget(
-          id = target,
+          key = WorkspaceTargetKey(label = target),
           dependencies = emptyList(),
           kind = TargetKind(
             kind = ruleKind,

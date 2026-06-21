@@ -6,323 +6,13 @@ import com.google.devtools.intellij.ideinfo.IntellijIdeInfo.TargetKey
 import com.google.devtools.intellij.ideinfo.IntellijIdeInfo.Dependency
 import io.kotest.matchers.shouldBe
 import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 
 // graphs generated using: https://arthursonzogni.com/Diagon/#GraphDAG
 class DependencyGraphTest {
-  @Nested
-  @DisplayName("DependencyGraph.transitiveDependenciesWithoutRootTargets")
-  inner class TransitiveDependenciesTest {
-    @Test
-    fun `should return empty list for not existing target`() {
-      // given
-      val dependencyGraph = DependencyGraph()
-
-      // when
-      val dependencies =
-        dependencyGraph.transitiveDependenciesWithoutRootTargets(Label.parse("//does/not/exist"))
-
-      // then
-      dependencies shouldBe emptySet()
-    }
-
-    @Test
-    fun `should return no dependencies for target without dependencies`() {
-      // graph:
-      // '?' - queried target
-      // '+' - should be returned
-      // '-' - shouldn't be returned
-      // capital letter - root target
-      // ┌─┐
-      // │A│
-      // └┬┘
-      // ┌▽┐
-      // │B│
-      // │?│
-      // └─┘
-
-      // given
-      val a = targetInfo("//A", listOf("//B"))
-      val b = targetInfo("//B")
-      val idToTargetInfo = toIdToTargetInfoMap(a, b)
-      val rootTargets = setOf(Label.parse("//A"), Label.parse("//B"))
-      val dependencyGraph = DependencyGraph(rootTargets, idToTargetInfo)
-
-      // when
-      val dependencies = dependencyGraph.transitiveDependenciesWithoutRootTargets(Label.parse("//B"))
-
-      // then
-      dependencies shouldBe emptySet()
-    }
-
-    @Test
-    fun `should return only direct dependencies for target without transitive dependencies`() {
-      // graph:
-      // '?' - queried target
-      // '+' - should be returned
-      // '-' - shouldn't be returned
-      // capital letter - root target
-      // ┌───────┐
-      // │   A   │
-      // │   ?   │
-      // └┬──┬──┬┘
-      // ┌▽┐┌▽┐┌▽┐
-      // │b││c││d│
-      // │+││+││+│
-      // └─┘└─┘└─┘
-
-      // given
-      val a = targetInfo("//A", listOf("//b", "//c", "//d"))
-      val b = targetInfo("//b", listOf())
-      val c = targetInfo("//c", listOf())
-      val d = targetInfo("//d", listOf())
-      val idToTargetInfo = toIdToTargetInfoMap(a, b, c, d)
-      val rootTargets = setOf(Label.parse("/"))
-      val dependencyGraph = DependencyGraph(rootTargets, idToTargetInfo)
-
-      // when
-      val dependencies = dependencyGraph.transitiveDependenciesWithoutRootTargets(Label.parse("//A"))
-
-      // then
-      val expectedDependencies = setOf(b, c, d)
-      dependencies shouldBe expectedDependencies
-    }
-
-    @Test
-    fun `should return direct and transitive dependencies for target with transitive dependencies`() {
-      // graph:
-      // '?' - queried target
-      // '+' - should be returned
-      // '-' - shouldn't be returned
-      // capital letter - root target
-      // ┌───────┐
-      // │   A   │
-      // │   ?   │
-      // └┬─────┬┘
-      // ┌▽───┐┌▽┐
-      // │ b  ││c│
-      // │ +  ││+│
-      // └┬──┬┘└─┘
-      // ┌▽┐┌▽┐
-      // │d││e│
-      // │+││+│
-      // └─┘└─┘
-
-      // given
-      val a = targetInfo("//A", listOf("//b", "//c"))
-      val b = targetInfo("//b", listOf("//d", "//e"))
-      val c = targetInfo("//c", listOf())
-      val d = targetInfo("//d", listOf())
-      val e = targetInfo("//e", listOf())
-      val idToTargetInfo = toIdToTargetInfoMap(a, b, c, d, e)
-      val rootTargets = setOf(Label.parse("//A"))
-      val dependencyGraph = DependencyGraph(rootTargets, idToTargetInfo)
-
-      // when
-      val dependencies = dependencyGraph.transitiveDependenciesWithoutRootTargets(Label.parse("//A"))
-
-      // then
-      val expectedDependencies = setOf(b, c, d, e)
-      dependencies shouldBe expectedDependencies
-    }
-
-    @Test
-    fun `should return direct and transitive dependencies for target with transitive dependencies but leaf is reused by targets`() {
-      // graph:
-      // '?' - queried target
-      // '+' - should be returned
-      // '-' - shouldn't be returned
-      // capital letter - root target
-      // ┌───────┐
-      // │   A   │
-      // │   ?   │
-      // └┬─────┬┘
-      // ┌▽───┐┌▽┐
-      // │ b  ││c│
-      // │ +  ││+│
-      // └┬──┬┘└┬┘
-      // ┌▽┐┌▽──▽┐
-      // │d││ e  │
-      // │+││ +  │
-      // └─┘└────┘
-
-      // given
-      val a = targetInfo("//A", listOf("//b", "//c"))
-      val b = targetInfo("//b", listOf("//d", "//e"))
-      val c = targetInfo("//c", listOf("//e"))
-      val d = targetInfo("//d", listOf())
-      val e = targetInfo("//e", listOf())
-      val idToTargetInfo = toIdToTargetInfoMap(a, b, c, d, e)
-      val rootTargets = setOf(Label.parse("//A"))
-      val dependencyGraph = DependencyGraph(rootTargets, idToTargetInfo)
-
-      // when
-      val dependencies = dependencyGraph.transitiveDependenciesWithoutRootTargets(Label.parse("//A"))
-
-      // then
-      val expectedDependencies = setOf(b, c, d, e)
-      dependencies shouldBe expectedDependencies
-    }
-
-    @Test
-    fun `should return direct and transitive dependencies for target with transitive dependencies including deep root target`() {
-      // graph:
-      // '?' - queried target
-      // '+' - should be returned
-      // '-' - shouldn't be returned
-      // capital letter - root target
-      // ┌──────────┐
-      // │    A     │
-      // │    ?     │
-      // └┬────────┬┘
-      // ┌▽──────┐┌▽┐
-      // │   b   ││c│
-      // │   +   ││+│
-      // └┬─────┬┘└─┘
-      // ┌▽───┐┌▽┐
-      // │ D  ││e│
-      // │ +  ││+│
-      // └┬──┬┘└─┘
-      // ┌▽┐┌▽┐
-      // │f││g│
-      // │+││+│
-      // └─┘└─┘
-
-      // given
-      val a = targetInfo("//A", listOf("//b", "//c"))
-      val b = targetInfo("//b", listOf("//D", "//e"))
-      val c = targetInfo("//c", listOf())
-      val d = targetInfo("//D", listOf("//f", "//g"))
-      val e = targetInfo("//e", listOf())
-      val f = targetInfo("//f", listOf())
-      val g = targetInfo("//g", listOf())
-      val idToTargetInfo = toIdToTargetInfoMap(a, b, c, d, e, f, g)
-      val rootTargets = setOf(Label.parse("//A"), Label.parse("//D"))
-      val dependencyGraph = DependencyGraph(rootTargets, idToTargetInfo)
-
-      // when
-      val dependencies = dependencyGraph.transitiveDependenciesWithoutRootTargets(Label.parse("//A"))
-
-      // then
-      val expectedDependencies = setOf(b, c, d, e, f, g)
-      dependencies shouldBe expectedDependencies
-    }
-
-    @Test
-    fun `should return direct and transitive dependencies for target with transitive dependencies including deep root target 2`() {
-      // graph:
-      // '?' - queried target
-      // '+' - should be returned
-      // '-' - shouldn't be returned
-      // capital letter - root target
-      // ┌───────┐
-      // │   A   │
-      // │   ?   │
-      // └┬─────┬┘
-      // ┌▽───┐┌▽─────────┐
-      // │ B  ││    c     │
-      // │ -  ││    +     │
-      // └┬──┬┘└┬─────┬──┬┘
-      // ┌▽┐┌▽┐┌▽───┐┌▽┐┌▽┐
-      // │d││e││ F  ││g││h│
-      // │-││-││ +  ││+││+│
-      // └─┘└─┘└┬──┬┘└─┘└─┘
-      //       ┌▽┐┌▽┐
-      //       │i││j│
-      //       │+││+│
-      //       └─┘└┬┘
-      //          ┌▽┐
-      //          │k│
-      //          │+│
-      //          └┬┘
-      //          ┌▽┐
-      //          │L│
-      //          │+│
-      //          └─┘
-
-      // given
-      val a = targetInfo("//A", listOf("//B", "//c"))
-      val b = targetInfo("//B", listOf("//d", "//e"))
-      val c = targetInfo("//c", listOf("//F", "//g", "//h"))
-      val d = targetInfo("//d", listOf())
-      val e = targetInfo("//e", listOf())
-      val f = targetInfo("//F", listOf("//i", "//j"))
-      val g = targetInfo("//g", listOf())
-      val h = targetInfo("//h", listOf())
-      val i = targetInfo("//i", listOf())
-      val j = targetInfo("//j", listOf("//k"))
-      val k = targetInfo("//k", listOf("//L"))
-      val l = targetInfo("//L", listOf())
-      val idToTargetInfo = toIdToTargetInfoMap(a, b, c, d, e, f, g, h, i, j, k, l)
-      val rootTargets = setOf(Label.parse("//A"), Label.parse("//B"), Label.parse("//F"), Label.parse("//L"))
-      val dependencyGraph = DependencyGraph(rootTargets, idToTargetInfo)
-
-      // when
-      val dependencies = dependencyGraph.transitiveDependenciesWithoutRootTargets(Label.parse("//A"))
-
-      // then
-      val expectedDependencies = setOf(c, f, g, h, i, j, k, l)
-      dependencies shouldBe expectedDependencies
-    }
-
-    @Test
-    fun `should return direct and transitive dependencies for target with transitive dependencies including deep root target 3`() {
-      // graph:
-      // '?' - queried target
-      // '+' - should be returned
-      // '-' - shouldn't be returned
-      // capital letter - root target
-      // ┌───────┐
-      // │   A   │
-      // └┬─────┬┘
-      // ┌▽───┐┌▽─────────┐
-      // │ B  ││    c     │
-      // └┬──┬┘└┬─────┬──┬┘
-      // ┌▽┐┌▽┐┌▽───┐┌▽┐┌▽┐
-      // │d││e││ F  ││g││h│
-      // │-││-││ ?  ││-││-│
-      // └─┘└─┘└┬──┬┘└─┘└─┘
-      //       ┌▽┐┌▽┐
-      //       │i││j│
-      //       │+││+│
-      //       └─┘└┬┘
-      //          ┌▽┐
-      //          │k│
-      //          │+│
-      //          └┬┘
-      //          ┌▽┐
-      //          │L│
-      //          │+│
-      //          └─┘
-
-      // given
-      val a = targetInfo("//A", listOf("//B", "//c"))
-      val b = targetInfo("//B", listOf("//d", "//e"))
-      val c = targetInfo("//c", listOf("//F", "//g", "//h"))
-      val d = targetInfo("//d", listOf())
-      val e = targetInfo("//e", listOf())
-      val f = targetInfo("//F", listOf("//i", "//j"))
-      val g = targetInfo("//g", listOf())
-      val h = targetInfo("//h", listOf())
-      val i = targetInfo("//i", listOf())
-      val j = targetInfo("//j", listOf("//k"))
-      val k = targetInfo("//k", listOf("//L"))
-      val l = targetInfo("//L", listOf())
-      val idToTargetInfo = toIdToTargetInfoMap(a, b, c, d, e, f, g, h, i, j, k, l)
-      val rootTargets = setOf(Label.parse("//A"), Label.parse("//B"), Label.parse("//F"), Label.parse("//L"))
-      val dependencyGraph = DependencyGraph(rootTargets, idToTargetInfo)
-
-      // when
-      val dependencies = dependencyGraph.transitiveDependenciesWithoutRootTargets(Label.parse("//F"))
-
-      // then
-      val expectedDependencies = setOf(i, j, k, l)
-      dependencies shouldBe expectedDependencies
-    }
-  }
-
   @Nested
   @DisplayName("DependencyGraph.allTargetsAtDepth")
   inner class DependenciesAtDepthTest {
@@ -360,7 +50,7 @@ class DependencyGraphTest {
       val g = targetInfo("//g", listOf())
       val idToTargetInfo = toIdToTargetInfoMap(a, b, c, d, e, f, g)
       val rootTargets = setOf(Label.parse("//A"), Label.parse("//D"))
-      val dependencyGraph = DependencyGraph(rootTargets, idToTargetInfo)
+      val dependencyGraph = createDependencyGraph(rootTargets, idToTargetInfo)
 
       // when
       val dependencies = dependencyGraph.allTargetsAtDepth(0)
@@ -404,7 +94,7 @@ class DependencyGraphTest {
       val g = targetInfo("//g", listOf())
       val idToTargetInfo = toIdToTargetInfoMap(a, b, c, d, e, f, g)
       val rootTargets = setOf(Label.parse("//A"), Label.parse("//D"))
-      val dependencyGraph = DependencyGraph(rootTargets, idToTargetInfo)
+      val dependencyGraph = createDependencyGraph(rootTargets, idToTargetInfo)
 
       // when
       val dependencies = dependencyGraph.allTargetsAtDepth(1)
@@ -448,7 +138,7 @@ class DependencyGraphTest {
       val g = targetInfo("//g", listOf())
       val idToTargetInfo = toIdToTargetInfoMap(a, b, c, d, e, f, g)
       val rootTargets = setOf(Label.parse("//A"))
-      val dependencyGraph = DependencyGraph(rootTargets, idToTargetInfo)
+      val dependencyGraph = createDependencyGraph(rootTargets, idToTargetInfo)
 
       // when
       val dependencies = dependencyGraph.allTargetsAtDepth(2)
@@ -530,7 +220,7 @@ class DependencyGraphTest {
       val rootTargets = setOf(Label.parse("//A00"))
       val idToTargetInfo =
         toIdToTargetInfoMap(a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11)
-      val dependencyGraph = DependencyGraph(rootTargets, idToTargetInfo)
+      val dependencyGraph = createDependencyGraph(rootTargets, idToTargetInfo)
 
       // when
       val dependencies = dependencyGraph.allTargetsAtDepth(10)
@@ -574,7 +264,7 @@ class DependencyGraphTest {
       val g = targetInfo("//g", listOf())
       val idToTargetInfo = toIdToTargetInfoMap(a, b, c, d, e, f, g)
       val rootTargets = setOf(Label.parse("//A"))
-      val dependencyGraph = DependencyGraph(rootTargets, idToTargetInfo)
+      val dependencyGraph = createDependencyGraph(rootTargets, idToTargetInfo)
 
       // when
       val dependencies = dependencyGraph.allTargetsAtDepth(-1)
@@ -596,7 +286,7 @@ class DependencyGraphTest {
     val rootTargets = setOf(Label.parse("//target"))
     val idToTargetInfo =
       toIdToTargetInfoMap(target, target1, target2, target3, target4)
-    val dependencyGraph = DependencyGraph(rootTargets, idToTargetInfo)
+    val dependencyGraph = createDependencyGraph(rootTargets, idToTargetInfo)
 
     // when
     val dependencies = dependencyGraph.allTargetsAtDepth(1)
@@ -605,7 +295,7 @@ class DependencyGraphTest {
     val expectedDependencies = setOf(target, target1)
     dependencies shouldBe expectedDependencies
   }
-  
+
   @Test
   fun `should support macros that generate a target and refer to it by an alias`() {
     // given
@@ -620,7 +310,7 @@ class DependencyGraphTest {
     // Alias target is in rootTargets, but not in idToTargetInfo, because the aspect is not run on aliases
     val rootTargets = setOf(Label.parse("//mypackage:alias"), Label.parse("//anotherpackage:importedTarget"))
     val idToTargetInfo = toIdToTargetInfoMap(generatedByAlias, dependency, generatedByImportedTarget, importedTarget, nonImportedTarget)
-    val dependencyGraph = DependencyGraph(rootTargets, idToTargetInfo)
+    val dependencyGraph = createDependencyGraph(rootTargets, idToTargetInfo)
 
     // when
     val dependenciesAtDepth0 = dependencyGraph.allTargetsAtDepth(0)
@@ -646,7 +336,7 @@ class DependencyGraphTest {
     val rootTargets = setOf(Label.parse("//target"), Label.parse("//target1"))
     val idToTargetInfo =
       toIdToTargetInfoMap(target, target1, target2)
-    val dependencyGraph = DependencyGraph(rootTargets, idToTargetInfo)
+    val dependencyGraph = createDependencyGraph(rootTargets, idToTargetInfo)
 
     // when
     val dependencies =
@@ -669,7 +359,7 @@ class DependencyGraphTest {
     val rootTargets = setOf(Label.parse("//target"), Label.parse("//target1"))
     val idToTargetInfo =
       toIdToTargetInfoMap(target, target1, target2, target3)
-    val dependencyGraph = DependencyGraph(rootTargets, idToTargetInfo)
+    val dependencyGraph = createDependencyGraph(rootTargets, idToTargetInfo)
 
     // when
     val dependencies =
@@ -694,7 +384,7 @@ class DependencyGraphTest {
       .setKey(TargetKey.newBuilder().setLabel(id).build())
       .addAllDeps(
         dependenciesIds.map { dependency(it, Dependency.DependencyType.COMPILE_TIME) } +
-          runtimeDependenciesIds.map { dependency(it, Dependency.DependencyType.RUNTIME) },
+        runtimeDependenciesIds.map { dependency(it, Dependency.DependencyType.RUNTIME) },
       )
       .apply {
         if (addSrcs) {
@@ -712,4 +402,12 @@ class DependencyGraphTest {
 
   private fun toIdToTargetInfoMap(vararg targetIds: TargetIdeInfo): Map<Label, TargetIdeInfo> =
     targetIds.associateBy { targetId -> Label.parse(targetId.key.label) }
+
+  private fun createDependencyGraph(
+    rootTargets: Set<Label>,
+    idToTargetInfo: Map<Label, TargetIdeInfo>,
+  ) = DependencyGraph(
+    rootTargets.map { WorkspaceTargetKey(label = it) }.toSet(),
+    idToTargetInfo.mapKeys { WorkspaceTargetKey(label = it.key) },
+  )
 }

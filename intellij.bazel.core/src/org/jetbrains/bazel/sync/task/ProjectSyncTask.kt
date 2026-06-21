@@ -84,7 +84,8 @@ class ProjectSyncTask(private val project: Project) {
       if (runSecondPhase) {
         sync(SecondPhaseSync, buildProject)
       }
-    } finally {
+    }
+    finally {
       if (incompleteState != null && runSecondPhase) {
         edtWriteAction { incompleteState.finish() }
       }
@@ -226,10 +227,17 @@ class ProjectSyncTask(private val project: Project) {
               try {
                 server.bazelInfo.release.deprecated()?.let { deprecated ->
                   project.syncConsole.addDiagnosticMessage(
-                    taskId, null, -1, -1,
+                    taskId = taskId,
                     message = "$deprecated Sync might give incomplete results.",
-                    description = null,
-                    MessageEvent.Kind.WARNING,
+                    severity = MessageEvent.Kind.WARNING,
+                  )
+                }
+
+                if (!server.bazelInfo.isConfigurationSupportEnabled) {
+                  project.syncConsole.addDiagnosticMessage(
+                    taskId = taskId,
+                    message = BazelPluginBundle.message("console.task.sync.configurations.unsupported"),
+                    severity = MessageEvent.Kind.WARNING,
                   )
                 }
 

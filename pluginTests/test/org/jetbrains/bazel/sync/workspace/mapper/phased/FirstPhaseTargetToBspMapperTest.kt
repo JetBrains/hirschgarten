@@ -16,6 +16,7 @@ import org.jetbrains.bazel.workspace.model.test.framework.BazelPathsResolverMock
 import org.jetbrains.bazel.workspace.model.test.framework.WorkspaceModelBaseTest
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bazel.sync.workspace.snapshot.SourceFileCollectionBuilder
+import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
 import org.jetbrains.bsp.protocol.SourceFileCollection
 import org.jetbrains.bsp.protocol.RawBuildTarget
 import org.junit.jupiter.api.BeforeEach
@@ -206,7 +207,7 @@ class FirstPhaseTargetToBspMapperTest : WorkspaceModelBaseTest() {
         listOf(
           // target1: unchanged
           RawBuildTarget(
-            id = Label.parse("//target1"),
+            key = WorkspaceTargetKey(label = Label.parse("//target1")),
             dependencies = listOf(DependencyLabel.parse("//dep/target1"), DependencyLabel.parse("//dep/target2")),
             kind =
               TargetKind(
@@ -234,7 +235,7 @@ class FirstPhaseTargetToBspMapperTest : WorkspaceModelBaseTest() {
           ),
           // target2
           RawBuildTarget(
-            id = Label.parse("//target2"),
+            key = WorkspaceTargetKey(label = Label.parse("//target2")),
             dependencies = listOf(DependencyLabel.parse("//dep/target1"), DependencyLabel.parse("//dep/target2")),
             kind =
               TargetKind(
@@ -258,7 +259,7 @@ class FirstPhaseTargetToBspMapperTest : WorkspaceModelBaseTest() {
           ),
           // // target3
           RawBuildTarget(
-            id = Label.parse("//target3"),
+            key = WorkspaceTargetKey(label = Label.parse("//target3")),
             dependencies = listOf(DependencyLabel.parse("//dep/target1"), DependencyLabel.parse("//dep/target2")),
             kind =
               TargetKind(
@@ -276,7 +277,7 @@ class FirstPhaseTargetToBspMapperTest : WorkspaceModelBaseTest() {
           ),
           // // target4
           RawBuildTarget(
-            id = Label.parse("//target4"),
+            key = WorkspaceTargetKey(label = Label.parse("//target4")),
             dependencies = listOf(DependencyLabel.parse("//dep/target1"), DependencyLabel.parse("//dep/target2")),
             kind =
               TargetKind(
@@ -291,7 +292,7 @@ class FirstPhaseTargetToBspMapperTest : WorkspaceModelBaseTest() {
           ),
           // // target5
           RawBuildTarget(
-            id = Label.parse("//target5"),
+            key = WorkspaceTargetKey(label = Label.parse("//target5")),
             dependencies = listOf(DependencyLabel.parse("//dep/target1"), DependencyLabel.parse("//dep/target2")),
             kind =
               TargetKind(
@@ -306,7 +307,7 @@ class FirstPhaseTargetToBspMapperTest : WorkspaceModelBaseTest() {
           ),
           // // target6
           RawBuildTarget(
-            id = Label.parse("//target6"),
+            key = WorkspaceTargetKey(label = Label.parse("//target6")),
             dependencies = listOf(DependencyLabel.parse("//dep/target1"), DependencyLabel.parse("//dep/target2")),
             kind =
               TargetKind(
@@ -321,7 +322,7 @@ class FirstPhaseTargetToBspMapperTest : WorkspaceModelBaseTest() {
           ),
           // // target7: now with its created source files
           RawBuildTarget(
-            id = Label.parse("//target7"),
+            key = WorkspaceTargetKey(label = Label.parse("//target7")),
             dependencies = emptyList(),
             kind =
               TargetKind(
@@ -345,7 +346,7 @@ class FirstPhaseTargetToBspMapperTest : WorkspaceModelBaseTest() {
           ),
           // // target8: merging its own source and the sources from filegroupSources dependency
           RawBuildTarget(
-            id = Label.parse("//target8"),
+            key = WorkspaceTargetKey(label = Label.parse("//target8")),
             dependencies = emptyList(),
             kind =
               TargetKind(
@@ -377,7 +378,7 @@ class FirstPhaseTargetToBspMapperTest : WorkspaceModelBaseTest() {
             baseDirectory = workspaceRoot.resolve(Path("target8")),
           ),
           RawBuildTarget(
-            id = Label.parse("//filegroupSources"),
+            key = WorkspaceTargetKey(label = Label.parse("//filegroupSources")),
             dependencies = emptyList(),
             kind =
               TargetKind(

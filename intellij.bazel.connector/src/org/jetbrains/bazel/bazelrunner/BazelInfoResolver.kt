@@ -5,6 +5,7 @@ import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.commons.BazelInfo
 import org.jetbrains.bazel.commons.BazelRelease
 import org.jetbrains.bazel.commons.orFallbackVersion
+import org.jetbrains.bazel.server.sync.isConfigurationSupportEnabled
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import java.nio.file.Path
 import java.nio.file.Paths
@@ -29,7 +30,11 @@ class BazelInfoResolver(val workspaceRoot: Path) {
       bazelRunner
         .runBazelCommand(command, taskId = null)
         .waitAndGetResult()
-    if (processResult.isNotSuccess) error("Querying bazel info failed.\n${processResult.stdoutLines.joinToString("\n")}\n${processResult.stderrLines.joinToString("\n")}")
+    if (processResult.isNotSuccess) error(
+      "Querying bazel info failed.\n${processResult.stdoutLines.joinToString("\n")}\n${
+        processResult.stderrLines.joinToString("\n")
+      }",
+    )
     return parseBazelInfo(processResult.stdoutLines, processResult.stderrLines)
   }
 
@@ -42,10 +47,10 @@ class BazelInfoResolver(val workspaceRoot: Path) {
 
     fun extract(name: String): String =
       outputMap[name]
-        ?: error(
-          "Failed to resolve $name from bazel info in $workspaceRoot. " +
-          "Bazel Info output: '${stderrLines.joinToString("\n")}'",
-        )
+      ?: error(
+        "Failed to resolve $name from bazel info in $workspaceRoot. " +
+        "Bazel Info output: '${stderrLines.joinToString("\n")}'",
+      )
 
     val bazelReleaseVersion =
       BazelRelease.fromReleaseString(extract(RELEASE))
@@ -67,6 +72,7 @@ class BazelInfoResolver(val workspaceRoot: Path) {
       isBzlModEnabled = starlarkSemantics.isBzlModEnabled,
       isWorkspaceEnabled = starlarkSemantics.isWorkspaceEnabled,
       externalAutoloads = starlarkSemantics.externalAutoloads,
+      isConfigurationSupportEnabled = bazelReleaseVersion.isConfigurationSupportEnabled,
     )
   }
 

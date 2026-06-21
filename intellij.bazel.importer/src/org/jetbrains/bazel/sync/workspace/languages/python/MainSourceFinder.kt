@@ -6,7 +6,7 @@ import org.jetbrains.bazel.commons.LocalRepositoryMapping
 import com.google.devtools.intellij.aspect.Common.ArtifactLocation
 import com.google.devtools.intellij.ideinfo.IntellijIdeInfo.TargetIdeInfo
 import com.google.devtools.intellij.ideinfo.IntellijIdeInfo.PythonTargetInfo
-import org.jetbrains.bazel.label.label
+import org.jetbrains.bazel.label.Label
 import java.nio.file.Path
 import kotlin.collections.plus
 import kotlin.io.path.nameWithoutExtension
@@ -34,7 +34,7 @@ object MainSourceFinder {
     if (sources.size == 1) {
       return sources.single()
     } else {
-      val label = target.label()
+      val label = Label.parse(target.key.label)
       return sources.firstOrNull {
         val path = Path.of(it.relativePath)
         // when having multiple sources, target //aaa/bbb:ccc/ddd will choose aaa/bbb/ccc/ddd.py as its main file

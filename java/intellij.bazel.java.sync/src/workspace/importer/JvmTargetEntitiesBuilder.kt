@@ -156,13 +156,15 @@ class JvmTargetEntitiesBuilder(private val ctx: ImportContext) {
 
     // phase 2: write entities sequentially.
     // `writtenNames` preserves the original `distinctBy { it.getModuleName() }` semantics: if two targets
-    // (or dummies) end up with the same module name, the first one wins and the rest are skipped.
+    // (or dummies) end up with the same module name, the first one wins and the rest are skipped,
+    // always write targets with `JvmBuildTarget` present
     ctx.progressReporter?.text(BazelJavaBackendBundle.message("workspace.java.importer.building.model"))
     val writtenNames = mutableSetOf<String>()
-    plans.forEachIndexed { index, (target, plan) ->
-      writeOne(target, plan, packageMarkerBuilder, writtenNames, storage)
-      ctx.progressReporter?.fraction((index + 1).toDouble() / plans.size)
-    }
+    plans.sortedByDescending { (target, _) -> extractJvmBuildTarget(target) != null }
+      .forEachIndexed { index, (target, plan) ->
+        writeOne(target, plan, packageMarkerBuilder, writtenNames, storage)
+        ctx.progressReporter?.fraction((index + 1).toDouble() / plans.size)
+      }
 
     // phase 3: compute excluded sources inside Jars
     if (ctx.excludeCompiledSourceCodeInsideJars) {
@@ -449,7 +451,7 @@ class JvmTargetEntitiesBuilder(private val ctx: ImportContext) {
     }
     addAll(
       resolved.dependencies.mapNotNull { dep ->
-        val depModuleName = dep.label.formatAsModuleName(ctx.repoMapping)
+        val depModuleName = dep.targetKey.label.formatAsModuleName(ctx.repoMapping)
         val scope = if (dep.isRuntime) DependencyScope.RUNTIME else DependencyScope.COMPILE
         val asModule = depModuleName.takeIf { it in ctx.knownModuleNames && it != moduleName }
         if (asModule != null) {

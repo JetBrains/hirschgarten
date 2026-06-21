@@ -323,8 +323,11 @@ class WorkspaceTargetGraphTest {
       val importedTarget = workspaceTarget("//anotherpackage:importedTarget")
       val generatedByImportedTarget = workspaceTarget("//anotherpackage:generatedByImportedTarget", generatorName = "importedTarget")
       val nonImportedTarget = workspaceTarget("//nonImportedTarget", generatorName = "somethingRandom")
-      val rootTargetLabels = setOf(Label.parse("//mypackage:alias"), Label.parse("//anotherpackage:importedTarget"))
-      val graph = buildGraph(rootTargetLabels, generatedByAlias, dependency, generatedByImportedTarget, importedTarget, nonImportedTarget)
+      val rootTargetKeys = setOf(
+        WorkspaceTargetKey(label = Label.parse("//mypackage:alias")),
+        WorkspaceTargetKey(label = Label.parse("//anotherpackage:importedTarget")),
+      )
+      val graph = buildGraph(rootTargetKeys, generatedByAlias, dependency, generatedByImportedTarget, importedTarget, nonImportedTarget)
 
       val depth0 = graph.findAllTargetsAtDepth(0)
       val depth1 = graph.findAllTargetsAtDepth(1)
@@ -388,6 +391,169 @@ class WorkspaceTargetGraphTest {
     }
   }
 
+  @Nested
+  @DisplayName("WorkspaceTargetGraph: shadow-graph aspect-id handling")
+  inner class ShadowGraphTest {
+    @Test
+    fun `findTargetByKey returns the exact shadow when aspect ids match`() {
+      val shadow = shadowTarget("//other_proto", aspectIds = listOf("bazel_java_proto_aspect"))
+      val graph = buildGraph(listOf(shadow), shadow)
+
+      val result = graph.findTargetByKey(shadow.targetKey)
+
+      result shouldBe shadow
+    }
+
+    @Test
+    fun `findTargetByKey falls back to canonical shadow when only shadow exists`() {
+      val shadow = shadowTarget("//proto", aspectIds = listOf("bazel_java_proto_aspect"))
+      val graph = buildGraph(listOf(shadow), shadow)
+
+      val result = graph.findTargetByKey(WorkspaceTargetKey(Label.parse("//proto")))
+
+      result shouldBe shadow
+    }
+
+    @Test
+    fun `findTargetByKey prefers the empty-aspect node over shadows`() {
+      val primary = workspaceTarget("//proto")
+      val shadow = shadowTarget("//proto", aspectIds = listOf("bazel_java_proto_aspect"))
+      val graph = buildGraph(listOf(primary), primary, shadow)
+
+      val result = graph.findTargetByKey(WorkspaceTargetKey(Label.parse("//proto")))
+
+      result shouldBe primary
+    }
+
+    @Test
+    fun `findTargetByKey returns the first inserted shadow when multiple shadows match`() {
+      val one = shadowTarget("//proto", aspectIds = listOf("zz_aspect"))
+      val two = shadowTarget("//proto", aspectIds = listOf("aa_aspect", "bb_aspect"))
+      val three = shadowTarget("//proto", aspectIds = listOf("aa_aspect"))
+      val graph = buildGraph(listOf(one, two, three), one, two, three)
+
+      val result = graph.findTargetByKey(WorkspaceTargetKey(Label.parse("//proto")))
+
+      result shouldBe one
+    }
+
+    @Test
+    fun `successor edges propagate parent aspect ids when dep has none`() {
+      val depShadow = shadowTarget("//dep", aspectIds = listOf("bazel_java_proto_aspect"))
+      val parent = workspaceTargetWithShadowDeps(
+        aspectIds = listOf("bazel_java_proto_aspect"),
+        // dep edge carries no aspect ids - the aspect failed to propagate them
+        rawDeps = listOf(WorkspaceTargetKey(Label.parse("//dep"))),
+      )
+      val graph = buildGraph(listOf(parent), parent, depShadow)
+
+      val result = graph.findAllTransitiveSuccessors(parent.targetKey)
+
+      result.toSet() shouldBe setOf(depShadow)
+    }
+
+    @Test
+    fun `successor edges prefer exact aspect ids match over propagation`() {
+      val depPlain = workspaceTarget("//dep")
+      val depShadow = shadowTarget("//dep", aspectIds = listOf("bazel_java_proto_aspect"))
+      val parent = workspaceTargetWithShadowDeps(
+        aspectIds = listOf("bazel_java_proto_aspect"),
+        rawDeps = listOf(WorkspaceTargetKey(Label.parse("//dep"))),
+      )
+      val graph = buildGraph(listOf(parent), parent, depPlain, depShadow)
+
+      val result = graph.findAllTransitiveSuccessors(parent.targetKey)
+
+      // the exact `(//dep, EMPTY, EMPTY)` key wins over the propagated `(//dep, EMPTY, [bazel_java_proto_aspect])`.
+      result.toSet() shouldBe setOf(depPlain)
+    }
+
+    @Test
+    fun `successor edges are dropped when neither exact nor propagated keys match`() {
+      val depShadow = shadowTarget("//dep", aspectIds = listOf("other_aspect"))
+      val parent = workspaceTargetWithShadowDeps(
+        aspectIds = listOf("bazel_java_proto_aspect"),
+        rawDeps = listOf(WorkspaceTargetKey(Label.parse("//dep"))),
+      )
+      val graph = buildGraph(listOf(parent), parent, depShadow)
+
+      val result = graph.findAllTransitiveSuccessors(parent.targetKey)
+
+      result.toSet() shouldBe emptySet()
+    }
+  }
+
+  @Nested
+  @DisplayName("WorkspaceTargetGraph: relaxed dependency expansion")
+  inner class RelaxedDependencyExpansionTest {
+    @Test
+    fun `relaxed walk surfaces every shadow sharing label and configuration`() {
+      val depPlain = workspaceTarget("//dep")
+      val depShadow = shadowTarget("//dep", aspectIds = listOf("bazel_java_proto_aspect"))
+      val parent = workspaceTargetWithShadowDeps(
+        aspectIds = emptyList(),
+        rawDeps = listOf(WorkspaceTargetKey(Label.parse("//dep"))),
+      )
+      val graph = buildGraph(listOf(parent), parent, depPlain, depShadow)
+
+      val strict = graph.findAllTransitiveSuccessors(parent.targetKey).toSet()
+      val relaxed = graph.findAllTransitiveSuccessors(parent.targetKey, useRelaxedDependencyExpansion = true).toSet()
+
+      strict shouldBe setOf(depPlain)
+      relaxed shouldBe setOf(depPlain, depShadow)
+    }
+
+    @Test
+    fun `relaxed walk does not invent successors when no shadow exists`() {
+      val depShadow = shadowTarget("//dep", aspectIds = listOf("bazel_java_proto_aspect"))
+      val parent = workspaceTargetWithShadowDeps(
+        aspectIds = listOf("bazel_java_proto_aspect"),
+        rawDeps = listOf(
+          WorkspaceTargetKey(label = Label.parse("//dep"), aspectIds = WorkspaceAspectIds.of(listOf("bazel_java_proto_aspect"))),
+        ),
+      )
+      val graph = buildGraph(listOf(parent), parent, depShadow)
+
+      val relaxed = graph.findAllTransitiveSuccessors(parent.targetKey, useRelaxedDependencyExpansion = true).toSet()
+
+      relaxed shouldBe setOf(depShadow)
+    }
+
+    @Test
+    fun `findAllTargetsAtDepth honours relaxed expansion`() {
+      val depPlain = workspaceTarget("//dep")
+      val depShadow = shadowTarget("//dep", aspectIds = listOf("bazel_java_proto_aspect"))
+      val parent = workspaceTargetWithShadowDeps(
+        aspectIds = emptyList(),
+        rawDeps = listOf(WorkspaceTargetKey(Label.parse("//dep"))),
+      )
+      val graph = buildGraph(listOf(parent), parent, depPlain, depShadow)
+
+      val strict = graph.findAllTargetsAtDepth(maxDepth = 1).toSet()
+      val relaxed = graph.findAllTargetsAtDepth(maxDepth = 1, useRelaxedDependencyExpansion = true).toSet()
+
+      strict shouldBe setOf(parent, depPlain)
+      relaxed shouldBe setOf(parent, depPlain, depShadow)
+    }
+
+    @Test
+    fun `findAllTransitiveSuccessorsWithoutRootTargets honours relaxed expansion`() {
+      val depPlain = workspaceTarget("//dep")
+      val depShadow = shadowTarget("//dep", aspectIds = listOf("bazel_java_proto_aspect"))
+      val parent = workspaceTargetWithShadowDeps(
+        aspectIds = emptyList(),
+        rawDeps = listOf(WorkspaceTargetKey(Label.parse("//dep"))),
+      )
+      val graph = buildGraph(listOf(parent), parent, depPlain, depShadow)
+
+      val relaxed = graph
+        .findAllTransitiveSuccessorsWithoutRootTargets(parent.targetKey, useRelaxedDependencyExpansion = true)
+        .toSet()
+
+      relaxed shouldBe setOf(depPlain, depShadow)
+    }
+  }
+
   private fun workspaceTarget(
     id: String,
     configuration: String? = null,
@@ -398,17 +564,16 @@ class WorkspaceTargetGraphTest {
     val label = Label.parse(id)
     val compileConfiguredDeps = compileDeps.map { (depLabel, depConfig) ->
       DependencyLabel(
-        Label.parse(depLabel),
-        configuration = depConfig,
+        targetKey = WorkspaceTargetKey(label = Label.parse(depLabel), configuration = WorkspaceConfigurationId.of(depConfig)),
         kind = DependencyLabelKind.COMPILE,
       )
     }
+    val targetKey = WorkspaceTargetKey(label, WorkspaceConfigurationId.of(configuration))
     return WorkspaceTarget(
-      targetKey = WorkspaceTargetKey(label, WorkspaceConfigurationId.of(configuration)),
+      targetKey = targetKey,
       rawBuildTarget = RawBuildTarget(
-        id = label,
-        configurationId = configuration,
-        dependencies = compileConfiguredDeps + runtimeDeps.map { DependencyLabel(Label.parse(it), kind = DependencyLabelKind.RUNTIME) },
+        key = targetKey,
+        dependencies = compileConfiguredDeps + runtimeDeps.map { DependencyLabel(targetKey = WorkspaceTargetKey(label = Label.parse(it)), kind = DependencyLabelKind.RUNTIME) },
         kind = TargetKind(
           kind = "java_library",
           ruleType = RuleType.LIBRARY,
@@ -423,12 +588,49 @@ class WorkspaceTargetGraphTest {
     )
   }
 
+  private fun shadowTarget(id: String, aspectIds: List<String>): WorkspaceTarget {
+    val label = Label.parse(id)
+    val targetKey = WorkspaceTargetKey(label, aspectIds = WorkspaceAspectIds.of(aspectIds))
+    return WorkspaceTarget(
+      targetKey = targetKey,
+      rawBuildTarget = RawBuildTarget(
+        key = targetKey,
+        dependencies = emptyList(),
+        kind = TargetKind(kind = "java_library", ruleType = RuleType.LIBRARY, languageClasses = setOf(LanguageClass.JAVA)),
+        sources = SourceFileCollection.EMPTY,
+        generatedSources = SourceFileCollection.EMPTY,
+        resources = SourceFileCollection.EMPTY,
+        baseDirectory = Path.of("/tmp"),
+      ),
+    )
+  }
+
+  private fun workspaceTargetWithShadowDeps(
+    aspectIds: List<String>,
+    rawDeps: List<WorkspaceTargetKey>,
+  ): WorkspaceTarget {
+    val label = Label.parse("//proto")
+    val targetKey = WorkspaceTargetKey(label, aspectIds = WorkspaceAspectIds.of(aspectIds))
+    return WorkspaceTarget(
+      targetKey = targetKey,
+      rawBuildTarget = RawBuildTarget(
+        key = targetKey,
+        dependencies = rawDeps.map { DependencyLabel(targetKey = it, kind = DependencyLabelKind.COMPILE) },
+        kind = TargetKind(kind = "java_library", ruleType = RuleType.LIBRARY, languageClasses = setOf(LanguageClass.JAVA)),
+        sources = SourceFileCollection.EMPTY,
+        generatedSources = SourceFileCollection.EMPTY,
+        resources = SourceFileCollection.EMPTY,
+        baseDirectory = Path.of("/tmp"),
+      ),
+    )
+  }
+
   private fun buildGraph(vararg targets: WorkspaceTarget): WorkspaceTargetGraph =
     WorkspaceTargetGraphBuilder.build(emptySet(), targets.toList())
 
   private fun buildGraph(rootTargets: Collection<WorkspaceTarget>, vararg targets: WorkspaceTarget): WorkspaceTargetGraph =
-    WorkspaceTargetGraphBuilder.build(rootTargets.map { it.targetKey.label }.toSet(), targets.toList())
+    WorkspaceTargetGraphBuilder.build(rootTargets.map { it.targetKey }.toSet(), targets.toList())
 
-  private fun buildGraph(rootTargetLabels: Set<Label>, vararg targets: WorkspaceTarget): WorkspaceTargetGraph =
-    WorkspaceTargetGraphBuilder.build(rootTargetLabels, targets.toList())
+  private fun buildGraph(rootTargetKeys: Set<WorkspaceTargetKey>, vararg targets: WorkspaceTarget): WorkspaceTargetGraph =
+    WorkspaceTargetGraphBuilder.build(rootTargetKeys, targets.toList())
 }

@@ -5,23 +5,6 @@ import org.jetbrains.bazel.label.DependencyLabel
 import org.jetbrains.bsp.protocol.BuildTargetData
 import org.jetbrains.bsp.protocol.RawBuildTarget
 
-// TODO: remove this after moving RawBuildTarget to backend module
-
-@get:ApiStatus.Internal
-val DependencyLabel.targetKey: WorkspaceTargetKey
-  get() = WorkspaceTargetKey(
-    label = label,
-    configuration = WorkspaceConfigurationId.of(configuration),
-  )
-
-@get:ApiStatus.Internal
-val RawBuildTarget.targetKey: WorkspaceTargetKey
-  get() = WorkspaceTargetKey(
-    label = id,
-    configuration = WorkspaceConfigurationId.of(configurationId),
-  )
-
-
 @ApiStatus.Internal
 inline fun <reified T : BuildTargetData> WorkspaceTarget.findBuildData(): T? = rawBuildTarget.data.filterIsInstance<T>().firstOrNull()
 
