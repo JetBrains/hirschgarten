@@ -245,7 +245,7 @@ class LabelParser {
     val repoName = normalized.substringBefore("//", "")
     val pathAndName = normalized.substringAfter("//")
     val packagePath = pathAndName.substringBefore(":")
-    val packageSegments = packagePath.split(PATH_SEGMENT_SEPARATOR).mapNotNull { if (it.isEmpty()) null else partsIntern.intern(it) }
+    val packageSegments = packagePath.split(PATH_SEGMENT_SEPARATOR).mapNotNull { if (it.isEmpty()) null else it.intern() }
     val packageType =
       if (packageSegments.lastOrNull() == ALL_PACKAGES_BENEATH) {
         AllPackagesBeneath(packageSegments.dropLast(1))
@@ -275,12 +275,17 @@ class LabelParser {
     val repo =
       when {
         repoName.isEmpty() -> Main
-        value.startsWith("@@") -> Canonical(partsIntern.intern(repoName))
-        else -> Apparent(partsIntern.intern(repoName))
+        value.startsWith("@@") -> Canonical(repoName.intern())
+        else -> Apparent(repoName.intern())
       }
 
     return ResolvedLabel(repo, packageType, target)
   }
+
+  private fun String.intern(): String =
+    synchronized(partsIntern) {
+      partsIntern.intern(this)
+    }
 
 }
 
