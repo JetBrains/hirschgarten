@@ -10,41 +10,41 @@ internal class StarlarkGlobMatchingTest : BasePlatformTestCase() {
 
   @Test
   fun `should match star wildcard`() {
-    assertTrue(StarlarkGlob.matches("*", "foo"))
-    assertTrue(StarlarkGlob.matches("*", "foo.bar"))
+    assertTrue(StarlarkGlob.partMatches("*", "foo"))
+    assertTrue(StarlarkGlob.partMatches("*", "foo.bar"))
 
-    assertFalse(StarlarkGlob.matches("*", ""))
+    assertFalse(StarlarkGlob.partMatches("*", ""))
   }
 
   @Test
   fun `should match question wildcard`() {
-    assertTrue(StarlarkGlob.matches("f?o", "foo"))
-    assertTrue(StarlarkGlob.matches("?oo", "foo"))
+    assertTrue(StarlarkGlob.partMatches("f?o", "foo"))
+    assertTrue(StarlarkGlob.partMatches("?oo", "foo"))
 
-    assertFalse(StarlarkGlob.matches("f?o", "fo"))
-    assertFalse(StarlarkGlob.matches("f?o", "fxxo"))
+    assertFalse(StarlarkGlob.partMatches("f?o", "fo"))
+    assertFalse(StarlarkGlob.partMatches("f?o", "fxxo"))
   }
 
   @Test
   fun `should match suffix wildcard`() {
-    assertTrue(StarlarkGlob.matches("*.java", "Foo.java"))
-    assertTrue(StarlarkGlob.matches("*.java", "Foo.java"))
+    assertTrue(StarlarkGlob.partMatches("*.java", "Foo.java"))
+    assertTrue(StarlarkGlob.partMatches("*.java", "Foo.java"))
 
-    assertFalse(StarlarkGlob.matches("*.java", "Foo.kt"))
+    assertFalse(StarlarkGlob.partMatches("*.java", "Foo.kt"))
   }
 
   @Test
   fun `should match prefix wildcard`() {
-    assertTrue(StarlarkGlob.matches("Foo*", "Foo"))
-    assertTrue(StarlarkGlob.matches("Foo*", "FooBar"))
+    assertTrue(StarlarkGlob.partMatches("Foo*", "Foo"))
+    assertTrue(StarlarkGlob.partMatches("Foo*", "FooBar"))
 
-    assertFalse(StarlarkGlob.matches("Foo*", "BarFoo"))
+    assertFalse(StarlarkGlob.partMatches("Foo*", "BarFoo"))
   }
 
   @Test
   fun `should match double star special case`() {
-    assertTrue(StarlarkGlob.matches("**", "anything"))
+    assertTrue(StarlarkGlob.partMatches("**", "anything"))
 
-    assertFalse(StarlarkGlob.matches("**", ""))
+    assertFalse(StarlarkGlob.partMatches("**", ""))
   }
 }

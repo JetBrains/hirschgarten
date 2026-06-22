@@ -171,6 +171,11 @@
                  key="bazel.highlight.unsynced.source.files"
                  restartRequired="false"
     />
+    <registryKey defaultValue="true"
+                 description="Highlight Bazel ignored source files"
+                 key="bazel.highlight.ignored.source.files"
+                 restartRequired="false"
+    />
     <projectSettings service="org.jetbrains.bazel.settings.bazel.BazelProjectSettingsService"/>
     <projectSettings service="org.jetbrains.bazel.settings.bazel.BazelJVMProjectSettingsService"/>
     <postStartupActivity implementation="org.jetbrains.bazel.sync.BazelEnvironmentService$StartupActivity"/>

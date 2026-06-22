@@ -11,7 +11,7 @@ import com.intellij.workspaceModel.ide.legacyBridge.findModuleEntity
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.target.targetUtils
-import org.jetbrains.bazel.ui.unsynced.showAsUnsyncedSourceFile
+import org.jetbrains.bazel.ui.status.showAsUnsyncedSourceFile
 
 internal class AssertFileKindCommand(text: String, line: Int) : PlaybackCommandCoroutineAdapter(text, line) {
   companion object {

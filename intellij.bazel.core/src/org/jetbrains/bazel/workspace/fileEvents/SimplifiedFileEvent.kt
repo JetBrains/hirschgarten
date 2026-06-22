@@ -13,6 +13,7 @@ import com.intellij.openapi.vfs.newvfs.events.VFileMoveEvent
 import com.intellij.openapi.vfs.newvfs.events.VFilePropertyChangeEvent
 import com.intellij.util.concurrency.annotations.RequiresReadLock
 import org.jetbrains.bazel.commons.LanguageClass
+import org.jetbrains.bazel.ignore.BazelIgnoreService
 import java.nio.file.Path
 import kotlin.io.path.exists
 import kotlin.io.path.extension
@@ -29,10 +30,18 @@ internal sealed class SimplifiedFileEvent private constructor(
   )
 
   // either of the affected files is a source file
-  fun shouldBeProcessed(): Boolean =
-    fileRemoved?.extension?.let { LanguageClass.fromExtension(it) } != null ||
-    fileAdded?.extension?.let { LanguageClass.fromExtension(it) } != null ||
-    this is CreateDirectory
+  fun shouldBeProcessed(project: Project): Boolean =
+    if (this is CreateDirectory) {
+      val path = this.fileAdded
+      return path != null && !BazelIgnoreService.getInstance(project).isIgnored(path)
+    } else {
+      return fileRemoved?.shouldProcess(project) == true ||
+             fileAdded?.shouldProcess(project) == true
+    }
+
+  private fun Path.shouldProcess(project: Project): Boolean =
+    LanguageClass.fromExtension(this.extension) != null &&
+    !BazelIgnoreService.getInstance(project).isIgnored(this)
 
   fun doesAffectFolder(folderPath: Path): Boolean =
     fileRemoved?.startsWith(folderPath) == true || fileAdded?.startsWith(folderPath) == true
@@ -54,7 +63,6 @@ internal sealed class SimplifiedFileEvent private constructor(
   }
 
   companion object {
-    /** @return `SimplifiedFileEvent` if it should be processed, `null` otherwise */
     fun from(event: VFileEvent): SimplifiedFileEvent? =
       when (event) {
         is VFileCreateEvent ->
@@ -76,7 +84,7 @@ internal sealed class SimplifiedFileEvent private constructor(
         }
 
         else -> null
-      }?.takeIf { it.shouldBeProcessed() }
+      }
   }
 
   class Create(path: String, vFile: VirtualFile?)
