@@ -228,8 +228,12 @@ private class TestConsoleService(project: Project) : ConsoleService {
       val failure = event.result as FailureResult
       log.error(
         "Bazel build finished with error:" +
-        failure.failures.joinToString(";") {
-          "${it.message} ${it.description}"
+        failure.failures.joinToString(";") { f ->
+          buildString {
+            if (f.message != null) append(f.message)
+            if (f.description != null) append(" (").append(f.message).append(")")
+            if (f.error != null) appendLine().append(f.error).appendLine()
+          }
         },
         failure.failures.firstOrNull()?.error,
       )

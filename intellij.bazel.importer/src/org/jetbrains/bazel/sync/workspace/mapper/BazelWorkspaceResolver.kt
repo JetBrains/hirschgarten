@@ -6,6 +6,7 @@ import com.intellij.openapi.project.Project
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.commons.constants.Constants
 import org.jetbrains.bazel.config.BazelImporterBundle
+import org.jetbrains.bazel.ignore.BazelIgnoreService
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.label.label
 import org.jetbrains.bazel.progress.syncConsole
@@ -20,11 +21,7 @@ import org.jetbrains.bsp.protocol.TaskId
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetParams
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetPhasedParams
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetSelector
-import java.io.IOException
 import java.nio.file.Path
-import kotlin.collections.joinToString
-import kotlin.io.path.exists
-import kotlin.io.path.readLines
 
 @ApiStatus.Internal
 object BazelWorkspaceResolver {
@@ -110,20 +107,12 @@ object BazelWorkspaceResolver {
     }
   }
 
-  // TODO: https://youtrack.jetbrains.com/issue/BAZEL-3170/Support-bazel-ignore-files
   private fun reportIgnoredBazelBsp(project: Project, taskId: TaskId, workspaceRoot: Path) {
-    val bazelIgnore = workspaceRoot.resolve(Constants.BAZEL_IGNORE_FILE_NAME)
-    if (!bazelIgnore.exists()) return
-
-    val lines = try {
-      bazelIgnore.readLines()
-    } catch (_: IOException) {
-      emptyList()
-    }
-    if (lines.contains(Constants.DOT_BAZELBSP_DIR_NAME)) {
+    val dotBazelBsp = workspaceRoot.resolve(Constants.DOT_BAZELBSP_DIR_NAME)
+    if (BazelIgnoreService.getInstance(project).isIgnored(dotBazelBsp)) {
       project.syncConsole.addDiagnosticMessage(
         taskId, null, -1, -1,
-        message = BazelImporterBundle.message("bazel.import.ignored.bazelbsp", bazelIgnore, Constants.DOT_BAZELBSP_DIR_NAME),
+        message = BazelImporterBundle.message("bazel.import.ignored.bazelbsp", dotBazelBsp, Constants.DOT_BAZELBSP_DIR_NAME),
         description = null,
         MessageEvent.Kind.ERROR,
       )

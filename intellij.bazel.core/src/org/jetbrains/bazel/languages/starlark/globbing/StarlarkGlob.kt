@@ -37,7 +37,6 @@ import org.jetbrains.bazel.languages.starlark.StarlarkBundle
 import java.util.concurrent.ConcurrentHashMap
 import java.util.function.Predicate
 import java.util.regex.Pattern
-import java.util.regex.PatternSyntaxException
 
 /**
  * Implementation of a subset of UNIX-style file globbing, expanding "*" and "?" as wildcards, but
@@ -57,14 +56,7 @@ class StarlarkGlob private constructor(
   private val pathFilter: Predicate<VirtualFile>,
 ) {
 
-  private val cache: Cache<String, Pattern> =
-    CacheBuilder
-      .newBuilder()
-      .build(
-        object : CacheLoader<String, Pattern>() {
-          override fun load(wildcard: String): Pattern = makePatternFromWildcard(wildcard)
-        },
-      )
+  private val cache: Cache<String, Pattern> = createCache()
 
   /**
    * Checks if given file matches the glob pattern.
@@ -88,9 +80,9 @@ class StarlarkGlob private constructor(
    * Checks if the given relative path matches the glob pattern.
    */
   fun match(relativePath: String): Boolean {
-    val included = patterns.any { include -> matchGlobPattern(include, relativePath) }
+    val included = patterns.any { include -> patternMatches(include, relativePath, excludeDirectories, cache) }
     if (included) {
-      val excluded = excludes.any { exclude -> matchGlobPattern(exclude, relativePath) }
+      val excluded = excludes.any { exclude -> patternMatches(exclude, relativePath, excludeDirectories, cache) }
       return !excluded
     }
     return false
@@ -276,7 +268,7 @@ class StarlarkGlob private constructor(
             )
           }
         }
-        if (matches(pattern, childName, cache)) {
+        if (partMatches(pattern, childName, cache)) {
           // Recurse and consume one segment of the pattern.
           if (childIsDir) {
             launch {
@@ -300,64 +292,6 @@ class StarlarkGlob private constructor(
 
     fun getChildren(file: VirtualFile?): Array<VirtualFile>? = file?.children
   }
-
-  private fun matchGlobPattern(
-    patternParts: List<String>,
-    path: String,
-  ): Boolean {
-    val pathPart = path.substringBefore("/")
-    val pathTail = path.substringAfter("/", "")
-    val isDirectory = pathTail.isNotEmpty()
-
-    if (patternParts.isEmpty()) { // Base case.
-      if (!(excludeDirectories && isDirectory)) {
-        return true
-      }
-      return false
-    }
-
-    //if (!isDirectory) {
-    //  // Nothing to find here.
-    //  return false
-    //}
-
-    val pattern = patternParts.first()
-
-    // ** is special: it can match nothing at all.
-    // For example, x/** matches x, **/y matches y, and x/**/y matches x/y.
-    if ("**" == pattern) {
-      if (matchGlobPattern(patternParts.tail(), path))
-        return true
-    }
-
-    if (!pattern.contains("*") && !pattern.contains("?")) {
-      if (pathPart != pattern)
-        return false
-
-      matchGlobPattern(patternParts.tail(), pathTail)
-    }
-
-    if ("**" == pattern && isDirectory) {
-      // Recurse without shifting the pattern.
-      if (matchGlobPattern(patternParts, pathTail))
-        return true
-    }
-
-    if (matches(pattern, pathPart, cache)) {
-      // Recurse and consume one segment of the pattern.
-      if (isDirectory) {
-        if (matchGlobPattern(patternParts.tail(), pathTail))
-          return true
-      }
-      else {
-        if (patternParts.size == 1)
-          return true
-      }
-    }
-
-    return false
-  }
-
 
   /** Builder class for UnixGlob.  */
   class Builder(private val base: VirtualFile) {
@@ -448,13 +382,67 @@ class StarlarkGlob private constructor(
     }
 
     /** Calls [matches(pattern, str, null)][.matches]  */
-    fun matches(pattern: String, str: String): Boolean =
-      try {
-        matches(pattern, str, null)
+    fun partMatches(pattern: String, str: String): Boolean =
+        partMatches(pattern, str, null)
+
+    fun patternMatches(
+      patternParts: List<String>,
+      path: String,
+      excludeDirectories: Boolean,
+      patternCache: Cache<String, Pattern>?
+    ): Boolean {
+      val pathPart = path.substringBefore("/")
+      val pathTail = path.substringAfter("/", "")
+      val isDirectory = pathTail.isNotEmpty()
+
+      if (patternParts.isEmpty()) { // Base case.
+        if (!(excludeDirectories && isDirectory)) {
+          return true
+        }
+        return false
       }
-      catch (_: PatternSyntaxException) {
-        false
+
+      //if (!isDirectory) {
+      //  // Nothing to find here.
+      //  return false
+      //}
+
+      val pattern = patternParts.first()
+
+      // ** is special: it can match nothing at all.
+      // For example, x/** matches x, **/y matches y, and x/**/y matches x/y.
+      if ("**" == pattern) {
+        if (patternMatches(patternParts.tail(), path, excludeDirectories, patternCache))
+          return true
       }
+
+      if (!pattern.contains("*") && !pattern.contains("?")) {
+        if (pathPart != pattern)
+          return false
+
+        patternMatches(patternParts.tail(), pathTail, excludeDirectories, patternCache)
+      }
+
+      if ("**" == pattern && isDirectory) {
+        // Recurse without shifting the pattern.
+        if (patternMatches(patternParts, pathTail, excludeDirectories, patternCache))
+          return true
+      }
+
+      if (partMatches(pattern, pathPart, patternCache)) {
+        // Recurse and consume one segment of the pattern.
+        if (isDirectory) {
+          if (patternMatches(patternParts.tail(), pathTail, excludeDirectories, patternCache))
+            return true
+        }
+        else {
+          if (patternParts.size == 1)
+            return true
+        }
+      }
+
+      return false
+    }
 
     /**
      * Returns whether `str` matches the glob pattern `pattern`. This method may use the
@@ -465,7 +453,7 @@ class StarlarkGlob private constructor(
      * @param patternCache a cache from patterns to compiled Pattern objects, or `null` to skip
      * caching
      */
-    private fun matches(
+    private fun partMatches(
       pattern: String,
       str: String,
       patternCache: Cache<String, Pattern>?,
@@ -555,5 +543,15 @@ class StarlarkGlob private constructor(
     }
 
     fun forPath(path: VirtualFile): Builder = Builder(path)
+
+    fun createCache(): Cache<String, Pattern> =
+      CacheBuilder
+        .newBuilder()
+        .build(
+          object : CacheLoader<String, Pattern>() {
+            override fun load(wildcard: String): Pattern = makePatternFromWildcard(wildcard)
+          },
+        )
+
   }
 }

@@ -2,6 +2,8 @@ package org.jetbrains.bazel.redcodes
 
 import com.intellij.mock.MockDocument
 import com.intellij.openapi.application.EDT
+import com.intellij.openapi.application.WriteAction
+import com.intellij.openapi.vfs.VirtualFileManager
 import com.intellij.testFramework.ExpectedHighlightingData
 import com.intellij.testFramework.PlatformTestUtil
 import com.intellij.testFramework.junit5.fixture.projectFixture
@@ -46,9 +48,10 @@ internal class FileSystemRefreshTest {
         ).also { it.init() },
       )
 
-      // Create file and resync FS
-      fixture.tempDirFixture.createFile(
-        "/module/gen/com/core/IModule.java",
+      // Create file in stash and resync FS
+      // Since stash is ignored, the file should not affect PSI
+      val newFile = fixture.tempDirFixture.createFile(
+        "/module/gen/stash/IModule.java",
         """
           package com.core;
 
@@ -57,10 +60,36 @@ internal class FileSystemRefreshTest {
           }
         """.trimIndent(),
       )
-      PlatformTestUtil.flushAllPendingVFSUpdates()
-      waitFor {
-        FileEventQueueController.getInstance(fixture.project).isIdle()
-      }
+      waitForFileEventsProcessor()
+
+      fixture.checkHighlighting(
+        "module/src/com/example/Module.java",
+        expected = ExpectedHighlightingData(
+          MockDocument().apply {
+            replaceText(
+              """
+                package com.example;
+
+                class Module implements com.<error descr="Cannot resolve symbol 'core'">core</error>.IModule {
+                }
+               """.trimIndent(),
+              1,
+            )
+          },
+        ).also { it.init() },
+      )
+
+
+      // Move file out of stash. Now it should affect PSI
+      WriteAction.runAndWait<Throwable>(
+        {
+          newFile.move(
+            this@FileSystemRefreshTest,
+            fixture.tempDirFixture.findOrCreateDir("/module/gen/com/core"),
+          )
+        },
+      )
+      waitForFileEventsProcessor()
 
       // Should highlight with new file
       fixture.checkHighlighting(
@@ -82,12 +111,14 @@ internal class FileSystemRefreshTest {
     }
   }
 
-  private suspend fun waitFor(condition: suspend () -> Boolean) {
+  private suspend fun waitForFileEventsProcessor() {
+    PlatformTestUtil.flushAllPendingVFSUpdates()
+
     val start = System.currentTimeMillis()
     var success = false
     do {
       PlatformTestUtil.dispatchAllInvocationEventsInIdeEventQueue()
-      if (condition()) {
+      if (FileEventQueueController.getInstance(fixture.project).isIdle()) {
         success = true
         break
       }

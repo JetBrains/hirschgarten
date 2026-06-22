@@ -93,6 +93,9 @@
       implementation="org.jetbrains.bazel.workspace.indexAdditionalFiles.IndexAdditionalFilesSyncHook"
       order="after DirectoriesSyncHook"
     />
+    <projectSyncHook
+      implementation="org.jetbrains.bazel.ignore.UpdateBazelIgnoreSyncHook"
+    />
 
     <projectPostSyncHook implementation="org.jetbrains.bazel.workspace.CleanupLabelsCacheSyncHook"/>
     <projectPostSyncHook implementation="org.jetbrains.bazel.ui.widgets.fileTargets.BazelFileTargetsWidgetSyncHook"/>
@@ -158,6 +161,11 @@
     <projectService
       serviceImplementation="org.jetbrains.bazel.ui.console.DefaultConsoleService"
       serviceInterface="org.jetbrains.bazel.progress.ConsoleService"
+    />
+
+    <projectService
+      serviceImplementation="org.jetbrains.bazel.ignore.DefaultBazelIgnoreService"
+      serviceInterface="org.jetbrains.bazel.ignore.BazelIgnoreService"
     />
 
     <commandLineInspectionProjectConfigurator
@@ -582,10 +590,10 @@
       </components>
     </obsoleteStorage>
     <projectViewNodeDecorator implementation="org.jetbrains.bazel.settings.ProjectViewFileNodeDecorator"/>
-    <projectViewNodeDecorator implementation="org.jetbrains.bazel.ui.unsynced.UnsyncedSourceFileNodeDecorator"/>
-    <editorTabColorProvider implementation="org.jetbrains.bazel.ui.unsynced.UnsyncedSourceFileEditorTabColorProvider"/>
-    <editorTabTitleProvider implementation="org.jetbrains.bazel.ui.unsynced.UnsyncedSourceFileEditorTabTitleProvider"/>
-    <editorNotificationProvider implementation="org.jetbrains.bazel.ui.unsynced.UnsyncedSourceFileNotificationProvider"/>
+    <projectViewNodeDecorator implementation="org.jetbrains.bazel.ui.status.BazelSourceFileNodeDecorator"/>
+    <editorTabColorProvider implementation="org.jetbrains.bazel.ui.status.BazelSourceFileEditorTabColorProvider"/>
+    <editorTabTitleProvider implementation="org.jetbrains.bazel.ui.status.BazelSourceFileEditorTabTitleProvider"/>
+    <editorNotificationProvider implementation="org.jetbrains.bazel.ui.status.BazelSourceFileNotificationProvider"/>
     <referencesSearch implementation="org.jetbrains.bazel.languages.starlark.findusages.StarlarkStringUsageSearcher"/>
     <referencesSearch implementation="org.jetbrains.bazel.languages.starlark.findusages.StarlarkFileUsageSearcher"/>
     <referencesSearch implementation="org.jetbrains.bazel.languages.starlark.findusages.BazelTargetReferenceSearcher"/>

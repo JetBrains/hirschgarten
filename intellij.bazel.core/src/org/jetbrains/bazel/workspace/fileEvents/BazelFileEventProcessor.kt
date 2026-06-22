@@ -51,7 +51,7 @@ import org.jetbrains.bazel.server.connection
 import org.jetbrains.bazel.sync.status.SyncStatusService
 import org.jetbrains.bazel.target.targetUtils
 import org.jetbrains.bazel.taskEvents.BazelTaskEventsService
-import org.jetbrains.bazel.ui.unsynced.refreshAllFilesPresentation
+import org.jetbrains.bazel.ui.status.refreshAllFilesPresentation
 import org.jetbrains.bazel.workspace.fileEvents.SimplifiedFileEvent.Create
 import org.jetbrains.bazel.workspace.fileEvents.SimplifiedFileEvent.CreateDirectory
 import org.jetbrains.bazel.workspace.packageMarker.concatenatePackages
@@ -86,7 +86,7 @@ open class DefaultBazelFileEventProcessor(private val project: Project): BazelFi
     if (!targetUtils.allTargets().any())
       return false
 
-    val simplifiedEvents = events.mapNotNull { SimplifiedFileEvent.from(it) }
+    val simplifiedEvents = events.mapNotNull { SimplifiedFileEvent.from(it) }.filter { it.shouldBeProcessed(project) }
     return processEvents(simplifiedEvents)
   }
 
@@ -193,7 +193,7 @@ open class DefaultBazelFileEventProcessor(private val project: Project): BazelFi
           ProjectFileIndex.getInstance(project).iterateContentUnderDirectory(root) { file ->
             if (!file.isDirectory) {
               val createFileEvent = Create(file.path, file)
-              if (createFileEvent.shouldBeProcessed())
+              if (createFileEvent.shouldBeProcessed(project))
                 filesInDirectory.add(createFileEvent)
             }
             true

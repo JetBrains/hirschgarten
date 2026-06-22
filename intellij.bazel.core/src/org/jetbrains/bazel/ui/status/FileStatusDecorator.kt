@@ -1,4 +1,4 @@
-package org.jetbrains.bazel.ui.unsynced
+package org.jetbrains.bazel.ui.status
 
 import com.intellij.ide.projectView.PresentationData
 import com.intellij.ide.projectView.ProjectView
@@ -8,6 +8,7 @@ import com.intellij.openapi.application.EDT
 import com.intellij.openapi.application.ReadAction
 import com.intellij.openapi.application.readAction
 import com.intellij.openapi.components.Service
+import com.intellij.openapi.components.service
 import com.intellij.openapi.fileEditor.FileEditor
 import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.fileEditor.impl.EditorTabColorProvider
@@ -30,6 +31,7 @@ import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.config.isBazelProject
 import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.coroutines.BazelCoroutineService
+import org.jetbrains.bazel.ignore.BazelIgnoreService
 import org.jetbrains.bazel.sync.status.SyncStatusListener
 import org.jetbrains.bazel.sync.status.isSyncInProgress
 import org.jetbrains.bazel.sync.task.ProjectSyncTask
@@ -40,14 +42,16 @@ import java.awt.Color
 import java.util.function.Function
 import javax.swing.JComponent
 
-internal class UnsyncedSourceFileEditorTabColorProvider : EditorTabColorProvider {
+internal class BazelSourceFileEditorTabColorProvider : EditorTabColorProvider {
   override fun getEditorTabColor(project: Project, file: VirtualFile): Color? {
-    if (!isApplicableFor(project)) return null
-    return if (showAsUnsyncedSourceFile(project, file)) UNSYNCED_COLOR else null
+    if (!project.isBazelProject) return null
+    if (!BazelFeatureFlags.highlightUnsyncedSourceFiles) return null
+    return if (showAsUnsyncedSourceFile(project, file)) UNSYNCED_BACKGROUND_COLOR
+    else null
   }
 }
 
-internal class UnsyncedSourceFileEditorTabTitleProvider : EditorTabTitleProvider {
+internal class BazelSourceFileEditorTabTitleProvider : EditorTabTitleProvider {
   private fun getEditorTabTitleImpl(project: Project, file: VirtualFile): String? {
     return if (showAsUnsyncedSourceFile(project, file)) {
       "${file.presentableName} ${BazelPluginBundle.message("sync.status.unsynced.source.file.hint")}"
@@ -57,23 +61,26 @@ internal class UnsyncedSourceFileEditorTabTitleProvider : EditorTabTitleProvider
   }
 
   override suspend fun getEditorTabTitleAsync(project: Project, file: VirtualFile): String? {
-    if (!isApplicableFor(project)) return null
+    if (!project.isBazelProject) return null
+    if (!BazelFeatureFlags.highlightUnsyncedSourceFiles) return null
     return readAction {
       getEditorTabTitleImpl(project, file)
     }
   }
 
   override fun getEditorTabTitle(project: Project, file: VirtualFile): String? {
-    if (!isApplicableFor(project)) return null
+    if (!project.isBazelProject) return null
+    if (!BazelFeatureFlags.highlightUnsyncedSourceFiles) return null
     return ReadAction.computeCancellable<String, RuntimeException> {
       getEditorTabTitleImpl(project, file)
     }
   }
 }
 
-internal class UnsyncedSourceFileNotificationProvider : EditorNotificationProvider {
+internal class BazelSourceFileNotificationProvider : EditorNotificationProvider {
   override fun collectNotificationData(project: Project, file: VirtualFile): Function<in FileEditor, out JComponent?>? {
-    if (!isApplicableFor(project)) return null
+    if (!project.isBazelProject) return null
+    if (!BazelFeatureFlags.highlightUnsyncedSourceFiles) return null
     if (!showAsUnsyncedSourceFile(project, file)) return null
     return Function { UnsyncedSourceFileEditorPanel(project, it) }
   }
@@ -98,22 +105,28 @@ internal class UnsyncedSourceFileNotificationProvider : EditorNotificationProvid
   }
 }
 
-private val UNSYNCED_COLOR: JBColor = JBColor(Color(252, 234, 234), Color(94, 56, 56))
+private val IGNORE_COLOR: JBColor = JBColor.orange
+private val UNSYNCED_BACKGROUND_COLOR: JBColor = JBColor(Color(252, 234, 234), Color(94, 56, 56))
 
-internal class UnsyncedSourceFileNodeDecorator(private val project: Project) : ProjectViewNodeDecorator {
+internal class BazelSourceFileNodeDecorator(private val project: Project) : ProjectViewNodeDecorator {
   override fun decorate(node: ProjectViewNode<*>, data: PresentationData) {
-    if (!isApplicableFor(project)) return
+    if (!project.isBazelProject) return
     val vFile = node.virtualFile
-    if (vFile != null && showAsUnsyncedSourceFile(project, vFile)) {
-      data.addText(vFile.name + " ", SimpleTextAttributes.REGULAR_ATTRIBUTES)
-      data.addText(BazelPluginBundle.message("sync.status.unsynced.source.file.hint"), SimpleTextAttributes.GRAYED_ITALIC_ATTRIBUTES)
-      data.background = UNSYNCED_COLOR
+    if (vFile != null) {
+      when {
+        BazelFeatureFlags.highlightIgnoredSourceFiles && showAsIgnoredSourceFile(project, vFile) -> {
+          data.forcedTextForeground = IGNORE_COLOR
+        }
+
+        BazelFeatureFlags.highlightUnsyncedSourceFiles && showAsUnsyncedSourceFile(project, vFile) -> {
+          data.addText(vFile.name + " ", SimpleTextAttributes.REGULAR_ATTRIBUTES)
+          data.addText(BazelPluginBundle.message("sync.status.unsynced.source.file.hint"), SimpleTextAttributes.GRAYED_ITALIC_ATTRIBUTES)
+          data.background = UNSYNCED_BACKGROUND_COLOR
+        }
+      }
     }
   }
 }
-
-private fun isApplicableFor(project: Project): Boolean =
-  project.isBazelProject && BazelFeatureFlags.highlightUnsyncedSourceFiles
 
 @ApiStatus.Internal
 fun showAsUnsyncedSourceFile(project: Project, file: VirtualFile): Boolean {
@@ -129,9 +142,7 @@ fun showAsUnsyncedSourceFile(project: Project, file: VirtualFile): Boolean {
 
   if (project.isSyncInProgress()) return false
   if (!FileEventQueueController.getInstance(project).isIdle()) return false
-
-  // TODO: support .bazelignore
-  // https://bazel.build/run/bazelrc#bazelignore
+  if (BazelIgnoreService.getInstance(project).isIgnored(file)) return false
 
   val projectFileIndex = ProjectFileIndex.getInstance(project)
   val isExcluded = projectFileIndex.isExcluded(file)
@@ -144,6 +155,12 @@ fun showAsUnsyncedSourceFile(project: Project, file: VirtualFile): Boolean {
   if (!targetUtils.isLoaded()) return false
 
   return targetUtils.getTargetsForFile(file).isEmpty()
+}
+
+@ApiStatus.Internal
+fun showAsIgnoredSourceFile(project: Project, file: VirtualFile): Boolean {
+  if (project.isSyncInProgress()) return false
+  return BazelIgnoreService.getInstance(project).isIgnored(file)
 }
 
 @ApiStatus.Internal
@@ -161,7 +178,7 @@ fun refreshAllFilesPresentation(project: Project) {
 }
 
 @Service(Service.Level.PROJECT)
-internal class UnsyncedFilesRefresher(private val project: Project) {
+internal class BazelFileStatusRefresher(private val project: Project) {
   init {
     project.targetUtils.onLoaded {
       refreshAllFilesPresentation(project)

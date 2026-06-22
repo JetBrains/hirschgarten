@@ -13,7 +13,7 @@ import com.intellij.openapi.vfs.newvfs.events.VFileEvent
 import com.intellij.openapi.vfs.newvfs.events.VFileMoveEvent
 import com.intellij.ui.tree.TreeVisitor
 import com.intellij.util.ui.tree.TreeUtil
-import org.jetbrains.bazel.ui.unsynced.refreshAllFilesPresentation
+import org.jetbrains.bazel.ui.status.refreshAllFilesPresentation
 
 @Service(Service.Level.PROJECT)
 internal class BazelWorkspace(val project: Project) : Disposable {
