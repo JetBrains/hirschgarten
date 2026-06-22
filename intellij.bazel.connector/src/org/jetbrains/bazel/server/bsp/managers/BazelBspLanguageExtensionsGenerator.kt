@@ -46,7 +46,7 @@ enum class Language(
     false, listOf(),
     listOf("https://github.com/bazel-contrib/rules_go/")),
   RulesProto(
-    Rules.PROTO,
+    Rules.LEGACY_RULES_PROTO,
     listOf("rules_proto"),
     false, emptyList(),
     listOf("https://github.com/bazelbuild/rules_proto")),
