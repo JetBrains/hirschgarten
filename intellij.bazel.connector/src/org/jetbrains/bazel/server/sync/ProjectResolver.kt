@@ -213,6 +213,15 @@ class ProjectResolver(
         )
       }
 
+    ruleLanguages.forEach {
+      it.language.deprecated?.let {
+        project.syncConsole.addDiagnosticMessage(
+          taskId, null, 0, 0, it, null,
+          MessageEvent.Kind.WARNING,
+        )
+      }
+    }
+
     measured("Realizing language aspect files from templates") {
       bazelBspAspectsManager.deployIntelliJAspect(
         ruleLanguages,

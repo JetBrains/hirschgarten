@@ -18,6 +18,7 @@ enum class Language(
   val isBundled: Boolean,
   val autoloadHints: List<String> = emptyList(),
   val hostLocations: List<String> = emptyList(),
+  val deprecated: String? = null,
 ) {
   Java(
     Rules.JAVA,
@@ -49,7 +50,8 @@ enum class Language(
     Rules.LEGACY_RULES_PROTO,
     listOf("rules_proto"),
     false, emptyList(),
-    listOf("https://github.com/bazelbuild/rules_proto")),
+    listOf("https://github.com/bazelbuild/rules_proto"),
+    "`rules_proto` is deprecated and should be replaced by `protobuf`"),
   Protobuf(
     Rules.PROTO,
     listOf("protobuf"),
