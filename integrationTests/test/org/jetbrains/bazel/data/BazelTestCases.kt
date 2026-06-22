@@ -356,11 +356,23 @@ object GoLandBazelCases : BaseBazelCasesParametrized(BazelTestContext.GOLAND) {
   val GolandSync = withBazelProject(
     projectInfo = withDefaults(
       repositoryUrl = "https://github.com/JetBrainsBazelBot/simpleBazelProjectsForTesting.git",
-      commitHash = "af3e066604a8af0c9505b088ae5e7055ecf3b6d5",
+      commitHash = "f79550b7459d4f0ee7de195605f7c1038e2ec4ae",
       branchName = "main",
       relativePath = "with_go_source",
       configure = { context -> BazelProjectConfigurer.configureProjectBeforeUse(context, createProjectView = false) },
-    )
+    ),
+  )
+}
+
+object GoPluginBazelCases : BaseBazelCasesParametrized(BazelTestContext.IDEA_GO_PLUGIN) {
+  val GoPluginSync = withBazelProject(
+    projectInfo = withDefaults(
+      repositoryUrl = "https://github.com/JetBrainsBazelBot/simpleBazelProjectsForTesting.git",
+      commitHash = "f79550b7459d4f0ee7de195605f7c1038e2ec4ae",
+      branchName = "main",
+      relativePath = "with_go_source",
+      configure = { context -> BazelProjectConfigurer.configureProjectBeforeUse(context, createProjectView = false) },
+    ),
   )
 }
 

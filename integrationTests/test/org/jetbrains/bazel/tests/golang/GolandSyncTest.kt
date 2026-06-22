@@ -4,19 +4,24 @@ import com.intellij.driver.client.Driver
 import com.intellij.driver.sdk.invokeAction
 import com.intellij.driver.sdk.step
 import com.intellij.driver.sdk.ui.components.common.ideFrame
+import com.intellij.driver.sdk.ui.components.common.welcomeScreen
 import com.intellij.driver.sdk.wait
 import com.intellij.ide.starter.driver.execute
 import com.intellij.ide.starter.ide.IDETestContext
+import com.intellij.ide.starter.models.TestCase
 import com.intellij.tools.ide.performanceTesting.commands.checkOnRedCode
 import com.intellij.tools.ide.performanceTesting.commands.openFile
 import com.intellij.tools.ide.performanceTesting.commands.takeScreenshot
+import io.kotest.matchers.shouldBe
 import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.data.GoLandBazelCases
+import org.jetbrains.bazel.data.GoPluginBazelCases
 import org.jetbrains.bazel.ideStarter.bazelClean
 import org.jetbrains.bazel.ideStarter.navigateToFile
 import org.jetbrains.bazel.ideStarter.withBazelFeatureFlag
 import org.jetbrains.bazel.tests.combined.IdeStarterCombinedBaseTest
 import org.jetbrains.bazel.tests.sync.verifyNoSyncOnReopen
+import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Order
 import org.junit.jupiter.api.Test
 import kotlin.time.Duration.Companion.seconds
@@ -32,12 +37,18 @@ private val FILES_TO_CHECK_FOR_RED_CODE =
 
 private const val GO_LINTER_PLUGIN_ID = "com.ypwang.plugin.go-linter"
 
-/**
- * bazel test //plugins/bazel/integrationTests:integrationTests_test --test_env=JB_TEST_FILTER=org.jetbrains.bazel.tests.golang.GolandSyncTest --test_output=errors --nocache_test_results
- */
-class GolandSyncTest : IdeStarterCombinedBaseTest() {
+@Suppress("JUnitTestCaseWithNoTests")
+class GolandSyncTest {
+  @Nested
+  inner class GoLand : GolandSyncBaseTest("golandSync", GoLandBazelCases.GolandSync)
+
+  @Nested
+  inner class GoPlugin : GolandSyncBaseTest("goPluginSync", GoPluginBazelCases.GoPluginSync)
+}
+
+abstract class GolandSyncBaseTest(private val projectName: String, private val case: TestCase<*>) : IdeStarterCombinedBaseTest() {
   override fun createContext(): IDETestContext =
-    createContext("golandSync", GoLandBazelCases.GolandSync)
+    createContext(projectName, case)
       .withDisabledPlugins(setOf(GO_LINTER_PLUGIN_ID))
       .withBazelFeatureFlag(BazelFeatureFlags.BUILD_PROJECT_ON_SYNC)
       .withBazelFeatureFlag(BazelFeatureFlags.GO_SUPPORT)
@@ -52,7 +63,12 @@ class GolandSyncTest : IdeStarterCombinedBaseTest() {
       }
 
       step("Reopen project from welcome screen") {
-        ideFrame { waitOneText("with_go_source").click() }
+        if (case === GoLandBazelCases.GolandSync) {
+          ideFrame { waitOneText("with_go_source").click() }
+        }
+        else {
+          welcomeScreen { clickRecentProject("with_go_source") }
+        }
         takeScreenshot("afterClickingRecentProject")
       }
 
@@ -100,6 +116,8 @@ class GolandSyncTest : IdeStarterCombinedBaseTest() {
             step("Check for red code in file $it") {
               checkForRedCodeInFile(it)
               wait(1.seconds)
+              val goSupportDisabledTexts = getAllTexts().map { uiText -> uiText.text }.filter { "Go support is disabled" in it }
+              goSupportDisabledTexts shouldBe emptyList()
             }
           }
         }
