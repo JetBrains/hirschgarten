@@ -222,6 +222,7 @@
       implementation="org.jetbrains.bazel.ui.notifications.BuildAndResyncOnUnresolvedImportNotificationsProvider"
     />
 
+    <statistics.counterUsagesCollector implementationClass="org.jetbrains.bazel.fus.BazelBuildInvocationCollector"/>
     <statistics.projectUsagesCollector implementation="org.jetbrains.bazel.fus.BazelProjectStatisticsCollector"/>
 
     <projectService
