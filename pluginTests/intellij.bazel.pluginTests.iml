@@ -119,6 +119,8 @@
     <orderEntry type="module" module-name="intellij.terminal.completion" scope="TEST" />
     <orderEntry type="module" module-name="intellij.driver.sdk" scope="TEST" />
     <orderEntry type="module" module-name="intellij.platform.refactoring" scope="TEST" />
+    <orderEntry type="module" module-name="intellij.platform.statistics" scope="TEST" />
+    <orderEntry type="module" module-name="intellij.platform.statistics.testFramework" scope="TEST" />
     <orderEntry type="module" module-name="intellij.java.testFramework" />
     <orderEntry type="module" module-name="intellij.java.rt" scope="PROVIDED" />
     <orderEntry type="module" module-name="intellij.platform.testFramework.core" scope="TEST" />
