@@ -13,16 +13,25 @@ import kotlin.io.path.name
 import kotlin.io.path.writeText
 
 object BazelProjectConfigurer {
-  fun configureProjectBeforeUse(context: IDETestContext, createProjectView: Boolean = true) {
+  fun configureProjectBeforeUse(
+    context: IDETestContext,
+    createProjectView: Boolean = true,
+    bazelServerMaxIdleSecs: Int? = null,
+  ) {
     runBazelClean(context)
-    configureProjectBeforeUseWithoutBazelClean(context, createProjectView)
+    configureProjectBeforeUseWithoutBazelClean(
+      context,
+      createProjectView = createProjectView,
+      bazelServerMaxIdleSecs = bazelServerMaxIdleSecs,
+    )
   }
 
   @OptIn(ExperimentalPathApi::class)
   fun configureProjectBeforeUseWithoutBazelClean(
     context: IDETestContext,
     removeDotIdea: Boolean = true,
-    createProjectView: Boolean = true
+    createProjectView: Boolean = true,
+    bazelServerMaxIdleSecs: Int? = null,
   ) {
     if (removeDotIdea) {
       (context.resolvedBazelProjectHome / ".idea").deleteRecursively()
@@ -34,7 +43,7 @@ object BazelProjectConfigurer {
     (context.resolvedBazelProjectHome / "settings.gradle.kts").deleteIfExists()
     (context.resolvedBazelProjectHome / "gradlew").deleteIfExists()
     (context.resolvedBazelProjectHome / "gradlew.bat").deleteIfExists()
-    configureBazelSettings(context)
+    configureBazelSettings(context, bazelServerMaxIdleSecs)
     if (createProjectView) {
       createProjectViewFile(context)
     }
@@ -89,9 +98,11 @@ register_toolchains(
   private val defaultCacheRoot: Path =
     Path.of(System.getProperty("user.home"), ".cache", "ide-starter-bazel")
 
-  private fun configureBazelSettings(context: IDETestContext) {
+  private fun configureBazelSettings(context: IDETestContext, bazelServerMaxIdleSecs: Int?) {
     val bazelrc = context.resolvedBazelProjectHome / ".bazelrc"
     val lines = mutableListOf<String>()
+
+    bazelServerMaxIdleSecs?.let { lines.add("startup --max_idle_secs=$it") }
 
     val repoCache = System.getenv("IDE_STARTER_BAZEL_REPOSITORY_CACHE")
       ?.let { Path.of(it) }

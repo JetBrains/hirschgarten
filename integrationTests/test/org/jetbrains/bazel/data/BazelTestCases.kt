@@ -275,7 +275,9 @@ object IdeaBazelCases : BaseBazelCasesParametrized(BazelTestContext.IDEA) {
       commitHash = "af3e066604a8af0c9505b088ae5e7055ecf3b6d5",
       branchName = "main",
       relativePath = "simpleKotlinTest",
-      configure = { context -> BazelProjectConfigurer.configureProjectBeforeUse(context) },
+      configure = { context ->
+        BazelProjectConfigurer.configureProjectBeforeUse(context, bazelServerMaxIdleSecs = 60)
+      },
     )
   )
 

@@ -92,7 +92,7 @@ class SimpleKotlinCombinedTest : IdeStarterCombinedBaseTest() {
         takeScreenshot("afterTriggerBuild")
         val buildView = x { byType("com.intellij.build.BuildView") }
         // Check that waitContainsText doesn't care about separating output lines, carrying over a word from the previous line
-        buildView.waitContainsText("actionsINFO: Build")
+        buildView.waitContainsText("actionsINFO: Build", timeout = 2.minutes)
         // If PTY terminal is disabled, it will print an empty "INFO:" into the console and won't be able to overwrite it
         takeScreenshot("afterReadingBuildCompletion")
         waitFor(
