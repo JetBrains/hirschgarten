@@ -43,9 +43,9 @@ value class WorkspaceConfigurationId private constructor(
 
     // RC: force `WorkspaceConfigurationId` normalization to avoid
     //  unexpected failing equality checks, don't ask how I know...
-    fun of(configurationHash: String?): WorkspaceConfigurationId = when {
-      configurationHash.isNullOrBlank() -> EMPTY
-      else -> WorkspaceConfigurationId(configurationHash)
+    fun of(configurationChecksum: String?): WorkspaceConfigurationId = when {
+      configurationChecksum.isNullOrBlank() -> EMPTY
+      else -> WorkspaceConfigurationId(configurationChecksum)
     }
   }
 }

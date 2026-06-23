@@ -43,6 +43,7 @@ import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceSyncConfig
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bazel.server.BazelServerFacade
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
+import org.jetbrains.bazel.sync.workspace.snapshot.toWorkspaceTargetKey
 import org.jetbrains.bsp.protocol.BuildTargetData
 import org.jetbrains.bsp.protocol.JvmBuildTarget
 import org.jetbrains.bsp.protocol.JvmDependency
@@ -142,7 +143,7 @@ class JavaLanguagePlugin : LanguagePlugin {
     private val outFilesHardLink = server.outFileHardLinks
 
     private var jdk: Jdk? = null
-    private var toolchainTargets: Map<Label, TargetIdeInfo> = mapOf()
+    private var toolchainTargets: Map<WorkspaceTargetKey, TargetIdeInfo> = mapOf()
     private var extraLibDependencies: Map<Label, List<DependencyLabel>> = mapOf()
     private var toolchainDependencies: Map<Label, List<DependencyLabel>> = mapOf()
     private var allLibraries: Map<Label, List<LibraryItem>> = mapOf()
@@ -163,7 +164,7 @@ class JavaLanguagePlugin : LanguagePlugin {
 
       mixins.forEach { it.prepareSync(graph, targetsToImport, repoMapping) }
 
-      toolchainTargets = graph.idToTargetInfo.filter { it.value.hasJavaToolchainInfo() }.collapseByAspectHeuristic()
+      toolchainTargets = graph.idToTargetInfo.filter { it.value.hasJavaToolchainInfo() }
       val ideJavaHomeOverride = server.workspaceContext.ideJavaHomeOverride
       jdk = ideJavaHomeOverride?.let { Jdk(javaHome = it) } ?: jdkResolver.resolve(graph.idToTargetInfo, repoMapping)
 
@@ -402,8 +403,7 @@ class JavaLanguagePlugin : LanguagePlugin {
       if (target.hasJavaToolchainInfo()) return target.javaToolchainInfo
       return target.depsList.asSequence()
         .filter { it.dependencyTypeValue == IntellijIdeInfo.Dependency.DependencyType.TOOLCHAIN_VALUE }
-        .mapNotNull { Label.parseOrNull(it.target.label) }
-        .mapNotNull { toolchainTargets[it] }
+        .mapNotNull { toolchainTargets[it.target.toWorkspaceTargetKey()] }
         .firstOrNull { it.hasJavaToolchainInfo() }
         ?.javaToolchainInfo
     }
