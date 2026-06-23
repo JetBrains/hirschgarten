@@ -17,7 +17,12 @@ internal class DefaultBazelProcessLauncher(private val workspaceRoot: Path, priv
       GeneralCommandLine(executionDescriptor.command)
     }
     commandLine.withParentEnvironmentType(ParentEnvironmentType.NONE)
-    commandLine.withEnvironment(parentEnvironment + executionDescriptor.environment)
+    // PtyCommandLine sets the environment variable `TERM` if not set already in the environment provided. To avoid having different
+    // values for the environment variables in our bazel invocations, we `TERM` to a sensible value so that PtyCommandLine will not
+    // change the environment we set.
+    // While normally nothing should depend on the value `TERM`, we have to work around bazel issue
+    // https://github.com/bazelbuild/bazel/issues/29956 which is not fixed in all versions of bazel in use.
+    commandLine.withEnvironment(mapOf("TERM" to "xterm-256color") + parentEnvironment + executionDescriptor.environment)
     commandLine.withWorkingDirectory(workspaceRoot)
     commandLine.withRedirectErrorStream(false)
 
