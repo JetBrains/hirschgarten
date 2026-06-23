@@ -23,7 +23,7 @@ internal class BepOutputBuilder(private val bazelPathsResolver: BazelPathsResolv
   private val textProtoFileSets: MutableMap<String, TextProtoDepSet> = HashMap()
   private val rootTargets: MutableSet<WorkspaceTargetKey> = HashSet()
   private val options: MutableList<String> = mutableListOf()
-  private val configurations: MutableMap<WorkspaceConfigurationId, WorkspaceConfiguration> = mutableMapOf()
+  val configurations: MutableMap<WorkspaceConfigurationId, WorkspaceConfiguration> = mutableMapOf()
   var buildToolVersion: BazelRelease = BazelRelease.FALLBACK_VERSION
 
   fun storeNamedSet(id: String, namedSetOfFiles: NamedSetOfFiles) {

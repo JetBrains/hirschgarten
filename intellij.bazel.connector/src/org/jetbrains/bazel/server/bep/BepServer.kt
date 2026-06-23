@@ -23,11 +23,14 @@ import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.label.SyntheticLabel
 import org.jetbrains.bazel.server.BazelTestFileNames
 import org.jetbrains.bazel.server.diagnostics.DiagnosticsService
+import org.jetbrains.bazel.server.sync.FALLBACK_CONFIG
+import org.jetbrains.bazel.server.sync.FALLBACK_EXEC_CONFIG
 import org.jetbrains.bazel.server.sync.isConfigurationSupportEnabled
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceAspectIds
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceConfiguration
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceConfigurationId
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceConfigurationSummary
+import org.jetbrains.bazel.sync.workspace.snapshot.isExecConfig
 import org.jetbrains.bazel.sync.workspace.snapshot.workspaceTargetKey
 import org.jetbrains.bazel.util.BspClientTestNotifier
 import org.jetbrains.bsp.protocol.BazelTaskEventsHandler
@@ -429,7 +432,12 @@ class BepServer(
           eventTargetKey.configuration
         }
         else {
-          WorkspaceConfigurationId.EMPTY
+          val configuration = bepOutputBuilder.configurations[eventTargetKey.configuration]
+          when {
+            configuration == null -> WorkspaceConfigurationId.EMPTY
+            configuration.isExecConfig -> FALLBACK_EXEC_CONFIG
+            else -> FALLBACK_CONFIG
+          }
         },
 
         // match behavior of the aspect, remove intellij aspect entries
