@@ -7,7 +7,9 @@ import com.intellij.platform.workspace.jps.entities.LibraryTableId
 import io.kotest.matchers.shouldBe
 import org.jetbrains.bazel.commons.RepoMappingDisabled
 import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.magicmetamodel.formatAsLibraryName
 import org.jetbrains.bazel.magicmetamodel.formatAsModuleName
+import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
 import org.jetbrains.bazel.workspace.model.matchers.entries.ExpectedLibraryEntity
 import org.jetbrains.bazel.workspace.model.matchers.entries.shouldBeEqual
 import org.jetbrains.bazel.workspace.model.matchers.entries.shouldContainExactlyInAnyOrder
@@ -22,7 +24,7 @@ internal class LibraryBuilderTest : WorkspaceModelBaseTest() {
   fun `should add one project library`() {
     val libraryItem =
       LibraryItem(
-        id = Label.parse("//dependency/test:test"),
+        key = WorkspaceTargetKey(label = Label.parse("//dependency/test:test")),
         ijars = emptyList(),
         jars = listOf(Path("/dependency/test/1.0.0/test-1.0.0.jar")),
         sourceJars = listOf(Path("/dependency/test/1.0.0/test-1.0.0-sources.jar")),
@@ -33,15 +35,15 @@ internal class LibraryBuilderTest : WorkspaceModelBaseTest() {
     val returned =
       LibraryBuilder.write(
         libraryItem = libraryItem,
-        repoMapping = RepoMappingDisabled,
         importIjars = false,
         virtualFileUrlManager = virtualFileUrlManager,
         entitySource = BazelDummyEntitySource,
+        libraryNameProvider = { key -> key.formatAsLibraryName(RepoMappingDisabled, withFullKey = true) },
         storage = workspaceEntityStorageBuilder,
       )
 
 
-    val expectedName = libraryItem.id.formatAsModuleName(RepoMappingDisabled)
+    val expectedName = libraryItem.key.label.formatAsModuleName(RepoMappingDisabled)
     val expected =
       ExpectedLibraryEntity(
         libraryEntity =
@@ -70,7 +72,7 @@ internal class LibraryBuilderTest : WorkspaceModelBaseTest() {
   fun `should add multiple project libraries`() {
     val item1 =
       LibraryItem(
-        id = Label.parse("//dependency/test1:test1"),
+        key = WorkspaceTargetKey(label = Label.parse("//dependency/test1:test1")),
         ijars = emptyList(),
         jars = listOf(Path("/dependency/test1/1.0.0/test1-1.0.0.jar")),
         sourceJars = listOf(Path("/dependency/test1/1.0.0/test1-1.0.0-sources.jar")),
@@ -79,7 +81,7 @@ internal class LibraryBuilderTest : WorkspaceModelBaseTest() {
       )
     val item2 =
       LibraryItem(
-        id = Label.parse("//dependency/test2:test2"),
+        key = WorkspaceTargetKey(label = Label.parse("//dependency/test2:test2")),
         ijars = emptyList(),
         jars = listOf(Path("/dependency/test2/2.0.0/test2-2.0.0.jar")),
         sourceJars = listOf(Path("/dependency/test2/2.0.0/test2-2.0.0-sources.jar")),
@@ -90,10 +92,10 @@ internal class LibraryBuilderTest : WorkspaceModelBaseTest() {
     val returned =
       LibraryBuilder.writeAll(
         libraryItems = listOf(item1, item2),
-        repoMapping = RepoMappingDisabled,
         importIjars = false,
         virtualFileUrlManager = virtualFileUrlManager,
         entitySource = BazelDummyEntitySource,
+        libraryNameProvider = { key -> key.formatAsLibraryName(RepoMappingDisabled, withFullKey = true) },
         storage = workspaceEntityStorageBuilder,
       )
 
@@ -102,7 +104,7 @@ internal class LibraryBuilderTest : WorkspaceModelBaseTest() {
         libraryEntity =
           LibraryEntity(
             tableId = LibraryTableId.ProjectLibraryTableId,
-            name = item1.id.formatAsModuleName(RepoMappingDisabled),
+            name = item1.key.label.formatAsModuleName(RepoMappingDisabled),
             roots = listOf(
               LibraryRoot(
                 url = virtualFileUrlManager.getOrCreateFromUrl("jar:///dependency/test1/1.0.0/test1-1.0.0-sources.jar!/"),
@@ -121,7 +123,7 @@ internal class LibraryBuilderTest : WorkspaceModelBaseTest() {
         libraryEntity =
           LibraryEntity(
             tableId = LibraryTableId.ProjectLibraryTableId,
-            name = item2.id.formatAsModuleName(RepoMappingDisabled),
+            name = item2.key.label.formatAsModuleName(RepoMappingDisabled),
             roots = listOf(
               LibraryRoot(
                 url = virtualFileUrlManager.getOrCreateFromUrl("jar:///dependency/test2/2.0.0/test2-2.0.0-sources.jar!/"),
@@ -144,7 +146,7 @@ internal class LibraryBuilderTest : WorkspaceModelBaseTest() {
   fun `should deduplicate libraries with same id`() {
     val item =
       LibraryItem(
-        id = Label.parse("//dependency/test:test"),
+        key = WorkspaceTargetKey(label = Label.parse("//dependency/test:test")),
         ijars = emptyList(),
         jars = listOf(Path("/dependency/test/1.0.0/test-1.0.0.jar")),
         sourceJars = listOf(Path("/dependency/test/1.0.0/test-1.0.0-sources.jar")),
@@ -152,8 +154,22 @@ internal class LibraryBuilderTest : WorkspaceModelBaseTest() {
         containsInternalJars = false,
       )
 
-    LibraryBuilder.write(item, RepoMappingDisabled, false, virtualFileUrlManager, BazelDummyEntitySource, workspaceEntityStorageBuilder)
-    LibraryBuilder.write(item, RepoMappingDisabled, false, virtualFileUrlManager, BazelDummyEntitySource, workspaceEntityStorageBuilder)
+    LibraryBuilder.write(
+      libraryItem = item,
+      importIjars = false,
+      virtualFileUrlManager = virtualFileUrlManager,
+      entitySource = BazelDummyEntitySource,
+      libraryNameProvider = { key -> key.formatAsLibraryName(RepoMappingDisabled, withFullKey = true) },
+      storage = workspaceEntityStorageBuilder,
+    )
+    LibraryBuilder.write(
+      libraryItem = item,
+      importIjars = false,
+      virtualFileUrlManager = virtualFileUrlManager,
+      entitySource = BazelDummyEntitySource,
+      libraryNameProvider = { key -> key.formatAsLibraryName(RepoMappingDisabled, withFullKey = true) },
+      storage = workspaceEntityStorageBuilder,
+    )
 
     loadedEntries(LibraryEntity::class.java).size shouldBe 1
   }

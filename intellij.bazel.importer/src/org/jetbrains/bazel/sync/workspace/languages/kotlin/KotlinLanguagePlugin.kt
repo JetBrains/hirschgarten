@@ -13,6 +13,7 @@ import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.sync.workspace.languages.java.JvmLanguagePluginMixin
 import org.jetbrains.bazel.server.BazelServerFacade
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
+import org.jetbrains.bazel.sync.workspace.snapshot.toWorkspaceTargetKey
 import org.jetbrains.bsp.protocol.BuildTargetData
 import org.jetbrains.bsp.protocol.KotlinBuildTarget
 import org.jetbrains.bsp.protocol.LibraryItem
@@ -22,7 +23,7 @@ import kotlin.io.path.notExists
 import kotlin.reflect.KClass
 
 @ApiStatus.Internal
-class KotlinLanguagePlugin: JvmLanguagePluginMixin {
+class KotlinLanguagePlugin : JvmLanguagePluginMixin {
   override val providedBuildTargetTypes: Set<KClass<out BuildTargetData>>
     get() = setOf(KotlinBuildTarget::class)
 
@@ -40,11 +41,12 @@ class KotlinLanguagePlugin: JvmLanguagePluginMixin {
       }
       val kotlinTarget = target.kotlinTargetInfo
       val localRepositories = repoMapping.getLocalRepositories()
+      val targetKey = target.key.toWorkspaceTargetKey()
       return listOf(
         KotlinBuildTarget(
           languageVersion = kotlinTarget.languageVersion.takeIf { it.isNotBlank() },
           apiVersion = kotlinTarget.apiVersion.takeIf { it.isNotBlank() },
-          associates = kotlinTarget.associatesList.map { Label.parse(it) },
+          associates = kotlinTarget.associatesList.map { targetKey.copy(label = Label.parse(it)) },
           moduleName = kotlinTarget.moduleName.takeIf { it.isNotBlank() },
           kotlincOptions = kotlinTarget.toKotlincOptArguments(localRepositories),
         ),
@@ -68,16 +70,19 @@ class KotlinLanguagePlugin: JvmLanguagePluginMixin {
         .map { "-Xplugin=${server.bazelPathsResolver.resolve(it, localRepositories)}" }
 
     override suspend fun toolchainLibraries(
-      targetsToImport: Map<Label, TargetIdeInfo>,
+      targetsToImport: Map<WorkspaceTargetKey, TargetIdeInfo>,
       repoMapping: RepoMapping,
-    ): Map<Label, List<LibraryItem>> {
+    ): Map<WorkspaceTargetKey, List<LibraryItem>> {
       val projectLevelKotlinStdlib = calculateProjectLevelKotlinStdlib(targetsToImport.values, repoMapping)
                                      ?: return emptyMap()
       val kotlinTargetsIds = targetsToImport.filter { it.value.hasKotlinTargetInfo() }.map { it.key }
       return kotlinTargetsIds.associateWith { listOf(projectLevelKotlinStdlib) }
     }
 
-    private suspend fun calculateProjectLevelKotlinStdlib(targetsToImport: Collection<TargetIdeInfo>, repoMapping: RepoMapping): LibraryItem? {
+    private suspend fun calculateProjectLevelKotlinStdlib(
+      targetsToImport: Collection<TargetIdeInfo>,
+      repoMapping: RepoMapping,
+    ): LibraryItem? {
       val kotlinStdlibJars = calculateProjectLevelKotlinStdlibJars(targetsToImport, repoMapping)
 
       // rules_kotlin does not expose source jars for jvm stdlibs, so this is the way they can be retrieved for now
@@ -92,14 +97,15 @@ class KotlinLanguagePlugin: JvmLanguagePluginMixin {
 
       return if (kotlinStdlibJars.isNotEmpty()) {
         LibraryItem(
-          id = Label.synthetic("rules_kotlin_kotlin-stdlibs"),
+          key = WorkspaceTargetKey(label = Label.synthetic("rules_kotlin_kotlin-stdlibs")),
           jars = server.outFileHardLinks.createOutputFileHardLinks(kotlinStdlibJars),
           sourceJars = server.outFileHardLinks.createOutputFileHardLinks(inferredSourceJars),
           ijars = emptyList(),
           mavenCoordinates = null,
           containsInternalJars = false,
         )
-      } else {
+      }
+      else {
         null
       }
     }

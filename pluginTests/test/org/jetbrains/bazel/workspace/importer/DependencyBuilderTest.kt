@@ -8,6 +8,7 @@ import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.label.DependencyLabel
 import org.jetbrains.bazel.label.DependencyLabelKind
 import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceConfigurationId
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
 import org.jetbrains.bazel.workspace.model.test.framework.createRawBuildTarget
 import org.jetbrains.bsp.protocol.SourceFileCollection
@@ -179,11 +180,25 @@ class DependencyBuilderTest {
     val targetA = jvmTarget(
       label = a.toString(),
       checkStrictDependencies = StrictDependencyCheckedType.WARNING,
-      jvmDependencies = listOf(JvmDependency.ModuleDependency(DependencyLabel(b.asKey(), kind = DependencyLabelKind.EXPORTED_COMPILE_TIME))),
+      jvmDependencies = listOf(
+        JvmDependency.ModuleDependency(
+          DependencyLabel(
+            b.asKey(),
+            kind = DependencyLabelKind.EXPORTED_COMPILE_TIME,
+          ),
+        ),
+      ),
     )
     val targetB = jvmTarget(
       label = b.toString(),
-      jvmDependencies = listOf(JvmDependency.ModuleDependency(DependencyLabel(c.asKey(), kind = DependencyLabelKind.EXPORTED_COMPILE_TIME))),
+      jvmDependencies = listOf(
+        JvmDependency.ModuleDependency(
+          DependencyLabel(
+            c.asKey(),
+            kind = DependencyLabelKind.EXPORTED_COMPILE_TIME,
+          ),
+        ),
+      ),
     )
     val targetC = jvmTarget(label = c.toString())
 
@@ -207,7 +222,14 @@ class DependencyBuilderTest {
     )
     val targetB = jvmTarget(
       label = b.toString(),
-      jvmDependencies = listOf(JvmDependency.ModuleDependency(DependencyLabel(c.asKey(), kind = DependencyLabelKind.EXPORTED_COMPILE_TIME))),
+      jvmDependencies = listOf(
+        JvmDependency.ModuleDependency(
+          DependencyLabel(
+            c.asKey(),
+            kind = DependencyLabelKind.EXPORTED_COMPILE_TIME,
+          ),
+        ),
+      ),
     )
     val targetC = jvmTarget(label = c.toString())
 
@@ -240,6 +262,32 @@ class DependencyBuilderTest {
   }
 
   private fun Label.asKey(): WorkspaceTargetKey = WorkspaceTargetKey(label = this)
+
+  @Test
+  fun `strictDependencies are resolved per configuration when one label has several configurations`() {
+    val a = Label.parse("//a")
+    val b = Label.parse("//b")
+    val c = Label.parse("//c")
+    val normalConfig = WorkspaceConfigurationId.of("00000f1")
+    val execConfig = WorkspaceConfigurationId.of("00000f2")
+    val aNormal = jvmTarget(
+      label = a.toString(),
+      checkStrictDependencies = StrictDependencyCheckedType.WARNING,
+      jvmDependencies = listOf(JvmDependency.ModuleDependency(DependencyLabel(b.asKey()))),
+    ).copy(key = WorkspaceTargetKey(label = a, configuration = normalConfig))
+    val aExec = jvmTarget(
+      label = a.toString(),
+      checkStrictDependencies = StrictDependencyCheckedType.WARNING,
+      jvmDependencies = listOf(JvmDependency.ModuleDependency(DependencyLabel(c.asKey()))),
+    ).copy(key = WorkspaceTargetKey(label = a, configuration = execConfig))
+    val targetB = jvmTarget(label = b.toString())
+    val targetC = jvmTarget(label = c.toString())
+
+    val builder = DependencyBuilder(listOf(aNormal, aExec, targetB, targetC))
+
+    builder.resolve(aNormal).strictDependencies shouldContainExactlyInAnyOrder listOf(b)
+    builder.resolve(aExec).strictDependencies shouldContainExactlyInAnyOrder listOf(c)
+  }
 
   private fun jvmTarget(
     label: String,

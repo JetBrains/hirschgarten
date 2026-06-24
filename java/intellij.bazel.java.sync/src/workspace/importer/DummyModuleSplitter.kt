@@ -158,7 +158,7 @@ class DummyModuleSplitter(
    * because of how the workspace model works. This can cause red code, e.g., on https://github.com/bazelbuild/bazel .
    */
   private fun VirtualFile.isSharedBetweenSeveralTargets(): Boolean = fileToTargets[toNioPath()].asSequence()
-                                                                       .distinctBy { it.label }
+                                                                       .distinctBy { it.label to it.configuration }
                                                                        .count() > 1
 
   private fun mergedRootsCoverNewFiles(

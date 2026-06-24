@@ -7,6 +7,7 @@ import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.sync.workspace.languages.java.sourceRoot.JvmPackagePrefixCalculator
 import org.jetbrains.bazel.sync.workspace.languages.java.sourceRoot.JvmPackagePrefixes
+import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
 import org.jetbrains.bazel.workspace.model.test.framework.createRawBuildTarget
 import org.jetbrains.bsp.protocol.LibraryItem
 import org.jetbrains.bsp.protocol.RawBuildTarget
@@ -102,7 +103,7 @@ class CompiledSourceCodeInsideJarExcludeBuilderTest {
   @Test
   fun `should produce jar URLs only for libraries flagged as containing internal jars`() {
     val internalLib = LibraryItem(
-      id = Label.parse("//internal"),
+      key = WorkspaceTargetKey(label = Label.parse("//internal")),
       ijars = emptyList(),
       jars = listOf(Path("/internal/a.jar")),
       sourceJars = listOf(Path("/internal/a-sources.jar")),
@@ -110,7 +111,7 @@ class CompiledSourceCodeInsideJarExcludeBuilderTest {
       containsInternalJars = true,
     )
     val externalLib = LibraryItem(
-      id = Label.parse("//external"),
+      key = WorkspaceTargetKey(label = Label.parse("//external")),
       ijars = emptyList(),
       jars = listOf(Path("/external/b.jar")),
       sourceJars = emptyList(),
@@ -130,7 +131,7 @@ class CompiledSourceCodeInsideJarExcludeBuilderTest {
   @Test
   fun `should also include ijars for internal libraries`() {
     val internalLib = LibraryItem(
-      id = Label.parse("//internal"),
+      key = WorkspaceTargetKey(label = Label.parse("//internal")),
       ijars = listOf(Path("/internal/a-ijar.jar")),
       jars = listOf(Path("/internal/a.jar")),
       sourceJars = emptyList(),

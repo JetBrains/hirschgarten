@@ -69,7 +69,7 @@ internal class JavaBazelWorkspaceImporter : BazelWorkspaceImporter, BazelWorkspa
     targets = snapshot.targets.map { (_, target) -> target.rawBuildTarget }
     libraryItems = targets.mapNotNull { extractJvmBuildTarget(it) }
       .flatMap { it.libraries }
-      .distinctBy { it.id }
+      .distinctBy { it.key }
 
     // TODO: check why is this even needed - can't we just write SdkEntity into the project workspace model
     //  and avoid the global JDK table altogether?
@@ -133,7 +133,7 @@ internal class JavaBazelWorkspaceImporter : BazelWorkspaceImporter, BazelWorkspa
     val testTargets = TestTargetClassifier.calculateTargetsToMarkAsTest(targets.toSet(), targetIndex)
 
     val importContext = ImportContext(
-      targets = targets,
+      targets = snapshot.targets.values,
       libraries = libraryItems,
       repoMapping = snapshot.repoMapping,
       projectName = commonSyncConfig.projectName,

@@ -29,5 +29,10 @@ val BuildEventStreamProtos.BuildEventId.workspaceTargetKey: WorkspaceTargetKey?
 val WorkspaceAspectIds.labelIds: List<Label>
   get() = ids.mapNotNull { Label.parseOrNull(it) }
 
+@get:ApiStatus.Internal
 val WorkspaceConfiguration.isExecConfig: Boolean
-  get() = this.summary.mnemonic.endsWith("-exec") || this.summary.mnemonic == "exec"
+  get() = summary.mnemonic.endsWith("-exec") || summary.mnemonic == "exec"
+
+@get:ApiStatus.Internal
+val WorkspaceConfigurationId.shortChecksum: String?
+  get() = configurationChecksum?.take(7)

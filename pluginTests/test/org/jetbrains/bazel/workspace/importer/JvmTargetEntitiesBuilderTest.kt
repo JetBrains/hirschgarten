@@ -1,12 +1,20 @@
 package org.jetbrains.bazel.workspace.importer
 
+import com.intellij.java.workspace.entities.javaSettings
 import com.intellij.openapi.util.registry.Registry
 import com.intellij.platform.workspace.jps.entities.ContentRootEntity
 import com.intellij.platform.workspace.jps.entities.LibraryEntity
+import com.intellij.platform.workspace.jps.entities.ModuleDependency
 import com.intellij.platform.workspace.jps.entities.ModuleEntity
 import com.intellij.platform.workspace.jps.entities.SourceRootEntity
 import com.intellij.platform.workspace.storage.impl.url.toVirtualFileUrl
 import com.intellij.testFramework.common.timeoutRunBlocking
+import io.kotest.matchers.collections.shouldContain
+import io.kotest.matchers.collections.shouldContainExactly
+import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
+import io.kotest.matchers.collections.shouldHaveSize
+import io.kotest.matchers.collections.shouldNotContain
+import io.kotest.matchers.nulls.shouldNotBeNull
 import org.jetbrains.bazel.commons.LanguageClass
 import org.jetbrains.bazel.commons.RepoMappingDisabled
 import org.jetbrains.bazel.commons.RuleType
@@ -14,11 +22,15 @@ import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.label.DependencyLabel
 import org.jetbrains.bazel.label.DependencyLabelKind
 import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.magicmetamodel.formatAsLibraryName
 import org.jetbrains.bazel.magicmetamodel.formatAsModuleName
 import org.jetbrains.bazel.sync.workspace.languages.java.sourceRoot.DefaultJvmPackagePrefixCalculator
 import org.jetbrains.bazel.sync.workspace.languages.java.sourceRoot.JvmPackagePrefixCalculator
 import org.jetbrains.bazel.sync.workspace.languages.java.sourceRoot.SourceRootOptimizationMode
 import org.jetbrains.bazel.sync.workspace.snapshot.File2TargetMap
+import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceAspectIds
+import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceConfigurationId
+import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTarget
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
 import org.jetbrains.bazel.workspace.indexAdditionalFiles.ProjectViewGlobSet
 import org.jetbrains.bazel.workspace.model.test.framework.WorkspaceModelBaseTest
@@ -26,6 +38,7 @@ import org.jetbrains.bazel.workspace.model.test.framework.createRawBuildTarget
 import org.jetbrains.bazel.workspacemodel.entities.BazelDummyEntitySource
 import org.jetbrains.bazel.workspacemodel.entities.BazelProjectEntitySource
 import org.jetbrains.bsp.protocol.JvmBuildTarget
+import org.jetbrains.bsp.protocol.JvmDependency
 import org.jetbrains.bsp.protocol.LibraryItem
 import org.jetbrains.bsp.protocol.RawBuildTarget
 import org.junit.jupiter.api.Test
@@ -76,7 +89,7 @@ internal class JvmTargetEntitiesBuilderTest : WorkspaceModelBaseTest() {
   fun `writes libraries and modules referencing them`() = timeoutRunBlocking {
     val libLabel = Label.parse("//libfoo")
     val libraryItem = LibraryItem(
-      id = libLabel,
+      key = WorkspaceTargetKey(label = libLabel),
       ijars = emptyList(),
       jars = listOf(Path("/dep/foo.jar")),
       sourceJars = emptyList(),
@@ -186,15 +199,128 @@ internal class JvmTargetEntitiesBuilderTest : WorkspaceModelBaseTest() {
     check(contentRoots.size == 1) { "expected 1 content root, got ${contentRoots.size}" }
     check(contentRoots[0].url == sourcePath.toVirtualFileUrl(virtualFileUrlManager)) {
       "expected content root at source path ${sourcePath.toVirtualFileUrl(virtualFileUrlManager)}, " +
-        "got ${contentRoots[0].url}"
+      "got ${contentRoots[0].url}"
     }
   }
 
   private fun Label.formatAsModuleNameTest(): String = this.formatAsModuleName(RepoMappingDisabled)
 
+  @Test
+  fun `disambiguates module names for a label imported under multiple configurations`(): Unit = timeoutRunBlocking {
+    val label = Label.parse("//foo")
+    val kind = TargetKind(kind = "java_library", ruleType = RuleType.LIBRARY, languageClasses = setOf(LanguageClass.JAVA))
+    val normal = createRawBuildTarget(id = label, kind = kind)
+      .copy(key = WorkspaceTargetKey(label = label, configuration = WorkspaceConfigurationId.of("00000f1")))
+    val exec = createRawBuildTarget(id = label, kind = kind)
+      .copy(key = WorkspaceTargetKey(label = label, configuration = WorkspaceConfigurationId.of("00000f2")))
+
+    runImport(targets = listOf(normal, exec))
+
+    val names = loadedEntries(ModuleEntity::class.java).map { it.name }.toSet()
+    val base = label.formatAsModuleNameTest()
+    names shouldContainExactlyInAnyOrder setOf("$base-00000f1", "$base-00000f2")
+  }
+
+  @Test
+  fun `a label with a single configuration keeps its plain module name`() = timeoutRunBlocking {
+    val label = Label.parse("//foo")
+    val target = createRawBuildTarget(id = label)
+      .copy(key = WorkspaceTargetKey(label = label, configuration = WorkspaceConfigurationId.of("00000f1")))
+
+    runImport(targets = listOf(target))
+
+    val names = loadedEntries(ModuleEntity::class.java).map { it.name }
+    names shouldContainExactly listOf(label.formatAsModuleNameTest())
+  }
+
+  @Test
+  fun `dependency resolves to the module of its exact configuration`(): Unit = timeoutRunBlocking {
+    val foo = Label.parse("//foo")
+    val kind = TargetKind(kind = "java_library", ruleType = RuleType.LIBRARY, languageClasses = setOf(LanguageClass.JAVA))
+    val fooNormal = createRawBuildTarget(id = foo, kind = kind)
+      .copy(key = WorkspaceTargetKey(label = foo, configuration = WorkspaceConfigurationId.of("00000f1")))
+    val fooExec = createRawBuildTarget(id = foo, kind = kind)
+      .copy(key = WorkspaceTargetKey(label = foo, configuration = WorkspaceConfigurationId.of("00000f2")))
+    val app = createRawBuildTarget(
+      id = Label.parse("//app"),
+      kind = kind,
+      dependencies = listOf(
+        DependencyLabel(
+          targetKey = WorkspaceTargetKey(label = foo, configuration = WorkspaceConfigurationId.of("00000f2")),
+          kind = DependencyLabelKind.COMPILE,
+        ),
+      ),
+    )
+
+    runImport(targets = listOf(fooNormal, fooExec, app))
+
+    val appModule = loadedEntries(ModuleEntity::class.java).single { it.name == Label.parse("//app").formatAsModuleNameTest() }
+    val moduleDeps = appModule.dependencies.filterIsInstance<ModuleDependency>().map { it.module.name }
+    val fooBase = foo.formatAsModuleNameTest()
+    moduleDeps shouldContain "$fooBase-00000f2"
+    moduleDeps shouldNotContain "$fooBase-00000f1"
+  }
+
   // BAZEL-3205 grouping logic in SourceRootBuilder.write() only fires when this flag is off.
   private fun disableMergeSourceRoots() {
     Registry.get("bazel.merge.source.roots").setValue(false, disposable)
+  }
+
+  @Test
+  fun `merges aspect variants so a provider carried only by the aspect variant survives`(): Unit = timeoutRunBlocking {
+    val label = Label.parse("//proto")
+    val kind = TargetKind(kind = "java_library", ruleType = RuleType.LIBRARY, languageClasses = setOf(LanguageClass.JAVA))
+    val sourcePath = projectBasePath.resolve("Proto.java")
+    sourcePath.writeText("class Proto {}")
+    val bare = createRawBuildTarget(id = label, kind = kind, sources = listOf(sourcePath), baseDirectory = projectBasePath)
+    val withProvider = createRawBuildTarget(
+      id = label,
+      kind = kind,
+      data = listOf(JvmBuildTarget(javaHome = Path("/fake/jdk"), javaVersion = "11")),
+    ).copy(key = WorkspaceTargetKey(label = label, aspectIds = WorkspaceAspectIds.of(listOf("//proto:proto_aspect"))))
+
+    runImport(targets = listOf(bare, withProvider))
+
+    val modules = loadedEntries(ModuleEntity::class.java)
+    modules shouldHaveSize 1
+    modules.single().javaSettings?.languageLevelId.shouldNotBeNull()
+  }
+
+  @Test
+  fun `merges JvmBuildTarget data from two aspect variants of the same target`(): Unit = timeoutRunBlocking {
+    val foo = Label.parse("//foo")
+    val a = Label.parse("//a")
+    val b = Label.parse("//b")
+    val kind = TargetKind(kind = "java_library", ruleType = RuleType.LIBRARY, languageClasses = setOf(LanguageClass.JAVA))
+    val depA = createRawBuildTarget(id = a, kind = kind)
+    val depB = createRawBuildTarget(id = b, kind = kind)
+    val variantA = createRawBuildTarget(
+      id = foo,
+      kind = kind,
+      data = listOf(
+        JvmBuildTarget(
+          javaVersion = "11",
+          jvmDependencies = listOf(JvmDependency.ModuleDependency(DependencyLabel(WorkspaceTargetKey(label = a)))),
+        ),
+      ),
+    ).copy(key = WorkspaceTargetKey(label = foo, aspectIds = WorkspaceAspectIds.of(listOf("//foo:aspect_a"))))
+    val variantB = createRawBuildTarget(
+      id = foo,
+      kind = kind,
+      data = listOf(
+        JvmBuildTarget(
+          javaVersion = "11",
+          jvmDependencies = listOf(JvmDependency.ModuleDependency(DependencyLabel(WorkspaceTargetKey(label = b)))),
+        ),
+      ),
+    ).copy(key = WorkspaceTargetKey(label = foo, aspectIds = WorkspaceAspectIds.of(listOf("//foo:aspect_b"))))
+
+    runImport(targets = listOf(depA, depB, variantA, variantB))
+
+    val fooModule = loadedEntries(ModuleEntity::class.java).single { it.name == foo.formatAsModuleNameTest() }
+    val moduleDeps = fooModule.dependencies.filterIsInstance<ModuleDependency>().map { it.module.name }
+    moduleDeps shouldContain a.formatAsModuleNameTest()
+    moduleDeps shouldContain b.formatAsModuleNameTest()
   }
 
   private suspend fun runImport(
@@ -205,7 +331,7 @@ internal class JvmTargetEntitiesBuilderTest : WorkspaceModelBaseTest() {
     calc.calculate(targets)
     val jvmPackagePrefixes: JvmPackagePrefixCalculator = calc
     val ctx = ImportContext(
-      targets = targets,
+      targets = targets.map { WorkspaceTarget(it.key, it) },
       libraries = libraries,
       repoMapping = RepoMappingDisabled,
       projectName = "test-project",
@@ -223,10 +349,10 @@ internal class JvmTargetEntitiesBuilderTest : WorkspaceModelBaseTest() {
     )
     LibraryBuilder.writeAll(
       libraryItems = libraries,
-      repoMapping = RepoMappingDisabled,
       importIjars = false,
       virtualFileUrlManager = virtualFileUrlManager,
       entitySource = BazelDummyEntitySource,
+      libraryNameProvider = { key -> key.formatAsLibraryName(RepoMappingDisabled, withFullKey = true) },
       storage = workspaceEntityStorageBuilder,
     )
     JvmTargetEntitiesBuilder(ctx).writeAll(workspaceEntityStorageBuilder)
