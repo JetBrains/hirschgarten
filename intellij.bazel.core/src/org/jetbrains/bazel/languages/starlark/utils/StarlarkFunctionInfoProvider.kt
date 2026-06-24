@@ -55,7 +55,7 @@ class StarlarkGlobalFunctionInfoProvider : StarlarkFunctionInfoProvider {
     if (call.resolvesToFunctionDeclaration()) return null
 
     val functionName = call.firstChild?.text ?: return null
-    val function = BazelGlobalFunctions.getFunctionByName(functionName) ?: return null
+    val function = BazelGlobalFunctions.getFunctionByName(functionName, call.project) ?: return null
     val params = function.params.map {StarlarkFuncParam(it.name, it.positional, it.named, it.required, it.isVarArgs(), it.isKwArgs())}
     val environment = function.environment.toSet()
 

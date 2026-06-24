@@ -100,7 +100,7 @@ class StarlarkCallExpression(node: ASTNode) :
 
   override fun getOwnReferences(): Collection<PsiSymbolReference> {
     val name = getCalledFunctionName() ?: return emptyList()
-    val function = BazelGlobalFunctions.getFunctionByName(name) ?: return emptyList()
+    val function = BazelGlobalFunctions.getFunctionByName(name, project) ?: return emptyList()
     return listOfNotNull(
       BazelGlobalFunctionReference(this, function),
       getCalledExpression()?.reference?.let { PsiSymbolService.getInstance().asSymbolReference(it) },

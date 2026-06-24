@@ -1,5 +1,6 @@
 package org.jetbrains.bazel.languages.starlark.inspection
 
+import com.intellij.openapi.project.Project
 import com.intellij.testFramework.ExtensionTestUtil
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
 import org.jetbrains.bazel.languages.starlark.StarlarkBundle
@@ -488,8 +489,7 @@ class StarlarkFunctionCallValidationInspectionTest : BasePlatformTestCase() {
 
 
 private class TestStarlarkGlobalFunctionProvider : StarlarkGlobalFunctionProvider {
-  override val functions: List<BazelGlobalFunction> =
-    listOf(
+  override fun functions(project: Project): List<BazelGlobalFunction> = listOf(
       BazelGlobalFunction(
         name = "simple",
         doc = null,

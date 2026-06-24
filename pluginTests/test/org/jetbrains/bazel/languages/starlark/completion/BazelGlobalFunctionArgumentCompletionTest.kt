@@ -17,7 +17,7 @@ class BazelGlobalFunctionArgumentCompletionTest : BasePlatformTestCase() {
     val lookups = myFixture.completeBasic().flatMap { it.allLookupStrings }
 
     val expectedArgNames =
-      BazelGlobalFunctions.moduleGlobalFunctions["module"]!!
+      BazelGlobalFunctions.moduleGlobalFunctions(project)["module"]!!
         .params
         .filter { it.name.contains('a') }
         .map { it.name }
@@ -32,7 +32,7 @@ class BazelGlobalFunctionArgumentCompletionTest : BasePlatformTestCase() {
     val lookups = myFixture.completeBasic().flatMap { it.allLookupStrings }
 
     val expectedArgNames =
-      BazelGlobalFunctions.moduleGlobalFunctions["module"]!!
+      BazelGlobalFunctions.moduleGlobalFunctions(project)["module"]!!
         .params
         .filter { it.name.contains('a') && it.name != "name" }
         .map { it.name }

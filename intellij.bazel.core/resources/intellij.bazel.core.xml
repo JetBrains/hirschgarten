@@ -118,7 +118,8 @@
 
     <bzlmodResolver implementation="org.jetbrains.bazel.languages.starlark.bazel.bzlmod.resolver.BazelCentralRegistryModuleResolver"/>
 
-    <starlarkGlobalFunctionProvider implementation="org.jetbrains.bazel.languages.starlark.bazel.DefaultBazelGlobalFunctionProvider"/>
+    <starlarkGlobalFunctionProvider implementation="org.jetbrains.bazel.languages.starlark.bazel.BazelBuiltinFunctionProvider"/>
+    <starlarkGlobalFunctionProvider implementation="org.jetbrains.bazel.languages.starlark.bazel.BazelStardocFunctionProvider"/>
   </extensions>
 
   <extensions defaultExtensionNs="com.intellij">
