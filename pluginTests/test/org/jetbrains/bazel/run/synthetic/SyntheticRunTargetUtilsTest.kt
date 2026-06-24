@@ -1,6 +1,7 @@
 package org.jetbrains.bazel.run.synthetic
 
 import com.intellij.lang.java.JavaLanguage
+import com.intellij.openapi.actionSystem.DefaultActionGroup
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
 import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.collections.shouldNotBeEmpty
@@ -13,6 +14,7 @@ import org.jetbrains.bazel.label.Package
 import org.jetbrains.bazel.label.ResolvedLabel
 import org.jetbrains.bazel.test.framework.target.TestBuildTargetFactory
 import org.jetbrains.kotlin.idea.KotlinLanguage
+import org.jetbrains.kotlin.psi.KtNamedFunction
 
 class SyntheticRunTargetUtilsTest : BasePlatformTestCase() {
 
@@ -82,6 +84,26 @@ class SyntheticRunTargetUtilsTest : BasePlatformTestCase() {
     val generators = SyntheticRunTargetUtils.getTemplateGenerators(javaTarget, KotlinLanguage.INSTANCE)
 
     generators.shouldBeEmpty()
+  }
+
+  fun `test addSyntheticRunActions creates actions for kotlin library main`() {
+    val target = TestBuildTargetFactory.createSimpleKotlinLibraryTarget(id = Label.parse("//test:kotlin_lib"))
+    myFixture.configureByText(
+      "main.kt",
+      """
+      package com.test
+
+      fun ma<caret>in() {
+        println("Hello")
+      }
+      """.trimIndent(),
+    )
+    val element = (myFixture.elementAtCaret as KtNamedFunction).nameIdentifier!!
+    val group = DefaultActionGroup()
+
+    SyntheticRunTargetUtils.addSyntheticRunActions(group, project, target, element)
+
+    group.childActionsOrStubs.shouldNotBeEmpty()
   }
 
   fun `test synthetic target label structure`() {

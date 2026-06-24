@@ -1,20 +1,25 @@
 package org.jetbrains.bazel.run.synthetic
 
+import com.intellij.execution.Executor
+import com.intellij.execution.RunManager
+import com.intellij.execution.actions.RunConfigurationsComboBoxAction
+import com.intellij.execution.configurations.runConfigurationType
+import com.intellij.execution.runners.ProgramRunner
 import com.intellij.lang.Language
 import com.intellij.openapi.actionSystem.DefaultActionGroup
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElement
 import org.jetbrains.annotations.ApiStatus
-import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.commons.constants.Constants
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.label.Main
 import org.jetbrains.bazel.label.Package
 import org.jetbrains.bazel.label.ResolvedLabel
 import org.jetbrains.bazel.label.SingleTarget
+import org.jetbrains.bazel.run.RunHandlerProvider
+import org.jetbrains.bazel.run.config.BazelRunConfiguration
+import org.jetbrains.bazel.run.config.BazelRunConfigurationType
 import org.jetbrains.bazel.runnerAction.RunSyntheticTargetAction
-import org.jetbrains.bazel.ui.gutters.NonImportedExecutableTarget
-import org.jetbrains.bazel.ui.widgets.tool.window.utils.getSupportedExecutors
 import org.jetbrains.bsp.protocol.ExecutableTarget
 
 @ApiStatus.Internal
@@ -43,12 +48,9 @@ object SyntheticRunTargetUtils {
     target: ExecutableTarget,
     element: PsiElement,
   ) {
-    val targetAsBinary = NonImportedExecutableTarget(target.id, target.kind.copy(ruleType = RuleType.BINARY))
-    val supportedExecutors = getSupportedExecutors(project, targetAsBinary)
-
     val language = element.language
     for (generator in getTemplateGenerators(target, language)) {
-      for (executor in supportedExecutors) {
+      for (executor in getSupportedExecutors(project, target, element, generator)) {
         group.addAction(
           RunSyntheticTargetAction(
             project = project,
@@ -58,6 +60,29 @@ object SyntheticRunTargetUtils {
             targetElement = element,
           ),
         )
+      }
+    }
+  }
+
+  private fun getSupportedExecutors(
+    project: Project,
+    target: ExecutableTarget,
+    element: PsiElement,
+    generator: SyntheticRunTargetTemplateGenerator,
+  ): List<Executor> {
+    val originalTargetProvider = RunHandlerProvider.getRunHandlerProvider(listOf(target.kind)) ?: return emptyList()
+    val syntheticTargetId = generator.getSyntheticTargetLabel(target, element)
+    val configurationType = runConfigurationType<BazelRunConfigurationType>()
+    val factory = configurationType.configurationFactories.first()
+    val settings = RunManager.getInstance(project).createConfiguration(target.id.toString(), factory)
+    val configuration = settings.configuration as BazelRunConfiguration
+    configuration.updateRunProvider(listOf(syntheticTargetId), originalTargetProvider)
+
+    return buildList {
+      RunConfigurationsComboBoxAction.forAllExecutors { executor ->
+        if (ProgramRunner.getRunner(executor.id, configuration) != null) {
+          add(executor)
+        }
       }
     }
   }

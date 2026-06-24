@@ -1,17 +1,25 @@
 package org.jetbrains.bazel.jvm.ui.gutters
 
+import com.intellij.icons.AllIcons
+import com.intellij.openapi.util.registry.Registry
 import com.intellij.psi.PsiClass
+import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiMethod
 import com.intellij.psi.impl.source.tree.LeafPsiElement
+import com.intellij.psi.util.PsiUtilCore
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
 import com.intellij.testFramework.fixtures.CodeInsightTestFixture
+import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
 import org.jetbrains.bazel.java.ui.gutters.BazelJavaRunLineMarkerContributor
 import org.jetbrains.bazel.kotlin.ui.gutters.BazelKotlinRunLineMarkerContributor
+import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.project.BazelProjectFixtures.initializeBazelProject
 import org.jetbrains.bazel.run.test.forceDisableJetBrainsTestRunner
+import org.jetbrains.bazel.test.framework.target.TestBuildTargetFactory
+import org.jetbrains.bsp.protocol.ExecutableTarget
 import org.jetbrains.kotlin.psi.KtClass
 import org.jetbrains.kotlin.psi.KtClassBody
 import org.jetbrains.kotlin.psi.KtNamedFunction
@@ -97,6 +105,36 @@ class BazelRunLineMarkerContributorTest : BasePlatformTestCase() {
     // then
     val expectedSingleTestFilter = "BspJVMRunLineMarkerContributorTestData"
     result shouldBe expectedSingleTestFilter
+  }
+
+  @Test
+  fun `should add synthetic run actions for Kotlin library top-level main`() {
+    // given
+    Registry.get("bazel.run.synthetic.enable").setValue(true, testRootDisposable)
+    val target = TestBuildTargetFactory.createSimpleKotlinLibraryTarget(id = Label.parse("//kotlin_target:my_kt_lib"))
+    val sourceFile = myFixture.configureByText(
+      "main.kt",
+      """
+      package com.jetbrains
+
+      fun main() {
+        println("Hello from main1")
+      }
+      """.trimIndent(),
+    )
+    val elementAtCaret = PsiUtilCore.getElementAtOffset(sourceFile, sourceFile.text.indexOf("main"))!!
+    val runLineMarkerContributor =
+      object : BazelKotlinRunLineMarkerContributor() {
+        override fun getTargets(element: PsiElement): List<ExecutableTarget> = listOf(target)
+      }
+
+    // when
+    val result = runLineMarkerContributor.getInfo(elementAtCaret)
+
+    // then
+    result.shouldNotBeNull()
+    result.icon shouldBe AllIcons.Actions.Execute
+    result.actions.shouldHaveSize(2)
   }
 
   private fun CodeInsightTestFixture.getJavaTestFile(): PsiFile =
