@@ -43,14 +43,10 @@ private class GenericBazelRules : TargetKindProvider {
         add(LanguageClass.PROTOBUF)
       }
       if (target.hasKotlinTargetInfo()) {
-        add(JAVA)
         add(KOTLIN)
       }
       if (target.javaCommon.jvmTarget) {
         add(JAVA)
-        if (target.kind.isKotlinJvmRuleKind()) {
-          add(KOTLIN)
-        }
       }
       if (target.hasPythonTargetInfo()) {
         add(LanguageClass.PYTHON)
@@ -63,6 +59,4 @@ private class GenericBazelRules : TargetKindProvider {
     if (inferredLanguages.isEmpty()) return null
     return TargetKind(target.kind, inferredLanguages, target.inferRuleType())
   }
-
-  private fun String.isKotlinJvmRuleKind(): Boolean = contains("kt_jvm")
 }
