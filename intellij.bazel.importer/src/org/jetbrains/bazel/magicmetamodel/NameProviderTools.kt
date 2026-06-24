@@ -7,6 +7,8 @@ import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.label.ResolvedLabel
 import org.jetbrains.bazel.languages.starlark.repomapping.toApparentLabelOrThis
+import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
+import org.jetbrains.bazel.sync.workspace.snapshot.shortChecksum
 import org.jetbrains.bsp.protocol.utils.StringUtils
 
 // TODO: I really don't like `formatAsModuleName`, it suppose to construct `ModuleEntity`/`LibraryEntity`
@@ -39,6 +41,35 @@ fun Label.formatAsModuleName(repoMapping: RepoMapping): String {
   return if (prefix.isBlank()) targetName else "$prefix.$targetName"
 }
 
+@ApiStatus.Internal
+fun WorkspaceTargetKey.formatAsModuleName(repoMapping: RepoMapping, withConfiguration: Boolean = true): String =
+  if (withConfiguration) {
+    val checksum = configuration.shortChecksum ?: "default"
+    "${label.formatAsModuleName(repoMapping)}-$checksum"
+  }
+  else {
+    label.formatAsModuleName(repoMapping)
+  }
+
+@ApiStatus.Internal
+fun WorkspaceTargetKey.formatAsLibraryName(repoMapping: RepoMapping, withFullKey: Boolean = true): String {
+  val base = label.formatAsModuleName(repoMapping)
+  return if (withFullKey) {
+    val aspectChecksum = aspectIds.ids.takeIf { it.isNotEmpty() }
+      ?.let { StringUtils.md5Hash(it.joinToString(","), 5) }
+    val suffix = listOfNotNull(configuration.shortChecksum, aspectChecksum).joinToString("-")
+    if (suffix.isEmpty()) {
+      base
+    }
+    else {
+      "$base-$suffix"
+    }
+  }
+  else {
+    base
+  }
+}
+
 private fun List<String>.shortenTargetPath(targetNameLength: Int = 0): List<String> =
   if (BazelFeatureFlags.isShortenModuleLibraryNamesEnabled) {
     val maxLength = 200 - targetNameLength
@@ -50,10 +81,12 @@ private fun List<String>.shortenTargetPath(targetNameLength: Int = 0): List<Stri
       }
     if (remaining.isEmpty()) {
       subPath.asReversed()
-    } else {
+    }
+    else {
       listOf(StringUtils.md5Hash(remaining.joinToString(""), 5)) + subPath.asReversed()
     }
-  } else {
+  }
+  else {
     this
   }
 
@@ -71,6 +104,7 @@ private fun String.filterColon(): String = this.replace(":", "")
 fun String.shortenTargetPath(): String =
   if (BazelFeatureFlags.isShortenModuleLibraryNamesEnabled) {
     split(".").shortenTargetPath().joinToString(".")
-  } else {
+  }
+  else {
     this
   }

@@ -17,8 +17,7 @@ import com.intellij.platform.workspace.storage.EntitySource
 import com.intellij.platform.workspace.storage.MutableEntityStorage
 import com.intellij.platform.workspace.storage.url.VirtualFileUrlManager
 import org.jetbrains.annotations.ApiStatus
-import org.jetbrains.bazel.commons.RepoMapping
-import org.jetbrains.bazel.magicmetamodel.formatAsModuleName
+import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
 import org.jetbrains.bazel.workspacemodel.entities.BazelLibraryExtensionEntity
 import org.jetbrains.bazel.workspacemodel.entities.WorkspaceModelTargetLabel
 import org.jetbrains.bazel.workspacemodel.entities.bazelLibraryExtension
@@ -26,29 +25,32 @@ import org.jetbrains.bsp.protocol.LibraryItem
 import org.jetbrains.jps.model.serialization.library.JpsLibraryTableSerializer
 import java.nio.file.Path
 
+typealias LibraryNameProvider = (key: WorkspaceTargetKey) -> String
+
 // RC: replaces `LibraryEntityUpdater`; goes straight from `LibraryItem` to `LibraryEntity` + `BazelLibraryExtensionEntity`,
 // dropping the old `Library` wrapper
 @ApiStatus.Internal
 object LibraryBuilder {
   fun writeAll(
     libraryItems: List<LibraryItem>,
-    repoMapping: RepoMapping,
     importIjars: Boolean,
     virtualFileUrlManager: VirtualFileUrlManager,
     entitySource: EntitySource,
+    libraryNameProvider: LibraryNameProvider,
     storage: MutableEntityStorage,
-  ): List<LibraryEntity> = libraryItems.map { write(it, repoMapping, importIjars, virtualFileUrlManager, entitySource, storage) }
+  ): List<LibraryEntity> =
+    libraryItems.map { write(it, importIjars, virtualFileUrlManager, entitySource, libraryNameProvider, storage) }
 
   fun write(
     libraryItem: LibraryItem,
-    repoMapping: RepoMapping,
     importIjars: Boolean,
     virtualFileUrlManager: VirtualFileUrlManager,
     entitySource: EntitySource,
+    libraryNameProvider: LibraryNameProvider,
     storage: MutableEntityStorage,
   ): LibraryEntity {
     val tableId = LibraryTableId.ProjectLibraryTableId
-    val displayName = libraryItem.id.formatAsModuleName(repoMapping)
+    val displayName = libraryNameProvider(libraryItem.key)
     val existing = storage.resolve(LibraryId(displayName, tableId))
     if (existing != null) {
       return existing
@@ -74,8 +76,8 @@ object LibraryBuilder {
           }
         this.bazelLibraryExtension = BazelLibraryExtensionEntity(
           entitySource = entitySource,
-          label = WorkspaceModelTargetLabel(libraryItem.id),
-          isSynthetic = libraryItem.id.isSynthetic,
+          label = WorkspaceModelTargetLabel(libraryItem.key.label),
+          isSynthetic = libraryItem.key.label.isSynthetic,
         )
       }
 

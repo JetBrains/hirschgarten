@@ -37,8 +37,8 @@ class ScalaLanguagePlugin : JvmLanguagePluginMixin {
 
   class Mapper(private val server: BazelServerFacade) : JvmLanguagePluginMixin.Mapper {
 
-    private var scalaSdks: Map<Label, ScalaSdk> = emptyMap()
-    private var scalaTestJars: Map<Label, Set<Path>> = emptyMap()
+    private var scalaSdks: Map<WorkspaceTargetKey, ScalaSdk> = emptyMap()
+    private var scalaTestJars: Map<WorkspaceTargetKey, Set<Path>> = emptyMap()
 
     override suspend fun prepareSync(
       graph: DependencyGraph,
@@ -49,7 +49,7 @@ class ScalaLanguagePlugin : JvmLanguagePluginMixin {
       scalaSdks =
         graph.idToTargetInfo.values
           .associateBy(
-            { it.label() },
+            { it.key.toWorkspaceTargetKey() },
             { ScalaSdkResolver(server.bazelPathsResolver).resolveSdk(it, localRepositories) },
           ).filterValuesNotNull()
 
@@ -57,7 +57,7 @@ class ScalaLanguagePlugin : JvmLanguagePluginMixin {
         graph.idToTargetInfo.values
           .filter { it.hasScalaTargetInfo() }
           .associateBy(
-            { it.label() },
+            { it.key.toWorkspaceTargetKey() },
             { target ->
               target.scalaTargetInfo.scalatestClasspathTargetsList.flatMap {
                 graph.idToTargetInfo[target.key.toWorkspaceTargetKey().copy(label = Label.parse(it))]?.javaProvider?.fullCompileJarsList
@@ -79,7 +79,7 @@ class ScalaLanguagePlugin : JvmLanguagePluginMixin {
       if (!target.hasScalaTargetInfo()) {
         return emptyList()
       }
-      val sdk = scalaSdks[target.label()] ?: return emptyList()
+      val sdk = scalaSdks[target.key.toWorkspaceTargetKey()] ?: return emptyList()
       return listOf(
         ScalaBuildTarget(
           scalaVersion = sdk.version,
@@ -90,9 +90,9 @@ class ScalaLanguagePlugin : JvmLanguagePluginMixin {
     }
 
     override suspend fun toolchainLibraries(
-      targetsToImport: Map<Label, TargetIdeInfo>,
+      targetsToImport: Map<WorkspaceTargetKey, TargetIdeInfo>,
       repoMapping: RepoMapping,
-    ): Map<Label, List<LibraryItem>> {
+    ): Map<WorkspaceTargetKey, List<LibraryItem>> {
       val projectLevelScalaSdkLibraries = calculateProjectLevelScalaSdkLibraries()
       val projectLevelScalaTestLibraries = calculateProjectLevelScalaTestLibraries()
       val scalaTargets = targetsToImport.filter { it.value.hasScalaTargetInfo() }.map { it.key }
@@ -115,7 +115,7 @@ class ScalaLanguagePlugin : JvmLanguagePluginMixin {
 
     private suspend fun calculateProjectLevelScalaSdkLibraries(): Map<Path, LibraryItem> =
       getProjectLevelScalaSdkLibrariesJars().associateWith {
-        createLibrary(id = Label.synthetic(it.name), jar = it)
+        createLibrary(key = WorkspaceTargetKey(label = Label.synthetic(it.name)), jar = it)
       }
 
     private suspend fun calculateProjectLevelScalaTestLibraries(): Map<Path, LibraryItem> {
@@ -123,7 +123,7 @@ class ScalaLanguagePlugin : JvmLanguagePluginMixin {
         .flatten()
         .toSet()
         .associateWith {
-          createLibrary(id = Label.synthetic(it.name), jar = it)
+          createLibrary(key = WorkspaceTargetKey(label = Label.synthetic(it.name)), jar = it)
         }
     }
 
@@ -136,11 +136,11 @@ class ScalaLanguagePlugin : JvmLanguagePluginMixin {
     }
 
     private suspend fun createLibrary(
-      id: Label,
+      key: WorkspaceTargetKey,
       jar: Path,
     ): LibraryItem {
       return LibraryItem(
-        id = id,
+        key = key,
         ijars = emptyList(),
         jars = server.outFileHardLinks.createOutputFileHardLinks(listOf(jar)),
         sourceJars = emptyList(),

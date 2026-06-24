@@ -84,7 +84,7 @@ data class KotlinBuildTarget(
   val languageVersion: String?,
   val apiVersion: String?,
   val kotlincOptions: List<String>,
-  val associates: List<Label>,
+  val associates: List<WorkspaceTargetKey>,
   val moduleName: String? = null,
 ) : BuildTargetData
 
@@ -141,8 +141,8 @@ enum class StrictDependencyCheckedType {
 sealed interface JvmDependency {
   val dependency: DependencyLabel
 
-  class LibraryDependency(override val dependency: DependencyLabel) : JvmDependency
-  class ModuleDependency(override val dependency: DependencyLabel) : JvmDependency
+  data class LibraryDependency(override val dependency: DependencyLabel) : JvmDependency
+  data class ModuleDependency(override val dependency: DependencyLabel) : JvmDependency
 }
 
 // ClassDiscriminator 6 & 7 were cpp and android, but they have been removed

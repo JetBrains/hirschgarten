@@ -12,6 +12,7 @@ import io.kotest.matchers.types.shouldBeInstanceOf
 import kotlinx.coroutines.runBlocking
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.sync.BazelKotlinFacetEntityUpdater
+import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
 import org.jetbrains.bazel.workspace.importer.KotlinOptions
 import org.jetbrains.bazel.workspace.model.test.framework.WorkspaceModelBaseTest
 import org.jetbrains.bsp.protocol.JvmBuildTarget
@@ -36,7 +37,7 @@ class BazelKotlinFacetEntityUpdaterTest : WorkspaceModelBaseTest() {
           languageVersion = "1.8",
           apiVersion = "1.8",
           kotlincOptions = listOf("-opt-in=com.example.ExperimentalApi"),
-          associates = listOf("//target4", "//target5").map { Label.parse(it) },
+          associates = listOf("//target4", "//target5").map { WorkspaceTargetKey(label = Label.parse(it)) },
           moduleName = "kotlin-module",
         )
       val jvmBuildTarget = JvmBuildTarget(
@@ -48,7 +49,7 @@ class BazelKotlinFacetEntityUpdaterTest : WorkspaceModelBaseTest() {
       val retrievedFacetSettings = addToWorkspaceModelAndGetFacet(kotlinBuildTarget, jvmBuildTarget)
 
       // then
-      retrievedFacetSettings.additionalVisibleModuleNames shouldBe kotlinBuildTarget.associates.map { it.toString() }
+      retrievedFacetSettings.additionalVisibleModuleNames shouldBe kotlinBuildTarget.associates.map { it.label.toString() }
       retrievedFacetSettings
         .compilerArguments
         .shouldBeInstanceOf<K2JVMCompilerArguments>()
@@ -139,7 +140,7 @@ class BazelKotlinFacetEntityUpdaterTest : WorkspaceModelBaseTest() {
       parentModuleEntity = parentEntity,
       kotlinOptions = kotlinOptions,
       isTestModule = false,
-      associates = kotlinBuildTarget.associates.map { it.toString() }.toSet(),
+      associates = kotlinBuildTarget.associates.map { it.label.toString() }.toSet(),
     )
   }
 }

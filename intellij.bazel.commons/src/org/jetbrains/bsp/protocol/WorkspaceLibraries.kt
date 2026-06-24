@@ -1,13 +1,12 @@
 package org.jetbrains.bsp.protocol
 
 import org.jetbrains.annotations.ApiStatus
-import org.jetbrains.bazel.label.DependencyLabel
-import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
 import java.nio.file.Path
 
 @ApiStatus.Internal
 data class LibraryItem(
-  val id: Label,
+  val key: WorkspaceTargetKey,
   val ijars: List<Path>,
   val jars: List<Path>,
   val sourceJars: List<Path>,

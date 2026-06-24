@@ -5,13 +5,13 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
 import org.jetbrains.annotations.ApiStatus
-import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.languages.projectview.projectView
 import org.jetbrains.bazel.sync.workspace.languages.DefaultJvmPackageResolver
 import org.jetbrains.bazel.sync.workspace.languages.java.sourceRoot.prefix.JavaSourceRootPatternContributor
 import org.jetbrains.bazel.sync.workspace.languages.java.sourceRoot.prefix.JavaSourceRootPatterns
 import org.jetbrains.bazel.sync.workspace.languages.java.sourceRoot.prefix.SourcePatternEval
 import org.jetbrains.bazel.sync.workspace.languages.java.sourceRoot.projectview.javaSROEnable
+import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
 import org.jetbrains.bsp.protocol.JvmBuildTarget
 import org.jetbrains.bsp.protocol.RawBuildTarget
 import java.nio.file.Path
@@ -60,7 +60,7 @@ class DefaultJvmPackagePrefixCalculator(
   private val packageResolver = DefaultJvmPackageResolver()
   private val packageInference = JavaSourceRootPackageInference(packageResolver)
 
-  private val cache = ConcurrentHashMap<Label, JvmPackagePrefixes>()
+  private val cache = ConcurrentHashMap<WorkspaceTargetKey, JvmPackagePrefixes>()
 
   suspend fun calculate(targets: Collection<RawBuildTarget>) {
     coroutineScope {
@@ -70,14 +70,14 @@ class DefaultJvmPackagePrefixCalculator(
         }.map { target ->
           async {
             val prefixes = JvmPackagePrefixes(calculateForTarget(target))
-            cache[target.id] = prefixes
+            cache[target.key] = prefixes
           }
         }.awaitAll()
     }
   }
 
   override fun get(target: RawBuildTarget): JvmPackagePrefixes {
-    return cache[target.id] ?: JvmPackagePrefixes(emptyMap())
+    return cache[target.key] ?: JvmPackagePrefixes(emptyMap())
   }
 
   private fun calculateForTarget(target: RawBuildTarget): Map<Path, String> {

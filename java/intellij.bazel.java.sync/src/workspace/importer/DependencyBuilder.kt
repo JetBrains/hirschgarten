@@ -11,6 +11,8 @@ import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.label.DependencyLabel
 import org.jetbrains.bazel.label.DependencyLabelKind
 import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceAspectIds
+import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
 import org.jetbrains.bsp.protocol.JvmDependency
 import org.jetbrains.bsp.protocol.RawBuildTarget
 import org.jetbrains.bsp.protocol.StrictDependencyCheckedType
@@ -31,8 +33,8 @@ private val idInterner: Interner<SymbolicEntityId<*>> = Interner.createWeakInter
 // (incl. its `DependenciesClosure` memo), plus the `Dependency` wrapper
 @ApiStatus.Internal
 class DependencyBuilder(private val targets: Collection<RawBuildTarget>) {
-  private val targetsIndex: Map<Label, RawBuildTarget> = targets.associateBy { it.id }
-  private val strictDependencies: Map<Label, List<Label>> = calculateExportedDependenciesTransitiveClosure()
+  private val targetsIndex: Map<WorkspaceTargetKey, RawBuildTarget> = targets.associateBy { it.key.stripAspects() }
+  private val strictDependencies: Map<WorkspaceTargetKey, List<Label>> = calculateExportedDependenciesTransitiveClosure()
 
   data class Resolved(
     val dependencies: List<DependencyLabel>,
@@ -50,6 +52,7 @@ class DependencyBuilder(private val targets: Collection<RawBuildTarget>) {
           if (target.kind.kind == "jvm_library" || target.kind.kind == "_jvm_library_jps")
             dep.dependency
           else dep.dependency.export()
+
         is JvmDependency.LibraryDependency ->
           dep.dependency.export()
       }
@@ -57,7 +60,7 @@ class DependencyBuilder(private val targets: Collection<RawBuildTarget>) {
     return Resolved(
       dependencies = deps,
       strictDependenciesCheck = checkStrictDependencies(target),
-      strictDependencies = strictDependencies[target.id] ?: emptyList(),
+      strictDependencies = strictDependencies[target.key.stripAspects()] ?: emptyList(),
     )
   }
 
@@ -66,29 +69,31 @@ class DependencyBuilder(private val targets: Collection<RawBuildTarget>) {
     return extractJvmBuildTarget(target)?.checkStrictDependencies ?: StrictDependencyCheckedType.OFF
   }
 
-  private fun calculateExportedDependenciesTransitiveClosure(): Map<Label, List<Label>> {
-    val strictTargets = targets.filter { checkStrictDependencies(it) != StrictDependencyCheckedType.OFF }.map { it.id }
+  private fun calculateExportedDependenciesTransitiveClosure(): Map<WorkspaceTargetKey, List<Label>> {
+    val strictTargets = targets.filter { checkStrictDependencies(it) != StrictDependencyCheckedType.OFF }.map { it.key.stripAspects() }
 
-    val fDependencies: ((Label) -> List<DependencyLabel>) = dependencies@ { label ->
-      val jvmTarget = targetsIndex[label]?.let { extractJvmBuildTarget(it) } ?: return@dependencies emptyList()
+    val fDependencies: ((WorkspaceTargetKey) -> List<DependencyLabel>) = dependencies@{ key ->
+      val jvmTarget = targetsIndex[key]?.let { extractJvmBuildTarget(it) } ?: return@dependencies emptyList()
       jvmTarget.jvmDependencies.map { it.dependency }
-        .filter { it.targetKey.label != label /* filter out module dependency on library */ }
+        .filter { it.targetKey.label != key.label /* filter out module dependency on library */ }
     }
 
-    val exportedDependenciesClosure = DependenciesClosure { label ->
-      fDependencies(label).filter { it.exported }.map { it.targetKey.label }
+    val exportedDependenciesClosure = DependenciesClosure { key ->
+      fDependencies(key).filter { it.exported }.map { it.targetKey.stripAspects() }
     }
 
-    return strictTargets.associateWith { targetId ->
-      fDependencies(targetId).flatMap { exportedDependenciesClosure[it.targetKey.label] + it.targetKey.label }.distinct()
+    return strictTargets.associateWith { targetKey ->
+      fDependencies(targetKey)
+        .flatMap { exportedDependenciesClosure[it.targetKey.stripAspects()].map { key -> key.label } + it.targetKey.label }
+        .distinct()
     }
   }
 
-  private class DependenciesClosure(val deps: (Label) -> List<Label>) {
-    private val cache = HashMap<Label, Set<Label>>()
-    operator fun get(label: Label): Set<Label> =
-      cache.getOrPut(label) {
-        val ds = deps(label)
+  private class DependenciesClosure(val deps: (WorkspaceTargetKey) -> List<WorkspaceTargetKey>) {
+    private val cache = HashMap<WorkspaceTargetKey, Set<WorkspaceTargetKey>>()
+    operator fun get(key: WorkspaceTargetKey): Set<WorkspaceTargetKey> =
+      cache.getOrPut(key) {
+        val ds = deps(key)
         ds.toSet() + ds.flatMap { get(it) }
       }
   }
@@ -96,6 +101,8 @@ class DependencyBuilder(private val targets: Collection<RawBuildTarget>) {
 
 private fun DependencyLabel.export(): DependencyLabel =
   if (this.kind == DependencyLabelKind.COMPILE) this.copy(kind = DependencyLabelKind.EXPORTED_COMPILE_TIME) else this
+
+private fun WorkspaceTargetKey.stripAspects(): WorkspaceTargetKey = copy(aspectIds = WorkspaceAspectIds.EMPTY)
 
 internal fun toLibraryDependency(
   libraryName: String,
