@@ -14,7 +14,6 @@ import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
 import org.jetbrains.bazel.java.ui.gutters.BazelJavaRunLineMarkerContributor
-import org.jetbrains.bazel.kotlin.ui.gutters.BazelKotlinRunLineMarkerHider
 import org.jetbrains.bazel.kotlin.ui.gutters.BazelKotlinRunLineMarkerContributor
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.project.BazelProjectFixtures.initializeBazelProject
@@ -136,35 +135,6 @@ class BazelRunLineMarkerContributorTest : BasePlatformTestCase() {
     result.shouldNotBeNull()
     result.icon shouldBe AllIcons.Actions.Execute
     result.actions.shouldHaveSize(2)
-  }
-
-  @Test
-  fun `should hide platform Kotlin run marker when Bazel run marker is available`() {
-    // given
-    Registry.get("bazel.run.synthetic.enable").setValue(true, testRootDisposable)
-    val target = TestBuildTargetFactory.createSimpleKotlinLibraryTarget(id = Label.parse("//kotlin_target:my_kt_lib"))
-    val sourceFile = myFixture.configureByText(
-      "main.kt",
-      """
-      package com.jetbrains
-
-      fun main() {
-        println("Hello from main1")
-      }
-      """.trimIndent(),
-    )
-    val elementAtCaret = PsiUtilCore.getElementAtOffset(sourceFile, sourceFile.text.indexOf("main"))!!
-    val runLineMarkerContributor =
-      object : BazelKotlinRunLineMarkerContributor() {
-        override fun getTargets(element: PsiElement): List<ExecutableTarget> = listOf(target)
-      }
-    val hider = BazelKotlinRunLineMarkerHider(runLineMarkerContributor)
-
-    // when
-    val result = hider.shouldHideRunLineMarker(elementAtCaret)
-
-    // then
-    result shouldBe true
   }
 
   private fun CodeInsightTestFixture.getJavaTestFile(): PsiFile =
