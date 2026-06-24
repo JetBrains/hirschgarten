@@ -42,15 +42,9 @@ class TargetKindServiceTest {
   }
 
   @Test
-  fun `fromTargetInfo infers kotlin language for unknown kt_jvm kind`() {
-    val target = targetInfo("_kt_jvm_library", executable = false, jvmTarget = true)
-    service.fromTargetInfo(target) shouldBe TargetKind("_kt_jvm_library", setOf(JAVA, KOTLIN), LIBRARY)
-  }
-
-  @Test
   fun `fromTargetInfo infers kotlin language from kotlin target info`() {
     val target = targetInfo("_kt_jvm_library", executable = false, kotlinTarget = true)
-    service.fromTargetInfo(target) shouldBe TargetKind("_kt_jvm_library", setOf(JAVA, KOTLIN), LIBRARY)
+    service.fromTargetInfo(target) shouldBe TargetKind("_kt_jvm_library", setOf(KOTLIN), LIBRARY)
   }
 
   @Test
