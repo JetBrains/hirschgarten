@@ -1,8 +1,8 @@
 package org.jetbrains.bazel.languages.starlark.bazel
 
-import com.google.gson.Gson
-import com.google.gson.reflect.TypeToken
 import com.intellij.openapi.extensions.ExtensionPointName
+import com.intellij.openapi.externalSystem.autolink.mapExtensionSafe
+import com.intellij.openapi.project.Project
 import org.jetbrains.annotations.ApiStatus
 
 @ApiStatus.Internal
@@ -38,31 +38,12 @@ data class BazelGlobalFunction(
 
 @ApiStatus.Internal
 interface StarlarkGlobalFunctionProvider {
-  val functions: List<BazelGlobalFunction>
+
+  fun functions(project: Project): List<BazelGlobalFunction>
 
   companion object {
     val extensionPoint = ExtensionPointName<StarlarkGlobalFunctionProvider>("org.jetbrains.bazel.starlarkGlobalFunctionProvider")
   }
-}
-
-internal class DefaultBazelGlobalFunctionProvider : StarlarkGlobalFunctionProvider {
-  private val globalFunctionsPath = "/bazelGlobalFunctions/global_functions.json"
-  private val buildRulesPath = "/bazelGlobalFunctions/rules.json"
-
-  private fun loadFunctionsList(filePath: String): List<BazelGlobalFunction> {
-    val resource = javaClass.getResourceAsStream(filePath)
-    val functions = mutableListOf<BazelGlobalFunction>()
-    val type = object : TypeToken<List<BazelGlobalFunction>>() {}.type
-    (resource?.reader()?.use { Gson().fromJson<List<BazelGlobalFunction>>(it, type) })?.let {
-      functions.addAll(it)
-    }
-    return functions
-  }
-
-  private fun loadFunctionsFromJson(): List<BazelGlobalFunction> =
-    (loadFunctionsList(globalFunctionsPath) + loadFunctionsList(buildRulesPath))
-
-  override val functions: List<BazelGlobalFunction> = loadFunctionsFromJson()
 }
 
 @ApiStatus.Internal
@@ -71,23 +52,24 @@ class BazelGlobalFunctions {
     // These properties read from the extension point dynamically to support test isolation.
     // Extension points can be masked/replaced during tests, so caching the initial value
     // would cause subsequent tests to see stale data.
-    internal val globalFunctions: Map<String, BazelGlobalFunction>
-      get() = StarlarkGlobalFunctionProvider.extensionPoint.extensionList
-        .flatMap { it.functions }
+    fun globalFunctions(project: Project): Map<String, BazelGlobalFunction> =
+      StarlarkGlobalFunctionProvider.extensionPoint
+        .mapExtensionSafe { it.functions(project) }
+        .flatten()
         .associateBy { it.name }
 
-    internal val buildGlobalFunctions: Map<String, BazelGlobalFunction>
-      get() = globalFunctions.filter { it.value.environment.contains(Environment.BUILD) }
+    internal fun buildGlobalFunctions(project: Project): Map<String, BazelGlobalFunction> =
+      globalFunctions(project).filter { it.value.environment.contains(Environment.BUILD) }
 
-    val moduleGlobalFunctions: Map<String, BazelGlobalFunction>
-      get() = globalFunctions.filter { it.value.environment.contains(Environment.MODULE) }
+    fun moduleGlobalFunctions(project: Project): Map<String, BazelGlobalFunction> =
+      globalFunctions(project).filter { it.value.environment.contains(Environment.MODULE) }
 
-    internal val extensionGlobalFunctions: Map<String, BazelGlobalFunction>
-      get() = globalFunctions.filter { it.value.environment.contains(Environment.BZL) }
+    internal fun extensionGlobalFunctions(project: Project): Map<String, BazelGlobalFunction> =
+      globalFunctions(project).filter { it.value.environment.contains(Environment.BZL) }
 
-    internal val starlarkGlobalFunctions: Map<String, BazelGlobalFunction>
-      get() = globalFunctions.filter { it.value.environment.containsAll(Environment.entries) }
+    internal fun starlarkGlobalFunctions(project: Project): Map<String, BazelGlobalFunction> =
+      globalFunctions(project).filter { it.value.environment.containsAll(Environment.entries) }
 
-    fun getFunctionByName(name: String): BazelGlobalFunction? = globalFunctions[name]
+    fun getFunctionByName(name: String, project: Project): BazelGlobalFunction? = globalFunctions(project)[name]
   }
 }

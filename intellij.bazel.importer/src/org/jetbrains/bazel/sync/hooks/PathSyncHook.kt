@@ -15,6 +15,7 @@ internal class PathSyncHook : ProjectSyncHook {
         projectCtxService.bazelBinPath = bazelInfo.bazelBin.toString()
         projectCtxService.bazelExecPath = bazelInfo.execRoot.toString()
         projectCtxService.workspaceName = environment.workspace.workspaceName
+        projectCtxService.bazelRelease = bazelInfo.release
       }
     }
 }

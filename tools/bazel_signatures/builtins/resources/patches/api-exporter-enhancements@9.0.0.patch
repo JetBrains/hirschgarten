@@ -1,0 +1,348 @@
+diff --git a/src/main/java/com/google/devtools/build/docgen/ApiExporter.java b/src/main/java/com/google/devtools/build/docgen/ApiExporter.java
+index f76c4f07ec..e6815481ee 100644
+--- a/src/main/java/com/google/devtools/build/docgen/ApiExporter.java
++++ b/src/main/java/com/google/devtools/build/docgen/ApiExporter.java
+@@ -163,6 +163,7 @@ public class ApiExporter {
+   private static Value.Builder valueFromCallable(StarlarkCallable x) {
+     // Starlark def statement?
+     if (x instanceof StarlarkFunction fn) {
++      int numOrdinary = fn.getNumOrdinaryParameters();
+       Signature sig = new Signature();
+       sig.name = fn.getName();
+       sig.doc = fn.getDocumentation();
+@@ -174,6 +175,9 @@ public class ApiExporter {
+             Object v = fn.getDefaultValue(i);
+             return v == null ? null : Starlark.repr(v);
+           };
++      // Ordinary params are positional+named; keyword-only params are named only.
++      sig.isPositional = (i) -> i < numOrdinary;
++      sig.isNamed = (i) -> true;
+       return signatureToValue(sig);
+     }
+ 
+@@ -204,6 +208,11 @@ public class ApiExporter {
+     // Returns the string form of the ith default value, using the
+     // index, ordering, and null Conventions of StarlarkFunction.getDefaultValue.
+     Function<Integer, String> getDefaultValue = (i) -> null;
++
++    // Per-parameter positional/named flags, parallel to parameterNames.
++    // Null means unknown (defaults to not set in proto).
++    Function<Integer, Boolean> isPositional = (i) -> null;
++    Function<Integer, Boolean> isNamed = (i) -> null;
+   }
+ 
+   private static Value.Builder signatureToValue(Signature sig) {
+@@ -237,6 +246,14 @@ public class ApiExporter {
+         } else {
+           param.setIsMandatory(true); // bool seems redundant
+         }
++        Boolean positional = sig.isPositional.apply(i);
++        if (positional != null) {
++          param.setIsPositional(positional);
++        }
++        Boolean named = sig.isNamed.apply(i);
++        if (named != null) {
++          param.setIsNamed(named);
++        }
+       }
+       callable.addParam(param);
+     }
+@@ -255,12 +272,28 @@ public class ApiExporter {
+         param.setType(par.getType());
+         param.setDoc(par.getDocumentation());
+         param.setDefaultValue(par.getDefaultValue());
+-        if (par.getKind().equals(ParamDoc.Kind.VARARGS)) {
+-          param.setName("*" + par.getName());
+-          param.setIsStarArg(true);
+-        } else if (par.getKind().equals(ParamDoc.Kind.KWARGS)) {
+-          param.setName("**" + par.getName());
+-          param.setIsStarStarArg(true);
++        switch (par.getKind()) {
++          case ORDINARY:
++            param.setIsPositional(true);
++            param.setIsNamed(true);
++            break;
++          case POSITIONAL_ONLY:
++            param.setIsPositional(true);
++            break;
++          case KEYWORD_ONLY:
++            param.setIsNamed(true);
++            break;
++          case VARARGS:
++            param.setName("*" + par.getName());
++            param.setIsStarArg(true);
++            param.setIsPositional(true);
++            param.setIsMandatory(false);
++            break;
++          case KWARGS:
++            param.setName("**" + par.getName());
++            param.setIsStarStarArg(true);
++            param.setIsMandatory(false);
++            break;
+         }
+         callable.addParam(param);
+       }
+@@ -287,9 +320,19 @@ public class ApiExporter {
+     Callable.Builder callable = Callable.newBuilder();
+     // All native rules have attribute "name". It is not included in the attributes list and needs
+     // to be added separately.
+-    callable.addParam(newParam("name", true));
++    Param.Builder nameParam = newParam("name", true);
++    nameParam.setIsNamed(true);
++    callable.addParam(nameParam);
+     for (RuleDocumentationAttribute attr : rule.getAttributes()) {
+-      callable.addParam(newParam(attr.getAttributeName(), attr.isMandatory()));
++      Param.Builder param = newParam(attr.getAttributeName(), attr.isMandatory());
++      param.setIsNamed(true);
++      param.setType(attr.getTypeDesc());
++      String defaultValue = attr.getDefaultValue();
++      if (defaultValue != null) {
++        param.setDefaultValue(defaultValue);
++      }
++      param.setDoc(attr.getUnexpandedHtmlDocumentation());
++      callable.addParam(param);
+     }
+     value.setCallable(callable);
+     return value;
+@@ -373,6 +416,30 @@ public class ApiExporter {
+           builtins, symbols.getGlobals(), globalToDoc, typeNameToConstructor, ApiContext.ALL);
+       appendGlobals(
+           builtins, symbols.getBzlGlobals(), globalToDoc, typeNameToConstructor, ApiContext.BZL);
++      appendGlobals(
++          builtins,
++          symbols.getModuleGlobals(),
++          globalToDoc,
++          typeNameToConstructor,
++          ApiContext.MODULE);
++      appendGlobals(
++          builtins,
++          symbols.getVendorGlobals(),
++          globalToDoc,
++          typeNameToConstructor,
++          ApiContext.VENDOR);
++      appendGlobals(
++          builtins,
++          symbols.getRepoGlobals(),
++          globalToDoc,
++          typeNameToConstructor,
++          ApiContext.REPO);
++      appendGlobals(
++          builtins,
++          symbols.getBuildGlobals(),
++          globalToDoc,
++          typeNameToConstructor,
++          ApiContext.BUILD);
+       appendNativeRules(builtins, symbols.getNativeRules());
+       writeBuiltins(options.outputFile, builtins);
+ 
+@@ -390,6 +457,8 @@ public class ApiExporter {
+     String starStar = null;
+     ArrayList<String> params = new ArrayList<>();
+     ArrayList<String> defaults = new ArrayList<>();
++    ArrayList<Boolean> positionals = new ArrayList<>();
++    ArrayList<Boolean> nameds = new ArrayList<>();
+ 
+     for (net.starlark.java.annot.Param param : annot.parameters()) {
+       // Ignore undocumented parameters
+@@ -407,6 +476,8 @@ public class ApiExporter {
+       }
+       params.add(param.name());
+       defaults.add(param.defaultValue().isEmpty() ? null : param.defaultValue());
++      positionals.add(param.positional());
++      nameds.add(param.named());
+     }
+ 
+     // f(..., *args, ...)
+@@ -430,6 +501,8 @@ public class ApiExporter {
+     sig.hasVarargs = star != null;
+     sig.hasKwargs = starStar != null;
+     sig.getDefaultValue = defaults::get;
++    sig.isPositional = positionals::get;
++    sig.isNamed = nameds::get;
+     return sig;
+   }
+ }
+diff --git a/src/main/java/com/google/devtools/build/docgen/BUILD b/src/main/java/com/google/devtools/build/docgen/BUILD
+index 1e50b5a60d..4d4be3ad9d 100644
+--- a/src/main/java/com/google/devtools/build/docgen/BUILD
++++ b/src/main/java/com/google/devtools/build/docgen/BUILD
+@@ -25,6 +25,7 @@ java_library(
+     deps = [
+         "//src/main/java/com/google/devtools/build/docgen/annot",
+         "//src/main/java/com/google/devtools/build/lib/analysis:analysis_cluster",
++        "//src/main/java/com/google/devtools/build/lib/bazel/repository/starlark",
+         "//src/main/java/com/google/devtools/build/lib/cmdline",
+         "//src/main/java/com/google/devtools/build/lib/collect/nestedset",
+         "//src/main/java/com/google/devtools/build/lib/concurrent:thread_safety",
+diff --git a/src/main/java/com/google/devtools/build/docgen/RuleDocumentationAttribute.java b/src/main/java/com/google/devtools/build/docgen/RuleDocumentationAttribute.java
+index de07f09d62..220e230d99 100644
+--- a/src/main/java/com/google/devtools/build/docgen/RuleDocumentationAttribute.java
++++ b/src/main/java/com/google/devtools/build/docgen/RuleDocumentationAttribute.java
+@@ -248,8 +248,21 @@ public class RuleDocumentationAttribute
+   /** Returns the attribute's default value, or null if none set. */
+   @Nullable
+   public String getDefaultValue() {
+-    // Strings are stored as "foo". Remove the surrounding quotes.
+-    return defaultValue == null ? null : defaultValue.substring(1, defaultValue.length() - 1);
++    return defaultValue;
++  }
++
++  /** Returns the raw (unexpanded) HTML documentation of the rule attribute. */
++  public String getUnexpandedHtmlDocumentation() {
++    return htmlDocumentation;
++  }
++
++  /** Returns the human-readable type description for this attribute, or empty string if unknown. */
++  public String getTypeDesc() throws BuildEncyclopediaDocException {
++    if (type == null) {
++      return "";
++    }
++    String rawType = TYPE_DESC.get(type);
++    return rawType == null ? "" : tryExpand(rawType);
+   }
+ 
+   /**
+diff --git a/src/main/java/com/google/devtools/build/docgen/SymbolFamilies.java b/src/main/java/com/google/devtools/build/docgen/SymbolFamilies.java
+index e69063c032..531b5684a1 100644
+--- a/src/main/java/com/google/devtools/build/docgen/SymbolFamilies.java
++++ b/src/main/java/com/google/devtools/build/docgen/SymbolFamilies.java
+@@ -19,6 +19,7 @@ import com.google.devtools.build.docgen.StarlarkDocumentationProcessor.Category;
+ import com.google.devtools.build.docgen.starlark.StarlarkDocExpander;
+ import com.google.devtools.build.docgen.starlark.StarlarkDocPage;
+ import com.google.devtools.build.lib.analysis.ConfiguredRuleClassProvider;
++import com.google.devtools.build.lib.bazel.repository.starlark.StarlarkRepositoryModule;
+ import com.google.devtools.build.lib.packages.StarlarkNativeModule;
+ import com.google.devtools.build.lib.util.Classpath.ClassPathException;
+ import java.io.IOException;
+@@ -39,6 +40,10 @@ public class SymbolFamilies {
+   // Mappings between Starlark names and Starlark entities generated from the fakebuildapi.
+   private final ImmutableMap<String, Object> globals;
+   private final ImmutableMap<String, Object> bzlGlobals;
++  private final ImmutableMap<String, Object> moduleGlobals;
++  private final ImmutableMap<String, Object> vendorGlobals;
++  private final ImmutableMap<String, Object> repoGlobals;
++  private final ImmutableMap<String, Object> buildGlobals;
+ 
+   public SymbolFamilies(
+       StarlarkDocExpander expander,
+@@ -67,6 +72,10 @@ public class SymbolFamilies {
+                 ruleDenyList));
+     this.globals = Starlark.UNIVERSE;
+     this.bzlGlobals = collectBzlGlobals(configuredRuleClassProvider);
++    this.moduleGlobals = collectModuleGlobals(configuredRuleClassProvider);
++    this.vendorGlobals = collectVendorGlobals(configuredRuleClassProvider);
++    this.repoGlobals = collectRepoGlobals(configuredRuleClassProvider);
++    this.buildGlobals = collectBuildGlobals(configuredRuleClassProvider);
+     this.allDocPages =
+         StarlarkDocumentationCollector.getAllDocPages(
+             expander, ImmutableList.copyOf(apiStardocProtos));
+@@ -95,6 +104,22 @@ public class SymbolFamilies {
+     return bzlGlobals;
+   }
+ 
++  public Map<String, Object> getModuleGlobals() {
++    return moduleGlobals;
++  }
++
++  public Map<String, Object> getVendorGlobals() {
++    return vendorGlobals;
++  }
++
++  public Map<String, Object> getRepoGlobals() {
++    return repoGlobals;
++  }
++
++  public Map<String, Object> getBuildGlobals() {
++    return buildGlobals;
++  }
++
+   // Returns a mapping between type names and module/type documentation.
+   public ImmutableMap<Category, ImmutableList<StarlarkDocPage>> getAllDocPages() {
+     return allDocPages;
+@@ -113,9 +138,43 @@ public class SymbolFamilies {
+       }
+       env.put(entry);
+     }
++    Starlark.addMethods(env, new StarlarkRepositoryModule());
+     return env.buildOrThrow();
+   }
+ 
++  private ImmutableMap<String, Object> collectModuleGlobals(ConfiguredRuleClassProvider provider) {
++    return provider.getBazelStarlarkEnvironment().getModuleBazelEnv();
++  }
++
++  private ImmutableMap<String, Object> collectVendorGlobals(ConfiguredRuleClassProvider provider) {
++    return provider.getBazelStarlarkEnvironment().getStarlarkGlobals().getVendorToplevels();
++  }
++
++  private ImmutableMap<String, Object> collectRepoGlobals(ConfiguredRuleClassProvider provider) {
++    return provider.getBazelStarlarkEnvironment().getRepoBazelEnv();
++  }
++
++  /** Collects BUILD-file-only globals (excluding rules and UNIVERSE items). */
++  private ImmutableMap<String, Object> collectBuildGlobals(ConfiguredRuleClassProvider provider) {
++    ImmutableMap<String, Object> buildEnv =
++        provider.getBazelStarlarkEnvironment().getUninjectedBuildEnv();
++    java.util.Set<String> ruleNames = provider.getRuleClassMap().keySet();
++    ImmutableMap.Builder<String, Object> result = ImmutableMap.builder();
++    for (Map.Entry<String, Object> entry : buildEnv.entrySet()) {
++      String name = entry.getKey();
++      // Skip items already exported in ALL context
++      if (Starlark.UNIVERSE.containsKey(name)) {
++        continue;
++      }
++      // Skip rule functions (already exported via appendNativeRules)
++      if (ruleNames.contains(name)) {
++        continue;
++      }
++      result.put(entry);
++    }
++    return result.buildOrThrow();
++  }
++
+   /*
+    * Collects a list of native rules that are available in BUILD files as top level functions
+    * and in BZL files as methods of the native package.
+diff --git a/src/main/protobuf/builtin.proto b/src/main/protobuf/builtin.proto
+index 9e9fe1977a..6bf61d1124 100644
+--- a/src/main/protobuf/builtin.proto
++++ b/src/main/protobuf/builtin.proto
+@@ -12,7 +12,7 @@
+ // See the License for the specific language governing permissions and
+ // limitations under the License.
+ //
+-// Proto that exposes all BUILD and Starlark builtin symbols.
++// Proto that exposes all BUILD, Starlark, and MODULE.bazel builtin symbols.
+ //
+ // The API exporter is used for code completion in Cider.
+ 
+@@ -23,7 +23,7 @@ package builtin;
+ option java_package = "com.google.devtools.build.docgen.builtin";
+ option java_outer_classname = "BuiltinProtos";
+ 
+-// Top-level object for all BUILD and Starlark builtin modules.
++// Top-level object for all BUILD, Starlark, and MODULE.bazel builtin modules.
+ // Globals contains a list of all builtin variables, functions and packages
+ // (e.g. "java_common" and "native" will be included, same as "None" and
+ // "dict").
+@@ -57,6 +57,9 @@ enum ApiContext {
+   ALL = 0;
+   BZL = 1;
+   BUILD = 2;
++  MODULE = 3;
++  VENDOR = 4;
++  REPO = 5;
+ }
+ 
+ // Generic representation for a Starlark object. If the object is callable
+@@ -105,4 +108,10 @@ message Param {
+ 
+   // Whether the param is a star-star argument.
+   bool is_star_star_arg = 7;
++
++  // Whether the param can be passed positionally.
++  bool is_positional = 8;
++
++  // Whether the param can be passed by keyword (name).
++  bool is_named = 9;
+ }

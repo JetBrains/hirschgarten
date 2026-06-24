@@ -19,6 +19,8 @@ class BazelReleaseTest {
 
     // then
     release?.major shouldBe 4
+    release?.minor shouldBe 0
+    release?.patch shouldBe 0
   }
 
   @Test
@@ -31,6 +33,7 @@ class BazelReleaseTest {
     // then
     release?.major shouldBe 7
     release?.minor shouldBe 5
+    release?.patch shouldBe 0
   }
 
   @Test
@@ -43,6 +46,7 @@ class BazelReleaseTest {
     // then
     release?.major shouldBe 7
     release?.minor shouldBe 6
+    release?.patch shouldBe 0
   }
 
   @Test
@@ -125,5 +129,16 @@ class BazelReleaseTest {
         .fromReleaseString("release 7.4.1")
 
     release!!.deprecated() shouldNotBe null
+  }
+
+  @Test
+  fun `should parse patch version`() {
+    val release =
+      org.jetbrains.bazel.commons.BazelRelease
+        .fromReleaseString("release 8.1.2")
+
+    release?.major shouldBe 8
+    release?.minor shouldBe 1
+    release?.patch shouldBe 2
   }
 }

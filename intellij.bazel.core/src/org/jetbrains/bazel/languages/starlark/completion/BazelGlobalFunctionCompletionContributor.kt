@@ -8,6 +8,7 @@ import com.intellij.codeInsight.completion.CompletionType
 import com.intellij.codeInsight.completion.util.ParenthesesInsertHandler
 import com.intellij.codeInsight.lookup.LookupElement
 import com.intellij.codeInsight.lookup.LookupElementBuilder
+import com.intellij.openapi.project.Project
 import com.intellij.patterns.PatternCondition
 import com.intellij.patterns.PlatformPatterns.psiComment
 import com.intellij.patterns.PlatformPatterns.psiElement
@@ -65,14 +66,15 @@ internal class BazelGlobalFunctionCompletionContributor : CompletionContributor(
     }
 }
 
-private abstract class BazelFunctionCompletionProvider(val getFunctions: () -> Collection<BazelGlobalFunction>) :
+private abstract class BazelFunctionCompletionProvider(val getFunctions: (Project) -> Collection<BazelGlobalFunction>) :
   CompletionProvider<CompletionParameters>() {
   override fun addCompletions(
     parameters: CompletionParameters,
     context: ProcessingContext,
     result: CompletionResultSet,
   ) {
-    val functions = getFunctions()
+    val project = parameters.editor.project ?: return
+    val functions = getFunctions(project)
     functions.forEach { result.addElement(functionLookupElement(it)) }
   }
 
@@ -84,16 +86,16 @@ private abstract class BazelFunctionCompletionProvider(val getFunctions: () -> C
 }
 
 private object StarlarkFunctionCompletionProvider :
-  BazelFunctionCompletionProvider({ BazelGlobalFunctions.starlarkGlobalFunctions.values })
+  BazelFunctionCompletionProvider({ BazelGlobalFunctions.starlarkGlobalFunctions(it).values })
 
 private object BazelBzlFunctionCompletionProvider :
-  BazelFunctionCompletionProvider({ BazelGlobalFunctions.extensionGlobalFunctions.values })
+  BazelFunctionCompletionProvider({ BazelGlobalFunctions.extensionGlobalFunctions(it).values })
 
 private object BazelBuildFunctionCompletionProvider :
-  BazelFunctionCompletionProvider({ BazelGlobalFunctions.buildGlobalFunctions.values })
+  BazelFunctionCompletionProvider({ BazelGlobalFunctions.buildGlobalFunctions(it).values })
 
 private object BazelModuleFunctionCompletionProvider :
-  BazelFunctionCompletionProvider({ BazelGlobalFunctions.moduleGlobalFunctions.values })
+  BazelFunctionCompletionProvider({ BazelGlobalFunctions.moduleGlobalFunctions(it).values })
 
 private object BazelWorkspaceFunctionCompletionProvider :
-  BazelFunctionCompletionProvider({ BazelGlobalFunctions.moduleGlobalFunctions.values })
+  BazelFunctionCompletionProvider({ BazelGlobalFunctions.moduleGlobalFunctions(it).values })

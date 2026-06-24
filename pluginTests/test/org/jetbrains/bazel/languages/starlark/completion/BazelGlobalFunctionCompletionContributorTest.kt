@@ -16,7 +16,7 @@ class BazelGlobalFunctionCompletionContributorTest : BasePlatformTestCase() {
 
     val lookups = myFixture.completeBasic().flatMap { it.allLookupStrings }
 
-    lookups shouldContainExactlyInAnyOrder listOf("max", "exec_group", "module_extension", "exec_transition")
+    lookups shouldContainExactlyInAnyOrder listOf("max", "exec_group", "module_extension", "exec_transition", "ktlint_fix")
   }
 
   @Test

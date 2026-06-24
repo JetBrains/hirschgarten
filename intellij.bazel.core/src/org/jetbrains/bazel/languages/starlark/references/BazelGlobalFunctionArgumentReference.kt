@@ -23,7 +23,7 @@ internal class BazelGlobalFunctionArgumentReference(val element: StarlarkNamedAr
     val callExpression = argumentList.parent as? StarlarkCallExpression ?: return emptyList()
     val argumentName = element.getName() ?: return emptyList()
     val functionName = callExpression.getCalledFunctionName() ?: return emptyList()
-    val function = BazelGlobalFunctions.getFunctionByName(functionName) ?: return emptyList()
+    val function = BazelGlobalFunctions.getFunctionByName(functionName, element.project) ?: return emptyList()
     val arg = function.params.find { it.name == argumentName } ?: return emptyList()
     return listOf(BazelGlobalFunctionArgumentDocumentationSymbol(arg, element.project))
   }

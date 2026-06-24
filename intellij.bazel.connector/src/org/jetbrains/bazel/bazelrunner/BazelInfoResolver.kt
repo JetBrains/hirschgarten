@@ -5,6 +5,7 @@ import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.commons.BazelInfo
 import org.jetbrains.bazel.commons.BazelRelease
 import org.jetbrains.bazel.commons.orFallbackVersion
+import org.jetbrains.bazel.commons.orFromBazelVersionFile
 import org.jetbrains.bazel.server.sync.isConfigurationSupportEnabled
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import java.nio.file.Path
@@ -52,9 +53,9 @@ class BazelInfoResolver(val workspaceRoot: Path) {
         "Bazel Info output: '${stderrLines.joinToString("\n")}'",
       )
 
-    val bazelReleaseVersion =
-      BazelRelease.fromReleaseString(extract(RELEASE))
-      ?: workspaceRoot.let { BazelRelease.fromBazelVersionFile(it) }.orFallbackVersion()
+    val bazelReleaseVersion = BazelRelease.fromReleaseString(extract(RELEASE))
+      .orFromBazelVersionFile(workspaceRoot)
+      .orFallbackVersion()
 
     val reportedWorkspaceRoot = Paths.get(extract(WORKSPACE))
     if (reportedWorkspaceRoot != workspaceRoot) {

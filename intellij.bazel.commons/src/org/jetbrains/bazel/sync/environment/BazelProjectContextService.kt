@@ -4,6 +4,7 @@ import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import org.jetbrains.annotations.ApiStatus
+import org.jetbrains.bazel.commons.BazelRelease
 
 @ApiStatus.Internal
 interface BazelProjectContextService {
@@ -14,6 +15,8 @@ interface BazelProjectContextService {
   // TODO: use NIO paths for bazel `bin` and `exec` paths
   var bazelBinPath: String?
   var bazelExecPath: String?
+
+  var bazelRelease: BazelRelease?
 
   val avoidExternalSystem: Boolean
     get() = false
