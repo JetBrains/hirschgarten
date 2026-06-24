@@ -3,6 +3,7 @@ package org.jetbrains.bazel.tests.combined
 import com.intellij.driver.client.Remote
 import com.intellij.driver.sdk.invokeAction
 import com.intellij.driver.sdk.step
+import com.intellij.driver.sdk.ui.UiText.Companion.asString
 import com.intellij.driver.sdk.ui.components.common.editorTabs
 import com.intellij.driver.sdk.ui.components.common.gutter
 import com.intellij.driver.sdk.ui.components.common.ideFrame
@@ -10,12 +11,15 @@ import com.intellij.driver.sdk.ui.components.elements.popup
 import com.intellij.driver.sdk.ui.shouldBe
 import com.intellij.driver.sdk.waitFor
 import com.intellij.ide.starter.ide.IDETestContext
+import com.intellij.tools.ide.performanceTesting.commands.Keys
 import com.intellij.tools.ide.performanceTesting.commands.build
 import com.intellij.tools.ide.performanceTesting.commands.checkOnRedCode
 import com.intellij.tools.ide.performanceTesting.commands.createJavaFile
+import com.intellij.tools.ide.performanceTesting.commands.delayType
 import com.intellij.tools.ide.performanceTesting.commands.goto
 import com.intellij.tools.ide.performanceTesting.commands.gotoLine
 import com.intellij.tools.ide.performanceTesting.commands.openFile
+import com.intellij.tools.ide.performanceTesting.commands.pressKey
 import com.intellij.tools.ide.performanceTesting.commands.reloadFiles
 import com.intellij.tools.ide.performanceTesting.commands.replaceText
 import com.intellij.tools.ide.performanceTesting.commands.saveDocumentsAndSettings
@@ -61,6 +65,9 @@ class SimpleJavaCombinedTest : IdeStarterCombinedBaseTest() {
 
   @Test @Order(100)
   fun `update bazel version should not cause server to break`() = bazelVersionUpdate()
+
+  @Test @Order(101)
+  fun `shard sync works`() = enableShardSync()
 
   @Test
   @Order(Integer.MAX_VALUE)
@@ -223,8 +230,41 @@ class SimpleJavaCombinedTest : IdeStarterCombinedBaseTest() {
       }
     }
   }
-}
 
+  private fun enableShardSync() {
+    withDriver(bgRun) {
+      ideFrame {
+        step("Change projectview") {
+          execute {openFile("projectview.bazelproject")}
+          execute { gotoLine(3) }
+          execute { delayType(150, "shard_sync: true") }
+          execute { pressKey(Keys.ENTER) }
+          execute { delayType(150, "target_shard_size: 1") }
+          execute { pressKey(Keys.ENTER) }
+          takeScreenshot("afterProjectViewChange")
+          execute { buildAndSync() }
+          waitForIndicators(10.minutes)
+          takeScreenshot("afterShardSync")
+
+          // Verify there are no reports about failure reading target info files
+          val buildView = x { byType("com.intellij.build.BuildView") }
+          waitFor(
+            message = "Build console shouldn't indicate error reading targets",
+            timeout = 10.seconds,
+            getter = { buildView.getAllTexts().asString() },
+            checker = { text: String -> "Could not read target info" !in text },
+          )
+        }
+        step("sanity check after shard sync") {
+          openFile("SimpleTest.java")
+          takeScreenshot("sanityCheckAfterShardSync")
+          execute { checkOnRedCode() }
+        }
+      }
+    }
+  }
+
+}
 
 @Remote("com.intellij.openapi.vfs.VirtualFileManager")
 interface VirtualFileManager {
