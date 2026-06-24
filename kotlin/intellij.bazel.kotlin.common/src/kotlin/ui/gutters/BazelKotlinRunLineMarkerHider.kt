@@ -5,10 +5,11 @@ import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.kotlin.idea.codeInsight.KotlinRunLineMarkerHider
 
 /**
- * Hides Kotlin's platform run marker when the Bazel contributor owns the same gutter element.
+ * Hides Kotlin's standard run gutter marker when the Bazel contributor owns the same element.
  *
- * [org.jetbrains.bazel.run.BazelRunConfigurationProducerSuppressor] suppresses run configuration producers after a
- * platform action is invoked; this extension prevents the duplicate platform marker/action from being offered at all.
+ * [org.jetbrains.bazel.run.BazelRunConfigurationProducerSuppressor] handles the later path where IntelliJ asks run
+ * configuration producers to create a configuration for that element. This extension runs earlier, while Kotlin builds
+ * its gutter marker, so the duplicate Kotlin action is not shown next to the Bazel action.
  */
 @ApiStatus.Internal
 class BazelKotlinRunLineMarkerHider(
