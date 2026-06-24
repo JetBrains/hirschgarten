@@ -7,8 +7,6 @@ import com.intellij.openapi.components.Storage
 import com.intellij.openapi.components.StoragePathMacros
 import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.vfs.VirtualFile
-import com.intellij.openapi.vfs.VirtualFileManager
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.buildifier.BuildifierUtil
 import java.net.URI
@@ -17,15 +15,10 @@ import java.nio.file.Paths
 import kotlin.io.path.exists
 
 data class BazelProjectSettings @ApiStatus.Internal constructor(
-  val projectViewPath: VirtualFile? = null,
   @ApiStatus.Internal internal val buildifierExecutablePath: Path? = null,
   @ApiStatus.Internal val runBuildifierOnSave: Boolean = true,
   // experimental settings
 ) {
-  @ApiStatus.Internal
-  fun withNewProjectViewPath(newProjectViewFilePath: VirtualFile?): BazelProjectSettings =
-    copy(projectViewPath = newProjectViewFilePath)
-
   @ApiStatus.Internal
   fun withNewBuildifierExecutablePath(newBuildifierExecutablePath: Path): BazelProjectSettings =
     copy(buildifierExecutablePath = newBuildifierExecutablePath)
@@ -37,7 +30,6 @@ data class BazelProjectSettings @ApiStatus.Internal constructor(
 }
 
 internal data class BazelProjectSettingsState(
-  var projectViewPathUri: String? = null,
   var buildifierExecutablePathUri: String? = null,
   var runBuildifierOnSave: Boolean = true,
 ) {
@@ -57,7 +49,6 @@ internal class BazelProjectSettingsService(val project: Project) :
 
   override fun getState(): BazelProjectSettingsState {
     return BazelProjectSettingsState(
-      projectViewPathUri = settings.projectViewPath?.url,
       buildifierExecutablePathUri = settings.buildifierExecutablePath?.toUri()?.toString(),
       runBuildifierOnSave = settings.runBuildifierOnSave,
     )
@@ -67,8 +58,6 @@ internal class BazelProjectSettingsService(val project: Project) :
     if (!settingsState.isEmptyState()) {
       this.settings =
         BazelProjectSettings(
-          projectViewPath = settingsState.projectViewPathUri?.takeIf { it.isNotBlank() }
-            ?.let { VirtualFileManager.getInstance().findFileByUrl(it) },
           buildifierExecutablePath = settingsState.buildifierExecutablePathUri?.takeIf { it.isNotBlank() }?.let { Paths.get(URI(it)) },
           runBuildifierOnSave = settingsState.runBuildifierOnSave,
         )

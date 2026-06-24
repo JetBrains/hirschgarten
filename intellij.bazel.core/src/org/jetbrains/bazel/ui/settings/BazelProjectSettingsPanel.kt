@@ -14,19 +14,19 @@ import com.intellij.openapi.ui.TextFieldWithBrowseButton
 import com.intellij.openapi.ui.ValidationInfo
 import com.intellij.openapi.util.SystemInfo
 import com.intellij.openapi.util.io.OSAgnosticPathUtil
-import com.intellij.openapi.vfs.VirtualFileManager
 import com.intellij.ui.components.JBCheckBox
 import com.intellij.ui.dsl.builder.Align
+import com.intellij.ui.dsl.builder.COLUMNS_SHORT
+import com.intellij.ui.dsl.builder.columns
 import com.intellij.ui.dsl.builder.panel
 import org.jetbrains.bazel.buildifier.BuildifierUtil
 import org.jetbrains.bazel.config.BazelPluginBundle
-import org.jetbrains.bazel.coroutines.BazelCoroutineService
+import org.jetbrains.bazel.project.projectViewFilePath
 import org.jetbrains.bazel.settings.bazel.bazelProjectSettings
-import org.jetbrains.bazel.sync.scope.SecondPhaseSync
-import org.jetbrains.bazel.sync.task.ProjectSyncTask
 import java.io.IOException
 import java.nio.file.InvalidPathException
 import java.nio.file.Path
+import javax.swing.JTextField
 import kotlin.io.path.Path
 import kotlin.io.path.isDirectory
 import kotlin.io.path.isExecutable
@@ -38,7 +38,7 @@ internal class BazelProjectSettingsConfigurable(private val project: Project) :
     helpTopic = "",
   ),
   Configurable.WithEpDependencies {
-  private val projectViewPathField: TextFieldWithBrowseButton
+  private val projectViewPathField: JTextField
   private val buildifierExecutablePathField: TextFieldWithBrowseButton
   private val runBuildifierOnSaveCheckBox: JBCheckBox
 
@@ -71,23 +71,10 @@ internal class BazelProjectSettingsConfigurable(private val project: Project) :
         .forEach { appendDslConfigurable(it) }
     }
 
-  private fun initProjectViewFileField(): TextFieldWithBrowseButton =
-    TextFieldWithBrowseButton().apply {
-      val title = BazelPluginBundle.message("text.field.project.settings.select.path.title")
-      val description = BazelPluginBundle.message("text.field.project.settings.select.path.description")
-      addBrowseFolderListener(
-        project,
-        FileChooserDescriptorFactory
-          .singleFile()
-          .withTitle(title)
-          .withDescription(description),
-      )
-      whenTextChanged {
-        if (text.isNotBlank()) {
-          val vFile = VirtualFileManager.getInstance().findFileByNioPath(Path(text))
-          currentProjectSettings = currentProjectSettings.withNewProjectViewPath(vFile)
-        }
-      }
+  private fun initProjectViewFileField(): JTextField =
+    JTextField().apply {
+      isEditable = false
+      columns(COLUMNS_SHORT)
     }
 
   private fun initBuildifierExecutablePathField(): TextFieldWithBrowseButton =
@@ -127,20 +114,12 @@ internal class BazelProjectSettingsConfigurable(private val project: Project) :
 
   override fun apply() {
     super<BoundCompositeSearchableConfigurable>.apply()
-    val isProjectViewPathChanged = currentProjectSettings.projectViewPath != project.bazelProjectSettings.projectViewPath
-
     project.bazelProjectSettings = currentProjectSettings
-
-    if (isProjectViewPathChanged) {
-      BazelCoroutineService.getInstance(project).start {
-        ProjectSyncTask(project).fullSync(buildProject = false)
-      }
-    }
   }
 
   override fun reset() {
     super<BoundCompositeSearchableConfigurable>.reset()
-    projectViewPathField.text = savedProjectViewPath()
+    projectViewPathField.text = project.projectViewFilePath.toString()
     buildifierExecutablePathField.text = getBuildifierExecPathPlaceholderMessage()
     runBuildifierOnSaveCheckBox.isSelected = project.bazelProjectSettings.runBuildifierOnSave
 
@@ -151,18 +130,9 @@ internal class BazelProjectSettingsConfigurable(private val project: Project) :
     currentProjectSettings.getBuildifierPathString(project)
     ?: BazelPluginBundle.message("buildifier.executable.not.found", if (SystemInfo.isWindows) 0 else 1)
 
-  private fun savedProjectViewPath() =
-    project.bazelProjectSettings.projectViewPath
-      ?.path.orEmpty()
-
   override fun getDisplayName(): String = BazelPluginBundle.message(DISPLAY_NAME_KEY)
 
   override fun getId(): String = ID
-
-  override fun disposeUIResources() {
-    projectViewPathField.dispose()
-    super<BoundCompositeSearchableConfigurable>.disposeUIResources()
-  }
 
   companion object {
     const val ID = "bazel.project.settings"

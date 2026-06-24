@@ -25,7 +25,7 @@ import org.intellij.lang.annotations.Language
 import org.jetbrains.bazel.languages.projectview.ProjectViewService
 import org.jetbrains.bazel.languages.projectview.directories
 import org.jetbrains.bazel.project.BazelProjectFixtures.initializeBazelProject
-import org.jetbrains.bazel.settings.bazel.bazelProjectSettings
+import org.jetbrains.bazel.project.BazelProjectFixtures.initializeBazelProjectViaProjectView
 import org.jetbrains.bazel.workspacemodel.entities.BazelProjectDirectoriesEntityFixtures.emptyBazelDirectoryWorkspaceEntity
 import org.jetbrains.bazel.workspacemodel.entities.NonIndexableVirtualFileUrl
 import kotlin.io.path.pathString
@@ -60,7 +60,7 @@ abstract class ProjectViewDirectoriesActionTestCase(
 
   protected fun useProjectView(@Language("projectview") content: String) {
     val projectView = myFixture.tempDirFixture.createFile(".user.bazelproject", content)
-    project.bazelProjectSettings = project.bazelProjectSettings.withNewProjectViewPath(projectView)
+    initializeBazelProjectViaProjectView(myFixture.project, projectView.toNioPath())
     // initializes editor with some file
     myFixture.openFileInEditor(myFixture.createFile("Foo.kt", ""))
     val workspaceModel = WorkspaceModel.getInstance(project)

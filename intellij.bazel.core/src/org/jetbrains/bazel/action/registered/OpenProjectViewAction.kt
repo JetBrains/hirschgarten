@@ -13,7 +13,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.jetbrains.bazel.action.SuspendableAction
 import org.jetbrains.bazel.config.BazelPluginBundle
-import org.jetbrains.bazel.settings.bazel.bazelProjectSettings
+import org.jetbrains.bazel.project.projectViewFile
 
 internal class OpenProjectViewAction :
   SuspendableAction(
@@ -27,11 +27,9 @@ internal class OpenProjectViewAction :
 }
 
 internal suspend fun openProjectView(project: Project) {
-  val configFile = project.bazelProjectSettings.projectViewPath
+  val configFile = project.projectViewFile
   withContext(Dispatchers.EDT) {
     project.serviceAsync<ProjectView>().refresh(ProjectViewUpdateCause.ACTION)
-    if (configFile != null) {
-      project.serviceAsync<PsiManager>().findFile(configFile)?.navigate(true)
-    }
+    project.serviceAsync<PsiManager>().findFile(configFile)?.navigate(true)
   }
 }

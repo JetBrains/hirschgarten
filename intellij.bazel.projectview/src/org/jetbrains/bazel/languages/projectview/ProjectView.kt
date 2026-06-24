@@ -44,11 +44,11 @@ data class ProjectView(val sections: Map<SectionKey<*>, Any>, val imports: List<
 
     @RequiresReadLock
     @RequiresBackgroundThread(generateAssertion = false)
-    fun fromProjectViewPsiFile(file: ProjectViewPsiFile): ProjectView {
+    fun fromProjectViewPsiFile(file: ProjectViewPsiFile, rootDir: VirtualFile = file.project.rootDir): ProjectView {
       val rawItems = collectRawItems(file)
-      val sections = buildSectionsMap(file.project, rawItems)
+      val sections = buildSectionsMap(file.project, rootDir, rawItems)
       val imports = rawItems.filterIsInstance<RawImport>()
-        .mapNotNull { tryResolveImportFile(file.project, it.path, false) }
+        .mapNotNull { tryResolveImportFile(rootDir, it.path, false) }
         .toList()
       return ProjectView(sections, imports)
     }
@@ -81,7 +81,7 @@ data class ProjectView(val sections: Map<SectionKey<*>, Any>, val imports: List<
       return rawSections
     }
 
-    private fun buildSectionsMap(project: Project, rawItems: List<RawItem>): Map<SectionKey<*>, Any> {
+    private fun buildSectionsMap(project: Project, rootDir: VirtualFile, rawItems: List<RawItem>): Map<SectionKey<*>, Any> {
       val result = mutableMapOf<SectionKey<*>, Any>()
       for (item in rawItems) {
         when (item) {
@@ -92,7 +92,7 @@ data class ProjectView(val sections: Map<SectionKey<*>, Any>, val imports: List<
           }
 
           is RawImport -> {
-            val vFile = tryResolveImportFile(project, item.path, item.required) ?: continue
+            val vFile = tryResolveImportFile(rootDir, item.path, item.required) ?: continue
             handleImport(project, vFile, result)
           }
         }
@@ -126,11 +126,11 @@ data class ProjectView(val sections: Map<SectionKey<*>, Any>, val imports: List<
     }
 
     private fun tryResolveImportFile(
-      project: Project,
+      rootDir: VirtualFile,
       pathString: String,
       required: Boolean,
     ): VirtualFile? {
-      val file = project.rootDir.findFileByRelativePath(pathString)
+      val file = rootDir.findFileByRelativePath(pathString)
       if (file == null && required) {
         error("Cannot find project view file requested in an import: $pathString")
       }

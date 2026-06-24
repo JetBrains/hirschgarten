@@ -2,42 +2,87 @@ package org.jetbrains.bazel.flow.open
 
 import com.intellij.configurationStore.ProjectStoreDescriptor
 import com.intellij.configurationStore.ProjectStorePathCustomizer
-import com.intellij.openapi.application.PathManager
-import com.intellij.openapi.project.getProjectCacheFileName
-import com.intellij.openapi.project.projectsDataDir
-import com.intellij.openapi.vfs.LocalFileSystem
+import com.intellij.openapi.application.runReadActionBlocking
+import com.intellij.openapi.diagnostic.logger
+import com.intellij.openapi.diagnostic.trace
+import com.intellij.openapi.project.Project.DIRECTORY_STORE_FOLDER
+import com.intellij.openapi.project.ProjectManager
+import com.intellij.openapi.vfs.findPsiFile
+import com.intellij.openapi.vfs.refreshAndFindVirtualDirectory
+import com.intellij.util.concurrency.ThreadingAssertions
+import com.intellij.util.concurrency.annotations.RequiresReadLockAbsence
 import org.jetbrains.bazel.commons.constants.Constants
+import org.jetbrains.bazel.languages.projectview.ProjectView
+import org.jetbrains.bazel.languages.projectview.dotIdeaDirectoryLocation
+import org.jetbrains.bazel.languages.projectview.project.ProjectViewFileLocalizer.isDefaultProjectViewFile
+import org.jetbrains.bazel.languages.projectview.project.ProjectViewFileLocalizer.pickProjectViewFileForProject
+import org.jetbrains.bazel.languages.projectview.psi.ProjectViewPsiFile
+import org.jetbrains.bazel.utils.refreshAndFindVirtualFile
 import java.nio.file.Path
 
 internal class BazelProjectStorePathCustomizer : ProjectStorePathCustomizer {
   override fun getStoreDirectoryPath(projectRoot: Path): ProjectStoreDescriptor? {
+    if (!isFileSupported(projectRoot)) return null
+    return getBazelStoreDirectoryPath(projectRoot)
+  }
+
+  private fun isFileSupported(fileBeingOpen: Path): Boolean {
     // do not use isDirectory, as we also want to check that the file exists
-    if (!projectRoot.hasNameOf(*Constants.SUPPORTED_CONFIG_FILE_NAMES) &&
-      !projectRoot.hasExtensionOf(*Constants.SUPPORTED_EXTENSIONS)
-    ) return null
+    return fileBeingOpen.hasNameOf(*Constants.SUPPORTED_CONFIG_FILE_NAMES) ||
+           fileBeingOpen.hasExtensionOf(*Constants.SUPPORTED_EXTENSIONS)
+  }
 
-    // we should use `getProjectCacheFileName` API,
-    // as in this dir is located a lot of other project-related data, so, location of dir should be in an expected location
-    val cacheDirectoryName = getProjectCacheFileName(projectRoot)
-    val dotIdea = projectsDataDir.resolve(cacheDirectoryName).resolve("bazel.idea")
-    val workspaceXml =
-      PathManager
-        .getConfigDir()
-        .resolve("workspace")
-        .resolve("bazel")
-        .resolve("$cacheDirectoryName.xml")
+  private fun getBazelStoreDirectoryPath(fileBeingOpen: Path): BazelProjectStoreDescriptor {
+    log.info("Computing BazelProjectStoreDescriptor for file: $fileBeingOpen")
 
-    val historicalProjectBasePath = LocalFileSystem.getInstance()
-      .refreshAndFindFileByNioFile(projectRoot)
-      ?.let(::findProjectFolderFromVFile)
-      ?.toNioPath()
-      ?: projectRoot.parent
+    val projectRootPath = findProjectRootPath(fileBeingOpen)
+    val projectIdentityFilePath = selectProjectIdentityFilePath(projectRootPath, fileBeingOpen)
+    val projectViewFile = pickProjectViewFileForProject(projectIdentityFilePath, projectRootPath)
+    val dotIdeaPath = selectDotIdeaPath(projectRootPath, projectViewFile)
 
+    log.trace { "projectRootPath = $projectRootPath, projectIdentityFilePath = $projectIdentityFilePath, projectViewFile = $projectViewFile, dotIdea = $dotIdeaPath" }
     return BazelProjectStoreDescriptor(
-      projectIdentityFile = projectRoot,
-      dotIdea = dotIdea,
-      historicalProjectBasePath = historicalProjectBasePath,
-      workspaceXml = workspaceXml,
+      projectIdentityFile = projectIdentityFilePath,
+      dotIdea = dotIdeaPath,
+      historicalProjectBasePath = projectRootPath,
+      projectViewFile = projectViewFile,
     )
+  }
+
+  private fun selectProjectIdentityFilePath(projectRoot: Path, fileBeingOpen: Path): Path {
+    // The purpose of this function is to improve the user's experience with project history.
+    // When the file being opened is one of the project view files that the plugin can automatically pick
+    // during project opening (the "default project view"), then the project identity file will become MODULE.bazel.
+    // This way, we won't create multiple history entries that will ultimately open the same project view.
+    if (isDefaultProjectViewFile(fileBeingOpen, projectRoot)) {
+      projectRoot.workspaceFile?.let { return it }
+    }
+    return fileBeingOpen
+  }
+
+  private fun findProjectRootPath(fileBeingOpen: Path): Path =
+    findProjectFolderFromFile(fileBeingOpen) ?: fileBeingOpen.parent
+
+  @RequiresReadLockAbsence(generateAssertion = false)
+  private fun selectDotIdeaPath(projectRootPath: Path, projectViewPath: Path): Path {
+    // The VFS refresh requires that there be no active read locks;
+    // otherwise, it will not perform any action and will not provide a warning.
+    ThreadingAssertions.assertNoReadAccess()
+    val projectViewFile = projectViewPath.refreshAndFindVirtualFile() ?: return projectRootPath.defaultDotIdeaDirectory()
+    val rootDir = projectRootPath.refreshAndFindVirtualDirectory() ?: return projectRootPath.defaultDotIdeaDirectory()
+    return runReadActionBlocking {
+      projectViewFile
+        .findPsiFile(ProjectManager.getInstance().defaultProject)
+        ?.let { it as? ProjectViewPsiFile }
+        ?.let { ProjectView.fromProjectViewPsiFile(it, rootDir) }
+        ?.dotIdeaDirectoryLocation
+        ?.let(projectRootPath::resolve) ?: projectRootPath.defaultDotIdeaDirectory()
+    }
+  }
+
+  private fun Path.defaultDotIdeaDirectory(): Path = resolve(DIRECTORY_STORE_FOLDER)
+
+  companion object {
+    private val log = logger<BazelProjectStorePathCustomizer>()
   }
 }
