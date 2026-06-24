@@ -2,8 +2,6 @@ package org.jetbrains.bazel.sync.workspace.targetKind
 
 import com.google.devtools.intellij.ideinfo.IntellijIdeInfo.TargetIdeInfo
 import org.jetbrains.bazel.commons.LanguageClass
-import org.jetbrains.bazel.commons.LanguageClass.JAVA
-import org.jetbrains.bazel.commons.LanguageClass.KOTLIN
 import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.commons.TargetKind
 
@@ -43,10 +41,10 @@ private class GenericBazelRules : TargetKindProvider {
         add(LanguageClass.PROTOBUF)
       }
       if (target.hasKotlinTargetInfo()) {
-        add(KOTLIN)
+        add(LanguageClass.KOTLIN)
       }
       if (target.javaCommon.jvmTarget) {
-        add(JAVA)
+        add(LanguageClass.JAVA)
       }
       if (target.hasPythonTargetInfo()) {
         add(LanguageClass.PYTHON)
