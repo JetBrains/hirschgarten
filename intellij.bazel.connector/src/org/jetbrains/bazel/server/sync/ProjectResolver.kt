@@ -340,7 +340,10 @@ class ProjectResolver(
                 throw e
               }
             }
-            shardedBuildResult = shardedBuildResult.merge(result)
+            // As bazel starts the naming of the namedSetOfFiles freshly (starting from "0") on each run, we have to distinguish
+            // them somehow; we do this by encoding the shard number in their names.
+            val runResult = result.renameNamedSets(shardNumber)
+            shardedBuildResult = shardedBuildResult.merge(runResult)
 
             taskLogger.message("---")
             ++shardNumber
