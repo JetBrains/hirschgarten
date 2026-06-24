@@ -66,9 +66,28 @@ class BepOutput(
     }
   }
 
+  /**
+   * Rename all namedSetOfFiles occurring in the BepOutput by encoding the run number.
+   */
+  fun renameNamedSets(runNumber: Int) : BepOutput  {
+    val renameSetName = { name : String -> "${runNumber}.${name}" }
+    return BepOutput(
+      outputGroups = outputGroups.mapValues {  (_, entries) -> entries.map(renameSetName).toSet() },
+      textProtoFileSets = textProtoFileSets.map { (key, entry) -> renameSetName(key) to TextProtoDepSet(entry.files, entry.children.map(renameSetName) ) }.toMap(),
+      rootTargets = rootTargets,
+      options = options,
+      configurations = configurations,
+      buildToolVersion = buildToolVersion,
+    )
+ }
+
+
+
   fun merge(anotherBepOutput: BepOutput): BepOutput =
     BepOutput(
-      outputGroups = outputGroups + anotherBepOutput.outputGroups,
+      outputGroups = (outputGroups.keys + anotherBepOutput.outputGroups.keys).associateWith { k ->
+        (outputGroups[k] ?: emptySet()) + (anotherBepOutput.outputGroups[k] ?: emptySet())
+      },
       textProtoFileSets = (textProtoFileSets.keys + anotherBepOutput.textProtoFileSets.keys).associateWith { k ->
         val left = textProtoFileSets[k] ?: TextProtoDepSet(emptyList(), emptyList())
         val right = anotherBepOutput.textProtoFileSets[k] ?: TextProtoDepSet(emptyList(), emptyList())

@@ -29,6 +29,8 @@ data class BazelBspAspectsManagerResult(val bepOutput: BepOutput, val status: Ba
   val isFailure: Boolean
     get() = status != BazelStatus.SUCCESS
 
+  fun renameNamedSets(runNumber: Int) = BazelBspAspectsManagerResult(bepOutput.renameNamedSets(runNumber), status)
+
   fun merge(anotherResult: BazelBspAspectsManagerResult): BazelBspAspectsManagerResult =
     BazelBspAspectsManagerResult(bepOutput.merge(anotherResult.bepOutput), status.merge(anotherResult.status))
 
