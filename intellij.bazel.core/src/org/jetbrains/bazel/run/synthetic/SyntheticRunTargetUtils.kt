@@ -2,9 +2,7 @@ package org.jetbrains.bazel.run.synthetic
 
 import com.intellij.execution.Executor
 import com.intellij.execution.RunManager
-import com.intellij.execution.actions.RunConfigurationsComboBoxAction
 import com.intellij.execution.configurations.runConfigurationType
-import com.intellij.execution.runners.ProgramRunner
 import com.intellij.lang.Language
 import com.intellij.openapi.actionSystem.DefaultActionGroup
 import com.intellij.openapi.project.Project
@@ -20,6 +18,7 @@ import org.jetbrains.bazel.run.RunHandlerProvider
 import org.jetbrains.bazel.run.config.BazelRunConfiguration
 import org.jetbrains.bazel.run.config.BazelRunConfigurationType
 import org.jetbrains.bazel.runnerAction.RunSyntheticTargetAction
+import org.jetbrains.bazel.ui.widgets.tool.window.utils.getSupportedExecutors as getSupportedRunConfigurationExecutors
 import org.jetbrains.bsp.protocol.ExecutableTarget
 
 @ApiStatus.Internal
@@ -78,12 +77,6 @@ object SyntheticRunTargetUtils {
     val configuration = settings.configuration as BazelRunConfiguration
     configuration.updateRunProvider(listOf(syntheticTargetId), originalTargetProvider)
 
-    return buildList {
-      RunConfigurationsComboBoxAction.forAllExecutors { executor ->
-        if (ProgramRunner.getRunner(executor.id, configuration) != null) {
-          add(executor)
-        }
-      }
-    }
+    return getSupportedRunConfigurationExecutors(settings)
   }
 }

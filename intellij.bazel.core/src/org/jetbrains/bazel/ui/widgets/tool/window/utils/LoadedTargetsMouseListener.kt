@@ -4,6 +4,7 @@ import com.intellij.codeInsight.hints.presentation.MouseButton
 import com.intellij.codeInsight.hints.presentation.mouseButton
 import com.intellij.execution.ExecutionBundle
 import com.intellij.execution.Executor
+import com.intellij.execution.RunnerAndConfigurationSettings
 import com.intellij.execution.actions.RunConfigurationsComboBoxAction
 import com.intellij.execution.runners.ProgramRunner
 import com.intellij.openapi.actionSystem.ActionGroup
@@ -179,6 +180,10 @@ internal fun DefaultActionGroup.fillWithEligibleActions(
 internal fun getSupportedExecutors(project: Project, target: ExecutableTarget): List<Executor> {
   if (!target.kind.isExecutable) return emptyList()
   val runConfiguration = RunTargetAction(project, target).createRunConfiguration()
+  return getSupportedExecutors(runConfiguration)
+}
+
+internal fun getSupportedExecutors(runConfiguration: RunnerAndConfigurationSettings): List<Executor> {
   val supportedExecutors = mutableListOf<Executor>()
   RunConfigurationsComboBoxAction.forAllExecutors { executor ->
     if (ProgramRunner.getRunner(executor.id, runConfiguration.configuration) != null) {
