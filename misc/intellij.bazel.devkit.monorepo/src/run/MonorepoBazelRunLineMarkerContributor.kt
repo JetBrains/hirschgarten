@@ -12,9 +12,8 @@ import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.java.ui.gutters.BazelJavaRunLineMarkerContributor
 import org.jetbrains.bazel.kotlin.ui.gutters.BazelKotlinRunLineMarkerContributor
 import org.jetbrains.bazel.label.Label
-import org.jetbrains.bazel.languages.projectview.ProjectViewService
 import org.jetbrains.bazel.languages.starlark.repomapping.PersistentBazelRepoMappingService
-import org.jetbrains.bazel.settings.bazel.bazelProjectSettings
+import org.jetbrains.bazel.project.DefaultProjectViewService
 import org.jetbrains.bazel.sync.workspace.targetKind.TargetKindService
 import org.jetbrains.bazel.ui.gutters.NonImportedExecutableTarget
 import org.jetbrains.bazel.ui.gutters.StarlarkRunLineMarkerContributor
@@ -60,9 +59,7 @@ internal class MonorepoProjectViewStartupActivity : ProjectActivity {
       LOG.warn("Missing project view path")
       return
     }
-    project.bazelProjectSettings = project.bazelProjectSettings
-      .withNewProjectViewPath(projectViewPath)
-    ProjectViewService.getInstance(project).forceReparseCurrentProjectViewFiles()
+    DefaultProjectViewService.getInstance(project).forceLoadProjectViewFile(projectViewPath)
   }
 }
 

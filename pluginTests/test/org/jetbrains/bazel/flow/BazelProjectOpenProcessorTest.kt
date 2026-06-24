@@ -5,16 +5,13 @@ import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.projectImport.ProjectOpenProcessor
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
-import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.shouldBe
 import org.jetbrains.bazel.commons.constants.Constants
 import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.config.BazelPluginConstants
-import org.jetbrains.bazel.flow.open.BUILD_FILE_GLOB
 import java.nio.file.Path
 import kotlin.io.path.createDirectories
 import kotlin.io.path.createTempDirectory
-import kotlin.io.path.listDirectoryEntries
 
 private const val BUILD_FILE_NAME = "BUILD.bazel"
 
@@ -38,12 +35,6 @@ class BazelProjectOpenProcessorTest : BasePlatformTestCase() {
     finally {
       super.tearDown()
     }
-  }
-
-  fun `test should find out build file with BUILD_FILE_GLOB`() {
-    val buildFile = directoryRoot.resolve(BUILD_FILE_NAME)
-    buildFile.also { it.createFile() }
-    directoryRoot.listDirectoryEntries(glob = BUILD_FILE_GLOB) shouldContain buildFile
   }
 
   fun `test should not open directory with dot idea when auto open is disabled`() {

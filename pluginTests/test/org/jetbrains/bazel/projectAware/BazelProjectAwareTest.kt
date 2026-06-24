@@ -1,5 +1,6 @@
 package org.jetbrains.bazel.projectAware
 
+import com.intellij.openapi.application.ReadAction
 import com.intellij.openapi.vfs.VirtualFile
 import io.kotest.assertions.throwables.shouldNotThrowAny
 import io.kotest.assertions.throwables.shouldThrow
@@ -21,7 +22,7 @@ internal class BazelProjectAwareTest : WorkspaceModelBaseTest() {
     prepareFiles()
     val projectAware = BazelProjectAware(project)
 
-    val result = shouldNotThrowAny { projectAware.settingsFiles }
+    val result = shouldNotThrowAny { computeSettingsFiles(projectAware) }
 
     val fileNames = result.map { Path.of(it).fileName.toString() }
     fileNames shouldContainAll listOf("MODULE.bazel", ".bazelrc")
@@ -34,7 +35,7 @@ internal class BazelProjectAwareTest : WorkspaceModelBaseTest() {
     val syncCache = SyncCache.getInstance(project)
 
     syncCache.isAlreadyComputed(projectAware.cachedBazelFiles).shouldBeFalse()
-    projectAware.settingsFiles
+    computeSettingsFiles(projectAware)
     syncCache.isAlreadyComputed(projectAware.cachedBazelFiles).shouldBeTrue()
   }
 
@@ -68,7 +69,10 @@ internal class BazelProjectAwareTest : WorkspaceModelBaseTest() {
     }
   }
 
-  private fun <T: Any> runInBackgroundWithWriteLockTaken(action: () -> T) =
+  private fun computeSettingsFiles(projectAware: BazelProjectAware): Set<String> =
+    ReadAction.nonBlocking<Set<String>> { projectAware.settingsFiles }.executeSynchronously()
+
+  private fun <T : Any> runInBackgroundWithWriteLockTaken(action: () -> T) =
     runTestWriteAction {
       withContext(Dispatchers.Default) { action() }
     }

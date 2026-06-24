@@ -1,120 +1,68 @@
 package org.jetbrains.bazel.flow.open
 
-import com.intellij.ide.impl.OpenProjectTask
-import com.intellij.openapi.application.ApplicationManager
+import com.intellij.ide.impl.toOpenProjectTask
 import com.intellij.openapi.components.service
 import com.intellij.openapi.diagnostic.logger
+import com.intellij.openapi.diagnostic.trace
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.ex.ProjectManagerEx
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.refreshAndFindVirtualFile
 import com.intellij.openapi.vfs.toNioPathOrNull
 import com.intellij.projectImport.ProjectOpenProcessor
-import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.assets.BazelPluginIcons
-import org.jetbrains.bazel.commons.constants.Constants
 import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.config.BazelPluginConstants
-import org.jetbrains.bazel.settings.bazel.bazelProjectSettings
+import org.jetbrains.bazel.coroutines.BazelCoroutineService
+import org.jetbrains.bazel.languages.projectview.project.ProjectViewFileLocalizer.pickProjectViewFileForProject
 import org.jetbrains.bazel.target.TargetUtils
-import java.nio.file.Path
 import javax.swing.Icon
-
-private val log = logger<BazelProjectOpenProcessor>()
-
-@ApiStatus.Internal
-val BUILD_FILE_GLOB: String = Constants.BUILD_FILE_NAMES.joinToString(
-  prefix = "{",
-  separator = ",",
-  postfix = "}",
-)
 
 /**
  * Refrain from using [VirtualFile.getChildren] as it causes performance issues in large projects, such as [BAZEL-1717](https://youtrack.jetbrains.com/issue/BAZEL-1717)
  */
 internal class BazelProjectOpenProcessor : ProjectOpenProcessor() {
-  // Deprecated in ProjectOpenProcessor superclass
-  @Deprecated("Use openProjectAsync instead", replaceWith = ReplaceWith("openProjectAsync(virtualFile, projectToClose, forceOpenInNewFrame)"), level = DeprecationLevel.ERROR)
-  override fun doOpenProject(
-    virtualFile: VirtualFile,
-    projectToClose: Project?,
-    forceOpenInNewFrame: Boolean,
-  ): Project? {
-    log.info("Opening project :$virtualFile")
-    val (projectStoreBaseDir, options) =
-      calculateOpenProjectTask(virtualFile, forceOpenInNewFrame, projectToClose) ?: return null
-
-    return ProjectManagerEx
-      .getInstanceEx()
-      .openProject(projectStoreBaseDir, options)
-  }
-
   override suspend fun openProjectAsync(
     virtualFile: VirtualFile,
-    projectToClose: Project?,
-    forceOpenInNewFrame: Boolean,
+    projectOpenOptions: ProjectOpenOptions
   ): Project? {
-    log.info("Opening asynchronously project :$virtualFile")
-    val (projectStoreBaseDir, options) =
-      calculateOpenProjectTask(virtualFile, forceOpenInNewFrame, projectToClose) ?: return null
+    val fileBeingOpen = virtualFile.toNioPathOrNull() ?: return null
+    log.info("Opening asynchronously file as a Bazel project: $fileBeingOpen")
+
+    // The user (or another part of the plugin) may try to open the project by pointing to:
+    // BUILD files, MODULE.bazel, project view file, etc. so we need to do normalization here
+    val projectRootDir = findProjectFolderFromFile(fileBeingOpen) ?: return null
+    log.trace { "Found project root directory: $projectRootDir" }
+
+    val projectViewFile = pickProjectViewFileForProject(fileBeingOpen, projectRootDir)
+    log.trace { "Using project view file: $projectViewFile" }
+
+    val openProjectTask = projectOpenOptions.toOpenProjectTask().copy(
+      // Setting this flag to true will remove existing .idea directory.
+      // We must overwrite it because ProjectUtil#openOrImportAsync sets it to true.
+      isNewProject = false,
+      runConfigurators = true,
+
+      projectRootDir = projectRootDir,
+      createModule = false,
+
+      callback = { project, _ ->
+        BazelCoroutineService.getInstance(project).start {
+          projectViewFile
+            .refreshAndFindVirtualFile()
+            ?.let { projectViewPath ->
+              openProjectViewInEditor(project, projectViewPath)
+            }
+        }
+
+        // force async load targets cache
+        project.service<TargetUtils>()
+      }
+    )
 
     return ProjectManagerEx
       .getInstanceEx()
-      .openProjectAsync(projectStoreBaseDir, options)
-  }
-
-  private fun calculateOpenProjectTask(
-    virtualFile: VirtualFile,
-    forceOpenInNewFrame: Boolean,
-    projectToClose: Project?,
-  ): Pair<Path, OpenProjectTask>? {
-    // todo why do we even need to calculate the project root dir?
-    // todo refactor
-
-    val path = virtualFile.toNioPathOrNull() ?: return null
-
-    val (projectRootDir, projectViewPath) =
-      if (path.workspaceFile != null) {
-        path to null
-      } else {
-        val projectRootDir = findProjectFolderFromFile(path)
-        val projectViewPath = projectRootDir?.let { getProjectViewPath(it, path) }
-        projectRootDir to projectViewPath
-      }
-
-    val projectStoreBaseDir = projectViewPath ?: projectRootDir?.workspaceFile
-    if (projectStoreBaseDir == null || projectRootDir == null) {
-      log.warn("Unable to open Bazel project at ${virtualFile.presentableUrl}")
-      return null
-    }
-
-    return (projectStoreBaseDir) to
-      OpenProjectTask {
-        runConfigurators = true
-        isRefreshVfsNeeded = !ApplicationManager.getApplication().isUnitTestMode
-
-        this.projectRootDir = projectRootDir
-        this.forceOpenInNewFrame = forceOpenInNewFrame
-        this.projectToClose = projectToClose
-        this.createModule = false
-
-        beforeOpen = { project ->
-          projectViewPath
-            ?.refreshAndFindVirtualFile()
-            ?.let { projectViewPath ->
-              project.bazelProjectSettings = project.bazelProjectSettings
-                .withNewProjectViewPath(projectViewPath)
-              openProjectViewInEditor(project, projectViewPath)
-            }
-
-          true
-        }
-
-        callback = { project, _ ->
-          // force async load targets cache
-          project.service<TargetUtils>()
-        }
-      }
+      .openProjectAsync(projectViewFile, openProjectTask)
   }
 
   override val icon: Icon
@@ -135,5 +83,9 @@ internal class BazelProjectOpenProcessor : ProjectOpenProcessor() {
         file.findChild(Project.DIRECTORY_STORE_FOLDER) != null) return false
 
     return findProjectFolderFromVFile(file) != null
+  }
+
+  companion object {
+    private val log = logger<BazelProjectOpenProcessor>()
   }
 }

@@ -13,10 +13,10 @@ import org.jetbrains.bazel.config.BazelPluginBundle.message
 import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.languages.projectview.psi.addDirectoriesInclude
 import org.jetbrains.bazel.languages.projectview.psi.directoriesContainsInclude
-import org.jetbrains.bazel.languages.projectview.psi.getProjectViewPsiFileOrNull
 import org.jetbrains.bazel.languages.projectview.psi.isDirectoriesNullOrEmpty
 import org.jetbrains.bazel.languages.projectview.psi.removeDirectoriesExclude
-import org.jetbrains.bazel.settings.bazel.bazelProjectSettings
+import org.jetbrains.bazel.project.projectViewFile
+import org.jetbrains.bazel.project.projectViewFilePsiFile
 import org.jetbrains.bazel.sync.environment.BazelProjectContextService
 import org.jetbrains.bazel.utils.findNearestParent
 import org.jetbrains.bazel.utils.selectedDirectory
@@ -28,7 +28,7 @@ internal class AddToProjectViewDirectoriesAction : AnAction() {
   override fun actionPerformed(e: AnActionEvent) {
     val directory = e.selectedDirectory ?: return
     val project = e.project ?: return
-    val projectViewPsi = project.getProjectViewPsiFileOrNull() ?: return
+    val projectViewPsi = project.projectViewFilePsiFile ?: return
     val includes = project.includedRoots().orEmpty()
     val excludes = project.excludedRoots().orEmpty()
     val nearestParent = directory.findNearestParent(includes + excludes - directory)
@@ -70,7 +70,6 @@ internal class AddToProjectViewDirectoriesAction : AnAction() {
   private fun Project.getProjectViewIfApplicableTo(e: AnActionEvent): VirtualFile? {
     if (DumbService.isDumb(this)) return null
     val directory = e.selectedDirectory ?: return null
-    val projectViewFile = bazelProjectSettings.projectViewPath ?: return null
     val includes = includedRoots().orEmpty()
     val excludes = excludedRoots().orEmpty()
     return when (directory) {

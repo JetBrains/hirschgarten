@@ -3,68 +3,24 @@ package org.jetbrains.bazel.flow.open
 import com.intellij.ide.impl.OpenProjectTask
 import com.intellij.ide.impl.ProjectUtil
 import com.intellij.openapi.application.EDT
-import com.intellij.openapi.components.serviceAsync
-import com.intellij.openapi.diagnostic.thisLogger
 import com.intellij.openapi.fileEditor.ex.FileEditorManagerEx
 import com.intellij.openapi.fileEditor.impl.FileEditorOpenOptions
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.project.ProjectManager
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.isFile
-import com.intellij.openapi.vfs.refreshAndFindVirtualDirectory
 import com.intellij.openapi.vfs.refreshAndFindVirtualFileOrDirectory
 import com.intellij.openapi.vfs.toNioPathOrNull
 import com.intellij.util.concurrency.annotations.RequiresBackgroundThread
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.commons.constants.Constants
 import org.jetbrains.bazel.coroutines.BazelApplicationCoroutineScopeService
-import java.io.IOException
 import java.nio.file.Files.isDirectory
 import java.nio.file.Files.isRegularFile
-import java.nio.file.Files.newDirectoryStream
 import java.nio.file.Path
 import kotlin.io.path.extension
 import kotlin.io.path.name
-import kotlin.io.path.relativeTo
-
-/**
- * this method can be used to set up additional project properties before opening the Bazel project
- * @param path the file passed to the project open processor
- */
-@RequiresBackgroundThread
-internal fun getProjectViewPath(
-  projectRootDir: Path,
-  path: Path,
-): Path? {
-  fun calculateProjectViewFilePath(directory: Path): Path? {
-    val virtualDirectory = projectRootDir.refreshAndFindVirtualDirectory() ?: return null
-    return ProjectViewFileUtils.calculateProjectViewFilePath(
-      projectRootDir = virtualDirectory,
-      projectViewPath = null,
-      overwrite = true,
-      format = directory.relativeTo(projectRootDir).toString(),
-    )
-  }
-
-  return when {
-    path.hasExtensionOf(Constants.PROJECT_VIEW_FILE_EXTENSION) -> path
-    // BUILD file at the root can be treated as a workspace file in this context
-    path.hasNameOf(*Constants.BUILD_FILE_NAMES) -> {
-      path.parent
-        //?.takeUnless { it.workspaceFile != null }
-        ?.let { calculateProjectViewFilePath(it) }
-    }
-
-    path.hasNameOf(*Constants.WORKSPACE_FILE_NAMES) -> null
-    path.workspaceFile != null -> null
-    else -> {
-      path.getBuildFileForPackageDirectory()
-        ?.parent
-        ?.let { calculateProjectViewFilePath(it) }
-    }
-  }
-}
 
 /**
  * when a file/subdirectory is selected for opening a Bazel project,
@@ -109,18 +65,6 @@ internal fun Path.hasExtensionOf(vararg extensions: String): Boolean =
   isRegularFile(this) &&
     extension in extensions
 
-private fun Path.getBuildFileForPackageDirectory(): Path? {
-  if (!isDirectory(this)) return null
-
-  return try {
-    newDirectoryStream(this, BUILD_FILE_GLOB)
-      .firstOrNull { isRegularFile(it) }
-  } catch (e: IOException) {
-    thisLogger().warn("Cannot retrieve Bazel BUILD file from directory: $this", e)
-    null
-  }
-}
-
 internal fun VirtualFile.isBazelWorkspaceFile(): Boolean {
   if (!isFile) return false
   return name in Constants.WORKSPACE_FILE_NAMES || extension == Constants.PROJECT_VIEW_FILE_EXTENSION
@@ -147,19 +91,14 @@ internal suspend fun openProjectViewInEditor(
  * Closes the current project and reopens it as a Bazel project.
  * Must be called from application-level scope (use [BazelApplicationCoroutineScopeService.launch]).
  */
-internal suspend fun closeAndReopenAsBazelProject(project: Project, file: Path) {
-  val projectManager = serviceAsync<ProjectManager>()
-  withContext(Dispatchers.EDT) {
-    projectManager.closeAndDispose(project)
-  }
-
+@ApiStatus.Internal
+suspend fun closeAndReopenAsBazelProject(project: Project, file: Path) {
   ProjectUtil.openOrImportAsync(
     file = file,
     options = OpenProjectTask {
+      forceReuseFrame = true
       runConfigurators = true
-      isNewProject = true
-      useDefaultProjectAsTemplate = true
-      forceOpenInNewFrame = true
+      projectToClose = project
     },
   )
 }

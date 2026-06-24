@@ -10,6 +10,7 @@ import org.jetbrains.bazel.languages.projectview.sections.DebugFlagsSection
 import org.jetbrains.bazel.languages.projectview.sections.DeriveInstrumentationFilterFromTargetsSection
 import org.jetbrains.bazel.languages.projectview.sections.DeriveTargetsFromDirectoriesSection
 import org.jetbrains.bazel.languages.projectview.sections.DirectoriesSection
+import org.jetbrains.bazel.languages.projectview.sections.DotIdeaDirectoryLocationSection
 import org.jetbrains.bazel.languages.projectview.sections.GazelleTargetSection
 import org.jetbrains.bazel.languages.projectview.sections.IdeJavaHomeOverrideSection
 import org.jetbrains.bazel.languages.projectview.sections.ImportDepthSection
@@ -65,6 +66,7 @@ internal class DefaultProjectViewSectionProvider : ProjectViewSectionProvider {
       PreferClassJarsOverSourcelessJarsSection(),
       RunConfigRunWithBazelSection(),
       TestSourcesSection(),
+      DotIdeaDirectoryLocationSection(),
     )
 }
 
