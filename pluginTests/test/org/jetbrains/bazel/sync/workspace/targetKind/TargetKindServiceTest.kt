@@ -1,12 +1,14 @@
 package org.jetbrains.bazel.sync.workspace.targetKind
 
 import com.google.devtools.intellij.ideinfo.IntellijIdeInfo.JavaCommonInfo
+import com.google.devtools.intellij.ideinfo.IntellijIdeInfo.KotlinTargetInfo
 import com.google.devtools.intellij.ideinfo.IntellijIdeInfo.TargetIdeInfo
 import com.google.devtools.intellij.ideinfo.IntellijIdeInfo.ExecutableInfo
 import io.kotest.matchers.nulls.shouldBeNull
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeSameInstanceAs
 import org.jetbrains.bazel.commons.LanguageClass.JAVA
+import org.jetbrains.bazel.commons.LanguageClass.KOTLIN
 import org.jetbrains.bazel.commons.RuleType.BINARY
 import org.jetbrains.bazel.commons.RuleType.LIBRARY
 import org.jetbrains.bazel.commons.RuleType.TEST
@@ -37,6 +39,18 @@ class TargetKindServiceTest {
   fun `fromTargetInfo infers library for unknown jvm kind when not executable`() {
     val target = targetInfo("custom_lib", executable = false, jvmTarget = true)
     service.fromTargetInfo(target) shouldBe TargetKind("custom_lib", setOf(JAVA), LIBRARY)
+  }
+
+  @Test
+  fun `fromTargetInfo infers kotlin language for unknown kt_jvm kind`() {
+    val target = targetInfo("_kt_jvm_library", executable = false, jvmTarget = true)
+    service.fromTargetInfo(target) shouldBe TargetKind("_kt_jvm_library", setOf(JAVA, KOTLIN), LIBRARY)
+  }
+
+  @Test
+  fun `fromTargetInfo infers kotlin language from kotlin target info`() {
+    val target = targetInfo("_kt_jvm_library", executable = false, kotlinTarget = true)
+    service.fromTargetInfo(target) shouldBe TargetKind("_kt_jvm_library", setOf(JAVA, KOTLIN), LIBRARY)
   }
 
   @Test
@@ -149,6 +163,7 @@ private fun targetInfo(
   kind: String,
   executable: Boolean = false,
   jvmTarget: Boolean = false,
+  kotlinTarget: Boolean = false,
 ): TargetIdeInfo {
   val builder =
     TargetIdeInfo.newBuilder()
@@ -159,6 +174,9 @@ private fun targetInfo(
         }
         if (jvmTarget) {
           javaCommon = JavaCommonInfo.newBuilder().setJvmTarget(true).build()
+        }
+        if (kotlinTarget) {
+          kotlinTargetInfo = KotlinTargetInfo.getDefaultInstance()
         }
       }
   return builder.build()

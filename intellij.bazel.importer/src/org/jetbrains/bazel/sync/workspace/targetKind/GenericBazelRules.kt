@@ -2,6 +2,8 @@ package org.jetbrains.bazel.sync.workspace.targetKind
 
 import com.google.devtools.intellij.ideinfo.IntellijIdeInfo.TargetIdeInfo
 import org.jetbrains.bazel.commons.LanguageClass
+import org.jetbrains.bazel.commons.LanguageClass.JAVA
+import org.jetbrains.bazel.commons.LanguageClass.KOTLIN
 import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.commons.TargetKind
 
@@ -40,8 +42,15 @@ private class GenericBazelRules : TargetKindProvider {
       if (target.hasProtobufTargetInfo()) {
         add(LanguageClass.PROTOBUF)
       }
+      if (target.hasKotlinTargetInfo()) {
+        add(JAVA)
+        add(KOTLIN)
+      }
       if (target.javaCommon.jvmTarget) {
-        add(LanguageClass.JAVA)
+        add(JAVA)
+        if (target.kind.isKotlinJvmRuleKind()) {
+          add(KOTLIN)
+        }
       }
       if (target.hasPythonTargetInfo()) {
         add(LanguageClass.PYTHON)
@@ -54,4 +63,6 @@ private class GenericBazelRules : TargetKindProvider {
     if (inferredLanguages.isEmpty()) return null
     return TargetKind(target.kind, inferredLanguages, target.inferRuleType())
   }
+
+  private fun String.isKotlinJvmRuleKind(): Boolean = contains("kt_jvm")
 }
