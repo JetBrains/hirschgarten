@@ -26,7 +26,10 @@ internal class RunSyntheticTargetAction(
   private val targetElement: PsiElement,
 ) : BaseRunnerAction(project, executor = executor, configurationName = target.id.toShortString(project)) {
 
-  override suspend fun getRunnerSettings(): RunnerAndConfigurationSettings {
+  override suspend fun getRunnerSettings(): RunnerAndConfigurationSettings =
+    createRunConfiguration() ?: error("Failed to get run provider")
+
+  fun createRunConfiguration(): RunnerAndConfigurationSettings? {
     val configurationType = runConfigurationType<BazelRunConfigurationType>()
     val factory = configurationType.configurationFactories.first()
     val name = templateGenerator.getRunnerActionName(configurationName, target, targetElement)
@@ -38,7 +41,7 @@ internal class RunSyntheticTargetAction(
 
     // this runner is inferred from the original target
     val originalTargetProvider = RunHandlerProvider.getRunHandlerProvider(listOf(target.kind))
-      ?: error("Failed to get run provider")
+      ?: return null
     config.updateRunProvider(listOf(syntheticTargetId), originalTargetProvider)
 
     val provider = BeforeRunTaskProvider.getProvider(project, GENERATE_SYNTHETIC_PROVIDER_ID)

@@ -1,8 +1,6 @@
 package org.jetbrains.bazel.run.synthetic
 
 import com.intellij.execution.Executor
-import com.intellij.execution.RunManager
-import com.intellij.execution.configurations.runConfigurationType
 import com.intellij.lang.Language
 import com.intellij.openapi.actionSystem.DefaultActionGroup
 import com.intellij.openapi.project.Project
@@ -14,9 +12,6 @@ import org.jetbrains.bazel.label.Main
 import org.jetbrains.bazel.label.Package
 import org.jetbrains.bazel.label.ResolvedLabel
 import org.jetbrains.bazel.label.SingleTarget
-import org.jetbrains.bazel.run.RunHandlerProvider
-import org.jetbrains.bazel.run.config.BazelRunConfiguration
-import org.jetbrains.bazel.run.config.BazelRunConfigurationType
 import org.jetbrains.bazel.runnerAction.RunSyntheticTargetAction
 import org.jetbrains.bazel.ui.widgets.tool.window.utils.getSupportedExecutors as getSupportedRunConfigurationExecutors
 import org.jetbrains.bsp.protocol.ExecutableTarget
@@ -69,14 +64,12 @@ object SyntheticRunTargetUtils {
     element: PsiElement,
     generator: SyntheticRunTargetTemplateGenerator,
   ): List<Executor> {
-    val originalTargetProvider = RunHandlerProvider.getRunHandlerProvider(listOf(target.kind)) ?: return emptyList()
-    val syntheticTargetId = generator.getSyntheticTargetLabel(target, element)
-    val configurationType = runConfigurationType<BazelRunConfigurationType>()
-    val factory = configurationType.configurationFactories.first()
-    val settings = RunManager.getInstance(project).createConfiguration(target.id.toString(), factory)
-    val configuration = settings.configuration as BazelRunConfiguration
-    configuration.updateRunProvider(listOf(syntheticTargetId), originalTargetProvider)
-
+    val settings = RunSyntheticTargetAction(
+      project = project,
+      target = target,
+      templateGenerator = generator,
+      targetElement = element,
+    ).createRunConfiguration() ?: return emptyList()
     return getSupportedRunConfigurationExecutors(settings)
   }
 }
