@@ -339,6 +339,7 @@ class ProjectViewCombinedTest : IdeStarterBaseProjectTest() {
             buildAndSync()
             waitForSmartMode()
           }
+          waitForSyncSucceeded()
         }
         step("Verify no targets are synced (not a fallback to //...)") {
           execute { assertSyncedTargets() }
@@ -360,6 +361,7 @@ class ProjectViewCombinedTest : IdeStarterBaseProjectTest() {
             buildAndSync()
             waitForSmartMode()
           }
+          waitForSyncSucceeded()
         }
         step("Open the BUILD file inside //binary") {
           openFile("binary/BUILD.bazel")
