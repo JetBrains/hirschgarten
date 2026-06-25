@@ -13,6 +13,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.platform.util.progress.RawProgressReporter
 import io.grpc.stub.StreamObserver
 import org.jetbrains.annotations.ApiStatus
+import org.jetbrains.annotations.VisibleForTesting
 import org.jetbrains.bazel.commons.BazelPathsResolver
 import org.jetbrains.bazel.commons.BazelRelease
 import org.jetbrains.bazel.commons.BazelStatus
@@ -462,6 +463,10 @@ class BepServer(
   internal val bepOutput: BepOutput = bepOutputBuilder.build()
   var bepMetrics: BuildEventStreamProtos.BuildMetrics? = null
     private set
+
+  @ApiStatus.Internal
+  @VisibleForTesting
+  fun getOutputForTesting() = bepOutput
 
   companion object {
     private val ansiEscapeCode = "\\u001B\\[[\\d;]*[^\\d;]".toRegex()
