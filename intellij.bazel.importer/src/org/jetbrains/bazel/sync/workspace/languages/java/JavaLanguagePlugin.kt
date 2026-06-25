@@ -16,6 +16,7 @@ import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.withContext
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.commons.LanguageClass
+import org.jetbrains.bazel.commons.LanguageClassService
 import org.jetbrains.bazel.commons.LocalRepositoryMapping
 import org.jetbrains.bazel.commons.RepoMapping
 import org.jetbrains.bazel.commons.getLocalRepositories
@@ -54,6 +55,7 @@ import java.nio.charset.StandardCharsets
 import java.nio.file.Path
 import java.nio.file.Paths
 import java.util.concurrent.ConcurrentHashMap
+import kotlin.collections.plus
 import kotlin.io.path.exists
 import kotlin.io.path.extension
 import kotlin.io.path.inputStream
@@ -66,6 +68,7 @@ interface JvmLanguagePluginMixin {
   val providedBuildTargetTypes: Set<KClass<out BuildTargetData>>
 
   fun getSupportedLanguages(): Set<LanguageClass>
+  fun collectUsedLanguages(target: TargetIdeInfo): List<LanguageClass>
   fun createProjectMapper(project: Project, server: BazelServerFacade): Mapper
 
   /**
@@ -109,7 +112,13 @@ class JavaLanguagePlugin : LanguagePlugin {
   override fun getSupportedLanguages(): Set<LanguageClass> =
     setOf(LanguageClass.JAVA) + JvmLanguagePluginMixin.mixins.flatMap { it.getSupportedLanguages() }
 
-  override fun createProjectMapper(project: Project, server: BazelServerFacade) = Mapper(project, server)
+  override fun collectUsedLanguages(target: TargetIdeInfo): List<LanguageClass> {
+    return JvmLanguagePluginMixin.mixins.flatMap { it.collectUsedLanguages(target) } +
+           (if (target.javaCommon.jvmTarget) listOf(LanguageClass.JAVA) else emptyList())
+  }
+
+
+  override fun createProjectMapper(project: Project, server: BazelServerFacade): Mapper = Mapper(project, server)
   override suspend fun createSyncConfigs(project: Project, workspaceContext: WorkspaceContext): List<WorkspaceSyncConfig> {
     return JvmLanguagePluginMixin.mixins.flatMap { it.createSyncConfigs(project, workspaceContext) } +
            JavaWorkspaceSyncConfig(
@@ -126,7 +135,7 @@ class JavaLanguagePlugin : LanguagePlugin {
            )
   }
 
-  class Mapper(private val project: Project, private val server: BazelServerFacade) : LanguagePlugin.Mapper {
+  inner class Mapper(private val project: Project, private val server: BazelServerFacade) : LanguagePlugin.Mapper {
     private val mixins: List<JvmLanguagePluginMixin.Mapper> = JvmLanguagePluginMixin.mixins.map { it.createProjectMapper(project, server) }
 
     private val bazelPathsResolver = server.bazelPathsResolver
@@ -144,6 +153,9 @@ class JavaLanguagePlugin : LanguagePlugin {
 
     // keep output jar label identity
     private lateinit var outputJarsByLabel: Map<Label, Set<Path>>
+
+    override val langPlugin: LanguagePlugin
+      get() = this@JavaLanguagePlugin
 
     override suspend fun prepareSync(
       graph: DependencyGraph,
@@ -380,7 +392,7 @@ class JavaLanguagePlugin : LanguagePlugin {
       // TODO: support Kotlin strict deps
       // TODO: investigate scala
       val hasJavaSources = target.sourcesList.any {
-        LanguageClass.fromPath(it.relativePath) == LanguageClass.JAVA
+        LanguageClassService.getInstance().fromPath(it.relativePath) == LanguageClass.JAVA
       }
       if (!hasJavaSources)
         return StrictDependencyCheckedType.OFF
@@ -651,7 +663,7 @@ class JavaLanguagePlugin : LanguagePlugin {
       targetInfo.javaCommon.jdepsList
         .flatMap { jdeps ->
           val path = bazelPathsResolver.resolve(jdeps, localRepositories)
-          if (path.toFile().exists()) {
+          if (path.exists()) {
             val dependencyList =
               path.inputStream().use {
                 Deps.Dependencies.parseFrom(it).dependencyList

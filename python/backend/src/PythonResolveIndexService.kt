@@ -11,6 +11,7 @@ import org.jetbrains.bazel.commons.LanguageClass
 import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.coroutines.BazelCoroutineService
 import org.jetbrains.bazel.label.ResolvedLabel
+import org.jetbrains.bazel.python.lang.PythonLanguageClass
 import org.jetbrains.bazel.sync.BazelOutFileHardLinks
 import org.jetbrains.bazel.sync.environment.projectCtx
 import org.jetbrains.bsp.protocol.BuildTarget
@@ -247,7 +248,7 @@ private fun Path.isPythonFile(): Boolean =
   this.isRegularFile() && this.isPythonLanguage()
 
 private fun Path.isPythonLanguage(): Boolean =
-  LanguageClass.fromExtension(this.extension) == LanguageClass.PYTHON
+  LanguageClass.fromExtension(this.extension) == PythonLanguageClass.PYTHON
 
 private val parentPath = Paths.get("..")
 

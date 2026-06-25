@@ -3,6 +3,7 @@
   <dependencies>
     <plugin id="idea.plugin.protoeditor"/>
     <module name="intellij.bazel.commons"/>
+    <module name="intellij.bazel.connector"/>
     <module name="intellij.bazel.core"/>
     <module name="intellij.bazel.importer"/>
   </dependencies>
@@ -10,6 +11,9 @@
 
   <extensions defaultExtensionNs="org.jetbrains.bazel">
     <projectSyncHook implementation="org.jetbrains.bazel.protobuf.BazelProtobufSyncHook" />
+    <targetKindProvider implementation="org.jetbrains.bazel.protobuf.ProtobufTargetKindProvider" />
+    <languageClassProvider implementation="org.jetbrains.bazel.protobuf.ProtobufLanguageClassProvider" />
+    <languagePlugin implementation="org.jetbrains.bazel.protobuf.ProtobufLanguagePlugin"/>
   </extensions>
 
   <extensions defaultExtensionNs="com.intellij.protobuf">

@@ -145,15 +145,6 @@ sealed interface JvmDependency {
   data class ModuleDependency(override val dependency: DependencyLabel) : JvmDependency
 }
 
-@ClassDiscriminator(5)
-@ApiStatus.Internal
-data class GoBuildTarget(
-  @Transient @JvmField val sdkHomePath: Path? = null,
-  val importPath: String,
-  val sources: List<Path>,
-  val libraryLabels: List<Label>,
-) : BuildTargetData
-
 // ClassDiscriminator 6 & 7 were cpp and android, but they have been removed
 
 @ClassDiscriminator(9)

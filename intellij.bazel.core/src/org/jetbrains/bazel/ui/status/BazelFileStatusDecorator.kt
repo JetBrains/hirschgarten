@@ -105,7 +105,7 @@ internal class BazelSourceFileNotificationProvider : EditorNotificationProvider 
   }
 }
 
-private val IGNORE_COLOR: JBColor = JBColor.orange
+private val IGNORE_COLOR: JBColor = JBColor(Color(159, 107, 0), Color(159, 107, 0))
 private val UNSYNCED_BACKGROUND_COLOR: JBColor = JBColor(Color(252, 234, 234), Color(94, 56, 56))
 
 internal class BazelSourceFileNodeDecorator(private val project: Project) : ProjectViewNodeDecorator {
@@ -163,25 +163,12 @@ fun showAsIgnoredSourceFile(project: Project, file: VirtualFile): Boolean {
   return BazelIgnoreService.getInstance(project).isIgnored(file)
 }
 
-@ApiStatus.Internal
-fun refreshAllFilesPresentation(project: Project) {
-  BazelCoroutineService.getInstance(project).start {
-    withContext(Dispatchers.EDT) {
-      ProjectView.getInstance(project).refresh(ProjectViewUpdateCause.PLUGIN_BAZEL)
-      with(FileEditorManager.getInstance(project)) {
-        openFiles.forEach {
-          updateFilePresentation(it)
-        }
-      }
-    }
-  }
-}
-
 @Service(Service.Level.PROJECT)
-internal class BazelFileStatusRefresher(private val project: Project) {
+@ApiStatus.Internal
+class BazelFileStatusRefresher(private val project: Project) {
   init {
     project.targetUtils.onLoaded {
-      refreshAllFilesPresentation(project)
+      refreshAllFilesPresentation()
     }
 
     project.messageBus.connect().subscribe(
@@ -189,13 +176,30 @@ internal class BazelFileStatusRefresher(private val project: Project) {
       object : SyncStatusListener {
         override fun syncStarted() {
           // Cleanup all "unsynced" presentations early
-          refreshAllFilesPresentation(project)
+          refreshAllFilesPresentation()
         }
 
         override fun syncFinished(canceled: Boolean) {
-          refreshAllFilesPresentation(project)
+          refreshAllFilesPresentation()
         }
       },
     )
+  }
+
+  fun refreshAllFilesPresentation() {
+    BazelCoroutineService.getInstance(project).start {
+      withContext(Dispatchers.EDT) {
+        ProjectView.getInstance(project).refresh(ProjectViewUpdateCause.PLUGIN_BAZEL)
+        with(FileEditorManager.getInstance(project)) {
+          openFiles.forEach {
+            updateFilePresentation(it)
+          }
+        }
+      }
+    }
+  }
+
+  companion object {
+    fun getInstance(project: Project): BazelFileStatusRefresher = project.service()
   }
 }

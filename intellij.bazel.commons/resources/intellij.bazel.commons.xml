@@ -185,5 +185,13 @@
     <extensionPoint qualifiedName="org.jetbrains.bazel.bazelExecutableProvider"
                     interface="org.jetbrains.bazel.workspace.BazelExecutableProvider"
                     dynamic="true"/>
+
+    <!-- dynamic="false" because of the caching in the init block of LanguageClassService  -->
+    <extensionPoint
+      dynamic="false"
+      interface="org.jetbrains.bazel.commons.LanguageClassProvider"
+      qualifiedName="org.jetbrains.bazel.languageClassProvider"
+    />
+
   </extensionPoints>
 </idea-plugin>

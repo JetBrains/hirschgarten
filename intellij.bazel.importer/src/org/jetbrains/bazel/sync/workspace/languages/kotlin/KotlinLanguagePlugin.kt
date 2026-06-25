@@ -28,9 +28,16 @@ class KotlinLanguagePlugin : JvmLanguagePluginMixin {
     get() = setOf(KotlinBuildTarget::class)
 
   override fun getSupportedLanguages(): Set<LanguageClass> = setOf(LanguageClass.KOTLIN)
+  override fun collectUsedLanguages(target: TargetIdeInfo): List<LanguageClass> {
+    if (target.hasKotlinTargetInfo()) {
+      return listOf(LanguageClass.KOTLIN)
+    }
+    return emptyList()
+  }
   override fun createProjectMapper(project: Project, server: BazelServerFacade): Mapper = Mapper(server)
 
   class Mapper(private val server: BazelServerFacade) : JvmLanguagePluginMixin.Mapper {
+
     override suspend fun createBuildTargetData(
       target: TargetIdeInfo,
       targetsToImport: Map<WorkspaceTargetKey, TargetIdeInfo>,

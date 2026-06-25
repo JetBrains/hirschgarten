@@ -24,9 +24,9 @@ import com.intellij.psi.PsiDirectory
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.config.isBazelProject
+import org.jetbrains.bazel.golang.sync.extractGoBuildTarget
 import org.jetbrains.bazel.sync.SyncCache
 import org.jetbrains.bazel.target.targetUtils
-import org.jetbrains.bsp.protocol.utils.extractGoBuildTarget
 import java.nio.file.Path
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ConcurrentMap

@@ -12,10 +12,10 @@ import com.intellij.platform.workspace.storage.impl.url.toVirtualFileUrl
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.config.rootDir
+import org.jetbrains.bazel.golang.sync.extractGoBuildTarget
 import org.jetbrains.bazel.sync.ProjectSyncHook
 import org.jetbrains.bazel.utils.filterPathsThatDontContainEachOther
 import org.jetbrains.bazel.workspacemodel.entities.BazelModuleEntitySource
-import org.jetbrains.bsp.protocol.utils.extractGoBuildTarget
 import java.nio.file.Path
 
 internal const val GO_WORKSPACE_MODULE_NAME = ".workspace"

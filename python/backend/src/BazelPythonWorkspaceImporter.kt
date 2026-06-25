@@ -45,7 +45,7 @@ import org.jetbrains.bazel.sync.workspace.importer.BazelWorkspaceImporter
 import org.jetbrains.bazel.sync.workspace.importer.WorkspaceImporterContext
 import org.jetbrains.bazel.sync.workspace.importer.WorkspaceImporterPhase
 import org.jetbrains.bazel.sync.workspace.importer.WorkspaceImporterResult
-import org.jetbrains.bazel.sync.workspace.languages.python.PythonWorkspaceSyncConfig
+import com.intellij.bazel.python.backend.sync.PythonWorkspaceSyncConfig
 import org.jetbrains.bazel.sync.workspace.snapshot.CommonWorkspaceSyncConfig
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceSnapshot
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey

@@ -34,12 +34,12 @@ import com.intellij.psi.search.PsiElementProcessor
 import com.intellij.util.ThreeState
 import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.config.isBazelProject
+import org.jetbrains.bazel.golang.sync.extractGoBuildTarget
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkFile
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkCallExpression
 import org.jetbrains.bazel.sync.SyncCache
 import org.jetbrains.bazel.target.targetUtils
-import org.jetbrains.bsp.protocol.utils.extractGoBuildTarget
 import java.util.concurrent.ConcurrentHashMap
 
 /** Converts each go target in the [targetUtils#allBuildTargets()] into a corresponding [BazelGoPackage]. */

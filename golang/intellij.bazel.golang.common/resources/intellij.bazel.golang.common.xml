@@ -41,6 +41,9 @@
       implementation="org.jetbrains.bazel.golang.debug.BazelGoTestHandler$BazelGoTestHandlerProvider"
     />
     <targetKindProvider implementation="org.jetbrains.bazel.golang.targetKinds.GoBazelRules" />
+    <languageClassProvider implementation="org.jetbrains.bazel.golang.GoLanguageClassProvider" />
+    <languagePlugin implementation="org.jetbrains.bazel.golang.sync.GoLanguagePlugin"/>
+
   </extensions>
   <extensions defaultExtensionNs="com.goide">
     <dlv.positionConverterFactory

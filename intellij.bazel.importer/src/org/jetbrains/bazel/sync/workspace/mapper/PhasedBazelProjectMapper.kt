@@ -1,4 +1,4 @@
-package org.jetbrains.bazel.sync.workspace.mapper.phased
+package org.jetbrains.bazel.sync.workspace.mapper
 
 import com.google.devtools.build.lib.query2.proto.proto2api.Build
 import org.jetbrains.annotations.ApiStatus
@@ -68,23 +68,18 @@ class PhasedBazelProjectMapper(
   }
 
   private fun Build.Target.inferKind(): TargetKind {
-    val targetKindService = TargetKindService.getInstance()
-    val inferredRuleKind = targetKindService.guessFromRuleName(kind)
+    val inferredRuleKind = TargetKindService.getInstance().guessFromRuleName(kind)
     if (inferredRuleKind.languageClasses.isNotEmpty()) return inferredRuleKind
-    val languagesForSources = languagesFromSources()
-    return inferredRuleKind.copy(languageClasses = languagesForSources)
+    return inferredRuleKind.copy(languageClasses = languagesFromSources().toSet())
   }
 
-  private fun Build.Target.languagesFromSources(): Set<LanguageClass> = srcs.mapNotNullTo(hashSetOf()) {
+  private fun Build.Target.languagesFromSources(): Sequence<LanguageClass> = srcs.asSequence().mapNotNull {
     LanguageClass.fromExtension(it.substringAfterLast('.'))
   }
 
   private fun Build.Target.isSupported(): Boolean {
-    val targetKindService = TargetKindService.getInstance()
-    val isRuleSupported = targetKindService.fromRuleName(kind) != null
-    val areSourcesSupported = languagesFromSources().isNotEmpty()
-
-    return isRuleSupported || areSourcesSupported
+    return TargetKindService.getInstance().findPredefinedRule(kind) != null ||
+           languagesFromSources().any()
   }
 
   private fun Build.Target.calculateSources(targets: Map<Label, Build.Target>): List<Path> {

@@ -4,6 +4,7 @@
     <module name="intellij.bazel.commons"/>
     <module name="intellij.bazel.connector"/>
     <module name="intellij.bazel.importer"/>
+    <module name="intellij.bazel.python.common"/>
     <module name="intellij.platform.backend"/>
     <module name="intellij.platform.kernel.backend"/>
     <module name="intellij.platform.rpc.backend"/>
@@ -30,5 +31,6 @@
   <extensions defaultExtensionNs="org.jetbrains.bazel">
     <indexAdditionalFilesContributor implementation="com.intellij.bazel.python.backend.PythonIndexAdditionalFilesContributor"/>
     <syncWorkspaceImporter implementation="com.intellij.bazel.python.backend.BazelPythonWorkspaceImporter"/>
+    <languagePlugin implementation="com.intellij.bazel.python.backend.sync.PythonLanguagePlugin"/>
   </extensions>
 </idea-plugin>

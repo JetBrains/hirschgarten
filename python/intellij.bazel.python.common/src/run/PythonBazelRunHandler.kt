@@ -4,6 +4,7 @@ import com.intellij.execution.runners.ExecutionEnvironment
 import org.jetbrains.bazel.commons.LanguageClass
 import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.commons.TargetKind
+import org.jetbrains.bazel.python.lang.PythonLanguageClass
 import org.jetbrains.bazel.run.BazelCommandLineStateBase
 import org.jetbrains.bazel.run.BazelRunHandler
 import org.jetbrains.bazel.run.commandLine.BazelRunCommandLineState
@@ -30,7 +31,7 @@ internal class PythonBazelRunHandler : PythonBazelHandler<GenericRunState>() {
 
     override fun canRun(targets: List<TargetKind>): Boolean =
       targets.all {
-        it.languageClasses.contains(LanguageClass.PYTHON) && it.ruleType == RuleType.BINARY
+        it.languageClasses.contains(PythonLanguageClass.PYTHON) && it.ruleType == RuleType.BINARY
       }
 
     override val googleHandlerId: String = "BlazePyRunConfigurationHandlerProvider"

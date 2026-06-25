@@ -15,14 +15,12 @@
  */
 package org.jetbrains.bazel.sync.workspace.targetKind
 
-import com.google.devtools.intellij.ideinfo.IntellijIdeInfo
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.service
 import com.intellij.openapi.extensions.ExtensionPointName
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.commons.TargetKind
-import java.util.Collections
 
 /**
  * Provides a set of recognized bazel rule names. Individual language-specific sub-plugins can use
@@ -35,13 +33,6 @@ import java.util.Collections
 interface TargetKindProvider {
   /** A set of rule names known at compile time.  */
   val targetKinds: Set<TargetKind>
-
-  /**
-   * A heuristic to identify additional target kinds at runtime which aren't known up-front. For
-   * example, any rule name starting with 'kt_jvm_' might be parsed as a kotlin rule of unknown
-   * [RuleType].
-   */
-  fun inferTargetKind(target: IntellijIdeInfo.TargetIdeInfo): TargetKind? = null
 
   companion object {
     val ep: ExtensionPointName<TargetKindProvider> =
@@ -58,26 +49,11 @@ interface TargetKindProvider {
 @ApiStatus.Internal
 class TargetKindService {
   /** An internal map of all known rule types.  */
-  private val stringToKind: MutableMap<String, TargetKind> =
-    Collections.synchronizedMap(HashMap())
+  private val stringToKind: Map<String, TargetKind> = TargetKindProvider.ep.extensions
+    .flatMap { it.targetKinds }
+    .associateBy { it.kind }
 
-  init {
-    // initialize the global state
-    TargetKindProvider.ep.extensions
-      .flatMap { it.targetKinds }
-      .forEach { this.cacheIfNecessary(it) }
-  }
-
-  /** Add the Kind instance to the global map, or returns an existing kind with this rule name.  */
-  fun cacheIfNecessary(kind: TargetKind): TargetKind {
-    val existing = stringToKind.putIfAbsent(kind.kind, kind)
-    if (existing != null) {
-      return existing
-    }
-    return kind
-  }
-
-  fun fromRuleName(ruleName: String): TargetKind? {
+  fun findPredefinedRule(ruleName: String): TargetKind? {
     var ruleName = ruleName
     if (ruleName.startsWith(RULE_NAME_PREFIX_TRANSITION)) {
       ruleName = ruleName.substring(RULE_NAME_PREFIX_TRANSITION.length)
@@ -85,24 +61,14 @@ class TargetKindService {
     return stringToKind[ruleName]
   }
 
-  fun fromTargetInfo(target: IntellijIdeInfo.TargetIdeInfo): TargetKind {
-    fromRuleName(target.kind)?.let { return it }
-    TargetKindProvider.ep
-      .lazySequence()
-      .firstNotNullOfOrNull { it.inferTargetKind(target) }
-      ?.let { return it }
-    return TargetKind(kind = target.kind, languageClasses = emptySet(), ruleType = target.inferRuleType())
-  }
-
   fun guessFromRuleName(ruleName: String): TargetKind {
-    fromRuleName(ruleName)?.let { return it }
-    val ruleType = guessRuleType(ruleName)
-    return TargetKind(kind = ruleName, languageClasses = emptySet(), ruleType = ruleType)
+    return findPredefinedRule(ruleName)
+           ?: TargetKind(kind = ruleName, ruleType = guessRuleType(ruleName))
   }
 
   /** If rule type isn't recognized, uses a heuristic to guess the rule type. */
   private fun guessRuleType(ruleName: String): RuleType {
-    val kind = fromRuleName(ruleName)
+    val kind = findPredefinedRule(ruleName)
     return when {
       kind != null -> kind.ruleType
       isTestSuite(ruleName) || ruleName.endsWith("_test") -> RuleType.TEST

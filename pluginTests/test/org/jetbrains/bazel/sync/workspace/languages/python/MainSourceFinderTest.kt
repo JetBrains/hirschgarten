@@ -2,6 +2,7 @@ package org.jetbrains.bazel.sync.workspace.languages.python
 
 import com.google.devtools.intellij.aspect.Common
 import com.google.devtools.intellij.ideinfo.IntellijIdeInfo
+import com.intellij.bazel.python.backend.sync.MainSourceFinder
 import io.kotest.assertions.throwables.shouldNotThrowAny
 import io.kotest.matchers.nulls.shouldBeNull
 import io.kotest.matchers.shouldBe

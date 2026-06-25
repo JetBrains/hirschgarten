@@ -16,7 +16,6 @@ import org.jetbrains.bazel.sync.scope.PartialProjectSync
 import org.jetbrains.bazel.sync.scope.ProjectSyncScope
 import org.jetbrains.bazel.sync.scope.SecondPhaseSync
 import org.jetbrains.bazel.sync.workspace.BazelResolvedWorkspace
-import org.jetbrains.bazel.sync.workspace.mapper.phased.PhasedBazelProjectMapper
 import org.jetbrains.bsp.protocol.TaskId
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetParams
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetPhasedParams

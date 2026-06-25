@@ -22,6 +22,7 @@ interface LanguagePlugin {
   val providedBuildTargetTypes: Set<KClass<out BuildTargetData>>
 
   fun getSupportedLanguages(): Set<LanguageClass>
+  fun collectUsedLanguages(target: IntellijIdeInfo.TargetIdeInfo): List<LanguageClass> = emptyList()
   fun createProjectMapper(project: Project, server: BazelServerFacade): Mapper
 
   /**
@@ -40,6 +41,8 @@ interface LanguagePlugin {
   suspend fun createSyncConfigs(project: Project, workspaceContext: WorkspaceContext): List<WorkspaceSyncConfig> = listOf()
 
   interface Mapper {
+    val langPlugin: LanguagePlugin
+
     suspend fun prepareSync(
       graph: DependencyGraph,
       targetsToImport: Map<WorkspaceTargetKey, IntellijIdeInfo.TargetIdeInfo>,

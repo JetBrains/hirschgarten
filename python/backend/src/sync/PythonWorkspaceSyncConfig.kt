@@ -1,4 +1,4 @@
-package org.jetbrains.bazel.sync.workspace.languages.python
+package com.intellij.bazel.python.backend.sync
 
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceSyncConfig

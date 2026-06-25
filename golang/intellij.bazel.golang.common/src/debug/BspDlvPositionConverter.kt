@@ -24,8 +24,8 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.openapi.vfs.VirtualFile
 import kotlinx.coroutines.runBlocking
+import org.jetbrains.bazel.golang.sync.GoLanguagePlugin
 import org.jetbrains.bazel.server.connection
-import org.jetbrains.bazel.sync.workspace.languages.go.GoLanguagePlugin
 import org.jetbrains.bsp.protocol.BazelResolveLocalToRemoteParams
 import org.jetbrains.bsp.protocol.BazelResolveRemoteToLocalParams
 import java.io.File
