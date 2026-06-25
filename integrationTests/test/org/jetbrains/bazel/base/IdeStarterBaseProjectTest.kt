@@ -454,10 +454,12 @@ interface IdeFatalError {
   fun getThrowableText(): String
 }
 
-fun UiComponent.waitForSyncSucceeded() {
+fun UiComponent.waitForSyncSucceeded(timeout: Duration = 2.minutes) {
   val buildView = x { byType("com.intellij.build.BuildView") }
   val syncSuccessText = BazelPluginBundle.message("console.task.sync.success")
-  buildView.waitOneText { it.text.contains(syncSuccessText) }
+  buildView.waitOneText(message = "Waiting for Bazel sync to finish", timeout = timeout) {
+    it.text.contains(syncSuccessText)
+  }
 }
 
 fun <T : CommandChain> T.assertSyncedTargets(vararg targets: String): T {
