@@ -26,7 +26,8 @@ fun Project.useJetBrainsTestRunner(): Boolean {
   return projectView().useJetBrainsTestRunner
 }
 
-internal fun setTestFilter(project: Project, state: BazelRunConfigurationState<*>, testFilter: String?) {
+@ApiStatus.Internal
+fun setTestFilter(project: Project, state: BazelRunConfigurationState<*>, testFilter: String?) {
   if (project.useJetBrainsTestRunner()) {
     (state as? HasTestFilter)?.testFilter = null
     (state as? HasEnv)?.env?.envs?.let {

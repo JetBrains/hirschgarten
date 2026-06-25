@@ -63,5 +63,9 @@ internal class BazelRunConfigurationProducerSuppressor : RunConfigurationProduce
     "org.jetbrains.plugins.gradle.execution.test.runner.TestClassGradleConfigurationProducer",
     "org.jetbrains.plugins.gradle.execution.test.runner.TestMethodGradleConfigurationProducer",
     "org.jetbrains.plugins.gradle.service.execution.GradleRuntimeConfigurationProducer",
+    "com.jetbrains.python.run.PythonRunConfigurationProducer",
+    "com.jetbrains.python.testing.PyTestsConfigurationProducer",
+    "com.jetbrains.python.testing.doctest.PythonDocTestConfigurationProducer",
+    "com.jetbrains.python.testing.tox.PyToxConfigurationProducer",
   )
 }

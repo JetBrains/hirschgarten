@@ -21,6 +21,7 @@
       implementationClass="org.jetbrains.bazel.python.gutter.BazelPyRunLineMarkerContributor"
       language="Python"
     />
+    <runConfigurationProducer implementation="org.jetbrains.bazel.python.run.PythonBazelRunConfigurationProducer"/>
   </extensions>
 
   <extensions defaultExtensionNs="org.jetbrains.bazel">
