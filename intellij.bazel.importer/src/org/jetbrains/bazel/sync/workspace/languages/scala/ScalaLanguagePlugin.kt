@@ -27,6 +27,12 @@ class ScalaLanguagePlugin : JvmLanguagePluginMixin {
     get() = setOf(ScalaBuildTarget::class)
 
   override fun getSupportedLanguages(): Set<LanguageClass> = setOf(LanguageClass.SCALA)
+  override fun collectUsedLanguages(target: TargetIdeInfo): List<LanguageClass> {
+    if (target.hasScalaTargetInfo()) {
+      return listOf(LanguageClass.SCALA)
+    }
+    return emptyList()
+  }
   override fun createProjectMapper(project: Project, server: BazelServerFacade): Mapper = Mapper(server)
 
   class Mapper(private val server: BazelServerFacade) : JvmLanguagePluginMixin.Mapper {

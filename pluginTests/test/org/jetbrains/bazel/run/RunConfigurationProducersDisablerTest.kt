@@ -16,10 +16,10 @@ import com.intellij.psi.PsiFile
 import com.intellij.psi.util.PsiUtilCore
 import com.intellij.testFramework.TestActionEvent
 import com.intellij.testFramework.rules.TempDirectory
-import org.jetbrains.bazel.commons.LanguageClass
 import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.python.lang.PythonLanguageClass
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
 import org.jetbrains.bazel.target.targetUtils
 import org.jetbrains.bazel.test.framework.BazelBasePlatformTestCase
@@ -206,7 +206,7 @@ internal class RunConfigurationProducersDisablerTest : BazelBasePlatformTestCase
       kind =
         TargetKind(
           kind = ruleKind,
-          languageClasses = setOf(LanguageClass.PYTHON),
+          languageClasses = setOf(PythonLanguageClass.PYTHON),
           ruleType = ruleType,
         ),
       sources = SourceFileCollection.EMPTY,

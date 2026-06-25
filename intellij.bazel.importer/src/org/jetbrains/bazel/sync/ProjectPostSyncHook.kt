@@ -49,9 +49,8 @@ interface ProjectPostSyncHook {
 
 val Project.projectPostSyncHooks: List<ProjectPostSyncHook>
   @ApiStatus.Internal
-  get() =
-    ProjectPostSyncHook.ep.extensionList.filter { it.isEnabled(this) }
+  get() = ProjectPostSyncHook.ep.extensionList.filter { it.isEnabled(this) }
 
 @ApiStatus.Internal
-suspend fun <T> ProjectPostSyncHook.ProjectPostSyncHookEnvironment.withSubtask(text: String, block: suspend (subtaskId: TaskId) -> T) =
+suspend fun <T> ProjectPostSyncHook.ProjectPostSyncHookEnvironment.withSubtask(text: String, block: suspend (subtaskId: TaskId) -> T): T =
   project.syncConsole.withSubtask(progressReporter, taskId.subTask(text), text, block)

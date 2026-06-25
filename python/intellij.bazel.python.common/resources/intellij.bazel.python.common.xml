@@ -25,6 +25,8 @@
   </extensions>
 
   <extensions defaultExtensionNs="org.jetbrains.bazel">
+    <targetKindProvider implementation="org.jetbrains.bazel.python.lang.PythonBazelRules" />
+    <languageClassProvider implementation="org.jetbrains.bazel.python.lang.PythonLanguageClassProvider" />
     <runHandlerProvider
       id="PythonBazelRunHandlerProvider"
       implementation="org.jetbrains.bazel.python.run.PythonBazelRunHandler$Provider"

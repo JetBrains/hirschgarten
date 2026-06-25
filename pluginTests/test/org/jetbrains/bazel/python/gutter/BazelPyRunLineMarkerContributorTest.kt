@@ -16,6 +16,7 @@ import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.project.BazelProjectFixtures.initializeBazelProject
+import org.jetbrains.bazel.python.lang.PythonLanguageClass
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
 import org.jetbrains.bazel.target.targetUtils
 import org.jetbrains.bsp.protocol.SourceFileCollection
@@ -364,7 +365,7 @@ internal class BazelPyRunLineMarkerContributorTest : CodeInsightFixtureTestCase<
           kind =
             TargetKind(
               kind = ruleKind,
-              languageClasses = setOf(LanguageClass.PYTHON),
+              languageClasses = setOf(PythonLanguageClass.PYTHON),
               ruleType = ruleType,
             ),
           sources = SourceFileCollection.EMPTY,

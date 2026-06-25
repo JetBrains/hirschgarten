@@ -8,9 +8,12 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.withContext
+import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.commons.LanguageClass
 import org.jetbrains.bazel.commons.LocalRepositoryMapping
 import org.jetbrains.bazel.commons.RepoMapping
+import org.jetbrains.bazel.commons.RuleType
+import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.commons.constants.Constants
 import org.jetbrains.bazel.commons.getLocalRepositories
 import org.jetbrains.bazel.label.Label
@@ -20,19 +23,20 @@ import org.jetbrains.bazel.label.toDependencyLabel
 import org.jetbrains.bazel.performance.measure
 import org.jetbrains.bazel.server.BazelServerFacade
 import org.jetbrains.bazel.sync.workspace.graph.DependencyGraph
+import org.jetbrains.bazel.sync.workspace.languages.LanguagePlugin
 import org.jetbrains.bazel.sync.workspace.languages.createLanguageProjectMappers
 import org.jetbrains.bazel.sync.workspace.snapshot.SourceFileCollectionBuilder
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
 import org.jetbrains.bazel.sync.workspace.snapshot.toWorkspaceTargetKey
 import org.jetbrains.bazel.sync.workspace.targetKind.TargetKindService
-import org.jetbrains.bsp.protocol.BuildTargetData
 import org.jetbrains.bsp.protocol.BuildTargetTag
 import org.jetbrains.bsp.protocol.RawBuildTarget
 import java.nio.file.Path
 import kotlin.io.path.exists
 import kotlin.io.path.extension
 
-internal class AspectBazelProjectMapper(
+@ApiStatus.Internal
+class AspectBazelProjectMapper(
   project: Project,
   server: BazelServerFacade,
 ) {
@@ -102,15 +106,15 @@ internal class AspectBazelProjectMapper(
     localRepositories: LocalRepositoryMapping,
   ): RawBuildTarget {
     val label = target.label().assumeResolved()
-    val targetKind = TargetKindService.getInstance().fromTargetInfo(target)
+    val targetKind = inferTargetKind(target)
     val baseDirectory = bazelPathsResolver.toDirectoryPath(label, repoMapping)
 
-    val buildData = ArrayList<BuildTargetData>()
-
-    targetKind.languageClasses.map { lang ->
-      langMappers.get(lang)
-    }.distinct().forEach { mapper ->
-      buildData.addAll(mapper.createBuildTargetData(target, targetsToImport, dependencyGraph, repoMapping))
+    val buildData = langMappers.all().flatMap { mapper ->
+      mapper.createBuildTargetData(target, targetsToImport, dependencyGraph, repoMapping).also { data ->
+        if (!mapper.langPlugin.providedBuildTargetTypes.containsAll(data.map { it::class })) {
+          error("Mapper $mapper returned unregistered build target data: ${data.joinToString()}")
+        }
+      }
     }
 
     val resources = bazelPathsResolver.resolvePaths(target.jvmTargetInfo.resourcesList, localRepositories)
@@ -158,7 +162,7 @@ internal class AspectBazelProjectMapper(
     fun report() {
       if (missingSources.isNotEmpty()) {
         logger.warn(
-          "target ${target} has ${missingSources.size} missing source files: " +
+          "target $target has ${missingSources.size} missing source files: " +
           missingSources.joinToString { it.toString() },
         )
       }
@@ -167,5 +171,22 @@ internal class AspectBazelProjectMapper(
 
   companion object {
     private val logger = logger<AspectBazelProjectMapper>()
+
+    fun inferTargetKind(target: TargetIdeInfo): TargetKind {
+      val targetKind = TargetKindService.getInstance().guessFromRuleName(target.kind)
+
+      val languages = HashSet<LanguageClass>(targetKind.languageClasses)
+      LanguagePlugin.EP_NAME.forEachExtensionSafe { plugin ->
+        languages.addAll(plugin.collectUsedLanguages(target))
+      }
+
+      val ruleType = when {
+        !target.hasExecutableInfo() -> RuleType.LIBRARY
+        targetKind.ruleType == RuleType.TEST -> RuleType.TEST
+        else -> RuleType.BINARY
+      }
+
+      return TargetKind(kind = targetKind.kind, languageClasses = languages, ruleType = ruleType)
+    }
   }
 }

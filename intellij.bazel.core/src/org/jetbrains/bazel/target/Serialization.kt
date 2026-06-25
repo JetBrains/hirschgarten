@@ -9,17 +9,16 @@ import org.h2.mvstore.WriteBuffer
 import org.h2.mvstore.type.LongDataType
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.commons.LanguageClass
+import org.jetbrains.bazel.commons.LanguageClassService
 import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.commons.gson.bazelGson
 import org.jetbrains.bazel.label.Label
-import org.jetbrains.bsp.protocol.BuildTargetData
-import org.jetbrains.bsp.protocol.SourceFileCollection
 import org.jetbrains.bsp.protocol.PartialBuildTarget
+import org.jetbrains.bsp.protocol.SourceFileCollection
 import java.io.ByteArrayOutputStream
 import java.nio.ByteBuffer
 import java.nio.file.Path
-import java.util.EnumSet
 import java.util.zip.GZIPInputStream
 import java.util.zip.GZIPOutputStream
 import kotlin.io.path.invariantSeparatorsPathString
@@ -148,24 +147,24 @@ private fun writeTargetKind(kind: TargetKind, buffer: WriteBuffer) {
   buffer.writeString(kind.kind)
   buffer.putVarInt(kind.languageClasses.size)
   for (languageClass in kind.languageClasses) {
-    buffer.put(languageClass.serialId.toByte())
+    buffer.writeString(languageClass.languageName)
   }
   buffer.put(kind.ruleType.ordinal.toByte())
 }
 
 private fun readTargetKind(buffer: ByteBuffer): TargetKind {
   val kindString = buffer.readString()
-  val languageClasses = EnumSet.noneOf(LanguageClass::class.java)
+  val languageClasses = HashSet<LanguageClass>()
   val languageClassCount = readVarInt(buffer)
   repeat(languageClassCount) {
-    val serialId = buffer.get().toInt()
-    val languageClass = LanguageClass.fromSerialId(serialId)
+    val languageName = buffer.readString()
+    val languageClass = LanguageClassService.getInstance().fromName(languageName)
     if (languageClass != null) {
       languageClasses.add(languageClass)
     }
     else {
-      // BAZEL-2292: Log unknown serialIds to diagnose potential database corruption
-      LOG.debug("Unknown LanguageClass serialId $serialId for kind '$kindString' - possible database corruption")
+      // BAZEL-2292: Log unknown langs to diagnose potential database corruption
+      LOG.debug("Unknown LanguageClass $languageName for kind '$kindString' - possible database corruption")
     }
   }
   val ruleType = RuleType.entries[buffer.get().toInt()]

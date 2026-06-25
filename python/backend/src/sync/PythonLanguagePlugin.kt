@@ -1,4 +1,4 @@
-package org.jetbrains.bazel.sync.workspace.languages.python
+package com.intellij.bazel.python.backend.sync
 
 import com.google.devtools.intellij.aspect.Common.ArtifactLocation
 import com.google.devtools.intellij.ideinfo.IntellijIdeInfo
@@ -9,9 +9,9 @@ import org.jetbrains.bazel.commons.LocalRepositoryMapping
 import org.jetbrains.bazel.commons.RepoMapping
 import org.jetbrains.bazel.commons.getLocalRepositories
 import org.jetbrains.bazel.config.BazelFeatureFlags
-import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.label.assumeResolved
 import org.jetbrains.bazel.label.label
+import org.jetbrains.bazel.python.lang.PythonLanguageClass
 import org.jetbrains.bazel.server.model.sourcesList
 import org.jetbrains.bazel.sync.workspace.graph.DependencyGraph
 import org.jetbrains.bazel.sync.workspace.languages.LanguagePlugin
@@ -21,7 +21,6 @@ import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bazel.server.BazelServerFacade
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
 import org.jetbrains.bsp.protocol.BuildTargetData
-import org.jetbrains.bsp.protocol.KotlinBuildTarget
 import org.jetbrains.bsp.protocol.PythonBuildTarget
 import java.nio.file.Files
 import java.nio.file.Path
@@ -35,7 +34,12 @@ internal class PythonLanguagePlugin : LanguagePlugin {
   override val providedBuildTargetTypes: Set<KClass<out BuildTargetData>>
     get() = setOf(PythonBuildTarget::class)
 
-  override fun getSupportedLanguages(): Set<LanguageClass> = setOf(LanguageClass.PYTHON)
+  override fun getSupportedLanguages(): Set<LanguageClass> = setOf(PythonLanguageClass.PYTHON)
+  override fun collectUsedLanguages(target: TargetIdeInfo): List<LanguageClass> {
+    if (target.hasPythonTargetInfo())
+      return listOf(PythonLanguageClass.PYTHON)
+    return emptyList()
+  }
   override fun createProjectMapper(project: Project, server: BazelServerFacade) = Mapper(server)
 
   override suspend fun createSyncConfigs(project: Project, workspaceContext: WorkspaceContext): List<WorkspaceSyncConfig> {
@@ -45,7 +49,10 @@ internal class PythonLanguagePlugin : LanguagePlugin {
     return listOf(config)
   }
 
-  class Mapper(private val server: BazelServerFacade) : LanguagePlugin.Mapper {
+  inner class Mapper(private val server: BazelServerFacade) : LanguagePlugin.Mapper {
+    override val langPlugin: LanguagePlugin
+      get() = this@PythonLanguagePlugin
+
     override suspend fun createBuildTargetData(
       target: TargetIdeInfo,
       targetsToImport: Map<WorkspaceTargetKey, TargetIdeInfo>,

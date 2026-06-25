@@ -17,10 +17,10 @@ import com.jetbrains.python.testing.isTestClass
 import com.jetbrains.python.testing.isTestFunction
 import com.jetbrains.python.testing.isUnitTestCaseClass
 import org.jetbrains.annotations.ApiStatus
-import org.jetbrains.bazel.commons.LanguageClass
 import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.languages.starlark.repomapping.toShortString
+import org.jetbrains.bazel.python.lang.PythonLanguageClass
 import org.jetbrains.bazel.target.targetUtils
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.PythonBuildTarget
@@ -84,7 +84,7 @@ private fun PyFile.getPythonBazelTargets(ruleType: RuleType): List<BuildTarget> 
     .mapNotNull { targetUtils.getBuildTargetForLabel(it) }
     .filter { target ->
       target.kind.ruleType == ruleType &&
-      target.kind.languageClasses.contains(LanguageClass.PYTHON)
+      target.kind.languageClasses.contains(PythonLanguageClass.PYTHON)
     }
 }
 

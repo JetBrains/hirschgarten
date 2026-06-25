@@ -11,6 +11,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.project.BazelProjectFixtures.initializeBazelProject
+import org.jetbrains.bazel.python.lang.PythonLanguageClass
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
 import org.jetbrains.bazel.target.targetUtils
 import org.jetbrains.bsp.protocol.PythonBuildTarget
@@ -147,7 +148,7 @@ class PythonDebugUtilsTest {
           dependencies = emptyList(),
           kind = TargetKind(
             kind = ruleKind,
-            languageClasses = setOf(LanguageClass.PYTHON),
+            languageClasses = setOf(PythonLanguageClass.PYTHON),
             ruleType = ruleType,
           ),
           sources = SourceFileCollection.EMPTY,

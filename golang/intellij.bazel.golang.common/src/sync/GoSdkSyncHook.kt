@@ -14,7 +14,6 @@ import org.jetbrains.bazel.progress.withSubtask
 import org.jetbrains.bazel.sync.ProjectPostSyncHook
 import org.jetbrains.bazel.target.targetUtils
 import org.jetbrains.bsp.protocol.TaskId
-import org.jetbrains.bsp.protocol.utils.extractGoBuildTarget
 
 /** From [com.goide.inspections.GoWrongSdkConfigurationNotificationProvider].  */
 private const val DO_NOT_SHOW_NOTIFICATION_ABOUT_EMPTY_GOPATH = "DO_NOT_SHOW_NOTIFICATION_ABOUT_EMPTY_GOPATH"

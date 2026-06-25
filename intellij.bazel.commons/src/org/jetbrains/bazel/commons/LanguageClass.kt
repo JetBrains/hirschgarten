@@ -15,8 +15,13 @@
  */
 package org.jetbrains.bazel.commons
 
-import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap
+import com.intellij.openapi.components.Service
+import com.intellij.openapi.components.service
+import com.intellij.openapi.extensions.ExtensionPointName
 import org.jetbrains.annotations.ApiStatus
+import org.jetbrains.bazel.commons.LanguageClass.Companion.JAVA
+import org.jetbrains.bazel.commons.LanguageClass.Companion.KOTLIN
+import org.jetbrains.bazel.commons.LanguageClass.Companion.SCALA
 import java.nio.file.Path
 import kotlin.io.path.extension
 
@@ -27,51 +32,64 @@ import kotlin.io.path.extension
  *
  */
 @ApiStatus.Internal
-enum class LanguageClass(
-  val serialId: Int,
+data class LanguageClass(
   val languageName: String,
-  private val recognizedFilenameExtensions: Set<String>,
+  val recognizedFilenameExtensions: Set<String>,
 ) {
-  JAVA(2, "java", setOf("java")),
-  GO(7, "go", setOf("go")),
-  PYTHON(8, "python", setOf("py", "pyw", "pyi")),
-  SCALA(9, "scala", setOf("scala")),
-  KOTLIN(10, "kotlin", setOf("kt")),
-  PROTOBUF(12, "protobuf", setOf("proto", "protodevel")),
-  ;
-
-  override fun toString(): String = name
+  override fun toString(): String = languageName
 
   companion object {
-    private val VALUE_BY_SERIAL_ID: Int2ObjectOpenHashMap<LanguageClass> =
-      Int2ObjectOpenHashMap(LanguageClass.entries.associateBy { it.serialId })
-    private val RECOGNIZED_EXTENSIONS: Map<String, LanguageClass> =
-      extensionToClassMap()
-
-    private fun extensionToClassMap(): Map<String, LanguageClass> {
-      val result = mutableMapOf<String, LanguageClass>()
-      LanguageClass.entries.forEach { lang ->
-        lang.recognizedFilenameExtensions.forEach { ext ->
-          result[ext] = lang
-        }
-      }
-      return result
-    }
-
-    fun fromString(name: String): LanguageClass? {
-      for (ruleClass in LanguageClass.entries) {
-        if (ruleClass.name == name) {
-          return ruleClass
-        }
-      }
-      return null
-    }
+    val JAVA = LanguageClass("java", setOf("java"))
+    val SCALA = LanguageClass("scala", setOf("scala"))
+    val KOTLIN = LanguageClass("kotlin", setOf("kt"))
 
     /** Returns the LanguageClass associated with the given filename extension, if it's recognized.  */
-    fun fromExtension(filenameExtension: String): LanguageClass? = RECOGNIZED_EXTENSIONS[filenameExtension]
-    fun fromPath(path: Path): LanguageClass? = RECOGNIZED_EXTENSIONS[path.extension]
-    fun fromPath(path: String): LanguageClass? = RECOGNIZED_EXTENSIONS[path.substringAfterLast(".", missingDelimiterValue = "")]
+    fun fromExtension(filenameExtension: String): LanguageClass? = LanguageClassService.getInstance().fromExtension(filenameExtension)
+  }
+}
 
-    fun fromSerialId(id: Int): LanguageClass? = VALUE_BY_SERIAL_ID.get(id)
+/**
+ * Provides a set of recognized bazel language classes.
+ * Individual language-specific sub-plugins can use
+ * this EP to register new language class
+ */
+@ApiStatus.Internal
+interface LanguageClassProvider {
+  val languages: List<LanguageClass>
+
+  companion object {
+    val ep: ExtensionPointName<LanguageClassProvider> =
+      ExtensionPointName.create("org.jetbrains.bazel.languageClassProvider")
+  }
+}
+
+@Service(Service.Level.APP)
+@ApiStatus.Internal
+class LanguageClassService {
+
+  private val languages =
+    listOf(
+      JAVA, SCALA, KOTLIN
+    ) + LanguageClassProvider.ep.extensions.flatMap { it.languages }
+
+  private val RECOGNIZED_EXTENSIONS: Map<String, LanguageClass> =
+    buildMap {
+      languages.forEach { lang ->
+        lang.recognizedFilenameExtensions.forEach { ext ->
+          if (get(ext) != null)
+            error("Duplicated recognized filename extension '${ext}'")
+          put(ext, lang)
+        }
+      }
+    }
+
+  fun fromName(languageName: String): LanguageClass? = languages.find { it.languageName == languageName }
+  fun fromExtension(filenameExtension: String): LanguageClass? = RECOGNIZED_EXTENSIONS[filenameExtension]
+  fun fromPath(path: Path): LanguageClass? = RECOGNIZED_EXTENSIONS[path.extension]
+  fun fromPath(path: String): LanguageClass? = RECOGNIZED_EXTENSIONS[path.substringAfterLast(".", missingDelimiterValue = "")]
+
+  @ApiStatus.Internal
+  companion object {
+    fun getInstance(): LanguageClassService = service()
   }
 }

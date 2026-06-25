@@ -36,7 +36,10 @@ import one.util.streamex.StreamEx
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.commons.LanguageClass
 import org.jetbrains.bazel.commons.RuleType
-import org.jetbrains.bazel.golang.targetKinds.GoBazelRules
+import org.jetbrains.bazel.golang.GoLanguageClass
+import org.jetbrains.bazel.golang.sync.GoBuildTarget
+import org.jetbrains.bazel.golang.sync.extractGoBuildTarget
+import org.jetbrains.bazel.golang.targetKinds.GoRuleTypes
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.label.ResolvedLabel
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkFile
@@ -47,8 +50,6 @@ import org.jetbrains.bazel.target.targetUtils
 import org.jetbrains.bazel.testing.TestUtils
 import org.jetbrains.bazel.utils.findVirtualFileLocal
 import org.jetbrains.bsp.protocol.BuildTarget
-import org.jetbrains.bsp.protocol.GoBuildTarget
-import org.jetbrains.bsp.protocol.utils.extractGoBuildTarget
 import java.nio.file.Path
 import java.nio.file.Paths
 import java.util.Objects
@@ -257,8 +258,8 @@ class BazelGoPackage : GoPackage {
       val targetUtils = project.targetUtils
       val builder = ImmutableMultimap.builder<Label, GoBuildTarget>()
       targetUtils.allBuildTargets().forEach { target ->
-        if (target.kind.languageClasses.contains(LanguageClass.GO) &&
-          target.kind.ruleType == RuleType.TEST
+        if (target.kind.languageClasses.contains(GoLanguageClass.GO) &&
+            target.kind.ruleType == RuleType.TEST
         ) {
           val goBuildTarget = extractGoBuildTarget(target) ?: return@forEach
           goBuildTarget.libraryLabels.forEach { libraryLabel ->
@@ -270,7 +271,7 @@ class BazelGoPackage : GoPackage {
     }
 
     private fun getSourceFiles(target: BuildTarget, libraryToTestMap: ImmutableMultimap<Label, GoBuildTarget>): ImmutableSet<Path> {
-      if (target.kind == GoBazelRules.RuleTypes.GO_WRAP_CC.kind) {
+      if (target.kind.kind == GoRuleTypes.GO_WRAP_CC.kindString) {
         return getWrapCcGoFiles(target)
       }
       val sources = mutableSetOf<Path>()

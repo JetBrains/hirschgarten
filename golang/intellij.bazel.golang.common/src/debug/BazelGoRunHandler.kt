@@ -11,6 +11,7 @@ import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.config.BazelPluginBundle
+import org.jetbrains.bazel.golang.targetKinds.includesGo
 import org.jetbrains.bazel.golang.workspace.GoWorkspaceModuleUtil
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.run.BazelRunHandler

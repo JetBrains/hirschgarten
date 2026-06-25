@@ -1,4 +1,4 @@
-package org.jetbrains.bazel.sync.workspace.languages.go
+package org.jetbrains.bazel.golang.sync
 
 import com.google.devtools.intellij.aspect.Common
 import com.google.devtools.intellij.ideinfo.IntellijIdeInfo.TargetIdeInfo
@@ -11,6 +11,7 @@ import org.jetbrains.bazel.commons.LanguageClass
 import org.jetbrains.bazel.commons.LocalRepositoryMapping
 import org.jetbrains.bazel.commons.RepoMapping
 import org.jetbrains.bazel.commons.getLocalRepositories
+import org.jetbrains.bazel.golang.GoLanguageClass
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.server.BazelServerFacade
 import org.jetbrains.bazel.sync.workspace.graph.DependencyGraph
@@ -21,7 +22,6 @@ import org.jetbrains.bsp.protocol.BazelResolveRemoteToLocalParams
 import org.jetbrains.bsp.protocol.BazelResolveRemoteToLocalResult
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
 import org.jetbrains.bsp.protocol.BuildTargetData
-import org.jetbrains.bsp.protocol.GoBuildTarget
 import java.nio.file.Path
 import java.nio.file.Paths
 import kotlin.reflect.KClass
@@ -31,10 +31,19 @@ class GoLanguagePlugin: LanguagePlugin {
   override val providedBuildTargetTypes: Set<KClass<out BuildTargetData>>
     get() = setOf(GoBuildTarget::class)
 
-  override fun getSupportedLanguages(): Set<LanguageClass> = setOf(LanguageClass.GO)
-  override fun createProjectMapper(project: Project, server: BazelServerFacade) = Mapper(server)
+  override fun getSupportedLanguages(): Set<LanguageClass> = setOf(GoLanguageClass.GO)
 
-  class Mapper(private val server: BazelServerFacade) : LanguagePlugin.Mapper {
+  override fun collectUsedLanguages(target: TargetIdeInfo): List<LanguageClass> {
+    if (target.hasGoTargetInfo())
+      return listOf(GoLanguageClass.GO)
+    return emptyList()
+  }
+
+  override fun createProjectMapper(project: Project, server: BazelServerFacade): Mapper = Mapper(server)
+
+  inner class Mapper(private val server: BazelServerFacade) : LanguagePlugin.Mapper {
+    override val langPlugin: LanguagePlugin
+      get() = this@GoLanguagePlugin
 
     override suspend fun createBuildTargetData(
       target: TargetIdeInfo,

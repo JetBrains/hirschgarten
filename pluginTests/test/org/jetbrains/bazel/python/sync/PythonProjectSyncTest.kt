@@ -42,6 +42,7 @@ import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.magicmetamodel.formatAsModuleName
 import org.jetbrains.bazel.progress.syncConsole
 import org.jetbrains.bazel.project.BazelProjectFixtures.initializeBazelProject
+import org.jetbrains.bazel.python.lang.PythonLanguageClass
 import org.jetbrains.bazel.server.BazelServerService
 import org.jetbrains.bazel.sync.environment.projectCtx
 import org.jetbrains.bazel.sync.workspace.BazelResolvedWorkspace
@@ -346,7 +347,7 @@ class PythonProjectSyncTest : MockProjectBaseTest() {
         TargetKind(
           kind = "python_binary",
           ruleType = RuleType.BINARY,
-          languageClasses = setOf(LanguageClass.PYTHON),
+          languageClasses = setOf(PythonLanguageClass.PYTHON),
         ),
         baseDirectory = Path("/targets_base_dir"),
         data = listOf(

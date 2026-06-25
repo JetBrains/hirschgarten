@@ -12,6 +12,7 @@ import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.commons.orFallbackVersion
 import org.jetbrains.bazel.label.DependencyLabel
 import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.sync.workspace.mapper.PhasedBazelProjectMapper
 import org.jetbrains.bazel.workspace.model.test.framework.BazelPathsResolverMock
 import org.jetbrains.bazel.workspace.model.test.framework.WorkspaceModelBaseTest
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext

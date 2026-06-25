@@ -51,7 +51,7 @@ import org.jetbrains.bazel.server.connection
 import org.jetbrains.bazel.sync.status.SyncStatusService
 import org.jetbrains.bazel.target.targetUtils
 import org.jetbrains.bazel.taskEvents.BazelTaskEventsService
-import org.jetbrains.bazel.ui.status.refreshAllFilesPresentation
+import org.jetbrains.bazel.ui.status.BazelFileStatusRefresher
 import org.jetbrains.bazel.workspace.fileEvents.SimplifiedFileEvent.Create
 import org.jetbrains.bazel.workspace.fileEvents.SimplifiedFileEvent.CreateDirectory
 import org.jetbrains.bazel.workspace.packageMarker.concatenatePackages
@@ -140,7 +140,7 @@ open class DefaultBazelFileEventProcessor(private val project: Project): BazelFi
             }
           } while (processed)
         } finally {
-          refreshAllFilesPresentation(project)
+          BazelFileStatusRefresher.getInstance(project).refreshAllFilesPresentation()
         }
       }
     }
