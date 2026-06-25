@@ -1,6 +1,5 @@
 package org.jetbrains.bazel.run.synthetic
 
-import com.intellij.execution.Executor
 import com.intellij.lang.Language
 import com.intellij.openapi.actionSystem.DefaultActionGroup
 import com.intellij.openapi.project.Project
@@ -13,7 +12,7 @@ import org.jetbrains.bazel.label.Package
 import org.jetbrains.bazel.label.ResolvedLabel
 import org.jetbrains.bazel.label.SingleTarget
 import org.jetbrains.bazel.runnerAction.RunSyntheticTargetAction
-import org.jetbrains.bazel.ui.widgets.tool.window.utils.getSupportedExecutors as getSupportedRunConfigurationExecutors
+import org.jetbrains.bazel.ui.widgets.tool.window.utils.getSupportedExecutors
 import org.jetbrains.bsp.protocol.ExecutableTarget
 
 @ApiStatus.Internal
@@ -44,7 +43,13 @@ object SyntheticRunTargetUtils {
   ) {
     val language = element.language
     for (generator in getTemplateGenerators(target, language)) {
-      for (executor in getSupportedExecutors(project, target, element, generator)) {
+      val settings = RunSyntheticTargetAction.createRunConfiguration(
+        project = project,
+        target = target,
+        templateGenerator = generator,
+        targetElement = element,
+      ) ?: continue
+      for (executor in getSupportedExecutors(settings)) {
         group.addAction(
           RunSyntheticTargetAction(
             project = project,
@@ -56,20 +61,5 @@ object SyntheticRunTargetUtils {
         )
       }
     }
-  }
-
-  private fun getSupportedExecutors(
-    project: Project,
-    target: ExecutableTarget,
-    element: PsiElement,
-    generator: SyntheticRunTargetTemplateGenerator,
-  ): List<Executor> {
-    val settings = RunSyntheticTargetAction(
-      project = project,
-      target = target,
-      templateGenerator = generator,
-      targetElement = element,
-    ).createRunConfiguration() ?: return emptyList()
-    return getSupportedRunConfigurationExecutors(settings)
   }
 }
