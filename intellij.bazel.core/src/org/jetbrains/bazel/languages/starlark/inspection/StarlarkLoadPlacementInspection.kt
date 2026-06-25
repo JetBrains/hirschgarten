@@ -2,6 +2,7 @@ package org.jetbrains.bazel.languages.starlark.inspection
 
 import com.intellij.codeInspection.LocalInspectionTool
 import com.intellij.codeInspection.ProblemsHolder
+import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiElementVisitor
 import com.intellij.psi.PsiFile
 import com.intellij.psi.util.PsiTreeUtil
@@ -11,6 +12,8 @@ import org.jetbrains.bazel.languages.starlark.StarlarkBundle
 import org.jetbrains.bazel.languages.starlark.StarlarkFileType
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkElementVisitor
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkFile
+import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkStringLiteralExpression
+import org.jetbrains.bazel.languages.starlark.psi.statements.StarlarkExpressionStatement
 import org.jetbrains.bazel.languages.starlark.psi.statements.StarlarkLoadStatement
 
 
@@ -43,12 +46,18 @@ class StarlarkLoadPlacementInspection : LocalInspectionTool() {
     private fun hasPreviousNonLoadTopLevelStatement(loadStatement: StarlarkLoadStatement): Boolean {
       var sibling = PsiTreeUtil.skipWhitespacesAndCommentsBackward(loadStatement)
       while (sibling != null) {
-        if (sibling !is StarlarkLoadStatement) {
+        if (sibling !is StarlarkLoadStatement && !isStringComment(sibling)) {
           return true
         }
         sibling = PsiTreeUtil.skipWhitespacesAndCommentsBackward(sibling)
       }
       return false
+    }
+
+    private fun isStringComment(node: PsiElement): Boolean {
+      val stmt = node as? StarlarkExpressionStatement ?: return false
+      val child = stmt.firstChild ?: return false
+      return child == stmt.lastChild && child is StarlarkStringLiteralExpression
     }
   }
 
