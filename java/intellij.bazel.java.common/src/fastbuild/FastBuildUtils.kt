@@ -206,11 +206,7 @@ internal object FastBuildUtils {
 
           val command =
             GeneralCommandLine(arguments).apply {
-              workDirectory =
-                File(
-                  project.projectCtx.bazelExecPath
-                    ?: throw ExecutionException(BazelPluginBundle.message("widget.fastbuild.error.null.bazel.exec.path")),
-                )
+              withWorkingDirectory(project.projectCtx.bazelExecPath ?: throw ExecutionException(BazelPluginBundle.message("widget.fastbuild.error.null.bazel.exec.path")))
             }
           val handler = OSProcessHandler(command)
           handler.addProcessListener(

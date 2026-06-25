@@ -55,9 +55,9 @@ internal class PythonResolveIndexService(private val project: Project) {
     pythonTargets: List<RawBuildTarget>,
     outFilesHardLink: BazelOutFileHardLinks,
   ): Map<QualifiedName, Path> {
-    val executionRoot = project.projectCtx.bazelExecPath?.let { Path.of(it) } ?: return emptyMap()
+    val executionRoot = project.projectCtx.bazelExecPath ?: return emptyMap()
     val rootDir = Path.of(project.rootDir.path)
-    val bazelBin = project.projectCtx.bazelBinPath?.let { Path.of(it) } ?: return emptyMap()
+    val bazelBin = project.projectCtx.bazelBinPath ?: return emptyMap()
 
     fun Path.toExecRootRelativePath(): Path {
       if (this.startsWith(bazelBin)) {

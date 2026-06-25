@@ -32,7 +32,6 @@ import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
 import java.util.Locale
-import kotlin.io.path.name
 import kotlin.io.path.readText
 
 // Matches TEST_SRCDIR=<dir>
@@ -152,7 +151,6 @@ internal sealed class BazelGoBeforeRunTaskProvider<T : BeforeRunTask<T>> : Befor
     val workingDir: File
     val testScrDir = TEST_SRCDIR.find(text)
     val workspaceRoot = project.rootDir.toNioPath()
-    val execRoot = Path.of(project.projectCtx.bazelExecPath)
     if (testScrDir != null) {
       // Format is <wrapper-script> <executable> arg0 arg1 arg2 ... argN "@"
       if (args.size < 3) {
@@ -173,7 +171,7 @@ internal sealed class BazelGoBeforeRunTaskProvider<T : BeforeRunTask<T>> : Befor
         }
         envVars[envKey] = workspaceRoot.resolve(envVal).toString()
       }
-      val workspaceName = execRoot.name
+      val workspaceName = project.projectCtx.workspaceName
       binary =
         Paths
           .get(

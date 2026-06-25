@@ -14,7 +14,6 @@ import org.jetbrains.bazel.sync.task.ProjectSyncTask
 import org.jetbrains.bazel.target.TargetUtils
 import org.jetbrains.bazel.ui.settings.BazelApplicationSettingsService
 import org.jetbrains.bazel.ui.widgets.fileTargets.updateBazelFileTargetsWidget
-import java.nio.file.Path
 import kotlin.io.path.isDirectory
 
 private val log = logger<BazelStartupActivity>()
@@ -35,8 +34,6 @@ internal class BazelStartupActivity : BazelProjectActivity() {
       executeOnEveryProjectStartup(project)
 
       resyncProjectIfNeeded(project)
-
-      executeOnSyncedProject(project)
     } finally {
       trackerService.isRunning.update { false }
     }
@@ -68,16 +65,10 @@ private suspend fun resyncProjectIfNeeded(project: Project) {
   }
 }
 
-private fun executeOnSyncedProject(project: Project) {
-}
-
 private suspend fun isProjectInIncompleteState(project: Project): Boolean =
   project.serviceAsync<TargetUtils>().getTotalTargetCount() == 0 ||
     !(project.serviceAsync<WorkspaceModel>() as WorkspaceModelImpl).loadedFromCache ||
     !bazelExecPathExists(project)
 
-private suspend fun bazelExecPathExists(project: Project): Boolean =
-  project.projectCtx
-    .bazelExecPath
-    ?.let { Path.of(it) }
-    ?.isDirectory() == true
+private fun bazelExecPathExists(project: Project): Boolean =
+  project.projectCtx.bazelExecPath?.isDirectory() == true
