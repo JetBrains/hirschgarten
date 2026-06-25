@@ -4,8 +4,10 @@ import com.intellij.lang.java.JavaLanguage
 import com.intellij.openapi.actionSystem.DefaultActionGroup
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
 import io.kotest.matchers.collections.shouldBeEmpty
+import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.collections.shouldNotBeEmpty
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.string.shouldContain
 import io.kotest.matchers.types.shouldBeInstanceOf
 import org.jetbrains.bazel.commons.constants.Constants
 import org.jetbrains.bazel.label.Label
@@ -103,7 +105,11 @@ class SyntheticRunTargetUtilsTest : BasePlatformTestCase() {
 
     SyntheticRunTargetUtils.addSyntheticRunActions(group, project, target, element)
 
-    group.childActionsOrStubs.shouldNotBeEmpty()
+    val actions = group.childActionsOrStubs
+    actions.shouldHaveSize(2)
+    val actionTexts = actions.map { it.templatePresentation.text.orEmpty() }
+    actionTexts.single { it.startsWith("Run") }.shouldContain("com.test.MainKt")
+    actionTexts.single { it.startsWith("Debug") }.shouldContain("com.test.MainKt")
   }
 
   fun `test synthetic target label structure`() {
