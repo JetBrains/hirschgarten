@@ -3,6 +3,7 @@ package org.jetbrains.bazel.ignore
 import com.intellij.build.events.MessageEvent
 import com.intellij.openapi.components.service
 import com.intellij.openapi.diagnostic.logger
+import com.intellij.openapi.diagnostic.rethrowControlFlowException
 import com.intellij.openapi.project.Project
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.commons.RepoMapping
@@ -86,6 +87,7 @@ class DefaultBazelIgnoreService(val project: Project): BazelIgnoreService {
       try {
         matchers.add(BazelIgnoreMatcherFactory.fromBazelIgnoreFile(bazelIgnore.readText(Charsets.UTF_8)))
       } catch (ex: Throwable) {
+        rethrowControlFlowException(ex)
         errors.add(path)
         log.error("Error scanning file $bazelIgnore", ex)
       }
@@ -96,6 +98,7 @@ class DefaultBazelIgnoreService(val project: Project): BazelIgnoreService {
       try {
         matchers.add(BazelIgnoreMatcherFactory.fromRepoBazelFile(repoBazel.readText(Charsets.UTF_8)))
       } catch (ex: Throwable) {
+        rethrowControlFlowException(ex)
         errors.add(path)
         log.error("Error scanning file $repoBazel", ex)
       }
