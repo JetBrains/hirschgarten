@@ -1,7 +1,7 @@
 package org.jetbrains.bazel.languages.starlark.inspection
 
-import com.intellij.testFramework.fixtures.BasePlatformTestCase
 import org.jetbrains.bazel.languages.starlark.StarlarkBundle
+import org.jetbrains.bazel.languages.starlark.fixtures.StarlarkInspectionTestCase
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -9,7 +9,7 @@ import org.junit.runners.JUnit4
 
 
 @RunWith(JUnit4::class)
-internal class StarlarkLoadPlacementInspectionTest : BasePlatformTestCase() {
+internal class StarlarkLoadPlacementInspectionTest : StarlarkInspectionTestCase() {
   val descriptionModule = StarlarkBundle.message("inspection.description.load.not.allowed.in.module.bazel")
   val descriptionTopLevel = StarlarkBundle.message("inspection.description.load.not.at.top.level")
   val descriptionAfter = StarlarkBundle.message("inspection.description.load.after.statement")
@@ -77,6 +77,12 @@ internal class StarlarkLoadPlacementInspectionTest : BasePlatformTestCase() {
         func(1)
       """.trimIndent()
     )
+    myFixture.checkHighlighting(true, false, false)
+  }
+
+  @Test
+  fun `load statement after comments and string literals in bzl file should not be highlighted`() {
+    myFixture.configureByFile("LoadPlacementCommentsTestData.bzl")
     myFixture.checkHighlighting(true, false, false)
   }
 }
