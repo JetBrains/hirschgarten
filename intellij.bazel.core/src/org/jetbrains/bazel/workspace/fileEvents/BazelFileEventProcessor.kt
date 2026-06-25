@@ -188,17 +188,7 @@ open class DefaultBazelFileEventProcessor(private val project: Project): BazelFi
     doProcessFileEvents(
       events.flatMap { event ->
         if (event is CreateDirectory) {
-          val root = event.newVirtualFile ?: return@flatMap emptyList()
-          val filesInDirectory = ArrayList<Create>()
-          ProjectFileIndex.getInstance(project).iterateContentUnderDirectory(root) { file ->
-            if (!file.isDirectory) {
-              val createFileEvent = Create(file.path, file)
-              if (createFileEvent.shouldBeProcessed(project))
-                filesInDirectory.add(createFileEvent)
-            }
-            true
-          }
-          filesInDirectory
+          collectCreatedFiles(event.newVirtualFile)
         } else {
           listOf(event)
         }
@@ -216,6 +206,29 @@ open class DefaultBazelFileEventProcessor(private val project: Project): BazelFi
     context.workspaceModel.update("File event processing (Bazel)") {
       it.applyChangesFrom(context.entityStorageDiff)
     }
+  }
+
+  private fun collectCreatedFiles(root: VirtualFile?): List<Create> {
+    if (root == null || !root.isValid) return emptyList()
+
+    val filesInDirectory = ArrayList<Create>()
+    try {
+      ProjectFileIndex.getInstance(project).iterateContentUnderDirectory(root) { file ->
+        if (!file.isValid) return@iterateContentUnderDirectory true
+        if (!file.isDirectory) {
+          val createFileEvent = Create(file.path, file)
+          if (createFileEvent.shouldBeProcessed(project))
+            filesInDirectory.add(createFileEvent)
+        }
+        true
+      }
+    }
+    catch (ex: IllegalArgumentException) {
+      if (root.isValid) throw ex
+      logger.debug("Skipping stale created directory event for ${root.path}", ex)
+      return emptyList()
+    }
+    return filesInDirectory
   }
 
   private suspend fun doProcessFileEvents(events: List<SimplifiedFileEvent>, context: ProcessingContext) {
@@ -332,6 +345,7 @@ open class DefaultBazelFileEventProcessor(private val project: Project): BazelFi
   ): Pair<ModuleEntity, PackageMarkerEntityBuilder>? {
     val workspaceModelIndex = WorkspaceFileIndex.getInstance(project)
     val dir = event.newVirtualFile ?: return null
+    if (!dir.isValid) return null
     val moduleRoot = generateSequence(dir.parent) { it.parent }.firstNotNullOfOrNull { file ->
       findModuleSourceRoot(workspaceModelIndex, file)
     } ?: return null

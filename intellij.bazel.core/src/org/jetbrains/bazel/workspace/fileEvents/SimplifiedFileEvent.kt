@@ -33,7 +33,7 @@ internal sealed class SimplifiedFileEvent private constructor(
   fun shouldBeProcessed(project: Project): Boolean =
     if (this is CreateDirectory) {
       val path = this.fileAdded
-      return path != null && !BazelIgnoreService.getInstance(project).isIgnored(path)
+      return path != null && newVirtualFile?.isValid == true && !BazelIgnoreService.getInstance(project).isIgnored(path)
     } else {
       return fileRemoved?.shouldProcess(project) == true ||
              fileAdded?.shouldProcess(project) == true

@@ -321,6 +321,16 @@ class BazelFileEventListenerTest : WorkspaceModelBaseTest() {
   }
 
   @Test
+  fun `should ignore stale directory creation event`() {
+    val directory = project.rootDir.createDirectory("src")
+    val createDirectoryEvent = createEvent(directory)
+
+    runTestWriteAction { directory.delete(requestor) }
+
+    createDirectoryEvent.process().assertNoProcessingHappened()
+  }
+
+  @Test
   fun `should ignore non-applicable events`() {
     val file = project.rootDir.createDirectory("src").createFile("aaa", "txt")
 
