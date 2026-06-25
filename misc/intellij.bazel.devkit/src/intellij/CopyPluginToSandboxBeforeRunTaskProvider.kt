@@ -59,7 +59,7 @@ internal class CopyPluginToSandboxBeforeRunTaskProvider : BeforeRunTaskProvider<
       return false
     }
 
-    val executionRoot = configuration.project.projectCtx.bazelExecPath?.let(Path::of)
+    val executionRoot = configuration.project.projectCtx.bazelExecPath
     if (executionRoot == null) {
       showError("Cannot determine the execution root")
       return false
@@ -92,7 +92,7 @@ internal class CopyPluginToSandboxBeforeRunTaskProvider : BeforeRunTaskProvider<
       return null
     }
 
-    val deployInfoFile = Path.of(bazelBinPath)
+    val deployInfoFile = bazelBinPath
       .resolve(workspaceRoot.relativize(targetInfo.baseDirectory))
       .resolve(targetLabel.targetName + DEPLOY_INFO_EXTENSION)
 

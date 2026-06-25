@@ -5,16 +5,16 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.commons.BazelRelease
+import java.nio.file.Path
 
 @ApiStatus.Internal
 interface BazelProjectContextService {
-  var isBazelProject: Boolean
-  var projectRootDir: VirtualFile?
-  var workspaceName: String?
+  val isBazelProject: Boolean
+  val projectRootDir: VirtualFile?
 
-  // TODO: use NIO paths for bazel `bin` and `exec` paths
-  var bazelBinPath: String?
-  var bazelExecPath: String?
+  var workspaceName: String?
+  var bazelBinPath: Path?
+  var bazelExecPath: Path?
 
   var bazelRelease: BazelRelease?
 

@@ -7,7 +7,6 @@ import com.intellij.openapi.application.runReadActionBlocking
 import com.intellij.openapi.diagnostic.fileLogger
 import com.intellij.openapi.projectRoots.ProjectJdkTable
 import com.intellij.openapi.vfs.LocalFileSystem
-import com.intellij.psi.PsiManager
 import com.intellij.platform.backend.workspace.WorkspaceModel
 import com.intellij.platform.util.progress.reportSequentialProgress
 import com.intellij.platform.workspace.jps.entities.ContentRootEntity
@@ -24,6 +23,7 @@ import com.intellij.platform.workspace.jps.entities.SourceRootTypeId
 import com.intellij.platform.workspace.storage.MutableEntityStorage
 import com.intellij.platform.workspace.storage.impl.url.toVirtualFileUrl
 import com.intellij.platform.workspace.storage.url.VirtualFileUrlManager
+import com.intellij.psi.PsiManager
 import com.intellij.python.community.services.systemPython.SystemPythonService
 import com.intellij.testFramework.common.timeoutRunBlocking
 import com.intellij.testFramework.registerOrReplaceServiceInstance
@@ -58,9 +58,9 @@ import org.jetbrains.bazel.workspace.model.test.framework.MockBuildServerService
 import org.jetbrains.bazel.workspace.model.test.framework.MockProjectBaseTest
 import org.jetbrains.bazel.workspace.model.test.framework.mockWorkspaceContext
 import org.jetbrains.bazel.workspacemodel.entities.BazelProjectEntitySource
-import org.jetbrains.bsp.protocol.SourceFileCollection
 import org.jetbrains.bsp.protocol.PythonBuildTarget
 import org.jetbrains.bsp.protocol.RawBuildTarget
+import org.jetbrains.bsp.protocol.SourceFileCollection
 import org.jetbrains.bsp.protocol.TaskGroupId
 import org.jetbrains.bsp.protocol.allSources
 import org.junit.jupiter.api.AfterEach
@@ -198,8 +198,8 @@ class PythonProjectSyncTest : MockProjectBaseTest() {
         resources = emptyList(),
       )
 
-    project.projectCtx.bazelExecPath = projectDir.get().toString()
-    project.projectCtx.bazelBinPath = projectDir.get().resolve("bazel-bin").toString()
+    project.projectCtx.bazelExecPath = projectDir.get()
+    project.projectCtx.bazelBinPath = projectDir.get().resolve("bazel-bin")
     project.registerOrReplaceServiceInstance(BazelServerService::class.java, MockBuildServerService(BuildServerMock()), disposable)
     runPythonImporter(generateWorkspaceSnapshot(listOf(target)), MutableEntityStorage.create(), runPostProcessing = true)
 
@@ -237,8 +237,8 @@ class PythonProjectSyncTest : MockProjectBaseTest() {
         resources = emptyList(),
       )
 
-    project.projectCtx.bazelExecPath = projectDir.get().toString()
-    project.projectCtx.bazelBinPath = projectDir.get().resolve("bazel-bin").toString()
+    project.projectCtx.bazelExecPath = projectDir.get()
+    project.projectCtx.bazelBinPath = projectDir.get().resolve("bazel-bin")
     project.registerOrReplaceServiceInstance(BazelServerService::class.java, MockBuildServerService(BuildServerMock()), disposable)
     runPythonImporter(generateWorkspaceSnapshot(listOf(target)), MutableEntityStorage.create(), runPostProcessing = true)
 

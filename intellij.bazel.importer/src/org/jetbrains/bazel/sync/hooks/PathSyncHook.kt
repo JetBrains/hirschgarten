@@ -12,8 +12,8 @@ internal class PathSyncHook : ProjectSyncHook {
       environment.withSubtask("Collect bazel workspace info") {
         val projectCtxService = environment.project.serviceAsync<BazelProjectContextService>()
         val bazelInfo = environment.server.bazelInfo
-        projectCtxService.bazelBinPath = bazelInfo.bazelBin.toString()
-        projectCtxService.bazelExecPath = bazelInfo.execRoot.toString()
+        projectCtxService.bazelBinPath = bazelInfo.bazelBin
+        projectCtxService.bazelExecPath = bazelInfo.execRoot
         projectCtxService.workspaceName = environment.workspace.workspaceName
         projectCtxService.bazelRelease = bazelInfo.release
       }
