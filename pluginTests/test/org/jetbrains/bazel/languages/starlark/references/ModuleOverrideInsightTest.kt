@@ -2,6 +2,7 @@ package org.jetbrains.bazel.languages.starlark.references
 
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
 import org.jetbrains.bazel.languages.starlark.StarlarkBundle
+import org.jetbrains.bazel.languages.starlark.inspection.StarlarkFunctionCallValidationInspection
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
@@ -42,7 +43,8 @@ class ModuleOverrideInsightTest : BasePlatformTestCase() {
 
   @Test
   fun `should highlight missing matching bazel_dep()`() {
-    val errorMsg = StarlarkBundle.message("annotator.override.missing.dep")
+    myFixture.enableInspections(StarlarkFunctionCallValidationInspection())
+    val errorMsg = StarlarkBundle.message("inspection.description.call.override.missing.dep")
     myFixture.configureByText(
       "MODULE.bazel",
       """
