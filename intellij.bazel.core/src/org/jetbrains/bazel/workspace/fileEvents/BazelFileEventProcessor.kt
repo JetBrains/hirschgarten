@@ -224,9 +224,7 @@ open class DefaultBazelFileEventProcessor(private val project: Project): BazelFi
       }
     }
     catch (ex: IllegalArgumentException) {
-      if (root.isValid) throw ex
-      logger.debug("Skipping stale created directory event for ${root.path}", ex)
-      return emptyList()
+      logger.debug("Stopped collecting created files for stale directory ${root.path}", ex)
     }
     return filesInDirectory
   }
