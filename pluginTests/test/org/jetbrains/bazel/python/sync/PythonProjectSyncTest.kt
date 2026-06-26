@@ -15,6 +15,7 @@ import com.intellij.platform.workspace.jps.entities.ModuleDependency
 import com.intellij.platform.workspace.jps.entities.ModuleDependencyItem
 import com.intellij.platform.workspace.jps.entities.ModuleEntity
 import com.intellij.platform.workspace.jps.entities.ModuleId
+import com.intellij.platform.workspace.jps.entities.ModuleSourceDependency
 import com.intellij.platform.workspace.jps.entities.ModuleTypeId
 import com.intellij.platform.workspace.jps.entities.SdkDependency
 import com.intellij.platform.workspace.jps.entities.SdkId
@@ -402,7 +403,7 @@ class PythonProjectSyncTest : MockProjectBaseTest() {
         ModuleEntity(
           name = targetInfo.targetId.formatAsModuleName(project),
           entitySource = BazelProjectEntitySource,
-          dependencies = moduleDependencies + sdkDependency,
+          dependencies = moduleDependencies + ModuleSourceDependency + sdkDependency,
         ) {
           type = ModuleTypeId("PYTHON_MODULE")
         },

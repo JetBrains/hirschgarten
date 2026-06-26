@@ -10,11 +10,9 @@ import kotlinx.coroutines.awaitAll
 import org.jetbrains.bazel.commons.LanguageClass
 import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.coroutines.BazelCoroutineService
-import org.jetbrains.bazel.label.ResolvedLabel
 import org.jetbrains.bazel.python.lang.PythonLanguageClass
 import org.jetbrains.bazel.sync.BazelOutFileHardLinks
 import org.jetbrains.bazel.sync.environment.projectCtx
-import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.RawBuildTarget
 import org.jetbrains.bsp.protocol.allSources
 import org.jetbrains.bsp.protocol.utils.extractPythonBuildTarget
@@ -105,7 +103,7 @@ internal class PythonResolveIndexService(private val project: Project) {
 
     val targetNames: List<Map<QualifiedName, Path>> = pythonTargets.map { target ->
       BazelCoroutineService.getInstance(project).startAsync {
-        val importsPaths = assembleImportsPaths(target)
+        val importsPaths = target.assembleImportsPaths()
         val sourcesRelativePathToAbsolutePath: Map<Path, Path> =
           if (target.isWorkspace) {
             importsPaths
@@ -181,23 +179,6 @@ internal class PythonResolveIndexService(private val project: Project) {
     }
 
     return newMap
-  }
-
-  // assembleImportRoots convert "imports" attributes of a bazel python rule to actual imported paths
-  private fun assembleImportsPaths(target: BuildTarget): List<Path> {
-    val label = target.id as? ResolvedLabel ?: return listOf()
-    val ideInfo = extractPythonBuildTarget(target) ?: return listOf()
-    var buildParentPath = label.packagePath.toString().let { Path.of(it) }
-
-    // In the case of an external repo the build path could be `/BUILD.bazel`
-    // which has a basedir of `/`. In this case we translate this to `.` so
-    // that it works in the sub file-system.
-    if (0 == buildParentPath.nameCount) {
-      buildParentPath = Path.of(".")
-    }
-    return ideInfo.imports.map {
-      buildParentPath.resolve(it).normalize()
-    }
   }
 
   private fun buildShortestQualifiedNamesByPath(resolveIndex: Map<QualifiedName, Path>): Map<Path, QualifiedName> {
