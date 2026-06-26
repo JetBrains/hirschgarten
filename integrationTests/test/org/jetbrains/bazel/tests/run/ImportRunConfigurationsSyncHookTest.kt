@@ -13,7 +13,6 @@ import com.intellij.driver.sdk.ui.components.common.dialogs.editRunConfiguration
 import com.intellij.driver.sdk.ui.components.common.editorTabs
 import com.intellij.driver.sdk.ui.components.common.gutter
 import com.intellij.driver.sdk.ui.components.common.ideFrame
-import com.intellij.driver.sdk.ui.components.common.popups.runConfigurationsList
 import com.intellij.driver.sdk.ui.components.common.popups.runConfigurationsPopup
 import com.intellij.driver.sdk.ui.components.elements.actionButton
 import com.intellij.driver.sdk.ui.components.elements.button
@@ -23,7 +22,6 @@ import com.intellij.driver.sdk.ui.pasteText
 import com.intellij.driver.sdk.ui.shouldBe
 import com.intellij.driver.sdk.wait
 import com.intellij.driver.sdk.waitFor
-import com.intellij.driver.sdk.withRetries
 import com.intellij.ide.starter.ide.IDETestContext
 import com.intellij.tools.ide.performanceTesting.commands.assertCurrentFile
 import com.intellij.tools.ide.performanceTesting.commands.delay
@@ -55,9 +53,6 @@ class ImportRunConfigurationsSyncHookTest : IdeStarterCombinedBaseTest() {
         waitForIndicators(5.minutes)
 
         step("Select Bazel test configuration") {
-          // Clicking the run config widget sometimes focuses it without opening the dropdown,
-          // especially after focus was elsewhere (editor, build tool window). Retry the click
-          // until the popup actually appears. ~9% flake rate observed without retries.
           selectRunConfiguration(targetText = "Bazel test CalculatorTest")
         }
 
@@ -285,16 +280,6 @@ class ImportRunConfigurationsSyncHookTest : IdeStarterCombinedBaseTest() {
 
   private fun GutterUiComponent.pointAtLine(line: Int): Point =
     Point(iconAreaOffset - 20, waitOneText(line.toString()).point.y)
-
-  private fun IdeaFrameUI.selectRunConfiguration(targetText: String) {
-    withRetries(message = "Select run configuration '$targetText'", times = 3) {
-      runConfigurationsPopup {
-        runConfigurationsList {
-          clickItem(targetText, fullMatch = false)
-        }
-      }
-    }
-  }
 
   private fun IdeaFrameUI.waitForBazelBuildBeforeProfilerUi(target: String) =
     step("Wait for Bazel build $target before checking profiler UI") {
