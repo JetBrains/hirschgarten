@@ -89,6 +89,9 @@ internal class GoRunWithDebugCommandLineState(
         customEnvironment[env.key] = env.value
       }
       isPassParentEnvironment = envVarsData.isPassParentEnvs
+      settings.programArguments?.let {
+        params = it
+      }
     }
   }
 }
