@@ -90,6 +90,7 @@ internal open class GoTestWithDebugCommandLineState(
     with(configuration) {
       val testFilter = settings.testFilter
       if (testFilter != null) {
+        // TODO(BAZEL-3272): remove duplication with GoRunWithDebugCommandLineState and RunWithScriptPath.kt
         customEnvironment["TESTBRIDGE_TEST_ONLY"] = testFilter
       }
       val envVarsData = settings.env
@@ -98,6 +99,9 @@ internal open class GoTestWithDebugCommandLineState(
         customEnvironment[env.key] = env.value
       }
       isPassParentEnvironment = envVarsData.isPassParentEnvs
+      settings.programArguments?.let {
+        params = it
+      }
     }
   }
 }
