@@ -27,7 +27,6 @@ class StarlarkFunctionCallValidationInspectionTest : BasePlatformTestCase() {
   val parameterNotFound = StarlarkBundle.message("inspection.description.call.named.parameter.not.found", "unknownParam")
   val positionalOnly = StarlarkBundle.message("inspection.description.call.unnamed.arg.with.name", "argOne")
   val wrongEnvironment = StarlarkBundle.message("inspection.description.call.not.available.in.environment", "simple", "BZL", "MODULE")
-  val undefined = StarlarkBundle.message("inspection.description.call.undefined")
 
   @Before
   fun beforeEach() {
@@ -257,17 +256,6 @@ class StarlarkFunctionCallValidationInspectionTest : BasePlatformTestCase() {
   }
 
   @Test
-  fun `unresolved callee should not highlighted`() {
-    myFixture.configureByText(
-      "test.bzl",
-      """
-      <error descr="$undefined">unknown(1, 2, a = 3)</error>
-      """.trimIndent()
-    )
-    myFixture.checkHighlighting(true, false, false)
-  }
-
-  @Test
   fun `too many positional arguments in lambda call should be highlighted`() {
     myFixture.configureByText(
       "test.bzl",
@@ -446,6 +434,32 @@ class StarlarkFunctionCallValidationInspectionTest : BasePlatformTestCase() {
   }
 
   @Test
+  fun `load with alias should resolve to definition transitively`() {
+    initializeBazelProject(project, myFixture.tempDirPath)
+    myFixture.addFileToProject(
+      "MODULE.bazel",
+      """
+      module(name = "test_repo", version = "0.1.0")
+      """.trimIndent(),
+    )
+    myFixture.addFileToProject("BUILD", "")
+    myFixture.addFileToProject(
+      "a.bzl",
+      """
+          def real(argOne, argTwo): pass
+          """.trimIndent(),
+    )
+    myFixture.configureByText(
+      "b.bzl",
+      """
+          load("//:a.bzl", alias = "real")
+          <error descr="$missingRequiredArgTwo">alias</error>(1)
+          """.trimIndent(),
+    )
+    myFixture.checkHighlighting(true, false, false)
+  }
+
+  @Test
   fun `custom macro pseudo collision should not be highlighted`() {
     initializeBazelProject(project, myFixture.tempDirPath)
 
@@ -482,6 +496,17 @@ class StarlarkFunctionCallValidationInspectionTest : BasePlatformTestCase() {
       """.trimIndent(),
     )
 
+    myFixture.checkHighlighting(true, false, false)
+  }
+
+  @Test
+  fun `unresolved call with wrong arguments order should be highlighted`() {
+    myFixture.configureByText(
+      "test.bzl",
+      """
+      unknown(*xs, <error descr="$positionalAfterKeywordOrStar">2</error>)
+      """.trimIndent()
+    )
     myFixture.checkHighlighting(true, false, false)
   }
 }

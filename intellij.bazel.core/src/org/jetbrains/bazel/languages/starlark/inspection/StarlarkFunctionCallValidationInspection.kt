@@ -35,14 +35,10 @@ class StarlarkFunctionCallValidationInspection : LocalInspectionTool() {
 
     override fun visitCallExpression(node: StarlarkCallExpression) {
       val arguments = node.getArgumentList()?.getArguments() ?: return
-      val resolved = signatureProviders.firstNotNullOfOrNull { it.resolve(node) }
-      if (resolved == null) {
-        holder.registerProblem(node, StarlarkBundle.message("inspection.description.call.undefined"))
-        return
-      }
-      if (!validateEnvironment(node, resolved.allowedEnvironments)) return
-
       validateOrder(arguments)
+
+      val resolved = signatureProviders.firstNotNullOfOrNull { it.resolve(node) } ?: return
+      if (!validateEnvironment(node, resolved.allowedEnvironments)) return
       validateAgainstSignature(node, arguments, resolved.params)
       checkDependencyOverrideResolution(node)
     }
