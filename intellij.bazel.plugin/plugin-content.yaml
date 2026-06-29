@@ -16,10 +16,6 @@
 - name: lib/modules/intellij.bazel.commons.jar
   contentModules:
   - name: intellij.bazel.commons
-  library: jetbrains.intellij.deps.bazel.aspect.sdk
-  files:
-  - name: $MAVEN_REPOSITORY$/org/jetbrains/intellij/deps/bazel/intellij-aspect-sdk/0/intellij-aspect-sdk-0.jar
-  reason: <- intellij.bazel.commons
 - name: lib/modules/intellij.bazel.connector.jar
   contentModules:
   - name: intellij.bazel.connector
@@ -101,3 +97,9 @@
 - name: lib/modules/intellij.bazel.terminal.jar
   contentModules:
   - name: intellij.bazel.terminal
+- name: lib/modules/intellij.libraries.bazel.aspect.sdk.jar
+  contentModules:
+  - name: intellij.libraries.bazel.aspect.sdk
+    libraries:
+      jetbrains.intellij.deps.bazel.aspect.sdk:
+      - name: $MAVEN_REPOSITORY$/org/jetbrains/intellij/deps/bazel/intellij-aspect-sdk/0/intellij-aspect-sdk-0.jar

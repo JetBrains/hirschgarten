@@ -35,6 +35,6 @@
     <orderEntry type="module" module-name="intellij.platform.diagnostic.telemetry" />
     <orderEntry type="module" module-name="intellij.platform.util.progress" />
     <orderEntry type="module" module-name="intellij.platform.eel.provider" />
-    <orderEntry type="library" name="jetbrains.intellij.deps.bazel.aspect.sdk" level="project" />
+    <orderEntry type="module" module-name="intellij.libraries.bazel.aspect.sdk" />
   </component>
 </module>

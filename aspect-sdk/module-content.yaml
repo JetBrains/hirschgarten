@@ -1,0 +1,6 @@
+- name: dist.all/lib/intellij.libraries.bazel.aspect.sdk.jar
+  modules:
+  - name: intellij.libraries.bazel.aspect.sdk
+    libraries:
+      jetbrains.intellij.deps.bazel.aspect.sdk:
+      - name: $MAVEN_REPOSITORY$/org/jetbrains/intellij/deps/bazel/intellij-aspect-sdk/0/intellij-aspect-sdk-0.jar

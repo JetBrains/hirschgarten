@@ -6,6 +6,7 @@
     <module name="intellij.bazel.connector"/>
     <module name="intellij.bazel.core"/>
     <module name="intellij.bazel.importer"/>
+    <module name="intellij.libraries.bazel.aspect.sdk"/>
   </dependencies>
   <!-- endregion -->
 
