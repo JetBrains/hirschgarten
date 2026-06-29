@@ -99,7 +99,7 @@
     <orderEntry type="module" module-name="intellij.platform.lang" />
     <orderEntry type="module" module-name="intellij.platform.statistics" />
     <orderEntry type="module" module-name="intellij.platform.testRunner" />
-    <orderEntry type="library" name="jetbrains.intellij.deps.bazel.aspect.sdk" level="project" />
+    <orderEntry type="module" module-name="intellij.libraries.bazel.aspect.sdk" />
     <orderEntry type="library" scope="PROVIDED" name="kotlinc.kotlin-compiler-common" level="project" />
   </component>
 </module>

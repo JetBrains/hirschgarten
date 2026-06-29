@@ -23,7 +23,7 @@
     <orderEntry type="module" module-name="intellij.platform.projectModel" />
     <orderEntry type="module" module-name="intellij.protoeditor" />
     <orderEntry type="module" module-name="intellij.protoeditor.core" />
-    <orderEntry type="library" name="jetbrains.intellij.deps.bazel.aspect.sdk" level="project" />
+    <orderEntry type="module" module-name="intellij.libraries.bazel.aspect.sdk" />
     <orderEntry type="module" module-name="intellij.bazel.connector" />
   </component>
 </module>

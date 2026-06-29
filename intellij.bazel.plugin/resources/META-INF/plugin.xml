@@ -66,6 +66,9 @@
     <module name="intellij.bazel.terminal"/>
     <module name="intellij.bazel.java.profiler"/>
 
+    <!-- library wrappers -->
+    <module name="intellij.libraries.bazel.aspect.sdk" loading="required"/>
+
   </content>
 
 </idea-plugin>

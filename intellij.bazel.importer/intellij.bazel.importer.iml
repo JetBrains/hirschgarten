@@ -52,6 +52,6 @@
     <orderEntry type="module" module-name="intellij.platform.util.jdom" />
     <orderEntry type="module" module-name="intellij.platform.eel.provider" />
     <orderEntry type="module" module-name="intellij.libraries.hash4j" />
-    <orderEntry type="library" exported="" name="jetbrains.intellij.deps.bazel.aspect.sdk" level="project" />
+    <orderEntry type="module" module-name="intellij.libraries.bazel.aspect.sdk" exported="" />
   </component>
 </module>

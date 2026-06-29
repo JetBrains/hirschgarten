@@ -216,7 +216,7 @@
     <orderEntry type="module" module-name="intellij.bazel.java.sync" scope="TEST" />
     <orderEntry type="module" module-name="intellij.bazel.python.backend" scope="TEST" />
     <orderEntry type="module" module-name="intellij.python.community.services.systemPython" scope="TEST" />
-    <orderEntry type="library" name="jetbrains.intellij.deps.bazel.aspect.sdk" level="project" />
+    <orderEntry type="module" module-name="intellij.libraries.bazel.aspect.sdk" />
     <orderEntry type="module" module-name="intellij.libraries.junit4" scope="TEST" />
     <orderEntry type="module" module-name="intellij.libraries.junit5" scope="TEST" />
     <orderEntry type="module" module-name="intellij.libraries.junit5.params" scope="TEST" />
