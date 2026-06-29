@@ -18,6 +18,7 @@ import com.intellij.openapi.roots.ProjectFileIndex
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.ui.EditorNotificationPanel
 import com.intellij.ui.EditorNotificationProvider
+import com.intellij.ui.EditorNotifications
 import com.intellij.ui.JBColor
 import com.intellij.ui.SimpleTextAttributes
 import com.intellij.ui.treeStructure.ProjectViewUpdateCause
@@ -190,6 +191,7 @@ class BazelFileStatusRefresher(private val project: Project) {
     BazelCoroutineService.getInstance(project).start {
       withContext(Dispatchers.EDT) {
         ProjectView.getInstance(project).refresh(ProjectViewUpdateCause.PLUGIN_BAZEL)
+        EditorNotifications.getInstance(project).updateAllNotifications()
         with(FileEditorManager.getInstance(project)) {
           openFiles.forEach {
             updateFilePresentation(it)
