@@ -34,6 +34,7 @@ data class BazelGlobalFunction(
   val doc: String?,
   val environment: List<Environment>,
   val params: List<BazelGlobalFunctionParameter>,
+  val returnType: String? = null,
 )
 
 @ApiStatus.Internal

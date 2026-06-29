@@ -21,6 +21,8 @@ import org.jetbrains.bazel.languages.starlark.bazel.BazelGlobalFunction
 import org.jetbrains.bazel.languages.starlark.bazel.BazelGlobalFunctions
 import org.jetbrains.bazel.languages.starlark.elements.StarlarkTokenTypes
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkFile
+import org.jetbrains.bazel.languages.starlark.psi.statements.StarlarkExpressionStatement
+import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkCallExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkReferenceExpression
 
 internal class BazelGlobalFunctionCompletionContributor : CompletionContributor() {
@@ -48,10 +50,11 @@ internal class BazelGlobalFunctionCompletionContributor : CompletionContributor(
     )
   }
 
-  private fun fileSpecificFunctionCompletionElement(bazelFileType: BazelFileType) =
-    globalFunctionCompletionElement()
-      .inFile(psiFile(StarlarkFile::class.java).with(bazelFileTypeCondition(bazelFileType)))
-      .withSuperParent(3, StarlarkFile::class.java)
+  private fun fileSpecificFunctionCompletionElement(bazelFileType: BazelFileType) = globalFunctionCompletionElement()
+      .inFile(
+        psiFile(StarlarkFile::class.java)
+          .with(bazelFileTypeCondition(bazelFileType))
+      )
 
   private fun globalFunctionCompletionElement() =
     psiElement()
@@ -66,17 +69,31 @@ internal class BazelGlobalFunctionCompletionContributor : CompletionContributor(
     }
 }
 
-private abstract class BazelFunctionCompletionProvider(val getFunctions: (Project) -> Collection<BazelGlobalFunction>) :
-  CompletionProvider<CompletionParameters>() {
+private abstract class BazelFunctionCompletionProvider : CompletionProvider<CompletionParameters>() {
+
   override fun addCompletions(
     parameters: CompletionParameters,
     context: ProcessingContext,
     result: CompletionResultSet,
   ) {
     val project = parameters.editor.project ?: return
-    val functions = getFunctions(project)
-    functions.forEach { result.addElement(functionLookupElement(it)) }
+    if (parameters.isInStatementPosition()) {
+      getFunctions(project).forEach { result.addElement(functionLookupElement(it)) }
+      return
+    }
+    getFunctions(project)
+      .filter {  it.returnType != null }
+      .forEach { result.addElement(functionLookupElement(it)) }
   }
+
+  private fun CompletionParameters.isInStatementPosition(): Boolean =
+    when (val grandParent = position.parent?.parent) {
+      is StarlarkExpressionStatement -> true
+      is StarlarkCallExpression -> grandParent.parent is StarlarkExpressionStatement
+      else -> false
+    }
+
+  protected abstract fun getFunctions(project: Project): Collection<BazelGlobalFunction>
 
   private fun functionLookupElement(function: BazelGlobalFunction): LookupElement =
     LookupElementBuilder
@@ -85,17 +102,32 @@ private abstract class BazelFunctionCompletionProvider(val getFunctions: (Projec
       .withIcon(PlatformIcons.FUNCTION_ICON)
 }
 
-private object StarlarkFunctionCompletionProvider :
-  BazelFunctionCompletionProvider({ BazelGlobalFunctions.starlarkGlobalFunctions(it).values })
+private object StarlarkFunctionCompletionProvider : BazelFunctionCompletionProvider() {
+  override fun getFunctions(project: Project): Collection<BazelGlobalFunction> = BazelGlobalFunctions
+    .starlarkGlobalFunctions(project)
+    .values
+}
 
-private object BazelBzlFunctionCompletionProvider :
-  BazelFunctionCompletionProvider({ BazelGlobalFunctions.extensionGlobalFunctions(it).values })
+private object BazelBzlFunctionCompletionProvider : BazelFunctionCompletionProvider() {
+  override fun getFunctions(project: Project): Collection<BazelGlobalFunction> = BazelGlobalFunctions
+    .extensionGlobalFunctions(project)
+    .values
+}
 
-private object BazelBuildFunctionCompletionProvider :
-  BazelFunctionCompletionProvider({ BazelGlobalFunctions.buildGlobalFunctions(it).values })
+private object BazelBuildFunctionCompletionProvider : BazelFunctionCompletionProvider() {
+  override fun getFunctions(project: Project): Collection<BazelGlobalFunction> = BazelGlobalFunctions
+    .buildGlobalFunctions(project)
+    .values
+}
 
-private object BazelModuleFunctionCompletionProvider :
-  BazelFunctionCompletionProvider({ BazelGlobalFunctions.moduleGlobalFunctions(it).values })
+private object BazelModuleFunctionCompletionProvider : BazelFunctionCompletionProvider() {
+  override fun getFunctions(project: Project): Collection<BazelGlobalFunction> = BazelGlobalFunctions
+    .moduleGlobalFunctions(project)
+    .values
+}
 
-private object BazelWorkspaceFunctionCompletionProvider :
-  BazelFunctionCompletionProvider({ BazelGlobalFunctions.moduleGlobalFunctions(it).values })
+private object BazelWorkspaceFunctionCompletionProvider : BazelFunctionCompletionProvider() {
+  override fun getFunctions(project: Project): Collection<BazelGlobalFunction> = BazelGlobalFunctions
+    .moduleGlobalFunctions(project)
+    .values
+}
