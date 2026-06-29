@@ -1,6 +1,7 @@
 package org.jetbrains.bsp.protocol
 
 import org.jetbrains.annotations.ApiStatus
+import java.nio.file.Path
 
 /**
  * Request and response classes for local->remote resolution.
@@ -27,5 +28,5 @@ data class BazelResolveRemoteToLocalResult(
   /**
    * Maps each remote path to a local absolute path (or an empty string if not resolvable).
    */
-  val resolvedPaths: Map<String, String>,
+  val resolvedPaths: Map<String, Path>,
 )

@@ -28,14 +28,15 @@ import org.jetbrains.bazel.golang.sync.GoLanguagePlugin
 import org.jetbrains.bazel.server.connection
 import org.jetbrains.bsp.protocol.BazelResolveLocalToRemoteParams
 import org.jetbrains.bsp.protocol.BazelResolveRemoteToLocalParams
-import java.io.File
+import java.nio.file.Path
+
+private val logger: Logger = logger<BspDlvPositionConverter>()
 
 internal class BspDlvPositionConverter(
   private val project: Project,
   private val remotePaths: Set<String>,
   private val goRoot: String,
 ) : DlvPositionConverter {
-  private val logger: Logger = logger<BspDlvPositionConverter>()
 
   private val localToRemoteCache = mutableMapOf<String, String>()
   private val remoteToLocalCache = mutableMapOf<String, VirtualFile>()
@@ -45,11 +46,9 @@ internal class BspDlvPositionConverter(
       runBlocking {
         val resolvedMap = resolveRemoteToLocalOnServer(remotePaths.toList())
         resolvedMap.forEach { (remote, localPath) ->
-          if (localPath.isNotBlank()) {
-            val vf = LocalFileSystem.getInstance().findFileByIoFile(File(localPath))
-            if (vf != null && vf.isValid) {
-              remoteToLocalCache[remote] = vf
-            }
+          val vf = LocalFileSystem.getInstance().findFileByNioFile(localPath)
+          if (vf != null && vf.isValid) {
+            remoteToLocalCache[remote] = vf
           }
         }
       }
@@ -101,12 +100,12 @@ internal class BspDlvPositionConverter(
       }
 
     val localAbsolute = resolvedMap[remotePath]
-    if (localAbsolute.isNullOrEmpty()) {
+    if (localAbsolute == null) {
       logger.warn("Server could not resolve remote path '$remotePath' to local path.")
       return null
     }
 
-    val vf = LocalFileSystem.getInstance().findFileByIoFile(File(localAbsolute))
+    val vf = LocalFileSystem.getInstance().findFileByNioFile(localAbsolute)
     if (vf != null && vf.isValid) {
       remoteToLocalCache[remotePath] = vf
       return vf
@@ -126,7 +125,7 @@ internal class BspDlvPositionConverter(
     }
   }
 
-  private suspend fun resolveRemoteToLocalOnServer(remotePaths: List<String>): Map<String, String> {
+  private suspend fun resolveRemoteToLocalOnServer(remotePaths: List<String>): Map<String, Path> {
     val params =
       BazelResolveRemoteToLocalParams(
         remotePaths = remotePaths,
