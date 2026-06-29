@@ -99,4 +99,36 @@ class BazelGlobalFunctionCompletionContributorTest : BasePlatformTestCase() {
 
     lookups shouldContainExactlyInAnyOrder listOf("max", "register_execution_platforms", "use_extension")
   }
+
+  @Test
+  fun `should insert a list literal when completing selected functions with list literal of strings as first argument`() {
+    for (funName in listOf("glob", "exports_files", "licenses")) {
+      assertListLiteralInserted(
+        fileName = "BUILD",
+        text = "$funName<caret>",
+        lookupString = funName,
+        expected = "$funName([\"<caret>\"])",
+      )
+    }
+  }
+
+  @Test
+  fun `should place caret inside existing parentheses instead of inserting a second list literal`() {
+    assertListLiteralInserted(
+      fileName = "BUILD",
+      text = "glo<caret>()",
+      lookupString = "glo",
+      expected = "glob(<caret>)",
+    )
+  }
+
+  private fun assertListLiteralInserted(fileName: String, text: String, lookupString: String, expected: String) {
+    myFixture.configureByText(fileName, text)
+    val lookups = myFixture.completeBasic()
+    if (lookups != null) {
+      myFixture.lookup.currentItem = lookups.first { lookupString in it.allLookupStrings }
+      myFixture.type('\n')
+    }
+    myFixture.checkResult(expected)
+  }
 }

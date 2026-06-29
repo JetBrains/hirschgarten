@@ -1,10 +1,13 @@
 package org.jetbrains.bazel.languages.starlark.completion
 
+import com.intellij.codeInsight.AutoPopupController
 import com.intellij.codeInsight.completion.CompletionContributor
 import com.intellij.codeInsight.completion.CompletionParameters
 import com.intellij.codeInsight.completion.CompletionProvider
 import com.intellij.codeInsight.completion.CompletionResultSet
 import com.intellij.codeInsight.completion.CompletionType
+import com.intellij.codeInsight.completion.InsertHandler
+import com.intellij.codeInsight.completion.InsertionContext
 import com.intellij.codeInsight.completion.util.ParenthesesInsertHandler
 import com.intellij.codeInsight.lookup.LookupElement
 import com.intellij.codeInsight.lookup.LookupElementBuilder
@@ -51,10 +54,10 @@ internal class BazelGlobalFunctionCompletionContributor : CompletionContributor(
   }
 
   private fun fileSpecificFunctionCompletionElement(bazelFileType: BazelFileType) = globalFunctionCompletionElement()
-      .inFile(
-        psiFile(StarlarkFile::class.java)
-          .with(bazelFileTypeCondition(bazelFileType))
-      )
+    .inFile(
+      psiFile(StarlarkFile::class.java)
+        .with(bazelFileTypeCondition(bazelFileType)),
+    )
 
   private fun globalFunctionCompletionElement() =
     psiElement()
@@ -82,7 +85,7 @@ private abstract class BazelFunctionCompletionProvider : CompletionProvider<Comp
       return
     }
     getFunctions(project)
-      .filter {  it.returnType != null }
+      .filter { it.returnType != null }
       .forEach { result.addElement(functionLookupElement(it)) }
   }
 
@@ -98,8 +101,37 @@ private abstract class BazelFunctionCompletionProvider : CompletionProvider<Comp
   private fun functionLookupElement(function: BazelGlobalFunction): LookupElement =
     LookupElementBuilder
       .create(function.name)
-      .withInsertHandler(ParenthesesInsertHandler.WITH_PARAMETERS)
+      .withInsertHandler(insertHandlerFor(function))
       .withIcon(PlatformIcons.FUNCTION_ICON)
+
+  private fun insertHandlerFor(
+    function: BazelGlobalFunction,
+  ): InsertHandler<LookupElement> = when (function.name) {
+    in LIST_LITERAL_COMPLETION_FUNCTIONS -> ListLiteralArgumentInsertHandler
+    else -> ParenthesesInsertHandler.WITH_PARAMETERS
+  }
+
+  private companion object {
+
+    private val LIST_LITERAL_COMPLETION_FUNCTIONS = setOf("glob", "exports_files", "licenses")
+  }
+}
+
+private object ListLiteralArgumentInsertHandler : InsertHandler<LookupElement> {
+
+  override fun handleInsert(context: InsertionContext, item: LookupElement) {
+    val editor = context.editor
+    val document = editor.document
+    // Completion may be re-invoked over an existing call, where the parentheses are already present.
+    // In that case place the caret inside them rather than inserting a second, broken `([""])`.
+    if (document.charsSequence.getOrNull(context.tailOffset) == '(') {
+      editor.caretModel.moveToOffset(context.tailOffset + 1)
+    } else {
+      document.insertString(context.tailOffset, "([\"\"])")
+      editor.caretModel.moveToOffset(context.tailOffset - 3)
+    }
+    AutoPopupController.getInstance(context.project).scheduleAutoPopup(editor)
+  }
 }
 
 private object StarlarkFunctionCompletionProvider : BazelFunctionCompletionProvider() {
