@@ -2,6 +2,7 @@ package org.jetbrains.bazel.tools.pluginDistribution
 
 import java.nio.file.Files
 import java.nio.file.Path
+import java.nio.file.Paths
 import java.util.zip.ZipFile
 
 private data class Arguments(
@@ -54,8 +55,8 @@ private fun parseArguments(rawArgs: List<String>): Arguments {
     require(index < rawArgs.size) { "missing value for $key" }
     val value = rawArgs[index++]
     when (key) {
-      "--plugin_content_yaml" -> pluginContentYaml = Path.of(value)
-      "--plugin_zip" -> pluginZip = Path.of(value)
+      "--plugin_content_yaml" -> pluginContentYaml = Paths.get(value)
+      "--plugin_zip" -> pluginZip = Paths.get(value)
       "--plugin_root" -> pluginRoot = value
       else -> error("unknown argument: $key")
     }
