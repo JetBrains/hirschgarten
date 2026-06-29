@@ -94,6 +94,8 @@
                     serviceImplementation="org.jetbrains.bazel.hotswap.BazelHotSwapManagerImpl"
                     open="true"/>
 
+    <postStartupActivity implementation="org.jetbrains.bazel.inspections.JavaInspectionsSetup" order="first"/>
+
     <localInspection language="JAVA"
                      groupKey="bazel.inspection.group.name"
                      shortName="JavaStrictDependencies"
