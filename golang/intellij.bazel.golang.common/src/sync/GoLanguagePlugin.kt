@@ -24,6 +24,7 @@ import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
 import org.jetbrains.bsp.protocol.BuildTargetData
 import java.nio.file.Path
 import java.nio.file.Paths
+import kotlin.io.path.absolute
 import kotlin.reflect.KClass
 
 @ApiStatus.Internal
@@ -111,17 +112,15 @@ class GoLanguagePlugin: LanguagePlugin {
      * Converts remote Bazel paths to local absolute paths.
      */
     fun resolveRemoteToLocal(pathsResolver: BazelPathsResolver, params: BazelResolveRemoteToLocalParams): BazelResolveRemoteToLocalResult {
-      val mapping = mutableMapOf<String, String>()
+      val mapping = mutableMapOf<String, Path>()
       for (remote in params.remotePaths) {
         try {
-          val normalizedRemotePath = normalizeRemotePath(remote, params.goRoot)
-          val localFile = pathsResolver.resolve(normalizedRemotePath)
-          val localPath = localFile.absoluteFile.normalize().path
+          val normalizedRemotePath = Path.of(normalizeRemotePath(remote, params.goRoot))
+          val localPath = pathsResolver.resolve(normalizedRemotePath).absolute().normalize()
           mapping[remote] = localPath
         }
         catch (e: Exception) {
           logger.warn("Failed to resolve remote path '$remote': ${e.message}", e)
-          mapping[remote] = "" // fallback
         }
       }
       return BazelResolveRemoteToLocalResult(mapping)

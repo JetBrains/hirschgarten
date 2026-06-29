@@ -119,14 +119,6 @@ class BazelPathsResolver(private val bazelInfo: BazelInfo) {
       else -> bazelInfo.workspaceRoot.resolve(path)
     }
 
-  // TODO: it's used only in go plugin but I don't feel competent to change it
-  fun resolve(path: String): File =
-    when {
-      Paths.get(path).isAbsolute -> File(path)
-      path.startsWith("external/") -> bazelInfo.outputBase.resolve(path).toFile()
-      else -> bazelInfo.workspaceRoot.resolve(path).toFile()
-    }
-
   fun toDirectoryPath(label: ResolvedLabel, repoMapping: RepoMapping): Path {
     val repoPath = (repoMapping as? BzlmodRepoMapping)?.let { label.toRepoPath(repoMapping) } ?: label.toRepoPathForBazel7()
     return repoPath.resolve(label.packagePath.toPath())
