@@ -160,7 +160,7 @@ private fun PatchedBuiltinProtos.Value.toFunctionSignature(): FunctionSignature?
     doc = doc.cleanupStardoc(),
     environment = environment,
     params = callable.paramList.map { it.toParamSignature() },
-    returnType = callable.returnType.takeIf { it.isNotEmpty() && it != "NoneType" && it != "unknown" },
+    returnType = callable.returnType.takeIf { it.isNotEmpty() && it != "NoneType" },
   )
 }
 

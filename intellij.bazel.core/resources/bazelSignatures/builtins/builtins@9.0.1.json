@@ -162,7 +162,8 @@
         "positional": true,
         "required": true
       }
-    ]
+    ],
+    "returnType": "unknown"
   },
   {
     "name": "action_listener",
@@ -2881,41 +2882,8 @@
     "name": "depset",
     "doc": "Creates a depset. The <code>direct</code> parameter is a list of direct elements of the depset, and <code>transitive</code> parameter is a list of depsets whose elements become indirect elements of the created depset. The order in which elements are returned when the depset is converted to a list is specified by the <code>order</code> parameter. See the <a href=\"https://bazel.build/extending/depsets\">Depsets overview</a> for more information.\n<p>All elements (direct and indirect) of a depset must be of the same type, as obtained by the expression <code>type(x)</code>.\n<p>Because a hash-based set is used to eliminate duplicates during iteration, all elements of a depset should be hashable. However, this invariant is not currently checked consistently in all constructors. Use the --incompatible_always_check_depset_elements flag to enable consistent checking; this will be the default behavior in future releases;  see <a href='https://github.com/bazelbuild/bazel/issues/10313'>Issue 10313</a>.\n<p>In addition, elements must currently be immutable, though this restriction will be relaxed in future.\n<p> The order of the created depset should be <i>compatible</i> with the order of its <code>transitive</code> depsets. <code>\"default\"</code> order is compatible with any other order, all other orders are only compatible with themselves.",
     "environment": [
+      "BUILD",
       "BZL"
-    ],
-    "params": [
-      {
-        "name": "direct",
-        "doc": "A list of <i>direct</i> elements of a depset. ",
-        "defaultValue": "None",
-        "named": true,
-        "positional": true,
-        "required": false
-      },
-      {
-        "name": "order",
-        "doc": "The traversal strategy for the new depset. See here for the possible values.",
-        "defaultValue": "\"default\"",
-        "named": true,
-        "positional": true,
-        "required": false
-      },
-      {
-        "name": "transitive",
-        "doc": "A list of depsets whose elements will become indirect elements of the depset.",
-        "defaultValue": "None",
-        "named": true,
-        "positional": false,
-        "required": false
-      }
-    ],
-    "returnType": "depset"
-  },
-  {
-    "name": "depset",
-    "doc": "Creates a depset. The <code>direct</code> parameter is a list of direct elements of the depset, and <code>transitive</code> parameter is a list of depsets whose elements become indirect elements of the created depset. The order in which elements are returned when the depset is converted to a list is specified by the <code>order</code> parameter. See the <a href=\"https://bazel.build/extending/depsets\">Depsets overview</a> for more information.\n<p>All elements (direct and indirect) of a depset must be of the same type, as obtained by the expression <code>type(x)</code>.\n<p>Because a hash-based set is used to eliminate duplicates during iteration, all elements of a depset should be hashable. However, this invariant is not currently checked consistently in all constructors. Use the --incompatible_always_check_depset_elements flag to enable consistent checking; this will be the default behavior in future releases;  see <a href='https://github.com/bazelbuild/bazel/issues/10313'>Issue 10313</a>.\n<p>In addition, elements must currently be immutable, though this restriction will be relaxed in future.\n<p> The order of the created depset should be <i>compatible</i> with the order of its <code>transitive</code> depsets. <code>\"default\"</code> order is compatible with any other order, all other orders are only compatible with themselves.",
-    "environment": [
-      "BUILD"
     ],
     "params": [
       {
@@ -3120,23 +3088,8 @@
         "positional": true,
         "required": true
       }
-    ]
-  },
-  {
-    "name": "existing_rule",
-    "doc": "Returns an immutable dict-like object that describes the attributes of a rule instantiated in this thread's package, or <code>None</code> if no rule instance of that name exists.<p>Here, an <em>immutable dict-like object</em> means a deeply immutable object <code>x</code> supporting dict-like iteration, <code>len(x)</code>, <code>name in x</code>, <code>xname</code>, <code>x.get(name)</code>, <code>x.items()</code>, <code>x.keys()</code>, and <code>x.values()</code>.<p>The result contains an entry for each attribute, with the exception of private ones (whose names do not start with a letter) and a few unrepresentable legacy attribute types. In addition, the dict contains entries for the rule instance's <code>name</code> and <code>kind</code> (for example, <code>'cc_binary'</code>).<p>The values of the result represent attribute values as follows:<ul><li>Attributes of type str, int, and bool are represented as is.</li><li>Labels are converted to strings of the form <code>':foo'</code> for targets in the same package or <code>'//pkg:name'</code> for targets in a different package.</li><li>Lists are represented as tuples, and dicts are converted to new, mutable dicts. Their elements are recursively converted in the same fashion.</li><li><code>select</code> values are returned with their contents transformed as described above.</li><li>Attributes for which no value was specified during rule instantiation and whose default value is computed are excluded from the result. (Computed defaults cannot be computed until the analysis phase.).</li></ul><p>If possible, use this function only in <a href=\"https://bazel.build/extending/macros#finalizers\">implementation functions of rule finalizer symbolic macros</a>. Use of this function in other contexts is not recommened, and will be disabled in a future Bazel release; it makes <code>BUILD</code> files brittle and order-dependent. Also, beware that it differs subtly from the two other conversions of rule attribute values from internal form to Starlark: one used by computed defaults, the other used by <code>ctx.attr.foo</code>.",
-    "environment": [
-      "BUILD"
     ],
-    "params": [
-      {
-        "name": "name",
-        "doc": "The name of the target.",
-        "named": false,
-        "positional": true,
-        "required": true
-      }
-    ]
+    "returnType": "unknown"
   },
   {
     "name": "existing_rules",
@@ -3144,47 +3097,8 @@
     "environment": [
       "BUILD"
     ],
-    "params": []
-  },
-  {
-    "name": "existing_rules",
-    "doc": "Returns an immutable dict-like object describing the rules so far instantiated in this thread's package. Each entry of the dict-like object maps the name of the rule instance to the result that would be returned by <code>existing_rule(name)</code>.<p>Here, an <em>immutable dict-like object</em> means a deeply immutable object <code>x</code> supporting dict-like iteration, <code>len(x)</code>, <code>name in x</code>, <code>xname</code>, <code>x.get(name)</code>, <code>x.items()</code>, <code>x.keys()</code>, and <code>x.values()</code>.<p>If possible, use this function only in <a href=\"https://bazel.build/extending/macros#finalizers\">implementation functions of rule finalizer symbolic macros</a>. Use of this function in other contexts is not recommened, and will be disabled in a future Bazel release; it makes <code>BUILD</code> files brittle and order-dependent.",
-    "environment": [
-      "BUILD"
-    ],
-    "params": []
-  },
-  {
-    "name": "exports_files",
-    "doc": "Specifies a list of files belonging to this package that are exported to other packages.",
-    "environment": [
-      "BUILD"
-    ],
-    "params": [
-      {
-        "name": "srcs",
-        "doc": "The list of files to export.",
-        "named": true,
-        "positional": true,
-        "required": true
-      },
-      {
-        "name": "visibility",
-        "doc": "A visibility declaration can to be specified. The files will be visible to the targets specified. If no visibility is specified, the files will be visible to every package.",
-        "defaultValue": "None",
-        "named": true,
-        "positional": true,
-        "required": false
-      },
-      {
-        "name": "licenses",
-        "doc": "Licenses to be specified.",
-        "defaultValue": "None",
-        "named": true,
-        "positional": true,
-        "required": false
-      }
-    ]
+    "params": [],
+    "returnType": "unknown"
   },
   {
     "name": "exports_files",
@@ -4269,7 +4183,8 @@
         "positional": true,
         "required": false
       }
-    ]
+    ],
+    "returnType": "unknown"
   },
   {
     "name": "git_override",
@@ -4293,48 +4208,6 @@
         "required": false
       }
     ]
-  },
-  {
-    "name": "glob",
-    "doc": "Glob returns a new, mutable, sorted list of every file in the current package that:<ul>\n<li>Matches at least one pattern in <code>include</code>.</li>\n<li>Does not match any of the patterns in <code>exclude</code> (default <code>[]</code>).</li></ul>\nIf the <code>exclude_directories</code> argument is enabled (set to <code>1</code>), files of type directory will be omitted from the results (default <code>1</code>).",
-    "environment": [
-      "BUILD"
-    ],
-    "params": [
-      {
-        "name": "include",
-        "doc": "The list of glob patterns to include.",
-        "defaultValue": "[]",
-        "named": true,
-        "positional": true,
-        "required": false
-      },
-      {
-        "name": "exclude",
-        "doc": "The list of glob patterns to exclude.",
-        "defaultValue": "[]",
-        "named": true,
-        "positional": true,
-        "required": false
-      },
-      {
-        "name": "exclude_directories",
-        "doc": "A flag whether to exclude directories or not.",
-        "defaultValue": "1",
-        "named": true,
-        "positional": true,
-        "required": false
-      },
-      {
-        "name": "allow_empty",
-        "doc": "Whether we allow glob patterns to match nothing. If <code>allow_empty</code> is False, each individual include pattern must match something and also the final result must be non-empty (after the matches of the <code>exclude</code> patterns are excluded).",
-        "defaultValue": "unbound",
-        "named": true,
-        "positional": true,
-        "required": false
-      }
-    ],
-    "returnType": "sequence"
   },
   {
     "name": "glob",
@@ -7391,7 +7264,8 @@
         "positional": true,
         "required": false
       }
-    ]
+    ],
+    "returnType": "unknown"
   },
   {
     "name": "memprof_profile",
@@ -7540,7 +7414,8 @@
         "positional": true,
         "required": false
       }
-    ]
+    ],
+    "returnType": "unknown"
   },
   {
     "name": "module",
@@ -7645,29 +7520,12 @@
         "positional": false,
         "required": false
       }
-    ]
+    ],
+    "returnType": "unknown"
   },
   {
     "name": "module_name",
     "doc": "The name of the Bazel module associated with the repo this package is in. If this package is from a repo defined in WORKSPACE instead of MODULE.bazel, this is empty. For repos generated by module extensions, this is the name of the module hosting the extension. It's the same as the <code>module.name</code> field seen in <code>module_ctx.modules</code>.",
-    "environment": [
-      "BUILD"
-    ],
-    "params": [],
-    "returnType": "string"
-  },
-  {
-    "name": "module_name",
-    "doc": "The name of the Bazel module associated with the repo this package is in. If this package is from a repo defined in WORKSPACE instead of MODULE.bazel, this is empty. For repos generated by module extensions, this is the name of the module hosting the extension. It's the same as the <code>module.name</code> field seen in <code>module_ctx.modules</code>.",
-    "environment": [
-      "BUILD"
-    ],
-    "params": [],
-    "returnType": "string"
-  },
-  {
-    "name": "module_version",
-    "doc": "The version of the Bazel module associated with the repo this package is in. If this package is from a repo defined in WORKSPACE instead of MODULE.bazel, this is empty. For repos generated by module extensions, this is the version of the module hosting the extension. It's the same as the <code>module.version</code> field seen in <code>module_ctx.modules</code>.",
     "environment": [
       "BUILD"
     ],
@@ -8247,16 +8105,8 @@
         "positional": false,
         "required": false
       }
-    ]
-  },
-  {
-    "name": "package_default_visibility",
-    "doc": "Returns the default visibility of the package being evaluated. This is the value of the <code>default_visibility</code> parameter of <code>package()</code>, extended to include the package itself.",
-    "environment": [
-      "BUILD"
     ],
-    "params": [],
-    "returnType": "list"
+    "returnType": "unknown"
   },
   {
     "name": "package_default_visibility",
@@ -8300,38 +8150,6 @@
     ]
   },
   {
-    "name": "package_group",
-    "doc": "This function defines a set of packages and assigns a label to the group. The label can be referenced in <code>visibility</code> attributes.",
-    "environment": [
-      "BUILD"
-    ],
-    "params": [
-      {
-        "name": "name",
-        "doc": "The unique name for this rule.",
-        "named": true,
-        "positional": false,
-        "required": true
-      },
-      {
-        "name": "packages",
-        "doc": "A complete enumeration of packages in this group.",
-        "defaultValue": "[]",
-        "named": true,
-        "positional": false,
-        "required": false
-      },
-      {
-        "name": "includes",
-        "doc": "Other package groups that are included in this one.",
-        "defaultValue": "[]",
-        "named": true,
-        "positional": false,
-        "required": false
-      }
-    ]
-  },
-  {
     "name": "package_name",
     "doc": "The name of the package being evaluated, without the repository name. For example, in the BUILD file <code>some/package/BUILD</code>, its value will be <code>some/package</code>. If the BUILD file calls a function defined in a .bzl file, <code>package_name()</code> will match the caller BUILD file package. The value will always be an empty string for the root package.",
     "environment": [
@@ -8339,32 +8157,6 @@
     ],
     "params": [],
     "returnType": "string"
-  },
-  {
-    "name": "package_name",
-    "doc": "The name of the package being evaluated, without the repository name. For example, in the BUILD file <code>some/package/BUILD</code>, its value will be <code>some/package</code>. If the BUILD file calls a function defined in a .bzl file, <code>package_name()</code> will match the caller BUILD file package. The value will always be an empty string for the root package.",
-    "environment": [
-      "BUILD"
-    ],
-    "params": [],
-    "returnType": "string"
-  },
-  {
-    "name": "package_relative_label",
-    "doc": "Converts the input string into a Label object, in the context of the package currently being initialized (that is, the <code>BUILD</code> file for which the current macro is executing). If the input is already a <code>Label</code>, it is returned unchanged.<p>This function may only be called while evaluating a BUILD file and the macros it directly or indirectly calls; it may not be called in (for instance) a rule implementation function. <p>The result of this function is the same <code>Label</code> value as would be produced by passing the given string to a label-valued attribute of a target declared in the BUILD file. <p><i>Usage note:</i> The difference between this function and Label()</code> is that <code>Label()</code> uses the context of the package of the <code>.bzl</code> file that called it, not the package of the <code>BUILD</code> file. Use <code>Label()</code> when you need to refer to a fixed target that is hardcoded into the macro, such as a compiler. Use <code>package_relative_label()</code> when you need to normalize a label string supplied by the BUILD file to a <code>Label</code> object. (There is no way to convert a string to a <code>Label</code> in the context of a package other than the BUILD file or the calling .bzl file. For that reason, outer macros should always prefer to pass Label objects to inner macros rather than label strings.)<code>ctx.package_relative_label()</code> provides the same functionality within a rule or aspect implementation function.",
-    "environment": [
-      "BUILD"
-    ],
-    "params": [
-      {
-        "name": "input",
-        "doc": "The input label string or Label object. If a Label object is passed, it's returned as is.",
-        "named": false,
-        "positional": true,
-        "required": true
-      }
-    ],
-    "returnType": "Label"
   },
   {
     "name": "package_relative_label",
@@ -9253,7 +9045,8 @@
         "positional": false,
         "required": false
       }
-    ]
+    ],
+    "returnType": "unknown"
   },
   {
     "name": "py_binary",
@@ -10581,24 +10374,6 @@
     "returnType": "string"
   },
   {
-    "name": "repo_name",
-    "doc": "The canonical name of the repository containing the package currently being evaluated, with no leading at-signs.",
-    "environment": [
-      "BUILD"
-    ],
-    "params": [],
-    "returnType": "string"
-  },
-  {
-    "name": "repository_name",
-    "doc": "<b>Experimental</b>. This API is experimental and may change at any time. Please do not depend on it. It may be enabled on an experimental basis by setting <code>--+incompatible_enable_deprecated_label_apis</code> <br><strong>Deprecated.</strong> Prefer to use <code>repo_name</code> instead, which doesn't contain the spurious leading at-sign, but behaves identically otherwise.<p>The canonical name of the repository containing the package currently being evaluated, with a single at-sign (<code>@</code>) prefixed. For example, in packages that are called into existence by the WORKSPACE stanza <code>local_repository(name='local', path=...)</code> it will be set to <code>@local</code>. In packages in the main repository, it will be set to <code>@</code>.",
-    "environment": [
-      "BUILD"
-    ],
-    "params": [],
-    "returnType": "string"
-  },
-  {
     "name": "repository_name",
     "doc": "<b>Experimental</b>. This API is experimental and may change at any time. Please do not depend on it. It may be enabled on an experimental basis by setting <code>--+incompatible_enable_deprecated_label_apis</code> <br><strong>Deprecated.</strong> Prefer to use <code>repo_name</code> instead, which doesn't contain the spurious leading at-sign, but behaves identically otherwise.<p>The canonical name of the repository containing the package currently being evaluated, with a single at-sign (<code>@</code>) prefixed. For example, in packages that are called into existence by the WORKSPACE stanza <code>local_repository(name='local', path=...)</code> it will be set to <code>@local</code>. In packages in the main repository, it will be set to <code>@</code>.",
     "environment": [
@@ -10903,6 +10678,7 @@
     "name": "select",
     "doc": "<code>select()</code> is the helper function that makes a rule attribute configurable. See build encyclopedia for details.",
     "environment": [
+      "BUILD",
       "BZL"
     ],
     "params": [
@@ -10921,31 +10697,8 @@
         "positional": true,
         "required": false
       }
-    ]
-  },
-  {
-    "name": "select",
-    "doc": "<code>select()</code> is the helper function that makes a rule attribute configurable. See build encyclopedia for details.",
-    "environment": [
-      "BUILD"
     ],
-    "params": [
-      {
-        "name": "x",
-        "doc": "A dict that maps configuration conditions to values. Each key is a Label or a label string that identifies a config_setting or constraint_value instance. See the <a href=\"https://bazel.build/extending/legacy-macros#label-resolution\">documentation on macros</a> for when to use a Label instead of a string. If <code>--incompatible_resolve_select_keys_eagerly</code> is enabled, the keys are resolved to <code>Label</code> objects relative to the package of the file that contains this call to <code>select</code>.",
-        "named": false,
-        "positional": true,
-        "required": true
-      },
-      {
-        "name": "no_match_error",
-        "doc": "Optional custom error to report if no condition matches.",
-        "defaultValue": "''",
-        "named": true,
-        "positional": true,
-        "required": false
-      }
-    ]
+    "returnType": "unknown"
   },
   {
     "name": "set",
@@ -11770,39 +11523,6 @@
       }
     ],
     "returnType": "struct"
-  },
-  {
-    "name": "subpackages",
-    "doc": "Returns a new mutable list of every direct subpackage of the current package, regardless of file-system directory depth. List returned is sorted and contains the names of subpackages relative to the current package. It is advised to prefer using the methods in bazel_skylib.subpackages module rather than calling this function directly.",
-    "environment": [
-      "BUILD"
-    ],
-    "params": [
-      {
-        "name": "include",
-        "doc": "The list of glob patterns to include in subpackages scan.",
-        "named": true,
-        "positional": false,
-        "required": true
-      },
-      {
-        "name": "exclude",
-        "doc": "The list of glob patterns to exclude from subpackages scan.",
-        "defaultValue": "[]",
-        "named": true,
-        "positional": false,
-        "required": false
-      },
-      {
-        "name": "allow_empty",
-        "doc": "Whether we fail if the call returns an empty list. By default empty list indicates potential error in BUILD file where the call to subpackages() is superflous.  Setting to true allows this function to succeed in that case.",
-        "defaultValue": "False",
-        "named": true,
-        "positional": false,
-        "required": false
-      }
-    ],
-    "returnType": "sequence"
   },
   {
     "name": "subpackages",

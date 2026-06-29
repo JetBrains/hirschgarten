@@ -60,7 +60,23 @@ fun String.cleanupStardoc(): String? = ifEmpty { null }
   ?.replace(Regex("`(.*?)`"), "<code>$1</code>")
 
 private fun List<FunctionSignature>.normalized(): List<FunctionSignature> =
-  map { it.copy(environment = it.environment.sorted(), params = it.params) }.sortedBy { it.name }
+  mergeDuplicatesByName()
+    .sortedBy { it.name }
+
+/**
+ * It handles functions that are declared separately for each environment e.g. `select` in builtins
+ */
+private fun List<FunctionSignature>.mergeDuplicatesByName(): List<FunctionSignature> =
+  groupingBy { it.name }
+    .reduce { name, acc, signature ->
+      if (acc.params != signature.params || acc.doc != signature.doc || acc.returnType != signature.returnType) {
+        println("# Warning: duplicate signatures for '$name' differ beyond environment; keeping the first variant's params/doc/returnType")
+      }
+      acc.copy(environment = (acc.environment + signature.environment).distinct())
+    }
+    .values
+    .map { it.copy(environment = it.environment.sorted()) }
+    .toList()
 
 /**
  * Given an output path like `.../builtins@9.2.0.json`, finds the existing file with
