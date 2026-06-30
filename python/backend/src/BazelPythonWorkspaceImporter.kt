@@ -38,7 +38,6 @@ import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.annotations.VisibleForTesting
 import org.jetbrains.bazel.commons.RepoMapping
 import org.jetbrains.bazel.config.rootDir
-import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.magicmetamodel.formatAsModuleName
 import org.jetbrains.bazel.progress.TaskConsole
 import org.jetbrains.bazel.progress.withSubtask
@@ -84,6 +83,7 @@ internal class BazelPythonWorkspaceImporter : BazelWorkspaceImporter {
 
   private lateinit var commonSyncConfig: CommonWorkspaceSyncConfig
   private lateinit var pythonSyncConfig: PythonWorkspaceSyncConfig
+  private lateinit var moduleNameByKey: Map<WorkspaceTargetKey, String>
 
   private var defaultInterpreter: Path? = null
   private var defaultVersion: String? = null
@@ -98,7 +98,7 @@ internal class BazelPythonWorkspaceImporter : BazelWorkspaceImporter {
   ): Result<WorkspaceImporterResult> = runCatching {
     when (phase) {
       WorkspaceImporterPhase.Initialize -> onInitialize(context, snapshot)
-      is WorkspaceImporterPhase.WorkspaceApply -> onWorkspaceApply(context, snapshot, phase.builder, context.vfuManager)
+      is WorkspaceImporterPhase.WorkspaceApply -> onWorkspaceApply(context, snapshot, phase.builder, context.vfuManager, phase.entitySource)
       WorkspaceImporterPhase.PostProcessing -> onPostProcessing(context, snapshot)
       else -> WorkspaceImporterResult.Success
     }
@@ -113,6 +113,21 @@ internal class BazelPythonWorkspaceImporter : BazelWorkspaceImporter {
     if (!pythonSyncConfig.isPythonSupportEnabled) {
       return WorkspaceImporterResult.Abort
     }
+
+    moduleNameByKey = snapshot.allTargets
+      .filter { it.hasBuildData<PythonBuildTarget>() }
+      .groupBy { it.targetKey.label }
+      .flatMap { (_, targets) ->
+        when {
+          targets.size == 1 -> {
+            val key = targets.single().targetKey
+            listOf(key to key.formatAsModuleName(snapshot.repoMapping, withConfiguration = false))
+          }
+
+          else -> targets.map { it.targetKey to it.targetKey.formatAsModuleName(snapshot.repoMapping, withConfiguration = true) }
+        }
+      }
+      .toMap()
 
     val defaultPythonTarget = snapshot.allTargets
       .filterBuildTarget<PythonBuildTarget>()
@@ -140,22 +155,21 @@ internal class BazelPythonWorkspaceImporter : BazelWorkspaceImporter {
   private fun onWorkspaceApply(
     context: WorkspaceImporterContext, snapshot: WorkspaceSnapshot,
     builder: MutableEntityStorage, vfuManager: VirtualFileUrlManager,
+    entitySource: EntitySource,
   ): WorkspaceImporterResult {
     for ((target, _) in snapshot.allTargets.filterBuildTarget<PythonBuildTarget>()) {
       val targetKey = target.targetKey
-      val moduleName = targetKey.label.formatAsModuleName(snapshot.repoMapping)
-      val moduleSourceEntity = BazelModuleEntitySource(moduleName)
       val sourceDeps = pySourceDeps[target.targetKey] ?: emptyList()
       val sourceDependencyLibrary =
-        calculateSourceDependencyLibrary(targetKey.label, sourceDeps, moduleSourceEntity, vfuManager)
+        calculateSourceDependencyLibrary(targetKey, snapshot.repoMapping, sourceDeps, entitySource, vfuManager)
 
       addModuleEntityFromTarget(
         context = context,
         builder = builder,
         repoMapping = snapshot.repoMapping,
         target = target.rawBuildTarget,
-        moduleName = moduleName,
-        entitySource = moduleSourceEntity,
+        moduleName = targetKey.toPythonModuleName(snapshot.repoMapping),
+        entitySource = entitySource,
         virtualFileUrlManager = vfuManager,
         sdk = pySdks[targetKey] ?: pyDefaultSdk,
         sourceDependencyLibrary = sourceDependencyLibrary,
@@ -225,7 +239,8 @@ internal class BazelPythonWorkspaceImporter : BazelWorkspaceImporter {
   }
 
   private fun calculateSourceDependencyLibrary(
-    target: Label,
+    target: WorkspaceTargetKey,
+    repoMapping: RepoMapping,
     sourceDependencies: List<Path>,
     entitySource: EntitySource,
     virtualFileUrlManager: VirtualFileUrlManager,
@@ -239,7 +254,7 @@ internal class BazelPythonWorkspaceImporter : BazelWorkspaceImporter {
       }
     return if (roots.isNotEmpty()) {
       LibraryEntity(
-        name = target.toString(),
+        name = target.toPythonModuleName(repoMapping),
         tableId = LibraryTableId.ProjectLibraryTableId,
         roots = roots,
         entitySource = entitySource,
@@ -256,7 +271,7 @@ internal class BazelPythonWorkspaceImporter : BazelWorkspaceImporter {
     repoMapping: RepoMapping,
     target: RawBuildTarget,
     moduleName: String,
-    entitySource: BazelModuleEntitySource,
+    entitySource: EntitySource,
     virtualFileUrlManager: VirtualFileUrlManager,
     sdk: Sdk?,
     sourceDependencyLibrary: LibraryEntityBuilder? = null,
@@ -272,7 +287,7 @@ internal class BazelPythonWorkspaceImporter : BazelWorkspaceImporter {
     val dependencies =
       target.dependencies.map {
         ModuleDependency(
-          module = ModuleId(it.targetKey.label.formatAsModuleName(repoMapping)),
+          module = ModuleId(it.targetKey.toPythonModuleName(repoMapping)),
           exported = true,
           scope = DependencyScope.COMPILE,  // Python does not have the runtime/compile scope separation
           productionOnTest = true,
@@ -307,7 +322,7 @@ internal class BazelPythonWorkspaceImporter : BazelWorkspaceImporter {
   private fun getContentRootEntities(
     context: WorkspaceImporterContext,
     target: RawBuildTarget,
-    entitySource: BazelModuleEntitySource,
+    entitySource: EntitySource,
     virtualFileUrlManager: VirtualFileUrlManager,
   ): List<ContentRootEntityBuilder> {
     val sourceContentRootEntities = getSourceContentRootEntities(context, target, entitySource, virtualFileUrlManager)
@@ -319,14 +334,14 @@ internal class BazelPythonWorkspaceImporter : BazelWorkspaceImporter {
   private fun getSourceContentRootEntities(
     context: WorkspaceImporterContext,
     target: RawBuildTarget,
-    entitySource: BazelModuleEntitySource,
+    entitySource: EntitySource,
     virtualFileUrlManager: VirtualFileUrlManager,
   ): List<ContentRootEntityBuilder> = computeSourceRootPaths(context, target)
       .map { it.toContentRoot(PYTHON_SOURCE_ROOT_TYPE, entitySource, virtualFileUrlManager) }
 
   private fun getResourceContentRootEntities(
     target: RawBuildTarget,
-    entitySource: BazelModuleEntitySource,
+    entitySource: EntitySource,
     virtualFileUrlManager: VirtualFileUrlManager,
   ): List<ContentRootEntityBuilder> = target.resources.getFiles()
     .map { resource -> resource.toContentRoot(PYTHON_RESOURCE_ROOT_TYPE, entitySource, virtualFileUrlManager) }
@@ -351,7 +366,7 @@ internal class BazelPythonWorkspaceImporter : BazelWorkspaceImporter {
 
   private fun Path.toContentRoot(
     rootType: String,
-    entitySource: BazelModuleEntitySource,
+    entitySource: EntitySource,
     virtualFileUrlManager: VirtualFileUrlManager,
   ): ContentRootEntityBuilder {
     val url = toVirtualFileUrl(virtualFileUrlManager)
@@ -369,7 +384,7 @@ internal class BazelPythonWorkspaceImporter : BazelWorkspaceImporter {
       this.sourceRoots = listOf(sourceRootEntity)
     }
   }
-  
+
   private suspend fun createSdkFromPython(
     interpreter: Path,
     project: Project,
@@ -385,13 +400,18 @@ internal class BazelPythonWorkspaceImporter : BazelWorkspaceImporter {
     logger.info("Detecting system SDK, found python $systemPython")
     return when (val result = createSdkFromPython(systemPython.pythonBinary, project, sdkName = null)) {
       is com.jetbrains.python.Result.Failure -> {
-        taskConsole.addMessage(taskId, BazelPythonBackendBundle.message("python.cant.create.sdk", systemPython.pythonBinary, result.error.message))
+        taskConsole.addMessage(
+          taskId,
+          BazelPythonBackendBundle.message("python.cant.create.sdk", systemPython.pythonBinary, result.error.message),
+        )
         null
       }
 
       is com.jetbrains.python.Result.Success -> result.result
     }
   }
+
+  private fun WorkspaceTargetKey.toPythonModuleName(repoMapping: RepoMapping) = moduleNameByKey[this] ?: this.formatAsModuleName(repoMapping)
 }
 
 @ApiStatus.Internal
