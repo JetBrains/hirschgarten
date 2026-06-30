@@ -48,4 +48,8 @@
     />
   </extensions>
 
+  <extensions defaultExtensionNs="org.jetbrains.kotlin.idea.codeInsight.lineMarkers">
+    <kotlinRunLineMarkerHider implementation="org.jetbrains.bazel.kotlin.ui.gutters.DefaultKotlinRunLineMarkerHider"/>
+  </extensions>
+
 </idea-plugin>
