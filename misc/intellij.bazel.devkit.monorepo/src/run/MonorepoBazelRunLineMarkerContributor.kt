@@ -1,6 +1,7 @@
 package com.intellij.bazel.devkit.monorepo.run
 
 import com.intellij.monorepo.devkit.bazel.BazelTargetsInfoCache
+import com.intellij.monorepo.devkit.bazel.JpsToBazelConverterRunner
 import com.intellij.monorepo.devkit.bazel.useBazelCompile
 import com.intellij.openapi.diagnostic.fileLogger
 import com.intellij.openapi.project.Project
@@ -53,7 +54,7 @@ internal class MonorepoProjectViewStartupActivity : ProjectActivity {
     // Set the project view. This is needed for these fields:
     // use_jetbrains_test_runner: true
     // run_config_run_with_bazel: false
-    val projectViewPath = sequenceOf(rootDir.findChild("ultimate.bazelproject"), rootDir.findChild("community.bazelproject"))
+    val projectViewPath = sequenceOf(rootDir.findChild(".bazelproject"), rootDir.findChild("ultimate.bazelproject"), rootDir.findChild("community.bazelproject"))
       .firstOrNull { it != null && it.exists() }
     if (projectViewPath == null) {
       LOG.warn("Missing project view path")
@@ -73,11 +74,16 @@ private object MonorepoRunLineMarkerContributorUtil {
     val projectFileIndex = ProjectFileIndex.getInstance(project)
     val module = projectFileIndex.getModuleForFile(containingFile) ?: return emptyList()
 
+    // Run gutters won't work without target information, launch JPS to Bazel converter in the background
+    if (!BazelTargetsInfoCache.getInstance(project).targetsInfo.filePresent) {
+      JpsToBazelConverterRunner.getInstance(project).launch(focus = false, shouldSaveEverything = false)
+      return emptyList()
+    }
+
     val bazelInfo = try {
       BazelTargetsInfoCache.getInstance(project).targetsInfo.getModuleDescription(module.name)
     }
     catch (e: Throwable) {
-      // Targets file can be missing if JPS to Bazel hasn't run. But we can't run JPS to Bazel synchronously while getting run gutters :)
       LOG.warn(e)
       return emptyList()
     }
