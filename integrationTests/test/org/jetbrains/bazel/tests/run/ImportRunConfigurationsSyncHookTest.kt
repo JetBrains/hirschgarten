@@ -25,6 +25,7 @@ import com.intellij.driver.sdk.waitFor
 import com.intellij.ide.starter.ide.IDETestContext
 import com.intellij.tools.ide.performanceTesting.commands.assertCurrentFile
 import com.intellij.tools.ide.performanceTesting.commands.delay
+import io.kotest.matchers.shouldBe
 import org.jetbrains.bazel.data.IdeaBazelCases
 import org.jetbrains.bazel.ideStarter.execute
 import org.jetbrains.bazel.ideStarter.openFile
@@ -166,6 +167,34 @@ class ImportRunConfigurationsSyncHookTest : IdeStarterCombinedBaseTest() {
           listOf("2 tests passed"),
           listOf("com.example.CalculatorTest", "testAdd", "testMultiply"),
         )
+      }
+    }
+  }
+
+  @Test
+  @Order(3)
+  fun `run markers are not added to non-test methods`() {
+    withDriver(bgRun) {
+      ideFrame {
+        openFile("src/com/example/KotlinTest.kt")
+        val runGutterLines = editorTabs()
+          .gutter()
+          .getGutterIcons()
+          .map { it.line }
+          .toSet()
+        runGutterLines shouldBe setOf(4, 6)
+      }
+    }
+  }
+
+  @Test
+  @Order(4)
+  fun `run gutter is added for Kotlin main method`() {
+    withDriver(bgRun) {
+      ideFrame {
+        openFile("src/com/example/Main.kt")
+        clickRunGutterOnLine(2)
+        verifyAvailableRunGutterActions(listOf("Run '//:kotlin_main'", "Debug '//:kotlin_main'", "Profile '//:kotlin_main' with 'IntelliJ Profiler'"))
       }
     }
   }

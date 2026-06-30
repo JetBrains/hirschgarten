@@ -13,12 +13,9 @@ import com.intellij.psi.util.parentOfType
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.run.test.useJetBrainsTestRunner
 import org.jetbrains.bazel.ui.gutters.BazelRunLineMarkerContributor
-import javax.swing.Icon
 
 open class BazelJavaRunLineMarkerContributor : BazelRunLineMarkerContributor() {
   override fun isDumbAware(): Boolean = true
-
-  override fun getRunLineMarkerIcon(element: PsiElement): Icon = executeRunLineMarkerIcon
 
   override fun PsiElement.shouldAddMarker(): Boolean =
     parentOfType<PsiNameIdentifierOwner>()

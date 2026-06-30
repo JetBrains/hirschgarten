@@ -46,6 +46,10 @@ abstract class BazelRunLineMarkerContributor : RunLineMarkerContributor() {
   protected val executeRunLineMarkerIcon: Icon // execute icon, provided here in order not to depend on AllIcons in other modules
     get() = AllIcons.Actions.Execute
 
+  /**
+   * Returns `null` by default, meaning: only add our actions only in existing run gutters,
+   * such as Java's JvmApplicationRunLineMarkerContributor or TestRunLineMarkerProvider
+   */
   open fun getRunLineMarkerIcon(element: PsiElement): Icon? = null
 
   /**

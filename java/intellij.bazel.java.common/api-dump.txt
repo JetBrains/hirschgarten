@@ -71,7 +71,6 @@ f:org.jetbrains.bazel.hotswap.JarFileManifest$Diff
 c:org.jetbrains.bazel.java.ui.gutters.BazelJavaRunLineMarkerContributor
 - org.jetbrains.bazel.ui.gutters.BazelRunLineMarkerContributor
 - <init>():V
-- getRunLineMarkerIcon(com.intellij.psi.PsiElement):javax.swing.Icon
 - getSingleTestFilter(com.intellij.psi.PsiElement):java.lang.String
 - isDumbAware():Z
 - shouldAddMarker(com.intellij.psi.PsiElement):Z
