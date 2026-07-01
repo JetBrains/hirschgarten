@@ -44,7 +44,7 @@ class PyCharmCombinedTest : IdeStarterCombinedBaseTest() {
         }
 
         step("Verify run line marker text") {
-          verifyRunLineMarkerText(listOf("Run", "Debug run"))
+          verifyRunLineMarkerText(listOf("Run '//python:binary'", "Debug '//python:binary'"))
         }
       }
     }
@@ -59,7 +59,7 @@ class PyCharmCombinedTest : IdeStarterCombinedBaseTest() {
         }
 
         step("Verify run line marker text") {
-          verifyRunLineMarkerText(listOf("Test", "Debug test", "Run with Coverage"))
+          verifyRunLineMarkerText(listOf("Run '//python:test'", "Debug '//python:test'", "Run '//python:test' with Coverage"))
         }
       }
     }
@@ -116,7 +116,7 @@ class PyCharmCombinedTest : IdeStarterCombinedBaseTest() {
       takeScreenshot("afterClickingOnRunLineMarker")
       val texts = heavyWeightWindow.getAllTexts()
       assert(texts.size == expectedTexts.size)
-      expectedTexts.forEach { expected -> assert(texts.any { actual -> actual.text.contains(expected) }) }
+      expectedTexts.forEach { expected -> assert(texts.any { actual -> actual.text == expected }) }
     }
   }
 }

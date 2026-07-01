@@ -71,24 +71,25 @@ object PythonBazelRunUtils {
 }
 
 private fun PyFile.getPythonBazelMainFileTargets(): List<BuildTarget> =
-  getPythonBazelTargets(RuleType.BINARY)
-    .filter { isMainFileInTarget(it) }
+  getPythonBazelTargets().filter { isMainFileInTarget(it) }
 
 private fun PyFile.getPythonBazelTestTargets(): List<BuildTarget> =
-  getPythonBazelTargets(RuleType.TEST)
+  getPythonBazelTargets().filter { it.kind.ruleType == RuleType.TEST }
 
-private fun PyFile.getPythonBazelTargets(ruleType: RuleType): List<BuildTarget> {
+private fun PyFile.getPythonBazelTargets(): List<BuildTarget> {
   val targetUtils = project.targetUtils
   val file = virtualFile ?: return emptyList()
   return targetUtils.getTargetsForFile(file)
     .mapNotNull { targetUtils.getBuildTargetForLabel(it) }
     .filter { target ->
-      target.kind.ruleType == ruleType &&
       target.kind.languageClasses.contains(PythonLanguageClass.PYTHON)
     }
 }
 
 private fun PyFile.isMainFileInTarget(target: BuildTarget): Boolean {
+  if (target.kind.ruleType != RuleType.BINARY && target.kind.ruleType != RuleType.TEST) {
+    return false
+  }
   val pythonBuildTargetData = extractPythonBuildTarget(target) ?: return false
   val fileNioPath = virtualFile.toNioPathOrNull()
   return if (pythonBuildTargetData.hasMainFileDefined()) {
