@@ -8,7 +8,7 @@ http_archive = use_repo_rule("@bazel_tools//tools/build_defs/repo:http.bzl", "ht
 
 bazel_dep(
     name = "rules_kotlin",
-    version = "2.2.2",
+    version = "2.4.0",
 )
 
 register_toolchains(
@@ -179,19 +179,19 @@ java_import(
 
 # SDK 261
 
-SDK_261_BASE_VERSION = "261.17801"
+SDK_261_BASE_VERSION = "261.25134"
 
-SDK_261_INTELLIJ_REPO_VERSION = SDK_261_BASE_VERSION + ".55"
+SDK_261_INTELLIJ_REPO_VERSION = SDK_261_BASE_VERSION + ".95"
 
-SDK_261_INTELLIJ_VERSION = SDK_261_INTELLIJ_REPO_VERSION + "-EAP"
+SDK_261_INTELLIJ_VERSION = SDK_261_INTELLIJ_REPO_VERSION
 
-SDK_261_INTELLIJ_REPOSITORY = "snapshots"  # releases or snapshots
+SDK_261_INTELLIJ_REPOSITORY = "releases"  # releases or snapshots
 
-SDK_261_PLUGIN_REPOSITORY_VERSION = SDK_261_BASE_VERSION + ".55"
+SDK_261_PLUGIN_REPOSITORY_VERSION = "261.17801.55"
 
 IC_261_URL = "https://www.jetbrains.com/intellij-repository/%s/com/jetbrains/intellij/idea/ideaIC/%s/ideaIC-%s.zip" % (SDK_261_INTELLIJ_REPOSITORY, SDK_261_INTELLIJ_VERSION, SDK_261_INTELLIJ_VERSION)
 
-IC_261_SHA = "0f1bac1a5e22d6c67d985ad3f11b263451885d8abe2fe37655ef7dbac5fc58e7"
+IC_261_SHA = "692daf5ad7d4649ca4bda79b450402756af96027a7fc34a3dd204ac01a625cf9"
 
 http_archive(
     name = "intellij_ce_2026_1",
@@ -202,7 +202,7 @@ http_archive(
 
 IC_261_SOURCES_URL = "https://www.jetbrains.com/intellij-repository/%s/com/jetbrains/intellij/idea/ideaIC/%s/ideaIC-%s-sources.jar" % (SDK_261_INTELLIJ_REPOSITORY, SDK_261_INTELLIJ_VERSION, SDK_261_INTELLIJ_VERSION)
 
-IC_261_SOURCES_SHA = "39c184320dabfd102b1f2073813318e72bd7e8354a310e6dc528d68e183a3c90"
+IC_261_SOURCES_SHA = "32a6ccd0079b5eeeeb85d76e8c084591f0e75e57f593b92e1dd13c308c7786fe"
 
 http_jar(
     name = "intellij_ce_2026_1_sources",
@@ -223,7 +223,7 @@ http_archive(
 
 PYTHON_PLUGIN_261_URL = "https://plugins.jetbrains.com/maven/com/jetbrains/plugins/PythonCore/%s/PythonCore-%s.zip" % (SDK_261_INTELLIJ_REPO_VERSION, SDK_261_INTELLIJ_REPO_VERSION)
 
-PYTHON_PLUGIN_261_SHA = "0402eecb672edbdf9f8bfc8d6c94ab7f919dd4d04e36a31731ce8482deabd464"
+PYTHON_PLUGIN_261_SHA = "5495ef851c94be74f77db45f150dde42a19dc7434f74ff06efce2082256d0db4"
 
 http_archive(
     name = "python_2026_1",
@@ -245,7 +245,7 @@ http_archive(
 
 PERFORMANCE_PLUGIN_261_URL = "https://www.jetbrains.com/intellij-repository/%s/com/jetbrains/intellij/performanceTesting/performance-testing/%s/performance-testing-%s.jar" % (SDK_261_INTELLIJ_REPOSITORY, SDK_261_INTELLIJ_REPO_VERSION, SDK_261_INTELLIJ_REPO_VERSION)
 
-PERFORMANCE_PLUGIN_261_SHA = "bcad8fc9d2f8b7936bfa22d58e5e11b90a2b00b64ad4b99c5fd188b0b1674084"
+PERFORMANCE_PLUGIN_261_SHA = "b19f707092775251b667cf9d5959c37d3ddb64ec27534577f88ffbee49679e99"
 
 http_jar(
     name = "performance_2026_1",
@@ -255,7 +255,7 @@ http_jar(
 
 CODE_WITH_ME_261_URL = "https://www.jetbrains.com/intellij-repository/%s/com/jetbrains/intellij/platform/backend-split/%s/backend-split-%s.jar" % (SDK_261_INTELLIJ_REPOSITORY, SDK_261_INTELLIJ_REPO_VERSION, SDK_261_INTELLIJ_REPO_VERSION)
 
-CODE_WITH_ME_261_SHA = "6d60ba3dee92050e878ec3ef641383307a45f0257b053db252552796888b50ba"
+CODE_WITH_ME_261_SHA = "e22720c6d5825f173e0c84cc650894630b7769d7971bbc3d5194d89ecb234caf"
 
 http_jar(
     name = "code_with_me_2026_1",
@@ -265,7 +265,7 @@ http_jar(
 
 CODE_WITH_ME_SPLIT_261_URL = "https://www.jetbrains.com/intellij-repository/%s/com/jetbrains/intellij/platform/split/%s/split-%s.jar" % (SDK_261_INTELLIJ_REPOSITORY, SDK_261_INTELLIJ_REPO_VERSION, SDK_261_INTELLIJ_REPO_VERSION)
 
-CODE_WITH_ME_SPLIT_261_SHA = "f4c533c05081b89812cf4452db4d40156c822628d138c5f7d933cae69ee811df"
+CODE_WITH_ME_SPLIT_261_SHA = "7c11d49237fc0988d171a781c1ded43d3dd3061f8e0bfcf3e053c1b83b13759a"
 
 http_jar(
     name = "code_with_me_split_2026_1",
@@ -287,7 +287,7 @@ http_jar(
     url = TERMINAL_COMPLETION_PLUGIN_261_URL,
 )
 
-PROTOEDIT_PLUGIN_261_VERSION = SDK_261_BASE_VERSION + ".36"
+PROTOEDIT_PLUGIN_261_VERSION = "261.17801.36"
 
 PROTOEDIT_PLUGIN_261_URL = "https://plugins.jetbrains.com/maven/com/jetbrains/plugins/idea.plugin.protoeditor/%s/idea.plugin.protoeditor-%s.zip" % (PROTOEDIT_PLUGIN_261_VERSION, PROTOEDIT_PLUGIN_261_VERSION)
 

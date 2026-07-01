@@ -63,7 +63,6 @@ private fun getStorageFilename(): String {
 
 private val LOG = logger<TargetUtils>()
 
-@PublicApi
 @Service(Service.Level.PROJECT)
 @ApiStatus.Internal
 class TargetUtils(private val project: Project, private val coroutineScope: CoroutineScope) : SettingsSavingComponent {

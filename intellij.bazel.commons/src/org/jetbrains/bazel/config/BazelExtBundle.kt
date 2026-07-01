@@ -12,11 +12,12 @@ object BazelExtBundle {
   private val INSTANCE = DynamicBundle(BazelExtBundle::class.java, BUNDLE)
 
   @JvmStatic
+  @Nls
   fun message(
     @PropertyKey(resourceBundle = BUNDLE)
     key: String,
     vararg params: Any?,
-  ): @Nls String {
+  ): String {
     return INSTANCE.getMessage(key = key, params = params)
   }
 

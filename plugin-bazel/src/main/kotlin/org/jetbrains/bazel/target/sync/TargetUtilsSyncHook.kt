@@ -2,7 +2,7 @@ package org.jetbrains.bazel.target.sync
 
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.sync.ProjectSyncHook
-import org.jetbrains.bazel.target.sync.projectStructure.targetUtilsDiff
+import org.jetbrains.bazel.target.targetUtils
 import org.jetbrains.bazel.workspace.TESTLIB_SUFFIXES
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.RawBuildTarget
@@ -10,13 +10,17 @@ import java.nio.file.Path
 
 internal class TargetUtilsSyncHook : ProjectSyncHook {
   override suspend fun onSync(environment: ProjectSyncHook.ProjectSyncHookEnvironment) {
-    val bspTargets =
-      environment.resolver
-        .getOrFetchResolvedWorkspace(taskId = environment.taskId)
-        .targets
-    val targetUtilsDiff = environment.diff.targetUtilsDiff
-    targetUtilsDiff.bspTargets = bspTargets
-    targetUtilsDiff.fileToTarget = calculateFileToTarget(bspTargets)
+    val bspTargets = environment.workspace.targets
+    val customFileToTarget = calculateFileToTarget(bspTargets)
+    val project = environment.project
+    val libraries = environment.workspace.libraries
+    environment.deferredApplyActions += {
+      project.targetUtils.saveTargets(
+        targets = bspTargets,
+        fileToTarget = customFileToTarget,
+        libraryItems = libraries,
+      )
+    }
   }
 
   private fun calculateFileToTarget(targets: List<RawBuildTarget>): Map<Path, List<Label>> {

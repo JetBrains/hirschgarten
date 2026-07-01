@@ -33,7 +33,7 @@ private fun createModuleSourceRootData(
       ctor.newInstance(module, virtualFile, rootTypeId, packagePrefix, forGeneratedSources) as ModuleSourceRootData
     }
   } catch (_: Exception) {
-    ModuleSourceRootData(module, virtualFile, rootTypeId, packagePrefix, forGeneratedSources)
+    ModuleSourceRootData(module, virtualFile, rootTypeId, packagePrefix, forGeneratedSources, null)
   }
 }
 

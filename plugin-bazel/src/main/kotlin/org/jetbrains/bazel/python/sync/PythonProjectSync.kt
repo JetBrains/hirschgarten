@@ -321,7 +321,7 @@ class PythonProjectSync : ProjectSyncHook {
     if (pythonSdk == null) {
       return
     }
-    val builder = environment.diff.workspaceModelDiff.mutableEntityStorage
+    val builder = environment.diff
 
     // Get the BazelProjectDirectoriesEntity to know which directories are included
     // Query from the mutableEntityStorage being built, not the current snapshot
