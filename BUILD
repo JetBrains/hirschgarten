@@ -29,7 +29,7 @@ kt_kotlinc_options(
 define_kt_toolchain(
     name = "kotlin_toolchain",
     api_version = select_for_plugin_api({
-        "intellij-2026.1": "2.3",
+        "intellij-2026.1": "2.4",
     }),
     experimental_multiplex_workers = True,
     jvm_target = select_for_plugin_api({
@@ -37,7 +37,7 @@ define_kt_toolchain(
     }),
     kotlinc_options = ":kotlinc_options",
     language_version = select_for_plugin_api({
-        "intellij-2026.1": "2.3",
+        "intellij-2026.1": "2.4",
     }),
 )
 
@@ -56,21 +56,44 @@ kt_jvm_library(
 
 kt_jvm_library(
     name = "bazel-plugin_resources_2",
-    resources = glob(["server/resources/**/*"]),
-    resource_strip_prefix = "server/resources",
+    resources = glob(["intellij.bazel.connector/resources/**/*"]),
+    resource_strip_prefix = "intellij.bazel.connector/resources",
 )
+
+kt_jvm_library(
+    name = "bazel-plugin_resources_3",
+    resources = glob(["intellij.bazel.importer/resources/**/*"]),
+    resource_strip_prefix = "intellij.bazel.importer/resources",
+)
+
+kt_jvm_library(
+    name = "bazel-plugin_resources_4",
+    resources = glob(["intellij.bazel.projectview/resources/**/*"]),
+    resource_strip_prefix = "intellij.bazel.projectview/resources",
+)
+
+kt_jvm_library(
+    name = "bazel-plugin_resources_5",
+    resources = glob(["intellij.bazel.bazelisk/resources/**/*"]),
+    resource_strip_prefix = "intellij.bazel.bazelisk/resources",
+)
+
 
 kt_jvm_library(
   name = "bazel-plugin",
   module_name = "intellij.bazel.plugin",
   # plugin_neverlink should be used instead
   visibility = ["//visibility:private"],
-  srcs = glob(["plugin-bazel/src/main/kotlin/**/*.kt", "plugin-bazel/src/main/kotlin/**/*.java", "plugin-bazel/src/main/kotlin/**/*.form", "plugin-bazel/src/main/gen/**/*.kt", "plugin-bazel/src/main/gen/**/*.java", "server/server/src/main/kotlin/**/*.kt", "server/server/src/main/kotlin/**/*.java", "server/server/src/main/kotlin/**/*.form", "server/logger/src/main/kotlin/**/*.kt", "server/logger/src/main/kotlin/**/*.java", "server/logger/src/main/kotlin/**/*.form", "server/install/src/main/kotlin/**/*.kt", "server/install/src/main/kotlin/**/*.java", "server/install/src/main/kotlin/**/*.form", "server/commons/src/main/kotlin/**/*.kt", "server/commons/src/main/kotlin/**/*.java", "server/commons/src/main/kotlin/**/*.form", "server/bazelrunner/src/main/kotlin/**/*.kt", "server/bazelrunner/src/main/kotlin/**/*.java", "server/bazelrunner/src/main/kotlin/**/*.form"], allow_empty = True),
+  srcs = glob(["plugin-bazel/src/main/kotlin/**/*.kt", "plugin-bazel/src/main/kotlin/**/*.java", "plugin-bazel/src/main/kotlin/**/*.form", "plugin-bazel/src/main/gen/**/*.kt", "plugin-bazel/src/main/gen/**/*.java", "intellij.bazel.connector/src/**/*.kt", "intellij.bazel.connector/src/**/*.java", "intellij.bazel.importer/src/**/*.kt", "intellij.bazel.importer/src/**/*.java", "intellij.bazel.importer/gen/**/*.kt", "intellij.bazel.importer/gen/**/*.java", "intellij.bazel.projectview/src/**/*.kt", "intellij.bazel.projectview/src/**/*.java", "intellij.bazel.bazelisk/src/**/*.kt", "intellij.bazel.bazelisk/src/**/*.java"], allow_empty = True),
   deps = [
     ":bazel-plugin_resources",
     ":bazel-plugin_resources_1",
     ":bazel-plugin_resources_2",
-    "//commons",
+    ":bazel-plugin_resources_3",
+    ":bazel-plugin_resources_4",
+    ":bazel-plugin_resources_5",
+    "//intellij.bazel.commons:commons",
+    "//intellij.bazel.commons:commons_resources",
     "//protobuf",
     "//rules_intellij/third_party/code_with_me",
     "//rules_intellij/third_party/devkit",

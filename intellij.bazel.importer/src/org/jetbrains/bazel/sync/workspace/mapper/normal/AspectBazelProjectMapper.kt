@@ -120,7 +120,7 @@ internal class AspectBazelProjectMapper(
               targetSupportsStrictDeps = { id -> allTargets[id]?.let { targetSupportsStrictDeps(it) } == true },
               isWorkspaceTarget = { id ->
                 allTargets[id]?.let { target ->
-                  (target.sourcesCount > 0 || target.getJvmTarget()) && isWorkspaceTarget(target, repoMapping, featureFlags)
+                  (target.sourcesCount > 0 || target.getJvmTarget()) && isWorkspaceTarget(target, repoMapping, featureFlags, workspaceContext)
                 } == true
               },
             )
@@ -935,7 +935,7 @@ internal class AspectBazelProjectMapper(
     return umbrellaTargets
       .flatMap { umbrellaTarget ->
         // Include sources from umbrella targets that depend on this shard
-        umbrellaTarget.dependenciesList.mapNotNull { dependency ->
+        umbrellaTarget.depsList.mapNotNull { dependency ->
           dependencyGraph.getTargetInfo(dependency.label())
         }
           .filter { dependencyTargetInfo ->

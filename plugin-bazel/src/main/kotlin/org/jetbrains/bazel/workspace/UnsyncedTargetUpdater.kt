@@ -22,9 +22,8 @@ import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.magicmetamodel.formatAsModuleName
 import org.jetbrains.bazel.server.connection.connection
 import org.jetbrains.bazel.sync.workspace.mapper.normal.TargetTagsResolver
-import org.jetbrains.bazel.target.addLibraryModulePrefix
+import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.LibraryGraph
 import org.jetbrains.bazel.target.targetUtils
-import org.jetbrains.bsp.protocol.BuildTargetTag.NO_IDE
 import org.jetbrains.bsp.protocol.RawBuildTarget
 import org.jetbrains.bsp.protocol.SourceItem
 import org.jetbrains.bsp.protocol.TaskGroupId
@@ -63,7 +62,7 @@ class UnsyncedTargetUpdater {
         val rawAspectTarget = partialSyncResult.targets[label]
         if (rawAspectTarget != null) {
           val targetInfo = rawAspectTarget
-          if (targetInfo.tagsList.contains(NO_IDE)) {
+          if (targetInfo.tagsList.contains("no-ide")) {
             return null
           }
 
@@ -83,10 +82,10 @@ class UnsyncedTargetUpdater {
             val baseDirectory = project.rootDir.toNioPath()
 
             // Convert dependencies from protobuf format to Label list
-            val targetDependencies = targetInfo.dependenciesList.map { DependencyLabel.parse(it.id) }
+            val targetDependencies = targetInfo.depsList.map { DependencyLabel(Label.parse(it.target.label)) }
 
             // Convert sources from protobuf format to SourceItem list
-            val sources = targetInfo.sourcesList.map { fileLocation: BspTargetInfo.FileLocation ->
+            val sources = targetInfo.sourcesList.map { fileLocation: BspTargetInfo.ArtifactLocation ->
               SourceItem(
                 path = baseDirectory.resolve(fileLocation.relativePath),
                 generated = !fileLocation.isSource,
@@ -156,7 +155,7 @@ class UnsyncedTargetUpdater {
           baseDependencyName
         } else {
           // Module doesn't exist, check if a library module with prefix exists
-          val libraryModuleName = baseDependencyName.addLibraryModulePrefix()
+          val libraryModuleName = LibraryGraph.addLibraryModulePrefix(baseDependencyName)
           val libraryModuleId = ModuleId(libraryModuleName)
           val libraryModuleExists = snapshot.resolve(libraryModuleId) != null || storage.resolve(libraryModuleId) != null
           if (libraryModuleExists) {

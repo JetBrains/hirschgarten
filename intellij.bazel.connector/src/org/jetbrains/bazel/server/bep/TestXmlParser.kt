@@ -8,7 +8,7 @@ import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlRootElement
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlText
-import org.jetbrains.bazel.logger.BspClientTestNotifier
+import org.jetbrains.bazel.util.BspClientTestNotifier
 import org.jetbrains.bsp.protocol.JUnitStyleTestCaseData
 import org.jetbrains.bsp.protocol.JUnitStyleTestSuiteData
 import org.jetbrains.bsp.protocol.TaskId
@@ -90,7 +90,7 @@ data class TestCase @JsonCreator constructor(
 
 // This is a regular class due to limitations deserializing plain xml tag contents.
 // https://github.com/FasterXML/jackson-dataformat-xml/issues/615
-internal class TestResultDetail {
+class TestResultDetail {
   // Shortened error message, as provided by the test framework.
   @JacksonXmlProperty(isAttribute = true)
   var message: String? = null

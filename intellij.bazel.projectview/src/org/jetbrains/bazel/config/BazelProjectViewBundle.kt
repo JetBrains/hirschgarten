@@ -9,11 +9,12 @@ internal object BazelProjectViewBundle {
   private val INSTANCE = DynamicBundle(BazelProjectViewBundle::class.java, BUNDLE)
 
   @JvmStatic
+  @Nls
   fun message(
     @PropertyKey(resourceBundle = BUNDLE)
     key: String,
     vararg params: Any?,
-  ): @Nls String {
+  ): String {
     return INSTANCE.getMessage(key = key, params = params)
   }
 

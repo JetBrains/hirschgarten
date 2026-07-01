@@ -31,7 +31,7 @@ class JavaModuleWithSourcesUpdater(
   private val libraries: Map<String, Library>,
   private val defaultJdkName: String? = null,
 ) : WorkspaceModelEntityWithoutParentModuleUpdater<JavaModule, ModuleEntity> {
-  val packageMarkerEntityUpdater =
+  internal val packageMarkerEntityUpdater =
     PackageMarkerEntityUpdater(
       workspaceModelEntityUpdaterConfig,
       moduleEntities,
