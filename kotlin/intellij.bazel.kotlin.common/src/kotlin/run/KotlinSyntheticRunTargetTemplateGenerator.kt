@@ -5,6 +5,7 @@ import com.intellij.psi.PsiNameIdentifierOwner
 import org.intellij.lang.annotations.Language
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.run.synthetic.MainClassSyntheticRunTargetTemplateGenerator
+import org.jetbrains.bazel.sync.includesKotlin
 import org.jetbrains.bsp.protocol.ExecutableTarget
 import org.jetbrains.kotlin.fileClasses.javaFileFacadeFqName
 import org.jetbrains.kotlin.idea.base.psi.KotlinPsiHeuristics

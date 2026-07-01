@@ -25,9 +25,12 @@ import org.jetbrains.bazel.label.DependencyLabelKind
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.magicmetamodel.formatAsLibraryName
 import org.jetbrains.bazel.magicmetamodel.formatAsModuleName
+import org.jetbrains.bazel.sync.JavaLanguageClass
 import org.jetbrains.bazel.sync.workspace.languages.java.sourceRoot.DefaultJvmPackagePrefixCalculator
 import org.jetbrains.bazel.sync.workspace.languages.java.sourceRoot.JvmPackagePrefixCalculator
 import org.jetbrains.bazel.sync.workspace.languages.java.sourceRoot.SourceRootOptimizationMode
+import org.jetbrains.bazel.sync.workspace.languages.jvm.JvmBuildTarget
+import org.jetbrains.bazel.sync.workspace.languages.jvm.JvmDependency
 import org.jetbrains.bazel.sync.workspace.snapshot.File2TargetMap
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceAspectIds
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceConfigurationId
@@ -38,8 +41,6 @@ import org.jetbrains.bazel.workspace.model.test.framework.WorkspaceModelBaseTest
 import org.jetbrains.bazel.workspace.model.test.framework.createRawBuildTarget
 import org.jetbrains.bazel.workspacemodel.entities.BazelDummyEntitySource
 import org.jetbrains.bazel.workspacemodel.entities.BazelProjectEntitySource
-import org.jetbrains.bsp.protocol.JvmBuildTarget
-import org.jetbrains.bsp.protocol.JvmDependency
 import org.jetbrains.bsp.protocol.LibraryItem
 import org.jetbrains.bsp.protocol.RawBuildTarget
 import org.junit.jupiter.api.Test
@@ -53,7 +54,7 @@ internal class JvmTargetEntitiesBuilderTest : WorkspaceModelBaseTest() {
   fun `writes a single java module with no sources or resources`() = timeoutRunBlocking {
     val target = createRawBuildTarget(
       id = Label.parse("//foo"),
-      kind = TargetKind(kind = "java_library", ruleType = RuleType.LIBRARY, languageClasses = setOf(LanguageClass.JAVA)),
+      kind = TargetKind(kind = "java_library", ruleType = RuleType.LIBRARY, languageClasses = setOf(JavaLanguageClass.JAVA)),
     )
 
     runImport(targets = listOf(target))
@@ -73,7 +74,7 @@ internal class JvmTargetEntitiesBuilderTest : WorkspaceModelBaseTest() {
     sourcePath.toFile().writeText("class Foo {}")
     val target = createRawBuildTarget(
       id = Label.parse("//foo"),
-      kind = TargetKind(kind = "java_library", ruleType = RuleType.LIBRARY, languageClasses = setOf(LanguageClass.JAVA)),
+      kind = TargetKind(kind = "java_library", ruleType = RuleType.LIBRARY, languageClasses = setOf(JavaLanguageClass.JAVA)),
       sources = listOf(sourcePath),
       baseDirectory = projectBasePath,
     )
@@ -99,7 +100,7 @@ internal class JvmTargetEntitiesBuilderTest : WorkspaceModelBaseTest() {
     )
     val target = createRawBuildTarget(
       id = Label.parse("//app"),
-      kind = TargetKind(kind = "java_library", ruleType = RuleType.LIBRARY, languageClasses = setOf(LanguageClass.JAVA)),
+      kind = TargetKind(kind = "java_library", ruleType = RuleType.LIBRARY, languageClasses = setOf(JavaLanguageClass.JAVA)),
       dependencies = listOf(
         DependencyLabel(targetKey = WorkspaceTargetKey(label = libLabel), kind = DependencyLabelKind.COMPILE),
       ),
@@ -129,7 +130,7 @@ internal class JvmTargetEntitiesBuilderTest : WorkspaceModelBaseTest() {
     barPath.writeText("class Bar {}")
     val target = createRawBuildTarget(
       id = Label.parse("//foo"),
-      kind = TargetKind(kind = "java_library", ruleType = RuleType.LIBRARY, languageClasses = setOf(LanguageClass.JAVA)),
+      kind = TargetKind(kind = "java_library", ruleType = RuleType.LIBRARY, languageClasses = setOf(JavaLanguageClass.JAVA)),
       sources = listOf(fooPath, barPath),
       baseDirectory = projectBasePath,
     )
@@ -161,7 +162,7 @@ internal class JvmTargetEntitiesBuilderTest : WorkspaceModelBaseTest() {
     testPath.writeText("class Bar {}")
     val target = createRawBuildTarget(
       id = Label.parse("//foo"),
-      kind = TargetKind(kind = "java_library", ruleType = RuleType.LIBRARY, languageClasses = setOf(LanguageClass.JAVA)),
+      kind = TargetKind(kind = "java_library", ruleType = RuleType.LIBRARY, languageClasses = setOf(JavaLanguageClass.JAVA)),
       sources = listOf(mainPath, testPath),
       baseDirectory = projectBasePath,
     )
@@ -189,7 +190,7 @@ internal class JvmTargetEntitiesBuilderTest : WorkspaceModelBaseTest() {
     sourcePath.writeText("class Foo {}")
     val target = createRawBuildTarget(
       id = Label.parse("//foo"),
-      kind = TargetKind(kind = "java_library", ruleType = RuleType.LIBRARY, languageClasses = setOf(LanguageClass.JAVA)),
+      kind = TargetKind(kind = "java_library", ruleType = RuleType.LIBRARY, languageClasses = setOf(JavaLanguageClass.JAVA)),
       sources = listOf(sourcePath),
       baseDirectory = projectBasePath,
     )
@@ -209,7 +210,7 @@ internal class JvmTargetEntitiesBuilderTest : WorkspaceModelBaseTest() {
   @Test
   fun `disambiguates module names for a label imported under multiple configurations`(): Unit = timeoutRunBlocking {
     val label = Label.parse("//foo")
-    val kind = TargetKind(kind = "java_library", ruleType = RuleType.LIBRARY, languageClasses = setOf(LanguageClass.JAVA))
+    val kind = TargetKind(kind = "java_library", ruleType = RuleType.LIBRARY, languageClasses = setOf(JavaLanguageClass.JAVA))
     val normal = createRawBuildTarget(id = label, kind = kind)
       .copy(key = WorkspaceTargetKey(label = label, configuration = WorkspaceConfigurationId.of("00000f1")))
     val exec = createRawBuildTarget(id = label, kind = kind)
@@ -237,7 +238,7 @@ internal class JvmTargetEntitiesBuilderTest : WorkspaceModelBaseTest() {
   @Test
   fun `dependency resolves to the module of its exact configuration`(): Unit = timeoutRunBlocking {
     val foo = Label.parse("//foo")
-    val kind = TargetKind(kind = "java_library", ruleType = RuleType.LIBRARY, languageClasses = setOf(LanguageClass.JAVA))
+    val kind = TargetKind(kind = "java_library", ruleType = RuleType.LIBRARY, languageClasses = setOf(JavaLanguageClass.JAVA))
     val fooNormal = createRawBuildTarget(id = foo, kind = kind)
       .copy(key = WorkspaceTargetKey(label = foo, configuration = WorkspaceConfigurationId.of("00000f1")))
     val fooExec = createRawBuildTarget(id = foo, kind = kind)
@@ -270,7 +271,7 @@ internal class JvmTargetEntitiesBuilderTest : WorkspaceModelBaseTest() {
   @Test
   fun `merges aspect variants so a provider carried only by the aspect variant survives`(): Unit = timeoutRunBlocking {
     val label = Label.parse("//proto")
-    val kind = TargetKind(kind = "java_library", ruleType = RuleType.LIBRARY, languageClasses = setOf(LanguageClass.JAVA))
+    val kind = TargetKind(kind = "java_library", ruleType = RuleType.LIBRARY, languageClasses = setOf(JavaLanguageClass.JAVA))
     val sourcePath = projectBasePath.resolve("Proto.java")
     sourcePath.writeText("class Proto {}")
     val bare = createRawBuildTarget(id = label, kind = kind, sources = listOf(sourcePath), baseDirectory = projectBasePath)
@@ -292,7 +293,7 @@ internal class JvmTargetEntitiesBuilderTest : WorkspaceModelBaseTest() {
     val foo = Label.parse("//foo")
     val a = Label.parse("//a")
     val b = Label.parse("//b")
-    val kind = TargetKind(kind = "java_library", ruleType = RuleType.LIBRARY, languageClasses = setOf(LanguageClass.JAVA))
+    val kind = TargetKind(kind = "java_library", ruleType = RuleType.LIBRARY, languageClasses = setOf(JavaLanguageClass.JAVA))
     val depA = createRawBuildTarget(id = a, kind = kind)
     val depB = createRawBuildTarget(id = b, kind = kind)
     val variantA = createRawBuildTarget(
@@ -326,7 +327,7 @@ internal class JvmTargetEntitiesBuilderTest : WorkspaceModelBaseTest() {
 
   @Test
   fun `a library dependency shadowing a source module becomes a exported module dependency`(): Unit = timeoutRunBlocking {
-    val kind = TargetKind(kind = "java_library", ruleType = RuleType.LIBRARY, languageClasses = setOf(LanguageClass.JAVA))
+    val kind = TargetKind(kind = "java_library", ruleType = RuleType.LIBRARY, languageClasses = setOf(JavaLanguageClass.JAVA))
     val producer = Label.parse("//producer")
     val producerJar = Path("/out/producer.jar")
     // producer is an in-scope source module whose output jar is reached by //app only through a jdeps library

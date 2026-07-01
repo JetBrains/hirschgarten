@@ -19,9 +19,6 @@ import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.service
 import com.intellij.openapi.extensions.ExtensionPointName
 import org.jetbrains.annotations.ApiStatus
-import org.jetbrains.bazel.commons.LanguageClass.Companion.JAVA
-import org.jetbrains.bazel.commons.LanguageClass.Companion.KOTLIN
-import org.jetbrains.bazel.commons.LanguageClass.Companion.SCALA
 import java.nio.file.Path
 import kotlin.io.path.extension
 
@@ -35,14 +32,14 @@ import kotlin.io.path.extension
 data class LanguageClass(
   val languageName: String,
   val recognizedFilenameExtensions: Set<String>,
+
+  // When collection FUS hide the overridden language to not to duplicate statistics
+  // TODO: develop more elegant solution
+  val fusOverride: LanguageClass? = null
 ) {
   override fun toString(): String = languageName
 
   companion object {
-    val JAVA: LanguageClass = LanguageClass("java", setOf("java"))
-    val SCALA: LanguageClass = LanguageClass("scala", setOf("scala"))
-    val KOTLIN: LanguageClass = LanguageClass("kotlin", setOf("kt"))
-
     /** Returns the LanguageClass associated with the given filename extension, if it's recognized.  */
     fun fromExtension(filenameExtension: String): LanguageClass? = LanguageClassService.getInstance().fromExtension(filenameExtension)
   }
@@ -68,9 +65,7 @@ interface LanguageClassProvider {
 class LanguageClassService {
 
   private val languages =
-    listOf(
-      JAVA, SCALA, KOTLIN
-    ) + LanguageClassProvider.ep.extensionList.flatMap { it.languages }
+    LanguageClassProvider.ep.extensionList.flatMap { it.languages }
 
   private val RECOGNIZED_EXTENSIONS: Map<String, LanguageClass> =
     buildMap {

@@ -12,10 +12,11 @@ import org.jetbrains.bazel.commons.getLocalRepositories
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.sync.workspace.languages.java.JvmLanguagePluginMixin
 import org.jetbrains.bazel.server.BazelServerFacade
+import org.jetbrains.bazel.sync.JavaLanguageClass
+import org.jetbrains.bazel.sync.workspace.languages.jvm.KotlinBuildTarget
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
 import org.jetbrains.bazel.sync.workspace.snapshot.toWorkspaceTargetKey
 import org.jetbrains.bsp.protocol.BuildTargetData
-import org.jetbrains.bsp.protocol.KotlinBuildTarget
 import org.jetbrains.bsp.protocol.LibraryItem
 import java.nio.file.Path
 import kotlin.io.path.exists
@@ -27,10 +28,10 @@ class KotlinLanguagePlugin : JvmLanguagePluginMixin {
   override val providedBuildTargetTypes: Set<KClass<out BuildTargetData>>
     get() = setOf(KotlinBuildTarget::class)
 
-  override fun getSupportedLanguages(): Set<LanguageClass> = setOf(LanguageClass.KOTLIN)
+  override fun getSupportedLanguages(): Set<LanguageClass> = setOf(JavaLanguageClass.KOTLIN)
   override fun collectUsedLanguages(target: TargetIdeInfo): List<LanguageClass> {
     if (target.hasKotlinTargetInfo()) {
-      return listOf(LanguageClass.KOTLIN)
+      return listOf(JavaLanguageClass.KOTLIN)
     }
     return emptyList()
   }

@@ -6,8 +6,8 @@ import com.google.devtools.intellij.ideinfo.IntellijIdeInfo.KotlinTargetInfo
 import com.google.devtools.intellij.ideinfo.IntellijIdeInfo.TargetIdeInfo
 import io.kotest.matchers.nulls.shouldBeNull
 import io.kotest.matchers.shouldBe
-import org.jetbrains.bazel.commons.LanguageClass.Companion.JAVA
-import org.jetbrains.bazel.commons.LanguageClass.Companion.KOTLIN
+import org.jetbrains.bazel.sync.JavaLanguageClass.JAVA
+import org.jetbrains.bazel.sync.JavaLanguageClass.KOTLIN
 import org.jetbrains.bazel.commons.RuleType.BINARY
 import org.jetbrains.bazel.commons.RuleType.LIBRARY
 import org.jetbrains.bazel.commons.RuleType.TEST

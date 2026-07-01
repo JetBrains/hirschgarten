@@ -6,6 +6,7 @@ import org.jetbrains.bazel.commons.LanguageClass
 import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.sync.JavaLanguageClass
 import org.jetbrains.bazel.sync.workspace.languages.java.sourceRoot.JvmPackagePrefixCalculator
 import org.jetbrains.bazel.sync.workspace.languages.java.sourceRoot.JvmPackagePrefixes
 import org.jetbrains.bazel.workspace.indexAdditionalFiles.ProjectViewGlobSet
@@ -146,7 +147,7 @@ class SourceRootBuilderTest {
     kind = TargetKind(
       kind = "java_library",
       ruleType = ruleType,
-      languageClasses = setOf(LanguageClass.JAVA),
+      languageClasses = setOf(JavaLanguageClass.JAVA),
     ),
     sources = sources,
     generatedSources = generatedSources,

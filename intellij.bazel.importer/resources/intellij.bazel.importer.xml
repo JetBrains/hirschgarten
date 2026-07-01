@@ -26,10 +26,6 @@
       interface="org.jetbrains.bazel.sync.ProjectPostSyncHook"
       qualifiedName="org.jetbrains.bazel.projectPostSyncHook"
     />
-    <extensionPoint qualifiedName="org.jetbrains.bazel.javaSourceRootPrefixContributor"
-                    interface="org.jetbrains.bazel.sync.workspace.languages.java.sourceRoot.prefix.JavaSourceRootPatternContributor"
-                    dynamic="true"
-    />
     <extensionPoint
       dynamic="true"
       interface="org.jetbrains.bazel.scala.sdk.ScalaSdkExtension"
@@ -48,11 +44,6 @@
     />
     <extensionPoint
       dynamic="true"
-      interface="org.jetbrains.bazel.sync.workspace.languages.java.JvmLanguagePluginMixin"
-      qualifiedName="org.jetbrains.bazel.jvmLanguagePlugin"
-    />
-    <extensionPoint
-      dynamic="true"
       interface="org.jetbrains.bazel.sync.workspace.importer.BazelWorkspaceImporter"
       qualifiedName="org.jetbrains.bazel.syncWorkspaceImporter"
     />
@@ -63,15 +54,8 @@
   </extensionPoints>
 
   <extensions defaultExtensionNs="org.jetbrains.bazel">
-    <javaSourceRootPrefixContributor
-      implementation="org.jetbrains.bazel.sync.workspace.languages.java.sourceRoot.prefix.JavaProjectViewSourceRootPatternContributor"/>
     <projectSyncHook implementation="org.jetbrains.bazel.sync.hooks.PathSyncHook"/>
     <targetKindProvider implementation="org.jetbrains.bazel.sync.workspace.targetKind.GenericBazelRules" order="last"/>
-
-    <languagePlugin id="JavaLanguagePlugin"
-                    implementation="org.jetbrains.bazel.sync.workspace.languages.java.JavaLanguagePlugin"/>
-    <jvmLanguagePlugin implementation="org.jetbrains.bazel.sync.workspace.languages.kotlin.KotlinLanguagePlugin"/>
-    <jvmLanguagePlugin implementation="org.jetbrains.bazel.sync.workspace.languages.scala.ScalaLanguagePlugin"/>
   </extensions>
 
   <extensions defaultExtensionNs="com.intellij">

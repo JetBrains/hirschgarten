@@ -1,9 +1,9 @@
 package org.jetbrains.bazel.protobuf
 
 import com.intellij.openapi.components.serviceAsync
+import org.jetbrains.bazel.protobuf.target.ProtobufBuildTarget
+import org.jetbrains.bazel.protobuf.target.extractProtobufBuildTarget
 import org.jetbrains.bazel.sync.ProjectSyncHook
-import org.jetbrains.bsp.protocol.ProtobufBuildTarget
-import org.jetbrains.bsp.protocol.utils.extractProtobufBuildTarget
 import java.nio.file.Path
 
 internal class BazelProtobufSyncHook : ProjectSyncHook {

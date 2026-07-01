@@ -66,6 +66,9 @@
     <starlarkClassParametersProvider implementation="org.jetbrains.bazel.languages.starlark.bazel.DefaultStarlarkClassParametersProvider"/>
     <runWithScriptPathExtension implementation="org.jetbrains.bazel.jvm.run.DefaultRunWithScriptPathExtension"/>
     <runWithScriptPathExtension implementation="org.jetbrains.bazel.jvm.run.DebugRunWithScriptPathExtension"/>
+
+    <languageClassProvider implementation="org.jetbrains.bazel.sync.JavaLanguageClassProvider"/>
+
   </extensions>
 
   <extensions defaultExtensionNs="com.intellij">

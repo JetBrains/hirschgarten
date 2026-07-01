@@ -4,16 +4,16 @@ import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.collections.shouldHaveSingleElement
 import io.kotest.matchers.collections.shouldNotContain
 import io.kotest.matchers.shouldBe
-import org.jetbrains.bazel.commons.LanguageClass
 import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.sync.JavaLanguageClass
+import org.jetbrains.bazel.sync.workspace.languages.jvm.JvmBuildTarget
+import org.jetbrains.bazel.sync.workspace.languages.jvm.KotlinBuildTarget
+import org.jetbrains.bazel.sync.workspace.languages.jvm.ScalaBuildTarget
 import org.jetbrains.bazel.workspace.model.test.framework.createRawBuildTarget
 import org.jetbrains.bsp.protocol.BuildTargetData
-import org.jetbrains.bsp.protocol.JvmBuildTarget
-import org.jetbrains.bsp.protocol.KotlinBuildTarget
 import org.jetbrains.bsp.protocol.RawBuildTarget
-import org.jetbrains.bsp.protocol.ScalaBuildTarget
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DynamicTest
 import org.junit.jupiter.api.Test
@@ -141,7 +141,7 @@ class ResourceRootBuilderTest {
       kind = TargetKind(
         kind = "java_library",
         ruleType = RuleType.LIBRARY,
-        languageClasses = setOf(LanguageClass.JAVA),
+        languageClasses = setOf(JavaLanguageClass.JAVA),
       ),
       resources = listOf(res1, res2),
       data = listOf(
@@ -673,7 +673,7 @@ class ResourceRootBuilderTest {
     kind = TargetKind(
       kind = "java_library",
       ruleType = ruleType,
-      languageClasses = setOf(LanguageClass.JAVA),
+      languageClasses = setOf(JavaLanguageClass.JAVA),
     ),
     sources = sources,
     resources = resources,
@@ -698,7 +698,7 @@ class ResourceRootBuilderTest {
     kind = TargetKind(
       kind = "kt_jvm_library",
       ruleType = RuleType.LIBRARY,
-      languageClasses = setOf(LanguageClass.KOTLIN),
+      languageClasses = setOf(JavaLanguageClass.KOTLIN),
     ),
     sources = sources,
     resources = resources,
@@ -721,7 +721,7 @@ class ResourceRootBuilderTest {
     kind = TargetKind(
       kind = "scala_library",
       ruleType = RuleType.LIBRARY,
-      languageClasses = setOf(LanguageClass.SCALA),
+      languageClasses = setOf(JavaLanguageClass.SCALA),
     ),
     sources = sources,
     resources = resources,

@@ -2,7 +2,9 @@
   <!-- region Generated dependencies - run `Generate Product Layouts` to regenerate -->
   <dependencies>
     <module name="intellij.bazel.commons"/>
+    <module name="intellij.bazel.connector"/>
     <module name="intellij.bazel.importer"/>
+    <module name="intellij.bazel.java.common"/>
     <module name="intellij.bazel.projectview"/>
     <module name="intellij.bazel.protobuf"/>
     <module name="intellij.java.compiler.impl"/>
@@ -17,14 +19,41 @@
   <extensionPoints>
     <extensionPoint
       dynamic="true"
+      interface="org.jetbrains.bazel.sync.workspace.languages.java.sourceRoot.prefix.JavaSourceRootPatternContributor"
+      qualifiedName="org.jetbrains.bazel.javaSourceRootPrefixContributor"
+    />
+
+    <extensionPoint
+      dynamic="true"
       interface="org.jetbrains.bazel.workspace.importer.KotlinFacetEntityUpdater"
       qualifiedName="org.jetbrains.bazel.kotlinFacetEntityUpdater"
+    />
+
+    <extensionPoint
+      dynamic="true"
+      interface="org.jetbrains.bazel.sync.workspace.languages.java.JvmLanguagePluginMixin"
+      qualifiedName="org.jetbrains.bazel.jvmLanguagePlugin"
     />
   </extensionPoints>
 
   <extensions defaultExtensionNs="org.jetbrains.bazel">
+
+    <projectViewSectionProvider
+      implementation="org.jetbrains.bazel.sync.workspace.languages.java.sourceRoot.projectview.JavaSROProjectViewSectionProvider"/>
+
     <syncWorkspaceImporter implementation="org.jetbrains.bazel.workspace.importer.JavaBazelWorkspaceImporter"/>
     <syncWorkspaceImporter implementation="org.jetbrains.bazel.workspace.importer.ScalaBazelWorkspaceImporter"/>
+
+    <javaSourceRootPrefixContributor
+      implementation="org.jetbrains.bazel.sync.workspace.languages.java.sourceRoot.prefix.JavaProjectViewSourceRootPatternContributor"/>
+
+    <targetKindProvider implementation="org.jetbrains.bazel.sync.workspace.languages.java.JavaBazelRules"/>
+
+    <languagePlugin id="JavaLanguagePlugin"
+                    implementation="org.jetbrains.bazel.sync.workspace.languages.java.JavaLanguagePlugin"/>
+    <jvmLanguagePlugin implementation="org.jetbrains.bazel.sync.workspace.languages.kotlin.KotlinLanguagePlugin"/>
+    <jvmLanguagePlugin implementation="org.jetbrains.bazel.sync.workspace.languages.scala.ScalaLanguagePlugin"/>
+
   </extensions>
 
   <extensions defaultExtensionNs="com.intellij">

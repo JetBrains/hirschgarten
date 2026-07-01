@@ -22,6 +22,7 @@ import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.run.config.BazelRunConfiguration
 import org.jetbrains.bazel.settings.bazel.bazelJVMProjectSettings
+import org.jetbrains.bazel.sync.includesKotlin
 import org.jetbrains.bazel.target.getModule
 import org.jetbrains.bazel.target.targetUtils
 

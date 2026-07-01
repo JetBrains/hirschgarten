@@ -17,12 +17,12 @@ import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.commons.symlinks.BazelSymlinksCalculator
 import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.sync.workspace.languages.jvm.extractJvmBuildTarget
+import org.jetbrains.bazel.sync.workspace.languages.jvm.extractKotlinBuildTarget
+import org.jetbrains.bazel.sync.workspace.languages.jvm.extractScalaBuildTarget
 import org.jetbrains.bazel.utils.isUnder
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.RawBuildTarget
-import org.jetbrains.bsp.protocol.utils.extractJvmBuildTarget
-import org.jetbrains.bsp.protocol.utils.extractKotlinBuildTarget
-import org.jetbrains.bsp.protocol.utils.extractScalaBuildTarget
 import java.nio.file.FileVisitResult
 import java.nio.file.Path
 import kotlin.io.path.Path as KPath

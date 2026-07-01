@@ -11,12 +11,12 @@ import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.label.DependencyLabel
 import org.jetbrains.bazel.label.DependencyLabelKind
 import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.sync.workspace.languages.jvm.JvmDependency
+import org.jetbrains.bazel.sync.workspace.languages.jvm.extractJvmBuildTarget
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceAspectIds
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
-import org.jetbrains.bsp.protocol.JvmDependency
 import org.jetbrains.bsp.protocol.RawBuildTarget
 import org.jetbrains.bsp.protocol.StrictDependencyCheckedType
-import org.jetbrains.bsp.protocol.utils.extractJvmBuildTarget
 import com.intellij.platform.workspace.jps.entities.DependencyScope as EntitiesDependencyScope
 
 // RC: those were present in original MMM

@@ -7,16 +7,15 @@ import org.jetbrains.bazel.commons.LanguageClass
 import org.jetbrains.bazel.commons.RepoMapping
 import org.jetbrains.bazel.commons.getLocalRepositories
 import org.jetbrains.bazel.label.Label
-import org.jetbrains.bazel.label.label
+import org.jetbrains.bazel.server.BazelServerFacade
+import org.jetbrains.bazel.sync.JavaLanguageClass
 import org.jetbrains.bazel.sync.workspace.graph.DependencyGraph
 import org.jetbrains.bazel.sync.workspace.languages.java.JvmLanguagePluginMixin
-import org.jetbrains.bazel.server.BazelServerFacade
-import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceConfigurationId
+import org.jetbrains.bazel.sync.workspace.languages.jvm.ScalaBuildTarget
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
 import org.jetbrains.bazel.sync.workspace.snapshot.toWorkspaceTargetKey
 import org.jetbrains.bsp.protocol.BuildTargetData
 import org.jetbrains.bsp.protocol.LibraryItem
-import org.jetbrains.bsp.protocol.ScalaBuildTarget
 import java.nio.file.Path
 import kotlin.io.path.name
 import kotlin.reflect.KClass
@@ -26,10 +25,10 @@ class ScalaLanguagePlugin : JvmLanguagePluginMixin {
   override val providedBuildTargetTypes: Set<KClass<out BuildTargetData>>
     get() = setOf(ScalaBuildTarget::class)
 
-  override fun getSupportedLanguages(): Set<LanguageClass> = setOf(LanguageClass.SCALA)
+  override fun getSupportedLanguages(): Set<LanguageClass> = setOf(JavaLanguageClass.SCALA)
   override fun collectUsedLanguages(target: TargetIdeInfo): List<LanguageClass> {
     if (target.hasScalaTargetInfo()) {
-      return listOf(LanguageClass.SCALA)
+      return listOf(JavaLanguageClass.SCALA)
     }
     return emptyList()
   }

@@ -6,7 +6,7 @@ import org.jetbrains.bazel.languages.projectview.projectView
 import org.jetbrains.bazel.sync.workspace.languages.java.sourceRoot.projectview.javaSROPatterns
 import org.jetbrains.bazel.workspace.indexAdditionalFiles.ProjectViewGlobSet
 
-private class JavaProjectViewSourceRootPatternContributor : JavaSourceRootPatternContributor {
+internal class JavaProjectViewSourceRootPatternContributor : JavaSourceRootPatternContributor {
 
   override fun getPatterns(project: Project): JavaSourceRootPatterns {
     val projectView = project.projectView()

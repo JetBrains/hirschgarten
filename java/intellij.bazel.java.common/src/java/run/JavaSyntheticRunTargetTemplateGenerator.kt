@@ -7,6 +7,7 @@ import com.intellij.psi.util.PsiTreeUtil
 import org.intellij.lang.annotations.Language
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.run.synthetic.MainClassSyntheticRunTargetTemplateGenerator
+import org.jetbrains.bazel.sync.isJvmTarget
 import org.jetbrains.bsp.protocol.ExecutableTarget
 
 @ApiStatus.Internal
