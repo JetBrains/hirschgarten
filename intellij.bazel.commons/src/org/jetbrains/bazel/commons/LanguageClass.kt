@@ -39,9 +39,9 @@ data class LanguageClass(
   override fun toString(): String = languageName
 
   companion object {
-    val JAVA = LanguageClass("java", setOf("java"))
-    val SCALA = LanguageClass("scala", setOf("scala"))
-    val KOTLIN = LanguageClass("kotlin", setOf("kt"))
+    val JAVA: LanguageClass = LanguageClass("java", setOf("java"))
+    val SCALA: LanguageClass = LanguageClass("scala", setOf("scala"))
+    val KOTLIN: LanguageClass = LanguageClass("kotlin", setOf("kt"))
 
     /** Returns the LanguageClass associated with the given filename extension, if it's recognized.  */
     fun fromExtension(filenameExtension: String): LanguageClass? = LanguageClassService.getInstance().fromExtension(filenameExtension)
@@ -70,7 +70,7 @@ class LanguageClassService {
   private val languages =
     listOf(
       JAVA, SCALA, KOTLIN
-    ) + LanguageClassProvider.ep.extensions.flatMap { it.languages }
+    ) + LanguageClassProvider.ep.extensionList.flatMap { it.languages }
 
   private val RECOGNIZED_EXTENSIONS: Map<String, LanguageClass> =
     buildMap {
