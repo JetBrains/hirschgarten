@@ -1,5 +1,6 @@
 package org.jetbrains.bazel.server.sync
 
+import com.google.devtools.build.lib.buildeventstream.BuildEventStreamProtos
 import com.intellij.execution.process.OSProcessUtil.killProcess
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
@@ -23,13 +24,18 @@ import org.jetbrains.bazel.commons.TargetCollection
 import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.server.BazelTestFileNames
+import org.jetbrains.bazel.server.bep.AnalysisCacheInvalidationParser
 import org.jetbrains.bazel.server.bep.BepBuildResult
 import org.jetbrains.bazel.server.bep.BepReader
 import org.jetbrains.bazel.server.bep.BepServer
+import org.jetbrains.bazel.server.bep.analysisPhaseTimeMsOrNull
+import org.jetbrains.bazel.server.bep.toActionCacheStats
 import org.jetbrains.bazel.server.diagnostics.DiagnosticsService
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bsp.protocol.AnalysisDebugParams
 import org.jetbrains.bsp.protocol.AnalysisDebugResult
+import org.jetbrains.bsp.protocol.BazelInvocationContext
+import org.jetbrains.bsp.protocol.BazelInvocationMetrics
 import org.jetbrains.bsp.protocol.BazelTaskEventsHandler
 import org.jetbrains.bsp.protocol.CompileParams
 import org.jetbrains.bsp.protocol.CompileResult
@@ -56,6 +62,7 @@ class ExecuteService(
   private suspend fun runWithBepServer(
     command: BazelCommand,
     taskId: TaskId,
+    context: BazelInvocationContext,
     pidDeferred: CompletableDeferred<Long?>? = null,
   ): BepBuildResult = rawProgressReporterProvider { rawProgressReporter ->
     coroutineScope {
@@ -90,6 +97,8 @@ class ExecuteService(
           }
         }
 
+        reportInvocationMetrics(context, bepServer, processResult)
+
         val bepOutput = bepServer.bepOutput
         BepBuildResult(processResult, bepOutput)
       }
@@ -106,6 +115,26 @@ class ExecuteService(
         eventFile.deleteExisting()
       }
     }
+  }
+
+  /** Reports analysis-cache discards and action cache hit/miss stats for a finished invocation (FUS). */
+  private fun reportInvocationMetrics(
+    context: BazelInvocationContext,
+    bepServer: BepServer,
+    processResult: BazelProcessResult,
+  ) {
+    taskEventsHandler.onBazelInvocationMetrics(
+      BazelInvocationMetrics(
+        context = context,
+        // BEP progress events are the primary source: Bazel routes its output through BEP when
+        // --build_event_binary_path is set. Process streams are the fallback for output that arrives
+        // before BEP starts, or in PTY mode where stderr is merged into stdout.
+        analysisCacheInvalidation = bepServer.analysisCacheInvalidation
+          ?: AnalysisCacheInvalidationParser.parse(processResult.stderrLines, processResult.stdoutLines),
+        actionCacheStats = bepServer.bepMetrics?.toActionCacheStats(),
+        analysisPhaseTimeMs = bepServer.bepMetrics?.analysisPhaseTimeMsOrNull(),
+      ),
+    )
   }
 
   suspend fun compile(params: CompileParams): CompileResult =
@@ -153,7 +182,7 @@ class ExecuteService(
           ptyTermSize = project.service<PtyTerminalService>().ptyTermSize(params.taskId)
         }
       }
-    val result = runWithBepServer(command, params.taskId, pidDeferred = params.pidDeferred)
+    val result = runWithBepServer(command, params.taskId, BazelInvocationContext.RUN, pidDeferred = params.pidDeferred)
     return RunResult(statusCode = result.processResult.bazelStatus, taskId = params.taskId)
   }
 
@@ -198,7 +227,7 @@ class ExecuteService(
     }
 
     // TODO: handle multiple targets
-    val result = runWithBepServer(command, params.taskId)
+    val result = runWithBepServer(command, params.taskId, BazelInvocationContext.TEST)
     return TestResult(statusCode = result.processResult.bazelStatus)
   }
 
@@ -217,7 +246,7 @@ class ExecuteService(
         }
       }
 
-    return runWithBepServer(command, taskId).processResult
+    return runWithBepServer(command, taskId, BazelInvocationContext.BUILD).processResult
   }
 
   private fun ensureTestOutputStreamed(command: BazelCommand) {
@@ -240,6 +269,6 @@ class ExecuteService(
         }
       }
 
-    return runWithBepServer(command, taskId)
+    return runWithBepServer(command, taskId, BazelInvocationContext.SYNC)
   }
 }

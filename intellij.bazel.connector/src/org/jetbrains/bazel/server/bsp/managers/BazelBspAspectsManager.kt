@@ -168,8 +168,12 @@ class BazelBspAspectsManager(
     val flagsToUse = defaultFlags + allowManualTargetsSyncFlags + syncFlags
 
     val emptyBuild = executeService.buildTargetsWithBep(
+      // WARNINGs are intentionally not filtered here: this empty build is the first invocation of a sync and is
+      // where Bazel reports "discarding analysis cache" when build options changed. We need that warning to reach
+      // BepServer for FUS. The resulting empty-target-set warning is dropped from the UI by isEmptyTargetSetWarning.
+      // See https://github.com/bazelbuild/bazel/issues/6811
       targetsSpec = TargetCollection(listOf()),
-      extraFlags = flagsToUse + listOf("--ui_event_filters=-WARNING"), // We know, we do an empty build, no need to warn; see https://github.com/bazelbuild/bazel/issues/6811
+      extraFlags = flagsToUse,
       taskId = taskId,
     )
 

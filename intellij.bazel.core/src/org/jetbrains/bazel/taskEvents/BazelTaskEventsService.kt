@@ -6,6 +6,8 @@ import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.diagnostic.logger
 import org.jetbrains.annotations.ApiStatus
+import org.jetbrains.bazel.fus.BazelBuildMetricsCollector
+import org.jetbrains.bsp.protocol.BazelInvocationMetrics
 import org.jetbrains.bsp.protocol.BazelTaskEventsHandler
 import org.jetbrains.bsp.protocol.CachedTestLog
 import org.jetbrains.bsp.protocol.CoverageReport
@@ -20,7 +22,7 @@ import java.util.concurrent.ConcurrentHashMap
 
 @Service(Service.Level.PROJECT)
 @ApiStatus.Internal
-class BazelTaskEventsService : BazelTaskEventsHandler {
+class BazelTaskEventsService(private val project: Project) : BazelTaskEventsHandler {
 
   private val taskListeners: ConcurrentHashMap<TaskGroupId, BazelTaskListener> = ConcurrentHashMap()
 
@@ -72,6 +74,8 @@ class BazelTaskEventsService : BazelTaskEventsHandler {
   override fun onBuildLogMessage(params: LogMessageParams) {
     val originId = params.task
     val message = params.message
+    // Drop the empty-target-set warning emitted by the 0-target "probe" build the sync runs to read options.
+    if (isEmptyTargetSetWarning(message)) return
 
     withListener(originId) {
       onLogMessage(originId, message)
@@ -112,10 +116,29 @@ class BazelTaskEventsService : BazelTaskEventsHandler {
     }
   }
 
+  override fun onBazelInvocationMetrics(metrics: BazelInvocationMetrics) {
+    BazelBuildMetricsCollector.log(project, metrics)
+  }
+
   companion object {
     private val log = logger<BazelTaskEventsService>()
 
     @JvmStatic
     fun getInstance(project: Project) = project.service<BazelTaskEventsService>()
   }
+}
+
+/**
+ * Recognizes Bazel's warning for an invocation with an empty target set, emitted line by line.
+ *
+ * The sync runs a 0-target "probe" build (to read the resolved options before the aspect build), which always
+ * triggers this warning. A real user build has targets and won't produce it, so dropping it globally is safe.
+ * Matched on stable, non-localized fragments observed on Bazel 9; see https://github.com/bazelbuild/bazel/issues/6811.
+ */
+@ApiStatus.Internal
+fun isEmptyTargetSetWarning(line: String): Boolean {
+  val lowercased = line.lowercase()
+  return "usage: bazel build" in lowercased ||
+    "invoke `bazel help build`" in lowercased ||
+    "empty set of targets" in lowercased
 }
