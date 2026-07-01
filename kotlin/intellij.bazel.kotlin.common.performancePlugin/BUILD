@@ -1,30 +1,140 @@
-### auto-generated section `iml intellij.bazel.kotlin.common.performancePlugin` start
-exports_files([
-  "intellij.bazel.kotlin.common.performancePlugin.iml",
-], visibility = ["//visibility:public"])
-### auto-generated section `iml intellij.bazel.kotlin.common.performancePlugin` end
+load("@rules_jvm//:jvm.bzl", "jvm_library")
 
 ### auto-generated section `build intellij.bazel.kotlin.common.performancePlugin` start
-load("//rules_intellij/build_defs:build_defs.bzl", "jvm_library", "resourcegroup")
 
-resourcegroup(
-  name = "bazel-kotlin-common-performancePlugin_resources",
-  srcs = glob(["resources/**/*"]),
-  strip_prefix = "resources"
+jvm_library(
+    name = "bazel-kotlin-common-performancePlugin",
+    srcs = glob(
+        [
+            "src/**/*.kt",
+            "src/**/*.java",
+            "src/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.bazel.kotlin.common.performancePlugin",
+    resource_strip_prefix = "resources",
+    resources = glob(
+        ["resources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    deps = [
+        # do not sort,
+        "@lib//:kotlin-stdlib",
+        "@community//libraries/kotlinx/coroutines/core",
+        "//plugins/bazel/intellij.bazel.core.performancePlugin:core-performancePlugin",
+        "//plugins/bazel/kotlin/intellij.bazel.kotlin.common:bazel-kotlin-common",
+        "//plugins/bazel/intellij.bazel.core:core",
+        "//plugins/bazel/intellij.bazel.commons:commons",
+        "//plugins/bazel/java/intellij.bazel.java.common:bazel-java-common",
+        "@community//plugins/performanceTesting/core:performanceTesting",
+        "@community//platform/lang-impl",
+        "@community//platform/core-api:core",
+        "@community//platform/core-impl",
+        "@community//platform/platform-api:ide",
+        "@community//platform/platform-impl:ide-impl",
+        "@community//platform/ide-core",
+        "@community//platform/ide-core-impl",
+        "@community//platform/core-ui",
+        "@community//platform/execution",
+        "@community//java/execution/openapi:java-execution",
+        "@community//java/execution/impl",
+        "@community//java/openapi:java",
+        "@community//java/java-psi-api:psi",
+        "@community//java/debugger/openapi:java-debugger",
+        "@community//java/debugger/impl",
+        "@lib//:kotlinc-analysis-api-platform-interface-provided",
+        "@lib//:kotlinc-kotlin-compiler-common-provided",
+        "@lib//:kotlinc-kotlin-jps-plugin-classpath-provided",
+        "@community//plugins/kotlin/base/facet",
+        "@community//plugins/kotlin/base/project-structure",
+        "@community//plugins/kotlin/base/psi",
+        "@community//plugins/kotlin/base/indices",
+        "@community//plugins/kotlin/base/resources:kotlin-base-resources",
+        "@community//plugins/kotlin/base/util",
+        "@community//plugins/kotlin/preferences",
+        "@community//plugins/kotlin/project-configuration",
+        "@community//platform/execution-impl",
+        "@community//platform/projectModel-api:projectModel",
+        "@community//plugins/kotlin/jvm-debugger/coroutines",
+        "@community//platform/xdebugger-api:debugger",
+        "@community//platform/xdebugger-impl:debugger-impl",
+        "@community//platform/smRunner",
+        "@community//platform/workspace/storage",
+        "@community//platform/backend/workspace",
+        "@community//platform/workspace/jps",
+        "@community//platform/refactoring",
+        "@community//platform/analysis-api:analysis",
+        "@community//platform/editor-ui-api:editor-ui",
+    ],
 )
 
 jvm_library(
-  name = "bazel-kotlin-common-performancePlugin",
-  module_name = "intellij.bazel.kotlin.common.performancePlugin",
-  visibility = ["//visibility:public"],
-  srcs = glob(["src/**/*.kt", "src/**/*.java", "src/**/*.form"], allow_empty = True),
-  resources = [":bazel-kotlin-common-performancePlugin_resources"],
-  deps = [
-    "//intellij.bazel.core.performancePlugin:core-performancePlugin",
-    "//kotlin/intellij.bazel.kotlin.common:bazel-kotlin-common",
-    "//intellij.bazel.core:core",
-    "//intellij.bazel.commons:commons",
-    "//java/intellij.bazel.java.common:bazel-java-common",
-  ]
+    name = "bazel-kotlin-common-performancePlugin_test_lib",
+    testonly = True,
+    srcs = glob(
+        [],
+        allow_empty = True,
+    ),
+    module_name = "intellij.bazel.kotlin.common.performancePlugin",
+    visibility = ["//visibility:public"],
+    runtime_deps = [
+        # do not sort,
+        ":bazel-kotlin-common-performancePlugin",
+        "@community//libraries/kotlinx/coroutines/core:core_test_lib",
+        "//plugins/bazel/intellij.bazel.core.performancePlugin:core-performancePlugin_test_lib",
+        "//plugins/bazel/kotlin/intellij.bazel.kotlin.common:bazel-kotlin-common_test_lib",
+        "//plugins/bazel/intellij.bazel.core:core_test_lib",
+        "//plugins/bazel/intellij.bazel.commons:commons_test_lib",
+        "//plugins/bazel/java/intellij.bazel.java.common:bazel-java-common_test_lib",
+        "@community//plugins/performanceTesting/core:performanceTesting_test_lib",
+        "@community//platform/lang-impl:lang-impl_test_lib",
+        "@community//platform/core-api:core_test_lib",
+        "@community//platform/core-impl:core-impl_test_lib",
+        "@community//platform/platform-api:ide_test_lib",
+        "@community//platform/platform-impl:ide-impl_test_lib",
+        "@community//platform/ide-core:ide-core_test_lib",
+        "@community//platform/ide-core-impl:ide-core-impl_test_lib",
+        "@community//platform/core-ui:core-ui_test_lib",
+        "@community//platform/execution:execution_test_lib",
+        "@community//java/execution/openapi:java-execution_test_lib",
+        "@community//java/execution/impl:impl_test_lib",
+        "@community//java/openapi:java_test_lib",
+        "@community//java/java-psi-api:psi_test_lib",
+        "@community//java/debugger/openapi:java-debugger_test_lib",
+        "@community//java/debugger/impl:impl_test_lib",
+        "@lib//:kotlinc-analysis-api-platform-interface-provided",
+        "@lib//:kotlinc-kotlin-compiler-common-provided",
+        "@lib//:kotlinc-kotlin-jps-plugin-classpath-provided",
+        "@community//plugins/kotlin/base/facet:facet_test_lib",
+        "@community//plugins/kotlin/base/project-structure:project-structure_test_lib",
+        "@community//plugins/kotlin/base/psi:psi_test_lib",
+        "@community//plugins/kotlin/base/indices:indices_test_lib",
+        "@community//plugins/kotlin/base/resources:kotlin-base-resources_test_lib",
+        "@community//plugins/kotlin/base/util:util_test_lib",
+        "@community//plugins/kotlin/preferences:preferences_test_lib",
+        "@community//plugins/kotlin/project-configuration:project-configuration_test_lib",
+        "@community//platform/execution-impl:execution-impl_test_lib",
+        "@community//platform/projectModel-api:projectModel_test_lib",
+        "@community//plugins/kotlin/jvm-debugger/coroutines:coroutines_test_lib",
+        "@community//platform/xdebugger-api:debugger_test_lib",
+        "@community//platform/xdebugger-impl:debugger-impl_test_lib",
+        "@community//platform/smRunner:smRunner_test_lib",
+        "@community//platform/workspace/storage:storage_test_lib",
+        "@community//platform/backend/workspace:workspace_test_lib",
+        "@community//platform/workspace/jps:jps_test_lib",
+        "@community//platform/refactoring:refactoring_test_lib",
+        "@community//platform/analysis-api:analysis_test_lib",
+        "@community//platform/editor-ui-api:editor-ui_test_lib",
+    ],
 )
 ### auto-generated section `build intellij.bazel.kotlin.common.performancePlugin` end
+
+### auto-generated section `iml intellij.bazel.kotlin.common.performancePlugin` start
+exports_files(
+    [
+        "intellij.bazel.kotlin.common.performancePlugin.iml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.bazel.kotlin.common.performancePlugin` end

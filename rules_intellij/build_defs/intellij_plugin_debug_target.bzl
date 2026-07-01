@@ -35,7 +35,7 @@ intellij_plugin_debug_target(
 
 """
 
-load("//rules_intellij/build_defs:build_defs.bzl", "output_path", "plugin_deploy_zip", "repackaged_files_data")
+load("//:jvm.bzl", "output_path", "plugin_deploy_zip", "repackaged_files_data")
 
 SUFFIX = ".intellij-plugin-debug-target-deploy-info"
 

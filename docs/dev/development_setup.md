@@ -8,38 +8,43 @@ Follow these steps to get your development environment ready.
 Tests (unit, integration) cannot be compiled and run from their source.
 The reason is that it's too difficult to adapt it from our internal build configuration.
 This unfortunately means you'll have to submit your PR without tests.
-### Requirements
 
-1) IntelliJ IDEA 2026.1 or later Release, Release Candidate or EAP version.
-2) Install the [Bazel plugin](https://plugins.jetbrains.com/plugin/22977-bazel-eap-/).
-3) Install the [Plugin DevKit](https://plugins.jetbrains.com/plugin/22851-plugin-devkit/versions/stable) plugin.
+### Build the Bazel plugin from sources
+1) `git clone https://github.com/JetBrains/hirschgarten.git`
+2) Checkout the 262 branch
+3) Run `bazel build //:plugin-bazel_zip` and then grab the built plugin at `out/bazel-bin/plugin-bazel.zip`.
 
-### How to develop/debug plugins
+### Develop/debug the Bazel plugin
+1) Install IntelliJ IDEA 2026.2 EAP, Release Candidate or Release version.
+2) Install the [Plugin DevKit](https://plugins.jetbrains.com/plugin/22851-plugin-devkit/versions/stable) plugin.
+3) Install the `plugin-bazel.zip` you've built in the previous section into IDEA. 
+   This is temporary step, needed because hirschgarten 262 branch has fixes that are not yet in Bazel plugin release.
 
-1) `git clone git@github.com:JetBrains/hirschgarten.git`
-2) Open the cloned `hirschgarten/MODULE.bazel` file in IDEA. Click "Open as Project" and wait for it to import.
-3) Open "File->Project Structure". This opens the Project Structure dialog.  
+   <img src="../files/INSTALL_PLUGIN_FROM_DISK.png" width="600">
+4) Open the cloned `hirschgarten/MODULE.bazel` file in IDEA. Click "Open as Project" and wait for it to import.
+5) Open "File→Project Structure". This opens the Project Structure dialog.  
    Click "SDKs".
-4) Hit the "+" button.  
+6) Hit the "+" button.
    Click "Download JDK".  
-   Install JetBrains Runtime (JCEF) version 21.  
+   Install JetBrains Runtime version 25.
+
    <img src="../files/DEVELOPMENT_SETUP_1.png" width="600">
-5) Hit the "+" button.  
+7) Hit the "+" button.  
    Click "Add IntelliJ Platform Plugin SDK from disk".  
    A file exporer with the 'Contents' folder will open.  
    Click "Open" in this window.  
    <img src="../files/DEVELOPMENT_SETUP_2.png" width="600">
-6) A "Select Internal Java Platform" dialog will open.  
-   Select `jbrsdk_jcef-21` in the dropdown list and click "OK".  
+8) A "Select Internal Java Platform" dialog will open.  
+   Select `jbr-25` in the dropdown list and click "OK".  
    Then click "OK" again.  
+
    <img src="../files/DEVELOPMENT_SETUP_3.png" width="600">
-7) In the target view (open it via the Bazel icon on the right), find `plugin-bazel_debug`, right-click it and click `Run` in the context
+9) In the target view (open it via the Bazel icon on the right), find `plugin-bazel_debug`, right-click it and click `Run` in the context
    menu.
+
    <img src="../files/DEVELOPMENT_SETUP_4.png" width="600">
-8) The following plugin runs can be started by clicking "Run" button in the upper right corner, next to the now present run configuration.
-9) If you want to build a deployable plugin, run `bazel build //:plugin-bazel_zip` and then grab the built plugin at
-   `out/bazel-bin/plugin-bazel.zip`.
-10) To avoid IDEA showing red code for `BuildEventStreamProtos` class, click Help->Edit Custom Properties... and add the following line:
+10) The following plugin runs can be started by clicking "Run" button in the upper right corner, next to the now present run configuration.
+1To avoid IDEA showing red code for `BuildEventStreamProtos` class, click Help->Edit Custom Properties... and add the following line:
     `idea.max.intellisense.filesize=10000`
 ### Conclusion
 

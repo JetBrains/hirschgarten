@@ -181,8 +181,9 @@ class AspectBazelProjectMapper(
       }
 
       val ruleType = when {
-        !target.hasExecutableInfo() -> RuleType.LIBRARY
+        targetKind.ruleType == RuleType.BINARY -> RuleType.BINARY
         targetKind.ruleType == RuleType.TEST -> RuleType.TEST
+        !target.hasExecutableInfo() -> RuleType.LIBRARY
         else -> RuleType.BINARY
       }
 

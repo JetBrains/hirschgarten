@@ -27,8 +27,8 @@ config_setting(
 )
 
 config_setting(
-    name = "intellij-2026.1",
-    values = {"define": "ij_product=intellij-2026.1"},
+    name = "intellij-2026.2",
+    values = {"define": "ij_product=intellij-2026.2"},
 )
 
 # The purpose of this rule is to hide the versioning
@@ -159,6 +159,20 @@ java_library(
         android_studio = [":bytecode_viewer"],
         clion = [],
         intellij = [":bytecode_viewer"],
+    ),
+)
+
+# IntelliJ TestRunner plugin
+java_library(
+    name = "testrunner",
+    neverlink = 1,
+    visibility = [
+        "//visibility:public",
+    ],
+    exports = select_from_plugin_api_directory(
+        android_studio = [":testrunner"],
+        clion = [],
+        intellij = [":testrunner"],
     ),
 )
 
