@@ -234,6 +234,8 @@
 
     <statistics.counterUsagesCollector implementationClass="org.jetbrains.bazel.fus.BazelBuildInvocationCollector"/>
     <statistics.counterUsagesCollector implementationClass="org.jetbrains.bazel.fus.BazelBuildMetricsCollector"/>
+    <statistics.counterUsagesCollector implementationClass="org.jetbrains.bazel.fus.BazelSyncCollector"/>
+    <statistics.validation.customValidationRule implementation="org.jetbrains.bazel.fus.BazelSyncLanguageValidationRule"/>
     <statistics.projectUsagesCollector implementation="org.jetbrains.bazel.fus.BazelProjectStatisticsCollector"/>
 
     <projectService

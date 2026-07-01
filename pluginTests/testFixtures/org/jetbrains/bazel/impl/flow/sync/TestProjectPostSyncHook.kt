@@ -5,9 +5,11 @@ import org.jetbrains.bazel.sync.ProjectPostSyncHook
 
 open class TestProjectPostSyncHook : ProjectPostSyncHook {
   var wasCalled: Boolean = false
+  var projectModelUpdated: Boolean? = null
 
   override suspend fun onPostSync(environment: ProjectPostSyncHook.ProjectPostSyncHookEnvironment) {
     wasCalled = true
+    projectModelUpdated = environment.projectModelUpdated
   }
 }
 
