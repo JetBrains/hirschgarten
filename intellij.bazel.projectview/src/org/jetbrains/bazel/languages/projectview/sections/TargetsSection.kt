@@ -19,7 +19,7 @@ class TargetsSection : ExcludableListSection<Label>() {
     "A list of bazel target expressions. To resolve source files under an imported directory, the source must be " +
       "reachable from one of your targets. Because these are full bazel target expressions, they support /... notation."
 
-  override fun parseItem(value: String): Label = Label.parse(value)
+  override fun parseItem(value: String): Label? = Label.parseOrNull(value)
 
   companion object {
     const val NAME = "targets"

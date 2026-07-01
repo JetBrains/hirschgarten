@@ -2,21 +2,32 @@ package org.jetbrains.bazel.tests.flow
 
 import com.intellij.driver.sdk.singleProject
 import com.intellij.driver.sdk.step
+import com.intellij.driver.sdk.ui.components.UiComponent
 import com.intellij.driver.sdk.waitFor
 import com.intellij.driver.sdk.waitForProjectOpen
+import com.intellij.driver.sdk.ui.components.common.ideFrame
 import com.intellij.ide.starter.driver.engine.runIdeWithDriver
+import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.data.IdeaBazelCases
 import org.jetbrains.bazel.ideStarter.IdeStarterBaseProjectTest
+import org.jetbrains.bazel.ideStarter.assertSyncedTargets
 import org.jetbrains.bazel.ideStarter.checkIdeaLogForExceptions
+import org.jetbrains.bazel.ideStarter.execute
 import org.jetbrains.bazel.ideStarter.isBazelProject
 import org.jetbrains.bazel.ideStarter.projectRootDir
 import org.jetbrains.bazel.ideStarter.singleProjectOrNull
+import org.jetbrains.bazel.ideStarter.syncBazelProject
+import org.jetbrains.bazel.ideStarter.waitForSyncSucceeded
 import org.jetbrains.bazel.tests.ui.setAutoOpenProjectIfPresent
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
+import kotlin.io.path.readText
 import kotlin.time.Duration.Companion.minutes
+import kotlin.io.path.div
+import kotlin.io.path.writeText
+import kotlin.time.Duration
 
 class BazelProjectOpenStarterTest : IdeStarterBaseProjectTest() {
 
@@ -105,5 +116,54 @@ class BazelProjectOpenStarterTest : IdeStarterBaseProjectTest() {
         }
       }
     checkIdeaLogForExceptions(context)
+  }
+
+  @Test
+  fun `open project with an broken project view`() {
+    val context = createContext("openProjectWithUnresolvedImport", IdeaBazelCases.BazelProjectOpenByRootDir)
+
+    val projectViewFile = context.resolvedProjectHome / ".bazelproject"
+    projectViewFile.writeText(
+      "import does_not_exist.bazelproject\n" + // unresolved import
+        "import .bazelproject\n" +             // recursive import
+        projectViewFile.readText()
+    )
+
+    context
+      .runIdeWithDriver(runTimeout = timeout)
+      .useDriverAndCloseIde {
+        step("Project opens as a Bazel project despite the unresolved required import") {
+          waitForProjectOpen()
+          assertTrue(isBazelProject)
+        }
+        ideFrame {
+          syncBazelProject()
+          step("Unresolved required import is reported as an error in the sync console") {
+            waitForUnresolvedImportReported("does_not_exist.bazelproject")
+          }
+          waitForSyncSucceeded()
+          step("Well-formed targets still sync") {
+            execute {
+              assertSyncedTargets(
+                "//:B",
+                "//:C",
+                "//:SimpleKotlinTest",
+                "//:associates_example",
+                "//:requires-no-ide",
+                "//:not-ignored",
+              )
+            }
+          }
+        }
+      }
+    checkIdeaLogForExceptions(context)
+  }
+
+  private fun UiComponent.waitForUnresolvedImportReported(importPath: String, timeout: Duration = 2.minutes) {
+    val buildView = x { byType("com.intellij.build.BuildView") }
+    val importErrorText = BazelPluginBundle.message("project.view.import.unresolved", importPath)
+    buildView.waitAnyTexts(message = "Waiting for the unresolved import diagnostic", timeout = timeout) {
+      it.text.contains(importErrorText)
+    }
   }
 }
