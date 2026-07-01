@@ -33,6 +33,7 @@ import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceConfigurationSummary
 import org.jetbrains.bazel.sync.workspace.snapshot.isExecConfig
 import org.jetbrains.bazel.sync.workspace.snapshot.workspaceTargetKey
 import org.jetbrains.bazel.util.BspClientTestNotifier
+import org.jetbrains.bsp.protocol.AnalysisCacheInvalidation
 import org.jetbrains.bsp.protocol.BazelTaskEventsHandler
 import org.jetbrains.bsp.protocol.CachedTestLog
 import org.jetbrains.bsp.protocol.CompileReport
@@ -258,9 +259,7 @@ class BepServer(
     if (event.hasProgress()) {
       val progress = event.progress
       if (progress.stderr.isNotEmpty()) {
-        val stderrLines = progress.stderr.lines().map { line ->
-          line.replace(ansiEscapeCode, "")
-        }
+        val stderrLines = progress.stderr.lineSequence().map { AnsiEscapeCodes.strip(it) }.toList()
 
         val events =
           diagnosticsService.extractDiagnostics(
@@ -280,6 +279,16 @@ class BepServer(
           rawProgressReporter?.details(progress.details)
           rawProgressReporter?.fraction(progress.fraction)
         }
+
+        if (analysisCacheInvalidation == null) {
+          analysisCacheInvalidation = AnalysisCacheInvalidationParser.parse(stderrLines = stderrLines)
+        }
+      }
+
+      // Also scan progress.stdout: with --curses=true (PTY mode), Bazel may route the warning there.
+      if (analysisCacheInvalidation == null && progress.stdout.isNotEmpty()) {
+        val stdoutLines = progress.stdout.lineSequence().map { AnsiEscapeCodes.strip(it) }.toList()
+        analysisCacheInvalidation = AnalysisCacheInvalidationParser.parse(stdoutLines)
       }
     }
   }
@@ -476,9 +485,11 @@ class BepServer(
   @VisibleForTesting
   fun getOutputForTesting() = bepOutput
 
-  companion object {
-    private val ansiEscapeCode = "\\u001B\\[[\\d;]*[^\\d;]".toRegex()
+  /** Set by BEP progress event scanning; `null` if no discard was detected this invocation. */
+  var analysisCacheInvalidation: AnalysisCacheInvalidation? = null
+    private set
 
+  companion object {
     private val LOGGER = logger<BepServer>()
   }
 }

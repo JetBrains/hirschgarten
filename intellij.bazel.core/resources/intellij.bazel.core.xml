@@ -233,6 +233,7 @@
     />
 
     <statistics.counterUsagesCollector implementationClass="org.jetbrains.bazel.fus.BazelBuildInvocationCollector"/>
+    <statistics.counterUsagesCollector implementationClass="org.jetbrains.bazel.fus.BazelBuildMetricsCollector"/>
     <statistics.projectUsagesCollector implementation="org.jetbrains.bazel.fus.BazelProjectStatisticsCollector"/>
 
     <projectService
