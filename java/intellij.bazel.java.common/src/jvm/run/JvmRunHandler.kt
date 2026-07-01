@@ -23,6 +23,7 @@ import org.jetbrains.bazel.run.import.GooglePluginAwareRunHandlerProvider
 import org.jetbrains.bazel.run.task.BazelRunTaskListener
 import org.jetbrains.bazel.taskEvents.BazelTaskListener
 import org.jetbrains.bazel.server.BazelServerFacade
+import org.jetbrains.bazel.sync.isJvmTarget
 
 internal val COROUTINE_JVM_FLAGS_KEY = Key.create<Ref<List<String>>>("bazel.coroutine.jvm.flags")
 

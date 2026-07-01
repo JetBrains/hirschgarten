@@ -11,11 +11,11 @@ import org.jetbrains.bazel.commons.LanguageClass
 import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.coroutines.BazelCoroutineService
 import org.jetbrains.bazel.python.lang.PythonLanguageClass
+import org.jetbrains.bazel.python.lang.extractPythonBuildTarget
 import org.jetbrains.bazel.sync.BazelOutFileHardLinks
 import org.jetbrains.bazel.sync.environment.projectCtx
 import org.jetbrains.bsp.protocol.RawBuildTarget
 import org.jetbrains.bsp.protocol.allSources
-import org.jetbrains.bsp.protocol.utils.extractPythonBuildTarget
 import java.nio.file.FileSystems
 import java.nio.file.Path
 import java.nio.file.Paths
@@ -26,6 +26,7 @@ import kotlin.io.path.exists
 import kotlin.io.path.extension
 import kotlin.io.path.isRegularFile
 import kotlin.io.path.pathString
+import kotlin.io.path.reader
 import kotlin.io.path.relativeTo
 import kotlin.io.path.writer
 
@@ -221,7 +222,7 @@ internal class PythonResolveIndexService(private val project: Project) {
 
       try {
         val result = mutableMapOf<QualifiedName, Path>()
-        storagePath.toFile().reader().use { reader ->
+        storagePath.reader().use { reader ->
           reader.forEachLine { line ->
             val (qName, path) = line.split(":", limit = 2)
             result[QualifiedName.fromDottedString(qName)] = Path.of(path)

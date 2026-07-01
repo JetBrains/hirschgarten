@@ -1,6 +1,5 @@
 package org.jetbrains.bazel.sync.workspace.languages.java
 
-import com.google.common.hash.Hashing
 import com.google.devtools.build.lib.view.proto.Deps
 import com.google.devtools.intellij.aspect.Common.ArtifactLocation
 import com.google.devtools.intellij.ideinfo.IntellijIdeInfo
@@ -10,6 +9,7 @@ import com.intellij.openapi.extensions.ExtensionPointName
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Ref
 import com.intellij.util.EnvironmentUtil
+import com.intellij.util.io.DigestUtil
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
@@ -32,30 +32,29 @@ import org.jetbrains.bazel.languages.projectview.importIjars
 import org.jetbrains.bazel.languages.projectview.projectView
 import org.jetbrains.bazel.languages.projectview.testSources
 import org.jetbrains.bazel.performance.measure
+import org.jetbrains.bazel.server.BazelServerFacade
 import org.jetbrains.bazel.server.model.generatedSourcesList
 import org.jetbrains.bazel.server.model.sourcesList
+import org.jetbrains.bazel.sync.JavaLanguageClass
 import org.jetbrains.bazel.sync.workspace.graph.DependencyGraph
 import org.jetbrains.bazel.sync.workspace.languages.LanguagePlugin
 import org.jetbrains.bazel.sync.workspace.languages.java.sourceRoot.SourceRootOptimizationMode
+import org.jetbrains.bazel.sync.workspace.languages.jvm.JvmBuildTarget
+import org.jetbrains.bazel.sync.workspace.languages.jvm.JvmDependency
 import org.jetbrains.bazel.sync.workspace.mapper.normal.MavenCoordinatesResolver
 import org.jetbrains.bazel.sync.workspace.snapshot.SourceFileCollectionBuilder
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceSyncConfig
-import org.jetbrains.bazel.workspacecontext.WorkspaceContext
-import org.jetbrains.bazel.server.BazelServerFacade
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
 import org.jetbrains.bazel.sync.workspace.snapshot.toWorkspaceTargetKey
+import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bsp.protocol.BuildTargetData
-import org.jetbrains.bsp.protocol.JvmBuildTarget
-import org.jetbrains.bsp.protocol.JvmDependency
 import org.jetbrains.bsp.protocol.LibraryItem
 import org.jetbrains.bsp.protocol.MavenCoordinates
 import org.jetbrains.bsp.protocol.StrictDependencyCheckedType
 import org.jetbrains.bsp.protocol.allJars
-import java.nio.charset.StandardCharsets
 import java.nio.file.Path
 import java.nio.file.Paths
 import java.util.concurrent.ConcurrentHashMap
-import kotlin.collections.plus
 import kotlin.io.path.exists
 import kotlin.io.path.extension
 import kotlin.io.path.inputStream
@@ -110,11 +109,11 @@ class JavaLanguagePlugin : LanguagePlugin {
     get() = setOf(JvmBuildTarget::class) + JvmLanguagePluginMixin.mixins.flatMap { it.providedBuildTargetTypes }.toSet()
 
   override fun getSupportedLanguages(): Set<LanguageClass> =
-    setOf(LanguageClass.JAVA) + JvmLanguagePluginMixin.mixins.flatMap { it.getSupportedLanguages() }
+    setOf(JavaLanguageClass.JAVA) + JvmLanguagePluginMixin.mixins.flatMap { it.getSupportedLanguages() }
 
   override fun collectUsedLanguages(target: TargetIdeInfo): List<LanguageClass> {
     return JvmLanguagePluginMixin.mixins.flatMap { it.collectUsedLanguages(target) } +
-           (if (target.javaCommon.jvmTarget) listOf(LanguageClass.JAVA) else emptyList())
+           (if (target.javaCommon.jvmTarget) listOf(JavaLanguageClass.JAVA) else emptyList())
   }
 
 
@@ -397,7 +396,7 @@ class JavaLanguagePlugin : LanguagePlugin {
       // TODO: support Kotlin strict deps
       // TODO: investigate scala
       val hasJavaSources = target.sourcesList.any {
-        LanguageClassService.getInstance().fromPath(it.relativePath) == LanguageClass.JAVA
+        LanguageClassService.getInstance().fromPath(it.relativePath) == JavaLanguageClass.JAVA
       }
       if (!hasJavaSources)
         return StrictDependencyCheckedType.OFF
@@ -694,12 +693,7 @@ class JavaLanguagePlugin : LanguagePlugin {
 
     private fun syntheticLabel(lib: Path): Label {
       val relativeLibPath = lib.relativeToOrSelf(bazelPathsResolver.bazelBin())
-      val shaOfPath =
-        Hashing
-          .sha256()
-          .hashString(relativeLibPath.toString(), StandardCharsets.UTF_8)
-          .toString()
-          .take(7) // just in case of a conflict in filename
+      val shaOfPath = DigestUtil.sha1Hex(relativeLibPath.toString()).take(7) // just in case of a conflict in filename
       return Label.synthetic(
         lib
           .fileName

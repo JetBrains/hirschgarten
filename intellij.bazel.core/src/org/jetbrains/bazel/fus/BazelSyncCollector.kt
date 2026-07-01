@@ -139,11 +139,10 @@ private fun ProjectSyncStatistics.languageTargetCountsForReporting(): Map<Langua
     }
   }
 
-private fun Set<LanguageClass>.fusLanguages(): Set<LanguageClass> =
-  primaryFusLanguages[this] ?: this
-
-private val primaryFusLanguages: Map<Set<LanguageClass>, Set<LanguageClass>> =
-  mapOf(
-    setOf(LanguageClass.JAVA, LanguageClass.KOTLIN) to setOf(LanguageClass.KOTLIN),
-    setOf(LanguageClass.JAVA, LanguageClass.SCALA) to setOf(LanguageClass.SCALA),
-  )
+private fun Set<LanguageClass>.fusLanguages(): Collection<LanguageClass> {
+  val source = this
+  return source.filter { candidate ->
+    val isOverridden = source.any { it.fusOverride == candidate }
+    !isOverridden
+  }
+}

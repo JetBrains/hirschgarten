@@ -1,13 +1,10 @@
 package org.jetbrains.bazel.commons.gson
 
-import io.kotest.assertions.throwables.shouldThrow
 import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.python.lang.PythonBuildTarget
 import org.jetbrains.bazel.sync.workspace.snapshot.SourceFileCollectionBuilder
 import org.jetbrains.bazel.target.targetUtilsGson
-import org.jetbrains.bsp.protocol.BuildTargetData
-import org.jetbrains.bsp.protocol.JvmBuildTarget
 import org.jetbrains.bsp.protocol.SourceFileCollection
-import org.jetbrains.bsp.protocol.PythonBuildTarget
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest

@@ -5,7 +5,7 @@ import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.BuildTargetData
 import org.jetbrains.bsp.protocol.ClassDiscriminator
-import org.jetbrains.bsp.protocol.utils.extractData
+import org.jetbrains.bsp.protocol.extractData
 import java.nio.file.Path
 
 @ClassDiscriminator(5)

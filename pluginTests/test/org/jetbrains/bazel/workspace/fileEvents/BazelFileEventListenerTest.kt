@@ -40,6 +40,7 @@ import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.magicmetamodel.formatAsModuleName
 import org.jetbrains.bazel.project.BazelProjectFixtures.deinitializeBazelProject
 import org.jetbrains.bazel.server.BazelServerService
+import org.jetbrains.bazel.sync.JavaLanguageClass
 import org.jetbrains.bazel.target.targetUtils
 import org.jetbrains.bazel.test.framework.target.TestBuildTargetFactory
 import org.jetbrains.bazel.workspace.importer.JAVA_SOURCE_ROOT_TYPE
@@ -445,7 +446,7 @@ class BazelFileEventListenerTest : WorkspaceModelBaseTest() {
               TargetKind(
                 kind = "java_library",
                 ruleType = RuleType.LIBRARY,
-                languageClasses = setOf(LanguageClass.JAVA),
+                languageClasses = setOf(JavaLanguageClass.JAVA),
               ),
             sources = SourceFileCollection.EMPTY,
             generatedSources = SourceFileCollection.EMPTY,

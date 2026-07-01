@@ -5,6 +5,7 @@ import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.label.DependencyLabel
 import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.sync.JavaLanguageClass
 import org.jetbrains.bazel.sync.workspace.snapshot.SourceFileCollectionBuilder
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
 import org.jetbrains.bsp.protocol.BuildTargetData
@@ -18,7 +19,7 @@ fun createRawBuildTarget(
   kind: TargetKind = TargetKind(
     kind = "java_library",
     ruleType = RuleType.LIBRARY,
-    languageClasses = setOf(LanguageClass.JAVA),
+    languageClasses = setOf(JavaLanguageClass.JAVA),
   ),
   sources: List<Path> = emptyList(),
   generatedSources: List<Path> = emptyList(),

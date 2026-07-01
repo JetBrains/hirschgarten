@@ -11,6 +11,7 @@ import org.jetbrains.bazel.commons.getLocalRepositories
 import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.label.assumeResolved
 import org.jetbrains.bazel.label.label
+import org.jetbrains.bazel.python.lang.PythonBuildTarget
 import org.jetbrains.bazel.python.lang.PythonLanguageClass
 import org.jetbrains.bazel.server.model.sourcesList
 import org.jetbrains.bazel.sync.workspace.graph.DependencyGraph
@@ -21,7 +22,6 @@ import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bazel.server.BazelServerFacade
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
 import org.jetbrains.bsp.protocol.BuildTargetData
-import org.jetbrains.bsp.protocol.PythonBuildTarget
 import java.nio.file.Files
 import java.nio.file.Path
 import kotlin.io.path.exists

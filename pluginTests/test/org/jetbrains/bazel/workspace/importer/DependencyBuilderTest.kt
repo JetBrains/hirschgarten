@@ -2,18 +2,18 @@ package org.jetbrains.bazel.workspace.importer
 
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.shouldBe
-import org.jetbrains.bazel.commons.LanguageClass
 import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.label.DependencyLabel
 import org.jetbrains.bazel.label.DependencyLabelKind
 import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.sync.JavaLanguageClass
+import org.jetbrains.bazel.sync.workspace.languages.jvm.JvmBuildTarget
+import org.jetbrains.bazel.sync.workspace.languages.jvm.JvmDependency
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceConfigurationId
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
 import org.jetbrains.bazel.workspace.model.test.framework.createRawBuildTarget
 import org.jetbrains.bsp.protocol.SourceFileCollection
-import org.jetbrains.bsp.protocol.JvmBuildTarget
-import org.jetbrains.bsp.protocol.JvmDependency
 import org.jetbrains.bsp.protocol.RawBuildTarget
 import org.jetbrains.bsp.protocol.StrictDependencyCheckedType
 import org.junit.jupiter.api.Test
@@ -161,7 +161,7 @@ class DependencyBuilderTest {
       kind = TargetKind(
         kind = "java_library",
         ruleType = RuleType.LIBRARY,
-        languageClasses = setOf(LanguageClass.JAVA),
+        languageClasses = setOf(JavaLanguageClass.JAVA),
       ),
       sources = SourceFileCollection.EMPTY,
       generatedSources = SourceFileCollection.EMPTY,
@@ -350,7 +350,7 @@ class DependencyBuilderTest {
     kind = TargetKind(
       kind = kind,
       ruleType = ruleType,
-      languageClasses = setOf(LanguageClass.JAVA),
+      languageClasses = setOf(JavaLanguageClass.JAVA),
     ),
     data = listOf(
       JvmBuildTarget(

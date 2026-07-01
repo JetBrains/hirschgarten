@@ -20,11 +20,11 @@ import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.languages.starlark.repomapping.toShortString
+import org.jetbrains.bazel.python.lang.PythonBuildTarget
+import org.jetbrains.bazel.python.lang.extractPythonBuildTarget
 import org.jetbrains.bazel.python.lang.PythonLanguageClass
 import org.jetbrains.bazel.target.targetUtils
 import org.jetbrains.bsp.protocol.BuildTarget
-import org.jetbrains.bsp.protocol.PythonBuildTarget
-import org.jetbrains.bsp.protocol.utils.extractPythonBuildTarget
 import kotlin.io.path.invariantSeparatorsPathString
 import kotlin.io.path.isRegularFile
 
@@ -103,7 +103,7 @@ private fun PyFile.isMainFileInTarget(target: BuildTarget): Boolean {
   }
 }
 
-private fun PythonBuildTarget.hasMainFileDefined(): Boolean = mainFile != null && mainFile!!.isRegularFile()
+private fun PythonBuildTarget.hasMainFileDefined(): Boolean = mainFile != null && mainFile.isRegularFile()
 
 private fun PsiElement.getTestFunctionFromContext(): PyFunction? =
   getTestFunctionFromNameIdentifier()

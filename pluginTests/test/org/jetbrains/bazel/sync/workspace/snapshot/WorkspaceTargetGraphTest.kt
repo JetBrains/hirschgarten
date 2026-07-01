@@ -1,14 +1,14 @@
 package org.jetbrains.bazel.sync.workspace.snapshot
 
 import io.kotest.matchers.shouldBe
-import org.jetbrains.bazel.commons.LanguageClass
 import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.label.DependencyLabel
 import org.jetbrains.bazel.label.DependencyLabelKind
 import org.jetbrains.bazel.label.Label
-import org.jetbrains.bsp.protocol.SourceFileCollection
+import org.jetbrains.bazel.sync.JavaLanguageClass
 import org.jetbrains.bsp.protocol.RawBuildTarget
+import org.jetbrains.bsp.protocol.SourceFileCollection
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -577,7 +577,7 @@ class WorkspaceTargetGraphTest {
         kind = TargetKind(
           kind = "java_library",
           ruleType = RuleType.LIBRARY,
-          languageClasses = setOf(LanguageClass.JAVA),
+          languageClasses = setOf(JavaLanguageClass.JAVA),
         ),
         sources = SourceFileCollection.EMPTY,
         generatedSources = SourceFileCollection.EMPTY,
@@ -596,7 +596,7 @@ class WorkspaceTargetGraphTest {
       rawBuildTarget = RawBuildTarget(
         key = targetKey,
         dependencies = emptyList(),
-        kind = TargetKind(kind = "java_library", ruleType = RuleType.LIBRARY, languageClasses = setOf(LanguageClass.JAVA)),
+        kind = TargetKind(kind = "java_library", ruleType = RuleType.LIBRARY, languageClasses = setOf(JavaLanguageClass.JAVA)),
         sources = SourceFileCollection.EMPTY,
         generatedSources = SourceFileCollection.EMPTY,
         resources = SourceFileCollection.EMPTY,
@@ -616,7 +616,7 @@ class WorkspaceTargetGraphTest {
       rawBuildTarget = RawBuildTarget(
         key = targetKey,
         dependencies = rawDeps.map { DependencyLabel(targetKey = it, kind = DependencyLabelKind.COMPILE) },
-        kind = TargetKind(kind = "java_library", ruleType = RuleType.LIBRARY, languageClasses = setOf(LanguageClass.JAVA)),
+        kind = TargetKind(kind = "java_library", ruleType = RuleType.LIBRARY, languageClasses = setOf(JavaLanguageClass.JAVA)),
         sources = SourceFileCollection.EMPTY,
         generatedSources = SourceFileCollection.EMPTY,
         resources = SourceFileCollection.EMPTY,

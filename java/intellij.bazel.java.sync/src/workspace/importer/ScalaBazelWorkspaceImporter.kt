@@ -9,9 +9,9 @@ import org.jetbrains.bazel.sync.workspace.importer.BazelWorkspaceImporter
 import org.jetbrains.bazel.sync.workspace.importer.WorkspaceImporterContext
 import org.jetbrains.bazel.sync.workspace.importer.WorkspaceImporterPhase
 import org.jetbrains.bazel.sync.workspace.importer.WorkspaceImporterResult
+import org.jetbrains.bazel.sync.workspace.languages.jvm.extractScalaBuildTarget
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceSnapshot
 import org.jetbrains.bsp.protocol.BuildTarget
-import org.jetbrains.bsp.protocol.utils.extractScalaBuildTarget
 
 internal class ScalaBazelWorkspaceImporter : BazelWorkspaceImporter {
   private var scalaSdks: Set<ScalaSdk>? = null

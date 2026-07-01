@@ -5,21 +5,21 @@ import org.jetbrains.bazel.commons.BazelInfo
 import org.jetbrains.bazel.commons.BazelPathsResolver
 import org.jetbrains.bazel.commons.BazelRelease
 import org.jetbrains.bazel.commons.ExcludableValue
-import org.jetbrains.bazel.commons.LanguageClass
 import org.jetbrains.bazel.commons.RepoMappingDisabled
 import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.commons.orFallbackVersion
 import org.jetbrains.bazel.label.DependencyLabel
 import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.sync.JavaLanguageClass
 import org.jetbrains.bazel.sync.workspace.mapper.PhasedBazelProjectMapper
+import org.jetbrains.bazel.sync.workspace.snapshot.SourceFileCollectionBuilder
+import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
 import org.jetbrains.bazel.workspace.model.test.framework.BazelPathsResolverMock
 import org.jetbrains.bazel.workspace.model.test.framework.WorkspaceModelBaseTest
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
-import org.jetbrains.bazel.sync.workspace.snapshot.SourceFileCollectionBuilder
-import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
-import org.jetbrains.bsp.protocol.SourceFileCollection
 import org.jetbrains.bsp.protocol.RawBuildTarget
+import org.jetbrains.bsp.protocol.SourceFileCollection
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
@@ -214,7 +214,7 @@ class FirstPhaseTargetToBspMapperTest : WorkspaceModelBaseTest() {
               TargetKind(
                 kind = "java_library",
                 ruleType = RuleType.LIBRARY,
-                languageClasses = setOf(LanguageClass.JAVA),
+                languageClasses = setOf(JavaLanguageClass.JAVA),
               ),
             sources = SourceFileCollectionBuilder.build(
               relativeRoot = workspaceRoot.resolve(Path("target1")),
@@ -242,7 +242,7 @@ class FirstPhaseTargetToBspMapperTest : WorkspaceModelBaseTest() {
               TargetKind(
                 kind = "java_binary",
                 ruleType = RuleType.BINARY,
-                languageClasses = setOf(LanguageClass.JAVA),
+                languageClasses = setOf(JavaLanguageClass.JAVA),
               ),
             sources = SourceFileCollectionBuilder.build(
               relativeRoot = workspaceRoot.resolve(Path("target2")),
@@ -266,7 +266,7 @@ class FirstPhaseTargetToBspMapperTest : WorkspaceModelBaseTest() {
               TargetKind(
                 kind = "java_test",
                 ruleType = RuleType.TEST,
-                languageClasses = setOf(LanguageClass.JAVA),
+                languageClasses = setOf(JavaLanguageClass.JAVA),
               ),
             sources = SourceFileCollection.EMPTY,
             generatedSources = SourceFileCollection.EMPTY,
@@ -284,7 +284,7 @@ class FirstPhaseTargetToBspMapperTest : WorkspaceModelBaseTest() {
               TargetKind(
                 kind = "kt_jvm_library",
                 ruleType = RuleType.LIBRARY,
-                languageClasses = setOf(LanguageClass.JAVA, LanguageClass.KOTLIN),
+                languageClasses = setOf(JavaLanguageClass.JAVA, JavaLanguageClass.KOTLIN),
               ),
             sources = SourceFileCollection.EMPTY,
             generatedSources = SourceFileCollection.EMPTY,
@@ -299,7 +299,7 @@ class FirstPhaseTargetToBspMapperTest : WorkspaceModelBaseTest() {
               TargetKind(
                 kind = "kt_jvm_binary",
                 ruleType = RuleType.BINARY,
-                languageClasses = setOf(LanguageClass.JAVA, LanguageClass.KOTLIN),
+                languageClasses = setOf(JavaLanguageClass.JAVA, JavaLanguageClass.KOTLIN),
               ),
             sources = SourceFileCollection.EMPTY,
             generatedSources = SourceFileCollection.EMPTY,
@@ -314,7 +314,7 @@ class FirstPhaseTargetToBspMapperTest : WorkspaceModelBaseTest() {
               TargetKind(
                 kind = "kt_jvm_test",
                 ruleType = RuleType.TEST,
-                languageClasses = setOf(LanguageClass.JAVA, LanguageClass.KOTLIN),
+                languageClasses = setOf(JavaLanguageClass.JAVA, JavaLanguageClass.KOTLIN),
               ),
             sources = SourceFileCollection.EMPTY,
             generatedSources = SourceFileCollection.EMPTY,
@@ -329,7 +329,7 @@ class FirstPhaseTargetToBspMapperTest : WorkspaceModelBaseTest() {
               TargetKind(
                 kind = "custom_rule_with_supported_rules_library",
                 ruleType = RuleType.LIBRARY,
-                languageClasses = setOf(LanguageClass.JAVA),
+                languageClasses = setOf(JavaLanguageClass.JAVA),
               ),
             sources = SourceFileCollectionBuilder.build(
               relativeRoot = workspaceRoot.resolve(Path("target7")),
@@ -353,7 +353,7 @@ class FirstPhaseTargetToBspMapperTest : WorkspaceModelBaseTest() {
               TargetKind(
                 kind = "java_library",
                 ruleType = RuleType.LIBRARY,
-                languageClasses = setOf(LanguageClass.JAVA),
+                languageClasses = setOf(JavaLanguageClass.JAVA),
               ),
             sources = SourceFileCollectionBuilder.build(
               relativeRoot = workspaceRoot.resolve(Path("target8")),
@@ -385,7 +385,7 @@ class FirstPhaseTargetToBspMapperTest : WorkspaceModelBaseTest() {
               TargetKind(
                 kind = "filegroup",
                 ruleType = RuleType.LIBRARY,
-                languageClasses = setOf(LanguageClass.JAVA),
+                languageClasses = setOf(JavaLanguageClass.JAVA),
               ),
             sources = SourceFileCollectionBuilder.build(
               relativeRoot = workspaceRoot.resolve(Path("filegroupSources")),

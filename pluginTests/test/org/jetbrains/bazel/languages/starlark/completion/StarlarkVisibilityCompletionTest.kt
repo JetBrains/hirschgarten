@@ -6,15 +6,15 @@ import io.kotest.matchers.collections.shouldBeIn
 import io.kotest.matchers.collections.shouldContainAll
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.collections.shouldNotContain
-import org.jetbrains.bazel.commons.LanguageClass
 import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.project.BazelProjectFixtures.initializeBazelProject
+import org.jetbrains.bazel.sync.JavaLanguageClass
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
 import org.jetbrains.bazel.target.targetUtils
-import org.jetbrains.bsp.protocol.SourceFileCollection
 import org.jetbrains.bsp.protocol.RawBuildTarget
+import org.jetbrains.bsp.protocol.SourceFileCollection
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -38,7 +38,7 @@ class StarlarkVisibilityCompletionTest : BasePlatformTestCase() {
             TargetKind(
               kind = "java_library",
               ruleType = RuleType.LIBRARY,
-              languageClasses = setOf(LanguageClass.JAVA),
+              languageClasses = setOf(JavaLanguageClass.JAVA),
             ),
           sources = SourceFileCollection.EMPTY,
           generatedSources = SourceFileCollection.EMPTY,

@@ -8,9 +8,9 @@ import com.intellij.util.EnvironmentUtil
 import com.jetbrains.python.PythonFileType
 import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.python.lang.PythonBuildTarget
 import org.jetbrains.bazel.target.targetUtils
 import org.jetbrains.bazel.utils.isUnder
-import org.jetbrains.bsp.protocol.PythonBuildTarget
 import java.io.File
 import java.nio.charset.StandardCharsets
 import java.nio.file.FileVisitOption

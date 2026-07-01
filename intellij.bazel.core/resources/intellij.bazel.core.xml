@@ -75,9 +75,6 @@
   </projectListeners>
 
   <extensions defaultExtensionNs="org.jetbrains.bazel">
-    <projectViewSectionProvider
-      implementation="org.jetbrains.bazel.sync.workspace.languages.java.sourceRoot.projectview.JavaSROProjectViewSectionProvider"/>
-
     <projectPreSyncHook implementation="org.jetbrains.bazel.flow.open.ReparseProjectViewFilePreSyncHook"/>
 
     <projectSyncHook

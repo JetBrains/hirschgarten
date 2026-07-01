@@ -3,7 +3,7 @@ package org.jetbrains.bazel.workspace.importer
 import com.intellij.platform.workspace.jps.entities.ModuleEntity
 import com.intellij.platform.workspace.storage.MutableEntityStorage
 import org.jetbrains.annotations.ApiStatus
-import org.jetbrains.bsp.protocol.KotlinBuildTarget
+import org.jetbrains.bazel.sync.workspace.languages.jvm.KotlinBuildTarget
 
 // RC: replaces the kotlin-facet EP call previously inlined in `JavaModuleUpdater` (the `kind.includesKotlin()` branch
 // and `addKotlinModuleIfPossible`); also owns the new `KotlinOptions` bag that replaces `KotlinAddendum`

@@ -5,6 +5,7 @@ import org.jetbrains.bazel.commons.LanguageClass
 import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.sync.JavaLanguageClass
 import org.jetbrains.bazel.sync.workspace.languages.java.sourceRoot.JvmPackagePrefixCalculator
 import org.jetbrains.bazel.sync.workspace.languages.java.sourceRoot.JvmPackagePrefixes
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
@@ -153,7 +154,7 @@ class CompiledSourceCodeInsideJarExcludeBuilderTest {
     kind = TargetKind(
       kind = "java_library",
       ruleType = RuleType.LIBRARY,
-      languageClasses = setOf(LanguageClass.JAVA),
+      languageClasses = setOf(JavaLanguageClass.JAVA),
     ),
     sources = sources,
     generatedSources = genSources,

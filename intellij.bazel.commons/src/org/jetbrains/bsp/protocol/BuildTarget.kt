@@ -78,58 +78,6 @@ annotation class ClassDiscriminator(val id: Short)
 @ApiStatus.Internal
 interface BuildTargetData
 
-@ClassDiscriminator(1)
-@ApiStatus.Internal
-data class KotlinBuildTarget(
-  val languageVersion: String?,
-  val apiVersion: String?,
-  val kotlincOptions: List<String>,
-  val associates: List<WorkspaceTargetKey>,
-  val moduleName: String? = null,
-) : BuildTargetData
-
-@ClassDiscriminator(2)
-@ApiStatus.Internal
-data class PythonBuildTarget(
-  val version: String?,
-  val interpreter: Path?,
-  // imports is the attribute in bazel python rules
-  // which specify a list of runfiles relative paths which will be included in PYTHONPATH
-  val imports: List<String>,
-  // Not used after full sync. Mapping is saved in `PythonResolveIndexService`
-  @Transient @JvmField val generatedSources: SourceFileCollection? = null,
-  @Transient @JvmField val externalSources: SourceFileCollection? = null,
-  val mainFile: Path? = null,
-  val mainModule: String? = null,
-  val runnerScript: Path? = null,
-) : BuildTargetData
-
-@ClassDiscriminator(3)
-@ApiStatus.Internal
-data class ScalaBuildTarget(
-  val scalaVersion: String,
-  val sdkJars: List<Path>,
-  val scalacOptions: List<String>,
-) : BuildTargetData
-
-@ClassDiscriminator(4)
-@ApiStatus.Internal
-data class JvmBuildTarget(
-  // not used if part of PartialBuildTarget
-  @Transient @JvmField val javaHome: Path? = null,
-  val javaVersion: String,
-  val javacOpts: List<String> = listOf(),
-  val binaryOutputs: SourceFileCollection = SourceFileCollection.EMPTY,
-  val environmentVariables: Map<String, String> = mapOf(),
-  val mainClass: String? = null,
-  val jvmArgs: List<String> = listOf(),
-  val programArgs: List<String> = listOf(),
-  val resolvedResourceStripPrefix: Path? = null,
-  @Transient @JvmField val libraries: List<LibraryItem> = emptyList(),
-  @Transient @JvmField val jvmDependencies: List<JvmDependency> = emptyList(),
-  @Transient @JvmField val outputJars: Set<Path> = emptySet(),
-  val checkStrictDependencies: StrictDependencyCheckedType = StrictDependencyCheckedType.OFF,
-) : BuildTargetData
 
 @ApiStatus.Internal
 enum class StrictDependencyCheckedType {
@@ -139,17 +87,5 @@ enum class StrictDependencyCheckedType {
 }
 
 @ApiStatus.Internal
-sealed interface JvmDependency {
-  val dependency: DependencyLabel
+inline fun <reified Data> BuildTarget.extractData(): Data? = this.data.filterIsInstance<Data>().singleOrNull()
 
-  data class LibraryDependency(override val dependency: DependencyLabel) : JvmDependency
-  data class ModuleDependency(override val dependency: DependencyLabel) : JvmDependency
-}
-
-// ClassDiscriminator 6 & 7 were cpp and android, but they have been removed
-
-@ClassDiscriminator(9)
-@ApiStatus.Internal
-data class ProtobufBuildTarget(
-  val sources: Map<String, String>, // import path -> real file
-) : BuildTargetData

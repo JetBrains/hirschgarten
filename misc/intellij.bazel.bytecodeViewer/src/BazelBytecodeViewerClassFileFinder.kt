@@ -15,10 +15,11 @@ import com.intellij.psi.PsiClass
 import com.intellij.psi.util.ClassUtil
 import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.psi.util.PsiUtil
+import org.jetbrains.bazel.sync.workspace.languages.jvm.extractJvmBuildTarget
 import org.jetbrains.bazel.target.targetUtils
-import org.jetbrains.bsp.protocol.utils.extractJvmBuildTarget
 import java.nio.file.Path
 import kotlin.io.path.extension
+import kotlin.sequences.sequenceOf
 
 internal class BazelBytecodeViewerClassFileFinder : BytecodeViewerClassFileFinder {
   override fun findClass(element: PsiClass, containing: PsiClass?): VirtualFile? {

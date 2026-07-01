@@ -1,5 +1,6 @@
 package com.intellij.bazel.python.backend
 
+import com.intellij.bazel.python.backend.sync.PythonWorkspaceSyncConfig
 import com.intellij.openapi.components.serviceAsync
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
@@ -37,17 +38,16 @@ import com.jetbrains.python.sdk.createLocalSdkGuessingTypeByPath
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.annotations.VisibleForTesting
 import org.jetbrains.bazel.commons.RepoMapping
-import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.magicmetamodel.formatAsModuleName
 import org.jetbrains.bazel.progress.TaskConsole
 import org.jetbrains.bazel.progress.withSubtask
+import org.jetbrains.bazel.python.lang.PythonBuildTarget
 import org.jetbrains.bazel.server.connection
 import org.jetbrains.bazel.sync.environment.projectCtx
 import org.jetbrains.bazel.sync.workspace.importer.BazelWorkspaceImporter
 import org.jetbrains.bazel.sync.workspace.importer.WorkspaceImporterContext
 import org.jetbrains.bazel.sync.workspace.importer.WorkspaceImporterPhase
 import org.jetbrains.bazel.sync.workspace.importer.WorkspaceImporterResult
-import com.intellij.bazel.python.backend.sync.PythonWorkspaceSyncConfig
 import org.jetbrains.bazel.sync.workspace.snapshot.CommonWorkspaceSyncConfig
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceSnapshot
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
@@ -55,13 +55,11 @@ import org.jetbrains.bazel.sync.workspace.snapshot.allTargets
 import org.jetbrains.bazel.sync.workspace.snapshot.filterBuildTarget
 import org.jetbrains.bazel.sync.workspace.snapshot.hasBuildData
 import org.jetbrains.bazel.utils.isUnder
-import org.jetbrains.bazel.workspacemodel.entities.BazelModuleEntitySource
 import org.jetbrains.bazel.workspacemodel.entities.BazelModuleExtensionEntity
 import org.jetbrains.bazel.workspacemodel.entities.WorkspaceModelTargetKey
 import org.jetbrains.bazel.workspacemodel.entities.WorkspaceModelTargetLabelList
 import org.jetbrains.bazel.workspacemodel.entities.WorkspaceModelTargetSourceRootTypeId
 import org.jetbrains.bazel.workspacemodel.entities.bazelModuleExtension
-import org.jetbrains.bsp.protocol.PythonBuildTarget
 import org.jetbrains.bsp.protocol.RawBuildTarget
 import org.jetbrains.bsp.protocol.StrictDependencyCheckedType
 import org.jetbrains.bsp.protocol.TaskId

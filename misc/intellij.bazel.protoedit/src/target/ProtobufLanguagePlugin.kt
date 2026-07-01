@@ -6,12 +6,12 @@ import com.intellij.openapi.project.Project
 import org.jetbrains.bazel.commons.LanguageClass
 import org.jetbrains.bazel.commons.RepoMapping
 import org.jetbrains.bazel.commons.getLocalRepositories
+import org.jetbrains.bazel.protobuf.target.ProtobufBuildTarget
 import org.jetbrains.bazel.server.BazelServerFacade
 import org.jetbrains.bazel.sync.workspace.graph.DependencyGraph
 import org.jetbrains.bazel.sync.workspace.languages.LanguagePlugin
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
 import org.jetbrains.bsp.protocol.BuildTargetData
-import org.jetbrains.bsp.protocol.ProtobufBuildTarget
 import kotlin.io.path.absolutePathString
 import kotlin.reflect.KClass
 
