@@ -3,6 +3,7 @@ package org.jetbrains.bazel.flow.open
 import com.intellij.configurationStore.ProjectStoreDescriptor
 import com.intellij.configurationStore.ProjectStorePathCustomizer
 import com.intellij.openapi.application.runReadActionBlocking
+import com.intellij.openapi.diagnostic.getOrHandleException
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.diagnostic.trace
 import com.intellij.openapi.project.Project.DIRECTORY_STORE_FOLDER
@@ -74,7 +75,12 @@ internal class BazelProjectStorePathCustomizer : ProjectStorePathCustomizer {
       projectViewFile
         .findPsiFile(ProjectManager.getInstance().defaultProject)
         ?.let { it as? ProjectViewPsiFile }
-        ?.let { ProjectView.fromProjectViewPsiFile(it, rootDir) }
+        ?.let { file ->
+          // In principle, ProjectView.fromProjectViewPsiFile should not throw.
+          // However, in case it does, it breaks the project opening, so it's better to keep it in a try-catch block.
+          runCatching { ProjectView.fromProjectViewPsiFile(file, rootDir) }
+            .getOrHandleException { log.error("Failed to parse project view file. Falling back to default dotIdea directory.", it) }
+        }
         ?.dotIdeaDirectoryLocation
         ?.let(projectRootPath::resolve) ?: projectRootPath.defaultDotIdeaDirectory()
     }

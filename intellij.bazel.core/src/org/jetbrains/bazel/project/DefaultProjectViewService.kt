@@ -24,6 +24,7 @@ import org.jetbrains.bazel.flow.open.BazelProjectStoreDescriptor
 import org.jetbrains.bazel.flow.open.ProjectViewFileUtils
 import org.jetbrains.bazel.languages.projectview.ProjectView
 import org.jetbrains.bazel.languages.projectview.ProjectViewService
+import org.jetbrains.bazel.languages.projectview.imports.resolvedFileOrNull
 import org.jetbrains.bazel.languages.projectview.psi.ProjectViewPsiFile
 import java.nio.file.Path
 
@@ -71,14 +72,12 @@ class DefaultProjectViewService(private val project: Project, coroutineScope: Co
     logger.info("Reparsing currently opened project view file")
     val newProjectView = computeProjectView()
     _projectViewState.emit(newProjectView)
-
     val projectViewPath = projectViewFile.await()
-    val imports = parseProjectViewAsync(projectViewPath)?.imports ?: emptyList()
-
-      edtWriteAction {
-          PsiDocumentManager.getInstance(project)
-              .reparseFiles(imports + projectViewPath, false)
-      }
+    val resolvedImports = newProjectView.imports.mapNotNull { it.resolvedFileOrNull() }
+    edtWriteAction {
+      PsiDocumentManager.getInstance(project)
+        .reparseFiles(resolvedImports + projectViewPath, false)
+    }
   }
 
   fun getProjectViewFileBlocking(): VirtualFile =

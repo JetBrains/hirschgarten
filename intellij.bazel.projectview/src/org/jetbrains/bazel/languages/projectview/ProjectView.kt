@@ -10,16 +10,16 @@ import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.commons.constants.Constants
 import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.languages.projectview.base.ProjectViewLanguage
+import org.jetbrains.bazel.languages.projectview.imports.Import
 import org.jetbrains.bazel.languages.projectview.psi.ProjectViewPsiFile
-import org.jetbrains.bazel.languages.projectview.psi.sections.ProjectViewPsiImport
+import org.jetbrains.bazel.languages.projectview.psi.sections.ProjectViewPsiImportBase
 import org.jetbrains.bazel.languages.projectview.psi.sections.ProjectViewPsiSection
-import org.jetbrains.bazel.languages.projectview.psi.sections.ProjectViewPsiTryImport
 
 /**
  * Immutable representation of a ProjectView: a map of section keys to parsed values.
  */
 @ApiStatus.Internal
-data class ProjectView(val sections: Map<SectionKey<*>, Any>, val imports: List<VirtualFile>) {
+data class ProjectView(val sections: Map<SectionKey<*>, Any>, val imports: List<Import>) {
   inline fun <reified T> getSection(key: SectionKey<T>): T? {
     var value = sections[key] as? T
     // in case of not existing section, try to get default one
@@ -32,12 +32,6 @@ data class ProjectView(val sections: Map<SectionKey<*>, Any>, val imports: List<
     return value
   }
 
-  private sealed interface RawItem
-
-  private data class RawSection(val name: String, val contents: List<String>) : RawItem
-
-  private data class RawImport(val path: String, val required: Boolean) : RawItem
-
   companion object {
 
     val EMPTY: ProjectView = ProjectView(mapOf(), listOf())
@@ -45,12 +39,7 @@ data class ProjectView(val sections: Map<SectionKey<*>, Any>, val imports: List<
     @RequiresReadLock
     @RequiresBackgroundThread(generateAssertion = false)
     fun fromProjectViewPsiFile(file: ProjectViewPsiFile, rootDir: VirtualFile = file.project.rootDir): ProjectView {
-      val rawItems = collectRawItems(file)
-      val sections = buildSectionsMap(file.project, rootDir, rawItems)
-      val imports = rawItems.filterIsInstance<RawImport>()
-        .mapNotNull { tryResolveImportFile(rootDir, it.path, false) }
-        .toList()
-      return ProjectView(sections, imports)
+      return fromProjectViewPsiFile(file, rootDir, setOfNotNull(file.virtualFile))
     }
 
     @RequiresReadLock
@@ -61,43 +50,36 @@ data class ProjectView(val sections: Map<SectionKey<*>, Any>, val imports: List<
       return fromProjectViewPsiFile(psiFile)
     }
 
-    private fun collectRawItems(file: ProjectViewPsiFile): List<RawItem> {
-      val rawSections = mutableListOf<RawItem>()
-      val psiSections = file.getSectionsOrImports()
-      for (section in psiSections) {
-        when (section) {
+    private fun fromProjectViewPsiFile(
+      file: ProjectViewPsiFile,
+      rootDir: VirtualFile,
+      visitedFiles: Set<VirtualFile>
+    ): ProjectView {
+      val imports = mutableListOf<Import>()
+      val sections = mutableMapOf<SectionKey<*>, Any>()
+      for (it in file.children) {
+        when (it) {
           is ProjectViewPsiSection -> {
-            val name = section.getKeyword().text.trim()
-            val values = section.getItems().map { it.text.trim() }
-            rawSections.add(RawSection(name, values))
+            val (section, value) = it.toSectionWithValue() ?: continue
+            mergeSection(sections, section.sectionKey, value)
           }
-
-          is ProjectViewPsiImport, is ProjectViewPsiTryImport -> {
-            val path = section.getImportPath()?.text?.trim() ?: ""
-            rawSections.add(RawImport(path, section.isImportRequired))
-          }
-        }
-      }
-      return rawSections
-    }
-
-    private fun buildSectionsMap(project: Project, rootDir: VirtualFile, rawItems: List<RawItem>): Map<SectionKey<*>, Any> {
-      val result = mutableMapOf<SectionKey<*>, Any>()
-      for (item in rawItems) {
-        when (item) {
-          is RawSection -> {
-            val section = ProjectViewSections.getSectionByName(item.name)
-            val parsed = section?.fromRawValues(item.contents) ?: continue
-            mergeSection(result, section.sectionKey, parsed)
-          }
-
-          is RawImport -> {
-            val vFile = tryResolveImportFile(rootDir, item.path, item.required) ?: continue
-            handleImport(project, vFile, result)
+          is ProjectViewPsiImportBase -> {
+            val import = Import.from(rootDir, it)
+            imports += import
+            // skip if recursion detected
+            if (import is Import.Resolved && import.file !in visitedFiles) {
+              parseImport(
+                project = file.project,
+                import = import,
+                into = sections,
+                rootDir = rootDir,
+                visitedFiles = visitedFiles,
+              )
+            }
           }
         }
       }
-      return result
+      return ProjectView(sections, imports)
     }
 
     private fun mergeSection(
@@ -113,28 +95,26 @@ data class ProjectView(val sections: Map<SectionKey<*>, Any>, val imports: List<
       }
     }
 
-    private fun handleImport(
+    private fun parseImport(
       project: Project,
-      virtualFile: VirtualFile,
+      import: Import.Resolved,
       into: MutableMap<SectionKey<*>, Any>,
+      rootDir: VirtualFile,
+      visitedFiles: Set<VirtualFile>,
     ) {
-      val psiFile = PsiManager.getInstance(project).findFile(virtualFile) as? ProjectViewPsiFile ?: return
-      val otherProjectView = fromProjectViewPsiFile(psiFile)
+      val psiFile = PsiManager.getInstance(project).findFile(import.file) as? ProjectViewPsiFile ?: return
+      val otherProjectView = fromProjectViewPsiFile(psiFile, rootDir, visitedFiles + import.file)
       for ((sectionKey, value) in otherProjectView.sections) {
         mergeSection(into, sectionKey, value)
       }
     }
 
-    private fun tryResolveImportFile(
-      rootDir: VirtualFile,
-      pathString: String,
-      required: Boolean,
-    ): VirtualFile? {
-      val file = rootDir.findFileByRelativePath(pathString)
-      if (file == null && required) {
-        error("Cannot find project view file requested in an import: $pathString")
-      }
-      return file
+    private fun ProjectViewPsiSection.toSectionWithValue(): Pair<Section<*>, Any>? {
+      val name = getKeyword().text.trim()
+      val contents = getItems().map { it.text.trim() }
+      val section = ProjectViewSections.getSectionByName(name) ?: return null
+      val value = section.fromRawValues(contents) ?: return null
+      return section to value
     }
   }
 }

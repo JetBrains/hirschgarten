@@ -2,6 +2,7 @@ package org.jetbrains.bazel.languages.projectview.language
 
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
 import io.kotest.matchers.collections.shouldContain
+import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.nulls.shouldNotBeNull
 import org.jetbrains.bazel.commons.ExcludableValue
 import org.jetbrains.bazel.label.Label
@@ -33,7 +34,7 @@ class ProjectViewTest : BasePlatformTestCase() {
         shard_sync: true
         """.trimIndent(),
       )
-    val projectView = ProjectView.Companion.fromProjectViewPsiFile(file as ProjectViewPsiFile)
+    val projectView = ProjectView.fromProjectViewPsiFile(file as ProjectViewPsiFile)
 
     val targetsSection = projectView.getSection(TargetsSection.KEY)
     targetsSection.shouldNotBeNull()
@@ -113,5 +114,23 @@ class ProjectViewTest : BasePlatformTestCase() {
     pv.buildFlags shouldContain "--define=ij_product=intellij-latest"
     pv.debugFlags shouldContain "--debugger_port=5555"
     pv.testFlags shouldContain "--test_suite=MyTestSuite"
+  }
+
+  @Test
+  fun `test invalid target label is ignored and does not crash`() {
+    val psiFile = myFixture.configureByText(
+      "A.bazelproject",
+      """
+        targets:
+          targetA
+          //...:invalidTarget
+          targetB
+        """.trimIndent(),
+    )
+    val projectView = ProjectView.fromProjectViewPsiFile(psiFile as ProjectViewPsiFile)
+    projectView.getSection(TargetsSection.KEY) shouldContainExactly listOf(
+      ExcludableValue.included(Label.parse("targetA")),
+      ExcludableValue.included(Label.parse("targetB")),
+    )
   }
 }

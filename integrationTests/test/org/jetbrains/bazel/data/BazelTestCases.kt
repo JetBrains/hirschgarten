@@ -41,7 +41,7 @@ object IdeaBazelCases : BaseBazelCasesParametrized(BazelTestContext.IDEA) {
   val BazelProjectOpenByRootDir = withBazelProject(
     projectInfo = withDefaults(
       repositoryUrl = "https://github.com/JetBrainsBazelBot/simpleBazelProjectsForTesting.git",
-      commitHash = "af3e066604a8af0c9505b088ae5e7055ecf3b6d5",
+      commitHash = "a59bb1e33ed063e03242d0055054bea97366e23f",
       branchName = "main",
       relativePath = "simpleKotlinTest",
       configure = { context -> BazelProjectConfigurer.configureProjectBeforeUse(context) },
@@ -51,7 +51,7 @@ object IdeaBazelCases : BaseBazelCasesParametrized(BazelTestContext.IDEA) {
   val BazelProjectOpenByModuleFile = withBazelProject(
     projectInfo = withDefaults(
       repositoryUrl = "https://github.com/JetBrainsBazelBot/simpleBazelProjectsForTesting.git",
-      commitHash = "af3e066604a8af0c9505b088ae5e7055ecf3b6d5",
+      commitHash = "a59bb1e33ed063e03242d0055054bea97366e23f",
       branchName = "main",
       relativePath = "simpleKotlinTest/MODULE.bazel",
       configure = { context -> BazelProjectConfigurer.configureProjectBeforeUse(context) },
@@ -61,7 +61,7 @@ object IdeaBazelCases : BaseBazelCasesParametrized(BazelTestContext.IDEA) {
   val BazelLegacyPluginProject = withBazelProject(
     projectInfo = withDefaults(
       repositoryUrl = "https://github.com/JetBrainsBazelBot/simpleBazelProjectsForTesting.git",
-      commitHash = "af3e066604a8af0c9505b088ae5e7055ecf3b6d5",
+      commitHash = "a59bb1e33ed063e03242d0055054bea97366e23f",
       branchName = "main",
       relativePath = "legacyGooglePluginTest/.ijwb",
       configure = { context -> BazelProjectConfigurer.configureProjectBeforeUse(context) },
@@ -71,7 +71,7 @@ object IdeaBazelCases : BaseBazelCasesParametrized(BazelTestContext.IDEA) {
   val BazelProjectWithDotIdeaDirectory = withBazelProject(
     projectInfo = withDefaults(
       repositoryUrl = "https://github.com/JetBrainsBazelBot/simpleBazelProjectsForTesting.git",
-      commitHash = "af3e066604a8af0c9505b088ae5e7055ecf3b6d5",
+      commitHash = "a59bb1e33ed063e03242d0055054bea97366e23f",
       branchName = "main",
       relativePath = "simpleJavaTest",
       configure = { context -> BazelProjectConfigurer.configureProjectBeforeUseWithoutBazelClean(context, removeDotIdea = false) },
