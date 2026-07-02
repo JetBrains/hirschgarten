@@ -192,7 +192,7 @@ open class DefaultBazelFileEventProcessor(private val project: Project): BazelFi
         } else {
           listOf(event)
         }
-      },
+      }.distinct(),
       context,
     )
 

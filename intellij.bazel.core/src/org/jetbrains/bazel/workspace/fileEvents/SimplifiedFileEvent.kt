@@ -62,6 +62,24 @@ internal sealed class SimplifiedFileEvent private constructor(
     return ancestor
   }
 
+  override fun equals(other: Any?): Boolean {
+    if (this === other) return true
+    if (other !is SimplifiedFileEvent) return false
+
+    if (fileRemoved != other.fileRemoved) return false
+    if (fileAdded != other.fileAdded) return false
+    if (newVirtualFile != other.newVirtualFile) return false
+
+    return true
+  }
+
+  override fun hashCode(): Int {
+    var result = fileRemoved.hashCode()
+    result = 31 * result + fileAdded.hashCode()
+    result = 31 * result + newVirtualFile.hashCode()
+    return result
+  }
+
   companion object {
     fun from(event: VFileEvent): SimplifiedFileEvent? =
       when (event) {

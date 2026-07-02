@@ -414,7 +414,10 @@ class ProjectSyncTask(private val project: Project) {
       val resolvedWorkspace =
         project.syncConsole.withSubtask(
           subtaskId = taskId.subTask("base-project-sync-subtask-id"),
-          message = BazelPluginBundle.message("console.task.base.sync"),
+          message = if (buildProject)
+            BazelPluginBundle.message("console.task.base.build.sync")
+          else
+            BazelPluginBundle.message("console.task.base.sync"),
         ) { subtaskId ->
           BazelWorkspaceResolver.fetchWorkspace(
             project,

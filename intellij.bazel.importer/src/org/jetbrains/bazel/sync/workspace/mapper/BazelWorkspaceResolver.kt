@@ -73,6 +73,8 @@ object BazelWorkspaceResolver {
             allTargets = syncProject.targets,
             rootTargets = syncProject.rootTargets,
             repoMapping = syncProject.repoMapping,
+            build = build,
+            taskId = taskId,
           )
 
           BazelResolvedWorkspace(
