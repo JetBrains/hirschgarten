@@ -117,11 +117,10 @@ class AspectBazelProjectMapper(
       }
     }
 
-    val resources = bazelPathsResolver.resolvePaths(target.jvmTargetInfo.resourcesList, localRepositories)
     val missingFilesReporter = MissingFilesReporter(label)
 
-    fun resolveSourceSet(filter: (ArtifactLocation) -> Boolean): List<Path> {
-      return target.srcsList.filter(filter).mapNotNull { src: ArtifactLocation ->
+    fun resolveSourceSet(srcs: List<ArtifactLocation>, filter: (ArtifactLocation) -> Boolean = { true }): List<Path> {
+      return srcs.filter(filter).mapNotNull { src: ArtifactLocation ->
         val path = bazelPathsResolver.resolve(src, localRepositories)
         if (!path.exists()) {
           missingFilesReporter.add(src, path)
@@ -135,9 +134,15 @@ class AspectBazelProjectMapper(
       key = target.key.toWorkspaceTargetKey(),
       dependencies = target.depsList.map { it.toDependencyLabel() },
       kind = targetKind,
-      sources = SourceFileCollectionBuilder.build(relativeRoot = baseDirectory, paths = resolveSourceSet { it.isSource }),
-      generatedSources = SourceFileCollectionBuilder.build(relativeRoot = baseDirectory, paths = resolveSourceSet { !it.isSource }),
-      resources = SourceFileCollectionBuilder.build(relativeRoot = baseDirectory, paths = resources),
+      sources = SourceFileCollectionBuilder.build(relativeRoot = baseDirectory, paths = resolveSourceSet(target.srcsList) { it.isSource }),
+      generatedSources = SourceFileCollectionBuilder.build(
+        relativeRoot = baseDirectory,
+        paths = resolveSourceSet(target.srcsList) { !it.isSource },
+      ),
+      resources = SourceFileCollectionBuilder.build(
+        relativeRoot = baseDirectory,
+        paths = resolveSourceSet(target.jvmTargetInfo.resourcesList),
+      ),
       baseDirectory = baseDirectory,
       data = buildData,
       generatorName = target.generatorName,
