@@ -2,8 +2,10 @@ package org.jetbrains.bazel.sync.workspace.mapper
 
 import com.google.devtools.intellij.aspect.Common.ArtifactLocation
 import com.google.devtools.intellij.ideinfo.IntellijIdeInfo.TargetIdeInfo
+import com.intellij.build.events.MessageEvent
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.util.text.StringUtil
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
@@ -21,6 +23,7 @@ import org.jetbrains.bazel.label.assumeResolved
 import org.jetbrains.bazel.label.label
 import org.jetbrains.bazel.label.toDependencyLabel
 import org.jetbrains.bazel.performance.measure
+import org.jetbrains.bazel.progress.syncConsole
 import org.jetbrains.bazel.server.BazelServerFacade
 import org.jetbrains.bazel.sync.workspace.graph.DependencyGraph
 import org.jetbrains.bazel.sync.workspace.languages.LanguagePlugin
@@ -31,13 +34,14 @@ import org.jetbrains.bazel.sync.workspace.snapshot.toWorkspaceTargetKey
 import org.jetbrains.bazel.sync.workspace.targetKind.TargetKindService
 import org.jetbrains.bsp.protocol.BuildTargetTag
 import org.jetbrains.bsp.protocol.RawBuildTarget
+import org.jetbrains.bsp.protocol.TaskId
 import java.nio.file.Path
 import kotlin.io.path.exists
 import kotlin.io.path.extension
 
 @ApiStatus.Internal
 class AspectBazelProjectMapper(
-  project: Project,
+  private val project: Project,
   server: BazelServerFacade,
 ) {
   private val bazelPathsResolver = server.bazelPathsResolver
@@ -48,6 +52,8 @@ class AspectBazelProjectMapper(
     allTargets: Map<WorkspaceTargetKey, TargetIdeInfo>,
     rootTargets: Set<WorkspaceTargetKey>,
     repoMapping: RepoMapping,
+    build: Boolean,
+    taskId: TaskId,
   ): List<RawBuildTarget> {
     val dependencyGraph =
       measure("Build dependency tree") {
@@ -68,7 +74,7 @@ class AspectBazelProjectMapper(
     }
 
     val rawTargets: List<RawBuildTarget> = measure("create raw targets") {
-      createRawBuildTargets(targetsToImport, repoMapping, dependencyGraph)
+      createRawBuildTargets(targetsToImport, repoMapping, dependencyGraph, build, taskId)
     }
 
     return rawTargets
@@ -78,6 +84,8 @@ class AspectBazelProjectMapper(
     targetsToImport: Map<WorkspaceTargetKey, TargetIdeInfo>,
     repoMapping: RepoMapping,
     dependencyGraph: DependencyGraph,
+    build: Boolean,
+    taskId: TaskId,
   ): List<RawBuildTarget> {
     val localRepositories = repoMapping.getLocalRepositories()
     return withContext(Dispatchers.Default) {
@@ -90,6 +98,8 @@ class AspectBazelProjectMapper(
               repoMapping = repoMapping,
               dependencyGraph = dependencyGraph,
               localRepositories = localRepositories,
+              build = build,
+              taskId = taskId,
             )
           }
         }
@@ -104,6 +114,8 @@ class AspectBazelProjectMapper(
     repoMapping: RepoMapping,
     dependencyGraph: DependencyGraph,
     localRepositories: LocalRepositoryMapping,
+    build: Boolean,
+    taskId: TaskId,
   ): RawBuildTarget {
     val label = target.label().assumeResolved()
     val targetKind = inferTargetKind(target)
@@ -117,13 +129,13 @@ class AspectBazelProjectMapper(
       }
     }
 
-    val missingFilesReporter = MissingFilesReporter(label)
+    val missingFilesReporter = MissingFilesReporter(project, taskId, label, build)
 
-    fun resolveSourceSet(srcs: List<ArtifactLocation>, filter: (ArtifactLocation) -> Boolean = { true }): List<Path> {
-      return srcs.filter(filter).mapNotNull { src: ArtifactLocation ->
+    fun resolveSourceSet(srcs: List<ArtifactLocation>, category: MissingFileCategory): List<Path> {
+      return srcs.mapNotNull { src: ArtifactLocation ->
         val path = bazelPathsResolver.resolve(src, localRepositories)
         if (!path.exists()) {
-          missingFilesReporter.add(src, path)
+          missingFilesReporter.add(category, src, path)
           return@mapNotNull null
         }
         path
@@ -134,14 +146,17 @@ class AspectBazelProjectMapper(
       key = target.key.toWorkspaceTargetKey(),
       dependencies = target.depsList.map { it.toDependencyLabel() },
       kind = targetKind,
-      sources = SourceFileCollectionBuilder.build(relativeRoot = baseDirectory, paths = resolveSourceSet(target.srcsList) { it.isSource }),
+      sources = SourceFileCollectionBuilder.build(
+        relativeRoot = baseDirectory,
+        paths = resolveSourceSet(target.srcsList.filter { it.isSource }, MissingFileCategory.SOURCES),
+      ),
       generatedSources = SourceFileCollectionBuilder.build(
         relativeRoot = baseDirectory,
-        paths = resolveSourceSet(target.srcsList) { !it.isSource },
+        paths = resolveSourceSet(target.srcsList.filter { !it.isSource }, MissingFileCategory.GENERATED_SOURCES),
       ),
       resources = SourceFileCollectionBuilder.build(
         relativeRoot = baseDirectory,
-        paths = resolveSourceSet(target.jvmTargetInfo.resourcesList),
+        paths = resolveSourceSet(target.jvmTargetInfo.resourcesList, MissingFileCategory.RESOURCES),
       ),
       baseDirectory = baseDirectory,
       data = buildData,
@@ -155,27 +170,83 @@ class AspectBazelProjectMapper(
     }
   }
 
-  private class MissingFilesReporter(val target: Label) {
-    private val missingSources = ArrayList<Path>()
+  private enum class MissingFileCategory(val title: String, val condition: (file: MissingFile, build: Boolean) -> Boolean) {
+    SOURCES(
+      "Source files",
+      { file, build ->
+        LanguageClass.fromExtension(file.path.extension) != null
+      },
+    ),
+    GENERATED_SOURCES(
+      "Generated sources (files that were not materialized during sync, so they cannot be indexed by the IDE)",
+      { file, build ->
+        // report missing generated source only if build was requested
+        build && LanguageClass.fromExtension(file.path.extension) != null
+      },
+    ),
+    RESOURCES(
+      "Resources",
+      { file, build ->
+        file.src.isSource || build
+      },
+    ),
+  }
 
-    fun add(src: ArtifactLocation, path: Path) {
-      // Do not report missing generated sources or unknown languages/file types
-      if (missingSources.size < 3 && src.isSource && LanguageClass.fromExtension(path.extension) != null)
-        missingSources.add(path)
+  private class MissingFilesReporter(
+    private val project: Project,
+    private val taskId: TaskId,
+    private val target: Label,
+    private val build: Boolean,
+  ) {
+    private val stored = MissingFileCategory.entries.associateWith { ArrayList<MissingFile>() }
+    private val totals = IntArray(MissingFileCategory.entries.size)
+
+    fun add(category: MissingFileCategory, src: ArtifactLocation, path: Path) {
+      val file = MissingFile(src, path)
+      if (!category.condition(file, build))
+        return
+
+      totals[category.ordinal]++
+      val list = stored.getValue(category)
+      if (list.size < DISPLAY_CAP) list.add(file)
     }
 
     fun report() {
-      if (missingSources.isNotEmpty()) {
-        logger.warn(
-          "target $target has ${missingSources.size} missing source files: " +
-          missingSources.joinToString { it.toString() },
-        )
+      val grandTotal = totals.sum()
+      if (grandTotal == 0)
+        return
+
+      val description = buildString {
+        for (category in MissingFileCategory.entries) {
+          val total = totals[category.ordinal]
+          if (total == 0)
+            continue
+
+          this.appendLine(category.title)
+          val files = stored.getValue(category)
+          files.forEach { file ->
+            append("  ")
+              .append(file.src.rootPath).append("/").append(file.src.relativePath)
+              .append(" (").append(file.path.toString()).append(")")
+              .append('\n')
+          }
+          if (total > files.size)
+            append("  ... and ").append(total - files.size).append(" more\n")
+        }
       }
+
+      log.error("Target ${target} has missing $grandTotal ${StringUtil.pluralize("file", grandTotal)}: " + description)
+    }
+
+    companion object {
+      private const val DISPLAY_CAP = 16
     }
   }
 
+  private data class MissingFile(val src: ArtifactLocation, val path: Path)
+
   companion object {
-    private val logger = logger<AspectBazelProjectMapper>()
+    private val log = logger<AspectBazelProjectMapper>()
 
     fun inferTargetKind(target: TargetIdeInfo): TargetKind {
       val targetKind = TargetKindService.getInstance().guessFromRuleName(target.kind)
