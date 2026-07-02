@@ -9,7 +9,7 @@ kt_kotlinc_options(
     name = "kotlinc_options",
     include_stdlibs = "none",
     jvm_target = select_for_plugin_api({
-        "intellij-2026.1": "21",
+        "intellij-2026.2": "25",
     }),
     x_optin = ["org.jetbrains.kotlin.analysis.api.KaPlatformInterface"],
 )
@@ -17,15 +17,15 @@ kt_kotlinc_options(
 define_kt_toolchain(
     name = "kotlin_toolchain",
     api_version = select_for_plugin_api({
-        "intellij-2026.1": "2.3",
+        "intellij-2026.2": "2.4",
     }),
     experimental_multiplex_workers = True,
     jvm_target = select_for_plugin_api({
-        "intellij-2026.1": "21",
+        "intellij-2026.2": "25",
     }),
     kotlinc_options = ":kotlinc_options",
     language_version = select_for_plugin_api({
-        "intellij-2026.1": "2.3",
+        "intellij-2026.2": "2.4",
     }),
 )
 
@@ -66,6 +66,7 @@ intellij_plugin_zip_and_debug_target(
         "//python/intellij.bazel.python.common.performancePlugin",
         "//misc/intellij.bazel.remoteDevelopment",
         "//misc/intellij.bazel.terminal",
+        "//aspect-sdk:intellij.libraries.bazel.aspect.sdk",
     ],
     visibility = ["//visibility:public"],
     zip_filename = "plugin-bazel.zip",

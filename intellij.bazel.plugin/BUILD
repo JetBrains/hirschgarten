@@ -1,6 +1,6 @@
 load("//:versions.bzl", "INTELLIJ_BAZEL_VERSION", "PLATFORM_VERSION", "SINCE_VERSION", "UNTIL_VERSION")
-load("//rules_intellij/build_defs:build_defs.bzl", "stamped_plugin_xml")
-load("//rules_intellij/build_defs:build_defs.bzl", "jvm_library", "resourcegroup")
+load("//:jvm.bzl", "stamped_plugin_xml")
+load("//:jvm.bzl", "jvm_library")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -14,18 +14,20 @@ stamped_plugin_xml(
     version = INTELLIJ_BAZEL_VERSION,
 )
 
-resourcegroup(
-  name = "plugin_resources",
-  # Exclude needed because we add versions to plugin.xml, see plugin_xml_with_versions
-  srcs = glob(["resources/**/*"], exclude = ["resources/META-INF/plugin.xml"]),
-  strip_prefix = "resources"
-)
-
 jvm_library(
-  name = "plugin",
-  module_name = "bazel-plugin",
-  visibility = ["//visibility:public"],
-  srcs = glob([], allow_empty = True),
-  resources = [":plugin_resources", ":plugin_xml_with_versions"],
-  plugin_zip_layout = "bazel-plugin/lib",
+    name = "plugin",
+    srcs = glob(
+        [],
+        allow_empty = True,
+    ),
+    module_name = "bazel-plugin",
+    resources = glob(
+        ["resources/**/*"],
+        # Exclude needed because we add versions to plugin.xml, see plugin_xml_with_versions
+        exclude = ["resources/META-INF/plugin.xml"]
+    ),
+    visibility = ["//visibility:public"],
+    runtime_deps = ["//plugins/bazel/protobuf"],
+    plugin_zip_layout = "bazel-plugin/lib",
+    deps_to_bundle = [":plugin_xml_with_versions"]
 )

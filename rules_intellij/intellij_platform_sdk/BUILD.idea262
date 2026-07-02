@@ -30,7 +30,7 @@ java_import(
         ]
     ),
     tags = ["intellij-provided-by-sdk"],
-    srcjar = "@intellij_ce_2026_1_sources//jar",
+    srcjar = "@intellij_ce_2026_2_sources//jar",
 )
 
 java_import(
@@ -61,6 +61,11 @@ java_import(
 java_import(
     name = "bytecode_viewer",
     jars = glob(["plugins/java-byteCodeViewer/lib/*.jar"]),
+)
+
+java_import(
+    name = "testrunner",
+    jars = glob(["plugins/platform-testRunner-plugin/lib/*.jar", "plugins/platform-testRunner-plugin/lib/modules/*.jar"]),
 )
 
 java_import(

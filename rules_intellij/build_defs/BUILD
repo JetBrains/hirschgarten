@@ -11,7 +11,6 @@ load("@rules_python//python:defs.bzl", "py_binary")
 package(default_visibility = ["//visibility:public"])
 
 exports_files([
-    "build_defs.bzl",
     "intellij_plugin.bzl",
     "intellij_plugin_debug_target.bzl",
 ])

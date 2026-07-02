@@ -6,24 +6,9 @@
 """Custom build macros for IntelliJ plugin handling."""
 
 load("@rules_java//java:java_import.bzl", "java_import")
+load("@rules_java//java:java_library.bzl", "java_library")
 load("@rules_java//java:java_single_jar.bzl", "java_single_jar")
 load("@rules_kotlin//kotlin:jvm.bzl", "kt_jvm_library")
-
-# Re-export these symbols
-
-def merged_plugin_xml(name, srcs, **kwargs):
-    """Merges N plugin.xml files together."""
-    merge_tool = "//rules_intellij/build_defs:merge_xml"
-    native.genrule(
-        name = name,
-        srcs = srcs,
-        outs = [name + ".xml"],
-        cmd = "./$(location {merge_tool}) $(SRCS) > $@".format(
-            merge_tool = merge_tool,
-        ),
-        tools = [merge_tool],
-        **kwargs
-    )
 
 def _optstr(name, value):
     return ("--" + name) if value else ""
@@ -376,12 +361,44 @@ def unescape_filenames(name, srcs):
         cmd = cmd,
     )
 
+# We want BUILD files from the monorepo to be portable to open-source with minimal changes
+def _rewrite_deps(deps):
+    fixed_deps = []
+    plugins_bazel_prefix = "//plugins/bazel/"
+    for dep in deps:
+        # In Ultimate monorepo, the plugin is in //plugins/bazel. But in hirschgarten, it's in //, so we have to fix the deps
+        if dep.startswith(plugins_bazel_prefix):
+            fixed_deps.append("//" + dep[len(plugins_bazel_prefix):])
+            continue
+
+        # These cases are already handled by intellij_platform_deps
+        if dep.startswith("@lib//"):
+            continue
+        if dep.startswith("@ultimate_lib//"):
+            continue
+        if dep.startswith("@community//"):
+            continue
+        if dep.startswith("//contrib/protobuf"):
+            continue
+        if dep.startswith("//plugins/profiler"):
+            continue
+        if dep.startswith("//plugins/monorepo-devkit"):
+            continue
+        if dep.startswith("//goland/intellij-go"):
+            continue
+        if dep.startswith("//platform/backend"):
+            continue
+
+        # Otherwise, add the dep as is
+        fixed_deps.append(dep)
+    return fixed_deps
+
 def jvm_library(
         name,
         module_name,
         srcs = [],
         deps = [],
-        resources = [],
+        exports = [],
         deps_to_bundle = [],
         visibility = None,
         plugin_zip_layout = "bazel-plugin/lib/modules",
@@ -399,23 +416,32 @@ def jvm_library(
             "//rules_intellij/intellij_platform_sdk:kotlin",
             "//rules_intellij/intellij_platform_sdk:bytecode_viewer",
             "//rules_intellij/intellij_platform_sdk:junit",
+            "//rules_intellij/intellij_platform_sdk:testrunner",
         ],
+        runtime_deps = [],  # ignore, this is only used for tests which we don't support
+        kotlinc_opts = None,  # ignore, we use the options from Kotlin toolchain instead
         **kwargs):
-    # Things we actually want to pack into the resulting jar, as opposed to deps which are only needed for compilation
-    deps_to_bundle = deps_to_bundle + resources
+    if name.endswith("_test_lib"):
+        # We don't support tests, don't create a target
+        return
+
+    deps = _rewrite_deps(deps)
+    exports = _rewrite_deps(exports)
 
     if srcs:
         kt_jvm_library(
             name = name,
             srcs = srcs,
             deps = deps + deps_to_bundle + intellij_platform_deps,
+            exports = exports,
             visibility = visibility,
             **kwargs
         )
     else:
+        # deps are illegal without sources
         kt_jvm_library(
             name = name,
-            exports = deps,
+            exports = deps + exports,
             visibility = visibility,
             **kwargs
         )
@@ -442,18 +468,11 @@ def jvm_library(
     )
 
     single_jar_name = name + "_single_jar"
-    if srcs:
-        java_single_jar(
-            name = single_jar_name,
-            deps = [name],
-            deploy_env = [deploy_env_name],
-        )
-    else:
-        java_single_jar(
-            name = single_jar_name,
-            deps = deps_to_bundle,
-            deploy_env = [deploy_env_name],
-        )
+    java_single_jar(
+        name = single_jar_name,
+        deps = [name] + ([] if srcs else deps_to_bundle),  # re-include deps_to_bundle if srcs was empty and we couldn't add it to deps
+        deploy_env = [deploy_env_name],
+    )
 
     native.genrule(
         name = name + "_renamed",
@@ -469,9 +488,6 @@ def jvm_library(
         visibility = visibility,
     )
 
-def resourcegroup(name, srcs, strip_prefix):
-    kt_jvm_library(
-        name = name,
-        resources = srcs,
-        resource_strip_prefix = strip_prefix,
-    )
+def jvm_provided_library(name, lib, visibility = None):
+    # Create an empty library as a stub
+    java_library(name = name, srcs = [], visibility = visibility)

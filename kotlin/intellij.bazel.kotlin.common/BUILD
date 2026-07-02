@@ -1,29 +1,138 @@
-### auto-generated section `iml intellij.bazel.kotlin.common` start
-exports_files([
-  "intellij.bazel.kotlin.common.iml",
-], visibility = ["//visibility:public"])
-### auto-generated section `iml intellij.bazel.kotlin.common` end
+load("@rules_jvm//:jvm.bzl", "jvm_library")
 
 ### auto-generated section `build intellij.bazel.kotlin.common` start
-load("//rules_intellij/build_defs:build_defs.bzl", "jvm_library", "resourcegroup")
 
-resourcegroup(
-  name = "bazel-kotlin-common_resources",
-  srcs = glob(["resources/**/*"]),
-  strip_prefix = "resources"
+jvm_library(
+    name = "bazel-kotlin-common",
+    srcs = glob(
+        [
+            "src/**/*.kt",
+            "src/**/*.java",
+            "src/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.bazel.kotlin.common",
+    resource_strip_prefix = "resources",
+    resources = glob(
+        ["resources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    deps = [
+        # do not sort,
+        "@lib//:kotlin-stdlib",
+        "@community//libraries/kotlinx/coroutines/core",
+        "//plugins/bazel/intellij.bazel.core:core",
+        "//plugins/bazel/intellij.bazel.commons:commons",
+        "//plugins/bazel/java/intellij.bazel.java.common:bazel-java-common",
+        "//plugins/bazel/intellij.bazel.importer:importer",
+        "@community//platform/core-api:core",
+        "@community//platform/core-impl",
+        "@community//platform/lang-api:lang",
+        "@community//platform/lang-core",
+        "@community//platform/platform-api:ide",
+        "@community//platform/ide-core",
+        "@community//platform/platform-impl:ide-impl",
+        "@community//platform/core-ui",
+        "@community//platform/execution",
+        "@community//java/execution/openapi:java-execution",
+        "@community//java/execution/impl",
+        "@community//java/openapi:java",
+        "@community//java/java-psi-api:psi",
+        "@community//java/debugger/openapi:java-debugger",
+        "@community//java/debugger/impl",
+        "@community//java/idea-ui:ui",
+        "@community//plugins/kotlin/references",
+        "@lib//:kotlinc-analysis-api-provided",
+        "@lib//:kotlinc-analysis-api-platform-interface-provided",
+        "@lib//:kotlinc-kotlin-compiler-common-provided",
+        "@lib//:kotlinc-kotlin-jps-plugin-classpath-provided",
+        "@community//plugins/kotlin/base/facet",
+        "@community//plugins/kotlin/base/project-structure",
+        "@community//plugins/kotlin/base/psi",
+        "@community//plugins/kotlin/base/indices",
+        "@community//plugins/kotlin/base/resources:kotlin-base-resources",
+        "@community//plugins/kotlin/base/util",
+        "@community//plugins/kotlin/preferences",
+        "@community//plugins/kotlin/project-configuration",
+        "@community//platform/execution-impl",
+        "@community//platform/projectModel-api:projectModel",
+        "@community//platform/workspace/storage",
+        "@community//platform/workspace/jps",
+        "@community//plugins/kotlin/jvm-debugger/coroutines",
+        "@community//platform/xdebugger-api:debugger",
+        "@community//platform/xdebugger-impl:debugger-impl",
+        "@community//platform/smRunner",
+        "@community//plugins/kotlin/frontend-independent",
+        "@community//plugins/kotlin/base/code-insight",
+    ],
 )
 
 jvm_library(
-  name = "bazel-kotlin-common",
-  module_name = "intellij.bazel.kotlin.common",
-  visibility = ["//visibility:public"],
-  srcs = glob(["src/**/*.kt", "src/**/*.java", "src/**/*.form"], allow_empty = True),
-  resources = [":bazel-kotlin-common_resources"],
-  deps = [
-    "//intellij.bazel.core:core",
-    "//intellij.bazel.commons:commons",
-    "//java/intellij.bazel.java.common:bazel-java-common",
-    "//intellij.bazel.importer:importer",
-  ]
+    name = "bazel-kotlin-common_test_lib",
+    testonly = True,
+    srcs = glob(
+        [],
+        allow_empty = True,
+    ),
+    module_name = "intellij.bazel.kotlin.common",
+    visibility = ["//visibility:public"],
+    runtime_deps = [
+        # do not sort,
+        ":bazel-kotlin-common",
+        "@community//libraries/kotlinx/coroutines/core:core_test_lib",
+        "//plugins/bazel/intellij.bazel.core:core_test_lib",
+        "//plugins/bazel/intellij.bazel.commons:commons_test_lib",
+        "//plugins/bazel/java/intellij.bazel.java.common:bazel-java-common_test_lib",
+        "//plugins/bazel/intellij.bazel.importer:importer_test_lib",
+        "@community//platform/core-api:core_test_lib",
+        "@community//platform/core-impl:core-impl_test_lib",
+        "@community//platform/lang-api:lang_test_lib",
+        "@community//platform/lang-core:lang-core_test_lib",
+        "@community//platform/platform-api:ide_test_lib",
+        "@community//platform/ide-core:ide-core_test_lib",
+        "@community//platform/platform-impl:ide-impl_test_lib",
+        "@community//platform/core-ui:core-ui_test_lib",
+        "@community//platform/execution:execution_test_lib",
+        "@community//java/execution/openapi:java-execution_test_lib",
+        "@community//java/execution/impl:impl_test_lib",
+        "@community//java/openapi:java_test_lib",
+        "@community//java/java-psi-api:psi_test_lib",
+        "@community//java/debugger/openapi:java-debugger_test_lib",
+        "@community//java/debugger/impl:impl_test_lib",
+        "@community//java/idea-ui:ui_test_lib",
+        "@community//plugins/kotlin/references:references_test_lib",
+        "@lib//:kotlinc-analysis-api-provided",
+        "@lib//:kotlinc-analysis-api-platform-interface-provided",
+        "@lib//:kotlinc-kotlin-compiler-common-provided",
+        "@lib//:kotlinc-kotlin-jps-plugin-classpath-provided",
+        "@community//plugins/kotlin/base/facet:facet_test_lib",
+        "@community//plugins/kotlin/base/project-structure:project-structure_test_lib",
+        "@community//plugins/kotlin/base/psi:psi_test_lib",
+        "@community//plugins/kotlin/base/indices:indices_test_lib",
+        "@community//plugins/kotlin/base/resources:kotlin-base-resources_test_lib",
+        "@community//plugins/kotlin/base/util:util_test_lib",
+        "@community//plugins/kotlin/preferences:preferences_test_lib",
+        "@community//plugins/kotlin/project-configuration:project-configuration_test_lib",
+        "@community//platform/execution-impl:execution-impl_test_lib",
+        "@community//platform/projectModel-api:projectModel_test_lib",
+        "@community//platform/workspace/storage:storage_test_lib",
+        "@community//platform/workspace/jps:jps_test_lib",
+        "@community//plugins/kotlin/jvm-debugger/coroutines:coroutines_test_lib",
+        "@community//platform/xdebugger-api:debugger_test_lib",
+        "@community//platform/xdebugger-impl:debugger-impl_test_lib",
+        "@community//platform/smRunner:smRunner_test_lib",
+        "@community//plugins/kotlin/frontend-independent:frontend-independent_test_lib",
+        "@community//plugins/kotlin/base/code-insight:code-insight_test_lib",
+    ],
 )
 ### auto-generated section `build intellij.bazel.kotlin.common` end
+
+### auto-generated section `iml intellij.bazel.kotlin.common` start
+exports_files(
+    [
+        "intellij.bazel.kotlin.common.iml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.bazel.kotlin.common` end
