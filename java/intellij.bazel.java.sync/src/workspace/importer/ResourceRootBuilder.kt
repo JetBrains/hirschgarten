@@ -2,6 +2,7 @@ package org.jetbrains.bazel.workspace.importer
 
 import com.intellij.java.workspace.entities.JavaResourceRootPropertiesEntity
 import com.intellij.java.workspace.entities.javaResourceRoots
+import com.intellij.openapi.diagnostic.logger
 import com.intellij.platform.workspace.jps.entities.ContentRootEntity
 import com.intellij.platform.workspace.jps.entities.ModuleEntity
 import com.intellij.platform.workspace.jps.entities.SourceRootEntity
@@ -27,7 +28,10 @@ import java.nio.file.Path
 import kotlin.io.path.Path as KPath
 import kotlin.io.path.isDirectory
 import kotlin.io.path.name
+import kotlin.io.path.notExists
 import kotlin.io.path.visitFileTree
+
+private val log = logger<ResourceRootBuilder>()
 
 // RC: replaces `ResourcesItemToJavaResourceRootTransformer` + `JavaResourceEntityUpdater`;
 // the strip-prefix merging logic is moved as-is, the `ResourceRoot` wrapper is dropped
@@ -292,6 +296,10 @@ object ResourceRootBuilder {
   }
 
   private fun Path.containsExtraFilesIgnoringBazelSymlinks(files: Set<Path>, bazelProjectName: String): Boolean {
+    if (notExists()) {
+      log.warn("Resource path does not exist, skipping dirtiness check: $this")
+      return false
+    }
     var result = false
     visitFileTree(followLinks = true) {
       onPreVisitDirectory { directory, _ ->
@@ -309,6 +317,10 @@ object ResourceRootBuilder {
 
           else -> FileVisitResult.CONTINUE
         }
+      }
+      onVisitFileFailed { _, _ ->
+        // skip on missing
+        FileVisitResult.CONTINUE
       }
     }
     return result

@@ -12,6 +12,7 @@ import org.jetbrains.bazel.commons.constants.Constants
 import org.jetbrains.bazel.commons.getLocalRepositories
 import org.jetbrains.bazel.info.BspTargetInfo
 import org.jetbrains.bazel.info.BspTargetInfo.TargetInfo
+import org.jetbrains.bazel.info.BspTargetInfo.ArtifactLocation
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.label.assumeResolved
 import org.jetbrains.bazel.label.label
@@ -119,8 +120,8 @@ internal class AspectBazelProjectMapper(
 
     val resources = bazelPathsResolver.resolvePaths(target.jvmTargetInfo.resourcesList, localRepositories)
 
-    fun resolveSourceSet(target: TargetInfo, filter: (BspTargetInfo.ArtifactLocation) -> Boolean): List<Path> {
-      return target.srcsList.filter(filter).mapNotNull { src: BspTargetInfo.ArtifactLocation ->
+    fun resolveSourceSet(srcs: List<ArtifactLocation>, filter: (ArtifactLocation) -> Boolean = { true }): List<Path> {
+      return srcs.filter(filter).mapNotNull { src: ArtifactLocation ->
         val path = bazelPathsResolver.resolve(src, localRepositories)
         if (!path.exists()) {
           logger.warn("target ${target.key.label}: $path does not exist.")
@@ -135,9 +136,15 @@ internal class AspectBazelProjectMapper(
       configurationId = target.key.configuration,
       dependencies = target.depsList.map { it.toDependencyLabel() },
       kind = targetKind,
-      sources = SourceFileCollectionBuilder.build(relativeRoot = baseDirectory, paths = resolveSourceSet(target) { it.isSource }),
-      generatedSources = SourceFileCollectionBuilder.build(relativeRoot = baseDirectory, paths = resolveSourceSet(target) { !it.isSource }),
-      resources = SourceFileCollectionBuilder.build(relativeRoot = baseDirectory, paths = resources),
+      sources = SourceFileCollectionBuilder.build(relativeRoot = baseDirectory, paths = resolveSourceSet(target.srcsList) { it.isSource }),
+      generatedSources = SourceFileCollectionBuilder.build(
+        relativeRoot = baseDirectory,
+        paths = resolveSourceSet(target.srcsList) { !it.isSource },
+      ),
+      resources = SourceFileCollectionBuilder.build(
+        relativeRoot = baseDirectory,
+        paths = resolveSourceSet(target.jvmTargetInfo.resourcesList),
+      ),
       baseDirectory = baseDirectory,
       data = buildData,
       generatorName = target.generatorName,
