@@ -12,6 +12,8 @@ import com.jetbrains.python.run.PythonCommandLineState
 import com.jetbrains.python.run.PythonConfigurationType
 import com.jetbrains.python.run.PythonRunConfiguration
 import com.jetbrains.python.run.PythonScriptCommandLineState
+import com.jetbrains.python.sdk.ModuleOrProject.ProjectOnly
+import com.jetbrains.python.sdk.createLocalSdkGuessingTypeByPath
 import com.jetbrains.python.sdk.legacy.PythonSdkUtil
 import kotlinx.coroutines.CompletableDeferred
 import org.jetbrains.bazel.config.BazelPluginBundle
@@ -25,8 +27,15 @@ import org.jetbrains.bazel.run.task.BazelRunTaskListener
 import org.jetbrains.bazel.taskEvents.BazelTaskListener
 import org.jetbrains.bazel.server.BazelServerFacade
 import org.jetbrains.bsp.protocol.CompileParams
+import java.nio.file.Files
+import java.nio.file.LinkOption
+import java.nio.file.Path
 
-internal class PythonDebugCommandLineState(private val environment: ExecutionEnvironment, private val programArguments: String?) :
+internal class PythonDebugCommandLineState(
+  private val environment: ExecutionEnvironment,
+  private val programArguments: String?,
+  val additionalBazelParams: String?,
+) :
   BazelCommandLineStateBase(environment) {
   val target: Label? = (environment.runProfile as? BazelRunConfiguration)?.targets?.singleOrNull()
 
@@ -43,14 +52,14 @@ internal class PythonDebugCommandLineState(private val environment: ExecutionEnv
       CompileParams(
         targets = listOf(targetId),
         taskId = taskGroupId.task("py-debug"),
-        arguments = transformProgramArguments(programArguments),
+        arguments = buildPythonDebugBazelArguments(server.workspaceContext.debugFlags, additionalBazelParams),
       )
     server.buildTargetCompile(buildParams)
   }
 
-  fun asPythonState(): PythonCommandLineState = PythonScriptCommandLineState(pythonConfig(), environment)
+  suspend fun asPythonState(): PythonCommandLineState = PythonScriptCommandLineState(pythonConfig(), environment)
 
-  private fun pythonConfig(): PythonRunConfiguration {
+  private suspend fun pythonConfig(): PythonRunConfiguration {
     val debugInfo = target?.let {
       PythonDebugUtils.preparePythonDebug(environment.project, it)
     }
@@ -67,12 +76,37 @@ internal class PythonDebugCommandLineState(private val environment: ExecutionEnv
         as PythonRunConfiguration // should always succeed; that's what PythonConfigurationFactory produces
     return templateConfig.also {
       it.scriptName = debugInfo.pythonFile.toAbsolutePath().toString()
+      it.scriptParameters = programArguments
       it.workingDirectory = debugInfo.workingDirectory.toAbsolutePath().toString()
       it.envs = debugInfo.environmentVariables
-      it.sdk = getSdkForTarget(environment.project, target)
+      it.sdk =
+        debugInfo.pythonBinary?.let { pythonBinary -> getOrCreateSdkForPythonBinary(environment.project, pythonBinary) }
+        ?: getSdkForTarget(environment.project, target)
     }
   }
 }
+
+internal suspend fun getOrCreateSdkForPythonBinary(project: Project, pythonBinary: Path): Sdk? {
+  if (!pythonBinary.isAbsolute || !Files.isRegularFile(pythonBinary)) return null
+  getSdkForPythonBinary(pythonBinary)?.let { return it }
+  return when (val result = createLocalSdkGuessingTypeByPath(pythonBinary, ProjectOnly(project))) {
+    is com.jetbrains.python.Result.Failure -> null
+    is com.jetbrains.python.Result.Success -> result.result
+  }
+}
+
+internal fun getSdkForPythonBinary(pythonBinary: Path): Sdk? {
+  if (!pythonBinary.isAbsolute) return null
+  val normalizedPythonBinary = pythonBinary.toSdkLookupPath()
+  return PythonSdkUtil.getAllSdks().firstOrNull { sdk ->
+    sdk.homePath?.let { sdkHome ->
+      runCatching { Path.of(sdkHome).toSdkLookupPath() == normalizedPythonBinary }.getOrDefault(false)
+    } == true
+  }
+}
+
+private fun Path.toSdkLookupPath(): Path =
+  runCatching { toRealPath(LinkOption.NOFOLLOW_LINKS) }.getOrElse { toAbsolutePath().normalize() }
 
 private fun getSdkForTarget(project: Project, target: Label): Sdk {
   val storage = WorkspaceModel.getInstance(project).currentSnapshot
@@ -91,3 +125,6 @@ private fun Label.toModuleEntity(storage: ImmutableEntityStorage, project: Proje
   val moduleId = ModuleId(moduleName)
   return storage.resolve(moduleId)
 }
+
+internal fun buildPythonDebugBazelArguments(debugFlags: List<String>, additionalBazelParams: String?): List<String> =
+  debugFlags + transformProgramArguments(additionalBazelParams)
