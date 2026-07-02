@@ -48,6 +48,17 @@ class ResourceRootBuilderTest {
   }
 
   @Test
+  fun `should not throw when a resource is missing on disk`() {
+    val prefix = projectRoot.resolve("pkg/src/main/resources")
+    val missingResource = prefix.resolve("com/example/a.txt")
+    val target = javaTarget(resources = listOf(missingResource))
+
+    val roots = ResourceRootBuilder.resolve(target, projectName, emptySet())
+
+    roots.map { it.resourcePath } shouldContainExactlyInAnyOrder listOf(prefix)
+  }
+
+  @Test
   fun `should mark resources of a TEST rule as JAVA_TEST_RESOURCE_ROOT_TYPE`() {
     val resource = projectRoot.resolve("file.txt").createFile()
     val target = javaTarget(
