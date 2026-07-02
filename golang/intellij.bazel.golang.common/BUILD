@@ -1,28 +1,122 @@
-### auto-generated section `iml intellij.bazel.golang.common` start
-exports_files([
-  "intellij.bazel.golang.common.iml",
-], visibility = ["//visibility:public"])
-### auto-generated section `iml intellij.bazel.golang.common` end
+load("@rules_jvm//:jvm.bzl", "jvm_library")
 
 ### auto-generated section `build intellij.bazel.golang.common` start
-load("//rules_intellij/build_defs:build_defs.bzl", "jvm_library", "resourcegroup")
 
-resourcegroup(
-  name = "bazel-golang-common_resources",
-  srcs = glob(["resources/**/*"]),
-  strip_prefix = "resources"
+jvm_library(
+    name = "bazel-golang-common",
+    srcs = glob(
+        [
+            "src/**/*.kt",
+            "src/**/*.java",
+            "src/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.bazel.golang.common",
+    resource_strip_prefix = "resources",
+    resources = glob(
+        ["resources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    deps = [
+        # do not sort,
+        "@community//libraries/guava",
+        "@lib//:kotlin-stdlib",
+        "@community//libraries/stream",
+        "//plugins/bazel/intellij.bazel.core:core",
+        "//plugins/bazel/intellij.bazel.commons:commons",
+        "//plugins/bazel/intellij.bazel.connector:connector",
+        "//plugins/bazel/intellij.bazel.importer:importer",
+        "@community//platform/core-api:core",
+        "@community//platform/core-impl",
+        "@community//platform/lang-api:lang",
+        "@community//platform/lang-impl",
+        "@community//platform/xdebugger-api:debugger",
+        "@community//platform/xdebugger-impl:debugger-impl",
+        "@community//platform/core-ui",
+        "@community//platform/progress/shared:ide-progress",
+        "@community//platform/util/progress",
+        "@community//platform/analysis-api:analysis",
+        "@community//platform/platform-api:ide",
+        "@community//platform/platform-impl:ide-impl",
+        "@community//platform/util/concurrency",
+        "@community//platform/projectModel-api:projectModel",
+        "@community//platform/execution",
+        "@community//platform/execution-impl",
+        "@community//platform/workspace/storage",
+        "@community//platform/backend/workspace",
+        "@community//platform/platform-util-io:ide-util-io",
+        "@community//platform/ide-core",
+        "@community//platform/smRunner",
+        "//goland/intellij-go/go-frontback",
+        "//goland/intellij-go/impl",
+        "@community//platform/script-debugger/backend",
+        "@community//platform/script-debugger/debugger-ui:scriptDebugger-ui",
+        "@community//platform/util/jdom",
+        "@community//platform/editor-ui-api:editor-ui",
+        "@community//platform/testIntegration",
+        "@community//platform/testRunner",
+        "@community//platform/workspace/jps",
+    ],
 )
 
 jvm_library(
-  name = "bazel-golang-common",
-  module_name = "intellij.bazel.golang.common",
-  visibility = ["//visibility:public"],
-  srcs = glob(["src/**/*.kt", "src/**/*.java", "src/**/*.form"], allow_empty = True),
-  resources = [":bazel-golang-common_resources"],
-  deps = [
-    "//intellij.bazel.core:core",
-    "//intellij.bazel.commons:commons",
-    "//intellij.bazel.importer:importer",
-  ]
+    name = "bazel-golang-common_test_lib",
+    testonly = True,
+    srcs = glob(
+        [],
+        allow_empty = True,
+    ),
+    module_name = "intellij.bazel.golang.common",
+    visibility = ["//visibility:public"],
+    runtime_deps = [
+        # do not sort,
+        ":bazel-golang-common",
+        "@community//libraries/guava:guava_test_lib",
+        "@community//libraries/stream:stream_test_lib",
+        "//plugins/bazel/intellij.bazel.core:core_test_lib",
+        "//plugins/bazel/intellij.bazel.commons:commons_test_lib",
+        "//plugins/bazel/intellij.bazel.connector:connector_test_lib",
+        "//plugins/bazel/intellij.bazel.importer:importer_test_lib",
+        "@community//platform/core-api:core_test_lib",
+        "@community//platform/core-impl:core-impl_test_lib",
+        "@community//platform/lang-api:lang_test_lib",
+        "@community//platform/lang-impl:lang-impl_test_lib",
+        "@community//platform/xdebugger-api:debugger_test_lib",
+        "@community//platform/xdebugger-impl:debugger-impl_test_lib",
+        "@community//platform/core-ui:core-ui_test_lib",
+        "@community//platform/progress/shared:ide-progress_test_lib",
+        "@community//platform/util/progress:progress_test_lib",
+        "@community//platform/analysis-api:analysis_test_lib",
+        "@community//platform/platform-api:ide_test_lib",
+        "@community//platform/platform-impl:ide-impl_test_lib",
+        "@community//platform/util/concurrency:concurrency_test_lib",
+        "@community//platform/projectModel-api:projectModel_test_lib",
+        "@community//platform/execution:execution_test_lib",
+        "@community//platform/execution-impl:execution-impl_test_lib",
+        "@community//platform/workspace/storage:storage_test_lib",
+        "@community//platform/backend/workspace:workspace_test_lib",
+        "@community//platform/platform-util-io:ide-util-io_test_lib",
+        "@community//platform/ide-core:ide-core_test_lib",
+        "@community//platform/smRunner:smRunner_test_lib",
+        "//goland/intellij-go/go-frontback:go-frontback_test_lib",
+        "//goland/intellij-go/impl:impl_test_lib",
+        "@community//platform/script-debugger/backend:backend_test_lib",
+        "@community//platform/script-debugger/debugger-ui:scriptDebugger-ui_test_lib",
+        "@community//platform/util/jdom:jdom_test_lib",
+        "@community//platform/editor-ui-api:editor-ui_test_lib",
+        "@community//platform/testIntegration:testIntegration_test_lib",
+        "@community//platform/testRunner:testRunner_test_lib",
+        "@community//platform/workspace/jps:jps_test_lib",
+    ],
 )
 ### auto-generated section `build intellij.bazel.golang.common` end
+
+### auto-generated section `iml intellij.bazel.golang.common` start
+exports_files(
+    [
+        "intellij.bazel.golang.common.iml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.bazel.golang.common` end

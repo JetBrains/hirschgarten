@@ -1,3 +1,4 @@
+@file:Suppress("INVISIBLE_REFERENCE")  // TODO: remove after next 2026.2 EAP when JAVA_DONT_CHECK_OUT_OF_SOURCE_FILES is public
 package org.jetbrains.bazel.inspections
 
 import com.intellij.ide.JAVA_DONT_CHECK_OUT_OF_SOURCE_FILES

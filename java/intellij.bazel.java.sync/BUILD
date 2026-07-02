@@ -1,29 +1,141 @@
-### auto-generated section `iml intellij.bazel.java.sync` start
-exports_files([
-  "intellij.bazel.java.sync.iml",
-], visibility = ["//visibility:public"])
-### auto-generated section `iml intellij.bazel.java.sync` end
+load("@rules_jvm//:jvm.bzl", "jvm_library", "jvm_provided_library")
 
 ### auto-generated section `build intellij.bazel.java.sync` start
-load("//rules_intellij/build_defs:build_defs.bzl", "jvm_library", "resourcegroup")
 
-resourcegroup(
-  name = "bazel-java-sync_resources",
-  srcs = glob(["resources/**/*"]),
-  strip_prefix = "resources"
+jvm_provided_library(
+    name = "community_libraries_opentelemetry_provided",
+    lib = "@community//libraries/opentelemetry",
 )
 
 jvm_library(
-  name = "bazel-java-sync",
-  module_name = "intellij.bazel.java.sync",
-  visibility = ["//visibility:public"],
-  srcs = glob(["src/**/*.kt", "src/**/*.java", "src/**/*.form"], allow_empty = True),
-  resources = [":bazel-java-sync_resources"],
-  deps = [
-    "//intellij.bazel.commons:commons",
-    "//protobuf",
-    "//intellij.bazel.importer:importer",
-    "//intellij.bazel.projectview:projectview",
-  ]
+    name = "bazel-java-sync",
+    srcs = glob(
+        [
+            "src/**/*.kt",
+            "src/**/*.java",
+            "src/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.bazel.java.sync",
+    resource_strip_prefix = "resources",
+    resources = glob(
+        ["resources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    deps = [
+        # do not sort,
+        "@lib//:kotlin-stdlib",
+        "@lib//:jetbrains-annotations",
+        "@lib//:kotlinc-kotlin-compiler-common-provided",
+        "@lib//:kotlinc-kotlin-jps-common-provided",
+        "@community//platform/platform-api:ide",
+        "@community//libraries/protobuf",
+        "//plugins/bazel/intellij.bazel.commons:commons",
+        "//plugins/bazel/protobuf",
+        "//plugins/bazel/intellij.bazel.importer:importer",
+        "@community//platform/backend",
+        "@community//platform/core-api:core",
+        "@community//platform/lang-api:lang",
+        "@community//platform/lang-impl",
+        "@community//platform/workspace/storage",
+        "@community//platform/workspace/jps",
+        "@community//platform/extensions",
+        "@community//platform/util/base",
+        "@community//platform/platform-impl:ide-impl",
+        "@community//platform/platform-util-io:ide-util-io",
+        "@community//platform/ide-core",
+        "@community//platform/analysis-api:analysis",
+        "@community//platform/util",
+        "@community//platform/util-ex",
+        "@community//platform/util/progress",
+        "@community//platform/util/coroutines",
+        "@community//platform/lang-core",
+        "@community//platform/projectModel-api:projectModel",
+        "@community//platform/projectModel-impl",
+        "@community//platform/backend/workspace",
+        "@community//platform/external-system-api:externalSystem",
+        "@community//platform/external-system-impl:externalSystem-impl",
+        "@community//jps/model-api:model",
+        "@community//jps/model-serialization",
+        "@community//libraries/kotlinx/coroutines/core",
+        "@community//platform/diagnostic/telemetry",
+        "@community//platform/diagnostic/telemetry.exporters",
+        "@community//java/java-impl:impl",
+        "@community//java/java-syntax:syntax",
+        "@community//platform/util/jdom",
+        "@community//platform/util:util-ui",
+        "//plugins/bazel/intellij.bazel.projectview:projectview",
+        "@community//platform/execution",
+        "@community//java/compiler/impl",
+        ":community_libraries_opentelemetry_provided",
+    ],
+)
+
+jvm_library(
+    name = "bazel-java-sync_test_lib",
+    testonly = True,
+    srcs = glob(
+        [],
+        allow_empty = True,
+    ),
+    module_name = "intellij.bazel.java.sync",
+    visibility = ["//visibility:public"],
+    runtime_deps = [
+        # do not sort,
+        ":bazel-java-sync",
+        "@community//libraries/opentelemetry",
+        "@community//libraries/opentelemetry:opentelemetry_test_lib",
+        "@lib//:kotlinc-kotlin-compiler-common-provided",
+        "@lib//:kotlinc-kotlin-jps-common-provided",
+        "@community//platform/platform-api:ide_test_lib",
+        "@community//libraries/protobuf:protobuf_test_lib",
+        "//plugins/bazel/intellij.bazel.commons:commons_test_lib",
+        "//plugins/bazel/protobuf:protobuf_test_lib",
+        "//plugins/bazel/intellij.bazel.importer:importer_test_lib",
+        "@community//platform/backend:backend_test_lib",
+        "@community//platform/core-api:core_test_lib",
+        "@community//platform/lang-api:lang_test_lib",
+        "@community//platform/lang-impl:lang-impl_test_lib",
+        "@community//platform/workspace/storage:storage_test_lib",
+        "@community//platform/workspace/jps:jps_test_lib",
+        "@community//platform/extensions:extensions_test_lib",
+        "@community//platform/util/base:base_test_lib",
+        "@community//platform/platform-impl:ide-impl_test_lib",
+        "@community//platform/platform-util-io:ide-util-io_test_lib",
+        "@community//platform/ide-core:ide-core_test_lib",
+        "@community//platform/analysis-api:analysis_test_lib",
+        "@community//platform/util:util_test_lib",
+        "@community//platform/util-ex:util-ex_test_lib",
+        "@community//platform/util/progress:progress_test_lib",
+        "@community//platform/util/coroutines:coroutines_test_lib",
+        "@community//platform/lang-core:lang-core_test_lib",
+        "@community//platform/projectModel-api:projectModel_test_lib",
+        "@community//platform/projectModel-impl:projectModel-impl_test_lib",
+        "@community//platform/backend/workspace:workspace_test_lib",
+        "@community//platform/external-system-api:externalSystem_test_lib",
+        "@community//platform/external-system-impl:externalSystem-impl_test_lib",
+        "@community//jps/model-api:model_test_lib",
+        "@community//jps/model-serialization:model-serialization_test_lib",
+        "@community//libraries/kotlinx/coroutines/core:core_test_lib",
+        "@community//platform/diagnostic/telemetry:telemetry_test_lib",
+        "@community//platform/diagnostic/telemetry.exporters:telemetry.exporters_test_lib",
+        "@community//java/java-impl:impl_test_lib",
+        "@community//java/java-syntax:syntax_test_lib",
+        "@community//platform/util/jdom:jdom_test_lib",
+        "@community//platform/util:util-ui_test_lib",
+        "//plugins/bazel/intellij.bazel.projectview:projectview_test_lib",
+        "@community//platform/execution:execution_test_lib",
+        "@community//java/compiler/impl:impl_test_lib",
+    ],
 )
 ### auto-generated section `build intellij.bazel.java.sync` end
+
+### auto-generated section `iml intellij.bazel.java.sync` start
+exports_files(
+    [
+        "intellij.bazel.java.sync.iml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.bazel.java.sync` end

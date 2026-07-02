@@ -1,31 +1,168 @@
-### auto-generated section `iml intellij.bazel.java.common` start
-exports_files([
-  "intellij.bazel.java.common.iml",
-], visibility = ["//visibility:public"])
-### auto-generated section `iml intellij.bazel.java.common` end
+load("@rules_jvm//:jvm.bzl", "jvm_library", "jvm_provided_library")
 
 ### auto-generated section `build intellij.bazel.java.common` start
-load("//rules_intellij/build_defs:build_defs.bzl", "jvm_library", "resourcegroup")
 
-resourcegroup(
-  name = "bazel-java-common_resources",
-  srcs = glob(["resources/**/*"]),
-  strip_prefix = "resources"
+jvm_provided_library(
+    name = "community_libraries_opentelemetry_provided",
+    lib = "@community//libraries/opentelemetry",
+)
+
+jvm_provided_library(
+    name = "community_libraries_opentelemetry-extension-kotlin_provided",
+    lib = "@community//libraries/opentelemetry-extension-kotlin",
 )
 
 jvm_library(
-  name = "bazel-java-common",
-  module_name = "intellij.bazel.java.common",
-  visibility = ["//visibility:public"],
-  srcs = glob(["src/**/*.kt", "src/**/*.java", "src/**/*.form"], allow_empty = True),
-  resources = [":bazel-java-common_resources"],
-  deps = [
-    "//intellij.bazel.core:core",
-    "//intellij.bazel.commons:commons",
-    "//intellij.bazel.importer:importer",
-    "//intellij.bazel.connector:connector",
-    "//intellij.bazel.projectview:projectview",
-    "//java/intellij.bazel.java.sync:bazel-java-sync",
-  ]
+    name = "bazel-java-common",
+    srcs = glob(
+        [
+            "src/**/*.kt",
+            "src/**/*.java",
+            "src/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.bazel.java.common",
+    resource_strip_prefix = "resources",
+    resources = glob(
+        ["resources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    deps = [
+        # do not sort,
+        "@lib//:kotlin-stdlib",
+        "@community//libraries/kotlinx/coroutines/core",
+        "//plugins/bazel/intellij.bazel.core:core",
+        "//plugins/bazel/intellij.bazel.commons:commons",
+        "//plugins/bazel/intellij.bazel.importer:importer",
+        "//plugins/bazel/intellij.bazel.connector:connector",
+        "//plugins/bazel/intellij.bazel.projectview:projectview",
+        "@community//platform/core-api:core",
+        "@community//platform/core-impl",
+        "@community//platform/platform-api:ide",
+        "@community//platform/ide-core",
+        "@community//platform/execution",
+        "@community//platform/execution-impl",
+        "@community//platform/analysis-api:analysis",
+        "@community//platform/lang-api:lang",
+        "@community//platform/lang-core",
+        "@community//java/java-analysis-impl:analysis-impl",
+        "@community//java/compiler/openapi:java-compiler",
+        "@community//java/compiler/impl",
+        "@community//java/debugger/openapi:java-debugger",
+        "@community//java/debugger/impl",
+        "@community//java/debugger/shared",
+        "@community//java/execution/openapi:java-execution",
+        "@community//java/execution/impl",
+        "@community//platform/platform-impl:ide-impl",
+        "@community//platform/platform-util-io:ide-util-io",
+        "@community//platform/progress/shared:ide-progress",
+        "@community//platform/util/progress",
+        "@community//platform/projectModel-api:projectModel",
+        "@community//platform/util/concurrency",
+        "@community//platform/external-system-api:externalSystem",
+        "@community//java/java-impl:impl",
+        "@community//java/java-psi-api:psi",
+        "@community//java/java-syntax:syntax",
+        "@community//java/idea-ui:ui",
+        "@community//java/java-frontback-psi-api:frontback-psi",
+        "@community//platform/smRunner",
+        "@community//platform/projectModel-impl",
+        "@community//platform/backend/workspace",
+        "@community//platform/util/jdom",
+        "@community//platform/util:util-ui",
+        "@community//platform/xdebugger-impl:debugger-impl",
+        "@community//platform/external-system-impl:externalSystem-impl",
+        "@community//platform/core-ui",
+        "@community//platform/workspace/storage",
+        "@community//platform/diagnostic/telemetry",
+        "@community//platform/diagnostic/telemetry.exporters",
+        "@community//jps/model-api:model",
+        "@community//jps/model-serialization",
+        "@community//platform/editor-ui-api:editor-ui",
+        "@community//platform/testRunner",
+        "@community//java/java-backend:backend",
+        ":community_libraries_opentelemetry_provided",
+        ":community_libraries_opentelemetry-extension-kotlin_provided",
+    ],
+)
+
+jvm_library(
+    name = "bazel-java-common_test_lib",
+    testonly = True,
+    srcs = glob(
+        [],
+        allow_empty = True,
+    ),
+    module_name = "intellij.bazel.java.common",
+    visibility = ["//visibility:public"],
+    runtime_deps = [
+        # do not sort,
+        ":bazel-java-common",
+        "@community//libraries/kotlinx/coroutines/core:core_test_lib",
+        "//plugins/bazel/intellij.bazel.core:core_test_lib",
+        "//plugins/bazel/intellij.bazel.commons:commons_test_lib",
+        "//plugins/bazel/intellij.bazel.importer:importer_test_lib",
+        "//plugins/bazel/intellij.bazel.connector:connector_test_lib",
+        "//plugins/bazel/intellij.bazel.projectview:projectview_test_lib",
+        "@community//platform/core-api:core_test_lib",
+        "@community//platform/core-impl:core-impl_test_lib",
+        "@community//platform/platform-api:ide_test_lib",
+        "@community//platform/ide-core:ide-core_test_lib",
+        "@community//platform/execution:execution_test_lib",
+        "@community//platform/execution-impl:execution-impl_test_lib",
+        "@community//platform/analysis-api:analysis_test_lib",
+        "@community//platform/lang-api:lang_test_lib",
+        "@community//platform/lang-core:lang-core_test_lib",
+        "@community//java/java-analysis-impl:analysis-impl_test_lib",
+        "@community//java/compiler/openapi:java-compiler_test_lib",
+        "@community//java/compiler/impl:impl_test_lib",
+        "@community//java/debugger/openapi:java-debugger_test_lib",
+        "@community//java/debugger/impl:impl_test_lib",
+        "@community//java/debugger/shared:shared_test_lib",
+        "@community//java/execution/openapi:java-execution_test_lib",
+        "@community//java/execution/impl:impl_test_lib",
+        "@community//platform/platform-impl:ide-impl_test_lib",
+        "@community//platform/platform-util-io:ide-util-io_test_lib",
+        "@community//platform/progress/shared:ide-progress_test_lib",
+        "@community//platform/util/progress:progress_test_lib",
+        "@community//platform/projectModel-api:projectModel_test_lib",
+        "@community//platform/util/concurrency:concurrency_test_lib",
+        "@community//platform/external-system-api:externalSystem_test_lib",
+        "@community//java/java-impl:impl_test_lib",
+        "@community//java/java-psi-api:psi_test_lib",
+        "@community//java/java-syntax:syntax_test_lib",
+        "@community//java/idea-ui:ui_test_lib",
+        "@community//java/java-frontback-psi-api:frontback-psi_test_lib",
+        "@community//platform/smRunner:smRunner_test_lib",
+        "@community//platform/projectModel-impl:projectModel-impl_test_lib",
+        "@community//platform/backend/workspace:workspace_test_lib",
+        "@community//platform/util/jdom:jdom_test_lib",
+        "@community//platform/util:util-ui_test_lib",
+        "@community//platform/xdebugger-impl:debugger-impl_test_lib",
+        "@community//platform/external-system-impl:externalSystem-impl_test_lib",
+        "@community//platform/core-ui:core-ui_test_lib",
+        "@community//platform/workspace/storage:storage_test_lib",
+        "@community//platform/diagnostic/telemetry:telemetry_test_lib",
+        "@community//platform/diagnostic/telemetry.exporters:telemetry.exporters_test_lib",
+        "@community//libraries/opentelemetry",
+        "@community//libraries/opentelemetry:opentelemetry_test_lib",
+        "@community//libraries/opentelemetry-extension-kotlin",
+        "@community//libraries/opentelemetry-extension-kotlin:opentelemetry-extension-kotlin_test_lib",
+        "@community//jps/model-api:model_test_lib",
+        "@community//jps/model-serialization:model-serialization_test_lib",
+        "@community//platform/editor-ui-api:editor-ui_test_lib",
+        "@community//platform/testRunner:testRunner_test_lib",
+        "@community//java/java-backend:backend_test_lib",
+    ],
 )
 ### auto-generated section `build intellij.bazel.java.common` end
+
+### auto-generated section `iml intellij.bazel.java.common` start
+exports_files(
+    [
+        "intellij.bazel.java.common.iml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.bazel.java.common` end
