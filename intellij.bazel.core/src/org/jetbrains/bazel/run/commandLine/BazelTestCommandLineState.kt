@@ -25,8 +25,11 @@ import org.jetbrains.bsp.protocol.TestParams
 import java.nio.file.Path
 
 @ApiStatus.Internal
-class BazelTestCommandLineState(environment: ExecutionEnvironment, val state: AbstractGenericTestState<*>) :
-  BazelCommandLineStateBase(environment) {
+class BazelTestCommandLineState(
+  environment: ExecutionEnvironment,
+  val state: AbstractGenericTestState<*>,
+  private val transformParams: (TestParams) -> TestParams = { it },
+) : BazelCommandLineStateBase(environment) {
   var coverageReportListener: ((Path) -> Unit)? = null
 
   private val configuration = BazelRunConfiguration.get(environment)
@@ -68,7 +71,7 @@ class BazelTestCommandLineState(environment: ExecutionEnvironment, val state: Ab
         additionalBazelParams = state.additionalBazelParams,
         useJetBrainsTestRunner = configuration.project.useJetBrainsTestRunner(),
       )
-    server.buildTargetTest(params)
+    server.buildTargetTest(transformParams(params))
   }
 
   private fun getCoverageInstrumentationFilter(project: Project): String {

@@ -4,9 +4,13 @@ import com.intellij.driver.sdk.step
 import com.intellij.driver.sdk.ui.components.UiComponent.Companion.waitFound
 import com.intellij.driver.sdk.ui.components.common.ideFrame
 import com.intellij.ide.starter.ide.IDETestContext
+import com.intellij.tools.ide.performanceTesting.commands.openFile
 import org.jetbrains.bazel.data.GoLandBazelCases
+import org.jetbrains.bazel.ideStarter.execute
 import org.jetbrains.bazel.tests.combined.IdeStarterCombinedBaseTest
 import org.jetbrains.bazel.tests.run.selectRunConfiguration
+import org.jetbrains.bazel.tests.ui.clickTestGutterOnLine
+import org.jetbrains.bazel.tests.ui.verifyTestStatus
 import org.junit.jupiter.api.Order
 import org.junit.jupiter.api.Test
 import kotlin.time.Duration.Companion.minutes
@@ -36,6 +40,39 @@ internal class GoRunConfigurationsTest : IdeStarterCombinedBaseTest() {
         step("Check that env vars and program arguments are passed") {
           consoleView.waitContainsText("Program arguments: [example_arg=example_value another_arg=another_value]", timeout = 5.seconds)
           consoleView.waitContainsText("Environment variable EXAMPLE_ENV: EXAMPLE_VALUE", timeout = 5.seconds)
+        }
+      }
+    }
+  }
+
+  @Test
+  @Order(2)
+  fun `run gutters run only the selected Go test and show it in the results tree`() {
+    withDriver(bgRun) {
+      ideFrame {
+        step("Open lib/lib_test.go") {
+          execute { openFile("lib/lib_test.go") }
+        }
+
+        step("Run tests in package via its run gutter and check results") {
+          clickTestGutterOnLine(0)
+          verifyTestStatus(
+            expectedStatus = listOf("2 tests passed"),
+            expectedTree = listOf("goruntest/lib.TestAdd", "TestAdd", "goruntest/lib.TestSubtract", "TestSubtract")
+          )
+          takeScreenshot("goRunPackageGutterResults")
+        }
+
+        step("Run TestAdd via its run gutter and check results") {
+          clickTestGutterOnLine(4)
+          verifyTestStatus(expectedStatus = listOf("1 test passed"), expectedTree = listOf("goruntest/lib.TestAdd", "TestAdd"))
+          takeScreenshot("goRunTestAddGutterResults")
+        }
+
+        step("Run TestSubtract via its run gutter and check results") {
+          clickTestGutterOnLine(10)
+          verifyTestStatus(expectedStatus = listOf("1 test passed"), expectedTree = listOf("goruntest/lib.TestSubtract", "TestSubtract"))
+          takeScreenshot("goRunTestSubtractGutterResults")
         }
       }
     }
