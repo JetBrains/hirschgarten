@@ -1,12 +1,11 @@
 package org.jetbrains.bazel.golang.debug
 
-import com.goide.execution.application.GoApplicationConfiguration
+import com.goide.execution.testing.GoTestRunConfiguration
 import com.intellij.execution.ExecutionException
 import com.intellij.execution.Executor
 import com.intellij.execution.configurations.RunProfileState
 import com.intellij.execution.executors.DefaultDebugExecutor
 import com.intellij.execution.runners.ExecutionEnvironment
-import com.intellij.openapi.module.Module
 import com.intellij.openapi.util.Key
 import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.commons.TargetKind
@@ -54,10 +53,12 @@ internal class BazelGoTestHandler(configuration: BazelRunConfiguration) : BazelR
         val target = getTargetId(environment)
         val project = environment.project
         val module = GoWorkspaceModuleUtil.findModule(project) ?: error("Could not find module for target $target")
+        val configuration = GoTestRunConfiguration(project, "default", BazelRunConfigurationType())
+        configuration.setModule(module)
         GoTestWithDebugCommandLineState(
           environment = environment,
           module = module,
-          configuration = GoApplicationConfiguration(project, "default", BazelRunConfigurationType()),
+          configuration = configuration,
           settings = state,
         )
       }
@@ -81,32 +82,6 @@ internal class BazelGoTestHandler(configuration: BazelRunConfiguration) : BazelR
 
     override val googleHandlerId: String = "BlazeGoTestConfigurationHandlerProvider"
     override val isTestHandler: Boolean = false
-  }
-}
-
-internal open class GoTestWithDebugCommandLineState(
-  environment: ExecutionEnvironment,
-  module: Module,
-  configuration: GoApplicationConfiguration,
-  val settings: GenericTestState,
-) : GoDebuggableCommandLineState(environment, module, configuration) {
-  override fun patchAdditionalConfigs() {
-    with(configuration) {
-      val testFilter = settings.testFilter
-      if (testFilter != null) {
-        // TODO(BAZEL-3272): remove duplication with GoRunWithDebugCommandLineState and RunWithScriptPath.kt
-        customEnvironment["TESTBRIDGE_TEST_ONLY"] = testFilter
-      }
-      val envVarsData = settings.env
-      val envVars = envVarsData.envs
-      for (env in envVars) {
-        customEnvironment[env.key] = env.value
-      }
-      isPassParentEnvironment = envVarsData.isPassParentEnvs
-      settings.programArguments?.let {
-        params = it
-      }
-    }
   }
 }
 

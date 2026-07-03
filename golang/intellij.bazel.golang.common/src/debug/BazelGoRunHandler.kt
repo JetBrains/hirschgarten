@@ -6,7 +6,6 @@ import com.intellij.execution.Executor
 import com.intellij.execution.configurations.RunProfileState
 import com.intellij.execution.executors.DefaultDebugExecutor
 import com.intellij.execution.runners.ExecutionEnvironment
-import com.intellij.openapi.module.Module
 import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.config.BazelFeatureFlags
@@ -44,10 +43,12 @@ internal class BazelGoRunHandler(configuration: BazelRunConfiguration) : BazelRu
         environment.putCopyableUserData(EXECUTABLE_KEY, AtomicReference())
         val target = getTargetId(environment)
         val module = GoWorkspaceModuleUtil.findModule(environment.project) ?: error("Could not find module for target $target")
+        val configuration = GoApplicationConfiguration(environment.project, "default", BazelRunConfigurationType())
+        configuration.setModule(module)
         GoRunWithDebugCommandLineState(
           environment = environment,
           module = module,
-          configuration = GoApplicationConfiguration(environment.project, "default", BazelRunConfigurationType()),
+          configuration = configuration,
           settings = state,
         )
       }
@@ -72,26 +73,5 @@ internal class BazelGoRunHandler(configuration: BazelRunConfiguration) : BazelRu
 
     override val googleHandlerId: String = "BlazeGoRunConfigurationHandlerProvider"
     override val isTestHandler: Boolean = false
-  }
-}
-
-internal class GoRunWithDebugCommandLineState(
-  environment: ExecutionEnvironment,
-  module: Module,
-  configuration: GoApplicationConfiguration,
-  val settings: GenericRunState,
-) : GoDebuggableCommandLineState(environment, module, configuration) {
-  override fun patchAdditionalConfigs() {
-    with(configuration) {
-      val envVarsData = settings.env
-      val envVars = envVarsData.envs
-      for (env in envVars) {
-        customEnvironment[env.key] = env.value
-      }
-      isPassParentEnvironment = envVarsData.isPassParentEnvs
-      settings.programArguments?.let {
-        params = it
-      }
-    }
   }
 }
