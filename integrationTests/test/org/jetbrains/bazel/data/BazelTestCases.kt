@@ -386,7 +386,7 @@ object GoLandBazelCases : BaseBazelCasesParametrized(BazelTestContext.GOLAND) {
   val GoRunConfigurationsTest = withBazelProject(
     projectInfo = withDefaults(
       repositoryUrl = "https://github.com/JetBrainsBazelBot/simpleBazelProjectsForTesting.git",
-      commitHash = "76981cc4f036a03d52209af4acd79a0e56787b09",
+      commitHash = "f01c28ffa2adfadee12673e44e78fa63d7cd8b13",
       branchName = "main",
       relativePath = "goRunConfigurationsTest",
       configure = { context -> BazelProjectConfigurer.configureProjectBeforeUse(context, createProjectView = false) },

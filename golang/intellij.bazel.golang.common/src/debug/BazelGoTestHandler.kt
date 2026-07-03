@@ -27,6 +27,10 @@ import java.util.concurrent.atomic.AtomicReference
 /** Used to store a runner to an [ExecutionEnvironment].  */
 internal val EXECUTABLE_KEY: Key<AtomicReference<ExecutableInfo>> = Key.create("bazel.debug.golang.executable")
 
+// ensures proper test output recognized by the Go test runner
+// without this env the test results are not shown properly in the IDE
+private val GO_TEST_WRAP_TESTV_1 = mapOf("GO_TEST_WRAP_TESTV" to "1")
+
 internal class BazelGoTestHandler(configuration: BazelRunConfiguration) : BazelRunHandler {
   init {
     configuration.setBeforeRunTasksFromHandler(
@@ -57,9 +61,8 @@ internal class BazelGoTestHandler(configuration: BazelRunConfiguration) : BazelR
           settings = state,
         )
       }
-
-      else -> {
-        BazelTestCommandLineState(environment, state)
+      else -> BazelTestCommandLineState(environment, state) {
+        it.copy(environmentVariables = GO_TEST_WRAP_TESTV_1 + it.environmentVariables.orEmpty())
       }
     }
 
