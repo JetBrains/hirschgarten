@@ -1,15 +1,22 @@
 package org.jetbrains.bazel.tests.golang
 
+import com.intellij.driver.client.Driver
 import com.intellij.driver.sdk.step
 import com.intellij.driver.sdk.ui.components.UiComponent.Companion.waitFound
 import com.intellij.driver.sdk.ui.components.common.ideFrame
+import com.intellij.driver.sdk.ui.components.common.toolwindows.debugToolWindow
+import com.intellij.driver.sdk.ui.components.elements.popup
 import com.intellij.ide.starter.ide.IDETestContext
 import com.intellij.tools.ide.performanceTesting.commands.openFile
+import com.intellij.tools.ide.performanceTesting.commands.removeAllBreakpoints
+import com.intellij.tools.ide.performanceTesting.commands.setBreakpoint
 import org.jetbrains.bazel.data.GoLandBazelCases
 import org.jetbrains.bazel.ideStarter.execute
 import org.jetbrains.bazel.tests.combined.IdeStarterCombinedBaseTest
 import org.jetbrains.bazel.tests.run.selectRunConfiguration
+import org.jetbrains.bazel.tests.ui.clickRunGutterOnLine
 import org.jetbrains.bazel.tests.ui.clickTestGutterOnLine
+import org.jetbrains.bazel.tests.ui.debuggerFramesUi
 import org.jetbrains.bazel.tests.ui.verifyTestStatus
 import org.junit.jupiter.api.Order
 import org.junit.jupiter.api.Test
@@ -76,5 +83,64 @@ internal class GoRunConfigurationsTest : IdeStarterCombinedBaseTest() {
         }
       }
     }
+  }
+
+  @Test
+  @Order(3)
+  fun `debug gutters stop at breakpoints and debug only the selected tests`() {
+    withDriver(bgRun) {
+      ideFrame {
+        step("Open lib/lib_test.go") {
+          execute { openFile("lib/lib_test.go") }
+        }
+        testDebuggingSingleFunction(name = "TestAdd", gutterLine = 4)
+        testDebuggingSingleFunction(name = "TestSubtract", gutterLine = 10)
+        step("Set all breaking points") {
+          execute { setBreakpoint(line = 6, relativePath = "lib/lib_test.go") }
+          execute { setBreakpoint(line = 12, relativePath = "lib/lib_test.go") }
+        }
+        step("Debug tests in package via its run gutter") {
+          clickRunGutterOnLine(0)
+          popup().waitOneContainsText("Debug '//lib:lib_test'").click()
+        }
+        step("Debugger stops at all breakpoints") {
+          repeat(2) { i ->
+            debuggerFramesUi.waitAnyTexts { it.text.contains("TestAdd") || it.text.contains("TestSubtract") }
+            takeScreenshot("goDebugPausedAt$i")
+            debugToolWindow().resumeButton.click()
+          }
+        }
+        step("Verify results") {
+          verifyTestStatus(
+            expectedStatus = listOf("2 tests passed"),
+            expectedTree = listOf("TestAdd", "TestSubtract")
+          )
+        }
+      }
+    }
+  }
+
+  private fun Driver.testDebuggingSingleFunction(
+    name: String,
+    gutterLine: Int,
+    breakpointLine: Int = gutterLine + 2
+  ) = ideFrame {
+    step("Set breakpoint inside $name") {
+      execute { setBreakpoint(line = breakpointLine, relativePath = "lib/lib_test.go") }
+    }
+    step("Debug $name via its run gutter") {
+      clickRunGutterOnLine(gutterLine)
+      popup().waitOneContainsText("Debug '//lib:lib_test'").click()
+    }
+    step("Debugger stops at the breakpoint inside $name and resumes") {
+      debuggerFramesUi.waitAnyTexts { it.text.contains(name) }
+      takeScreenshot("goDebug${name}PausedAtBreakpoint")
+      debugToolWindow().resumeButton.click()
+    }
+    step("Only $name was debugged and it is shown in the results tree") {
+      verifyTestStatus(expectedStatus = listOf("1 test passed"), expectedTree = listOf(name))
+      takeScreenshot("goDebug${name}Results")
+    }
+    execute { removeAllBreakpoints() }
   }
 }

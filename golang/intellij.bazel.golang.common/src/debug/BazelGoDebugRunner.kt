@@ -4,6 +4,7 @@ import com.goide.dlv.DlvDebugProcess
 import com.goide.dlv.DlvDisconnectOption
 import com.goide.dlv.DlvRemoteVmConnection
 import com.goide.execution.GoBuildingRunner
+import com.goide.execution.GoBuildingRunningState
 import com.intellij.execution.DefaultExecutionResult
 import com.intellij.execution.ExecutionResult
 import com.intellij.execution.configurations.RunProfile
@@ -36,17 +37,12 @@ internal class BazelGoDebugRunner : GoBuildingRunner() {
     return profile.handler is BazelGoRunHandler || profile.handler is BazelGoTestHandler
   }
 
-  // override fun doExecute(state: RunProfileState, environment: ExecutionEnvironment): RunContentDescriptor {
-  //  // cast should always succeed, because canRun(...) checks for a compatible profile
-  //  return attachVM(state as GoDebuggableCommandLineState, environment)
-  // }
-
   override fun execute(environment: ExecutionEnvironment, state: RunProfileState): Promise<RunContentDescriptor?> =
-    resolvedPromise(attachVM(state as GoDebuggableCommandLineState, environment))
+    resolvedPromise(attachVM(state as GoBuildingRunningState<*>, environment))
 
-  private fun attachVM(state: GoDebuggableCommandLineState, executionEnvironment: ExecutionEnvironment): RunContentDescriptor {
+  private fun attachVM(state: GoBuildingRunningState<*>, executionEnvironment: ExecutionEnvironment): RunContentDescriptor {
     val project = executionEnvironment.project
-    state.patchNativeState()
+    (state as GoDebugCommandLineState).patchNativeState()
     ProgressManager.getInstance().runProcessWithProgressSynchronously(
       { ReadAction.run<RuntimeException>(state::prepareStateInBGT) },
       BazelPluginBundle.message("go.debug.progress.manager.preparing.process.title"),
@@ -60,8 +56,10 @@ internal class BazelGoDebugRunner : GoBuildingRunner() {
   }
 }
 
-private class BazelDebugProcessStarter(private val executionResult: ExecutionResult, val state: GoDebuggableCommandLineState) :
-  XDebugProcessStarter() {
+private class BazelDebugProcessStarter(
+  private val executionResult: ExecutionResult,
+  val state: GoBuildingRunningState<*>
+) : XDebugProcessStarter() {
   override fun start(session: XDebugSession): XDebugProcess {
     val sessionImpl = session as XDebugSessionImpl
     sessionImpl.addExtraActions(*executionResult.actions)
