@@ -31,7 +31,7 @@ internal class BazelGoTestHandler(configuration: BazelRunConfiguration) : BazelR
   init {
     configuration.setBeforeRunTasksFromHandler(
       listOfNotNull(
-        BazelGoTestBeforeRunTaskProvider().createTask(configuration),
+        ScriptPathDebugBeforeRunTaskProvider().createTask(configuration),
       ),
     )
   }

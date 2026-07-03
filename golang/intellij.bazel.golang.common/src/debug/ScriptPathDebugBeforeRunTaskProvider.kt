@@ -4,13 +4,11 @@ import com.intellij.execution.BeforeRunTask
 import com.intellij.execution.BeforeRunTaskProvider
 import com.intellij.execution.ExecutionException
 import com.intellij.execution.configurations.RunConfiguration
-import com.intellij.execution.executors.DefaultDebugExecutor
 import com.intellij.execution.runners.ExecutionEnvironment
 import com.intellij.openapi.actionSystem.DataContext
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Key
 import com.intellij.openapi.util.io.FileUtilRt
-import com.intellij.platform.ide.progress.withBackgroundProgress
 import kotlinx.coroutines.runBlocking
 import org.jetbrains.bazel.commons.BazelStatus
 import org.jetbrains.bazel.commons.RuleType
@@ -18,15 +16,14 @@ import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.golang.targetKinds.includesGo
+import org.jetbrains.bazel.run.commandLine.transformProgramArguments
+import org.jetbrains.bazel.server.tasks.ScriptPathBuildTargetTask
 import org.jetbrains.bazel.run.config.BazelRunConfiguration
-import org.jetbrains.bazel.run.state.GenericRunState
-import org.jetbrains.bazel.run.state.GenericTestState
-import org.jetbrains.bazel.server.connection
+import org.jetbrains.bazel.run.state.HasBazelParams
+import org.jetbrains.bazel.server.tasks.runBuildTargetTask
 import org.jetbrains.bazel.sync.environment.projectCtx
 import org.jetbrains.bazel.target.targetUtils
 import org.jetbrains.bazel.ui.notifications.BazelBalloonNotifier
-import org.jetbrains.bsp.protocol.RunParams
-import org.jetbrains.bsp.protocol.TaskGroupId
 import java.io.File
 import java.io.IOException
 import java.nio.file.Files
@@ -61,77 +58,65 @@ private val POP_UP_MESSAGE_ENABLE_SYMLINKS: String =
   
   """.trimIndent()
 
-/**
- * this class is inspired from [this code snippet](https://github.com/bazelbuild/intellij/blob/master/golang/src/com/google/idea/blaze/golang/run/BlazeGoRunConfigurationRunner.java)
- */
-internal sealed class BazelGoBeforeRunTaskProvider<T : BeforeRunTask<T>> : BeforeRunTaskProvider<T>() {
-  override fun createTask(runConfiguration: RunConfiguration): T? {
+
+private const val PROVIDER_NAME = "ScriptPathDebugBeforeRunTaskProvider"
+
+private val PROVIDER_ID = Key.create<ScriptPathDebugBeforeRunTaskProvider.Task>(PROVIDER_NAME)
+
+internal class ScriptPathDebugBeforeRunTaskProvider : BeforeRunTaskProvider<ScriptPathDebugBeforeRunTaskProvider.Task>() {
+  class Task : BeforeRunTask<Task>(PROVIDER_ID)
+
+  override fun createTask(runConfiguration: RunConfiguration): Task? {
     if (!BazelFeatureFlags.isGoSupportEnabled) return null
     if (runConfiguration !is BazelRunConfiguration) return null
-    return createTaskInstance()
+    return Task()
   }
 
-  abstract fun createTaskInstance(): T
+  override fun getId(): Key<Task> = PROVIDER_ID
 
-  open fun additionalBazelParams(runConfiguration: BazelRunConfiguration): List<String> = emptyList()
+  override fun getName() = PROVIDER_NAME
 
   override fun executeTask(
     context: DataContext,
     configuration: RunConfiguration,
     environment: ExecutionEnvironment,
-    task: T,
+    task: Task,
   ): Boolean {
     val runConfiguration = BazelRunConfiguration.get(environment)
-    // skipping this task for non-debugging run config
-    if (environment.executor !is DefaultDebugExecutor) return true
+    // EXECUTABLE_KEY is not present for non-debugging run config
+    val executableKey = environment.getCopyableUserData(EXECUTABLE_KEY) ?: return true
     val scriptPath = createTempScriptFile()
     val project = environment.project
     val targetUtils = project.targetUtils
     val targetInfos = runConfiguration.targets.mapNotNull { targetUtils.getBuildTargetForLabel(it) }
-    if (targetInfos.any {
-        !it.kind.includesGo() || (it.kind.ruleType != RuleType.TEST && it.kind.ruleType != RuleType.BINARY)
-      }
-    ) {
+    if (targetInfos.any { !it.kind.includesGo() || (it.kind.ruleType != RuleType.TEST && it.kind.ruleType != RuleType.BINARY) }) {
       return false
     }
     val target = runConfiguration.targets.single()
 
-    // TODO: reuse ScriptPathBuildTargetTask/runWithScriptPath instead of this copy-pasted code
-    val bazelParams =
-      listOf(
-        "--script_path=$scriptPath",
-        "--dynamic_mode=off",
-        "--test_sharding_strategy=disabled",
-        "--compilation_mode=dbg",
-      ) + additionalBazelParams(runConfiguration)
-
-    val success =
-      runBlocking {
-        val result =
-          withBackgroundProgress(project, BazelPluginBundle.message("go.debug.background.progress.start.title", target)) {
-            val params =
-              RunParams(
-                target = runConfiguration.targets.single(),
-                taskId = TaskGroupId.EMPTY.task(""),
-                checkVisibility = true,
-                arguments = emptyList(),
-                environmentVariables = emptyMap(),
-                additionalBazelParams = bazelParams.joinToString(" "),
-              )
-            project.connection.runWithServer { server -> server.buildTargetRun(params) }
-          }
-        if (result.statusCode != BazelStatus.SUCCESS) {
-          BazelBalloonNotifier.error(
-            BazelPluginBundle.message("go.debug.before.run.script.path.generation.failure.title", target),
-            BazelPluginBundle.message("go.debug.before.run.script.path.generation.failure.content", result.statusCode),
-          )
-          return@runBlocking false
-        }
-        environment.getCopyableUserData(EXECUTABLE_KEY).set(parseScriptPathFile(scriptPath, project))
-        return@runBlocking true
-      }
-    return success
+    val extraBazelParams = listOf("--dynamic_mode=off", "--compilation_mode=dbg") + runConfiguration.extractAdditionalBazelParams()
+    // runBlocking instead of runBlockingCancellable because before run tasks aren't cancellable
+    val status = runBlocking {
+      runBuildTargetTask(
+        targetIds = listOf(target),
+        project = project,
+        isDebug = true,
+        buildTargetTask = ScriptPathBuildTargetTask(
+          scriptPath = scriptPath,
+          programArguments = emptyList(),
+          additionalBazelParams = extraBazelParams,
+        ),
+      )
+    }
+    if (status != BazelStatus.SUCCESS) return false
+    executableKey.set(parseScriptPathFile(scriptPath, project))
+    return true
   }
+
+  private fun BazelRunConfiguration.extractAdditionalBazelParams() = (handler?.state as? HasBazelParams)
+    ?.additionalBazelParams
+    ?.let(::transformProgramArguments)
+    .orEmpty()
 
   private fun createTempScriptFile(): Path =
     Files.createTempFile(Paths.get(FileUtilRt.getTempDirectory()), "bazel-script-", "").also { it.toFile().deleteOnExit() }
@@ -225,58 +210,4 @@ internal sealed class BazelGoBeforeRunTaskProvider<T : BeforeRunTask<T>> : Befor
     if (expectedPath.isDirectory) return expectedPath
     return root
   }
-}
-
-private const val TEST_PROVIDER_NAME = "BazelGoTestBeforeRunTaskProvider"
-
-private val TEST_PROVIDER_ID = Key.create<BazelGoTestBeforeRunTaskProvider.Task>(TEST_PROVIDER_NAME)
-
-internal class BazelGoTestBeforeRunTaskProvider : BazelGoBeforeRunTaskProvider<BazelGoTestBeforeRunTaskProvider.Task>() {
-  class Task : BeforeRunTask<Task>(TEST_PROVIDER_ID)
-
-  override fun createTaskInstance(): Task = Task()
-
-  override fun additionalBazelParams(runConfiguration: BazelRunConfiguration): List<String> =
-    listOfNotNull(
-      runConfiguration.extractTestFilter(),
-      "--test_env=GO_TEST_WRAP_TESTV=1",
-    ) + bazelParamsFromState(runConfiguration)
-
-  private fun bazelParamsFromState(runConfiguration: BazelRunConfiguration): List<String> =
-    (runConfiguration.handler?.state as? GenericTestState)
-      ?.additionalBazelParams
-      ?.split(" ")
-      ?.filter { it.isNotBlank() }
-      .orEmpty()
-
-  private fun BazelRunConfiguration.extractTestFilter(): String? {
-    val rawTestFilter = (handler?.state as? GenericTestState)?.testFilter
-    if (rawTestFilter.isNullOrEmpty()) return null
-    return "--test_filter=$rawTestFilter"
-  }
-
-  override fun getId(): Key<Task> = TEST_PROVIDER_ID
-
-  override fun getName() = TEST_PROVIDER_NAME
-}
-
-private const val BINARY_PROVIDER_NAME = "BazelGoBinaryBeforeRunTaskProvider"
-
-private val BINARY_PROVIDER_ID = Key.create<BazelGoBinaryBeforeRunTaskProvider.Task>(BINARY_PROVIDER_NAME)
-
-internal class BazelGoBinaryBeforeRunTaskProvider : BazelGoBeforeRunTaskProvider<BazelGoBinaryBeforeRunTaskProvider.Task>() {
-  class Task : BeforeRunTask<Task>(BINARY_PROVIDER_ID)
-
-  override fun additionalBazelParams(runConfiguration: BazelRunConfiguration): List<String> =
-    (runConfiguration.handler?.state as? GenericRunState)
-      ?.additionalBazelParams
-      ?.split(" ")
-      ?.filter { it.isNotBlank() }
-      .orEmpty()
-
-  override fun createTaskInstance(): Task = Task()
-
-  override fun getId(): Key<Task> = BINARY_PROVIDER_ID
-
-  override fun getName() = BINARY_PROVIDER_NAME
 }

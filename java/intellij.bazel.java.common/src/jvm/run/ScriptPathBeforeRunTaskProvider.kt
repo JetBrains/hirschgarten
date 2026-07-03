@@ -15,18 +15,13 @@ import kotlinx.coroutines.runBlocking
 import org.jetbrains.bazel.commons.BazelStatus
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.jvm.run.ScriptPathBeforeRunTaskProvider.Task
-import org.jetbrains.bazel.label.Label
-import org.jetbrains.bazel.progress.TaskConsole
+import org.jetbrains.bazel.server.tasks.ScriptPathBuildTargetTask
 import org.jetbrains.bazel.run.commandLine.transformProgramArguments
 import org.jetbrains.bazel.run.config.BazelRunConfiguration
 import org.jetbrains.bazel.run.state.HasBazelParams
 import org.jetbrains.bazel.run.state.HasProgramArguments
-import org.jetbrains.bazel.server.tasks.BuildTargetTask
 import org.jetbrains.bazel.server.tasks.DefaultBuildTargetTask
 import org.jetbrains.bazel.server.tasks.runBuildTargetTask
-import org.jetbrains.bazel.server.BazelServerFacade
-import org.jetbrains.bsp.protocol.RunParams
-import org.jetbrains.bsp.protocol.TaskId
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
@@ -70,7 +65,14 @@ internal class ScriptPathBeforeRunTaskProvider : BeforeRunTaskProvider<Task>() {
     val status =
       try {
         val buildTargetTask = if (scriptPath != null) {
-          ScriptPathBuildTargetTask(runConfiguration, scriptPath)
+          val state = runConfiguration.handler?.state
+          val programArguments = transformProgramArguments((state as? HasProgramArguments)?.programArguments)
+          val additionalBazelParams = transformProgramArguments((state as? HasBazelParams)?.additionalBazelParams)
+          ScriptPathBuildTargetTask(
+            scriptPath = scriptPath,
+            programArguments = programArguments,
+            additionalBazelParams = additionalBazelParams,
+          )
         } else {
           /**
            * scriptPath is null when running tests without debug, which indicates that we should build but not pass --script_path
@@ -110,36 +112,4 @@ internal class ScriptPathBeforeRunTaskProvider : BeforeRunTaskProvider<Task>() {
   override fun getName(): String = BazelPluginBundle.message("console.task.build.title")
 
   class Task : BeforeRunTask<Task>(PROVIDER_ID)
-}
-
-private class ScriptPathBuildTargetTask(
-  private val runConfiguration: BazelRunConfiguration,
-  private val scriptPath: Path,
-) : BuildTargetTask {
-  override suspend fun build(
-      server: BazelServerFacade,
-      targetIds: List<Label>,
-      buildConsole: TaskConsole,
-      taskId: TaskId,
-      debugFlags: List<String>,
-  ): BazelStatus {
-    val state = runConfiguration.handler?.state
-    val additionalBazelParams = transformProgramArguments((state as? HasBazelParams)?.additionalBazelParams)
-    val programArguments = (state as? HasProgramArguments)?.programArguments
-
-    val scriptPathParams = listOf("--script_path=$scriptPath", "--test_sharding_strategy=disabled")
-    val params =
-      RunParams(
-        taskId = taskId,
-        target = targetIds.single(),
-        arguments = programArguments?.let { transformProgramArguments(it) }.orEmpty(),
-        additionalBazelParams = (scriptPathParams + additionalBazelParams).joinToString(" "),
-        /**
-         * Environment variables are not written into the generated run script by Bazel, so they are handled by [runWithScriptPath].
-         */
-        environmentVariables = null,
-        checkVisibility = true,
-      )
-    return server.buildTargetRun(params).statusCode
-  }
 }

@@ -26,7 +26,7 @@ internal class BazelGoRunHandler(configuration: BazelRunConfiguration) : BazelRu
   init {
     configuration.setBeforeRunTasksFromHandler(
       listOfNotNull(
-        BazelGoBinaryBeforeRunTaskProvider().createTask(configuration),
+        ScriptPathDebugBeforeRunTaskProvider().createTask(configuration),
       ),
     )
   }
