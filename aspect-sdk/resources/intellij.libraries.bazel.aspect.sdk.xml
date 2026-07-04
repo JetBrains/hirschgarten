@@ -1,7 +1,4 @@
 <idea-plugin visibility="public">
-  <dependencies>
-    <module name="intellij.aiCodeReview"/>
-  </dependencies>
 
   <extensions defaultExtensionNs="com.intellij">
     <aiCodeReview.skillBundleProvider order="last"
