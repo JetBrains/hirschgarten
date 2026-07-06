@@ -1,6 +1,7 @@
 package org.jetbrains.bazel.python.debug
 
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.testFramework.junit5.TestApplication
 import com.intellij.testFramework.junit5.fixture.projectFixture
 import com.intellij.testFramework.junit5.fixture.tempPathFixture
@@ -23,6 +24,7 @@ import java.nio.file.Path
 import kotlin.io.path.createFile
 import kotlin.io.path.createDirectories
 import kotlin.test.assertEquals
+import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 @TestApplication
@@ -79,6 +81,110 @@ class PythonDebugUtilsTest {
   }
 
   @Test
+  fun `runner script type follows changed file contents`() {
+    val target = Label.parse("//tools/scripts:runner")
+    val fixture = registerPythonTarget(
+      target = target,
+      ruleKind = "py_binary",
+      ruleType = RuleType.BINARY,
+      imports = emptyList(),
+      runnerScriptName = target.targetName,
+      runnerScriptContent = "#!/usr/bin/env python\nprint('debug target')\n",
+      mainFileName = "main.py",
+    )
+
+    val debugInfoBefore = preparePythonDebug(project, target)
+    assertEquals(fixture.runnerScript, debugInfoBefore.pythonFile)
+
+    Files.writeString(fixture.runnerScript, "#!/usr/bin/env bash\necho debug target\n")
+    LocalFileSystem.getInstance().refreshAndFindFileByNioFile(fixture.runnerScript)
+
+    val debugInfoAfter = preparePythonDebug(project, target)
+    assertEquals(fixture.mainFile, debugInfoAfter.pythonFile)
+  }
+
+  @Test
+  fun `Bazel-declared venv interpreter is used as python binary`() {
+    val target = Label.parse("//tools/scripts:runner")
+    val basePythonBinary = tempDir.resolve("bazel-out/bin/rules_python/bin/python3")
+    val fixture = registerPythonTarget(
+      target = target,
+      ruleKind = "py_binary",
+      ruleType = RuleType.BINARY,
+      imports = emptyList(),
+      runnerScriptName = target.targetName,
+      runnerScriptContent = """
+        #!/usr/bin/env bash
+        PYTHON_BINARY="stale/runner/script/value"
+        echo debug target
+      """.trimIndent(),
+      mainFileName = "main.py",
+      interpreter = basePythonBinary,
+    )
+    val venvPythonBinary = fixture.runfilesWorkspaceRoot
+      .resolve(target.packagePath.toString())
+      .resolve("_${target.targetName}.venv/bin/python3")
+    venvPythonBinary.parent.createDirectories()
+    venvPythonBinary.createFile()
+    assertTrue(venvPythonBinary.toFile().setExecutable(true))
+    writeRunfilesManifest(fixture, venvPythonBinary)
+
+    val debugInfo = preparePythonDebug(project, target)
+
+    assertEquals(fixture.mainFile, debugInfo.pythonFile)
+    assertEquals(venvPythonBinary, debugInfo.pythonBinary)
+  }
+
+  @Test
+  fun `target interpreter is used when runfiles contain stale undeclared venv`() {
+    val target = Label.parse("//tools/scripts:runner")
+    val pythonBinary = tempDir.resolve("bazel-out/bin/rules_python/bin/python3")
+    val fixture = registerPythonTarget(
+      target = target,
+      ruleKind = "py_binary",
+      ruleType = RuleType.BINARY,
+      imports = emptyList(),
+      runnerScriptName = target.targetName,
+      runnerScriptContent = "#!/usr/bin/env bash\necho debug target\n",
+      mainFileName = "main.py",
+      interpreter = pythonBinary,
+    )
+    val staleVenvPythonBinary = fixture.runfilesWorkspaceRoot
+      .resolve(target.packagePath.toString())
+      .resolve("_${target.targetName}.venv/bin/python3")
+    staleVenvPythonBinary.parent.createDirectories()
+    staleVenvPythonBinary.createFile()
+    writeRunfilesManifest(fixture)
+
+    val debugInfo = preparePythonDebug(project, target)
+
+    assertEquals(pythonBinary, debugInfo.pythonBinary)
+  }
+
+  @Test
+  fun `missing target interpreter leaves python binary empty`() {
+    val target = Label.parse("//tools/scripts:runner")
+    registerPythonTarget(
+      target = target,
+      ruleKind = "py_binary",
+      ruleType = RuleType.BINARY,
+      imports = emptyList(),
+      runnerScriptName = target.targetName,
+      runnerScriptContent = """
+        #!/usr/bin/env bash
+        PYTHON_BINARY=''
+        echo debug target
+      """.trimIndent(),
+      mainFileName = "main.py",
+      interpreter = null,
+    )
+
+    val debugInfo = preparePythonDebug(project, target)
+
+    assertNull(debugInfo.pythonBinary)
+  }
+
+  @Test
   fun `python path includes workspace imports and external site packages`(@TempDir tempDir: Path) {
     val runfilesRoot = tempDir.resolve("test_runner.runfiles").createDirectories()
     val workspaceRoot = runfilesRoot.resolve("_main").createDirectories()
@@ -122,18 +228,48 @@ class PythonDebugUtilsTest {
     assertEquals(workspaceRoot, workingDirectory)
   }
 
+  @Test
+  fun `python debug build arguments include debug flags additional bazel params and keep going`() {
+    val arguments = buildPythonDebugBazelArguments(
+      debugFlags = listOf("--debug_flag=1"),
+      additionalBazelParams = "--@rules_python//python/config_settings:bootstrap_impl=system_python --flag \"two words\"",
+    )
+
+    assertEquals(
+      listOf(
+        "--debug_flag=1",
+        "--@rules_python//python/config_settings:bootstrap_impl=system_python",
+        "--flag",
+        "two words",
+      ),
+      arguments,
+    )
+  }
+
   private fun registerPythonTarget(
     target: Label,
     ruleKind: String,
     ruleType: RuleType,
     imports: List<String>,
+    runnerScriptName: String = "${target.targetName}.py",
+    runnerScriptContent: String = "print('debug target')\n",
+    mainFileName: String? = null,
+    interpreter: Path? = tempDir.resolve("python3"),
   ): PythonTargetFixture {
     initializeBazelProject(project, tempDir)
     createFileIfAbsent(tempDir.resolve("MODULE.bazel"))
 
-    val runnerScript = tempDir.resolve("bazel-out/bin").resolve(target.packagePath.toString()).resolve("${target.targetName}.py")
+    val runnerScript = tempDir.resolve("bazel-out/bin").resolve(target.packagePath.toString()).resolve(runnerScriptName)
     runnerScript.parent.createDirectories()
-    Files.writeString(runnerScript, "print('debug target')\n")
+    Files.writeString(runnerScript, runnerScriptContent)
+
+    val mainFile =
+      mainFileName?.let {
+        tempDir.resolve(target.packagePath.toString()).resolve(it).also { mainFile ->
+          mainFile.parent.createDirectories()
+          Files.writeString(mainFile, "print('main file')\n")
+        }
+      } ?: runnerScript
 
     val runfilesRoot = runnerScript.parent.resolve("${runnerScript.fileName}.runfiles").createDirectories()
     val runfilesWorkspaceRoot = runfilesRoot.resolve("_main").createDirectories()
@@ -158,9 +294,9 @@ class PythonDebugUtilsTest {
           data = listOf(
             PythonBuildTarget(
               version = "3.8",
-              interpreter = tempDir.resolve("python3"),
+              interpreter = interpreter,
               imports = imports,
-              mainFile = runnerScript,
+              mainFile = mainFile,
               runnerScript = runnerScript,
             ),
           ),
@@ -171,11 +307,13 @@ class PythonDebugUtilsTest {
     return PythonTargetFixture(
       target = target,
       runnerScript = runnerScript,
+      mainFile = mainFile,
       runfilesRoot = runfilesRoot,
       runfilesWorkspaceRoot = runfilesWorkspaceRoot,
       packageWorkingDirectory = packageWorkingDirectory,
       importRoots = importRoots,
       sitePackagesRoot = sitePackagesRoot,
+      interpreter = interpreter,
     )
   }
 
@@ -184,6 +322,7 @@ class PythonDebugUtilsTest {
     assertEquals(fixture.packageWorkingDirectory, debugInfo.workingDirectory)
 
     val environmentVariables = debugInfo.environmentVariables
+    assertEquals(fixture.interpreter, debugInfo.pythonBinary)
     assertEquals(fixture.target.toString(), environmentVariables["BAZEL_TARGET"])
     assertEquals("_main", environmentVariables["BAZEL_WORKSPACE"])
     assertEquals(fixture.target.targetName, environmentVariables["BAZEL_TARGET_NAME"])
@@ -209,6 +348,7 @@ class PythonDebugUtilsTest {
     val result = method.invoke(instance, project, target) ?: error("Expected Python debug info for $target")
     return ReflectedPythonDebugInfo(
       pythonFile = result.getField("pythonFile"),
+      pythonBinary = result.getField("pythonBinary"),
       environmentVariables = result.getField("environmentVariables"),
       workingDirectory = result.getField("workingDirectory"),
     )
@@ -236,11 +376,30 @@ class PythonDebugUtilsTest {
     return method.invoke(instance, workspaceRoot, target) as Path
   }
 
+  private fun buildPythonDebugBazelArguments(debugFlags: List<String>, additionalBazelParams: String?): List<String> {
+    val stateClass = Class.forName("org.jetbrains.bazel.python.debug.PythonDebugCommandLineStateKt")
+    val parameterTypes = arrayOf(List::class.java, String::class.java)
+    val method = stateClass.declaredMethods.single {
+      it.name.startsWith("buildPythonDebugBazelArguments") && it.parameterTypes.contentEquals(parameterTypes)
+    }
+    method.isAccessible = true
+    @Suppress("UNCHECKED_CAST")
+    return method.invoke(null, debugFlags, additionalBazelParams) as List<String>
+  }
+
   private fun createFileIfAbsent(path: Path) {
     path.parent?.createDirectories()
     if (!Files.exists(path)) {
       path.createFile()
     }
+  }
+
+  private fun writeRunfilesManifest(fixture: PythonTargetFixture, vararg files: Path) {
+    val content = files.joinToString(separator = "\n", postfix = "\n") { file ->
+      val runfilesPath = fixture.runfilesRoot.relativize(file).toString().replace(File.separatorChar, '/')
+      "$runfilesPath $file"
+    }
+    Files.writeString(fixture.runfilesRoot.resolve("MANIFEST"), content)
   }
 
   @Suppress("UNCHECKED_CAST")
@@ -253,15 +412,18 @@ class PythonDebugUtilsTest {
   private data class PythonTargetFixture(
     val target: Label,
     val runnerScript: Path,
+    val mainFile: Path,
     val runfilesRoot: Path,
     val runfilesWorkspaceRoot: Path,
     val packageWorkingDirectory: Path,
     val importRoots: List<Path>,
     val sitePackagesRoot: Path,
+    val interpreter: Path?,
   )
 
   private data class ReflectedPythonDebugInfo(
     val pythonFile: Path,
+    val pythonBinary: Path?,
     val environmentVariables: Map<String, String>,
     val workingDirectory: Path,
   )

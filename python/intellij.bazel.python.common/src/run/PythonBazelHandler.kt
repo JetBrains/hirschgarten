@@ -8,16 +8,18 @@ import org.jetbrains.bazel.python.debug.PythonDebugCommandLineState
 import org.jetbrains.bazel.run.BazelCommandLineStateBase
 import org.jetbrains.bazel.run.BazelRunConfigurationState
 import org.jetbrains.bazel.run.BazelRunHandler
+import org.jetbrains.bazel.run.state.HasBazelParams
 import org.jetbrains.bazel.run.state.HasProgramArguments
 
 internal abstract class PythonBazelHandler<T> : BazelRunHandler
   where T : BazelRunConfigurationState<T>,
-        T : HasProgramArguments {
+        T : HasProgramArguments,
+        T : HasBazelParams {
   abstract override val state: T
 
   override fun getRunProfileState(executor: Executor, environment: ExecutionEnvironment): RunProfileState =
     if (executor.id == DefaultDebugExecutor.EXECUTOR_ID) {
-      PythonDebugCommandLineState(environment, state.programArguments)
+      PythonDebugCommandLineState(environment, state.programArguments, state.additionalBazelParams)
     } else {
       createCommandLineState(environment)
     }
