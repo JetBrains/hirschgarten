@@ -10,6 +10,7 @@ import com.intellij.openapi.ui.playback.commands.AbstractCommand.CMD_PREFIX
 import com.intellij.tools.ide.performanceTesting.commands.CommandChain
 import com.intellij.tools.ide.performanceTesting.commands.goToDeclaration
 import com.intellij.tools.ide.performanceTesting.commands.goto
+import io.kotest.matchers.string.shouldContain
 import org.jetbrains.bazel.data.IdeaBazelCases
 import org.jetbrains.bazel.ideStarter.IdeStarterBaseProjectTest
 import org.jetbrains.bazel.ideStarter.execute
@@ -58,7 +59,7 @@ class LocalPathOverrideTest : IdeStarterBaseProjectTest() {
             buildView.waitContainsText("Build completed successfully", timeout = 60.seconds)
             takeScreenshot("afterBuildCompleted")
             // double check we actually built the correct single target
-            assert(buildView.getAllTexts().asString().contains("utils.jdeps"))
+            buildView.getAllTexts().asString().shouldContain("utils.jdeps")
           }
         }
       }

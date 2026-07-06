@@ -5,6 +5,9 @@ import com.intellij.driver.sdk.WaitForException
 import com.intellij.driver.sdk.step
 import com.intellij.driver.sdk.ui.components.common.ideFrame
 import com.intellij.driver.sdk.wait
+import io.kotest.assertions.withClue
+import io.kotest.matchers.booleans.shouldBeFalse
+import io.kotest.matchers.types.shouldBeInstanceOf
 import org.jetbrains.bazel.config.BazelPluginBundle
 import kotlin.time.Duration.Companion.seconds
 import kotlin.time.TimeSource
@@ -16,15 +19,18 @@ fun Driver.verifyNoSyncOnReopen() {
       while (TimeSource.Monotonic.markNow() - start < 20.seconds) {
         try {
           val buildView = x { byType("com.intellij.build.BuildView") }
-          assert(
-            !buildView.getAllTexts().any {
-              it.text.contains(BazelPluginBundle.message("console.task.sync.in.progress"))
-            },
-          ) { "Build view contains sync text" }
+          withClue("Build view contains sync text") {
+            buildView
+              .getAllTexts()
+              .any { it.text.contains(BazelPluginBundle.message("console.task.sync.in.progress")) }
+              .shouldBeFalse()
+          }
           wait(1.seconds)
         }
         catch (e: Exception) {
-          assert(e is WaitForException) { "Unknown exception: ${e.message}" }
+          withClue("Unknown exception: ${e.message}") {
+            e.shouldBeInstanceOf<WaitForException>()
+          }
         }
       }
     }
