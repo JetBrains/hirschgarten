@@ -14,6 +14,7 @@ import org.jetbrains.bazel.run.state.EnvironmentVariablesDataOptions
 import org.jetbrains.bazel.run.state.GenericRunState
 import org.jetbrains.bazel.run.state.GenericTestState
 import kotlin.collections.set
+import kotlin.io.path.pathString
 
 internal interface GoDebugCommandLineState {
 
@@ -67,10 +68,10 @@ private fun GoBuildingRunningState<*>.applyExecutableInfo(executableInfo: Execut
       customEnvironment[key] = value
     }
     kind = GoBuildingRunConfiguration.Kind.PACKAGE
-    outputDirectory = executableInfo.binary.parent
-    workingDirectory = executableInfo.workingDir.path
+    outputDirectory = executableInfo.binary.parent?.pathString
+    workingDirectory = executableInfo.workingDir.pathString
   }
-  setOutputFilePath(executableInfo.binary.path)
+  setOutputFilePath(executableInfo.binary.pathString)
 }
 
 private fun GoBuildingRunningState<*>.applyState(

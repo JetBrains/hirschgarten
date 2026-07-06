@@ -20,7 +20,7 @@ import org.jetbrains.bazel.run.config.BazelRunConfiguration
 import org.jetbrains.bazel.run.config.BazelRunConfigurationType
 import org.jetbrains.bazel.run.import.GooglePluginAwareRunHandlerProvider
 import org.jetbrains.bazel.run.state.GenericTestState
-import java.io.File
+import java.nio.file.Path
 import java.util.concurrent.atomic.AtomicReference
 
 /** Used to store a runner to an [ExecutionEnvironment].  */
@@ -62,8 +62,8 @@ internal class BazelGoTestHandler(configuration: BazelRunConfiguration) : BazelR
           settings = state,
         )
       }
-      else -> BazelTestCommandLineState(environment, state) {
-        it.copy(environmentVariables = GO_TEST_WRAP_TESTV_1 + it.environmentVariables.orEmpty())
+      else -> BazelTestCommandLineState(environment, state) { params ->
+        params.copy(environmentVariables = GO_TEST_WRAP_TESTV_1 + params.environmentVariables.orEmpty())
       }
     }
 
@@ -86,8 +86,8 @@ internal class BazelGoTestHandler(configuration: BazelRunConfiguration) : BazelR
 }
 
 internal data class ExecutableInfo(
-  val binary: File,
-  val workingDir: File,
+  val binary: Path,
+  val workingDir: Path,
   val args: List<String?>,
   val envVars: Map<String, String>,
 )

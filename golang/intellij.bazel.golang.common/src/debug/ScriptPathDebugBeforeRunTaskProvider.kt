@@ -24,12 +24,15 @@ import org.jetbrains.bazel.server.tasks.runBuildTargetTask
 import org.jetbrains.bazel.sync.environment.projectCtx
 import org.jetbrains.bazel.target.targetUtils
 import org.jetbrains.bazel.ui.notifications.BazelBalloonNotifier
-import java.io.File
 import java.io.IOException
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
 import java.util.Locale
+import kotlin.io.path.Path
+import kotlin.io.path.isDirectory
+import kotlin.io.path.name
+import kotlin.io.path.pathString
 import kotlin.io.path.readText
 
 // Matches TEST_SRCDIR=<dir>
@@ -133,8 +136,8 @@ internal class ScriptPathDebugBeforeRunTaskProvider : BeforeRunTaskProvider<Scri
     val argsMatcher = ARGS.findAll(lastLine.trim { it <= ' ' })
     var args = argsMatcher.map { it.groupValues[1].trimStart('\'').trimEnd('\'') }.toList()
     val envVars = mutableMapOf<String, String>()
-    val binary: File
-    val workingDir: File
+    val binary: Path
+    val workingDir: Path
     val testScrDir = TEST_SRCDIR.find(text)
     val workspaceRoot = project.rootDir.toNioPath()
     if (testScrDir != null) {
@@ -165,7 +168,7 @@ internal class ScriptPathDebugBeforeRunTaskProvider : BeforeRunTaskProvider<Scri
             testScrDir.groupValues[1],
             workspaceName,
             args[1],
-          ).toFile()
+          )
 
       val testTarget = TEST_TARGET.find(text)
       if (testTarget != null) {
@@ -175,9 +178,8 @@ internal class ScriptPathDebugBeforeRunTaskProvider : BeforeRunTaskProvider<Scri
             .resolve(testScrDir.groupValues[1])
             .resolve(workspaceName)
             .resolve(packagePath)
-            .toFile()
       } else {
-        workingDir = workspaceRoot.toFile()
+        workingDir = workspaceRoot
       }
 
       // Remove everything except the args.
@@ -187,8 +189,8 @@ internal class ScriptPathDebugBeforeRunTaskProvider : BeforeRunTaskProvider<Scri
       if (args.size < 2) {
         throw ExecutionException(BazelPluginBundle.message("go.before.run.error.args.parsing.failure", scriptPath))
       }
-      binary = File(args[0])
-      workingDir = getWorkingDirectory(workspaceRoot.toFile(), binary)
+      binary = Path(args[0])
+      workingDir = getWorkingDirectory(workspaceRoot, binary)
       // Remove everything except the args.
       args = args.drop(1)
     }
@@ -204,10 +206,10 @@ internal class ScriptPathDebugBeforeRunTaskProvider : BeforeRunTaskProvider<Scri
    *
    * If the runfiles directory does not exist (unlikely) fall back to workspace root.
    */
-  private fun getWorkingDirectory(root: File, executable: File): File {
+  private fun getWorkingDirectory(root: Path, executable: Path): Path {
     val workspaceName = root.name
-    val expectedPath = File(executable.path + ".runfiles", workspaceName)
-    if (expectedPath.isDirectory) return expectedPath
+    val expectedPath = Path("${executable.pathString}.runfiles", workspaceName)
+    if (expectedPath.isDirectory()) return expectedPath
     return root
   }
 }
