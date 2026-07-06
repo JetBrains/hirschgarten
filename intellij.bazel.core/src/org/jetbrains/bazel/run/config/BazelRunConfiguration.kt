@@ -38,7 +38,6 @@ class BazelRunConfiguration internal constructor(
 ) : LocatableConfigurationBase<RunProfileState>(project, configurationType, name),
   RunConfigurationWithSuppressedDefaultDebugAction,
     SMRunnerConsolePropertiesProvider {
-  private val logger: Logger = logger<BazelRunConfiguration>()
 
   var targets: List<Label> = emptyList()
     private set // private because we need to set the targets directly when running readExternal
@@ -47,6 +46,18 @@ class BazelRunConfiguration internal constructor(
     private set
 
   override fun checkConfiguration() {
+    try {
+      checkConfigurationUnsafe()
+    } catch (e: RuntimeConfigurationError) {
+      // rethrow configuration error
+      throw e
+    } catch (e: Throwable) {
+      // exception here can prevent project from loading
+      logger.error("Error checking configuration", e)
+    }
+  }
+
+  fun checkConfigurationUnsafe() {
     val utils = project.targetUtils
     val selectedTargets = targets.map {
       val target = utils.getBuildTargetForLabel(it) ?: return // skip validations when any target is missing
@@ -58,7 +69,7 @@ class BazelRunConfiguration internal constructor(
       .mapTo(mutableSetOf()) { target ->
         RunHandlerProvider
           .getRunHandlerProvider(listOf(target.kind))
-          ?: throw RuntimeConfigurationError(message("runconfig.bazel.errors.target.not.supported", target.id))
+        ?: throw RuntimeConfigurationError(message("runconfig.bazel.errors.target.not.supported", target.id))
       }
     if (providers.size > 1) {
       throw RuntimeConfigurationError(
@@ -245,6 +256,8 @@ class BazelRunConfiguration internal constructor(
     private const val HANDLER_STATE_TAG = "handler-state"
     private const val HANDLER_PROVIDER_ATTR = "handler-provider-id"
     private const val CHECK_VISIBILITY_ATTR = "check-visibility"
+
+    private val logger: Logger = logger<BazelRunConfiguration>()
 
     // Used in BazelRerunFailedTestsAction
     public val BAZEL_RUN_CONFIGURATION_KEY = Key.create<BazelRunConfiguration>("BAZEL_RUN_CONFIGURATION_KEY")
