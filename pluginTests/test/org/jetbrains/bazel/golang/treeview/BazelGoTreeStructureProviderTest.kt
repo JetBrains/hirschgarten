@@ -122,12 +122,12 @@ class BazelGoTreeStructureProviderTest : WorkspaceModelBaseTest() {
     actualChildren[1].name shouldBe "root2"
 
     val secondLevelImportPath1 = actualChildren[0].children.toList()
-    assert(secondLevelImportPath1.size == 1)
-    assert(secondLevelImportPath1.first() == fileNode1)
+    secondLevelImportPath1.shouldHaveSize(1)
+    secondLevelImportPath1.first() shouldBe fileNode1
 
     val secondLevelImportPath2 = actualChildren[1].children.toList()
-    assert(secondLevelImportPath2.size == 1)
-    assert(secondLevelImportPath2.first() == fileNode2)
+    secondLevelImportPath2.shouldHaveSize(1)
+    secondLevelImportPath2.first() shouldBe fileNode2
   }
 
   private fun createPsiFileNode(virtualFile: VirtualFile): PsiFileNode =

@@ -10,6 +10,8 @@ import com.intellij.driver.sdk.ui.xQuery
 import com.intellij.driver.sdk.wait
 import com.intellij.ide.starter.ide.IDETestContext
 import com.intellij.tools.ide.performanceTesting.commands.openFile
+import io.kotest.matchers.booleans.shouldBeTrue
+import io.kotest.matchers.collections.shouldHaveSize
 import org.jetbrains.bazel.data.PyCharmBazelCases
 import org.jetbrains.bazel.ideStarter.execute
 import org.jetbrains.bazel.ideStarter.navigateToFile
@@ -115,8 +117,10 @@ class PyCharmCombinedTest : IdeStarterCombinedBaseTest() {
       val heavyWeightWindow = popup(xQuery { byClass("HeavyWeightWindow") })
       takeScreenshot("afterClickingOnRunLineMarker")
       val texts = heavyWeightWindow.getAllTexts()
-      assert(texts.size == expectedTexts.size)
-      expectedTexts.forEach { expected -> assert(texts.any { actual -> actual.text == expected }) }
+      texts.shouldHaveSize(expectedTexts.size)
+      expectedTexts.forEach { expected ->
+        texts.any { actual -> actual.text == expected }.shouldBeTrue()
+      }
     }
   }
 }

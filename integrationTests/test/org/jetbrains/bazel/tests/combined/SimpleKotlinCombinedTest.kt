@@ -36,6 +36,8 @@ import com.intellij.tools.ide.performanceTesting.commands.setBreakpoint
 import com.intellij.tools.ide.performanceTesting.commands.sleep
 import com.intellij.tools.ide.performanceTesting.commands.takeScreenshot
 import com.intellij.tools.ide.performanceTesting.commands.waitForSmartMode
+import io.kotest.assertions.withClue
+import io.kotest.matchers.booleans.shouldBeTrue
 import org.jetbrains.bazel.data.IdeaBazelCases
 import org.jetbrains.bazel.ideStarter.assertSyncedTargets
 import org.jetbrains.bazel.ideStarter.buildAndSync
@@ -252,7 +254,7 @@ class SimpleKotlinCombinedTest : IdeStarterCombinedBaseTest() {
       selectedGutterIcon.click()
       val heavyWeightWindow = popup(xQuery { byClass("HeavyWeightWindow") })
       val texts = heavyWeightWindow.getAllTexts()
-      assert(texts.any { it.text.contains("Test") })
+      texts.any { it.text.contains("Test") }.shouldBeTrue()
     }
   }
 
@@ -352,7 +354,9 @@ class SimpleKotlinCombinedTest : IdeStarterCombinedBaseTest() {
           tagsPair.second.contains(expectedMessage)
         }
       }
-      assert(foundMessage) { "Cannot find expected hotswap message: $expectedMessage" }
+      withClue("Cannot find expected hotswap message: $expectedMessage") {
+        foundMessage.shouldBeTrue()
+      }
     }
   }
 }

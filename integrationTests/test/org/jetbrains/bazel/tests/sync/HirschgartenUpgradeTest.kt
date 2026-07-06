@@ -13,6 +13,9 @@ import com.intellij.ide.starter.project.LocalProjectInfo
 import com.intellij.ide.starter.project.ProjectInfoSpec
 import com.intellij.openapi.ui.playback.commands.AbstractCommand.CMD_PREFIX
 import com.intellij.tools.ide.performanceTesting.commands.CommandChain
+import io.kotest.assertions.withClue
+import io.kotest.matchers.booleans.shouldBeFalse
+import io.kotest.matchers.types.shouldBeInstanceOf
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.data.BazelProjectConfigurer
 import org.jetbrains.bazel.data.IdeaBazelCases
@@ -158,13 +161,16 @@ class HirschgartenUpgradeTest : IdeStarterBaseProjectTest() {
             wait(20.seconds)
             try {
               val buildView = x { byType("com.intellij.build.BuildView") }
-              assert(
-                !buildView.getAllTexts().any {
-                  it.text.contains(BazelPluginBundle.message("console.task.sync.in.progress"))
-                },
-              ) { "Unexpected resync triggered after plugin upgrade" }
+              withClue("Unexpected resync triggered after plugin upgrade") {
+                buildView
+                  .getAllTexts()
+                  .any { it.text.contains(BazelPluginBundle.message("console.task.sync.in.progress")) }
+                  .shouldBeFalse()
+              }
             } catch (e: Exception) {
-              assert(e is WaitForException) { "Unknown exception: ${e.message}" }
+              withClue("Unknown exception: ${e.message}") {
+                e.shouldBeInstanceOf<WaitForException>()
+              }
             }
           }
           takeScreenshot("afterNoResyncCheck")
