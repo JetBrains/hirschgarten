@@ -3,13 +3,14 @@ package org.jetbrains.bazel.hotswap
 import com.intellij.debugger.impl.DebuggerSession
 import com.intellij.debugger.ui.HotSwapStatusListener
 import com.intellij.debugger.ui.HotSwapUIImpl
+import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import com.intellij.task.ProjectTaskContext
 import org.jetbrains.bazel.buildTask.AdditionalProjectTask
 import org.jetbrains.bazel.buildTask.AdditionalProjectTaskRunnerProvider
 import org.jetbrains.bazel.commons.BazelStatus
 import org.jetbrains.bazel.label.Label
-import org.jetbrains.bazel.target.getModuleEntity
+import org.jetbrains.bazel.target.ModuleTargetService
 import org.jetbrains.bazel.workspacemodel.entities.jvmBinaryJarsEntity
 import java.net.URI
 import java.nio.file.Path
@@ -51,8 +52,8 @@ private class HotSwapTask(
   }
 
   private fun getTargetJars(): List<Path> = targetsToBuild.asSequence()
-    .map { it.getModuleEntity(project) }
-    .mapNotNull { it?.jvmBinaryJarsEntity }
+    .flatMap { project.service<ModuleTargetService>().findModulesByLabel(label = it) }
+    .mapNotNull { it.jvmBinaryJarsEntity }
     .flatMap { it.jars }
     .map { URI.create(it.url) }  // Don't use VFS here as we're dealing with files in bazel-out
     .distinct()

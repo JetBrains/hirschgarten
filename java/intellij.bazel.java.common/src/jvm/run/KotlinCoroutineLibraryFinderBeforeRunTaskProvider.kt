@@ -9,6 +9,7 @@ import com.intellij.execution.configurations.RunConfigurationBase
 import com.intellij.execution.executors.DefaultDebugExecutor
 import com.intellij.execution.runners.ExecutionEnvironment
 import com.intellij.openapi.actionSystem.DataContext
+import com.intellij.openapi.components.service
 import com.intellij.openapi.progress.runBlockingMaybeCancellable
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.roots.OrderEnumerator
@@ -22,7 +23,7 @@ import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.run.config.BazelRunConfiguration
 import org.jetbrains.bazel.settings.bazel.bazelJVMProjectSettings
-import org.jetbrains.bazel.target.getModule
+import org.jetbrains.bazel.target.ModuleTargetService
 import org.jetbrains.bazel.target.targetUtils
 
 private const val PROVIDER_NAME = "KotlinCoroutineLibraryFinderBeforeRunTaskProvider"
@@ -90,22 +91,24 @@ internal fun attachCoroutinesDebuggerConnection(runConfiguration: RunConfigurati
 
 private val MIN_COROUTINES_VERSION = SemVer.parseFromText("1.3.8")
 
-private fun Project.findClassPathByTargetLabel(label: Label): List<VirtualFile> {
-  val module = label.getModule(this) ?: return emptyList()
-  val jars = PathsList()
-  OrderEnumerator
-    .orderEntries(module)
-    .recursively()
-    .withoutSdk()
-    .roots(OrderRootType.CLASSES)
-    .collectPaths(jars)
-  return jars.virtualFiles
-}
+private fun Project.findClassPathByTargetLabel(label: Label): List<VirtualFile> =
+  service<ModuleTargetService>()
+    .findLegacyModulesByLabel(label = label)
+    .flatMap { module ->
+      val jars = PathsList()
+      OrderEnumerator
+        .orderEntries(module)
+        .recursively()
+        .withoutSdk()
+        .roots(OrderRootType.CLASSES)
+        .collectPaths(jars)
+      jars.virtualFiles
+    }
 
 private fun List<VirtualFile>.findLatestCoroutinesJarRootRelativePath(): VirtualFile? {
   val (path, version) = findLatestJarByName("kotlinx-coroutines-core-jvm")
-    ?: findLatestJarByName("kotlin-coroutines-core")
-    ?: return null
+                        ?: findLatestJarByName("kotlin-coroutines-core")
+                        ?: return null
   if (version < MIN_COROUTINES_VERSION) return null
   return path
 }

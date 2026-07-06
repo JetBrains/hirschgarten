@@ -57,7 +57,7 @@ import org.jetbrains.bazel.sync.workspace.snapshot.hasBuildData
 import org.jetbrains.bazel.utils.isUnder
 import org.jetbrains.bazel.workspacemodel.entities.BazelModuleEntitySource
 import org.jetbrains.bazel.workspacemodel.entities.BazelModuleExtensionEntity
-import org.jetbrains.bazel.workspacemodel.entities.WorkspaceModelTargetLabel
+import org.jetbrains.bazel.workspacemodel.entities.WorkspaceModelTargetKey
 import org.jetbrains.bazel.workspacemodel.entities.WorkspaceModelTargetLabelList
 import org.jetbrains.bazel.workspacemodel.entities.WorkspaceModelTargetSourceRootTypeId
 import org.jetbrains.bazel.workspacemodel.entities.bazelModuleExtension
@@ -305,7 +305,7 @@ internal class BazelPythonWorkspaceImporter : BazelWorkspaceImporter {
         this.type = PYTHON_MODULE_TYPE
         this.contentRoots = contentRoots
         this.bazelModuleExtension = BazelModuleExtensionEntity(
-          label = WorkspaceModelTargetLabel(target.id),
+          _targetKey = WorkspaceModelTargetKey.of(target.key),
           rootTypeId = WorkspaceModelTargetSourceRootTypeId(SourceRootTypeId(PYTHON_SOURCE_ROOT_TYPE)),
           strictDependencies = WorkspaceModelTargetLabelList(
             StrictDependencyCheckedType.OFF,

@@ -49,7 +49,7 @@ import org.jetbrains.bazel.workspace.model.test.framework.WorkspaceModelBaseTest
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
 import org.jetbrains.bazel.workspacemodel.entities.BazelModuleEntitySource
 import org.jetbrains.bazel.workspacemodel.entities.BazelModuleExtensionEntity
-import org.jetbrains.bazel.workspacemodel.entities.WorkspaceModelTargetLabel
+import org.jetbrains.bazel.workspacemodel.entities.WorkspaceModelTargetKey
 import org.jetbrains.bazel.workspacemodel.entities.WorkspaceModelTargetLabelList
 import org.jetbrains.bazel.workspacemodel.entities.WorkspaceModelTargetSourceRootTypeId
 import org.jetbrains.bazel.workspacemodel.entities.bazelModuleExtension
@@ -616,7 +616,7 @@ class BazelFileEventListenerTest : WorkspaceModelBaseTest() {
       ) {
         this.contentRoots = contentRoots
         this.bazelModuleExtension = BazelModuleExtensionEntity(
-          label = WorkspaceModelTargetLabel(label),
+          _targetKey = WorkspaceModelTargetKey.of(WorkspaceTargetKey(label = label)),
           rootTypeId = WorkspaceModelTargetSourceRootTypeId(JAVA_SOURCE_ROOT_TYPE),
           strictDependencies = WorkspaceModelTargetLabelList(StrictDependencyCheckedType.OFF, emptyList()),
           entitySource = entitySource,
@@ -649,9 +649,9 @@ private fun Deferred<Boolean>?.assertNoProcessingHappened() {
 }
 
 private fun Deferred<Boolean>?.awaitAndGetResult(timeoutSeconds: Int = 15): Boolean? =
-  timeoutRunBlocking(timeout=timeoutSeconds.seconds) { this@awaitAndGetResult?.await() }
+  timeoutRunBlocking(timeout = timeoutSeconds.seconds) { this@awaitAndGetResult?.await() }
 
-private object MockBazelFileEventProcessor: BazelFileEventProcessor {
+private object MockBazelFileEventProcessor : BazelFileEventProcessor {
   override suspend fun process(events: List<VFileEvent>): Boolean {
     return false
   }

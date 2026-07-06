@@ -41,6 +41,7 @@ import org.jetbrains.bazel.languages.starlark.references.resolveLabel
 import org.jetbrains.bazel.target.targetUtils
 import org.jetbrains.bazel.workspacemodel.entities.BazelGoPackageEntity
 import org.jetbrains.bazel.workspacemodel.entities.BazelGoTargetEntity
+import org.jetbrains.bazel.workspacemodel.entities.targetKey
 import java.util.function.Predicate
 
 /**
@@ -125,7 +126,8 @@ class BazelGoPackage(
       var currentElement =
         if (lastElement is PsiDirectory) {
           lastElement.parent
-        } else {
+        }
+        else {
           lastElement.containingFile?.parent
         }
 
@@ -138,7 +140,8 @@ class BazelGoPackage(
         if (name == pathComponent) {
           importReferences[i] = currentElement
           currentElement = currentElement.parent
-        } else {
+        }
+        else {
           break
         }
       }
@@ -163,17 +166,20 @@ class BazelGoPackage(
         is StarlarkCallExpression -> {
           if (name == label.targetName) {
             buildElement
-          } else {
+          }
+          else {
             buildElement.containingFile?.parent?.takeIf {
               it.name == name
             }
           }
         }
+
         is StarlarkFile -> {
           if (!buildElement.isBuildFile()) return null
           buildElement.parent?.takeIf { it.name == name }
-            ?: buildElement
+          ?: buildElement
         }
+
         else -> null
       }
     }
@@ -220,9 +226,9 @@ class BazelGoPackage(
     for (file in files()) {
       val virtualFile = file.virtualFile
       if (virtualFile.isValid &&
-        virtualFileFilter.test(virtualFile) &&
-        !fileIndexFacade.isExcludedFile(virtualFile) &&
-        !processor.process(file)
+          virtualFileFilter.test(virtualFile) &&
+          !fileIndexFacade.isExcludedFile(virtualFile) &&
+          !processor.process(file)
       ) {
         return false
       }
@@ -252,9 +258,10 @@ class BazelGoPackage(
   private fun getMainLabel(): Label? {
     val targetUtils = project.targetUtils
     val labels = project.workspaceModel.currentSnapshot.referrers(entity.symbolicId, BazelGoTargetEntity::class.java)
-      .map { it.label.toLabel() }
+      .map { it.targetKey.label }
     // A package may have a library target, and a test target that tests that library.
     // Don't resolve to a test target if we can.
+    // TODO: migrate to full compound key
     labels.firstOrNull { targetUtils.getBuildTargetForLabel(it)?.kind?.ruleType == RuleType.LIBRARY }?.let { return it }
     return labels.firstOrNull()
   }

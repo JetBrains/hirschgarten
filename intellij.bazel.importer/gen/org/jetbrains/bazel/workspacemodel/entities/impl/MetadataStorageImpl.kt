@@ -15,8 +15,9 @@ import com.intellij.platform.workspace.storage.metadata.model.ValueTypeMetadata
 internal object MetadataStorageImpl : MetadataStorageBase() {
   override fun initializeMetadata() {
     val primitiveTypeStringNotNullable = ValueTypeMetadata.SimpleType.PrimitiveType(isNullable = false, type = "String")
-    val primitiveTypeIntNotNullable = ValueTypeMetadata.SimpleType.PrimitiveType(isNullable = false, type = "Int")
     val primitiveTypeListNotNullable = ValueTypeMetadata.SimpleType.PrimitiveType(isNullable = false, type = "List")
+    val primitiveTypeStringNullable = ValueTypeMetadata.SimpleType.PrimitiveType(isNullable = true, type = "String")
+    val primitiveTypeIntNotNullable = ValueTypeMetadata.SimpleType.PrimitiveType(isNullable = false, type = "Int")
     val primitiveTypeBooleanNotNullable = ValueTypeMetadata.SimpleType.PrimitiveType(isNullable = false, type = "Boolean")
     val primitiveTypeSetNotNullable = ValueTypeMetadata.SimpleType.PrimitiveType(isNullable = false, type = "Set")
 
@@ -137,12 +138,41 @@ internal object MetadataStorageImpl : MetadataStorageBase() {
           isComputable = false,
           isKey = false,
           isOpen = false,
-          name = "label",
+          name = "presentableName",
+          valueType = primitiveTypeStringNotNullable,
+          withDefault = false,
+        ),
+        OwnPropertyMetadata(
+          isComputable = false,
+          isKey = false,
+          isOpen = false,
+          name = "targetKey",
           valueType = ValueTypeMetadata.SimpleType.CustomType(
             isNullable = false,
             typeMetadata = FinalClassMetadata.ClassMetadata(
-              fqName = "org.jetbrains.bazel.workspacemodel.entities.WorkspaceModelTargetLabel",
+              fqName = "org.jetbrains.bazel.workspacemodel.entities.WorkspaceModelTargetKey",
               properties = listOf(
+                OwnPropertyMetadata(
+                  isComputable = false,
+                  isKey = false,
+                  isOpen = false,
+                  name = "aspectIds",
+                  valueType = ValueTypeMetadata.ParameterizedType(
+                    generics = listOf(
+                      primitiveTypeStringNotNullable,
+                    ),
+                    primitive = primitiveTypeListNotNullable,
+                  ),
+                  withDefault = false,
+                ),
+                OwnPropertyMetadata(
+                  isComputable = false,
+                  isKey = false,
+                  isOpen = false,
+                  name = "configuration",
+                  valueType = primitiveTypeStringNullable,
+                  withDefault = false,
+                ),
                 OwnPropertyMetadata(
                   isComputable = false,
                   isKey = false,
@@ -155,14 +185,6 @@ internal object MetadataStorageImpl : MetadataStorageBase() {
               supertypes = listOf(),
             ),
           ),
-          withDefault = false,
-        ),
-        OwnPropertyMetadata(
-          isComputable = false,
-          isKey = false,
-          isOpen = false,
-          name = "presentableName",
-          valueType = primitiveTypeStringNotNullable,
           withDefault = false,
         ),
       ),
@@ -320,12 +342,41 @@ internal object MetadataStorageImpl : MetadataStorageBase() {
                   isComputable = false,
                   isKey = false,
                   isOpen = false,
-                  name = "label",
+                  name = "presentableName",
+                  valueType = primitiveTypeStringNotNullable,
+                  withDefault = false,
+                ),
+                OwnPropertyMetadata(
+                  isComputable = false,
+                  isKey = false,
+                  isOpen = false,
+                  name = "targetKey",
                   valueType = ValueTypeMetadata.SimpleType.CustomType(
                     isNullable = false,
                     typeMetadata = FinalClassMetadata.ClassMetadata(
-                      fqName = "org.jetbrains.bazel.workspacemodel.entities.WorkspaceModelTargetLabel",
+                      fqName = "org.jetbrains.bazel.workspacemodel.entities.WorkspaceModelTargetKey",
                       properties = listOf(
+                        OwnPropertyMetadata(
+                          isComputable = false,
+                          isKey = false,
+                          isOpen = false,
+                          name = "aspectIds",
+                          valueType = ValueTypeMetadata.ParameterizedType(
+                            generics = listOf(
+                              primitiveTypeStringNotNullable,
+                            ),
+                            primitive = primitiveTypeListNotNullable,
+                          ),
+                          withDefault = false,
+                        ),
+                        OwnPropertyMetadata(
+                          isComputable = false,
+                          isKey = false,
+                          isOpen = false,
+                          name = "configuration",
+                          valueType = primitiveTypeStringNullable,
+                          withDefault = false,
+                        ),
                         OwnPropertyMetadata(
                           isComputable = false,
                           isKey = false,
@@ -340,14 +391,6 @@ internal object MetadataStorageImpl : MetadataStorageBase() {
                   ),
                   withDefault = false,
                 ),
-                OwnPropertyMetadata(
-                  isComputable = false,
-                  isKey = false,
-                  isOpen = false,
-                  name = "presentableName",
-                  valueType = primitiveTypeStringNotNullable,
-                  withDefault = false,
-                ),
               ),
               supertypes = listOf(
                 "com.intellij.platform.workspace.storage.SymbolicEntityId",
@@ -360,12 +403,33 @@ internal object MetadataStorageImpl : MetadataStorageBase() {
           isComputable = false,
           isKey = false,
           isOpen = false,
-          name = "label",
+          name = "_targetKey",
           valueType = ValueTypeMetadata.SimpleType.CustomType(
             isNullable = false,
             typeMetadata = FinalClassMetadata.ClassMetadata(
-              fqName = "org.jetbrains.bazel.workspacemodel.entities.WorkspaceModelTargetLabel",
+              fqName = "org.jetbrains.bazel.workspacemodel.entities.WorkspaceModelTargetKey",
               properties = listOf(
+                OwnPropertyMetadata(
+                  isComputable = false,
+                  isKey = false,
+                  isOpen = false,
+                  name = "aspectIds",
+                  valueType = ValueTypeMetadata.ParameterizedType(
+                    generics = listOf(
+                      primitiveTypeStringNotNullable,
+                    ),
+                    primitive = primitiveTypeListNotNullable,
+                  ),
+                  withDefault = false,
+                ),
+                OwnPropertyMetadata(
+                  isComputable = false,
+                  isKey = false,
+                  isOpen = false,
+                  name = "configuration",
+                  valueType = primitiveTypeStringNullable,
+                  withDefault = false,
+                ),
                 OwnPropertyMetadata(
                   isComputable = false,
                   isKey = false,
@@ -456,12 +520,33 @@ internal object MetadataStorageImpl : MetadataStorageBase() {
           isComputable = false,
           isKey = false,
           isOpen = false,
-          name = "label",
+          name = "_targetKey",
           valueType = ValueTypeMetadata.SimpleType.CustomType(
             isNullable = false,
             typeMetadata = FinalClassMetadata.ClassMetadata(
-              fqName = "org.jetbrains.bazel.workspacemodel.entities.WorkspaceModelTargetLabel",
+              fqName = "org.jetbrains.bazel.workspacemodel.entities.WorkspaceModelTargetKey",
               properties = listOf(
+                OwnPropertyMetadata(
+                  isComputable = false,
+                  isKey = false,
+                  isOpen = false,
+                  name = "aspectIds",
+                  valueType = ValueTypeMetadata.ParameterizedType(
+                    generics = listOf(
+                      primitiveTypeStringNotNullable,
+                    ),
+                    primitive = primitiveTypeListNotNullable,
+                  ),
+                  withDefault = false,
+                ),
+                OwnPropertyMetadata(
+                  isComputable = false,
+                  isKey = false,
+                  isOpen = false,
+                  name = "configuration",
+                  valueType = primitiveTypeStringNullable,
+                  withDefault = false,
+                ),
                 OwnPropertyMetadata(
                   isComputable = false,
                   isKey = false,
@@ -540,6 +625,51 @@ internal object MetadataStorageImpl : MetadataStorageBase() {
           isComputable = false,
           isKey = false,
           isOpen = false,
+          name = "_targetKey",
+          valueType = ValueTypeMetadata.SimpleType.CustomType(
+            isNullable = false,
+            typeMetadata = FinalClassMetadata.ClassMetadata(
+              fqName = "org.jetbrains.bazel.workspacemodel.entities.WorkspaceModelTargetKey",
+              properties = listOf(
+                OwnPropertyMetadata(
+                  isComputable = false,
+                  isKey = false,
+                  isOpen = false,
+                  name = "aspectIds",
+                  valueType = ValueTypeMetadata.ParameterizedType(
+                    generics = listOf(
+                      primitiveTypeStringNotNullable,
+                    ),
+                    primitive = primitiveTypeListNotNullable,
+                  ),
+                  withDefault = false,
+                ),
+                OwnPropertyMetadata(
+                  isComputable = false,
+                  isKey = false,
+                  isOpen = false,
+                  name = "configuration",
+                  valueType = primitiveTypeStringNullable,
+                  withDefault = false,
+                ),
+                OwnPropertyMetadata(
+                  isComputable = false,
+                  isKey = false,
+                  isOpen = false,
+                  name = "label",
+                  valueType = primitiveTypeStringNotNullable,
+                  withDefault = false,
+                ),
+              ),
+              supertypes = listOf(),
+            ),
+          ),
+          withDefault = false,
+        ),
+        OwnPropertyMetadata(
+          isComputable = false,
+          isKey = false,
+          isOpen = false,
           name = "rootTypeId",
           valueType = ValueTypeMetadata.SimpleType.CustomType(
             isNullable = false,
@@ -568,30 +698,6 @@ internal object MetadataStorageImpl : MetadataStorageBase() {
                       supertypes = listOf(),
                     ),
                   ),
-                  withDefault = false,
-                ),
-              ),
-              supertypes = listOf(),
-            ),
-          ),
-          withDefault = false,
-        ),
-        OwnPropertyMetadata(
-          isComputable = false,
-          isKey = false,
-          isOpen = false,
-          name = "label",
-          valueType = ValueTypeMetadata.SimpleType.CustomType(
-            isNullable = false,
-            typeMetadata = FinalClassMetadata.ClassMetadata(
-              fqName = "org.jetbrains.bazel.workspacemodel.entities.WorkspaceModelTargetLabel",
-              properties = listOf(
-                OwnPropertyMetadata(
-                  isComputable = false,
-                  isKey = false,
-                  isOpen = false,
-                  name = "label",
-                  valueType = primitiveTypeStringNotNullable,
                   withDefault = false,
                 ),
               ),
@@ -1385,9 +1491,9 @@ internal object MetadataStorageImpl : MetadataStorageBase() {
 
   override fun initializeMetadataHash() {
     addMetadataHash(typeFqn = "org.jetbrains.bazel.workspacemodel.entities.BazelGoPackageEntity", metadataHash = -238377136)
-    addMetadataHash(typeFqn = "org.jetbrains.bazel.workspacemodel.entities.BazelGoTargetEntity", metadataHash = -99500148)
-    addMetadataHash(typeFqn = "org.jetbrains.bazel.workspacemodel.entities.BazelLibraryExtensionEntity", metadataHash = -2026061674)
-    addMetadataHash(typeFqn = "org.jetbrains.bazel.workspacemodel.entities.BazelModuleExtensionEntity", metadataHash = -1800919832)
+    addMetadataHash(typeFqn = "org.jetbrains.bazel.workspacemodel.entities.BazelGoTargetEntity", metadataHash = 806781147)
+    addMetadataHash(typeFqn = "org.jetbrains.bazel.workspacemodel.entities.BazelLibraryExtensionEntity", metadataHash = 380765835)
+    addMetadataHash(typeFqn = "org.jetbrains.bazel.workspacemodel.entities.BazelModuleExtensionEntity", metadataHash = 18340035)
     addMetadataHash(typeFqn = "org.jetbrains.bazel.workspacemodel.entities.BazelProjectDirectoriesEntity", metadataHash = 2065560361)
     addMetadataHash(
       typeFqn = "org.jetbrains.bazel.workspacemodel.entities.CompiledSourceCodeInsideJarExcludeEntity",
@@ -1401,8 +1507,8 @@ internal object MetadataStorageImpl : MetadataStorageBase() {
     addMetadataHash(typeFqn = "org.jetbrains.bazel.workspacemodel.entities.PackageMarkerEntity", metadataHash = -1844349399)
     addMetadataHash(typeFqn = "org.jetbrains.bazel.workspacemodel.entities.ScalaAddendumEntity", metadataHash = 950673911)
     addMetadataHash(typeFqn = "org.jetbrains.bazel.workspacemodel.entities.ImportPathId", metadataHash = 1954566151)
-    addMetadataHash(typeFqn = "org.jetbrains.bazel.workspacemodel.entities.BazelGoTargetEntityId", metadataHash = -70553589)
-    addMetadataHash(typeFqn = "org.jetbrains.bazel.workspacemodel.entities.WorkspaceModelTargetLabel", metadataHash = -582088477)
+    addMetadataHash(typeFqn = "org.jetbrains.bazel.workspacemodel.entities.BazelGoTargetEntityId", metadataHash = -1911160669)
+    addMetadataHash(typeFqn = "org.jetbrains.bazel.workspacemodel.entities.WorkspaceModelTargetKey", metadataHash = -2063063629)
     addMetadataHash(
       typeFqn = "org.jetbrains.bazel.workspacemodel.entities.WorkspaceModelTargetSourceRootTypeId",
       metadataHash = -1299159314,
@@ -1429,6 +1535,6 @@ internal object MetadataStorageImpl : MetadataStorageBase() {
     addMetadataHash(typeFqn = "org.jetbrains.bazel.workspacemodel.entities.BazelEntitySource", metadataHash = -2119790393)
     addMetadataHash(typeFqn = "org.jetbrains.bazel.workspacemodel.entities.BazelModuleEntitySource", metadataHash = 633678949)
     addMetadataHash(typeFqn = "org.jetbrains.bazel.workspacemodel.entities.BazelProjectEntitySource", metadataHash = -1409629483)
-    addMetadataHash(typeFqn = "com.intellij.platform.workspace.storage.SymbolicEntityId", metadataHash = -1285738418)
+    addMetadataHash(typeFqn = "com.intellij.platform.workspace.storage.SymbolicEntityId", metadataHash = 1804943590)
   }
 }

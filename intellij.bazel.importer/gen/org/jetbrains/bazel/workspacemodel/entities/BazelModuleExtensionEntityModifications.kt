@@ -17,8 +17,8 @@ import org.jetbrains.bazel.workspacemodel.entities.impl.BazelModuleExtensionEnti
 interface BazelModuleExtensionEntityBuilder : WorkspaceEntityBuilder<BazelModuleExtensionEntity> {
   override var entitySource: EntitySource
   var module: ModuleEntityBuilder
+  var _targetKey: WorkspaceModelTargetKey
   var rootTypeId: WorkspaceModelTargetSourceRootTypeId
-  var label: WorkspaceModelTargetLabel
   var strictDependencies: WorkspaceModelTargetLabelList
 }
 
@@ -26,15 +26,15 @@ internal object BazelModuleExtensionEntityType : EntityType<BazelModuleExtension
   override val entityClass: Class<BazelModuleExtensionEntity> get() = BazelModuleExtensionEntity::class.java
   override val entityImplBuilderClass: Class<*> get() = BazelModuleExtensionEntityImpl.Builder::class.java
   operator fun invoke(
+    _targetKey: WorkspaceModelTargetKey,
     rootTypeId: WorkspaceModelTargetSourceRootTypeId,
-    label: WorkspaceModelTargetLabel,
     strictDependencies: WorkspaceModelTargetLabelList,
     entitySource: EntitySource,
     init: (BazelModuleExtensionEntityBuilder.() -> Unit)? = null,
   ): BazelModuleExtensionEntityBuilder {
     val builder = builder()
+    builder._targetKey = _targetKey
     builder.rootTypeId = rootTypeId
-    builder.label = label
     builder.strictDependencies = strictDependencies
     builder.entitySource = entitySource
     init?.invoke(builder)
@@ -58,9 +58,9 @@ var ModuleEntityBuilder.bazelModuleExtension: BazelModuleExtensionEntityBuilder?
 @JvmOverloads
 @JvmName("createBazelModuleExtensionEntity")
 fun BazelModuleExtensionEntity(
+  _targetKey: WorkspaceModelTargetKey,
   rootTypeId: WorkspaceModelTargetSourceRootTypeId,
-  label: WorkspaceModelTargetLabel,
   strictDependencies: WorkspaceModelTargetLabelList,
   entitySource: EntitySource,
   init: (BazelModuleExtensionEntityBuilder.() -> Unit)? = null,
-): BazelModuleExtensionEntityBuilder = BazelModuleExtensionEntityType(rootTypeId, label, strictDependencies, entitySource, init)
+): BazelModuleExtensionEntityBuilder = BazelModuleExtensionEntityType(_targetKey, rootTypeId, strictDependencies, entitySource, init)

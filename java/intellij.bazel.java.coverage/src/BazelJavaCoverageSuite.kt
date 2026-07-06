@@ -13,7 +13,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.psi.search.GlobalSearchScope
 import com.intellij.psi.search.GlobalSearchScopesCore
 import org.jetbrains.bazel.run.config.BazelRunConfiguration
-import org.jetbrains.bazel.target.getModule
+import org.jetbrains.bazel.target.ModuleTargetService
 
 internal class BazelJavaCoverageSuite : JavaCoverageSuite {
   constructor(coverageEngine: CoverageEngine) : super(coverageEngine)
@@ -67,10 +67,10 @@ internal class BazelJavaCoverageSuite : JavaCoverageSuite {
     }
 
     val module = (configuration as? BazelRunConfiguration)
-      ?.targets
-      ?.singleOrNull()
-      ?.getModule(project)
-      ?: return scope
+                   ?.targets
+                   ?.singleOrNull()
+                   ?.let { project.service<ModuleTargetService>().findLegacyModulesByLabel(label = it).firstOrNull() }
+                 ?: return scope
     val cache = project.service<ModuleWithDependenciesScopeCache>()
     // Follow both runtime and compile dependencies, but don't add libraries
     val moduleScope = cache.getCachedScope(module, TESTS or MODULES)

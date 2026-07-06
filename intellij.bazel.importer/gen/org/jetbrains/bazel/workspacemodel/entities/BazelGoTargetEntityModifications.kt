@@ -14,7 +14,7 @@ import org.jetbrains.bazel.workspacemodel.entities.impl.BazelGoTargetEntityImpl
 @GeneratedCodeApiVersion(3)
 interface BazelGoTargetEntityBuilder : WorkspaceEntityBuilder<BazelGoTargetEntity> {
   override var entitySource: EntitySource
-  var label: WorkspaceModelTargetLabel
+  var _targetKey: WorkspaceModelTargetKey
   var importPath: ImportPathId
 }
 
@@ -22,13 +22,13 @@ internal object BazelGoTargetEntityType : EntityType<BazelGoTargetEntity, BazelG
   override val entityClass: Class<BazelGoTargetEntity> get() = BazelGoTargetEntity::class.java
   override val entityImplBuilderClass: Class<*> get() = BazelGoTargetEntityImpl.Builder::class.java
   operator fun invoke(
-    label: WorkspaceModelTargetLabel,
+    _targetKey: WorkspaceModelTargetKey,
     importPath: ImportPathId,
     entitySource: EntitySource,
     init: (BazelGoTargetEntityBuilder.() -> Unit)? = null,
   ): BazelGoTargetEntityBuilder {
     val builder = builder()
-    builder.label = label
+    builder._targetKey = _targetKey
     builder.importPath = importPath
     builder.entitySource = entitySource
     init?.invoke(builder)
@@ -46,8 +46,8 @@ fun MutableEntityStorage.modifyBazelGoTargetEntity(
 @JvmOverloads
 @JvmName("createBazelGoTargetEntity")
 fun BazelGoTargetEntity(
-  label: WorkspaceModelTargetLabel,
+  _targetKey: WorkspaceModelTargetKey,
   importPath: ImportPathId,
   entitySource: EntitySource,
   init: (BazelGoTargetEntityBuilder.() -> Unit)? = null,
-): BazelGoTargetEntityBuilder = BazelGoTargetEntityType(label, importPath, entitySource, init)
+): BazelGoTargetEntityBuilder = BazelGoTargetEntityType(_targetKey, importPath, entitySource, init)

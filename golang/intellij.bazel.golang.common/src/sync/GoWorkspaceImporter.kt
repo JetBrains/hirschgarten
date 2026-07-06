@@ -29,8 +29,7 @@ import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
 import org.jetbrains.bazel.utils.filterPathsThatDontContainEachOther
 import org.jetbrains.bazel.workspacemodel.entities.BazelGoPackageEntity
 import org.jetbrains.bazel.workspacemodel.entities.BazelGoTargetEntity
-import org.jetbrains.bazel.workspacemodel.entities.BazelGoTargetEntityId
-import org.jetbrains.bazel.workspacemodel.entities.WorkspaceModelTargetLabel
+import org.jetbrains.bazel.workspacemodel.entities.WorkspaceModelTargetKey
 import org.jetbrains.bsp.protocol.TaskId
 import java.nio.file.Path
 
@@ -135,15 +134,8 @@ internal class GoWorkspaceImporter : BazelWorkspaceImporter, BazelWorkspaceImpor
       val importPathId = packageEntity.symbolicId
 
       for (target in goTargets) {
-        val label = WorkspaceModelTargetLabel(target.key.label)
-        if (builder.contains(BazelGoTargetEntityId(label))) {
-          // TODO: if we add several entities with the same SymbolicEntityId we get an exception
-          // We have this problem as we serialize WorkspaceModelTargetLabel and not the full key, so they can clash
-          // should be resolved after Krystian's PR: https://code.jetbrains.team/p/ij/repositories/ultimate/reviews/212065
-          continue
-        }
         builder addEntity BazelGoTargetEntity(
-          label = WorkspaceModelTargetLabel(target.key.label),
+          _targetKey = WorkspaceModelTargetKey.of(target.key),
           importPath = importPathId,
           entitySource = entitySource,
         )

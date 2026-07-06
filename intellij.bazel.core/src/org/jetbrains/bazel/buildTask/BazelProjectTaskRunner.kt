@@ -18,6 +18,7 @@ import org.jetbrains.bazel.coroutines.BazelCoroutineService
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.server.tasks.runBuildTargetTask
 import org.jetbrains.bazel.workspacemodel.entities.bazelModuleExtension
+import org.jetbrains.bazel.workspacemodel.entities.targetKey
 import org.jetbrains.concurrency.Promise
 import org.jetbrains.concurrency.toPromiseWithoutLogError
 
@@ -55,7 +56,7 @@ internal class BazelProjectTaskRunner : ProjectTaskRunner() {
   private fun obtainTargetsToBuild(tasks: Array<out ProjectTask>): List<Label> =
     tasks.filterIsInstance<ModuleBuildTask>()
       .mapNotNull { it.module.findModuleEntity() }
-      .mapNotNull { it.bazelModuleExtension?.label?.toLabel() }
+      .mapNotNull { it.bazelModuleExtension?.targetKey?.label }
 
   private fun BazelStatus.toTaskRunnerResult() =
     when (this) {

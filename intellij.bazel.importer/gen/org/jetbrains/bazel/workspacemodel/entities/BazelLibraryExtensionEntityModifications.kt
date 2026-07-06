@@ -17,7 +17,7 @@ import org.jetbrains.bazel.workspacemodel.entities.impl.BazelLibraryExtensionEnt
 interface BazelLibraryExtensionEntityBuilder : WorkspaceEntityBuilder<BazelLibraryExtensionEntity> {
   override var entitySource: EntitySource
   var library: LibraryEntityBuilder
-  var label: WorkspaceModelTargetLabel
+  var _targetKey: WorkspaceModelTargetKey
   var isSynthetic: Boolean
 }
 
@@ -25,13 +25,13 @@ internal object BazelLibraryExtensionEntityType : EntityType<BazelLibraryExtensi
   override val entityClass: Class<BazelLibraryExtensionEntity> get() = BazelLibraryExtensionEntity::class.java
   override val entityImplBuilderClass: Class<*> get() = BazelLibraryExtensionEntityImpl.Builder::class.java
   operator fun invoke(
-    label: WorkspaceModelTargetLabel,
+    _targetKey: WorkspaceModelTargetKey,
     isSynthetic: Boolean,
     entitySource: EntitySource,
     init: (BazelLibraryExtensionEntityBuilder.() -> Unit)? = null,
   ): BazelLibraryExtensionEntityBuilder {
     val builder = builder()
-    builder.label = label
+    builder._targetKey = _targetKey
     builder.isSynthetic = isSynthetic
     builder.entitySource = entitySource
     init?.invoke(builder)
@@ -55,8 +55,8 @@ var LibraryEntityBuilder.bazelLibraryExtension: BazelLibraryExtensionEntityBuild
 @JvmOverloads
 @JvmName("createBazelLibraryExtensionEntity")
 fun BazelLibraryExtensionEntity(
-  label: WorkspaceModelTargetLabel,
+  _targetKey: WorkspaceModelTargetKey,
   isSynthetic: Boolean,
   entitySource: EntitySource,
   init: (BazelLibraryExtensionEntityBuilder.() -> Unit)? = null,
-): BazelLibraryExtensionEntityBuilder = BazelLibraryExtensionEntityType(label, isSynthetic, entitySource, init)
+): BazelLibraryExtensionEntityBuilder = BazelLibraryExtensionEntityType(_targetKey, isSynthetic, entitySource, init)

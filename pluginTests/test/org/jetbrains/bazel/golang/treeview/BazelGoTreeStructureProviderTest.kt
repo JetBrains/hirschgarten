@@ -40,12 +40,13 @@ import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.golang.sync.GoExternalSyntheticLibrary
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.sync.SyncCache
+import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
 import org.jetbrains.bazel.workspace.model.test.framework.WorkspaceModelBaseTest
 import org.jetbrains.bazel.workspacemodel.entities.BazelDummyEntitySource
 import org.jetbrains.bazel.workspacemodel.entities.BazelGoPackageEntity
 import org.jetbrains.bazel.workspacemodel.entities.BazelGoTargetEntity
 import org.jetbrains.bazel.workspacemodel.entities.ImportPathId
-import org.jetbrains.bazel.workspacemodel.entities.WorkspaceModelTargetLabel
+import org.jetbrains.bazel.workspacemodel.entities.WorkspaceModelTargetKey
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
@@ -72,7 +73,7 @@ class BazelGoTreeStructureProviderTest : WorkspaceModelBaseTest() {
     runWriteAction {
       workspaceModel.updateProjectModel("add file1 with importpath root1") { storage ->
         storage addEntity BazelGoTargetEntity(
-          label = WorkspaceModelTargetLabel(Label.synthetic("target1")),
+          _targetKey = WorkspaceModelTargetKey.of(WorkspaceTargetKey(Label.synthetic("target1"))),
           importPath = ImportPathId("root1"),
           entitySource = BazelDummyEntitySource,
         )
@@ -91,7 +92,7 @@ class BazelGoTreeStructureProviderTest : WorkspaceModelBaseTest() {
     runWriteAction {
       workspaceModel.updateProjectModel("add file2 with importpath root2") { storage ->
         storage addEntity BazelGoTargetEntity(
-          label = WorkspaceModelTargetLabel(Label.synthetic("target2")),
+          _targetKey = WorkspaceModelTargetKey.of(WorkspaceTargetKey(Label.synthetic("target2"))),
           importPath = ImportPathId("root2"),
           entitySource = BazelDummyEntitySource,
         )
