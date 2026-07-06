@@ -19,7 +19,7 @@ import com.intellij.platform.workspace.storage.url.VirtualFileUrlManager
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
 import org.jetbrains.bazel.workspacemodel.entities.BazelLibraryExtensionEntity
-import org.jetbrains.bazel.workspacemodel.entities.WorkspaceModelTargetLabel
+import org.jetbrains.bazel.workspacemodel.entities.WorkspaceModelTargetKey
 import org.jetbrains.bazel.workspacemodel.entities.bazelLibraryExtension
 import org.jetbrains.bsp.protocol.LibraryItem
 import org.jetbrains.jps.model.serialization.library.JpsLibraryTableSerializer
@@ -76,7 +76,7 @@ object LibraryBuilder {
           }
         this.bazelLibraryExtension = BazelLibraryExtensionEntity(
           entitySource = entitySource,
-          label = WorkspaceModelTargetLabel(libraryItem.key.label),
+          _targetKey = WorkspaceModelTargetKey.of(libraryItem.key),
           isSynthetic = libraryItem.key.label.isSynthetic,
         )
       }

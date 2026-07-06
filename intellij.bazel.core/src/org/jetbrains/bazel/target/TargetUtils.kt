@@ -12,11 +12,17 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.getProjectDataPath
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.toNioPathOrNull
+import com.intellij.platform.backend.workspace.workspaceModel
 import com.intellij.platform.workspace.jps.entities.ModuleEntity
+import com.intellij.platform.workspace.storage.query.entities
+import com.intellij.platform.workspace.storage.query.filter
+import com.intellij.platform.workspace.storage.query.flatMap
+import com.intellij.platform.workspace.storage.query.map
 import com.intellij.util.AwaitCancellationAndInvoke
 import com.intellij.util.awaitCancellationAndInvoke
 import com.intellij.util.concurrency.SynchronizedClearableLazy
 import com.intellij.util.concurrency.ThreadingAssertions
+import com.intellij.workspaceModel.ide.legacyBridge.findModule
 import com.intellij.workspaceModel.ide.legacyBridge.findModuleEntity
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Deferred
@@ -38,6 +44,7 @@ import org.jetbrains.bazel.languages.starlark.repomapping.toShortString
 import org.jetbrains.bazel.magicmetamodel.formatAsModuleName
 import org.jetbrains.bazel.sync.ExecutableTargetsComputer
 import org.jetbrains.bazel.target.TargetsCacheStorage.Companion.openStore
+import org.jetbrains.bazel.workspacemodel.entities.bazelModuleExtension
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.RawBuildTarget
 import java.nio.file.Path
@@ -222,15 +229,3 @@ class TargetUtils(private val project: Project, private val coroutineScope: Coro
 val Project.targetUtils: TargetUtils
   @ApiStatus.Internal
   get() = service<TargetUtils>()
-
-@ApiStatus.Internal
-fun Label.getModule(project: Project): Module? = project.targetUtils.getBuildTargetForLabel(this)?.getModule(project)
-
-@ApiStatus.Internal
-fun Label.getModuleEntity(project: Project): ModuleEntity? = getModule(project)?.findModuleEntity()
-
-@ApiStatus.Internal
-fun BuildTarget.getModule(project: Project): Module? {
-  val moduleName = this.id.formatAsModuleName(project)
-  return ModuleManager.getInstance(project).findModuleByName(moduleName)
-}

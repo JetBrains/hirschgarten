@@ -24,7 +24,7 @@ import com.intellij.platform.workspace.storage.metadata.model.EntityMetadata
 import org.jetbrains.annotations.ApiStatus.Internal
 import org.jetbrains.bazel.workspacemodel.entities.BazelLibraryExtensionEntity
 import org.jetbrains.bazel.workspacemodel.entities.BazelLibraryExtensionEntityBuilder
-import org.jetbrains.bazel.workspacemodel.entities.WorkspaceModelTargetLabel
+import org.jetbrains.bazel.workspacemodel.entities.WorkspaceModelTargetKey
 
 @Internal
 @GeneratedCodeApiVersion(3)
@@ -43,10 +43,10 @@ internal class BazelLibraryExtensionEntityImpl(private val dataSource: BazelLibr
   override val library: LibraryEntity
     get() = snapshot.instrumentation.getParent(LIBRARY_CONNECTION_ID, this) as? LibraryEntity
             ?: error("Parent library not found for BazelLibraryExtensionEntity")
-  override val label: WorkspaceModelTargetLabel
+  override val _targetKey: WorkspaceModelTargetKey
     get() {
-      readField("label")
-      return dataSource.label
+      readField("_targetKey")
+      return dataSource._targetKey
     }
   override val isSynthetic: Boolean
     get() {
@@ -106,8 +106,8 @@ internal class BazelLibraryExtensionEntityImpl(private val dataSource: BazelLibr
           error("Field BazelLibraryExtensionEntity#library should be initialized")
         }
       }
-      if (!getEntityData().isLabelInitialized()) {
-        error("Field BazelLibraryExtensionEntity#label should be initialized")
+      if (!getEntityData().is_targetKeyInitialized()) {
+        error("Field BazelLibraryExtensionEntity#_targetKey should be initialized")
       }
     }
 
@@ -119,7 +119,7 @@ internal class BazelLibraryExtensionEntityImpl(private val dataSource: BazelLibr
     override fun relabel(dataSource: WorkspaceEntity, parents: Set<WorkspaceEntity>?) {
       dataSource as BazelLibraryExtensionEntity
       if (this.entitySource != dataSource.entitySource) this.entitySource = dataSource.entitySource
-      if (this.label != dataSource.label) this.label = dataSource.label
+      if (this._targetKey != dataSource._targetKey) this._targetKey = dataSource._targetKey
       if (this.isSynthetic != dataSource.isSynthetic) this.isSynthetic = dataSource.isSynthetic
       updateChildToParentReferences(parents)
     }
@@ -169,12 +169,12 @@ internal class BazelLibraryExtensionEntityImpl(private val dataSource: BazelLibr
         changedProperty.add("library")
       }
 
-    override var label: WorkspaceModelTargetLabel
-      get() = getEntityData().label
+    override var _targetKey: WorkspaceModelTargetKey
+      get() = getEntityData()._targetKey
       set(value) {
         checkModificationAllowed()
-        getEntityData(true).label = value
-        changedProperty.add("label")
+        getEntityData(true)._targetKey = value
+        changedProperty.add("_targetKey")
 
       }
     override var isSynthetic: Boolean
@@ -192,10 +192,10 @@ internal class BazelLibraryExtensionEntityImpl(private val dataSource: BazelLibr
 
 @OptIn(WorkspaceEntityInternalApi::class)
 internal class BazelLibraryExtensionEntityData : WorkspaceEntityData<BazelLibraryExtensionEntity>() {
-  lateinit var label: WorkspaceModelTargetLabel
+  lateinit var _targetKey: WorkspaceModelTargetKey
   var isSynthetic: Boolean = false
 
-  internal fun isLabelInitialized(): Boolean = ::label.isInitialized
+  internal fun is_targetKeyInitialized(): Boolean = ::_targetKey.isInitialized
 
 
   override fun wrapAsModifiable(diff: MutableEntityStorage): WorkspaceEntityBuilder<BazelLibraryExtensionEntity> {
@@ -224,7 +224,7 @@ internal class BazelLibraryExtensionEntityData : WorkspaceEntityData<BazelLibrar
   }
 
   override fun createDetachedEntity(parents: List<WorkspaceEntityBuilder<*>>): WorkspaceEntityBuilder<*> {
-    return BazelLibraryExtensionEntity(label, isSynthetic, entitySource) {
+    return BazelLibraryExtensionEntity(_targetKey, isSynthetic, entitySource) {
       parents.filterIsInstance<LibraryEntityBuilder>().singleOrNull()?.let { this.library = it }
     }
   }
@@ -240,7 +240,7 @@ internal class BazelLibraryExtensionEntityData : WorkspaceEntityData<BazelLibrar
     if (this.javaClass != other.javaClass) return false
     other as BazelLibraryExtensionEntityData
     if (this.entitySource != other.entitySource) return false
-    if (this.label != other.label) return false
+    if (this._targetKey != other._targetKey) return false
     if (this.isSynthetic != other.isSynthetic) return false
     return true
   }
@@ -249,21 +249,21 @@ internal class BazelLibraryExtensionEntityData : WorkspaceEntityData<BazelLibrar
     if (other == null) return false
     if (this.javaClass != other.javaClass) return false
     other as BazelLibraryExtensionEntityData
-    if (this.label != other.label) return false
+    if (this._targetKey != other._targetKey) return false
     if (this.isSynthetic != other.isSynthetic) return false
     return true
   }
 
   override fun hashCode(): Int {
     var result = entitySource.hashCode()
-    result = 31 * result + label.hashCode()
+    result = 31 * result + _targetKey.hashCode()
     result = 31 * result + isSynthetic.hashCode()
     return result
   }
 
   override fun hashCodeIgnoringEntitySource(): Int {
     var result = javaClass.hashCode()
-    result = 31 * result + label.hashCode()
+    result = 31 * result + _targetKey.hashCode()
     result = 31 * result + isSynthetic.hashCode()
     return result
   }

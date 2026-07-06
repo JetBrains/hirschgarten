@@ -1,5 +1,6 @@
 package org.jetbrains.bazel.startup
 
+import com.intellij.openapi.components.service
 import com.intellij.openapi.components.serviceAsync
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
@@ -11,6 +12,7 @@ import org.jetbrains.bazel.projectAware.BazelWorkspace
 import org.jetbrains.bazel.startup.utils.BazelProjectActivity
 import org.jetbrains.bazel.sync.environment.projectCtx
 import org.jetbrains.bazel.sync.task.ProjectSyncTask
+import org.jetbrains.bazel.target.ModuleTargetService
 import org.jetbrains.bazel.target.TargetUtils
 import org.jetbrains.bazel.ui.settings.BazelApplicationSettingsService
 import org.jetbrains.bazel.ui.widgets.fileTargets.updateBazelFileTargetsWidget
@@ -44,6 +46,7 @@ private suspend fun executeOnEveryProjectStartup(project: Project) {
   log.debug("Executing Bazel startup activities for every opening")
   updateBazelFileTargetsWidget(project)
   project.serviceAsync<BazelWorkspace>().initialize()
+  project.service<ModuleTargetService>() // warm up service
 }
 
 private suspend fun resyncProjectIfNeeded(project: Project) {

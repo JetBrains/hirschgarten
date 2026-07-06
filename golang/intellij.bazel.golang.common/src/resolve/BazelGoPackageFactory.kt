@@ -19,14 +19,14 @@ package org.jetbrains.bazel.golang.resolve
 import com.goide.project.GoPackageFactory
 import com.goide.psi.GoFile
 import com.goide.psi.impl.GoPackage
+import com.intellij.platform.backend.workspace.toVirtualFileUrl
 import com.intellij.platform.backend.workspace.workspaceModel
 import com.intellij.psi.PsiDirectory
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.config.isBazelProject
-import org.jetbrains.bazel.target.targetUtils
-import org.jetbrains.bazel.workspacemodel.entities.BazelGoTargetEntityId
-import org.jetbrains.bazel.workspacemodel.entities.WorkspaceModelTargetLabel
+import org.jetbrains.bazel.workspacemodel.entities.BazelGoPackageEntity
+import org.jetbrains.bazel.workspacemodel.entities.ImportPathId
 
 @ApiStatus.Internal
 class BazelGoPackageFactory : GoPackageFactory {
@@ -35,14 +35,18 @@ class BazelGoPackageFactory : GoPackageFactory {
     val project = goFile.project
     if (!project.isBazelProject) return null
     val virtualFile = goFile.virtualFile ?: return null
-    val targetUtils = project.targetUtils
 
-    val containingTargets = targetUtils.getTargetsForFile(virtualFile)
-    val snapshot = project.workspaceModel.currentSnapshot
-    val goPackageEntity = containingTargets
-                            .mapNotNull { label -> snapshot.resolve(BazelGoTargetEntityId(WorkspaceModelTargetLabel(label))) }
-                            .firstNotNullOfOrNull { snapshot.resolve(it.importPath) } ?: return null
-    return BazelGoPackage(project, goPackageEntity)
+    val workspaceModel = project.workspaceModel
+    val vfuManager = workspaceModel.getVirtualFileUrlManager()
+    val snapshot = workspaceModel.currentSnapshot
+
+    // `BazelGoPackageEntity` is already part of VFU index due to `sources` property
+    val goPackage = snapshot.getVirtualFileUrlIndex()
+      .findEntitiesByUrl(fileUrl = virtualFile.toVirtualFileUrl(vfuManager))
+      .filterIsInstance<BazelGoPackageEntity>()
+      .firstNotNullOfOrNull { snapshot.resolve(ImportPathId(it.importPath)) }
+
+    return BazelGoPackage(project, goPackage ?: return null)
   }
 
   override fun createPackage(packageName: String, vararg directories: PsiDirectory): GoPackage? = null

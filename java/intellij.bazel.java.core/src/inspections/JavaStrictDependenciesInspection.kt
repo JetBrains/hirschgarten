@@ -27,10 +27,11 @@ import org.jetbrains.bazel.languages.starlark.repomapping.toApparentLabelOrThis
 import org.jetbrains.bazel.workspacemodel.entities.BazelModuleExtensionEntity
 import org.jetbrains.bazel.workspacemodel.entities.bazelLibraryExtension
 import org.jetbrains.bazel.workspacemodel.entities.bazelModuleExtension
+import org.jetbrains.bazel.workspacemodel.entities.targetKey
 import org.jetbrains.bsp.protocol.StrictDependencyCheckedType
 
 @ApiStatus.Internal
-class JavaStrictDependenciesInspection: LocalInspectionTool() {
+class JavaStrictDependenciesInspection : LocalInspectionTool() {
 
   override fun buildVisitor(
     holder: ProblemsHolder,
@@ -39,13 +40,13 @@ class JavaStrictDependenciesInspection: LocalInspectionTool() {
     val psiFile = (holder.file as? PsiJavaFile) ?: return PsiElementVisitor.EMPTY_VISITOR
     val bazelModuleExtension = bazelModuleExtension(psiFile) ?: return PsiElementVisitor.EMPTY_VISITOR
 
-    val moduleLabel = bazelModuleExtension.label.toLabel()
+    val moduleLabel = bazelModuleExtension.targetKey.label
     val strictDependenciesCheck = bazelModuleExtension.strictDependencies.check
     val strictDependencies = bazelModuleExtension.strictDependencies.labels.toSet()
     if (strictDependenciesCheck == StrictDependencyCheckedType.OFF || strictDependencies.isEmpty())
       return PsiElementVisitor.EMPTY_VISITOR
 
-    return object: JavaElementVisitor() {
+    return object : JavaElementVisitor() {
       override fun visitReferenceElement(reference: PsiJavaCodeReferenceElement) {
         reference.reference?.let {
           checkReference(it)
@@ -83,7 +84,7 @@ class JavaStrictDependenciesInspection: LocalInspectionTool() {
     if (file == null)
       return null
 
-    val multiverseModule =  (file.codeInsightContext as? ModuleContext)?.getModule()?.findModuleEntity()?.bazelModuleExtension
+    val multiverseModule = (file.codeInsightContext as? ModuleContext)?.getModule()?.findModuleEntity()?.bazelModuleExtension
     if (multiverseModule != null)
       return multiverseModule
 
@@ -93,11 +94,11 @@ class JavaStrictDependenciesInspection: LocalInspectionTool() {
   private fun getTargetLabel(element: PsiElement?): Label? {
     val file = element?.containingFile ?: return null
 
-    val multiverseModule =  (file.codeInsightContext as? ModuleContext)?.getModule()
+    val multiverseModule = (file.codeInsightContext as? ModuleContext)?.getModule()
       ?.findModuleEntity()
       ?.bazelModuleExtension
     if (multiverseModule != null)
-      return multiverseModule.label.toLabel()
+      return multiverseModule.targetKey.label
 
     val library = (file.codeInsightContext as? LibraryContext)?.getLibrary()
     if (library != null) {
@@ -105,10 +106,11 @@ class JavaStrictDependenciesInspection: LocalInspectionTool() {
         .findLibraryEntity(element.project.workspaceModel.currentSnapshot)
         ?.bazelLibraryExtension
       if (multiverseLibrary != null)
-        return multiverseLibrary.label.toLabel()
+        return multiverseLibrary.targetKey.label
     }
 
     // Fallback
-    return ProjectFileIndex.getInstance(file.project).getModuleForFile(file.virtualFile)?.findModuleEntity()?.bazelModuleExtension?.label?.toLabel()
+    return ProjectFileIndex.getInstance(file.project).getModuleForFile(file.virtualFile)
+      ?.findModuleEntity()?.bazelModuleExtension?.targetKey?.label
   }
 }

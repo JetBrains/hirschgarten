@@ -49,7 +49,7 @@ import org.jetbrains.bazel.workspacemodel.entities.BazelDummyEntitySource
 import org.jetbrains.bazel.workspacemodel.entities.BazelModuleEntitySource
 import org.jetbrains.bazel.workspacemodel.entities.BazelModuleExtensionEntity
 import org.jetbrains.bazel.workspacemodel.entities.CompiledSourceCodeInsideJarExcludeEntity
-import org.jetbrains.bazel.workspacemodel.entities.WorkspaceModelTargetLabel
+import org.jetbrains.bazel.workspacemodel.entities.WorkspaceModelTargetKey
 import org.jetbrains.bazel.workspacemodel.entities.WorkspaceModelTargetLabelList
 import org.jetbrains.bazel.workspacemodel.entities.WorkspaceModelTargetSourceRootTypeId
 import org.jetbrains.bazel.workspacemodel.entities.bazelModuleExtension
@@ -431,7 +431,7 @@ class JvmTargetEntitiesBuilder(private val ctx: ImportContext) {
       ) {
         this.type = dummyModuleType
         this.bazelModuleExtension = BazelModuleExtensionEntity(
-          label = WorkspaceModelTargetLabel(parentTarget.id),
+          _targetKey = WorkspaceModelTargetKey.of(parentTarget.key),
           rootTypeId = WorkspaceModelTargetSourceRootTypeId(JAVA_SOURCE_ROOT_TYPE),
           strictDependencies = WorkspaceModelTargetLabelList(StrictDependencyCheckedType.OFF, emptyList()),
           entitySource = entitySource,
@@ -479,7 +479,7 @@ class JvmTargetEntitiesBuilder(private val ctx: ImportContext) {
       ) {
         this.type = javaModuleType
         this.bazelModuleExtension = BazelModuleExtensionEntity(
-          label = WorkspaceModelTargetLabel(target.id),
+          _targetKey = WorkspaceModelTargetKey.of(target.key),
           rootTypeId = WorkspaceModelTargetSourceRootTypeId(defaultRootTypeId),
           strictDependencies = WorkspaceModelTargetLabelList(
             resolvedDeps.strictDependenciesCheck,

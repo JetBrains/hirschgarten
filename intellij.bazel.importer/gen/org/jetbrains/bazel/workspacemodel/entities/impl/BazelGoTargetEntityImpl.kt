@@ -24,7 +24,7 @@ import org.jetbrains.bazel.workspacemodel.entities.BazelGoTargetEntity
 import org.jetbrains.bazel.workspacemodel.entities.BazelGoTargetEntityBuilder
 import org.jetbrains.bazel.workspacemodel.entities.BazelGoTargetEntityId
 import org.jetbrains.bazel.workspacemodel.entities.ImportPathId
-import org.jetbrains.bazel.workspacemodel.entities.WorkspaceModelTargetLabel
+import org.jetbrains.bazel.workspacemodel.entities.WorkspaceModelTargetKey
 
 @Internal
 @GeneratedCodeApiVersion(3)
@@ -41,10 +41,10 @@ internal class BazelGoTargetEntityImpl(private val dataSource: BazelGoTargetEnti
 
   override val symbolicId: BazelGoTargetEntityId = super.symbolicId
 
-  override val label: WorkspaceModelTargetLabel
+  override val _targetKey: WorkspaceModelTargetKey
     get() {
-      readField("label")
-      return dataSource.label
+      readField("_targetKey")
+      return dataSource._targetKey
     }
   override val importPath: ImportPathId
     get() {
@@ -93,8 +93,8 @@ internal class BazelGoTargetEntityImpl(private val dataSource: BazelGoTargetEnti
       if (!getEntityData().isEntitySourceInitialized()) {
         error("Field WorkspaceEntity#entitySource should be initialized")
       }
-      if (!getEntityData().isLabelInitialized()) {
-        error("Field BazelGoTargetEntity#label should be initialized")
+      if (!getEntityData().is_targetKeyInitialized()) {
+        error("Field BazelGoTargetEntity#_targetKey should be initialized")
       }
       if (!getEntityData().isImportPathInitialized()) {
         error("Field BazelGoTargetEntity#importPath should be initialized")
@@ -109,7 +109,7 @@ internal class BazelGoTargetEntityImpl(private val dataSource: BazelGoTargetEnti
     override fun relabel(dataSource: WorkspaceEntity, parents: Set<WorkspaceEntity>?) {
       dataSource as BazelGoTargetEntity
       if (this.entitySource != dataSource.entitySource) this.entitySource = dataSource.entitySource
-      if (this.label != dataSource.label) this.label = dataSource.label
+      if (this._targetKey != dataSource._targetKey) this._targetKey = dataSource._targetKey
       if (this.importPath != dataSource.importPath) this.importPath = dataSource.importPath
       updateChildToParentReferences(parents)
     }
@@ -123,12 +123,12 @@ internal class BazelGoTargetEntityImpl(private val dataSource: BazelGoTargetEnti
         changedProperty.add("entitySource")
 
       }
-    override var label: WorkspaceModelTargetLabel
-      get() = getEntityData().label
+    override var _targetKey: WorkspaceModelTargetKey
+      get() = getEntityData()._targetKey
       set(value) {
         checkModificationAllowed()
-        getEntityData(true).label = value
-        changedProperty.add("label")
+        getEntityData(true)._targetKey = value
+        changedProperty.add("_targetKey")
 
       }
     override var importPath: ImportPathId
@@ -147,25 +147,31 @@ internal class BazelGoTargetEntityImpl(private val dataSource: BazelGoTargetEnti
 
 @OptIn(WorkspaceEntityInternalApi::class)
 internal class BazelGoTargetEntityData : WorkspaceEntityData<BazelGoTargetEntity>(), SoftLinkable {
-  lateinit var label: WorkspaceModelTargetLabel
+  lateinit var _targetKey: WorkspaceModelTargetKey
   lateinit var importPath: ImportPathId
 
-  internal fun isLabelInitialized(): Boolean = ::label.isInitialized
+  internal fun is_targetKeyInitialized(): Boolean = ::_targetKey.isInitialized
   internal fun isImportPathInitialized(): Boolean = ::importPath.isInitialized
 
   override fun getLinks(): Set<SymbolicEntityId<*>> {
     val result = HashSet<SymbolicEntityId<*>>()
+    for (item in _targetKey.aspectIds) {
+    }
     result.add(importPath)
     return result
   }
 
   override fun index(index: WorkspaceMutableIndex<SymbolicEntityId<*>>) {
+    for (item in _targetKey.aspectIds) {
+    }
     index.index(this, importPath)
   }
 
   override fun updateLinksIndex(prev: Set<SymbolicEntityId<*>>, index: WorkspaceMutableIndex<SymbolicEntityId<*>>) {
 // TODO verify logic
     val mutablePreviousSet = HashSet(prev)
+    for (item in _targetKey.aspectIds) {
+    }
     val removedItem_importPath = mutablePreviousSet.remove(importPath)
     if (!removedItem_importPath) {
       index.index(this, importPath)
@@ -216,7 +222,7 @@ internal class BazelGoTargetEntityData : WorkspaceEntityData<BazelGoTargetEntity
   }
 
   override fun createDetachedEntity(parents: List<WorkspaceEntityBuilder<*>>): WorkspaceEntityBuilder<*> {
-    return BazelGoTargetEntity(label, importPath, entitySource)
+    return BazelGoTargetEntity(_targetKey, importPath, entitySource)
   }
 
   override fun getRequiredParents(): List<Class<out WorkspaceEntity>> {
@@ -229,7 +235,7 @@ internal class BazelGoTargetEntityData : WorkspaceEntityData<BazelGoTargetEntity
     if (this.javaClass != other.javaClass) return false
     other as BazelGoTargetEntityData
     if (this.entitySource != other.entitySource) return false
-    if (this.label != other.label) return false
+    if (this._targetKey != other._targetKey) return false
     if (this.importPath != other.importPath) return false
     return true
   }
@@ -238,21 +244,21 @@ internal class BazelGoTargetEntityData : WorkspaceEntityData<BazelGoTargetEntity
     if (other == null) return false
     if (this.javaClass != other.javaClass) return false
     other as BazelGoTargetEntityData
-    if (this.label != other.label) return false
+    if (this._targetKey != other._targetKey) return false
     if (this.importPath != other.importPath) return false
     return true
   }
 
   override fun hashCode(): Int {
     var result = entitySource.hashCode()
-    result = 31 * result + label.hashCode()
+    result = 31 * result + _targetKey.hashCode()
     result = 31 * result + importPath.hashCode()
     return result
   }
 
   override fun hashCodeIgnoringEntitySource(): Int {
     var result = javaClass.hashCode()
-    result = 31 * result + label.hashCode()
+    result = 31 * result + _targetKey.hashCode()
     result = 31 * result + importPath.hashCode()
     return result
   }

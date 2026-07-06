@@ -5,6 +5,7 @@ import com.intellij.platform.workspace.storage.SymbolicEntityId
 import com.intellij.platform.workspace.storage.WorkspaceEntityWithSymbolicId
 import com.intellij.platform.workspace.storage.url.VirtualFileUrl
 import org.jetbrains.annotations.ApiStatus
+import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
 
 @ApiStatus.Internal
 data class ImportPathId(val importPath: String) : SymbolicEntityId<BazelGoPackageEntity> {
@@ -32,7 +33,7 @@ interface BazelGoPackageEntity : WorkspaceEntityWithSymbolicId {
 }
 
 @ApiStatus.Internal
-data class BazelGoTargetEntityId(private val label: WorkspaceModelTargetLabel) : SymbolicEntityId<BazelGoTargetEntity> {
+data class BazelGoTargetEntityId(private val targetKey: WorkspaceModelTargetKey) : SymbolicEntityId<BazelGoTargetEntity> {
   override val presentableName: @NlsSafe String
     get() = toString()
 }
@@ -40,8 +41,12 @@ data class BazelGoTargetEntityId(private val label: WorkspaceModelTargetLabel) :
 @ApiStatus.Internal
 interface BazelGoTargetEntity : WorkspaceEntityWithSymbolicId {
   override val symbolicId: BazelGoTargetEntityId
-    get() = BazelGoTargetEntityId(label)
+    get() = BazelGoTargetEntityId(_targetKey)
 
-  val label: WorkspaceModelTargetLabel
+  val _targetKey: WorkspaceModelTargetKey
   val importPath: ImportPathId
 }
+
+@get:ApiStatus.Internal
+val BazelGoTargetEntity.targetKey: WorkspaceTargetKey
+  get() = _targetKey.toWorkspaceTarget()

@@ -24,7 +24,7 @@ import com.intellij.platform.workspace.storage.metadata.model.EntityMetadata
 import org.jetbrains.annotations.ApiStatus.Internal
 import org.jetbrains.bazel.workspacemodel.entities.BazelModuleExtensionEntity
 import org.jetbrains.bazel.workspacemodel.entities.BazelModuleExtensionEntityBuilder
-import org.jetbrains.bazel.workspacemodel.entities.WorkspaceModelTargetLabel
+import org.jetbrains.bazel.workspacemodel.entities.WorkspaceModelTargetKey
 import org.jetbrains.bazel.workspacemodel.entities.WorkspaceModelTargetLabelList
 import org.jetbrains.bazel.workspacemodel.entities.WorkspaceModelTargetSourceRootTypeId
 
@@ -45,15 +45,15 @@ internal class BazelModuleExtensionEntityImpl(private val dataSource: BazelModul
   override val module: ModuleEntity
     get() = snapshot.instrumentation.getParent(MODULE_CONNECTION_ID, this) as? ModuleEntity
             ?: error("Parent module not found for BazelModuleExtensionEntity")
+  override val _targetKey: WorkspaceModelTargetKey
+    get() {
+      readField("_targetKey")
+      return dataSource._targetKey
+    }
   override val rootTypeId: WorkspaceModelTargetSourceRootTypeId
     get() {
       readField("rootTypeId")
       return dataSource.rootTypeId
-    }
-  override val label: WorkspaceModelTargetLabel
-    get() {
-      readField("label")
-      return dataSource.label
     }
   override val strictDependencies: WorkspaceModelTargetLabelList
     get() {
@@ -112,11 +112,11 @@ internal class BazelModuleExtensionEntityImpl(private val dataSource: BazelModul
           error("Field BazelModuleExtensionEntity#module should be initialized")
         }
       }
+      if (!getEntityData().is_targetKeyInitialized()) {
+        error("Field BazelModuleExtensionEntity#_targetKey should be initialized")
+      }
       if (!getEntityData().isRootTypeIdInitialized()) {
         error("Field BazelModuleExtensionEntity#rootTypeId should be initialized")
-      }
-      if (!getEntityData().isLabelInitialized()) {
-        error("Field BazelModuleExtensionEntity#label should be initialized")
       }
       if (!getEntityData().isStrictDependenciesInitialized()) {
         error("Field BazelModuleExtensionEntity#strictDependencies should be initialized")
@@ -131,8 +131,8 @@ internal class BazelModuleExtensionEntityImpl(private val dataSource: BazelModul
     override fun relabel(dataSource: WorkspaceEntity, parents: Set<WorkspaceEntity>?) {
       dataSource as BazelModuleExtensionEntity
       if (this.entitySource != dataSource.entitySource) this.entitySource = dataSource.entitySource
+      if (this._targetKey != dataSource._targetKey) this._targetKey = dataSource._targetKey
       if (this.rootTypeId != dataSource.rootTypeId) this.rootTypeId = dataSource.rootTypeId
-      if (this.label != dataSource.label) this.label = dataSource.label
       if (this.strictDependencies != dataSource.strictDependencies) this.strictDependencies = dataSource.strictDependencies
       updateChildToParentReferences(parents)
     }
@@ -182,20 +182,20 @@ internal class BazelModuleExtensionEntityImpl(private val dataSource: BazelModul
         changedProperty.add("module")
       }
 
+    override var _targetKey: WorkspaceModelTargetKey
+      get() = getEntityData()._targetKey
+      set(value) {
+        checkModificationAllowed()
+        getEntityData(true)._targetKey = value
+        changedProperty.add("_targetKey")
+
+      }
     override var rootTypeId: WorkspaceModelTargetSourceRootTypeId
       get() = getEntityData().rootTypeId
       set(value) {
         checkModificationAllowed()
         getEntityData(true).rootTypeId = value
         changedProperty.add("rootTypeId")
-
-      }
-    override var label: WorkspaceModelTargetLabel
-      get() = getEntityData().label
-      set(value) {
-        checkModificationAllowed()
-        getEntityData(true).label = value
-        changedProperty.add("label")
 
       }
     override var strictDependencies: WorkspaceModelTargetLabelList
@@ -214,12 +214,12 @@ internal class BazelModuleExtensionEntityImpl(private val dataSource: BazelModul
 
 @OptIn(WorkspaceEntityInternalApi::class)
 internal class BazelModuleExtensionEntityData : WorkspaceEntityData<BazelModuleExtensionEntity>() {
+  lateinit var _targetKey: WorkspaceModelTargetKey
   lateinit var rootTypeId: WorkspaceModelTargetSourceRootTypeId
-  lateinit var label: WorkspaceModelTargetLabel
   lateinit var strictDependencies: WorkspaceModelTargetLabelList
 
+  internal fun is_targetKeyInitialized(): Boolean = ::_targetKey.isInitialized
   internal fun isRootTypeIdInitialized(): Boolean = ::rootTypeId.isInitialized
-  internal fun isLabelInitialized(): Boolean = ::label.isInitialized
   internal fun isStrictDependenciesInitialized(): Boolean = ::strictDependencies.isInitialized
 
   override fun wrapAsModifiable(diff: MutableEntityStorage): WorkspaceEntityBuilder<BazelModuleExtensionEntity> {
@@ -248,7 +248,7 @@ internal class BazelModuleExtensionEntityData : WorkspaceEntityData<BazelModuleE
   }
 
   override fun createDetachedEntity(parents: List<WorkspaceEntityBuilder<*>>): WorkspaceEntityBuilder<*> {
-    return BazelModuleExtensionEntity(rootTypeId, label, strictDependencies, entitySource) {
+    return BazelModuleExtensionEntity(_targetKey, rootTypeId, strictDependencies, entitySource) {
       parents.filterIsInstance<ModuleEntityBuilder>().singleOrNull()?.let { this.module = it }
     }
   }
@@ -264,8 +264,8 @@ internal class BazelModuleExtensionEntityData : WorkspaceEntityData<BazelModuleE
     if (this.javaClass != other.javaClass) return false
     other as BazelModuleExtensionEntityData
     if (this.entitySource != other.entitySource) return false
+    if (this._targetKey != other._targetKey) return false
     if (this.rootTypeId != other.rootTypeId) return false
-    if (this.label != other.label) return false
     if (this.strictDependencies != other.strictDependencies) return false
     return true
   }
@@ -274,24 +274,24 @@ internal class BazelModuleExtensionEntityData : WorkspaceEntityData<BazelModuleE
     if (other == null) return false
     if (this.javaClass != other.javaClass) return false
     other as BazelModuleExtensionEntityData
+    if (this._targetKey != other._targetKey) return false
     if (this.rootTypeId != other.rootTypeId) return false
-    if (this.label != other.label) return false
     if (this.strictDependencies != other.strictDependencies) return false
     return true
   }
 
   override fun hashCode(): Int {
     var result = entitySource.hashCode()
+    result = 31 * result + _targetKey.hashCode()
     result = 31 * result + rootTypeId.hashCode()
-    result = 31 * result + label.hashCode()
     result = 31 * result + strictDependencies.hashCode()
     return result
   }
 
   override fun hashCodeIgnoringEntitySource(): Int {
     var result = javaClass.hashCode()
+    result = 31 * result + _targetKey.hashCode()
     result = 31 * result + rootTypeId.hashCode()
-    result = 31 * result + label.hashCode()
     result = 31 * result + strictDependencies.hashCode()
     return result
   }
