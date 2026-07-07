@@ -145,6 +145,7 @@ class JavaLanguagePlugin : LanguagePlugin {
     private var jdk: Jdk? = null
     private var toolchainTargets: Map<WorkspaceTargetKey, TargetIdeInfo> = mapOf()
     private var extraLibDependencies: Map<WorkspaceTargetKey, List<DependencyLabel>> = mapOf()
+    private var interfacesAndBinaries: Map<WorkspaceTargetKey, Set<Path>> = mapOf()
     private var toolchainDependencies: Map<WorkspaceTargetKey, List<DependencyLabel>> = mapOf()
     private var allLibraries: Map<WorkspaceTargetKey, List<LibraryItem>> = mapOf()
 
@@ -228,6 +229,7 @@ class JavaLanguagePlugin : LanguagePlugin {
         programArgs = jvmTarget.argsList,
         resolvedResourceStripPrefix = target.resolveResourceStripPrefixToAbsolutePath(localRepositories),
         libraries = targetLibraries.values.map { it.hardLink() },
+        outputJars = outFilesHardLink.createOutputFileHardLinks(interfacesAndBinaries[targetKey].orEmpty()).toSet(),
         // https://youtrack.jetbrains.com/issue/BAZEL-983
         // extra libraries can override some library versions, so they should be put before
         jvmDependencies =
@@ -332,6 +334,9 @@ class JavaLanguagePlugin : LanguagePlugin {
         measure("Collect interfaces and classes from targets to import") {
           collectInterfacesAndClasses(targetsToImport.values)
         }
+      // exposed via JvmBuildTarget.outputJars so the jdeps library-shadows-module index
+      // can be built downstream in ImportContext/JvmTargetEntitiesBuilder
+      interfacesAndBinaries = interfacesAndBinariesFromTargetsToImport
       val outputJarsLibraries: Map<WorkspaceTargetKey, List<LibraryItem>> =
         measure("Create output jars libraries") {
           calculateOutputJarsLibraries(server.workspaceContext, targetsToImport.values)

@@ -32,7 +32,10 @@ private val idInterner: Interner<SymbolicEntityId<*>> = Interner.createWeakInter
 // RC: replaces the dependency-resolution and exported-closure slice of `ProjectDetailsToModuleDetailsTransformer`
 // (incl. its `DependenciesClosure` memo), plus the `Dependency` wrapper
 @ApiStatus.Internal
-class DependencyBuilder(private val targets: Collection<RawBuildTarget>) {
+class DependencyBuilder(
+  private val targets: Collection<RawBuildTarget>,
+  private val libraryShadowsModule: Map<WorkspaceTargetKey, WorkspaceTargetKey> = emptyMap(),
+) {
   private val targetsIndex: Map<WorkspaceTargetKey, RawBuildTarget> = targets.associateBy { it.key.stripAspects() }
   private val strictDependencies: Map<WorkspaceTargetKey, List<Label>> = calculateExportedDependenciesTransitiveClosure()
 
@@ -54,9 +57,9 @@ class DependencyBuilder(private val targets: Collection<RawBuildTarget>) {
           else dep.dependency.export()
 
         is JvmDependency.LibraryDependency ->
-          dep.dependency.export()
+          redirectLibraryShadow(target.key, dep.dependency)?.export() ?: dep.dependency.export()
       }
-    } ?: target.dependencies
+    }?.distinct() ?: target.dependencies
     return Resolved(
       dependencies = deps,
       strictDependenciesCheck = checkStrictDependencies(target),
@@ -74,8 +77,9 @@ class DependencyBuilder(private val targets: Collection<RawBuildTarget>) {
 
     val fDependencies: ((WorkspaceTargetKey) -> List<DependencyLabel>) = dependencies@{ key ->
       val jvmTarget = targetsIndex[key]?.let { extractJvmBuildTarget(it) } ?: return@dependencies emptyList()
-      jvmTarget.jvmDependencies.map { it.dependency }
+      jvmTarget.jvmDependencies.map { redirectLibraryShadow(key, it.dependency) ?: it.dependency }
         .filter { it.targetKey.label != key.label /* filter out module dependency on library */ }
+        .distinct()
     }
 
     val exportedDependenciesClosure = DependenciesClosure { key ->
@@ -96,6 +100,14 @@ class DependencyBuilder(private val targets: Collection<RawBuildTarget>) {
         val ds = deps(key)
         ds.toSet() + ds.flatMap { get(it) }
       }
+  }
+
+  private fun redirectLibraryShadow(consumer: WorkspaceTargetKey, dep: DependencyLabel): DependencyLabel? {
+    val producer = libraryShadowsModule[dep.targetKey] ?: return null
+    if (producer.stripAspects() == consumer.stripAspects()) {
+      return null
+    }
+    return DependencyLabel(targetKey = producer)
   }
 }
 

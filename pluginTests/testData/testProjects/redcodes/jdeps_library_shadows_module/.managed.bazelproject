@@ -1,0 +1,7 @@
+derive_targets_from_directories: false
+
+targets:
+  //app:app
+  //liba:a
+
+import_depth: 0

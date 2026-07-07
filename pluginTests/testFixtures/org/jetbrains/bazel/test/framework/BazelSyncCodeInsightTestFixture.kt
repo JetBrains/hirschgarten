@@ -11,6 +11,8 @@ import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.projectRoots.ProjectJdkTable
 import com.intellij.platform.testFramework.junit5.codeInsight.fixture.codeInsightFixture
+import com.intellij.configurationStore.ProjectStoreImpl
+import com.intellij.project.stateStore
 import com.intellij.testFramework.fixtures.CodeInsightTestFixture
 import com.intellij.testFramework.fixtures.IdeaProjectTestFixture
 import com.intellij.testFramework.fixtures.TempDirTestFixture
@@ -20,8 +22,8 @@ import com.intellij.testFramework.replaceService
 import com.intellij.util.lang.UrlClassLoader
 import org.jetbrains.bazel.progress.ConsoleService
 import org.jetbrains.bazel.progress.TaskConsole
+import org.jetbrains.bazel.flow.open.BazelProjectStoreDescriptor
 import org.jetbrains.bazel.project.BazelProjectFixtures.initializeBazelProject
-import org.jetbrains.bazel.sync.scope.SecondPhaseSync
 import org.jetbrains.bazel.sync.task.ProjectSyncTask
 import org.jetbrains.bazel.ui.console.task.TestTaskConsole
 import java.nio.file.Path
@@ -51,6 +53,8 @@ interface BazelSyncCodeInsightTestFixture : CodeInsightTestFixture {
    * If any file from your project collides with the base, your file will overwrite the base file.
    */
   fun copyBazelTestProject(path: String)
+
+  fun setProjectView(projectview: String)
 
   fun setBazelVersion(version: String)
 
@@ -89,6 +93,12 @@ class BazelSyncCodeInsightTestFixtureImpl(
     testProjectPath = BazelPathManager.testProjectsRoot.resolve(path)
   }
 
+  override fun setProjectView(projectview: String) {
+    val source = projectRoot.resolve(projectview).takeIf { it.exists() } ?: return
+    val descriptor = (project.stateStore as ProjectStoreImpl).storeDescriptor as BazelProjectStoreDescriptor
+    source.copyTo(descriptor.projectViewFile.createParentDirectories(), overwrite = true)
+  }
+
   override fun setBazelVersion(version: String) {
     projectRoot.resolve(".bazelversion").writeText(version)
   }
@@ -118,22 +128,22 @@ class BazelSyncCodeInsightTestFixtureImpl(
   private fun bazelServerMaxIdleSeconds(): Int =
     System.getenv("BAZEL_PLUGIN_TEST_BAZEL_MAX_IDLE_SECONDS")
       ?.toIntOrNull()
-      ?: System.getProperty("bazel.plugin.test.bazel.max.idle.seconds")
-        ?.toIntOrNull()
-      ?: 7200
+    ?: System.getProperty("bazel.plugin.test.bazel.max.idle.seconds")
+      ?.toIntOrNull()
+    ?: 7200
 
   private fun testCacheRoot(): Path {
     val cacheRoot = System.getenv("BAZEL_PLUGIN_TEST_CACHE_ROOT")
-      ?.let { Path.of(it) }
-      ?: System.getProperty("bazel.plugin.test.cache.root")
-        ?.let { Path.of(it) }
-      ?: System.getProperty("agent.persistent.cache")
-        ?.takeIf { it.isNotBlank() }
-        ?.let { Path.of(it, "bazel-plugin-test-cache") }
-      ?: System.getenv("AGENT_PERSISTENT_CACHE")
-        ?.takeIf { it.isNotBlank() }
-        ?.let { Path.of(it, "bazel-plugin-test-cache") }
-      ?: localDefaultCacheRoot()
+                      ?.let { Path.of(it) }
+                    ?: System.getProperty("bazel.plugin.test.cache.root")
+                      ?.let { Path.of(it) }
+                    ?: System.getProperty("agent.persistent.cache")
+                      ?.takeIf { it.isNotBlank() }
+                      ?.let { Path.of(it, "bazel-plugin-test-cache") }
+                    ?: System.getenv("AGENT_PERSISTENT_CACHE")
+                      ?.takeIf { it.isNotBlank() }
+                      ?.let { Path.of(it, "bazel-plugin-test-cache") }
+                    ?: localDefaultCacheRoot()
     return cacheRoot.toAbsolutePath()
   }
 
@@ -149,18 +159,20 @@ class BazelSyncCodeInsightTestFixtureImpl(
     return when {
       osName.startsWith("Mac", ignoreCase = true) ->
         userHome.resolve("Library").resolve("Caches").resolve("JetBrains").resolve("bazel-plugin-tests")
+
       osName.startsWith("Windows", ignoreCase = true) -> {
         val localAppData = System.getenv("LOCALAPPDATA")
-          ?.takeIf { it.isNotBlank() }
-          ?.let { Path.of(it) }
-          ?: userHome.resolve("AppData").resolve("Local")
+                             ?.takeIf { it.isNotBlank() }
+                             ?.let { Path.of(it) }
+                           ?: userHome.resolve("AppData").resolve("Local")
         localAppData.resolve("JetBrains").resolve("bazel-plugin-tests")
       }
+
       else -> {
         val cacheHome = System.getenv("XDG_CACHE_HOME")
-          ?.takeIf { it.isNotBlank() }
-          ?.let { Path.of(it) }
-          ?: userHome.resolve(".cache")
+                          ?.takeIf { it.isNotBlank() }
+                          ?.let { Path.of(it) }
+                        ?: userHome.resolve(".cache")
         cacheHome.resolve("JetBrains").resolve("bazel-plugin-tests")
       }
     }

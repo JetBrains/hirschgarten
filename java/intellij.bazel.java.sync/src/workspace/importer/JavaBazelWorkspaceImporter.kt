@@ -134,7 +134,7 @@ internal class JavaBazelWorkspaceImporter : BazelWorkspaceImporter, BazelWorkspa
 
     val importContext = ImportContext(
       targets = snapshot.targets.values,
-      libraries = libraryItems,
+      allLibraries = libraryItems,
       repoMapping = snapshot.repoMapping,
       projectName = commonSyncConfig.projectName,
       projectBasePath = commonSyncConfig.projectRootDir,
