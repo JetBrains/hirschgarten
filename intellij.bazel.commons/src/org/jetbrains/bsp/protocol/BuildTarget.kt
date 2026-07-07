@@ -127,6 +127,7 @@ data class JvmBuildTarget(
   val resolvedResourceStripPrefix: Path? = null,
   @Transient @JvmField val libraries: List<LibraryItem> = emptyList(),
   @Transient @JvmField val jvmDependencies: List<JvmDependency> = emptyList(),
+  @Transient @JvmField val outputJars: Set<Path> = emptySet(),
   val checkStrictDependencies: StrictDependencyCheckedType = StrictDependencyCheckedType.OFF,
 ) : BuildTargetData
 

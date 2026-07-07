@@ -15,6 +15,7 @@ import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.collections.shouldNotContain
 import io.kotest.matchers.nulls.shouldNotBeNull
+import io.kotest.matchers.shouldBe
 import org.jetbrains.bazel.commons.LanguageClass
 import org.jetbrains.bazel.commons.RepoMappingDisabled
 import org.jetbrains.bazel.commons.RuleType
@@ -323,6 +324,45 @@ internal class JvmTargetEntitiesBuilderTest : WorkspaceModelBaseTest() {
     moduleDeps shouldContain b.formatAsModuleNameTest()
   }
 
+  @Test
+  fun `a library dependency shadowing a source module becomes a exported module dependency`(): Unit = timeoutRunBlocking {
+    val kind = TargetKind(kind = "java_library", ruleType = RuleType.LIBRARY, languageClasses = setOf(LanguageClass.JAVA))
+    val producer = Label.parse("//producer")
+    val producerJar = Path("/out/producer.jar")
+    // producer is an in-scope source module whose output jar is reached by //app only through a jdeps library
+    val producerTarget = createRawBuildTarget(
+      id = producer,
+      kind = kind,
+      sources = listOf(Path("/base/dir/Producer.java")),
+      data = listOf(JvmBuildTarget(javaVersion = "11", outputJars = setOf(producerJar))),
+    )
+    val shadowLibraryKey = WorkspaceTargetKey(label = Label.parse("//producer-jdeps-lib"))
+    val shadowLibrary = LibraryItem(
+      key = shadowLibraryKey,
+      ijars = emptyList(),
+      jars = listOf(producerJar),
+      sourceJars = emptyList(),
+      mavenCoordinates = null,
+      containsInternalJars = false,
+    )
+    val app = createRawBuildTarget(
+      id = Label.parse("//app"),
+      kind = kind,
+      data = listOf(
+        JvmBuildTarget(
+          javaVersion = "11",
+          jvmDependencies = listOf(JvmDependency.LibraryDependency(DependencyLabel(shadowLibraryKey))),
+        ),
+      ),
+    )
+
+    runImport(targets = listOf(producerTarget, app), libraries = listOf(shadowLibrary))
+
+    val appModule = loadedEntries(ModuleEntity::class.java).single { it.name == Label.parse("//app").formatAsModuleNameTest() }
+    val dep = appModule.dependencies.filterIsInstance<ModuleDependency>().single { it.module.name == producer.formatAsModuleNameTest() }
+    dep.exported shouldBe true
+  }
+
   private suspend fun runImport(
     targets: List<RawBuildTarget>,
     libraries: List<LibraryItem> = emptyList(),
@@ -332,7 +372,7 @@ internal class JvmTargetEntitiesBuilderTest : WorkspaceModelBaseTest() {
     val jvmPackagePrefixes: JvmPackagePrefixCalculator = calc
     val ctx = ImportContext(
       targets = targets.map { WorkspaceTarget(it.key, it) },
-      libraries = libraries,
+      allLibraries = libraries,
       repoMapping = RepoMappingDisabled,
       projectName = "test-project",
       projectBasePath = projectBasePath,
@@ -348,7 +388,7 @@ internal class JvmTargetEntitiesBuilderTest : WorkspaceModelBaseTest() {
       currentCompiledSourceExcludeEntity = null,
     )
     LibraryBuilder.writeAll(
-      libraryItems = libraries,
+      libraryItems = ctx.libraries,
       importIjars = false,
       virtualFileUrlManager = virtualFileUrlManager,
       entitySource = BazelDummyEntitySource,

@@ -49,6 +49,28 @@ class DependencyBuilderTest {
   }
 
   @Test
+  fun `a library dependency shadowing a source module becomes a exported module dependency`() {
+    val libLabel = Label.parse("//lib")
+    val producer = Label.parse("//producer")
+    val target = jvmTarget(
+      label = "//target",
+      jvmDependencies = listOf(JvmDependency.LibraryDependency(DependencyLabel(libLabel.asKey()))),
+    )
+
+    val resolved = DependencyBuilder(
+      listOf(target),
+      libraryShadowsModule = mapOf(libLabel.asKey() to producer.asKey()),
+    ).resolve(target)
+
+    resolved.dependencies shouldContainExactlyInAnyOrder listOf(
+      DependencyLabel(
+        producer.asKey(),
+        DependencyLabelKind.EXPORTED_COMPILE_TIME,
+      ),
+    )
+  }
+
+  @Test
   fun `should resolve a module dependency without exporting it for jvm_library kind (monorepo special case)`() {
     val depLabel = Label.parse("//other")
     val target = jvmTarget(
@@ -206,6 +228,34 @@ class DependencyBuilderTest {
 
     resolved.strictDependenciesCheck shouldBe StrictDependencyCheckedType.WARNING
     resolved.strictDependencies shouldContainExactlyInAnyOrder listOf(b, c)
+  }
+
+  @Test
+  fun `library-shadow module dependencies are not propagated through the exported-deps closure`() {
+    val x = Label.parse("//x")
+    val a = Label.parse("//a")
+    val b = Label.parse("//b")
+    val libB = Label.parse("//libB")
+    val targetX = jvmTarget(
+      label = x.toString(),
+      checkStrictDependencies = StrictDependencyCheckedType.WARNING,
+      jvmDependencies = listOf(
+        JvmDependency.ModuleDependency(DependencyLabel(a.asKey(), kind = DependencyLabelKind.EXPORTED_COMPILE_TIME)),
+      ),
+    )
+    // //a reaches //b only through a jdeps library that shadows the //b source module
+    val targetA = jvmTarget(
+      label = a.toString(),
+      jvmDependencies = listOf(JvmDependency.LibraryDependency(DependencyLabel(libB.asKey()))),
+    )
+    val targetB = jvmTarget(label = b.toString())
+
+    val resolved = DependencyBuilder(
+      listOf(targetX, targetA, targetB),
+      libraryShadowsModule = mapOf(libB.asKey() to b.asKey()),
+    ).resolve(targetX)
+
+    resolved.strictDependencies shouldContainExactlyInAnyOrder listOf(a)
   }
 
   @Test

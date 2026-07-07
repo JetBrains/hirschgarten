@@ -68,7 +68,7 @@ import com.intellij.platform.workspace.jps.entities.DependencyScope as EntitiesD
 @ApiStatus.Internal
 class ImportContext(
   targets: Collection<WorkspaceTarget>,
-  val libraries: List<LibraryItem>,
+  allLibraries: List<LibraryItem>,
   val repoMapping: RepoMapping,
   val projectName: String,
   val projectBasePath: Path,
@@ -111,6 +111,37 @@ class ImportContext(
     .mapNotNull { moduleNamesByKey[it.targetKey.copy(aspectIds = WorkspaceAspectIds.EMPTY)] }
     .toSet()
 
+  private val jarToSourceModule: Map<Path, WorkspaceTargetKey> =
+    this.targets.asSequence()
+
+      // build `jar -> source module` map
+      .filter { it.rawBuildTarget.allSources.any { path -> path.hasJvmSourceExtension() } }
+      .flatMap { target ->
+        target.findBuildData<JvmBuildTarget>()?.outputJars.orEmpty()
+          .asSequence().map { it to target.targetKey }
+      }
+      .groupBy({ it.first }, { it.second })
+
+      // keep only single `jar -> source module` mapping
+      .mapNotNull { (jar, owners) -> owners.distinct().singleOrNull()?.let { jar to it } }
+      .toMap()
+
+  val libraryShadowsModule: Map<WorkspaceTargetKey, WorkspaceTargetKey> =
+    allLibraries.asSequence()
+      .mapNotNull { lib ->
+        val producer = lib.jars.firstNotNullOfOrNull { jarToSourceModule[it] } ?: return@mapNotNull null
+        // don't shadow own module generated, annotation processor generated code
+        // is just self-referential library, so ignore it immediately
+        if (producer.copy(aspectIds = WorkspaceAspectIds.EMPTY)
+          == lib.key.copy(aspectIds = WorkspaceAspectIds.EMPTY)) {
+          return@mapNotNull null
+        }
+        lib.key to producer
+      }
+      .toMap()
+
+  val libraries: List<LibraryItem> = allLibraries.filterNot { it.key in libraryShadowsModule }
+
   val libraryNamesByKey: Map<WorkspaceTargetKey, String> = this.libraries.asSequence()
     .distinctBy { it.key }
     .map { it.key }
@@ -130,7 +161,7 @@ class ImportContext(
     libraries.groupBy({ it.key.label }, { libraryNamesByKey[it.key]!! })
       .mapValues { (_, names) -> names.distinct() }
 
-  val dependencyBuilder: DependencyBuilder = DependencyBuilder(this.targets.map { it.rawBuildTarget })
+  val dependencyBuilder: DependencyBuilder = DependencyBuilder(this.targets.map { it.rawBuildTarget }, libraryShadowsModule)
   val dummyModuleSplitter: DummyModuleSplitter = DummyModuleSplitter(projectBasePath, fileToTargets)
 }
 
@@ -565,6 +596,11 @@ class JvmTargetEntitiesBuilder(private val ctx: ImportContext) {
 // RC: naming helpers duplicated from ModuleDetailsToJavaModuleTransformer.kt so this file is independent of MMM.
 @ApiStatus.Internal
 fun String.scalaVersionToScalaSdkName(): String = "scala-sdk-$this"
+
+private fun Path.hasJvmSourceExtension(): Boolean {
+  val name = fileName?.toString() ?: return false
+  return name.endsWith(".java") || name.endsWith(".kt") || name.endsWith(".scala")
+}
 
 @ApiStatus.Internal
 fun String.projectNameToBaseJdkName(): String = "$this-jdk"
