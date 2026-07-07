@@ -7,6 +7,7 @@ import com.intellij.execution.configurations.RunProfileState
 import com.intellij.execution.executors.DefaultDebugExecutor
 import com.intellij.execution.runners.ExecutionEnvironment
 import com.intellij.openapi.util.Key
+import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.config.BazelFeatureFlags
@@ -84,10 +85,3 @@ internal class BazelGoTestHandler(configuration: BazelRunConfiguration) : BazelR
     override val isTestHandler: Boolean = false
   }
 }
-
-internal data class ExecutableInfo(
-  val binary: Path,
-  val workingDir: Path,
-  val args: List<String?>,
-  val envVars: Map<String, String>,
-)
