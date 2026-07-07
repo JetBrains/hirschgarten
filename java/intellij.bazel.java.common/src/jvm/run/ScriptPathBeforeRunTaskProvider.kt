@@ -8,23 +8,19 @@ import com.intellij.execution.runners.ExecutionEnvironment
 import com.intellij.openapi.actionSystem.DataContext
 import com.intellij.openapi.util.Key
 import com.intellij.openapi.util.Ref
-import com.intellij.openapi.util.io.FileUtilRt
-import com.intellij.util.system.OS
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.runBlocking
 import org.jetbrains.bazel.commons.BazelStatus
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.jvm.run.ScriptPathBeforeRunTaskProvider.Task
-import org.jetbrains.bazel.server.tasks.ScriptPathBuildTargetTask
 import org.jetbrains.bazel.run.commandLine.transformProgramArguments
 import org.jetbrains.bazel.run.config.BazelRunConfiguration
 import org.jetbrains.bazel.run.state.HasBazelParams
 import org.jetbrains.bazel.run.state.HasProgramArguments
 import org.jetbrains.bazel.server.tasks.DefaultBuildTargetTask
+import org.jetbrains.bazel.server.tasks.ScriptPathBuildTargetTask
 import org.jetbrains.bazel.server.tasks.runBuildTargetTask
-import java.nio.file.Files
 import java.nio.file.Path
-import java.nio.file.Paths
 
 internal val SCRIPT_PATH_KEY: Key<Ref<Path>> = Key.create("bazel.jvm.script.path")
 
@@ -61,7 +57,7 @@ internal class ScriptPathBeforeRunTaskProvider : BeforeRunTaskProvider<Task>() {
     val runConfiguration = BazelRunConfiguration.get(environment)
     val isDebug = environment.executor is DefaultDebugExecutor
     val project = environment.project
-    val scriptPath = scriptPathRef?.let { createTempScriptFile() }
+    val scriptPath = scriptPathRef?.let { ScriptPathBuildTargetTask.createTempScriptFile() }
     val status =
       try {
         val buildTargetTask = if (scriptPath != null) {
@@ -98,13 +94,6 @@ internal class ScriptPathBeforeRunTaskProvider : BeforeRunTaskProvider<Task>() {
     } else {
       return false
     }
-  }
-
-  private fun createTempScriptFile(): Path {
-    // on Windows, the only way to have an executable script is to have a
-    // .bat file, but on unix the extension doesn't matter
-    val suffix = if (OS.CURRENT == OS.Windows) ".bat" else ""
-    return Files.createTempFile(Paths.get(FileUtilRt.getTempDirectory()), "bazel-script-", suffix).also { it.toFile().deleteOnExit() }
   }
 
   override fun getId(): Key<Task> = PROVIDER_ID
