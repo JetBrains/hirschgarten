@@ -34,7 +34,6 @@ import com.intellij.psi.PsiManager
 import com.intellij.util.Processor
 import one.util.streamex.StreamEx
 import org.jetbrains.annotations.ApiStatus
-import org.jetbrains.bazel.commons.LanguageClass
 import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.golang.GoLanguageClass
 import org.jetbrains.bazel.golang.sync.GoBuildTarget
@@ -262,7 +261,7 @@ class BazelGoPackage : GoPackage {
             target.kind.ruleType == RuleType.TEST
         ) {
           val goBuildTarget = extractGoBuildTarget(target) ?: return@forEach
-          goBuildTarget.libraryLabels.forEach { libraryLabel ->
+          goBuildTarget.embed.forEach { libraryLabel ->
             builder.put(libraryLabel, goBuildTarget)
           }
         }
