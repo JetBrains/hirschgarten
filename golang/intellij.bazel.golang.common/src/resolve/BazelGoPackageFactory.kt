@@ -13,25 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+// Copyright 2000-2026 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
 package org.jetbrains.bazel.golang.resolve
 
 import com.goide.project.GoPackageFactory
 import com.goide.psi.GoFile
 import com.goide.psi.impl.GoPackage
-import com.intellij.openapi.project.Project
-import com.intellij.openapi.vfs.toNioPathOrNull
+import com.intellij.platform.backend.workspace.workspaceModel
 import com.intellij.psi.PsiDirectory
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.config.isBazelProject
-import org.jetbrains.bazel.golang.sync.extractGoBuildTarget
-import org.jetbrains.bazel.sync.SyncCache
 import org.jetbrains.bazel.target.targetUtils
-import java.nio.file.Path
-import java.util.concurrent.ConcurrentHashMap
-import java.util.concurrent.ConcurrentMap
+import org.jetbrains.bazel.workspacemodel.entities.BazelGoTargetEntityId
+import org.jetbrains.bazel.workspacemodel.entities.WorkspaceModelTargetLabel
 
-/** Updates and exposes a map of import paths to files. */
 @ApiStatus.Internal
 class BazelGoPackageFactory : GoPackageFactory {
   override fun createPackage(goFile: GoFile): GoPackage? {
@@ -39,49 +35,15 @@ class BazelGoPackageFactory : GoPackageFactory {
     val project = goFile.project
     if (!project.isBazelProject) return null
     val virtualFile = goFile.virtualFile ?: return null
-    val fileToImportPathMap = getFileToImportPathMap(project)
-    val path = virtualFile.toNioPathOrNull() ?: return null
-    val importPath = fileToImportPathMap[path]
-    return if (importPath != null) doResolve(importPath, project) else null
+    val targetUtils = project.targetUtils
+
+    val containingTargets = targetUtils.getTargetsForFile(virtualFile)
+    val snapshot = project.workspaceModel.currentSnapshot
+    val goPackageEntity = containingTargets
+                            .mapNotNull { label -> snapshot.resolve(BazelGoTargetEntityId(WorkspaceModelTargetLabel(label))) }
+                            .firstNotNullOfOrNull { snapshot.resolve(it.importPath) } ?: return null
+    return BazelGoPackage(project, goPackageEntity)
   }
 
   override fun createPackage(packageName: String, vararg directories: PsiDirectory): GoPackage? = null
-
-  companion object {
-    @ApiStatus.Internal
-    val fileToImportPathMapComputable =
-      SyncCache.SyncCacheComputable { project ->
-        buildFileToImportPathMap(project)
-      }
-
-    @JvmStatic
-    fun getFileToImportPathMap(project: Project): ConcurrentMap<Path, String> =
-      SyncCache
-        .getInstance(project)
-        .get(fileToImportPathMapComputable)
-
-    private fun buildFileToImportPathMap(project: Project): ConcurrentMap<Path, String> {
-      val targetUtils = project.targetUtils
-      val map = ConcurrentHashMap<Path, String>()
-      val targetToFile = BazelGoPackage.getTargetToFileMap(project)
-
-      for (target in targetUtils.allBuildTargets()) {
-        val goBuildTarget = extractGoBuildTarget(target) ?: continue
-
-        val importPath =
-          goBuildTarget.embed
-            .asSequence()
-            .mapNotNull { targetUtils.getBuildTargetForLabel(it) }
-            .mapNotNull { extractGoBuildTarget(it) }
-            .map { it.importPath }
-            .firstOrNull() ?: goBuildTarget.importPath.takeIf { it.isNotBlank() } ?: continue
-
-        for (file in targetToFile.get(target.id)) {
-          map.putIfAbsent(file, importPath)
-        }
-      }
-
-      return map
-    }
-  }
 }

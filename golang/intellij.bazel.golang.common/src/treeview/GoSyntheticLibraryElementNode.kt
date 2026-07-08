@@ -53,7 +53,7 @@ class GoSyntheticLibraryElementNode internal constructor(
 
   fun hasChild(dirName: String): Boolean = children.containsKey(dirName)
 
-  fun addFiles(files: Set<VirtualFile>) {
+  fun addFiles(files: Collection<VirtualFile>) {
     (value as? BazelGoExternalSyntheticLibrary)?.addFiles(files)
   }
 

@@ -45,7 +45,8 @@ value class WorkspaceConfigurationId private constructor(
     //  unexpected failing equality checks, don't ask how I know...
     fun of(configurationChecksum: String?): WorkspaceConfigurationId = when {
       configurationChecksum.isNullOrBlank() -> EMPTY
-      else -> WorkspaceConfigurationId(configurationChecksum)
+      // Sometimes the checksum is cut off and only first 7 hex digits of the hash are printed, sometimes not, to be investigated
+      else -> WorkspaceConfigurationId(configurationChecksum.take(7))
     }
   }
 }

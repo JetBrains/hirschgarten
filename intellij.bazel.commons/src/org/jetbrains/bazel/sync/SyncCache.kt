@@ -51,11 +51,6 @@ class SyncCache(private val project: Project) {
   fun clear(): Unit = cache.clear()
 
   @TestOnly
-  fun <T : Any> injectValueForTest(key: SyncCacheComputable<T>, value: T) {
-    cache[key] = value
-  }
-
-  @TestOnly
   fun <T : Any> isAlreadyComputed(computable: SyncCacheComputable<T>): Boolean =
     cache[computable] != null
 
