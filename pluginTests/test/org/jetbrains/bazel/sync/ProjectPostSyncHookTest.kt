@@ -95,7 +95,7 @@ class ProjectPostSyncHookTest : MockProjectBaseTest() {
           GoBuildTarget(
             importPath = "example.com/app",
             sources = listOf(source),
-            libraryLabels = emptyList(),
+            embed = emptyList(),
           ),
         ),
       )

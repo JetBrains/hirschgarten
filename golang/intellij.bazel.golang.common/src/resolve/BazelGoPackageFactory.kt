@@ -69,7 +69,7 @@ class BazelGoPackageFactory : GoPackageFactory {
         val goBuildTarget = extractGoBuildTarget(target) ?: continue
 
         val importPath =
-          goBuildTarget.libraryLabels
+          goBuildTarget.embed
             .asSequence()
             .mapNotNull { targetUtils.getBuildTargetForLabel(it) }
             .mapNotNull { extractGoBuildTarget(it) }
