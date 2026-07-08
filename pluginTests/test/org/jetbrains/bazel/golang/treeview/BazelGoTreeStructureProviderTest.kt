@@ -20,11 +20,12 @@ import com.intellij.ide.projectView.ViewSettings
 import com.intellij.ide.projectView.impl.nodes.PsiFileNode
 import com.intellij.ide.projectView.impl.nodes.SyntheticLibraryElementNode
 import com.intellij.lang.FileASTNode
-import com.intellij.mock.MockVirtualFile
+import com.intellij.openapi.application.runWriteAction
 import com.intellij.openapi.fileTypes.FileType
 import com.intellij.openapi.fileTypes.FileTypeManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.platform.backend.workspace.toVirtualFileUrl
 import com.intellij.psi.FileViewProvider
 import com.intellij.psi.PsiDirectory
 import com.intellij.psi.PsiFile
@@ -32,29 +33,30 @@ import com.intellij.psi.PsiFileSystemItem
 import com.intellij.psi.PsiManager
 import com.intellij.psi.impl.FakePsiElement
 import com.intellij.psi.search.PsiElementProcessor
+import com.intellij.testFramework.utils.vfs.createFile
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
-import org.jetbrains.bazel.golang.resolve.BazelGoPackageFactory.Companion.fileToImportPathMapComputable
+import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.golang.sync.GoExternalSyntheticLibrary
-import org.jetbrains.bazel.project.BazelProjectFixtures.initializeBazelProject
+import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.sync.SyncCache
-import org.jetbrains.bazel.workspace.model.test.framework.MockProjectBaseTest
+import org.jetbrains.bazel.workspace.model.test.framework.WorkspaceModelBaseTest
+import org.jetbrains.bazel.workspacemodel.entities.BazelDummyEntitySource
+import org.jetbrains.bazel.workspacemodel.entities.BazelGoPackageEntity
+import org.jetbrains.bazel.workspacemodel.entities.BazelGoTargetEntity
+import org.jetbrains.bazel.workspacemodel.entities.ImportPathId
+import org.jetbrains.bazel.workspacemodel.entities.WorkspaceModelTargetLabel
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import java.nio.file.Path
-import java.util.concurrent.ConcurrentHashMap
-import kotlin.io.path.Path
 
 /** Unit tests for [BazelGoTreeStructureProvider] */
-class BazelGoTreeStructureProviderTest : MockProjectBaseTest() {
-  private lateinit var fileToImportPathMap: ConcurrentHashMap<Path, String>
+class BazelGoTreeStructureProviderTest : WorkspaceModelBaseTest() {
   private lateinit var rootNode: SyntheticLibraryElementNode
 
   @BeforeEach
-  fun beforeEach() {
-    initializeBazelProject(project, projectDir.get())
+  override fun beforeEach() {
+    super.beforeEach()
     rootNode = createRootNode()
-    fileToImportPathMap = ConcurrentHashMap<Path, String>()
     SyncCache.getInstance(project).clear()
   }
 
@@ -63,16 +65,44 @@ class BazelGoTreeStructureProviderTest : MockProjectBaseTest() {
     // GIVEN
 
     val fileName1 = "bar.go"
-    val file1 = MockVirtualFile.file(fileName1)
+    val file1 = runWriteAction { project.rootDir.createFile(fileName1) }
     val fileNode1 = createPsiFileNode(file1)
-    fileToImportPathMap[Path(file1.path)] = "root1"
+
+    val virtualFileUrlManager = workspaceModel.getVirtualFileUrlManager()
+    runWriteAction {
+      workspaceModel.updateProjectModel("add file1 with importpath root1") { storage ->
+        storage addEntity BazelGoTargetEntity(
+          label = WorkspaceModelTargetLabel(Label.synthetic("target1")),
+          importPath = ImportPathId("root1"),
+          entitySource = BazelDummyEntitySource,
+        )
+
+        storage addEntity BazelGoPackageEntity(
+          importPath = "root1",
+          sources = listOf(file1.toVirtualFileUrl(virtualFileUrlManager)),
+          entitySource = BazelDummyEntitySource,
+        )
+      }
+    }
 
     val fileName2 = "buzz.go"
-    val file2 = MockVirtualFile.file(fileName2)
+    val file2 = runWriteAction { project.rootDir.createFile(fileName2) }
     val fileNode2 = createPsiFileNode(file2)
-    fileToImportPathMap[Path(file2.path)] = "root2"
+    runWriteAction {
+      workspaceModel.updateProjectModel("add file2 with importpath root2") { storage ->
+        storage addEntity BazelGoTargetEntity(
+          label = WorkspaceModelTargetLabel(Label.synthetic("target2")),
+          importPath = ImportPathId("root2"),
+          entitySource = BazelDummyEntitySource,
+        )
 
-    SyncCache.getInstance(project).injectValueForTest(fileToImportPathMapComputable, fileToImportPathMap)
+        storage addEntity BazelGoPackageEntity(
+          importPath = "root2",
+          sources = listOf(file2.toVirtualFileUrl(virtualFileUrlManager)),
+          entitySource = BazelDummyEntitySource,
+        )
+      }
+    }
 
     // WHEN
     val actualChildren =

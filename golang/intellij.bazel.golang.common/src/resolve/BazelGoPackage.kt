@@ -13,101 +13,53 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+// Copyright 2000-2026 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
 package org.jetbrains.bazel.golang.resolve
 
 import com.goide.psi.GoFile
 import com.goide.psi.impl.GoPackage
+import com.goide.sdk.GoPackageUtil
 import com.google.common.annotations.VisibleForTesting
-import com.google.common.collect.ImmutableMultimap
-import com.google.common.collect.ImmutableSet
-import com.google.common.collect.ImmutableSet.toImmutableSet
-import com.google.common.collect.Streams
 import com.intellij.openapi.module.Module
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.roots.FileIndexFacade
 import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.platform.backend.workspace.virtualFile
+import com.intellij.platform.backend.workspace.workspaceModel
 import com.intellij.pom.Navigatable
 import com.intellij.psi.PsiDirectory
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiManager
 import com.intellij.util.Processor
-import one.util.streamex.StreamEx
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.commons.RuleType
-import org.jetbrains.bazel.golang.GoLanguageClass
-import org.jetbrains.bazel.golang.sync.GoBuildTarget
-import org.jetbrains.bazel.golang.sync.extractGoBuildTarget
-import org.jetbrains.bazel.golang.targetKinds.GoRuleTypes
 import org.jetbrains.bazel.label.Label
-import org.jetbrains.bazel.label.ResolvedLabel
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkFile
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkCallExpression
-import org.jetbrains.bazel.languages.starlark.references.findBuildFile
-import org.jetbrains.bazel.sync.SyncCache
+import org.jetbrains.bazel.languages.starlark.references.resolveLabel
 import org.jetbrains.bazel.target.targetUtils
-import org.jetbrains.bazel.testing.TestUtils
-import org.jetbrains.bazel.utils.findVirtualFileLocal
-import org.jetbrains.bsp.protocol.BuildTarget
-import java.nio.file.Path
-import java.nio.file.Paths
-import java.util.Objects
-import java.util.Optional
-import java.util.concurrent.ConcurrentHashMap
+import org.jetbrains.bazel.workspacemodel.entities.BazelGoPackageEntity
+import org.jetbrains.bazel.workspacemodel.entities.BazelGoTargetEntity
 import java.util.function.Predicate
-import kotlin.io.path.invariantSeparatorsPathString
 
 /**
- * [GoPackage] specialized for bazel, with a couple of differences:
- *
- *   - Same directory may appear in may different [BazelGoPackage]s.
- *   - A single [BazelGoPackage] may contain may different directories.
- *   - [files] will not necessarily return all files under [GoPackage#getDirectories()].
- *   - [#navigate]s to the corresponding go rule instead of a directory.
- *
- * Exactly one [BazelGoPackage] per go rule.
+ * Wrapper around [BazelGoPackageEntity] that implements [GoPackage] from the Go plugin.
+ * Differences from vanilla [GoPackage]:
+ * - Same directory may appear in different [BazelGoPackage]s.
+ * - [files] will not necessarily return all files under [GoPackage.getDirectories].
+ * - [navigate]s to the corresponding go rule instead of a directory.
  */
 @ApiStatus.Internal
-class BazelGoPackage : GoPackage {
-  private val label: Label
-  private val importPath: String
-  private val files: MutableMap<Path, Optional<PsiFile>>
-  private val directories: MutableMap<Path, Optional<VirtualFile>>
+class BazelGoPackage(
+  private val project: Project,
+  private val entity: BazelGoPackageEntity,
+) : GoPackage(
+  project,
+  getPackageName(project, entity.sources(), entity.importPath),
+  *entity.sources().mapNotNull { it.parent }.distinct().toTypedArray(),
+) {
 
-  @Volatile
-  private var navigableElement: PsiElement? = null
-
-  @Volatile
-  private var importReferences: Array<PsiElement?>? = null
-
-  constructor(
-    project: Project,
-    importPath: String,
-    target: BuildTarget,
-  ) : this(
-    project = project,
-    importPath = importPath,
-    label = target.id,
-    files = getTargetToFileMap(project)[target.id].toList(),
-  )
-
-  private constructor(
-    project: Project,
-    importPath: String,
-    label: Label,
-    files: List<Path>,
-  ) : super(project, getPackageName(project, files, importPath)) {
-    this.importPath = importPath
-    this.label = label
-    this.files =
-      ConcurrentHashMap<Path, Optional<PsiFile>>().apply {
-        files.forEach { put(it, Optional.empty()) }
-      }
-    this.directories =
-      ConcurrentHashMap<Path, Optional<VirtualFile>>().apply {
-        files.mapNotNull { it.parent }.forEach { put(it, Optional.empty()) }
-      }
-  }
 
   /**
    * Returns a list of resolve targets, one for each import path component.
@@ -140,15 +92,8 @@ class BazelGoPackage : GoPackage {
    * 4. `two` resolves to the directory `one/two/`.
    */
   fun getImportReferences(): Array<PsiElement?>? {
-    val references = importReferences
-    if (references != null && references.all { it == null || it.isValid }) {
-      return references
-    }
-
     val navigable = getNavigableElement() ?: return null
-
-    importReferences = getImportReferences(label, navigable, importPath)
-    return importReferences
+    return getImportReferences(getMainLabel() ?: return null, navigable, entity.importPath)
   }
 
   companion object {
@@ -233,112 +178,40 @@ class BazelGoPackage : GoPackage {
       }
     }
 
-    private val goTargetToFileMap =
-      SyncCache.SyncCacheComputable { project ->
-        getUncachedTargetToFileMap(project)
-      }
-
-    fun getTargetToFileMap(project: Project): ImmutableMultimap<Label, Path> =
-      SyncCache
-        .getInstance(project)
-        .get(goTargetToFileMap)
-
-    fun getUncachedTargetToFileMap(project: Project): ImmutableMultimap<Label, Path> {
-      val libraryToTestMap = buildLibraryToTestMap(project)
-      val builder = ImmutableMultimap.builder<Label, Path>()
-      project.targetUtils.allBuildTargets().filter { extractGoBuildTarget(it) != null }.forEach { target ->
-        val sourceFiles = getSourceFiles(target, libraryToTestMap).map { toRealFile(it) }
-        builder.putAll(target.id, sourceFiles)
-      }
-      return builder.build()
-    }
-
-    private fun buildLibraryToTestMap(project: Project): ImmutableMultimap<Label, GoBuildTarget> {
-      val targetUtils = project.targetUtils
-      val builder = ImmutableMultimap.builder<Label, GoBuildTarget>()
-      targetUtils.allBuildTargets().forEach { target ->
-        if (target.kind.languageClasses.contains(GoLanguageClass.GO) &&
-            target.kind.ruleType == RuleType.TEST
-        ) {
-          val goBuildTarget = extractGoBuildTarget(target) ?: return@forEach
-          goBuildTarget.embed.forEach { libraryLabel ->
-            builder.put(libraryLabel, goBuildTarget)
-          }
-        }
-      }
-      return builder.build()
-    }
-
-    private fun getSourceFiles(target: BuildTarget, libraryToTestMap: ImmutableMultimap<Label, GoBuildTarget>): ImmutableSet<Path> {
-      if (target.kind.kind == GoRuleTypes.GO_WRAP_CC.kindString) {
-        return getWrapCcGoFiles(target)
-      }
-      val sources = mutableSetOf<Path>()
-      val targetSources = extractGoBuildTarget(target)?.sources
-      val librarySources = libraryToTestMap[target.id].flatMap { it.sources }
-
-      (targetSources.orEmpty() + librarySources).toCollection(sources)
-
-      return ImmutableSet.copyOf(sources)
-    }
-
-    private fun getWrapCcGoFiles(target: BuildTarget): ImmutableSet<Path> {
-      val goBuildTarget = extractGoBuildTarget(target) ?: return ImmutableSet.of()
-      return goBuildTarget.sources.stream().collect(toImmutableSet())
-    }
-
+    /**
+     * Package name is determined by package declaration in the source files.
+     * By convention, this is *usually* equal to the last component of the `importpath`.
+     * However, e.g., for `go_binary` the package is always `main`.
+     *
+     * `rules_go` in principle allows any package name, but enforces that among packages passed to the linker,
+     * each `importpath` corresponds to exactly one package name.
+     * Very conveniently (see doc [BazelGoPackageEntity]), [BazelGoPackage] contains files with only one `importpath`,
+     * so checking the package name for just one source file, not for all sources, is enough here.
+     */
     private fun getPackageName(
       project: Project,
-      files: List<Path>,
+      sources: List<VirtualFile>,
       importPath: String,
     ): String {
       val psiManager = PsiManager.getInstance(project)
-      files
-        .mapNotNull { file ->
-          file.findVirtualFileLocal()?.let {
+      sources
+        .mapNotNull { source ->
+          source.let {
             psiManager.findFile(it) as? GoFile
           }
         }.firstOrNull { it.buildFlags != "ignore" }
         ?.let {
-          return it.canonicalPackageName ?: importPath.substringAfterLast('/')
+          return GoPackageUtil.getTrimmedPackageName(it) ?: importPath.substringAfterLast('/')
         }
       return importPath.substringAfterLast('/')
     }
+
+    private fun BazelGoPackageEntity.sources(): List<VirtualFile> = sources.mapNotNull { it.virtualFile }
   }
 
-  override fun getDirectories(): MutableSet<VirtualFile> {
-    directories.replaceAll { file, oldVirtualFile ->
-      if (oldVirtualFile.filter(VirtualFile::isValid).isPresent) {
-        oldVirtualFile
-      } else {
-        Optional.ofNullable(file.findVirtualFileLocal())
-      }
-    }
-    return directories.values
-      .stream()
-      .flatMap(Streams::stream)
-      .filter(VirtualFile::isValid)
-      .collect(toImmutableSet())
-  }
-
-  override fun files(): MutableCollection<PsiFile> {
+  override fun files(): Collection<PsiFile> {
     val psiManager = PsiManager.getInstance(project)
-    files.replaceAll { file, oldGoFile ->
-      if (oldGoFile.filter(PsiFile::isValid).isPresent) {
-        oldGoFile
-      } else {
-        Optional
-          .ofNullable(file.findVirtualFileLocal())
-          .map(psiManager::findFile)
-          .filter { it is GoFile }
-          .map { it as GoFile }
-      }
-    }
-    return files.values
-      .stream()
-      .flatMap(Streams::stream)
-      .filter(PsiFile::isValid)
-      .collect(toImmutableSet())
+    return entity.sources().mapNotNull { psiManager.findFile(it) }
   }
 
   override fun processFiles(processor: Processor<in PsiFile>, virtualFileFilter: Predicate<VirtualFile>): Boolean {
@@ -369,61 +242,38 @@ class BazelGoPackage : GoPackage {
   /**
    * navigates to the target in the BUILD file or just the BUILD file
    */
-  override fun getNavigableElement(): PsiElement? {
-    navigableElement?.takeIf { it.isValid }?.let { return it }
-    if (label is ResolvedLabel) {
-      val buildFile = findBuildFile(project, label, null)
-      buildFile?.also { navigableElement = it }?.findTargetRule(label.targetName)?.also { navigableElement = it }
-    }
-
-    return navigableElement
-  }
-
-  override fun getCanonicalImport(contextModule: Module?): String = importPath
-
-  override fun getImportPath(withVendoring: Boolean): String = importPath
-
-  override fun getAllImportPaths(withVendoring: Boolean): List<String> = listOf(importPath)
-
-  override fun toString(): String = "Package: $importPath"
+  override fun getNavigableElement(): PsiElement? =
+    resolveLabel(project, getMainLabel() ?: return null)
 
   /**
-   * need to override these because [GoPackage] uses [GoPackage#myDirectories] directly in their implementations
+   * A package can actually correspond to several labels in case of `embed`.
+   * Unfortunately, [getNavigableElement] allows for only one option, so we just take the first option.
    */
-  override fun isValid(): Boolean = getDirectories().size == directories.size
-
-  override fun equals(other: Any?): Boolean {
-    if (this === other) return true
-    if (other !is BazelGoPackage) return false
-    return importPath == other.importPath && directories == other.directories
+  private fun getMainLabel(): Label? {
+    val targetUtils = project.targetUtils
+    val labels = project.workspaceModel.currentSnapshot.referrers(entity.symbolicId, BazelGoTargetEntity::class.java)
+      .map { it.label.toLabel() }
+    // A package may have a library target, and a test target that tests that library.
+    // Don't resolve to a test target if we can.
+    labels.firstOrNull { targetUtils.getBuildTargetForLabel(it)?.kind?.ruleType == RuleType.LIBRARY }?.let { return it }
+    return labels.firstOrNull()
   }
 
-  override fun hashCode(): Int = Objects.hash(importPath, directories)
+  override fun getCanonicalImport(contextModule: Module?): String = entity.importPath
 
-  override fun getPsiDirectories(): StreamEx<PsiDirectory> {
-    val psiManager = PsiManager.getInstance(project)
-    return StreamEx.of(getDirectories().mapNotNull { directory -> psiManager.findDirectory(directory)?.takeIf { it.isValid } })
-  }
-}
+  override fun getImportPath(withVendoring: Boolean): String = entity.importPath
 
-/**
- * Workaround for https://github.com/bazelbuild/intellij/issues/2057. External workspace symlinks
- * can be changed externally by practically any bazel command. Such changes to symlinks will make
- * IntelliJ red. This helper resolves such symlink to an actual location.
- *
- * In IDE Starter Test, this logic does not work properly, so it is disabled.
- */
-@VisibleForTesting
-@ApiStatus.Internal
-fun toRealFile(maybeExternal: Path): Path {
-  if (TestUtils.isInIdeStarterTest()) return maybeExternal
-  val externalString = maybeExternal.invariantSeparatorsPathString
-  return if (externalString.contains("/external/") &&
-    !externalString.contains("/bazel-out/") &&
-    !externalString.contains("/blaze-out/")
-  ) {
-    Paths.get(externalString.replace(Regex("/execroot.*?/external/"), "/external/"))
-  } else {
-    maybeExternal
+  override fun getAllImportPaths(withVendoring: Boolean): List<String> = listOf(entity.importPath)
+
+  override fun toString(): String = "Package: ${entity.importPath}"
+
+  override fun equals(o: Any?): Boolean {
+    if (this === o) return true
+    if (javaClass != o?.javaClass) return false
+    o as BazelGoPackage
+    return entity == o.entity
   }
+
+  override fun hashCode(): Int =
+    entity.hashCode()
 }

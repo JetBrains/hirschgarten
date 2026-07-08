@@ -26,8 +26,9 @@ import org.jetbrains.bazel.workspace.canonicalRepoNameToPath
  * @param acceptOnlyFileTarget `true` if [Label.target] always refers to a file on disk (e.g., in `load` statements).
  * @see ExternalRepoResolveTest
  */
+@ApiStatus.Internal
 @RequiresReadLock
-internal fun resolveLabel(
+fun resolveLabel(
   project: Project,
   label: Label,
   containingFile: VirtualFile? = null,

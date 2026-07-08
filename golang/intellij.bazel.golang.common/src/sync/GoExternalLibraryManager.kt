@@ -5,6 +5,9 @@ import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.roots.AdditionalLibraryRootsListener
+import com.intellij.platform.backend.workspace.workspaceModel
+import com.intellij.platform.workspace.storage.entities
+import com.intellij.workspaceModel.ide.toPath
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import org.jetbrains.bazel.config.BazelFeatureFlags
@@ -14,6 +17,7 @@ import org.jetbrains.bazel.coroutines.BazelCoroutineService
 import org.jetbrains.bazel.golang.resolve.BazelGoPackage
 import org.jetbrains.bazel.sync.ProjectPostSyncHook
 import org.jetbrains.bazel.utils.refreshAndFindVirtualFile
+import org.jetbrains.bazel.workspacemodel.entities.BazelGoPackageEntity
 import java.nio.file.Path
 import kotlin.io.path.extension
 
@@ -54,9 +58,12 @@ internal class GoExternalLibraryManager(private val project: Project) {
      * which may contain data from previous sync while we're executing inside [GoExternalLibraryPostSyncHook].
      */
     val libraryFiles =
-      BazelGoPackage
-        .getUncachedTargetToFileMap(project)
-        .values()
+      project.workspaceModel
+        .currentSnapshot
+        .entities<BazelGoPackageEntity>()
+        .flatMap { it.sources }
+        .map { it.toPath() }
+        // Files inside the workspace are handled by GoWorkspaceImporter
         .filter { !it.startsWith(workspacePath) && it.extension == "go" }
         .distinct()
         .toList()

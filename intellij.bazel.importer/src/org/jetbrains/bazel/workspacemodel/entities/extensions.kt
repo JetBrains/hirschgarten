@@ -35,7 +35,7 @@ val ModuleEntity.bazelModuleExtension: BazelModuleExtensionEntity? by WorkspaceE
 val LibraryEntity.bazelLibraryExtension: BazelLibraryExtensionEntity? by WorkspaceEntity.extension()
 
 @ApiStatus.Internal
-class WorkspaceModelTargetLabel(private val label: String) {
+data class WorkspaceModelTargetLabel(private val label: String) {
   constructor(label: Label) : this(label.toString())
 
   fun toLabel(): Label = Label.parse(label)

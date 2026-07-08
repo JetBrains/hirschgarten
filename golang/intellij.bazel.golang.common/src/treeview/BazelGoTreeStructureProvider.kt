@@ -13,26 +13,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+// Copyright 2000-2026 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
 package org.jetbrains.bazel.golang.treeview
 
-import com.google.common.collect.ImmutableListMultimap
 import com.intellij.ide.projectView.TreeStructureProvider
 import com.intellij.ide.projectView.ViewSettings
 import com.intellij.ide.projectView.impl.nodes.PsiFileNode
 import com.intellij.ide.util.treeView.AbstractTreeNode
 import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.vfs.VfsUtil
 import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.platform.backend.workspace.virtualFile
+import com.intellij.platform.backend.workspace.workspaceModel
+import com.intellij.platform.workspace.storage.entities
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.config.isBazelProject
-import org.jetbrains.bazel.golang.resolve.BazelGoPackageFactory
 import org.jetbrains.bazel.golang.sync.GO_EXTERNAL_LIBRARY_ROOT_NAME
+import org.jetbrains.bazel.workspacemodel.entities.BazelGoPackageEntity
 import java.nio.file.Path
 import java.nio.file.Paths
 import java.util.SortedMap
 import java.util.TreeMap
-import java.util.function.Function
 
 /**
  * Modifies the project view by replacing the External Go Libraries root node (containing a flat
@@ -55,37 +56,22 @@ class BazelGoTreeStructureProvider :
     }
     val originalFileNodes = getOriginalFileNodesMap(children)
 
-    val fileToImportPathMap = BazelGoPackageFactory.getFileToImportPathMap(project)
-
     val newChildren = TreeMap<String, AbstractTreeNode<*>>()
 
-    val importPathToFilesMap =
-      originalFileNodes.keys
-        .stream()
-        .collect(
-          ImmutableListMultimap.toImmutableListMultimap(
-            // Some nodes may, for some reason, not be in importPathMap, use the empty
-            // String as a guard character.
-            Function { virtualFile -> fileToImportPathMap.getOrDefault(VfsUtil.virtualToIoFile(virtualFile).toPath(), "") },
-            Function.identity(),
-          ),
-        )
-
-    for (importPath in importPathToFilesMap.keySet()) {
-      if (importPath.isEmpty()) {
+    for (goPackage in parent.project.workspaceModel.currentSnapshot.entities<BazelGoPackageEntity>()) {
+      if (goPackage.importPath.isEmpty()) {
         continue
       }
       generateTree(
         settings,
         project,
         newChildren,
-        importPath,
-        importPathToFilesMap[importPath].toSet(),
+        goPackage.importPath,
+        goPackage.sources.mapNotNull { it.virtualFile },
         originalFileNodes,
       )
     }
-    val directChildren = importPathToFilesMap[""].mapNotNull { originalFileNodes[it] }
-    return newChildren.values + directChildren
+    return newChildren.values
   }
 }
 
@@ -94,7 +80,7 @@ private fun generateTree(
   project: Project,
   newChildren: SortedMap<String, AbstractTreeNode<*>>,
   importPath: String,
-  availableFiles: Set<VirtualFile>,
+  availableFiles: Collection<VirtualFile>,
   originalFileNodes: Map<VirtualFile, AbstractTreeNode<*>>,
 ) {
   val pathIter: Iterator<Path> = Paths.get(importPath).iterator()
@@ -133,7 +119,7 @@ private fun generateTree(
 private fun buildChildTree(
   settings: ViewSettings,
   project: Project,
-  files: Set<VirtualFile>,
+  files: Collection<VirtualFile>,
   pathIter: Iterator<Path>,
   parent: GoSyntheticLibraryElementNode,
 ): GoSyntheticLibraryElementNode {

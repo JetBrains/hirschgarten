@@ -12,16 +12,15 @@ import org.jetbrains.bazel.commons.LocalRepositoryMapping
 import org.jetbrains.bazel.commons.RepoMapping
 import org.jetbrains.bazel.commons.getLocalRepositories
 import org.jetbrains.bazel.golang.GoLanguageClass
-import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.server.BazelServerFacade
 import org.jetbrains.bazel.sync.workspace.graph.DependencyGraph
 import org.jetbrains.bazel.sync.workspace.languages.LanguagePlugin
+import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
+import org.jetbrains.bazel.sync.workspace.snapshot.toWorkspaceTargetKey
 import org.jetbrains.bsp.protocol.BazelResolveLocalToRemoteParams
 import org.jetbrains.bsp.protocol.BazelResolveLocalToRemoteResult
 import org.jetbrains.bsp.protocol.BazelResolveRemoteToLocalParams
 import org.jetbrains.bsp.protocol.BazelResolveRemoteToLocalResult
-import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
-import org.jetbrains.bazel.sync.workspace.snapshot.toWorkspaceTargetKey
 import org.jetbrains.bsp.protocol.BuildTargetData
 import java.nio.file.Path
 import java.nio.file.Paths
@@ -65,7 +64,7 @@ class GoLanguagePlugin: LanguagePlugin {
           sources = server.outFileHardLinks.createOutputFileHardLinks(
             goTarget.sourcesList.map { server.bazelPathsResolver.resolve(it, localRepositories) },
           ),
-          embed = goTarget.embedList.map { it.toWorkspaceTargetKey().label },
+          embed = goTarget.embedList.map { it.toWorkspaceTargetKey() },
         ),
       )
     }

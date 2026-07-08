@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+// Copyright 2000-2026 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
 package org.jetbrains.bazel.golang.resolve
 
 import com.goide.psi.impl.GoPackage
@@ -24,6 +25,7 @@ import com.intellij.lang.documentation.DocumentationProviderEx
 import com.intellij.openapi.module.Module
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.platform.backend.workspace.workspaceModel
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiElementResolveResult
 import com.intellij.psi.PsiFileSystemItem
@@ -34,15 +36,11 @@ import com.intellij.psi.search.PsiElementProcessor
 import com.intellij.util.ThreeState
 import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.config.isBazelProject
-import org.jetbrains.bazel.golang.sync.extractGoBuildTarget
-import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkFile
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkCallExpression
-import org.jetbrains.bazel.sync.SyncCache
-import org.jetbrains.bazel.target.targetUtils
-import java.util.concurrent.ConcurrentHashMap
+import org.jetbrains.bazel.workspacemodel.entities.BazelGoPackageEntity
+import org.jetbrains.bazel.workspacemodel.entities.ImportPathId
 
-/** Converts each go target in the [targetUtils#allBuildTargets()] into a corresponding [BazelGoPackage]. */
 internal class BazelGoImportResolver : GoImportResolver {
   override fun resolve(
     importPath: String,
@@ -51,7 +49,7 @@ internal class BazelGoImportResolver : GoImportResolver {
     resolveState: ResolveState?,
   ): Collection<GoPackage>? {
     if (!project.isBazelProject || !BazelFeatureFlags.isGoSupportEnabled) return null
-    val goPackage = doResolve(importPath, project)
+    val goPackage = resolveGoPackage(project, importPath)
     return if (goPackage != null) ImmutableList.of(goPackage) else null
   }
 
@@ -60,7 +58,7 @@ internal class BazelGoImportResolver : GoImportResolver {
   override fun resolve(reference: GoImportReference): Array<ResolveResult>? {
     val importPath = reference.fileReferenceSet.pathString
     val project = reference.element.project
-    val goPackage = doResolve(importPath, project) ?: return null
+    val goPackage = resolveGoPackage(project, importPath) ?: return null
     return doResolve(goPackage, reference.index)
   }
 }
@@ -109,47 +107,11 @@ internal class GoPackageDocumentationProvider : DocumentationProviderEx() {
     }
 }
 
-internal fun doResolve(importPath: String, project: Project): BazelGoPackage? {
+internal fun resolveGoPackage(project: Project, importPath: String): BazelGoPackage? {
   if (!project.isBazelProject) return null
-  val targetUtils = project.targetUtils
-
-  val goPackageMap = getGoPackageMap(project)
-  val goTargetMap = getGoTargetMap(project)
-  val targetLabel = goTargetMap[importPath] ?: return null
-  val target = targetUtils.getBuildTargetForLabel(targetLabel) ?: return null
-  return goPackageMap
-    .computeIfAbsent(importPath) { path -> BazelGoPackage(project = project, importPath = path, target = target) }
+  val entity: BazelGoPackageEntity = project.workspaceModel.currentSnapshot.resolve(ImportPathId(importPath)) ?: return null
+  return BazelGoPackage(project, entity)
 }
-
-private val goPackageMapComputable =
-  SyncCache.SyncCacheComputable {
-    ConcurrentHashMap<String, BazelGoPackage>()
-  }
-
-internal fun getGoPackageMap(project: Project): ConcurrentHashMap<String, BazelGoPackage> =
-  SyncCache
-    .getInstance(project)
-    .get(goPackageMapComputable)
-
-private val goTargetMapComputable: SyncCache.SyncCacheComputable<Map<String, Label>> =
-  SyncCache.SyncCacheComputable { project ->
-    val targetUtils = project.targetUtils
-    targetUtils
-      .allBuildTargets()
-      .filter { t -> extractGoBuildTarget(t)?.importPath?.isNotBlank() == true }
-      .groupBy { t -> extractGoBuildTarget(t)?.importPath.orEmpty() }
-      .mapValues { (_, targets) ->
-        // duplicates are possible (e.g., same target with different aspects)
-        // choose the one with the most sources (though they're probably the same)
-        targets.maxByOrNull { extractGoBuildTarget(it)?.sources?.size ?: 0 }?.id
-      }.filterValues { it != null }
-      .mapValues { (_, id) -> id!! }
-  }
-
-private fun getGoTargetMap(project: Project): Map<String, Label> =
-  SyncCache
-    .getInstance(project)
-    .get(goTargetMapComputable)
 
 internal fun doResolve(goPackage: BazelGoPackage, index: Int): Array<ResolveResult> =
   listOf(goPackage)
