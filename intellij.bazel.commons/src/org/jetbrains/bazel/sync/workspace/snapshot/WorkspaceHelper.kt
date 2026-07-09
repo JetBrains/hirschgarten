@@ -32,7 +32,3 @@ val WorkspaceAspectIds.labelIds: List<Label>
 @get:ApiStatus.Internal
 val WorkspaceConfiguration.isExecConfig: Boolean
   get() = summary.mnemonic.endsWith("-exec") || summary.mnemonic == "exec"
-
-@get:ApiStatus.Internal
-val WorkspaceConfigurationId.shortChecksum: String?
-  get() = configurationChecksum?.take(7)

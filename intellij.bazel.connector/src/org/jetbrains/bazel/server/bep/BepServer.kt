@@ -117,10 +117,10 @@ class BepServer(
     val workspaceConfiguration = WorkspaceConfiguration(
       id = WorkspaceConfigurationId.of(event.id.configuration.id),
       summary = WorkspaceConfigurationSummary(
+        hash = event.id.configuration.id,
         mnemonic = config.mnemonic,
         platformName = config.platformName,
         cpu = config.cpu,
-        makeVariables = config.makeVariableMap,
         isTool = config.isTool,
       ),
       fragments = emptyList(),
@@ -438,7 +438,7 @@ class BepServer(
 
     bepOutputBuilder.storeTargetOutputGroups(
       target = eventTargetKey.copy(
-        // when configurations aren't supported, simply use `EMPTY` configuration IDs everywhere
+        // when configurations aren't supported, simply use `EMPTY` or fallback configuration IDs
         configuration = if (bepOutputBuilder.buildToolVersion.isConfigurationSupportEnabled) {
           eventTargetKey.configuration
         }

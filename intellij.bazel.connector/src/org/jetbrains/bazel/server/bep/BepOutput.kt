@@ -20,8 +20,6 @@ class BepOutput(
   var buildToolVersion: BazelRelease = BazelRelease.FALLBACK_VERSION
 ) {
 
-  private val configIdCache: ConcurrentMap<String, WorkspaceConfiguration> = ConcurrentHashMap()
-
   fun rootTargets(): Set<WorkspaceTargetKey> = rootTargets
 
   fun filesByOutputGroupNameTransitive(outputGroup: String): Set<Path> {
@@ -46,24 +44,6 @@ class BepOutput(
         }
     }
     return result
-  }
-
-  /**
-   * Find according [WorkspaceConfiguration] by either full checksum of short id
-   *
-   * @param id Full checksum or short id (`ctx.configuration.short_id`)
-   *
-   * @return Matching [WorkspaceConfiguration]
-   */
-  fun findConfigurationByChecksum(id: String): WorkspaceConfiguration? {
-    // full configuration checksum
-    configurations[WorkspaceConfigurationId.of(id)]
-      ?.let { return it }
-
-    // try matching short checksum
-    return configIdCache.computeIfAbsent(id) {
-      configurations.values.firstOrNull { cfg -> cfg.id.configurationChecksum?.startsWith(id) == true }
-    }
   }
 
   /**

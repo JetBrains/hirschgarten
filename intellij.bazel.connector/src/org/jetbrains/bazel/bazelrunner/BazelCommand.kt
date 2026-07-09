@@ -355,6 +355,19 @@ abstract class BazelCommand(val bazelBinary: String) {
     }
   }
 
+  class Config(bazelBinary: String) : BazelCommand(bazelBinary) {
+    override fun buildExecutionDescriptor(): BazelCommandExecutionDescriptor {
+      val commandLine = mutableListOf(bazelBinary)
+
+      commandLine.addAll(startupOptions)
+      commandLine.add("config")
+      commandLine.addAll(options)
+
+      return BazelCommandExecutionDescriptor(commandLine, ptyTermSize)
+    }
+
+  }
+
   abstract class SimpleCommand(bazelBinary: String, val command: List<String>) : BazelCommand(bazelBinary) {
     override fun buildExecutionDescriptor(): BazelCommandExecutionDescriptor {
       val commandLine = mutableListOf(bazelBinary)
