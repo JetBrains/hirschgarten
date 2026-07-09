@@ -8,7 +8,6 @@ import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.label.ResolvedLabel
 import org.jetbrains.bazel.languages.starlark.repomapping.toApparentLabelOrThis
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
-import org.jetbrains.bazel.sync.workspace.snapshot.shortChecksum
 import org.jetbrains.bsp.protocol.utils.StringUtils
 
 // TODO: I really don't like `formatAsModuleName`, it suppose to construct `ModuleEntity`/`LibraryEntity`

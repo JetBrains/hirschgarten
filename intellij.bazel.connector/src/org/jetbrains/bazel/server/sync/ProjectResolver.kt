@@ -6,6 +6,7 @@ import com.intellij.aspect.lib.Aspects
 import com.intellij.aspect.lib.Rules
 import com.intellij.aspect.lib.OutputGroups
 import com.intellij.build.events.MessageEvent
+import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import com.intellij.platform.diagnostic.telemetry.helpers.useWithScope
 import kotlinx.coroutines.coroutineScope
@@ -35,7 +36,6 @@ import org.jetbrains.bazel.server.bzlmod.calculateRepoNameMappingOnly
 import org.jetbrains.bazel.server.bzlmod.extendRepoMappingByPathInfo
 import org.jetbrains.bazel.server.model.AspectSyncProject
 import org.jetbrains.bazel.server.sync.sharding.BazelBuildTargetSharder
-import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceConfigurationId
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
 import org.jetbrains.bazel.sync.workspace.snapshot.toWorkspaceTargetKey
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
@@ -82,6 +82,10 @@ class ProjectResolver(
       val buildAspectResult = buildProjectWithAspectAndSetup(build, requestedTargetsToSync, allTargets, taskId)
       val repoMapping = buildAspectResult.first
       val aspectResult = buildAspectResult.second
+
+      val configurations = fetchConfigurationsFromAnalysisCache(workspaceContext, bazelRunner, taskId)
+        .onFailure { logger.warn("`bazel config` invocation failed, falling back to BEP configurations", it) }
+        .getOrElse { aspectResult.bepOutput.configurations.values } // fallback to BEP configurations
 
       val aspectOutputs = extractAspectOutputPaths(aspectResult)
       val targets =
@@ -135,7 +139,7 @@ class ProjectResolver(
         hasError = aspectResult.isFailure,
         targets = targets,
         rootTargets = rootTargets,
-        configurations = aspectResult.bepOutput.configurations,
+        configurations = configurations.associateBy { it.id },
       )
     }
   }
@@ -389,13 +393,14 @@ class ProjectResolver(
     ) { buildAspectResult.bepOutput.filesByOutputGroupNameTransitive(OutputGroups.INFO.groupName) }
 
   companion object {
+    private val logger = logger<ProjectResolver>()
+
     @JvmStatic
     fun processTargetMap(
       targetMap: Map<WorkspaceTargetKey, TargetIdeInfo>,
       bepOutput: BepOutput,
     ): Map<WorkspaceTargetKey, TargetIdeInfo> =
       targetMap
-        .mapKeys { (key, _) -> key.copy(configuration = patchConfigurationId(bepOutput, key.configuration)) }
         .mapValues { (k, v) ->
           // our target-information already contains labels in canonical form
           v.toBuilder()
@@ -403,13 +408,6 @@ class ProjectResolver(
               val processedDependencies = processDependenciesList(depsBuilderList, targetMap, bepOutput)
               clearDeps()
               addAllDeps(processedDependencies)
-
-              // update key
-              key = IntellijIdeInfo.TargetKey.newBuilder()
-                .setLabel(k.label.toString())
-                .setConfiguration(k.configuration.configurationChecksum.orEmpty())
-                .addAllAspectIds(k.aspectIds.ids)
-                .build()
             }.build()
         }.toMap()
 
@@ -434,13 +432,9 @@ class ProjectResolver(
               else {
                 target.label
               }
-            val configurationId = patchConfigurationId(
-              bepOutput = bepOutput,
-              configurationId = WorkspaceConfigurationId.of(target.configuration),
-            )
             target = IntellijIdeInfo.TargetKey.newBuilder()
               .setLabel(newlabel)
-              .setConfiguration(configurationId.configurationChecksum.orEmpty())
+              .setConfiguration(target.configuration)
               .addAllAspectIds(target.aspectIdsList)
               .build()
           }.build()

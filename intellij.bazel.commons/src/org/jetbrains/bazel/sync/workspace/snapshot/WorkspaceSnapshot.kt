@@ -36,17 +36,23 @@ value class WorkspaceAspectIds private constructor(val ids: List<String>) {
 @ApiStatus.Internal
 @JvmInline
 value class WorkspaceConfigurationId private constructor(
-  val configurationChecksum: String? = null
+  val shortChecksum: String? = null
 ) {
   companion object {
     val EMPTY: WorkspaceConfigurationId = WorkspaceConfigurationId(null)
+
+    // https://github.com/bazelbuild/bazel/blob/3dcf3fd7c59eaaf207ec342877d6e8978b903825/src/main/java/com/google/devtools/build/lib/analysis/config/BuildOptions.java#L263
+    private const val SHORT_ID_LENGTH: Int = 7
 
     // RC: force `WorkspaceConfigurationId` normalization to avoid
     //  unexpected failing equality checks, don't ask how I know...
     fun of(configurationChecksum: String?): WorkspaceConfigurationId = when {
       configurationChecksum.isNullOrBlank() -> EMPTY
-      // Sometimes the checksum is cut off and only first 7 hex digits of the hash are printed, sometimes not, to be investigated
-      else -> WorkspaceConfigurationId(configurationChecksum.take(7))
+
+      // normalize to short id
+      else -> {
+        WorkspaceConfigurationId(configurationChecksum.take(SHORT_ID_LENGTH))
+      }
     }
   }
 }
@@ -70,18 +76,18 @@ data class WorkspaceConfiguration(
 /**
  * Bazel configuration summary emitted from BEP message
  *
+ * @property hash Full configuration hash
  * @property mnemonic Platform mnemonic
  * @property platformName Platform name
  * @property cpu Platform cpu
- * @property makeVariables Bazel make variables, `bazel info --show_make_env`
  * @property isTool Whether this configuration is used for building tools
  */
 @ApiStatus.Internal
 data class WorkspaceConfigurationSummary(
+  val hash: String,
   val mnemonic: String,
   val platformName: String,
   val cpu: String,
-  val makeVariables: Map<String, String>,
   val isTool: Boolean,
 )
 

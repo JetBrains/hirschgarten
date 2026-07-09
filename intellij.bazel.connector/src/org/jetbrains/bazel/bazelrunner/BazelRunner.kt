@@ -49,6 +49,8 @@ class BazelRunner(
     fun query(allowManualTargetsSync: Boolean = true, builder: BazelCommand.Query.() -> Unit = {}) =
       BazelCommand.Query(bazelBinary, allowManualTargetsSync).apply { builder() }
 
+    fun config(builder: BazelCommand.Config.() -> Unit) = BazelCommand.Config(bazelBinary).apply { builder() }
+
     /** Special version of `query` for asking Bazel about files instead of a target */
     fun fileQuery(filePaths: List<Path>, builder: BazelCommand.QueryExpression.() -> Unit = {}): BazelCommand.QueryExpression {
       val fileString = filePaths.joinToString(prefix = "set(", separator = " ", postfix = ")")
@@ -168,7 +170,7 @@ class BazelRunner(
   private fun envToString(environment: Map<String, String>): String = environment.entries.joinToString(" ") { "${it.key}=${it.value}" }
 }
 
-private class BazelTaskLoggerOnlyErrors(private val delegate: BazelTaskLogger): BazelTaskLogger by delegate {
+private class BazelTaskLoggerOnlyErrors(private val delegate: BazelTaskLogger) : BazelTaskLogger by delegate {
   override fun message(message: String) {
     // Do nothing
   }

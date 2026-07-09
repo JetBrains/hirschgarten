@@ -52,7 +52,7 @@ data class WorkspaceModelTargetKey(
   companion object {
     fun of(key: WorkspaceTargetKey): WorkspaceModelTargetKey = WorkspaceModelTargetKey(
       label = key.label.toString(),
-      configuration = key.configuration.configurationChecksum,
+      configuration = key.configuration.shortChecksum,
       aspectIds = key.aspectIds.ids,
     )
   }
