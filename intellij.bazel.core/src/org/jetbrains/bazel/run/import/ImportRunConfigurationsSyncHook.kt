@@ -8,7 +8,6 @@ import com.intellij.execution.impl.RunManagerImpl
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.JDOMUtil
-import com.intellij.openapi.vfs.resolveFromRootOrRelative
 import org.jdom.Element
 import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.label.Label
@@ -35,14 +34,10 @@ internal class ImportRunConfigurationsSyncHook : ProjectSyncHook {
       val runManager = RunManager.getInstance(project)
       val shouldSetSelectedConfiguration = runManager.selectedConfiguration == null
 
-      val runConfigurationPaths =
-        workspaceContext.importRunConfigurations.mapNotNull { pathString ->
-          project.rootDir.resolveFromRootOrRelative(pathString)
-        }
       val runConfigurations =
-        runConfigurationPaths.mapNotNull { runConfigurationPath ->
+        workspaceContext.importRunConfigurations.mapNotNull { runConfigurationPath ->
           try {
-            importRunConfiguration(project, runConfigurationPath.toNioPath())
+            importRunConfiguration(project, runConfigurationPath)
           } catch (e: Exception) {
             log.warn("Could not import $runConfigurationPath", e)
             null
