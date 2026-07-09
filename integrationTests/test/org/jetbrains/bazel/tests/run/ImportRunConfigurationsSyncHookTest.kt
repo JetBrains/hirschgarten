@@ -27,9 +27,9 @@ import com.intellij.tools.ide.performanceTesting.commands.assertCurrentFile
 import com.intellij.tools.ide.performanceTesting.commands.delay
 import io.kotest.matchers.shouldBe
 import org.jetbrains.bazel.data.IdeaBazelCases
-import org.jetbrains.bazel.ideStarter.execute
-import org.jetbrains.bazel.ideStarter.openFile
-import org.jetbrains.bazel.ideStarter.syncBazelProject
+import org.jetbrains.bazel.base.execute
+import org.jetbrains.bazel.base.openFile
+import org.jetbrains.bazel.base.syncBazelProject
 import org.jetbrains.bazel.tests.combined.IdeStarterCombinedBaseTest
 import org.jetbrains.bazel.tests.ui.clickRunGutterOnLine
 import org.jetbrains.bazel.tests.ui.verifyAvailableRunGutterActions

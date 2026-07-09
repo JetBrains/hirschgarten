@@ -12,10 +12,10 @@ import com.intellij.tools.ide.performanceTesting.commands.goToDeclaration
 import com.intellij.tools.ide.performanceTesting.commands.goto
 import io.kotest.matchers.string.shouldContain
 import org.jetbrains.bazel.data.IdeaBazelCases
-import org.jetbrains.bazel.ideStarter.IdeStarterBaseProjectTest
-import org.jetbrains.bazel.ideStarter.execute
-import org.jetbrains.bazel.ideStarter.openFile
-import org.jetbrains.bazel.ideStarter.syncBazelProject
+import org.jetbrains.bazel.base.IdeStarterBaseProjectTest
+import org.jetbrains.bazel.base.execute
+import org.jetbrains.bazel.base.openFile
+import org.jetbrains.bazel.base.syncBazelProject
 import org.junit.jupiter.api.Test
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds

@@ -6,9 +6,9 @@ import com.intellij.ide.starter.driver.engine.runIdeWithDriver
 import com.intellij.openapi.ui.playback.commands.AbstractCommand.CMD_PREFIX
 import com.intellij.tools.ide.performanceTesting.commands.CommandChain
 import org.jetbrains.bazel.data.IdeaBazelCases
-import org.jetbrains.bazel.ideStarter.IdeStarterBaseProjectTest
-import org.jetbrains.bazel.ideStarter.execute
-import org.jetbrains.bazel.ideStarter.syncBazelProject
+import org.jetbrains.bazel.base.IdeStarterBaseProjectTest
+import org.jetbrains.bazel.base.execute
+import org.jetbrains.bazel.base.syncBazelProject
 import org.junit.jupiter.api.Test
 import kotlin.time.Duration.Companion.minutes
 

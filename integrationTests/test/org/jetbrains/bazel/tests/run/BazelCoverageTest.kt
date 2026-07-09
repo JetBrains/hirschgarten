@@ -9,9 +9,9 @@ import com.intellij.tools.ide.performanceTesting.commands.CommandChain
 import com.intellij.tools.ide.performanceTesting.commands.delay
 import com.intellij.tools.ide.performanceTesting.commands.openFile
 import org.jetbrains.bazel.data.IdeaBazelCases
-import org.jetbrains.bazel.ideStarter.IdeStarterBaseProjectTest
-import org.jetbrains.bazel.ideStarter.execute
-import org.jetbrains.bazel.ideStarter.syncBazelProject
+import org.jetbrains.bazel.base.IdeStarterBaseProjectTest
+import org.jetbrains.bazel.base.execute
+import org.jetbrains.bazel.base.syncBazelProject
 import org.jetbrains.bazel.tests.ui.clickRunGutterOnLine
 import org.jetbrains.bazel.tests.ui.setRunConfigRunWithBazel
 import org.junit.jupiter.params.ParameterizedTest

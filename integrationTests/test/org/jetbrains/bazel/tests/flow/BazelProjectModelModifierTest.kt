@@ -11,12 +11,12 @@ import com.intellij.tools.ide.performanceTesting.commands.goto
 import com.intellij.tools.ide.performanceTesting.commands.openFile
 import com.intellij.tools.ide.performanceTesting.commands.waitForSmartMode
 import org.jetbrains.bazel.data.IdeaBazelCases
-import org.jetbrains.bazel.ideStarter.IdeStarterBaseProjectTest
-import org.jetbrains.bazel.ideStarter.assertEitherFileContentIsEqual
-import org.jetbrains.bazel.ideStarter.checkIdeaLogForExceptions
-import org.jetbrains.bazel.ideStarter.execute
-import org.jetbrains.bazel.ideStarter.navigateToFile
-import org.jetbrains.bazel.ideStarter.syncBazelProject
+import org.jetbrains.bazel.base.IdeStarterBaseProjectTest
+import org.jetbrains.bazel.base.assertEitherFileContentIsEqual
+import org.jetbrains.bazel.base.checkIdeaLogForExceptions
+import org.jetbrains.bazel.base.execute
+import org.jetbrains.bazel.base.navigateToFile
+import org.jetbrains.bazel.base.syncBazelProject
 import org.junit.jupiter.api.Test
 import kotlin.time.Duration.Companion.minutes
 

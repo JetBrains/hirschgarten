@@ -19,11 +19,11 @@ import io.kotest.matchers.types.shouldBeInstanceOf
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.data.BazelProjectConfigurer
 import org.jetbrains.bazel.data.IdeaBazelCases
-import org.jetbrains.bazel.ideStarter.IdeStarterBaseProjectTest
-import org.jetbrains.bazel.ideStarter.checkIdeaLogForExceptions
-import org.jetbrains.bazel.ideStarter.execute
-import org.jetbrains.bazel.ideStarter.syncBazelProject
-import org.jetbrains.bazel.ideStarter.waitForSyncSucceeded
+import org.jetbrains.bazel.base.IdeStarterBaseProjectTest
+import org.jetbrains.bazel.base.checkIdeaLogForExceptions
+import org.jetbrains.bazel.base.execute
+import org.jetbrains.bazel.base.syncBazelProject
+import org.jetbrains.bazel.base.waitForSyncSucceeded
 import org.jetbrains.bazel.test.compat.IntegrationTestCompat
 import org.junit.jupiter.api.Assumptions
 import org.junit.jupiter.api.BeforeEach

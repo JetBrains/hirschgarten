@@ -1,10 +1,11 @@
-package org.jetbrains.bazel.testing
+package org.jetbrains.bazel.commons
 
 import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldBeEmpty
 import io.kotest.matchers.string.shouldStartWith
+import org.jetbrains.bazel.testing.BazelTestLocationHintProvider
 import org.junit.jupiter.api.Test
 
 class BazelTestLocationHintProviderTest {

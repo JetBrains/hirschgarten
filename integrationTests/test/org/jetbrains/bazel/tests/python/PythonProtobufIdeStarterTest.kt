@@ -7,9 +7,9 @@ import com.intellij.idea.TestFor
 import com.intellij.tools.ide.performanceTesting.commands.checkOnRedCode
 import com.intellij.tools.ide.performanceTesting.commands.openFile
 import org.jetbrains.bazel.data.PyCharmBazelCases
-import org.jetbrains.bazel.ideStarter.IdeStarterBaseProjectTest
-import org.jetbrains.bazel.ideStarter.execute
-import org.jetbrains.bazel.ideStarter.syncBazelProjectCloseDialog
+import org.jetbrains.bazel.base.IdeStarterBaseProjectTest
+import org.jetbrains.bazel.base.execute
+import org.jetbrains.bazel.base.syncBazelProjectCloseDialog
 import org.junit.jupiter.api.Test
 import kotlin.time.Duration.Companion.minutes
 

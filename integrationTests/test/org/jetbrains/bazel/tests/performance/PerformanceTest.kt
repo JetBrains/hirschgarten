@@ -28,11 +28,11 @@ import com.intellij.tools.ide.performanceTesting.commands.CommandChain
 import com.intellij.tools.ide.performanceTesting.commands.takeScreenshot
 import com.intellij.tools.ide.performanceTesting.commands.waitForSmartMode
 import org.jetbrains.bazel.data.IdeaBazelCases
-import org.jetbrains.bazel.ideStarter.IdeStarterBaseProjectTest
-import org.jetbrains.bazel.ideStarter.getProjectInfoFromSystemProperties
-import org.jetbrains.bazel.ideStarter.execute
-import org.jetbrains.bazel.ideStarter.openBspToolWindow
-import org.jetbrains.bazel.ideStarter.waitForBazelSync
+import org.jetbrains.bazel.base.IdeStarterBaseProjectTest
+import org.jetbrains.bazel.base.getProjectInfoFromSystemProperties
+import org.jetbrains.bazel.base.execute
+import org.jetbrains.bazel.base.openBspToolWindow
+import org.jetbrains.bazel.base.waitForBazelSync
 import org.junit.jupiter.api.DynamicTest
 import org.junit.jupiter.api.TestFactory
 import org.kodein.di.direct

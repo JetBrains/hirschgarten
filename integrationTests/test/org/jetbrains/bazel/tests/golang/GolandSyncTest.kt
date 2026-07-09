@@ -16,9 +16,9 @@ import io.kotest.matchers.shouldBe
 import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.data.GoLandBazelCases
 import org.jetbrains.bazel.data.GoPluginBazelCases
-import org.jetbrains.bazel.ideStarter.bazelClean
-import org.jetbrains.bazel.ideStarter.navigateToFile
-import org.jetbrains.bazel.ideStarter.withBazelFeatureFlag
+import org.jetbrains.bazel.base.bazelClean
+import org.jetbrains.bazel.base.navigateToFile
+import org.jetbrains.bazel.base.withBazelFeatureFlag
 import org.jetbrains.bazel.tests.combined.IdeStarterCombinedBaseTest
 import org.jetbrains.bazel.tests.sync.verifyNoSyncOnReopen
 import org.junit.jupiter.api.Nested

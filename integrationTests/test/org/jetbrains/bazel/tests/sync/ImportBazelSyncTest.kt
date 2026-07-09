@@ -3,10 +3,10 @@ package org.jetbrains.bazel.tests.sync
 import com.intellij.driver.sdk.ui.components.common.ideFrame
 import com.intellij.ide.starter.driver.engine.runIdeWithDriver
 import org.jetbrains.bazel.data.IdeaBazelCases
-import org.jetbrains.bazel.ideStarter.IdeStarterBaseProjectTest
-import org.jetbrains.bazel.ideStarter.checkIdeaLogForExceptions
-import org.jetbrains.bazel.ideStarter.getProjectInfoFromSystemProperties
-import org.jetbrains.bazel.ideStarter.syncBazelProject
+import org.jetbrains.bazel.base.IdeStarterBaseProjectTest
+import org.jetbrains.bazel.base.checkIdeaLogForExceptions
+import org.jetbrains.bazel.base.getProjectInfoFromSystemProperties
+import org.jetbrains.bazel.base.syncBazelProject
 import org.junit.jupiter.api.Test
 import kotlin.time.Duration.Companion.minutes
 

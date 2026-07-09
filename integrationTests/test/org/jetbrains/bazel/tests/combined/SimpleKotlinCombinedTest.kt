@@ -39,11 +39,11 @@ import com.intellij.tools.ide.performanceTesting.commands.waitForSmartMode
 import io.kotest.assertions.withClue
 import io.kotest.matchers.booleans.shouldBeTrue
 import org.jetbrains.bazel.data.IdeaBazelCases
-import org.jetbrains.bazel.ideStarter.assertSyncedTargets
-import org.jetbrains.bazel.ideStarter.buildAndSync
-import org.jetbrains.bazel.ideStarter.execute
-import org.jetbrains.bazel.ideStarter.openFile
-import org.jetbrains.bazel.ideStarter.waitForSyncSucceeded
+import org.jetbrains.bazel.base.assertSyncedTargets
+import org.jetbrains.bazel.base.buildAndSync
+import org.jetbrains.bazel.base.execute
+import org.jetbrains.bazel.base.openFile
+import org.jetbrains.bazel.base.waitForSyncSucceeded
 import org.jetbrains.bazel.tests.sync.verifyNoSyncOnReopen
 import org.jetbrains.bazel.tests.ui.expandedTree
 import org.jetbrains.bazel.tests.ui.verifyTestStatus

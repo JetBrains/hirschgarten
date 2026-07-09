@@ -1,4 +1,4 @@
-package org.jetbrains.bazel.ideStarter
+package org.jetbrains.bazel.base
 
 import com.intellij.driver.client.Driver
 import com.intellij.driver.client.Remote
@@ -205,10 +205,12 @@ abstract class IdeStarterBaseProjectTest {
 
     suspend fun killCefProcesses() {
       try {
-        val cefProcesses = getProcessList(java.util.function.Predicate { p ->
-          p.name.contains("cef_server") &&
-            p.arguments.any { it.contains("/ide-tests/") || it.contains("\\ide-tests\\") }
-        })
+        val cefProcesses = getProcessList(
+          Predicate { p ->
+            p.name.contains("cef_server") &&
+              p.arguments.any { it.contains("/ide-tests/") || it.contains("\\ide-tests\\") }
+          }
+        )
         if (cefProcesses.isEmpty()) {
           println("Killing orphaned JCEF helper processes: no processes were detected")
           return

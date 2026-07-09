@@ -15,7 +15,7 @@ import com.intellij.testFramework.junit5.SystemProperty
 import com.intellij.testFramework.junit5.fixture.projectFixture
 import com.intellij.testFramework.replaceService
 import com.intellij.tools.ide.starter.product.idea.ultimate.IdeaUltimate
-import org.jetbrains.bazel.ideStarter.IdeStarterBaseProjectTest
+import org.jetbrains.bazel.base.IdeStarterBaseProjectTest
 import org.jetbrains.bazel.languages.projectview.ProjectView
 import org.jetbrains.bazel.languages.projectview.ProjectViewToWorkspaceContextConverter
 import org.jetbrains.bazel.project.BazelProjectFixtures

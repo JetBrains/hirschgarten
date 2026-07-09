@@ -10,8 +10,8 @@ import com.intellij.ide.starter.ide.IDETestContext
 import com.intellij.tools.ide.performanceTesting.commands.openFile
 import com.intellij.tools.ide.performanceTesting.commands.removeAllBreakpoints
 import com.intellij.tools.ide.performanceTesting.commands.setBreakpoint
+import org.jetbrains.bazel.base.execute
 import org.jetbrains.bazel.data.GoLandBazelCases
-import org.jetbrains.bazel.ideStarter.execute
 import org.jetbrains.bazel.tests.combined.IdeStarterCombinedBaseTest
 import org.jetbrains.bazel.tests.run.selectRunConfiguration
 import org.jetbrains.bazel.tests.ui.clickRunGutterOnLine

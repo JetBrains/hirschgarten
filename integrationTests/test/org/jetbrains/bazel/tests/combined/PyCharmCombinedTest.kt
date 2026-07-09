@@ -13,9 +13,9 @@ import com.intellij.tools.ide.performanceTesting.commands.openFile
 import io.kotest.matchers.booleans.shouldBeTrue
 import io.kotest.matchers.collections.shouldHaveSize
 import org.jetbrains.bazel.data.PyCharmBazelCases
-import org.jetbrains.bazel.ideStarter.execute
-import org.jetbrains.bazel.ideStarter.navigateToFile
-import org.jetbrains.bazel.ideStarter.syncBazelProjectCloseDialog
+import org.jetbrains.bazel.base.execute
+import org.jetbrains.bazel.base.navigateToFile
+import org.jetbrains.bazel.base.syncBazelProjectCloseDialog
 import org.junit.jupiter.api.Order
 import org.junit.jupiter.api.Test
 import kotlin.time.Duration.Companion.seconds

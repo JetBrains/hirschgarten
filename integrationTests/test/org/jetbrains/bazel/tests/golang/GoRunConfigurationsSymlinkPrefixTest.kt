@@ -7,11 +7,11 @@ import com.intellij.driver.sdk.ui.components.elements.popup
 import com.intellij.ide.starter.driver.engine.runIdeWithDriver
 import com.intellij.tools.ide.performanceTesting.commands.openFile
 import com.intellij.tools.ide.performanceTesting.commands.setBreakpoint
+import org.jetbrains.bazel.base.IdeStarterBaseProjectTest
+import org.jetbrains.bazel.base.execute
+import org.jetbrains.bazel.base.syncBazelProject
+import org.jetbrains.bazel.base.waitForSyncSucceeded
 import org.jetbrains.bazel.data.GoLandBazelCases
-import org.jetbrains.bazel.ideStarter.IdeStarterBaseProjectTest
-import org.jetbrains.bazel.ideStarter.execute
-import org.jetbrains.bazel.ideStarter.syncBazelProject
-import org.jetbrains.bazel.ideStarter.waitForSyncSucceeded
 import org.jetbrains.bazel.tests.ui.clickRunGutterOnLine
 import org.jetbrains.bazel.tests.ui.debuggerFramesUi
 import org.jetbrains.bazel.tests.ui.verifyTestStatus
