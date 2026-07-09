@@ -54,7 +54,7 @@ data class WorkspaceContext(
   val shardSync: Boolean,
   val targetShardSize: Int,
   val shardingApproach: String?,
-  val importRunConfigurations: List<String>,
+  val importRunConfigurations: List<Path>,
   val gazelleTarget: Label?,
   val indexAllFilesInDirectories: Boolean,
   val deriveInstrumentationFilterFromTargets: Boolean,

@@ -38,7 +38,7 @@ object ProjectViewToWorkspaceContextConverter {
       shardSync = projectView.shardSync,
       targetShardSize = projectView.targetShardSize,
       shardingApproach = projectView.shardingApproach,
-      importRunConfigurations = projectView.importRunConfigurations,
+      importRunConfigurations = projectView.importRunConfigurations.map { workspaceRoot.resolve(it).normalize() },
       gazelleTarget = projectView.gazelleTarget,
       indexAllFilesInDirectories = projectView.indexAllFilesInDirectories,
       deriveInstrumentationFilterFromTargets = projectView.deriveInstrumentationFilterFromTargets,

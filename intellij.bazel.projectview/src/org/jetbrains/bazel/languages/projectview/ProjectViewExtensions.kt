@@ -94,9 +94,9 @@ val ProjectView.shardingApproach: String?
   @ApiStatus.Internal
   get() = getSection(ShardingApproachSection.KEY)?.name?.lowercase()
 
-val ProjectView.importRunConfigurations: List<String>
+val ProjectView.importRunConfigurations: List<Path>
   @ApiStatus.Internal
-  get() = getSection(ImportRunConfigurationsSection.KEY)?.map { it.toString() } ?: emptyList()
+  get() = getSection(ImportRunConfigurationsSection.KEY) ?: emptyList()
 
 val ProjectView.gazelleTarget: Label?
   @ApiStatus.Internal
