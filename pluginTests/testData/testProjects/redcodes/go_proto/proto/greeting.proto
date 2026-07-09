@@ -1,0 +1,9 @@
+syntax = "proto3";
+
+package greeting;
+
+option go_package = "example.com/proto/greeting";
+
+message HelloRequest {
+  string hello = 1;
+}
