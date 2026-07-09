@@ -1,0 +1,6 @@
+package lib
+
+func Bar() {
+
+}
+
