@@ -34,6 +34,7 @@ import org.jetbrains.bazel.performance.bspTracer
 import org.jetbrains.bazel.progress.syncConsole
 import org.jetbrains.bazel.progress.withSubtask
 import org.jetbrains.bazel.run.task.BazelBuildTaskListener
+import org.jetbrains.bazel.server.BazelServerFacade
 import org.jetbrains.bazel.server.BazelServerService
 import org.jetbrains.bazel.sync.ProjectPostSyncHook
 import org.jetbrains.bazel.sync.ProjectPreSyncHook
@@ -43,20 +44,19 @@ import org.jetbrains.bazel.sync.projectPreSyncHooks
 import org.jetbrains.bazel.sync.projectStructure.ProjectModelApplicationTask
 import org.jetbrains.bazel.sync.projectSyncHooks
 import org.jetbrains.bazel.sync.scope.FirstPhaseSync
+import org.jetbrains.bazel.sync.scope.PartialProjectSync
 import org.jetbrains.bazel.sync.scope.ProjectSyncScope
+import org.jetbrains.bazel.sync.scope.SecondPhaseSync
 import org.jetbrains.bazel.sync.status.SyncAlreadyInProgressException
 import org.jetbrains.bazel.sync.status.SyncStatusService
 import org.jetbrains.bazel.sync.workspace.importer.WorkspaceImporterHelper
+import org.jetbrains.bazel.sync.workspace.mapper.BazelWorkspaceResolver
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceSnapshot
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceSnapshotBuilder
 import org.jetbrains.bazel.sync.workspace.snapshot.allTargets
 import org.jetbrains.bazel.target.targetUtils
 import org.jetbrains.bazel.taskEvents.BazelTaskEventsService
 import org.jetbrains.bazel.workspace.fileEvents.FileEventJobManager
-import org.jetbrains.bazel.server.BazelServerFacade
-import org.jetbrains.bazel.sync.scope.PartialProjectSync
-import org.jetbrains.bazel.sync.scope.SecondPhaseSync
-import org.jetbrains.bazel.sync.workspace.mapper.BazelWorkspaceResolver
 import org.jetbrains.bsp.protocol.TaskGroupId
 import org.jetbrains.bsp.protocol.TaskId
 import org.jetbrains.bsp.protocol.allSources
@@ -298,7 +298,7 @@ class ProjectSyncTask(private val project: Project) {
     var shouldUpdateProjectModel = false
     try {
       executePreSyncHooks(progressReporter, taskId)
-      return BazelServerService.getInstance(project).connection.runWithServer { server ->
+      return BazelServerService.getInstance(project).connection.runWithServer(taskId) { server ->
         server.withOutFileHardLinksSync(projectModelUpdated = { shouldUpdateProjectModel }) {
           server.bazelInfo.release.deprecated()?.let { deprecated ->
             project.syncConsole.addDiagnosticMessage(

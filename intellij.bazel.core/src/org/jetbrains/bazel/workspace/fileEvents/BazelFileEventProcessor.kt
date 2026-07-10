@@ -421,7 +421,7 @@ private suspend fun queryTargetsForFile(project: Project, filePaths: List<Path>,
   return try {
     project
       .connection
-      .runWithServer { it.buildTargetInverseSources(InverseSourcesParams(taskId, filePaths)) }
+      .runWithServer(taskId) { it.buildTargetInverseSources(InverseSourcesParams(taskId, filePaths)) }
       .targets
   }
   catch (ex: Exception) {

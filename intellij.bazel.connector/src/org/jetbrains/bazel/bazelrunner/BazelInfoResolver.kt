@@ -8,6 +8,7 @@ import org.jetbrains.bazel.commons.orFallbackVersion
 import org.jetbrains.bazel.commons.orFromBazelVersionFile
 import org.jetbrains.bazel.server.sync.isConfigurationSupportEnabled
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
+import org.jetbrains.bsp.protocol.TaskId
 import java.nio.file.Path
 import java.nio.file.Paths
 
@@ -20,7 +21,7 @@ private const val STARLARK_SEMANTICS = "starlark-semantics"
 
 @ApiStatus.Internal
 class BazelInfoResolver(val workspaceRoot: Path) {
-  suspend fun resolveBazelInfo(bazelRunner: BazelRunner, workspaceContext: WorkspaceContext): BazelInfo {
+  suspend fun resolveBazelInfo(bazelRunner: BazelRunner, workspaceContext: WorkspaceContext, taskId: TaskId?): BazelInfo {
     val command =
       bazelRunner.buildBazelCommand(workspaceContext) {
         info {
@@ -29,7 +30,7 @@ class BazelInfoResolver(val workspaceRoot: Path) {
       }
     val processResult =
       bazelRunner
-        .runBazelCommand(command, taskId = null)
+        .runBazelCommand(command, taskId)
         .waitAndGetResult()
     if (processResult.isNotSuccess) error(
       "Querying bazel info failed.\n${processResult.stdoutLines.joinToString("\n")}\n${
