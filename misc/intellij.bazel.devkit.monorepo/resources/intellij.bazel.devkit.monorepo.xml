@@ -4,7 +4,7 @@
     <module name="intellij.bazel.commons"/>
     <module name="intellij.bazel.core"/>
     <module name="intellij.bazel.importer"/>
-    <module name="intellij.bazel.java.common"/>
+    <module name="intellij.bazel.java.core"/>
     <module name="intellij.bazel.kotlin.common"/>
     <module name="intellij.bazel.projectview"/>
     <module name="intellij.java.debugger.impl"/>

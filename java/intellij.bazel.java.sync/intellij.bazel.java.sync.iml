@@ -20,7 +20,6 @@
     <orderEntry type="module" module-name="intellij.bazel.protobuf" />
     <orderEntry type="module" module-name="intellij.bazel.importer" />
     <orderEntry type="module" module-name="intellij.bazel.projectview" />
-    <orderEntry type="module" module-name="intellij.bazel.java.common" />
     <orderEntry type="module" module-name="intellij.platform.backend" />
     <orderEntry type="module" module-name="intellij.platform.core" />
     <orderEntry type="module" module-name="intellij.platform.lang" />
@@ -55,5 +54,6 @@
     <orderEntry type="module" module-name="intellij.platform.execution" />
     <orderEntry type="module" module-name="intellij.java.compiler.impl" />
     <orderEntry type="module" module-name="intellij.platform.eel.provider" />
+    <orderEntry type="module" module-name="intellij.bazel.java.common" />
   </component>
 </module>

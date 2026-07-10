@@ -7,6 +7,7 @@
     <module name="intellij.bazel.core"/>
     <module name="intellij.bazel.importer"/>
     <module name="intellij.bazel.java.common"/>
+    <module name="intellij.bazel.java.core"/>
     <module name="intellij.java"/>
     <module name="intellij.java.debugger"/>
     <module name="intellij.java.debugger.impl"/>
