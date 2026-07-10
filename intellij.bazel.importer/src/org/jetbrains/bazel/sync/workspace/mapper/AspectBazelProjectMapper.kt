@@ -157,11 +157,15 @@ class AspectBazelProjectMapper(
 
   private class MissingFilesReporter(val target: Label) {
     private val missingSources = ArrayList<Path>()
+    private val missingGeneratedSources = ArrayList<Path>()
 
     fun add(src: ArtifactLocation, path: Path) {
-      // Do not report missing generated sources or unknown languages/file types
-      if (missingSources.size < 3 && src.isSource && LanguageClass.fromExtension(path.extension) != null)
-        missingSources.add(path)
+      // Do not report unknown languages/file types
+      if (LanguageClass.fromExtension(path.extension) == null) return
+      val missing = if (src.isSource) missingSources else missingGeneratedSources
+      if (missing.size < 3) {
+        missing.add(path)
+      }
     }
 
     fun report() {
@@ -169,6 +173,12 @@ class AspectBazelProjectMapper(
         logger.warn(
           "target $target has ${missingSources.size} missing source files: " +
           missingSources.joinToString { it.toString() },
+        )
+      }
+      if (missingGeneratedSources.isNotEmpty()) {
+        logger.warn(
+          "target $target has ${missingGeneratedSources.size} generated source files that were not materialized during sync, " +
+          "so they cannot be indexed by the IDE: " + missingGeneratedSources.joinToString { it.toString() },
         )
       }
     }
