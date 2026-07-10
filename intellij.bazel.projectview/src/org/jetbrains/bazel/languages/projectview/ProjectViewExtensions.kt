@@ -39,7 +39,6 @@ val ProjectView.targets: List<ExcludableValue<Label>>
   get() = getSection(TargetsSection.KEY) ?: emptyList()
 
 val ProjectView.directories: List<ExcludableValue<Path>>
-  @ApiStatus.Internal
   get() = getSection(DirectoriesSection.KEY) ?: emptyList()
 
 val ProjectView.buildFlags: List<String>
@@ -63,11 +62,9 @@ val ProjectView.bazelBinary: Path?
   get() = getSection(BazelBinarySection.KEY)
 
 val ProjectView.allowManualTargetsSync: Boolean
-  @ApiStatus.Internal
   get() = getSection(AllowManualTargetsSyncSection.KEY) ?: false
 
 val ProjectView.deriveTargetsFromDirectories: Boolean
-  @ApiStatus.Internal
   get() = getSection(DeriveTargetsFromDirectoriesSection.KEY) ?: false
 
 val ProjectView.importDepth: Int

@@ -18,11 +18,17 @@ import org.jetbrains.bazel.languages.projectview.psi.sections.ProjectViewPsiSect
 /**
  * Immutable representation of a ProjectView: a map of section keys to parsed values.
  */
-@ApiStatus.Internal
-data class ProjectView(val sections: Map<SectionKey<*>, Any>, val imports: List<Import>) {
+class ProjectView internal constructor(
+  internal val sections: Map<SectionKey<*>, Any>,
+  @get:ApiStatus.Internal
+  val imports: List<Import>,
+) {
+  @ApiStatus.Internal
   fun isEmpty(): Boolean = sections.isEmpty() && imports.isEmpty()
 
-  inline fun <reified T> getSection(key: SectionKey<T>): T? {
+  @ApiStatus.Internal
+  @Suppress("UNCHECKED_CAST")
+  fun <T> getSection(key: SectionKey<T>): T? {
     var value = sections[key] as? T
     // in case of not existing section, try to get default one
     if (value == null) {
@@ -34,6 +40,25 @@ data class ProjectView(val sections: Map<SectionKey<*>, Any>, val imports: List<
     return value
   }
 
+  override fun equals(other: Any?): Boolean {
+    if (this === other) return true
+    if (javaClass != other?.javaClass) return false
+
+    other as ProjectView
+
+    if (sections != other.sections) return false
+    if (imports != other.imports) return false
+
+    return true
+  }
+
+  override fun hashCode(): Int {
+    var result = sections.hashCode()
+    result = 31 * result + imports.hashCode()
+    return result
+  }
+
+  @ApiStatus.Internal
   companion object {
 
     val EMPTY: ProjectView = ProjectView(mapOf(), listOf())

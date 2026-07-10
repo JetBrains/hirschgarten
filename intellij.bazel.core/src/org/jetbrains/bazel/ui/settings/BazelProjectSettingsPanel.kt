@@ -21,7 +21,7 @@ import com.intellij.ui.dsl.builder.columns
 import com.intellij.ui.dsl.builder.panel
 import org.jetbrains.bazel.buildifier.BuildifierUtil
 import org.jetbrains.bazel.config.BazelPluginBundle
-import org.jetbrains.bazel.project.DefaultProjectViewService
+import org.jetbrains.bazel.languages.projectview.ProjectViewService
 import org.jetbrains.bazel.settings.bazel.bazelProjectSettings
 import java.io.IOException
 import java.nio.file.InvalidPathException
@@ -119,7 +119,7 @@ internal class BazelProjectSettingsConfigurable(private val project: Project) :
 
   override fun reset() {
     super<BoundCompositeSearchableConfigurable>.reset()
-    projectViewPathField.text = DefaultProjectViewService.getProjectViewFilePath(project).toString()
+    projectViewPathField.text = ProjectViewService.getInstance(project).projectViewPath.toString()
     buildifierExecutablePathField.text = getBuildifierExecPathPlaceholderMessage()
     runBuildifierOnSaveCheckBox.isSelected = project.bazelProjectSettings.runBuildifierOnSave
 
