@@ -3,9 +3,10 @@ package org.jetbrains.bazel.workspace.model.test.framework
 import org.jetbrains.bazel.commons.ExcludableValue
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.server.BazelServerConnection
+import org.jetbrains.bazel.server.BazelServerFacade
 import org.jetbrains.bazel.server.BazelServerService
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
-import org.jetbrains.bazel.server.BazelServerFacade
+import org.jetbrains.bsp.protocol.TaskId
 import kotlin.io.path.Path
 
 val mockWorkspaceContext =
@@ -33,6 +34,6 @@ val mockWorkspaceContext =
 class MockBuildServerService(server: BazelServerFacade) : BazelServerService {
   override val connection: BazelServerConnection =
     object : BazelServerConnection {
-      override suspend fun <T> runWithServer(task: suspend (server: BazelServerFacade) -> T): T = task(server)
+      override suspend fun <T> runWithServer(taskId: TaskId?, task: suspend (server: BazelServerFacade) -> T): T = task(server)
     }
 }

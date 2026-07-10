@@ -31,7 +31,7 @@ object BazelWorkspaceResolver {
     build: Boolean,
     taskId: TaskId,
   ): BazelResolvedWorkspace {
-    return BazelServerService.getInstance(project).connection.runWithServer { server ->
+    return BazelServerService.getInstance(project).connection.runWithServer(taskId) { server ->
       when (scope) {
         is FirstPhaseSync -> {
           val phasedSyncProject = server.workspaceBuildPhasedTargets(WorkspaceBuildTargetPhasedParams(taskId))

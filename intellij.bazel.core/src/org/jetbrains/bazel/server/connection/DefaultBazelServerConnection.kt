@@ -13,6 +13,8 @@ import org.jetbrains.bazel.install.EnvironmentCreator
 import org.jetbrains.bazel.languages.bazelversion.psi.BazelVersionLiteral
 import org.jetbrains.bazel.languages.bazelversion.service.BazelVersionWorkspaceResolver
 import org.jetbrains.bazel.server.BazelServerConnection
+import org.jetbrains.bazel.server.BazelServerFacade
+import org.jetbrains.bazel.server.BazelServerService
 import org.jetbrains.bazel.server.bsp.BazelServerFacadeImpl
 import org.jetbrains.bazel.server.bsp.managers.BazelBspAspectsManager
 import org.jetbrains.bazel.server.sync.BspProjectMapper
@@ -20,15 +22,14 @@ import org.jetbrains.bazel.server.sync.ExecuteService
 import org.jetbrains.bazel.server.sync.ProjectResolver
 import org.jetbrains.bazel.server.sync.firstPhase.FirstPhaseProjectResolver
 import org.jetbrains.bazel.sync.BazelEnvironmentService
+import org.jetbrains.bazel.sync.BazelOutFileHardLinks
+import org.jetbrains.bazel.sync.environment.BazelApplicationContextService
 import org.jetbrains.bazel.sync.workspace.mapper.normal.DefaultBazelOutputFileHardLinks
 import org.jetbrains.bazel.taskEvents.BazelTaskEventsService
 import org.jetbrains.bazel.workspace.BazelExecutableProvider
 import org.jetbrains.bazel.workspace.WorkspaceContextProvider
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
-import org.jetbrains.bazel.server.BazelServerFacade
-import org.jetbrains.bazel.server.BazelServerService
-import org.jetbrains.bazel.sync.BazelOutFileHardLinks
-import org.jetbrains.bazel.sync.environment.BazelApplicationContextService
+import org.jetbrains.bsp.protocol.TaskId
 import java.util.concurrent.atomic.AtomicReference
 
 internal class DefaultBazelServerConnection(private val project: Project) : BazelServerConnection {
@@ -41,11 +42,11 @@ internal class DefaultBazelServerConnection(private val project: Project) : Baze
 
   private val serverAndVersionLiteral = AtomicReference<ServerWithVersionLiteral>(ServerWithVersionLiteral(null, null))
 
-  override suspend fun <T> runWithServer(task: suspend (server: BazelServerFacade) -> T): T {
-    return task(getServer())
+  override suspend fun <T> runWithServer(taskId: TaskId?, task: suspend (server: BazelServerFacade) -> T): T {
+    return task(getServer(taskId))
   }
 
-  private suspend fun getServer(): BazelServerFacadeImpl {
+  private suspend fun getServer(taskId: TaskId?): BazelServerFacadeImpl {
     // ensure `.bazelbsp` directory exists and functions
     environmentCreator.create()
 
@@ -59,13 +60,13 @@ internal class DefaultBazelServerConnection(private val project: Project) : Baze
     if (server == null ||
         bazelVersionUpdated ||
         server.workspaceContext != workspaceContext) {
-      server = createServer(workspaceContext)
+      server = createServer(workspaceContext, taskId)
       this.serverAndVersionLiteral.set(ServerWithVersionLiteral(server, resolvedVersion))
     }
     return server
   }
 
-  private suspend fun createServer(workspaceContext: WorkspaceContext): BazelServerFacadeImpl {
+  private suspend fun createServer(workspaceContext: WorkspaceContext, taskId: TaskId?): BazelServerFacadeImpl {
     val taskEventsHandler = BazelTaskEventsService.getInstance(project)
     val bazelInfoResolver = BazelInfoResolver(workspaceRoot)
     val bazelProcessLauncherProvider = BazelProcessLauncherProvider.getInstance()
@@ -73,7 +74,7 @@ internal class DefaultBazelServerConnection(private val project: Project) : Baze
       bazelProcessLauncherProvider.createBazelProcessLauncher(workspaceRoot, BazelEnvironmentService.getInstance(project).getEnvironment())
     val bazelRunner = BazelRunner(taskEventsHandler, workspaceRoot, bazelProcessLauncher)
 
-    val bazelInfo = bazelInfoResolver.resolveBazelInfo(bazelRunner, workspaceContext)
+    val bazelInfo = bazelInfoResolver.resolveBazelInfo(bazelRunner, workspaceContext, taskId)
     val bazelPathsResolver = BazelPathsResolver(bazelInfo)
 
     val outFileHardLinks =

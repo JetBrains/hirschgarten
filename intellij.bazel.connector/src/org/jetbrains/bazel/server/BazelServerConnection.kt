@@ -2,6 +2,7 @@ package org.jetbrains.bazel.server
 
 import com.intellij.openapi.project.Project
 import org.jetbrains.annotations.ApiStatus
+import org.jetbrains.bsp.protocol.TaskId
 
 /**
  * The BSP connection, implementation should keep all the information
@@ -9,7 +10,7 @@ import org.jetbrains.annotations.ApiStatus
  */
 @ApiStatus.Internal
 interface BazelServerConnection {
-  suspend fun <T> runWithServer(task: suspend (server: BazelServerFacade) -> T): T
+  suspend fun <T> runWithServer(taskId: TaskId? = null, task: suspend (server: BazelServerFacade) -> T): T
 }
 
 val Project.connection: BazelServerConnection
