@@ -1,9 +1,9 @@
 package org.jetbrains.bazel.golang.sync
 
+import com.goide.inspections.GoWrongSdkConfigurationNotificationProvider
 import com.goide.sdk.GoSdk
 import com.goide.sdk.GoSdkService
 import com.goide.sdk.GoSdkUtil
-import com.intellij.ide.util.PropertiesComponent
 import com.intellij.openapi.application.edtWriteAction
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.NlsContexts
@@ -33,9 +33,6 @@ import org.jetbrains.bazel.workspacemodel.entities.BazelGoTargetEntityId
 import org.jetbrains.bazel.workspacemodel.entities.WorkspaceModelTargetLabel
 import org.jetbrains.bsp.protocol.TaskId
 import java.nio.file.Path
-
-/** From [com.goide.inspections.GoWrongSdkConfigurationNotificationProvider].  */
-private const val DO_NOT_SHOW_NOTIFICATION_ABOUT_EMPTY_GOPATH = "DO_NOT_SHOW_NOTIFICATION_ABOUT_EMPTY_GOPATH"
 
 internal class GoWorkspaceImporter : BazelWorkspaceImporter, BazelWorkspaceImporter.Named {
   lateinit var goTargets: Map<WorkspaceTargetKey, GoBuildTarget>
@@ -188,7 +185,7 @@ internal class GoWorkspaceImporter : BazelWorkspaceImporter, BazelWorkspaceImpor
 
   private suspend fun onPostProcessing(context: WorkspaceImporterContext) {
     calculateAndAddGoSdk(context.progressReporter, context.project, context.taskId)
-    PropertiesComponent.getInstance().setValue(DO_NOT_SHOW_NOTIFICATION_ABOUT_EMPTY_GOPATH, true)
+    GoWrongSdkConfigurationNotificationProvider.disableNotification(context.project)
   }
 
   private suspend fun calculateAndAddGoSdk(
