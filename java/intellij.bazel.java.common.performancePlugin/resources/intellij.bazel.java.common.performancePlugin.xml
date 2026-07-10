@@ -6,7 +6,7 @@
     <module name="intellij.bazel.commons"/>
     <module name="intellij.bazel.core"/>
     <module name="intellij.bazel.core.performancePlugin"/>
-    <module name="intellij.bazel.java.common"/>
+    <module name="intellij.bazel.java.core"/>
     <module name="intellij.java.analysis.impl"/>
     <module name="intellij.java.compiler"/>
     <module name="intellij.java.compiler.impl"/>

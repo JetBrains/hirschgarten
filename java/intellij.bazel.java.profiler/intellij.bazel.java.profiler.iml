@@ -16,7 +16,7 @@
     <orderEntry type="module" module-name="intellij.java.execution.impl" />
     <orderEntry type="module" module-name="intellij.platform.ide.core" />
     <orderEntry type="module" module-name="intellij.bazel.core" />
-    <orderEntry type="module" module-name="intellij.bazel.java.common" />
+    <orderEntry type="module" module-name="intellij.bazel.java.core" />
     <orderEntry type="module" module-name="intellij.platform.smRunner" />
     <orderEntry type="module" module-name="intellij.platform.testRunner" />
     <orderEntry type="module" module-name="intellij.platform.ide.util.io" />

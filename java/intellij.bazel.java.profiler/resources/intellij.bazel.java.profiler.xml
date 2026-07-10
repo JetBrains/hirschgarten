@@ -3,7 +3,7 @@
   <dependencies>
     <module name="intellij.bazel.commons"/>
     <module name="intellij.bazel.core"/>
-    <module name="intellij.bazel.java.common"/>
+    <module name="intellij.bazel.java.core"/>
     <module name="intellij.java.execution.impl"/>
     <module name="intellij.platform.smRunner"/>
     <module name="intellij.platform.testRunner"/>

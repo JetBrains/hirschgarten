@@ -14,7 +14,7 @@
     <orderEntry type="module" module-name="intellij.bazel.kotlin.common" />
     <orderEntry type="module" module-name="intellij.bazel.core" />
     <orderEntry type="module" module-name="intellij.bazel.commons" />
-    <orderEntry type="module" module-name="intellij.bazel.java.common" />
+    <orderEntry type="module" module-name="intellij.bazel.java.core" />
     <orderEntry type="module" module-name="intellij.performanceTesting" />
     <orderEntry type="module" module-name="intellij.platform.lang.impl" />
     <orderEntry type="module" module-name="intellij.platform.core" />
