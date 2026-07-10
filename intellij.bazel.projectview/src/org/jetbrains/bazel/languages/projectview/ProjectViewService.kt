@@ -3,14 +3,18 @@ package org.jetbrains.bazel.languages.projectview
 import com.intellij.openapi.project.Project
 import kotlinx.coroutines.flow.StateFlow
 import org.jetbrains.annotations.ApiStatus
+import java.nio.file.Path
 
-@ApiStatus.Internal
 interface ProjectViewService {
+  @get:ApiStatus.Internal
   val projectViewState: StateFlow<ProjectView>
 
   suspend fun forceReparseCurrentProjectViewFiles()
 
-  fun getProjectView(): ProjectView = projectViewState.value
+  val projectView: ProjectView
+    get() = projectViewState.value
+
+  val projectViewPath: Path?
 
   companion object {
     @JvmStatic
@@ -19,4 +23,4 @@ interface ProjectViewService {
 }
 
 @ApiStatus.Internal
-fun Project.projectView(): ProjectView = ProjectViewService.getInstance(this).getProjectView()
+fun Project.projectView(): ProjectView = ProjectViewService.getInstance(this).projectView

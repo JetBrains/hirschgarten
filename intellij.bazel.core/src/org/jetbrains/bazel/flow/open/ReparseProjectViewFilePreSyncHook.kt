@@ -16,7 +16,7 @@ internal class ReparseProjectViewFilePreSyncHook : ProjectPreSyncHook {
       val projectViewService = project.serviceAsync<ProjectViewService>()
       projectViewService.forceReparseCurrentProjectViewFiles()
       val unresolvedRequiredImports = projectViewService
-        .getProjectView()
+        .projectView
         .imports
         .filterIsInstance<Import.Unresolved>()
         .filter { it.isRequired }

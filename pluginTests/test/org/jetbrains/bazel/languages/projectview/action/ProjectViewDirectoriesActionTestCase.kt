@@ -38,7 +38,7 @@ abstract class ProjectViewDirectoriesActionTestCase(
     get() = runWithModalProgressBlocking(project, "Getting project view") {
       val service = project.service<ProjectViewService>()
       service.forceReparseCurrentProjectViewFiles()
-      service.getProjectView()
+      service.projectView
     }
 
   protected val action: AnAction get() = ActionManager.getInstance().getAction(actionId)

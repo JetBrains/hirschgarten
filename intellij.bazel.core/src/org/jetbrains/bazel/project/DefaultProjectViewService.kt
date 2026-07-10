@@ -68,7 +68,7 @@ class DefaultProjectViewService(private val project: Project) : ProjectViewServi
   }
 
   private fun findProjectViewVirtualFile(): VirtualFile =
-    getProjectViewFilePath(project)?.findVirtualFile() ?: error("Could not find project view file in VFS")
+    projectViewPath?.findVirtualFile() ?: error("Could not find project view file in VFS")
 
   // Only to be used in monorepo devkit module
   suspend fun forceLoadProjectViewFile(newFile: VirtualFile) {
@@ -77,14 +77,14 @@ class DefaultProjectViewService(private val project: Project) : ProjectViewServi
     projectViewState.emit(newProjectView)
   }
 
+  override val projectViewPath: Path?
+    get() = (project.stateStore.storeDescriptor as? BazelProjectStoreDescriptor)?.projectViewFile
+
   companion object {
     private val logger = logger<DefaultProjectViewService>()
 
     @JvmStatic
     fun getInstance(project: Project): DefaultProjectViewService = ProjectViewService.getInstance(project) as DefaultProjectViewService
-
-    fun getProjectViewFilePath(project: Project): Path? =
-      (project.stateStore.storeDescriptor as? BazelProjectStoreDescriptor)?.projectViewFile
   }
 }
 

@@ -54,8 +54,8 @@ class ProjectViewImportTest : CodeInsightFixtureTestCase<ModuleFixtureBuilder<Mo
         """.trimIndent(),
       )
     val projectView = ProjectView.Companion.fromProjectViewPsiFile(psiFile as ProjectViewPsiFile)
-    assertEquals(projectView.sections[ImportDepthSection.KEY], 123)
-    assertEquals(projectView.sections[ShardSyncSection.KEY], false)
+    assertEquals(projectView.getSection(ImportDepthSection.KEY), 123)
+    assertEquals(projectView.getSection(ShardSyncSection.KEY), false)
     projectView.getSection(TargetsSection.KEY) shouldContainExactly
       listOf(
         ExcludableValue.included(Label.parse("targetA")),
@@ -92,7 +92,7 @@ class ProjectViewImportTest : CodeInsightFixtureTestCase<ModuleFixtureBuilder<Mo
         """.trimIndent(),
       )
     val projectView = ProjectView.Companion.fromProjectViewPsiFile(psiFile as ProjectViewPsiFile)
-    assertEquals(projectView.sections[ImportDepthSection.KEY], 123)
+    assertEquals(projectView.getSection(ImportDepthSection.KEY), 123)
     projectView.getSection(TargetsSection.KEY) shouldContainExactly
       listOf(
         ExcludableValue.included(Label.parse("targetC")),
@@ -126,7 +126,7 @@ class ProjectViewImportTest : CodeInsightFixtureTestCase<ModuleFixtureBuilder<Mo
         """.trimIndent(),
       )
     val projectView = ProjectView.Companion.fromProjectViewPsiFile(psiFile as ProjectViewPsiFile)
-    assertEquals(projectView.sections[ImportDepthSection.KEY], 321)
+    assertEquals(projectView.getSection(ImportDepthSection.KEY), 321)
     projectView.getSection(TargetsSection.KEY) shouldContainExactly
       listOf(
         ExcludableValue.included(Label.parse("targetA")),
@@ -189,7 +189,7 @@ class ProjectViewImportTest : CodeInsightFixtureTestCase<ModuleFixtureBuilder<Mo
     projectView.imports.shouldBeSingleton {
       it.shouldBeInstanceOf<Import.Unresolved>()
     }
-    projectView.sections[ImportDepthSection.KEY] shouldBe 42
+    projectView.getSection(ImportDepthSection.KEY) shouldBe 42
     projectView.getSection(DirectoriesSection.KEY) shouldContainExactly
       listOf(
         ExcludableValue.included(Path("dirA")),

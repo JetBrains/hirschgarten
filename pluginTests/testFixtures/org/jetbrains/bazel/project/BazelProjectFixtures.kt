@@ -9,6 +9,7 @@ import com.intellij.project.stateStore
 import com.intellij.testFramework.refreshVfs
 import com.intellij.util.io.createDirectories
 import org.jetbrains.bazel.flow.open.BazelProjectStoreDescriptor
+import org.jetbrains.bazel.languages.projectview.ProjectViewService
 import org.jetbrains.bazel.languages.projectview.project.ProjectViewFileLocalizer.pickProjectViewFileForProject
 import java.nio.file.Path
 import kotlin.io.path.isRegularFile
@@ -25,7 +26,7 @@ object BazelProjectFixtures {
       projectViewFile = pickProjectViewFileForProject(projectIdentityFile, rootDir),
     )
     // projectview virtual file lookup requires a VFS refresh in test environment
-    DefaultProjectViewService.getProjectViewFilePath(project)?.refreshAndFindVirtualFile()
+    ProjectViewService.getInstance(project).projectViewPath?.refreshAndFindVirtualFile()
   }
 
   fun initializeBazelProject(project: Project, rootDir: String) {

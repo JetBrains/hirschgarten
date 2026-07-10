@@ -1,0 +1,15 @@
+f:org.jetbrains.bazel.languages.projectview.ProjectView
+- equals(java.lang.Object):Z
+- hashCode():I
+f:org.jetbrains.bazel.languages.projectview.ProjectViewExtensionsKt
+- sf:getAllowManualTargetsSync(org.jetbrains.bazel.languages.projectview.ProjectView):Z
+- sf:getDeriveTargetsFromDirectories(org.jetbrains.bazel.languages.projectview.ProjectView):Z
+- sf:getDirectories(org.jetbrains.bazel.languages.projectview.ProjectView):java.util.List
+org.jetbrains.bazel.languages.projectview.ProjectViewService
+- sf:Companion:org.jetbrains.bazel.languages.projectview.ProjectViewService$Companion
+- a:forceReparseCurrentProjectViewFiles(kotlin.coroutines.Continuation):java.lang.Object
+- s:getInstance(com.intellij.openapi.project.Project):org.jetbrains.bazel.languages.projectview.ProjectViewService
+- getProjectView():org.jetbrains.bazel.languages.projectview.ProjectView
+- a:getProjectViewPath():java.nio.file.Path
+f:org.jetbrains.bazel.languages.projectview.ProjectViewService$Companion
+- f:getInstance(com.intellij.openapi.project.Project):org.jetbrains.bazel.languages.projectview.ProjectViewService
