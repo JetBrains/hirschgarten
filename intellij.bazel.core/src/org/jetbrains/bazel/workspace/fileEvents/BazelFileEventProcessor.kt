@@ -6,6 +6,7 @@ import com.intellij.build.events.impl.SuccessResultImpl
 import com.intellij.openapi.application.readAction
 import com.intellij.openapi.components.serviceAsync
 import com.intellij.openapi.diagnostic.Logger
+import com.intellij.openapi.diagnostic.rethrowControlFlowException
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.roots.ProjectFileIndex
 import com.intellij.openapi.roots.ProjectRootManager
@@ -425,6 +426,7 @@ private suspend fun queryTargetsForFile(project: Project, filePaths: List<Path>,
       .targets
   }
   catch (ex: Exception) {
+    rethrowControlFlowException(ex)
     logger.debug(ex)
     null
   }
