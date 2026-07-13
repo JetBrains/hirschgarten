@@ -394,11 +394,15 @@ class JvmBuildTargetResolver(
     val targetsToJdepsJars: Map<WorkspaceTargetKey, Set<Path>> =
       getAllJdepsDependencies(targetsToImport, libraryDependencies)
     val libraryNameToLibraryValueMap = HashMap<WorkspaceTargetKey, LibraryItem>()
+    // Jars already provided by a known library must not get a second, sourceless
+    // jdeps library: it would compete with the proper library during resolution.
+    val jarsCoveredByLibraries: Set<Path> =
+      libraryDependencies.values.asSequence().flatten().flatMap { it.allJars }.toSet()
     return targetsToJdepsJars.mapValues { target: Map.Entry<WorkspaceTargetKey, Set<Path>> ->
       val interfacesAndBinariesFromTarget =
         interfacesAndBinariesFromTargetsToImport.getOrDefault(target.key, emptySet())
       target.value
-        .filter { it !in interfacesAndBinariesFromTarget }
+        .filter { it !in interfacesAndBinariesFromTarget && it !in jarsCoveredByLibraries }
         .mapNotNull {
           // the synthetic label was precomputed by the plugin (it needs `bazelBin`, only available at map time)
           val label = jdepsLabelByJar[it] ?: return@mapNotNull null
