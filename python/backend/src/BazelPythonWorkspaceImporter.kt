@@ -37,6 +37,7 @@ import com.jetbrains.python.sdk.PythonSdkType
 import com.jetbrains.python.sdk.createLocalSdkGuessingTypeByPath
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.annotations.VisibleForTesting
+import org.jetbrains.bazel.commons.LanguageClass
 import org.jetbrains.bazel.commons.RepoMapping
 import org.jetbrains.bazel.magicmetamodel.formatAsModuleName
 import org.jetbrains.bazel.progress.TaskConsole
@@ -163,6 +164,10 @@ internal class BazelPythonWorkspaceImporter : BazelWorkspaceImporter {
     entitySource: EntitySource,
   ): WorkspaceImporterResult {
     for ((targetKey, target) in allPythonTargets) {
+      // Dual-language targets (e.g. custom rules forwarding both PyInfo and JavaInfo) are
+      // owned by the JVM importer: both importers derive the same module name, so creating
+      // a Python module here would clobber the JVM module and break JVM consumers.
+      if (target.rawBuildTarget.kind.languageClasses.any { it.languageName in JVM_LANGUAGE_NAMES }) continue
       val sourceDeps = pySourceDeps[targetKey] ?: emptyList()
       val sourceDependencyLibrary =
         calculateSourceDependencyLibrary(targetKey, snapshot.repoMapping, sourceDeps, entitySource, vfuManager)
@@ -419,6 +424,10 @@ internal class BazelPythonWorkspaceImporter : BazelWorkspaceImporter {
     moduleNameByKey[this] ?: this.formatAsModuleName(repoMapping)
 }
 
+
+// language name match to avoid a dependency on the java module, where the JVM
+// LanguageClass constants live
+private val JVM_LANGUAGE_NAMES = setOf("java", "kotlin", "scala")
 @ApiStatus.Internal
 @VisibleForTesting
 fun chooseSdkName(interpreter: PythonBinary, projectName: String): String =
