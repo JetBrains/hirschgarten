@@ -22,7 +22,7 @@ internal fun String.toResolvedVirtualFileUrl(virtualFileUrlManager: VirtualFileU
 }
 
 internal fun Path.toJarUrlString(): String =
-  if (extension == "jar") {
+  if (extension == "jar" || extension == "srcjar" || extension == "zip") {
     "jar://$this!/"
   } else {
     // There can be other library roots except for jars, e.g., Android resources. Use the file:// scheme then.
