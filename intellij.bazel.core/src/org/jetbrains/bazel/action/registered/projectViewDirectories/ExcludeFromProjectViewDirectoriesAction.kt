@@ -11,6 +11,7 @@ import com.intellij.openapi.vfs.VfsUtil
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiDocumentManager
 import org.jetbrains.bazel.config.BazelPluginBundle
+import org.jetbrains.bazel.config.isBazelProject
 import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.languages.projectview.psi.addDirectoriesExclude
 import org.jetbrains.bazel.languages.projectview.psi.addDirectoriesInclude
@@ -76,6 +77,7 @@ internal class ExcludeFromProjectViewDirectoriesAction : AnAction() {
   override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.BGT
 
   private fun Project.getProjectViewIfApplicable(e: AnActionEvent): VirtualFile? {
+    if (!isBazelProject) return null
     if (DumbService.isDumb(this)) return null
     val directory = e.selectedDirectory ?: return null
     val includes = includedRoots().orEmpty()
