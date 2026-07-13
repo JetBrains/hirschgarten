@@ -139,7 +139,15 @@ internal class PythonResolveIndexService(private val project: Project) {
         val getSourcesRelativePathToAbsolutePath: Map<Path, Path> =
           extractPythonBuildTarget(target)?.generatedSources?.getFiles()
               ?.associate { path ->
-                path.toExecRootRelativePath() to (outFilesHardLink.createOutputFileHardLink(path) ?: path.toAbsolutePath())
+                // Prefer the real output path: it is the one covered by the module's
+                // content roots (anchored at bazel-bin), so navigation lands in a file
+                // with a module context and references inside it resolve further.
+                // The hard link is only a fallback for files that are not on disk.
+                path.toExecRootRelativePath() to (
+                  path.toAbsolutePath().takeIf { it.exists() }
+                  ?: outFilesHardLink.createOutputFileHardLink(path)
+                  ?: path.toAbsolutePath()
+                )
               }
           ?: emptyMap()
         expandPathsToQualifiedNames(qualifiedNameImportPaths, sourcesRelativePathToAbsolutePath + getSourcesRelativePathToAbsolutePath)
