@@ -29,7 +29,7 @@ class ProjectViewSectionItemCompletionContributorTest {
   private val projectFixture = projectFixture(pathFixture = tempDirFixture, openAfterCreation = true)
   private val project by projectFixture
 
-  // Module fixture is unused by the test code, but the code insight fixture requires it to work.
+  @Suppress("unused") // Module fixture is unused by the test code, but the code insight fixture requires it to work.
   private val moduleFixture = projectFixture.moduleFixture()
 
   private val codeInsightFixture by codeInsightFixture(projectFixture, tempDirFixture)
@@ -248,7 +248,7 @@ class ProjectViewSectionItemCompletionContributorTest {
     codeInsightFixture.type("baz")
     val lookups = codeInsightFixture.completeBasic().flatMap { it.allLookupStrings }
 
-    lookups shouldContainExactlyInAnyOrder listOf("subpackage/sub.bazelproject", "otherDir/module.bazelproject")
+    lookups shouldContainExactlyInAnyOrder listOf("subpackage/sub.bazelproject", "otherDir/module.bazelproject", ".bazelbsp/.bazelproject")
   }
 
   @Test

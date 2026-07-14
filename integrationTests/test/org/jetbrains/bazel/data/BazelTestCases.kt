@@ -78,6 +78,16 @@ object IdeaBazelCases : BaseBazelCasesParametrized(BazelTestContext.IDEA) {
     )
   )
 
+  val BazelProjectWithoutProjectview = withBazelProject(
+    projectInfo = withDefaults(
+      repositoryUrl = "https://github.com/JetBrainsBazelBot/simpleBazelProjectsForTesting.git",
+      commitHash = "a59bb1e33ed063e03242d0055054bea97366e23f",
+      branchName = "main",
+      relativePath = "simpleJavaTest",
+      configure = { context -> BazelProjectConfigurer.configureProjectBeforeUseWithoutBazelClean(context, removeDotIdea = false) },
+    )
+  )
+
   val CompiledSourceCodeInsideJarExclude = withBazelProject(
       projectInfo = withDefaults(
         repositoryUrl = "https://github.com/JetBrainsBazelBot/simpleBazelProjectsForTesting.git",

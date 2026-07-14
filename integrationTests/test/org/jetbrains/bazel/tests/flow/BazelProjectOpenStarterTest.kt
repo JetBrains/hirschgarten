@@ -1,11 +1,13 @@
 package org.jetbrains.bazel.tests.flow
 
+import com.intellij.driver.client.Remote
+import com.intellij.driver.client.service
 import com.intellij.driver.sdk.singleProject
 import com.intellij.driver.sdk.step
 import com.intellij.driver.sdk.ui.components.UiComponent
+import com.intellij.driver.sdk.ui.components.common.ideFrame
 import com.intellij.driver.sdk.waitFor
 import com.intellij.driver.sdk.waitForProjectOpen
-import com.intellij.driver.sdk.ui.components.common.ideFrame
 import com.intellij.ide.starter.driver.engine.runIdeWithDriver
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.data.IdeaBazelCases
@@ -119,6 +121,27 @@ class BazelProjectOpenStarterTest : IdeStarterBaseProjectTest() {
   }
 
   @Test
+  fun `opening a project with no project view file should not cause any issues`() {
+    val context = createContext("openSimpleJavaTestWithProjectView", IdeaBazelCases.BazelProjectWithoutProjectview)
+    context
+      .setAutoOpenProjectIfPresent(true)
+      .runIdeWithDriver(runTimeout = timeout)
+      .useDriverAndCloseIde {
+        step("Ensure project was opened as a Bazel project") {
+          waitForProjectOpen()
+          assertTrue(isBazelProject)
+        }
+        step("Ensure project view file was loaded") {
+          val isProjectViewEmpty = service<RemoteProjectViewService>(singleProject())
+            .getProjectView()
+            .isEmpty()
+          assertFalse(isProjectViewEmpty)
+        }
+      }
+    checkIdeaLogForExceptions(context)
+  }
+
+  @Test
   fun `open project with an broken project view`() {
     val context = createContext("openProjectWithUnresolvedImport", IdeaBazelCases.BazelProjectOpenByRootDir)
 
@@ -166,4 +189,14 @@ class BazelProjectOpenStarterTest : IdeStarterBaseProjectTest() {
       it.text.contains(importErrorText)
     }
   }
+}
+
+@Remote("org.jetbrains.bazel.languages.projectview.ProjectViewService", plugin = "org.jetbrains.bazel/intellij.bazel.projectview")
+interface RemoteProjectViewService {
+  fun getProjectView(): RemoteProjectView
+}
+
+@Remote("org.jetbrains.bazel.languages.projectview.ProjectView", plugin = "org.jetbrains.bazel/intellij.bazel.projectview")
+interface RemoteProjectView {
+  fun isEmpty(): Boolean
 }
