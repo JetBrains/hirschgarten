@@ -1,6 +1,7 @@
 package org.jetbrains.bazel.ui.projectTree
 
 import com.intellij.openapi.application.runWriteAction
+import com.intellij.openapi.util.io.toCanonicalPath
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.findOrCreateDirectory
 import com.intellij.openapi.vfs.findOrCreateFile
@@ -10,6 +11,7 @@ import com.intellij.platform.backend.workspace.workspaceModel
 import com.intellij.testFramework.junit5.TestApplication
 import com.intellij.testFramework.junit5.fixture.projectFixture
 import com.intellij.testFramework.junit5.fixture.tempPathFixture
+import org.jetbrains.bazel.commons.constants.Constants
 import org.jetbrains.bazel.project.BazelProjectFixtures.initializeBazelProject
 import org.jetbrains.bazel.ui.projectTree.BazelTreeNodeType.EXCLUDED
 import org.jetbrains.bazel.ui.projectTree.BazelTreeNodeType.ROOT
@@ -36,6 +38,9 @@ internal class BazelTreeStructureControllerTest {
 
   @BeforeEach
   fun initializeBazelProject() {
+    // Explicitly create an empty projectview, not to generate the .bazelbsp folder
+    //   (this would interfere with testing behavior of unimported directories)
+    createFile(tempDir.resolve(Constants.DEFAULT_PROJECT_VIEW_FILE_NAME).toCanonicalPath())
     initializeBazelProject(project, tempDir)
   }
 

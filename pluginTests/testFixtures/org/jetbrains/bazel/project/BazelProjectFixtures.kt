@@ -4,6 +4,7 @@ import com.intellij.configurationStore.ProjectStoreImpl
 import com.intellij.configurationStore.ProjectStorePathManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.io.toNioPathOrNull
+import com.intellij.openapi.vfs.refreshAndFindVirtualFile
 import com.intellij.project.stateStore
 import com.intellij.testFramework.refreshVfs
 import com.intellij.util.io.createDirectories
@@ -23,6 +24,8 @@ object BazelProjectFixtures {
       historicalProjectBasePath = rootDir,
       projectViewFile = pickProjectViewFileForProject(projectIdentityFile, rootDir),
     )
+    // projectview virtual file lookup requires a VFS refresh in test environment
+    DefaultProjectViewService.getProjectViewFilePath(project)?.refreshAndFindVirtualFile()
   }
 
   fun initializeBazelProject(project: Project, rootDir: String) {

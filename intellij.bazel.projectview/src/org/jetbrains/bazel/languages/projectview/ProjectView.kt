@@ -20,6 +20,8 @@ import org.jetbrains.bazel.languages.projectview.psi.sections.ProjectViewPsiSect
  */
 @ApiStatus.Internal
 data class ProjectView(val sections: Map<SectionKey<*>, Any>, val imports: List<Import>) {
+  fun isEmpty(): Boolean = sections.isEmpty() && imports.isEmpty()
+
   inline fun <reified T> getSection(key: SectionKey<T>): T? {
     var value = sections[key] as? T
     // in case of not existing section, try to get default one

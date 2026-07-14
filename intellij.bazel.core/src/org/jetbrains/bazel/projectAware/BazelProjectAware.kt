@@ -1,7 +1,7 @@
 package org.jetbrains.bazel.projectAware
 
 import com.intellij.openapi.Disposable
-import com.intellij.openapi.application.ReadAction
+import com.intellij.openapi.application.ex.ApplicationUtil
 import com.intellij.openapi.externalSystem.autoimport.ExternalSystemProjectAware
 import com.intellij.openapi.externalSystem.autoimport.ExternalSystemProjectId
 import com.intellij.openapi.externalSystem.autoimport.ExternalSystemProjectListener
@@ -10,6 +10,7 @@ import com.intellij.openapi.externalSystem.autoimport.ExternalSystemProjectTrack
 import com.intellij.openapi.externalSystem.autoimport.ExternalSystemRefreshStatus
 import com.intellij.openapi.externalSystem.autoimport.ExternalSystemSettingsFilesModificationContext
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.util.Computable
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.search.FilenameIndex
 import com.intellij.psi.search.GlobalSearchScope
@@ -33,7 +34,7 @@ class BazelProjectAware(private val project: Project) : ExternalSystemProjectAwa
   val cachedBazelFiles =
     SyncCache.SyncCacheComputable {
       // if a write action collides with this read action, a cancellation exception will be thrown and the value will not be cached
-      ReadAction.computeCancellable<Set<String>, Throwable> { calculateBazelConfigFiles(project) }
+      ApplicationUtil.tryRunReadAction(Computable { calculateBazelConfigFiles(project) })
     }
 
   override val settingsFiles: Set<String>

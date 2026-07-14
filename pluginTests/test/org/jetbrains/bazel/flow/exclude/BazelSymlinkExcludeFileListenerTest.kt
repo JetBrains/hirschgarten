@@ -1,8 +1,6 @@
 package org.jetbrains.bazel.flow.exclude
 
 import com.intellij.openapi.application.backgroundWriteAction
-import com.intellij.openapi.application.edtWriteAction
-import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.util.io.FileAttributes
 import com.intellij.openapi.vfs.newvfs.RefreshQueue
 import com.intellij.openapi.vfs.newvfs.events.VFileCreateEvent
