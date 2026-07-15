@@ -453,16 +453,14 @@ class JavaLanguagePlugin : LanguagePlugin {
         return false
       }
 
-      val targetKey = targetInfo.key.toWorkspaceTargetKey()
       val hasGeneratedSrcJar = targetInfo.generatedSourcesList.any { it.relativePath.endsWith(".srcjar") }
       val hasOnlyNonJvmSources = targetInfo.sourcesList.any() && !hasKnownJvmSources(targetInfo)
       val isUnknownTargetWithoutSources =
         targetInfo.sourcesList.none() && targetInfo.kind !in wellKnownTargetKinds && !targetInfo.hasExecutableInfo()
       val hasApiGeneratingPlugins = targetInfo.javaProvider.hasApiGeneratingPlugins
       val dependsOnExportedApiGeneratingPlugins =
-        targetInfo.kotlinTargetInfo.exportedCompilerPluginTargetsFromDepsList.any {
-          // TODO: full key from aspect
-          allTargets[targetKey.copy(label = Label.parse(it))]?.javaProvider?.hasApiGeneratingPlugins ?: false
+        targetInfo.kotlinTargetInfo.exportedCompilerPluginTargetsList.any {
+          allTargets[it.toWorkspaceTargetKey()]?.javaProvider?.hasApiGeneratingPlugins ?: false
         }
 
       return hasGeneratedSrcJar ||
