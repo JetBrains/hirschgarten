@@ -1,15 +1,8 @@
 package org.jetbrains.bazel.languages.projectview.sections
 
-import org.jetbrains.bazel.languages.projectview.SectionKey
+import org.jetbrains.bazel.languages.projectview.DERIVE_INSTRUMENTATION_FILTER_FROM_TARGETS_KEY
 import org.jetbrains.bazel.languages.projectview.sections.presets.BooleanScalarSection
 
 internal class DeriveInstrumentationFilterFromTargetsSection : BooleanScalarSection() {
-  override val name = NAME
-  override val sectionKey = KEY
-  override val default: Boolean = true
-
-  companion object {
-    const val NAME = "derive_instrumentation_filter_from_targets"
-    val KEY = SectionKey<Boolean>(NAME)
-  }
+  override val sectionKey = DERIVE_INSTRUMENTATION_FILTER_FROM_TARGETS_KEY
 }

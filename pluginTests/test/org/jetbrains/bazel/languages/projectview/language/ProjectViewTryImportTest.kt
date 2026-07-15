@@ -9,10 +9,10 @@ import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeInstanceOf
 import org.jetbrains.bazel.commons.ExcludableValue
-import org.jetbrains.bazel.languages.projectview.ProjectView
+import org.jetbrains.bazel.languages.projectview.DIRECTORIES_KEY
+import org.jetbrains.bazel.languages.projectview.ProjectViewFactory
 import org.jetbrains.bazel.languages.projectview.imports.Import
 import org.jetbrains.bazel.languages.projectview.psi.ProjectViewPsiFile
-import org.jetbrains.bazel.languages.projectview.sections.DirectoriesSection
 import org.jetbrains.bazel.project.BazelProjectFixtures.initializeBazelProject
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -43,9 +43,9 @@ class ProjectViewTryImportTest : CodeInsightFixtureTestCase<ModuleFixtureBuilder
         """.trimIndent(),
       )
 
-    val projectView = ProjectView.fromProjectViewPsiFile(psiFile as ProjectViewPsiFile)
+    val projectView = ProjectViewFactory.fromProjectViewPsiFile(psiFile as ProjectViewPsiFile)
 
-    projectView.getSection(DirectoriesSection.KEY) shouldContainExactly listOf(ExcludableValue.included(Path("dirB")))
+    projectView.getSection(DIRECTORIES_KEY) shouldContainExactly listOf(ExcludableValue.included(Path("dirB")))
   }
 
   @Test
@@ -61,7 +61,7 @@ class ProjectViewTryImportTest : CodeInsightFixtureTestCase<ModuleFixtureBuilder
         """.trimIndent(),
       )
 
-    val projectView = ProjectView.fromProjectViewPsiFile(psiFile as ProjectViewPsiFile)
+    val projectView = ProjectViewFactory.fromProjectViewPsiFile(psiFile as ProjectViewPsiFile)
 
     projectView.imports.shouldBeSingleton {
       val unresolved = it.shouldBeInstanceOf<Import.Unresolved>()
@@ -94,10 +94,10 @@ class ProjectViewTryImportTest : CodeInsightFixtureTestCase<ModuleFixtureBuilder
         """.trimIndent(),
       )
 
-    val projectView = ProjectView.fromProjectViewPsiFile(psiFile as ProjectViewPsiFile)
+    val projectView = ProjectViewFactory.fromProjectViewPsiFile(psiFile as ProjectViewPsiFile)
 
     // Since try_import comes first, imported directories should appear before local ones
-    projectView.getSection(DirectoriesSection.KEY) shouldContainExactly
+    projectView.getSection(DIRECTORIES_KEY) shouldContainExactly
       listOf(
         ExcludableValue.included(Path("dirA")),
         ExcludableValue.included(Path("dirB")),
@@ -122,9 +122,9 @@ class ProjectViewTryImportTest : CodeInsightFixtureTestCase<ModuleFixtureBuilder
         """.trimIndent(),
       )
 
-    val projectView = ProjectView.fromProjectViewPsiFile(psiFile as ProjectViewPsiFile)
+    val projectView = ProjectViewFactory.fromProjectViewPsiFile(psiFile as ProjectViewPsiFile)
 
-    projectView.getSection(DirectoriesSection.KEY) shouldContainExactly listOf(ExcludableValue.included(Path("dirA")))
+    projectView.getSection(DIRECTORIES_KEY) shouldContainExactly listOf(ExcludableValue.included(Path("dirA")))
   }
 
   @Test
@@ -138,8 +138,8 @@ class ProjectViewTryImportTest : CodeInsightFixtureTestCase<ModuleFixtureBuilder
         try_import Main.bazelproject
         """.trimIndent(),
     )
-    val projectView = ProjectView.fromProjectViewPsiFile(psiFile as ProjectViewPsiFile)
-    projectView.getSection(DirectoriesSection.KEY) shouldContainExactly listOf(ExcludableValue.included(Path("dirA")))
+    val projectView = ProjectViewFactory.fromProjectViewPsiFile(psiFile as ProjectViewPsiFile)
+    projectView.getSection(DIRECTORIES_KEY) shouldContainExactly listOf(ExcludableValue.included(Path("dirA")))
     projectView.imports.shouldBeSingleton {
       it.shouldBeInstanceOf<Import.Resolved>()
     }
@@ -166,8 +166,8 @@ class ProjectViewTryImportTest : CodeInsightFixtureTestCase<ModuleFixtureBuilder
         try_import Imported.bazelproject
         """.trimIndent(),
       )
-    val projectView = ProjectView.fromProjectViewPsiFile(psiFile as ProjectViewPsiFile)
-    projectView.getSection(DirectoriesSection.KEY) shouldContainExactly listOf(
+    val projectView = ProjectViewFactory.fromProjectViewPsiFile(psiFile as ProjectViewPsiFile)
+    projectView.getSection(DIRECTORIES_KEY) shouldContainExactly listOf(
       ExcludableValue.included(Path("dirA")),
       ExcludableValue.included(Path("dirB")),
     )

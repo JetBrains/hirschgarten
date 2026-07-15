@@ -11,13 +11,9 @@ import java.nio.file.Path
 import kotlin.io.path.exists
 
 @ApiStatus.Internal
-class SectionKey<T>(val name: String)
-
-@ApiStatus.Internal
 abstract class Section<T> {
-  abstract val name: String
-
-  open val default: T? = null
+  val name: String
+    get() = sectionKey.name
 
   abstract val sectionKey: SectionKey<T>
 

@@ -71,6 +71,13 @@ f:org.jetbrains.bazel.label.SingleTarget
 - f:getTargetName():java.lang.String
 - hashCode():I
 org.jetbrains.bazel.label.TargetType
+f:org.jetbrains.bazel.languages.projectview.ProjectView
+- equals(java.lang.Object):Z
+- hashCode():I
+f:org.jetbrains.bazel.languages.projectview.ProjectViewExtensionsKt
+- sf:getAllowManualTargetsSync(org.jetbrains.bazel.languages.projectview.ProjectView):Z
+- sf:getDeriveTargetsFromDirectories(org.jetbrains.bazel.languages.projectview.ProjectView):Z
+- sf:getDirectories(org.jetbrains.bazel.languages.projectview.ProjectView):java.util.List
 f:org.jetbrains.bazel.settings.bazel.BazelProjectSettings
 - f:component2():Z
 - f:copy(java.nio.file.Path,Z):org.jetbrains.bazel.settings.bazel.BazelProjectSettings

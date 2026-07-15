@@ -2,14 +2,13 @@ package org.jetbrains.bazel.languages.projectview.sections
 
 import com.intellij.lang.annotation.AnnotationHolder
 import com.intellij.psi.PsiElement
+import org.jetbrains.bazel.languages.projectview.IMPORT_RUN_CONFIGURATIONS_KEY
 import org.jetbrains.bazel.languages.projectview.ListSection
-import org.jetbrains.bazel.languages.projectview.SectionKey
 import org.jetbrains.bazel.languages.projectview.completion.FiletypeCompletionProvider
 import java.nio.file.Path
 
 internal class ImportRunConfigurationsSection : ListSection<List<Path>>() {
-  override val name = NAME
-  override val sectionKey = KEY
+  override val sectionKey = IMPORT_RUN_CONFIGURATIONS_KEY
   override val completionProvider = FiletypeCompletionProvider(".xml")
   override val doc =
     "A list of XML files which will be imported as run configurations during bazel sync. " +
@@ -20,9 +19,6 @@ internal class ImportRunConfigurationsSection : ListSection<List<Path>>() {
   override fun annotateValue(element: PsiElement, holder: AnnotationHolder) = annotatePath(element, holder)
 
   companion object {
-    const val NAME = "import_run_configurations"
-    val KEY = SectionKey<List<Path>>(NAME)
-
     private fun parseItem(path: String): Path? =
       try {
         Path.of(path)

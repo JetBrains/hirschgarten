@@ -1,11 +1,10 @@
 package org.jetbrains.bazel.languages.projectview.language.sections
 
+import org.jetbrains.bazel.languages.projectview.INDEX_ADDITIONAL_FILES_IN_DIRECTORIES_KEY
 import org.jetbrains.bazel.languages.projectview.ListSection
-import org.jetbrains.bazel.languages.projectview.SectionKey
 
 internal class IndexAdditionalFilesInDirectoriesSection : ListSection<List<String>>() {
-  override val name = NAME
-  override val sectionKey = KEY
+  override val sectionKey = INDEX_ADDITIONAL_FILES_IN_DIRECTORIES_KEY
   override val doc =
     "List of filenames to index in addition to sources, resources, and libraries defined in the project. " +
       "The filenames are scanned inside directories defined in the directories: section. " +
@@ -13,9 +12,4 @@ internal class IndexAdditionalFilesInDirectoriesSection : ListSection<List<Strin
       "Has no effect if index_all_files_in_directories is set to true"
 
   override fun fromRawValues(rawValues: List<String>): List<String> = rawValues
-
-  companion object {
-    const val NAME = "index_additional_files_in_directories"
-    val KEY = SectionKey<List<String>>(NAME)
-  }
 }
