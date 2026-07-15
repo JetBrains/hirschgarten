@@ -30,5 +30,6 @@
       language="Starlark"
     />
     <postStartupActivity implementation="com.intellij.bazel.devkit.monorepo.run.MonorepoProjectViewStartupActivity"/>
+    <postStartupActivity implementation="com.intellij.bazel.devkit.monorepo.sync.UnlinkedProjectNotificationDisabler"/>
   </extensions>
 </idea-plugin>
