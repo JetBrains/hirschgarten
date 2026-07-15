@@ -1,15 +1,9 @@
 package org.jetbrains.bazel.languages.projectview.sections
 
-import org.jetbrains.bazel.languages.projectview.SectionKey
+import org.jetbrains.bazel.languages.projectview.TARGET_SHARD_SIZE_KEY
 import org.jetbrains.bazel.languages.projectview.sections.presets.IntScalarSection
 
 internal class TargetShardSizeSection : IntScalarSection() {
-  override val name = NAME
-  override val sectionKey = KEY
+  override val sectionKey = TARGET_SHARD_SIZE_KEY
   override val doc = "Number of targets per build shard."
-
-  companion object {
-    const val NAME = "target_shard_size"
-    val KEY = SectionKey<Int>(NAME)
-  }
 }

@@ -16,7 +16,7 @@ import com.intellij.testFramework.junit5.fixture.projectFixture
 import com.intellij.testFramework.replaceService
 import com.intellij.tools.ide.starter.product.idea.ultimate.IdeaUltimate
 import org.jetbrains.bazel.ideStarter.IdeStarterBaseProjectTest
-import org.jetbrains.bazel.languages.projectview.ProjectView
+import org.jetbrains.bazel.languages.projectview.ProjectViewFactory
 import org.jetbrains.bazel.languages.projectview.ProjectViewToWorkspaceContextConverter
 import org.jetbrains.bazel.project.BazelProjectFixtures
 import org.jetbrains.bazel.test.framework.BazelPathManager
@@ -182,7 +182,7 @@ internal class WorkspaceImportApprovalTests {
             mockWorkspaceContext
           }
           else {
-            val projectView = readAction { ProjectView.fromProjectViewContent(project, projectView.readText()) }
+            val projectView = readAction { ProjectViewFactory.fromProjectViewContent(project, projectView.readText()) }
             ProjectViewToWorkspaceContextConverter.convert(project, projectView, bazelExecutable)
           }
       },

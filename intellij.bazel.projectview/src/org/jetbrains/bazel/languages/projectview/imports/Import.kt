@@ -6,43 +6,35 @@ import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.toNioPathOrNull
 import com.intellij.psi.PsiElement
 import org.jetbrains.annotations.ApiStatus
+import org.jetbrains.bazel.languages.projectview.imports.Import.Resolved
+import org.jetbrains.bazel.languages.projectview.imports.Import.Unresolved
 import org.jetbrains.bazel.languages.projectview.psi.sections.ProjectViewPsiImport
 import org.jetbrains.bazel.languages.projectview.psi.sections.ProjectViewPsiImportBase
 
-@ApiStatus.Internal
-sealed class Import {
-
-  abstract val isRequired: Boolean
-
-  data class Resolved(val file: VirtualFile, override val isRequired: Boolean) : Import()
-  data class Unresolved(val text: String, val position: FilePosition?, override val isRequired: Boolean) : Import()
-
-  companion object {
-
-    internal fun from(
-      root: VirtualFile,
-      element: ProjectViewPsiImportBase,
-    ): Import {
-      val importPathElement = element.getImportPath()
-      val path = importPathElement?.text?.trim() ?: ""
-      val file = root.findFileByRelativePath(path)
-      val required = element is ProjectViewPsiImport
-      return when (file) {
-        null -> Unresolved(path, importPathElement?.filePositionOrNull(), required)
-        else -> Resolved(file, required)
-      }
+internal object ImportFactory {
+  fun from(
+    root: VirtualFile,
+    element: ProjectViewPsiImportBase,
+  ): Import {
+    val importPathElement = element.getImportPath()
+    val path = importPathElement?.text?.trim() ?: ""
+    val file = root.findFileByRelativePath(path)
+    val required = element is ProjectViewPsiImport
+    return when (file) {
+      null -> Unresolved(path, importPathElement?.filePositionOrNull(), required)
+      else -> Resolved(file, required)
     }
+  }
+
+  private fun PsiElement.filePositionOrNull(): FilePosition? {
+    val file = this.containingFile ?: return null
+    val path = file.virtualFile?.toNioPathOrNull() ?: return null
+    val text = file.text
+    val start = StringUtil.offsetToLineColumn(text, textRange.startOffset) ?: return FilePosition(path, 0, 0)
+    val end = StringUtil.offsetToLineColumn(text, textRange.endOffset) ?: return FilePosition(path, 0, 0)
+    return FilePosition(path, start.line, start.column, end.line, end.column)
   }
 }
 
 @ApiStatus.Internal
 fun Import.resolvedFileOrNull(): VirtualFile? = (this as? Import.Resolved)?.file
-
-private fun PsiElement.filePositionOrNull(): FilePosition? {
-  val file = this.containingFile ?: return null
-  val path = file.virtualFile?.toNioPathOrNull() ?: return null
-  val text = file.text
-  val start = StringUtil.offsetToLineColumn(text, textRange.startOffset) ?: return FilePosition(path, 0, 0)
-  val end = StringUtil.offsetToLineColumn(text, textRange.endOffset) ?: return FilePosition(path, 0, 0)
-  return FilePosition(path, start.line, start.column, end.line, end.column)
-}

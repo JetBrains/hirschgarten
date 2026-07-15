@@ -13,7 +13,7 @@ import com.intellij.openapi.vfs.refreshAndFindVirtualDirectory
 import com.intellij.util.concurrency.ThreadingAssertions
 import com.intellij.util.concurrency.annotations.RequiresReadLockAbsence
 import org.jetbrains.bazel.commons.constants.Constants
-import org.jetbrains.bazel.languages.projectview.ProjectView
+import org.jetbrains.bazel.languages.projectview.ProjectViewFactory
 import org.jetbrains.bazel.languages.projectview.dotIdeaDirectoryLocation
 import org.jetbrains.bazel.languages.projectview.project.ProjectViewFileLocalizer.isDefaultProjectViewFile
 import org.jetbrains.bazel.languages.projectview.project.ProjectViewFileLocalizer.pickProjectViewFileForProject
@@ -76,9 +76,9 @@ internal class BazelProjectStorePathCustomizer : ProjectStorePathCustomizer {
         .findPsiFile(ProjectManager.getInstance().defaultProject)
         ?.let { it as? ProjectViewPsiFile }
         ?.let { file ->
-          // In principle, ProjectView.fromProjectViewPsiFile should not throw.
+          // In principle, ProjectViewFactory.fromProjectViewPsiFile should not throw.
           // However, in case it does, it breaks the project opening, so it's better to keep it in a try-catch block.
-          runCatching { ProjectView.fromProjectViewPsiFile(file, rootDir) }
+          runCatching { ProjectViewFactory.fromProjectViewPsiFile(file, rootDir) }
             .getOrHandleException { log.error("Failed to parse project view file. Falling back to default dotIdea directory.", it) }
         }
         ?.dotIdeaDirectoryLocation

@@ -17,7 +17,7 @@ import org.jetbrains.bazel.commons.BzlmodRepoMapping
 import org.jetbrains.bazel.commons.RepoMapping
 import org.jetbrains.bazel.commons.RepoMappingDisabled
 import org.jetbrains.bazel.commons.orFallbackVersion
-import org.jetbrains.bazel.languages.projectview.ProjectView
+import org.jetbrains.bazel.languages.projectview.ProjectViewFactory
 import org.jetbrains.bazel.languages.projectview.ProjectViewToWorkspaceContextConverter
 import org.jetbrains.bazel.languages.projectview.psi.ProjectViewPsiFile
 import org.jetbrains.bazel.project.BazelProjectFixtures.initializeBazelProject
@@ -525,7 +525,7 @@ class WorkspaceDirectoriesFromProjectViewTest : BasePlatformTestCase() {
     psiFile: PsiFile?,
     repoMapping: RepoMapping = RepoMappingDisabled,
   ): WorkspaceDirectoriesResult {
-    val projectView = ProjectView.fromProjectViewPsiFile(psiFile as ProjectViewPsiFile)
+    val projectView = ProjectViewFactory.fromProjectViewPsiFile(psiFile as ProjectViewPsiFile)
     val workspaceContext = ProjectViewToWorkspaceContextConverter
       .convert(project, projectView, workspaceRoot)
     val owner = ModalTaskOwner.guess()

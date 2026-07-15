@@ -6,9 +6,11 @@ import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.nulls.shouldNotBeNull
 import org.jetbrains.bazel.commons.ExcludableValue
 import org.jetbrains.bazel.label.Label
-import org.jetbrains.bazel.languages.projectview.ProjectView
 import org.jetbrains.bazel.languages.projectview.ProjectViewBundle
+import org.jetbrains.bazel.languages.projectview.ProjectViewFactory
 import org.jetbrains.bazel.languages.projectview.ProjectViewSections
+import org.jetbrains.bazel.languages.projectview.SHARD_SYNC_KEY
+import org.jetbrains.bazel.languages.projectview.TARGETS_KEY
 import org.jetbrains.bazel.languages.projectview.buildFlags
 import org.jetbrains.bazel.languages.projectview.debugFlags
 import org.jetbrains.bazel.languages.projectview.psi.ProjectViewPsiFile
@@ -34,14 +36,14 @@ class ProjectViewTest : BasePlatformTestCase() {
         shard_sync: true
         """.trimIndent(),
       )
-    val projectView = ProjectView.fromProjectViewPsiFile(file as ProjectViewPsiFile)
+    val projectView = ProjectViewFactory.fromProjectViewPsiFile(file as ProjectViewPsiFile)
 
-    val targetsSection = projectView.getSection(TargetsSection.KEY)
+    val targetsSection = projectView.getSection(TARGETS_KEY)
     targetsSection.shouldNotBeNull()
     targetsSection shouldContain ExcludableValue.included(Label.parse("target1"))
     targetsSection shouldContain ExcludableValue.excluded(Label.parse("target2"))
 
-    val shardSyncSection = projectView.getSection(ShardSyncSection.KEY)
+    val shardSyncSection = projectView.getSection(SHARD_SYNC_KEY)
     shardSyncSection.shouldNotBeNull()
     assertEquals(shardSyncSection, true)
   }
@@ -108,7 +110,7 @@ class ProjectViewTest : BasePlatformTestCase() {
         """.trimIndent(),
     )
 
-    val pv = ProjectView.fromProjectViewPsiFile(myFixture.file as ProjectViewPsiFile)
+    val pv = ProjectViewFactory.fromProjectViewPsiFile(myFixture.file as ProjectViewPsiFile)
 
     pv.syncFlags shouldContain "--announce_rc"
     pv.buildFlags shouldContain "--define=ij_product=intellij-latest"
@@ -127,8 +129,8 @@ class ProjectViewTest : BasePlatformTestCase() {
           targetB
         """.trimIndent(),
     )
-    val projectView = ProjectView.fromProjectViewPsiFile(psiFile as ProjectViewPsiFile)
-    projectView.getSection(TargetsSection.KEY) shouldContainExactly listOf(
+    val projectView = ProjectViewFactory.fromProjectViewPsiFile(psiFile as ProjectViewPsiFile)
+    projectView.getSection(TARGETS_KEY) shouldContainExactly listOf(
       ExcludableValue.included(Label.parse("targetA")),
       ExcludableValue.included(Label.parse("targetB")),
     )

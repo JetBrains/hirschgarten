@@ -15,6 +15,7 @@ import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.flow.open.BazelProjectStoreDescriptor
 import org.jetbrains.bazel.flow.open.ProjectViewFileUtils
 import org.jetbrains.bazel.languages.projectview.ProjectView
+import org.jetbrains.bazel.languages.projectview.ProjectViewFactory
 import org.jetbrains.bazel.languages.projectview.ProjectViewService
 import org.jetbrains.bazel.languages.projectview.imports.resolvedFileOrNull
 import org.jetbrains.bazel.languages.projectview.psi.ProjectViewPsiFile
@@ -38,14 +39,14 @@ class DefaultProjectViewService(private val project: Project) : ProjectViewServi
     return readAction {
         val psi = PsiManager.getInstance(project).findFile(projectViewPath) as? ProjectViewPsiFile
             ?: return@readAction null
-        ProjectView.fromProjectViewPsiFile(psi)
+      ProjectViewFactory.fromProjectViewPsiFile(psi)
     }
   }
 
   private suspend fun getDefaultProjectView(): ProjectView {
     return readAction {
         val content = ProjectViewFileUtils.projectViewTemplate(project.rootDir)
-        ProjectView.fromProjectViewContent(project, content)
+      ProjectViewFactory.fromProjectViewContent(project, content)
     }
   }
 

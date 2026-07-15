@@ -10,13 +10,13 @@ import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeInstanceOf
 import org.jetbrains.bazel.commons.ExcludableValue
 import org.jetbrains.bazel.label.Label
-import org.jetbrains.bazel.languages.projectview.ProjectView
+import org.jetbrains.bazel.languages.projectview.DIRECTORIES_KEY
+import org.jetbrains.bazel.languages.projectview.IMPORT_DEPTH_KEY
+import org.jetbrains.bazel.languages.projectview.ProjectViewFactory
+import org.jetbrains.bazel.languages.projectview.SHARD_SYNC_KEY
+import org.jetbrains.bazel.languages.projectview.TARGETS_KEY
 import org.jetbrains.bazel.languages.projectview.imports.Import
 import org.jetbrains.bazel.languages.projectview.psi.ProjectViewPsiFile
-import org.jetbrains.bazel.languages.projectview.sections.DirectoriesSection
-import org.jetbrains.bazel.languages.projectview.sections.ImportDepthSection
-import org.jetbrains.bazel.languages.projectview.sections.ShardSyncSection
-import org.jetbrains.bazel.languages.projectview.sections.TargetsSection
 import org.jetbrains.bazel.project.BazelProjectFixtures.initializeBazelProject
 import org.jetbrains.bazel.test.framework.annotation.BazelTest
 import org.junit.Test
@@ -53,15 +53,15 @@ class ProjectViewImportTest : CodeInsightFixtureTestCase<ModuleFixtureBuilder<Mo
         import A.bazelproject
         """.trimIndent(),
       )
-    val projectView = ProjectView.Companion.fromProjectViewPsiFile(psiFile as ProjectViewPsiFile)
-    assertEquals(projectView.getSection(ImportDepthSection.KEY), 123)
-    assertEquals(projectView.getSection(ShardSyncSection.KEY), false)
-    projectView.getSection(TargetsSection.KEY) shouldContainExactly
+    val projectView = ProjectViewFactory.fromProjectViewPsiFile(psiFile as ProjectViewPsiFile)
+    assertEquals(projectView.getSection(IMPORT_DEPTH_KEY), 123)
+    assertEquals(projectView.getSection(SHARD_SYNC_KEY), false)
+    projectView.getSection(TARGETS_KEY) shouldContainExactly
       listOf(
         ExcludableValue.included(Label.parse("targetA")),
         ExcludableValue.included(Label.parse("targetB")),
       )
-    projectView.getSection(DirectoriesSection.KEY) shouldContainExactly
+    projectView.getSection(DIRECTORIES_KEY) shouldContainExactly
       listOf(
         ExcludableValue.included(Path("dirA")),
         ExcludableValue.included(Path("dirB")),
@@ -91,9 +91,9 @@ class ProjectViewImportTest : CodeInsightFixtureTestCase<ModuleFixtureBuilder<Mo
         import A.bazelproject
         """.trimIndent(),
       )
-    val projectView = ProjectView.Companion.fromProjectViewPsiFile(psiFile as ProjectViewPsiFile)
-    assertEquals(projectView.getSection(ImportDepthSection.KEY), 123)
-    projectView.getSection(TargetsSection.KEY) shouldContainExactly
+    val projectView = ProjectViewFactory.fromProjectViewPsiFile(psiFile as ProjectViewPsiFile)
+    assertEquals(projectView.getSection(IMPORT_DEPTH_KEY), 123)
+    projectView.getSection(TARGETS_KEY) shouldContainExactly
       listOf(
         ExcludableValue.included(Label.parse("targetC")),
         ExcludableValue.included(Label.parse("targetD")),
@@ -125,9 +125,9 @@ class ProjectViewImportTest : CodeInsightFixtureTestCase<ModuleFixtureBuilder<Mo
           targetD
         """.trimIndent(),
       )
-    val projectView = ProjectView.Companion.fromProjectViewPsiFile(psiFile as ProjectViewPsiFile)
-    assertEquals(projectView.getSection(ImportDepthSection.KEY), 321)
-    projectView.getSection(TargetsSection.KEY) shouldContainExactly
+    val projectView = ProjectViewFactory.fromProjectViewPsiFile(psiFile as ProjectViewPsiFile)
+    assertEquals(projectView.getSection(IMPORT_DEPTH_KEY), 321)
+    projectView.getSection(TARGETS_KEY) shouldContainExactly
       listOf(
         ExcludableValue.included(Label.parse("targetA")),
         ExcludableValue.included(Label.parse("targetB")),
@@ -140,7 +140,7 @@ class ProjectViewImportTest : CodeInsightFixtureTestCase<ModuleFixtureBuilder<Mo
   fun `test resolved import mapping`() {
     val importedFile = myFixture.addFileToProject("A.bazelproject", "import_depth: 1")
     val psiFile = myFixture.configureByText("B.bazelproject", "import A.bazelproject")
-    val projectView = ProjectView.fromProjectViewPsiFile(psiFile as ProjectViewPsiFile)
+    val projectView = ProjectViewFactory.fromProjectViewPsiFile(psiFile as ProjectViewPsiFile)
     projectView.imports.shouldBeSingleton {
       val resolved = it.shouldBeInstanceOf<Import.Resolved>()
       resolved.file shouldBe importedFile.virtualFile
@@ -160,7 +160,7 @@ class ProjectViewImportTest : CodeInsightFixtureTestCase<ModuleFixtureBuilder<Mo
         import missing.bazelproject
         """.trimIndent(),
       )
-    val projectView = ProjectView.fromProjectViewPsiFile(psiFile as ProjectViewPsiFile)
+    val projectView = ProjectViewFactory.fromProjectViewPsiFile(psiFile as ProjectViewPsiFile)
     projectView.imports.shouldBeSingleton {
       val unresolved = it.shouldBeInstanceOf<Import.Unresolved>()
       unresolved.isRequired shouldBe true
@@ -185,12 +185,12 @@ class ProjectViewImportTest : CodeInsightFixtureTestCase<ModuleFixtureBuilder<Mo
         import missing.bazelproject
         """.trimIndent(),
       )
-    val projectView = ProjectView.fromProjectViewPsiFile(psiFile as ProjectViewPsiFile)
+    val projectView = ProjectViewFactory.fromProjectViewPsiFile(psiFile as ProjectViewPsiFile)
     projectView.imports.shouldBeSingleton {
       it.shouldBeInstanceOf<Import.Unresolved>()
     }
-    projectView.getSection(ImportDepthSection.KEY) shouldBe 42
-    projectView.getSection(DirectoriesSection.KEY) shouldContainExactly
+    projectView.getSection(IMPORT_DEPTH_KEY) shouldBe 42
+    projectView.getSection(DIRECTORIES_KEY) shouldContainExactly
       listOf(
         ExcludableValue.included(Path("dirA")),
         ExcludableValue.included(Path("dirB")),
@@ -208,8 +208,8 @@ class ProjectViewImportTest : CodeInsightFixtureTestCase<ModuleFixtureBuilder<Mo
         import A.bazelproject
         """.trimIndent(),
     )
-    val projectView = ProjectView.fromProjectViewPsiFile(psiFile as ProjectViewPsiFile)
-    projectView.getSection(TargetsSection.KEY) shouldContainExactly listOf(ExcludableValue.included(Label.parse("targetA")))
+    val projectView = ProjectViewFactory.fromProjectViewPsiFile(psiFile as ProjectViewPsiFile)
+    projectView.getSection(TARGETS_KEY) shouldContainExactly listOf(ExcludableValue.included(Label.parse("targetA")))
     projectView.imports.shouldBeSingleton {
       it.shouldBeInstanceOf<Import.Resolved>()
     }
@@ -235,8 +235,8 @@ class ProjectViewImportTest : CodeInsightFixtureTestCase<ModuleFixtureBuilder<Mo
         import B.bazelproject
         """.trimIndent(),
     )
-    val projectView = ProjectView.fromProjectViewPsiFile(psiFile as ProjectViewPsiFile)
-    projectView.getSection(TargetsSection.KEY) shouldContainExactly listOf(
+    val projectView = ProjectViewFactory.fromProjectViewPsiFile(psiFile as ProjectViewPsiFile)
+    projectView.getSection(TARGETS_KEY) shouldContainExactly listOf(
       ExcludableValue.included(Label.parse("targetA")),
       ExcludableValue.included(Label.parse("targetB")),
     )

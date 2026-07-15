@@ -1,11 +1,10 @@
 package org.jetbrains.bazel.languages.projectview.sections
 
 import org.jetbrains.bazel.languages.projectview.ListSection
-import org.jetbrains.bazel.languages.projectview.SectionKey
+import org.jetbrains.bazel.languages.projectview.TEST_SOURCES_KEY
 
 internal class TestSourcesSection : ListSection<List<String>>() {
-  override val name = NAME
-  override val sectionKey = KEY
+  override val sectionKey = TEST_SOURCES_KEY
 
   /**
    * Copied from [OG plugin docs](https://ij.bazel.build/docs/project-views.html#test_sources)
@@ -14,9 +13,4 @@ internal class TestSourcesSection : ListSection<List<String>>() {
     "A list of workspace-relative glob patterns matching directories. Determines which sources IntelliJ treats as a tests."
 
   override fun fromRawValues(rawValues: List<String>): List<String> = rawValues
-
-  companion object {
-    const val NAME = "test_sources"
-    val KEY = SectionKey<List<String>>(NAME)
-  }
 }

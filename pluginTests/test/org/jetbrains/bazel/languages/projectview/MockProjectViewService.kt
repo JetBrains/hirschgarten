@@ -12,7 +12,7 @@ internal class MockProjectViewService(private val project: Project, private val 
   override val projectViewState: StateFlow<ProjectView>
     get() = MutableStateFlow(
       runReadActionBlocking {
-        ProjectView.fromProjectViewContent(project, projectViewContent)
+        ProjectViewFactory.fromProjectViewContent(project, projectViewContent)
       },
     )
 
