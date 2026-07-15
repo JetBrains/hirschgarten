@@ -15,3 +15,11 @@ kt_jvm_library(
     plugins = ["//helper:processor"],
     deps = ["//helper:lib"],
 )
+
+kt_jvm_library(
+    name = "kt_test_lib",
+    testonly = True,
+    srcs = ["KtTestLib.kt"],
+    plugins = ["//helper:processor"],
+    deps = ["//helper:lib"],
+)

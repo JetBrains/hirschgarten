@@ -49,12 +49,11 @@ class KotlinLanguagePlugin : JvmLanguagePluginMixin {
       }
       val kotlinTarget = target.kotlinTargetInfo
       val localRepositories = repoMapping.getLocalRepositories()
-      val targetKey = target.key.toWorkspaceTargetKey()
       return listOf(
         KotlinBuildTarget(
           languageVersion = kotlinTarget.languageVersion.takeIf { it.isNotBlank() },
           apiVersion = kotlinTarget.apiVersion.takeIf { it.isNotBlank() },
-          associates = kotlinTarget.associatesList.map { targetKey.copy(label = Label.parse(it)) },
+          associates = kotlinTarget.associatedTargetsList.map { it.toWorkspaceTargetKey() },
           moduleName = kotlinTarget.moduleName.takeIf { it.isNotBlank() },
           kotlincOptions = kotlinTarget.toKotlincOptArguments(localRepositories),
         ),

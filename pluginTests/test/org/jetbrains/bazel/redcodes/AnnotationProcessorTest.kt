@@ -29,6 +29,7 @@ class AnnotationProcessorTest {
     withContext(Dispatchers.EDT) {
       fixture.checkHighlighting("JavaLib.java")
       fixture.checkHighlighting("KtLib.kt")
+      fixture.checkHighlighting("KtTestLib.kt")
     }
   }
 }
