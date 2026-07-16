@@ -8,6 +8,7 @@
     <module name="intellij.bazel.kotlin.common"/>
     <module name="intellij.bazel.projectview"/>
     <module name="intellij.java.debugger.impl"/>
+    <module name="intellij.java.psi"/>
     <module name="intellij.monorepo.devkit"/>
     <module name="intellij.monorepo.devkit.bazel"/>
   </dependencies>
