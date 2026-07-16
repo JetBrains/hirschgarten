@@ -17,10 +17,11 @@ import org.jetbrains.bazel.commons.phased.srcs
 import org.jetbrains.bazel.label.DependencyLabel
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.label.assumeResolved
+import org.jetbrains.bazel.languages.projectview.ProjectView
+import org.jetbrains.bazel.languages.projectview.allowManualTargetsSync
 import org.jetbrains.bazel.sync.workspace.snapshot.SourceFileCollectionBuilder
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
 import org.jetbrains.bazel.sync.workspace.targetKind.TargetKindService
-import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bsp.protocol.RawBuildTarget
 import java.nio.file.Path
 import kotlin.io.path.Path
@@ -30,13 +31,13 @@ import kotlin.io.path.isRegularFile
 @ApiStatus.Internal
 class PhasedBazelProjectMapper(
   private val bazelPathsResolver: BazelPathsResolver,
-  private val workspaceContext: WorkspaceContext
+  private val projectView: ProjectView,
 ) {
   fun mapTargets(
     repoMapping: RepoMapping,
     targets: Map<Label, Build.Target>
   ): List<RawBuildTarget> {
-    val shouldSyncManualTargets = workspaceContext.allowManualTargetsSync
+    val shouldSyncManualTargets = projectView.allowManualTargetsSync
     val targets: List<RawBuildTarget> =
       targets
         .asSequence()

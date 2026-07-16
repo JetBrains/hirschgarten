@@ -9,7 +9,9 @@ import org.jetbrains.bazel.commons.constants.Constants
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.label.ResolvedLabel
 import org.jetbrains.bazel.label.assumeResolved
-import org.jetbrains.bazel.workspacecontext.WorkspaceContext
+import org.jetbrains.bazel.languages.projectview.ProjectView
+import org.jetbrains.bazel.languages.projectview.directories
+import org.jetbrains.bazel.languages.projectview.targets
 import org.jetbrains.bsp.protocol.DirectoryItem
 import org.jetbrains.bsp.protocol.InverseSourcesParams
 import org.jetbrains.bsp.protocol.InverseSourcesResult
@@ -24,7 +26,7 @@ import kotlin.io.path.isRegularFile
 class BspProjectMapper(
   private val workspaceRoot: Path,
   private val bazelRunner: BazelRunner,
-  private val workspaceContext: WorkspaceContext,
+  private val projectView: ProjectView,
   private val bazelPathsResolver: BazelPathsResolver,
 ) {
   suspend fun workspaceDirectories(repoMapping: RepoMapping, taskId: TaskId): WorkspaceDirectoriesResult {
@@ -45,7 +47,8 @@ class BspProjectMapper(
     val included = mutableSetOf<Path>()
     val excluded = mutableSetOf<Path>()
 
-    for (directory in workspaceContext.directories) {
+    val directories = projectView.directories
+    for (directory in directories) {
       val relativeToWorkspaceRoot = workspaceRoot.resolve(directory.value).normalize()
       when (directory) {
         is ExcludableValue.Included<Path> -> included.add(relativeToWorkspaceRoot)
@@ -60,8 +63,8 @@ class BspProjectMapper(
     val excludedAdditionally = mutableSetOf<Path>()
     val includedAdditionally = mutableSetOf<Path>()
 
-    val allSubPackages = getSubPackages(workspaceContext, repoMapping, taskId)
-    for (target in workspaceContext.targets) {
+    val allSubPackages = getSubPackages(projectView, repoMapping, taskId)
+    for (target in projectView.targets) {
       val path = target.value.assumeResolved().toDirectoryPath(repoMapping)
       val subPackages = allSubPackages.filter { it.startsWith(path) && it != path }
       val (targetSet, additionalSet) = when (target) {
@@ -108,9 +111,9 @@ class BspProjectMapper(
     )
   }
 
-  private suspend fun getSubPackages(workspaceContext: WorkspaceContext, repoMapping: RepoMapping, taskId: TaskId): List<Path> {
-    val patterns = workspaceContext.targets.map { it.value.assumeResolved() }.distinct()
-    val out = runBazelBuildfilesQuery(workspaceContext, patterns, taskId)
+  private suspend fun getSubPackages(projectView: ProjectView, repoMapping: RepoMapping, taskId: TaskId): List<Path> {
+    val patterns = projectView.targets.map { it.value.assumeResolved() }.distinct()
+    val out = runBazelBuildfilesQuery(projectView, patterns, taskId)
     if (out.isBlank())
       return emptyList()
 
@@ -130,7 +133,7 @@ class BspProjectMapper(
   private fun ResolvedLabel.toDirectoryPath(repoMapping: RepoMapping): Path =
     bazelPathsResolver.toDirectoryPath(this, repoMapping).normalize()
 
-  private suspend fun runBazelBuildfilesQuery(workspaceContext: WorkspaceContext, patterns: List<ResolvedLabel>, taskId: TaskId): String {
+  private suspend fun runBazelBuildfilesQuery(projectView: ProjectView, patterns: List<ResolvedLabel>, taskId: TaskId): String {
     if (patterns.isEmpty()) return ""
     val expr = buildString {
       append("buildfiles(set(")
@@ -138,7 +141,7 @@ class BspProjectMapper(
       append("))")
     }
 
-    val command = bazelRunner.buildBazelCommand(workspaceContext) {
+    val command = bazelRunner.buildBazelCommand(projectView) {
       queryExpression(expr) {
         options.add("--keep_going")
       }
@@ -164,11 +167,11 @@ class BspProjectMapper(
     )
 
   internal suspend fun inverseSources(workspaceRoot: Path, inverseSourcesParams: InverseSourcesParams): InverseSourcesResult {
-    return InverseSourcesQuery.inverseSourcesQuery(inverseSourcesParams, workspaceRoot, bazelRunner, workspaceContext)
+    return InverseSourcesQuery.inverseSourcesQuery(inverseSourcesParams, workspaceRoot, bazelRunner, projectView)
   }
 
   suspend fun jvmBuilderParamsForTarget(target: Label): JvmToolchainInfo =
-    JvmToolchainQuery.jvmToolchainQueryForTarget(bazelRunner, workspaceContext, target)
+    JvmToolchainQuery.jvmToolchainQueryForTarget(bazelRunner, projectView, target)
 
 
   private class DirsPriority {

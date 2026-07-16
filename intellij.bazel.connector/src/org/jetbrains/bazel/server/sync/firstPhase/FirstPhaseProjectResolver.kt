@@ -7,9 +7,10 @@ import org.jetbrains.bazel.bazelrunner.BazelRunner
 import org.jetbrains.bazel.bazelrunner.params.BazelFlag
 import org.jetbrains.bazel.commons.BazelInfo
 import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.languages.projectview.ProjectView
+import org.jetbrains.bazel.languages.projectview.targets
 import org.jetbrains.bazel.server.bzlmod.calculateRepoMapping
 import org.jetbrains.bazel.server.model.PhasedSyncProject
-import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bsp.protocol.BazelTaskEventsHandler
 import org.jetbrains.bsp.protocol.TaskId
 import org.jetbrains.bsp.protocol.asLogger
@@ -19,20 +20,19 @@ import java.nio.file.Path
 class FirstPhaseProjectResolver(
   private val workspaceRoot: Path,
   private val bazelRunner: BazelRunner,
-  private val workspaceContext: WorkspaceContext,
+  private val projectView: ProjectView,
   private val bazelInfo: BazelInfo,
   private val taskEventsHandler: BazelTaskEventsHandler,
 ) {
   suspend fun resolve(taskId: TaskId): PhasedSyncProject =
     coroutineScope {
-      // Use the already available workspaceContext
       val command =
-        bazelRunner.buildBazelCommand(workspaceContext) {
+        bazelRunner.buildBazelCommand(projectView) {
           query {
             options.add("--output=streamed_proto")
             options.add(BazelFlag.keepGoing())
 
-            addTargetsFromExcludableList(workspaceContext.targets)
+            addTargetsFromExcludableList(projectView.targets)
           }
         }
 
@@ -45,7 +45,7 @@ class FirstPhaseProjectResolver(
       val targets: Sequence<Target> = generateSequence { Target.parseDelimitedFrom(inputStream) }
       val modules: Map<Label, Target> = targets.associateBy { Label.parse(it.rule.name) }
 
-      val repoMapping = calculateRepoMapping(workspaceContext, bazelRunner, bazelInfo, taskEventsHandler.asLogger(taskId), taskId)
+      val repoMapping = calculateRepoMapping(projectView, bazelRunner, bazelInfo, taskEventsHandler.asLogger(taskId), taskId)
 
       PhasedSyncProject(
         workspaceRoot = workspaceRoot,

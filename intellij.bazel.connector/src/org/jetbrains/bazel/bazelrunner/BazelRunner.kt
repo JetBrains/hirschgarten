@@ -1,11 +1,15 @@
 package org.jetbrains.bazel.bazelrunner
 
+import com.intellij.openapi.project.Project
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.bazelrunner.params.BazelFlag.color
 import org.jetbrains.bazel.bazelrunner.params.BazelFlag.curses
 import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.label.Label
-import org.jetbrains.bazel.workspacecontext.WorkspaceContext
+import org.jetbrains.bazel.languages.projectview.ProjectView
+import org.jetbrains.bazel.languages.projectview.bazelBinary
+import org.jetbrains.bazel.languages.projectview.buildFlags
+import org.jetbrains.bazel.workspace.BazelExecutableProvider
 import org.jetbrains.bsp.protocol.BazelTaskEventsHandler
 import org.jetbrains.bsp.protocol.BazelTaskLogger
 import org.jetbrains.bsp.protocol.TaskId
@@ -21,9 +25,23 @@ class BazelRunner(
   private val taskEventsHandler: BazelTaskEventsHandler?,
   val workspaceRoot: Path,
   private val bazelProcessLauncher: BazelProcessLauncher,
+  private val bazelBinary: Path,
 ) {
-  class CommandBuilder(workspaceContext: WorkspaceContext) {
-    private val bazelBinary = workspaceContext.bazelBinary?.pathString ?: "bazel"
+  companion object {
+    suspend fun create(
+      project: Project,
+      taskEventsHandler: BazelTaskEventsHandler?,
+      workspaceRoot: Path,
+      bazelProcessLauncher: BazelProcessLauncher,
+      projectView: ProjectView,
+    ): BazelRunner {
+      val bazelBinary: Path =
+        projectView.bazelBinary?.let { workspaceRoot.resolve(it) } ?: BazelExecutableProvider.computeBazelExecutableOrFail(project)
+      return BazelRunner(taskEventsHandler, workspaceRoot, bazelProcessLauncher, bazelBinary)
+    }
+  }
+
+  class CommandBuilder(private val bazelBinary: String) {
     var inheritWorkspaceOptions = false
 
     fun clean(builder: BazelCommand.Clean.() -> Unit = {}) = BazelCommand.Clean(bazelBinary).apply { builder() }
@@ -90,11 +108,11 @@ class BazelRunner(
   }
 
   fun buildBazelCommand(
-    workspaceContext: WorkspaceContext,
+    projectView: ProjectView,
     inheritProjectviewOptionsOverride: Boolean? = null,
     doBuild: CommandBuilder.() -> BazelCommand,
   ): BazelCommand {
-    val commandBuilder = CommandBuilder(workspaceContext)
+    val commandBuilder = CommandBuilder(bazelBinary.pathString)
     val command = doBuild(commandBuilder)
 
     if (command.ptyTermSize != null) {
@@ -120,7 +138,7 @@ class BazelRunner(
     }
 
     if (commandBuilder.inheritWorkspaceOptions) {
-      command.options.addAll(workspaceContext.buildFlags)
+      command.options.addAll(projectView.buildFlags)
     }
 
     return command

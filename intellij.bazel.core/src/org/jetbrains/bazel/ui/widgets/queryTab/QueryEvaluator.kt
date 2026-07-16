@@ -7,9 +7,9 @@ import org.jetbrains.bazel.bazelrunner.BazelProcess
 import org.jetbrains.bazel.bazelrunner.BazelProcessLauncherProvider
 import org.jetbrains.bazel.bazelrunner.BazelProcessResult
 import org.jetbrains.bazel.bazelrunner.BazelRunner
-import org.jetbrains.bazel.commons.ExcludableValue
+import org.jetbrains.bazel.languages.projectview.ProjectView
+import org.jetbrains.bazel.languages.projectview.projectView
 import org.jetbrains.bazel.sync.BazelEnvironmentService
-import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bsp.protocol.TaskGroupId
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicReference
@@ -45,51 +45,29 @@ internal class BazelFlag(value: String) {
 
 internal class QueryEvaluator(private val project: Project, currentRunnerDirFile: VirtualFile) {
   private var bazelRunner: BazelRunner
-  private var workspaceContext: WorkspaceContext
+  private var projectView: ProjectView
 
   init {
     currentRunnerDirFile.isDirectoryOrThrow()
     val getRunnerCallResult = getRunnerOfDirectory(currentRunnerDirFile)
     bazelRunner = getRunnerCallResult.first
-    workspaceContext = getRunnerCallResult.second
+    projectView = getRunnerCallResult.second
   }
 
   private var currentProcess = AtomicReference<BazelProcess?>(null)
   private var currentProcessCancelled = AtomicBoolean(false)
 
-  private fun getRunnerOfDirectory(directoryFile: VirtualFile): Pair<BazelRunner, WorkspaceContext> {
+  private fun getRunnerOfDirectory(directoryFile: VirtualFile): Pair<BazelRunner, ProjectView> {
     directoryFile.isDirectoryOrThrow()
 
     val workspaceRoot = directoryFile.toNioPath()
-    val emptyWorkspaceContext =
-      WorkspaceContext(
-        targets = emptyList(),
-        directories = listOf(ExcludableValue.included(workspaceRoot)),
-        buildFlags = emptyList(),
-        syncFlags = emptyList(),
-        debugFlags = emptyList(),
-        bazelBinary = null,
-        allowManualTargetsSync = false,
-        importDepth = 1,
-        ideJavaHomeOverride = null,
-        shardSync = false,
-        targetShardSize = 1000,
-        shardingApproach = null,
-        importRunConfigurations = emptyList(),
-        gazelleTarget = null,
-        indexAllFilesInDirectories = false,
-        deriveInstrumentationFilterFromTargets = false,
-        indexAdditionalFilesInDirectories = emptyList(),
-        preferClassJarsOverSourcelessJars = false,
-      )
-
     val bazelProcessLauncherProvider = BazelProcessLauncherProvider.getInstance()
     val bazelProcessLauncher =
       bazelProcessLauncherProvider.createBazelProcessLauncher(
         workspaceRoot,
         runBlocking { BazelEnvironmentService.getInstance(project).getEnvironment() },
       )
-    return Pair(BazelRunner(null, workspaceRoot, bazelProcessLauncher), emptyWorkspaceContext)
+    return runBlocking { BazelRunner.create(project, null, workspaceRoot, bazelProcessLauncher, project.projectView()) } to projectView
   }
 
   // Starts a process which evaluates a given query.
@@ -99,7 +77,7 @@ internal class QueryEvaluator(private val project: Project, currentRunnerDirFile
     if (currentProcess.get() != null) throw IllegalStateException("Trying to start new process before result of previous is received")
 
     val commandToRun =
-      bazelRunner.buildBazelCommand(workspaceContext) {
+      bazelRunner.buildBazelCommand(projectView) {
         queryExpression(command) { }
       }
 

@@ -1,13 +1,10 @@
 package org.jetbrains.bazel.bazelrunner
 
-import com.intellij.openapi.project.Project
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.commons.BazelInfo
 import org.jetbrains.bazel.commons.gson.bazelGson
-import org.jetbrains.bazel.progress.syncConsole
-import org.jetbrains.bazel.workspacecontext.WorkspaceContext
+import org.jetbrains.bazel.languages.projectview.ProjectView
 import org.jetbrains.bsp.protocol.TaskId
-import kotlin.collections.plus
 
 @ApiStatus.Internal
 sealed interface ShowRepoResult {
@@ -144,7 +141,7 @@ class ModuleOutputParser {
 
 internal class ModuleResolver(
   private val bazelRunner: BazelRunner,
-  private val workspaceContext: WorkspaceContext,
+  private val projectView: ProjectView,
   private val taskId: TaskId,
 ) {
   private val moduleOutputParser = ModuleOutputParser()
@@ -157,7 +154,7 @@ internal class ModuleResolver(
     val moduleNames = unsortedModuleNames.sorted().distinct()
     val json_output = bazelInfo.release.major >= 9
     val command =
-      bazelRunner.buildBazelCommand(workspaceContext) {
+      bazelRunner.buildBazelCommand(projectView) {
         showRepo {
           if (json_output) {
             options.add("--output=streamed_jsonproto")
@@ -203,7 +200,7 @@ internal class ModuleResolver(
     }
 
     val command =
-      bazelRunner.buildBazelCommand(workspaceContext) {
+      bazelRunner.buildBazelCommand(projectView) {
         dumpRepoMapping {
           options.addAll(canonicalRepoNames)
         }

@@ -1,7 +1,6 @@
 package org.jetbrains.bazel.server.bzlmod
 
 import kotlinx.coroutines.CancellationException
-import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.bazelrunner.BazelRunner
 import org.jetbrains.bazel.bazelrunner.ModuleResolver
 import org.jetbrains.bazel.bazelrunner.ShowRepoResult
@@ -9,12 +8,11 @@ import org.jetbrains.bazel.commons.BazelInfo
 import org.jetbrains.bazel.commons.BzlmodRepoMapping
 import org.jetbrains.bazel.commons.RepoMapping
 import org.jetbrains.bazel.commons.RepoMappingDisabled
-import org.jetbrains.bazel.workspacecontext.WorkspaceContext
-import org.jetbrains.bazel.workspacecontext.externalRepositoriesTreatedAsInternal
+import org.jetbrains.bazel.languages.projectview.ProjectView
+import org.jetbrains.bazel.languages.starlark.repomapping.externalRepositoriesTreatedAsInternal
 import org.jetbrains.bsp.protocol.BazelTaskLogger
 import org.jetbrains.bsp.protocol.TaskId
 import java.nio.file.Path
-import kotlin.collections.plus
 import kotlin.io.path.Path
 
 internal val rootRulesToNeededTransitiveRules = mapOf(
@@ -23,7 +21,7 @@ internal val rootRulesToNeededTransitiveRules = mapOf(
 )
 
 internal suspend fun calculateRepoNameMappingOnly(
-  workspaceContext: WorkspaceContext,
+  projectView: ProjectView,
   bazelRunner: BazelRunner,
   bazelInfo: BazelInfo,
   taskLogger: BazelTaskLogger,
@@ -32,7 +30,7 @@ internal suspend fun calculateRepoNameMappingOnly(
   if (!bazelInfo.isBzlModEnabled) {
     return RepoMappingDisabled
   }
-  val moduleResolver = ModuleResolver(bazelRunner, workspaceContext, taskId)
+  val moduleResolver = ModuleResolver(bazelRunner, projectView, taskId)
   val moduleApparentNameToCanonicalName =
     try {
       // empty string is the name of the root module
@@ -72,7 +70,7 @@ internal suspend fun calculateRepoNameMappingOnly(
 
 internal suspend fun extendRepoMappingByPathInfo(
   nameMapping : RepoMapping,
-  workspaceContext: WorkspaceContext,
+  projectView: ProjectView,
   bazelRunner: BazelRunner,
   bazelInfo: BazelInfo,
   taskLogger: BazelTaskLogger,
@@ -83,9 +81,9 @@ internal suspend fun extendRepoMappingByPathInfo(
   val knownRepoDefinitions = knownResolved.values.filterNotNull().associateBy { it.name }
 
   val moduleCanonicalNameToLocalPath = mutableMapOf<String, Path>()
-  val moduleResolver = ModuleResolver(bazelRunner, workspaceContext, taskId)
+  val moduleResolver = ModuleResolver(bazelRunner, projectView, taskId)
 
-  val (known, unknown) =workspaceContext.externalRepositoriesTreatedAsInternal.partition { name ->
+  val (known, unknown) = projectView.externalRepositoriesTreatedAsInternal.partition { name ->
     moduleApparentNameToCanonicalName[name]?.let { knownRepoDefinitions.containsKey(it) } ?: false
   }
   val knownCanonicalNames = known.map { moduleApparentNameToCanonicalName[it] }
@@ -132,13 +130,14 @@ internal suspend fun extendRepoMappingByPathInfo(
 
 
 internal suspend fun calculateRepoMapping(
-  workspaceContext: WorkspaceContext,
+  projectView: ProjectView,
   bazelRunner: BazelRunner,
   bazelInfo: BazelInfo,
   taskLogger: BazelTaskLogger,
   taskId: TaskId,
 ): RepoMapping {
   return extendRepoMappingByPathInfo(
-    calculateRepoNameMappingOnly(workspaceContext, bazelRunner, bazelInfo, taskLogger, taskId),
-    workspaceContext, bazelRunner, bazelInfo, taskLogger, mapOf(), taskId)
+    calculateRepoNameMappingOnly(projectView, bazelRunner, bazelInfo, taskLogger, taskId),
+    projectView, bazelRunner, bazelInfo, taskLogger, mapOf(), taskId,
+  )
 }

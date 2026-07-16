@@ -7,6 +7,7 @@ import com.intellij.platform.backend.workspace.toVirtualFileUrl
 import com.intellij.platform.workspace.storage.impl.url.toVirtualFileUrl
 import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.flow.exclude.BazelSymlinkExcludeService
+import org.jetbrains.bazel.languages.projectview.indexAllFilesInDirectories
 import org.jetbrains.bazel.sync.ProjectSyncHook
 import org.jetbrains.bazel.sync.ProjectSyncHook.ProjectSyncHookEnvironment
 import org.jetbrains.bazel.sync.withSubtask
@@ -21,9 +22,9 @@ private class DirectoriesSyncHook : ProjectSyncHook {
   override suspend fun onSync(environment: ProjectSyncHookEnvironment) {
     environment.withSubtask("Collect project directories") {
       val directories = environment.server.workspaceDirectories(environment.workspace.repoMapping, environment.taskId)
-      val workspaceContext = environment.server.workspaceContext
+      val projectView = environment.server.projectView
       val additionalExcludes = BazelSymlinkExcludeService.getInstance(environment.project).scanForBazelSymlinksToExclude(environment.project.rootDir.toNioPath())
-      val indexAllFilesInIncludedRoots = workspaceContext.indexAllFilesInDirectories
+      val indexAllFilesInIncludedRoots = projectView.indexAllFilesInDirectories
       val entity = createEntity(environment.project, directories, additionalExcludes, indexAllFilesInIncludedRoots)
 
       environment.diff.addEntity(entity)

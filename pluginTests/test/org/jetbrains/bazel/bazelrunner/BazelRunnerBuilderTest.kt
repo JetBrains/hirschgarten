@@ -7,7 +7,18 @@ import org.jetbrains.bazel.commons.BazelInfo
 import org.jetbrains.bazel.commons.BazelRelease
 import org.jetbrains.bazel.commons.ExcludableValue
 import org.jetbrains.bazel.label.Label
-import org.jetbrains.bazel.workspacecontext.WorkspaceContext
+import org.jetbrains.bazel.languages.projectview.ALLOW_MANUAL_TARGETS_SYNC_KEY
+import org.jetbrains.bazel.languages.projectview.BAZEL_BINARY_KEY
+import org.jetbrains.bazel.languages.projectview.BUILD_FLAGS_KEY
+import org.jetbrains.bazel.languages.projectview.DIRECTORIES_KEY
+import org.jetbrains.bazel.languages.projectview.IDE_JAVA_HOME_OVERRIDE_KEY
+import org.jetbrains.bazel.languages.projectview.IMPORT_DEPTH_KEY
+import org.jetbrains.bazel.languages.projectview.ProjectView
+import org.jetbrains.bazel.languages.projectview.SHARD_SYNC_KEY
+import org.jetbrains.bazel.languages.projectview.SYNC_FLAGS_KEY
+import org.jetbrains.bazel.languages.projectview.TARGETS_KEY
+import org.jetbrains.bazel.languages.projectview.TARGET_SHARD_SIZE_KEY
+import org.jetbrains.bazel.languages.projectview.targets
 import org.junit.jupiter.api.Assertions.fail
 import org.junit.jupiter.api.Test
 import java.nio.file.Paths
@@ -18,40 +29,31 @@ import kotlin.io.path.readText
 
 fun String.label() = Label.parse(this)
 
-private val mockContext =
-  WorkspaceContext(
-    targets =
-      listOf(
-        ExcludableValue.included("in1".label()),
-        ExcludableValue.included("in2".label()),
-        ExcludableValue.excluded("ex1".label()),
-        ExcludableValue.excluded("ex2".label()),
-      ),
-    directories =
-      listOf(
-        ExcludableValue.included(Path("in1dir")),
-        ExcludableValue.included(Path("in2dir")),
-        ExcludableValue.excluded(Path("ex1dir")),
-        ExcludableValue.excluded(Path("ex2dir")),
-      ),
-    buildFlags = listOf("flag1", "flag2"),
-    syncFlags = listOf("flag1", "flag2"),
-    debugFlags = emptyList(),
-    bazelBinary = Path("bazel"),
-    allowManualTargetsSync = true,
-    importDepth = 2,
-    ideJavaHomeOverride = Path("java_home"),
-    shardSync = false,
-    targetShardSize = 1000,
-    shardingApproach = null,
-    importRunConfigurations = emptyList(),
-    gazelleTarget = null,
-    indexAllFilesInDirectories = false,
-
-    deriveInstrumentationFilterFromTargets = false,
-    indexAdditionalFilesInDirectories = emptyList(),
-    preferClassJarsOverSourcelessJars = true,
-  )
+private val mockProjectView: ProjectView = ProjectView(
+  sections = mapOf(
+    TARGETS_KEY to listOf(
+      ExcludableValue.included("in1".label()),
+      ExcludableValue.included("in2".label()),
+      ExcludableValue.excluded("ex1".label()),
+      ExcludableValue.excluded("ex2".label()),
+    ),
+    DIRECTORIES_KEY to listOf(
+      ExcludableValue.included(Path("in1dir")),
+      ExcludableValue.included(Path("in2dir")),
+      ExcludableValue.excluded(Path("ex1dir")),
+      ExcludableValue.excluded(Path("ex2dir")),
+    ),
+    BUILD_FLAGS_KEY to listOf("flag1", "flag2"),
+    SYNC_FLAGS_KEY to listOf("flag1", "flag2"),
+    BAZEL_BINARY_KEY to Path("bazel"),
+    ALLOW_MANUAL_TARGETS_SYNC_KEY to true,
+    IMPORT_DEPTH_KEY to 2,
+    IDE_JAVA_HOME_OVERRIDE_KEY to Path("java_home"),
+    SHARD_SYNC_KEY to false,
+    TARGET_SHARD_SIZE_KEY to 1000,
+  ),
+  imports = emptyList(),
+)
 
 val mockBazelInfo =
   BazelInfo(
@@ -71,8 +73,8 @@ val mockBazelProcessLauncher = object : BazelProcessLauncher {
   }
 }
 
-val bazelRunner = BazelRunner(null, mockBazelInfo.workspaceRoot, mockBazelProcessLauncher)
-val bazelRunnerWithBazelInfo = BazelRunner(null, mockBazelInfo.workspaceRoot, mockBazelProcessLauncher)
+val bazelRunner = BazelRunner(null, mockBazelInfo.workspaceRoot, mockBazelProcessLauncher, Path("bazel"))
+val bazelRunnerWithBazelInfo = BazelRunner(null, mockBazelInfo.workspaceRoot, mockBazelProcessLauncher, Path("bazel"))
 
 fun splitOfTargetPattern(cmds : List<String>) : Pair<List<String>, List<String>> {
   cmds.indexOf("--") shouldBe -1
@@ -86,7 +88,7 @@ class BazelRunnerBuilderTest {
   @Test
   fun `most bare bones build without targets`() {
     val command =
-      bazelRunner.buildBazelCommand(workspaceContext = mockContext, inheritProjectviewOptionsOverride = false) {
+      bazelRunner.buildBazelCommand(projectView = mockProjectView, inheritProjectviewOptionsOverride = false) {
         build()
       }
 
@@ -106,9 +108,9 @@ class BazelRunnerBuilderTest {
   @Test
   fun `build with targets from spec`() {
     val command =
-      bazelRunnerWithBazelInfo.buildBazelCommand(mockContext) {
+      bazelRunnerWithBazelInfo.buildBazelCommand(mockProjectView) {
         build {
-          addTargetsFromExcludableList(mockContext.targets)
+          addTargetsFromExcludableList(mockProjectView.targets)
         }
       }
     val executionDescriptor = command.buildExecutionDescriptor()
@@ -142,7 +144,7 @@ class BazelRunnerBuilderTest {
   @Test
   fun `run without program arguments`() {
     val command =
-      bazelRunner.buildBazelCommand(mockContext) {
+      bazelRunner.buildBazelCommand(mockProjectView) {
         run("in1".label())
       }
 
@@ -163,7 +165,7 @@ class BazelRunnerBuilderTest {
   @Test
   fun `run with program arguments`() {
     val command =
-      bazelRunner.buildBazelCommand(mockContext) {
+      bazelRunner.buildBazelCommand(mockProjectView) {
         run("in1".label()) {
           programArguments.addAll(listOf("hello", "world"))
         }
@@ -189,7 +191,7 @@ class BazelRunnerBuilderTest {
   @Test
   fun `run doesn't set environment using arguments`() {
     val command =
-      bazelRunner.buildBazelCommand(mockContext) {
+      bazelRunner.buildBazelCommand(mockProjectView) {
         run("in1".label()) {
           environment["key"] = "value"
         }
@@ -212,7 +214,7 @@ class BazelRunnerBuilderTest {
   @Test
   fun `build sets environment using --action_env`() {
     val command =
-      bazelRunner.buildBazelCommand(mockContext) {
+      bazelRunner.buildBazelCommand(mockProjectView) {
         build {
           targets.add("in1".label())
           environment["key"] = "value"
@@ -238,7 +240,7 @@ class BazelRunnerBuilderTest {
   @Test
   fun `test sets environment using --test_env`() {
     val command =
-      bazelRunner.buildBazelCommand(mockContext) {
+      bazelRunner.buildBazelCommand(mockProjectView) {
         test {
           targets.add("in1".label())
           environment["key"] = "value"
@@ -264,7 +266,7 @@ class BazelRunnerBuilderTest {
   @Test
   fun `test sets arguments using --test_arg`() {
     val command =
-      bazelRunner.buildBazelCommand(mockContext) {
+      bazelRunner.buildBazelCommand(mockProjectView) {
         test {
           targets.add("in1".label())
           programArguments.addAll(listOf("hello", "world"))
@@ -291,7 +293,7 @@ class BazelRunnerBuilderTest {
   @Test
   fun `coverage uses the same way of settings arguments and env as test`() {
     val command =
-      bazelRunner.buildBazelCommand(mockContext) {
+      bazelRunner.buildBazelCommand(mockProjectView) {
         coverage {
           targets.add("in1".label())
           programArguments.addAll(listOf("hello", "world"))
@@ -320,7 +322,7 @@ class BazelRunnerBuilderTest {
   @Test
   fun `query does not inherit projectview options`() {
     val command =
-      bazelRunner.buildBazelCommand(workspaceContext = mockContext, inheritProjectviewOptionsOverride = null) {
+      bazelRunner.buildBazelCommand(projectView = mockProjectView, inheritProjectviewOptionsOverride = null) {
         query {
           targets.add("in1".label())
         }
@@ -341,7 +343,7 @@ class BazelRunnerBuilderTest {
   @Test
   fun `query correctly handles excluded values`() {
     val command =
-      bazelRunner.buildBazelCommand(workspaceContext = mockContext, inheritProjectviewOptionsOverride = null) {
+      bazelRunner.buildBazelCommand(projectView = mockProjectView, inheritProjectviewOptionsOverride = null) {
         query {
           targets.add("in1".label())
           targets.add("in2".label())
@@ -365,7 +367,7 @@ class BazelRunnerBuilderTest {
   @Test
   fun `cquery does inherit projectview options`() {
     val command =
-      bazelRunner.buildBazelCommand(workspaceContext = mockContext, inheritProjectviewOptionsOverride = null) {
+      bazelRunner.buildBazelCommand(projectView = mockProjectView, inheritProjectviewOptionsOverride = null) {
         cquery {
           targets.add("in1".label())
         }
@@ -389,7 +391,7 @@ class BazelRunnerBuilderTest {
   @Test
   fun `bes arguments are handled properly`() {
     val command =
-      bazelRunner.buildBazelCommand(mockContext) {
+      bazelRunner.buildBazelCommand(mockProjectView) {
         build {
           targets.add("in1".label())
           useBes(Path("/dev/null"))

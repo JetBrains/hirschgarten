@@ -21,8 +21,10 @@ import org.jetbrains.bazel.commons.BazelStatus
 import org.jetbrains.bazel.commons.ShardingApproach
 import org.jetbrains.bazel.commons.TargetCollection
 import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.languages.projectview.ProjectView
+import org.jetbrains.bazel.languages.projectview.shardingApproach
+import org.jetbrains.bazel.languages.projectview.targetShardSize
 import org.jetbrains.bazel.server.sync.sharding.WildcardTargetExpander.ExpandedTargetsResult
-import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bsp.protocol.BazelTaskLogger
 import kotlin.math.min
 
@@ -42,32 +44,32 @@ internal object BazelBuildTargetSharder {
   suspend fun expandAndShardTargets(
     pathResolver: BazelPathsResolver,
     targets: TargetCollection,
-    context: WorkspaceContext,
+    projectView: ProjectView,
     bazelRunner: BazelRunner,
     taskLogger: BazelTaskLogger,
-    allTargets: List<Label>? /* all known targets, if any, from first phase */,
+    allTargets: List<Label>?, /* all known targets, if any, from first phase */
   ): ShardedTargetsResult {
     if (allTargets != null) {
       return ShardedTargetsResult(
-        shardTargetsToBatches(allTargets, emptyList(), getTargetShardSize(context)),
+        shardTargetsToBatches(allTargets, emptyList(), getTargetShardSize(projectView)),
         BazelStatus.SUCCESS,
       )
     }
     val includes = targets.values
     val excludes = targets.excludedValues
-    val shardingApproach = getShardingApproach(context)
+    val shardingApproach = getShardingApproach(projectView)
     return when (shardingApproach) {
       ShardingApproach.SHARD_ONLY ->
         ShardedTargetsResult(
-          shardTargetsToBatches(includes, excludes, getTargetShardSize(context)),
+          shardTargetsToBatches(includes, excludes, getTargetShardSize(projectView)),
           BazelStatus.SUCCESS,
         )
 
       ShardingApproach.QUERY_AND_SHARD -> {
         val singleTargets =
-          WildcardTargetExpander.queryIndividualTargets(includes, excludes, bazelRunner, context)
+          WildcardTargetExpander.queryIndividualTargets(includes, excludes, bazelRunner, projectView)
         ShardedTargetsResult(
-          shardTargetsToBatches(singleTargets.singleTargets, emptyList(), getTargetShardSize(context)),
+          shardTargetsToBatches(singleTargets.singleTargets, emptyList(), getTargetShardSize(projectView)),
           singleTargets.buildResult,
         )
       }
@@ -80,13 +82,13 @@ internal object BazelBuildTargetSharder {
             excludes,
             bazelRunner,
             taskLogger,
-            context,
+            projectView,
           )
         if (expandedTargets.buildResult == BazelStatus.FATAL_ERROR) {
           ShardedTargetsResult(ShardedTargetList(emptyList()), expandedTargets.buildResult)
         } else {
           ShardedTargetsResult(
-            shardTargetsToBatches(expandedTargets.singleTargets, emptyList(), getTargetShardSize(context)),
+            shardTargetsToBatches(expandedTargets.singleTargets, emptyList(), getTargetShardSize(projectView)),
             expandedTargets.buildResult,
           )
         }
@@ -94,15 +96,15 @@ internal object BazelBuildTargetSharder {
     }
   }
 
-  private fun getShardingApproach(context: WorkspaceContext): ShardingApproach =
-    context.shardingApproach?.let {
+  private fun getShardingApproach(projectView: ProjectView): ShardingApproach =
+    projectView.shardingApproach?.let {
       ShardingApproach.fromString(
         it,
       ) ?: ShardingApproach.QUERY_AND_SHARD
     } ?: ShardingApproach.QUERY_AND_SHARD
 
   /** Number of individual targets per blaze build shard.  */
-  private fun getTargetShardSize(context: WorkspaceContext): Int = min(context.targetShardSize, MAX_TARGET_SHARD_SIZE)
+  private fun getTargetShardSize(projectView: ProjectView): Int = min(projectView.targetShardSize, MAX_TARGET_SHARD_SIZE)
 
   /**
    *  Expand wildcard target patterns into individual bazel targets.
@@ -113,7 +115,7 @@ internal object BazelBuildTargetSharder {
     excludes: List<Label>,
     bazelRunner: BazelRunner,
     taskLogger: BazelTaskLogger,
-    context: WorkspaceContext,
+    projectView: ProjectView,
   ): ExpandedTargetsResult {
     val wildcardIncludes = includes.filter { it.isWildcard }
     if (wildcardIncludes.isEmpty()) {
@@ -143,7 +145,7 @@ internal object BazelBuildTargetSharder {
           excludes,
           bazelRunner,
           taskLogger,
-          context,
+          projectView,
         ).orEmpty()
 
     // finally add back any explicitly-specified, unexcluded single targets which may have been

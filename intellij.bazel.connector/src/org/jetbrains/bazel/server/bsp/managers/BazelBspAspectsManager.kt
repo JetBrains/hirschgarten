@@ -18,9 +18,11 @@ import org.jetbrains.bazel.commons.RepoMapping
 import org.jetbrains.bazel.commons.TargetCollection
 import org.jetbrains.bazel.commons.constants.Constants
 import org.jetbrains.bazel.config.BazelFeatureFlags
+import org.jetbrains.bazel.languages.projectview.ProjectView
+import org.jetbrains.bazel.languages.projectview.allowManualTargetsSync
+import org.jetbrains.bazel.languages.projectview.syncFlags
 import org.jetbrains.bazel.server.bep.BepOutput
 import org.jetbrains.bazel.server.sync.ExecuteService
-import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bsp.protocol.TaskId
 import java.nio.file.Path
 
@@ -150,7 +152,7 @@ class BazelBspAspectsManager(
     targetsSpec: TargetCollection,
     aspects: List<String>,
     outputGroups: List<String>,
-    workspaceContext: WorkspaceContext,
+    projectView: ProjectView,
     taskId: TaskId,
   ): BazelBspAspectsManagerResult {
     if (targetsSpec.values.isEmpty()) return BazelBspAspectsManagerResult(BepOutput(), BazelStatus.SUCCESS)
@@ -162,8 +164,8 @@ class BazelBspAspectsManager(
         // Validations don't contribute to the project model and only slow down sync, so disable them.
         noRunValidations(),
       )
-    val allowManualTargetsSyncFlags = if (workspaceContext.allowManualTargetsSync) listOf(buildManualTests()) else emptyList()
-    val syncFlags = workspaceContext.syncFlags
+    val allowManualTargetsSyncFlags = if (projectView.allowManualTargetsSync) listOf(buildManualTests()) else emptyList()
+    val syncFlags = projectView.syncFlags
 
     val flagsToUse = defaultFlags + allowManualTargetsSyncFlags + syncFlags
 

@@ -4,10 +4,10 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import org.jetbrains.bazel.bazelrunner.BazelRunner
 import org.jetbrains.bazel.commons.BazelRelease
+import org.jetbrains.bazel.languages.projectview.ProjectView
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceConfiguration
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceConfigurationId
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceConfigurationSummary
-import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bsp.protocol.TaskId
 
 // sentinel values from aspect
@@ -80,11 +80,11 @@ internal fun BazelConfiguration.toWorkspaceConfiguration(): WorkspaceConfigurati
 }
 
 internal suspend fun fetchConfigurationsFromAnalysisCache(
-  workspaceContext: WorkspaceContext,
+  projectView: ProjectView,
   runner: BazelRunner,
   taskId: TaskId?,
 ): Result<List<WorkspaceConfiguration>> {
-  val command = runner.buildBazelCommand(workspaceContext) {
+  val command = runner.buildBazelCommand(projectView) {
     config {
       options += listOf("--dump_all", "--output=json")
     }

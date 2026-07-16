@@ -12,6 +12,7 @@ import org.jetbrains.bazel.commons.BazelStatus
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.fus.BazelBuildInvocationCollector
 import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.languages.projectview.debugFlags
 import org.jetbrains.bazel.languages.starlark.repomapping.toShortString
 import org.jetbrains.bazel.progress.ConsoleService
 import org.jetbrains.bazel.progress.TaskConsole
@@ -49,7 +50,7 @@ suspend fun runBuildTargetTask(
     return withBackgroundProgress(project, BazelPluginBundle.message("background.progress.building.targets")) {
       // some languages require running `bazel build` with additional flags before debugging. e.g., python, c++
       // when this happens, isDebug should be set to true, and flags from "debug_flags" section of the project view file will be added
-      val debugFlag = if (isDebug) project.connection.runWithServer { it.workspaceContext.debugFlags } else listOf()
+      val debugFlag = if (isDebug) project.connection.runWithServer { it.projectView.debugFlags } else listOf()
       val taskGroupId = TaskGroupId("build-" + Random.nextBytes(8).toHexString())
       val taskId = taskGroupId.task("build-${project.name}-${Random.nextBytes(8).toHexString()}")
       project.connection.runWithServer(taskId) { server ->

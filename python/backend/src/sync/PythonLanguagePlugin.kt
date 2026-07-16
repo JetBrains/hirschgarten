@@ -11,15 +11,15 @@ import org.jetbrains.bazel.commons.getLocalRepositories
 import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.label.assumeResolved
 import org.jetbrains.bazel.label.label
+import org.jetbrains.bazel.languages.projectview.ProjectView
 import org.jetbrains.bazel.python.lang.PythonBuildTarget
 import org.jetbrains.bazel.python.lang.PythonLanguageClass
+import org.jetbrains.bazel.server.BazelServerFacade
 import org.jetbrains.bazel.server.model.sourcesList
 import org.jetbrains.bazel.sync.workspace.graph.DependencyGraph
 import org.jetbrains.bazel.sync.workspace.languages.LanguagePlugin
 import org.jetbrains.bazel.sync.workspace.snapshot.SourceFileCollectionBuilder
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceSyncConfig
-import org.jetbrains.bazel.workspacecontext.WorkspaceContext
-import org.jetbrains.bazel.server.BazelServerFacade
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
 import org.jetbrains.bsp.protocol.BuildTargetData
 import java.nio.file.Files
@@ -42,7 +42,7 @@ internal class PythonLanguagePlugin : LanguagePlugin {
   }
   override fun createProjectMapper(project: Project, server: BazelServerFacade) = Mapper(server)
 
-  override suspend fun createSyncConfigs(project: Project, workspaceContext: WorkspaceContext): List<WorkspaceSyncConfig> {
+  override suspend fun createSyncConfigs(project: Project, projectView: ProjectView): List<WorkspaceSyncConfig> {
     val config = PythonWorkspaceSyncConfig(
       isPythonSupportEnabled = BazelFeatureFlags.isPythonSupportEnabled,
     )

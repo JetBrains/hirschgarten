@@ -11,6 +11,7 @@ import com.intellij.openapi.util.JDOMUtil
 import org.jdom.Element
 import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.languages.projectview.importRunConfigurations
 import org.jetbrains.bazel.run.RunHandlerProvider
 import org.jetbrains.bazel.run.config.BazelRunConfiguration
 import org.jetbrains.bazel.run.config.BazelRunConfigurationType
@@ -29,13 +30,13 @@ internal class ImportRunConfigurationsSyncHook : ProjectSyncHook {
   override suspend fun onSync(environment: ProjectSyncHook.ProjectSyncHookEnvironment) {
     environment.withSubtask("Import run configurations") {
       val project = environment.project
-      val workspaceContext = environment.server.workspaceContext
+      val projectView = environment.server.projectView
 
       val runManager = RunManager.getInstance(project)
       val shouldSetSelectedConfiguration = runManager.selectedConfiguration == null
-
+      val workspaceRoot = environment.project.rootDir.toNioPath()
       val runConfigurations =
-        workspaceContext.importRunConfigurations.mapNotNull { runConfigurationPath ->
+        projectView.importRunConfigurations.map { workspaceRoot.resolve(it) }.mapNotNull { runConfigurationPath ->
           try {
             importRunConfiguration(project, runConfigurationPath)
           } catch (e: Exception) {

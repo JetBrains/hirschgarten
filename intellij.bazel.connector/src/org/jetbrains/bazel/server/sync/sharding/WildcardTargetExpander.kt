@@ -20,8 +20,9 @@ import org.jetbrains.bazel.commons.BazelPathsResolver
 import org.jetbrains.bazel.commons.BazelStatus
 import org.jetbrains.bazel.commons.TargetCollection
 import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.languages.projectview.ProjectView
+import org.jetbrains.bazel.languages.projectview.allowManualTargetsSync
 import org.jetbrains.bazel.server.sync.sharding.WildcardTargetExpander.ExpandedTargetsResult
-import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bsp.protocol.BazelTaskLogger
 
 /** Expands wildcard target patterns into individual Bazel targets.  */
@@ -45,7 +46,7 @@ internal object WildcardTargetExpander {
     excludes: List<Label>,
     bazelRunner: BazelRunner,
     taskLogger: BazelTaskLogger,
-    context: WorkspaceContext,
+    projectView: ProjectView,
   ): ExpandedTargetsResult? {
     val shards =
       BazelBuildTargetSharder.shardTargetsRetainingOrdering(
@@ -57,7 +58,7 @@ internal object WildcardTargetExpander {
     val singleTargets = mutableSetOf<Label>()
     var buildResult = BazelStatus.SUCCESS
     for (shard in shards) {
-      val result = queryIndividualTargets(shard, excludes, bazelRunner, context)
+      val result = queryIndividualTargets(shard, excludes, bazelRunner, projectView)
       singleTargets.addAll(result.singleTargets)
       buildResult = buildResult.merge(result.buildResult)
       if (buildResult == BazelStatus.FATAL_ERROR) {
@@ -73,7 +74,7 @@ internal object WildcardTargetExpander {
     includedPatterns: List<Label>,
     excludedTargets: List<Label>,
     bazelRunner: BazelRunner,
-    context: WorkspaceContext,
+    projectView: ProjectView,
   ): ExpandedTargetsResult {
     val targetsSpec =
       TargetCollection(
@@ -81,10 +82,10 @@ internal object WildcardTargetExpander {
         excludedValues = excludedTargets,
       )
     val command =
-      bazelRunner.buildBazelCommand(context) {
+      bazelRunner.buildBazelCommand(projectView) {
         // exclude 'manual' targets,
         // which shouldn't be built when expanding wildcard target patterns if `allow_manual_targets_sync` is not specified.
-        query(allowManualTargetsSync = context.allowManualTargetsSync) {
+        query(allowManualTargetsSync = projectView.allowManualTargetsSync) {
           this.targets.addAll(targetsSpec.values)
           this.excludedTargets.addAll(targetsSpec.excludedValues)
           options.addAll(listOf("--output=label", "--keep_going"))

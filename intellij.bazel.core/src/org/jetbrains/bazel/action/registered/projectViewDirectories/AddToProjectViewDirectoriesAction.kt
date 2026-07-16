@@ -3,6 +3,7 @@ package org.jetbrains.bazel.action.registered.projectViewDirectories
 import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
+import com.intellij.openapi.application.ReadAction
 import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.DumbService
@@ -30,7 +31,7 @@ internal class AddToProjectViewDirectoriesAction : AnAction() {
     val directory = e.selectedDirectory ?: return
     val project = e.project ?: return
     val projectViewPsi = project.projectViewFilePsiFile ?: return
-    val includes = project.includedRoots().orEmpty()
+    val includes = project.explicitlyIncludedRoots()
     val excludes = project.excludedRoots().orEmpty()
     val nearestParent = directory.findNearestParent(includes + excludes - directory)
     val isNotIncluded = nearestParent !in includes
@@ -72,7 +73,7 @@ internal class AddToProjectViewDirectoriesAction : AnAction() {
     if (!isBazelProject) return null
     if (DumbService.isDumb(this)) return null
     val directory = e.selectedDirectory ?: return null
-    val includes = includedRoots().orEmpty()
+    val includes = explicitlyIncludedRoots()
     val excludes = excludedRoots().orEmpty()
     return when (directory) {
       in includes -> null
@@ -83,4 +84,11 @@ internal class AddToProjectViewDirectoriesAction : AnAction() {
       }
     }
   }
+}
+
+internal fun Project.explicitlyIncludedRoots(): Set<VirtualFile> {
+  if (ReadAction.nonBlocking<Boolean> { projectViewFilePsiFile?.isDirectoriesNullOrEmpty() == true }.executeSynchronously()) {
+    return emptySet()
+  }
+  return includedRoots().orEmpty()
 }

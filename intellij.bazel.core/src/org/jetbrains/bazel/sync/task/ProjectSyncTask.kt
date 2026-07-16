@@ -441,7 +441,7 @@ class ProjectSyncTask(private val project: Project) {
       ) { subtaskId ->
         val workspaceSnapshot = WorkspaceSnapshotBuilder.build(
           project = project,
-          workspaceContext = server.workspaceContext,
+          projectView = server.projectView,
           repoMapping = resolvedWorkspace.repoMapping,
           resolved = resolvedWorkspace,
         )

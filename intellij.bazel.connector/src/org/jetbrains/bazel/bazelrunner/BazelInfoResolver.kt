@@ -6,8 +6,8 @@ import org.jetbrains.bazel.commons.BazelInfo
 import org.jetbrains.bazel.commons.BazelRelease
 import org.jetbrains.bazel.commons.orFallbackVersion
 import org.jetbrains.bazel.commons.orFromBazelVersionFile
+import org.jetbrains.bazel.languages.projectview.ProjectView
 import org.jetbrains.bazel.server.sync.isConfigurationSupportEnabled
-import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bsp.protocol.TaskId
 import java.nio.file.Path
 import java.nio.file.Paths
@@ -21,9 +21,9 @@ private const val STARLARK_SEMANTICS = "starlark-semantics"
 
 @ApiStatus.Internal
 class BazelInfoResolver(val workspaceRoot: Path) {
-  suspend fun resolveBazelInfo(bazelRunner: BazelRunner, workspaceContext: WorkspaceContext, taskId: TaskId?): BazelInfo {
+  suspend fun resolveBazelInfo(bazelRunner: BazelRunner, projectView: ProjectView, taskId: TaskId?): BazelInfo {
     val command =
-      bazelRunner.buildBazelCommand(workspaceContext) {
+      bazelRunner.buildBazelCommand(projectView) {
         info {
           options.addAll(listOf(RELEASE, EXECUTION_ROOT, OUTPUT_BASE, WORKSPACE, BAZEL_BIN, STARLARK_SEMANTICS))
         }

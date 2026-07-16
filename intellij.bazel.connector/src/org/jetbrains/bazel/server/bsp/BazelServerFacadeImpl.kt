@@ -5,6 +5,8 @@ import org.jetbrains.bazel.commons.BazelInfo
 import org.jetbrains.bazel.commons.BazelPathsResolver
 import org.jetbrains.bazel.commons.RepoMapping
 import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.languages.projectview.ProjectView
+import org.jetbrains.bazel.server.BazelServerFacade
 import org.jetbrains.bazel.server.model.AspectSyncProject
 import org.jetbrains.bazel.server.model.PhasedSyncProject
 import org.jetbrains.bazel.server.sync.BspProjectMapper
@@ -12,10 +14,8 @@ import org.jetbrains.bazel.server.sync.ExecuteService
 import org.jetbrains.bazel.server.sync.ProjectResolver
 import org.jetbrains.bazel.server.sync.firstPhase.FirstPhaseProjectResolver
 import org.jetbrains.bazel.sync.BazelOutFileHardLinks
-import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bsp.protocol.AnalysisDebugParams
 import org.jetbrains.bsp.protocol.AnalysisDebugResult
-import org.jetbrains.bazel.server.BazelServerFacade
 import org.jetbrains.bsp.protocol.CompileParams
 import org.jetbrains.bsp.protocol.CompileResult
 import org.jetbrains.bsp.protocol.InverseSourcesParams
@@ -37,10 +37,10 @@ class BazelServerFacadeImpl(
   private val projectResolver: ProjectResolver,
   private val firstPhaseProjectResolver: FirstPhaseProjectResolver,
   private val executeService: ExecuteService,
-  override val workspaceContext: WorkspaceContext,
+  override val projectView: ProjectView,
   override val bazelInfo: BazelInfo,
   override val bazelPathsResolver: BazelPathsResolver,
-  override val outFileHardLinks: BazelOutFileHardLinks
+  override val outFileHardLinks: BazelOutFileHardLinks,
 ) : BazelServerFacade {
 
   override suspend fun workspaceBuildTargets(params: WorkspaceBuildTargetParams): AspectSyncProject {

@@ -1,25 +1,12 @@
 package org.jetbrains.bazel.languages.projectview
 
 import org.jetbrains.annotations.ApiStatus.Internal
-import org.jetbrains.bazel.commons.ExcludableValue
 import org.jetbrains.bazel.commons.ShardingApproach
 import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.label.Label
 import java.nio.file.Path
 
 // Extension properties to provide convenient access to ProjectView sections
-// These match the properties that were available in WorkspaceContext
-
-@Internal
-val TARGETS_KEY: SectionKey<List<ExcludableValue<Label>>> = SectionKey("targets", emptyList())
-val ProjectView.targets: List<ExcludableValue<Label>>
-  @Internal
-  get() = getSection(TARGETS_KEY)
-
-@Internal
-val DIRECTORIES_KEY: SectionKey<List<ExcludableValue<Path>>> = SectionKey("directories", emptyList())
-val ProjectView.directories: List<ExcludableValue<Path>>
-  get() = getSection(DIRECTORIES_KEY)
 
 @Internal
 val BUILD_FLAGS_KEY: SectionKey<List<String>> = SectionKey("build_flags", emptyList())
@@ -37,7 +24,7 @@ val ProjectView.syncFlags: List<String>
 val DEBUG_FLAGS_KEY: SectionKey<List<String>> = SectionKey("debug_flags", emptyList())
 val ProjectView.debugFlags: List<String>
   @Internal
-  get() = getSection(DEBUG_FLAGS_KEY)
+  get() = getSection(DEBUG_FLAGS_KEY) + if (BazelFeatureFlags.isPythonSupportEnabled) pythonDebugFlags else emptyList()
 
 @Internal
 val TEST_FLAGS_KEY: SectionKey<List<String>> = SectionKey("test_flags", emptyList())

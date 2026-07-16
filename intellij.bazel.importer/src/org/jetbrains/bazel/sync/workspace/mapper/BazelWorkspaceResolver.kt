@@ -37,7 +37,7 @@ object BazelWorkspaceResolver {
           val phasedSyncProject = server.workspaceBuildPhasedTargets(WorkspaceBuildTargetPhasedParams(taskId))
           val phasedMapper = PhasedBazelProjectMapper(
             bazelPathsResolver = server.bazelPathsResolver,
-            workspaceContext = server.workspaceContext,
+            projectView = server.projectView,
           )
           val targets = phasedMapper.mapTargets(phasedSyncProject.repoMapping, phasedSyncProject.modules)
           BazelResolvedWorkspace(

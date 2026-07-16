@@ -18,7 +18,6 @@ import org.jetbrains.bazel.commons.RepoMapping
 import org.jetbrains.bazel.commons.RepoMappingDisabled
 import org.jetbrains.bazel.commons.orFallbackVersion
 import org.jetbrains.bazel.languages.projectview.ProjectViewFactory
-import org.jetbrains.bazel.languages.projectview.ProjectViewToWorkspaceContextConverter
 import org.jetbrains.bazel.languages.projectview.psi.ProjectViewPsiFile
 import org.jetbrains.bazel.project.BazelProjectFixtures.initializeBazelProject
 import org.jetbrains.bazel.server.sync.BspProjectMapper
@@ -30,6 +29,7 @@ import org.mockito.Mockito.spy
 import org.mockito.Mockito.`when`
 import java.nio.file.Files
 import java.nio.file.Path
+import kotlin.io.path.Path
 import kotlin.io.path.createDirectories
 import kotlin.io.path.createFile
 import kotlin.io.path.createTempDirectory
@@ -526,10 +526,8 @@ class WorkspaceDirectoriesFromProjectViewTest : BasePlatformTestCase() {
     repoMapping: RepoMapping = RepoMappingDisabled,
   ): WorkspaceDirectoriesResult {
     val projectView = ProjectViewFactory.fromProjectViewPsiFile(psiFile as ProjectViewPsiFile)
-    val workspaceContext = ProjectViewToWorkspaceContextConverter
-      .convert(project, projectView, workspaceRoot)
     val owner = ModalTaskOwner.guess()
-    val mapper = BspProjectMapper(workspaceRoot, bazelRunner, workspaceContext, BazelPathsResolver(createBazelInfo()))
+    val mapper = BspProjectMapper(workspaceRoot, bazelRunner, projectView, BazelPathsResolver(createBazelInfo()))
     return runWithModalProgressBlocking(
       owner,
       "Running Bazel Query",
@@ -559,7 +557,7 @@ class WorkspaceDirectoriesFromProjectViewTest : BasePlatformTestCase() {
     )
 
   private fun createMockBazelRunner(): BazelRunner {
-    val realRunner = BazelRunner(null, workspaceRoot, mockBazelProcessLauncher)
+    val realRunner = BazelRunner(null, workspaceRoot, mockBazelProcessLauncher, Path("bazel"))
     val runner = spy(realRunner)
 
     fun mockBuildfilesOutput(): String {

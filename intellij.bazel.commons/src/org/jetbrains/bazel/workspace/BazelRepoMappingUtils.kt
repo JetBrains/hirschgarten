@@ -18,6 +18,9 @@ import org.jetbrains.bazel.label.Main
 import org.jetbrains.bazel.label.Package
 import org.jetbrains.bazel.label.ResolvedLabel
 import org.jetbrains.bazel.label.SingleTarget
+import org.jetbrains.bazel.label.assumeResolved
+import org.jetbrains.bazel.languages.projectview.ProjectView
+import org.jetbrains.bazel.languages.projectview.targets
 import org.jetbrains.bazel.workspace.apparentRepoNameToCanonicalName
 import org.jetbrains.bazel.workspace.canonicalRepoNameToApparentName
 import org.jetbrains.bazel.workspace.canonicalRepoNameToPath
@@ -138,3 +141,19 @@ fun Label.toShortString(project: Project): String {
     }
   return "$repoPart//$packagePart$targetPart"
 }
+
+/**
+ * List of names of repositories that should be treated as internal because there are some targets that we want to be imported that
+ * belong to them.
+ */
+val ProjectView.externalRepositoriesTreatedAsInternal: List<String>
+  @ApiStatus.Internal
+  get() =
+    targets
+      .filter { it.isIncluded() }
+      .mapNotNull { excludableValue ->
+        excludableValue.value
+          .assumeResolved()
+          .repo.repoName
+          .takeIf { repoName -> repoName.isNotEmpty() }
+      }.distinct()

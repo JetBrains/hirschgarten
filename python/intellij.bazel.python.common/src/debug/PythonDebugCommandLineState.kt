@@ -18,14 +18,15 @@ import com.jetbrains.python.sdk.legacy.PythonSdkUtil
 import kotlinx.coroutines.CompletableDeferred
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.languages.projectview.debugFlags
 import org.jetbrains.bazel.magicmetamodel.formatAsModuleName
 import org.jetbrains.bazel.run.BazelCommandLineStateBase
 import org.jetbrains.bazel.run.BazelProcessHandler
 import org.jetbrains.bazel.run.commandLine.transformProgramArguments
 import org.jetbrains.bazel.run.config.BazelRunConfiguration
 import org.jetbrains.bazel.run.task.BazelRunTaskListener
-import org.jetbrains.bazel.taskEvents.BazelTaskListener
 import org.jetbrains.bazel.server.BazelServerFacade
+import org.jetbrains.bazel.taskEvents.BazelTaskListener
 import org.jetbrains.bsp.protocol.CompileParams
 import java.nio.file.Files
 import java.nio.file.LinkOption
@@ -52,7 +53,7 @@ internal class PythonDebugCommandLineState(
       CompileParams(
         targets = listOf(targetId),
         taskId = taskGroupId.task("py-debug"),
-        arguments = buildPythonDebugBazelArguments(server.workspaceContext.debugFlags, additionalBazelParams),
+        arguments = buildPythonDebugBazelArguments(server.projectView.debugFlags, additionalBazelParams),
       )
     server.buildTargetCompile(buildParams)
   }

@@ -12,9 +12,9 @@ import org.jetbrains.bazel.commons.gson.bazelGson
 import org.jetbrains.bazel.label.AllRuleTargets
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.label.SyntheticLabel
+import org.jetbrains.bazel.languages.projectview.ProjectView
 import org.jetbrains.bazel.server.bzlmod.rootRulesToNeededTransitiveRules
 import org.jetbrains.bazel.server.diagnostics.DiagnosticsService
-import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bsp.protocol.BazelTaskEventsHandler
 import org.jetbrains.bsp.protocol.TaskId
 import org.jetbrains.bsp.protocol.asLogger
@@ -38,7 +38,7 @@ internal class BazelExternalRulesetsQueryImpl(
   private val isBzlModEnabled: Boolean,
   private val isWorkspaceEnabled: Boolean,
   private val taskEventsHandler: BazelTaskEventsHandler,
-  private val workspaceContext: WorkspaceContext,
+  private val projectView: ProjectView,
   private val repoMapping: RepoMapping,
 ) : BazelExternalRulesetsQuery {
   override suspend fun fetchExternalRulesetNames(): List<String> =
@@ -47,7 +47,7 @@ internal class BazelExternalRulesetsQueryImpl(
       bazelRunner,
       isBzlModEnabled,
       taskEventsHandler,
-      workspaceContext,
+      projectView,
       repoMapping,
     ).fetchExternalRulesetNames() +
     BazelWorkspaceExternalRulesetsQueryImpl(
@@ -55,7 +55,7 @@ internal class BazelExternalRulesetsQueryImpl(
       bazelRunner,
       isWorkspaceEnabled,
       taskEventsHandler,
-      workspaceContext,
+      projectView,
     ).fetchExternalRulesetNames()
 }
 
@@ -64,7 +64,7 @@ internal class BazelWorkspaceExternalRulesetsQueryImpl(
   private val bazelRunner: BazelRunner,
   private val isWorkspaceEnabled: Boolean,
   private val taskEventsHandler: BazelTaskEventsHandler,
-  private val workspaceContext: WorkspaceContext,
+  private val projectView: ProjectView,
 ) : BazelExternalRulesetsQuery {
   override suspend fun fetchExternalRulesetNames(): List<String> =
     if (!isWorkspaceEnabled) {
@@ -72,7 +72,7 @@ internal class BazelWorkspaceExternalRulesetsQueryImpl(
     } else {
       bazelRunner.run {
         val command =
-          buildBazelCommand(workspaceContext) {
+          buildBazelCommand(projectView) {
             query {
               targets.add(Label.parse("//external:*"))
               options.addAll(listOf("--output=xml", "--order_output=no"))
@@ -132,7 +132,7 @@ internal class BazelBzlModExternalRulesetsQueryImpl(
   private val bazelRunner: BazelRunner,
   private val isBzlModEnabled: Boolean,
   private val taskEventsHandler: BazelTaskEventsHandler,
-  private val workspaceContext: WorkspaceContext,
+  private val projectView: ProjectView,
   private val repoMapping: RepoMapping,
 ) : BazelExternalRulesetsQuery {
   private val gson = bazelGson
@@ -140,7 +140,7 @@ internal class BazelBzlModExternalRulesetsQueryImpl(
   override suspend fun fetchExternalRulesetNames(): List<String> {
     if (!isBzlModEnabled) return emptyList()
     val command =
-      bazelRunner.buildBazelCommand(workspaceContext) {
+      bazelRunner.buildBazelCommand(projectView) {
         graph { options.add("--output=json") }
       }
     val bzlmodGraphJson =

@@ -7,7 +7,7 @@ import org.jetbrains.bazel.bazelrunner.params.BazelFlag
 import org.jetbrains.bazel.label.AllRuleTargets
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.label.assumeResolved
-import org.jetbrains.bazel.workspacecontext.WorkspaceContext
+import org.jetbrains.bazel.languages.projectview.ProjectView
 import org.jetbrains.bsp.protocol.InverseSourcesParams
 import org.jetbrains.bsp.protocol.InverseSourcesResult
 import org.jetbrains.bsp.protocol.TaskId
@@ -19,14 +19,14 @@ internal object InverseSourcesQuery {
     params: InverseSourcesParams,
     workspaceRoot: Path,
     bazelRunner: BazelRunner,
-    workspaceContext: WorkspaceContext,
+    projectView: ProjectView,
   ): InverseSourcesResult {
     val relativePaths = params.files.map { it.relativeTo(workspaceRoot) }
-    val fileLabels = relativePaths.associateWithLabels(bazelRunner, workspaceContext, params.taskId)
+    val fileLabels = relativePaths.associateWithLabels(bazelRunner, projectView, params.taskId)
     val result =
       if (fileLabels.isNotEmpty()) {
         val sourcesByRule =
-          getSourcesByRule(fileLabels.values, bazelRunner, workspaceContext, params.taskId)
+          getSourcesByRule(fileLabels.values, bazelRunner, projectView, params.taskId)
         val rulesBySource = reverseMap(sourcesByRule, fileLabels.values.toSet())
         params.files.associateWith { rulesBySource[fileLabels[it]] ?: emptyList() }
       } else {
@@ -37,23 +37,23 @@ internal object InverseSourcesQuery {
 
   private suspend fun List<Path>.associateWithLabels(
     bazelRunner: BazelRunner,
-    workspaceContext: WorkspaceContext,
+    projectView: ProjectView,
     taskId: TaskId,
   ): Map<Path, Label> =
-    prepareFileLabelQuery(this, bazelRunner, workspaceContext).runAndParse(bazelRunner, taskId).getSourcesPathLabelMap()
+    prepareFileLabelQuery(this, bazelRunner, projectView).runAndParse(bazelRunner, taskId).getSourcesPathLabelMap()
 
   private suspend fun getSourcesByRule(
     fileLabels: Collection<Label>,
     bazelRunner: BazelRunner,
-    workspaceContext: WorkspaceContext,
+    projectView: ProjectView,
     taskId: TaskId,
   ): Map<Label, List<Label>> {
-    val command = prepareInverseSourcesQuery(fileLabels, bazelRunner, workspaceContext)
+    val command = prepareInverseSourcesQuery(fileLabels, bazelRunner, projectView)
     return command.runAndParse(bazelRunner, taskId).sourceLabelsByRuleNames()
   }
 
-  private fun prepareFileLabelQuery(files: List<Path>, bazelRunner: BazelRunner, workspaceContext: WorkspaceContext): BazelCommand =
-    bazelRunner.buildBazelCommand(workspaceContext) {
+  private fun prepareFileLabelQuery(files: List<Path>, bazelRunner: BazelRunner, projectView: ProjectView): BazelCommand =
+    bazelRunner.buildBazelCommand(projectView) {
       fileQuery(files) {
         options.add(BazelFlag.OutputFormat.streamed_proto())
         options.add(BazelFlag.consistentLabels(true))
@@ -65,12 +65,12 @@ internal object InverseSourcesQuery {
   private fun prepareInverseSourcesQuery(
     fileLabels: Collection<Label>,
     bazelRunner: BazelRunner,
-    workspaceContext: WorkspaceContext,
+    projectView: ProjectView,
   ): BazelCommand {
     val universe = generateUniverse(fileLabels)
     val targets = fileLabels.joinToString(separator = " + ")
     val expression = "allrdeps($targets, 1)"
-    return bazelRunner.buildBazelCommand(workspaceContext) {
+    return bazelRunner.buildBazelCommand(projectView) {
       queryExpression(expression) {
         options.add(BazelFlag.OutputFormat.streamed_proto())
         options.add(BazelFlag.orderOutput(false))
