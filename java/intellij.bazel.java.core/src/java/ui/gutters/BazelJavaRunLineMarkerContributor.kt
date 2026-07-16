@@ -74,7 +74,7 @@ open class BazelJavaRunLineMarkerContributor : BazelRunLineMarkerContributor() {
     PsiTreeUtil.getParentOfType(this, PsiClass::class.java, false)?.name
 
   @ApiStatus.Internal
-  protected open fun PsiNameIdentifierOwner.getFullyQualifiedClassName(): String? {
+  protected open fun PsiElement.getFullyQualifiedClassName(): String? {
     val psiClass = PsiTreeUtil.getParentOfType(this, PsiClass::class.java, false) ?: return null
     return JvmClassUtil.getJvmClassName(psiClass)
   }

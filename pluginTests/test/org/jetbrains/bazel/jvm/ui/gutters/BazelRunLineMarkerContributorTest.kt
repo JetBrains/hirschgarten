@@ -1,6 +1,5 @@
 package org.jetbrains.bazel.jvm.ui.gutters
 
-import com.intellij.icons.AllIcons
 import com.intellij.openapi.util.registry.Registry
 import com.intellij.psi.PsiClass
 import com.intellij.psi.PsiElement
@@ -129,11 +128,10 @@ class BazelRunLineMarkerContributorTest : BasePlatformTestCase() {
       }
 
     // when
-    val result = runLineMarkerContributor.getInfo(elementAtCaret)
+    val result = runLineMarkerContributor.getSlowInfo(elementAtCaret)
 
     // then
     result.shouldNotBeNull()
-    result.icon shouldBe AllIcons.Actions.Execute
     result.actions.shouldHaveSize(2)
   }
 

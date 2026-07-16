@@ -17,5 +17,6 @@ internal class IntelliJMonorepoBazelRules : TargetKindProvider {
       TargetKind("jps_test", setOf(JavaLanguageClass.JAVA, JavaLanguageClass.KOTLIN), RuleType.TEST),
       TargetKind("intellij_dev_binary_ultimate", setOf(JavaLanguageClass.JAVA, JavaLanguageClass.KOTLIN), RuleType.BINARY),
       TargetKind("intellij_dev_binary_community", setOf(JavaLanguageClass.JAVA, JavaLanguageClass.KOTLIN), RuleType.BINARY),
+      TargetKind("server_bundle", setOf(JavaLanguageClass.JAVA, JavaLanguageClass.KOTLIN), RuleType.BINARY),
     )
 }

@@ -1,19 +1,26 @@
 package com.intellij.bazel.devkit.monorepo.run
 
+import com.intellij.lang.jvm.util.JvmMainMethodUtil
 import com.intellij.monorepo.devkit.bazel.BazelTargetsInfoCache
 import com.intellij.monorepo.devkit.bazel.JpsToBazelConverterRunner
 import com.intellij.monorepo.devkit.bazel.useBazelCompile
 import com.intellij.openapi.diagnostic.fileLogger
+import com.intellij.openapi.module.Module
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.roots.ProjectFileIndex
 import com.intellij.openapi.startup.ProjectActivity
+import com.intellij.psi.PsiClass
 import com.intellij.psi.PsiElement
+import com.intellij.psi.PsiManager
+import com.intellij.psi.PsiMethod
 import org.jetbrains.bazel.config.isBazelProject
 import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.java.ui.gutters.BazelJavaRunLineMarkerContributor
 import org.jetbrains.bazel.kotlin.ui.gutters.BazelKotlinRunLineMarkerContributor
 import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.languages.starlark.psi.StarlarkFile
 import org.jetbrains.bazel.languages.starlark.repomapping.PersistentBazelRepoMappingService
+import org.jetbrains.bazel.languages.starlark.repomapping.calculateLabel
 import org.jetbrains.bazel.project.DefaultProjectViewService
 import org.jetbrains.bazel.sync.workspace.targetKind.TargetKindService
 import org.jetbrains.bazel.ui.gutters.NonImportedExecutableTarget
@@ -25,13 +32,28 @@ private val LOG = fileLogger()
 internal class MonorepoBazelJavaRunLineMarkerContributor : BazelJavaRunLineMarkerContributor() {
   override fun isProjectApplicable(project: Project): Boolean = MonorepoRunLineMarkerContributorUtil.isProjectApplicable(project)
 
-  override fun getTargets(element: PsiElement): List<ExecutableTarget> = MonorepoRunLineMarkerContributorUtil.getTargets(element)
+  override fun getTargets(element: PsiElement): List<ExecutableTarget> {
+    @Suppress("DEPRECATION")
+    val mainClassFqn =
+      if (element is PsiMethod && JvmMainMethodUtil.isMainMethod(element) || element is PsiClass && JvmMainMethodUtil.hasMainMethodInHierarchy(
+          element,
+        )) {
+        element.getFullyQualifiedClassName()
+      }
+      else {
+        null
+      }
+    return MonorepoRunLineMarkerContributorUtil.getTargets(element, mainClassFqn)
+  }
 }
 
 internal class MonorepoBazelKotlinRunLineMarkerContributor : BazelKotlinRunLineMarkerContributor() {
   override fun isProjectApplicable(project: Project): Boolean = MonorepoRunLineMarkerContributorUtil.isProjectApplicable(project)
 
-  override fun getTargets(element: PsiElement): List<ExecutableTarget> = MonorepoRunLineMarkerContributorUtil.getTargets(element)
+  override fun getTargets(element: PsiElement): List<ExecutableTarget> {
+    val mainClassFqn = if (isKotlinMainFunction(element)) element.getFullyQualifiedClassName() else null
+    return MonorepoRunLineMarkerContributorUtil.getTargets(element, mainClassFqn)
+  }
 }
 
 internal class MonorepoStarlarkRunLineMarkerContributor : StarlarkRunLineMarkerContributor() {
@@ -68,7 +90,7 @@ private object MonorepoRunLineMarkerContributorUtil {
   fun isProjectApplicable(project: Project): Boolean =
     useBazelCompile(project) && !project.isBazelProject
 
-  fun getTargets(element: PsiElement): List<ExecutableTarget> {
+  fun getTargets(element: PsiElement, mainClassFqn: String?): List<ExecutableTarget> {
     val project = element.project
     val containingFile = element.containingFile?.virtualFile ?: return emptyList()
     val projectFileIndex = ProjectFileIndex.getInstance(project)
@@ -88,6 +110,17 @@ private object MonorepoRunLineMarkerContributorUtil {
       return emptyList()
     }
 
+    val binaryLabel = getBinaryLabel(module, mainClassFqn)
+    if (binaryLabel != null) {
+      val kind = TargetKindService.getInstance().guessFromRuleName("java_binary")
+      return listOf(
+        NonImportedExecutableTarget(
+          id = binaryLabel,
+          kind = kind,
+        ),
+      )
+    }
+
     val kind = TargetKindService.getInstance().guessFromRuleName("jps_test")
     return listOfNotNull(
       bazelInfo.testTargets.firstOrNull()?.let { target ->
@@ -97,5 +130,17 @@ private object MonorepoRunLineMarkerContributorUtil {
         )
       },
     )
+  }
+
+  private fun getBinaryLabel(module: Module, fqn: String?): Label? {
+    if (fqn == null) return null
+    val project = module.project
+    val buildFile = module.moduleFile?.parent?.findChild("BUILD.bazel") ?: return null
+    val psiFile = PsiManager.getInstance(project).findFile(buildFile) as? StarlarkFile ?: return null
+    val binaryTargetName = psiFile.getTargetRules()
+                             .firstOrNull {
+                               it.getArgumentList()?.getKeywordArgument("main_class")?.getArgumentStringValue() == fqn
+                             }?.name ?: return null
+    return calculateLabel(project, buildFile, binaryTargetName)
   }
 }
