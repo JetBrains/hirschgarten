@@ -469,6 +469,14 @@
                      level="ERROR"
                      implementationClass="org.jetbrains.bazel.languages.starlark.inspection.StarlarkFunctionCallValidationInspection"/>
 
+    <localInspection language="Starlark"
+                     key="inspection.display.name.starlark.variable.usage.check"
+                     groupPath="Bazel"
+                     groupKey="starlark.inspection.group.name"
+                     enabledByDefault="true"
+                     level="ERROR"
+                     implementationClass="org.jetbrains.bazel.languages.starlark.inspection.StarlarkVariableUsageInspection"/>
+
     <fileType
       extensions="bazelquery"
       fieldName="INSTANCE"
