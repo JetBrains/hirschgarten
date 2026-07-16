@@ -129,8 +129,7 @@ internal class JavaBazelWorkspaceImporter : BazelWorkspaceImporter, BazelWorkspa
       sourceRootOptimizationMode = javaSyncConfig.sourceRootOptimizationMode,
     ).also { it.calculate(targets) }
 
-    val targetIndex: Map<Label, RawBuildTarget> = targets.associateBy { it.id }
-    val testTargets = TestTargetClassifier.calculateTargetsToMarkAsTest(targets.toSet(), targetIndex)
+    val testTargets = TestTargetClassifier.calculateTargetsToMarkAsTest(targets)
 
     val importContext = ImportContext(
       targets = snapshot.targets.values,
