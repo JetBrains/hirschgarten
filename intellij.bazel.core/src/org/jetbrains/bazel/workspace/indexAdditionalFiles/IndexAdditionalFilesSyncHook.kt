@@ -16,6 +16,8 @@ import com.intellij.platform.workspace.storage.url.VirtualFileUrl
 import com.intellij.platform.workspace.storage.url.VirtualFileUrlManager
 import org.jetbrains.bazel.commons.constants.Constants
 import org.jetbrains.bazel.config.rootDir
+import org.jetbrains.bazel.languages.projectview.indexAdditionalFilesInDirectories
+import org.jetbrains.bazel.languages.projectview.indexAllFilesInDirectories
 import org.jetbrains.bazel.project.projectViewFile
 import org.jetbrains.bazel.sync.ProjectSyncHook
 import org.jetbrains.bazel.sync.withSubtask
@@ -67,14 +69,14 @@ internal class IndexAdditionalFilesSyncHook : ProjectSyncHook {
     projectDirectoriesEntity: BazelProjectDirectoriesEntity,
     virtualFileUrlManager: VirtualFileUrlManager,
   ): List<VirtualFileUrl> {
-    val workspaceContext = environment.server.workspaceContext
-    if (workspaceContext.indexAllFilesInDirectories) {
+    val projectView = environment.server.projectView
+    if (projectView.indexAllFilesInDirectories) {
       return emptyList()
     }
     val indexAdditionalFilesGlob =
       ProjectViewGlobSet(
         environment.project.rootDir.toNioPath(),
-        workspaceContext.indexAdditionalFilesInDirectories + INDEX_ADDITIONAL_FILES_DEFAULT,
+        projectView.indexAdditionalFilesInDirectories + INDEX_ADDITIONAL_FILES_DEFAULT,
       )
 
     val includedRoots = projectDirectoriesEntity.includedRoots.mapNotNull { it.url.virtualFile }

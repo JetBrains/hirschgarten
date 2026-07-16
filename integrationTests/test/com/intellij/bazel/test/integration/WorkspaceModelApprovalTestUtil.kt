@@ -20,13 +20,13 @@ import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.contentOrNull
 import org.jetbrains.bazel.config.rootDir
+import org.jetbrains.bazel.languages.projectview.ProjectView
 import org.jetbrains.bazel.progress.syncConsole
 import org.jetbrains.bazel.server.BazelServerService
 import org.jetbrains.bazel.sync.scope.SecondPhaseSync
 import org.jetbrains.bazel.sync.workspace.importer.WorkspaceImporterHelper
 import org.jetbrains.bazel.sync.workspace.mapper.BazelWorkspaceResolver
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceSnapshotBuilder
-import org.jetbrains.bazel.workspace.model.test.framework.mockWorkspaceContext
 import org.jetbrains.bsp.protocol.TaskGroupId
 import org.junit.jupiter.api.fail
 import java.nio.file.Path
@@ -105,7 +105,7 @@ internal suspend fun doWorkspaceModelTest(
 
   val workspaceSnapshot = WorkspaceSnapshotBuilder.build(
     project = project,
-    workspaceContext = mockWorkspaceContext,
+    projectView = ProjectView.EMPTY,
     repoMapping = resolvedWorkspace.repoMapping,
     resolved = resolvedWorkspace,
   )

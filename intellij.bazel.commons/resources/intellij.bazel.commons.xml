@@ -109,7 +109,7 @@
       defaultValue="true"
       description="If enabled, sets the default value of &quot;Run with Bazel&quot; to 'true' for new run configurations. This can be overridden with a project view flag."
       key="bazel.run.config.run.with.bazel"
-      restartRequired="false"
+      restartRequired="true"
     />
     <registryKey
       defaultValue="true"

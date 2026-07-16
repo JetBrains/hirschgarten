@@ -2,7 +2,6 @@ package org.jetbrains.bazel.sync.workspace.mapper
 
 import com.google.devtools.intellij.aspect.Common.ArtifactLocation
 import com.google.devtools.intellij.ideinfo.IntellijIdeInfo.TargetIdeInfo
-import com.intellij.build.events.MessageEvent
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.text.StringUtil
@@ -22,8 +21,8 @@ import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.label.assumeResolved
 import org.jetbrains.bazel.label.label
 import org.jetbrains.bazel.label.toDependencyLabel
+import org.jetbrains.bazel.languages.projectview.importDepth
 import org.jetbrains.bazel.performance.measure
-import org.jetbrains.bazel.progress.syncConsole
 import org.jetbrains.bazel.server.BazelServerFacade
 import org.jetbrains.bazel.sync.workspace.graph.DependencyGraph
 import org.jetbrains.bazel.sync.workspace.languages.LanguagePlugin
@@ -46,7 +45,7 @@ class AspectBazelProjectMapper(
 ) {
   private val bazelPathsResolver = server.bazelPathsResolver
   private val langMappers = createLanguageProjectMappers(project, server)
-  private val workspaceContext = server.workspaceContext
+  private val projectView = server.projectView
 
   suspend fun mapTargets(
     allTargets: Map<WorkspaceTargetKey, TargetIdeInfo>,
@@ -63,7 +62,7 @@ class AspectBazelProjectMapper(
     val targetsToImport: Map<WorkspaceTargetKey, TargetIdeInfo> =
       measure("Select targets") {
         dependencyGraph.allTargetsAtDepth(
-          workspaceContext.importDepth,
+          projectView.importDepth,
           // Ignore .bazelbsp and all its dependencies (if any)
           predicate = { key -> key.label.packagePath.pathSegments.firstOrNull() != Constants.DOT_BAZELBSP_DIR_NAME },
         ).associateBy { it.key.toWorkspaceTargetKey() }

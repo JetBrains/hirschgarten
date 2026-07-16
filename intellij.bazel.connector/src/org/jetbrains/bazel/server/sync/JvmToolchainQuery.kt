@@ -5,18 +5,18 @@ import com.google.gson.JsonObject
 import org.jetbrains.bazel.bazelrunner.BazelRunner
 import org.jetbrains.bazel.commons.ExecUtils
 import org.jetbrains.bazel.label.Label
-import org.jetbrains.bazel.workspacecontext.WorkspaceContext
+import org.jetbrains.bazel.languages.projectview.ProjectView
 import org.jetbrains.bsp.protocol.JvmToolchainInfo
 
 internal object JvmToolchainQuery {
   suspend fun jvmToolchainQueryForTarget(
     bazelRunner: BazelRunner,
-    workspaceContext: WorkspaceContext,
+    projectView: ProjectView,
     target: Label,
   ): JvmToolchainInfo {
     val aqueryExpression = "mnemonic(\"Javac\", $target)"
     val command =
-      bazelRunner.buildBazelCommand(workspaceContext = workspaceContext, inheritProjectviewOptionsOverride = true) {
+      bazelRunner.buildBazelCommand(projectView = projectView, inheritProjectviewOptionsOverride = true) {
         aquery {
           options.addAll(listOf("--output=jsonproto", aqueryExpression))
         }

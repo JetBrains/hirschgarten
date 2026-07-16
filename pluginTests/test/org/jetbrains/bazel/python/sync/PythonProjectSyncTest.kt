@@ -39,6 +39,7 @@ import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.label.DependencyLabel
 import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.languages.projectview.ProjectView
 import org.jetbrains.bazel.magicmetamodel.formatAsModuleName
 import org.jetbrains.bazel.progress.syncConsole
 import org.jetbrains.bazel.project.BazelProjectFixtures.initializeBazelProject
@@ -58,7 +59,6 @@ import org.jetbrains.bazel.workspace.model.matchers.entries.shouldContainExactly
 import org.jetbrains.bazel.workspace.model.test.framework.BuildServerMock
 import org.jetbrains.bazel.workspace.model.test.framework.MockBuildServerService
 import org.jetbrains.bazel.workspace.model.test.framework.MockProjectBaseTest
-import org.jetbrains.bazel.workspace.model.test.framework.mockWorkspaceContext
 import org.jetbrains.bazel.workspacemodel.entities.BazelProjectEntitySource
 import org.jetbrains.bsp.protocol.RawBuildTarget
 import org.jetbrains.bsp.protocol.SourceFileCollection
@@ -370,7 +370,7 @@ class PythonProjectSyncTest : MockProjectBaseTest() {
   private fun generateWorkspaceSnapshot(targets: List<RawBuildTarget>): WorkspaceSnapshot = runBlocking {
     WorkspaceSnapshotBuilder.build(
       project = project,
-      workspaceContext = mockWorkspaceContext,
+      projectView = ProjectView.EMPTY,
       repoMapping = RepoMappingDisabled,
       resolved = BazelResolvedWorkspace(
         workspaceName = null,

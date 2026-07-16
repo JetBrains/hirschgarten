@@ -15,8 +15,6 @@
   </extensionPoints>
 
   <extensions defaultExtensionNs="com.intellij">
-    <projectService serviceImplementation="org.jetbrains.bazel.languages.projectview.ProjectViewWorkspaceContextProvider"
-                    serviceInterface="org.jetbrains.bazel.workspace.WorkspaceContextProvider"/>
     <fileType
       extensions="bazelproject"
       fieldName="INSTANCE"

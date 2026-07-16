@@ -1,6 +1,5 @@
 package org.jetbrains.bazel.server.sync
 
-import com.google.devtools.build.lib.buildeventstream.BuildEventStreamProtos
 import com.intellij.execution.process.OSProcessUtil.killProcess
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
@@ -23,6 +22,8 @@ import org.jetbrains.bazel.commons.BazelStatus
 import org.jetbrains.bazel.commons.TargetCollection
 import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.languages.projectview.ProjectView
+import org.jetbrains.bazel.languages.projectview.deriveInstrumentationFilterFromTargets
 import org.jetbrains.bazel.server.BazelTestFileNames
 import org.jetbrains.bazel.server.bep.AnalysisCacheInvalidationParser
 import org.jetbrains.bazel.server.bep.BepBuildResult
@@ -31,7 +32,6 @@ import org.jetbrains.bazel.server.bep.BepServer
 import org.jetbrains.bazel.server.bep.analysisPhaseTimeMsOrNull
 import org.jetbrains.bazel.server.bep.toActionCacheStats
 import org.jetbrains.bazel.server.diagnostics.DiagnosticsService
-import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bsp.protocol.AnalysisDebugParams
 import org.jetbrains.bsp.protocol.AnalysisDebugResult
 import org.jetbrains.bsp.protocol.BazelInvocationContext
@@ -55,7 +55,7 @@ class ExecuteService(
   private val workspaceRoot: Path,
   private val taskEventsHandler: BazelTaskEventsHandler,
   private val bazelRunner: BazelRunner,
-  private val workspaceContext: WorkspaceContext,
+  private val projectView: ProjectView,
   private val bazelPathsResolver: BazelPathsResolver,
   private val rawProgressReporterProvider: RawProgressReporterProvider = RawProgressReporterProvider.current(),
 ) {
@@ -168,7 +168,7 @@ class ExecuteService(
     additionalOptions: List<String>? = null,
   ): RunResult {
     val command =
-      bazelRunner.buildBazelCommand(workspaceContext) {
+      bazelRunner.buildBazelCommand(projectView) {
         run(params.target) {
           options.add(BazelFlag.color(true))
           if (!params.checkVisibility) {
@@ -188,15 +188,14 @@ class ExecuteService(
 
   suspend fun test(params: TestParams): TestResult {
     val targetsSpec = TargetCollection(params.targets, emptyList())
-    // Use the already available workspaceContext
     val command =
       when (val instrumentationFilter = params.coverageInstrumentationFilter) {
-        null -> bazelRunner.buildBazelCommand(workspaceContext) { test() }
+        null -> bazelRunner.buildBazelCommand(projectView) { test() }
 
         else ->
-          bazelRunner.buildBazelCommand(workspaceContext) { coverage() }.also {
+          bazelRunner.buildBazelCommand(projectView) { coverage() }.also {
             it.options.add(BazelFlag.combinedReportLcov())
-            if (workspaceContext.deriveInstrumentationFilterFromTargets) {
+            if (projectView.deriveInstrumentationFilterFromTargets) {
               it.options.add(BazelFlag.instrumentationFilter(instrumentationFilter))
             }
           }
@@ -238,7 +237,7 @@ class ExecuteService(
   ): BazelProcessResult {
     // you must compute all targets before passing them to bound
     val command =
-      bazelRunner.buildBazelCommand(workspaceContext) {
+      bazelRunner.buildBazelCommand(projectView) {
         build {
           options.addAll(additionalArguments)
           targets.addAll(allTargets)
@@ -260,7 +259,7 @@ class ExecuteService(
     taskId: TaskId,
   ): BepBuildResult {
     val command =
-      bazelRunner.buildBazelCommand(workspaceContext) {
+      bazelRunner.buildBazelCommand(projectView) {
         build {
           options.addAll(extraFlags)
           targets.addAll(targetsSpec.values)

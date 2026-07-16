@@ -3,8 +3,8 @@ package org.jetbrains.bazel.server.sync
 import com.google.devtools.intellij.ideinfo.IntellijIdeInfo
 import com.google.devtools.intellij.ideinfo.IntellijIdeInfo.TargetIdeInfo
 import com.intellij.aspect.lib.Aspects
-import com.intellij.aspect.lib.Rules
 import com.intellij.aspect.lib.OutputGroups
+import com.intellij.aspect.lib.Rules
 import com.intellij.build.events.MessageEvent
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
@@ -26,6 +26,12 @@ import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.label.Canonical
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.label.ResolvedLabel
+import org.jetbrains.bazel.languages.projectview.ProjectView
+import org.jetbrains.bazel.languages.projectview.gazelleTarget
+import org.jetbrains.bazel.languages.projectview.shardSync
+import org.jetbrains.bazel.languages.projectview.targetShardSize
+import org.jetbrains.bazel.languages.projectview.targets
+import org.jetbrains.bazel.languages.starlark.repomapping.externalRepositoriesTreatedAsInternal
 import org.jetbrains.bazel.performance.bspTracer
 import org.jetbrains.bazel.progress.syncConsole
 import org.jetbrains.bazel.server.bep.BepOutput
@@ -38,8 +44,6 @@ import org.jetbrains.bazel.server.model.AspectSyncProject
 import org.jetbrains.bazel.server.sync.sharding.BazelBuildTargetSharder
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
 import org.jetbrains.bazel.sync.workspace.snapshot.toWorkspaceTargetKey
-import org.jetbrains.bazel.workspacecontext.WorkspaceContext
-import org.jetbrains.bazel.workspacecontext.externalRepositoriesTreatedAsInternal
 import org.jetbrains.bsp.protocol.BazelTaskEventsHandler
 import org.jetbrains.bsp.protocol.TaskId
 import org.jetbrains.bsp.protocol.asLogger
@@ -63,7 +67,7 @@ private fun TargetCollection.halve(): List<TargetCollection> {
 @ApiStatus.Internal
 class ProjectResolver(
   private val bazelBspAspectsManager: BazelBspAspectsManager,
-  private val workspaceContext: WorkspaceContext,
+  private val projectView: ProjectView,
   private val bazelInfo: BazelInfo,
   private val bazelRunner: BazelRunner,
   private val bazelPathsResolver: BazelPathsResolver,
@@ -83,7 +87,7 @@ class ProjectResolver(
       val repoMapping = buildAspectResult.first
       val aspectResult = buildAspectResult.second
 
-      val configurations = fetchConfigurationsFromAnalysisCache(workspaceContext, bazelRunner, taskId)
+      val configurations = fetchConfigurationsFromAnalysisCache(projectView, bazelRunner, taskId)
         .onFailure { logger.warn("`bazel config` invocation failed, falling back to BEP configurations", it) }
         .getOrElse { aspectResult.bepOutput.configurations.values } // fallback to BEP configurations
 
@@ -110,7 +114,7 @@ class ProjectResolver(
             .filter { !(repoMapping.canonicalRepoNameToLocalPath.contains(it.repoName)) }
             .map { it.toString() }
           val extraRepositoryDescriptions =
-            ModuleResolver(bazelRunner, workspaceContext, taskId).resolveModules(needsPath, bazelInfo).result
+            ModuleResolver(bazelRunner, projectView, taskId).resolveModules(needsPath, bazelInfo).result
           val extraPaths = extraRepositoryDescriptions.map { (name, description) ->
             when (description) {
               is ShowRepoResult.LocalRepository -> mapOf(description.name to Path(description.path))
@@ -150,11 +154,9 @@ class ProjectResolver(
     allTargets: List<Label>?, /* all known targets, if any, from first phase */
     taskId: TaskId,
   ): Pair<RepoMapping, BazelBspAspectsManagerResult> {
-    // Use the already available workspaceContext and featureFlags
-
     val repoMappingOnly =
       measured("Calculating external repository mapping") {
-        calculateRepoNameMappingOnly(workspaceContext, bazelRunner, bazelInfo, taskEventsHandler.asLogger(taskId), taskId)
+        calculateRepoNameMappingOnly(projectView, bazelRunner, bazelInfo, taskEventsHandler.asLogger(taskId), taskId)
       }
 
     val bazelExternalRulesetsQuery =
@@ -164,7 +166,7 @@ class ProjectResolver(
         bazelInfo.isBzlModEnabled,
         bazelInfo.isWorkspaceEnabled,
         taskEventsHandler,
-        workspaceContext,
+        projectView,
         repoMappingOnly,
       )
 
@@ -180,11 +182,11 @@ class ProjectResolver(
     } ?: emptyList()
 
     val extraDefinitionsNeeded =
-      workspaceContext.externalRepositoriesTreatedAsInternal.map { repoName -> mapping?.get(repoName)?.let { "@@" + it } ?: repoName }
+      projectView.externalRepositoriesTreatedAsInternal.map { repoName -> mapping?.get(repoName)?.let { "@@" + it } ?: repoName }
 
     val repoDefinitionsWithWarnings =
       measured("Looking up definitions of external rules") {
-        ModuleResolver(bazelRunner, workspaceContext, taskId).resolveModules(externalRepos + extraDefinitionsNeeded, bazelInfo)
+        ModuleResolver(bazelRunner, projectView, taskId).resolveModules(externalRepos + extraDefinitionsNeeded, bazelInfo)
       }
 
     repoDefinitionsWithWarnings.warnings.forEach {
@@ -198,7 +200,7 @@ class ProjectResolver(
 
     val repoMapping = extendRepoMappingByPathInfo(
       repoMappingOnly,
-      workspaceContext,
+      projectView,
       bazelRunner,
       bazelInfo,
       taskEventsHandler.asLogger(taskId),
@@ -235,27 +237,27 @@ class ProjectResolver(
     }
 
     measured("Run Gazelle target") {
-      workspaceContext.gazelleTarget?.also { gazelleTarget ->
-        runGazelleTarget(workspaceContext, gazelleTarget, taskId)
+      projectView.gazelleTarget?.also { gazelleTarget ->
+        runGazelleTarget(projectView, gazelleTarget, taskId)
       }
     }
 
     val targetsToSync =
       requestedTargetsToSync
-        ?.let { TargetCollection(it, emptyList()) } ?: TargetCollection.fromExcludableList(workspaceContext.targets)
+        ?.let { TargetCollection(it, emptyList()) } ?: TargetCollection.fromExcludableList(projectView.targets)
 
     val syncLanguages = ruleLanguages.map { it.language.aspectLanguage }.toSet()
 
     val buildAspectResult =
       measured(
         "Building project with aspect",
-      ) { buildProjectWithAspect(workspaceContext, syncLanguages, build, targetsToSync, allTargets, taskId) }
+      ) { buildProjectWithAspect(projectView, syncLanguages, build, targetsToSync, allTargets, taskId) }
 
     return Pair(repoMapping, buildAspectResult)
   }
 
   private suspend fun buildProjectWithAspect(
-    workspaceContext: WorkspaceContext,
+    projectView: ProjectView,
     languages: Set<Rules>,
     build: Boolean,
     targetsToSync: TargetCollection,
@@ -276,7 +278,7 @@ class ProjectResolver(
               targetsSpec = targetsToSync,
               aspects = aspects,
               outputGroups = outputGroups,
-              workspaceContext = workspaceContext,
+              projectView = projectView,
               taskId = taskId,
             ).also {
               if (it.status == BazelStatus.OOM_ERROR) {
@@ -287,12 +289,12 @@ class ProjectResolver(
         }
 
       val res =
-        if (workspaceContext.shardSync) {
+        if (projectView.shardSync) {
           val shardedResult =
             BazelBuildTargetSharder.expandAndShardTargets(
               bazelPathsResolver,
               targetsToSync,
-              workspaceContext,
+              projectView,
               bazelRunner,
               taskLogger,
               allTargets,
@@ -300,14 +302,14 @@ class ProjectResolver(
           var remainingShardedTargetsSpecs = shardedResult.targets.toTargetCollections().toMutableList()
           var shardNumber = 1
           var shardedBuildResult: BazelBspAspectsManagerResult = BazelBspAspectsManagerResult.emptyResult()
-          var suggestedTargetShardSize: Int = workspaceContext.targetShardSize
+          var suggestedTargetShardSize: Int = projectView.targetShardSize
           while (remainingShardedTargetsSpecs.isNotEmpty()) {
             ensureActive()
             if (BazelFeatureFlags.shutDownBeforeShardBuild) {
               // Prevent memory leak by forcing Bazel to shut down before it builds a shard
               // This may cause the build to become slower, but it is necessary, at least before this issue is solved
               // https://github.com/bazelbuild/bazel/issues/19412
-              runBazelShutDown(workspaceContext, taskId)
+              runBazelShutDown(projectView, taskId)
             }
             val shardedTargetsSpec = remainingShardedTargetsSpecs.removeFirst()
             val shardName = "shard $shardNumber of ${shardNumber + remainingShardedTargetsSpecs.size}"
@@ -319,7 +321,7 @@ class ProjectResolver(
                   targetsSpec = shardedTargetsSpec,
                   aspects = aspects,
                   outputGroups = outputGroups,
-                  workspaceContext = workspaceContext,
+                  projectView = projectView,
                   taskId = taskId,
                 )
             if (result.isFailure) {
@@ -352,7 +354,7 @@ class ProjectResolver(
             taskLogger.message("---")
             ++shardNumber
           }
-          if (suggestedTargetShardSize != workspaceContext.targetShardSize) {
+          if (suggestedTargetShardSize != projectView.targetShardSize) {
             taskLogger.message("Bazel ran out of memory during sync. To mitigate, consider setting shard size in your project view file: `target_shard_size: $suggestedTargetShardSize`")
             taskLogger.message("---")
           }
@@ -365,10 +367,10 @@ class ProjectResolver(
       return@coroutineScope res
     }
 
-  private suspend fun runBazelShutDown(workspaceContext: WorkspaceContext, taskId: TaskId) {
+  private suspend fun runBazelShutDown(projectView: ProjectView, taskId: TaskId) {
     bazelRunner.run {
       val command =
-        buildBazelCommand(workspaceContext) {
+        buildBazelCommand(projectView) {
           shutDown()
         }
       runBazelCommand(command, taskId)
@@ -376,10 +378,10 @@ class ProjectResolver(
     }
   }
 
-  private suspend fun runGazelleTarget(workspaceContext: WorkspaceContext, gazelleTarget: Label, taskId: TaskId) {
+  private suspend fun runGazelleTarget(projectView: ProjectView, gazelleTarget: Label, taskId: TaskId) {
     bazelRunner.run {
       val command =
-        buildBazelCommand(workspaceContext) {
+        buildBazelCommand(projectView) {
           run(gazelleTarget)
         }
       runBazelCommand(command, taskId)

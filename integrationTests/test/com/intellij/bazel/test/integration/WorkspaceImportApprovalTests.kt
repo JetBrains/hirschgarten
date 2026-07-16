@@ -6,8 +6,7 @@ import com.intellij.ide.starter.models.TestCase
 import com.intellij.ide.starter.project.GitHubProject
 import com.intellij.ide.starter.project.LocalProjectInfo
 import com.intellij.ide.starter.project.ReusableLocalProjectInfo
-import com.intellij.openapi.application.readAction
-import com.intellij.openapi.project.Project
+import com.intellij.openapi.application.runReadActionBlocking
 import com.intellij.openapi.project.ex.ProjectManagerEx
 import com.intellij.testFramework.UsefulTestCase
 import com.intellij.testFramework.common.timeoutRunBlocking
@@ -15,14 +14,14 @@ import com.intellij.testFramework.junit5.SystemProperty
 import com.intellij.testFramework.junit5.fixture.projectFixture
 import com.intellij.testFramework.replaceService
 import com.intellij.tools.ide.starter.product.idea.ultimate.IdeaUltimate
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import org.jetbrains.bazel.base.IdeStarterBaseProjectTest
+import org.jetbrains.bazel.languages.projectview.ProjectView
 import org.jetbrains.bazel.languages.projectview.ProjectViewFactory
-import org.jetbrains.bazel.languages.projectview.ProjectViewToWorkspaceContextConverter
+import org.jetbrains.bazel.languages.projectview.ProjectViewService
 import org.jetbrains.bazel.project.BazelProjectFixtures
 import org.jetbrains.bazel.test.framework.BazelPathManager
-import org.jetbrains.bazel.workspace.WorkspaceContextProvider
-import org.jetbrains.bazel.workspace.model.test.framework.mockWorkspaceContext
-import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assumptions
 import org.junit.jupiter.api.BeforeEach
@@ -171,23 +170,24 @@ internal class WorkspaceImportApprovalTests {
     val projectOpenTask = OpenProjectTask.build()
     val project = projectManager.newProjectAsync(projectDir, projectOpenTask)
     val projectView = testCase.data.projectView(projectDir)
-    project.replaceService(
-      serviceInterface = WorkspaceContextProvider::class.java,
-      instance = object : WorkspaceContextProvider {
-        override suspend fun computeWorkspaceContext(
-          project: Project,
-          bazelExecutable: Path,
-        ): WorkspaceContext =
-          if (projectView == null) {
-            mockWorkspaceContext
-          }
-          else {
-            val projectView = readAction { ProjectViewFactory.fromProjectViewContent(project, projectView.readText()) }
-            ProjectViewToWorkspaceContextConverter.convert(project, projectView, bazelExecutable)
-          }
-      },
-      parentDisposable = project,
-    )
+    if (projectView != null) {
+      project.replaceService(
+        serviceInterface = ProjectViewService::class.java,
+        instance = object : ProjectViewService {
+          override val projectViewState: StateFlow<ProjectView>
+            get() = MutableStateFlow(
+              runReadActionBlocking {
+                ProjectViewFactory.fromProjectViewContent(project, projectView.readText())
+              },
+            )
+
+          override suspend fun forceReparseCurrentProjectViewFiles() {}
+
+          override val projectViewPath: Path = projectView
+        },
+        parentDisposable = project,
+      )
+    }
     BazelProjectFixtures.initializeBazelProject(project, projectDir)
     // prevent automatic sync
     // projectManager.openProjectAsync(projectDir, projectOpenTask.withProject(project)) ?: fail { "cannot open project" }

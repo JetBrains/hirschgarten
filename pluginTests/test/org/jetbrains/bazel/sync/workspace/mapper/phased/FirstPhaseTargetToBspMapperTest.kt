@@ -4,20 +4,20 @@ import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import org.jetbrains.bazel.commons.BazelInfo
 import org.jetbrains.bazel.commons.BazelPathsResolver
 import org.jetbrains.bazel.commons.BazelRelease
-import org.jetbrains.bazel.commons.ExcludableValue
 import org.jetbrains.bazel.commons.RepoMappingDisabled
 import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.commons.orFallbackVersion
 import org.jetbrains.bazel.label.DependencyLabel
 import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.languages.projectview.ALLOW_MANUAL_TARGETS_SYNC_KEY
+import org.jetbrains.bazel.languages.projectview.ProjectView
 import org.jetbrains.bazel.sync.JavaLanguageClass
 import org.jetbrains.bazel.sync.workspace.mapper.PhasedBazelProjectMapper
 import org.jetbrains.bazel.sync.workspace.snapshot.SourceFileCollectionBuilder
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
 import org.jetbrains.bazel.workspace.model.test.framework.BazelPathsResolverMock
 import org.jetbrains.bazel.workspace.model.test.framework.WorkspaceModelBaseTest
-import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bsp.protocol.RawBuildTarget
 import org.jetbrains.bsp.protocol.SourceFileCollection
 import org.junit.jupiter.api.BeforeEach
@@ -31,28 +31,6 @@ import kotlin.io.path.createFile
 import kotlin.io.path.createParentDirectories
 import kotlin.io.path.createTempDirectory
 import kotlin.io.path.writeText
-
-private fun createMockWorkspaceContext(allowManualTargetsSync: Boolean): WorkspaceContext =
-  WorkspaceContext(
-    targets = listOf(ExcludableValue.included(Label.parse("//..."))),
-    directories = listOf(ExcludableValue.included(Path("."))),
-    buildFlags = emptyList(),
-    syncFlags = emptyList(),
-    debugFlags = emptyList(),
-    bazelBinary = Path("bazel"),
-    allowManualTargetsSync = allowManualTargetsSync,
-    importDepth = -1,
-    ideJavaHomeOverride = Path("java_home"),
-    shardSync = false,
-    targetShardSize = 1000,
-    shardingApproach = null,
-    importRunConfigurations = emptyList(),
-    gazelleTarget = null,
-    indexAllFilesInDirectories = false,
-    deriveInstrumentationFilterFromTargets = true,
-    indexAdditionalFilesInDirectories = emptyList(),
-    preferClassJarsOverSourcelessJars = true,
-  )
 
 // Helper: creates a mock source file at the given relative path with the given package.
 private fun Path.createMockSourceFile(relativePath: String, fullPackage: String): Path {
@@ -199,8 +177,7 @@ class FirstPhaseTargetToBspMapperTest : WorkspaceModelBaseTest() {
       val fgRes2 = workspaceRoot.resolve("filegroupResources/file2.txt").createParentDirectories().createFile()
 
       // when
-      val workspaceContext = createMockWorkspaceContext(false)
-      val mapper = PhasedBazelProjectMapper(BazelPathsResolverMock.create(workspaceRoot), workspaceContext)
+      val mapper = PhasedBazelProjectMapper(BazelPathsResolverMock.create(workspaceRoot), ProjectView.EMPTY)
       val resultTargets = mapper.mapTargets(RepoMappingDisabled, targets.associateBy { Label.parse(it.rule.name) })
 
       // then: update expected build targets as per the new merged behavior
@@ -421,7 +398,8 @@ class FirstPhaseTargetToBspMapperTest : WorkspaceModelBaseTest() {
         )
 
       // when
-      val mapper = PhasedBazelProjectMapper(BazelPathsResolverMock.create(), createMockWorkspaceContext(true))
+      val mapper =
+        PhasedBazelProjectMapper(BazelPathsResolverMock.create(), ProjectView(mapOf(ALLOW_MANUAL_TARGETS_SYNC_KEY to true), emptyList()))
       val resultTargets = mapper.mapTargets(RepoMappingDisabled, targets.associateBy { Label.parse(it.rule.name) })
 
       // then

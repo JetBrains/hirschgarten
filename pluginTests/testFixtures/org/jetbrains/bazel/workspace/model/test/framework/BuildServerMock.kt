@@ -6,13 +6,13 @@ import org.jetbrains.bazel.commons.BazelRelease
 import org.jetbrains.bazel.commons.RepoMapping
 import org.jetbrains.bazel.commons.orFallbackVersion
 import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.languages.projectview.ProjectView
+import org.jetbrains.bazel.server.BazelServerFacade
 import org.jetbrains.bazel.server.model.AspectSyncProject
 import org.jetbrains.bazel.server.model.PhasedSyncProject
 import org.jetbrains.bazel.sync.BazelOutFileHardLinks
-import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bsp.protocol.AnalysisDebugParams
 import org.jetbrains.bsp.protocol.AnalysisDebugResult
-import org.jetbrains.bazel.server.BazelServerFacade
 import org.jetbrains.bsp.protocol.CompileParams
 import org.jetbrains.bsp.protocol.CompileResult
 import org.jetbrains.bsp.protocol.InverseSourcesParams
@@ -58,7 +58,7 @@ open class BuildServerMock(
 
   override suspend fun buildTargetAnalysisDebug(params: AnalysisDebugParams): AnalysisDebugResult = wrapInFuture(analysisDebugResult)
 
-  override val workspaceContext: WorkspaceContext = mockWorkspaceContext
+  override val projectView: ProjectView = ProjectView.EMPTY
 
   override val bazelInfo =
     BazelInfo(

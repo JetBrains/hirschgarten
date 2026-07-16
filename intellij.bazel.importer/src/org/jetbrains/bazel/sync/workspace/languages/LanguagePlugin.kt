@@ -7,12 +7,11 @@ import com.intellij.util.IncorrectOperationException
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.commons.LanguageClass
 import org.jetbrains.bazel.commons.RepoMapping
-import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.languages.projectview.ProjectView
+import org.jetbrains.bazel.server.BazelServerFacade
 import org.jetbrains.bazel.sync.workspace.graph.DependencyGraph
 import org.jetbrains.bazel.sync.workspace.importer.BazelWorkspaceImporter
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceSyncConfig
-import org.jetbrains.bazel.workspacecontext.WorkspaceContext
-import org.jetbrains.bazel.server.BazelServerFacade
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
 import org.jetbrains.bsp.protocol.BuildTargetData
 import kotlin.reflect.KClass
@@ -27,18 +26,13 @@ interface LanguagePlugin {
 
   /**
    * Create a set of sync configurations that shall be later consumed by [BazelWorkspaceImporter].
-   * This is the only time when [BazelWorkspaceImporter] can indirectly access [WorkspaceContext].
-   * Or any other external data outside [WorkspaceContext]
+   * This is the only time when [BazelWorkspaceImporter] can indirectly access [ProjectView].
+   * Or any other external data outside [ProjectView]
    *
    * @param project [Project] that can be used as a data source
-   * @param workspaceContext current workspace context
+   * @param projectView current project view
    */
-  // RC: `WorkspaceContext` should be dropped for workspace importers all along, it contains language-specific logic and
-  //  using it as configuration source isn't ideal, for every language `createSyncConfigs` shall be used for
-  //  creating `WorkspaceSyncConfig` that directly change workspace importing results.
-  //  this also simplify logic quite a lot, and make it extensible, instead of adding new fields to `WorkspaceContext`
-  //  in a single place, each plugin can do it only for its own `WorkspaceSyncConfig`
-  suspend fun createSyncConfigs(project: Project, workspaceContext: WorkspaceContext): List<WorkspaceSyncConfig> = listOf()
+  suspend fun createSyncConfigs(project: Project, projectView: ProjectView): List<WorkspaceSyncConfig> = listOf()
 
   interface Mapper {
     val langPlugin: LanguagePlugin

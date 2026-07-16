@@ -1,7 +1,6 @@
 package org.jetbrains.bazel.server.connection
 
 import com.intellij.openapi.components.service
-import com.intellij.openapi.components.serviceAsync
 import com.intellij.openapi.project.Project
 import org.jetbrains.bazel.bazelrunner.BazelInfoResolver
 import org.jetbrains.bazel.bazelrunner.BazelProcessLauncherProvider
@@ -12,6 +11,8 @@ import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.install.EnvironmentCreator
 import org.jetbrains.bazel.languages.bazelversion.psi.BazelVersionLiteral
 import org.jetbrains.bazel.languages.bazelversion.service.BazelVersionWorkspaceResolver
+import org.jetbrains.bazel.languages.projectview.ProjectView
+import org.jetbrains.bazel.languages.projectview.projectView
 import org.jetbrains.bazel.server.BazelServerConnection
 import org.jetbrains.bazel.server.BazelServerFacade
 import org.jetbrains.bazel.server.BazelServerService
@@ -26,9 +27,6 @@ import org.jetbrains.bazel.sync.BazelOutFileHardLinks
 import org.jetbrains.bazel.sync.environment.BazelApplicationContextService
 import org.jetbrains.bazel.sync.workspace.mapper.normal.DefaultBazelOutputFileHardLinks
 import org.jetbrains.bazel.taskEvents.BazelTaskEventsService
-import org.jetbrains.bazel.workspace.BazelExecutableProvider
-import org.jetbrains.bazel.workspace.WorkspaceContextProvider
-import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bsp.protocol.TaskId
 import java.util.concurrent.atomic.AtomicReference
 
@@ -50,8 +48,7 @@ internal class DefaultBazelServerConnection(private val project: Project) : Baze
     // ensure `.bazelbsp` directory exists and functions
     environmentCreator.create()
 
-    val bazelExecutable = BazelExecutableProvider.computeBazelExecutableOrFail(project)
-    val workspaceContext = project.serviceAsync<WorkspaceContextProvider>().computeWorkspaceContext(project, bazelExecutable)
+    val projectView = project.projectView()
     var (server, oldVersionLiteral) = this.serverAndVersionLiteral.get()
     val projectPath = project.rootDir.toNioPath()
     val resolvedVersion = BazelVersionWorkspaceResolver.resolveBazelVersionFromWorkspace(projectPath)
@@ -59,22 +56,22 @@ internal class DefaultBazelServerConnection(private val project: Project) : Baze
 
     if (server == null ||
         bazelVersionUpdated ||
-        server.workspaceContext != workspaceContext) {
-      server = createServer(workspaceContext, taskId)
+        server.projectView != projectView) {
+      server = createServer(projectView, taskId)
       this.serverAndVersionLiteral.set(ServerWithVersionLiteral(server, resolvedVersion))
     }
     return server
   }
 
-  private suspend fun createServer(workspaceContext: WorkspaceContext, taskId: TaskId?): BazelServerFacadeImpl {
+  private suspend fun createServer(projectView: ProjectView, taskId: TaskId?): BazelServerFacadeImpl {
     val taskEventsHandler = BazelTaskEventsService.getInstance(project)
     val bazelInfoResolver = BazelInfoResolver(workspaceRoot)
     val bazelProcessLauncherProvider = BazelProcessLauncherProvider.getInstance()
     val bazelProcessLauncher =
       bazelProcessLauncherProvider.createBazelProcessLauncher(workspaceRoot, BazelEnvironmentService.getInstance(project).getEnvironment())
-    val bazelRunner = BazelRunner(taskEventsHandler, workspaceRoot, bazelProcessLauncher)
+    val bazelRunner = BazelRunner.create(project, taskEventsHandler, workspaceRoot, bazelProcessLauncher, projectView)
 
-    val bazelInfo = bazelInfoResolver.resolveBazelInfo(bazelRunner, workspaceContext, taskId)
+    val bazelInfo = bazelInfoResolver.resolveBazelInfo(bazelRunner, projectView, taskId)
     val bazelPathsResolver = BazelPathsResolver(bazelInfo)
 
     val outFileHardLinks =
@@ -90,7 +87,7 @@ internal class DefaultBazelServerConnection(private val project: Project) : Baze
         workspaceRoot = workspaceRoot,
         taskEventsHandler = taskEventsHandler,
         bazelRunner = bazelRunner,
-        workspaceContext = workspaceContext,
+        projectView = projectView,
         bazelPathsResolver = bazelPathsResolver,
       )
 
@@ -104,7 +101,7 @@ internal class DefaultBazelServerConnection(private val project: Project) : Baze
     val projectResolver =
       ProjectResolver(
         bazelBspAspectsManager = bazelBspAspectsManager,
-        workspaceContext = workspaceContext,
+        projectView = projectView,
         bazelInfo = bazelInfo,
         bazelRunner = bazelRunner,
         bazelPathsResolver = bazelPathsResolver,
@@ -115,7 +112,7 @@ internal class DefaultBazelServerConnection(private val project: Project) : Baze
       FirstPhaseProjectResolver(
         workspaceRoot = workspaceRoot,
         bazelRunner = bazelRunner,
-        workspaceContext = workspaceContext,
+        projectView = projectView,
         bazelInfo = bazelInfo,
         taskEventsHandler = taskEventsHandler,
       )
@@ -124,7 +121,7 @@ internal class DefaultBazelServerConnection(private val project: Project) : Baze
       BspProjectMapper(
         workspaceRoot = workspaceRoot,
         bazelRunner = bazelRunner,
-        workspaceContext = workspaceContext,
+        projectView = projectView,
         bazelPathsResolver = bazelPathsResolver,
       )
 
@@ -133,7 +130,7 @@ internal class DefaultBazelServerConnection(private val project: Project) : Baze
       projectResolver = projectResolver,
       firstPhaseProjectResolver = firstPhaseProjectResolver,
       executeService = executeService,
-      workspaceContext = workspaceContext,
+      projectView = projectView,
       bazelInfo = bazelInfo,
       bazelPathsResolver = bazelPathsResolver,
       outFileHardLinks = outFileHardLinks,

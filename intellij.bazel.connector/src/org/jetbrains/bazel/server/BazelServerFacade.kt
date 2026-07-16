@@ -5,10 +5,10 @@ import org.jetbrains.bazel.commons.BazelInfo
 import org.jetbrains.bazel.commons.BazelPathsResolver
 import org.jetbrains.bazel.commons.RepoMapping
 import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.languages.projectview.ProjectView
 import org.jetbrains.bazel.server.model.AspectSyncProject
 import org.jetbrains.bazel.server.model.PhasedSyncProject
 import org.jetbrains.bazel.sync.BazelOutFileHardLinks
-import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bsp.protocol.AnalysisDebugParams
 import org.jetbrains.bsp.protocol.AnalysisDebugResult
 import org.jetbrains.bsp.protocol.CompileParams
@@ -35,7 +35,7 @@ interface BazelServerFacade {
   @get:ApiStatus.Internal
   val bazelPathsResolver: BazelPathsResolver
 
-  val workspaceContext: WorkspaceContext
+  val projectView: ProjectView
 
   @ApiStatus.Internal
   suspend fun workspaceBuildTargets(params: WorkspaceBuildTargetParams): AspectSyncProject

@@ -28,8 +28,10 @@ import org.jetbrains.bazel.label.ResolvedLabel
 import org.jetbrains.bazel.label.assumeResolved
 import org.jetbrains.bazel.label.label
 import org.jetbrains.bazel.label.toDependencyLabel
+import org.jetbrains.bazel.languages.projectview.ProjectView
+import org.jetbrains.bazel.languages.projectview.ideJavaHomeOverride
 import org.jetbrains.bazel.languages.projectview.importIjars
-import org.jetbrains.bazel.languages.projectview.projectView
+import org.jetbrains.bazel.languages.projectview.preferClassJarsOverSourcelessJars
 import org.jetbrains.bazel.languages.projectview.testSources
 import org.jetbrains.bazel.performance.measure
 import org.jetbrains.bazel.server.BazelServerFacade
@@ -46,7 +48,6 @@ import org.jetbrains.bazel.sync.workspace.snapshot.SourceFileCollectionBuilder
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceSyncConfig
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
 import org.jetbrains.bazel.sync.workspace.snapshot.toWorkspaceTargetKey
-import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bsp.protocol.BuildTargetData
 import org.jetbrains.bsp.protocol.LibraryItem
 import org.jetbrains.bsp.protocol.MavenCoordinates
@@ -73,7 +74,7 @@ interface JvmLanguagePluginMixin {
   /**
    * @see [LanguagePlugin.createSyncConfigs]
    */
-  suspend fun createSyncConfigs(project: Project, workspaceContext: WorkspaceContext): List<WorkspaceSyncConfig> = listOf()
+  suspend fun createSyncConfigs(project: Project, projectView: ProjectView): List<WorkspaceSyncConfig> = listOf()
 
   interface Mapper {
     suspend fun prepareSync(
@@ -118,13 +119,12 @@ class JavaLanguagePlugin : LanguagePlugin {
 
 
   override fun createProjectMapper(project: Project, server: BazelServerFacade): Mapper = Mapper(project, server)
-  override suspend fun createSyncConfigs(project: Project, workspaceContext: WorkspaceContext): List<WorkspaceSyncConfig> {
-    return JvmLanguagePluginMixin.mixins.flatMap { it.createSyncConfigs(project, workspaceContext) } +
+  override suspend fun createSyncConfigs(project: Project, projectView: ProjectView): List<WorkspaceSyncConfig> {
+    return JvmLanguagePluginMixin.mixins.flatMap { it.createSyncConfigs(project, projectView) } +
            JavaWorkspaceSyncConfig(
-             testSourcesPatterns = project.projectView().testSources,
+             testSourcesPatterns = projectView.testSources,
 
-             // RC: we bypass `WorkspaceContext` here completely
-             importIjars = project.projectView().importIjars,
+             importIjars = projectView.importIjars,
 
              // RC: as you can see we pass `SourceRootOptimizationMode` as `WorkspaceSyncConfig`
              //  property, so can compare it against previous snapshot and assess whatever it has changes
@@ -179,7 +179,7 @@ class JavaLanguagePlugin : LanguagePlugin {
       mixins.forEach { it.prepareSync(graph, targetsToImport, repoMapping) }
 
       toolchainTargets = graph.idToTargetInfo.filter { it.value.hasJavaToolchainInfo() }
-      val ideJavaHomeOverride = server.workspaceContext.ideJavaHomeOverride
+      val ideJavaHomeOverride = server.projectView.ideJavaHomeOverride
       jdk = ideJavaHomeOverride?.let { Jdk(javaHome = it) } ?: jdkResolver.resolve(graph.idToTargetInfo, repoMapping)
 
       calculateAllLibraries(targetsToImport = targetsToImport.filterValues { it.javaCommon.jvmTarget })
@@ -318,7 +318,7 @@ class JavaLanguagePlugin : LanguagePlugin {
               libraryItemByIdCache.getOrPut(depKey) {
                 Ref(
                   createLibrary(
-                    server.workspaceContext,
+                    server.projectView,
                     depKey,
                     libTargetInfo,
                     onlyOutputJars = false,
@@ -338,7 +338,7 @@ class JavaLanguagePlugin : LanguagePlugin {
       interfacesAndBinaries = interfacesAndBinariesFromTargetsToImport
       val outputJarsLibraries: Map<WorkspaceTargetKey, List<LibraryItem>> =
         measure("Create output jars libraries") {
-          calculateOutputJarsLibraries(server.workspaceContext, targetsToImport.values)
+          calculateOutputJarsLibraries(server.projectView, targetsToImport.values)
         }
       val annotationProcessorLibraries: Map<WorkspaceTargetKey, List<LibraryItem>> =
         measure("Create AP libraries") {
@@ -489,7 +489,7 @@ class JavaLanguagePlugin : LanguagePlugin {
       )
 
     private fun calculateOutputJarsLibraries(
-      workspaceContext: WorkspaceContext,
+      projectView: ProjectView,
       targetsToImport: Collection<TargetIdeInfo>,
     ): Map<WorkspaceTargetKey, List<LibraryItem>> {
       val localRepositories = repoMapping.getLocalRepositories()
@@ -497,7 +497,7 @@ class JavaLanguagePlugin : LanguagePlugin {
         .filter { shouldCreateOutputJarsLibrary(it, allTargets) }
         .mapNotNull { target ->
           createLibrary(
-            workspaceContext,
+            projectView,
             target.key.toWorkspaceTargetKey(), // Label.parse(target.key.label+ OUTPUT_JARS_SUFFIX),
             target,
             onlyOutputJars = true,
@@ -710,7 +710,7 @@ class JavaLanguagePlugin : LanguagePlugin {
     }
 
     private fun createLibrary(
-      workspaceContext: WorkspaceContext,
+      projectView: ProjectView,
       key: WorkspaceTargetKey,
       targetInfo: TargetIdeInfo,
       onlyOutputJars: Boolean,
@@ -718,7 +718,7 @@ class JavaLanguagePlugin : LanguagePlugin {
     ): LibraryItem? {
       val outputs = getTargetOutputJarsList(targetInfo, localRepositories).toSet() + getIntellijPluginJars(targetInfo, localRepositories)
       val rawSources = getSourceJarPaths(targetInfo, localRepositories)
-      val sources = if (workspaceContext.preferClassJarsOverSourcelessJars) {
+      val sources = if (projectView.preferClassJarsOverSourcelessJars) {
         rawSources - outputs
       }
       else {

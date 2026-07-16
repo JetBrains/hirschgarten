@@ -24,7 +24,6 @@ import org.jetbrains.bazel.sync.environment.BazelProjectContextService
 import org.jetbrains.bazel.utils.findNearestParent
 import org.jetbrains.bazel.utils.selectedDirectory
 import org.jetbrains.bazel.workspace.excludedRoots
-import org.jetbrains.bazel.workspace.includedRoots
 
 internal class ExcludeFromProjectViewDirectoriesAction : AnAction() {
 
@@ -32,7 +31,7 @@ internal class ExcludeFromProjectViewDirectoriesAction : AnAction() {
     val directory = e.selectedDirectory ?: return
     val project = e.project ?: return
     val projectViewPsi = project.projectViewFilePsiFile ?: return
-    val includes = project.includedRoots().orEmpty()
+    val includes = project.explicitlyIncludedRoots()
     val excludes = project.excludedRoots().orEmpty()
     val nearestParent = directory.findNearestParent(includes + excludes - directory)
     if (nearestParent in excludes) return
@@ -80,7 +79,7 @@ internal class ExcludeFromProjectViewDirectoriesAction : AnAction() {
     if (!isBazelProject) return null
     if (DumbService.isDumb(this)) return null
     val directory = e.selectedDirectory ?: return null
-    val includes = includedRoots().orEmpty()
+    val includes = explicitlyIncludedRoots()
     val excludes = excludedRoots().orEmpty()
     return when (directory) {
       in includes -> projectViewFile
