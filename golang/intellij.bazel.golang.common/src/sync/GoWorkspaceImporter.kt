@@ -26,6 +26,8 @@ import org.jetbrains.bazel.sync.workspace.importer.WorkspaceImporterPhase
 import org.jetbrains.bazel.sync.workspace.importer.WorkspaceImporterResult
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceSnapshot
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
+import org.jetbrains.bazel.sync.workspace.snapshot.commonSyncConfig
+import org.jetbrains.bazel.sync.workspace.snapshot.filterBuildTarget
 import org.jetbrains.bazel.utils.filterPathsThatDontContainEachOther
 import org.jetbrains.bazel.workspacemodel.entities.BazelGoPackageEntity
 import org.jetbrains.bazel.workspacemodel.entities.BazelGoTargetEntity
@@ -49,11 +51,18 @@ internal class GoWorkspaceImporter : BazelWorkspaceImporter, BazelWorkspaceImpor
   ): Result<WorkspaceImporterResult> {
     when (phase) {
       WorkspaceImporterPhase.Initialize -> {
-        if (!BazelFeatureFlags.isGoSupportEnabled) return Result.success(WorkspaceImporterResult.Abort)
-        goTargets = snapshot.targets.mapNotNull { (key, target) ->
-          key to (extractGoBuildTarget(target.rawBuildTarget) ?: return@mapNotNull null)
-        }.toMap()
-        if (goTargets.isEmpty()) return Result.success(WorkspaceImporterResult.Abort)
+        if (!BazelFeatureFlags.isGoSupportEnabled) {
+          return Result.success(WorkspaceImporterResult.Abort)
+        }
+        val importDepth = snapshot.commonSyncConfig.importDepth
+        goTargets = snapshot.targetGraph.findAllTargetsAtDepth(maxDepth = importDepth, useRelaxedDependencyExpansion = true)
+          .asSequence()
+          .filterBuildTarget<GoBuildTarget>()
+          .associate { (target, goBuildTarget) -> target.targetKey to goBuildTarget }
+          .toMap()
+        if (goTargets.isEmpty()) {
+          return Result.success(WorkspaceImporterResult.Abort)
+        }
       }
 
       is WorkspaceImporterPhase.WorkspaceApply -> {

@@ -146,7 +146,6 @@ class ResourceRootBuilderTest {
       resources = listOf(res1, res2),
       data = listOf(
         JvmBuildTarget(
-          javaVersion = "",
           resolvedResourceStripPrefix = prefix,
         ),
       ),
@@ -326,7 +325,7 @@ class ResourceRootBuilderTest {
           associates = emptyList(),
           moduleName = null,
         ),
-        JvmBuildTarget(javaVersion = "", resolvedResourceStripPrefix = stripPrefix),
+        JvmBuildTarget(resolvedResourceStripPrefix = stripPrefix),
       ),
     )
 
@@ -345,7 +344,7 @@ class ResourceRootBuilderTest {
 
     val target = javaTarget(
       resources = listOf(resourceFile),
-      data = listOf(JvmBuildTarget(javaVersion = "", resolvedResourceStripPrefix = stripPrefix)),
+      data = listOf(JvmBuildTarget(resolvedResourceStripPrefix = stripPrefix)),
     )
 
     val roots = ResourceRootBuilder.resolve(target, projectName, emptySet())
@@ -667,7 +666,7 @@ class ResourceRootBuilderTest {
     ruleType: RuleType = RuleType.LIBRARY,
     sources: List<Path> = emptyList(),
     resources: List<Path> = emptyList(),
-    data: List<BuildTargetData> = listOf(JvmBuildTarget(javaVersion = "")),
+    data: List<BuildTargetData> = listOf(JvmBuildTarget()),
   ): RawBuildTarget = createRawBuildTarget(
     id = Label.parse(label),
     kind = TargetKind(
@@ -713,7 +712,6 @@ class ResourceRootBuilderTest {
       ScalaBuildTarget(
         scalaVersion = "2.13.0",
         scalacOptions = emptyList(),
-        sdkJars = emptyList(),
       ),
     ),
   ): RawBuildTarget = createRawBuildTarget(

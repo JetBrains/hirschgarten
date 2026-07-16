@@ -50,8 +50,10 @@ import org.jetbrains.bazel.sync.workspace.importer.WorkspaceImporterPhase
 import org.jetbrains.bazel.sync.workspace.importer.WorkspaceImporterResult
 import org.jetbrains.bazel.sync.workspace.snapshot.CommonWorkspaceSyncConfig
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceSnapshot
+import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTarget
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
 import org.jetbrains.bazel.sync.workspace.snapshot.allTargets
+import org.jetbrains.bazel.sync.workspace.snapshot.commonSyncConfig
 import org.jetbrains.bazel.sync.workspace.snapshot.filterBuildTarget
 import org.jetbrains.bazel.sync.workspace.snapshot.hasBuildData
 import org.jetbrains.bazel.utils.isUnder
@@ -82,6 +84,7 @@ internal class BazelPythonWorkspaceImporter : BazelWorkspaceImporter {
   private lateinit var commonSyncConfig: CommonWorkspaceSyncConfig
   private lateinit var pythonSyncConfig: PythonWorkspaceSyncConfig
   private lateinit var moduleNameByKey: Map<WorkspaceTargetKey, String>
+  private lateinit var allPythonTargets: Map<WorkspaceTargetKey, WorkspaceTarget>
 
   private var defaultInterpreter: Path? = null
   private var defaultVersion: String? = null
@@ -112,8 +115,12 @@ internal class BazelPythonWorkspaceImporter : BazelWorkspaceImporter {
       return WorkspaceImporterResult.Abort
     }
 
-    moduleNameByKey = snapshot.allTargets
+    val importDepth = snapshot.commonSyncConfig.importDepth
+    allPythonTargets = snapshot.targetGraph.findAllTargetsAtDepth(maxDepth = importDepth, useRelaxedDependencyExpansion = true)
       .filter { it.hasBuildData<PythonBuildTarget>() }
+      .associateBy { it.targetKey }
+
+    moduleNameByKey = allPythonTargets.values
       .groupBy { it.targetKey.label }
       .flatMap { (_, targets) ->
         when {
@@ -155,9 +162,8 @@ internal class BazelPythonWorkspaceImporter : BazelWorkspaceImporter {
     builder: MutableEntityStorage, vfuManager: VirtualFileUrlManager,
     entitySource: EntitySource,
   ): WorkspaceImporterResult {
-    for ((target, _) in snapshot.allTargets.filterBuildTarget<PythonBuildTarget>()) {
-      val targetKey = target.targetKey
-      val sourceDeps = pySourceDeps[target.targetKey] ?: emptyList()
+    for ((targetKey, target) in allPythonTargets) {
+      val sourceDeps = pySourceDeps[targetKey] ?: emptyList()
       val sourceDependencyLibrary =
         calculateSourceDependencyLibrary(targetKey, snapshot.repoMapping, sourceDeps, entitySource, vfuManager)
 
@@ -177,7 +183,7 @@ internal class BazelPythonWorkspaceImporter : BazelWorkspaceImporter {
   }
 
   private suspend fun onPostProcessing(context: WorkspaceImporterContext, snapshot: WorkspaceSnapshot): WorkspaceImporterResult {
-    val pyTargets = snapshot.allTargets
+    val pyTargets = allPythonTargets.values
       .filter { it.hasBuildData<PythonBuildTarget>() }
       .map { it.rawBuildTarget }
       .toList()
@@ -335,7 +341,7 @@ internal class BazelPythonWorkspaceImporter : BazelWorkspaceImporter {
     entitySource: EntitySource,
     virtualFileUrlManager: VirtualFileUrlManager,
   ): List<ContentRootEntityBuilder> = computeSourceRootPaths(context, target)
-      .map { it.toContentRoot(PYTHON_SOURCE_ROOT_TYPE, entitySource, virtualFileUrlManager) }
+    .map { it.toContentRoot(PYTHON_SOURCE_ROOT_TYPE, entitySource, virtualFileUrlManager) }
 
   private fun getResourceContentRootEntities(
     target: RawBuildTarget,
@@ -409,7 +415,8 @@ internal class BazelPythonWorkspaceImporter : BazelWorkspaceImporter {
     }
   }
 
-  private fun WorkspaceTargetKey.toPythonModuleName(repoMapping: RepoMapping) = moduleNameByKey[this] ?: this.formatAsModuleName(repoMapping)
+  private fun WorkspaceTargetKey.toPythonModuleName(repoMapping: RepoMapping) =
+    moduleNameByKey[this] ?: this.formatAsModuleName(repoMapping)
 }
 
 @ApiStatus.Internal

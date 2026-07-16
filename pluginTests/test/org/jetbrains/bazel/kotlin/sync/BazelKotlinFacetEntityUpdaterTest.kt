@@ -21,7 +21,6 @@ import org.jetbrains.kotlin.cli.common.arguments.K2JVMCompilerArguments
 import org.jetbrains.kotlin.config.IKotlinFacetSettings
 import org.jetbrains.kotlin.idea.facet.KotlinFacetType
 import org.junit.jupiter.api.Test
-import kotlin.io.path.Path
 
 class BazelKotlinFacetEntityUpdaterTest : WorkspaceModelBaseTest() {
 
@@ -29,9 +28,6 @@ class BazelKotlinFacetEntityUpdaterTest : WorkspaceModelBaseTest() {
   fun `should add KotlinFacet when given KotlinAddendum`() {
     runInEdtAndWait {
       // given
-      val javaHome = Path("/fake/path/to/local_jdk")
-      val javaVersion = "11"
-
       val kotlinBuildTarget =
         KotlinBuildTarget(
           languageVersion = "1.8",
@@ -40,10 +36,7 @@ class BazelKotlinFacetEntityUpdaterTest : WorkspaceModelBaseTest() {
           associates = listOf("//target4", "//target5").map { WorkspaceTargetKey(label = Label.parse(it)) },
           moduleName = "kotlin-module",
         )
-      val jvmBuildTarget = JvmBuildTarget(
-        javaHome = javaHome,
-        javaVersion = javaVersion,
-      )
+      val jvmBuildTarget = JvmBuildTarget()
 
       // when
       val retrievedFacetSettings = addToWorkspaceModelAndGetFacet(kotlinBuildTarget, jvmBuildTarget)
@@ -69,9 +62,6 @@ class BazelKotlinFacetEntityUpdaterTest : WorkspaceModelBaseTest() {
   fun `should parse Kotlin version from kotlincOptions if rules_jvm is used and not rules_kotlin`() {
     runInEdtAndWait {
       // given
-      val javaHome = Path("/fake/path/to/local_jdk")
-      val javaVersion = "11"
-
       val kotlinBuildTarget =
         KotlinBuildTarget(
           languageVersion = null,
@@ -80,10 +70,7 @@ class BazelKotlinFacetEntityUpdaterTest : WorkspaceModelBaseTest() {
           associates = emptyList(),
           moduleName = "kotlin-module",
         )
-      val jvmBuildTarget = JvmBuildTarget(
-        javaHome = javaHome,
-        javaVersion = javaVersion,
-      )
+      val jvmBuildTarget = JvmBuildTarget()
 
       // when
       val retrievedFacetSettings = addToWorkspaceModelAndGetFacet(kotlinBuildTarget, jvmBuildTarget)

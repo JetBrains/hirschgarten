@@ -56,7 +56,9 @@ internal class ScalaBazelWorkspaceImporter : BazelWorkspaceImporter {
         ScalaSdk(
           name = scalaBuildTarget.scalaVersion.scalaVersionToScalaSdkName(),
           scalaVersion = scalaBuildTarget.scalaVersion,
-          sdkJars = scalaBuildTarget.sdkJars.map { path -> path.toUri() },
+          sdkJars = scalaBuildTarget.sdkJars.getFiles()
+            .map { path -> path.toUri() }
+            .toList(),
         )
       }
 }

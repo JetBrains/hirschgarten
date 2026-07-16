@@ -14,13 +14,11 @@ import org.jetbrains.bazel.label.label
 import org.jetbrains.bazel.languages.projectview.ProjectView
 import org.jetbrains.bazel.python.lang.PythonBuildTarget
 import org.jetbrains.bazel.python.lang.PythonLanguageClass
-import org.jetbrains.bazel.server.BazelServerFacade
 import org.jetbrains.bazel.server.model.sourcesList
-import org.jetbrains.bazel.sync.workspace.graph.DependencyGraph
 import org.jetbrains.bazel.sync.workspace.languages.LanguagePlugin
 import org.jetbrains.bazel.sync.workspace.snapshot.SourceFileCollectionBuilder
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceSyncConfig
-import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
+import org.jetbrains.bazel.server.BazelServerFacade
 import org.jetbrains.bsp.protocol.BuildTargetData
 import java.nio.file.Files
 import java.nio.file.Path
@@ -40,8 +38,6 @@ internal class PythonLanguagePlugin : LanguagePlugin {
       return listOf(PythonLanguageClass.PYTHON)
     return emptyList()
   }
-  override fun createProjectMapper(project: Project, server: BazelServerFacade) = Mapper(server)
-
   override suspend fun createSyncConfigs(project: Project, projectView: ProjectView): List<WorkspaceSyncConfig> {
     val config = PythonWorkspaceSyncConfig(
       isPythonSupportEnabled = BazelFeatureFlags.isPythonSupportEnabled,
@@ -49,97 +45,91 @@ internal class PythonLanguagePlugin : LanguagePlugin {
     return listOf(config)
   }
 
-  inner class Mapper(private val server: BazelServerFacade) : LanguagePlugin.Mapper {
-    override val langPlugin: LanguagePlugin
-      get() = this@PythonLanguagePlugin
-
-    override suspend fun createBuildTargetData(
-      target: TargetIdeInfo,
-      targetsToImport: Map<WorkspaceTargetKey, TargetIdeInfo>,
-      graph: DependencyGraph,
-      repoMapping: RepoMapping,
-    ): List<BuildTargetData> {
-      if (!target.hasPythonTargetInfo()) {
-        return emptyList()
+  override suspend fun mapBuildTargetData(
+    server: BazelServerFacade,
+    target: TargetIdeInfo,
+    repoMapping: RepoMapping,
+  ): List<BuildTargetData> {
+    if (!target.hasPythonTargetInfo()) {
+      return emptyList()
+    }
+    val baseDirectory = server.bazelPathsResolver.toDirectoryPath(target.label().assumeResolved(), repoMapping)
+    val localRepositories = repoMapping.getLocalRepositories()
+    val pythonTarget = target.pythonTargetInfo
+    val runnerScript =
+      if (target.hasExecutableInfo()) {
+        server.bazelPathsResolver.resolve(target.executableInfo.executableFile, localRepositories)
       }
-      val baseDirectory = server.bazelPathsResolver.toDirectoryPath(target.label().assumeResolved(), repoMapping)
-      val localRepositories = repoMapping.getLocalRepositories()
-      val pythonTarget = target.pythonTargetInfo
-      val runnerScript =
-        if (target.hasExecutableInfo()) {
-          server.bazelPathsResolver.resolve(target.executableInfo.executableFile, localRepositories)
+      else {
+        null
+      }
+    return listOf(
+      PythonBuildTarget(
+        version = pythonTarget.version.takeUnless(String::isNullOrEmpty),
+        interpreter = calculateInterpreterPath(server, interpreter = pythonTarget.interpreter, localRepositories),
+        imports = pythonTarget.importsList,
+        generatedSources = SourceFileCollectionBuilder.build(
+          relativeRoot = baseDirectory,
+          paths = pythonTarget.resolveGeneratedSources(server, repoMapping),
+        ),
+        externalSources = getExternalSources(server, target, localRepositories)
+          .map { calculateExternalSourcePath(server, it, localRepositories) }
+          .let { SourceFileCollectionBuilder.build(relativeRoot = baseDirectory, paths = it) },
+        mainFile = MainSourceFinder.findMainFile(target, pythonTarget, server.bazelPathsResolver, localRepositories),
+        mainModule = pythonTarget.mainModule,
+        runnerScript = runnerScript,
+      ),
+    )
+  }
+
+  private fun calculateInterpreterPath(server: BazelServerFacade, interpreter: ArtifactLocation?, localRepositories: LocalRepositoryMapping): Path? =
+    interpreter
+      ?.takeUnless { it.relativePath.isNullOrEmpty() }
+      ?.let { server.bazelPathsResolver.resolve(it, localRepositories) }
+
+  private fun getExternalSources(server: BazelServerFacade, targetInfo: TargetIdeInfo, localRepositories: LocalRepositoryMapping): List<ArtifactLocation> =
+    targetInfo.sourcesList.mapNotNull { it.takeIf { server.bazelPathsResolver.isExternal(it, localRepositories) } }.toList()
+
+  private fun calculateExternalSourcePath(server: BazelServerFacade, externalSource: ArtifactLocation, localRepositories: LocalRepositoryMapping): Path {
+    val path = server.bazelPathsResolver.resolve(externalSource, localRepositories)
+    return server.bazelPathsResolver.resolve(findSitePackagesSubdirectory(path) ?: path)
+  }
+
+  private fun IntellijIdeInfo.PythonTargetInfo.resolveGeneratedSources(server: BazelServerFacade, repoMapping: RepoMapping): Sequence<Path> {
+    val localRepositories = repoMapping.getLocalRepositories()
+    return generatedSourcesList
+      .asSequence()
+      .flatMap { location ->
+        val sourceFile = server.bazelPathsResolver.resolve(location, localRepositories)
+        // some code gen rules return directories. we need to figure out what files are there
+        if (sourceFile.isDirectory()) {
+          Files
+            .walk(sourceFile)
+            .toList()
         }
         else {
-          null
+          listOf(sourceFile)
         }
-      return listOf(
-        PythonBuildTarget(
-          version = pythonTarget.version.takeUnless(String::isNullOrEmpty),
-          interpreter = calculateInterpreterPath(interpreter = pythonTarget.interpreter, localRepositories),
-          imports = pythonTarget.importsList,
-          generatedSources = SourceFileCollectionBuilder.build(
-            relativeRoot = baseDirectory,
-            paths = pythonTarget.resolveGeneratedSources(repoMapping),
-          ),
-          externalSources = getExternalSources(target, localRepositories)
-            .map { calculateExternalSourcePath(it, localRepositories) }
-            .let { SourceFileCollectionBuilder.build(relativeRoot = baseDirectory, paths = it) },
-          mainFile = MainSourceFinder.findMainFile(target, pythonTarget, server.bazelPathsResolver, localRepositories),
-          mainModule = pythonTarget.mainModule,
-          runnerScript = runnerScript,
-        ),
-      )
-    }
-
-    private fun calculateInterpreterPath(interpreter: ArtifactLocation?, localRepositories: LocalRepositoryMapping): Path? =
-      interpreter
-        ?.takeUnless { it.relativePath.isNullOrEmpty() }
-        ?.let { server.bazelPathsResolver.resolve(it, localRepositories) }
-
-    private fun getExternalSources(targetInfo: TargetIdeInfo, localRepositories: LocalRepositoryMapping): List<ArtifactLocation> =
-      targetInfo.sourcesList.mapNotNull { it.takeIf { server.bazelPathsResolver.isExternal(it, localRepositories) } }.toList()
-
-    private fun calculateExternalSourcePath(externalSource: ArtifactLocation, localRepositories: LocalRepositoryMapping): Path {
-      val path = server.bazelPathsResolver.resolve(externalSource, localRepositories)
-      return server.bazelPathsResolver.resolve(findSitePackagesSubdirectory(path) ?: path)
-    }
-
-    private fun IntellijIdeInfo.PythonTargetInfo.resolveGeneratedSources(repoMapping: RepoMapping): Sequence<Path> {
-      val localRepositories = repoMapping.getLocalRepositories()
-      return generatedSourcesList
-        .asSequence()
-        .flatMap { location ->
-          val sourceFile = server.bazelPathsResolver.resolve(location, localRepositories)
-          // some code gen rules return directories. we need to figure out what files are there
-          if (sourceFile.isDirectory()) {
-            Files
-              .walk(sourceFile)
-              .toList()
-          }
-          else {
-            listOf(sourceFile)
-          }
+      }
+      .filter { it.extension == "py" || it.extension == "pyw" }
+      .map { sourceFile ->
+        // If type annotation exists - use it instead of generated .py file
+        // https://peps.python.org/pep-0484/#the-type-of-class-objects
+        if (sourceFile.extension == "py") {
+          val interfaceStub = sourceFile.parent.resolve("${sourceFile.nameWithoutExtension}.pyi")
+          if (interfaceStub.exists())
+            return@map interfaceStub
         }
-        .filter { it.extension == "py" || it.extension == "pyw" }
-        .map { sourceFile ->
-          // If type annotation exists - use it instead of generated .py file
-          // https://peps.python.org/pep-0484/#the-type-of-class-objects
-          if (sourceFile.extension == "py") {
-            val interfaceStub = sourceFile.parent.resolve("${sourceFile.nameWithoutExtension}.pyi")
-            if (interfaceStub.exists())
-              return@map interfaceStub
-          }
 
-          sourceFile
-        }
-    }
-
-    private tailrec fun findSitePackagesSubdirectory(path: Path?): Path? =
-      when {
-        path == null -> null
-        // PyNames.SITE_PACKAGES
-        path.endsWith("site-packages") -> path
-        else -> findSitePackagesSubdirectory(path.parent)
+        sourceFile
       }
   }
+
+  private tailrec fun findSitePackagesSubdirectory(path: Path?): Path? =
+    when {
+      path == null -> null
+      // PyNames.SITE_PACKAGES
+      path.endsWith("site-packages") -> path
+      else -> findSitePackagesSubdirectory(path.parent)
+    }
 }

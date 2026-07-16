@@ -16,14 +16,12 @@ import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.collections.shouldNotContain
 import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
-import org.jetbrains.bazel.commons.LanguageClass
 import org.jetbrains.bazel.commons.RepoMappingDisabled
 import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.label.DependencyLabel
 import org.jetbrains.bazel.label.DependencyLabelKind
 import org.jetbrains.bazel.label.Label
-import org.jetbrains.bazel.magicmetamodel.formatAsLibraryName
 import org.jetbrains.bazel.magicmetamodel.formatAsModuleName
 import org.jetbrains.bazel.sync.JavaLanguageClass
 import org.jetbrains.bazel.sync.workspace.languages.java.sourceRoot.DefaultJvmPackagePrefixCalculator
@@ -31,7 +29,9 @@ import org.jetbrains.bazel.sync.workspace.languages.java.sourceRoot.JvmPackagePr
 import org.jetbrains.bazel.sync.workspace.languages.java.sourceRoot.SourceRootOptimizationMode
 import org.jetbrains.bazel.sync.workspace.languages.jvm.JvmBuildTarget
 import org.jetbrains.bazel.sync.workspace.languages.jvm.JvmDependency
+import org.jetbrains.bazel.sync.workspace.languages.jvm.extractJvmBuildTarget
 import org.jetbrains.bazel.sync.workspace.snapshot.File2TargetMap
+import org.jetbrains.bazel.sync.workspace.snapshot.SourceFileCollectionBuilder
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceAspectIds
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceConfigurationId
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTarget
@@ -39,7 +39,6 @@ import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
 import org.jetbrains.bazel.workspace.indexAdditionalFiles.ProjectViewGlobSet
 import org.jetbrains.bazel.workspace.model.test.framework.WorkspaceModelBaseTest
 import org.jetbrains.bazel.workspace.model.test.framework.createRawBuildTarget
-import org.jetbrains.bazel.workspacemodel.entities.BazelDummyEntitySource
 import org.jetbrains.bazel.workspacemodel.entities.BazelProjectEntitySource
 import org.jetbrains.bsp.protocol.LibraryItem
 import org.jetbrains.bsp.protocol.RawBuildTarget
@@ -104,16 +103,14 @@ internal class JvmTargetEntitiesBuilderTest : WorkspaceModelBaseTest() {
       dependencies = listOf(
         DependencyLabel(targetKey = WorkspaceTargetKey(label = libLabel), kind = DependencyLabelKind.COMPILE),
       ),
-      data = listOf(
-        JvmBuildTarget(
-          javaHome = Path("/fake/jdk"),
-          javaVersion = "11",
-          libraries = listOf(libraryItem),
-        ),
-      ),
+      data = listOf(JvmBuildTarget()),
     )
 
-    runImport(targets = listOf(target), libraries = listOf(libraryItem))
+    val appKey = target.key.copy(aspectIds = WorkspaceAspectIds.EMPTY)
+    runImport(
+      targets = listOf(target),
+      resolved = mapOf(appKey to JvmResolvedTarget(appKey, listOf(libraryItem), emptyList(), null, "")),
+    )
 
     check(loadedEntries(LibraryEntity::class.java).isNotEmpty()) { "expected a library entity" }
     check(loadedEntries(ModuleEntity::class.java).isNotEmpty()) { "expected a module entity" }
@@ -278,10 +275,14 @@ internal class JvmTargetEntitiesBuilderTest : WorkspaceModelBaseTest() {
     val withProvider = createRawBuildTarget(
       id = label,
       kind = kind,
-      data = listOf(JvmBuildTarget(javaHome = Path("/fake/jdk"), javaVersion = "11")),
+      data = listOf(JvmBuildTarget()),
     ).copy(key = WorkspaceTargetKey(label = label, aspectIds = WorkspaceAspectIds.of(listOf("//proto:proto_aspect"))))
 
-    runImport(targets = listOf(bare, withProvider))
+    val protoKey = WorkspaceTargetKey(label = label)
+    runImport(
+      targets = listOf(bare, withProvider),
+      resolved = mapOf(protoKey to JvmResolvedTarget(protoKey, emptyList(), emptyList(), null, "11")),
+    )
 
     val modules = loadedEntries(ModuleEntity::class.java)
     modules shouldHaveSize 1
@@ -299,22 +300,14 @@ internal class JvmTargetEntitiesBuilderTest : WorkspaceModelBaseTest() {
     val variantA = createRawBuildTarget(
       id = foo,
       kind = kind,
-      data = listOf(
-        JvmBuildTarget(
-          javaVersion = "11",
-          jvmDependencies = listOf(JvmDependency.ModuleDependency(DependencyLabel(WorkspaceTargetKey(label = a)))),
-        ),
-      ),
+      dependencies = listOf(DependencyLabel(WorkspaceTargetKey(label = a))),
+      data = listOf(JvmBuildTarget()),
     ).copy(key = WorkspaceTargetKey(label = foo, aspectIds = WorkspaceAspectIds.of(listOf("//foo:aspect_a"))))
     val variantB = createRawBuildTarget(
       id = foo,
       kind = kind,
-      data = listOf(
-        JvmBuildTarget(
-          javaVersion = "11",
-          jvmDependencies = listOf(JvmDependency.ModuleDependency(DependencyLabel(WorkspaceTargetKey(label = b)))),
-        ),
-      ),
+      dependencies = listOf(DependencyLabel(WorkspaceTargetKey(label = b))),
+      data = listOf(JvmBuildTarget()),
     ).copy(key = WorkspaceTargetKey(label = foo, aspectIds = WorkspaceAspectIds.of(listOf("//foo:aspect_b"))))
 
     runImport(targets = listOf(depA, depB, variantA, variantB))
@@ -335,7 +328,7 @@ internal class JvmTargetEntitiesBuilderTest : WorkspaceModelBaseTest() {
       id = producer,
       kind = kind,
       sources = listOf(Path("/base/dir/Producer.java")),
-      data = listOf(JvmBuildTarget(javaVersion = "11", outputJars = setOf(producerJar))),
+      data = listOf(JvmBuildTarget(outputInterfaceJars = SourceFileCollectionBuilder.build(listOf(producerJar)))),
     )
     val shadowLibraryKey = WorkspaceTargetKey(label = Label.parse("//producer-jdeps-lib"))
     val shadowLibrary = LibraryItem(
@@ -349,15 +342,24 @@ internal class JvmTargetEntitiesBuilderTest : WorkspaceModelBaseTest() {
     val app = createRawBuildTarget(
       id = Label.parse("//app"),
       kind = kind,
-      data = listOf(
-        JvmBuildTarget(
-          javaVersion = "11",
+      data = listOf(JvmBuildTarget()),
+    )
+
+    val producerKey = producerTarget.key.copy(aspectIds = WorkspaceAspectIds.EMPTY)
+    val appKey = app.key.copy(aspectIds = WorkspaceAspectIds.EMPTY)
+    runImport(
+      targets = listOf(producerTarget, app),
+      resolved = mapOf(
+        producerKey to JvmResolvedTarget(producerKey, emptyList(), emptyList(), null, ""),
+        appKey to JvmResolvedTarget(
+          key = appKey,
+          libraries = listOf(shadowLibrary),
           jvmDependencies = listOf(JvmDependency.LibraryDependency(DependencyLabel(shadowLibraryKey))),
+          javaHome = null,
+          javaVersion = "",
         ),
       ),
     )
-
-    runImport(targets = listOf(producerTarget, app), libraries = listOf(shadowLibrary))
 
     val appModule = loadedEntries(ModuleEntity::class.java).single { it.name == Label.parse("//app").formatAsModuleNameTest() }
     val dep = appModule.dependencies.filterIsInstance<ModuleDependency>().single { it.module.name == producer.formatAsModuleNameTest() }
@@ -366,14 +368,14 @@ internal class JvmTargetEntitiesBuilderTest : WorkspaceModelBaseTest() {
 
   private suspend fun runImport(
     targets: List<RawBuildTarget>,
-    libraries: List<LibraryItem> = emptyList(),
+    resolved: Map<WorkspaceTargetKey, JvmResolvedTarget> = defaultResolved(targets),
   ) {
     val calc = DefaultJvmPackagePrefixCalculator(SourceRootOptimizationMode.Disabled)
     calc.calculate(targets)
     val jvmPackagePrefixes: JvmPackagePrefixCalculator = calc
     val ctx = ImportContext(
       targets = targets.map { WorkspaceTarget(it.key, it) },
-      allLibraries = libraries,
+      jvmResolved = resolved,
       repoMapping = RepoMappingDisabled,
       projectName = "test-project",
       projectBasePath = projectBasePath,
@@ -388,14 +390,22 @@ internal class JvmTargetEntitiesBuilderTest : WorkspaceModelBaseTest() {
       excludeCompiledSourceCodeInsideJars = true,
       currentCompiledSourceExcludeEntity = null,
     )
-    LibraryBuilder.writeAll(
-      libraryItems = ctx.libraries,
-      importIjars = false,
-      virtualFileUrlManager = virtualFileUrlManager,
-      entitySource = BazelDummyEntitySource,
-      libraryNameProvider = { key -> key.formatAsLibraryName(RepoMappingDisabled, withFullKey = true) },
-      storage = workspaceEntityStorageBuilder,
-    )
+    // JvmTargetEntitiesBuilder writes ctx.libraries (sourced from the resolver) in its phase 0
     JvmTargetEntitiesBuilder(ctx).writeAll(workspaceEntityStorageBuilder)
+  }
+
+  private fun defaultResolved(targets: List<RawBuildTarget>): Map<WorkspaceTargetKey, JvmResolvedTarget> {
+    val moduleKeys = targets.filter { extractJvmBuildTarget(it) != null }.map { it.key.copy(aspectIds = WorkspaceAspectIds.EMPTY) }.toSet()
+    return targets.filter { extractJvmBuildTarget(it) != null }
+      .groupBy { it.key.copy(aspectIds = WorkspaceAspectIds.EMPTY) }
+      .mapValues { (key, group) ->
+        val jvmDeps = group.flatMap { t ->
+          t.dependencies.map { dep ->
+            if (dep.targetKey.copy(aspectIds = WorkspaceAspectIds.EMPTY) in moduleKeys) JvmDependency.ModuleDependency(dep)
+            else JvmDependency.LibraryDependency(dep)
+          }
+        }.distinct()
+        JvmResolvedTarget(key = key, libraries = emptyList(), jvmDependencies = jvmDeps, javaHome = null, javaVersion = "")
+      }
   }
 }

@@ -6,6 +6,7 @@ import org.jetbrains.bazel.commons.RepoMapping
 import org.jetbrains.bazel.config.bazelProjectName
 import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.languages.projectview.ProjectView
+import org.jetbrains.bazel.languages.projectview.importDepth
 import org.jetbrains.bazel.sync.workspace.BazelResolvedWorkspace
 import org.jetbrains.bazel.sync.workspace.languages.LanguagePlugin
 
@@ -21,6 +22,7 @@ object WorkspaceSnapshotBuilder {
     val commonSyncConfig = CommonWorkspaceSyncConfig(
       projectRootDir = workspaceRoot,
       projectName = project.bazelProjectName,
+      importDepth = projectView.importDepth,
     )
     val targets = resolved.targets
       .map {

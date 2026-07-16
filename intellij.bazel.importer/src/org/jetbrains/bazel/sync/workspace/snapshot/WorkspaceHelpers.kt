@@ -22,3 +22,7 @@ val WorkspaceSnapshot.allTargets: Sequence<WorkspaceTarget>
 @get:ApiStatus.Internal
 val WorkspaceTarget.kind: String
   get() = rawBuildTarget.kind.kind
+
+@get:ApiStatus.Internal
+val WorkspaceSnapshot.commonSyncConfig: CommonWorkspaceSyncConfig
+  get() = syncConfigs.filterIsInstance<CommonWorkspaceSyncConfig>().first()

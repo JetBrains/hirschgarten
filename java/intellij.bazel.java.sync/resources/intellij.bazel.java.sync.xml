@@ -28,12 +28,6 @@
       interface="org.jetbrains.bazel.workspace.importer.KotlinFacetEntityUpdater"
       qualifiedName="org.jetbrains.bazel.kotlinFacetEntityUpdater"
     />
-
-    <extensionPoint
-      dynamic="true"
-      interface="org.jetbrains.bazel.sync.workspace.languages.java.JvmLanguagePluginMixin"
-      qualifiedName="org.jetbrains.bazel.jvmLanguagePlugin"
-    />
   </extensionPoints>
 
   <extensions defaultExtensionNs="org.jetbrains.bazel">
@@ -51,8 +45,10 @@
 
     <languagePlugin id="JavaLanguagePlugin"
                     implementation="org.jetbrains.bazel.sync.workspace.languages.java.JavaLanguagePlugin"/>
-    <jvmLanguagePlugin implementation="org.jetbrains.bazel.sync.workspace.languages.kotlin.KotlinLanguagePlugin"/>
-    <jvmLanguagePlugin implementation="org.jetbrains.bazel.sync.workspace.languages.scala.ScalaLanguagePlugin"/>
+    <languagePlugin id="KotlinLanguagePlugin"
+                    implementation="org.jetbrains.bazel.sync.workspace.languages.kotlin.KotlinLanguagePlugin"/>
+    <languagePlugin id="ScalaLanguagePlugin"
+                    implementation="org.jetbrains.bazel.sync.workspace.languages.scala.ScalaLanguagePlugin"/>
 
   </extensions>
 

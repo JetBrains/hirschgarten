@@ -130,7 +130,7 @@ sealed interface WorkspaceImporterPhase {
   /**
    * Optional phase called after [Finalize], depending on environment might not be invoked.
    * [WorkspaceImporterPhase.PostProcessing] phase will be applied after workspace model
-   * application if conecpt of workspace model application is present in invocation environment.{
+   * application if concept of workspace model application is present in invocation environment.
    */
   data object PostProcessing : WorkspaceImporterPhase
 

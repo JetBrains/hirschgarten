@@ -20,7 +20,7 @@ object TestBuildTargetFactory {
       kind = "java_library",
       ruleType = RuleType.LIBRARY,
       languages = setOf(JavaLanguageClass.JAVA),
-      data = listOf(JvmBuildTarget(javaVersion = "21")),
+      data = listOf(JvmBuildTarget()),
     )
 
   fun createSimpleKotlinLibraryTarget(id: Label): RawBuildTarget =
@@ -36,9 +36,7 @@ object TestBuildTargetFactory {
           kotlincOptions = listOf(),
           associates = listOf(),
         ),
-        JvmBuildTarget(
-          javaVersion = "21",
-        ),
+        JvmBuildTarget(),
       ),
     )
 

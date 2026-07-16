@@ -58,4 +58,5 @@ interface WorkspaceSyncConfig
 data class CommonWorkspaceSyncConfig(
   val projectRootDir: Path,
   val projectName: String,
+  val importDepth: Int,
 ) : WorkspaceSyncConfig

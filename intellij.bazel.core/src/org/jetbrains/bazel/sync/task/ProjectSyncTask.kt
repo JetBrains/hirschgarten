@@ -53,7 +53,7 @@ import org.jetbrains.bazel.sync.workspace.importer.WorkspaceImporterHelper
 import org.jetbrains.bazel.sync.workspace.mapper.BazelWorkspaceResolver
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceSnapshot
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceSnapshotBuilder
-import org.jetbrains.bazel.sync.workspace.snapshot.allTargets
+import org.jetbrains.bazel.sync.workspace.snapshot.commonSyncConfig
 import org.jetbrains.bazel.target.targetUtils
 import org.jetbrains.bazel.taskEvents.BazelTaskEventsService
 import org.jetbrains.bazel.workspace.fileEvents.FileEventJobManager
@@ -476,11 +476,14 @@ class ProjectSyncTask(private val project: Project) {
 
   // TODO: remove this after proper `WorkspaceSnapshot` persistance
   private fun saveTargetStorage(snapshot: WorkspaceSnapshot) {
+    val moduleTargets = snapshot.targetGraph.findAllTargetsAtDepth(
+      maxDepth = snapshot.commonSyncConfig.importDepth,
+      useRelaxedDependencyExpansion = true,
+    )
     project.targetUtils.saveTargets(
-      targets = snapshot.allTargets
-        .map { it.rawBuildTarget }
-        .toList(),
-      fileToTarget = snapshot.allTargets
+      targets = moduleTargets
+        .map { it.rawBuildTarget },
+      fileToTarget = moduleTargets
         .flatMap { target -> target.rawBuildTarget.allSources.map { source -> source to target } }
         .groupBy(keySelector = { it.first }, valueTransform = { it.second.targetKey.label })
         .toMap(),

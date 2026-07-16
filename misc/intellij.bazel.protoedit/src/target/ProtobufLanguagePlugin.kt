@@ -2,15 +2,12 @@ package org.jetbrains.bazel.protobuf
 
 import com.google.devtools.intellij.ideinfo.IntellijIdeInfo
 import com.google.devtools.intellij.ideinfo.IntellijIdeInfo.TargetIdeInfo
-import com.intellij.openapi.project.Project
 import org.jetbrains.bazel.commons.LanguageClass
 import org.jetbrains.bazel.commons.RepoMapping
 import org.jetbrains.bazel.commons.getLocalRepositories
 import org.jetbrains.bazel.protobuf.target.ProtobufBuildTarget
 import org.jetbrains.bazel.server.BazelServerFacade
-import org.jetbrains.bazel.sync.workspace.graph.DependencyGraph
 import org.jetbrains.bazel.sync.workspace.languages.LanguagePlugin
-import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
 import org.jetbrains.bsp.protocol.BuildTargetData
 import kotlin.io.path.absolutePathString
 import kotlin.reflect.KClass
@@ -25,32 +22,24 @@ internal class ProtobufLanguagePlugin : LanguagePlugin {
       return listOf(ProtobufLanguageClass.PROTOBUF)
     return emptyList()
   }
-  override fun createProjectMapper(project: Project, server: BazelServerFacade) = Mapper(server)
-
-  inner class Mapper(private val server: BazelServerFacade) : LanguagePlugin.Mapper {
-    override val langPlugin: LanguagePlugin
-      get() = this@ProtobufLanguagePlugin
-
-    override suspend fun createBuildTargetData(
-      target: TargetIdeInfo,
-      targetsToImport: Map<WorkspaceTargetKey, TargetIdeInfo>,
-      graph: DependencyGraph,
-      repoMapping: RepoMapping,
-    ): List<BuildTargetData> {
-      if (!target.hasProtobufTargetInfo()) {
-        return emptyList()
-      }
-      val localRepositories = repoMapping.getLocalRepositories()
-      val sources =
-        target.protobufTargetInfo.sourceMappingsList
-          .associate<IntellijIdeInfo.ProtobufSourceMapping, String, String> {
-            it.importPath to server.bazelPathsResolver.resolve(it.protoFile, localRepositories).absolutePathString()
-          }
-      return listOf(
-        ProtobufBuildTarget(
-          sources = sources,
-        ),
-      )
+  override suspend fun mapBuildTargetData(
+    server: BazelServerFacade,
+    target: TargetIdeInfo,
+    repoMapping: RepoMapping,
+  ): List<BuildTargetData> {
+    if (!target.hasProtobufTargetInfo()) {
+      return emptyList()
     }
+    val localRepositories = repoMapping.getLocalRepositories()
+    val sources =
+      target.protobufTargetInfo.sourceMappingsList
+        .associate<IntellijIdeInfo.ProtobufSourceMapping, String, String> {
+          it.importPath to server.bazelPathsResolver.resolve(it.protoFile, localRepositories).absolutePathString()
+        }
+    return listOf(
+      ProtobufBuildTarget(
+        sources = sources,
+      ),
+    )
   }
 }
