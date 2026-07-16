@@ -71,7 +71,6 @@ object BazelWorkspaceResolver {
             )
           val targets = bazelMapper.mapTargets(
             allTargets = syncProject.targets,
-            rootTargets = syncProject.rootTargets,
             repoMapping = syncProject.repoMapping,
             build = build,
             taskId = taskId,

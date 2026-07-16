@@ -26,7 +26,7 @@ object ScalaAddendumBuilder {
         entitySource = parentModuleEntity.entitySource,
         compilerVersion = target.scalaVersion,
         scalacOptions = target.scalacOptions,
-        sdkClasspaths = target.sdkJars.map { it.toVirtualFileUrl(virtualFileUrlManager) },
+        sdkClasspaths = target.sdkJars.getFiles().map { it.toVirtualFileUrl(virtualFileUrlManager) }.toList(),
       )
     storage.modifyModuleEntity(parentModuleEntity) {
       this.scalaAddendumEntity = entity

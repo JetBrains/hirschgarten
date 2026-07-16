@@ -24,7 +24,6 @@ import org.jetbrains.bazel.label.toDependencyLabel
 import org.jetbrains.bazel.languages.projectview.importDepth
 import org.jetbrains.bazel.performance.measure
 import org.jetbrains.bazel.server.BazelServerFacade
-import org.jetbrains.bazel.sync.workspace.graph.DependencyGraph
 import org.jetbrains.bazel.sync.workspace.languages.LanguagePlugin
 import org.jetbrains.bazel.sync.workspace.languages.createLanguageProjectMappers
 import org.jetbrains.bazel.sync.workspace.snapshot.SourceFileCollectionBuilder
@@ -41,61 +40,42 @@ import kotlin.io.path.extension
 @ApiStatus.Internal
 class AspectBazelProjectMapper(
   private val project: Project,
-  server: BazelServerFacade,
+  private val server: BazelServerFacade,
 ) {
   private val bazelPathsResolver = server.bazelPathsResolver
-  private val langMappers = createLanguageProjectMappers(project, server)
-  private val projectView = server.projectView
+  private val langMappers = createLanguageProjectMappers()
 
   suspend fun mapTargets(
     allTargets: Map<WorkspaceTargetKey, TargetIdeInfo>,
-    rootTargets: Set<WorkspaceTargetKey>,
     repoMapping: RepoMapping,
     build: Boolean,
     taskId: TaskId,
   ): List<RawBuildTarget> {
-    val dependencyGraph =
-      measure("Build dependency tree") {
-        DependencyGraph(rootTargets, allTargets)
-      }
-
-    val targetsToImport: Map<WorkspaceTargetKey, TargetIdeInfo> =
-      measure("Select targets") {
-        dependencyGraph.allTargetsAtDepth(
-          projectView.importDepth,
-          // Ignore .bazelbsp and all its dependencies (if any)
-          predicate = { key -> key.label.packagePath.pathSegments.firstOrNull() != Constants.DOT_BAZELBSP_DIR_NAME },
-        ).associateBy { it.key.toWorkspaceTargetKey() }
-      }
-
-    langMappers.all().forEach {
-      it.prepareSync(dependencyGraph, targetsToImport, repoMapping)
-    }
+    // Ignore .bazelbsp and all its dependencies (if any)
+    val allImportableTargets =
+      allTargets.filterKeys { key -> key.label.packagePath.pathSegments.firstOrNull() != Constants.DOT_BAZELBSP_DIR_NAME }
 
     val rawTargets: List<RawBuildTarget> = measure("create raw targets") {
-      createRawBuildTargets(targetsToImport, repoMapping, dependencyGraph, build, taskId)
+      createRawBuildTargets(allImportableTargets, repoMapping, build, taskId)
     }
 
     return rawTargets
   }
 
   private suspend fun createRawBuildTargets(
-    targetsToImport: Map<WorkspaceTargetKey, TargetIdeInfo>,
+    allTargets: Map<WorkspaceTargetKey, TargetIdeInfo>,
     repoMapping: RepoMapping,
-    dependencyGraph: DependencyGraph,
     build: Boolean,
     taskId: TaskId,
   ): List<RawBuildTarget> {
     val localRepositories = repoMapping.getLocalRepositories()
     return withContext(Dispatchers.Default) {
       val tasks =
-        targetsToImport.values.map { target ->
+        allTargets.values.map { target ->
           async {
             createRawBuildTarget(
               target = target,
-              targetsToImport = targetsToImport,
               repoMapping = repoMapping,
-              dependencyGraph = dependencyGraph,
               localRepositories = localRepositories,
               build = build,
               taskId = taskId,
@@ -109,9 +89,7 @@ class AspectBazelProjectMapper(
 
   private suspend fun createRawBuildTarget(
     target: TargetIdeInfo,
-    targetsToImport: Map<WorkspaceTargetKey, TargetIdeInfo>,
     repoMapping: RepoMapping,
-    dependencyGraph: DependencyGraph,
     localRepositories: LocalRepositoryMapping,
     build: Boolean,
     taskId: TaskId,
@@ -120,10 +98,10 @@ class AspectBazelProjectMapper(
     val targetKind = inferTargetKind(target)
     val baseDirectory = bazelPathsResolver.toDirectoryPath(label, repoMapping)
 
-    val buildData = langMappers.all().flatMap { mapper ->
-      mapper.createBuildTargetData(target, targetsToImport, dependencyGraph, repoMapping).also { data ->
-        if (!mapper.langPlugin.providedBuildTargetTypes.containsAll(data.map { it::class })) {
-          error("Mapper $mapper returned unregistered build target data: ${data.joinToString()}")
+    val buildData = langMappers.all().flatMap { plugin ->
+      plugin.mapBuildTargetData(server, target, repoMapping).also { data ->
+        if (!plugin.providedBuildTargetTypes.containsAll(data.map { it::class })) {
+          error("Language plugin $plugin returned unregistered build target data: ${data.joinToString()}")
         }
       }
     }

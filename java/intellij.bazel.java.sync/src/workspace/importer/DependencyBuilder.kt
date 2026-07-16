@@ -34,9 +34,9 @@ private val idInterner: Interner<SymbolicEntityId<*>> = Interner.createWeakInter
 @ApiStatus.Internal
 class DependencyBuilder(
   private val targets: Collection<RawBuildTarget>,
+  private val jvmResolved: Map<WorkspaceTargetKey, JvmResolvedTarget>,
   private val libraryShadowsModule: Map<WorkspaceTargetKey, WorkspaceTargetKey> = emptyMap(),
 ) {
-  private val targetsIndex: Map<WorkspaceTargetKey, RawBuildTarget> = targets.associateBy { it.key.stripAspects() }
   private val strictDependencies: Map<WorkspaceTargetKey, List<Label>> = calculateExportedDependenciesTransitiveClosure()
 
   data class Resolved(
@@ -46,8 +46,7 @@ class DependencyBuilder(
   )
 
   fun resolve(target: RawBuildTarget): Resolved {
-    val jvmBuildTarget = extractJvmBuildTarget(target)
-    val deps = jvmBuildTarget?.jvmDependencies?.map { dep ->
+    val deps = jvmResolved[target.key.stripAspects()]?.jvmDependencies?.map { dep ->
       // TODO: investigate "experimental_prune_transitive_deps" option in .bazelrc
       when (dep) {
         is JvmDependency.ModuleDependency ->
@@ -76,8 +75,8 @@ class DependencyBuilder(
     val strictTargets = targets.filter { checkStrictDependencies(it) != StrictDependencyCheckedType.OFF }.map { it.key.stripAspects() }
 
     val fDependencies: ((WorkspaceTargetKey) -> List<DependencyLabel>) = dependencies@{ key ->
-      val jvmTarget = targetsIndex[key]?.let { extractJvmBuildTarget(it) } ?: return@dependencies emptyList()
-      jvmTarget.jvmDependencies.map { redirectLibraryShadow(key, it.dependency) ?: it.dependency }
+      val resolved = jvmResolved[key] ?: return@dependencies emptyList()
+      resolved.jvmDependencies.map { redirectLibraryShadow(key, it.dependency) ?: it.dependency }
         .filter { it.targetKey.label != key.label /* filter out module dependency on library */ }
         .distinct()
     }
@@ -114,7 +113,7 @@ class DependencyBuilder(
 private fun DependencyLabel.export(): DependencyLabel =
   if (this.kind == DependencyLabelKind.COMPILE) this.copy(kind = DependencyLabelKind.EXPORTED_COMPILE_TIME) else this
 
-private fun WorkspaceTargetKey.stripAspects(): WorkspaceTargetKey = copy(aspectIds = WorkspaceAspectIds.EMPTY)
+internal fun WorkspaceTargetKey.stripAspects(): WorkspaceTargetKey = copy(aspectIds = WorkspaceAspectIds.EMPTY)
 
 internal fun toLibraryDependency(
   libraryName: String,

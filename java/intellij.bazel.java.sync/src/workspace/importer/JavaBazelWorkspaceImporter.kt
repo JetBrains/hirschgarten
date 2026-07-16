@@ -7,7 +7,6 @@ import com.intellij.platform.diagnostic.telemetry.helpers.use
 import com.intellij.platform.workspace.storage.EntitySource
 import com.intellij.platform.workspace.storage.MutableEntityStorage
 import com.intellij.platform.workspace.storage.entities
-import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.config.BazelJavaBackendBundle
 import org.jetbrains.bazel.config.bazelProjectName
 import org.jetbrains.bazel.label.Label
@@ -24,16 +23,18 @@ import org.jetbrains.bazel.sync.workspace.languages.java.sourceRoot.DefaultJvmPa
 import org.jetbrains.bazel.sync.workspace.languages.jvm.extractJvmBuildTarget
 import org.jetbrains.bazel.sync.workspace.snapshot.CommonWorkspaceSyncConfig
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceSnapshot
+import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTarget
+import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
 import org.jetbrains.bazel.workspace.indexAdditionalFiles.ProjectViewGlobSet
 import org.jetbrains.bazel.workspacemodel.entities.CompiledSourceCodeInsideJarExcludeEntity
-import org.jetbrains.bsp.protocol.LibraryItem
 import org.jetbrains.bsp.protocol.RawBuildTarget
 import java.nio.file.Path
 
 internal class JavaBazelWorkspaceImporter : BazelWorkspaceImporter, BazelWorkspaceImporter.Named {
   private var javacOptions: Map<String, String>? = null
+  private lateinit var moduleTargets: List<WorkspaceTarget>
   private lateinit var targets: List<RawBuildTarget>
-  private lateinit var libraryItems: List<LibraryItem>
+  private lateinit var jvmResolved: Map<WorkspaceTargetKey, JvmResolvedTarget>
   private lateinit var uniqueJavaHomes: Set<Path>
   private lateinit var commonSyncConfig: CommonWorkspaceSyncConfig
   private lateinit var javaSyncConfig: JavaWorkspaceSyncConfig
@@ -66,17 +67,20 @@ internal class JavaBazelWorkspaceImporter : BazelWorkspaceImporter, BazelWorkspa
     javaSyncConfig = snapshot.syncConfigs.filterIsInstance<JavaWorkspaceSyncConfig>()
                        .firstOrNull() ?: throw IllegalStateException()
 
-    targets = snapshot.targets.map { (_, target) -> target.rawBuildTarget }
-    libraryItems = targets.mapNotNull { extractJvmBuildTarget(it) }
-      .flatMap { it.libraries }
-      .distinctBy { it.key }
+    moduleTargets = snapshot.targetGraph.findAllTargetsAtDepth(
+      maxDepth = commonSyncConfig.importDepth,
+      useRelaxedDependencyExpansion = true,
+    )
+    targets = moduleTargets.map { it.rawBuildTarget }
+    jvmResolved = JvmBuildTargetResolver(
+      allTargets = snapshot.targets,
+      targetsToImport = moduleTargets.associateBy { it.targetKey },
+      javaSyncConfig = snapshot.syncConfigs.filterIsInstance<JavaWorkspaceSyncConfig>().first(),
+    ).resolveAll()
 
     // TODO: check why is this even needed - can't we just write SdkEntity into the project workspace model
     //  and avoid the global JDK table altogether?
-    uniqueJavaHomes = targets
-      .mapNotNull(::extractJvmBuildTarget)
-      .map { requireNotNull(it.javaHome) { "javaHome is null but expected not to be null for $it" } }
-      .toSet()
+    uniqueJavaHomes = jvmResolved.values.mapNotNull { it.javaHome }.toSet()
     defaultJdkName = if (uniqueJavaHomes.isNotEmpty()) {
       context.project.bazelProjectName.projectNameToJdkName(uniqueJavaHomes.first())
     }
@@ -132,8 +136,8 @@ internal class JavaBazelWorkspaceImporter : BazelWorkspaceImporter, BazelWorkspa
     val testTargets = TestTargetClassifier.calculateTargetsToMarkAsTest(targets)
 
     val importContext = ImportContext(
-      targets = snapshot.targets.values,
-      allLibraries = libraryItems,
+      targets = moduleTargets,
+      jvmResolved = jvmResolved,
       repoMapping = snapshot.repoMapping,
       projectName = commonSyncConfig.projectName,
       projectBasePath = commonSyncConfig.projectRootDir,

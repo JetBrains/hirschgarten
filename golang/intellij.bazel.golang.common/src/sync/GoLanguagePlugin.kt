@@ -4,7 +4,6 @@ import com.google.devtools.intellij.aspect.Common
 import com.google.devtools.intellij.ideinfo.IntellijIdeInfo.TargetIdeInfo
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.diagnostic.logger
-import com.intellij.openapi.project.Project
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.commons.BazelPathsResolver
 import org.jetbrains.bazel.commons.LanguageClass
@@ -13,9 +12,7 @@ import org.jetbrains.bazel.commons.RepoMapping
 import org.jetbrains.bazel.commons.getLocalRepositories
 import org.jetbrains.bazel.golang.GoLanguageClass
 import org.jetbrains.bazel.server.BazelServerFacade
-import org.jetbrains.bazel.sync.workspace.graph.DependencyGraph
 import org.jetbrains.bazel.sync.workspace.languages.LanguagePlugin
-import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
 import org.jetbrains.bazel.sync.workspace.snapshot.toWorkspaceTargetKey
 import org.jetbrains.bsp.protocol.BazelResolveLocalToRemoteParams
 import org.jetbrains.bsp.protocol.BazelResolveLocalToRemoteResult
@@ -40,43 +37,35 @@ class GoLanguagePlugin: LanguagePlugin {
     return emptyList()
   }
 
-  override fun createProjectMapper(project: Project, server: BazelServerFacade): Mapper = Mapper(server)
-
-  inner class Mapper(private val server: BazelServerFacade) : LanguagePlugin.Mapper {
-    override val langPlugin: LanguagePlugin
-      get() = this@GoLanguagePlugin
-
-    override suspend fun createBuildTargetData(
-      target: TargetIdeInfo,
-      targetsToImport: Map<WorkspaceTargetKey, TargetIdeInfo>,
-      graph: DependencyGraph,
-      repoMapping: RepoMapping,
-    ): List<BuildTargetData> {
-      if (!target.hasGoTargetInfo()) {
-        return emptyList()
-      }
-      val goTarget = target.goTargetInfo
-      val localRepositories = repoMapping.getLocalRepositories()
-      return listOf(
-        GoBuildTarget(
-          sdkHomePath = calculateSdkPath(goTarget.sdkHomePath, localRepositories),
-          importPath = goTarget.importPath,
-          sources = server.outFileHardLinks.createOutputFileHardLinks(
-            goTarget.sourcesList.map { server.bazelPathsResolver.resolve(it, localRepositories) },
-          ),
-          embed = goTarget.embedList.map { it.toWorkspaceTargetKey() },
-        ),
-      )
+  override suspend fun mapBuildTargetData(
+    server: BazelServerFacade,
+    target: TargetIdeInfo,
+    repoMapping: RepoMapping,
+  ): List<BuildTargetData> {
+    if (!target.hasGoTargetInfo()) {
+      return emptyList()
     }
-
-    private fun calculateSdkPath(sdk: Common.ArtifactLocation?, localRepositories: LocalRepositoryMapping): Path? =
-      sdk
-        ?.takeUnless { it.relativePath.isNullOrEmpty() }
-        ?.let {
-          val goBinaryPath = server.bazelPathsResolver.resolve(it, localRepositories)
-          goBinaryPath.parent.parent
-        }
+    val goTarget = target.goTargetInfo
+    val localRepositories = repoMapping.getLocalRepositories()
+    return listOf(
+      GoBuildTarget(
+        sdkHomePath = calculateSdkPath(server, goTarget.sdkHomePath, localRepositories),
+        importPath = goTarget.importPath,
+        sources = server.outFileHardLinks.createOutputFileHardLinks(
+          goTarget.sourcesList.map { server.bazelPathsResolver.resolve(it, localRepositories) },
+        ),
+        embed = goTarget.embedList.map { it.toWorkspaceTargetKey() },
+      ),
+    )
   }
+
+  private fun calculateSdkPath(server: BazelServerFacade, sdk: Common.ArtifactLocation?, localRepositories: LocalRepositoryMapping): Path? =
+    sdk
+      ?.takeUnless { it.relativePath.isNullOrEmpty() }
+      ?.let {
+        val goBinaryPath = server.bazelPathsResolver.resolve(it, localRepositories)
+        goBinaryPath.parent.parent
+      }
 
   companion object {
     private val logger: Logger = logger<GoLanguagePlugin>()

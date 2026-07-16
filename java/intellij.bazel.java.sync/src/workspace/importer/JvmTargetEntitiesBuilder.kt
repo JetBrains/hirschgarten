@@ -71,7 +71,7 @@ import com.intellij.platform.workspace.jps.entities.DependencyScope as EntitiesD
 @ApiStatus.Internal
 class ImportContext(
   targets: Collection<WorkspaceTarget>,
-  allLibraries: List<LibraryItem>,
+  val jvmResolved: Map<WorkspaceTargetKey, JvmResolvedTarget>,
   val repoMapping: RepoMapping,
   val projectName: String,
   val projectBasePath: Path,
@@ -89,6 +89,8 @@ class ImportContext(
 ) {
   // merge aspect-only duplicates so the whole pipeline sees one target per (label, configuration)
   val targets: List<WorkspaceTarget> = JvmWorkspaceTargetMerger.mergeByTargetKey(targets)
+
+  private val allLibraries: List<LibraryItem> = jvmResolved.values.flatMap { it.libraries }.distinctBy { it.key }
 
   // module names are keyed by (label, configuration): a single label imported under >= 2 configurations
   // (e.g. normal + exec) would otherwise collide on one name and silently drop a module, labels with a single
@@ -120,7 +122,7 @@ class ImportContext(
       // build `jar -> source module` map
       .filter { it.rawBuildTarget.allSources.any { path -> path.hasJvmSourceExtension() } }
       .flatMap { target ->
-        target.findBuildData<JvmBuildTarget>()?.outputJars.orEmpty()
+        target.findBuildData<JvmBuildTarget>()?.let { (it.binaryOutputs.getFiles() + it.outputInterfaceJars.getFiles()).toList() }.orEmpty()
           .asSequence().map { it to target.targetKey }
       }
       .groupBy({ it.first }, { it.second })
@@ -164,7 +166,7 @@ class ImportContext(
     libraries.groupBy({ it.key.label }, { libraryNamesByKey[it.key]!! })
       .mapValues { (_, names) -> names.distinct() }
 
-  val dependencyBuilder: DependencyBuilder = DependencyBuilder(this.targets.map { it.rawBuildTarget }, libraryShadowsModule)
+  val dependencyBuilder: DependencyBuilder = DependencyBuilder(this.targets.map { it.rawBuildTarget }, jvmResolved, libraryShadowsModule)
   val dummyModuleSplitter: DummyModuleSplitter = DummyModuleSplitter(projectBasePath, fileToTargets)
 }
 
@@ -269,9 +271,9 @@ class JvmTargetEntitiesBuilder(private val ctx: ImportContext) {
                      ?: target.targetKey.label.formatAsModuleName(ctx.repoMapping)
     val resolvedDeps = ctx.dependencyBuilder.resolve(target.rawBuildTarget)
     val jdkName = jdkNameFor(target)
-    val javaLangVersion = target.findBuildData<JvmBuildTarget>()?.javaVersion
+    val javaLangVersion = ctx.jvmResolved[target.targetKey.copy(aspectIds = WorkspaceAspectIds.EMPTY)]?.javaVersion
     val javacOptions = target.findBuildData<JvmBuildTarget>()?.javacOpts.orEmpty()
-    val jvmBinaryJars = target.findBuildData<JvmBuildTarget>()?.binaryOutputs ?: SourceFileCollection.EMPTY
+    val jvmBinaryJars = target.findBuildData<JvmBuildTarget>()?.rawBinaryOutputs ?: SourceFileCollection.EMPTY
     val scalaTarget = target.findBuildData<ScalaBuildTarget>()
     val kotlinTarget = target.findBuildData<KotlinBuildTarget>()
     val associates = kotlinTarget?.associates?.distinct()
@@ -563,7 +565,7 @@ class JvmTargetEntitiesBuilder(private val ctx: ImportContext) {
   }
 
   private fun jdkNameFor(target: WorkspaceTarget): String? =
-    target.findBuildData<JvmBuildTarget>()?.javaHome?.let { ctx.projectName.projectNameToJdkName(it) } ?: ctx.defaultJdkName
+    ctx.jvmResolved[target.targetKey.copy(aspectIds = WorkspaceAspectIds.EMPTY)]?.javaHome?.let { ctx.projectName.projectNameToJdkName(it) } ?: ctx.defaultJdkName
 
   private sealed interface TargetPlan {
     val moduleName: String
