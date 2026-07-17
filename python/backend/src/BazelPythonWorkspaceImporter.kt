@@ -6,6 +6,7 @@ import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.projectRoots.ProjectJdkTable
 import com.intellij.openapi.projectRoots.Sdk
+import com.intellij.openapi.util.NlsContexts
 import com.intellij.platform.workspace.jps.entities.ContentRootEntity
 import com.intellij.platform.workspace.jps.entities.ContentRootEntityBuilder
 import com.intellij.platform.workspace.jps.entities.DependencyScope
@@ -52,6 +53,7 @@ import org.jetbrains.bazel.sync.workspace.snapshot.CommonWorkspaceSyncConfig
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceSnapshot
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTarget
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
+import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetMerger
 import org.jetbrains.bazel.sync.workspace.snapshot.allTargets
 import org.jetbrains.bazel.sync.workspace.snapshot.commonSyncConfig
 import org.jetbrains.bazel.sync.workspace.snapshot.filterBuildTarget
@@ -70,16 +72,20 @@ import org.jetbrains.bsp.protocol.utils.StringUtils
 import java.nio.file.Path
 import kotlin.io.path.isDirectory
 import kotlin.io.path.pathString
+import kotlin.sequences.toList
 
 private const val PYTHON_SDK_ID = "PythonSDK"
 private const val PYTHON_SOURCE_ROOT_TYPE = "python-source"
 private const val PYTHON_RESOURCE_ROOT_TYPE = "python-resource"
 private val PYTHON_MODULE_TYPE = ModuleTypeId("PYTHON_MODULE")
 
-internal class BazelPythonWorkspaceImporter : BazelWorkspaceImporter {
+internal class BazelPythonWorkspaceImporter : BazelWorkspaceImporter, BazelWorkspaceImporter.Named {
   companion object {
     internal val logger = logger<BazelPythonWorkspaceImporter>()
   }
+
+  override val importerName: @NlsContexts.ProgressTitle String
+    get() = BazelPythonBackendBundle.message("python.workspace.importer")
 
   private lateinit var commonSyncConfig: CommonWorkspaceSyncConfig
   private lateinit var pythonSyncConfig: PythonWorkspaceSyncConfig
@@ -118,6 +124,10 @@ internal class BazelPythonWorkspaceImporter : BazelWorkspaceImporter {
     val importDepth = snapshot.commonSyncConfig.importDepth
     allPythonTargets = snapshot.targetGraph.findAllTargetsAtDepth(maxDepth = importDepth, useRelaxedDependencyExpansion = true)
       .filter { it.hasBuildData<PythonBuildTarget>() }
+      .let { targets ->
+        WorkspaceTargetMerger(mergeFunctions = pythonTargetMergeFunctions)
+          .mergeByTargetKey(targets = targets.toList())
+      }
       .associateBy { it.targetKey }
 
     moduleNameByKey = allPythonTargets.values

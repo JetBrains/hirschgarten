@@ -1,19 +1,24 @@
-package org.jetbrains.bazel.workspace.importer
+package org.jetbrains.bazel.sync.workspace.snapshot
 
 import com.intellij.openapi.diagnostic.logger
-import org.jetbrains.bazel.sync.workspace.languages.jvm.JvmBuildTarget
-import org.jetbrains.bazel.sync.workspace.languages.jvm.KotlinBuildTarget
-import org.jetbrains.bazel.sync.workspace.languages.jvm.ScalaBuildTarget
-import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceAspectIds
-import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTarget
-import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
+import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bsp.protocol.BuildTargetData
 import org.jetbrains.bsp.protocol.SourceFileCollection
 import java.nio.file.Path
+import kotlin.reflect.KClass
 
-// RC: can be shared among other importers if needed
-internal object JvmWorkspaceTargetMerger {
-  private val log = logger<JvmWorkspaceTargetMerger>()
+typealias MergeFunctionMap = Map<KClass<out BuildTargetData>, MergeFunction<*>>
+
+@ApiStatus.Internal
+fun interface MergeFunction<T : BuildTargetData> {
+  operator fun invoke(left: T, right: T): T
+}
+
+@ApiStatus.Internal
+class WorkspaceTargetMerger(val mergeFunctions: MergeFunctionMap) {
+  companion object {
+    private val log = logger<WorkspaceTargetMerger>()
+  }
 
   fun mergeByTargetKey(targets: Collection<WorkspaceTarget>): List<WorkspaceTarget> =
     targets.groupBy { it.targetKey.copy(aspectIds = WorkspaceAspectIds.EMPTY) }
@@ -76,43 +81,6 @@ internal object JvmWorkspaceTargetMerger {
            && left.isTestOnly == right.isTestOnly
   }
 
-  fun interface MergeFunction<T : BuildTargetData> {
-    operator fun invoke(left: T, right: T): T
-  }
-
-  private val mergingFunctions = mapOf(
-    JvmBuildTarget::class to MergeFunction<JvmBuildTarget> { left, right ->
-      return@MergeFunction left.copy(
-        binaryOutputs = mergeFileCollections(left.binaryOutputs, right.binaryOutputs),
-        rawBinaryOutputs = mergeFileCollections(left.rawBinaryOutputs, right.rawBinaryOutputs),
-        outputInterfaceJars = mergeFileCollections(left.outputInterfaceJars, right.outputInterfaceJars),
-        outputSourceJars = mergeFileCollections(left.outputSourceJars, right.outputSourceJars),
-        generatedJars = (left.generatedJars + right.generatedJars).distinct(),
-        jdepsJars = (left.jdepsJars + right.jdepsJars).distinct(),
-        intellijPluginJars = mergeFileCollections(left.intellijPluginJars, right.intellijPluginJars),
-        containsInternalJars = left.containsInternalJars || right.containsInternalJars,
-        hasExecutableInfo = left.hasExecutableInfo || right.hasExecutableInfo,
-      )
-    },
-
-    KotlinBuildTarget::class to MergeFunction<KotlinBuildTarget> { left, right ->
-      return@MergeFunction left.copy(
-        associates = (left.associates + right.associates).distinct(),
-        stdlibHardLinkedJars = mergeFileCollections(left.stdlibHardLinkedJars, right.stdlibHardLinkedJars),
-        stdlibInferredSourceJars = mergeFileCollections(left.stdlibInferredSourceJars, right.stdlibInferredSourceJars),
-        exportedCompilerPluginTargetsList =
-          (left.exportedCompilerPluginTargetsList + right.exportedCompilerPluginTargetsList).distinct(),
-      )
-    },
-
-    ScalaBuildTarget::class to MergeFunction<ScalaBuildTarget> { left, right ->
-      return@MergeFunction left.copy(
-        sdkJars = mergeFileCollections(left.sdkJars, right.sdkJars),
-        scalatestClasspathTargets = (left.scalatestClasspathTargets + right.scalatestClasspathTargets).distinct(),
-      )
-    },
-  )
-
   private fun mergeBuildData(input: Sequence<BuildTargetData>): List<BuildTargetData> {
     // we have to merge them, `BuildTargetData` doesn't correspond to specific provider
     // BuildTargetData` can overlap relative to source provider
@@ -122,7 +90,7 @@ internal object JvmWorkspaceTargetMerger {
           data.size == 1 -> data.single()
           else -> {
             @Suppress("UNCHECKED_CAST")
-            val fn = mergingFunctions[type] as? MergeFunction<BuildTargetData>?
+            val fn = mergeFunctions[type] as? MergeFunction<BuildTargetData>?
             if (fn == null) {
               // only warn when candidates are indeed different
               val allEqual = data.all { it == data.first() }
@@ -137,5 +105,17 @@ internal object JvmWorkspaceTargetMerger {
           }
         }
       }
+  }
+}
+
+@ApiStatus.Internal
+fun mergeFileCollections(left: SourceFileCollection, right: SourceFileCollection): SourceFileCollection {
+  if (left == right) {
+    return left
+  }
+  // merging, building trie inside another trie :p
+  return object : SourceFileCollection {
+    override fun isEmpty(): Boolean = left.isEmpty() && right.isEmpty()
+    override fun getFiles(): Sequence<Path> = (left.getFiles() + right.getFiles()).distinct()
   }
 }
