@@ -37,7 +37,7 @@ import org.jetbrains.bazel.sync.status.SyncStatusListener
 import org.jetbrains.bazel.sync.status.isSyncInProgress
 import org.jetbrains.bazel.sync.task.ProjectSyncTask
 import org.jetbrains.bazel.target.targetUtils
-import org.jetbrains.bazel.workspace.fileEvents.FileEventQueueController
+import org.jetbrains.bazel.workspace.fileEvents.BazelFileEventProcessor
 import org.jetbrains.jps.model.java.JavaResourceRootType
 import java.awt.Color
 import java.util.function.Function
@@ -142,7 +142,7 @@ fun showAsUnsyncedSourceFile(project: Project, file: VirtualFile): Boolean {
   }
 
   if (project.isSyncInProgress()) return false
-  if (!FileEventQueueController.getInstance(project).isIdle()) return false
+  if (!BazelFileEventProcessor.getInstance(project).isIdle()) return false
   if (BazelIgnoreService.getInstance(project).isIgnored(file)) return false
 
   val projectFileIndex = ProjectFileIndex.getInstance(project)

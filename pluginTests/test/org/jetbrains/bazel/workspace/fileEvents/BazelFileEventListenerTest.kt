@@ -28,14 +28,11 @@ import com.intellij.testFramework.workspaceModel.updateProjectModel
 import com.intellij.workspaceModel.ide.toPath
 import io.kotest.matchers.booleans.shouldBeFalse
 import io.kotest.matchers.booleans.shouldBeTrue
-import io.kotest.matchers.nulls.shouldNotBeNull
-import kotlinx.coroutines.Deferred
-import org.jetbrains.bazel.commons.LanguageClass
+import kotlinx.coroutines.CompletableDeferred
 import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.config.isBazelProject
 import org.jetbrains.bazel.config.rootDir
-import org.jetbrains.bazel.coroutines.BazelCoroutineService
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.magicmetamodel.formatAsModuleName
 import org.jetbrains.bazel.project.BazelProjectFixtures.deinitializeBazelProject
@@ -66,7 +63,6 @@ import java.util.concurrent.atomic.AtomicInteger
 import kotlin.io.path.Path
 import kotlin.io.path.relativeTo
 import kotlin.test.assertEquals
-import kotlin.time.Duration.Companion.seconds
 
 private const val TARGET1 = "//src:target1"
 private const val TARGET2 = "//src:target2"
@@ -123,7 +119,7 @@ class BazelFileEventListenerTest : WorkspaceModelBaseTest() {
       target2 to false,
     )
 
-    createEvent(file).process().assertProcessingAndAwait()
+    createEvent(file).process().shouldBeTrue()
 
     file.assertFileBelongsToTargets(
       target1 to true,
@@ -134,7 +130,7 @@ class BazelFileEventListenerTest : WorkspaceModelBaseTest() {
   @Test
   fun `source file rename with extension change`() {
     val file = project.rootDir.createDirectory("src").createFile("aaa", "java")
-    createEvent(file).process().assertProcessingAndAwait()
+    createEvent(file).process().shouldBeTrue()
 
     file.assertFileBelongsToTargets(
       target1 to true,
@@ -143,7 +139,7 @@ class BazelFileEventListenerTest : WorkspaceModelBaseTest() {
     )
 
     runTestWriteAction { file.rename(requestor, "aaa.kt") }
-    renameEvent(file, "aaa.java", "aaa.kt").process().assertProcessingAndAwait()
+    renameEvent(file, "aaa.java", "aaa.kt").process().shouldBeTrue()
 
     file.assertFileBelongsToTargets(
       target1 to false,
@@ -155,7 +151,7 @@ class BazelFileEventListenerTest : WorkspaceModelBaseTest() {
   @Test
   fun `source file rename without extension change`() {
     val file = project.rootDir.createDirectory("src").createFile("aaa", "java")
-    createEvent(file).process().assertProcessingAndAwait()
+    createEvent(file).process().shouldBeTrue()
 
     file.assertFileBelongsToTargets(
       target1 to true,
@@ -167,7 +163,7 @@ class BazelFileEventListenerTest : WorkspaceModelBaseTest() {
     file.toVirtualFileUrl(virtualFileUrlManager).belongsToTarget(target1).shouldBeFalse()
     file.toVirtualFileUrl(virtualFileUrlManager).belongsToTarget(target2).shouldBeFalse()
 
-    renameEvent(file, "aaa.java", "bbb.java").process().assertProcessingAndAwait()
+    renameEvent(file, "aaa.java", "bbb.java").process().shouldBeTrue()
 
     file.assertFileBelongsToTargets(
       target1 to true,
@@ -180,19 +176,21 @@ class BazelFileEventListenerTest : WorkspaceModelBaseTest() {
     val src = project.rootDir.createDirectory("src")
     val file = src.createFile("aaa", "java")
     val pack = src.createDirectory("package")
-    createEvent(file).process().assertProcessingAndAwait()
+    createEvent(file).process().shouldBeTrue()
 
     file.assertFileBelongsToTargets(
       target1 to true,
       target2 to true,
+      target3 to false,
     )
 
     val moveEvent = moveEvent(file, pack)
     runTestWriteAction { file.move(requestor, pack) }
-    moveEvent.process().assertProcessingAndAwait()
+    moveEvent.process().shouldBeTrue()
     file.assertFileBelongsToTargets(
       target1 to false,
       target2 to true,
+      target3 to true,
     )
   }
 
@@ -203,7 +201,7 @@ class BazelFileEventListenerTest : WorkspaceModelBaseTest() {
     val sub2 = src.createDirectory("dir2")
     val file = sub1.createFile("aaa", "java")
 
-    createEvent(file).process().assertProcessingAndAwait()
+    createEvent(file).process().shouldBeTrue()
     file.assertFileBelongsToTargets(
       target1 to true,
       target2 to false,
@@ -211,7 +209,7 @@ class BazelFileEventListenerTest : WorkspaceModelBaseTest() {
 
     val moveEvent = moveEvent(file, sub2)
     runTestWriteAction { file.move(requestor, sub2) }
-    moveEvent.process().awaitAndGetResult()
+    moveEvent.process().shouldBeTrue()
 
     file.assertFileBelongsToTargets(
       target1 to false,
@@ -223,7 +221,7 @@ class BazelFileEventListenerTest : WorkspaceModelBaseTest() {
   fun `source file copy`() {
     val src = project.rootDir.createDirectory("src")
     val file = src.createFile("aaa", "java")
-    createEvent(file).process().assertProcessingAndAwait()
+    createEvent(file).process().shouldBeTrue()
 
     file.assertFileBelongsToTargets(
       target1 to true,
@@ -232,7 +230,7 @@ class BazelFileEventListenerTest : WorkspaceModelBaseTest() {
     )
 
     val newFile = runTestWriteAction { file.copy(requestor, src, "bbb.java") }
-    copyEvent(newFile, src, "bbb.java").process().assertProcessingAndAwait()
+    copyEvent(newFile, src, "bbb.java").process().shouldBeTrue()
 
     file.assertFileBelongsToTargets(
       target1 to true,
@@ -250,7 +248,7 @@ class BazelFileEventListenerTest : WorkspaceModelBaseTest() {
   fun `source file delete`() {
     val src = project.rootDir.createDirectory("src")
     val file = src.createFile("aaa", "java")
-    createEvent(file).process().assertProcessingAndAwait()
+    createEvent(file).process().shouldBeTrue()
 
     file.assertFileBelongsToTargets(
       target1 to true,
@@ -258,7 +256,7 @@ class BazelFileEventListenerTest : WorkspaceModelBaseTest() {
     )
 
     runTestWriteAction { file.delete(requestor) }
-    deleteEvent(file).process().assertProcessingAndAwait()
+    deleteEvent(file).process().shouldBeTrue()
 
     file.assertFileBelongsToTargets(
       target1 to false,
@@ -273,7 +271,7 @@ class BazelFileEventListenerTest : WorkspaceModelBaseTest() {
 
     val fileCreated = src.createFile("bbb", "java")
     val fileMoved = src.createFile("aaa", "java")
-    createEvent(fileMoved).process().assertProcessingAndAwait()
+    createEvent(fileMoved).process().shouldBeTrue()
 
     fileMoved.assertFileBelongsToTargets(
       target1 to true,
@@ -294,7 +292,7 @@ class BazelFileEventListenerTest : WorkspaceModelBaseTest() {
       createEvent(fileCreated),
       moveEvent,
       encodingChangeEvent(fileCreated),
-    ).assertProcessingAndAwait()
+    ).shouldBeTrue()
 
     fileMoved.assertFileBelongsToTargets(
       target1 to false,
@@ -310,15 +308,15 @@ class BazelFileEventListenerTest : WorkspaceModelBaseTest() {
   @Test
   fun `should ignore non-source file`() {
     val file = project.rootDir.createDirectory("src").createFile("aaa", "txt")
-    createEvent(file).process().assertNoProcessingHappened()
-    deleteEvent(file).process().assertNoProcessingHappened()
+    createEvent(file).process().shouldBeFalse()
+    deleteEvent(file).process().shouldBeFalse()
   }
 
   @Test
   fun `should ignore directory events`() {
     val directory = project.rootDir.createDirectory("src")
-    createEvent(directory).process().assertNoProcessingHappened()
-    deleteEvent(directory).process().assertNoProcessingHappened()
+    createEvent(directory).process().shouldBeFalse()
+    deleteEvent(directory).process().shouldBeFalse()
   }
 
   @Test
@@ -328,15 +326,15 @@ class BazelFileEventListenerTest : WorkspaceModelBaseTest() {
 
     runTestWriteAction { directory.delete(requestor) }
 
-    createDirectoryEvent.process().assertNoProcessingHappened()
+    createDirectoryEvent.process().shouldBeFalse()
   }
 
   @Test
   fun `should ignore non-applicable events`() {
     val file = project.rootDir.createDirectory("src").createFile("aaa", "txt")
 
-    encodingChangeEvent(file).process().assertNoProcessingHappened()
-    contentChangeEvent(file).process().assertNoProcessingHappened()
+    encodingChangeEvent(file).process().shouldBeFalse()
+    contentChangeEvent(file).process().shouldBeFalse()
   }
 
   @Test
@@ -345,7 +343,7 @@ class BazelFileEventListenerTest : WorkspaceModelBaseTest() {
     val excluded = src.createExcludedDirectory("excluded")
     val file = excluded.createFile("aaa", "java")
 
-    createEvent(file).process().assertNoProcessingHappened()
+    createEvent(file).process().shouldBeFalse()
   }
 
   @Test
@@ -355,7 +353,7 @@ class BazelFileEventListenerTest : WorkspaceModelBaseTest() {
     val file = excluded.createFile("aaa", "java")
 
     runTestWriteAction { file.delete(requestor) }
-    deleteEvent(file).process().assertNoProcessingHappened()
+    deleteEvent(file).process().shouldBeFalse()
   }
 
   @Test
@@ -368,7 +366,7 @@ class BazelFileEventListenerTest : WorkspaceModelBaseTest() {
     val moveEvent = moveEvent(file, pack)
     runTestWriteAction { file.move(requestor, pack) }
 
-    moveEvent.process().assertNoProcessingHappened()
+    moveEvent.process().shouldBeFalse()
   }
 
   @Test
@@ -381,7 +379,7 @@ class BazelFileEventListenerTest : WorkspaceModelBaseTest() {
     val moveEvent = moveEvent(file, excluded)
     runTestWriteAction { file.move(requestor, excluded) }
 
-    moveEvent.process().assertNoProcessingHappened()
+    moveEvent.process().shouldBeFalse()
   }
 
   @Test
@@ -392,7 +390,7 @@ class BazelFileEventListenerTest : WorkspaceModelBaseTest() {
     val level3 = level2.createDirectory("level3")
     val file = level3.createFile("aaa", "java")
 
-    createEvent(file).process().assertNoProcessingHappened()
+    createEvent(file).process().shouldBeFalse()
   }
 
   @Test
@@ -404,15 +402,15 @@ class BazelFileEventListenerTest : WorkspaceModelBaseTest() {
     val file = level3.createFile("aaa", "java")
 
     runTestWriteAction { level2.delete(requestor) }
-    deleteEvent(file).process().assertNoProcessingHappened()
+    deleteEvent(file).process().shouldBeFalse()
   }
 
   @Test
   fun `should ignore projects without any targets`() {
     project.targetUtils.setTargets(emptyList())
     val file = project.rootDir.createDirectory("src").createFile("aaa", "java")
-    createEvent(file).process().assertNoProcessingHappened()
-    deleteEvent(file).process().assertNoProcessingHappened()
+    createEvent(file).process().shouldBeFalse()
+    deleteEvent(file).process().shouldBeFalse()
   }
 
   @Test
@@ -426,8 +424,8 @@ class BazelFileEventListenerTest : WorkspaceModelBaseTest() {
       .createFile("aaa", "java")
 
     // THEN
-    createEvent(file).process().assertNoProcessingHappened()
-    deleteEvent(file).process().assertNoProcessingHappened()
+    createEvent(file).process().shouldBeFalse()
+    deleteEvent(file).process().shouldBeFalse()
   }
 
   @Test
@@ -479,7 +477,7 @@ class BazelFileEventListenerTest : WorkspaceModelBaseTest() {
 
     val file = src.createFile("aaa", "java")
     val fileUrl = file.toVirtualFileUrl(virtualFileUrlManager)
-    createEvent(file).process().assertProcessingAndAwait()
+    createEvent(file).process().shouldBeTrue()
 
     // should not be added to target1's model
     doesModuleContainFile(target1, fileUrl).shouldBeFalse()
@@ -562,12 +560,12 @@ class BazelFileEventListenerTest : WorkspaceModelBaseTest() {
 
   private fun contentChangeEvent(file: VirtualFile) = VFileContentChangeEvent(requestor, file, 0, 0)
 
-  private fun VFileEvent.process(): Deferred<Boolean> = processEvents(this)
+  private fun VFileEvent.process(): Boolean = processEvents(this)
 
   private val invertedSourcesQueryCount = AtomicInteger(0)
 
-  private fun processEvents(vararg events: VFileEvent): Deferred<Boolean> =
-    BazelCoroutineService.getInstance(project).startAsync {
+  private fun processEvents(vararg events: VFileEvent): Boolean {
+    return timeoutRunBlocking {
       object : DefaultBazelFileEventProcessor(project) {
         override suspend fun invertedSourcesQuery(
           taskId: TaskId,
@@ -578,8 +576,9 @@ class BazelFileEventListenerTest : WorkspaceModelBaseTest() {
             inverseSourcesData.getOrDefault(it.relativeTo(projectBasePath).toString(), emptyList())
           }
         }
-      }.process(events.toList())
+      }.enqueue(events.toList()).await()
     }
+  }
 
   private fun VirtualFile.assertFileBelongsToTargets(vararg expectedBelongingStatus: Pair<Label, Boolean>) {
     val vFile = this
@@ -638,22 +637,7 @@ class BazelFileEventListenerTest : WorkspaceModelBaseTest() {
   }
 }
 
-private fun Deferred<Boolean>?.assertProcessingAndAwait() {
-  val processingHappened = awaitAndGetResult()
-  processingHappened.shouldNotBeNull()
-  processingHappened.shouldBeTrue()
-}
-
-private fun Deferred<Boolean>?.assertNoProcessingHappened() {
-  val processingHappened = awaitAndGetResult(5)
-  processingHappened?.shouldBeFalse() // null is also a correct outcome when we don't want any processing to be done
-}
-
-private fun Deferred<Boolean>?.awaitAndGetResult(timeoutSeconds: Int = 15): Boolean? =
-  timeoutRunBlocking(timeout = timeoutSeconds.seconds) { this@awaitAndGetResult?.await() }
-
 private object MockBazelFileEventProcessor : BazelFileEventProcessor {
-  override suspend fun process(events: List<VFileEvent>): Boolean {
-    return false
-  }
+  override suspend fun enqueue(events: List<VFileEvent>) = CompletableDeferred(false)
+  override fun isIdle() = true
 }

@@ -3,7 +3,9 @@ package org.jetbrains.bazel.redcodes
 import com.intellij.mock.MockDocument
 import com.intellij.openapi.application.EDT
 import com.intellij.openapi.application.WriteAction
-import com.intellij.openapi.vfs.VirtualFileManager
+import com.intellij.openapi.vfs.newvfs.events.VFileCreateEvent
+import com.intellij.openapi.vfs.newvfs.events.VFileEvent
+import com.intellij.openapi.vfs.newvfs.events.VFileMoveEvent
 import com.intellij.testFramework.ExpectedHighlightingData
 import com.intellij.testFramework.PlatformTestUtil
 import com.intellij.testFramework.junit5.fixture.projectFixture
@@ -15,7 +17,7 @@ import kotlinx.coroutines.withContext
 import org.jetbrains.bazel.test.framework.BazelTestApplication
 import org.jetbrains.bazel.test.framework.bazelSyncCodeInsightFixture
 import org.jetbrains.bazel.test.framework.checkHighlighting
-import org.jetbrains.bazel.workspace.fileEvents.FileEventQueueController
+import org.jetbrains.bazel.workspace.fileEvents.BazelFileEventProcessor
 import org.junit.jupiter.api.Test
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
@@ -60,7 +62,15 @@ internal class FileSystemRefreshTest {
           }
         """.trimIndent(),
       )
-      waitForFileEventsProcessor()
+      waitForFileEventsProcessor(
+        VFileCreateEvent(
+          this,
+          newFile.parent,
+          "IModule.java",
+          false,
+          null, null, null,
+        )
+      )
 
       fixture.checkHighlighting(
         "module/src/com/example/Module.java",
@@ -79,7 +89,6 @@ internal class FileSystemRefreshTest {
         ).also { it.init() },
       )
 
-
       // Move file out of stash. Now it should affect PSI
       WriteAction.runAndWait<Throwable>(
         {
@@ -89,7 +98,13 @@ internal class FileSystemRefreshTest {
           )
         },
       )
-      waitForFileEventsProcessor()
+      waitForFileEventsProcessor(
+        VFileMoveEvent(
+          this,
+          newFile,
+          newFile.parent,
+        )
+      )
 
       // Should highlight with new file
       fixture.checkHighlighting(
@@ -111,14 +126,15 @@ internal class FileSystemRefreshTest {
     }
   }
 
-  private suspend fun waitForFileEventsProcessor() {
+  private suspend fun waitForFileEventsProcessor(event: VFileEvent) {
     PlatformTestUtil.flushAllPendingVFSUpdates()
+    BazelFileEventProcessor.getInstance(fixture.project).enqueue(listOf(event))
 
     val start = System.currentTimeMillis()
     var success = false
     do {
       PlatformTestUtil.dispatchAllInvocationEventsInIdeEventQueue()
-      if (FileEventQueueController.getInstance(fixture.project).isIdle()) {
+      if (BazelFileEventProcessor.getInstance(fixture.project).isIdle()) {
         success = true
         break
       }

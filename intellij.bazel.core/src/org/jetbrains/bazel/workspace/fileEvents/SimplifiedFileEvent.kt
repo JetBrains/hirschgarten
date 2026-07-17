@@ -12,13 +12,15 @@ import com.intellij.openapi.vfs.newvfs.events.VFileEvent
 import com.intellij.openapi.vfs.newvfs.events.VFileMoveEvent
 import com.intellij.openapi.vfs.newvfs.events.VFilePropertyChangeEvent
 import com.intellij.util.concurrency.annotations.RequiresReadLock
+import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.commons.LanguageClass
 import org.jetbrains.bazel.ignore.BazelIgnoreService
 import java.nio.file.Path
 import kotlin.io.path.exists
 import kotlin.io.path.extension
 
-internal sealed class SimplifiedFileEvent private constructor(
+@ApiStatus.Internal
+sealed class SimplifiedFileEvent private constructor(
   val fileRemoved: Path?,
   val fileAdded: Path?,
   val newVirtualFile: VirtualFile? = null,
@@ -78,6 +80,10 @@ internal sealed class SimplifiedFileEvent private constructor(
     result = 31 * result + fileAdded.hashCode()
     result = 31 * result + newVirtualFile.hashCode()
     return result
+  }
+
+  override fun toString(): String {
+    return "${javaClass.simpleName}(removed=$fileRemoved, added=$fileAdded)"
   }
 
   companion object {
