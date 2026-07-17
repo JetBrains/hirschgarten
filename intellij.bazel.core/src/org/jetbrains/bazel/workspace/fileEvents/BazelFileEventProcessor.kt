@@ -4,6 +4,7 @@ import com.intellij.build.events.impl.FailureResultImpl
 import com.intellij.build.events.impl.SkippedResultImpl
 import com.intellij.build.events.impl.SuccessResultImpl
 import com.intellij.openapi.application.readAction
+import com.intellij.openapi.components.service
 import com.intellij.openapi.components.serviceAsync
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.diagnostic.rethrowControlFlowException
@@ -33,7 +34,10 @@ import com.intellij.workspaceModel.core.fileIndex.impl.ModuleRelatedRootData
 import com.intellij.workspaceModel.ide.isEqualOrParentOf
 import com.intellij.workspaceModel.ide.legacyBridge.findModuleEntity
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.config.BazelFeatureFlags
@@ -65,6 +69,8 @@ import org.jetbrains.bsp.protocol.InverseSourcesParams
 import org.jetbrains.bsp.protocol.TaskGroupId
 import org.jetbrains.bsp.protocol.TaskId
 import java.nio.file.Path
+import java.util.concurrent.atomic.AtomicBoolean
+import java.util.concurrent.atomic.AtomicInteger
 import kotlin.io.path.name
 import kotlin.random.Random
 import kotlin.time.Duration.Companion.milliseconds
@@ -72,95 +78,146 @@ import kotlin.time.Duration.Companion.milliseconds
 @ApiStatus.Internal
 interface BazelFileEventProcessor {
   /**
-   * Return true if events were processed
+   * Return true if events were queued and processed
    */
-  suspend fun process(events: List<VFileEvent>): Boolean
+  suspend fun enqueue(events: List<VFileEvent>): Deferred<Boolean>
+
+  /**
+   * Check if queue is empty and no events are being processed
+   */
+  fun isIdle(): Boolean
+
+  companion object {
+    @JvmStatic
+    fun getInstance(project: Project): BazelFileEventProcessor = project.service()
+  }
 }
 
 @ApiStatus.Internal
 open class DefaultBazelFileEventProcessor(private val project: Project): BazelFileEventProcessor {
   private val targetUtils = project.targetUtils
+  private val eventsQueue = Channel<EventsBatch>(Channel.UNLIMITED)
 
-  override suspend fun process(events: List<VFileEvent>): Boolean {
+  private val eventsRequestCounter = AtomicInteger(0)
+  private val eventsProcessCounter = AtomicInteger(0)
+
+  private class EventsBatch(
+    val events: List<SimplifiedFileEvent>,
+    val result: CompletableDeferred<Boolean>,
+  )
+
+  init {
+    //coroutineScope.launch {
+    BazelCoroutineService.getInstance(project).start {
+      while(true) {
+        val batches = ArrayList<EventsBatch>()
+        batches.add(eventsQueue.receive())
+        // load all available events after small pause
+        do {
+          delay(PROCESSING_DELAY)
+          val moreEvents = eventsQueue.tryReceive().getOrNull()
+          if (moreEvents != null) {
+            batches.add(moreEvents)
+          }
+        } while (moreEvents != null)
+        processEventsBatch(batches)
+      }
+    }
+  }
+
+  override suspend fun enqueue(events: List<VFileEvent>): Deferred<Boolean> {
     // if a project has no targets, there is no point in processing (also, it could interrupt the initial sync)
     targetUtils.awaitLoaded()
     if (!targetUtils.allTargets().any())
-      return false
+      return CompletableDeferred(false)
 
-    val simplifiedEvents = events.mapNotNull { SimplifiedFileEvent.from(it) }.filter { it.shouldBeProcessed(project) }
-    return processEvents(simplifiedEvents)
+    val simplifiedEvents = events
+      .mapNotNull { SimplifiedFileEvent.from(it) }
+      .filter { it.shouldBeProcessed(project) }
+      .filterByProject()
+
+    if (simplifiedEvents.isEmpty())
+      return CompletableDeferred(false)
+
+    val result = CompletableDeferred<Boolean>()
+    eventsRequestCounter.addAndGet(simplifiedEvents.size)
+    eventsQueue.send(EventsBatch(simplifiedEvents, result))
+    return result
+  }
+
+  override fun isIdle(): Boolean {
+    return eventsRequestCounter.get() == eventsProcessCounter.get()
   }
 
   private val allowBazelQuery: Boolean get() = BazelFeatureFlags.queryBazelOnFileEvents
   private val allowPsiEvaluation: Boolean get() = BazelFeatureFlags.evaluatePsiOnFileEvents
 
-  /** @return `true` if processing has been performed in this function execution, `false` if it was omitted for any reason */
-  private suspend fun processEvents(events: List<SimplifiedFileEvent>): Boolean {
-    val applicableEvents = events.filterByProject(project).takeIf { it.isNotEmpty() } ?: return false
-    val queueController = FileEventQueueController.getInstance(project)
-    val shouldStartProcessing = queueController.addEvents(applicableEvents)
-    if (!shouldStartProcessing)
-      return false
-
+  private suspend fun processEventsBatch(batches: List<EventsBatch>) {
     val jobManager = FileEventJobManager.getInstance(project)
     val taskGroupId = jobManager.syncTaskGroupId ?: TaskGroupId("file-event-" + Random.nextBytes(8).toHexString())
     val taskId = taskGroupId.task("file-event-processing")
+
+    val events = batches.flatMap { it.events }
+    val success = AtomicBoolean(false)
+
     val processingJob = jobManager.runFileEventsProcessing {
       BazelCoroutineService.getInstance(project).startAsync(true) {
-        delay(PROCESSING_DELAY)
         try {
-          do {
-            val processed = queueController.withNextBatch { batch ->
-              try {
-                val progressTitle = getProgressTitle(batch)
+          val progressTitle = getProgressTitle(events)
 
-                val workspaceModel = project.serviceAsync<WorkspaceModel>()
-                val entityStorageDiff = MutableEntityStorage.from(workspaceModel.currentSnapshot)
+          val workspaceModel = project.serviceAsync<WorkspaceModel>()
+          val entityStorageDiff = MutableEntityStorage.from(workspaceModel.currentSnapshot)
 
-                BazelFileEventProgressReporter.runWithProgressBar(progressTitle, project) { bazelReporter ->
-                  val context = ProcessingContext(
-                    urlManager = workspaceModel.getVirtualFileUrlManager(),
-                    workspaceModel = workspaceModel,
-                    workspaceSnapshot = workspaceModel.currentSnapshot,
-                    entityStorageDiff = entityStorageDiff,
-                    taskId = taskId,
-                    progressReporter = bazelReporter,
-                  )
+          BazelFileEventProgressReporter.runWithProgressBar(progressTitle, project) { bazelReporter ->
+            val context = ProcessingContext(
+              urlManager = workspaceModel.getVirtualFileUrlManager(),
+              workspaceModel = workspaceModel,
+              workspaceSnapshot = workspaceModel.currentSnapshot,
+              entityStorageDiff = entityStorageDiff,
+              taskId = taskId,
+              progressReporter = bazelReporter,
+            )
 
-                  doProcessEvents(
-                    events = batch,
-                    context = context
-                  )
-                }
-              }
-              catch (ex: Throwable) {
-                if (ex !is CancellationException)
-                  logger.error(ex)
-                throw ex
-              }
-            }
-          } while (processed)
-        } finally {
-          BazelFileStatusRefresher.getInstance(project).refreshAllFilesPresentation()
+            processEventsBatchImpl(
+              events = events,
+              context = context
+            )
+          }
+
+          success.set(true)
+        }
+        catch (ex: Throwable) {
+          if (ex !is CancellationException)
+            logger.error(ex)
+          throw ex
         }
       }
     }
 
-    if (processingJob == null) {
-      queueController.clearAllEvents()
-      return false
-    }
-
-    // no need to start sync console task if no Bazel processing is allowed
-    if (allowBazelQuery) {
-      startSyncConsoleTask(project, processingJob, taskId)
-    }
     try {
-      processingJob.join()
-    } finally {
-      BazelTaskEventsService.getInstance(project).removeListener(taskId.taskGroupId)
+      if (processingJob == null) {
+        // Cannot spawn job, most likely sync is in progress
+        return
+      }
+
+      // no need to start sync console task if no Bazel processing is allowed
+      if (allowBazelQuery) {
+        startSyncConsoleTask(project, processingJob, taskId)
+      }
+      try {
+        processingJob.join()
+      }
+      finally {
+        BazelTaskEventsService.getInstance(project).removeListener(taskId.taskGroupId)
+      }
     }
-    return true
+    finally {
+      eventsProcessCounter.addAndGet(events.size)
+      batches.forEach {
+        logger.runCatching { it.result.complete(success.get()) }
+      }
+      BazelFileStatusRefresher.getInstance(project).refreshAllFilesPresentation()
+    }
   }
 
   private fun startSyncConsoleTask(project: Project, processingJob: Job, taskId: TaskId) {
@@ -185,15 +242,17 @@ open class DefaultBazelFileEventProcessor(private val project: Project): BazelFi
     }
   }
 
-  private suspend fun doProcessEvents(events: List<SimplifiedFileEvent>, context: ProcessingContext) {
+  private suspend fun processEventsBatchImpl(events: List<SimplifiedFileEvent>, context: ProcessingContext) {
     doProcessFileEvents(
       events.flatMap { event ->
         if (event is CreateDirectory) {
           collectCreatedFiles(event.newVirtualFile)
+        } else if (event.newVirtualFile?.isDirectory == true) {
+          emptyList() // ignore other directory events
         } else {
           listOf(event)
         }
-      }.distinct(),
+      },
       context,
     )
 
@@ -236,17 +295,13 @@ open class DefaultBazelFileEventProcessor(private val project: Project): BazelFi
 
     context.progressReporter.startPreparationStep()
 
-    val eventToOldTargets: Map<SimplifiedFileEvent, List<Label>> =
-      events.associateWithIfNotNull { event ->
-        event.fileRemoved?.let { fileRemoved -> targetUtils.getTargetsForPath(fileRemoved) }?.takeIf { it.isNotEmpty() }
-      }
-
-    val eventsToNewTargets: Map<SimplifiedFileEvent, List<Label>> =
+    val targetsByPath: Map<Path, List<Label>> =
       events
         .mapNotNull { event -> event.toPathAndVFile()?.takeIf { !it.vFile.isDirectory } }
+        .distinctBy { it.path }
         .let { files ->
           // avoid running a Bazel query when not required (BAZEL-2458)
-          val targetsByPath: Map<Path, List<Label>> = if (files.isNotEmpty()) {
+          if (files.isNotEmpty()) {
             context.progressReporter.startQueryStep {
               invertedSourcesQuery(context.taskId, files)
             }
@@ -254,40 +309,38 @@ open class DefaultBazelFileEventProcessor(private val project: Project): BazelFi
             context.progressReporter.skipQueryStep()
             emptyMap()
           }
-          events.associateWithIfNotNull { event -> targetsByPath[event.fileAdded]?.takeIf { it.isNotEmpty() } }
         }
+
+    val removedPaths = HashSet<Path>()
+    val addedPaths = HashSet<Path>()
 
     for (event in events) {
       val removedFile = event.fileRemoved
       val addedFile = event.fileAdded
 
-      val oldTargets: Set<Label> = eventToOldTargets[event]?.toSet() ?: emptySet()
-      val newTargets: Set<Label> = eventsToNewTargets[event]?.toSet() ?: emptySet()
-
-      // Update target utils
-      if (removedFile != null) {
-        targetUtils.removeFileToTargetIdEntry(removedFile)
-      }
-      if (addedFile != null && newTargets.isNotEmpty()) {
-        targetUtils.addFileToTargetIdEntry(addedFile, newTargets)
-      }
-
-      // Update WSM
       val removedFileUrl = removedFile?.toVirtualFileUrl(context.urlManager)
       val addedFileUrl = addedFile?.toVirtualFileUrl(context.urlManager)
 
-      (oldTargets - newTargets).forEach { toRemove ->
-        val module = toRemove.toModuleEntity(context.workspaceSnapshot, project)
-        if (module != null) {
-          val contentRoots = module.contentRoots.filter { it.url == removedFileUrl || it.url == addedFileUrl }
-          contentRoots.forEach { context.entityStorageDiff.removeEntity(it) }
+      val oldTargets: Set<Label> = removedFile?.let { targetUtils.getTargetsForPath(it) }?.toSet() ?: emptySet()
+      val newTargets: Set<Label> = addedFile?.let { targetsByPath[it] }?.toSet() ?: emptySet()
+
+      if (removedFile != null && oldTargets.isNotEmpty() && removedPaths.add(removedFile)) {
+        targetUtils.removeFileToTargetIdEntry(removedFile)
+        (oldTargets - newTargets).forEach { toRemove ->
+          val module = toRemove.toModuleEntity(context.workspaceSnapshot, project)
+          if (module != null) {
+            val contentRoots = module.contentRoots.filter { it.url == removedFileUrl || it.url == addedFileUrl }
+            contentRoots.forEach { context.entityStorageDiff.removeEntity(it) }
+          }
         }
       }
-      if (addedFileUrl != null) {
+
+      if (addedFile != null && newTargets.isNotEmpty() && addedPaths.add(addedFile) && addedFileUrl != null) {
+        targetUtils.addFileToTargetIdEntry(addedFile, newTargets)
         (newTargets - oldTargets).forEach { toAdd ->
           val module = toAdd.toModuleEntity(context.workspaceSnapshot, project)
           if (module != null) {
-            addFileToModule(project, addedFileUrl, context.entityStorageDiff, module)
+            addFileToModule(addedFileUrl, context.entityStorageDiff, module)
           }
         }
       }
@@ -385,22 +438,64 @@ open class DefaultBazelFileEventProcessor(private val project: Project): BazelFi
     else
       null
   }
-}
 
-private suspend fun List<SimplifiedFileEvent>.filterByProject(project: Project): List<SimplifiedFileEvent> {
-  if (this.isEmpty() || !project.isBazelProject) return emptyList()
-  val rootDirPath =
-    try {
-      project.rootDir.toNioPath()
-    } catch (_: IllegalStateException) { // Bazel rootDir not set
-      return emptyList()
-    } catch (_: UnsupportedOperationException) { // unable to create a Path instance
-      return emptyList()
+  // return true if was added, false if already present in content roots
+  private fun addFileToModule(
+    url: VirtualFileUrl,
+    entityStorageDiff: MutableEntityStorage,
+    module: ModuleEntity
+  ): Boolean {
+    // we don't want to duplicate source content roots
+    if (module.contentRoots.any { contentRoot ->
+        contentRoot.sourceRoots.any { sourceRoot ->
+          sourceRoot.url.isEqualOrParentOf(url)
+        }
+      })
+      return false
+
+    val sourceRootTypeId = module.bazelModuleExtension?.rootTypeId?.default
+                           ?: return false
+
+    entityStorageDiff.modifyModuleEntity(module) {
+      if (contentRoots.any { contentRoot ->
+          contentRoot.sourceRoots.any { sourceRoot ->
+            sourceRoot.url.isEqualOrParentOf(url)
+          }
+        })
+        return@modifyModuleEntity
+
+      contentRoots += ContentRootEntity(
+        url = url,
+        excludedPatterns = emptyList(),
+        entitySource = module.entitySource,
+      ) {
+        sourceRoots += listOf(
+          SourceRootEntity(
+            url = url,
+            entitySource = module.entitySource,
+            rootTypeId = sourceRootTypeId,
+          ),
+        )
+      }
     }
-  val fileIndex = ProjectRootManager.getInstance(project).fileIndex
-  val fileSystem = LocalFileSystem.getInstance()
-  return readAction {
-    filter { it.doesAffectFolder(rootDirPath) && !it.affectsExcludedFiles(fileIndex, fileSystem) }
+    return true
+  }
+
+  private suspend fun List<SimplifiedFileEvent>.filterByProject(): List<SimplifiedFileEvent> {
+    if (this.isEmpty() || !project.isBazelProject) return emptyList()
+    val rootDirPath =
+      try {
+        project.rootDir.toNioPath()
+      } catch (_: IllegalStateException) { // Bazel rootDir not set
+        return emptyList()
+      } catch (_: UnsupportedOperationException) { // unable to create a Path instance
+        return emptyList()
+      }
+    val fileIndex = ProjectRootManager.getInstance(project).fileIndex
+    val fileSystem = LocalFileSystem.getInstance()
+    return readAction {
+      filter { it.doesAffectFolder(rootDirPath) && !it.affectsExcludedFiles(fileIndex, fileSystem) }
+    }
   }
 }
 
@@ -434,53 +529,6 @@ private suspend fun queryTargetsForFile(project: Project, filePaths: List<Path>,
 
 // the .toUri() conversion is necessary to contain file:// schema, which is present in VirtualFile.toVirtualFileUrl() results
 private fun Path.toVirtualFileUrl(manager: VirtualFileUrlManager): VirtualFileUrl = manager.getOrCreateFromUrl(this.toUri().toString())
-
-// return true if was added, false if already present in content roots
-private fun addFileToModule(
-  project: Project,
-  url: VirtualFileUrl,
-  entityStorageDiff: MutableEntityStorage,
-  module: ModuleEntity
-): Boolean {
-  // we don't want to duplicate source content roots
-  val existingContentRoot = module.contentRoots.find { contentRoot ->
-    contentRoot.sourceRoots.any { sourceRoot ->
-      sourceRoot.url.isEqualOrParentOf(url)
-    }
-  }
-  if (existingContentRoot != null)
-    return false
-
-  val sourceRootTypeId = module.bazelModuleExtension?.rootTypeId?.default
-                         ?: return false
-  val sourceRoot =
-    SourceRootEntity(
-      url = url,
-      entitySource = module.entitySource,
-      rootTypeId = sourceRootTypeId,
-    )
-
-  val contentRootEntity =
-    ContentRootEntity(
-      url = url,
-      excludedPatterns = emptyList(),
-      entitySource = module.entitySource,
-    ) {
-      sourceRoots += listOf(sourceRoot)
-    }
-
-  entityStorageDiff.modifyModuleEntity(module) { contentRoots += contentRootEntity }
-  return true
-}
-
-private inline fun <K, V> Collection<K>.associateWithIfNotNull(valueSelector: (K) -> V?): Map<K, V> {
-  val result = HashMap<K, V>(this.size)
-  for (k in this) {
-    val v = valueSelector(k) ?: continue
-    result[k] = v
-  }
-  return result
-}
 
 private val PROCESSING_DELAY = 250.milliseconds // not noticeable by the user, but if there are many events simultaneously, we will get them all
 
