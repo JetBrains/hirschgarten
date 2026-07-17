@@ -1,5 +1,6 @@
 package org.jetbrains.bazel.python.sync
 
+import com.intellij.bazel.python.backend.BazelPyImportResolver
 import com.intellij.bazel.python.backend.chooseSdkName
 import com.intellij.bazel.python.backend.findBazelPythonShortestQualifiedName
 import com.intellij.bazel.python.backend.hasBazelPythonQualifiedName
@@ -27,14 +28,18 @@ import com.intellij.platform.workspace.storage.MutableEntityStorage
 import com.intellij.platform.workspace.storage.impl.url.toVirtualFileUrl
 import com.intellij.platform.workspace.storage.url.VirtualFileUrlManager
 import com.intellij.psi.PsiManager
+import com.intellij.psi.util.QualifiedName
 import com.intellij.python.community.services.systemPython.SystemPythonService
 import com.intellij.testFramework.common.timeoutRunBlocking
 import com.intellij.testFramework.registerOrReplaceServiceInstance
 import com.jetbrains.python.PythonBinary
 import com.jetbrains.python.psi.PyFile
+import com.jetbrains.python.psi.resolve.PyQualifiedNameResolveContextImpl
 import com.jetbrains.python.sdk.PythonSdkUtil
 import io.kotest.matchers.booleans.shouldBeFalse
+import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.types.shouldBeInstanceOf
 import kotlinx.coroutines.runBlocking
 import org.jetbrains.bazel.commons.RepoMappingDisabled
 import org.jetbrains.bazel.commons.RuleType
@@ -69,6 +74,7 @@ import org.jetbrains.bsp.protocol.allSources
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import java.nio.file.Files
 import java.nio.file.Path
 import kotlin.io.path.Path
 import kotlin.io.path.createDirectories
@@ -346,6 +352,44 @@ class PythonProjectSyncTest : MockProjectBaseTest() {
       renderModuleLocationText(pyClass) shouldBe "(aaa.bbb)"
       renderModuleLocationText(method) shouldBe "(Foo in aaa.bbb)"
     }
+  }
+
+  @Test
+  fun `should resolve generated Python source delivered via srcs (RawBuildTarget generatedSources)`() {
+    val execRoot = Files.createTempDirectory("bazel-exec")
+    val bazelBin = execRoot.resolve("bin").createDirectories()
+    val generatedFile = bazelBin.resolve("part.py")
+    generatedFile.writeText("P = 1\n")
+    LocalFileSystem.getInstance().refreshAndFindFileByNioFile(generatedFile)
+
+    val info =
+      GeneratedTargetInfo(
+        targetId = Label.parse("@@server//genpy:part"),
+        type = "PYTHON_MODULE",
+        imports = listOf(),
+      )
+    val target =
+      generateTarget(
+        info,
+        sources = emptyList(),
+        generatedSources = listOf(generatedFile),
+        resources = emptyList(),
+      )
+
+    project.projectCtx.bazelExecPath = execRoot
+    project.projectCtx.bazelBinPath = bazelBin
+    project.registerOrReplaceServiceInstance(BazelServerService::class.java, MockBuildServerService(BuildServerMock()), disposable)
+
+    runPythonImporter(generateWorkspaceSnapshot(listOf(target)), MutableEntityStorage.create(), runPostProcessing = true)
+
+    val resolved =
+      runReadActionBlocking {
+        val context = PyQualifiedNameResolveContextImpl(PsiManager.getInstance(project), null, null, null)
+        BazelPyImportResolver().resolveImportReference(QualifiedName.fromComponents("part"), context, false)
+      }
+    resolved.shouldNotBeNull()
+    resolved.shouldBeInstanceOf<PyFile>()
+    resolved.virtualFile.name shouldBe "part.py"
   }
 
   private fun renderModuleLocationText(element: Any): String =

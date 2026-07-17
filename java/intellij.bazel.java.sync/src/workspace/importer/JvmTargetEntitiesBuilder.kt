@@ -43,6 +43,7 @@ import org.jetbrains.bazel.sync.workspace.snapshot.File2TargetMap
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceAspectIds
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTarget
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
+import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetMerger
 import org.jetbrains.bazel.sync.workspace.snapshot.findBuildData
 import org.jetbrains.bazel.workspace.indexAdditionalFiles.ProjectViewGlobSet
 import org.jetbrains.bazel.workspacemodel.entities.BazelDummyEntitySource
@@ -87,7 +88,7 @@ class ImportContext(
   val progressReporter: RawProgressReporter? = null,
 ) {
   // merge aspect-only duplicates so the whole pipeline sees one target per (label, configuration)
-  val targets: List<WorkspaceTarget> = JvmWorkspaceTargetMerger.mergeByTargetKey(targets)
+  val targets: List<WorkspaceTarget> = WorkspaceTargetMerger(mergeFunctions = jvmTargetMergeFunctions).mergeByTargetKey(targets)
 
   private val allLibraries: List<LibraryItem> = jvmResolved.values.flatMap { it.libraries }.distinctBy { it.key }
 

@@ -136,12 +136,15 @@ internal class PythonResolveIndexService(private val project: Project) {
               .filter { it.isPythonFile() }
               .associateBy { sourceItem -> sourceItem.toExecRootRelativePath() }
           }
+        val generatedSourceFiles =
+          (target.generatedSources.getFiles() + (extractPythonBuildTarget(target)?.generatedSources?.getFiles() ?: emptySequence()))
         val getSourcesRelativePathToAbsolutePath: Map<Path, Path> =
-          extractPythonBuildTarget(target)?.generatedSources?.getFiles()
-              ?.associate { path ->
-                path.toExecRootRelativePath() to (outFilesHardLink.createOutputFileHardLink(path) ?: path.toAbsolutePath())
-              }
-          ?: emptyMap()
+          generatedSourceFiles
+            .distinct()
+            .filter { it.isPythonLanguage() }
+            .associate { path ->
+              path.toExecRootRelativePath() to (outFilesHardLink.createOutputFileHardLink(path) ?: path.toAbsolutePath())
+            }
         expandPathsToQualifiedNames(qualifiedNameImportPaths, sourcesRelativePathToAbsolutePath + getSourcesRelativePathToAbsolutePath)
       }
     }.awaitAll()
@@ -230,7 +233,8 @@ internal class PythonResolveIndexService(private val project: Project) {
             writer.appendLine("$qName:${path.pathString}")
           }
         }
-      } catch (ex: Throwable) {
+      }
+      catch (ex: Throwable) {
         logger.warn("Failed to store Python resolve index to $storagePath", ex)
         storagePath.deleteIfExists()
       }
@@ -249,7 +253,8 @@ internal class PythonResolveIndexService(private val project: Project) {
           }
         }
         return result
-      } catch (ex: Throwable) {
+      }
+      catch (ex: Throwable) {
         logger.warn("Failed to load Python resolve index from $storagePath", ex)
         storagePath.deleteIfExists()
         return emptyMap()
