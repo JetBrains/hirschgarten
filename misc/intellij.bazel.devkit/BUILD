@@ -46,6 +46,8 @@ jvm_library(
         "@community//platform/testRunner",
         "@community//plugins/devkit/devkit-core:core",
         "//plugins/bazel/intellij.bazel.importer:importer",
+        "//plugins/bazel/java/intellij.bazel.java.core:bazel-java-core",
+        "//plugins/bazel/java/intellij.bazel.java.common:bazel-java-common",
     ],
 )
 
@@ -86,6 +88,8 @@ jvm_library(
         "@community//platform/testRunner:testRunner_test_lib",
         "@community//plugins/devkit/devkit-core:core_test_lib",
         "//plugins/bazel/intellij.bazel.importer:importer_test_lib",
+        "//plugins/bazel/java/intellij.bazel.java.core:bazel-java-core_test_lib",
+        "//plugins/bazel/java/intellij.bazel.java.common:bazel-java-common_test_lib",
     ],
 )
 ### auto-generated section `build intellij.bazel.devkit` end

@@ -4,9 +4,13 @@ load("@rules_jvm//:jvm.bzl", "jvm_library")
 
 jvm_library(
     name = "bazel-devkit-monorepo",
-    # Monorepo DevKit isn't published, we can't build against it
     srcs = glob(
-        [],
+        [
+            # Monorepo DevKit isn't published, we can't build against it
+            # "src/**/*.kt",
+            # "src/**/*.java",
+            # "src/**/*.form",
+        ],
         allow_empty = True,
     ),
     module_name = "intellij.bazel.devkit.monorepo",
@@ -18,7 +22,7 @@ jvm_library(
     deps = [
         # do not sort,
         "@lib//:kotlin-stdlib",
-        "//plugins/bazel/java/intellij.bazel.java.common:bazel-java-common",
+        "//plugins/bazel/java/intellij.bazel.java.core:bazel-java-core",
         "@community//java/debugger/impl",
         "@community//platform/core-api:core",
         "@community//platform/xdebugger-api:debugger",
@@ -33,6 +37,8 @@ jvm_library(
         "@community//platform/analysis-api:analysis",
         "//plugins/bazel/intellij.bazel.projectview:projectview",
         "//plugins/bazel/kotlin/intellij.bazel.kotlin.common:bazel-kotlin-common",
+        "@community//platform/external-system-impl:externalSystem-impl",
+        "@community//platform/external-system-api:externalSystem",
     ],
 )
 
@@ -48,7 +54,7 @@ jvm_library(
     runtime_deps = [
         # do not sort,
         ":bazel-devkit-monorepo",
-        "//plugins/bazel/java/intellij.bazel.java.common:bazel-java-common_test_lib",
+        "//plugins/bazel/java/intellij.bazel.java.core:bazel-java-core_test_lib",
         "@community//java/debugger/impl:impl_test_lib",
         "@community//platform/core-api:core_test_lib",
         "@community//platform/xdebugger-api:debugger_test_lib",
@@ -63,6 +69,8 @@ jvm_library(
         "@community//platform/analysis-api:analysis_test_lib",
         "//plugins/bazel/intellij.bazel.projectview:projectview_test_lib",
         "//plugins/bazel/kotlin/intellij.bazel.kotlin.common:bazel-kotlin-common_test_lib",
+        "@community//platform/external-system-impl:externalSystem-impl_test_lib",
+        "@community//platform/external-system-api:externalSystem_test_lib",
     ],
 )
 ### auto-generated section `build intellij.bazel.devkit.monorepo` end

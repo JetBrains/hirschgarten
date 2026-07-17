@@ -1,6 +1,6 @@
 load("@rules_jvm//:jvm.bzl", "jvm_library", "jvm_provided_library")
 
-### auto-generated section `build intellij.bazel.java.common` start
+### auto-generated section `build intellij.bazel.java.core` start
 
 jvm_provided_library(
     name = "community_libraries_opentelemetry_provided",
@@ -13,7 +13,7 @@ jvm_provided_library(
 )
 
 jvm_library(
-    name = "bazel-java-common",
+    name = "bazel-java-core",
     srcs = glob(
         [
             "src/**/*.kt",
@@ -22,7 +22,7 @@ jvm_library(
         ],
         allow_empty = True,
     ),
-    module_name = "intellij.bazel.java.common",
+    module_name = "intellij.bazel.java.core",
     resource_strip_prefix = "resources",
     resources = glob(
         ["resources/**/*"],
@@ -32,11 +32,12 @@ jvm_library(
         # do not sort,
         "@lib//:kotlin-stdlib",
         "@community//libraries/kotlinx/coroutines/core",
-        "//plugins/bazel/intellij.bazel.core:core",
         "//plugins/bazel/intellij.bazel.commons:commons",
+        "//plugins/bazel/intellij.bazel.core:core",
         "//plugins/bazel/intellij.bazel.importer:importer",
         "//plugins/bazel/intellij.bazel.connector:connector",
         "//plugins/bazel/intellij.bazel.projectview:projectview",
+        "//plugins/bazel/java/intellij.bazel.java.common:bazel-java-common",
         "@community//platform/core-api:core",
         "@community//platform/core-impl",
         "@community//platform/platform-api:ide",
@@ -88,23 +89,24 @@ jvm_library(
 )
 
 jvm_library(
-    name = "bazel-java-common_test_lib",
+    name = "bazel-java-core_test_lib",
     testonly = True,
     srcs = glob(
         [],
         allow_empty = True,
     ),
-    module_name = "intellij.bazel.java.common",
+    module_name = "intellij.bazel.java.core",
     visibility = ["//visibility:public"],
     runtime_deps = [
         # do not sort,
-        ":bazel-java-common",
+        ":bazel-java-core",
         "@community//libraries/kotlinx/coroutines/core:core_test_lib",
-        "//plugins/bazel/intellij.bazel.core:core_test_lib",
         "//plugins/bazel/intellij.bazel.commons:commons_test_lib",
+        "//plugins/bazel/intellij.bazel.core:core_test_lib",
         "//plugins/bazel/intellij.bazel.importer:importer_test_lib",
         "//plugins/bazel/intellij.bazel.connector:connector_test_lib",
         "//plugins/bazel/intellij.bazel.projectview:projectview_test_lib",
+        "//plugins/bazel/java/intellij.bazel.java.common:bazel-java-common_test_lib",
         "@community//platform/core-api:core_test_lib",
         "@community//platform/core-impl:core-impl_test_lib",
         "@community//platform/platform-api:ide_test_lib",
@@ -156,13 +158,13 @@ jvm_library(
         "@community//java/java-backend:backend_test_lib",
     ],
 )
-### auto-generated section `build intellij.bazel.java.common` end
+### auto-generated section `build intellij.bazel.java.core` end
 
-### auto-generated section `iml intellij.bazel.java.common` start
+### auto-generated section `iml intellij.bazel.java.core` start
 exports_files(
     [
-        "intellij.bazel.java.common.iml",
+        "intellij.bazel.java.core.iml",
     ],
     visibility = ["//visibility:public"],
 )
-### auto-generated section `iml intellij.bazel.java.common` end
+### auto-generated section `iml intellij.bazel.java.core` end

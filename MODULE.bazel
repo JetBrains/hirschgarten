@@ -10,7 +10,7 @@ http_archive = use_repo_rule("@bazel_tools//tools/build_defs/repo:http.bzl", "ht
 bazel_dep(name = "intellij_aspect_sdk")
 git_override(
     module_name = "intellij_aspect_sdk",
-    commit = "03e9731a3ee98417c2825887a9343a583790fd48",
+    commit = "e95187042abcd23f78a27623929f83b811d81416",
     remote = "https://github.com/JetBrains/intellij-aspect.git",
 )
 
@@ -90,17 +90,17 @@ java_import(
 
 # SDK 262
 
-SDK_262_BASE_VERSION = "262.8377"
+SDK_262_BASE_VERSION = "262.8665"
 
-SDK_262_INTELLIJ_REPO_VERSION = SDK_262_BASE_VERSION + ".35"
+SDK_262_INTELLIJ_REPO_VERSION = SDK_262_BASE_VERSION + ".258"
 
-SDK_262_INTELLIJ_VERSION = SDK_262_BASE_VERSION + ".35-EAP"
+SDK_262_INTELLIJ_VERSION = SDK_262_BASE_VERSION + ".258"
 
-SDK_262_INTELLIJ_REPOSITORY = "snapshots"  # releases or snapshots
+SDK_262_INTELLIJ_REPOSITORY = "releases"  # releases or snapshots
 
 IC_262_URL = "https://www.jetbrains.com/intellij-repository/%s/com/jetbrains/intellij/idea/ideaIU/%s/ideaIU-%s.zip" % (SDK_262_INTELLIJ_REPOSITORY, SDK_262_INTELLIJ_VERSION, SDK_262_INTELLIJ_VERSION)
 
-IC_262_SHA = "9b47cf1c9f1ccf2d1bad78db1f622b5263c426371d5f68eb09ef022f45719495"
+IC_262_SHA = "af239a432cde8f54e5ca3f02b34adcd35367a1235126d85fb169fd18a300f385"
 
 http_archive(
     name = "intellij_ce_2026_2",
@@ -111,7 +111,7 @@ http_archive(
 
 IC_262_SOURCES_URL = "https://www.jetbrains.com/intellij-repository/%s/com/jetbrains/intellij/idea/ideaIU/%s/ideaIU-%s-sources.jar" % (SDK_262_INTELLIJ_REPOSITORY, SDK_262_INTELLIJ_VERSION, SDK_262_INTELLIJ_VERSION)
 
-IC_262_SOURCES_SHA = "41242b0f8a2c88c1b731b392be4c6fc39a7f39ed45772d26d17c6d1039069a62"
+IC_262_SOURCES_SHA = "2ab7bbe36741062d0da9d0824044b78952e3b4a04ad6923c23e9aef9e97582a7"
 
 http_jar(
     name = "intellij_ce_2026_2_sources",
@@ -119,9 +119,11 @@ http_jar(
     url = IC_262_SOURCES_URL,
 )
 
-DEVKIT_262_URL = "https://plugins.jetbrains.com/maven/com/jetbrains/plugins/DevKit/%s/DevKit-%s.zip" % (SDK_262_INTELLIJ_REPO_VERSION, SDK_262_INTELLIJ_REPO_VERSION)
+DEVKIT_262_VERSION = SDK_262_BASE_VERSION + ".176"
 
-DEVKIT_262_SHA = "14c85db5155e4447238de33139d6b605da3f78a1193236293f93a36ed0d9cc53"
+DEVKIT_262_URL = "https://plugins.jetbrains.com/maven/com/jetbrains/plugins/DevKit/%s/DevKit-%s.zip" % (DEVKIT_262_VERSION, DEVKIT_262_VERSION)
+
+DEVKIT_262_SHA = "09dd22e106f01910a2524aedda3127bcd4dbcc82a4e26d36b4c687485656ed77"
 
 http_archive(
     name = "devkit_2026_2",
@@ -132,7 +134,7 @@ http_archive(
 
 PYTHON_PLUGIN_262_URL = "https://plugins.jetbrains.com/maven/com/jetbrains/plugins/PythonCore/%s/PythonCore-%s.zip" % (SDK_262_INTELLIJ_REPO_VERSION, SDK_262_INTELLIJ_REPO_VERSION)
 
-PYTHON_PLUGIN_262_SHA = "86db97b15282555162a7e886cfa1ba06a3e1f8f894206050052e4e26972e0e89"
+PYTHON_PLUGIN_262_SHA = "44fca95b2104c40e2609bf7724be3816a62a4727a0090278a3330b0025dbe1f0"
 
 http_archive(
     name = "python_2026_2",
@@ -143,7 +145,7 @@ http_archive(
 
 GO_PLUGIN_262_URL = "https://plugins.jetbrains.com/maven/com/jetbrains/plugins/org.jetbrains.plugins.go/%s/org.jetbrains.plugins.go-%s.zip" % (SDK_262_INTELLIJ_REPO_VERSION, SDK_262_INTELLIJ_REPO_VERSION)
 
-GO_PLUGIN_262_SHA = "a5cb0e0e3a203be59df4ceb723395a24af3660274d0831f4fb21d66fb05e4f5c"
+GO_PLUGIN_262_SHA = "04def39162e5716241d5a2d18917fe8cca05def84e2749cee11e59bd46b5565a"
 
 http_archive(
     name = "go_2026_2",
@@ -154,7 +156,7 @@ http_archive(
 
 PERFORMANCE_PLUGIN_262_URL = "https://www.jetbrains.com/intellij-repository/%s/com/jetbrains/intellij/performanceTesting/performance-testing/%s/performance-testing-%s.jar" % (SDK_262_INTELLIJ_REPOSITORY, SDK_262_INTELLIJ_REPO_VERSION, SDK_262_INTELLIJ_REPO_VERSION)
 
-PERFORMANCE_PLUGIN_262_SHA = "000bb699fa3f950a6ae68096b87ae8eb5f58bb2e7001973e8424da87ddf1fd6c"
+PERFORMANCE_PLUGIN_262_SHA = "d9971e65ba8650a7fd30cbebfb8bbdc910d1d63541e5c59650dcc9f19fc6e6f3"
 
 http_jar(
     name = "performance_2026_2",
@@ -164,7 +166,7 @@ http_jar(
 
 CODE_WITH_ME_262_URL = "https://www.jetbrains.com/intellij-repository/%s/com/jetbrains/intellij/platform/backend-split/%s/backend-split-%s.jar" % (SDK_262_INTELLIJ_REPOSITORY, SDK_262_INTELLIJ_REPO_VERSION, SDK_262_INTELLIJ_REPO_VERSION)
 
-CODE_WITH_ME_262_SHA = "f71a10eb40063e37bbd4fa2cd6595b6a521b6a3ccd2d32c428c5b5b7c4b91cd0"
+CODE_WITH_ME_262_SHA = "27c3f3b31165ee0504fb973736a694e100d1a3868f16990294d8ac4e7989cfd5"
 
 http_jar(
     name = "code_with_me_2026_2",
@@ -174,7 +176,7 @@ http_jar(
 
 CODE_WITH_ME_SPLIT_262_URL = "https://www.jetbrains.com/intellij-repository/%s/com/jetbrains/intellij/platform/split/%s/split-%s.jar" % (SDK_262_INTELLIJ_REPOSITORY, SDK_262_INTELLIJ_REPO_VERSION, SDK_262_INTELLIJ_REPO_VERSION)
 
-CODE_WITH_ME_SPLIT_262_SHA = "2fe2cd0c2d35bf9573195769b6a319e06fe4fb8a6e1d6d510d4a4f8074bc905d"
+CODE_WITH_ME_SPLIT_262_SHA = "08e30674749a5ede945289df64cce4b9cc7c2735540678023d5c6460b2a69042"
 
 http_jar(
     name = "code_with_me_split_2026_2",
@@ -184,7 +186,7 @@ http_jar(
 
 TERMINAL_PLUGIN_262_URL = "https://www.jetbrains.com/intellij-repository/%s/com/jetbrains/intellij/terminal/terminal/%s/terminal-%s.jar" % (SDK_262_INTELLIJ_REPOSITORY, SDK_262_INTELLIJ_REPO_VERSION, SDK_262_INTELLIJ_REPO_VERSION)
 
-TERMINAL_PLUGIN_262_SHA = "8097066fcc6dc06c4f6456fb3f6cedb3d1ddec9c6ae1eca9644246720f64486f"
+TERMINAL_PLUGIN_262_SHA = "2bfc3ba33b60748b4fabd2eada607c59c7aef411c0403d396dd7cd7914762a64"
 
 http_jar(
     name = "terminal_2026_2",
@@ -202,11 +204,11 @@ http_jar(
     url = TERMINAL_COMPLETION_PLUGIN_262_URL,
 )
 
-PROTOEDIT_PLUGIN_262_VERSION = SDK_262_BASE_VERSION + ".40"
+PROTOEDIT_PLUGIN_262_VERSION = SDK_262_BASE_VERSION + ".173"
 
 PROTOEDIT_PLUGIN_262_URL = "https://plugins.jetbrains.com/maven/com/jetbrains/plugins/idea.plugin.protoeditor/%s/idea.plugin.protoeditor-%s.zip" % (PROTOEDIT_PLUGIN_262_VERSION, PROTOEDIT_PLUGIN_262_VERSION)
 
-PROTOEDIT_PLUGIN_262_SHA = "f9ebb1a662b6471f42c8c815237de310605cfbb08f54f2c2166652e914ac2a11"
+PROTOEDIT_PLUGIN_262_SHA = "6854cf2e786c3a6ba62e4cc0ee3a45ef5891dd88944bcdba81178e1e29b4edf6"
 
 http_archive(
     name = "protoedit_2026_2",
@@ -217,7 +219,7 @@ http_archive(
 
 JAVA_COVERAGE_262_URL = "https://www.jetbrains.com/intellij-repository/%s/com/jetbrains/intellij/java/java-coverage/%s/java-coverage-%s.jar" % (SDK_262_INTELLIJ_REPOSITORY, SDK_262_INTELLIJ_REPO_VERSION, SDK_262_INTELLIJ_REPO_VERSION)
 
-JAVA_COVERAGE_262_SHA = "65910bfec1d826de871e7e359db49f660b745632c665cada86b2092963af1d0f"
+JAVA_COVERAGE_262_SHA = "970511ef980920d4ed0bb7c4ed50f36d9d284688cf89212d1a1dcbcf4bfe3b39"
 
 http_jar(
     name = "java_coverage_2026_2",
