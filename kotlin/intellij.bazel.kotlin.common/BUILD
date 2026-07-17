@@ -24,7 +24,7 @@ jvm_library(
         "@community//libraries/kotlinx/coroutines/core",
         "//plugins/bazel/intellij.bazel.core:core",
         "//plugins/bazel/intellij.bazel.commons:commons",
-        "//plugins/bazel/java/intellij.bazel.java.common:bazel-java-common",
+        "//plugins/bazel/java/intellij.bazel.java.core:bazel-java-core",
         "//plugins/bazel/intellij.bazel.importer:importer",
         "@community//platform/core-api:core",
         "@community//platform/core-impl",
@@ -65,6 +65,7 @@ jvm_library(
         "@community//platform/smRunner",
         "@community//plugins/kotlin/frontend-independent",
         "@community//plugins/kotlin/base/code-insight",
+        "//plugins/bazel/java/intellij.bazel.java.common:bazel-java-common",
     ],
 )
 
@@ -83,7 +84,7 @@ jvm_library(
         "@community//libraries/kotlinx/coroutines/core:core_test_lib",
         "//plugins/bazel/intellij.bazel.core:core_test_lib",
         "//plugins/bazel/intellij.bazel.commons:commons_test_lib",
-        "//plugins/bazel/java/intellij.bazel.java.common:bazel-java-common_test_lib",
+        "//plugins/bazel/java/intellij.bazel.java.core:bazel-java-core_test_lib",
         "//plugins/bazel/intellij.bazel.importer:importer_test_lib",
         "@community//platform/core-api:core_test_lib",
         "@community//platform/core-impl:core-impl_test_lib",
@@ -124,6 +125,7 @@ jvm_library(
         "@community//platform/smRunner:smRunner_test_lib",
         "@community//plugins/kotlin/frontend-independent:frontend-independent_test_lib",
         "@community//plugins/kotlin/base/code-insight:code-insight_test_lib",
+        "//plugins/bazel/java/intellij.bazel.java.common:bazel-java-common_test_lib",
     ],
 )
 ### auto-generated section `build intellij.bazel.kotlin.common` end
