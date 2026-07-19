@@ -15,12 +15,9 @@ This unfortunately means you'll have to submit your PR without tests.
 3) Run `bazel build //:plugin-bazel_zip` and then grab the built plugin at `out/bazel-bin/plugin-bazel.zip`.
 
 ### Develop/debug the Bazel plugin
-1) Install IntelliJ IDEA 2026.2 EAP, Release Candidate or Release version.
-2) Install the [Plugin DevKit](https://plugins.jetbrains.com/plugin/22851-plugin-devkit/versions/stable) plugin.
-3) Install the `plugin-bazel.zip` you've built in the previous section into IDEA. 
-   This is temporary step, needed because hirschgarten 262 branch has fixes that are not yet in Bazel plugin release.
-
-   <img src="../files/INSTALL_PLUGIN_FROM_DISK.png" width="600">
+1) Install IntelliJ IDEA 2026.2 or later version.
+2) Install the [Bazel plugin](https://plugins.jetbrains.com/plugin/22977-bazel).
+3) Install the [Plugin DevKit](https://plugins.jetbrains.com/plugin/22851-plugin-devkit/versions/stable) plugin.
 4) Open the cloned `hirschgarten/MODULE.bazel` file in IDEA. Click "Open as Project" and wait for it to import.
 5) Open "File→Project Structure". This opens the Project Structure dialog.  
    Click "SDKs".
@@ -44,7 +41,7 @@ This unfortunately means you'll have to submit your PR without tests.
 
    <img src="../files/DEVELOPMENT_SETUP_4.png" width="600">
 10) The following plugin runs can be started by clicking "Run" button in the upper right corner, next to the now present run configuration.
-1To avoid IDEA showing red code for `BuildEventStreamProtos` class, click Help->Edit Custom Properties... and add the following line:
+11) To avoid IDEA showing red code for `BuildEventStreamProtos` class, click Help->Edit Custom Properties... and add the following line:
     `idea.max.intellisense.filesize=10000`
 ### Conclusion
 
