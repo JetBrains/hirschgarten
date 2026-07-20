@@ -75,8 +75,8 @@ class BazelGoPackage(
    *         (1)        (2)  (3) (4)
    * ```
    *
-   * 1. `github.com` resolves to nothing.
-   * 2. `user` resolves to nothing.
+   * 1. `github.com` resolves to nothing, falls back to target `//foo:bar`.
+   * 2. `user` resolves to nothing, falls back to target `//foo:bar`.
    * 3. `foo` resolves to the directory `foo/`.
    * 4. `bar` resolves to the target `//foo:bar`.
    *
@@ -87,12 +87,12 @@ class BazelGoPackage(
    *         (1)        (2)  (3) (4)
    * ```
    *
-   * 1. `github.com` resolves to nothing.
-   * 2. `user` resolves to nothing.
+   * 1. `github.com` resolves to nothing, falls back to directory `one/two/`.
+   * 2. `user` resolves to nothing, falls back to directory `one/two/`.
    * 3. `one` resolves to the directory `one/`.
    * 4. `two` resolves to the directory `one/two/`.
    */
-  fun getImportReferences(): Array<PsiElement?>? {
+  fun getImportReferences(): Array<PsiElement>? {
     val navigable = getNavigableElement() ?: return null
     return getImportReferences(getMainLabel() ?: return null, navigable, entity.importPath)
   }
@@ -111,25 +111,32 @@ class BazelGoPackage(
       label: Label,
       buildElement: PsiElement,
       importPath: String,
-    ): Array<PsiElement?> {
+    ): Array<PsiElement> {
       val pathComponents = importPath.split("/")
-      val importReferences = arrayOfNulls<PsiElement>(pathComponents.size)
+      val importReferences = pathComponents.indices.map { buildElement }.toTypedArray()
 
       if (pathComponents.isEmpty()) {
         return importReferences
       }
 
       // Get the last element (e.g., `bar` for the import path ending in `github.com/user/foo/bar`)
-      val lastElement = getLastElement(pathComponents.last(), label, buildElement) ?: return importReferences
+      val lastPathComponent = pathComponents.last()
+      val lastElement = getLastElement(lastPathComponent, label, buildElement) ?: return importReferences
 
       importReferences[pathComponents.size - 1] = lastElement
-      var currentElement =
-        if (lastElement is PsiDirectory) {
-          lastElement.parent
-        }
+      var currentElement: PsiDirectory?
+      if (lastElement is PsiDirectory) {
+        currentElement = lastElement.parent
+      }
         else {
-          lastElement.containingFile?.parent
+        val containingPackage = lastElement.containingFile?.parent
+        if (containingPackage?.name == lastPathComponent) {
+          // Package name is the same as last component -- go one level up again
+          currentElement = containingPackage.parent
+        } else {
+          currentElement = containingPackage
         }
+      }
 
       // Iterate backwards through the path components, linking names to the proper directories or elements
       for (i in pathComponents.size - 2 downTo 0) {
