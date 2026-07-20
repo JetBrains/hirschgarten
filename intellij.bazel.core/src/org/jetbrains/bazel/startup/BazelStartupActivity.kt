@@ -13,7 +13,7 @@ import org.jetbrains.bazel.startup.utils.BazelProjectActivity
 import org.jetbrains.bazel.sync.environment.projectCtx
 import org.jetbrains.bazel.sync.task.ProjectSyncTask
 import org.jetbrains.bazel.target.ModuleTargetService
-import org.jetbrains.bazel.target.TargetUtils
+import org.jetbrains.bazel.target.TargetStorage
 import org.jetbrains.bazel.ui.settings.BazelApplicationSettingsService
 import org.jetbrains.bazel.ui.widgets.fileTargets.updateBazelFileTargetsWidget
 import kotlin.io.path.isDirectory
@@ -29,6 +29,7 @@ private val log = logger<BazelStartupActivity>()
 internal class BazelStartupActivity : BazelProjectActivity() {
   override suspend fun executeForBazelProject(project: Project) {
     log.info("Executing Bazel startup activity for project: $project")
+    project.serviceAsync<TargetStorage>()
     val trackerService = project.serviceAsync<BspConfigurationTrackerService>()
     try {
       trackerService.isRunning.update { true }
@@ -69,7 +70,7 @@ private suspend fun resyncProjectIfNeeded(project: Project) {
 }
 
 private suspend fun isProjectInIncompleteState(project: Project): Boolean =
-  project.serviceAsync<TargetUtils>().getTotalTargetCount() == 0 ||
+  project.serviceAsync<TargetStorage>().also { it.awaitLoaded() }.getTotalTargetCount() == 0 ||
     !(project.serviceAsync<WorkspaceModel>() as WorkspaceModelImpl).loadedFromCache ||
     !bazelExecPathExists(project)
 

@@ -13,7 +13,7 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeoutOrNull
 import org.jetbrains.bazel.sync.status.SyncStatusListener
 import org.jetbrains.bazel.sync.status.isSyncInProgress
-import org.jetbrains.bazel.target.targetUtils
+import org.jetbrains.bazel.target.targetStorage
 
 private const val SYNC_START_TIMEOUT_MS = 10000L
 
@@ -52,7 +52,7 @@ internal class WaitForBazelSyncCommand(text: String, line: Int) : PlaybackComman
         syncFinished.receive()
       }
 
-      check(project.targetUtils.getTotalTargetCount() != 0) { "Target id list is empty after sync" }
+      check(project.targetStorage.getTotalTargetCount() != 0) { "Target id list is empty after sync" }
     }
 
   // copied com.intellij.collaboration.async.nestedDisposable because it's not always available in the tests

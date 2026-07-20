@@ -4,7 +4,7 @@ import com.intellij.openapi.project.Project
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.languages.starlark.repomapping.toShortString
-import org.jetbrains.bazel.target.targetUtils
+import org.jetbrains.bazel.target.targetStorage
 import java.nio.file.Path
 
 @ApiStatus.Internal
@@ -14,7 +14,7 @@ class TargetCompletionsGenerator(private val project: Project) {
 
   // TODO: check if it is possible to also consider external targets - BAZEL-2028
   private val allTargets =
-    project.targetUtils
+    project.targetStorage
       .allTargets()
       .map { it.toShortString(project) }
       .toMutableSet()

@@ -20,8 +20,8 @@ import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkFile
 import org.jetbrains.bazel.languages.starlark.psi.statements.StarlarkExpressionStatement
 import org.jetbrains.bazel.languages.starlark.references.resolveLabel
-import org.jetbrains.bazel.target.targetUtils
-import org.jetbrains.bsp.protocol.BuildTarget
+import org.jetbrains.bazel.target.targetStorage
+import org.jetbrains.bsp.protocol.ExecutableTarget
 import javax.swing.JComponent
 
 internal sealed class BazelJumpToBuildFileAction :
@@ -37,7 +37,7 @@ internal sealed class BazelJumpToBuildFileAction :
   class XmlRegistered : BazelJumpToBuildFileAction() {
     override suspend fun getTargetLabel(project: Project, e: AnActionEvent): Label? {
       val virtualFile = readAction { e.getPsiFile()?.virtualFile } ?: return null
-      return project.targetUtils.getTargetsForFile(virtualFile).chooseTarget(e.getEditor())
+      return project.targetStorage.getTargetsForFile(virtualFile).chooseTarget(e.getEditor())
     }
 
     override fun update(project: Project, e: AnActionEvent) {
@@ -46,11 +46,11 @@ internal sealed class BazelJumpToBuildFileAction :
 
     private fun shouldBeEnabledAndVisible(project: Project, e: AnActionEvent): Boolean =
       e.getPsiFile()?.virtualFile?.let {
-        project.targetUtils.getTargetsForFile(it).isNotEmpty()
+        project.targetStorage.getTargetsForFile(it).isNotEmpty()
       } == true
   }
 
-  class NonXmlRegistered(private val getTarget: () -> BuildTarget?) : BazelJumpToBuildFileAction() {
+  class NonXmlRegistered(private val getTarget: () -> ExecutableTarget?) : BazelJumpToBuildFileAction() {
     override suspend fun getTargetLabel(project: Project, e: AnActionEvent): Label? = getTarget()?.id
 
     fun registerShortcut(component: JComponent) {

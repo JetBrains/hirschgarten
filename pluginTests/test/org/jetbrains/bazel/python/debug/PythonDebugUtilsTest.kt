@@ -12,7 +12,7 @@ import org.jetbrains.bazel.project.BazelProjectFixtures.initializeBazelProject
 import org.jetbrains.bazel.python.lang.PythonBuildTarget
 import org.jetbrains.bazel.python.lang.PythonLanguageClass
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
-import org.jetbrains.bazel.target.targetUtils
+import org.jetbrains.bazel.target.targetStorage
 import org.jetbrains.bsp.protocol.RawBuildTarget
 import org.jetbrains.bsp.protocol.SourceFileCollection
 import org.junit.jupiter.api.Test
@@ -276,7 +276,7 @@ class PythonDebugUtilsTest {
     val importRoots = imports.map { runfilesWorkspaceRoot.resolve(it).createDirectories() }
     val sitePackagesRoot = runfilesRoot.resolve("rules_python++pip+pypi__pytest/site-packages").createDirectories()
 
-    project.targetUtils.setTargets(
+    project.targetStorage.setTargets(
       listOf(
         RawBuildTarget(
           key = WorkspaceTargetKey(label = target),

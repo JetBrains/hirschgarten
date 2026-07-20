@@ -21,6 +21,7 @@
     <targetKindProvider implementation="org.jetbrains.bazel.protobuf.ProtobufTargetKindProvider" />
     <languageClassProvider implementation="org.jetbrains.bazel.protobuf.ProtobufLanguageClassProvider" />
     <languagePlugin implementation="org.jetbrains.bazel.protobuf.ProtobufLanguagePlugin"/>
+    <workspaceTypeContributor implementation="org.jetbrains.bazel.protobuf.target.ProtobufWorkspaceTypeContributor"/>
   </extensions>
 
   <extensions defaultExtensionNs="com.intellij.protobuf">

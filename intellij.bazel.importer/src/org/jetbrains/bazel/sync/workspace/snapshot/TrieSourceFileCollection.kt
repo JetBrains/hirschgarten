@@ -75,22 +75,33 @@ class TrieNode(
 
 @ApiStatus.Internal
 object SourceFileCollectionBuilder {
+
+  // only use explicitly defined relativization root only when specific percentage of them matches
+  private const val EXPLICIT_RELATIVIZE_ROOT_THRESHOLD = 0.75f
+
   fun build(relativeRoot: Path?, paths: Iterable<Path>): SourceFileCollection = buildImpl(relativeRoot, paths)
   fun build(relativeRoot: Path?, paths: Sequence<Path>): SourceFileCollection = buildImpl(relativeRoot, paths.asIterable())
 
   fun build(paths: Iterable<Path>): SourceFileCollection = buildImpl(relativeRoot = null, paths = paths)
 
   private fun buildImpl(relativeRoot: Path? = null, paths: Iterable<Path>): SourceFileCollection {
-    val (relativizablePaths, externalPaths) = paths.partition { relativeRoot != null && it.startsWith(relativeRoot) }
-      .let { (l, r) -> l to r.toMutableList() }
-
-    if (relativizablePaths.isEmpty() && externalPaths.isEmpty()) {
+    val allPaths = (paths as? List<Path>) ?: paths.toList()
+    if (allPaths.isEmpty()) {
       return SourceFileCollection.EMPTY
     }
 
+    val effectiveRoot = if (relativeRoot != null
+                            && allPaths.count { it.startsWith(relativeRoot) } >= allPaths.size * EXPLICIT_RELATIVIZE_ROOT_THRESHOLD) {
+      relativeRoot
+    }
+    else {
+      commonAncestor(allPaths)
+    }
+
     val root = TrieNode(segment = "")
-    for (path in relativizablePaths) {
-      val relativePath = path.relativeToOrNull(relativeRoot ?: continue)
+    val externalPaths = mutableListOf<Path>()
+    for (path in allPaths) {
+      val relativePath = if (effectiveRoot == null) null else path.relativeToOrNull(effectiveRoot)
       if (relativePath == null) {
         externalPaths.add(path)
         continue
@@ -104,9 +115,22 @@ object SourceFileCollectionBuilder {
     }
 
     return TrieSourceFileCollection(
-      relativizeRoot = relativeRoot,
+      relativizeRoot = effectiveRoot,
       root = root,
       externalFiles = externalPaths,
     )
+  }
+
+  // TODO: we can find X amound of best picks and select based in statictic
+  private fun commonAncestor(paths: List<Path>): Path? {
+    var candidate: Path = paths.first().parent ?: return null
+    for (path in paths) {
+      var ancestor: Path = candidate
+      while (!path.startsWith(ancestor)) {
+        ancestor = ancestor.parent ?: return null
+      }
+      candidate = ancestor
+    }
+    return candidate
   }
 }

@@ -148,13 +148,13 @@ class JavaLanguagePlugin : LanguagePlugin {
     val pluginJars = server.outFileHardLinks.createOutputFileHardLinks(getIntellijPluginJars(server, target, localRepositories).toList())
 
     return JvmBuildTarget(
-      javacOpts = target.javaCommon.javacOptsList,
+      javacOpts = target.javaCommon.javacOptsList.toList(),
       binaryOutputs = SourceFileCollectionBuilder.build(relativeRoot = baseDirectory, paths = binaryOutputs),
       rawBinaryOutputs = SourceFileCollectionBuilder.build(relativeRoot = baseDirectory, paths = rawBinaryOutputs),
-      environmentVariables = environmentVariables,
+      environmentVariables = environmentVariables.toMap(),
       mainClass = getMainClass(jvmTarget),
-      jvmArgs = jvmTarget.jvmFlagsList,
-      programArgs = jvmTarget.argsList,
+      jvmArgs = jvmTarget.jvmFlagsList.toList(),
+      programArgs = jvmTarget.argsList.toList(),
       resolvedResourceStripPrefix = target.resolveResourceStripPrefixToAbsolutePath(server, localRepositories),
       outputInterfaceJars = SourceFileCollectionBuilder.build(hardLinkedInterfaceJars),
       outputSourceJars = SourceFileCollectionBuilder.build(hardLinkedSourceJars),

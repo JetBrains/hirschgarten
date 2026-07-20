@@ -63,7 +63,9 @@
     <targetKindProvider implementation="org.jetbrains.bazel.golang.targetKinds.GoBazelRules" />
     <languageClassProvider implementation="org.jetbrains.bazel.golang.GoLanguageClassProvider" />
     <languagePlugin implementation="org.jetbrains.bazel.golang.sync.GoLanguagePlugin"/>
+    <workspaceTypeContributor implementation="org.jetbrains.bazel.golang.sync.GoWorkspaceTypeContributor"/>
     <targetsToBuildProvider implementation="org.jetbrains.bazel.golang.workspace.GoTargetsToBuildProvider"/>
+
   </extensions>
   <extensions defaultExtensionNs="com.goide">
     <dlv.positionConverterFactory

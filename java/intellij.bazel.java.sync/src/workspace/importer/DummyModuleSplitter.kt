@@ -10,7 +10,7 @@ import org.jetbrains.bazel.commons.constants.Constants
 import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.magicmetamodel.sanitizeName
 import org.jetbrains.bazel.magicmetamodel.shortenTargetPath
-import org.jetbrains.bazel.sync.workspace.snapshot.File2TargetMap
+import org.jetbrains.bazel.sync.workspace.snapshot.FileToTargetMap
 import org.jetbrains.bazel.sync.workspace.snapshot.get
 import org.jetbrains.bazel.utils.findVirtualFile
 import java.io.File
@@ -39,7 +39,7 @@ private val log = logger<DummyModuleSplitter>()
 @ApiStatus.Internal
 class DummyModuleSplitter(
   private val projectBasePath: Path,
-  private val fileToTargets: File2TargetMap,
+  private val fileToTargets: FileToTargetMap,
 ) {
   sealed interface Result
 

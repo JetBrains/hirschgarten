@@ -5,7 +5,7 @@ import com.intellij.openapi.ui.playback.commands.PlaybackCommandCoroutineAdapter
 import com.jetbrains.performancePlugin.CommandProvider
 import com.jetbrains.performancePlugin.CreateCommand
 import org.jetbrains.bazel.languages.starlark.repomapping.toShortString
-import org.jetbrains.bazel.target.targetUtils
+import org.jetbrains.bazel.target.targetStorage
 import java.nio.file.Path
 import kotlin.io.path.readLines
 import kotlin.io.path.writeLines
@@ -19,7 +19,7 @@ private fun snapshotPath(project: com.intellij.openapi.project.Project): Path {
 
 private fun getOrderedTargetLabels(context: PlaybackContext): List<String> {
   val project = context.project
-  val targets = project.targetUtils.allBuildTargetAsLabelToTargetMap { true }
+  val targets = project.targetStorage.allTargets().toList()
   return targets.map { it.toShortString(project) }.sorted()
 }
 

@@ -16,7 +16,7 @@ import org.jetbrains.bazel.assets.BazelPluginIcons
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.run.BazelRunHandler
-import org.jetbrains.bazel.target.targetUtils
+import org.jetbrains.bazel.target.targetStorage
 
 /**
  * The base editor for a Bazel run configuration.
@@ -64,7 +64,7 @@ class BazelRunConfigurationEditor(
         val provider = TextFieldWithAutoCompletion.StringsCompletionProvider(
           /* variants = */
           project
-            .targetUtils
+            .targetStorage
             .allExecutableTargetLabels,
           /* icon = */ BazelPluginIcons.bazel,
         )

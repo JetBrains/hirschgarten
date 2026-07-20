@@ -16,7 +16,7 @@ import org.jetbrains.bazel.config.BazelPluginConstants
 import org.jetbrains.bazel.coroutines.BazelCoroutineService
 import org.jetbrains.bazel.languages.projectview.project.ProjectViewFileLocalizer.pickProjectViewFileForProject
 import org.jetbrains.bazel.target.ModuleTargetService
-import org.jetbrains.bazel.target.TargetUtils
+import org.jetbrains.bazel.target.TargetStorage
 import javax.swing.Icon
 
 /**
@@ -57,7 +57,7 @@ internal class BazelProjectOpenProcessor : ProjectOpenProcessor() {
         }
 
         // force async load targets cache
-        project.service<TargetUtils>()
+        project.service<TargetStorage>()
         project.service<ModuleTargetService>()
       }
     )

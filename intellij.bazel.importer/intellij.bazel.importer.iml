@@ -53,5 +53,8 @@
     <orderEntry type="module" module-name="intellij.platform.eel.provider" />
     <orderEntry type="module" module-name="intellij.libraries.hash4j" />
     <orderEntry type="module" module-name="intellij.libraries.bazel.aspect.sdk" exported="" />
+    <orderEntry type="module" module-name="intellij.libraries.kryo5" />
+    <orderEntry type="module" module-name="intellij.libraries.mvstore" />
+    <orderEntry type="module" module-name="intellij.libraries.caffeine" />
   </component>
 </module>

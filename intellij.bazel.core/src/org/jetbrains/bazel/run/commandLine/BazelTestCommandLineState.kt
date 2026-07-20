@@ -17,7 +17,7 @@ import org.jetbrains.bazel.run.task.BazelTestTaskListener
 import org.jetbrains.bazel.run.task.JetBrainsTestRunnerTaskListener
 import org.jetbrains.bazel.run.test.useJetBrainsTestRunner
 import org.jetbrains.bazel.runnerAction.COVERAGE_EXECUTOR_ID
-import org.jetbrains.bazel.target.targetUtils
+import org.jetbrains.bazel.target.targetStorage
 import org.jetbrains.bazel.taskEvents.BazelTaskListener
 import org.jetbrains.bazel.utils.filterPathsThatDontContainEachOther2
 import org.jetbrains.bazel.server.BazelServerFacade
@@ -76,7 +76,7 @@ class BazelTestCommandLineState(
 
   private fun getCoverageInstrumentationFilter(project: Project): String {
     val packages =
-      project.targetUtils
+      project.targetStorage
         .allTargets()
         .map { it.packagePath.pathSegments }
         .toSet()

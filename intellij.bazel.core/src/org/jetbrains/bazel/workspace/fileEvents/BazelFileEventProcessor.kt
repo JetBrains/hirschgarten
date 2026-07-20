@@ -54,7 +54,7 @@ import org.jetbrains.bazel.projectAware.BazelProjectAware
 import org.jetbrains.bazel.run.task.BazelBuildTaskListener
 import org.jetbrains.bazel.server.connection
 import org.jetbrains.bazel.sync.status.SyncStatusService
-import org.jetbrains.bazel.target.targetUtils
+import org.jetbrains.bazel.target.targetStorage
 import org.jetbrains.bazel.taskEvents.BazelTaskEventsService
 import org.jetbrains.bazel.ui.status.BazelFileStatusRefresher
 import org.jetbrains.bazel.workspace.fileEvents.SimplifiedFileEvent.Create
@@ -95,7 +95,7 @@ interface BazelFileEventProcessor {
 
 @ApiStatus.Internal
 open class DefaultBazelFileEventProcessor(private val project: Project): BazelFileEventProcessor {
-  private val targetUtils = project.targetUtils
+  private val targetUtils = project.targetStorage
   private val eventsQueue = Channel<EventsBatch>(Channel.UNLIMITED)
 
   private val eventsRequestCounter = AtomicInteger(0)

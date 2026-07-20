@@ -11,8 +11,11 @@ import org.jetbrains.bazel.commons.LocalRepositoryMapping
 import org.jetbrains.bazel.commons.RepoMapping
 import org.jetbrains.bazel.commons.getLocalRepositories
 import org.jetbrains.bazel.golang.GoLanguageClass
+import org.jetbrains.bazel.label.assumeResolved
+import org.jetbrains.bazel.label.label
 import org.jetbrains.bazel.server.BazelServerFacade
 import org.jetbrains.bazel.sync.workspace.languages.LanguagePlugin
+import org.jetbrains.bazel.sync.workspace.snapshot.SourceFileCollectionBuilder
 import org.jetbrains.bazel.sync.workspace.snapshot.toWorkspaceTargetKey
 import org.jetbrains.bsp.protocol.BazelResolveLocalToRemoteParams
 import org.jetbrains.bsp.protocol.BazelResolveLocalToRemoteResult
@@ -25,7 +28,7 @@ import kotlin.io.path.absolute
 import kotlin.reflect.KClass
 
 @ApiStatus.Internal
-class GoLanguagePlugin: LanguagePlugin {
+class GoLanguagePlugin : LanguagePlugin {
   override val providedBuildTargetTypes: Set<KClass<out BuildTargetData>>
     get() = setOf(GoBuildTarget::class)
 
@@ -47,12 +50,16 @@ class GoLanguagePlugin: LanguagePlugin {
     }
     val goTarget = target.goTargetInfo
     val localRepositories = repoMapping.getLocalRepositories()
+    val baseDirectory = server.bazelPathsResolver.toDirectoryPath(target.label().assumeResolved(), repoMapping)
     return listOf(
       GoBuildTarget(
         sdkHomePath = calculateSdkPath(server, goTarget.sdkHomePath, localRepositories),
         importPath = goTarget.importPath,
-        sources = server.outFileHardLinks.createOutputFileHardLinks(
-          goTarget.sourcesList.map { server.bazelPathsResolver.resolve(it, localRepositories) },
+        sources = SourceFileCollectionBuilder.build(
+          relativeRoot = baseDirectory,
+          paths = server.outFileHardLinks.createOutputFileHardLinks(
+            goTarget.sourcesList.map { server.bazelPathsResolver.resolve(it, localRepositories) },
+          ),
         ),
         embed = goTarget.embedList.map { it.toWorkspaceTargetKey() },
       ),

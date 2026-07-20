@@ -6,11 +6,14 @@
     <module name="intellij.bazel.projectview"/>
     <module name="intellij.bazel.protobuf"/>
     <module name="intellij.libraries.bazel.aspect.sdk"/>
+    <module name="intellij.libraries.caffeine"/>
     <module name="intellij.libraries.fastutil"/>
     <module name="intellij.libraries.gson"/>
     <module name="intellij.libraries.guava"/>
     <module name="intellij.libraries.hash4j"/>
     <module name="intellij.libraries.kotlinx.coroutines.core"/>
+    <module name="intellij.libraries.kryo5"/>
+    <module name="intellij.libraries.mvstore"/>
     <module name="intellij.libraries.protobuf"/>
     <module name="intellij.platform.analysis"/>
     <module name="intellij.platform.backend"/>
@@ -67,16 +70,24 @@
                     interface="org.jetbrains.bazel.workspace.indexAdditionalFiles.IndexAdditionalFilesContributor"
                     dynamic="true"
     />
+    <extensionPoint qualifiedName="org.jetbrains.bazel.workspaceTypeContributor"
+                    interface="org.jetbrains.bazel.sync.workspace.persistence.WorkspaceTypeContributor"
+                    dynamic="false"
+    />
   </extensionPoints>
 
   <extensions defaultExtensionNs="org.jetbrains.bazel">
     <projectSyncHook implementation="org.jetbrains.bazel.sync.hooks.PathSyncHook"/>
     <targetKindProvider implementation="org.jetbrains.bazel.sync.workspace.targetKind.GenericBazelRules" order="last"/>
+
+    <workspaceTypeContributor implementation="org.jetbrains.bazel.sync.workspace.persistence.DefaultWorkspaceTypeContributor"/>
   </extensions>
 
   <extensions defaultExtensionNs="com.intellij">
     <workspaceModel.fileIndexContributor
       implementation="org.jetbrains.bazel.workspace.BazelProjectDirectoriesWorkspaceFileIndexContributor"
     />
+    <projectService serviceInterface="org.jetbrains.bazel.sync.workspace.persistence.WorkspaceSnapshotService"
+                    serviceImplementation="org.jetbrains.bazel.sync.workspace.persistence.mvstore.DefaultWorkspaceSnapshotService"/>
   </extensions>
 </idea-plugin>

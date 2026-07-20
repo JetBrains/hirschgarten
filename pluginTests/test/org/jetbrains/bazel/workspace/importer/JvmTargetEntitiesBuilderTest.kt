@@ -30,7 +30,7 @@ import org.jetbrains.bazel.sync.workspace.languages.java.sourceRoot.SourceRootOp
 import org.jetbrains.bazel.sync.workspace.languages.jvm.JvmBuildTarget
 import org.jetbrains.bazel.sync.workspace.languages.jvm.JvmDependency
 import org.jetbrains.bazel.sync.workspace.languages.jvm.extractJvmBuildTarget
-import org.jetbrains.bazel.sync.workspace.snapshot.File2TargetMap
+import org.jetbrains.bazel.sync.workspace.snapshot.FileToTargetMap
 import org.jetbrains.bazel.sync.workspace.snapshot.SourceFileCollectionBuilder
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceAspectIds
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceConfigurationId
@@ -382,7 +382,7 @@ internal class JvmTargetEntitiesBuilderTest : WorkspaceModelBaseTest() {
       defaultJdkName = null,
       testSourcesGlob = ProjectViewGlobSet(projectBasePath, emptyList()),
       packagePrefixes = jvmPackagePrefixes,
-      fileToTargets = File2TargetMap.EMPTY,
+      fileToTargets = FileToTargetMap.EMPTY,
       virtualFileUrlManager = virtualFileUrlManager,
       importIJars = false,
       entitySource = BazelProjectEntitySource,

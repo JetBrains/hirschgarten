@@ -7,7 +7,7 @@ import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.run.config.BazelRunConfiguration
-import org.jetbrains.bazel.target.targetUtils
+import org.jetbrains.bazel.target.targetStorage
 
 @ApiStatus.Internal
 interface RunHandlerProvider {
@@ -40,10 +40,10 @@ interface RunHandlerProvider {
     /** Finds a BspRunHandlerProvider that will be able to create a BspRunHandler for the given targets.
      *  Needs to query WM for Build Target Infos. */
     fun getRunHandlerProvider(project: Project, targets: List<Label>): RunHandlerProvider {
-      val targetUtils = project.targetUtils
+      val targetUtils = project.targetStorage
       val targetInfos =
         targets.mapNotNull {
-          targetUtils.getBuildTargetForLabel(it)
+          targetUtils.getTargetSummary(it)
         }
       if (targetInfos.size != targets.size) {
         thisLogger().warn("Some targets could not be found: ${targets - targetInfos.map { it.id }.toSet()}")
@@ -56,8 +56,8 @@ interface RunHandlerProvider {
     }
 
     fun getRunHandlerProviderOrNull(project: Project, targets: List<Label>): RunHandlerProvider? {
-      val targetUtils = project.targetUtils
-      val targetKinds = targets.mapNotNull { targetUtils.getBuildTargetForLabel(it)?.kind }
+      val targetUtils = project.targetStorage
+      val targetKinds = targets.mapNotNull { targetUtils.getTargetSummary(it)?.kind }
       if (targetKinds.isEmpty()) return null
       return getRunHandlerProvider(targetKinds)
     }

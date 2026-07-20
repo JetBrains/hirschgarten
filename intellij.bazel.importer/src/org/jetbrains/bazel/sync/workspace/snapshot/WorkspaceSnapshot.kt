@@ -2,29 +2,52 @@ package org.jetbrains.bazel.sync.workspace.snapshot
 
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.commons.RepoMapping
+import org.jetbrains.bazel.commons.RepoMappingDisabled
 import org.jetbrains.bsp.protocol.RawBuildTarget
 import org.jetbrains.bazel.sync.workspace.importer.BazelWorkspaceImporter
+import org.jetbrains.bazel.sync.workspace.persistence.TargetLoadOptions
+import org.jetbrains.bazel.sync.workspace.persistence.WorkspaceTargetMap
 import java.nio.file.Path
 
 /**
  * Immutable workspace snapshot, describing fixed input scope for [BazelWorkspaceImporter]
  *
- * @property targets Full set of [WorkspaceTarget]
+ * @property targets Lazy loadable collection of [WorkspaceTarget]
  * @property configurations All used bazel configurations
  * @property targetGraph Immutable representation of bazel target graph
  * @property syncConfigs Set of sync configs used by [BazelWorkspaceImporter] in later stage
  * @property repoMapping Bazel repo mapping
- * @property hasError Did previous steps ended with partial failure
+ * @property metadata Snapshot metadata
  */
 @ApiStatus.Internal
 data class WorkspaceSnapshot(
-  val targets: Map<WorkspaceTargetKey, WorkspaceTarget>,
+  val targets: WorkspaceTargetMap,
   val configurations: Map<WorkspaceConfigurationId, WorkspaceConfiguration>,
   val targetGraph: WorkspaceTargetGraph,
-  val fileToTarget: File2TargetMap,
+  val fileToTarget: FileToTargetMap,
+  val executableTargets: ExecutableTargetsIndex = ExecutableTargetsIndex.EMPTY,
   val syncConfigs: List<WorkspaceSyncConfig>,
   val repoMapping: RepoMapping,
-  val hasError: Boolean,
+  val metadata: WorkspaceSnapshotMetadata
+) {
+  companion object {
+    val EMPTY: WorkspaceSnapshot = WorkspaceSnapshot(
+      targets = WorkspaceTargetMap.EMPTY,
+      configurations = mapOf(),
+      targetGraph = WorkspaceTargetGraph.EMPTY,
+      fileToTarget = FileToTargetMap.EMPTY,
+      syncConfigs = emptyList(),
+      repoMapping = RepoMappingDisabled,
+      metadata = WorkspaceSnapshotMetadata(
+        version = 1,
+      )
+    )
+  }
+}
+
+@ApiStatus.Internal
+data class WorkspaceSnapshotMetadata(
+  val version: Int,
 )
 
 /**
@@ -37,7 +60,11 @@ data class WorkspaceSnapshot(
 data class WorkspaceTarget(
   val targetKey: WorkspaceTargetKey,
   val rawBuildTarget: RawBuildTarget,
-)
+  val loaded: TargetLoadOptions = TargetLoadOptions.DEFAULT,
+) {
+  val isFull: Boolean
+    get() = loaded == TargetLoadOptions.DEFAULT
+}
 
 /**
  * Marker interface for workspace importer specific configuration,

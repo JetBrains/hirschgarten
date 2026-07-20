@@ -13,14 +13,14 @@ import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.runnerAction.TestTargetAction
 import org.jetbrains.bazel.runnerAction.getCoverageExecutor
-import org.jetbrains.bazel.target.targetUtils
-import org.jetbrains.bsp.protocol.BuildTarget
+import org.jetbrains.bazel.target.TargetSummary
+import org.jetbrains.bazel.target.targetStorage
 import javax.swing.Icon
 
 internal open class RunAllTestsBaseAction(
   text: () -> String,
   icon: Icon,
-  private val createAction: (project: Project, targets: List<BuildTarget>, directoryName: String) -> SuspendableAction?,
+  private val createAction: (project: Project, targets: List<TargetSummary>, directoryName: String) -> SuspendableAction?,
 ) : SuspendableAction(
     text = text,
     icon = icon,
@@ -39,7 +39,7 @@ internal open class RunAllTestsBaseAction(
     e.presentation.isEnabledAndVisible = runReadAction { shouldShowAction(project, e) }
   }
 
-  private fun getAllTestTargetInfos(project: Project, event: AnActionEvent): List<BuildTarget> {
+  private fun getAllTestTargetInfos(project: Project, event: AnActionEvent): List<TargetSummary> {
     return (event.getCurrentPath() ?: return emptyList())
       .toChildTestTargets(project)
       .toList()
@@ -50,18 +50,19 @@ internal open class RunAllTestsBaseAction(
 
   private fun AnActionEvent.getCurrentPath(): VirtualFile? = getData(PlatformDataKeys.VIRTUAL_FILE)
 
-  private fun VirtualFile.toChildTestTargets(project: Project): Sequence<BuildTarget> {
-    val targetUtils = project.targetUtils
+  private fun VirtualFile.toChildTestTargets(project: Project): Sequence<TargetSummary> {
+    val targetUtils = project.targetStorage
     val childTargets =
       if (isDirectory) {
         val path = toNioPathOrNull() ?: return emptySequence()
         targetUtils
-          .allBuildTargets()
+          .allTargetSummaries()
+          .asSequence()
           .filter { it.baseDirectory.startsWith(path) }
       } else {
         targetUtils
           .getExecutableTargetsForFile(this)
-          .mapNotNull { targetUtils.getBuildTargetForLabel(it) }
+          .mapNotNull { targetUtils.getTargetSummary(it) }
           .asSequence()
       }
     return childTargets

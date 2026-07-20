@@ -28,7 +28,6 @@ import org.jetbrains.bazel.runnerAction.getTestExecutors
 import org.jetbrains.bazel.sync.action.ResyncTargetAction
 import org.jetbrains.bazel.ui.widgets.BazelJumpToBuildFileAction
 import org.jetbrains.bazel.ui.widgets.tool.window.actions.CopyTargetIdAction
-import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.ExecutableTarget
 import java.awt.Component
 import java.awt.Point
@@ -37,9 +36,9 @@ import java.awt.event.MouseEvent
 internal abstract class LoadedTargetsMouseListener(private val project: Project) : PopupHandler() {
   abstract fun isPointSelectable(point: Point): Boolean
 
-  abstract fun getSelectedBuildTarget(): BuildTarget?
+  abstract fun getSelectedBuildTarget(): ExecutableTarget?
 
-  abstract fun getSelectedBuildTargetsUnderDirectory(): List<BuildTarget>
+  abstract fun getSelectedBuildTargetsUnderDirectory(): List<ExecutableTarget>
 
   abstract val copyTargetIdAction: CopyTargetIdAction
 
@@ -85,7 +84,7 @@ internal abstract class LoadedTargetsMouseListener(private val project: Project)
     }
   }
 
-  private fun calculatePopupGroup(target: BuildTarget): ActionGroup =
+  private fun calculatePopupGroup(target: ExecutableTarget): ActionGroup =
     DefaultActionGroup().apply {
       ResyncTargetAction.createIfEnabled(target.id)?.let { addAction(it) }
       addAction(copyTargetIdAction)
@@ -96,7 +95,7 @@ internal abstract class LoadedTargetsMouseListener(private val project: Project)
       add(StarlarkDebugAction(target.id))
     }
 
-  private fun calculatePopupGroup(targets: List<BuildTarget>): ActionGroup? {
+  private fun calculatePopupGroup(targets: List<ExecutableTarget>): ActionGroup? {
     val testTargets = targets.filter { it.kind.ruleType == RuleType.TEST }
     if (testTargets.isEmpty()) {
       return null

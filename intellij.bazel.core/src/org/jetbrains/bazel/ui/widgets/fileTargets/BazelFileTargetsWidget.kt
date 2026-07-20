@@ -24,11 +24,11 @@ import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.languages.starlark.repomapping.toShortString
 import org.jetbrains.bazel.runnerAction.BuildTargetAction
 import org.jetbrains.bazel.sync.action.ResyncTargetAction
-import org.jetbrains.bazel.target.targetUtils
+import org.jetbrains.bazel.target.targetStorage
 import org.jetbrains.bazel.ui.widgets.BazelJumpToBuildFileAction
 import org.jetbrains.bazel.ui.widgets.tool.window.actions.CopyTargetIdAction
 import org.jetbrains.bazel.ui.widgets.tool.window.utils.fillWithEligibleActions
-import org.jetbrains.bsp.protocol.BuildTarget
+import org.jetbrains.bsp.protocol.ExecutableTarget
 import javax.swing.Icon
 
 /**
@@ -47,7 +47,7 @@ internal class BazelFileTargetsWidget(project: Project) : EditorBasedStatusBarPo
     }
 
   private fun activeWidgetStateIfIncludedInAnyTargetOrInactiveState(file: VirtualFile, icon: Icon): WidgetState {
-    val targets = project.targetUtils.getTargetsForFile(file)
+    val targets = project.targetStorage.getTargetsForFile(file)
     return if (targets.isEmpty()) {
       inactiveWidgetState(icon)
     } else {
@@ -80,7 +80,7 @@ internal class BazelFileTargetsWidget(project: Project) : EditorBasedStatusBarPo
   }
 
   private fun calculatePopupGroup(file: VirtualFile): ActionGroup {
-    val targetUtils = project.targetUtils
+    val targetUtils = project.targetStorage
     val targetIds = targetUtils.getTargetsForFile(file)
     val executableTargetIds = targetUtils.getExecutableTargetsForFile(file) - targetIds.toSet()
 
@@ -94,12 +94,12 @@ internal class BazelFileTargetsWidget(project: Project) : EditorBasedStatusBarPo
     }
   }
 
-  private fun List<Label>.getTargetInfos(): List<BuildTarget> {
-    val targetUtils = project.targetUtils
-    return this.mapNotNull { targetUtils.getBuildTargetForLabel(it) }
+  private fun List<Label>.getTargetInfos(): List<ExecutableTarget> {
+    val targetUtils = project.targetStorage
+    return this.mapNotNull { targetUtils.getTargetSummary(it) }
   }
 
-  private fun BuildTarget.calculatePopupGroup(): ActionGroup =
+  private fun ExecutableTarget.calculatePopupGroup(): ActionGroup =
     createActionGroup(id.toShortString(project)).also {
       ResyncTargetAction.createIfEnabled(id)?.let { resyncTargetAction -> it.add(resyncTargetAction) }
       it.add(CopyTargetIdAction.FromTargetInfo(this))

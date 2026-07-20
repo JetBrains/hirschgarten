@@ -22,7 +22,7 @@ import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.python.lang.PythonBuildTarget
 import org.jetbrains.bazel.python.lang.PythonLanguageClass
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
-import org.jetbrains.bazel.target.targetUtils
+import org.jetbrains.bazel.target.targetStorage
 import org.jetbrains.bazel.test.framework.BazelBasePlatformTestCase
 import org.jetbrains.bsp.protocol.RawBuildTarget
 import org.jetbrains.bsp.protocol.SourceFileCollection
@@ -171,11 +171,11 @@ internal class RunConfigurationProducersDisablerTest : BazelBasePlatformTestCase
   }
 
   private fun Project.addPyBinaryTargets(vararg targets: RawBuildTarget) {
-    targetUtils.setTargets(targets.toList())
+    targetStorage.setTargets(targets.toList())
   }
 
   private fun Project.addPyTestTarget(label: Label) {
-    targetUtils.setTargets(listOf(pyTestTarget(label)))
+    targetStorage.setTargets(listOf(pyTestTarget(label)))
   }
 
   private fun pyBinaryTarget(label: Label, mainFile: PsiFile): RawBuildTarget =
@@ -227,7 +227,7 @@ internal class RunConfigurationProducersDisablerTest : BazelBasePlatformTestCase
     )
 
   private fun Project.addFileToTargets(file: PsiFile, vararg targets: Label) {
-    targetUtils.addFileToTargetIdEntry(file.virtualFile.toNioPath(), targets.toList())
+    targetStorage.addFileToTargetIdEntry(file.virtualFile.toNioPath(), targets.toList())
   }
 
   @Suppress("UNCHECKED_CAST")

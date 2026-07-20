@@ -67,7 +67,7 @@ internal class PythonLanguagePlugin : LanguagePlugin {
       PythonBuildTarget(
         version = pythonTarget.version.takeUnless(String::isNullOrEmpty),
         interpreter = calculateInterpreterPath(server, interpreter = pythonTarget.interpreter, localRepositories),
-        imports = pythonTarget.importsList,
+        imports = pythonTarget.importsList.toList(),
         generatedSources = SourceFileCollectionBuilder.build(
           relativeRoot = baseDirectory,
           paths = pythonTarget.resolveGeneratedSources(server, repoMapping),

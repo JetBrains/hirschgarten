@@ -66,7 +66,7 @@ class KotlinLanguagePlugin : LanguagePlugin {
         apiVersion = kotlinTarget.apiVersion.takeIf { it.isNotBlank() },
         associates = kotlinTarget.associatedTargetsList.map { it.toWorkspaceTargetKey() },
         moduleName = kotlinTarget.moduleName.takeIf { it.isNotBlank() },
-        kotlincOptions = kotlinTarget.toKotlincOptArguments(server, localRepositories),
+        kotlincOptions = kotlinTarget.toKotlincOptArguments(server, localRepositories).toList(),
         stdlibHardLinkedJars = SourceFileCollectionBuilder.build(server.outFileHardLinks.createOutputFileHardLinks(stdlibJars)),
         stdlibInferredSourceJars = SourceFileCollectionBuilder.build(server.outFileHardLinks.createOutputFileHardLinks(inferredSourceJars)),
         exportedCompilerPluginTargetsList = kotlinTarget.exportedCompilerPluginTargetsList.map { it.toWorkspaceTargetKey() },

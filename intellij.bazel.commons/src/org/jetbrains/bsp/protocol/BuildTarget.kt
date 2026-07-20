@@ -7,6 +7,9 @@ import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
 import java.nio.file.Path
 
+// TODO: Unify target access interface through entire codebase
+//  after introducing common target storage, we don't have to difference target by partial/full
+
 @ApiStatus.Internal
 interface ExecutableTarget {
   val id: Label
@@ -62,16 +65,6 @@ val RawBuildTarget.allSources: Sequence<Path>
 
 @ApiStatus.Internal
 fun RawBuildTarget.isTestTarget(): Boolean = isTestOnly || kind.ruleType == RuleType.TEST
-
-@ApiStatus.Internal
-data class PartialBuildTarget(
-  override val id: Label,
-  override val kind: TargetKind,
-  override val baseDirectory: Path,
-  override val data: List<BuildTargetData> = emptyList(),
-  override val isManual: Boolean,
-  override val isWorkspace: Boolean
-) : BuildTarget
 
 // adding or removing new BuildTargetData should not cause cache invalidation, but still we don't want to write FQN per each target
 @Target(AnnotationTarget.CLASS)

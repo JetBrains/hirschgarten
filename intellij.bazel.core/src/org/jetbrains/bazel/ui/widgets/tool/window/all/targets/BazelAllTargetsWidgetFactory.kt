@@ -29,7 +29,7 @@ import org.jetbrains.bazel.assets.BazelPluginIcons
 import org.jetbrains.bazel.config.BazelPluginConstants
 import org.jetbrains.bazel.config.isBazelProject
 import org.jetbrains.bazel.languages.starlark.repomapping.toShortString
-import org.jetbrains.bazel.target.TargetUtils
+import org.jetbrains.bazel.target.TargetStorage
 import org.jetbrains.bazel.ui.widgets.tool.window.components.BazelTargetsPanel
 import org.jetbrains.bazel.ui.widgets.tool.window.components.BazelTargetsPanelModel
 import org.jetbrains.bazel.ui.widgets.tool.window.components.configureBazelToolWindowToolBar
@@ -85,13 +85,13 @@ private class BazelAllTargetsWidgetFactory :
           panel
         }
 
-      val targetUtils = project.serviceAsync<TargetUtils>()
+      val targetStorage = project.serviceAsync<TargetStorage>()
       // update immediately, avoid any delays
-      updateVisibleTargets(targetUtils = targetUtils, project = project, model = model, targetPanel = targetPanel)
-      merge(targetUtils.targetListUpdated, updateRequests)
+      updateVisibleTargets(targetStorage = targetStorage, project = project, model = model, targetPanel = targetPanel)
+      merge(targetStorage.targetListUpdated, updateRequests)
         .throttle(300)
         .collectLatest {
-          updateVisibleTargets(targetUtils = targetUtils, project = project, model = model, targetPanel = targetPanel)
+          updateVisibleTargets(targetStorage = targetStorage, project = project, model = model, targetPanel = targetPanel)
         }
     }
   }
@@ -128,16 +128,19 @@ private val bazelToolWindowId: String
   get() = BazelPluginConstants.BAZEL_DISPLAY_NAME
 
 private suspend fun updateVisibleTargets(
-  targetUtils: TargetUtils,
+  targetStorage: TargetStorage,
   project: Project,
   model: BazelTargetsPanelModel,
   targetPanel: Deferred<BazelTargetsPanel>,
 ) {
   // First, apply the filter
-  val filteredTargets = targetUtils.allBuildTargetAsLabelToTargetMap { target ->
-    target.isWorkspace && model.targetFilter.predicate(target)
-  }
-  val hasAnyTargets = targetUtils.getTotalTargetCount() > 0
+  val filteredTargets = targetStorage.allTargetSummaries()
+    .asSequence()
+    .distinctBy { it.id }
+    .filter { target -> target.isWorkspace && model.targetFilter.predicate(target) }
+    .map { it.id }
+    .toList()
+  val hasAnyTargets = targetStorage.getTotalTargetCount() > 0
   // Then, apply the search query
   var searchRegex: Regex?
   val searchResults =

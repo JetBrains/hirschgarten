@@ -25,7 +25,7 @@ import org.jetbrains.bazel.runnerAction.TestTargetAction
 import org.jetbrains.bazel.runnerAction.getTestExecutors
 import org.jetbrains.bazel.sync.action.ResyncTargetAction
 import org.jetbrains.bazel.sync.workspace.targetKind.TargetKindService
-import org.jetbrains.bazel.target.targetUtils
+import org.jetbrains.bazel.target.targetStorage
 import org.jetbrains.bazel.ui.widgets.tool.window.utils.fillWithEligibleActions
 
 @ApiStatus.Internal
@@ -77,8 +77,8 @@ open class StarlarkRunLineMarkerContributor : RunLineMarkerContributor() {
   }
 
   private fun calculateEligibleActions(project: Project, targetLabel: ResolvedLabel, ruleName: String): List<AnAction> = buildList {
-    val targetUtils = project.targetUtils
-    val targetInfo = targetUtils.getBuildTargetForLabel(targetLabel)
+    val targetUtils = project.targetStorage
+    val targetInfo = targetUtils.getTargetSummary(targetLabel)
     val targetKind = targetInfo?.kind ?: TargetKindService.getInstance().guessFromRuleName(ruleName)
 
     add(BuildTargetAction(targetLabel))
@@ -88,7 +88,7 @@ open class StarlarkRunLineMarkerContributor : RunLineMarkerContributor() {
 
     val executableTargetsFromTargetUtils =
       targetUtils.getExecutableTargetsForTarget(targetLabel)
-        .mapNotNull { executableLabel -> targetUtils.getBuildTargetForLabel(executableLabel) }
+        .mapNotNull { executableLabel -> targetUtils.getTargetSummary(executableLabel) }
         .map { NonImportedExecutableTarget(it.id, it.kind) }
     val executableTargets = if (targetInfo != null) {
       // If we have the targetInfo, we know for sure whether the target is executable.

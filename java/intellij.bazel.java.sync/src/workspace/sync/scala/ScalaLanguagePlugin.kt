@@ -44,7 +44,7 @@ class ScalaLanguagePlugin : LanguagePlugin {
             sdk.sdkJars.map { uri -> Path.of(uri) }
           )
         ),
-        scalacOptions = target.scalaTargetInfo.scalacOptsList,
+        scalacOptions = target.scalaTargetInfo.scalacOptsList.toList(),
         scalatestClasspathTargets = target.scalaTargetInfo.scalatestClasspathTargetsList.map { Label.parse(it) },
       ),
     )

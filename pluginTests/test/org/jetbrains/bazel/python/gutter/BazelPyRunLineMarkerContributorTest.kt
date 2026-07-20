@@ -18,7 +18,7 @@ import org.jetbrains.bazel.project.BazelProjectFixtures.initializeBazelProject
 import org.jetbrains.bazel.python.lang.PythonBuildTarget
 import org.jetbrains.bazel.python.lang.PythonLanguageClass
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
-import org.jetbrains.bazel.target.targetUtils
+import org.jetbrains.bazel.target.targetStorage
 import org.jetbrains.bsp.protocol.RawBuildTarget
 import org.jetbrains.bsp.protocol.SourceFileCollection
 import org.junit.Before
@@ -356,7 +356,7 @@ internal class BazelPyRunLineMarkerContributorTest : CodeInsightFixtureTestCase<
     mainFile: PsiFile?,
     mainModule: String?,
   ) {
-    targetUtils.setTargets(
+    targetStorage.setTargets(
       listOf(
         RawBuildTarget(
           key = WorkspaceTargetKey(label = label),
@@ -388,11 +388,11 @@ internal class BazelPyRunLineMarkerContributorTest : CodeInsightFixtureTestCase<
   }
 
   private fun Project.addFileToTarget(file: PsiFile, target: Label) {
-    targetUtils.addFileToTargetIdEntry(file.virtualFile.toNioPath(), listOf(target))
+    targetStorage.addFileToTargetIdEntry(file.virtualFile.toNioPath(), listOf(target))
   }
 
   private fun Project.removeFileFromAllTargets(file: PsiFile) {
-    targetUtils.removeFileToTargetIdEntry(file.virtualFile.toNioPath())
+    targetStorage.removeFileToTargetIdEntry(file.virtualFile.toNioPath())
   }
 
   companion object {
