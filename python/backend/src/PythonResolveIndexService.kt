@@ -1,12 +1,16 @@
 package com.intellij.bazel.python.backend
 
 import com.intellij.openapi.components.Service
+import com.intellij.openapi.components.service
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.getProjectDataPath
 import com.intellij.psi.util.QualifiedName
 import com.jetbrains.python.PyNames
 import kotlinx.coroutines.awaitAll
+import org.jetbrains.annotations.ApiStatus
+import org.jetbrains.annotations.TestOnly
+import org.jetbrains.annotations.VisibleForTesting
 import org.jetbrains.bazel.commons.LanguageClass
 import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.coroutines.BazelCoroutineService
@@ -36,17 +40,21 @@ private fun Project.pyIndexStoragePath(): Path = getProjectDataPath("bazel-pyind
 private data class ResolveIndexSnapshot(
   val qualifiedNamesToPaths: Map<QualifiedName, Path>,
   val shortestQualifiedNamesByPath: Map<Path, QualifiedName>,
+  val directChildrenByQualifiedName: Map<QualifiedName, Map<String, Path>>,
 )
 
 @Service(Service.Level.PROJECT)
 internal class PythonResolveIndexService(private val project: Project) {
-  private val resolveIndexSnapshotRef = AtomicReference(ResolveIndexSnapshot(emptyMap(), emptyMap()))
+  private val resolveIndexSnapshotRef = AtomicReference(ResolveIndexSnapshot(emptyMap(), emptyMap(), emptyMap()))
 
   val resolveIndex: Map<QualifiedName, Path>
     get() = resolveIndexSnapshotRef.get().qualifiedNamesToPaths
 
   fun findShortestQualifiedName(path: Path): QualifiedName? =
     resolveIndexSnapshotRef.get().shortestQualifiedNamesByPath[path]
+
+  fun findDirectChildren(qualifiedName: QualifiedName): Map<String, Path> =
+    resolveIndexSnapshotRef.get().directChildrenByQualifiedName[qualifiedName].orEmpty()
 
   init {
     updateResolveIndexSnapshot(load(project.pyIndexStoragePath()))
@@ -59,9 +67,11 @@ internal class PythonResolveIndexService(private val project: Project) {
     store(project.pyIndexStoragePath(), nameToPathIndex)
   }
 
-  private fun updateResolveIndexSnapshot(newNameToPathIndex: Map<QualifiedName, Path>) {
+  @VisibleForTesting
+  fun updateResolveIndexSnapshot(newNameToPathIndex: Map<QualifiedName, Path>) {
     val pathToNameIndex = buildShortestQualifiedNamesByPath(newNameToPathIndex)
-    val newSnapshot = ResolveIndexSnapshot(newNameToPathIndex, pathToNameIndex)
+    val directChildrenIndex = buildDirectChildrenByQualifiedName(newNameToPathIndex)
+    val newSnapshot = ResolveIndexSnapshot(newNameToPathIndex, pathToNameIndex, directChildrenIndex)
     resolveIndexSnapshotRef.set(newSnapshot)
   }
 
@@ -96,19 +106,23 @@ internal class PythonResolveIndexService(private val project: Project) {
         }
     }
 
-    val allPYSourcesInMainWorkspace =
+    val allPYSourcesInMainWorkspace: List<Path> by lazy {
       pythonTargets
         .flatMap { it.allSources }
         .filter { it.isPythonFile() && it.startsWith(rootDir) }
         .map { it.relativeTo(rootDir) }
+    }
 
     val targetNames: List<Map<QualifiedName, Path>> = pythonTargets.map { target ->
       BazelCoroutineService.getInstance(project).startAsync {
-        val importsPaths = target.assembleImportsPaths()
+        val explicitImportsPaths = PythonImportUtils.assembleExplicitImportsPaths(target)
+        val qualifiedNameImportPaths = PythonImportUtils.assembleQualifiedNameImportPaths(explicitImportsPaths)
         val sourcesRelativePathToAbsolutePath: Map<Path, Path> =
           if (target.isWorkspace) {
-            importsPaths
-              .flatMap { importsPath -> allPYSourcesInMainWorkspace.filter { it.startsWith(importsPath) }.toList() }
+            explicitImportsPaths
+              .flatMap { importsPath ->
+                allPYSourcesInMainWorkspace.filter { it.startsWith(importsPath) }.toList()
+              }
               .ifEmpty {
                 target.allSources
                   .filter { it.isPythonFile() && it.startsWith(rootDir) }
@@ -128,7 +142,7 @@ internal class PythonResolveIndexService(private val project: Project) {
                 path.toExecRootRelativePath() to (outFilesHardLink.createOutputFileHardLink(path) ?: path.toAbsolutePath())
               }
           ?: emptyMap()
-        expandPathsToQualifiedNames(importsPaths, sourcesRelativePathToAbsolutePath + getSourcesRelativePathToAbsolutePath)
+        expandPathsToQualifiedNames(qualifiedNameImportPaths, sourcesRelativePathToAbsolutePath + getSourcesRelativePathToAbsolutePath)
       }
     }.awaitAll()
 
@@ -149,19 +163,16 @@ internal class PythonResolveIndexService(private val project: Project) {
    *
    * All intermediate relative paths are converted to QualifiedNames for the result map
    * */
-  private fun expandPathsToQualifiedNames(importsPaths: List<Path>, filePaths: Map<Path, Path>): Map<QualifiedName, Path> {
+  private fun expandPathsToQualifiedNames(importsPaths: List<PythonImportUtils.ImportsPath>, filePaths: Map<Path, Path>): Map<QualifiedName, Path> {
     val newMap = hashMapOf<QualifiedName, Path>()
-    for ((relativePath, absolutePath) in filePaths) {
-      val qualifiedNames = if (importsPaths.isNotEmpty()) {
-        importsPaths
-          .filter { it != relativePath && relativePath.startsWith(it) }
-          .map { relativePath.subpath(it.nameCount, relativePath.nameCount) }
-          .filter { it.nameCount > 0 }
-          .mapNotNull { it.toQualifiedName() }
-      }
-      else {
-        listOfNotNull(relativePath.toQualifiedName())
-      }
+    for ((rootRelativePath, absolutePath) in filePaths) {
+      val qualifiedNames =
+        if (importsPaths.isNotEmpty()) {
+          importsPaths
+            .mapNotNull { it.relativizePath(rootRelativePath)?.toQualifiedName() }
+        } else {
+          listOfNotNull(rootRelativePath.toQualifiedName())
+        }
 
       for (qualifiedName in qualifiedNames) {
         var qName = qualifiedName
@@ -190,6 +201,15 @@ internal class PythonResolveIndexService(private val project: Project) {
         // keep the shortest matching qualified name
         result[path] = qualifiedName
       }
+    }
+    return result
+  }
+
+  private fun buildDirectChildrenByQualifiedName(resolveIndex: Map<QualifiedName, Path>): Map<QualifiedName, Map<String, Path>> {
+    val result = hashMapOf<QualifiedName, MutableMap<String, Path>>()
+    for ((qualifiedName, path) in resolveIndex) {
+      val childName = qualifiedName.lastComponent ?: continue
+      result.getOrPut(qualifiedName.removeLastComponent()) { linkedMapOf() }.putIfAbsent(childName, path)
     }
     return result
   }
@@ -266,4 +286,20 @@ private fun Path.removeParentParentPrefix(): Path {
     return this.subpath(2, this.nameCount)
   }
   return this
+}
+
+@ApiStatus.Internal
+@TestOnly
+fun Project.findBazelPythonShortestQualifiedName(path: Path): String? =
+  service<PythonResolveIndexService>().findShortestQualifiedName(path)?.toString()
+
+@ApiStatus.Internal
+@TestOnly
+fun Project.hasBazelPythonQualifiedName(qualifiedName: String): Boolean =
+  service<PythonResolveIndexService>().resolveIndex.keys.any { it.toString() == qualifiedName }
+
+@ApiStatus.Internal
+@TestOnly
+fun Project.updateBazelPythonResolveIndex(resolveIndex: Map<QualifiedName, Path>) {
+  service<PythonResolveIndexService>().updateResolveIndexSnapshot(resolveIndex)
 }

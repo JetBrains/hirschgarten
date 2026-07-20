@@ -29,6 +29,7 @@
   </extensions>
 
   <extensions defaultExtensionNs="com.intellij">
+    <completion.contributor language="Python" implementationClass="com.intellij.bazel.python.backend.BazelPythonImportCompletionContributor"/>
     <moduleRendererFactory implementation="com.intellij.bazel.python.backend.BazelPythonModuleRendererFactory" order="before platform"/>
   </extensions>
 

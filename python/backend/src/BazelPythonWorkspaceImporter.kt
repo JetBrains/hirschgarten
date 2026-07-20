@@ -349,13 +349,13 @@ internal class BazelPythonWorkspaceImporter : BazelWorkspaceImporter {
     val projectCtx = context.project.projectCtx
     // imports for generated files should be resolved against bazel-bin
     val basePaths = listOfNotNull(projectCtx.projectRootDir?.toNioPath(), projectCtx.bazelBinPath).distinct()
-    val importRoots = target.assembleImportsPaths()
-      .mapNotNull { importPath ->
-        basePaths.firstNotNullOfOrNull { base ->
-          base.resolve(importPath).normalize().takeIf { it.startsWith(base) && it.isDirectory() }
-        }
-      }
-      .toSet()
+    val importRoots =
+      PythonImportUtils.assembleExplicitImportsPaths(target)
+        .mapNotNull { importPath ->
+          basePaths.firstNotNullOfOrNull { base ->
+            base.resolve(importPath).normalize().takeIf { it.startsWith(base) && it.isDirectory() }
+          }
+        }.toSet()
     val individualFiles = target.allSources
       .filter { !it.isUnder(importRoots) }
       .toSet()

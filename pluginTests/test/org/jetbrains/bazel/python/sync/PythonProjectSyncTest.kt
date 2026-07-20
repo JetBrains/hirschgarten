@@ -1,6 +1,8 @@
 package org.jetbrains.bazel.python.sync
 
 import com.intellij.bazel.python.backend.chooseSdkName
+import com.intellij.bazel.python.backend.findBazelPythonShortestQualifiedName
+import com.intellij.bazel.python.backend.hasBazelPythonQualifiedName
 import com.intellij.ide.util.ModuleRendererFactory
 import com.intellij.openapi.application.edtWriteAction
 import com.intellij.openapi.application.runReadActionBlocking
@@ -153,6 +155,100 @@ class PythonProjectSyncTest : MockProjectBaseTest() {
         .toList()
 
     actualModuleEntities shouldContainExactlyInAnyOrder pythonTestTargets.expectedSourceRootEntities
+  }
+
+  @Test
+  fun `should add detailed source root for target without Bazel imports`() {
+    // given
+    val pythonBinary =
+      GeneratedTargetInfo(
+        targetId = Label.parse("@@server//tools/helper:helper"),
+        type = "PYTHON_MODULE",
+      )
+    val expectedSourceRootPath = projectDir.get().resolve("tools/helper/op.py")
+    val target =
+      generateTarget(
+        pythonBinary,
+        sources = listOf(expectedSourceRootPath),
+        generatedSources = emptyList(),
+        resources = emptyList(),
+      )
+    val expectedModuleEntity = generateExpectedModuleEntity(pythonBinary, emptyList())
+    val expectedSourceRootEntity =
+      generateExpectedSourceRootEntity(expectedSourceRootPath, "python-source", expectedModuleEntity.moduleEntity)
+
+    // when
+    val diff = MutableEntityStorage.create()
+    runPythonImporter(generateWorkspaceSnapshot(listOf(target)), diff)
+
+    // then
+    val actualModuleEntities =
+      diff.entities(SourceRootEntity::class.java)
+        .toList()
+    actualModuleEntities shouldContainExactlyInAnyOrder listOf(expectedSourceRootEntity)
+  }
+
+  @Test
+  fun `should index root-relative package location for target without Bazel imports`() {
+    val rootRelativePath = "tools/helper/op.py"
+    val rootRelativeSource = projectDir.get().resolve(rootRelativePath)
+    val pyFile = createPythonFile(
+      relativePath = rootRelativePath,
+      text = """
+        class Foo:
+            pass
+      """.trimIndent(),
+    )
+    val importedRelativePath = "src/aaa/bbb.py"
+    val importedSource = projectDir.get().resolve(importedRelativePath)
+    createPythonFile(
+      relativePath = importedRelativePath,
+      text = """
+        class Bar:
+            pass
+      """.trimIndent(),
+    )
+    val targetWithoutImportsInfo =
+      GeneratedTargetInfo(
+        targetId = Label.parse("@@server//tools/helper:helper"),
+        type = "PYTHON_MODULE",
+      )
+    val targetWithImportsInfo =
+      GeneratedTargetInfo(
+        targetId = Label.parse("@@server//:imported"),
+        type = "PYTHON_MODULE",
+        imports = listOf("src"),
+      )
+    val targetWithoutImports =
+      generateTarget(
+        targetWithoutImportsInfo,
+        sources = listOf(rootRelativeSource),
+        generatedSources = emptyList(),
+        resources = emptyList(),
+      )
+    val targetWithImports =
+      generateTarget(
+        targetWithImportsInfo,
+        sources = listOf(importedSource),
+        generatedSources = emptyList(),
+        resources = emptyList(),
+      )
+
+    project.projectCtx.bazelExecPath = projectDir.get()
+    project.projectCtx.bazelBinPath = projectDir.get().resolve("bazel-bin")
+    project.registerOrReplaceServiceInstance(BazelServerService::class.java, MockBuildServerService(BuildServerMock()), disposable)
+    runPythonImporter(
+      generateWorkspaceSnapshot(listOf(targetWithoutImports, targetWithImports)),
+      MutableEntityStorage.create(),
+      runPostProcessing = true,
+    )
+
+    project.findBazelPythonShortestQualifiedName(rootRelativeSource) shouldBe "tools.helper.op"
+    project.findBazelPythonShortestQualifiedName(importedSource) shouldBe "aaa.bbb"
+    project.hasBazelPythonQualifiedName("src.aaa.bbb").shouldBeFalse()
+    runReadActionBlocking {
+      renderModuleLocationText(pyFile.findTopLevelClass("Foo")!!) shouldBe "(tools.helper.op)"
+    }
   }
 
   @Test
@@ -410,26 +506,19 @@ class PythonProjectSyncTest : MockProjectBaseTest() {
   }
 
   private fun generateExpectedSourceRootEntities(target: RawBuildTarget, parentModuleEntity: ModuleEntity): List<ExpectedSourceRootEntity> =
-    (target.allSources.map {
-      val url = it.toVirtualFileUrl(virtualFileUrlManager)
-      val sourceRootEntity = SourceRootEntity(url, SourceRootTypeId("python-source"), parentModuleEntity.entitySource)
-      val contentRootEntity =
-        ContentRootEntity(url, emptyList(), parentModuleEntity.entitySource) {
-          excludedUrls = emptyList()
-          sourceRoots = listOf(sourceRootEntity)
-        }
-      ExpectedSourceRootEntity(sourceRootEntity, contentRootEntity, parentModuleEntity)
-    } +
-     target.resources.getFiles().map {
-       val url = it.toVirtualFileUrl(virtualFileUrlManager)
-       val sourceRootEntity = SourceRootEntity(url, SourceRootTypeId("python-resource"), parentModuleEntity.entitySource)
-       val contentRootEntity =
-         ContentRootEntity(url, emptyList(), parentModuleEntity.entitySource) {
-           excludedUrls = emptyList()
-           sourceRoots = listOf(sourceRootEntity)
-         }
-       ExpectedSourceRootEntity(sourceRootEntity, contentRootEntity, parentModuleEntity)
-     }).toList()
+    (target.allSources.map { generateExpectedSourceRootEntity(it, "python-source", parentModuleEntity) } +
+     target.resources.getFiles().map { generateExpectedSourceRootEntity(it, "python-resource", parentModuleEntity) }).toList()
+
+  private fun generateExpectedSourceRootEntity(path: Path, rootType: String, parentModuleEntity: ModuleEntity): ExpectedSourceRootEntity {
+    val url = path.toVirtualFileUrl(virtualFileUrlManager)
+    val sourceRootEntity = SourceRootEntity(url, SourceRootTypeId(rootType), parentModuleEntity.entitySource)
+    val contentRootEntity =
+      ContentRootEntity(url, emptyList(), parentModuleEntity.entitySource) {
+        excludedUrls = emptyList()
+        sourceRoots = listOf(sourceRootEntity)
+      }
+    return ExpectedSourceRootEntity(sourceRootEntity, contentRootEntity, parentModuleEntity)
+  }
 
   private fun List<ModuleEntity>.shouldAllHaveTheSameSDK() {
     val sdks = this.map { module -> module.dependencies.firstNotNullOfOrNull { it as? SdkDependency } }
