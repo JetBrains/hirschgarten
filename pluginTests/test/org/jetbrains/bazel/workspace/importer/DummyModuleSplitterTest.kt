@@ -6,8 +6,8 @@ import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeInstanceOf
 import org.jetbrains.bazel.label.Label
-import org.jetbrains.bazel.sync.workspace.snapshot.File2TargetMap
 import org.jetbrains.bazel.sync.workspace.snapshot.File2TargetMapBuilder
+import org.jetbrains.bazel.sync.workspace.snapshot.FileToTargetMap
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
 import org.jetbrains.bazel.workspace.importer.SourceRootBuilder.ResolvedSourceRoot
 import org.jetbrains.bazel.workspace.model.test.framework.WorkspaceModelBaseTest
@@ -25,7 +25,7 @@ internal class DummyModuleSplitterTest : WorkspaceModelBaseTest() {
     val file2 = packageA2.resolve("File2.java").createFile()
     val irrelevant = moduleRoot.resolve("irrelevant.xml").createFile()
 
-    val result = DummyModuleSplitter(projectBasePath, File2TargetMap.EMPTY).split(
+    val result = DummyModuleSplitter(projectBasePath, FileToTargetMap.EMPTY).split(
       baseDirectory = moduleRoot.toAbsolutePath(),
       sourceRoots = listOf(
         sourceRoot(file1, packagePrefix = "packageA2"),
@@ -52,7 +52,7 @@ internal class DummyModuleSplitterTest : WorkspaceModelBaseTest() {
     val file1 = packageA1.resolve("File1.java").createFile()
     val file2 = packageA2.resolve("File2.java").createFile()
 
-    val result = DummyModuleSplitter(projectBasePath, File2TargetMap.EMPTY).split(
+    val result = DummyModuleSplitter(projectBasePath, FileToTargetMap.EMPTY).split(
       baseDirectory = moduleRoot.toAbsolutePath(),
       sourceRoots = listOf(
         sourceRoot(file1, packagePrefix = ""),
@@ -71,7 +71,7 @@ internal class DummyModuleSplitterTest : WorkspaceModelBaseTest() {
     val moduleRoot1 = projectBasePath.resolve("module1").createDirectories()
     val moduleRoot2 = projectBasePath.resolve("module2").createDirectories()
 
-    val splitter = DummyModuleSplitter(projectBasePath, File2TargetMap.EMPTY)
+    val splitter = DummyModuleSplitter(projectBasePath, FileToTargetMap.EMPTY)
     val dummies = listOf(moduleRoot1, moduleRoot2).flatMap { root ->
       val result = splitter.split(
         baseDirectory = root.toAbsolutePath(),
@@ -93,7 +93,7 @@ internal class DummyModuleSplitterTest : WorkspaceModelBaseTest() {
       .resolve("File2.java")
       .createFile()
 
-    val result = DummyModuleSplitter(projectBasePath, File2TargetMap.EMPTY).split(
+    val result = DummyModuleSplitter(projectBasePath, FileToTargetMap.EMPTY).split(
       baseDirectory = moduleRoot.toAbsolutePath(),
       sourceRoots = listOf(
         sourceRoot(file1, packagePrefix = "", generated = true),
@@ -123,7 +123,7 @@ internal class DummyModuleSplitterTest : WorkspaceModelBaseTest() {
       .createDirectories()
       .resolve("GenFile2.kt")
       .createFile()
-    val result = DummyModuleSplitter(projectBasePath, File2TargetMap.EMPTY).split(
+    val result = DummyModuleSplitter(projectBasePath, FileToTargetMap.EMPTY).split(
       baseDirectory = moduleRoot.toAbsolutePath(),
       sourceRoots = listOf(
         sourceRoot(file1, packagePrefix = "com.example"),
@@ -149,7 +149,7 @@ internal class DummyModuleSplitterTest : WorkspaceModelBaseTest() {
     val file1 = packageA2.resolve("File1.java").createFile()
     val file2 = packageA2.resolve("File2.java").createFile()
 
-    val result = DummyModuleSplitter(projectBasePath, File2TargetMap.EMPTY).split(
+    val result = DummyModuleSplitter(projectBasePath, FileToTargetMap.EMPTY).split(
       baseDirectory = moduleRoot.toAbsolutePath(),
       sourceRoots = listOf(
         sourceRoot(file1, packagePrefix = "packageA2", rootType = JAVA_TEST_SOURCE_ROOT_TYPE),
@@ -172,7 +172,7 @@ internal class DummyModuleSplitterTest : WorkspaceModelBaseTest() {
     val file1 = packageA2.resolve("File1.java").createFile()
     val file2 = packageA2.resolve("File2.java").createFile()
 
-    val result = DummyModuleSplitter(projectBasePath, File2TargetMap.EMPTY).split(
+    val result = DummyModuleSplitter(projectBasePath, FileToTargetMap.EMPTY).split(
       baseDirectory = moduleRoot.toAbsolutePath(),
       sourceRoots = listOf(
         sourceRoot(file1, packagePrefix = "packageA1.packageA2", rootType = JAVA_TEST_SOURCE_ROOT_TYPE),
@@ -195,7 +195,7 @@ internal class DummyModuleSplitterTest : WorkspaceModelBaseTest() {
     val file2 = packageA2.resolve("File2.java").createFile()
 
     // The base directory is the package directory itself: the algorithm must not climb above it.
-    val result = DummyModuleSplitter(projectBasePath, File2TargetMap.EMPTY).split(
+    val result = DummyModuleSplitter(projectBasePath, FileToTargetMap.EMPTY).split(
       baseDirectory = packageA2.toAbsolutePath(),
       sourceRoots = listOf(
         sourceRoot(file1, packagePrefix = "packageA2"),
@@ -215,7 +215,7 @@ internal class DummyModuleSplitterTest : WorkspaceModelBaseTest() {
     val packageA2 = packageA1.resolve("packageA2").createDirectories()
     val file = packageA2.resolve("File1.java").createFile()
 
-    val result = DummyModuleSplitter(projectBasePath, File2TargetMap.EMPTY).split(
+    val result = DummyModuleSplitter(projectBasePath, FileToTargetMap.EMPTY).split(
       baseDirectory = moduleRoot.toAbsolutePath(),
       sourceRoots = listOf(sourceRoot(file, packagePrefix = "org.example.packageA2")),
     )
@@ -259,7 +259,7 @@ internal class DummyModuleSplitterTest : WorkspaceModelBaseTest() {
     val file2 = packageA2.resolve("File2.java").createFile()
     val file3 = packageA2.resolve("File3.java").createFile()
 
-    val result = DummyModuleSplitter(projectBasePath, File2TargetMap.EMPTY).split(
+    val result = DummyModuleSplitter(projectBasePath, FileToTargetMap.EMPTY).split(
       baseDirectory = moduleRoot.toAbsolutePath(),
       sourceRoots = listOf(
         sourceRoot(file1, packagePrefix = "packageA2"),
@@ -282,7 +282,7 @@ internal class DummyModuleSplitterTest : WorkspaceModelBaseTest() {
     val file1 = packageA2.resolve("File1.java").createFile()
     packageA1.resolve("File2.java").createFile()
 
-    val result = DummyModuleSplitter(projectBasePath, File2TargetMap.EMPTY).split(
+    val result = DummyModuleSplitter(projectBasePath, FileToTargetMap.EMPTY).split(
       baseDirectory = moduleRoot.toAbsolutePath(),
       sourceRoots = listOf(sourceRoot(file1, packagePrefix = "packageA1.packageA2")),
     )
@@ -301,7 +301,7 @@ internal class DummyModuleSplitterTest : WorkspaceModelBaseTest() {
     val file2 = fooPackage.resolve("File2.kt").createFile()
     val file3 = fooPackage.resolve("File3.kt").createFile()
 
-    val result = DummyModuleSplitter(projectBasePath, File2TargetMap.EMPTY).split(
+    val result = DummyModuleSplitter(projectBasePath, FileToTargetMap.EMPTY).split(
       baseDirectory = moduleRoot.toAbsolutePath(),
       sourceRoots = listOf(
         sourceRoot(file1, packagePrefix = "foo"),
@@ -324,7 +324,7 @@ internal class DummyModuleSplitterTest : WorkspaceModelBaseTest() {
     val file2 = srcDir.resolve("File2.kt").createFile()
     val file3 = srcDir.resolve("File3.java").createFile()
 
-    val result = DummyModuleSplitter(projectBasePath, File2TargetMap.EMPTY).split(
+    val result = DummyModuleSplitter(projectBasePath, FileToTargetMap.EMPTY).split(
       baseDirectory = moduleRoot.toAbsolutePath(),
       sourceRoots = listOf(
         sourceRoot(file1, packagePrefix = "org.company.project"),

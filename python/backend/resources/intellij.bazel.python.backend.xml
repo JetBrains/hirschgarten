@@ -39,5 +39,6 @@
     <indexAdditionalFilesContributor implementation="com.intellij.bazel.python.backend.PythonIndexAdditionalFilesContributor"/>
     <syncWorkspaceImporter implementation="com.intellij.bazel.python.backend.BazelPythonWorkspaceImporter"/>
     <languagePlugin implementation="com.intellij.bazel.python.backend.sync.PythonLanguagePlugin"/>
+    <workspaceTypeContributor implementation="com.intellij.bazel.python.backend.sync.PythonWorkspaceTypeContributor"/>
   </extensions>
 </idea-plugin>

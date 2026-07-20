@@ -8,13 +8,13 @@ import com.intellij.internal.statistic.eventLog.events.EventFields
 import com.intellij.internal.statistic.service.fus.collectors.ProjectUsagesCollector
 import com.intellij.openapi.project.Project
 import org.jetbrains.bazel.config.isBazelProject
-import org.jetbrains.bazel.target.targetUtils
+import org.jetbrains.bazel.target.targetStorage
 
 internal class BazelProjectStatisticsCollector : ProjectUsagesCollector() {
   override fun getGroup(): EventLogGroup = Const.GROUP
 
   override fun getMetrics(project: Project): Set<MetricEvent> {
-    val targetUtils = project.targetUtils
+    val targetUtils = project.targetStorage
     return if (project.isBazelProject) {
       setOf(
         Const.COUNT_TARGETS.metric(targetUtils.getTotalTargetCount()),

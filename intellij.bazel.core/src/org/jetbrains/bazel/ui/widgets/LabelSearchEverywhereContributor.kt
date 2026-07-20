@@ -29,7 +29,7 @@ import org.jetbrains.bazel.config.isBazelProject
 import org.jetbrains.bazel.coroutines.BazelCoroutineService
 import org.jetbrains.bazel.languages.starlark.references.resolveLabel
 import org.jetbrains.bazel.languages.starlark.repomapping.toShortString
-import org.jetbrains.bazel.target.targetUtils
+import org.jetbrains.bazel.target.targetStorage
 import javax.swing.ListCellRenderer
 
 internal class LabelSearchEverywhereContributor(private val project: Project) :
@@ -63,7 +63,7 @@ internal class LabelSearchEverywhereContributor(private val project: Project) :
         .build()
 
     val foundItems =
-      project.targetUtils
+      project.targetStorage
         .allTargets()
         .mapNotNull { label ->
           val fullString = label.toString()

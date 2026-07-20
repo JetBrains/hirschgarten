@@ -38,7 +38,7 @@ import org.jetbrains.bazel.magicmetamodel.formatAsModuleName
 import org.jetbrains.bazel.project.BazelProjectFixtures.deinitializeBazelProject
 import org.jetbrains.bazel.server.BazelServerService
 import org.jetbrains.bazel.sync.JavaLanguageClass
-import org.jetbrains.bazel.target.targetUtils
+import org.jetbrains.bazel.target.targetStorage
 import org.jetbrains.bazel.test.framework.target.TestBuildTargetFactory
 import org.jetbrains.bazel.workspace.importer.JAVA_SOURCE_ROOT_TYPE
 import org.jetbrains.bazel.workspace.model.test.framework.BuildServerMock
@@ -51,7 +51,6 @@ import org.jetbrains.bazel.workspacemodel.entities.WorkspaceModelTargetKey
 import org.jetbrains.bazel.workspacemodel.entities.WorkspaceModelTargetLabelList
 import org.jetbrains.bazel.workspacemodel.entities.WorkspaceModelTargetSourceRootTypeId
 import org.jetbrains.bazel.workspacemodel.entities.bazelModuleExtension
-import org.jetbrains.bsp.protocol.PartialBuildTarget
 import org.jetbrains.bsp.protocol.RawBuildTarget
 import org.jetbrains.bsp.protocol.SourceFileCollection
 import org.jetbrains.bsp.protocol.StrictDependencyCheckedType
@@ -100,7 +99,7 @@ class BazelFileEventListenerTest : WorkspaceModelBaseTest() {
     createModule(target3)
     createModule(target4)
 
-    project.targetUtils.setTargets(
+    project.targetStorage.setTargets(
       listOf(
         TestBuildTargetFactory.createSimpleJavaLibraryTarget(id = target1),
         TestBuildTargetFactory.createSimpleJavaLibraryTarget(id = target2),
@@ -407,7 +406,7 @@ class BazelFileEventListenerTest : WorkspaceModelBaseTest() {
 
   @Test
   fun `should ignore projects without any targets`() {
-    project.targetUtils.setTargets(emptyList())
+    project.targetStorage.setTargets(emptyList())
     val file = project.rootDir.createDirectory("src").createFile("aaa", "java")
     createEvent(file).process().shouldBeFalse()
     deleteEvent(file).process().shouldBeFalse()
@@ -434,25 +433,23 @@ class BazelFileEventListenerTest : WorkspaceModelBaseTest() {
     val srcUrl = src.toVirtualFileUrl(virtualFileUrlManager)
     val module = workspaceModel.currentSnapshot.resolveModule(target1)
 
-    project.targetUtils.saveTargets(
-      targets =
-        listOf(
-          RawBuildTarget(
-            key = WorkspaceTargetKey(label = target1),
-            dependencies = emptyList(),
-            kind =
-              TargetKind(
-                kind = "java_library",
-                ruleType = RuleType.LIBRARY,
-                languageClasses = setOf(JavaLanguageClass.JAVA),
-              ),
-            sources = SourceFileCollection.EMPTY,
-            generatedSources = SourceFileCollection.EMPTY,
-            resources = SourceFileCollection.EMPTY,
-            baseDirectory = Path("/"),
-          ),
+    project.targetStorage.setTargets(
+      listOf(
+        RawBuildTarget(
+          key = WorkspaceTargetKey(label = target1),
+          dependencies = emptyList(),
+          kind =
+            TargetKind(
+              kind = "java_library",
+              ruleType = RuleType.LIBRARY,
+              languageClasses = setOf(JavaLanguageClass.JAVA),
+            ),
+          sources = SourceFileCollection.EMPTY,
+          generatedSources = SourceFileCollection.EMPTY,
+          resources = SourceFileCollection.EMPTY,
+          baseDirectory = Path("/"),
         ),
-      fileToTarget = emptyMap(),
+      ),
     )
 
     val sourceRoot =
@@ -488,14 +485,20 @@ class BazelFileEventListenerTest : WorkspaceModelBaseTest() {
   private fun addMockTargetToProject(project: Project) {
     val mockLabel = Label.parse("//mock:target")
     val mockBuildTarget =
-      PartialBuildTarget(
-        id = mockLabel,
+      RawBuildTarget(
+        key = WorkspaceTargetKey(mockLabel),
         kind = TargetKind("mock", emptySet(), RuleType.LIBRARY),
         baseDirectory = projectBasePath,
         isManual = false,
         isWorkspace = true,
+        dependencies = listOf(),
+        sources = SourceFileCollection.EMPTY,
+        generatedSources = SourceFileCollection.EMPTY,
+        resources = SourceFileCollection.EMPTY,
+        generatorName = null,
+        isTestOnly = false,
       )
-    project.targetUtils.setTargets(listOf(mockBuildTarget))
+    project.targetStorage.setTargets(listOf(mockBuildTarget))
   }
 
   private fun VirtualFile.createFile(name: String, extension: String): VirtualFile {
@@ -595,7 +598,7 @@ class BazelFileEventListenerTest : WorkspaceModelBaseTest() {
   }
 
   private fun VirtualFileUrl.belongsToTarget(target: Label): Boolean =
-    project.targetUtils.getTargetsForPath(this.toPath()).contains(target)
+    project.targetStorage.getTargetsForPath(this.toPath()).contains(target)
 
   private fun createModule(label: Label, contentRootFiles: List<VirtualFile> = emptyList()) {
     val moduleName = label.formatAsModuleName(project)

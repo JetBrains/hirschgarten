@@ -39,7 +39,7 @@ import org.jetbrains.bazel.sync.workspace.languages.jvm.JvmBuildTarget
 import org.jetbrains.bazel.sync.workspace.languages.jvm.KotlinBuildTarget
 import org.jetbrains.bazel.sync.workspace.languages.jvm.ScalaBuildTarget
 import org.jetbrains.bazel.sync.workspace.languages.jvm.extractJvmBuildTarget
-import org.jetbrains.bazel.sync.workspace.snapshot.File2TargetMap
+import org.jetbrains.bazel.sync.workspace.snapshot.FileToTargetMap
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceAspectIds
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTarget
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
@@ -79,7 +79,7 @@ class ImportContext(
   val defaultJdkName: String?,
   val testSourcesGlob: ProjectViewGlobSet,
   val packagePrefixes: JvmPackagePrefixCalculator,
-  val fileToTargets: File2TargetMap,
+  val fileToTargets: FileToTargetMap,
   val virtualFileUrlManager: VirtualFileUrlManager,
   val importIJars: Boolean,
   val entitySource: EntitySource,

@@ -5,12 +5,12 @@ import com.intellij.openapi.ui.playback.commands.PlaybackCommandCoroutineAdapter
 import com.jetbrains.performancePlugin.CommandProvider
 import com.jetbrains.performancePlugin.CreateCommand
 import org.jetbrains.bazel.label.Label
-import org.jetbrains.bazel.target.targetUtils
+import org.jetbrains.bazel.target.targetStorage
 
 internal class CheckTargetsInTargetWidget(text: String, line: Int) : PlaybackCommandCoroutineAdapter(text, line) {
   override suspend fun doExecute(context: PlaybackContext) {
     val project = context.project
-    val loadedTargets = project.targetUtils.allTargets().toSet()
+    val loadedTargets = project.targetStorage.allTargets().toSet()
     val expectedTargets =
       setOf(
         Label.parse("//java:binary"),

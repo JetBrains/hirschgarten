@@ -22,12 +22,13 @@ import org.jetbrains.bazel.languages.bazelversion.psi.BazelVersionLiteral
 import org.jetbrains.bazel.languages.bazelversion.service.BazelVersionResolver
 import org.jetbrains.bazel.project.BazelProjectFixtures.initializeBazelProject
 import org.jetbrains.bazel.server.BazelServerService
-import org.jetbrains.bazel.target.targetUtils
+import org.jetbrains.bazel.target.targetStorage
 import org.jetbrains.bazel.workspace.model.test.framework.BuildServerMock
 import org.jetbrains.bazel.workspace.model.test.framework.createRawBuildTarget
 import org.jetbrains.bazel.workspace.model.test.framework.MockBuildServerService
 import org.jetbrains.bazel.workspace.model.test.framework.MockProjectBaseTest
 import org.jetbrains.bazel.golang.sync.GoBuildTarget
+import org.jetbrains.bazel.sync.workspace.snapshot.SourceFileCollectionBuilder
 import org.jetbrains.bsp.protocol.TaskGroupId
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
@@ -94,12 +95,12 @@ class ProjectPostSyncHookTest : MockProjectBaseTest() {
         data = listOf(
           GoBuildTarget(
             importPath = "example.com/app",
-            sources = listOf(source),
+            sources = SourceFileCollectionBuilder.build(paths = listOf(source)),
             embed = emptyList(),
           ),
         ),
       )
-    project.targetUtils.setTargets(listOf(target))
+    project.targetStorage.setTargets(listOf(target))
   }
 
   private fun ProjectPostSyncHook.isEnabledForTest(): Boolean =

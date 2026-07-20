@@ -31,7 +31,7 @@ import org.jetbrains.bazel.languages.starlark.psi.statements.StarlarkLoadStateme
 import org.jetbrains.bazel.languages.starlark.rename.StarlarkStringLiteralManipulator
 import org.jetbrains.bazel.languages.starlark.repomapping.findContainingBazelRepo
 import org.jetbrains.bazel.languages.starlark.repomapping.toShortString
-import org.jetbrains.bazel.target.targetUtils
+import org.jetbrains.bazel.target.targetStorage
 import org.jetbrains.bazel.workspace.canonicalRepoNameToPath
 import org.jetbrains.kotlin.psi.psiUtil.getParentOfType
 import java.nio.file.Path
@@ -160,7 +160,7 @@ internal class BazelLabelReference(element: StarlarkStringLiteralExpression, sof
 
   private fun targetCompletion(): Array<LookupElement> {
     val project = element.project
-    return project.targetUtils
+    return project.targetStorage
       .allTargetShortLabels
       .map { getCompletionLookupElemenent(it, PlatformIcons.PACKAGE_ICON) }
       .toTypedArray()

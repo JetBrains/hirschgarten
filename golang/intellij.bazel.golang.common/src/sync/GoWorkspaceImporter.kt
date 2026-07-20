@@ -24,6 +24,7 @@ import org.jetbrains.bazel.sync.workspace.importer.BazelWorkspaceImporter
 import org.jetbrains.bazel.sync.workspace.importer.WorkspaceImporterContext
 import org.jetbrains.bazel.sync.workspace.importer.WorkspaceImporterPhase
 import org.jetbrains.bazel.sync.workspace.importer.WorkspaceImporterResult
+import org.jetbrains.bazel.sync.workspace.persistence.TargetLoadOptions
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceSnapshot
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
 import org.jetbrains.bazel.sync.workspace.snapshot.commonSyncConfig
@@ -56,7 +57,7 @@ internal class GoWorkspaceImporter : BazelWorkspaceImporter, BazelWorkspaceImpor
         }
         val importDepth = snapshot.commonSyncConfig.importDepth
         goTargets = snapshot.targetGraph.findAllTargetsAtDepth(maxDepth = importDepth, useRelaxedDependencyExpansion = true)
-          .asSequence()
+          .mapNotNull { it.load(snapshot.targets, TargetLoadOptions.DEFAULT) }
           .filterBuildTarget<GoBuildTarget>()
           .associate { (target, goBuildTarget) -> target.targetKey to goBuildTarget }
           .toMap()
@@ -102,7 +103,7 @@ internal class GoWorkspaceImporter : BazelWorkspaceImporter, BazelWorkspaceImpor
     val workspacePath = project.rootDir.toNioPath()
 
     val goSourcesParentDirectories = goTargets.values
-      .flatMap { it.sources }
+      .flatMap { it.sources.getFiles() }
       .filter { it.startsWith(workspacePath) }  // External files are handled in GoExternalLibraryManager
       .map { source -> source.parent }
       .toSet()
@@ -140,7 +141,9 @@ internal class GoWorkspaceImporter : BazelWorkspaceImporter, BazelWorkspaceImpor
       // Group targets with the same importpath, see doc for BazelGoPackageEntity
       val packageEntity = builder addEntity BazelGoPackageEntity(
         importPath = importPath,
-        sources = goTargets.flatMap { it.value.sources }.distinct().map { it.toVirtualFileUrl(context.vfuManager) },
+        sources = goTargets.flatMap { it.value.sources.getFiles() }
+          .distinct()
+          .map { it.toVirtualFileUrl(context.vfuManager) },
         entitySource = entitySource,
       )
       val importPathId = packageEntity.symbolicId

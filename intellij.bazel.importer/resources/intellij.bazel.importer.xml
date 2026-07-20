@@ -46,16 +46,24 @@
                     interface="org.jetbrains.bazel.workspace.indexAdditionalFiles.IndexAdditionalFilesContributor"
                     dynamic="true"
     />
+    <extensionPoint qualifiedName="org.jetbrains.bazel.workspaceTypeContributor"
+                    interface="org.jetbrains.bazel.sync.workspace.persistence.WorkspaceTypeContributor"
+                    dynamic="false"
+    />
   </extensionPoints>
 
   <extensions defaultExtensionNs="org.jetbrains.bazel">
     <projectSyncHook implementation="org.jetbrains.bazel.sync.hooks.PathSyncHook"/>
     <targetKindProvider implementation="org.jetbrains.bazel.sync.workspace.targetKind.GenericBazelRules" order="last"/>
+
+    <workspaceTypeContributor implementation="org.jetbrains.bazel.sync.workspace.persistence.DefaultWorkspaceTypeContributor"/>
   </extensions>
 
   <extensions defaultExtensionNs="com.intellij">
     <workspaceModel.fileIndexContributor
       implementation="org.jetbrains.bazel.workspace.BazelProjectDirectoriesWorkspaceFileIndexContributor"
     />
+    <projectService serviceInterface="org.jetbrains.bazel.sync.workspace.persistence.WorkspaceSnapshotService"
+                    serviceImplementation="org.jetbrains.bazel.sync.workspace.persistence.mvstore.DefaultWorkspaceSnapshotService"/>
   </extensions>
 </idea-plugin>

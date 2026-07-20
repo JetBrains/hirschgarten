@@ -12,7 +12,7 @@ import org.jetbrains.bazel.commons.phased.srcs
 import org.jetbrains.bazel.commons.phased.tags
 import org.junit.jupiter.api.Test
 
-class FirstPhaseTargetUtilsTest {
+class FirstPhaseTargetStorageTest {
   @Test
   fun `should obtain target attributes using getters`() {
     // given

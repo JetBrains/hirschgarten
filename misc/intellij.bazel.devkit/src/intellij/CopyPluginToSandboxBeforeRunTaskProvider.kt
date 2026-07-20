@@ -13,7 +13,7 @@ import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.run.config.BazelRunConfiguration
 import org.jetbrains.bazel.sync.environment.projectCtx
-import org.jetbrains.bazel.target.targetUtils
+import org.jetbrains.bazel.target.targetStorage
 import org.jetbrains.bazel.ui.notifications.BazelBalloonNotifier
 import java.io.IOException
 import java.nio.charset.StandardCharsets
@@ -85,7 +85,7 @@ internal class CopyPluginToSandboxBeforeRunTaskProvider : BeforeRunTaskProvider<
     val bazelBinPath = project.projectCtx.bazelBinPath ?: return null
     val workspaceRoot = project.projectCtx.projectRootDir?.toNioPath() ?: return null
 
-    val targetInfo = project.targetUtils.getBuildTargetForLabel(targetLabel) ?: return null
+    val targetInfo = project.targetStorage.getTargetSummary(targetLabel) ?: return null
 
     // required for save relativize call below, but should always hold
     if (!targetInfo.baseDirectory.startsWith(workspaceRoot)) {

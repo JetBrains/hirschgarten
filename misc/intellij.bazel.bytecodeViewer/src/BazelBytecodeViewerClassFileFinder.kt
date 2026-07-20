@@ -15,22 +15,22 @@ import com.intellij.psi.PsiClass
 import com.intellij.psi.util.ClassUtil
 import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.psi.util.PsiUtil
-import org.jetbrains.bazel.sync.workspace.languages.jvm.extractJvmBuildTarget
-import org.jetbrains.bazel.target.targetUtils
+import org.jetbrains.bazel.sync.workspace.languages.jvm.JvmBuildTarget
+import org.jetbrains.bazel.target.getTargetDataForLabel
+import org.jetbrains.bazel.target.targetStorage
 import java.nio.file.Path
 import kotlin.io.path.extension
-import kotlin.sequences.sequenceOf
 
 internal class BazelBytecodeViewerClassFileFinder : BytecodeViewerClassFileFinder {
   override fun findClass(element: PsiClass, containing: PsiClass?): VirtualFile? {
     val targetElement = element.containingClass ?: element
     val project = targetElement.project
     val vFile = targetElement.containingFile.virtualFile
-    val targetUtils = project.targetUtils
+    val targetUtils = project.targetStorage
     return targetUtils.getTargetsForFile(vFile)
       .asSequence()
-      .mapNotNull { targetUtils.getBuildTargetForLabel(it) }
-      .flatMap { extractJvmBuildTarget(it)?.rawBinaryOutputs?.getFiles() ?: sequenceOf() }
+      .mapNotNull { targetUtils.getTargetDataForLabel<JvmBuildTarget>(it) }
+      .flatMap { it.rawBinaryOutputs.getFiles() }
       .map { it.toCompiledClassesVFSRoot(project)?.toFullClassPath(targetElement, containing) }
       .firstOrNull()
   }

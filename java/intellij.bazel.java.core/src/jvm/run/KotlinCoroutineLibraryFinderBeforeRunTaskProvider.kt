@@ -25,7 +25,7 @@ import org.jetbrains.bazel.run.config.BazelRunConfiguration
 import org.jetbrains.bazel.settings.bazel.bazelJVMProjectSettings
 import org.jetbrains.bazel.sync.includesKotlin
 import org.jetbrains.bazel.target.ModuleTargetService
-import org.jetbrains.bazel.target.targetUtils
+import org.jetbrains.bazel.target.targetStorage
 
 private const val PROVIDER_NAME = "KotlinCoroutineLibraryFinderBeforeRunTaskProvider"
 
@@ -60,7 +60,7 @@ internal class KotlinCoroutineLibraryFinderBeforeRunTaskProvider :
     if (environment.executor !is DefaultDebugExecutor) return true
     val project = environment.project
     val target = runConfiguration.targets.single()
-    val targetInfo = project.targetUtils.getBuildTargetForLabel(target) ?: return true
+    val targetInfo = project.targetStorage.getTargetSummary(target) ?: return true
     if (!targetInfo.kind.includesKotlin() || !targetInfo.kind.isExecutable) return true
     runBlockingMaybeCancellable {
       withBackgroundProgress(project, BazelPluginBundle.message("background.task.description.preparing.for.debugging.kotlin", target)) {

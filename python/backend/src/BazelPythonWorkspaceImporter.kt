@@ -49,6 +49,7 @@ import org.jetbrains.bazel.sync.workspace.importer.BazelWorkspaceImporter
 import org.jetbrains.bazel.sync.workspace.importer.WorkspaceImporterContext
 import org.jetbrains.bazel.sync.workspace.importer.WorkspaceImporterPhase
 import org.jetbrains.bazel.sync.workspace.importer.WorkspaceImporterResult
+import org.jetbrains.bazel.sync.workspace.persistence.TargetLoadOptions
 import org.jetbrains.bazel.sync.workspace.snapshot.CommonWorkspaceSyncConfig
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceSnapshot
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTarget
@@ -123,6 +124,7 @@ internal class BazelPythonWorkspaceImporter : BazelWorkspaceImporter, BazelWorks
 
     val importDepth = snapshot.commonSyncConfig.importDepth
     allPythonTargets = snapshot.targetGraph.findAllTargetsAtDepth(maxDepth = importDepth, useRelaxedDependencyExpansion = true)
+      .mapNotNull { it.load(snapshot.targets, TargetLoadOptions.DEFAULT) }
       .filter { it.hasBuildData<PythonBuildTarget>() }
       .let { targets ->
         WorkspaceTargetMerger(mergeFunctions = pythonTargetMergeFunctions)
@@ -156,6 +158,7 @@ internal class BazelPythonWorkspaceImporter : BazelWorkspaceImporter, BazelWorks
     pySourceDeps = snapshot.allTargets.filterBuildTarget<PythonBuildTarget>()
       .associate { (target, _) ->
         target.targetKey to snapshot.targetGraph.findAllTransitiveSuccessorsWithoutRootTargets(target.targetKey)
+          .mapNotNull { it.load(snapshot.targets, TargetLoadOptions.DEFAULT) }
           .filterBuildTarget<PythonBuildTarget>()
           .flatMap { (_, pythonTarget) -> pythonTarget.externalSources?.getFiles() ?: sequenceOf() }
           .toList()

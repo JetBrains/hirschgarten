@@ -6,7 +6,7 @@ import org.jetbrains.annotations.ApiStatus
 import java.nio.file.Path
 
 @ApiStatus.Internal
-fun interface SourceRootPattern {
+interface SourceRootPattern {
   fun matches(root: Path): Boolean
 }
 

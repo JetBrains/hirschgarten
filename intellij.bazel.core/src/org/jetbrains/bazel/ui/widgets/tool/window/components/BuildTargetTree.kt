@@ -7,13 +7,13 @@ import org.jetbrains.bazel.extensionPoints.buildTargetClassifier.BuildTargetClas
 import org.jetbrains.bazel.extensionPoints.buildTargetClassifier.ListTargetClassifier
 import org.jetbrains.bazel.extensionPoints.buildTargetClassifier.TreeTargetClassifier
 import org.jetbrains.bazel.label.Label
-import org.jetbrains.bazel.target.targetUtils
+import org.jetbrains.bazel.target.targetStorage
 import org.jetbrains.bazel.ui.widgets.BazelJumpToBuildFileAction
 import org.jetbrains.bazel.ui.widgets.tool.window.actions.CopyTargetIdAction
 import org.jetbrains.bazel.ui.widgets.tool.window.utils.BspShortcuts
 import org.jetbrains.bazel.ui.widgets.tool.window.utils.LoadedTargetsMouseListener
 import org.jetbrains.bazel.ui.widgets.tool.window.utils.SimpleAction
-import org.jetbrains.bsp.protocol.BuildTarget
+import org.jetbrains.bsp.protocol.ExecutableTarget
 import java.awt.Point
 import javax.swing.tree.DefaultMutableTreeNode
 import javax.swing.tree.DefaultTreeModel
@@ -39,23 +39,23 @@ internal class BuildTargetTree(
 
       override fun isPointSelectable(point: Point): Boolean = getPathForLocation(point.x, point.y) != null
 
-      override fun getSelectedBuildTarget(): BuildTarget? {
+      override fun getSelectedBuildTarget(): ExecutableTarget? {
         val selected = lastSelectedPathComponent as? DefaultMutableTreeNode
         val userObject = selected?.userObject
         return if (userObject is TargetNodeData) {
-          project.targetUtils.getBuildTargetForLabel(userObject.id)
+          project.targetStorage.getTargetSummary(userObject.id)
         } else {
           null
         }
       }
 
-      override fun getSelectedBuildTargetsUnderDirectory(): List<BuildTarget> {
+      override fun getSelectedBuildTargetsUnderDirectory(): List<ExecutableTarget> {
         val selected = lastSelectedPathComponent as? DefaultMutableTreeNode
         val userObject = selected?.userObject
-        val targetUtils = project.targetUtils
+        val targetUtils = project.targetStorage
         return (
           if (userObject is DirectoryNodeData) {
-            userObject.targets.mapNotNull { targetUtils.getBuildTargetForLabel(it.id) }
+            userObject.targets.mapNotNull { targetUtils.getTargetSummary(it.id) }
           } else {
             emptyList()
           }
@@ -64,7 +64,7 @@ internal class BuildTargetTree(
 
       override val copyTargetIdAction: CopyTargetIdAction =
         object : CopyTargetIdAction.FromContainer(this@BuildTargetTree) {
-          override fun getTargetInfo(): BuildTarget? = getSelectedBuildTarget()
+          override fun getTargetInfo(): ExecutableTarget? = getSelectedBuildTarget()
         }
 
       override val bazelJumpToBuildFileAction: BazelJumpToBuildFileAction =

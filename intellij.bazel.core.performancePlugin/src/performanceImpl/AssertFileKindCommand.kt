@@ -10,7 +10,7 @@ import com.intellij.workspaceModel.core.fileIndex.WorkspaceFileIndex
 import com.intellij.workspaceModel.ide.legacyBridge.findModuleEntity
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.config.rootDir
-import org.jetbrains.bazel.target.targetUtils
+import org.jetbrains.bazel.target.targetStorage
 import org.jetbrains.bazel.ui.status.showAsUnsyncedSourceFile
 
 internal class AssertFileKindCommand(text: String, line: Int) : PlaybackCommandCoroutineAdapter(text, line) {
@@ -43,13 +43,13 @@ internal class AssertFileKindCommand(text: String, line: Int) : PlaybackCommandC
 enum class FileKindCheck {
   IN_TARGETS {
     override fun verify(project: Project, file: VirtualFile): Boolean =
-      project.targetUtils.getTargetsForFile(file).isNotEmpty()
+      project.targetStorage.getTargetsForFile(file).isNotEmpty()
 
     override fun displayName(): String = "in targets"
   },
   NOT_IN_TARGETS {
     override fun verify(project: Project, file: VirtualFile): Boolean =
-      project.targetUtils.getTargetsForFile(file).isEmpty()
+      project.targetStorage.getTargetsForFile(file).isEmpty()
 
     override fun displayName(): String = "not in targets"
   },

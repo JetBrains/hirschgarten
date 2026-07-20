@@ -1,9 +1,8 @@
 package org.jetbrains.bazel.sync.workspace.snapshot
 
 import org.jetbrains.annotations.ApiStatus
-import org.jetbrains.bazel.label.DependencyLabel
+import org.jetbrains.bazel.sync.workspace.persistence.TargetLoadOptions
 import org.jetbrains.bsp.protocol.BuildTargetData
-import org.jetbrains.bsp.protocol.RawBuildTarget
 
 @ApiStatus.Internal
 inline fun <reified T : BuildTargetData> WorkspaceTarget.findBuildData(): T? = rawBuildTarget.data.filterIsInstance<T>().firstOrNull()
@@ -17,7 +16,7 @@ inline fun <reified T : BuildTargetData> Sequence<WorkspaceTarget>.filterBuildTa
 
 @get:ApiStatus.Internal
 val WorkspaceSnapshot.allTargets: Sequence<WorkspaceTarget>
-  get(): Sequence<WorkspaceTarget> = targetGraph.allTargets.asSequence()
+  get(): Sequence<WorkspaceTarget> = targetGraph.allTargets.mapNotNull { it.load(targets, TargetLoadOptions.DEFAULT) }
 
 @get:ApiStatus.Internal
 val WorkspaceTarget.kind: String

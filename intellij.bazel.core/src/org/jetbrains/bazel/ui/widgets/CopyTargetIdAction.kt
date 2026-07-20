@@ -7,7 +7,6 @@ import com.intellij.openapi.application.readAction
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.ide.CopyPasteManager
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.vfs.toNioPathOrNull
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import com.intellij.psi.util.elementType
@@ -24,7 +23,7 @@ import org.jetbrains.bazel.languages.starlark.psi.expressions.arguments.Starlark
 import org.jetbrains.bazel.languages.starlark.psi.statements.StarlarkExpressionStatement
 import org.jetbrains.bazel.languages.starlark.repomapping.calculateLabel
 import org.jetbrains.bazel.languages.starlark.repomapping.toShortString
-import org.jetbrains.bazel.target.targetUtils
+import org.jetbrains.bazel.target.targetStorage
 
 // TODO: https://youtrack.jetbrains.com/issue/BAZEL-1158
 
@@ -62,7 +61,7 @@ internal class CopyTargetIdAction : SuspendableAction({ BazelPluginBundle.messag
       return readAction { psiElement?.findParentOfType<StarlarkCallExpression>()?.calculateTargetId() }
     } else {
       val virtualFile = readAction { psiFile.virtualFile } ?: return null
-      return psiFile.project.targetUtils
+      return psiFile.project.targetStorage
         .getTargetsForFile(virtualFile)
         .chooseTarget(editor)
         ?.toShortString(psiFile.project)
@@ -86,7 +85,7 @@ internal class CopyTargetIdAction : SuspendableAction({ BazelPluginBundle.messag
       shouldAddActionToStarlarkFile(file, e)
     } else {
       file.virtualFile?.let { virtualFile ->
-        project.targetUtils.getTargetsForFile(virtualFile).isNotEmpty()
+        project.targetStorage.getTargetsForFile(virtualFile).isNotEmpty()
       } ?: false
     }
   }

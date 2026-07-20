@@ -9,7 +9,8 @@ import com.jetbrains.python.PythonFileType
 import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.python.lang.PythonBuildTarget
-import org.jetbrains.bazel.target.targetUtils
+import org.jetbrains.bazel.target.getTargetDataForLabel
+import org.jetbrains.bazel.target.targetStorage
 import org.jetbrains.bazel.utils.isUnder
 import java.io.File
 import java.nio.charset.StandardCharsets
@@ -170,7 +171,7 @@ internal object PythonDebugUtils {
   }
 
   private fun getPythonTargetData(project: Project, target: Label): PythonBuildTarget? =
-    project.targetUtils.getBuildTargetForLabel(target)?.data?.firstNotNullOfOrNull { it as? PythonBuildTarget }
+    project.targetStorage.getTargetDataForLabel<PythonBuildTarget>(target)
 
   private fun PythonBuildTarget.findRunfilesWorkspaceRoot(): Path? =
     this.runnerScript?.let { it.parent?.resolve("${it.name}.runfiles")?.resolve("_main") }

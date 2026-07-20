@@ -18,7 +18,7 @@ import org.jetbrains.bazel.test.framework.target.TestBuildTargetFactory
 import org.jetbrains.kotlin.idea.KotlinLanguage
 import org.jetbrains.kotlin.psi.KtNamedFunction
 
-class SyntheticRunTargetUtilsTest : BasePlatformTestCase() {
+class SyntheticRunTargetStorageTest : BasePlatformTestCase() {
 
   fun `test getSyntheticTargetLabel with single package part`() {
     val label = SyntheticRunTargetUtils.getSyntheticTargetLabel(

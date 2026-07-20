@@ -36,7 +36,7 @@ import org.jetbrains.bazel.ignore.BazelIgnoreService
 import org.jetbrains.bazel.sync.status.SyncStatusListener
 import org.jetbrains.bazel.sync.status.isSyncInProgress
 import org.jetbrains.bazel.sync.task.ProjectSyncTask
-import org.jetbrains.bazel.target.targetUtils
+import org.jetbrains.bazel.target.targetStorage
 import org.jetbrains.bazel.workspace.fileEvents.BazelFileEventProcessor
 import org.jetbrains.jps.model.java.JavaResourceRootType
 import java.awt.Color
@@ -152,7 +152,7 @@ fun showAsUnsyncedSourceFile(project: Project, file: VirtualFile): Boolean {
   val isResource = projectFileIndex.isUnderSourceRootOfType(file, setOf(JavaResourceRootType.RESOURCE, JavaResourceRootType.TEST_RESOURCE))
   if (isResource) return false
 
-  val targetUtils = project.targetUtils
+  val targetUtils = project.targetStorage
   if (!targetUtils.isLoaded()) return false
 
   return targetUtils.getTargetsForFile(file).isEmpty()
@@ -168,7 +168,7 @@ fun showAsIgnoredSourceFile(project: Project, file: VirtualFile): Boolean {
 @ApiStatus.Internal
 class BazelFileStatusRefresher(private val project: Project) {
   init {
-    project.targetUtils.onLoaded {
+    project.targetStorage.onLoaded {
       refreshAllFilesPresentation()
     }
 

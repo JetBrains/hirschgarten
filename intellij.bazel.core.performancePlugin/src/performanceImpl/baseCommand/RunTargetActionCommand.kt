@@ -7,7 +7,7 @@ import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.runnerAction.RunTargetAction
 import org.jetbrains.bazel.runnerAction.TestTargetAction
-import org.jetbrains.bazel.target.targetUtils
+import org.jetbrains.bazel.target.targetStorage
 
 internal abstract class RunTargetActionCommand(text: String, line: Int) : PlaybackCommandCoroutineAdapter(text, line) {
   override suspend fun doExecute(context: PlaybackContext) {
@@ -16,7 +16,7 @@ internal abstract class RunTargetActionCommand(text: String, line: Int) : Playba
 
   private suspend fun executeRunTargetAction(project: Project) {
     val id = getTargetId(project) ?: return
-    val targetInfo = project.targetUtils.getBuildTargetForLabel(id) ?: return
+    val targetInfo = project.targetStorage.getTargetSummary(id) ?: return
     if (targetInfo.kind.ruleType == RuleType.TEST) {
       TestTargetAction(project, targetInfo).doPerformAction(project)
     } else {

@@ -55,7 +55,8 @@
                     implementation="org.jetbrains.bazel.sync.workspace.languages.kotlin.KotlinLanguagePlugin"/>
     <languagePlugin id="ScalaLanguagePlugin"
                     implementation="org.jetbrains.bazel.sync.workspace.languages.scala.ScalaLanguagePlugin"/>
-
+    
+    <workspaceTypeContributor implementation="org.jetbrains.bazel.workspace.sync.jvm.JvmWorkspaceTypeContributor"/>
   </extensions>
 
   <extensions defaultExtensionNs="com.intellij">

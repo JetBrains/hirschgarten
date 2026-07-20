@@ -13,6 +13,7 @@ import org.jetbrains.bazel.label.DependencyLabelKind
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.label.SingleTarget
 import org.jetbrains.bazel.label.assumeResolved
+import org.jetbrains.bazel.sync.workspace.persistence.WorkspaceTargetRef
 import java.util.concurrent.atomic.AtomicReferenceArray
 
 /**
@@ -24,7 +25,7 @@ interface WorkspaceTargetGraph {
   /**
    * Entire set of [WorkspaceTarget] present inside this [WorkspaceTargetGraph]
    */
-  val allTargets: Array<WorkspaceTarget>
+  val allTargets: Sequence<WorkspaceTargetRef>
 
   /**
    * Find [WorkspaceTarget] by distinct [WorkspaceTargetKey]
@@ -34,7 +35,7 @@ interface WorkspaceTargetGraph {
    *
    * @return Matched target
    */
-  fun findTargetByKey(targetKey: WorkspaceTargetKey, strict: Boolean = false): WorkspaceTarget?
+  fun findTargetByKey(targetKey: WorkspaceTargetKey, strict: Boolean = false): WorkspaceTargetRef?
 
   /**
    * Find all [WorkspaceTarget] that lossy match [targetKey], match only by label and configuration
@@ -43,7 +44,17 @@ interface WorkspaceTargetGraph {
    *
    * @return All matching targets
    */
-  fun findTargetsLossy(targetKey: WorkspaceTargetKey): Sequence<WorkspaceTarget>
+  fun findTargetsLossy(targetKey: WorkspaceTargetKey): Sequence<WorkspaceTargetRef>
+
+  /**
+   * Find all direct successors of target with key [targetKey].
+   *
+   * @param targetKey Specific [WorkspaceTargetKey]
+   * @param strict Match [targetKey] exactly, when false try matching without propagated aspects [WorkspaceTargetKey.aspectIds]
+   *
+   * @param targetKey
+   */
+  fun findAllSuccessors(targetKey: WorkspaceTargetKey, strict: Boolean = true): Sequence<WorkspaceTargetRef>
 
   /**
    * Walk graph and find all targets until depth [maxDepth]
@@ -60,7 +71,7 @@ interface WorkspaceTargetGraph {
     runtimeDependencies: Boolean = maxDepth < 0,
     useRelaxedDependencyExpansion: Boolean = false,
     condition: (key: WorkspaceTargetKey) -> Boolean = { true },
-  ): List<WorkspaceTarget>
+  ): Sequence<WorkspaceTargetRef>
 
   /**
    * Find all transitive successors to [targetKey]
@@ -73,7 +84,7 @@ interface WorkspaceTargetGraph {
   fun findAllTransitiveSuccessors(
     targetKey: WorkspaceTargetKey,
     useRelaxedDependencyExpansion: Boolean = false,
-  ): Sequence<WorkspaceTarget>
+  ): Sequence<WorkspaceTargetRef>
 
   /**
    * Find all transitive successors to [targetKey] excluding traversal over root targets
@@ -86,8 +97,43 @@ interface WorkspaceTargetGraph {
   fun findAllTransitiveSuccessorsWithoutRootTargets(
     targetKey: WorkspaceTargetKey,
     useRelaxedDependencyExpansion: Boolean = false,
-  ): Sequence<WorkspaceTarget>
+  ): Sequence<WorkspaceTargetRef>
 
+  companion object {
+    val EMPTY: WorkspaceTargetGraph = object : WorkspaceTargetGraph {
+      override val allTargets: Sequence<WorkspaceTargetRef>
+        get() = sequenceOf()
+
+      override fun findTargetByKey(
+        targetKey: WorkspaceTargetKey,
+        strict: Boolean,
+      ): WorkspaceTargetRef? = null
+
+      override fun findTargetsLossy(targetKey: WorkspaceTargetKey): Sequence<WorkspaceTargetRef> = sequenceOf()
+      override fun findAllSuccessors(
+        targetKey: WorkspaceTargetKey,
+        strict: Boolean,
+      ): Sequence<WorkspaceTargetRef> = sequenceOf()
+
+      override fun findAllTargetsAtDepth(
+        maxDepth: Int,
+        runtimeDependencies: Boolean,
+        useRelaxedDependencyExpansion: Boolean,
+        condition: (key: WorkspaceTargetKey) -> Boolean,
+      ): Sequence<WorkspaceTargetRef> = sequenceOf()
+
+      override fun findAllTransitiveSuccessors(
+        targetKey: WorkspaceTargetKey,
+        useRelaxedDependencyExpansion: Boolean,
+      ): Sequence<WorkspaceTargetRef> = sequenceOf()
+
+      override fun findAllTransitiveSuccessorsWithoutRootTargets(
+        targetKey: WorkspaceTargetKey,
+        useRelaxedDependencyExpansion: Boolean,
+      ): Sequence<WorkspaceTargetRef> = sequenceOf()
+
+    }
+  }
 }
 
 internal const val INVALID_TARGET_ID: Int = -1
@@ -101,20 +147,29 @@ internal class WorkspaceTargetGraphImpl internal constructor(
   private val rootTargetIds: IntSet,
   private val targetKey2TargetId: Object2IntMap<WorkspaceTargetKey>,
   private val labelConfig2TargetIds: Object2ObjectMap<LabelConfigKey, IntArray>,
-  private val id2WorkspaceTarget: Array<WorkspaceTarget>,
+  private val id2WorkspaceTarget: Array<WorkspaceTargetKey>,
   private val id2CompileSuccessors: Array<IntArray>,
   private val id2AllSuccessors: Array<IntArray>,
   private val id2RelaxedCompileSuccessors: Array<IntArray>,
   private val id2RelaxedAllSuccessors: Array<IntArray>,
 ) : WorkspaceTargetGraph {
-  private val id2TransitiveTargetCache: AtomicReferenceArray<IntArray?> = AtomicReferenceArray(targetKey2TargetId.size)
 
-  override val allTargets: Array<WorkspaceTarget> = id2WorkspaceTarget
+  // recreated lazily: Kryo field serialization skips transient fields and instantiates
+  // the class without running field initializers
+  @field:Transient
+  private var id2TransitiveTargetCache: AtomicReferenceArray<IntArray?>? = AtomicReferenceArray(id2WorkspaceTarget.size)
 
-  override fun findTargetByKey(targetKey: WorkspaceTargetKey, strict: Boolean): WorkspaceTarget? {
+  private fun transitiveTargetCache(): AtomicReferenceArray<IntArray?> =
+    id2TransitiveTargetCache ?: AtomicReferenceArray<IntArray?>(id2WorkspaceTarget.size).also { id2TransitiveTargetCache = it }
+
+  // no backing field: a stored Sequence would end up in the serialized form
+  override val allTargets: Sequence<WorkspaceTargetRef>
+    get() = id2WorkspaceTarget.asSequence().map { WorkspaceTargetRef.of(it) }
+
+  override fun findTargetByKey(targetKey: WorkspaceTargetKey, strict: Boolean): WorkspaceTargetRef? {
     val targetId = targetKey2TargetId.getOrDefault(targetKey, INVALID_TARGET_ID)
     if (targetId != INVALID_TARGET_ID) {
-      return id2WorkspaceTarget[targetId]
+      return id2WorkspaceTarget[targetId].let { WorkspaceTargetRef.of(it) }
     }
     if (strict) {
       return null
@@ -125,26 +180,39 @@ internal class WorkspaceTargetGraphImpl internal constructor(
       null
     }
     else {
-      id2WorkspaceTarget[canonical]
+      id2WorkspaceTarget[canonical].let { WorkspaceTargetRef.of(it) }
     }
   }
 
-  override fun findTargetsLossy(targetKey: WorkspaceTargetKey): Sequence<WorkspaceTarget> =
+  override fun findTargetsLossy(targetKey: WorkspaceTargetKey): Sequence<WorkspaceTargetRef> =
     (labelConfig2TargetIds[LabelConfigKey(label = targetKey.label, configuration = targetKey.configuration)] ?: intArrayOf())
       .asSequence()
-      .map { id2WorkspaceTarget[it] }
+      .map { WorkspaceTargetRef.of(id2WorkspaceTarget[it]) }
+
+  override fun findAllSuccessors(
+    targetKey: WorkspaceTargetKey,
+    strict: Boolean,
+  ): Sequence<WorkspaceTargetRef> {
+    val id = targetKey2TargetId.getOrDefault(targetKey, INVALID_TARGET_ID)
+    if (id == INVALID_TARGET_ID) {
+      return sequenceOf()
+    }
+    val collection = if (strict) id2AllSuccessors else id2RelaxedAllSuccessors
+    return collection[id].asSequence()
+      .map { WorkspaceTargetRef.of(id2WorkspaceTarget[it]) }
+  }
 
   override fun findAllTargetsAtDepth(
     maxDepth: Int,
     runtimeDependencies: Boolean,
     useRelaxedDependencyExpansion: Boolean,
     condition: (key: WorkspaceTargetKey) -> Boolean,
-  ): List<WorkspaceTarget> {
+  ): Sequence<WorkspaceTargetRef> {
     val depth = IntArray(id2WorkspaceTarget.size) { Int.MAX_VALUE }
 
     // TODO: use primitive collection here
     val toVisit = ArrayDeque<Int>()
-    val result = mutableListOf<WorkspaceTarget>()
+    val result = mutableListOf<WorkspaceTargetKey>()
 
     val compileSuccessors = if (useRelaxedDependencyExpansion) {
       id2RelaxedCompileSuccessors
@@ -162,7 +230,7 @@ internal class WorkspaceTargetGraphImpl internal constructor(
     // perform BFS traversal
     for (targetId in rootTargetIds.intIterator()) {
       val target = id2WorkspaceTarget[targetId]
-      if (!condition(target.targetKey)) {
+      if (!condition(target)) {
         continue
       }
       toVisit.add(targetId)
@@ -180,7 +248,7 @@ internal class WorkspaceTargetGraphImpl internal constructor(
       val successors = if (runtimeDependencies) allSuccessors[currentId] else compileSuccessors[currentId]
       for (succId in successors) {
         val target = id2WorkspaceTarget[succId]
-        if (!condition(target.targetKey)) {
+        if (!condition(target)) {
           continue
         }
         if (depth[succId] > currentDepth + 1) {
@@ -190,7 +258,7 @@ internal class WorkspaceTargetGraphImpl internal constructor(
       }
     }
 
-    return result
+    return result.asSequence().map { WorkspaceTargetRef.of(it) }
   }
 
   // MAYBE RC: avoid Sequence<...> as a return value?,
@@ -199,20 +267,20 @@ internal class WorkspaceTargetGraphImpl internal constructor(
   override fun findAllTransitiveSuccessors(
     targetKey: WorkspaceTargetKey,
     useRelaxedDependencyExpansion: Boolean,
-  ): Sequence<WorkspaceTarget> {
+  ): Sequence<WorkspaceTargetRef> {
     val targetId = targetKey2TargetId.getOrDefault(targetKey, INVALID_TARGET_ID)
     if (targetId == INVALID_TARGET_ID) {
       return emptySequence()
     }
     return computeTransitiveSuccessorIds(targetId, useRelaxedDependencyExpansion)
       .asSequence()
-      .map { transitiveSuccId -> id2WorkspaceTarget[transitiveSuccId] }
+      .map { transitiveSuccId -> WorkspaceTargetRef.of(id2WorkspaceTarget[transitiveSuccId]) }
   }
 
   override fun findAllTransitiveSuccessorsWithoutRootTargets(
     targetKey: WorkspaceTargetKey,
     useRelaxedDependencyExpansion: Boolean,
-  ): Sequence<WorkspaceTarget> {
+  ): Sequence<WorkspaceTargetRef> {
     val targetId = targetKey2TargetId.getOrDefault(targetKey, INVALID_TARGET_ID)
     if (targetId == INVALID_TARGET_ID) {
       return emptySequence()
@@ -225,7 +293,7 @@ internal class WorkspaceTargetGraphImpl internal constructor(
         computeTransitiveSuccessorIds(depId, useRelaxedDependencyExpansion)
           .asSequence() + sequenceOf(depId)
       }
-      .map { transitiveSuccId -> id2WorkspaceTarget[transitiveSuccId] }
+      .map { transitiveSuccId -> WorkspaceTargetRef.of(id2WorkspaceTarget[transitiveSuccId]) }
   }
 
   private fun computeTransitiveSuccessorIds(targetId: Int, useRelaxedDependencyExpansion: Boolean): IntArray =
@@ -234,7 +302,7 @@ internal class WorkspaceTargetGraphImpl internal constructor(
       computeTransitiveSuccessorSlow(targetId, id2RelaxedCompileSuccessors)
     }
     else {
-      findAllTransitiveSuccessorIds(cache = id2TransitiveTargetCache, targetId = targetId)
+      findAllTransitiveSuccessorIds(cache = transitiveTargetCache(), targetId = targetId)
     }
 
   private fun findAllTransitiveSuccessorIds(cache: AtomicReferenceArray<IntArray?>, targetId: Int): IntArray {
@@ -381,7 +449,7 @@ object WorkspaceTargetGraphBuilder {
       rootTargetIds = rootTargetIds,
       targetKey2TargetId = targetKey2TargetId,
       labelConfig2TargetIds = labelConfig2TargetIds,
-      id2WorkspaceTarget = id2WorkspaceTarget,
+      id2WorkspaceTarget = Array(id2WorkspaceTarget.size) { id2WorkspaceTarget[it].targetKey },
       id2CompileSuccessors = buildSuccessorIds(compilePredicate),
       id2AllSuccessors = buildSuccessorIds(allPredicate),
       id2RelaxedCompileSuccessors = buildRelaxedSuccessorIds(compilePredicate),

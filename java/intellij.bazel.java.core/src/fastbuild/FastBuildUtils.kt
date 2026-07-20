@@ -46,7 +46,7 @@ import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.coroutines.BazelCoroutineService
 import org.jetbrains.bazel.server.tasks.runBuildTargetTask
 import org.jetbrains.bazel.sync.environment.projectCtx
-import org.jetbrains.bazel.target.targetUtils
+import org.jetbrains.bazel.target.targetStorage
 import org.jetbrains.concurrency.AsyncPromise
 import org.jetbrains.concurrency.Promise
 import java.io.BufferedReader
@@ -100,14 +100,14 @@ internal object FastBuildUtils {
 
   suspend fun fastBuildFiles(project: Project, files: List<VirtualFile>) {
     val workspaceRoot = project.rootDir.toNioPath()
-    val targetUtils = project.targetUtils
+    val targetUtils = project.targetStorage
     val virtualFileManager = VirtualFileManager.getInstance()
     val fastBuildService = FastBuildStatusService.getInstance(project)
     val buildInfos =
       files
         .mapNotNull { file ->
           val targetForFile = targetUtils.getTargetsForFile(file).firstOrNull() ?: return@mapNotNull null
-          targetUtils.getBuildTargetForLabel(targetForFile)?.let { file to it }
+          targetUtils.getTargetSummary(targetForFile)?.let { file to it }
         }.toMap()
 
     if (buildInfos.isEmpty()) {

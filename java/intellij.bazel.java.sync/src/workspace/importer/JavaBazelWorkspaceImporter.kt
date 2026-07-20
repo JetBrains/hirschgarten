@@ -20,6 +20,7 @@ import org.jetbrains.bazel.sync.workspace.importer.WorkspaceImporterResult
 import org.jetbrains.bazel.sync.workspace.languages.java.JavaWorkspaceSyncConfig
 import org.jetbrains.bazel.sync.workspace.languages.java.sourceRoot.DefaultJvmPackagePrefixCalculator
 import org.jetbrains.bazel.sync.workspace.languages.jvm.extractJvmBuildTarget
+import org.jetbrains.bazel.sync.workspace.persistence.TargetLoadOptions
 import org.jetbrains.bazel.sync.workspace.snapshot.CommonWorkspaceSyncConfig
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceSnapshot
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTarget
@@ -69,10 +70,10 @@ internal class JavaBazelWorkspaceImporter : BazelWorkspaceImporter, BazelWorkspa
     moduleTargets = snapshot.targetGraph.findAllTargetsAtDepth(
       maxDepth = commonSyncConfig.importDepth,
       useRelaxedDependencyExpansion = true,
-    )
+    ).mapNotNull { it.load(snapshot.targets, TargetLoadOptions.DEFAULT) }.toList()
     targets = moduleTargets.map { it.rawBuildTarget }
     jvmResolved = JvmBuildTargetResolver(
-      allTargets = snapshot.targets,
+      allTargets = snapshot.targets.allTargets().associateBy { it.targetKey },
       targetsToImport = moduleTargets.associateBy { it.targetKey },
       javaSyncConfig = snapshot.syncConfigs.filterIsInstance<JavaWorkspaceSyncConfig>().first(),
     ).resolveAll()
