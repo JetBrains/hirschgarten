@@ -3,6 +3,7 @@ package org.jetbrains.bazel.tests.scala
 import com.intellij.driver.sdk.step
 import com.intellij.driver.sdk.ui.components.common.ideFrame
 import com.intellij.ide.starter.driver.engine.runIdeWithDriver
+import com.intellij.ide.starter.junit5.WithScreenRecording
 import org.jetbrains.bazel.data.IdeaBazelCases
 import org.jetbrains.bazel.data.simpleBazelProject
 import org.jetbrains.bazel.base.IdeStarterBaseProjectTest
@@ -20,9 +21,10 @@ private val BASIC_SCALA_PROJECT = simpleBazelProject(
 internal class BasicScalaIdeStarterTest : IdeStarterBaseProjectTest() {
 
   @Test
+  @WithScreenRecording
   fun `pure scala projects should sync with bazel`() {
     createContext("basicScalaTest", IdeaBazelCases.withProject(BASIC_SCALA_PROJECT))
-      .runIdeWithDriver(runTimeout = timeout) { withScreenRecording() }
+      .runIdeWithDriver(runTimeout = timeout)
       .useDriverAndCloseIde {
         ideFrame {
           step("Sync pure scala project") {
