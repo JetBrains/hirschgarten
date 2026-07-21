@@ -2,12 +2,33 @@ package org.jetbrains.bazel.sync.workspace.mapper.normal
 
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.label.Label
+import org.jetbrains.bsp.protocol.BuildTargetTag
 import org.jetbrains.bsp.protocol.MavenCoordinates
 import java.nio.file.Path
 import kotlin.io.path.extension
 
 @ApiStatus.Internal
 object MavenCoordinatesResolver {
+  private const val mavenCoordsTagPrefix = BuildTargetTag.MAVEN_COORDINATES + "="
+
+  fun fromTargetTagsList(tags: Collection<String>): MavenCoordinates? {
+    val mavenCoordsTag =
+      tags
+        .firstOrNull { it.startsWith(mavenCoordsTagPrefix) }
+        ?.removePrefix(mavenCoordsTagPrefix)
+      ?: return null
+
+    val parts = mavenCoordsTag.split(':')
+    val groupId = parts.getOrNull(0) ?: return null
+    val artifactId = parts.getOrNull(1) ?: return null
+    val version = parts.getOrNull(2) ?: return null
+    return MavenCoordinates(
+      groupId = groupId,
+      artifactId = artifactId,
+      version = version
+    )
+  }
+
   fun resolveMavenCoordinates(libraryLabel: Label, outputJar: Path): MavenCoordinates? {
     /* For example:
      * @@rules_jvm_external~override~maven~maven//:org_apache_commons_commons_lang3 -> org

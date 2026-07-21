@@ -142,6 +142,7 @@ class AspectBazelProjectMapper(
       isWorkspace = label.isMainWorkspace ||
                     localRepositories.localRepositories.containsKey(label.assumeResolved().repoName),
       isTestOnly = target.testonly,
+      tags = target.tagsList,
     ).also {
       missingFilesReporter.report()
     }

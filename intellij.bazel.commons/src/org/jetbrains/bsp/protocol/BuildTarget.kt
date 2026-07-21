@@ -49,6 +49,7 @@ data class RawBuildTarget(
   override val isManual: Boolean = false,
   override val isWorkspace: Boolean = true,
   val isTestOnly: Boolean = false,
+  val tags: List<String> = emptyList(),
 ) : BuildTarget {
   override val id: Label
     get() = key.label
