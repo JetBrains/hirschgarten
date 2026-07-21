@@ -286,7 +286,6 @@ class JavaLanguagePlugin : LanguagePlugin {
                     server.workspaceContext,
                     label,
                     libTargetInfo,
-                    onlyOutputJars = false,
                     localRepositories,
                   ),
                 )
@@ -444,7 +443,6 @@ class JavaLanguagePlugin : LanguagePlugin {
             workspaceContext,
             target.label(), // Label.parse(target.key.label+ OUTPUT_JARS_SUFFIX),
             target,
-            onlyOutputJars = true,
             localRepositories,
           )?.let { library ->
             target.label() to listOf(library)
@@ -660,7 +658,6 @@ class JavaLanguagePlugin : LanguagePlugin {
       workspaceContext: WorkspaceContext,
       label: Label,
       targetInfo: TargetInfo,
-      onlyOutputJars: Boolean,
       localRepositories: LocalRepositoryMapping,
     ): LibraryItem? {
       val outputs = getTargetOutputJarsList(targetInfo, localRepositories).toSet() + getIntellijPluginJars(targetInfo, localRepositories)
@@ -674,7 +671,6 @@ class JavaLanguagePlugin : LanguagePlugin {
 
       val interfaceJars = getTargetInterfaceJarsList(targetInfo, localRepositories).toSet()
       if (!shouldCreateLibrary(
-          dependencies = if (!onlyOutputJars) targetInfo.depsList else emptyList(),
           outputs = outputs,
           sources = sources,
           interfaceJars = interfaceJars,
@@ -684,13 +680,9 @@ class JavaLanguagePlugin : LanguagePlugin {
       }
 
       val mavenCoordinates =
-        if (!onlyOutputJars) {
-          outputs.firstOrNull()?.let { outputJar ->
-            MavenCoordinatesResolver.resolveMavenCoordinates(label, outputJar)
-          }
-        }
-        else {
-          null
+        MavenCoordinatesResolver.fromTargetTagsList(targetInfo.tagsList)
+        ?: outputs.firstOrNull()?.let { outputJar ->
+          MavenCoordinatesResolver.resolveMavenCoordinates(label, outputJar)
         }
 
       return createLibrary(
@@ -729,11 +721,10 @@ class JavaLanguagePlugin : LanguagePlugin {
       )
 
     private fun shouldCreateLibrary(
-      dependencies: List<BspTargetInfo.Dependency>,
       outputs: Collection<Path>,
       interfaceJars: Collection<Path>,
       sources: Collection<Path>,
-    ): Boolean = dependencies.isNotEmpty() || !outputs.isEmptyJarList() || !interfaceJars.isEmptyJarList() || !sources.isEmptyJarList()
+    ): Boolean = !outputs.isEmptyJarList() || !interfaceJars.isEmptyJarList() || !sources.isEmptyJarList()
 
     private fun Collection<Path>.isEmptyJarList(): Boolean = isEmpty() || singleOrNull()?.name == "empty.jar"
 

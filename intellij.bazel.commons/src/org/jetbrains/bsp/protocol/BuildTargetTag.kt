@@ -6,4 +6,5 @@ import org.jetbrains.annotations.ApiStatus
 object BuildTargetTag {
   const val MANUAL = "manual"
   const val NO_IDE = "no-ide"
+  const val MAVEN_COORDINATES = "maven_coordinates"
 }
