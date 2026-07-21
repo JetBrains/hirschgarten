@@ -130,8 +130,8 @@ class BazelGoPackageImportReferencesTest : MockProjectBaseTest() {
     val importReferences = BazelGoPackage.getImportReferences(label, fooBarBazRule, "github.com/user/foo/bar/baz")
     importReferences shouldBe
       arrayOf<PsiElement?>(
-        null, // github.com
-        null, // user
+        fooBarBazRule, // github.com
+        fooBarBazRule, // user
         fooDirectory, // foo
         fooBarDirectory, // bar
         fooBarBazRule, // baz
@@ -148,8 +148,8 @@ class BazelGoPackageImportReferencesTest : MockProjectBaseTest() {
     val importReferences = BazelGoPackage.getImportReferences(label, fooBarBazRule, "github.com/user/foo/bar/baz")
     importReferences shouldBe
       arrayOf<PsiElement?>(
-        null, // github.com
-        null, // user
+        fooBarBazRule, // github.com
+        fooBarBazRule, // user
         fooDirectory, // foo
         fooBarDirectory, // bar
         fooBarBazRule, // baz
@@ -168,9 +168,27 @@ class BazelGoPackageImportReferencesTest : MockProjectBaseTest() {
     val importReferences = BazelGoPackage.getImportReferences(label, fooBarBazRule, "one/two/three")
     importReferences shouldBe
       arrayOf<PsiElement?>(
-        null, // one
-        null, // two
-        null, // three
+        fooBarBazRule, // one
+        fooBarBazRule, // two
+        fooBarBazRule, // three
+      )
+  }
+
+  @Test
+  fun testFromTargetInPackage() {
+    val label = Label.parse("//foo/bar/baz:baz")
+    val workspaceDirectory = mockPsiDirectory("workspace", null)
+    val fooDirectory = mockPsiDirectory("foo", workspaceDirectory)
+    val fooBarDirectory = mockPsiDirectory("bar", fooDirectory)
+    val fooBarBazDirectory = mockPsiDirectory("baz", fooBarDirectory)
+    val fooBarBazBuild = mockBuildFile(fooBarBazDirectory)
+    val fooBarBazRule = mockRule("baz", fooBarBazBuild)
+    val importReferences = BazelGoPackage.getImportReferences(label, fooBarBazRule, "foo/bar/baz")
+    importReferences shouldBe
+      arrayOf<PsiElement>(
+        fooDirectory, // foo
+        fooBarDirectory, // bar
+        fooBarBazRule, // baz
       )
   }
 
