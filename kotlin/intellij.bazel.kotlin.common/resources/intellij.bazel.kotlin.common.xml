@@ -17,15 +17,16 @@
     <module name="intellij.java.ui"/>
     <module name="intellij.kotlin.base.codeInsight"/>
     <module name="intellij.kotlin.base.facet"/>
+    <module name="intellij.kotlin.base.indices"/>
     <module name="intellij.kotlin.base.projectStructure"/>
     <module name="intellij.kotlin.base.psi"/>
-<module name="intellij.kotlin.jvm.debugger.coroutines"/>
-<module name="intellij.kotlin.preferences"/>
-<module name="intellij.kotlin.projectConfiguration"/>
+    <module name="intellij.kotlin.jvm.debugger.coroutines"/>
+    <module name="intellij.kotlin.preferences"/>
+    <module name="intellij.kotlin.projectConfiguration"/>
     <module name="intellij.kotlin.references"/>
-<module name="intellij.platform.smRunner"/>
-<module name="kotlin.fir.frontend-independent"/>
-</dependencies>
+    <module name="intellij.platform.smRunner"/>
+    <module name="kotlin.fir.frontend-independent"/>
+  </dependencies>
   <!-- endregion -->
 
   <extensions defaultExtensionNs="org.jetbrains.kotlin">
