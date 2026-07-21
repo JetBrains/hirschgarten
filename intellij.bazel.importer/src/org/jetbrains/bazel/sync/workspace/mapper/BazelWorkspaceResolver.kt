@@ -94,7 +94,7 @@ object BazelWorkspaceResolver {
     taskId: TaskId,
     targets: Collection<IntellijIdeInfo.TargetIdeInfo>
   ) {
-    val noIdeTargets = targets.filter { target -> target.tagsList.any { it.equals(Constants.NO_IDE) } }
+    val noIdeTargets = targets.filter { target -> Constants.NO_IDE in target.tagsList }
     if (noIdeTargets.isNotEmpty()) {
       project.syncConsole.addDiagnosticMessage(
         taskId, null, -1, -1,

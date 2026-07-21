@@ -170,13 +170,7 @@ class JvmBuildTargetResolver(
                             ?: return@mapNotNull null
 
             libraryItemByIdCache.getOrPut(depKey) {
-              Ref(
-                createLibrary(
-                  depKey,
-                  libTarget,
-                  onlyOutputJars = false,
-                ),
-              )
+              Ref(createLibrary(depKey, libTarget))
             }.get()
           }
       }
@@ -295,11 +289,7 @@ class JvmBuildTargetResolver(
     return targetsToImport
       .filter { shouldCreateOutputJarsLibrary(it) }
       .mapNotNull { target ->
-        createLibrary(
-          target.targetKey,
-          target,
-          onlyOutputJars = true,
-        )?.let { library ->
+        createLibrary(target.targetKey, target)?.let { library ->
           target.targetKey to listOf(library)
         }
       }.toMap()
@@ -496,7 +486,6 @@ class JvmBuildTargetResolver(
   private fun createLibrary(
     key: WorkspaceTargetKey,
     target: WorkspaceTarget,
-    onlyOutputJars: Boolean,
   ): LibraryItem? {
     val outputs = getTargetOutputJarsList(target).toSet() + getIntellijPluginJars(target)
     val rawSources = getSourceJarPaths(target)
@@ -508,26 +497,15 @@ class JvmBuildTargetResolver(
     }
 
     val interfaceJars = getTargetInterfaceJarsList(target).toSet()
-    if (!shouldCreateLibrary(
-        dependencies = if (!onlyOutputJars) target.rawBuildTarget.dependencies else emptyList(),
-        outputs = outputs,
-        sources = sources,
-        interfaceJars = interfaceJars,
-      )
-    ) {
+    if (outputs.isEmptyJarList() && interfaceJars.isEmptyJarList() && sources.isEmptyJarList()) {
       return null
     }
 
     val mavenCoordinates =
-      if (!onlyOutputJars) {
-        outputs.firstOrNull()?.let { outputJar ->
-          MavenCoordinatesResolver.resolveMavenCoordinates(key.label, outputJar)
-        }
+      MavenCoordinatesResolver.fromTargetTagsList(target.rawBuildTarget.tags)
+      ?: outputs.firstOrNull()?.let { outputJar ->
+        MavenCoordinatesResolver.resolveMavenCoordinates(key.label, outputJar)
       }
-      else {
-        null
-      }
-
 
     return createLibrary(
       key = key,
@@ -556,13 +534,6 @@ class JvmBuildTargetResolver(
       containsInternalJars = containsInternalJars,
     )
   }
-
-  private fun shouldCreateLibrary(
-    dependencies: List<DependencyLabel>,
-    outputs: Collection<Path>,
-    interfaceJars: Collection<Path>,
-    sources: Collection<Path>,
-  ): Boolean = dependencies.isNotEmpty() || !outputs.isEmptyJarList() || !interfaceJars.isEmptyJarList() || !sources.isEmptyJarList()
 
   private fun Collection<Path>.isEmptyJarList(): Boolean = isEmpty() || singleOrNull()?.name == "empty.jar"
 

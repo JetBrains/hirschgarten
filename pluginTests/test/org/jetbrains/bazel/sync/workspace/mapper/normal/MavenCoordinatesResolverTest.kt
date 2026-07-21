@@ -57,4 +57,80 @@ class MavenCoordinatesResolverTest {
     val outputJar = Path("rules_jvm_external~~maven~name/auto-service-annotations/header_auto-service-annotations-1.1.1.jar")
     MavenCoordinatesResolver.resolveMavenCoordinates(label, outputJar) shouldBe null
   }
+
+  @Test
+  fun `should resolve maven coordinates from a tags list containing the maven_coordinates tag`() {
+    val tags = listOf("manual", "no-ide", "maven_coordinates=com.google.guava:guava:31.1-jre")
+    val expectedMavenCoordinates = MavenCoordinates(
+      "com.google.guava",
+      "guava",
+      "31.1-jre",
+    )
+    MavenCoordinatesResolver.fromTargetTagsList(tags) shouldBe expectedMavenCoordinates
+  }
+
+  @Test
+  fun `should resolve maven coordinates when maven_coordinates is the only tag`() {
+    val tags = listOf("maven_coordinates=org.scala-lang:scala-library:2.13.11")
+    val expectedMavenCoordinates = MavenCoordinates(
+      "org.scala-lang",
+      "scala-library",
+      "2.13.11",
+    )
+    MavenCoordinatesResolver.fromTargetTagsList(tags) shouldBe expectedMavenCoordinates
+  }
+
+  @Test
+  fun `should return null when the tags list is empty`() {
+    MavenCoordinatesResolver.fromTargetTagsList(emptyList()) shouldBe null
+  }
+
+  @Test
+  fun `should return null when no maven_coordinates tag is present`() {
+    val tags = listOf("manual", "no-ide")
+    MavenCoordinatesResolver.fromTargetTagsList(tags) shouldBe null
+  }
+
+  @Test
+  fun `should return null when maven_coordinates value has only groupId`() {
+    val tags = listOf("maven_coordinates=com.google.guava")
+    MavenCoordinatesResolver.fromTargetTagsList(tags) shouldBe null
+  }
+
+  @Test
+  fun `should return null when maven_coordinates value is missing the version`() {
+    val tags = listOf("maven_coordinates=com.google.guava:guava")
+    MavenCoordinatesResolver.fromTargetTagsList(tags) shouldBe null
+  }
+
+  @Test
+  fun `should return null when maven_coordinates value is empty`() {
+    val tags = listOf("maven_coordinates=")
+    MavenCoordinatesResolver.fromTargetTagsList(tags) shouldBe null
+  }
+
+  @Test
+  fun `should pick the first maven_coordinates tag when multiple are present`() {
+    val tags = listOf(
+      "maven_coordinates=g1:a1:1.0",
+      "maven_coordinates=g2:a2:2.0",
+    )
+    val expectedMavenCoordinates = MavenCoordinates(
+      "g1",
+      "a1",
+      "1.0",
+    )
+    MavenCoordinatesResolver.fromTargetTagsList(tags) shouldBe expectedMavenCoordinates
+  }
+
+  @Test
+  fun `should ignore extra colon-separated segments beyond version`() {
+    val tags = listOf("maven_coordinates=com.example:artifact:1.2.3:sources")
+    val expectedMavenCoordinates = MavenCoordinates(
+      "com.example",
+      "artifact",
+      "1.2.3",
+    )
+    MavenCoordinatesResolver.fromTargetTagsList(tags) shouldBe expectedMavenCoordinates
+  }
 }

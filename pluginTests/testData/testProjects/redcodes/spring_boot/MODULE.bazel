@@ -1,0 +1,22 @@
+module(
+    name = "hirschgarten_spring_navigation_repro",
+    version = "0.1.0",
+)
+
+bazel_dep(name = "rules_java", version = "9.6.1")
+bazel_dep(name = "rules_jvm_external", version = "7.0")
+
+maven = use_extension("@rules_jvm_external//:extensions.bzl", "maven")
+maven.install(
+    name = "maven",
+    artifacts = [
+        "org.springframework:spring-beans:6.2.8",
+        "org.springframework:spring-context:6.2.8",
+    ],
+    fetch_sources = True,
+    known_contributing_modules = ["protobuf"],
+    repositories = [
+        "https://repo1.maven.org/maven2",
+    ],
+)
+use_repo(maven, "maven")
