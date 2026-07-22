@@ -4,17 +4,18 @@ import com.intellij.psi.PsiElement
 import com.jetbrains.python.psi.PyFile
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.python.run.PythonBazelRunUtils
+import org.jetbrains.bazel.runnerAction.BazelRunnerActionDescriptor
 import org.jetbrains.bazel.ui.gutters.BazelRunLineMarkerContributor
-import javax.swing.Icon
 
 @ApiStatus.Internal
 class BazelPyRunLineMarkerContributor : BazelRunLineMarkerContributor() {
-  override fun PsiElement.shouldAddMarker(): Boolean =
-    containingFile is PyFile && PythonBazelRunUtils.isRunLineMarkerElement(this)
-
-  override fun getRunLineMarkerIcon(element: PsiElement): Icon? =
-    if (PythonBazelRunUtils.isTestFunctionNameIdentifier(element)) executeRunLineMarkerIcon else null
-
-  override fun getExtraProgramArguments(element: PsiElement): List<String> =
-    PythonBazelRunUtils.getTestRunnerArguments(element)
+  override fun getGutterAction(element: PsiElement): GutterAction? {
+    if (element.containingFile !is PyFile || !PythonBazelRunUtils.isRunLineMarkerElement(element)) return null
+    return GutterAction(
+      icon = if (PythonBazelRunUtils.isTestFunctionNameIdentifier(element)) executeRunLineMarkerIcon else null,
+      runnerActionDescriptor = BazelRunnerActionDescriptor(
+        programArguments = PythonBazelRunUtils.getTestRunnerArguments(element),
+      ),
+    )
+  }
 }

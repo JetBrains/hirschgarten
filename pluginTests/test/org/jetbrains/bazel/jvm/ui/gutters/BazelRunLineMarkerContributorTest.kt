@@ -78,10 +78,10 @@ class BazelRunLineMarkerContributorTest : BasePlatformTestCase() {
     val runLineMarkerContributor = BazelKotlinRunLineMarkerContributor()
 
     // when
-    val result = runLineMarkerContributor.getSingleTestFilter(psiElement)
+    val result = runLineMarkerContributor.getGutterAction(psiElement)?.runnerActionDescriptor?.testFilter
 
     // then
-    val expectedSingleTestFilter = "BspJVMRunLineMarkerContributorTestData.should add 1 plus 1$"
+    val expectedSingleTestFilter = "org.jetbrains.bazel.ui.gutters.BspJVMRunLineMarkerContributorTestData.should add 1 plus 1$"
     result shouldBe expectedSingleTestFilter
   }
 
@@ -99,10 +99,10 @@ class BazelRunLineMarkerContributorTest : BasePlatformTestCase() {
     val runLineMarkerContributor = BazelKotlinRunLineMarkerContributor()
 
     // when
-    val result = runLineMarkerContributor.getSingleTestFilter(psiElement)
+    val result = runLineMarkerContributor.getGutterAction(psiElement)?.runnerActionDescriptor?.testFilter
 
     // then
-    val expectedSingleTestFilter = "BspJVMRunLineMarkerContributorTestData"
+    val expectedSingleTestFilter = "org.jetbrains.bazel.ui.gutters.BspJVMRunLineMarkerContributorTestData"
     result shouldBe expectedSingleTestFilter
   }
 
@@ -170,10 +170,10 @@ class BazelRunLineMarkerContributorTest : BasePlatformTestCase() {
     val runLineMarkerContributor = BazelJavaRunLineMarkerContributor()
 
     // when
-    val result = runLineMarkerContributor.getSingleTestFilter(psiElement)
+    val result = runLineMarkerContributor.getGutterAction(psiElement)?.runnerActionDescriptor?.testFilter
 
     // then
-    val expectedSingleTestFilter = "BspJVMRunLineMarkerContributorTestData.addOnePlusOne$"
+    val expectedSingleTestFilter = "org.jetbrains.bazel.ui.gutters.BspJVMRunLineMarkerContributorTestData.addOnePlusOne$"
     result shouldBe expectedSingleTestFilter
   }
 
@@ -187,11 +187,12 @@ class BazelRunLineMarkerContributorTest : BasePlatformTestCase() {
         ?.getChildOfType<LeafPsiElement>()
         ?.nextSibling
         ?.nextSibling
+        ?.nextSibling
     psiElement.shouldNotBeNull()
     val runLineMarkerContributor = BazelJavaRunLineMarkerContributor()
 
     // when
-    val result = runLineMarkerContributor.getSingleTestFilter(psiElement)
+    val result = runLineMarkerContributor.getGutterAction(psiElement)?.runnerActionDescriptor?.testFilter
 
     // then
     val expectedSingleTestFilter = "org.jetbrains.bazel.ui.gutters.BspJVMRunLineMarkerContributorTestData"

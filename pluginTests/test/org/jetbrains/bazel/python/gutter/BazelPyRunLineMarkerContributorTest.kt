@@ -183,7 +183,7 @@ internal class BazelPyRunLineMarkerContributorTest : CodeInsightFixtureTestCase<
 
     // WHEN
     val elementAtCaret = PsiUtilCore.getElementAtOffset(testFile, myFixture.caretOffset)!!
-    val extraProgramArguments = bazelPyRunLineMarkerContributor.getExtraProgramArguments(elementAtCaret)
+    val extraProgramArguments = bazelPyRunLineMarkerContributor.getGutterAction(elementAtCaret)?.runnerActionDescriptor?.programArguments
 
     // THEN
     extraProgramArguments shouldBe listOf("test_sample.py::test_passes")
@@ -207,7 +207,7 @@ internal class BazelPyRunLineMarkerContributorTest : CodeInsightFixtureTestCase<
 
     // WHEN
     val elementAtCaret = PsiUtilCore.getElementAtOffset(testFile, myFixture.caretOffset)!!
-    val extraProgramArguments = bazelPyRunLineMarkerContributor.getExtraProgramArguments(elementAtCaret)
+    val extraProgramArguments = bazelPyRunLineMarkerContributor.getGutterAction(elementAtCaret)?.runnerActionDescriptor?.programArguments
 
     // THEN
     extraProgramArguments shouldBe listOf("test_sample.py::TestSample::test_passes")
@@ -233,7 +233,7 @@ internal class BazelPyRunLineMarkerContributorTest : CodeInsightFixtureTestCase<
 
     // WHEN
     val elementAtCaret = PsiUtilCore.getElementAtOffset(testFile, myFixture.caretOffset)!!
-    val extraProgramArguments = bazelPyRunLineMarkerContributor.getExtraProgramArguments(elementAtCaret)
+    val extraProgramArguments = bazelPyRunLineMarkerContributor.getGutterAction(elementAtCaret)?.runnerActionDescriptor?.programArguments
 
     // THEN
     extraProgramArguments shouldBe listOf("SampleTest.test_passes")

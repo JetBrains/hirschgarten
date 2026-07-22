@@ -68,9 +68,3 @@ f:org.jetbrains.bazel.hotswap.JarFileManifest$Diff
 - equals(java.lang.Object):Z
 - f:getPerJarModifiedFiles():com.intellij.util.containers.MultiMap
 - hashCode():I
-c:org.jetbrains.bazel.java.ui.gutters.BazelJavaRunLineMarkerContributor
-- org.jetbrains.bazel.ui.gutters.BazelRunLineMarkerContributor
-- <init>():V
-- getSingleTestFilter(com.intellij.psi.PsiElement):java.lang.String
-- isDumbAware():Z
-- shouldAddMarker(com.intellij.psi.PsiElement):Z

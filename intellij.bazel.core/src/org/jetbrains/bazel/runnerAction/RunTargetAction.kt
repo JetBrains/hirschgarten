@@ -13,11 +13,13 @@ class RunTargetAction(
   project: Project,
   target: ExecutableTarget,
   executor: Executor = DefaultRunExecutor.getRunExecutorInstance(),
+  runnerActionDescriptor: BazelRunnerActionDescriptor? = null,
   callerPsiElement: PsiElement? = null,
 ) : BazelRunnerAction(
   project,
   targets = listOf(target),
   executor = executor,
   configurationName = target.id.toShortString(project),
+  runnerActionDescriptor = runnerActionDescriptor,
   callerPsiElement = callerPsiElement,
 )

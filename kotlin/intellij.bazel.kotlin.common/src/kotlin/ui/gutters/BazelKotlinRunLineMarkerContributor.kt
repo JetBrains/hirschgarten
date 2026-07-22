@@ -11,11 +11,12 @@ import org.jetbrains.kotlin.idea.base.psi.KotlinPsiHeuristics
 import org.jetbrains.kotlin.psi.KtClassOrObject
 import org.jetbrains.kotlin.psi.KtNamedFunction
 import org.jetbrains.kotlin.psi.psiUtil.getNonStrictParentOfType
+import org.jetbrains.kotlin.psi.psiUtil.getParentOfType
 
 @ApiStatus.Internal
 open class BazelKotlinRunLineMarkerContributor : BazelJavaRunLineMarkerContributor() {
   override fun getInfo(element: PsiElement): Info? {
-    return if (isKotlinMainFunction(element)) {
+    return if (element.isMainMethod()) {
       null
     }
     else {
@@ -24,7 +25,11 @@ open class BazelKotlinRunLineMarkerContributor : BazelJavaRunLineMarkerContribut
   }
 
   override fun getSlowInfo(element: PsiElement): Info? {
-    return if (isKotlinMainFunction(element)) {
+    /**
+     * KotlinRunLineMarkerContributor adds its run gutter via `getSlowInfo`, while we do so via `getInfo`.
+     * IDEA can't merge the two run gutters unless it's the same type.
+     */
+    return if (element.isMainMethod()) {
       super.getInfo(element)
     }
     else {
@@ -32,17 +37,11 @@ open class BazelKotlinRunLineMarkerContributor : BazelJavaRunLineMarkerContribut
     }
   }
 
-  /**
-   * KotlinRunLineMarkerContributor adds its run gutter via `getSlowInfo`, while we do so via `getInfo`.
-   * IDEA can't merge the two run gutters unless it's the same type.
-   */
-  protected fun isKotlinMainFunction(element: PsiElement): Boolean {
-    val function = element.parent as? KtNamedFunction ?: return false
-    val detector = KotlinMainFunctionDetector.getInstanceDumbAware(element.project)
+  override fun PsiElement.isMainMethod(): Boolean {
+    val function = this.getParentOfType<KtNamedFunction>(strict = true) ?: return false
+    val detector = KotlinMainFunctionDetector.getInstanceDumbAware(this.project)
     return detector.isMain(function)
   }
-
-  override fun PsiNameIdentifierOwner.getClassName(): String? = this.getNonStrictParentOfType<KtClassOrObject>()?.name
 
   override fun PsiElement.getFullyQualifiedClassName(): String? {
     val classOrObject = this.getNonStrictParentOfType<KtClassOrObject>() ?: return null

@@ -1,6 +1,5 @@
 package com.intellij.bazel.devkit.monorepo.run
 
-import com.intellij.lang.jvm.util.JvmMainMethodUtil
 import com.intellij.monorepo.devkit.bazel.BazelTargetsInfoCache
 import com.intellij.monorepo.devkit.bazel.JpsToBazelConverterRunner
 import com.intellij.monorepo.devkit.bazel.useBazelCompile
@@ -9,10 +8,8 @@ import com.intellij.openapi.module.Module
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.roots.ProjectFileIndex
 import com.intellij.openapi.startup.ProjectActivity
-import com.intellij.psi.PsiClass
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiManager
-import com.intellij.psi.PsiMethod
 import org.jetbrains.bazel.config.isBazelProject
 import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.java.ui.gutters.BazelJavaRunLineMarkerContributor
@@ -33,16 +30,7 @@ internal class MonorepoBazelJavaRunLineMarkerContributor : BazelJavaRunLineMarke
   override fun isProjectApplicable(project: Project): Boolean = MonorepoRunLineMarkerContributorUtil.isProjectApplicable(project)
 
   override fun getTargets(element: PsiElement): List<ExecutableTarget> {
-    @Suppress("DEPRECATION")
-    val mainClassFqn =
-      if (element is PsiMethod && JvmMainMethodUtil.isMainMethod(element) || element is PsiClass && JvmMainMethodUtil.hasMainMethodInHierarchy(
-          element,
-        )) {
-        element.getFullyQualifiedClassName()
-      }
-      else {
-        null
-      }
+    val mainClassFqn = if (element.isMainMethod()) element.getFullyQualifiedClassName() else null
     return MonorepoRunLineMarkerContributorUtil.getTargets(element, mainClassFqn)
   }
 }
@@ -51,7 +39,7 @@ internal class MonorepoBazelKotlinRunLineMarkerContributor : BazelKotlinRunLineM
   override fun isProjectApplicable(project: Project): Boolean = MonorepoRunLineMarkerContributorUtil.isProjectApplicable(project)
 
   override fun getTargets(element: PsiElement): List<ExecutableTarget> {
-    val mainClassFqn = if (isKotlinMainFunction(element)) element.getFullyQualifiedClassName() else null
+    val mainClassFqn = if (element.isMainMethod()) element.getFullyQualifiedClassName() else null
     return MonorepoRunLineMarkerContributorUtil.getTargets(element, mainClassFqn)
   }
 }

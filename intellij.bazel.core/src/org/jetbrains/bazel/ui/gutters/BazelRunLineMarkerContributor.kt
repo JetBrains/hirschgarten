@@ -8,8 +8,8 @@ import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElement
 import com.intellij.psi.impl.source.tree.LeafPsiElement
 import org.jetbrains.annotations.ApiStatus
-import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.config.isBazelProject
+import org.jetbrains.bazel.runnerAction.BazelRunnerActionDescriptor
 import org.jetbrains.bazel.target.targetUtils
 import org.jetbrains.bazel.ui.widgets.tool.window.utils.fillWithEligibleActions
 import org.jetbrains.bsp.protocol.ExecutableTarget
@@ -28,7 +28,7 @@ private class BazelRunLineMarkerInfo(
 abstract class BazelRunLineMarkerContributor : RunLineMarkerContributor() {
   override fun getInfo(element: PsiElement): Info? =
     // gutter icons are only allowed to be added to leaf elements
-    if (element is LeafPsiElement && isProjectApplicable(element.project) && element.shouldAddMarker()) {
+    if (element is LeafPsiElement && isProjectApplicable(element.project)) {
       element.calculateLineMarkerInfo()
     } else {
       null
@@ -39,35 +39,55 @@ abstract class BazelRunLineMarkerContributor : RunLineMarkerContributor() {
 
   override fun getSlowInfo(element: PsiElement): Info? = null
 
-  abstract fun PsiElement.shouldAddMarker(): Boolean
-
-  open fun getSingleTestFilter(element: PsiElement): String? = null
-
   protected val executeRunLineMarkerIcon: Icon // execute icon, provided here in order not to depend on AllIcons in other modules
     get() = AllIcons.Actions.Execute
 
   /**
-   * Returns `null` by default, meaning: only add our actions only in existing run gutters,
-   * such as Java's JvmApplicationRunLineMarkerContributor or TestRunLineMarkerProvider
+   * Single method for override instead of several to avoid double computations for the same element
    */
-  open fun getRunLineMarkerIcon(element: PsiElement): Icon? = null
+  open fun getGutterAction(element: PsiElement): GutterAction? = null
 
-  /**
-   * Allows adding additional test runner arguments.
-   * Under the hood it uses `--testarg` bazel arguments
-   */
-  open fun getExtraProgramArguments(element: PsiElement): List<String> = emptyList()
+  data class GutterAction(
+    /**
+     * `null` by default, meaning: only add our actions only in existing run gutters,
+     * such as Java's JvmApplicationRunLineMarkerContributor or TestRunLineMarkerProvider
+     */
+    val icon: Icon? = null,
+    val runnerActionDescriptor: BazelRunnerActionDescriptor = BazelRunnerActionDescriptor(),
+  )
 
   private fun PsiElement.calculateLineMarkerInfo(): Info? {
-    val targets = getTargets(this)
-    return calculateLineMarkerInfo(
-      project = project,
-      targetInfos = targets,
-      hasTestTarget = targets.any { it.kind.ruleType == RuleType.TEST },
-      testExecutableArguments = getExtraProgramArguments(this),
-      psiElement = this,
-    )
+    val gutterAction = getGutterAction(this) ?: return null
+    return getTargets(this)
+      .flatMap { it.calculateEligibleActions(project, gutterAction.runnerActionDescriptor, this) }
+      .takeIf { it.isNotEmpty() }
+      ?.let {
+        BazelRunLineMarkerInfo(
+          text = "Run",
+          icon = gutterAction.icon,
+          actions = it,
+          shouldReplaceOtherMarkers = project.isBazelProject,
+        )
+      }
   }
+
+  private fun ExecutableTarget?.calculateEligibleActions(
+    project: Project,
+    runnerActionDescriptor: BazelRunnerActionDescriptor,
+    psiElement: PsiElement,
+  ): List<AnAction> =
+    if (this == null) {
+      emptyList()
+    } else {
+      DefaultActionGroup()
+        .fillWithEligibleActions(
+          project,
+          this,
+          runnerActionDescriptor,
+          psiElement,
+        ).childActionsOrStubs
+        .toList()
+    }
 
   @ApiStatus.Internal
   open fun getTargets(element: PsiElement): List<ExecutableTarget> {
@@ -79,46 +99,4 @@ abstract class BazelRunLineMarkerContributor : RunLineMarkerContributor() {
       .mapNotNull { targetUtils.getBuildTargetForLabel(it) }
     return (normalTargets + executableTargets).distinctBy { it.id }
   }
-
-  private fun calculateLineMarkerInfo(
-    project: Project,
-    targetInfos: List<ExecutableTarget>,
-    hasTestTarget: Boolean,
-    testExecutableArguments: List<String>,
-    psiElement: PsiElement,
-  ): Info? {
-    val singleTestFilter =
-      if (hasTestTarget) getSingleTestFilter(psiElement) else null // no need to call the function if there are no tests among the targets
-    return targetInfos
-      .flatMap { it.calculateEligibleActions(project, singleTestFilter, testExecutableArguments, psiElement) }
-      .takeIf { it.isNotEmpty() }
-      ?.let {
-        BazelRunLineMarkerInfo(
-          text = "Run",
-          icon = getRunLineMarkerIcon(psiElement),
-          actions = it,
-          shouldReplaceOtherMarkers = project.isBazelProject,
-        )
-      }
-  }
-
-  private fun ExecutableTarget?.calculateEligibleActions(
-    project: Project,
-    singleTestFilter: String?,
-    testExecutableArguments: List<String>,
-    psiElement: PsiElement,
-  ): List<AnAction> =
-    if (this == null) {
-      emptyList()
-    } else {
-      DefaultActionGroup()
-        .fillWithEligibleActions(
-          project,
-          this,
-          singleTestFilter,
-          testExecutableArguments,
-          psiElement,
-        ).childActionsOrStubs
-        .toList()
-    }
 }

@@ -1,6 +1,20 @@
 f:org.jetbrains.bazel.config.BazelProjectPropertiesKt
 - sf:getRootDir(com.intellij.openapi.project.Project):com.intellij.openapi.vfs.VirtualFile
 - sf:isBazelProject(com.intellij.openapi.project.Project):Z
+f:org.jetbrains.bazel.runnerAction.BazelRunnerActionDescriptor
+- <init>():V
+- <init>(java.lang.String,java.util.List,java.util.Map):V
+- b:<init>(java.lang.String,java.util.List,java.util.Map,I,kotlin.jvm.internal.DefaultConstructorMarker):V
+- f:component1():java.lang.String
+- f:component2():java.util.List
+- f:component3():java.util.Map
+- f:copy(java.lang.String,java.util.List,java.util.Map):org.jetbrains.bazel.runnerAction.BazelRunnerActionDescriptor
+- bs:copy$default(org.jetbrains.bazel.runnerAction.BazelRunnerActionDescriptor,java.lang.String,java.util.List,java.util.Map,I,java.lang.Object):org.jetbrains.bazel.runnerAction.BazelRunnerActionDescriptor
+- equals(java.lang.Object):Z
+- f:getEnv():java.util.Map
+- f:getProgramArguments():java.util.List
+- f:getTestFilter():java.lang.String
+- hashCode():I
 org.jetbrains.bazel.sync.status.SyncStatusListener
 - sf:Companion:org.jetbrains.bazel.sync.status.SyncStatusListener$Companion
 - a:syncFinished(Z):V
@@ -13,9 +27,18 @@ a:org.jetbrains.bazel.ui.gutters.BazelRunLineMarkerContributor
 - com.intellij.execution.lineMarker.RunLineMarkerContributor
 - <init>():V
 - pf:getExecuteRunLineMarkerIcon():javax.swing.Icon
-- getExtraProgramArguments(com.intellij.psi.PsiElement):java.util.List
+- getGutterAction(com.intellij.psi.PsiElement):org.jetbrains.bazel.ui.gutters.BazelRunLineMarkerContributor$GutterAction
 - getInfo(com.intellij.psi.PsiElement):com.intellij.execution.lineMarker.RunLineMarkerContributor$Info
-- getRunLineMarkerIcon(com.intellij.psi.PsiElement):javax.swing.Icon
-- getSingleTestFilter(com.intellij.psi.PsiElement):java.lang.String
 - getSlowInfo(com.intellij.psi.PsiElement):com.intellij.execution.lineMarker.RunLineMarkerContributor$Info
-- a:shouldAddMarker(com.intellij.psi.PsiElement):Z
+f:org.jetbrains.bazel.ui.gutters.BazelRunLineMarkerContributor$GutterAction
+- <init>():V
+- <init>(javax.swing.Icon,org.jetbrains.bazel.runnerAction.BazelRunnerActionDescriptor):V
+- b:<init>(javax.swing.Icon,org.jetbrains.bazel.runnerAction.BazelRunnerActionDescriptor,I,kotlin.jvm.internal.DefaultConstructorMarker):V
+- f:component1():javax.swing.Icon
+- f:component2():org.jetbrains.bazel.runnerAction.BazelRunnerActionDescriptor
+- f:copy(javax.swing.Icon,org.jetbrains.bazel.runnerAction.BazelRunnerActionDescriptor):org.jetbrains.bazel.ui.gutters.BazelRunLineMarkerContributor$GutterAction
+- bs:copy$default(org.jetbrains.bazel.ui.gutters.BazelRunLineMarkerContributor$GutterAction,javax.swing.Icon,org.jetbrains.bazel.runnerAction.BazelRunnerActionDescriptor,I,java.lang.Object):org.jetbrains.bazel.ui.gutters.BazelRunLineMarkerContributor$GutterAction
+- equals(java.lang.Object):Z
+- f:getIcon():javax.swing.Icon
+- f:getRunnerActionDescriptor():org.jetbrains.bazel.runnerAction.BazelRunnerActionDescriptor
+- hashCode():I

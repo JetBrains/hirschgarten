@@ -20,6 +20,7 @@ import org.jetbrains.bazel.coroutines.BazelCoroutineService
 import org.jetbrains.bazel.debug.actions.StarlarkDebugAction
 import org.jetbrains.bazel.run.synthetic.SyntheticRunTargetUtils
 import org.jetbrains.bazel.runnerAction.BazelRunnerAction
+import org.jetbrains.bazel.runnerAction.BazelRunnerActionDescriptor
 import org.jetbrains.bazel.runnerAction.BuildTargetAction
 import org.jetbrains.bazel.runnerAction.RunTargetAction
 import org.jetbrains.bazel.runnerAction.TestTargetAction
@@ -135,12 +136,10 @@ private fun BazelRunnerAction.prepareAndPerform(project: Project) {
   }
 }
 
-@Suppress("CognitiveComplexMethod")
 internal fun DefaultActionGroup.fillWithEligibleActions(
   project: Project,
   target: ExecutableTarget,
-  singleTestFilter: String? = null,
-  testExecutableArguments: List<String> = emptyList(),
+  runnerActionDescriptor: BazelRunnerActionDescriptor? = null,
   callerPsiElement: PsiElement? = null,
 ): DefaultActionGroup {
   val kind = target.kind
@@ -149,7 +148,7 @@ internal fun DefaultActionGroup.fillWithEligibleActions(
 
   if (kind.ruleType == RuleType.BINARY) {
     for (executor in supportedExecutors) {
-      addAction(RunTargetAction(project, target, executor, callerPsiElement))
+      addAction(RunTargetAction(project, target, executor, runnerActionDescriptor, callerPsiElement))
     }
   }
 
@@ -160,8 +159,7 @@ internal fun DefaultActionGroup.fillWithEligibleActions(
           project,
           target,
           executor = executor,
-          singleTestFilter = singleTestFilter,
-          testExecutableArguments = testExecutableArguments,
+          runnerActionDescriptor = runnerActionDescriptor,
           callerPsiElement = callerPsiElement,
         ),
       )

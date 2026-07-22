@@ -8,6 +8,7 @@ import org.jetbrains.bazel.languages.projectview.useJetBrainsTestRunner
 import org.jetbrains.bazel.run.BazelRunConfigurationState
 import org.jetbrains.bazel.run.state.HasEnv
 import org.jetbrains.bazel.run.state.HasTestFilter
+import org.jetbrains.bazel.runnerAction.BazelRunnerActionDescriptor
 
 // Constants copied from JUnit5BazelRunner
 private const val JB_TEST_UNIQUE_IDS = "JB_TEST_UNIQUE_IDS"
@@ -27,27 +28,21 @@ fun Project.useJetBrainsTestRunner(): Boolean {
 }
 
 @ApiStatus.Internal
-fun setTestFilter(project: Project, state: BazelRunConfigurationState<*>, testFilter: String?) {
+fun createTestFilterDescriptor(project: Project, testFilter: String): BazelRunnerActionDescriptor =
   if (project.useJetBrainsTestRunner()) {
-    (state as? HasTestFilter)?.testFilter = null
-    (state as? HasEnv)?.env?.envs?.let {
-      it.remove(JB_TEST_UNIQUE_IDS)
-      if (testFilter != null) {
-        it[JB_TEST_FILTER] = testFilter
-      } else {
-        it.remove(JB_TEST_FILTER)
-      }
-      it[JB_IDE_SM_RUN] = "true"
-    }
-  } else {
-    (state as? HasTestFilter)?.testFilter = testFilter
-    (state as? HasEnv)?.env?.envs?.let {
-      it.remove(JB_TEST_UNIQUE_IDS)
-      it.remove(JB_TEST_FILTER)
-      it.remove(JB_IDE_SM_RUN)
-    }
+    BazelRunnerActionDescriptor(
+      testFilter = null,
+      env = mapOf(
+        JB_TEST_FILTER to testFilter,
+        JB_IDE_SM_RUN to "true",
+      ),
+    )
   }
-}
+  else {
+    BazelRunnerActionDescriptor(
+      testFilter = testFilter,
+    )
+  }
 
 internal fun setTestUniqueIds(state: BazelRunConfigurationState<*>, testUniqueIds: List<String>) {
   (state as? HasTestFilter)?.testFilter = null

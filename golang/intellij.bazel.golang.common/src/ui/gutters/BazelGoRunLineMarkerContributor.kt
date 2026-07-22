@@ -8,22 +8,23 @@ import com.goide.psi.GoFunctionDeclaration
 import com.goide.psi.GoFunctionOrMethodDeclaration
 import com.intellij.psi.PsiElement
 import org.jetbrains.annotations.ApiStatus
+import org.jetbrains.bazel.runnerAction.BazelRunnerActionDescriptor
 import org.jetbrains.bazel.ui.gutters.BazelRunLineMarkerContributor
 
 /**
  * this impl is inspired by the OG impl [here](https://github.com/bazelbuild/intellij/blob/master/golang/src/com/google/idea/blaze/golang/run/producers/GoTestContextProvider.java)
  */
 internal class BazelGoRunLineMarkerContributor : BazelRunLineMarkerContributor() {
-  override fun PsiElement.shouldAddMarker(): Boolean = isMainFunction() || GoTestFinder.isTestFile(this.containingFile)
-
+  override fun getGutterAction(element: PsiElement): GutterAction? {
+    if (element.isMainFunction()) return GutterAction()
+    if (!GoTestFinder.isTestFile(element.containingFile)) return null
+    val function = GoTestFinder.findTestFunctionInContext(element) ?: return null
+    val testFilter = calculateRawTestFilterForElement(element, function)?.let { regexifyTestFilter(it) } ?: return null
+    return GutterAction(runnerActionDescriptor = BazelRunnerActionDescriptor(testFilter = testFilter))
+  }
   private fun PsiElement.isMainFunction(): Boolean =
     GoRunUtil.isMainGoFile(this.containingFile) &&
       GoConstants.MAIN == (this.parent as? GoFunctionDeclaration)?.name
-
-  override fun getSingleTestFilter(element: PsiElement): String? {
-    val function = GoTestFinder.findTestFunctionInContext(element) ?: return null
-    return calculateRawTestFilterForElement(element, function)?.let { regexifyTestFilter(it) }
-  }
 
   /**
    * Given a code element, calculate the test filter we'd need to run exactly that element.

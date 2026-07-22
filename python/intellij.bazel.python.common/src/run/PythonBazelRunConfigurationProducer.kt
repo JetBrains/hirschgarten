@@ -11,7 +11,6 @@ import org.jetbrains.bazel.run.RunHandlerProvider
 import org.jetbrains.bazel.run.config.BazelRunConfiguration
 import org.jetbrains.bazel.run.config.BazelRunConfigurationType
 import org.jetbrains.bazel.run.state.HasProgramArguments
-import org.jetbrains.bazel.run.test.setTestFilter
 
 internal class PythonBazelRunConfigurationProducer : LazyRunConfigurationProducer<BazelRunConfiguration>() {
   override fun getConfigurationFactory(): ConfigurationFactory =
@@ -53,7 +52,6 @@ internal class PythonBazelRunConfigurationProducer : LazyRunConfigurationProduce
     val bazelHandler = handler ?: return false
 
     if (runContext is PythonBazelRunContext.Test) {
-      setTestFilter(project, bazelHandler.state, null)
       (bazelHandler.state as? HasProgramArguments)?.programArguments = formatProgramArguments(runContext.testExecutableArguments)
     }
     return true
