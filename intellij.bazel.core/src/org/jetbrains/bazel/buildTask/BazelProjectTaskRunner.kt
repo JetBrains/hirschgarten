@@ -3,6 +3,7 @@ package org.jetbrains.bazel.buildTask
 import com.intellij.ide.trustedProjects.TrustedProjects
 import com.intellij.openapi.extensions.ExtensionPointName
 import com.intellij.openapi.project.Project
+import com.intellij.platform.workspace.jps.entities.ModuleEntity
 import com.intellij.task.ModuleBuildTask
 import com.intellij.task.ProjectTask
 import com.intellij.task.ProjectTaskContext
@@ -23,10 +24,6 @@ import org.jetbrains.concurrency.Promise
 import org.jetbrains.concurrency.toPromiseWithoutLogError
 
 internal class BazelProjectTaskRunner : ProjectTaskRunner() {
-  // obsolete, kept for compatibility with 261.*
-  @Suppress("removal", "OVERRIDE_DEPRECATION")
-  override fun canRun(projectTask: ProjectTask): Boolean = false
-
   override fun canRun(project: Project, projectTask: ProjectTask, context: ProjectTaskContext?): Boolean =
     project.isBazelProject &&
     TrustedProjects.isProjectTrusted(project) &&
@@ -37,7 +34,7 @@ internal class BazelProjectTaskRunner : ProjectTaskRunner() {
     projectTaskContext: ProjectTaskContext,
     vararg tasks: ProjectTask,
   ): Promise<Result> = BazelCoroutineService.getInstance(project).startAsync {
-    val targetsToBuild = obtainTargetsToBuild(tasks)
+    val targetsToBuild = obtainTargetsToBuild(project, tasks)
     val additionalTasks = AdditionalProjectTaskRunnerProvider.ep.extensionList.mapNotNull {
       it.createTask(project, projectTaskContext, targetsToBuild)
     }
@@ -53,10 +50,12 @@ internal class BazelProjectTaskRunner : ProjectTaskRunner() {
     result.toTaskRunnerResult()
   }.toPromiseWithoutLogError()
 
-  private fun obtainTargetsToBuild(tasks: Array<out ProjectTask>): List<Label> =
-    tasks.filterIsInstance<ModuleBuildTask>()
+  private fun obtainTargetsToBuild(project: Project, tasks: Array<out ProjectTask>): List<Label> {
+    val targetsToBuildProviders = TargetsToBuildProvider.ep.extensionList
+    return tasks.filterIsInstance<ModuleBuildTask>()
       .mapNotNull { it.module.findModuleEntity() }
-      .mapNotNull { it.bazelModuleExtension?.targetKey?.label }
+      .flatMap { moduleEntity -> targetsToBuildProviders.flatMap { it.getTargetsToBuild(project, moduleEntity) } }
+  }
 
   private fun BazelStatus.toTaskRunnerResult() =
     when (this) {
@@ -87,4 +86,20 @@ interface AdditionalProjectTaskRunnerProvider {
 interface AdditionalProjectTask {
   suspend fun preRun()
   suspend fun postRun(result: BazelStatus)
+}
+
+@ApiStatus.Internal
+interface TargetsToBuildProvider {
+  fun getTargetsToBuild(project: Project, moduleEntity: ModuleEntity): List<Label>
+
+  companion object {
+    val ep: ExtensionPointName<TargetsToBuildProvider> =
+      ExtensionPointName.create("org.jetbrains.bazel.targetsToBuildProvider")
+  }
+}
+
+internal class DefaultTargetsToBuildProvider : TargetsToBuildProvider {
+  override fun getTargetsToBuild(project: Project, moduleEntity: ModuleEntity): List<Label> {
+    return listOfNotNull(moduleEntity.bazelModuleExtension?.targetKey?.label)
+  }
 }

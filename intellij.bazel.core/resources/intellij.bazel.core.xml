@@ -14,6 +14,11 @@
     />
     <extensionPoint
       dynamic="true"
+      interface="org.jetbrains.bazel.buildTask.TargetsToBuildProvider"
+      qualifiedName="org.jetbrains.bazel.targetsToBuildProvider"
+    />
+    <extensionPoint
+      dynamic="true"
       interface="org.jetbrains.bazel.ui.notifications.UnresolvedImportChecker"
       qualifiedName="org.jetbrains.bazel.unresolvedImportChecker"
     />
@@ -118,6 +123,8 @@
 
     <starlarkGlobalFunctionProvider implementation="org.jetbrains.bazel.languages.starlark.bazel.BazelBuiltinFunctionProvider"/>
     <starlarkGlobalFunctionProvider implementation="org.jetbrains.bazel.languages.starlark.bazel.BazelStardocFunctionProvider"/>
+
+    <targetsToBuildProvider implementation="org.jetbrains.bazel.buildTask.DefaultTargetsToBuildProvider"/>
   </extensions>
 
   <extensions defaultExtensionNs="com.intellij">

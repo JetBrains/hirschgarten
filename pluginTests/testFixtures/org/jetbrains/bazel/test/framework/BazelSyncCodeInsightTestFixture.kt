@@ -6,12 +6,14 @@ import com.intellij.build.events.BuildEvent
 import com.intellij.build.events.FailureResult
 import com.intellij.build.events.FinishEvent
 import com.intellij.build.events.MessageEvent
+import com.intellij.configurationStore.ProjectStoreImpl
+import com.intellij.openapi.Disposable
 import com.intellij.openapi.application.WriteAction
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.projectRoots.ProjectJdkTable
+import com.intellij.openapi.util.Disposer
 import com.intellij.platform.testFramework.junit5.codeInsight.fixture.codeInsightFixture
-import com.intellij.configurationStore.ProjectStoreImpl
 import com.intellij.project.stateStore
 import com.intellij.testFramework.fixtures.CodeInsightTestFixture
 import com.intellij.testFramework.fixtures.IdeaProjectTestFixture
@@ -20,9 +22,9 @@ import com.intellij.testFramework.fixtures.impl.CodeInsightTestFixtureImpl
 import com.intellij.testFramework.junit5.fixture.TestFixture
 import com.intellij.testFramework.replaceService
 import com.intellij.util.lang.UrlClassLoader
+import org.jetbrains.bazel.flow.open.BazelProjectStoreDescriptor
 import org.jetbrains.bazel.progress.ConsoleService
 import org.jetbrains.bazel.progress.TaskConsole
-import org.jetbrains.bazel.flow.open.BazelProjectStoreDescriptor
 import org.jetbrains.bazel.project.BazelProjectFixtures.initializeBazelProject
 import org.jetbrains.bazel.sync.task.ProjectSyncTask
 import org.jetbrains.bazel.ui.console.task.TestTaskConsole
@@ -81,7 +83,11 @@ class BazelSyncCodeInsightTestFixtureImpl(
     get() = Path(tempDirPath)
 
   init {
-    project.replaceService(ConsoleService::class.java, TestConsoleService(project), project)
+    project.replaceService(
+      ConsoleService::class.java,
+      TestConsoleService(project).also { Disposer.register(testRootDisposable, it) },
+      testRootDisposable,
+    )
   }
 
   override fun copyBazelTestProject(path: String) {
@@ -229,7 +235,7 @@ class BazelSyncCodeInsightTestFixtureImpl(
   }
 }
 
-private class TestConsoleService(project: Project) : ConsoleService {
+private class TestConsoleService(project: Project) : ConsoleService, Disposable {
   override val buildConsole: TaskConsole
   override val syncConsole: TaskConsole
 
@@ -259,6 +265,8 @@ private class TestConsoleService(project: Project) : ConsoleService {
     }
   }
 
+  override fun dispose() {}
+
   init {
     buildConsole = TestTaskConsole(
       object : BuildViewManager(project) {
@@ -266,7 +274,7 @@ private class TestConsoleService(project: Project) : ConsoleService {
           onEventImpl(buildId, event)
           super.onEvent(buildId, event)
         }
-      },
+      }.also { Disposer.register(this, it) },
       "", project,
     )
 
@@ -276,7 +284,7 @@ private class TestConsoleService(project: Project) : ConsoleService {
           onEventImpl(buildId, event)
           super.onEvent(buildId, event)
         }
-      },
+      }.also { Disposer.register(this, it) },
       "", project,
     )
   }
