@@ -1,6 +1,5 @@
 package org.jetbrains.bazel.workspace.model.test.framework
 
-import org.jetbrains.bazel.commons.LanguageClass
 import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.label.DependencyLabel
@@ -26,6 +25,7 @@ fun createRawBuildTarget(
   resources: List<Path> = emptyList(),
   baseDirectory: Path = Path("/base/dir"),
   data: List<BuildTargetData> = emptyList(),
+  isTestOnly: Boolean = false,
 ): RawBuildTarget =
   RawBuildTarget(
     key = WorkspaceTargetKey(label = id),
@@ -36,4 +36,5 @@ fun createRawBuildTarget(
     resources = SourceFileCollectionBuilder.build(relativeRoot = baseDirectory, paths = resources),
     baseDirectory = baseDirectory,
     data = data,
+    isTestOnly = isTestOnly,
   )

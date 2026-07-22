@@ -77,7 +77,6 @@ class ImportContext(
   val projectBasePath: Path,
   val defaultJdkName: String?,
   val testSourcesGlob: ProjectViewGlobSet,
-  val testTargets: Set<Label>,
   val packagePrefixes: JvmPackagePrefixCalculator,
   val fileToTargets: File2TargetMap,
   val virtualFileUrlManager: VirtualFileUrlManager,
@@ -299,7 +298,7 @@ class JvmTargetEntitiesBuilder(private val ctx: ImportContext) {
         null
 
       else -> {
-        val resolvedSourceRoots = SourceRootBuilder.resolve(rawTarget, ctx.testSourcesGlob, ctx.packagePrefixes, ctx.testTargets)
+        val resolvedSourceRoots = SourceRootBuilder.resolve(rawTarget, ctx.testSourcesGlob, ctx.packagePrefixes)
         val splitResult = ctx.dummyModuleSplitter.split(rawTarget.baseDirectory, resolvedSourceRoots)
         val mainSourceRoots = when (splitResult) {
           is DummyModuleSplitter.MergedRoots -> splitResult.mergedSourceRoots
@@ -309,7 +308,6 @@ class JvmTargetEntitiesBuilder(private val ctx: ImportContext) {
         val resourceRoots = ResourceRootBuilder.resolve(
           target = rawTarget,
           bazelProjectName = ctx.projectName,
-          testTargets = ctx.testTargets,
           sourceContentRoots = mainSourceRoots.map { it.sourcePath },
         )
         TargetPlan.Full(

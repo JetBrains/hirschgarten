@@ -1,5 +1,6 @@
 package org.jetbrains.bsp.protocol
 import org.jetbrains.annotations.ApiStatus
+import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.label.DependencyLabel
 import org.jetbrains.bazel.label.Label
@@ -58,6 +59,9 @@ data class RawBuildTarget(
 @get:ApiStatus.Internal
 val RawBuildTarget.allSources: Sequence<Path>
   get() = sources.getFiles() + generatedSources.getFiles()
+
+@ApiStatus.Internal
+fun RawBuildTarget.isTestTarget(): Boolean = isTestOnly || kind.ruleType == RuleType.TEST
 
 @ApiStatus.Internal
 data class PartialBuildTarget(

@@ -9,7 +9,6 @@ import com.intellij.platform.workspace.storage.MutableEntityStorage
 import com.intellij.platform.workspace.storage.entities
 import org.jetbrains.bazel.config.BazelJavaBackendBundle
 import org.jetbrains.bazel.config.bazelProjectName
-import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.magicmetamodel.formatAsModuleName
 import org.jetbrains.bazel.performance.bspTracer
 import org.jetbrains.bazel.progress.withSubtask
@@ -133,8 +132,6 @@ internal class JavaBazelWorkspaceImporter : BazelWorkspaceImporter, BazelWorkspa
       sourceRootOptimizationMode = javaSyncConfig.sourceRootOptimizationMode,
     ).also { it.calculate(targets) }
 
-    val testTargets = TestTargetClassifier.calculateTargetsToMarkAsTest(targets)
-
     val importContext = ImportContext(
       targets = moduleTargets,
       jvmResolved = jvmResolved,
@@ -143,7 +140,6 @@ internal class JavaBazelWorkspaceImporter : BazelWorkspaceImporter, BazelWorkspa
       projectBasePath = commonSyncConfig.projectRootDir,
       defaultJdkName = defaultJdkName,
       testSourcesGlob = ProjectViewGlobSet(commonSyncConfig.projectRootDir, javaSyncConfig.testSourcesPatterns),
-      testTargets = testTargets,
       packagePrefixes = packagePrefixes,
       fileToTargets = snapshot.fileToTarget,
       virtualFileUrlManager = context.vfuManager,
