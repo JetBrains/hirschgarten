@@ -42,7 +42,7 @@ class ResourceRootBuilderTest {
     val resource = projectRoot.resolve("file.txt").createFile()
     val target = javaTarget(resources = listOf(resource))
 
-    val roots = ResourceRootBuilder.resolve(target, projectName, emptySet())
+    val roots = ResourceRootBuilder.resolve(target, projectName)
 
     roots.map { it.rootType } shouldContainExactlyInAnyOrder listOf(JAVA_RESOURCE_ROOT_TYPE)
   }
@@ -53,7 +53,7 @@ class ResourceRootBuilderTest {
     val missingResource = prefix.resolve("com/example/a.txt")
     val target = javaTarget(resources = listOf(missingResource))
 
-    val roots = ResourceRootBuilder.resolve(target, projectName, emptySet())
+    val roots = ResourceRootBuilder.resolve(target, projectName)
 
     roots.map { it.resourcePath } shouldContainExactlyInAnyOrder listOf(prefix)
   }
@@ -66,18 +66,17 @@ class ResourceRootBuilderTest {
       resources = listOf(resource),
     )
 
-    val roots = ResourceRootBuilder.resolve(target, projectName, emptySet())
+    val roots = ResourceRootBuilder.resolve(target, projectName)
 
     roots.map { it.rootType } shouldContainExactlyInAnyOrder listOf(JAVA_TEST_RESOURCE_ROOT_TYPE)
   }
 
   @Test
-  fun `should mark resources of a target in testTargets as JAVA_TEST_RESOURCE_ROOT_TYPE`() {
+  fun `should mark resources of a testonly target as JAVA_TEST_RESOURCE_ROOT_TYPE`() {
     val resource = projectRoot.resolve("file.txt").createFile()
-    val targetId = Label.parse("//target")
-    val target = javaTarget(resources = listOf(resource), label = targetId.toString())
+    val target = javaTarget(resources = listOf(resource), isTestOnly = true)
 
-    val roots = ResourceRootBuilder.resolve(target, projectName, setOf(targetId))
+    val roots = ResourceRootBuilder.resolve(target, projectName)
 
     roots.map { it.rootType } shouldContainExactlyInAnyOrder listOf(JAVA_TEST_RESOURCE_ROOT_TYPE)
   }
@@ -88,7 +87,7 @@ class ResourceRootBuilderTest {
     val b = projectRoot.resolve("random/dir/sub/b.txt").also { it.parent.createDirectories() }.createFile()
     val target = javaTarget(resources = listOf(a, b))
 
-    val roots = ResourceRootBuilder.resolve(target, projectName, emptySet())
+    val roots = ResourceRootBuilder.resolve(target, projectName)
 
     roots.map { it.resourcePath } shouldContainExactlyInAnyOrder listOf(a, b)
   }
@@ -100,7 +99,7 @@ class ResourceRootBuilderTest {
     val res2 = prefix.resolve("com/example/b.txt").createFile()
     val target = javaTarget(resources = listOf(res1, res2))
 
-    val roots = ResourceRootBuilder.resolve(target, projectName, emptySet())
+    val roots = ResourceRootBuilder.resolve(target, projectName)
 
     roots.map { it.resourcePath } shouldContainExactlyInAnyOrder listOf(prefix)
   }
@@ -113,7 +112,7 @@ class ResourceRootBuilderTest {
     val res2 = mavenPrefix.resolve("d/e.txt").also { it.parent.createDirectories() }.createFile()
     val target = kotlinTarget(resources = listOf(res1, res2))
 
-    val roots = ResourceRootBuilder.resolve(target, projectName, emptySet())
+    val roots = ResourceRootBuilder.resolve(target, projectName)
 
     roots.map { it.resourcePath } shouldContainExactlyInAnyOrder listOf(kotlinPrefix, mavenPrefix)
   }
@@ -126,7 +125,7 @@ class ResourceRootBuilderTest {
     val res2 = javaPrefix.resolve("d/e.txt").also { it.parent.createDirectories() }.createFile()
     val target = scalaTarget(resources = listOf(res1, res2))
 
-    val roots = ResourceRootBuilder.resolve(target, projectName, emptySet())
+    val roots = ResourceRootBuilder.resolve(target, projectName)
 
     roots.map { it.resourcePath } shouldContainExactlyInAnyOrder listOf(resPrefix, javaPrefix)
   }
@@ -151,7 +150,7 @@ class ResourceRootBuilderTest {
       ),
     )
 
-    val roots = ResourceRootBuilder.resolve(target, projectName, emptySet())
+    val roots = ResourceRootBuilder.resolve(target, projectName)
 
     roots.map { it.resourcePath } shouldContainExactlyInAnyOrder listOf(prefix)
   }
@@ -167,7 +166,7 @@ class ResourceRootBuilderTest {
 
     val target = javaTarget(resources = listOf(srcMainResourcesFile, javaFile, javatestsFile))
 
-    val roots = ResourceRootBuilder.resolve(target, projectName, emptySet())
+    val roots = ResourceRootBuilder.resolve(target, projectName)
 
     roots.map { it.resourcePath } shouldContainExactlyInAnyOrder listOf(srcMainResources, javaPrefix, javatestsPrefix)
   }
@@ -183,7 +182,7 @@ class ResourceRootBuilderTest {
 
     val target = kotlinTarget(resources = listOf(srcMainResourcesFile, srcMainJavaFile, kotlinFile))
 
-    val roots = ResourceRootBuilder.resolve(target, projectName, emptySet())
+    val roots = ResourceRootBuilder.resolve(target, projectName)
 
     roots.map { it.resourcePath } shouldContainExactlyInAnyOrder listOf(srcMainResources, srcMainJava, kotlinPrefix)
   }
@@ -270,7 +269,7 @@ class ResourceRootBuilderTest {
       resources = listOf(resourceFile),
     )
 
-    val roots = ResourceRootBuilder.resolve(target, projectName, emptySet())
+    val roots = ResourceRootBuilder.resolve(target, projectName)
 
     roots.map { it.resourcePath } shouldHaveSingleElement resourceFile
   }
@@ -289,7 +288,7 @@ class ResourceRootBuilderTest {
       resources = listOf(conflictingResource, safeResource),
     )
 
-    val roots = ResourceRootBuilder.resolve(target, projectName, emptySet())
+    val roots = ResourceRootBuilder.resolve(target, projectName)
 
     roots.map { it.resourcePath } shouldContainExactlyInAnyOrder listOf(resourcesRoot, conflictingResource)
   }
@@ -302,7 +301,7 @@ class ResourceRootBuilderTest {
 
     val target = kotlinTarget(resources = listOf(resourceFile))
 
-    val roots = ResourceRootBuilder.resolve(target, projectName, emptySet())
+    val roots = ResourceRootBuilder.resolve(target, projectName)
 
     roots.map { it.resourcePath } shouldHaveSingleElement kotlinRoot
   }
@@ -329,7 +328,7 @@ class ResourceRootBuilderTest {
       ),
     )
 
-    val roots = ResourceRootBuilder.resolve(target, projectName, emptySet())
+    val roots = ResourceRootBuilder.resolve(target, projectName)
 
     roots.map { it.resourcePath } shouldHaveSingleElement resourceFile
   }
@@ -347,7 +346,7 @@ class ResourceRootBuilderTest {
       data = listOf(JvmBuildTarget(resolvedResourceStripPrefix = stripPrefix)),
     )
 
-    val roots = ResourceRootBuilder.resolve(target, projectName, emptySet())
+    val roots = ResourceRootBuilder.resolve(target, projectName)
 
     roots.map { it.resourcePath } shouldHaveSingleElement stripPrefix
   }
@@ -362,7 +361,7 @@ class ResourceRootBuilderTest {
 
     val target = javaTarget(resources = listOf(resourceFile))
 
-    val roots = ResourceRootBuilder.resolve(target, projectName, emptySet())
+    val roots = ResourceRootBuilder.resolve(target, projectName)
 
     roots.map { it.resourcePath } shouldHaveSingleElement srcMainResources
   }
@@ -376,7 +375,7 @@ class ResourceRootBuilderTest {
 
     val target = javaTarget(resources = listOf(gateResource) + leftovers)
 
-    val roots = ResourceRootBuilder.resolve(target, projectName, emptySet())
+    val roots = ResourceRootBuilder.resolve(target, projectName)
 
     roots.map { it.resourcePath } shouldContainExactlyInAnyOrder listOf(gateRoot, leftoversParent)
   }
@@ -392,7 +391,7 @@ class ResourceRootBuilderTest {
 
     val target = javaTarget(resources = listOf(gateResource, flat, nested))
 
-    val roots = ResourceRootBuilder.resolve(target, projectName, emptySet())
+    val roots = ResourceRootBuilder.resolve(target, projectName)
 
     roots.map { it.resourcePath } shouldContainExactlyInAnyOrder listOf(gateRoot, flat, nestedParent)
   }
@@ -408,7 +407,7 @@ class ResourceRootBuilderTest {
 
     val target = javaTarget(resources = listOf(gateResource, leftover))
 
-    val roots = ResourceRootBuilder.resolve(target, projectName, emptySet())
+    val roots = ResourceRootBuilder.resolve(target, projectName)
 
     roots.map { it.resourcePath } shouldContainExactlyInAnyOrder listOf(gateRoot, data)
   }
@@ -422,7 +421,7 @@ class ResourceRootBuilderTest {
 
     val target = kotlinTarget(resources = listOf(gateResource, leftover))
 
-    val roots = ResourceRootBuilder.resolve(target, projectName, emptySet())
+    val roots = ResourceRootBuilder.resolve(target, projectName)
 
     roots.map { it.resourcePath } shouldContainExactlyInAnyOrder listOf(gateRoot, extras)
   }
@@ -437,7 +436,7 @@ class ResourceRootBuilderTest {
 
     val target = javaTarget(resources = listOf(gateResource, leftover))
 
-    val roots = ResourceRootBuilder.resolve(target, projectName, emptySet())
+    val roots = ResourceRootBuilder.resolve(target, projectName)
 
     roots.map { it.resourcePath } shouldContainExactlyInAnyOrder listOf(gateRoot, leftover)
   }
@@ -454,7 +453,7 @@ class ResourceRootBuilderTest {
 
     val target = javaTarget(resources = listOf(gateResource) + imgFiles + dataFiles)
 
-    val roots = ResourceRootBuilder.resolve(target, projectName, emptySet())
+    val roots = ResourceRootBuilder.resolve(target, projectName)
 
     roots.map { it.resourcePath } shouldContainExactlyInAnyOrder listOf(gateRoot, img, data)
   }
@@ -474,7 +473,7 @@ class ResourceRootBuilderTest {
 
     val target = javaTarget(resources = listOf(gateResource, a1, a2, b1, b2))
 
-    val roots = ResourceRootBuilder.resolve(target, projectName, emptySet())
+    val roots = ResourceRootBuilder.resolve(target, projectName)
 
     roots.map { it.resourcePath } shouldContainExactlyInAnyOrder listOf(gateRoot, areaA, areaB)
   }
@@ -497,7 +496,6 @@ class ResourceRootBuilderTest {
     val roots = ResourceRootBuilder.resolve(
       target = target,
       bazelProjectName = projectName,
-      testTargets = emptySet(),
       sourceContentRoots = listOf(kotlinRoot),
     )
 
@@ -517,7 +515,7 @@ class ResourceRootBuilderTest {
 
     val target = filegroupTarget(resources = listOf(flat, nested, deeper), baseDirectory = baseDir)
 
-    val roots = ResourceRootBuilder.resolve(target, projectName, emptySet())
+    val roots = ResourceRootBuilder.resolve(target, projectName)
 
     roots.map { it.resourcePath } shouldContainExactlyInAnyOrder listOf(baseDir)
   }
@@ -535,7 +533,7 @@ class ResourceRootBuilderTest {
 
     val target = filegroupTarget(resources = listOf(inputRes, outputRes), baseDirectory = baseDir)
 
-    val roots = ResourceRootBuilder.resolve(target, projectName, emptySet())
+    val roots = ResourceRootBuilder.resolve(target, projectName)
 
     roots.map { it.resourcePath } shouldContainExactlyInAnyOrder listOf(testResources)
   }
@@ -547,7 +545,7 @@ class ResourceRootBuilderTest {
 
     val target = filegroupTarget(resources = listOf(nested), baseDirectory = baseDir)
 
-    val roots = ResourceRootBuilder.resolve(target, projectName, emptySet())
+    val roots = ResourceRootBuilder.resolve(target, projectName)
 
     roots.map { it.resourcePath } shouldContainExactlyInAnyOrder listOf(baseDir)
   }
@@ -563,7 +561,7 @@ class ResourceRootBuilderTest {
 
     val target = filegroupTarget(resources = listOf(a, b), baseDirectory = baseDir)
 
-    val roots = ResourceRootBuilder.resolve(target, projectName, emptySet())
+    val roots = ResourceRootBuilder.resolve(target, projectName)
 
     roots.map { it.resourcePath } shouldContainExactlyInAnyOrder listOf(areaA, areaB)
   }
@@ -578,7 +576,7 @@ class ResourceRootBuilderTest {
 
     val target = filegroupTarget(resources = files1 + files2, baseDirectory = baseDir)
 
-    val roots = ResourceRootBuilder.resolve(target, projectName, emptySet())
+    val roots = ResourceRootBuilder.resolve(target, projectName)
 
     roots.map { it.resourcePath } shouldContainExactlyInAnyOrder listOf(baseDir)
   }
@@ -590,7 +588,7 @@ class ResourceRootBuilderTest {
       val resourceFile = detected.resolve("config.properties").createFile()
       val target = javaTarget(resources = listOf(resourceFile))
 
-      val roots = ResourceRootBuilder.resolve(target, projectName, emptySet())
+      val roots = ResourceRootBuilder.resolve(target, projectName)
 
       roots.map { it.resourcePath } shouldHaveSingleElement detected
     }
@@ -603,7 +601,7 @@ class ResourceRootBuilderTest {
       val resourceFile = candidate.resolve("config.properties").createFile()
       val target = javaTarget(resources = listOf(resourceFile))
 
-      val roots = ResourceRootBuilder.resolve(target, projectName, emptySet())
+      val roots = ResourceRootBuilder.resolve(target, projectName)
 
       roots.map { it.resourcePath } shouldNotContain candidate
     }
@@ -616,7 +614,7 @@ class ResourceRootBuilderTest {
       val resourceFile = detected.resolve("config.properties").createFile()
       val target = kotlinTarget(resources = listOf(resourceFile))
 
-      val roots = ResourceRootBuilder.resolve(target, projectName, emptySet())
+      val roots = ResourceRootBuilder.resolve(target, projectName)
 
       roots.map { it.resourcePath } shouldHaveSingleElement detected
     }
@@ -629,7 +627,7 @@ class ResourceRootBuilderTest {
       val resourceFile = candidate.resolve("config.properties").createFile()
       val target = kotlinTarget(resources = listOf(resourceFile))
 
-      val roots = ResourceRootBuilder.resolve(target, projectName, emptySet())
+      val roots = ResourceRootBuilder.resolve(target, projectName)
 
       roots.map { it.resourcePath } shouldNotContain candidate
     }
@@ -642,7 +640,7 @@ class ResourceRootBuilderTest {
       val resourceFile = detected.resolve("config.properties").createFile()
       val target = scalaTarget(resources = listOf(resourceFile))
 
-      val roots = ResourceRootBuilder.resolve(target, projectName, emptySet())
+      val roots = ResourceRootBuilder.resolve(target, projectName)
 
       roots.map { it.resourcePath } shouldHaveSingleElement detected
     }
@@ -655,7 +653,7 @@ class ResourceRootBuilderTest {
       val resourceFile = candidate.resolve("config.properties").createFile()
       val target = scalaTarget(resources = listOf(resourceFile))
 
-      val roots = ResourceRootBuilder.resolve(target, projectName, emptySet())
+      val roots = ResourceRootBuilder.resolve(target, projectName)
 
       roots.map { it.resourcePath } shouldNotContain candidate
     }
@@ -667,6 +665,7 @@ class ResourceRootBuilderTest {
     sources: List<Path> = emptyList(),
     resources: List<Path> = emptyList(),
     data: List<BuildTargetData> = listOf(JvmBuildTarget()),
+    isTestOnly: Boolean = false,
   ): RawBuildTarget = createRawBuildTarget(
     id = Label.parse(label),
     kind = TargetKind(
@@ -677,6 +676,7 @@ class ResourceRootBuilderTest {
     sources = sources,
     resources = resources,
     data = data,
+    isTestOnly = isTestOnly,
   )
 
   private fun kotlinTarget(

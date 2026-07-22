@@ -381,7 +381,6 @@ internal class JvmTargetEntitiesBuilderTest : WorkspaceModelBaseTest() {
       projectBasePath = projectBasePath,
       defaultJdkName = null,
       testSourcesGlob = ProjectViewGlobSet(projectBasePath, emptyList()),
-      testTargets = emptySet(),
       packagePrefixes = jvmPackagePrefixes,
       fileToTargets = File2TargetMap.EMPTY,
       virtualFileUrlManager = virtualFileUrlManager,

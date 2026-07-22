@@ -30,7 +30,6 @@ class SourceRootBuilderTest {
       target = target,
       testSourcesGlob = ProjectViewGlobSet.EMPTY,
       packagePrefixes = fixedPrefixes(emptyMap()),
-      testTargets = emptySet(),
     )
 
     roots.map { it.rootType } shouldContainExactly listOf(JAVA_TEST_SOURCE_ROOT_TYPE)
@@ -48,26 +47,24 @@ class SourceRootBuilderTest {
       target = target,
       testSourcesGlob = ProjectViewGlobSet.EMPTY,
       packagePrefixes = fixedPrefixes(emptyMap()),
-      testTargets = emptySet(),
     )
 
     roots.map { it.rootType } shouldContainExactly listOf(JAVA_SOURCE_ROOT_TYPE)
   }
 
   @Test
-  fun `should mark sources as test roots when the target id is in testTargets`() {
+  fun `should mark sources of a testonly target as test roots`() {
     val sourcePath = Path("/project/main/Foo.java")
-    val targetId = Label.parse("//target")
     val target = libraryTarget(
       label = "//target",
       sources = listOf(sourcePath),
+      isTestOnly = true,
     )
 
     val roots = SourceRootBuilder.resolve(
       target = target,
       testSourcesGlob = ProjectViewGlobSet.EMPTY,
       packagePrefixes = fixedPrefixes(emptyMap()),
-      testTargets = setOf(targetId),
     )
 
     roots.map { it.rootType } shouldContainExactly listOf(JAVA_TEST_SOURCE_ROOT_TYPE)
@@ -88,7 +85,6 @@ class SourceRootBuilderTest {
       target = target,
       testSourcesGlob = glob,
       packagePrefixes = fixedPrefixes(emptyMap()),
-      testTargets = emptySet(),
     )
 
     roots.first { it.sourcePath == matchingPath }.rootType shouldBe JAVA_TEST_SOURCE_ROOT_TYPE
@@ -109,7 +105,6 @@ class SourceRootBuilderTest {
       target = target,
       testSourcesGlob = ProjectViewGlobSet.EMPTY,
       packagePrefixes = fixedPrefixes(emptyMap()),
-      testTargets = emptySet(),
     )
 
     roots.first { it.sourcePath == generatedPath }.generated shouldBe true
@@ -130,7 +125,6 @@ class SourceRootBuilderTest {
       target = target,
       testSourcesGlob = ProjectViewGlobSet.EMPTY,
       packagePrefixes = prefixes,
-      testTargets = emptySet(),
     )
 
     roots.first { it.sourcePath == withPrefix }.packagePrefix shouldBe "com.example"
@@ -142,6 +136,7 @@ class SourceRootBuilderTest {
     ruleType: RuleType = RuleType.LIBRARY,
     sources: List<Path> = emptyList(),
     generatedSources: List<Path> = emptyList(),
+    isTestOnly: Boolean = false,
   ): RawBuildTarget = createRawBuildTarget(
     id = Label.parse(label),
     kind = TargetKind(
@@ -151,6 +146,7 @@ class SourceRootBuilderTest {
     ),
     sources = sources,
     generatedSources = generatedSources,
+    isTestOnly = isTestOnly,
   )
 
   private fun fixedPrefixes(map: Map<Path, String>): JvmPackagePrefixCalculator =

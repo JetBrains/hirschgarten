@@ -14,15 +14,13 @@ import com.intellij.platform.workspace.storage.MutableEntityStorage
 import com.intellij.platform.workspace.storage.impl.url.toVirtualFileUrl
 import com.intellij.platform.workspace.storage.url.VirtualFileUrlManager
 import org.jetbrains.annotations.ApiStatus
-import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.commons.symlinks.BazelSymlinksCalculator
-import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.sync.workspace.languages.jvm.extractJvmBuildTarget
 import org.jetbrains.bazel.sync.workspace.languages.jvm.extractKotlinBuildTarget
 import org.jetbrains.bazel.sync.workspace.languages.jvm.extractScalaBuildTarget
 import org.jetbrains.bazel.utils.isUnder
-import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.RawBuildTarget
+import org.jetbrains.bsp.protocol.isTestTarget
 import java.nio.file.FileVisitResult
 import java.nio.file.Path
 import kotlin.io.path.Path as KPath
@@ -46,10 +44,9 @@ object ResourceRootBuilder {
   fun resolve(
     target: RawBuildTarget,
     bazelProjectName: String,
-    testTargets: Set<Label>,
     sourceContentRoots: List<Path> = emptyList(),
   ): List<ResolvedResourceRoot> {
-    val rootType = target.inferRootType(testTargets)
+    val rootType = target.inferRootType()
     val stripPrefixes = extractStripPrefixOrNull(target) ?: defaultStripPrefixes(target)
     val aggressiveCeiling = target.aggressiveCollapseCeiling()
     val resourceFiles = target.resources.getFiles().toList()
@@ -95,8 +92,8 @@ object ResourceRootBuilder {
     }
   }
 
-  private fun BuildTarget.inferRootType(testTargets: Set<Label>): SourceRootTypeId =
-    if (kind.ruleType == RuleType.TEST || id in testTargets) {
+  private fun RawBuildTarget.inferRootType(): SourceRootTypeId =
+    if (isTestTarget()) {
       JAVA_TEST_RESOURCE_ROOT_TYPE
     }
     else {

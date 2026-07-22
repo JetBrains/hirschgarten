@@ -13,12 +13,11 @@ import com.intellij.platform.workspace.storage.MutableEntityStorage
 import com.intellij.platform.workspace.storage.impl.url.toVirtualFileUrl
 import com.intellij.platform.workspace.storage.url.VirtualFileUrlManager
 import org.jetbrains.annotations.ApiStatus
-import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.config.BazelFeatureFlags
-import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.sync.workspace.languages.java.sourceRoot.JvmPackagePrefixCalculator
 import org.jetbrains.bazel.workspace.indexAdditionalFiles.ProjectViewGlobSet
 import org.jetbrains.bsp.protocol.RawBuildTarget
+import org.jetbrains.bsp.protocol.isTestTarget
 import java.nio.file.Path
 
 @ApiStatus.Internal
@@ -49,7 +48,6 @@ object SourceRootBuilder {
     target: RawBuildTarget,
     testSourcesGlob: ProjectViewGlobSet,
     packagePrefixes: JvmPackagePrefixCalculator,
-    testTargets: Set<Label>,
   ): List<ResolvedSourceRoot> {
     val prefixes = packagePrefixes.get(target)
     fun Path.convert(generated: Boolean) =
@@ -58,8 +56,7 @@ object SourceRootBuilder {
         generated = generated,
         packagePrefix = prefixes[this] ?: "",
         rootType = when {
-          target.kind.ruleType == RuleType.TEST -> JAVA_TEST_SOURCE_ROOT_TYPE
-          target.id in testTargets -> JAVA_TEST_SOURCE_ROOT_TYPE
+          target.isTestTarget() -> JAVA_TEST_SOURCE_ROOT_TYPE
           testSourcesGlob.matches(this) -> JAVA_TEST_SOURCE_ROOT_TYPE
           else -> JAVA_SOURCE_ROOT_TYPE
         },
