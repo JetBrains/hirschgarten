@@ -1,5 +1,6 @@
 package org.jetbrains.bazel.java.ui.gutters
 
+import com.intellij.execution.junit.DisabledConditionUtil
 import com.intellij.lang.jvm.util.JvmClassUtil
 import com.intellij.lang.jvm.util.JvmMainMethodUtil
 import com.intellij.openapi.vfs.JarFileSystem
@@ -8,7 +9,6 @@ import com.intellij.psi.PsiClassType
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiMethod
 import com.intellij.psi.PsiNameIdentifierOwner
-import com.intellij.psi.PsiParameter
 import com.intellij.psi.util.PsiTreeUtil
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.run.test.createTestFilterDescriptor
@@ -23,39 +23,44 @@ open class BazelJavaRunLineMarkerContributor : BazelRunLineMarkerContributor() {
     if (element.containingFile.virtualFile?.fileSystem is JarFileSystem) return null
     val psiIdentifier = PsiTreeUtil.getParentOfType(element, PsiNameIdentifierOwner::class.java, true) ?: return null
     if (psiIdentifier.nameIdentifier != element) return null
-    val isMethod = psiIdentifier.isMethod()
-    val isClass = psiIdentifier.isClass()
-    if (!isMethod && !isClass) return null
-
+    val (psiClass, psiMethod) = psiIdentifier.toPsiClassOrMethod()
+    val classOrMethod = psiClass ?: psiMethod ?: return null
     if (element.isMainMethod()) {
       return GutterAction()
     }
 
     val project = element.project
-    val fullyQualifiedClassName = psiIdentifier.getFullyQualifiedClassName() ?: return null
-    val testFilter = if (isMethod) {
-      val methodName = psiIdentifier.getMethodName()
+    val className = psiIdentifier.getContainingClassFqn() ?: return null
+    val testFilter = if (psiMethod != null) {
+      val methodName = psiMethod.name
       if (element.project.useJetBrainsTestRunner()) {
-        val methodParameterTypes = psiIdentifier.getMethodParameterTypes()
-        "$fullyQualifiedClassName:$methodName:$methodParameterTypes"
+        val methodParameterTypes = psiMethod.getMethodParameterTypes()
+        "$className:$methodName:$methodParameterTypes"
       } else {
-        "$fullyQualifiedClassName.$methodName$"
+        "$className.$methodName$"
       }
     }
     else {
-      fullyQualifiedClassName
+      className
     }
-    return GutterAction(runnerActionDescriptor = createTestFilterDescriptor(project, testFilter))
-  }
 
-  @ApiStatus.Internal
-  protected open fun PsiNameIdentifierOwner.getMethodName(): String? = if (isMethod()) name else null
+    var runnerActionDescriptor = createTestFilterDescriptor(project, testFilter)
+    // Support running a @Disabled JUnit test if we clicked on it explicitely
+    val junitDisabledCondition = DisabledConditionUtil.getDisabledCondition(classOrMethod)
+    if (junitDisabledCondition != null) {
+      val jvmFlag = "--wrapper_script_flag=--jvm_flag=-Djunit.jupiter.conditions.deactivate=$junitDisabledCondition"
+      runnerActionDescriptor = runnerActionDescriptor.copy(
+        programArguments = runnerActionDescriptor.programArguments + listOf(jvmFlag),
+      )
+    }
+    return GutterAction(runnerActionDescriptor = runnerActionDescriptor)
+  }
 
   /**
    * See [JUnit docs](https://docs.junit.org/5.2.0/api/org/junit/platform/engine/discovery/MethodSelector.html#getMethodParameterTypes())
    */
-  private fun PsiNameIdentifierOwner.getMethodParameterTypes(): String =
-    getPsiParameters().orEmpty().map { it.type }.mapNotNull { type ->
+  private fun PsiMethod.getMethodParameterTypes(): String =
+    this.parameterList.parameters.map { it.type }.mapNotNull { type ->
       if (type is PsiClassType) {
         // canonicalText will include type arguments if they are present, avoid that in simple cases
         type.resolve()?.qualifiedName
@@ -65,20 +70,13 @@ open class BazelJavaRunLineMarkerContributor : BazelRunLineMarkerContributor() {
     }.joinToString(separator = ",")
 
   @ApiStatus.Internal
-  protected open fun PsiNameIdentifierOwner.getPsiParameters(): Array<out PsiParameter>? =
-    (this as? PsiMethod)?.parameterList?.parameters
-
-  @ApiStatus.Internal
-  protected open fun PsiElement.getFullyQualifiedClassName(): String? {
+  protected open fun PsiElement.getContainingClassFqn(): String? {
     val psiClass = PsiTreeUtil.getParentOfType(this, PsiClass::class.java, false) ?: return null
     return JvmClassUtil.getJvmClassName(psiClass)
   }
 
-  @ApiStatus.Internal
-  protected open fun PsiNameIdentifierOwner.isClass(): Boolean = this is PsiClass
-
-  @ApiStatus.Internal
-  protected open fun PsiNameIdentifierOwner.isMethod(): Boolean = this is PsiMethod
+  protected open fun PsiNameIdentifierOwner.toPsiClassOrMethod(): Pair<PsiClass?, PsiMethod?> =
+    (this as? PsiClass) to (this as? PsiMethod)
 
   @ApiStatus.Internal
   protected open fun PsiElement.isMainMethod(): Boolean =

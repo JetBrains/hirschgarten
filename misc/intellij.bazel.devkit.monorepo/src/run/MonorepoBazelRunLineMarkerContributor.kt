@@ -30,7 +30,7 @@ internal class MonorepoBazelJavaRunLineMarkerContributor : BazelJavaRunLineMarke
   override fun isProjectApplicable(project: Project): Boolean = MonorepoRunLineMarkerContributorUtil.isProjectApplicable(project)
 
   override fun getTargets(element: PsiElement): List<ExecutableTarget> {
-    val mainClassFqn = if (element.isMainMethod()) element.getFullyQualifiedClassName() else null
+    val mainClassFqn = if (element.isMainMethod()) element.getContainingClassFqn() else null
     return MonorepoRunLineMarkerContributorUtil.getTargets(element, mainClassFqn)
   }
 }
@@ -39,7 +39,7 @@ internal class MonorepoBazelKotlinRunLineMarkerContributor : BazelKotlinRunLineM
   override fun isProjectApplicable(project: Project): Boolean = MonorepoRunLineMarkerContributorUtil.isProjectApplicable(project)
 
   override fun getTargets(element: PsiElement): List<ExecutableTarget> {
-    val mainClassFqn = if (element.isMainMethod()) element.getFullyQualifiedClassName() else null
+    val mainClassFqn = if (element.isMainMethod()) element.getContainingClassFqn() else null
     return MonorepoRunLineMarkerContributorUtil.getTargets(element, mainClassFqn)
   }
 }

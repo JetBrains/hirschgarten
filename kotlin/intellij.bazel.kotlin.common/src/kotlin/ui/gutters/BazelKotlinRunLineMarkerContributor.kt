@@ -1,11 +1,13 @@
 package org.jetbrains.bazel.kotlin.ui.gutters
 
+import com.intellij.psi.PsiClass
 import com.intellij.psi.PsiElement
+import com.intellij.psi.PsiMethod
 import com.intellij.psi.PsiNameIdentifierOwner
-import com.intellij.psi.PsiParameter
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.java.ui.gutters.BazelJavaRunLineMarkerContributor
-import org.jetbrains.kotlin.asJava.LightClassUtil
+import org.jetbrains.kotlin.asJava.getRepresentativeLightMethod
+import org.jetbrains.kotlin.asJava.toLightClass
 import org.jetbrains.kotlin.idea.base.codeInsight.KotlinMainFunctionDetector
 import org.jetbrains.kotlin.idea.base.psi.KotlinPsiHeuristics
 import org.jetbrains.kotlin.psi.KtClassOrObject
@@ -43,18 +45,14 @@ open class BazelKotlinRunLineMarkerContributor : BazelJavaRunLineMarkerContribut
     return detector.isMain(function)
   }
 
-  override fun PsiElement.getFullyQualifiedClassName(): String? {
+  override fun PsiElement.getContainingClassFqn(): String? {
     val classOrObject = this.getNonStrictParentOfType<KtClassOrObject>() ?: return null
     return KotlinPsiHeuristics.getJvmName(classOrObject)
   }
 
-  override fun PsiNameIdentifierOwner.isClass(): Boolean = this is KtClassOrObject
-
-  override fun PsiNameIdentifierOwner.isMethod(): Boolean = this is KtNamedFunction
-
-  override fun PsiNameIdentifierOwner.getPsiParameters(): Array<out PsiParameter>? {
-    if (this !is KtNamedFunction) return null
-    val psiMethod = LightClassUtil.getLightClassMethod(this) ?: return null
-    return psiMethod.parameterList.parameters
+  override fun PsiNameIdentifierOwner.toPsiClassOrMethod(): Pair<PsiClass?, PsiMethod?> = when (this) {
+    is KtClassOrObject -> toLightClass() to null
+    is KtNamedFunction -> null to getRepresentativeLightMethod()
+    else -> null to null
   }
 }

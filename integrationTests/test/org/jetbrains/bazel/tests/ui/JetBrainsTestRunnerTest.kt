@@ -123,6 +123,35 @@ class JetBrainsTestRunnerTest : IdeStarterBaseProjectTest() {
           execute { assertCaretPosition(18, 8) }
           wait(3.seconds)
         }
+
+        step("Disabled tests are shown in test tree") {
+          execute { openFile("TestDisabled.kt") }
+          clickTestGutterOnLine(3)
+
+          verifyTestStatus(
+            listOf("1 test passed, ", "1 ignored"),
+            listOf(
+              "JUnit Jupiter",
+              "TestDisabled",
+              "normalTest()",
+              "disabledTest()",
+            ),
+          )
+        }
+
+        step("Disabled test is run when launched explicitly") {
+          execute { openFile("TestDisabled.kt") }
+          clickTestGutterOnLine(11)
+
+          verifyTestStatus(
+            listOf("1 test passed"),
+            listOf(
+              "JUnit Jupiter",
+              "TestDisabled",
+              "disabledTest()",
+            ),
+          )
+        }
       }
     }
   }
