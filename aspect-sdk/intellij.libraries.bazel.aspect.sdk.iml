@@ -9,15 +9,15 @@
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="module-library" exported="">
       <library name="jetbrains.intellij.deps.bazel.aspect.sdk" type="repository">
-        <properties maven-id="org.jetbrains.intellij.deps.bazel:intellij-aspect-sdk:0.0.28">
+        <properties maven-id="org.jetbrains.intellij.deps.bazel:intellij-aspect-sdk:0.0.29">
           <verification>
-            <artifact url="file://$MAVEN_REPOSITORY$/org/jetbrains/intellij/deps/bazel/intellij-aspect-sdk/0.0.28/intellij-aspect-sdk-0.0.28.jar">
-              <sha256sum>b3f62052182cfa21dda07ee5501d1cd0ba6f7d588221636df67d3639f8604eea</sha256sum>
+            <artifact url="file://$MAVEN_REPOSITORY$/org/jetbrains/intellij/deps/bazel/intellij-aspect-sdk/0.0.29/intellij-aspect-sdk-0.0.29.jar">
+              <sha256sum>6e324959ae70efd200077df3236fe8b6136d620b9e3ed14b130cda64b56ae6bc</sha256sum>
             </artifact>
           </verification>
         </properties>
         <CLASSES>
-          <root url="jar://$MAVEN_REPOSITORY$/org/jetbrains/intellij/deps/bazel/intellij-aspect-sdk/0.0.28/intellij-aspect-sdk-0.0.28.jar!/" />
+          <root url="jar://$MAVEN_REPOSITORY$/org/jetbrains/intellij/deps/bazel/intellij-aspect-sdk/0.0.29/intellij-aspect-sdk-0.0.29.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />
