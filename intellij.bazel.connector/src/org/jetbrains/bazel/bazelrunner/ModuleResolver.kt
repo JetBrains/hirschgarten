@@ -1,5 +1,6 @@
 package org.jetbrains.bazel.bazelrunner
 
+import com.intellij.util.system.OS
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.commons.BazelInfo
 import org.jetbrains.bazel.commons.gson.bazelGson
@@ -126,9 +127,9 @@ class ModuleOutputParser {
     }
   }
 
-  fun parseShowRepoResults(bazelProcessResult: BazelProcessResult, isJson: Boolean, moduleNames: List<String>): ResolvedModulesAndWarning {
+  fun parseShowRepoResults(bazelProcessResult: BazelProcessResult, isJson: Boolean, moduleNames: List<String>?): ResolvedModulesAndWarning {
    val warnings =  if (bazelProcessResult.isSuccess) listOf() else
-     listOf("Project depends on broken modules; bazel failed to show_repo ${moduleNames.joinToString()}:\n" + bazelProcessResult.stderrLines.joinToString("\n"))
+     listOf("Project depends on broken modules; bazel failed to show_repo ${moduleNames?.joinToString() ?: "--all_repos"}:\n" + bazelProcessResult.stderrLines.joinToString("\n"))
     if (!isJson) {
       return ResolvedModulesAndWarning(splitInfoGroups (bazelProcessResult.stdoutLines).mapValues { (_, stanza) -> parseShowRepoStanza(stanza) }, warnings)
     }
@@ -150,8 +151,23 @@ internal class ModuleResolver(
    * The name can be @@repo, @repo or repo. It will be resolved in the context of the main workspace.
    */
   suspend fun resolveModules(unsortedModuleNames: List<String>, bazelInfo: BazelInfo): ResolvedModulesAndWarning {
-    if (unsortedModuleNames.isEmpty()) return ResolvedModulesAndWarning(emptyMap(), emptyList()) // avoid bazel call if no information is needed
+    if (unsortedModuleNames.isEmpty()) return ResolvedModulesAndWarning(emptyMap(),
+                                                                        emptyList()) // avoid bazel call if no information is needed
     val moduleNames = unsortedModuleNames.sorted().distinct()
+    val supportsAllRequest = (bazelInfo.release.major >= 9 || (bazelInfo.release.major == 8 && bazelInfo.release.minor >= 6))
+    if (supportsAllRequest && moduleNames.size > USE_ALL_THRESHOLD) {
+      return resolveOneModuleBatch(moduleNames, bazelInfo, requestAll = true)
+    }
+    return batchModules(moduleNames)
+      .map {resolveOneModuleBatch(it, bazelInfo, requestAll = false) }
+      .reduceOrNull { acc, batch -> acc.updated(batch) }
+           ?: ResolvedModulesAndWarning(emptyMap(), emptyList())
+  }
+
+  /**
+   * Resolve one batch of modules.
+   */
+  private suspend fun resolveOneModuleBatch(moduleNames: List<String>, bazelInfo: BazelInfo, requestAll: Boolean) : ResolvedModulesAndWarning {
     val json_output = bazelInfo.release.major >= 9
     val command =
       bazelRunner.buildBazelCommand(projectView) {
@@ -159,7 +175,11 @@ internal class ModuleResolver(
           if (json_output) {
             options.add("--output=streamed_jsonproto")
           }
-          options.addAll(moduleNames)
+          if (requestAll) {
+            options.add("--all_repos")
+          } else {
+            options.addAll(moduleNames)
+          }
         }
       }
     val processResult =
@@ -177,11 +197,11 @@ internal class ModuleResolver(
                                          listOf("Bazel failed to show_repo ${moduleNames[0]}:\n" +
                                          processResult.stdoutLines.joinToString("\n")))
       }
-      return moduleNames.map { resolveModules(listOf(it), bazelInfo) }
+      return moduleNames.map { resolveOneModuleBatch(listOf(it), bazelInfo, false) }
                .reduceOrNull { acc, result -> acc.updated(result) } ?: ResolvedModulesAndWarning(emptyMap(), emptyList())
     }
 
-    return moduleOutputParser.parseShowRepoResults(processResult, json_output, moduleNames)
+    return moduleOutputParser.parseShowRepoResults(processResult, json_output, if (requestAll) null else moduleNames)
   }
 
   val gson = bazelGson
@@ -222,6 +242,45 @@ internal class ModuleResolver(
     catch (ex: Throwable) {
       throw Error("Failed to parse repo mapping from bazel. Bazel output:\n${processResult.stdoutLines.joinToString("\n")}", ex)
     }
+  }
+
+  private fun batchModules(modules: List<String>): List<List<String>> {
+    if (OS.CURRENT != OS.Windows) return modules.chunked(BATCH_SIZE_COUNT_POSIX)
+    val batches = mutableListOf<List<String>>()
+    var currentBatch = mutableListOf<String>()
+    var currentBatchSize = 0
+    for (moduleName in modules) {
+      val moduleLength = moduleName.length + 3 // account for quoting and separating space
+      if (currentBatchSize + moduleLength < BATCH_SIZE_CHARS_WINDOWS) {
+        currentBatch.add(moduleName)
+        currentBatchSize += moduleLength
+      } else {
+        batches.add(currentBatch)
+        currentBatch = mutableListOf(moduleName)
+        currentBatchSize = moduleLength
+      }
+    }
+    if (currentBatch.size > 0) {
+      batches.add(currentBatch)
+    }
+    return batches
+  }
+
+  companion object {
+    // Total size of the repository names that can fit into one batch.
+    // Background: on Windows, the total command-line length is limited to 8191 characters, see
+    // https://learn.microsoft.com/en-us/troubleshoot/windows-client/shell-experience/command-line-string-limitation
+    // Let's leave roughly 2k characters for the (possibly qualified) path of the bazel binary, as well as other flags and arguments.
+    const val BATCH_SIZE_CHARS_WINDOWS = 6_000
+
+    // On non-windows systems, the length of the argument vector typically is the limiting factor. POSIX guarantees that limit
+    // to be at least 4096. We have 3 arguments (bazel mod show_repo) as well as a couple of flags. Let's leave a bit of headroom.
+    const val BATCH_SIZE_COUNT_POSIX = 4_000
+
+    // Heuristically chosen threshold where requesting all repositories does not take much longer than requesting
+    // this number of repositories specifically. Should be small enough that, assuming typical repository names, this
+    // number of repositories does not exceed the batch length declared above.
+    const val USE_ALL_THRESHOLD = 64
   }
 }
 
