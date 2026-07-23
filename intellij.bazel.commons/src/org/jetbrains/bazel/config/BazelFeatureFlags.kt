@@ -10,7 +10,6 @@ object BazelFeatureFlags {
 
   @VisibleForTesting
   const val GO_SUPPORT = "bsp.go.support"
-  private const val QUERY_TERMINAL_COMPLETION = "bazel.query.terminal.completion"
 
   @VisibleForTesting
   const val BUILD_PROJECT_ON_SYNC = "bazel.build.project.on.sync"
@@ -26,7 +25,6 @@ object BazelFeatureFlags {
   @VisibleForTesting
   const val FAST_BUILD_ENABLED = "bazel.enable.jvm.fastbuild"
   const val AUTO_OPEN_PROJECT_IF_PRESENT = "bazel.project.auto.open.if.present"
-  private const val ENABLE_BAZEL_QUERY_TAB = "bazel.query.tab.enabled"
   private const val EXCLUDE_SYMLINKS_FROM_FILE_WATCHER_VIA_REFLECTION = "bazel.exclude.symlinks.from.file.watcher.via.reflection"
   private const val SYNTHETIC_RUN_ENABLE = "bazel.run.synthetic.enable"
   private const val SYNTHETIC_RUN_DISABLE_VISIBILITY_CHECK = "bazel.run.synthetic.disable.visibility.check"
@@ -81,12 +79,6 @@ object BazelFeatureFlags {
 
   val autoOpenProjectIfPresent: Boolean
     get() = isEnabled(AUTO_OPEN_PROJECT_IF_PRESENT)
-
-  val isQueryTerminalCompletionEnabled: Boolean
-    get() = isEnabled(QUERY_TERMINAL_COMPLETION)
-
-  val isBazelQueryTabEnabled: Boolean
-    get() = isEnabled(ENABLE_BAZEL_QUERY_TAB)
 
   val excludeSymlinksFromFileWatcherViaReflection: Boolean
     get() = isEnabled(EXCLUDE_SYMLINKS_FROM_FILE_WATCHER_VIA_REFLECTION)

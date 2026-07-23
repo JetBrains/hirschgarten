@@ -32,10 +32,6 @@ internal fun configureBazelToolWindowToolBar(
       add(BazelToolWindowSettingsAction(BazelPluginBundle.message("project.settings.display.name")))
       addSeparator()
       add(actionManager.getAction("Bazel.OpenProjectViewFile"))
-      if (BazelFeatureFlags.isBazelQueryTabEnabled) {
-        addSeparator()
-        add(actionManager.getAction("Bazel.OpenBazelQueryToolWindowAction"))
-      }
     }
 
   val actionToolbar = actionManager.createActionToolbar("Bazel Toolbar", actionGroup, true)

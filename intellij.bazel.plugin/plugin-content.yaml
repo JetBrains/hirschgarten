@@ -97,9 +97,6 @@
 - name: lib/modules/intellij.bazel.remoteDevelopment.jar
   contentModules:
   - name: intellij.bazel.remoteDevelopment
-- name: lib/modules/intellij.bazel.terminal.jar
-  contentModules:
-  - name: intellij.bazel.terminal
 - name: lib/modules/intellij.libraries.bazel.aspect.sdk.jar
   contentModules:
   - name: intellij.libraries.bazel.aspect.sdk

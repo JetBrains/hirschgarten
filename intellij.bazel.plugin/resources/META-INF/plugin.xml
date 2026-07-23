@@ -64,7 +64,6 @@
     <module name="intellij.bazel.devkit.monorepo"/>
     <module name="intellij.bazel.protoedit"/>
     <module name="intellij.bazel.remoteDevelopment"/>
-    <module name="intellij.bazel.terminal"/>
     <module name="intellij.bazel.java.profiler"/>
 
     <!-- library wrappers -->

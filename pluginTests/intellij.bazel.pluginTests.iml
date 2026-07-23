@@ -209,7 +209,6 @@
     <orderEntry type="module" module-name="intellij.bazel.python.common" scope="TEST" />
     <orderEntry type="module" module-name="intellij.bazel.python.common.performancePlugin" scope="TEST" />
     <orderEntry type="module" module-name="intellij.bazel.remoteDevelopment" scope="TEST" />
-    <orderEntry type="module" module-name="intellij.bazel.terminal" scope="TEST" />
     <orderEntry type="module" module-name="intellij.bazel.kotlin.sync" scope="TEST" />
     <orderEntry type="module" module-name="intellij.bazel.java.sync" scope="TEST" />
     <orderEntry type="module" module-name="intellij.bazel.python.backend" scope="TEST" />

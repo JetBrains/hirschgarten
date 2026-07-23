@@ -66,7 +66,6 @@ intellij_plugin_zip_and_debug_target(
         "//python/intellij.bazel.python.common",
         "//python/intellij.bazel.python.common.performancePlugin",
         "//misc/intellij.bazel.remoteDevelopment",
-        "//misc/intellij.bazel.terminal",
         "//aspect-sdk:intellij.libraries.bazel.aspect.sdk",
     ],
     visibility = ["//visibility:public"],

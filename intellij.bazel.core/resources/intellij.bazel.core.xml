@@ -218,11 +218,6 @@
       id="Bazel"
     />
 
-    <toolWindowAllowlist id="Bazel Query"/>
-    <toolWindowExtractor
-      implementation="org.jetbrains.bazel.ui.widgets.queryTab.BazelQueryToolWindowViewModelExtractor"
-    />
-
     <consoleFilterProvider
       implementation="org.jetbrains.bazel.ui.console.filter.AbsoluteAndRelativePathsConsoleFilterProvider"
     />
@@ -750,10 +745,6 @@
 
     <action id="Bazel.ExcludeFromProjectViewDirectoriesAction"
             class="org.jetbrains.bazel.action.registered.projectViewDirectories.ExcludeFromProjectViewDirectoriesAction">
-    </action>
-
-    <action id="Bazel.OpenBazelQueryToolWindowAction"
-            class="org.jetbrains.bazel.action.registered.OpenBazelQueryToolWindowAction">
     </action>
 
     <action id="Bazel.OpenProjectViewFile"
