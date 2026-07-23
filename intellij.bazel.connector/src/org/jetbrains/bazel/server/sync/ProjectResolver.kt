@@ -1,7 +1,5 @@
 package org.jetbrains.bazel.server.sync
 
-import com.google.devtools.intellij.ideinfo.IntellijIdeInfo
-import com.google.devtools.intellij.ideinfo.IntellijIdeInfo.TargetIdeInfo
 import com.intellij.aspect.lib.Aspects
 import com.intellij.aspect.lib.OutputGroups
 import com.intellij.aspect.lib.Rules
@@ -34,7 +32,6 @@ import org.jetbrains.bazel.languages.projectview.targets
 import org.jetbrains.bazel.languages.starlark.repomapping.externalRepositoriesTreatedAsInternal
 import org.jetbrains.bazel.performance.bspTracer
 import org.jetbrains.bazel.progress.syncConsole
-import org.jetbrains.bazel.server.bep.BepOutput
 import org.jetbrains.bazel.server.bsp.managers.BazelBspAspectsManager
 import org.jetbrains.bazel.server.bsp.managers.BazelBspAspectsManagerResult
 import org.jetbrains.bazel.server.bsp.managers.BazelExternalRulesetsQueryImpl
@@ -42,8 +39,6 @@ import org.jetbrains.bazel.server.bzlmod.calculateRepoNameMappingOnly
 import org.jetbrains.bazel.server.bzlmod.extendRepoMappingByPathInfo
 import org.jetbrains.bazel.server.model.AspectSyncProject
 import org.jetbrains.bazel.server.sync.sharding.BazelBuildTargetSharder
-import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
-import org.jetbrains.bazel.sync.workspace.snapshot.toWorkspaceTargetKey
 import org.jetbrains.bsp.protocol.BazelTaskEventsHandler
 import org.jetbrains.bsp.protocol.TaskId
 import org.jetbrains.bsp.protocol.asLogger
@@ -96,10 +91,8 @@ class ProjectResolver(
         measured(
           "Parsing aspect outputs",
         ) {
-          val rawTargetsMap =
-            TargetInfoReader(taskEventsHandler.asLogger(taskId))
-              .readTargetMapFromAspectOutputs(aspectOutputs)
-          processTargetMap(rawTargetsMap, aspectResult.bepOutput)
+          TargetInfoReader(taskEventsHandler.asLogger(taskId))
+            .readTargetMapFromAspectOutputs(aspectOutputs)
         }
 
       val newRepoMapping = when (repoMapping) {
@@ -396,51 +389,5 @@ class ProjectResolver(
 
   companion object {
     private val logger = logger<ProjectResolver>()
-
-    @JvmStatic
-    fun processTargetMap(
-      targetMap: Map<WorkspaceTargetKey, TargetIdeInfo>,
-      bepOutput: BepOutput,
-    ): Map<WorkspaceTargetKey, TargetIdeInfo> =
-      targetMap
-        .mapValues { (k, v) ->
-          // our target-information already contains labels in canonical form
-          v.toBuilder()
-            .apply {
-              val processedDependencies = processDependenciesList(depsBuilderList, targetMap, bepOutput)
-              clearDeps()
-              addAllDeps(processedDependencies)
-            }.build()
-        }.toMap()
-
-    @JvmStatic
-    fun processDependenciesList(
-      dependenciesBuilderList: List<IntellijIdeInfo.Dependency.Builder>,
-      targets: Map<WorkspaceTargetKey, TargetIdeInfo>,
-      bepOutput: BepOutput,
-    ): List<IntellijIdeInfo.Dependency> {
-      val projectSuffix = "-project"
-      return dependenciesBuilderList.map { dependency ->
-        dependency
-          .apply {
-            // Replace dependencies from maven_project_jar with their java_library counterparts
-            // this is to support the macro java_export from rules_jvm_external
-            // refer to its definition for more context: https://github.com/bazel-contrib/rules_jvm_external/blob/935db476ba732576a1f868b092301ce1bc44fe72/private/rules/java_export.bzl#L8
-            val targetInfo = targets[dependency.target.toWorkspaceTargetKey()]
-            val newlabel =
-              if (targetInfo?.kind == "maven_project_jar" && target.label.endsWith(projectSuffix)) {
-                target.label.dropLast(projectSuffix.length) + "-lib"
-              }
-              else {
-                target.label
-              }
-            target = IntellijIdeInfo.TargetKey.newBuilder()
-              .setLabel(newlabel)
-              .setConfiguration(target.configuration)
-              .addAllAspectIds(target.aspectIdsList)
-              .build()
-          }.build()
-      }
-    }
   }
 }

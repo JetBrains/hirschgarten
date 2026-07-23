@@ -13,14 +13,15 @@ import org.jetbrains.bazel.sync.workspace.languages.jvm.JvmDependency
 import org.jetbrains.bazel.sync.workspace.languages.jvm.KotlinBuildTarget
 import org.jetbrains.bazel.sync.workspace.languages.jvm.ScalaBuildTarget
 import org.jetbrains.bazel.sync.workspace.mapper.normal.MavenCoordinatesResolver
+import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceConfigurationId
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTarget
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
 import org.jetbrains.bazel.sync.workspace.snapshot.findBuildData
+import org.jetbrains.bazel.sync.workspace.snapshot.kind
 import org.jetbrains.bsp.protocol.LibraryItem
 import org.jetbrains.bsp.protocol.MavenCoordinates
 import org.jetbrains.bsp.protocol.allJars
 import java.nio.file.Path
-import java.util.concurrent.ConcurrentHashMap
 import kotlin.io.path.name
 
 private typealias DependencyLabelPatcher = (DependencyLabel) -> DependencyLabel
@@ -34,6 +35,7 @@ class JvmBuildTargetResolver(
   private var extraLibDependencies: Map<WorkspaceTargetKey, List<DependencyLabel>> = mapOf()
   private var toolchainDependencies: Map<WorkspaceTargetKey, List<DependencyLabel>> = mapOf()
   private var allLibraries: Map<WorkspaceTargetKey, List<LibraryItem>> = mapOf()
+  private var wellKnownTargetKeyByMavenCoordinates: Map<MavenCoordinatesKey, WorkspaceTargetKey> = mapOf()
 
   // keep output jar label identity
   private val outputJarsByLabel: Map<Label, Set<Path>> =
@@ -49,6 +51,7 @@ class JvmBuildTargetResolver(
   private val projectJavaHome: Path? by lazy { JdkResolver(allTargets, javaSyncConfig.ideJavaHomeOverride).resolve()?.javaHome }
 
   fun resolveAll(): Map<WorkspaceTargetKey, JvmResolvedTarget> {
+    wellKnownTargetKeyByMavenCoordinates = computeWellKnownTargetKeyByMavenCoordinates()
     calculateAllLibraries(targetsToImport = targetsToImport.filterValues { it.findBuildData<JvmBuildTarget>() != null })
 
     // We merge targets based on (label, configuration) pair because:
@@ -103,11 +106,17 @@ class JvmBuildTargetResolver(
     )
   }
 
-  private val dependenciesCache = ConcurrentHashMap<WorkspaceTargetKey, List<DependencyLabel>>()
+  private val dependenciesCache = mutableMapOf<WorkspaceTargetKey, List<DependencyLabel>>()
+  private val mavenExportDependenciesCache = mutableMapOf<WorkspaceTargetKey, List<DependencyLabel>>()
 
   private fun WorkspaceTarget.dependencies(): List<DependencyLabel> {
+    if (mavenCoordinatesKeyOrNull() in wellKnownTargetKeyByMavenCoordinates) return mavenExportDependencies()
+    return directDependencies()
+  }
+
+  private fun WorkspaceTarget.directDependencies(): List<DependencyLabel> {
     val target = this
-    return dependenciesCache.computeIfAbsent(target.targetKey) F@{
+    return dependenciesCache.getOrPut(target.targetKey) F@{
       val kind = target.rawBuildTarget.kind.kind
 
       // Well-known targets which include generated libraries as dependencies.
@@ -147,10 +156,76 @@ class JvmBuildTargetResolver(
         }
 
       return@F target.rawBuildTarget.dependencies.map {
-        exportByOutputJarsPatcher(it)
+        exportByOutputJarsPatcher(it.toWellKnownTargetByMavenCoordinates())
       }
     }
   }
+
+  // Locates a target of known kind for every maven coordinates that is also associated with target of unknown kind.
+  // This pattern is produced by `java_export` macro from rules_jvm_external
+  // It should also work with other macros following similar pattern e.g. macros from selenium repository
+  private fun computeWellKnownTargetKeyByMavenCoordinates(): Map<MavenCoordinatesKey, WorkspaceTargetKey> {
+    val unknownTargetsWithMavenCoordinates = allTargets.values
+      .asSequence()
+      .filter { it.kind !in wellKnownTargetKinds && it.rawBuildTarget.isWorkspace }
+      .mapNotNull {
+        val key = it.mavenCoordinatesKeyOrNull() ?: return@mapNotNull null
+        key to it.targetKey
+      }.groupBy(keySelector = { it.first }, valueTransform = { it.second })
+      .toMap()
+    val result = mutableMapOf<MavenCoordinatesKey, WorkspaceTargetKey>()
+    val ambiguousResults = mutableSetOf<MavenCoordinatesKey>()
+    for (target in allTargets.values) {
+      if (target.kind !in wellKnownTargetKinds || !target.rawBuildTarget.isWorkspace) continue
+      val coordinatesKey = target.mavenCoordinatesKeyOrNull() ?: continue
+      val targetsToReplaceKeys = unknownTargetsWithMavenCoordinates[coordinatesKey] ?: continue
+      val targetsToReplace = targetsToReplaceKeys.mapNotNull { allTargets[it] }.ifEmpty { null } ?: continue
+      val targetGeneratorName = target.rawBuildTarget.generatorName
+      if (targetGeneratorName == null || targetsToReplace.any { it.rawBuildTarget.generatorName != targetGeneratorName }) continue
+      if (coordinatesKey in ambiguousResults) continue
+      if (coordinatesKey in result) {
+        ambiguousResults += coordinatesKey
+        continue
+      }
+      result[coordinatesKey] = target.targetKey
+    }
+    return result - ambiguousResults
+  }
+
+  private fun DependencyLabel.toWellKnownTargetByMavenCoordinates(): DependencyLabel {
+    val target = allTargets[targetKey] ?: return this
+    if (target.kind in wellKnownTargetKinds || !target.rawBuildTarget.isWorkspace) return this
+    val coordinatesKey = target.mavenCoordinatesKeyOrNull() ?: return this
+    val libraryKey = wellKnownTargetKeyByMavenCoordinates[coordinatesKey] ?: return this
+    return this.copy(targetKey = libraryKey)
+  }
+
+  private fun WorkspaceTarget.mavenCoordinatesKeyOrNull(): MavenCoordinatesKey? {
+    val coordinates = MavenCoordinatesResolver
+      .fromTargetTagsList(rawBuildTarget.tags)
+      ?: return null
+    return coordinates.toKey(targetKey.configuration)
+  }
+
+  // `java_export` (rules_jvm_external) merges every transitive dependency that is NOT itself a maven artifact into the single published jar
+  // we mirror that by treating those inlined non-maven deps as exported
+  // not exporting those leads to red code when referring those non-maven transitive dependencies
+  private fun WorkspaceTarget.mavenExportDependencies(): List<DependencyLabel> = mavenExportDependenciesCache.getOrPut(targetKey) {
+    directDependencies()
+      .flatMap { dependency ->
+        val depTarget = allTargets[dependency.targetKey]
+        when {
+          depTarget != null && depTarget.shouldBeExportedForMavenArtifact() -> dependency
+            .copy(kind = DependencyLabelKind.EXPORTED_COMPILE_TIME)
+            .let(::listOf)
+            .plus(depTarget.mavenExportDependencies())
+          else -> listOf(dependency)
+        }
+      }.distinct()
+  }
+
+  private fun WorkspaceTarget.shouldBeExportedForMavenArtifact(): Boolean =
+    rawBuildTarget.isWorkspace && mavenCoordinatesKeyOrNull() == null
 
   private fun calculateAllLibraries(
     targetsToImport: Map<WorkspaceTargetKey, WorkspaceTarget>,
@@ -424,7 +499,7 @@ class JvmBuildTargetResolver(
         .flatten()
         .toSet()
 
-    val outputJarsFromTransitiveDepsCache = ConcurrentHashMap<WorkspaceTargetKey, Set<Path>>()
+    val outputJarsFromTransitiveDepsCache =  mutableMapOf<WorkspaceTargetKey, Set<Path>>()
     return jdepsJars
       .mapValues { (targetKey, jarsFromJdeps) ->
         val transitiveJdepsJars =
@@ -445,7 +520,7 @@ class JvmBuildTargetResolver(
     target: WorkspaceTargetKey,
     targetsToImport: Map<WorkspaceTargetKey, WorkspaceTarget>,
     libraryDependencies: Map<WorkspaceTargetKey, List<LibraryItem>>,
-    outputJarsFromTransitiveDepsCache: ConcurrentHashMap<WorkspaceTargetKey, Set<Path>>,
+    outputJarsFromTransitiveDepsCache: MutableMap<WorkspaceTargetKey, Set<Path>>,
     allJdepsJars: Set<Path>,
     visited: MutableSet<WorkspaceTargetKey>,
   ): Set<Path> {
@@ -585,3 +660,12 @@ class JvmBuildTargetResolver(
         maps.flatMap { it[key].orEmpty() }
       }
 }
+
+private fun MavenCoordinates.toKey(configuration: WorkspaceConfigurationId?): MavenCoordinatesKey {
+  return MavenCoordinatesKey(this, configuration)
+}
+
+private data class MavenCoordinatesKey(
+  val coordinates: MavenCoordinates,
+  val configuration: WorkspaceConfigurationId?,
+)
