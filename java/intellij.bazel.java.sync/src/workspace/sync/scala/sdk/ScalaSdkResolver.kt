@@ -1,4 +1,4 @@
-package org.jetbrains.bazel.sync.workspace.languages.scala
+package org.jetbrains.bazel.scala.sdk
 
 import com.google.devtools.intellij.ideinfo.IntellijIdeInfo.TargetIdeInfo
 import org.jetbrains.bazel.commons.BazelPathsResolver
@@ -12,16 +12,16 @@ internal class ScalaSdkResolver(private val bazelPathsResolver: BazelPathsResolv
       return null
     }
     val scalaTarget = targetInfo.scalaTargetInfo
-    val compilerJars =
-      bazelPathsResolver.resolvePaths(scalaTarget.compilerClasspathList, localRepositories).sorted()
+    val compilerJars = bazelPathsResolver.resolvePaths(scalaTarget.compilerClasspathList, localRepositories).sorted()
     val maybeVersions = compilerJars.mapNotNull(::extractVersion)
     if (maybeVersions.none()) {
       return null
     }
     val version = maybeVersions.distinct().maxOf { it }
     return ScalaSdk(
-      version,
-      compilerJars.map(bazelPathsResolver::resolve),
+      name = "",
+      scalaVersion = version,
+      sdkJars = compilerJars.map(bazelPathsResolver::resolve).map { it.toUri() },
     )
   }
 

@@ -57,12 +57,6 @@ fun calculateLabel(
   )
 }
 
-private fun Path.segments(): List<String> {
-  // Check needed for the case if we're computing a relative path between two equal paths
-  if (nameCount == 1 && toString().isEmpty()) return emptyList()
-  return (0 until nameCount).map { getName(it).toString() }
-}
-
 /**
  * We should show apparent labels in the UI, where possible, to avoid confusing the user with labels containing symbols such as `~` or `+`.
  * If conversion to an apparent label fails, fall back to the original label.
