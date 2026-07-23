@@ -34,7 +34,19 @@ data class DependencyLabel(
 
 @ApiStatus.Internal
 enum class DependencyLabelKind {
-  COMPILE, EXPORTED_COMPILE_TIME, RUNTIME, TOOLCHAIN
+  COMPILE,
+
+  /**
+   * A compile-scope dependency that is never exported, even for rule kinds whose module dependencies are
+   * otherwise force-exported during resolution. Used for dependencies synthesized from a target's jdeps
+   * that point at another imported target: the consumer must be able to resolve the producer's classes,
+   * but it does not declare or re-export the producer, so the producer must not leak to the consumer's
+   * own dependents.
+   */
+  COMPILE_NON_EXPORTED,
+  EXPORTED_COMPILE_TIME,
+  RUNTIME,
+  TOOLCHAIN,
 }
 
 @ApiStatus.Internal

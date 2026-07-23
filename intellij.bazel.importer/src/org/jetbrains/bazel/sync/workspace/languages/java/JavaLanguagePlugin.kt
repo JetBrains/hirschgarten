@@ -127,6 +127,7 @@ class JavaLanguagePlugin : LanguagePlugin {
     private var jdk: Jdk? = null
     private var toolchainTargets: Map<Label, TargetInfo> = mapOf()
     private var extraLibDependencies: Map<Label, List<DependencyLabel>> = mapOf()
+    private var extraModuleDependencies: Map<Label, List<DependencyLabel>> = mapOf()
     private var toolchainDependencies: Map<Label, List<DependencyLabel>> = mapOf()
     private var allLibraries: Map<Label, List<LibraryItem>> = mapOf()
 
@@ -199,6 +200,7 @@ class JavaLanguagePlugin : LanguagePlugin {
         // extra libraries can override some library versions, so they should be put before
         jvmDependencies =
           extraLibDependencies[label].orEmpty().map { JvmDependency.LibraryDependency(it) } +
+          extraModuleDependencies[label].orEmpty().map { JvmDependency.ModuleDependency(it) } +
           target.dependencies().map {
             if (targetLibraries.containsKey(it.label))
               JvmDependency.LibraryDependency(it)
@@ -321,19 +323,20 @@ class JavaLanguagePlugin : LanguagePlugin {
           concatenateMaps(listOf(librariesFromDeps, librariesFromToolchains, importDependenciesAsLibraries))
         }
 
-      val extraLibrariesFromJdeps: Map<Label, List<LibraryItem>> =
-        measure("Libraries from jdeps") {
-          jdepsLibraries(
+      val jdepsResult: JdepsDependencies =
+        measure("Dependencies from jdeps") {
+          jdepsDependencies(
             targetsToImport,
             librariesFromDepsAndTargets,
             interfacesAndBinariesFromTargetsToImport,
           )
         }
 
-      val extraLibraries = concatenateMaps(listOf(librariesFromDeps, extraLibrariesFromJdeps))
+      val extraLibraries = concatenateMaps(listOf(librariesFromDeps, jdepsResult.libraries))
 
       extraLibDependencies =
         extraLibraries.mapValues { (_, libs) -> libs.map { DependencyLabel(it.id, kind = DependencyLabelKind.EXPORTED_COMPILE_TIME) } }
+      extraModuleDependencies = jdepsResult.moduleDependencies
       toolchainDependencies = librariesFromToolchains.mapValues { (_, libs) -> libs.map { DependencyLabel(it.id) } }
       allLibraries = concatenateMaps(listOf(importDependenciesAsLibraries, extraLibraries, librariesFromToolchains))
     }
@@ -480,34 +483,63 @@ class JavaLanguagePlugin : LanguagePlugin {
      * The old Bazel Plugin performs similar step here
      * https://github.com/bazelbuild/intellij/blob/b68ec8b33aa54ead6d84dd94daf4822089b3b013/java/src/com/google/idea/blaze/java/sync/importer/BlazeJavaWorkspaceImporter.java#L256
      */
-    private suspend fun jdepsLibraries(
+    /**
+     * The jdeps-recorded compile dependencies of every imported target, split by how they should be
+     * represented in the workspace model:
+     *  - [libraries]: jars not produced by any imported target become synthetic sourceless libraries.
+     *  - [moduleDependencies]: a jar produced by an imported target becomes a non-exported module
+     *    dependency on that target. Turning it into a sourceless library instead would shadow the target's
+     *    own source module, so go-to-definition would resolve to the decompiled .class.
+     */
+    private class JdepsDependencies(
+      val libraries: Map<Label, List<LibraryItem>>,
+      val moduleDependencies: Map<Label, List<DependencyLabel>>,
+    )
+
+    private suspend fun jdepsDependencies(
       targetsToImport: Map<Label, TargetInfo>,
       libraryDependencies: Map<Label, List<LibraryItem>>,
       interfacesAndBinariesFromTargetsToImport: Map<Label, Set<Path>>,
-    ): Map<Label, List<LibraryItem>> {
+    ): JdepsDependencies {
       val localRepositories = repoMapping.getLocalRepositories()
       val targetsToJdepsJars: Map<Label, Set<Path>> =
         getAllJdepsDependencies(targetsToImport, libraryDependencies, localRepositories)
-      val libraryNameToLibraryValueMap = HashMap<Label, LibraryItem>()
-      return targetsToJdepsJars.mapValues { target: Map.Entry<Label, Set<Path>> ->
-        val interfacesAndBinariesFromTarget =
-          interfacesAndBinariesFromTargetsToImport.getOrDefault(target.key, emptySet())
-        target.value
-          .map { path: Path -> bazelPathsResolver.resolve(path) }
-          .filter { it !in interfacesAndBinariesFromTarget }
-          .mapNotNull {
-            if (shouldSkipJdepsJar(it)) return@mapNotNull null
-            val label = syntheticLabel(it)
-            libraryNameToLibraryValueMap.getOrPut(label) {
-              createLibrary(
-                id = label,
-                ijars = emptySet(),
-                jars = setOf(it),
-                sourceJars = emptySet(),
-              )
-            }
+      // Map every interface/binary jar produced by an imported target back to that target. A .jdeps
+      // reference to such a jar means the consumer compiles against an imported target's classes without
+      // that target being on its transitive dependency path (e.g. it is reached only through an
+      // out-of-scope library). The jar is already provided by the producing target's source module, so we
+      // emit a non-exported module dependency on that target rather than a sourceless library that would
+      // shadow its sources.
+      val importedTargetByJar: Map<Path, Label> =
+        interfacesAndBinariesFromTargetsToImport.entries
+          .flatMap { (label, jars) -> jars.map { it to label } }
+          .toMap()
+      val libraryByLabel = HashMap<Label, LibraryItem>()
+      val libraries = HashMap<Label, List<LibraryItem>>()
+      val moduleDependencies = HashMap<Label, List<DependencyLabel>>()
+      for ((consumer, jars) in targetsToJdepsJars) {
+        val consumerLibraries = mutableListOf<LibraryItem>()
+        val consumerModuleDeps = LinkedHashSet<Label>()
+        for (jar in jars.map { bazelPathsResolver.resolve(it) }) {
+          val producingTarget = importedTargetByJar[jar]
+          if (producingTarget != null) {
+            if (producingTarget != consumer) consumerModuleDeps.add(producingTarget)
+            continue
           }
+          if (shouldSkipJdepsJar(jar)) continue
+          val label = syntheticLabel(jar)
+          consumerLibraries.add(
+            libraryByLabel.getOrPut(label) {
+              createLibrary(id = label, ijars = emptySet(), jars = setOf(jar), sourceJars = emptySet())
+            },
+          )
+        }
+        if (consumerLibraries.isNotEmpty()) libraries[consumer] = consumerLibraries
+        if (consumerModuleDeps.isNotEmpty()) {
+          moduleDependencies[consumer] = consumerModuleDeps.map { DependencyLabel(it, kind = DependencyLabelKind.COMPILE_NON_EXPORTED) }
+        }
       }
+      return JdepsDependencies(libraries, moduleDependencies)
     }
 
     // See https://github.com/bazel-contrib/rules_jvm_external/issues/786
