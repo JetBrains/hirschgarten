@@ -9,6 +9,7 @@ import com.intellij.execution.runners.ExecutionEnvironment
 import com.intellij.openapi.actionSystem.DataContext
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Key
+import com.intellij.openapi.util.io.NioFiles
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.run.config.BazelRunConfiguration
@@ -70,7 +71,7 @@ internal class CopyPluginToSandboxBeforeRunTaskProvider : BeforeRunTaskProvider<
         copyDeployFiles(parseDeployInfo(file), executionRoot, pluginSandbox)
       }
     } catch (e: IOException) {
-      showError("Cannot deploy plugin files: ${e.message}")
+      showError("Cannot deploy plugin files: $e")
       return false
     }
 
@@ -124,7 +125,19 @@ internal class CopyPluginToSandboxBeforeRunTaskProvider : BeforeRunTaskProvider<
         Files.createDirectories(dst.parent)
       }
 
+      clearReadOnly(dst)
       Files.copy(src, dst, StandardCopyOption.REPLACE_EXISTING)
+    }
+  }
+
+  private fun clearReadOnly(path: Path) {
+    if (!Files.exists(path)) return
+
+    try {
+      NioFiles.setReadOnly(path, false)
+    }
+    catch (_: IOException) {
+      // best effort; the copy itself will surface any real failure
     }
   }
 
