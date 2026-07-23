@@ -22,7 +22,6 @@ import org.jetbrains.bazel.languages.projectview.ProjectView
 import org.jetbrains.bazel.languages.projectview.ideJavaHomeOverride
 import org.jetbrains.bazel.languages.projectview.importIjars
 import org.jetbrains.bazel.languages.projectview.preferClassJarsOverSourcelessJars
-import org.jetbrains.bazel.languages.projectview.projectView
 import org.jetbrains.bazel.languages.projectview.testSources
 import org.jetbrains.bazel.server.BazelServerFacade
 import org.jetbrains.bazel.server.model.generatedSourcesList
