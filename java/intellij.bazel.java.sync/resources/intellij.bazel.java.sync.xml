@@ -25,6 +25,12 @@
 
     <extensionPoint
       dynamic="true"
+      interface="org.jetbrains.bazel.scala.sdk.ScalaSdkExtension"
+      qualifiedName="org.jetbrains.bazel.scalaSdkExtension"
+    />
+
+    <extensionPoint
+      dynamic="true"
       interface="org.jetbrains.bazel.workspace.importer.KotlinFacetEntityUpdater"
       qualifiedName="org.jetbrains.bazel.kotlinFacetEntityUpdater"
     />
@@ -57,5 +63,13 @@
       id="BAZEL_DUMMY_MODULE_TYPE"
       implementationClass="org.jetbrains.bazel.workspace.importer.BazelDummyModuleType"
     />
+
+    <workspaceModel.fileIndexContributor
+      implementation="org.jetbrains.bazel.workspace.CompiledSourceCodeInsideJarExcludeWorkspaceFileIndexContributor"
+    />
+    <workspaceModel.fileIndexContributor
+      implementation="org.jetbrains.bazel.workspace.PackageMarkerEntityWorkspaceFileIndexContributor"
+    />
+
   </extensions>
 </idea-plugin>

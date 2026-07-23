@@ -9,6 +9,7 @@ import com.intellij.platform.workspace.storage.EntityStorage
 import com.intellij.workspaceModel.core.fileIndex.WorkspaceFileIndexContributor
 import com.intellij.workspaceModel.core.fileIndex.WorkspaceFileSetExclusionCondition
 import com.intellij.workspaceModel.core.fileIndex.WorkspaceFileSetRegistrar
+import org.jetbrains.bazel.sync.JavaLanguageClass
 import org.jetbrains.bazel.workspacemodel.entities.LibraryCompiledSourceCodeInsideJarExcludeEntity
 
 /**
@@ -16,13 +17,10 @@ import org.jetbrains.bazel.workspacemodel.entities.LibraryCompiledSourceCodeInsi
  * We care about generated classes (and respective generated sources), but not about generated resources.
  */
 private val JVM_EXTENSIONS =
-  listOf(
-    "class",
-    "java",
-    "kt",
-    "scala",
-    "tasty",
-  )
+  setOf("class", "tasty") +
+  JavaLanguageClass.JAVA.recognizedFilenameExtensions +
+  JavaLanguageClass.SCALA.recognizedFilenameExtensions +
+  JavaLanguageClass.KOTLIN.recognizedFilenameExtensions
 
 /**
  * There's some cases where we don't want to index certain files inside a jar, either because of performance considerations or to
@@ -89,15 +87,15 @@ private class InternalTargetsJarExclusionCondition(
   private val librariesFromInternalTargetsUrls: Set<String>,
   private val entityId: Int,
 ) : WorkspaceFileSetExclusionCondition {
-  override fun shouldExclude(virtualFile: VirtualFile): Boolean {
-    if (virtualFile.isDirectory) return false
+  override fun shouldExclude(file: VirtualFile): Boolean {
+    if (file.isDirectory) return false
 
-    val rootFile = VfsUtilCore.getRootFile(virtualFile)
+    val rootFile = VfsUtilCore.getRootFile(file)
     if (rootFile.url !in librariesFromInternalTargetsUrls) return false
 
-    if (virtualFile.hasNonJvmExtension()) return true
+    if (file.extension !in JVM_EXTENSIONS) return true
 
-    val relativePath = virtualFile.getRelativePathInsideJar(rootFile)
+    val relativePath = file.getRelativePathInsideJar(rootFile)
     val relativePathWithoutNestedClass = removeNestedClass(relativePath)
     return relativePathWithoutNestedClass in relativePathsToExclude
   }
@@ -117,7 +115,7 @@ private class InternalTargetsJarExclusionCondition(
 }
 
 private object NonJvmExtensionExclusionCondition : WorkspaceFileSetExclusionCondition {
-  override fun shouldExclude(file: VirtualFile): Boolean = file.hasNonJvmExtension()
+  override fun shouldExclude(file: VirtualFile): Boolean = file.isFile && file.extension !in JVM_EXTENSIONS
 
   override fun equals(other: Any?): Boolean = other === this
 
@@ -142,5 +140,3 @@ private fun removeNestedClass(relativePath: String): String {
   if (dotIndex == -1) return relativePath
   return relativePath.substring(0, dollarIndex) + relativePath.substring(dotIndex)
 }
-
-private fun VirtualFile.hasNonJvmExtension() = isFile && extension !in JVM_EXTENSIONS

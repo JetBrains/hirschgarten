@@ -26,11 +26,6 @@
       interface="org.jetbrains.bazel.sync.ProjectPostSyncHook"
       qualifiedName="org.jetbrains.bazel.projectPostSyncHook"
     />
-    <extensionPoint
-      dynamic="true"
-      interface="org.jetbrains.bazel.scala.sdk.ScalaSdkExtension"
-      qualifiedName="org.jetbrains.bazel.scalaSdkExtension"
-    />
     <!-- dynamic="false" because of the caching in the init block of TargetKindService  -->
     <extensionPoint
       dynamic="false"
@@ -61,12 +56,6 @@
   <extensions defaultExtensionNs="com.intellij">
     <workspaceModel.fileIndexContributor
       implementation="org.jetbrains.bazel.workspace.BazelProjectDirectoriesWorkspaceFileIndexContributor"
-    />
-    <workspaceModel.fileIndexContributor
-      implementation="org.jetbrains.bazel.workspace.CompiledSourceCodeInsideJarExcludeWorkspaceFileIndexContributor"
-    />
-    <workspaceModel.fileIndexContributor
-      implementation="org.jetbrains.bazel.workspace.packageMarker.PackageMarkerEntityWorkspaceFileIndexContributor"
     />
   </extensions>
 </idea-plugin>

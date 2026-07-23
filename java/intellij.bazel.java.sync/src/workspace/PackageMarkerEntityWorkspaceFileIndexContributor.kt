@@ -1,6 +1,6 @@
 @file:Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
 
-package org.jetbrains.bazel.workspace.packageMarker
+package org.jetbrains.bazel.workspace
 
 import com.intellij.platform.backend.workspace.virtualFile
 import com.intellij.platform.workspace.jps.entities.SourceRootTypeId
@@ -12,7 +12,7 @@ import com.intellij.workspaceModel.core.fileIndex.impl.ModuleSourceRootData
 import com.intellij.workspaceModel.ide.legacyBridge.findModule
 import org.jetbrains.bazel.workspacemodel.entities.PackageMarkerEntity
 
-private class PackageMarkerEntityWorkspaceFileIndexContributor : WorkspaceFileIndexContributor<PackageMarkerEntity> {
+internal class PackageMarkerEntityWorkspaceFileIndexContributor : WorkspaceFileIndexContributor<PackageMarkerEntity> {
   override val entityClass: Class<PackageMarkerEntity> = PackageMarkerEntity::class.java
 
   override fun registerFileSets(
