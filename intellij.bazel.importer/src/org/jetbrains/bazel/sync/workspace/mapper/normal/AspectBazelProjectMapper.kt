@@ -40,7 +40,6 @@ import org.jetbrains.bazel.sync.workspace.model.BspMappings
 import org.jetbrains.bazel.sync.workspace.model.Library
 import org.jetbrains.bazel.sync.workspace.model.NonModuleTarget
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
-import org.jetbrains.bsp.protocol.BuildTargetTag
 import org.jetbrains.bsp.protocol.FeatureFlags
 import org.jetbrains.bsp.protocol.LibraryItem
 import org.jetbrains.bsp.protocol.RawBuildTarget
@@ -886,7 +885,7 @@ internal class AspectBazelProjectMapper(
   ): RawBuildTarget? {
     val target = targetData.target
     val label = targetData.label
-    val resolvedDependencies = resolveDirectDependencies(target)
+    val resolvedDependencies = resolveDirectDependencies(target, dependencyGraph)
     // https://youtrack.jetbrains.com/issue/BAZEL-983: extra libraries can override some library versions, so they should be put before
     val (extraLibraries, lowPriorityExtraLibraries) = targetData.extraLibraries.partition { !it.isLowPriority }
     val shardFolkDependencies: List<DependencyLabel> = resolveShardFolkDependencies(target, dependencyGraph).map { DependencyLabel(it) }
@@ -915,8 +914,21 @@ internal class AspectBazelProjectMapper(
     )
   }
 
-  private fun resolveDirectDependencies(target: TargetInfo): List<DependencyLabel> =
-    target.depsList.map { it.toDependencyLabel() }
+  private fun resolveDirectDependencies(target: TargetInfo, dependencyGraph: DependencyGraph): List<DependencyLabel> =
+    target.depsList.map { dep ->
+      val depLabel = dep.toDependencyLabel()
+      // Umbrella targets (java_incremental_library) place their shard targets in runtime_deps so
+      // they arrive here with isRuntime=true. Promote them to compile-time so IntelliJ can resolve
+      // symbols across shards without red code.
+      if (depLabel.isRuntime &&
+        target.tagsList.contains("umbrella") &&
+        dependencyGraph.getTargetInfo(depLabel.label)?.tagsList?.contains("shard") == true
+      ) {
+        depLabel.copy(isRuntime = false)
+      } else {
+        depLabel
+      }
+    }
 
   private fun BspTargetInfo.Dependency.toDependencyLabel(): DependencyLabel =
     DependencyLabel(
