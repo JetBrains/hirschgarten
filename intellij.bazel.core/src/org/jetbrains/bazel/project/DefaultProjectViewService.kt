@@ -5,7 +5,6 @@ import com.intellij.openapi.application.readAction
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
-import com.intellij.project.stateStore
 import com.intellij.psi.PsiDocumentManager
 import com.intellij.psi.PsiManager
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -19,6 +18,7 @@ import org.jetbrains.bazel.languages.projectview.ProjectViewFactory
 import org.jetbrains.bazel.languages.projectview.ProjectViewService
 import org.jetbrains.bazel.languages.projectview.imports.resolvedFileOrNull
 import org.jetbrains.bazel.languages.projectview.psi.ProjectViewPsiFile
+import org.jetbrains.bazel.sync.environment.stateStoreOrNull
 import org.jetbrains.bazel.utils.findVirtualFile
 import java.nio.file.Path
 
@@ -79,7 +79,7 @@ class DefaultProjectViewService(private val project: Project) : ProjectViewServi
   }
 
   override val projectViewPath: Path?
-    get() = (project.stateStore.storeDescriptor as? BazelProjectStoreDescriptor)?.projectViewFile
+    get() = (project.stateStoreOrNull?.storeDescriptor as? BazelProjectStoreDescriptor)?.projectViewFile
 
   companion object {
     private val logger = logger<DefaultProjectViewService>()
