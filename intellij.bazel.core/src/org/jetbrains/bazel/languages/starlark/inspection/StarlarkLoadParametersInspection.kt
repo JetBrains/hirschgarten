@@ -17,7 +17,7 @@ import org.jetbrains.bazel.languages.starlark.psi.statements.StarlarkStringLoadV
 
 
 @ApiStatus.Internal
-class StarlarkLoadDuplicateSymbolsInspection : LocalInspectionTool() {
+class StarlarkLoadParametersInspection : LocalInspectionTool() {
   override fun isAvailableForFile(file: PsiFile): Boolean = file.fileType is StarlarkFileType
 
   override fun buildVisitor(holder: ProblemsHolder, isOnTheFly: Boolean): PsiElementVisitor = DuplicateLoadSymbolsVisitor(holder)
@@ -25,7 +25,17 @@ class StarlarkLoadDuplicateSymbolsInspection : LocalInspectionTool() {
   private class DuplicateLoadSymbolsVisitor(private val holder: ProblemsHolder) : StarlarkElementVisitor() {
     override fun visitLoadStatement(node: StarlarkLoadStatement) {
       val seenLocalNames = mutableSetOf<String>()
+
+      if(node.getLoadedFileNamePsi() == null) {
+        holder.registerProblem(node, StarlarkBundle.message("inspection.description.load.missing.filename"))
+        return
+      }
+
       val loadValues = node.getLoadedSymbolsPsi().filterIsInstance<StarlarkLoadValue>().filterNot { it is StarlarkFilenameLoadValue }
+      if (loadValues.isEmpty()) {
+        holder.registerProblem(node, StarlarkBundle.message("inspection.description.load.missing.symbol"))
+        return
+      }
 
       for (value in loadValues) {
         val binding = extractBinding(value) ?: continue
