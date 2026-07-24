@@ -169,6 +169,10 @@ class ImportContext(
   val dummyModuleSplitter: DummyModuleSplitter = DummyModuleSplitter(projectBasePath, fileToTargets)
 }
 
+// intentionally skip propagated aspect IDs, they're stripped before anyway
+private val TARGET_KEY_COMPARATOR = compareBy<WorkspaceTargetKey> { it.label }
+  .thenBy { it.configuration.shortChecksum }
+
 /**
  * Writes the full set of JVM workspace-model entities for all [ImportContext.targets] (plus any dummy modules
  * they split into) directly into the supplied [MutableEntityStorage].
@@ -236,7 +240,10 @@ class JvmTargetEntitiesBuilder(private val ctx: ImportContext) {
     // always write targets with `JvmBuildTarget` present
     ctx.progressReporter?.text(BazelJavaBackendBundle.message("workspace.java.importer.building.model"))
     val writtenNames = mutableSetOf<String>()
-    plans.sortedByDescending { (target, _) -> extractJvmBuildTarget(target) != null }
+    val comparator = compareBy<Pair<RawBuildTarget, TargetPlan>, WorkspaceTargetKey>(TARGET_KEY_COMPARATOR) { (target, _) -> target.key }
+      .thenByDescending { (target, _) -> extractJvmBuildTarget(target) != null }
+      .thenBy { (_, plan) -> plan.moduleName }
+    plans.sortedWith(comparator)
       .forEachIndexed { index, (target, plan) ->
         writeOne(target, plan, packageMarkerBuilder, writtenNames, storage)
         ctx.progressReporter?.fraction((index + 1).toDouble() / plans.size)
@@ -563,7 +570,8 @@ class JvmTargetEntitiesBuilder(private val ctx: ImportContext) {
   }
 
   private fun jdkNameFor(target: WorkspaceTarget): String? =
-    ctx.jvmResolved[target.targetKey.copy(aspectIds = WorkspaceAspectIds.EMPTY)]?.javaHome?.let { ctx.projectName.projectNameToJdkName(it) } ?: ctx.defaultJdkName
+    ctx.jvmResolved[target.targetKey.copy(aspectIds = WorkspaceAspectIds.EMPTY)]?.javaHome?.let { ctx.projectName.projectNameToJdkName(it) }
+    ?: ctx.defaultJdkName
 
   private sealed interface TargetPlan {
     val moduleName: String
