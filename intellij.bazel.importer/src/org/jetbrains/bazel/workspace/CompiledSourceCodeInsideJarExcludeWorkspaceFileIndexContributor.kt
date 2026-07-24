@@ -21,6 +21,7 @@ private val JVM_EXTENSIONS =
     "java",
     "kt",
     "scala",
+    "tasty",
   )
 
 /**
