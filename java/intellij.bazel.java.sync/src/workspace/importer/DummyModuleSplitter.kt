@@ -61,23 +61,28 @@ class DummyModuleSplitter(
     sourceRoots: List<SourceRootBuilder.ResolvedSourceRoot>,
   ): Result {
     val (relevantSourceRoots, irrelevantSourceRoots) = sourceRoots.partition { it.isRelevant() }
-    val sourceRootsForParentDirs = calculateSourceRootsForParentDirs(relevantSourceRoots)
+    val (realSourceRoots, generatedSourceRoots) = relevantSourceRoots.partition { !it.generated }
+    val sourceRootsForParentDirs = realSourceRoots
+      .filter { it.sourcePath.startsWith(projectBasePath) }
+      .parentSourceRoots()
     val relevantSourceRootFiles = relevantSourceRoots.mapNotNullTo(mutableSetOf()) { it.sourcePath.findOrRefreshVirtualFile() }
+    val realSourceRootFiles = realSourceRoots.mapNotNullTo(mutableSetOf()) { it.sourcePath.findOrRefreshVirtualFile() }
     val finder = UnknownFileFinder(knownFiles = relevantSourceRootFiles, relevantExtensions = Constants.JVM_LANGUAGES_EXTENSIONS)
     val mergedSourceRootVotes = sourceRootsForParentDirs
       .restoreSourceRootFromPackagePrefix(finder, limit = baseDirectory)
       .preferShorterPrefix()
 
     if (BazelFeatureFlags.mergeSourceRoots) {
-      val mergedSourceRoots =
+      val mergedRealSourceRoots =
         tryMergeSources(
-          sourceRootFiles = relevantSourceRootFiles,
+          sourceRootFiles = realSourceRootFiles,
           mergeSourceRootVotes = mergedSourceRootVotes,
           sourceRootsForParentDirsVotes = sourceRootsForParentDirs,
           finder = finder,
         )
-      if (mergedSourceRoots != null) {
-        return MergedRoots(mergedSourceRoots = mergedSourceRoots + irrelevantSourceRoots)
+      if (mergedRealSourceRoots != null) {
+        val mergedGeneratedSourceRoots = tryMergeGeneratedSources(generatedSourceRoots, finder) ?: generatedSourceRoots
+        return MergedRoots(mergedSourceRoots = mergedRealSourceRoots + mergedGeneratedSourceRoots + irrelevantSourceRoots)
       }
     }
     val dummySourceRoots =
@@ -153,6 +158,18 @@ class DummyModuleSplitter(
     return mergedSourceRoots
   }
 
+  private fun tryMergeGeneratedSources(
+    generatedSourceRoots: List<SourceRootBuilder.ResolvedSourceRoot>,
+    finder: UnknownFileFinder,
+  ): List<SourceRootBuilder.ResolvedSourceRoot>? {
+    if (generatedSourceRoots.isEmpty()) return emptyList()
+    val generatedFiles = generatedSourceRoots.mapNotNullTo(mutableSetOf()) { it.sourcePath.findOrRefreshVirtualFile() }
+    val votes = generatedSourceRoots.parentSourceRoots(generated = true)
+      .restoreSourceRootFromPackagePrefix(finder)
+      .preferShorterPrefix()
+    return tryMergeSources(generatedFiles, votes, finder)
+  }
+
   /**
    * If after merging sources one source root becomes a parent of another, IDEA only considers the inner root
    * because of how the workspace model works. This can cause red code, e.g., on https://github.com/bazelbuild/bazel .
@@ -170,24 +187,25 @@ class DummyModuleSplitter(
    * Returns a map from a restored source root to the number of "votes" - the number of original source files
    * that "voted" for that root.
    */
-  private fun calculateSourceRootsForParentDirs(
-    sourceRoots: List<SourceRootBuilder.ResolvedSourceRoot>,
+  private fun List<SourceRootBuilder.ResolvedSourceRoot>.parentSourceRoots(
+    generated: Boolean = false,
   ): Map<SourceRootBuilder.ResolvedSourceRoot, Int> =
-    sourceRoots
-      .asSequence()
-      .filter { root -> !root.generated && root.sourcePath.startsWith(projectBasePath) }
-      .mapNotNull { sourceRootForParentDir(it) }
+    asSequence()
+      .mapNotNull { sourceRootForParentDir(it, generated) }
       .groupingBy { it }
       .eachCount()
 }
 
-private fun sourceRootForParentDir(sourceRoot: SourceRootBuilder.ResolvedSourceRoot): SourceRootBuilder.ResolvedSourceRoot? {
+private fun sourceRootForParentDir(
+  sourceRoot: SourceRootBuilder.ResolvedSourceRoot,
+  generated: Boolean,
+): SourceRootBuilder.ResolvedSourceRoot? {
   if (sourceRoot.sourcePath.isDirectory()) return null
   val sourceParent = sourceRoot.sourcePath.parent.pathString
   val sourceRootPath = Path(sourceParent)
   return SourceRootBuilder.ResolvedSourceRoot(
     sourcePath = sourceRootPath,
-    generated = false,
+    generated = generated,
     packagePrefix = sourceRoot.packagePrefix,
     rootType = sourceRoot.rootType,
   )

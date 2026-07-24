@@ -1,8 +1,10 @@
 package org.jetbrains.bazel.workspace.importer
 
 import com.intellij.platform.workspace.jps.entities.SourceRootTypeId
+import com.intellij.util.io.createDirectories
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.types.shouldBeInstanceOf
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.sync.workspace.snapshot.File2TargetMap
 import org.jetbrains.bazel.sync.workspace.snapshot.File2TargetMapBuilder
@@ -11,7 +13,6 @@ import org.jetbrains.bazel.workspace.importer.SourceRootBuilder.ResolvedSourceRo
 import org.jetbrains.bazel.workspace.model.test.framework.WorkspaceModelBaseTest
 import org.junit.jupiter.api.Test
 import java.nio.file.Path
-import kotlin.io.path.createDirectories
 import kotlin.io.path.createFile
 
 internal class DummyModuleSplitterTest : WorkspaceModelBaseTest() {
@@ -33,8 +34,10 @@ internal class DummyModuleSplitterTest : WorkspaceModelBaseTest() {
       ),
     )
 
-    (result as DummyModuleSplitter.MergedRoots).mergedSourceRoots shouldContainExactlyInAnyOrder
-      listOf(
+    result
+      .shouldBeInstanceOf<DummyModuleSplitter.MergedRoots>()
+      .mergedSourceRoots
+      .shouldContainExactlyInAnyOrder(
         sourceRoot(packageA1, packagePrefix = ""),
         sourceRoot(irrelevant, packagePrefix = ""),
       )
@@ -57,8 +60,10 @@ internal class DummyModuleSplitterTest : WorkspaceModelBaseTest() {
       ),
     )
 
-    (result as DummyModuleSplitter.MergedRoots).mergedSourceRoots shouldContainExactlyInAnyOrder
-      listOf(sourceRoot(packageA1, packagePrefix = ""))
+    result
+      .shouldBeInstanceOf<DummyModuleSplitter.MergedRoots>()
+      .mergedSourceRoots
+      .shouldContainExactlyInAnyOrder(listOf(sourceRoot(packageA1, packagePrefix = "")))
   }
 
   @Test
@@ -79,16 +84,61 @@ internal class DummyModuleSplitterTest : WorkspaceModelBaseTest() {
   }
 
   @Test
-  fun `should not create dummy modules for generated source roots`() {
+  fun `should merge multiple generated sources`() {
     val moduleRoot = projectBasePath.resolve("module").createDirectories()
-    val file = moduleRoot.resolve("File.java").createFile()
+    val file1 = moduleRoot.resolve("File1.java").createFile()
+    val file2 = moduleRoot
+      .resolve("nested")
+      .createDirectories()
+      .resolve("File2.java")
+      .createFile()
 
     val result = DummyModuleSplitter(projectBasePath, File2TargetMap.EMPTY).split(
       baseDirectory = moduleRoot.toAbsolutePath(),
-      sourceRoots = listOf(sourceRoot(file, packagePrefix = "", generated = true)),
+      sourceRoots = listOf(
+        sourceRoot(file1, packagePrefix = "", generated = true),
+        sourceRoot(file2, packagePrefix = "", generated = true),
+      ),
     )
+    result
+      .shouldBeInstanceOf<DummyModuleSplitter.MergedRoots>()
+      .mergedSourceRoots
+      .shouldContainExactlyInAnyOrder(listOf(sourceRoot(moduleRoot, packagePrefix = "", generated = true)))
+  }
 
-    (result as DummyModuleSplitter.DummyModulesToAdd).dummies shouldBe emptyList()
+  @Test
+  fun `should merge real and generated sources separately`() {
+    val moduleRoot = projectBasePath.resolve("module").createDirectories()
+    val srcRoot = moduleRoot.resolve("src/main/kotlin").createDirectories()
+    val file1 = srcRoot.resolve("File1.kt").createFile()
+    val file2 = srcRoot
+      .resolve("nested")
+      .createDirectories()
+      .resolve("File2.kt")
+      .createFile()
+    val genRoot = projectBasePath.resolve("bazel-out/bin/module").createDirectories()
+    val genFile1 = genRoot.resolve("GenFile1.kt").createFile()
+    val genFile2 = genRoot
+      .resolve("nested")
+      .createDirectories()
+      .resolve("GenFile2.kt")
+      .createFile()
+    val result = DummyModuleSplitter(projectBasePath, File2TargetMap.EMPTY).split(
+      baseDirectory = moduleRoot.toAbsolutePath(),
+      sourceRoots = listOf(
+        sourceRoot(file1, packagePrefix = "com.example"),
+        sourceRoot(file2, packagePrefix = "com.example"),
+        sourceRoot(genFile1, packagePrefix = "com.example.gen", generated = true),
+        sourceRoot(genFile2, packagePrefix = "com.example.gen", generated = true),
+      ),
+    )
+    result
+      .shouldBeInstanceOf<DummyModuleSplitter.MergedRoots>()
+      .mergedSourceRoots
+      .shouldContainExactlyInAnyOrder(
+        sourceRoot(srcRoot, packagePrefix = "com.example", generated = false),
+        sourceRoot(genRoot, packagePrefix = "com.example.gen", generated = true),
+      )
   }
 
   @Test
@@ -107,8 +157,10 @@ internal class DummyModuleSplitterTest : WorkspaceModelBaseTest() {
       ),
     )
 
-    (result as DummyModuleSplitter.MergedRoots).mergedSourceRoots shouldContainExactlyInAnyOrder
-      listOf(sourceRoot(packageA1, packagePrefix = "", rootType = JAVA_TEST_SOURCE_ROOT_TYPE))
+    result
+      .shouldBeInstanceOf<DummyModuleSplitter.MergedRoots>()
+      .mergedSourceRoots
+      .shouldContainExactlyInAnyOrder(sourceRoot(packageA1, packagePrefix = "", rootType = JAVA_TEST_SOURCE_ROOT_TYPE))
   }
 
   @Test
@@ -128,8 +180,10 @@ internal class DummyModuleSplitterTest : WorkspaceModelBaseTest() {
       ),
     )
 
-    (result as DummyModuleSplitter.MergedRoots).mergedSourceRoots shouldContainExactlyInAnyOrder
-      listOf(sourceRoot(javaRoot, packagePrefix = "", rootType = JAVA_TEST_SOURCE_ROOT_TYPE))
+    result
+      .shouldBeInstanceOf<DummyModuleSplitter.MergedRoots>()
+      .mergedSourceRoots
+      .shouldContainExactlyInAnyOrder(sourceRoot(javaRoot, packagePrefix = "", rootType = JAVA_TEST_SOURCE_ROOT_TYPE))
   }
 
   @Test
@@ -148,9 +202,10 @@ internal class DummyModuleSplitterTest : WorkspaceModelBaseTest() {
         sourceRoot(file2, packagePrefix = "packageA2"),
       ),
     )
-
-    (result as DummyModuleSplitter.MergedRoots).mergedSourceRoots shouldContainExactlyInAnyOrder
-      listOf(sourceRoot(packageA2, packagePrefix = "packageA2"))
+    result
+      .shouldBeInstanceOf<DummyModuleSplitter.MergedRoots>()
+      .mergedSourceRoots
+      .shouldContainExactlyInAnyOrder(sourceRoot(packageA2, packagePrefix = "packageA2"))
   }
 
   @Test
@@ -165,8 +220,10 @@ internal class DummyModuleSplitterTest : WorkspaceModelBaseTest() {
       sourceRoots = listOf(sourceRoot(file, packagePrefix = "org.example.packageA2")),
     )
 
-    (result as DummyModuleSplitter.MergedRoots).mergedSourceRoots shouldContainExactlyInAnyOrder
-      listOf(sourceRoot(packageA1, packagePrefix = "org.example"))
+    result
+      .shouldBeInstanceOf<DummyModuleSplitter.MergedRoots>()
+      .mergedSourceRoots
+      .shouldContainExactlyInAnyOrder(sourceRoot(packageA1, packagePrefix = "org.example"))
   }
 
   @Test
@@ -185,7 +242,11 @@ internal class DummyModuleSplitterTest : WorkspaceModelBaseTest() {
       sourceRoots = listOf(sourceRoot(file1, packagePrefix = "packageA2")),
     )
 
-    (result as DummyModuleSplitter.DummyModulesToAdd).dummies.size shouldBe 1
+    result
+      .shouldBeInstanceOf<DummyModuleSplitter.DummyModulesToAdd>()
+      .dummies
+      .size
+      .shouldBe(1)
   }
 
   @Test
@@ -207,8 +268,10 @@ internal class DummyModuleSplitterTest : WorkspaceModelBaseTest() {
       ),
     )
 
-    (result as DummyModuleSplitter.MergedRoots).mergedSourceRoots shouldContainExactlyInAnyOrder
-      listOf(sourceRoot(packageA1, packagePrefix = ""))
+    result
+      .shouldBeInstanceOf<DummyModuleSplitter.MergedRoots>()
+      .mergedSourceRoots
+      .shouldContainExactlyInAnyOrder(sourceRoot(packageA1, packagePrefix = ""))
   }
 
   @Test
@@ -224,8 +287,10 @@ internal class DummyModuleSplitterTest : WorkspaceModelBaseTest() {
       sourceRoots = listOf(sourceRoot(file1, packagePrefix = "packageA1.packageA2")),
     )
 
-    (result as DummyModuleSplitter.MergedRoots).mergedSourceRoots shouldContainExactlyInAnyOrder
-      listOf(sourceRoot(packageA2, packagePrefix = "packageA1.packageA2"))
+    result
+      .shouldBeInstanceOf<DummyModuleSplitter.MergedRoots>()
+      .mergedSourceRoots
+      .shouldContainExactlyInAnyOrder(sourceRoot(packageA2, packagePrefix = "packageA1.packageA2"))
   }
 
   @Test
@@ -245,8 +310,10 @@ internal class DummyModuleSplitterTest : WorkspaceModelBaseTest() {
       ),
     )
 
-    (result as DummyModuleSplitter.MergedRoots).mergedSourceRoots shouldContainExactlyInAnyOrder
-      listOf(sourceRoot(moduleRoot, packagePrefix = ""))
+    result
+      .shouldBeInstanceOf<DummyModuleSplitter.MergedRoots>()
+      .mergedSourceRoots
+      .shouldContainExactlyInAnyOrder(sourceRoot(moduleRoot, packagePrefix = ""))
   }
 
   @Test
@@ -266,8 +333,10 @@ internal class DummyModuleSplitterTest : WorkspaceModelBaseTest() {
       ),
     )
 
-    (result as DummyModuleSplitter.MergedRoots).mergedSourceRoots shouldContainExactlyInAnyOrder
-      listOf(sourceRoot(srcDir, packagePrefix = "project"))
+    result
+      .shouldBeInstanceOf<DummyModuleSplitter.MergedRoots>()
+      .mergedSourceRoots
+      .shouldContainExactlyInAnyOrder(sourceRoot(srcDir, packagePrefix = "project"))
   }
 
   @Test
@@ -286,7 +355,7 @@ internal class DummyModuleSplitterTest : WorkspaceModelBaseTest() {
       sourceRoots = listOf(sourceRoot(file, packagePrefix = "org.example.app")),
     )
 
-    val dummies = (result as DummyModuleSplitter.DummyModulesToAdd).dummies
+    val dummies = result.shouldBeInstanceOf<DummyModuleSplitter.DummyModulesToAdd>().dummies
     dummies.size shouldBe 1
     dummies[0].sourceRoot.sourcePath shouldBe org.toAbsolutePath()
     dummies[0].sourceRoot.packagePrefix shouldBe "org"
@@ -307,7 +376,7 @@ internal class DummyModuleSplitterTest : WorkspaceModelBaseTest() {
       sourceRoots = listOf(sourceRoot(file, packagePrefix = "com.example")),
     )
 
-    val dummies = (result as DummyModuleSplitter.DummyModulesToAdd).dummies
+    val dummies = result.shouldBeInstanceOf<DummyModuleSplitter.DummyModulesToAdd>().dummies
     dummies.size shouldBe 1
     dummies[0].sourceRoot.sourcePath shouldBe moduleRoot.toAbsolutePath()
     dummies[0].sourceRoot.packagePrefix shouldBe ""
@@ -334,7 +403,7 @@ internal class DummyModuleSplitterTest : WorkspaceModelBaseTest() {
       ),
     )
 
-    val dummies = (result as DummyModuleSplitter.DummyModulesToAdd).dummies
+    val dummies = result.shouldBeInstanceOf<DummyModuleSplitter.DummyModulesToAdd>().dummies
     dummies.size shouldBe 1
     dummies[0].sourceRoot.sourcePath shouldBe moduleRoot.toAbsolutePath()
     dummies[0].sourceRoot.packagePrefix shouldBe ""
