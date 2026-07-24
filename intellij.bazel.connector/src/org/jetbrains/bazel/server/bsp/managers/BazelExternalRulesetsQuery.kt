@@ -119,7 +119,7 @@ internal class BazelWorkspaceExternalRulesetsQueryImpl(
   private fun Document.calculateEligibleRules(): List<String> {
     val xPath = XPathFactory.newInstance().newXPath()
     val expression =
-      "/query/rule[contains(@class, 'http_archive') and " +
+      "/query/rule[contains(@class, 'git_repository') or contains(@class, 'http_archive') and " +
         "(not(string[@name='generator_function']) or string[@name='generator_function' and contains(@value, 'http_archive')])" +
         "]//string[@name='name']"
     val eligibleItems = xPath.evaluate(expression, this, XPathConstants.NODESET) as NodeList
