@@ -1,10 +1,12 @@
 package org.jetbrains.bazel.sync.environment
 
+import com.intellij.openapi.components.impl.stores.IProjectStore
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.guessProjectDir
 import com.intellij.openapi.vfs.VirtualFile
-import com.intellij.project.stateStore
+import com.intellij.project.ProjectStoreOwner
+import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.flow.open.BazelProjectStoreDescriptor
 import org.jetbrains.bazel.flow.sync.bazelPaths.BazelBinPathService
 import org.jetbrains.bazel.project.BazelProjectProperties.Companion.bazelProjectProperties
@@ -12,7 +14,7 @@ import org.jetbrains.bazel.utils.findVirtualFile
 
 internal class IJBazelProjectContextService(private val project: Project) : BazelProjectContextService {
   override var isBazelProject: Boolean
-    get() = project.stateStore.storeDescriptor is BazelProjectStoreDescriptor
+    get() = project.stateStoreOrNull?.storeDescriptor is BazelProjectStoreDescriptor
     set(_) = throw UnsupportedOperationException()
 
   private val projectRootDirFallback: VirtualFile? by lazy {
@@ -22,7 +24,7 @@ internal class IJBazelProjectContextService(private val project: Project) : Baze
 
   override var projectRootDir: VirtualFile?
     get() {
-      val bazelProjectStoreDescriptor = project.stateStore.storeDescriptor as? BazelProjectStoreDescriptor
+      val bazelProjectStoreDescriptor = project.stateStoreOrNull?.storeDescriptor as? BazelProjectStoreDescriptor
       return bazelProjectStoreDescriptor?.historicalProjectBasePath?.findVirtualFile() ?: projectRootDirFallback
     }
     set(_) = throw UnsupportedOperationException()
@@ -43,3 +45,11 @@ internal class IJBazelProjectContextService(private val project: Project) : Baze
     }
   override val avoidExternalSystem: Boolean = false
 }
+
+/**
+ * Normal [com.intellij.project.stateStore] throws [IllegalStateException] for [com.intellij.openapi.project.impl.DefaultProject],
+ * this function returns `null` instead.
+ */
+@get:ApiStatus.Internal
+val Project.stateStoreOrNull: IProjectStore?
+  get() = (this as? ProjectStoreOwner)?.componentStore
