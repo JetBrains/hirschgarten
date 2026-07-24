@@ -165,6 +165,25 @@ class StarlarkGlobAnnotatorTest : StarlarkAnnotatorTestCase() {
   }
 
   @Test
+  fun testGlobAnnotatorIsRevalidatedAfterPatternEdit() {
+    myFixture.addFileToProject("example.java", "")
+    myFixture.configureByText(
+      "BUILD",
+      """
+      java_library(
+          name = "myLib",
+          srcs = <error descr="$globMsg">glob</error>([<warning descr="$patternMsg">"*.x<caret>"</warning>]),
+      )
+      """.trimIndent(),
+    )
+    myFixture.checkHighlighting(true, false, false)
+
+    myFixture.type("\bjava")
+
+    myFixture.checkHighlighting(true, false, false)
+  }
+
+  @Test
   fun testUnresolvedGlobPatternsAnnotatorForBazel7() {
     runWithBazel7VersionSet {
       myFixture.configureByText(
