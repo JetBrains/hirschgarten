@@ -410,7 +410,7 @@ class StarlarkFunctionCallValidationInspectionTest : BasePlatformTestCase() {
   }
 
   @Test
-  fun `positional argument not not as a first in global function call should not be highlighted`() {
+  fun `positional argument not as a first in global function call should not be highlighted`() {
     myFixture.configureByText(
       "MODULE.bazel",
       """
@@ -474,6 +474,49 @@ class StarlarkFunctionCallValidationInspectionTest : BasePlatformTestCase() {
                  **kwargs):
             #     my awesome logic based on 'my_custom_param' param value
             _alias(**kwargs)        
+      """.trimIndent(),
+    )
+    myFixture.addFileToProject(
+      "MODULE.bazel",
+      """
+        module(name = "null", version = "0.1.0")
+        bazel_dep(name = "rules_java", version = "8.10.0")
+      """.trimIndent(),
+    )
+    myFixture.configureByText(
+      "BUILD",
+      """
+        load("//:def.bzl", "java_library")
+
+        java_library(
+            name = "example",
+            srcs = ["example.kt"],
+            my_custom_param = True,
+            deps = [],
+        )
+      """.trimIndent(),
+    )
+
+    myFixture.checkHighlighting(true, false, false)
+  }
+
+
+  @Test
+  fun `custom macro with alias pseudo collision should not be highlighted`() {
+    initializeBazelProject(project, myFixture.tempDirPath)
+
+    myFixture.addFileToProject(
+      "def.bzl",
+      """
+        load("@rules_java//java:defs.bzl", _alias = "java_library")
+
+        def _java_library(
+                my_custom_param = False,
+                 **kwargs):
+            #     my awesome logic based on 'my_custom_param' param value
+            _alias(**kwargs)        
+            
+        java_library = _java_library
       """.trimIndent(),
     )
     myFixture.addFileToProject(
