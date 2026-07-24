@@ -8,12 +8,36 @@ import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
 
 @RunWith(JUnit4::class)
-internal class StarlarkLoadDuplicateSymbolsInspectionTest : BasePlatformTestCase() {
-  private val description = StarlarkBundle.message("inspection.description.load.name.defined.more.than.once")
+internal class StarlarkLoadParametersInspectionTest : BasePlatformTestCase() {
+  private val descriptionMissingFilename = StarlarkBundle.message("inspection.description.load.missing.filename")
+  private val descriptionMissingSymbol = StarlarkBundle.message("inspection.description.load.missing.symbol")
+  private val descriptionDuplicate = StarlarkBundle.message("inspection.description.load.name.defined.more.than.once")
 
   @Before
   fun beforeEach() {
-    myFixture.enableInspections(StarlarkLoadDuplicateSymbolsInspection())
+    myFixture.enableInspections(StarlarkLoadParametersInspection())
+  }
+
+  @Test
+  fun `loads without any parameters should be highlighted`() {
+    myFixture.configureByText(
+      "example.bzl",
+      """
+        <error descr="$descriptionMissingFilename">load()</error>
+      """.trimIndent()
+    )
+    myFixture.checkHighlighting(true, false, false)
+  }
+
+  @Test
+  fun `loads that are missing load symbols should be highlighted`() {
+    myFixture.configureByText(
+      "example.bzl",
+      """
+        <error descr="$descriptionMissingSymbol">load("//pkg:file.bzl")</error>
+      """.trimIndent()
+    )
+    myFixture.checkHighlighting(true, false, false)
   }
 
   @Test
@@ -21,7 +45,7 @@ internal class StarlarkLoadDuplicateSymbolsInspectionTest : BasePlatformTestCase
     myFixture.configureByText(
       "example.bzl",
       """
-        load("//pkg:file.bzl", "foo", <error descr="$description">foo</error> = "bar")
+        load("//pkg:file.bzl", "foo", <error descr="$descriptionDuplicate">foo</error> = "bar")
       """.trimIndent()
     )
     myFixture.checkHighlighting(true, false, false)
@@ -32,7 +56,7 @@ internal class StarlarkLoadDuplicateSymbolsInspectionTest : BasePlatformTestCase
     myFixture.configureByText(
       "example.bzl",
       """
-        load("//pkg:file.bzl", "foo", <error descr="$description">"foo"</error>)
+        load("//pkg:file.bzl", "foo", <error descr="$descriptionDuplicate">"foo"</error>)
       """.trimIndent()
     )
     myFixture.checkHighlighting(true, false, false)
@@ -43,7 +67,7 @@ internal class StarlarkLoadDuplicateSymbolsInspectionTest : BasePlatformTestCase
     myFixture.configureByText(
       "example.bzl",
       """
-        load("//pkg:file.bzl", foo = "bar", <error descr="$description">foo</error> = "baz")
+        load("//pkg:file.bzl", foo = "bar", <error descr="$descriptionDuplicate">foo</error> = "baz")
       """.trimIndent()
     )
     myFixture.checkHighlighting(true, false, false)

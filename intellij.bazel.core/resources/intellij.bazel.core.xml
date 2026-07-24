@@ -443,12 +443,12 @@
                      implementationClass="org.jetbrains.bazel.languages.starlark.inspection.StarlarkLoadPrivateSymbolInspection"/>
 
     <localInspection language="Starlark"
-                     key="inspection.display.name.starlark.load.duplicate.symbols.check"
+                     key="inspection.display.name.starlark.load.parameters.check"
                      groupPath="Bazel"
                      groupKey="starlark.inspection.group.name"
                      enabledByDefault="true"
                      level="ERROR"
-                     implementationClass="org.jetbrains.bazel.languages.starlark.inspection.StarlarkLoadDuplicateSymbolsInspection"/>
+                     implementationClass="org.jetbrains.bazel.languages.starlark.inspection.StarlarkLoadParametersInspection"/>
 
     <localInspection language="Starlark"
                      key="inspection.display.name.starlark.control.flow.context.check"
