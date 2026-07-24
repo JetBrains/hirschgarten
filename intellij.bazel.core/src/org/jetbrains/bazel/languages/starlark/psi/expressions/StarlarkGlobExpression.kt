@@ -3,6 +3,9 @@ package org.jetbrains.bazel.languages.starlark.psi.expressions
 import com.intellij.lang.ASTNode
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiElement
+import com.intellij.psi.util.CachedValueProvider
+import com.intellij.psi.util.CachedValuesManager
+import com.intellij.psi.util.PsiModificationTracker
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.languages.starlark.elements.StarlarkElementTypes
 import org.jetbrains.bazel.languages.starlark.globbing.StarlarkGlob
@@ -61,8 +64,8 @@ class StarlarkGlobExpression(node: ASTNode) : StarlarkBaseElement(node) {
     return StarlarkGlobReference(this)
   }
 
-  private val glob: Lazy<StarlarkGlob?> = lazy(LazyThreadSafetyMode.SYNCHRONIZED) {
-    val containingDirectory = containingFile.parent?.virtualFile ?: return@lazy null
+  private fun buildGlob(): StarlarkGlob? {
+    val containingDirectory = containingFile.parent?.virtualFile ?: return null
 
     fun listContents(expr: PsiElement?): List<String> {
       if (expr !is StarlarkListLiteralExpression) {
@@ -77,7 +80,7 @@ class StarlarkGlobExpression(node: ASTNode) : StarlarkBaseElement(node) {
       dir.path == base || findBuildFile(dir) == null
     }
 
-    StarlarkGlob
+    return StarlarkGlob
       .forPath(containingDirectory)
       .addPatterns(listContents(getIncludes()))
       .addExcludes(listContents(getExcludes()))
@@ -86,5 +89,7 @@ class StarlarkGlobExpression(node: ASTNode) : StarlarkBaseElement(node) {
       .build()
   }
 
-  fun getGlob(): StarlarkGlob?  = glob.value
+  fun getGlob(): StarlarkGlob? = CachedValuesManager.getCachedValue(this) {
+    CachedValueProvider.Result.create(buildGlob(), PsiModificationTracker.MODIFICATION_COUNT)
+  }
 }
