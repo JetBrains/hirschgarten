@@ -3,14 +3,16 @@ package org.jetbrains.bazel.sync.environment
 import com.intellij.openapi.components.PersistentStateComponent
 import com.intellij.openapi.components.Storage
 import com.intellij.openapi.components.StoragePathMacros
+import com.intellij.openapi.components.impl.stores.IProjectStore
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.guessProjectDir
 import com.intellij.openapi.util.io.toNioPathOrNull
 import com.intellij.openapi.vfs.VirtualFile
-import com.intellij.project.stateStore
-import org.jetbrains.bazel.flow.open.BazelProjectStoreDescriptor
+import com.intellij.project.ProjectStoreOwner
+import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.commons.BazelRelease
 import org.jetbrains.bazel.commons.toVersionString
+import org.jetbrains.bazel.flow.open.BazelProjectStoreDescriptor
 import org.jetbrains.bazel.utils.findVirtualFile
 import java.nio.file.Path
 
@@ -28,11 +30,11 @@ internal class IJBazelProjectContextService(private val project: Project)
   override var bazelRelease: BazelRelease? = null
 
   override val isBazelProject: Boolean
-    get() = project.stateStore.storeDescriptor is BazelProjectStoreDescriptor
+    get() = project.stateStoreOrNull?.storeDescriptor is BazelProjectStoreDescriptor
 
   override val projectRootDir: VirtualFile?
     get() {
-      val bazelProjectStoreDescriptor = project.stateStore.storeDescriptor as? BazelProjectStoreDescriptor
+      val bazelProjectStoreDescriptor = project.stateStoreOrNull?.storeDescriptor as? BazelProjectStoreDescriptor
       return bazelProjectStoreDescriptor?.historicalProjectBasePath?.findVirtualFile()
              // Fallback for running a Bazel run configuration in a non-Bazel project
              ?: project.guessProjectDir()
@@ -61,3 +63,12 @@ internal class IJBazelProjectContextService(private val project: Project)
     var bazelReleaseVersion: String? = null,
   )
 }
+
+/**
+ * Normal [com.intellij.project.stateStore] throws [IllegalStateException] for [com.intellij.openapi.project.impl.DefaultProject],
+ * this function returns `null` instead.
+ */
+@get:ApiStatus.Internal
+val Project.stateStoreOrNull: IProjectStore?
+  get() = (this as? ProjectStoreOwner)?.componentStore
+
