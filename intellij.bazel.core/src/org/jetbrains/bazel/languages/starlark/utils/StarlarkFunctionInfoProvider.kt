@@ -14,7 +14,6 @@ import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkReferenceE
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkStringLiteralExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkTargetExpression
 import org.jetbrains.bazel.languages.starlark.psi.functions.StarlarkCallable
-import org.jetbrains.bazel.languages.starlark.psi.functions.StarlarkFunctionDeclaration
 import org.jetbrains.bazel.languages.starlark.psi.functions.StarlarkKeywordOnlyBoundary
 import org.jetbrains.bazel.languages.starlark.psi.functions.StarlarkKeywordVariadicParameter
 import org.jetbrains.bazel.languages.starlark.psi.functions.StarlarkMandatoryParameter
@@ -52,7 +51,7 @@ data class StarlarkFuncParam(
 class StarlarkGlobalFunctionInfoProvider : StarlarkFunctionInfoProvider {
   override fun resolve(call: StarlarkCallExpression): StarlarkFunctionInfo? {
     if (call.parent?.parent !is StarlarkFile) return null
-    if (call.resolvesToFunctionDeclaration()) return null
+    if (call.resolvesToValidTarget()) return null
 
     val functionName = call.firstChild?.text ?: return null
     val function = BazelGlobalFunctions.getFunctionByName(functionName, call.project) ?: return null
@@ -62,9 +61,10 @@ class StarlarkGlobalFunctionInfoProvider : StarlarkFunctionInfoProvider {
     return StarlarkFunctionInfo(params, environment)
   }
 
-  private fun StarlarkCallExpression.resolvesToFunctionDeclaration(): Boolean {
+  private fun StarlarkCallExpression.resolvesToValidTarget(): Boolean {
     val calledExpression = getCalledExpression() as? StarlarkReferenceExpression ?: return false
-    return calledExpression.reference?.resolve() is StarlarkFunctionDeclaration
+    val resolved = calledExpression.reference?.resolve()
+    return resolved != null
   }
 }
 
