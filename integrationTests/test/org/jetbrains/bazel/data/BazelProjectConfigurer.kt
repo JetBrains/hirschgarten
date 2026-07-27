@@ -2,6 +2,7 @@ package org.jetbrains.bazel.data
 
 import com.intellij.ide.starter.ide.IDETestContext
 import org.jetbrains.bazel.commons.constants.Constants
+import org.jetbrains.bazel.test.framework.toBazelRcPath
 import java.nio.file.Path
 import kotlin.io.path.ExperimentalPathApi
 import kotlin.io.path.deleteIfExists
@@ -13,13 +14,15 @@ import kotlin.io.path.name
 import kotlin.io.path.writeText
 
 object BazelProjectConfigurer {
+  private const val USER_BAZELRC_IMPORT = "try-import %workspace%/user.bazelrc"
+
   fun configureProjectBeforeUse(
     context: IDETestContext,
     createProjectView: Boolean = true,
     bazelServerMaxIdleSecs: Int? = null,
   ) {
     runBazelClean(context)
-    configureProjectBeforeUseWithoutBazelClean(
+    configureProjectFiles(
       context,
       createProjectView = createProjectView,
       bazelServerMaxIdleSecs = bazelServerMaxIdleSecs,
@@ -28,6 +31,16 @@ object BazelProjectConfigurer {
 
   @OptIn(ExperimentalPathApi::class)
   fun configureProjectBeforeUseWithoutBazelClean(
+    context: IDETestContext,
+    removeDotIdea: Boolean = true,
+    createProjectView: Boolean = true,
+    bazelServerMaxIdleSecs: Int? = null,
+  ) {
+    configureProjectFiles(context, removeDotIdea, createProjectView, bazelServerMaxIdleSecs)
+  }
+
+  @OptIn(ExperimentalPathApi::class)
+  private fun configureProjectFiles(
     context: IDETestContext,
     removeDotIdea: Boolean = true,
     createProjectView: Boolean = true,
@@ -99,7 +112,6 @@ register_toolchains(
     Path.of(System.getProperty("user.home"), ".cache", "ide-starter-bazel")
 
   private fun configureBazelSettings(context: IDETestContext, bazelServerMaxIdleSecs: Int?) {
-    val bazelrc = context.resolvedBazelProjectHome / ".bazelrc"
     val lines = mutableListOf<String>()
 
     bazelServerMaxIdleSecs?.let { lines.add("startup --max_idle_secs=$it") }
@@ -109,7 +121,7 @@ register_toolchains(
       ?: System.getProperty("ide.starter.bazel.repository.cache")
         ?.let { Path.of(it) }
       ?: defaultCacheRoot.resolve("repository-cache")
-    lines.add("common --repository_cache=$repoCache")
+    lines.add(bazelCacheSetting("repository_cache", repoCache))
 
     val isPerformanceTest = System.getProperty("idea.performance.tests") == "true"
     val diskCache = System.getenv("IDE_STARTER_BAZEL_DISK_CACHE")
@@ -117,7 +129,7 @@ register_toolchains(
       ?: System.getProperty("ide.starter.bazel.disk.cache")
         ?.let { Path.of(it) }
       ?: if (!isPerformanceTest) defaultCacheRoot.resolve("disk-cache") else null
-    diskCache?.let { lines.add("common --disk_cache=$it") }
+    diskCache?.let { lines.add(bazelCacheSetting("disk_cache", it)) }
 
     val downloaderConfigSource = System.getenv("IDE_STARTER_BAZEL_DOWNLOADER_CONFIG")
       ?.let { Path.of(it) }
@@ -138,8 +150,35 @@ register_toolchains(
     lines.add("common --java_language_version=21")
     lines.add("common --tool_java_runtime_version=remotejdk_21")
 
-    bazelrc.toFile().appendText("\n" + lines.joinToString("\n") + "\n")
+    writeGeneratedBazelSettings(context.resolvedBazelProjectHome, lines)
   }
+
+  internal fun writeGeneratedBazelSettings(projectRoot: Path, lines: List<String>) {
+    (projectRoot / "user.bazelrc").writeText(lines.joinToString("\n", postfix = "\n"))
+    ensureUserBazelrcImport(projectRoot / ".bazelrc")
+  }
+
+  // The import must stay after the project's own settings so the generated options win on conflicts.
+  private fun ensureUserBazelrcImport(bazelrc: Path) {
+    val existing = if (bazelrc.exists()) bazelrc.toFile().readText() else ""
+    val lines = existing.lines()
+    val importIndex = lines.indexOfLast { it.trim() == USER_BAZELRC_IMPORT }
+    val settingsAfterImport = importIndex >= 0 && lines.drop(importIndex + 1).any {
+      it.isNotBlank() && !it.trim().startsWith("#")
+    }
+    if (importIndex >= 0 && !settingsAfterImport) return
+    val withoutImport = lines.filter { it.trim() != USER_BAZELRC_IMPORT }.joinToString("\n").trimEnd('\n')
+    bazelrc.writeText(
+      buildString {
+        append(withoutImport)
+        if (isNotEmpty()) appendLine()
+        appendLine(USER_BAZELRC_IMPORT)
+      },
+    )
+  }
+
+  internal fun bazelCacheSetting(name: String, path: Path): String =
+    "common --$name=${path.toBazelRcPath()}"
 
   private fun resolveDownloaderConfigFlag(context: IDETestContext): String {
     val bazelVersionFile = context.resolvedBazelProjectHome / ".bazelversion"
