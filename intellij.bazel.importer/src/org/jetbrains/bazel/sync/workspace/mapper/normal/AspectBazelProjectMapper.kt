@@ -915,20 +915,7 @@ internal class AspectBazelProjectMapper(
   }
 
   private fun resolveDirectDependencies(target: TargetInfo, dependencyGraph: DependencyGraph): List<DependencyLabel> =
-    target.depsList.map { dep ->
-      val depLabel = dep.toDependencyLabel()
-      // Umbrella targets (java_incremental_library) place their shard targets in runtime_deps so
-      // they arrive here with isRuntime=true. Promote them to compile-time so IntelliJ can resolve
-      // symbols across shards without red code.
-      if (depLabel.isRuntime &&
-        target.tagsList.contains("umbrella") &&
-        dependencyGraph.getTargetInfo(depLabel.label)?.tagsList?.contains("shard") == true
-      ) {
-        depLabel.copy(isRuntime = false)
-      } else {
-        depLabel
-      }
-    }
+    Companion.resolveDirectDependencies(target, dependencyGraph)
 
   private fun BspTargetInfo.Dependency.toDependencyLabel(): DependencyLabel =
     DependencyLabel(
@@ -939,21 +926,41 @@ internal class AspectBazelProjectMapper(
 
   private fun List<Library>.toDependencyLabels(): List<DependencyLabel> = this.map { DependencyLabel(it.label) }
 
-  private fun resolveShardFolkDependencies(target: TargetInfo, dependencyGraph: DependencyGraph): List<Label> {
-    if (!target.tagsList.contains("shard")) return emptyList()
-    val umbrellaTargets = dependencyGraph
-      .getSourcesFromReverseDependencies(target.label())
-      .filter{ it.tagsList.contains("umbrella") }
-    return umbrellaTargets
-      .flatMap { umbrellaTarget ->
-        // Include sources from umbrella targets that depend on this shard
-        umbrellaTarget.depsList.mapNotNull { dependency ->
-          dependencyGraph.getTargetInfo(dependency.label())
-        }
-          .filter { dependencyTargetInfo ->
-            dependencyTargetInfo.tagsList.contains("shard")
-          }
+  private fun resolveShardFolkDependencies(target: TargetInfo, dependencyGraph: DependencyGraph): List<Label> =
+    Companion.resolveShardFolkDependencies(target, dependencyGraph)
+
+  companion object {
+    /** Exposed for testing. */
+    internal fun resolveShardFolkDependencies(target: TargetInfo, dependencyGraph: DependencyGraph): List<Label> {
+      if (!target.tagsList.contains("shard")) return emptyList()
+      val umbrellaTargets = dependencyGraph
+        .getSourcesFromReverseDependencies(target.label())
+        .filter { it.tagsList.contains("umbrella") }
+      return umbrellaTargets.flatMap { umbrellaTarget ->
+        umbrellaTarget.depsList
+          .mapNotNull { dep -> dependencyGraph.getTargetInfo(dep.label()) }
+          .filter { it.tagsList.contains("shard") }
           .map { it.label() }
+      }
+    }
+
+    /** Exposed for testing. */
+    internal fun resolveDirectDependencies(target: TargetInfo, dependencyGraph: DependencyGraph): List<DependencyLabel> =
+      target.depsList.map { dep ->
+        val label = dep.label()
+        val isRuntime = dep.dependencyType == BspTargetInfo.Dependency.DependencyType.RUNTIME
+        val depLabel = DependencyLabel(label = label, isRuntime = isRuntime, exported = dep.exported)
+        // Umbrella targets (java_incremental_library) place their shard targets in runtime_deps so
+        // they arrive here with isRuntime=true. Promote them to compile-time so IntelliJ can resolve
+        // symbols across shards without red code.
+        if (depLabel.isRuntime &&
+          target.tagsList.contains("umbrella") &&
+          dependencyGraph.getTargetInfo(depLabel.label)?.tagsList?.contains("shard") == true
+        ) {
+          depLabel.copy(isRuntime = false)
+        } else {
+          depLabel
+        }
       }
   }
 
