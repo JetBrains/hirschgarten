@@ -2,8 +2,20 @@ package org.jetbrains.bazel.data
 
 import com.intellij.ide.starter.ide.IDETestContext
 import org.jetbrains.bazel.commons.constants.Constants
+import org.jetbrains.bazel.test.framework.serializeBazelRcPath
 import org.jetbrains.bazel.test.framework.toBazelRcPath
+import java.io.IOException
+import java.nio.charset.StandardCharsets
+import java.nio.file.FileVisitResult
+import java.nio.file.Files
 import java.nio.file.Path
+import java.nio.file.SimpleFileVisitor
+import java.nio.file.attribute.BasicFileAttributes
+import java.security.MessageDigest
+import java.util.HexFormat
+import java.util.Locale
+import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.atomic.AtomicLong
 import kotlin.io.path.ExperimentalPathApi
 import kotlin.io.path.deleteIfExists
 import kotlin.io.path.deleteRecursively
@@ -15,6 +27,15 @@ import kotlin.io.path.writeText
 
 object BazelProjectConfigurer {
   private const val USER_BAZELRC_IMPORT = "try-import %workspace%/user.bazelrc"
+  private val nestedBazelInvocationSequence = AtomicLong()
+  private val nestedBazelProcessIdentity = "${ProcessHandle.current().pid()}-${System.currentTimeMillis()}"
+  private val windowsNestedBazelRoots = ConcurrentHashMap.newKeySet<Path>()
+
+  init {
+    Runtime.getRuntime().addShutdownHook(
+      Thread(::cleanupWindowsNestedBazelRoots, "Windows nested Bazel roots cleanup"),
+    )
+  }
 
   fun configureProjectBeforeUse(
     context: IDETestContext,
@@ -63,6 +84,7 @@ object BazelProjectConfigurer {
   }
 
   fun addHermeticCcToolchain(context: IDETestContext) {
+    if (IdeStarterOs.current() == IdeStarterOs.WINDOWS) return
     val moduleFile = context.resolvedBazelProjectHome / "MODULE.bazel"
     val toolchainConfig = """
 bazel_dep(name = "hermetic_cc_toolchain", version = "4.1.0")
@@ -114,6 +136,7 @@ register_toolchains(
   private fun configureBazelSettings(context: IDETestContext, bazelServerMaxIdleSecs: Int?) {
     val lines = mutableListOf<String>()
 
+    lines.addAll(nestedBazelStartupOptions(context.resolvedBazelProjectHome, registerCleanup = true))
     bazelServerMaxIdleSecs?.let { lines.add("startup --max_idle_secs=$it") }
 
     val repoCache = System.getenv("IDE_STARTER_BAZEL_REPOSITORY_CACHE")
@@ -153,6 +176,48 @@ register_toolchains(
     writeGeneratedBazelSettings(context.resolvedBazelProjectHome, lines)
   }
 
+  internal fun nestedBazelStartupOptions(
+    projectRoot: Path,
+    environment: Map<String, String> = System.getenv(),
+    hostOs: IdeStarterOs = IdeStarterOs.current(),
+    userHome: String = System.getProperty("user.home"),
+    invocationId: String? = null,
+    registerCleanup: Boolean = false,
+  ): List<String> = if (hostOs == IdeStarterOs.WINDOWS && environment.containsKey("TEST_TMPDIR")) {
+    val home = userHome.trimEnd('/', '\\')
+    val rootKey = windowsNestedBazelRootKey(
+      projectRoot,
+      environment,
+      invocationId ?: "$nestedBazelProcessIdentity-${nestedBazelInvocationSequence.incrementAndGet()}",
+    )
+    val invocationRoot = "$home/ijr/$rootKey"
+    if (registerCleanup) {
+      windowsNestedBazelRoots.add(Path.of(userHome).resolve("ijr").resolve(rootKey))
+    }
+    listOf(
+      "startup --batch",
+      "startup --output_user_root=${serializeBazelRcPath("$invocationRoot/u")}",
+      "startup --install_base=${serializeBazelRcPath("$invocationRoot/i")}",
+      "startup --output_base=${serializeBazelRcPath("$invocationRoot/b")}",
+    )
+  } else {
+    emptyList()
+  }
+
+  private fun windowsNestedBazelRootKey(
+    projectRoot: Path,
+    environment: Map<String, String>,
+    invocationId: String,
+  ): String {
+    val normalizedProjectRoot = projectRoot.toAbsolutePath().normalize().toString()
+      .replace('\\', '/')
+      .lowercase(Locale.US)
+    val matrixVariant = environment[USE_BAZEL_VERSION_ENV].orEmpty()
+    val digest = MessageDigest.getInstance("SHA-256")
+      .digest("$normalizedProjectRoot\n$matrixVariant\n$invocationId".toByteArray(StandardCharsets.UTF_8))
+    return HexFormat.of().formatHex(digest, 0, 8)
+  }
+
   internal fun writeGeneratedBazelSettings(projectRoot: Path, lines: List<String>) {
     (projectRoot / "user.bazelrc").writeText(lines.joinToString("\n", postfix = "\n"))
     ensureUserBazelrcImport(projectRoot / ".bazelrc")
@@ -173,6 +238,48 @@ register_toolchains(
         append(withoutImport)
         if (isNotEmpty()) appendLine()
         appendLine(USER_BAZELRC_IMPORT)
+      },
+    )
+  }
+
+  internal fun cleanupWindowsNestedBazelRoots() {
+    windowsNestedBazelRoots.forEach { root ->
+      try {
+        if (root.exists()) {
+          deleteRecursivelyWithoutFollowingJunctions(root)
+        }
+        windowsNestedBazelRoots.remove(root)
+      } catch (_: Exception) {
+        // Best-effort cleanup; a terminated Bazel process may still hold a Windows file lock.
+      }
+    }
+  }
+
+  // Bazel plants junctions inside the output base (execroot source forest, local external repos).
+  // NIO reports Windows junctions as directories rather than symlinks, so a plain Files.walk would
+  // descend through them and delete the junction targets' contents (e.g. the fixture project).
+  private fun deleteRecursivelyWithoutFollowingJunctions(root: Path) {
+    Files.walkFileTree(
+      root,
+      object : SimpleFileVisitor<Path>() {
+        override fun preVisitDirectory(dir: Path, attrs: BasicFileAttributes): FileVisitResult {
+          if (attrs.isSymbolicLink || attrs.isOther || !attrs.isDirectory) {
+            Files.deleteIfExists(dir)
+            return FileVisitResult.SKIP_SUBTREE
+          }
+          return FileVisitResult.CONTINUE
+        }
+
+        override fun visitFile(file: Path, attrs: BasicFileAttributes): FileVisitResult {
+          Files.deleteIfExists(file)
+          return FileVisitResult.CONTINUE
+        }
+
+        override fun postVisitDirectory(dir: Path, exc: IOException?): FileVisitResult {
+          exc?.let { throw it }
+          Files.deleteIfExists(dir)
+          return FileVisitResult.CONTINUE
+        }
       },
     )
   }
