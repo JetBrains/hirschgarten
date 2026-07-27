@@ -13,6 +13,10 @@ import com.intellij.ide.starter.ide.IDETestContext
 import com.intellij.tools.ide.performanceTesting.commands.goto
 import com.intellij.tools.ide.performanceTesting.commands.waitForSmartMode
 import org.jetbrains.bazel.data.IdeaBazelCases
+import org.jetbrains.bazel.data.BazelProjectConfigurer
+import org.jetbrains.bazel.data.IdeStarterOs
+import org.jetbrains.bazel.data.simpleBazelProject
+import org.jetbrains.bazel.data.preCacheBazelisk
 import org.jetbrains.bazel.base.IdeStarterBaseProjectTest
 import org.jetbrains.bazel.base.assertFileKind
 import org.jetbrains.bazel.base.assertSyncedTargets
@@ -52,6 +56,40 @@ import kotlin.io.path.writeText
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
 
+private val PROJECT_VIEW_COMBINED_PROJECT = simpleBazelProject(
+  // TODO: temporary pin to SBPFT branch bazel/dan/e2e-os-bazel-matrix; repoint to main once the fixture upstreaming lands there
+  revision = "e974ca77b97e65a329f03492f9b556e44f47f648",
+  path = "projectViewCombinedTest",
+  configureProject = { context ->
+    BazelProjectConfigurer.configureProjectBeforeUseWithoutBazelClean(
+      context,
+      createProjectView = false,
+    )
+    preCacheBazelisk(context)
+    if (IdeStarterOs.current() == IdeStarterOs.WINDOWS) {
+      // Hermetic zig toolchains do not work on Windows; the build_flags view points
+      // at the fixture's committed no-op windows_toolchain instead.
+      (context.resolvedProjectHome / "build-flags-with-toolchain.bazelproject").writeText(
+        """
+        derive_targets_from_directories: true
+        index_all_files_in_directories: true
+
+        directories:
+          app
+          common
+          -frontend
+          -webapp
+
+        build_flags:
+          --extra_toolchains=//windows_toolchain:toolchain
+
+        import_depth: 0
+        """.trimIndent() + "\n",
+      )
+    }
+  },
+)
+
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @TestMethodOrder(MethodOrderer.OrderAnnotation::class)
 class ProjectViewCombinedTest : IdeStarterBaseProjectTest() {
@@ -60,7 +98,7 @@ class ProjectViewCombinedTest : IdeStarterBaseProjectTest() {
 
   @BeforeAll
   fun startIdeAndSync() {
-    ctx = createContext("projectViewCombined", IdeaBazelCases.ProjectViewCombined)
+    ctx = createContext("projectViewCombined", IdeaBazelCases.withProject(PROJECT_VIEW_COMBINED_PROJECT))
     bgRun = ctx.runIdeWithDriver(runTimeout = timeout)
     withDriver(bgRun) {
       ideFrame {

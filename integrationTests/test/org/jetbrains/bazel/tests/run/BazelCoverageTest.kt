@@ -9,6 +9,7 @@ import com.intellij.tools.ide.performanceTesting.commands.CommandChain
 import com.intellij.tools.ide.performanceTesting.commands.delay
 import com.intellij.tools.ide.performanceTesting.commands.openFile
 import org.jetbrains.bazel.data.IdeaBazelCases
+import org.jetbrains.bazel.data.simpleBazelProject
 import org.jetbrains.bazel.base.IdeStarterBaseProjectTest
 import org.jetbrains.bazel.base.execute
 import org.jetbrains.bazel.base.syncBazelProject
@@ -17,6 +18,11 @@ import org.jetbrains.bazel.tests.ui.setRunConfigRunWithBazel
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.ValueSource
 import kotlin.time.Duration.Companion.minutes
+
+private val BAZEL_COVERAGE_PROJECT = simpleBazelProject(
+  revision = "cb47ad3072495dd9811da4ae2f346566f8b0c7cf",
+  path = "coverageTest",
+)
 
 /**
  * ```sh
@@ -28,7 +34,10 @@ class BazelCoverageTest : IdeStarterBaseProjectTest() {
   @ParameterizedTest
   @ValueSource(booleans = [false, true])
   fun `run test with coverage and verify results`(runConfigRunWithBazel: Boolean) {
-    createContext("bazelCoverage-${if (runConfigRunWithBazel) "withBazel" else "withoutBazel"}", IdeaBazelCases.BazelCoverage)
+    createContext(
+      "bazelCoverage-${if (runConfigRunWithBazel) "withBazel" else "withoutBazel"}",
+      IdeaBazelCases.withProject(BAZEL_COVERAGE_PROJECT),
+    )
       .setRunConfigRunWithBazel(runConfigRunWithBazel)
       .runIdeWithDriver(runTimeout = timeout)
       .useDriverAndCloseIde {

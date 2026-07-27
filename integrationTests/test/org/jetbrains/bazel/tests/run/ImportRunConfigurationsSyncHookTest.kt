@@ -26,7 +26,9 @@ import com.intellij.ide.starter.ide.IDETestContext
 import com.intellij.tools.ide.performanceTesting.commands.assertCurrentFile
 import com.intellij.tools.ide.performanceTesting.commands.delay
 import io.kotest.matchers.shouldBe
+import org.jetbrains.bazel.data.BazelProjectConfigurer
 import org.jetbrains.bazel.data.IdeaBazelCases
+import org.jetbrains.bazel.data.simpleBazelProject
 import org.jetbrains.bazel.base.execute
 import org.jetbrains.bazel.base.openFile
 import org.jetbrains.bazel.base.syncBazelProject
@@ -41,9 +43,20 @@ import java.awt.event.KeyEvent
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
 
+private val IMPORT_RUN_CONFIGURATIONS_PROJECT = simpleBazelProject(
+  revision = "a59bb1e33ed063e03242d0055054bea97366e23f",
+  path = "importRunConfigurations",
+  configureProject = { context ->
+    BazelProjectConfigurer.configureProjectBeforeUseWithoutBazelClean(
+      context,
+      createProjectView = false,
+    )
+  },
+)
+
 class ImportRunConfigurationsSyncHookTest : IdeStarterCombinedBaseTest() {
   override fun createContext(): IDETestContext =
-    createContext("importRunConfigurationsSyncHook", IdeaBazelCases.ImportRunConfigurationsSyncHook)
+    createContext("importRunConfigurationsSyncHook", IdeaBazelCases.withProject(IMPORT_RUN_CONFIGURATIONS_PROJECT))
 
   @Test
   @Order(1)

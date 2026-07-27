@@ -11,6 +11,8 @@ import com.intellij.driver.sdk.waitForProjectOpen
 import com.intellij.ide.starter.driver.engine.runIdeWithDriver
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.data.IdeaBazelCases
+import org.jetbrains.bazel.data.BazelProjectConfigurer
+import org.jetbrains.bazel.data.simpleBazelProject
 import org.jetbrains.bazel.base.IdeStarterBaseProjectTest
 import org.jetbrains.bazel.base.assertSyncedTargets
 import org.jetbrains.bazel.base.checkIdeaLogForExceptions
@@ -31,11 +33,36 @@ import kotlin.io.path.div
 import kotlin.io.path.writeText
 import kotlin.time.Duration
 
+// TODO: temporary pin to SBPFT branch bazel/dan/e2e-os-bazel-matrix; repoint to main once the fixture upstreaming lands there
+private const val BAZEL_PROJECT_OPEN_REVISION = "e974ca77b97e65a329f03492f9b556e44f47f648"
+
+private fun bazelProjectOpenProject(
+  projectPath: String,
+  configureProject: (com.intellij.ide.starter.ide.IDETestContext) -> Unit = BazelProjectConfigurer::configureProjectBeforeUse,
+) = simpleBazelProject(
+  revision = BAZEL_PROJECT_OPEN_REVISION,
+  path = projectPath,
+  configureProject = configureProject,
+)
+
+private val BAZEL_PROJECT_ROOT = bazelProjectOpenProject("simpleKotlinTest")
+private val BAZEL_MODULE_FILE = bazelProjectOpenProject("simpleKotlinTest/MODULE.bazel")
+private val LEGACY_BAZEL_PROJECT = bazelProjectOpenProject("legacyGooglePluginTest/.ijwb")
+private val BAZEL_PROJECT_WITH_DOT_IDEA = bazelProjectOpenProject(
+  projectPath = "simpleJavaTest",
+  configureProject = { context ->
+    BazelProjectConfigurer.configureProjectBeforeUseWithoutBazelClean(
+      context,
+      removeDotIdea = false,
+    )
+  },
+)
+
 class BazelProjectOpenStarterTest : IdeStarterBaseProjectTest() {
 
   @Test
   fun `open project by root directory should resolve project name`() {
-    val context = createContext("openBazelProjectByProjectRoot", IdeaBazelCases.BazelProjectOpenByRootDir)
+    val context = createContext("openBazelProjectByProjectRoot", IdeaBazelCases.withProject(BAZEL_PROJECT_ROOT))
     context
       .runIdeWithDriver(runTimeout = timeout)
       .useDriverAndCloseIde {
@@ -53,7 +80,7 @@ class BazelProjectOpenStarterTest : IdeStarterBaseProjectTest() {
 
   @Test
   fun `open project by MODULE file should resolve project name`() {
-    val context = createContext("openBazelProjectByProjectModule", IdeaBazelCases.BazelProjectOpenByModuleFile)
+    val context = createContext("openBazelProjectByProjectModule", IdeaBazelCases.withProject(BAZEL_MODULE_FILE))
     context
       .runIdeWithDriver(runTimeout = timeout)
       .useDriverAndCloseIde {
@@ -71,7 +98,7 @@ class BazelProjectOpenStarterTest : IdeStarterBaseProjectTest() {
 
   @Test
   fun `open legacy ijwb project should reopen with MODULE bazel`() {
-    val context = createContext("openLegacyProject", IdeaBazelCases.BazelLegacyPluginProject)
+    val context = createContext("openLegacyProject", IdeaBazelCases.withProject(LEGACY_BAZEL_PROJECT))
     context
       .runIdeWithDriver(runTimeout = timeout)
       .useDriverAndCloseIde {
@@ -86,7 +113,7 @@ class BazelProjectOpenStarterTest : IdeStarterBaseProjectTest() {
 
   @Test
   fun `should not open directory as a bazel project when it contains a dot idea directory`() {
-    val context = createContext("projectWithDotIdeaDir", IdeaBazelCases.BazelProjectWithDotIdeaDirectory)
+    val context = createContext("projectWithDotIdeaDir", IdeaBazelCases.withProject(BAZEL_PROJECT_WITH_DOT_IDEA))
     context
       .runIdeWithDriver(runTimeout = timeout)
       .useDriverAndCloseIde {
@@ -103,7 +130,7 @@ class BazelProjectOpenStarterTest : IdeStarterBaseProjectTest() {
 
   @Test
   fun `should open directory as a bazel project when it contains a dot idea directory and registry flag is enabled`() {
-    val context = createContext("projectWithDotIdeaDir", IdeaBazelCases.BazelProjectWithDotIdeaDirectory)
+    val context = createContext("projectWithDotIdeaDir", IdeaBazelCases.withProject(BAZEL_PROJECT_WITH_DOT_IDEA))
     context
       .setAutoOpenProjectIfPresent(true)
       .runIdeWithDriver(runTimeout = timeout)
@@ -122,7 +149,7 @@ class BazelProjectOpenStarterTest : IdeStarterBaseProjectTest() {
 
   @Test
   fun `opening a project with no project view file should not cause any issues`() {
-    val context = createContext("openSimpleJavaTestWithProjectView", IdeaBazelCases.BazelProjectWithoutProjectview)
+    val context = createContext("openSimpleJavaTestWithProjectView", IdeaBazelCases.withProject(BAZEL_PROJECT_WITH_DOT_IDEA))
     context
       .setAutoOpenProjectIfPresent(true)
       .runIdeWithDriver(runTimeout = timeout)
@@ -143,7 +170,7 @@ class BazelProjectOpenStarterTest : IdeStarterBaseProjectTest() {
 
   @Test
   fun `open project with an broken project view`() {
-    val context = createContext("openProjectWithUnresolvedImport", IdeaBazelCases.BazelProjectOpenByRootDir)
+    val context = createContext("openProjectWithUnresolvedImport", IdeaBazelCases.withProject(BAZEL_PROJECT_ROOT))
 
     val projectViewFile = context.resolvedProjectHome / ".bazelproject"
     projectViewFile.writeText(

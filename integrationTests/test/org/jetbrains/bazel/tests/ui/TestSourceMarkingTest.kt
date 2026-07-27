@@ -7,6 +7,7 @@ import com.intellij.ide.starter.driver.engine.runIdeWithDriver
 import com.intellij.openapi.ui.playback.commands.PlaybackCommandCoroutineAdapter.Companion.CMD_PREFIX
 import com.intellij.tools.ide.performanceTesting.commands.CommandChain
 import org.jetbrains.bazel.data.IdeaBazelCases
+import org.jetbrains.bazel.data.simpleBazelProject
 import org.jetbrains.bazel.base.IdeStarterBaseProjectTest
 import org.jetbrains.bazel.base.checkIdeaLogForExceptions
 import org.jetbrains.bazel.base.execute
@@ -15,10 +16,16 @@ import org.jetbrains.bazel.base.waitForSyncSucceeded
 import org.junit.jupiter.api.Test
 import kotlin.time.Duration.Companion.minutes
 
+private val TEST_SOURCE_MARKING_PROJECT = simpleBazelProject(
+  // TODO: temporary pin to SBPFT branch bazel/dan/e2e-os-bazel-matrix; repoint to main once the fixture upstreaming lands there
+  revision = "e974ca77b97e65a329f03492f9b556e44f47f648",
+  path = "testSourcesMarking",
+)
+
 internal class TestSourceMarkingTest : IdeStarterBaseProjectTest() {
   @Test
   fun test() {
-    val context = createContext("testSourcesMarking", IdeaBazelCases.TestSourcesMarking)
+    val context = createContext("testSourcesMarking", IdeaBazelCases.withProject(TEST_SOURCE_MARKING_PROJECT))
     context
       .runIdeWithDriver(runTimeout = timeout)
       .useDriverAndCloseIde {

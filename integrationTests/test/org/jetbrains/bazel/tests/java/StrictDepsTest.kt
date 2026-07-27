@@ -11,13 +11,47 @@ import com.intellij.tools.ide.performanceTesting.commands.goto
 import com.intellij.tools.ide.performanceTesting.commands.pressKey
 import com.intellij.tools.ide.performanceTesting.commands.waitForSmartMode
 import org.jetbrains.bazel.data.IdeaBazelCases
+import org.jetbrains.bazel.data.BazelProjectConfigurer
+import org.jetbrains.bazel.data.IdeStarterOs
+import org.jetbrains.bazel.data.simpleBazelProject
 import org.jetbrains.bazel.base.IdeStarterBaseProjectTest
 import org.jetbrains.bazel.base.execute
 import org.jetbrains.bazel.base.openFile
 import org.jetbrains.bazel.base.syncBazelProject
 import org.jetbrains.bazel.workspace.model.matchers.shouldBeEqual
 import org.junit.jupiter.api.Test
+import kotlin.io.path.div
+import kotlin.io.path.writeText
 import kotlin.time.Duration.Companion.minutes
+
+private val STRICT_DEPS_PROJECT = simpleBazelProject(
+  // TODO: temporary pin to SBPFT branch bazel/dan/e2e-os-bazel-matrix; repoint to main once the fixture upstreaming lands there
+  revision = "e974ca77b97e65a329f03492f9b556e44f47f648",
+  path = "protobufStrictDepsTest",
+  configureProject = { context ->
+    BazelProjectConfigurer.configureProjectBeforeUse(
+      context,
+      createProjectView = false,
+    )
+    if (IdeStarterOs.current() == IdeStarterOs.WINDOWS) {
+      // No scala toolchains are registered on Windows, so the sync scope is
+      // restricted to the Java part of the fixture.
+      (context.resolvedProjectHome / ".bazelproject").writeText(
+        """
+        directories:
+          .
+
+        derive_targets_from_directories: false
+
+        targets:
+          //appj:appj
+
+        index_all_files_in_directories: true
+        """.trimIndent() + "\n",
+      )
+    }
+  },
+)
 
 internal class StrictDepsTest : IdeStarterBaseProjectTest() {
   @Test
@@ -26,7 +60,7 @@ internal class StrictDepsTest : IdeStarterBaseProjectTest() {
     // TODO
     // Add test for scala in this project
 
-    createContext("strictDepsTest", IdeaBazelCases.ProtobufStrictDepsTest)
+    createContext("strictDepsTest", IdeaBazelCases.withProject(STRICT_DEPS_PROJECT))
       .runIdeWithDriver(runTimeout = timeout)
       .useDriverAndCloseIde {
         ideFrame {

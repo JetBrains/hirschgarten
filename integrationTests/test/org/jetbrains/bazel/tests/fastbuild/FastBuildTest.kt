@@ -19,6 +19,8 @@ import com.intellij.driver.sdk.waitFor
 import com.intellij.ide.starter.driver.engine.runIdeWithDriver
 import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.data.IdeaBazelCases
+import org.jetbrains.bazel.data.BazelProjectConfigurer
+import org.jetbrains.bazel.data.simpleBazelProject
 import org.jetbrains.bazel.base.IdeStarterBaseProjectTest
 import org.jetbrains.bazel.base.checkIdeaLogForExceptions
 import org.jetbrains.bazel.base.findFile
@@ -30,6 +32,19 @@ import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.ValueSource
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
+import kotlin.io.path.div
+import kotlin.io.path.isDirectory
+
+private val FAST_BUILD_PROJECT = simpleBazelProject(
+  // TODO: temporary pin to SBPFT branch bazel/dan/e2e-os-bazel-matrix; repoint to main once the fixture upstreaming lands there
+  revision = "e974ca77b97e65a329f03492f9b556e44f47f648",
+  path = "fastBuildTest",
+  configureProject = { context ->
+    BazelProjectConfigurer.configureProjectBeforeUseWithoutBazelClean(context)
+    val projectHome = context.resolvedProjectHome.let { if (it.isDirectory()) it else it.parent }
+    (projectHome / ".bazelrc").toFile().appendText("\ncommon --disk_cache=\n")
+  },
+)
 
 /**
  * ```sh
@@ -41,7 +56,7 @@ class FastBuildTest : IdeStarterBaseProjectTest() {
   @ParameterizedTest
   @ValueSource(booleans = [false, true])
   fun `hotswap should apply code changes during debug`(useFastBuildInsteadOfHotswap: Boolean) {
-    val context = createContext("fastbuild", IdeaBazelCases.FastBuild)
+    val context = createContext("fastbuild", IdeaBazelCases.withProject(FAST_BUILD_PROJECT))
       .withBazelFeatureFlag(BazelFeatureFlags.BUILD_PROJECT_ON_SYNC)
       .applyVMOptionsPatch {
         addSystemProperty(BazelFeatureFlags.FAST_BUILD_ENABLED, useFastBuildInsteadOfHotswap.toString())

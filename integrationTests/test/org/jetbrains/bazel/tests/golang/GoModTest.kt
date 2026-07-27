@@ -6,7 +6,9 @@ import com.intellij.driver.sdk.ui.components.common.ideFrame
 import com.intellij.driver.sdk.wait
 import com.intellij.ide.starter.driver.engine.runIdeWithDriver
 import io.kotest.matchers.shouldBe
+import org.jetbrains.bazel.data.BazelProjectConfigurer
 import org.jetbrains.bazel.data.GoLandBazelCases
+import org.jetbrains.bazel.data.simpleBazelProject
 import org.jetbrains.bazel.base.IdeStarterBaseProjectTest
 import org.jetbrains.bazel.base.buildAndSync
 import org.jetbrains.bazel.base.execute
@@ -16,10 +18,21 @@ import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
 import kotlin.time.TimeSource
 
+private val GO_MOD_PROJECT = simpleBazelProject(
+  revision = "6b0657e79e32494837b88ded4083d799bf1e3efc",
+  path = "goModTest",
+  configureProject = { context ->
+    BazelProjectConfigurer.configureProjectBeforeUse(
+      context,
+      createProjectView = false,
+    )
+  },
+)
+
 internal class GoModTest : IdeStarterBaseProjectTest() {
   @Test
   fun `should not download deps via go list and go mod download`() {
-    createContext("goModTest", GoLandBazelCases.GoModTest)
+    createContext("goModTest", GoLandBazelCases.withProject(GO_MOD_PROJECT))
       .runIdeWithDriver(runTimeout = timeout)
       .useDriverAndCloseIde {
         ideFrame {

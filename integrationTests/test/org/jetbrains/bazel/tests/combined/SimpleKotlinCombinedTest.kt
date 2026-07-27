@@ -39,6 +39,8 @@ import com.intellij.tools.ide.performanceTesting.commands.waitForSmartMode
 import io.kotest.assertions.withClue
 import io.kotest.matchers.booleans.shouldBeTrue
 import org.jetbrains.bazel.data.IdeaBazelCases
+import org.jetbrains.bazel.data.BazelProjectConfigurer
+import org.jetbrains.bazel.data.simpleBazelProject
 import org.jetbrains.bazel.base.assertSyncedTargets
 import org.jetbrains.bazel.base.buildAndSync
 import org.jetbrains.bazel.base.execute
@@ -53,9 +55,20 @@ import kotlin.io.path.div
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
 
+private val SIMPLE_KOTLIN_PROJECT = simpleBazelProject(
+  revision = "af3e066604a8af0c9505b088ae5e7055ecf3b6d5",
+  path = "simpleKotlinTest",
+  configureProject = { context ->
+    BazelProjectConfigurer.configureProjectBeforeUse(
+      context,
+      bazelServerMaxIdleSecs = 60,
+    )
+  },
+)
+
 class SimpleKotlinCombinedTest : IdeStarterCombinedBaseTest() {
   override fun createContext(): IDETestContext =
-    createContext("simpleKotlinCombined", IdeaBazelCases.SimpleKotlinCombined)
+    createContext("simpleKotlinCombined", IdeaBazelCases.withProject(SIMPLE_KOTLIN_PROJECT))
 
   @Test @Order(0)
   fun `pty terminal should have correct output after sync`() = ptyTerminal()

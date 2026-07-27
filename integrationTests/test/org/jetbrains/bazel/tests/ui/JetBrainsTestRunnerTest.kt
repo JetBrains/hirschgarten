@@ -8,6 +8,7 @@ import com.intellij.ide.starter.driver.engine.runIdeWithDriver
 import com.intellij.tools.ide.performanceTesting.commands.assertCaretPosition
 import com.intellij.tools.ide.performanceTesting.commands.openFile
 import org.jetbrains.bazel.data.IdeaBazelCases
+import org.jetbrains.bazel.data.simpleBazelProject
 import org.jetbrains.bazel.base.IdeStarterBaseProjectTest
 import org.jetbrains.bazel.base.execute
 import org.jetbrains.bazel.base.syncBazelProject
@@ -15,11 +16,16 @@ import org.junit.jupiter.api.Test
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
 
+private val JETBRAINS_TEST_RUNNER_PROJECT = simpleBazelProject(
+  revision = "8843d7857cde7085d7078bcd35f09f572f59dbb7",
+  path = "jetbrainsTestRunner",
+)
+
 class JetBrainsTestRunnerTest : IdeStarterBaseProjectTest() {
 
   @Test
   fun `JetBrains test runner should execute tests and show results tree`() {
-    createContext("jetBrainsTestRunner", IdeaBazelCases.JetBrainsTestRunner)
+    createContext("jetBrainsTestRunner", IdeaBazelCases.withProject(JETBRAINS_TEST_RUNNER_PROJECT))
       .setRunConfigRunWithBazel(false)
       .runIdeWithDriver(runTimeout = timeout)
       .useDriverAndCloseIde {
@@ -158,7 +164,7 @@ class JetBrainsTestRunnerTest : IdeStarterBaseProjectTest() {
 
   @Test
   fun `test results should be cached when running with Bazel`() {
-    createContext("jetBrainsTestRunnerCached", IdeaBazelCases.JetBrainsTestRunner)
+    createContext("jetBrainsTestRunnerCached", IdeaBazelCases.withProject(JETBRAINS_TEST_RUNNER_PROJECT))
       // This is required for Bazel test caching!
       .setRunConfigRunWithBazel(true)
       .runIdeWithDriver(runTimeout = timeout)

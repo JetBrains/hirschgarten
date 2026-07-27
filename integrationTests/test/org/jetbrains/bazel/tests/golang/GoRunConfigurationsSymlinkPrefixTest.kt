@@ -11,13 +11,26 @@ import org.jetbrains.bazel.base.IdeStarterBaseProjectTest
 import org.jetbrains.bazel.base.execute
 import org.jetbrains.bazel.base.syncBazelProject
 import org.jetbrains.bazel.base.waitForSyncSucceeded
+import org.jetbrains.bazel.data.BazelProjectConfigurer
 import org.jetbrains.bazel.data.GoLandBazelCases
+import org.jetbrains.bazel.data.simpleBazelProject
 import org.jetbrains.bazel.tests.ui.clickRunGutterOnLine
 import org.jetbrains.bazel.tests.ui.debuggerFramesUi
 import org.jetbrains.bazel.tests.ui.verifyTestStatus
 import org.junit.jupiter.api.Test
 import kotlin.io.path.appendText
 import kotlin.io.path.div
+
+private val GO_RUN_CONFIGURATIONS_SYMLINK_PROJECT = simpleBazelProject(
+  revision = "f01c28ffa2adfadee12673e44e78fa63d7cd8b13",
+  path = "goRunConfigurationsTest",
+  configureProject = { context ->
+    BazelProjectConfigurer.configureProjectBeforeUse(
+      context,
+      createProjectView = false,
+    )
+  },
+)
 
 internal class GoRunConfigurationsSymlinkPrefixTest : IdeStarterBaseProjectTest() {
 
@@ -26,7 +39,7 @@ internal class GoRunConfigurationsSymlinkPrefixTest : IdeStarterBaseProjectTest(
    */
   @Test
   fun `test debug run configurations when the symlinks are not in the default location`() {
-    val context = createContext("goRunConfigurationsTest", GoLandBazelCases.GoRunConfigurationsTest)
+    val context = createContext("goRunConfigurationsTest", GoLandBazelCases.withProject(GO_RUN_CONFIGURATIONS_SYMLINK_PROJECT))
     val bazelrc = context.resolvedProjectHome / ".bazelrc"
     bazelrc.appendText("common --symlink_prefix=out/bazel-")
     context

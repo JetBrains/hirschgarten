@@ -11,7 +11,9 @@ import com.intellij.tools.ide.performanceTesting.commands.openFile
 import com.intellij.tools.ide.performanceTesting.commands.removeAllBreakpoints
 import com.intellij.tools.ide.performanceTesting.commands.setBreakpoint
 import org.jetbrains.bazel.base.execute
+import org.jetbrains.bazel.data.BazelProjectConfigurer
 import org.jetbrains.bazel.data.GoLandBazelCases
+import org.jetbrains.bazel.data.simpleBazelProject
 import org.jetbrains.bazel.tests.combined.IdeStarterCombinedBaseTest
 import org.jetbrains.bazel.tests.run.selectRunConfiguration
 import org.jetbrains.bazel.tests.ui.clickRunGutterOnLine
@@ -23,9 +25,20 @@ import org.junit.jupiter.api.Test
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
 
+private val GO_RUN_CONFIGURATIONS_PROJECT = simpleBazelProject(
+  revision = "f01c28ffa2adfadee12673e44e78fa63d7cd8b13",
+  path = "goRunConfigurationsTest",
+  configureProject = { context ->
+    BazelProjectConfigurer.configureProjectBeforeUse(
+      context,
+      createProjectView = false,
+    )
+  },
+)
+
 internal class GoRunConfigurationsTest : IdeStarterCombinedBaseTest() {
   override fun createContext(): IDETestContext =
-    createContext("goRunConfigurationsTest", GoLandBazelCases.GoRunConfigurationsTest)
+    createContext("goRunConfigurationsTest", GoLandBazelCases.withProject(GO_RUN_CONFIGURATIONS_PROJECT))
 
   @Test
   @Order(1)

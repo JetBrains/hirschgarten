@@ -7,11 +7,18 @@ import com.intellij.ide.starter.ide.IDETestContext
 import com.intellij.openapi.ui.playback.commands.AbstractCommand.CMD_PREFIX
 import com.intellij.tools.ide.performanceTesting.commands.CommandChain
 import org.jetbrains.bazel.data.IdeaBazelCases
+import org.jetbrains.bazel.data.simpleBazelProject
 import org.jetbrains.bazel.base.IdeStarterBaseProjectTest
 import org.jetbrains.bazel.base.execute
 import org.jetbrains.bazel.base.syncBazelProject
 import org.junit.jupiter.api.Test
 import kotlin.time.Duration.Companion.minutes
+
+private val DISABLED_KOTLIN_PLUGIN_PROJECT = simpleBazelProject(
+  // TODO: temporary pin to SBPFT branch bazel/dan/e2e-os-bazel-matrix; repoint to main once the fixture upstreaming lands there
+  revision = "e974ca77b97e65a329f03492f9b556e44f47f648",
+  path = "simpleMultiLanguageTest",
+)
 
 /**
  * ```sh
@@ -21,7 +28,7 @@ import kotlin.time.Duration.Companion.minutes
 class DisabledKotlinPluginTest : IdeStarterBaseProjectTest() {
   @Test
   fun `sync should work with Kotlin plugin disabled`() {
-    createContext("disabledKotlinPlugin", IdeaBazelCases.DisabledKotlinPlugin)
+    createContext("disabledKotlinPlugin", IdeaBazelCases.withProject(DISABLED_KOTLIN_PLUGIN_PROJECT))
       .withDisabledPlugins(setOf("org.jetbrains.kotlin"))
       .runIdeWithDriver(runTimeout = timeout)
       .useDriverAndCloseIde {

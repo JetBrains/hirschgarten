@@ -11,6 +11,7 @@ import com.intellij.tools.ide.performanceTesting.commands.goto
 import com.intellij.tools.ide.performanceTesting.commands.openFile
 import com.intellij.tools.ide.performanceTesting.commands.waitForSmartMode
 import org.jetbrains.bazel.data.IdeaBazelCases
+import org.jetbrains.bazel.data.simpleBazelProject
 import org.jetbrains.bazel.base.IdeStarterBaseProjectTest
 import org.jetbrains.bazel.base.assertEitherFileContentIsEqual
 import org.jetbrains.bazel.base.checkIdeaLogForExceptions
@@ -20,6 +21,12 @@ import org.jetbrains.bazel.base.syncBazelProject
 import org.junit.jupiter.api.Test
 import kotlin.time.Duration.Companion.minutes
 
+private val BAZEL_PROJECT_MODEL_MODIFIER_PROJECT = simpleBazelProject(
+  // TODO: temporary pin to SBPFT branch bazel/dan/e2e-os-bazel-matrix; repoint to main once the fixture upstreaming lands there
+  revision = "e974ca77b97e65a329f03492f9b556e44f47f648",
+  path = "bazelProjectModelModifierTest",
+)
+
 /**
  * ```sh
  * bazel test //plugins/bazel/integrationTests:integrationTests_test --test_env=JB_TEST_FILTER=org.jetbrains.bazel.tests.flow.BazelProjectModelModifierTest --test_output=errors --nocache_test_results
@@ -28,7 +35,7 @@ import kotlin.time.Duration.Companion.minutes
 class BazelProjectModelModifierTest : IdeStarterBaseProjectTest() {
   @Test
   fun `quick fix should add module and library dependencies to BUILD file`() {
-    val context = createContext("bazelProjectModelModifier", IdeaBazelCases.BazelProjectModelModifier)
+    val context = createContext("bazelProjectModelModifier", IdeaBazelCases.withProject(BAZEL_PROJECT_MODEL_MODIFIER_PROJECT))
     context
       .runIdeWithDriver(runTimeout = timeout)
       .useDriverAndCloseIde {

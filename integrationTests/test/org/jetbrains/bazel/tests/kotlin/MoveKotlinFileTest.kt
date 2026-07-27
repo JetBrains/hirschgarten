@@ -11,7 +11,9 @@ import com.intellij.openapi.ui.playback.commands.AbstractCommand.CMD_PREFIX
 import com.intellij.tools.ide.performanceTesting.commands.CommandChain
 import com.intellij.tools.ide.performanceTesting.commands.saveDocumentsAndSettings
 import org.jetbrains.bazel.config.BazelFeatureFlags
+import org.jetbrains.bazel.data.BazelProjectConfigurer
 import org.jetbrains.bazel.data.IdeaBazelCases
+import org.jetbrains.bazel.data.simpleBazelProject
 import org.jetbrains.bazel.base.IdeStarterBaseProjectTest
 import org.jetbrains.bazel.base.assertFileContentsEqual
 import org.jetbrains.bazel.base.assertFileKind
@@ -24,6 +26,15 @@ import org.junit.jupiter.api.Test
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
 
+private val MOVE_KOTLIN_FILE_PROJECT = simpleBazelProject(
+  // TODO: temporary pin to SBPFT branch bazel/dan/e2e-os-bazel-matrix; repoint to main once the fixture upstreaming lands there
+  revision = "e974ca77b97e65a329f03492f9b556e44f47f648",
+  path = "moveFilesTest",
+  configureProject = { context ->
+    BazelProjectConfigurer.configureProjectBeforeUseWithoutBazelClean(context)
+  },
+)
+
 /**
  * ```sh
  * bazel test //plugins/bazel/integrationTests:integrationTests_test --test_env=JB_TEST_FILTER=org.jetbrains.bazel.tests.kotlin.MoveKotlinFileTest --test_output=errors --nocache_test_results
@@ -33,7 +44,7 @@ class MoveKotlinFileTest : IdeStarterBaseProjectTest() {
 
   @Test
   fun `move Kotlin file to subpackage should update imports`() {
-    val context = createContext("MoveFilesTest", IdeaBazelCases.MoveKotlinFile)
+    val context = createContext("MoveFilesTest", IdeaBazelCases.withProject(MOVE_KOTLIN_FILE_PROJECT))
       .applyVMOptionsPatch {
         skipRefactoringDialogs()
       }
