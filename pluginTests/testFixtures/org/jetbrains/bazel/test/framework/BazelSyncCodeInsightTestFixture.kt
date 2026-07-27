@@ -201,9 +201,6 @@ class BazelSyncCodeInsightTestFixtureImpl(
   private fun Path.toBazelPath(): String =
     toAbsolutePath().toString().replace('\\', '/')
 
-  private fun Path.toBazelRcPath(): String =
-    "'${toBazelPath().replace("'", "'\\''")}'"
-
   private fun findKotlinStdlibInClasspath(): Path {
     val urls = (this::class.java.classLoader as UrlClassLoader).urls
     return urls.map { it.toURI().toPath() }.first { it.name.startsWith("kotlin-stdlib") }
