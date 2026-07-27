@@ -2,6 +2,7 @@ package org.jetbrains.bazel.bazelrunner
 
 import com.intellij.util.system.OS
 import org.jetbrains.annotations.ApiStatus
+import org.jetbrains.annotations.VisibleForTesting
 import org.jetbrains.bazel.commons.BazelInfo
 import org.jetbrains.bazel.commons.gson.bazelGson
 import org.jetbrains.bazel.languages.projectview.ProjectView
@@ -168,41 +169,63 @@ internal class ModuleResolver(
    * Resolve one batch of modules.
    */
   private suspend fun resolveOneModuleBatch(moduleNames: List<String>, bazelInfo: BazelInfo, requestAll: Boolean) : ResolvedModulesAndWarning {
-    val json_output = bazelInfo.release.major >= 9
-    val command =
-      bazelRunner.buildBazelCommand(projectView) {
-        showRepo {
-          if (json_output) {
-            options.add("--output=streamed_jsonproto")
-          }
-          if (requestAll) {
-            options.add("--all_repos")
-          } else {
-            options.addAll(moduleNames)
+    var currentModuleNames = moduleNames
+    var currentRequestAll = requestAll
+    val excludedRepos = mutableMapOf<String, ShowRepoResult?>()
+    val warnings = mutableListOf<String>()
+
+    while (true) {
+      val json_output = bazelInfo.release.major >= 9
+      val command =
+        bazelRunner.buildBazelCommand(projectView) {
+          showRepo {
+            if (json_output) {
+              options.add("--output=streamed_jsonproto")
+            }
+            if (currentRequestAll) {
+              options.add("--all_repos")
+            } else {
+              options.addAll(currentModuleNames)
+            }
           }
         }
+      val processResult =
+        bazelRunner
+          .runBazelCommand(command, taskId, logOnlyErrors = true)
+          .waitAndGetResult()
+      if (bazelInfo.isWorkspaceEnabled && processResult.isNotSuccess) {
+        // work around https://github.com/bazelbuild/bazel/issues/28601
+        // Parse the error to identify the bad repo and retry the batch without it,
+        // falling back to per-repo resolution for unrecognized errors.
+        val badRepo = extractBadRepoFromError(processResult)
+        if (badRepo != null && currentModuleNames.size > 1 && badRepo in currentModuleNames) {
+          excludedRepos[badRepo] = null
+          warnings.add("Bazel failed to show_repo $badRepo: excluded from batch and skipped")
+          currentModuleNames = currentModuleNames.filter { it != badRepo }
+          currentRequestAll = false
+          continue
+        }
+        if (currentModuleNames.size == 1) {
+          // Failure of a request asking for a single repository, so we just answer that we don't know.
+          excludedRepos[currentModuleNames[0]] = null
+          warnings.add("Bazel failed to show_repo ${currentModuleNames[0]}:\n" +
+            processResult.stdoutLines.joinToString("\n"))
+          return ResolvedModulesAndWarning(excludedRepos, warnings)
+        }
+        val individualResults = resolveModulesIndividually(currentModuleNames, bazelInfo)
+        return if (excludedRepos.isEmpty()) individualResults
+               else individualResults.updated(ResolvedModulesAndWarning(excludedRepos, warnings))
       }
-    val processResult =
-      bazelRunner
-        .runBazelCommand(command, taskId, logOnlyErrors = true)
-        .waitAndGetResult()
-    if (bazelInfo.isWorkspaceEnabled && processResult.isNotSuccess) {
-      // work around https://github.com/bazelbuild/bazel/issues/28601
-      // As we cannot reliably determine which repositories `bazel mod show_repo` is willing to resolve,
-      // we have to accept failure. However, to get the maximal amount of information possible, we should
-      // ask for each repository individually.
-      if (moduleNames.size == 1) {
-        // Failure of a request asking for a single repository, so we just answer that we don't know.
-        return ResolvedModulesAndWarning(mapOf(moduleNames[0] to null),
-                                         listOf("Bazel failed to show_repo ${moduleNames[0]}:\n" +
-                                         processResult.stdoutLines.joinToString("\n")))
-      }
-      return moduleNames.map { resolveOneModuleBatch(listOf(it), bazelInfo, false) }
-               .reduceOrNull { acc, result -> acc.updated(result) } ?: ResolvedModulesAndWarning(emptyMap(), emptyList())
-    }
 
-    return moduleOutputParser.parseShowRepoResults(processResult, json_output, if (requestAll) null else moduleNames)
+      val parsed = moduleOutputParser.parseShowRepoResults(processResult, json_output, if (currentRequestAll) null else currentModuleNames)
+      return if (excludedRepos.isEmpty()) parsed
+             else parsed.updated(ResolvedModulesAndWarning(excludedRepos, warnings))
+    }
   }
+
+  private suspend fun resolveModulesIndividually(moduleNames: List<String>, bazelInfo: BazelInfo): ResolvedModulesAndWarning =
+    moduleNames.map { resolveOneModuleBatch(listOf(it), bazelInfo, requestAll = false) }
+      .reduceOrNull { acc, result -> acc.updated(result) } ?: ResolvedModulesAndWarning(emptyMap(), emptyList())
 
   val gson = bazelGson
 
@@ -267,6 +290,19 @@ internal class ModuleResolver(
   }
 
   companion object {
+    private val BAD_REPO_PATTERNS = listOf(
+      Regex("""In repo argument ([^\s:]+): no such repo\."""),
+      Regex("""In repo argument ([^\s:]+): No repo visible as .* from @.* repository .*"""),
+      Regex("""In repo argument ([^\s:]+): Module .* does not exist in the dependency graph\..*"""),
+    )
+
+    @VisibleForTesting
+    internal fun extractBadRepoFromError(processResult: BazelProcessResult): String? =
+      processResult.stderrLines
+        .firstNotNullOfOrNull { line ->
+          BAD_REPO_PATTERNS.firstNotNullOfOrNull { it.find(line)?.groupValues?.get(1) }
+        }
+
     // Total size of the repository names that can fit into one batch.
     // Background: on Windows, the total command-line length is limited to 8191 characters, see
     // https://learn.microsoft.com/en-us/troubleshoot/windows-client/shell-experience/command-line-string-limitation

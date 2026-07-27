@@ -181,6 +181,56 @@ class ModuleResolverTest {
   }
 
   @Test
+  fun `should correctly extract bad repo from error message`() {
+    val stderr =
+      "ERROR: In repo argument maven: Module maven does not exist in the dependency graph." +
+        "(Note that unused modules cannot be used here). Type 'bazel help mod' for syntax and help."
+    val result = BazelProcessResult(makeOutputCollector(""), makeOutputCollector(stderr), 2)
+
+    val badRepo = ModuleResolver.extractBadRepoFromError(result)
+    badRepo shouldBe "maven"
+  }
+
+  @Test
+  fun `should return null when error message has no repo argument`() {
+    val stderr = "ERROR: some unrelated bazel error"
+    val result = BazelProcessResult(makeOutputCollector(""), makeOutputCollector(stderr), 1)
+
+    val badRepo = ModuleResolver.extractBadRepoFromError(result)
+    badRepo shouldBe null
+  }
+
+  @Test
+  fun `should extract repo with @@ prefix from error`() {
+    val stderr =
+      "ERROR: In repo argument @@some_workspace_repo: Module @@some_workspace_repo does not exist in the dependency graph." +
+        "(Note that unused modules cannot be used here). Type 'bazel help mod' for syntax and help."
+    val result = BazelProcessResult(makeOutputCollector(""), makeOutputCollector(stderr), 2)
+
+    val badRepo = ModuleResolver.extractBadRepoFromError(result)
+    badRepo shouldBe "@@some_workspace_repo"
+  }
+
+  @Test
+  fun `should ignore non retryable repo argument errors`() {
+    val stderr =
+      "ERROR: In repo argument @rules_python+: invalid argument '@rules_python+': invalid user-provided repo name 'rules_python+'"
+    val result = BazelProcessResult(makeOutputCollector(""), makeOutputCollector(stderr), 2)
+
+    val badRepo = ModuleResolver.extractBadRepoFromError(result)
+    badRepo shouldBe null
+  }
+
+  @Test
+  fun `should extract bad repo from no such repo error`() {
+    val stderr = "ERROR: In repo argument @@bad_repo: no such repo. Type 'bazel help mod' for syntax and help."
+    val result = BazelProcessResult(makeOutputCollector(""), makeOutputCollector(stderr), 2)
+
+    val badRepo = ModuleResolver.extractBadRepoFromError(result)
+    badRepo shouldBe "@@bad_repo"
+  }
+
+  @Test
   fun `json parser should accept empty lines in both line endings supported by NDJSON`() {
     val stdout = """
       {"canonicalName":"bundled+","repoRuleName":"local_repository","moduleKey":"bundled@_","attribute":[{"name":"path","type":"STRING","stringValue":"subproject"}]}
