@@ -914,14 +914,14 @@ internal class AspectBazelProjectMapper(
     )
   }
 
-  private fun resolveDirectDependencies(target: TargetInfo, dependencyGraph: DependencyGraph): List<DependencyLabel> =
-    target.depsList.map { dep ->
+  private fun resolveDirectDependencies(target: TargetInfo, dependencyGraph: DependencyGraph): List<DependencyLabel> {
+    if (!target.tagsList.contains("umbrella")) return target.depsList.map { it.toDependencyLabel() }
+    // Umbrella targets (java_incremental_library) place their shard targets in runtime_deps so
+    // they arrive here with isRuntime=true. Promote them to compile-time so IntelliJ can resolve
+    // symbols across shards without red code.
+    return target.depsList.map { dep ->
       val depLabel = dep.toDependencyLabel()
-      // Umbrella targets (java_incremental_library) place their shard targets in runtime_deps so
-      // they arrive here with isRuntime=true. Promote them to compile-time so IntelliJ can resolve
-      // symbols across shards without red code.
       if (depLabel.isRuntime &&
-        target.tagsList.contains("umbrella") &&
         dependencyGraph.getTargetInfo(depLabel.label)?.tagsList?.contains("shard") == true
       ) {
         depLabel.copy(isRuntime = false)
@@ -929,6 +929,7 @@ internal class AspectBazelProjectMapper(
         depLabel
       }
     }
+  }
 
   private fun BspTargetInfo.Dependency.toDependencyLabel(): DependencyLabel =
     DependencyLabel(
