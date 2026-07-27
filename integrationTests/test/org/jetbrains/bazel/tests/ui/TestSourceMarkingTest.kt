@@ -17,8 +17,7 @@ import org.junit.jupiter.api.Test
 import kotlin.time.Duration.Companion.minutes
 
 private val TEST_SOURCE_MARKING_PROJECT = simpleBazelProject(
-  // TODO: temporary pin to SBPFT branch bazel/dan/e2e-os-bazel-matrix; repoint to main once the fixture upstreaming lands there
-  revision = "e974ca77b97e65a329f03492f9b556e44f47f648",
+  revision = "5cbca8140ac85e5178ca803935fbd9e1d9400a07",
   path = "testSourcesMarking",
 )
 
