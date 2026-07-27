@@ -33,8 +33,7 @@ import kotlin.io.path.div
 import kotlin.io.path.writeText
 import kotlin.time.Duration
 
-// TODO: temporary pin to SBPFT branch bazel/dan/e2e-os-bazel-matrix; repoint to main once the fixture upstreaming lands there
-private const val BAZEL_PROJECT_OPEN_REVISION = "e974ca77b97e65a329f03492f9b556e44f47f648"
+private const val BAZEL_PROJECT_OPEN_REVISION = "5cbca8140ac85e5178ca803935fbd9e1d9400a07"
 
 private fun bazelProjectOpenProject(
   projectPath: String,
