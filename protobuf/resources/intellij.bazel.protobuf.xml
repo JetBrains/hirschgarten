@@ -2,6 +2,9 @@
   <!-- region Generated dependencies - run `Generate Product Layouts` to regenerate -->
   <dependencies>
     <module name="intellij.libraries.grpc"/>
+    <module name="intellij.libraries.guava"/>
+    <module name="intellij.libraries.javax.annotation"/>
+    <module name="intellij.libraries.protobuf"/>
   </dependencies>
   <!-- endregion -->
 </idea-plugin>

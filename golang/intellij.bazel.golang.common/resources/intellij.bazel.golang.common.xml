@@ -8,10 +8,29 @@
     <module name="intellij.bazel.importer"/>
     <module name="intellij.go.frontback"/>
     <module name="intellij.go.impl"/>
+    <module name="intellij.libraries.guava"/>
+    <module name="intellij.libraries.stream"/>
+    <module name="intellij.platform.analysis"/>
+    <module name="intellij.platform.core"/>
+    <module name="intellij.platform.core.impl"/>
+    <module name="intellij.platform.core.ui"/>
     <module name="intellij.platform.coverage"/>
+    <module name="intellij.platform.debugger"/>
+    <module name="intellij.platform.debugger.impl"/>
+    <module name="intellij.platform.editor.ui"/>
+    <module name="intellij.platform.execution"/>
+    <module name="intellij.platform.execution.impl"/>
+    <module name="intellij.platform.ide"/>
+    <module name="intellij.platform.ide.core"/>
+    <module name="intellij.platform.ide.impl"/>
+    <module name="intellij.platform.ide.progress"/>
+    <module name="intellij.platform.lang"/>
+    <module name="intellij.platform.lang.impl"/>
+    <module name="intellij.platform.projectModel"/>
     <module name="intellij.platform.scriptDebugger.backend"/>
     <module name="intellij.platform.scriptDebugger.ui"/>
     <module name="intellij.platform.smRunner"/>
+    <module name="intellij.platform.testIntegration"/>
     <module name="intellij.platform.testRunner"/>
   </dependencies>
   <!-- endregion -->

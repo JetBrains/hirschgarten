@@ -12,6 +12,14 @@
     <module name="intellij.kotlin.base.psi"/>
     <module name="intellij.monorepo.devkit"/>
     <module name="intellij.monorepo.devkit.bazel"/>
+    <module name="intellij.platform.analysis"/>
+    <module name="intellij.platform.core"/>
+    <module name="intellij.platform.core.impl"/>
+    <module name="intellij.platform.debugger"/>
+    <module name="intellij.platform.execution.impl"/>
+    <module name="intellij.platform.externalSystem"/>
+    <module name="intellij.platform.externalSystem.impl"/>
+    <module name="intellij.platform.projectModel"/>
   </dependencies>
   <!-- endregion -->
   <extensions defaultExtensionNs="org.jetbrains.bazel">

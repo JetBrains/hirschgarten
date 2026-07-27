@@ -1,11 +1,16 @@
 <idea-plugin>
+  <!-- region Generated dependencies - run `Generate Product Layouts` to regenerate -->
   <dependencies>
-    <!-- region Generated dependencies - run `Generate Product Layouts` to regenerate -->
     <module name="intellij.bazel.commons"/>
     <module name="intellij.bazel.core"/>
+    <module name="intellij.libraries.rd.core"/>
     <module name="intellij.platform.backend.split"/>
-    <!-- endregion -->
+    <module name="intellij.platform.core"/>
+    <module name="intellij.platform.core.ui"/>
+    <module name="intellij.platform.execution"/>
+    <module name="intellij.platform.ide.core"/>
   </dependencies>
+  <!-- endregion -->
 
   <applicationListeners>
     <listener

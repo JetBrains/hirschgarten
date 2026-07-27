@@ -5,8 +5,16 @@
     <module name="intellij.bazel.connector"/>
     <module name="intellij.bazel.importer"/>
     <module name="intellij.bazel.python.common"/>
+    <module name="intellij.platform.analysis"/>
     <module name="intellij.platform.backend"/>
+    <module name="intellij.platform.core"/>
+    <module name="intellij.platform.ide"/>
+    <module name="intellij.platform.ide.core"/>
     <module name="intellij.platform.kernel.backend"/>
+    <module name="intellij.platform.lang.core"/>
+    <module name="intellij.platform.lang.impl"/>
+    <module name="intellij.platform.projectModel"/>
+    <module name="intellij.platform.projectModel.impl"/>
     <module name="intellij.platform.rpc.backend"/>
     <module name="intellij.python.community.impl"/>
     <module name="intellij.python.community.services.systemPython"/>
