@@ -165,7 +165,7 @@ register_toolchains(
         .filter { !it.trim().startsWith("block ") }
         .joinToString("\n")
       configFile.writeText(content)
-      val flagName = resolveDownloaderConfigFlag(context)
+      val flagName = resolveDownloaderConfigFlag(context.resolvedBazelProjectHome)
       lines.add("common --$flagName=bazel_downloader.cfg")
     }
 
@@ -287,11 +287,16 @@ register_toolchains(
   internal fun bazelCacheSetting(name: String, path: Path): String =
     "common --$name=${path.toBazelRcPath()}"
 
-  private fun resolveDownloaderConfigFlag(context: IDETestContext): String {
-    val bazelVersionFile = context.resolvedBazelProjectHome / ".bazelversion"
-    if (!bazelVersionFile.exists()) return "experimental_downloader_config"
-    val majorVersion = bazelVersionFile.toFile().readText().trim()
-      .split(".").firstOrNull()?.toIntOrNull() ?: return "experimental_downloader_config"
+  internal fun resolveDownloaderConfigFlag(
+    projectRoot: Path,
+    environment: Map<String, String> = System.getenv(),
+  ): String {
+    // The matrix overrides the checked-in .bazelversion through bazelisk's USE_BAZEL_VERSION.
+    val version = environment[USE_BAZEL_VERSION_ENV]?.takeIf { it.isNotBlank() }
+      ?: (projectRoot / ".bazelversion").takeIf { it.exists() }?.toFile()?.readText()
+      ?: return "experimental_downloader_config"
+    val majorVersion = version.trim().split(".").firstOrNull()?.toIntOrNull()
+      ?: return "experimental_downloader_config"
     return if (majorVersion >= 8) "downloader_config" else "experimental_downloader_config"
   }
 
