@@ -17,7 +17,7 @@ import org.junit.jupiter.api.Test
 import kotlin.time.Duration.Companion.minutes
 
 private val TEST_SOURCE_MARKING_PROJECT = simpleBazelProject(
-  revision = "5cbca8140ac85e5178ca803935fbd9e1d9400a07",
+  revision = "ce48e24a5cbb8315737a8b42b274ff4a99ad7a3e",
   path = "testSourcesMarking",
 )
 
@@ -33,30 +33,30 @@ internal class TestSourceMarkingTest : IdeStarterBaseProjectTest() {
           waitForIndicators(5.minutes)
           waitForSyncSucceeded()
 
-          step("Check sources marked as tests") {
-            // a library used only in a test target in the same package
-            shouldBeMarkedAsTestSource("java/case1/TestLibrary.java")
-            // all sources in this folder are tests, so the folder shoul be also marked
-            shouldBeMarkedAsTestSource("java/case1")
+          step("Check sources and source roots marked as tests") {
+            // testRunner: a single java_test owns src/, so the whole source root is test
+            shouldBeMarkedAsTestSource("java/testRunner/src/JavaTest.java")
+            shouldBeMarkedAsTestSource("java/testRunner/src/TestHelper.java")
+            shouldBeMarkedAsTestSource("java/testRunner/src")
 
+            // testLibrary: a single testonly library owns src/, so the whole source root is test
+            shouldBeMarkedAsTestSource("java/testLibrary/src/TestFixtures.java")
+            shouldBeMarkedAsTestSource("java/testLibrary/src/TestHelpers.java")
+            shouldBeMarkedAsTestSource("java/testLibrary/src")
 
-            // a library used only in a test target in the same package
-            shouldBeMarkedAsTestSource("java/case2/TestLibrary.java")
-            // belongs directly to a test target
-            shouldBeMarkedAsTestSource("java/case2/JavaTest.java")
-            // a library used in both a test and binary target
-            shouldNotBeMarkedAsTestSource("java/case2/NormalLibrary1.java")
-            // a library used in a test target that has its own sources
-            shouldNotBeMarkedAsTestSource("java/case2/NormalLibrary2.java")
-            // both test and not test - do not mark
-            shouldNotBeMarkedAsTestSource("java/case2/MixedSource.java")
-            shouldNotBeMarkedAsTestSource("java/case2")
+            // projectViewTestSources: a plain library marked as test only by the project view
+            // test_sources glob (see the workspace-root .bazelproject)
+            shouldBeMarkedAsTestSource("java/projectViewTestSources/src/FirstSource.java")
+            shouldBeMarkedAsTestSource("java/projectViewTestSources/src/SecondSource.java")
+            shouldBeMarkedAsTestSource("java/projectViewTestSources/src")
 
-            // a library marked as test-only
-            shouldBeMarkedAsTestSource("java/case3/TestOnlyLibrary.java")
-            // a library used in a test target in another package
-            shouldNotBeMarkedAsTestSource("java/case3/TestLibrary.java")
-            shouldNotBeMarkedAsTestSource("java/case3")
+            // mixedSources: several targets share src/ and mix test and production sources,
+            // so the src/ source root is not test
+            shouldBeMarkedAsTestSource("java/mixedSources/src/JavaTest.java")
+            shouldNotBeMarkedAsTestSource("java/mixedSources/src/SharedSource.java")
+            shouldNotBeMarkedAsTestSource("java/mixedSources/src/ProductionLibrary.java")
+            shouldNotBeMarkedAsTestSource("java/mixedSources/src/Main.java")
+            shouldNotBeMarkedAsTestSource("java/mixedSources/src")
           }
         }
       }
