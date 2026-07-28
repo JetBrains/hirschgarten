@@ -1,13 +1,10 @@
 package org.jetbrains.bazel.bazelrunner
 
-import com.intellij.openapi.project.Project
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.commons.BazelInfo
 import org.jetbrains.bazel.commons.gson.bazelGson
-import org.jetbrains.bazel.progress.syncConsole
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bsp.protocol.TaskId
-import kotlin.collections.plus
 
 @ApiStatus.Internal
 sealed interface ShowRepoResult {
@@ -35,7 +32,23 @@ sealed interface ShowRepoResult {
 
 @ApiStatus.Internal
 data class ResolvedModulesAndWarning(val result: Map<String, ShowRepoResult?>, val warnings: List<String>) {
-  fun updated(other: ResolvedModulesAndWarning): ResolvedModulesAndWarning = ResolvedModulesAndWarning(result + other.result, warnings + other.warnings)
+  class Builder(
+    result: Map<String, ShowRepoResult?> = emptyMap(),
+    warnings: List<String> = emptyList(),
+  ) {
+    private val result: MutableMap<String, ShowRepoResult?> = result.toMutableMap()
+    private val warnings: MutableList<String> = warnings.toMutableList()
+
+    fun update(other: ResolvedModulesAndWarning): Builder {
+      result += other.result
+      warnings += other.warnings
+      return this
+    }
+
+    fun build(): ResolvedModulesAndWarning = ResolvedModulesAndWarning(result, warnings)
+  }
+
+  fun builder(): Builder = Builder(result, warnings)
 }
 
 @ApiStatus.Internal
@@ -136,9 +149,11 @@ class ModuleOutputParser {
       return ResolvedModulesAndWarning(splitInfoGroups (bazelProcessResult.stdoutLines).mapValues { (_, stanza) -> parseShowRepoStanza(stanza) }, warnings)
     }
     // The output is new-line-delimited JSON, i.e., each line is a JSON description of one repository.
-    return ResolvedModulesAndWarning(mapOf(), warnings).updated(
-    bazelProcessResult.stdoutLines.map { parseJsonRepoDescription(it) }.reduce { acc, result -> acc.updated(result) }
-    )
+    val builder = ResolvedModulesAndWarning.Builder(mapOf(), warnings)
+    bazelProcessResult.stdoutLines
+      .map { parseJsonRepoDescription(it) }
+      .forEach { builder.update(it) }
+    return builder.build()
   }
 }
 
@@ -180,8 +195,11 @@ internal class ModuleResolver(
                                          listOf("Bazel failed to show_repo ${moduleNames[0]}:\n" +
                                          processResult.stdoutLines.joinToString("\n")))
       }
-      return moduleNames.map { resolveModules(listOf(it), bazelInfo) }
-               .reduceOrNull { acc, result -> acc.updated(result) } ?: ResolvedModulesAndWarning(emptyMap(), emptyList())
+      val builder = ResolvedModulesAndWarning.Builder()
+      moduleNames
+        .map { resolveModules(listOf(it), bazelInfo) }
+        .forEach { builder.update(it) }
+      return builder.build()
     }
 
     return moduleOutputParser.parseShowRepoResults(processResult, json_output, moduleNames)
