@@ -1,6 +1,7 @@
 package org.jetbrains.bazel.golang.ui.gutters
 
 import com.goide.GoConstants
+import com.goide.execution.GoRunConfigurationProducerBase
 import com.goide.execution.GoRunUtil
 import com.goide.execution.testing.GoTestFinder
 import com.goide.execution.testing.GoTestRunConfigurationProducerBase
@@ -18,6 +19,7 @@ internal class BazelGoRunLineMarkerContributor : BazelRunLineMarkerContributor()
   override fun getGutterAction(element: PsiElement): GutterAction? {
     if (element.isMainFunction()) return GutterAction()
     if (!GoTestFinder.isTestFile(element.containingFile)) return null
+    if (GoRunConfigurationProducerBase.isPackageContext(element)) return GutterAction()
     val function = GoTestFinder.findTestFunctionInContext(element) ?: return null
     val testFilter = calculateRawTestFilterForElement(element, function)?.let { regexifyTestFilter(it) } ?: return null
     return GutterAction(runnerActionDescriptor = BazelRunnerActionDescriptor(testFilter = testFilter))
