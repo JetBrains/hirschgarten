@@ -56,7 +56,7 @@ internal class GoTestWithDebugCommandLineState(
     val executableInfo = environment.getCopyableUserData(EXECUTABLE_KEY)?.get()
     if (executableInfo != null) applyExecutableInfo(executableInfo)
     applyState(settings.env, settings.programArguments)
-    settings.testFilter?.let { configuration.customEnvironment["TESTBRIDGE_TEST_ONLY"] = it }
+    configuration.customEnvironment["TESTBRIDGE_TEST_ONLY"] = settings.testFilter?.takeIf { it.isNotBlank() } ?: ".*"
     // GO_TEST_WRAP=0 ensures the tests are run in the debugged process, not a child process
     configuration.customEnvironment["GO_TEST_WRAP"] = "0"
   }
