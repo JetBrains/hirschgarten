@@ -65,7 +65,7 @@ class StarlarkGlobExpression(node: ASTNode) : StarlarkBaseElement(node) {
   }
 
   private fun buildGlob(): StarlarkGlob? {
-    val containingDirectory = containingFile.parent?.virtualFile ?: return null
+    val containingDirectory = containingFile?.parent?.virtualFile ?: return null
 
     fun listContents(expr: PsiElement?): List<String> {
       if (expr !is StarlarkListLiteralExpression) {
