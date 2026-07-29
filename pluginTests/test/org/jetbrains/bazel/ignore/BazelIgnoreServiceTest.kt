@@ -40,6 +40,7 @@ class BazelIgnoreServiceTest: WorkspaceModelBaseTest() {
           canonicalRepoNameToLocalPath = mapOf("nested+" to Path.of("nested")),
           apparentRepoNameToCanonicalName = emptyMap(),
           canonicalRepoNameToPath = emptyMap(),
+          nonLocalCanonicalRepoNames = setOf(),
         )
       )
 

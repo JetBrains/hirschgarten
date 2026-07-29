@@ -104,6 +104,7 @@ class ProjectResolver(
           // point to the source tree (rather than the output map).
           val involvedRepos = targets.keys.mapNotNull { (it.label as? ResolvedLabel)?.repo as? Canonical }.distinct()
           val needsPath = involvedRepos
+            .filter { !(repoMapping.nonLocalCanonicalRepoNames.contains(it.repoName)) }
             .filter { !(repoMapping.canonicalRepoNameToLocalPath.contains(it.repoName)) }
             .map { it.toString() }
           val extraRepositoryDescriptions =
@@ -116,10 +117,12 @@ class ProjectResolver(
           }.reduceOrNull { acc, map -> acc + map }
             .orEmpty()
           val extraPathsResolved = extraPaths.mapValues { (_, path) -> bazelInfo.workspaceRoot.resolve(path) }
+          val extraNonLocalCanonicalRepoNames = extraRepositoryDescriptions.filter { it.value != null && it.value !is ShowRepoResult.LocalRepository }.mapNotNull { it.value?.name }
           BzlmodRepoMapping(
             repoMapping.canonicalRepoNameToLocalPath + extraPaths,
             repoMapping.apparentRepoNameToCanonicalName,
             repoMapping.canonicalRepoNameToPath + extraPathsResolved,
+            repoMapping.nonLocalCanonicalRepoNames + extraNonLocalCanonicalRepoNames,
           )
         }
       }

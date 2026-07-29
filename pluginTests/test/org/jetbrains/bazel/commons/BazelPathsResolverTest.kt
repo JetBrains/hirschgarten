@@ -77,6 +77,7 @@ class BazelPathsResolverTest {
       canonicalRepoNameToLocalPath = mapOf("community+" to Path("community")),
       apparentRepoNameToCanonicalName = mapOf("community" to "community+"),
       canonicalRepoNameToPath = mapOf("community+" to Path("workspace/community")),
+      nonLocalCanonicalRepoNames = setOf(),
     )
 
     assertEquals(

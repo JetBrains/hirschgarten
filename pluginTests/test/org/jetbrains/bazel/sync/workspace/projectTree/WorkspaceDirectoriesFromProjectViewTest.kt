@@ -542,6 +542,7 @@ class WorkspaceDirectoriesFromProjectViewTest : BasePlatformTestCase() {
       canonicalRepoNameToLocalPath = mapOf(canonicalName to workspaceRoot.relativize(path)),
       apparentRepoNameToCanonicalName = mapOf("" to "", apparentName to canonicalName),
       canonicalRepoNameToPath = mapOf("" to workspaceRoot, canonicalName to path),
+      nonLocalCanonicalRepoNames = setOf(),
     )
 
   private fun createBazelInfo(): BazelInfo =
