@@ -202,8 +202,8 @@ class JvmBuildTargetResolver(
 
   private fun WorkspaceTarget.mavenCoordinatesKeyOrNull(): MavenCoordinatesKey? {
     val coordinates = MavenCoordinatesResolver
-      .fromTargetTagsList(rawBuildTarget.tags)
-      ?: return null
+                        .fromTargetTagsList(rawBuildTarget.tags)
+                      ?: return null
     return coordinates.toKey(targetKey.configuration)
   }
 
@@ -219,6 +219,7 @@ class JvmBuildTargetResolver(
             .copy(kind = DependencyLabelKind.EXPORTED_COMPILE_TIME)
             .let(::listOf)
             .plus(depTarget.mavenExportDependencies())
+
           else -> listOf(dependency)
         }
       }.distinct()
@@ -372,19 +373,28 @@ class JvmBuildTargetResolver(
 
   private fun annotationProcessorLibraries(targetsToImport: Collection<WorkspaceTarget>): Map<WorkspaceTargetKey, List<LibraryItem>> {
     return targetsToImport
+      .asSequence()
       .filter { it.findBuildData<JvmBuildTarget>()?.generatedJars?.isNotEmpty() == true }
       .associate { target ->
         val libKey = target.targetKey
         val generated = target.findBuildData<JvmBuildTarget>()?.generatedJars.orEmpty()
+        val kspSourceJars = target.findBuildData<KotlinBuildTarget>()
+          ?.kspSourceJars?.getFiles()?.toSet().orEmpty()
         libKey to
           createLibrary(
             // `Label.toString()` round-trips the raw target label, so this matches the pre-refactor `key.label + "_generated"`
             key = libKey.copy(label = Label.synthetic(target.targetKey.label.toString() + "_generated")),
             ijars = emptySet(),
             jars = generated.flatMap { it.binaryJars.getFiles().toList() }.toSet(),
-            sourceJars = generated.flatMap { it.sourceJars.getFiles().toList() }.toSet(),
+            sourceJars = generated.flatMap { it.sourceJars.getFiles().toList() }
+              // we don't want KSP source jars inside library source JARs,
+              // it won't have it's compiled jar equivalent anyway
+              .filterNot { it in kspSourceJars }
+              .toSet(),
           )
-      }.mapValues { listOf(it.value) }
+      }
+      .filter { (_, library) -> library.jars.isNotEmpty() || library.sourceJars.isNotEmpty() }
+      .mapValues { (_, library) -> listOf(library) }
       .toMap()
   }
 
@@ -499,7 +509,7 @@ class JvmBuildTargetResolver(
         .flatten()
         .toSet()
 
-    val outputJarsFromTransitiveDepsCache =  mutableMapOf<WorkspaceTargetKey, Set<Path>>()
+    val outputJarsFromTransitiveDepsCache = mutableMapOf<WorkspaceTargetKey, Set<Path>>()
     return jdepsJars
       .mapValues { (targetKey, jarsFromJdeps) ->
         val transitiveJdepsJars =
