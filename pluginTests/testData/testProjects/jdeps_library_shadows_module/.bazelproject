@@ -1,0 +1,23 @@
+# Reproduces a jdeps-derived sourceless library shadowing an in-project source module.
+#
+# Only //src/main/com/example/a:A and //src/main/com/example/b:B are roots, and
+# import_depth is 0, so only the roots become source modules. //src/main/com/example/mid:M
+# (which `exports` A) is reachable only as a transitive dependency of B, so it is demoted to
+# a library. B compiles against A's class through M's export, so B's .jdeps references A's
+# header jar -- but the importer's transitive-dependency subtraction cannot see through the
+# `mid` library to A. Before the fix in JavaLanguagePlugin.jdepsDependencies, A's header jar
+# therefore leaked into B as a sourceless library while A was also imported as a source module,
+# shadowing A's sources (go-to-definition on A lands in the decompiled .class instead of A.java).
+# The importer must instead recognize that A's header jar belongs to an imported target and emit a
+# module dependency B -> A, so A resolves to its source module.
+directories:
+  .
+
+targets:
+  //src/main/com/example/a:A
+  //src/main/com/example/b:B
+  # Demo: a dependent of B that uses A indirectly. B does not re-export A, so A is unresolved in C and
+  # IntelliJ offers "Add dependency on module 'A'" (which edits c/BUILD). See src/main/com/example/c.
+  //src/main/com/example/c:C
+
+import_depth: 0
