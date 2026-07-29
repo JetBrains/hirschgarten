@@ -65,6 +65,7 @@ internal suspend fun calculateRepoNameMappingOnly(
       mapOf(),
       moduleApparentNameToCanonicalNameForNeededTransitiveRules + moduleApparentNameToCanonicalName,
       mapOf(),
+      setOf(),
     )
 }
 
@@ -81,6 +82,7 @@ internal suspend fun extendRepoMappingByPathInfo(
   val knownRepoDefinitions = knownResolved.values.filterNotNull().associateBy { it.name }
 
   val moduleCanonicalNameToLocalPath = mutableMapOf<String, Path>()
+  val knownNonLocalRepoNames = mutableSetOf<String>()
   val moduleResolver = ModuleResolver(bazelRunner, projectView, taskId)
 
   val (known, unknown) = projectView.externalRepositoriesTreatedAsInternal.partition { name ->
@@ -95,11 +97,18 @@ internal suspend fun extendRepoMappingByPathInfo(
         is ShowRepoResult.LocalRepository -> moduleCanonicalNameToLocalPath[showRepoResult.name] = Path(showRepoResult.path)
         else -> {
           taskLogger.warn("Tried to import external module $externalRepo, but it was not `local_path_override`: $showRepoResult")
+          knownNonLocalRepoNames.add(externalRepo)
         }
       }
     }
     catch (e: Exception) {
       taskLogger.error(e.toString())
+    }
+  }
+
+  knownResolved.forEach { externalRepo, showRepoResult ->
+    if (!(showRepoResult is ShowRepoResult.LocalRepository)) {
+      knownNonLocalRepoNames.add(externalRepo)
     }
   }
 
@@ -125,6 +134,7 @@ internal suspend fun extendRepoMappingByPathInfo(
     moduleCanonicalNameToLocalPath,
     moduleApparentNameToCanonicalName,
     moduleCanonicalNameToPath,
+    knownNonLocalRepoNames,
   )
 }
 

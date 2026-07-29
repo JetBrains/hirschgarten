@@ -11,6 +11,7 @@ data class BzlmodRepoMapping(
   val canonicalRepoNameToLocalPath: Map<String, Path>,
   val apparentRepoNameToCanonicalName: Map<String, String>,
   val canonicalRepoNameToPath: Map<String, Path>,
+  val nonLocalCanonicalRepoNames: Set<String>,
 ) : RepoMapping {
   val canonicalRepoNameToApparentName: Map<String, String> =
     apparentRepoNameToCanonicalName.entries.associate { (apparent, canonical) -> canonical to apparent }.toSortedMap()
