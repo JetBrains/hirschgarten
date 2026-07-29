@@ -1,0 +1,14 @@
+bazel_dep(name = "rules_java", version = "8.16.1")
+bazel_dep(name = "rules_python", version = "1.4.0")
+bazel_dep(name = "rules_scala", version = "7.1.6")
+
+scala_config = use_extension("@rules_scala//scala/extensions:config.bzl", "scala_config")
+scala_config.settings(scala_version = "2.13.17")
+
+scala_deps = use_extension("@rules_scala//scala/extensions:deps.bzl", "scala_deps")
+scala_deps.scala()
+scala_deps.scalatest()
+scala_deps.twitter_scrooge()
+
+python = use_extension("@rules_python//python/extensions:python.bzl", "python")
+python.toolchain(python_version = "3.11")

@@ -498,6 +498,10 @@
       name="BazelQuery"
     />
 
+    <!-- Source jars produced by Bazel rules (e.g. scrooge) use the .srcjar extension;
+         without this mapping library source roots pointing at them cannot be opened. -->
+    <fileType name="ARCHIVE" extensions="srcjar"/>
+
     <lang.parserDefinition
       implementationClass="org.jetbrains.bazel.languages.bazelquery.parser.BazelQueryParserDefinition"
       language="BazelQuery"
