@@ -47,6 +47,7 @@ data class KotlinBuildTarget(
   @JvmField @Transient val stdlibHardLinkedJars: SourceFileCollection = SourceFileCollection.EMPTY,
   @JvmField @Transient val stdlibInferredSourceJars: SourceFileCollection = SourceFileCollection.EMPTY,
   @JvmField @Transient val exportedCompilerPluginTargetsList: List<WorkspaceTargetKey> = emptyList(),
+  @JvmField @Transient val kspSourceJars: SourceFileCollection = SourceFileCollection.EMPTY
 ) : BuildTargetData
 
 @ClassDiscriminator(3)

@@ -10,13 +10,15 @@ import com.intellij.platform.workspace.jps.entities.modifyContentRootEntity
 import com.intellij.platform.workspace.jps.entities.modifyModuleEntity
 import com.intellij.platform.workspace.jps.entities.modifySourceRootEntity
 import com.intellij.platform.workspace.storage.MutableEntityStorage
-import com.intellij.platform.workspace.storage.impl.url.toVirtualFileUrl
 import com.intellij.platform.workspace.storage.url.VirtualFileUrlManager
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.sync.workspace.languages.java.sourceRoot.JvmPackagePrefixCalculator
+import org.jetbrains.bazel.sync.workspace.languages.jvm.KotlinBuildTarget
 import org.jetbrains.bazel.workspace.indexAdditionalFiles.ProjectViewGlobSet
 import org.jetbrains.bsp.protocol.RawBuildTarget
+import org.jetbrains.bsp.protocol.SourceFileCollection
+import org.jetbrains.bsp.protocol.extractData
 import org.jetbrains.bsp.protocol.isTestTarget
 import java.nio.file.Path
 
@@ -62,8 +64,16 @@ object SourceRootBuilder {
         },
       )
 
+    // KSP is not a compiler plugin, it uses kotlin analysis API to analyze
+    // user code and expose results using KSP API then generate code (that's why it's separate bazel actions),
+    // the issue is that rules_kotlin treat KSP outputs in the same way as normal compiler artifacts.
+    // Correct way of representing ksp sources is to put then side-by-side to real sources
+    // that allow our plugin to correctly handle things like two-way references, or access to internal members.
+    val kspSrcJars = target.extractData<KotlinBuildTarget>()?.kspSourceJars ?: SourceFileCollection.EMPTY
+
     return (target.sources.getFiles().map { it.convert(generated = false) } +
-            target.generatedSources.getFiles().map { it.convert(generated = true) }).toList()
+            target.generatedSources.getFiles().map { it.convert(generated = true) }).toList() +
+           kspSrcJars.getFiles().map { it.convert(generated = true) }
   }
 
   /**
@@ -92,7 +102,8 @@ object SourceRootBuilder {
     }.forEach { (commonParentDir, sourceRoots) ->
       val commonContentRoot = addContentRoot(commonParentDir, parentModuleEntity, virtualFileUrlManager, storage)
       for (sourceRoot in sourceRoots) {
-        val sourceRootEntity = addSourceRootEntity(storage, commonContentRoot, sourceRoot.sourcePath, sourceRoot.rootType, virtualFileUrlManager)
+        val sourceRootEntity =
+          addSourceRootEntity(storage, commonContentRoot, sourceRoot.sourcePath, sourceRoot.rootType, virtualFileUrlManager)
         addJavaSourceRootPropertiesEntity(storage, sourceRootEntity, sourceRoot.generated, sourceRoot.packagePrefix)
       }
     }
@@ -125,7 +136,7 @@ object SourceRootBuilder {
     virtualFileUrlManager: VirtualFileUrlManager,
   ): SourceRootEntity {
     val entity = SourceRootEntity(
-      url = sourcePath.toVirtualFileUrl(virtualFileUrlManager),
+      url = sourcePath.toJarUrlString().toResolvedVirtualFileUrl(virtualFileUrlManager),
       rootTypeId = rootType,
       entitySource = contentRoot.entitySource,
     )
