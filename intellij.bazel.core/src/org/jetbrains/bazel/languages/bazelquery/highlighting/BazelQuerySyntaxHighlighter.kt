@@ -35,7 +35,7 @@ internal object BazelQuerySyntaxHighlighter : SyntaxHighlighterBase() {
 
   override fun getHighlightingLexer(): Lexer = BazelQueryLexer()
 
-  override fun getTokenHighlights(tokenType: IElementType): Array<TextAttributesKey> = pack(keys[tokenType])
+  override fun getTokenHighlights(tokenType: IElementType): Array<out TextAttributesKey> = pack(keys[tokenType])
 }
 
 internal class BazelQuerySyntaxHighlighterFactory : SyntaxHighlighterFactory() {

@@ -54,7 +54,7 @@ internal object StarlarkSyntaxHighlighter : SyntaxHighlighterBase() {
 
   override fun getHighlightingLexer(): Lexer = StarlarkHighlightingLexer()
 
-  override fun getTokenHighlights(tokenType: IElementType): Array<TextAttributesKey> = pack(keys[tokenType])
+  override fun getTokenHighlights(tokenType: IElementType): Array<out TextAttributesKey> = pack(keys[tokenType])
 }
 
 internal class StarlarkSyntaxHighlighterFactory : SyntaxHighlighterFactory() {

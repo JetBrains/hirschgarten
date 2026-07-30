@@ -24,7 +24,7 @@ internal object ProjectViewSyntaxHighlighter : SyntaxHighlighterBase() {
 
   override fun getHighlightingLexer(): Lexer = ProjectViewLexer()
 
-  override fun getTokenHighlights(tokenType: IElementType): Array<TextAttributesKey> = pack(keys[tokenType])
+  override fun getTokenHighlights(tokenType: IElementType): Array<out TextAttributesKey> = pack(keys[tokenType])
 }
 
 internal class ProjectViewSyntaxHighlighterFactory : SyntaxHighlighterFactory() {
