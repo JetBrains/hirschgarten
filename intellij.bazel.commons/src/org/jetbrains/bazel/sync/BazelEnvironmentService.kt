@@ -5,6 +5,7 @@ import com.intellij.openapi.components.service
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.startup.ProjectActivity
+import com.intellij.platform.eel.channels.EelDelicateApi
 import com.intellij.platform.eel.environmentVariables
 import com.intellij.platform.eel.provider.getEelDescriptor
 import com.intellij.platform.eel.provider.toEelApi
@@ -14,12 +15,14 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
+import kotlinx.coroutines.withTimeout
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.config.isBazelProject
 import java.io.File
 import java.nio.file.Path
 import kotlin.io.path.exists
 import kotlin.io.path.isExecutable
+import kotlin.time.Duration.Companion.seconds
 
 private val LOG = logger<BazelEnvironmentService>()
 
@@ -33,9 +36,14 @@ private val LOG = logger<BazelEnvironmentService>()
 @ApiStatus.Internal
 @Service(Service.Level.PROJECT)
 class BazelEnvironmentService(project: Project, scope: CoroutineScope) {
+  @OptIn(EelDelicateApi::class)
   private val environmentDeferred: Deferred<Map<String, String>> = scope.async(Dispatchers.IO) {
     try {
-      project.getEelDescriptor().toEelApi().exec.environmentVariables().loginNonInteractive().eelIt().await()
+      withTimeout(5.seconds) {
+        // Using interactive login shell here to make sure the environment variables match the user's terminal exactly.
+        // Non-interactive shells miss environment variables defined in files like ~/.bashrc or ~/.zshrc
+        project.getEelDescriptor().toEelApi().exec.environmentVariables().loginInteractive().eelIt().await()
+      }
     }
     catch (e: Throwable) {
       LOG.warn(e)
