@@ -47,6 +47,18 @@ class BazelBspLanguageExtensionsGeneratorTest {
   val kotlinCompletedRepoMapping =
     BzlmodRepoMapping(mapOf(), mapOf("io_bazel_rules_kotlin" to "rules_kotlin+", "rules_java" to "rules_java+"), mapOf())
 
+  // rules_java declared with a custom repo_name, so its default "rules_java" apparent name is absent.
+  // Rule imports must still resolve via the module's canonical name (rules_java+).
+  private val renamedRulesJavaRepoMapping =
+    BzlmodRepoMapping(
+      mapOf(),
+      mapOf(
+        "com_google_rules_java" to "rules_java+",
+        "rules_python" to "rules_python+",
+      ),
+      mapOf(),
+    )
+
   private val defaultFileContent =
     """ load("@@rules_java+//java/common:java_info.bzl", "JavaInfo")
             load("//.bazelbsp/aspects:rules/java/java_info.bzl","extract_java_toolchain","extract_java_runtime")
@@ -149,6 +161,21 @@ class BazelBspLanguageExtensionsGeneratorTest {
     bazelBspLanguageExtensionsGenerator.generateLanguageExtensions(ruleLanguages, defaultToolchains, defaultRepoMapping, noAutoloads)
 
     // then
+    val fileContent = getExtensionsFileContent()
+    fileContent shouldBe defaultFileContent
+  }
+
+  @Test
+  fun `should resolve rule imports for rulesets declared with a custom repo_name`() {
+    // given
+    val ruleLanguages = defaultRulesetLanguages
+    val bazelBspLanguageExtensionsGenerator =
+      BazelBspLanguageExtensionsGenerator(internalAspectsResolverMock)
+
+    // when
+    bazelBspLanguageExtensionsGenerator.generateLanguageExtensions(ruleLanguages, defaultToolchains, renamedRulesJavaRepoMapping, noAutoloads)
+
+    // then: JavaInfo still loads from the canonical @@rules_java+ despite the custom apparent name
     val fileContent = getExtensionsFileContent()
     fileContent shouldBe defaultFileContent
   }

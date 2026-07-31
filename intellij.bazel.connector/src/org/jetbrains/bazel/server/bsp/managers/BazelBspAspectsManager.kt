@@ -190,9 +190,11 @@ class BazelBspAspectsManager(
       // prefix, so we have to add @ to indicate it as canonical, as the template adds a single @ as prefix.
       (rulesetName as? CanonicalRulesetName) != null-> "@${rulesetName.name}"
       // bazel mod dump_repo_mapping returns everything without @@
-      // and in aspects we have a @ prefix
+      // and in aspects we have a @ prefix. Resolve via the module's canonical name so aspects keep
+      // working when the root module gave the ruleset a custom repo_name (e.g. protobuf ->
+      // com_google_protobuf); a bare apparent-name fallback would emit a non-existent @protobuf.
       repoMapping is BzlmodRepoMapping && (rulesetName as? ApparentRulesetName)!= null ->
-        repoMapping.apparentRepoNameToCanonicalName[rulesetName.name ]?.let { "@$it" } ?: rulesetName.name
+        repoMapping.canonicalNameForRuleset(rulesetName.name)?.let { "@$it" } ?: rulesetName.name
 
       else -> (rulesetName as? ApparentRulesetName)?.name
     }

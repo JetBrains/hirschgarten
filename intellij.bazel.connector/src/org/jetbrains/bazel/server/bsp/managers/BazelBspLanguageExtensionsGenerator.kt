@@ -83,8 +83,10 @@ enum class Language(
     ) { "\"$it\"" }
 
   private fun toCanonicalRuleName(repoMapping: RepoMapping) : String? {
-    val toCanonical = (repoMapping as? BzlmodRepoMapping)?.apparentRepoNameToCanonicalName ?: return null
-    return rulesetNames.filter { it in toCanonical }.firstOrNull()?.let { "@@" + toCanonical[it] }
+    val bzlmodRepoMapping = repoMapping as? BzlmodRepoMapping ?: return null
+    // Resolve via the module's canonical name so rule imports (e.g. JavaInfo) keep working even when
+    // the root module gave the ruleset a custom repo_name that hides its default apparent name.
+    return rulesetNames.firstNotNullOfOrNull { bzlmodRepoMapping.canonicalNameForRuleset(it) }?.let { "@@$it" }
   }
 
   fun toRuleImportLoads(repoMapping: RepoMapping): List<String> {
