@@ -26,7 +26,6 @@ import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.config.isBazelProject
 import org.jetbrains.bazel.workspacemodel.entities.BazelGoPackageEntity
-import org.jetbrains.bazel.workspacemodel.entities.ImportPathId
 
 @ApiStatus.Internal
 class BazelGoPackageFactory : GoPackageFactory {
@@ -44,7 +43,7 @@ class BazelGoPackageFactory : GoPackageFactory {
     val goPackage = snapshot.getVirtualFileUrlIndex()
       .findEntitiesByUrl(fileUrl = virtualFile.toVirtualFileUrl(vfuManager))
       .filterIsInstance<BazelGoPackageEntity>()
-      .firstNotNullOfOrNull { snapshot.resolve(ImportPathId(it.importPath)) }
+      .firstOrNull()
 
     return BazelGoPackage(project, goPackage ?: return null)
   }
