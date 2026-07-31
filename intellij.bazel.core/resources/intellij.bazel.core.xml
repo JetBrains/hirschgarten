@@ -487,6 +487,14 @@
                      level="ERROR"
                      implementationClass="org.jetbrains.bazel.languages.starlark.inspection.StarlarkInvalidAssignmentTargetInspection"/>
 
+    <localInspection language="Starlark"
+                     key="inspection.display.name.starlark.recursion.check"
+                     groupPath="Bazel"
+                     groupKey="starlark.inspection.group.name"
+                     enabledByDefault="true"
+                     level="ERROR"
+                     implementationClass="org.jetbrains.bazel.languages.starlark.inspection.StarlarkRecursionInspection"/>
+
     <fileType
       extensions="bazelquery"
       fieldName="INSTANCE"
