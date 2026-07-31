@@ -100,6 +100,5 @@
     <orderEntry type="module" module-name="intellij.platform.statistics" />
     <orderEntry type="module" module-name="intellij.platform.testRunner" />
     <orderEntry type="module" module-name="intellij.libraries.bazel.aspect.sdk" />
-    <orderEntry type="module" module-name="intellij.libraries.kotlinc.kotlin.compiler.common" scope="PROVIDED" />
   </component>
 </module>

@@ -4,12 +4,12 @@ import com.intellij.codeInsight.lookup.LookupElementBuilder
 import com.intellij.openapi.util.TextRange
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiReferenceBase
+import com.intellij.psi.util.PsiTreeUtil.getChildOfType
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkCallExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkReferenceExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.arguments.StarlarkNamedArgumentExpression
 import org.jetbrains.bazel.languages.starlark.psi.functions.StarlarkArgumentList
 import org.jetbrains.bazel.languages.starlark.psi.statements.StarlarkAssignmentStatement
-import org.jetbrains.kotlin.psi.psiUtil.getChildOfType
 
 internal class StarlarkQualifiedReferenceExpressionReference (element: StarlarkReferenceExpression) :
   PsiReferenceBase<StarlarkReferenceExpression>(
@@ -38,7 +38,8 @@ private fun StarlarkReferenceExpression.getStructArgumentList(): StarlarkArgumen
   val qualifiedPartResolved = getQualifierExpression()?.reference?.resolve() ?: return null
   val structCall = when (qualifiedPartResolved) {
     is StarlarkNamedArgumentExpression -> qualifiedPartResolved.getValue() as? StarlarkCallExpression
-    else -> (qualifiedPartResolved.parent as? StarlarkAssignmentStatement)?.getChildOfType()
+                     else -> (qualifiedPartResolved.parent as? StarlarkAssignmentStatement)
+                       ?.let { getChildOfType(it, StarlarkCallExpression::class.java) }
   } ?: return null
   if (structCall.getCalledFunctionName() != "struct") return null
   return structCall.getArgumentList()

@@ -10,6 +10,7 @@ import com.intellij.psi.ElementManipulators
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiReferenceBase
+import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.util.PlatformIcons
 import com.intellij.util.containers.reverse
 import org.jetbrains.bazel.commons.constants.Constants.BUILD_FILE_NAMES
@@ -33,7 +34,6 @@ import org.jetbrains.bazel.languages.starlark.repomapping.findContainingBazelRep
 import org.jetbrains.bazel.languages.starlark.repomapping.toShortString
 import org.jetbrains.bazel.target.targetStorage
 import org.jetbrains.bazel.workspace.canonicalRepoNameToPath
-import org.jetbrains.kotlin.psi.psiUtil.getParentOfType
 import java.nio.file.Path
 import kotlin.io.path.Path
 import kotlin.io.path.relativeToOrNull
@@ -45,7 +45,7 @@ internal class BazelLabelReference(element: StarlarkStringLiteralExpression, sof
     val project = element.project
     if (!project.isBazelProject || isInNameArgument()) return null
     val label = Label.parseOrNull(element.getStringContents()) ?: return null
-    val acceptOnlyFileTarget = element.getParentOfType<StarlarkLoadStatement>(strict = true) != null
+    val acceptOnlyFileTarget = PsiTreeUtil.getParentOfType(element, StarlarkLoadStatement::class.java, true) != null
     return resolveLabel(project, label, element.containingFile.originalFile.virtualFile, acceptOnlyFileTarget)
   }
 
