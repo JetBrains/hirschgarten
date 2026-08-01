@@ -40,6 +40,7 @@ import org.junit.jupiter.api.Order
 import org.junit.jupiter.api.Test
 import java.awt.Point
 import java.awt.event.KeyEvent
+import java.io.File
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
 
@@ -71,27 +72,37 @@ class ImportRunConfigurationsSyncHookTest : IdeStarterCombinedBaseTest() {
         }
 
         step("Check build diagnostics with run configs") {
-          step("Break compilation intentionally") {
-            openFile("src/com/example/Calculator.java")
-            codeEditor {
-              // Erase the semicolon ;
-              goToPosition(5, 22)
-              keyboard { key(KeyEvent.VK_BACK_SPACE) }
+          var compilationBroken = false
+          try {
+            step("Break compilation intentionally") {
+              openFile("src/com/example/Calculator.java")
+              codeEditor {
+                // Erase the semicolon ;
+                goToPosition(5, 22)
+                keyboard { key(KeyEvent.VK_BACK_SPACE) }
+              }
+              compilationBroken = true
             }
-          }
-          step("Run test in Debug") { x { byAccessibleName("Debug 'Bazel test CalculatorTest'") }.click() }
-          val expectedBuildErrors = setOf("Ended with an error.", "Calculator.java", " src/com/example 1 error", "BUILD", "  1 error")
-          step("Verify build results tree") { waitForBuildResultsTree(expectedTexts = expectedBuildErrors) }
+            step("Run test in Debug") { x { byAccessibleName("Debug 'Bazel test CalculatorTest'") }.click() }
+            // The tree renders the directory node with the host separator, so this cannot be a POSIX literal.
+            val sourceDirWithError = " src/com/example 1 error".replace('/', File.separatorChar)
+            val expectedBuildErrors = setOf("Ended with an error.", "Calculator.java", sourceDirWithError, "BUILD", "  1 error")
+            step("Verify build results tree") { waitForBuildResultsTree(expectedTexts = expectedBuildErrors) }
 
-          step("Run test normally") { x { byAccessibleName("Run 'Bazel test CalculatorTest'") }.click() }
-          step("Verify build results tree") { waitForBuildResultsTree(expectedTexts = expectedBuildErrors) }
-
-          step("Fix compilation") {
-            openFile("src/com/example/Calculator.java")
-            codeEditor {
-              // Return back the semicolon ;
-              goToPosition(5, 22)
-              pasteText(";")
+            step("Run test normally") { x { byAccessibleName("Run 'Bazel test CalculatorTest'") }.click() }
+            step("Verify build results tree") { waitForBuildResultsTree(expectedTexts = expectedBuildErrors) }
+          } finally {
+            // Restore even when a verification above fails, otherwise the deliberately broken file
+            // leaks into the following @Order tests and they fail to compile for an unrelated reason.
+            if (compilationBroken) {
+              step("Fix compilation") {
+                openFile("src/com/example/Calculator.java")
+                codeEditor {
+                  // Return back the semicolon ;
+                  goToPosition(5, 22)
+                  pasteText(";")
+                }
+              }
             }
           }
         }
