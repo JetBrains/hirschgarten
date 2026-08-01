@@ -4,6 +4,7 @@ import org.jetbrains.bazel.test.framework.serializeBazelRcPath
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertNotEquals
+import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
@@ -301,6 +302,46 @@ internal class BazelTestFixtureConfigTest {
     assertEquals(
       "experimental_downloader_config",
       BazelProjectConfigurer.resolveDownloaderConfigFlag(withoutVersionFile, emptyMap()),
+    )
+  }
+
+  @Test
+  fun `Windows opts out of the shared repo contents cache from Bazel 8 on`(@TempDir projectRoot: Path) {
+    projectRoot.resolve(".bazelversion").writeText("9.1.1\n")
+    assertEquals(
+      "common --repo_contents_cache=",
+      BazelProjectConfigurer.repoContentsCacheSetting(projectRoot, emptyMap(), IdeStarterOs.WINDOWS),
+    )
+
+    // Other platforms are green on the shared cache; leave their extraction sharing intact.
+    listOf(IdeStarterOs.LINUX, IdeStarterOs.MACOS).forEach { hostOs ->
+      assertNull(BazelProjectConfigurer.repoContentsCacheSetting(projectRoot, emptyMap(), hostOs))
+    }
+
+    // The flag does not exist before Bazel 8, so it must not be emitted there at all.
+    projectRoot.resolve(".bazelversion").writeText("7.5.0\n")
+    assertNull(BazelProjectConfigurer.repoContentsCacheSetting(projectRoot, emptyMap(), IdeStarterOs.WINDOWS))
+    assertEquals(
+      "common --repo_contents_cache=",
+      BazelProjectConfigurer.repoContentsCacheSetting(
+        projectRoot,
+        mapOf(USE_BAZEL_VERSION_ENV to "8.5.1"),
+        IdeStarterOs.WINDOWS,
+      ),
+    )
+    // The matrix override wins over the checked-in version in both directions.
+    projectRoot.resolve(".bazelversion").writeText("9.1.1\n")
+    assertNull(
+      BazelProjectConfigurer.repoContentsCacheSetting(
+        projectRoot,
+        mapOf(USE_BAZEL_VERSION_ENV to "7.5.0"),
+        IdeStarterOs.WINDOWS,
+      ),
+    )
+
+    val withoutVersionFile = projectRoot.resolve("bare").createDirectories()
+    assertNull(
+      BazelProjectConfigurer.repoContentsCacheSetting(withoutVersionFile, emptyMap(), IdeStarterOs.WINDOWS),
     )
   }
 
