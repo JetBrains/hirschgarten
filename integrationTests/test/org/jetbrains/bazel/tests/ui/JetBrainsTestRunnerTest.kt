@@ -17,7 +17,7 @@ import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
 
 private val JETBRAINS_TEST_RUNNER_PROJECT = simpleBazelProject(
-  revision = "8843d7857cde7085d7078bcd35f09f572f59dbb7",
+  revision = "91afe6b055e8c9dedd518b243916c1a0b005e96b",
   path = "jetbrainsTestRunner",
 )
 
