@@ -306,7 +306,7 @@ internal class BazelTestFixtureConfigTest {
   }
 
   @Test
-  fun `Windows opts out of the shared repo contents cache from Bazel 8 on`(@TempDir projectRoot: Path) {
+  fun `Windows opts out of the shared repo contents cache from Bazel 8_3 on`(@TempDir projectRoot: Path) {
     projectRoot.resolve(".bazelversion").writeText("9.1.1\n")
     assertEquals(
       "common --repo_contents_cache=",
@@ -318,9 +318,19 @@ internal class BazelTestFixtureConfigTest {
       assertNull(BazelProjectConfigurer.repoContentsCacheSetting(projectRoot, emptyMap(), hostOs))
     }
 
-    // The flag does not exist before Bazel 8, so it must not be emitted there at all.
+    // The repo contents cache first shipped in Bazel 8.3.0. Anything older -- 8.2.x very much
+    // included -- rejects the flag as an unrecognized option and the whole invocation fails.
     projectRoot.resolve(".bazelversion").writeText("7.5.0\n")
     assertNull(BazelProjectConfigurer.repoContentsCacheSetting(projectRoot, emptyMap(), IdeStarterOs.WINDOWS))
+    projectRoot.resolve(".bazelversion").writeText("8.2.1\n")
+    assertNull(BazelProjectConfigurer.repoContentsCacheSetting(projectRoot, emptyMap(), IdeStarterOs.WINDOWS))
+    projectRoot.resolve(".bazelversion").writeText("8.3.0\n")
+    assertEquals(
+      "common --repo_contents_cache=",
+      BazelProjectConfigurer.repoContentsCacheSetting(projectRoot, emptyMap(), IdeStarterOs.WINDOWS),
+    )
+
+    projectRoot.resolve(".bazelversion").writeText("7.5.0\n")
     assertEquals(
       "common --repo_contents_cache=",
       BazelProjectConfigurer.repoContentsCacheSetting(
@@ -334,7 +344,31 @@ internal class BazelTestFixtureConfigTest {
     assertNull(
       BazelProjectConfigurer.repoContentsCacheSetting(
         projectRoot,
+        mapOf(USE_BAZEL_VERSION_ENV to "8.2.0"),
+        IdeStarterOs.WINDOWS,
+      ),
+    )
+    assertNull(
+      BazelProjectConfigurer.repoContentsCacheSetting(
+        projectRoot,
         mapOf(USE_BAZEL_VERSION_ENV to "7.5.0"),
+        IdeStarterOs.WINDOWS,
+      ),
+    )
+
+    // A bare major version leaves the minor unknown. Skipping the flag is always safe, while
+    // emitting it below 8.3 is a hard startup error, so an unknown minor means no flag.
+    assertNull(
+      BazelProjectConfigurer.repoContentsCacheSetting(
+        projectRoot,
+        mapOf(USE_BAZEL_VERSION_ENV to "8"),
+        IdeStarterOs.WINDOWS,
+      ),
+    )
+    assertNull(
+      BazelProjectConfigurer.repoContentsCacheSetting(
+        projectRoot,
+        mapOf(USE_BAZEL_VERSION_ENV to "9"),
         IdeStarterOs.WINDOWS,
       ),
     )
