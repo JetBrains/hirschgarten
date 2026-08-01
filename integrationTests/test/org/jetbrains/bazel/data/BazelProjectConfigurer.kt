@@ -145,6 +145,7 @@ register_toolchains(
         ?.let { Path.of(it) }
       ?: defaultCacheRoot.resolve("repository-cache")
     lines.add(bazelCacheSetting("repository_cache", repoCache))
+    repoContentsCacheSetting(context.resolvedBazelProjectHome)?.let { lines.add(it) }
 
     val isPerformanceTest = System.getProperty("idea.performance.tests") == "true"
     val diskCache = System.getenv("IDE_STARTER_BAZEL_DISK_CACHE")
@@ -287,17 +288,43 @@ register_toolchains(
   internal fun bazelCacheSetting(name: String, path: Path): String =
     "common --$name=${path.toBazelRcPath()}"
 
+  internal fun resolveBazelMajorVersion(
+    projectRoot: Path,
+    environment: Map<String, String> = System.getenv(),
+  ): Int? {
+    // The matrix overrides the checked-in .bazelversion through bazelisk's USE_BAZEL_VERSION.
+    val version = environment[USE_BAZEL_VERSION_ENV]?.takeIf { it.isNotBlank() }
+      ?: (projectRoot / ".bazelversion").takeIf { it.exists() }?.toFile()?.readText()
+      ?: return null
+    return version.trim().split(".").firstOrNull()?.toIntOrNull()
+  }
+
   internal fun resolveDownloaderConfigFlag(
     projectRoot: Path,
     environment: Map<String, String> = System.getenv(),
   ): String {
-    // The matrix overrides the checked-in .bazelversion through bazelisk's USE_BAZEL_VERSION.
-    val version = environment[USE_BAZEL_VERSION_ENV]?.takeIf { it.isNotBlank() }
-      ?: (projectRoot / ".bazelversion").takeIf { it.exists() }?.toFile()?.readText()
-      ?: return "experimental_downloader_config"
-    val majorVersion = version.trim().split(".").firstOrNull()?.toIntOrNull()
+    val majorVersion = resolveBazelMajorVersion(projectRoot, environment)
       ?: return "experimental_downloader_config"
     return if (majorVersion >= 8) "downloader_config" else "experimental_downloader_config"
+  }
+
+  // Bazel 8+ keeps *extracted* external repos in a repo contents cache that defaults to
+  // `{--repository_cache}/contents`, so pointing the whole Windows e2e fleet at one shared
+  // repository cache silently shares extracted repos too. Its garbage collector (idle 5m,
+  // max age 14d) can evict an entry another Bazel server is still using, and on Windows a
+  // delete that loses a file-lock race leaves the entry directory behind without its
+  // MODULE.bazel/REPO.bazel/WORKSPACE marker. Every later fetch of that repo then dies with
+  // "no such package '@@platforms//host'" and sync returns zero targets. Keep sharing the
+  // download cache — the network-bound half — and re-extract repos per invocation instead.
+  internal fun repoContentsCacheSetting(
+    projectRoot: Path,
+    environment: Map<String, String> = System.getenv(),
+    hostOs: IdeStarterOs = IdeStarterOs.current(),
+  ): String? {
+    if (hostOs != IdeStarterOs.WINDOWS) return null
+    // The flag does not exist before Bazel 8; passing it there fails the invocation outright.
+    val majorVersion = resolveBazelMajorVersion(projectRoot, environment) ?: return null
+    return if (majorVersion >= 8) "common --repo_contents_cache=" else null
   }
 
   private fun createProjectViewFile(context: IDETestContext) {
