@@ -288,15 +288,25 @@ register_toolchains(
   internal fun bazelCacheSetting(name: String, path: Path): String =
     "common --$name=${path.toBazelRcPath()}"
 
+  private fun resolveRawBazelVersion(projectRoot: Path, environment: Map<String, String>): String? =
+    // The matrix overrides the checked-in .bazelversion through bazelisk's USE_BAZEL_VERSION.
+    environment[USE_BAZEL_VERSION_ENV]?.takeIf { it.isNotBlank() }
+      ?: (projectRoot / ".bazelversion").takeIf { it.exists() }?.toFile()?.readText()
+
   internal fun resolveBazelMajorVersion(
     projectRoot: Path,
     environment: Map<String, String> = System.getenv(),
-  ): Int? {
-    // The matrix overrides the checked-in .bazelversion through bazelisk's USE_BAZEL_VERSION.
-    val version = environment[USE_BAZEL_VERSION_ENV]?.takeIf { it.isNotBlank() }
-      ?: (projectRoot / ".bazelversion").takeIf { it.exists() }?.toFile()?.readText()
-      ?: return null
-    return version.trim().split(".").firstOrNull()?.toIntOrNull()
+  ): Int? =
+    resolveRawBazelVersion(projectRoot, environment)?.trim()?.split(".")?.firstOrNull()?.toIntOrNull()
+
+  internal fun resolveBazelMajorMinorVersion(
+    projectRoot: Path,
+    environment: Map<String, String> = System.getenv(),
+  ): Pair<Int, Int>? {
+    val parts = resolveRawBazelVersion(projectRoot, environment)?.trim()?.split(".") ?: return null
+    val major = parts.getOrNull(0)?.toIntOrNull() ?: return null
+    val minor = parts.getOrNull(1)?.toIntOrNull() ?: return null
+    return major to minor
   }
 
   internal fun resolveDownloaderConfigFlag(
@@ -308,7 +318,7 @@ register_toolchains(
     return if (majorVersion >= 8) "downloader_config" else "experimental_downloader_config"
   }
 
-  // Bazel 8+ keeps *extracted* external repos in a repo contents cache that defaults to
+  // Bazel 8.3+ keeps *extracted* external repos in a repo contents cache that defaults to
   // `{--repository_cache}/contents`, so pointing the whole Windows e2e fleet at one shared
   // repository cache silently shares extracted repos too. Its garbage collector (idle 5m,
   // max age 14d) can evict an entry another Bazel server is still using, and on Windows a
@@ -322,9 +332,11 @@ register_toolchains(
     hostOs: IdeStarterOs = IdeStarterOs.current(),
   ): String? {
     if (hostOs != IdeStarterOs.WINDOWS) return null
-    // The flag does not exist before Bazel 8; passing it there fails the invocation outright.
-    val majorVersion = resolveBazelMajorVersion(projectRoot, environment) ?: return null
-    return if (majorVersion >= 8) "common --repo_contents_cache=" else null
+    // The repo contents cache and its flag first shipped in Bazel 8.3.0; every older Bazel
+    // (8.2.x included) rejects the option outright and the whole invocation fails.
+    val (major, minor) = resolveBazelMajorMinorVersion(projectRoot, environment) ?: return null
+    val flagIsSupported = major > 8 || (major == 8 && minor >= 3)
+    return if (flagIsSupported) "common --repo_contents_cache=" else null
   }
 
   private fun createProjectViewFile(context: IDETestContext) {
