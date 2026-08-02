@@ -9,6 +9,7 @@ import com.intellij.tools.ide.performanceTesting.commands.checkOnRedCode
 import com.intellij.tools.ide.performanceTesting.commands.goto
 import com.intellij.tools.ide.performanceTesting.commands.pressKey
 import com.intellij.tools.ide.performanceTesting.commands.waitForSmartMode
+import org.jetbrains.bazel.data.BazelProjectConfigurer
 import org.jetbrains.bazel.data.IdeaBazelCases
 import org.jetbrains.bazel.ideStarter.IdeStarterBaseProjectTest
 import org.jetbrains.bazel.ideStarter.bazelClean
@@ -17,13 +18,26 @@ import org.jetbrains.bazel.ideStarter.execute
 import org.jetbrains.bazel.ideStarter.navigateToFile
 import org.jetbrains.bazel.ideStarter.openFile
 import org.jetbrains.bazel.ideStarter.syncBazelProject
+import org.jetbrains.bazel.data.simpleBazelProject
 import org.junit.jupiter.api.Test
 import kotlin.time.Duration.Companion.minutes
+
+private val IMPORT_DEPTH_ZERO_PROJECT = simpleBazelProject(
+  // TODO: temporary pin to SBPFT branch bazel/dan/e2e-os-bazel-matrix; repoint to main once the fixture upstreaming lands there
+  revision = "e974ca77b97e65a329f03492f9b556e44f47f648",
+  path = "importDepthZero",
+  configureProject = { context ->
+    BazelProjectConfigurer.configureProjectBeforeUse(
+      context,
+      createProjectView = false,
+    )
+  },
+)
 
 internal class ImportDepthZeroTest : IdeStarterBaseProjectTest() {
   @Test
   fun `should import the first level of dependencies and jdeps`() {
-    createContext("importDepthZeroTest", IdeaBazelCases.ImportDepthZeroTest)
+    createContext("importDepthZeroTest", IdeaBazelCases.withProject(IMPORT_DEPTH_ZERO_PROJECT))
       .runIdeWithDriver(runTimeout = timeout)
       .useDriverAndCloseIde {
         ideFrame {

@@ -33,6 +33,7 @@ import org.jetbrains.bazel.ideStarter.buildAndSync
 import org.jetbrains.bazel.ideStarter.execute
 import org.jetbrains.bazel.ideStarter.openFile
 import org.jetbrains.bazel.ideStarter.waitForSyncSucceeded
+import org.jetbrains.bazel.data.simpleBazelProject
 import org.jetbrains.bazel.performanceImpl.FileKindCheck
 import org.jetbrains.bazel.tests.ui.verifyAvailableRunGutterActions
 import org.junit.jupiter.api.Order
@@ -41,9 +42,15 @@ import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
 import com.intellij.ide.starter.driver.execute as sdkExecute
 
+private val SIMPLE_JAVA_PROJECT = simpleBazelProject(
+  // TODO: temporary pin to SBPFT branch bazel/dan/e2e-os-bazel-matrix; repoint to main once the fixture upstreaming lands there
+  revision = "e974ca77b97e65a329f03492f9b556e44f47f648",
+  path = "simpleJavaTest",
+)
+
 class SimpleJavaCombinedTest : IdeStarterCombinedBaseTest() {
   override fun createContext(): IDETestContext =
-    createContext("simpleJavaCombined", IdeaBazelCases.SimpleJavaCombined)
+    createContext("simpleJavaCombined", IdeaBazelCases.withProject(SIMPLE_JAVA_PROJECT))
       .applyVMOptionsPatch {
         addSystemProperty("expose.ui.hierarchy.url", "true")
       }

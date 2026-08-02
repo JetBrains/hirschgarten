@@ -14,11 +14,13 @@ import com.intellij.tools.ide.performanceTesting.commands.openFile
 import com.intellij.tools.ide.performanceTesting.commands.takeScreenshot
 import io.kotest.matchers.shouldBe
 import org.jetbrains.bazel.config.BazelFeatureFlags
+import org.jetbrains.bazel.data.BazelProjectConfigurer
 import org.jetbrains.bazel.data.GoLandBazelCases
 import org.jetbrains.bazel.data.GoPluginBazelCases
 import org.jetbrains.bazel.ideStarter.bazelClean
 import org.jetbrains.bazel.ideStarter.navigateToFile
 import org.jetbrains.bazel.ideStarter.withBazelFeatureFlag
+import org.jetbrains.bazel.data.simpleBazelProject
 import org.jetbrains.bazel.tests.combined.IdeStarterCombinedBaseTest
 import org.jetbrains.bazel.tests.sync.verifyNoSyncOnReopen
 import org.junit.jupiter.api.Nested
@@ -37,16 +39,39 @@ private val FILES_TO_CHECK_FOR_RED_CODE =
 
 private const val GO_LINTER_PLUGIN_ID = "com.ypwang.plugin.go-linter"
 
+private val GOLAND_SYNC_PROJECT = simpleBazelProject(
+  revision = "f79550b7459d4f0ee7de195605f7c1038e2ec4ae",
+  path = "with_go_source",
+  configureProject = { context ->
+    BazelProjectConfigurer.configureProjectBeforeUse(
+      context,
+      createProjectView = false,
+    )
+  },
+)
+
 @Suppress("JUnitTestCaseWithNoTests")
 class GolandSyncTest {
   @Nested
-  inner class GoLand : GolandSyncBaseTest("golandSync", GoLandBazelCases.GolandSync)
+  inner class GoLand : GolandSyncBaseTest(
+    "golandSync",
+    GoLandBazelCases.withProject(GOLAND_SYNC_PROJECT),
+    usesGoLandWelcomeScreen = true,
+  )
 
   @Nested
-  inner class GoPlugin : GolandSyncBaseTest("goPluginSync", GoPluginBazelCases.GoPluginSync)
+  inner class GoPlugin : GolandSyncBaseTest(
+    "goPluginSync",
+    GoPluginBazelCases.withProject(GOLAND_SYNC_PROJECT),
+    usesGoLandWelcomeScreen = false,
+  )
 }
 
-abstract class GolandSyncBaseTest(private val projectName: String, private val case: TestCase<*>) : IdeStarterCombinedBaseTest() {
+abstract class GolandSyncBaseTest(
+  private val projectName: String,
+  private val case: TestCase<*>,
+  private val usesGoLandWelcomeScreen: Boolean,
+) : IdeStarterCombinedBaseTest() {
   override fun createContext(): IDETestContext =
     createContext(projectName, case)
       .withDisabledPlugins(setOf(GO_LINTER_PLUGIN_ID))
@@ -63,7 +88,7 @@ abstract class GolandSyncBaseTest(private val projectName: String, private val c
       }
 
       step("Reopen project from welcome screen") {
-        if (case === GoLandBazelCases.GolandSync) {
+        if (usesGoLandWelcomeScreen) {
           ideFrame { waitOneText("with_go_source").click() }
         }
         else {

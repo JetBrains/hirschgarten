@@ -9,9 +9,16 @@ import com.intellij.ide.starter.driver.engine.runIdeWithDriver
 import org.jetbrains.bazel.data.IdeaBazelCases
 import org.jetbrains.bazel.ideStarter.IdeStarterBaseProjectTest
 import org.jetbrains.bazel.ideStarter.syncBazelProject
+import org.jetbrains.bazel.data.simpleBazelProject
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.ValueSource
 import kotlin.time.Duration.Companion.minutes
+
+private val RUN_ALL_TESTS_PROJECT = simpleBazelProject(
+  // TODO: temporary pin to SBPFT branch bazel/dan/e2e-os-bazel-matrix; repoint to main once the fixture upstreaming lands there
+  revision = "e974ca77b97e65a329f03492f9b556e44f47f648",
+  path = "runAllTests",
+)
 
 /**
  * ```sh
@@ -23,7 +30,7 @@ class RunAllTestsActionTest : IdeStarterBaseProjectTest() {
   @ParameterizedTest
   @ValueSource(booleans = [false, true])
   fun `run all tests action should execute and show results`(runConfigRunWithBazel: Boolean) {
-    createContext("runAllTestsAction-${if (runConfigRunWithBazel) "withBazel" else "withoutBazel"}", IdeaBazelCases.RunAllTestsAction)
+    createContext("runAllTestsAction-${if (runConfigRunWithBazel) "withBazel" else "withoutBazel"}", IdeaBazelCases.withProject(RUN_ALL_TESTS_PROJECT))
       .setRunConfigRunWithBazel(runConfigRunWithBazel)
       .runIdeWithDriver(runTimeout = timeout).useDriverAndCloseIde {
       ideFrame {

@@ -16,13 +16,24 @@ import org.jetbrains.bazel.data.PyCharmBazelCases
 import org.jetbrains.bazel.ideStarter.execute
 import org.jetbrains.bazel.ideStarter.navigateToFile
 import org.jetbrains.bazel.ideStarter.syncBazelProjectCloseDialog
+import org.jetbrains.bazel.data.BazelProjectConfigurer
+import org.jetbrains.bazel.data.simpleBazelProject
 import org.junit.jupiter.api.Order
 import org.junit.jupiter.api.Test
 import kotlin.time.Duration.Companion.seconds
 
+private val PYCHARM_COMBINED_PROJECT = simpleBazelProject(
+  // TODO: temporary pin to SBPFT branch bazel/dan/e2e-os-bazel-matrix; repoint to main once the fixture upstreaming lands there
+  revision = "e974ca77b97e65a329f03492f9b556e44f47f648",
+  path = "simpleMultiLanguageTest",
+  configureProject = { context ->
+    BazelProjectConfigurer.configureProjectBeforeUseWithoutBazelClean(context)
+  },
+)
+
 class PyCharmCombinedTest : IdeStarterCombinedBaseTest() {
   override fun createContext(): IDETestContext =
-    createContext("pyCharmCombined", PyCharmBazelCases.PyCharm)
+    createContext("pyCharmCombined", PyCharmBazelCases.withProject(PYCHARM_COMBINED_PROJECT))
 
   override fun Driver.syncBazelProject() {
     syncBazelProjectCloseDialog()
@@ -111,15 +122,21 @@ class PyCharmCombinedTest : IdeStarterCombinedBaseTest() {
 
   private fun Driver.verifyRunLineMarkerText(expectedTexts: List<String>) {
     ideFrame {
+      keyboard { escape() }
       val gutterIcons = editorTabs().gutter().getGutterIcons()
       val selectedGutterIcon = gutterIcons.first()
       selectedGutterIcon.click()
       val heavyWeightWindow = popup(xQuery { byClass("HeavyWeightWindow") })
-      takeScreenshot("afterClickingOnRunLineMarker")
-      val texts = heavyWeightWindow.getAllTexts()
-      texts.shouldHaveSize(expectedTexts.size)
-      expectedTexts.forEach { expected ->
-        texts.any { actual -> actual.text == expected }.shouldBeTrue()
+      try {
+        takeScreenshot("afterClickingOnRunLineMarker")
+        val texts = heavyWeightWindow.getAllTexts()
+        texts.shouldHaveSize(expectedTexts.size)
+        expectedTexts.forEach { expected ->
+          texts.any { actual -> actual.text == expected }.shouldBeTrue()
+        }
+      }
+      finally {
+        heavyWeightWindow.close()
       }
     }
   }

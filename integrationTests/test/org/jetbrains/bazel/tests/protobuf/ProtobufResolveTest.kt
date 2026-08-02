@@ -15,8 +15,19 @@ import org.jetbrains.bazel.ideStarter.buildAndSync
 import org.jetbrains.bazel.ideStarter.execute
 import org.jetbrains.bazel.ideStarter.syncBazelProject
 import org.jetbrains.intellij.build.impl.getOrCreateTopElement
+import org.jetbrains.bazel.data.BazelProjectConfigurer
+import org.jetbrains.bazel.data.simpleBazelProject
 import org.junit.jupiter.api.Test
 import kotlin.time.Duration.Companion.minutes
+
+private val PROTOBUF_RESOLVE_PROJECT = simpleBazelProject(
+  // TODO: temporary pin to SBPFT branch bazel/dan/e2e-os-bazel-matrix; repoint to main once the fixture upstreaming lands there
+  revision = "e974ca77b97e65a329f03492f9b556e44f47f648",
+  path = "protobufTest",
+  configureProject = { context ->
+    BazelProjectConfigurer.configureProjectBeforeUseWithoutBazelClean(context)
+  },
+)
 
 /**
  * ```sh
@@ -28,7 +39,7 @@ class ProtobufResolveTest : IdeStarterBaseProjectTest() {
 
   @Test
   fun `protobuf imports should resolve without red code`() {
-    createContext("protobufResolve", IdeaBazelCases.ProtobufResolve)
+    createContext("protobufResolve", IdeaBazelCases.withProject(PROTOBUF_RESOLVE_PROJECT))
       .runIdeWithDriver(runTimeout = timeout)
       .useDriverAndCloseIde {
         ideFrame {

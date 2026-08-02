@@ -9,8 +9,15 @@ import org.jetbrains.bazel.ideStarter.IdeStarterBaseProjectTest
 import org.jetbrains.bazel.ideStarter.execute
 import org.jetbrains.bazel.ideStarter.navigateToFile
 import org.jetbrains.bazel.ideStarter.syncBazelProject
+import org.jetbrains.bazel.data.simpleBazelProject
 import org.junit.jupiter.api.Test
 import kotlin.time.Duration.Companion.minutes
+
+private val EXTERNAL_REPO_RESOLVE_PROJECT = simpleBazelProject(
+  // TODO: temporary pin to SBPFT branch bazel/dan/e2e-os-bazel-matrix; repoint to main once the fixture upstreaming lands there
+  revision = "e974ca77b97e65a329f03492f9b556e44f47f648",
+  path = "starlarkResolveTest",
+)
 
 /**
  * ```sh
@@ -21,7 +28,7 @@ class ExternalRepoResolveTest : IdeStarterBaseProjectTest() {
 
   @Test
   fun `navigate to external repo symbols should resolve correctly`() {
-    createContext("externalRepoResolve", IdeaBazelCases.ExternalRepoResolve)
+    createContext("externalRepoResolve", IdeaBazelCases.withProject(EXTERNAL_REPO_RESOLVE_PROJECT))
       .runIdeWithDriver(runTimeout = timeout)
       .useDriverAndCloseIde {
         ideFrame {
