@@ -9,8 +9,14 @@ import org.jetbrains.bazel.data.IdeaBazelCases
 import org.jetbrains.bazel.ideStarter.IdeStarterBaseProjectTest
 import org.jetbrains.bazel.ideStarter.execute
 import org.jetbrains.bazel.ideStarter.syncBazelProject
+import org.jetbrains.bazel.data.simpleBazelProject
 import org.junit.jupiter.api.Test
 import kotlin.time.Duration.Companion.minutes
+
+private val NON_MODULE_TARGETS_PROJECT = simpleBazelProject(
+  revision = "af3e066604a8af0c9505b088ae5e7055ecf3b6d5",
+  path = "nonModuleTargetsTest",
+)
 
 /**
  * ```sh
@@ -21,7 +27,7 @@ class NonModuleTargetsTest : IdeStarterBaseProjectTest() {
 
   @Test
   fun `non-module targets should be synced and visible in project`() {
-    createContext("nonModuleTargets", IdeaBazelCases.NonModuleTargets)
+    createContext("nonModuleTargets", IdeaBazelCases.withProject(NON_MODULE_TARGETS_PROJECT))
       .runIdeWithDriver(runTimeout = timeout)
       .useDriverAndCloseIde {
         ideFrame {

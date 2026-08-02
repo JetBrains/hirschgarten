@@ -24,6 +24,7 @@ import org.jetbrains.bazel.ideStarter.checkIdeaLogForExceptions
 import org.jetbrains.bazel.ideStarter.execute
 import org.jetbrains.bazel.ideStarter.syncBazelProject
 import org.jetbrains.bazel.ideStarter.waitForSyncSucceeded
+import org.jetbrains.bazel.data.IdeStarterOs
 import org.jetbrains.bazel.test.compat.IntegrationTestCompat
 import org.junit.jupiter.api.Assumptions
 import org.junit.jupiter.api.BeforeEach
@@ -33,7 +34,13 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.api.TestMethodOrder
 import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable
+import java.io.File
 import java.nio.file.Path
+import kotlin.io.path.deleteIfExists
+import kotlin.io.path.div
+import kotlin.io.path.isRegularFile
+import kotlin.io.path.readText
+import kotlin.io.path.writeText
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
 
@@ -220,8 +227,90 @@ private fun configureHirschgarten(context: IDETestContext) {
   val projectHome = context.resolvedProjectHome
   resetTrackedFiles(projectHome)
   BazelProjectConfigurer.configureProjectBeforeUse(context)
-  BazelProjectConfigurer.addHermeticCcToolchain(context)
+  if (IdeStarterOs.current() == IdeStarterOs.WINDOWS) {
+    configureHirschgartenForWindows(projectHome)
+  } else {
+    BazelProjectConfigurer.addHermeticCcToolchain(context)
+  }
 }
+
+internal fun configureHirschgartenForWindows(projectHome: Path, gitBash: Path = findGitBashOnWindows()) {
+  val moduleFile = projectHome / "MODULE.bazel"
+  val windowsModule = moduleFile.readText()
+  check(Regex("""module_name\s*=\s*"rules_apple"""").containsMatchIn(windowsModule)) {
+    "Hirschgarten no longer pins rules_apple; verify its transitive version on Windows"
+  }
+  moduleFile.writeText(windowsModule.trimEnd() + WINDOWS_TOOLCHAIN_UTILS_OVERRIDE)
+  (projectHome / WINDOWS_TOOLCHAIN_UTILS_PATCH_FILE).writeText(WINDOWS_TOOLCHAIN_UTILS_PATCH)
+
+  val projectViewTemplate = (projectHome / "tools" / "intellij" / ".managed.bazelproject").readText()
+  check(projectViewTemplate.lineSequence().count { it.trim() == HIRSCHGARTEN_FORMAT_TARGET } == 1) {
+    "Hirschgarten's managed project view must contain exactly one $HIRSCHGARTEN_FORMAT_TARGET target"
+  }
+  check(projectViewTemplate.lineSequence().count { it.trim() == DERIVE_TARGETS_FROM_DIRECTORIES } == 1) {
+    "Hirschgarten's managed project view must derive targets from its directories"
+  }
+  val windowsProjectView = projectViewTemplate
+    .lineSequence()
+    .filterNot { it.trim() == HIRSCHGARTEN_FORMAT_TARGET }
+    .map { if (it.trim() == DERIVE_TARGETS_FROM_DIRECTORIES) "derive_targets_from_directories: false" else it }
+    .joinToString("\n")
+  (projectHome / "projectview.bazelproject").writeText(windowsProjectView.trimEnd() + "\n")
+
+  val bazelRcFile = projectHome / ".bazelrc"
+  bazelRcFile.writeText(
+    bazelRcFile.readText().trimEnd() + WINDOWS_BAZEL_SETTINGS.replace("%git_bash%", gitBash.toString().replace('\\', '/')),
+  )
+  (projectHome / "MODULE.bazel.lock").deleteIfExists()
+}
+
+private fun findGitBashOnWindows(): Path {
+  val pathCandidates = System.getenv("PATH").orEmpty()
+    .split(File.pathSeparator)
+    .filter { it.contains("Git", ignoreCase = true) }
+    .flatMap { entry ->
+      val directory = Path.of(entry)
+      listOf(directory / "bash.exe", directory.parent?.resolve("bin")?.resolve("bash.exe"))
+    }
+    .filterNotNull()
+  return (listOf(Path.of("C:/Program Files/Git/bin/bash.exe")) + pathCandidates)
+    .firstOrNull { it.isRegularFile() }
+    ?: error("Git Bash is required to import Hirschgarten on Windows")
+}
+
+internal const val HIRSCHGARTEN_FORMAT_TARGET = "//tools/format"
+
+private const val DERIVE_TARGETS_FROM_DIRECTORIES = "derive_targets_from_directories: true"
+
+internal const val WINDOWS_TOOLCHAIN_UTILS_PATCH_FILE = "toolchain_utils_windows.patch"
+
+private const val WINDOWS_BAZEL_SETTINGS = """
+
+common --legacy_external_runfiles
+common --shell_executable='%git_bash%'
+"""
+
+private const val WINDOWS_TOOLCHAIN_UTILS_OVERRIDE = """
+
+single_version_override(
+    module_name = "rules_buf",
+    version = "0.5.2",
+)
+
+single_version_override(
+    module_name = "toolchain_utils",
+    patch_strip = 1,
+    patches = ["//:$WINDOWS_TOOLCHAIN_UTILS_PATCH_FILE"],
+)
+"""
+
+internal const val WINDOWS_TOOLCHAIN_UTILS_PATCH = """diff --git a/toolchain/local/triplet/libc.bzl b/toolchain/local/triplet/libc.bzl
+--- a/toolchain/local/triplet/libc.bzl
++++ b/toolchain/local/triplet/libc.bzl
+@@ -56 +56 @@ def _powershell(rctx, path):
+-    result = rctx.execute([path, "-Command", "Get-Package -Name 'Universal CRT Redistributable'| Format-Wide -Property Version"])
++    result = rctx.execute([path, "-Command", "${'$'}WarningPreference = 'SilentlyContinue'; Get-Package -Name 'Universal CRT Redistributable' | Format-Wide -Property Version"])
+"""
 
 private fun resetTrackedFiles(projectHome: Path) {
   val result = ProcessBuilder("git", "checkout", "--", ".bazelrc", "MODULE.bazel")

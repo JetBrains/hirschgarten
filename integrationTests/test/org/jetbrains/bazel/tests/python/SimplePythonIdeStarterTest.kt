@@ -13,8 +13,18 @@ import org.jetbrains.bazel.data.PyCharmBazelCases
 import org.jetbrains.bazel.ideStarter.IdeStarterBaseProjectTest
 import org.jetbrains.bazel.ideStarter.execute
 import org.jetbrains.bazel.ideStarter.syncBazelProjectCloseDialog
+import org.jetbrains.bazel.data.BazelProjectConfigurer
+import org.jetbrains.bazel.data.simpleBazelProject
 import org.junit.jupiter.api.Test
 import kotlin.time.Duration.Companion.minutes
+
+private val SIMPLE_PYTHON_PROJECT = simpleBazelProject(
+  revision = "af3e066604a8af0c9505b088ae5e7055ecf3b6d5",
+  path = "simplePythonTest",
+  configureProject = { context ->
+    BazelProjectConfigurer.configureProjectBeforeUseWithoutBazelClean(context)
+  },
+)
 
 /**
  * ```sh
@@ -25,7 +35,7 @@ class SimplePythonIdeStarterTest : IdeStarterBaseProjectTest() {
 
   @Test
   fun `Python files should have no red code after sync`() {
-    createContext("simplePython", PyCharmBazelCases.SimplePython)
+    createContext("simplePython", PyCharmBazelCases.withProject(SIMPLE_PYTHON_PROJECT))
       .runIdeWithDriver(runTimeout = timeout)
       .useDriverAndCloseIde {
         ideFrame {

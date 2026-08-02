@@ -7,9 +7,9 @@ import org.jetbrains.bazel.data.IdeaBazelCases
 import org.jetbrains.bazel.ideStarter.IdeStarterBaseProjectTest
 import org.jetbrains.bazel.ideStarter.syncBazelProject
 import org.jetbrains.bazel.ideStarter.waitForSyncSucceeded
+import org.jetbrains.bazel.data.simpleBazelProject
+import org.jetbrains.bazel.data.IdeStarterOs
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.condition.EnabledOnOs
-import org.junit.jupiter.api.condition.OS
 import org.junit.jupiter.api.io.TempDir
 import java.io.File
 import java.nio.file.Path
@@ -19,30 +19,40 @@ import kotlin.io.path.setPosixFilePermissions
 import kotlin.io.path.writeText
 import kotlin.time.Duration.Companion.minutes
 
-@EnabledOnOs(OS.MAC)
+private val ENVIRONMENT_VARIABLES_PROJECT = simpleBazelProject(
+  // TODO: temporary pin to SBPFT branch bazel/dan/e2e-os-bazel-matrix; repoint to main once the fixture upstreaming lands there
+  revision = "e974ca77b97e65a329f03492f9b556e44f47f648",
+  path = "simpleJavaTest",
+)
+
 internal class EnvironmentVariablesTest : IdeStarterBaseProjectTest() {
   @Test
   fun `sync succeeds if PATH variable was overridden`(@TempDir tempDir: Path) {
-    val bazelWrapper = tempDir.resolve("bazel")
-    bazelWrapper.writeText(
-      """
-        #!/bin/sh
-        echo "This is not actually Bazel :)"
-        exit 1
-      """.trimIndent(),
-    )
-    bazelWrapper.setPosixFilePermissions(
-      setOf(
-        PosixFilePermission.OWNER_READ,
-        PosixFilePermission.GROUP_READ,
-        PosixFilePermission.OTHERS_READ,
-        PosixFilePermission.OWNER_EXECUTE,
-        PosixFilePermission.GROUP_EXECUTE,
-        PosixFilePermission.OTHERS_EXECUTE,
-      ),
-    )
+    val isWindows = IdeStarterOs.current() == IdeStarterOs.WINDOWS
+    val bazelWrapper = tempDir.resolve(if (isWindows) "bazel.bat" else "bazel")
+    if (isWindows) {
+      bazelWrapper.writeText("@echo off\necho This is not actually Bazel :)\nexit /b 1\n")
+    } else {
+      bazelWrapper.writeText(
+        """
+          #!/bin/sh
+          echo "This is not actually Bazel :)"
+          exit 1
+        """.trimIndent(),
+      )
+      bazelWrapper.setPosixFilePermissions(
+        setOf(
+          PosixFilePermission.OWNER_READ,
+          PosixFilePermission.GROUP_READ,
+          PosixFilePermission.OTHERS_READ,
+          PosixFilePermission.OWNER_EXECUTE,
+          PosixFilePermission.GROUP_EXECUTE,
+          PosixFilePermission.OTHERS_EXECUTE,
+        ),
+      )
+    }
 
-    createContext("simpleJavaCombined", IdeaBazelCases.SimpleJavaCombined)
+    createContext("simpleJavaCombined", IdeaBazelCases.withProject(ENVIRONMENT_VARIABLES_PROJECT))
       .applyVMOptionsPatch { withEnv("PATH", tempDir.absolutePathString() + File.pathSeparator + System.getenv("PATH")) }
       .runIdeWithDriver(runTimeout = timeout)
       .useDriverAndCloseIde {

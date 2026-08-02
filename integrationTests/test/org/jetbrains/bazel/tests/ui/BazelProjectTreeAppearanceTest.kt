@@ -12,15 +12,31 @@ import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.data.IdeaBazelCases
 import org.jetbrains.bazel.ideStarter.IdeStarterBaseProjectTest
 import org.jetbrains.bazel.ideStarter.syncBazelProject
+import org.jetbrains.bazel.data.BazelProjectConfigurer
+import org.jetbrains.bazel.data.simpleBazelProject
+import org.jetbrains.bazel.data.preCacheBazelisk
 import org.junit.jupiter.api.Test
 import kotlin.time.Duration.Companion.minutes
+
+private val BAZEL_PROJECT_TREE_APPEARANCE_PROJECT = simpleBazelProject(
+  // TODO: temporary pin to SBPFT branch bazel/dan/e2e-os-bazel-matrix; repoint to main once the fixture upstreaming lands there
+  revision = "e974ca77b97e65a329f03492f9b556e44f47f648",
+  path = "projectViewAppearanceTest",
+  configureProject = { context ->
+    BazelProjectConfigurer.configureProjectBeforeUseWithoutBazelClean(
+      context,
+      createProjectView = false,
+    )
+    preCacheBazelisk(context)
+  },
+)
 
 
 class BazelProjectTreeAppearanceTest : IdeStarterBaseProjectTest() {
 
   @Test
   fun `compact middle packages works in Bazel project tree - single target`() {
-    createContext("bazelProjectTreeAppearance", IdeaBazelCases.ProjectViewAppearance)
+    createContext("bazelProjectTreeAppearance", IdeaBazelCases.withProject(BAZEL_PROJECT_TREE_APPEARANCE_PROJECT))
       .runIdeWithDriver(runTimeout = timeout)
       .useDriverAndCloseIde {
         ideFrame {
@@ -73,7 +89,7 @@ class BazelProjectTreeAppearanceTest : IdeStarterBaseProjectTest() {
 
   @Test
   fun `compact middle packages works in Bazel project tree - multiple targets`() {
-    createContext("bazelProjectTreeAppearance", IdeaBazelCases.ProjectViewAppearance)
+    createContext("bazelProjectTreeAppearance", IdeaBazelCases.withProject(BAZEL_PROJECT_TREE_APPEARANCE_PROJECT))
       .runIdeWithDriver(runTimeout = timeout)
       .useDriverAndCloseIde {
         ideFrame {
@@ -145,7 +161,7 @@ class BazelProjectTreeAppearanceTest : IdeStarterBaseProjectTest() {
 
   @Test
   fun `flatten packages works in Bazel project tree`() {
-    createContext("bazelProjectTreeAppearance", IdeaBazelCases.ProjectViewAppearance)
+    createContext("bazelProjectTreeAppearance", IdeaBazelCases.withProject(BAZEL_PROJECT_TREE_APPEARANCE_PROJECT))
       .runIdeWithDriver(runTimeout = timeout)
       .useDriverAndCloseIde {
         ideFrame {
@@ -197,7 +213,7 @@ class BazelProjectTreeAppearanceTest : IdeStarterBaseProjectTest() {
 
   @Test
   fun `hide empty middle packages works in Bazel project tree`() {
-    createContext("bazelProjectTreeAppearance", IdeaBazelCases.ProjectViewAppearance)
+    createContext("bazelProjectTreeAppearance", IdeaBazelCases.withProject(BAZEL_PROJECT_TREE_APPEARANCE_PROJECT))
       .runIdeWithDriver(runTimeout = timeout)
       .useDriverAndCloseIde {
         ideFrame {
@@ -258,7 +274,7 @@ class BazelProjectTreeAppearanceTest : IdeStarterBaseProjectTest() {
 
   @Test
   fun `module names in brackets are not shown on content roots`() {
-    createContext("bazelProjectTreeAppearance", IdeaBazelCases.ProjectViewAppearance)
+    createContext("bazelProjectTreeAppearance", IdeaBazelCases.withProject(BAZEL_PROJECT_TREE_APPEARANCE_PROJECT))
       .runIdeWithDriver(runTimeout = timeout)
       .useDriverAndCloseIde {
         setRegistry(BazelFeatureFlags.MERGE_SOURCE_ROOTS, false.toString())

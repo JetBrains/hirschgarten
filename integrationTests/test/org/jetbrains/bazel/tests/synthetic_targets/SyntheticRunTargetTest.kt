@@ -17,16 +17,23 @@ import org.jetbrains.bazel.ideStarter.IdeStarterBaseProjectTest
 import org.jetbrains.bazel.ideStarter.checkIdeaLogForExceptions
 import org.jetbrains.bazel.ideStarter.execute
 import org.jetbrains.bazel.ideStarter.syncBazelProject
+import org.jetbrains.bazel.data.simpleBazelProject
 import org.junit.jupiter.api.Test
 import org.opentest4j.MultipleFailuresError
 import kotlin.time.Duration.Companion.minutes
+
+private val SYNTHETIC_RUN_TARGET_PROJECT = simpleBazelProject(
+  // TODO: temporary pin to SBPFT branch bazel/dan/e2e-os-bazel-matrix; repoint to main once the fixture upstreaming lands there
+  revision = "e974ca77b97e65a329f03492f9b556e44f47f648",
+  path = "syntheticRunTargetTest",
+)
 
 class SyntheticRunTargetTest : IdeStarterBaseProjectTest() {
 
   @Test
   fun `synthetic run targets should execute Java and Kotlin main classes from gutter`() {
     val failures = mutableListOf<Throwable>()
-    val context = createContext("syntheticRunTarget", IdeaBazelCases.SyntheticRunTarget)
+    val context = createContext("syntheticRunTarget", IdeaBazelCases.withProject(SYNTHETIC_RUN_TARGET_PROJECT))
       .applyVMOptionsPatch {
         this.addSystemProperty("expose.ui.hierarchy.url", "true")
       }
@@ -46,7 +53,8 @@ class SyntheticRunTargetTest : IdeStarterBaseProjectTest() {
               name = "java_main1",
               file = "java_target/MyMain1.java",
               line = 4,
-              runActionText = "Run '//java_target:my_java_lib'",
+              targetLabel = "//java_target:my_java_lib",
+              mainClass = "com.jetbrains.MyMain1",
               expectedConsoleText = "Hello from MyMain1",
             ),
             failures,
@@ -57,7 +65,8 @@ class SyntheticRunTargetTest : IdeStarterBaseProjectTest() {
               name = "java_main2",
               file = "java_target/MyMain2.java",
               line = 4,
-              runActionText = "Run '//java_target:my_java_lib'",
+              targetLabel = "//java_target:my_java_lib",
+              mainClass = "com.jetbrains.MyMain2",
               expectedConsoleText = "Hello from MyMain2",
             ),
             failures,
@@ -68,7 +77,8 @@ class SyntheticRunTargetTest : IdeStarterBaseProjectTest() {
               name = "kotlin_main1",
               file = "kotlin_target/main1.kt",
               line = 3,
-              runActionText = "Run '//kotlin_target:my_kt_lib'",
+              targetLabel = "//kotlin_target:my_kt_lib",
+              mainClass = "com.jetbrains.Main1Kt",
               expectedConsoleText = "Hello from main1",
             ),
             failures,
@@ -79,7 +89,8 @@ class SyntheticRunTargetTest : IdeStarterBaseProjectTest() {
               name = "kotlin_main2",
               file = "kotlin_target/main2.kt",
               line = 5,
-              runActionText = "Run '//kotlin_target:my_kt_lib'",
+              targetLabel = "//kotlin_target:my_kt_lib",
+              mainClass = "com.jetbrains.Main2Kt",
               expectedConsoleText = "Hello from main2",
             ),
             failures,
@@ -98,7 +109,7 @@ class SyntheticRunTargetTest : IdeStarterBaseProjectTest() {
       runCatching {
         driver.execute { openFile(scenario.file) }
         driver.execute { takeScreenshot("${scenario.name}_afterOpen") }
-        runFromGutter(driver, scenario.line, scenario.runActionText, scenario.name)
+        runFromGutter(driver, scenario)
         waitForIndicators(timeout = 2.minutes)
         driver.execute { takeScreenshot("${scenario.name}_afterRun") }
         assertOutConsoleContains(scenario.expectedConsoleText)
@@ -111,16 +122,20 @@ class SyntheticRunTargetTest : IdeStarterBaseProjectTest() {
     }
   }
 
-  private fun IdeaFrameUI.runFromGutter(driver: Driver, line: Int, actionText: String, screenshotName: String) {
+  private fun IdeaFrameUI.runFromGutter(driver: Driver, scenario: SyntheticRunScenario) {
     val gutterIcons = editorTabs()
       .gutter()
       .getGutterIcons()
-      .filter { it.line == line - 1 }
-    check(gutterIcons.size == 1) { "Expected one gutter icon at line $line, got ${gutterIcons.size}" }
+      .filter { it.line == scenario.line - 1 }
+    check(gutterIcons.size == 1) { "Expected one gutter icon at line ${scenario.line}, got ${gutterIcons.size}" }
     gutterIcons.single().click()
     val popup = popup()
-    val action = popup.waitOneText(actionText)
-    driver.execute { takeScreenshot("${screenshotName}_runPopup") }
+    val targetOnlyAction = "Run '${scenario.targetLabel}'"
+    val targetAndMainClassAction = "Run '${scenario.targetLabel} ${scenario.mainClass}'"
+    val action = popup.waitOneText(
+      message = "Finding the run action for ${scenario.targetLabel} and ${scenario.mainClass}",
+    ) { it.text == targetOnlyAction || it.text == targetAndMainClassAction }
+    driver.execute { takeScreenshot("${scenario.name}_runPopup") }
     action.click()
   }
 
@@ -132,7 +147,8 @@ class SyntheticRunTargetTest : IdeStarterBaseProjectTest() {
     val name: String,
     val file: String,
     val line: Int,
-    val runActionText: String,
+    val targetLabel: String,
+    val mainClass: String,
     val expectedConsoleText: String,
   )
 }

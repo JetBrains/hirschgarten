@@ -13,10 +13,17 @@ import org.jetbrains.bazel.data.IdeaBazelCases
 import org.jetbrains.bazel.ideStarter.IdeStarterBaseProjectTest
 import org.jetbrains.bazel.ideStarter.checkIdeaLogForExceptions
 import org.jetbrains.bazel.ideStarter.syncBazelProject
+import org.jetbrains.bazel.data.simpleBazelProject
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
+
+private val SEARCH_EVERYWHERE_PROJECT = simpleBazelProject(
+  // TODO: temporary pin to SBPFT branch bazel/dan/e2e-os-bazel-matrix; repoint to main once the fixture upstreaming lands there
+  revision = "e974ca77b97e65a329f03492f9b556e44f47f648",
+  path = "simpleMultiLanguageTest",
+)
 
 class LabelAllTabSESplitUiTest : IdeStarterBaseProjectTest() {
   private val searchText = "//python:binary"
@@ -24,7 +31,7 @@ class LabelAllTabSESplitUiTest : IdeStarterBaseProjectTest() {
 
   @Test
   fun `search everywhere should show Bazel labels when contributor enabled`() {
-    val context = createContext("labelAllTabSESplit-contributorEnabled", IdeaBazelCases.LabelAllTabSESplit).enableSplitSearchEverywhere()
+    val context = createContext("labelAllTabSESplit-contributorEnabled", IdeaBazelCases.withProject(SEARCH_EVERYWHERE_PROJECT)).enableSplitSearchEverywhere()
     context
       .runIdeWithDriver(runTimeout = timeout).useDriverAndCloseIde {
         ideFrame {
@@ -46,7 +53,7 @@ class LabelAllTabSESplitUiTest : IdeStarterBaseProjectTest() {
 
   @Test
   fun `search everywhere should hide Bazel labels when contributor disabled`() {
-    val context = createContext("labelAllTabSESplit-contributorDisabled", IdeaBazelCases.LabelAllTabSESplit).enableSplitSearchEverywhere()
+    val context = createContext("labelAllTabSESplit-contributorDisabled", IdeaBazelCases.withProject(SEARCH_EVERYWHERE_PROJECT)).enableSplitSearchEverywhere()
     context
       .runIdeWithDriver(runTimeout = timeout).useDriverAndCloseIde {
         ideFrame {

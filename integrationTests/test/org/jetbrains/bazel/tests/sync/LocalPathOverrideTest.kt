@@ -16,15 +16,22 @@ import org.jetbrains.bazel.ideStarter.IdeStarterBaseProjectTest
 import org.jetbrains.bazel.ideStarter.execute
 import org.jetbrains.bazel.ideStarter.openFile
 import org.jetbrains.bazel.ideStarter.syncBazelProject
+import org.jetbrains.bazel.data.simpleBazelProject
 import org.junit.jupiter.api.Test
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
+
+private val LOCAL_PATH_OVERRIDE_PROJECT = simpleBazelProject(
+  // TODO: temporary pin to SBPFT branch bazel/dan/e2e-os-bazel-matrix; repoint to main once the fixture upstreaming lands there
+  revision = "e974ca77b97e65a329f03492f9b556e44f47f648",
+  path = "localPathOverride",
+)
 
 class LocalPathOverrideTest : IdeStarterBaseProjectTest() {
 
   @Test
   fun `local path override should resolve navigation and build target`() {
-    createContext("localPathOverride", IdeaBazelCases.LocalPathOverride)
+    createContext("localPathOverride", IdeaBazelCases.withProject(LOCAL_PATH_OVERRIDE_PROJECT))
       .runIdeWithDriver(runTimeout = timeout)
       .useDriverAndCloseIde {
         ideFrame {
