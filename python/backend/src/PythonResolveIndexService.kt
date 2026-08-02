@@ -5,6 +5,10 @@ import com.intellij.openapi.components.service
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.getProjectDataPath
+import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.openapi.vfs.VirtualFileManager
+import com.intellij.openapi.vfs.toNioPathOrNull
+import com.intellij.psi.search.GlobalSearchScope
 import com.intellij.psi.util.QualifiedName
 import com.jetbrains.python.PyNames
 import kotlinx.coroutines.awaitAll
@@ -37,15 +41,18 @@ import kotlin.io.path.writer
 private const val PYINDEX_STORAGE_VERSION: Int = 1
 private fun Project.pyIndexStoragePath(): Path = getProjectDataPath("bazel-pyindex-v$PYINDEX_STORAGE_VERSION.db")
 
-private data class ResolveIndexSnapshot(
+private class ResolveIndexSnapshot(
   val qualifiedNamesToPaths: Map<QualifiedName, Path>,
   val shortestQualifiedNamesByPath: Map<Path, QualifiedName>,
   val directChildrenByQualifiedName: Map<QualifiedName, Map<String, Path>>,
-)
+  computeStubScope: () -> GlobalSearchScope,
+) {
+  val stubScope: GlobalSearchScope by lazy(computeStubScope) // search scope for Python stubs
+}
 
 @Service(Service.Level.PROJECT)
 internal class PythonResolveIndexService(private val project: Project) {
-  private val resolveIndexSnapshotRef = AtomicReference(ResolveIndexSnapshot(emptyMap(), emptyMap(), emptyMap()))
+  private val resolveIndexSnapshotRef = AtomicReference(newSnapshot(load(project.pyIndexStoragePath())))
 
   val resolveIndex: Map<QualifiedName, Path>
     get() = resolveIndexSnapshotRef.get().qualifiedNamesToPaths
@@ -53,12 +60,13 @@ internal class PythonResolveIndexService(private val project: Project) {
   fun findShortestQualifiedName(path: Path): QualifiedName? =
     resolveIndexSnapshotRef.get().shortestQualifiedNamesByPath[path]
 
+  fun findShortestQualifiedName(file: VirtualFile): QualifiedName? =
+    file.toNioPathOrNull()?.let { findShortestQualifiedName(it) }
+
   fun findDirectChildren(qualifiedName: QualifiedName): Map<String, Path> =
     resolveIndexSnapshotRef.get().directChildrenByQualifiedName[qualifiedName].orEmpty()
 
-  init {
-    updateResolveIndexSnapshot(load(project.pyIndexStoragePath()))
-  }
+  fun getStubScope(): GlobalSearchScope = resolveIndexSnapshotRef.get().stubScope
 
   suspend fun updatePythonResolveIndex(pythonTargets: List<RawBuildTarget>, outFilesHardLink: BazelOutFileHardLinks) {
     val nameToPathIndex = buildIndex(pythonTargets, outFilesHardLink)
@@ -69,10 +77,23 @@ internal class PythonResolveIndexService(private val project: Project) {
 
   @VisibleForTesting
   fun updateResolveIndexSnapshot(newNameToPathIndex: Map<QualifiedName, Path>) {
-    val pathToNameIndex = buildShortestQualifiedNamesByPath(newNameToPathIndex)
-    val directChildrenIndex = buildDirectChildrenByQualifiedName(newNameToPathIndex)
-    val newSnapshot = ResolveIndexSnapshot(newNameToPathIndex, pathToNameIndex, directChildrenIndex)
-    resolveIndexSnapshotRef.set(newSnapshot)
+    resolveIndexSnapshotRef.set(newSnapshot(newNameToPathIndex))
+  }
+
+  private fun newSnapshot(resolveIndex: Map<QualifiedName, Path>): ResolveIndexSnapshot =
+    ResolveIndexSnapshot(
+      resolveIndex,
+      buildShortestQualifiedNamesByPath(resolveIndex),
+      buildDirectChildrenByQualifiedName(resolveIndex),
+    ) { buildStubScope(resolveIndex.values) }
+
+  private fun buildStubScope(paths: Collection<Path>): GlobalSearchScope {
+    val virtualFileManager = VirtualFileManager.getInstance()
+    val files = paths.asSequence()
+      .mapNotNull { virtualFileManager.findFileByNioPath(it) }
+      .filterNot { it.isDirectory }
+      .toSet()
+    return if (files.isEmpty()) GlobalSearchScope.EMPTY_SCOPE else GlobalSearchScope.filesWithLibrariesScope(project, files)
   }
 
   private suspend fun buildIndex(

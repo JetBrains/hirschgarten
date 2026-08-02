@@ -10,6 +10,7 @@
     <module name="intellij.platform.core"/>
     <module name="intellij.platform.ide"/>
     <module name="intellij.platform.ide.core"/>
+    <module name="intellij.platform.indexing"/>
     <module name="intellij.platform.kernel.backend"/>
     <module name="intellij.platform.lang.core"/>
     <module name="intellij.platform.lang.impl"/>
@@ -34,6 +35,8 @@
 
   <extensions defaultExtensionNs="Pythonid">
     <importResolver implementation="com.intellij.bazel.python.backend.BazelPyImportResolver" />
+    <canonicalPathProvider implementation="com.intellij.bazel.python.backend.BazelPyCanonicalPathProvider" />
+    <importCandidateProvider implementation="com.intellij.bazel.python.backend.BazelPyImportCandidateProvider" />
   </extensions>
 
   <extensions defaultExtensionNs="com.intellij">
