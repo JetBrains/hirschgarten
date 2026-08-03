@@ -32,7 +32,7 @@
     <orderEntry type="module" module-name="intellij.java.ui" />
     <orderEntry type="module" module-name="intellij.kotlin.references" />
     <orderEntry type="module" module-name="intellij.libraries.kotlinc.analysis.api" />
-    <orderEntry type="module" module-name="intellij.libraries.kotlinc.analysis.api.platform.interface" scope="PROVIDED" />
+    <orderEntry type="module" module-name="intellij.libraries.kotlinc.analysis.api.platform.interface" />
     <orderEntry type="module" module-name="intellij.libraries.kotlinc.kotlin.compiler.common" />
     <orderEntry type="library" scope="PROVIDED" name="kotlinc.kotlin-jps-plugin-classpath" level="project" />
     <orderEntry type="module" module-name="intellij.kotlin.base.facet" />
