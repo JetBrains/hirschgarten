@@ -23,7 +23,7 @@
     <module name="intellij.python.community.impl"/>
     <module name="intellij.python.community.services.systemPython"/>
     <module name="intellij.python.pydev"/>
-    <module name="intellij.python.sdk"/>
+    <module name="intellij.python.sdk.backend"/>
   </dependencies>
   <!-- endregion -->
 

@@ -19,7 +19,7 @@
     <module name="intellij.platform.rpc.backend"/>
     <module name="intellij.python.community.impl"/>
     <module name="intellij.python.community.services.systemPython"/>
-    <module name="intellij.python.sdk"/>
+    <module name="intellij.python.sdk.backend"/>
   </dependencies>
   <!-- endregion -->
 
