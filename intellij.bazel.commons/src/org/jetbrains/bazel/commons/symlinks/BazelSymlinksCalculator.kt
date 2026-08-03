@@ -1,5 +1,6 @@
 package org.jetbrains.bazel.commons.symlinks
 
+import com.intellij.openapi.vfs.VirtualFile
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.commons.constants.Constants.WORKSPACE_FILE_NAMES
 import java.io.IOException
@@ -41,8 +42,9 @@ object BazelSymlinksCalculator {
   }
 
   fun isBazelSymlink(workspaceRootName: String, file: Path): Boolean {
-    val bazelSymlinkEndings = listOf("bin", "out", "testlogs", workspaceRootName)
-    if (bazelSymlinkEndings.none { file.name.endsWith(it) }) return false
+    if (bazelSymlinkSuffixes(workspaceRootName).none { file.name.endsWith(it) }) {
+      return false
+    }
 
     val realPath =
       try {
@@ -56,4 +58,10 @@ object BazelSymlinksCalculator {
     // This string used to be "execroot/_main", but for projects without Bzlmod the relevant path is actually "execroot/<my-project>"
     return realPath.invariantSeparatorsPathString.contains("/execroot/")
   }
+
+  fun isBazelSymlink(workspaceRootName: String, file: VirtualFile): Boolean =
+    bazelSymlinkSuffixes(workspaceRootName).any { file.name.endsWith(it) } &&
+    file.canonicalPath?.contains("/execroot/") == true
+
+  private fun bazelSymlinkSuffixes(workspaceRootName: String): List<String> = listOf("bin", "out", "testlogs", workspaceRootName)
 }

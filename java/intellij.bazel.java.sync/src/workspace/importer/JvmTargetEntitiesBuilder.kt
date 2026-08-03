@@ -314,6 +314,7 @@ class JvmTargetEntitiesBuilder(private val ctx: ImportContext) {
         val resourceRoots = ResourceRootBuilder.resolve(
           target = target,
           bazelProjectName = ctx.projectName,
+          workspaceRoot = ctx.projectBasePath,
           sourceContentRoots = mainSourceRoots.map { it.sourcePath },
         )
         TargetPlan.Full(
