@@ -2,6 +2,7 @@ package org.jetbrains.bazel.sync.workspace.snapshot
 
 import com.intellij.openapi.diagnostic.logger
 import org.jetbrains.annotations.ApiStatus
+import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bsp.protocol.BuildTargetData
 import org.jetbrains.bsp.protocol.SourceFileCollection
 import java.nio.file.Path
@@ -45,6 +46,9 @@ class WorkspaceTargetMerger(val mergeFunctions: MergeFunctionMap) {
       rawBuildTarget = rawLeft.copy(
         key = key,
 
+        // merge language classes
+        kind = rawLeft.kind.copy(languageClasses = rawLeft.kind.languageClasses + rawRight.kind.languageClasses),
+
         // dependencies might be composed of multiple providers, so merge manually
         dependencies = (rawLeft.dependencies + rawRight.dependencies)
           .distinctBy { it.copy(targetKey = it.targetKey.copy(aspectIds = WorkspaceAspectIds.EMPTY)) },
@@ -59,21 +63,11 @@ class WorkspaceTargetMerger(val mergeFunctions: MergeFunctionMap) {
     )
   }
 
-  private fun mergeFileCollections(left: SourceFileCollection, right: SourceFileCollection): SourceFileCollection {
-    if (left == right) {
-      return left
-    }
-    // merging, building trie inside another trie :p
-    return object : SourceFileCollection {
-      override fun isEmpty(): Boolean = left.isEmpty() && right.isEmpty()
-      override fun getFiles(): Sequence<Path> = (left.getFiles() + right.getFiles()).distinct()
-    }
-  }
-
   private fun WorkspaceTarget.isCompatibleWith(other: WorkspaceTarget): Boolean {
     val left = this.rawBuildTarget
     val right = other.rawBuildTarget
-    return left.kind == right.kind
+    return left.kind.kind == right.kind.kind
+           && left.kind.ruleType == right.kind.ruleType
            && left.baseDirectory == right.baseDirectory
            && left.generatorName == right.generatorName
            && left.isManual == right.isManual
