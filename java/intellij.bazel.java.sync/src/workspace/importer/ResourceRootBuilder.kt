@@ -3,6 +3,9 @@ package org.jetbrains.bazel.workspace.importer
 import com.intellij.java.workspace.entities.JavaResourceRootPropertiesEntity
 import com.intellij.java.workspace.entities.javaResourceRoots
 import com.intellij.openapi.diagnostic.logger
+import com.intellij.openapi.vfs.VFileProperty
+import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.openapi.vfs.refreshAndFindVirtualFileOrDirectory
 import com.intellij.platform.workspace.jps.entities.ContentRootEntity
 import com.intellij.platform.workspace.jps.entities.ModuleEntity
 import com.intellij.platform.workspace.jps.entities.SourceRootEntity
@@ -14,20 +17,20 @@ import com.intellij.platform.workspace.storage.MutableEntityStorage
 import com.intellij.platform.workspace.storage.impl.url.toVirtualFileUrl
 import com.intellij.platform.workspace.storage.url.VirtualFileUrlManager
 import org.jetbrains.annotations.ApiStatus
+import org.jetbrains.bazel.commons.constants.Constants
 import org.jetbrains.bazel.commons.symlinks.BazelSymlinksCalculator
 import org.jetbrains.bazel.sync.workspace.languages.jvm.extractJvmBuildTarget
 import org.jetbrains.bazel.sync.workspace.languages.jvm.extractKotlinBuildTarget
 import org.jetbrains.bazel.sync.workspace.languages.jvm.extractScalaBuildTarget
+import org.jetbrains.bazel.utils.findVirtualFile
 import org.jetbrains.bazel.sync.workspace.snapshot.isTestTarget
 import org.jetbrains.bazel.utils.isUnder
 import org.jetbrains.bsp.protocol.BuildTarget
-import java.nio.file.FileVisitResult
 import java.nio.file.Path
 import kotlin.io.path.Path as KPath
+import kotlin.io.path.exists
 import kotlin.io.path.isDirectory
 import kotlin.io.path.name
-import kotlin.io.path.notExists
-import kotlin.io.path.visitFileTree
 
 private val log = logger<ResourceRootBuilder>()
 
@@ -44,16 +47,13 @@ object ResourceRootBuilder {
   fun resolve(
     target: BuildTarget,
     bazelProjectName: String,
+    workspaceRoot: Path,
     sourceContentRoots: List<Path> = emptyList(),
   ): List<ResolvedResourceRoot> {
     val rootType = target.inferRootType()
     val stripPrefixes = extractStripPrefixOrNull(target) ?: defaultStripPrefixes(target)
-    val aggressiveCeiling = target.aggressiveCollapseCeiling()
     val resourceFiles = target.resources.getFiles().toList()
-    val canCollapseTopology = resourceFiles.any { it.startsWith(aggressiveCeiling) }
-    if (stripPrefixes.isEmpty() && !canCollapseTopology) {
-      return rootsForResourcesWithoutPrefix(resourceFiles, rootType, sourceContentRoots)
-    }
+    if (resourceFiles.isEmpty()) return emptyList()
     val resourcesSet = resourceFiles.toSet()
     val dirtinessCache = DirtinessCache(resourcesSet, bazelProjectName)
     val result = stripPrefixes.fold(MergeResult(leftovers = resourcesSet)) { acc, prefix ->
@@ -62,7 +62,7 @@ object ResourceRootBuilder {
     val leftoverPaths = collapseLeftoversByTopology(
       leftovers = result.leftovers,
       alreadyMerged = result.merged,
-      aggressiveCeiling = aggressiveCeiling,
+      ceilingFor = { parent -> collapseCeiling(parent, target.baseDirectory, workspaceRoot) },
       dirtinessCache = dirtinessCache,
     )
     return (result.merged + leftoverPaths).map { path ->
@@ -153,18 +153,6 @@ object ResourceRootBuilder {
     }
   }
 
-  private fun rootsForResourcesWithoutPrefix(
-    resources: List<Path>,
-    rootType: SourceRootTypeId,
-    sourceContentRoots: List<Path>,
-  ): List<ResolvedResourceRoot> = resources.map { path ->
-    ResolvedResourceRoot(
-      resourcePath = path,
-      rootType = rootType,
-      relativeOutputPath = computeRelativeOutputPath(path.parent ?: path, sourceContentRoots),
-    )
-  }
-
   /**
    * The reference point for computing `relativeOutputPath`. For a directory resource root the
    * directory itself is the reference; for a file-level root the file's parent is, so a file at
@@ -191,7 +179,7 @@ object ResourceRootBuilder {
   private fun collapseLeftoversByTopology(
     leftovers: Set<Path>,
     alreadyMerged: List<Path>,
-    aggressiveCeiling: Path,
+    ceilingFor: (Path) -> Path?,
     dirtinessCache: DirtinessCache,
   ): List<Path> {
     val collapsed = LinkedHashSet<Path>()
@@ -201,7 +189,7 @@ object ResourceRootBuilder {
         null
       }
       else {
-        val aggressive = findHighestCollapseAncestor(parent, aggressiveCeiling, alreadyMerged, dirtinessCache)
+        val aggressive = ceilingFor(parent)?.let { findHighestCollapseAncestor(parent, it, alreadyMerged, dirtinessCache) }
         aggressive ?: parent.takeIf { canCollapseStrictly(it, byParent, alreadyMerged, dirtinessCache) }
       }
       if (collapseTarget != null) {
@@ -273,13 +261,73 @@ object ResourceRootBuilder {
     private val allResourceFiles: Set<Path>,
     private val bazelProjectName: String,
   ) {
-    private val cache = HashMap<Path, Boolean>()
-    fun isDirty(path: Path): Boolean = cache.getOrPut(path) {
-      path.containsExtraFilesIgnoringBazelSymlinks(allResourceFiles, bazelProjectName)
+    private val cache = HashMap<VirtualFile, Boolean>()
+
+    fun isDirty(path: Path): Boolean {
+      val file = path.findVirtualFile() ?: path.refreshAndFindVirtualFileOrDirectory()
+      if (file == null) {
+        log.warn("Resource path does not exist, skipping dirtiness check: $path")
+        return false
+      }
+      return isDirty(file)
+    }
+
+    private fun isDirty(file: VirtualFile): Boolean = cache.getOrPut(file) {
+      file.containsExtraFilesIgnoringBazelSymlinks()
+    }
+
+    private fun VirtualFile.containsExtraFilesIgnoringBazelSymlinks(): Boolean {
+      if (!isDirectory) {
+        return toNioPath() !in allResourceFiles
+      }
+      if (children == null) {
+        return false
+      }
+      // symlinked directories are never walked
+      return children.any { child ->
+        when {
+          child.`is`(VFileProperty.SYMLINK) -> child.isDirtySymlink()
+          child.isDirectory -> isDirty(child) // recursion goes through the memoizing cache
+          else -> child.toNioPath() !in allResourceFiles
+        }
+      }
+    }
+
+    private fun VirtualFile.isDirtySymlink(): Boolean = when {
+      BazelSymlinksCalculator.isBazelSymlink(bazelProjectName, this) -> false
+      isDirectory -> true // symlinked directory: foreign content, dirty without descending
+      else -> toNioPath() !in allResourceFiles // symlink to a file (or broken): treat like a regular file entry
     }
   }
 
-  private fun BuildTarget.aggressiveCollapseCeiling(): Path = baseDirectory
+  // here we have two distinct cases:
+  //  - candidate is located under OWNING target package, then use it as celling
+  //  - candidate is outside OWNING target package, then target is probably a filegroup
+  //    in this case treat closest bazel package as collapse celling, generally safe
+  // by widening scope of resource file merging we prevent creating single file resource content roots per
+  // resource file which with big enough resource file set can cause OOM
+  private fun collapseCeiling(parent: Path, baseDirectory: Path, workspaceRoot: Path): Path? =
+    if (parent.startsWith(baseDirectory)) baseDirectory else findClosestOwningPackage(parent, workspaceRoot)
+
+  private fun findClosestOwningPackage(path: Path, workspaceRoot: Path): Path? {
+    var next: Path? = path
+    while (next != null && next.startsWith(workspaceRoot)) {
+      val candidate = next
+
+      // hit celling, bail
+      if (candidate == workspaceRoot) {
+        return null
+      }
+
+      // nearest package found
+      if (Constants.BUILD_FILE_NAMES.any { candidate.resolve(it).exists() }) {
+        return candidate
+      }
+
+      next = candidate.parent
+    }
+    return null
+  }
 
   private fun MergeResult.mergeUsing(stripPrefix: Path, dirtinessCache: DirtinessCache): MergeResult {
     val stripPrefixAncestors = setOf(stripPrefix)
@@ -290,37 +338,6 @@ object ResourceRootBuilder {
       merged = merged.plusElement(stripPrefix),
       leftovers = newLeftovers,
     )
-  }
-
-  private fun Path.containsExtraFilesIgnoringBazelSymlinks(files: Set<Path>, bazelProjectName: String): Boolean {
-    if (notExists()) {
-      log.warn("Resource path does not exist, skipping dirtiness check: $this")
-      return false
-    }
-    var result = false
-    visitFileTree(followLinks = true) {
-      onPreVisitDirectory { directory, _ ->
-        when {
-          BazelSymlinksCalculator.isBazelSymlink(bazelProjectName, directory) -> FileVisitResult.SKIP_SUBTREE
-          else -> FileVisitResult.CONTINUE
-        }
-      }
-      onVisitFile { file, _ ->
-        when (file) {
-          !in files -> {
-            result = true
-            FileVisitResult.TERMINATE
-          }
-
-          else -> FileVisitResult.CONTINUE
-        }
-      }
-      onVisitFileFailed { _, _ ->
-        // skip on missing
-        FileVisitResult.CONTINUE
-      }
-    }
-    return result
   }
 
   private fun extractStripPrefixOrNull(target: BuildTarget) = extractJvmBuildTarget(target)
