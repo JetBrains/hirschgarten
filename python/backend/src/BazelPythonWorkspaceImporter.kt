@@ -31,6 +31,7 @@ import com.intellij.platform.workspace.storage.MutableEntityStorage
 import com.intellij.platform.workspace.storage.impl.url.toVirtualFileUrl
 import com.intellij.platform.workspace.storage.url.VirtualFileUrlManager
 import com.intellij.python.community.services.systemPython.SystemPythonService
+import com.jetbrains.python.PyNames
 import com.jetbrains.python.PythonBinary
 import com.jetbrains.python.errorProcessing.PyResult
 import com.jetbrains.python.sdk.ModuleOrProject.ProjectOnly
@@ -73,9 +74,7 @@ import org.jetbrains.bsp.protocol.utils.StringUtils
 import java.nio.file.Path
 import kotlin.io.path.isDirectory
 import kotlin.io.path.pathString
-import kotlin.sequences.toList
 
-private const val PYTHON_SDK_ID = "PythonSDK"
 private const val PYTHON_SOURCE_ROOT_TYPE = "python-source"
 private const val PYTHON_RESOURCE_ROOT_TYPE = "python-resource"
 private val PYTHON_MODULE_TYPE = ModuleTypeId("PYTHON_MODULE")
@@ -334,7 +333,7 @@ internal class BazelPythonWorkspaceImporter : BazelWorkspaceImporter, BazelWorks
     )
   }
 
-  private fun Sdk.toModuleDependencyItem(): ModuleDependencyItem = SdkDependency(SdkId(name, PYTHON_SDK_ID))
+  private fun Sdk.toModuleDependencyItem(): ModuleDependencyItem = SdkDependency(SdkId(name, PyNames.PYTHON_SDK_ID_NAME))
 
   private fun getContentRootEntities(
     context: WorkspaceImporterContext,
