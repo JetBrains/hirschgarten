@@ -14,6 +14,9 @@ import com.intellij.platform.backend.workspace.WorkspaceModel
 import com.intellij.platform.util.progress.reportSequentialProgress
 import com.intellij.platform.workspace.jps.entities.ContentRootEntity
 import com.intellij.platform.workspace.jps.entities.DependencyScope
+import com.intellij.platform.workspace.jps.entities.LibraryDependency
+import com.intellij.platform.workspace.jps.entities.LibraryEntity
+import com.intellij.platform.workspace.jps.entities.LibraryRootTypeId
 import com.intellij.platform.workspace.jps.entities.ModuleDependency
 import com.intellij.platform.workspace.jps.entities.ModuleDependencyItem
 import com.intellij.platform.workspace.jps.entities.ModuleEntity
@@ -37,6 +40,7 @@ import com.jetbrains.python.psi.PyFile
 import com.jetbrains.python.psi.resolve.PyQualifiedNameResolveContextImpl
 import com.jetbrains.python.sdk.PythonSdkUtil
 import io.kotest.matchers.booleans.shouldBeFalse
+import io.kotest.matchers.collections.shouldExist
 import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeInstanceOf
@@ -392,6 +396,58 @@ class PythonProjectSyncTest : MockProjectBaseTest() {
     resolved.virtualFile.name shouldBe "part.py"
   }
 
+  @Test
+  fun `should create a library for external pip dependency`() {
+    // Mimics `//project:lib` depending on `@pypi//aaa`: the pip target is a non-root dependency whose sources
+    // live under an external `site-packages` directory (reported via PythonBuildTarget.externalSources).
+    val sitePackages = projectDir.get().resolve("external/pypi_312_aaa/site-packages")
+    createPythonFile("external/pypi_312_aaa/site-packages/aaa/__init__.py", "from aaa.bbb import Ccc\n")
+    createPythonFile("external/pypi_312_aaa/site-packages/aaa/bbb.py", "class Ccc:\n    pass\n")
+
+    val externalPackageInfo =
+      GeneratedTargetInfo(
+        targetId = Label.parse("@@rules_python++pip+pypi_312_aaa//:pkg"),
+        type = "PYTHON_MODULE",
+      )
+    val libInfo =
+      GeneratedTargetInfo(
+        targetId = Label.parse("@@server//project:lib"),
+        type = "PYTHON_MODULE",
+        dependencies = listOf(externalPackageInfo.targetId),
+      )
+    val externalPackageTarget =
+      generateTarget(
+        externalPackageInfo,
+        sources = emptyList(),
+        generatedSources = emptyList(),
+        resources = emptyList(),
+        externalSources = listOf(sitePackages),
+      )
+    val libTarget =
+      generateTarget(
+        libInfo,
+        sources = listOf(projectDir.get().resolve("project/lib/main_dependency.py")),
+        generatedSources = emptyList(),
+        resources = emptyList(),
+      )
+
+    // when: `lib` is the only root target, `aaa` is a (non-root) dependency
+    val diff = MutableEntityStorage.create()
+    runPythonImporter(
+      generateWorkspaceSnapshot(targets = listOf(libTarget, externalPackageTarget), rootTargets = setOf(libTarget.key)),
+      diff,
+    )
+
+    // then: a project library with a SOURCES root at `site-packages` is created and attached to `lib`'s module
+    val sitePackagesUrl = sitePackages.toVirtualFileUrl(virtualFileUrlManager)
+    diff.entities(LibraryEntity::class.java).toList() shouldExist { library ->
+      library.roots.any { it.type == LibraryRootTypeId.SOURCES && it.url == sitePackagesUrl }
+    }
+    diff.entities(ModuleEntity::class.java).toList() shouldExist { module ->
+      module.dependencies.any { it is LibraryDependency }
+    }
+  }
+
   private fun renderModuleLocationText(element: Any): String =
     ModuleRendererFactory.findInstance(element).getModuleTextWithIcon(element)!!.text
 
@@ -478,6 +534,7 @@ class PythonProjectSyncTest : MockProjectBaseTest() {
     sources: List<Path>,
     generatedSources: List<Path>,
     resources: List<Path>,
+    externalSources: List<Path> = emptyList(),
   ): RawBuildTarget {
 
     val target =
@@ -496,7 +553,7 @@ class PythonProjectSyncTest : MockProjectBaseTest() {
             interpreter = pythonBinary,
             info.imports,
             SourceFileCollection.EMPTY,
-            externalSources = SourceFileCollection.EMPTY,
+            externalSources = SourceFileCollectionBuilder.build(externalSources),
           ),
         ),
         sources = SourceFileCollectionBuilder.build(sources),
@@ -507,7 +564,10 @@ class PythonProjectSyncTest : MockProjectBaseTest() {
     return target
   }
 
-  private fun generateWorkspaceSnapshot(targets: List<RawBuildTarget>): WorkspaceSnapshot = runBlocking {
+  private fun generateWorkspaceSnapshot(
+    targets: List<RawBuildTarget>,
+    rootTargets: Set<WorkspaceTargetKey> = targets.map { it.key }.toSet(),
+  ): WorkspaceSnapshot = runBlocking {
     WorkspaceSnapshotBuilder.build(
       project = project,
       projectView = ProjectView.EMPTY,
@@ -515,7 +575,7 @@ class PythonProjectSyncTest : MockProjectBaseTest() {
       resolved = BazelResolvedWorkspace(
         workspaceName = null,
         repoMapping = RepoMappingDisabled,
-        rootTargets = targets.map { it.key }.toSet(),
+        rootTargets = rootTargets,
         targets = targets,
         configurations = emptyMap()
       ),

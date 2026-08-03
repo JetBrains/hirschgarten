@@ -26,6 +26,8 @@
 
   <extensions defaultExtensionNs="Pythonid">
     <importResolver implementation="com.intellij.bazel.python.backend.BazelPyImportResolver" />
+    <canonicalPathProvider implementation="com.intellij.bazel.python.backend.BazelPyCanonicalPathProvider" />
+    <importCandidateProvider implementation="com.intellij.bazel.python.backend.BazelPyImportCandidateProvider" />
   </extensions>
 
   <extensions defaultExtensionNs="com.intellij">
