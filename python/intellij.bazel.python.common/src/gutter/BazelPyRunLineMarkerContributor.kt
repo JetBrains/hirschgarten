@@ -12,7 +12,6 @@ class BazelPyRunLineMarkerContributor : BazelRunLineMarkerContributor() {
   override fun getGutterAction(element: PsiElement): GutterAction? {
     if (element.containingFile !is PyFile || !PythonBazelRunUtils.isRunLineMarkerElement(element)) return null
     return GutterAction(
-      icon = if (PythonBazelRunUtils.isTestFunctionNameIdentifier(element)) executeRunLineMarkerIcon else null,
       runnerActionDescriptor = BazelRunnerActionDescriptor(
         programArguments = PythonBazelRunUtils.getTestRunnerArguments(element),
       ),

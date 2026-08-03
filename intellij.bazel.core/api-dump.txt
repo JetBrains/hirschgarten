@@ -26,19 +26,16 @@ f:org.jetbrains.bazel.sync.status.SyncStatusServiceKt
 a:org.jetbrains.bazel.ui.gutters.BazelRunLineMarkerContributor
 - com.intellij.execution.lineMarker.RunLineMarkerContributor
 - <init>():V
-- pf:getExecuteRunLineMarkerIcon():javax.swing.Icon
 - getGutterAction(com.intellij.psi.PsiElement):org.jetbrains.bazel.ui.gutters.BazelRunLineMarkerContributor$GutterAction
 - getInfo(com.intellij.psi.PsiElement):com.intellij.execution.lineMarker.RunLineMarkerContributor$Info
 - getSlowInfo(com.intellij.psi.PsiElement):com.intellij.execution.lineMarker.RunLineMarkerContributor$Info
 f:org.jetbrains.bazel.ui.gutters.BazelRunLineMarkerContributor$GutterAction
 - <init>():V
-- <init>(javax.swing.Icon,org.jetbrains.bazel.runnerAction.BazelRunnerActionDescriptor):V
-- b:<init>(javax.swing.Icon,org.jetbrains.bazel.runnerAction.BazelRunnerActionDescriptor,I,kotlin.jvm.internal.DefaultConstructorMarker):V
-- f:component1():javax.swing.Icon
-- f:component2():org.jetbrains.bazel.runnerAction.BazelRunnerActionDescriptor
-- f:copy(javax.swing.Icon,org.jetbrains.bazel.runnerAction.BazelRunnerActionDescriptor):org.jetbrains.bazel.ui.gutters.BazelRunLineMarkerContributor$GutterAction
-- bs:copy$default(org.jetbrains.bazel.ui.gutters.BazelRunLineMarkerContributor$GutterAction,javax.swing.Icon,org.jetbrains.bazel.runnerAction.BazelRunnerActionDescriptor,I,java.lang.Object):org.jetbrains.bazel.ui.gutters.BazelRunLineMarkerContributor$GutterAction
+- <init>(org.jetbrains.bazel.runnerAction.BazelRunnerActionDescriptor):V
+- b:<init>(org.jetbrains.bazel.runnerAction.BazelRunnerActionDescriptor,I,kotlin.jvm.internal.DefaultConstructorMarker):V
+- f:component1():org.jetbrains.bazel.runnerAction.BazelRunnerActionDescriptor
+- f:copy(org.jetbrains.bazel.runnerAction.BazelRunnerActionDescriptor):org.jetbrains.bazel.ui.gutters.BazelRunLineMarkerContributor$GutterAction
+- bs:copy$default(org.jetbrains.bazel.ui.gutters.BazelRunLineMarkerContributor$GutterAction,org.jetbrains.bazel.runnerAction.BazelRunnerActionDescriptor,I,java.lang.Object):org.jetbrains.bazel.ui.gutters.BazelRunLineMarkerContributor$GutterAction
 - equals(java.lang.Object):Z
-- f:getIcon():javax.swing.Icon
 - f:getRunnerActionDescriptor():org.jetbrains.bazel.runnerAction.BazelRunnerActionDescriptor
 - hashCode():I

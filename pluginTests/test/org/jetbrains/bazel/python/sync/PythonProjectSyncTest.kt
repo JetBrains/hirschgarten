@@ -587,7 +587,7 @@ class PythonProjectSyncTest : MockProjectBaseTest() {
     dependenciesTargetInfo: List<GeneratedTargetInfo>,
   ): ExpectedModuleEntity {
     val sdkName = chooseSdkName(pythonBinary, project.name)
-    val sdkDependency: ModuleDependencyItem = SdkDependency(SdkId(sdkName, "PythonSDK"))
+    val sdkDependency: ModuleDependencyItem = SdkDependency(SdkId(sdkName, "Python SDK"))
     val moduleDependencies: List<ModuleDependencyItem> =
       dependenciesTargetInfo.map {
         ModuleDependency(

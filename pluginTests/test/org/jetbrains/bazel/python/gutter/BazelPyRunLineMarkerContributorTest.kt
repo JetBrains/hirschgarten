@@ -1,6 +1,5 @@
 package org.jetbrains.bazel.python.gutter
 
-import com.intellij.icons.AllIcons
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiFile
 import com.intellij.psi.util.PsiUtilCore
@@ -139,7 +138,7 @@ internal class BazelPyRunLineMarkerContributorTest : CodeInsightFixtureTestCase<
     val runLineMarkerInfo = bazelPyRunLineMarkerContributor.getInfo(elementAtCaret)!!
 
     // THEN
-    runLineMarkerInfo.icon shouldBe AllIcons.Actions.Execute
+    runLineMarkerInfo.icon shouldBe null
     runLineMarkerInfo.actions.shouldHaveSize(3)
   }
 
@@ -262,7 +261,7 @@ internal class BazelPyRunLineMarkerContributorTest : CodeInsightFixtureTestCase<
     val runLineMarkerInfo = bazelPyRunLineMarkerContributor.getInfo(elementAtCaret)!!
 
     // THEN
-    runLineMarkerInfo.icon shouldBe AllIcons.Actions.Execute
+    runLineMarkerInfo.icon shouldBe null
     runLineMarkerInfo.actions.shouldHaveSize(3)
   }
 

@@ -1,7 +1,6 @@
 package org.jetbrains.bazel.ui.gutters
 
 import com.intellij.execution.lineMarker.RunLineMarkerContributor
-import com.intellij.icons.AllIcons
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.DefaultActionGroup
 import com.intellij.openapi.project.Project
@@ -13,15 +12,17 @@ import org.jetbrains.bazel.runnerAction.BazelRunnerActionDescriptor
 import org.jetbrains.bazel.target.targetStorage
 import org.jetbrains.bazel.ui.widgets.tool.window.utils.fillWithEligibleActions
 import org.jetbrains.bsp.protocol.ExecutableTarget
-import javax.swing.Icon
 
 private class BazelRunLineMarkerInfo(
   text: String,
-  icon: Icon?,
   actions: List<AnAction>,
   private val shouldReplaceOtherMarkers: Boolean,
 ) :
-  RunLineMarkerContributor.Info(icon, actions.toTypedArray(), { text }) {
+/**
+ * [icon] here is `null`, meaning: only add our actions only in existing run gutters,
+ * such as Java's JvmApplicationRunLineMarkerContributor or TestRunLineMarkerProvider
+ */
+  RunLineMarkerContributor.Info(/* icon */ null, actions.toTypedArray(), { text }) {
   override fun shouldReplace(other: RunLineMarkerContributor.Info): Boolean = shouldReplaceOtherMarkers
 }
 
@@ -39,20 +40,12 @@ abstract class BazelRunLineMarkerContributor : RunLineMarkerContributor() {
 
   override fun getSlowInfo(element: PsiElement): Info? = null
 
-  protected val executeRunLineMarkerIcon: Icon // execute icon, provided here in order not to depend on AllIcons in other modules
-    get() = AllIcons.Actions.Execute
-
   /**
    * Single method for override instead of several to avoid double computations for the same element
    */
   open fun getGutterAction(element: PsiElement): GutterAction? = null
 
   data class GutterAction(
-    /**
-     * `null` by default, meaning: only add our actions only in existing run gutters,
-     * such as Java's JvmApplicationRunLineMarkerContributor or TestRunLineMarkerProvider
-     */
-    val icon: Icon? = null,
     val runnerActionDescriptor: BazelRunnerActionDescriptor = BazelRunnerActionDescriptor(),
   )
 
@@ -64,7 +57,6 @@ abstract class BazelRunLineMarkerContributor : RunLineMarkerContributor() {
       ?.let {
         BazelRunLineMarkerInfo(
           text = "Run",
-          icon = gutterAction.icon,
           actions = it,
           shouldReplaceOtherMarkers = project.isBazelProject,
         )
