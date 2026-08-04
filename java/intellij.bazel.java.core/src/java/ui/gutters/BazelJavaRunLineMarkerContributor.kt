@@ -11,6 +11,7 @@ import com.intellij.psi.PsiParameter
 import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.psi.util.parentOfType
 import org.jetbrains.annotations.ApiStatus
+import org.jetbrains.bazel.jvm.run.javaMethodTestFilter
 import org.jetbrains.bazel.run.test.useJetBrainsTestRunner
 import org.jetbrains.bazel.ui.gutters.BazelRunLineMarkerContributor
 
@@ -35,7 +36,7 @@ open class BazelJavaRunLineMarkerContributor : BazelRunLineMarkerContributor() {
         "$fullyQualifiedClassName:$methodName:$methodParameterTypes"
       } else {
         val className = psiIdentifier.getClassName() ?: return methodName
-        "$className.$methodName$"
+        javaMethodTestFilter(className, methodName)
       }
     } else {
       if (element.project.useJetBrainsTestRunner()) {
