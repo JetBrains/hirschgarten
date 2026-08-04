@@ -23,6 +23,7 @@ import org.jetbrains.bazel.workspace.addToModule
 import org.jetbrains.bazel.workspace.askForInverseSources
 import org.jetbrains.bazel.workspace.getModulesForFile
 import org.jetbrains.bazel.workspace.processTargetsForTestlibStripping
+import org.jetbrains.bazel.workspace.resolvePackagePrefix
 import org.jetbrains.bazel.workspace.toModuleEntity
 import org.jetbrains.bazel.workspacemodel.entities.BazelDummyEntitySource
 
@@ -70,7 +71,9 @@ class AddFileToModuleAction :
             val isStripped = moduleLabel != null && processedResult.strippedLabels.contains(moduleLabel)
             val alreadyAdded = existingModules.contains(module)
             if (!alreadyAdded && !isStripped) {
-              url.addToModule(entityStorageDiff, module, virtualFile.extension, isTestModule)
+              val parentUrl = virtualFile.parent?.toVirtualFileUrl(workspaceModel.getVirtualFileUrlManager())
+              val packagePrefix = resolvePackagePrefix(parentUrl, module)
+              url.addToModule(entityStorageDiff, module, virtualFile.extension, isTestModule, packagePrefix)
             }
           }
 

@@ -19,11 +19,8 @@ import com.intellij.openapi.vfs.newvfs.BulkFileListenerBackgroundable
 import com.intellij.openapi.vfs.newvfs.events.VFileEvent
 import com.intellij.platform.backend.workspace.WorkspaceModel
 import com.intellij.platform.backend.workspace.toVirtualFileUrl
-import com.intellij.platform.workspace.jps.entities.ContentRootEntity
 import com.intellij.platform.workspace.jps.entities.ModuleEntity
 import com.intellij.platform.workspace.jps.entities.ModuleId
-import com.intellij.platform.workspace.jps.entities.SourceRootEntity
-import com.intellij.platform.workspace.jps.entities.SourceRootTypeId
 import com.intellij.platform.workspace.jps.entities.modifyModuleEntity
 import com.intellij.platform.workspace.storage.ImmutableEntityStorage
 import com.intellij.platform.workspace.storage.MutableEntityStorage
@@ -59,6 +56,10 @@ import org.jetbrains.bazel.target.TargetUtils
 import org.jetbrains.bazel.target.moduleEntity
 import org.jetbrains.bazel.target.targetUtils
 import org.jetbrains.bazel.taskEvents.BazelTaskEventsService
+import org.jetbrains.bazel.workspace.addToModule
+import org.jetbrains.bazel.workspace.processTargetsForTestlibStripping
+import org.jetbrains.bazel.workspace.resolvePackagePrefix
+import org.jetbrains.bazel.workspace.toModuleEntity
 import org.jetbrains.bazel.workspace.fileEvents.SimplifiedFileEvent.CreateDirectory
 import org.jetbrains.bazel.workspace.packageMarker.concatenatePackages
 import org.jetbrains.bazel.workspacemodel.entities.BazelDummyEntitySource
@@ -230,7 +231,7 @@ class BazelFileEventListener : BulkFileListenerBackgroundable {
       val modules =
         targetUtils
           .getTargetsForPath(path)
-          .mapNotNull { it.toModuleEntity(context.workspaceSnapshot, context.project) }
+          .mapNotNull { it.resolveExistingModuleEntity(context.workspaceSnapshot, context.project) }
       for (module in modules) {
         val contentRoot = module.contentRoots.find { it.url == fileUrl }
         contentRoot?.let { context.entityStorageDiff.removeEntity(it) }
@@ -272,6 +273,7 @@ class BazelFileEventListener : BulkFileListenerBackgroundable {
   ) {
     val applicableEvents = allFileEvents.filter {
       it is SimplifiedFileEvent.Create ||
+      it is SimplifiedFileEvent.ExternalCreate ||
       it is SimplifiedFileEvent.Move ||
       it is SimplifiedFileEvent.Copy ||
       (it as? SimplifiedFileEvent.Rename)?.extensionChanged == true
@@ -311,7 +313,7 @@ class BazelFileEventListener : BulkFileListenerBackgroundable {
       newFilePath to existingModules
     }.toMap()
 
-  private fun addFileToTargets(
+  private suspend fun addFileToTargets(
     targetsByPath: Map<Path, List<Label>>,
     moduleToRemoveFilesFrom: Map<Path, MutableSet<ModuleEntity>>,
     modulesAlreadyContainingFiles: Map<Path, Set<ModuleEntity>>,
@@ -322,16 +324,32 @@ class BazelFileEventListener : BulkFileListenerBackgroundable {
       val moduleRemovalsForFile = moduleToRemoveFilesFrom[filePath]
       val modulesAlreadyContainingFile =
         modulesAlreadyContainingFiles.getOrDefault(filePath, emptySet())
-      val modulesToAddTo = targets.mapNotNull { it.toModuleEntity(context.workspaceSnapshot, context.project) }
-      for (module in modulesToAddTo) {
+      val processedResult = processTargetsForTestlibStripping(targets)
+      // Only use partial sync (UnsyncedTargetUpdater) for original targets from Bazel.
+      // Stripped-testlib labels are fabricated and may not be real targets — just resolve existing modules for them.
+      val modulesWithTestFlag = processedResult.allProcessedTargets.mapNotNull { label ->
+        if (processedResult.strippedLabels.contains(label)) {
+          val moduleId = ModuleId(label.formatAsModuleName(context.project))
+          val existing = context.entityStorageDiff.resolve(moduleId) ?: context.workspaceSnapshot.resolve(moduleId)
+          existing?.let { it to false }
+        } else {
+          label.toModuleEntity(context.workspaceSnapshot, context.entityStorageDiff, context.project)
+        }
+      }
+      val moduleNameToLabel = processedResult.allProcessedTargets.associateBy { it.formatAsModuleName(context.project) }
+      for ((module, isTestModule) in modulesWithTestFlag) {
+        val moduleLabel = moduleNameToLabel[module.name]
+        val isStripped = moduleLabel != null && processedResult.strippedLabels.contains(moduleLabel)
         // if we want a file to be both added and removed in the same module, neither of them will be done
         val moduleContainsContentRootForRemoval = moduleRemovalsForFile?.remove(module) == true
         val fileAlreadyInModule = modulesAlreadyContainingFile.contains(module)
-        if (!moduleContainsContentRootForRemoval && !fileAlreadyInModule) {
-          fileUrl.addToModule(context.entityStorageDiff, module, filePath.extension)
+        if (!moduleContainsContentRootForRemoval && !fileAlreadyInModule && !isStripped) {
+          val parentUrl = filePath.parent?.toVirtualFileUrl(context.urlManager)
+          val packagePrefix = resolvePackagePrefix(parentUrl, module)
+          fileUrl.addToModule(context.entityStorageDiff, module, filePath.extension, isTestModule, packagePrefix)
         }
       }
-      context.targetUtils.addFileToTargetIdEntry(filePath, targets)
+      context.targetUtils.addFileToTargetIdEntry(filePath, processedResult.targetsForMapping)
     }
   }
 
@@ -398,6 +416,37 @@ class BazelFileEventListener : BulkFileListenerBackgroundable {
         customDataClass = ModuleRelatedRootData::class.java,
       )
     }
+
+  companion object {
+    /**
+     * Enqueue externally-generated file events (e.g., from Bazel build) for processing
+     * through the standard file event queue.
+     */
+    internal fun enqueueExternalEvents(project: Project, events: List<SimplifiedFileEvent>) {
+      val queueController = FileEventQueueController.getInstance(project)
+      val shouldStart = queueController.addEvents(events)
+      if (shouldStart) {
+        BazelCoroutineService.getInstance(project).start {
+          val taskId = TaskGroupId("file-event-external-" + Random.nextBytes(8).toHexString()).task("")
+          delay(PROCESSING_DELAY)
+          do {
+            val processed = queueController.withNextBatch { batch ->
+              val listener = BazelFileEventListener()
+              BazelFileEventProgressReporter.runWithProgressBar(
+                BazelPluginBundle.message("file.change.processing.title.multiple"),
+                project,
+              ) { bazelReporter ->
+                listener.applyAllChanges(
+                  allFileEvents = batch,
+                  context = prepareProcessingContext(project, taskId, bazelReporter),
+                )
+              }
+            }
+          } while (processed)
+        }
+      }
+    }
+  }
 }
 
 // if a project has no targets, there is no point in processing (also, it could interrupt the initial sync)
@@ -448,7 +497,7 @@ private suspend fun prepareProcessingContext(
   )
 }
 
-private fun Label.toModuleEntity(storage: ImmutableEntityStorage, project: Project): ModuleEntity? =
+private fun Label.resolveExistingModuleEntity(storage: ImmutableEntityStorage, project: Project): ModuleEntity? =
   storage.resolve(ModuleId(this.formatAsModuleName(project)))
 
 @Suppress("UnstableApiUsage")
@@ -484,44 +533,6 @@ private fun addToPluginModelByModules(filePath: Path, modules: Set<ModuleEntity>
 
 // the .toUri() conversion is necessary to contain file:// schema, which is present in VirtualFile.toVirtualFileUrl() results
 private fun Path.toVirtualFileUrl(manager: VirtualFileUrlManager): VirtualFileUrl = manager.getOrCreateFromUrl(this.toUri().toString())
-
-private fun VirtualFileUrl.addToModule(
-  entityStorageDiff: MutableEntityStorage,
-  module: ModuleEntity,
-  extension: String?,
-) {
-  if (module.contentRoots.any { it.url == this }) return // we don't want to duplicate content roots
-
-  // TODO: https://youtrack.jetbrains.com/issue/BAZEL-1917
-  val sourceRootType =
-    when (extension) {
-      "java" -> SourceRootTypeId("java-source")
-      "kt" -> SourceRootTypeId("kotlin-source")
-      "py" -> SourceRootTypeId("python-source")
-      else -> {
-        logger.warn("Bazel recognised a file as a source, but we failed to parse its extension: .$extension")
-        SourceRootTypeId("unknown-source")
-      }
-    }
-
-  val sourceRoot =
-    SourceRootEntity(
-      url = this,
-      entitySource = module.entitySource,
-      rootTypeId = sourceRootType,
-    )
-
-  val contentRootEntity =
-    ContentRootEntity(
-      url = this,
-      excludedPatterns = emptyList(),
-      entitySource = module.entitySource,
-    ) {
-      sourceRoots += listOf(sourceRoot)
-    }
-
-  entityStorageDiff.modifyModuleEntity(module) { contentRoots += contentRootEntity }
-}
 
 private val PROCESSING_DELAY = 250.milliseconds // not noticeable by the user, but if there are many events simultaneously, we will get them all
 
