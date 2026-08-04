@@ -13,10 +13,8 @@ import kotlin.io.path.exists
 
 internal class JdkResolver(
   private val allTargets: Map<WorkspaceTargetKey, WorkspaceTarget>,
-  private val ideJavaHomeOverride: Path? = null,
 ) {
   fun resolve(): Jdk? {
-    ideJavaHomeOverride?.let { return Jdk(javaHome = it) }
     val allCandidates = allTargets.values.mapNotNull { resolveJdkData(it) }.toList()
     if (allCandidates.none()) return localJdkFallback()
     val bestJdk = allCandidates.sortByFrequency().maxBy { it.jdkType.priority }

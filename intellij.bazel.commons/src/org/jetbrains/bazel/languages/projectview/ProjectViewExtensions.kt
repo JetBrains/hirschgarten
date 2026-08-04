@@ -55,12 +55,6 @@ val ProjectView.importDepth: Int
   get() = getSection(IMPORT_DEPTH_KEY)
 
 @Internal
-val IDE_JAVA_HOME_OVERRIDE_KEY: SectionKey<Path?> = SectionKey("ide_java_home_override", null)
-val ProjectView.ideJavaHomeOverride: Path?
-  @Internal
-  get() = getSection(IDE_JAVA_HOME_OVERRIDE_KEY)
-
-@Internal
 val SHARD_SYNC_KEY: SectionKey<Boolean> = SectionKey("shard_sync", false)
 val ProjectView.shardSync: Boolean
   @Internal

@@ -189,7 +189,6 @@ class SnapshotKryoSerializationTest {
               excludes = listOf(),
             ),
           ),
-          ideJavaHomeOverride = null,
         ),
       ),
       repoMapping = BzlmodRepoMapping(

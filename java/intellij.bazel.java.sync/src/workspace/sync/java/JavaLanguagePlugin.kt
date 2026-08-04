@@ -19,7 +19,6 @@ import org.jetbrains.bazel.label.ResolvedLabel
 import org.jetbrains.bazel.label.assumeResolved
 import org.jetbrains.bazel.label.label
 import org.jetbrains.bazel.languages.projectview.ProjectView
-import org.jetbrains.bazel.languages.projectview.ideJavaHomeOverride
 import org.jetbrains.bazel.languages.projectview.importIjars
 import org.jetbrains.bazel.languages.projectview.testSources
 import org.jetbrains.bazel.server.BazelServerFacade
@@ -70,7 +69,6 @@ class JavaLanguagePlugin : LanguagePlugin {
         //  thus performing automatic full importer invalidation
         sourceRootOptimizationMode = SourceRootOptimizationMode.createFromProject(project),
         excludeCompiledSourceCodeInsideJars = BazelFeatureFlags.excludeCompiledSourceCodeInsideJars,
-        ideJavaHomeOverride = projectView.ideJavaHomeOverride,
       ),
     )
   }

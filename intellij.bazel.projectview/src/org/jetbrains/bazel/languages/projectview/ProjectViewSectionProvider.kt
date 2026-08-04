@@ -12,7 +12,6 @@ import org.jetbrains.bazel.languages.projectview.sections.DeriveTargetsFromDirec
 import org.jetbrains.bazel.languages.projectview.sections.DirectoriesSection
 import org.jetbrains.bazel.languages.projectview.sections.DotIdeaDirectoryLocationSection
 import org.jetbrains.bazel.languages.projectview.sections.GazelleTargetSection
-import org.jetbrains.bazel.languages.projectview.sections.IdeJavaHomeOverrideSection
 import org.jetbrains.bazel.languages.projectview.sections.ImportDepthSection
 import org.jetbrains.bazel.languages.projectview.sections.ImportIjarsSection
 import org.jetbrains.bazel.languages.projectview.sections.ImportRunConfigurationsSection
@@ -48,7 +47,6 @@ internal class DefaultProjectViewSectionProvider : ProjectViewSectionProvider {
       DeriveTargetsFromDirectoriesSection(),
       DirectoriesSection(),
       GazelleTargetSection(),
-      IdeJavaHomeOverrideSection(),
       ImportDepthSection(),
       ImportIjarsSection(),
       ImportRunConfigurationsSection(),
