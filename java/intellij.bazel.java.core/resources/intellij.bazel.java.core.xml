@@ -47,6 +47,7 @@
 
   <extensions defaultExtensionNs="org.jetbrains.bazel">
     <testLocatorProvider id="defaultJavaLocator" implementation="org.jetbrains.bazel.jvm.run.JavaTestLocatorProvider"/>
+    <testFilterProvider id="defaultJavaFilter" implementation="org.jetbrains.bazel.jvm.run.JavaTestFilterProvider"/>
     <syntheticRunTargetTemplateGenerator language="JAVA"
                                          implementationClass="org.jetbrains.bazel.java.run.JavaSyntheticRunTargetTemplateGenerator"/>
 
