@@ -127,12 +127,6 @@ val ProjectView.useJetBrainsTestRunner: Boolean
   get() = getSection(USE_JETBRAINS_TEST_RUNNER_KEY)
 
 @Internal
-val PREFER_CLASS_JARS_OVER_SOURCELESS_JARS_KEY: SectionKey<Boolean> = SectionKey("prefer_class_jars_over_sourceless_jars", true)
-val ProjectView.preferClassJarsOverSourcelessJars: Boolean
-  @Internal
-  get() = getSection(PREFER_CLASS_JARS_OVER_SOURCELESS_JARS_KEY)
-
-@Internal
 val RUN_CONFIG_RUN_WITH_BAZEL_KEY: SectionKey<Boolean> = SectionKey("run_config_run_with_bazel", BazelFeatureFlags.runConfigRunWithBazel)
 val ProjectView.runConfigRunWithBazel: Boolean
   @Internal

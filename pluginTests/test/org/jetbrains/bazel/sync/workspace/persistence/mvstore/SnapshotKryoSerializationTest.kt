@@ -189,7 +189,6 @@ class SnapshotKryoSerializationTest {
               excludes = listOf(),
             ),
           ),
-          preferClassJarsOverSourcelessJars = false,
           ideJavaHomeOverride = null,
         ),
       ),

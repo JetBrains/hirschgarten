@@ -574,12 +574,7 @@ class JvmBuildTargetResolver(
   ): LibraryItem? {
     val outputs = getTargetOutputJarsList(target).toSet() + getIntellijPluginJars(target)
     val rawSources = getSourceJarPaths(target)
-    val sources = if (javaSyncConfig.preferClassJarsOverSourcelessJars) {
-      rawSources - outputs
-    }
-    else {
-      rawSources
-    }
+    val sources = rawSources - outputs
 
     val interfaceJars = getTargetInterfaceJarsList(target).toSet()
     if (outputs.isEmptyJarList() && interfaceJars.isEmptyJarList() && sources.isEmptyJarList()) {
