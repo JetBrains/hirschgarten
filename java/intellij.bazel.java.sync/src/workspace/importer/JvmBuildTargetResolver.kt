@@ -48,7 +48,7 @@ class JvmBuildTargetResolver(
       }
     }
 
-  private val projectJavaHome: Path? by lazy { JdkResolver(allTargets, javaSyncConfig.ideJavaHomeOverride).resolve()?.javaHome }
+  private val projectJavaHome: Path? by lazy { JdkResolver(allTargets).resolve()?.javaHome }
 
   fun resolveAll(): Map<WorkspaceTargetKey, JvmResolvedTarget> {
     wellKnownTargetKeyByMavenCoordinates = computeWellKnownTargetKeyByMavenCoordinates()

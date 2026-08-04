@@ -11,7 +11,6 @@ import org.jetbrains.bazel.languages.projectview.ALLOW_MANUAL_TARGETS_SYNC_KEY
 import org.jetbrains.bazel.languages.projectview.BAZEL_BINARY_KEY
 import org.jetbrains.bazel.languages.projectview.BUILD_FLAGS_KEY
 import org.jetbrains.bazel.languages.projectview.DIRECTORIES_KEY
-import org.jetbrains.bazel.languages.projectview.IDE_JAVA_HOME_OVERRIDE_KEY
 import org.jetbrains.bazel.languages.projectview.IMPORT_DEPTH_KEY
 import org.jetbrains.bazel.languages.projectview.ProjectView
 import org.jetbrains.bazel.languages.projectview.SHARD_SYNC_KEY
@@ -48,7 +47,6 @@ private val mockProjectView: ProjectView = ProjectView(
     BAZEL_BINARY_KEY to Path("bazel"),
     ALLOW_MANUAL_TARGETS_SYNC_KEY to true,
     IMPORT_DEPTH_KEY to 2,
-    IDE_JAVA_HOME_OVERRIDE_KEY to Path("java_home"),
     SHARD_SYNC_KEY to false,
     TARGET_SHARD_SIZE_KEY to 1000,
   ),
