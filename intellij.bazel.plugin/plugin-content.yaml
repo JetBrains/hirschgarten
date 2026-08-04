@@ -13,6 +13,9 @@
 - name: lib/modules/intellij.bazel.bytecodeViewer.jar
   contentModules:
   - name: intellij.bazel.bytecodeViewer
+- name: lib/modules/intellij.bazel.clion.common.jar
+  contentModules:
+  - name: intellij.bazel.clion.common
 - name: lib/modules/intellij.bazel.commons.jar
   contentModules:
   - name: intellij.bazel.commons

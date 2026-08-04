@@ -1,0 +1,47 @@
+<idea-plugin>
+  <!-- region Generated dependencies - run `Generate Product Layouts` to regenerate -->
+  <dependencies>
+    <plugin id="com.intellij.clion"/>
+    <plugin id="org.jetbrains.plugins.clion.radler"/>
+    <module name="intellij.bazel.commons"/>
+    <module name="intellij.bazel.connector"/>
+    <module name="intellij.bazel.core"/>
+    <module name="intellij.bazel.coverage"/>
+    <module name="intellij.bazel.importer"/>
+    <module name="intellij.libraries.guava"/>
+    <module name="intellij.libraries.stream"/>
+    <module name="intellij.platform.analysis"/>
+    <module name="intellij.platform.core"/>
+    <module name="intellij.platform.core.impl"/>
+    <module name="intellij.platform.core.ui"/>
+    <module name="intellij.platform.coverage"/>
+    <module name="intellij.platform.debugger"/>
+    <module name="intellij.platform.debugger.impl"/>
+    <module name="intellij.platform.editor.ui"/>
+    <module name="intellij.platform.execution"/>
+    <module name="intellij.platform.execution.impl"/>
+    <module name="intellij.platform.ide"/>
+    <module name="intellij.platform.ide.core"/>
+    <module name="intellij.platform.ide.impl"/>
+    <module name="intellij.platform.ide.progress"/>
+    <module name="intellij.platform.lang"/>
+    <module name="intellij.platform.lang.impl"/>
+    <module name="intellij.platform.projectModel"/>
+    <module name="intellij.platform.scriptDebugger.backend"/>
+    <module name="intellij.platform.scriptDebugger.ui"/>
+    <module name="intellij.platform.smRunner"/>
+    <module name="intellij.platform.testIntegration"/>
+    <module name="intellij.platform.testRunner"/>
+  </dependencies>
+  <!-- endregion -->
+
+  <extensions defaultExtensionNs="com.intellij">
+  </extensions>
+
+  <extensions defaultExtensionNs="org.jetbrains.bazel">
+    <targetKindProvider implementation="org.jetbrains.bazel.clion.sync.CLionBazelRules" />
+    <languageClassProvider implementation="org.jetbrains.bazel.clion.sync.CLionLanguageClassProvider" />
+    <languagePlugin implementation="org.jetbrains.bazel.clion.sync.CLionLanguagePlugin"/>
+  </extensions>
+
+</idea-plugin>

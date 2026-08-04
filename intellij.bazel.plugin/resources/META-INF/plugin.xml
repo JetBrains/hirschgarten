@@ -48,6 +48,9 @@
     <module name="intellij.bazel.kotlin.k2"/>
     <module name="intellij.bazel.kotlin.projectWizard"/>
 
+    <!-- cpp modules -->
+    <module name="intellij.bazel.clion.common"/>
+
     <!-- go modules -->
     <module name="intellij.bazel.golang.common"/>
 

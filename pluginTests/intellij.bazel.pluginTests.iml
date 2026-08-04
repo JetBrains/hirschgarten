@@ -195,6 +195,7 @@
     <orderEntry type="module" module-name="intellij.bazel.coverage" scope="TEST" />
     <orderEntry type="module" module-name="intellij.bazel.coverage.performancePlugin" scope="TEST" />
     <orderEntry type="module" module-name="intellij.bazel.devkit" scope="TEST" />
+    <orderEntry type="module" module-name="intellij.bazel.clion.common" scope="TEST" />
     <orderEntry type="module" module-name="intellij.bazel.golang.common" scope="TEST" />
     <orderEntry type="module" module-name="intellij.bazel.importer" scope="TEST" />
     <orderEntry type="module" module-name="intellij.bazel.java.core" scope="TEST" />
