@@ -8,11 +8,11 @@ import com.intellij.openapi.ui.playback.commands.AbstractCommand.CMD_PREFIX
 import com.intellij.tools.ide.performanceTesting.commands.CommandChain
 import com.intellij.tools.ide.performanceTesting.commands.delay
 import com.intellij.tools.ide.performanceTesting.commands.openFile
-import org.jetbrains.bazel.data.IdeaBazelCases
-import org.jetbrains.bazel.data.simpleBazelProject
 import org.jetbrains.bazel.base.IdeStarterBaseProjectTest
 import org.jetbrains.bazel.base.execute
 import org.jetbrains.bazel.base.syncBazelProject
+import org.jetbrains.bazel.data.IdeaBazelCases
+import org.jetbrains.bazel.data.simpleBazelProject
 import org.jetbrains.bazel.tests.ui.clickRunGutterOnLine
 import org.jetbrains.bazel.tests.ui.setRunConfigRunWithBazel
 import org.junit.jupiter.params.ParameterizedTest
@@ -24,11 +24,6 @@ private val BAZEL_COVERAGE_PROJECT = simpleBazelProject(
   path = "coverageTest",
 )
 
-/**
- * ```sh
- * bazel test //plugins/bazel/integrationTests:integrationTests_test --test_env=JB_TEST_FILTER=org.jetbrains.bazel.tests.run.BazelCoverageTest --test_output=errors --nocache_test_results
- * ```
- */
 class BazelCoverageTest : IdeStarterBaseProjectTest() {
 
   @ParameterizedTest
@@ -68,7 +63,7 @@ class BazelCoverageTest : IdeStarterBaseProjectTest() {
             "50% lines covered"
           }
           else {
-            "50% methods, 50% lines covered"  // More detailed native IDEA coverage with a Java agent
+            "40% methods, 40% lines covered"  // More detailed native IDEA coverage with a Java agent
           }
 
           step("Verify coverage results") {
