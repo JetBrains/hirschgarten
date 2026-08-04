@@ -12,6 +12,5 @@ data class JavaWorkspaceSyncConfig(
   val importIjars: Boolean,
   val excludeCompiledSourceCodeInsideJars: Boolean,
   val sourceRootOptimizationMode: SourceRootOptimizationMode,
-  val preferClassJarsOverSourcelessJars: Boolean,
   val ideJavaHomeOverride: Path?,
 ) : WorkspaceSyncConfig
