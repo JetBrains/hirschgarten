@@ -56,10 +56,11 @@ import org.jetbrains.bazel.target.TargetUtils
 import org.jetbrains.bazel.target.moduleEntity
 import org.jetbrains.bazel.target.targetUtils
 import org.jetbrains.bazel.taskEvents.BazelTaskEventsService
+import org.jetbrains.bazel.workspace.ProcessedTargetsResult
+import org.jetbrains.bazel.workspace.UnsyncedTargetUpdater
 import org.jetbrains.bazel.workspace.addToModule
 import org.jetbrains.bazel.workspace.processTargetsForTestlibStripping
 import org.jetbrains.bazel.workspace.resolvePackagePrefix
-import org.jetbrains.bazel.workspace.toModuleEntity
 import org.jetbrains.bazel.workspace.fileEvents.SimplifiedFileEvent.CreateDirectory
 import org.jetbrains.bazel.workspace.packageMarker.concatenatePackages
 import org.jetbrains.bazel.workspacemodel.entities.BazelDummyEntitySource
@@ -319,28 +320,61 @@ class BazelFileEventListener : BulkFileListenerBackgroundable {
     modulesAlreadyContainingFiles: Map<Path, Set<ModuleEntity>>,
     context: ProcessingContext,
   ) {
-    for ((filePath, targets) in targetsByPath.entries) {
+    // Phase 1: Collect all targets, resolve existing modules, identify unsynced targets
+    data class FileTargetInfo(
+      val filePath: Path,
+      val processedResult: ProcessedTargetsResult,
+    )
+    val allFileInfos = targetsByPath.map { (filePath, targets) ->
+      FileTargetInfo(filePath, processTargetsForTestlibStripping(targets))
+    }
+
+    // Collect all original (non-stripped) labels that don't have an existing module
+    val unsyncedLabels = allFileInfos.flatMap { info ->
+      info.processedResult.allProcessedTargets
+        .filter { label -> !info.processedResult.strippedLabels.contains(label) }
+        .filter { label ->
+          val moduleId = ModuleId(label.formatAsModuleName(context.project))
+          context.entityStorageDiff.resolve(moduleId) == null && context.workspaceSnapshot.resolve(moduleId) == null
+        }
+    }.distinct()
+
+    // Phase 2: Single batch RPC for all unsynced targets (filters no-ide server-side)
+    val fetchedTargets = UnsyncedTargetUpdater.fetchAndCacheUnsyncedTargets(
+      unsyncedLabels, context.project, context.workspaceSnapshot, context.entityStorageDiff
+    )
+
+    // Create module entities for successfully fetched targets
+    for ((label, targetAndDeps) in fetchedTargets) {
+      val (rawBuildTarget, dependencies) = targetAndDeps
+      val moduleId = ModuleId(label.formatAsModuleName(context.project))
+      // Skip if module was created by a previous iteration in this batch
+      if (context.entityStorageDiff.resolve(moduleId) != null) continue
+      val entitySource = org.jetbrains.bazel.workspacemodel.entities.BazelModuleEntitySource(moduleId.name)
+      val moduleEntity = ModuleEntity(name = moduleId.name, dependencies = dependencies, entitySource = entitySource)
+      context.entityStorageDiff.addEntity(moduleEntity)
+    }
+
+    // Phase 3: Add files to their resolved modules
+    for (info in allFileInfos) {
+      val filePath = info.filePath
       val fileUrl = filePath.toVirtualFileUrl(context.urlManager)
       val moduleRemovalsForFile = moduleToRemoveFilesFrom[filePath]
       val modulesAlreadyContainingFile =
         modulesAlreadyContainingFiles.getOrDefault(filePath, emptySet())
-      val processedResult = processTargetsForTestlibStripping(targets)
-      // Only use partial sync (UnsyncedTargetUpdater) for original targets from Bazel.
-      // Stripped-testlib labels are fabricated and may not be real targets — just resolve existing modules for them.
-      val modulesWithTestFlag = processedResult.allProcessedTargets.mapNotNull { label ->
-        if (processedResult.strippedLabels.contains(label)) {
-          val moduleId = ModuleId(label.formatAsModuleName(context.project))
-          val existing = context.entityStorageDiff.resolve(moduleId) ?: context.workspaceSnapshot.resolve(moduleId)
-          existing?.let { it to false }
-        } else {
-          label.toModuleEntity(context.workspaceSnapshot, context.entityStorageDiff, context.project)
-        }
+
+      val modulesWithTestFlag = info.processedResult.allProcessedTargets.mapNotNull { label ->
+        val moduleId = ModuleId(label.formatAsModuleName(context.project))
+        val module = context.entityStorageDiff.resolve(moduleId) ?: context.workspaceSnapshot.resolve(moduleId) ?: return@mapNotNull null
+        val cachedTarget = context.targetUtils.getBuildTargetForLabel(label)
+        val isTestModule = cachedTarget?.kind?.ruleType == org.jetbrains.bazel.commons.RuleType.TEST
+        module to isTestModule
       }
-      val moduleNameToLabel = processedResult.allProcessedTargets.associateBy { it.formatAsModuleName(context.project) }
+
+      val moduleNameToLabel = info.processedResult.allProcessedTargets.associateBy { it.formatAsModuleName(context.project) }
       for ((module, isTestModule) in modulesWithTestFlag) {
         val moduleLabel = moduleNameToLabel[module.name]
-        val isStripped = moduleLabel != null && processedResult.strippedLabels.contains(moduleLabel)
-        // if we want a file to be both added and removed in the same module, neither of them will be done
+        val isStripped = moduleLabel != null && info.processedResult.strippedLabels.contains(moduleLabel)
         val moduleContainsContentRootForRemoval = moduleRemovalsForFile?.remove(module) == true
         val fileAlreadyInModule = modulesAlreadyContainingFile.contains(module)
         if (!moduleContainsContentRootForRemoval && !fileAlreadyInModule && !isStripped) {
@@ -349,7 +383,7 @@ class BazelFileEventListener : BulkFileListenerBackgroundable {
           fileUrl.addToModule(context.entityStorageDiff, module, filePath.extension, isTestModule, packagePrefix)
         }
       }
-      context.targetUtils.addFileToTargetIdEntry(filePath, processedResult.targetsForMapping)
+      context.targetUtils.addFileToTargetIdEntry(filePath, info.processedResult.targetsForMapping)
     }
   }
 

@@ -136,6 +136,83 @@ class UnsyncedTargetUpdater {
     }
 
     /**
+     * Batch-fetches target information for multiple unsynced targets in a single RPC call.
+     * Returns a map from Label to (RawBuildTarget, dependencies) for valid targets.
+     * Filters out targets with "no-ide" tag.
+     */
+    suspend fun fetchAndCacheUnsyncedTargets(
+      labels: List<Label>,
+      project: Project,
+      snapshot: ImmutableEntityStorage,
+      storage: MutableEntityStorage,
+    ): Map<Label, Pair<RawBuildTarget, List<ModuleDependencyItem>>> {
+      if (labels.isEmpty()) return emptyMap()
+      val result = mutableMapOf<Label, Pair<RawBuildTarget, List<ModuleDependencyItem>>>()
+      try {
+        val partialSyncResult = project.connection.runWithServer { server ->
+          server.workspaceBuildTargets(
+            WorkspaceBuildTargetParams(
+              WorkspaceBuildTargetSelector.SpecificTargets(labels),
+              TaskGroupId.EMPTY.task("unsynced-targets-batch"),
+            )
+          )
+        }
+
+        val baseDirectory = project.rootDir.toNioPath()
+        for (label in labels) {
+          val targetInfo = partialSyncResult.targets[label] ?: continue
+          if (targetInfo.tagsList.contains("no-ide")) continue
+
+          val dependencies = mutableListOf<ModuleDependencyItem>()
+          val languages = inferLanguages(targetInfo)
+          if (languages.contains(LanguageClass.JAVA)) {
+            val defaultJdk = project.defaultJdkName
+            if (defaultJdk != null) {
+              dependencies.add(InheritedSdkDependency)
+            }
+          }
+
+          try {
+            val targetKind = inferKind(TargetTagsResolver().resolveTags(targetInfo), targetInfo.kind, languages)
+            val targetDependencies = targetInfo.depsList.map { DependencyLabel(Label.parse(it.target.label)) }
+            val sources = targetInfo.sourcesList.map { fileLocation: BspTargetInfo.ArtifactLocation ->
+              SourceItem(
+                path = baseDirectory.resolve(fileLocation.relativePath),
+                generated = !fileLocation.isSource,
+                jvmPackagePrefix = null
+              )
+            }
+            val resources = targetInfo.resourcesList.map { fileLocation ->
+              baseDirectory.resolve(fileLocation.relativePath)
+            }
+
+            val rawBuildTarget = RawBuildTarget(
+              id = label,
+              tags = targetInfo.tagsList,
+              dependencies = targetDependencies,
+              kind = targetKind,
+              sources = sources,
+              resources = resources,
+              baseDirectory = baseDirectory,
+              noBuild = false,
+              data = null,
+            )
+            project.targetUtils.addTargets(mapOf(label to rawBuildTarget), project)
+
+            val moduleDeps = buildModuleDependencies(rawBuildTarget, project, snapshot, storage)
+            dependencies.addAll(moduleDeps)
+            result[label] = rawBuildTarget to dependencies
+          } catch (e: Exception) {
+            e.printStackTrace()
+          }
+        }
+      } catch (ex: Exception) {
+        ex.printStackTrace()
+      }
+      return result
+    }
+
+    /**
      * Builds module dependencies from a RawBuildTarget, checking if dependencies exist
      * as regular modules or library modules.
      */
