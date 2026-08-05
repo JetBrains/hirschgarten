@@ -4,7 +4,7 @@ import com.intellij.build.events.MessageEvent
 import com.intellij.openapi.components.serviceAsync
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.languages.projectview.ProjectViewService
-import org.jetbrains.bazel.languages.projectview.imports.Import
+import org.jetbrains.bazel.languages.projectview.unresolvedRequiredImports
 import org.jetbrains.bazel.progress.syncConsole
 import org.jetbrains.bazel.sync.ProjectPreSyncHook
 import org.jetbrains.bazel.sync.withSubtask
@@ -15,11 +15,7 @@ internal class ReparseProjectViewFilePreSyncHook : ProjectPreSyncHook {
     environment.withSubtask(BazelPluginBundle.message("project.view.validate.subtask")) { taskId ->
       val projectViewService = project.serviceAsync<ProjectViewService>()
       projectViewService.forceReparseCurrentProjectViewFiles()
-      val unresolvedRequiredImports = projectViewService
-        .projectView
-        .imports
-        .filterIsInstance<Import.Unresolved>()
-        .filter { it.isRequired }
+      val unresolvedRequiredImports = projectViewService.projectView.unresolvedRequiredImports()
       unresolvedRequiredImports.forEach {
         project.syncConsole.addDiagnosticMessage(
           taskId = taskId,
