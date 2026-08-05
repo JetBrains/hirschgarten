@@ -55,6 +55,7 @@ fun preCacheBazelisk(context: IDETestContext) {
 }
 
 open class BaseBazelCasesParametrized(val context: BazelTestContext) : TestCaseTemplate(context.getIdeInfo()) {
+  // Keep fixture declarations next to the tests that use them; only intentionally shared fixtures live here.
   fun withProject(project: IdeStarterBazelProject): TestCase<GitProjectInfo> =
     withBazelProject(
       GitProjectInfo(
