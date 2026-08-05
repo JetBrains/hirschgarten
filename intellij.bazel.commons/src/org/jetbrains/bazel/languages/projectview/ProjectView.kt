@@ -46,3 +46,14 @@ class ProjectView @Internal constructor(
     val EMPTY: ProjectView = ProjectView(mapOf(), listOf())
   }
 }
+
+/**
+ * The required `import` statements (i.e. plain `import`, not `try_import`) whose target file could
+ * not be found. A non-empty result means the project view is incomplete and the sync should be
+ * stopped: otherwise it proceeds over an effectively-empty project view and fails slowly with
+ * misleading errors. See `ReparseProjectViewFilePreSyncHook` (which reports each one) and
+ * `ProjectSyncTask` (which aborts the sync).
+ */
+@Internal
+fun ProjectView.unresolvedRequiredImports(): List<Import.Unresolved> =
+  imports.filterIsInstance<Import.Unresolved>().filter { it.isRequired }
