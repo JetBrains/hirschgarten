@@ -17,7 +17,6 @@ import com.intellij.platform.workspace.jps.entities.LibraryRoot
 import com.intellij.platform.workspace.jps.entities.LibraryRootTypeId
 import com.intellij.platform.workspace.jps.entities.LibraryTableId
 import com.intellij.platform.workspace.jps.entities.ModuleDependency
-import com.intellij.platform.workspace.jps.entities.ModuleDependencyItem
 import com.intellij.platform.workspace.jps.entities.ModuleEntity
 import com.intellij.platform.workspace.jps.entities.ModuleId
 import com.intellij.platform.workspace.jps.entities.ModuleSourceDependency
@@ -59,6 +58,7 @@ import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetMerger
 import org.jetbrains.bazel.sync.workspace.snapshot.allTargets
 import org.jetbrains.bazel.sync.workspace.snapshot.commonSyncConfig
 import org.jetbrains.bazel.sync.workspace.snapshot.filterBuildTarget
+import org.jetbrains.bazel.sync.workspace.snapshot.findBuildData
 import org.jetbrains.bazel.sync.workspace.snapshot.hasBuildData
 import org.jetbrains.bazel.utils.isUnder
 import org.jetbrains.bazel.workspacemodel.entities.BazelModuleExtensionEntity
@@ -95,8 +95,6 @@ internal class BazelPythonWorkspaceImporter : BazelWorkspaceImporter, BazelWorks
   private var defaultInterpreter: Path? = null
   private var defaultVersion: String? = null
   private var pySourceDeps: Map<WorkspaceTargetKey, List<Path>> = mapOf()
-  private var pySdks: Map<WorkspaceTargetKey, Sdk?> = mapOf()
-  private var pyDefaultSdk: Sdk? = null
 
   override suspend fun import(
     context: WorkspaceImporterContext,
@@ -163,9 +161,6 @@ internal class BazelPythonWorkspaceImporter : BazelWorkspaceImporter, BazelWorks
           .toList()
       }
 
-    pySdks = calculateAndAddSdksWithProgress(context, snapshot)
-    pyDefaultSdk = getSystemSdk(context.taskId, context.project, context.taskConsole)
-
     return WorkspaceImporterResult.Success
   }
 
@@ -183,11 +178,10 @@ internal class BazelPythonWorkspaceImporter : BazelWorkspaceImporter, BazelWorks
         context = context,
         builder = builder,
         repoMapping = snapshot.repoMapping,
-        target = target.rawBuildTarget,
+        target = target,
         moduleName = targetKey.toPythonModuleName(snapshot.repoMapping),
         entitySource = entitySource,
         virtualFileUrlManager = vfuManager,
-        sdk = pySdks[targetKey] ?: pyDefaultSdk,
         sourceDependencyLibrary = sourceDependencyLibrary,
       )
     }
@@ -195,10 +189,18 @@ internal class BazelPythonWorkspaceImporter : BazelWorkspaceImporter, BazelWorks
   }
 
   private suspend fun onPostProcessing(context: WorkspaceImporterContext, snapshot: WorkspaceSnapshot): WorkspaceImporterResult {
+    /**
+     * Because of PY-86494, PythonSdkUpdater fails to add SDK paths unless there's at least one module in the project.
+     * Hence, we're forced to do it in post-processing, after WSM has been applied already.
+     */
+    calculateAndAddSdksWithProgress(context, snapshot)
+    getSystemSdk(context.taskId, context.project, context.taskConsole)
+
     val pyTargets = allPythonTargets.values
       .filter { it.hasBuildData<PythonBuildTarget>() }
       .map { it.rawBuildTarget }
       .toList()
+
     context.project.connection.runWithServer { server ->
       context.project.serviceAsync<PythonResolveIndexService>()
         .updatePythonResolveIndex(pyTargets, server.outFileHardLinks)
@@ -285,14 +287,13 @@ internal class BazelPythonWorkspaceImporter : BazelWorkspaceImporter, BazelWorks
     context: WorkspaceImporterContext,
     builder: MutableEntityStorage,
     repoMapping: RepoMapping,
-    target: RawBuildTarget,
+    target: WorkspaceTarget,
     moduleName: String,
     entitySource: EntitySource,
     virtualFileUrlManager: VirtualFileUrlManager,
-    sdk: Sdk?,
     sourceDependencyLibrary: LibraryEntityBuilder? = null,
   ): ModuleEntity {
-    val contentRoots = getContentRootEntities(context, target, entitySource, virtualFileUrlManager)
+    val contentRoots = getContentRootEntities(context, target.rawBuildTarget, entitySource, virtualFileUrlManager)
 
     val libraryDependency =
       sourceDependencyLibrary?.let {
@@ -301,7 +302,7 @@ internal class BazelPythonWorkspaceImporter : BazelWorkspaceImporter, BazelWorks
       }
 
     val dependencies =
-      target.dependencies.map {
+      target.rawBuildTarget.dependencies.map {
         ModuleDependency(
           module = ModuleId(it.targetKey.toPythonModuleName(repoMapping)),
           exported = true,
@@ -310,7 +311,14 @@ internal class BazelPythonWorkspaceImporter : BazelWorkspaceImporter, BazelWorks
         )
       }
 
-    val allDependencies = dependencies + listOfNotNull(ModuleSourceDependency, sdk?.toModuleDependencyItem(), libraryDependency)
+    val pythonTarget = target.findBuildData<PythonBuildTarget>()
+    val interpreter = pythonTarget?.interpreter
+                      ?: defaultInterpreter
+    val sdkName = interpreter?.let { chooseSdkName(interpreter, context.project.name) }
+                  ?: chooseSystemSdkName(context.project.name)
+    val sdkDependency = SdkDependency(SdkId(sdkName, PyNames.PYTHON_SDK_ID_NAME))
+
+    val allDependencies = dependencies + listOfNotNull(ModuleSourceDependency, sdkDependency, libraryDependency)
 
     return builder.addEntity(
       ModuleEntity(
@@ -321,7 +329,7 @@ internal class BazelPythonWorkspaceImporter : BazelWorkspaceImporter, BazelWorks
         this.type = PYTHON_MODULE_TYPE
         this.contentRoots = contentRoots
         this.bazelModuleExtension = BazelModuleExtensionEntity(
-          _targetKey = WorkspaceModelTargetKey.of(target.key),
+          _targetKey = WorkspaceModelTargetKey.of(target.targetKey),
           rootTypeId = WorkspaceModelTargetSourceRootTypeId(SourceRootTypeId(PYTHON_SOURCE_ROOT_TYPE)),
           strictDependencies = WorkspaceModelTargetLabelList(
             StrictDependencyCheckedType.OFF,
@@ -332,8 +340,6 @@ internal class BazelPythonWorkspaceImporter : BazelWorkspaceImporter, BazelWorks
       },
     )
   }
-
-  private fun Sdk.toModuleDependencyItem(): ModuleDependencyItem = SdkDependency(SdkId(name, PyNames.PYTHON_SDK_ID_NAME))
 
   private fun getContentRootEntities(
     context: WorkspaceImporterContext,
@@ -414,7 +420,7 @@ internal class BazelPythonWorkspaceImporter : BazelWorkspaceImporter, BazelWorks
                          return null
                        }
     logger.info("Detecting system SDK, found python $systemPython")
-    return when (val result = createSdkFromPython(systemPython.pythonBinary, project, sdkName = null)) {
+    return when (val result = createSdkFromPython(systemPython.pythonBinary, project, sdkName = chooseSystemSdkName(project.name))) {
       is com.jetbrains.python.Result.Failure -> {
         taskConsole.addMessage(
           taskId,
@@ -435,3 +441,6 @@ internal class BazelPythonWorkspaceImporter : BazelWorkspaceImporter, BazelWorks
 @VisibleForTesting
 fun chooseSdkName(interpreter: PythonBinary, projectName: String): String =
   "$projectName-python-${StringUtils.md5Hash(interpreter.pathString, 5)}"
+
+private fun chooseSystemSdkName(projectName: String): String =
+  "$projectName-python"
