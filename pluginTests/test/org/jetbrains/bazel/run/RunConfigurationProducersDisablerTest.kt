@@ -24,7 +24,8 @@ import org.jetbrains.bazel.python.lang.PythonLanguageClass
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
 import org.jetbrains.bazel.target.targetStorage
 import org.jetbrains.bazel.test.framework.BazelBasePlatformTestCase
-import org.jetbrains.bsp.protocol.RawBuildTarget
+import org.jetbrains.bazel.test.framework.target.TestBuildTarget
+import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.SourceFileCollection
 import org.junit.Rule
 import org.junit.Test
@@ -170,7 +171,7 @@ internal class RunConfigurationProducersDisablerTest : BazelBasePlatformTestCase
     addPyBinaryTargets(pyBinaryTarget(label, mainFile))
   }
 
-  private fun Project.addPyBinaryTargets(vararg targets: RawBuildTarget) {
+  private fun Project.addPyBinaryTargets(vararg targets: BuildTarget) {
     targetStorage.setTargets(targets.toList())
   }
 
@@ -178,7 +179,7 @@ internal class RunConfigurationProducersDisablerTest : BazelBasePlatformTestCase
     targetStorage.setTargets(listOf(pyTestTarget(label)))
   }
 
-  private fun pyBinaryTarget(label: Label, mainFile: PsiFile): RawBuildTarget =
+  private fun pyBinaryTarget(label: Label, mainFile: PsiFile): TestBuildTarget =
     pythonTarget(
       label = label,
       ruleKind = "py_binary",
@@ -186,7 +187,7 @@ internal class RunConfigurationProducersDisablerTest : BazelBasePlatformTestCase
       mainFile = mainFile,
     )
 
-  private fun pyTestTarget(label: Label): RawBuildTarget =
+  private fun pyTestTarget(label: Label): TestBuildTarget =
     pythonTarget(
       label = label,
       ruleKind = "py_test",
@@ -199,8 +200,8 @@ internal class RunConfigurationProducersDisablerTest : BazelBasePlatformTestCase
     ruleKind: String,
     ruleType: RuleType,
     mainFile: PsiFile?,
-  ): RawBuildTarget =
-    RawBuildTarget(
+  ): TestBuildTarget =
+    TestBuildTarget(
       key = WorkspaceTargetKey(label = label),
       dependencies = emptyList(),
       kind =

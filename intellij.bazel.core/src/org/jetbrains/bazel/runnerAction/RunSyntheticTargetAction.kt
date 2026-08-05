@@ -15,19 +15,20 @@ import org.jetbrains.bazel.run.config.BazelRunConfigurationType
 import org.jetbrains.bazel.run.synthetic.GENERATE_SYNTHETIC_PROVIDER_ID
 import org.jetbrains.bazel.run.synthetic.GenerateSyntheticTargetRunTaskProvider
 import org.jetbrains.bazel.run.synthetic.SyntheticRunTargetTemplateGenerator
-import org.jetbrains.bsp.protocol.ExecutableTarget
+import org.jetbrains.bsp.protocol.BuildTarget
+import org.jetbrains.bsp.protocol.id
 
 // TODO: refactor to Execution API
 private fun getSyntheticConfigurationName(
   project: Project,
-  target: ExecutableTarget,
+  target: BuildTarget,
   templateGenerator: SyntheticRunTargetTemplateGenerator,
   targetElement: PsiElement,
 ): String = templateGenerator.getRunnerActionName(target.id.toShortString(project), target, targetElement)
 
 internal class RunSyntheticTargetAction(
   private val project: Project,
-  private val target: ExecutableTarget,
+  private val target: BuildTarget,
   executor: Executor = DefaultRunExecutor.getRunExecutorInstance(),
   private val templateGenerator: SyntheticRunTargetTemplateGenerator,
   private val targetElement: PsiElement,
@@ -48,7 +49,7 @@ internal class RunSyntheticTargetAction(
   companion object {
     fun createRunConfiguration(
       project: Project,
-      target: ExecutableTarget,
+      target: BuildTarget,
       templateGenerator: SyntheticRunTargetTemplateGenerator,
       targetElement: PsiElement,
       configurationName: String = getSyntheticConfigurationName(project, target, templateGenerator, targetElement),

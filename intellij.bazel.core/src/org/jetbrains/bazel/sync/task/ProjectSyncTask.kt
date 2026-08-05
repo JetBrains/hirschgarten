@@ -57,6 +57,7 @@ import org.jetbrains.bazel.taskEvents.BazelTaskEventsService
 import org.jetbrains.bazel.workspace.fileEvents.FileEventJobManager
 import org.jetbrains.bsp.protocol.TaskGroupId
 import org.jetbrains.bsp.protocol.TaskId
+import org.jetbrains.bsp.protocol.id
 import java.util.concurrent.CancellationException
 import kotlin.random.Random
 

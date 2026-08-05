@@ -25,9 +25,10 @@ import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.languages.starlark.repomapping.toCanonicalLabelOrThis
 import org.jetbrains.bazel.languages.starlark.repomapping.toShortString
+import org.jetbrains.bazel.sync.workspace.persistence.BuildTargetLoadHint
 import org.jetbrains.bazel.sync.workspace.persistence.InMemoryWorkspaceTargetMap
-import org.jetbrains.bazel.sync.workspace.persistence.TargetLoadHint
 import org.jetbrains.bazel.sync.workspace.persistence.TargetLoadOptions
+import org.jetbrains.bazel.sync.workspace.persistence.TargetSection
 import org.jetbrains.bazel.sync.workspace.persistence.WorkspaceSnapshotService
 import org.jetbrains.bazel.sync.workspace.snapshot.CommonWorkspaceSyncConfig
 import org.jetbrains.bazel.sync.workspace.snapshot.ExecutableTargetsIndexBuilder
@@ -35,28 +36,15 @@ import org.jetbrains.bazel.sync.workspace.snapshot.File2TargetMapBuilder
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceAspectIds
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceSnapshot
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceSnapshotMetadata
-import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTarget
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetGraphBuilder
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.BuildTargetData
-import org.jetbrains.bsp.protocol.RawBuildTarget
-import org.jetbrains.bsp.protocol.SourceFileCollection
+import org.jetbrains.bsp.protocol.data
+import org.jetbrains.bsp.protocol.id
 import java.nio.file.Path
-import kotlin.reflect.KClass
-
-private val SUMMARY_OPTIONS = TargetLoadOptions(TargetLoadHint.SKIP_FILE_SETS, TargetLoadHint.SKIP_DEPS, TargetLoadHint.SKIP_TARGET_DATA)
 
 private data object EmptyBuildTargetData : BuildTargetData
-
-private fun WorkspaceTarget.toSummary(): TargetSummary =
-  TargetSummary(
-    key = targetKey,
-    kind = rawBuildTarget.kind,
-    baseDirectory = rawBuildTarget.baseDirectory,
-    isManual = rawBuildTarget.isManual,
-    isWorkspace = rawBuildTarget.isWorkspace,
-  )
 
 private class CachedSnapshotView(val snapshot: WorkspaceSnapshot, private val project: Project) {
   val importKeys: Set<WorkspaceTargetKey>
@@ -88,13 +76,12 @@ private class CachedSnapshotView(val snapshot: WorkspaceSnapshot, private val pr
     }
   }
 
-  private class TargetSummaryAggregate(val summaries: List<TargetSummary>, val byKey: Map<WorkspaceTargetKey, TargetSummary>)
+  private class TargetSummaryAggregate(val summaries: List<BuildTarget>, val byKey: Map<WorkspaceTargetKey, BuildTarget>)
 
   private val aggregate: TargetSummaryAggregate by lazy {
     // using cursor here is way faster than random per-key lookups
-    val importedSummaryTargets = snapshot.targets.allTargets(SUMMARY_OPTIONS)
-      .filter { it.targetKey in importKeys }
-      .map { it.toSummary() }
+    val importedSummaryTargets = snapshot.targets.allTargets(TargetLoadOptions.SUMMARY)
+      .filter { it.key in importKeys }
       .toList()
     TargetSummaryAggregate(
       summaries = importedSummaryTargets,
@@ -102,10 +89,10 @@ private class CachedSnapshotView(val snapshot: WorkspaceSnapshot, private val pr
     )
   }
 
-  val summaries: List<TargetSummary>
+  val summaries: List<BuildTarget>
     get() = aggregate.summaries
 
-  val label2Summary: Map<Label, TargetSummary> by lazy {
+  val label2Summary: Map<Label, BuildTarget> by lazy {
     label2Key.mapNotNull { (label, key) -> aggregate.byKey[key]?.let { label to it } }.toMap()
   }
 
@@ -134,23 +121,22 @@ private class CachedSnapshotView(val snapshot: WorkspaceSnapshot, private val pr
   // small data cache to accelerate repeated bulk reads of the same target data
   private val dataCache = Caffeine.newBuilder()
     .maximumSize(64)
-    .build<Pair<Label, KClass<*>>, BuildTargetData>()
+    .build<Pair<Label, Class<*>>, BuildTargetData>()
 
-  fun <T : BuildTargetData> data(label: Label, type: KClass<T>): T? {
+  fun <T : BuildTargetData> data(label: Label, type: Class<T>): T? {
     val cached = dataCache.get(label to type) {
       val key = label2Key[label] ?: return@get EmptyBuildTargetData
       val options = TargetLoadOptions(
-        hints = setOf(TargetLoadHint.SKIP_FILE_SETS, TargetLoadHint.SKIP_DEPS, TargetLoadHint.SKIP_TARGET_DATA),
-        dataTypes = setOf(type),
+        sections = setOf(TargetSection.INFO),
+        targetData = BuildTargetLoadHint.Subset(setOf(type)),
       )
-      snapshot.targets.findTargetByKey(key, options)?.rawBuildTarget?.data
-        ?.firstOrNull { type.isInstance(it) } ?: EmptyBuildTargetData
+      snapshot.targets.findTargetByKey(key, options)?.data(type) ?: EmptyBuildTargetData
     }
     return if (cached === EmptyBuildTargetData) {
       null
     }
     else {
-      type.java.cast(cached)
+      type.cast(cached)
     }
   }
 }
@@ -220,34 +206,16 @@ class TargetStorage(private val project: Project, private val coroutineScope: Co
 
   @TestOnly
   fun setTargets(targets: List<BuildTarget>) {
-    val workspaceTargets = targets.map { target ->
-      val key = WorkspaceTargetKey(label = target.id)
-      WorkspaceTarget(
-        targetKey = key,
-        rawBuildTarget = RawBuildTarget(
-          key = key,
-          dependencies = emptyList(),
-          kind = target.kind,
-          sources = SourceFileCollection.EMPTY,
-          generatedSources = SourceFileCollection.EMPTY,
-          resources = SourceFileCollection.EMPTY,
-          baseDirectory = target.baseDirectory,
-          data = target.data,
-          isManual = target.isManual,
-          isWorkspace = target.isWorkspace,
-        ),
-      )
-    }
     val graph = WorkspaceTargetGraphBuilder.build(
-      rootTargets = workspaceTargets.map { it.targetKey }.toSet(),
-      targets = workspaceTargets,
+      rootTargets = targets.map { it.key }.toSet(),
+      targets = targets,
     )
     val snapshot = WorkspaceSnapshot(
-      targets = InMemoryWorkspaceTargetMap(workspaceTargets.associateBy { it.targetKey }),
+      targets = InMemoryWorkspaceTargetMap(targets.associateBy { it.key }),
       configurations = mapOf(),
       targetGraph = graph,
-      fileToTarget = File2TargetMapBuilder.build(targets = workspaceTargets),
-      executableTargets = ExecutableTargetsIndexBuilder.build(targetGraph = graph, importDepth = 0, targets = workspaceTargets),
+      fileToTarget = File2TargetMapBuilder.build(targets = targets),
+      executableTargets = ExecutableTargetsIndexBuilder.build(targetGraph = graph, importDepth = 0, targets = targets),
       syncConfigs = listOf(
         CommonWorkspaceSyncConfig(
           projectRootDir = Path.of(project.basePath!!),
@@ -263,9 +231,9 @@ class TargetStorage(private val project: Project, private val coroutineScope: Co
 
   fun allTargets(): Sequence<Label> = allTargetSummaries().asSequence().map { it.id }
 
-  fun allTargetSummaries(): List<TargetSummary> = view().summaries
+  fun allTargetSummaries(): List<BuildTarget> = view().summaries
 
-  fun getTargetSummary(label: Label): TargetSummary? =
+  fun getTargetSummary(label: Label): BuildTarget? =
     label.toCanonicalLabelOrThis(project)?.let { view().label2Summary[it] }
 
   fun getTotalTargetCount(): Int = view().summaries.size
@@ -276,7 +244,6 @@ class TargetStorage(private val project: Project, private val coroutineScope: Co
 
   fun getExecutableTargetsForFile(file: VirtualFile): List<Label> {
     val path = file.toNioPathOrNull() ?: return emptyList()
-    // one view for the whole answer, otherwise the file lookup and the summaries can come from different snapshots
     val view = view()
     val targetsForFile = view.targetsForPath(path)
     val executableDirectTargets = targetsForFile.filter { label -> view.label2Summary[label]?.kind?.isExecutable == true }
@@ -290,14 +257,14 @@ class TargetStorage(private val project: Project, private val coroutineScope: Co
 
   fun isLibrary(target: Label): Boolean = getTargetSummary(target)?.kind?.ruleType == RuleType.LIBRARY
 
-  fun <T : BuildTargetData> getTargetDataForLabel(label: Label, type: KClass<T>): T? =
+  fun <T : BuildTargetData> getTargetDataForLabel(label: Label, type: Class<T>): T? =
     label.toCanonicalLabelOrThis(project)?.let { view().data(it, type) }
 
   fun getTotalFileCount(): Int = view().snapshot.fileToTarget.size
 }
 
 @ApiStatus.Internal
-inline fun <reified T : BuildTargetData> TargetStorage.getTargetDataForLabel(label: Label): T? = getTargetDataForLabel(label, T::class)
+inline fun <reified T : BuildTargetData> TargetStorage.getTargetDataForLabel(label: Label): T? = getTargetDataForLabel(label, T::class.java)
 
 val Project.targetStorage: TargetStorage
   @ApiStatus.Internal

@@ -3,6 +3,8 @@ package org.jetbrains.bazel.sync.workspace.snapshot
 import com.intellij.openapi.diagnostic.logger
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.commons.TargetKind
+import org.jetbrains.bsp.protocol.BuildTarget
+import org.jetbrains.bazel.label.DependencyLabel
 import org.jetbrains.bsp.protocol.BuildTargetData
 import org.jetbrains.bsp.protocol.SourceFileCollection
 import java.nio.file.Path
@@ -21,59 +23,51 @@ class WorkspaceTargetMerger(val mergeFunctions: MergeFunctionMap) {
     private val log = logger<WorkspaceTargetMerger>()
   }
 
-  fun mergeByTargetKey(targets: Collection<WorkspaceTarget>): List<WorkspaceTarget> =
-    targets.groupBy { it.targetKey.copy(aspectIds = WorkspaceAspectIds.EMPTY) }
+  fun mergeByTargetKey(targets: Collection<BuildTarget>): List<BuildTarget> =
+    targets.groupBy { it.key.copy(aspectIds = WorkspaceAspectIds.EMPTY) }
       .map { (key, group) ->
         if (group.size == 1) {
-          WorkspaceTarget(targetKey = key, rawBuildTarget = group.single().rawBuildTarget.copy(key = key))
+          val target = group.single()
+          object : BuildTarget by target {
+            override val key: WorkspaceTargetKey = key
+          }
         }
         else {
           // keep it deterministic
-          group.sortedBy { it.targetKey.toString() }
+          group.sortedBy { it.key.toString() }
             .reduce { l, r -> merge(key, l, r) }
         }
       }
 
-  private fun merge(key: WorkspaceTargetKey, left: WorkspaceTarget, right: WorkspaceTarget): WorkspaceTarget {
+  private fun merge(key: WorkspaceTargetKey, left: BuildTarget, right: BuildTarget): BuildTarget {
     if (!left.isCompatibleWith(right)) {
-      log.warn("Trying to merge incompatible ${WorkspaceTarget::class}, ${key}, workspace model could be incorrect.")
+      log.warn("Trying to merge incompatible ${BuildTarget::class}, ${key}, workspace model could be incorrect.")
     }
 
-    val rawLeft = left.rawBuildTarget
-    val rawRight = right.rawBuildTarget
-    return WorkspaceTarget(
-      targetKey = key,
-      rawBuildTarget = rawLeft.copy(
-        key = key,
+    return object : BuildTarget by left {
+      override val key: WorkspaceTargetKey = key
 
-        // merge language classes
-        kind = rawLeft.kind.copy(languageClasses = rawLeft.kind.languageClasses + rawRight.kind.languageClasses),
+      override val kind: TargetKind = left.kind.copy(languageClasses = left.kind.languageClasses + right.kind.languageClasses)
 
-        // dependencies might be composed of multiple providers, so merge manually
-        dependencies = (rawLeft.dependencies + rawRight.dependencies)
-          .distinctBy { it.copy(targetKey = it.targetKey.copy(aspectIds = WorkspaceAspectIds.EMPTY)) },
+      override val dependencies: List<DependencyLabel> = (left.dependencies + right.dependencies)
+        .distinctBy { it.copy(targetKey = it.targetKey.copy(aspectIds = WorkspaceAspectIds.EMPTY)) }
 
-        sources = mergeFileCollections(rawLeft.sources, rawRight.sources),
-        generatedSources = mergeFileCollections(rawLeft.generatedSources, rawRight.generatedSources),
-        resources = mergeFileCollections(rawLeft.resources, rawRight.resources),
+      override val sources: SourceFileCollection = mergeFileCollections(left.sources, right.sources)
+      override val generatedSources: SourceFileCollection = mergeFileCollections(left.generatedSources, right.generatedSources)
+      override val resources: SourceFileCollection = mergeFileCollections(left.resources, right.resources)
 
-        // the most important part of merging
-        data = mergeBuildData(rawLeft.data.asSequence() + rawRight.data.asSequence()),
-      ),
-    )
+      override val data: List<BuildTargetData> = mergeBuildData(left.data.asSequence() + right.data.asSequence())
+    }
   }
 
-  private fun WorkspaceTarget.isCompatibleWith(other: WorkspaceTarget): Boolean {
-    val left = this.rawBuildTarget
-    val right = other.rawBuildTarget
-    return left.kind.kind == right.kind.kind
-           && left.kind.ruleType == right.kind.ruleType
-           && left.baseDirectory == right.baseDirectory
-           && left.generatorName == right.generatorName
-           && left.isManual == right.isManual
-           && left.isWorkspace == right.isWorkspace
-           && left.isTestOnly == right.isTestOnly
-  }
+  private fun BuildTarget.isCompatibleWith(other: BuildTarget): Boolean =
+    kind.kind == other.kind.kind
+    && kind.ruleType == other.kind.ruleType
+    && baseDirectory == other.baseDirectory
+    && generatorName == other.generatorName
+    && isManual == other.isManual
+    && isWorkspace == other.isWorkspace
+    && isTestOnly == other.isTestOnly
 
   private fun mergeBuildData(input: Sequence<BuildTargetData>): List<BuildTargetData> {
     // we have to merge them, `BuildTargetData` doesn't correspond to specific provider

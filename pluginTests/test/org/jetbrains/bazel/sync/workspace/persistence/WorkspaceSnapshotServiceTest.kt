@@ -32,10 +32,10 @@ import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceConfigurationId
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceConfigurationSummary
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceSnapshot
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceSnapshotMetadata
-import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTarget
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetGraphBuilder
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
-import org.jetbrains.bsp.protocol.RawBuildTarget
+import org.jetbrains.bazel.test.framework.target.TestBuildTarget
+import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.SourceFileCollection
 import org.junit.jupiter.api.Test
 import java.nio.file.Path
@@ -81,8 +81,8 @@ class WorkspaceSnapshotServiceTest {
   private fun sources(vararg paths: Path): SourceFileCollection =
     SourceFileCollectionBuilder.build(relativeRoot = Path.of("/workspace"), paths = paths.toList())
 
-  private fun rawTarget(key: WorkspaceTargetKey, index: Int): RawBuildTarget =
-    RawBuildTarget(
+  private fun rawTarget(key: WorkspaceTargetKey, index: Int): TestBuildTarget =
+    TestBuildTarget(
       key = key,
       dependencies = listOf(DependencyLabel(targetKey = key("@//deps:dep$index"))),
       kind = TargetKind(
@@ -107,11 +107,11 @@ class WorkspaceSnapshotServiceTest {
   private fun buildSnapshot(): WorkspaceSnapshot {
     val targets = (0 until 3).map { n ->
       val targetKey = key("@//pkg$n:target")
-      WorkspaceTarget(targetKey = targetKey, rawBuildTarget = rawTarget(targetKey, n))
+      rawTarget(targetKey, n)
     }
     val configurationId = WorkspaceConfigurationId.of("cafe4242")
     return WorkspaceSnapshot(
-      targets = InMemoryWorkspaceTargetMap(targets.associateBy { it.targetKey }),
+      targets = InMemoryWorkspaceTargetMap(targets.associateBy { it.key }),
       configurations = mapOf(
         configurationId to WorkspaceConfiguration(
           id = configurationId,
@@ -126,7 +126,7 @@ class WorkspaceSnapshotServiceTest {
         ),
       ),
       targetGraph = WorkspaceTargetGraphBuilder.build(
-        rootTargets = setOf(targets.first().targetKey),
+        rootTargets = setOf(targets.first().key),
         targets = targets,
       ),
       fileToTarget = FileToTargetMap.EMPTY,
@@ -148,11 +148,10 @@ class WorkspaceSnapshotServiceTest {
     actual.repoMapping shouldBe expected.repoMapping
 
     val expectedTargets = expected.targets.allTargets().toList()
-    actual.targetGraph.allTargets.map { it.targetKey }.toSet() shouldBe expectedTargets.map { it.targetKey }.toSet()
-    for ((targetKey, expectedRaw) in expectedTargets) {
-      val target = actual.targets.findTargetByKey(targetKey)
-      target.shouldNotBeNull()
-      val actualRaw = target.rawBuildTarget
+    actual.targetGraph.allTargets.map { it.targetKey }.toSet() shouldBe expectedTargets.map { it.key }.toSet()
+    for (expectedRaw in expectedTargets) {
+      val actualRaw = actual.targets.findTargetByKey(expectedRaw.key)
+      actualRaw.shouldNotBeNull()
       actualRaw.kind shouldBe expectedRaw.kind
       actualRaw.baseDirectory shouldBe expectedRaw.baseDirectory
       actualRaw.dependencies shouldBe expectedRaw.dependencies
@@ -162,7 +161,7 @@ class WorkspaceSnapshotServiceTest {
 
     actual.fileToTarget.getTargetsByFile(Path.of("/workspace/pkg1/Main.java")) shouldBe listOf(key("@//pkg1:target"))
     actual.fileToTarget.getTargetsByFile(Path.of("/workspace/shared/Shared.java")).toSet() shouldBe
-      expectedTargets.map { it.targetKey }.toSet()
+      expectedTargets.map { it.key }.toSet()
   }
 
   @Test
@@ -225,10 +224,10 @@ class WorkspaceSnapshotServiceTest {
     }
 
     val changedKey = key("@//pkg1:target")
-    val changed = WorkspaceTarget(targetKey = changedKey, rawBuildTarget = rawTarget(changedKey, 1).copy(isTestOnly = true))
+    val changed = rawTarget(changedKey, 1).copy(isTestOnly = true)
     val removedKey = key("@//pkg2:target")
     val addedKey = key("@//pkg3:target")
-    val added = WorkspaceTarget(targetKey = addedKey, rawBuildTarget = rawTarget(addedKey, 3))
+    val added = rawTarget(addedKey, 3)
     val pkg0 = expected.targets.findTargetByKey(key("@//pkg0:target"))
     pkg0.shouldNotBeNull()
 
@@ -238,7 +237,7 @@ class WorkspaceSnapshotServiceTest {
       service.update { snapshot ->
         snapshot.copy(
           targets = InMemoryWorkspaceTargetMap(
-            mapOf(pkg0.targetKey to pkg0, changedKey to changed, addedKey to added),
+            mapOf(pkg0.key to pkg0, changedKey to changed, addedKey to added),
           ),
         )
       }
@@ -249,17 +248,17 @@ class WorkspaceSnapshotServiceTest {
 
       val changedTarget = restored.targets.findTargetByKey(changedKey)
       changedTarget.shouldNotBeNull()
-      changedTarget.rawBuildTarget.isTestOnly shouldBe true
+      changedTarget.isTestOnly shouldBe true
 
       restored.targets.findTargetByKey(removedKey) shouldBe null
 
       val addedTarget = restored.targets.findTargetByKey(addedKey)
       addedTarget.shouldNotBeNull()
-      addedTarget.rawBuildTarget.baseDirectory shouldBe Path.of("/workspace/pkg3")
+      addedTarget.baseDirectory shouldBe Path.of("/workspace/pkg3")
 
       val target = restored.targets.findTargetByKey(key("@//pkg0:target"))
       target.shouldNotBeNull()
-      target.rawBuildTarget.sources shouldBe sources(Path.of("/workspace/pkg0/Main.java"), Path.of("/workspace/shared/Shared.java"))
+      target.sources shouldBe sources(Path.of("/workspace/pkg0/Main.java"), Path.of("/workspace/shared/Shared.java"))
 
       restored.fileToTarget.getTargetsByFile(Path.of("/workspace/pkg2/Main.java")) shouldBe emptyList()
       restored.fileToTarget.getTargetsByFile(Path.of("/workspace/pkg3/Main.java")) shouldBe listOf(addedKey)
@@ -275,22 +274,19 @@ class WorkspaceSnapshotServiceTest {
 
     // pkg1 carries a generated source G in addition to its normal sources
     val base = buildSnapshot()
-    val original = base.targets.findTargetByKey(changedKey)
-    original.shouldNotBeNull()
-    val withGeneratedSource = original.copy(rawBuildTarget = original.rawBuildTarget.copy(generatedSources = sources(generatedFile)))
+    base.targets.findTargetByKey(changedKey).shouldNotBeNull()
+    // build the variant from the same recipe buildSnapshot() used, rather than reading one back to copy it
+    val withGeneratedSource = rawTarget(changedKey, 1).copy(generatedSources = sources(generatedFile))
     val expected = base.copy(
-      targets = InMemoryWorkspaceTargetMap(base.targets.allTargets().associateBy { it.targetKey } + (changedKey to withGeneratedSource)),
+      targets = InMemoryWorkspaceTargetMap(base.targets.allTargets().associateBy { it.key } + (changedKey to withGeneratedSource)),
     )
 
     withProject(isNew = true, saveOnClose = true) { project ->
       project.getService(WorkspaceSnapshotService::class.java).update { expected }
     }
 
-    val changed = WorkspaceTarget(
-      targetKey = changedKey,
-      rawBuildTarget = withGeneratedSource.rawBuildTarget.copy(generatedSources = SourceFileCollection.EMPTY),
-    )
-    val reStoredTargets = expected.targets.allTargets().associateBy { it.targetKey } + (changedKey to changed)
+    val changed = withGeneratedSource.copy(generatedSources = SourceFileCollection.EMPTY)
+    val reStoredTargets = expected.targets.allTargets().associateBy { it.key } + (changedKey to changed)
     withProject(saveOnClose = true) { project ->
       val service = project.getService(WorkspaceSnapshotService::class.java)
       awaitLoadedSnapshot(project)
@@ -373,22 +369,19 @@ class WorkspaceSnapshotServiceTest {
     key: WorkspaceTargetKey,
     deps: List<WorkspaceTargetKey> = emptyList(),
     executable: Boolean = false,
-  ): WorkspaceTarget =
-    WorkspaceTarget(
-      targetKey = key,
-      rawBuildTarget = RawBuildTarget(
-        key = key,
-        dependencies = deps.map { DependencyLabel(targetKey = it) },
-        kind = TargetKind(
-          kind = if (executable) "java_binary" else "java_library",
-          languageClasses = setOf(JavaLanguageClass.JAVA),
-          ruleType = if (executable) RuleType.BINARY else RuleType.LIBRARY,
-        ),
-        sources = SourceFileCollection.EMPTY,
-        generatedSources = SourceFileCollection.EMPTY,
-        resources = SourceFileCollection.EMPTY,
-        baseDirectory = Path.of("/workspace"),
+  ): TestBuildTarget =
+    TestBuildTarget(
+      key = key,
+      dependencies = deps.map { DependencyLabel(targetKey = it) },
+      kind = TargetKind(
+        kind = if (executable) "java_binary" else "java_library",
+        languageClasses = setOf(JavaLanguageClass.JAVA),
+        ruleType = if (executable) RuleType.BINARY else RuleType.LIBRARY,
       ),
+      sources = SourceFileCollection.EMPTY,
+      generatedSources = SourceFileCollection.EMPTY,
+      resources = SourceFileCollection.EMPTY,
+      baseDirectory = Path.of("/workspace"),
     )
 
   private fun binDependsOnLibSnapshot(): WorkspaceSnapshot {
@@ -397,7 +390,7 @@ class WorkspaceSnapshotServiceTest {
     val lib = executableTarget(libKey)
     val bin = executableTarget(binKey, deps = listOf(libKey), executable = true)
     return WorkspaceSnapshot(
-      targets = InMemoryWorkspaceTargetMap(listOf(bin, lib).associateBy { it.targetKey }),
+      targets = InMemoryWorkspaceTargetMap(listOf(bin, lib).associateBy { it.key }),
       configurations = mapOf(),
       targetGraph = WorkspaceTargetGraphBuilder.build(rootTargets = setOf(binKey), targets = listOf(bin, lib)),
       fileToTarget = FileToTargetMap.EMPTY,
@@ -444,7 +437,7 @@ class WorkspaceSnapshotServiceTest {
       executableTarget(binAltKey, deps = listOf(libAltKey), executable = true),
     )
     val expected = WorkspaceSnapshot(
-      targets = InMemoryWorkspaceTargetMap(targets.associateBy { it.targetKey }),
+      targets = InMemoryWorkspaceTargetMap(targets.associateBy { it.key }),
       configurations = mapOf(),
       targetGraph = WorkspaceTargetGraphBuilder.build(rootTargets = setOf(binKey, binAltKey), targets = targets),
       fileToTarget = FileToTargetMap.EMPTY,
@@ -471,9 +464,9 @@ class WorkspaceSnapshotServiceTest {
     val generatorLabel = key("@//app:my_macro").label
     val lib = executableTarget(libKey)
     val bin = executableTarget(binKey, deps = listOf(libKey), executable = true)
-      .let { it.copy(rawBuildTarget = it.rawBuildTarget.copy(generatorName = "my_macro")) }
+      .copy(generatorName = "my_macro")
     val expected = WorkspaceSnapshot(
-      targets = InMemoryWorkspaceTargetMap(listOf(bin, lib).associateBy { it.targetKey }),
+      targets = InMemoryWorkspaceTargetMap(listOf(bin, lib).associateBy { it.key }),
       configurations = mapOf(),
       targetGraph = WorkspaceTargetGraphBuilder.build(rootTargets = setOf(binKey), targets = listOf(bin, lib)),
       fileToTarget = FileToTargetMap.EMPTY,

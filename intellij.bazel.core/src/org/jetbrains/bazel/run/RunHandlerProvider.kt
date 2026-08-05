@@ -8,6 +8,7 @@ import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.run.config.BazelRunConfiguration
 import org.jetbrains.bazel.target.targetStorage
+import org.jetbrains.bsp.protocol.id
 
 @ApiStatus.Internal
 interface RunHandlerProvider {

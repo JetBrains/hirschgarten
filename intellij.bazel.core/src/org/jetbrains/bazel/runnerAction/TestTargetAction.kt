@@ -6,12 +6,13 @@ import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElement
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.languages.starlark.repomapping.toShortString
-import org.jetbrains.bsp.protocol.ExecutableTarget
+import org.jetbrains.bsp.protocol.BuildTarget
+import org.jetbrains.bsp.protocol.id
 
 @ApiStatus.Internal
 class TestTargetAction(
   project: Project,
-  targets: List<ExecutableTarget>,
+  targets: List<BuildTarget>,
   executor: Executor = DefaultRunExecutor.getRunExecutorInstance(),
   configurationName: String,
   runnerActionDescriptor: BazelRunnerActionDescriptor? = null,
@@ -27,7 +28,7 @@ class TestTargetAction(
 ) {
   constructor(
     project: Project,
-    target: ExecutableTarget,
+    target: BuildTarget,
     executor: Executor = DefaultRunExecutor.getRunExecutorInstance(),
     runnerActionDescriptor: BazelRunnerActionDescriptor? = null,
     callerPsiElement: PsiElement? = null,

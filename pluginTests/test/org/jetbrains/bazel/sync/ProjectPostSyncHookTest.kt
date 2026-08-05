@@ -15,6 +15,7 @@ import org.jetbrains.bazel.commons.LanguageClass
 import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.config.BazelFeatureFlags
+import org.jetbrains.bazel.golang.sync.GoBuildTarget
 import org.jetbrains.bazel.impl.flow.sync.DisabledTestProjectPostSyncHook
 import org.jetbrains.bazel.impl.flow.sync.TestProjectPostSyncHook
 import org.jetbrains.bazel.label.Label
@@ -22,13 +23,13 @@ import org.jetbrains.bazel.languages.bazelversion.psi.BazelVersionLiteral
 import org.jetbrains.bazel.languages.bazelversion.service.BazelVersionResolver
 import org.jetbrains.bazel.project.BazelProjectFixtures.initializeBazelProject
 import org.jetbrains.bazel.server.BazelServerService
+import org.jetbrains.bazel.sync.workspace.snapshot.SourceFileCollectionBuilder
 import org.jetbrains.bazel.target.targetStorage
+import org.jetbrains.bazel.test.framework.target.TestBuildTarget
 import org.jetbrains.bazel.workspace.model.test.framework.BuildServerMock
-import org.jetbrains.bazel.workspace.model.test.framework.createRawBuildTarget
 import org.jetbrains.bazel.workspace.model.test.framework.MockBuildServerService
 import org.jetbrains.bazel.workspace.model.test.framework.MockProjectBaseTest
-import org.jetbrains.bazel.golang.sync.GoBuildTarget
-import org.jetbrains.bazel.sync.workspace.snapshot.SourceFileCollectionBuilder
+import org.jetbrains.bazel.workspace.model.test.framework.createTestBuildTarget
 import org.jetbrains.bsp.protocol.TaskGroupId
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
@@ -83,7 +84,7 @@ class ProjectPostSyncHookTest : MockProjectBaseTest() {
   private fun seedStaleGoTarget() {
     val source = projectDir.get().resolve("app/main.go")
     val target =
-      createRawBuildTarget(
+      createTestBuildTarget(
         id = Label.parse("//app:go_default_library"),
         kind = TargetKind(
           kind = "go_library",

@@ -13,7 +13,7 @@ import org.jetbrains.bazel.project.BazelProjectFixtures.initializeBazelProject
 import org.jetbrains.bazel.sync.JavaLanguageClass
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
 import org.jetbrains.bazel.target.targetStorage
-import org.jetbrains.bsp.protocol.RawBuildTarget
+import org.jetbrains.bazel.test.framework.target.TestBuildTarget
 import org.jetbrains.bsp.protocol.SourceFileCollection
 import org.junit.Before
 import org.junit.Test
@@ -31,7 +31,7 @@ class StarlarkVisibilityCompletionTest : BasePlatformTestCase() {
   private fun setTargets(targets: List<String>) {
     project.targetStorage.setTargets(
       targets.map {
-        RawBuildTarget(
+        TestBuildTarget(
           key = WorkspaceTargetKey(label = Label.parse(it)),
           dependencies = emptyList(),
           kind =

@@ -4,8 +4,6 @@ import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.annotations.Debug
 import java.nio.file.Path
 
-// TODO: move to backend module together with `RawBuildTarget`
-
 /**
  * Unordered file set container
  */

@@ -47,6 +47,7 @@ import org.jetbrains.bazel.coroutines.BazelCoroutineService
 import org.jetbrains.bazel.server.tasks.runBuildTargetTask
 import org.jetbrains.bazel.sync.environment.projectCtx
 import org.jetbrains.bazel.target.targetStorage
+import org.jetbrains.bsp.protocol.id
 import org.jetbrains.concurrency.AsyncPromise
 import org.jetbrains.concurrency.Promise
 import java.io.BufferedReader

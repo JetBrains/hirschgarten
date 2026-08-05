@@ -11,8 +11,8 @@ import org.jetbrains.bazel.workspacemodel.entities.BazelProjectEntitySource
 import org.jetbrains.bazel.workspacemodel.entities.CompiledSourceCodeInsideJarExcludeEntity
 import org.jetbrains.bazel.workspacemodel.entities.CompiledSourceCodeInsideJarExcludeId
 import org.jetbrains.bazel.workspacemodel.entities.LibraryCompiledSourceCodeInsideJarExcludeEntity
+import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.LibraryItem
-import org.jetbrains.bsp.protocol.RawBuildTarget
 import java.util.Locale
 import kotlin.io.path.invariantSeparatorsPathString
 
@@ -34,7 +34,7 @@ object CompiledSourceCodeInsideJarExcludeBuilder {
    * `CompiledSourceCodeInsideJarExcludeWorkspaceFileIndexContributor` re-runs.
    */
   fun write(
-    targets: Collection<RawBuildTarget>,
+    targets: Collection<BuildTarget>,
     libraries: List<LibraryItem>,
     packagePrefixes: JvmPackagePrefixCalculator,
     storage: MutableEntityStorage,
@@ -82,7 +82,7 @@ object CompiledSourceCodeInsideJarExcludeBuilder {
 
   @VisibleForTesting
   fun calculateRelativePathsInsideJarToExclude(
-    targets: Collection<RawBuildTarget>,
+    targets: Collection<BuildTarget>,
     packagePrefixes: JvmPackagePrefixCalculator,
   ): Set<String> {
     val result = HashSet<String>()

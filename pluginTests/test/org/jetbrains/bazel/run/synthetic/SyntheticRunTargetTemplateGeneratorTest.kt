@@ -8,7 +8,7 @@ import io.kotest.matchers.string.shouldContain
 import org.jetbrains.bazel.commons.constants.Constants
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.test.framework.target.TestBuildTargetFactory
-import org.jetbrains.bsp.protocol.RawBuildTarget
+import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.kotlin.idea.KotlinLanguage
 import org.jetbrains.kotlin.psi.KtNamedFunction
 
@@ -98,7 +98,7 @@ class SyntheticRunTargetTemplateGeneratorTest : BasePlatformTestCase() {
     params.data.shouldBe("com.test.MyObject")
   }
 
-  private fun getDefaultTemplateGenerator(target: RawBuildTarget, language: Language): SyntheticRunTargetTemplateGenerator {
+  private fun getDefaultTemplateGenerator(target: BuildTarget, language: Language): SyntheticRunTargetTemplateGenerator {
     val generator = SyntheticRunTargetUtils.getTemplateGenerators(target, language)
     generator.size.shouldBe(1)
     return generator.first()

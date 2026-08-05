@@ -13,14 +13,14 @@ import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.runnerAction.TestTargetAction
 import org.jetbrains.bazel.runnerAction.getCoverageExecutor
-import org.jetbrains.bazel.target.TargetSummary
 import org.jetbrains.bazel.target.targetStorage
+import org.jetbrains.bsp.protocol.BuildTarget
 import javax.swing.Icon
 
 internal open class RunAllTestsBaseAction(
   text: () -> String,
   icon: Icon,
-  private val createAction: (project: Project, targets: List<TargetSummary>, directoryName: String) -> SuspendableAction?,
+  private val createAction: (project: Project, targets: List<BuildTarget>, directoryName: String) -> SuspendableAction?,
 ) : SuspendableAction(
     text = text,
     icon = icon,
@@ -39,7 +39,7 @@ internal open class RunAllTestsBaseAction(
     e.presentation.isEnabledAndVisible = runReadAction { shouldShowAction(project, e) }
   }
 
-  private fun getAllTestTargetInfos(project: Project, event: AnActionEvent): List<TargetSummary> {
+  private fun getAllTestTargetInfos(project: Project, event: AnActionEvent): List<BuildTarget> {
     return (event.getCurrentPath() ?: return emptyList())
       .toChildTestTargets(project)
       .toList()
@@ -50,7 +50,7 @@ internal open class RunAllTestsBaseAction(
 
   private fun AnActionEvent.getCurrentPath(): VirtualFile? = getData(PlatformDataKeys.VIRTUAL_FILE)
 
-  private fun VirtualFile.toChildTestTargets(project: Project): Sequence<TargetSummary> {
+  private fun VirtualFile.toChildTestTargets(project: Project): Sequence<BuildTarget> {
     val targetUtils = project.targetStorage
     val childTargets =
       if (isDirectory) {

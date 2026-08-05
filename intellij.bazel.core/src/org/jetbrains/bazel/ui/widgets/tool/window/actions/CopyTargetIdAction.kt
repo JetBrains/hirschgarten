@@ -9,7 +9,8 @@ import com.intellij.openapi.project.Project
 import com.intellij.util.ui.TextTransferable
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.languages.starlark.repomapping.toShortString
-import org.jetbrains.bsp.protocol.ExecutableTarget
+import org.jetbrains.bsp.protocol.BuildTarget
+import org.jetbrains.bsp.protocol.id
 import javax.swing.JComponent
 
 internal sealed class CopyTargetIdAction : AnAction({ BazelPluginBundle.message("widget.copy.target.id") }, AllIcons.Actions.Copy) {
@@ -18,9 +19,9 @@ internal sealed class CopyTargetIdAction : AnAction({ BazelPluginBundle.message(
     getTargetInfo()?.copyIdToClipboard(project)
   }
 
-  protected abstract fun getTargetInfo(): ExecutableTarget?
+  protected abstract fun getTargetInfo(): BuildTarget?
 
-  private fun ExecutableTarget.copyIdToClipboard(project: Project) {
+  private fun BuildTarget.copyIdToClipboard(project: Project) {
     val clipboard = CopyPasteManager.getInstance()
     val transferable = TextTransferable(this.id.toShortString(project) as CharSequence)
     clipboard.setContents(transferable)
@@ -32,7 +33,7 @@ internal sealed class CopyTargetIdAction : AnAction({ BazelPluginBundle.message(
     }
   }
 
-  class FromTargetInfo(private val targetInfo: ExecutableTarget) : CopyTargetIdAction() {
-    override fun getTargetInfo(): ExecutableTarget = targetInfo
+  class FromTargetInfo(private val targetInfo: BuildTarget) : CopyTargetIdAction() {
+    override fun getTargetInfo(): BuildTarget = targetInfo
   }
 }

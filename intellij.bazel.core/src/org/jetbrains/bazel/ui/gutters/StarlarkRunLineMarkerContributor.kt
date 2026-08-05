@@ -6,6 +6,7 @@ import com.intellij.icons.AllIcons
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.DefaultActionGroup
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiElement
 import com.intellij.psi.util.elementType
 import org.jetbrains.annotations.ApiStatus
@@ -64,11 +65,11 @@ open class StarlarkRunLineMarkerContributor : RunLineMarkerContributor() {
     val ruleName = visitor.ruleName ?: return null
     val targetName = visitor.targetName ?: return null
     val targetLabel = calculateLabel(project, virtualFile, targetName) ?: return null
-    return calculateLineMarkerInfo(project, targetLabel, ruleName).takeIf { it.actions.isNotEmpty() }
+    return calculateLineMarkerInfo(project, virtualFile, targetLabel, ruleName).takeIf { it.actions.isNotEmpty() }
   }
 
-  private fun calculateLineMarkerInfo(project: Project, targetLabel: ResolvedLabel, ruleName: String): Info {
-    val actions = calculateEligibleActions(project, targetLabel, ruleName).toTypedArray()
+  private fun calculateLineMarkerInfo(project: Project, buildFile: VirtualFile, targetLabel: ResolvedLabel, ruleName: String): Info {
+    val actions = calculateEligibleActions(project, buildFile, targetLabel, ruleName).toTypedArray()
     val onlyBuild = actions.singleOrNull() is BuildTargetAction
     return Info(
       if (onlyBuild) AllIcons.Actions.Compile else AllIcons.Actions.Execute,
@@ -76,7 +77,7 @@ open class StarlarkRunLineMarkerContributor : RunLineMarkerContributor() {
     )
   }
 
-  private fun calculateEligibleActions(project: Project, targetLabel: ResolvedLabel, ruleName: String): List<AnAction> = buildList {
+  private fun calculateEligibleActions(project: Project, buildFile: VirtualFile, targetLabel: ResolvedLabel, ruleName: String): List<AnAction> = buildList {
     val targetUtils = project.targetStorage
     val targetInfo = targetUtils.getTargetSummary(targetLabel)
     val targetKind = targetInfo?.kind ?: TargetKindService.getInstance().guessFromRuleName(ruleName)
@@ -89,7 +90,6 @@ open class StarlarkRunLineMarkerContributor : RunLineMarkerContributor() {
     val executableTargetsFromTargetUtils =
       targetUtils.getExecutableTargetsForTarget(targetLabel)
         .mapNotNull { executableLabel -> targetUtils.getTargetSummary(executableLabel) }
-        .map { NonImportedExecutableTarget(it.id, it.kind) }
     val executableTargets = if (targetInfo != null) {
       // If we have the targetInfo, we know for sure whether the target is executable.
       // If it isn't executable, do not show gutter, even if executableTargetsFromTargetUtils has targets.
@@ -101,7 +101,7 @@ open class StarlarkRunLineMarkerContributor : RunLineMarkerContributor() {
     }
     else if (targetKind.isExecutable) {
       // We guessed via our heuristics that the target is executable (e.g., the rule name is my_custom_binary)
-      setOf(NonImportedExecutableTarget(targetLabel, targetKind))
+      setOf(NonImportedBuildTarget(targetLabel, targetKind, (buildFile.parent ?: buildFile).toNioPath()))
     }
     else {
       emptySet()

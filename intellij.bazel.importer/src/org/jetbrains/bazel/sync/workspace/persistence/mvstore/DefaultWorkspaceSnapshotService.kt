@@ -32,9 +32,9 @@ import org.jetbrains.bazel.sync.workspace.snapshot.CommonWorkspaceSyncConfig
 import org.jetbrains.bazel.sync.workspace.snapshot.ExecutableTargetsIndexBuilder
 import org.jetbrains.bazel.sync.workspace.snapshot.InMemoryFileToTargetMap
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceSnapshot
-import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTarget
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
-import org.jetbrains.bsp.protocol.allSources
+import org.jetbrains.bazel.sync.workspace.snapshot.allSources
+import org.jetbrains.bsp.protocol.BuildTarget
 import java.nio.ByteBuffer
 import java.nio.file.AtomicMoveNotSupportedException
 import java.nio.file.Path
@@ -252,8 +252,9 @@ class DefaultWorkspaceSnapshotService(
     val targetsToSave = ArrayList<WorkspaceTargetToSave>(allTargets.size)
     var nextKeyId = 1
     var nextLabelId = 1
-    for ((key, raw) in allTargets) {
+    for (raw in allTargets) {
       // setup global key/label IDs
+      val key = raw.key
       val keyId = nextKeyId++
       keyId2Target[keyId] = key
 
@@ -361,7 +362,7 @@ class DefaultWorkspaceSnapshotService(
 
   private fun saveExecutableTargetIndex(
     snapshot: WorkspaceSnapshot,
-    allTargets: List<WorkspaceTarget>,
+    allTargets: List<BuildTarget>,
     labelId2Label: Int2ObjectBiMap<Label>,
     generation: SnapshotGeneration,
     lastLabelId: Int,

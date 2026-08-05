@@ -4,6 +4,7 @@ import org.jetbrains.bazel.label.ResolvedLabel
 import org.jetbrains.bazel.label.toPath
 import org.jetbrains.bazel.python.lang.extractPythonBuildTarget
 import org.jetbrains.bsp.protocol.BuildTarget
+import org.jetbrains.bsp.protocol.id
 import java.nio.file.Path
 import kotlin.io.path.Path
 

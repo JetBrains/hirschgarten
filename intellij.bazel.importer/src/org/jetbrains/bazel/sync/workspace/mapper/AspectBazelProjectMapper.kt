@@ -26,12 +26,14 @@ import org.jetbrains.bazel.performance.measure
 import org.jetbrains.bazel.server.BazelServerFacade
 import org.jetbrains.bazel.sync.workspace.languages.LanguagePlugin
 import org.jetbrains.bazel.sync.workspace.languages.createLanguageProjectMappers
+import org.jetbrains.bazel.sync.workspace.persistence.TargetLoadOptions
 import org.jetbrains.bazel.sync.workspace.snapshot.SourceFileCollectionBuilder
+import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTarget
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
 import org.jetbrains.bazel.sync.workspace.snapshot.toWorkspaceTargetKey
 import org.jetbrains.bazel.sync.workspace.targetKind.TargetKindService
+import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.BuildTargetTag
-import org.jetbrains.bsp.protocol.RawBuildTarget
 import org.jetbrains.bsp.protocol.TaskId
 import java.nio.file.Path
 import kotlin.io.path.exists
@@ -50,30 +52,30 @@ class AspectBazelProjectMapper(
     repoMapping: RepoMapping,
     build: Boolean,
     taskId: TaskId,
-  ): List<RawBuildTarget> {
+  ): List<BuildTarget> {
     // Ignore .bazelbsp and all its dependencies (if any)
     val allImportableTargets =
       allTargets.filterKeys { key -> key.label.packagePath.pathSegments.firstOrNull() != Constants.DOT_BAZELBSP_DIR_NAME }
 
-    val rawTargets: List<RawBuildTarget> = measure("create raw targets") {
-      createRawBuildTargets(allImportableTargets, repoMapping, build, taskId)
+    val rawTargets: List<BuildTarget> = measure("create raw targets") {
+      createWorkspaceTargets(allImportableTargets, repoMapping, build, taskId)
     }
 
     return rawTargets
   }
 
-  private suspend fun createRawBuildTargets(
+  private suspend fun createWorkspaceTargets(
     allTargets: Map<WorkspaceTargetKey, TargetIdeInfo>,
     repoMapping: RepoMapping,
     build: Boolean,
     taskId: TaskId,
-  ): List<RawBuildTarget> {
+  ): List<BuildTarget> {
     val localRepositories = repoMapping.getLocalRepositories()
     return withContext(Dispatchers.Default) {
       val tasks =
         allTargets.values.map { target ->
           async {
-            createRawBuildTarget(
+            createWorkspaceTarget(
               target = target,
               repoMapping = repoMapping,
               localRepositories = localRepositories,
@@ -87,13 +89,13 @@ class AspectBazelProjectMapper(
     }
   }
 
-  private suspend fun createRawBuildTarget(
+  private suspend fun createWorkspaceTarget(
     target: TargetIdeInfo,
     repoMapping: RepoMapping,
     localRepositories: LocalRepositoryMapping,
     build: Boolean,
     taskId: TaskId,
-  ): RawBuildTarget {
+  ): BuildTarget {
     val label = target.label().assumeResolved()
     val targetKind = inferTargetKind(target)
     val baseDirectory = bazelPathsResolver.toDirectoryPath(label, repoMapping)
@@ -119,7 +121,7 @@ class AspectBazelProjectMapper(
       }.distinct()
     }
 
-    return RawBuildTarget(
+    return WorkspaceTarget(
       key = target.key.toWorkspaceTargetKey(),
       dependencies = target.depsList.map { it.toDependencyLabel() },
       kind = targetKind,
@@ -142,7 +144,7 @@ class AspectBazelProjectMapper(
       isWorkspace = label.isMainWorkspace ||
                     localRepositories.localRepositories.containsKey(label.assumeResolved().repoName),
       isTestOnly = target.testonly,
-      tags = target.tagsList,
+      tags = target.tagsList.toList(),
     ).also {
       missingFilesReporter.report()
     }

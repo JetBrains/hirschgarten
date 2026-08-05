@@ -11,7 +11,8 @@ import org.jetbrains.bazel.config.isBazelProject
 import org.jetbrains.bazel.runnerAction.BazelRunnerActionDescriptor
 import org.jetbrains.bazel.target.targetStorage
 import org.jetbrains.bazel.ui.widgets.tool.window.utils.fillWithEligibleActions
-import org.jetbrains.bsp.protocol.ExecutableTarget
+import org.jetbrains.bsp.protocol.BuildTarget
+import org.jetbrains.bsp.protocol.id
 
 private class BazelRunLineMarkerInfo(
   text: String,
@@ -63,7 +64,7 @@ abstract class BazelRunLineMarkerContributor : RunLineMarkerContributor() {
       }
   }
 
-  private fun ExecutableTarget?.calculateEligibleActions(
+  private fun BuildTarget?.calculateEligibleActions(
     project: Project,
     runnerActionDescriptor: BazelRunnerActionDescriptor,
     psiElement: PsiElement,
@@ -82,7 +83,7 @@ abstract class BazelRunLineMarkerContributor : RunLineMarkerContributor() {
     }
 
   @ApiStatus.Internal
-  open fun getTargets(element: PsiElement): List<ExecutableTarget> {
+  open fun getTargets(element: PsiElement): List<BuildTarget> {
     val targetUtils = element.project.targetStorage
     val containingFile = element.containingFile?.virtualFile ?: return emptyList()
     val normalTargets = targetUtils.getTargetsForFile(containingFile)

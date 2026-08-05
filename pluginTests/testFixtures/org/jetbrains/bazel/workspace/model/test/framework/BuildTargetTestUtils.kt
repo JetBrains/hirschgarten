@@ -7,12 +7,13 @@ import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.sync.JavaLanguageClass
 import org.jetbrains.bazel.sync.workspace.snapshot.SourceFileCollectionBuilder
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
+import org.jetbrains.bazel.test.framework.target.TestBuildTarget
+import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.BuildTargetData
-import org.jetbrains.bsp.protocol.RawBuildTarget
 import java.nio.file.Path
 import kotlin.io.path.Path
 
-fun createRawBuildTarget(
+fun createTestBuildTarget(
   id: Label = Label.parse("//target"),
   dependencies: List<DependencyLabel> = emptyList(),
   kind: TargetKind = TargetKind(
@@ -26,8 +27,8 @@ fun createRawBuildTarget(
   baseDirectory: Path = Path("/base/dir"),
   data: List<BuildTargetData> = emptyList(),
   isTestOnly: Boolean = false,
-): RawBuildTarget =
-  RawBuildTarget(
+): TestBuildTarget =
+  TestBuildTarget(
     key = WorkspaceTargetKey(label = id),
     dependencies = dependencies,
     kind = kind,

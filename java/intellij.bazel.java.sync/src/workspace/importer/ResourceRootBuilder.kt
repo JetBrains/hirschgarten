@@ -18,9 +18,9 @@ import org.jetbrains.bazel.commons.symlinks.BazelSymlinksCalculator
 import org.jetbrains.bazel.sync.workspace.languages.jvm.extractJvmBuildTarget
 import org.jetbrains.bazel.sync.workspace.languages.jvm.extractKotlinBuildTarget
 import org.jetbrains.bazel.sync.workspace.languages.jvm.extractScalaBuildTarget
+import org.jetbrains.bazel.sync.workspace.snapshot.isTestTarget
 import org.jetbrains.bazel.utils.isUnder
-import org.jetbrains.bsp.protocol.RawBuildTarget
-import org.jetbrains.bsp.protocol.isTestTarget
+import org.jetbrains.bsp.protocol.BuildTarget
 import java.nio.file.FileVisitResult
 import java.nio.file.Path
 import kotlin.io.path.Path as KPath
@@ -42,7 +42,7 @@ object ResourceRootBuilder {
   )
 
   fun resolve(
-    target: RawBuildTarget,
+    target: BuildTarget,
     bazelProjectName: String,
     sourceContentRoots: List<Path> = emptyList(),
   ): List<ResolvedResourceRoot> {
@@ -92,7 +92,7 @@ object ResourceRootBuilder {
     }
   }
 
-  private fun RawBuildTarget.inferRootType(): SourceRootTypeId =
+  private fun BuildTarget.inferRootType(): SourceRootTypeId =
     if (isTestTarget()) {
       JAVA_TEST_RESOURCE_ROOT_TYPE
     }
@@ -279,7 +279,7 @@ object ResourceRootBuilder {
     }
   }
 
-  private fun RawBuildTarget.aggressiveCollapseCeiling(): Path = baseDirectory
+  private fun BuildTarget.aggressiveCollapseCeiling(): Path = baseDirectory
 
   private fun MergeResult.mergeUsing(stripPrefix: Path, dirtinessCache: DirtinessCache): MergeResult {
     val stripPrefixAncestors = setOf(stripPrefix)
@@ -323,29 +323,29 @@ object ResourceRootBuilder {
     return result
   }
 
-  private fun extractStripPrefixOrNull(target: RawBuildTarget) = extractJvmBuildTarget(target)
+  private fun extractStripPrefixOrNull(target: BuildTarget) = extractJvmBuildTarget(target)
     ?.resolvedResourceStripPrefix
     ?.let(::setOf)
 
-  private fun defaultStripPrefixes(target: RawBuildTarget): Set<Path> = when {
+  private fun defaultStripPrefixes(target: BuildTarget): Set<Path> = when {
     extractKotlinBuildTarget(target) != null -> defaultStripPrefixesKotlin(target)
     extractScalaBuildTarget(target) != null -> defaultStripPrefixesScala(target)
     extractJvmBuildTarget(target) != null -> defaultStripPrefixesJava(target)
     else -> emptySet()
   }
 
-  private fun defaultStripPrefixesJava(target: RawBuildTarget): MutableSet<Path> = target
+  private fun defaultStripPrefixesJava(target: BuildTarget): MutableSet<Path> = target
     .resources
     .getFiles()
     .mapNotNullTo(mutableSetOf()) { it.takeSrcResourcesPrefixOrNull() ?: it.takeJavaLayoutPrefixOrNull() }
 
-  private fun defaultStripPrefixesKotlin(target: RawBuildTarget): Set<Path> {
+  private fun defaultStripPrefixesKotlin(target: BuildTarget): Set<Path> {
     val resources = target.resources.getFiles().toList()
     return kotlinConventionalSegments
       .flatMapTo(mutableSetOf()) { resources.findPrefixesEndingWith(it) }
   }
 
-  private fun defaultStripPrefixesScala(target: RawBuildTarget): Set<Path> {
+  private fun defaultStripPrefixesScala(target: BuildTarget): Set<Path> {
     val resources = target.resources.getFiles().toList()
     val externalPrefixes = resources.mapNotNullTo(mutableSetOf()) { resource ->
       val index = resource.indexOfFirst { it.name == "external" }

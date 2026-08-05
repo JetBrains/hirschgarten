@@ -6,6 +6,9 @@ import com.intellij.openapi.project.Project
 import com.intellij.testFramework.junit5.TestApplication
 import com.intellij.testFramework.junit5.fixture.projectFixture
 import io.kotest.matchers.collections.shouldContainExactly
+import io.kotest.assertions.throwables.shouldThrow
+import io.kotest.matchers.nulls.shouldNotBeNull
+import io.kotest.matchers.string.shouldContain
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeSameInstanceAs
 import io.kotest.matchers.types.shouldNotBeSameInstanceAs
@@ -20,6 +23,8 @@ import org.jetbrains.bazel.sync.JavaLanguageClass
 import org.jetbrains.bazel.sync.workspace.languages.jvm.JavaToolchainData
 import org.jetbrains.bazel.sync.workspace.languages.jvm.JvmBuildTarget
 import org.jetbrains.bazel.sync.workspace.persistence.InMemoryWorkspaceTargetMap
+import org.jetbrains.bazel.sync.workspace.persistence.TargetLoadOptions
+import org.jetbrains.bazel.sync.workspace.persistence.TargetSection
 import org.jetbrains.bazel.sync.workspace.persistence.WorkspaceSnapshotService
 import org.jetbrains.bazel.sync.workspace.snapshot.CommonWorkspaceSyncConfig
 import org.jetbrains.bazel.sync.workspace.snapshot.ExecutableTargetsIndexBuilder
@@ -28,14 +33,18 @@ import org.jetbrains.bazel.sync.workspace.snapshot.SourceFileCollectionBuilder
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceConfigurationId
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceSnapshot
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceSnapshotMetadata
-import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTarget
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetGraphBuilder
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
+import org.jetbrains.bazel.test.framework.target.TestBuildTarget
+import org.jetbrains.bazel.ui.gutters.NonImportedBuildTarget
+import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.BuildTargetData
-import org.jetbrains.bsp.protocol.RawBuildTarget
 import org.jetbrains.bsp.protocol.SourceFileCollection
+import org.jetbrains.bsp.protocol.data
+import org.jetbrains.bsp.protocol.id
 import org.junit.jupiter.api.Test
 import java.nio.file.Path
+import kotlin.io.path.Path
 
 @TestApplication
 class TargetStorageTest {
@@ -59,36 +68,35 @@ class TargetStorageTest {
     baseDirectory: Path = Path.of("/workspace"),
     sources: SourceFileCollection = SourceFileCollection.EMPTY,
     key: WorkspaceTargetKey = WorkspaceTargetKey(label = Label.parse(label)),
-  ): WorkspaceTarget =
-    WorkspaceTarget(
-      targetKey = key,
-      rawBuildTarget = RawBuildTarget(
-        key = key,
-        dependencies = deps.map { DependencyLabel(targetKey = WorkspaceTargetKey(label = Label.parse(it))) },
-        kind = TargetKind(
-          kind = if (executable) "java_binary" else "java_library",
-          ruleType = if (executable) RuleType.BINARY else RuleType.LIBRARY,
-          languageClasses = setOf(JavaLanguageClass.JAVA),
-        ),
-        sources = sources,
-        generatedSources = SourceFileCollection.EMPTY,
-        resources = SourceFileCollection.EMPTY,
-        baseDirectory = baseDirectory,
-        data = data,
-        isManual = isManual,
-        isWorkspace = isWorkspace,
+  ): TestBuildTarget =
+    TestBuildTarget(
+      key = key,
+      dependencies = deps.map { DependencyLabel(targetKey = WorkspaceTargetKey(label = Label.parse(it))) },
+      kind = TargetKind(
+        kind = if (executable) "java_binary" else "java_library",
+        ruleType = if (executable) RuleType.BINARY else RuleType.LIBRARY,
+        languageClasses = setOf(JavaLanguageClass.JAVA),
       ),
+      sources = sources,
+      generatedSources = SourceFileCollection.EMPTY,
+      resources = SourceFileCollection.EMPTY,
+      baseDirectory = baseDirectory,
+      data = data,
+      isManual = isManual,
+      isWorkspace = isWorkspace,
     )
+
+  private fun BuildTarget.summaryView(): List<Any?> = listOf(key, kind, baseDirectory, isManual, isWorkspace)
 
   private fun snapshot(
     project: Project,
-    targets: List<WorkspaceTarget>,
-    roots: List<WorkspaceTarget> = targets,
+    targets: List<BuildTarget>,
+    roots: List<BuildTarget> = targets,
     importDepth: Int = -1,
   ): WorkspaceSnapshot {
-    val graph = WorkspaceTargetGraphBuilder.build(rootTargets = roots.map { it.targetKey }.toSet(), targets = targets)
+    val graph = WorkspaceTargetGraphBuilder.build(rootTargets = roots.map { it.key }.toSet(), targets = targets)
     return WorkspaceSnapshot(
-      targets = InMemoryWorkspaceTargetMap(targets.associateBy { it.targetKey }),
+      targets = InMemoryWorkspaceTargetMap(targets.associateBy { it.key }),
       configurations = mapOf(),
       targetGraph = graph,
       fileToTarget = File2TargetMapBuilder.build(targets = targets),
@@ -117,14 +125,11 @@ class TargetStorageTest {
     val deep = target("//deep:deep")
     publish(project, snapshot(project, targets = listOf(bin, lib, deep), roots = listOf(bin), importDepth = 1))
 
-    val summaries = project.targetStorage.allTargetSummaries().associateBy { it.label }
-    summaries.keys shouldBe setOf(bin.targetKey.label, lib.targetKey.label)
+    val summaries = project.targetStorage.allTargetSummaries().associateBy { it.id }
+    summaries.keys shouldBe setOf(bin.key.label, lib.key.label)
 
-    val binSummary = summaries.getValue(bin.targetKey.label)
-    binSummary.kind shouldBe bin.rawBuildTarget.kind
-    binSummary.baseDirectory shouldBe bin.rawBuildTarget.baseDirectory
-    binSummary.isManual shouldBe bin.rawBuildTarget.isManual
-    binSummary.isWorkspace shouldBe bin.rawBuildTarget.isWorkspace
+    // an in-memory snapshot hands back the very targets it was given, so compare them whole
+    summaries.getValue(bin.key.label) shouldBe bin
   }
 
   @Test
@@ -137,12 +142,12 @@ class TargetStorageTest {
     val targetUtils = project.targetStorage
 
     // in-memory (clean resync) snapshot holds full targets, language data is present
-    targetUtils.getTargetDataForLabel(lib.targetKey.label, JvmBuildTarget::class) shouldBe jvmData
+    targetUtils.getTargetDataForLabel(lib.key.label, JvmBuildTarget::class.java) shouldBe jvmData
 
     project.service<WorkspaceSnapshotService>().save()
 
     // store-backed snapshot, the requested data frame is still loaded exactly, with no sentinel leaking
-    targetUtils.getTargetDataForLabel(lib.targetKey.label, JvmBuildTarget::class) shouldBe jvmData
+    targetUtils.getTargetDataForLabel(lib.key.label, JvmBuildTarget::class.java) shouldBe jvmData
   }
 
   @Test
@@ -153,8 +158,8 @@ class TargetStorageTest {
     publish(project, snapshot(project, targets = listOf(lib)))
 
     val targetUtils = project.targetStorage
-    targetUtils.getTargetDataForLabel(lib.targetKey.label, JvmBuildTarget::class) shouldBe jvmData
-    targetUtils.getTargetDataForLabel(lib.targetKey.label, PythonBuildTarget::class) shouldBe null
+    targetUtils.getTargetDataForLabel(lib.key.label, JvmBuildTarget::class.java) shouldBe jvmData
+    targetUtils.getTargetDataForLabel(lib.key.label, PythonBuildTarget::class.java) shouldBe null
   }
 
   @Test
@@ -179,8 +184,8 @@ class TargetStorageTest {
     val file = Path.of("/workspace/src/Extra.java")
 
     val targetUtils = project.targetStorage
-    targetUtils.addFileToTargetIdEntry(file, listOf(bin.targetKey.label, deep.targetKey.label))
-    targetUtils.getTargetsForPath(file) shouldBe listOf(bin.targetKey.label)
+    targetUtils.addFileToTargetIdEntry(file, listOf(bin.key.label, deep.key.label))
+    targetUtils.getTargetsForPath(file) shouldBe listOf(bin.key.label)
 
     targetUtils.removeFileToTargetIdEntry(file)
     targetUtils.getTargetsForPath(file) shouldBe emptyList()
@@ -192,7 +197,7 @@ class TargetStorageTest {
     val lib = target("//lib:lib")
     publish(project, snapshot(project, targets = listOf(bin, lib), roots = listOf(bin)))
 
-    project.targetStorage.getExecutableTargetsForTarget(lib.targetKey.label).shouldContainExactly(bin.targetKey.label)
+    project.targetStorage.getExecutableTargetsForTarget(lib.key.label).shouldContainExactly(bin.key.label)
   }
 
   @Test
@@ -210,17 +215,66 @@ class TargetStorageTest {
 
     val targetUtils = project.targetStorage
 
-    val summariesBefore = targetUtils.allTargetSummaries()
+    val summariesBefore = targetUtils.allTargetSummaries().map { it.summaryView() }
     val targetsForPathBefore = targetUtils.getTargetsForPath(file)
-    val executableBefore = targetUtils.getExecutableTargetsForTarget(lib.targetKey.label)
-    val dataBefore = targetUtils.getTargetDataForLabel(lib.targetKey.label, JvmBuildTarget::class)
+    val executableBefore = targetUtils.getExecutableTargetsForTarget(lib.key.label)
+    val dataBefore = targetUtils.getTargetDataForLabel(lib.key.label, JvmBuildTarget::class.java)
 
     project.service<WorkspaceSnapshotService>().save()
 
-    targetUtils.allTargetSummaries() shouldBe summariesBefore
+    targetUtils.allTargetSummaries().map { it.summaryView() } shouldBe summariesBefore
     targetUtils.getTargetsForPath(file) shouldBe targetsForPathBefore
-    targetUtils.getExecutableTargetsForTarget(lib.targetKey.label) shouldBe executableBefore
-    targetUtils.getTargetDataForLabel(lib.targetKey.label, JvmBuildTarget::class) shouldBe dataBefore
+    targetUtils.getExecutableTargetsForTarget(lib.key.label) shouldBe executableBefore
+    targetUtils.getTargetDataForLabel(lib.key.label, JvmBuildTarget::class.java) shouldBe dataBefore
+  }
+
+  @Test
+  fun `a persisted summary carries INFO and materializes the sections it did not load`(): Unit = runBlocking {
+    val jvmData = JvmBuildTarget(javacOpts = listOf("-parameters"), mainClass = "com.example.Main")
+    val bin = target("//app:bin", deps = listOf("//lib:lib"), executable = true, data = listOf(jvmData))
+    val lib = target("//lib:lib")
+    publish(project, snapshot(project, targets = listOf(bin, lib), roots = listOf(bin, lib)))
+    project.service<WorkspaceSnapshotService>().save()
+
+    val summary = project.targetStorage.getTargetSummary(bin.key.label)
+    summary.shouldNotBeNull()
+    summary.loaded.sections shouldBe setOf(TargetSection.INFO)
+
+    summary.kind shouldBe bin.kind
+    summary.baseDirectory shouldBe bin.baseDirectory
+    summary.isManual shouldBe bin.isManual
+
+    summary.sources.getFiles().toList() shouldBe bin.sources.getFiles().toList()
+    summary.dependencies shouldBe bin.dependencies
+    summary.data(JvmBuildTarget::class.java) shouldBe jvmData
+
+    project.targetStorage.getTargetDataForLabel(bin.key.label, JvmBuildTarget::class.java) shouldBe jvmData
+  }
+
+  @Test
+  fun `data selects from what a target already carries`() {
+    val jvmData = JvmBuildTarget(javacOpts = listOf("-parameters"), mainClass = "com.example.Main")
+    val toolchain = JavaToolchainData(sourceVersion = "17", targetVersion = "17")
+    val full = target("//lib:lib", data = listOf(jvmData, toolchain))
+
+    full.data(JvmBuildTarget::class.java) shouldBe jvmData
+    full.data(JavaToolchainData::class.java) shouldBe toolchain
+    full.data(PythonBuildTarget::class.java) shouldBe null
+  }
+
+  @Test
+  fun `a minimally loaded target names itself and its sections when a missing one is read`() {
+    val label = Label.parse("//app:bin")
+    val guessed = NonImportedBuildTarget(
+      label = label,
+      kind = TargetKind(kind = "java_binary", ruleType = RuleType.BINARY, languageClasses = setOf(JavaLanguageClass.JAVA)),
+      baseDirectory = Path("/tmp/workspace")
+    )
+
+    guessed.id shouldBe label
+    guessed.loaded shouldBe TargetLoadOptions.MINIMAL
+
+    guessed.data shouldBe emptyList()
   }
 
   @Test
@@ -233,7 +287,7 @@ class TargetStorageTest {
     val second = targetUtils.allTargetSummaries()
     second shouldBeSameInstanceAs first
 
-    targetUtils.setTargets(listOf(bin.rawBuildTarget))
+    targetUtils.setTargets(listOf(bin))
 
     val afterNewSnapshot = targetUtils.allTargetSummaries()
     afterNewSnapshot shouldNotBeSameInstanceAs first

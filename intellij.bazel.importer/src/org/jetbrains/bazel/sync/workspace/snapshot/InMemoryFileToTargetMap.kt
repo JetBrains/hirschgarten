@@ -6,7 +6,7 @@ import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.annotations.VisibleForTesting
 import org.jetbrains.bazel.label.Label
-import org.jetbrains.bsp.protocol.allSources
+import org.jetbrains.bsp.protocol.BuildTarget
 import java.nio.file.Path
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.locks.ReentrantReadWriteLock
@@ -81,12 +81,12 @@ operator fun FileToTargetMap.get(path: Path): List<WorkspaceTargetKey> = getTarg
 
 @ApiStatus.Internal
 object File2TargetMapBuilder {
-  fun build(targets: Iterable<WorkspaceTarget>): FileToTargetMap {
+  fun build(targets: Iterable<BuildTarget>): FileToTargetMap {
     val hash2Targets = Long2ObjectOpenHashMap<ArrayList<WorkspaceTargetKey>>()
     for (target in targets) {
-      for (source in target.rawBuildTarget.allSources) {
+      for (source in target.allSources) {
         hash2Targets.computeIfAbsent(hashFilePath(source)) { ArrayList() }
-          .add(target.targetKey)
+          .add(target.key)
       }
     }
     return InMemoryFileToTargetMap(

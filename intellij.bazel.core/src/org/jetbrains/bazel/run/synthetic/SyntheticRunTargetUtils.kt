@@ -13,7 +13,7 @@ import org.jetbrains.bazel.label.ResolvedLabel
 import org.jetbrains.bazel.label.SingleTarget
 import org.jetbrains.bazel.runnerAction.RunSyntheticTargetAction
 import org.jetbrains.bazel.ui.widgets.tool.window.utils.getSupportedExecutors
-import org.jetbrains.bsp.protocol.ExecutableTarget
+import org.jetbrains.bsp.protocol.BuildTarget
 
 @ApiStatus.Internal
 object SyntheticRunTargetUtils {
@@ -27,7 +27,7 @@ object SyntheticRunTargetUtils {
     )
   }
 
-  fun getTemplateGenerators(target: ExecutableTarget, language: Language): List<SyntheticRunTargetTemplateGenerator> =
+  fun getTemplateGenerators(target: BuildTarget, language: Language): List<SyntheticRunTargetTemplateGenerator> =
     SyntheticRunTargetTemplateGenerator.ep.allForLanguage(language)
       .filter { it.isSupported(target) }
 
@@ -38,7 +38,7 @@ object SyntheticRunTargetUtils {
   fun addSyntheticRunActions(
     group: DefaultActionGroup,
     project: Project,
-    target: ExecutableTarget,
+    target: BuildTarget,
     element: PsiElement,
   ) {
     val language = element.language

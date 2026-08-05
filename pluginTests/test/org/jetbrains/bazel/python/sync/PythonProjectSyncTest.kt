@@ -64,6 +64,8 @@ import org.jetbrains.bazel.sync.workspace.snapshot.SourceFileCollectionBuilder
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceSnapshot
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceSnapshotBuilder
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
+import org.jetbrains.bazel.sync.workspace.snapshot.allSources
+import org.jetbrains.bazel.test.framework.target.TestBuildTarget
 import org.jetbrains.bazel.workspace.model.matchers.entries.ExpectedModuleEntity
 import org.jetbrains.bazel.workspace.model.matchers.entries.ExpectedSourceRootEntity
 import org.jetbrains.bazel.workspace.model.matchers.entries.shouldContainExactlyInAnyOrder
@@ -71,10 +73,9 @@ import org.jetbrains.bazel.workspace.model.test.framework.BuildServerMock
 import org.jetbrains.bazel.workspace.model.test.framework.MockBuildServerService
 import org.jetbrains.bazel.workspace.model.test.framework.MockProjectBaseTest
 import org.jetbrains.bazel.workspacemodel.entities.BazelProjectEntitySource
-import org.jetbrains.bsp.protocol.RawBuildTarget
+import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.SourceFileCollection
 import org.jetbrains.bsp.protocol.TaskGroupId
-import org.jetbrains.bsp.protocol.allSources
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -359,7 +360,7 @@ class PythonProjectSyncTest : MockProjectBaseTest() {
   }
 
   @Test
-  fun `should resolve generated Python source delivered via srcs (RawBuildTarget generatedSources)`() {
+  fun `should resolve generated Python source delivered via srcs (BuildTarget generatedSources)`() {
     val execRoot = Files.createTempDirectory("bazel-exec")
     val bazelBin = execRoot.resolve("bin").createDirectories()
     val generatedFile = bazelBin.resolve("part.py")
@@ -535,10 +536,10 @@ class PythonProjectSyncTest : MockProjectBaseTest() {
     generatedSources: List<Path>,
     resources: List<Path>,
     externalSources: List<Path> = emptyList(),
-  ): RawBuildTarget {
+  ): TestBuildTarget {
 
     val target =
-      RawBuildTarget(
+      TestBuildTarget(
         key = WorkspaceTargetKey(label = info.targetId),
         info.dependencies.map { DependencyLabel(WorkspaceTargetKey(label = it)) },
         TargetKind(
@@ -565,7 +566,7 @@ class PythonProjectSyncTest : MockProjectBaseTest() {
   }
 
   private fun generateWorkspaceSnapshot(
-    targets: List<RawBuildTarget>,
+    targets: List<BuildTarget>,
     rootTargets: Set<WorkspaceTargetKey> = targets.map { it.key }.toSet(),
   ): WorkspaceSnapshot = runBlocking {
     WorkspaceSnapshotBuilder.build(
@@ -609,7 +610,7 @@ class PythonProjectSyncTest : MockProjectBaseTest() {
     )
   }
 
-  private fun generateExpectedSourceRootEntities(target: RawBuildTarget, parentModuleEntity: ModuleEntity): List<ExpectedSourceRootEntity> =
+  private fun generateExpectedSourceRootEntities(target: BuildTarget, parentModuleEntity: ModuleEntity): List<ExpectedSourceRootEntity> =
     (target.allSources.map { generateExpectedSourceRootEntity(it, "python-source", parentModuleEntity) } +
      target.resources.getFiles().map { generateExpectedSourceRootEntity(it, "python-resource", parentModuleEntity) }).toList()
 

@@ -13,7 +13,7 @@ import org.jetbrains.bazel.ui.widgets.tool.window.actions.CopyTargetIdAction
 import org.jetbrains.bazel.ui.widgets.tool.window.utils.BspShortcuts
 import org.jetbrains.bazel.ui.widgets.tool.window.utils.LoadedTargetsMouseListener
 import org.jetbrains.bazel.ui.widgets.tool.window.utils.SimpleAction
-import org.jetbrains.bsp.protocol.ExecutableTarget
+import org.jetbrains.bsp.protocol.BuildTarget
 import java.awt.Point
 import javax.swing.tree.DefaultMutableTreeNode
 import javax.swing.tree.DefaultTreeModel
@@ -39,7 +39,7 @@ internal class BuildTargetTree(
 
       override fun isPointSelectable(point: Point): Boolean = getPathForLocation(point.x, point.y) != null
 
-      override fun getSelectedBuildTarget(): ExecutableTarget? {
+      override fun getSelectedBuildTarget(): BuildTarget? {
         val selected = lastSelectedPathComponent as? DefaultMutableTreeNode
         val userObject = selected?.userObject
         return if (userObject is TargetNodeData) {
@@ -49,7 +49,7 @@ internal class BuildTargetTree(
         }
       }
 
-      override fun getSelectedBuildTargetsUnderDirectory(): List<ExecutableTarget> {
+      override fun getSelectedBuildTargetsUnderDirectory(): List<BuildTarget> {
         val selected = lastSelectedPathComponent as? DefaultMutableTreeNode
         val userObject = selected?.userObject
         val targetUtils = project.targetStorage
@@ -64,7 +64,7 @@ internal class BuildTargetTree(
 
       override val copyTargetIdAction: CopyTargetIdAction =
         object : CopyTargetIdAction.FromContainer(this@BuildTargetTree) {
-          override fun getTargetInfo(): ExecutableTarget? = getSelectedBuildTarget()
+          override fun getTargetInfo(): BuildTarget? = getSelectedBuildTarget()
         }
 
       override val bazelJumpToBuildFileAction: BazelJumpToBuildFileAction =
