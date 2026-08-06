@@ -1,15 +1,16 @@
-package org.jetbrains.bsp.protocol
+package org.jetbrains.bazel.server.diagnostics
 
 import org.jetbrains.annotations.ApiStatus
+import org.jetbrains.bazel.label.Label
+import org.jetbrains.bsp.protocol.DiagnosticSeverity
+import org.jetbrains.bsp.protocol.Position
+import java.nio.file.Path
 
 @ApiStatus.Internal
 data class Diagnostic(
-  val range: Range,
+  val position: Position,
   val message: String,
-  val severity: DiagnosticSeverity? = null,
-  val code: DiagnosticCode? = null,
-  val codeDescription: CodeDescription? = null,
-  val source: String? = null,
-  val tags: List<Int>? = null,
-  val relatedInformation: List<DiagnosticRelatedInformation>? = null,
+  val fileLocation: Path?,
+  val targetLabel: Label,
+  val level: DiagnosticSeverity? = null,
 )

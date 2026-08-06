@@ -89,9 +89,9 @@ class BazelTaskEventsService(private val project: Project) : BazelTaskEventsHand
           params.taskId,
           params.textDocument?.path,
           params.buildTarget,
-          diag.range.start.line,
-          diag.range.start.character,
-          when (diag.severity) {
+          diag.position.line,
+          diag.position.character,
+          when (diag.level) {
             DiagnosticSeverity.ERROR -> Kind.ERROR
             DiagnosticSeverity.WARNING -> Kind.WARNING
             DiagnosticSeverity.INFORMATION -> Kind.INFO

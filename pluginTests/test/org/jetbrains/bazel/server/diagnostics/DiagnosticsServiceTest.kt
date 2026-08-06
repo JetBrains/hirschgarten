@@ -3,16 +3,16 @@ package org.jetbrains.bazel.server.diagnostics
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bsp.protocol.DiagnosticSeverity
-import org.jetbrains.bsp.protocol.TaskGroupId
+import org.jetbrains.bsp.protocol.Position
 import org.jetbrains.bsp.protocol.PublishDiagnosticsParams
-import org.jetbrains.bsp.protocol.Range
+import org.jetbrains.bsp.protocol.TaskGroupId
 import org.jetbrains.bsp.protocol.TextDocumentIdentifier
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.condition.EnabledOnOs
+import org.junit.jupiter.api.condition.OS
 import java.nio.file.Paths
 import kotlin.io.path.Path
 import kotlin.io.path.createTempFile
-import org.jetbrains.bsp.protocol.Diagnostic as BspDiagnostic
-import org.jetbrains.bsp.protocol.Position as BspPosition
 
 class DiagnosticsServiceTest {
   private val workspacePath = Paths.get("/user/workspace")
@@ -40,7 +40,7 @@ class DiagnosticsServiceTest {
           TextDocumentIdentifier(Path("/user/workspace/path/to/package/BUILD")),
           Label.parse("@//path/to/package:test"),
           errorDiagnostic(
-            Position(12, 37),
+            Position.fromHumanReadable(12, 37),
             "in java_test rule //path/to/package:test: target '//path/to/another/package:lib' is not visible from target '//path/to/package:test'. Check the visibility declaration of the former target if you think the dependency is legitimate",
           ),
         ),
@@ -89,7 +89,7 @@ class DiagnosticsServiceTest {
           TextDocumentIdentifier(Path("/user/workspace/path/to/package/Test.scala")),
           Label.parse("@//path/to/package:test"),
           errorDiagnostic(
-            Position(3, 18),
+            Position.fromHumanReadable(3, 18),
             """type mismatch;
                   | found   : String("test")
                   | required: Int
@@ -151,7 +151,7 @@ class DiagnosticsServiceTest {
           TextDocumentIdentifier(Path("/user/workspace/path/to/package/Test1.scala")),
           Label.parse("@//path/to/package:test"),
           errorDiagnostic(
-            Position(21, 21),
+            Position.fromHumanReadable(21, 21),
             """type mismatch;
                   |  found   : Int(42)
                   |  required: String
@@ -164,7 +164,7 @@ class DiagnosticsServiceTest {
           TextDocumentIdentifier(Path("/user/workspace/path/to/package/Test2.scala")),
           Label.parse("@//path/to/package:test"),
           errorDiagnostic(
-            Position(37, 18),
+            Position.fromHumanReadable(37, 18),
             """type mismatch;
                   |  found   : String("test")
                   |  required: Int
@@ -200,15 +200,15 @@ class DiagnosticsServiceTest {
           textDocument = null,
           buildTarget = label,
           errorDiagnostic(
-            Position(-1, -1),
+            Position.NONE,
             "module extension @@googleapis+//:extensions.bzl%switched_rules does not generate repository \"com_google_googleapis_imports\", yet it is imported as \"com_google_googleapis_imports\" in the usage at https://bcr.bazel.build/modules/grpc/1.66.0.bcr.2/MODULE.bazel:39:31",
           ),
           errorDiagnostic(
-            Position(-1, -1),
+            Position.NONE,
             "Results may be incomplete as 1 extension failed.",
           ),
           errorDiagnostic(
-            Position(-1, -1),
+            Position.NONE,
             "Build did NOT complete successfully",
           ),
         ),
@@ -219,7 +219,7 @@ class DiagnosticsServiceTest {
             ),
           buildTarget = label,
           errorDiagnostic(
-            Position(3, 11),
+            Position.fromHumanReadable(3, 11),
             message = "KotlinCompile //commons/src/main/kotlin/org/jetbrains/bsp/protocol:protocol { kt: 65, java: 0, srcjars: 0 } for darwin_arm64 failed: (Exit 1): build failed: error executing KotlinCompile command (from target //commons/src/main/kotlin/org/jetbrains",
           ),
         ),
@@ -274,7 +274,7 @@ class DiagnosticsServiceTest {
           TextDocumentIdentifier(Path("/user/workspace/path/to/package/Test.scala")),
           Label.parse("@//path/to/package:test"),
           errorDiagnostic(
-            Position(21, 21),
+            Position.fromHumanReadable(21, 21),
             """type mismatch;
                   |  found   : Int(42)
                   |  required: String
@@ -283,7 +283,7 @@ class DiagnosticsServiceTest {
             """.trimMargin(),
           ),
           errorDiagnostic(
-            Position(37, 18),
+            Position.fromHumanReadable(37, 18),
             """type mismatch;
                   |  found   : String("test")
                   |  required: Int
@@ -346,14 +346,14 @@ class DiagnosticsServiceTest {
           ),
           Label.parse(label.toString()),
           errorDiagnostic(
-            Position(12, 18),
+            Position.fromHumanReadable(12, 18),
             """type mismatch: inferred type is String but Int was expected
                   |val int: Int = "STRING"
                   |^
             """.trimMargin(),
           ),
           errorDiagnostic(
-            Position(13, 24),
+            Position.fromHumanReadable(13, 24),
             """the integer literal does not conform to the expected type String
                   |val string: String = 1
                   |^
@@ -400,7 +400,7 @@ class DiagnosticsServiceTest {
           TextDocumentIdentifier(Path("/user/workspace/project/src/main/scala/com/example/project/File1.scala")),
           Label.parse(label.toString()),
           errorDiagnostic(
-            Position(11, 18),
+            Position.fromHumanReadable(11, 18),
             """type mismatch;
                   |  found   : String("sd")
                   |  required: Int
@@ -409,7 +409,7 @@ class DiagnosticsServiceTest {
             """.trimMargin(),
           ),
           warningDiagnostic(
-            Position(11, 7),
+            Position.fromHumanReadable(11, 7),
             """local val x in method promote is never used
                    |  val x: Int = "sd"
                    |      ^
@@ -420,14 +420,14 @@ class DiagnosticsServiceTest {
           TextDocumentIdentifier(Path("/user/workspace/project/src/main/scala/com/example/project/File2.scala")),
           Label.parse(label.toString()),
           warningDiagnostic(
-            Position(26, 24),
+            Position.fromHumanReadable(26, 24),
             """private val versionsWriter in object File2 is never used
                    |  private implicit val versionsWriter: ConfigWriter[Versions] = deriveWriter[Versions]
                    |                       ^
             """.trimMargin(),
           ),
           warningDiagnostic(
-            Position(28, 22),
+            Position.fromHumanReadable(28, 22),
             """private val File2ProtocolWriter in object File2 is never used
                    |private implicit val File2ProtocolWriter: ConfigWriter[File2Protocol] =
                    |                     ^
@@ -472,7 +472,7 @@ class DiagnosticsServiceTest {
           TextDocumentIdentifier(Path("/user/workspace/Hello.scala")),
           Label.parse(label.toString()),
           errorDiagnostic(
-            Position(19, 20),
+            Position.fromHumanReadable(19, 20),
             """|Type Mismatch Error
                        |Found:    ("Hello" : String)
                        |Required: Int
@@ -526,7 +526,7 @@ class DiagnosticsServiceTest {
           TextDocumentIdentifier(Path("/user/workspace/Hello.scala")),
           Label.parse(label.toString()),
           errorDiagnostic(
-            Position(18, 20),
+            Position.fromHumanReadable(18, 20),
             """|Type Mismatch Error
                        |Found:    ("Hello" : String)
                        |Required: Int
@@ -535,7 +535,7 @@ class DiagnosticsServiceTest {
             """.trimMargin(),
           ),
           errorDiagnostic(
-            Position(19, 20),
+            Position.fromHumanReadable(19, 20),
             """|Type Mismatch Error
                        |Found:    ("Hello" : String)
                        |Required: Int
@@ -580,7 +580,7 @@ class DiagnosticsServiceTest {
           TextDocumentIdentifier(Path("/user/workspace/drd/messaging/src/main/scala/bots/Bot.scala")),
           Label.parse(label.toString()),
           errorDiagnostic(
-            Position(143, 26),
+            Position.fromHumanReadable(143, 26),
             """|Not Found Error
                        |Not found: makeMessage
                        |
@@ -588,7 +588,7 @@ class DiagnosticsServiceTest {
             """.trimMargin(),
           ),
           errorDiagnostic(
-            Position(153, 22),
+            Position.fromHumanReadable(153, 22),
             """|Not Found Error
                        |Not found: type Message
                        |
@@ -625,11 +625,11 @@ class DiagnosticsServiceTest {
           TextDocumentIdentifier(Path("/user/workspace/path/to/file.scala")),
           Label.parse(label.toString()),
           errorDiagnostic(
-            Position(27, 10),
+            Position.fromHumanReadable(27, 10),
             "Error\nend of statement expected but 'type' found",
           ),
           warningDiagnostic(
-            Position(13, 24),
+            Position.fromHumanReadable(13, 24),
             "Warning\nunused import",
           ),
         ),
@@ -673,7 +673,7 @@ class DiagnosticsServiceTest {
           ),
           Label.parse(label.toString()),
           warningDiagnostic(
-            Position(14, 5),
+            Position.fromHumanReadable(14, 5),
             """match may not be exhaustive.
                    |It would fail on the following inputs: Bundled(_), BundledCrossVersion(_, _, _), Direct(_), Empty(), FromSources(_, _), Versioned((x: String forSome x not in "com.intellijUpdaterPlugin"), _, _)
                    |    key match {
@@ -687,7 +687,7 @@ class DiagnosticsServiceTest {
           ),
           Label.parse(label.toString()),
           warningDiagnostic(
-            Position(29, 37),
+            Position.fromHumanReadable(29, 37),
             """trait ScalaObjectMapper in package scala is deprecated (since 2.12.1): ScalaObjectMapper is deprecated because Manifests are not supported in Scala3, you might want to use ClassTagExtensions as a replacement
                    |    val m = new ObjectMapper() with ScalaObjectMapper
                    |                                    ^
@@ -732,14 +732,14 @@ class DiagnosticsServiceTest {
           ),
           Label.parse(label.toString()),
           errorDiagnostic(
-            Position(20, 8),
+            Position.fromHumanReadable(20, 8),
             """symbol not found org.jetbrains.bazel.server.bsp.config.ProjectViewProvider
                    |import org.jetbrains.bazel.server.bsp.config.ProjectViewProvider;
                    |       ^
             """.trimMargin(),
           ),
           errorDiagnostic(
-            Position(37, 7),
+            Position.fromHumanReadable(37, 7),
             """could not resolve ProjectViewProvider
                    |      ProjectViewProvider projectViewProvider,
                    |      ^
@@ -787,7 +787,7 @@ class DiagnosticsServiceTest {
           TextDocumentIdentifier(Path("/user/workspace/server/src/main/java/org/jetbrains/bazel/server/bep/BepServer.java")),
           Label.parse(label.toString()),
           errorDiagnostic(
-            Position(55, 34),
+            Position.fromHumanReadable(55, 34),
             """
             cannot find symbol
                 return new BepStreamObserver(thi, responseObserver);
@@ -840,11 +840,11 @@ class DiagnosticsServiceTest {
           ),
           label,
           errorDiagnostic(
-            Position(10, 1),
+            Position.fromHumanReadable(10, 1),
             "example error.",
           ),
           errorDiagnostic(
-            Position(57, 12),
+            Position.fromHumanReadable(57, 12),
             """
             none of the following candidates is applicable:
             fun <T> Pair<T, T>.toList(): List<T>
@@ -927,11 +927,11 @@ class DiagnosticsServiceTest {
           TextDocumentIdentifier(Path("/Users/user/path/to/project/src/Foo.kt")),
           Label.parse(label.toString()),
           errorDiagnostic(
-            Position(25, 90),
+            Position.fromHumanReadable(25, 90),
             "Unresolved reference 'foo'.",
           ),
           errorDiagnostic(
-            Position(44, 33),
+            Position.fromHumanReadable(44, 33),
             "Unresolved reference 'bar'.",
           ),
         ),
@@ -939,7 +939,7 @@ class DiagnosticsServiceTest {
           TextDocumentIdentifier(Path("/Users/user/path/to/project/src/package/Zoo.kt")),
           Label.parse(label.toString()),
           errorDiagnostic(
-            Position(31, 3),
+            Position.fromHumanReadable(31, 3),
             """
               None of the following candidates is applicable:
               fun <T> Array<out T>.toList(): List<T>
@@ -1011,7 +1011,7 @@ class DiagnosticsServiceTest {
           TextDocumentIdentifier(Path("/Users/user/path/to/project/src/Foo.java")),
           Label.parse(label.toString()),
           errorDiagnostic(
-            Position(106, 26),
+            Position.fromHumanReadable(106, 26),
             """
               cannot find symbol
                 symbol:   variable bar
@@ -1019,7 +1019,7 @@ class DiagnosticsServiceTest {
             """.trimIndent(),
           ),
           errorDiagnostic(
-            Position(110, 37),
+            Position.fromHumanReadable(110, 37),
             """
               reference to foo is ambiguous
                 both method foo(java.lang.Integer) in Foo and method foo(java.lang.Double) in Foo match
@@ -1030,7 +1030,7 @@ class DiagnosticsServiceTest {
           TextDocumentIdentifier(Path("/Users/user/path/to/project/src/package/Zoo.java")),
           Label.parse(label.toString()),
           errorDiagnostic(
-            Position(33, 44),
+            Position.fromHumanReadable(33, 44),
             """
               cannot find symbol
                 symbol:   variable zoo
@@ -1099,7 +1099,7 @@ class DiagnosticsServiceTest {
           TextDocumentIdentifier(Path("/Users/user/$specialCharsPathSegment/to/project/src/Foo.java")),
           Label.parse(label.toString()),
           errorDiagnostic(
-            Position(106, 26),
+            Position.fromHumanReadable(106, 26),
             """
               cannot find symbol
                 symbol:   variable bar
@@ -1111,7 +1111,7 @@ class DiagnosticsServiceTest {
           TextDocumentIdentifier(Path("/Users/user/$specialCharsPathSegment/to/project/src/package/Zoo.java")),
           Label.parse(label.toString()),
           errorDiagnostic(
-            Position(33, 44),
+            Position.fromHumanReadable(33, 44),
             """
               cannot find symbol
                 symbol:   variable zoo
@@ -1123,8 +1123,69 @@ class DiagnosticsServiceTest {
           TextDocumentIdentifier(Path("/Users/user/$specialCharsPathSegment/to/project/src/Foo.kt")),
           Label.parse(label.toString()),
           errorDiagnostic(
-            position = Position(25, 90),
+            position = Position.fromHumanReadable(25, 90),
             message = "Unresolved reference 'foo'.",
+          ),
+        ),
+      )
+    diagnostics shouldContainExactlyInAnyOrder expected
+  }
+
+  @Test
+  fun `BUILD file error in BEP progress event`() {
+    // given
+    val output =
+      """
+        ERROR: /Users/pasynkov/Work/ultimate/plugins/bazel/pluginTests/BUILD.bazel:84:12: compile //plugins/bazel/pluginTests:pluginTests_test_lib (kt: 300, java: 1) failed: (Exit -1): java failed: error executing JvmCompile command (from _jvm_library_jps rule target //plugins/bazel/pluginTests:pluginTests_test_lib) external/community++jbr_toolchains+remotejbr25_macos_aarch64/bin/java -XX:+UseG1GC '-XX:MinHeapFreeRatio=40' '-XX:MaxHeapFreeRatio=40' -Xmx10g -Xms256m '-XX:SoftRefLRUPolicyMSPerMB=50' ... (remaining 15 arguments skipped)
+      """.trimIndent()
+
+    // when
+    val label = Label.parse("//:calculator")
+
+    val diagnostics =
+      extractDiagnostics(output, label, isCommandLineFormattedOutput = true)
+
+    // then
+    val expected =
+      listOf(
+        publishDiagnosticsParams(
+          TextDocumentIdentifier(Path("/Users/pasynkov/Work/ultimate/plugins/bazel/pluginTests/BUILD.bazel")),
+          label,
+          errorDiagnostic(
+            Position.fromHumanReadable(84, 12),
+            "compile //plugins/bazel/pluginTests:pluginTests_test_lib (kt: 300, java: 1) failed: (Exit -1): java failed: error executing JvmCompile command (from _jvm_library_jps rule target //plugins/bazel/pluginTests:pluginTests_test_lib) external/community++jbr_toolchains+remotejbr25_macos_aarch64/bin/java -XX:+UseG1GC '-XX:MinHeapFreeRatio=40' '-XX:MaxHeapFreeRatio=40' -Xmx10g -Xms256m '-XX:SoftRefLRUPolicyMSPerMB=50' ... (remaining 15 arguments skipped)",
+          ),
+        ),
+      )
+    diagnostics shouldContainExactlyInAnyOrder expected
+  }
+
+  @Test
+  @EnabledOnOs(OS.WINDOWS)
+  fun `BUILD file error in BEP progress event with Windows drive letter in path`() {
+    // given
+    val output =
+      """
+        [0;31;91mERROR: [0mZ:/buildagent/work/89e70edcf4afcfd6/out/ide-tests/cache/projects/unpacked/simplebazelprojectsfortesting/importrunconfigurations/BUILD:6:13: Building libcalculator.jar (1 source file) failed: (Exit 1): java.exe failed: error executing Javac command (from java_library rule target //:calculator) external\rules_java++toolchains+remotejdk25_win\bin\java.exe --add-exports=jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED --add-exports=jdk.compiler/com.sun.tools.javac.main=ALL-UNNAMED ... (remaining 19 arguments skipped)
+      """.trimIndent()
+
+    // when
+    val label = Label.parse("//:calculator")
+
+    val diagnostics =
+      extractDiagnostics(output, label, isCommandLineFormattedOutput = true)
+
+    // then
+    val expected =
+      listOf(
+        publishDiagnosticsParams(
+          TextDocumentIdentifier(Path("Z:/buildagent/work/89e70edcf4afcfd6/out/ide-tests/cache/projects/unpacked/simplebazelprojectsfortesting/importrunconfigurations/BUILD")),
+          label,
+          errorDiagnostic(
+            Position.fromHumanReadable(6, 13),
+            """
+              Building libcalculator.jar (1 source file) failed: (Exit 1): java.exe failed: error executing Javac command (from java_library rule target //:calculator) external\rules_java++toolchains+remotejdk25_win\bin\java.exe --add-exports=jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED --add-exports=jdk.compiler/com.sun.tools.javac.main=ALL-UNNAMED ... (remaining 19 arguments skipped)
+            """.trimIndent(),
           ),
         ),
       )
@@ -1134,30 +1195,29 @@ class DiagnosticsServiceTest {
   private fun publishDiagnosticsParams(
     textDocument: TextDocumentIdentifier?,
     buildTarget: Label,
-    vararg diagnostics: BspDiagnostic,
+    vararg diagnostics: Triple<Position, String, DiagnosticSeverity>,
   ): PublishDiagnosticsParams =
     PublishDiagnosticsParams(
       TaskGroupId.EMPTY.task("task-id"),
       textDocument,
       buildTarget,
-      diagnostics = diagnostics.asList(),
+      diagnostics = diagnostics.map {
+        Diagnostic(
+          position = it.first,
+          message = it.second,
+          fileLocation = textDocument?.path,
+          targetLabel = buildTarget,
+          level = it.third,
+        )
+      },
       reset = true,
     )
 
-  private fun errorDiagnostic(position: Position, message: String): BspDiagnostic =
-    createDiagnostic(position, message, DiagnosticSeverity.ERROR)
+  private fun errorDiagnostic(position: Position, message: String): Triple<Position, String, DiagnosticSeverity> =
+    Triple(position, message, DiagnosticSeverity.ERROR)
 
-  private fun warningDiagnostic(position: Position, message: String): BspDiagnostic =
-    createDiagnostic(position, message, DiagnosticSeverity.WARNING)
-
-  private fun createDiagnostic(
-    position: Position,
-    message: String,
-    severity: DiagnosticSeverity,
-  ): BspDiagnostic {
-    val adjustedPosition = BspPosition(position.line - 1, position.character - 1)
-    return BspDiagnostic(Range(adjustedPosition, adjustedPosition), severity = severity, message = message)
-  }
+  private fun warningDiagnostic(position: Position, message: String): Triple<Position, String, DiagnosticSeverity> =
+    Triple(position, message, DiagnosticSeverity.WARNING)
 
   private fun extractDiagnostics(
     output: String,
@@ -1169,6 +1229,6 @@ class DiagnosticsServiceTest {
         output.lines(),
         buildTarget,
         TaskGroupId.EMPTY.task("task-id"),
-        isCommandLineFormattedOutput
+        isCommandLineFormattedOutput,
       )
 }
