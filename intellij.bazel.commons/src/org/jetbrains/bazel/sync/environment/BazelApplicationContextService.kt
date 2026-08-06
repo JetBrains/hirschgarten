@@ -10,4 +10,6 @@ interface BazelApplicationContextService {
     get() = false
   val forceBazeliskDownload: Boolean
     get() = false
+  val enablePty: Boolean
+    get() = true
 }

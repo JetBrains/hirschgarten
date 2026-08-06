@@ -28,7 +28,6 @@ import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.DumbAwareAction
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Disposer
-import com.intellij.terminal.TerminalExecutionConsole
 import com.intellij.terminal.TerminalExecutionConsoleBuilder
 import com.jediterm.core.util.TermSize
 import com.jediterm.terminal.TtyConnector
@@ -38,7 +37,6 @@ import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.config.BazelPluginConstants
 import org.jetbrains.bazel.progress.ConsoleService
-import org.jetbrains.bazel.progress.PtyAwareTaskConsole
 import org.jetbrains.bazel.progress.ShowConsole
 import org.jetbrains.bazel.progress.TaskConsole
 import org.jetbrains.bazel.sync.status.SyncStatusListener
@@ -51,7 +49,7 @@ abstract class BaseTaskConsole(
   private val taskView: BuildProgressListener,
   private val basePath: String,
   private val project: Project,
-) : TaskConsole, PtyAwareTaskConsole {
+) : TaskConsole {
   companion object {
     private val log = logger<BaseTaskConsole>()
   }
@@ -60,7 +58,6 @@ abstract class BaseTaskConsole(
   private val taskFailures: MutableMap<TaskId, MutableSet<Throwable>> = linkedMapOf()
   private val subtaskParentMap: MutableMap<TaskId, TaskId> = linkedMapOf()
   private val subtaskMessageMap: MutableMap<TaskId, String> = linkedMapOf()
-  private val taskPtyTerminalMap: MutableMap<TaskId, TerminalExecutionConsole> = linkedMapOf()
 
   @Synchronized
   override fun startTask(
@@ -110,7 +107,8 @@ abstract class BaseTaskConsole(
     }
     addRedoActionToDescriptor(taskDescriptor, redoAction)
     addCancelActionToDescriptor(taskId, taskDescriptor, cancelAction)
-    addPtyToDescriptor(taskId, taskDescriptor)
+    if (BazelFeatureFlags.usePty)
+      addPtyToDescriptor(taskId, taskDescriptor)
     val startEvent = StartBuildEvent.builder(message, taskDescriptor).build()
     taskView.onEvent(taskId, startEvent)
   }
@@ -130,7 +128,6 @@ abstract class BaseTaskConsole(
   }
 
   private fun addPtyToDescriptor(taskId: TaskId, taskDescriptor: DefaultBuildDescriptor) {
-    if (!BazelFeatureFlags.usePty) return
     val consoleDelegate = TerminalExecutionConsoleBuilder(project).build()
     val console = object : ConsoleView by consoleDelegate, BuildProgressListener {
       override fun onEvent(buildId: Any, event: BuildEvent) {
@@ -139,7 +136,6 @@ abstract class BaseTaskConsole(
         }
       }
     }
-    taskPtyTerminalMap[taskId] = consoleDelegate
 
     val contentDescriptor =
       BuildContentDescriptor(console, null, consoleDelegate.component, null)
@@ -211,7 +207,6 @@ abstract class BaseTaskConsole(
     tasksInProgress.remove(taskId)
     taskFailures.remove(taskId)
     subtaskParentMap.entries.removeAll { findActiveRootTaskId(it.value) == taskId }
-    taskPtyTerminalMap.remove(taskId)
     val event = FinishBuildEventImpl(taskId, null, System.currentTimeMillis(), message, result)
     taskView.onEvent(taskId, event)
   }
@@ -339,15 +334,6 @@ abstract class BaseTaskConsole(
     return taskFailures.getOrPut(rootTaskId) { mutableSetOf() }.add(ex)
   }
 
-  private val DEFAULT_PTY_TERM_SIZE = TermSize(80, 24)
-
-  @Synchronized
-  override fun ptyTermSize(taskId: TaskId): TermSize? {
-    val terminal = generateSequence(taskId) { it.parent }
-      .firstNotNullOfOrNull { taskPtyTerminalMap[it] } ?: return null
-    return terminal.terminalWidget.terminalPanel.terminalSizeFromComponent ?: DEFAULT_PTY_TERM_SIZE
-  }
-
   private fun doAddMessage(taskId: TaskId, message: String) {
     if (tasksInProgress.contains(taskId)) {
       sendMessageEvent(taskId, message)
@@ -358,7 +344,7 @@ abstract class BaseTaskConsole(
     }
   }
 
-  private fun sendMessageToAncestors(taskId: TaskId, message: String): Unit {
+  private fun sendMessageToAncestors(taskId: TaskId, message: String) {
     val parentTask = subtaskParentMap[taskId]
     if (parentTask != null) {
       sendMessageEvent(parentTask, message)
@@ -374,30 +360,8 @@ abstract class BaseTaskConsole(
     }
   }
 
-  private inline fun doIfTaskInProgress(taskId: TaskId, action: () -> Unit) {
-    if (tasksInProgress.contains(taskId)) {
-      action()
-    }
-  }
-
-  private inline fun doUnlessTaskInProgress(taskId: TaskId, action: () -> Unit) {
-    if (!tasksInProgress.contains(taskId)) {
-      action()
-    }
-  }
-
   private fun findActiveTaskId(taskId: TaskId): TaskId? {
     var id: TaskId? = taskId
-    while (id != null) {
-      if (subtaskParentMap.containsKey(id) || tasksInProgress.contains(id))
-        return id
-      id = id.parent
-    }
-    return null
-  }
-
-  private fun findParentTaskId(taskId: TaskId): TaskId? {
-    var id: TaskId? = taskId.parent
     while (id != null) {
       if (subtaskParentMap.containsKey(id) || tasksInProgress.contains(id))
         return id

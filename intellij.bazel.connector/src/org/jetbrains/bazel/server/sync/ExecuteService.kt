@@ -179,7 +179,7 @@ class ExecuteService(
           params.environmentVariables?.let { environment.putAll(it) }
           params.arguments?.let { programArguments.addAll(it) }
           params.additionalBazelParams?.let { additionalBazelOptions.addAll(it.trim().split(" ")) }
-          ptyTermSize = project.service<PtyTerminalService>().ptyTermSize(params.taskId)
+          enablePty = true
         }
       }
     val result = runWithBepServer(command, params.taskId, BazelInvocationContext.RUN, pidDeferred = params.pidDeferred)
@@ -241,7 +241,7 @@ class ExecuteService(
         build {
           options.addAll(additionalArguments)
           targets.addAll(allTargets)
-          ptyTermSize = project.service<PtyTerminalService>().ptyTermSize(taskId)
+          enablePty = true
         }
       }
 
@@ -264,7 +264,7 @@ class ExecuteService(
           options.addAll(extraFlags)
           targets.addAll(targetsSpec.values)
           excludedTargets.addAll(targetsSpec.excludedValues)
-          ptyTermSize = project.service<PtyTerminalService>().ptyTermSize(taskId)
+          enablePty = true
         }
       }
 

@@ -3,15 +3,19 @@ package org.jetbrains.bazel.bazelrunner
 import com.intellij.execution.configurations.GeneralCommandLine
 import com.intellij.execution.configurations.GeneralCommandLine.ParentEnvironmentType
 import com.intellij.execution.configurations.PtyCommandLine
+import com.intellij.openapi.components.service
+import org.jetbrains.bazel.config.BazelFeatureFlags
+import org.jetbrains.bazel.sync.environment.BazelApplicationContextService
 import java.nio.file.Path
 
 internal class DefaultBazelProcessLauncher(private val workspaceRoot: Path, private val parentEnvironment: Map<String, String>) :
   BazelProcessLauncher {
   override fun launchProcess(executionDescriptor: BazelCommandExecutionDescriptor): Process {
-    val ptyTermSize = executionDescriptor.ptyTermSize
-    val commandLine = if (ptyTermSize != null) {
-      PtyCommandLine(executionDescriptor.command).withConsoleMode(true).withInitialColumns(ptyTermSize.columns)
-        .withInitialRows(ptyTermSize.rows)
+    val commandLine = if (executionDescriptor.enablePty && service<BazelApplicationContextService>().enablePty && BazelFeatureFlags.usePty) {
+      PtyCommandLine(executionDescriptor.command)
+        .withConsoleMode(true)
+        .withInitialColumns(512)
+        .withInitialRows(25)
     }
     else {
       GeneralCommandLine(executionDescriptor.command)

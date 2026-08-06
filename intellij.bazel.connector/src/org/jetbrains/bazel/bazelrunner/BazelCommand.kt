@@ -79,7 +79,7 @@ interface HasSingleTarget {
 @ApiStatus.Internal
 data class BazelCommandExecutionDescriptor(
   val command: List<String>,
-  val ptyTermSize: TermSize?,
+  val enablePty: Boolean,
   val environment: Map<String, String> = emptyMap(),
   val alwaysShowStdout: Boolean = false,
   val finishCallback: () -> Unit = {},
@@ -94,7 +94,7 @@ abstract class BazelCommand(val bazelBinary: String) {
   // See https://bazel.build/reference/command-line-reference#options-common-to-all-commands and command-specific options
   val options: MutableList<String> = mutableListOf(BazelFlag.toolTag())
 
-  var ptyTermSize: TermSize? = null
+  var enablePty: Boolean = false
 
   abstract fun buildExecutionDescriptor(): BazelCommandExecutionDescriptor
 
@@ -138,7 +138,7 @@ abstract class BazelCommand(val bazelBinary: String) {
 
       // Pass environment variables here to be set inside org.jetbrains.bazel.bazelrunner.BazelRunner
       // Run needs to be handled separately because the resulting process is not run in the sandbox
-      return BazelCommandExecutionDescriptor(commandLine, ptyTermSize, environment = environment, alwaysShowStdout = true)
+      return BazelCommandExecutionDescriptor(commandLine, enablePty, environment = environment, alwaysShowStdout = true)
     }
   }
 
@@ -164,7 +164,7 @@ abstract class BazelCommand(val bazelBinary: String) {
 
       return BazelCommandExecutionDescriptor(
         commandLine,
-        ptyTermSize,
+        enablePty,
         finishCallback = {
           try {
             Files.deleteIfExists(targetPatternFile)
@@ -232,7 +232,7 @@ abstract class BazelCommand(val bazelBinary: String) {
       commandLine.addAll(programArguments.map { "--test_arg=$it" })
       commandLine.addAll(targetCommandLine())
 
-      return BazelCommandExecutionDescriptor(commandLine, ptyTermSize, alwaysShowStdout = true)
+      return BazelCommandExecutionDescriptor(commandLine, enablePty, alwaysShowStdout = true)
     }
   }
 
@@ -258,7 +258,7 @@ abstract class BazelCommand(val bazelBinary: String) {
       commandLine.addAll(programArguments.map { "--test_arg=$it" })
       commandLine.addAll(targetCommandLine())
 
-      return BazelCommandExecutionDescriptor(commandLine, ptyTermSize)
+      return BazelCommandExecutionDescriptor(commandLine, enablePty)
     }
   }
 
@@ -274,7 +274,7 @@ abstract class BazelCommand(val bazelBinary: String) {
       commandLine.addAll(options)
       commandLine.add(target.toString())
 
-      return BazelCommandExecutionDescriptor(commandLine, ptyTermSize)
+      return BazelCommandExecutionDescriptor(commandLine, enablePty)
     }
   }
 
@@ -294,7 +294,7 @@ abstract class BazelCommand(val bazelBinary: String) {
       commandLine.addAll(options)
       commandLine.add(queryString(allowManualTargetsSync))
 
-      return BazelCommandExecutionDescriptor(commandLine, ptyTermSize)
+      return BazelCommandExecutionDescriptor(commandLine, enablePty)
     }
 
     fun queryString(allowManualTargetsSync: Boolean): String {
@@ -333,7 +333,7 @@ abstract class BazelCommand(val bazelBinary: String) {
       commandLine.addAll(options)
       commandLine.addAll(targetCommandLine())
 
-      return BazelCommandExecutionDescriptor(commandLine, ptyTermSize)
+      return BazelCommandExecutionDescriptor(commandLine, enablePty)
     }
   }
 
@@ -351,7 +351,7 @@ abstract class BazelCommand(val bazelBinary: String) {
       commandLine.addAll(options)
       commandLine.addAll(targetCommandLine())
 
-      return BazelCommandExecutionDescriptor(commandLine, ptyTermSize)
+      return BazelCommandExecutionDescriptor(commandLine, enablePty)
     }
   }
 
@@ -363,7 +363,7 @@ abstract class BazelCommand(val bazelBinary: String) {
       commandLine.add("config")
       commandLine.addAll(options)
 
-      return BazelCommandExecutionDescriptor(commandLine, ptyTermSize)
+      return BazelCommandExecutionDescriptor(commandLine, enablePty)
     }
 
   }
@@ -376,7 +376,7 @@ abstract class BazelCommand(val bazelBinary: String) {
       commandLine.addAll(command)
       commandLine.addAll(options)
 
-      return BazelCommandExecutionDescriptor(commandLine, ptyTermSize)
+      return BazelCommandExecutionDescriptor(commandLine, enablePty)
     }
   }
 
