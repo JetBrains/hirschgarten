@@ -1,6 +1,7 @@
 package org.jetbrains.bazel.server.diagnostics
 
 import org.jetbrains.bazel.label.Label
+import org.jetbrains.bsp.protocol.Position
 
 internal interface DiagnosticsParser {
   fun parse(
@@ -44,11 +45,11 @@ internal class DiagnosticsParserImpl : DiagnosticsParser {
     if (diagnostics.isEmpty() && !onlyFromParsedOutput) {
       diagnostics.add(
         Diagnostic(
-          position = Position(0, 0),
+          position = Position.NONE,
           message = output.fullOutput(),
           fileLocation = null,
           targetLabel = output.targetLabel,
-        ),
+        )
       )
     }
 

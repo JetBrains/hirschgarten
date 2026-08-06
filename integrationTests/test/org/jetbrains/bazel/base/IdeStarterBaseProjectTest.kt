@@ -70,7 +70,6 @@ import kotlin.time.Duration
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
 
-@OptIn(ExperimentalPathApi::class)
 abstract class IdeStarterBaseProjectTest {
   protected open val timeout: Duration
     get() = (System.getProperty("bazel.ide.starter.test.timeout.seconds")?.toIntOrNull() ?: 1200).seconds
@@ -109,6 +108,7 @@ abstract class IdeStarterBaseProjectTest {
       .propagateSystemProperty("bazel.enable.log")
       .patchPathVariable()
       .enableCppToolchainDetectionForNestedBazel()
+      .filterOutRunfileVariables()
       .addIdeStarterTestMarker()
       .applyVMOptionsPatch {
         addSystemProperty("JETBRAINS_LICENSE_SERVER", "https://flsv1.labs.jb.gg")
@@ -171,6 +171,24 @@ abstract class IdeStarterBaseProjectTest {
     applyVMOptionsPatch {
       withEnv("BAZEL_DO_NOT_DETECT_CPP_TOOLCHAIN", "0")
       withEnv("BAZEL_NO_APPLE_CPP_TOOLCHAIN", "0")
+    }
+    return this
+  }
+
+  /**
+   * IDE-Starter launches fixture Bazel processes from inside an outer Bazel test.
+   * On Windows, inherited runfiles variables pointed the nested launcher back into
+   * the outer test tree and produced invalid runtime resolution.
+   *
+   * Strip the outer runfiles environment before starting nested Bazel
+   * and cover the retained and removed variables explicitly.
+   */
+  private fun IDETestContext.filterOutRunfileVariables(): IDETestContext {
+    applyVMOptionsPatch {
+      withEnv("JAVA_RUNFILES", "")
+      withEnv("RUNFILES_DIR", "")
+      withEnv("RUNFILES_MANIFEST_FILE", "")
+      withEnv("RUNFILES_MANIFEST_ONLY", "")
     }
     return this
   }

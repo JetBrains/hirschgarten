@@ -1,6 +1,8 @@
 package org.jetbrains.bazel.server.diagnostics
 
+import org.jetbrains.bazel.server.diagnostics.Parser.Companion.PATH_PART
 import org.jetbrains.bsp.protocol.DiagnosticSeverity
+import org.jetbrains.bsp.protocol.Position
 import kotlin.io.path.Path
 
 internal object Scala3CompilerDiagnosticParser : Parser {
@@ -8,11 +10,11 @@ internal object Scala3CompilerDiagnosticParser : Parser {
 
   private val DiagnosticHeader =
     """
-      ^--\       # "-- " diagnostic start 
-      (?:\[E\d+\])?   # "[E008]" optional explanation id
-      ([^:]+): # (1) type of diagnostic
-      ([^:]+):(\d+):(\d+) # (2) path, (3) line, (4) column
-      [\s-]*$ # " -----------------" ending 
+      ^--\                     # "-- " diagnostic start 
+      (?:\[E\d+\])?            # "[E008]" optional explanation id
+      ([^:]+):                 # (1) type of diagnostic
+      ($PATH_PART):(\d+):(\d+) # (2) path, (3) line, (4) column
+      [\s-]*$                  # " -----------------" ending 
       """.toRegex(RegexOption.COMMENTS)
 
   // Scala 3 diagnostics have additional color printed, since Bazel uses renderedMessage field
@@ -30,7 +32,7 @@ internal object Scala3CompilerDiagnosticParser : Parser {
         val messageLines = collectMessageLines(match.groupValues[1].trim(), output)
         val column = match.groupValues[4].toIntOrNull() ?: tryFindColumnNumber(messageLines) ?: 1
         val message = messageLines.joinToString("\n")
-        Diagnostic(Position(line, column), message, Path(path), output.targetLabel, level)
+        Diagnostic(Position.fromHumanReadable(line, column), message, Path(path), output.targetLabel, level)
       }
 
   private fun collectMessageLines(header: String, output: Output): List<String> {

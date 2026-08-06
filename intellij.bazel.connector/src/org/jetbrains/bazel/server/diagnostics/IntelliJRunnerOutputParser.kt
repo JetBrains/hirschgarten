@@ -1,6 +1,7 @@
 package org.jetbrains.bazel.server.diagnostics
 
 import org.jetbrains.bsp.protocol.DiagnosticSeverity
+import org.jetbrains.bsp.protocol.Position
 import kotlin.io.path.Path
 
 internal object IntelliJRunnerOutputParser : Parser {
@@ -50,11 +51,10 @@ internal object IntelliJRunnerOutputParser : Parser {
         continue
       }
       val (path, lineText, columnText) = locationMatch.destructured
-      val position = Position(lineText.toInt(), columnText.toInt())
       output.take(i + 1)
       return listOf(
         Diagnostic(
-          position = position,
+          position = Position.fromHumanReadable(lineText.toInt(), columnText.toInt()),
           message = message.toString(),
           fileLocation = Path(path),
           targetLabel = output.targetLabel,

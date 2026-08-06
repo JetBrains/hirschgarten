@@ -1,7 +1,9 @@
 package org.jetbrains.bazel.server.diagnostics
 
 import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.server.diagnostics.Parser.Companion.PATH_PART
 import org.jetbrains.bsp.protocol.DiagnosticSeverity
+import org.jetbrains.bsp.protocol.Position
 import kotlin.io.path.Path
 
 internal object BazelRootMessageParser : Parser {
@@ -14,19 +16,19 @@ internal object BazelRootMessageParser : Parser {
   // This approach was used to find optional target label inside the message
   private val ErrorInBUILD =
     """
-      ^               # start of line
-      ERROR:\         # error indicator
-      ([^:]+/BUILD)   # path to BUILD file (1)
-      :(\d+)          # line number (2)
-      (?::(\d+))?     # optional column number (3)
-      :\              # ": " separator
-      (               # beginning of the error message (4)
-      (?:.*           # part of actual error message wrapped with label into optional group
-      $TARGET_LABEL    # target label (5)
-      )?              # make target label optional
-      .*              # part of actual error message
-      )               # end of the error message (4)
-      $               # end of line
+      ^                    # start of line
+      ERROR:\              # error indicator
+      ($PATH_PART/BUILD)   # path to BUILD file (1)
+      :(\d+)               # line number (2)
+      (?::(\d+))?          # optional column number (3)
+      :\                   # ": " separator
+      (                    # beginning of the error message (4)
+      (?:.*                # part of actual error message wrapped with label into optional group
+      $TARGET_LABEL        # target label (5)
+      )?                   # make target label optional
+      .*                   # part of actual error message
+      )                    # end of the error message (4)
+      $                    # end of line
       """.toRegex(RegexOption.COMMENTS)
 
   private fun findErrorInBUILD(output: Output): List<Diagnostic>? {
@@ -43,7 +45,7 @@ internal object BazelRootMessageParser : Parser {
     val line = match.groupValues[2].toInt()
     val column = match.groupValues[3].toIntOrNull() ?: 1
     val message = match.groupValues[4]
-    return Diagnostic(Position(line, column), message, Path(path), targetLabel, DiagnosticSeverity.ERROR)
+    return Diagnostic(Position.fromHumanReadable(line, column), message, Path(path), targetLabel, DiagnosticSeverity.ERROR)
   }
 
   private val InfoMessage =
@@ -51,7 +53,7 @@ internal object BazelRootMessageParser : Parser {
       ^               # start of line
       INFO:\          # info indicator
       .*?             # part of actual message
-      $TARGET_LABEL    # target label (1)
+      $TARGET_LABEL   # target label (1)
       .*              # part of actual message
       $               # end of line
     """.toRegex(RegexOption.COMMENTS)

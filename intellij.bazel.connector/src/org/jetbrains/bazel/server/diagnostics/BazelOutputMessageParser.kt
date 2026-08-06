@@ -1,13 +1,15 @@
 package org.jetbrains.bazel.server.diagnostics
 
 import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.server.diagnostics.Parser.Companion.PATH_PART
 import org.jetbrains.bsp.protocol.DiagnosticSeverity
+import org.jetbrains.bsp.protocol.Position
 import java.nio.file.InvalidPathException
 import java.nio.file.Paths
 import kotlin.io.path.exists
 
 internal object BazelOutputMessageParser : Parser {
-  private val COLOR = "\\u001B\\[[0-9]+m".toRegex()
+  private val COLOR = "\\u001B\\[[0-9]+(;[0-9]+)*m".toRegex()
 
   override fun tryParse(output: Output): List<Diagnostic> = findErrorInOutput(output)
 
@@ -22,7 +24,7 @@ internal object BazelOutputMessageParser : Parser {
   private val FileInOutput =
     """
       ^\s*                        # start of line
-      File\s*"(?<file>[^"]*)",   # file path
+      File\s*"(?<file>[^"]*)",    # file path
       \s*line\s*(?<line>\d+),     # line number
       \s*column\s*(?<char>\d+)    # caret position
       .*$                         # the rest
@@ -31,7 +33,7 @@ internal object BazelOutputMessageParser : Parser {
   private val FileBasedError =
     """
       ^                           # start of line
-      ?(?<file>[^:\r\n]+)         # file path
+      ?(?<file>$PATH_PART)        # file path
       :(?<line>\d+)               # line number
       :(?<char>\d+)               # caret position
       :\s*(?<message>.+?)\s*$     # error message
@@ -67,12 +69,12 @@ internal object BazelOutputMessageParser : Parser {
     }
     fileMatch?.let { fileMatch ->
       val file = try {
-        fileMatch.groups["file"]!!.let { Paths.get(it.value) }.takeIf { file -> file.exists() }
+        fileMatch.groups["file"]!!.let { Paths.get(it.value) }
       } catch (_: InvalidPathException) {
         null
       }
       if (file != null) {
-        val position = Position(
+        val position = Position.fromHumanReadable(
           fileMatch.groups["line"]!!.value.toInt(),
           fileMatch.groups["char"]!!.value.toInt(),
         )
@@ -81,7 +83,7 @@ internal object BazelOutputMessageParser : Parser {
       }
     }
     return Diagnostic(
-      position = Position(-1, -1),
+      position = Position.NONE,
       message = message.joinToString("\n").trim(),
       fileLocation = null,
       targetLabel = targetLabel,
