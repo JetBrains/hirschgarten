@@ -115,7 +115,7 @@ class BazelRunner(
     val commandBuilder = CommandBuilder(bazelBinary.pathString)
     val command = doBuild(commandBuilder)
 
-    if (command.ptyTermSize != null) {
+    if (command.enablePty) {
       command.options.addAll(
         listOf(
           curses(true),

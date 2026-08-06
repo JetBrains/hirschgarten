@@ -202,9 +202,6 @@
       serviceInterface="org.jetbrains.bazel.sync.environment.BazelApplicationContextService"
     />
 
-    <projectService serviceImplementation="org.jetbrains.bazel.ui.console.DefaultPtyTerminalService"
-                    serviceInterface="org.jetbrains.bazel.server.sync.PtyTerminalService"/>
-
     <projectService
       serviceImplementation="org.jetbrains.bazel.project.DefaultProjectViewService"
       serviceInterface="org.jetbrains.bazel.languages.projectview.ProjectViewService"
