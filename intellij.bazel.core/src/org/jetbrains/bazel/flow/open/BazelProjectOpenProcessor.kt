@@ -37,15 +37,19 @@ internal class BazelProjectOpenProcessor : ProjectOpenProcessor() {
 
     val projectViewFile = pickProjectViewFileForProject(fileBeingOpen, projectRootDir)
     log.trace { "Using project view file: $projectViewFile" }
+    val originalTask = projectOpenOptions.toOpenProjectTask()
+    val openProjectTask = OpenProjectTaskCompat {
+      forceOpenInNewFrame = originalTask.forceOpenInNewFrame
+      forceReuseFrame = originalTask.forceReuseFrame
+      projectToClose = originalTask.projectToClose
 
-    val openProjectTask = projectOpenOptions.toOpenProjectTask().copy(
       // Setting this flag to true will remove existing .idea directory.
       // We must overwrite it because ProjectUtil#openOrImportAsync sets it to true.
-      isNewProject = false,
-      runConfigurators = true,
+      isNewProject = false
+      runConfigurators = true
 
-      projectRootDir = projectRootDir,
-      createModule = false,
+      this.projectRootDir = projectRootDir
+      createModule = false
 
       callback = { project, _ ->
         BazelCoroutineService.getInstance(project).start {
@@ -60,7 +64,7 @@ internal class BazelProjectOpenProcessor : ProjectOpenProcessor() {
         project.service<TargetUtils>()
         project.service<ModuleTargetService>()
       }
-    )
+    }
 
     return ProjectManagerEx
       .getInstanceEx()

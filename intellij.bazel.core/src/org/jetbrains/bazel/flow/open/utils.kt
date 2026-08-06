@@ -1,6 +1,5 @@
 package org.jetbrains.bazel.flow.open
 
-import com.intellij.ide.impl.OpenProjectTask
 import com.intellij.ide.impl.ProjectUtil
 import com.intellij.openapi.application.EDT
 import com.intellij.openapi.fileEditor.ex.FileEditorManagerEx
@@ -59,11 +58,11 @@ internal val Path.workspaceFile: Path?
 
 internal fun Path.hasNameOf(vararg names: String): Boolean =
   isRegularFile(this) &&
-    name in names
+  name in names
 
 internal fun Path.hasExtensionOf(vararg extensions: String): Boolean =
   isRegularFile(this) &&
-    extension in extensions
+  extension in extensions
 
 internal fun VirtualFile.isBazelWorkspaceFile(): Boolean {
   if (!isFile) return false
@@ -95,7 +94,7 @@ internal suspend fun openProjectViewInEditor(
 suspend fun closeAndReopenAsBazelProject(project: Project, file: Path) {
   ProjectUtil.openOrImportAsync(
     file = file,
-    options = OpenProjectTask {
+    options = OpenProjectTaskCompat {
       forceReuseFrame = true
       runConfigurators = true
       projectToClose = project
