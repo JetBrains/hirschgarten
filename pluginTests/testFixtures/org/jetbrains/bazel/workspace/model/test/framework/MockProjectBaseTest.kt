@@ -8,6 +8,7 @@ import com.intellij.testFramework.junit5.TestDisposable
 import com.intellij.testFramework.junit5.fixture.projectFixture
 import com.intellij.testFramework.junit5.fixture.tempPathFixture
 import org.jetbrains.bazel.test.compat.PluginTestsCompat
+import org.jetbrains.bazel.test.framework.BazelTestApplication
 import org.junit.jupiter.api.extension.AfterAllCallback
 import org.junit.jupiter.api.extension.BeforeAllCallback
 import org.junit.jupiter.api.extension.ExtensionContext
@@ -24,18 +25,4 @@ abstract class MockProjectBaseTest {
   protected fun <T : Any> ExtensionPointName<T>.registerExtension(extension: T) {
     point.registerExtension(extension, disposable)
   }
-}
-
-
-class BazelIdeaTextExtension : BeforeAllCallback, AfterAllCallback {
-  val disposable = Disposer.newDisposable()
-
-  override fun beforeAll(context: ExtensionContext?) {
-    PluginTestsCompat.setupTestSuite(disposable)
-  }
-
-  override fun afterAll(context: ExtensionContext?) {
-    Disposer.dispose(disposable)
-  }
-
 }
