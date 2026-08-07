@@ -131,6 +131,16 @@ internal fun resolveProvidedBazelPluginZip(path: Path): BazelPluginInfo {
 }
 
 /**
+ * The verifier replaces every character outside this set with `_` when it names its report directories
+ * (`DirectoryBasedPluginVerificationReportage.createPluginVerificationDirectory` in intellij-plugin-verifier), while
+ * [PluginVerifier.reportVerifierIssues] resolves the directory by the raw [VerifierPluginInfo.buildNumber], so the value
+ * has to be pre-sanitized the same way. Nightly plugin versions contain `+` (`2026.2.1-nightly.40+a174936a2fe57`).
+ */
+private val VERIFIER_REPORT_DIR_INVALID_CHARS = Regex("[^a-zA-Z0-9.#\\-() ]")
+
+private fun String.asVerifierReportDirName(): String = replace(VERIFIER_REPORT_DIR_INVALID_CHARS, "_")
+
+/**
  * [reportArtifactSuffix] keeps the published reports apart when one CI build verifies several plugin archives against the same IDE.
  */
 internal suspend fun verifyBazelPluginCompatibility(
@@ -156,7 +166,7 @@ internal suspend fun verifyBazelPluginCompatibility(
       plugin = VerifierPluginInfo(
         path = bazelPlugin.path,
         pluginId = BAZEL_PLUGIN_ID,
-        buildNumber = bazelPlugin.pluginVersion,
+        buildNumber = bazelPlugin.pluginVersion.asVerifierReportDirName(),
       ),
       ide = ide,
       runtimeDir = JdkDownloader.getRuntimeHome(COMMUNITY_ROOT),
