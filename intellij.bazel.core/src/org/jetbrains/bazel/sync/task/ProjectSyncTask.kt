@@ -30,6 +30,8 @@ import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.coroutines.BazelCoroutineService
 import org.jetbrains.bazel.fus.BazelSyncCollector
 import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.languages.projectview.ProjectViewService
+import org.jetbrains.bazel.languages.projectview.unresolvedRequiredImports
 import org.jetbrains.bazel.performance.bspTracer
 import org.jetbrains.bazel.progress.syncConsole
 import org.jetbrains.bazel.progress.withSubtask
@@ -295,6 +297,16 @@ class ProjectSyncTask(private val project: Project) {
     var shouldUpdateProjectModel = false
     try {
       executePreSyncHooks(progressReporter, taskId)
+
+      // A required `import` in the project view (e.g. `import local.bazelproject`) whose file is
+      // missing leaves the project view effectively empty. Without stopping here the sync still
+      // contacts the Bazel server and tries to resolve configurations/targets from that empty view,
+      // which fails slowly with misleading secondary errors instead of the real cause. Stop now;
+      // the offending import was already reported as an error by ReparseProjectViewFilePreSyncHook.
+      if (project.serviceAsync<ProjectViewService>().projectView.unresolvedRequiredImports().isNotEmpty()) {
+        return ProjectSyncResult(ProjectSyncCompletionResult.FAILURE)
+      }
+
       return BazelServerService.getInstance(project).connection.runWithServer(taskId) { server ->
         server.withOutFileHardLinksSync(projectModelUpdated = { shouldUpdateProjectModel }) {
           server.bazelInfo.release.deprecated()?.let { deprecated ->
