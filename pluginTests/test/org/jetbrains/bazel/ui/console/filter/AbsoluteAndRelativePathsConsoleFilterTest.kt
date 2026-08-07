@@ -9,6 +9,8 @@ import kotlinx.coroutines.runBlocking
 import org.jetbrains.bazel.workspace.model.test.framework.WorkspaceModelBaseTest
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.condition.EnabledOnOs
+import org.junit.jupiter.api.condition.OS
 import java.nio.file.Path
 import kotlin.io.path.createDirectories
 import kotlin.io.path.pathString
@@ -42,7 +44,7 @@ class AbsoluteAndRelativePathsConsoleFilterTest : WorkspaceModelBaseTest() {
     result.resultItems[0].shouldHave(
       expectedStartOffset = expectedStartOffset,
       expectedEndOffset = expectedStartOffset + path.pathString.length,
-      expectedPath = path.pathString,
+      expectedPath = path,
     )
   }
 
@@ -64,7 +66,7 @@ class AbsoluteAndRelativePathsConsoleFilterTest : WorkspaceModelBaseTest() {
     result.resultItems[0].shouldHave(
       expectedStartOffset = expectedStartOffset,
       expectedEndOffset = expectedStartOffset + relativePath.length,
-      expectedPath = path.pathString,
+      expectedPath = path,
     )
   }
 
@@ -86,7 +88,7 @@ class AbsoluteAndRelativePathsConsoleFilterTest : WorkspaceModelBaseTest() {
     result.resultItems[0].shouldHave(
       expectedStartOffset = expectedStartOffset,
       expectedEndOffset = expectedStartOffset + path.pathString.length + coordinatesLength,
-      expectedPath = path.pathString,
+      expectedPath = path,
       expectedLine = 11,
       expectedColumn = 36,
     )
@@ -111,9 +113,58 @@ class AbsoluteAndRelativePathsConsoleFilterTest : WorkspaceModelBaseTest() {
     result.resultItems[0].shouldHave(
       expectedStartOffset = expectedStartOffset,
       expectedEndOffset = expectedStartOffset + relativePath.length + coordinatesLength,
-      expectedPath = path.pathString,
+      expectedPath = path,
       expectedLine = 11,
       expectedColumn = 36,
+    )
+  }
+
+  @Test
+  @EnabledOnOs(OS.WINDOWS)
+  fun `should match a windows absolute path with a drive letter and coordinates`() {
+    // given
+    val path = createPathInProject("some/path/in/the/project")
+    val windowsPath = path.pathString
+
+    val line = "$TEST_LINE_PREFIX $windowsPath:12:37: blah blah blah\n"
+
+    // when
+    val result = filter.applyFilter(line, line.length)
+
+    // then
+    result.resultItems.size shouldBe 1
+
+    val expectedStartOffset = TEST_LINE_PREFIX.length + 1
+    val coordinatesLength = ":12:37".length
+    result.resultItems[0].shouldHave(
+      expectedStartOffset = expectedStartOffset,
+      expectedEndOffset = expectedStartOffset + windowsPath.length + coordinatesLength,
+      expectedPath = path,
+      expectedLine = 11,
+      expectedColumn = 36,
+    )
+  }
+
+  @Test
+  @EnabledOnOs(OS.WINDOWS)
+  fun `should match a relative path with backslash separators`() {
+    // given
+    val relativePath = "some\\path\\in\\the\\project"
+    val path = createPathInProject(relativePath)
+
+    val line = "$TEST_LINE_PREFIX $relativePath blah blah blah\n"
+
+    // when
+    val result = filter.applyFilter(line, line.length)
+
+    // then
+    result.resultItems.size shouldBe 1
+
+    val expectedStartOffset = TEST_LINE_PREFIX.length + 1
+    result.resultItems[0].shouldHave(
+      expectedStartOffset = expectedStartOffset,
+      expectedEndOffset = expectedStartOffset + relativePath.length,
+      expectedPath = path,
     )
   }
 
@@ -136,7 +187,7 @@ class AbsoluteAndRelativePathsConsoleFilterTest : WorkspaceModelBaseTest() {
     result.resultItems[0].shouldHave(
       expectedStartOffset = expectedStartOffset,
       expectedEndOffset = expectedStartOffset + relativePath.length + coordinatesLength,
-      expectedPath = path.pathString,
+      expectedPath = path,
       expectedLine = 11,
       expectedColumn = 36,
     )
@@ -199,6 +250,48 @@ class AbsoluteAndRelativePathsConsoleFilterTest : WorkspaceModelBaseTest() {
   }
 
   @Test
+  fun `should not match a bazel target`() {
+    // given
+    val relativePath = "some/path/in/the/project"
+    createPathInProject(relativePath)
+
+    val line = "$TEST_LINE_PREFIX //$relativePath:some_target blah blah blah\n"
+
+    // when
+    val result = filter.applyFilter(line, line.length)
+
+    // then
+    result.resultItems.size shouldBe 0
+  }
+
+  @Test
+  fun `should not match a bazel target with a repository prefix`() {
+    // given
+    val relativePath = "some/path/in/the/project"
+    createPathInProject(relativePath)
+
+    val line = "$TEST_LINE_PREFIX @rules_jvm_external//$relativePath:some_target blah blah blah\n"
+
+    // when
+    val result = filter.applyFilter(line, line.length)
+
+    // then
+    result.resultItems.size shouldBe 0
+  }
+
+  @Test
+  fun `should not match a UNC path`() {
+    // given
+    val line = "$TEST_LINE_PREFIX \\\\server\\share\\file blah blah blah\n"
+
+    // when
+    val result = filter.applyFilter(line, line.length)
+
+    // then
+    result.resultItems.size shouldBe 0
+  }
+
+  @Test
   fun `should match multiple paths in one line`() {
     // given
     val relativePath1 = "some/path/number/1/in/the/project"
@@ -220,7 +313,7 @@ class AbsoluteAndRelativePathsConsoleFilterTest : WorkspaceModelBaseTest() {
     result.resultItems[0].shouldHave(
       expectedStartOffset = expectedStartOffset1,
       expectedEndOffset = expectedEndOffset1,
-      expectedPath = path1.pathString,
+      expectedPath = path1,
       expectedLine = 11,
       expectedColumn = 36,
     )
@@ -231,7 +324,7 @@ class AbsoluteAndRelativePathsConsoleFilterTest : WorkspaceModelBaseTest() {
     result.resultItems[1].shouldHave(
       expectedStartOffset = expectedStartOffset2,
       expectedEndOffset = expectedEndOffset2,
-      expectedPath = path2.pathString,
+      expectedPath = path2,
       expectedLine = 36,
       expectedColumn = 11,
     )
@@ -240,7 +333,7 @@ class AbsoluteAndRelativePathsConsoleFilterTest : WorkspaceModelBaseTest() {
     result.resultItems[2].shouldHave(
       expectedStartOffset = expectedStartOffset3,
       expectedEndOffset = expectedStartOffset3 + path3.pathString.length,
-      expectedPath = path3.pathString,
+      expectedPath = path3,
     )
   }
 
@@ -264,7 +357,7 @@ class AbsoluteAndRelativePathsConsoleFilterTest : WorkspaceModelBaseTest() {
     result.resultItems[0].shouldHave(
       expectedStartOffset = expectedStartOffset,
       expectedEndOffset = expectedEndOffset,
-      expectedPath = path1.pathString,
+      expectedPath = path1,
       expectedLine = 11,
       expectedColumn = 36,
     )
@@ -279,7 +372,7 @@ class AbsoluteAndRelativePathsConsoleFilterTest : WorkspaceModelBaseTest() {
   private fun Filter.ResultItem.shouldHave(
     expectedStartOffset: Int,
     expectedEndOffset: Int,
-    expectedPath: String,
+    expectedPath: Path,
     expectedLine: Int = 0,
     expectedColumn: Int = 0,
   ) {
@@ -287,7 +380,8 @@ class AbsoluteAndRelativePathsConsoleFilterTest : WorkspaceModelBaseTest() {
     highlightEndOffset shouldBe expectedEndOffset
 
     val info = hyperlinkInfo as? OpenFileHyperlinkInfo
-    info?.virtualFile?.path shouldBe expectedPath
+    // a virtual file path is always system-independent, so it cannot be compared to a path string directly on Windows
+    info?.virtualFile?.toNioPath() shouldBe expectedPath
     runBlocking {
       readAction {
         info?.descriptor?.line shouldBe expectedLine

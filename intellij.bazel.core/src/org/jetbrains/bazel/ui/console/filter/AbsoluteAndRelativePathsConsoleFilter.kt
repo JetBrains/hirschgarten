@@ -17,11 +17,18 @@ private const val COLUMN_GROUP_ID = "column"
 
 private val PathRegex = Regex(
   pattern = """
-        (^|\W)                                  # start of line or non-word character
-        (?<$PATH_GROUP_ID>[0-9 a-z_A-Z-/.+]+)   # match the path, even relative
+        (?<![\w.+/\\-])              # not preceded by a path character, so we never match a suffix of a longer path
+        (?<$PATH_GROUP_ID>
+          (?:[A-Za-z]:)?             # optional Windows drive letter, e.g. C:
+          [/\\]?                     # optional leading separator of an absolute path
+          [\w.+-]+                   # the first segment
+          (?:[/\\][\w.+-]+)*         # the following segments, each after exactly one separator
+        )
     """,
   options = setOf(RegexOption.COMMENTS, RegexOption.MULTILINE),
 )
+
+private val WindowsAbsolutePathRegex = Regex("""[A-Za-z]:[/\\]""")
 
 private val PositionRegex = Regex(":(?<$LINE_GROUP_ID>\\d+):(?<$COLUMN_GROUP_ID>\\d+)")
 private val IntellijPositionRegex = Regex(" \\((?<$LINE_GROUP_ID>\\d+):(?<$COLUMN_GROUP_ID>\\d+)\\)")
@@ -30,13 +37,16 @@ private val IntellijPositionRegex = Regex(" \\((?<$LINE_GROUP_ID>\\d+):(?<$COLUM
  * A better version of [com.intellij.execution.filters.RegexpFilter] which supports relative paths as well
  *
  * It tries to match:
- *  - absolute path if exists
+ *  - absolute path if exists, both Unix-style (`/home/user/a.kt`) and Windows-style with a drive letter (`C:\Users\user\a.kt`)
  *  - relative path if exists and is not in the root of the project, why?
  *    Because then we can get a lot of false positives with just normal names in the console
  *    e.g. word "Build" could be matched to a BUILD file in the project root.
  *    So to avoid such cases, we do not mach anything in the root of the project -
  *    it's highly unlikely to have a non-path word in the console which has slash in it
  *    and maps to an existing file
+ *
+ * Anything with two consecutive separators is not considered a path, so a bazel target
+ * (`//plugins/bazel:bazel`, `@rules_java//java:java`), a UNC path or a `file://` URL is never matched.
  */
 @ApiStatus.Internal
 class AbsoluteAndRelativePathsConsoleFilter(private val project: Project) : Filter {
@@ -61,14 +71,16 @@ class AbsoluteAndRelativePathsConsoleFilter(private val project: Project) : Filt
   }
 
   private fun String.toVirtualFileInTheProject(): VirtualFile? {
-    if ('/' !in this) return null
-    if (trim() == "/") return null
+    if ('/' !in this && '\\' !in this) return null
     return toAbsolutePath()
       .toNioPathOrNull()
       ?.findCanonicalVirtualFileThatExists()
   }
 
-  private fun String.toAbsolutePath() = if (startsWith("/")) this else "${project.rootDir.path}/$this"
+  private fun String.toAbsolutePath() = if (isAbsolutePath()) this else "${project.rootDir.path}/$this"
+
+  private fun String.isAbsolutePath() =
+    startsWith('/') || startsWith('\\') || WindowsAbsolutePathRegex.matchesAt(this, 0)
 
   private fun calculateInfo(virtualFile: VirtualFile, positionRegexResult: MatchResult?): OpenFileHyperlinkInfo {
     val lineNumber = positionRegexResult?.groups[LINE_GROUP_ID]?.value?.toIntOrNull()?.dec() ?: 0

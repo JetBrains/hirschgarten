@@ -22,6 +22,7 @@ import com.intellij.workspaceModel.ide.impl.WorkspaceModelImpl
 import com.jetbrains.python.sdk.internal.PYTHON_MODULE_ID
 import kotlinx.coroutines.runBlocking
 import org.jetbrains.bazel.project.BazelProjectFixtures.initializeBazelProject
+import org.jetbrains.bazel.test.framework.BazelTestApplication
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.extension.RegisterExtension
 import java.nio.file.Path
