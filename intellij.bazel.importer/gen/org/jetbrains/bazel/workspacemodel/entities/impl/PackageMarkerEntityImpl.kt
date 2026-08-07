@@ -32,12 +32,10 @@ import org.jetbrains.bazel.workspacemodel.entities.PackageMarkerEntityBuilder
 @OptIn(WorkspaceEntityInternalApi::class)
 internal class PackageMarkerEntityImpl(private val dataSource: PackageMarkerEntityData) : PackageMarkerEntity,
                                                                                           WorkspaceEntityBase(dataSource) {
-
   private companion object {
     internal val MODULE_CONNECTION_ID: ConnectionId =
       ConnectionId.create(ModuleEntity::class.java, PackageMarkerEntity::class.java, ConnectionId.ConnectionType.ONE_TO_MANY, false)
     private val connections = listOf<ConnectionId>(MODULE_CONNECTION_ID)
-
   }
 
   override val root: VirtualFileUrl
@@ -53,7 +51,6 @@ internal class PackageMarkerEntityImpl(private val dataSource: PackageMarkerEnti
   override val module: ModuleEntity
     get() = snapshot.instrumentation.getParent(MODULE_CONNECTION_ID, this) as? ModuleEntity
             ?: error("Parent module not found for PackageMarkerEntity")
-
   override val entitySource: EntitySource
     get() {
       readField("entitySource")
@@ -63,7 +60,6 @@ internal class PackageMarkerEntityImpl(private val dataSource: PackageMarkerEnti
   override fun connectionIdList(): List<ConnectionId> {
     return connections
   }
-
 
   internal class Builder(result: PackageMarkerEntityData?) :
     ModifiableWorkspaceEntityBase<PackageMarkerEntity, PackageMarkerEntityData>(result), PackageMarkerEntityBuilder {
@@ -88,7 +84,7 @@ internal class PackageMarkerEntityImpl(private val dataSource: PackageMarkerEnti
       index(this, "root", this.root)
 // Process linked entities that are connected without a builder
       processLinkedEntities(builder)
-      checkInitialization() // TODO uncomment and check failed tests
+      checkInitialization()
     }
 
     private fun checkInitialization() {
@@ -127,14 +123,12 @@ internal class PackageMarkerEntityImpl(private val dataSource: PackageMarkerEnti
       updateChildToParentReferences(parents)
     }
 
-
     override var entitySource: EntitySource
       get() = getEntityData().entitySource
       set(value) {
         checkModificationAllowed()
         getEntityData(true).entitySource = value
         changedProperty.add("entitySource")
-
       }
     override var root: VirtualFileUrl
       get() = getEntityData().root
@@ -170,11 +164,10 @@ internal class PackageMarkerEntityImpl(private val dataSource: PackageMarkerEnti
         val _diff = diff
         if (_diff != null && value is ModifiableWorkspaceEntityBase<*, *> && value.diff == null) {
 // Setting backref of the list
-          if (value is ModifiableWorkspaceEntityBase<*, *>) {
-            val data = (value.entityLinks[EntityLink(true, MODULE_CONNECTION_ID)] as? List<Any> ?: emptyList()) + this
-            value.entityLinks[EntityLink(true, MODULE_CONNECTION_ID)] = data
-          }
-// else you're attaching a new entity to an existing entity that is not modifiable
+          @Suppress("UNCHECKED_CAST")
+          val data = (value.entityLinks[EntityLink(true, MODULE_CONNECTION_ID)] as? List<Any> ?: emptyList()) + this
+          value.entityLinks[EntityLink(true, MODULE_CONNECTION_ID)] = data
+          @Suppress("UNCHECKED_CAST")
           _diff.addEntity(value as ModifiableWorkspaceEntityBase<WorkspaceEntity, *>)
         }
         if (_diff != null && (value !is ModifiableWorkspaceEntityBase<*, *> || value.diff != null)) {
@@ -183,10 +176,10 @@ internal class PackageMarkerEntityImpl(private val dataSource: PackageMarkerEnti
         else {
 // Setting backref of the list
           if (value is ModifiableWorkspaceEntityBase<*, *>) {
+            @Suppress("UNCHECKED_CAST")
             val data = (value.entityLinks[EntityLink(true, MODULE_CONNECTION_ID)] as? List<Any> ?: emptyList()) + this
             value.entityLinks[EntityLink(true, MODULE_CONNECTION_ID)] = data
           }
-// else you're attaching a new entity to an existing entity that is not modifiable
           this.entityLinks[EntityLink(false, MODULE_CONNECTION_ID)] = value
         }
         changedProperty.add("module")
@@ -194,17 +187,14 @@ internal class PackageMarkerEntityImpl(private val dataSource: PackageMarkerEnti
 
     override fun getEntityClass(): Class<PackageMarkerEntity> = PackageMarkerEntity::class.java
   }
-
 }
 
 @OptIn(WorkspaceEntityInternalApi::class)
 internal class PackageMarkerEntityData : WorkspaceEntityData<PackageMarkerEntity>() {
   lateinit var root: VirtualFileUrl
   lateinit var packagePrefix: String
-
   internal fun isRootInitialized(): Boolean = ::root.isInitialized
   internal fun isPackagePrefixInitialized(): Boolean = ::packagePrefix.isInitialized
-
   override fun wrapAsModifiable(diff: MutableEntityStorage): WorkspaceEntityBuilder<PackageMarkerEntity> {
     val modifiable = PackageMarkerEntityImpl.Builder(null)
     modifiable.diff = diff

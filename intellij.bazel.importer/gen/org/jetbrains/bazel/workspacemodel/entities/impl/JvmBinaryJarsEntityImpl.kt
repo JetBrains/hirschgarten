@@ -34,12 +34,10 @@ import org.jetbrains.bazel.workspacemodel.entities.JvmBinaryJarsEntityBuilder
 @OptIn(WorkspaceEntityInternalApi::class)
 internal class JvmBinaryJarsEntityImpl(private val dataSource: JvmBinaryJarsEntityData) : JvmBinaryJarsEntity,
                                                                                           WorkspaceEntityBase(dataSource) {
-
   private companion object {
     internal val MODULE_CONNECTION_ID: ConnectionId =
       ConnectionId.create(ModuleEntity::class.java, JvmBinaryJarsEntity::class.java, ConnectionId.ConnectionType.ONE_TO_ONE, false)
     private val connections = listOf<ConnectionId>(MODULE_CONNECTION_ID)
-
   }
 
   override val jars: List<VirtualFileUrl>
@@ -50,7 +48,6 @@ internal class JvmBinaryJarsEntityImpl(private val dataSource: JvmBinaryJarsEnti
   override val module: ModuleEntity
     get() = snapshot.instrumentation.getParent(MODULE_CONNECTION_ID, this) as? ModuleEntity
             ?: error("Parent module not found for JvmBinaryJarsEntity")
-
   override val entitySource: EntitySource
     get() {
       readField("entitySource")
@@ -60,7 +57,6 @@ internal class JvmBinaryJarsEntityImpl(private val dataSource: JvmBinaryJarsEnti
   override fun connectionIdList(): List<ConnectionId> {
     return connections
   }
-
 
   internal class Builder(result: JvmBinaryJarsEntityData?) :
     ModifiableWorkspaceEntityBase<JvmBinaryJarsEntity, JvmBinaryJarsEntityData>(result), JvmBinaryJarsEntityBuilder {
@@ -85,7 +81,7 @@ internal class JvmBinaryJarsEntityImpl(private val dataSource: JvmBinaryJarsEnti
       index(this, "jars", this.jars)
 // Process linked entities that are connected without a builder
       processLinkedEntities(builder)
-      checkInitialization() // TODO uncomment and check failed tests
+      checkInitialization()
     }
 
     private fun checkInitialization() {
@@ -127,14 +123,12 @@ internal class JvmBinaryJarsEntityImpl(private val dataSource: JvmBinaryJarsEnti
       updateChildToParentReferences(parents)
     }
 
-
     override var entitySource: EntitySource
       get() = getEntityData().entitySource
       set(value) {
         checkModificationAllowed()
         getEntityData(true).entitySource = value
         changedProperty.add("entitySource")
-
       }
     private val jarsUpdater: (value: List<VirtualFileUrl>) -> Unit = { value ->
       val _diff = diff
@@ -175,10 +169,8 @@ internal class JvmBinaryJarsEntityImpl(private val dataSource: JvmBinaryJarsEnti
         checkModificationAllowed()
         val _diff = diff
         if (_diff != null && value is ModifiableWorkspaceEntityBase<*, *> && value.diff == null) {
-          if (value is ModifiableWorkspaceEntityBase<*, *>) {
-            value.entityLinks[EntityLink(true, MODULE_CONNECTION_ID)] = this
-          }
-// else you're attaching a new entity to an existing entity that is not modifiable
+          value.entityLinks[EntityLink(true, MODULE_CONNECTION_ID)] = this
+          @Suppress("UNCHECKED_CAST")
           _diff.addEntity(value as ModifiableWorkspaceEntityBase<WorkspaceEntity, *>)
         }
         if (_diff != null && (value !is ModifiableWorkspaceEntityBase<*, *> || value.diff != null)) {
@@ -188,7 +180,6 @@ internal class JvmBinaryJarsEntityImpl(private val dataSource: JvmBinaryJarsEnti
           if (value is ModifiableWorkspaceEntityBase<*, *>) {
             value.entityLinks[EntityLink(true, MODULE_CONNECTION_ID)] = this
           }
-// else you're attaching a new entity to an existing entity that is not modifiable
           this.entityLinks[EntityLink(false, MODULE_CONNECTION_ID)] = value
         }
         changedProperty.add("module")
@@ -196,15 +187,12 @@ internal class JvmBinaryJarsEntityImpl(private val dataSource: JvmBinaryJarsEnti
 
     override fun getEntityClass(): Class<JvmBinaryJarsEntity> = JvmBinaryJarsEntity::class.java
   }
-
 }
 
 @OptIn(WorkspaceEntityInternalApi::class)
 internal class JvmBinaryJarsEntityData : WorkspaceEntityData<JvmBinaryJarsEntity>() {
   lateinit var jars: MutableList<VirtualFileUrl>
-
   internal fun isJarsInitialized(): Boolean = ::jars.isInitialized
-
   override fun wrapAsModifiable(diff: MutableEntityStorage): WorkspaceEntityBuilder<JvmBinaryJarsEntity> {
     val modifiable = JvmBinaryJarsEntityImpl.Builder(null)
     modifiable.diff = diff

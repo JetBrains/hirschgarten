@@ -23,7 +23,7 @@ interface BazelModuleExtensionEntityBuilder : WorkspaceEntityBuilder<BazelModule
 }
 
 internal object BazelModuleExtensionEntityType : EntityType<BazelModuleExtensionEntity, BazelModuleExtensionEntityBuilder>() {
-  override val entityClass: Class<BazelModuleExtensionEntity> get() = BazelModuleExtensionEntity::class.java
+  override val entityImplClass: Class<*> get() = BazelModuleExtensionEntityImpl::class.java
   override val entityImplBuilderClass: Class<*> get() = BazelModuleExtensionEntityImpl.Builder::class.java
   operator fun invoke(
     _targetKey: WorkspaceModelTargetKey,
@@ -52,7 +52,6 @@ fun MutableEntityStorage.modifyBazelModuleExtensionEntity(
 @set:Internal
 var ModuleEntityBuilder.bazelModuleExtension: BazelModuleExtensionEntityBuilder?
   by WorkspaceEntity.extensionBuilder(BazelModuleExtensionEntity::class.java)
-
 
 @Internal
 @JvmOverloads

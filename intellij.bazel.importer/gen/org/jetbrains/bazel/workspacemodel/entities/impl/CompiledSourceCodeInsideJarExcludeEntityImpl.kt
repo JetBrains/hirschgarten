@@ -32,13 +32,6 @@ import org.jetbrains.bazel.workspacemodel.entities.CompiledSourceCodeInsideJarEx
 @OptIn(WorkspaceEntityInternalApi::class)
 internal class CompiledSourceCodeInsideJarExcludeEntityImpl(private val dataSource: CompiledSourceCodeInsideJarExcludeEntityData) :
   CompiledSourceCodeInsideJarExcludeEntity, WorkspaceEntityBase(dataSource) {
-
-  private companion object {
-
-    private val connections = listOf<ConnectionId>()
-
-  }
-
   override val symbolicId: CompiledSourceCodeInsideJarExcludeId = super.symbolicId
 
   override val relativePathsInsideJarToExclude: Set<String>
@@ -56,7 +49,6 @@ internal class CompiledSourceCodeInsideJarExcludeEntityImpl(private val dataSour
       readField("excludeId")
       return dataSource.excludeId
     }
-
   override val entitySource: EntitySource
     get() {
       readField("entitySource")
@@ -64,9 +56,8 @@ internal class CompiledSourceCodeInsideJarExcludeEntityImpl(private val dataSour
     }
 
   override fun connectionIdList(): List<ConnectionId> {
-    return connections
+    return emptyList()
   }
-
 
   internal class Builder(result: CompiledSourceCodeInsideJarExcludeEntityData?) :
     ModifiableWorkspaceEntityBase<CompiledSourceCodeInsideJarExcludeEntity, CompiledSourceCodeInsideJarExcludeEntityData>(result),
@@ -91,7 +82,7 @@ internal class CompiledSourceCodeInsideJarExcludeEntityImpl(private val dataSour
       this.currentEntityData = null
 // Process linked entities that are connected without a builder
       processLinkedEntities(builder)
-      checkInitialization() // TODO uncomment and check failed tests
+      checkInitialization()
     }
 
     private fun checkInitialization() {
@@ -111,7 +102,7 @@ internal class CompiledSourceCodeInsideJarExcludeEntityImpl(private val dataSour
     }
 
     override fun connectionIdList(): List<ConnectionId> {
-      return connections
+      return emptyList()
     }
 
     override fun afterModification() {
@@ -137,14 +128,12 @@ internal class CompiledSourceCodeInsideJarExcludeEntityImpl(private val dataSour
       updateChildToParentReferences(parents)
     }
 
-
     override var entitySource: EntitySource
       get() = getEntityData().entitySource
       set(value) {
         checkModificationAllowed()
         getEntityData(true).entitySource = value
         changedProperty.add("entitySource")
-
       }
     private val relativePathsInsideJarToExcludeUpdater: (value: Set<String>) -> Unit = { value ->
 
@@ -194,12 +183,10 @@ internal class CompiledSourceCodeInsideJarExcludeEntityImpl(private val dataSour
         checkModificationAllowed()
         getEntityData(true).excludeId = value
         changedProperty.add("excludeId")
-
       }
 
     override fun getEntityClass(): Class<CompiledSourceCodeInsideJarExcludeEntity> = CompiledSourceCodeInsideJarExcludeEntity::class.java
   }
-
 }
 
 @OptIn(WorkspaceEntityInternalApi::class)
@@ -208,36 +195,21 @@ internal class CompiledSourceCodeInsideJarExcludeEntityData : WorkspaceEntityDat
   lateinit var relativePathsInsideJarToExclude: MutableSet<String>
   lateinit var librariesFromInternalTargetsUrls: MutableSet<String>
   lateinit var excludeId: CompiledSourceCodeInsideJarExcludeId
-
   internal fun isRelativePathsInsideJarToExcludeInitialized(): Boolean = ::relativePathsInsideJarToExclude.isInitialized
   internal fun isLibrariesFromInternalTargetsUrlsInitialized(): Boolean = ::librariesFromInternalTargetsUrls.isInitialized
   internal fun isExcludeIdInitialized(): Boolean = ::excludeId.isInitialized
-
   override fun getLinks(): Set<SymbolicEntityId<*>> {
     val result = HashSet<SymbolicEntityId<*>>()
-    for (item in relativePathsInsideJarToExclude) {
-    }
-    for (item in librariesFromInternalTargetsUrls) {
-    }
     result.add(excludeId)
     return result
   }
 
   override fun index(index: WorkspaceMutableIndex<SymbolicEntityId<*>>) {
-    for (item in relativePathsInsideJarToExclude) {
-    }
-    for (item in librariesFromInternalTargetsUrls) {
-    }
     index.index(this, excludeId)
   }
 
   override fun updateLinksIndex(prev: Set<SymbolicEntityId<*>>, index: WorkspaceMutableIndex<SymbolicEntityId<*>>) {
-// TODO verify logic
     val mutablePreviousSet = HashSet(prev)
-    for (item in relativePathsInsideJarToExclude) {
-    }
-    for (item in librariesFromInternalTargetsUrls) {
-    }
     val removedItem_excludeId = mutablePreviousSet.remove(excludeId)
     if (!removedItem_excludeId) {
       index.index(this, excludeId)

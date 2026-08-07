@@ -22,7 +22,7 @@ interface CompiledSourceCodeInsideJarExcludeEntityBuilder : WorkspaceEntityBuild
 
 internal object CompiledSourceCodeInsideJarExcludeEntityType :
   EntityType<CompiledSourceCodeInsideJarExcludeEntity, CompiledSourceCodeInsideJarExcludeEntityBuilder>() {
-  override val entityClass: Class<CompiledSourceCodeInsideJarExcludeEntity> get() = CompiledSourceCodeInsideJarExcludeEntity::class.java
+  override val entityImplClass: Class<*> get() = CompiledSourceCodeInsideJarExcludeEntityImpl::class.java
   override val entityImplBuilderClass: Class<*> get() = CompiledSourceCodeInsideJarExcludeEntityImpl.Builder::class.java
   operator fun invoke(
     relativePathsInsideJarToExclude: Set<String>,

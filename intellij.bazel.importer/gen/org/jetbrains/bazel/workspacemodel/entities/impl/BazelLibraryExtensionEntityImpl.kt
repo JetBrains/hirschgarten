@@ -32,12 +32,10 @@ import org.jetbrains.bazel.workspacemodel.entities.WorkspaceModelTargetKey
 @OptIn(WorkspaceEntityInternalApi::class)
 internal class BazelLibraryExtensionEntityImpl(private val dataSource: BazelLibraryExtensionEntityData) : BazelLibraryExtensionEntity,
                                                                                                           WorkspaceEntityBase(dataSource) {
-
   private companion object {
     internal val LIBRARY_CONNECTION_ID: ConnectionId =
       ConnectionId.create(LibraryEntity::class.java, BazelLibraryExtensionEntity::class.java, ConnectionId.ConnectionType.ONE_TO_ONE, false)
     private val connections = listOf<ConnectionId>(LIBRARY_CONNECTION_ID)
-
   }
 
   override val library: LibraryEntity
@@ -53,7 +51,6 @@ internal class BazelLibraryExtensionEntityImpl(private val dataSource: BazelLibr
       readField("isSynthetic")
       return dataSource.isSynthetic
     }
-
   override val entitySource: EntitySource
     get() {
       readField("entitySource")
@@ -63,7 +60,6 @@ internal class BazelLibraryExtensionEntityImpl(private val dataSource: BazelLibr
   override fun connectionIdList(): List<ConnectionId> {
     return connections
   }
-
 
   internal class Builder(result: BazelLibraryExtensionEntityData?) :
     ModifiableWorkspaceEntityBase<BazelLibraryExtensionEntity, BazelLibraryExtensionEntityData>(result),
@@ -88,7 +84,7 @@ internal class BazelLibraryExtensionEntityImpl(private val dataSource: BazelLibr
       this.currentEntityData = null
 // Process linked entities that are connected without a builder
       processLinkedEntities(builder)
-      checkInitialization() // TODO uncomment and check failed tests
+      checkInitialization()
     }
 
     private fun checkInitialization() {
@@ -124,14 +120,12 @@ internal class BazelLibraryExtensionEntityImpl(private val dataSource: BazelLibr
       updateChildToParentReferences(parents)
     }
 
-
     override var entitySource: EntitySource
       get() = getEntityData().entitySource
       set(value) {
         checkModificationAllowed()
         getEntityData(true).entitySource = value
         changedProperty.add("entitySource")
-
       }
     override var library: LibraryEntityBuilder
       get() {
@@ -150,10 +144,8 @@ internal class BazelLibraryExtensionEntityImpl(private val dataSource: BazelLibr
         checkModificationAllowed()
         val _diff = diff
         if (_diff != null && value is ModifiableWorkspaceEntityBase<*, *> && value.diff == null) {
-          if (value is ModifiableWorkspaceEntityBase<*, *>) {
-            value.entityLinks[EntityLink(true, LIBRARY_CONNECTION_ID)] = this
-          }
-// else you're attaching a new entity to an existing entity that is not modifiable
+          value.entityLinks[EntityLink(true, LIBRARY_CONNECTION_ID)] = this
+          @Suppress("UNCHECKED_CAST")
           _diff.addEntity(value as ModifiableWorkspaceEntityBase<WorkspaceEntity, *>)
         }
         if (_diff != null && (value !is ModifiableWorkspaceEntityBase<*, *> || value.diff != null)) {
@@ -163,19 +155,16 @@ internal class BazelLibraryExtensionEntityImpl(private val dataSource: BazelLibr
           if (value is ModifiableWorkspaceEntityBase<*, *>) {
             value.entityLinks[EntityLink(true, LIBRARY_CONNECTION_ID)] = this
           }
-// else you're attaching a new entity to an existing entity that is not modifiable
           this.entityLinks[EntityLink(false, LIBRARY_CONNECTION_ID)] = value
         }
         changedProperty.add("library")
       }
-
     override var _targetKey: WorkspaceModelTargetKey
       get() = getEntityData()._targetKey
       set(value) {
         checkModificationAllowed()
         getEntityData(true)._targetKey = value
         changedProperty.add("_targetKey")
-
       }
     override var isSynthetic: Boolean
       get() = getEntityData().isSynthetic
@@ -187,17 +176,13 @@ internal class BazelLibraryExtensionEntityImpl(private val dataSource: BazelLibr
 
     override fun getEntityClass(): Class<BazelLibraryExtensionEntity> = BazelLibraryExtensionEntity::class.java
   }
-
 }
 
 @OptIn(WorkspaceEntityInternalApi::class)
 internal class BazelLibraryExtensionEntityData : WorkspaceEntityData<BazelLibraryExtensionEntity>() {
   lateinit var _targetKey: WorkspaceModelTargetKey
   var isSynthetic: Boolean = false
-
   internal fun is_targetKeyInitialized(): Boolean = ::_targetKey.isInitialized
-
-
   override fun wrapAsModifiable(diff: MutableEntityStorage): WorkspaceEntityBuilder<BazelLibraryExtensionEntity> {
     val modifiable = BazelLibraryExtensionEntityImpl.Builder(null)
     modifiable.diff = diff

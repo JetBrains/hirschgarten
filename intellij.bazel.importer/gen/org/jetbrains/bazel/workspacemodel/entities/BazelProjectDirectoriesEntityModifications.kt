@@ -24,7 +24,7 @@ interface BazelProjectDirectoriesEntityBuilder : WorkspaceEntityBuilder<BazelPro
 }
 
 internal object BazelProjectDirectoriesEntityType : EntityType<BazelProjectDirectoriesEntity, BazelProjectDirectoriesEntityBuilder>() {
-  override val entityClass: Class<BazelProjectDirectoriesEntity> get() = BazelProjectDirectoriesEntity::class.java
+  override val entityImplClass: Class<*> get() = BazelProjectDirectoriesEntityImpl::class.java
   override val entityImplBuilderClass: Class<*> get() = BazelProjectDirectoriesEntityImpl.Builder::class.java
   operator fun invoke(
     projectRoot: VirtualFileUrl,

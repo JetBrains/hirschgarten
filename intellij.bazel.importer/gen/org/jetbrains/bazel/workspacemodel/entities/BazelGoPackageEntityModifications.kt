@@ -21,7 +21,7 @@ interface BazelGoPackageEntityBuilder : WorkspaceEntityBuilder<BazelGoPackageEnt
 }
 
 internal object BazelGoPackageEntityType : EntityType<BazelGoPackageEntity, BazelGoPackageEntityBuilder>() {
-  override val entityClass: Class<BazelGoPackageEntity> get() = BazelGoPackageEntity::class.java
+  override val entityImplClass: Class<*> get() = BazelGoPackageEntityImpl::class.java
   override val entityImplBuilderClass: Class<*> get() = BazelGoPackageEntityImpl.Builder::class.java
   operator fun invoke(
     importPath: String,

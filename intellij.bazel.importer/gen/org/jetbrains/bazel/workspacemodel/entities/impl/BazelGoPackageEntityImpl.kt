@@ -30,13 +30,6 @@ import org.jetbrains.bazel.workspacemodel.entities.ImportPathId
 @OptIn(WorkspaceEntityInternalApi::class)
 internal class BazelGoPackageEntityImpl(private val dataSource: BazelGoPackageEntityData) : BazelGoPackageEntity,
                                                                                             WorkspaceEntityBase(dataSource) {
-
-  private companion object {
-
-    private val connections = listOf<ConnectionId>()
-
-  }
-
   override val symbolicId: ImportPathId = super.symbolicId
 
   override val importPath: String
@@ -49,7 +42,6 @@ internal class BazelGoPackageEntityImpl(private val dataSource: BazelGoPackageEn
       readField("sources")
       return dataSource.sources
     }
-
   override val entitySource: EntitySource
     get() {
       readField("entitySource")
@@ -57,9 +49,8 @@ internal class BazelGoPackageEntityImpl(private val dataSource: BazelGoPackageEn
     }
 
   override fun connectionIdList(): List<ConnectionId> {
-    return connections
+    return emptyList()
   }
-
 
   internal class Builder(result: BazelGoPackageEntityData?) :
     ModifiableWorkspaceEntityBase<BazelGoPackageEntity, BazelGoPackageEntityData>(result), BazelGoPackageEntityBuilder {
@@ -84,7 +75,7 @@ internal class BazelGoPackageEntityImpl(private val dataSource: BazelGoPackageEn
       index(this, "sources", this.sources)
 // Process linked entities that are connected without a builder
       processLinkedEntities(builder)
-      checkInitialization() // TODO uncomment and check failed tests
+      checkInitialization()
     }
 
     private fun checkInitialization() {
@@ -101,7 +92,7 @@ internal class BazelGoPackageEntityImpl(private val dataSource: BazelGoPackageEn
     }
 
     override fun connectionIdList(): List<ConnectionId> {
-      return connections
+      return emptyList()
     }
 
     override fun afterModification() {
@@ -120,14 +111,12 @@ internal class BazelGoPackageEntityImpl(private val dataSource: BazelGoPackageEn
       updateChildToParentReferences(parents)
     }
 
-
     override var entitySource: EntitySource
       get() = getEntityData().entitySource
       set(value) {
         checkModificationAllowed()
         getEntityData(true).entitySource = value
         changedProperty.add("entitySource")
-
       }
     override var importPath: String
       get() = getEntityData().importPath
@@ -161,17 +150,14 @@ internal class BazelGoPackageEntityImpl(private val dataSource: BazelGoPackageEn
 
     override fun getEntityClass(): Class<BazelGoPackageEntity> = BazelGoPackageEntity::class.java
   }
-
 }
 
 @OptIn(WorkspaceEntityInternalApi::class)
 internal class BazelGoPackageEntityData : WorkspaceEntityData<BazelGoPackageEntity>() {
   lateinit var importPath: String
   lateinit var sources: MutableList<VirtualFileUrl>
-
   internal fun isImportPathInitialized(): Boolean = ::importPath.isInitialized
   internal fun isSourcesInitialized(): Boolean = ::sources.isInitialized
-
   override fun wrapAsModifiable(diff: MutableEntityStorage): WorkspaceEntityBuilder<BazelGoPackageEntity> {
     val modifiable = BazelGoPackageEntityImpl.Builder(null)
     modifiable.diff = diff

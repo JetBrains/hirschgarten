@@ -32,12 +32,6 @@ import org.jetbrains.bazel.workspacemodel.entities.LibraryCompiledSourceCodeInsi
 internal class LibraryCompiledSourceCodeInsideJarExcludeEntityImpl(private val dataSource: LibraryCompiledSourceCodeInsideJarExcludeEntityData) :
   LibraryCompiledSourceCodeInsideJarExcludeEntity, WorkspaceEntityBase(dataSource) {
 
-  private companion object {
-
-    private val connections = listOf<ConnectionId>()
-
-  }
-
   override val libraryId: LibraryId
     get() {
       readField("libraryId")
@@ -48,7 +42,6 @@ internal class LibraryCompiledSourceCodeInsideJarExcludeEntityImpl(private val d
       readField("compiledSourceCodeInsideJarExcludeId")
       return dataSource.compiledSourceCodeInsideJarExcludeId
     }
-
   override val entitySource: EntitySource
     get() {
       readField("entitySource")
@@ -56,9 +49,8 @@ internal class LibraryCompiledSourceCodeInsideJarExcludeEntityImpl(private val d
     }
 
   override fun connectionIdList(): List<ConnectionId> {
-    return connections
+    return emptyList()
   }
-
 
   internal class Builder(result: LibraryCompiledSourceCodeInsideJarExcludeEntityData?) :
     ModifiableWorkspaceEntityBase<LibraryCompiledSourceCodeInsideJarExcludeEntity, LibraryCompiledSourceCodeInsideJarExcludeEntityData>(
@@ -84,7 +76,7 @@ internal class LibraryCompiledSourceCodeInsideJarExcludeEntityImpl(private val d
       this.currentEntityData = null
 // Process linked entities that are connected without a builder
       processLinkedEntities(builder)
-      checkInitialization() // TODO uncomment and check failed tests
+      checkInitialization()
     }
 
     private fun checkInitialization() {
@@ -101,7 +93,7 @@ internal class LibraryCompiledSourceCodeInsideJarExcludeEntityImpl(private val d
     }
 
     override fun connectionIdList(): List<ConnectionId> {
-      return connections
+      return emptyList()
     }
 
     // Relabeling code, move information from dataSource to this builder
@@ -114,14 +106,12 @@ internal class LibraryCompiledSourceCodeInsideJarExcludeEntityImpl(private val d
       updateChildToParentReferences(parents)
     }
 
-
     override var entitySource: EntitySource
       get() = getEntityData().entitySource
       set(value) {
         checkModificationAllowed()
         getEntityData(true).entitySource = value
         changedProperty.add("entitySource")
-
       }
     override var libraryId: LibraryId
       get() = getEntityData().libraryId
@@ -129,7 +119,6 @@ internal class LibraryCompiledSourceCodeInsideJarExcludeEntityImpl(private val d
         checkModificationAllowed()
         getEntityData(true).libraryId = value
         changedProperty.add("libraryId")
-
       }
     override var compiledSourceCodeInsideJarExcludeId: CompiledSourceCodeInsideJarExcludeId
       get() = getEntityData().compiledSourceCodeInsideJarExcludeId
@@ -137,13 +126,11 @@ internal class LibraryCompiledSourceCodeInsideJarExcludeEntityImpl(private val d
         checkModificationAllowed()
         getEntityData(true).compiledSourceCodeInsideJarExcludeId = value
         changedProperty.add("compiledSourceCodeInsideJarExcludeId")
-
       }
 
     override fun getEntityClass(): Class<LibraryCompiledSourceCodeInsideJarExcludeEntity> =
       LibraryCompiledSourceCodeInsideJarExcludeEntity::class.java
   }
-
 }
 
 @OptIn(WorkspaceEntityInternalApi::class)
@@ -151,10 +138,8 @@ internal class LibraryCompiledSourceCodeInsideJarExcludeEntityData : WorkspaceEn
                                                                      SoftLinkable {
   lateinit var libraryId: LibraryId
   lateinit var compiledSourceCodeInsideJarExcludeId: CompiledSourceCodeInsideJarExcludeId
-
   internal fun isLibraryIdInitialized(): Boolean = ::libraryId.isInitialized
   internal fun isCompiledSourceCodeInsideJarExcludeIdInitialized(): Boolean = ::compiledSourceCodeInsideJarExcludeId.isInitialized
-
   override fun getLinks(): Set<SymbolicEntityId<*>> {
     val result = HashSet<SymbolicEntityId<*>>()
     result.add(libraryId)
@@ -168,7 +153,6 @@ internal class LibraryCompiledSourceCodeInsideJarExcludeEntityData : WorkspaceEn
   }
 
   override fun updateLinksIndex(prev: Set<SymbolicEntityId<*>>, index: WorkspaceMutableIndex<SymbolicEntityId<*>>) {
-// TODO verify logic
     val mutablePreviousSet = HashSet(prev)
     val removedItem_libraryId = mutablePreviousSet.remove(libraryId)
     if (!removedItem_libraryId) {

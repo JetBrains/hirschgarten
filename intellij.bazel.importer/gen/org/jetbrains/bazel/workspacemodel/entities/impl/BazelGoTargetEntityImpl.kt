@@ -32,13 +32,6 @@ import org.jetbrains.bazel.workspacemodel.entities.WorkspaceModelTargetKey
 @OptIn(WorkspaceEntityInternalApi::class)
 internal class BazelGoTargetEntityImpl(private val dataSource: BazelGoTargetEntityData) : BazelGoTargetEntity,
                                                                                           WorkspaceEntityBase(dataSource) {
-
-  private companion object {
-
-    private val connections = listOf<ConnectionId>()
-
-  }
-
   override val symbolicId: BazelGoTargetEntityId = super.symbolicId
 
   override val _targetKey: WorkspaceModelTargetKey
@@ -51,7 +44,6 @@ internal class BazelGoTargetEntityImpl(private val dataSource: BazelGoTargetEnti
       readField("importPath")
       return dataSource.importPath
     }
-
   override val entitySource: EntitySource
     get() {
       readField("entitySource")
@@ -59,9 +51,8 @@ internal class BazelGoTargetEntityImpl(private val dataSource: BazelGoTargetEnti
     }
 
   override fun connectionIdList(): List<ConnectionId> {
-    return connections
+    return emptyList()
   }
-
 
   internal class Builder(result: BazelGoTargetEntityData?) :
     ModifiableWorkspaceEntityBase<BazelGoTargetEntity, BazelGoTargetEntityData>(result), BazelGoTargetEntityBuilder {
@@ -85,7 +76,7 @@ internal class BazelGoTargetEntityImpl(private val dataSource: BazelGoTargetEnti
       this.currentEntityData = null
 // Process linked entities that are connected without a builder
       processLinkedEntities(builder)
-      checkInitialization() // TODO uncomment and check failed tests
+      checkInitialization()
     }
 
     private fun checkInitialization() {
@@ -102,7 +93,7 @@ internal class BazelGoTargetEntityImpl(private val dataSource: BazelGoTargetEnti
     }
 
     override fun connectionIdList(): List<ConnectionId> {
-      return connections
+      return emptyList()
     }
 
     // Relabeling code, move information from dataSource to this builder
@@ -114,14 +105,12 @@ internal class BazelGoTargetEntityImpl(private val dataSource: BazelGoTargetEnti
       updateChildToParentReferences(parents)
     }
 
-
     override var entitySource: EntitySource
       get() = getEntityData().entitySource
       set(value) {
         checkModificationAllowed()
         getEntityData(true).entitySource = value
         changedProperty.add("entitySource")
-
       }
     override var _targetKey: WorkspaceModelTargetKey
       get() = getEntityData()._targetKey
@@ -129,7 +118,6 @@ internal class BazelGoTargetEntityImpl(private val dataSource: BazelGoTargetEnti
         checkModificationAllowed()
         getEntityData(true)._targetKey = value
         changedProperty.add("_targetKey")
-
       }
     override var importPath: ImportPathId
       get() = getEntityData().importPath
@@ -137,41 +125,30 @@ internal class BazelGoTargetEntityImpl(private val dataSource: BazelGoTargetEnti
         checkModificationAllowed()
         getEntityData(true).importPath = value
         changedProperty.add("importPath")
-
       }
 
     override fun getEntityClass(): Class<BazelGoTargetEntity> = BazelGoTargetEntity::class.java
   }
-
 }
 
 @OptIn(WorkspaceEntityInternalApi::class)
 internal class BazelGoTargetEntityData : WorkspaceEntityData<BazelGoTargetEntity>(), SoftLinkable {
   lateinit var _targetKey: WorkspaceModelTargetKey
   lateinit var importPath: ImportPathId
-
   internal fun is_targetKeyInitialized(): Boolean = ::_targetKey.isInitialized
   internal fun isImportPathInitialized(): Boolean = ::importPath.isInitialized
-
   override fun getLinks(): Set<SymbolicEntityId<*>> {
     val result = HashSet<SymbolicEntityId<*>>()
-    for (item in _targetKey.aspectIds) {
-    }
     result.add(importPath)
     return result
   }
 
   override fun index(index: WorkspaceMutableIndex<SymbolicEntityId<*>>) {
-    for (item in _targetKey.aspectIds) {
-    }
     index.index(this, importPath)
   }
 
   override fun updateLinksIndex(prev: Set<SymbolicEntityId<*>>, index: WorkspaceMutableIndex<SymbolicEntityId<*>>) {
-// TODO verify logic
     val mutablePreviousSet = HashSet(prev)
-    for (item in _targetKey.aspectIds) {
-    }
     val removedItem_importPath = mutablePreviousSet.remove(importPath)
     if (!removedItem_importPath) {
       index.index(this, importPath)

@@ -23,7 +23,7 @@ interface PackageMarkerEntityBuilder : WorkspaceEntityBuilder<PackageMarkerEntit
 }
 
 internal object PackageMarkerEntityType : EntityType<PackageMarkerEntity, PackageMarkerEntityBuilder>() {
-  override val entityClass: Class<PackageMarkerEntity> get() = PackageMarkerEntity::class.java
+  override val entityImplClass: Class<*> get() = PackageMarkerEntityImpl::class.java
   override val entityImplBuilderClass: Class<*> get() = PackageMarkerEntityImpl.Builder::class.java
   operator fun invoke(
     root: VirtualFileUrl,
@@ -50,7 +50,6 @@ fun MutableEntityStorage.modifyPackageMarkerEntity(
 @set:Internal
 var ModuleEntityBuilder.packageMarkerEntities: List<PackageMarkerEntityBuilder>
   by WorkspaceEntity.extensionBuilder(PackageMarkerEntity::class.java)
-
 
 @Internal
 @JvmOverloads

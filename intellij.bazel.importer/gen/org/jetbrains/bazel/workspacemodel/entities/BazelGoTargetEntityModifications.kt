@@ -19,7 +19,7 @@ interface BazelGoTargetEntityBuilder : WorkspaceEntityBuilder<BazelGoTargetEntit
 }
 
 internal object BazelGoTargetEntityType : EntityType<BazelGoTargetEntity, BazelGoTargetEntityBuilder>() {
-  override val entityClass: Class<BazelGoTargetEntity> get() = BazelGoTargetEntity::class.java
+  override val entityImplClass: Class<*> get() = BazelGoTargetEntityImpl::class.java
   override val entityImplBuilderClass: Class<*> get() = BazelGoTargetEntityImpl.Builder::class.java
   operator fun invoke(
     _targetKey: WorkspaceModelTargetKey,

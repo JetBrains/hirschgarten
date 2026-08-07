@@ -31,12 +31,6 @@ import org.jetbrains.bazel.workspacemodel.entities.NonIndexableVirtualFileUrl
 internal class BazelProjectDirectoriesEntityImpl(private val dataSource: BazelProjectDirectoriesEntityData) : BazelProjectDirectoriesEntity,
                                                                                                               WorkspaceEntityBase(dataSource) {
 
-  private companion object {
-
-    private val connections = listOf<ConnectionId>()
-
-  }
-
   override val projectRoot: VirtualFileUrl
     get() {
       readField("projectRoot")
@@ -62,7 +56,6 @@ internal class BazelProjectDirectoriesEntityImpl(private val dataSource: BazelPr
       readField("indexAdditionalFiles")
       return dataSource.indexAdditionalFiles
     }
-
   override val entitySource: EntitySource
     get() {
       readField("entitySource")
@@ -70,9 +63,8 @@ internal class BazelProjectDirectoriesEntityImpl(private val dataSource: BazelPr
     }
 
   override fun connectionIdList(): List<ConnectionId> {
-    return connections
+    return emptyList()
   }
-
 
   internal class Builder(result: BazelProjectDirectoriesEntityData?) :
     ModifiableWorkspaceEntityBase<BazelProjectDirectoriesEntity, BazelProjectDirectoriesEntityData>(result),
@@ -98,7 +90,7 @@ internal class BazelProjectDirectoriesEntityImpl(private val dataSource: BazelPr
       index(this, "projectRoot", this.projectRoot)
 // Process linked entities that are connected without a builder
       processLinkedEntities(builder)
-      checkInitialization() // TODO uncomment and check failed tests
+      checkInitialization()
     }
 
     private fun checkInitialization() {
@@ -121,7 +113,7 @@ internal class BazelProjectDirectoriesEntityImpl(private val dataSource: BazelPr
     }
 
     override fun connectionIdList(): List<ConnectionId> {
-      return connections
+      return emptyList()
     }
 
     override fun afterModification() {
@@ -153,14 +145,12 @@ internal class BazelProjectDirectoriesEntityImpl(private val dataSource: BazelPr
       updateChildToParentReferences(parents)
     }
 
-
     override var entitySource: EntitySource
       get() = getEntityData().entitySource
       set(value) {
         checkModificationAllowed()
         getEntityData(true).entitySource = value
         changedProperty.add("entitySource")
-
       }
     override var projectRoot: VirtualFileUrl
       get() = getEntityData().projectRoot
@@ -244,7 +234,6 @@ internal class BazelProjectDirectoriesEntityImpl(private val dataSource: BazelPr
 
     override fun getEntityClass(): Class<BazelProjectDirectoriesEntity> = BazelProjectDirectoriesEntity::class.java
   }
-
 }
 
 @OptIn(WorkspaceEntityInternalApi::class)
@@ -254,13 +243,10 @@ internal class BazelProjectDirectoriesEntityData : WorkspaceEntityData<BazelProj
   lateinit var excludedRoots: MutableList<NonIndexableVirtualFileUrl>
   var indexAllFilesInIncludedRoots: Boolean = false
   lateinit var indexAdditionalFiles: MutableList<NonIndexableVirtualFileUrl>
-
   internal fun isProjectRootInitialized(): Boolean = ::projectRoot.isInitialized
   internal fun isIncludedRootsInitialized(): Boolean = ::includedRoots.isInitialized
   internal fun isExcludedRootsInitialized(): Boolean = ::excludedRoots.isInitialized
-
   internal fun isIndexAdditionalFilesInitialized(): Boolean = ::indexAdditionalFiles.isInitialized
-
   override fun wrapAsModifiable(diff: MutableEntityStorage): WorkspaceEntityBuilder<BazelProjectDirectoriesEntity> {
     val modifiable = BazelProjectDirectoriesEntityImpl.Builder(null)
     modifiable.diff = diff

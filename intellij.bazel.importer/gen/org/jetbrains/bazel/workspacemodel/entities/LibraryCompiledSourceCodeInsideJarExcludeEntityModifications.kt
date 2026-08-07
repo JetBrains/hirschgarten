@@ -21,7 +21,7 @@ interface LibraryCompiledSourceCodeInsideJarExcludeEntityBuilder : WorkspaceEnti
 
 internal object LibraryCompiledSourceCodeInsideJarExcludeEntityType :
   EntityType<LibraryCompiledSourceCodeInsideJarExcludeEntity, LibraryCompiledSourceCodeInsideJarExcludeEntityBuilder>() {
-  override val entityClass: Class<LibraryCompiledSourceCodeInsideJarExcludeEntity> get() = LibraryCompiledSourceCodeInsideJarExcludeEntity::class.java
+  override val entityImplClass: Class<*> get() = LibraryCompiledSourceCodeInsideJarExcludeEntityImpl::class.java
   override val entityImplBuilderClass: Class<*> get() = LibraryCompiledSourceCodeInsideJarExcludeEntityImpl.Builder::class.java
   operator fun invoke(
     libraryId: LibraryId,

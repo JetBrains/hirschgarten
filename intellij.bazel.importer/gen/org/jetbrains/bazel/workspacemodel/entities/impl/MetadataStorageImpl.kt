@@ -20,9 +20,7 @@ internal object MetadataStorageImpl : MetadataStorageBase() {
     val primitiveTypeIntNotNullable = ValueTypeMetadata.SimpleType.PrimitiveType(isNullable = false, type = "Int")
     val primitiveTypeBooleanNotNullable = ValueTypeMetadata.SimpleType.PrimitiveType(isNullable = false, type = "Boolean")
     val primitiveTypeSetNotNullable = ValueTypeMetadata.SimpleType.PrimitiveType(isNullable = false, type = "Set")
-
     var typeMetadata: StorageTypeMetadata
-
     typeMetadata = FinalClassMetadata.ClassMetadata(
       fqName = "org.jetbrains.bazel.workspacemodel.entities.BazelModuleEntitySource",
       properties = listOf(
@@ -53,9 +51,7 @@ internal object MetadataStorageImpl : MetadataStorageBase() {
         "org.jetbrains.bazel.workspacemodel.entities.BazelEntitySource",
       ),
     )
-
     addMetadata(typeMetadata)
-
     typeMetadata = FinalClassMetadata.ObjectMetadata(
       fqName = "org.jetbrains.bazel.workspacemodel.entities.BazelDummyEntitySource",
       properties = listOf(
@@ -78,9 +74,7 @@ internal object MetadataStorageImpl : MetadataStorageBase() {
         "org.jetbrains.bazel.workspacemodel.entities.BazelEntitySource",
       ),
     )
-
     addMetadata(typeMetadata)
-
     typeMetadata = FinalClassMetadata.ObjectMetadata(
       fqName = "org.jetbrains.bazel.workspacemodel.entities.BazelProjectEntitySource",
       properties = listOf(
@@ -103,9 +97,7 @@ internal object MetadataStorageImpl : MetadataStorageBase() {
         "org.jetbrains.bazel.workspacemodel.entities.BazelEntitySource",
       ),
     )
-
     addMetadata(typeMetadata)
-
     typeMetadata = FinalClassMetadata.ClassMetadata(
       fqName = "org.jetbrains.bazel.workspacemodel.entities.ImportPathId",
       properties = listOf(
@@ -128,9 +120,7 @@ internal object MetadataStorageImpl : MetadataStorageBase() {
       ),
       supertypes = listOf("com.intellij.platform.workspace.storage.SymbolicEntityId"),
     )
-
     addMetadata(typeMetadata)
-
     typeMetadata = FinalClassMetadata.ClassMetadata(
       fqName = "org.jetbrains.bazel.workspacemodel.entities.BazelGoTargetEntityId",
       properties = listOf(
@@ -190,9 +180,7 @@ internal object MetadataStorageImpl : MetadataStorageBase() {
       ),
       supertypes = listOf("com.intellij.platform.workspace.storage.SymbolicEntityId"),
     )
-
     addMetadata(typeMetadata)
-
     typeMetadata =
       FinalClassMetadata.ClassMetadata(
         fqName = "org.jetbrains.bazel.workspacemodel.entities.CompiledSourceCodeInsideJarExcludeId",
@@ -216,9 +204,7 @@ internal object MetadataStorageImpl : MetadataStorageBase() {
         ),
         supertypes = listOf("com.intellij.platform.workspace.storage.SymbolicEntityId"),
       )
-
     addMetadata(typeMetadata)
-
     typeMetadata = EntityMetadata(
       fqName = "org.jetbrains.bazel.workspacemodel.entities.BazelGoPackageEntity",
       entityDataFqName = "org.jetbrains.bazel.workspacemodel.entities.impl.BazelGoPackageEntityData",
@@ -304,9 +290,7 @@ internal object MetadataStorageImpl : MetadataStorageBase() {
       extProperties = listOf(),
       isAbstract = false,
     )
-
     addMetadata(typeMetadata)
-
     typeMetadata = EntityMetadata(
       fqName = "org.jetbrains.bazel.workspacemodel.entities.BazelGoTargetEntity",
       entityDataFqName = "org.jetbrains.bazel.workspacemodel.entities.impl.BazelGoTargetEntityData",
@@ -482,9 +466,7 @@ internal object MetadataStorageImpl : MetadataStorageBase() {
       extProperties = listOf(),
       isAbstract = false,
     )
-
     addMetadata(typeMetadata)
-
     typeMetadata = EntityMetadata(
       fqName = "org.jetbrains.bazel.workspacemodel.entities.BazelLibraryExtensionEntity",
       entityDataFqName = "org.jetbrains.bazel.workspacemodel.entities.impl.BazelLibraryExtensionEntityData",
@@ -587,9 +569,7 @@ internal object MetadataStorageImpl : MetadataStorageBase() {
       ),
       isAbstract = false,
     )
-
     addMetadata(typeMetadata)
-
     typeMetadata = EntityMetadata(
       fqName = "org.jetbrains.bazel.workspacemodel.entities.BazelModuleExtensionEntity",
       entityDataFqName = "org.jetbrains.bazel.workspacemodel.entities.impl.BazelModuleExtensionEntityData",
@@ -777,9 +757,7 @@ internal object MetadataStorageImpl : MetadataStorageBase() {
       ),
       isAbstract = false,
     )
-
     addMetadata(typeMetadata)
-
     typeMetadata = EntityMetadata(
       fqName = "org.jetbrains.bazel.workspacemodel.entities.BazelProjectDirectoriesEntity",
       entityDataFqName = "org.jetbrains.bazel.workspacemodel.entities.impl.BazelProjectDirectoriesEntityData",
@@ -925,9 +903,7 @@ internal object MetadataStorageImpl : MetadataStorageBase() {
       extProperties = listOf(),
       isAbstract = false,
     )
-
     addMetadata(typeMetadata)
-
     typeMetadata = EntityMetadata(
       fqName = "org.jetbrains.bazel.workspacemodel.entities.CompiledSourceCodeInsideJarExcludeEntity",
       entityDataFqName = "org.jetbrains.bazel.workspacemodel.entities.impl.CompiledSourceCodeInsideJarExcludeEntityData",
@@ -1047,9 +1023,7 @@ internal object MetadataStorageImpl : MetadataStorageBase() {
       extProperties = listOf(),
       isAbstract = false,
     )
-
     addMetadata(typeMetadata)
-
     typeMetadata = EntityMetadata(
       fqName = "org.jetbrains.bazel.workspacemodel.entities.JvmBinaryJarsEntity",
       entityDataFqName = "org.jetbrains.bazel.workspacemodel.entities.impl.JvmBinaryJarsEntityData",
@@ -1117,9 +1091,7 @@ internal object MetadataStorageImpl : MetadataStorageBase() {
       ),
       isAbstract = false,
     )
-
     addMetadata(typeMetadata)
-
     typeMetadata = EntityMetadata(
       fqName = "org.jetbrains.bazel.workspacemodel.entities.LibraryCompiledSourceCodeInsideJarExcludeEntity",
       entityDataFqName = "org.jetbrains.bazel.workspacemodel.entities.impl.LibraryCompiledSourceCodeInsideJarExcludeEntityData",
@@ -1321,9 +1293,7 @@ internal object MetadataStorageImpl : MetadataStorageBase() {
       extProperties = listOf(),
       isAbstract = false,
     )
-
     addMetadata(typeMetadata)
-
     typeMetadata = EntityMetadata(
       fqName = "org.jetbrains.bazel.workspacemodel.entities.PackageMarkerEntity",
       entityDataFqName = "org.jetbrains.bazel.workspacemodel.entities.impl.PackageMarkerEntityData",
@@ -1394,9 +1364,7 @@ internal object MetadataStorageImpl : MetadataStorageBase() {
       ),
       isAbstract = false,
     )
-
     addMetadata(typeMetadata)
-
     typeMetadata = EntityMetadata(
       fqName = "org.jetbrains.bazel.workspacemodel.entities.ScalaAddendumEntity",
       entityDataFqName = "org.jetbrains.bazel.workspacemodel.entities.impl.ScalaAddendumEntityData",
@@ -1485,30 +1453,17 @@ internal object MetadataStorageImpl : MetadataStorageBase() {
       ),
       isAbstract = false,
     )
-
     addMetadata(typeMetadata)
   }
 
   override fun initializeMetadataHash() {
     addMetadataHash(typeFqn = "org.jetbrains.bazel.workspacemodel.entities.BazelGoPackageEntity", metadataHash = -238377136)
-    addMetadataHash(typeFqn = "org.jetbrains.bazel.workspacemodel.entities.BazelGoTargetEntity", metadataHash = 806781147)
-    addMetadataHash(typeFqn = "org.jetbrains.bazel.workspacemodel.entities.BazelLibraryExtensionEntity", metadataHash = 380765835)
-    addMetadataHash(typeFqn = "org.jetbrains.bazel.workspacemodel.entities.BazelModuleExtensionEntity", metadataHash = 18340035)
-    addMetadataHash(typeFqn = "org.jetbrains.bazel.workspacemodel.entities.BazelProjectDirectoriesEntity", metadataHash = 2065560361)
-    addMetadataHash(
-      typeFqn = "org.jetbrains.bazel.workspacemodel.entities.CompiledSourceCodeInsideJarExcludeEntity",
-      metadataHash = -844721890,
-    )
-    addMetadataHash(typeFqn = "org.jetbrains.bazel.workspacemodel.entities.JvmBinaryJarsEntity", metadataHash = -2137707891)
-    addMetadataHash(
-      typeFqn = "org.jetbrains.bazel.workspacemodel.entities.LibraryCompiledSourceCodeInsideJarExcludeEntity",
-      metadataHash = 873866698,
-    )
-    addMetadataHash(typeFqn = "org.jetbrains.bazel.workspacemodel.entities.PackageMarkerEntity", metadataHash = -1844349399)
-    addMetadataHash(typeFqn = "org.jetbrains.bazel.workspacemodel.entities.ScalaAddendumEntity", metadataHash = 950673911)
     addMetadataHash(typeFqn = "org.jetbrains.bazel.workspacemodel.entities.ImportPathId", metadataHash = 1954566151)
+    addMetadataHash(typeFqn = "org.jetbrains.bazel.workspacemodel.entities.BazelGoTargetEntity", metadataHash = 806781147)
     addMetadataHash(typeFqn = "org.jetbrains.bazel.workspacemodel.entities.BazelGoTargetEntityId", metadataHash = -1911160669)
     addMetadataHash(typeFqn = "org.jetbrains.bazel.workspacemodel.entities.WorkspaceModelTargetKey", metadataHash = -2063063629)
+    addMetadataHash(typeFqn = "org.jetbrains.bazel.workspacemodel.entities.BazelLibraryExtensionEntity", metadataHash = 380765835)
+    addMetadataHash(typeFqn = "org.jetbrains.bazel.workspacemodel.entities.BazelModuleExtensionEntity", metadataHash = 18340035)
     addMetadataHash(
       typeFqn = "org.jetbrains.bazel.workspacemodel.entities.WorkspaceModelTargetSourceRootTypeId",
       metadataHash = -1299159314,
@@ -1516,8 +1471,18 @@ internal object MetadataStorageImpl : MetadataStorageBase() {
     addMetadataHash(typeFqn = "com.intellij.platform.workspace.jps.entities.SourceRootTypeId", metadataHash = 619871016)
     addMetadataHash(typeFqn = "org.jetbrains.bazel.workspacemodel.entities.WorkspaceModelTargetLabelList", metadataHash = 1283568167)
     addMetadataHash(typeFqn = "org.jetbrains.bsp.protocol.StrictDependencyCheckedType", metadataHash = -2089160899)
+    addMetadataHash(typeFqn = "org.jetbrains.bazel.workspacemodel.entities.BazelProjectDirectoriesEntity", metadataHash = 2065560361)
     addMetadataHash(typeFqn = "org.jetbrains.bazel.workspacemodel.entities.NonIndexableVirtualFileUrl", metadataHash = 1788161052)
+    addMetadataHash(
+      typeFqn = "org.jetbrains.bazel.workspacemodel.entities.CompiledSourceCodeInsideJarExcludeEntity",
+      metadataHash = -844721890,
+    )
     addMetadataHash(typeFqn = "org.jetbrains.bazel.workspacemodel.entities.CompiledSourceCodeInsideJarExcludeId", metadataHash = -914279954)
+    addMetadataHash(typeFqn = "org.jetbrains.bazel.workspacemodel.entities.JvmBinaryJarsEntity", metadataHash = -2137707891)
+    addMetadataHash(
+      typeFqn = "org.jetbrains.bazel.workspacemodel.entities.LibraryCompiledSourceCodeInsideJarExcludeEntity",
+      metadataHash = 873866698,
+    )
     addMetadataHash(typeFqn = "com.intellij.platform.workspace.jps.entities.LibraryId", metadataHash = 1783065412)
     addMetadataHash(typeFqn = "com.intellij.platform.workspace.jps.entities.LibraryTableId", metadataHash = 1939585583)
     addMetadataHash(typeFqn = "com.intellij.platform.workspace.jps.entities.LibraryTableId\$GlobalLibraryTableId", metadataHash = 105250347)
@@ -1530,6 +1495,8 @@ internal object MetadataStorageImpl : MetadataStorageBase() {
       typeFqn = "com.intellij.platform.workspace.jps.entities.LibraryTableId\$ProjectLibraryTableId",
       metadataHash = 824092854,
     )
+    addMetadataHash(typeFqn = "org.jetbrains.bazel.workspacemodel.entities.PackageMarkerEntity", metadataHash = -1844349399)
+    addMetadataHash(typeFqn = "org.jetbrains.bazel.workspacemodel.entities.ScalaAddendumEntity", metadataHash = 950673911)
     addMetadataHash(typeFqn = "com.intellij.platform.workspace.storage.EntitySource", metadataHash = 1674399842)
     addMetadataHash(typeFqn = "org.jetbrains.bazel.workspacemodel.entities.BazelDummyEntitySource", metadataHash = 1476524774)
     addMetadataHash(typeFqn = "org.jetbrains.bazel.workspacemodel.entities.BazelEntitySource", metadataHash = -2119790393)

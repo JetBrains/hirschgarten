@@ -23,7 +23,7 @@ interface JvmBinaryJarsEntityBuilder : WorkspaceEntityBuilder<JvmBinaryJarsEntit
 }
 
 internal object JvmBinaryJarsEntityType : EntityType<JvmBinaryJarsEntity, JvmBinaryJarsEntityBuilder>() {
-  override val entityClass: Class<JvmBinaryJarsEntity> get() = JvmBinaryJarsEntity::class.java
+  override val entityImplClass: Class<*> get() = JvmBinaryJarsEntityImpl::class.java
   override val entityImplBuilderClass: Class<*> get() = JvmBinaryJarsEntityImpl.Builder::class.java
   operator fun invoke(
     jars: List<VirtualFileUrl>,
@@ -48,7 +48,6 @@ fun MutableEntityStorage.modifyJvmBinaryJarsEntity(
 @set:Internal
 var ModuleEntityBuilder.jvmBinaryJarsEntity: JvmBinaryJarsEntityBuilder?
   by WorkspaceEntity.extensionBuilder(JvmBinaryJarsEntity::class.java)
-
 
 @Internal
 @JvmOverloads

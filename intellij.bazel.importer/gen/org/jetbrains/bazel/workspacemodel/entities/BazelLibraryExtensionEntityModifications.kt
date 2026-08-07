@@ -22,7 +22,7 @@ interface BazelLibraryExtensionEntityBuilder : WorkspaceEntityBuilder<BazelLibra
 }
 
 internal object BazelLibraryExtensionEntityType : EntityType<BazelLibraryExtensionEntity, BazelLibraryExtensionEntityBuilder>() {
-  override val entityClass: Class<BazelLibraryExtensionEntity> get() = BazelLibraryExtensionEntity::class.java
+  override val entityImplClass: Class<*> get() = BazelLibraryExtensionEntityImpl::class.java
   override val entityImplBuilderClass: Class<*> get() = BazelLibraryExtensionEntityImpl.Builder::class.java
   operator fun invoke(
     _targetKey: WorkspaceModelTargetKey,
@@ -49,7 +49,6 @@ fun MutableEntityStorage.modifyBazelLibraryExtensionEntity(
 @set:Internal
 var LibraryEntityBuilder.bazelLibraryExtension: BazelLibraryExtensionEntityBuilder?
   by WorkspaceEntity.extensionBuilder(BazelLibraryExtensionEntity::class.java)
-
 
 @Internal
 @JvmOverloads

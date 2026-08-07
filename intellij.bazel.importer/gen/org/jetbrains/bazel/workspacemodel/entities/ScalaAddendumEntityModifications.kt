@@ -25,7 +25,7 @@ interface ScalaAddendumEntityBuilder : WorkspaceEntityBuilder<ScalaAddendumEntit
 }
 
 internal object ScalaAddendumEntityType : EntityType<ScalaAddendumEntity, ScalaAddendumEntityBuilder>() {
-  override val entityClass: Class<ScalaAddendumEntity> get() = ScalaAddendumEntity::class.java
+  override val entityImplClass: Class<*> get() = ScalaAddendumEntityImpl::class.java
   override val entityImplBuilderClass: Class<*> get() = ScalaAddendumEntityImpl.Builder::class.java
   operator fun invoke(
     compilerVersion: String,
@@ -54,7 +54,6 @@ fun MutableEntityStorage.modifyScalaAddendumEntity(
 @set:Internal
 var ModuleEntityBuilder.scalaAddendumEntity: ScalaAddendumEntityBuilder?
   by WorkspaceEntity.extensionBuilder(ScalaAddendumEntity::class.java)
-
 
 @Internal
 @JvmOverloads

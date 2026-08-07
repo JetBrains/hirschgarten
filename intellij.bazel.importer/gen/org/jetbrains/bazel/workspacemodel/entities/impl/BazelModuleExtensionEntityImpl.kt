@@ -34,12 +34,10 @@ import org.jetbrains.bazel.workspacemodel.entities.WorkspaceModelTargetSourceRoo
 @OptIn(WorkspaceEntityInternalApi::class)
 internal class BazelModuleExtensionEntityImpl(private val dataSource: BazelModuleExtensionEntityData) : BazelModuleExtensionEntity,
                                                                                                         WorkspaceEntityBase(dataSource) {
-
   private companion object {
     internal val MODULE_CONNECTION_ID: ConnectionId =
       ConnectionId.create(ModuleEntity::class.java, BazelModuleExtensionEntity::class.java, ConnectionId.ConnectionType.ONE_TO_ONE, false)
     private val connections = listOf<ConnectionId>(MODULE_CONNECTION_ID)
-
   }
 
   override val module: ModuleEntity
@@ -60,7 +58,6 @@ internal class BazelModuleExtensionEntityImpl(private val dataSource: BazelModul
       readField("strictDependencies")
       return dataSource.strictDependencies
     }
-
   override val entitySource: EntitySource
     get() {
       readField("entitySource")
@@ -70,7 +67,6 @@ internal class BazelModuleExtensionEntityImpl(private val dataSource: BazelModul
   override fun connectionIdList(): List<ConnectionId> {
     return connections
   }
-
 
   internal class Builder(result: BazelModuleExtensionEntityData?) :
     ModifiableWorkspaceEntityBase<BazelModuleExtensionEntity, BazelModuleExtensionEntityData>(result), BazelModuleExtensionEntityBuilder {
@@ -94,7 +90,7 @@ internal class BazelModuleExtensionEntityImpl(private val dataSource: BazelModul
       this.currentEntityData = null
 // Process linked entities that are connected without a builder
       processLinkedEntities(builder)
-      checkInitialization() // TODO uncomment and check failed tests
+      checkInitialization()
     }
 
     private fun checkInitialization() {
@@ -137,14 +133,12 @@ internal class BazelModuleExtensionEntityImpl(private val dataSource: BazelModul
       updateChildToParentReferences(parents)
     }
 
-
     override var entitySource: EntitySource
       get() = getEntityData().entitySource
       set(value) {
         checkModificationAllowed()
         getEntityData(true).entitySource = value
         changedProperty.add("entitySource")
-
       }
     override var module: ModuleEntityBuilder
       get() {
@@ -163,10 +157,8 @@ internal class BazelModuleExtensionEntityImpl(private val dataSource: BazelModul
         checkModificationAllowed()
         val _diff = diff
         if (_diff != null && value is ModifiableWorkspaceEntityBase<*, *> && value.diff == null) {
-          if (value is ModifiableWorkspaceEntityBase<*, *>) {
-            value.entityLinks[EntityLink(true, MODULE_CONNECTION_ID)] = this
-          }
-// else you're attaching a new entity to an existing entity that is not modifiable
+          value.entityLinks[EntityLink(true, MODULE_CONNECTION_ID)] = this
+          @Suppress("UNCHECKED_CAST")
           _diff.addEntity(value as ModifiableWorkspaceEntityBase<WorkspaceEntity, *>)
         }
         if (_diff != null && (value !is ModifiableWorkspaceEntityBase<*, *> || value.diff != null)) {
@@ -176,19 +168,16 @@ internal class BazelModuleExtensionEntityImpl(private val dataSource: BazelModul
           if (value is ModifiableWorkspaceEntityBase<*, *>) {
             value.entityLinks[EntityLink(true, MODULE_CONNECTION_ID)] = this
           }
-// else you're attaching a new entity to an existing entity that is not modifiable
           this.entityLinks[EntityLink(false, MODULE_CONNECTION_ID)] = value
         }
         changedProperty.add("module")
       }
-
     override var _targetKey: WorkspaceModelTargetKey
       get() = getEntityData()._targetKey
       set(value) {
         checkModificationAllowed()
         getEntityData(true)._targetKey = value
         changedProperty.add("_targetKey")
-
       }
     override var rootTypeId: WorkspaceModelTargetSourceRootTypeId
       get() = getEntityData().rootTypeId
@@ -196,7 +185,6 @@ internal class BazelModuleExtensionEntityImpl(private val dataSource: BazelModul
         checkModificationAllowed()
         getEntityData(true).rootTypeId = value
         changedProperty.add("rootTypeId")
-
       }
     override var strictDependencies: WorkspaceModelTargetLabelList
       get() = getEntityData().strictDependencies
@@ -204,12 +192,10 @@ internal class BazelModuleExtensionEntityImpl(private val dataSource: BazelModul
         checkModificationAllowed()
         getEntityData(true).strictDependencies = value
         changedProperty.add("strictDependencies")
-
       }
 
     override fun getEntityClass(): Class<BazelModuleExtensionEntity> = BazelModuleExtensionEntity::class.java
   }
-
 }
 
 @OptIn(WorkspaceEntityInternalApi::class)
@@ -217,11 +203,9 @@ internal class BazelModuleExtensionEntityData : WorkspaceEntityData<BazelModuleE
   lateinit var _targetKey: WorkspaceModelTargetKey
   lateinit var rootTypeId: WorkspaceModelTargetSourceRootTypeId
   lateinit var strictDependencies: WorkspaceModelTargetLabelList
-
   internal fun is_targetKeyInitialized(): Boolean = ::_targetKey.isInitialized
   internal fun isRootTypeIdInitialized(): Boolean = ::rootTypeId.isInitialized
   internal fun isStrictDependenciesInitialized(): Boolean = ::strictDependencies.isInitialized
-
   override fun wrapAsModifiable(diff: MutableEntityStorage): WorkspaceEntityBuilder<BazelModuleExtensionEntity> {
     val modifiable = BazelModuleExtensionEntityImpl.Builder(null)
     modifiable.diff = diff
