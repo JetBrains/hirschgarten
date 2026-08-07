@@ -1,0 +1,13 @@
+# Accepted plugin verifier problems for BazelPluginBranchCompatibilityTest, one verbatim report line per entry.
+#
+# Java-plugin dependency heuristic: the plugin intentionally has no top-level
+# <depends>com.intellij.modules.java</depends> (it must load in IDEs without the Java plugin);
+# Java functionality lives in conditional V2 content modules (intellij.bazel.java.*).
+# The verifier's legacy check does not account for that and fires only against the dev-run IDE layout.
+Plugin uses classes of Java plugin, for example
+'com.intellij.codeInsight.AttachSourcesProvider' is used at 'org.jetbrains.bazel.ui.notifications.BazelAttachSourcesProvider'
+'com.intellij.codeInsight.AttachSourcesProvider.AttachSourcesAction' is used at 'org.jetbrains.bazel.ui.notifications.BazelAttachSourcesProvider.BazelAttachSourcesAction'
+'com.intellij.codeInsight.daemon.impl.quickfix.OrderEntryFix' is used at 'org.jetbrains.bazel.flow.modify.ideStarter.ApplyOrderEntryQuickFixCommand.doExecute$lambda$2(PsiFile, Editor, ApplyOrderEntryQuickFixCommand) : IntentionAction'
+but the plugin does not declare explicit dependency on the Java plugin, via <depends>com.intellij.modules.java</depends>.
+Java functionality was extracted from the IntelliJ Platform to a separate plugin in IDEA 2019.2.
+For more info refer to https://blog.jetbrains.com/platform/2019/06/java-functionality-extracted-as-a-plugin
