@@ -10,6 +10,7 @@
     <module name="intellij.java.compiler.impl"/>
     <module name="intellij.java.impl"/>
     <module name="intellij.java.syntax"/>
+    <module name="intellij.libraries.jetbrains.annotations"/>
     <module name="intellij.libraries.kotlinx.coroutines.core"/>
     <module name="intellij.libraries.protobuf"/>
     <module name="intellij.platform.analysis"/>

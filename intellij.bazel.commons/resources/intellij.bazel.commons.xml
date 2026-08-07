@@ -10,6 +10,7 @@
     <module name="intellij.libraries.guava"/>
     <module name="intellij.libraries.hash4j"/>
     <module name="intellij.libraries.jediterm.core"/>
+    <module name="intellij.libraries.jetbrains.annotations"/>
     <module name="intellij.libraries.kotlinx.datetime"/>
     <module name="intellij.libraries.opentelemetry"/>
     <module name="intellij.libraries.protobuf"/>
