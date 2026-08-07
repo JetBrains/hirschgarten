@@ -15,11 +15,15 @@ import org.jetbrains.intellij.build.telemetry.block
 import java.nio.file.Path
 import kotlin.io.path.exists
 import kotlin.io.path.invariantSeparatorsPathString
+import kotlin.io.path.isDirectory
 import kotlin.io.path.name
 import kotlin.io.path.readText
 
 internal const val BAZEL_PLUGIN_ID: String = "org.jetbrains.bazel"
 internal const val BAZEL_PLUGIN_MODULE: String = "intellij.bazel.plugin"
+
+private const val BAZEL_PLUGIN_ZIP_PREFIX = "bazel-plugin-"
+private const val BLOCKMAP_ZIP_SUFFIX = "blockmap.zip"
 
 internal data class BazelPluginInfo(
   val path: Path,
@@ -79,21 +83,61 @@ internal suspend fun buildBazelPluginZip(
     }
   }
 
-  val pluginFile = outRootDir.toFile().walkTopDown()
-    .filter { it.isFile && it.name.startsWith("bazel-plugin-") && it.name.endsWith(".zip") && !it.name.endsWith("blockmap.zip") }
-    .firstOrNull()
-    ?: error("Cannot find built Bazel plugin zip (bazel-plugin-*.zip) in $outRootDir")
+  val pluginFile = findBazelPluginZips(outRootDir).firstOrNull()
+                   ?: error("Cannot find built Bazel plugin zip (bazel-plugin-*.zip) in $outRootDir")
 
   return BazelPluginInfo(
-    path = pluginFile.toPath(),
+    path = pluginFile,
     pluginVersion = versions.pluginVersion,
   )
 }
 
+private fun isBazelPluginZip(fileName: String): Boolean =
+  fileName.startsWith(BAZEL_PLUGIN_ZIP_PREFIX) && fileName.endsWith(".zip") && !fileName.endsWith(BLOCKMAP_ZIP_SUFFIX)
+
+private fun findBazelPluginZips(rootDir: Path): Sequence<Path> =
+  rootDir.toFile().walkTopDown().filter { it.isFile && isBazelPluginZip(it.name) }.map { it.toPath() }
+
+/**
+ * Resolves a plugin archive built outside this test: [path] is either the archive itself or a directory holding exactly one.
+ *
+ * The version is taken from the file name because the verifier stores its report under the plugin version it reads from
+ * `plugin.xml`, and [verifyBazelPluginCompatibility] has to look the report up by the same value.
+ */
+internal fun resolveProvidedBazelPluginZip(path: Path): BazelPluginInfo {
+  check(path.exists()) { "Bazel plugin path does not exist: $path" }
+
+  val pluginFile = if (path.isDirectory()) {
+    val candidates = findBazelPluginZips(path).toList()
+    when {
+      candidates.isEmpty() -> error("No bazel-plugin-*.zip found in directory $path")
+      candidates.size > 1 -> error("Expected exactly one bazel-plugin-*.zip in directory $path, " +
+                                   "found ${candidates.size}: ${candidates.joinToString { it.name }}")
+      else -> candidates.single()
+    }
+  }
+  else {
+    path
+  }
+
+  check(isBazelPluginZip(pluginFile.name)) {
+    "Expected a plugin archive named bazel-plugin-<version>.zip, got ${pluginFile.name}: $pluginFile"
+  }
+
+  return BazelPluginInfo(
+    path = pluginFile,
+    pluginVersion = pluginFile.name.removePrefix(BAZEL_PLUGIN_ZIP_PREFIX).removeSuffix(".zip"),
+  )
+}
+
+/**
+ * [reportArtifactSuffix] keeps the published reports apart when one CI build verifies several plugin archives against the same IDE.
+ */
 internal suspend fun verifyBazelPluginCompatibility(
   verifier: PluginVerifier,
   bazelPlugin: BazelPluginInfo,
   ide: VerifierIdeInfo,
+  reportArtifactSuffix: String = "",
 ): Boolean {
   val ideIdentity = "${ide.productCode}-${ide.productBuild}"
 
@@ -117,7 +161,7 @@ internal suspend fun verifyBazelPluginCompatibility(
       ide = ide,
       runtimeDir = JdkDownloader.getRuntimeHome(COMMUNITY_ROOT),
     ).also {
-      println(PublishArtifacts("$ideSpecificReportDir/**=>bazel-plugin-compatibility-report/$ideIdentity"))
+      println(PublishArtifacts("$ideSpecificReportDir/**=>bazel-plugin-compatibility-report/$ideIdentity$reportArtifactSuffix"))
     }
   }
 }
