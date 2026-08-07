@@ -4,10 +4,13 @@ import com.intellij.coverage.CoverageFileProvider
 import com.intellij.coverage.CoverageRunner
 import com.intellij.coverage.CoverageSuite
 import com.intellij.coverage.CoverageSuitesBundle
+import com.intellij.coverage.IDEACoverageRunner
 import com.intellij.coverage.JavaCoverageEngine
+import com.intellij.coverage.JavaCoverageOptionsProvider
 import com.intellij.coverage.JavaCoverageSuite
 import com.intellij.execution.configurations.RunConfigurationBase
 import com.intellij.execution.configurations.RunProfile
+import com.intellij.execution.configurations.coverage.CoverageEnabledConfiguration
 import com.intellij.openapi.module.Module
 import com.intellij.openapi.project.Project
 import org.jetbrains.bazel.jvm.run.JvmTestHandler
@@ -61,6 +64,21 @@ internal class BazelJavaAgentCoverageEngine : JavaCoverageEngine() {
    */
   override fun recompileProjectAndRerunAction(module: Module, suite: CoverageSuitesBundle, chooseSuiteAction: Runnable): Boolean =
     false
+
+  // Use IDEACoverageRunner instead of the default JaCoco, because JaCoCoReportLoader depends on collectOutputRoots.
+  // However, we don't want the platform to iterate output jars, see BazelJavaCoverageSuite for more explanation.
+  private fun getCoverageRunner() = CoverageRunner.getInstance(IDEACoverageRunner::class.java)
+
+  override fun createCoverageEnabledConfiguration(conf: RunConfigurationBase<*>): CoverageEnabledConfiguration {
+    return super.createCoverageEnabledConfiguration(conf).apply {
+      coverageRunner = getCoverageRunner()
+    }
+  }
+
+  override fun createCoverageSuite(config: CoverageEnabledConfiguration): CoverageSuite? {
+    JavaCoverageOptionsProvider.getInstance(config.configuration.project).coverageRunner = getCoverageRunner()
+    return super.createCoverageSuite(config)
+  }
 }
 
 /**
