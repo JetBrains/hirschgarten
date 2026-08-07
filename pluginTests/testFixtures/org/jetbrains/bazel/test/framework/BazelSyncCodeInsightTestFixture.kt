@@ -9,8 +9,10 @@ import com.intellij.build.events.MessageEvent
 import com.intellij.build.events.OutputBuildEvent
 import com.intellij.configurationStore.ProjectStoreImpl
 import com.intellij.openapi.Disposable
+import com.intellij.openapi.application.ReadAction
 import com.intellij.openapi.application.WriteAction
 import com.intellij.openapi.components.service
+import com.intellij.openapi.application.readAction
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.projectRoots.ProjectJdkTable
@@ -23,14 +25,26 @@ import com.intellij.testFramework.fixtures.TempDirTestFixture
 import com.intellij.testFramework.fixtures.impl.CodeInsightTestFixtureImpl
 import com.intellij.testFramework.junit5.fixture.TestFixture
 import com.intellij.testFramework.replaceService
+import com.intellij.testFramework.withProjectAsync
 import com.intellij.util.lang.UrlClassLoader
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.runBlocking
+import org.jetbrains.bazel.bazelrunner.BazelProcessLauncherProvider
+import org.jetbrains.bazel.bazelrunner.BazelProcessResult
+import org.jetbrains.bazel.bazelrunner.BazelRunner
 import org.jetbrains.bazel.flow.open.BazelProjectStoreDescriptor
+import org.jetbrains.bazel.languages.projectview.ProjectViewService
 import org.jetbrains.bazel.progress.ConsoleService
 import org.jetbrains.bazel.progress.TaskConsole
 import org.jetbrains.bazel.project.BazelProjectFixtures.initializeBazelProject
 import org.jetbrains.bazel.sync.ProjectSyncScope
 import org.jetbrains.bazel.sync.ProjectSyncService
+import org.jetbrains.bazel.server.BazelServerService
+import org.jetbrains.bazel.sync.BazelEnvironmentService
+import org.jetbrains.bazel.sync.task.ProjectSyncTask
 import org.jetbrains.bazel.ui.console.task.TestTaskConsole
+import org.jetbrains.bsp.protocol.TaskGroupId
+import org.jetbrains.bsp.protocol.TaskId
 import java.nio.file.Path
 import kotlin.io.path.Path
 import kotlin.io.path.copyTo
@@ -220,6 +234,12 @@ class BazelSyncCodeInsightTestFixtureImpl(
 
   override fun tearDown() {
     try {
+      // Stop bazel server to unlock access to all files
+      runBlocking(Dispatchers.Default) {
+        shutdownBazelSever()
+      }
+
+      //
       WriteAction.runAndWait<Throwable> {
         ProjectJdkTable.getInstance().apply {
           allJdks.forEach(this::removeJdk)
@@ -231,6 +251,28 @@ class BazelSyncCodeInsightTestFixtureImpl(
     }
     finally {
       super.tearDown()
+    }
+  }
+
+  private suspend fun shutdownBazelSever(): BazelProcessResult {
+    val bazelProcessLauncher =
+      BazelProcessLauncherProvider.getInstance()
+        .createBazelProcessLauncher(
+          projectRoot,
+          BazelEnvironmentService.getInstance(project).getEnvironment(),
+        )
+    val projectView = ProjectViewService.getInstance(project).projectView
+    val bazelRunner = BazelRunner.create(
+      project, null, projectRoot, bazelProcessLauncher,
+      projectView,
+    )
+    return bazelRunner.run {
+      val command =
+        buildBazelCommand(projectView) {
+          shutDown()
+        }
+      runBazelCommand(command, TaskGroupId.EMPTY.task(""))
+        .waitAndGetResult()
     }
   }
 }
