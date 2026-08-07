@@ -5,6 +5,7 @@ import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.roots.AdditionalLibraryRootsListener
+import com.intellij.openapi.vfs.toNioPathOrNull
 import com.intellij.platform.backend.workspace.workspaceModel
 import com.intellij.platform.workspace.storage.entities
 import com.intellij.workspaceModel.ide.toPath
@@ -51,7 +52,7 @@ internal class GoExternalLibraryManager(private val project: Project) {
   fun getLibraryFiles(project: Project): List<Path> {
     if (!BazelFeatureFlags.isGoSupportEnabled) return emptyList()
     if (!project.isBazelProject) return emptyList()
-    val workspacePath = project.rootDir.toNioPath()
+    val workspacePath = project.rootDir.toNioPathOrNull() ?: return emptyList()
 
     /**
      * We're not using [BazelGoPackage.goTargetToFileMap] here, because it uses [org.jetbrains.bazel.sync.SyncCache],
