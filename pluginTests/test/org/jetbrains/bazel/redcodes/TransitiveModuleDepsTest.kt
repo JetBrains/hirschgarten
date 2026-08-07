@@ -34,10 +34,9 @@ class TransitiveModuleDepsTest {
     val project = fixture.project
 
     withContext(Dispatchers.EDT) {
-      val results = fixture.getGotoClassResults("ClassB", false, null)
-      results.shouldNotBeEmpty()
+      val reference = fixture.getReferenceAtCaretPosition("mod_a/ClassA.java").shouldNotBeNull()
 
-      val classB = results.filterIsInstance<PsiClass>().single { it.name == "ClassB" }
+      val classB = reference.resolve() as PsiClass
       val virtualFile = classB.containingFile.virtualFile.shouldNotBeNull()
       virtualFile.extension shouldBe "java"
 
