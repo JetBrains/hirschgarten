@@ -48,19 +48,26 @@ internal class BazelGoImportResolver : GoImportResolver {
     module: Module?,
     resolveState: ResolveState?,
   ): Collection<GoPackage>? {
-    if (!project.isBazelProject || !BazelFeatureFlags.isGoSupportEnabled) return null
+    if (!supportsGo(project)) return null
     val goPackage = resolveGoPackage(project, importPath)
     return if (goPackage != null) ImmutableList.of(goPackage) else null
   }
 
-  override fun supportsRelativeImportPaths(project: Project, module: Module?): ThreeState = ThreeState.NO
+  override fun supportsRelativeImportPaths(project: Project, module: Module?): ThreeState {
+    if (!supportsGo(project)) return ThreeState.UNSURE
+    return ThreeState.NO
+  }
 
   override fun resolve(reference: GoImportReference): Array<ResolveResult>? {
-    val importPath = reference.fileReferenceSet.pathString
     val project = reference.element.project
+    if (!supportsGo(project)) return null
+    val importPath = reference.fileReferenceSet.pathString
     val goPackage = resolveGoPackage(project, importPath) ?: return null
     return doResolve(goPackage, reference.index)
   }
+
+  private fun supportsGo(project: Project): Boolean =
+    project.isBazelProject && BazelFeatureFlags.isGoSupportEnabled
 }
 
 /**
@@ -107,13 +114,12 @@ internal class GoPackageDocumentationProvider : DocumentationProviderEx() {
     }
 }
 
-internal fun resolveGoPackage(project: Project, importPath: String): BazelGoPackage? {
-  if (!project.isBazelProject) return null
+private fun resolveGoPackage(project: Project, importPath: String): BazelGoPackage? {
   val entity: BazelGoPackageEntity = project.workspaceModel.currentSnapshot.resolve(ImportPathId(importPath)) ?: return null
   return BazelGoPackage(project, entity)
 }
 
-internal fun doResolve(goPackage: BazelGoPackage, index: Int): Array<ResolveResult> =
+private fun doResolve(goPackage: BazelGoPackage, index: Int): Array<ResolveResult> =
   listOf(goPackage)
     .asSequence()
     .mapNotNull { it.getImportReferences() }

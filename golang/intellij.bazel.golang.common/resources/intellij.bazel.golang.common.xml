@@ -30,6 +30,7 @@
       implementation="org.jetbrains.bazel.golang.treeview.BazelGoTreeStructureProvider"
       order="last"
     />
+    <postStartupActivity implementation="org.jetbrains.bazel.golang.BazelGoStartupActivity"/>
   </extensions>
 
   <extensions defaultExtensionNs="org.jetbrains.bazel">

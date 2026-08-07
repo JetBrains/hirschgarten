@@ -7,6 +7,7 @@ import com.intellij.ide.util.PropertiesComponent
 import com.intellij.openapi.application.edtWriteAction
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.NlsContexts
+import com.intellij.openapi.vfs.toNioPathOrNull
 import com.intellij.platform.util.progress.SequentialProgressReporter
 import com.intellij.platform.workspace.jps.entities.ContentRootEntity
 import com.intellij.platform.workspace.jps.entities.ModuleEntity
@@ -207,8 +208,10 @@ internal class GoWorkspaceImporter : BazelWorkspaceImporter, BazelWorkspaceImpor
     goTargets
       .values
       .firstNotNullOfOrNull { it.sdkHomePath }
-      .let { it ?: GoSdkUtil.suggestSdkDirectory() }
+      .let { it ?: GoSdkUtil.suggestSdkDirectory()?.toNioPathOrNull() }
       ?.let { path -> GoSdk.fromHomePath(path.toString()) }
+      ?.takeUnless { it === GoSdk.NULL }
+      ?.let { BazelGoSdk(it) }
       ?.setAsUsed(project)
   }
 
