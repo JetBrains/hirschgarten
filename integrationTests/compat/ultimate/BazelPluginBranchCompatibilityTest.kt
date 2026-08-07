@@ -11,12 +11,15 @@ import org.jetbrains.intellij.build.dev.BuildRequest
 import org.jetbrains.intellij.build.dev.buildProductInProcess
 import org.jetbrains.intellij.build.impl.SnapshotBuildNumber
 import org.jetbrains.intellij.build.telemetry.block
-import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.DynamicTest
+import org.junit.jupiter.api.DynamicTest.dynamicTest
+import org.junit.jupiter.api.TestFactory
 import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable
 import java.nio.file.Path
 
 private const val PLUGIN_ZIP_ENV = "BAZEL_PLUGIN_COMPATIBILITY_PLUGIN_ZIP"
 private const val PLUGIN_ZIP_PROPERTY = "bazel.plugin.compatibility.plugin.zip"
+private const val TEST_LABEL_ENV = "BAZEL_PLUGIN_COMPATIBILITY_TEST_LABEL"
 
 private val KNOWN_ERRORS_FILE = ULTIMATE_HOME.resolve("plugins/bazel/integrationTests/compat/testData/known_errors_branch.txt")
 
@@ -35,6 +38,11 @@ private val KNOWN_ERRORS_FILE = ULTIMATE_HOME.resolve("plugins/bazel/integration
  * plugin channel, feeding it the latest nightly and the latest stable Bazel plugin artifacts, on the root branch and on the
  * release-line branches alike.
  *
+ * [TEST_LABEL_ENV] optionally names the reported test (`vs <label> plugin`). The name is what TeamCity identifies a test by,
+ * so runs against different archives register as distinct tests with separate histories instead of merging into one entry.
+ * Without it the label falls back to the file name of the provided path, which is unstable across CI runs by design - CI must
+ * pass an explicit label.
+ *
  * Locally:
  * ```
  * bazel test //plugins/bazel/integrationTests:branch_compatibility_test \
@@ -52,14 +60,21 @@ class BazelPluginBranchCompatibilityTest {
     private const val PRODUCT_CODE = "IU"
   }
 
-  @Test
-  fun `Bazel plugin branch compatibility test`() {
+  @TestFactory
+  fun `Bazel plugin branch compatibility test`(): List<DynamicTest> {
     val providedPluginPath = System.getenv(PLUGIN_ZIP_ENV)
       ?: System.getProperty(PLUGIN_ZIP_PROPERTY)
       ?: error("Required env variable $PLUGIN_ZIP_ENV or JVM property -D$PLUGIN_ZIP_PROPERTY not set. " +
                "Expected an absolute path to a bazel-plugin-<version>.zip, or to a directory containing exactly one. " +
                "Example: -D$PLUGIN_ZIP_PROPERTY=/abs/path/to/bazel-plugin-2025.3.1.zip")
 
+    val label = System.getenv(TEST_LABEL_ENV)?.takeIf { it.isNotBlank() }
+                ?: Path.of(providedPluginPath).fileName.toString()
+
+    return listOf(dynamicTest("vs $label plugin") { verifyProvidedPlugin(providedPluginPath) })
+  }
+
+  private fun verifyProvidedPlugin(providedPluginPath: String) {
     val bazelPlugin = resolveProvidedBazelPluginZip(Path.of(providedPluginPath))
 
     runBlocking(Dispatchers.Default) {
