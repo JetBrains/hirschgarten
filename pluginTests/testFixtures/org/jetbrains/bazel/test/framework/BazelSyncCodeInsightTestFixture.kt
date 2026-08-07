@@ -6,6 +6,7 @@ import com.intellij.build.events.BuildEvent
 import com.intellij.build.events.FailureResult
 import com.intellij.build.events.FinishEvent
 import com.intellij.build.events.MessageEvent
+import com.intellij.build.events.OutputBuildEvent
 import com.intellij.configurationStore.ProjectStoreImpl
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.application.WriteAction
@@ -240,15 +241,18 @@ private class TestConsoleService(project: Project) : ConsoleService, Disposable 
 
   private val log = logger<TestConsoleService>()
 
+  private fun String?.trimCrLf(): String? =
+    this?.trimEnd { it.isWhitespace() || it == '\r' || it == '\n' }
+
   private fun onEventImpl(buildId: Any, event: BuildEvent) {
     if (event is FinishEvent && event.result is FailureResult) {
       val failure = event.result as FailureResult
       log.error(
-        "Bazel build finished with error:" +
+        "Bazel build finished with error: ${event.message.trimCrLf()} " +
         failure.failures.joinToString(";") { f ->
           buildString {
-            if (f.message != null) append(f.message)
-            if (f.description != null) append(" (").append(f.message).append(")")
+            if (f.message != null) append(f.message.trimCrLf())
+            if (f.description != null) append(" (").append(f.message.trimCrLf()).append(")")
             if (f.error != null) appendLine().append(f.error).appendLine()
           }
         },
@@ -257,10 +261,13 @@ private class TestConsoleService(project: Project) : ConsoleService, Disposable 
     }
     if (event is MessageEvent) {
       when (event.kind) {
-        MessageEvent.Kind.ERROR -> log.warn("Bazel build error: ${event.message}")
-        MessageEvent.Kind.WARNING -> log.warn("Bazel build warning: ${event.message}")
-        else -> log.warn("Bazel build message: ${event.message}")
+        MessageEvent.Kind.ERROR -> log.warn("Bazel build error: ${event.message.trimCrLf()}")
+        MessageEvent.Kind.WARNING -> log.warn("Bazel build warning: ${event.message.trimCrLf()}")
+        else -> log.warn("Bazel build message: ${event.message.trimCrLf()}")
       }
+    }
+    if (event is OutputBuildEvent && event.parentId == null) {
+      log.info("Bazel build message: ${event.message.trimCrLf()}")
     }
   }
 
