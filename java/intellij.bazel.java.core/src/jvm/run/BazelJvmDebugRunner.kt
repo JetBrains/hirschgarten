@@ -30,6 +30,7 @@ internal class BazelJvmDebugRunner : GenericProgramRunner<BazelDebugRunnerSettin
     // if target cannot be debugged, do not offer debugging it
     if (executorId != DefaultDebugExecutor.EXECUTOR_ID) return false
     if (profile !is BazelRunConfiguration) return false
+    if (profile.targets.size != 1) return false
     return profile.handler is JvmRunHandler || profile.handler is JvmTestHandler
   }
 

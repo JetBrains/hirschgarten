@@ -1,5 +1,6 @@
 package org.jetbrains.bazel.python.gutter
 
+import com.intellij.execution.PsiLocation
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiFile
 import com.intellij.psi.util.PsiUtilCore
@@ -7,8 +8,9 @@ import com.intellij.testFramework.builders.ModuleFixtureBuilder
 import com.intellij.testFramework.fixtures.CodeInsightFixtureTestCase
 import com.intellij.testFramework.fixtures.CodeInsightTestFixture
 import com.intellij.testFramework.fixtures.ModuleFixture
-import io.kotest.matchers.collections.shouldHaveSize
+import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.nulls.shouldBeNull
+import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
 import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.commons.TargetKind
@@ -19,16 +21,19 @@ import org.jetbrains.bazel.python.lang.PythonLanguageClass
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
 import org.jetbrains.bazel.target.targetStorage
 import org.jetbrains.bazel.test.framework.target.TestBuildTarget
+import org.jetbrains.bazel.ui.gutters.BazelContainingTargetsLocationsProvider
+import org.jetbrains.bazel.ui.gutters.NonImportedBuildTarget
 import org.jetbrains.bsp.protocol.SourceFileCollection
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
 import java.nio.file.Path
+import kotlin.io.path.Path
 
 @RunWith(JUnit4::class)
-internal class BazelPyRunLineMarkerContributorTest : CodeInsightFixtureTestCase<ModuleFixtureBuilder<ModuleFixture>>() {
-  private val bazelPyRunLineMarkerContributor = BazelPyRunLineMarkerContributor()
+internal class BazelPyRunConfigurationProducerTest : CodeInsightFixtureTestCase<ModuleFixtureBuilder<ModuleFixture>>() {
+  private val bazelPyRunConfigurationProducer = BazelPyRunConfigurationProducer()
 
   @Before
   fun beforeEach() {
@@ -45,11 +50,10 @@ internal class BazelPyRunLineMarkerContributorTest : CodeInsightFixtureTestCase<
 
     // WHEN
     val elementAtCaret = PsiUtilCore.getElementAtOffset(mainFile, myFixture.caretOffset)!!
-    val runLineMarkerInfo = bazelPyRunLineMarkerContributor.getInfo(elementAtCaret)!!
+    val gutterAction = bazelPyRunConfigurationProducer.getGutterAction(elementAtCaret, executableTarget)
 
     // THEN
-    runLineMarkerInfo.icon.shouldBeNull()
-    runLineMarkerInfo.actions.shouldHaveSize(2)
+    gutterAction.shouldNotBeNull()
   }
 
   @Test
@@ -62,10 +66,10 @@ internal class BazelPyRunLineMarkerContributorTest : CodeInsightFixtureTestCase<
 
     // WHEN
     val elementAtCaret = PsiUtilCore.getElementAtOffset(mainFile, myFixture.caretOffset)!!
-    val runLineMarkerInfo = bazelPyRunLineMarkerContributor.getInfo(elementAtCaret)!!
+    val gutterAction = bazelPyRunConfigurationProducer.getGutterAction(elementAtCaret, executableTarget)
 
     // THEN
-    runLineMarkerInfo.actions.shouldHaveSize(2)
+    gutterAction.shouldNotBeNull()
   }
 
   @Test
@@ -80,10 +84,10 @@ internal class BazelPyRunLineMarkerContributorTest : CodeInsightFixtureTestCase<
 
     // WHEN
     val elementAtCaret = PsiUtilCore.getElementAtOffset(otherFile, myFixture.caretOffset)!!
-    val runLineMarkerInfo = bazelPyRunLineMarkerContributor.getInfo(elementAtCaret)
+    val gutterAction = bazelPyRunConfigurationProducer.getGutterAction(elementAtCaret, executableTarget)
 
     // THEN
-    runLineMarkerInfo.shouldBeNull()
+    gutterAction.shouldBeNull()
   }
 
   @Test
@@ -96,10 +100,10 @@ internal class BazelPyRunLineMarkerContributorTest : CodeInsightFixtureTestCase<
 
     // WHEN
     val elementAtCaret = PsiUtilCore.getElementAtOffset(notInTargetFile, myFixture.caretOffset)!!
-    val runLineMarkerInfo = bazelPyRunLineMarkerContributor.getInfo(elementAtCaret)
+    val bazelRunLocations = BazelContainingTargetsLocationsProvider().getAlternativeLocations(PsiLocation(elementAtCaret))
 
     // THEN
-    runLineMarkerInfo.shouldBeNull()
+    bazelRunLocations.shouldBeEmpty()
   }
 
   @Test
@@ -112,10 +116,10 @@ internal class BazelPyRunLineMarkerContributorTest : CodeInsightFixtureTestCase<
 
     // WHEN
     val elementAtCaret = PsiUtilCore.getElementAtOffset(runnableFile, myFixture.caretOffset)!!
-    val runLineMarkerInfo = bazelPyRunLineMarkerContributor.getInfo(elementAtCaret)
+    val gutterAction = bazelPyRunConfigurationProducer.getGutterAction(elementAtCaret, executableTarget)
 
     // THEN
-    runLineMarkerInfo.shouldBeNull()
+    gutterAction.shouldBeNull()
   }
 
   @Test
@@ -135,34 +139,10 @@ internal class BazelPyRunLineMarkerContributorTest : CodeInsightFixtureTestCase<
 
     // WHEN
     val elementAtCaret = PsiUtilCore.getElementAtOffset(testFile, myFixture.caretOffset)!!
-    val runLineMarkerInfo = bazelPyRunLineMarkerContributor.getInfo(elementAtCaret)!!
+    val gutterAction = bazelPyRunConfigurationProducer.getGutterAction(elementAtCaret, executableTarget)
 
     // THEN
-    runLineMarkerInfo.icon shouldBe null
-    runLineMarkerInfo.actions.shouldHaveSize(3)
-  }
-
-  @Test
-  fun `should not calculate slow info for pytest function`() {
-    // GIVEN
-    val testFile =
-      myFixture.pythonFile(
-        "test_sample.py",
-        """
-        def <caret>test_passes():
-            assert True
-        """.trimIndent(),
-      )
-
-    project.addPyTestTarget(label = LABEL)
-    project.addFileToTarget(testFile, LABEL)
-
-    // WHEN
-    val elementAtCaret = PsiUtilCore.getElementAtOffset(testFile, myFixture.caretOffset)!!
-    val slowRunLineMarkerInfo = bazelPyRunLineMarkerContributor.getSlowInfo(elementAtCaret)
-
-    // THEN
-    slowRunLineMarkerInfo.shouldBeNull()
+    gutterAction.shouldNotBeNull()
   }
 
   @Test
@@ -182,10 +162,11 @@ internal class BazelPyRunLineMarkerContributorTest : CodeInsightFixtureTestCase<
 
     // WHEN
     val elementAtCaret = PsiUtilCore.getElementAtOffset(testFile, myFixture.caretOffset)!!
-    val extraProgramArguments = bazelPyRunLineMarkerContributor.getGutterAction(elementAtCaret)?.runnerActionDescriptor?.programArguments
+    val gutterAction = bazelPyRunConfigurationProducer.getGutterAction(elementAtCaret, executableTarget)
 
     // THEN
-    extraProgramArguments shouldBe listOf("test_sample.py::test_passes")
+    gutterAction.shouldNotBeNull()
+    gutterAction.programArguments shouldBe listOf("test_sample.py::test_passes")
   }
 
   @Test
@@ -206,10 +187,11 @@ internal class BazelPyRunLineMarkerContributorTest : CodeInsightFixtureTestCase<
 
     // WHEN
     val elementAtCaret = PsiUtilCore.getElementAtOffset(testFile, myFixture.caretOffset)!!
-    val extraProgramArguments = bazelPyRunLineMarkerContributor.getGutterAction(elementAtCaret)?.runnerActionDescriptor?.programArguments
+    val gutterAction = bazelPyRunConfigurationProducer.getGutterAction(elementAtCaret, executableTarget)
 
     // THEN
-    extraProgramArguments shouldBe listOf("test_sample.py::TestSample::test_passes")
+    gutterAction.shouldNotBeNull()
+    gutterAction.programArguments shouldBe listOf("test_sample.py::TestSample::test_passes")
   }
 
   @Test
@@ -232,10 +214,11 @@ internal class BazelPyRunLineMarkerContributorTest : CodeInsightFixtureTestCase<
 
     // WHEN
     val elementAtCaret = PsiUtilCore.getElementAtOffset(testFile, myFixture.caretOffset)!!
-    val extraProgramArguments = bazelPyRunLineMarkerContributor.getGutterAction(elementAtCaret)?.runnerActionDescriptor?.programArguments
+    val gutterAction = bazelPyRunConfigurationProducer.getGutterAction(elementAtCaret, executableTarget)
 
     // THEN
-    extraProgramArguments shouldBe listOf("SampleTest.test_passes")
+    gutterAction.shouldNotBeNull()
+    gutterAction.programArguments shouldBe listOf("SampleTest.test_passes")
   }
 
   @Test
@@ -258,11 +241,10 @@ internal class BazelPyRunLineMarkerContributorTest : CodeInsightFixtureTestCase<
 
     // WHEN
     val elementAtCaret = PsiUtilCore.getElementAtOffset(testFile, myFixture.caretOffset)!!
-    val runLineMarkerInfo = bazelPyRunLineMarkerContributor.getInfo(elementAtCaret)!!
+    val gutterAction = bazelPyRunConfigurationProducer.getGutterAction(elementAtCaret, executableTarget)
 
     // THEN
-    runLineMarkerInfo.icon shouldBe null
-    runLineMarkerInfo.actions.shouldHaveSize(3)
+    gutterAction.shouldNotBeNull()
   }
 
   @Test
@@ -283,10 +265,10 @@ internal class BazelPyRunLineMarkerContributorTest : CodeInsightFixtureTestCase<
 
     // WHEN
     val elementAtCaret = PsiUtilCore.getElementAtOffset(testFile, myFixture.caretOffset)!!
-    val runLineMarkerInfo = bazelPyRunLineMarkerContributor.getInfo(elementAtCaret)
+    val gutterAction = bazelPyRunConfigurationProducer.getGutterAction(elementAtCaret, executableTarget)
 
     // THEN
-    runLineMarkerInfo.shouldBeNull()
+    gutterAction.shouldBeNull()
   }
 
   @Test
@@ -306,10 +288,10 @@ internal class BazelPyRunLineMarkerContributorTest : CodeInsightFixtureTestCase<
 
     // WHEN
     val elementAtCaret = PsiUtilCore.getElementAtOffset(testFile, myFixture.caretOffset)!!
-    val runLineMarkerInfo = bazelPyRunLineMarkerContributor.getInfo(elementAtCaret)
+    val gutterAction = bazelPyRunConfigurationProducer.getGutterAction(elementAtCaret, executableTarget)
 
     // THEN
-    runLineMarkerInfo.shouldBeNull()
+    gutterAction.shouldBeNull()
   }
 
   private fun CodeInsightTestFixture.runnablePythonFile(fileName: String): PsiFile =
@@ -396,5 +378,7 @@ internal class BazelPyRunLineMarkerContributorTest : CodeInsightFixtureTestCase<
 
   companion object {
     private val LABEL = Label.parse("//foo:bar")
+    private val executableTarget =
+      NonImportedBuildTarget(LABEL, TargetKind("py_test", setOf(PythonLanguageClass.PYTHON), RuleType.TEST), Path("base/directory"))
   }
 }

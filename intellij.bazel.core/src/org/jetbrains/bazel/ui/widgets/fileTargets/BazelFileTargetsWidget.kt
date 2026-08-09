@@ -25,9 +25,9 @@ import org.jetbrains.bazel.languages.starlark.repomapping.toShortString
 import org.jetbrains.bazel.runnerAction.BuildTargetAction
 import org.jetbrains.bazel.sync.action.ResyncTargetAction
 import org.jetbrains.bazel.target.targetStorage
+import org.jetbrains.bazel.ui.gutters.getExecutorActions
 import org.jetbrains.bazel.ui.widgets.BazelJumpToBuildFileAction
 import org.jetbrains.bazel.ui.widgets.tool.window.actions.CopyTargetIdAction
-import org.jetbrains.bazel.ui.widgets.tool.window.utils.fillWithEligibleActions
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.id
 import javax.swing.Icon
@@ -106,7 +106,7 @@ internal class BazelFileTargetsWidget(project: Project) : EditorBasedStatusBarPo
       it.add(CopyTargetIdAction.FromTargetInfo(this))
       it.addSeparator()
       it.add(BuildTargetAction(id))
-      it.fillWithEligibleActions(project, this)
+      it.addAll(getExecutorActions(project, this))
       it.addSeparator()
       it.add(BazelJumpToBuildFileAction.NonXmlRegistered({ this }))
       it.add(StarlarkDebugAction(this.id))

@@ -1,24 +1,22 @@
 package org.jetbrains.bazel.jvm.ui.gutters
 
-import com.intellij.openapi.util.registry.Registry
 import com.intellij.psi.PsiClass
-import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiMethod
 import com.intellij.psi.impl.source.tree.LeafPsiElement
-import com.intellij.psi.util.PsiUtilCore
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
 import com.intellij.testFramework.fixtures.CodeInsightTestFixture
-import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
-import org.jetbrains.bazel.java.ui.gutters.BazelJavaRunLineMarkerContributor
-import org.jetbrains.bazel.kotlin.ui.gutters.BazelKotlinRunLineMarkerContributor
+import org.jetbrains.bazel.commons.RuleType
+import org.jetbrains.bazel.commons.TargetKind
+import org.jetbrains.bazel.java.ui.gutters.BazelJavaRunConfigurationProducer
+import org.jetbrains.bazel.kotlin.ui.gutters.BazelKotlinRunConfigurationProducer
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.project.BazelProjectFixtures.initializeBazelProject
 import org.jetbrains.bazel.run.test.forceDisableJetBrainsTestRunner
-import org.jetbrains.bazel.test.framework.target.TestBuildTargetFactory
-import org.jetbrains.bsp.protocol.BuildTarget
+import org.jetbrains.bazel.sync.JavaLanguageClass
+import org.jetbrains.bazel.ui.gutters.NonImportedBuildTarget
 import org.jetbrains.kotlin.psi.KtClass
 import org.jetbrains.kotlin.psi.KtClassBody
 import org.jetbrains.kotlin.psi.KtNamedFunction
@@ -27,9 +25,20 @@ import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
+import kotlin.io.path.Path
 
 @RunWith(JUnit4::class)
-class BazelRunLineMarkerContributorTest : BasePlatformTestCase() {
+class BazelJavaRunConfigurationProducerTest : BasePlatformTestCase() {
+  private val mockTarget = NonImportedBuildTarget(
+    Label.synthetic("mock"),
+    TargetKind(
+      kind = "java_binary",
+      ruleType = RuleType.BINARY,
+      languageClasses = setOf(JavaLanguageClass.JAVA),
+    ),
+    Path("base/directory"),
+  )
+
   @Before
   fun beforeEach() {
     myFixture.setBuildTool()
@@ -75,10 +84,10 @@ class BazelRunLineMarkerContributorTest : BasePlatformTestCase() {
         ?.nextSibling
         ?.nextSibling
     psiElement.shouldNotBeNull()
-    val runLineMarkerContributor = BazelKotlinRunLineMarkerContributor()
+    val runConfigurationProducer = BazelKotlinRunConfigurationProducer()
 
     // when
-    val result = runLineMarkerContributor.getGutterAction(psiElement)?.runnerActionDescriptor?.testFilter
+    val result = runConfigurationProducer.getGutterAction(psiElement, mockTarget)?.testFilter
 
     // then
     val expectedSingleTestFilter = "org.jetbrains.bazel.ui.gutters.BspJVMRunLineMarkerContributorTestData.should add 1 plus 1$"
@@ -96,43 +105,14 @@ class BazelRunLineMarkerContributorTest : BasePlatformTestCase() {
         ?.nextSibling
         ?.nextSibling
     psiElement.shouldNotBeNull()
-    val runLineMarkerContributor = BazelKotlinRunLineMarkerContributor()
+    val runConfigurationProducer = BazelKotlinRunConfigurationProducer()
 
     // when
-    val result = runLineMarkerContributor.getGutterAction(psiElement)?.runnerActionDescriptor?.testFilter
+    val result = runConfigurationProducer.getGutterAction(psiElement, mockTarget)?.testFilter
 
     // then
     val expectedSingleTestFilter = "org.jetbrains.bazel.ui.gutters.BspJVMRunLineMarkerContributorTestData"
     result shouldBe expectedSingleTestFilter
-  }
-
-  @Test
-  fun `should add synthetic run actions for Kotlin library top-level main`() {
-    // given
-    Registry.get("bazel.run.synthetic.enable").setValue(true, testRootDisposable)
-    val target = TestBuildTargetFactory.createSimpleKotlinLibraryTarget(id = Label.parse("//kotlin_target:my_kt_lib"))
-    val sourceFile = myFixture.configureByText(
-      "main.kt",
-      """
-      package com.jetbrains
-
-      fun main() {
-        println("Hello from main1")
-      }
-      """.trimIndent(),
-    )
-    val elementAtCaret = PsiUtilCore.getElementAtOffset(sourceFile, sourceFile.text.indexOf("main"))!!
-    val runLineMarkerContributor =
-      object : BazelKotlinRunLineMarkerContributor() {
-        override fun getTargets(element: PsiElement): List<BuildTarget> = listOf(target)
-      }
-
-    // when
-    val result = runLineMarkerContributor.getSlowInfo(elementAtCaret)
-
-    // then
-    result.shouldNotBeNull()
-    result.actions.shouldHaveSize(2)
   }
 
   private fun CodeInsightTestFixture.getJavaTestFile(): PsiFile =
@@ -167,10 +147,10 @@ class BazelRunLineMarkerContributorTest : BasePlatformTestCase() {
         ?.nextSibling
         ?.nextSibling
     psiElement.shouldNotBeNull()
-    val runLineMarkerContributor = BazelJavaRunLineMarkerContributor()
+    val runConfigurationProducer = BazelJavaRunConfigurationProducer()
 
     // when
-    val result = runLineMarkerContributor.getGutterAction(psiElement)?.runnerActionDescriptor?.testFilter
+    val result = runConfigurationProducer.getGutterAction(psiElement, mockTarget)?.testFilter
 
     // then
     val expectedSingleTestFilter = "org.jetbrains.bazel.ui.gutters.BspJVMRunLineMarkerContributorTestData.addOnePlusOne$"
@@ -189,10 +169,10 @@ class BazelRunLineMarkerContributorTest : BasePlatformTestCase() {
         ?.nextSibling
         ?.nextSibling
     psiElement.shouldNotBeNull()
-    val runLineMarkerContributor = BazelJavaRunLineMarkerContributor()
+    val runConfigurationProducer = BazelJavaRunConfigurationProducer()
 
     // when
-    val result = runLineMarkerContributor.getGutterAction(psiElement)?.runnerActionDescriptor?.testFilter
+    val result = runConfigurationProducer.getGutterAction(psiElement, mockTarget)?.testFilter
 
     // then
     val expectedSingleTestFilter = "org.jetbrains.bazel.ui.gutters.BspJVMRunLineMarkerContributorTestData"

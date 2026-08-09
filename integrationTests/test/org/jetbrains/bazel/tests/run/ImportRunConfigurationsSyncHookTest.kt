@@ -26,12 +26,12 @@ import com.intellij.ide.starter.ide.IDETestContext
 import com.intellij.tools.ide.performanceTesting.commands.assertCurrentFile
 import com.intellij.tools.ide.performanceTesting.commands.delay
 import io.kotest.matchers.shouldBe
-import org.jetbrains.bazel.data.BazelProjectConfigurer
-import org.jetbrains.bazel.data.IdeaBazelCases
-import org.jetbrains.bazel.data.simpleBazelProject
 import org.jetbrains.bazel.base.execute
 import org.jetbrains.bazel.base.openFile
 import org.jetbrains.bazel.base.syncBazelProject
+import org.jetbrains.bazel.data.BazelProjectConfigurer
+import org.jetbrains.bazel.data.IdeaBazelCases
+import org.jetbrains.bazel.data.simpleBazelProject
 import org.jetbrains.bazel.tests.combined.IdeStarterCombinedBaseTest
 import org.jetbrains.bazel.tests.ui.clickRunGutterOnLine
 import org.jetbrains.bazel.tests.ui.verifyAvailableRunGutterActions
@@ -314,7 +314,7 @@ class ImportRunConfigurationsSyncHookTest : IdeStarterCombinedBaseTest() {
             )
           }
           clickRunGutterOnLine(8)
-          popup().waitOneText("Profile '//:calculator_test' with 'IntelliJ Profiler'").click()
+          popup().waitOneText("Profile '//:calculator_test (testAdd)' with 'IntelliJ Profiler'").click()
           waitForProfilerDataReadyBubbleAppearAndClose()
           takeScreenshot("beforeClickingOnGutter")
           editorTabs().gutter().clickLine(15)  // result += random.nextDouble();

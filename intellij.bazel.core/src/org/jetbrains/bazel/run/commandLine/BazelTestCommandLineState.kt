@@ -16,11 +16,10 @@ import org.jetbrains.bazel.run.state.AbstractGenericTestState
 import org.jetbrains.bazel.run.task.BazelTestTaskListener
 import org.jetbrains.bazel.run.task.JetBrainsTestRunnerTaskListener
 import org.jetbrains.bazel.run.test.useJetBrainsTestRunner
-import org.jetbrains.bazel.runnerAction.COVERAGE_EXECUTOR_ID
+import org.jetbrains.bazel.server.BazelServerFacade
 import org.jetbrains.bazel.target.targetStorage
 import org.jetbrains.bazel.taskEvents.BazelTaskListener
 import org.jetbrains.bazel.utils.filterPathsThatDontContainEachOther2
-import org.jetbrains.bazel.server.BazelServerFacade
 import org.jetbrains.bsp.protocol.TestParams
 import java.nio.file.Path
 
@@ -86,5 +85,9 @@ class BazelTestCommandLineState(
       return "^//"
     }
     return "^//(${packages.joinToString("|") { it.joinToString("/") }})[/:]"
+  }
+
+  companion object {
+    private const val COVERAGE_EXECUTOR_ID: String = "Coverage"
   }
 }

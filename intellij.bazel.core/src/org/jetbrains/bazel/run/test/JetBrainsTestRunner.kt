@@ -8,7 +8,7 @@ import org.jetbrains.bazel.languages.projectview.useJetBrainsTestRunner
 import org.jetbrains.bazel.run.BazelRunConfigurationState
 import org.jetbrains.bazel.run.state.HasEnv
 import org.jetbrains.bazel.run.state.HasTestFilter
-import org.jetbrains.bazel.runnerAction.BazelRunnerActionDescriptor
+import org.jetbrains.bazel.ui.gutters.BazelRunConfigurationProducer
 
 // Constants copied from JUnit5BazelRunner
 private const val JB_TEST_UNIQUE_IDS = "JB_TEST_UNIQUE_IDS"
@@ -28,9 +28,9 @@ fun Project.useJetBrainsTestRunner(): Boolean {
 }
 
 @ApiStatus.Internal
-fun createTestFilterDescriptor(project: Project, testFilter: String): BazelRunnerActionDescriptor =
+fun createTestFilterAction(project: Project, testFilter: String): BazelRunConfigurationProducer.GutterAction =
   if (project.useJetBrainsTestRunner()) {
-    BazelRunnerActionDescriptor(
+    BazelRunConfigurationProducer.GutterAction(
       testFilter = null,
       env = mapOf(
         JB_TEST_FILTER to testFilter,
@@ -39,7 +39,7 @@ fun createTestFilterDescriptor(project: Project, testFilter: String): BazelRunne
     )
   }
   else {
-    BazelRunnerActionDescriptor(
+    BazelRunConfigurationProducer.GutterAction(
       testFilter = testFilter,
     )
   }

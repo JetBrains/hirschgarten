@@ -16,6 +16,7 @@ import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.run.config.BazelRunConfiguration
 import org.jetbrains.bazel.target.targetStorage
+import java.nio.file.Files
 import java.nio.file.Path
 
 private const val GENERATE_SYNTHETIC_PROVIDER_NAME: String = "BazelGenerateSyntheticTargetRunTaskProvider"
@@ -25,7 +26,6 @@ val GENERATE_SYNTHETIC_PROVIDER_ID: Key<GenerateSyntheticTargetRunTaskProvider.T
 internal val SYNTHETIC_BUILD_SESSION: Key<SyntheticRunTargetSession> = Key.create("bazel.run.synthetic.build_file.vfile")
 
 internal data class SyntheticRunTargetSession(
-  val buildFileContent: String,
   val buildFilePath: Path,
 )
 
@@ -58,12 +58,13 @@ class GenerateSyntheticTargetRunTaskProvider(
       .resolve("synthetic_targets")
       .resolve(template.buildFilePath)
       .resolve("BUILD")
-    val session = SyntheticRunTargetSession(
-      buildFileContent = template.buildFileContent,
-      buildFilePath = buildFilePath,
-    )
 
     configuration as BazelRunConfiguration
+    Files.createDirectories(buildFilePath.parent)
+    Files.writeString(buildFilePath, template.buildFileContent)
+
+    // See SyntheticRunExecutionListener
+    val session = SyntheticRunTargetSession(buildFilePath = buildFilePath)
     configuration.putUserData(SYNTHETIC_BUILD_SESSION, session)
 
     if (BazelFeatureFlags.syntheticRunDisableVisibilityCheck) {

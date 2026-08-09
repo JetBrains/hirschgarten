@@ -16,11 +16,13 @@ import com.intellij.psi.PsiFile
 import com.intellij.psi.util.PsiUtilCore
 import com.intellij.testFramework.TestActionEvent
 import com.intellij.testFramework.rules.TempDirectory
+import io.kotest.matchers.types.shouldBeInstanceOf
 import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.python.lang.PythonBuildTarget
 import org.jetbrains.bazel.python.lang.PythonLanguageClass
+import org.jetbrains.bazel.run.config.BazelRunConfiguration
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
 import org.jetbrains.bazel.target.targetStorage
 import org.jetbrains.bazel.test.framework.BazelBasePlatformTestCase
@@ -118,9 +120,9 @@ internal class RunConfigurationProducersDisablerTest : BazelBasePlatformTestCase
     val element = PsiUtilCore.getElementAtOffset(psiFile, myFixture.caretOffset)
 
     val context = ConfigurationContext(element)
-    assertNull(context.configuration)
-    assertEmpty(context.configurationsFromContext.orEmpty())
-    assertRunContextActionHidden(element)
+    context.configurationsFromContext?.forEach {
+      it.configuration.shouldBeInstanceOf<BazelRunConfiguration>()
+    }
   }
 
   private fun assertSingleBazelConfiguration(context: ConfigurationContext): RunConfiguration {

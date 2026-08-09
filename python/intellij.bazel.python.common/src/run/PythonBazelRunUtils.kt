@@ -19,7 +19,6 @@ import com.jetbrains.python.testing.isUnitTestCaseClass
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.config.rootDir
-import org.jetbrains.bazel.languages.starlark.repomapping.toShortString
 import org.jetbrains.bazel.python.lang.PythonBuildTarget
 import org.jetbrains.bazel.python.lang.PythonLanguageClass
 import org.jetbrains.bazel.target.getTargetDataForLabel
@@ -47,28 +46,6 @@ object PythonBazelRunUtils {
       ?.getTestRunnerArgument()
       ?.let { listOf(it) }
       .orEmpty()
-
-  internal fun findPythonBazelRunContext(element: PsiElement): PythonBazelRunContext? {
-    val testFunction = element.getTestFunctionFromContext()
-    if (testFunction != null) {
-      val target = (testFunction.containingFile as? PyFile)?.getPythonBazelTestTargets()?.singleOrNull() ?: return null
-      val testRunnerArgument = testFunction.getTestRunnerArgument() ?: return null
-      return PythonBazelRunContext.Test(
-        target = target,
-        sourceElement = testFunction,
-        configurationName = target.id.toShortString(element.project),
-        testExecutableArguments = listOf(testRunnerArgument),
-      )
-    }
-
-    val pyFile = element as? PyFile ?: element.containingFile as? PyFile ?: return null
-    val target = pyFile.getPythonBazelMainFileTargets().singleOrNull() ?: return null
-    return PythonBazelRunContext.Binary(
-      target = target,
-      sourceElement = pyFile,
-      configurationName = target.id.toShortString(element.project),
-    )
-  }
 }
 
 private fun PyFile.getPythonBazelMainFileTargets(): List<BuildTarget> =

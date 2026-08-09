@@ -1,5 +1,7 @@
 package org.jetbrains.bazel.run.config
 
+import com.intellij.execution.configurations.ConfigurationFactory
+import com.intellij.execution.configurations.ConfigurationTypeUtil
 import com.intellij.execution.configurations.RunConfiguration
 import com.intellij.execution.configurations.SimpleConfigurationType
 import com.intellij.openapi.project.DumbAware
@@ -28,5 +30,9 @@ class BazelRunConfigurationType :
 
   companion object {
     const val ID: String = "BazelRunConfigurationType"
+
   }
 }
+
+internal val bazelRunConfigurationFactory: ConfigurationFactory
+  get() = ConfigurationTypeUtil.findConfigurationType(BazelRunConfigurationType::class.java).configurationFactories.first()

@@ -26,14 +26,14 @@ import com.intellij.tools.ide.performanceTesting.commands.saveDocumentsAndSettin
 import com.intellij.tools.ide.performanceTesting.commands.sleep
 import com.intellij.tools.ide.performanceTesting.commands.takeScreenshot
 import com.intellij.tools.ide.performanceTesting.commands.waitForSmartMode
-import org.jetbrains.bazel.data.IdeaBazelCases
-import org.jetbrains.bazel.data.simpleBazelProject
 import org.jetbrains.bazel.base.assertFileKind
 import org.jetbrains.bazel.base.bazelClean
 import org.jetbrains.bazel.base.buildAndSync
 import org.jetbrains.bazel.base.execute
 import org.jetbrains.bazel.base.openFile
 import org.jetbrains.bazel.base.waitForSyncSucceeded
+import org.jetbrains.bazel.data.IdeaBazelCases
+import org.jetbrains.bazel.data.simpleBazelProject
 import org.jetbrains.bazel.performanceImpl.FileKindCheck
 import org.jetbrains.bazel.tests.ui.verifyAvailableRunGutterActions
 import org.junit.jupiter.api.Order
@@ -61,7 +61,7 @@ class SimpleJavaCombinedTest : IdeStarterCombinedBaseTest() {
   fun `bytecode viewer should display compiled class bytecode`() = bytecodeViewer()
 
   @Test @Order(3)
-  fun `run gutter for test suite should contain several targets`() = runGutterTestSuite()
+  fun `run gutter for test suite should work`() = runGutterTestSuite()
 
   @Test @Order(4)
   fun `build and sync should succeed`() = buildAndSyncTest()
@@ -178,16 +178,8 @@ class SimpleJavaCombinedTest : IdeStarterCombinedBaseTest() {
           verifyAvailableRunGutterActions(
             listOf(
               "Build Target",
-              "Run 'Tests in '//:SimpleJavaTest''",
-              "Run 'Tests in '//:SimpleJavaTest'' with Coverage",
-              "Run '//:Simple2Test'",
-              "Debug '//:Simple2Test'",
-              "Run '//:Simple2Test' with Coverage",
-              "Profile '//:Simple2Test' with 'IntelliJ Profiler'",
-              "Run '//:SimpleTest'",
-              "Debug '//:SimpleTest'",
-              "Run '//:SimpleTest' with Coverage",
-              "Profile '//:SimpleTest' with 'IntelliJ Profiler'",
+              "Run '//:SimpleJavaTest'",
+              "Run '//:SimpleJavaTest' with Coverage",
             ),
           )
           popup().close()

@@ -1,20 +1,6 @@
 f:org.jetbrains.bazel.config.BazelProjectPropertiesKt
 - sf:getRootDir(com.intellij.openapi.project.Project):com.intellij.openapi.vfs.VirtualFile
 - sf:isBazelProject(com.intellij.openapi.project.Project):Z
-f:org.jetbrains.bazel.runnerAction.BazelRunnerActionDescriptor
-- <init>():V
-- <init>(java.lang.String,java.util.List,java.util.Map):V
-- b:<init>(java.lang.String,java.util.List,java.util.Map,I,kotlin.jvm.internal.DefaultConstructorMarker):V
-- f:component1():java.lang.String
-- f:component2():java.util.List
-- f:component3():java.util.Map
-- f:copy(java.lang.String,java.util.List,java.util.Map):org.jetbrains.bazel.runnerAction.BazelRunnerActionDescriptor
-- bs:copy$default(org.jetbrains.bazel.runnerAction.BazelRunnerActionDescriptor,java.lang.String,java.util.List,java.util.Map,I,java.lang.Object):org.jetbrains.bazel.runnerAction.BazelRunnerActionDescriptor
-- equals(java.lang.Object):Z
-- f:getEnv():java.util.Map
-- f:getProgramArguments():java.util.List
-- f:getTestFilter():java.lang.String
-- hashCode():I
 org.jetbrains.bazel.sync.status.SyncStatusListener
 - sf:Companion:org.jetbrains.bazel.sync.status.SyncStatusListener$Companion
 - a:syncFinished(Z):V
@@ -23,19 +9,20 @@ f:org.jetbrains.bazel.sync.status.SyncStatusListener$Companion
 - f:getTOPIC():com.intellij.util.messages.Topic
 f:org.jetbrains.bazel.sync.status.SyncStatusServiceKt
 - sf:isSyncInProgress(com.intellij.openapi.project.Project):Z
-a:org.jetbrains.bazel.ui.gutters.BazelRunLineMarkerContributor
-- com.intellij.execution.lineMarker.RunLineMarkerContributor
+a:org.jetbrains.bazel.ui.gutters.BazelRunConfigurationProducer
+- com.intellij.execution.actions.LazyRunConfigurationProducer
 - <init>():V
-- getGutterAction(com.intellij.psi.PsiElement):org.jetbrains.bazel.ui.gutters.BazelRunLineMarkerContributor$GutterAction
-- getInfo(com.intellij.psi.PsiElement):com.intellij.execution.lineMarker.RunLineMarkerContributor$Info
-- getSlowInfo(com.intellij.psi.PsiElement):com.intellij.execution.lineMarker.RunLineMarkerContributor$Info
-f:org.jetbrains.bazel.ui.gutters.BazelRunLineMarkerContributor$GutterAction
+- pf:acceptsTarget(org.jetbrains.bsp.protocol.BuildTarget):Z
+- getConfigurationFactory():com.intellij.execution.configurations.ConfigurationFactory
+- a:getGutterAction(com.intellij.psi.PsiElement,org.jetbrains.bsp.protocol.BuildTarget):org.jetbrains.bazel.ui.gutters.BazelRunConfigurationProducer$GutterAction
+- isDumbAware():Z
+f:org.jetbrains.bazel.ui.gutters.BazelRunConfigurationProducer$GutterAction
 - <init>():V
-- <init>(org.jetbrains.bazel.runnerAction.BazelRunnerActionDescriptor):V
-- b:<init>(org.jetbrains.bazel.runnerAction.BazelRunnerActionDescriptor,I,kotlin.jvm.internal.DefaultConstructorMarker):V
-- f:component1():org.jetbrains.bazel.runnerAction.BazelRunnerActionDescriptor
-- f:copy(org.jetbrains.bazel.runnerAction.BazelRunnerActionDescriptor):org.jetbrains.bazel.ui.gutters.BazelRunLineMarkerContributor$GutterAction
-- bs:copy$default(org.jetbrains.bazel.ui.gutters.BazelRunLineMarkerContributor$GutterAction,org.jetbrains.bazel.runnerAction.BazelRunnerActionDescriptor,I,java.lang.Object):org.jetbrains.bazel.ui.gutters.BazelRunLineMarkerContributor$GutterAction
+- <init>(java.lang.String,java.util.List,java.util.Map,java.lang.String):V
+- b:<init>(java.lang.String,java.util.List,java.util.Map,java.lang.String,I,kotlin.jvm.internal.DefaultConstructorMarker):V
 - equals(java.lang.Object):Z
-- f:getRunnerActionDescriptor():org.jetbrains.bazel.runnerAction.BazelRunnerActionDescriptor
+- f:getAdditionalLocationString():java.lang.String
+- f:getEnv():java.util.Map
+- f:getProgramArguments():java.util.List
+- f:getTestFilter():java.lang.String
 - hashCode():I

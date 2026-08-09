@@ -1,8 +1,10 @@
 package org.jetbrains.bazel.ui.widgets.tool.window.components
 
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.ui.PopupHandler
 import com.intellij.ui.treeStructure.Tree
+import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.extensionPoints.buildTargetClassifier.BuildTargetClassifierExtension
 import org.jetbrains.bazel.extensionPoints.buildTargetClassifier.ListTargetClassifier
 import org.jetbrains.bazel.extensionPoints.buildTargetClassifier.TreeTargetClassifier
@@ -24,7 +26,7 @@ import javax.swing.tree.TreeSelectionModel
 
 internal class BuildTargetTree(
   private val project: Project,
-  private val rootNode: DefaultMutableTreeNode = DefaultMutableTreeNode(DirectoryNodeData("[root]", emptyList())),
+  private val rootNode: DefaultMutableTreeNode = DefaultMutableTreeNode(DirectoryNodeData("[root]")),
 ) : Tree(rootNode) {
   private val loadedTargetsMouseListener: LoadedTargetsMouseListener =
     object : LoadedTargetsMouseListener(project) {
@@ -49,17 +51,18 @@ internal class BuildTargetTree(
         }
       }
 
-      override fun getSelectedBuildTargetsUnderDirectory(): List<BuildTarget> {
+      override fun getSelectedDirectory(): VirtualFile? {
         val selected = lastSelectedPathComponent as? DefaultMutableTreeNode
-        val userObject = selected?.userObject
-        val targetUtils = project.targetStorage
-        return (
-          if (userObject is DirectoryNodeData) {
-            userObject.targets.mapNotNull { targetUtils.getTargetSummary(it.id) }
-          } else {
-            emptyList()
-          }
-        )
+        if (selected?.userObject !is DirectoryNodeData) return null
+        var selectionPath = selected.path.drop(1)  // don't include root node
+          .filterIsInstance<DefaultMutableTreeNode>()
+          .mapNotNull { it.userObject as? DirectoryNodeData }
+          .map { it.name }
+        // TODO: handle nested local repos properly, currently this works for community inside ultimate just by coincidence
+        // (repo name is the same as local path)
+        return selectionPath.fold<String, VirtualFile?>(project.rootDir) { file, name ->
+          file?.findFileByRelativePath(name)
+        }
       }
 
       override val copyTargetIdAction: CopyTargetIdAction =
@@ -135,7 +138,7 @@ internal class BuildTargetTree(
     depth: Int,
   ): DefaultMutableTreeNode {
     val node = DefaultMutableTreeNode()
-    node.userObject = DirectoryNodeData(dirname, targets)
+    node.userObject = DirectoryNodeData(dirname)
 
     val pathToIdentifierMap = targets.groupBy { it.path.getOrNull(depth + 1) }
     val childrenNodeList =
@@ -198,7 +201,7 @@ internal class BuildTargetTree(
       val onlyChild = childrenList.first() as? DefaultMutableTreeNode
       val onlyChildObject = onlyChild?.userObject
       if (onlyChildObject is DirectoryNodeData) {
-        node.userObject = DirectoryNodeData("${dirname}${separator}${onlyChildObject.name}", onlyChildObject.targets)
+        node.userObject = DirectoryNodeData("${dirname}${separator}${onlyChildObject.name}")
         childrenList.clear()
         childrenList.addAll(onlyChild.children().toList())
       }
@@ -235,7 +238,6 @@ internal class BuildTargetTree(
 
 internal data class DirectoryNodeData(
   @JvmField val name: String,
-  @JvmField val targets: List<BuildTargetTreeIdentifier>,
 )
 
 internal data class TargetNodeData(

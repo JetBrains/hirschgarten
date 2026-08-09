@@ -2,30 +2,33 @@ package org.jetbrains.bazel.ui.widgets.tool.window.utils
 
 import com.intellij.codeInsight.hints.presentation.MouseButton
 import com.intellij.codeInsight.hints.presentation.mouseButton
-import com.intellij.execution.ExecutionBundle
-import com.intellij.execution.Executor
-import com.intellij.execution.RunnerAndConfigurationSettings
-import com.intellij.execution.actions.RunConfigurationsComboBoxAction
+import com.intellij.execution.Location
+import com.intellij.execution.PsiLocation
+import com.intellij.execution.RunManagerEx
+import com.intellij.execution.actions.ConfigurationContext
+import com.intellij.execution.actions.PreferredProducerFind
+import com.intellij.execution.executors.DefaultRunExecutor
+import com.intellij.execution.runners.ExecutionEnvironmentBuilder
 import com.intellij.execution.runners.ProgramRunner
 import com.intellij.openapi.actionSystem.ActionGroup
 import com.intellij.openapi.actionSystem.ActionManager
 import com.intellij.openapi.actionSystem.ActionPlaces
+import com.intellij.openapi.actionSystem.CommonDataKeys
 import com.intellij.openapi.actionSystem.DefaultActionGroup
+import com.intellij.openapi.actionSystem.impl.SimpleDataContext
+import com.intellij.openapi.application.runReadActionBlocking
 import com.intellij.openapi.project.Project
-import com.intellij.psi.PsiElement
+import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.psi.PsiManager
 import com.intellij.ui.PopupHandler
+import com.intellij.util.concurrency.annotations.RequiresEdt
+import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.commons.RuleType
-import org.jetbrains.bazel.config.BazelFeatureFlags
-import org.jetbrains.bazel.coroutines.BazelCoroutineService
 import org.jetbrains.bazel.debug.actions.StarlarkDebugAction
-import org.jetbrains.bazel.run.synthetic.SyntheticRunTargetUtils
-import org.jetbrains.bazel.runnerAction.BazelRunnerAction
-import org.jetbrains.bazel.runnerAction.BazelRunnerActionDescriptor
 import org.jetbrains.bazel.runnerAction.BuildTargetAction
-import org.jetbrains.bazel.runnerAction.RunTargetAction
-import org.jetbrains.bazel.runnerAction.TestTargetAction
-import org.jetbrains.bazel.runnerAction.getTestExecutors
 import org.jetbrains.bazel.sync.action.ResyncTargetAction
+import org.jetbrains.bazel.ui.gutters.BazelRunLocation
+import org.jetbrains.bazel.ui.gutters.getExecutorActions
 import org.jetbrains.bazel.ui.widgets.BazelJumpToBuildFileAction
 import org.jetbrains.bazel.ui.widgets.tool.window.actions.CopyTargetIdAction
 import org.jetbrains.bsp.protocol.BuildTarget
@@ -39,7 +42,7 @@ internal abstract class LoadedTargetsMouseListener(private val project: Project)
 
   abstract fun getSelectedBuildTarget(): BuildTarget?
 
-  abstract fun getSelectedBuildTargetsUnderDirectory(): List<BuildTarget>
+  abstract fun getSelectedDirectory(): VirtualFile?
 
   abstract val copyTargetIdAction: CopyTargetIdAction
 
@@ -49,7 +52,7 @@ internal abstract class LoadedTargetsMouseListener(private val project: Project)
 
   override fun mouseClicked(mouseEvent: MouseEvent) {
     if (mouseEvent.isDoubleClick() && isPointSelectable(mouseEvent.point)) {
-      onDoubleClick()
+      runOrBuildTarget(project, getSelectedBuildTarget() ?: return)
     } else {
       super.mouseClicked(mouseEvent)
     }
@@ -74,15 +77,13 @@ internal abstract class LoadedTargetsMouseListener(private val project: Project)
   ) {
     val actionGroup =
       getSelectedBuildTarget()?.let { calculatePopupGroup(it) }
-        ?: calculatePopupGroup(getSelectedBuildTargetsUnderDirectory())
+      ?: calculatePopupGroup(getSelectedDirectory() ?: return)
 
-    if (actionGroup != null) {
-      ActionManager
-        .getInstance()
-        .createActionPopupMenu(ActionPlaces.TOOLWINDOW_POPUP, actionGroup)
-        .component
-        .show(component, x, y)
-    }
+    ActionManager
+      .getInstance()
+      .createActionPopupMenu(ActionPlaces.TOOLWINDOW_POPUP, actionGroup)
+      .component
+      .show(component, x, y)
   }
 
   private fun calculatePopupGroup(target: BuildTarget): ActionGroup =
@@ -91,102 +92,51 @@ internal abstract class LoadedTargetsMouseListener(private val project: Project)
       addAction(copyTargetIdAction)
       addSeparator()
       addAction(BuildTargetAction(target.id))
-      fillWithEligibleActions(project, target)
+      addAll(runReadActionBlocking { getExecutorActions(project, target) })  // We're on EDT so use runReadActionBlocking
       addAction(bazelJumpToBuildFileAction)
       add(StarlarkDebugAction(target.id))
     }
 
-  private fun calculatePopupGroup(targets: List<BuildTarget>): ActionGroup? {
-    val testTargets = targets.filter { it.kind.ruleType == RuleType.TEST }
-    if (testTargets.isEmpty()) {
-      return null
-    }
-    val directoryName = getSelectedComponentName()
-    val group = DefaultActionGroup()
-    val configurationName = ExecutionBundle.message("test.in.scope.presentable.text", directoryName)
-    for (executor in getTestExecutors()) {
-      group.addAction(
-        TestTargetAction(
-          project,
-          targets,
-          executor = executor,
-          configurationName = configurationName,
-        ),
+  private fun calculatePopupGroup(directory: VirtualFile): ActionGroup =
+    DefaultActionGroup().apply {
+      addAll(
+        runReadActionBlocking {
+          val psiDirectory = PsiManager.getInstance(project).findDirectory(directory)
+          getExecutorActions(PsiLocation(psiDirectory))
+        },
       )
     }
-    return group
-  }
 
   private fun MouseEvent.isDoubleClick(): Boolean = this.mouseButton == MouseButton.Left && this.clickCount == 2
-
-  private fun onDoubleClick() {
-    getSelectedBuildTarget()?.also {
-      when {
-        it.kind.ruleType == RuleType.TEST -> TestTargetAction(project, target = it).prepareAndPerform(project)
-        it.kind.ruleType == RuleType.BINARY -> RunTargetAction(project, target = it).prepareAndPerform(project)
-        else -> BuildTargetAction.buildTarget(project, it.id)
-      }
-    }
-  }
 }
 
-private fun BazelRunnerAction.prepareAndPerform(project: Project) {
-  BazelCoroutineService.getInstance(project).start {
-    doPerformAction(project)
-  }
-}
+@ApiStatus.Internal
+@RequiresEdt
+fun runOrBuildTarget(project: Project, target: BuildTarget) {
+  when (target.kind.ruleType) {
+    RuleType.TEST, RuleType.BINARY -> {
+      val location = BazelRunLocation(project, target)
+      val dataContext = SimpleDataContext.builder()
+        .add(CommonDataKeys.PROJECT, project)
+        .add(Location.DATA_KEY, location)
+        .build()
+      val configurationContext = ConfigurationContext.getFromContext(dataContext, ActionPlaces.UNKNOWN)
+      val settings = runReadActionBlocking {
+        PreferredProducerFind.createConfiguration(location, configurationContext)
+      } ?: return
 
-internal fun DefaultActionGroup.fillWithEligibleActions(
-  project: Project,
-  target: BuildTarget,
-  runnerActionDescriptor: BazelRunnerActionDescriptor? = null,
-  callerPsiElement: PsiElement? = null,
-): DefaultActionGroup {
-  val kind = target.kind
+      RunManagerEx.getInstanceEx(project).setTemporaryConfiguration(settings)
+      val executor = DefaultRunExecutor.getRunExecutorInstance()
+      val runner = ProgramRunner.getRunner(executor.id, settings.configuration) ?: return
+      val executionEnvironment =
+        ExecutionEnvironmentBuilder(project, executor)
+          .runnerAndSettings(runner, settings)
+          .build()
+      runner.execute(executionEnvironment)
+    }
 
-  val supportedExecutors = getSupportedExecutors(project, target)
-
-  if (kind.ruleType == RuleType.BINARY) {
-    for (executor in supportedExecutors) {
-      addAction(RunTargetAction(project, target, executor, runnerActionDescriptor, callerPsiElement))
+    else -> {
+      BuildTargetAction.buildTarget(project, target.id)
     }
   }
-
-  if (kind.ruleType == RuleType.TEST) {
-    for (executor in supportedExecutors) {
-      addAction(
-        TestTargetAction(
-          project,
-          target,
-          executor = executor,
-          runnerActionDescriptor = runnerActionDescriptor,
-          callerPsiElement = callerPsiElement,
-        ),
-      )
-    }
-  }
-
-  if (BazelFeatureFlags.syntheticRunEnable && target.kind.ruleType == RuleType.LIBRARY) {
-    if (callerPsiElement != null) {
-      SyntheticRunTargetUtils.addSyntheticRunActions(this, project, target, callerPsiElement)
-    }
-  }
-
-  return this
-}
-
-internal fun getSupportedExecutors(project: Project, target: BuildTarget): List<Executor> {
-  if (!target.kind.isExecutable) return emptyList()
-  val runConfiguration = RunTargetAction(project, target).createRunConfiguration()
-  return getSupportedExecutors(runConfiguration)
-}
-
-internal fun getSupportedExecutors(runConfiguration: RunnerAndConfigurationSettings): List<Executor> {
-  val supportedExecutors = mutableListOf<Executor>()
-  RunConfigurationsComboBoxAction.forAllExecutors { executor ->
-    if (ProgramRunner.getRunner(executor.id, runConfiguration.configuration) != null) {
-      supportedExecutors.add(executor)
-    }
-  }
-  return supportedExecutors
 }

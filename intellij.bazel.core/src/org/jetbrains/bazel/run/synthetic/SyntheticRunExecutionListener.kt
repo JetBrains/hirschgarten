@@ -8,17 +8,6 @@ import org.jetbrains.bazel.run.config.BazelRunConfiguration
 import java.nio.file.Files
 
 internal class SyntheticRunExecutionListener : ExecutionListener {
-  override fun processStarting(executorId: String, env: ExecutionEnvironment, handler: ProcessHandler) {
-    val runConfig = env.runProfile as? BazelRunConfiguration ?: return
-    val syntheticTemplate = runConfig.getUserData(SYNTHETIC_BUILD_SESSION)
-    if (syntheticTemplate == null) {
-      return
-    }
-    val buildFilePath = syntheticTemplate.buildFilePath
-    Files.createDirectories(buildFilePath.parent)
-    Files.writeString(buildFilePath, syntheticTemplate.buildFileContent)
-  }
-
   override fun processTerminated(
     executorId: String,
     env: ExecutionEnvironment,

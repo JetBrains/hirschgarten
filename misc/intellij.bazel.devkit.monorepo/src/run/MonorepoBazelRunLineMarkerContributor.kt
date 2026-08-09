@@ -1,5 +1,9 @@
 package com.intellij.bazel.devkit.monorepo.run
 
+import com.intellij.execution.Location
+import com.intellij.execution.PsiLocation
+import com.intellij.execution.actions.MultipleRunLocationsProvider
+import com.intellij.lang.Language
 import com.intellij.monorepo.devkit.bazel.BazelTargetsInfoCache
 import com.intellij.monorepo.devkit.bazel.JpsToBazelConverterRunner
 import com.intellij.monorepo.devkit.bazel.useBazelCompile
@@ -12,36 +16,54 @@ import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiManager
 import org.jetbrains.bazel.config.isBazelProject
 import org.jetbrains.bazel.config.rootDir
-import org.jetbrains.bazel.java.ui.gutters.BazelJavaRunLineMarkerContributor
-import org.jetbrains.bazel.kotlin.ui.gutters.BazelKotlinRunLineMarkerContributor
+import org.jetbrains.bazel.java.ui.gutters.BazelJavaRunConfigurationProducer
+import org.jetbrains.bazel.kotlin.ui.gutters.BazelKotlinRunConfigurationProducer
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkFile
 import org.jetbrains.bazel.languages.starlark.repomapping.PersistentBazelRepoMappingService
 import org.jetbrains.bazel.languages.starlark.repomapping.calculateLabel
 import org.jetbrains.bazel.project.DefaultProjectViewService
 import org.jetbrains.bazel.sync.workspace.targetKind.TargetKindService
+import org.jetbrains.bazel.ui.gutters.BazelRunLocation
 import org.jetbrains.bazel.ui.gutters.NonImportedBuildTarget
 import org.jetbrains.bazel.ui.gutters.StarlarkRunLineMarkerContributor
 import org.jetbrains.bsp.protocol.BuildTarget
 
 private val LOG = fileLogger()
 
-internal class MonorepoBazelJavaRunLineMarkerContributor : BazelJavaRunLineMarkerContributor() {
-  override fun isProjectApplicable(project: Project): Boolean = MonorepoRunLineMarkerContributorUtil.isProjectApplicable(project)
+/**
+ * See [org.jetbrains.bazel.ui.gutters.BazelContainingTargetsLocationsProvider]
+ */
+internal class MonorepoBazelContainingTargetsLocationsProvider : MultipleRunLocationsProvider() {
+  override fun getAlternativeLocations(originalLocation: Location<*>): List<Location<*>> {
+    if (!MonorepoRunLineMarkerContributorUtil.isProjectApplicable(originalLocation.project)) return emptyList()
+    if (originalLocation !is PsiLocation) return emptyList()
+    val element = originalLocation.psiElement
+    val producer: BazelJavaRunConfigurationProducer = when (element.language) {
+      Language.findLanguageByID("JAVA") -> BazelJavaRunConfigurationProducer()
+      Language.findLanguageByID("kotlin") -> BazelKotlinRunConfigurationProducer()
+      else -> return emptyList()
+    }
+    val mainClassFqn = if (producer.isMainMethod(element)) producer.getContainingClassFqn(element) else null
+    val bazelRunLocations = MonorepoRunLineMarkerContributorUtil.getTargets(element, mainClassFqn).map { target ->
+      BazelRunLocation(target, originalLocation)
+    }
 
-  override fun getTargets(element: PsiElement): List<BuildTarget> {
-    val mainClassFqn = if (element.isMainMethod()) element.getContainingClassFqn() else null
-    return MonorepoRunLineMarkerContributorUtil.getTargets(element, mainClassFqn)
+    // main() method gutters only expect one element. E.g., ApplicationRunLineMarkerProvider calls
+    // ExecutorAction.getActions(Integer.MAX_VALUE), meaning: take only the top config from context (as opposed to the default order = 0).
+    // If we can provide a Bazel main() gutter, then we are forced to discard the JPS gutter here (otherwise our gutter won't be shown).
+    return if (mainClassFqn != null && bazelRunLocations.isNotEmpty()) {
+      bazelRunLocations
+    }
+    else {
+      listOf(originalLocation) + bazelRunLocations
+    }
   }
-}
 
-internal class MonorepoBazelKotlinRunLineMarkerContributor : BazelKotlinRunLineMarkerContributor() {
-  override fun isProjectApplicable(project: Project): Boolean = MonorepoRunLineMarkerContributorUtil.isProjectApplicable(project)
-
-  override fun getTargets(element: PsiElement): List<BuildTarget> {
-    val mainClassFqn = if (element.isMainMethod()) element.getContainingClassFqn() else null
-    return MonorepoRunLineMarkerContributorUtil.getTargets(element, mainClassFqn)
-  }
+  override fun getLocationDisplayName(
+    locationCreatedFrom: Location<*>,
+    originalLocation: Location<*>,
+  ): String? = null
 }
 
 internal class MonorepoStarlarkRunLineMarkerContributor : StarlarkRunLineMarkerContributor() {
@@ -97,16 +119,17 @@ private object MonorepoRunLineMarkerContributorUtil {
       LOG.warn(e)
       return emptyList()
     }
-    
+
     val baseDirectory = (containingFile.parent ?: containingFile).toNioPath()
-    val binaryLabel = getBinaryLabel(module, mainClassFqn)
-    if (binaryLabel != null) {
+
+    if (mainClassFqn != null) {
+      val binaryLabel = getBinaryLabel(module, mainClassFqn) ?: return emptyList()
       val kind = TargetKindService.getInstance().guessFromRuleName("java_binary")
       return listOf(
         NonImportedBuildTarget(
           label = binaryLabel,
           kind = kind,
-          baseDirectory = baseDirectory
+          baseDirectory = baseDirectory,
         ),
       )
     }
@@ -117,14 +140,13 @@ private object MonorepoRunLineMarkerContributorUtil {
         NonImportedBuildTarget(
           label = Label.parse(target.removeSuffix("_lib.jar")),
           kind = kind,
-          baseDirectory = baseDirectory
+          baseDirectory = baseDirectory,
         )
       },
     )
   }
 
-  private fun getBinaryLabel(module: Module, fqn: String?): Label? {
-    if (fqn == null) return null
+  private fun getBinaryLabel(module: Module, fqn: String): Label? {
     val project = module.project
     val buildFile = module.moduleFile?.parent?.findChild("BUILD.bazel") ?: return null
     val psiFile = PsiManager.getInstance(project).findFile(buildFile) as? StarlarkFile ?: return null

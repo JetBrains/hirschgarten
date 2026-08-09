@@ -38,14 +38,14 @@ import com.intellij.tools.ide.performanceTesting.commands.takeScreenshot
 import com.intellij.tools.ide.performanceTesting.commands.waitForSmartMode
 import io.kotest.assertions.withClue
 import io.kotest.matchers.booleans.shouldBeTrue
-import org.jetbrains.bazel.data.IdeaBazelCases
-import org.jetbrains.bazel.data.BazelProjectConfigurer
-import org.jetbrains.bazel.data.simpleBazelProject
 import org.jetbrains.bazel.base.assertSyncedTargets
 import org.jetbrains.bazel.base.buildAndSync
 import org.jetbrains.bazel.base.execute
 import org.jetbrains.bazel.base.openFile
 import org.jetbrains.bazel.base.waitForSyncSucceeded
+import org.jetbrains.bazel.data.BazelProjectConfigurer
+import org.jetbrains.bazel.data.IdeaBazelCases
+import org.jetbrains.bazel.data.simpleBazelProject
 import org.jetbrains.bazel.tests.sync.verifyNoSyncOnReopen
 import org.jetbrains.bazel.tests.ui.expandedTree
 import org.jetbrains.bazel.tests.ui.verifyTestStatus
@@ -143,7 +143,7 @@ class SimpleKotlinCombinedTest : IdeStarterCombinedBaseTest() {
             .getGutterIcons()
             .first()
             .click()
-          popup().waitOneContainsText("Debug '//:SimpleKotlinTest'").click()
+          popup().waitOneContainsText("Debug '//:SimpleKotlinTest (another trivial test)").click()
           wait(15.seconds)
         }
         step("Verify debug test status and results tree") {
@@ -182,7 +182,7 @@ class SimpleKotlinCombinedTest : IdeStarterCombinedBaseTest() {
             .getGutterIcons()
             .first()
             .click()
-          popup().waitOneContainsText("Debug '//:SimpleKotlinTest'").click()
+          popup().waitOneContainsText("Debug '//:SimpleKotlinTest (another trivial test)").click()
           wait(15.seconds)
         }
         step("Verify debug test status and results tree") {
@@ -305,7 +305,7 @@ class SimpleKotlinCombinedTest : IdeStarterCombinedBaseTest() {
             .getGutterIcons()
             .first { it.getIconPath().contains("run") }
             .click()
-          popup().waitOneContainsText("Debug '//:SimpleKotlinTest'").click()
+          popup().waitOneContainsText("Debug '//:SimpleKotlinTest (another trivial test)").click()
 
           wait(30.seconds)
 

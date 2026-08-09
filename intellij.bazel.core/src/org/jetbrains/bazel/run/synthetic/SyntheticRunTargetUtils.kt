@@ -1,9 +1,5 @@
 package org.jetbrains.bazel.run.synthetic
 
-import com.intellij.lang.Language
-import com.intellij.openapi.actionSystem.DefaultActionGroup
-import com.intellij.openapi.project.Project
-import com.intellij.psi.PsiElement
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.commons.constants.Constants
 import org.jetbrains.bazel.label.Label
@@ -11,9 +7,6 @@ import org.jetbrains.bazel.label.Main
 import org.jetbrains.bazel.label.Package
 import org.jetbrains.bazel.label.ResolvedLabel
 import org.jetbrains.bazel.label.SingleTarget
-import org.jetbrains.bazel.runnerAction.RunSyntheticTargetAction
-import org.jetbrains.bazel.ui.widgets.tool.window.utils.getSupportedExecutors
-import org.jetbrains.bsp.protocol.BuildTarget
 
 @ApiStatus.Internal
 object SyntheticRunTargetUtils {
@@ -27,39 +20,7 @@ object SyntheticRunTargetUtils {
     )
   }
 
-  fun getTemplateGenerators(target: BuildTarget, language: Language): List<SyntheticRunTargetTemplateGenerator> =
-    SyntheticRunTargetTemplateGenerator.ep.allForLanguage(language)
-      .filter { it.isSupported(target) }
-
   fun escapeTargetLabel(input: String): String {
     return input.replace(escapePattern, "_")
-  }
-
-  fun addSyntheticRunActions(
-    group: DefaultActionGroup,
-    project: Project,
-    target: BuildTarget,
-    element: PsiElement,
-  ) {
-    val language = element.language
-    for (generator in getTemplateGenerators(target, language)) {
-      val settings = RunSyntheticTargetAction.createRunConfiguration(
-        project = project,
-        target = target,
-        templateGenerator = generator,
-        targetElement = element,
-      ) ?: continue
-      for (executor in getSupportedExecutors(settings)) {
-        group.addAction(
-          RunSyntheticTargetAction(
-            project = project,
-            target = target,
-            executor = executor,
-            templateGenerator = generator,
-            targetElement = element,
-          ),
-        )
-      }
-    }
   }
 }

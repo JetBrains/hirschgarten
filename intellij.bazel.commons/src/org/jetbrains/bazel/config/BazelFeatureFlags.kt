@@ -26,7 +26,9 @@ object BazelFeatureFlags {
   const val FAST_BUILD_ENABLED = "bazel.enable.jvm.fastbuild"
   const val AUTO_OPEN_PROJECT_IF_PRESENT = "bazel.project.auto.open.if.present"
   private const val EXCLUDE_SYMLINKS_FROM_FILE_WATCHER_VIA_REFLECTION = "bazel.exclude.symlinks.from.file.watcher.via.reflection"
-  private const val SYNTHETIC_RUN_ENABLE = "bazel.run.synthetic.enable"
+
+  @VisibleForTesting
+  const val SYNTHETIC_RUN_ENABLE = "bazel.run.synthetic.enable"
   private const val SYNTHETIC_RUN_DISABLE_VISIBILITY_CHECK = "bazel.run.synthetic.disable.visibility.check"
 
   @VisibleForTesting

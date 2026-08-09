@@ -184,8 +184,12 @@
   <extensions defaultExtensionNs="com.intellij">
 
     <activityTracker implementation="org.jetbrains.bazel.startup.BazelStartupActivityTracker"/>
+    <runConfigurationProducer implementation="org.jetbrains.bazel.ui.gutters.BazelRunConfigurationFromTargetProducer"/>
+    <runConfigurationProducer implementation="org.jetbrains.bazel.runnerAction.SyntheticRunConfigurationProducer"/>
     <runConfigurationProducerSuppressor implementation="org.jetbrains.bazel.run.BazelRunConfigurationProducerSuppressor"/>
     <runConfigurationProducer implementation="org.jetbrains.bazel.run.test.BazelRerunTestConfigurationProducer"/>
+    <runConfigurationProducer implementation="org.jetbrains.bazel.ui.projectTree.action.BazelAllTestsInDirectoryRunConfigurationProducer"/>
+    <multipleRunLocationsProvider implementation="org.jetbrains.bazel.ui.gutters.BazelContainingTargetsLocationsProvider"/>
     <stepsBeforeRunProvider implementation="org.jetbrains.bazel.run.synthetic.GenerateSyntheticTargetRunTaskProvider"/>
 
     <vfs.asyncListener implementation="org.jetbrains.bazel.flow.exclude.BazelSymlinkExcludeFileListener"/>
@@ -709,19 +713,6 @@
   </extensions>
 
   <actions>
-    <action
-      class="org.jetbrains.bazel.ui.projectTree.action.RunAllTestsAction"
-      id="BazelRunAllTestsAction"
-    >
-      <add-to-group
-        anchor="last"
-        group-id="EditorPopupMenu"
-      />
-      <add-to-group
-        anchor="last"
-        group-id="ProjectViewPopupMenu"
-      />
-    </action>
     <action
       class="org.jetbrains.bazel.action.registered.ResyncAction"
       icon="/icons/resync.svg"

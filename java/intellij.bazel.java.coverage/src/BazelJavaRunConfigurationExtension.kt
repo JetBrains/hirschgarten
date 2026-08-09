@@ -13,6 +13,7 @@ import com.intellij.psi.PsiElement
 import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.util.concurrency.annotations.RequiresReadLock
 import org.jetbrains.annotations.ApiStatus
+import org.jetbrains.bazel.ui.gutters.BazelRunLocation
 
 internal class BazelJavaRunConfigurationExtension : RunConfigurationExtension() {
   override fun <T : RunConfigurationBase<*>> updateJavaParameters(
@@ -33,7 +34,7 @@ internal class BazelJavaRunConfigurationExtension : RunConfigurationExtension() 
     val coverageEnabledConfiguration = JavaCoverageEnabledConfiguration.getFrom(configuration)
     if (coverageEnabledConfiguration == null) return
 
-    val psiElement = location.psiElement
+    val psiElement = (location as? BazelRunLocation)?.originalLocation?.psiElement ?: return
     val testClassFqn: String? = FullyQualifiedNameProvider.ep.extensionList.firstNotNullOfOrNull { extension ->
       ReadAction.nonBlocking<String> { extension.getFullyQualifiedName(psiElement) }.executeSynchronously()
     }

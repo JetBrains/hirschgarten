@@ -32,15 +32,6 @@ object ExecutableTargetsComputer {
           result[label] = executables.toMutableList()
         }
       }
-    labelToTargetInfo.forEach { (label, target) ->
-      target.generatorName?.let { generatorName ->
-        val generatorLabel = label.assumeResolved().copy(target = SingleTarget(generatorName))
-        val generatorTargets = result.getOrPut(generatorLabel) { mutableListOf() }
-        if (generatorTargets.size < MAX_EXECUTABLE_TARGET_IDS) {
-          generatorTargets.add(label)
-        }
-      }
-    }
     return result.mapValues { (_, executableTargets) -> executableTargets.sortedBy { it.toString() } }
   }
 

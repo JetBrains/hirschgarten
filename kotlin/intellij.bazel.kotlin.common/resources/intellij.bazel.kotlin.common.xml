@@ -71,10 +71,7 @@
   </extensions>
 
   <extensions defaultExtensionNs="com.intellij">
-    <runLineMarkerContributor
-      implementationClass="org.jetbrains.bazel.kotlin.ui.gutters.BazelKotlinRunLineMarkerContributor"
-      language="kotlin"
-    />
+    <runConfigurationProducer implementation="org.jetbrains.bazel.kotlin.ui.gutters.BazelKotlinRunConfigurationProducer"/>
   </extensions>
 
 </idea-plugin>

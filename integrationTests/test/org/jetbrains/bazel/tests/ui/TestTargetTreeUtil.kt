@@ -2,7 +2,6 @@ package org.jetbrains.bazel.tests.ui
 
 import com.intellij.driver.sdk.step
 import com.intellij.driver.sdk.ui.UiText
-import com.intellij.driver.sdk.ui.components.UiComponent
 import com.intellij.driver.sdk.ui.components.common.GutterUiComponent
 import com.intellij.driver.sdk.ui.components.common.IdeaFrameUI
 import com.intellij.driver.sdk.ui.components.common.editorTabs
@@ -12,7 +11,6 @@ import com.intellij.driver.sdk.ui.components.elements.popup
 import com.intellij.driver.sdk.ui.components.elements.tree
 import com.intellij.driver.sdk.ui.xQuery
 import com.intellij.driver.sdk.wait
-import com.intellij.driver.sdk.waitFor
 import com.intellij.ide.starter.ide.IDETestContext
 import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.junit.jupiter.api.Assertions
@@ -115,7 +113,10 @@ fun IdeaFrameUI.verifyAvailableRunGutterActions(texts: List<String>) {
   texts.forEach { text ->
     popup().waitAnyTextsContains(text)
   }
-  val allTexts = popup().getAllTexts().sortedBy { it.point.y }.map { it.text }
+  val allTexts = popup().getAllTexts().sortedBy { it.point.y }.map { it.text }.filter {
+    it != "Modify Run Configuration…" &&
+    "Ctrl" !in it && "⌃" !in it  // filter out key combinations
+  }
   check(allTexts.size == texts.size) {
     "Too many texts! Expected: $texts, actual: $allTexts"
   }

@@ -9,20 +9,20 @@ import com.goide.psi.GoFunctionDeclaration
 import com.goide.psi.GoFunctionOrMethodDeclaration
 import com.intellij.psi.PsiElement
 import org.jetbrains.annotations.ApiStatus
-import org.jetbrains.bazel.runnerAction.BazelRunnerActionDescriptor
-import org.jetbrains.bazel.ui.gutters.BazelRunLineMarkerContributor
+import org.jetbrains.bazel.ui.gutters.BazelRunConfigurationProducer
+import org.jetbrains.bsp.protocol.BuildTarget
 
 /**
  * this impl is inspired by the OG impl [here](https://github.com/bazelbuild/intellij/blob/master/golang/src/com/google/idea/blaze/golang/run/producers/GoTestContextProvider.java)
  */
-internal class BazelGoRunLineMarkerContributor : BazelRunLineMarkerContributor() {
-  override fun getGutterAction(element: PsiElement): GutterAction? {
+internal class BazelGoRunConfigurationProducer : BazelRunConfigurationProducer() {
+  override fun getGutterAction(element: PsiElement, target: BuildTarget): GutterAction? {
     if (element.isMainFunction()) return GutterAction()
     if (!GoTestFinder.isTestFile(element.containingFile)) return null
     if (GoRunConfigurationProducerBase.isPackageContext(element)) return GutterAction()
     val function = GoTestFinder.findTestFunctionInContext(element) ?: return null
     val testFilter = calculateRawTestFilterForElement(element, function)?.let { regexifyTestFilter(it) } ?: return null
-    return GutterAction(runnerActionDescriptor = BazelRunnerActionDescriptor(testFilter = testFilter))
+    return GutterAction(testFilter = testFilter)
   }
   private fun PsiElement.isMainFunction(): Boolean =
     GoRunUtil.isMainGoFile(this.containingFile) &&

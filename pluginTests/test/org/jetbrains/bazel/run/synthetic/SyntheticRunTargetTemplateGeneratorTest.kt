@@ -3,6 +3,7 @@ package org.jetbrains.bazel.run.synthetic
 import com.intellij.lang.Language
 import com.intellij.lang.java.JavaLanguage
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
+import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
 import org.jetbrains.bazel.commons.constants.Constants
@@ -99,8 +100,8 @@ class SyntheticRunTargetTemplateGeneratorTest : BasePlatformTestCase() {
   }
 
   private fun getDefaultTemplateGenerator(target: BuildTarget, language: Language): SyntheticRunTargetTemplateGenerator {
-    val generator = SyntheticRunTargetUtils.getTemplateGenerators(target, language)
-    generator.size.shouldBe(1)
-    return generator.first()
+    val generator = SyntheticRunTargetTemplateGenerator.getTemplateGenerator(target, language)
+    generator.shouldNotBeNull()
+    return generator
   }
 }

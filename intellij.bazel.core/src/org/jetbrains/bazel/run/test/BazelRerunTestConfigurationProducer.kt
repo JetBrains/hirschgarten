@@ -3,21 +3,19 @@ package org.jetbrains.bazel.run.test
 import com.intellij.execution.actions.ConfigurationContext
 import com.intellij.execution.actions.LazyRunConfigurationProducer
 import com.intellij.execution.configurations.ConfigurationFactory
-import com.intellij.execution.configurations.ConfigurationTypeUtil
 import com.intellij.execution.testframework.AbstractTestProxy
 import com.intellij.openapi.util.Ref
 import com.intellij.psi.PsiElement
 import org.jetbrains.bazel.run.config.BazelRunConfiguration
-import org.jetbrains.bazel.run.config.BazelRunConfigurationType
+import org.jetbrains.bazel.run.config.bazelRunConfigurationFactory
 
 /**
  * Allows right-clicking on a test in the test results and then rerunning it separately from other tests
  * @see BazelRerunFailedTestsAction
  * @see com.intellij.execution.junit.UniqueIdConfigurationProducer
  */
-private class BazelRerunTestConfigurationProducer : LazyRunConfigurationProducer<BazelRunConfiguration>() {
-  override fun getConfigurationFactory(): ConfigurationFactory =
-    ConfigurationTypeUtil.findConfigurationType(BazelRunConfigurationType::class.java).configurationFactories.first()
+internal class BazelRerunTestConfigurationProducer : LazyRunConfigurationProducer<BazelRunConfiguration>() {
+  override fun getConfigurationFactory(): ConfigurationFactory = bazelRunConfigurationFactory
 
   override fun setupConfigurationFromContext(
     configuration: BazelRunConfiguration,

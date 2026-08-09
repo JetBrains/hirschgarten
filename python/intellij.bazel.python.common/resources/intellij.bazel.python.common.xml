@@ -29,11 +29,7 @@
 
   <extensions defaultExtensionNs="com.intellij">
     <programRunner implementation="org.jetbrains.bazel.python.run.PythonBspDebugRunner" />
-    <runLineMarkerContributor
-      implementationClass="org.jetbrains.bazel.python.gutter.BazelPyRunLineMarkerContributor"
-      language="Python"
-    />
-    <runConfigurationProducer implementation="org.jetbrains.bazel.python.run.PythonBazelRunConfigurationProducer"/>
+    <runConfigurationProducer implementation="org.jetbrains.bazel.python.gutter.BazelPyRunConfigurationProducer"/>
   </extensions>
 
   <extensions defaultExtensionNs="org.jetbrains.bazel">

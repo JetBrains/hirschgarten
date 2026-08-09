@@ -457,35 +457,6 @@ class WorkspaceSnapshotServiceTest {
   }
 
   @Test
-  fun `generator label index entries survive persistence`(): Unit = runBlocking {
-    val libKey = key("@//lib:lib")
-    val binKey = key("@//app:bin")
-    val binLabel = binKey.label
-    val generatorLabel = key("@//app:my_macro").label
-    val lib = executableTarget(libKey)
-    val bin = executableTarget(binKey, deps = listOf(libKey), executable = true)
-      .copy(generatorName = "my_macro")
-    val expected = WorkspaceSnapshot(
-      targets = InMemoryWorkspaceTargetMap(listOf(bin, lib).associateBy { it.key }),
-      configurations = mapOf(),
-      targetGraph = WorkspaceTargetGraphBuilder.build(rootTargets = setOf(binKey), targets = listOf(bin, lib)),
-      fileToTarget = FileToTargetMap.EMPTY,
-      syncConfigs = listOf(CommonWorkspaceSyncConfig(projectRootDir = Path.of("/workspace"), projectName = "e2e", importDepth = -1)),
-      repoMapping = RepoMappingDisabled,
-      metadata = WorkspaceSnapshotMetadata(version = 1),
-    )
-
-    withProject(isNew = true, saveOnClose = true) { project ->
-      project.getService(WorkspaceSnapshotService::class.java).update { expected }
-    }
-
-    withProject { project ->
-      val restored = awaitLoadedSnapshot(project)
-      restored.executableTargets.executableTargetsFor(generatorLabel).shouldContainExactly(binLabel)
-    }
-  }
-
-  @Test
   fun `file mapping point updates are instantly visible and survive save and reopen`(): Unit = runBlocking {
     val binKey = key("@//app:bin")
     val expected = binDependsOnLibSnapshot()

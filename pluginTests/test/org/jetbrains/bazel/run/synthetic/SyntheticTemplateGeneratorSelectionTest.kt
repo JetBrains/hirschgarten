@@ -2,6 +2,7 @@ package org.jetbrains.bazel.run.synthetic
 
 import com.intellij.lang.java.JavaLanguage
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
+import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 import io.kotest.matchers.string.shouldContain
@@ -17,26 +18,26 @@ class SyntheticTemplateGeneratorSelectionTest : BasePlatformTestCase() {
 
   fun `test java template generator selection`() {
     val target = TestBuildTargetFactory.createSimpleJavaLibraryTarget(id = Label.parse("target"))
-    val generators = SyntheticRunTargetUtils.getTemplateGenerators(target, JavaLanguage.INSTANCE)
+    val generator = SyntheticRunTargetTemplateGenerator.getTemplateGenerator(target, JavaLanguage.INSTANCE)
 
-    generators.count().shouldBe(1)
-    generators.first().shouldBeInstanceOf<JavaSyntheticRunTargetTemplateGenerator>()
+    generator.shouldNotBeNull()
+    generator.shouldBeInstanceOf<JavaSyntheticRunTargetTemplateGenerator>()
   }
 
   fun `test kotlin template generator selection`() {
     val target = TestBuildTargetFactory.createSimpleKotlinLibraryTarget(id = Label.parse("target"))
-    val generators = SyntheticRunTargetUtils.getTemplateGenerators(target, KotlinLanguage.INSTANCE)
+    val generator = SyntheticRunTargetTemplateGenerator.getTemplateGenerator(target, KotlinLanguage.INSTANCE)
 
-    generators.count().shouldBe(1)
-    generators.first().shouldBeInstanceOf<KotlinSyntheticRunTargetTemplateGenerator>()
+    generator.shouldNotBeNull()
+    generator.shouldBeInstanceOf<KotlinSyntheticRunTargetTemplateGenerator>()
   }
 
   fun `test java main in kotlin target template generator selection`() {
     val target = TestBuildTargetFactory.createSimpleKotlinLibraryTarget(id = Label.parse("target"))
-    val generators = SyntheticRunTargetUtils.getTemplateGenerators(target, JavaLanguage.INSTANCE)
+    val generator = SyntheticRunTargetTemplateGenerator.getTemplateGenerator(target, JavaLanguage.INSTANCE)
 
-    generators.count().shouldBe(1)
-    generators.first().shouldBeInstanceOf<JavaSyntheticRunTargetTemplateGenerator>()
+    generator.shouldNotBeNull()
+    generator.shouldBeInstanceOf<JavaSyntheticRunTargetTemplateGenerator>()
   }
 
   fun `test java generator supports jvm targets`() {

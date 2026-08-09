@@ -98,10 +98,7 @@
     <stepsBeforeRunProvider implementation="org.jetbrains.bazel.jvm.run.ScriptPathBeforeRunTaskProvider"/>
     <stepsBeforeRunProvider implementation="org.jetbrains.bazel.jvm.run.KotlinCoroutineLibraryFinderBeforeRunTaskProvider"/>
 
-    <runLineMarkerContributor
-      implementationClass="org.jetbrains.bazel.java.ui.gutters.BazelJavaRunLineMarkerContributor"
-      language="JAVA"
-    />
+    <runConfigurationProducer implementation="org.jetbrains.bazel.java.ui.gutters.BazelJavaRunConfigurationProducer"/>
     <newProjectWizard.java.buildSystem implementation="org.jetbrains.bazel.java.starters.BazelJavaNewProjectWizard"/>
     <projectModelModifier implementation="org.jetbrains.bazel.flow.modify.BazelProjectModelModifier"/>
     <projectTaskRunner
