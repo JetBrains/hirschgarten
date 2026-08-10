@@ -9,11 +9,12 @@ import com.intellij.platform.workspace.storage.MutableEntityStorage
 import com.intellij.platform.workspace.storage.entities
 import org.jetbrains.bazel.config.BazelJavaBackendBundle
 import org.jetbrains.bazel.config.bazelProjectName
-import org.jetbrains.bazel.magicmetamodel.formatAsModuleName
 import org.jetbrains.bazel.performance.bspTracer
 import org.jetbrains.bazel.progress.withSubtask
 import org.jetbrains.bazel.sync.environment.projectCtx
 import org.jetbrains.bazel.sync.workspace.importer.BazelWorkspaceImporter
+import org.jetbrains.bazel.sync.workspace.importer.GlobalNamingContext
+import org.jetbrains.bazel.sync.workspace.importer.GlobalNamingContextBuilder
 import org.jetbrains.bazel.sync.workspace.importer.WorkspaceImporterContext
 import org.jetbrains.bazel.sync.workspace.importer.WorkspaceImporterPhase
 import org.jetbrains.bazel.sync.workspace.importer.WorkspaceImporterResult
@@ -35,6 +36,7 @@ internal class JavaBazelWorkspaceImporter : BazelWorkspaceImporter, BazelWorkspa
   private lateinit var moduleTargets: List<BuildTarget>
   private lateinit var targets: List<BuildTarget>
   private lateinit var jvmResolved: Map<WorkspaceTargetKey, JvmResolvedTarget>
+  private lateinit var plan: JvmImportPlan
   private lateinit var uniqueJavaHomes: Set<Path>
   private lateinit var commonSyncConfig: CommonWorkspaceSyncConfig
   private lateinit var javaSyncConfig: JavaWorkspaceSyncConfig
@@ -49,14 +51,18 @@ internal class JavaBazelWorkspaceImporter : BazelWorkspaceImporter, BazelWorkspa
     snapshot: WorkspaceSnapshot,
   ): Result<WorkspaceImporterResult> = runCatching {
     when (phase) {
-      WorkspaceImporterPhase.Initialize -> onInitialize(context, snapshot)
-      is WorkspaceImporterPhase.WorkspaceApply -> onWorkspaceApply(context, snapshot, phase.builder, phase.entitySource)
+      is WorkspaceImporterPhase.Initialize -> onInitialize(context, snapshot, phase.naming)
+      is WorkspaceImporterPhase.WorkspaceApply -> onWorkspaceApply(context, snapshot, phase.builder, phase.entitySource, phase.naming)
       WorkspaceImporterPhase.Finalize -> onFinalize(context, snapshot)
       WorkspaceImporterPhase.PostProcessing -> onPostProcessing(context, snapshot)
     }
   }
 
-  fun onInitialize(context: WorkspaceImporterContext, snapshot: WorkspaceSnapshot): WorkspaceImporterResult {
+  fun onInitialize(
+    context: WorkspaceImporterContext,
+    snapshot: WorkspaceSnapshot,
+    naming: GlobalNamingContextBuilder,
+  ): WorkspaceImporterResult {
     if (!context.project.projectCtx.avoidExternalSystem) {
       // store generated IML files outside the project directory
       ExternalProjectsManagerImpl.getInstance(context.project).setStoreExternally(true)
@@ -78,6 +84,9 @@ internal class JavaBazelWorkspaceImporter : BazelWorkspaceImporter, BazelWorkspa
       javaSyncConfig = snapshot.syncConfigs.filterIsInstance<JavaWorkspaceSyncConfig>().first(),
     ).resolveAll()
 
+    plan = JvmImportPlan(rawTargets = moduleTargets, jvmResolved = jvmResolved)
+    plan.declareNames(naming)
+
     // TODO: check why is this even needed - can't we just write SdkEntity into the project workspace model
     //  and avoid the global JDK table altogether?
     uniqueJavaHomes = jvmResolved.values.mapNotNull { it.javaHome }.toSet()
@@ -93,12 +102,13 @@ internal class JavaBazelWorkspaceImporter : BazelWorkspaceImporter, BazelWorkspa
   suspend fun onWorkspaceApply(
     context: WorkspaceImporterContext, snapshot: WorkspaceSnapshot,
     builder: MutableEntityStorage, entitySource: EntitySource,
+    naming: GlobalNamingContext,
   ): WorkspaceImporterResult {
     context.taskConsole.withSubtask(
       context.taskId.subTask("update-internal-model"),
       BazelJavaBackendBundle.message("workspace.java.importer.update.internal.model"),
     ) {
-      updateInternalModelSubtask(context, snapshot, builder, entitySource)
+      updateInternalModelSubtask(context, snapshot, builder, entitySource, naming)
     }
     return WorkspaceImporterResult.Success
   }
@@ -128,15 +138,16 @@ internal class JavaBazelWorkspaceImporter : BazelWorkspaceImporter, BazelWorkspa
     snapshot: WorkspaceSnapshot,
     builder: MutableEntityStorage,
     entitySource: EntitySource,
+    naming: GlobalNamingContext,
   ) {
     val packagePrefixes = DefaultJvmPackagePrefixCalculator(
       sourceRootOptimizationMode = javaSyncConfig.sourceRootOptimizationMode,
     ).also { it.calculate(targets) }
 
     val importContext = ImportContext(
-      targets = moduleTargets,
+      plan = plan,
+      naming = naming,
       jvmResolved = jvmResolved,
-      repoMapping = snapshot.repoMapping,
       projectName = commonSyncConfig.projectName,
       projectBasePath = commonSyncConfig.projectRootDir,
       defaultJdkName = defaultJdkName,
@@ -156,12 +167,12 @@ internal class JavaBazelWorkspaceImporter : BazelWorkspaceImporter, BazelWorkspa
       JvmTargetEntitiesBuilder(importContext).writeAll(builder)
     }
 
-    javacOptions = calculateAllJavacOptions(snapshot)
+    javacOptions = calculateAllJavacOptions(importContext)
   }
 
-  private fun calculateAllJavacOptions(snapshot: WorkspaceSnapshot): HashMap<String, String> {
+  private fun calculateAllJavacOptions(ctx: ImportContext): HashMap<String, String> {
     val result = HashMap<String, String>()
-    for (target in targets) {
+    for (target in ctx.targets) {
       val jvm = extractJvmBuildTarget(target) ?: continue
       val options = jvm.javacOpts
       if (options.isEmpty()) {
@@ -170,7 +181,8 @@ internal class JavaBazelWorkspaceImporter : BazelWorkspaceImporter, BazelWorkspa
       if (options.size == 1 && options[0] == "-proc:none") {
         continue
       }
-      result[target.id.formatAsModuleName(snapshot.repoMapping)] = options.joinToString(" ")
+      val moduleName = ctx.moduleNamesByKey[target.key] ?: continue
+      result[moduleName] = options.joinToString(" ")
     }
     return result
   }

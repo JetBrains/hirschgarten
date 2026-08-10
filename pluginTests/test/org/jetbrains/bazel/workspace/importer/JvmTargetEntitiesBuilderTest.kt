@@ -24,11 +24,13 @@ import org.jetbrains.bazel.label.DependencyLabelKind
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.magicmetamodel.formatAsModuleName
 import org.jetbrains.bazel.sync.JavaLanguageClass
+import org.jetbrains.bazel.sync.workspace.importer.GlobalNamingContextBuilder
 import org.jetbrains.bazel.sync.workspace.languages.java.sourceRoot.DefaultJvmPackagePrefixCalculator
 import org.jetbrains.bazel.sync.workspace.languages.java.sourceRoot.JvmPackagePrefixCalculator
 import org.jetbrains.bazel.sync.workspace.languages.java.sourceRoot.SourceRootOptimizationMode
 import org.jetbrains.bazel.sync.workspace.languages.jvm.JvmBuildTarget
 import org.jetbrains.bazel.sync.workspace.languages.jvm.JvmDependency
+import org.jetbrains.bazel.sync.workspace.languages.jvm.KotlinBuildTarget
 import org.jetbrains.bazel.sync.workspace.languages.jvm.extractJvmBuildTarget
 import org.jetbrains.bazel.sync.workspace.snapshot.FileToTargetMap
 import org.jetbrains.bazel.sync.workspace.snapshot.SourceFileCollectionBuilder
@@ -47,6 +49,8 @@ import org.junit.jupiter.api.Test
 import java.nio.file.Files
 import kotlin.io.path.Path
 import kotlin.io.path.writeText
+
+private val FOO_BAR: Label = Label.parse("//foo:bar")
 
 internal class JvmTargetEntitiesBuilderTest : WorkspaceModelBaseTest() {
 
@@ -367,6 +371,89 @@ internal class JvmTargetEntitiesBuilderTest : WorkspaceModelBaseTest() {
     dep.exported shouldBe true
   }
 
+  @Test
+  fun `a rules_kotlin module name derived from the label does not rename the module`(): Unit = timeoutRunBlocking {
+    runImport(targets = listOf(kotlinTarget(FOO_BAR, moduleName = "foo-bar")))
+
+    moduleNames() shouldContainExactly listOf(FOO_BAR.formatAsModuleNameTest())
+  }
+
+  @Test
+  fun `a rules_kotlin module name derived from a root package label does not rename the module`(): Unit = timeoutRunBlocking {
+    val root = Label.parse("//:bar")
+    runImport(targets = listOf(kotlinTarget(root, moduleName = "-bar")))
+
+    moduleNames() shouldContainExactly listOf(root.formatAsModuleNameTest())
+  }
+
+  @Test
+  fun `an explicitly set rules_kotlin module name renames the module`(): Unit = timeoutRunBlocking {
+    runImport(targets = listOf(kotlinTarget(FOO_BAR, moduleName = "explicit.module.name")))
+
+    moduleNames() shouldContainExactly listOf("explicit.module.name")
+  }
+
+  @Test
+  fun `a derived rules_kotlin module name does not add the test suffix to a test target`(): Unit = timeoutRunBlocking {
+    runImport(targets = listOf(kotlinTarget(FOO_BAR, moduleName = "foo-bar", isTestOnly = true)))
+
+    moduleNames() shouldContainExactly listOf(FOO_BAR.formatAsModuleNameTest())
+  }
+
+  @Test
+  fun `an explicitly set rules_kotlin module name adds the test suffix to a test target`(): Unit = timeoutRunBlocking {
+    runImport(targets = listOf(kotlinTarget(FOO_BAR, moduleName = "explicit.module.name", isTestOnly = true)))
+
+    moduleNames() shouldContainExactly listOf("explicit.module.name-test")
+  }
+
+  @Test
+  fun `the ide-module-name tag wins over a rules_kotlin module name`(): Unit = timeoutRunBlocking {
+    val target = kotlinTarget(FOO_BAR, moduleName = "explicit.module.name")
+      .copy(tags = listOf("ide-module-name=tagged.module.name"))
+
+    runImport(targets = listOf(target))
+
+    moduleNames() shouldContainExactly listOf("tagged.module.name")
+  }
+
+  @Test
+  fun `a rules_kotlin module name derived from an associate label does not rename the module`(): Unit = timeoutRunBlocking {
+    val associate = Label.parse("//:friend")
+    val target = kotlinTarget(Label.parse("//:consumer"), moduleName = "-friend", associates = listOf(associate))
+
+    runImport(targets = listOf(target, kotlinTarget(associate, moduleName = "-friend")))
+
+    moduleNames() shouldContainExactlyInAnyOrder listOf(
+      Label.parse("//:consumer").formatAsModuleNameTest(),
+      associate.formatAsModuleNameTest(),
+    )
+  }
+
+  private fun moduleNames(): List<String> = loadedEntries(ModuleEntity::class.java).map { it.name }
+
+  private fun kotlinTarget(
+    label: Label,
+    moduleName: String,
+    isTestOnly: Boolean = false,
+    associates: List<Label> = emptyList(),
+  ): TestBuildTarget =
+    createTestBuildTarget(
+      id = label,
+      kind = TargetKind(kind = "kt_jvm_library", ruleType = RuleType.LIBRARY, languageClasses = setOf(JavaLanguageClass.KOTLIN)),
+      data = listOf(
+        JvmBuildTarget(),
+        KotlinBuildTarget(
+          languageVersion = null,
+          apiVersion = null,
+          kotlincOptions = emptyList(),
+          associates = associates.map { WorkspaceTargetKey(label = it) },
+          moduleName = moduleName,
+        ),
+      ),
+      isTestOnly = isTestOnly,
+    )
+
   private suspend fun runImport(
     targets: List<BuildTarget>,
     resolved: Map<WorkspaceTargetKey, JvmResolvedTarget> = defaultResolved(targets),
@@ -374,10 +461,14 @@ internal class JvmTargetEntitiesBuilderTest : WorkspaceModelBaseTest() {
     val calc = DefaultJvmPackagePrefixCalculator(SourceRootOptimizationMode.Disabled)
     calc.calculate(targets)
     val jvmPackagePrefixes: JvmPackagePrefixCalculator = calc
+    val plan = JvmImportPlan(rawTargets = targets, jvmResolved = resolved)
+    val naming = GlobalNamingContextBuilder.create(RepoMappingDisabled)
+      .apply { plan.declareNames(this) }
+      .build()
     val ctx = ImportContext(
-      targets = targets,
+      plan = plan,
+      naming = naming,
       jvmResolved = resolved,
-      repoMapping = RepoMappingDisabled,
       projectName = "test-project",
       projectBasePath = projectBasePath,
       defaultJdkName = null,

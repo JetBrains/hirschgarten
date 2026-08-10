@@ -52,7 +52,7 @@ internal class GoWorkspaceImporter : BazelWorkspaceImporter, BazelWorkspaceImpor
     snapshot: WorkspaceSnapshot,
   ): Result<WorkspaceImporterResult> {
     when (phase) {
-      WorkspaceImporterPhase.Initialize -> {
+      is WorkspaceImporterPhase.Initialize -> {
         if (!BazelFeatureFlags.isGoSupportEnabled) {
           return Result.success(WorkspaceImporterResult.Abort)
         }

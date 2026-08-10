@@ -23,17 +23,16 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
 import org.jetbrains.annotations.ApiStatus
-import org.jetbrains.bazel.commons.RepoMapping
 import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.config.BazelJavaBackendBundle
 import org.jetbrains.bazel.label.Label
-import org.jetbrains.bazel.magicmetamodel.formatAsLibraryName
-import org.jetbrains.bazel.magicmetamodel.formatAsModuleName
 import org.jetbrains.bazel.scala.sdk.scalaSdkExtensionExists
 import org.jetbrains.bazel.sync.includesJava
 import org.jetbrains.bazel.sync.includesKotlin
 import org.jetbrains.bazel.sync.isJvmTarget
+import org.jetbrains.bazel.sync.workspace.importer.GlobalNamingContext
+import org.jetbrains.bazel.sync.workspace.importer.GlobalNamingContext.NameSpace
 import org.jetbrains.bazel.sync.workspace.languages.java.sourceRoot.JvmPackagePrefixCalculator
 import org.jetbrains.bazel.sync.workspace.languages.jvm.JvmBuildTarget
 import org.jetbrains.bazel.sync.workspace.languages.jvm.KotlinBuildTarget
@@ -42,7 +41,6 @@ import org.jetbrains.bazel.sync.workspace.languages.jvm.extractJvmBuildTarget
 import org.jetbrains.bazel.sync.workspace.snapshot.FileToTargetMap
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceAspectIds
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
-import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetMerger
 import org.jetbrains.bazel.sync.workspace.snapshot.allSources
 import org.jetbrains.bazel.sync.workspace.snapshot.findBuildData
 import org.jetbrains.bazel.workspace.indexAdditionalFiles.ProjectViewGlobSet
@@ -70,9 +68,9 @@ import com.intellij.platform.workspace.jps.entities.DependencyScope as EntitiesD
 // RC: replaces `ProjectDetails` + the per-target `ModuleDetails` intermediates
 @ApiStatus.Internal
 class ImportContext(
-  targets: Collection<BuildTarget>,
+  val plan: JvmImportPlan,
+  val naming: GlobalNamingContext,
   val jvmResolved: Map<WorkspaceTargetKey, JvmResolvedTarget>,
-  val repoMapping: RepoMapping,
   val projectName: String,
   val projectBasePath: Path,
   val defaultJdkName: String?,
@@ -86,80 +84,19 @@ class ImportContext(
   val currentCompiledSourceExcludeEntity: CompiledSourceCodeInsideJarExcludeEntity?,
   val progressReporter: RawProgressReporter? = null,
 ) {
-  // merge aspect-only duplicates so the whole pipeline sees one target per (label, configuration)
-  val targets: List<BuildTarget> = WorkspaceTargetMerger(mergeFunctions = jvmTargetMergeFunctions).mergeByTargetKey(targets)
+  val targets: List<BuildTarget> get() = plan.targets
 
-  private val allLibraries: List<LibraryItem> = jvmResolved.values.flatMap { it.libraries }.distinctBy { it.key }
+  val libraryShadowsModule: Map<WorkspaceTargetKey, WorkspaceTargetKey> get() = plan.libraryShadowsModule
 
-  // module names are keyed by (label, configuration): a single label imported under >= 2 configurations
-  // (e.g. normal + exec) would otherwise collide on one name and silently drop a module, labels with a single
-  // configuration keep their plain name, so the common case is unchanged
+  val libraries: List<LibraryItem> get() = plan.libraries
+
   val moduleNamesByKey: Map<WorkspaceTargetKey, String> =
-    this.targets.asSequence()
-      .map { it.key.copy(aspectIds = WorkspaceAspectIds.EMPTY) }
-      .distinct()
-      .groupBy { it.label }
-      .flatMap { (label, keys) ->
-        if (keys.size == 1) {
-          val key = keys.single()
-          listOf(key to key.formatAsModuleName(repoMapping, withConfiguration = false))
-        }
-        else {
-          keys.map { key -> key to key.formatAsModuleName(repoMapping, withConfiguration = true) }
-        }
-      }
-      .toMap()
+    plan.moduleKeys.associateWith { naming.findOrFallback(NameSpace.MODULE, JVM_NAME_PRODUCER, it) }
 
-  val knownModuleNames: Set<String> = this.targets.asSequence()
-    .filter { it.kind.isJvmTarget() }
-    .mapNotNull { moduleNamesByKey[it.key.copy(aspectIds = WorkspaceAspectIds.EMPTY)] }
-    .toSet()
+  val knownModuleNames: Set<String> = moduleNamesByKey.values.toSet()
 
-  private val jarToSourceModule: Map<Path, WorkspaceTargetKey> =
-    this.targets.asSequence()
-
-      // build `jar -> source module` map
-      .filter { it.allSources.any { path -> path.hasJvmSourceExtension() } }
-      .flatMap { target ->
-        target.findBuildData<JvmBuildTarget>()?.let { (it.binaryOutputs.getFiles() + it.outputInterfaceJars.getFiles()).toList() }.orEmpty()
-          .asSequence().map { it to target.key }
-      }
-      .groupBy({ it.first }, { it.second })
-
-      // keep only single `jar -> source module` mapping
-      .mapNotNull { (jar, owners) -> owners.distinct().singleOrNull()?.let { jar to it } }
-      .toMap()
-
-  val libraryShadowsModule: Map<WorkspaceTargetKey, WorkspaceTargetKey> =
-    allLibraries.asSequence()
-      .mapNotNull { lib ->
-        val producer = lib.jars.firstNotNullOfOrNull { jarToSourceModule[it] } ?: return@mapNotNull null
-        // don't shadow own module generated, annotation processor generated code
-        // is just self-referential library, so ignore it immediately
-        if (producer.copy(aspectIds = WorkspaceAspectIds.EMPTY)
-          == lib.key.copy(aspectIds = WorkspaceAspectIds.EMPTY)) {
-          return@mapNotNull null
-        }
-        lib.key to producer
-      }
-      .toMap()
-
-  val libraries: List<LibraryItem> = allLibraries.filterNot { it.key in libraryShadowsModule }
-
-  val libraryNamesByKey: Map<WorkspaceTargetKey, String> = this.libraries.asSequence()
-    .distinctBy { it.key }
-    .map { it.key }
-    .groupBy { it.label }
-    .flatMap { (label, keys) ->
-      if (keys.size == 1) {
-        val key = keys.single()
-        listOf(key to key.formatAsLibraryName(repoMapping, withFullKey = false))
-      }
-      else {
-        keys.map { key -> key to key.formatAsLibraryName(repoMapping, withFullKey = true) }
-      }
-    }
-    .toMap()
+  val libraryNamesByKey: Map<WorkspaceTargetKey, String> =
+    plan.libraryKeys.associateWith { naming.findOrFallback(NameSpace.LIBRARY, JVM_NAME_PRODUCER, it) }
 
   val librariesByLabel: Map<Label, List<String>> =
     libraries.groupBy({ it.key.label }, { libraryNamesByKey[it.key]!! })
@@ -203,7 +140,7 @@ class JvmTargetEntitiesBuilder(private val ctx: ImportContext) {
       importIjars = ctx.importIJars,
       virtualFileUrlManager = ctx.virtualFileUrlManager,
       entitySource = ctx.entitySource,
-      libraryNameProvider = { key -> ctx.libraryNamesByKey[key] ?: key.formatAsLibraryName(ctx.repoMapping, withFullKey = true) },
+      libraryNameProvider = { key -> ctx.libraryNamesByKey.getValue(key) },
       storage = storage,
     )
 
@@ -272,8 +209,7 @@ class JvmTargetEntitiesBuilder(private val ctx: ImportContext) {
     if (!target.kind.isJvmTarget()) {
       return null
     }
-    val moduleName = ctx.moduleNamesByKey[target.key.copy(aspectIds = WorkspaceAspectIds.EMPTY)]
-                     ?: target.key.label.formatAsModuleName(ctx.repoMapping)
+    val moduleName = ctx.moduleNamesByKey.getValue(target.key.copy(aspectIds = WorkspaceAspectIds.EMPTY))
     val resolvedDeps = ctx.dependencyBuilder.resolve(target)
     val jdkName = jdkNameFor(target)
     val javaLangVersion = ctx.jvmResolved[target.key.copy(aspectIds = WorkspaceAspectIds.EMPTY)]?.javaVersion
@@ -537,10 +473,10 @@ class JvmTargetEntitiesBuilder(private val ctx: ImportContext) {
     addAll(
       resolved.dependencies.flatMap { dep ->
         val scope = if (dep.isRuntime) DependencyScope.RUNTIME else DependencyScope.COMPILE
-        // resolve to a module by exact (label, configuration), fall back by label name
+        // resolve to a module by exact (label, configuration), an undeclared dependency is not an imported
+        // module, so it falls through to the libraries below
         val depModuleName = ctx.moduleNamesByKey[dep.targetKey.copy(aspectIds = WorkspaceAspectIds.EMPTY)]
-                            ?: dep.targetKey.label.formatAsModuleName(ctx.repoMapping)
-        val asModule = depModuleName.takeIf { it in ctx.knownModuleNames && it != moduleName }
+        val asModule = depModuleName?.takeIf { it in ctx.knownModuleNames && it != moduleName }
         if (asModule != null) {
           return@flatMap listOf(moduleDependency(asModule, exported = dep.exported, scope = scope))
         }
@@ -608,7 +544,7 @@ class JvmTargetEntitiesBuilder(private val ctx: ImportContext) {
 @ApiStatus.Internal
 fun String.scalaVersionToScalaSdkName(): String = "scala-sdk-$this"
 
-private fun Path.hasJvmSourceExtension(): Boolean {
+internal fun Path.hasJvmSourceExtension(): Boolean {
   val name = fileName?.toString() ?: return false
   return name.endsWith(".java") || name.endsWith(".kt") || name.endsWith(".scala")
 }
