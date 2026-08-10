@@ -9,10 +9,8 @@ import com.intellij.build.events.MessageEvent
 import com.intellij.build.events.OutputBuildEvent
 import com.intellij.configurationStore.ProjectStoreImpl
 import com.intellij.openapi.Disposable
-import com.intellij.openapi.application.ReadAction
 import com.intellij.openapi.application.WriteAction
 import com.intellij.openapi.components.service
-import com.intellij.openapi.application.readAction
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.projectRoots.ProjectJdkTable
@@ -25,7 +23,6 @@ import com.intellij.testFramework.fixtures.TempDirTestFixture
 import com.intellij.testFramework.fixtures.impl.CodeInsightTestFixtureImpl
 import com.intellij.testFramework.junit5.fixture.TestFixture
 import com.intellij.testFramework.replaceService
-import com.intellij.testFramework.withProjectAsync
 import com.intellij.util.lang.UrlClassLoader
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
@@ -37,14 +34,13 @@ import org.jetbrains.bazel.languages.projectview.ProjectViewService
 import org.jetbrains.bazel.progress.ConsoleService
 import org.jetbrains.bazel.progress.TaskConsole
 import org.jetbrains.bazel.project.BazelProjectFixtures.initializeBazelProject
+import org.jetbrains.bazel.sync.BazelEnvironmentService
 import org.jetbrains.bazel.sync.ProjectSyncScope
 import org.jetbrains.bazel.sync.ProjectSyncService
-import org.jetbrains.bazel.server.BazelServerService
-import org.jetbrains.bazel.sync.BazelEnvironmentService
-import org.jetbrains.bazel.sync.task.ProjectSyncTask
 import org.jetbrains.bazel.ui.console.task.TestTaskConsole
 import org.jetbrains.bsp.protocol.TaskGroupId
-import org.jetbrains.bsp.protocol.TaskId
+import org.jetbrains.kotlin.incremental.createDirectory
+import java.io.File
 import java.nio.file.Path
 import kotlin.io.path.Path
 import kotlin.io.path.copyTo
@@ -110,10 +106,36 @@ class BazelSyncCodeInsightTestFixtureImpl(
   override fun copyBazelTestProject(path: String) {
     val testProjectsPath = BazelPathManager.testProjectsRoot.relativeTo(Path(testDataPath))
     copyDirectoryToProject("${testProjectsPath}/base", "")
+    setupBazelRc()
     copyDirectoryToProject("${testProjectsPath}/$path", "")
     configureBazelCaches(path)
     findKotlinStdlibInClasspath().copyTo(projectRoot.resolve("toolchains").resolve("kotlin-stdlib.jar").createParentDirectories())
     testProjectPath = BazelPathManager.testProjectsRoot.resolve(path)
+  }
+
+  // create %user_home%/bazel-test-temp
+  private fun setupBazelRc() {
+    val bazelCachesPath: String = run {
+      val testCaches = File(System.getProperty("user.home"), "bazel-test-temp")
+      testCaches.createDirectory()
+      testCaches.absolutePath.replace('\\', '/')
+    }
+
+    File(tempDirPath, ".bazelrc")
+      .writeText(
+        """
+        startup --output_base=$bazelCachesPath
+        startup --host_jvm_args=-Djava.io.tmpdir=$bazelCachesPath
+
+        common --action_env BAZEL_DO_NOT_DETECT_CPP_TOOLCHAIN=0
+        common --action_env BAZEL_NO_APPLE_CPP_TOOLCHAIN=0
+
+        build --java_runtime_version=remotejdk_21
+
+        build --action_env=TMP=$bazelCachesPath
+        build --action_env=TEMP=$bazelCachesPath
+        """.trimIndent()
+    )
   }
 
   override fun setProjectView(projectview: String) {

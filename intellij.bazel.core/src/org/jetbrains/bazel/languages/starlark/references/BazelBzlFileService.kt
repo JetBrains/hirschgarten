@@ -16,6 +16,7 @@ import org.jetbrains.bazel.workspace.canonicalRepoNameToPath
 import org.jetbrains.bazel.workspace.excludedRoots
 import java.nio.file.Path
 import kotlin.io.path.Path
+import kotlin.io.path.invariantSeparatorsPathString
 import kotlin.io.path.relativeToOrNull
 
 @ApiStatus.Internal
@@ -30,7 +31,7 @@ private val canonicalRepoNameToBzlFilesValue =
 private fun calculateApparentRepoNameToFiles(project: Project): Map<String, List<ResolvedLabel>> {
   val newMap = mutableMapOf<String, List<ResolvedLabel>>()
 
-  val canonicalRepoPaths =
+  val canonicalRepoPaths: Set<VirtualFile> =
     project.canonicalRepoNameToPath.values
       .mapNotNull {
         VirtualFileManager.getInstance().findFileByNioPath(it)
@@ -54,14 +55,14 @@ private fun calculateApparentRepoNameToFiles(project: Project): Map<String, List
           if (file.isDirectory || file.extension != "bzl") return CONTINUE
 
           val packagePath = findBuildFilePathForDirectory(file.parent, root, dirToPackagePath)?.parent ?: return CONTINUE
-          val packageName = packagePath.relativeToOrNull(repoPath) ?: return CONTINUE
-          val targetName = file.toNioPath().relativeToOrNull(packagePath)
+          val packageName = packagePath.relativeToOrNull(repoPath)?.invariantSeparatorsPathString ?: return CONTINUE
+          val targetName = file.toNioPath().relativeToOrNull(packagePath)?.invariantSeparatorsPathString ?: return CONTINUE
 
           val label =
             ResolvedLabel(
               repo = Canonical.createCanonicalOrMain(canonicalName),
-              packagePath = Package(packageName.toString().split("/")),
-              target = SingleTarget(targetName.toString()),
+              packagePath = Package(packageName.split("/")),
+              target = SingleTarget(targetName),
             )
           newMap[canonicalName] = newMap.getOrDefault(canonicalName, emptyList()) + label
           return CONTINUE

@@ -9,12 +9,13 @@ import io.kotest.matchers.shouldBe
 import org.jetbrains.bazel.languages.starlark.StarlarkBundle
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkNamedElement
 import org.jetbrains.bazel.project.BazelProjectFixtures
+import org.jetbrains.bazel.test.framework.BazelBasePlatformTestCase
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
 
 @RunWith(JUnit4::class)
-class StarlarkRenameTest : BasePlatformTestCase() {
+class StarlarkRenameTest : BazelBasePlatformTestCase() {
 
   // region Functions
 
@@ -44,7 +45,6 @@ class StarlarkRenameTest : BasePlatformTestCase() {
 
   @Test
   fun `should rename top-level function across files`() {
-    BazelProjectFixtures.initializeBazelProject(project, myFixture.tempDirPath)
     myFixture.addFileToProject("MODULE.bazel", "")
     myFixture.addFileToProject("BUILD", "")
     val defsFile = myFixture.addFileToProject(
@@ -124,7 +124,6 @@ class StarlarkRenameTest : BasePlatformTestCase() {
 
   @Test
   fun `should rename top-level variable across files`() {
-    BazelProjectFixtures.initializeBazelProject(project, myFixture.tempDirPath)
     myFixture.addFileToProject("MODULE.bazel", "")
     myFixture.addFileToProject("BUILD", "")
     val defsFile = myFixture.addFileToProject(

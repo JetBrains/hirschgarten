@@ -83,14 +83,15 @@ class ProjectViewGlobSetTest {
   @Test
   fun `should match java nio's Path`() {
     val pattern = "test/*"
-    glob(pattern, Path("/project")).matches(Path("/project/test")) shouldBe true
-    glob(pattern, Path("/project")).matches(Path("project/test")) shouldBe false
-    glob(pattern, Path("/")).matches(Path("/project/test")) shouldBe false
-    glob(pattern, Path("/some/random/dir")).matches(Path("/project/test")) shouldBe false
-    glob(pattern, Path("/some/random/dir")).matches(Path("project/test")) shouldBe false
-    glob(pattern, Path("/some/random/dir")).matches(Path("test")) shouldBe true
+    glob(pattern, Path("/project").toAbsolutePath()).matches(Path("/project/test").toAbsolutePath()) shouldBe true
+    glob(pattern, Path("/project").toAbsolutePath()).matches(Path("project/test")) shouldBe false
+    glob(pattern, Path("/").toAbsolutePath()).matches(Path("/project/test").toAbsolutePath()) shouldBe false
+    glob(pattern, Path("/some/random/dir").toAbsolutePath()).matches(Path("/project/test").toAbsolutePath()) shouldBe false
+    glob(pattern, Path("/some/random/dir").toAbsolutePath()).matches(Path("project/test")) shouldBe false
+    glob(pattern, Path("/some/random/dir").toAbsolutePath()).matches(Path("test")) shouldBe true
     shouldThrow<IllegalArgumentException> { glob(pattern, Path("some/random/dir")).matches(Path("test")) }
   }
 
-  private fun glob(pattern: String, rootDir: Path = Path("/")): ProjectViewGlobSet = ProjectViewGlobSet(rootDir, listOf(pattern))
+  private fun glob(pattern: String, rootDir: Path = Path("/").toAbsolutePath()): ProjectViewGlobSet =
+    ProjectViewGlobSet(rootDir, listOf(pattern))
 }

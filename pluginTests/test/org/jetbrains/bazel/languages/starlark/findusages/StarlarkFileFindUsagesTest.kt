@@ -5,23 +5,14 @@ import com.intellij.psi.search.searches.ReferencesSearch
 import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.collections.shouldBeSingleton
 import io.kotest.matchers.collections.shouldContain
-import io.kotest.matchers.collections.shouldHaveSingleElement
-import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
 import org.jetbrains.bazel.languages.starlark.fixtures.StarlarkFindUsagesTestCase
-import org.jetbrains.bazel.project.BazelProjectFixtures.initializeBazelProject
-import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
 
 @RunWith(JUnit4::class)
 class StarlarkFileFindUsagesTest : StarlarkFindUsagesTestCase() {
-  @Before
-  fun setupBuildEnvironment() {
-    initializeBazelProject(project, myFixture.tempDirPath)
-  }
-
   @Test
   fun `should find usage for java file`() {
     val javaFile =

@@ -5,18 +5,14 @@ import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.collections.shouldHaveSingleElement
 import io.kotest.matchers.collections.shouldHaveSize
 import org.jetbrains.bazel.project.BazelProjectFixtures
+import org.jetbrains.bazel.test.framework.BazelBasePlatformTestCase
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
 
 @RunWith(JUnit4::class)
-class BazelTargetFindUsagesTest : BasePlatformTestCase() {
-  @Before
-  fun setupBuildEnvironment() {
-    BazelProjectFixtures.initializeBazelProject(project, myFixture.tempDirPath)
-  }
-
+class BazelTargetFindUsagesTest : BazelBasePlatformTestCase() {
   @Test
   fun `should find usage of target name in same BUILD file`() {
     myFixture.configureByText(

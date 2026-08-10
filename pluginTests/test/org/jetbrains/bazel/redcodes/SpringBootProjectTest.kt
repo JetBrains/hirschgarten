@@ -11,6 +11,8 @@ import org.jetbrains.bazel.test.framework.BazelTestApplication
 import org.jetbrains.bazel.test.framework.bazelSyncCodeInsightFixture
 import org.jetbrains.bazel.workspace.model.matchers.shouldBeEqual
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.condition.DisabledOnOs
+import org.junit.jupiter.api.condition.OS
 
 @BazelTestApplication
 class SpringBootProjectTest {
@@ -19,6 +21,7 @@ class SpringBootProjectTest {
   private val fixture by bazelSyncCodeInsightFixture(projectFixture, tempDir)
 
   @Test
+  @DisabledOnOs(OS.WINDOWS) // coursier
   fun testGutterMarks(): Unit = runBlocking(Dispatchers.Default) {
     fixture.copyBazelTestProject("redcodes/spring_boot")
     fixture.enableInspections(*SpringInspectionsRegistry.getInstance().getTestSpringInspectionClasses())

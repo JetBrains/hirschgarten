@@ -18,22 +18,18 @@ import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkTargetExpr
 import org.jetbrains.bazel.languages.starlark.psi.requireCallWithNameAttribute
 import org.jetbrains.bazel.languages.starlark.psi.statements.StarlarkLoadStatement
 import org.jetbrains.bazel.project.BazelProjectFixtures.initializeBazelProject
+import org.jetbrains.bazel.test.framework.BazelBasePlatformTestCase
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
 
 @RunWith(JUnit4::class)
-class BazelRuleCallDocumentationTargetTest : BasePlatformTestCase() {
+class BazelRuleCallDocumentationTargetTest : BazelBasePlatformTestCase() {
   private val functionColor by lazy { textAttributeColor("STARLARK_FUNCTION_DECLARATION") }
   private val namedArgColor by lazy { textAttributeColor("STARLARK_NAMED_ARGUMENT") }
   private val stringColor by lazy { textAttributeColor("STARLARK_STRING") }
   private val identifierColor by lazy { textAttributeColor("STARLARK_IDENTIFIER") }
-
-  @Before
-  fun setupBuildEnvironment() {
-    initializeBazelProject(project, myFixture.tempDirPath)
-  }
 
   private fun configureBuildFileWithDepAndLib() {
     myFixture.configureByText(

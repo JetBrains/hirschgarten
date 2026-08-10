@@ -6,6 +6,7 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
 import kotlin.io.path.Path
+import kotlin.io.path.invariantSeparatorsPathString
 import kotlin.io.path.relativeTo
 
 @RunWith(JUnit4::class)
@@ -183,6 +184,6 @@ internal class StarlarkGlobGlobbingTest : BasePlatformTestCase() {
   }
 
   private fun List<VirtualFile>.relativePathsFrom(base: VirtualFile): Set<String> {
-    return map { Path(it.path).relativeTo(Path(base.path)).toString() }.toSet()
+    return map { Path(it.path).relativeTo(Path(base.path)).invariantSeparatorsPathString }.toSet()
   }
 }

@@ -4,18 +4,14 @@ import com.intellij.testFramework.fixtures.BasePlatformTestCase
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.collections.shouldNotContainAnyOf
 import org.jetbrains.bazel.project.BazelProjectFixtures.initializeBazelProject
+import org.jetbrains.bazel.test.framework.BazelBasePlatformTestCase
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
 
 @RunWith(JUnit4::class)
-class StarlarkFileCompletionTest : BasePlatformTestCase() {
-  @Before
-  fun beforeEach() {
-    initializeBazelProject(project, myFixture.tempDirPath)
-  }
-
+class StarlarkFileCompletionTest : BazelBasePlatformTestCase() {
   @Test
   fun `should complete in src`() {
     myFixture.addFileToProject("a.kt", "")

@@ -5,19 +5,14 @@ import com.intellij.testFramework.fixtures.BasePlatformTestCase
 import io.kotest.assertions.throwables.shouldThrowWithMessage
 import org.jetbrains.bazel.languages.starlark.StarlarkBundle
 import org.jetbrains.bazel.project.BazelProjectFixtures
+import org.jetbrains.bazel.test.framework.BazelBasePlatformTestCase
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
 
 @RunWith(JUnit4::class)
-class BazelTargetRenameTest : BasePlatformTestCase() {
-
-  @Before
-  fun setupBuildEnvironment() {
-    BazelProjectFixtures.initializeBazelProject(project, myFixture.tempDirPath)
-  }
-
+class BazelTargetRenameTest : BazelBasePlatformTestCase() {
   @Test
   fun `rename target should update short label reference in same file`() {
     myFixture.configureByText(

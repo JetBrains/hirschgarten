@@ -4,19 +4,14 @@ import com.intellij.refactoring.rename.RenameUtil
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
 import org.jetbrains.bazel.languages.starlark.psi.requireCallWithNameAttribute
 import org.jetbrains.bazel.project.BazelProjectFixtures
+import org.jetbrains.bazel.test.framework.BazelBasePlatformTestCase
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
 
 @RunWith(JUnit4::class)
-class BazelTargetRenameInputValidatorTest : BasePlatformTestCase() {
-
-  @Before
-  fun setupBuildEnvironment() {
-    BazelProjectFixtures.initializeBazelProject(project, myFixture.tempDirPath)
-  }
-
+class BazelTargetRenameInputValidatorTest : BazelBasePlatformTestCase() {
   @Test
   fun `valid simple name`() {
     assertTargetNameValid("my_lib", expected = true)

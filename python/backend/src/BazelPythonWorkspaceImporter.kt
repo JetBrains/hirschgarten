@@ -29,7 +29,6 @@ import com.intellij.platform.workspace.storage.EntitySource
 import com.intellij.platform.workspace.storage.MutableEntityStorage
 import com.intellij.platform.workspace.storage.impl.url.toVirtualFileUrl
 import com.intellij.platform.workspace.storage.url.VirtualFileUrlManager
-import com.intellij.python.community.services.systemPython.SystemPythonService
 import com.jetbrains.python.PyNames
 import com.jetbrains.python.PythonBinary
 import com.jetbrains.python.errorProcessing.PyResult
@@ -42,7 +41,6 @@ import org.jetbrains.annotations.VisibleForTesting
 import org.jetbrains.bazel.commons.RepoMapping
 import org.jetbrains.bazel.magicmetamodel.formatAsLibraryName
 import org.jetbrains.bazel.magicmetamodel.formatAsModuleName
-import org.jetbrains.bazel.progress.TaskConsole
 import org.jetbrains.bazel.progress.withSubtask
 import org.jetbrains.bazel.python.lang.PythonBuildTarget
 import org.jetbrains.bazel.server.connection
@@ -70,7 +68,6 @@ import org.jetbrains.bazel.workspacemodel.entities.WorkspaceModelTargetSourceRoo
 import org.jetbrains.bazel.workspacemodel.entities.bazelModuleExtension
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.StrictDependencyCheckedType
-import org.jetbrains.bsp.protocol.TaskId
 import org.jetbrains.bsp.protocol.utils.StringUtils
 import java.nio.file.Path
 import kotlin.io.path.isDirectory
@@ -217,7 +214,6 @@ internal class BazelPythonWorkspaceImporter : BazelWorkspaceImporter, BazelWorks
      * Hence, we're forced to do it in post-processing, after WSM has been applied already.
      */
     calculateAndAddSdksWithProgress(context, snapshot)
-    getSystemSdk(context.taskId, context.project, context.taskConsole)
 
     val pyTargets = allPythonTargets.values
       .filter { it.hasBuildData<PythonBuildTarget>() }
@@ -443,26 +439,6 @@ internal class BazelPythonWorkspaceImporter : BazelWorkspaceImporter, BazelWorks
     project: Project,
     sdkName: String?,
   ): PyResult<Sdk> = createLocalSdkGuessingTypeByPath(interpreter, ProjectOnly(project), sdkName)
-
-  private suspend fun getSystemSdk(taskId: TaskId, project: Project, taskConsole: TaskConsole): Sdk? {
-    val systemPython = SystemPythonService().findSystemPythons().firstOrNull { it.pythonInfo.languageLevel.isPy3K }
-                       ?: run {
-                         taskConsole.addMessage(taskId, BazelPythonBackendBundle.message("python.not.found"))
-                         return null
-                       }
-    logger.info("Detecting system SDK, found python $systemPython")
-    return when (val result = createSdkFromPython(systemPython.pythonBinary, project, sdkName = chooseSystemSdkName(project.name))) {
-      is com.jetbrains.python.Result.Failure -> {
-        taskConsole.addMessage(
-          taskId,
-          BazelPythonBackendBundle.message("python.cant.create.sdk", systemPython.pythonBinary, result.error.message),
-        )
-        null
-      }
-
-      is com.jetbrains.python.Result.Success -> result.result
-    }
-  }
 
   private fun WorkspaceTargetKey.toPythonModuleName(repoMapping: RepoMapping) =
     moduleNameByKey[this] ?: this.formatAsModuleName(repoMapping)

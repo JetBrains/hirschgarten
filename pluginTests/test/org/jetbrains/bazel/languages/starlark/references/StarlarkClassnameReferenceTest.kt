@@ -8,18 +8,14 @@ import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.instanceOf
 import org.jetbrains.bazel.languages.starlark.bazel.StarlarkClassParametersProvider
 import org.jetbrains.bazel.project.BazelProjectFixtures.initializeBazelProject
+import org.jetbrains.bazel.test.framework.BazelBasePlatformTestCase
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
 
 @RunWith(JUnit4::class)
-class StarlarkClassnameReferenceTest : BasePlatformTestCase() {
-  @Before
-  fun beforeEach() {
-    initializeBazelProject(project, myFixture.tempDirPath)
-  }
-
+class StarlarkClassnameReferenceTest : BazelBasePlatformTestCase() {
   @Test
   fun `should resolve kotlin class`() {
     // given

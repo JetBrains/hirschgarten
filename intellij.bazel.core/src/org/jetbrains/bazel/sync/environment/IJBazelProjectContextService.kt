@@ -36,6 +36,7 @@ internal class IJBazelProjectContextService(private val project: Project)
     get() {
       val bazelProjectStoreDescriptor = project.stateStoreOrNull?.storeDescriptor as? BazelProjectStoreDescriptor
       return bazelProjectStoreDescriptor?.historicalProjectBasePath?.findVirtualFile()
+             //?: project.base
              // Fallback for running a Bazel run configuration in a non-Bazel project
              ?: project.guessProjectDir()
     }

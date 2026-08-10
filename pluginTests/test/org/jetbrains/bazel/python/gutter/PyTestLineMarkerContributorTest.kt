@@ -14,6 +14,8 @@ import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.test.framework.BazelTestApplication
 import org.jetbrains.bazel.test.framework.bazelSyncCodeInsightFixture
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.condition.DisabledOnOs
+import org.junit.jupiter.api.condition.OS
 
 @BazelTestApplication
 internal class PyTestLineMarkerContributorTest {
@@ -23,6 +25,7 @@ internal class PyTestLineMarkerContributorTest {
   private val pyRunLineMarkerContributor = PyTestLineMarkerContributor()
 
   @Test
+  @DisabledOnOs(OS.WINDOWS) // No suitable shell toolchain found
   fun `check that run gutters are shown for test methods`() = runBlocking(Dispatchers.Default) {
     fixture.copyBazelTestProject("redcodes/python_test_gutters")
     fixture.performBazelSync()

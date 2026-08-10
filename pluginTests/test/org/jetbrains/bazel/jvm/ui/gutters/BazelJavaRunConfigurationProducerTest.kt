@@ -4,16 +4,16 @@ import com.intellij.psi.PsiClass
 import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiMethod
 import com.intellij.psi.impl.source.tree.LeafPsiElement
-import com.intellij.testFramework.fixtures.BasePlatformTestCase
+import com.intellij.psi.util.PsiUtilCore
 import com.intellij.testFramework.fixtures.CodeInsightTestFixture
 import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
 import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.commons.TargetKind
+import org.jetbrains.bazel.test.framework.BazelBasePlatformTestCase
 import org.jetbrains.bazel.java.ui.gutters.BazelJavaRunConfigurationProducer
 import org.jetbrains.bazel.kotlin.ui.gutters.BazelKotlinRunConfigurationProducer
 import org.jetbrains.bazel.label.Label
-import org.jetbrains.bazel.project.BazelProjectFixtures.initializeBazelProject
 import org.jetbrains.bazel.run.test.forceDisableJetBrainsTestRunner
 import org.jetbrains.bazel.sync.JavaLanguageClass
 import org.jetbrains.bazel.ui.gutters.NonImportedBuildTarget
@@ -28,7 +28,7 @@ import org.junit.runners.JUnit4
 import kotlin.io.path.Path
 
 @RunWith(JUnit4::class)
-class BazelJavaRunConfigurationProducerTest : BasePlatformTestCase() {
+class BazelJavaRunConfigurationProducerTest : BazelBasePlatformTestCase() {
   private val mockTarget = NonImportedBuildTarget(
     Label.synthetic("mock"),
     TargetKind(
@@ -45,7 +45,6 @@ class BazelJavaRunConfigurationProducerTest : BasePlatformTestCase() {
   }
 
   private fun CodeInsightTestFixture.setBuildTool() {
-    initializeBazelProject(project, myFixture.tempDirPath)
     forceDisableJetBrainsTestRunner = true
   }
 

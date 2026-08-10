@@ -8,14 +8,14 @@ import org.jetbrains.bazel.languages.starlark.bazel.BazelGlobalFunction
 import org.jetbrains.bazel.languages.starlark.bazel.BazelGlobalFunctionParameter
 import org.jetbrains.bazel.languages.starlark.bazel.Environment
 import org.jetbrains.bazel.languages.starlark.bazel.StarlarkGlobalFunctionProvider
-import org.jetbrains.bazel.project.BazelProjectFixtures.initializeBazelProject
+import org.jetbrains.bazel.test.framework.BazelBasePlatformTestCase
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
 
 @RunWith(JUnit4::class)
-class StarlarkFunctionCallValidationInspectionTest : BasePlatformTestCase() {
+class StarlarkFunctionCallValidationInspectionTest : BazelBasePlatformTestCase() {
   val positionalAfterKeywordOrStar = StarlarkBundle.message("inspection.description.call.positional.after.keyword.or.star")
   val argumentAfterKwargs = StarlarkBundle.message("inspection.description.call.argument.after.kwargs")
   val multipleKwargsUnpacking = StarlarkBundle.message("inspection.description.call.multiple.kwargs.unpacking")
@@ -436,7 +436,6 @@ class StarlarkFunctionCallValidationInspectionTest : BasePlatformTestCase() {
 
   @Test
   fun `load with alias should resolve to definition transitively`() {
-    initializeBazelProject(project, myFixture.tempDirPath)
     myFixture.addFileToProject(
       "MODULE.bazel",
       """
@@ -462,8 +461,6 @@ class StarlarkFunctionCallValidationInspectionTest : BasePlatformTestCase() {
 
   @Test
   fun `custom macro pseudo collision should not be highlighted`() {
-    initializeBazelProject(project, myFixture.tempDirPath)
-
     myFixture.addFileToProject(
       "def.bzl",
       """
@@ -503,8 +500,6 @@ class StarlarkFunctionCallValidationInspectionTest : BasePlatformTestCase() {
 
   @Test
   fun `custom macro with alias pseudo collision should not be highlighted`() {
-    initializeBazelProject(project, myFixture.tempDirPath)
-
     myFixture.addFileToProject(
       "def.bzl",
       """

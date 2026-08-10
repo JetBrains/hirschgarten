@@ -2,22 +2,20 @@ package org.jetbrains.bazel.languages.starlark.completion
 
 import com.intellij.openapi.project.Project
 import com.intellij.testFramework.ExtensionTestUtil
-import com.intellij.testFramework.fixtures.BasePlatformTestCase
 import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.collections.shouldContainExactly
 import org.jetbrains.bazel.languages.starlark.bazel.bzlmod.BazelModuleResolver
-import org.jetbrains.bazel.project.BazelProjectFixtures.initializeBazelProject
+import org.jetbrains.bazel.test.framework.BazelBasePlatformTestCase
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
 
 @RunWith(JUnit4::class)
-class BazelDepModuleCompletionTest : BasePlatformTestCase() {
+class BazelDepModuleCompletionTest : BazelBasePlatformTestCase() {
   @Before
   fun beforeEach() {
-    initializeBazelProject(project, myFixture.tempDirPath)
     ExtensionTestUtil.maskExtensions(BazelModuleResolver.EP_NAME, listOf(provider), testRootDisposable)
   }
 
