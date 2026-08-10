@@ -1,13 +1,13 @@
 package org.jetbrains.bazel.server.bep
 
 import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.testing.BazelTestDetails
 import org.jetbrains.bazel.util.BspClientTestNotifier
 import org.jetbrains.bsp.protocol.JUnitStyleTestCaseData
 import org.jetbrains.bsp.protocol.TaskId
 import org.jetbrains.bsp.protocol.TestStatus
 import java.util.UUID
 import java.util.regex.Pattern
-import kotlin.random.Random
 
 /**
  * Parses the nice-looking test execution tree Junit5 produces
@@ -218,7 +218,9 @@ private class TestResultTreeNode(
       children.forEach { it.value.notifyClient(bspClientTestNotifier) }
     } else if (isLeafNode()) {
       val fullMessage = generateMessage()
-      bspClientTestNotifier.startTest(name, taskId, isSuite = false, parentSuiteNames)
+
+      val testDetails = BazelTestDetails.testCase(name).withParentSuites(parentSuiteNames).build()
+      bspClientTestNotifier.startTest(testDetails, taskId)
 
       if (status == TestStatus.FAILED && parent?.isRootNode() == true && children.isEmpty()) {
         // BAZEL-2080: if an exception happens at the start of a test suit, there will be no test case run
@@ -226,9 +228,10 @@ private class TestResultTreeNode(
         // So in this case, we need to report a dummy test case with TestStatus.FAILED status.
         val displayName = "no tests found"
         val placeholderID = taskId.subTask("placeholder")
-        bspClientTestNotifier.startTest(displayName, placeholderID, isSuite = false)
-        bspClientTestNotifier.finishTest(
-          displayName = displayName,
+
+        val placeholderTestDetails = BazelTestDetails.testCase(displayName).withParentSuites(parentSuiteNames).build()
+        bspClientTestNotifier.startAndFinishTest(
+          testDetails = placeholderTestDetails,
           taskId = placeholderID,
           status =
             TestStatus.FAILED,
@@ -247,7 +250,8 @@ private class TestResultTreeNode(
         data = createTestCaseData(fullMessage, time),
       )
     } else {
-      bspClientTestNotifier.startTest(name, taskId, isSuite = true, parentSuiteNames)
+      val testDetails = BazelTestDetails.testSuite(name).withParentSuites(parentSuiteNames).build()
+      bspClientTestNotifier.startTest(testDetails, taskId)
       children.forEach { it.value.notifyClient(bspClientTestNotifier) }
       bspClientTestNotifier.finishTest(
         displayName = name,

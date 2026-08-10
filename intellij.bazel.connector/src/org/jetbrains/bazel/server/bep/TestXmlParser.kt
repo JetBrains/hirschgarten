@@ -8,6 +8,7 @@ import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlRootElement
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlText
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import org.jetbrains.annotations.ApiStatus
+import org.jetbrains.bazel.testing.BazelTestDetails
 import org.jetbrains.bazel.util.BspClientTestNotifier
 import org.jetbrains.bsp.protocol.JUnitStyleTestCaseData
 import org.jetbrains.bsp.protocol.JUnitStyleTestSuiteData
@@ -64,6 +65,10 @@ internal data class TestCase(
   // Time value included with the test case.
   @JacksonXmlProperty(isAttribute = true)
   val time: Double,
+  @JacksonXmlProperty(isAttribute = true)
+  val file: String?,
+  @JacksonXmlProperty(isAttribute = true)
+  val line: Int?,
   // One of the following will be included if test did not pass.
   @JacksonXmlProperty(localName = "error")
   val error: TestResultDetail? = null,
@@ -159,7 +164,8 @@ class TestXmlParser(private var bspClientTestNotifier: BspClientTestNotifier) {
     val suiteTaskId = parentId.subTask(suite.name)
     val suiteData = JUnitStyleTestSuiteData(suite.time, null, suite.systemErr?.toString())
 
-    bspClientTestNotifier.startTest(suite.name, suiteTaskId, isSuite = true)
+    val testDetails = BazelTestDetails.testSuite(suite.name).build()
+    bspClientTestNotifier.startTest(testDetails, suiteTaskId)
     suite.testcase.forEach { case ->
       processTestCase(suiteTaskId, suite.name, case)
     }
@@ -228,15 +234,16 @@ class TestXmlParser(private var bspClientTestNotifier: BspClientTestNotifier) {
         fullOutput,
         errorType,
       )
-    bspClientTestNotifier.startTest(
-      displayName = testCase.name,
-      taskId = testCaseTaskId,
-      classname = testCaseData.className,
-      parentSuites = listOf(parentSuiteName),
-      isSuite = false
-    )
-    bspClientTestNotifier.finishTest(
-      testCase.name,
+
+    val testDetails =
+      BazelTestDetails
+        .testCase(testCase.name)
+        .withClassname(testCase.classname)
+        .withParentSuite(parentSuiteName)
+        .withFileAndZeroBasedLine(testCase.file, testCase.line)
+        .build()
+    bspClientTestNotifier.startAndFinishTest(
+      testDetails,
       testCaseTaskId,
       testStatusOutcome,
       "",
@@ -306,7 +313,8 @@ private class FallbackTestXmlParser(private var bspClientTestNotifier: BspClient
       }
     val testSuiteData = JUnitStyleTestSuiteData(null, suite.systemOut, null)
 
-    bspClientTestNotifier.startTest(suite.name, suiteTaskId, isSuite = true)
+    val testDetails = BazelTestDetails.testSuite(suite.name).build()
+    bspClientTestNotifier.startTest(testDetails, suiteTaskId)
     val fallbackMessage = suite.systemOut.takeIf { suite.testcase.size == 1 }
     suite.testcase.forEach { testCase ->
       processIncompleteInfoCase(testCase, suiteTaskId, suite.name, testCase.systemOut ?: fallbackMessage)
@@ -366,9 +374,10 @@ private class FallbackTestXmlParser(private var bspClientTestNotifier: BspClient
     // In the generated xml, suite name and test case name are the same, but in the Test Console test names have
     // to be unique
     val testCaseName = testCase.name.substringAfterLast('/')
-    bspClientTestNotifier.startTest(testCaseName, testCaseTaskId, isSuite = false, parentSuites = listOf(parentSuiteName))
-    bspClientTestNotifier.finishTest(
-      testCaseName,
+
+    val testDetails = BazelTestDetails.testCase(testCaseName).withParentSuite(parentSuiteName).build()
+    bspClientTestNotifier.startAndFinishTest(
+      testDetails,
       testCaseTaskId,
       testStatus,
       message,
