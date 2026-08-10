@@ -13,9 +13,10 @@ import org.jetbrains.bazel.sync.workspace.languages.jvm.JvmDependency
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceAspectIds
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceConfigurationId
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
-import org.jetbrains.bazel.workspace.model.test.framework.createRawBuildTarget
+import org.jetbrains.bazel.test.framework.target.TestBuildTarget
+import org.jetbrains.bazel.workspace.model.test.framework.createTestBuildTarget
+import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.SourceFileCollection
-import org.jetbrains.bsp.protocol.RawBuildTarget
 import org.jetbrains.bsp.protocol.StrictDependencyCheckedType
 import org.junit.jupiter.api.Test
 
@@ -144,7 +145,7 @@ class DependencyBuilderTest {
   @Test
   fun `should fall back to target_dependencies when there is no JvmBuildTarget`() {
     val depLabel = Label.parse("//other")
-    val target = createRawBuildTarget(
+    val target = createTestBuildTarget(
       id = Label.parse("//target"),
       dependencies = listOf(DependencyLabel(depLabel.asKey())),
     )
@@ -158,7 +159,7 @@ class DependencyBuilderTest {
 
   @Test
   fun `strictDependenciesCheck should be OFF when target is not in workspace`() {
-    val target = RawBuildTarget(
+    val target = TestBuildTarget(
       key = WorkspaceTargetKey(label = Label.parse("@external//some:target")),
       dependencies = emptyList(),
       kind = TargetKind(
@@ -343,8 +344,8 @@ class DependencyBuilderTest {
     builder.resolve(aExec).strictDependencies shouldContainExactlyInAnyOrder listOf(c)
   }
 
-  private fun List<RawBuildTarget>.resolveDeps(
-    target: RawBuildTarget,
+  private fun List<BuildTarget>.resolveDeps(
+    target: BuildTarget,
     libraryShadowsModule: Map<WorkspaceTargetKey, WorkspaceTargetKey> = emptyMap(),
   ): DependencyBuilder.Resolved =
     DependencyBuilder(this, resolvedByKey, libraryShadowsModule).resolve(target)
@@ -356,8 +357,8 @@ class DependencyBuilderTest {
     jvmDependencies: List<JvmDependency> = emptyList(),
     checkStrictDependencies: StrictDependencyCheckedType = StrictDependencyCheckedType.OFF,
     configuration: WorkspaceConfigurationId = WorkspaceConfigurationId.EMPTY,
-  ): RawBuildTarget {
-    val base = createRawBuildTarget(
+  ): TestBuildTarget {
+    val base = createTestBuildTarget(
       id = Label.parse(label),
       kind = TargetKind(
         kind = kind,

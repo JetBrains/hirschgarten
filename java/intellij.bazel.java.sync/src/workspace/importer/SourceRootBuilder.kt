@@ -15,11 +15,11 @@ import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.sync.workspace.languages.java.sourceRoot.JvmPackagePrefixCalculator
 import org.jetbrains.bazel.sync.workspace.languages.jvm.KotlinBuildTarget
+import org.jetbrains.bazel.sync.workspace.snapshot.isTestTarget
 import org.jetbrains.bazel.workspace.indexAdditionalFiles.ProjectViewGlobSet
-import org.jetbrains.bsp.protocol.RawBuildTarget
+import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.SourceFileCollection
 import org.jetbrains.bsp.protocol.extractData
-import org.jetbrains.bsp.protocol.isTestTarget
 import java.nio.file.Path
 
 @ApiStatus.Internal
@@ -47,7 +47,7 @@ object SourceRootBuilder {
   )
 
   fun resolve(
-    target: RawBuildTarget,
+    target: BuildTarget,
     testSourcesGlob: ProjectViewGlobSet,
     packagePrefixes: JvmPackagePrefixCalculator,
   ): List<ResolvedSourceRoot> {

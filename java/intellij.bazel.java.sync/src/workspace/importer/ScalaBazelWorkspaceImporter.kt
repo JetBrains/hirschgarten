@@ -48,7 +48,7 @@ internal class ScalaBazelWorkspaceImporter : BazelWorkspaceImporter {
   }
 
   private fun calculateAllScalaSdkInfos(snapshot: WorkspaceSnapshot): Set<ScalaSdk> =
-    snapshot.targets.allTargets().mapNotNull { createScalaSdk(it.rawBuildTarget) }.toSet()
+    snapshot.targets.allTargets().mapNotNull { createScalaSdk(it) }.toSet()
 
   private fun createScalaSdk(target: BuildTarget): ScalaSdk? =
     extractScalaBuildTarget(target)

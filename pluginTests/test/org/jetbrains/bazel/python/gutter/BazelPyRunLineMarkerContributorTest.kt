@@ -19,7 +19,7 @@ import org.jetbrains.bazel.python.lang.PythonBuildTarget
 import org.jetbrains.bazel.python.lang.PythonLanguageClass
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
 import org.jetbrains.bazel.target.targetStorage
-import org.jetbrains.bsp.protocol.RawBuildTarget
+import org.jetbrains.bazel.test.framework.target.TestBuildTarget
 import org.jetbrains.bsp.protocol.SourceFileCollection
 import org.junit.Before
 import org.junit.Test
@@ -358,7 +358,7 @@ internal class BazelPyRunLineMarkerContributorTest : CodeInsightFixtureTestCase<
   ) {
     targetStorage.setTargets(
       listOf(
-        RawBuildTarget(
+        TestBuildTarget(
           key = WorkspaceTargetKey(label = label),
           dependencies = emptyList(),
           kind =

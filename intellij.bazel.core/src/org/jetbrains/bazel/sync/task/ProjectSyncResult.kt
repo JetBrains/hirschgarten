@@ -1,7 +1,7 @@
 package org.jetbrains.bazel.sync.task
 
 import org.jetbrains.bazel.commons.LanguageClass
-import org.jetbrains.bsp.protocol.RawBuildTarget
+import org.jetbrains.bsp.protocol.BuildTarget
 
 internal data class ProjectSyncResult(
   val completionResult: ProjectSyncCompletionResult,
@@ -46,7 +46,7 @@ internal suspend fun <T> MutableList<ProjectSyncPhaseDuration>.trackSyncPhase(
   }
 }
 
-internal fun List<RawBuildTarget>.syncStatistics(): ProjectSyncStatistics {
-  val targetLanguageClasses = map { (_, _, kind) -> kind.languageClasses }
+internal fun List<BuildTarget>.syncStatistics(): ProjectSyncStatistics {
+  val targetLanguageClasses = map { it.kind.languageClasses }
   return ProjectSyncStatistics(size, targetLanguageClasses)
 }

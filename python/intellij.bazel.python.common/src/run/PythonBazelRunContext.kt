@@ -4,18 +4,18 @@ import com.intellij.psi.PsiElement
 import org.jetbrains.bsp.protocol.BuildTarget
 
 internal sealed interface PythonBazelRunContext {
-  val target: PythonTarget
+  val target: BuildTarget
   val sourceElement: PsiElement
   val configurationName: String
 
   data class Binary(
-    override val target: PythonTarget,
+    override val target: BuildTarget,
     override val sourceElement: PsiElement,
     override val configurationName: String,
   ) : PythonBazelRunContext
 
   data class Test(
-    override val target: PythonTarget,
+    override val target: BuildTarget,
     override val sourceElement: PsiElement,
     override val configurationName: String,
     val testExecutableArguments: List<String>,

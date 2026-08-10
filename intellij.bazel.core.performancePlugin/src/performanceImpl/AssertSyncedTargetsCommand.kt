@@ -4,6 +4,7 @@ import com.intellij.openapi.ui.playback.PlaybackContext
 import com.intellij.openapi.ui.playback.commands.PlaybackCommandCoroutineAdapter
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.target.targetStorage
+import org.jetbrains.bsp.protocol.id
 
 internal class AssertSyncedTargetsCommand(text: String, line: Int) : PlaybackCommandCoroutineAdapter(text, line) {
   companion object {

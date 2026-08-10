@@ -34,14 +34,15 @@ import org.jetbrains.bazel.sync.workspace.snapshot.FileToTargetMap
 import org.jetbrains.bazel.sync.workspace.snapshot.SourceFileCollectionBuilder
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceAspectIds
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceConfigurationId
-import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTarget
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
+import org.jetbrains.bazel.test.framework.target.TestBuildTarget
 import org.jetbrains.bazel.workspace.indexAdditionalFiles.ProjectViewGlobSet
 import org.jetbrains.bazel.workspace.model.test.framework.WorkspaceModelBaseTest
-import org.jetbrains.bazel.workspace.model.test.framework.createRawBuildTarget
+import org.jetbrains.bazel.workspace.model.test.framework.createTestBuildTarget
 import org.jetbrains.bazel.workspacemodel.entities.BazelProjectEntitySource
+import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.LibraryItem
-import org.jetbrains.bsp.protocol.RawBuildTarget
+import org.jetbrains.bsp.protocol.id
 import org.junit.jupiter.api.Test
 import java.nio.file.Files
 import kotlin.io.path.Path
@@ -51,7 +52,7 @@ internal class JvmTargetEntitiesBuilderTest : WorkspaceModelBaseTest() {
 
   @Test
   fun `writes a single java module with no sources or resources`() = timeoutRunBlocking {
-    val target = createRawBuildTarget(
+    val target = createTestBuildTarget(
       id = Label.parse("//foo"),
       kind = TargetKind(kind = "java_library", ruleType = RuleType.LIBRARY, languageClasses = setOf(JavaLanguageClass.JAVA)),
     )
@@ -71,7 +72,7 @@ internal class JvmTargetEntitiesBuilderTest : WorkspaceModelBaseTest() {
     val sourcePath = projectBasePath.resolve("src/Foo.java")
     sourcePath.toFile().parentFile.mkdirs()
     sourcePath.toFile().writeText("class Foo {}")
-    val target = createRawBuildTarget(
+    val target = createTestBuildTarget(
       id = Label.parse("//foo"),
       kind = TargetKind(kind = "java_library", ruleType = RuleType.LIBRARY, languageClasses = setOf(JavaLanguageClass.JAVA)),
       sources = listOf(sourcePath),
@@ -97,7 +98,7 @@ internal class JvmTargetEntitiesBuilderTest : WorkspaceModelBaseTest() {
       mavenCoordinates = null,
       containsInternalJars = false,
     )
-    val target = createRawBuildTarget(
+    val target = createTestBuildTarget(
       id = Label.parse("//app"),
       kind = TargetKind(kind = "java_library", ruleType = RuleType.LIBRARY, languageClasses = setOf(JavaLanguageClass.JAVA)),
       dependencies = listOf(
@@ -125,7 +126,7 @@ internal class JvmTargetEntitiesBuilderTest : WorkspaceModelBaseTest() {
     val barPath = srcDir.resolve("Bar.java")
     fooPath.writeText("class Foo {}")
     barPath.writeText("class Bar {}")
-    val target = createRawBuildTarget(
+    val target = createTestBuildTarget(
       id = Label.parse("//foo"),
       kind = TargetKind(kind = "java_library", ruleType = RuleType.LIBRARY, languageClasses = setOf(JavaLanguageClass.JAVA)),
       sources = listOf(fooPath, barPath),
@@ -157,7 +158,7 @@ internal class JvmTargetEntitiesBuilderTest : WorkspaceModelBaseTest() {
     val testPath = testDir.resolve("Bar.java")
     mainPath.writeText("class Foo {}")
     testPath.writeText("class Bar {}")
-    val target = createRawBuildTarget(
+    val target = createTestBuildTarget(
       id = Label.parse("//foo"),
       kind = TargetKind(kind = "java_library", ruleType = RuleType.LIBRARY, languageClasses = setOf(JavaLanguageClass.JAVA)),
       sources = listOf(mainPath, testPath),
@@ -185,7 +186,7 @@ internal class JvmTargetEntitiesBuilderTest : WorkspaceModelBaseTest() {
     disableMergeSourceRoots()
     val sourcePath = projectBasePath.resolve("Foo.java")
     sourcePath.writeText("class Foo {}")
-    val target = createRawBuildTarget(
+    val target = createTestBuildTarget(
       id = Label.parse("//foo"),
       kind = TargetKind(kind = "java_library", ruleType = RuleType.LIBRARY, languageClasses = setOf(JavaLanguageClass.JAVA)),
       sources = listOf(sourcePath),
@@ -208,9 +209,9 @@ internal class JvmTargetEntitiesBuilderTest : WorkspaceModelBaseTest() {
   fun `disambiguates module names for a label imported under multiple configurations`(): Unit = timeoutRunBlocking {
     val label = Label.parse("//foo")
     val kind = TargetKind(kind = "java_library", ruleType = RuleType.LIBRARY, languageClasses = setOf(JavaLanguageClass.JAVA))
-    val normal = createRawBuildTarget(id = label, kind = kind)
+    val normal = createTestBuildTarget(id = label, kind = kind)
       .copy(key = WorkspaceTargetKey(label = label, configuration = WorkspaceConfigurationId.of("00000f1")))
-    val exec = createRawBuildTarget(id = label, kind = kind)
+    val exec = createTestBuildTarget(id = label, kind = kind)
       .copy(key = WorkspaceTargetKey(label = label, configuration = WorkspaceConfigurationId.of("00000f2")))
 
     runImport(targets = listOf(normal, exec))
@@ -223,7 +224,7 @@ internal class JvmTargetEntitiesBuilderTest : WorkspaceModelBaseTest() {
   @Test
   fun `a label with a single configuration keeps its plain module name`() = timeoutRunBlocking {
     val label = Label.parse("//foo")
-    val target = createRawBuildTarget(id = label)
+    val target = createTestBuildTarget(id = label)
       .copy(key = WorkspaceTargetKey(label = label, configuration = WorkspaceConfigurationId.of("00000f1")))
 
     runImport(targets = listOf(target))
@@ -236,11 +237,11 @@ internal class JvmTargetEntitiesBuilderTest : WorkspaceModelBaseTest() {
   fun `dependency resolves to the module of its exact configuration`(): Unit = timeoutRunBlocking {
     val foo = Label.parse("//foo")
     val kind = TargetKind(kind = "java_library", ruleType = RuleType.LIBRARY, languageClasses = setOf(JavaLanguageClass.JAVA))
-    val fooNormal = createRawBuildTarget(id = foo, kind = kind)
+    val fooNormal = createTestBuildTarget(id = foo, kind = kind)
       .copy(key = WorkspaceTargetKey(label = foo, configuration = WorkspaceConfigurationId.of("00000f1")))
-    val fooExec = createRawBuildTarget(id = foo, kind = kind)
+    val fooExec = createTestBuildTarget(id = foo, kind = kind)
       .copy(key = WorkspaceTargetKey(label = foo, configuration = WorkspaceConfigurationId.of("00000f2")))
-    val app = createRawBuildTarget(
+    val app = createTestBuildTarget(
       id = Label.parse("//app"),
       kind = kind,
       dependencies = listOf(
@@ -271,8 +272,8 @@ internal class JvmTargetEntitiesBuilderTest : WorkspaceModelBaseTest() {
     val kind = TargetKind(kind = "java_library", ruleType = RuleType.LIBRARY, languageClasses = setOf(JavaLanguageClass.JAVA))
     val sourcePath = projectBasePath.resolve("Proto.java")
     sourcePath.writeText("class Proto {}")
-    val bare = createRawBuildTarget(id = label, kind = kind, sources = listOf(sourcePath), baseDirectory = projectBasePath)
-    val withProvider = createRawBuildTarget(
+    val bare = createTestBuildTarget(id = label, kind = kind, sources = listOf(sourcePath), baseDirectory = projectBasePath)
+    val withProvider = createTestBuildTarget(
       id = label,
       kind = kind,
       data = listOf(JvmBuildTarget()),
@@ -295,15 +296,15 @@ internal class JvmTargetEntitiesBuilderTest : WorkspaceModelBaseTest() {
     val a = Label.parse("//a")
     val b = Label.parse("//b")
     val kind = TargetKind(kind = "java_library", ruleType = RuleType.LIBRARY, languageClasses = setOf(JavaLanguageClass.JAVA))
-    val depA = createRawBuildTarget(id = a, kind = kind)
-    val depB = createRawBuildTarget(id = b, kind = kind)
-    val variantA = createRawBuildTarget(
+    val depA = createTestBuildTarget(id = a, kind = kind)
+    val depB = createTestBuildTarget(id = b, kind = kind)
+    val variantA = createTestBuildTarget(
       id = foo,
       kind = kind,
       dependencies = listOf(DependencyLabel(WorkspaceTargetKey(label = a))),
       data = listOf(JvmBuildTarget()),
     ).copy(key = WorkspaceTargetKey(label = foo, aspectIds = WorkspaceAspectIds.of(listOf("//foo:aspect_a"))))
-    val variantB = createRawBuildTarget(
+    val variantB = createTestBuildTarget(
       id = foo,
       kind = kind,
       dependencies = listOf(DependencyLabel(WorkspaceTargetKey(label = b))),
@@ -324,7 +325,7 @@ internal class JvmTargetEntitiesBuilderTest : WorkspaceModelBaseTest() {
     val producer = Label.parse("//producer")
     val producerJar = Path("/out/producer.jar")
     // producer is an in-scope source module whose output jar is reached by //app only through a jdeps library
-    val producerTarget = createRawBuildTarget(
+    val producerTarget = createTestBuildTarget(
       id = producer,
       kind = kind,
       sources = listOf(Path("/base/dir/Producer.java")),
@@ -339,7 +340,7 @@ internal class JvmTargetEntitiesBuilderTest : WorkspaceModelBaseTest() {
       mavenCoordinates = null,
       containsInternalJars = false,
     )
-    val app = createRawBuildTarget(
+    val app = createTestBuildTarget(
       id = Label.parse("//app"),
       kind = kind,
       data = listOf(JvmBuildTarget()),
@@ -367,14 +368,14 @@ internal class JvmTargetEntitiesBuilderTest : WorkspaceModelBaseTest() {
   }
 
   private suspend fun runImport(
-    targets: List<RawBuildTarget>,
+    targets: List<BuildTarget>,
     resolved: Map<WorkspaceTargetKey, JvmResolvedTarget> = defaultResolved(targets),
   ) {
     val calc = DefaultJvmPackagePrefixCalculator(SourceRootOptimizationMode.Disabled)
     calc.calculate(targets)
     val jvmPackagePrefixes: JvmPackagePrefixCalculator = calc
     val ctx = ImportContext(
-      targets = targets.map { WorkspaceTarget(it.key, it) },
+      targets = targets,
       jvmResolved = resolved,
       repoMapping = RepoMappingDisabled,
       projectName = "test-project",
@@ -393,7 +394,7 @@ internal class JvmTargetEntitiesBuilderTest : WorkspaceModelBaseTest() {
     JvmTargetEntitiesBuilder(ctx).writeAll(workspaceEntityStorageBuilder)
   }
 
-  private fun defaultResolved(targets: List<RawBuildTarget>): Map<WorkspaceTargetKey, JvmResolvedTarget> {
+  private fun defaultResolved(targets: List<BuildTarget>): Map<WorkspaceTargetKey, JvmResolvedTarget> {
     val moduleKeys = targets.filter { extractJvmBuildTarget(it) != null }.map { it.key.copy(aspectIds = WorkspaceAspectIds.EMPTY) }.toSet()
     return targets.filter { extractJvmBuildTarget(it) != null }
       .groupBy { it.key.copy(aspectIds = WorkspaceAspectIds.EMPTY) }

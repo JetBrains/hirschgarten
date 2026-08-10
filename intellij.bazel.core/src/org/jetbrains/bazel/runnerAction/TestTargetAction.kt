@@ -10,12 +10,13 @@ import org.jetbrains.bazel.languages.starlark.repomapping.toShortString
 import org.jetbrains.bazel.run.config.BazelRunConfiguration
 import org.jetbrains.bazel.run.state.HasProgramArguments
 import org.jetbrains.bazel.run.test.setTestFilter
-import org.jetbrains.bsp.protocol.ExecutableTarget
+import org.jetbrains.bsp.protocol.BuildTarget
+import org.jetbrains.bsp.protocol.id
 
 @ApiStatus.Internal
 class TestTargetAction(
   project: Project,
-  targets: List<ExecutableTarget>,
+  targets: List<BuildTarget>,
   executor: Executor = DefaultRunExecutor.getRunExecutorInstance(),
   configurationName: String,
   private val singleTestFilter: String? = null,
@@ -30,7 +31,7 @@ class TestTargetAction(
 ) {
   constructor(
     project: Project,
-    target: ExecutableTarget,
+    target: BuildTarget,
     executor: Executor = DefaultRunExecutor.getRunExecutorInstance(),
     singleTestFilter: String? = null,
     testExecutableArguments: List<String> = emptyList(),

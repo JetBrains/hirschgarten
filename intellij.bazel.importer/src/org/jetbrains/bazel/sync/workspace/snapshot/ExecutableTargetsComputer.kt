@@ -1,19 +1,20 @@
-package org.jetbrains.bazel.sync
+package org.jetbrains.bazel.sync.workspace.snapshot
 
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.label.ResolvedLabel
 import org.jetbrains.bazel.label.SingleTarget
 import org.jetbrains.bazel.label.assumeResolved
-import org.jetbrains.bsp.protocol.RawBuildTarget
+import org.jetbrains.bsp.protocol.BuildTarget
+import org.jetbrains.bsp.protocol.id
 import kotlin.collections.forEach
 
 // TODO: migrate to WorkspaceTargetKey
 @ApiStatus.Internal
 object ExecutableTargetsComputer {
   fun calculateExecutableTargets(
-    targets: Collection<RawBuildTarget>,
-    labelToTargetInfo: Map<Label, RawBuildTarget>,
+    targets: Collection<BuildTarget>,
+    labelToTargetInfo: Map<Label, BuildTarget>,
   ): Map<ResolvedLabel, List<Label>> {
     val targetDirectDependentsGraph = calculateDirectDependentsGraph(targets)
     val targetToTransitiveRevertedDependenciesCache = mutableMapOf<Label, Set<Label>>()
@@ -43,7 +44,7 @@ object ExecutableTargetsComputer {
     return result.mapValues { (_, executableTargets) -> executableTargets.sortedBy { it.toString() } }
   }
 
-  private fun calculateDirectDependentsGraph(targets: Collection<RawBuildTarget>): Map<Label, Set<Label>> {
+  private fun calculateDirectDependentsGraph(targets: Collection<BuildTarget>): Map<Label, Set<Label>> {
     val targetIdToDirectDependentIds = hashMapOf<Label, MutableSet<Label>>()
     for (targetInfo in targets) {
       val dependencies = targetInfo.dependencies
@@ -60,7 +61,7 @@ object ExecutableTargetsComputer {
     resultCache: MutableMap<Label, Set<Label>>,
     targetDirectDependentsGraph: Map<Label, Set<Label>>,
     target: Label,
-    labelToTargetInfo: Map<Label, RawBuildTarget>,
+    labelToTargetInfo: Map<Label, BuildTarget>,
   ): Set<Label> =
     resultCache.getOrPut(target) {
       val targetInfo = labelToTargetInfo[target]

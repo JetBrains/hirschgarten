@@ -18,7 +18,7 @@ import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.project.BazelProjectFixtures.initializeBazelProject
 import org.jetbrains.bazel.run.test.forceDisableJetBrainsTestRunner
 import org.jetbrains.bazel.test.framework.target.TestBuildTargetFactory
-import org.jetbrains.bsp.protocol.ExecutableTarget
+import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.kotlin.psi.KtClass
 import org.jetbrains.kotlin.psi.KtClassBody
 import org.jetbrains.kotlin.psi.KtNamedFunction
@@ -124,7 +124,7 @@ class BazelRunLineMarkerContributorTest : BasePlatformTestCase() {
     val elementAtCaret = PsiUtilCore.getElementAtOffset(sourceFile, sourceFile.text.indexOf("main"))!!
     val runLineMarkerContributor =
       object : BazelKotlinRunLineMarkerContributor() {
-        override fun getTargets(element: PsiElement): List<ExecutableTarget> = listOf(target)
+        override fun getTargets(element: PsiElement): List<BuildTarget> = listOf(target)
       }
 
     // when

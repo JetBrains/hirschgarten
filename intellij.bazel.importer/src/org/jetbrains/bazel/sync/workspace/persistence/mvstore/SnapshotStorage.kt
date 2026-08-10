@@ -23,13 +23,14 @@ import org.h2.mvstore.type.LongDataType
 import org.h2.mvstore.type.StringDataType
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.annotations.VisibleForTesting
+import org.jetbrains.bazel.label.DependencyLabel
 import org.jetbrains.bazel.label.Label
-import org.jetbrains.bazel.sync.workspace.persistence.TargetLoadHint
+import org.jetbrains.bazel.sync.workspace.persistence.BuildTargetLoadHint
 import org.jetbrains.bazel.sync.workspace.persistence.TargetLoadOptions
-import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTarget
+import org.jetbrains.bazel.sync.workspace.persistence.TargetSection
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
+import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.BuildTargetData
-import org.jetbrains.bsp.protocol.RawBuildTarget
 import org.jetbrains.bsp.protocol.SourceFileCollection
 import java.lang.ref.WeakReference
 import java.nio.ByteBuffer
@@ -41,6 +42,12 @@ import java.util.concurrent.CopyOnWriteArrayList
 private const val INITIAL_VALUE_BUFFER_SIZE = 8 * 1024
 private const val ENCODE_CHUNK_SIZE = 256
 
+private val EMPTY_FILE_SETS = HeavyWorkspaceTarget(
+  sources = SourceFileCollection.EMPTY,
+  generatedSources = SourceFileCollection.EMPTY,
+  resources = SourceFileCollection.EMPTY,
+)
+
 // limit frame encoder threads to avoid lock contention on kryo instance pool
 private val ENCODE_DISPATCHER = Dispatchers.IO.limitedParallelism(KRYO_POOL_INSTANCES)
 
@@ -51,7 +58,7 @@ private val KRYO_OUTPUT_POOL: Pool<Output> =
 
 /**
  * Storage is split into [SnapshotGeneration], each generation is set of MVStore maps
- * that together are used to reconstruct original [WorkspaceTarget] based on loading conditions [TargetLoadOptions],
+ * that together are used to reconstruct original [BuildTarget] based on loading conditions [TargetLoadOptions],
  *
  * We must always keep previous snapshot generation in order to have fallback in case of update failure/cancellation,
  * this might cause storage file on disk be 2x larger than actual data, but the good news is that is barely impact read/write
@@ -246,7 +253,7 @@ class SnapshotGeneration internal constructor(
   private val executables: MVMap<Int, IntArrayList>,
   private val strings: MVMap<Int, String>,
 ) {
-  private val fullTargetCache: Cache<WorkspaceTargetKey, WorkspaceTarget?> = Caffeine.newBuilder()
+  private val fullTargetCache: Cache<WorkspaceTargetKey, BuildTarget?> = Caffeine.newBuilder()
     .weakValues() // TODO: check if cleaning cache after sync is better
     .build()
 
@@ -262,7 +269,7 @@ class SnapshotGeneration internal constructor(
     partialSnapshot: PersistentWorkspaceSnapshot,
     key: WorkspaceTargetKey,
     options: TargetLoadOptions,
-  ): WorkspaceTarget? {
+  ): BuildTarget? {
     val keyId = partialSnapshot.keyId2Target.getReverseOrDefault(key, -1)
     if (keyId < 0) {
       // TODO: assert
@@ -274,86 +281,92 @@ class SnapshotGeneration internal constructor(
       key = key,
       options = options,
       partialData = partialData,
-      depsFrame = id2TargetDeps[keyId],
-      heavyFrame = id2HeavyTarget[keyId],
-      dataFrameForType = { typeId -> id2TargetData[BuildTargetPack.pack(keyId, typeId)] },
+      depsFrame = { frameOf(id2TargetDeps, keyId) },
+      heavyFrame = { frameOf(id2HeavyTarget, keyId) },
+      dataFrameForType = { typeId -> frameOf(id2TargetData, BuildTargetPack.pack(keyId, typeId)) },
     )
   }
 
-  private fun composeFromFrames(
+  private inline fun composeFromFrames(
     key: WorkspaceTargetKey,
     options: TargetLoadOptions,
     partialData: PartialWorkspaceTarget,
-    depsFrame: ValueFrame?,
-    heavyFrame: ValueFrame?,
+    crossinline depsFrame: () -> ValueFrame?,
+    crossinline heavyFrame: () -> ValueFrame?,
     // invoked in ascending typeId order (both id sources below are sorted), so the bulk scan may
     // back this with a forward-only cursor over the packed-key map
-    dataFrameForType: (typeId: Int) -> ValueFrame?,
-  ): WorkspaceTarget {
-    val depsData = if (TargetLoadHint.SKIP_DEPS !in options.hints) {
-      storage.decodeFrame(depsFrame, WorkspaceTargetDeps::class.java, stringTable)
+    crossinline dataFrameForType: (typeId: Int) -> ValueFrame?,
+  ): BuildTarget {
+    val depsSection = LazyTargetSection(TargetSection.DEPS in options.sections) { decodeDeps(depsFrame()) }
+    val fileSetsSection = LazyTargetSection(TargetSection.FILE_SETS in options.sections) { decodeFileSets(heavyFrame()) }
+    val dataTypeIds = when (val hint = options.targetData) {
+      is BuildTargetLoadHint.Subset -> typeIdsOf(hint.data)
+      BuildTargetLoadHint.All, BuildTargetLoadHint.None -> storage.allBuildTargetIds
     }
-    else {
-      null
+    val dataSection = LazyTargetSection(options.targetData != BuildTargetLoadHint.None) {
+      decodeData(dataTypeIds, dataFrameForType)
     }
-    val heavyData = if (TargetLoadHint.SKIP_FILE_SETS !in options.hints) {
-      storage.decodeFrame(heavyFrame, HeavyWorkspaceTarget::class.java, stringTable)
-    }
-    else {
-      null
-    }
-    val buildTargetIdsToLoad = if (TargetLoadHint.SKIP_TARGET_DATA in options.hints) {
-      val targets = IntArrayList(options.dataTypes.size)
-      for (type in options.dataTypes) {
-        val typeId = storage.kryo.universe.type2Id.getOrDefault(type.java, -1)
-        if (typeId < 0) {
-          // TODO: assert
-          continue
-        }
-        targets.add(typeId)
-      }
-      // ascending, per the dataFrameForType ordering contract above
-      targets.sort(null)
-      targets
-    }
-    else {
-      storage.allBuildTargetIds
-    }
-    val loadedData = ArrayList<BuildTargetData>(buildTargetIdsToLoad.size)
-    for (n in buildTargetIdsToLoad.indices) {
-      val frame = dataFrameForType(buildTargetIdsToLoad.getInt(n))
-      loadedData += storage.decodeFrame(frame, BuildTargetData::class.java, stringTable) ?: continue
-    }
-    val isSkippingDeps = TargetLoadHint.SKIP_DEPS in options.hints
-    val isSkippingFileSets = TargetLoadHint.SKIP_FILE_SETS in options.hints
-    return WorkspaceTarget(
-      targetKey = key,
-      rawBuildTarget = RawBuildTarget(
-        key = key,
-        dependencies = if (isSkippingDeps) NOT_LOADED_DEPS else (depsData?.dependencies ?: listOf()),
-        kind = partialData.kind,
-        sources = if (isSkippingFileSets) NOT_LOADED_SOURCE_FILE_COLLECTION else (heavyData?.sources ?: SourceFileCollection.EMPTY),
-        generatedSources = if (isSkippingFileSets) NOT_LOADED_SOURCE_FILE_COLLECTION
-        else (heavyData?.generatedSources ?: SourceFileCollection.EMPTY),
-        resources = if (isSkippingFileSets) NOT_LOADED_SOURCE_FILE_COLLECTION else (heavyData?.resources ?: SourceFileCollection.EMPTY),
-        baseDirectory = partialData.baseDirectory,
-        data = if (TargetLoadHint.SKIP_TARGET_DATA in options.hints && options.dataTypes.isEmpty()) NOT_LOADED_DATA else loadedData,
-        generatorName = partialData.generatorName,
-        isManual = partialData.isManual,
-        isWorkspace = partialData.isWorkspace,
-        isTestOnly = partialData.isTestOnly,
-      ),
-      loaded = options,
+    return LazyWorkspaceTarget(
+      key = key,
+      kind = partialData.kind,
+      baseDirectory = partialData.baseDirectory,
+      generatorName = partialData.generatorName,
+      isManual = partialData.isManual,
+      isWorkspace = partialData.isWorkspace,
+      isTestOnly = partialData.isTestOnly,
+      tags = partialData.tags,
+      loaded = options.copy(sections = options.sections + TargetSection.INFO),
+      depsSection = depsSection,
+      fileSetsSection = fileSetsSection,
+      dataSection = dataSection,
     )
   }
 
-  fun scanAllTargets(partialSnapshot: PersistentWorkspaceSnapshot, options: TargetLoadOptions): Sequence<WorkspaceTarget> = sequence {
+  private fun decodeDeps(frame: ValueFrame?): List<DependencyLabel> =
+    storage.decodeFrame(frame, WorkspaceTargetDeps::class.java, stringTable)?.dependencies ?: listOf()
+
+  private fun decodeFileSets(frame: ValueFrame?): HeavyWorkspaceTarget =
+    storage.decodeFrame(frame, HeavyWorkspaceTarget::class.java, stringTable) ?: EMPTY_FILE_SETS
+
+  private inline fun decodeData(typeIds: IntList, dataFrameForType: (typeId: Int) -> ValueFrame?): List<BuildTargetData> {
+    val loadedData = ArrayList<BuildTargetData>(typeIds.size)
+    for (n in typeIds.indices) {
+      val frame = dataFrameForType(typeIds.getInt(n))
+      loadedData += storage.decodeFrame(frame, BuildTargetData::class.java, stringTable) ?: continue
+    }
+    return loadedData
+  }
+
+  private fun typeIdsOf(types: Set<Class<out BuildTargetData>>): IntList {
+    val typeIds = IntArrayList(types.size)
+    for (type in types) {
+      val typeId = storage.kryo.universe.type2Id.getOrDefault(type, -1)
+      if (typeId < 0) {
+        // TODO: assert
+        continue
+      }
+      typeIds.add(typeId)
+    }
+    // ascending, per the dataFrameForType ordering contract
+    typeIds.sort(null)
+    return typeIds
+  }
+
+  // guarded frame read
+  private fun <K> frameOf(map: MVMap<K, ValueFrame>, mapKey: K): ValueFrame? {
+    if (!isLive()) {
+      return null
+    }
+    return map[mapKey]
+  }
+
+  fun scanAllTargets(partialSnapshot: PersistentWorkspaceSnapshot, options: TargetLoadOptions): Sequence<BuildTarget> = sequence {
     if (!isLive()) {
       return@sequence
     }
-    val skipDeps = TargetLoadHint.SKIP_DEPS in options.hints
-    val skipFileSets = TargetLoadHint.SKIP_FILE_SETS in options.hints
-    val skipData = TargetLoadHint.SKIP_TARGET_DATA in options.hints && options.dataTypes.isEmpty()
+    val skipDeps = TargetSection.DEPS !in options.sections
+    val skipFileSets = TargetSection.FILE_SETS !in options.sections
+    val skipData = options.targetData == BuildTargetLoadHint.None
     val depsCursor = if (skipDeps) null else PeekingEntryCursor(id2TargetDeps) { it.toLong() }
     val heavyCursor = if (skipFileSets) null else PeekingEntryCursor(id2HeavyTarget) { it.toLong() }
     val dataCursor = if (skipData) null else PeekingEntryCursor(id2TargetData) { it }
@@ -372,23 +385,29 @@ class SnapshotGeneration internal constructor(
         key = key,
         options = options,
         partialData = partialData,
-        depsFrame = depsFrame,
-        heavyFrame = heavyFrame,
+        depsFrame = { depsFrame ?: frameOf(id2TargetDeps, keyId) },
+        heavyFrame = { heavyFrame ?: frameOf(id2HeavyTarget, keyId) },
       ) { typeId ->
-        dataCursor?.advanceTo(BuildTargetPack.pack(keyId, typeId))
+        val packedKey = BuildTargetPack.pack(keyId, typeId)
+        if (dataCursor == null) {
+          frameOf(id2TargetData, packedKey)
+        }
+        else {
+          dataCursor.advanceTo(packedKey)
+        }
       }
       yield(target)
     }
   }
 
-  fun findOrLoadTarget(partialSnapshot: PersistentWorkspaceSnapshot, key: WorkspaceTargetKey, options: TargetLoadOptions): WorkspaceTarget? {
+  fun findOrLoadTarget(partialSnapshot: PersistentWorkspaceSnapshot, key: WorkspaceTargetKey, options: TargetLoadOptions): BuildTarget? {
     if (!isLive()) {
       return null
     }
     // cached full target satisfies any request
     fullTargetCache.getIfPresent(key)?.let { return it }
-    if (options == TargetLoadOptions.DEFAULT) {
-      return fullTargetCache.get(key) { composeNewWorkspaceTarget(partialSnapshot, it, TargetLoadOptions.DEFAULT) }
+    if (options == TargetLoadOptions.ALL) {
+      return fullTargetCache.get(key) { composeNewWorkspaceTarget(partialSnapshot, it, TargetLoadOptions.ALL) }
     }
     // partial loads are the memory-light bulk path: composed fresh, never cached
     return composeNewWorkspaceTarget(partialSnapshot, key, options)
@@ -445,6 +464,7 @@ class SnapshotGeneration internal constructor(
       isManual = raw.isManual,
       isWorkspace = raw.isWorkspace,
       isTestOnly = raw.isTestOnly,
+      tags = raw.tags,
     )
     val targetDeps = WorkspaceTargetDeps(dependencies = raw.dependencies)
     val heavyTarget = HeavyWorkspaceTarget(

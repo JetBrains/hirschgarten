@@ -13,7 +13,7 @@ import org.jetbrains.bazel.python.lang.PythonBuildTarget
 import org.jetbrains.bazel.python.lang.PythonLanguageClass
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
 import org.jetbrains.bazel.target.targetStorage
-import org.jetbrains.bsp.protocol.RawBuildTarget
+import org.jetbrains.bazel.test.framework.target.TestBuildTarget
 import org.jetbrains.bsp.protocol.SourceFileCollection
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
@@ -278,7 +278,7 @@ class PythonDebugUtilsTest {
 
     project.targetStorage.setTargets(
       listOf(
-        RawBuildTarget(
+        TestBuildTarget(
           key = WorkspaceTargetKey(label = target),
           dependencies = emptyList(),
           kind = TargetKind(

@@ -24,6 +24,8 @@ import org.jetbrains.bazel.python.lang.PythonBuildTarget
 import org.jetbrains.bazel.python.lang.PythonLanguageClass
 import org.jetbrains.bazel.target.getTargetDataForLabel
 import org.jetbrains.bazel.target.targetStorage
+import org.jetbrains.bsp.protocol.BuildTarget
+import org.jetbrains.bsp.protocol.id
 import kotlin.io.path.invariantSeparatorsPathString
 import kotlin.io.path.isRegularFile
 
@@ -54,7 +56,7 @@ object PythonBazelRunUtils {
       return PythonBazelRunContext.Test(
         target = target,
         sourceElement = testFunction,
-        configurationName = target.summary.id.toShortString(element.project),
+        configurationName = target.id.toShortString(element.project),
         testExecutableArguments = listOf(testRunnerArgument),
       )
     }
@@ -64,41 +66,36 @@ object PythonBazelRunUtils {
     return PythonBazelRunContext.Binary(
       target = target,
       sourceElement = pyFile,
-      configurationName = target.summary.id.toShortString(element.project),
+      configurationName = target.id.toShortString(element.project),
     )
   }
 }
 
-private fun PyFile.getPythonBazelMainFileTargets(): List<PythonTarget> =
+private fun PyFile.getPythonBazelMainFileTargets(): List<BuildTarget> =
   getPythonBazelTargets().filter { isMainFileInTarget(it) }
 
-private fun PyFile.getPythonBazelTestTargets(): List<PythonTarget> =
-  getPythonBazelTargets().filter { it.summary.kind.ruleType == RuleType.TEST }
+private fun PyFile.getPythonBazelTestTargets(): List<BuildTarget> =
+  getPythonBazelTargets().filter { it.kind.ruleType == RuleType.TEST }
 
-private fun PyFile.getPythonBazelTargets(): List<PythonTarget> {
+private fun PyFile.getPythonBazelTargets(): List<BuildTarget> {
   val targetUtils = project.targetStorage
   val file = virtualFile ?: return emptyList()
   return targetUtils.getTargetsForFile(file).mapNotNull { label ->
-    val summary = targetUtils.getTargetSummary(label) ?: return@mapNotNull null
-    if (!summary.kind.languageClasses.contains(PythonLanguageClass.PYTHON)) {
-      return@mapNotNull null
-    }
-    val data = targetUtils.getTargetDataForLabel<PythonBuildTarget>(label)
-    PythonTarget(summary = summary, data = data)
+    targetUtils.getTargetSummary(label)?.takeIf { it.kind.languageClasses.contains(PythonLanguageClass.PYTHON) }
   }
 }
 
-private fun PyFile.isMainFileInTarget(target: PythonTarget): Boolean {
-  if (target.summary.kind.ruleType != RuleType.BINARY && target.summary.kind.ruleType != RuleType.TEST) {
+private fun PyFile.isMainFileInTarget(target: BuildTarget): Boolean {
+  if (target.kind.ruleType != RuleType.BINARY && target.kind.ruleType != RuleType.TEST) {
     return false
   }
-  val pythonBuildTargetData = target.data ?: return false
+  val pythonBuildTargetData = project.targetStorage.getTargetDataForLabel<PythonBuildTarget>(target.id) ?: return false
   val fileNioPath = virtualFile.toNioPathOrNull()
   return if (pythonBuildTargetData.hasMainFileDefined()) {
     pythonBuildTargetData.mainFile == fileNioPath
   } else if (pythonBuildTargetData.mainModule.isNullOrEmpty()) {
     // When both the main file and main module aren't defined, py_binary expects targetName + ".py".
-    virtualFile.name == "${target.summary.id.targetName}.py"
+    virtualFile.name == "${target.id.targetName}.py"
   } else {
     // Resolving Python modules to files is intentionally not supported here.
     false

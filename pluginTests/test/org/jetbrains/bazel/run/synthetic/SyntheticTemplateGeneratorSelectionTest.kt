@@ -10,6 +10,7 @@ import org.jetbrains.bazel.java.run.JavaSyntheticRunTargetTemplateGenerator
 import org.jetbrains.bazel.kotlin.run.KotlinSyntheticRunTargetTemplateGenerator
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.test.framework.target.TestBuildTargetFactory
+import org.jetbrains.bsp.protocol.id
 import org.jetbrains.kotlin.idea.KotlinLanguage
 
 class SyntheticTemplateGeneratorSelectionTest : BasePlatformTestCase() {

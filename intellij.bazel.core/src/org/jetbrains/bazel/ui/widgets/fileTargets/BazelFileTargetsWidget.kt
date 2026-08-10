@@ -28,7 +28,8 @@ import org.jetbrains.bazel.target.targetStorage
 import org.jetbrains.bazel.ui.widgets.BazelJumpToBuildFileAction
 import org.jetbrains.bazel.ui.widgets.tool.window.actions.CopyTargetIdAction
 import org.jetbrains.bazel.ui.widgets.tool.window.utils.fillWithEligibleActions
-import org.jetbrains.bsp.protocol.ExecutableTarget
+import org.jetbrains.bsp.protocol.BuildTarget
+import org.jetbrains.bsp.protocol.id
 import javax.swing.Icon
 
 /**
@@ -94,12 +95,12 @@ internal class BazelFileTargetsWidget(project: Project) : EditorBasedStatusBarPo
     }
   }
 
-  private fun List<Label>.getTargetInfos(): List<ExecutableTarget> {
+  private fun List<Label>.getTargetInfos(): List<BuildTarget> {
     val targetUtils = project.targetStorage
     return this.mapNotNull { targetUtils.getTargetSummary(it) }
   }
 
-  private fun ExecutableTarget.calculatePopupGroup(): ActionGroup =
+  private fun BuildTarget.calculatePopupGroup(): ActionGroup =
     createActionGroup(id.toShortString(project)).also {
       ResyncTargetAction.createIfEnabled(id)?.let { resyncTargetAction -> it.add(resyncTargetAction) }
       it.add(CopyTargetIdAction.FromTargetInfo(this))

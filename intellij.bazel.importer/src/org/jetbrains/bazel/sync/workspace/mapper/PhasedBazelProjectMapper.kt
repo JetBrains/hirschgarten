@@ -19,10 +19,12 @@ import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.label.assumeResolved
 import org.jetbrains.bazel.languages.projectview.ProjectView
 import org.jetbrains.bazel.languages.projectview.allowManualTargetsSync
+import org.jetbrains.bazel.sync.workspace.persistence.TargetLoadOptions
 import org.jetbrains.bazel.sync.workspace.snapshot.SourceFileCollectionBuilder
+import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTarget
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
 import org.jetbrains.bazel.sync.workspace.targetKind.TargetKindService
-import org.jetbrains.bsp.protocol.RawBuildTarget
+import org.jetbrains.bsp.protocol.BuildTarget
 import java.nio.file.Path
 import kotlin.io.path.Path
 import kotlin.io.path.exists
@@ -36,9 +38,9 @@ class PhasedBazelProjectMapper(
   fun mapTargets(
     repoMapping: RepoMapping,
     targets: Map<Label, Build.Target>
-  ): List<RawBuildTarget> {
+  ): List<BuildTarget> {
     val shouldSyncManualTargets = projectView.allowManualTargetsSync
-    val targets: List<RawBuildTarget> =
+    val targets: List<BuildTarget> =
       targets
         .asSequence()
         .map { it.value }
@@ -50,10 +52,10 @@ class PhasedBazelProjectMapper(
     return targets
   }
 
-  private fun Build.Target.toBspBuildTarget(repoMapping: RepoMapping, targets: Map<Label, Build.Target>): RawBuildTarget {
+  private fun Build.Target.toBspBuildTarget(repoMapping: RepoMapping, targets: Map<Label, Build.Target>): BuildTarget {
     val label = Label.parse(name).assumeResolved()
     val baseDirectory = bazelPathsResolver.toDirectoryPath(label, repoMapping)
-    return RawBuildTarget(
+    return WorkspaceTarget(
       key = WorkspaceTargetKey(label = label),
       dependencies = interestingDeps.map { DependencyLabel.parse(it) },
       kind = inferKind(),
@@ -65,6 +67,8 @@ class PhasedBazelProjectMapper(
       generatorName = generatorName,
       isManual = isManual,
       isWorkspace = true, // TODO
+      isTestOnly = false,
+      tags = emptyList(),
     )
   }
 

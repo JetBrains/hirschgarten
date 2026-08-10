@@ -22,8 +22,8 @@ import org.jetbrains.bazel.python.lang.PythonLanguageClass
 import org.jetbrains.bazel.python.lang.extractPythonBuildTarget
 import org.jetbrains.bazel.sync.BazelOutFileHardLinks
 import org.jetbrains.bazel.sync.environment.projectCtx
-import org.jetbrains.bsp.protocol.RawBuildTarget
-import org.jetbrains.bsp.protocol.allSources
+import org.jetbrains.bazel.sync.workspace.snapshot.allSources
+import org.jetbrains.bsp.protocol.BuildTarget
 import java.nio.file.FileSystems
 import java.nio.file.Path
 import java.nio.file.Paths
@@ -68,7 +68,7 @@ internal class PythonResolveIndexService(private val project: Project) {
 
   fun getStubScope(): GlobalSearchScope = resolveIndexSnapshotRef.get().stubScope
 
-  suspend fun updatePythonResolveIndex(pythonTargets: List<RawBuildTarget>, outFilesHardLink: BazelOutFileHardLinks) {
+  suspend fun updatePythonResolveIndex(pythonTargets: List<BuildTarget>, outFilesHardLink: BazelOutFileHardLinks) {
     val nameToPathIndex = buildIndex(pythonTargets, outFilesHardLink)
 
     updateResolveIndexSnapshot(nameToPathIndex)
@@ -97,7 +97,7 @@ internal class PythonResolveIndexService(private val project: Project) {
   }
 
   private suspend fun buildIndex(
-    pythonTargets: List<RawBuildTarget>,
+    pythonTargets: List<BuildTarget>,
     outFilesHardLink: BazelOutFileHardLinks,
   ): Map<QualifiedName, Path> {
     val executionRoot = project.projectCtx.bazelExecPath ?: return emptyMap()

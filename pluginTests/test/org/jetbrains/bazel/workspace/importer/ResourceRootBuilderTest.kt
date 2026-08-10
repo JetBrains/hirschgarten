@@ -11,9 +11,9 @@ import org.jetbrains.bazel.sync.JavaLanguageClass
 import org.jetbrains.bazel.sync.workspace.languages.jvm.JvmBuildTarget
 import org.jetbrains.bazel.sync.workspace.languages.jvm.KotlinBuildTarget
 import org.jetbrains.bazel.sync.workspace.languages.jvm.ScalaBuildTarget
-import org.jetbrains.bazel.workspace.model.test.framework.createRawBuildTarget
+import org.jetbrains.bazel.test.framework.target.TestBuildTarget
+import org.jetbrains.bazel.workspace.model.test.framework.createTestBuildTarget
 import org.jetbrains.bsp.protocol.BuildTargetData
-import org.jetbrains.bsp.protocol.RawBuildTarget
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DynamicTest
 import org.junit.jupiter.api.Test
@@ -135,7 +135,7 @@ class ResourceRootBuilderTest {
     val prefix = projectRoot.resolve("explicit/prefix").createDirectories()
     val res1 = prefix.resolve("com/example/a.txt").also { it.parent.createDirectories() }.createFile()
     val res2 = prefix.resolve("com/example/b.txt").createFile()
-    val target = createRawBuildTarget(
+    val target = createTestBuildTarget(
       id = Label.parse("//target"),
       kind = TargetKind(
         kind = "java_library",
@@ -666,7 +666,7 @@ class ResourceRootBuilderTest {
     resources: List<Path> = emptyList(),
     data: List<BuildTargetData> = listOf(JvmBuildTarget()),
     isTestOnly: Boolean = false,
-  ): RawBuildTarget = createRawBuildTarget(
+  ): TestBuildTarget = createTestBuildTarget(
     id = Label.parse(label),
     kind = TargetKind(
       kind = "java_library",
@@ -692,7 +692,7 @@ class ResourceRootBuilderTest {
         moduleName = null,
       ),
     ),
-  ): RawBuildTarget = createRawBuildTarget(
+  ): TestBuildTarget = createTestBuildTarget(
     id = Label.parse(label),
     kind = TargetKind(
       kind = "kt_jvm_library",
@@ -714,7 +714,7 @@ class ResourceRootBuilderTest {
         scalacOptions = emptyList(),
       ),
     ),
-  ): RawBuildTarget = createRawBuildTarget(
+  ): TestBuildTarget = createTestBuildTarget(
     id = Label.parse(label),
     kind = TargetKind(
       kind = "scala_library",
@@ -730,7 +730,7 @@ class ResourceRootBuilderTest {
     label: String = "//target",
     resources: List<Path> = emptyList(),
     baseDirectory: Path,
-  ): RawBuildTarget = createRawBuildTarget(
+  ): TestBuildTarget = createTestBuildTarget(
     id = Label.parse(label),
     kind = TargetKind(
       kind = "filegroup",

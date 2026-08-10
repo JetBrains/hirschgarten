@@ -52,9 +52,9 @@ import org.jetbrains.bazel.sync.workspace.importer.WorkspaceImporterResult
 import org.jetbrains.bazel.sync.workspace.persistence.TargetLoadOptions
 import org.jetbrains.bazel.sync.workspace.snapshot.CommonWorkspaceSyncConfig
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceSnapshot
-import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTarget
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetMerger
+import org.jetbrains.bazel.sync.workspace.snapshot.allSources
 import org.jetbrains.bazel.sync.workspace.snapshot.allTargets
 import org.jetbrains.bazel.sync.workspace.snapshot.commonSyncConfig
 import org.jetbrains.bazel.sync.workspace.snapshot.filterBuildTarget
@@ -66,10 +66,9 @@ import org.jetbrains.bazel.workspacemodel.entities.WorkspaceModelTargetKey
 import org.jetbrains.bazel.workspacemodel.entities.WorkspaceModelTargetLabelList
 import org.jetbrains.bazel.workspacemodel.entities.WorkspaceModelTargetSourceRootTypeId
 import org.jetbrains.bazel.workspacemodel.entities.bazelModuleExtension
-import org.jetbrains.bsp.protocol.RawBuildTarget
+import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.StrictDependencyCheckedType
 import org.jetbrains.bsp.protocol.TaskId
-import org.jetbrains.bsp.protocol.allSources
 import org.jetbrains.bsp.protocol.utils.StringUtils
 import java.nio.file.Path
 import kotlin.io.path.isDirectory
@@ -90,7 +89,7 @@ internal class BazelPythonWorkspaceImporter : BazelWorkspaceImporter, BazelWorks
   private lateinit var commonSyncConfig: CommonWorkspaceSyncConfig
   private lateinit var pythonSyncConfig: PythonWorkspaceSyncConfig
   private lateinit var moduleNameByKey: Map<WorkspaceTargetKey, String>
-  private lateinit var allPythonTargets: Map<WorkspaceTargetKey, WorkspaceTarget>
+  private lateinit var allPythonTargets: Map<WorkspaceTargetKey, BuildTarget>
 
   private var defaultInterpreter: Path? = null
   private var defaultVersion: String? = null
@@ -121,24 +120,24 @@ internal class BazelPythonWorkspaceImporter : BazelWorkspaceImporter, BazelWorks
 
     val importDepth = snapshot.commonSyncConfig.importDepth
     allPythonTargets = snapshot.targetGraph.findAllTargetsAtDepth(maxDepth = importDepth, useRelaxedDependencyExpansion = true)
-      .mapNotNull { it.load(snapshot.targets, TargetLoadOptions.DEFAULT) }
+      .mapNotNull { it.load(snapshot.targets, TargetLoadOptions.ALL) }
       .filter { it.hasBuildData<PythonBuildTarget>() }
       .let { targets ->
         WorkspaceTargetMerger(mergeFunctions = pythonTargetMergeFunctions)
           .mergeByTargetKey(targets = targets.toList())
       }
-      .associateBy { it.targetKey }
+      .associateBy { it.key }
 
     moduleNameByKey = allPythonTargets.values
-      .groupBy { it.targetKey.label }
+      .groupBy { it.key.label }
       .flatMap { (_, targets) ->
         when {
           targets.size == 1 -> {
-            val key = targets.single().targetKey
+            val key = targets.single().key
             listOf(key to key.formatAsModuleName(snapshot.repoMapping, withConfiguration = false))
           }
 
-          else -> targets.map { it.targetKey to it.targetKey.formatAsModuleName(snapshot.repoMapping, withConfiguration = true) }
+          else -> targets.map { it.key to it.key.formatAsModuleName(snapshot.repoMapping, withConfiguration = true) }
         }
       }
       .toMap()
@@ -154,8 +153,8 @@ internal class BazelPythonWorkspaceImporter : BazelWorkspaceImporter, BazelWorks
     // MAYBE RC: obvious incremental caching candidate...
     pySourceDeps = snapshot.allTargets.filterBuildTarget<PythonBuildTarget>()
       .associate { (target, _) ->
-        target.targetKey to snapshot.targetGraph.findAllTransitiveSuccessorsWithoutRootTargets(target.targetKey)
-          .mapNotNull { it.load(snapshot.targets, TargetLoadOptions.DEFAULT) }
+        target.key to snapshot.targetGraph.findAllTransitiveSuccessorsWithoutRootTargets(target.key)
+          .mapNotNull { it.load(snapshot.targets, TargetLoadOptions.ALL) }
           .filterBuildTarget<PythonBuildTarget>()
           .flatMap { (_, pythonTarget) -> pythonTarget.externalSources?.getFiles() ?: sequenceOf() }
           .toList()
@@ -198,7 +197,6 @@ internal class BazelPythonWorkspaceImporter : BazelWorkspaceImporter, BazelWorks
 
     val pyTargets = allPythonTargets.values
       .filter { it.hasBuildData<PythonBuildTarget>() }
-      .map { it.rawBuildTarget }
       .toList()
 
     context.project.connection.runWithServer { server ->
@@ -229,7 +227,7 @@ internal class BazelPythonWorkspaceImporter : BazelWorkspaceImporter, BazelWorks
   ): Map<WorkspaceTargetKey, Sdk?> {
     return snapshot.allTargets.filterBuildTarget<PythonBuildTarget>()
       .filter { (_, pyTarget) -> (pyTarget.interpreter) != null }
-      .associateBy { (target, _) -> target.targetKey }
+      .associateBy { (target, _) -> target.key }
       .mapValues { (_, value) -> findOrAddSdk(value.second, context.project) }
   }
 
@@ -287,13 +285,13 @@ internal class BazelPythonWorkspaceImporter : BazelWorkspaceImporter, BazelWorks
     context: WorkspaceImporterContext,
     builder: MutableEntityStorage,
     repoMapping: RepoMapping,
-    target: WorkspaceTarget,
+    target: BuildTarget,
     moduleName: String,
     entitySource: EntitySource,
     virtualFileUrlManager: VirtualFileUrlManager,
     sourceDependencyLibrary: LibraryEntityBuilder? = null,
   ): ModuleEntity {
-    val contentRoots = getContentRootEntities(context, target.rawBuildTarget, entitySource, virtualFileUrlManager)
+    val contentRoots = getContentRootEntities(context, target, entitySource, virtualFileUrlManager)
 
     val libraryDependency =
       sourceDependencyLibrary?.let {
@@ -302,7 +300,7 @@ internal class BazelPythonWorkspaceImporter : BazelWorkspaceImporter, BazelWorks
       }
 
     val dependencies =
-      target.rawBuildTarget.dependencies.map {
+      target.dependencies.map {
         ModuleDependency(
           module = ModuleId(it.targetKey.toPythonModuleName(repoMapping)),
           exported = true,
@@ -329,7 +327,7 @@ internal class BazelPythonWorkspaceImporter : BazelWorkspaceImporter, BazelWorks
         this.type = PYTHON_MODULE_TYPE
         this.contentRoots = contentRoots
         this.bazelModuleExtension = BazelModuleExtensionEntity(
-          _targetKey = WorkspaceModelTargetKey.of(target.targetKey),
+          _targetKey = WorkspaceModelTargetKey.of(target.key),
           rootTypeId = WorkspaceModelTargetSourceRootTypeId(SourceRootTypeId(PYTHON_SOURCE_ROOT_TYPE)),
           strictDependencies = WorkspaceModelTargetLabelList(
             StrictDependencyCheckedType.OFF,
@@ -343,7 +341,7 @@ internal class BazelPythonWorkspaceImporter : BazelWorkspaceImporter, BazelWorks
 
   private fun getContentRootEntities(
     context: WorkspaceImporterContext,
-    target: RawBuildTarget,
+    target: BuildTarget,
     entitySource: EntitySource,
     virtualFileUrlManager: VirtualFileUrlManager,
   ): List<ContentRootEntityBuilder> {
@@ -355,21 +353,21 @@ internal class BazelPythonWorkspaceImporter : BazelWorkspaceImporter, BazelWorks
 
   private fun getSourceContentRootEntities(
     context: WorkspaceImporterContext,
-    target: RawBuildTarget,
+    target: BuildTarget,
     entitySource: EntitySource,
     virtualFileUrlManager: VirtualFileUrlManager,
   ): List<ContentRootEntityBuilder> = computeSourceRootPaths(context, target)
     .map { it.toContentRoot(PYTHON_SOURCE_ROOT_TYPE, entitySource, virtualFileUrlManager) }
 
   private fun getResourceContentRootEntities(
-    target: RawBuildTarget,
+    target: BuildTarget,
     entitySource: EntitySource,
     virtualFileUrlManager: VirtualFileUrlManager,
   ): List<ContentRootEntityBuilder> = target.resources.getFiles()
     .map { resource -> resource.toContentRoot(PYTHON_RESOURCE_ROOT_TYPE, entitySource, virtualFileUrlManager) }
     .toList()
 
-  private fun computeSourceRootPaths(context: WorkspaceImporterContext, target: RawBuildTarget): Set<Path> {
+  private fun computeSourceRootPaths(context: WorkspaceImporterContext, target: BuildTarget): Set<Path> {
     val projectCtx = context.project.projectCtx
     // imports for generated files should be resolved against bazel-bin
     val basePaths = listOfNotNull(projectCtx.projectRootDir?.toNioPath(), projectCtx.bazelBinPath).distinct()

@@ -13,12 +13,16 @@ import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.run.RunHandlerProvider
 import org.jetbrains.bazel.run.config.BazelRunConfiguration
 import org.jetbrains.bazel.run.config.BazelRunConfigurationType
-import org.jetbrains.bsp.protocol.ExecutableTarget
+import org.jetbrains.bazel.run.state.HasEnv
+import org.jetbrains.bazel.run.state.HasProgramArguments
+import org.jetbrains.bazel.run.state.HasTestFilter
+import org.jetbrains.bsp.protocol.BuildTarget
+import org.jetbrains.bsp.protocol.id
 
 @ApiStatus.Internal
 abstract class BazelRunnerAction(
   private val project: Project,
-  private val targets: List<ExecutableTarget>,
+  private val targets: List<BuildTarget>,
   executor: Executor,
   configurationName: String,
   private val callerPsiElement: PsiElement? = null,

@@ -27,6 +27,7 @@ import org.jetbrains.bazel.run.RunHandlerProvider
 import org.jetbrains.bazel.run.synthetic.SyntheticRunTaskMarker
 import org.jetbrains.bazel.run.test.BazelTestConsoleProperties
 import org.jetbrains.bazel.target.targetStorage
+import org.jetbrains.bsp.protocol.id
 import java.util.EventListener
 
 // Use BazelRunConfigurationType.createTemplateConfiguration(project) to create a new BazelRunConfiguration.

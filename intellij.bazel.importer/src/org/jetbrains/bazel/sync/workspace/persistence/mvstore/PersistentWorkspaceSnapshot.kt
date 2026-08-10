@@ -11,7 +11,7 @@ import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceSnapshotMetadata
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceSyncConfig
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetGraph
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
-import org.jetbrains.bsp.protocol.RawBuildTarget
+import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.SourceFileCollection
 import java.nio.file.Path
 
@@ -40,6 +40,7 @@ class PartialWorkspaceTarget(
   val isManual: Boolean,
   val isWorkspace: Boolean,
   val isTestOnly: Boolean,
+  val tags: List<String>
 )
 
 @ApiStatus.Internal
@@ -57,5 +58,5 @@ class HeavyWorkspaceTarget(
 @ApiStatus.Internal
 class WorkspaceTargetToSave(
   val keyId: Int,
-  val target: RawBuildTarget,
+  val target: BuildTarget,
 )

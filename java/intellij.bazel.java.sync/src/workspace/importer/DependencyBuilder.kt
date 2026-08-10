@@ -15,7 +15,7 @@ import org.jetbrains.bazel.sync.workspace.languages.jvm.JvmDependency
 import org.jetbrains.bazel.sync.workspace.languages.jvm.extractJvmBuildTarget
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceAspectIds
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
-import org.jetbrains.bsp.protocol.RawBuildTarget
+import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.StrictDependencyCheckedType
 import com.intellij.platform.workspace.jps.entities.DependencyScope as EntitiesDependencyScope
 
@@ -33,7 +33,7 @@ private val idInterner: Interner<SymbolicEntityId<*>> = Interner.createWeakInter
 // (incl. its `DependenciesClosure` memo), plus the `Dependency` wrapper
 @ApiStatus.Internal
 class DependencyBuilder(
-  private val targets: Collection<RawBuildTarget>,
+  private val targets: Collection<BuildTarget>,
   private val jvmResolved: Map<WorkspaceTargetKey, JvmResolvedTarget>,
   private val libraryShadowsModule: Map<WorkspaceTargetKey, WorkspaceTargetKey> = emptyMap(),
 ) {
@@ -45,7 +45,7 @@ class DependencyBuilder(
     val strictDependencies: List<Label>,
   )
 
-  fun resolve(target: RawBuildTarget): Resolved {
+  fun resolve(target: BuildTarget): Resolved {
     val deps = jvmResolved[target.key.stripAspects()]?.jvmDependencies?.map { dep ->
       // TODO: investigate "experimental_prune_transitive_deps" option in .bazelrc
       when (dep) {
@@ -66,7 +66,7 @@ class DependencyBuilder(
     )
   }
 
-  private fun checkStrictDependencies(target: RawBuildTarget): StrictDependencyCheckedType {
+  private fun checkStrictDependencies(target: BuildTarget): StrictDependencyCheckedType {
     if (!target.isWorkspace) return StrictDependencyCheckedType.OFF
     return extractJvmBuildTarget(target)?.checkStrictDependencies ?: StrictDependencyCheckedType.OFF
   }

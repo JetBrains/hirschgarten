@@ -2,7 +2,8 @@ package org.jetbrains.bazel.sync.workspace.snapshot
 
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.label.Label
-import org.jetbrains.bazel.sync.ExecutableTargetsComputer
+import org.jetbrains.bsp.protocol.BuildTarget
+import org.jetbrains.bsp.protocol.id
 
 @ApiStatus.Internal
 interface ExecutableTargetsIndex {
@@ -27,23 +28,23 @@ object ExecutableTargetsIndexBuilder {
   fun build(
     targetGraph: WorkspaceTargetGraph,
     importDepth: Int,
-    targets: Collection<WorkspaceTarget>,
+    targets: Collection<BuildTarget>,
   ): ExecutableTargetsIndex = InMemoryExecutableTargetsIndex(buildExecutableTargetsIndex(targetGraph, importDepth, targets))
 
   internal fun buildExecutableTargetsIndex(
     targetGraph: WorkspaceTargetGraph,
     importDepth: Int,
-    targets: Collection<WorkspaceTarget>,
+    targets: Collection<BuildTarget>,
   ): Map<Label, List<Label>> {
-    val byKey = HashMap<WorkspaceTargetKey, WorkspaceTarget>(targets.size)
+    val byKey = HashMap<WorkspaceTargetKey, BuildTarget>(targets.size)
     for (target in targets) {
-      byKey[target.targetKey] = target
+      byKey[target.key] = target
     }
     val imported = targetGraph.findAllTargetsAtDepth(maxDepth = importDepth, useRelaxedDependencyExpansion = true)
-      .mapNotNull { byKey[it.targetKey]?.rawBuildTarget }
+      .mapNotNull { byKey[it.targetKey] }
       .toList()
     val labelToTarget = imported.associateByTo(HashMap(imported.size)) { it.id }
-    return ExecutableTargetsComputer.calculateExecutableTargets(targets = imported, labelToTargetInfo = labelToTarget, )
+    return ExecutableTargetsComputer.calculateExecutableTargets(targets = imported, labelToTargetInfo = labelToTarget)
       .mapKeys { (k, _) -> k as Label }
   }
 }

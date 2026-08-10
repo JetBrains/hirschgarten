@@ -36,12 +36,12 @@ import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceConfiguration
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceConfigurationId
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceConfigurationSummary
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceSnapshotMetadata
-import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTarget
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetGraph
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetGraphBuilder
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
+import org.jetbrains.bazel.test.framework.target.TestBuildTarget
+import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.BuildTargetData
-import org.jetbrains.bsp.protocol.RawBuildTarget
 import org.jetbrains.bsp.protocol.SourceFileCollection
 import org.jetbrains.bsp.protocol.StrictDependencyCheckedType
 import org.junit.jupiter.api.Test
@@ -91,8 +91,8 @@ class SnapshotKryoSerializationTest {
     key: WorkspaceTargetKey,
     dependencies: List<DependencyLabel> = emptyList(),
     data: List<BuildTargetData> = emptyList(),
-  ): RawBuildTarget =
-    RawBuildTarget(
+  ): TestBuildTarget =
+    TestBuildTarget(
       key = key,
       dependencies = dependencies,
       kind = TargetKind(
@@ -141,15 +141,12 @@ class SnapshotKryoSerializationTest {
     val rootKey = key("@//foo:bar", configuration = "deadbeef42", aspectIds = listOf("my_aspect"))
     val depKey = key("@//foo:dep", configuration = "deadbeef42")
     val targets = listOf(
-      WorkspaceTarget(
-        targetKey = rootKey,
-        rawBuildTarget = rawTarget(
-          key = rootKey,
-          dependencies = listOf(DependencyLabel(targetKey = depKey, kind = DependencyLabelKind.COMPILE)),
-          data = listOf(jvmBuildTarget()),
-        ),
+      rawTarget(
+        key = rootKey,
+        dependencies = listOf(DependencyLabel(targetKey = depKey, kind = DependencyLabelKind.COMPILE)),
+        data = listOf(jvmBuildTarget()),
       ),
-      WorkspaceTarget(targetKey = depKey, rawBuildTarget = rawTarget(key = depKey)),
+      rawTarget(key = depKey),
     )
     val graph = WorkspaceTargetGraphBuilder.build(rootTargets = setOf(rootKey), targets = targets)
 
@@ -250,6 +247,7 @@ class SnapshotKryoSerializationTest {
       isManual = false,
       isWorkspace = true,
       isTestOnly = true,
+      tags = listOf("no-ide"),
     )
     val restoredPartial = serializeAndDeserialize(partialTarget)
     restoredPartial.kind shouldBe partialTarget.kind

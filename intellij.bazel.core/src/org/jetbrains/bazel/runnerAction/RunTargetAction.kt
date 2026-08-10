@@ -6,12 +6,13 @@ import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElement
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.languages.starlark.repomapping.toShortString
-import org.jetbrains.bsp.protocol.ExecutableTarget
+import org.jetbrains.bsp.protocol.BuildTarget
+import org.jetbrains.bsp.protocol.id
 
 @ApiStatus.Internal
 class RunTargetAction(
   project: Project,
-  target: ExecutableTarget,
+  target: BuildTarget,
   executor: Executor = DefaultRunExecutor.getRunExecutorInstance(),
   callerPsiElement: PsiElement? = null,
 ) : BazelRunnerAction(

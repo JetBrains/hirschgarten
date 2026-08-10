@@ -33,6 +33,7 @@ import org.jetbrains.bazel.target.TargetStorage
 import org.jetbrains.bazel.ui.widgets.tool.window.components.BazelTargetsPanel
 import org.jetbrains.bazel.ui.widgets.tool.window.components.BazelTargetsPanelModel
 import org.jetbrains.bazel.ui.widgets.tool.window.components.configureBazelToolWindowToolBar
+import org.jetbrains.bsp.protocol.id
 import java.awt.BorderLayout
 
 private class BazelAllTargetsWidgetFactory :

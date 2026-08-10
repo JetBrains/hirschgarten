@@ -26,6 +26,7 @@ import org.jetbrains.bazel.settings.bazel.bazelJVMProjectSettings
 import org.jetbrains.bazel.sync.includesKotlin
 import org.jetbrains.bazel.target.ModuleTargetService
 import org.jetbrains.bazel.target.targetStorage
+import org.jetbrains.bsp.protocol.id
 
 private const val PROVIDER_NAME = "KotlinCoroutineLibraryFinderBeforeRunTaskProvider"
 

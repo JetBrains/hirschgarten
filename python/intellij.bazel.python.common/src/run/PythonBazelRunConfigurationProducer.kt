@@ -12,6 +12,7 @@ import org.jetbrains.bazel.run.config.BazelRunConfiguration
 import org.jetbrains.bazel.run.config.BazelRunConfigurationType
 import org.jetbrains.bazel.run.state.HasProgramArguments
 import org.jetbrains.bazel.run.test.setTestFilter
+import org.jetbrains.bsp.protocol.id
 
 internal class PythonBazelRunConfigurationProducer : LazyRunConfigurationProducer<BazelRunConfiguration>() {
   override fun getConfigurationFactory(): ConfigurationFactory =
@@ -30,7 +31,7 @@ internal class PythonBazelRunConfigurationProducer : LazyRunConfigurationProduce
 
   override fun isConfigurationFromContext(configuration: BazelRunConfiguration, context: ConfigurationContext): Boolean {
     val runContext = context.findRunContext() ?: return false
-    return configuration.targets == listOf(runContext.target.summary.id) && when (runContext) {
+    return configuration.targets == listOf(runContext.target.id) && when (runContext) {
       is PythonBazelRunContext.Binary ->
         configuration.handler?.isTestHandler == false
 
@@ -47,9 +48,9 @@ internal class PythonBazelRunConfigurationProducer : LazyRunConfigurationProduce
   }
 
   private fun BazelRunConfiguration.applyRunContext(runContext: PythonBazelRunContext): Boolean {
-    val provider = RunHandlerProvider.getRunHandlerProvider(listOf(runContext.target.summary.kind)) ?: return false
+    val provider = RunHandlerProvider.getRunHandlerProvider(listOf(runContext.target.kind)) ?: return false
     name = runContext.configurationName
-    updateTargets(listOf(runContext.target.summary.id), provider)
+    updateTargets(listOf(runContext.target.id), provider)
     val bazelHandler = handler ?: return false
 
     if (runContext is PythonBazelRunContext.Test) {

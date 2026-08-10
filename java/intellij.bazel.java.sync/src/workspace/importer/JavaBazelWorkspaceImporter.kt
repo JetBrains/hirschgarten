@@ -23,17 +23,17 @@ import org.jetbrains.bazel.sync.workspace.languages.jvm.extractJvmBuildTarget
 import org.jetbrains.bazel.sync.workspace.persistence.TargetLoadOptions
 import org.jetbrains.bazel.sync.workspace.snapshot.CommonWorkspaceSyncConfig
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceSnapshot
-import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTarget
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
 import org.jetbrains.bazel.workspace.indexAdditionalFiles.ProjectViewGlobSet
 import org.jetbrains.bazel.workspacemodel.entities.CompiledSourceCodeInsideJarExcludeEntity
-import org.jetbrains.bsp.protocol.RawBuildTarget
+import org.jetbrains.bsp.protocol.BuildTarget
+import org.jetbrains.bsp.protocol.id
 import java.nio.file.Path
 
 internal class JavaBazelWorkspaceImporter : BazelWorkspaceImporter, BazelWorkspaceImporter.Named {
   private var javacOptions: Map<String, String>? = null
-  private lateinit var moduleTargets: List<WorkspaceTarget>
-  private lateinit var targets: List<RawBuildTarget>
+  private lateinit var moduleTargets: List<BuildTarget>
+  private lateinit var targets: List<BuildTarget>
   private lateinit var jvmResolved: Map<WorkspaceTargetKey, JvmResolvedTarget>
   private lateinit var uniqueJavaHomes: Set<Path>
   private lateinit var commonSyncConfig: CommonWorkspaceSyncConfig
@@ -70,11 +70,11 @@ internal class JavaBazelWorkspaceImporter : BazelWorkspaceImporter, BazelWorkspa
     moduleTargets = snapshot.targetGraph.findAllTargetsAtDepth(
       maxDepth = commonSyncConfig.importDepth,
       useRelaxedDependencyExpansion = true,
-    ).mapNotNull { it.load(snapshot.targets, TargetLoadOptions.DEFAULT) }.toList()
-    targets = moduleTargets.map { it.rawBuildTarget }
+    ).mapNotNull { it.load(snapshot.targets, TargetLoadOptions.ALL) }.toList()
+    targets = moduleTargets
     jvmResolved = JvmBuildTargetResolver(
-      allTargets = snapshot.targets.allTargets().associateBy { it.targetKey },
-      targetsToImport = moduleTargets.associateBy { it.targetKey },
+      allTargets = snapshot.targets.allTargets().associateBy { it.key },
+      targetsToImport = moduleTargets.associateBy { it.key },
       javaSyncConfig = snapshot.syncConfigs.filterIsInstance<JavaWorkspaceSyncConfig>().first(),
     ).resolveAll()
 

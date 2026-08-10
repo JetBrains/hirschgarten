@@ -14,21 +14,22 @@ import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.label.SingleTarget
 import org.jetbrains.bazel.label.assumeResolved
 import org.jetbrains.bazel.sync.workspace.persistence.WorkspaceTargetRef
+import org.jetbrains.bsp.protocol.BuildTarget
 import java.util.concurrent.atomic.AtomicReferenceArray
 
 /**
- * Immutable [WorkspaceTarget] graph, takes into account configurations [WorkspaceConfiguration]
+ * Immutable [BuildTarget] graph, takes into account configurations [WorkspaceConfiguration]
  */
 @ApiStatus.Internal
 interface WorkspaceTargetGraph {
 
   /**
-   * Entire set of [WorkspaceTarget] present inside this [WorkspaceTargetGraph]
+   * Entire set of [BuildTarget] present inside this [WorkspaceTargetGraph]
    */
   val allTargets: Sequence<WorkspaceTargetRef>
 
   /**
-   * Find [WorkspaceTarget] by distinct [WorkspaceTargetKey]
+   * Find [BuildTarget] by distinct [WorkspaceTargetKey]
    *
    * @param targetKey Specific [WorkspaceTargetKey]
    * @param strict Match [targetKey] exactly, when false try matching without propagated aspects [WorkspaceTargetKey.aspectIds]
@@ -38,7 +39,7 @@ interface WorkspaceTargetGraph {
   fun findTargetByKey(targetKey: WorkspaceTargetKey, strict: Boolean = false): WorkspaceTargetRef?
 
   /**
-   * Find all [WorkspaceTarget] that lossy match [targetKey], match only by label and configuration
+   * Find all [BuildTarget] that lossy match [targetKey], match only by label and configuration
    *
    * @param targetKey Specific [WorkspaceTargetKey]
    *
@@ -349,18 +350,18 @@ object WorkspaceTargetGraphBuilder {
   //  for now when we're living in the world with monolithic sync pipeline passing entire set of
   //  `rootTargets` is fine, but for future change we shall consider removing it in order to provide easy
   //  to understand and simple incremental snapshot updating
-  fun build(rootTargets: Set<WorkspaceTargetKey>, targets: Collection<WorkspaceTarget>): WorkspaceTargetGraph {
-    // with this trick, we have unique IDs for each WorkspaceTarget
+  fun build(rootTargets: Set<WorkspaceTargetKey>, targets: Collection<BuildTarget>): WorkspaceTargetGraph {
+    // with this trick, we have unique IDs for each BuildTarget
     val id2WorkspaceTarget = targets.toTypedArray()
     val rootTargetIds = IntOpenHashSet()
     val targetKey2TargetId = Object2IntOpenHashMap<WorkspaceTargetKey>()
 
     val labelConfig2TargetIdList = HashMap<LabelConfigKey, IntArrayList>()
     for ((targetId, target) in id2WorkspaceTarget.withIndex()) {
-      targetKey2TargetId.put(target.targetKey, targetId)
-      val smallKey = LabelConfigKey(target.targetKey.label, target.targetKey.configuration)
+      targetKey2TargetId.put(target.key, targetId)
+      val smallKey = LabelConfigKey(target.key.label, target.key.configuration)
       labelConfig2TargetIdList.getOrPut(smallKey) { IntArrayList() }.add(targetId)
-      if (target.targetKey in rootTargets) {
+      if (target.key in rootTargets) {
         rootTargetIds.add(targetId)
       }
     }
@@ -373,19 +374,19 @@ object WorkspaceTargetGraphBuilder {
 
     val rootLabels: Set<Label> = rootTargets.map { it.label }.toHashSet()
     for ((targetId, target) in id2WorkspaceTarget.withIndex()) {
-      val generatorName = target.rawBuildTarget.generatorName ?: continue
+      val generatorName = target.generatorName ?: continue
       if (generatorName.isNotEmpty()) {
-        val generatorTargetLabel = target.targetKey.label.assumeResolved()
+        val generatorTargetLabel = target.key.label.assumeResolved()
           .copy(target = SingleTarget(generatorName))
 
         // try the macro/alias key with the current target's `aspectIds` propagated first,
         // then the configuration-only key, then the label-only key.
-        val generatorTargetKey = WorkspaceTargetKey(label = generatorTargetLabel, configuration = target.targetKey.configuration)
+        val generatorTargetKey = WorkspaceTargetKey(label = generatorTargetLabel, configuration = target.key.configuration)
         val generatorTargetKeyWithAspect =
           WorkspaceTargetKey(
             label = generatorTargetLabel,
-            configuration = target.targetKey.configuration,
-            aspectIds = target.targetKey.aspectIds,
+            configuration = target.key.configuration,
+            aspectIds = target.key.aspectIds,
           )
         val generatorTargetKeyWithConfiguration = WorkspaceTargetKey(label = generatorTargetLabel)
         val isGeneratorTargetInScope = sequenceOf(generatorTargetKeyWithAspect, generatorTargetKey, generatorTargetKeyWithConfiguration)
@@ -402,23 +403,23 @@ object WorkspaceTargetGraphBuilder {
       }
     }
 
-    fun resolveDepId(parent: WorkspaceTarget, dep: DependencyLabel): Int {
+    fun resolveDepId(parent: BuildTarget, dep: DependencyLabel): Int {
       val exact = targetKey2TargetId.getOrDefault(dep.targetKey, INVALID_TARGET_ID)
       if (exact != INVALID_TARGET_ID) {
         return exact
       }
       // shadow graph stuff: try key with parent aspects
-      if (parent.targetKey.aspectIds == WorkspaceAspectIds.EMPTY) {
+      if (parent.key.aspectIds == WorkspaceAspectIds.EMPTY) {
         return INVALID_TARGET_ID
       }
-      val propagated = dep.targetKey.copy(aspectIds = parent.targetKey.aspectIds)
+      val propagated = dep.targetKey.copy(aspectIds = parent.key.aspectIds)
       return targetKey2TargetId.getOrDefault(propagated, INVALID_TARGET_ID)
     }
 
     fun buildSuccessorIds(predicate: (dependency: DependencyLabel) -> Boolean): Array<IntArray> {
       return Array(id2WorkspaceTarget.size) { targetId ->
         val target = id2WorkspaceTarget[targetId]
-        target.rawBuildTarget.dependencies
+        target.dependencies
           .filter { predicate(it) }
           .map { resolveDepId(target, it) }
           .filterNot { it == INVALID_TARGET_ID }
@@ -433,7 +434,7 @@ object WorkspaceTargetGraphBuilder {
       return Array(id2WorkspaceTarget.size) { targetId ->
         val target = id2WorkspaceTarget[targetId]
         val acc = IntOpenHashSet()
-        for (dep in target.rawBuildTarget.dependencies) {
+        for (dep in target.dependencies) {
           if (!predicate(dep)) continue
           for (id in resolveDepIdsRelaxed(dep)) acc.add(id)
         }
@@ -449,7 +450,7 @@ object WorkspaceTargetGraphBuilder {
       rootTargetIds = rootTargetIds,
       targetKey2TargetId = targetKey2TargetId,
       labelConfig2TargetIds = labelConfig2TargetIds,
-      id2WorkspaceTarget = Array(id2WorkspaceTarget.size) { id2WorkspaceTarget[it].targetKey },
+      id2WorkspaceTarget = Array(id2WorkspaceTarget.size) { id2WorkspaceTarget[it].key },
       id2CompileSuccessors = buildSuccessorIds(compilePredicate),
       id2AllSuccessors = buildSuccessorIds(allPredicate),
       id2RelaxedCompileSuccessors = buildRelaxedSuccessorIds(compilePredicate),

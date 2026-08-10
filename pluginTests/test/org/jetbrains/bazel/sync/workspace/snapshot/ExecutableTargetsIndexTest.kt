@@ -7,7 +7,8 @@ import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.label.DependencyLabel
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.sync.JavaLanguageClass
-import org.jetbrains.bsp.protocol.RawBuildTarget
+import org.jetbrains.bazel.test.framework.target.TestBuildTarget
+import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.SourceFileCollection
 import org.junit.jupiter.api.Test
 import java.nio.file.Path
@@ -17,28 +18,25 @@ class ExecutableTargetsIndexTest {
     label: String,
     deps: List<String> = emptyList(),
     executable: Boolean = false,
-  ): WorkspaceTarget {
+  ): TestBuildTarget {
     val key = WorkspaceTargetKey(label = Label.parse(label))
-    return WorkspaceTarget(
-      targetKey = key,
-      rawBuildTarget = RawBuildTarget(
-        key = key,
-        dependencies = deps.map { DependencyLabel(targetKey = WorkspaceTargetKey(label = Label.parse(it))) },
-        kind = TargetKind(
-          kind = if (executable) "java_binary" else "java_library",
-          ruleType = if (executable) RuleType.BINARY else RuleType.LIBRARY,
-          languageClasses = setOf(JavaLanguageClass.JAVA),
-        ),
-        sources = SourceFileCollection.EMPTY,
-        generatedSources = SourceFileCollection.EMPTY,
-        resources = SourceFileCollection.EMPTY,
-        baseDirectory = Path.of("/workspace"),
+    return TestBuildTarget(
+      key = key,
+      dependencies = deps.map { DependencyLabel(targetKey = WorkspaceTargetKey(label = Label.parse(it))) },
+      kind = TargetKind(
+        kind = if (executable) "java_binary" else "java_library",
+        ruleType = if (executable) RuleType.BINARY else RuleType.LIBRARY,
+        languageClasses = setOf(JavaLanguageClass.JAVA),
       ),
+      sources = SourceFileCollection.EMPTY,
+      generatedSources = SourceFileCollection.EMPTY,
+      resources = SourceFileCollection.EMPTY,
+      baseDirectory = Path.of("/workspace"),
     )
   }
 
-  private fun index(targets: List<WorkspaceTarget>, importDepth: Int = -1, roots: List<WorkspaceTarget> = targets): ExecutableTargetsIndex {
-    val graph = WorkspaceTargetGraphBuilder.build(rootTargets = roots.map { it.targetKey }.toSet(), targets = targets)
+  private fun index(targets: List<BuildTarget>, importDepth: Int = -1, roots: List<BuildTarget> = targets): ExecutableTargetsIndex {
+    val graph = WorkspaceTargetGraphBuilder.build(rootTargets = roots.map { it.key }.toSet(), targets = targets)
     return ExecutableTargetsIndexBuilder.build(targetGraph = graph, importDepth = importDepth, targets = targets)
   }
 

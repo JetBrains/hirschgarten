@@ -11,7 +11,8 @@ import org.jetbrains.bazel.sync.workspace.persistence.InMemoryWorkspaceTargetMap
 import org.jetbrains.bazel.sync.workspace.persistence.TargetLoadOptions
 import org.jetbrains.bazel.sync.workspace.persistence.WorkspaceTargetMap
 import org.jetbrains.bazel.sync.workspace.persistence.WorkspaceTargetRef
-import org.jetbrains.bsp.protocol.RawBuildTarget
+import org.jetbrains.bazel.test.framework.target.TestBuildTarget
+import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.SourceFileCollection
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
@@ -36,7 +37,7 @@ class WorkspaceTargetGraphTest {
       val a = workspaceTarget("//A")
       val graph = buildGraph(listOf(a), a)
 
-      val result = graph.findAllTransitiveSuccessors(a.targetKey)
+      val result = graph.findAllTransitiveSuccessors(a.key)
 
       result.toSet() shouldBe emptySet()
     }
@@ -50,7 +51,7 @@ class WorkspaceTargetGraphTest {
       val graph = buildGraph(listOf(a), a, b, c, d)
       val map = targetMapOf(a, b, c, d)
 
-      val result = graph.findAllTransitiveSuccessors(a.targetKey)
+      val result = graph.findAllTransitiveSuccessors(a.key)
 
       result.resolved(map) shouldBe setOf(b, c, d)
     }
@@ -65,7 +66,7 @@ class WorkspaceTargetGraphTest {
       val graph = buildGraph(listOf(a), a, b, c, d, e)
       val map = targetMapOf(a, b, c, d, e)
 
-      val result = graph.findAllTransitiveSuccessors(a.targetKey)
+      val result = graph.findAllTransitiveSuccessors(a.key)
 
       result.resolved(map) shouldBe setOf(b, c, d, e)
     }
@@ -80,7 +81,7 @@ class WorkspaceTargetGraphTest {
       val graph = buildGraph(listOf(a), a, b, c, d, e)
       val map = targetMapOf(a, b, c, d, e)
 
-      val result = graph.findAllTransitiveSuccessors(a.targetKey)
+      val result = graph.findAllTransitiveSuccessors(a.key)
 
       result.resolved(map) shouldBe setOf(b, c, d, e)
     }
@@ -93,8 +94,8 @@ class WorkspaceTargetGraphTest {
       val graph = buildGraph(listOf(a), a, b, c)
       val map = targetMapOf(a, b, c)
 
-      val first = graph.findAllTransitiveSuccessors(a.targetKey).resolved(map)
-      val second = graph.findAllTransitiveSuccessors(a.targetKey).resolved(map)
+      val first = graph.findAllTransitiveSuccessors(a.key).resolved(map)
+      val second = graph.findAllTransitiveSuccessors(a.key).resolved(map)
 
       first shouldBe second
       first shouldBe setOf(b, c)
@@ -112,7 +113,7 @@ class WorkspaceTargetGraphTest {
       val graph = buildGraph(listOf(a), a, compileDep, runtimeDep)
       val map = targetMapOf(a, compileDep, runtimeDep)
 
-      val result = graph.findAllTransitiveSuccessors(a.targetKey)
+      val result = graph.findAllTransitiveSuccessors(a.key)
 
       result.resolved(map) shouldBe setOf(compileDep)
     }
@@ -133,7 +134,7 @@ class WorkspaceTargetGraphTest {
       val graph = buildGraph(listOf(a, d), a, b, c, d, e, f, g)
       val map = targetMapOf(a, b, c, d, e, f, g)
 
-      val result = graph.findAllTransitiveSuccessorsWithoutRootTargets(a.targetKey)
+      val result = graph.findAllTransitiveSuccessorsWithoutRootTargets(a.key)
 
       result.resolved(map) shouldBe setOf(b, c, d, e, f, g)
     }
@@ -155,7 +156,7 @@ class WorkspaceTargetGraphTest {
       val graph = buildGraph(listOf(a, b, f, l), a, b, c, d, e, f, g, h, i, j, k, l)
       val map = targetMapOf(a, b, c, d, e, f, g, h, i, j, k, l)
 
-      val result = graph.findAllTransitiveSuccessorsWithoutRootTargets(a.targetKey)
+      val result = graph.findAllTransitiveSuccessorsWithoutRootTargets(a.key)
 
       result.resolved(map) shouldBe setOf(c, f, g, h, i, j, k, l)
     }
@@ -177,7 +178,7 @@ class WorkspaceTargetGraphTest {
       val graph = buildGraph(listOf(a, b, f, l), a, b, c, d, e, f, g, h, i, j, k, l)
       val map = targetMapOf(a, b, c, d, e, f, g, h, i, j, k, l)
 
-      val result = graph.findAllTransitiveSuccessorsWithoutRootTargets(f.targetKey)
+      val result = graph.findAllTransitiveSuccessorsWithoutRootTargets(f.key)
 
       result.resolved(map) shouldBe setOf(i, j, k, l)
     }
@@ -392,7 +393,7 @@ class WorkspaceTargetGraphTest {
       val graph = buildGraph(listOf(app), app, libConfig1, libConfig2, common)
       val map = targetMapOf(app, libConfig1, libConfig2, common)
 
-      val result = graph.findAllTransitiveSuccessors(app.targetKey)
+      val result = graph.findAllTransitiveSuccessors(app.key)
 
       result.resolved(map) shouldBe setOf(libConfig1, libConfig2, common)
     }
@@ -409,7 +410,7 @@ class WorkspaceTargetGraphTest {
       val graph = buildGraph(listOf(app), app, libConfig1, libConfig2, common)
       val map = targetMapOf(app, libConfig1, libConfig2, common)
 
-      val result = graph.findAllTransitiveSuccessors(libConfig1.targetKey)
+      val result = graph.findAllTransitiveSuccessors(libConfig1.key)
 
       result.resolved(map) shouldBe setOf(common)
     }
@@ -424,7 +425,7 @@ class WorkspaceTargetGraphTest {
       val graph = buildGraph(listOf(shadow), shadow)
       val map = targetMapOf(shadow)
 
-      val result = graph.findTargetByKey(shadow.targetKey)
+      val result = graph.findTargetByKey(shadow.key)
 
       result.resolved(map) shouldBe shadow
     }
@@ -476,7 +477,7 @@ class WorkspaceTargetGraphTest {
       val graph = buildGraph(listOf(parent), parent, depShadow)
       val map = targetMapOf(parent, depShadow)
 
-      val result = graph.findAllTransitiveSuccessors(parent.targetKey)
+      val result = graph.findAllTransitiveSuccessors(parent.key)
 
       result.resolved(map) shouldBe setOf(depShadow)
     }
@@ -492,7 +493,7 @@ class WorkspaceTargetGraphTest {
       val graph = buildGraph(listOf(parent), parent, depPlain, depShadow)
       val map = targetMapOf(parent, depPlain, depShadow)
 
-      val result = graph.findAllTransitiveSuccessors(parent.targetKey)
+      val result = graph.findAllTransitiveSuccessors(parent.key)
 
       // the exact `(//dep, EMPTY, EMPTY)` key wins over the propagated `(//dep, EMPTY, [bazel_java_proto_aspect])`.
       result.resolved(map) shouldBe setOf(depPlain)
@@ -507,7 +508,7 @@ class WorkspaceTargetGraphTest {
       )
       val graph = buildGraph(listOf(parent), parent, depShadow)
 
-      val result = graph.findAllTransitiveSuccessors(parent.targetKey)
+      val result = graph.findAllTransitiveSuccessors(parent.key)
 
       result.toSet() shouldBe emptySet()
     }
@@ -527,8 +528,8 @@ class WorkspaceTargetGraphTest {
       val graph = buildGraph(listOf(parent), parent, depPlain, depShadow)
       val map = targetMapOf(parent, depPlain, depShadow)
 
-      val strict = graph.findAllTransitiveSuccessors(parent.targetKey).resolved(map)
-      val relaxed = graph.findAllTransitiveSuccessors(parent.targetKey, useRelaxedDependencyExpansion = true).resolved(map)
+      val strict = graph.findAllTransitiveSuccessors(parent.key).resolved(map)
+      val relaxed = graph.findAllTransitiveSuccessors(parent.key, useRelaxedDependencyExpansion = true).resolved(map)
 
       strict shouldBe setOf(depPlain)
       relaxed shouldBe setOf(depPlain, depShadow)
@@ -546,7 +547,7 @@ class WorkspaceTargetGraphTest {
       val graph = buildGraph(listOf(parent), parent, depShadow)
       val map = targetMapOf(parent, depShadow)
 
-      val relaxed = graph.findAllTransitiveSuccessors(parent.targetKey, useRelaxedDependencyExpansion = true).resolved(map)
+      val relaxed = graph.findAllTransitiveSuccessors(parent.key, useRelaxedDependencyExpansion = true).resolved(map)
 
       relaxed shouldBe setOf(depShadow)
     }
@@ -581,21 +582,21 @@ class WorkspaceTargetGraphTest {
       val map = targetMapOf(parent, depPlain, depShadow)
 
       val relaxed = graph
-        .findAllTransitiveSuccessorsWithoutRootTargets(parent.targetKey, useRelaxedDependencyExpansion = true)
+        .findAllTransitiveSuccessorsWithoutRootTargets(parent.key, useRelaxedDependencyExpansion = true)
         .resolved(map)
 
       relaxed shouldBe setOf(depPlain, depShadow)
     }
   }
 
-  private fun targetMapOf(vararg targets: WorkspaceTarget): WorkspaceTargetMap =
-    InMemoryWorkspaceTargetMap(targets.associateBy { it.targetKey })
+  private fun targetMapOf(vararg targets: BuildTarget): WorkspaceTargetMap =
+    InMemoryWorkspaceTargetMap(targets.associateBy { it.key })
 
-  private fun Sequence<WorkspaceTargetRef>.resolved(map: WorkspaceTargetMap): Set<WorkspaceTarget> =
-    mapNotNull { it.load(map, TargetLoadOptions.DEFAULT) }.toSet()
+  private fun Sequence<WorkspaceTargetRef>.resolved(map: WorkspaceTargetMap): Set<BuildTarget> =
+    mapNotNull { it.load(map, TargetLoadOptions.ALL) }.toSet()
 
-  private fun WorkspaceTargetRef?.resolved(map: WorkspaceTargetMap): WorkspaceTarget? =
-    this?.load(map, TargetLoadOptions.DEFAULT)
+  private fun WorkspaceTargetRef?.resolved(map: WorkspaceTargetMap): BuildTarget? =
+    this?.load(map, TargetLoadOptions.ALL)
 
   private fun workspaceTarget(
     id: String,
@@ -603,7 +604,7 @@ class WorkspaceTargetGraphTest {
     compileDeps: List<Pair<String, String?>> = emptyList(),
     runtimeDeps: List<String> = emptyList(),
     generatorName: String? = null,
-  ): WorkspaceTarget {
+  ): TestBuildTarget {
     val label = Label.parse(id)
     val compileConfiguredDeps = compileDeps.map { (depLabel, depConfig) ->
       DependencyLabel(
@@ -612,68 +613,59 @@ class WorkspaceTargetGraphTest {
       )
     }
     val targetKey = WorkspaceTargetKey(label, WorkspaceConfigurationId.of(configuration))
-    return WorkspaceTarget(
-      targetKey = targetKey,
-      rawBuildTarget = RawBuildTarget(
-        key = targetKey,
-        dependencies = compileConfiguredDeps + runtimeDeps.map { DependencyLabel(targetKey = WorkspaceTargetKey(label = Label.parse(it)), kind = DependencyLabelKind.RUNTIME) },
-        kind = TargetKind(
-          kind = "java_library",
-          ruleType = RuleType.LIBRARY,
-          languageClasses = setOf(JavaLanguageClass.JAVA),
-        ),
-        sources = SourceFileCollection.EMPTY,
-        generatedSources = SourceFileCollection.EMPTY,
-        resources = SourceFileCollection.EMPTY,
-        baseDirectory = Path.of("/tmp"),
-        generatorName = generatorName,
+    return TestBuildTarget(
+      key = targetKey,
+      dependencies = compileConfiguredDeps + runtimeDeps.map { DependencyLabel(targetKey = WorkspaceTargetKey(label = Label.parse(it)), kind = DependencyLabelKind.RUNTIME) },
+      kind = TargetKind(
+        kind = "java_library",
+        ruleType = RuleType.LIBRARY,
+        languageClasses = setOf(JavaLanguageClass.JAVA),
       ),
+      sources = SourceFileCollection.EMPTY,
+      generatedSources = SourceFileCollection.EMPTY,
+      resources = SourceFileCollection.EMPTY,
+      baseDirectory = Path.of("/tmp"),
+      generatorName = generatorName,
     )
   }
 
-  private fun shadowTarget(id: String, aspectIds: List<String>): WorkspaceTarget {
+  private fun shadowTarget(id: String, aspectIds: List<String>): TestBuildTarget {
     val label = Label.parse(id)
     val targetKey = WorkspaceTargetKey(label, aspectIds = WorkspaceAspectIds.of(aspectIds))
-    return WorkspaceTarget(
-      targetKey = targetKey,
-      rawBuildTarget = RawBuildTarget(
-        key = targetKey,
-        dependencies = emptyList(),
-        kind = TargetKind(kind = "java_library", ruleType = RuleType.LIBRARY, languageClasses = setOf(JavaLanguageClass.JAVA)),
-        sources = SourceFileCollection.EMPTY,
-        generatedSources = SourceFileCollection.EMPTY,
-        resources = SourceFileCollection.EMPTY,
-        baseDirectory = Path.of("/tmp"),
-      ),
+    return TestBuildTarget(
+      key = targetKey,
+      dependencies = emptyList(),
+      kind = TargetKind(kind = "java_library", ruleType = RuleType.LIBRARY, languageClasses = setOf(JavaLanguageClass.JAVA)),
+      sources = SourceFileCollection.EMPTY,
+      generatedSources = SourceFileCollection.EMPTY,
+      resources = SourceFileCollection.EMPTY,
+      baseDirectory = Path.of("/tmp"),
     )
   }
 
   private fun workspaceTargetWithShadowDeps(
     aspectIds: List<String>,
     rawDeps: List<WorkspaceTargetKey>,
-  ): WorkspaceTarget {
+  ): TestBuildTarget {
     val label = Label.parse("//proto")
     val targetKey = WorkspaceTargetKey(label, aspectIds = WorkspaceAspectIds.of(aspectIds))
-    return WorkspaceTarget(
-      targetKey = targetKey,
-      rawBuildTarget = RawBuildTarget(
-        key = targetKey,
-        dependencies = rawDeps.map { DependencyLabel(targetKey = it, kind = DependencyLabelKind.COMPILE) },
-        kind = TargetKind(kind = "java_library", ruleType = RuleType.LIBRARY, languageClasses = setOf(JavaLanguageClass.JAVA)),
-        sources = SourceFileCollection.EMPTY,
-        generatedSources = SourceFileCollection.EMPTY,
-        resources = SourceFileCollection.EMPTY,
-        baseDirectory = Path.of("/tmp"),
-      ),
+    return TestBuildTarget(
+      key = targetKey,
+      dependencies = rawDeps.map { DependencyLabel(targetKey = it, kind = DependencyLabelKind.COMPILE) },
+      kind = TargetKind(kind = "java_library", ruleType = RuleType.LIBRARY, languageClasses = setOf(JavaLanguageClass.JAVA)),
+      sources = SourceFileCollection.EMPTY,
+      generatedSources = SourceFileCollection.EMPTY,
+      resources = SourceFileCollection.EMPTY,
+      baseDirectory = Path.of("/tmp"),
     )
   }
 
-  private fun buildGraph(vararg targets: WorkspaceTarget): WorkspaceTargetGraph =
+  private fun buildGraph(vararg targets: BuildTarget): WorkspaceTargetGraph =
     WorkspaceTargetGraphBuilder.build(emptySet(), targets.toList())
 
-  private fun buildGraph(rootTargets: Collection<WorkspaceTarget>, vararg targets: WorkspaceTarget): WorkspaceTargetGraph =
-    WorkspaceTargetGraphBuilder.build(rootTargets.map { it.targetKey }.toSet(), targets.toList())
+  private fun buildGraph(rootTargets: Collection<BuildTarget>, vararg targets: BuildTarget): WorkspaceTargetGraph =
+    WorkspaceTargetGraphBuilder.build(rootTargets.map { it.key }.toSet(), targets.toList())
 
-  private fun buildGraph(rootTargetKeys: Set<WorkspaceTargetKey>, vararg targets: WorkspaceTarget): WorkspaceTargetGraph =
+  private fun buildGraph(rootTargetKeys: Set<WorkspaceTargetKey>, vararg targets: BuildTarget): WorkspaceTargetGraph =
     WorkspaceTargetGraphBuilder.build(rootTargetKeys, targets.toList())
 }

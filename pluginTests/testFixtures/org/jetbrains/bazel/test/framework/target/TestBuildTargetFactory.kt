@@ -8,13 +8,12 @@ import org.jetbrains.bazel.sync.JavaLanguageClass
 import org.jetbrains.bazel.sync.workspace.languages.jvm.JvmBuildTarget
 import org.jetbrains.bazel.sync.workspace.languages.jvm.KotlinBuildTarget
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
-import org.jetbrains.bsp.protocol.SourceFileCollection
 import org.jetbrains.bsp.protocol.BuildTargetData
-import org.jetbrains.bsp.protocol.RawBuildTarget
+import org.jetbrains.bsp.protocol.SourceFileCollection
 import kotlin.io.path.Path
 
 object TestBuildTargetFactory {
-  fun createSimpleJavaLibraryTarget(id: Label): RawBuildTarget =
+  fun createSimpleJavaLibraryTarget(id: Label): TestBuildTarget =
     createSimpleTarget(
       id = id,
       kind = "java_library",
@@ -23,7 +22,7 @@ object TestBuildTargetFactory {
       data = listOf(JvmBuildTarget()),
     )
 
-  fun createSimpleKotlinLibraryTarget(id: Label): RawBuildTarget =
+  fun createSimpleKotlinLibraryTarget(id: Label): TestBuildTarget =
     createSimpleTarget(
       id = id,
       kind = "kt_jvm_library",
@@ -46,7 +45,7 @@ object TestBuildTargetFactory {
     ruleType: RuleType,
     languages: Set<LanguageClass>,
     data: List<BuildTargetData>,
-  ): RawBuildTarget = RawBuildTarget(
+  ): TestBuildTarget = TestBuildTarget(
     key = WorkspaceTargetKey(label = id),
     dependencies = emptyList(),
     kind = TargetKind(

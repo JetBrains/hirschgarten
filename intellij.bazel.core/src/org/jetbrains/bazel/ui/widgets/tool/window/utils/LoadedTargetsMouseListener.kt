@@ -27,7 +27,8 @@ import org.jetbrains.bazel.runnerAction.getTestExecutors
 import org.jetbrains.bazel.sync.action.ResyncTargetAction
 import org.jetbrains.bazel.ui.widgets.BazelJumpToBuildFileAction
 import org.jetbrains.bazel.ui.widgets.tool.window.actions.CopyTargetIdAction
-import org.jetbrains.bsp.protocol.ExecutableTarget
+import org.jetbrains.bsp.protocol.BuildTarget
+import org.jetbrains.bsp.protocol.id
 import java.awt.Component
 import java.awt.Point
 import java.awt.event.MouseEvent
@@ -35,9 +36,9 @@ import java.awt.event.MouseEvent
 internal abstract class LoadedTargetsMouseListener(private val project: Project) : PopupHandler() {
   abstract fun isPointSelectable(point: Point): Boolean
 
-  abstract fun getSelectedBuildTarget(): ExecutableTarget?
+  abstract fun getSelectedBuildTarget(): BuildTarget?
 
-  abstract fun getSelectedBuildTargetsUnderDirectory(): List<ExecutableTarget>
+  abstract fun getSelectedBuildTargetsUnderDirectory(): List<BuildTarget>
 
   abstract val copyTargetIdAction: CopyTargetIdAction
 
@@ -83,7 +84,7 @@ internal abstract class LoadedTargetsMouseListener(private val project: Project)
     }
   }
 
-  private fun calculatePopupGroup(target: ExecutableTarget): ActionGroup =
+  private fun calculatePopupGroup(target: BuildTarget): ActionGroup =
     DefaultActionGroup().apply {
       ResyncTargetAction.createIfEnabled(target.id)?.let { addAction(it) }
       addAction(copyTargetIdAction)
@@ -94,7 +95,7 @@ internal abstract class LoadedTargetsMouseListener(private val project: Project)
       add(StarlarkDebugAction(target.id))
     }
 
-  private fun calculatePopupGroup(targets: List<ExecutableTarget>): ActionGroup? {
+  private fun calculatePopupGroup(targets: List<BuildTarget>): ActionGroup? {
     val testTargets = targets.filter { it.kind.ruleType == RuleType.TEST }
     if (testTargets.isEmpty()) {
       return null
@@ -137,7 +138,7 @@ private fun BazelRunnerAction.prepareAndPerform(project: Project) {
 @Suppress("CognitiveComplexMethod")
 internal fun DefaultActionGroup.fillWithEligibleActions(
   project: Project,
-  target: ExecutableTarget,
+  target: BuildTarget,
   singleTestFilter: String? = null,
   testExecutableArguments: List<String> = emptyList(),
   callerPsiElement: PsiElement? = null,
@@ -176,7 +177,7 @@ internal fun DefaultActionGroup.fillWithEligibleActions(
   return this
 }
 
-internal fun getSupportedExecutors(project: Project, target: ExecutableTarget): List<Executor> {
+internal fun getSupportedExecutors(project: Project, target: BuildTarget): List<Executor> {
   if (!target.kind.isExecutable) return emptyList()
   val runConfiguration = RunTargetAction(project, target).createRunConfiguration()
   return getSupportedExecutors(runConfiguration)

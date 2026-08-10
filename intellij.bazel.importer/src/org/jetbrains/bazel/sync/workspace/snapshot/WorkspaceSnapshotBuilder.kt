@@ -25,14 +25,7 @@ object WorkspaceSnapshotBuilder {
       projectName = project.bazelProjectName,
       importDepth = projectView.importDepth,
     )
-    val targets = resolved.targets
-      .map {
-        WorkspaceTarget(
-          targetKey = it.key,
-          rawBuildTarget = it,
-        )
-      }
-      .associateBy { it.targetKey }
+    val targets = resolved.targets.associateBy { it.key }
     val targetGraph = WorkspaceTargetGraphBuilder.build(resolved.rootTargets, targets.values)
     return WorkspaceSnapshot(
       targets = InMemoryWorkspaceTargetMap(targets),

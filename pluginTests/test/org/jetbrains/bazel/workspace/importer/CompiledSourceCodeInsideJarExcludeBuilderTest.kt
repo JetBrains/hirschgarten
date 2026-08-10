@@ -9,9 +9,10 @@ import org.jetbrains.bazel.sync.JavaLanguageClass
 import org.jetbrains.bazel.sync.workspace.languages.java.sourceRoot.JvmPackagePrefixCalculator
 import org.jetbrains.bazel.sync.workspace.languages.java.sourceRoot.JvmPackagePrefixes
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
-import org.jetbrains.bazel.workspace.model.test.framework.createRawBuildTarget
+import org.jetbrains.bazel.test.framework.target.TestBuildTarget
+import org.jetbrains.bazel.workspace.model.test.framework.createTestBuildTarget
+import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.LibraryItem
-import org.jetbrains.bsp.protocol.RawBuildTarget
 import org.junit.jupiter.api.Test
 import java.nio.file.Path
 import kotlin.io.path.Path
@@ -149,7 +150,7 @@ class CompiledSourceCodeInsideJarExcludeBuilderTest {
     )
   }
 
-  private fun targetWithSources(sources: List<Path>, genSources: List<Path> = emptyList()): RawBuildTarget = createRawBuildTarget(
+  private fun targetWithSources(sources: List<Path>, genSources: List<Path> = emptyList()): TestBuildTarget = createTestBuildTarget(
     id = Label.parse("//target"),
     kind = TargetKind(
       kind = "java_library",
@@ -162,6 +163,6 @@ class CompiledSourceCodeInsideJarExcludeBuilderTest {
 
   private fun fixedPrefixes(map: Map<Path, String>): JvmPackagePrefixCalculator =
     object : JvmPackagePrefixCalculator {
-      override fun get(target: RawBuildTarget): JvmPackagePrefixes = JvmPackagePrefixes(map)
+      override fun get(target: BuildTarget): JvmPackagePrefixes = JvmPackagePrefixes(map)
     }
 }

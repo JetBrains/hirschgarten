@@ -13,7 +13,7 @@ import org.jetbrains.bazel.sync.workspace.languages.java.sourceRoot.prefix.Sourc
 import org.jetbrains.bazel.sync.workspace.languages.java.sourceRoot.projectview.javaSROEnable
 import org.jetbrains.bazel.sync.workspace.languages.jvm.JvmBuildTarget
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
-import org.jetbrains.bsp.protocol.RawBuildTarget
+import org.jetbrains.bsp.protocol.BuildTarget
 import java.nio.file.Path
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.io.path.extension
@@ -25,7 +25,7 @@ class JvmPackagePrefixes(private val prefixes: Map<Path, String>) {
 
 @ApiStatus.Internal
 interface JvmPackagePrefixCalculator {
-  fun get(target: RawBuildTarget): JvmPackagePrefixes
+  fun get(target: BuildTarget): JvmPackagePrefixes
 }
 
 @ApiStatus.Internal
@@ -62,7 +62,7 @@ class DefaultJvmPackagePrefixCalculator(
 
   private val cache = ConcurrentHashMap<WorkspaceTargetKey, JvmPackagePrefixes>()
 
-  suspend fun calculate(targets: Collection<RawBuildTarget>) {
+  suspend fun calculate(targets: Collection<BuildTarget>) {
     coroutineScope {
       targets
         .filter { target ->
@@ -76,11 +76,11 @@ class DefaultJvmPackagePrefixCalculator(
     }
   }
 
-  override fun get(target: RawBuildTarget): JvmPackagePrefixes {
+  override fun get(target: BuildTarget): JvmPackagePrefixes {
     return cache[target.key] ?: JvmPackagePrefixes(emptyMap())
   }
 
-  private fun calculateForTarget(target: RawBuildTarget): Map<Path, String> {
+  private fun calculateForTarget(target: BuildTarget): Map<Path, String> {
     val sources = target.sources.getFiles().filter { it.extension != "srcjar" }.toList()
 
     val result = HashMap<Path, String>()

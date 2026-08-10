@@ -14,10 +14,9 @@ import org.jetbrains.bazel.sync.workspace.languages.jvm.KotlinBuildTarget
 import org.jetbrains.bazel.sync.workspace.languages.jvm.ScalaBuildTarget
 import org.jetbrains.bazel.sync.workspace.mapper.normal.MavenCoordinatesResolver
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceConfigurationId
-import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTarget
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
 import org.jetbrains.bazel.sync.workspace.snapshot.findBuildData
-import org.jetbrains.bazel.sync.workspace.snapshot.kind
+import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.LibraryItem
 import org.jetbrains.bsp.protocol.MavenCoordinates
 import org.jetbrains.bsp.protocol.allJars
@@ -28,8 +27,8 @@ private typealias DependencyLabelPatcher = (DependencyLabel) -> DependencyLabel
 
 @ApiStatus.Internal
 class JvmBuildTargetResolver(
-  private val allTargets: Map<WorkspaceTargetKey, WorkspaceTarget>,
-  private val targetsToImport: Map<WorkspaceTargetKey, WorkspaceTarget>,
+  private val allTargets: Map<WorkspaceTargetKey, BuildTarget>,
+  private val targetsToImport: Map<WorkspaceTargetKey, BuildTarget>,
   private val javaSyncConfig: JavaWorkspaceSyncConfig,
 ) {
   private var extraLibDependencies: Map<WorkspaceTargetKey, List<DependencyLabel>> = mapOf()
@@ -80,8 +79,8 @@ class JvmBuildTargetResolver(
       }
   }
 
-  private fun createJvmResolvedTarget(target: WorkspaceTarget): JvmResolvedTarget {
-    val targetKey = target.targetKey
+  private fun createJvmResolvedTarget(target: BuildTarget): JvmResolvedTarget {
+    val targetKey = target.key
     val javaVersion =
       javaVersionFromJavacOpts(target.findBuildData<JvmBuildTarget>()?.javacOpts.orEmpty()) ?: javaVersionFromToolchain(target)
 
@@ -109,21 +108,21 @@ class JvmBuildTargetResolver(
   private val dependenciesCache = mutableMapOf<WorkspaceTargetKey, List<DependencyLabel>>()
   private val mavenExportDependenciesCache = mutableMapOf<WorkspaceTargetKey, List<DependencyLabel>>()
 
-  private fun WorkspaceTarget.dependencies(): List<DependencyLabel> {
+  private fun BuildTarget.dependencies(): List<DependencyLabel> {
     if (mavenCoordinatesKeyOrNull() in wellKnownTargetKeyByMavenCoordinates) return mavenExportDependencies()
     return directDependencies()
   }
 
-  private fun WorkspaceTarget.directDependencies(): List<DependencyLabel> {
+  private fun BuildTarget.directDependencies(): List<DependencyLabel> {
     val target = this
-    return dependenciesCache.getOrPut(target.targetKey) F@{
-      val kind = target.rawBuildTarget.kind.kind
+    return dependenciesCache.getOrPut(target.key) F@{
+      val kind = target.kind.kind
 
       // Well-known targets which include generated libraries as dependencies.
       // They must be exported, but this is not returned from aspects:
       // https://bazel.build/reference/be/protocol-buffer#proto_library_args
       if (kind == "java_proto_library") {
-        return@F target.rawBuildTarget.dependencies.map {
+        return@F target.dependencies.map {
           it.copy(kind = DependencyLabelKind.EXPORTED_COMPILE_TIME)
         }
       }
@@ -155,7 +154,7 @@ class JvmBuildTargetResolver(
           }
         }
 
-      return@F target.rawBuildTarget.dependencies.map {
+      return@F target.dependencies.map {
         exportByOutputJarsPatcher(it.toWellKnownTargetByMavenCoordinates())
       }
     }
@@ -167,50 +166,50 @@ class JvmBuildTargetResolver(
   private fun computeWellKnownTargetKeyByMavenCoordinates(): Map<MavenCoordinatesKey, WorkspaceTargetKey> {
     val unknownTargetsWithMavenCoordinates = allTargets.values
       .asSequence()
-      .filter { it.kind !in wellKnownTargetKinds && it.rawBuildTarget.isWorkspace }
+      .filter { it.kind.kind !in wellKnownTargetKinds && it.isWorkspace }
       .mapNotNull {
         val key = it.mavenCoordinatesKeyOrNull() ?: return@mapNotNull null
-        key to it.targetKey
+        key to it.key
       }.groupBy(keySelector = { it.first }, valueTransform = { it.second })
       .toMap()
     val result = mutableMapOf<MavenCoordinatesKey, WorkspaceTargetKey>()
     val ambiguousResults = mutableSetOf<MavenCoordinatesKey>()
     for (target in allTargets.values) {
-      if (target.kind !in wellKnownTargetKinds || !target.rawBuildTarget.isWorkspace) continue
+      if (target.kind.kind !in wellKnownTargetKinds || !target.isWorkspace) continue
       val coordinatesKey = target.mavenCoordinatesKeyOrNull() ?: continue
       val targetsToReplaceKeys = unknownTargetsWithMavenCoordinates[coordinatesKey] ?: continue
       val targetsToReplace = targetsToReplaceKeys.mapNotNull { allTargets[it] }.ifEmpty { null } ?: continue
-      val targetGeneratorName = target.rawBuildTarget.generatorName
-      if (targetGeneratorName == null || targetsToReplace.any { it.rawBuildTarget.generatorName != targetGeneratorName }) continue
+      val targetGeneratorName = target.generatorName
+      if (targetGeneratorName == null || targetsToReplace.any { it.generatorName != targetGeneratorName }) continue
       if (coordinatesKey in ambiguousResults) continue
       if (coordinatesKey in result) {
         ambiguousResults += coordinatesKey
         continue
       }
-      result[coordinatesKey] = target.targetKey
+      result[coordinatesKey] = target.key
     }
     return result - ambiguousResults
   }
 
   private fun DependencyLabel.toWellKnownTargetByMavenCoordinates(): DependencyLabel {
     val target = allTargets[targetKey] ?: return this
-    if (target.kind in wellKnownTargetKinds || !target.rawBuildTarget.isWorkspace) return this
+    if (target.kind.kind in wellKnownTargetKinds || !target.isWorkspace) return this
     val coordinatesKey = target.mavenCoordinatesKeyOrNull() ?: return this
     val libraryKey = wellKnownTargetKeyByMavenCoordinates[coordinatesKey] ?: return this
     return this.copy(targetKey = libraryKey)
   }
 
-  private fun WorkspaceTarget.mavenCoordinatesKeyOrNull(): MavenCoordinatesKey? {
+  private fun BuildTarget.mavenCoordinatesKeyOrNull(): MavenCoordinatesKey? {
     val coordinates = MavenCoordinatesResolver
-                        .fromTargetTagsList(rawBuildTarget.tags)
+                        .fromTargetTagsList(tags)
                       ?: return null
-    return coordinates.toKey(targetKey.configuration)
+    return coordinates.toKey(key.configuration)
   }
 
   // `java_export` (rules_jvm_external) merges every transitive dependency that is NOT itself a maven artifact into the single published jar
   // we mirror that by treating those inlined non-maven deps as exported
   // not exporting those leads to red code when referring those non-maven transitive dependencies
-  private fun WorkspaceTarget.mavenExportDependencies(): List<DependencyLabel> = mavenExportDependenciesCache.getOrPut(targetKey) {
+  private fun BuildTarget.mavenExportDependencies(): List<DependencyLabel> = mavenExportDependenciesCache.getOrPut(key) {
     directDependencies()
       .flatMap { dependency ->
         val depTarget = allTargets[dependency.targetKey]
@@ -225,11 +224,11 @@ class JvmBuildTargetResolver(
       }.distinct()
   }
 
-  private fun WorkspaceTarget.shouldBeExportedForMavenArtifact(): Boolean =
-    rawBuildTarget.isWorkspace && mavenCoordinatesKeyOrNull() == null
+  private fun BuildTarget.shouldBeExportedForMavenArtifact(): Boolean =
+    isWorkspace && mavenCoordinatesKeyOrNull() == null
 
   private fun calculateAllLibraries(
-    targetsToImport: Map<WorkspaceTargetKey, WorkspaceTarget>,
+    targetsToImport: Map<WorkspaceTargetKey, BuildTarget>,
   ) {
     // Avoid creating the same LibraryItem instance several times to avoid O(N^2) (BAZEL-3203)
     val libraryItemByIdCache = hashMapOf<WorkspaceTargetKey, Ref<LibraryItem?>>()
@@ -286,15 +285,15 @@ class JvmBuildTargetResolver(
     allLibraries = concatenateMaps(listOf(importDependenciesAsLibraries, extraLibraries, librariesFromToolchains))
   }
 
-  private fun toolchainInfo(target: WorkspaceTarget): JavaToolchainData? {
+  private fun toolchainInfo(target: BuildTarget): JavaToolchainData? {
     target.findBuildData<JavaToolchainData>()?.let { return it }
-    return target.rawBuildTarget.dependencies.asSequence()
+    return target.dependencies.asSequence()
       .filter { it.kind == DependencyLabelKind.TOOLCHAIN }
       .mapNotNull { allTargets[it.targetKey] }
       .firstNotNullOfOrNull { it.findBuildData<JavaToolchainData>() }
   }
 
-  private fun javaVersionFromToolchain(target: WorkspaceTarget): String? = toolchainInfo(target)?.sourceVersion
+  private fun javaVersionFromToolchain(target: BuildTarget): String? = toolchainInfo(target)?.sourceVersion
 
   private fun javaVersionFromJavacOpts(javacOpts: List<String>): String? {
     for (i in javacOpts.indices) {
@@ -309,24 +308,24 @@ class JvmBuildTargetResolver(
     return null
   }
 
-  private fun hasKnownJvmSources(target: WorkspaceTarget): Boolean =
-    target.rawBuildTarget.sources.getFiles().any {
+  private fun hasKnownJvmSources(target: BuildTarget): Boolean =
+    target.sources.getFiles().any {
       val path = it.toString()
       path.endsWith(".java") ||
       path.endsWith(".kt") ||
       path.endsWith(".scala")
     }
 
-  private fun shouldCreateOutputJarsLibrary(target: WorkspaceTarget): Boolean {
+  private fun shouldCreateOutputJarsLibrary(target: BuildTarget): Boolean {
     // Resource-only targets and non-JVM targets never produce output jars worth indexing.
-    if (target.rawBuildTarget.kind.kind.endsWith("_resources") || target.findBuildData<JvmBuildTarget>() == null) {
+    if (target.kind.kind.endsWith("_resources") || target.findBuildData<JvmBuildTarget>() == null) {
       return false
     }
 
-    val hasGeneratedSrcJar = target.rawBuildTarget.generatedSources.getFiles().any { it.toString().endsWith(".srcjar") }
-    val hasOnlyNonJvmSources = target.rawBuildTarget.sources.getFiles().any() && !hasKnownJvmSources(target)
+    val hasGeneratedSrcJar = target.generatedSources.getFiles().any { it.toString().endsWith(".srcjar") }
+    val hasOnlyNonJvmSources = target.sources.getFiles().any() && !hasKnownJvmSources(target)
     val isUnknownTargetWithoutSources =
-      target.rawBuildTarget.sources.getFiles().none() && target.rawBuildTarget.kind.kind !in wellKnownTargetKinds &&
+      target.sources.getFiles().none() && target.kind.kind !in wellKnownTargetKinds &&
       !(target.findBuildData<JvmBuildTarget>()?.hasExecutableInfo ?: false)
     val hasApiGeneratingPlugins = target.findBuildData<JavaProviderData>()?.hasApiGeneratingPlugins ?: false
     val dependsOnExportedApiGeneratingPlugins =
@@ -360,30 +359,30 @@ class JvmBuildTargetResolver(
     )
 
   private fun calculateOutputJarsLibraries(
-    targetsToImport: Collection<WorkspaceTarget>,
+    targetsToImport: Collection<BuildTarget>,
   ): Map<WorkspaceTargetKey, List<LibraryItem>> {
     return targetsToImport
       .filter { shouldCreateOutputJarsLibrary(it) }
       .mapNotNull { target ->
-        createLibrary(target.targetKey, target)?.let { library ->
-          target.targetKey to listOf(library)
+        createLibrary(target.key, target)?.let { library ->
+          target.key to listOf(library)
         }
       }.toMap()
   }
 
-  private fun annotationProcessorLibraries(targetsToImport: Collection<WorkspaceTarget>): Map<WorkspaceTargetKey, List<LibraryItem>> {
+  private fun annotationProcessorLibraries(targetsToImport: Collection<BuildTarget>): Map<WorkspaceTargetKey, List<LibraryItem>> {
     return targetsToImport
       .asSequence()
       .filter { it.findBuildData<JvmBuildTarget>()?.generatedJars?.isNotEmpty() == true }
       .associate { target ->
-        val libKey = target.targetKey
+        val libKey = target.key
         val generated = target.findBuildData<JvmBuildTarget>()?.generatedJars.orEmpty()
         val kspSourceJars = target.findBuildData<KotlinBuildTarget>()
           ?.kspSourceJars?.getFiles()?.toSet().orEmpty()
         libKey to
           createLibrary(
             // `Label.toString()` round-trips the raw target label, so this matches the pre-refactor `key.label + "_generated"`
-            key = libKey.copy(label = Label.synthetic(target.targetKey.label.toString() + "_generated")),
+            key = libKey.copy(label = Label.synthetic(target.key.label.toString() + "_generated")),
             ijars = emptySet(),
             jars = generated.flatMap { it.binaryJars.getFiles().toList() }.toSet(),
             sourceJars = generated.flatMap { it.sourceJars.getFiles().toList() }
@@ -400,7 +399,7 @@ class JvmBuildTargetResolver(
 
   // inlined `toolchainLibraries` from `JvmLanguagePluginMixin`
   private fun calculateToolchainLibraries(
-    targetsToImport: Map<WorkspaceTargetKey, WorkspaceTarget>,
+    targetsToImport: Map<WorkspaceTargetKey, BuildTarget>,
   ): Map<WorkspaceTargetKey, List<LibraryItem>> {
     val result = HashMap<WorkspaceTargetKey, MutableList<LibraryItem>>()
 
@@ -462,7 +461,7 @@ class JvmBuildTargetResolver(
    * https://github.com/bazelbuild/intellij/blob/b68ec8b33aa54ead6d84dd94daf4822089b3b013/java/src/com/google/idea/blaze/java/sync/importer/BlazeJavaWorkspaceImporter.java#L256
    */
   private fun jdepsLibraries(
-    targetsToImport: Map<WorkspaceTargetKey, WorkspaceTarget>,
+    targetsToImport: Map<WorkspaceTargetKey, BuildTarget>,
     libraryDependencies: Map<WorkspaceTargetKey, List<LibraryItem>>,
     interfacesAndBinariesFromTargetsToImport: Map<WorkspaceTargetKey, Set<Path>>,
   ): Map<WorkspaceTargetKey, List<LibraryItem>> {
@@ -495,7 +494,7 @@ class JvmBuildTargetResolver(
       .flatMap { it.jdepsJars.asSequence() }.associate { it.jar to it.syntheticLabel }
 
   private fun getAllJdepsDependencies(
-    targetsToImport: Map<WorkspaceTargetKey, WorkspaceTarget>,
+    targetsToImport: Map<WorkspaceTargetKey, BuildTarget>,
     libraryDependencies: Map<WorkspaceTargetKey, List<LibraryItem>>,
   ): Map<WorkspaceTargetKey, Set<Path>> {
     val jdepsJars =
@@ -528,7 +527,7 @@ class JvmBuildTargetResolver(
 
   private fun getJdepsJarsFromTransitiveDependencies(
     target: WorkspaceTargetKey,
-    targetsToImport: Map<WorkspaceTargetKey, WorkspaceTarget>,
+    targetsToImport: Map<WorkspaceTargetKey, BuildTarget>,
     libraryDependencies: Map<WorkspaceTargetKey, List<LibraryItem>>,
     outputJarsFromTransitiveDepsCache: MutableMap<WorkspaceTargetKey, Set<Path>>,
     allJdepsJars: Set<Path>,
@@ -570,7 +569,7 @@ class JvmBuildTargetResolver(
 
   private fun createLibrary(
     key: WorkspaceTargetKey,
-    target: WorkspaceTarget,
+    target: BuildTarget,
   ): LibraryItem? {
     val outputs = getTargetOutputJarsList(target).toSet() + getIntellijPluginJars(target)
     val rawSources = getSourceJarPaths(target)
@@ -582,7 +581,7 @@ class JvmBuildTargetResolver(
     }
 
     val mavenCoordinates =
-      MavenCoordinatesResolver.fromTargetTagsList(target.rawBuildTarget.tags)
+      MavenCoordinatesResolver.fromTargetTagsList(target.tags)
       ?: outputs.firstOrNull()?.let { outputJar ->
         MavenCoordinatesResolver.resolveMavenCoordinates(key.label, outputJar)
       }
@@ -617,44 +616,44 @@ class JvmBuildTargetResolver(
 
   private fun Collection<Path>.isEmptyJarList(): Boolean = isEmpty() || singleOrNull()?.name == "empty.jar"
 
-  private fun getIntellijPluginJars(target: WorkspaceTarget): Set<Path> =
+  private fun getIntellijPluginJars(target: BuildTarget): Set<Path> =
     target.findBuildData<JvmBuildTarget>()?.intellijPluginJars?.getFiles()?.toSet().orEmpty()
 
-  private fun getSourceJarPaths(target: WorkspaceTarget): Set<Path> =
+  private fun getSourceJarPaths(target: BuildTarget): Set<Path> =
     target.findBuildData<JvmBuildTarget>()?.outputSourceJars?.getFiles()?.toSet().orEmpty()
 
-  private fun getTargetOutputJarsList(target: WorkspaceTarget): List<Path> {
+  private fun getTargetOutputJarsList(target: BuildTarget): List<Path> {
     // proto generator put the generated jar into `javaProvider.fullCompileJarsList`
     // See test `simpleBazelProjectsForTest/protobufStrictDepsTest`
-    if (target.rawBuildTarget.kind.kind == "scala_proto_library")
+    if (target.kind.kind == "scala_proto_library")
       return target.findBuildData<JavaProviderData>()?.fullCompileJars?.getFiles()?.toList().orEmpty()
 
     return target.outputBinaryJars().toList()
   }
 
-  private fun WorkspaceTarget.outputBinaryJars(): Set<Path> =
+  private fun BuildTarget.outputBinaryJars(): Set<Path> =
     findBuildData<JvmBuildTarget>()?.binaryOutputs?.getFiles()?.toSet() ?: emptySet()
 
-  private fun WorkspaceTarget.rawOutputBinaryJars(): Set<Path> =
+  private fun BuildTarget.rawOutputBinaryJars(): Set<Path> =
     findBuildData<JvmBuildTarget>()?.rawBinaryOutputs?.getFiles()?.toSet() ?: emptySet()
 
-  private fun getTargetInterfaceJarsList(target: WorkspaceTarget): List<Path> =
+  private fun getTargetInterfaceJarsList(target: BuildTarget): List<Path> =
     target.findBuildData<JvmBuildTarget>()?.outputInterfaceJars?.getFiles()?.toList().orEmpty()
 
-  private fun containsAnyInternalJars(target: WorkspaceTarget): Boolean =
+  private fun containsAnyInternalJars(target: BuildTarget): Boolean =
     target.findBuildData<JvmBuildTarget>()?.containsInternalJars ?: false
 
-  private fun collectInterfacesAndClasses(targets: Collection<WorkspaceTarget>): Map<WorkspaceTargetKey, Set<Path>> {
+  private fun collectInterfacesAndClasses(targets: Collection<BuildTarget>): Map<WorkspaceTargetKey, Set<Path>> {
     return targets.associate { target ->
-      target.targetKey to
+      target.key to
         (getTargetInterfaceJarsList(target) + getTargetOutputJarsList(target))
           .toSet()
     }
   }
 
-  private fun WorkspaceTarget.scalatestClasspathJars(): List<Path> =
+  private fun BuildTarget.scalatestClasspathJars(): List<Path> =
     findBuildData<ScalaBuildTarget>()?.scalatestClasspathTargets.orEmpty().flatMap { label ->
-      allTargets[targetKey.copy(label = label)]?.findBuildData<JavaProviderData>()?.fullCompileJars?.getFiles()?.toList().orEmpty()
+      allTargets[key.copy(label = label)]?.findBuildData<JavaProviderData>()?.fullCompileJars?.getFiles()?.toList().orEmpty()
     }
 
   private fun <K, V> concatenateMaps(maps: Collection<Map<K, List<V>>>): Map<K, List<V>> =

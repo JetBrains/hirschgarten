@@ -1,18 +1,19 @@
 package org.jetbrains.bazel.workspace.importer
 
-import com.intellij.openapi.projectRoots.impl.JavaHomeFinder
+import  com.intellij.openapi.projectRoots.impl.JavaHomeFinder
 import com.intellij.platform.eel.provider.LocalEelDescriptor
 import org.jetbrains.bazel.sync.workspace.languages.java.Jdk
 import org.jetbrains.bazel.sync.workspace.languages.jvm.JavaToolchainData
-import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTarget
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
 import org.jetbrains.bazel.sync.workspace.snapshot.findBuildData
+import org.jetbrains.bsp.protocol.BuildTarget
 import java.nio.file.Path
+import kotlin.collections.mapNotNull
 import kotlin.io.path.Path
 import kotlin.io.path.exists
 
 internal class JdkResolver(
-  private val allTargets: Map<WorkspaceTargetKey, WorkspaceTarget>,
+  private val allTargets: Map<WorkspaceTargetKey, BuildTarget>,
 ) {
   fun resolve(): Jdk? {
     val allCandidates = allTargets.values.mapNotNull { resolveJdkData(it) }.toList()
@@ -21,7 +22,7 @@ internal class JdkResolver(
     return Jdk(bestJdk.javaHome)
   }
 
-  private fun resolveJdkData(target: WorkspaceTarget): JdkCandidate? {
+  private fun resolveJdkData(target: BuildTarget): JdkCandidate? {
     val toolchain = target.findBuildData<JavaToolchainData>()
     val bootClasspath = toolchain?.bootClasspathJavaHome
     val toolchainHome = toolchain?.javaHome
@@ -29,7 +30,7 @@ internal class JdkResolver(
       bootClasspath != null -> bootClasspath to JdkType.BOOT_CLASSPATH
       toolchainHome != null -> toolchainHome to JdkType.TOOLCHAIN
       else -> {
-        val runtimeHome = target.rawBuildTarget.dependencies.asSequence()
+        val runtimeHome = target.dependencies.asSequence()
                             .mapNotNull { allTargets[it.targetKey] }
                             .firstNotNullOfOrNull { it.findBuildData<JavaToolchainData>()?.javaHome } ?: return null
         runtimeHome to JdkType.RUNTIME
