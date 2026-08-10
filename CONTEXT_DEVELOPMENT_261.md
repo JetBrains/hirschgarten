@@ -3,6 +3,10 @@
 > **Maintenance tip**: Keep this file updated as you make progress — update the tip commit hash,
 > move completed work into the "Recently Completed" section, and revise the "Pending" section.
 > This file is the primary handoff document between sessions.
+>
+> **Next step guidance**: Only write a "Next step" when there is something actionable *after* a PR
+> merges. Don't write "get PR reviewed/merged" — this doc lives in the repo and is read post-merge,
+> so those entries are immediately stale. Use `—` or omit the field when nothing remains.
 
 ## Current State (as of 2026-08-10)
 
