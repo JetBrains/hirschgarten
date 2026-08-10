@@ -3,8 +3,10 @@ package org.jetbrains.bazel.tests.ui
 import com.intellij.driver.sdk.step
 import com.intellij.driver.sdk.ui.components.UiComponent.Companion.waitFound
 import com.intellij.driver.sdk.ui.components.common.ideFrame
+import com.intellij.driver.sdk.ui.components.common.toolWindow
 import com.intellij.driver.sdk.ui.components.common.toolwindows.projectView
 import com.intellij.driver.sdk.ui.components.elements.popupMenu
+import com.intellij.driver.sdk.ui.components.elements.tree
 import com.intellij.ide.starter.driver.engine.runIdeWithDriver
 import org.jetbrains.bazel.base.IdeStarterBaseProjectTest
 import org.jetbrains.bazel.base.syncBazelProject
@@ -15,7 +17,7 @@ import org.junit.jupiter.params.provider.ValueSource
 import kotlin.time.Duration.Companion.minutes
 
 private val RUN_ALL_TESTS_PROJECT = simpleBazelProject(
-  revision = "5cbca8140ac85e5178ca803935fbd9e1d9400a07",
+  revision = "f57e56ae83125caf4ddc417bb3b759a7c40231c6",
   path = "runAllTests",
 )
 
@@ -36,21 +38,64 @@ class RunAllTestsActionTest : IdeStarterBaseProjectTest() {
         syncBazelProject()
         waitForIndicators(5.minutes)
 
-        step("Right-click the root project directory") {
-          projectView().projectViewTree.rightClickRow(0)
+        fun verifyTestsInRoot() {
           popupMenu().waitFound()
-          takeScreenshot("afterRightClickingProjectRoot")
-        }
-
-        step("Click on Run all tests") {
+          takeScreenshot("afterRightClicking")
           popupMenu().findMenuItemByText("Run 'Tests in 'runAllTests''").click()
           waitForIndicators(5.minutes)
+          verifyTestStatus(
+            listOf("3 tests passed"),
+            setOf("AdditionTest", "testAddition", "MultiplicationTest", "testMultiplication", "DivisionTest", "testDivision"),
+          )
         }
 
-        verifyTestStatus(
-          listOf("2 tests passed"),
-          setOf("AdditionTest", "testAddition", "MultiplicationTest", "testMultiplication"),
-        )
+        fun verifyTestsInMy() {
+          takeScreenshot("afterRightClicking")
+          popupMenu().findMenuItemByText("Run 'Tests in 'my''").click()
+          waitForIndicators(5.minutes)
+          verifyTestStatus(
+            listOf("3 tests passed"),
+            setOf("AdditionTest", "testAddition", "MultiplicationTest", "testMultiplication", "DivisionTest", "testDivision"),
+          )
+        }
+
+        fun verifyTestsInMyPackage() {
+          takeScreenshot("afterRightClicking")
+          popupMenu().findMenuItemByText("Run 'Tests in 'package''").click()
+          waitForIndicators(5.minutes)
+          verifyTestStatus(
+            listOf("2 tests passed"),
+            setOf("AdditionTest", "testAddition", "MultiplicationTest", "testMultiplication"),
+          )
+        }
+
+        step("Run all tests in root directory") {
+          projectView().projectViewTree.rightClickRow { it.contains("runAllTests") }
+          verifyTestsInRoot()
+        }
+
+        step("Run all tests in a root/my/package directory") {
+          projectView().projectViewTree.run {
+            expandPath("runAllTests", "my", fullMatch = false)
+            rightClickRow { it.contains("package") }
+          }
+          verifyTestsInMyPackage()
+        }
+
+        step("Run all tests in root/my toolwindow path") {
+          toolWindow("Bazel") { tree().rightClickRow { it.contains("my") } }
+          verifyTestsInMy()
+        }
+
+        step("Run all tests in a root/my/package toolwindow path") {
+          toolWindow("Bazel") {
+            tree().run {
+              expandAll()
+              rightClickRow { it.contains("package") }
+            }
+          }
+          verifyTestsInMyPackage()
+        }
       }
     }
   }
