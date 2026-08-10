@@ -15,6 +15,7 @@ import org.jetbrains.bazel.data.simpleBazelProject
 import org.jetbrains.bazel.data.preCacheBazelisk
 import org.jetbrains.bazel.base.IdeStarterBaseProjectTest
 import org.jetbrains.bazel.base.syncBazelProject
+import org.jetbrains.bazel.base.waitForSyncSucceeded
 import org.junit.jupiter.api.Test
 import kotlin.time.Duration.Companion.minutes
 
@@ -41,6 +42,7 @@ class BazelProjectTreeAppearanceTest : IdeStarterBaseProjectTest() {
         ideFrame {
           syncBazelProject()
           waitForIndicators(5.minutes)
+          waitForSyncSucceeded()
 
           leftToolWindowToolbar.projectButton.open()
 
@@ -94,6 +96,7 @@ class BazelProjectTreeAppearanceTest : IdeStarterBaseProjectTest() {
         ideFrame {
           syncBazelProject()
           waitForIndicators(5.minutes)
+          waitForSyncSucceeded()
 
           leftToolWindowToolbar.projectButton.open()
 
@@ -166,6 +169,7 @@ class BazelProjectTreeAppearanceTest : IdeStarterBaseProjectTest() {
         ideFrame {
           syncBazelProject()
           waitForIndicators(5.minutes)
+          waitForSyncSucceeded()
 
           leftToolWindowToolbar.projectButton.open()
 
@@ -218,6 +222,7 @@ class BazelProjectTreeAppearanceTest : IdeStarterBaseProjectTest() {
         ideFrame {
           syncBazelProject()
           waitForIndicators(5.minutes)
+          waitForSyncSucceeded()
 
           leftToolWindowToolbar.projectButton.open()
 
@@ -281,6 +286,7 @@ class BazelProjectTreeAppearanceTest : IdeStarterBaseProjectTest() {
         ideFrame {
           syncBazelProject()
           waitForIndicators(5.minutes)
+          waitForSyncSucceeded()
 
           leftToolWindowToolbar.projectButton.open()
 
