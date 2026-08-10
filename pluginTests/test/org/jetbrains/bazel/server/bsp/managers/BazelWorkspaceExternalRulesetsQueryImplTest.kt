@@ -15,6 +15,8 @@ import org.jetbrains.bazel.test.framework.bazelSyncCodeInsightFixture
 import org.jetbrains.bazel.test.framework.checkHighlighting
 import org.jetbrains.bazel.test.framework.enableGoHighlighting
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.condition.DisabledOnOs
+import org.junit.jupiter.api.condition.OS
 import kotlin.time.Duration.Companion.minutes
 
 @BazelTestApplication
@@ -25,6 +27,7 @@ internal class BazelWorkspaceExternalRulesetsQueryImplTest {
   private val fixture by bazelSyncCodeInsightFixture(projectFixture, tempDir)
 
   @Test
+  @DisabledOnOs(OS.WINDOWS) // bazel failed to get go rules
   fun testCustomAspectGeneratedClassResolves() = timeoutRunBlocking(timeout = 5.minutes) {
     fixture.enableGoHighlighting()
     fixture.copyBazelTestProject("redcodes/go_workspace_git_repository")

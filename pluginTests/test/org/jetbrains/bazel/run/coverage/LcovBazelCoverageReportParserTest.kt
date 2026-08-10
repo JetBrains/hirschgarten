@@ -26,7 +26,7 @@ class LcovBazelCoverageReportParserTest {
     brokenReport.writeText("DA:1,1\n")
     val projectRoot = checkNotNull(LocalFileSystem.getInstance().refreshAndFindFileByNioFile(tempDir))
     val reporter = RecordingCoverageLoadErrorReporter()
-    val coverage = mutableListOf<Triple<String, Int, Long>>()
+    val coverage = mutableListOf<Triple<Path, Int, Long>>()
 
     val consumedFiles =
       LcovBazelCoverageReportParser().parse(
@@ -35,11 +35,11 @@ class LcovBazelCoverageReportParserTest {
         projectRoot,
         reporter,
       ) { file, lineNumber, hits ->
-        coverage.add(Triple(file.path, lineNumber, hits))
+        coverage.add(Triple(file.toNioPath(), lineNumber, hits))
       }
 
     consumedFiles shouldBe listOf(validReport)
-    coverage shouldBe listOf(Triple(sourcePath.toString(), 1, 7L))
+    coverage shouldBe listOf(Triple(sourcePath, 1, 7L))
     reporter.warnings.size shouldBe 1
     reporter.warnings.single().contains(brokenReport.toString()) shouldBe true
   }

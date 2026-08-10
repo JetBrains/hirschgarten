@@ -1,23 +1,21 @@
 package org.jetbrains.bazel.languages.starlark.completion
 
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
+import com.intellij.testFramework.fixtures.TempDirTestFixture
+import com.intellij.testFramework.fixtures.impl.TempDirTestFixtureImpl
 import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.collections.shouldContainOnly
 import org.jetbrains.bazel.project.BazelProjectFixtures.initializeBazelProject
+import org.jetbrains.bazel.test.framework.BazelBasePlatformTestCase
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
 
 @RunWith(JUnit4::class)
-class StarlarkClassCompletionTest : BasePlatformTestCase() {
-  @Before
-  fun setupBuildEnvironment() {
-    initializeBazelProject(project, myFixture.tempDirPath)
-  }
-
+class StarlarkClassCompletionTest : BazelBasePlatformTestCase() {
   @Test
   fun `should suggest classes for classname attribute`() {
     myFixture.addFileToProject(

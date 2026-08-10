@@ -26,13 +26,14 @@ import org.jetbrains.bazel.languages.projectview.ProjectViewService
 import org.jetbrains.bazel.languages.projectview.directories
 import org.jetbrains.bazel.project.BazelProjectFixtures.initializeBazelProject
 import org.jetbrains.bazel.project.BazelProjectFixtures.initializeBazelProjectViaProjectView
+import org.jetbrains.bazel.test.framework.BazelBasePlatformTestCase
 import org.jetbrains.bazel.workspacemodel.entities.BazelProjectDirectoriesEntityFixtures.emptyBazelDirectoryWorkspaceEntity
 import org.jetbrains.bazel.workspacemodel.entities.NonIndexableVirtualFileUrl
 import kotlin.io.path.pathString
 
 abstract class ProjectViewDirectoriesActionTestCase(
   protected val actionId: String,
-) : BasePlatformTestCase() {
+) : BazelBasePlatformTestCase() {
 
   protected val bazelProjectView
     get() = runWithModalProgressBlocking(project, "Getting project view") {
@@ -42,11 +43,6 @@ abstract class ProjectViewDirectoriesActionTestCase(
     }
 
   protected val action: AnAction get() = ActionManager.getInstance().getAction(actionId)
-
-  override fun setUp() {
-    super.setUp()
-    initializeBazelProject(project, myFixture.tempDirPath)
-  }
 
   override fun getProjectDescriptor() = LightProjectDescriptor()
 

@@ -4,13 +4,12 @@ import com.intellij.execution.filters.OpenFileHyperlinkInfo
 import com.intellij.openapi.application.runWriteAction
 import com.intellij.openapi.util.io.findOrCreateFile
 import com.intellij.openapi.vfs.LocalFileSystem
-import com.intellij.testFramework.fixtures.BasePlatformTestCase
 import com.intellij.util.io.delete
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
 import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.languages.starlark.repomapping.PersistentBazelRepoMappingService
-import org.jetbrains.bazel.project.BazelProjectFixtures.initializeBazelProject
+import org.jetbrains.bazel.test.framework.BazelBasePlatformTestCase
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
@@ -23,12 +22,11 @@ private const val TEST_LINE_PREFIX = "There are 39 characters in this string "
 private const val TEST_LINE_SUFFIX = " bliep bliep bliep\n"
 
 @RunWith(JUnit4::class)
-class BazelBuildTargetConsoleFilterTest : BasePlatformTestCase() {
+class BazelBuildTargetConsoleFilterTest : BazelBasePlatformTestCase() {
   private lateinit var filter: BazelBuildTargetConsoleFilter
 
   override fun setUp() {
     super.setUp()
-    initializeBazelProject(project, myFixture.tempDirPath)
     filter = BazelBuildTargetConsoleFilter(project)
     PersistentBazelRepoMappingService.getInstance(project).canonicalRepoNameToPath = mapOf("" to project.rootDir.toNioPath())
   }

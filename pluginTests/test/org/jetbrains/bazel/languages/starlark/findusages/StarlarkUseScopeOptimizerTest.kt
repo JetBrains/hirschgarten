@@ -11,12 +11,13 @@ import org.jetbrains.bazel.languages.starlark.psi.StarlarkNamedElement
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkTargetExpression
 import org.jetbrains.bazel.languages.starlark.psi.functions.StarlarkFunctionDeclaration
 import org.jetbrains.bazel.project.BazelProjectFixtures
+import org.jetbrains.bazel.test.framework.BazelBasePlatformTestCase
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
 
 @RunWith(JUnit4::class)
-class StarlarkUseScopeOptimizerTest : BasePlatformTestCase() {
+class StarlarkUseScopeOptimizerTest : BazelBasePlatformTestCase() {
 
   @Test
   fun `should narrow scope for top-level public function to defining and loading files`() {
@@ -57,7 +58,6 @@ class StarlarkUseScopeOptimizerTest : BasePlatformTestCase() {
 
   @Test
   fun `should narrow scope for top-level public variable to defining and loading files`() {
-    BazelProjectFixtures.initializeBazelProject(project, myFixture.tempDirPath)
     myFixture.addFileToProject("MODULE.bazel", "")
     myFixture.addFileToProject("BUILD", "")
     val defsFile = myFixture.addFileToProject(

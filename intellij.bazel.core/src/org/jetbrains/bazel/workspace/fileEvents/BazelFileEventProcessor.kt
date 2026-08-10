@@ -103,7 +103,7 @@ class BazelFileEventProcessorResult(
 ) {
   fun isEmpty(): Boolean =
     removedFromModel.isEmpty() && addedToModel.isEmpty() && failedToEvaluate.isEmpty()
-  
+
   companion object {
     val EMPTY: BazelFileEventProcessorResult =
       BazelFileEventProcessorResult(emptyList(), emptyList(), emptyList())
@@ -340,18 +340,21 @@ open class DefaultBazelFileEventProcessor(private val project: Project): BazelFi
 
         context.progressReporter.message(addedFile?.toString() ?: removedFile?.toString() ?: "")
 
-        val removedFileUrl = removedFile?.toVirtualFileUrl(context.urlManager)
-        val addedFileUrl = addedFile?.toVirtualFileUrl(context.urlManager)
+        val removedFileUrl = removedFile?.let { context.urlManager.fromPath(it.toString()) }
+        val addedFileUrl = addedFile?.let { context.urlManager.fromPath(it.toString()) }
 
         val oldTargets: Set<Label> = removedFile?.let { targetUtils.getTargetsForPath(it) }?.toSet() ?: emptySet()
         val newTargets: Set<Label> = addedFile?.let { targetsByPath[it] }?.toSet() ?: emptySet()
 
         if (removedFile != null && oldTargets.isNotEmpty() && visitedRemovedPaths.add(removedFile)) {
           targetUtils.removeFileToTargetIdEntry(removedFile)
-          (oldTargets - newTargets).forEach { toRemove ->
+          oldTargets.forEach { toRemove ->
             val module = toRemove.toModuleEntity(context.workspaceSnapshot, project)
             if (module != null) {
-              val contentRoots = module.contentRoots.filter { it.url == removedFileUrl || it.url == addedFileUrl }
+              val contentRoots = module.contentRoots.filter {
+                it.url == removedFileUrl ||
+                !newTargets.contains(toRemove) && it.url == addedFileUrl
+              }
               if (contentRoots.isNotEmpty()) {
                 contentRoots.forEach { context.entityStorageDiff.removeEntity(it) }
                 removedFromWSM.add(removedFile)
@@ -362,7 +365,7 @@ open class DefaultBazelFileEventProcessor(private val project: Project): BazelFi
 
         if (addedFile != null && newTargets.isNotEmpty() && visitedAddedPaths.add(addedFile) && addedFileUrl != null) {
           targetUtils.addFileToTargetIdEntry(addedFile, newTargets)
-          (newTargets - oldTargets).forEach { toAdd ->
+          newTargets.forEach { toAdd ->
             val module = toAdd.toModuleEntity(context.workspaceSnapshot, project)
             if (module != null) {
               if (addFileToModule(addedFileUrl, context.entityStorageDiff, module)) {
@@ -373,7 +376,7 @@ open class DefaultBazelFileEventProcessor(private val project: Project): BazelFi
         }
       }
     }
-    
+
     return BazelFileEventProcessorResult(
       removedFromModel = removedFromWSM,
       addedToModel = addedToWSM,
@@ -577,9 +580,6 @@ private suspend fun queryTargetsForFile(project: Project, filePaths: List<Path>,
     null
   }
 }
-
-// the .toUri() conversion is necessary to contain file:// schema, which is present in VirtualFile.toVirtualFileUrl() results
-private fun Path.toVirtualFileUrl(manager: VirtualFileUrlManager): VirtualFileUrl = manager.getOrCreateFromUrl(this.toUri().toString())
 
 private val PROCESSING_DELAY = 250.milliseconds // not noticeable by the user, but if there are many events simultaneously, we will get them all
 

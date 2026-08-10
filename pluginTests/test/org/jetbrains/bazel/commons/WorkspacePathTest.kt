@@ -60,7 +60,7 @@ class WorkspacePathTest {
 
     WorkspacePath(empty, "baz").relativePath() shouldBe "baz"
     WorkspacePath(dot, "baz").relativePath() shouldBe "baz"
-    WorkspacePath(foo, "baz").relativePath() shouldBe "foo/baz"
-    WorkspacePath(dotBar, "baz").relativePath() shouldBe "./bar/baz"
+    WorkspacePath(foo, "baz").relativePath().replace('\\', '/') shouldBe "foo/baz"
+    WorkspacePath(dotBar, "baz").relativePath().replace('\\', '/') shouldBe "./bar/baz"
   }
 }

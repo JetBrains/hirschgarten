@@ -60,6 +60,7 @@ import org.junit.jupiter.api.Test
 import java.nio.file.Path
 import java.util.concurrent.atomic.AtomicInteger
 import kotlin.io.path.Path
+import kotlin.io.path.invariantSeparatorsPathString
 import kotlin.io.path.relativeTo
 import kotlin.test.assertEquals
 
@@ -577,7 +578,7 @@ class BazelFileEventListenerTest : WorkspaceModelBaseTest() {
         ): Map<Path, List<Label>> {
           invertedSourcesQueryCount.incrementAndGet()
           return files.map { it.path }.associateWith {
-            inverseSourcesData.getOrDefault(it.relativeTo(projectBasePath).toString(), emptyList())
+            inverseSourcesData.getOrDefault(it.relativeTo(projectBasePath).invariantSeparatorsPathString, emptyList())
           }
         }
       }.enqueue(events.toList()).await().let { !it.isEmpty() }
@@ -629,11 +630,12 @@ class BazelFileEventListenerTest : WorkspaceModelBaseTest() {
     runTestWriteAction { workspaceModel.updateProjectModel { it.addEntity(module) } }
   }
 
-  private fun doesModuleContainFile(moduleTarget: Label, fileUrl: VirtualFileUrl): Boolean =
-    workspaceModel.currentSnapshot
+  private fun doesModuleContainFile(moduleTarget: Label, fileUrl: VirtualFileUrl): Boolean {
+    return workspaceModel.currentSnapshot
       .resolveModule(moduleTarget)
       .contentRoots
       .any { it.url == fileUrl }
+  }
 
   private fun ImmutableEntityStorage.resolveModule(target: Label): ModuleEntity {
     val moduleId = ModuleId(target.formatAsModuleName(project))

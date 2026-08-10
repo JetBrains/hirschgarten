@@ -24,7 +24,7 @@ import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkListLitera
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkStringLiteralExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.arguments.StarlarkArgumentExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.arguments.StarlarkNamedArgumentExpression
-import org.jetbrains.bazel.languages.starlark.psi.expressions.getCompletionLookupElemenent
+import org.jetbrains.bazel.languages.starlark.psi.expressions.getCompletionLookupElement
 import org.jetbrains.bazel.languages.starlark.psi.functions.StarlarkArgumentList
 import org.jetbrains.bazel.languages.starlark.psi.statements.StarlarkFilenameLoadValue
 import org.jetbrains.bazel.languages.starlark.psi.statements.StarlarkLoadStatement
@@ -36,6 +36,7 @@ import org.jetbrains.bazel.workspace.canonicalRepoNameToPath
 import org.jetbrains.kotlin.psi.psiUtil.getParentOfType
 import java.nio.file.Path
 import kotlin.io.path.Path
+import kotlin.io.path.invariantSeparatorsPathString
 import kotlin.io.path.relativeToOrNull
 
 // Tested in ExternalRepoResolveTest
@@ -68,13 +69,13 @@ internal class BazelLabelReference(element: StarlarkStringLiteralExpression, sof
     val packagePath = findBuildFilePathFor(file, repo)?.parent?.path?.let { Path.of(it) }
                       ?: return null
 
-    val packageName = packagePath.relativeToOrNull(repoPath) ?: return null
-    val targetName = filePath.relativeToOrNull(packagePath) ?: return null
+    val packageName = packagePath.relativeToOrNull(repoPath)?.invariantSeparatorsPathString ?: return null
+    val targetName = filePath.relativeToOrNull(packagePath)?.invariantSeparatorsPathString ?: return null
     val label =
       ResolvedLabel(
         repo = Canonical.createCanonicalOrMain(element.project.canonicalRepoNameToPath.reverse()[repoPath] ?: return null),
-        packagePath = Package(packageName.toString().split("/")),
-        target = SingleTarget(targetName.toString()),
+        packagePath = Package(packageName.split("/")),
+        target = SingleTarget(targetName),
       )
 
     val range = StarlarkStringLiteralManipulator().getRangeInElement(this.element)
@@ -124,7 +125,7 @@ internal class BazelLabelReference(element: StarlarkStringLiteralExpression, sof
     val lookupElements =
       allFiles
         .map {
-          getCompletionLookupElemenent(
+          getCompletionLookupElement(
             VfsUtilCore
               .getRelativePath(it, currentDirectory)!!,
             PlatformIcons.FILE_ICON,
@@ -162,7 +163,7 @@ internal class BazelLabelReference(element: StarlarkStringLiteralExpression, sof
     val project = element.project
     return project.targetStorage
       .allTargetShortLabels
-      .map { getCompletionLookupElemenent(it, PlatformIcons.PACKAGE_ICON) }
+      .map { getCompletionLookupElement(it, PlatformIcons.PACKAGE_ICON) }
       .toTypedArray()
   }
 
@@ -179,7 +180,7 @@ internal class BazelLabelReference(element: StarlarkStringLiteralExpression, sof
     for ((_, bzlFiles) in repoNameToBzlFiles) {
       for (label in bzlFiles) {
         lookupElements.add(
-          getCompletionLookupElemenent(
+          getCompletionLookupElement(
             label.toShortString(element.project),
             PlatformIcons.FILE_ICON,
           ),

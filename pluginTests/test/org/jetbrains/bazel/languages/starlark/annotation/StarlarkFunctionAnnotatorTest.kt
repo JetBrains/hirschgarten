@@ -10,8 +10,6 @@ class StarlarkFunctionAnnotatorTest : StarlarkAnnotatorTestCase() {
   }
 
   fun testHighlightingForCustomMacro() {
-    initializeBazelProject(project, myFixture.tempDirPath)
-
     myFixture.addFileToProject(
       "def.bzl",
       """

@@ -48,7 +48,6 @@ class StarlarkStructFieldCompletionTest : StarlarkCompletionTestCase() {
 
   @Test
   fun `should complete loaded struct fields`() {
-    BazelProjectFixtures.initializeBazelProject(project, myFixture.tempDirPath)
     myFixture.addFileToProject("MODULE.bazel", "")
     myFixture.addFileToProject("BUILD", "")
     myFixture.addFileToProject(
@@ -74,7 +73,6 @@ class StarlarkStructFieldCompletionTest : StarlarkCompletionTestCase() {
 
   @Test
   fun `should complete nested struct fields defined in different files`() {
-    BazelProjectFixtures.initializeBazelProject(project, myFixture.tempDirPath)
     myFixture.addFileToProject("MODULE.bazel", "")
     myFixture.addFileToProject("BUILD", "")
     myFixture.addFileToProject(

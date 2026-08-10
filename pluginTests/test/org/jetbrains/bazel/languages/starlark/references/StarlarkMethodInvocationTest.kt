@@ -1,22 +1,15 @@
 package org.jetbrains.bazel.languages.starlark.references
 
-import com.intellij.testFramework.fixtures.BasePlatformTestCase
 import com.intellij.testFramework.fixtures.IdeaTestFixtureFactory
 import com.intellij.testFramework.fixtures.TempDirTestFixture
-import org.jetbrains.bazel.project.BazelProjectFixtures.initializeBazelProject
-import org.junit.Before
+import org.jetbrains.bazel.test.framework.BazelBasePlatformTestCase
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
 
 @RunWith(JUnit4::class)
-class StarlarkMethodInvocationTest : BasePlatformTestCase() {
+class StarlarkMethodInvocationTest : BazelBasePlatformTestCase() {
   override fun createTempDirTestFixture(): TempDirTestFixture = IdeaTestFixtureFactory.getFixtureFactory().createTempDirTestFixture()
-
-  @Before
-  fun beforeEach() {
-    initializeBazelProject(project, myFixture.tempDirPath)
-  }
 
   // https://youtrack.jetbrains.com/issue/BAZEL-3039
   @Test

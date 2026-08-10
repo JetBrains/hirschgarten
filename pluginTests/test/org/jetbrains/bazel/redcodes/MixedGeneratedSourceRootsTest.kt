@@ -17,6 +17,8 @@ import org.jetbrains.bazel.test.framework.BazelTestApplication
 import org.jetbrains.bazel.test.framework.bazelSyncCodeInsightFixture
 import org.jetbrains.bazel.test.framework.checkHighlighting
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.condition.DisabledOnOs
+import org.junit.jupiter.api.condition.OS
 import kotlin.io.path.Path
 import kotlin.time.Duration.Companion.minutes
 
@@ -28,6 +30,7 @@ class MixedGeneratedSourceRootsTest {
   private val fixture by bazelSyncCodeInsightFixture(projectFixture, tempDir)
 
   @Test
+  @DisabledOnOs(OS.WINDOWS) // can't find bash
   fun testHighlighting(): Unit = timeoutRunBlocking(timeout = 5.minutes) {
     check(BazelFeatureFlags.mergeSourceRoots) {
       "MixedGeneratedSourceRootsTest only makes sense with BazelFeatureFlags.mergeSourceRoots enabled"

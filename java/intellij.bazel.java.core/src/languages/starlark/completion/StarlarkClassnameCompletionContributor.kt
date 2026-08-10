@@ -19,7 +19,7 @@ import com.intellij.util.ProcessingContext
 import org.jetbrains.bazel.config.isBazelProject
 import org.jetbrains.bazel.languages.starlark.StarlarkLanguage
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkStringLiteralExpression
-import org.jetbrains.bazel.languages.starlark.psi.expressions.getCompletionLookupElemenent
+import org.jetbrains.bazel.languages.starlark.psi.expressions.getCompletionLookupElement
 import org.jetbrains.bazel.languages.starlark.reference.StarlarkClassnameReferenceProvider
 
 internal class StarlarkClassnameCompletionContributor : CompletionContributor() {
@@ -80,7 +80,7 @@ private class StarlarkClassnameCompletionProvider : CompletionProvider<Completio
 
   private fun getSubPackagesVariants(subpackages: Array<PsiPackage>): List<LookupElement> =
     subpackages.map { subPackage ->
-      getCompletionLookupElemenent(
+      getCompletionLookupElement(
         name = "${subPackage.qualifiedName}.",
         icon = PlatformIcons.PACKAGE_ICON,
         priority = 1.0,
@@ -100,7 +100,7 @@ private class StarlarkClassnameCompletionProvider : CompletionProvider<Completio
 
           // Add the class itself
           result.add(
-            getCompletionLookupElemenent(
+            getCompletionLookupElement(
               name = name,
               icon = PlatformIcons.CLASS_ICON,
               priority = 1.0,
@@ -112,7 +112,7 @@ private class StarlarkClassnameCompletionProvider : CompletionProvider<Completio
           // Add the class as a path segment if it has completable inner classes
           if (psiClass.innerClasses.any { it.isCompletableClass() }) {
             result.add(
-              getCompletionLookupElemenent(
+              getCompletionLookupElement(
                 name = "$name.",
                 icon = PlatformIcons.CLASS_ICON,
                 priority = 1.0,

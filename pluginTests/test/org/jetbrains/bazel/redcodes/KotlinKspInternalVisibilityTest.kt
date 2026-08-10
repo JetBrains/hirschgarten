@@ -10,6 +10,8 @@ import org.jetbrains.bazel.test.framework.BazelTestApplication
 import org.jetbrains.bazel.test.framework.bazelSyncCodeInsightFixture
 import org.jetbrains.bazel.test.framework.checkHighlighting
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.condition.DisabledOnOs
+import org.junit.jupiter.api.condition.OS
 
 @BazelTestApplication
 class KotlinKspInternalVisibilityTest {
@@ -19,6 +21,7 @@ class KotlinKspInternalVisibilityTest {
   private val fixture by bazelSyncCodeInsightFixture(projectFixture, tempDir)
 
   @Test
+  @DisabledOnOs(OS.WINDOWS) // hangs
   fun testHighlighting() = runBlocking(Dispatchers.Default) {
     fixture.copyBazelTestProject("redcodes/kotlin_ksp_internal_visibility")
     fixture.performBazelSync(buildProject = true)

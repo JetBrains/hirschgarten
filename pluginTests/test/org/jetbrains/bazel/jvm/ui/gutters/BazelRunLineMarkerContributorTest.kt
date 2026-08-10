@@ -9,7 +9,6 @@ import com.intellij.psi.PsiMethod
 import com.intellij.psi.impl.source.tree.LeafPsiElement
 import com.intellij.psi.util.PsiUtilCore
 import com.intellij.psi.util.childrenOfType
-import com.intellij.testFramework.fixtures.BasePlatformTestCase
 import com.intellij.testFramework.fixtures.CodeInsightTestFixture
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.nulls.shouldNotBeNull
@@ -17,8 +16,8 @@ import io.kotest.matchers.shouldBe
 import org.jetbrains.bazel.java.ui.gutters.BazelJavaRunLineMarkerContributor
 import org.jetbrains.bazel.kotlin.ui.gutters.BazelKotlinRunLineMarkerContributor
 import org.jetbrains.bazel.label.Label
-import org.jetbrains.bazel.project.BazelProjectFixtures.initializeBazelProject
 import org.jetbrains.bazel.run.test.forceDisableJetBrainsTestRunner
+import org.jetbrains.bazel.test.framework.BazelBasePlatformTestCase
 import org.jetbrains.bazel.test.framework.target.TestBuildTargetFactory
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.kotlin.psi.KtClass
@@ -31,14 +30,14 @@ import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
 
 @RunWith(JUnit4::class)
-class BazelRunLineMarkerContributorTest : BasePlatformTestCase() {
+class BazelJavaRunConfigurationProducerTest : BazelBasePlatformTestCase() {
+
   @Before
   fun beforeEach() {
     myFixture.setBuildTool()
   }
 
   private fun CodeInsightTestFixture.setBuildTool() {
-    initializeBazelProject(project, myFixture.tempDirPath)
     forceDisableJetBrainsTestRunner = true
   }
 

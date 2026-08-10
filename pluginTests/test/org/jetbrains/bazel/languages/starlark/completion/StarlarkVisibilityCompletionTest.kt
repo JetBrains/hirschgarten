@@ -13,6 +13,7 @@ import org.jetbrains.bazel.project.BazelProjectFixtures.initializeBazelProject
 import org.jetbrains.bazel.sync.JavaLanguageClass
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
 import org.jetbrains.bazel.target.targetStorage
+import org.jetbrains.bazel.test.framework.BazelBasePlatformTestCase
 import org.jetbrains.bazel.test.framework.target.TestBuildTarget
 import org.jetbrains.bsp.protocol.SourceFileCollection
 import org.junit.Before
@@ -22,12 +23,7 @@ import org.junit.runners.JUnit4
 import kotlin.io.path.Path
 
 @RunWith(JUnit4::class)
-class StarlarkVisibilityCompletionTest : BasePlatformTestCase() {
-  @Before
-  fun beforeEach() {
-    initializeBazelProject(project, myFixture.tempDirPath)
-  }
-
+class StarlarkVisibilityCompletionTest : BazelBasePlatformTestCase() {
   private fun setTargets(targets: List<String>) {
     project.targetStorage.setTargets(
       targets.map {

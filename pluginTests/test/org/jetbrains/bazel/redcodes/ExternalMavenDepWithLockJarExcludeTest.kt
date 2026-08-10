@@ -10,6 +10,8 @@ import org.jetbrains.bazel.test.framework.BazelTestApplication
 import org.jetbrains.bazel.test.framework.bazelSyncCodeInsightFixture
 import org.jetbrains.bazel.test.framework.checkHighlighting
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.condition.DisabledOnOs
+import org.junit.jupiter.api.condition.OS
 
 @BazelTestApplication
 class ExternalMavenDepWithLockJarExcludeTest {
@@ -19,6 +21,7 @@ class ExternalMavenDepWithLockJarExcludeTest {
   private val fixture by bazelSyncCodeInsightFixture(projectFixture, tempDir)
 
   @Test
+  @DisabledOnOs(OS.WINDOWS) // coursier
   fun testHighlighting() = runBlocking(Dispatchers.Default) {
     fixture.copyBazelTestProject("redcodes/external_maven_dep_with_lock_jar_exclude")
     fixture.performBazelSync()

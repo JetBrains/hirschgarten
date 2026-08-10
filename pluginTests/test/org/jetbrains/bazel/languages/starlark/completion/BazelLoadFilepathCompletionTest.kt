@@ -6,8 +6,13 @@ import com.intellij.platform.backend.workspace.workspaceModel
 import com.intellij.testFramework.IndexingTestUtil
 import com.intellij.testFramework.builders.ModuleFixtureBuilder
 import com.intellij.testFramework.fixtures.CodeInsightFixtureTestCase
+import com.intellij.testFramework.fixtures.CodeInsightTestFixture
+import com.intellij.testFramework.fixtures.IdeaProjectTestFixture
+import com.intellij.testFramework.fixtures.IdeaTestFixtureFactory
 import com.intellij.testFramework.fixtures.ModuleFixture
+import com.intellij.testFramework.fixtures.impl.TempDirTestFixtureImpl
 import io.kotest.matchers.collections.shouldContainAll
+import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.languages.starlark.references.getCanonicalRepoNameToBzlFiles
 import org.jetbrains.bazel.languages.starlark.repomapping.injectCanonicalRepoNameToApparentName
 import org.jetbrains.bazel.languages.starlark.repomapping.injectCanonicalRepoNameToPath
@@ -21,6 +26,11 @@ import org.junit.runners.JUnit4
 
 @RunWith(JUnit4::class)
 class BazelLoadFilepathCompletionTest : CodeInsightFixtureTestCase<ModuleFixtureBuilder<ModuleFixture>>() {
+
+  override fun createMyFixture(projectFixture: IdeaProjectTestFixture): CodeInsightTestFixture {
+    return IdeaTestFixtureFactory.getFixtureFactory().createCodeInsightFixture(projectFixture, TempDirTestFixtureImpl())
+  }
+
   @Test
   fun `should complete basic filePath`() {
     myFixture.tempDirFixture.createFile("BUILD.bazel", "")

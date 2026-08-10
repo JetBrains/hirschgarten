@@ -6,7 +6,6 @@ import com.intellij.codeInsight.lookup.LookupElement
 import com.intellij.codeInsight.lookup.LookupElementBuilder
 import com.intellij.lang.ASTNode
 import com.intellij.openapi.util.TextRange
-import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiReference
 import com.intellij.psi.impl.source.resolve.reference.ReferenceProvidersRegistry
 import org.jetbrains.annotations.ApiStatus
@@ -24,11 +23,9 @@ import org.jetbrains.bazel.languages.starlark.references.StarlarkLoadReference
 import org.jetbrains.bazel.languages.starlark.references.StarlarkVisibilityReference
 import org.jetbrains.bazel.languages.starlark.utils.StarlarkQuote
 import javax.swing.Icon
-import kotlin.contracts.ExperimentalContracts
-import kotlin.contracts.contract
 
 @ApiStatus.Internal
-fun getCompletionLookupElemenent(
+fun getCompletionLookupElement(
   name: String,
   icon: Icon,
   priority: Double = 0.0,

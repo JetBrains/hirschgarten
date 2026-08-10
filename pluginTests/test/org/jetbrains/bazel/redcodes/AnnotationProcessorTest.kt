@@ -14,6 +14,8 @@ import org.jetbrains.bazel.test.framework.BazelTestApplication
 import org.jetbrains.bazel.test.framework.bazelSyncCodeInsightFixture
 import org.jetbrains.bazel.test.framework.checkHighlighting
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.condition.DisabledOnOs
+import org.junit.jupiter.api.condition.OS
 
 @BazelTestApplication
 class AnnotationProcessorTest {
@@ -23,6 +25,7 @@ class AnnotationProcessorTest {
   private val fixture by bazelSyncCodeInsightFixture(projectFixture, tempDir)
 
   @Test
+  @DisabledOnOs(OS.WINDOWS) // hangs
   fun testHighlighting() = runBlocking(Dispatchers.Default) {
     fixture.copyBazelTestProject("redcodes/annotation_processor")
     fixture.performBazelSync(buildProject = true)

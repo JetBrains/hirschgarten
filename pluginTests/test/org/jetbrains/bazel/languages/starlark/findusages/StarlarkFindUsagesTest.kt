@@ -9,12 +9,13 @@ import org.jetbrains.bazel.languages.starlark.psi.StarlarkNamedElement
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkTargetExpression
 import org.jetbrains.bazel.project.BazelProjectFixtures
 import org.jetbrains.bazel.languages.starlark.psi.functions.StarlarkParameter
+import org.jetbrains.bazel.test.framework.BazelBasePlatformTestCase
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
 
 @RunWith(JUnit4::class)
-class StarlarkFindUsagesTest : BasePlatformTestCase() {
+class StarlarkFindUsagesTest : BazelBasePlatformTestCase() {
 
   // region Functions
 
@@ -35,7 +36,6 @@ class StarlarkFindUsagesTest : BasePlatformTestCase() {
 
   @Test
   fun `should find usage of loaded function in another file`() {
-    BazelProjectFixtures.initializeBazelProject(project, myFixture.tempDirPath)
     myFixture.addFileToProject("MODULE.bazel", "")
     myFixture.addFileToProject("BUILD", "")
     val defsFile = myFixture.addFileToProject(
@@ -102,7 +102,6 @@ class StarlarkFindUsagesTest : BasePlatformTestCase() {
 
   @Test
   fun `should find usage of loaded variable in another file`() {
-    BazelProjectFixtures.initializeBazelProject(project, myFixture.tempDirPath)
     myFixture.addFileToProject("MODULE.bazel", "")
     myFixture.addFileToProject("BUILD", "")
     val defsFile = myFixture.addFileToProject(

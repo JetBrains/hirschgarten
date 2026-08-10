@@ -13,6 +13,8 @@ import org.jetbrains.bazel.test.framework.BazelTestApplication
 import org.jetbrains.bazel.test.framework.bazelSyncCodeInsightFixture
 import org.jetbrains.bazel.test.framework.checkHighlighting
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.condition.DisabledOnOs
+import org.junit.jupiter.api.condition.OS
 
 @BazelTestApplication
 class JavaStrictDependenciesTest {
@@ -62,6 +64,7 @@ class JavaStrictDependenciesTest {
   }
 
   @Test
+  @DisabledOnOs(OS.WINDOWS) //cpp toolchain
   // https://youtrack.jetbrains.com/issue/BAZEL-1423
   fun testStrictDepsWithProtobufReference() = runBlocking(Dispatchers.Default) {
     fixture.copyBazelTestProject("redcodes/strict_dependencies/java_strict_deps_proto")

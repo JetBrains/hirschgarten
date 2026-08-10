@@ -14,7 +14,7 @@ import org.jetbrains.bazel.languages.starlark.StarlarkLanguage
 import org.jetbrains.bazel.languages.starlark.bazel.bzlmod.BazelModuleRegistryService
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkCallExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkStringLiteralExpression
-import org.jetbrains.bazel.languages.starlark.psi.expressions.getCompletionLookupElemenent
+import org.jetbrains.bazel.languages.starlark.psi.expressions.getCompletionLookupElement
 
 internal class BazelDepCompletionContributor : CompletionContributor() {
   init {
@@ -50,7 +50,7 @@ internal class BazelDepCompletionProvider : CompletionProvider<CompletionParamet
         "name" -> {
           val names = registryService.getModuleNames()
           names.forEach { name ->
-            result.addElement(getCompletionLookupElemenent(name, PlatformIcons.PACKAGE_ICON, 1.0))
+            result.addElement(getCompletionLookupElement(name, PlatformIcons.PACKAGE_ICON, 1.0))
           }
         }
         "version" -> {
@@ -58,7 +58,7 @@ internal class BazelDepCompletionProvider : CompletionProvider<CompletionParamet
           val versions = registryService.getModuleVersions(moduleName)
           result.addAllElements(
             versions.mapIndexed { index, v ->
-              getCompletionLookupElemenent(v, PlatformIcons.PROPERTY_ICON, (-index).toDouble())
+              getCompletionLookupElement(v, PlatformIcons.PROPERTY_ICON, (-index).toDouble())
             },
           )
         }

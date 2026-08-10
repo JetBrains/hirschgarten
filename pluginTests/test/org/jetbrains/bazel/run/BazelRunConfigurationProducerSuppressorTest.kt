@@ -15,6 +15,8 @@ import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import com.intellij.psi.util.PsiUtilCore
 import com.intellij.testFramework.TestActionEvent
+import com.intellij.testFramework.fixtures.TempDirTestFixture
+import com.intellij.testFramework.fixtures.impl.TempDirTestFixtureImpl
 import com.intellij.testFramework.rules.TempDirectory
 import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.commons.TargetKind
@@ -39,6 +41,10 @@ internal class BazelRunConfigurationProducerSuppressorTest : BazelBasePlatformTe
   @Rule
   @JvmField
   val tempDirectory = TempDirectory()
+
+  override fun createTempDirTestFixture(): TempDirTestFixture {
+    return TempDirTestFixtureImpl()
+  }
 
   @Test
   fun `should show standard Run context action with Bazel configuration for Python main file`() {

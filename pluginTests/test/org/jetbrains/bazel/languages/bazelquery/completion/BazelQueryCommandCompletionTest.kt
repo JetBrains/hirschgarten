@@ -1,13 +1,13 @@
 package org.jetbrains.bazel.languages.bazelquery.completion
 
 import io.kotest.matchers.collections.shouldContainAll
-import org.jetbrains.bazel.languages.bazelquery.fixtures.BazelQueryCompletionTestCase
+import org.jetbrains.bazel.test.framework.BazelBasePlatformTestCase
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
 
 @RunWith(JUnit4::class)
-class BazelQueryCommandCompletionTest : BazelQueryCompletionTestCase() {
+class BazelQueryCommandCompletionTest : BazelBasePlatformTestCase() {
   @Test
   fun `beginning of line should complete commands`() {
     // given

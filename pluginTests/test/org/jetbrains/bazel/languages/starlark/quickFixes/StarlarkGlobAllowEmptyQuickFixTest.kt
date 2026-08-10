@@ -1,9 +1,8 @@
 package org.jetbrains.bazel.languages.starlark.quickFixes
 
 import com.intellij.openapi.vfs.newvfs.impl.VfsRootAccess
-import com.intellij.testFramework.fixtures.BasePlatformTestCase
 import org.jetbrains.bazel.languages.starlark.StarlarkBundle
-import org.jetbrains.bazel.project.BazelProjectFixtures.initializeBazelProject
+import org.jetbrains.bazel.test.framework.BazelBasePlatformTestCase
 import org.jetbrains.bazel.test.framework.BazelPathManager
 import org.junit.Before
 import org.junit.Test
@@ -11,13 +10,12 @@ import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
 
 @RunWith(JUnit4::class)
-class StarlarkGlobAllowEmptyQuickFixTest : BasePlatformTestCase() {
+class StarlarkGlobAllowEmptyQuickFixTest : BazelBasePlatformTestCase() {
   override fun getTestDataPath(): String =
     BazelPathManager.getTestFixture("starlark/quickFixes")
 
   @Before
   fun beforeEach() {
-    initializeBazelProject(project, myFixture.tempDirPath)
     VfsRootAccess.allowRootAccess(this.testRootDisposable, this.testDataPath)
   }
 

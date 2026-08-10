@@ -30,7 +30,8 @@ object BazelProjectFixtures {
   }
 
   fun initializeBazelProject(project: Project, rootDir: String) {
-    initializeBazelProject(project, rootDir.toNioPathOrNull()!!)
+    val rootDirPath = rootDir.toNioPathOrNull() ?: error("NIO path not found for $rootDir")
+    initializeBazelProject(project, rootDirPath)
   }
 
   fun initializeBazelProjectViaProjectView(project: Project, projectViewFile: Path) {

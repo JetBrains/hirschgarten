@@ -1,5 +1,6 @@
 package org.jetbrains.bazel.bazelrunner
 
+import com.intellij.util.system.OS
 import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.shouldBe
 import org.jetbrains.bazel.bazelrunner.params.BazelFlag
@@ -18,6 +19,7 @@ import org.jetbrains.bazel.languages.projectview.SYNC_FLAGS_KEY
 import org.jetbrains.bazel.languages.projectview.TARGETS_KEY
 import org.jetbrains.bazel.languages.projectview.TARGET_SHARD_SIZE_KEY
 import org.jetbrains.bazel.languages.projectview.targets
+import org.jetbrains.kotlin.cli.common.repl.replNormalizeLineBreaks
 import org.jetbrains.bazel.test.framework.BazelTestApplication
 import org.junit.jupiter.api.Assertions.fail
 import org.junit.jupiter.api.Test
@@ -129,7 +131,7 @@ class BazelRunnerBuilderTest {
     val targetPatternFileFlag = "--target_pattern_file="
     commandLine.last().startsWith(targetPatternFileFlag)
     val targetPatternFile = Paths.get(commandLine.last().removePrefix(targetPatternFileFlag))
-    targetPatternFile.readText() shouldBe
+    targetPatternFile.readText().replNormalizeLineBreaks() shouldBe
       """
       in1
       in2
@@ -431,7 +433,10 @@ class BazelRunnerBuilderTest {
         "bazel",
         "build",
         BazelFlag.toolTag(),
-        "--build_event_binary_file=/dev/null",
+        if (OS.CURRENT == OS.Windows)
+          "--build_event_binary_file=C:\\dev\\null"
+        else
+          "--build_event_binary_file=/dev/null",
         "--build_event_binary_file_upload_mode=wait_for_upload_complete",
         "--bes_outerr_buffer_size=10",
         "--curses=no",

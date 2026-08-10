@@ -1,6 +1,7 @@
 package org.jetbrains.bazel.flow
 
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.util.io.NioFiles
 import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.projectImport.ProjectOpenProcessor
@@ -9,11 +10,10 @@ import io.kotest.matchers.shouldBe
 import org.jetbrains.bazel.commons.constants.Constants
 import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.config.BazelPluginConstants
+import java.nio.file.Files
 import java.nio.file.Path
 import kotlin.io.path.createDirectories
 import kotlin.io.path.createTempDirectory
-
-private const val BUILD_FILE_NAME = "BUILD.bazel"
 
 class BazelProjectOpenProcessorTest : BasePlatformTestCase() {
   private lateinit var directoryRoot: Path
@@ -21,20 +21,21 @@ class BazelProjectOpenProcessorTest : BasePlatformTestCase() {
 
   override fun setUp() {
     super.setUp()
-    directoryRoot = createTempDirectory(Path.of("/tmp"), "dir").also { it.toFile().deleteOnExit() }
+    directoryRoot = Files.createTempDirectory(
+      Path.of("/tmp").also {
+        it.toFile().mkdirs()
+      },
+      "dir")
     originalAutoOpenProjectIfPresent = System.getProperty(BazelFeatureFlags.AUTO_OPEN_PROJECT_IF_PRESENT)
   }
 
   override fun tearDown() {
-    try {
-      originalAutoOpenProjectIfPresent
-        ?.let { System.setProperty(BazelFeatureFlags.AUTO_OPEN_PROJECT_IF_PRESENT, it) }
-        ?: System.clearProperty(BazelFeatureFlags.AUTO_OPEN_PROJECT_IF_PRESENT)
-      directoryRoot.toFile().deleteRecursively()
-    }
-    finally {
-      super.tearDown()
-    }
+    originalAutoOpenProjectIfPresent
+      ?.let { System.setProperty(BazelFeatureFlags.AUTO_OPEN_PROJECT_IF_PRESENT, it) }
+    ?: System.clearProperty(BazelFeatureFlags.AUTO_OPEN_PROJECT_IF_PRESENT)
+    NioFiles.deleteRecursively(directoryRoot)
+
+    super.tearDown()
   }
 
   fun `test should not open directory with dot idea when auto open is disabled`() {

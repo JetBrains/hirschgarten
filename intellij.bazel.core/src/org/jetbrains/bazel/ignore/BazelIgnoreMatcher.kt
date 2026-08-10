@@ -14,6 +14,7 @@ import org.jetbrains.bazel.languages.starlark.psi.statements.StarlarkExpressionS
 import org.jetbrains.bazel.utils.isUnder
 import java.nio.file.Path
 import java.util.regex.Pattern
+import kotlin.io.path.invariantSeparatorsPathString
 
 @ApiStatus.Internal
 interface BazelIgnoreMatcher {
@@ -98,7 +99,7 @@ object BazelIgnoreMatcherFactory {
     return object : BazelIgnoreMatcher {
       private val cache: Cache<String, Pattern> = StarlarkGlob.createCache()
       override fun match(relativePath: Path): Boolean {
-        val pathString = relativePath.toString()
+        val pathString = relativePath.invariantSeparatorsPathString
         return patterns.any { pattern ->
           StarlarkGlob.patternMatches(pattern, pathString, false, cache)
         }
