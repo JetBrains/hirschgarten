@@ -59,5 +59,5 @@ Two commits in this PR:
 - Snowflake repo: `github.com/Snowflake-Labs/hirschgarten`
 - Development branch for IntelliJ 261 builds: `development-261`
 - PRs are filed against `development-261` (not `main`)
-- Git remote for pushing PRs: `snowflake`
-- GitHub account for PRs: `sfc-gh-gguo`
+- Git remote for pushing PRs: `snowflake` (points to `github.com/Snowflake-Labs/hirschgarten`)
+- Use your own `sfc-gh-*` GitHub account when creating PRs
