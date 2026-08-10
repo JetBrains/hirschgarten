@@ -37,14 +37,15 @@ import com.jetbrains.python.sdk.PythonSdkType
 import com.jetbrains.python.sdk.createLocalSdkGuessingTypeByPath
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.annotations.VisibleForTesting
-import org.jetbrains.bazel.commons.RepoMapping
-import org.jetbrains.bazel.magicmetamodel.formatAsLibraryName
-import org.jetbrains.bazel.magicmetamodel.formatAsModuleName
 import org.jetbrains.bazel.progress.withSubtask
 import org.jetbrains.bazel.python.lang.PythonBuildTarget
 import org.jetbrains.bazel.server.connection
 import org.jetbrains.bazel.sync.environment.projectCtx
 import org.jetbrains.bazel.sync.workspace.importer.BazelWorkspaceImporter
+import org.jetbrains.bazel.sync.workspace.importer.GlobalNamingContext
+import org.jetbrains.bazel.sync.workspace.importer.GlobalNamingContext.NameProducer
+import org.jetbrains.bazel.sync.workspace.importer.GlobalNamingContext.NameSpace
+import org.jetbrains.bazel.sync.workspace.importer.GlobalNamingContextBuilder
 import org.jetbrains.bazel.sync.workspace.importer.WorkspaceImporterContext
 import org.jetbrains.bazel.sync.workspace.importer.WorkspaceImporterPhase
 import org.jetbrains.bazel.sync.workspace.importer.WorkspaceImporterResult
@@ -75,6 +76,7 @@ import kotlin.io.path.pathString
 private const val PYTHON_SOURCE_ROOT_TYPE = "python-source"
 private const val PYTHON_RESOURCE_ROOT_TYPE = "python-resource"
 private val PYTHON_MODULE_TYPE = ModuleTypeId("PYTHON_MODULE")
+private val NAME_PRODUCER = NameProducer(id = "python")
 
 internal class BazelPythonWorkspaceImporter : BazelWorkspaceImporter, BazelWorkspaceImporter.Named {
   companion object {
@@ -86,7 +88,6 @@ internal class BazelPythonWorkspaceImporter : BazelWorkspaceImporter, BazelWorks
 
   private lateinit var commonSyncConfig: CommonWorkspaceSyncConfig
   private lateinit var pythonSyncConfig: PythonWorkspaceSyncConfig
-  private lateinit var moduleNameByKey: Map<WorkspaceTargetKey, String>
   private lateinit var allPythonTargets: Map<WorkspaceTargetKey, BuildTarget>
 
   private var defaultInterpreter: Path? = null
@@ -99,14 +100,15 @@ internal class BazelPythonWorkspaceImporter : BazelWorkspaceImporter, BazelWorks
     snapshot: WorkspaceSnapshot,
   ): Result<WorkspaceImporterResult> = runCatching {
     when (phase) {
-      WorkspaceImporterPhase.Initialize -> onInitialize(snapshot)
-      is WorkspaceImporterPhase.WorkspaceApply -> onWorkspaceApply(context, snapshot, phase.builder, context.vfuManager, phase.entitySource)
+      is WorkspaceImporterPhase.Initialize -> onInitialize(snapshot, phase.naming)
+      is WorkspaceImporterPhase.WorkspaceApply ->
+        onWorkspaceApply(context, snapshot, phase.builder, context.vfuManager, phase.entitySource, phase.naming)
       WorkspaceImporterPhase.PostProcessing -> onPostProcessing(context, snapshot)
       else -> WorkspaceImporterResult.Success
     }
   }
 
-  private fun onInitialize(snapshot: WorkspaceSnapshot): WorkspaceImporterResult {
+  private fun onInitialize(snapshot: WorkspaceSnapshot, naming: GlobalNamingContextBuilder): WorkspaceImporterResult {
     commonSyncConfig = snapshot.syncConfigs.filterIsInstance<CommonWorkspaceSyncConfig>()
                          .firstOrNull() ?: throw IllegalStateException()
     pythonSyncConfig = snapshot.syncConfigs.filterIsInstance<PythonWorkspaceSyncConfig>()
@@ -121,20 +123,6 @@ internal class BazelPythonWorkspaceImporter : BazelWorkspaceImporter, BazelWorks
           .mergeByTargetKey(targets = targets.toList())
       }
       .associateBy { it.key }
-
-    moduleNameByKey = allPythonTargets.values
-      .groupBy { it.key.label }
-      .flatMap { (_, targets) ->
-        when {
-          targets.size == 1 -> {
-            val key = targets.single().key
-            listOf(key to key.formatAsModuleName(snapshot.repoMapping, withConfiguration = false))
-          }
-
-          else -> targets.map { it.key to it.key.formatAsModuleName(snapshot.repoMapping, withConfiguration = true) }
-        }
-      }
-      .toMap()
 
     val defaultPythonTarget = snapshot.allTargets
       .filterBuildTarget<PythonBuildTarget>()
@@ -159,8 +147,21 @@ internal class BazelPythonWorkspaceImporter : BazelWorkspaceImporter, BazelWorks
             .toList()
         }
 
+    for (key in allPythonTargets.keys) {
+      naming.declare(NameSpace.MODULE, NAME_PRODUCER, key)
+    }
+    // one library per external source dependency target, see `onWorkspaceApply`
+    for (key in externalSourceDependencyKeys()) {
+      naming.declare(NameSpace.LIBRARY, NAME_PRODUCER, key)
+    }
+
     return WorkspaceImporterResult.Success
   }
+
+  private fun externalSourceDependencyKeys(): List<WorkspaceTargetKey> =
+    allPythonTargets.keys
+      .flatMap { externalSourceDependenciesByTarget[it].orEmpty() }
+      .distinct()
 
   private fun onWorkspaceApply(
     context: WorkspaceImporterContext,
@@ -168,18 +169,17 @@ internal class BazelPythonWorkspaceImporter : BazelWorkspaceImporter, BazelWorks
     builder: MutableEntityStorage,
     vfuManager: VirtualFileUrlManager,
     entitySource: EntitySource,
+    naming: GlobalNamingContext,
   ): WorkspaceImporterResult {
     val allTargetsByKey = snapshot.allTargets.associateBy { it.key }
     val sourceDependencyLibraries =
-      allPythonTargets.keys
-        .flatMap { externalSourceDependenciesByTarget[it].orEmpty() }
-        .distinct()
+      externalSourceDependencyKeys()
         .mapNotNull { dependencyKey ->
           // calculate one external source path list per iteration to avoid keeping everything in memory at once
           val dependencyTarget = allTargetsByKey[dependencyKey] ?: return@mapNotNull null
           val externalSources = getExternalSourcePaths(dependencyTarget)
           if (externalSources.isEmpty()) return@mapNotNull null
-          addSourceDependencyLibrary(builder, dependencyKey, snapshot.repoMapping, externalSources, entitySource, vfuManager)
+          addSourceDependencyLibrary(builder, dependencyKey, naming, externalSources, entitySource, vfuManager)
             ?.let { dependencyKey to it }
         }.toMap()
 
@@ -187,11 +187,11 @@ internal class BazelPythonWorkspaceImporter : BazelWorkspaceImporter, BazelWorks
       addModuleEntityFromTarget(
         context = context,
         builder = builder,
-        repoMapping = snapshot.repoMapping,
         target = target,
-        moduleName = targetKey.toPythonModuleName(snapshot.repoMapping),
+        moduleName = naming.findOrFallback(NameSpace.MODULE, NAME_PRODUCER, targetKey),
         entitySource = entitySource,
         virtualFileUrlManager = vfuManager,
+        naming = naming,
         sourceDependencyLibraries = externalSourceDependenciesByTarget[targetKey].orEmpty().mapNotNull { sourceDependencyLibraries[it] },
       )
     }
@@ -272,7 +272,7 @@ internal class BazelPythonWorkspaceImporter : BazelWorkspaceImporter, BazelWorks
   private fun addSourceDependencyLibrary(
     builder: MutableEntityStorage,
     dependencyTarget: WorkspaceTargetKey,
-    repoMapping: RepoMapping,
+    naming: GlobalNamingContext,
     sourceDependencies: List<Path>,
     entitySource: EntitySource,
     virtualFileUrlManager: VirtualFileUrlManager,
@@ -288,7 +288,7 @@ internal class BazelPythonWorkspaceImporter : BazelWorkspaceImporter, BazelWorks
       return null
     }
 
-    val name = dependencyTarget.formatAsLibraryName(repoMapping, withFullKey = true)
+    val name = naming.findOrFallback(NameSpace.LIBRARY, NAME_PRODUCER, dependencyTarget)
     val tableId = LibraryTableId.ProjectLibraryTableId
     return builder.resolve(LibraryId(name, tableId))
            ?: builder.addEntity(
@@ -304,11 +304,11 @@ internal class BazelPythonWorkspaceImporter : BazelWorkspaceImporter, BazelWorks
   private fun addModuleEntityFromTarget(
     context: WorkspaceImporterContext,
     builder: MutableEntityStorage,
-    repoMapping: RepoMapping,
     target: BuildTarget,
     moduleName: String,
     entitySource: EntitySource,
     virtualFileUrlManager: VirtualFileUrlManager,
+    naming: GlobalNamingContext,
     sourceDependencyLibraries: List<LibraryEntity> = emptyList(),
   ): ModuleEntity {
     val contentRoots = getContentRootEntities(context, target, entitySource, virtualFileUrlManager)
@@ -321,7 +321,7 @@ internal class BazelPythonWorkspaceImporter : BazelWorkspaceImporter, BazelWorks
     val dependencies =
       target.dependencies.map {
         ModuleDependency(
-          module = ModuleId(it.targetKey.toPythonModuleName(repoMapping)),
+          module = ModuleId(naming.findOrFallback(NameSpace.MODULE, NAME_PRODUCER, it.targetKey)),
           exported = true,
           scope = DependencyScope.COMPILE,  // Python does not have the runtime/compile scope separation
           productionOnTest = true,
@@ -434,9 +434,6 @@ internal class BazelPythonWorkspaceImporter : BazelWorkspaceImporter, BazelWorks
     project: Project,
     sdkName: String?,
   ): PyResult<Sdk> = createLocalSdkGuessingTypeByPath(interpreter, ProjectOnly(project), sdkName)
-
-  private fun WorkspaceTargetKey.toPythonModuleName(repoMapping: RepoMapping) =
-    moduleNameByKey[this] ?: this.formatAsModuleName(repoMapping)
 }
 
 @ApiStatus.Internal

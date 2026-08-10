@@ -94,7 +94,7 @@ data class WorkspaceImporterContext(
   val progressReporter: SequentialProgressReporter,
   val taskId: TaskId,
   val vfuManager: VirtualFileUrlManager,
-  val currentSnapshot: ImmutableEntityStorage
+  val currentSnapshot: ImmutableEntityStorage,
 )
 
 /**
@@ -111,16 +111,24 @@ sealed interface WorkspaceImporterPhase {
 
   /**
    * Called first once per [BazelWorkspaceImporter.import]
+   *
+   * @property naming The only phase where names can be declared, see [GlobalNamingContextBuilder]
    */
-  data object Initialize : WorkspaceImporterPhase
+  data class Initialize(val naming: GlobalNamingContextBuilder) : WorkspaceImporterPhase
 
   /**
    * Apply changes to shared [MutableEntityStorage], remember that [builder] is shared among all [BazelWorkspaceImporter] instances,
    * so be careful with [MutableEntityStorage.replaceBySource].
    *
    * Called exactly once for every [BazelWorkspaceImporter].
+   *
+   * @property naming Names declared during [Initialize], resolved across all importers
    */
-  data class WorkspaceApply(val builder: MutableEntityStorage, val entitySource: EntitySource) : WorkspaceImporterPhase
+  data class WorkspaceApply(
+    val builder: MutableEntityStorage,
+    val entitySource: EntitySource,
+    val naming: GlobalNamingContext,
+  ) : WorkspaceImporterPhase
 
   /**
    * Called last once per [BazelWorkspaceImporter.import]

@@ -22,7 +22,7 @@ internal class ScalaBazelWorkspaceImporter : BazelWorkspaceImporter {
     snapshot: WorkspaceSnapshot,
   ): Result<WorkspaceImporterResult> {
     when (phase) {
-      WorkspaceImporterPhase.Initialize -> {
+      is WorkspaceImporterPhase.Initialize -> {
         if (!scalaSdkExtensionExists()) {
           return Result.success(WorkspaceImporterResult.Abort)
         }

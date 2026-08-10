@@ -29,17 +29,20 @@ class WorkspaceImporterHelper(
   }
 
   private val workspaceModel = WorkspaceModel.getInstance(project)
-  private val context = WorkspaceImporterContext(
-    project = project,
-    taskConsole = taskConsole,
-    progressReporter = progressReporter,
-    taskId = taskId,
-    vfuManager = workspaceModel.getVirtualFileUrlManager(),
-    currentSnapshot = workspaceModel.currentSnapshot,
-  )
   private val toSkip = mutableSetOf<BazelWorkspaceImporter>()
+  private lateinit var context: WorkspaceImporterContext
 
   suspend fun invoke(reporter: SequentialProgressReporter, snapshot: WorkspaceSnapshot) {
+    context = WorkspaceImporterContext(
+      project = project,
+      taskConsole = taskConsole,
+      progressReporter = progressReporter,
+      taskId = taskId,
+      vfuManager = workspaceModel.getVirtualFileUrlManager(),
+      currentSnapshot = workspaceModel.currentSnapshot,
+    )
+    val namingBuilder = GlobalNamingContextBuilder.create(snapshot.repoMapping)
+
     taskConsole.withSubtask(
       reporter, taskId.subTask("workspace-importers"),
       BazelBackendBundle.message("bazel.workspace.importer.task.name"),
@@ -49,7 +52,7 @@ class WorkspaceImporterHelper(
         message = BazelBackendBundle.message("workspace.importer.phase.initialization.progress"),
       ) { taskId ->
         BazelWorkspaceImporter.EP_NAME.forEachExtensionSafeInline { ep ->
-          ep.runContextual(taskId, context, WorkspaceImporterPhase.Initialize, snapshot)
+          ep.runContextual(taskId, context, WorkspaceImporterPhase.Initialize(namingBuilder), snapshot)
             .onFailure { toSkip += ep }
             .onSuccess { result ->
               when (result) {
@@ -63,6 +66,8 @@ class WorkspaceImporterHelper(
         }
       }
 
+      val naming = namingBuilder.build()
+
       taskConsole.withSubtask(
         subtaskId = taskId.subTask("workspace-importers-wsm-building"),
         message = BazelBackendBundle.message("build.workspace.model"),
@@ -71,7 +76,7 @@ class WorkspaceImporterHelper(
           if (ep in toSkip) {
             return@forEachExtensionSafeInline
           }
-          ep.runContextual(taskId, context, WorkspaceImporterPhase.WorkspaceApply(builder, BazelProjectEntitySource), snapshot)
+          ep.runContextual(taskId, context, WorkspaceImporterPhase.WorkspaceApply(builder, BazelProjectEntitySource, naming), snapshot)
             .onFailure { toSkip += ep }
             .onSuccess { result ->
               when (result) {

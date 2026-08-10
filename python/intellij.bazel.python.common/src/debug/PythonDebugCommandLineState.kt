@@ -1,13 +1,11 @@
 package org.jetbrains.bazel.python.debug
 
 import com.intellij.execution.runners.ExecutionEnvironment
+import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.projectRoots.Sdk
 import com.intellij.platform.backend.workspace.WorkspaceModel
-import com.intellij.platform.workspace.jps.entities.ModuleEntity
-import com.intellij.platform.workspace.jps.entities.ModuleId
 import com.intellij.platform.workspace.jps.entities.SdkDependency
-import com.intellij.platform.workspace.storage.ImmutableEntityStorage
 import com.jetbrains.python.run.PythonCommandLineState
 import com.jetbrains.python.run.PythonConfigurationType
 import com.jetbrains.python.run.PythonRunConfiguration
@@ -19,7 +17,6 @@ import kotlinx.coroutines.CompletableDeferred
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.languages.projectview.debugFlags
-import org.jetbrains.bazel.magicmetamodel.formatAsModuleName
 import org.jetbrains.bazel.languages.projectview.pythonDebugFlags
 import org.jetbrains.bazel.run.BazelCommandLineStateBase
 import org.jetbrains.bazel.run.BazelProcessHandler
@@ -27,6 +24,7 @@ import org.jetbrains.bazel.run.commandLine.transformProgramArguments
 import org.jetbrains.bazel.run.config.BazelRunConfiguration
 import org.jetbrains.bazel.run.task.BazelRunTaskListener
 import org.jetbrains.bazel.server.BazelServerFacade
+import org.jetbrains.bazel.target.ModuleTargetService
 import org.jetbrains.bazel.taskEvents.BazelTaskListener
 import org.jetbrains.bsp.protocol.CompileParams
 import java.nio.file.Files
@@ -67,7 +65,8 @@ internal class PythonDebugCommandLineState(
     }
     if (target == null) {
       error(BazelPluginBundle.message("python.debug.error.no.id"))
-    } else if (debugInfo == null) {
+    }
+    else if (debugInfo == null) {
       error(BazelPluginBundle.message("python.debug.error.other", target))
     }
     val templateConfig =
@@ -112,20 +111,16 @@ private fun Path.toSdkLookupPath(): Path =
 
 private fun getSdkForTarget(project: Project, target: Label): Sdk {
   val storage = WorkspaceModel.getInstance(project).currentSnapshot
-  return target
-    .toModuleEntity(storage, project) // module
-    ?.dependencies // module's dependencies
-    ?.firstNotNullOfOrNull { it as? SdkDependency } // first SDK dependency
-    ?.sdk
-    ?.name
-    ?.let { PythonSdkUtil.getAllSdks().firstOrNull { sdk -> sdk.name == it } } // the first SDK matching the module SDK dependency
+  val module = project.service<ModuleTargetService>()
+    .findModulesByLabel(storage, target)
+    .firstOrNull()
+  return module
+           ?.dependencies // module's dependencies
+           ?.firstNotNullOfOrNull { it as? SdkDependency } // first SDK dependency
+           ?.sdk
+           ?.name
+           ?.let { PythonSdkUtil.getAllSdks().firstOrNull { sdk -> sdk.name == it } } // the first SDK matching the module SDK dependency
          ?: error(BazelPluginBundle.message("python.debug.error.no.sdk", target))
-}
-
-private fun Label.toModuleEntity(storage: ImmutableEntityStorage, project: Project): ModuleEntity? {
-  val moduleName = this.formatAsModuleName(project)
-  val moduleId = ModuleId(moduleName)
-  return storage.resolve(moduleId)
 }
 
 internal fun buildPythonDebugBazelArguments(debugFlags: List<String>, additionalBazelParams: String?): List<String> =
