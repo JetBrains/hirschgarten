@@ -63,7 +63,7 @@ Added `CONTEXT_DEVELOPMENT_261.md` as a persistent handoff document between sess
     2. Scan `execroot/_main/external/` for JDK directories, prefer those matching the version hint in the wrapper name
   - Helpers: `resolveRealJdkFromWrapper()`, `findJdkInExternalDir()`, `findExecRoot()`
 
-**Next step**: Get PR #31 reviewed and merged
+**Next step**: —
 
 ### Repo Context
 - This is a Snowflake fork of the JetBrains Bazel IntelliJ plugin (`hirschgarten`)
