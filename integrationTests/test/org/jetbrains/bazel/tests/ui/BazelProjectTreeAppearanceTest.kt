@@ -49,7 +49,7 @@ class BazelProjectTreeAppearanceTest : IdeStarterBaseProjectTest() {
           projectView {
             // Expand tree
             step("Expand common/src/main/java") {
-              expandPath(projectViewTree, "common")
+              projectViewTree.expandSourceRoots("common", "main")
             }
 
             // Compact middle packages: true (default)
@@ -103,7 +103,7 @@ class BazelProjectTreeAppearanceTest : IdeStarterBaseProjectTest() {
           projectView {
             // Expand tree
             step("Expand app/src/main/java") {
-              expandPath(projectViewTree, "app")
+              projectViewTree.expandSourceRoots("app", "main", "other")
             }
 
             // Compact middle packages: true (default)
@@ -176,7 +176,7 @@ class BazelProjectTreeAppearanceTest : IdeStarterBaseProjectTest() {
           projectView {
             // Expand tree
             step("Expand common/src/main/java") {
-              expandPath(projectViewTree, "common")
+              projectViewTree.expandSourceRoots("common", "main")
             }
           }
 
@@ -229,7 +229,7 @@ class BazelProjectTreeAppearanceTest : IdeStarterBaseProjectTest() {
           projectView {
             // Expand tree
             step("Expand common/src/main/java") {
-              expandPath(projectViewTree, "common")
+              projectViewTree.expandSourceRoots("common", "main")
             }
           }
 
@@ -292,7 +292,7 @@ class BazelProjectTreeAppearanceTest : IdeStarterBaseProjectTest() {
 
           projectView {
             step("Expand common/src/main/java") {
-              expandPath(projectViewTree, "common")
+              projectViewTree.expandSourceRoots("common", "main")
             }
 
             step("Directories in common/src/main/java path have no module info") {
@@ -310,31 +310,33 @@ class BazelProjectTreeAppearanceTest : IdeStarterBaseProjectTest() {
       }
   }
 
-  private fun expandPath(projectViewTree: JTreeUiComponent, path: String) {
-    val commonRow = projectViewTree.collectExpandedPaths()
-                   .firstOrNull { it.path.lastOrNull() == path }
-                   ?.row ?: error("Cannot find '$path' row in Project View")
-    projectViewTree.doubleClickRow(commonRow)
-
-    val srcRow = projectViewTree.collectExpandedPaths()
-                   .firstOrNull { info ->
-                     val p = info.path
-                     p.size >= 2 && p[p.size - 2] == path && p.last() == "src"
-                   }?.row ?: error("Cannot find 'src' row under '$path'")
-    projectViewTree.doubleClickRow(srcRow)
-
-    val nextRows = projectViewTree.collectExpandedPaths()
-                    .filter { info ->
-                       val p = info.path
-                       p.size >= 3 && p[p.size - 3] == path && p[p.size - 2] == "src"
-                    }
-    if (nextRows.size < 2) return
-
-    for (i in nextRows.size - 1 downTo 0) {
-      val row = nextRows[i].row
-      projectViewTree.doubleClickRow(row)
+  private fun JTreeUiComponent.expandSourceRoots(module: String, vararg children: String) {
+    expandNodeEndingWith(module)
+    expandNodeEndingWith(module, "src")
+    for (child in children) {
+      expandNodeEndingWith(module, "src", child)
     }
   }
+
+  private fun JTreeUiComponent.expandNodeEndingWith(vararg segments: String) {
+    var lastPaths = emptyList<List<String>>()
+    should(
+      message = "'${segments.joinToString("/")}' is expanded in Project View",
+      timeout = 4.minutes,
+      errorMessage = { "Current expanded paths: $lastPaths" },
+    ) {
+      val visiblePaths = collectExpandedPaths()
+      lastPaths = visiblePaths.map { it.path }
+      val target = visiblePaths.firstOrNull { it.path.endsWith(*segments) } ?: return@should false
+      val childVisible = lastPaths.any { it.size == target.path.size + 1 && it.subList(0, target.path.size) == target.path }
+      if (childVisible) return@should fixture.areTreeNodesLoaded()
+      fixture.expandRow(target.row)
+      false
+    }
+  }
+
+  private fun List<String>.endsWith(vararg segments: String): Boolean =
+    size >= segments.size && subList(size - segments.size, size) == segments.asList()
 
   private fun checkPathAboveLast(path: List<String>, elem: String, expectedUp: List<String>): Boolean {
     val idx = path.lastIndexOf(elem)
