@@ -57,6 +57,11 @@ enum class Language(
     listOf("protobuf"),
     true, emptyList(),
     listOf("https://github.com/protocolbuffers/protobuf/")),
+  CC(
+    Rules.CC,
+    listOf("rules_cc"),
+    true, listOf("CcInfo"),
+    listOf("https://github.com/bazelbuild/rules_cc")),
   ;
 
   fun isBundledFor(bazelRelease: BazelRelease, externalAutoloads: List<String>): Boolean {
