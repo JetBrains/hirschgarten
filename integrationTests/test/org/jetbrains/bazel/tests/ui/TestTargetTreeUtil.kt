@@ -7,6 +7,7 @@ import com.intellij.driver.sdk.ui.components.common.GutterUiComponent
 import com.intellij.driver.sdk.ui.components.common.IdeaFrameUI
 import com.intellij.driver.sdk.ui.components.common.editorTabs
 import com.intellij.driver.sdk.ui.components.common.gutter
+import com.intellij.driver.sdk.ui.components.common.toolwindows.debugToolWindow
 import com.intellij.driver.sdk.ui.components.elements.JTreeUiComponent
 import com.intellij.driver.sdk.ui.components.elements.popup
 import com.intellij.driver.sdk.ui.components.elements.tree
@@ -126,3 +127,49 @@ fun IdeaFrameUI.verifyAvailableRunGutterActions(texts: List<String>) {
 
 val IdeaFrameUI.debuggerFramesUi
   get() = x("//div[@class='XDebuggerFramesList']")
+
+private data class DebuggerPauseState(
+  val toolWindowPresent: Boolean = false,
+  val resumeEnabled: Boolean = false,
+  val frames: List<String> = emptyList(),
+)
+
+fun IdeaFrameUI.waitForDebuggerPausedAt(vararg expectedFrameTexts: String, timeout: Duration = 3.minutes) {
+  require(expectedFrameTexts.isNotEmpty())
+  step("Wait for debugger to pause at ${expectedFrameTexts.toList()}") {
+    waitFor(
+      message = "Debugger should pause at ${expectedFrameTexts.toList()}",
+      timeout = timeout,
+      interval = 1.seconds,
+      errorMessage = { state ->
+        "Debugger did not pause at ${expectedFrameTexts.toList()}. " +
+          "Tool window present: ${state.toolWindowPresent}, resume enabled: ${state.resumeEnabled}, frames: ${state.frames}"
+      },
+      getter = {
+        val toolWindow = debugToolWindow()
+        if (!toolWindow.present()) {
+          DebuggerPauseState()
+        }
+        else {
+          val threadsAndVariablesTab = toolWindow.threadsAndVariablesTab
+          if (!threadsAndVariablesTab.present()) {
+            DebuggerPauseState(toolWindowPresent = true)
+          }
+          else {
+            threadsAndVariablesTab.click()
+            val resumeButton = toolWindow.resumeButton
+            val framesUi = debuggerFramesUi
+            DebuggerPauseState(
+              toolWindowPresent = true,
+              resumeEnabled = resumeButton.present() && resumeButton.isEnabled(),
+              frames = if (framesUi.present()) framesUi.getAllTexts().map { it.text } else emptyList(),
+            )
+          }
+        }
+      },
+      checker = { state ->
+        state.resumeEnabled && expectedFrameTexts.any { expected -> state.frames.any { expected in it } }
+      },
+    )
+  }
+}
