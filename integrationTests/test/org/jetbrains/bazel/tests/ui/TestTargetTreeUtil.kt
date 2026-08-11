@@ -12,6 +12,7 @@ import com.intellij.driver.sdk.ui.components.elements.popup
 import com.intellij.driver.sdk.ui.components.elements.tree
 import com.intellij.driver.sdk.ui.xQuery
 import com.intellij.driver.sdk.wait
+import com.intellij.driver.sdk.waitFor
 import com.intellij.ide.starter.ide.IDETestContext
 import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.junit.jupiter.api.Assertions
