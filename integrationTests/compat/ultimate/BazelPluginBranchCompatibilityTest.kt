@@ -30,9 +30,8 @@ private val KNOWN_ERRORS_FILE = ULTIMATE_HOME.resolve("plugins/bazel/integration
  * `bazel-plugin-<version>.zip` or a directory containing exactly one of them. Without that variable the class is skipped, so the
  * unfiltered `:integrationTests_test` target does not pay for a full IDE dev build.
  *
- * Unlike [BazelPluginCompatibilityTest], which builds the plugin from sources and verifies it against a released IDE, this test
- * inverts the two sides: the IDE is local and the plugin is external. A failure therefore means an already-published plugin build
- * cannot be loaded by the platform the current branch produces.
+ * The IDE is local and the plugin is external. A failure therefore means an already-published plugin build cannot be loaded by
+ * the platform the current branch produces.
  *
  * The test is blind to which channel the archive came from - that choice belongs entirely to the caller. CI runs it once per
  * plugin channel, feeding it the latest nightly and the latest stable Bazel plugin artifacts, on the root branch and on the
