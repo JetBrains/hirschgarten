@@ -2,6 +2,7 @@ package org.jetbrains.bazel.projectAware
 
 import com.intellij.ide.projectView.ProjectView
 import com.intellij.openapi.Disposable
+import com.intellij.openapi.application.readAction
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vcs.BranchChangeListener
@@ -13,18 +14,29 @@ import com.intellij.openapi.vfs.newvfs.events.VFileEvent
 import com.intellij.openapi.vfs.newvfs.events.VFileMoveEvent
 import com.intellij.ui.tree.TreeVisitor
 import com.intellij.util.ui.tree.TreeUtil
+import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.ui.status.BazelFileStatusRefresher
 
 @Service(Service.Level.PROJECT)
-internal class BazelWorkspace(val project: Project) : Disposable {
+@ApiStatus.Internal
+class BazelWorkspace(val project: Project) : Disposable {
   private var initialized = false
 
-  @Synchronized
-  fun initialize() {
-    if (!initialized) {
-      BazelProjectAware.initialize(this)
-      BspExternalServicesSubscriber(project).subscribe()
-      initialized = true
+  @Volatile
+  private var disposed = false
+
+  /**
+   * Project disposal runs inside a write action, so performing the registration under a read action
+   * guarantees it cannot interleave with the disposal of this workspace or of the auto-import tracker (BAZEL-3453).
+   */
+  suspend fun initialize() {
+    readAction {
+      synchronized(this) {
+        if (initialized || disposed || project.isDisposed) return@readAction
+        BazelProjectAware.initialize(this)
+        BspExternalServicesSubscriber(project).subscribe()
+        initialized = true
+      }
     }
   }
 
@@ -33,7 +45,9 @@ internal class BazelWorkspace(val project: Project) : Disposable {
     fun getInstance(project: Project): BazelWorkspace = project.getService(BazelWorkspace::class.java)
   }
 
-  override fun dispose() {}
+  override fun dispose() {
+    disposed = true
+  }
 }
 
 internal class BspExternalServicesSubscriber(private val project: Project) {
