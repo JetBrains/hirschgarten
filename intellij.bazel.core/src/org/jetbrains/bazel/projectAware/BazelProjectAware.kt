@@ -56,7 +56,7 @@ class BazelProjectAware(private val project: Project) : ExternalSystemProjectAwa
   }
 
   override fun subscribe(listener: ExternalSystemProjectListener, parentDisposable: Disposable) {
-    project.messageBus.connect().subscribe(
+    project.messageBus.connect(parentDisposable).subscribe(
       SyncStatusListener.TOPIC,
       object : SyncStatusListener {
         override fun syncStarted() {
@@ -83,7 +83,7 @@ class BazelProjectAware(private val project: Project) : ExternalSystemProjectAwa
       val project = workspace.project
       val projectAware = BazelProjectAware(project)
       val projectTracker = ExternalSystemProjectTracker.getInstance(project)
-      projectTracker.register(projectAware)
+      projectTracker.register(projectAware, workspace)
       projectTracker.activate(projectAware.projectId)
     }
 

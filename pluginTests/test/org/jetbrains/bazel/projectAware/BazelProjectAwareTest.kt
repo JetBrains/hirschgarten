@@ -1,17 +1,21 @@
 package org.jetbrains.bazel.projectAware
 
 import com.intellij.openapi.application.ReadAction
+import com.intellij.openapi.externalSystem.autoimport.ExternalSystemProjectListener
+import com.intellij.openapi.util.Disposer
 import com.intellij.openapi.vfs.VirtualFile
 import io.kotest.assertions.throwables.shouldNotThrowAny
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.booleans.shouldBeFalse
 import io.kotest.matchers.booleans.shouldBeTrue
 import io.kotest.matchers.collections.shouldContainAll
+import io.kotest.matchers.shouldBe
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.sync.SyncCache
+import org.jetbrains.bazel.sync.status.SyncStatusListener
 import org.jetbrains.bazel.workspace.model.test.framework.WorkspaceModelBaseTest
 import org.junit.jupiter.api.Test
 import java.nio.file.Path
@@ -60,6 +64,29 @@ internal class BazelProjectAwareTest : WorkspaceModelBaseTest() {
       runInBackgroundWithWriteLockTaken { projectAware.settingsFiles }
     }
     syncCache.isAlreadyComputed(projectAware.cachedBazelFiles).shouldBeFalse()
+  }
+
+  @Test
+  fun `subscribe stops delivering events after parent disposal`() {
+    val projectAware = BazelProjectAware(project)
+    val parentDisposable = Disposer.newDisposable()
+    var reloadStartCount = 0
+    projectAware.subscribe(
+      object : ExternalSystemProjectListener {
+        override fun onProjectReloadStart() {
+          reloadStartCount++
+        }
+      },
+      parentDisposable,
+    )
+    val publisher = project.messageBus.syncPublisher(SyncStatusListener.TOPIC)
+
+    publisher.syncStarted()
+    reloadStartCount shouldBe 1
+
+    Disposer.dispose(parentDisposable)
+    publisher.syncStarted()
+    reloadStartCount shouldBe 1
   }
 
   private fun prepareFiles() {
