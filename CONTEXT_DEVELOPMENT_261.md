@@ -1,9 +1,17 @@
 # Context for Next Task
 
+> **Maintenance tip**: Keep this file updated as you make progress — update the tip commit hash,
+> move completed work into the "Recently Completed" section, and revise the "Pending" section.
+> This file is the primary handoff document between sessions.
+>
+> **Next step guidance**: Only write a "Next step" when there is something actionable *after* a PR
+> merges. Don't write "get PR reviewed/merged" — this doc lives in the repo and is read post-merge,
+> so those entries are immediately stale. Use `—` or omit the field when nothing remains.
+
 ## Current State (as of 2026-08-10)
 
 ### Working Branch
-`development-261` — latest tip: `260af4c882 Merge pull request #29`
+`development-261` — latest tip: `98bc05a260 Merge pull request #30`
 
 ### Recently Completed Work (PR #29)
 
@@ -39,20 +47,27 @@ Two commits in this PR:
 - `plugin-bazel/src/main/kotlin/org/jetbrains/bazel/workspace/fileEvents/SimplifiedFileEvent.kt` — added `ExternalCreate` subclass
 - `plugin-bazel/src/main/kotlin/org/jetbrains/bazel/action/registered/AddFileToModuleAction.kt` — passes `packagePrefix` to `addToModule()`
 
+### Recently Completed Work (PR #30)
+
+**Branch**: `context/update-development-261-context` → merged into `development-261`
+
+Added `CONTEXT_DEVELOPMENT_261.md` as a persistent handoff document between sessions, then made the GitHub account note generic.
+
 ### Pending / In-Progress Work
 
-**JVM Wrapper JDK resolution** — separate branch `fix/resolve-jvm-wrapper-jdk-home`, NOT yet merged, NO PR yet.
+**JVM Wrapper JDK resolution** — branch `fix/resolve-jvm-wrapper-jdk-home`, PR #31 open (→ `development-261`).
 
 **Problem**: When a project uses `jvm_wrapper_runtime`, the `java_home` from the Bazel aspect points to the wrapper directory (contains only `bin/java` as a shell script), not the actual JDK. IntelliJ's `JavaSdk.isValidSdkHome()` fails for this path → "JDK not found on disk or corrupted" warning after sync.
 
-**Fix implemented** (on `fix/resolve-jvm-wrapper-jdk-home`):
+**Fix implemented** (on `fix/resolve-jvm-wrapper-jdk-home`, rebased onto `development-261`):
 - `plugin-bazel/src/main/kotlin/org/jetbrains/bazel/jvm/sync/SdkUtils.kt`
-  - Added `resolveJavaHome(javaHome: Path, project: Project): Path`
-  - If `javaHome` is not a valid JDK: reads `bin/java` as text, parses `exec` lines to find real java binary relative to Bazel exec root, derives actual JDK home
+  - `addJdkIfNeeded()` now calls `resolveJavaHome()` before creating the SDK
+  - `resolveJavaHome()`: fast-path returns early if already a valid JDK; otherwise tries:
+    1. Parse `{javaHome}/bin/java` wrapper script for `exec .../bin/java` lines, resolve against Bazel exec root
+    2. Scan `execroot/_main/external/` for JDK directories, prefer those matching the version hint in the wrapper name
   - Helpers: `resolveRealJdkFromWrapper()`, `findJdkInExternalDir()`, `findExecRoot()`
-- Note: this fix is on a REMOTE machine; `jvm_wrapper_runtime` creates a `java_runtime` with `java_home` pointing to wrapper dir (`jdk21_jvm_wrapper_wrapper_script`)
 
-**Next step**: Create a PR from `fix/resolve-jvm-wrapper-jdk-home` → `development-261`
+**Next step**: —
 
 ### Repo Context
 - This is a Snowflake fork of the JetBrains Bazel IntelliJ plugin (`hirschgarten`)
