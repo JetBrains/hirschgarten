@@ -56,6 +56,8 @@ import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.PythonBuildTarget
 import org.jetbrains.bsp.protocol.RawBuildTarget
 import org.jetbrains.bsp.protocol.utils.extractPythonBuildTarget
+import org.jetbrains.bazel.languages.projectview.ProjectViewService
+import org.jetbrains.bazel.languages.projectview.nonBazelPythonDirectories
 import java.nio.file.Path
 
 private const val PYTHON_SDK_ID = "PythonSDK"
@@ -98,7 +100,8 @@ class PythonProjectSync : ProjectSyncHook {
         )
       }
 
-      // Create a fallback module for non-target Python files in included directories
+      // Create modules for directories listed under non_bazel_python_directories: in .bazelproject.
+      // pythonTargets is passed so we can skip any directory already covered by a Bazel Python target.
       createFallbackPythonModuleIfNeeded(
         environment = environment,
         pythonTargets = pythonTargets,
@@ -300,10 +303,13 @@ class PythonProjectSync : ProjectSyncHook {
     }
 
   /**
-   * Creates fallback Python modules for files in included directories that are not part of any Python target.
-   * This ensures that Python files outside of targets still get a Python SDK instead of falling back to the
-   * project-level Java SDK.
-   * Creates one module per root-level folder to allow different folder-level settings.
+   * Creates Python modules for directories listed under `non_bazel_python_directories:` in the .bazelproject file.
+   * Each listed directory gets its own module with a Python SDK, giving code intelligence to Python files
+   * that are not part of any Bazel target.
+   *
+   * [pythonTargets] are the Bazel-managed Python targets (handled elsewhere in [onSync]). They are used here
+   * only to skip any explicitly listed directory that is already covered by a Bazel target, preventing
+   * duplicate modules.
    */
   private suspend fun createFallbackPythonModuleIfNeeded(
     environment: ProjectSyncHookEnvironment,
@@ -312,86 +318,72 @@ class PythonProjectSync : ProjectSyncHook {
     defaultSdk: Sdk?,
     virtualFileUrlManager: VirtualFileUrlManager,
   ) {
-    // Prefer any Python SDK from Bazel sync, fall back to system SDK
-    // Validate that we only use actual Python SDKs, not JDK or other SDK types
     val pythonSdkType = PythonSdkType.getInstance()
     val pythonSdk = sdks.values.firstOrNull { sdk ->
       sdk != null && sdk.sdkType == pythonSdkType
     } ?: defaultSdk?.takeIf { it.sdkType == pythonSdkType }
+    ?: findPythonSdk(environment.project)
     if (pythonSdk == null) {
       return
     }
-    val builder = environment.diff
 
-    // Get the BazelProjectDirectoriesEntity to know which directories are included
-    // Query from the mutableEntityStorage being built, not the current snapshot
-    val directoriesEntity = builder.entities(BazelProjectDirectoriesEntity::class.java).firstOrNull()
-    if (directoriesEntity == null || directoriesEntity.includedRoots.isEmpty()) {
-      // No included directories, nothing to do
-      return
-    }
+    val projectView = ProjectViewService.getInstance(environment.project).getProjectView()
+    val nonBazelDirs = projectView.nonBazelPythonDirectories
+    if (nonBazelDirs.isEmpty()) return
 
-    // Collect all directories that are already covered by Python targets
+    // Collect source URLs already covered by Bazel Python targets so we can skip duplicates
     val targetCoveredUrls = pythonTargets.flatMap { target ->
       (target as RawBuildTarget).sources.map { it.path.toVirtualFileUrl(virtualFileUrlManager) }
     }.toSet()
 
-    // Find included roots that are not covered by any Python target
-    val uncoveredRoots = directoriesEntity.includedRoots.filterNot { includedRoot ->
-      // Check if this included root is already covered by a target
-      targetCoveredUrls.any { targetUrl ->
-        targetUrl.url.startsWith(includedRoot.url) || includedRoot.url.startsWith(targetUrl.url)
+    // Resolve relative paths against the workspace root
+    val builder = environment.diff
+    val projectRootPath = builder.entities(BazelProjectDirectoriesEntity::class.java)
+      .firstOrNull()
+      ?.projectRoot
+      ?.url
+      ?.let { runCatching { Path.of(java.net.URI(it)) }.getOrNull() }
+
+    nonBazelDirs.forEach { dirPath ->
+      val absolutePath = if (dirPath.isAbsolute) dirPath else projectRootPath?.resolve(dirPath) ?: dirPath
+      val dirUrl = absolutePath.toVirtualFileUrl(virtualFileUrlManager)
+
+      // Skip directories already covered by a Bazel Python target
+      if (targetCoveredUrls.any { it.url.startsWith(dirUrl.url) || dirUrl.url.startsWith(it.url) }) {
+        LOG.info("Skipping non-Bazel Python directory '$absolutePath': already covered by a Bazel target")
+        return@forEach
       }
-    }
+      val folderName = absolutePath.fileName?.toString() ?: absolutePath.toString()
+      val moduleName = "${environment.project.name}.python.$folderName"
+      val entitySource = BazelModuleEntitySource(moduleName)
 
-    if (uncoveredRoots.isEmpty()) {
-      // All included directories are covered by targets
-      return
-    }
-
-    // Create one module per root-level folder to allow different folder-level settings
-    uncoveredRoots.forEach { rootUrl ->
-      // Extract folder name from URL (e.g., "file:///path/to/root/folder1" -> "folder1")
-      val folderName = rootUrl.url.trimEnd('/').substringAfterLast('/')
-      val fallbackModuleName = "${environment.project.name}.python.$folderName"
-      val fallbackEntitySource = BazelModuleEntitySource(fallbackModuleName)
-
-      // Create content root for this directory
       val sourceRootEntity = SourceRootEntity(
-        url = rootUrl,
+        url = dirUrl,
         rootTypeId = SourceRootTypeId(PYTHON_SOURCE_ROOT_TYPE),
-        entitySource = fallbackEntitySource,
+        entitySource = entitySource,
       )
       val contentRoot = ContentRootEntity(
-        url = rootUrl,
+        url = dirUrl,
         excludedPatterns = emptyList(),
-        entitySource = fallbackEntitySource,
+        entitySource = entitySource,
       ) {
         this.excludedUrls = emptyList()
         this.sourceRoots = listOf(sourceRootEntity)
       }
 
-      // Create the fallback module with Python SDK from Bazel sync
-      // Use JAVA module type (default) with Python SDK - IntelliJ respects Python folders this way
-      // ModuleSourceDependency is crucial - it's the "<module source>" entry that tells IntelliJ
-      // to recognize the module's own content roots as source folders
-      val dependencies = listOf(
-        ModuleSourceDependency,
-        pythonSdk.toModuleDependencyItem(),
-      )
-
+      // ModuleSourceDependency is the "<module source>" entry that tells IntelliJ to recognise
+      // the module's own content roots as source folders.
       builder.addEntity(
         ModuleEntity(
-          name = fallbackModuleName,
-          dependencies = dependencies,
-          entitySource = fallbackEntitySource,
+          name = moduleName,
+          dependencies = listOf(ModuleSourceDependency, pythonSdk.toModuleDependencyItem()),
+          entitySource = entitySource,
         ) {
-          // Use default JAVA module type - IntelliJ will respect Python folders with Python SDK
           this.contentRoots = listOf(contentRoot)
         },
       )
 
-      LOG.info("Created fallback Python module: $fallbackModuleName for folder: $folderName with Python SDK: ${pythonSdk.name}")
+      LOG.info("Created non-Bazel Python module '$moduleName' for '$absolutePath' with SDK '${pythonSdk.name}'")
     }
   }
 }
