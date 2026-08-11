@@ -8,7 +8,6 @@ import com.intellij.platform.workspace.storage.ConnectionId
 import com.intellij.platform.workspace.storage.EntitySource
 import com.intellij.platform.workspace.storage.GeneratedCodeApiVersion
 import com.intellij.platform.workspace.storage.GeneratedCodeImplVersion
-import com.intellij.platform.workspace.storage.MutableEntityStorage
 import com.intellij.platform.workspace.storage.WorkspaceEntity
 import com.intellij.platform.workspace.storage.WorkspaceEntityBuilder
 import com.intellij.platform.workspace.storage.WorkspaceEntityInternalApi
@@ -18,7 +17,6 @@ import com.intellij.platform.workspace.storage.impl.WorkspaceEntityBase
 import com.intellij.platform.workspace.storage.impl.WorkspaceEntityData
 import com.intellij.platform.workspace.storage.impl.containers.MutableWorkspaceList
 import com.intellij.platform.workspace.storage.impl.containers.toMutableWorkspaceList
-import com.intellij.platform.workspace.storage.instrumentation.EntityStorageInstrumentation
 import com.intellij.platform.workspace.storage.instrumentation.EntityStorageInstrumentationApi
 import com.intellij.platform.workspace.storage.instrumentation.MutableEntityStorageInstrumentation
 import com.intellij.platform.workspace.storage.instrumentation.instrumentation
@@ -72,29 +70,7 @@ internal class ScalaAddendumEntityImpl(private val dataSource: ScalaAddendumEnti
     ModifiableWorkspaceEntityBase<ScalaAddendumEntity, ScalaAddendumEntityData>(result), ScalaAddendumEntityBuilder {
     internal constructor() : this(ScalaAddendumEntityData())
 
-    override fun applyToBuilder(builder: MutableEntityStorage) {
-      if (this.diff != null) {
-        if (existsInBuilder(builder)) {
-          this.diff = builder
-          return
-        }
-        else {
-          error("Entity ScalaAddendumEntity is already created in a different builder")
-        }
-      }
-      this.diff = builder
-      addToBuilder()
-      this.id = getEntityData().createEntityId()
-// After adding entity data to the builder, we need to unbind it and move the control over entity data to builder
-// Builder may switch to snapshot at any moment and lock entity data to modification
-      this.currentEntityData = null
-      index(this, "sdkClasspaths", this.sdkClasspaths)
-// Process linked entities that are connected without a builder
-      processLinkedEntities(builder)
-      checkInitialization()
-    }
-
-    private fun checkInitialization() {
+    override fun checkInitialization() {
       val _diff = diff
       if (!getEntityData().isEntitySourceInitialized()) {
         error("Field WorkspaceEntity#entitySource should be initialized")
@@ -143,6 +119,10 @@ internal class ScalaAddendumEntityImpl(private val dataSource: ScalaAddendumEnti
       if (this.scalacOptions != dataSource.scalacOptions) this.scalacOptions = dataSource.scalacOptions.toMutableList()
       if (this.sdkClasspaths != dataSource.sdkClasspaths) this.sdkClasspaths = dataSource.sdkClasspaths.toMutableList()
       updateChildToParentReferences(parents)
+    }
+
+    override fun index() {
+      index(this, "sdkClasspaths", this.sdkClasspaths)
     }
 
     override var entitySource: EntitySource
@@ -247,23 +227,8 @@ internal class ScalaAddendumEntityData : WorkspaceEntityData<ScalaAddendumEntity
   internal fun isCompilerVersionInitialized(): Boolean = ::compilerVersion.isInitialized
   internal fun isScalacOptionsInitialized(): Boolean = ::scalacOptions.isInitialized
   internal fun isSdkClasspathsInitialized(): Boolean = ::sdkClasspaths.isInitialized
-  override fun wrapAsModifiable(diff: MutableEntityStorage): WorkspaceEntityBuilder<ScalaAddendumEntity> {
-    val modifiable = ScalaAddendumEntityImpl.Builder(null)
-    modifiable.diff = diff
-    modifiable.id = createEntityId()
-    return modifiable
-  }
-
-  override fun createEntity(snapshot: EntityStorageInstrumentation): ScalaAddendumEntity {
-    val entityId = createEntityId()
-    return snapshot.initializeEntity(entityId) {
-      val entity = ScalaAddendumEntityImpl(this)
-      entity.snapshot = snapshot
-      entity.id = entityId
-      entity
-    }
-  }
-
+  override fun newInstance(): ScalaAddendumEntity = ScalaAddendumEntityImpl(this)
+  override fun newBuilderInstance(): ModifiableWorkspaceEntityBase<ScalaAddendumEntity, *> = ScalaAddendumEntityImpl.Builder(null)
   override fun getMetadata(): EntityMetadata {
     return MetadataStorageImpl.getMetadataByTypeFqn("org.jetbrains.bazel.workspacemodel.entities.ScalaAddendumEntity") as EntityMetadata
   }
