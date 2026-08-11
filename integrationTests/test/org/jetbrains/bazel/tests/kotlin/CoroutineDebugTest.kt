@@ -19,6 +19,7 @@ import org.jetbrains.bazel.data.simpleBazelProject
 import org.jetbrains.bazel.base.IdeStarterBaseProjectTest
 import org.jetbrains.bazel.base.syncBazelProject
 import org.jetbrains.bazel.base.withBazelFeatureFlag
+import org.jetbrains.bazel.tests.ui.waitForDebuggerPausedAt
 import org.junit.jupiter.api.Test
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
@@ -65,7 +66,7 @@ class CoroutineDebugTest : IdeStarterBaseProjectTest() {
           }
 
           step("Check if async stack trace is displayed") {
-            waitOneContainsText("secondLevel:30", timeout = 1.minutes)
+            waitForDebuggerPausedAt("secondLevel:30")
             waitFor(message = "Async stack traces to appear", timeout = 30.seconds, interval = 2.seconds) {
               runCatching {
                 x("//div[@class='Splitter']").verticalScrollBar { scrollBlockDown(6) }
