@@ -49,6 +49,7 @@ import org.jetbrains.bazel.data.simpleBazelProject
 import org.jetbrains.bazel.tests.sync.verifyNoSyncOnReopen
 import org.jetbrains.bazel.tests.ui.expandedTree
 import org.jetbrains.bazel.tests.ui.verifyTestStatus
+import org.jetbrains.bazel.tests.ui.waitForDebuggerPausedAt
 import org.junit.jupiter.api.Order
 import org.junit.jupiter.api.Test
 import kotlin.io.path.div
@@ -307,7 +308,7 @@ class SimpleKotlinCombinedTest : IdeStarterCombinedBaseTest() {
             .click()
           popup().waitOneContainsText("Debug '//:SimpleKotlinTest'").click()
 
-          wait(30.seconds)
+          waitForDebuggerPausedAt("trivial test:7")
 
           takeScreenshot("afterSetBreakpointsAndStartDebugSession")
         }
