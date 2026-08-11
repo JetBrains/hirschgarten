@@ -18,8 +18,8 @@ import org.jetbrains.bazel.tests.combined.IdeStarterCombinedBaseTest
 import org.jetbrains.bazel.tests.run.selectRunConfiguration
 import org.jetbrains.bazel.tests.ui.clickRunGutterOnLine
 import org.jetbrains.bazel.tests.ui.clickTestGutterOnLine
-import org.jetbrains.bazel.tests.ui.debuggerFramesUi
 import org.jetbrains.bazel.tests.ui.verifyTestStatus
+import org.jetbrains.bazel.tests.ui.waitForDebuggerPausedAt
 import org.junit.jupiter.api.Order
 import org.junit.jupiter.api.Test
 import kotlin.time.Duration.Companion.minutes
@@ -118,7 +118,7 @@ internal class GoRunConfigurationsTest : IdeStarterCombinedBaseTest() {
         }
         step("Debugger stops at all breakpoints") {
           repeat(2) { i ->
-            debuggerFramesUi.waitAnyTexts { it.text.contains("TestAdd") || it.text.contains("TestSubtract") }
+            waitForDebuggerPausedAt("TestAdd", "TestSubtract")
             takeScreenshot("goDebugPausedAt$i")
             debugToolWindow().resumeButton.click()
           }
@@ -146,7 +146,7 @@ internal class GoRunConfigurationsTest : IdeStarterCombinedBaseTest() {
       popup().waitOneContainsText("Debug '//lib:lib_test'").click()
     }
     step("Debugger stops at the breakpoint inside $name and resumes") {
-      debuggerFramesUi.waitAnyTexts { it.text.contains(name) }
+      waitForDebuggerPausedAt(name)
       takeScreenshot("goDebug${name}PausedAtBreakpoint")
       debugToolWindow().resumeButton.click()
     }

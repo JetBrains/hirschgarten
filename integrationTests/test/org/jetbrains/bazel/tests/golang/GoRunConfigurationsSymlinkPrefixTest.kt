@@ -15,8 +15,8 @@ import org.jetbrains.bazel.data.BazelProjectConfigurer
 import org.jetbrains.bazel.data.GoLandBazelCases
 import org.jetbrains.bazel.data.simpleBazelProject
 import org.jetbrains.bazel.tests.ui.clickRunGutterOnLine
-import org.jetbrains.bazel.tests.ui.debuggerFramesUi
 import org.jetbrains.bazel.tests.ui.verifyTestStatus
+import org.jetbrains.bazel.tests.ui.waitForDebuggerPausedAt
 import org.junit.jupiter.api.Test
 import kotlin.io.path.appendText
 import kotlin.io.path.div
@@ -61,7 +61,7 @@ internal class GoRunConfigurationsSymlinkPrefixTest : IdeStarterBaseProjectTest(
           }
           step("Debugger stops at all breakpoints") {
             repeat(2) { i ->
-              debuggerFramesUi.waitAnyTexts { it.text.contains("TestAdd") || it.text.contains("TestSubtract") }
+              waitForDebuggerPausedAt("TestAdd", "TestSubtract")
               takeScreenshot("goDebugPausedAt$i")
               debugToolWindow().resumeButton.click()
             }
