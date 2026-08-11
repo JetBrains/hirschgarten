@@ -34,7 +34,7 @@ class BazelWorkspace(val project: Project) : Disposable {
       synchronized(this) {
         if (initialized || disposed || project.isDisposed) return@readAction
         BazelProjectAware.initialize(this)
-        BspExternalServicesSubscriber(project).subscribe()
+        BspExternalServicesSubscriber(project).subscribe(this)
         initialized = true
       }
     }
@@ -51,13 +51,13 @@ class BazelWorkspace(val project: Project) : Disposable {
 }
 
 internal class BspExternalServicesSubscriber(private val project: Project) {
-  fun subscribe() {
-    subscribeForConfigChanges()
-    subscribeForBranchChanges()
+  fun subscribe(parentDisposable: Disposable) {
+    subscribeForConfigChanges(parentDisposable)
+    subscribeForBranchChanges(parentDisposable)
   }
 
-  fun subscribeForConfigChanges() {
-    project.messageBus.connect().subscribe(
+  fun subscribeForConfigChanges(parentDisposable: Disposable) {
+    project.messageBus.connect(parentDisposable).subscribe(
       VirtualFileManager.VFS_CHANGES,
       object : BulkFileListener {
         override fun after(events: MutableList<out VFileEvent>) {
@@ -76,8 +76,8 @@ internal class BspExternalServicesSubscriber(private val project: Project) {
         it is VFileMoveEvent
     }
 
-  private fun subscribeForBranchChanges() {
-    project.messageBus.connect().subscribe(
+  private fun subscribeForBranchChanges(parentDisposable: Disposable) {
+    project.messageBus.connect(parentDisposable).subscribe(
       BranchChangeListener.VCS_BRANCH_CHANGED,
       object : BranchChangeListener {
         override fun branchWillChange(branchName: String) {}
