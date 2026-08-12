@@ -12,7 +12,6 @@ import org.jetbrains.bazel.label.assumeResolved
 import org.jetbrains.bazel.languages.projectview.ProjectView
 import org.jetbrains.bazel.languages.projectview.directories
 import org.jetbrains.bazel.languages.projectview.targets
-import org.jetbrains.bsp.protocol.DirectoryItem
 import org.jetbrains.bsp.protocol.InverseSourcesParams
 import org.jetbrains.bsp.protocol.InverseSourcesResult
 import org.jetbrains.bsp.protocol.JvmToolchainInfo
@@ -30,19 +29,6 @@ class BspProjectMapper(
   private val bazelPathsResolver: BazelPathsResolver,
 ) {
   suspend fun workspaceDirectories(repoMapping: RepoMapping, taskId: TaskId): WorkspaceDirectoriesResult {
-    val (includedDirectories, excludedDirectories) = getProjectDirs(repoMapping, taskId)
-    return WorkspaceDirectoriesResult(
-      includedDirectories = includedDirectories.map { it.toDirectoryItem() },
-      excludedDirectories = excludedDirectories.map { it.toDirectoryItem() },
-    )
-  }
-
-  private data class ProjectDirs(
-    val included: Set<Path>,
-    val excluded: Set<Path>,
-  )
-
-  private suspend fun getProjectDirs(repoMapping: RepoMapping, taskId: TaskId): ProjectDirs {
     val excludedTechnicalDirectories = getTechnicalDirectoriesToExclude()
     val included = mutableSetOf<Path>()
     val excluded = mutableSetOf<Path>()
@@ -105,9 +91,9 @@ class BspProjectMapper(
       .addLast(excludedTechnicalDirectories, isRecursive = true)
       .removeShadowedPaths()
 
-    return ProjectDirs(
-      included = included + includedFromTargets + includedAdditionally,
-      excluded = excluded + excludedFromTargets + excludedAdditionally + excludedTechnicalDirectories,
+    return WorkspaceDirectoriesResult(
+      includedDirectories = (included + includedFromTargets + includedAdditionally).toList(),
+      excludedDirectories = (excluded + excludedFromTargets + excludedAdditionally + excludedTechnicalDirectories).toList(),
     )
   }
 
@@ -159,11 +145,6 @@ class BspProjectMapper(
   private fun getTechnicalDirectoriesToExclude(): MutableSet<Path> =
     mutableSetOf(
       workspaceRoot.resolve(Constants.DOT_BAZELBSP_DIR_NAME),
-    )
-
-  private fun Path.toDirectoryItem() =
-    DirectoryItem(
-      uri = this.toUri().toString(),
     )
 
   internal suspend fun inverseSources(workspaceRoot: Path, inverseSourcesParams: InverseSourcesParams): InverseSourcesResult {

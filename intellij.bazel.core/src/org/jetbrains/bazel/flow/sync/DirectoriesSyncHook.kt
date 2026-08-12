@@ -17,8 +17,9 @@ import org.jetbrains.bazel.workspacemodel.entities.BazelProjectEntitySource
 import org.jetbrains.bazel.workspacemodel.entities.NonIndexableVirtualFileUrl
 import org.jetbrains.bsp.protocol.WorkspaceDirectoriesResult
 import java.nio.file.Path
+import kotlin.io.path.absolutePathString
 
-private class DirectoriesSyncHook : ProjectSyncHook {
+internal class DirectoriesSyncHook : ProjectSyncHook {
   override suspend fun onSync(environment: ProjectSyncHookEnvironment) {
     environment.withSubtask("Collect project directories") {
       val directories = environment.server.workspaceDirectories(environment.workspace.repoMapping, environment.taskId)
@@ -39,9 +40,9 @@ private class DirectoriesSyncHook : ProjectSyncHook {
   ): BazelProjectDirectoriesEntityBuilder {
     val virtualFileUrlManager = project.serviceAsync<WorkspaceModel>().getVirtualFileUrlManager()
 
-    val includedRoots = directories.includedDirectories.map { IdeaVFSUtil.toVirtualFileUrl(it.uri, virtualFileUrlManager) }
+    val includedRoots = directories.includedDirectories.map { virtualFileUrlManager.fromPath(it.absolutePathString()) }
     val excludedRoots =
-      directories.excludedDirectories.map { IdeaVFSUtil.toVirtualFileUrl(it.uri, virtualFileUrlManager) } +
+      directories.excludedDirectories.map { virtualFileUrlManager.fromPath(it.absolutePathString()) } +
       additionalExcludes.map { it.toVirtualFileUrl(virtualFileUrlManager) }
 
     return BazelProjectDirectoriesEntity(
