@@ -12,6 +12,7 @@ import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.data.IdeaBazelCases
 import org.jetbrains.bazel.ideStarter.IdeStarterBaseProjectTest
 import org.jetbrains.bazel.ideStarter.syncBazelProject
+import org.jetbrains.bazel.ideStarter.waitForSyncSucceeded
 import org.jetbrains.bazel.data.BazelProjectConfigurer
 import org.jetbrains.bazel.data.simpleBazelProject
 import org.jetbrains.bazel.data.preCacheBazelisk
@@ -41,6 +42,7 @@ class BazelProjectTreeAppearanceTest : IdeStarterBaseProjectTest() {
         ideFrame {
           syncBazelProject()
           waitForIndicators(5.minutes)
+          waitForSyncSucceeded()
 
           leftToolWindowToolbar.projectButton.open()
 
@@ -94,6 +96,7 @@ class BazelProjectTreeAppearanceTest : IdeStarterBaseProjectTest() {
         ideFrame {
           syncBazelProject()
           waitForIndicators(5.minutes)
+          waitForSyncSucceeded()
 
           leftToolWindowToolbar.projectButton.open()
 
@@ -166,6 +169,7 @@ class BazelProjectTreeAppearanceTest : IdeStarterBaseProjectTest() {
         ideFrame {
           syncBazelProject()
           waitForIndicators(5.minutes)
+          waitForSyncSucceeded()
 
           leftToolWindowToolbar.projectButton.open()
 
@@ -218,6 +222,7 @@ class BazelProjectTreeAppearanceTest : IdeStarterBaseProjectTest() {
         ideFrame {
           syncBazelProject()
           waitForIndicators(5.minutes)
+          waitForSyncSucceeded()
 
           leftToolWindowToolbar.projectButton.open()
 
@@ -281,6 +286,7 @@ class BazelProjectTreeAppearanceTest : IdeStarterBaseProjectTest() {
         ideFrame {
           syncBazelProject()
           waitForIndicators(5.minutes)
+          waitForSyncSucceeded()
 
           leftToolWindowToolbar.projectButton.open()
 
