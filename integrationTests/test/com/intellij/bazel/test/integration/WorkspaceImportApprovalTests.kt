@@ -6,7 +6,6 @@ import com.intellij.ide.starter.models.TestCase
 import com.intellij.ide.starter.project.GitHubProject
 import com.intellij.ide.starter.project.LocalProjectInfo
 import com.intellij.ide.starter.project.ReusableLocalProjectInfo
-import com.intellij.openapi.application.runReadActionBlocking
 import com.intellij.openapi.project.ex.ProjectManagerEx
 import com.intellij.testFramework.UsefulTestCase
 import com.intellij.testFramework.common.timeoutRunBlocking
@@ -33,7 +32,6 @@ import java.nio.file.Path
 import java.nio.file.StandardOpenOption
 import kotlin.io.path.absolutePathString
 import kotlin.io.path.name
-import kotlin.io.path.readText
 import kotlin.io.path.writeText
 import kotlin.time.Duration.Companion.hours
 
@@ -175,11 +173,7 @@ internal class WorkspaceImportApprovalTests {
         serviceInterface = ProjectViewService::class.java,
         instance = object : ProjectViewService {
           override val projectViewState: StateFlow<ProjectView>
-            get() = MutableStateFlow(
-              runReadActionBlocking {
-                ProjectViewFactory.fromProjectViewContent(project, projectView.readText())
-              },
-            )
+            get() = MutableStateFlow(ProjectViewFactory.from(project, projectView))
 
           override suspend fun forceReparseCurrentProjectViewFiles() {}
 

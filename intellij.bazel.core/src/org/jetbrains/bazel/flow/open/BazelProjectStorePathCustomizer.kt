@@ -2,23 +2,15 @@ package org.jetbrains.bazel.flow.open
 
 import com.intellij.configurationStore.ProjectStoreDescriptor
 import com.intellij.configurationStore.ProjectStorePathCustomizer
-import com.intellij.openapi.application.runReadActionBlocking
-import com.intellij.openapi.diagnostic.getOrHandleException
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.diagnostic.trace
 import com.intellij.openapi.project.Project.DIRECTORY_STORE_FOLDER
 import com.intellij.openapi.project.ProjectManager
-import com.intellij.openapi.vfs.findPsiFile
-import com.intellij.openapi.vfs.refreshAndFindVirtualDirectory
-import com.intellij.util.concurrency.ThreadingAssertions
-import com.intellij.util.concurrency.annotations.RequiresReadLockAbsence
 import org.jetbrains.bazel.commons.constants.Constants
 import org.jetbrains.bazel.languages.projectview.ProjectViewFactory
 import org.jetbrains.bazel.languages.projectview.dotIdeaDirectoryLocation
 import org.jetbrains.bazel.languages.projectview.project.ProjectViewFileLocalizer.isDefaultProjectViewFile
 import org.jetbrains.bazel.languages.projectview.project.ProjectViewFileLocalizer.pickProjectViewFileForProject
-import org.jetbrains.bazel.languages.projectview.psi.ProjectViewPsiFile
-import org.jetbrains.bazel.utils.refreshAndFindVirtualFile
 import java.nio.file.Path
 
 internal class BazelProjectStorePathCustomizer : ProjectStorePathCustomizer {
@@ -64,26 +56,13 @@ internal class BazelProjectStorePathCustomizer : ProjectStorePathCustomizer {
   private fun findProjectRootPath(fileBeingOpen: Path): Path =
     findProjectFolderFromFile(fileBeingOpen) ?: fileBeingOpen.parent
 
-  @RequiresReadLockAbsence(generateAssertion = false)
   private fun selectDotIdeaPath(projectRootPath: Path, projectViewPath: Path): Path {
-    // The VFS refresh requires that there be no active read locks;
-    // otherwise, it will not perform any action and will not provide a warning.
-    ThreadingAssertions.assertNoReadAccess()
-    val projectViewFile = projectViewPath.refreshAndFindVirtualFile() ?: return projectRootPath.defaultDotIdeaDirectory()
-    val rootDir = projectRootPath.refreshAndFindVirtualDirectory() ?: return projectRootPath.defaultDotIdeaDirectory()
-    return runReadActionBlocking {
-      projectViewFile
-        .findPsiFile(ProjectManager.getInstance().defaultProject)
-        ?.let { it as? ProjectViewPsiFile }
-        ?.let { file ->
-          // In principle, ProjectViewFactory.fromProjectViewPsiFile should not throw.
-          // However, in case it does, it breaks the project opening, so it's better to keep it in a try-catch block.
-          runCatching { ProjectViewFactory.fromProjectViewPsiFile(file, rootDir) }
-            .getOrHandleException { log.error("Failed to parse project view file. Falling back to default dotIdea directory.", it) }
-        }
-        ?.dotIdeaDirectoryLocation
-        ?.let(projectRootPath::resolve) ?: projectRootPath.defaultDotIdeaDirectory()
-    }
+    val defaultProject = ProjectManager.getInstance().defaultProject
+    val projectView = ProjectViewFactory.fromOrNull(defaultProject, projectViewPath, projectRootPath)
+    return projectView
+      ?.dotIdeaDirectoryLocation
+      ?.let(projectRootPath::resolve)
+      ?: projectRootPath.defaultDotIdeaDirectory()
   }
 
   private fun Path.defaultDotIdeaDirectory(): Path = resolve(DIRECTORY_STORE_FOLDER)
