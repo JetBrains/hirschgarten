@@ -32,6 +32,7 @@ import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceConfigurationId
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceConfigurationSummary
 import org.jetbrains.bazel.sync.workspace.snapshot.isExecConfig
 import org.jetbrains.bazel.sync.workspace.snapshot.workspaceTargetKey
+import org.jetbrains.bazel.testing.BazelTestDetails
 import org.jetbrains.bazel.util.BspClientTestNotifier
 import org.jetbrains.bsp.protocol.AnalysisCacheInvalidation
 import org.jetbrains.bsp.protocol.BazelTaskEventsHandler
@@ -199,8 +200,9 @@ class BepServer(
         // instead of "No tests were found".
         val targetName = event.id.testResult.label?.takeIf { it.isNotBlank() } ?: "Test"
         val childId = taskId.uniqueSubTask("test")
-        bspClientTestNotifier.startTest(targetName, childId, isSuite = true)
-        bspClientTestNotifier.finishTest(targetName, childId, testStatus, "Test finished")
+
+        val testDetails = BazelTestDetails.testSuite(targetName).build()
+        bspClientTestNotifier.startAndFinishTest(testDetails, childId, testStatus, "Test finished")
       }
     }
   }

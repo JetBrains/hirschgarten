@@ -1,7 +1,8 @@
 package org.jetbrains.bazel.python.run
 
 import com.intellij.execution.runners.ExecutionEnvironment
-import org.jetbrains.bazel.commons.LanguageClass
+import org.jetbrains.annotations.ApiStatus
+import org.jetbrains.annotations.VisibleForTesting
 import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.python.lang.PythonLanguageClass
@@ -11,8 +12,10 @@ import org.jetbrains.bazel.run.commandLine.BazelTestCommandLineState
 import org.jetbrains.bazel.run.config.BazelRunConfiguration
 import org.jetbrains.bazel.run.import.GooglePluginAwareRunHandlerProvider
 import org.jetbrains.bazel.run.state.GenericTestState
+import org.jetbrains.bsp.protocol.TestParams
 
-internal class PythonBazelTestHandler : PythonBazelHandler<GenericTestState>() {
+@ApiStatus.Internal
+class PythonBazelTestHandler : PythonBazelHandler<GenericTestState>() {
   override val name: String
     get() = "Python Test Handler"
 
@@ -21,7 +24,25 @@ internal class PythonBazelTestHandler : PythonBazelHandler<GenericTestState>() {
   override val state: GenericTestState = GenericTestState()
 
   override fun createCommandLineState(environment: ExecutionEnvironment): BazelCommandLineStateBase =
-    BazelTestCommandLineState(environment, state)
+    BazelTestCommandLineState(environment, state, ::addJunitXmlOptionsToEnvironment)
+
+  @VisibleForTesting
+  fun addJunitXmlOptionsToEnvironment(testParams: TestParams): TestParams {
+    val envs = testParams.environmentVariables.orEmpty().toMutableMap()
+    val originalPytestOpts = envs["PYTEST_ADDOPTS"]
+    if (originalPytestOpts == null) {
+      envs["PYTEST_ADDOPTS"] = $$"--junitxml=${XML_OUTPUT_FILE} -o junit_family=xunit1"
+    } else if (!originalPytestOpts.contains("junitxml")) {
+      envs["PYTEST_ADDOPTS"] = $$"$$originalPytestOpts --junitxml=${XML_OUTPUT_FILE} -o junit_family=xunit1"
+    } else {
+      // if the user has already specified --junitxml, we don't want to interfere with that
+      return testParams
+    }
+
+    return testParams.copy(
+      environmentVariables = envs
+    )
+  }
 
   class Provider : GooglePluginAwareRunHandlerProvider {
     override val id: String

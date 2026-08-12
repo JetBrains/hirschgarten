@@ -4,6 +4,7 @@ import com.intellij.execution.Executor
 import com.intellij.execution.configurations.RunProfileState
 import com.intellij.execution.executors.DefaultDebugExecutor
 import com.intellij.execution.runners.ExecutionEnvironment
+import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.python.debug.PythonDebugCommandLineState
 import org.jetbrains.bazel.run.BazelCommandLineStateBase
 import org.jetbrains.bazel.run.BazelRunConfigurationState
@@ -11,7 +12,8 @@ import org.jetbrains.bazel.run.BazelRunHandler
 import org.jetbrains.bazel.run.state.HasBazelParams
 import org.jetbrains.bazel.run.state.HasProgramArguments
 
-internal abstract class PythonBazelHandler<T> : BazelRunHandler
+@ApiStatus.Internal
+abstract class PythonBazelHandler<T> : BazelRunHandler
   where T : BazelRunConfigurationState<T>,
         T : HasProgramArguments,
         T : HasBazelParams {

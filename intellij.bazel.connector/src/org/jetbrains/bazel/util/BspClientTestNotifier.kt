@@ -3,7 +3,7 @@ package org.jetbrains.bazel.util
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.commons.BazelStatus
 import org.jetbrains.bazel.label.Label
-import org.jetbrains.bazel.testing.BazelTestLocationHintProvider
+import org.jetbrains.bazel.testing.BazelTestDetails
 import org.jetbrains.bsp.protocol.BazelTaskEventsHandler
 import org.jetbrains.bsp.protocol.JUnitStyleTestCaseData
 import org.jetbrains.bsp.protocol.TaskFinishParams
@@ -23,37 +23,25 @@ class BspClientTestNotifier(private val taskEventsHandler: BazelTaskEventsHandle
   private var cancelledTests: Int = 0
   private var skippedTests: Int = 0
 
-  /**
-   * Notifies the client about starting a single test or a test suite
-   * The presence or lack of parent's taskId indicates whether it's a test case or a test suite.
-   *
-   * @param displayName display name of the started test / test suite
-   * @param taskId      TaskId of the started test - when parentsId is not empty / test suite - otherwise
-   * @param isSuite     whether the started test is a test suite or a test case
-   * @param parentSuites list of ancestor suites' names, starting from the top level
-   * @param classname `classname` value from test XML, if present
-   */
+  /** Notifies the client about starting a single test or a test suite */
   fun startTest(
-      displayName: String,
-      taskId: TaskId,
-      isSuite: Boolean,
-      parentSuites: List<String> = emptyList(),
-      classname: String? = null,
+    testDetails: BazelTestDetails,
+    taskId: TaskId,
   ) {
-    val locationHint = BazelTestLocationHintProvider.testLocationHint(displayName, classname, parentSuites, isSuite = isSuite)
-    val testStart = TestStart(displayName, isSuite, locationHint)
+    val displayName = testDetails.displayName
+    val locationHint = BazelTestLocationHintProvider.getLocationHint(testDetails)
+    val testStart = TestStart(displayName, testDetails.isSuite, locationHint)
     val taskStartParams =
-        TaskStartParams(
-            taskId,
-            data = testStart,
-            message = "Test $displayName started",
-        )
+      TaskStartParams(
+        taskId,
+        data = testStart,
+        message = "Test $displayName started",
+      )
     taskEventsHandler.onBuildTaskStart(taskStartParams)
   }
 
   /**
    * Notifies the client about finishing a single test or a test suite.
-   * The presence or lack of parent's taskId indicates whether it's a test case or a test suite.
    *
    * @param displayName display name of the finished test / test suite
    * @param taskId      TaskId of the finished test / test suite
@@ -89,6 +77,17 @@ class BspClientTestNotifier(private val taskEventsHandler: BazelTaskEventsHandle
             message = "Test $displayName finished",
         )
     taskEventsHandler.onBuildTaskFinish(taskFinishParams)
+  }
+
+  fun startAndFinishTest(
+    testDetails: BazelTestDetails,
+    taskId: TaskId,
+    status: TestStatus,
+    message: String?,
+    data: TestFinishData? = null,
+  ) {
+    startTest(testDetails, taskId)
+    finishTest(testDetails.displayName, taskId, status, message, data)
   }
 
   /**

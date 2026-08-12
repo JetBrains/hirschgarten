@@ -68,6 +68,7 @@
     <runWithScriptPathExtension implementation="org.jetbrains.bazel.jvm.run.DefaultRunWithScriptPathExtension"/>
     <runWithScriptPathExtension implementation="org.jetbrains.bazel.jvm.run.DebugRunWithScriptPathExtension"/>
 
+    <testLocationHintProvider implementation="org.jetbrains.bazel.testing.BazelJavaTestLocationHintProvider"/>
   </extensions>
 
   <extensions defaultExtensionNs="com.intellij">
