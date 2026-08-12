@@ -489,7 +489,6 @@ class BazelFileEventListenerTest : WorkspaceModelBaseTest() {
         key = WorkspaceTargetKey(mockLabel),
         kind = TargetKind("mock", emptySet(), RuleType.LIBRARY),
         baseDirectory = projectBasePath,
-        isManual = false,
         isWorkspace = true,
         dependencies = listOf(),
         sources = SourceFileCollection.EMPTY,

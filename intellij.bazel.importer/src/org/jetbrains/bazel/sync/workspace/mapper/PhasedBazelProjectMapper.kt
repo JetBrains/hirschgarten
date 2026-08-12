@@ -14,12 +14,12 @@ import org.jetbrains.bazel.commons.phased.kind
 import org.jetbrains.bazel.commons.phased.name
 import org.jetbrains.bazel.commons.phased.resources
 import org.jetbrains.bazel.commons.phased.srcs
+import org.jetbrains.bazel.commons.phased.tags
 import org.jetbrains.bazel.label.DependencyLabel
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.label.assumeResolved
 import org.jetbrains.bazel.languages.projectview.ProjectView
 import org.jetbrains.bazel.languages.projectview.allowManualTargetsSync
-import org.jetbrains.bazel.sync.workspace.persistence.TargetLoadOptions
 import org.jetbrains.bazel.sync.workspace.snapshot.SourceFileCollectionBuilder
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTarget
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
@@ -65,10 +65,9 @@ class PhasedBazelProjectMapper(
       baseDirectory = baseDirectory,
       data = emptyList(),
       generatorName = generatorName,
-      isManual = isManual,
       isWorkspace = true, // TODO
       isTestOnly = false,
-      tags = emptyList(),
+      tags = tags,
     )
   }
 

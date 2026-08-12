@@ -6,9 +6,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.testFramework.junit5.TestApplication
 import com.intellij.testFramework.junit5.fixture.projectFixture
 import io.kotest.matchers.collections.shouldContainExactly
-import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.nulls.shouldNotBeNull
-import io.kotest.matchers.string.shouldContain
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeSameInstanceAs
 import io.kotest.matchers.types.shouldNotBeSameInstanceAs
@@ -39,6 +37,7 @@ import org.jetbrains.bazel.test.framework.target.TestBuildTarget
 import org.jetbrains.bazel.ui.gutters.NonImportedBuildTarget
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.BuildTargetData
+import org.jetbrains.bsp.protocol.BuildTargetTag
 import org.jetbrains.bsp.protocol.SourceFileCollection
 import org.jetbrains.bsp.protocol.data
 import org.jetbrains.bsp.protocol.id
@@ -63,11 +62,11 @@ class TargetStorageTest {
     deps: List<String> = emptyList(),
     executable: Boolean = false,
     data: List<BuildTargetData> = emptyList(),
-    isManual: Boolean = false,
     isWorkspace: Boolean = true,
     baseDirectory: Path = Path.of("/workspace"),
     sources: SourceFileCollection = SourceFileCollection.EMPTY,
     key: WorkspaceTargetKey = WorkspaceTargetKey(label = Label.parse(label)),
+    tags: List<String> = emptyList(),
   ): TestBuildTarget =
     TestBuildTarget(
       key = key,
@@ -82,11 +81,11 @@ class TargetStorageTest {
       resources = SourceFileCollection.EMPTY,
       baseDirectory = baseDirectory,
       data = data,
-      isManual = isManual,
       isWorkspace = isWorkspace,
+      tags = tags,
     )
 
-  private fun BuildTarget.summaryView(): List<Any?> = listOf(key, kind, baseDirectory, isManual, isWorkspace)
+  private fun BuildTarget.summaryView(): List<Any?> = listOf(key, kind, baseDirectory, tags, isWorkspace)
 
   private fun snapshot(
     project: Project,
@@ -120,7 +119,7 @@ class TargetStorageTest {
 
   @Test
   fun `summaries expose the depth-filtered import set only`(): Unit = runBlocking {
-    val bin = target("//app:bin", deps = listOf("//lib:lib"), executable = true, isManual = true)
+    val bin = target("//app:bin", deps = listOf("//lib:lib"), executable = true, tags = listOf(BuildTargetTag.MANUAL))
     val lib = target("//lib:lib", deps = listOf("//deep:deep"))
     val deep = target("//deep:deep")
     publish(project, snapshot(project, targets = listOf(bin, lib, deep), roots = listOf(bin), importDepth = 1))
@@ -242,7 +241,7 @@ class TargetStorageTest {
 
     summary.kind shouldBe bin.kind
     summary.baseDirectory shouldBe bin.baseDirectory
-    summary.isManual shouldBe bin.isManual
+    summary.tags shouldBe bin.tags
 
     summary.sources.getFiles().toList() shouldBe bin.sources.getFiles().toList()
     summary.dependencies shouldBe bin.dependencies

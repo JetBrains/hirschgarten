@@ -7,6 +7,7 @@ import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bazel.label.DependencyLabel
 import org.jetbrains.bsp.protocol.BuildTargetData
 import org.jetbrains.bsp.protocol.SourceFileCollection
+import org.jetbrains.bsp.protocol.isManual
 import java.nio.file.Path
 import kotlin.reflect.KClass
 

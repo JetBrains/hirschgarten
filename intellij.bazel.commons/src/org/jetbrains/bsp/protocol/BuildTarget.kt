@@ -5,7 +5,6 @@ import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.label.DependencyLabel
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.sync.workspace.persistence.TargetLoadOptions
-import org.jetbrains.bazel.sync.workspace.persistence.TargetSection
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
 import java.nio.file.Path
 
@@ -18,12 +17,6 @@ interface BuildTarget {
   // TargetSection.INFO
   val baseDirectory: Path
   val generatorName: String?
-  /**
-   * From Bazel doc (https://bazel.build/reference/be/common-definitions)
-   * manual tag will exclude the target from expansion of target pattern wildcards (..., :*, :all, etc.) and test_suite rules which do not
-   * list the test explicitly when computing the set of top-level targets to build/run for the build, test, and coverage commands
-   */
-  val isManual: Boolean
   /**
    * Indicates if this target belongs to workspace, or counted as "external"
    */
@@ -69,3 +62,11 @@ enum class StrictDependencyCheckedType {
 @ApiStatus.Internal
 inline fun <reified Data> BuildTarget.extractData(): Data? = this.data.filterIsInstance<Data>().singleOrNull()
 
+/**
+ * From Bazel doc (https://bazel.build/reference/be/common-definitions)
+ * manual tag will exclude the target from expansion of target pattern wildcards (..., :*, :all, etc.) and test_suite rules which do not
+ * list the test explicitly when computing the set of top-level targets to build/run for the build, test, and coverage commands
+ */
+@get:ApiStatus.Internal
+val BuildTarget.isManual: Boolean
+  get() = BuildTargetTag.MANUAL in tags

@@ -17,6 +17,7 @@ import org.jetbrains.bazel.run.config.BazelRunConfiguration
 import org.jetbrains.bazel.run.config.bazelRunConfigurationFactory
 import org.jetbrains.bazel.target.targetStorage
 import org.jetbrains.bsp.protocol.id
+import org.jetbrains.bsp.protocol.isManual
 
 internal class BazelAllTestsInDirectoryRunConfigurationProducer : LazyRunConfigurationProducer<BazelRunConfiguration>() {
   override fun getConfigurationFactory(): ConfigurationFactory = bazelRunConfigurationFactory
