@@ -10,6 +10,7 @@
 
 ## Current State (as of 2026-08-11)
 
+
 ### Working Branch
 `development-261` — latest tip: `98bc05a260 Merge pull request #30`
 
@@ -38,6 +39,12 @@ Two commits in this PR:
 
 Added `CONTEXT_DEVELOPMENT_261.md` as a persistent handoff document.
 
+### Recently Completed Work (PR #30)
+
+**Branch**: `context/update-development-261-context` → merged into `development-261`
+
+Added `CONTEXT_DEVELOPMENT_261.md` as a persistent handoff document between sessions, then made the GitHub account note generic.
+
 ### Pending / In-Progress Work
 
 **JVM Wrapper JDK resolution** — branch `fix/resolve-jvm-wrapper-jdk-home`, PR #31 open (→ `development-261`).
@@ -51,27 +58,6 @@ Added `CONTEXT_DEVELOPMENT_261.md` as a persistent handoff document.
     1. Parse `{javaHome}/bin/java` wrapper script for `exec .../bin/java` lines, resolve against Bazel exec root
     2. Scan `execroot/_main/external/` for JDK directories, prefer those matching the version hint in the wrapper name
   - Helpers: `resolveRealJdkFromWrapper()`, `findJdkInExternalDir()`, `findExecRoot()`
-
-**Next step**: —
-
----
-
-**Non-Bazel Python directories** — branch `feat/non-bazel-python-directories`, PR #32 open (→ `development-261`).
-
-**Problem**: Python files not covered by any Bazel target inherit the Java SDK → no Python code intelligence, IDE freezes.
-
-**Fix implemented** (on `feat/non-bazel-python-directories`):
-- New `.bazelproject` section `non_bazel_python_directories:` — lists directories explicitly
-- `NonBazelPythonDirectoriesSection.kt` (new) — parses the section as `List<Path>`
-- `ProjectViewExtensions.kt` — adds `ProjectView.nonBazelPythonDirectories` extension property
-- `PythonProjectSync.kt` — `createFallbackPythonModuleIfNeeded()` replaced: reads the explicit list, resolves relative paths against workspace root, creates one module per listed directory with a Python SDK; falls back to `findPythonSdk()` when no Python Bazel targets exist
-
-Example `.bazelproject` usage:
-```
-non_bazel_python_directories:
-  Snowfort
-  tools/scripts
-```
 
 **Next step**: —
 
