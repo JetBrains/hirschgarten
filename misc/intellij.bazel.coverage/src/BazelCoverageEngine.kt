@@ -77,5 +77,5 @@ internal class BazelCoverageEngine : CoverageEngine() {
   override fun coverageProjectViewStatisticsApplicableTo(fileOrDir: VirtualFile): Boolean = true
 
   override fun createCoverageViewExtension(project: Project, suiteBundle: CoverageSuitesBundle): CoverageViewExtension =
-    BazelCoverageViewExtension(project, getCoverageAnnotator(project), suiteBundle)
+    BazelCoverageViewExtension(project, suiteBundle.getAnnotator(project), suiteBundle)
 }
