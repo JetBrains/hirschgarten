@@ -1,0 +1,40 @@
+module(
+    name = "null",
+    version = "0.1.0",
+)
+
+bazel_dep(name = "rules_kotlin", version = "2.1.0")
+bazel_dep(name = "rules_jvm_external", version = "6.7")
+
+# Set up Maven repositories for dependencies
+maven = use_extension("@rules_jvm_external//:extensions.bzl", "maven")
+maven.install(
+    name = "maven",
+    artifacts = [
+        "junit:junit:4.13.2",
+        "org.jetbrains.kotlinx:kotlinx-coroutines-test:1.9.0",
+        "org.junit.jupiter:junit-jupiter:5.12.1",
+        "org.junit.vintage:junit-vintage-engine:5.12.1",
+        "org.junit.platform:junit-platform-console:1.12.1",
+        "org.junit.platform:junit-platform-suite-api:1.12.1",
+        "org.junit.platform:junit-platform-suite-engine:1.12.1",
+        "io.kotest:kotest-assertions-api-jvm:5.9.1",
+        "io.kotest:kotest-assertions-core-jvm:5.9.1",
+        "io.kotest:kotest-assertions-shared-jvm:5.9.1",
+        "io.kotest:kotest-common-jvm:5.9.1",
+    ],
+    fail_if_repin_required = True,
+    fetch_sources = True,
+    generate_compat_repositories = True,
+    lock_file = "//:maven_install.json",
+    repositories = [
+        "https://repo1.maven.org/maven2",
+        "https://cache-redirector.jetbrains.com/maven-central",
+    ],
+)
+use_repo(maven, "maven")
+
+bazel_dep(name = "hermetic_cc_toolchain", version = "4.0.1")
+
+toolchains = use_extension("@hermetic_cc_toolchain//toolchain:ext.bzl", "toolchains")
+use_repo(toolchains, "zig_sdk")

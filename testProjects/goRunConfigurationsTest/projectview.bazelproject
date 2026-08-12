@@ -1,0 +1,7 @@
+import_run_configurations:
+  tools/intellij/runConfigurations/__main_binary.run.xml
+
+directories:
+  .
+
+derive_targets_from_directories: true

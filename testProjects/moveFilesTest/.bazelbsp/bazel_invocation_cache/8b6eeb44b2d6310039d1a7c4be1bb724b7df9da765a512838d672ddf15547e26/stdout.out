@@ -1,0 +1,6 @@
+release: release 8.2.1
+execution_root: /private/var/tmp/_bazel_Lev.Leontev/9370fc0bc7604ec540add6033e9915ce/execroot/_main
+output_base: /private/var/tmp/_bazel_Lev.Leontev/9370fc0bc7604ec540add6033e9915ce
+workspace: /Users/Lev.Leontev/IdeaProjects/simpleBazelProjectsForTesting/moveFilesTest
+bazel-bin: /private/var/tmp/_bazel_Lev.Leontev/9370fc0bc7604ec540add6033e9915ce/execroot/_main/bazel-out/darwin_arm64-fastbuild/bin
+starlark-semantics: StarlarkSemantics{internal_bazel_only_utf_8_byte_strings=true}

@@ -1,0 +1,3 @@
+targets:
+  //:lib_c
+  //:lib_d

@@ -1,0 +1,6 @@
+.idea
+.bazelbsp
+bazel-bin
+bazel-out
+bazel-coverageTest
+bazel-testlogs

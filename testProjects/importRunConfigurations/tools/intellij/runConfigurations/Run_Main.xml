@@ -1,0 +1,15 @@
+<configuration default="false" name="Bazel run :main" type="BlazeCommandRunConfigurationType" factoryName="Bazel Command" nameIsGenerated="true">
+  <blaze-settings handler-id="BlazeJavaRunConfigurationHandlerProvider" blaze-command="run" kind="java_binary">
+    <blaze-target>//:main</blaze-target>
+    <blaze-user-flag>--keep_going</blaze-user-flag>
+    <blaze-user-exe-flag>-moduleBazelLocation=$PROJECT_DIR$/../MODULE.bazel</blaze-user-exe-flag>
+    <env_state>
+      <envs>
+        <env name="MODULE.bazel" value="$PROJECT_DIR$/../MODULE.bazel" />
+      </envs>
+    </env_state>
+  </blaze-settings>
+  <method v="2">
+    <option name="Blaze.BeforeRunTask" enabled="true" />
+  </method>
+</configuration>

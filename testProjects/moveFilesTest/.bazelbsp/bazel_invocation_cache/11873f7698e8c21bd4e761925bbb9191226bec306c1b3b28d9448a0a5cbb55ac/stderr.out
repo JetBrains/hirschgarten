@@ -1,0 +1,5 @@
+[32mLoading:[0m 0 packages loaded
+[31m[1mERROR: [0mSkipping 'subpackage/Class2.kt': no such target '//:subpackage/Class2.kt': target 'subpackage/Class2.kt' not declared in package '' defined by /Users/Lev.Leontev/IdeaProjects/simpleBazelProjectsForTesting/moveFilesTest/BUILD; however, a source file of this name exists.  (Perhaps add 'exports_files(["subpackage/Class2.kt"])' to /BUILD?)
+[35mWARNING: [0m--keep_going specified, ignoring errors. Results may be inaccurate
+[32mINFO: [0mEmpty results
+[0m

@@ -1,0 +1,9 @@
+derive_targets_from_directories: true
+
+directories:
+  app
+  common
+  -frontend
+  -webapp
+
+import_depth: 0

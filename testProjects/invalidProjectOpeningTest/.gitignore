@@ -1,0 +1,63 @@
+.idea
+# Bazel build output directories
+bazel-*
+*.runfiles/
+.bazelbsp/
+MODULE.bazel.lock
+
+# Bazel binary logs
+*.log
+
+# Generated files by Bazel
+*.pb.go
+*.pb.cc
+*.pb.h
+*.js
+*.ts
+*.d.ts
+
+# Bazel sandbox files (for temporary build files)
+*.sandbox/
+
+# Bazel coverage output
+coverage.dat
+*.gcno
+*.gcda
+*.profraw
+
+# IDE-specific files
+.idea/
+
+# OS-specific files
+.DS_Store
+Thumbs.db
+
+# Python virtual environment (if Python used in project)
+.env/
+venv/
+
+# Node.js dependencies (if applicable)
+node_modules/
+
+# Temporary files and logs
+*.swp
+*.tmp
+*.log
+*.bak
+
+# Ignore cquery and aquery result files
+*.cquery
+*.aquery
+
+# Generated XML or JSON files
+*.xml
+*.json
+
+# Ignore local configurations and cache
+bazel-out/
+bazel-bin/
+bazel-genfiles/
+bazel-testlogs/
+
+# Personal files
+*.user

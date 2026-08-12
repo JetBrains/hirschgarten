@@ -1,0 +1,7 @@
+derive_targets_from_directories: false
+index_all_files_in_directories: true
+
+directories:
+  .
+
+import_depth: 0

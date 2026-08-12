@@ -1,0 +1,26 @@
+bazel_dep(name = "bazel_worker_api", version = "0.0.2")
+bazel_dep(name = "rules_jvm_external", version = "6.5")
+bazel_dep(name = "rules_java", version = "8.3.0")
+bazel_dep(name = "protobuf", version = "28.3")
+bazel_dep(name = "rules_kotlin", version = "2.1.0")
+
+maven = use_extension("@rules_jvm_external//:extensions.bzl", "maven")
+maven.install(
+  artifacts = [
+    "com.google.protobuf:protobuf-java:4.28.3",
+    "com.google.protobuf:protobuf-java-util:4.28.3",
+  ],
+)
+
+use_repo(maven, "maven")
+register_toolchains("//:kotlin_strict_deps_toolchain")
+
+bazel_dep(name = "hermetic_cc_toolchain", version = "4.0.1")
+
+toolchains = use_extension("@hermetic_cc_toolchain//toolchain:ext.bzl", "toolchains")
+use_repo(toolchains, "zig_sdk")
+
+register_toolchains(
+    "@zig_sdk//toolchain/...",
+    "@zig_sdk//libc_aware/toolchain/...",
+)

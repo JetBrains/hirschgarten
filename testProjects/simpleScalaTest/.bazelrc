@@ -1,0 +1,9 @@
+common --enable_platform_specific_config
+
+# Take protoc from protobuf's own prebuilt release binary instead of building it from
+# source; see the note in MODULE.bazel. Supported by protobuf 33.4+.
+common --@protobuf//bazel/toolchains:prefer_prebuilt_protoc
+
+build:linux --extra_toolchains=@zig_sdk//toolchain/... --extra_toolchains=@zig_sdk//libc_aware/toolchain/...
+build:macos --extra_toolchains=@zig_sdk//toolchain/... --extra_toolchains=@zig_sdk//libc_aware/toolchain/...
+try-import %workspace%/user.bazelrc

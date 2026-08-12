@@ -1,0 +1,36 @@
+load("@rules_java//java:java_library.bzl", "java_library")
+load(":my_java_library.bzl", "my_java_library")
+
+java_library(
+    name = "dependency",
+    srcs = ["Dependency.java"],
+)
+
+java_library(
+    name = "another_dependency",
+    srcs = ["AnotherDependency.java"],
+)
+
+java_library(
+    name = "uses_dependency_1",
+    srcs = ["UsesDependency1.java"],
+    deps = ["//:dependency"],
+)
+
+java_library(
+    name = "uses_dependency_2",
+    srcs = ["UsesDependency2.java"],
+    deps = [
+        "//:dependency",
+        "@maven//:junit_junit",
+    ],
+)
+
+my_java_library(
+    name = "uses_dependency_3",
+    srcs = ["UsesDependency3.java"],
+    dependencies = [
+        "@maven//:junit_junit",
+        "//:another_dependency",
+    ],
+)

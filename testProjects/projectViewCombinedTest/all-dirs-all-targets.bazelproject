@@ -1,0 +1,19 @@
+derive_targets_from_directories: false
+index_all_files_in_directories: true
+
+directories:
+  .
+
+targets:
+  //app:app
+  //common:common
+  //server:server
+  //client:client
+  //database:database
+  //frontend:frontend
+  //webapp:webapp
+  //tools:tools
+  //infra:infra
+  //testing:testing
+
+import_depth: 0

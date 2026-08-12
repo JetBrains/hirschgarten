@@ -1,0 +1,35 @@
+module(name = "scala_example")
+
+bazel_dep(name = "rules_scala", version = "7.1.6")
+bazel_dep(name = "rules_jvm_external", version = "6.9")
+
+scala_config = use_extension(
+    "@rules_scala//scala/extensions:config.bzl",
+    "scala_config",
+)
+scala_config.settings(scala_version = "2.13.17")
+
+scala_deps = use_extension(
+    "@rules_scala//scala/extensions:deps.bzl",
+    "scala_deps",
+)
+scala_deps.scala()
+scala_deps.scalatest()
+
+# Every scala_library pulls in rules_scala's scalac worker, which depends on
+# diagnostics_java_proto and therefore on @protobuf//:protoc. Building protoc from source
+# compiles upb's C sources, which the Windows agents' MSVC 14.29 (VS2019) cannot do for
+# protobuf 34 — sync died on upb/mini_descriptor/decode.c with a cl.exe CppCompile error.
+# protobuf 33.4+ can hand out its own prebuilt protoc instead (see the flag in .bazelrc),
+# which keeps protoc and the rules invoking it on the same release. It has to be a stable
+# version, because no protoc binaries are published for -rc tags — and not 34.0 or 34.1,
+# whose toolchain/cc_toolchain_config.bzl fails to load on Bazel 9 ("at index 0 of provides,
+# got element of type NoneType"). That incompatibility is why this was pinned to an rc.
+#
+# With protoc prebuilt, nothing compiles protobuf's C sources anymore, so the original
+# reason for pinning a protobuf new enough for the zig toolchain no longer applies either.
+bazel_dep(name = "protobuf", version = "35.1")
+
+bazel_dep(name = "hermetic_cc_toolchain", version = "4.1.0")
+toolchains = use_extension("@hermetic_cc_toolchain//toolchain:ext.bzl", "toolchains")
+use_repo(toolchains, "zig_sdk")

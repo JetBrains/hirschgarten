@@ -1,0 +1,9 @@
+syntax = "proto3";
+
+package hirschgarten.example;
+
+// Dummy example message for py_proto_library wiring.
+message Greeter {
+  string message = 1;
+  int32 count = 2;
+}

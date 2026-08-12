@@ -1,0 +1,1 @@
+bazel_dep(name = "rules_python", version = "1.0.0")

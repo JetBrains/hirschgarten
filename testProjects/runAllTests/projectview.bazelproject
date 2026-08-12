@@ -1,0 +1,4 @@
+derive_targets_from_directories: true
+directories: .
+import_depth: 0
+allow_manual_targets_sync: true

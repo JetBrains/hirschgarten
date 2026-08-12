@@ -1,0 +1,9 @@
+[0m no actions running
+[33mDEBUG: [0m/private/var/tmp/_bazel_Lev.Leontev/9370fc0bc7604ec540add6033e9915ce/external/gazelle+/internal/bzlmod/go_deps.bzl:571:40: 
+
+Mismatch between versions requested for module github.com/bazelbuild/rules_go
+Bazel dependency version requested in MODULE.bazel: 0.51.0-rc2
+Go module version requested in go.mod: 0.50.1
+Please resolve this mismatch to prevent discrepancies between native Go and Bazel builds
+
+[0m

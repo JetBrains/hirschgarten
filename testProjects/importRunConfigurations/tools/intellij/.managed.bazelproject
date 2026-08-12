@@ -1,0 +1,15 @@
+directories:
+  # Add the directories you want added as source here
+  # By default, we've added your entire workspace ('.')
+  .
+
+# Automatically includes all relevant targets under the 'directories' above
+derive_targets_from_directories: true
+
+targets:
+  # If source code isn't resolving, add additional targets that compile it here
+
+import_run_configurations:
+  tools/intellij/runConfigurations/Remote_JVM.xml
+  tools/intellij/runConfigurations/Run_Main.xml
+  tools/intellij/runConfigurations/Test_Calculator.xml

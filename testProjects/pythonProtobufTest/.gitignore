@@ -1,0 +1,9 @@
+/.bazelbsp/
+/.idea/
+/.venv/
+/bazel-bin
+/bazel-hirschgarten_python_test
+/bazel-out
+/bazel-testlogs
+
+__pycache__/

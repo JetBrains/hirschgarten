@@ -1,0 +1,19 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="//:main_binary" type="BazelRunConfigurationType">
+    <bsp-state handler-provider-id="BazelGoRunHandlerProvider" check-visibility="true">
+      <bsp-target>@//:main_binary</bsp-target>
+      <handler-state programArguments="example_arg=example_value another_arg=another_value">
+        <option name="env">
+          <EnvironmentVariablesDataOptions>
+            <envs>
+              <env key="EXAMPLE_ENV" value="EXAMPLE_VALUE" />
+            </envs>
+          </EnvironmentVariablesDataOptions>
+        </option>
+      </handler-state>
+    </bsp-state>
+    <method v="2">
+      <option name="BazelGoBinaryBeforeRunTaskProvider" enabled="false" />
+    </method>
+  </configuration>
+</component>

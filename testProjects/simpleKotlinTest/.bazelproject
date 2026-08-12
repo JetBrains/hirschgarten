@@ -1,0 +1,7 @@
+derive_targets_from_directories: true
+directories:
+  .
+  -broken
+
+build_flags:
+  --noshow_timestamps

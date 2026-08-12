@@ -1,0 +1,16 @@
+syntax = "proto3";
+
+package example.service;
+
+import "google/protobuf/timestamp.proto";
+import "proto/common/common.proto";
+
+option java_package = "example.service";
+option java_multiple_files = true;
+
+message ServiceRequest {
+  string request_id = 1;
+  double priority = 2;
+  google.protobuf.Timestamp created_at = 3;
+  example.common.Metadata metadata = 4;
+}

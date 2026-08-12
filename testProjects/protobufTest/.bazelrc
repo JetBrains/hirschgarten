@@ -1,0 +1,14 @@
+common --enable_bzlmod
+
+common --java_language_version=21
+common --java_runtime_version=remotejdk_21
+
+common --tool_java_language_version=21
+common --tool_java_runtime_version=remotejdk_21
+
+common --enable_platform_specific_config
+
+build:linux --extra_toolchains=@zig_sdk//toolchain:linux_amd64_gnu.2.28 --extra_toolchains=@zig_sdk//toolchain:linux_arm64_gnu.2.28
+build:macos --extra_toolchains=@zig_sdk//toolchain:darwin_amd64
+build:windows --extra_toolchains=@zig_sdk//toolchain:windows_amd64 --extra_toolchains=@zig_sdk//toolchain:windows_arm64
+try-import %workspace%/user.bazelrc

@@ -1,0 +1,6 @@
+targets:
+  //app:app
+  //common:common
+  //server:server
+
+import_depth: 0

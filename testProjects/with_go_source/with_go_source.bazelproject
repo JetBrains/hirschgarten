@@ -1,0 +1,10 @@
+targets:
+  //...
+
+directories:
+  .
+
+gazelle_target: //:gazelle
+
+enabled_rules:
+  io_bazel_rules_go

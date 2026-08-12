@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module type="JAVA_MODULE" version="4">
+  <component name="NewModuleRootManager" inherit-compiler-output="true">
+    <exclude-output />
+    <content url="file://$MODULE_DIR$">
+      <sourceFolder url="file://$MODULE_DIR$/src" isTestSource="false" />
+    </content>
+    <orderEntry type="inheritedJdk" />
+    <orderEntry type="sourceFolder" forTests="false" />
+    <orderEntry type="library" name="java_tools3" level="project" />
+    <orderEntry type="library" name="Runner_deploy-ijar2" level="project" />
+    <orderEntry type="library" name="java_tools" level="project" />
+    <orderEntry type="library" name="4.13.3" level="project" />
+    <orderEntry type="library" name="java_tools2" level="project" />
+    <orderEntry type="library" name="processed_junit-4.13.4" level="project" />
+    <orderEntry type="library" name="Runner_deploy-ijar" level="project" />
+    <orderEntry type="library" name="java_tools4" level="project" />
+    <orderEntry type="library" name="Runner_deploy-ijar3" level="project" />
+    <orderEntry type="library" name="processed_junit-4.13.3" level="project" />
+    <orderEntry type="library" name="4.13.2" level="project" />
+    <orderEntry type="library" name="4.13.4" level="project" />
+    <orderEntry type="library" name="junit-4.13.2" level="project" />
+    <orderEntry type="library" name="processed_junit-4.13.2" level="project" />
+  </component>
+</module>

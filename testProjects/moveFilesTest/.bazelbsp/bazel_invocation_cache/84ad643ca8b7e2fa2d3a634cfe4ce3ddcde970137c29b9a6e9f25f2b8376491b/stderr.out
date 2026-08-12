@@ -1,0 +1,36 @@
+[32mComputing main repo mapping:[0m 
+[32mLoading:[0m 
+[32mLoading:[0m 0 packages loaded
+[32mAnalyzing:[0m 4 targets (3 packages loaded, 0 targets configured)
+[32mAnalyzing:[0m 4 targets (3 packages loaded, 0 targets configured)
+
+[32mAnalyzing:[0m 4 targets (70 packages loaded, 1240 targets configured)
+[32m[1 / 1][0m no actions running
+[32mAnalyzing:[0m 4 targets (70 packages loaded, 1240 targets configured)
+[32m[1 / 1][0m no actions running
+[32mAnalyzing:[0m 4 targets (70 packages loaded, 1240 targets configured)
+[32m[1 / 1][0m no actions running
+[32mAnalyzing:[0m 4 targets (70 packages loaded, 1240 targets configured)
+[32m[1 / 1][0m no actions running
+[32mAnalyzing:[0m 4 targets (70 packages loaded, 1240 targets configured)
+[32m[1 / 1][0m no actions running
+[32mAnalyzing:[0m 4 targets (76 packages loaded, 2935 targets configured)
+[32m[1 / 1][0m no actions running
+[32mAnalyzing:[0m 4 targets (78 packages loaded, 3081 targets configured)
+[32m[1 / 1][0m no actions running
+[32mAnalyzing:[0m 4 targets (93 packages loaded, 7586 targets configured)
+[32m[1 / 1][0m no actions running
+[32mAnalyzing:[0m 4 targets (96 packages loaded, 9759 targets configured)
+[32m[1 / 1][0m no actions running
+[32mAnalyzing:[0m 4 targets (96 packages loaded, 9759 targets configured)
+[32m[1 / 1][0m no actions running
+[32mAnalyzing:[0m 4 targets (104 packages loaded, 9952 targets configured)
+[32m[1 / 1][0m no actions running
+[32mINFO: [0mAnalyzed 4 targets (105 packages loaded, 9964 targets configured).
+[32mINFO: [0mFound 4 targets...
+[32mINFO: [0mElapsed time: 21.835s, Critical Path: 0.02s
+[32mINFO: [0m6 processes: 6 internal.
+[32mINFO: [0mBuild completed successfully, 6 total actions
+[32mINFO:[0m 
+[32mINFO: [0mBuild Event Protocol files produced successfully.
+[0m

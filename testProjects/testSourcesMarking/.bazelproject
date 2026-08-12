@@ -1,0 +1,6 @@
+derive_targets_from_directories: true
+directories:
+  .
+
+test_sources:
+  java/projectViewTestSources/src/*

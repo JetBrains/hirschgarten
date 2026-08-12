@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+option java_package = "com.jetbrains.proto";
+
+import "pure/libA/lib_a.proto";
+
+package lib_b;
+
+message OtherMessage {
+  lib_a.MyMessage msg = 1;
+}

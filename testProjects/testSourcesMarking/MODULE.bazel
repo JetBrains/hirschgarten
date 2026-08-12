@@ -1,0 +1,15 @@
+bazel_dep(name = "rules_java", version = "9.6.1")
+bazel_dep(name = "rules_jvm_external", version = "6.7")
+
+maven = use_extension("@rules_jvm_external//:extensions.bzl", "maven")
+maven.install(
+    artifacts = [
+        "junit:junit:4.12",
+    ],
+)
+use_repo(maven, "maven")
+
+bazel_dep(name = "hermetic_cc_toolchain", version = "4.1.0")
+
+toolchains = use_extension("@hermetic_cc_toolchain//toolchain:ext.bzl", "toolchains")
+use_repo(toolchains, "zig_sdk")
