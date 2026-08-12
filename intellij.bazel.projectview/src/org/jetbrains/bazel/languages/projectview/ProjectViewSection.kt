@@ -19,8 +19,6 @@ abstract class Section<T> {
 
   abstract fun fromRawValues(rawValues: List<String>): T?
 
-  abstract fun serialize(value: T): String
-
   open val doc: String? = null
   open val completionProvider: CompletionProvider<CompletionParameters>? = null
 
@@ -63,11 +61,7 @@ abstract class ScalarSection<T> : Section<T>() {
     }
     return fromRawValue(rawValues[0])
   }
-
-  override fun serialize(value: T): String = "$name: $value"
 }
 
 @ApiStatus.Internal
-abstract class ListSection<T : Collection<*>> : Section<T>() {
-  override fun serialize(value: T): String = "$name:\n  ${value.joinToString(separator = "\n  ") { it.toString() }}"
-}
+abstract class ListSection<T : Collection<*>> : Section<T>()

@@ -71,6 +71,4 @@ object ProjectViewSections {
   val REGISTERED_SECTIONS get() = ProjectViewSectionProvider.EP.extensionList.flatMap { it.sections }
 
   fun getSectionByName(name: String): Section<*>? = REGISTERED_SECTIONS.find { it.name == name }
-
-  inline fun <reified T> getSectionByType(): T? = REGISTERED_SECTIONS.find { it is T } as T
 }

@@ -3,7 +3,6 @@ package org.jetbrains.bazel.sync.workspace.projectTree
 import com.intellij.platform.ide.progress.ModalTaskOwner
 import com.intellij.platform.ide.progress.TaskCancellation
 import com.intellij.platform.ide.progress.runWithModalProgressBlocking
-import com.intellij.psi.PsiFile
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
 import kotlinx.coroutines.runBlocking
 import org.jetbrains.bazel.bazelrunner.BazelProcess
@@ -18,7 +17,6 @@ import org.jetbrains.bazel.commons.RepoMapping
 import org.jetbrains.bazel.commons.RepoMappingDisabled
 import org.jetbrains.bazel.commons.orFallbackVersion
 import org.jetbrains.bazel.languages.projectview.ProjectViewFactory
-import org.jetbrains.bazel.languages.projectview.psi.ProjectViewPsiFile
 import org.jetbrains.bazel.project.BazelProjectFixtures.initializeBazelProject
 import org.jetbrains.bazel.server.sync.BspProjectMapper
 import org.jetbrains.bazel.sync.workspace.projectTree.BazelRunnerSpyStubbingHelper.captureBazelCommandFromMock
@@ -50,15 +48,13 @@ class WorkspaceDirectoriesFromProjectViewTest : BasePlatformTestCase() {
 
   fun `test should add workspace root to included directories when there is no directories section`() {
     // GIVEN
-    val psiFile = myFixture.configureByText(
-      "Empty.bazelproject",
+    val projectViewContent =
       """
         derive_targets_from_directories: false
-      """.trimIndent(),
-    )
+      """.trimIndent()
 
     // WHEN
-    val result = runMapper(psiFile)
+    val result = runMapper(projectViewContent)
 
     // THEN
     assertSameElements(
@@ -72,16 +68,14 @@ class WorkspaceDirectoriesFromProjectViewTest : BasePlatformTestCase() {
     val excludedDir = workspaceRoot.resolve("excluded").createDirectories()
     includedDir.resolve("BUILD").createFile()
 
-    val psiFile = myFixture.configureByText(
-      "B.bazelproject",
+    val projectViewContent =
       """
         directories:
           included
           -excluded
-      """.trimIndent(),
-    )
+      """.trimIndent()
 
-    val result = runMapper(psiFile)
+    val result = runMapper(projectViewContent)
 
     assertSameElements(
       result.includedDirectories,
@@ -99,8 +93,7 @@ class WorkspaceDirectoriesFromProjectViewTest : BasePlatformTestCase() {
     val pkg = workspaceRoot.resolve("pkg").createDirectories()
     pkg.resolve("BUILD").createFile()
 
-    val psiFile = myFixture.configureByText(
-      "Targets.bazelproject",
+    val projectViewContent =
       """
         directories:
           included
@@ -108,10 +101,9 @@ class WorkspaceDirectoriesFromProjectViewTest : BasePlatformTestCase() {
         targets:
           //pkg:target
         derive_targets_from_directories: false
-      """.trimIndent(),
-    )
+      """.trimIndent()
 
-    val result = runMapper(psiFile)
+    val result = runMapper(projectViewContent)
 
     assertSameElements(
       result.includedDirectories,
@@ -124,8 +116,7 @@ class WorkspaceDirectoriesFromProjectViewTest : BasePlatformTestCase() {
     val pkg = workspaceRoot.resolve("pkg").createDirectories()
     pkg.resolve("BUILD").createFile()
 
-    val psiFile = myFixture.configureByText(
-      "Targets.bazelproject",
+    val projectViewContent =
       """
         directories:
           included
@@ -133,10 +124,9 @@ class WorkspaceDirectoriesFromProjectViewTest : BasePlatformTestCase() {
         targets:
           //pkg:target
         derive_targets_from_directories: true
-      """.trimIndent(),
-    )
+      """.trimIndent()
 
-    val result = runMapper(psiFile)
+    val result = runMapper(projectViewContent)
 
     assertSameElements(
       result.includedDirectories,
@@ -152,17 +142,15 @@ class WorkspaceDirectoriesFromProjectViewTest : BasePlatformTestCase() {
     val subpkg = pkg.resolve("subpkg").createDirectories()
     subpkg.resolve("BUILD").createFile()
 
-    val psiFile = myFixture.configureByText(
-      "Targets.bazelproject",
+    val projectViewContent =
       """
         directories:
           included
         targets:
           //pkg:target
-      """.trimIndent(),
-    )
+      """.trimIndent()
 
-    val result = runMapper(psiFile)
+    val result = runMapper(projectViewContent)
 
     assertSameElements(
       result.includedDirectories,
@@ -182,8 +170,7 @@ class WorkspaceDirectoriesFromProjectViewTest : BasePlatformTestCase() {
     val subpkg = pkg.resolve("subpkg").createDirectories()
     subpkg.resolve("BUILD").createFile()
 
-    val psiFile = myFixture.configureByText(
-      "Targets.bazelproject",
+    val projectViewContent =
       """
         directories:
           included
@@ -191,10 +178,9 @@ class WorkspaceDirectoriesFromProjectViewTest : BasePlatformTestCase() {
         targets:
           //pkg/subpkg:target
         derive_targets_from_directories: false
-      """.trimIndent(),
-    )
+      """.trimIndent()
 
-    val result = runMapper(psiFile)
+    val result = runMapper(projectViewContent)
 
     assertSameElements(
       result.includedDirectories,
@@ -214,8 +200,7 @@ class WorkspaceDirectoriesFromProjectViewTest : BasePlatformTestCase() {
     val subpkg = pkg.resolve("subpkg").createDirectories()
     subpkg.resolve("BUILD").createFile()
 
-    val psiFile = myFixture.configureByText(
-      "Targets.bazelproject",
+    val projectViewContent =
       """
         directories:
           included
@@ -223,10 +208,9 @@ class WorkspaceDirectoriesFromProjectViewTest : BasePlatformTestCase() {
         targets:
           //pkg/subpkg:target
         derive_targets_from_directories: true
-      """.trimIndent(),
-    )
+      """.trimIndent()
 
-    val result = runMapper(psiFile)
+    val result = runMapper(projectViewContent)
 
     assertSameElements(
       result.includedDirectories,
@@ -245,17 +229,15 @@ class WorkspaceDirectoriesFromProjectViewTest : BasePlatformTestCase() {
     val subpkg = pkg.resolve("subpkg").createDirectories()
     subpkg.resolve("BUILD").createFile()
 
-    val psiFile = myFixture.configureByText(
-      "Targets.bazelproject",
+    val projectViewContent =
       """
         directories:
           included
         targets:
           //pkg/...
-      """.trimIndent(),
-    )
+      """.trimIndent()
 
-    val result = runMapper(psiFile)
+    val result = runMapper(projectViewContent)
 
     assertSameElements(
       result.includedDirectories,
@@ -274,8 +256,7 @@ class WorkspaceDirectoriesFromProjectViewTest : BasePlatformTestCase() {
     val subpkg = pkg.resolve("subpkg").createDirectories()
     subpkg.resolve("BUILD").createFile()
 
-    val psiFile = myFixture.configureByText(
-      "Targets.bazelproject",
+    val projectViewContent =
       """
         directories:
           included
@@ -283,10 +264,9 @@ class WorkspaceDirectoriesFromProjectViewTest : BasePlatformTestCase() {
         targets:
           //pkg/...
         derive_targets_from_directories: true
-      """.trimIndent(),
-    )
+      """.trimIndent()
 
-    val result = runMapper(psiFile)
+    val result = runMapper(projectViewContent)
 
     assertSameElements(
       result.includedDirectories,
@@ -305,8 +285,7 @@ class WorkspaceDirectoriesFromProjectViewTest : BasePlatformTestCase() {
     val subpkg = pkg.resolve("subpkg").createDirectories()
     subpkg.resolve("BUILD").createFile()
 
-    val psiFile = myFixture.configureByText(
-      "Targets.bazelproject",
+    val projectViewContent =
       """
         directories:
           included
@@ -314,10 +293,9 @@ class WorkspaceDirectoriesFromProjectViewTest : BasePlatformTestCase() {
         targets:
           //pkg/...
         derive_targets_from_directories: false
-      """.trimIndent(),
-    )
+      """.trimIndent()
 
-    val result = runMapper(psiFile)
+    val result = runMapper(projectViewContent)
 
     assertSameElements(
       result.includedDirectories,
@@ -337,8 +315,7 @@ class WorkspaceDirectoriesFromProjectViewTest : BasePlatformTestCase() {
     val subpkg = pkg.resolve("subpkg").createDirectories()
     subpkg.resolve("BUILD").createFile()
 
-    val psiFile = myFixture.configureByText(
-      "Targets.bazelproject",
+    val projectViewContent =
       """
         directories:
           included
@@ -346,10 +323,9 @@ class WorkspaceDirectoriesFromProjectViewTest : BasePlatformTestCase() {
         targets:
           //pkg/...
         derive_targets_from_directories: false
-      """.trimIndent(),
-    )
+      """.trimIndent()
 
-    val result = runMapper(psiFile)
+    val result = runMapper(projectViewContent)
 
     assertSameElements(
       result.includedDirectories,
@@ -369,8 +345,7 @@ class WorkspaceDirectoriesFromProjectViewTest : BasePlatformTestCase() {
     aspectTestingDir.resolve("BUILD").createFile()
     workspaceRoot.resolve("BUILD").createFile()
 
-    val psiFile = myFixture.configureByText(
-      ".bazelproject",
+    val projectViewContent =
       """
         directories:
           .
@@ -378,11 +353,10 @@ class WorkspaceDirectoriesFromProjectViewTest : BasePlatformTestCase() {
           //:clwb_tests
           //aspect/testing/...
         derive_targets_from_directories: false
-      """.trimIndent(),
-    )
+      """.trimIndent()
 
     // WHEN
-    val result = runMapper(psiFile)
+    val result = runMapper(projectViewContent)
 
     // THEN aspect/testing and workspace root should be included
     assertSameElements(
@@ -403,16 +377,14 @@ class WorkspaceDirectoriesFromProjectViewTest : BasePlatformTestCase() {
     val aspectsDir = workspaceRoot.resolve(".bazelbsp/aspects").createDirectories()
     aspectsDir.resolve("BUILD").createFile()
 
-    val psiFile = myFixture.configureByText(
-      ".bazelproject",
+    val projectViewContent =
       """
         directories: .
         derive_targets_from_directories: true
-      """.trimIndent(),
-    )
+      """.trimIndent()
 
     // WHEN
-    val result = runMapper(psiFile)
+    val result = runMapper(projectViewContent)
 
     // THEN
     assertDoesntContain(
@@ -425,19 +397,17 @@ class WorkspaceDirectoriesFromProjectViewTest : BasePlatformTestCase() {
     // GIVEN
     val toolboxDir = workspaceRoot.resolve("toolbox").createDirectories()
     val communityKernelDir = workspaceRoot.resolve("community/fleet/kernel").createDirectories()
-    val psiFile = myFixture.configureByText(
-      "Targets.bazelproject",
+    val projectViewContent =
       """
         directories:
           toolbox
         targets:
           @community//fleet/kernel:...
         derive_targets_from_directories: false
-      """.trimIndent(),
-    )
+      """.trimIndent()
 
     // WHEN
-    val result = runMapper(psiFile, createRepoMapping("community", "community+", workspaceRoot.resolve("community")))
+    val result = runMapper(projectViewContent, createRepoMapping("community", "community+", workspaceRoot.resolve("community")))
 
     // THEN
     assertSameElements(
@@ -449,19 +419,17 @@ class WorkspaceDirectoriesFromProjectViewTest : BasePlatformTestCase() {
   fun `test should not pass build flags to bazel query command`() {
     // GIVEN
     val extraToolchainsOption = "--extra_toolchains=//some_directory/non_existing_toolchain:non_existing_toolchain"
-    val psiFile = myFixture.configureByText(
-      "testeest.bazelproject",
+    val projectViewContent =
       """
         directories:
           some_directory
         build_flags:
           $extraToolchainsOption
         derive_targets_from_directories: true
-      """.trimIndent(),
-    )
+      """.trimIndent()
 
     // WHEN
-    runMapper(psiFile)
+    runMapper(projectViewContent)
 
     // THEN
     val bazelCommand = captureBazelCommandFromMock(bazelRunner)
@@ -470,10 +438,10 @@ class WorkspaceDirectoriesFromProjectViewTest : BasePlatformTestCase() {
   }
 
   private fun runMapper(
-    psiFile: PsiFile?,
+    projectViewContent: String,
     repoMapping: RepoMapping = RepoMappingDisabled,
   ): WorkspaceDirectoriesResult {
-    val projectView = ProjectViewFactory.fromProjectViewPsiFile(psiFile as ProjectViewPsiFile)
+    val projectView = ProjectViewFactory.from(project, projectViewContent, root = workspaceRoot)
     val owner = ModalTaskOwner.guess()
     val mapper = BspProjectMapper(workspaceRoot, bazelRunner, projectView, BazelPathsResolver(createBazelInfo()))
     return runWithModalProgressBlocking(
