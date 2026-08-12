@@ -31,12 +31,10 @@ class BazelWorkspace(val project: Project) : Disposable {
    */
   suspend fun initialize() {
     readAction {
-      synchronized(this) {
-        if (initialized || disposed || project.isDisposed) return@readAction
-        BazelProjectAware.initialize(this)
-        BspExternalServicesSubscriber(project).subscribe(this)
-        initialized = true
-      }
+      if (initialized || disposed || project.isDisposed) return@readAction
+      BazelProjectAware.initialize(this)
+      BspExternalServicesSubscriber(project).subscribe(this)
+      initialized = true
     }
   }
 
