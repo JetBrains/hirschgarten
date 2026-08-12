@@ -78,7 +78,9 @@ internal class CollectProjectDetailsTask(
       calculateAllUniqueJdkInfosSubtask(projectDetails)
       uniqueJavaHomes.orEmpty().also {
         if (it.isNotEmpty()) {
-          projectDetails.defaultJdkName = project.bazelProjectName.projectNameToJdkName(it.first())
+          // Resolve through JVM wrapper scripts before computing the name so it matches the name
+          // used when the SDK is registered in addBspFetchedJdks → addJdkIfNeeded.
+          projectDetails.defaultJdkName = project.bazelProjectName.projectNameToJdkName(SdkUtils.resolveJavaHome(it.first()))
         } else {
           projectDetails.defaultJdkName = SdkUtils.getProjectJdkOrMostRecentJdk(project)?.name
         }

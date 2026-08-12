@@ -27,12 +27,22 @@ internal object SdkUtils {
     // points to a directory containing only bin/java (a shell script), not a full JDK.
     // In that case, parse the wrapper to find the real JDK path.
     val resolvedHome = resolveJavaHome(javaHome)
-    val jdkName = projectName.projectNameToJdkName(resolvedHome)
+    val resolvedJdkName = projectName.projectNameToJdkName(resolvedHome)
     // Normalize the JDK path, because some code in the platform compares paths using `startsWith`, e.g.
     // https://github.com/JetBrains/intellij-community/blob/b41a4084da5521effedd334e28896fd9d07410da/java/codeserver/core/src/com/intellij/java/codeserver/core/JpmsModuleAccessInfo.kt#L216
     val path = resolvedHome.normalize().toString()
-    val jdk = ExternalSystemJdkProvider.getInstance().createJdk(jdkName, path)
+    val jdk = ExternalSystemJdkProvider.getInstance().createJdk(resolvedJdkName, path)
     addSdkIfNeeded(jdk)
+
+    // Module entities (via ModuleDetailsToJavaModuleTransformer) compute their SDK name from the
+    // raw javaHome (wrapper path), while addJdkIfNeeded registers under the resolved path name.
+    // To bridge this gap, also register an alias SDK under the original wrapper-path name so that
+    // module-level SDK dependencies can resolve and code does not show red.
+    if (resolvedHome != javaHome) {
+      val originalJdkName = projectName.projectNameToJdkName(javaHome)
+      val aliasJdk = ExternalSystemJdkProvider.getInstance().createJdk(originalJdkName, path)
+      addSdkIfNeeded(aliasJdk)
+    }
   }
 
   /**
@@ -40,8 +50,11 @@ internal object SdkUtils {
    * Otherwise, attempts to resolve the real JDK through multiple strategies:
    * 1. Parse the wrapper script at `{javaHome}/bin/java` for exec paths
    * 2. Scan `external/` under the Bazel exec root for a matching JDK
+   *
+   * Internal so callers that need to compute a stable SDK name (e.g. for [setProjectSdk]) can
+   * resolve the path through the same logic used by [addJdkIfNeeded].
    */
-  private fun resolveJavaHome(javaHome: Path): Path {
+  internal fun resolveJavaHome(javaHome: Path): Path {
     if (javaSdkInstance.isValidSdkHome(javaHome.normalize().toString())) {
       return javaHome
     }
