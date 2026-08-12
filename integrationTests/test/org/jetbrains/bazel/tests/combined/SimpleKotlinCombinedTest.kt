@@ -57,7 +57,6 @@ import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
 
 private val SIMPLE_KOTLIN_PROJECT = simpleBazelProject(
-  revision = "af3e066604a8af0c9505b088ae5e7055ecf3b6d5",
   path = "simpleKotlinTest",
   configureProject = { context ->
     BazelProjectConfigurer.configureProjectBeforeUse(

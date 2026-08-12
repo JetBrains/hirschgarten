@@ -14,7 +14,6 @@ import org.junit.jupiter.api.Test
 import kotlin.time.Duration.Companion.minutes
 
 private val BASIC_SCALA_PROJECT = simpleBazelProject(
-  revision = "91afe6b055e8c9dedd518b243916c1a0b005e96b",
   path = "simpleScalaTest",
 )
 

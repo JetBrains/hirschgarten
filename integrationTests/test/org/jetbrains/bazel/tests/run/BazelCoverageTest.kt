@@ -20,7 +20,6 @@ import org.junit.jupiter.params.provider.ValueSource
 import kotlin.time.Duration.Companion.minutes
 
 private val BAZEL_COVERAGE_PROJECT = simpleBazelProject(
-  revision = "cb47ad3072495dd9811da4ae2f346566f8b0c7cf",
   path = "coverageTest",
 )
 

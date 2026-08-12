@@ -4,25 +4,25 @@ The e2e IDE-Starter tests run their fixture projects across an explicit OS × Ba
 matrix. Each test owns a package here (`e2e/<test-name>/BUILD.bazel`) that declares which
 (OS, Bazel version) cells exist; `e2e/BUILD.bazel` aggregates the per-OS suites that CI runs.
 
-There is no fixture patching: every fixture project in
-[`simpleBazelProjectsForTesting`](https://github.com/JetBrainsBazelBot/simpleBazelProjectsForTesting)
-is cross-platform as committed, and the checked-out fixture stays byte-identical to its
-repository state for the whole test run. Anyone can `cd` into a checkout and debug with plain
-Bazel — what the test saw is what is committed, plus generated `user.bazelrc`/project-view files.
+Fixture projects are bundled under `plugins/bazel/testProjects/<fixture>`. Tests copy the selected
+fixture from the current Ultimate checkout to a disposable workspace. The source fixture stays
+unchanged; only the copy receives generated `user.bazelrc` and project-view files. For local Bazel
+runs, pass `--nocache_test_results` so fixture changes rerun the test. TeamCity already supplies
+this flag.
 
 ## Why the declarations live here and not next to the test code
 
 The natural expectation is `e2e/basic-scala/BUILD.bazel` sitting next to `BasicScalaIdeStarterTest.kt`,
-or next to the fixture project. Neither is reachable today:
+or next to the fixture project. Neither location works:
 
 - **Not next to the test sources.** All test classes belong to the single JPS module
   `intellij.bazel.integrationTests`, whose `BUILD.bazel` is generated from the `.iml` and collects
   classes with `glob(["test/**/*.kt"])`. A `BUILD.bazel` file makes its directory a separate Bazel
   package, and globs never cross package boundaries — so a BUILD file next to a test class would
   silently drop that class from `integrationTests_test_lib` (and from the monolithic Linux run).
-- **Not next to the fixture.** Fixture projects are not in this repository at all; IDE-Starter
-  clones them from `simpleBazelProjectsForTesting` at test runtime, so there is no Bazel package to
-  attach anything to. Moving fixtures in-tree is [BAZEL-3392](https://youtrack.jetbrains.com/issue/BAZEL-3392).
+- **Not next to the fixture.** Directories under `plugins/bazel/testProjects` are test data and are
+  excluded from Ultimate's Bazel graph. Matrix declarations must stay reachable from the Ultimate
+  build.
 - **One package per test, not one shared file.** Target names must be unique within a package, and
   every test declares a `test_suite` named after its OS. Collapsing all tests into a single
   `e2e/BUILD.bazel` would therefore require prefixing every target
@@ -63,8 +63,8 @@ ide_starter_e2e_matrix(
   Linux cells for them would run the same test twice in CI. Folding that monolithic Linux run onto
   the matrix is a follow-up; until then **new tests should declare `os_list = ["windows"]`** unless
   they need an OS-specific fixture setup.
-- Cells are tagged `exclusive`, because these tests are not isolated from each other: all fixtures
-  share one clone directory (which each test wipes and resets to its own pinned revision), teardown
+- Cells are tagged `exclusive`, because these tests are not isolated from each other: tests that use
+  the same fixture share its copied-project destination (which each test replaces), teardown
   kills any Bazel/JCEF process under `/ide-tests/` machine-wide, the IDE-Starter cache root is
   shared, and on Linux/macOS the nested Bazel output base is keyed by that shared workspace path.
   Per-cell isolation, after which the tag can be dropped, is
@@ -77,12 +77,12 @@ generates one OS-named test per entry and does not select a Bazel version.
 ## How the Bazel-version axis works
 
 `USE_BAZEL_VERSION` is read natively by bazelisk inside the launched IDE and wins over the
-fixture's committed `.bazelversion`. Nothing rewrites checked-out files:
+fixture's committed `.bazelversion`. Nothing rewrites the source fixture:
 
 - The committed `.bazelversion` is simply the default — it is what you get when running a test
   from the IDE without any selection.
 - The committed `MODULE.bazel.lock` matches that default. When a matrix cell selects another
-  version, Bazel regenerates whatever is stale in the disposable checkout
+  version, Bazel regenerates whatever is stale in the disposable copy
   (default `--lockfile_mode=update`).
 - On Windows, the nested Bazel invocations get short isolated roots
   (`startup --output_user_root/--install_base/--output_base`) keyed by project root and
@@ -90,7 +90,7 @@ fixture's committed `.bazelversion`. Nothing rewrites checked-out files:
 
 ## How fixtures stay cross-platform
 
-OS differences live in standard Bazel mechanisms inside the fixture repo, never in per-OS file
+OS differences live in standard Bazel mechanisms inside each bundled fixture, never in per-OS file
 variants:
 
 - **`MODULE.bazel` is identical on every OS** and declares all deps/extensions unconditionally
@@ -115,16 +115,17 @@ one OS needs are written by the test's own `configureProject` step (see `StrictD
 
 ## Adding a test to the matrix
 
-1. Make the fixture cross-platform in `simpleBazelProjectsForTesting` (see the contract above),
-   push, and pin the new revision in the test's `simpleBazelProject(...)` declaration.
+1. Add or update the cross-platform fixture under `plugins/bazel/testProjects/<fixture>` (see the
+   contract above), then reference that fixture in the test declaration.
 2. Create `e2e/<test-name>/BUILD.bazel` (lowercase kebab-case, conventionally matching the test
    name) with an `ide_starter_e2e_matrix` call — normally `os_list = ["windows"]`, see above — and
    add the new package's OS suites to the aggregating suites in `e2e/BUILD.bazel`.
 3. Mirror the OS in CI: add a `WindowsRun`/target entry to the test's `TestDef` in UTC's
    `.teamcity/src/plugins/bazel/buildTypes/BazelPluginIdeStarterTest.kt`.
-4. Run the config check: `bazel test //plugins/bazel/integrationTests:fixture_config_tests`.
+4. Run the config check:
+   `bazel test --nocache_test_results //plugins/bazel/integrationTests:fixture_config_tests`.
 5. Run the real cell, e.g.
-   `bazel test //plugins/bazel/integrationTests/e2e/strict-deps:windows_bazel_9_0_0`
+   `bazel test --nocache_test_results //plugins/bazel/integrationTests/e2e/strict-deps:windows_bazel_9_0_0`
    (or the `:windows` suite for the default version).
 
 ## Caveats

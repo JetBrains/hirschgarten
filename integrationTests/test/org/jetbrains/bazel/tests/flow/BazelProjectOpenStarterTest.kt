@@ -33,13 +33,10 @@ import kotlin.io.path.div
 import kotlin.io.path.writeText
 import kotlin.time.Duration
 
-private const val BAZEL_PROJECT_OPEN_REVISION = "5cbca8140ac85e5178ca803935fbd9e1d9400a07"
-
 private fun bazelProjectOpenProject(
   projectPath: String,
   configureProject: (com.intellij.ide.starter.ide.IDETestContext) -> Unit = BazelProjectConfigurer::configureProjectBeforeUse,
 ) = simpleBazelProject(
-  revision = BAZEL_PROJECT_OPEN_REVISION,
   path = projectPath,
   configureProject = configureProject,
 )

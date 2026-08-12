@@ -40,7 +40,6 @@ private val FILES_TO_CHECK_FOR_RED_CODE =
 private const val GO_LINTER_PLUGIN_ID = "com.ypwang.plugin.go-linter"
 
 private val GOLAND_SYNC_PROJECT = simpleBazelProject(
-  revision = "f79550b7459d4f0ee7de195605f7c1038e2ec4ae",
   path = "with_go_source",
   configureProject = { context ->
     BazelProjectConfigurer.configureProjectBeforeUse(

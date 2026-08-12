@@ -45,7 +45,6 @@ import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
 
 private val IMPORT_RUN_CONFIGURATIONS_PROJECT = simpleBazelProject(
-  revision = "a59bb1e33ed063e03242d0055054bea97366e23f",
   path = "importRunConfigurations",
   configureProject = { context ->
     BazelProjectConfigurer.configureProjectBeforeUseWithoutBazelClean(

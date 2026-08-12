@@ -14,7 +14,6 @@ import org.junit.jupiter.api.Test
 import kotlin.time.Duration.Companion.minutes
 
 private val NON_MODULE_TARGETS_PROJECT = simpleBazelProject(
-  revision = "af3e066604a8af0c9505b088ae5e7055ecf3b6d5",
   path = "nonModuleTargetsTest",
 )
 

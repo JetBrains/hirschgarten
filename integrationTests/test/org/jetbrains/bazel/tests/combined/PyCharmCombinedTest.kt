@@ -23,7 +23,6 @@ import org.junit.jupiter.api.Test
 import kotlin.time.Duration.Companion.seconds
 
 private val PYCHARM_COMBINED_PROJECT = simpleBazelProject(
-  revision = "5cbca8140ac85e5178ca803935fbd9e1d9400a07",
   path = "simpleMultiLanguageTest",
   configureProject = { context ->
     BazelProjectConfigurer.configureProjectBeforeUseWithoutBazelClean(context)

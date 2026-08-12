@@ -27,7 +27,6 @@ import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
 
 private val GO_RUN_CONFIGURATIONS_PROJECT = simpleBazelProject(
-  revision = "f01c28ffa2adfadee12673e44e78fa63d7cd8b13",
   path = "goRunConfigurationsTest",
   configureProject = { context ->
     BazelProjectConfigurer.configureProjectBeforeUse(

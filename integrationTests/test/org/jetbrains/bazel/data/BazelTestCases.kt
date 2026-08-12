@@ -2,10 +2,11 @@ package org.jetbrains.bazel.data
 
 import com.intellij.ide.starter.ide.IDETestContext
 import com.intellij.ide.starter.models.TestCase
-import com.intellij.ide.starter.project.GitProjectInfo
 import com.intellij.ide.starter.project.ProjectInfoSpec
+import com.intellij.ide.starter.project.ReusableLocalProjectInfo
 import com.intellij.ide.starter.project.TestCaseTemplate
 import org.jetbrains.bazel.test.compat.IntegrationTestCompat
+import org.jetbrains.bazel.test.framework.BazelPathManager
 import java.nio.file.Path
 import kotlin.io.path.createDirectories
 import kotlin.io.path.createSymbolicLinkPointingTo
@@ -14,22 +15,16 @@ import kotlin.io.path.exists
 
 object IdeaBazelCases : BaseBazelCasesParametrized(BazelTestContext.IDEA) {
   val NonIndexableFilesAllTabSESplit = withBazelProject(
-    projectInfo = withDefaults(
-      repositoryUrl = "https://github.com/JetBrainsBazelBot/simpleBazelProjectsForTesting",
-      commitHash = "90fcdecc4ea14ca4e453565e667f67d2cb27eb6e",
-      branchName = "main",
-      relativePath = "simpleMultiLanguageTest",
-      configure = { context -> BazelProjectConfigurer.configureProjectBeforeUseWithoutBazelClean(context) },
+    projectInfo = simpleBazelProject(
+      path = "simpleMultiLanguageTest",
+      configureProject = { context -> BazelProjectConfigurer.configureProjectBeforeUseWithoutBazelClean(context) },
     ),
   )
 
   val ProjectViewChange = withBazelProject(
-    projectInfo = withDefaults(
-      repositoryUrl = "https://github.com/JetBrainsBazelBot/simpleBazelProjectsForTesting.git",
-      commitHash = "1b07410678cfef0042e82ecfaadbbd9f34c1cd03",
-      branchName = "main",
-      relativePath = "projectViewChangeTest",
-      configure = { context ->
+    projectInfo = simpleBazelProject(
+      path = "projectViewChangeTest",
+      configureProject = { context ->
         BazelProjectConfigurer.configureProjectBeforeUseWithoutBazelClean(context, createProjectView = false)
         preCacheBazelisk(context)
       },
@@ -55,32 +50,7 @@ fun preCacheBazelisk(context: IDETestContext) {
 }
 
 open class BaseBazelCasesParametrized(val context: BazelTestContext) : TestCaseTemplate(context.getIdeInfo()) {
-  fun withProject(project: IdeStarterBazelProject): TestCase<GitProjectInfo> =
-    withBazelProject(
-      GitProjectInfo(
-        repositoryUrl = project.repositoryUrl,
-        commitHash = project.revision,
-        branchName = project.branch,
-        projectHomeRelativePath = { root -> root.resolve(project.projectPath) },
-        isReusable = false,
-        configureProjectBeforeUse = project.configureProject,
-      ),
-    )
-
-  protected fun withDefaults(
-    repositoryUrl: String,
-    commitHash: String,
-    branchName: String,
-    relativePath: String? = null,
-    configure: (IDETestContext) -> Unit = { },
-  ) = GitProjectInfo(
-    repositoryUrl = repositoryUrl,
-    commitHash = commitHash,
-    branchName = branchName,
-    projectHomeRelativePath = { p -> relativePath?.let { p.resolve(it) } ?: p },
-    isReusable = false,
-    configureProjectBeforeUse = configure,
-  )
+  fun withProject(project: IdeStarterBazelProject): TestCase<IdeStarterBazelProject> = withBazelProject(project)
 
   protected fun <T : ProjectInfoSpec> withBazelProject(projectInfo: T): TestCase<T> =
     withProject(projectInfo)
@@ -88,33 +58,65 @@ open class BaseBazelCasesParametrized(val context: BazelTestContext) : TestCaseT
 }
 
 class IdeStarterBazelProject internal constructor(
-  val repositoryUrl: String,
-  val revision: String,
-  val branch: String,
-  val projectPath: String,
-  val configureProject: (IDETestContext) -> Unit,
-) {
+  path: String,
+  override val configureProjectBeforeUse: (IDETestContext) -> Unit,
+  testProjectsRoot: Path = BazelPathManager.bazelTestProjectsRoot,
+) : ProjectInfoSpec {
+  internal val fixtureRoot: Path
+  internal val pathWithinFixture: Path?
+  private val localProject: ReusableLocalProjectInfo
+
   init {
-    require(FULL_GIT_REVISION.matches(revision)) {
-      "IDE-Starter fixture revision must be an exact 40-character lowercase hexadecimal commit, got '$revision'"
+    require(path.isNotBlank()) { "Bazel test fixture path must not be empty" }
+    require(!isAbsoluteOnAnyPlatform(path)) { "Bazel test fixture path must be relative: '$path'" }
+
+    val projectPath = Path.of(path)
+    require(projectPath.none { it.toString() == ".." } && path.split('/', '\\').none { it == ".." }) {
+      "Bazel test fixture path must not contain '..': '$path'"
     }
+
+    val fixtureName = projectPath.first().toString()
+    require(fixtureName != ".") { "Bazel test fixture path must start with a fixture name: '$path'" }
+
+    fixtureRoot = testProjectsRoot.resolve(fixtureName)
+    pathWithinFixture = if (projectPath.nameCount == 1) null else projectPath.subpath(1, projectPath.nameCount).normalize()
+    localProject = ReusableLocalProjectInfo(
+      projectDir = fixtureRoot,
+      configureProjectBeforeUse = configureProjectBeforeUse,
+      description = "Bundled Bazel test fixture '$path'",
+    )
   }
 
+  override val isReusable: Boolean
+    get() = localProject.isReusable
+
+  override val downloadTimeout
+    get() = localProject.downloadTimeout
+
+  override fun downloadAndUnpackProject(): Path? {
+    val copiedFixtureRoot = localProject.downloadAndUnpackProject() ?: return null
+    val innerPath = pathWithinFixture ?: return copiedFixtureRoot
+    val projectHome = copiedFixtureRoot.resolve(innerPath).normalize()
+    require(projectHome.startsWith(copiedFixtureRoot) && projectHome.exists()) {
+      "Bazel test fixture path does not exist: '$innerPath' in '$fixtureRoot'"
+    }
+    return projectHome
+  }
+
+  override fun getDescription(): String = localProject.getDescription()
+
   private companion object {
-    val FULL_GIT_REVISION = Regex("[0-9a-f]{40}")
+    val WINDOWS_ABSOLUTE_PATH = Regex("^[A-Za-z]:[\\\\/].*")
+
+    fun isAbsoluteOnAnyPlatform(path: String): Boolean =
+      Path.of(path).isAbsolute || WINDOWS_ABSOLUTE_PATH.matches(path) || path.startsWith("/") || path.startsWith("\\")
   }
 }
 
 fun simpleBazelProject(
-  revision: String,
   path: String,
-  repositoryUrl: String = "https://github.com/JetBrainsBazelBot/simpleBazelProjectsForTesting.git",
-  branch: String = "main",
   configureProject: (IDETestContext) -> Unit = BazelProjectConfigurer::configureProjectBeforeUse,
 ): IdeStarterBazelProject = IdeStarterBazelProject(
-  repositoryUrl = repositoryUrl,
-  revision = revision,
-  branch = branch,
-  projectPath = path,
-  configureProject = configureProject,
+  path = path,
+  configureProjectBeforeUse = configureProject,
 )

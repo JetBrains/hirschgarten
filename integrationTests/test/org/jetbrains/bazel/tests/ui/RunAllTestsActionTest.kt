@@ -17,7 +17,6 @@ import org.junit.jupiter.params.provider.ValueSource
 import kotlin.time.Duration.Companion.minutes
 
 private val RUN_ALL_TESTS_PROJECT = simpleBazelProject(
-  revision = "f57e56ae83125caf4ddc417bb3b759a7c40231c6",
   path = "runAllTests",
 )
 

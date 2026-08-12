@@ -43,7 +43,6 @@ import kotlin.time.Duration.Companion.seconds
 import com.intellij.ide.starter.driver.execute as sdkExecute
 
 private val SIMPLE_JAVA_PROJECT = simpleBazelProject(
-  revision = "5cbca8140ac85e5178ca803935fbd9e1d9400a07",
   path = "simpleJavaTest",
 )
 

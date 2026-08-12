@@ -21,7 +21,6 @@ import org.junit.jupiter.api.Test
 import kotlin.time.Duration.Companion.minutes
 
 private val COMPILED_SOURCE_CODE_INSIDE_JAR_EXCLUDE_PROJECT = simpleBazelProject(
-  revision = "5cbca8140ac85e5178ca803935fbd9e1d9400a07",
   path = "generatedCodeTest",
 )
 

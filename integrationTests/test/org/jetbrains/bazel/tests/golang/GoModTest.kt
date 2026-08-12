@@ -19,7 +19,6 @@ import kotlin.time.Duration.Companion.seconds
 import kotlin.time.TimeSource
 
 private val GO_MOD_PROJECT = simpleBazelProject(
-  revision = "6b0657e79e32494837b88ded4083d799bf1e3efc",
   path = "goModTest",
   configureProject = { context ->
     BazelProjectConfigurer.configureProjectBeforeUse(

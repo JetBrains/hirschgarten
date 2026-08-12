@@ -17,7 +17,6 @@ import org.junit.jupiter.api.Test
 import kotlin.time.Duration.Companion.minutes
 
 private val TEST_SOURCE_MARKING_PROJECT = simpleBazelProject(
-  revision = "ce48e24a5cbb8315737a8b42b274ff4a99ad7a3e",
   path = "testSourcesMarking",
 )
 

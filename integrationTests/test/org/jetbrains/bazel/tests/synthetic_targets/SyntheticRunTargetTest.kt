@@ -23,7 +23,6 @@ import org.opentest4j.MultipleFailuresError
 import kotlin.time.Duration.Companion.minutes
 
 private val SYNTHETIC_RUN_TARGET_PROJECT = simpleBazelProject(
-  revision = "5cbca8140ac85e5178ca803935fbd9e1d9400a07",
   path = "syntheticRunTargetTest",
 )
 

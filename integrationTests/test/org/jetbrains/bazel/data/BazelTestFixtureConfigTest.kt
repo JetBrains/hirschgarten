@@ -1,5 +1,8 @@
 package org.jetbrains.bazel.data
 
+import com.intellij.ide.starter.di.di
+import com.intellij.ide.starter.path.GlobalPaths
+import org.jetbrains.bazel.test.framework.BazelPathManager
 import org.jetbrains.bazel.test.framework.serializeBazelRcPath
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
@@ -9,43 +12,112 @@ import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
+import org.kodein.di.DI
+import org.kodein.di.bindSingleton
 import java.nio.file.Files
 import java.nio.file.Path
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.Executors
 import kotlin.io.path.createDirectories
 import kotlin.io.path.exists
+import kotlin.io.path.isDirectory
+import kotlin.io.path.isRegularFile
+import kotlin.io.path.readText
 import kotlin.io.path.writeText
 
 internal class BazelTestFixtureConfigTest {
   @Test
-  fun `project declarations require exact revisions`() {
-    val project = simpleBazelProject(
-      repositoryUrl = "https://example.invalid/fixtures.git",
-      revision = "0123456789abcdef0123456789abcdef01234567",
-      branch = "main",
-      path = "simpleJavaTest",
+  fun `project declarations parse the fixture root and inner path`(@TempDir tempDir: Path) {
+    assertEquals(BazelPathManager.pluginSourceRoot.resolve("testProjects"), BazelPathManager.bazelTestProjectsRoot)
+    assertEquals(BazelPathManager.testDataRoot.resolve("testProjects"), BazelPathManager.testProjectsRoot)
+    assertTrue(BazelPathManager.bazelTestProjectsRoot.resolve("simpleJavaTest").isDirectory())
+    assertTrue(BazelPathManager.bazelTestProjectsRoot.resolve("simpleJavaTest/MODULE.bazel").isRegularFile())
+
+    val project = IdeStarterBazelProject(
+      path = "simpleJavaTest/MODULE.bazel",
+      configureProjectBeforeUse = {},
+      testProjectsRoot = tempDir,
     )
 
-    assertEquals("simpleJavaTest", project.projectPath)
-    listOf("0123456", "0123456789ABCDEF0123456789ABCDEF01234567", "g123456789abcdef0123456789abcdef01234567")
-      .forEach { revision ->
+    assertEquals(tempDir.resolve("simpleJavaTest"), project.fixtureRoot)
+    assertEquals(Path.of("MODULE.bazel"), project.pathWithinFixture)
+    assertFalse(project.isReusable)
+  }
+
+  @Test
+  fun `project declarations reject empty absolute and parent paths`(@TempDir tempDir: Path) {
+    val absolutePath = tempDir.resolve("simpleJavaTest").toAbsolutePath().toString()
+
+    listOf(
+      "",
+      " ",
+      absolutePath,
+      "C:\\fixtures\\simpleJavaTest",
+      "/fixtures/simpleJavaTest",
+      "\\fixtures\\simpleJavaTest",
+      "\\\\server\\fixtures\\simpleJavaTest",
+    ).forEach { path ->
+      assertThrows(IllegalArgumentException::class.java) {
+        IdeStarterBazelProject(path, {}, tempDir)
+      }
+    }
+    listOf("..", "../simpleJavaTest", "simpleJavaTest/..", "simpleJavaTest/../other", "simpleJavaTest\\..\\other")
+      .forEach { path ->
         assertThrows(IllegalArgumentException::class.java) {
-          simpleBazelProject(revision = revision, path = "simpleJavaTest")
+          IdeStarterBazelProject(path, {}, tempDir)
         }
       }
   }
 
   @Test
-  fun `project declarations default the fixture repository and branch`() {
-    val project = simpleBazelProject(
-      revision = "0123456789abcdef0123456789abcdef01234567",
-      path = "nested/project",
-    )
+  fun `project declarations return fresh fixture root module and ijwb copies`(@TempDir tempDir: Path) {
+    val fixturesRoot = tempDir.resolve("fixtures").createDirectories()
+    val fixtureRoot = fixturesRoot.resolve("legacyGooglePluginTest").createDirectories()
+    fixtureRoot.resolve("MODULE.bazel").writeText("module(name = \"fixture\")")
+    fixtureRoot.resolve(".ijwb").createDirectories().resolve(".bazelproject").writeText("directories:\n  .")
 
-    assertEquals("https://github.com/JetBrainsBazelBot/simpleBazelProjectsForTesting.git", project.repositoryUrl)
-    assertEquals("main", project.branch)
-    assertEquals("nested/project", project.projectPath)
+    withTemporaryStarterPaths(tempDir.resolve("starter")) {
+      val rootProject = IdeStarterBazelProject("legacyGooglePluginTest", {}, fixturesRoot)
+      val copiedRoot = checkNotNull(rootProject.downloadAndUnpackProject())
+      assertTrue(copiedRoot.isDirectory())
+      assertNotEquals(fixtureRoot, copiedRoot)
+
+      val moduleFile = checkNotNull(
+        IdeStarterBazelProject("legacyGooglePluginTest/MODULE.bazel", {}, fixturesRoot).downloadAndUnpackProject(),
+      )
+      assertTrue(moduleFile.isRegularFile())
+
+      val ijwbDirectory = checkNotNull(
+        IdeStarterBazelProject("legacyGooglePluginTest/.ijwb", {}, fixturesRoot).downloadAndUnpackProject(),
+      )
+      assertTrue(ijwbDirectory.isDirectory())
+
+      val writableCopy = checkNotNull(rootProject.downloadAndUnpackProject())
+      writableCopy.resolve("created-by-test.txt").writeText("created")
+      writableCopy.resolve("MODULE.bazel").writeText("changed")
+
+      val freshCopy = checkNotNull(rootProject.downloadAndUnpackProject())
+      assertFalse(freshCopy.resolve("created-by-test.txt").exists())
+      assertEquals("module(name = \"fixture\")", freshCopy.resolve("MODULE.bazel").readText())
+      assertEquals("module(name = \"fixture\")", fixtureRoot.resolve("MODULE.bazel").readText())
+
+      assertThrows(IllegalArgumentException::class.java) {
+        IdeStarterBazelProject("legacyGooglePluginTest/missing", {}, fixturesRoot).downloadAndUnpackProject()
+      }
+    }
+  }
+
+  private fun <T> withTemporaryStarterPaths(checkoutDir: Path, action: () -> T): T {
+    val previousDi = di
+    di = DI {
+      extend(previousDi)
+      bindSingleton<GlobalPaths>(overrides = true) { object : GlobalPaths(checkoutDir) {} }
+    }
+    return try {
+      action()
+    } finally {
+      di = previousDi
+    }
   }
 
   @Test

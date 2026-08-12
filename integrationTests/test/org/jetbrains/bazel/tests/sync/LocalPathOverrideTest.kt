@@ -22,7 +22,6 @@ import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
 
 private val LOCAL_PATH_OVERRIDE_PROJECT = simpleBazelProject(
-  revision = "5cbca8140ac85e5178ca803935fbd9e1d9400a07",
   path = "localPathOverride",
 )
 

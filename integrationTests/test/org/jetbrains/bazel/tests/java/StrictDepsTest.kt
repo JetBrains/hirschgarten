@@ -25,7 +25,6 @@ import kotlin.io.path.writeText
 import kotlin.time.Duration.Companion.minutes
 
 private val STRICT_DEPS_PROJECT = simpleBazelProject(
-  revision = "5cbca8140ac85e5178ca803935fbd9e1d9400a07",
   path = "protobufStrictDepsTest",
   configureProject = { context ->
     BazelProjectConfigurer.configureProjectBeforeUse(

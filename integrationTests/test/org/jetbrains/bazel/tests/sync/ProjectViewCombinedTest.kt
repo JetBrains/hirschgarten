@@ -57,7 +57,6 @@ import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
 
 private val PROJECT_VIEW_COMBINED_PROJECT = simpleBazelProject(
-  revision = "5cbca8140ac85e5178ca803935fbd9e1d9400a07",
   path = "projectViewCombinedTest",
   configureProject = { context ->
     BazelProjectConfigurer.configureProjectBeforeUseWithoutBazelClean(

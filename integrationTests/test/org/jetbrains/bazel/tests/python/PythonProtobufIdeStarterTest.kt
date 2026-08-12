@@ -16,7 +16,6 @@ import org.junit.jupiter.api.Test
 import kotlin.time.Duration.Companion.minutes
 
 private val PYTHON_PROTOBUF_PROJECT = simpleBazelProject(
-  revision = "2a408a472e9161dc823fa3b45c779479898cf22d",
   path = "pythonProtobufTest",
   configureProject = { context ->
     BazelProjectConfigurer.configureProjectBeforeUseWithoutBazelClean(context)

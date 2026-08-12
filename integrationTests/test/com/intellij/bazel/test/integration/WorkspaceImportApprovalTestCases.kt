@@ -3,26 +3,22 @@ package com.intellij.bazel.test.integration
 import com.intellij.ide.starter.extended.config.Const.SSH_GIT_SPACE_PREFIX
 import com.intellij.ide.starter.extended.data.PlatformGitProject
 import com.intellij.ide.starter.models.IdeInfo
-import com.intellij.ide.starter.project.GitHubProject
+import com.intellij.ide.starter.project.ReusableLocalProjectInfo
 import com.intellij.ide.starter.project.TestCaseTemplate
 import com.intellij.tools.ide.starter.product.idea.ultimate.IdeaUltimate
+import org.jetbrains.bazel.test.framework.BazelPathManager
 
 object WorkspaceImportApprovalTestCases : TestCaseTemplate(IdeInfo.IdeaUltimate) {
 
-  private fun simpleBazelProjectsForTesting(name: String) = withProject(
-    GitHubProject.fromGithub(
-      branchName = "main",
-      commitHash = "6b8eb8de37dbb91e2906d6a059596101c22762f8",
-      repoRelativeUrl = "JetBrainsBazelBot/simpleBazelProjectsForTesting",
-    ).copy(projectHomeRelativePath = { it.resolve(name) }),
+  private fun bundledBazelProject(name: String) = withProject(
+    ReusableLocalProjectInfo(BazelPathManager.bazelTestProjectsRoot.resolve(name)),
   )
 
-  val SimpleKotlinTest = simpleBazelProjectsForTesting("simpleKotlinTest")
-  val KotlinStrictDepsTest = simpleBazelProjectsForTesting("kotlinStrictDepsTest")
-  val LocalPathOverrideTest = simpleBazelProjectsForTesting("localPathOverride")
-  val NonModuleTargetsTest = simpleBazelProjectsForTesting("nonModuleTargetsTest")
-  val SimpleJavaTest = simpleBazelProjectsForTesting("simpleJavaTest")
-  val SimpleScalaTest = simpleBazelProjectsForTesting("simpleScalaTest")
+  val SimpleKotlinTest = bundledBazelProject("simpleKotlinTest")
+  val LocalPathOverrideTest = bundledBazelProject("localPathOverride")
+  val NonModuleTargetsTest = bundledBazelProject("nonModuleTargetsTest")
+  val SimpleJavaTest = bundledBazelProject("simpleJavaTest")
+  val SimpleScalaTest = bundledBazelProject("simpleScalaTest")
 
   val InSaneBazel = withProject(
     PlatformGitProject.fromProjectPath(

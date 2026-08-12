@@ -22,7 +22,6 @@ import kotlin.io.path.appendText
 import kotlin.io.path.div
 
 private val GO_RUN_CONFIGURATIONS_SYMLINK_PROJECT = simpleBazelProject(
-  revision = "f01c28ffa2adfadee12673e44e78fa63d7cd8b13",
   path = "goRunConfigurationsTest",
   configureProject = { context ->
     BazelProjectConfigurer.configureProjectBeforeUse(

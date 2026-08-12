@@ -13,7 +13,6 @@ import org.junit.jupiter.api.Test
 import kotlin.time.Duration.Companion.minutes
 
 private val BROKEN_DEPS_PROJECT = simpleBazelProject(
-  revision = "41a8dc6b668681d114d6760e7755de0daa25ab12",
   path = "broken",
 )
 
