@@ -99,7 +99,6 @@ class WorkspaceSnapshotServiceTest {
         JavaToolchainData(sourceVersion = "17", targetVersion = "17"),
       ),
       generatorName = null,
-      isManual = false,
       isWorkspace = true,
       isTestOnly = false,
     )

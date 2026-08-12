@@ -106,7 +106,6 @@ class SnapshotKryoSerializationTest {
       baseDirectory = Path.of("/workspace/src"),
       data = data,
       generatorName = "my_macro",
-      isManual = false,
       isWorkspace = true,
       isTestOnly = false,
     )
@@ -244,7 +243,6 @@ class SnapshotKryoSerializationTest {
       ),
       baseDirectory = Path.of("/workspace/foo"),
       generatorName = null,
-      isManual = false,
       isWorkspace = true,
       isTestOnly = true,
       tags = listOf("no-ide"),
@@ -253,7 +251,9 @@ class SnapshotKryoSerializationTest {
     restoredPartial.kind shouldBe partialTarget.kind
     restoredPartial.baseDirectory shouldBe partialTarget.baseDirectory
     restoredPartial.generatorName shouldBe partialTarget.generatorName
+    restoredPartial.isWorkspace shouldBe partialTarget.isWorkspace
     restoredPartial.isTestOnly shouldBe partialTarget.isTestOnly
+    restoredPartial.tags shouldBe partialTarget.tags
 
     val deps = WorkspaceTargetDeps(
       dependencies = listOf(

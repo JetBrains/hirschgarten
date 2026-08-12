@@ -22,7 +22,6 @@ data class NonImportedBuildTarget(
   override val loaded: TargetLoadOptions get() = TargetLoadOptions.MINIMAL
 
   override val generatorName: String? get() = null
-  override val isManual: Boolean get() = false
   override val isWorkspace: Boolean get() = true
   override val isTestOnly: Boolean get() = false
   override val tags: List<String> get() = listOf()

@@ -37,7 +37,6 @@ class PartialWorkspaceTarget(
   val kind: TargetKind,
   val baseDirectory: Path,
   val generatorName: String?,
-  val isManual: Boolean,
   val isWorkspace: Boolean,
   val isTestOnly: Boolean,
   val tags: List<String>

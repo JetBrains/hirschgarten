@@ -1,6 +1,8 @@
 package org.jetbrains.bazel.sync.workspace.mapper.phased
 
+import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
+import io.kotest.matchers.nulls.shouldNotBeNull
 import org.jetbrains.bazel.commons.BazelInfo
 import org.jetbrains.bazel.commons.BazelPathsResolver
 import org.jetbrains.bazel.commons.BazelRelease
@@ -20,6 +22,7 @@ import org.jetbrains.bazel.test.framework.target.TestBuildTarget
 import org.jetbrains.bazel.test.framework.target.asTestBuildTarget
 import org.jetbrains.bazel.workspace.model.test.framework.BazelPathsResolverMock
 import org.jetbrains.bazel.workspace.model.test.framework.WorkspaceModelBaseTest
+import org.jetbrains.bsp.protocol.BuildTargetTag
 import org.jetbrains.bsp.protocol.SourceFileCollection
 import org.jetbrains.bsp.protocol.id
 import org.junit.jupiter.api.BeforeEach
@@ -413,6 +416,16 @@ class FirstPhaseTargetToBspMapperTest : WorkspaceModelBaseTest() {
           "@//target1",
           "@//manual_target",
         )
+      resultTargets
+        .singleOrNull { it.id.toString() == "@//manual_target" }
+        .shouldNotBeNull()
+        .tags shouldContainExactlyInAnyOrder listOf(BuildTargetTag.MANUAL)
+
+      resultTargets
+        .singleOrNull { it.id.toString() == "@//target1" }
+        .shouldNotBeNull()
+        .tags
+        .shouldBeEmpty()
     }
   }
 }

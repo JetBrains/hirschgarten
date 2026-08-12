@@ -15,6 +15,7 @@ import org.jetbrains.bazel.runnerAction.TestTargetAction
 import org.jetbrains.bazel.runnerAction.getCoverageExecutor
 import org.jetbrains.bazel.target.targetStorage
 import org.jetbrains.bsp.protocol.BuildTarget
+import org.jetbrains.bsp.protocol.isManual
 import javax.swing.Icon
 
 internal open class RunAllTestsBaseAction(

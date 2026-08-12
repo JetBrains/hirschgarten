@@ -20,7 +20,6 @@ internal class WorkspaceTarget(
   override val baseDirectory: Path,
   override val data: List<BuildTargetData>,
   override val generatorName: String?,
-  override val isManual: Boolean,
   override val isWorkspace: Boolean,
   override val isTestOnly: Boolean,
   override val tags: List<String>,
