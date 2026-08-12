@@ -50,7 +50,7 @@ import org.jetbrains.bazel.languages.starlark.utils.StarlarkSrcsListEval
 import org.jetbrains.bazel.magicmetamodel.formatAsModuleName
 import org.jetbrains.bazel.progress.ShowConsole
 import org.jetbrains.bazel.progress.syncConsole
-import org.jetbrains.bazel.projectAware.BazelProjectAware
+import org.jetbrains.bazel.projectAware.BazelWorkspace
 import org.jetbrains.bazel.run.task.BazelBuildTaskListener
 import org.jetbrains.bazel.server.connection
 import org.jetbrains.bazel.sync.status.SyncStatusService
@@ -382,11 +382,11 @@ open class DefaultBazelFileEventProcessor(private val project: Project): BazelFi
       }.toMap().also {
         if (emptyEvaluation.isNotEmpty()) {
           logger.warn("Cannot evaluate targets for ${emptyEvaluation.size} new files. Show \"Sync Bazel changes\" button. ${emptyEvaluation.take(3).joinToString()}")
-          BazelProjectAware.notify(project)
+          BazelWorkspace.notify(project)
         }
       }
     } else {
-      BazelProjectAware.notify(project)
+      BazelWorkspace.notify(project)
       emptyMap()
     }
   }
