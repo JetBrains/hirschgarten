@@ -62,8 +62,8 @@ class WorkspaceDirectoriesFromProjectViewTest : BasePlatformTestCase() {
 
     // THEN
     assertSameElements(
-      result.includedDirectories.map { it.uri },
-      listOf(workspaceRoot.toUri().toString()),
+      result.includedDirectories,
+      listOf(workspaceRoot),
     )
   }
 
@@ -84,16 +84,13 @@ class WorkspaceDirectoriesFromProjectViewTest : BasePlatformTestCase() {
     val result = runMapper(psiFile)
 
     assertSameElements(
-      result.includedDirectories.map { it.uri },
-      listOf(includedDir.toUri().toString()),
+      result.includedDirectories,
+      listOf(includedDir),
     )
 
     assertSameElements(
-      result.excludedDirectories.map { it.uri },
-      listOf(
-        excludedDir.toUri().toString(),
-        dotBazelBspPath.toUri().toString(),
-      ),
+      result.excludedDirectories,
+      listOf(excludedDir, dotBazelBspPath)
     )
   }
 
@@ -117,11 +114,8 @@ class WorkspaceDirectoriesFromProjectViewTest : BasePlatformTestCase() {
     val result = runMapper(psiFile)
 
     assertSameElements(
-      result.includedDirectories.map { it.uri },
-      listOf(
-        includedDir.toUri().toString(),
-        pkg.toUri().toString(),
-      ),
+      result.includedDirectories,
+      listOf(includedDir, pkg),
     )
   }
 
@@ -145,8 +139,8 @@ class WorkspaceDirectoriesFromProjectViewTest : BasePlatformTestCase() {
     val result = runMapper(psiFile)
 
     assertSameElements(
-      result.includedDirectories.map { it.uri },
-      listOf(includedDir.toUri().toString()),
+      result.includedDirectories,
+      listOf(includedDir),
     )
   }
 
@@ -171,18 +165,12 @@ class WorkspaceDirectoriesFromProjectViewTest : BasePlatformTestCase() {
     val result = runMapper(psiFile)
 
     assertSameElements(
-      result.includedDirectories.map { it.uri },
-      listOf(
-        includedDir.toUri().toString(),
-        pkg.toUri().toString(),
-      ),
+      result.includedDirectories,
+      listOf(includedDir, pkg),
     )
     assertSameElements(
-      result.excludedDirectories.map { it.uri },
-      listOf(
-        subpkg.toUri().toString(),
-        dotBazelBspPath.toUri().toString(),
-      ),
+      result.excludedDirectories,
+      listOf(subpkg, dotBazelBspPath),
     )
   }
 
@@ -209,18 +197,12 @@ class WorkspaceDirectoriesFromProjectViewTest : BasePlatformTestCase() {
     val result = runMapper(psiFile)
 
     assertSameElements(
-      result.includedDirectories.map { it.uri },
-      listOf(
-        includedDir.toUri().toString(),
-        subpkg.toUri().toString(),
-      ),
+      result.includedDirectories,
+      listOf(includedDir, subpkg)
     )
     assertSameElements(
-      result.excludedDirectories.map { it.uri },
-      listOf(
-        pkg.toUri().toString(),
-        dotBazelBspPath.toUri().toString(),
-      ),
+      result.excludedDirectories,
+      listOf(pkg, dotBazelBspPath)
     )
   }
 
@@ -247,18 +229,12 @@ class WorkspaceDirectoriesFromProjectViewTest : BasePlatformTestCase() {
     val result = runMapper(psiFile)
 
     assertSameElements(
-      result.includedDirectories.map { it.uri },
-      listOf(
-        includedDir.toUri().toString(),
-      ),
+      result.includedDirectories,
+      listOf(includedDir),
     )
     assertSameElements(
-      result.excludedDirectories.map { it.uri },
-      listOf(
-        pkg.toUri().toString(),
-        subpkg.toUri().toString(),
-        dotBazelBspPath.toUri().toString(),
-      ),
+      result.excludedDirectories,
+      listOf(pkg, subpkg, dotBazelBspPath),
     )
   }
 
@@ -282,18 +258,12 @@ class WorkspaceDirectoriesFromProjectViewTest : BasePlatformTestCase() {
     val result = runMapper(psiFile)
 
     assertSameElements(
-      result.includedDirectories.map { it.uri },
-      listOf(
-        includedDir.toUri().toString(),
-        pkg.toUri().toString(),
-        subpkg.toUri().toString(),
-      ),
+      result.includedDirectories,
+      listOf(includedDir, pkg, subpkg)
     )
     assertSameElements(
-      result.excludedDirectories.map { it.uri },
-      listOf(
-        dotBazelBspPath.toUri().toString(),
-      ),
+      result.excludedDirectories,
+      listOf(dotBazelBspPath),
     )
   }
 
@@ -319,18 +289,12 @@ class WorkspaceDirectoriesFromProjectViewTest : BasePlatformTestCase() {
     val result = runMapper(psiFile)
 
     assertSameElements(
-      result.includedDirectories.map { it.uri },
-      listOf(
-        includedDir.toUri().toString(),
-        pkg.toUri().toString(),
-      ),
+      result.includedDirectories,
+      listOf(includedDir, pkg)
     )
     assertSameElements(
-      result.excludedDirectories.map { it.uri },
-      listOf(
-        subpkg.toUri().toString(),
-        dotBazelBspPath.toUri().toString(),
-      ),
+      result.excludedDirectories,
+      listOf(subpkg, dotBazelBspPath)
     )
   }
 
@@ -356,18 +320,12 @@ class WorkspaceDirectoriesFromProjectViewTest : BasePlatformTestCase() {
     val result = runMapper(psiFile)
 
     assertSameElements(
-      result.includedDirectories.map { it.uri },
-      listOf(
-        includedDir.toUri().toString(),
-        pkg.toUri().toString(),
-        subpkg.toUri().toString(),
-      ),
+      result.includedDirectories,
+      listOf(includedDir, pkg, subpkg)
     )
     assertSameElements(
-      result.excludedDirectories.map { it.uri },
-      listOf(
-        dotBazelBspPath.toUri().toString(),
-      ),
+      result.excludedDirectories,
+      listOf(dotBazelBspPath)
     )
   }
 
@@ -394,19 +352,12 @@ class WorkspaceDirectoriesFromProjectViewTest : BasePlatformTestCase() {
     val result = runMapper(psiFile)
 
     assertSameElements(
-      result.includedDirectories.map { it.uri },
-      listOf(
-        includedDir.toUri().toString(),
-        pkg.toUri().toString(),
-        subpkg.toUri().toString(),
-      ),
+      result.includedDirectories,
+      listOf(includedDir, pkg, subpkg),
     )
     assertSameElements(
-      result.excludedDirectories.map { it.uri },
-      listOf(
-        subdir.toUri().toString(),
-        dotBazelBspPath.toUri().toString(),
-      ),
+      result.excludedDirectories,
+      listOf(subdir, dotBazelBspPath)
     )
   }
 
@@ -435,15 +386,15 @@ class WorkspaceDirectoriesFromProjectViewTest : BasePlatformTestCase() {
 
     // THEN aspect/testing and workspace root should be included
     assertSameElements(
-      result.includedDirectories.map { it.uri },
-      aspectTestingDir.toUri().toString(),
-      workspaceRoot.toUri().toString()
+      result.includedDirectories,
+      aspectTestingDir,
+      workspaceRoot
     )
 
     // AND aspect should NOT be excluded because of 'directories: .'
     assertDoesntContain(
-      result.excludedDirectories.map { it.uri },
-      aspectDir.toUri().toString()
+      result.excludedDirectories,
+      aspectDir
     )
   }
 
@@ -465,8 +416,8 @@ class WorkspaceDirectoriesFromProjectViewTest : BasePlatformTestCase() {
 
     // THEN
     assertDoesntContain(
-      result.includedDirectories.map { it.uri },
-      aspectsDir.toUri().toString()
+      result.includedDirectories,
+      aspectsDir
     )
   }
 
@@ -490,11 +441,8 @@ class WorkspaceDirectoriesFromProjectViewTest : BasePlatformTestCase() {
 
     // THEN
     assertSameElements(
-      result.includedDirectories.map { it.uri },
-      listOf(
-        toolboxDir.toUri().toString(),
-        communityKernelDir.toUri().toString(),
-      ),
+      result.includedDirectories,
+      listOf(toolboxDir, communityKernelDir),
     )
   }
 

@@ -1,12 +1,10 @@
 package org.jetbrains.bsp.protocol
 
 import org.jetbrains.annotations.ApiStatus
-
-@ApiStatus.Internal
-data class DirectoryItem(val uri: String)
+import java.nio.file.Path
 
 @ApiStatus.Internal
 data class WorkspaceDirectoriesResult(
-  val includedDirectories: List<DirectoryItem>,
-  val excludedDirectories: List<DirectoryItem>
+  val includedDirectories: List<Path>,
+  val excludedDirectories: List<Path>
 )
