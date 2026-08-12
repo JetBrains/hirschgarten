@@ -8,7 +8,8 @@
 > merges. Don't write "get PR reviewed/merged" — this doc lives in the repo and is read post-merge,
 > so those entries are immediately stale. Use `—` or omit the field when nothing remains.
 
-## Current State (as of 2026-08-10)
+## Current State (as of 2026-08-11)
+
 
 ### Working Branch
 `development-261` — latest tip: `98bc05a260 Merge pull request #30`
@@ -32,20 +33,11 @@ Two commits in this PR:
 
 **Optimization**: `addFileToTargets()` in `BazelFileEventListener` was calling `fetchAndCacheUnsyncedTarget()` once per unsynced target (N individual BSP RPCs). Refactored into a 3-phase approach: collect all unsynced labels → single batch RPC via `fetchAndCacheUnsyncedTargets()` → add files to modules.
 
-#### Key files changed
-- `plugin-bazel/src/main/kotlin/org/jetbrains/bazel/workspace/ModuleAssignmentUtils.kt` (new, replaces `AssignFileToModuleListener.kt`)
-  - `addToModule()` — now creates `JavaSourceRootPropertiesEntity` with `packagePrefix`
-  - `resolvePackagePrefix()` — looks up `PackageMarkerEntity` for the parent directory
-  - `getModulesForFile()`, `askForInverseSources()`, `processTargetsForTestlibStripping()`
-- `plugin-bazel/src/main/kotlin/org/jetbrains/bazel/workspace/AssignFileToModuleListener.kt` (deleted)
-- `plugin-bazel/src/main/kotlin/org/jetbrains/bazel/workspace/UnsyncedTargetUpdater.kt`
-  - Added `fetchAndCacheUnsyncedTargets(labels: List<Label>, ...)` — batch BSP call via `WorkspaceBuildTargetSelector.SpecificTargets(labels)`
-- `plugin-bazel/src/main/kotlin/org/jetbrains/bazel/workspace/fileEvents/BazelFileEventListener.kt`
-  - `addFileToTargets()` refactored: 3-phase batch approach
-  - Added `enqueueExternalEvents()` companion method (internal) for `BazelFileEventSubmitter`
-- `plugin-bazel/src/main/kotlin/org/jetbrains/bazel/workspace/BazelFileEventSubmitter.kt` — routes to `BazelFileEventListener.enqueueExternalEvents()`
-- `plugin-bazel/src/main/kotlin/org/jetbrains/bazel/workspace/fileEvents/SimplifiedFileEvent.kt` — added `ExternalCreate` subclass
-- `plugin-bazel/src/main/kotlin/org/jetbrains/bazel/action/registered/AddFileToModuleAction.kt` — passes `packagePrefix` to `addToModule()`
+### Recently Completed Work (PR #30)
+
+**Branch**: `context/update-development-261-context` → merged into `development-261`
+
+Added `CONTEXT_DEVELOPMENT_261.md` as a persistent handoff document.
 
 ### Recently Completed Work (PR #30)
 

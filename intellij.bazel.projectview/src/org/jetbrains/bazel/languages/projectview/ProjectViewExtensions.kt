@@ -22,6 +22,7 @@ import org.jetbrains.bazel.languages.projectview.sections.ImportIjarsSection
 import org.jetbrains.bazel.languages.projectview.sections.ImportRunConfigurationsSection
 import org.jetbrains.bazel.languages.projectview.sections.IndexAllFilesInDirectoriesSection
 import org.jetbrains.bazel.languages.projectview.sections.PreferClassJarsOverSourcelessJarsSection
+import org.jetbrains.bazel.languages.projectview.sections.NonBazelPythonDirectoriesSection
 import org.jetbrains.bazel.languages.projectview.sections.PythonCodeGeneratorRuleNamesSection
 import org.jetbrains.bazel.languages.projectview.sections.PythonDebugFlagsSection
 import org.jetbrains.bazel.languages.projectview.sections.RunConfigRunWithBazelSection
@@ -116,6 +117,10 @@ val ProjectView.gazelleTarget: Label?
 val ProjectView.indexAllFilesInDirectories: Boolean
   @ApiStatus.Internal
   get() = getSection(IndexAllFilesInDirectoriesSection.KEY) ?: false
+
+val ProjectView.nonBazelPythonDirectories: List<Path>
+  @ApiStatus.Internal
+  get() = getSection(NonBazelPythonDirectoriesSection.KEY) ?: emptyList()
 
 val ProjectView.pythonCodeGeneratorRuleNames: List<String>
   @ApiStatus.Internal
