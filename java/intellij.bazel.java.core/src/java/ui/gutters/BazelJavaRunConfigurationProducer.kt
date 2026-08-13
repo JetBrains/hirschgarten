@@ -75,7 +75,7 @@ open class BazelJavaRunConfigurationProducer : BazelRunConfigurationProducer() {
     return JvmClassUtil.getJvmClassName(psiClass)
   }
 
-  protected open fun toPsiClassOrMethod(element: PsiNameIdentifierOwner): Pair<PsiClass?, PsiMethod?> =
+  open fun toPsiClassOrMethod(element: PsiNameIdentifierOwner): Pair<PsiClass?, PsiMethod?> =
     (element as? PsiClass) to (element as? PsiMethod)
 
   open fun isMainMethod(element: PsiElement): Boolean {

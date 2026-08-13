@@ -8,6 +8,7 @@
     <module name="intellij.bazel.kotlin.common"/>
     <module name="intellij.bazel.projectview"/>
     <module name="intellij.java.debugger.impl"/>
+    <module name="intellij.java.frontback.psi"/>
     <module name="intellij.java.psi"/>
     <module name="intellij.kotlin.base.psi"/>
     <module name="intellij.libraries.kotlinc.analysis.api"/>

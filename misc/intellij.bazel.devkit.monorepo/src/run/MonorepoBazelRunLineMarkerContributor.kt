@@ -3,7 +3,7 @@ package com.intellij.bazel.devkit.monorepo.run
 import com.intellij.execution.Location
 import com.intellij.execution.PsiLocation
 import com.intellij.execution.actions.MultipleRunLocationsProvider
-import com.intellij.lang.Language
+import com.intellij.lang.java.JavaLanguage
 import com.intellij.monorepo.devkit.bazel.BazelTargetsInfoCache
 import com.intellij.monorepo.devkit.bazel.JpsToBazelConverterRunner
 import com.intellij.monorepo.devkit.bazel.useBazelCompile
@@ -12,8 +12,11 @@ import com.intellij.openapi.module.Module
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.roots.ProjectFileIndex
 import com.intellij.openapi.startup.ProjectActivity
+import com.intellij.psi.PsiDirectory
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiManager
+import com.intellij.psi.PsiNameIdentifierOwner
+import com.intellij.psi.util.PsiTreeUtil
 import org.jetbrains.bazel.config.isBazelProject
 import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.java.ui.gutters.BazelJavaRunConfigurationProducer
@@ -28,6 +31,7 @@ import org.jetbrains.bazel.ui.gutters.BazelRunLocation
 import org.jetbrains.bazel.ui.gutters.NonImportedBuildTarget
 import org.jetbrains.bazel.ui.gutters.StarlarkRunLineMarkerContributor
 import org.jetbrains.bsp.protocol.BuildTarget
+import org.jetbrains.kotlin.idea.KotlinLanguage
 
 private val LOG = fileLogger()
 
@@ -39,14 +43,24 @@ internal class MonorepoBazelContainingTargetsLocationsProvider : MultipleRunLoca
     if (!MonorepoRunLineMarkerContributorUtil.isProjectApplicable(originalLocation.project)) return emptyList()
     if (originalLocation !is PsiLocation) return emptyList()
     val element = originalLocation.psiElement
-    val producer: BazelJavaRunConfigurationProducer = when (element.language) {
-      Language.findLanguageByID("JAVA") -> BazelJavaRunConfigurationProducer()
-      Language.findLanguageByID("kotlin") -> BazelKotlinRunConfigurationProducer()
-      else -> return emptyList()
+
+    if (element is PsiDirectory) {
+      val virtualFile = element.virtualFile
+      // Only show the "all tests" gutter on top-level directories because we don't support filtering by package
+      val showAllTestsGutter = virtualFile.findChild("BUILD.bazel") != null ||
+                               (element.virtualFile.name == "test" && element.parentDirectory?.findFile("BUILD.bazel") != null)
+      if (!showAllTestsGutter) return emptyList()
     }
-    val mainClassFqn = if (producer.isMainMethod(element)) producer.getContainingClassFqn(element) else null
+
+    val mainClassFqn: String? = getMainClassFqn(element)
+
     val bazelRunLocations = MonorepoRunLineMarkerContributorUtil.getTargets(element, mainClassFqn).map { target ->
-      BazelRunLocation(target, originalLocation)
+      if (element is PsiDirectory) {
+        BazelRunLocation(element.project, target)
+      }
+      else {
+        BazelRunLocation(target, originalLocation)
+      }
     }
 
     // main() method gutters only expect one element. E.g., ApplicationRunLineMarkerProvider calls
@@ -58,6 +72,19 @@ internal class MonorepoBazelContainingTargetsLocationsProvider : MultipleRunLoca
     else {
       listOf(originalLocation) + bazelRunLocations
     }
+  }
+
+  private fun getMainClassFqn(element: PsiElement): String? {
+    val producer: BazelJavaRunConfigurationProducer = when (element.language) {
+      JavaLanguage.INSTANCE -> BazelJavaRunConfigurationProducer()
+      KotlinLanguage.INSTANCE -> BazelKotlinRunConfigurationProducer()
+      else -> return null
+    }
+    if (!producer.isMainMethod(element)) return null
+    val identifier = PsiTreeUtil.getParentOfType(element, PsiNameIdentifierOwner::class.java, true) ?: return null
+    val (clazz, method) = producer.toPsiClassOrMethod(identifier)
+    val containingClazz = clazz ?: method?.containingClass ?: return null
+    return containingClazz.qualifiedName
   }
 
   override fun getLocationDisplayName(
@@ -102,11 +129,11 @@ private object MonorepoRunLineMarkerContributorUtil {
 
   fun getTargets(element: PsiElement, mainClassFqn: String?): List<BuildTarget> {
     val project = element.project
-    val containingFile = element.containingFile?.virtualFile ?: return emptyList()
+    val containingFile = if (element is PsiDirectory) element.virtualFile else element.containingFile?.virtualFile ?: return emptyList()
     val projectFileIndex = ProjectFileIndex.getInstance(project)
     val module = projectFileIndex.getModuleForFile(containingFile) ?: return emptyList()
 
-    // Run gutters won't work without target information, launch JPS to Bazel converter in the background
+    // Run gutters won't work without bazel-targets.json, launch JPS to Bazel converter in the background
     if (!BazelTargetsInfoCache.getInstance(project).targetsInfo.filePresent) {
       JpsToBazelConverterRunner.getInstance(project).launch(focus = false, shouldSaveEverything = false)
       return emptyList()
@@ -114,6 +141,12 @@ private object MonorepoRunLineMarkerContributorUtil {
 
     val bazelInfo = try {
       BazelTargetsInfoCache.getInstance(project).targetsInfo.getModuleDescription(module.name)
+    }
+    catch (e: IllegalStateException) {
+      // Module not found, which is probably caused by bazel-targets.json being outdated
+      LOG.warn(e)
+      JpsToBazelConverterRunner.getInstance(project).launch(focus = false, shouldSaveEverything = false)
+      return emptyList()
     }
     catch (e: Throwable) {
       LOG.warn(e)
