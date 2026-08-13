@@ -21,8 +21,9 @@ internal class BazelGoRunConfigurationProducer : BazelRunConfigurationProducer()
     if (!GoTestFinder.isTestFile(element.containingFile)) return null
     if (GoRunConfigurationProducerBase.isPackageContext(element)) return GutterAction()
     val function = GoTestFinder.findTestFunctionInContext(element) ?: return null
-    val testFilter = calculateRawTestFilterForElement(element, function)?.let { regexifyTestFilter(it) } ?: return null
-    return GutterAction(testFilter = testFilter)
+    val rawTestFilter = calculateRawTestFilterForElement(element, function)
+    val testFilter = rawTestFilter?.let { regexifyTestFilter(it) } ?: return null
+    return GutterAction(testFilter = testFilter, additionalLocationString = rawTestFilter)
   }
   private fun PsiElement.isMainFunction(): Boolean =
     GoRunUtil.isMainGoFile(this.containingFile) &&

@@ -50,10 +50,11 @@ abstract class BazelRunConfigurationProducer : LazyRunConfigurationProducer<Baze
 
   @ApiStatus.Internal
   override fun isConfigurationFromContext(configuration: BazelRunConfiguration, context: ConfigurationContext): Boolean {
-    val target = (context.location as? BazelRunLocation)?.target ?: return false
+    val location = context.location as? BazelRunLocation ?: return false
+    val target = location.target
     if (!acceptsTarget(target)) return false
     if (configuration.targets != listOf(target.id)) return false
-    val element = context.psiLocation ?: return false
+    val element = location.originalLocation.psiElement
     val gutterAction = getGutterAction(element, target) ?: return false
     return configuration.handler?.state?.let { gutterAction.isFromContext(it) } ?: false
   }

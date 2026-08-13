@@ -18,6 +18,7 @@ import org.jetbrains.bazel.tests.combined.IdeStarterCombinedBaseTest
 import org.jetbrains.bazel.tests.run.selectRunConfiguration
 import org.jetbrains.bazel.tests.ui.clickRunGutterOnLine
 import org.jetbrains.bazel.tests.ui.clickTestGutterOnLine
+import org.jetbrains.bazel.tests.ui.verifyAvailableRunGutterActions
 import org.jetbrains.bazel.tests.ui.verifyTestStatus
 import org.jetbrains.bazel.tests.ui.waitForDebuggerPausedAt
 import org.junit.jupiter.api.Order
@@ -75,16 +76,30 @@ internal class GoRunConfigurationsTest : IdeStarterCombinedBaseTest() {
         }
 
         step("Run tests in package via its run gutter and check results") {
-          clickTestGutterOnLine(0)
+          clickRunGutterOnLine(0)
+          verifyAvailableRunGutterActions(listOf("Run '//lib:lib_test'", "Debug '//lib:lib_test'", "Run '//lib:lib_test' with Coverage"))
+          popup().waitOneText("Run '//lib:lib_test'").click()
           verifyTestStatus(
             expectedStatus = listOf("2 tests passed"),
             expectedTree = listOf("goruntest/lib.TestAdd", "TestAdd", "goruntest/lib.TestSubtract", "TestSubtract")
           )
           takeScreenshot("goRunPackageGutterResults")
+          // Check that the run configuration is reused instead of creating "Run '//lib:lib_test' (1)"
+          clickRunGutterOnLine(0)
+          verifyAvailableRunGutterActions(listOf("Run '//lib:lib_test'", "Debug '//lib:lib_test'", "Run '//lib:lib_test' with Coverage"))
+          popup().close()
         }
 
         step("Run TestAdd via its run gutter and check results") {
-          clickTestGutterOnLine(4)
+          clickRunGutterOnLine(4)
+          verifyAvailableRunGutterActions(
+            listOf(
+              "Run '//lib:lib_test (TestAdd)'",
+              "Debug '//lib:lib_test (TestAdd)'",
+              "Run '//lib:lib_test (TestAdd)' with Coverage",
+            ),
+          )
+          popup().waitOneText("Run '//lib:lib_test (TestAdd)'").click()
           verifyTestStatus(expectedStatus = listOf("1 test passed"), expectedTree = listOf("goruntest/lib.TestAdd", "TestAdd"))
           takeScreenshot("goRunTestAddGutterResults")
         }
@@ -143,7 +158,7 @@ internal class GoRunConfigurationsTest : IdeStarterCombinedBaseTest() {
     }
     step("Debug $name via its run gutter") {
       clickRunGutterOnLine(gutterLine)
-      popup().waitOneContainsText("Debug '//lib:lib_test'").click()
+      popup().waitOneContainsText("Debug '//lib:lib_test ($name)'").click()
     }
     step("Debugger stops at the breakpoint inside $name and resumes") {
       waitForDebuggerPausedAt(name)
