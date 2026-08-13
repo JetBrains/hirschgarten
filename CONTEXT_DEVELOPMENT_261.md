@@ -8,56 +8,39 @@
 > merges. Don't write "get PR reviewed/merged" — this doc lives in the repo and is read post-merge,
 > so those entries are immediately stale. Use `—` or omit the field when nothing remains.
 
-## Current State (as of 2026-08-11)
-
+## Current State (as of 2026-08-12)
 
 ### Working Branch
-`development-261` — latest tip: `98bc05a260 Merge pull request #30`
+`development-261` — latest tip: `669b674a0b Merge pull request #32`
 
-### Recently Completed Work (PR #29)
+### Recently Completed Work (PR #31)
 
-**Branch**: `fix/add-java-source-root-properties-on-file-add` → merged into `development-261`
+**Branch**: `fix/resolve-jvm-wrapper-jdk-home` → merged into `development-261`
 
-Two commits in this PR:
-1. `18baa6588b` — Fix missing `JavaSourceRootPropertiesEntity` when adding new files to modules
-2. `20e33fe445` — Batch unsynced target RPCs: N calls → 1 for new file sync
+**Problem**: When a project uses `jvm_wrapper_runtime`, the `java_home` from the Bazel aspect points to the wrapper directory (contains only `bin/java` as a shell script), not the actual JDK. IntelliJ's `JavaSdk.isValidSdkHome()` fails → "JDK not found on disk or corrupted" warning after sync.
 
-#### What was fixed
+**Fix** (`SdkUtils.kt`): `addJdkIfNeeded()` now calls `resolveJavaHome()` before creating the SDK. `resolveJavaHome()` tries two strategies: (1) parse `bin/java` wrapper script for `exec .../bin/java` lines and resolve against Bazel exec root; (2) scan `execroot/_main/external/` for JDK directories.
 
-**Bug**: When a new `.java`/`.kt` file was added to a Bazel target:
-- No code intelligence until file was closed and reopened
-- Alt+Enter import resolution failed for other files importing from the new class
-- Root cause: `addToModule()` created a `SourceRootEntity` but never attached a `JavaSourceRootPropertiesEntity` with `packagePrefix` — IntelliJ's `SingleFileSourcesTrackerImpl.getPackageNameForSingleFileSource()` returned null without it
+### Recently Completed Work (PR #32)
 
-**Deduplication**: Removed the dead `AssignFileToModuleListener` class (it was not registered in `plugin.xml` — upstream had already moved functionality to `BazelFileEventListener`). Kept utility functions in a new `ModuleAssignmentUtils.kt`.
+**Branch**: `feat/non-bazel-python-directories` → merged into `development-261`
 
-**Optimization**: `addFileToTargets()` in `BazelFileEventListener` was calling `fetchAndCacheUnsyncedTarget()` once per unsynced target (N individual BSP RPCs). Refactored into a 3-phase approach: collect all unsynced labels → single batch RPC via `fetchAndCacheUnsyncedTargets()` → add files to modules.
+**Problem**: Python files not covered by any Bazel target inherit the Java SDK → no Python code intelligence.
 
-### Recently Completed Work (PR #30)
-
-**Branch**: `context/update-development-261-context` → merged into `development-261`
-
-Added `CONTEXT_DEVELOPMENT_261.md` as a persistent handoff document.
-
-### Recently Completed Work (PR #30)
-
-**Branch**: `context/update-development-261-context` → merged into `development-261`
-
-Added `CONTEXT_DEVELOPMENT_261.md` as a persistent handoff document between sessions, then made the GitHub account note generic.
+**Fix**: New `.bazelproject` section `non_bazel_python_directories:` — explicitly list directories. The plugin creates one IntelliJ module per listed directory with a Python SDK. Bazel-covered directories are skipped to avoid duplicate modules.
 
 ### Pending / In-Progress Work
 
-**JVM Wrapper JDK resolution** — branch `fix/resolve-jvm-wrapper-jdk-home`, PR #31 open (→ `development-261`).
+**JVM wrapper project SDK regression** — branch `fix/jvm-wrapper-project-sdk`, PR #33 open (→ `development-261`).
 
-**Problem**: When a project uses `jvm_wrapper_runtime`, the `java_home` from the Bazel aspect points to the wrapper directory (contains only `bin/java` as a shell script), not the actual JDK. IntelliJ's `JavaSdk.isValidSdkHome()` fails for this path → "JDK not found on disk or corrupted" warning after sync.
+**Problem**: PR #31 introduced two regressions:
+1. The project SDK is reported as "not configured" — `defaultJdkName` hashed the raw wrapper path but the SDK was registered under the resolved path; the names diverged so `setProjectSdk` couldn't find it.
+2. Target modules showed red code — `ModuleDetailsToJavaModuleTransformer` computes `jvmJdkName` from the raw wrapper path, but after PR #31 only the resolved-path SDK was registered, so the module SDK dependency resolved to a non-existent SDK.
 
-**Fix implemented** (on `fix/resolve-jvm-wrapper-jdk-home`, rebased onto `development-261`):
-- `plugin-bazel/src/main/kotlin/org/jetbrains/bazel/jvm/sync/SdkUtils.kt`
-  - `addJdkIfNeeded()` now calls `resolveJavaHome()` before creating the SDK
-  - `resolveJavaHome()`: fast-path returns early if already a valid JDK; otherwise tries:
-    1. Parse `{javaHome}/bin/java` wrapper script for `exec .../bin/java` lines, resolve against Bazel exec root
-    2. Scan `execroot/_main/external/` for JDK directories, prefer those matching the version hint in the wrapper name
-  - Helpers: `resolveRealJdkFromWrapper()`, `findJdkInExternalDir()`, `findExecRoot()`
+**Fix** (on `fix/jvm-wrapper-project-sdk`):
+- `SdkUtils.resolveJavaHome()` widened from `private` to `internal`
+- `CollectProjectDetailsTask.kt`: `defaultJdkName` now derived from `SdkUtils.resolveJavaHome(it.first())` (resolved path) — fixes regression #1
+- `SdkUtils.addJdkIfNeeded()`: when `resolvedHome != javaHome`, also registers an alias SDK under the original wrapper-path name pointing to the same real JDK — fixes regression #2
 
 **Next step**: —
 
