@@ -119,6 +119,7 @@ private fun <T : CommandChain> T.recordMemory(gaugeName: String): T {
  */
 fun IDEStartResult.publishTeamCityArtifacts(
   source: Path,
+  // the name of the run, because that is the only artifact path IJ Perf and issue creation can rebuild — see IDERunContext.contextName
   artifactPath: String = runContext.contextName,
   artifactName: String = source.fileName.toString(),
   zipContent: Boolean = true,
@@ -132,6 +133,8 @@ fun IDEStartResult.publishTeamCityArtifacts(
 }
 
 fun IDEStartResult.publishPerformanceMetrics(
+  // IJ Perf keys its history by the project name and can rebuild an artifact path out of no more than that, so both stay the name of the run
+  // rather than of the launch — see IDERunContext.contextName
   artifactPath: String = runContext.contextName,
   artifactName: String = "metrics.performance.json",
   projectName: String = runContext.contextName,
