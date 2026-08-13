@@ -35,7 +35,7 @@ import java.nio.file.Files
 import java.nio.file.Path
 
 @RunWith(JUnit4::class)
-internal class RunConfigurationProducersDisablerTest : BazelBasePlatformTestCase() {
+internal class BazelRunConfigurationProducerSuppressorTest : BazelBasePlatformTestCase() {
   @Rule
   @JvmField
   val tempDirectory = TempDirectory()

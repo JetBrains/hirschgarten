@@ -5,67 +5,29 @@ import com.intellij.execution.actions.RunConfigurationProducer
 import com.intellij.openapi.project.Project
 import org.jetbrains.bazel.config.isBazelProject
 
+/**
+ * Disables [RunConfigurationProducer]s that are already supported by our plugin via [org.jetbrains.bazel.run.config.BazelRunConfiguration].
+ * Those producers are attempting, e.g., to launch a test via calling `python` or `go` directly (skipping Bazel entirely).
+ * While this may work for very simple projects without external deps/codegen, Bazel should be the only available option to avoid confusion.
+ * We could instead disable all producers except several "known" ones, but that would disable valid cases, e.g., running `.sh`/`.bat` files.
+ */
 internal class BazelRunConfigurationProducerSuppressor : RunConfigurationProducerSuppressor {
   override fun shouldSuppress(producer: RunConfigurationProducer<*>, project: Project): Boolean =
     project.isBazelProject &&
-      producer::class.java.name in producersNames
+    generateSequence<Class<*>>(producer::class.java) { clazz -> clazz.superclass }
+      .any { clazz -> clazz.name in producerNames }
 
-  private val producersNames = setOf(
-    "com.android.tools.idea.run.AndroidConfigurationProducer",
-    "com.android.tools.idea.run.configuration.AndroidComplicationRunConfigurationProducer",
-    "com.android.tools.idea.run.configuration.AndroidTileRunConfigurationProducer",
-    "com.android.tools.idea.run.configuration.AndroidWatchFaceRunConfigurationProducer",
-    "com.android.tools.idea.testartifacts.instrumented.AndroidTestConfigurationProducer",
-    "com.android.tools.idea.testartifacts.junit.TestClassAndroidConfigurationProducer",
-    "com.android.tools.idea.testartifacts.junit.TestDirectoryAndroidConfigurationProducer",
-    "com.android.tools.idea.testartifacts.junit.TestMethodAndroidConfigurationProducer",
-    "com.android.tools.idea.testartifacts.junit.TestPackageAndroidConfigurationProducer",
-    "com.android.tools.idea.testartifacts.junit.TestPatternConfigurationProducer",
-    "com.intellij.execution.application.ApplicationConfigurationProducer",
-    "com.intellij.execution.junit.AbstractAllInDirectoryConfigurationProducer",
-    "com.intellij.execution.junit.AllInDirectoryConfigurationProducer",
-    "com.intellij.execution.junit.AllInPackageConfigurationProducer",
-    "com.intellij.execution.junit.PatternConfigurationProducer",
-    "com.intellij.execution.junit.TestClassConfigurationProducer",
-    "com.intellij.execution.junit.TestInClassConfigurationProducer",
-    "com.intellij.execution.junit.UniqueIdConfigurationProducer",
-    "com.intellij.execution.junit.testDiscovery.JUnitTestDiscoveryConfigurationProducer",
-    "org.jetbrains.kotlin.idea.gradle.native.KotlinNativeRunConfigurationProducer",
-    "org.jetbrains.kotlin.idea.gradleJava.run.KotlinJvmTestClassGradleConfigurationProducer",
-    "org.jetbrains.kotlin.idea.gradleJava.run.KotlinJvmTestMethodGradleConfigurationProducer",
-    "org.jetbrains.kotlin.idea.gradleJava.run.KotlinMultiplatformJvmTestClassGradleConfigurationProducer",
-    "org.jetbrains.kotlin.idea.gradleJava.run.KotlinMultiplatformJvmTestMethodGradleConfigurationProducer",
-    "org.jetbrains.kotlin.idea.gradleJava.testing.KotlinMultiplatformAllInDirectoryConfigurationProducer",
-    "org.jetbrains.kotlin.idea.gradleJava.testing.KotlinMultiplatformAllInPackageConfigurationProducer",
-    "org.jetbrains.kotlin.idea.gradleJava.testing.common.KotlinMultiplatformCommonTestClassGradleConfigurationProducer",
-    "org.jetbrains.kotlin.idea.gradleJava.testing.common." +
-      "KotlinMultiplatformCommonTestMethodGradleConfigurationProducer",
-    "org.jetbrains.kotlin.idea.gradleJava.testing.js.KotlinMultiplatformJsTestClassGradleConfigurationProducer",
-    "org.jetbrains.kotlin.idea.gradleJava.testing.js.KotlinMultiplatformJsTestMethodGradleConfigurationProducer",
-    "org.jetbrains.kotlin.idea.gradleJava.testing.native.KotlinMultiplatformNativeTestClassGradleConfigurationProducer",
-    "org.jetbrains.kotlin.idea.gradleJava.testing.native." +
-      "KotlinMultiplatformNativeTestMethodGradleConfigurationProducer",
+  private val producerNames = setOf(
+    "com.android.tools.idea.run.configuration.AndroidWearRunConfigurationProducer",
+    "com.intellij.execution.junit.JavaRunConfigurationProducerBase",
+    "org.jetbrains.kotlin.idea.gradleCodeInsightCommon.native.KotlinNativeRunConfigurationProducer",
+    "org.jetbrains.plugins.gradle.execution.GradleRunConfigurationProducer",
     "org.jetbrains.kotlin.idea.junit.KotlinJUnitRunConfigurationProducer",
-    "org.jetbrains.kotlin.idea.junit.KotlinPatternConfigurationProducer",
-    "org.jetbrains.kotlin.idea.run.KotlinJUnitRunConfigurationProducer",
-    "org.jetbrains.kotlin.idea.run.KotlinJvmTestClassGradleConfigurationProducer",
-    "org.jetbrains.kotlin.idea.run.KotlinJvmTestMethodGradleConfigurationProducer",
-    "org.jetbrains.kotlin.idea.run.KotlinMultiplatformJvmTestClassGradleConfigurationProducer",
-    "org.jetbrains.kotlin.idea.run.KotlinMultiplatformJvmTestMethodGradleConfigurationProducer",
-    "org.jetbrains.kotlin.idea.run.KotlinPatternConfigurationProducer",
     "org.jetbrains.kotlin.idea.run.KotlinRunConfigurationProducer",
-    "org.jetbrains.kotlin.idea.run.KotlinTestClassGradleConfigurationProducer",
-    "org.jetbrains.kotlin.idea.run.KotlinTestMethodGradleConfigurationProducer",
-    "com.intellij.gradle.java.groovy.execution.GradleGroovyScriptRunConfigurationProducer",
-    "org.jetbrains.plugins.gradle.execution.test.runner.AllInDirectoryGradleConfigurationProducer",
-    "org.jetbrains.plugins.gradle.execution.test.runner.AllInPackageGradleConfigurationProducer",
-    "org.jetbrains.plugins.gradle.execution.test.runner.PatternGradleConfigurationProducer",
-    "org.jetbrains.plugins.gradle.execution.test.runner.TestClassGradleConfigurationProducer",
-    "org.jetbrains.plugins.gradle.execution.test.runner.TestMethodGradleConfigurationProducer",
-    "org.jetbrains.plugins.gradle.service.execution.GradleRuntimeConfigurationProducer",
+    "com.intellij.openapi.externalSystem.service.execution.AbstractExternalSystemRunConfigurationProducer",
     "com.jetbrains.python.run.PythonRunConfigurationProducer",
-    "com.jetbrains.python.testing.PyTestsConfigurationProducer",
-    "com.jetbrains.python.testing.doctest.PythonDocTestConfigurationProducer",
+    "com.jetbrains.python.testing.AbstractPythonTestConfigurationProducer",
     "com.jetbrains.python.testing.tox.PyToxConfigurationProducer",
+    "com.goide.execution.GoRunConfigurationProducerBase",
   )
 }
