@@ -63,6 +63,10 @@
                     interface="org.jetbrains.bazel.sync.workspace.persistence.WorkspaceTypeContributor"
                     dynamic="false"
     />
+    <extensionPoint qualifiedName="org.jetbrains.bazel.bazelRuleSetProvider"
+                    interface="org.jetbrains.bazel.util.BazelRuleSetProvider"
+                    dynamic="true"
+    />
   </extensionPoints>
 
   <extensions defaultExtensionNs="org.jetbrains.bazel">
