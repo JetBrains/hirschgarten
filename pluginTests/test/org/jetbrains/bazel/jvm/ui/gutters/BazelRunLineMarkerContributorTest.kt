@@ -103,7 +103,7 @@ class BazelRunLineMarkerContributorTest : BasePlatformTestCase() {
     val result = runLineMarkerContributor.getSingleTestFilter(psiElement)
 
     // then
-    val expectedSingleTestFilter = "BspJVMRunLineMarkerContributorTestData"
+    val expectedSingleTestFilter = "org.jetbrains.bazel.ui.gutters.BspJVMRunLineMarkerContributorTestData"
     result shouldBe expectedSingleTestFilter
   }
 
