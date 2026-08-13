@@ -14,6 +14,7 @@
     <targetKindProvider implementation="org.jetbrains.bazel.protobuf.ProtobufTargetKindProvider" />
     <languageClassProvider implementation="org.jetbrains.bazel.protobuf.ProtobufLanguageClassProvider" />
     <languagePlugin implementation="org.jetbrains.bazel.protobuf.ProtobufLanguagePlugin"/>
+    <bazelRuleSetProvider implementation="org.jetbrains.bazel.protobuf.ProtobufRuleSetPlugin"/>
     <workspaceTypeContributor implementation="org.jetbrains.bazel.protobuf.target.ProtobufWorkspaceTypeContributor"/>
   </extensions>
 

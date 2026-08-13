@@ -54,7 +54,10 @@
                     implementation="org.jetbrains.bazel.sync.workspace.languages.kotlin.KotlinLanguagePlugin"/>
     <languagePlugin id="ScalaLanguagePlugin"
                     implementation="org.jetbrains.bazel.sync.workspace.languages.scala.ScalaLanguagePlugin"/>
-    
+    <bazelRuleSetProvider implementation="org.jetbrains.bazel.sync.workspace.languages.java.JavaBazelRuleSetPlugin"/>
+    <bazelRuleSetProvider implementation="org.jetbrains.bazel.sync.workspace.languages.kotlin.KotlinRuleSetPlugin"/>
+    <bazelRuleSetProvider implementation="org.jetbrains.bazel.sync.workspace.languages.scala.ScalaBazelRuleSetPlugin"/>
+
     <workspaceTypeContributor implementation="org.jetbrains.bazel.workspace.sync.jvm.JvmWorkspaceTypeContributor"/>
   </extensions>
 
