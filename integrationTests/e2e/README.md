@@ -4,7 +4,7 @@ The e2e IDE-Starter tests run their fixture projects across an explicit OS × Ba
 matrix. Each test owns a package here (`e2e/<test-name>/BUILD.bazel`) that declares which
 (OS, Bazel version) cells exist; `e2e/BUILD.bazel` aggregates the per-OS suites that CI runs.
 
-Fixture projects are bundled under `plugins/bazel/testProjects/<fixture>`. Tests copy the selected
+Fixture projects are bundled under `plugins/bazel/integrationTests/testProjects/<fixture>`. Tests copy the selected
 fixture from the current Ultimate checkout to a disposable workspace. The source fixture stays
 unchanged; only the copy receives generated `user.bazelrc` and project-view files. For local Bazel
 runs, pass `--nocache_test_results` so fixture changes rerun the test. TeamCity already supplies
@@ -20,7 +20,7 @@ or next to the fixture project. Neither location works:
   classes with `glob(["test/**/*.kt"])`. A `BUILD.bazel` file makes its directory a separate Bazel
   package, and globs never cross package boundaries — so a BUILD file next to a test class would
   silently drop that class from `integrationTests_test_lib` (and from the monolithic Linux run).
-- **Not next to the fixture.** Directories under `plugins/bazel/testProjects` are test data and are
+- **Not next to the fixture.** Directories under `plugins/bazel/integrationTests/testProjects` are test data and are
   excluded from Ultimate's Bazel graph. Matrix declarations must stay reachable from the Ultimate
   build.
 - **One package per test, not one shared file.** Target names must be unique within a package, and
@@ -115,7 +115,7 @@ one OS needs are written by the test's own `configureProject` step (see `StrictD
 
 ## Adding a test to the matrix
 
-1. Add or update the cross-platform fixture under `plugins/bazel/testProjects/<fixture>` (see the
+1. Add or update the cross-platform fixture under `plugins/bazel/integrationTests/testProjects/<fixture>` (see the
    contract above), then reference that fixture in the test declaration.
 2. Create `e2e/<test-name>/BUILD.bazel` (lowercase kebab-case, conventionally matching the test
    name) with an `ide_starter_e2e_matrix` call — normally `os_list = ["windows"]`, see above — and

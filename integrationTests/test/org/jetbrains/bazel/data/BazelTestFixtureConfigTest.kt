@@ -28,7 +28,7 @@ import kotlin.io.path.writeText
 internal class BazelTestFixtureConfigTest {
   @Test
   fun `project declarations parse the fixture root and inner path`(@TempDir tempDir: Path) {
-    assertEquals(BazelPathManager.pluginSourceRoot.resolve("testProjects"), BazelPathManager.bazelTestProjectsRoot)
+    assertEquals(BazelPathManager.integrationTestProjectRoot.resolve("testProjects"), BazelPathManager.bazelTestProjectsRoot)
     assertEquals(BazelPathManager.testDataRoot.resolve("testProjects"), BazelPathManager.testProjectsRoot)
     assertTrue(BazelPathManager.bazelTestProjectsRoot.resolve("simpleJavaTest").isDirectory())
     assertTrue(BazelPathManager.bazelTestProjectsRoot.resolve("simpleJavaTest/MODULE.bazel").isRegularFile())

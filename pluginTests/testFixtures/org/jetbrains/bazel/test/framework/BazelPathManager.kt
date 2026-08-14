@@ -20,12 +20,12 @@ object BazelPathManager {
       .resolve("testProjects")
   }
 
-  val bazelTestProjectsRoot: Path by lazy {
-    pluginSourceRoot.resolve("testProjects")
-  }
-
   val integrationTestProjectRoot: Path by lazy {
     pluginSourceRoot.resolve("integrationTests")
+  }
+
+  val bazelTestProjectsRoot: Path by lazy {
+    integrationTestProjectRoot.resolve("testProjects")
   }
 
   val integrationTestDataRoot: Path by lazy {

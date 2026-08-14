@@ -624,7 +624,7 @@ class JvmBuildTargetResolver(
 
   private fun getTargetOutputJarsList(target: BuildTarget): List<Path> {
     // proto generator put the generated jar into `javaProvider.fullCompileJarsList`
-    // See test `plugins/bazel/testProjects/protobufStrictDepsTest`
+    // See test `plugins/bazel/integrationTests/testProjects/protobufStrictDepsTest`
     if (target.kind.kind == "scala_proto_library")
       return target.findBuildData<JavaProviderData>()?.fullCompileJars?.getFiles()?.toList().orEmpty()
 
