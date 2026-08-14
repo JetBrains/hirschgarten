@@ -10,6 +10,7 @@ import com.intellij.testFramework.ExpectedHighlightingData
 import com.intellij.testFramework.PlatformTestUtil
 import com.intellij.testFramework.junit5.fixture.projectFixture
 import com.intellij.testFramework.junit5.fixture.tempPathFixture
+import io.kotest.matchers.shouldBe
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
@@ -18,6 +19,7 @@ import org.jetbrains.bazel.test.framework.BazelTestApplication
 import org.jetbrains.bazel.test.framework.bazelSyncCodeInsightFixture
 import org.jetbrains.bazel.test.framework.checkHighlighting
 import org.jetbrains.bazel.workspace.fileEvents.BazelFileEventProcessor
+import org.jetbrains.bazel.workspace.fileEvents.BazelFileEventProcessorResult
 import org.junit.jupiter.api.Test
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
@@ -126,22 +128,50 @@ internal class FileSystemRefreshTest {
     }
   }
 
-  private suspend fun waitForFileEventsProcessor(event: VFileEvent) {
-    PlatformTestUtil.flushAllPendingVFSUpdates()
-    BazelFileEventProcessor.getInstance(fixture.project).enqueue(listOf(event))
+  @Test
+  fun `model is not invalidated on added resource file`() = runBlocking(Dispatchers.Default) {
+    fixture.copyBazelTestProject("redcodes/file_system_refresh")
+    fixture.performBazelSync()
+    withContext(Dispatchers.EDT) {
+      // Create resource file and resync FS
+      val newFile = fixture.tempDirFixture.createFile(
+        "/module/resources/data/File.java",
+        """
+          class File {}
+        """.trimIndent(),
+      )
+      val result = waitForFileEventsProcessor(
+        VFileCreateEvent(
+          this,
+          newFile.parent,
+          "File.java",
+          false,
+          null, null, null,
+        )
+      )
 
-    val start = System.currentTimeMillis()
-    var success = false
-    do {
-      PlatformTestUtil.dispatchAllInvocationEventsInIdeEventQueue()
-      if (BazelFileEventProcessor.getInstance(fixture.project).isIdle()) {
-        success = true
-        break
-      }
-      delay(100.milliseconds)
+      result.isEmpty() shouldBe true
     }
-    while ((System.currentTimeMillis() - start) < 10.seconds.inWholeMilliseconds)
-    if (!success)
-      error("Timed out waiting for refresh")
+  }
+
+  private suspend fun waitForFileEventsProcessor(event: VFileEvent): BazelFileEventProcessorResult {
+    PlatformTestUtil.flushAllPendingVFSUpdates()
+    return BazelFileEventProcessor.getInstance(fixture.project)
+      .enqueue(listOf(event))
+      .await()
+
+    //val start = System.currentTimeMillis()
+    //var success = false
+    //do {
+    //  PlatformTestUtil.dispatchAllInvocationEventsInIdeEventQueue()
+    //  if (BazelFileEventProcessor.getInstance(fixture.project).isIdle()) {
+    //    success = true
+    //    break
+    //  }
+    //  delay(100.milliseconds)
+    //}
+    //while ((System.currentTimeMillis() - start) < 10.seconds.inWholeMilliseconds)
+    //if (!success)
+    //  error("Timed out waiting for refresh")
   }
 }
