@@ -23,6 +23,7 @@ import org.jetbrains.bazel.languages.projectview.allowManualTargetsSync
 import org.jetbrains.bazel.languages.projectview.syncFlags
 import org.jetbrains.bazel.server.bep.BepOutput
 import org.jetbrains.bazel.server.sync.ExecuteService
+import org.jetbrains.bazel.util.relevantRuleSets
 import org.jetbrains.bsp.protocol.TaskId
 import java.nio.file.Path
 
@@ -82,8 +83,15 @@ class BazelBspAspectsManager(
           return@mapNotNull RulesetLanguage(null, language)
         }
         null
-      }.removeDisabledLanguages()
+      }
+      .restrictToRequestedRuleSets()
+      .removeDisabledLanguages()
       .addExternalPythonLanguageIfNeeded(externalRulesetNames)
+  }
+
+  private fun List<RulesetLanguage>.restrictToRequestedRuleSets(): List<RulesetLanguage> {
+    val requested = relevantRuleSets()
+    return filter { it.language.rulesetNames.any { requested.contains(it) } }
   }
 
   private fun List<RulesetLanguage>.removeDisabledLanguages(): List<RulesetLanguage> {
