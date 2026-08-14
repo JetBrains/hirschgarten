@@ -662,6 +662,11 @@
     <projectSettings service="org.jetbrains.bazel.languages.bazelversion.service.resolver.BazelGithubGlobalCacheService"/>
   </extensions>
 
+  <extensions defaultExtensionNs="com.intellij.multiverse">
+    <codeInsightContextPresentationProvider
+      implementation="org.jetbrains.bazel.multiverse.BazelModuleCodeInsightContextPresentationProvider" order="first"/>
+  </extensions>
+
   <actions>
     <action
       class="org.jetbrains.bazel.ui.projectTree.action.RunAllTestsAction"
