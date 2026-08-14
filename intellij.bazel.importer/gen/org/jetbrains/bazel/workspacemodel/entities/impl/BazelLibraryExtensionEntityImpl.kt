@@ -16,7 +16,6 @@ import com.intellij.platform.workspace.storage.impl.ModifiableWorkspaceEntityBas
 import com.intellij.platform.workspace.storage.impl.WorkspaceEntityBase
 import com.intellij.platform.workspace.storage.impl.WorkspaceEntityData
 import com.intellij.platform.workspace.storage.instrumentation.EntityStorageInstrumentationApi
-import com.intellij.platform.workspace.storage.instrumentation.MutableEntityStorageInstrumentation
 import com.intellij.platform.workspace.storage.instrumentation.instrumentation
 import com.intellij.platform.workspace.storage.metadata.model.EntityMetadata
 import org.jetbrains.annotations.ApiStatus.Internal
@@ -105,35 +104,9 @@ internal class BazelLibraryExtensionEntityImpl(private val dataSource: BazelLibr
         changedProperty.add("entitySource")
       }
     override var library: LibraryEntityBuilder
-      get() {
-        val _diff = diff
-        return if (_diff != null) {
-          ((_diff as MutableEntityStorageInstrumentation).getParentBuilder(LIBRARY_CONNECTION_ID, this) as? LibraryEntityBuilder)
-          ?: (this.entityLinks[EntityLink(false, LIBRARY_CONNECTION_ID)] as? LibraryEntityBuilder)
-          ?: error("library is null for BazelLibraryExtensionEntity")
-        }
-        else {
-          (this.entityLinks[EntityLink(false, LIBRARY_CONNECTION_ID)] as? LibraryEntityBuilder)
-          ?: error("library is null for BazelLibraryExtensionEntity")
-        }
-      }
+      get() = getParent(LIBRARY_CONNECTION_ID) as? LibraryEntityBuilder ?: error("library is null for BazelLibraryExtensionEntity")
       set(value) {
-        checkModificationAllowed()
-        val _diff = diff
-        if (_diff != null && value is ModifiableWorkspaceEntityBase<*, *> && value.diff == null) {
-          value.entityLinks[EntityLink(true, LIBRARY_CONNECTION_ID)] = this
-          @Suppress("UNCHECKED_CAST")
-          _diff.addEntity(value as ModifiableWorkspaceEntityBase<WorkspaceEntity, *>)
-        }
-        if (_diff != null && (value !is ModifiableWorkspaceEntityBase<*, *> || value.diff != null)) {
-          _diff.instrumentation.addChild(LIBRARY_CONNECTION_ID, value, this)
-        }
-        else {
-          if (value is ModifiableWorkspaceEntityBase<*, *>) {
-            value.entityLinks[EntityLink(true, LIBRARY_CONNECTION_ID)] = this
-          }
-          this.entityLinks[EntityLink(false, LIBRARY_CONNECTION_ID)] = value
-        }
+        changeParent(value, LIBRARY_CONNECTION_ID)
         changedProperty.add("library")
       }
     override var _targetKey: WorkspaceModelTargetKey
