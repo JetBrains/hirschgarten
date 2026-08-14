@@ -572,13 +572,15 @@ class BazelFileEventListenerTest : WorkspaceModelBaseTest() {
         override suspend fun invertedSourcesQuery(
           taskId: TaskId,
           files: Collection<PathAndVFile>,
+          failedEvalPaths: MutableList<Path>,
+          context: ProcessingContext
         ): Map<Path, List<Label>> {
           invertedSourcesQueryCount.incrementAndGet()
           return files.map { it.path }.associateWith {
             inverseSourcesData.getOrDefault(it.relativeTo(projectBasePath).toString(), emptyList())
           }
         }
-      }.enqueue(events.toList()).await()
+      }.enqueue(events.toList()).await().let { !it.isEmpty() }
     }
   }
 
@@ -640,6 +642,6 @@ class BazelFileEventListenerTest : WorkspaceModelBaseTest() {
 }
 
 private object MockBazelFileEventProcessor : BazelFileEventProcessor {
-  override suspend fun enqueue(events: List<VFileEvent>) = CompletableDeferred(false)
+  override suspend fun enqueue(events: List<VFileEvent>) = CompletableDeferred(BazelFileEventProcessorResult.EMPTY)
   override fun isIdle() = true
 }

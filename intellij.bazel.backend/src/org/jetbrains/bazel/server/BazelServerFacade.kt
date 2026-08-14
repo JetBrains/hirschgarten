@@ -43,7 +43,6 @@ interface BazelServerFacade {
   @ApiStatus.Internal
   suspend fun workspaceBuildPhasedTargets(params: WorkspaceBuildTargetPhasedParams): PhasedSyncProject
 
-  // TODO: should be replaced with some query that can be crafted on the client side
   @ApiStatus.Internal
   suspend fun buildTargetInverseSources(params: InverseSourcesParams): InverseSourcesResult
 

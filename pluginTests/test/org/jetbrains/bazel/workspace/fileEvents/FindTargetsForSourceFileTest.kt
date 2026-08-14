@@ -70,6 +70,47 @@ class FindTargetsForSourceFileTest : BasePlatformTestCase() {
   }
 
   @Test
+  fun `returns target with Resources kind when resources is a string literal matching the file`() {
+    addBuildFile("pkg", """java_library(name = "lib", resources = "Foo.kt")""")
+    val source = addSource("pkg/Foo.kt")
+
+    findTargetsWithKinds(source) shouldBe mapOf("@//pkg:lib" to setOf(StarlarkSrcsListEval.Kind.Resources))
+  }
+
+  @Test
+  fun `returns target with Resources kind when resources is a glob matching the file`() {
+    addBuildFile("pkg", """java_library(name = "lib", resources = glob(["**/*.kt"]))""")
+    val source = addSource("pkg/sub/Foo.kt")
+
+    findTargetsWithKinds(source) shouldBe mapOf("@//pkg:lib" to setOf(StarlarkSrcsListEval.Kind.Resources))
+  }
+
+  @Test
+  fun `returns target with Resources kind when resources list contains the file`() {
+    addBuildFile("pkg", """java_library(name = "lib", resources = ["Foo.kt", "Bar.kt"])""")
+    val source = addSource("pkg/Bar.kt")
+
+    findTargetsWithKinds(source) shouldBe mapOf("@//pkg:lib" to setOf(StarlarkSrcsListEval.Kind.Resources))
+  }
+
+  @Test
+  fun `returns empty list when no target resources match`() {
+    addBuildFile("pkg", """java_library(name = "lib", resources = "Other.kt")""")
+    val source = addSource("pkg/Foo.kt")
+
+    findTargetsWithKinds(source) shouldBe emptyMap()
+  }
+
+  @Test
+  fun `reports both Srcs and Resources when the file matches both arguments`() {
+    addBuildFile("pkg", """java_library(name = "lib", srcs = "Foo.kt", resources = "Foo.kt")""")
+    val source = addSource("pkg/Foo.kt")
+
+    findTargetsWithKinds(source) shouldBe
+      mapOf("@//pkg:lib" to setOf(StarlarkSrcsListEval.Kind.Srcs, StarlarkSrcsListEval.Kind.Resources))
+  }
+
+  @Test
   fun `returns empty list when no BUILD file between file and repo root`() {
     val source = addSource("pkg/Foo.kt")
 
@@ -111,6 +152,13 @@ class FindTargetsForSourceFileTest : BasePlatformTestCase() {
 
   private fun findTargets(file: VirtualFile): List<String> =
     runReadActionBlocking {
-      StarlarkSrcsListEval(project).findTargetsForSourceFile(file).map {it.toString()}
+      StarlarkSrcsListEval(project).findTargetsForSourceFile(file).map {it.key.toString()}
+    }
+
+  private fun findTargetsWithKinds(file: VirtualFile): Map<String, Set<StarlarkSrcsListEval.Kind>> =
+    runReadActionBlocking {
+      StarlarkSrcsListEval(project).findTargetsForSourceFile(file)
+        .mapKeys { it.key.toString() }
+        .mapValues { it.value.toSet() }
     }
 }

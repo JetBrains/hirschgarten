@@ -29,9 +29,8 @@ class StarlarkNamedArgumentExpression(node: ASTNode) :
   fun getNameNode(): ASTNode? = node.findChildByType(StarlarkTokenTypes.IDENTIFIER)
 
   fun isSrcsArgument(): Boolean = containsArgumentWithName("srcs")
-
+  fun isResourcesArgument(): Boolean = containsArgumentWithName("resources")
   fun isNameArgument(): Boolean = containsArgumentWithName("name")
-
   fun isDepsArgument(): Boolean = containsArgumentWithName("deps")
 
   // Some companies may have custom macros that use another name

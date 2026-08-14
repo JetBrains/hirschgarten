@@ -18,6 +18,9 @@ class StarlarkArgumentList(node: ASTNode) : StarlarkBaseElement(node) {
   fun getSrcsArgument(): StarlarkNamedArgumentExpression? =
     findChildrenByClass(StarlarkNamedArgumentExpression::class.java).find { it.isSrcsArgument() }
 
+  fun getResourcesArgument(): StarlarkNamedArgumentExpression? =
+    findChildrenByClass(StarlarkNamedArgumentExpression::class.java).find { it.isResourcesArgument() }
+
   fun getNameArgument(): StarlarkNamedArgumentExpression? =
     findChildrenByClass(StarlarkNamedArgumentExpression::class.java).find { it.isNameArgument() }
 
