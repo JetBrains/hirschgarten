@@ -3,7 +3,6 @@ package org.jetbrains.bazel.bazelrunner
 import com.intellij.openapi.application.PathManager
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.util.SystemInfo
-import com.jediterm.core.util.TermSize
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.bazelrunner.params.BazelFlag
 import org.jetbrains.bazel.commons.ExcludableValue
@@ -105,7 +104,7 @@ abstract class BazelCommand(val bazelBinary: String) {
         BazelFlag.buildEventBinaryFile(besOutputFile.toAbsolutePath().toString()),
         BazelFlag.buildEventBinaryFileWait(),
         "--bes_outerr_buffer_size=10",
-        "--build_event_publish_all_actions",
+        // No --build_event_publish_all_actions to save Bazel memory: https://github.com/bazelbuild/bazel/issues/21540#issuecomment-3505368753
       ),
     )
   }
