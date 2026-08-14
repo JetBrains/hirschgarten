@@ -84,7 +84,7 @@ internal class KotlinCoroutineLibraryFinderBeforeRunTaskProvider :
 
 internal fun retrieveKotlinCoroutineParams(environment: ExecutionEnvironment, project: Project): List<String> {
   if (!project.bazelJVMProjectSettings.enableKotlinCoroutineDebug) return emptyList()
-  return environment.getCopyableUserData(COROUTINE_JVM_FLAGS_KEY).get() ?: emptyList()
+  return environment.getCopyableUserData(COROUTINE_JVM_FLAGS_KEY)?.get() ?: emptyList()
 }
 
 internal fun attachCoroutinesDebuggerConnection(runConfiguration: RunConfigurationBase<*>) {

@@ -1,5 +1,6 @@
 package org.jetbrains.bazel.jvm.run
 
+import com.intellij.debugger.engine.AsyncStacksUtils.addDebuggerAgent
 import com.intellij.execution.Executor
 import com.intellij.execution.JavaRunConfigurationExtensionManager
 import com.intellij.execution.configuration.RunConfigurationExtensionsManager
@@ -114,9 +115,11 @@ internal fun getAdditionalJvmRunParameters(environment: ExecutionEnvironment, de
     // https://bazel.build/reference/command-line-reference#flag--java_debug
     // https://github.com/bazelbuild/rules_java/blob/747bddd6091a624c54a42c1ac20308190c1ad849/java/bazel/rules/java_stub_template.txt#L23
     this += "--wrapper_script_flag=--debug=$debugPort"
-    this += retrieveKotlinCoroutineParams(environment, environment.project).map {
-      wrapVmOptionAsArg(it)
-    }
+    val debugParameters = JavaParameters()
+    debugParameters.vmParametersList.addAll(retrieveKotlinCoroutineParams(environment, environment.project))
+    // async stacks and the log-capture console decoration require the debugger agent inside the debuggee
+    addDebuggerAgent(debugParameters, environment.project, false)
+    this += debugParameters.vmParametersList.parameters.map { wrapVmOptionAsArg(it) }
   }
 
   val profilerParameters = JavaParameters()
