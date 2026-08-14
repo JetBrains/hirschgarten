@@ -30,9 +30,8 @@ jvm_library(
     visibility = ["//visibility:public"],
     deps = [
         # do not sort,
-        "//plugins/bazel/intellij.bazel.connector:connector",
+        "//plugins/bazel/intellij.bazel.backend:backend",
         "//plugins/bazel/intellij.bazel.bazelisk:bazelisk",
-        "//plugins/bazel/intellij.bazel.importer:importer",
         "//plugins/bazel/intellij.bazel.projectview:projectview",
         "@community//libraries/guava",
         "@community//libraries/fastutil",
@@ -138,9 +137,8 @@ jvm_library(
     runtime_deps = [
         # do not sort,
         ":core",
-        "//plugins/bazel/intellij.bazel.connector:connector_test_lib",
+        "//plugins/bazel/intellij.bazel.backend:backend_test_lib",
         "//plugins/bazel/intellij.bazel.bazelisk:bazelisk_test_lib",
-        "//plugins/bazel/intellij.bazel.importer:importer_test_lib",
         "//plugins/bazel/intellij.bazel.projectview:projectview_test_lib",
         "@community//libraries/guava:guava_test_lib",
         "@community//libraries/fastutil:fastutil_test_lib",

@@ -13,7 +13,7 @@
     <orderEntry type="module" module-name="intellij.bazel.core" />
     <orderEntry type="module" module-name="intellij.bazel.commons" />
     <orderEntry type="module" module-name="intellij.bazel.java.core" />
-    <orderEntry type="module" module-name="intellij.bazel.importer" />
+    <orderEntry type="module" module-name="intellij.bazel.backend" />
     <orderEntry type="module" module-name="intellij.platform.core" />
     <orderEntry type="module" module-name="intellij.platform.core.impl" />
     <orderEntry type="module" module-name="intellij.platform.lang" />

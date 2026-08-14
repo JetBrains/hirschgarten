@@ -20,7 +20,7 @@
     <orderEntry type="module" module-name="intellij.platform.util" />
     <orderEntry type="module" module-name="intellij.monorepo.devkit.bazel" />
     <orderEntry type="module" module-name="intellij.platform.projectModel" />
-    <orderEntry type="module" module-name="intellij.bazel.importer" />
+    <orderEntry type="module" module-name="intellij.bazel.backend" />
     <orderEntry type="module" module-name="intellij.platform.analysis" />
     <orderEntry type="module" module-name="intellij.bazel.projectview" />
     <orderEntry type="module" module-name="intellij.bazel.kotlin.common" />

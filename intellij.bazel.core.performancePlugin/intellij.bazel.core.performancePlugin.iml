@@ -9,9 +9,8 @@
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="module" module-name="intellij.bazel.core" />
-    <orderEntry type="module" module-name="intellij.bazel.connector" />
+    <orderEntry type="module" module-name="intellij.bazel.backend" />
     <orderEntry type="module" module-name="intellij.bazel.bazelisk" />
-    <orderEntry type="module" module-name="intellij.bazel.importer" />
     <orderEntry type="module" module-name="intellij.bazel.projectview" />
     <orderEntry type="module" module-name="intellij.libraries.guava" />
     <orderEntry type="module" module-name="intellij.libraries.fastutil" />

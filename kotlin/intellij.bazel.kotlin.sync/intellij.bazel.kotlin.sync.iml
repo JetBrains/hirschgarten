@@ -12,7 +12,7 @@
     <orderEntry type="library" scope="PROVIDED" name="kotlinc.kotlin-compiler-common" level="project" />
     <orderEntry type="library" scope="PROVIDED" name="kotlinc.kotlin-jps-common" level="project" />
     <orderEntry type="module" module-name="intellij.bazel.commons" />
-    <orderEntry type="module" module-name="intellij.bazel.importer" />
+    <orderEntry type="module" module-name="intellij.bazel.backend" />
     <orderEntry type="module" module-name="intellij.bazel.java.sync" />
     <orderEntry type="module" module-name="intellij.platform.core" />
     <orderEntry type="module" module-name="intellij.platform.ide" />

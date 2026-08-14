@@ -5,7 +5,7 @@ import com.intellij.build.events.MessageEvent
 import com.intellij.openapi.project.Project
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.commons.constants.Constants
-import org.jetbrains.bazel.config.BazelImporterBundle
+import org.jetbrains.bazel.config.BazelBackendBundle
 import org.jetbrains.bazel.ignore.BazelIgnoreService
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.label.label
@@ -98,7 +98,7 @@ object BazelWorkspaceResolver {
     if (noIdeTargets.isNotEmpty()) {
       project.syncConsole.addDiagnosticMessage(
         taskId, null, -1, -1,
-        message = BazelImporterBundle.message("bazel.import.noide.targets", noIdeTargets.size, Constants.NO_IDE),
+        message = BazelBackendBundle.message("bazel.import.noide.targets", noIdeTargets.size, Constants.NO_IDE),
         description = noIdeTargets.joinToString(",", limit = 5) {
           it.label().toString()
         },
@@ -112,7 +112,7 @@ object BazelWorkspaceResolver {
     if (BazelIgnoreService.getInstance(project).isIgnored(dotBazelBsp)) {
       project.syncConsole.addDiagnosticMessage(
         taskId, null, -1, -1,
-        message = BazelImporterBundle.message("bazel.import.ignored.bazelbsp", dotBazelBsp, Constants.DOT_BAZELBSP_DIR_NAME),
+        message = BazelBackendBundle.message("bazel.import.ignored.bazelbsp", dotBazelBsp, Constants.DOT_BAZELBSP_DIR_NAME),
         description = null,
         MessageEvent.Kind.ERROR,
       )

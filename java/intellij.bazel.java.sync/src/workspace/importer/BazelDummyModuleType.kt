@@ -6,7 +6,7 @@ import com.intellij.openapi.module.InternalModuleType
 import com.intellij.openapi.module.ModuleType
 import com.intellij.openapi.module.ModuleTypeManager
 import org.jetbrains.annotations.ApiStatus
-import org.jetbrains.bazel.config.BazelImporterBundle
+import org.jetbrains.bazel.config.BazelBackendBundle
 import javax.swing.Icon
 
 // RC: moved from old MMM transformers package, was `BazelDummyModuleType`
@@ -18,7 +18,7 @@ class BazelDummyModuleType : InternalModuleType<BazelDummyModuleBuilder>(ID) {
 
   override fun createModuleBuilder(): BazelDummyModuleBuilder = BazelDummyModuleBuilder()
 
-  override fun getName(): String = BazelImporterBundle.message("bazel.dummy.module.type.name")
+  override fun getName(): String = BazelBackendBundle.message("bazel.dummy.module.type.name")
 
   override fun getDescription(): String = name
 
