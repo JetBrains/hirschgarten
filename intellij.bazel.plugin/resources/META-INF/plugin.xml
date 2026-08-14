@@ -23,8 +23,7 @@
 
   <content namespace="jetbrains">
     <!-- core modules -->
-    <module name="intellij.bazel.connector" loading="required"/>
-    <module name="intellij.bazel.importer" loading="required"/>
+    <module name="intellij.bazel.backend" loading="required"/>
     <module name="intellij.bazel.projectview" loading="required"/>
     <module name="intellij.bazel.commons" loading="required"/>
     <module name="intellij.bazel.core" loading="required"/>

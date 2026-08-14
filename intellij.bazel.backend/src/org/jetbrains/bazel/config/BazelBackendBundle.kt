@@ -6,9 +6,9 @@ import org.jetbrains.annotations.Nls
 import org.jetbrains.annotations.PropertyKey
 
 @ApiStatus.Internal
-object BazelImporterBundle {
-  const val BUNDLE = "messages.BazelImporterBundle"
-  private val INSTANCE = DynamicBundle(BazelImporterBundle::class.java, BUNDLE)
+object BazelBackendBundle {
+  const val BUNDLE = "messages.BazelBackendBundle"
+  private val INSTANCE = DynamicBundle(BazelBackendBundle::class.java, BUNDLE)
 
   @JvmStatic
   fun message(

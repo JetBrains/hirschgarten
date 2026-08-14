@@ -2,20 +2,28 @@
   <!-- region Generated dependencies - run `Generate Product Layouts` to regenerate -->
   <dependencies>
     <module name="intellij.bazel.commons"/>
-    <module name="intellij.bazel.connector"/>
     <module name="intellij.bazel.projectview"/>
     <module name="intellij.bazel.protobuf"/>
     <module name="intellij.libraries.bazel.aspect.sdk"/>
     <module name="intellij.libraries.caffeine"/>
     <module name="intellij.libraries.fastutil"/>
+    <module name="intellij.libraries.grpc"/>
     <module name="intellij.libraries.gson"/>
     <module name="intellij.libraries.guava"/>
     <module name="intellij.libraries.hash4j"/>
+    <module name="intellij.libraries.jackson"/>
+    <module name="intellij.libraries.jackson.databind"/>
+    <module name="intellij.libraries.jackson.dataformat.xml"/>
+    <module name="intellij.libraries.jackson.module.kotlin"/>
+    <module name="intellij.libraries.jediterm.core"/>
     <module name="intellij.libraries.jetbrains.annotations"/>
     <module name="intellij.libraries.kotlinx.coroutines.core"/>
+    <module name="intellij.libraries.kotlinx.serialization.core"/>
+    <module name="intellij.libraries.kotlinx.serialization.json"/>
     <module name="intellij.libraries.kryo5"/>
     <module name="intellij.libraries.mvstore"/>
     <module name="intellij.libraries.protobuf"/>
+    <module name="intellij.libraries.velocity"/>
     <module name="intellij.platform.analysis"/>
     <module name="intellij.platform.backend"/>
     <module name="intellij.platform.core"/>
@@ -36,6 +44,18 @@
   <!-- endregion -->
 
   <extensionPoints>
+    <extensionPoint qualifiedName="org.jetbrains.bazel.bazelProcessLauncherProvider"
+                    interface="org.jetbrains.bazel.bazelrunner.BazelProcessLauncherProvider"
+                    dynamic="true"
+    />
+    <extensionPoint qualifiedName="org.jetbrains.bazel.bepEventHandlerProvider"
+                    interface="org.jetbrains.bazel.server.bep.BepEventHandlerProvider"
+                    dynamic="true"
+    />
+    <extensionPoint qualifiedName="org.jetbrains.bazel.testLocationHintProvider"
+                    interface="org.jetbrains.bazel.util.BazelTestLocationHintProvider"
+                    dynamic="true"
+    />
     <extensionPoint
       dynamic="true"
       interface="org.jetbrains.bazel.sync.ProjectSyncHook"

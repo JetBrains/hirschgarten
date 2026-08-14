@@ -7,6 +7,9 @@
 - name: lib/intellij.bazel.resource.jar
   contentModules:
   - name: intellij.bazel.resource
+- name: lib/modules/intellij.bazel.backend.jar
+  contentModules:
+  - name: intellij.bazel.backend
 - name: lib/modules/intellij.bazel.bazelisk.jar
   contentModules:
   - name: intellij.bazel.bazelisk
@@ -19,9 +22,6 @@
 - name: lib/modules/intellij.bazel.commons.jar
   contentModules:
   - name: intellij.bazel.commons
-- name: lib/modules/intellij.bazel.connector.jar
-  contentModules:
-  - name: intellij.bazel.connector
 - name: lib/modules/intellij.bazel.core.jar
   contentModules:
   - name: intellij.bazel.core
@@ -43,9 +43,6 @@
 - name: lib/modules/intellij.bazel.golang.common.jar
   contentModules:
   - name: intellij.bazel.golang.common
-- name: lib/modules/intellij.bazel.importer.jar
-  contentModules:
-  - name: intellij.bazel.importer
 - name: lib/modules/intellij.bazel.java.common.jar
   contentModules:
   - name: intellij.bazel.java.common

@@ -8,7 +8,7 @@ import com.intellij.platform.backend.workspace.WorkspaceModel
 import com.intellij.platform.util.progress.SequentialProgressReporter
 import com.intellij.platform.workspace.storage.MutableEntityStorage
 import org.jetbrains.annotations.ApiStatus
-import org.jetbrains.bazel.config.BazelImporterBundle
+import org.jetbrains.bazel.config.BazelBackendBundle
 import org.jetbrains.bazel.progress.TaskConsole
 import org.jetbrains.bazel.progress.syncConsole
 import org.jetbrains.bazel.progress.withSubtask
@@ -42,11 +42,11 @@ class WorkspaceImporterHelper(
   suspend fun invoke(reporter: SequentialProgressReporter, snapshot: WorkspaceSnapshot) {
     taskConsole.withSubtask(
       reporter, taskId.subTask("workspace-importers"),
-      BazelImporterBundle.message("bazel.workspace.importer.task.name"),
+      BazelBackendBundle.message("bazel.workspace.importer.task.name"),
     ) { taskId ->
       taskConsole.withSubtask(
         subtaskId = taskId.subTask("workspace-importers-init"),
-        message = BazelImporterBundle.message("workspace.importer.phase.initialization.progress"),
+        message = BazelBackendBundle.message("workspace.importer.phase.initialization.progress"),
       ) { taskId ->
         BazelWorkspaceImporter.EP_NAME.forEachExtensionSafeInline { ep ->
           ep.runContextual(taskId, context, WorkspaceImporterPhase.Initialize, snapshot)
@@ -65,7 +65,7 @@ class WorkspaceImporterHelper(
 
       taskConsole.withSubtask(
         subtaskId = taskId.subTask("workspace-importers-wsm-building"),
-        message = BazelImporterBundle.message("build.workspace.model"),
+        message = BazelBackendBundle.message("build.workspace.model"),
       ) { taskId ->
         BazelWorkspaceImporter.EP_NAME.forEachExtensionSafeInline { ep ->
           if (ep in toSkip) {
@@ -85,7 +85,7 @@ class WorkspaceImporterHelper(
 
       taskConsole.withSubtask(
         subtaskId = taskId.subTask("workspace-importers-finalize"),
-        message = BazelImporterBundle.message("workspace.importer.phase.finalization"),
+        message = BazelBackendBundle.message("workspace.importer.phase.finalization"),
       ) { taskId ->
         BazelWorkspaceImporter.EP_NAME.forEachExtensionSafeInline { ep ->
           if (ep in toSkip) {
@@ -109,7 +109,7 @@ class WorkspaceImporterHelper(
   suspend fun invokeLate(reporter: SequentialProgressReporter, snapshot: WorkspaceSnapshot) {
     taskConsole.withSubtask(
       reporter, taskId.subTask("workspace-importers-post-apply"),
-      BazelImporterBundle.message("bazel.workspace.post.apply.task.name"),
+      BazelBackendBundle.message("bazel.workspace.post.apply.task.name"),
     ) { taskId ->
       BazelWorkspaceImporter.EP_NAME.forEachExtensionSafeInline { ep ->
         if (ep in toSkip) {
@@ -140,7 +140,7 @@ class WorkspaceImporterHelper(
     if (this is BazelWorkspaceImporter.Named) {
       taskConsole.withSubtask(
         taskId.uniqueSubTask("importer"),
-        BazelImporterBundle.message("workspace.importer.phase.executing", this.importerName),
+        BazelBackendBundle.message("workspace.importer.phase.executing", this.importerName),
       ) { taskId ->
         this.import(context.copy(taskId = taskId), phase, snapshot)
       }

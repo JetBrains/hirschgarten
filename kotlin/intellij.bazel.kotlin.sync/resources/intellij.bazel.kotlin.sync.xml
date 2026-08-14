@@ -2,8 +2,8 @@
 <idea-plugin visibility="public">
   <dependencies>
     <plugin id="org.jetbrains.kotlin"/>
+    <module name="intellij.bazel.backend"/>
     <module name="intellij.bazel.commons"/>
-    <module name="intellij.bazel.importer"/>
     <module name="intellij.bazel.java.sync"/>
     <module name="intellij.java"/>
     <module name="intellij.kotlin.base.projectStructure"/>

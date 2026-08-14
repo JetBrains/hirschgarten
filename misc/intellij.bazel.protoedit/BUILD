@@ -24,7 +24,7 @@ jvm_library(
         "@community//libraries/mvstore",
         "//plugins/bazel/intellij.bazel.core:core",
         "//plugins/bazel/intellij.bazel.commons:commons",
-        "//plugins/bazel/intellij.bazel.importer:importer",
+        "//plugins/bazel/intellij.bazel.backend:backend",
         "@community//platform/core-api:core",
         "@community//platform/platform-api:ide",
         "@community//platform/platform-util-io:ide-util-io",
@@ -36,7 +36,6 @@ jvm_library(
         "//contrib/protobuf:protoeditor",
         "//contrib/protobuf/protoeditor-core",
         "//plugins/bazel/aspect-sdk:libraries-bazel-aspect-sdk",
-        "//plugins/bazel/intellij.bazel.connector:connector",
     ],
 )
 
@@ -55,7 +54,7 @@ jvm_library(
         "@community//libraries/mvstore:mvstore_test_lib",
         "//plugins/bazel/intellij.bazel.core:core_test_lib",
         "//plugins/bazel/intellij.bazel.commons:commons_test_lib",
-        "//plugins/bazel/intellij.bazel.importer:importer_test_lib",
+        "//plugins/bazel/intellij.bazel.backend:backend_test_lib",
         "@community//platform/core-api:core_test_lib",
         "@community//platform/platform-api:ide_test_lib",
         "@community//platform/platform-util-io:ide-util-io_test_lib",
@@ -67,7 +66,6 @@ jvm_library(
         "//contrib/protobuf:protoeditor_test_lib",
         "//contrib/protobuf/protoeditor-core:protoeditor-core_test_lib",
         "//plugins/bazel/aspect-sdk:libraries-bazel-aspect-sdk_test_lib",
-        "//plugins/bazel/intellij.bazel.connector:connector_test_lib",
     ],
 )
 ### auto-generated section `build intellij.bazel.protoedit` end

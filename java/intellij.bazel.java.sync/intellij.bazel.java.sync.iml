@@ -15,9 +15,8 @@
     <orderEntry type="module" module-name="intellij.platform.ide" />
     <orderEntry type="module" module-name="intellij.libraries.protobuf" />
     <orderEntry type="module" module-name="intellij.bazel.commons" />
-    <orderEntry type="module" module-name="intellij.bazel.connector" />
+    <orderEntry type="module" module-name="intellij.bazel.backend" />
     <orderEntry type="module" module-name="intellij.bazel.protobuf" />
-    <orderEntry type="module" module-name="intellij.bazel.importer" />
     <orderEntry type="module" module-name="intellij.bazel.projectview" />
     <orderEntry type="module" module-name="intellij.platform.backend" />
     <orderEntry type="module" module-name="intellij.platform.core" />
