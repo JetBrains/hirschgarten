@@ -173,7 +173,7 @@
     <orderEntry type="module" module-name="intellij.libraries.jackson.databind" scope="TEST" />
     <orderEntry type="module" module-name="intellij.libraries.jackson.module.kotlin" scope="TEST" />
     <orderEntry type="module" module-name="intellij.libraries.kotlinTestAssertionsCoreJvm" scope="TEST" />
-    <orderEntry type="library" scope="TEST" name="kodein-di-jvm" level="project" />
+    <orderEntry type="module" module-name="intellij.libraries.kodein.di.jvm" scope="TEST" />
     <orderEntry type="library" scope="TEST" name="mockito" level="project" />
     <orderEntry type="library" scope="TEST" name="jmock" level="project" />
     <orderEntry type="module" module-name="intellij.libraries.assertj.core" scope="TEST" />
