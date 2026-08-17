@@ -18,6 +18,7 @@ import org.jetbrains.bazel.languages.projectview.SYNC_FLAGS_KEY
 import org.jetbrains.bazel.languages.projectview.TARGETS_KEY
 import org.jetbrains.bazel.languages.projectview.TARGET_SHARD_SIZE_KEY
 import org.jetbrains.bazel.languages.projectview.targets
+import org.jetbrains.bazel.test.framework.BazelTestApplication
 import org.junit.jupiter.api.Assertions.fail
 import org.junit.jupiter.api.Test
 import java.nio.file.Paths
@@ -74,14 +75,15 @@ val mockBazelProcessLauncher = object : BazelProcessLauncher {
 val bazelRunner = BazelRunner(null, mockBazelInfo.workspaceRoot, mockBazelProcessLauncher, Path("bazel"))
 val bazelRunnerWithBazelInfo = BazelRunner(null, mockBazelInfo.workspaceRoot, mockBazelProcessLauncher, Path("bazel"))
 
-fun splitOfTargetPattern(cmds : List<String>) : Pair<List<String>, List<String>> {
+fun splitOfTargetPattern(cmds: List<String>): Pair<List<String>, List<String>> {
   cmds.indexOf("--") shouldBe -1
-  val targetPatternFiles = cmds.filter { s -> s.startsWith("--target_pattern_file=")}
+  val targetPatternFiles = cmds.filter { s -> s.startsWith("--target_pattern_file=") }
   val targetPatternFileArgument = targetPatternFiles.singleOrNull() ?: fail("Expected precisely one target pattern file argument")
   val patterns = Path(targetPatternFileArgument.substringAfter("--target_pattern_file=")).readLines()
-  return Pair(patterns, cmds.filter { s -> !s.startsWith("--target_pattern_file=")})
+  return Pair(patterns, cmds.filter { s -> !s.startsWith("--target_pattern_file=") })
 }
 
+@BazelTestApplication
 class BazelRunnerBuilderTest {
   @Test
   fun `most bare bones build without targets`() {
@@ -383,6 +385,33 @@ class BazelRunnerBuilderTest {
         "flag2",
         "--",
         "in1",
+      )
+  }
+
+  @Test
+  fun `config does inherit build flags from projectview`() {
+    val command =
+      bazelRunner.buildBazelCommand(
+        projectView = ProjectView(
+          sections = mapOf(
+            BUILD_FLAGS_KEY to listOf("--repo_env=IDE_BUILD=1"),
+          ),
+          imports = emptyList(),
+        ),
+        inheritProjectviewOptionsOverride = null,
+      ) {
+        config {}
+      }
+
+    command.buildExecutionDescriptor().command shouldContainExactly
+      listOf(
+        "bazel",
+        "config",
+        BazelFlag.toolTag(),
+        "--curses=no",
+        "--color=yes",
+        "--noprogress_in_terminal_title",
+        "--repo_env=IDE_BUILD=1",
       )
   }
 
