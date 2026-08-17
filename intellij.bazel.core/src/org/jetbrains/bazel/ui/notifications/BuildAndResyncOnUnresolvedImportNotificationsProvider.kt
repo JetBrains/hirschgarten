@@ -22,7 +22,8 @@ import org.jetbrains.bazel.coroutines.BazelCoroutineService
 import org.jetbrains.bazel.sync.ProjectPostSyncHook
 import org.jetbrains.bazel.sync.scope.SecondPhaseSync
 import org.jetbrains.bazel.sync.status.isSyncInProgress
-import org.jetbrains.bazel.sync.task.ProjectSyncTask
+import org.jetbrains.bazel.sync.ProjectSyncScope
+import org.jetbrains.bazel.sync.ProjectSyncService
 import java.util.function.Function
 import javax.swing.JComponent
 
@@ -73,7 +74,7 @@ internal class BuildAndResyncOnUnresolvedImportNotificationsProvider :
 
       createActionLabel(BazelPluginBundle.message("build.and.resync.action.text")) {
         BazelCoroutineService.getInstance(project).start {
-          ProjectSyncTask(project).fullSync(buildProject = true)
+          project.service<ProjectSyncService>().sync(ProjectSyncScope.Full(build = true, phased = false))
         }
       }
       val virtualFile = fileEditor.file

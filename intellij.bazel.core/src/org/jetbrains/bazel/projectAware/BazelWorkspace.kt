@@ -5,6 +5,7 @@ import com.intellij.openapi.Disposable
 import com.intellij.openapi.application.ex.ApplicationUtil
 import com.intellij.openapi.application.readAction
 import com.intellij.openapi.components.Service
+import com.intellij.openapi.components.service
 import com.intellij.openapi.externalSystem.autoimport.ExternalSystemProjectAware
 import com.intellij.openapi.externalSystem.autoimport.ExternalSystemProjectId
 import com.intellij.openapi.externalSystem.autoimport.ExternalSystemProjectListener
@@ -36,7 +37,8 @@ import org.jetbrains.bazel.coroutines.BazelCoroutineService
 import org.jetbrains.bazel.project.projectViewFile
 import org.jetbrains.bazel.sync.SyncCache
 import org.jetbrains.bazel.sync.status.SyncStatusListener
-import org.jetbrains.bazel.sync.task.ProjectSyncTask
+import org.jetbrains.bazel.sync.ProjectSyncScope
+import org.jetbrains.bazel.sync.ProjectSyncService
 import org.jetbrains.bazel.ui.status.BazelFileStatusRefresher
 
 @Service(Service.Level.PROJECT)
@@ -80,7 +82,7 @@ class BazelWorkspace(val project: Project) :
   override fun reloadProject(context: ExternalSystemProjectReloadContext) {
     if (context.isExplicitReload) {
       BazelCoroutineService.getInstance(project).start {
-        ProjectSyncTask(project).fullSync(buildProject = false)
+        project.service<ProjectSyncService>().sync(ProjectSyncScope.Full(build = false, phased = false))
       }
     }
   }

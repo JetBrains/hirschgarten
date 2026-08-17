@@ -82,5 +82,11 @@
     />
     <projectService serviceInterface="org.jetbrains.bazel.sync.workspace.persistence.WorkspaceSnapshotService"
                     serviceImplementation="org.jetbrains.bazel.sync.workspace.persistence.mvstore.DefaultWorkspaceSnapshotService"/>
+    <projectService serviceInterface="org.jetbrains.bazel.sync.ProjectSyncService"
+                    serviceImplementation="org.jetbrains.bazel.sync.DefaultProjectSyncService"/>
+
+    <statistics.counterUsagesCollector implementationClass="org.jetbrains.bazel.fus.BazelBuildMetricsCollector"/>
+    <statistics.counterUsagesCollector implementationClass="org.jetbrains.bazel.fus.BazelSyncCollector"/>
+    <statistics.validation.customValidationRule implementation="org.jetbrains.bazel.fus.BazelSyncLanguageValidationRule"/>
   </extensions>
 </idea-plugin>

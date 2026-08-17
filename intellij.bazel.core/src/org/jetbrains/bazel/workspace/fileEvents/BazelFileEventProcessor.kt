@@ -53,6 +53,7 @@ import org.jetbrains.bazel.progress.syncConsole
 import org.jetbrains.bazel.projectAware.BazelWorkspace
 import org.jetbrains.bazel.run.task.BazelBuildTaskListener
 import org.jetbrains.bazel.server.connection
+import org.jetbrains.bazel.sync.ProjectSyncService
 import org.jetbrains.bazel.sync.status.SyncStatusService
 import org.jetbrains.bazel.target.targetStorage
 import org.jetbrains.bazel.taskEvents.BazelTaskEventsService
@@ -154,7 +155,8 @@ open class DefaultBazelFileEventProcessor(private val project: Project): BazelFi
 
   private suspend fun processEventsBatch(batches: List<EventsBatch>) {
     val jobManager = FileEventJobManager.getInstance(project)
-    val taskGroupId = jobManager.syncTaskGroupId ?: TaskGroupId("file-event-" + Random.nextBytes(8).toHexString())
+    val lastSyncTaskGroupId = project.serviceAsync<ProjectSyncService>().lastSyncTaskId?.taskGroupId
+    val taskGroupId = lastSyncTaskGroupId ?: TaskGroupId("file-event-" + Random.nextBytes(8).toHexString())
     val taskId = taskGroupId.task("file-event-processing")
 
     val events = batches.flatMap { it.events }

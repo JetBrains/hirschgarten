@@ -9,6 +9,7 @@ import com.intellij.build.events.MessageEvent
 import com.intellij.configurationStore.ProjectStoreImpl
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.application.WriteAction
+import com.intellij.openapi.components.service
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.projectRoots.ProjectJdkTable
@@ -26,7 +27,8 @@ import org.jetbrains.bazel.flow.open.BazelProjectStoreDescriptor
 import org.jetbrains.bazel.progress.ConsoleService
 import org.jetbrains.bazel.progress.TaskConsole
 import org.jetbrains.bazel.project.BazelProjectFixtures.initializeBazelProject
-import org.jetbrains.bazel.sync.task.ProjectSyncTask
+import org.jetbrains.bazel.sync.ProjectSyncScope
+import org.jetbrains.bazel.sync.ProjectSyncService
 import org.jetbrains.bazel.ui.console.task.TestTaskConsole
 import java.nio.file.Path
 import kotlin.io.path.Path
@@ -207,7 +209,7 @@ class BazelSyncCodeInsightTestFixtureImpl(
   }
 
   override suspend fun performBazelSync(buildProject: Boolean) {
-    ProjectSyncTask(project).fullSync(buildProject = buildProject)
+    project.service<ProjectSyncService>().sync(ProjectSyncScope.Full(build = buildProject, phased = false))
   }
 
   override fun setUp() {

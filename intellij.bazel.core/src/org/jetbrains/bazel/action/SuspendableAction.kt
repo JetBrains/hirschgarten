@@ -5,30 +5,17 @@ import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.CommonDataKeys
-import com.intellij.openapi.application.EDT
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.editor.Editor
-import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.vfs.newvfs.ManagingFS
 import com.intellij.psi.PsiFile
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.config.isBazelProject
 import org.jetbrains.bazel.coroutines.BazelCoroutineService
 import javax.swing.Icon
 
 private val log = logger<SuspendableAction>()
-
-internal suspend fun saveAllFiles() {
-  withContext(Dispatchers.EDT) {
-    FileDocumentManager.getInstance().saveAllDocuments()
-  }
-  // Flush VFS before calling Bazel: https://blog.jetbrains.com/platform/2026/06/async-vfs-content-writes-what-plugin-authors-need-to-know/
-  ManagingFS.getInstance().flushPendingUpdatesOrNotify()
-}
 
 @ApiStatus.Internal
 abstract class SuspendableAction(text: () -> String, icon: Icon? = null) :

@@ -8,7 +8,7 @@ import com.intellij.driver.sdk.wait
 import io.kotest.assertions.withClue
 import io.kotest.matchers.booleans.shouldBeFalse
 import io.kotest.matchers.types.shouldBeInstanceOf
-import org.jetbrains.bazel.config.BazelPluginBundle
+import org.jetbrains.bazel.config.BazelBackendBundle
 import kotlin.time.Duration.Companion.seconds
 import kotlin.time.TimeSource
 
@@ -22,7 +22,7 @@ fun Driver.verifyNoSyncOnReopen() {
           withClue("Build view contains sync text") {
             buildView
               .getAllTexts()
-              .any { it.text.contains(BazelPluginBundle.message("console.task.sync.in.progress")) }
+              .any { it.text.contains(BazelBackendBundle.message("console.task.sync.in.progress")) }
               .shouldBeFalse()
           }
           wait(1.seconds)

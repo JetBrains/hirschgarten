@@ -2,11 +2,13 @@ package org.jetbrains.bazel.sync.status
 
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.project.Project
+import org.jetbrains.annotations.ApiStatus
 
 internal class SyncAlreadyInProgressException : IllegalStateException()
 
+@ApiStatus.Internal
 @Service(Service.Level.PROJECT)
-internal class SyncStatusService(private val project: Project) {
+class SyncStatusService(private val project: Project) {
   @Volatile
   private var isCanceled = false
 

@@ -10,8 +10,9 @@ import kotlinx.coroutines.flow.update
 import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.projectAware.BazelWorkspace
 import org.jetbrains.bazel.startup.utils.BazelProjectActivity
+import org.jetbrains.bazel.sync.ProjectSyncScope
+import org.jetbrains.bazel.sync.ProjectSyncService
 import org.jetbrains.bazel.sync.environment.projectCtx
-import org.jetbrains.bazel.sync.task.ProjectSyncTask
 import org.jetbrains.bazel.target.ModuleTargetService
 import org.jetbrains.bazel.target.TargetStorage
 import org.jetbrains.bazel.ui.settings.BazelApplicationSettingsService
@@ -54,19 +55,14 @@ private suspend fun resyncProjectIfNeeded(project: Project) {
   if (!isProjectInIncompleteState(project))
     return
 
-  val projectSyncTask = ProjectSyncTask(project)
-  if (serviceAsync<BazelApplicationSettingsService>().settings.enablePhasedSync) {
-    log.info("Running Bazel phased sync task")
-    projectSyncTask.phasedSync(
-      runSecondPhase = BazelFeatureFlags.executeSecondPhaseOnSync,
-      buildProject = BazelFeatureFlags.isBuildProjectOnSyncEnabled,
+  val phased = serviceAsync<BazelApplicationSettingsService>().settings.enablePhasedSync
+  log.info(if (phased) "Running Bazel phased sync task" else "Running Bazel sync task")
+  project.serviceAsync<ProjectSyncService>().sync(
+    ProjectSyncScope.Full(
+      build = BazelFeatureFlags.isBuildProjectOnSyncEnabled,
+      phased = phased,
     )
-  } else {
-    log.info("Running Bazel sync task")
-    projectSyncTask.fullSync(
-      buildProject = BazelFeatureFlags.isBuildProjectOnSyncEnabled,
-    )
-  }
+  )
 }
 
 private suspend fun isProjectInIncompleteState(project: Project): Boolean =

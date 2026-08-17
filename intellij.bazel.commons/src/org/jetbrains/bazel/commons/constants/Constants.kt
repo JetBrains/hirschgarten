@@ -4,6 +4,7 @@ import org.jetbrains.annotations.ApiStatus
 
 @ApiStatus.Internal
 object Constants {
+  const val BAZEL_DISPLAY_NAME: String = "Bazel"
   const val NAME: String = "bazelbsp"
   const val VERSION: String = "3.2.0"
   const val BAZEL_BUILD_COMMAND: String = "build"
