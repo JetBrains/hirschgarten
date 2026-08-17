@@ -39,6 +39,7 @@ import com.jetbrains.python.PythonBinary
 import com.jetbrains.python.psi.PyFile
 import com.jetbrains.python.psi.resolve.PyQualifiedNameResolveContextImpl
 import com.jetbrains.python.sdk.PythonSdkUtil
+import com.jetbrains.python.sdk.internal.PYTHON_MODULE_ID
 import io.kotest.matchers.booleans.shouldBeFalse
 import io.kotest.matchers.collections.shouldExist
 import io.kotest.matchers.nulls.shouldNotBeNull
@@ -145,7 +146,7 @@ class PythonProjectSyncTest : MockProjectBaseTest() {
     val actualModuleEntities =
       diff.entities(ModuleEntity::class.java)
         .toList()
-        .filter { it.type == ModuleTypeId("PYTHON_MODULE") }
+        .filter { it.type == ModuleTypeId(PYTHON_MODULE_ID) }
     logger.info("Checking for project ${project.name}")
     actualModuleEntities shouldContainExactlyInAnyOrder pythonTestTargets.expectedModuleEntities
     actualModuleEntities.shouldAllHaveTheSameSDK()
@@ -174,7 +175,7 @@ class PythonProjectSyncTest : MockProjectBaseTest() {
     val pythonBinary =
       GeneratedTargetInfo(
         targetId = Label.parse("@@server//tools/helper:helper"),
-        type = "PYTHON_MODULE",
+        type = PYTHON_MODULE_ID,
       )
     val expectedSourceRootPath = projectDir.get().resolve("tools/helper/op.py")
     val target =
@@ -222,12 +223,12 @@ class PythonProjectSyncTest : MockProjectBaseTest() {
     val targetWithoutImportsInfo =
       GeneratedTargetInfo(
         targetId = Label.parse("@@server//tools/helper:helper"),
-        type = "PYTHON_MODULE",
+        type = PYTHON_MODULE_ID,
       )
     val targetWithImportsInfo =
       GeneratedTargetInfo(
         targetId = Label.parse("@@server//:imported"),
-        type = "PYTHON_MODULE",
+        type = PYTHON_MODULE_ID,
         imports = listOf("src"),
       )
     val targetWithoutImports =
@@ -295,7 +296,7 @@ class PythonProjectSyncTest : MockProjectBaseTest() {
     val pythonBinary =
       GeneratedTargetInfo(
         targetId = Label.parse("@@server//:main_app"),
-        type = "PYTHON_MODULE",
+        type = PYTHON_MODULE_ID,
         imports = listOf("src"),
       )
     val target =
@@ -334,7 +335,7 @@ class PythonProjectSyncTest : MockProjectBaseTest() {
     val pythonBinary =
       GeneratedTargetInfo(
         targetId = Label.parse("@@server//:main_app"),
-        type = "PYTHON_MODULE",
+        type = PYTHON_MODULE_ID,
         imports = listOf("src", "src/app"),
       )
     val target =
@@ -370,7 +371,7 @@ class PythonProjectSyncTest : MockProjectBaseTest() {
     val info =
       GeneratedTargetInfo(
         targetId = Label.parse("@@server//genpy:part"),
-        type = "PYTHON_MODULE",
+        type = PYTHON_MODULE_ID,
         imports = listOf(),
       )
     val target =
@@ -408,12 +409,12 @@ class PythonProjectSyncTest : MockProjectBaseTest() {
     val externalPackageInfo =
       GeneratedTargetInfo(
         targetId = Label.parse("@@rules_python++pip+pypi_312_aaa//:pkg"),
-        type = "PYTHON_MODULE",
+        type = PYTHON_MODULE_ID,
       )
     val libInfo =
       GeneratedTargetInfo(
         targetId = Label.parse("@@server//project:lib"),
-        type = "PYTHON_MODULE",
+        type = PYTHON_MODULE_ID,
         dependencies = listOf(externalPackageInfo.targetId),
       )
     val externalPackageTarget =
@@ -487,7 +488,7 @@ class PythonProjectSyncTest : MockProjectBaseTest() {
     val pythonBinary =
       GeneratedTargetInfo(
         targetId = Label.parse("@@server//:main_app"),
-        type = "PYTHON_MODULE",
+        type = PYTHON_MODULE_ID,
         dependencies = listOf(pythonLibrary1.targetId, pythonLibrary2.targetId),
       )
 
@@ -508,7 +509,7 @@ class PythonProjectSyncTest : MockProjectBaseTest() {
     val pythonBinary =
       GeneratedTargetInfo(
         targetId = Label.parse("@@server//:main_app"),
-        type = "PYTHON_MODULE",
+        type = PYTHON_MODULE_ID,
         dependencies = listOf(),
       )
 
@@ -605,7 +606,7 @@ class PythonProjectSyncTest : MockProjectBaseTest() {
           entitySource = BazelProjectEntitySource,
           dependencies = moduleDependencies + ModuleSourceDependency + sdkDependency,
         ) {
-          type = ModuleTypeId("PYTHON_MODULE")
+          type = ModuleTypeId(PYTHON_MODULE_ID)
         },
     )
   }

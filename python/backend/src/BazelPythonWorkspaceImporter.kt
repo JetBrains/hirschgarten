@@ -36,6 +36,7 @@ import com.jetbrains.python.errorProcessing.PyResult
 import com.jetbrains.python.sdk.ModuleOrProject.ProjectOnly
 import com.jetbrains.python.sdk.PythonSdkType
 import com.jetbrains.python.sdk.createLocalSdkGuessingTypeByPath
+import com.jetbrains.python.sdk.internal.PYTHON_MODULE_ID
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.annotations.VisibleForTesting
 import org.jetbrains.bazel.commons.RepoMapping
@@ -76,7 +77,7 @@ import kotlin.io.path.pathString
 
 private const val PYTHON_SOURCE_ROOT_TYPE = "python-source"
 private const val PYTHON_RESOURCE_ROOT_TYPE = "python-resource"
-private val PYTHON_MODULE_TYPE = ModuleTypeId("PYTHON_MODULE")
+private val PYTHON_MODULE_TYPE = ModuleTypeId(PYTHON_MODULE_ID)
 
 internal class BazelPythonWorkspaceImporter : BazelWorkspaceImporter, BazelWorkspaceImporter.Named {
   companion object {

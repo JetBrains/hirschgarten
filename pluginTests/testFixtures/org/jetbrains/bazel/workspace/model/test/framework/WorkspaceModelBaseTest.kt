@@ -19,6 +19,7 @@ import com.intellij.testFramework.junit5.TestDisposable
 import com.intellij.testFramework.rules.ProjectModelExtension
 import com.intellij.testFramework.workspaceModel.updateProjectModel
 import com.intellij.workspaceModel.ide.impl.WorkspaceModelImpl
+import com.jetbrains.python.sdk.internal.PYTHON_MODULE_ID
 import kotlinx.coroutines.runBlocking
 import org.jetbrains.bazel.project.BazelProjectFixtures.initializeBazelProject
 import org.junit.jupiter.api.BeforeEach
@@ -122,5 +123,5 @@ abstract class WorkspaceModelWithParentJavaModuleBaseTest : WorkspaceModelWithPa
 }
 
 abstract class WorkspaceModelWithParentPythonModuleBaseTest : WorkspaceModelWithParentModuleBaseTest() {
-  override val parentModuleType = ModuleTypeId("PYTHON_MODULE")
+  override val parentModuleType = ModuleTypeId(PYTHON_MODULE_ID)
 }
