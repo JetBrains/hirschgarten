@@ -2,19 +2,21 @@ package org.jetbrains.bazel.sync.action
 
 import com.intellij.icons.AllIcons
 import com.intellij.openapi.actionSystem.AnActionEvent
+import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import org.jetbrains.bazel.action.SuspendableAction
 import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.config.isBazelProject
 import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.sync.ProjectSyncScope
+import org.jetbrains.bazel.sync.ProjectSyncService
 import org.jetbrains.bazel.sync.status.isSyncInProgress
-import org.jetbrains.bazel.sync.task.ProjectSyncTask
 
 internal class ResyncTargetAction private constructor(private val targetId: Label) :
   SuspendableAction({ BazelPluginBundle.message("target.partial.sync.action.text") }, AllIcons.Actions.Refresh) {
     override suspend fun actionPerformed(project: Project, e: AnActionEvent) {
-      ProjectSyncTask(project).partialSync(targets = listOf(targetId), buildProject = false)
+      project.service<ProjectSyncService>().sync(ProjectSyncScope.Targets(patterns = listOf(targetId), build = false))
     }
 
     override fun update(project: Project, e: AnActionEvent) {

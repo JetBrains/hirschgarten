@@ -2,10 +2,11 @@ package org.jetbrains.bazel.config
 
 import com.intellij.openapi.externalSystem.model.ProjectSystemId
 import org.jetbrains.annotations.ApiStatus
+import org.jetbrains.bazel.commons.constants.Constants
 
 @ApiStatus.Internal
 object BazelPluginConstants {
-  const val BAZEL_TOOLWINDOW_ID: String = "Bazel"
+  const val BAZEL_TOOLWINDOW_ID: String = Constants.BAZEL_DISPLAY_NAME
 
   /**
    * This id used in [BazelMoveDeclarationsToFileRefactoringListener]. Update the usage there if changing the constant

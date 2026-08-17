@@ -7,16 +7,12 @@ import kotlinx.coroutines.Job
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.sync.status.SyncStatusListener
 import org.jetbrains.bazel.sync.status.SyncStatusService
-import org.jetbrains.bsp.protocol.TaskGroupId
 import java.util.concurrent.atomic.AtomicReference
 
 @ApiStatus.Internal
 @Service(Service.Level.PROJECT)
 class FileEventJobManager(private val project: Project) {
   private val fileEventProcessingJob = AtomicReference<Job?>(null)
-
-  @Volatile
-  var syncTaskGroupId: TaskGroupId? = null
 
   init {
     project.messageBus.connect().subscribe(SyncStatusListener.TOPIC, StatusListener())

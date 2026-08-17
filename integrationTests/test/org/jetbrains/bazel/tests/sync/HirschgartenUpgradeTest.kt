@@ -16,7 +16,7 @@ import com.intellij.tools.ide.performanceTesting.commands.CommandChain
 import io.kotest.assertions.withClue
 import io.kotest.matchers.booleans.shouldBeFalse
 import io.kotest.matchers.types.shouldBeInstanceOf
-import org.jetbrains.bazel.config.BazelPluginBundle
+import org.jetbrains.bazel.config.BazelBackendBundle
 import org.jetbrains.bazel.data.BazelProjectConfigurer
 import org.jetbrains.bazel.data.IdeaBazelCases
 import org.jetbrains.bazel.data.IdeStarterOs
@@ -171,7 +171,7 @@ class HirschgartenUpgradeTest : IdeStarterBaseProjectTest() {
               withClue("Unexpected resync triggered after plugin upgrade") {
                 buildView
                   .getAllTexts()
-                  .any { it.text.contains(BazelPluginBundle.message("console.task.sync.in.progress")) }
+                  .any { it.text.contains(BazelBackendBundle.message("console.task.sync.in.progress")) }
                   .shouldBeFalse()
               }
             } catch (e: Exception) {

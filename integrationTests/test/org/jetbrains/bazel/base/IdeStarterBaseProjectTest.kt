@@ -50,7 +50,7 @@ import com.intellij.tools.ide.performanceTesting.commands.goToDeclaration
 import com.intellij.tools.ide.performanceTesting.commands.goto
 import com.intellij.tools.ide.performanceTesting.commands.takeScreenshot
 import com.intellij.tools.ide.performanceTesting.commands.waitForSmartMode
-import org.jetbrains.bazel.config.BazelPluginBundle
+import org.jetbrains.bazel.config.BazelBackendBundle
 import org.jetbrains.bazel.data.BazelProjectConfigurer
 import org.jetbrains.bazel.performanceImpl.FileKindCheck
 import org.jetbrains.bazel.test.compat.IntegrationTestCompat
@@ -476,7 +476,7 @@ interface IdeFatalError {
 
 fun UiComponent.waitForSyncSucceeded(timeout: Duration = 2.minutes) {
   val buildView = x { byType("com.intellij.build.BuildView") }
-  val syncSuccessText = BazelPluginBundle.message("console.task.sync.success")
+  val syncSuccessText = BazelBackendBundle.message("console.task.sync.success")
   buildView.waitOneText(message = "Waiting for Bazel sync to finish", timeout = timeout) {
     it.text.contains(syncSuccessText)
   }

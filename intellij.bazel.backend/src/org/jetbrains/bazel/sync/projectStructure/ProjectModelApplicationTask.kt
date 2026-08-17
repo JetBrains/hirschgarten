@@ -8,7 +8,7 @@ import com.intellij.platform.diagnostic.telemetry.helpers.useWithScope
 import com.intellij.platform.workspace.storage.EntitySource
 import com.intellij.platform.workspace.storage.MutableEntityStorage
 import com.intellij.workspaceModel.ide.impl.WorkspaceModelImpl
-import org.jetbrains.bazel.config.BazelPluginBundle
+import org.jetbrains.bazel.config.BazelBackendBundle
 import org.jetbrains.bazel.performance.bspTracer
 import org.jetbrains.bazel.progress.syncConsole
 import org.jetbrains.bazel.progress.withSubtask
@@ -44,12 +44,12 @@ internal class ProjectModelApplicationTask(
 
     project.syncConsole.withSubtask(
       subtaskId = taskId.subTask("apply-changes-on-workspace-model"),
-      message = BazelPluginBundle.message("console.task.model.apply.changes"),
+      message = BazelBackendBundle.message("console.task.model.apply.changes"),
     ) {
       bspTracer.spanBuilder("apply.changes.on.workspace.model.ms").useWithScope {
         val workspaceModel = project.serviceAsync<WorkspaceModel>() as WorkspaceModelImpl
         workspaceModel.updateWithRetry(
-          BazelPluginBundle.message("console.task.model.apply.changes.attempt.0.1.wsm", 0, 0),
+          BazelBackendBundle.message("console.task.model.apply.changes.attempt.0.1.wsm", 0, 0),
           MAX_REPLACE_WSM_ATTEMPTS,
         ) { builder ->
           bspTracer.spanBuilder("replaceprojectmodel.in.apply.on.workspace.model.ms").use {

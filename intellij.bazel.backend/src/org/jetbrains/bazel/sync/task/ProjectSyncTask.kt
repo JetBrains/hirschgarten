@@ -21,11 +21,9 @@ import com.intellij.platform.ide.progress.withBackgroundProgress
 import com.intellij.platform.util.progress.SequentialProgressReporter
 import com.intellij.platform.util.progress.reportSequentialProgress
 import com.intellij.platform.workspace.storage.MutableEntityStorage
-import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.action.saveAllFiles
 import org.jetbrains.bazel.commons.constants.Constants
-import org.jetbrains.bazel.config.BazelPluginBundle
-import org.jetbrains.bazel.config.BazelPluginConstants
+import org.jetbrains.bazel.config.BazelBackendBundle
 import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.coroutines.BazelCoroutineService
 import org.jetbrains.bazel.fus.BazelSyncCollector
@@ -54,7 +52,6 @@ import org.jetbrains.bazel.sync.workspace.mapper.BazelWorkspaceResolver
 import org.jetbrains.bazel.sync.workspace.persistence.WorkspaceSnapshotService
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceSnapshotBuilder
 import org.jetbrains.bazel.taskEvents.BazelTaskEventsService
-import org.jetbrains.bazel.workspace.fileEvents.FileEventJobManager
 import org.jetbrains.bsp.protocol.TaskGroupId
 import org.jetbrains.bsp.protocol.TaskId
 import org.jetbrains.bsp.protocol.id
@@ -63,9 +60,10 @@ import kotlin.random.Random
 
 private val log = logger<ProjectSyncTask>()
 
-// TODO: some parts of this logic should be moved to `backend` module
-@ApiStatus.Internal
-class ProjectSyncTask(private val project: Project) {
+internal class ProjectSyncTask(
+  private val project: Project,
+  private val onSyncTaskStarted: (TaskId) -> Unit = {},
+) {
   suspend fun fullSync(buildProject: Boolean) {
     sync(SecondPhaseSync, buildProject)
   }
@@ -119,7 +117,7 @@ class ProjectSyncTask(private val project: Project) {
       return ProjectSyncResult(ProjectSyncCompletionResult.SKIPPED)
     }
 
-    FileEventJobManager.getInstance(project).syncTaskGroupId = taskId.taskGroupId
+    onSyncTaskStarted(taskId)
 
     try {
       log.debug("Starting sync project task")
@@ -136,8 +134,8 @@ class ProjectSyncTask(private val project: Project) {
 
         syncConsole.startTask(
           taskId = taskId,
-          title = BazelPluginBundle.message("console.task.sync.title"),
-          message = BazelPluginBundle.message("console.task.sync.in.progress"),
+          title = BazelBackendBundle.message("console.task.sync.title"),
+          message = BazelBackendBundle.message("console.task.sync.in.progress"),
           cancelAction = {
             SyncStatusService.getInstance(project).cancel()
             syncJob.cancel()
@@ -152,8 +150,8 @@ class ProjectSyncTask(private val project: Project) {
             failureCause?.let { log.error("Error syncing project", it) }
             // distinguish a thrown error mid-sync from a clean run that resolved no targets
             val message =
-              if (failureCause != null) BazelPluginBundle.message("console.task.sync.failed")
-              else BazelPluginBundle.message("console.task.sync.fatalfailure")
+              if (failureCause != null) BazelBackendBundle.message("console.task.sync.failed")
+              else BazelBackendBundle.message("console.task.sync.fatalfailure")
             syncConsole.finishTask(
               taskId,
               message,
@@ -165,13 +163,13 @@ class ProjectSyncTask(private val project: Project) {
             syncConsole.addDiagnosticMessage(
               taskId,
               null, -1, -1,
-              message = BazelPluginBundle.message("console.task.sync.partialsuccess"),
+              message = BazelBackendBundle.message("console.task.sync.partialsuccess"),
               description = null,
               MessageEvent.Kind.WARNING,
             )
             syncConsole.finishTask(
               taskId,
-              BazelPluginBundle.message("console.task.sync.partialsuccess"),
+              BazelBackendBundle.message("console.task.sync.partialsuccess"),
               SuccessResultImpl(true),
             )
           }
@@ -179,14 +177,14 @@ class ProjectSyncTask(private val project: Project) {
           ProjectSyncCompletionResult.SUCCESS -> {
             syncConsole.finishTask(
               taskId,
-              BazelPluginBundle.message("console.task.sync.success"),
+              BazelBackendBundle.message("console.task.sync.success"),
             )
           }
 
           ProjectSyncCompletionResult.CANCELLED -> {
             syncConsole.finishTask(
               taskId,
-              BazelPluginBundle.message("console.task.sync.cancelled"),
+              BazelBackendBundle.message("console.task.sync.cancelled"),
               SkippedResultImpl(),
             )
           }
@@ -202,7 +200,7 @@ class ProjectSyncTask(private val project: Project) {
     catch (e: CancellationException) {
       syncConsole.finishTask(
         taskId,
-        BazelPluginBundle.message("console.task.sync.cancelled"),
+        BazelBackendBundle.message("console.task.sync.cancelled"),
         SkippedResultImpl(),
       )
       return ProjectSyncResult(ProjectSyncCompletionResult.CANCELLED, failureCause = e)
@@ -211,7 +209,7 @@ class ProjectSyncTask(private val project: Project) {
       log.error("Error syncing project", e)
       syncConsole.finishTask(
         taskId,
-        BazelPluginBundle.message("console.task.sync.failed"),
+        BazelBackendBundle.message("console.task.sync.failed"),
         FailureResultImpl(e),
       )
       return ProjectSyncResult(ProjectSyncCompletionResult.FAILURE, failureCause = e)
@@ -243,9 +241,9 @@ class ProjectSyncTask(private val project: Project) {
     buildProject: Boolean,
   ): ProjectSyncResult {
     val syncActivityName =
-      BazelPluginBundle.message(
+      BazelBackendBundle.message(
         "console.task.sync.activity.name",
-        BazelPluginConstants.BAZEL_DISPLAY_NAME,
+        Constants.BAZEL_DISPLAY_NAME,
       )
     val saveAndSyncHandler = serviceAsync<SaveAndSyncHandler>()
     val phaseDurations = mutableListOf<ProjectSyncPhaseDuration>()
@@ -254,7 +252,7 @@ class ProjectSyncTask(private val project: Project) {
       preSync()
       UnindexedFilesScannerExecutor.getInstance(project).suspendScanningAndIndexingThenExecute(syncActivityName) {
         saveAndSyncHandler.disableAutoSave().use {
-          withBackgroundProgress(project, BazelPluginBundle.message("background.progress.syncing.project"), true) {
+          withBackgroundProgress(project, BazelBackendBundle.message("background.progress.syncing.project"), true) {
             reportSequentialProgress { progressReporter ->
               syncResult = executeSyncPipeline(
                 progressReporter = progressReporter,
@@ -309,7 +307,7 @@ class ProjectSyncTask(private val project: Project) {
           if (!server.bazelInfo.isConfigurationSupportEnabled) {
             project.syncConsole.addDiagnosticMessage(
               taskId = taskId,
-              message = BazelPluginBundle.message("console.task.sync.configurations.unsupported"),
+              message = BazelBackendBundle.message("console.task.sync.configurations.unsupported"),
               severity = MessageEvent.Kind.WARNING,
             )
           }
@@ -379,7 +377,7 @@ class ProjectSyncTask(private val project: Project) {
     project.syncConsole.withSubtask(
       reporter = progressReporter,
       subtaskId = taskId.subTask("pre-sync-hooks"),
-      text = BazelPluginBundle.message("console.task.execute.pre.sync.hooks"),
+      text = BazelBackendBundle.message("console.task.execute.pre.sync.hooks"),
     ) { subtaskId ->
       val environment =
         ProjectPreSyncHook.ProjectPreSyncHookEnvironment(
@@ -413,9 +411,9 @@ class ProjectSyncTask(private val project: Project) {
         project.syncConsole.withSubtask(
           subtaskId = taskId.subTask("base-project-sync-subtask-id"),
           message = if (buildProject)
-            BazelPluginBundle.message("console.task.base.build.sync")
+            BazelBackendBundle.message("console.task.base.build.sync")
           else
-            BazelPluginBundle.message("console.task.base.sync"),
+            BazelBackendBundle.message("console.task.base.sync"),
         ) { subtaskId ->
           BazelWorkspaceResolver.fetchWorkspace(
             project,
@@ -435,7 +433,7 @@ class ProjectSyncTask(private val project: Project) {
       project.syncConsole.withSubtask(
         reporter = progressReporter,
         subtaskId = taskId.subTask("sync-hooks"),
-        text = BazelPluginBundle.message("console.task.execute.sync.hooks"),
+        text = BazelBackendBundle.message("console.task.execute.sync.hooks"),
       ) { subtaskId ->
         val workspaceSnapshot = WorkspaceSnapshotBuilder.build(
           project = project,
@@ -482,7 +480,7 @@ class ProjectSyncTask(private val project: Project) {
     project.syncConsole.withSubtask(
       reporter = progressReporter,
       subtaskId = taskId.subTask("apply-changes"),
-      text = BazelPluginBundle.message("console.task.apply.changes"),
+      text = BazelBackendBundle.message("console.task.apply.changes"),
     ) { subtaskId ->
       val applicator = ProjectModelApplicationTask(
         project = project,
@@ -502,7 +500,7 @@ class ProjectSyncTask(private val project: Project) {
     project.syncConsole.withSubtask(
       reporter = progressReporter,
       subtaskId = taskId.subTask("post-sync-hooks"),
-      text = BazelPluginBundle.message("console.task.execute.post.sync.hooks"),
+      text = BazelBackendBundle.message("console.task.execute.post.sync.hooks"),
     ) { subtaskId ->
       val environment =
         ProjectPostSyncHook.ProjectPostSyncHookEnvironment(

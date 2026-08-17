@@ -35,7 +35,8 @@ import org.jetbrains.bazel.coroutines.BazelCoroutineService
 import org.jetbrains.bazel.ignore.BazelIgnoreService
 import org.jetbrains.bazel.sync.status.SyncStatusListener
 import org.jetbrains.bazel.sync.status.isSyncInProgress
-import org.jetbrains.bazel.sync.task.ProjectSyncTask
+import org.jetbrains.bazel.sync.ProjectSyncScope
+import org.jetbrains.bazel.sync.ProjectSyncService
 import org.jetbrains.bazel.target.targetStorage
 import org.jetbrains.bazel.workspace.fileEvents.BazelFileEventProcessor
 import org.jetbrains.jps.model.java.JavaResourceRootType
@@ -99,7 +100,7 @@ internal class BazelSourceFileNotificationProvider : EditorNotificationProvider 
       }
       createActionLabel(BazelPluginBundle.message("resync.action.text")) {
         BazelCoroutineService.getInstance(project).start {
-          ProjectSyncTask(project).fullSync(buildProject = false)
+          project.service<ProjectSyncService>().sync(ProjectSyncScope.Full(build = false, phased = false))
         }
       }
     }

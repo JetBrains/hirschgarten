@@ -1,13 +1,15 @@
 package org.jetbrains.bazel.performanceImpl
 
+import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.playback.PlaybackContext
 import com.intellij.openapi.ui.playback.commands.PlaybackCommandCoroutineAdapter
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.coroutineScope
+import org.jetbrains.bazel.sync.ProjectSyncScope
+import org.jetbrains.bazel.sync.ProjectSyncService
 import org.jetbrains.bazel.sync.status.SyncStatusListener
 import org.jetbrains.bazel.sync.status.isSyncInProgress
-import org.jetbrains.bazel.sync.task.ProjectSyncTask
 
 internal class BuildAndSyncCommand(text: String, line: Int) : PlaybackCommandCoroutineAdapter(text, line) {
   companion object {
@@ -18,7 +20,7 @@ internal class BuildAndSyncCommand(text: String, line: Int) : PlaybackCommandCor
     coroutineScope {
       val project = context.project
       project.waitForRunningSyncToFinish()
-      ProjectSyncTask(project).fullSync(buildProject = true)
+      project.service<ProjectSyncService>().sync(ProjectSyncScope.Full(build = true, phased = false))
     }
 
   private suspend fun Project.waitForRunningSyncToFinish() {

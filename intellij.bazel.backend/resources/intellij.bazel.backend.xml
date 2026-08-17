@@ -33,11 +33,13 @@
     <module name="intellij.platform.ide"/>
     <module name="intellij.platform.ide.core"/>
     <module name="intellij.platform.ide.impl"/>
+    <module name="intellij.platform.ide.progress"/>
     <module name="intellij.platform.lang"/>
     <module name="intellij.platform.lang.core"/>
     <module name="intellij.platform.lang.impl"/>
     <module name="intellij.platform.projectModel"/>
     <module name="intellij.platform.projectModel.impl"/>
+    <module name="intellij.platform.statistics"/>
     <module name="intellij.platform.util.coroutines"/>
     <module name="intellij.platform.util.ex"/>
   </dependencies>
@@ -114,5 +116,11 @@
     />
     <projectService serviceInterface="org.jetbrains.bazel.sync.workspace.persistence.WorkspaceSnapshotService"
                     serviceImplementation="org.jetbrains.bazel.sync.workspace.persistence.mvstore.DefaultWorkspaceSnapshotService"/>
+    <projectService serviceInterface="org.jetbrains.bazel.sync.ProjectSyncService"
+                    serviceImplementation="org.jetbrains.bazel.sync.DefaultProjectSyncService"/>
+
+    <statistics.counterUsagesCollector implementationClass="org.jetbrains.bazel.fus.BazelBuildMetricsCollector"/>
+    <statistics.counterUsagesCollector implementationClass="org.jetbrains.bazel.fus.BazelSyncCollector"/>
+    <statistics.validation.customValidationRule implementation="org.jetbrains.bazel.fus.BazelSyncLanguageValidationRule"/>
   </extensions>
 </idea-plugin>

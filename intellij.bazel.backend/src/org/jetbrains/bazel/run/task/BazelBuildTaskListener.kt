@@ -4,6 +4,7 @@ import com.intellij.build.events.MessageEvent
 import com.intellij.build.events.impl.FailureResultImpl
 import com.intellij.build.events.impl.SkippedResultImpl
 import com.intellij.build.events.impl.SuccessResultImpl
+import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.commons.BazelStatus
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.progress.TaskConsole
@@ -13,7 +14,8 @@ import org.jetbrains.bsp.protocol.CompileReport
 import org.jetbrains.bsp.protocol.TaskId
 import java.nio.file.Path
 
-internal class BazelBuildTaskListener(private val taskConsole: TaskConsole) : BazelTaskListener {
+@ApiStatus.Internal
+class BazelBuildTaskListener(private val taskConsole: TaskConsole) : BazelTaskListener {
   override fun onTaskFinish(
     taskId: TaskId,
     message: String,

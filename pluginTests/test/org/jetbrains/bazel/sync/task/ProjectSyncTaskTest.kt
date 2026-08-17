@@ -4,6 +4,7 @@ import com.google.devtools.intellij.ideinfo.IntellijIdeInfo.TargetIdeInfo
 import com.google.devtools.intellij.ideinfo.IntellijIdeInfo.TargetKey
 import com.intellij.internal.statistic.FUCollectorTestCase
 import com.intellij.testFramework.LoggedErrorProcessor
+import com.intellij.openapi.components.service
 import com.intellij.testFramework.registerOrReplaceServiceInstance
 import io.kotest.matchers.shouldBe
 import kotlinx.coroutines.runBlocking
@@ -21,6 +22,8 @@ import org.jetbrains.bazel.server.model.AspectSyncProject
 import org.jetbrains.bazel.sync.ProjectPostSyncHook
 import org.jetbrains.bazel.sync.ProjectPreSyncHook
 import org.jetbrains.bazel.sync.ProjectSyncHook
+import org.jetbrains.bazel.sync.ProjectSyncScope
+import org.jetbrains.bazel.sync.ProjectSyncService
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
 import org.jetbrains.bazel.workspace.model.test.framework.BuildServerMock
 import org.jetbrains.bazel.workspace.model.test.framework.MockBuildServerService
@@ -80,7 +83,7 @@ class ProjectSyncTaskTest : MockProjectBaseTest() {
 
     // when
     runBlocking {
-      ProjectSyncTask(project).fullSync(false)
+      project.service<ProjectSyncService>().sync(ProjectSyncScope.Full(build = false, phased = false))
     }
 
     // then
@@ -120,7 +123,7 @@ class ProjectSyncTaskTest : MockProjectBaseTest() {
 
     // when
     runBlocking {
-      ProjectSyncTask(project).fullSync(false)
+      project.service<ProjectSyncService>().sync(ProjectSyncScope.Full(build = false, phased = false))
     }
 
     // then
@@ -145,7 +148,7 @@ class ProjectSyncTaskTest : MockProjectBaseTest() {
     val events = expectingSyncErrorLogged {
       FUCollectorTestCase.collectLogEvents(disposable) {
         runBlocking {
-          ProjectSyncTask(project).fullSync(false)
+          project.service<ProjectSyncService>().sync(ProjectSyncScope.Full(build = false, phased = false))
         }
       }.filter { it.group.id == "bazel.sync" }.map { it.event }
     }
@@ -181,7 +184,7 @@ class ProjectSyncTaskTest : MockProjectBaseTest() {
 
     val events = FUCollectorTestCase.collectLogEvents(disposable) {
       runBlocking {
-        ProjectSyncTask(project).fullSync(buildProject = true)
+        project.service<ProjectSyncService>().sync(ProjectSyncScope.Full(build = true, phased = false))
       }
     }.filter { it.group.id == "bazel.sync" }.map { it.event }
 
