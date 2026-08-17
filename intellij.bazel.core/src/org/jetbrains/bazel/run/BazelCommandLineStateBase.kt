@@ -8,7 +8,9 @@ import com.intellij.execution.process.ProcessOutputType
 import com.intellij.execution.runners.ExecutionEnvironment
 import com.intellij.execution.testframework.sm.SMTestRunnerConnectionUtil
 import com.intellij.execution.testframework.sm.ServiceMessageBuilder
+import com.intellij.execution.testframework.sm.runner.ui.SMTRunnerConsoleView
 import com.intellij.execution.ui.RunContentManager
+import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.application.EDT
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
@@ -17,8 +19,6 @@ import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.action.saveAllFiles
 import org.jetbrains.bazel.coroutines.BazelCoroutineService
 import org.jetbrains.bazel.run.config.BazelRunConfiguration
-import org.jetbrains.bazel.run.test.BazelRerunFailedTestsAction
-import org.jetbrains.bazel.run.test.useJetBrainsTestRunner
 import org.jetbrains.bazel.server.connection
 import org.jetbrains.bazel.taskEvents.BazelTaskEventsService
 import org.jetbrains.bazel.taskEvents.BazelTaskListener
@@ -30,7 +30,13 @@ import kotlin.random.Random
 abstract class BazelCommandLineStateBase(environment: ExecutionEnvironment) : CommandLineState(environment) {
   protected val taskGroupId: TaskGroupId = TaskGroupId(environment.toString() + "-" + Random.nextBytes(8).toHexString())
 
+  protected open val isIdBasedTestTree: Boolean get() = false
+
+  protected open val testRunnerEmitsServiceMessages: Boolean get() = false
+
   protected abstract fun createAndAddTaskListener(handler: BazelProcessHandler): BazelTaskListener
+
+  protected open fun createTestRestartActions(console: SMTRunnerConsoleView): Array<AnAction> = emptyArray()
 
   /** Run the actual BSP command or throw an exception if the server does not support running the configuration */
   protected abstract suspend fun startBsp(
@@ -64,7 +70,7 @@ abstract class BazelCommandLineStateBase(environment: ExecutionEnvironment) : Co
       }
 
     handler = if (runningTests)
-      BazelTestProcessHandler(project, runDeferred, pid)
+      BazelTestProcessHandler(project, runDeferred, pid, isIdBasedTestTree)
     else
       BazelProcessHandler(project, runDeferred, pid)
 
@@ -86,10 +92,7 @@ abstract class BazelCommandLineStateBase(environment: ExecutionEnvironment) : Co
   protected fun executeWithTestConsole(executor: Executor): ExecutionResult {
     val configuration = BazelRunConfiguration.get(environment)
     val properties = configuration.createTestConsoleProperties(executor)
-    val useJetBrainsTestRunner = environment.project.useJetBrainsTestRunner()
-    if (useJetBrainsTestRunner) {
-      properties.isIdBasedTestTree = true
-    }
+    properties.isIdBasedTestTree = isIdBasedTestTree
     val handler = doStartProcess(true)
 
     val console =
@@ -98,17 +101,16 @@ abstract class BazelCommandLineStateBase(environment: ExecutionEnvironment) : Co
       )
     console.attachToProcess(handler)
 
-    if (!useJetBrainsTestRunner) {
+    if (!testRunnerEmitsServiceMessages) {
       handler.notifyTextAvailable(ServiceMessageBuilder.testsStarted().toString() + "\n", ProcessOutputType.STDOUT)
     }
 
     val actions = createActions(console, handler, executor)
 
     val executionResult = DefaultExecutionResult(console, handler, *actions)
-    if (useJetBrainsTestRunner) {
-      val rerunFailedTestsAction = BazelRerunFailedTestsAction(console)
-      rerunFailedTestsAction.setModelProvider { console.resultsViewer }
-      executionResult.setRestartActions(rerunFailedTestsAction)
+    val restartActions = createTestRestartActions(console)
+    if (restartActions.isNotEmpty()) {
+      executionResult.setRestartActions(*restartActions)
     }
     return executionResult
   }

@@ -14,8 +14,6 @@ import org.jetbrains.bazel.run.BazelProcessHandler
 import org.jetbrains.bazel.run.config.BazelRunConfiguration
 import org.jetbrains.bazel.run.state.AbstractGenericTestState
 import org.jetbrains.bazel.run.task.BazelTestTaskListener
-import org.jetbrains.bazel.run.task.JetBrainsTestRunnerTaskListener
-import org.jetbrains.bazel.run.test.useJetBrainsTestRunner
 import org.jetbrains.bazel.server.BazelServerFacade
 import org.jetbrains.bazel.target.targetStorage
 import org.jetbrains.bazel.taskEvents.BazelTaskListener
@@ -24,23 +22,19 @@ import org.jetbrains.bsp.protocol.TestParams
 import java.nio.file.Path
 
 @ApiStatus.Internal
-class BazelTestCommandLineState(
+open class BazelTestCommandLineState(
   environment: ExecutionEnvironment,
   val state: AbstractGenericTestState<*>,
-  private val transformParams: (TestParams) -> TestParams = { it },
 ) : BazelCommandLineStateBase(environment) {
   var coverageReportListener: ((Path) -> Unit)? = null
 
   private val configuration = BazelRunConfiguration.get(environment)
 
+  protected open fun transformTestParams(params: TestParams): TestParams = params
+
   override fun execute(executor: Executor, runner: ProgramRunner<*>): ExecutionResult = executeWithTestConsole(executor)
 
-  override fun createAndAddTaskListener(handler: BazelProcessHandler): BazelTaskListener =
-    if (configuration.project.useJetBrainsTestRunner()) {
-      JetBrainsTestRunnerTaskListener(handler)
-    } else {
-      BazelTestTaskListener(handler, coverageReportListener)
-    }
+  override fun createAndAddTaskListener(handler: BazelProcessHandler): BazelTaskListener = BazelTestTaskListener(handler, coverageReportListener)
 
   override suspend fun startBsp(
     server: BazelServerFacade,
@@ -68,9 +62,9 @@ class BazelTestCommandLineState(
         coverageInstrumentationFilter = coverageInstrumentationFilter,
         testFilter = state.testFilter,
         additionalBazelParams = state.additionalBazelParams,
-        useJetBrainsTestRunner = configuration.project.useJetBrainsTestRunner(),
+        streamTestOutput = false,
       )
-    server.buildTargetTest(transformParams(params))
+    server.buildTargetTest(transformTestParams(params))
   }
 
   private fun getCoverageInstrumentationFilter(project: Project): String {

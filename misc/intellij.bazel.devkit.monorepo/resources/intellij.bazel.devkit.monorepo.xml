@@ -30,6 +30,7 @@
   <!-- endregion -->
   <extensions defaultExtensionNs="org.jetbrains.bazel">
     <hotSwapHook implementation="com.intellij.bazel.devkit.monorepo.hotswap.MonorepoDevkitHotSwapHook"/>
+    <jetBrainsTestRunnerDetector implementation="com.intellij.bazel.devkit.monorepo.run.MonorepoJetBrainsTestRunnerDetector"/>
   </extensions>
 
   <extensions defaultExtensionNs="com.intellij">

@@ -15,16 +15,21 @@ import java.nio.file.Path
 data class NonImportedBuildTarget(
   override val key: WorkspaceTargetKey,
   override val kind: TargetKind,
-  override val baseDirectory: Path
+  override val baseDirectory: Path,
+  override val tags: List<String> = emptyList()
 ) : BuildTarget {
-  constructor(label: Label, kind: TargetKind, baseDirectory: Path) : this(WorkspaceTargetKey(label = label), kind, baseDirectory)
+  constructor(
+    label: Label,
+    kind: TargetKind,
+    baseDirectory: Path,
+    tags: List<String> = emptyList(),
+  ) : this(WorkspaceTargetKey(label = label), kind, baseDirectory, tags)
 
   override val loaded: TargetLoadOptions get() = TargetLoadOptions.MINIMAL
 
   override val generatorName: String? get() = null
   override val isWorkspace: Boolean get() = true
   override val isTestOnly: Boolean get() = false
-  override val tags: List<String> get() = listOf()
 
   override val dependencies: List<DependencyLabel> get() = listOf()
 

@@ -1,4 +1,4 @@
-package org.jetbrains.bazel.run.test
+package org.jetbrains.bazel.jvm.run
 
 import com.intellij.execution.actions.ConfigurationContext
 import com.intellij.execution.actions.LazyRunConfigurationProducer
@@ -22,11 +22,11 @@ internal class BazelRerunTestConfigurationProducer : LazyRunConfigurationProduce
     context: ConfigurationContext,
     sourceElement: Ref<PsiElement>,
   ): Boolean {
-    if (!context.project.useJetBrainsTestRunner()) return false
+    if (!configuration.targetsUseJetBrainsTestRunner()) return false
     val testIds = getTestIdsFromTestConsole(context)
     if (testIds.isEmpty()) return false
     val handler = configuration.handler ?: return false
-    setTestUniqueIds(handler.state, testIds.toList())
+    JetBrainsTestRunner.setTestUniqueIds(handler.state, testIds.toList())
 
     val selectedProxy = context.dataContext.getData(AbstractTestProxy.DATA_KEY)
     if (selectedProxy != null) {
@@ -43,11 +43,10 @@ internal class BazelRerunTestConfigurationProducer : LazyRunConfigurationProduce
     configuration: BazelRunConfiguration,
     context: ConfigurationContext,
   ): Boolean {
-    if (!context.project.useJetBrainsTestRunner()) return false
+    if (!configuration.targetsUseJetBrainsTestRunner()) return false
     val state = configuration.handler?.state ?: return false
-    val testIds = getTestUniqueIds(state) ?: return false
-    if (testIds.isEmpty()) return false
-    return getTestIdsFromTestConsole(context) == testIds
+    val testIds = JetBrainsTestRunner.getTestUniqueIds(state) ?: return false
+    return testIds.isNotEmpty() && getTestIdsFromTestConsole(context) == testIds
   }
 
   private fun getTestIdsFromTestConsole(context: ConfigurationContext): List<String> =

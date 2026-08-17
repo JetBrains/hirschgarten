@@ -115,12 +115,6 @@ val ProjectView.indexAdditionalFilesInDirectories: List<String>
   get() = getSection(INDEX_ADDITIONAL_FILES_IN_DIRECTORIES_KEY)
 
 @Internal
-val USE_JETBRAINS_TEST_RUNNER_KEY: SectionKey<Boolean> = SectionKey("use_jetbrains_test_runner", false)
-val ProjectView.useJetBrainsTestRunner: Boolean
-  @Internal
-  get() = getSection(USE_JETBRAINS_TEST_RUNNER_KEY)
-
-@Internal
 val RUN_CONFIG_RUN_WITH_BAZEL_KEY: SectionKey<Boolean> = SectionKey("run_config_run_with_bazel", BazelFeatureFlags.runConfigRunWithBazel)
 val ProjectView.runConfigRunWithBazel: Boolean
   @Internal

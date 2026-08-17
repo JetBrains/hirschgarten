@@ -1,7 +1,6 @@
 package org.jetbrains.bazel.server.sync
 
 import com.intellij.execution.process.OSProcessUtil.killProcess
-import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
@@ -205,7 +204,7 @@ class ExecuteService(
       (command as HasAdditionalBazelOptions).additionalBazelOptions.addAll(additionalParams.split(" "))
     }
 
-    if (params.useJetBrainsTestRunner) {
+    if (params.streamTestOutput) {
       // Ensure streamed test output for live UI in IDE
       ensureTestOutputStreamed(command)
     }

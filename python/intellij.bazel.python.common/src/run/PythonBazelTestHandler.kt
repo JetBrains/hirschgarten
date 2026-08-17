@@ -11,8 +11,12 @@ import org.jetbrains.bazel.run.BazelRunHandler
 import org.jetbrains.bazel.run.commandLine.BazelTestCommandLineState
 import org.jetbrains.bazel.run.config.BazelRunConfiguration
 import org.jetbrains.bazel.run.import.GooglePluginAwareRunHandlerProvider
+import org.jetbrains.bazel.run.state.AbstractGenericTestState
 import org.jetbrains.bazel.run.state.GenericTestState
 import org.jetbrains.bsp.protocol.TestParams
+import kotlin.collections.orEmpty
+import kotlin.collections.toMutableMap
+import kotlin.text.contains
 
 @ApiStatus.Internal
 class PythonBazelTestHandler : PythonBazelHandler<GenericTestState>() {
@@ -23,26 +27,9 @@ class PythonBazelTestHandler : PythonBazelHandler<GenericTestState>() {
 
   override val state: GenericTestState = GenericTestState()
 
-  override fun createCommandLineState(environment: ExecutionEnvironment): BazelCommandLineStateBase =
-    BazelTestCommandLineState(environment, state, ::addJunitXmlOptionsToEnvironment)
-
-  @VisibleForTesting
-  fun addJunitXmlOptionsToEnvironment(testParams: TestParams): TestParams {
-    val envs = testParams.environmentVariables.orEmpty().toMutableMap()
-    val originalPytestOpts = envs["PYTEST_ADDOPTS"]
-    if (originalPytestOpts == null) {
-      envs["PYTEST_ADDOPTS"] = $$"--junitxml=${XML_OUTPUT_FILE} -o junit_family=xunit1"
-    } else if (!originalPytestOpts.contains("junitxml")) {
-      envs["PYTEST_ADDOPTS"] = $$"$$originalPytestOpts --junitxml=${XML_OUTPUT_FILE} -o junit_family=xunit1"
-    } else {
-      // if the user has already specified --junitxml, we don't want to interfere with that
-      return testParams
-    }
-
-    return testParams.copy(
-      environmentVariables = envs
-    )
-  }
+  override fun createCommandLineState(
+    environment: ExecutionEnvironment
+  ): BazelCommandLineStateBase = BazelPythonTestCommandLineState(environment, state)
 
   class Provider : GooglePluginAwareRunHandlerProvider {
     override val id: String
@@ -58,4 +45,30 @@ class PythonBazelTestHandler : PythonBazelHandler<GenericTestState>() {
     override val googleHandlerId: String = "BlazePyTestConfigurationHandlerProvider"
     override val isTestHandler: Boolean = true
   }
+
+  companion object {
+    @VisibleForTesting
+    fun addJunitXmlOptionsToEnvironment(testParams: TestParams): TestParams {
+      val envs = testParams.environmentVariables.orEmpty().toMutableMap()
+      val originalPytestOpts = envs["PYTEST_ADDOPTS"]
+      if (originalPytestOpts == null) {
+        envs["PYTEST_ADDOPTS"] = $$"--junitxml=${XML_OUTPUT_FILE} -o junit_family=xunit1"
+      } else if (!originalPytestOpts.contains("junitxml")) {
+        envs["PYTEST_ADDOPTS"] = $$"$$originalPytestOpts --junitxml=${XML_OUTPUT_FILE} -o junit_family=xunit1"
+      } else {
+        // if the user has already specified --junitxml, we don't want to interfere with that
+        return testParams
+      }
+      return testParams.copy(
+        environmentVariables = envs
+      )
+    }
+  }
+}
+
+private class BazelPythonTestCommandLineState(
+  environment: ExecutionEnvironment,
+  state: AbstractGenericTestState<*>
+) : BazelTestCommandLineState(environment, state) {
+  override fun transformTestParams(params: TestParams): TestParams = PythonBazelTestHandler.addJunitXmlOptionsToEnvironment(params)
 }

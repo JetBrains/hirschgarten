@@ -34,5 +34,6 @@ class BazelRunConfigurationType :
   }
 }
 
-internal val bazelRunConfigurationFactory: ConfigurationFactory
+@get:ApiStatus.Internal
+val bazelRunConfigurationFactory: ConfigurationFactory
   get() = ConfigurationTypeUtil.findConfigurationType(BazelRunConfigurationType::class.java).configurationFactories.first()

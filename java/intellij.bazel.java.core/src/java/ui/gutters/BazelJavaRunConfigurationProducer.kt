@@ -11,8 +11,7 @@ import com.intellij.psi.PsiMethod
 import com.intellij.psi.PsiNameIdentifierOwner
 import com.intellij.psi.util.PsiTreeUtil
 import org.jetbrains.annotations.ApiStatus
-import org.jetbrains.bazel.run.test.createTestFilterAction
-import org.jetbrains.bazel.run.test.useJetBrainsTestRunner
+import org.jetbrains.bazel.jvm.run.usesJetBrainsTestRunner
 import org.jetbrains.bazel.ui.gutters.BazelRunConfigurationProducer
 import org.jetbrains.bsp.protocol.BuildTarget
 
@@ -30,11 +29,10 @@ open class BazelJavaRunConfigurationProducer : BazelRunConfigurationProducer() {
       return GutterAction()
     }
 
-    val project = element.project
     val className = getContainingClassFqn(psiIdentifier) ?: return null
     val testFilter = if (psiMethod != null) {
       val methodName = psiMethod.name
-      if (element.project.useJetBrainsTestRunner()) {
+      if (target.usesJetBrainsTestRunner(element.project)) {
         val methodParameterTypes = psiMethod.getMethodParameterTypes()
         "$className:$methodName:$methodParameterTypes"
       } else {
@@ -44,17 +42,16 @@ open class BazelJavaRunConfigurationProducer : BazelRunConfigurationProducer() {
     else {
       className.normalizeNestedClassSeparator()
     }
-
-    var gutterAction = createTestFilterAction(project, testFilter)
-    // Support running a @Disabled JUnit test if we clicked on it explicitely
     val junitDisabledCondition = DisabledConditionUtil.getDisabledCondition(classOrMethod)
-    if (junitDisabledCondition != null) {
-      val jvmFlag = "--wrapper_script_flag=--jvm_flag=-Djunit.jupiter.conditions.deactivate=$junitDisabledCondition"
-      gutterAction = gutterAction.copy(
-        programArguments = gutterAction.programArguments + listOf(jvmFlag),
-      )
-    }
-    return gutterAction.copy(additionalLocationString = psiMethod?.name)
+    return GutterAction(
+      testFilter = testFilter,
+      programArguments = when {
+        // Support running a @Disabled JUnit test if we clicked on it explicitely
+        junitDisabledCondition != null -> listOf("--wrapper_script_flag=--jvm_flag=-Djunit.jupiter.conditions.deactivate=$junitDisabledCondition")
+        else -> emptyList()
+      },
+      additionalLocationString = psiMethod?.name
+    )
   }
 
   /**

@@ -14,7 +14,6 @@ import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.test.framework.BazelBasePlatformTestCase
 import org.jetbrains.bazel.kotlin.ui.gutters.BazelKotlinRunConfigurationProducer
 import org.jetbrains.bazel.label.Label
-import org.jetbrains.bazel.run.test.forceDisableJetBrainsTestRunner
 import org.jetbrains.bazel.sync.JavaLanguageClass
 import org.jetbrains.bazel.ui.gutters.NonImportedBuildTarget
 import org.jetbrains.kotlin.psi.KtClass
@@ -38,15 +37,6 @@ class BazelJavaRunConfigurationProducerTest : BazelBasePlatformTestCase() {
     ),
     Path("base/directory"),
   )
-
-  @Before
-  fun beforeEach() {
-    myFixture.setBuildTool()
-  }
-
-  private fun CodeInsightTestFixture.setBuildTool() {
-    forceDisableJetBrainsTestRunner = true
-  }
 
   private fun CodeInsightTestFixture.getKotlinTestFile(): PsiFile =
     configureByText(

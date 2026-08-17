@@ -7,7 +7,6 @@ import com.intellij.execution.configurations.RunProfileState
 import com.intellij.execution.executors.DefaultDebugExecutor
 import com.intellij.execution.runners.ExecutionEnvironment
 import com.intellij.openapi.util.Key
-import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.config.BazelFeatureFlags
@@ -20,8 +19,9 @@ import org.jetbrains.bazel.run.commandLine.BazelTestCommandLineState
 import org.jetbrains.bazel.run.config.BazelRunConfiguration
 import org.jetbrains.bazel.run.config.BazelRunConfigurationType
 import org.jetbrains.bazel.run.import.GooglePluginAwareRunHandlerProvider
+import org.jetbrains.bazel.run.state.AbstractGenericTestState
 import org.jetbrains.bazel.run.state.GenericTestState
-import java.nio.file.Path
+import org.jetbrains.bsp.protocol.TestParams
 import java.util.concurrent.atomic.AtomicReference
 
 /** Used to store a runner to an [ExecutionEnvironment].  */
@@ -63,9 +63,7 @@ internal class BazelGoTestHandler(configuration: BazelRunConfiguration) : BazelR
           settings = state,
         )
       }
-      else -> BazelTestCommandLineState(environment, state) { params ->
-        params.copy(environmentVariables = GO_TEST_WRAP_TESTV_1 + params.environmentVariables.orEmpty())
-      }
+      else -> BazelGoTestCommandLineState(environment, state)
     }
 
   private fun getTargetId(environment: ExecutionEnvironment): Label =
@@ -84,4 +82,13 @@ internal class BazelGoTestHandler(configuration: BazelRunConfiguration) : BazelR
     override val googleHandlerId: String = "BlazeGoTestConfigurationHandlerProvider"
     override val isTestHandler: Boolean = false
   }
+}
+
+private class BazelGoTestCommandLineState(
+  environment: ExecutionEnvironment,
+  state: AbstractGenericTestState<*>,
+) : BazelTestCommandLineState(environment, state) {
+  override fun transformTestParams(
+    params: TestParams
+  ): TestParams = params.copy(environmentVariables = GO_TEST_WRAP_TESTV_1 + params.environmentVariables.orEmpty())
 }

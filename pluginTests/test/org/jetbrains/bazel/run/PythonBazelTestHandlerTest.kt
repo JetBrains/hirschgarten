@@ -45,7 +45,7 @@ private fun transformEnvironment(initialEnvironment: Environment?): Environment?
       targets = emptyList(),
       environmentVariables = initialEnvironment
     )
-  val transformed = PythonBazelTestHandler().addJunitXmlOptionsToEnvironment(params)
+  val transformed = PythonBazelTestHandler.addJunitXmlOptionsToEnvironment(params)
   return transformed.environmentVariables
 }
 

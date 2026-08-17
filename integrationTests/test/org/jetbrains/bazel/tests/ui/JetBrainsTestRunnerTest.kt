@@ -33,7 +33,7 @@ class JetBrainsTestRunnerTest : IdeStarterBaseProjectTest() {
         waitForIndicators(10.minutes)
 
         step("open TestKotlin.kt and run TestKotlin.` interesting#test `") {
-          execute { openFile("TestKotlin.kt") }
+          execute { openFile("custom/TestKotlin.kt") }
           clickTestGutterOnLine(11)
 
           verifyTestStatus(
@@ -43,7 +43,7 @@ class JetBrainsTestRunnerTest : IdeStarterBaseProjectTest() {
         }
 
         step("run the same again to check that it is NOT cached because we use --script_path in this test") {
-          execute { openFile("TestKotlin.kt") }
+          execute { openFile("custom/TestKotlin.kt") }
           clickTestGutterOnLine(11)
 
           verifyTestStatus(
@@ -53,7 +53,7 @@ class JetBrainsTestRunnerTest : IdeStarterBaseProjectTest() {
         }
 
         step("open TestJava.java and run the whole class") {
-          execute { openFile("TestJava.java") }
+          execute { openFile("custom/TestJava.java") }
           clickTestGutterOnLine(14)
 
           verifyTestStatus(
@@ -73,7 +73,7 @@ class JetBrainsTestRunnerTest : IdeStarterBaseProjectTest() {
         }
 
         step("Rerun failed tests in TestJava.java") {
-          execute { openFile("TestJava.java") }
+          execute { openFile("custom/TestJava.java") }
           x { byAccessibleName("Rerun Failed Tests") }.click()
           wait(15.seconds)
           verifyTestStatus(
@@ -91,7 +91,7 @@ class JetBrainsTestRunnerTest : IdeStarterBaseProjectTest() {
         }
 
         step("Run parametrized test via gutter") {
-          execute { openFile("TestJava.java") }
+          execute { openFile("custom/TestJava.java") }
           clickTestGutterOnLine(17)
 
           verifyTestStatus(
@@ -130,7 +130,7 @@ class JetBrainsTestRunnerTest : IdeStarterBaseProjectTest() {
         }
 
         step("Disabled tests are shown in test tree") {
-          execute { openFile("TestDisabled.kt") }
+          execute { openFile("custom/TestDisabled.kt") }
           clickTestGutterOnLine(3)
 
           verifyTestStatus(
@@ -145,7 +145,7 @@ class JetBrainsTestRunnerTest : IdeStarterBaseProjectTest() {
         }
 
         step("Disabled test is run when launched explicitly") {
-          execute { openFile("TestDisabled.kt") }
+          execute { openFile("custom/TestDisabled.kt") }
           clickTestGutterOnLine(11)
 
           verifyTestStatus(
@@ -173,7 +173,7 @@ class JetBrainsTestRunnerTest : IdeStarterBaseProjectTest() {
           waitForIndicators(10.minutes)
 
           step("open TestKotlin.kt and run TestKotlin.` interesting#test `") {
-            execute { openFile("TestKotlin.kt") }
+            execute { openFile("custom/TestKotlin.kt") }
             clickTestGutterOnLine(11)
 
             verifyTestStatus(
@@ -183,13 +183,63 @@ class JetBrainsTestRunnerTest : IdeStarterBaseProjectTest() {
           }
 
           step("run the same again to check that it's cached") {
-            execute { openFile("TestKotlin.kt") }
+            execute { openFile("custom/TestKotlin.kt") }
             clickTestGutterOnLine(11)
 
             verifyTestStatus(
               listOf("1 test passed"),
               listOf("JUnit Jupiter", "TestKotlin", "interesting#test () (cached)"),
             )
+          }
+        }
+      }
+  }
+
+  @Test
+  fun `a regular test target is not run with the JetBrains test runner`() {
+    createContext(
+      "regularTestRunner",
+      IdeaBazelCases.withProject(JETBRAINS_TEST_RUNNER_PROJECT),
+    )
+      .runIdeWithDriver(runTimeout = timeout)
+      .useDriverAndCloseIde {
+        ideFrame {
+          syncBazelProject(buildAndSync = true)
+          waitForIndicators(10.minutes)
+
+          step("Run the whole RegularTest class") {
+            execute { openFile("regular/RegularTest.java") }
+            clickTestGutterOnLine(7)
+
+            verifyTestStatus(
+              listOf("1 test failed,", " 1 passed"),
+              listOf("RegularTest", "regularFail", "regularPass"),
+            )
+          }
+
+          step("There is no \"Rerun Failed Tests\" action") {
+            x { byAccessibleName("Rerun Failed Tests") }.waitNotFound(10.seconds)
+          }
+
+          // Running twice also covers Bazel test caching: the " (cached)" suffix is added by the
+          // JetBrains test runner listener only, so a regular target must never be decorated with it.
+          repeat(2) { run ->
+            step("Run a single RegularTest method via gutter (run #${run + 1})") {
+              execute { openFile("regular/RegularTest.java") }
+              clickTestGutterOnLine(15)
+
+              verifyTestStatus(
+                listOf("1 test passed"),
+                listOf("RegularTest", "regularPass"),
+              )
+            }
+          }
+
+          step("Right-clicking a result does not offer a per-test rerun") {
+            testTreeView().rightClickRow { it.startsWith("regularPass") }
+            popup().waitNoTexts("Run 'regularPass'")
+            takeScreenshot("regularTestRightClick")
+            keyboard { escape() }
           }
         }
       }

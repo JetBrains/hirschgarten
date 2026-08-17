@@ -1,4 +1,4 @@
-package org.jetbrains.bazel.run.test
+package org.jetbrains.bazel.jvm.run
 
 import com.intellij.execution.Executor
 import com.intellij.execution.configurations.RunProfileState
@@ -24,7 +24,7 @@ internal class BazelRerunFailedTestsAction(
     val handler = configuration.handler ?: return null
 
     val state = handler.state as? AbstractGenericTestState<*> ?: return null
-    setTestUniqueIds(state = state, testUniqueIds = failedTestIds)
+    JetBrainsTestRunner.setTestUniqueIds(state = state, testUniqueIds = failedTestIds)
     return object : MyRunProfile(configuration) {
       override fun getState(
         executor: Executor,

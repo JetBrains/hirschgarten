@@ -111,7 +111,6 @@ internal class MonorepoProjectViewStartupActivity : ProjectActivity {
     mapping.canonicalRepoNameToApparentName = mapOf("community+" to "community", "" to "")
 
     // Set the project view. This is needed for these fields:
-    // use_jetbrains_test_runner: true
     // run_config_run_with_bazel: false
     val projectViewPath = sequenceOf(rootDir.findChild(".bazelproject"), rootDir.findChild("ultimate.bazelproject"), rootDir.findChild("community.bazelproject"))
       .firstOrNull { it != null && it.exists() }
@@ -123,7 +122,10 @@ internal class MonorepoProjectViewStartupActivity : ProjectActivity {
   }
 }
 
-private object MonorepoRunLineMarkerContributorUtil {
+internal object MonorepoRunLineMarkerContributorUtil {
+
+  const val JAR_SUFFIX = "_lib.jar"
+
   fun isProjectApplicable(project: Project): Boolean =
     useBazelCompile(project) && !project.isBazelProject
 
@@ -171,7 +173,7 @@ private object MonorepoRunLineMarkerContributorUtil {
     return listOfNotNull(
       bazelInfo.testTargets.firstOrNull()?.let { target ->
         NonImportedBuildTarget(
-          label = Label.parse(target.removeSuffix("_lib.jar")),
+          label = Label.parse(target.removeSuffix(JAR_SUFFIX)),
           kind = kind,
           baseDirectory = baseDirectory,
         )

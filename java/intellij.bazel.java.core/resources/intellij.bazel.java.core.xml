@@ -64,6 +64,9 @@
     <extensionPoint qualifiedName="org.jetbrains.bazel.runWithScriptPathExtension"
                     interface="org.jetbrains.bazel.jvm.run.RunWithScriptPathExtension"
                     dynamic="true"/>
+    <extensionPoint qualifiedName="org.jetbrains.bazel.jetBrainsTestRunnerDetector"
+                    interface="org.jetbrains.bazel.jvm.run.JetBrainsTestRunner.Detector"
+                    dynamic="true"/>
   </extensionPoints>
 
   <extensions defaultExtensionNs="org.jetbrains.bazel">
@@ -123,6 +126,7 @@
                      enabledByDefault="true" level="ERROR"
                      implementationClass="org.jetbrains.bazel.inspections.JavaStrictDependenciesInspection"
                      key="inspections.display.name.javastrictdeps"/>
+    <runConfigurationProducer implementation="org.jetbrains.bazel.jvm.run.BazelRerunTestConfigurationProducer"/>
 
   </extensions>
 </idea-plugin>

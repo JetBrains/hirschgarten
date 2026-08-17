@@ -25,7 +25,6 @@ import org.jetbrains.bazel.languages.projectview.sections.TargetShardSizeSection
 import org.jetbrains.bazel.languages.projectview.sections.TargetsSection
 import org.jetbrains.bazel.languages.projectview.sections.TestFlagsSection
 import org.jetbrains.bazel.languages.projectview.sections.TestSourcesSection
-import org.jetbrains.bazel.languages.projectview.sections.UseJetBrainsTestRunnerSection
 
 @ApiStatus.Internal
 interface ProjectViewSectionProvider {
@@ -59,7 +58,6 @@ internal class DefaultProjectViewSectionProvider : ProjectViewSectionProvider {
       TargetsSection(),
       TestFlagsSection(),
       IndexAdditionalFilesInDirectoriesSection(),
-      UseJetBrainsTestRunnerSection(),
       RunConfigRunWithBazelSection(),
       TestSourcesSection(),
       DotIdeaDirectoryLocationSection(),
