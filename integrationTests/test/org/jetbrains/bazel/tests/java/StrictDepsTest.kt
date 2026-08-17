@@ -79,7 +79,7 @@ internal class StrictDepsTest : IdeStarterBaseProjectTest() {
 
           step("Uncomment dependency") {
             openFile("appj/BUILD.bazel")
-            execute { goto(10, 2) }
+            execute { goto(10, 10) }
             execute { pressKey(Keys.BACKSPACE) }
           }
 
