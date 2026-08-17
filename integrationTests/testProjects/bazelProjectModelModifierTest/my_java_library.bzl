@@ -6,4 +6,3 @@ def my_java_library(name, srcs, dependencies):
         srcs = srcs,
         deps = dependencies,
     )
-

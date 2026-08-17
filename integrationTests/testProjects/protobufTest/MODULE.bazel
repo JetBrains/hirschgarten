@@ -1,7 +1,6 @@
 bazel_dep(name = "protobuf", version = "32.0", repo_name = "my_protobuf")
 bazel_dep(name = "platforms", version = "1.0.0")
 bazel_dep(name = "rules_cc", version = "0.2.3")
-
 bazel_dep(name = "hermetic_cc_toolchain", version = "4.0.1")
 bazel_dep(name = "toolchains_llvm", version = "1.4.0")
 

@@ -6,9 +6,9 @@ load("@rules_java//java:java_library.bzl", "java_library")
 
 java_library(
     name = "test_library",
+    testonly = True,
     srcs = [
         "src/TestFixtures.java",
         "src/TestHelpers.java",
     ],
-    testonly = True,
 )

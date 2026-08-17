@@ -9,11 +9,11 @@ kt_jvm_test(
             "*.java",
         ],
     ),
+    main_class = "runner.JUnit5BazelRunner",
     deps = [
         "@maven//:junit_junit",
         "@maven//:org_junit_jupiter_junit_jupiter",
-        "@maven//:org_junit_platform_junit_platform_launcher",
         "@maven//:org_junit_platform_junit_platform_engine",
+        "@maven//:org_junit_platform_junit_platform_launcher",
     ],
-    main_class = "runner.JUnit5BazelRunner",
 )

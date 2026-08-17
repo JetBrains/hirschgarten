@@ -29,7 +29,7 @@ scala_deps.scalatest()
 # With protoc prebuilt, nothing compiles protobuf's C sources anymore, so the original
 # reason for pinning a protobuf new enough for the zig toolchain no longer applies either.
 bazel_dep(name = "protobuf", version = "35.1")
-
 bazel_dep(name = "hermetic_cc_toolchain", version = "4.1.0")
+
 toolchains = use_extension("@hermetic_cc_toolchain//toolchain:ext.bzl", "toolchains")
 use_repo(toolchains, "zig_sdk")

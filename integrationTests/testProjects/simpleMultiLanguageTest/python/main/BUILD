@@ -1,5 +1,6 @@
-load("@rules_python//python:defs.bzl", "py_binary")
 load("@pip//:requirements.bzl", "requirement")
+load("@rules_python//python:defs.bzl", "py_binary")
+
 py_binary(
     name = "main",
     srcs = ["main.py"],
@@ -13,7 +14,7 @@ py_binary(
         requirement("urllib3"),
         requirement("numpy"),
         # python dependecny via http_archieve
-        "@requests//:requests",
+        "@requests",
         # generated source
         "//python/generated:generated_directory_lib",
         "//python/generated:generated_files_lib",

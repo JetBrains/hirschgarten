@@ -1,5 +1,4 @@
 bazel_dep(name = "rules_kotlin", version = "2.0.0")
-
 bazel_dep(name = "rules_license", version = "1.0.0")
 bazel_dep(name = "rules_java", version = "8.6.2")
 bazel_dep(name = "rules_jvm_external", version = "6.6")
@@ -26,7 +25,6 @@ maven.install(
         "https://www.jetbrains.com/intellij-repository/snapshots",
     ],
 )
-
 use_repo(maven, "maven")
 
 bazel_dep(name = "hermetic_cc_toolchain", version = "4.0.1")
