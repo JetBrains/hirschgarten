@@ -108,6 +108,14 @@ class BazelFileEventListener : BulkFileListenerBackgroundable {
   /** @return `true` if processing has been performed in this function execution, `false` if it was omitted for any reason */
   private suspend fun processEventsForProject(project: Project, events: List<SimplifiedFileEvent>): Boolean {
     val applicableEvents = events.filterByProject(project).takeIf { it.isNotEmpty() } ?: return false
+    val tooManyNewFileEvents = applicableEvents.asSequence()
+      .filter { it is SimplifiedFileEvent.Create || it is SimplifiedFileEvent.ExternalCreate }
+      .drop(NEW_FILE_EVENTS_LIMIT)
+      .any()
+    if (tooManyNewFileEvents) {
+      BazelProjectAware.notify(project)
+      return false
+    }
     val queueController = FileEventQueueController.getInstance(project)
     val shouldStartProcessing = queueController.addEvents(applicableEvents)
     if (!shouldStartProcessing)
@@ -569,6 +577,7 @@ private fun addToPluginModelByModules(filePath: Path, modules: Set<ModuleEntity>
 private fun Path.toVirtualFileUrl(manager: VirtualFileUrlManager): VirtualFileUrl = manager.getOrCreateFromUrl(this.toUri().toString())
 
 private val PROCESSING_DELAY = 250.milliseconds // not noticeable by the user, but if there are many events simultaneously, we will get them all
+private const val NEW_FILE_EVENTS_LIMIT = 5 // skip new-file processing when too many files arrive at once (e.g. git pull) to avoid choking IntelliJ
 
 private val logger = Logger.getInstance(BazelFileEventListener::class.java)
 
