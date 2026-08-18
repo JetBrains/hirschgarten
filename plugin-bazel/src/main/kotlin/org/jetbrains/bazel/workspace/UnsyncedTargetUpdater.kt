@@ -62,7 +62,7 @@ class UnsyncedTargetUpdater {
         val rawAspectTarget = partialSyncResult.targets[label]
         if (rawAspectTarget != null) {
           val targetInfo = rawAspectTarget
-          if (targetInfo.tagsList.contains("no-ide")) {
+          if (targetInfo.tagsList.contains("no-ide") || targetInfo.tagsList.contains("shard")) {
             return null
           }
 
@@ -161,7 +161,7 @@ class UnsyncedTargetUpdater {
         val baseDirectory = project.rootDir.toNioPath()
         for (label in labels) {
           val targetInfo = partialSyncResult.targets[label] ?: continue
-          if (targetInfo.tagsList.contains("no-ide")) continue
+          if (targetInfo.tagsList.contains("no-ide") || targetInfo.tagsList.contains("shard")) continue
 
           val dependencies = mutableListOf<ModuleDependencyItem>()
           val languages = inferLanguages(targetInfo)
