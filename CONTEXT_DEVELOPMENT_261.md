@@ -8,39 +8,34 @@
 > merges. Don't write "get PR reviewed/merged" — this doc lives in the repo and is read post-merge,
 > so those entries are immediately stale. Use `—` or omit the field when nothing remains.
 
-## Current State (as of 2026-08-12)
+## Current State (as of 2026-08-18)
 
 ### Working Branch
-`development-261` — latest tip: `669b674a0b Merge pull request #32`
+`feat/shard-module-elimination` — latest tip: `56c4d45337 feat: eliminate shard modules; register umbrella as directory source root`
 
-### Recently Completed Work (PR #31)
+### Recently Completed Work (PR #33)
 
-**Branch**: `fix/resolve-jvm-wrapper-jdk-home` → merged into `development-261`
+**Branch**: `fix/jvm-wrapper-project-sdk` → merged into `development-261`
 
-**Problem**: When a project uses `jvm_wrapper_runtime`, the `java_home` from the Bazel aspect points to the wrapper directory (contains only `bin/java` as a shell script), not the actual JDK. IntelliJ's `JavaSdk.isValidSdkHome()` fails → "JDK not found on disk or corrupted" warning after sync.
+**Problem**: PR #31 introduced two regressions with `jvm_wrapper_runtime` JDK resolution:
+1. Project SDK reported as "not configured" — `defaultJdkName` derived from raw wrapper path but SDK registered under resolved path.
+2. Target modules showed red code — `ModuleDetailsToJavaModuleTransformer` looked up the raw-path SDK name which no longer existed.
 
-**Fix** (`SdkUtils.kt`): `addJdkIfNeeded()` now calls `resolveJavaHome()` before creating the SDK. `resolveJavaHome()` tries two strategies: (1) parse `bin/java` wrapper script for `exec .../bin/java` lines and resolve against Bazel exec root; (2) scan `execroot/_main/external/` for JDK directories.
-
-### Recently Completed Work (PR #32)
-
-**Branch**: `feat/non-bazel-python-directories` → merged into `development-261`
-
-**Problem**: Python files not covered by any Bazel target inherit the Java SDK → no Python code intelligence.
-
-**Fix**: New `.bazelproject` section `non_bazel_python_directories:` — explicitly list directories. The plugin creates one IntelliJ module per listed directory with a Python SDK. Bazel-covered directories are skipped to avoid duplicate modules.
+**Fix**: `SdkUtils.resolveJavaHome()` widened to `internal`; `defaultJdkName` derived from resolved path; alias SDK registered under original wrapper-path name.
 
 ### Pending / In-Progress Work
 
-**JVM wrapper project SDK regression** — branch `fix/jvm-wrapper-project-sdk`, PR #33 open (→ `development-261`).
+**Shard module elimination** — branch `feat/shard-module-elimination`, PR #34 open (→ `development-261`).
 
-**Problem**: PR #31 introduced two regressions:
-1. The project SDK is reported as "not configured" — `defaultJdkName` hashed the raw wrapper path but the SDK was registered under the resolved path; the names diverged so `setProjectSdk` couldn't find it.
-2. Target modules showed red code — `ModuleDetailsToJavaModuleTransformer` computes `jvmJdkName` from the raw wrapper path, but after PR #31 only the resolved-path SDK was registered, so the module SDK dependency resolved to a non-existent SDK.
+**Problem**: `java_incremental_library` splits a target into one umbrella + N shard sub-targets. Importing shards as separate IntelliJ modules caused red code and bloated the module list.
 
-**Fix** (on `fix/jvm-wrapper-project-sdk`):
-- `SdkUtils.resolveJavaHome()` widened from `private` to `internal`
-- `CollectProjectDetailsTask.kt`: `defaultJdkName` now derived from `SdkUtils.resolveJavaHome(it.first())` (resolved path) — fixes regression #1
-- `SdkUtils.addJdkIfNeeded()`: when `resolvedHome != javaHome`, also registers an alias SDK under the original wrapper-path name pointing to the same real JDK — fixes regression #2
+**Fix** (`AspectBazelProjectMapper.kt`, `UnsyncedTargetUpdater.kt`): Shard-tagged targets filtered before partition into workspace/non-workspace; shard deps dropped from umbrella dependency lists; `resolveShardFolkDependencies` removed; `UnsyncedTargetUpdater` skips shard-tagged targets like `no-ide`.
+
+**File event batch guard** — branch `feat/file-event-batch-guard`, PR #35 open (→ `development-261`).
+
+**Problem**: A `git pull` can deliver dozens of `Create`/`ExternalCreate` events simultaneously, triggering an expensive Bazel inverse-sources query that chokes IntelliJ.
+
+**Fix** (`BazelFileEventListener.kt`): Early-exit sequence counts new-file events; if count exceeds `NEW_FILE_EVENTS_LIMIT` (5), skip processing and show Resync notification instead.
 
 **Next step**: —
 
