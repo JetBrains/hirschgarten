@@ -57,6 +57,7 @@
     <module name="intellij.platform.markdown.utils"/>
     <module name="intellij.platform.projectModel"/>
     <module name="intellij.platform.projectModel.impl"/>
+    <module name="intellij.platform.refactoring"/>
     <module name="intellij.platform.scriptDebugger.backend"/>
     <module name="intellij.platform.scriptDebugger.ui"/>
     <module name="intellij.platform.searchEverywhere"/>
@@ -66,6 +67,7 @@
     <module name="intellij.platform.util.coroutines"/>
     <module name="intellij.platform.util.ui"/>
     <module name="intellij.platform.vcs"/>
+    <module name="intellij.platform.workspace.jps"/>
   </dependencies>
   <!-- endregion -->
 
