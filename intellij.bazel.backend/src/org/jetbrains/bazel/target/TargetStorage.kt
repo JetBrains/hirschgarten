@@ -218,6 +218,7 @@ class TargetStorage(private val project: Project, private val coroutineScope: Co
     )
     val snapshot = WorkspaceSnapshot(
       targets = InMemoryWorkspaceTargetMap(targets.associateBy { it.key }),
+      workspaceName = null,
       configurations = mapOf(),
       targetGraph = graph,
       fileToTarget = File2TargetMapBuilder.build(targets = targets),
@@ -232,7 +233,7 @@ class TargetStorage(private val project: Project, private val coroutineScope: Co
       repoMapping = RepoMappingDisabled,
       metadata = WorkspaceSnapshotMetadata(version = 1),
     )
-    runBlocking { service.update { snapshot } }
+    runBlocking { service.update { snapshot to Unit } }
   }
 
   fun allTargets(): Sequence<Label> = allTargetSummaries().asSequence().map { it.id }

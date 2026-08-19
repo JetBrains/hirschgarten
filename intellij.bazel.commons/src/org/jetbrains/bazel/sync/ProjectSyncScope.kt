@@ -7,13 +7,18 @@ import java.nio.file.Path
 @ApiStatus.Internal
 sealed interface ProjectSyncScope {
   /**
+   * Invoke bazel build actions
+   */
+  val build: Boolean
+
+  /**
    * Perform full resync of the project, discard old state and
    * rebuild it from scratch through bazel invocation over entire target universe
    *
    * @property build Invoke bazel build actions
    * @property phased Execute as phased sync (query + build)
    */
-  data class Full(val build: Boolean, val phased: Boolean) : ProjectSyncScope
+  data class Full(override val build: Boolean, val phased: Boolean) : ProjectSyncScope
 
   /**
    * Resync subset of targets specified by [patterns].
@@ -23,7 +28,7 @@ sealed interface ProjectSyncScope {
    * @property patterns Target patterns used in `bazel build` invocation
    * @property build Invoke bazel build actions
    */
-  data class Targets(val patterns: List<Label>, val build: Boolean) : ProjectSyncScope
+  data class Targets(val patterns: List<Label>, override val build: Boolean) : ProjectSyncScope
 
   /**
    * Perform project resync based on modified files, [files] list can contain
@@ -35,7 +40,7 @@ sealed interface ProjectSyncScope {
    * @property files Modified files
    * @property build Invoke bazel build actions
    */
-  data class Files(val files: List<Path>, val build: Boolean) : ProjectSyncScope
+  data class Files(val files: List<Path>, override val build: Boolean) : ProjectSyncScope
 
   ///**
   // * Perform incremental sync over changes targets relative to previous sync run.

@@ -97,6 +97,7 @@ class SnapshotStorageTest {
     generation.saveFileToTargetMap(hash2KeyIds)
 
     val partial = PersistentWorkspaceSnapshot(
+      workspaceName = null,
       configurations = emptyMap(),
       targetGraph = WorkspaceTargetGraph.EMPTY,
       syncConfigs = emptyList(),
@@ -141,6 +142,7 @@ class SnapshotStorageTest {
     generation.saveFileToTargetMap(hash2KeyIds)
 
     val partial = PersistentWorkspaceSnapshot(
+      workspaceName = null,
       configurations = emptyMap(),
       targetGraph = WorkspaceTargetGraph.EMPTY,
       syncConfigs = emptyList(),

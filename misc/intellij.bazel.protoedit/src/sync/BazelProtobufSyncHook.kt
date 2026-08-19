@@ -11,8 +11,9 @@ internal class BazelProtobufSyncHook : ProjectSyncHook {
     val store = environment.project.serviceAsync<BazelProtobufIndexService>().store
 
     store.clearProtoIndexData()
-    environment.workspace
+    environment.snapshot
       .targets
+      .allTargets()
       .mapNotNull { extractProtobufBuildTarget(it) }
       .forEach { protoData: ProtobufBuildTarget ->
         for ((importPath, absolutePath) in protoData.sources) {

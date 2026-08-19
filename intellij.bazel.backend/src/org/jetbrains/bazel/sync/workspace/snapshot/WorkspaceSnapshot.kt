@@ -12,6 +12,7 @@ import java.nio.file.Path
  * Immutable workspace snapshot, describing fixed input scope for [BazelWorkspaceImporter]
  *
  * @property targets Lazy loadable collection of [BuildTarget]
+ * @property workspaceName Bazel workspace name, `null` when it is not known yet
  * @property configurations All used bazel configurations
  * @property targetGraph Immutable representation of bazel target graph
  * @property syncConfigs Set of sync configs used by [BazelWorkspaceImporter] in later stage
@@ -21,10 +22,11 @@ import java.nio.file.Path
 @ApiStatus.Internal
 data class WorkspaceSnapshot(
   val targets: WorkspaceTargetMap,
+  val workspaceName: String?,
   val configurations: Map<WorkspaceConfigurationId, WorkspaceConfiguration>,
   val targetGraph: WorkspaceTargetGraph,
   val fileToTarget: FileToTargetMap,
-  val executableTargets: ExecutableTargetsIndex = ExecutableTargetsIndex.EMPTY,
+  val executableTargets: ExecutableTargetsIndex,
   val syncConfigs: List<WorkspaceSyncConfig>,
   val repoMapping: RepoMapping,
   val metadata: WorkspaceSnapshotMetadata
@@ -32,9 +34,11 @@ data class WorkspaceSnapshot(
   companion object {
     val EMPTY: WorkspaceSnapshot = WorkspaceSnapshot(
       targets = WorkspaceTargetMap.EMPTY,
+      workspaceName = null,
       configurations = mapOf(),
       targetGraph = WorkspaceTargetGraph.EMPTY,
       fileToTarget = FileToTargetMap.EMPTY,
+      executableTargets = ExecutableTargetsIndex.EMPTY,
       syncConfigs = emptyList(),
       repoMapping = RepoMappingDisabled,
       metadata = WorkspaceSnapshotMetadata(

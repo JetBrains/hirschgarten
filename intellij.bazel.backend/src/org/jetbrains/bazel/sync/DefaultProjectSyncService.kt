@@ -2,7 +2,6 @@ package org.jetbrains.bazel.sync
 
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.project.Project
-import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.sync.task.ProjectSyncTask
 import org.jetbrains.bsp.protocol.TaskId
 
@@ -13,19 +12,11 @@ internal class DefaultProjectSyncService(private val project: Project) : Project
     private set
 
   override suspend fun sync(scope: ProjectSyncScope) {
-    val syncTask = ProjectSyncTask(project, onSyncTaskStarted = { lastSyncTaskId = it })
-    when (scope) {
-      is ProjectSyncScope.Full ->
-        if (scope.phased) {
-          syncTask.phasedSync(runSecondPhase = BazelFeatureFlags.executeSecondPhaseOnSync, buildProject = scope.build)
-        }
-        else {
-          syncTask.fullSync(buildProject = scope.build)
-        }
-
-      is ProjectSyncScope.Targets -> throw UnsupportedOperationException("not supported yet")
-
-      is ProjectSyncScope.Files -> throw UnsupportedOperationException("not supported yet")
-    }
+    val task = ProjectSyncTask(
+      project = project,
+      scope = scope,
+      onSyncTaskStarted = { lastSyncTaskId = it },
+    )
+    task.sync()
   }
 }

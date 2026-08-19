@@ -159,6 +159,7 @@ class SnapshotKryoSerializationTest {
       set(2, depKey.label)
     }
     val partial = PersistentWorkspaceSnapshot(
+      workspaceName = "_main",
       configurations = mapOf(
         configurationId to WorkspaceConfiguration(
           id = configurationId,
@@ -200,6 +201,7 @@ class SnapshotKryoSerializationTest {
 
     val restored = serializeAndDeserialize(partial)
 
+    restored.workspaceName shouldBe partial.workspaceName
     restored.configurations shouldBe partial.configurations
     restored.syncConfigs shouldBe partial.syncConfigs
     restored.repoMapping shouldBe partial.repoMapping
@@ -219,6 +221,7 @@ class SnapshotKryoSerializationTest {
   @Test
   fun `empty graph and empty source collection as singletons`() {
     val partial = PersistentWorkspaceSnapshot(
+      workspaceName = null,
       configurations = emptyMap(),
       targetGraph = WorkspaceTargetGraph.EMPTY,
       syncConfigs = emptyList(),

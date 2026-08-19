@@ -52,7 +52,7 @@ class TargetStorageTest {
   private val project by projectFixture
 
   private suspend fun publish(project: Project, snapshot: WorkspaceSnapshot) {
-    project.service<WorkspaceSnapshotService>().update { snapshot }
+    project.service<WorkspaceSnapshotService>().update { snapshot to Unit }
   }
 
   private suspend fun WorkspaceSnapshotService.save() = (this as SettingsSavingComponent).save()
@@ -96,6 +96,7 @@ class TargetStorageTest {
     val graph = WorkspaceTargetGraphBuilder.build(rootTargets = roots.map { it.key }.toSet(), targets = targets)
     return WorkspaceSnapshot(
       targets = InMemoryWorkspaceTargetMap(targets.associateBy { it.key }),
+      workspaceName = null,
       configurations = mapOf(),
       targetGraph = graph,
       fileToTarget = File2TargetMapBuilder.build(targets = targets),

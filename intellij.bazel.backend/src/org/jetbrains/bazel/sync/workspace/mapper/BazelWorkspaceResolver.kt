@@ -11,10 +11,6 @@ import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.label.label
 import org.jetbrains.bazel.progress.syncConsole
 import org.jetbrains.bazel.server.BazelServerService
-import org.jetbrains.bazel.sync.scope.FirstPhaseSync
-import org.jetbrains.bazel.sync.scope.PartialProjectSync
-import org.jetbrains.bazel.sync.scope.ProjectSyncScope
-import org.jetbrains.bazel.sync.scope.SecondPhaseSync
 import org.jetbrains.bazel.sync.workspace.BazelResolvedWorkspace
 import org.jetbrains.bsp.protocol.TaskId
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetParams
@@ -24,75 +20,65 @@ import java.nio.file.Path
 
 @ApiStatus.Internal
 object BazelWorkspaceResolver {
-  suspend fun fetchWorkspace(
+  suspend fun fetchPhasedWorkspace(project: Project, taskId: TaskId): BazelResolvedWorkspace {
+    return BazelServerService.getInstance(project).connection.runWithServer(taskId) { server ->
+      val phasedSyncProject = server.workspaceBuildPhasedTargets(WorkspaceBuildTargetPhasedParams(taskId))
+      val phasedMapper = PhasedBazelProjectMapper(
+        bazelPathsResolver = server.bazelPathsResolver,
+        projectView = server.projectView,
+      )
+      val targets = phasedMapper.mapTargets(phasedSyncProject.repoMapping, phasedSyncProject.modules)
+      BazelResolvedWorkspace(
+        workspaceName = null,
+        repoMapping = phasedSyncProject.repoMapping,
+        rootTargets = targets.map { it.key }.toSet(),
+        targets = targets,
+        hasError = phasedSyncProject.hasError,
+        configurations = emptyMap(),
+      )
+    }
+  }
+
+  suspend fun fetchAspectWorkspace(
     project: Project,
-    scope: ProjectSyncScope,
     allKnownTargets: List<Label>?,
     build: Boolean,
     taskId: TaskId,
   ): BazelResolvedWorkspace {
     return BazelServerService.getInstance(project).connection.runWithServer(taskId) { server ->
-      when (scope) {
-        is FirstPhaseSync -> {
-          val phasedSyncProject = server.workspaceBuildPhasedTargets(WorkspaceBuildTargetPhasedParams(taskId))
-          val phasedMapper = PhasedBazelProjectMapper(
-            bazelPathsResolver = server.bazelPathsResolver,
-            projectView = server.projectView,
-          )
-          val targets = phasedMapper.mapTargets(phasedSyncProject.repoMapping, phasedSyncProject.modules)
-          BazelResolvedWorkspace(
-            workspaceName = null,
-            repoMapping = phasedSyncProject.repoMapping,
-            rootTargets = targets.map { it.key }.toSet(),
-            targets = targets,
-            hasError = phasedSyncProject.hasError,
-            configurations = emptyMap(),
-          )
-        }
+      reportIgnoredBazelBsp(project, taskId, server.bazelInfo.workspaceRoot)
 
-        SecondPhaseSync, is PartialProjectSync -> {
-          reportIgnoredBazelBsp(project, taskId, server.bazelInfo.workspaceRoot)
+      val syncProject =
+        server.workspaceBuildTargets(WorkspaceBuildTargetParams(WorkspaceBuildTargetSelector.AllTargets, build, allKnownTargets, taskId))
+      reportImportedNoIdeTargets(project, taskId, syncProject.targets.values)
 
-          val selector =
-            if (scope is PartialProjectSync) {
-              WorkspaceBuildTargetSelector.SpecificTargets(scope.targetsToSync)
-            }
-            else {
-              WorkspaceBuildTargetSelector.AllTargets
-            }
+      val bazelMapper =
+        AspectBazelProjectMapper(
+          project = project,
+          server = server,
+        )
+      val targets = bazelMapper.mapTargets(
+        allTargets = syncProject.targets,
+        repoMapping = syncProject.repoMapping,
+        build = build,
+        taskId = taskId,
+      )
 
-          val syncProject = server.workspaceBuildTargets(WorkspaceBuildTargetParams(selector, build, allKnownTargets, taskId))
-          reportImportedNoIdeTargets(project, taskId, syncProject.targets.values)
-
-          val bazelMapper =
-            AspectBazelProjectMapper(
-              project = project,
-              server = server,
-            )
-          val targets = bazelMapper.mapTargets(
-            allTargets = syncProject.targets,
-            repoMapping = syncProject.repoMapping,
-            build = build,
-            taskId = taskId,
-          )
-
-          BazelResolvedWorkspace(
-            workspaceName = syncProject.workspaceName,
-            repoMapping = syncProject.repoMapping,
-            rootTargets = syncProject.rootTargets,
-            targets = targets,
-            hasError = syncProject.hasError,
-            configurations = syncProject.configurations,
-          )
-        }
-      }
+      BazelResolvedWorkspace(
+        workspaceName = syncProject.workspaceName,
+        repoMapping = syncProject.repoMapping,
+        rootTargets = syncProject.rootTargets,
+        targets = targets,
+        hasError = syncProject.hasError,
+        configurations = syncProject.configurations,
+      )
     }
   }
 
   private fun reportImportedNoIdeTargets(
     project: Project,
     taskId: TaskId,
-    targets: Collection<IntellijIdeInfo.TargetIdeInfo>
+    targets: Collection<IntellijIdeInfo.TargetIdeInfo>,
   ) {
     val noIdeTargets = targets.filter { target -> Constants.NO_IDE in target.tagsList }
     if (noIdeTargets.isNotEmpty()) {

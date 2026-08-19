@@ -134,13 +134,13 @@ class DefaultWorkspaceSnapshotService(
     return commits.value
   }
 
-  override suspend fun update(updater: WorkspaceSnapshotUpdater): WorkspaceSnapshot {
+  override suspend fun <R> update(updater: WorkspaceSnapshotUpdater<R>): Pair<WorkspaceSnapshot, R> {
     // an early updater must not derive from EMPTY
     initialLoad.join()
     return updateLock.withLock {
-      val updated = updater.update(commits.value)
-      commits.value = updated
-      updated
+      val (newSnapshot, returnValue) = updater.update(commits.value)
+      commits.value = newSnapshot
+      newSnapshot to returnValue
     }
   }
 
@@ -193,6 +193,7 @@ class DefaultWorkspaceSnapshotService(
 
     return WorkspaceSnapshot(
       targets = PersistentWorkspaceTargetMap(partialSnapshot = partial, generation = generation),
+      workspaceName = partial.workspaceName,
       configurations = partial.configurations,
       targetGraph = partial.targetGraph,
       fileToTarget = PersistentFileToTargetMap(partialSnapshot = partial, generation = generation),
@@ -288,6 +289,7 @@ class DefaultWorkspaceSnapshotService(
 
     val partial = PersistentWorkspaceSnapshot(
       // copies
+      workspaceName = snapshot.workspaceName,
       configurations = snapshot.configurations,
       targetGraph = snapshot.targetGraph,
       syncConfigs = snapshot.syncConfigs,
@@ -330,6 +332,7 @@ class DefaultWorkspaceSnapshotService(
     // swap snapshot lazy-loadable fields
     val twin = WorkspaceSnapshot(
       targets = PersistentWorkspaceTargetMap(partialSnapshot = partial, generation = generation),
+      workspaceName = partial.workspaceName,
       configurations = partial.configurations,
       targetGraph = partial.targetGraph,
       fileToTarget = PersistentFileToTargetMap(

@@ -29,6 +29,7 @@ object WorkspaceSnapshotBuilder {
     val targetGraph = WorkspaceTargetGraphBuilder.build(resolved.rootTargets, targets.values)
     return WorkspaceSnapshot(
       targets = InMemoryWorkspaceTargetMap(targets),
+      workspaceName = resolved.workspaceName,
       configurations = resolved.configurations,
       targetGraph = targetGraph,
       fileToTarget = File2TargetMapBuilder.build(targets = targets.values),

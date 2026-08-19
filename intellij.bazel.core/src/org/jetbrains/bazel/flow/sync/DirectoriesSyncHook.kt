@@ -76,7 +76,7 @@ internal class DirectoriesSyncHook : ProjectSyncHook {
   )
 
   private suspend fun computeProjectDirectories(environment: ProjectSyncHookEnvironment, virtualFileUrlManager: VirtualFileUrlManager): DirectoryRoots {
-    val directories = environment.server.workspaceDirectories(environment.workspace.repoMapping, environment.taskId)
+    val directories = environment.server.workspaceDirectories(environment.snapshot.repoMapping, environment.taskId)
     val additionalExcludes = BazelSymlinkExcludeService.getInstance(environment.project).scanForBazelSymlinksToExclude(environment.project.rootDir.toNioPath())
 
     val includedRoots =

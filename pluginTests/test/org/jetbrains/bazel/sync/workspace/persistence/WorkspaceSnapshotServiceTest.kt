@@ -25,6 +25,7 @@ import org.jetbrains.bazel.sync.JavaLanguageClass
 import org.jetbrains.bazel.sync.workspace.languages.jvm.JavaToolchainData
 import org.jetbrains.bazel.sync.workspace.languages.jvm.JvmBuildTarget
 import org.jetbrains.bazel.sync.workspace.snapshot.CommonWorkspaceSyncConfig
+import org.jetbrains.bazel.sync.workspace.snapshot.ExecutableTargetsIndex
 import org.jetbrains.bazel.sync.workspace.snapshot.FileToTargetMap
 import org.jetbrains.bazel.sync.workspace.snapshot.SourceFileCollectionBuilder
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceConfiguration
@@ -111,6 +112,7 @@ class WorkspaceSnapshotServiceTest {
     val configurationId = WorkspaceConfigurationId.of("cafe4242")
     return WorkspaceSnapshot(
       targets = InMemoryWorkspaceTargetMap(targets.associateBy { it.key }),
+      workspaceName = "_main",
       configurations = mapOf(
         configurationId to WorkspaceConfiguration(
           id = configurationId,
@@ -129,6 +131,7 @@ class WorkspaceSnapshotServiceTest {
         targets = targets,
       ),
       fileToTarget = FileToTargetMap.EMPTY,
+      executableTargets = ExecutableTargetsIndex.EMPTY,
       syncConfigs = listOf(CommonWorkspaceSyncConfig(projectRootDir = Path.of("/workspace"), projectName = "e2e", importDepth = -1)),
       repoMapping = BzlmodRepoMapping(
         canonicalRepoNameToLocalPath = mapOf("rules_jvm~" to Path.of("/cache/rules_jvm")),
@@ -142,6 +145,7 @@ class WorkspaceSnapshotServiceTest {
 
   private fun assertSnapshotEquals(actual: WorkspaceSnapshot, expected: WorkspaceSnapshot) {
     actual.metadata.version shouldBeGreaterThan WorkspaceSnapshot.EMPTY.metadata.version
+    actual.workspaceName shouldBe expected.workspaceName
     actual.configurations shouldBe expected.configurations
     actual.syncConfigs shouldBe expected.syncConfigs
     actual.repoMapping shouldBe expected.repoMapping
@@ -168,13 +172,13 @@ class WorkspaceSnapshotServiceTest {
     val expected = buildSnapshot()
 
     withProject(isNew = true, saveOnClose = true) { project ->
-      project.getService(WorkspaceSnapshotService::class.java).update { expected }
+      project.getService(WorkspaceSnapshotService::class.java).update { expected to Unit }
     }
 
     val firstReloadVersion = withProject(saveOnClose = true) { project ->
       val loaded = awaitLoadedSnapshot(project)
       assertSnapshotEquals(loaded, expected)
-      project.getService(WorkspaceSnapshotService::class.java).update { it.copy(targets = expected.targets) }
+      project.getService(WorkspaceSnapshotService::class.java).update { it.copy(targets = expected.targets) to Unit }
       loaded.metadata.version
     }
 
@@ -191,7 +195,7 @@ class WorkspaceSnapshotServiceTest {
 
     withProject(isNew = true) { project ->
       val service = project.getService(WorkspaceSnapshotService::class.java)
-      service.update { expected }
+      service.update { expected to Unit }
       val swapped = withTimeout(60.seconds) { service.snapshot.first { it.targets !is InMemoryWorkspaceTargetMap } }
       assertSnapshotEquals(swapped, expected)
     }
@@ -204,7 +208,7 @@ class WorkspaceSnapshotServiceTest {
     withProject(isNew = true, saveOnClose = true) { project ->
       val service = project.getService(WorkspaceSnapshotService::class.java)
       withTimeout(60.seconds) { service.currentSnapshot() } shouldBe WorkspaceSnapshot.EMPTY
-      service.update { expected }
+      service.update { expected to Unit }
     }
 
     withProject { project ->
@@ -219,7 +223,7 @@ class WorkspaceSnapshotServiceTest {
     val expected = buildSnapshot()
 
     withProject(isNew = true, saveOnClose = true) { project ->
-      project.getService(WorkspaceSnapshotService::class.java).update { expected }
+      project.getService(WorkspaceSnapshotService::class.java).update { expected to Unit }
     }
 
     val changedKey = key("@//pkg1:target")
@@ -238,7 +242,7 @@ class WorkspaceSnapshotServiceTest {
           targets = InMemoryWorkspaceTargetMap(
             mapOf(pkg0.key to pkg0, changedKey to changed, addedKey to added),
           ),
-        )
+        ) to Unit
       }
     }
 
@@ -281,7 +285,7 @@ class WorkspaceSnapshotServiceTest {
     )
 
     withProject(isNew = true, saveOnClose = true) { project ->
-      project.getService(WorkspaceSnapshotService::class.java).update { expected }
+      project.getService(WorkspaceSnapshotService::class.java).update { expected to Unit }
     }
 
     val changed = withGeneratedSource.copy(generatedSources = SourceFileCollection.EMPTY)
@@ -290,7 +294,7 @@ class WorkspaceSnapshotServiceTest {
       val service = project.getService(WorkspaceSnapshotService::class.java)
       awaitLoadedSnapshot(project)
       service.update { snapshot ->
-        snapshot.copy(targets = InMemoryWorkspaceTargetMap(reStoredTargets))
+        snapshot.copy(targets = InMemoryWorkspaceTargetMap(reStoredTargets)) to Unit
       }
     }
 
@@ -316,7 +320,7 @@ class WorkspaceSnapshotServiceTest {
     val expected = buildSnapshot()
 
     withProject(isNew = true, saveOnClose = true) { project ->
-      project.getService(WorkspaceSnapshotService::class.java).update { expected }
+      project.getService(WorkspaceSnapshotService::class.java).update { expected to Unit }
     }
 
     withProject { project ->
@@ -329,14 +333,14 @@ class WorkspaceSnapshotServiceTest {
     val expected = buildSnapshot()
 
     withProject(isNew = true, saveOnClose = true) { project ->
-      project.getService(WorkspaceSnapshotService::class.java).update { expected }
+      project.getService(WorkspaceSnapshotService::class.java).update { expected to Unit }
     }
 
     withProject(saveOnClose = true) { project ->
       val service = project.getService(WorkspaceSnapshotService::class.java)
       val loaded = awaitLoadedSnapshot(project)
 
-      val firstUpdate = service.update { snapshot ->
+      val (snapshot, _) = service.update { snapshot ->
         val id = WorkspaceConfigurationId.of("abcdefg")
         val config = WorkspaceConfiguration(
           id = id,
@@ -345,15 +349,15 @@ class WorkspaceSnapshotServiceTest {
             mnemonic = "darwin-arm64",
             platformName = "macos",
             cpu = "arm64",
-            isTool = false
+            isTool = false,
           ),
-          fragments = listOf()
+          fragments = listOf(),
         )
-        snapshot.copy(configurations = snapshot.configurations + mapOf(id to config))
+        snapshot.copy(configurations = snapshot.configurations + mapOf(id to config)) to Unit
       }
-      withTimeout(60.seconds) { service.snapshot.first { it !== firstUpdate && it !== loaded } }
+      withTimeout(60.seconds) { service.snapshot.first { it !== snapshot && it !== loaded } }
 
-      service.update { loaded.copy(configurations = emptyMap()) }
+      service.update { loaded.copy(configurations = emptyMap()) to Unit }
     }
 
     withProject { project ->
@@ -390,9 +394,11 @@ class WorkspaceSnapshotServiceTest {
     val bin = executableTarget(binKey, deps = listOf(libKey), executable = true)
     return WorkspaceSnapshot(
       targets = InMemoryWorkspaceTargetMap(listOf(bin, lib).associateBy { it.key }),
+      workspaceName = null,
       configurations = mapOf(),
       targetGraph = WorkspaceTargetGraphBuilder.build(rootTargets = setOf(binKey), targets = listOf(bin, lib)),
       fileToTarget = FileToTargetMap.EMPTY,
+      executableTargets = ExecutableTargetsIndex.EMPTY,
       syncConfigs = listOf(CommonWorkspaceSyncConfig(projectRootDir = Path.of("/workspace"), projectName = "e2e", importDepth = -1)),
       repoMapping = RepoMappingDisabled,
       metadata = WorkspaceSnapshotMetadata(version = 1),
@@ -406,14 +412,14 @@ class WorkspaceSnapshotServiceTest {
     val expected = binDependsOnLibSnapshot()
 
     withProject(isNew = true, saveOnClose = true) { project ->
-      project.getService(WorkspaceSnapshotService::class.java).update { expected }
+      project.getService(WorkspaceSnapshotService::class.java).update { expected to Unit }
     }
 
     withProject(saveOnClose = true) { project ->
       val restored = awaitLoadedSnapshot(project)
       restored.executableTargets.executableTargetsFor(libLabel).shouldContainExactly(binLabel)
 
-      project.getService(WorkspaceSnapshotService::class.java).update { restored.copy() }
+      project.getService(WorkspaceSnapshotService::class.java).update { restored.copy() to Unit }
     }
 
     withProject { project ->
@@ -437,16 +443,18 @@ class WorkspaceSnapshotServiceTest {
     )
     val expected = WorkspaceSnapshot(
       targets = InMemoryWorkspaceTargetMap(targets.associateBy { it.key }),
+      workspaceName = null,
       configurations = mapOf(),
       targetGraph = WorkspaceTargetGraphBuilder.build(rootTargets = setOf(binKey, binAltKey), targets = targets),
       fileToTarget = FileToTargetMap.EMPTY,
+      executableTargets = ExecutableTargetsIndex.EMPTY,
       syncConfigs = listOf(CommonWorkspaceSyncConfig(projectRootDir = Path.of("/workspace"), projectName = "e2e", importDepth = -1)),
       repoMapping = RepoMappingDisabled,
       metadata = WorkspaceSnapshotMetadata(version = 1),
     )
 
     withProject(isNew = true, saveOnClose = true) { project ->
-      project.getService(WorkspaceSnapshotService::class.java).update { expected }
+      project.getService(WorkspaceSnapshotService::class.java).update { expected to Unit }
     }
 
     withProject { project ->
@@ -463,7 +471,7 @@ class WorkspaceSnapshotServiceTest {
 
     withProject(isNew = true, saveOnClose = true) { project ->
       val service = project.getService(WorkspaceSnapshotService::class.java)
-      service.update { expected }
+      service.update { expected to Unit }
       service.save()
 
       val persisted = service.currentSnapshot()

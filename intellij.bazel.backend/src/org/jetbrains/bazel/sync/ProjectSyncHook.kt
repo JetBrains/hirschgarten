@@ -8,8 +8,7 @@ import com.intellij.platform.workspace.storage.MutableEntityStorage
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.progress.syncConsole
 import org.jetbrains.bazel.progress.withSubtask
-import org.jetbrains.bazel.sync.scope.ProjectSyncScope
-import org.jetbrains.bazel.sync.workspace.BazelResolvedWorkspace
+import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceSnapshot
 import org.jetbrains.bazel.server.BazelServerFacade
 import org.jetbrains.bsp.protocol.TaskId
 
@@ -37,7 +36,9 @@ interface ProjectSyncHook {
 
   /**
    * @param project project on which sync is executed
+   * @param syncScope scope the sync is effectively running with
    * @param server BSP server which is used during sync
+   * @param snapshot workspace snapshot published by this sync
    * @param diff diff which was prepared before sync and which should be updated in the hook
    * @param taskId task id which should be used in the sync console as root
    * @param progressReporter should be used to report the progress of the hook
@@ -47,7 +48,7 @@ interface ProjectSyncHook {
     val project: Project,
     val syncScope: ProjectSyncScope,
     val server: BazelServerFacade,
-    val workspace: BazelResolvedWorkspace,
+    val snapshot: WorkspaceSnapshot,
     val taskId: TaskId,
     val diff: MutableEntityStorage,
     val progressReporter: SequentialProgressReporter,

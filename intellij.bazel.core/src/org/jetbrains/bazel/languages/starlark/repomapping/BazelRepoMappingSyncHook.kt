@@ -36,7 +36,7 @@ internal class BazelRepoMappingSyncHook : ProjectSyncHook {
   override suspend fun onSync(environment: ProjectSyncHookEnvironment) {
     environment.withSubtask("Load bazel repo mapping") {
       val bazelRepoMappingService = PersistentBazelRepoMappingService.getInstance(environment.project)
-      when (val repoMapping = environment.workspace.repoMapping) {
+      when (val repoMapping = environment.snapshot.repoMapping) {
         is BzlmodRepoMapping -> {
           bazelRepoMappingService.apparentRepoNameToCanonicalName = repoMapping.apparentRepoNameToCanonicalName
           bazelRepoMappingService.canonicalRepoNameToPath = repoMapping.canonicalRepoNameToPath

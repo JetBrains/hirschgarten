@@ -23,11 +23,11 @@ import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.languages.projectview.ProjectView
 import org.jetbrains.bazel.progress.syncConsole
 import org.jetbrains.bazel.server.BazelServerService
-import org.jetbrains.bazel.sync.scope.SecondPhaseSync
 import org.jetbrains.bazel.sync.workspace.importer.WorkspaceImporterHelper
 import org.jetbrains.bazel.sync.workspace.mapper.BazelWorkspaceResolver
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceSnapshotBuilder
 import org.jetbrains.bsp.protocol.TaskGroupId
+import org.jetbrains.bsp.protocol.WorkspaceBuildTargetSelector
 import org.junit.jupiter.api.fail
 import java.nio.file.Path
 import java.nio.file.StandardOpenOption
@@ -100,7 +100,12 @@ internal suspend fun doWorkspaceModelTest(
 ) {
   val taskId = TaskGroupId.EMPTY.task("main")
   val server = BazelServerService.getInstance(project).connection
-  val resolvedWorkspace = BazelWorkspaceResolver.fetchWorkspace(project, scope = SecondPhaseSync, build = false, allKnownTargets = null, taskId = taskId)
+  val resolvedWorkspace = BazelWorkspaceResolver.fetchAspectWorkspace(
+    project = project,
+    allKnownTargets = null,
+    build = false,
+    taskId = taskId,
+  )
   resolvedWorkspace.targets.shouldNotBeEmpty()
 
   val workspaceSnapshot = WorkspaceSnapshotBuilder.build(

@@ -21,6 +21,7 @@ import java.nio.file.Path
 class PersistentWorkspaceSnapshot(
 
   // direct references inside `WorkspaceSnapshot`
+  val workspaceName: String?,
   val configurations: Map<WorkspaceConfigurationId, WorkspaceConfiguration>,
   val targetGraph: WorkspaceTargetGraph,
   val syncConfigs: List<WorkspaceSyncConfig>,

@@ -5,8 +5,8 @@ import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceSnapshot
 
 @ApiStatus.Internal
-fun interface WorkspaceSnapshotUpdater {
-  suspend fun update(snapshot: WorkspaceSnapshot): WorkspaceSnapshot
+fun interface WorkspaceSnapshotUpdater<R> {
+  suspend fun update(snapshot: WorkspaceSnapshot): Pair<WorkspaceSnapshot, R>
 }
 
 @ApiStatus.Internal
@@ -19,5 +19,8 @@ interface WorkspaceSnapshotService {
    */
   suspend fun currentSnapshot(): WorkspaceSnapshot
 
-  suspend fun update(updater: WorkspaceSnapshotUpdater): WorkspaceSnapshot
+  /**
+   * Update current snapshot atomically
+   */
+  suspend fun <R> update(updater: WorkspaceSnapshotUpdater<R>): Pair<WorkspaceSnapshot, R>
 }

@@ -136,7 +136,7 @@ internal class UpdateBazelIgnoreSyncHook : ProjectSyncHook {
       if (service != null) {
         val state = service.update(
           environment.server.bazelInfo.workspaceRoot,
-          environment.workspace.repoMapping,
+          environment.snapshot.repoMapping,
         )
         state.errorsParsing.forEach { path ->
           environment.project.syncConsole.addDiagnosticMessage(

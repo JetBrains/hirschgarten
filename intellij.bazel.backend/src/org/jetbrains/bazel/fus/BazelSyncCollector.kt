@@ -6,14 +6,12 @@ import com.intellij.internal.statistic.eventLog.events.EventFields
 import com.intellij.internal.statistic.service.fus.collectors.CounterUsagesCollector
 import com.intellij.openapi.project.Project
 import org.jetbrains.bazel.commons.LanguageClass
-import org.jetbrains.bazel.sync.scope.FirstPhaseSync
-import org.jetbrains.bazel.sync.scope.PartialProjectSync
-import org.jetbrains.bazel.sync.scope.ProjectSyncScope
-import org.jetbrains.bazel.sync.scope.SecondPhaseSync
+import org.jetbrains.bazel.sync.ProjectSyncScope
 import org.jetbrains.bazel.sync.task.ProjectSyncCompletionResult
 import org.jetbrains.bazel.sync.task.ProjectSyncPhase
 import org.jetbrains.bazel.sync.task.ProjectSyncResult
 import org.jetbrains.bazel.sync.task.ProjectSyncStatistics
+import org.jetbrains.bazel.sync.task.SyncPhase as SyncTaskPhase
 import java.util.concurrent.CancellationException
 
 internal object BazelSyncCollector : CounterUsagesCollector() {
@@ -55,10 +53,11 @@ internal object BazelSyncCollector : CounterUsagesCollector() {
   suspend fun logSync(
     project: Project,
     syncScope: ProjectSyncScope,
+    syncPhase: SyncTaskPhase,
     buildProject: Boolean,
     action: suspend () -> ProjectSyncResult,
   ): ProjectSyncResult {
-    val activity = logSyncStarted(project, syncScope.fusPhase(), buildProject)
+    val activity = logSyncStarted(project, fusPhase(syncScope, syncPhase), buildProject)
     return try {
       action().also { result -> logSyncFinished(project, activity, result) }
     }
@@ -72,8 +71,8 @@ internal object BazelSyncCollector : CounterUsagesCollector() {
     }
   }
 
-  fun logSyncSkipped(project: Project, syncScope: ProjectSyncScope, buildProject: Boolean) {
-    val activity = logSyncStarted(project, syncScope.fusPhase(), buildProject)
+  fun logSyncSkipped(project: Project, syncScope: ProjectSyncScope, syncPhase: SyncTaskPhase, buildProject: Boolean) {
+    val activity = logSyncStarted(project, fusPhase(syncScope, syncPhase), buildProject)
     logSyncFinished(project, activity, ProjectSyncResult(ProjectSyncCompletionResult.SKIPPED))
   }
 
@@ -123,11 +122,11 @@ internal object BazelSyncCollector : CounterUsagesCollector() {
 
 }
 
-private fun ProjectSyncScope.fusPhase(): BazelSyncCollector.SyncPhase =
-  when (this) {
-    FirstPhaseSync -> BazelSyncCollector.SyncPhase.FIRST_PHASE
-    SecondPhaseSync -> BazelSyncCollector.SyncPhase.SECOND_PHASE
-    is PartialProjectSync -> BazelSyncCollector.SyncPhase.PARTIAL
+private fun fusPhase(scope: ProjectSyncScope, phase: SyncTaskPhase): BazelSyncCollector.SyncPhase =
+  when {
+    phase == SyncTaskPhase.FIRST -> BazelSyncCollector.SyncPhase.FIRST_PHASE
+    scope is ProjectSyncScope.Full -> BazelSyncCollector.SyncPhase.SECOND_PHASE
+    else -> BazelSyncCollector.SyncPhase.PARTIAL
   }
 
 private fun ProjectSyncStatistics.languageTargetCountsForReporting(): Map<LanguageClass, Int> =
