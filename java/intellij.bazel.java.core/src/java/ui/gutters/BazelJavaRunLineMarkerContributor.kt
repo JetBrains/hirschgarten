@@ -26,28 +26,29 @@ open class BazelJavaRunLineMarkerContributor : BazelRunLineMarkerContributor() {
 
   // TODO: https://youtrack.jetbrains.com/issue/BAZEL-1316
   override fun getSingleTestFilter(element: PsiElement): String? {
-    val psiIdentifier = PsiTreeUtil.getParentOfType(element, PsiNameIdentifierOwner::class.java, true)
-    if (psiIdentifier?.isMethod() == true) {
+    val psiIdentifier = PsiTreeUtil.getParentOfType(element, PsiNameIdentifierOwner::class.java, true) ?: return null
+    val className = psiIdentifier.getFullyQualifiedClassName() ?: return null
+    return if (psiIdentifier.isMethod()) {
       val methodName = psiIdentifier.getMethodName()
-      return if (element.project.useJetBrainsTestRunner()) {
-        val fullyQualifiedClassName = psiIdentifier.getFullyQualifiedClassName() ?: return null
+      if (element.project.useJetBrainsTestRunner()) {
         val methodParameterTypes = psiIdentifier.getMethodParameterTypes()
-        "$fullyQualifiedClassName:$methodName:$methodParameterTypes"
+        "$className:$methodName:$methodParameterTypes"
       } else {
-        val className = psiIdentifier.getClassName() ?: return methodName
-        "$className.$methodName$"
+        "${className.normalizeNestedClassSeparator()}.$methodName$"
       }
     } else {
       if (element.project.useJetBrainsTestRunner()) {
-        return psiIdentifier?.getFullyQualifiedClassName()
-      }
-      return if (psiIdentifier is PsiClass) {
-        psiIdentifier.getFullyQualifiedClassName()
+        className
       } else {
-        psiIdentifier?.getClassName()
+        className.normalizeNestedClassSeparator()
       }
     }
   }
+
+  /**
+   * Any `$` separating a nested class is replaced with `.`, because `$` would otherwise be interpreted as a regex end-of-input anchor.
+   */
+  private fun String.normalizeNestedClassSeparator(): String = replace("$", ".")
 
   @ApiStatus.Internal
   protected open fun PsiNameIdentifierOwner.getMethodName(): String? = if (isMethod()) name else null
@@ -68,10 +69,6 @@ open class BazelJavaRunLineMarkerContributor : BazelRunLineMarkerContributor() {
   @ApiStatus.Internal
   protected open fun PsiNameIdentifierOwner.getPsiParameters(): Array<out PsiParameter>? =
     (this as? PsiMethod)?.parameterList?.parameters
-
-  @ApiStatus.Internal
-  protected open fun PsiNameIdentifierOwner.getClassName(): String? =
-    PsiTreeUtil.getParentOfType(this, PsiClass::class.java, false)?.name
 
   @ApiStatus.Internal
   protected open fun PsiElement.getFullyQualifiedClassName(): String? {

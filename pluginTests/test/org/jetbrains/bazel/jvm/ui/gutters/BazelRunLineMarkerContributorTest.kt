@@ -4,9 +4,11 @@ import com.intellij.openapi.util.registry.Registry
 import com.intellij.psi.PsiClass
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
+import com.intellij.psi.PsiIdentifier
 import com.intellij.psi.PsiMethod
 import com.intellij.psi.impl.source.tree.LeafPsiElement
 import com.intellij.psi.util.PsiUtilCore
+import com.intellij.psi.util.childrenOfType
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
 import com.intellij.testFramework.fixtures.CodeInsightTestFixture
 import io.kotest.matchers.collections.shouldHaveSize
@@ -81,7 +83,7 @@ class BazelRunLineMarkerContributorTest : BasePlatformTestCase() {
     val result = runLineMarkerContributor.getSingleTestFilter(psiElement)
 
     // then
-    val expectedSingleTestFilter = "BspJVMRunLineMarkerContributorTestData.should add 1 plus 1$"
+    val expectedSingleTestFilter = "org.jetbrains.bazel.ui.gutters.BspJVMRunLineMarkerContributorTestData.should add 1 plus 1$"
     result shouldBe expectedSingleTestFilter
   }
 
@@ -102,7 +104,7 @@ class BazelRunLineMarkerContributorTest : BasePlatformTestCase() {
     val result = runLineMarkerContributor.getSingleTestFilter(psiElement)
 
     // then
-    val expectedSingleTestFilter = "BspJVMRunLineMarkerContributorTestData"
+    val expectedSingleTestFilter = "org.jetbrains.bazel.ui.gutters.BspJVMRunLineMarkerContributorTestData"
     result shouldBe expectedSingleTestFilter
   }
 
@@ -173,7 +175,7 @@ class BazelRunLineMarkerContributorTest : BasePlatformTestCase() {
     val result = runLineMarkerContributor.getSingleTestFilter(psiElement)
 
     // then
-    val expectedSingleTestFilter = "BspJVMRunLineMarkerContributorTestData.addOnePlusOne$"
+    val expectedSingleTestFilter = "org.jetbrains.bazel.ui.gutters.BspJVMRunLineMarkerContributorTestData.addOnePlusOne$"
     result shouldBe expectedSingleTestFilter
   }
 
@@ -195,6 +197,43 @@ class BazelRunLineMarkerContributorTest : BasePlatformTestCase() {
 
     // then
     val expectedSingleTestFilter = "org.jetbrains.bazel.ui.gutters.BspJVMRunLineMarkerContributorTestData"
+    result shouldBe expectedSingleTestFilter
+  }
+
+  private fun CodeInsightTestFixture.getJavaNestedTestFile(): PsiFile =
+    configureByText(
+      "OuterTest.java",
+      """
+      package com.example;
+
+      import org.junit.Test;
+      import org.junit.experimental.runners.Enclosed;
+      import org.junit.runner.RunWith;
+      
+      @RunWith(Enclosed.class)
+      public class OuterTest {
+          public static class NestedTest {
+              @Test
+              public void nestedTest() {
+                  assert(true);
+              }
+          }
+      }
+      """.trimMargin(),
+    )
+
+  @Test
+  fun `should return FQN without $ for nested JUnit 4 test class`() {
+    // given
+    myFixture.getJavaNestedTestFile()
+    val psiElement = myFixture.findElementByText("nestedTest", PsiMethod::class.java).childrenOfType<PsiIdentifier>().first()
+    val runConfigurationProducer = BazelJavaRunLineMarkerContributor()
+
+    // when
+    val result = runConfigurationProducer.getSingleTestFilter(psiElement)
+
+    // then
+    val expectedSingleTestFilter = "com.example.OuterTest.NestedTest.nestedTest$"
     result shouldBe expectedSingleTestFilter
   }
 }

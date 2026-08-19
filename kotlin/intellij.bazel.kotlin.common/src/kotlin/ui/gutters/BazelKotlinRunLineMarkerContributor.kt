@@ -42,8 +42,6 @@ open class BazelKotlinRunLineMarkerContributor : BazelJavaRunLineMarkerContribut
     return detector.isMain(function)
   }
 
-  override fun PsiNameIdentifierOwner.getClassName(): String? = this.getNonStrictParentOfType<KtClassOrObject>()?.name
-
   override fun PsiElement.getFullyQualifiedClassName(): String? {
     val classOrObject = this.getNonStrictParentOfType<KtClassOrObject>() ?: return null
     return KotlinPsiHeuristics.getJvmName(classOrObject)
