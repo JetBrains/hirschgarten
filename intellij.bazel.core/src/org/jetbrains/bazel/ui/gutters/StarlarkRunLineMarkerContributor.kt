@@ -1,6 +1,5 @@
 package org.jetbrains.bazel.ui.gutters
 
-import com.intellij.execution.ExecutionBundle
 import com.intellij.execution.lineMarker.RunLineMarkerContributor
 import com.intellij.icons.AllIcons
 import com.intellij.openapi.actionSystem.AnAction
@@ -10,7 +9,6 @@ import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiElement
 import com.intellij.psi.util.elementType
 import org.jetbrains.annotations.ApiStatus
-import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.config.isBazelProject
 import org.jetbrains.bazel.label.ResolvedLabel
 import org.jetbrains.bazel.languages.starlark.bazel.BazelFileType
@@ -20,10 +18,7 @@ import org.jetbrains.bazel.languages.starlark.psi.StarlarkFile
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkCallExpression
 import org.jetbrains.bazel.languages.starlark.psi.statements.StarlarkExpressionStatement
 import org.jetbrains.bazel.languages.starlark.repomapping.calculateLabel
-import org.jetbrains.bazel.languages.starlark.repomapping.toShortString
 import org.jetbrains.bazel.runnerAction.BuildTargetAction
-import org.jetbrains.bazel.runnerAction.TestTargetAction
-import org.jetbrains.bazel.runnerAction.getTestExecutors
 import org.jetbrains.bazel.sync.action.ResyncTargetAction
 import org.jetbrains.bazel.sync.workspace.targetKind.TargetKindService
 import org.jetbrains.bazel.target.targetStorage
@@ -87,46 +82,19 @@ open class StarlarkRunLineMarkerContributor : RunLineMarkerContributor() {
       ResyncTargetAction.createIfEnabled(targetLabel)?.let { add(it) }
     }
 
-    val executableTargetsFromTargetUtils =
-      targetUtils.getExecutableTargetsForTarget(targetLabel)
-        .mapNotNull { executableLabel -> targetUtils.getTargetSummary(executableLabel) }
-    val executableTargets = if (targetInfo != null) {
-      // If we have the targetInfo, we know for sure whether the target is executable.
-      // If it isn't executable, do not show gutter, even if executableTargetsFromTargetUtils has targets.
-      listOfNotNull(targetInfo.takeIf { targetInfo.kind.isExecutable })
-    }
-    else if (executableTargetsFromTargetUtils.isNotEmpty()) {
-      // Support cases like java_test_suite, which generates targets but isn't imported itself
-      executableTargetsFromTargetUtils
-    }
-    else if (targetKind.isExecutable) {
-      // We guessed via our heuristics that the target is executable (e.g., the rule name is my_custom_binary)
-      setOf(NonImportedBuildTarget(targetLabel, targetKind, (buildFile.parent ?: buildFile).toNioPath()))
+    val executableTarget = if (targetKind.isExecutable) {
+      targetInfo ?: NonImportedBuildTarget(targetLabel, targetKind, (buildFile.parent ?: buildFile).toNioPath())
     }
     else {
-      emptySet()
+      null
     }
 
-    val testableTargets = executableTargets.filter { it.kind.ruleType == RuleType.TEST }
-    if (testableTargets.size > 1) {
-      for (executor in getTestExecutors()) {
-        add(
-          TestTargetAction(
-            project = project,
-            targets = testableTargets,
-            executor = executor,
-            configurationName = ExecutionBundle.message("test.in.scope.presentable.text", targetLabel.toShortString(project)),
-          ),
-        )
-      }
-    }
-
-    val executeActions = executableTargets.flatMap { executableTarget ->
+    val executeActions = executableTarget?.let {
       DefaultActionGroup().fillWithEligibleActions(
         project,
         executableTarget,
       ).childActionsOrStubs.toList()
-    }
+    }.orEmpty()
     addAll(executeActions)
   }
 }

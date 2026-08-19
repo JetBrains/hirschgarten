@@ -27,13 +27,13 @@ import com.intellij.tools.ide.performanceTesting.commands.sleep
 import com.intellij.tools.ide.performanceTesting.commands.takeScreenshot
 import com.intellij.tools.ide.performanceTesting.commands.waitForSmartMode
 import org.jetbrains.bazel.data.IdeaBazelCases
+import org.jetbrains.bazel.data.simpleBazelProject
 import org.jetbrains.bazel.ideStarter.assertFileKind
 import org.jetbrains.bazel.ideStarter.bazelClean
 import org.jetbrains.bazel.ideStarter.buildAndSync
 import org.jetbrains.bazel.ideStarter.execute
 import org.jetbrains.bazel.ideStarter.openFile
 import org.jetbrains.bazel.ideStarter.waitForSyncSucceeded
-import org.jetbrains.bazel.data.simpleBazelProject
 import org.jetbrains.bazel.performanceImpl.FileKindCheck
 import org.jetbrains.bazel.tests.ui.verifyAvailableRunGutterActions
 import org.junit.jupiter.api.Order
@@ -178,16 +178,8 @@ class SimpleJavaCombinedTest : IdeStarterCombinedBaseTest() {
           verifyAvailableRunGutterActions(
             listOf(
               "Build Target",
-              "Run 'Tests in '//:SimpleJavaTest''",
-              "Run 'Tests in '//:SimpleJavaTest'' with Coverage",
-              "Run '//:Simple2Test'",
-              "Debug '//:Simple2Test'",
-              "Run '//:Simple2Test' with Coverage",
-              "Profile '//:Simple2Test' with 'IntelliJ Profiler'",
-              "Run '//:SimpleTest'",
-              "Debug '//:SimpleTest'",
-              "Run '//:SimpleTest' with Coverage",
-              "Profile '//:SimpleTest' with 'IntelliJ Profiler'",
+              "Run '//:SimpleJavaTest'",
+              "Run '//:SimpleJavaTest' with Coverage",
             ),
           )
           popup().close()
