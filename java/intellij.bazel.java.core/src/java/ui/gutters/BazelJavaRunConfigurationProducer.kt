@@ -38,11 +38,11 @@ open class BazelJavaRunConfigurationProducer : BazelRunConfigurationProducer() {
         val methodParameterTypes = psiMethod.getMethodParameterTypes()
         "$className:$methodName:$methodParameterTypes"
       } else {
-        "$className.$methodName$"
+        "${className.normalizeNestedClassSeparator()}.$methodName$"
       }
     }
     else {
-      className
+      className.normalizeNestedClassSeparator()
     }
 
     var gutterAction = createTestFilterAction(project, testFilter)
@@ -69,6 +69,11 @@ open class BazelJavaRunConfigurationProducer : BazelRunConfigurationProducer() {
         type.canonicalText
       }
     }.joinToString(separator = ",")
+
+  /**
+   * Any `$` separating a nested class is replaced with `.`, because `$` would otherwise be interpreted as a regex end-of-input anchor.
+   */
+  private fun String.normalizeNestedClassSeparator(): String = replace("$", ".")
 
   open fun getContainingClassFqn(element: PsiElement): String? {
     val psiClass = PsiTreeUtil.getParentOfType(element, PsiClass::class.java, false) ?: return null

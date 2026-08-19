@@ -1,17 +1,17 @@
-package org.jetbrains.bazel.jvm.ui.gutters
+package org.jetbrains.bazel.java.ui.gutters
 
 import com.intellij.psi.PsiClass
 import com.intellij.psi.PsiFile
+import com.intellij.psi.PsiIdentifier
 import com.intellij.psi.PsiMethod
 import com.intellij.psi.impl.source.tree.LeafPsiElement
-import com.intellij.psi.util.PsiUtilCore
+import com.intellij.psi.util.childrenOfType
 import com.intellij.testFramework.fixtures.CodeInsightTestFixture
 import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
 import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.test.framework.BazelBasePlatformTestCase
-import org.jetbrains.bazel.java.ui.gutters.BazelJavaRunConfigurationProducer
 import org.jetbrains.bazel.kotlin.ui.gutters.BazelKotlinRunConfigurationProducer
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.run.test.forceDisableJetBrainsTestRunner
@@ -175,6 +175,43 @@ class BazelJavaRunConfigurationProducerTest : BazelBasePlatformTestCase() {
 
     // then
     val expectedSingleTestFilter = "org.jetbrains.bazel.ui.gutters.BspJVMRunLineMarkerContributorTestData"
+    result shouldBe expectedSingleTestFilter
+  }
+
+  private fun CodeInsightTestFixture.getJavaNestedTestFile(): PsiFile =
+    configureByText(
+      "OuterTest.java",
+      """
+      package com.example;
+
+      import org.junit.Test;
+      import org.junit.experimental.runners.Enclosed;
+      import org.junit.runner.RunWith;
+      
+      @RunWith(Enclosed.class)
+      public class OuterTest {
+          public static class NestedTest {
+              @Test
+              public void nestedTest() {
+                  assert(true);
+              }
+          }
+      }
+      """.trimMargin(),
+    )
+
+  @Test
+  fun `should return FQN without $ for nested JUnit 4 test class`() {
+    // given
+    myFixture.getJavaNestedTestFile()
+    val psiElement = myFixture.findElementByText("nestedTest", PsiMethod::class.java).childrenOfType<PsiIdentifier>().first()
+    val runConfigurationProducer = BazelJavaRunConfigurationProducer()
+
+    // when
+    val result = runConfigurationProducer.getGutterAction(psiElement, mockTarget)?.testFilter
+
+    // then
+    val expectedSingleTestFilter = "com.example.OuterTest.NestedTest.nestedTest$"
     result shouldBe expectedSingleTestFilter
   }
 }
