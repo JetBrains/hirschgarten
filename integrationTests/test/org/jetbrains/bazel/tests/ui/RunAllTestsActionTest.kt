@@ -41,7 +41,6 @@ class RunAllTestsActionTest : IdeStarterBaseProjectTest() {
           popupMenu().waitFound()
           takeScreenshot("afterRightClicking")
           popupMenu().findMenuItemByText("Run 'Tests in 'runAllTests''").click()
-          waitForIndicators(5.minutes)
           verifyTestStatus(
             listOf("3 tests passed"),
             setOf("AdditionTest", "testAddition", "MultiplicationTest", "testMultiplication", "DivisionTest", "testDivision"),
@@ -51,7 +50,6 @@ class RunAllTestsActionTest : IdeStarterBaseProjectTest() {
         fun verifyTestsInMy() {
           takeScreenshot("afterRightClicking")
           popupMenu().findMenuItemByText("Run 'Tests in 'my''").click()
-          waitForIndicators(5.minutes)
           verifyTestStatus(
             listOf("3 tests passed"),
             setOf("AdditionTest", "testAddition", "MultiplicationTest", "testMultiplication", "DivisionTest", "testDivision"),
@@ -61,7 +59,6 @@ class RunAllTestsActionTest : IdeStarterBaseProjectTest() {
         fun verifyTestsInMyPackage() {
           takeScreenshot("afterRightClicking")
           popupMenu().findMenuItemByText("Run 'Tests in 'package''").click()
-          waitForIndicators(5.minutes)
           verifyTestStatus(
             listOf("2 tests passed"),
             setOf("AdditionTest", "testAddition", "MultiplicationTest", "testMultiplication"),

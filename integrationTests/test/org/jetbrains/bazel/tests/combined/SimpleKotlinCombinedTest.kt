@@ -47,7 +47,6 @@ import org.jetbrains.bazel.data.BazelProjectConfigurer
 import org.jetbrains.bazel.data.IdeaBazelCases
 import org.jetbrains.bazel.data.simpleBazelProject
 import org.jetbrains.bazel.tests.sync.verifyNoSyncOnReopen
-import org.jetbrains.bazel.tests.ui.expandedTree
 import org.jetbrains.bazel.tests.ui.verifyTestStatus
 import org.jetbrains.bazel.tests.ui.waitForDebuggerPausedAt
 import org.junit.jupiter.api.Order
@@ -144,7 +143,6 @@ class SimpleKotlinCombinedTest : IdeStarterCombinedBaseTest() {
             .first()
             .click()
           popup().waitOneContainsText("Debug '//:SimpleKotlinTest (another trivial test)").click()
-          wait(15.seconds)
         }
         step("Verify debug test status and results tree") {
           verifyTestStatus(
@@ -158,7 +156,6 @@ class SimpleKotlinCombinedTest : IdeStarterCombinedBaseTest() {
   }
 
   private fun testResultsTreeWithBazelRunner() {
-    expandedTree = true
     withDriver(bgRun) {
       setRegistry("bazel.run.config.run.with.bazel", true.toString())
       ideFrame {
@@ -183,7 +180,6 @@ class SimpleKotlinCombinedTest : IdeStarterCombinedBaseTest() {
             .first()
             .click()
           popup().waitOneContainsText("Debug '//:SimpleKotlinTest (another trivial test)").click()
-          wait(15.seconds)
         }
         step("Verify debug test status and results tree") {
           verifyTestStatus(

@@ -56,7 +56,6 @@ import org.jetbrains.bazel.performanceImpl.FileKindCheck
 import org.jetbrains.bazel.test.compat.IntegrationTestCompat
 import org.jetbrains.bazel.testing.IS_IN_IDE_STARTER_TEST
 import org.jetbrains.bazel.tests.combined.VirtualFileManager
-import org.jetbrains.bazel.tests.ui.expandedTree
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.kodein.di.DI
@@ -65,7 +64,6 @@ import java.io.File
 import java.net.URI
 import java.nio.file.Path
 import java.util.function.Predicate
-import kotlin.io.path.ExperimentalPathApi
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
@@ -132,8 +130,6 @@ abstract class IdeStarterBaseProjectTest {
           }
         }
       }
-
-    expandedTree = false
   }
 
   @AfterEach

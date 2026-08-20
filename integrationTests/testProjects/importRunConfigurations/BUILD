@@ -50,3 +50,14 @@ kt_jvm_binary(
     ],
     main_class = "com.example.MainKt",
 )
+
+java_test(
+    name = "outer_nested_test",
+    srcs = [
+        "src/com/example/OuterTest.java",
+    ],
+    test_class = "com.example.OuterTest",
+    deps = [
+        "@maven//:junit_junit",
+    ],
+)

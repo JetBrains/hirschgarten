@@ -20,7 +20,6 @@ import com.intellij.driver.sdk.ui.components.elements.list
 import com.intellij.driver.sdk.ui.components.elements.popup
 import com.intellij.driver.sdk.ui.pasteText
 import com.intellij.driver.sdk.ui.shouldBe
-import com.intellij.driver.sdk.wait
 import com.intellij.driver.sdk.waitFor
 import com.intellij.ide.starter.ide.IDETestContext
 import com.intellij.tools.ide.performanceTesting.commands.assertCurrentFile
@@ -28,12 +27,12 @@ import com.intellij.tools.ide.performanceTesting.commands.delay
 import io.kotest.matchers.shouldBe
 import org.jetbrains.bazel.base.execute
 import org.jetbrains.bazel.base.openFile
-import org.jetbrains.bazel.base.syncBazelProject
 import org.jetbrains.bazel.data.BazelProjectConfigurer
 import org.jetbrains.bazel.data.IdeaBazelCases
 import org.jetbrains.bazel.data.simpleBazelProject
 import org.jetbrains.bazel.tests.combined.IdeStarterCombinedBaseTest
 import org.jetbrains.bazel.tests.ui.clickRunGutterOnLine
+import org.jetbrains.bazel.tests.ui.clickTestGutterOnLine
 import org.jetbrains.bazel.tests.ui.verifyAvailableRunGutterActions
 import org.jetbrains.bazel.tests.ui.verifyTestStatus
 import org.junit.jupiter.api.Order
@@ -63,9 +62,6 @@ class ImportRunConfigurationsSyncHookTest : IdeStarterCombinedBaseTest() {
   fun `imported run configurations should execute and show build diagnostics`() {
     withDriver(bgRun) {
       ideFrame {
-        syncBazelProject(buildAndSync = true)
-        waitForIndicators(5.minutes)
-
         step("Select Bazel test configuration") {
           selectRunConfiguration(targetText = "Test Calculator")
         }
@@ -179,13 +175,10 @@ class ImportRunConfigurationsSyncHookTest : IdeStarterCombinedBaseTest() {
   fun `debugging a java_test works with shard_size`() {
     withDriver(bgRun) {
       ideFrame {
-        syncBazelProject(buildAndSync = true)
-        waitForIndicators(5.minutes)
         step("Select Bazel test configuration") {
           selectRunConfiguration(targetText = "Test Calculator")
         }
         step("Run test in Debug") { x { byAccessibleName("Debug 'Test Calculator'") }.click() }
-        wait(15.seconds)
         verifyTestStatus(
           listOf("2 tests passed"),
           listOf("com.example.CalculatorTest", "testAdd", "testMultiply"),
@@ -218,6 +211,21 @@ class ImportRunConfigurationsSyncHookTest : IdeStarterCombinedBaseTest() {
         openFile("src/com/example/Main.kt")
         clickRunGutterOnLine(2)
         verifyAvailableRunGutterActions(listOf("Run '//:kotlin_main'", "Debug '//:kotlin_main'", "Profile '//:kotlin_main' with 'IntelliJ Profiler'"))
+      }
+    }
+  }
+
+  @Test
+  @Order(5)
+  fun `debugging a nested JUnit4 test works`() {
+    withDriver(bgRun) {
+      ideFrame {
+        openFile("src/com/example/OuterTest.java")
+        clickTestGutterOnLine(11)
+        verifyTestStatus(
+          listOf("1 test passed"),
+          listOf($$"com.example.OuterTest$NestedTest", "anotherNestedTest"),
+        )
       }
     }
   }
