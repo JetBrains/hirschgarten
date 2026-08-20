@@ -11,7 +11,7 @@
 ## Current State (as of 2026-08-18)
 
 ### Working Branch
-`feat/shard-module-elimination` — latest tip: `56c4d45337 feat: eliminate shard modules; register umbrella as directory source root`
+`feat/file-event-batch-guard` — latest tip: `70a5a0b38b feat: skip new-file event processing when batch exceeds 5 files`
 
 ### Recently Completed Work (PR #33)
 
@@ -25,17 +25,17 @@
 
 ### Pending / In-Progress Work
 
+**File event batch guard** — branch `feat/file-event-batch-guard`, PR open (→ `development-261`).
+
+**Problem**: A `git pull` can deliver dozens of `Create`/`ExternalCreate` events simultaneously, triggering an expensive Bazel inverse-sources query that chokes IntelliJ.
+
+**Fix** (`BazelFileEventListener.kt`): `addNewFilesToBothModels` counts new-file events with an early-exit sequence (`asSequence().filter().drop(5).any()`); if exceeded, skip processing and show the Resync notification instead. Limit is `NEW_FILE_EVENTS_LIMIT = 5`.
+
 **Shard module elimination** — branch `feat/shard-module-elimination`, PR #34 open (→ `development-261`).
 
 **Problem**: `java_incremental_library` splits a target into one umbrella + N shard sub-targets. Importing shards as separate IntelliJ modules caused red code and bloated the module list.
 
 **Fix** (`AspectBazelProjectMapper.kt`, `UnsyncedTargetUpdater.kt`): Shard-tagged targets filtered before partition into workspace/non-workspace; shard deps dropped from umbrella dependency lists; `resolveShardFolkDependencies` removed; `UnsyncedTargetUpdater` skips shard-tagged targets like `no-ide`.
-
-**File event batch guard** — branch `feat/file-event-batch-guard`, PR #35 open (→ `development-261`).
-
-**Problem**: A `git pull` can deliver dozens of `Create`/`ExternalCreate` events simultaneously, triggering an expensive Bazel inverse-sources query that chokes IntelliJ.
-
-**Fix** (`BazelFileEventListener.kt`): Early-exit sequence counts new-file events; if count exceeds `NEW_FILE_EVENTS_LIMIT` (5), skip processing and show Resync notification instead.
 
 **Next step**: —
 
