@@ -38,16 +38,15 @@ import com.intellij.tools.ide.performanceTesting.commands.takeScreenshot
 import com.intellij.tools.ide.performanceTesting.commands.waitForSmartMode
 import io.kotest.assertions.withClue
 import io.kotest.matchers.booleans.shouldBeTrue
+import org.jetbrains.bazel.data.BazelProjectConfigurer
 import org.jetbrains.bazel.data.IdeaBazelCases
+import org.jetbrains.bazel.data.simpleBazelProject
 import org.jetbrains.bazel.ideStarter.assertSyncedTargets
 import org.jetbrains.bazel.ideStarter.buildAndSync
 import org.jetbrains.bazel.ideStarter.execute
 import org.jetbrains.bazel.ideStarter.openFile
 import org.jetbrains.bazel.ideStarter.waitForSyncSucceeded
-import org.jetbrains.bazel.data.BazelProjectConfigurer
-import org.jetbrains.bazel.data.simpleBazelProject
 import org.jetbrains.bazel.tests.sync.verifyNoSyncOnReopen
-import org.jetbrains.bazel.tests.ui.expandedTree
 import org.jetbrains.bazel.tests.ui.verifyTestStatus
 import org.jetbrains.bazel.tests.ui.waitForDebuggerPausedAt
 import org.junit.jupiter.api.Order
@@ -145,7 +144,6 @@ class SimpleKotlinCombinedTest : IdeStarterCombinedBaseTest() {
             .first()
             .click()
           popup().waitOneContainsText("Debug '//:SimpleKotlinTest'").click()
-          wait(15.seconds)
         }
         step("Verify debug test status and results tree") {
           verifyTestStatus(
@@ -159,7 +157,6 @@ class SimpleKotlinCombinedTest : IdeStarterCombinedBaseTest() {
   }
 
   private fun testResultsTreeWithBazelRunner() {
-    expandedTree = true
     withDriver(bgRun) {
       setRegistry("bazel.run.config.run.with.bazel", true.toString())
       ideFrame {
@@ -184,7 +181,6 @@ class SimpleKotlinCombinedTest : IdeStarterCombinedBaseTest() {
             .first()
             .click()
           popup().waitOneContainsText("Debug '//:SimpleKotlinTest'").click()
-          wait(15.seconds)
         }
         step("Verify debug test status and results tree") {
           verifyTestStatus(

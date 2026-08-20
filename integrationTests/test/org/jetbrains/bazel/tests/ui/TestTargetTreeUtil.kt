@@ -2,17 +2,16 @@ package org.jetbrains.bazel.tests.ui
 
 import com.intellij.driver.sdk.step
 import com.intellij.driver.sdk.ui.UiText
-import com.intellij.driver.sdk.ui.components.UiComponent
 import com.intellij.driver.sdk.ui.components.common.GutterUiComponent
 import com.intellij.driver.sdk.ui.components.common.IdeaFrameUI
 import com.intellij.driver.sdk.ui.components.common.editorTabs
 import com.intellij.driver.sdk.ui.components.common.gutter
 import com.intellij.driver.sdk.ui.components.common.toolwindows.debugToolWindow
+import com.intellij.driver.sdk.ui.components.elements.ActionButtonUi
 import com.intellij.driver.sdk.ui.components.elements.JTreeUiComponent
 import com.intellij.driver.sdk.ui.components.elements.popup
 import com.intellij.driver.sdk.ui.components.elements.tree
 import com.intellij.driver.sdk.ui.xQuery
-import com.intellij.driver.sdk.wait
 import com.intellij.driver.sdk.waitFor
 import com.intellij.ide.starter.ide.IDETestContext
 import org.jetbrains.bazel.config.BazelFeatureFlags
@@ -25,22 +24,23 @@ import kotlin.time.Duration.Companion.seconds
  * If we have too many test results, then part of the tree may be cut off because it doesn't fit into the screen
  */
 private const val TREE_SIZE_THAT_FITS_INTO_SCREEN = 6
-var expandedTree = false
 
 /**
  * @param expectedStatus e.g., `listOf("2 tests passed", "2 tests total")`
  * @param expectedTree list of test tree elements from top to bottom, disregarding the actual tree structure
  */
 fun IdeaFrameUI.verifyTestStatus(expectedStatus: List<String>, expectedTree: Collection<String>) {
+  waitForIndicators(5.minutes)  // Wait for Bazel build to finish
+  waitNoTexts("Instantiating tests…", timeout = 5.minutes)
   step("Verify test status") {
     waitContainsText("Test Results", timeout = 1.minutes)
     val actualStatus = x { byClass("TestStatusLine") }.getAllTexts().filterRelevant()
     Assertions.assertEquals(expectedStatus, actualStatus, "Test status must match")
   }
   step("Verify test results tree") {
-    if (!expandedTree) {
-      x { byAccessibleName("Show Passed") }.click()
-      expandedTree = true
+    val showPassed = x(ActionButtonUi::class.java) { byAccessibleName("Show Passed") }
+    if (!showPassed.isSelected) {
+      showPassed.click()
     }
     val treeComponent = testTreeView()
     treeComponent.expandAll()
@@ -78,7 +78,7 @@ fun IDETestContext.setAutoOpenProjectIfPresent(autoOpenProjectIfPresent: Boolean
 /**
  * [line] can be different depending on e.g. imports folding
  */
-fun IdeaFrameUI.clickTestGutterOnLine(line: Int, testTimeout: Duration = 10.seconds) {
+fun IdeaFrameUI.clickTestGutterOnLine(line: Int) {
   clickRunGutterOnLine(line)
   val allRunTexts = popup().getAllTexts { it.text.startsWith("Run ") }.sortedBy { it.point.y }
   check(allRunTexts.isNotEmpty()) {
@@ -87,7 +87,6 @@ fun IdeaFrameUI.clickTestGutterOnLine(line: Int, testTimeout: Duration = 10.seco
     }"
   }
   allRunTexts.first().click()
-  wait(testTimeout)
 }
 
 /**

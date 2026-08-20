@@ -7,9 +7,9 @@ import com.intellij.driver.sdk.ui.components.common.toolwindows.projectView
 import com.intellij.driver.sdk.ui.components.elements.popupMenu
 import com.intellij.ide.starter.driver.engine.runIdeWithDriver
 import org.jetbrains.bazel.data.IdeaBazelCases
+import org.jetbrains.bazel.data.simpleBazelProject
 import org.jetbrains.bazel.ideStarter.IdeStarterBaseProjectTest
 import org.jetbrains.bazel.ideStarter.syncBazelProject
-import org.jetbrains.bazel.data.simpleBazelProject
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.ValueSource
 import kotlin.time.Duration.Companion.minutes
@@ -44,7 +44,6 @@ class RunAllTestsActionTest : IdeStarterBaseProjectTest() {
 
         step("Click on Run all tests") {
           popupMenu().findMenuItemByText("Run all tests").click()
-          waitForIndicators(5.minutes)
         }
 
         verifyTestStatus(

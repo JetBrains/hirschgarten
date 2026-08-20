@@ -8,10 +8,10 @@ import com.intellij.ide.starter.driver.engine.runIdeWithDriver
 import com.intellij.tools.ide.performanceTesting.commands.assertCaretPosition
 import com.intellij.tools.ide.performanceTesting.commands.openFile
 import org.jetbrains.bazel.data.IdeaBazelCases
+import org.jetbrains.bazel.data.simpleBazelProject
 import org.jetbrains.bazel.ideStarter.IdeStarterBaseProjectTest
 import org.jetbrains.bazel.ideStarter.execute
 import org.jetbrains.bazel.ideStarter.syncBazelProject
-import org.jetbrains.bazel.data.simpleBazelProject
 import org.junit.jupiter.api.Test
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
@@ -55,7 +55,7 @@ class JetBrainsTestRunnerTest : IdeStarterBaseProjectTest() {
 
         step("open TestJava.java and run the whole class") {
           execute { openFile("TestJava.java") }
-          clickTestGutterOnLine(14, testTimeout = 15.seconds)
+          clickTestGutterOnLine(14)
 
           verifyTestStatus(
             listOf("3 tests failed,", " 2 passed"),
