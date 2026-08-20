@@ -7,7 +7,7 @@ internal class PythonDebugFlagsSection : FlagListSection(COMMAND_RUN, COMMAND_TE
   override val sectionKey = PYTHON_DEBUG_FLAGS_KEY
   override val doc =
     "A set of flags that get passed as arguments to run and test commands invocations in debug mode. " +
-    "These flags are only used when the Python support is enabled in Bazel." +
+    "These flags are only used when the Python support is enabled." +
     "They are added after flags specified in debug_flags section (in case of duplicates python_debug_flags have higher priority)."
 
   companion object {

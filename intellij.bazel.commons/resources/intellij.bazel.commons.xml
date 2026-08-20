@@ -15,16 +15,6 @@
     />
     <registryKey
       defaultValue="true"
-      description="Python modules support"
-      key="bsp.python.support"
-    />
-    <registryKey
-      defaultValue="true"
-      description="Go modules support"
-      key="bsp.go.support"
-    />
-    <registryKey
-      defaultValue="true"
       description="Shorten module/library names by hashing the first parts and retaining the others"
       key="bsp.shorten.module.library.names"
     />

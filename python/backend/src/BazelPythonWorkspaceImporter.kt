@@ -112,10 +112,6 @@ internal class BazelPythonWorkspaceImporter : BazelWorkspaceImporter, BazelWorks
     pythonSyncConfig = snapshot.syncConfigs.filterIsInstance<PythonWorkspaceSyncConfig>()
                          .firstOrNull() ?: throw IllegalStateException()
 
-    if (!pythonSyncConfig.isPythonSupportEnabled) {
-      return WorkspaceImporterResult.Abort
-    }
-
     val importDepth = snapshot.commonSyncConfig.importDepth
     allPythonTargets = snapshot.targetGraph.findAllTargetsAtDepth(maxDepth = importDepth, useRelaxedDependencyExpansion = true)
       .mapNotNull { it.load(snapshot.targets, TargetLoadOptions.ALL) }

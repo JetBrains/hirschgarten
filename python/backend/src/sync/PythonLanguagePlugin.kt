@@ -39,9 +39,7 @@ internal class PythonLanguagePlugin : LanguagePlugin {
     return emptyList()
   }
   override suspend fun createSyncConfigs(project: Project, projectView: ProjectView): List<WorkspaceSyncConfig> {
-    val config = PythonWorkspaceSyncConfig(
-      isPythonSupportEnabled = BazelFeatureFlags.isPythonSupportEnabled,
-    )
+    val config = PythonWorkspaceSyncConfig
     return listOf(config)
   }
 

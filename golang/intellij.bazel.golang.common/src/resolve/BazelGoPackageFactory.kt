@@ -30,7 +30,6 @@ import org.jetbrains.bazel.workspacemodel.entities.BazelGoPackageEntity
 @ApiStatus.Internal
 class BazelGoPackageFactory : GoPackageFactory {
   override fun createPackage(goFile: GoFile): GoPackage? {
-    if (!BazelFeatureFlags.isGoSupportEnabled) return null
     val project = goFile.project
     if (!project.isBazelProject) return null
     val goPackageEntity = getGoPackageEntity(goFile) ?: return null

@@ -13,7 +13,6 @@ import org.jetbrains.bazel.startup.utils.BazelProjectActivity
 // 263 and newer get a proper fix on the Go plugin side
 internal class BazelGoStartupActivity : BazelProjectActivity() {
   override suspend fun executeForBazelProject(project: Project) {
-    if (!BazelFeatureFlags.isGoSupportEnabled) return
     val goWorkspaceModule = GoWorkspaceModuleUtil.findModule(project) ?: return
     val goSdkService = GoSdkService.getInstance(project)
     val originalSdk = goSdkService.getSdk(goWorkspaceModule)

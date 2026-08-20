@@ -6,10 +6,6 @@ import org.jetbrains.annotations.VisibleForTesting
 
 @ApiStatus.Internal
 object BazelFeatureFlags {
-  private const val PYTHON_SUPPORT = "bsp.python.support"
-
-  @VisibleForTesting
-  const val GO_SUPPORT = "bsp.go.support"
   private const val QUERY_TERMINAL_COMPLETION = "bazel.query.terminal.completion"
 
   @VisibleForTesting
@@ -44,12 +40,6 @@ object BazelFeatureFlags {
   const val ENABLE_LOG: String = "bazel.enable.log"
   private const val KILL_TREE_ON_CANCEL = "bazel.kill.tree.on.cancel"
   private const val KILL_SERVER_ON_CANCEL = "bazel.kill.server.on.cancel"
-
-  val isPythonSupportEnabled: Boolean
-    get() = isEnabled(PYTHON_SUPPORT)
-
-  val isGoSupportEnabled: Boolean
-    get() = isEnabled(GO_SUPPORT)
 
   val isBuildProjectOnSyncEnabled: Boolean
     get() = isEnabled(BUILD_PROJECT_ON_SYNC)

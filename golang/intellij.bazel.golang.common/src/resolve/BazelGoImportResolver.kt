@@ -67,7 +67,7 @@ internal class BazelGoImportResolver : GoImportResolver {
   }
 
   private fun supportsGo(project: Project): Boolean =
-    project.isBazelProject && BazelFeatureFlags.isGoSupportEnabled
+    project.isBazelProject
 }
 
 /**
