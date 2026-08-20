@@ -17,7 +17,6 @@ import org.jetbrains.bsp.protocol.RunParams
 internal val GAZELLE_TARGET_OVERRIDE_KEY: Key<Label> = Key.create("GAZELLE_TARGET_OVERRIDE_KEY")
 
 internal class RunGazelleTargetPreSyncHook : ProjectPreSyncHook {
-  override fun isEnabled(project: Project): Boolean = BazelFeatureFlags.isGoSupportEnabled
 
   override suspend fun onPreSync(environment: ProjectPreSyncHook.ProjectPreSyncHookEnvironment) {
     val project = environment.project

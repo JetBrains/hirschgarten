@@ -23,7 +23,6 @@ import org.jetbrains.bazel.config.isBazelProject
 
 internal class GoAdditionalLibraryRootsProvider : AdditionalLibraryRootsProvider() {
   override fun getAdditionalProjectLibraries(project: Project): Collection<SyntheticLibrary> {
-    if (!BazelFeatureFlags.isGoSupportEnabled) return emptyList()
     if (!project.isBazelProject) return emptyList()
     val library = GoExternalLibraryManager.getInstance(project).library
     return if (library != null) {

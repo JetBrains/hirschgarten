@@ -85,30 +85,11 @@ class BazelBspAspectsManager(
         null
       }
       .restrictToRequestedRuleSets()
-      .removeDisabledLanguages()
-      .addExternalPythonLanguageIfNeeded(externalRulesetNames)
   }
 
   private fun List<RulesetLanguage>.restrictToRequestedRuleSets(): List<RulesetLanguage> {
     val requested = relevantRuleSets()
     return filter { it.language.rulesetNames.any { requested.contains(it) } }
-  }
-
-  private fun List<RulesetLanguage>.removeDisabledLanguages(): List<RulesetLanguage> {
-    val disabledLanguages =
-      buildSet {
-        if (!BazelFeatureFlags.isGoSupportEnabled) add(Language.Go)
-        if (!BazelFeatureFlags.isPythonSupportEnabled) add(Language.Python)
-      }
-    return filterNot { it.language in disabledLanguages }
-  }
-
-  private fun List<RulesetLanguage>.addExternalPythonLanguageIfNeeded(
-    externalRulesetNames: List<String>,
-  ): List<RulesetLanguage> {
-    if (!BazelFeatureFlags.isPythonSupportEnabled) return this
-    val pythonRulesetName = Language.Python.rulesetNames.firstOrNull { externalRulesetNames.contains(it) } ?: return this
-    return this.filterNot { it.language == Language.Python } + RulesetLanguage(ApparentRulesetName(pythonRulesetName), Language.Python)
   }
 
   fun deployIntelliJAspect(

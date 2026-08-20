@@ -50,7 +50,6 @@ class ProjectPostSyncHookTest : MockProjectBaseTest() {
   }
 
   @Test
-  @SystemProperty(propertyKey = BazelFeatureFlags.GO_SUPPORT, propertyValue = "true")
   fun `registered project post-sync hooks should tolerate unchanged project model`(): Unit = runBlocking {
     initializeBazelProject(project, projectDir.get())
     project.registerOrReplaceServiceInstance(BazelServerService::class.java, MockBuildServerService(BuildServerMock()), disposable)

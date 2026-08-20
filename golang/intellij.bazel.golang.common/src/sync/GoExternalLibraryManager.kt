@@ -49,7 +49,6 @@ internal class GoExternalLibraryManager(private val project: Project) {
   }
 
   fun getLibraryFiles(project: Project): List<Path> {
-    if (!BazelFeatureFlags.isGoSupportEnabled) return emptyList()
     if (!project.isBazelProject) return emptyList()
     val workspacePath = project.rootDir.toNioPathOrNull() ?: return emptyList()
 

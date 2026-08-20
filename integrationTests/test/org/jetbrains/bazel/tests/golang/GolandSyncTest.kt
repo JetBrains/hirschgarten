@@ -75,7 +75,6 @@ abstract class GolandSyncBaseTest(
     createContext(projectName, case)
       .withDisabledPlugins(setOf(GO_LINTER_PLUGIN_ID))
       .withBazelFeatureFlag(BazelFeatureFlags.BUILD_PROJECT_ON_SYNC)
-      .withBazelFeatureFlag(BazelFeatureFlags.GO_SUPPORT)
 
   @Test
   @Order(1)

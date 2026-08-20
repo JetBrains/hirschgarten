@@ -24,7 +24,7 @@ val ProjectView.syncFlags: List<String>
 val DEBUG_FLAGS_KEY: SectionKey<List<String>> = SectionKey("debug_flags", emptyList())
 val ProjectView.debugFlags: List<String>
   @Internal
-  get() = getSection(DEBUG_FLAGS_KEY) + if (BazelFeatureFlags.isPythonSupportEnabled) pythonDebugFlags else emptyList()
+  get() = getSection(DEBUG_FLAGS_KEY)
 
 @Internal
 val TEST_FLAGS_KEY: SectionKey<List<String>> = SectionKey("test_flags", emptyList())

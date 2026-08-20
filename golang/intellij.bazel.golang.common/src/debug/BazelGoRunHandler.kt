@@ -69,7 +69,7 @@ internal class BazelGoRunHandler(configuration: BazelRunConfiguration) : BazelRu
     override fun createRunHandler(configuration: BazelRunConfiguration): BazelRunHandler = BazelGoRunHandler(configuration)
 
     override fun canRun(targets: List<TargetKind>): Boolean =
-      BazelFeatureFlags.isGoSupportEnabled && targets.all { it.includesGo() && it.ruleType == RuleType.BINARY }
+      targets.all { it.includesGo() && it.ruleType == RuleType.BINARY }
 
     override val googleHandlerId: String = "BlazeGoRunConfigurationHandlerProvider"
     override val isTestHandler: Boolean = false

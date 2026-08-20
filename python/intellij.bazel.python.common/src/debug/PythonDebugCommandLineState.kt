@@ -17,6 +17,7 @@ import kotlinx.coroutines.CompletableDeferred
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.languages.projectview.debugFlags
+import org.jetbrains.bazel.languages.projectview.pythonDebugFlags
 import org.jetbrains.bazel.run.BazelCommandLineStateBase
 import org.jetbrains.bazel.run.BazelProcessHandler
 import org.jetbrains.bazel.run.commandLine.transformProgramArguments
@@ -51,7 +52,7 @@ internal class PythonDebugCommandLineState(
       CompileParams(
         targets = listOf(targetId),
         taskId = taskGroupId.task("py-debug"),
-        arguments = buildPythonDebugBazelArguments(server.projectView.debugFlags, additionalBazelParams),
+        arguments = buildPythonDebugBazelArguments(server.projectView.debugFlags + server.projectView.pythonDebugFlags, additionalBazelParams),
       )
     server.buildTargetCompile(buildParams)
   }

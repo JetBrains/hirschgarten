@@ -34,7 +34,6 @@ internal class ScriptPathDebugBeforeRunTaskProvider : BeforeRunTaskProvider<Scri
   class Task : BeforeRunTask<Task>(PROVIDER_ID)
 
   override fun createTask(runConfiguration: RunConfiguration): Task? {
-    if (!BazelFeatureFlags.isGoSupportEnabled) return null
     if (runConfiguration !is BazelRunConfiguration) return null
     return Task()
   }
