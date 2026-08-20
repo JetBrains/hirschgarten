@@ -15,6 +15,7 @@ import com.intellij.openapi.externalSystem.service.execution.configuration.fragm
 import com.intellij.openapi.externalSystem.service.ui.util.LabeledSettingsFragmentInfo
 import com.intellij.openapi.externalSystem.service.ui.util.SettingsFragmentInfo
 import com.intellij.openapi.ui.DialogPanel
+import com.intellij.openapi.ui.ValidationInfo
 import com.intellij.ui.RawCommandLineEditor
 import com.intellij.ui.components.TextComponentEmptyText
 import com.intellij.ui.dsl.builder.panel
@@ -75,7 +76,18 @@ fun SettingsEditorFragmentContainer<BazelRunConfiguration>.addEnvironmentFragmen
     { envState?.env?.isPassParentEnvs ?: false },
     { envState?.env?.isPassParentEnvs = it },
     hideWhenEmpty = false,
-  )
+  ).apply {
+    setValidation { configuration ->
+      // When running via --script_path (instead of bazel run), we only pass envs to the program itself, not to Bazel:
+      // bazel run --script_path=foo //foo && export FOO=BAR ./foo
+      if (configuration.envState?.env?.envs?.isNotEmpty() == true && configuration.handler?.state?.let { it is HasRunWithBazel && it.runWithBazel } != false) {
+        listOf(ValidationInfo(BazelPluginBundle.message("runconfig.bazel.warnings.env.vars"), editorComponent).asWarning())
+      }
+      else {
+        emptyList()
+      }
+    }
+  }
 
 @ApiStatus.Internal
 interface HasProgramArguments {
@@ -132,7 +144,7 @@ private val BazelRunConfiguration.bazelParamsState: HasBazelParams?
 fun bazelParamsFragment(): SettingsEditorFragment<BazelRunConfiguration, RawCommandLineEditor> {
   val bazelParams = RawCommandLineEditor()
   CommandLinePanel.setMinimumWidth(bazelParams, 400)
-  val message = BazelPluginBundle.message("runconfig.bazel.params")
+  val message = BazelPluginBundle.message("runconfig.bazel.flags")
   bazelParams.editorField.emptyText.text = message
   bazelParams.editorField.accessibleContext.accessibleName = message
   TextComponentEmptyText.setupPlaceholderVisibility(bazelParams.editorField)
@@ -144,7 +156,7 @@ fun bazelParamsFragment(): SettingsEditorFragment<BazelRunConfiguration, RawComm
   val parameters: SettingsEditorFragment<BazelRunConfiguration, RawCommandLineEditor> =
     SettingsEditorFragment(
       "bazelParameters",
-      BazelPluginBundle.message("runconfig.bazel.params"),
+      BazelPluginBundle.message("runconfig.bazel.flags"),
       null,
       bazelParams,
       100,
@@ -158,7 +170,15 @@ fun bazelParamsFragment(): SettingsEditorFragment<BazelRunConfiguration, RawComm
     )
   parameters.isRemovable = false
   parameters.setEditorGetter { editor: RawCommandLineEditor -> editor.editorField }
-  parameters.setHint(BazelPluginBundle.message("runconfig.bazel.params"))
+  parameters.setHint(BazelPluginBundle.message("runconfig.bazel.flags"))
+  parameters.setValidation { configuration ->
+    if (configuration.bazelParamsState?.additionalBazelParams?.isNotEmpty() == true) {
+      listOf(ValidationInfo(BazelPluginBundle.message("runconfig.bazel.warnings.bazel.flags"), bazelParams.editorField).asWarning())
+    }
+    else {
+      emptyList()
+    }
+  }
 
   return parameters
 }
