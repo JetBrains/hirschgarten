@@ -124,9 +124,9 @@ internal class AspectBazelProjectMapper(
               },
             )
         val (targetsToImport, nonWorkspaceTargets) =
-          targetsAtDepth.targets.partition {
-            isWorkspaceTarget(it, repoMapping, featureFlags, workspaceContext)
-          }
+          targetsAtDepth.targets
+            .filterNot { it.tagsList.contains("shard") }
+            .partition { isWorkspaceTarget(it, repoMapping, featureFlags, workspaceContext) }
         val (jvmDirectDependencies, nonJvmDirectDependencies) = targetsAtDepth.directDependencies.partition { it.getJvmTarget() }
         val jvmLibraries = (nonWorkspaceTargets + jvmDirectDependencies).associateBy { it.label() }
         (targetsToImport + nonJvmDirectDependencies).asSequence() to jvmLibraries
@@ -888,8 +888,7 @@ internal class AspectBazelProjectMapper(
     val resolvedDependencies = resolveDirectDependencies(target, dependencyGraph)
     // https://youtrack.jetbrains.com/issue/BAZEL-983: extra libraries can override some library versions, so they should be put before
     val (extraLibraries, lowPriorityExtraLibraries) = targetData.extraLibraries.partition { !it.isLowPriority }
-    val shardFolkDependencies: List<DependencyLabel> = resolveShardFolkDependencies(target, dependencyGraph).map { DependencyLabel(it) }
-    val directDependencies = extraLibraries.toDependencyLabels() + resolvedDependencies + lowPriorityExtraLibraries.toDependencyLabels() + shardFolkDependencies
+    val directDependencies = extraLibraries.toDependencyLabels() + resolvedDependencies + lowPriorityExtraLibraries.toDependencyLabels()
     val baseDirectory = bazelPathsResolver.toDirectoryPath(label, repoMapping)
     val languagePlugin = languagePluginsService.getLanguagePlugin(targetData.languages) ?: return null
     val resources = resolveResources(target, languagePlugin, localRepositories)
@@ -916,19 +915,14 @@ internal class AspectBazelProjectMapper(
 
   private fun resolveDirectDependencies(target: TargetInfo, dependencyGraph: DependencyGraph): List<DependencyLabel> {
     if (!target.tagsList.contains("umbrella")) return target.depsList.map { it.toDependencyLabel() }
-    // Umbrella targets (java_incremental_library) place their shard targets in runtime_deps so
-    // they arrive here with isRuntime=true. Promote them to compile-time so IntelliJ can resolve
-    // symbols across shards without red code.
-    return target.depsList.map { dep ->
-      val depLabel = dep.toDependencyLabel()
-      if (depLabel.isRuntime &&
-        dependencyGraph.getTargetInfo(depLabel.label)?.tagsList?.contains("shard") == true
-      ) {
-        depLabel.copy(isRuntime = false)
-      } else {
-        depLabel
+    // Umbrella targets (java_incremental_library) have shards as runtime_deps. Shards are excluded
+    // from IntelliJ modules, so drop them from the dependency list to avoid unresolved references.
+    // Symbol resolution is provided by the headers compile-time dependency.
+    return target.depsList
+      .filter { dep ->
+        dependencyGraph.getTargetInfo(dep.label())?.tagsList?.contains("shard") != true
       }
-    }
+      .map { it.toDependencyLabel() }
   }
 
   private fun BspTargetInfo.Dependency.toDependencyLabel(): DependencyLabel =
@@ -940,23 +934,6 @@ internal class AspectBazelProjectMapper(
 
   private fun List<Library>.toDependencyLabels(): List<DependencyLabel> = this.map { DependencyLabel(it.label) }
 
-  private fun resolveShardFolkDependencies(target: TargetInfo, dependencyGraph: DependencyGraph): List<Label> {
-    if (!target.tagsList.contains("shard")) return emptyList()
-    val umbrellaTargets = dependencyGraph
-      .getSourcesFromReverseDependencies(target.label())
-      .filter{ it.tagsList.contains("umbrella") }
-    return umbrellaTargets
-      .flatMap { umbrellaTarget ->
-        // Include sources from umbrella targets that depend on this shard
-        umbrellaTarget.depsList.mapNotNull { dependency ->
-          dependencyGraph.getTargetInfo(dependency.label())
-        }
-          .filter { dependencyTargetInfo ->
-            dependencyTargetInfo.tagsList.contains("shard")
-          }
-          .map { it.label() }
-      }
-  }
 
   // TODO: this is a re-creation of `Language.allOfKind`. To be removed when this logic is merged with client-side
   private val languagesFromKinds: Map<String, Set<LanguageClass>> =
