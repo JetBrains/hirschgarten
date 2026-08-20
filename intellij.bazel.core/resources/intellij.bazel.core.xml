@@ -343,6 +343,7 @@
       language="Starlark"
     />
     <fileBasedIndex implementation="org.jetbrains.bazel.languages.starlark.index.StarlarkLoadsIndexExtension"/>
+    <fileBasedIndex implementation="org.jetbrains.bazel.languages.starlark.index.StarlarkLoadEdgesIndexExtension"/>
 
     <useScopeOptimizer implementation="org.jetbrains.bazel.languages.starlark.findusages.StarlarkUseScopeOptimizer"/>
     <useScopeEnlarger implementation="org.jetbrains.bazel.languages.starlark.findusages.StarlarkFileUseScopeEnlarger"/>
@@ -549,6 +550,14 @@
                      enabledByDefault="true"
                      level="ERROR"
                      implementationClass="org.jetbrains.bazel.languages.starlark.inspection.StarlarkRecursionInspection"/>
+
+    <localInspection language="Starlark"
+                     key="inspection.display.name.starlark.load.cycle.check"
+                     groupPath="Bazel"
+                     groupKey="starlark.inspection.group.name"
+                     enabledByDefault="true"
+                     level="ERROR"
+                     implementationClass="org.jetbrains.bazel.languages.starlark.inspection.StarlarkLoadCycleInspection"/>
 
     <fileType
       extensions="bazelquery"

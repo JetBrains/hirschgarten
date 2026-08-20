@@ -13,6 +13,7 @@ import org.jetbrains.bazel.languages.starlark.psi.StarlarkElementVisitor
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkFile
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkCallExpression
 import org.jetbrains.bazel.languages.starlark.psi.functions.StarlarkCallable
+import org.jetbrains.bazel.languages.starlark.utils.GraphUtils
 import org.jetbrains.bazel.languages.starlark.utils.StarlarkCallableResolver
 
 @ApiStatus.Internal
@@ -93,64 +94,9 @@ class StarlarkRecursionInspection : LocalInspectionTool() {
         callables: Collection<StarlarkCallable>,
         edges: Map<StarlarkCallable, Set<StarlarkCallable>>,
       ): Map<StarlarkCallable, Int> =
-        stronglyConnectedComponents(callables, edges)
-          .filter { isCyclicComponent(it, edges) }
+        GraphUtils.findCyclicStronglyConnectedComponents(callables) { edges[it].orEmpty() }
           .flatMapIndexed { index, component -> component.map { it to index } }
           .toMap()
-
-      private fun isCyclicComponent(component: List<StarlarkCallable>, edges: Map<StarlarkCallable, Set<StarlarkCallable>>): Boolean {
-        if (component.size > 1) return true
-        val callable = component.singleOrNull() ?: return false
-        return callable in edges[callable].orEmpty()
-      }
-
-      // Tarjan's algorithm for precomputing strongly connected components.
-      private fun stronglyConnectedComponents(
-        callables: Collection<StarlarkCallable>,
-        edges: Map<StarlarkCallable, Set<StarlarkCallable>>,
-      ): List<List<StarlarkCallable>> {
-        var nextIndex = 0
-        val indexByCallable = mutableMapOf<StarlarkCallable, Int>()
-        val lowLinkByCallable = mutableMapOf<StarlarkCallable, Int>()
-        val stack = ArrayDeque<StarlarkCallable>()
-        val onStack = mutableSetOf<StarlarkCallable>()
-        val components = mutableListOf<List<StarlarkCallable>>()
-
-        fun visit(callable: StarlarkCallable) {
-          indexByCallable[callable] = nextIndex
-          lowLinkByCallable[callable] = nextIndex
-          nextIndex++
-
-          stack.addLast(callable)
-          onStack.add(callable)
-
-          for (target in edges[callable].orEmpty()) {
-            if (target !in indexByCallable) {
-              visit(target)
-              lowLinkByCallable[callable] = minOf(lowLinkByCallable.getValue(callable), lowLinkByCallable.getValue(target))
-            }
-            else if (target in onStack) {
-              lowLinkByCallable[callable] = minOf(lowLinkByCallable.getValue(callable), indexByCallable.getValue(target))
-            }
-          }
-
-          if (lowLinkByCallable.getValue(callable) == indexByCallable.getValue(callable)) {
-            val component = mutableListOf<StarlarkCallable>()
-            do {
-              val target = stack.removeLast()
-              onStack.remove(target)
-              component.add(target)
-            }
-            while (target != callable)
-
-            components.add(component)
-          }
-        }
-
-        callables.forEach { if (it !in indexByCallable) visit(it) }
-
-        return components
-      }
     }
   }
 }
