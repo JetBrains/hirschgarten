@@ -18,6 +18,7 @@
     <module name="intellij.java.frontback.psi"/>
     <module name="intellij.java.impl"/>
     <module name="intellij.java.psi"/>
+    <module name="intellij.java.psi.impl"/>
     <module name="intellij.java.syntax"/>
     <module name="intellij.java.ui"/>
     <module name="intellij.platform.smRunner"/>
@@ -86,6 +87,7 @@
       order="before BazelProjectTaskRunner"
     />
     <attachSourcesProvider implementation="org.jetbrains.bazel.ui.notifications.BazelAttachSourcesProvider"/>
+    <psi.clsCustomNavigationPolicy implementation="org.jetbrains.bazel.java.navigation.BazelJavaSourceJarNavigationPolicy"/>
     <completion.contributor
       implementationClass="org.jetbrains.bazel.languages.starlark.completion.StarlarkClassnameCompletionContributor"
       language="Starlark"

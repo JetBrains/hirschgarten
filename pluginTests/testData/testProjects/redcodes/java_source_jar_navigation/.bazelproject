@@ -1,0 +1,7 @@
+derive_targets_from_directories: false
+
+targets:
+  //app:app
+  //:default_package_app
+
+import_depth: 0

@@ -56,9 +56,9 @@ internal class ImportDepthZeroTest : IdeStarterBaseProjectTest() {
             execute { checkOnRedCode() }
           }
 
-          step("Check that first-level dependency to B navigates to a jar") {
+          step("Check that first-level dependency to B navigates to a source jar") {
             execute { acceptDecompileNotice() }
-            execute { navigateToFile(6, 23, expectedFilename = "B.class", 10, 14) }
+            execute { navigateToFile(6, 23, expectedFilename = "B.java", 5, 14) }
             openFile("src/main/com/example/a/A.java")
           }
 
