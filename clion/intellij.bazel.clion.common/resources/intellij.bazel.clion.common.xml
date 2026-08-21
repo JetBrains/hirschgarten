@@ -41,11 +41,11 @@
     <workspaceTypeContributor implementation="org.jetbrains.bazel.clion.sync.CcBuildTargetWorkspaceTypeContributor"/>
     <workspaceTypeContributor implementation="org.jetbrains.bazel.clion.sync.CcToolchainBuildTargetWorkspaceTypeContributor"/>
     <languageClassProvider implementation="org.jetbrains.bazel.clion.sync.CcLanguageClassProvider"/>
+    <bazelRuleSetProvider implementation="org.jetbrains.bazel.clion.sync.CcRuleSetProvider"/>
 
     <targetKindProvider implementation="org.jetbrains.bazel.clion.sync.CLionBazelRules" />
     <languagePlugin implementation="org.jetbrains.bazel.clion.sync.CLionLanguagePlugin"/>
     <workspaceTypeContributor implementation="org.jetbrains.bazel.clion.sync.CLionWorkspaceTypeContributor"/>
-    <bazelRuleSetProvider implementation="org.jetbrains.bazel.clion.sync.CLionBazelRuleSets"/>
   </extensions>
 
 </idea-plugin>
