@@ -10,7 +10,7 @@ import org.junit.jupiter.api.Test
 internal class BazelCLionSmokeTest: MockProjectBaseTest() {
   @Test
   fun testCLionIsLoaded() {
-    LanguageClassService.getInstance().fromExtension("cpp").shouldNotBeNull()
+    LanguageClassService.getInstance().fromName("cc").shouldNotBeNull()
 
     PluginManagerCore.getPluginSet()
       .findEnabledPlugin(PluginId.getId("org.jetbrains.plugins.clion.radler"))
