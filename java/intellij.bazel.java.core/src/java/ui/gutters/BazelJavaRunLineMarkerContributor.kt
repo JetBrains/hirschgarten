@@ -34,20 +34,27 @@ open class BazelJavaRunLineMarkerContributor : BazelRunLineMarkerContributor() {
         val methodParameterTypes = psiIdentifier.getMethodParameterTypes()
         "$fullyQualifiedClassName:$methodName:$methodParameterTypes"
       } else {
-        val className = psiIdentifier.getClassName() ?: return methodName
+        val className = psiIdentifier.getTestFilterClassName() ?: return methodName
         "$className.$methodName$"
       }
     } else {
       if (element.project.useJetBrainsTestRunner()) {
         return psiIdentifier?.getFullyQualifiedClassName()
       }
-      return if (psiIdentifier is PsiClass) {
-        psiIdentifier.getFullyQualifiedClassName()
-      } else {
-        psiIdentifier?.getClassName()
-      }
+      return psiIdentifier?.getTestFilterClassName()
     }
   }
+
+  /**
+   * The class name to put in a `--test_filter`, which is matched as a regex against a test's
+   * `className#methodName`.
+   *
+   * The name is fully qualified, so that identically named test classes in different packages don't
+   * all match the same filter. Any `$` separating a nested class is replaced with `.`, both because
+   * a `$` would otherwise be interpreted as a regex end-of-input anchor, and because `.` then
+   * matches the separator whichever form the test runner reports it in.
+   */
+  private fun PsiElement.getTestFilterClassName(): String? = getFullyQualifiedClassName()?.replace('$', '.')
 
   @ApiStatus.Internal
   protected open fun PsiNameIdentifierOwner.getMethodName(): String? = if (isMethod()) name else null

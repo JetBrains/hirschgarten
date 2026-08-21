@@ -81,7 +81,8 @@ class BazelRunLineMarkerContributorTest : BasePlatformTestCase() {
     val result = runLineMarkerContributor.getSingleTestFilter(psiElement)
 
     // then
-    val expectedSingleTestFilter = "BspJVMRunLineMarkerContributorTestData.should add 1 plus 1$"
+    val expectedSingleTestFilter =
+      "org.jetbrains.bazel.ui.gutters.BspJVMRunLineMarkerContributorTestData.should add 1 plus 1$"
     result shouldBe expectedSingleTestFilter
   }
 
@@ -102,7 +103,7 @@ class BazelRunLineMarkerContributorTest : BasePlatformTestCase() {
     val result = runLineMarkerContributor.getSingleTestFilter(psiElement)
 
     // then
-    val expectedSingleTestFilter = "BspJVMRunLineMarkerContributorTestData"
+    val expectedSingleTestFilter = "org.jetbrains.bazel.ui.gutters.BspJVMRunLineMarkerContributorTestData"
     result shouldBe expectedSingleTestFilter
   }
 
@@ -173,7 +174,8 @@ class BazelRunLineMarkerContributorTest : BasePlatformTestCase() {
     val result = runLineMarkerContributor.getSingleTestFilter(psiElement)
 
     // then
-    val expectedSingleTestFilter = "BspJVMRunLineMarkerContributorTestData.addOnePlusOne$"
+    val expectedSingleTestFilter =
+      "org.jetbrains.bazel.ui.gutters.BspJVMRunLineMarkerContributorTestData.addOnePlusOne$"
     result shouldBe expectedSingleTestFilter
   }
 
@@ -195,6 +197,42 @@ class BazelRunLineMarkerContributorTest : BasePlatformTestCase() {
 
     // then
     val expectedSingleTestFilter = "org.jetbrains.bazel.ui.gutters.BspJVMRunLineMarkerContributorTestData"
+    result shouldBe expectedSingleTestFilter
+  }
+
+  private fun CodeInsightTestFixture.getJavaNestedTestFile(): PsiFile =
+    configureByText(
+      "OuterTestData.java",
+      """
+      package org.jetbrains.bazel.ui.gutters;
+
+      import org.junit.Test;
+
+      public class OuterTestData {
+        public static class NestedTestData {
+          @Test
+          public void nestedTest() {
+            assert(true);
+          }
+        }
+      }
+      """.trimMargin(),
+    )
+
+  @Test
+  fun `should return FQN test filter for Java nested test function`() {
+    // given
+    val testFile = myFixture.getJavaNestedTestFile()
+    val psiElement = PsiUtilCore.getElementAtOffset(testFile, testFile.text.indexOf("nestedTest"))
+    val runLineMarkerContributor = BazelJavaRunLineMarkerContributor()
+
+    // when
+    val result = runLineMarkerContributor.getSingleTestFilter(psiElement)
+
+    // then
+    // the '$' separating the nested class is replaced with '.', which the filter matches as a
+    // wildcard -- a literal '$' would be read as a regex end-of-input anchor and match nothing
+    val expectedSingleTestFilter = "org.jetbrains.bazel.ui.gutters.OuterTestData.NestedTestData.nestedTest$"
     result shouldBe expectedSingleTestFilter
   }
 }
