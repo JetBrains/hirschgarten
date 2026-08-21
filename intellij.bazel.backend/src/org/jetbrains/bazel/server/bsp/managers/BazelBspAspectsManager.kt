@@ -135,9 +135,10 @@ class BazelBspAspectsManager(
       workspaceRoot,
       Path.of(Constants.DOT_BAZELBSP_DIR_NAME),
       AspectConfig(
-        "${bazelRelease.major}",
-        ruleNameMapping,
-        builtInLanguages,
+        bazelVersion = "${bazelRelease.major}",
+        repoMapping = ruleNameMapping,
+        useBuiltin = builtInLanguages,
+        rulesets = rulesetLanguages.map { it.language.aspectLanguage }.toSet(),
       ),
     )
 
