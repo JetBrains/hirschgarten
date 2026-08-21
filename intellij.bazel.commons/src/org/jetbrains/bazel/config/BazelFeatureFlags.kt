@@ -28,7 +28,8 @@ object BazelFeatureFlags {
 
   @VisibleForTesting
   const val RUN_CONFIG_RUN_WITH_BAZEL = "bazel.run.config.run.with.bazel"
-  private const val USE_PTY = "bazel.use.pty"
+  @VisibleForTesting
+  const val USE_PTY = "bazel.use.pty"
   private const val SHOW_BAZEL_STDOUT = "bazel.show.stdout"
   private const val HARD_LINK_OUTPUT_FILES = "bazel.hard.link.output.files"
 
