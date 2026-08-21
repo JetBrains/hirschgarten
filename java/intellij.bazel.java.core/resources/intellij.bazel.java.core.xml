@@ -19,6 +19,7 @@
     <module name="intellij.java.frontback.psi"/>
     <module name="intellij.java.impl"/>
     <module name="intellij.java.psi"/>
+    <module name="intellij.java.psi.impl"/>
     <module name="intellij.java.syntax"/>
     <module name="intellij.java.ui"/>
     <module name="intellij.libraries.kotlinx.coroutines.core"/>
@@ -37,6 +38,7 @@
     <module name="intellij.platform.ide.core"/>
     <module name="intellij.platform.ide.impl"/>
     <module name="intellij.platform.ide.progress"/>
+    <module name="intellij.platform.indexing"/>
     <module name="intellij.platform.lang"/>
     <module name="intellij.platform.lang.core"/>
     <module name="intellij.platform.projectModel"/>
@@ -108,6 +110,7 @@
       order="before BazelProjectTaskRunner"
     />
     <attachSourcesProvider implementation="org.jetbrains.bazel.ui.notifications.BazelAttachSourcesProvider"/>
+    <psi.clsCustomNavigationPolicy implementation="org.jetbrains.bazel.java.navigation.BazelJavaSourceJarNavigationPolicy"/>
     <completion.contributor
       implementationClass="org.jetbrains.bazel.languages.starlark.completion.StarlarkClassnameCompletionContributor"
       language="Starlark"
