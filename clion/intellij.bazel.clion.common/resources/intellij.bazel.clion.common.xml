@@ -43,9 +43,7 @@
     <languageClassProvider implementation="org.jetbrains.bazel.clion.sync.CcLanguageClassProvider"/>
     <bazelRuleSetProvider implementation="org.jetbrains.bazel.clion.sync.CcRuleSetProvider"/>
     <targetKindProvider implementation="org.jetbrains.bazel.clion.sync.CcTargetKindProvider"/>
-
-    <languagePlugin implementation="org.jetbrains.bazel.clion.sync.CLionLanguagePlugin"/>
-    <workspaceTypeContributor implementation="org.jetbrains.bazel.clion.sync.CLionWorkspaceTypeContributor"/>
+    <languagePlugin implementation="org.jetbrains.bazel.clion.sync.CcLanguagePlugin"/>
   </extensions>
 
 </idea-plugin>
