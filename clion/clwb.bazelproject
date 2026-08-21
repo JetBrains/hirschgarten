@@ -1,0 +1,30 @@
+# import: .bazelproject - inline since import is broken
+
+dot_idea_directory_location: .idea.bazel
+
+# targets:
+#   //...
+#   @community//...
+#   @rules_jvm//...
+#   @lib//...
+#   @ultimate_lib//...
+#   @jps_to_bazel//...
+
+use_jetbrains_test_runner: true
+
+java_source_root_optimization_enable: true
+java_source_root_optimization_patterns:
+  *
+
+run_config_run_with_bazel: false
+
+# end of inline
+
+import_depth: -1
+
+targets:
+  //plugins/bazel/clion/intellij.bazel.clion.common:all
+  //plugins/bazel/pluginTests:all
+  //plugins/bazel/pluginTests.clion:all
+
+
