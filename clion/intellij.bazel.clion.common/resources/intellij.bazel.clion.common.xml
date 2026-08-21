@@ -37,6 +37,7 @@
 
   <extensions defaultExtensionNs="org.jetbrains.bazel">
     <workspaceTypeContributor implementation="org.jetbrains.bazel.clion.sync.ArtifactLocationWorkspaceTypeContributor"/>
+    <workspaceTypeContributor implementation="org.jetbrains.bazel.clion.sync.ExecutionRootPathWorkspaceTypeContributor"/>
 
     <targetKindProvider implementation="org.jetbrains.bazel.clion.sync.CLionBazelRules" />
     <languageClassProvider implementation="org.jetbrains.bazel.clion.sync.CLionLanguageClassProvider" />
