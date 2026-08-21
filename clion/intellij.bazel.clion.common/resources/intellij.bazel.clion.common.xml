@@ -35,10 +35,9 @@
   </dependencies>
   <!-- endregion -->
 
-  <extensions defaultExtensionNs="com.intellij">
-  </extensions>
-
   <extensions defaultExtensionNs="org.jetbrains.bazel">
+    <workspaceTypeContributor implementation="org.jetbrains.bazel.clion.sync.ArtifactLocationWorkspaceTypeContributor"/>
+
     <targetKindProvider implementation="org.jetbrains.bazel.clion.sync.CLionBazelRules" />
     <languageClassProvider implementation="org.jetbrains.bazel.clion.sync.CLionLanguageClassProvider" />
     <languagePlugin implementation="org.jetbrains.bazel.clion.sync.CLionLanguagePlugin"/>
