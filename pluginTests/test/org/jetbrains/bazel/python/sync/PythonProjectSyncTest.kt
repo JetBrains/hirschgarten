@@ -51,7 +51,9 @@ import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.label.DependencyLabel
 import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.languages.projectview.IMPORT_DEPTH_KEY
 import org.jetbrains.bazel.languages.projectview.ProjectView
+import org.jetbrains.bazel.magicmetamodel.formatAsLibraryName
 import org.jetbrains.bazel.magicmetamodel.formatAsModuleName
 import org.jetbrains.bazel.progress.syncConsole
 import org.jetbrains.bazel.project.BazelProjectFixtures.initializeBazelProject
@@ -450,6 +452,161 @@ class PythonProjectSyncTest : MockProjectBaseTest() {
     }
   }
 
+  @Test
+  fun `should create external pip dependency library when import depth is limited`() {
+    val sitePackages = projectDir.get().resolve("external/pypi_312_aaa/site-packages")
+
+    val externalPackageInfo =
+      GeneratedTargetInfo(
+        targetId = Label.parse("@@rules_python++pip+pypi_312_aaa//:pkg"),
+        type = "PYTHON_MODULE",
+      )
+    val libInfo =
+      GeneratedTargetInfo(
+        targetId = Label.parse("@@server//project:lib"),
+        type = "PYTHON_MODULE",
+        dependencies = listOf(externalPackageInfo.targetId),
+      )
+    val appInfo =
+      GeneratedTargetInfo(
+        targetId = Label.parse("@@server//project:app"),
+        type = "PYTHON_MODULE",
+        dependencies = listOf(libInfo.targetId),
+      )
+    val externalPackageTarget =
+      generateTarget(
+        externalPackageInfo,
+        sources = emptyList(),
+        generatedSources = emptyList(),
+        resources = emptyList(),
+        externalSources = listOf(sitePackages),
+      )
+    val libTarget =
+      generateTarget(
+        libInfo,
+        sources = listOf(projectDir.get().resolve("project/lib/main.py")),
+        generatedSources = emptyList(),
+        resources = emptyList(),
+      )
+    val appTarget =
+      generateTarget(
+        appInfo,
+        sources = listOf(projectDir.get().resolve("project/app/main.py")),
+        generatedSources = emptyList(),
+        resources = emptyList(),
+      )
+
+    val diff = MutableEntityStorage.create()
+    runPythonImporter(
+      generateWorkspaceSnapshot(
+        targets = listOf(appTarget, libTarget, externalPackageTarget),
+        rootTargets = setOf(appTarget.key),
+        projectView = ProjectView(mapOf(IMPORT_DEPTH_KEY to 1), emptyList()),
+      ),
+      diff,
+    )
+
+    val sitePackagesUrl = sitePackages.toVirtualFileUrl(virtualFileUrlManager)
+    diff.entities(LibraryEntity::class.java).toList() shouldExist { library ->
+      library.roots.any { it.type == LibraryRootTypeId.SOURCES && it.url == sitePackagesUrl }
+    }
+  }
+
+  @Test
+  fun `should create one library per external pip dependency`() {
+    val aaaSitePackages = projectDir.get().resolve("external/pypi_312_aaa/site-packages")
+    val bbbSitePackages = projectDir.get().resolve("external/pypi_312_bbb/site-packages")
+    createPythonFile("external/pypi_312_aaa/site-packages/aaa/__init__.py", "")
+    createPythonFile("external/pypi_312_bbb/site-packages/bbb/__init__.py", "")
+
+    val aaaPackageInfo =
+      GeneratedTargetInfo(
+        targetId = Label.parse("@@rules_python++pip+pypi_312_aaa//:pkg"),
+        type = "PYTHON_MODULE",
+      )
+    val bbbPackageInfo =
+      GeneratedTargetInfo(
+        targetId = Label.parse("@@rules_python++pip+pypi_312_bbb//:pkg"),
+        type = "PYTHON_MODULE",
+      )
+    val libInfo =
+      GeneratedTargetInfo(
+        targetId = Label.parse("@@server//project:lib"),
+        type = "PYTHON_MODULE",
+        dependencies = listOf(aaaPackageInfo.targetId, bbbPackageInfo.targetId),
+      )
+    val appInfo =
+      GeneratedTargetInfo(
+        targetId = Label.parse("@@server//project:app"),
+        type = "PYTHON_MODULE",
+        dependencies = listOf(aaaPackageInfo.targetId),
+      )
+    val aaaPackageTarget =
+      generateTarget(
+        aaaPackageInfo,
+        sources = emptyList(),
+        generatedSources = emptyList(),
+        resources = emptyList(),
+        externalSources = listOf(aaaSitePackages),
+      )
+    val bbbPackageTarget =
+      generateTarget(
+        bbbPackageInfo,
+        sources = emptyList(),
+        generatedSources = emptyList(),
+        resources = emptyList(),
+        externalSources = listOf(bbbSitePackages),
+      )
+    val libTarget =
+      generateTarget(
+        libInfo,
+        sources = listOf(projectDir.get().resolve("project/lib/main.py")),
+        generatedSources = emptyList(),
+        resources = emptyList(),
+      )
+    val appTarget =
+      generateTarget(
+        appInfo,
+        sources = listOf(projectDir.get().resolve("project/app/main.py")),
+        generatedSources = emptyList(),
+        resources = emptyList(),
+      )
+
+    val diff = MutableEntityStorage.create()
+    runPythonImporter(
+      generateWorkspaceSnapshot(
+        targets = listOf(libTarget, appTarget, aaaPackageTarget, bbbPackageTarget),
+        rootTargets = setOf(libTarget.key, appTarget.key),
+      ),
+      diff,
+    )
+
+    val libraries = diff.entities(LibraryEntity::class.java).toList()
+    libraries.size shouldBe 2
+    libraries.map { it.name }.toSet() shouldBe setOf(
+      aaaPackageTarget.key.formatAsLibraryName(RepoMappingDisabled, withFullKey = true),
+      bbbPackageTarget.key.formatAsLibraryName(RepoMappingDisabled, withFullKey = true),
+    )
+
+    val aaaSitePackagesUrl = aaaSitePackages.toVirtualFileUrl(virtualFileUrlManager)
+    val bbbSitePackagesUrl = bbbSitePackages.toVirtualFileUrl(virtualFileUrlManager)
+    val aaaLibrary = libraries.single { library ->
+      library.roots.any { it.type == LibraryRootTypeId.SOURCES && it.url == aaaSitePackagesUrl }
+    }
+    val bbbLibrary = libraries.single { library ->
+      library.roots.any { it.type == LibraryRootTypeId.SOURCES && it.url == bbbSitePackagesUrl }
+    }
+    val modules = diff.entities(ModuleEntity::class.java).toList()
+    val libModule = modules.single { it.name == libInfo.targetId.formatAsModuleName(project) }
+    val appModule = modules.single { it.name == appInfo.targetId.formatAsModuleName(project) }
+
+    libModule.dependencies.filterIsInstance<LibraryDependency>().map { it.library }.toSet() shouldBe setOf(
+      aaaLibrary.symbolicId,
+      bbbLibrary.symbolicId,
+    )
+    appModule.dependencies.filterIsInstance<LibraryDependency>().map { it.library }.toSet() shouldBe setOf(aaaLibrary.symbolicId)
+  }
+
   private fun renderModuleLocationText(element: Any): String =
     ModuleRendererFactory.findInstance(element).getModuleTextWithIcon(element)!!.text
 
@@ -569,10 +726,11 @@ class PythonProjectSyncTest : MockProjectBaseTest() {
   private fun generateWorkspaceSnapshot(
     targets: List<BuildTarget>,
     rootTargets: Set<WorkspaceTargetKey> = targets.map { it.key }.toSet(),
+    projectView: ProjectView = ProjectView.EMPTY,
   ): WorkspaceSnapshot = runBlocking {
     WorkspaceSnapshotBuilder.build(
       project = project,
-      projectView = ProjectView.EMPTY,
+      projectView = projectView,
       repoMapping = RepoMappingDisabled,
       resolved = BazelResolvedWorkspace(
         workspaceName = null,
