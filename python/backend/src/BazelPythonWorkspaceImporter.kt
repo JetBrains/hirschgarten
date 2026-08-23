@@ -12,7 +12,7 @@ import com.intellij.platform.workspace.jps.entities.ContentRootEntityBuilder
 import com.intellij.platform.workspace.jps.entities.DependencyScope
 import com.intellij.platform.workspace.jps.entities.LibraryDependency
 import com.intellij.platform.workspace.jps.entities.LibraryEntity
-import com.intellij.platform.workspace.jps.entities.LibraryEntityBuilder
+import com.intellij.platform.workspace.jps.entities.LibraryId
 import com.intellij.platform.workspace.jps.entities.LibraryRoot
 import com.intellij.platform.workspace.jps.entities.LibraryRootTypeId
 import com.intellij.platform.workspace.jps.entities.LibraryTableId
@@ -39,6 +39,7 @@ import com.jetbrains.python.sdk.createLocalSdkGuessingTypeByPath
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.annotations.VisibleForTesting
 import org.jetbrains.bazel.commons.RepoMapping
+import org.jetbrains.bazel.magicmetamodel.formatAsLibraryName
 import org.jetbrains.bazel.magicmetamodel.formatAsModuleName
 import org.jetbrains.bazel.progress.TaskConsole
 import org.jetbrains.bazel.progress.withSubtask
@@ -93,7 +94,7 @@ internal class BazelPythonWorkspaceImporter : BazelWorkspaceImporter, BazelWorks
 
   private var defaultInterpreter: Path? = null
   private var defaultVersion: String? = null
-  private var pySourceDeps: Map<WorkspaceTargetKey, List<Path>> = mapOf()
+  private var externalSourceDependenciesByTarget: Map<WorkspaceTargetKey, List<WorkspaceTargetKey>> = mapOf()
 
   override suspend fun import(
     context: WorkspaceImporterContext,
@@ -101,14 +102,14 @@ internal class BazelPythonWorkspaceImporter : BazelWorkspaceImporter, BazelWorks
     snapshot: WorkspaceSnapshot,
   ): Result<WorkspaceImporterResult> = runCatching {
     when (phase) {
-      WorkspaceImporterPhase.Initialize -> onInitialize(context, snapshot)
+      WorkspaceImporterPhase.Initialize -> onInitialize(snapshot)
       is WorkspaceImporterPhase.WorkspaceApply -> onWorkspaceApply(context, snapshot, phase.builder, context.vfuManager, phase.entitySource)
       WorkspaceImporterPhase.PostProcessing -> onPostProcessing(context, snapshot)
       else -> WorkspaceImporterResult.Success
     }
   }
 
-  private suspend fun onInitialize(context: WorkspaceImporterContext, snapshot: WorkspaceSnapshot): WorkspaceImporterResult {
+  private fun onInitialize(snapshot: WorkspaceSnapshot): WorkspaceImporterResult {
     commonSyncConfig = snapshot.syncConfigs.filterIsInstance<CommonWorkspaceSyncConfig>()
                          .firstOrNull() ?: throw IllegalStateException()
     pythonSyncConfig = snapshot.syncConfigs.filterIsInstance<PythonWorkspaceSyncConfig>()
@@ -150,29 +151,46 @@ internal class BazelPythonWorkspaceImporter : BazelWorkspaceImporter, BazelWorks
     defaultInterpreter = defaultPythonTarget?.interpreter
     defaultVersion = defaultPythonTarget?.version
 
-    // MAYBE RC: obvious incremental caching candidate...
-    pySourceDeps = snapshot.allTargets.filterBuildTarget<PythonBuildTarget>()
-      .associate { (target, _) ->
-        target.key to snapshot.targetGraph.findAllTransitiveSuccessorsWithoutRootTargets(target.key)
-          .mapNotNull { it.load(snapshot.targets, TargetLoadOptions.ALL) }
-          .filterBuildTarget<PythonBuildTarget>()
-          .flatMap { (_, pythonTarget) -> pythonTarget.externalSources?.getFiles() ?: sequenceOf() }
-          .toList()
-      }
+    externalSourceDependenciesByTarget =
+      snapshot
+        .allTargets
+        .filterBuildTarget<PythonBuildTarget>()
+        .map { it.first.key }
+        .associateWith { workspaceTargetKey ->
+          snapshot.targetGraph.findAllTransitiveSuccessorsWithoutRootTargets(workspaceTargetKey)
+            .mapNotNull { it.load(snapshot.targets, TargetLoadOptions.ALL) }
+            .filterBuildTarget<PythonBuildTarget>()
+            .filter { it.second.externalSources?.isEmpty() == false }
+            .map { it.first.key }
+            .distinct()
+            .toList()
+        }
 
     return WorkspaceImporterResult.Success
   }
 
   private fun onWorkspaceApply(
-    context: WorkspaceImporterContext, snapshot: WorkspaceSnapshot,
-    builder: MutableEntityStorage, vfuManager: VirtualFileUrlManager,
+    context: WorkspaceImporterContext,
+    snapshot: WorkspaceSnapshot,
+    builder: MutableEntityStorage,
+    vfuManager: VirtualFileUrlManager,
     entitySource: EntitySource,
   ): WorkspaceImporterResult {
-    for ((targetKey, target) in allPythonTargets) {
-      val sourceDeps = pySourceDeps[targetKey] ?: emptyList()
-      val sourceDependencyLibrary =
-        calculateSourceDependencyLibrary(targetKey, snapshot.repoMapping, sourceDeps, entitySource, vfuManager)
+    val allTargetsByKey = snapshot.allTargets.associateBy { it.key }
+    val sourceDependencyLibraries =
+      allPythonTargets.keys
+        .flatMap { externalSourceDependenciesByTarget[it].orEmpty() }
+        .distinct()
+        .mapNotNull { dependencyKey ->
+          // calculate one external source path list per iteration to avoid keeping everything in memory at once
+          val dependencyTarget = allTargetsByKey[dependencyKey] ?: return@mapNotNull null
+          val externalSources = getExternalSourcePaths(dependencyTarget)
+          if (externalSources.isEmpty()) return@mapNotNull null
+          addSourceDependencyLibrary(builder, dependencyKey, snapshot.repoMapping, externalSources, entitySource, vfuManager)
+            ?.let { dependencyKey to it }
+        }.toMap()
 
+    for ((targetKey, target) in allPythonTargets) {
       addModuleEntityFromTarget(
         context = context,
         builder = builder,
@@ -181,10 +199,15 @@ internal class BazelPythonWorkspaceImporter : BazelWorkspaceImporter, BazelWorks
         moduleName = targetKey.toPythonModuleName(snapshot.repoMapping),
         entitySource = entitySource,
         virtualFileUrlManager = vfuManager,
-        sourceDependencyLibrary = sourceDependencyLibrary,
+        sourceDependencyLibraries = externalSourceDependenciesByTarget[targetKey].orEmpty().mapNotNull { sourceDependencyLibraries[it] },
       )
     }
     return WorkspaceImporterResult.Success
+  }
+
+  private fun getExternalSourcePaths(target: BuildTarget): List<Path> {
+    val pythonTarget = target.findBuildData<PythonBuildTarget>() ?: return emptyList()
+    return pythonTarget.externalSources?.getFiles()?.distinct()?.toList().orEmpty()
   }
 
   private suspend fun onPostProcessing(context: WorkspaceImporterContext, snapshot: WorkspaceSnapshot): WorkspaceImporterResult {
@@ -254,13 +277,14 @@ internal class BazelPythonWorkspaceImporter : BazelWorkspaceImporter, BazelWorks
     }
   }
 
-  private fun calculateSourceDependencyLibrary(
-    target: WorkspaceTargetKey,
+  private fun addSourceDependencyLibrary(
+    builder: MutableEntityStorage,
+    dependencyTarget: WorkspaceTargetKey,
     repoMapping: RepoMapping,
     sourceDependencies: List<Path>,
     entitySource: EntitySource,
     virtualFileUrlManager: VirtualFileUrlManager,
-  ): LibraryEntityBuilder? {
+  ): LibraryEntity? {
     val roots =
       sourceDependencies.distinct().map {
         LibraryRoot(
@@ -268,17 +292,21 @@ internal class BazelPythonWorkspaceImporter : BazelWorkspaceImporter, BazelWorks
           type = LibraryRootTypeId.SOURCES,
         )
       }
-    return if (roots.isNotEmpty()) {
-      LibraryEntity(
-        name = target.toPythonModuleName(repoMapping),
-        tableId = LibraryTableId.ProjectLibraryTableId,
-        roots = roots,
-        entitySource = entitySource,
-      )
+    if (roots.isEmpty()) {
+      return null
     }
-    else {
-      null
-    }
+
+    val name = dependencyTarget.formatAsLibraryName(repoMapping, withFullKey = true)
+    val tableId = LibraryTableId.ProjectLibraryTableId
+    return builder.resolve(LibraryId(name, tableId))
+           ?: builder.addEntity(
+             LibraryEntity(
+               name = name,
+               tableId = tableId,
+               roots = roots,
+               entitySource = entitySource,
+             ),
+           )
   }
 
   private fun addModuleEntityFromTarget(
@@ -289,14 +317,13 @@ internal class BazelPythonWorkspaceImporter : BazelWorkspaceImporter, BazelWorks
     moduleName: String,
     entitySource: EntitySource,
     virtualFileUrlManager: VirtualFileUrlManager,
-    sourceDependencyLibrary: LibraryEntityBuilder? = null,
+    sourceDependencyLibraries: List<LibraryEntity> = emptyList(),
   ): ModuleEntity {
     val contentRoots = getContentRootEntities(context, target, entitySource, virtualFileUrlManager)
 
-    val libraryDependency =
-      sourceDependencyLibrary?.let {
-        val addedLibrary = builder.addEntity(it)
-        LibraryDependency(addedLibrary.symbolicId, true, DependencyScope.COMPILE)
+    val libraryDependencies =
+      sourceDependencyLibraries.map {
+        LibraryDependency(it.symbolicId, true, DependencyScope.COMPILE)
       }
 
     val dependencies =
@@ -316,7 +343,12 @@ internal class BazelPythonWorkspaceImporter : BazelWorkspaceImporter, BazelWorks
                   ?: chooseSystemSdkName(context.project.name)
     val sdkDependency = SdkDependency(SdkId(sdkName, PyNames.PYTHON_SDK_ID_NAME))
 
-    val allDependencies = dependencies + listOfNotNull(ModuleSourceDependency, sdkDependency, libraryDependency)
+    val allDependencies =
+      buildList {
+        addAll(dependencies)
+        addAll(listOf(ModuleSourceDependency, sdkDependency))
+        addAll(libraryDependencies)
+      }
 
     return builder.addEntity(
       ModuleEntity(
