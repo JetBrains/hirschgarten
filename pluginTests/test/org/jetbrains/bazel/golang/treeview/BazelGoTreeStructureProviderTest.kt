@@ -81,6 +81,7 @@ class BazelGoTreeStructureProviderTest : WorkspaceModelBaseTest() {
         storage addEntity BazelGoPackageEntity(
           importPath = "root1",
           sources = listOf(file1.toVirtualFileUrl(virtualFileUrlManager)),
+          directDepsImportPaths = emptySet(),
           entitySource = BazelDummyEntitySource,
         )
       }
@@ -100,6 +101,7 @@ class BazelGoTreeStructureProviderTest : WorkspaceModelBaseTest() {
         storage addEntity BazelGoPackageEntity(
           importPath = "root2",
           sources = listOf(file2.toVirtualFileUrl(virtualFileUrlManager)),
+          directDepsImportPaths = emptySet(),
           entitySource = BazelDummyEntitySource,
         )
       }

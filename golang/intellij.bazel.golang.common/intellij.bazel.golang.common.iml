@@ -46,5 +46,6 @@
     <orderEntry type="module" module-name="intellij.platform.testIntegration" />
     <orderEntry type="module" module-name="intellij.platform.testRunner" />
     <orderEntry type="module" module-name="intellij.platform.workspace.jps" />
+    <orderEntry type="module" module-name="intellij.bazel.projectview" />
   </component>
 </module>

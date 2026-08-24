@@ -25,7 +25,6 @@ import org.jetbrains.bazel.label.Canonical
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.label.ResolvedLabel
 import org.jetbrains.bazel.languages.projectview.ProjectView
-import org.jetbrains.bazel.languages.projectview.gazelleTarget
 import org.jetbrains.bazel.languages.projectview.shardSync
 import org.jetbrains.bazel.languages.projectview.targetShardSize
 import org.jetbrains.bazel.languages.projectview.targets
@@ -232,12 +231,6 @@ class ProjectResolver(
       )
     }
 
-    measured("Run Gazelle target") {
-      projectView.gazelleTarget?.also { gazelleTarget ->
-        runGazelleTarget(projectView, gazelleTarget, taskId)
-      }
-    }
-
     val targetsToSync =
       requestedTargetsToSync
         ?.let { TargetCollection(it, emptyList()) } ?: TargetCollection.fromExcludableList(projectView.targets)
@@ -368,17 +361,6 @@ class ProjectResolver(
       val command =
         buildBazelCommand(projectView) {
           shutDown()
-        }
-      runBazelCommand(command, taskId)
-        .waitAndGetResult()
-    }
-  }
-
-  private suspend fun runGazelleTarget(projectView: ProjectView, gazelleTarget: Label, taskId: TaskId) {
-    bazelRunner.run {
-      val command =
-        buildBazelCommand(projectView) {
-          run(gazelleTarget)
         }
       runBazelCommand(command, taskId)
         .waitAndGetResult()

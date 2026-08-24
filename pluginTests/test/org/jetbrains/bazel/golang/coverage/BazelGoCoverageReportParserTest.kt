@@ -11,7 +11,6 @@ import com.intellij.testFramework.junit5.TestApplication
 import com.intellij.testFramework.junit5.fixture.projectFixture
 import com.intellij.testFramework.junit5.fixture.tempPathFixture
 import com.intellij.testFramework.utils.vfs.createFile
-import com.intellij.testFramework.workspaceModel.updateProjectModel
 import io.kotest.matchers.shouldBe
 import org.jetbrains.bazel.run.coverage.BazelCoverageReportParser
 import org.jetbrains.bazel.workspacemodel.entities.BazelDummyEntitySource
@@ -88,6 +87,7 @@ class BazelGoCoverageReportParserTest {
           BazelGoPackageEntity(
             importPath = importPath,
             sources = sources.map { it.toVirtualFileUrl(virtualFileUrlManager) },
+            directDepsImportPaths = emptySet(),
             entitySource = BazelDummyEntitySource,
           ),
         )

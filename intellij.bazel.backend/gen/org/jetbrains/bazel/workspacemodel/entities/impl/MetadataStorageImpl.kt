@@ -18,8 +18,8 @@ internal object MetadataStorageImpl : MetadataStorageBase() {
     val primitiveTypeListNotNullable = ValueTypeMetadata.SimpleType.PrimitiveType(isNullable = false, type = "List")
     val primitiveTypeStringNullable = ValueTypeMetadata.SimpleType.PrimitiveType(isNullable = true, type = "String")
     val primitiveTypeIntNotNullable = ValueTypeMetadata.SimpleType.PrimitiveType(isNullable = false, type = "Int")
-    val primitiveTypeBooleanNotNullable = ValueTypeMetadata.SimpleType.PrimitiveType(isNullable = false, type = "Boolean")
     val primitiveTypeSetNotNullable = ValueTypeMetadata.SimpleType.PrimitiveType(isNullable = false, type = "Set")
+    val primitiveTypeBooleanNotNullable = ValueTypeMetadata.SimpleType.PrimitiveType(isNullable = false, type = "Boolean")
     var typeMetadata: StorageTypeMetadata
     typeMetadata = FinalClassMetadata.ClassMetadata(
       fqName = "org.jetbrains.bazel.workspacemodel.entities.BazelModuleEntitySource",
@@ -283,6 +283,19 @@ internal object MetadataStorageImpl : MetadataStorageBase() {
               ),
             ),
             primitive = primitiveTypeListNotNullable,
+          ),
+          withDefault = false,
+        ),
+        OwnPropertyMetadata(
+          isComputable = false,
+          isKey = false,
+          isOpen = false,
+          name = "directDepsImportPaths",
+          valueType = ValueTypeMetadata.ParameterizedType(
+            generics = listOf(
+              primitiveTypeStringNotNullable,
+            ),
+            primitive = primitiveTypeSetNotNullable,
           ),
           withDefault = false,
         ),
@@ -1457,7 +1470,7 @@ internal object MetadataStorageImpl : MetadataStorageBase() {
   }
 
   override fun initializeMetadataHash() {
-    addMetadataHash(typeFqn = "org.jetbrains.bazel.workspacemodel.entities.BazelGoPackageEntity", metadataHash = -238377136)
+    addMetadataHash(typeFqn = "org.jetbrains.bazel.workspacemodel.entities.BazelGoPackageEntity", metadataHash = -489466067)
     addMetadataHash(typeFqn = "org.jetbrains.bazel.workspacemodel.entities.ImportPathId", metadataHash = 1954566151)
     addMetadataHash(typeFqn = "org.jetbrains.bazel.workspacemodel.entities.BazelGoTargetEntity", metadataHash = 806781147)
     addMetadataHash(typeFqn = "org.jetbrains.bazel.workspacemodel.entities.BazelGoTargetEntityId", metadataHash = -1911160669)
