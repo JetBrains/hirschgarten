@@ -1,7 +1,6 @@
 package org.jetbrains.bazel.sync.workspace.mapper.normal
 
-import com.intellij.openapi.application.edtWriteAction
-import com.intellij.openapi.components.service
+import com.intellij.openapi.application.readAction
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.getProjectDataPath
@@ -20,11 +19,9 @@ import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.withContext
 import org.jetbrains.bazel.commons.BazelInfo
-import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.coroutines.BazelCoroutineService
 import org.jetbrains.bazel.sync.BazelOutFileHardLinks
-import org.jetbrains.bazel.sync.environment.BazelApplicationContextService
 import java.nio.file.Files
 import java.nio.file.Path
 import java.util.concurrent.ConcurrentHashMap
@@ -32,6 +29,7 @@ import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.io.path.deleteIfExists
 import kotlin.io.path.exists
 import kotlin.io.path.getLastModifiedTime
+import kotlin.io.path.isDirectory
 import kotlin.io.path.relativeTo
 
 internal class DefaultBazelOutputFileHardLinks(
@@ -167,13 +165,13 @@ internal class DefaultBazelOutputFileHardLinks(
       }
     }
 
-    val toDelete = mutableListOf<VirtualFile>()
+    val toDeleteVF = mutableListOf<VirtualFile>()
     VfsUtilCore.visitChildrenRecursively(
       cacheDirFile,
       object : VirtualFileVisitor<Nothing>() {
         override fun visitFile(file: VirtualFile): Boolean {
           if (file !in hardLinksFilesUsedDuringSync) {
-            toDelete.add(file)
+            toDeleteVF.add(file)
             return false
           }
           return true
@@ -181,9 +179,18 @@ internal class DefaultBazelOutputFileHardLinks(
       },
     )
 
-    edtWriteAction {
-      toDelete.forEach { it.delete(DefaultBazelOutputFileHardLinks) }
+    // https://youtrack.jetbrains.com/issue/BAZEL-3494
+    val toDeleteNio = readAction {
+      toDeleteVF.asSequence().filter { it.isValid }.map { it.toNioPath() }.toList()
     }
+    for (path in toDeleteNio) {
+      if (path.isDirectory()) {
+        NioFiles.deleteRecursively(path)
+      } else {
+        path.deleteIfExists()
+      }
+    }
+    RefreshQueue.getInstance().refresh(true, toDeleteVF)
 
     // Drop the old cache directories because the name is changed. Delete this code in 26.2
     NioFiles.deleteRecursively(project.getProjectDataPath("bazelOutputFilesHardLinks"))
