@@ -1,0 +1,50 @@
+<idea-plugin>
+  <id>intellij.bazel.pluginTests.clion</id>
+  <name>Bazel Test CLion</name>
+  <vendor>JetBrains</vendor>
+  <dependencies>
+    <plugin id="org.jetbrains.bazel"/>
+    <plugin id="org.jetbrains.kotlin"/>
+  </dependencies>
+  <!--
+    Loads the CLion (Nova) test framework so the `com.intellij.clion.testFramework.languageEngine` EP loads.
+  -->
+  <content namespace="jetbrains">
+    <module name="intellij.libraries.assertj.core" loading="required"/>
+    <module name="intellij.libraries.clikt" loading="required"/>
+    <module name="intellij.libraries.hamcrest" loading="required"/>
+    <module name="intellij.libraries.jetcheck" loading="required"/>
+    <module name="intellij.libraries.junit4" loading="required"/>
+    <module name="intellij.libraries.junit5" loading="required"/>
+    <module name="intellij.libraries.junit5.jupiter" loading="required"/>
+    <module name="intellij.libraries.junit5.launcher" loading="required"/>
+    <module name="intellij.libraries.junit5.params" loading="required"/>
+    <module name="intellij.libraries.junit5.vintage" loading="required"/>
+    <module name="intellij.libraries.opentest4j" loading="required"/>
+    <module name="intellij.libraries.memoryfilesystem" loading="required"/>
+    <module name="intellij.tools.testsBootstrap" loading="required"/>
+    <module name="intellij.java.rt" loading="required"/>
+    <module name="intellij.codeowners" loading="required"/>
+    <module name="intellij.codeowners.runtime.resolver" loading="required"/>
+    <module name="intellij.codeowners.monorepo.resolver" loading="required"/>
+    <module name="intellij.platform.testFramework.teamCity" loading="required"/>
+    <module name="intellij.platform.debugger.testFramework" loading="required"/>
+    <module name="intellij.platform.testExtensions" loading="required"/>
+    <module name="intellij.platform.testFramework.common" loading="required"/>
+    <module name="intellij.platform.testFramework.core" loading="required"/>
+    <module name="intellij.platform.testFramework" loading="required"/>
+    <module name="intellij.platform.testFramework.impl" loading="required"/>
+    <module name="intellij.platform.testFramework.junit5" loading="required"/>
+    <module name="intellij.platform.testFramework.junit5.projectStructure" loading="required"/>
+    <module name="intellij.platform.problemView.collector" loading="required"/>
+    <module name="intellij.platform.problemView.shared" loading="required"/>
+    <module name="intellij.platform.problemView.ui" loading="required"/>
+    <module name="intellij.clion.meson.core" loading="required"/>
+    <module name="intellij.cmake.core" loading="required"/>
+    <module name="intellij.cmake.psi" loading="required"/>
+    <module name="intellij.cidr.common.testFramework.core.nolang" loading="required"/>
+    <module name="intellij.clion.testFramework.nolang" loading="required"/>
+    <module name="intellij.clion.testFramework.nolang.junit5.core" loading="required"/>
+    <module name="intellij.clion.radler.testFramework.junit5" loading="required"/>
+  </content>
+</idea-plugin>

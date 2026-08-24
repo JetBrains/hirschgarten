@@ -21,9 +21,6 @@ jps_test(
     env = {
         "RESHARPER_HOST_BIN": "/Users/...../ultimate/dotnet/Bin.RiderBackend",
     },
-    jvm_flags = [
-        "-Dpatch.engine.backend.freeze.timeout=-1"
-    ],    
 )
 
 ```
@@ -34,12 +31,12 @@ Please note that this change will be overwritten on each jps-to-bazel call
 
 Instead of following step 3, it is also possible to run the CLion test from the command line after compiling the Rider Backend without modifying the `BUILD` file:
 ```bash
-bazel test //plugins/bazel/pluginTests.clion:pluginTests.clion_test --test_arg=--wrapper_script_flag=--jvm_flag=-Dpatch.engine.backend.freeze.timeout=-1 --test_env=RESHARPER_HOST_BIN="$(pwd)/dotnet/Bin.RiderBackend"
+bazel test //plugins/bazel/pluginTests.clion:pluginTests.clion_test --test_env=RESHARPER_HOST_BIN="$(pwd)/dotnet/Bin.RiderBackend"
 ```
 
 To debug the tests use `run` and pass `-- --debug`:
 ```bash
-bazel run //plugins/bazel/pluginTests.clion:pluginTests.clion_test --test_arg=--wrapper_script_flag=--jvm_flag=-Dpatch.engine.backend.freeze.timeout=-1 --test_env=RESHARPER_HOST_BIN="$(pwd)/dotnet/Bin.RiderBackend" -- --debug
+bazel run //plugins/bazel/pluginTests.clion:pluginTests.clion_test --test_env=RESHARPER_HOST_BIN="$(pwd)/dotnet/Bin.RiderBackend" -- --debug
 ```
 
 To filter tests add:
