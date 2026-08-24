@@ -8,6 +8,7 @@ import org.jetbrains.bazel.languages.projectview.completion.TargetCompletionProv
 internal class GazelleTargetSection : ScalarSection<Label?>() {
   override val sectionKey = GAZELLE_TARGET_KEY
   override val completionProvider = TargetCompletionProvider()
-
+  override val doc: String
+    get() = "Specifies whether IntelliJ IDEA should run a Gazelle target automatically at the start of each Bazel sync."
   override fun fromRawValue(rawValue: String): Label = Label.parse(rawValue)
 }

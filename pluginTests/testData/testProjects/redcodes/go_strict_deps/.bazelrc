@@ -1,0 +1,2 @@
+# Fix hermetic_cc_toolchain compilation problems with Gazelle
+build --@rules_go//go/config:pure

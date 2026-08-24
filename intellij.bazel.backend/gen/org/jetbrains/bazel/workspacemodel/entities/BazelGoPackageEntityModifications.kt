@@ -8,6 +8,7 @@ import com.intellij.platform.workspace.storage.GeneratedCodeApiVersion
 import com.intellij.platform.workspace.storage.MutableEntityStorage
 import com.intellij.platform.workspace.storage.WorkspaceEntityBuilder
 import com.intellij.platform.workspace.storage.impl.containers.toMutableWorkspaceList
+import com.intellij.platform.workspace.storage.impl.containers.toMutableWorkspaceSet
 import com.intellij.platform.workspace.storage.url.VirtualFileUrl
 import org.jetbrains.annotations.ApiStatus.Internal
 import org.jetbrains.bazel.workspacemodel.entities.impl.BazelGoPackageEntityImpl
@@ -18,6 +19,7 @@ interface BazelGoPackageEntityBuilder : WorkspaceEntityBuilder<BazelGoPackageEnt
   override var entitySource: EntitySource
   var importPath: String
   var sources: MutableList<VirtualFileUrl>
+  var directDepsImportPaths: MutableSet<String>
 }
 
 internal object BazelGoPackageEntityType : EntityType<BazelGoPackageEntity, BazelGoPackageEntityBuilder>() {
@@ -26,12 +28,14 @@ internal object BazelGoPackageEntityType : EntityType<BazelGoPackageEntity, Baze
   operator fun invoke(
     importPath: String,
     sources: List<VirtualFileUrl>,
+    directDepsImportPaths: Set<String>,
     entitySource: EntitySource,
     init: (BazelGoPackageEntityBuilder.() -> Unit)? = null,
   ): BazelGoPackageEntityBuilder {
     val builder = builder()
     builder.importPath = importPath
     builder.sources = sources.toMutableWorkspaceList()
+    builder.directDepsImportPaths = directDepsImportPaths.toMutableWorkspaceSet()
     builder.entitySource = entitySource
     init?.invoke(builder)
     return builder
@@ -50,6 +54,7 @@ fun MutableEntityStorage.modifyBazelGoPackageEntity(
 fun BazelGoPackageEntity(
   importPath: String,
   sources: List<VirtualFileUrl>,
+  directDepsImportPaths: Set<String>,
   entitySource: EntitySource,
   init: (BazelGoPackageEntityBuilder.() -> Unit)? = null,
-): BazelGoPackageEntityBuilder = BazelGoPackageEntityType(importPath, sources, entitySource, init)
+): BazelGoPackageEntityBuilder = BazelGoPackageEntityType(importPath, sources, directDepsImportPaths, entitySource, init)

@@ -15,7 +15,6 @@ import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.config.isBazelProject
 import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.coroutines.BazelCoroutineService
-import org.jetbrains.bazel.golang.resolve.BazelGoPackage
 import org.jetbrains.bazel.sync.ProjectPostSyncHook
 import org.jetbrains.bazel.utils.refreshAndFindVirtualFile
 import org.jetbrains.bazel.workspacemodel.entities.BazelGoPackageEntity
@@ -54,10 +53,6 @@ internal class GoExternalLibraryManager(private val project: Project) {
     if (!project.isBazelProject) return emptyList()
     val workspacePath = project.rootDir.toNioPathOrNull() ?: return emptyList()
 
-    /**
-     * We're not using [BazelGoPackage.goTargetToFileMap] here, because it uses [org.jetbrains.bazel.sync.SyncCache],
-     * which may contain data from previous sync while we're executing inside [GoExternalLibraryPostSyncHook].
-     */
     val libraryFiles =
       project.workspaceModel
         .currentSnapshot

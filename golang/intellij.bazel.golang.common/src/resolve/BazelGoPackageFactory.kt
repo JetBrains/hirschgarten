@@ -33,20 +33,23 @@ class BazelGoPackageFactory : GoPackageFactory {
     if (!BazelFeatureFlags.isGoSupportEnabled) return null
     val project = goFile.project
     if (!project.isBazelProject) return null
-    val virtualFile = goFile.virtualFile ?: return null
-
-    val workspaceModel = project.workspaceModel
-    val vfuManager = workspaceModel.getVirtualFileUrlManager()
-    val snapshot = workspaceModel.currentSnapshot
-
-    // `BazelGoPackageEntity` is already part of VFU index due to `sources` property
-    val goPackage = snapshot.getVirtualFileUrlIndex()
-      .findEntitiesByUrl(fileUrl = virtualFile.toVirtualFileUrl(vfuManager))
-      .filterIsInstance<BazelGoPackageEntity>()
-      .firstOrNull()
-
-    return BazelGoPackage(project, goPackage ?: return null)
+    val goPackageEntity = getGoPackageEntity(goFile) ?: return null
+    return BazelGoPackage(project, goPackageEntity)
   }
 
   override fun createPackage(packageName: String, vararg directories: PsiDirectory): GoPackage? = null
+}
+
+internal fun getGoPackageEntity(goFile: GoFile): BazelGoPackageEntity? {
+  val project = goFile.project
+  val virtualFile = goFile.virtualFile ?: return null
+  val workspaceModel = project.workspaceModel
+  val vfuManager = workspaceModel.getVirtualFileUrlManager()
+  val snapshot = workspaceModel.currentSnapshot
+
+  // `BazelGoPackageEntity` is already part of VFU index due to `sources` property
+  return snapshot.getVirtualFileUrlIndex()
+    .findEntitiesByUrl(fileUrl = virtualFile.toVirtualFileUrl(vfuManager))
+    .filterIsInstance<BazelGoPackageEntity>()
+    .firstOrNull()
 }

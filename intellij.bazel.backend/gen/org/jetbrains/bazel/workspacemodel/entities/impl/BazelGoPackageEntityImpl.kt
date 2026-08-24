@@ -14,7 +14,9 @@ import com.intellij.platform.workspace.storage.impl.ModifiableWorkspaceEntityBas
 import com.intellij.platform.workspace.storage.impl.WorkspaceEntityBase
 import com.intellij.platform.workspace.storage.impl.WorkspaceEntityData
 import com.intellij.platform.workspace.storage.impl.containers.MutableWorkspaceList
+import com.intellij.platform.workspace.storage.impl.containers.MutableWorkspaceSet
 import com.intellij.platform.workspace.storage.impl.containers.toMutableWorkspaceList
+import com.intellij.platform.workspace.storage.impl.containers.toMutableWorkspaceSet
 import com.intellij.platform.workspace.storage.instrumentation.EntityStorageInstrumentation
 import com.intellij.platform.workspace.storage.instrumentation.EntityStorageInstrumentationApi
 import com.intellij.platform.workspace.storage.metadata.model.EntityMetadata
@@ -48,6 +50,11 @@ internal class BazelGoPackageEntityImpl(private val dataSource: BazelGoPackageEn
     get() {
       readField("sources")
       return dataSource.sources
+    }
+  override val directDepsImportPaths: Set<String>
+    get() {
+      readField("directDepsImportPaths")
+      return dataSource.directDepsImportPaths
     }
 
   override val entitySource: EntitySource
@@ -98,6 +105,9 @@ internal class BazelGoPackageEntityImpl(private val dataSource: BazelGoPackageEn
       if (!getEntityData().isSourcesInitialized()) {
         error("Field BazelGoPackageEntity#sources should be initialized")
       }
+      if (!getEntityData().isDirectDepsImportPathsInitialized()) {
+        error("Field BazelGoPackageEntity#directDepsImportPaths should be initialized")
+      }
     }
 
     override fun connectionIdList(): List<ConnectionId> {
@@ -109,6 +119,10 @@ internal class BazelGoPackageEntityImpl(private val dataSource: BazelGoPackageEn
       if (collection_sources is MutableWorkspaceList<*>) {
         collection_sources.cleanModificationUpdateAction()
       }
+      val collection_directDepsImportPaths = getEntityData().directDepsImportPaths
+      if (collection_directDepsImportPaths is MutableWorkspaceSet<*>) {
+        collection_directDepsImportPaths.cleanModificationUpdateAction()
+      }
     }
 
     // Relabeling code, move information from dataSource to this builder
@@ -117,6 +131,8 @@ internal class BazelGoPackageEntityImpl(private val dataSource: BazelGoPackageEn
       if (this.entitySource != dataSource.entitySource) this.entitySource = dataSource.entitySource
       if (this.importPath != dataSource.importPath) this.importPath = dataSource.importPath
       if (this.sources != dataSource.sources) this.sources = dataSource.sources.toMutableList()
+      if (this.directDepsImportPaths != dataSource.directDepsImportPaths) this.directDepsImportPaths =
+        dataSource.directDepsImportPaths.toMutableSet()
       updateChildToParentReferences(parents)
     }
 
@@ -158,6 +174,27 @@ internal class BazelGoPackageEntityImpl(private val dataSource: BazelGoPackageEn
         getEntityData(true).sources = value
         sourcesUpdater.invoke(value)
       }
+    private val directDepsImportPathsUpdater: (value: Set<String>) -> Unit = { value ->
+
+      changedProperty.add("directDepsImportPaths")
+    }
+    override var directDepsImportPaths: MutableSet<String>
+      get() {
+        val collection_directDepsImportPaths = getEntityData().directDepsImportPaths
+        if (collection_directDepsImportPaths !is MutableWorkspaceSet) return collection_directDepsImportPaths
+        if (diff == null || modifiable.get()) {
+          collection_directDepsImportPaths.setModificationUpdateAction(directDepsImportPathsUpdater)
+        }
+        else {
+          collection_directDepsImportPaths.cleanModificationUpdateAction()
+        }
+        return collection_directDepsImportPaths
+      }
+      set(value) {
+        checkModificationAllowed()
+        getEntityData(true).directDepsImportPaths = value
+        directDepsImportPathsUpdater.invoke(value)
+      }
 
     override fun getEntityClass(): Class<BazelGoPackageEntity> = BazelGoPackageEntity::class.java
   }
@@ -168,9 +205,11 @@ internal class BazelGoPackageEntityImpl(private val dataSource: BazelGoPackageEn
 internal class BazelGoPackageEntityData : WorkspaceEntityData<BazelGoPackageEntity>() {
   lateinit var importPath: String
   lateinit var sources: MutableList<VirtualFileUrl>
+  lateinit var directDepsImportPaths: MutableSet<String>
 
   internal fun isImportPathInitialized(): Boolean = ::importPath.isInitialized
   internal fun isSourcesInitialized(): Boolean = ::sources.isInitialized
+  internal fun isDirectDepsImportPathsInitialized(): Boolean = ::directDepsImportPaths.isInitialized
 
   override fun wrapAsModifiable(diff: MutableEntityStorage): WorkspaceEntityBuilder<BazelGoPackageEntity> {
     val modifiable = BazelGoPackageEntityImpl.Builder(null)
@@ -197,6 +236,7 @@ internal class BazelGoPackageEntityData : WorkspaceEntityData<BazelGoPackageEnti
     val clonedEntity = super.clone()
     clonedEntity as BazelGoPackageEntityData
     clonedEntity.sources = clonedEntity.sources.toMutableWorkspaceList()
+    clonedEntity.directDepsImportPaths = clonedEntity.directDepsImportPaths.toMutableWorkspaceSet()
     return clonedEntity
   }
 
@@ -205,7 +245,7 @@ internal class BazelGoPackageEntityData : WorkspaceEntityData<BazelGoPackageEnti
   }
 
   override fun createDetachedEntity(parents: List<WorkspaceEntityBuilder<*>>): WorkspaceEntityBuilder<*> {
-    return BazelGoPackageEntity(importPath, sources, entitySource)
+    return BazelGoPackageEntity(importPath, sources, directDepsImportPaths, entitySource)
   }
 
   override fun getRequiredParents(): List<Class<out WorkspaceEntity>> {
@@ -220,6 +260,7 @@ internal class BazelGoPackageEntityData : WorkspaceEntityData<BazelGoPackageEnti
     if (this.entitySource != other.entitySource) return false
     if (this.importPath != other.importPath) return false
     if (this.sources != other.sources) return false
+    if (this.directDepsImportPaths != other.directDepsImportPaths) return false
     return true
   }
 
@@ -229,6 +270,7 @@ internal class BazelGoPackageEntityData : WorkspaceEntityData<BazelGoPackageEnti
     other as BazelGoPackageEntityData
     if (this.importPath != other.importPath) return false
     if (this.sources != other.sources) return false
+    if (this.directDepsImportPaths != other.directDepsImportPaths) return false
     return true
   }
 
@@ -236,6 +278,7 @@ internal class BazelGoPackageEntityData : WorkspaceEntityData<BazelGoPackageEnti
     var result = entitySource.hashCode()
     result = 31 * result + importPath.hashCode()
     result = 31 * result + sources.hashCode()
+    result = 31 * result + directDepsImportPaths.hashCode()
     return result
   }
 
@@ -243,6 +286,7 @@ internal class BazelGoPackageEntityData : WorkspaceEntityData<BazelGoPackageEnti
     var result = javaClass.hashCode()
     result = 31 * result + importPath.hashCode()
     result = 31 * result + sources.hashCode()
+    result = 31 * result + directDepsImportPaths.hashCode()
     return result
   }
 }

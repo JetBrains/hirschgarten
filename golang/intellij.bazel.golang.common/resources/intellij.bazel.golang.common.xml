@@ -5,6 +5,7 @@
     <module name="intellij.bazel.commons"/>
     <module name="intellij.bazel.core"/>
     <module name="intellij.bazel.coverage"/>
+    <module name="intellij.bazel.projectview"/>
     <module name="intellij.go.frontback"/>
     <module name="intellij.go.impl"/>
     <module name="intellij.platform.coverage"/>
@@ -14,6 +15,8 @@
     <module name="intellij.platform.testRunner"/>
   </dependencies>
   <!-- endregion -->
+
+  <resource-bundle>messages.BazelGoBundle</resource-bundle>
 
   <extensions defaultExtensionNs="com.intellij">
     <programRunner implementation="org.jetbrains.bazel.golang.debug.BazelGoDebugRunner" />
@@ -30,10 +33,16 @@
       order="last"
     />
     <postStartupActivity implementation="org.jetbrains.bazel.golang.BazelGoStartupActivity"/>
+    <localInspection language="go"
+                     groupKey="bazel.inspection.group.name"
+                     key="inspections.display.name.go.strict.deps"
+                     enabledByDefault="true" level="ERROR"
+                     implementationClass="org.jetbrains.bazel.golang.inspections.BazelGoStrictDependenciesInspection"/>
   </extensions>
 
   <extensions defaultExtensionNs="org.jetbrains.bazel">
     <syncWorkspaceImporter implementation="org.jetbrains.bazel.golang.sync.GoWorkspaceImporter"/>
+    <projectPreSyncHook implementation="org.jetbrains.bazel.golang.sync.RunGazelleTargetPreSyncHook"/>
     <projectPostSyncHook implementation="org.jetbrains.bazel.golang.sync.GoModuleSupportPostSyncHook" />
     <projectPostSyncHook implementation="org.jetbrains.bazel.golang.sync.GoExternalLibraryPostSyncHook" />
     <runHandlerProvider implementation="org.jetbrains.bazel.golang.debug.BazelGoRunHandler$BazelGoRunHandlerProvider" />

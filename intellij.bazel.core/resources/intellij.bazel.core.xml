@@ -79,7 +79,7 @@
   </projectListeners>
 
   <extensions defaultExtensionNs="org.jetbrains.bazel">
-    <projectPreSyncHook implementation="org.jetbrains.bazel.flow.open.ReparseProjectViewFilePreSyncHook"/>
+    <projectPreSyncHook implementation="org.jetbrains.bazel.flow.open.ReparseProjectViewFilePreSyncHook" order="first"/>
 
     <projectSyncHook
       id="DirectoriesSyncHook"

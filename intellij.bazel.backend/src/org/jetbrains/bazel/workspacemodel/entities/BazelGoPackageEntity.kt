@@ -30,6 +30,7 @@ interface BazelGoPackageEntity : WorkspaceEntityWithSymbolicId {
 
   val importPath: String
   val sources: List<VirtualFileUrl>
+  val directDepsImportPaths: Set<String>
 }
 
 @ApiStatus.Internal

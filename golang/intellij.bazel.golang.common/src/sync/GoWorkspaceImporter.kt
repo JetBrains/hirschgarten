@@ -15,6 +15,7 @@ import com.intellij.platform.workspace.jps.entities.ModuleSourceDependency
 import com.intellij.platform.workspace.storage.EntitySource
 import com.intellij.platform.workspace.storage.MutableEntityStorage
 import com.intellij.platform.workspace.storage.impl.url.toVirtualFileUrl
+import com.intellij.util.containers.Interner
 import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.config.rootDir
@@ -42,6 +43,8 @@ private const val DO_NOT_SHOW_NOTIFICATION_ABOUT_EMPTY_GOPATH = "DO_NOT_SHOW_NOT
 
 internal class GoWorkspaceImporter : BazelWorkspaceImporter, BazelWorkspaceImporter.Named {
   lateinit var goTargets: Map<WorkspaceTargetKey, GoBuildTarget>
+  lateinit var goTargetDependencies: Map<WorkspaceTargetKey, List<WorkspaceTargetKey>>
+  private val importPathInterner = Interner.createWeakInterner<String>()
 
   override val importerName: @NlsContexts.ProgressTitle String
     get() = BazelPluginBundle.message("console.task.model.go.importer")
@@ -57,11 +60,12 @@ internal class GoWorkspaceImporter : BazelWorkspaceImporter, BazelWorkspaceImpor
           return Result.success(WorkspaceImporterResult.Abort)
         }
         val importDepth = snapshot.commonSyncConfig.importDepth
-        goTargets = snapshot.targetGraph.findAllTargetsAtDepth(maxDepth = importDepth, useRelaxedDependencyExpansion = true)
+        val goBuildTargetList = snapshot.targetGraph.findAllTargetsAtDepth(maxDepth = importDepth, useRelaxedDependencyExpansion = true)
           .mapNotNull { it.load(snapshot.targets, TargetLoadOptions.ALL) }
           .filterBuildTarget<GoBuildTarget>()
-          .associate { (target, goBuildTarget) -> target.key to goBuildTarget }
-          .toMap()
+          .toList()
+        goTargets = goBuildTargetList.associate { (target, goTarget) -> target.key to goTarget }
+        goTargetDependencies = goBuildTargetList.associate { (target, _) -> target.key to target.dependencies.map { it.targetKey } }
         if (goTargets.isEmpty()) {
           return Result.success(WorkspaceImporterResult.Abort)
         }
@@ -141,10 +145,16 @@ internal class GoWorkspaceImporter : BazelWorkspaceImporter, BazelWorkspaceImpor
     for ((importPath, goTargets) in targetsByImportPath) {
       // Group targets with the same importpath, see doc for BazelGoPackageEntity
       val packageEntity = builder addEntity BazelGoPackageEntity(
-        importPath = importPath,
+        importPath = importPathInterner.intern(importPath),
         sources = goTargets.flatMap { it.value.sources.getFiles() }
           .distinct()
           .map { it.toVirtualFileUrl(context.vfuManager) },
+        directDepsImportPaths = goTargets.asSequence()
+          .flatMap { goTargetDependencies[it.key].orEmpty() }
+          .distinct()
+          .mapNotNull { inferredImportPath[it] ?: this.goTargets[it]?.importPath }
+          .map { importPathInterner.intern(it) }
+          .toSet(),
         entitySource = entitySource,
       )
       val importPathId = packageEntity.symbolicId
