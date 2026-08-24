@@ -67,7 +67,7 @@ class ImportRunConfigurationsSyncHookTest : IdeStarterCombinedBaseTest() {
         waitForIndicators(5.minutes)
 
         step("Select Bazel test configuration") {
-          selectRunConfiguration(targetText = "Bazel test CalculatorTest")
+          selectRunConfiguration(targetText = "Test Calculator")
         }
 
         step("Check build diagnostics with run configs") {
@@ -82,13 +82,13 @@ class ImportRunConfigurationsSyncHookTest : IdeStarterCombinedBaseTest() {
               }
               compilationBroken = true
             }
-            step("Run test in Debug") { x { byAccessibleName("Debug 'Bazel test CalculatorTest'") }.click() }
+            step("Run test in Debug") { x { byAccessibleName("Debug 'Test Calculator'") }.click() }
             // The tree renders the directory node with the host separator, so this cannot be a POSIX literal.
             val sourceDirWithError = " src/com/example 1 error".replace('/', File.separatorChar)
             val expectedBuildErrors = setOf("Ended with an error.", "Calculator.java", sourceDirWithError, "BUILD", "  1 error")
             step("Verify build results tree") { waitForBuildResultsTree(expectedTexts = expectedBuildErrors) }
 
-            step("Run test normally") { x { byAccessibleName("Run 'Bazel test CalculatorTest'") }.click() }
+            step("Run test normally") { x { byAccessibleName("Run 'Test Calculator'") }.click() }
             step("Verify build results tree") { waitForBuildResultsTree(expectedTexts = expectedBuildErrors) }
           } finally {
             // Restore even when a verification above fails, otherwise the deliberately broken file
@@ -182,9 +182,9 @@ class ImportRunConfigurationsSyncHookTest : IdeStarterCombinedBaseTest() {
         syncBazelProject(buildAndSync = true)
         waitForIndicators(5.minutes)
         step("Select Bazel test configuration") {
-          selectRunConfiguration(targetText = "Bazel test CalculatorTest")
+          selectRunConfiguration(targetText = "Test Calculator")
         }
-        step("Run test in Debug") { x { byAccessibleName("Debug 'Bazel test CalculatorTest'") }.click() }
+        step("Run test in Debug") { x { byAccessibleName("Debug 'Test Calculator'") }.click() }
         wait(15.seconds)
         verifyTestStatus(
           listOf("2 tests passed"),

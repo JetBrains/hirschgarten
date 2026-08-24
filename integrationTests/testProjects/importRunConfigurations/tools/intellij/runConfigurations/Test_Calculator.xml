@@ -1,4 +1,4 @@
-<configuration default="false" name="Bazel test CalculatorTest" type="BlazeCommandRunConfigurationType" factoryName="Bazel Command">
+<configuration default="false" name="Test Calculator" type="BlazeCommandRunConfigurationType" factoryName="Bazel Command">
   <blaze-settings handler-id="BlazeJavaRunConfigurationHandlerProvider" blaze-command="test" kind="java_test" context-element="$PROJECT_DIR$/../src/com/example/CalculatorTest.java#com.example.CalculatorTest">
     <blaze-target>//:calculator_test</blaze-target>
     <blaze-user-flag>--test_filter=com.example.CalculatorTest#</blaze-user-flag>
