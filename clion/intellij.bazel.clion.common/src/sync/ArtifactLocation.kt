@@ -1,9 +1,5 @@
 package org.jetbrains.bazel.clion.sync
 
-import com.intellij.openapi.project.Project
-import org.jetbrains.bazel.sync.workspace.persistence.WorkspaceTypeContributor
-import org.jetbrains.bazel.sync.workspace.persistence.WorkspaceTypeEntry
-import org.jetbrains.bazel.sync.workspace.persistence.type
 import java.nio.file.Path
 
 data class ArtifactLocation(
@@ -38,8 +34,3 @@ data class ArtifactLocation(
    */
   val resolvedPath: Path,
 )
-
-internal class ArtifactLocationWorkspaceTypeContributor : WorkspaceTypeContributor {
-
-  override fun contribute(project: Project): List<WorkspaceTypeEntry> = buildList { type<ArtifactLocation>() }
-}

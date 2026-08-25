@@ -1,9 +1,5 @@
 package org.jetbrains.bazel.clion.sync
 
-import com.intellij.openapi.project.Project
-import org.jetbrains.bazel.sync.workspace.persistence.WorkspaceTypeContributor
-import org.jetbrains.bazel.sync.workspace.persistence.WorkspaceTypeEntry
-import org.jetbrains.bazel.sync.workspace.persistence.type
 import org.jetbrains.bsp.protocol.BuildTargetData
 
 data class CcBuildTarget(val ruleContext: RuleContext?, val compilationContext: CompilationContext) : BuildTargetData {
@@ -33,13 +29,4 @@ data class CcBuildTarget(val ruleContext: RuleContext?, val compilationContext: 
     val quoteIncludes: List<ExecutionRootPath>,
     val systemIncludes: List<ExecutionRootPath>,
   )
-}
-
-internal class CcBuildTargetWorkspaceTypeContributor : WorkspaceTypeContributor {
-
-  override fun contribute(project: Project): List<WorkspaceTypeEntry> = buildList {
-    type<CcBuildTarget>()
-    type<CcBuildTarget.RuleContext>()
-    type<CcBuildTarget.CompilationContext>()
-  }
 }

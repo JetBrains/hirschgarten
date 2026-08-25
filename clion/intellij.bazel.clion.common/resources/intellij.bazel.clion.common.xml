@@ -36,10 +36,7 @@
   <!-- endregion -->
 
   <extensions defaultExtensionNs="org.jetbrains.bazel">
-    <workspaceTypeContributor implementation="org.jetbrains.bazel.clion.sync.ArtifactLocationWorkspaceTypeContributor"/>
-    <workspaceTypeContributor implementation="org.jetbrains.bazel.clion.sync.ExecutionRootPathWorkspaceTypeContributor"/>
-    <workspaceTypeContributor implementation="org.jetbrains.bazel.clion.sync.CcBuildTargetWorkspaceTypeContributor"/>
-    <workspaceTypeContributor implementation="org.jetbrains.bazel.clion.sync.CcToolchainBuildTargetWorkspaceTypeContributor"/>
+    <workspaceTypeContributor implementation="org.jetbrains.bazel.clion.sync.CcWorkspaceTypeContributor"/>
     <languageClassProvider implementation="org.jetbrains.bazel.clion.sync.CcLanguageClassProvider"/>
     <bazelRuleSetProvider implementation="org.jetbrains.bazel.clion.sync.CcRuleSetProvider"/>
     <targetKindProvider implementation="org.jetbrains.bazel.clion.sync.CcTargetKindProvider"/>
