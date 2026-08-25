@@ -91,11 +91,6 @@
     />
     <projectSyncHook implementation="org.jetbrains.bazel.run.import.ImportRunConfigurationsSyncHook"/>
     <projectSyncHook
-      id="IndexAdditionalFilesSyncHook"
-      implementation="org.jetbrains.bazel.workspace.indexAdditionalFiles.IndexAdditionalFilesSyncHook"
-      order="after DirectoriesSyncHook"
-    />
-    <projectSyncHook
       implementation="org.jetbrains.bazel.ignore.UpdateBazelIgnoreSyncHook"
     />
 
