@@ -291,4 +291,19 @@ class TargetStorageTest {
     val afterNewSnapshot = targetUtils.allTargetSummaries()
     afterNewSnapshot shouldNotBeSameInstanceAs first
   }
+
+  @Test
+  fun `getTargetsForPath returns only one target with multiple configurations`(): Unit = runBlocking {
+    val label = Label.parse("//lib:lib")
+    val file = Path.of("/workspace/app/Bin.java")
+    val sourceCollection = SourceFileCollectionBuilder.build(relativeRoot = Path.of("/workspace"), paths = listOf(file))
+    val firstKey = WorkspaceTargetKey(label = label, configuration = WorkspaceConfigurationId.of("abcdef1"))
+    val secondKey = WorkspaceTargetKey(label = label, configuration = WorkspaceConfigurationId.of("abcdef2"))
+    val first = target("//lib:lib", key = firstKey, baseDirectory = Path.of("/workspace"), sources = sourceCollection)
+    val second = target("//lib:lib", key = secondKey, baseDirectory = Path.of("/workspace"), sources = sourceCollection)
+    publish(project, snapshot(project, targets = listOf(first, second), roots = listOf(first, second)))
+
+    val targetUtils = project.targetStorage
+    targetUtils.getTargetsForPath(file) shouldBe listOf(label)
+  }
 }
