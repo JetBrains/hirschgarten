@@ -32,11 +32,11 @@
     <orderEntry type="module" module-name="intellij.devkit.core" scope="TEST" />
     <orderEntry type="module" module-name="intellij.nativeDebug.plugin" scope="TEST" />
     <orderEntry type="module" module-name="intellij.clion" scope="TEST" />
-    <orderEntry type="module" module-name="intellij.clion.radler" scope="TEST" />
-    <orderEntry type="module" module-name="intellij.clion.radler.testFramework.junit5" scope="TEST" />
-    <orderEntry type="module" module-name="intellij.clion.radler.backend.marker" scope="TEST" />
+    <orderEntry type="module" module-name="intellij.clion.radler" scope="RUNTIME" />
+    <orderEntry type="module" module-name="intellij.clion.radler.testFramework.junit5" scope="RUNTIME" />
+    <orderEntry type="module" module-name="intellij.clion.radler.backend.marker" scope="RUNTIME" />
     <orderEntry type="module" module-name="intellij.clion.testFramework.nolang.junit5.core" scope="TEST" />
-    <orderEntry type="module" module-name="intellij.rider.rdclient.dotnet" scope="TEST" />
+    <orderEntry type="module" module-name="intellij.rider.rdclient.dotnet" scope="RUNTIME" />
     <orderEntry type="module" module-name="intellij.rd.ide.model.generated" scope="TEST" />
     <orderEntry type="module" module-name="intellij.libraries.rd.core" scope="TEST" />
     <orderEntry type="module" module-name="intellij.libraries.rd.framework" scope="TEST" />
