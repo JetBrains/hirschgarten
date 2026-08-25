@@ -6,14 +6,18 @@ import com.intellij.openapi.actionSystem.PlatformDataKeys
 import com.intellij.openapi.application.readAction
 import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.roots.ProjectFileIndex
 import com.intellij.openapi.vfs.VirtualFile
-import com.intellij.openapi.vfs.toNioPathOrNull
 import org.jetbrains.bazel.action.SuspendableAction
 import org.jetbrains.bazel.commons.RuleType
+import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.config.BazelPluginBundle
+import org.jetbrains.bazel.config.rootDir
+import org.jetbrains.bazel.languages.starlark.repomapping.calculateWildcardLabel
 import org.jetbrains.bazel.runnerAction.TestTargetAction
 import org.jetbrains.bazel.runnerAction.getCoverageExecutor
 import org.jetbrains.bazel.target.targetStorage
+import org.jetbrains.bazel.ui.gutters.NonImportedBuildTarget
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.isManual
 import javax.swing.Icon
@@ -52,14 +56,13 @@ internal open class RunAllTestsBaseAction(
   private fun AnActionEvent.getCurrentPath(): VirtualFile? = getData(PlatformDataKeys.VIRTUAL_FILE)
 
   private fun VirtualFile.toChildTestTargets(project: Project): Sequence<BuildTarget> {
+    if (ProjectFileIndex.getInstance(project).isExcluded(this)) return emptySequence()
     val targetUtils = project.targetStorage
     val childTargets =
       if (isDirectory) {
-        val path = toNioPathOrNull() ?: return emptySequence()
-        targetUtils
-          .allTargetSummaries()
-          .asSequence()
-          .filter { it.baseDirectory.startsWith(path) }
+        val wildcardLabel = calculateWildcardLabel(project, this) ?: return emptySequence()
+        val targetKind = TargetKind("unknown_test", emptySet(), RuleType.TEST)
+        sequenceOf(NonImportedBuildTarget(wildcardLabel, targetKind, project.rootDir.toNioPath()))
       } else {
         targetUtils
           .getExecutableTargetsForFile(this)

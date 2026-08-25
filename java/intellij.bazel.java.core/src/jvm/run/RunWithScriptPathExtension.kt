@@ -5,6 +5,7 @@ import com.intellij.execution.executors.DefaultDebugExecutor
 import com.intellij.execution.executors.DefaultRunExecutor
 import com.intellij.openapi.extensions.ExtensionPointName
 import org.jetbrains.annotations.ApiStatus
+import org.jetbrains.bazel.label.AllRuleTargets
 import org.jetbrains.bazel.run.config.BazelRunConfiguration
 import org.jetbrains.bazel.run.state.HasRunWithBazel
 
@@ -20,7 +21,7 @@ interface RunWithScriptPathExtension {
   companion object {
     fun shouldRunWithScriptPath(executor: Executor, configuration: BazelRunConfiguration): Boolean =
       // Because `bazel run` only supports one target, so does `bazel run --script_path`
-      configuration.targets.size == 1 &&
+      configuration.targets.size == 1 && configuration.targets.none { it.target is AllRuleTargets } &&
       ep.extensionList.any { it.shouldRunWithScriptPath(executor, configuration) }
 
     private val ep: ExtensionPointName<RunWithScriptPathExtension> = ExtensionPointName("org.jetbrains.bazel.runWithScriptPathExtension")

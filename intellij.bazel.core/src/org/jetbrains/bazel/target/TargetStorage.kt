@@ -42,6 +42,7 @@ import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.BuildTargetData
 import org.jetbrains.bsp.protocol.data
 import org.jetbrains.bsp.protocol.id
+import org.jetbrains.bsp.protocol.isManual
 import java.nio.file.Path
 
 private data object EmptyBuildTargetData : BuildTargetData
@@ -108,6 +109,10 @@ private class CachedSnapshotView(val snapshot: WorkspaceSnapshot, private val pr
   val executableShortLabels: List<String> by lazy {
     summaries.filter { it.kind.isExecutable }
       .map { it.id.toShortString(project) }
+  }
+
+  val allTestableSummaries: List<BuildTarget> by lazy {
+    summaries.filter { it.kind.ruleType == RuleType.TEST && !it.isManual }
   }
 
   fun targetsForPath(path: Path): List<Label> =
@@ -233,6 +238,8 @@ class TargetStorage(private val project: Project, private val coroutineScope: Co
   fun allTargets(): Sequence<Label> = allTargetSummaries().asSequence().map { it.id }
 
   fun allTargetSummaries(): List<BuildTarget> = view().summaries
+
+  fun allTestableSummaries(): List<BuildTarget> = view().allTestableSummaries
 
   fun getTargetSummary(label: Label): BuildTarget? =
     label.toCanonicalLabelOrThis(project)?.let { view().label2Summary[it] }
