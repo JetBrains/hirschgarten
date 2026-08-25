@@ -114,6 +114,7 @@ private class CachedSnapshotView(val snapshot: WorkspaceSnapshot, private val pr
     snapshot.fileToTarget.getTargetsByFile(path)
       .filter { it in importKeys }
       .map { it.label }
+      .distinct()
 
   fun executableTargetsFor(label: Label): List<Label> =
     label.toCanonicalLabelOrThis(project)?.let { snapshot.executableTargets.executableTargetsFor(it) }.orEmpty()
