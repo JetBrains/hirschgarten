@@ -15,7 +15,19 @@ data class WorkspaceTargetKey(
   val label: Label,
   val configuration: WorkspaceConfigurationId = WorkspaceConfigurationId.EMPTY,
   val aspectIds: WorkspaceAspectIds = WorkspaceAspectIds.EMPTY,
-)
+) {
+  override fun toString(): String = buildString {
+    append("TargetKey(")
+    append(label)
+    if (configuration != WorkspaceConfigurationId.EMPTY) {
+      append(", conf=").append(configuration)
+    }
+    if (aspectIds != WorkspaceAspectIds.EMPTY) {
+      append(", aspects=").append(aspectIds.ids.joinToString(";"))
+    }
+    append(')')
+  }
+}
 
 @ApiStatus.Internal
 @JvmInline
