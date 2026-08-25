@@ -29,3 +29,20 @@ jps_test(
 ```
 
 Please note that this change will be overwritten on each jps-to-bazel call 
+
+### Running CLion tests from the command line
+
+Instead of following step 3, it is also possible to run the CLion test from the command line after compiling the Rider Backend without modifying the `BUILD` file:
+```bash
+bazel test //plugins/bazel/pluginTests.clion:pluginTests.clion_test --test_arg=--wrapper_script_flag=--jvm_flag=-Dpatch.engine.backend.freeze.timeout=-1 --test_env=RESHARPER_HOST_BIN="$(pwd)/dotnet/Bin.RiderBackend"
+```
+
+To debug the tests use `run` and pass `-- --debug`:
+```bash
+bazel run //plugins/bazel/pluginTests.clion:pluginTests.clion_test --test_arg=--wrapper_script_flag=--jvm_flag=-Dpatch.engine.backend.freeze.timeout=-1 --test_env=RESHARPER_HOST_BIN="$(pwd)/dotnet/Bin.RiderBackend" -- --debug
+```
+
+To filter tests add:
+```bash
+--test_env=JB_IDE_SM_RUN=true --test_env=JB_TEST_FILTER="fully qualified class name[:test name]"
+```
