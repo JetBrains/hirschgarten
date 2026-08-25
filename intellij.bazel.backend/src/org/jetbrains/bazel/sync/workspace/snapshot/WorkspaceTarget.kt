@@ -1,6 +1,7 @@
 package org.jetbrains.bazel.sync.workspace.snapshot
 
 import org.jetbrains.annotations.ApiStatus
+import org.jetbrains.annotations.Debug
 import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.label.DependencyLabel
@@ -10,6 +11,8 @@ import org.jetbrains.bsp.protocol.BuildTargetData
 import org.jetbrains.bsp.protocol.SourceFileCollection
 import java.nio.file.Path
 
+
+@Debug.Renderer(text = "this.getKey()")
 internal class WorkspaceTarget(
   override val key: WorkspaceTargetKey,
   override val dependencies: List<DependencyLabel>,
