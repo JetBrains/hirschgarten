@@ -24,8 +24,11 @@
     <module name="intellij.platform.execution.impl"/>
     <module name="intellij.platform.externalSystem"/>
     <module name="intellij.platform.externalSystem.impl"/>
+    <module name="intellij.platform.ide.core"/>
     <module name="intellij.platform.lang"/>
     <module name="intellij.platform.projectModel"/>
+    <module name="intellij.platform.smRunner"/>
+    <module name="intellij.platform.testRunner"/>
   </dependencies>
   <!-- endregion -->
   <extensions defaultExtensionNs="org.jetbrains.bazel">
@@ -39,6 +42,8 @@
       implementationClass="com.intellij.bazel.devkit.monorepo.run.MonorepoStarlarkRunLineMarkerContributor"
       language="Starlark"
     />
+    <runConfigurationProducer
+      implementation="com.intellij.bazel.devkit.monorepo.run.MonorepoBazelAllTestsInDirectoryRunConfigurationProducer"/>
     <postStartupActivity implementation="com.intellij.bazel.devkit.monorepo.run.MonorepoProjectViewStartupActivity"/>
     <postStartupActivity implementation="com.intellij.bazel.devkit.monorepo.sync.UnlinkedProjectNotificationDisabler"/>
   </extensions>

@@ -30,11 +30,13 @@ class BazelRunConfigurationEditor(
 ) :
   RunConfigurationFragmentedEditor<BazelRunConfiguration>(runConfiguration, handler?.extensionsManager) {
 
+  private lateinit var targetLabelsFragment: SettingsEditorFragment<*, *>
+
   override fun createRunFragments(): List<SettingsEditorFragment<BazelRunConfiguration, *>> =
     SettingsEditorFragmentContainer.fragments {
       add(CommonTags.parallelRun())
       addBeforeRunFragment()
-      addBspTargetFragment()
+      addTargetLabelsFragment()
       addStateEditorFragment()
     }
 
@@ -50,7 +52,7 @@ class BazelRunConfigurationEditor(
     this.addAll(handler.state.createFragments(runConfiguration))
   }
 
-  private fun SettingsEditorFragmentContainer<BazelRunConfiguration>.addBspTargetFragment() {
+  private fun SettingsEditorFragmentContainer<BazelRunConfiguration>.addTargetLabelsFragment() {
     this.addLabeledSettingsEditorFragment(
       object : LabeledSettingsFragmentInfo { // TODO: Use bundle
         override val settingsId: String = "bsp.target.fragment"
@@ -93,6 +95,11 @@ class BazelRunConfigurationEditor(
         }
       },
       { true },
-    )
+    ).also { targetLabelsFragment = it }
+  }
+
+  fun focusTargetLabelsFragment() {
+    fragments  // make sure createFragments is called lazily
+    targetLabelsFragment.editorComponent.requestFocus()
   }
 }

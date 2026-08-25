@@ -52,6 +52,9 @@ internal class BazelRunConfigurationDynamicEditor(
           runnerAndConfigurationSettings?.let { delegate.resetEditorFrom(it) }
           delegate.resetFrom(runConfiguration)
           wrapper.setContent(delegate.component)
+          // Run handler can only change if we're typing new targets.
+          // Make sure the focus is still on the edit field after the run config is recreated.
+          delegate.focusTargetLabelsFragment()
         }
       }
     }

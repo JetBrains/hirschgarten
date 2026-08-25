@@ -28,6 +28,8 @@ interface RunHandlerProvider {
    */
   fun canRun(targets: List<TargetKind>): Boolean
 
+  fun canRunNonImported(project: Project, targets: List<Label>): Boolean = false
+
   companion object {
     val ep: ExtensionPointName<RunHandlerProvider> =
       ExtensionPointName.create("org.jetbrains.bazel.runHandlerProvider")
@@ -59,8 +61,12 @@ interface RunHandlerProvider {
     fun getRunHandlerProviderOrNull(project: Project, targets: List<Label>): RunHandlerProvider? {
       val targetUtils = project.targetStorage
       val targetKinds = targets.mapNotNull { targetUtils.getTargetSummary(it)?.kind }
-      if (targetKinds.isEmpty()) return null
-      return getRunHandlerProvider(targetKinds)
+      return if (targetKinds.isNotEmpty()) {
+        getRunHandlerProvider(targetKinds)
+      }
+      else {
+        ep.extensionList.firstOrNull { it.canRunNonImported(project, targets) }
+      }
     }
 
     /** Finds a BspRunHandlerProvider by its unique ID */

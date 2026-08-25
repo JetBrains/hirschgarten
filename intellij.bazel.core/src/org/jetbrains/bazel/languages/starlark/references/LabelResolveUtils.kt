@@ -64,7 +64,7 @@ fun resolveFileTargetToVirtualFile(
   containingFile: VirtualFile? = null,
 ): VirtualFile? = when (label) {
   is ResolvedLabel -> {
-    val packageDir = findReferredAbsolutePackage(project, containingFile, label)
+    val packageDir = findReferredPackage(project, label, containingFile)
     packageDir
       ?.findFileByRelativePath(label.targetName)
       ?.takeIf { it.isFile }
@@ -112,7 +112,7 @@ fun findBuildFile(
   label: ResolvedLabel,
   containingFile: VirtualFile? = null,
 ): StarlarkFile? {
-  val packageDir = findReferredAbsolutePackage(project, containingFile, label) ?: return null
+  val packageDir = findReferredPackage(project, label, containingFile) ?: return null
   return findBuildFilePsi(project, packageDir)
 }
 
@@ -148,10 +148,11 @@ private fun resolveFileTarget(
 }
 
 // BAZEL-2280 LabelResolveUtilsKt#findReferredAbsolutePackage may not be able to resolve repo root
-private fun findReferredAbsolutePackage(
+@ApiStatus.Internal
+fun findReferredPackage(
   project: Project,
-  containingFile: VirtualFile?,
   label: ResolvedLabel,
+  containingFile: VirtualFile? = null,
 ): VirtualFile? {
   val canonicalLabel = label.toCanonicalLabel(project) ?: return null
   val repoRoot: VirtualFile? =
@@ -163,7 +164,7 @@ private fun findReferredAbsolutePackage(
   if (repoRoot == null)
     return null
 
-  return repoRoot.findFileByRelativePath(label.packagePath.toString())
+  return repoRoot.findFileByRelativePath(label.packagePath.pathSegments.joinToString(VfsUtilCore.VFS_SEPARATOR))
 }
 
 internal fun findBuildFile(packageDir: VirtualFile): VirtualFile? =

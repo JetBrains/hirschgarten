@@ -2,9 +2,13 @@ package org.jetbrains.bazel.jvm.run
 
 import com.intellij.openapi.extensions.ExtensionPointName
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.vfs.toNioPathOrNull
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.commons.RuleType
+import org.jetbrains.bazel.label.AllRuleTargets
 import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.label.assumeResolved
+import org.jetbrains.bazel.languages.starlark.references.findReferredPackage
 import org.jetbrains.bazel.run.BazelRunConfigurationState
 import org.jetbrains.bazel.run.config.BazelRunConfiguration
 import org.jetbrains.bazel.run.state.HasEnv
@@ -32,12 +36,28 @@ private val wellKnownJetBrainsTestRunnerImpls = setOf(
   "jetbrains.datalore.buildScripts.JUnit5TestLauncher", // datalore
 )
 
-internal fun BazelRunConfiguration.targetsUseJetBrainsTestRunner(): Boolean {
+internal fun BazelRunConfiguration.targetsUseJetBrainsTestRunner(): Boolean =
+  targetsUseJetBrainsTestRunner(project, targets)
+
+internal fun targetsUseJetBrainsTestRunner(project: Project, targets: List<Label>): Boolean {
   if (targets.isEmpty()) return false
+  val expandedTargets = targets.asSequence().flatMap { expandWildcardTarget(project, it) }
   val targetStorage = project.targetStorage
-  return targets.all { label ->
+  return expandedTargets.all { label ->
     targetStorage.getTargetSummary(label)?.usesJetBrainsTestRunner(project) ?: JetBrainsTestRunner.Detector.anyDetects(project, label)
   }
+}
+
+private fun expandWildcardTarget(project: Project, target: Label): List<Label> {
+  if (target.target !is AllRuleTargets) return listOf(target)
+  val testableSummaries = project.targetStorage.allTestableSummaries()
+  if (testableSummaries.isEmpty()) return listOf(target)  // Monorepo with JPS case
+  val baseDirectory = findReferredPackage(project, target.assumeResolved())?.toNioPathOrNull()
+                      ?: return listOf(target)
+  return testableSummaries
+    .filter { it.baseDirectory.startsWith(baseDirectory) }
+    .map { it.id }
+           .takeIf { it.isNotEmpty() } ?: listOf(target)
 }
 
 @ApiStatus.Internal
@@ -51,7 +71,8 @@ object JetBrainsTestRunner {
 
   internal const val TEST_UNIQUE_IDS: String = "JB_TEST_UNIQUE_IDS"
 
-  internal fun envs(testFilter: String?): Map<String, String> = when (testFilter) {
+  @ApiStatus.Internal
+  fun envs(testFilter: String?): Map<String, String> = when (testFilter) {
     null -> mapOf(IDE_SM_RUN to "true")
     else -> mapOf(IDE_SM_RUN to "true", TEST_FILTER to testFilter)
   }

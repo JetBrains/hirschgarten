@@ -12,11 +12,13 @@ import com.intellij.execution.runners.ExecutionEnvironment
 import com.intellij.execution.runners.ProgramRunner
 import com.intellij.execution.testframework.sm.runner.ui.SMTRunnerConsoleView
 import com.intellij.openapi.actionSystem.AnAction
+import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Ref
 import kotlinx.coroutines.CompletableDeferred
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.commons.TargetKind
+import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.run.BazelProcessHandler
 import org.jetbrains.bazel.run.BazelRunHandler
 import org.jetbrains.bazel.run.commandLine.BazelTestCommandLineState
@@ -24,13 +26,12 @@ import org.jetbrains.bazel.run.config.BazelRunConfiguration
 import org.jetbrains.bazel.run.import.GooglePluginAwareRunHandlerProvider
 import org.jetbrains.bazel.run.task.BazelRunTaskListener
 import org.jetbrains.bazel.run.task.BazelTestTaskListener
-import org.jetbrains.bazel.taskEvents.BazelTaskListener
 import org.jetbrains.bazel.server.BazelServerFacade
 import org.jetbrains.bazel.sync.isJvmTarget
+import org.jetbrains.bazel.taskEvents.BazelTaskListener
 import org.jetbrains.bsp.protocol.TestParams
 import java.nio.file.Path
 import kotlin.io.path.useLines
-import kotlin.sequences.forEach
 
 @ApiStatus.Internal
 class JvmTestHandler(private val configuration: BazelRunConfiguration) : BazelRunHandler {
@@ -77,6 +78,9 @@ class JvmTestHandler(private val configuration: BazelRunConfiguration) : BazelRu
       targets.all {
         (it.isJvmTarget() && it.ruleType == RuleType.TEST)
       }
+
+    override fun canRunNonImported(project: Project, targets: List<Label>): Boolean =
+      targetsUseJetBrainsTestRunner(project, targets)
 
     override val googleHandlerId: String = "BlazeJavaRunConfigurationHandlerProvider"
     override val isTestHandler: Boolean = true

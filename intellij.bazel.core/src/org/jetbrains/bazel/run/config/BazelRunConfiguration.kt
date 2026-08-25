@@ -107,7 +107,7 @@ class BazelRunConfiguration internal constructor(
   private val handlerChangedEventDispatcher = EventDispatcher.create(BazelRunHandlerChangedListener::class.java)
 
   private fun updateHandlerIfDifferentProvider(newProvider: RunHandlerProvider) {
-    if (newProvider == handlerProvider) return
+    if (newProvider::class.java == handlerProvider?.let { it::class.java }) return
     updateHandler(newProvider)
   }
 

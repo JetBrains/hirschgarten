@@ -10,6 +10,9 @@ import org.jetbrains.bazel.commons.BzlmodRepoMapping
 import org.jetbrains.bazel.commons.RepoMapping
 import org.jetbrains.bazel.commons.RepoMappingDisabled
 import org.jetbrains.bazel.commons.constants.Constants.WORKSPACE_FILE_NAMES
+import org.jetbrains.bazel.label.AllPackagesBeneath
+import org.jetbrains.bazel.label.AllRuleTargets
+import org.jetbrains.bazel.label.AllRuleTargetsAndFiles
 import org.jetbrains.bazel.label.AmbiguousEmptyTarget
 import org.jetbrains.bazel.label.Apparent
 import org.jetbrains.bazel.label.Canonical
@@ -40,8 +43,32 @@ fun calculateLabel(
   buildFile: VirtualFile,
   targetName: String? = null,
 ): ResolvedLabel? {
-  val targetBaseDirectory = buildFile.parent ?: return null
-  val containingRepoDirectory = findContainingBazelRepo(targetBaseDirectory) ?: return null
+  val packageLabel = calculatePackageLabel(project, packageDirectory = buildFile.parent) ?: return null
+  return if (targetName != null) {
+    packageLabel.copy(target = SingleTarget(targetName))
+  }
+  else {
+    packageLabel
+  }
+}
+
+@ApiStatus.Internal
+fun calculateWildcardLabel(
+  project: Project,
+  packageDirectory: VirtualFile,
+): ResolvedLabel? {
+  val packageLabel = calculatePackageLabel(project, packageDirectory) ?: return null
+  return packageLabel.copy(
+    packagePath = AllPackagesBeneath(packageLabel.packagePath.pathSegments),
+    target = AllRuleTargets,
+  )
+}
+
+private fun calculatePackageLabel(
+  project: Project,
+  packageDirectory: VirtualFile,
+): ResolvedLabel? {
+  val containingRepoDirectory = findContainingBazelRepo(packageDirectory) ?: return null
   val containingRepoPath = Path.of(containingRepoDirectory.path)
   val containingCanonicalRepoName =
     project.canonicalRepoNameToPath.entries
@@ -49,11 +76,11 @@ fun calculateLabel(
         repoPath == containingRepoPath
       }?.key ?: return null
 
-  val relativeTargetBaseDirectory = VfsUtil.getRelativePath(targetBaseDirectory, containingRepoDirectory, '/') ?: return null
+  val relativeTargetBaseDirectory = VfsUtil.getRelativePath(packageDirectory, containingRepoDirectory, '/') ?: return null
   return ResolvedLabel(
     repo = Canonical.createCanonicalOrMain(containingCanonicalRepoName),
     packagePath = Package(relativeTargetBaseDirectory.split('/').filter { it.isNotEmpty() }),
-    target = targetName?.let { SingleTarget(targetName) } ?: AmbiguousEmptyTarget,
+    target = AmbiguousEmptyTarget,
   )
 }
 
@@ -103,7 +130,11 @@ fun Label.toCanonicalLabel(project: Project): ResolvedLabel? {
       val canonicalRepoName = project.apparentRepoNameToCanonicalName[repo.repoName] ?: return null
       Canonical.createCanonicalOrMain(canonicalRepoName)
     }
-  val target = this.singleTarget() ?: return null
+  val target = when (target) {
+    AllRuleTargets -> target
+    AllRuleTargetsAndFiles -> target
+    else -> this.singleTarget() ?: return null
+  }
   return this.copy(repo = repo, target = target)
 }
 

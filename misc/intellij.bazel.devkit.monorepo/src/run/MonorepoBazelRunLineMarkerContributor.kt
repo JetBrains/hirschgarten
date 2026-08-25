@@ -2,6 +2,7 @@ package com.intellij.bazel.devkit.monorepo.run
 
 import com.intellij.execution.Location
 import com.intellij.execution.PsiLocation
+import com.intellij.execution.actions.ConfigurationContext
 import com.intellij.execution.actions.MultipleRunLocationsProvider
 import com.intellij.lang.java.JavaLanguage
 import com.intellij.monorepo.devkit.bazel.BazelTargetsInfoCache
@@ -12,6 +13,7 @@ import com.intellij.openapi.module.Module
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.roots.ProjectFileIndex
 import com.intellij.openapi.startup.ProjectActivity
+import com.intellij.openapi.util.Ref
 import com.intellij.psi.PsiDirectory
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiManager
@@ -26,10 +28,12 @@ import org.jetbrains.bazel.languages.starlark.psi.StarlarkFile
 import org.jetbrains.bazel.languages.starlark.repomapping.PersistentBazelRepoMappingService
 import org.jetbrains.bazel.languages.starlark.repomapping.calculateLabel
 import org.jetbrains.bazel.project.DefaultProjectViewService
+import org.jetbrains.bazel.run.config.BazelRunConfiguration
 import org.jetbrains.bazel.sync.workspace.targetKind.TargetKindService
 import org.jetbrains.bazel.ui.gutters.BazelRunLocation
 import org.jetbrains.bazel.ui.gutters.NonImportedBuildTarget
 import org.jetbrains.bazel.ui.gutters.StarlarkRunLineMarkerContributor
+import org.jetbrains.bazel.ui.projectTree.action.BazelAllTestsInDirectoryRunConfigurationProducer
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.kotlin.idea.KotlinLanguage
 
@@ -44,16 +48,7 @@ internal class MonorepoBazelContainingTargetsLocationsProvider : MultipleRunLoca
     if (originalLocation !is PsiLocation) return emptyList()
     val element = originalLocation.psiElement
 
-    if (element is PsiDirectory) {
-      val virtualFile = element.virtualFile
-      // Only show the "all tests" gutter on top-level directories because we don't support filtering by package
-      val showAllTestsGutter = virtualFile.findChild("BUILD.bazel") != null ||
-                               (element.virtualFile.name == "test" && element.parentDirectory?.findFile("BUILD.bazel") != null)
-      if (!showAllTestsGutter) return emptyList()
-    }
-
     val mainClassFqn: String? = getMainClassFqn(element)
-
     val bazelRunLocations = MonorepoRunLineMarkerContributorUtil.getTargets(element, mainClassFqn).map { target ->
       if (element is PsiDirectory) {
         BazelRunLocation(element.project, target)
@@ -98,6 +93,28 @@ internal class MonorepoStarlarkRunLineMarkerContributor : StarlarkRunLineMarkerC
     MonorepoRunLineMarkerContributorUtil.isProjectApplicable(project)
 }
 
+internal class MonorepoBazelAllTestsInDirectoryRunConfigurationProducer : BazelAllTestsInDirectoryRunConfigurationProducer() {
+  override fun setupConfigurationFromContext(
+    configuration: BazelRunConfiguration,
+    context: ConfigurationContext,
+    sourceElement: Ref<PsiElement?>,
+  ): Boolean {
+    if (!isProjectApplicable(context.project)) return false
+    val element = context.psiLocation as? PsiDirectory ?: return false
+    val virtualFile = element.virtualFile
+
+    // Only show the "all tests" gutter on top-level directories because we don't support filtering by package
+    val showAllTestsGutter = virtualFile.findChild("BUILD.bazel") != null
+    if (!showAllTestsGutter) return false
+
+    if (!super.setupConfigurationFromContext(configuration, context, sourceElement)) return false
+    return true
+  }
+
+  override fun isProjectApplicable(project: Project): Boolean =
+    MonorepoRunLineMarkerContributorUtil.isProjectApplicable(project)
+}
+
 internal class MonorepoProjectViewStartupActivity : ProjectActivity {
   override suspend fun execute(project: Project) {
     if (!MonorepoRunLineMarkerContributorUtil.isProjectApplicable(project)) return
@@ -131,7 +148,7 @@ internal object MonorepoRunLineMarkerContributorUtil {
 
   fun getTargets(element: PsiElement, mainClassFqn: String?): List<BuildTarget> {
     val project = element.project
-    val containingFile = if (element is PsiDirectory) element.virtualFile else element.containingFile?.virtualFile ?: return emptyList()
+    val containingFile = element.containingFile?.virtualFile ?: return emptyList()
     val projectFileIndex = ProjectFileIndex.getInstance(project)
     val module = projectFileIndex.getModuleForFile(containingFile) ?: return emptyList()
 
