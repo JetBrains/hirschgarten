@@ -53,7 +53,7 @@ class DependencyBuilderTest {
   }
 
   @Test
-  fun `a library dependency shadowing a source module becomes a exported module dependency`() {
+  fun `a shadowed library adds the producer module and keeps the library dependency`() {
     val libLabel = Label.parse("//lib")
     val producer = Label.parse("//producer")
     val target = jvmTarget(
@@ -63,14 +63,15 @@ class DependencyBuilderTest {
 
     val resolved = listOf(target).resolveDeps(
       target,
-      libraryShadowsModule = mapOf(libLabel.asKey() to producer.asKey()),
+      libraryShadowedProducers = mapOf(libLabel.asKey() to listOf(producer.asKey())),
     )
 
+    // The producer module replaces the shadowed jar. The library dependency stays
+    // for the remaining jars. A library replaced in full holds no jars and is
+    // absent from the project libraries, so its dependency then resolves to nothing.
     resolved.dependencies shouldContainExactlyInAnyOrder listOf(
-      DependencyLabel(
-        producer.asKey(),
-        DependencyLabelKind.EXPORTED_COMPILE_TIME,
-      ),
+      DependencyLabel(producer.asKey(), DependencyLabelKind.EXPORTED_COMPILE_TIME),
+      DependencyLabel(libLabel.asKey(), DependencyLabelKind.EXPORTED_COMPILE_TIME),
     )
   }
 
@@ -255,7 +256,7 @@ class DependencyBuilderTest {
 
     val resolved = listOf(targetX, targetA, targetB).resolveDeps(
       targetX,
-      libraryShadowsModule = mapOf(libB.asKey() to b.asKey()),
+      libraryShadowedProducers = mapOf(libB.asKey() to listOf(b.asKey())),
     )
 
     resolved.strictDependencies shouldContainExactlyInAnyOrder listOf(a)
@@ -346,9 +347,9 @@ class DependencyBuilderTest {
 
   private fun List<BuildTarget>.resolveDeps(
     target: BuildTarget,
-    libraryShadowsModule: Map<WorkspaceTargetKey, WorkspaceTargetKey> = emptyMap(),
+    libraryShadowedProducers: Map<WorkspaceTargetKey, List<WorkspaceTargetKey>> = emptyMap(),
   ): DependencyBuilder.Resolved =
-    DependencyBuilder(this, resolvedByKey, libraryShadowsModule).resolve(target)
+    DependencyBuilder(this, resolvedByKey, libraryShadowedProducers).resolve(target)
 
   private fun jvmTarget(
     label: String,

@@ -35,7 +35,7 @@ private val idInterner: Interner<SymbolicEntityId<*>> = Interner.createWeakInter
 class DependencyBuilder(
   private val targets: Collection<BuildTarget>,
   private val jvmResolved: Map<WorkspaceTargetKey, JvmResolvedTarget>,
-  private val libraryShadowsModule: Map<WorkspaceTargetKey, WorkspaceTargetKey> = emptyMap(),
+  private val libraryShadowedProducers: Map<WorkspaceTargetKey, List<WorkspaceTargetKey>> = emptyMap(),
 ) {
   private val strictDependencies: Map<WorkspaceTargetKey, List<Label>> = calculateExportedDependenciesTransitiveClosure()
 
@@ -46,17 +46,17 @@ class DependencyBuilder(
   )
 
   fun resolve(target: BuildTarget): Resolved {
-    val deps = jvmResolved[target.key.stripAspects()]?.jvmDependencies?.map { dep ->
+    val deps = jvmResolved[target.key.stripAspects()]?.jvmDependencies?.flatMap { dep ->
       // TODO: investigate "experimental_prune_transitive_deps" option in .bazelrc
       when (dep) {
         is JvmDependency.ModuleDependency ->
           // TODO: Ultimate monorepo specifics. Drop shortly
           if (target.kind.kind == "jvm_library" || target.kind.kind == "_jvm_library_jps")
-            dep.dependency
-          else dep.dependency.export()
+            listOf(dep.dependency)
+          else listOf(dep.dependency.export())
 
         is JvmDependency.LibraryDependency ->
-          redirectLibraryShadow(target.key, dep.dependency)?.export() ?: dep.dependency.export()
+          redirectLibraryShadow(target.key, dep.dependency).map { it.export() }
       }
     }?.distinct() ?: target.dependencies
     return Resolved(
@@ -76,7 +76,7 @@ class DependencyBuilder(
 
     val fDependencies: ((WorkspaceTargetKey) -> List<DependencyLabel>) = dependencies@{ key ->
       val resolved = jvmResolved[key] ?: return@dependencies emptyList()
-      resolved.jvmDependencies.map { redirectLibraryShadow(key, it.dependency) ?: it.dependency }
+      resolved.jvmDependencies.flatMap { redirectLibraryShadow(key, it.dependency) }
         .filter { it.targetKey.label != key.label /* filter out module dependency on library */ }
         .distinct()
     }
@@ -101,12 +101,17 @@ class DependencyBuilder(
       }
   }
 
-  private fun redirectLibraryShadow(consumer: WorkspaceTargetKey, dep: DependencyLabel): DependencyLabel? {
-    val producer = libraryShadowsModule[dep.targetKey] ?: return null
-    if (producer.stripAspects() == consumer.stripAspects()) {
-      return null
-    }
-    return DependencyLabel(targetKey = producer)
+  // Adds a dependency on each source module that produces the library's shadowed
+  // jars, and keeps the library dependency for the jars that remain. A library
+  // that source modules replace in full holds no jars, so it is absent from the
+  // project libraries and its dependency resolves to nothing. A dependency that
+  // shadows nothing stays unchanged.
+  private fun redirectLibraryShadow(consumer: WorkspaceTargetKey, dep: DependencyLabel): List<DependencyLabel> {
+    val producers = libraryShadowedProducers[dep.targetKey] ?: return listOf(dep)
+    val moduleDeps = producers
+      .filter { it.stripAspects() != consumer.stripAspects() }
+      .map { DependencyLabel(targetKey = it, kind = dep.kind) }
+    return moduleDeps + dep
   }
 }
 

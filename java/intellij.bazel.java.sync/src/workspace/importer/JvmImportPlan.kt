@@ -8,7 +8,6 @@ import org.jetbrains.bazel.sync.workspace.importer.GlobalNamingContext.NameSpace
 import org.jetbrains.bazel.sync.workspace.importer.GlobalNamingContextBuilder
 import org.jetbrains.bazel.sync.workspace.languages.jvm.JvmBuildTarget
 import org.jetbrains.bazel.sync.workspace.languages.jvm.KotlinBuildTarget
-import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceAspectIds
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetMerger
 import org.jetbrains.bazel.sync.workspace.snapshot.allSources
@@ -48,21 +47,33 @@ class JvmImportPlan(
       .mapNotNull { (jar, owners) -> owners.distinct().singleOrNull()?.let { jar to it } }
       .toMap()
 
-  val libraryShadowsModule: Map<WorkspaceTargetKey, WorkspaceTargetKey> =
+  // A jar shadows a library entry when a source module (not the library's own
+  // module) produces it. That jar belongs to the module, not to the library.
+  // Own-module jars stay. Annotation-processor output is a self-referential
+  // library, so it must not shadow itself.
+  private fun LibraryItem.shadowingProducerOf(jar: Path): WorkspaceTargetKey? =
+    jarToSourceModule[jar]?.takeIf { it.stripAspects() != key.stripAspects() }
+
+  // Each library maps to the distinct source modules that produce some of its
+  // jars. The import replaces those jars with a module dependency.
+  val libraryShadowedProducers: Map<WorkspaceTargetKey, List<WorkspaceTargetKey>> =
     allLibraries.asSequence()
       .mapNotNull { lib ->
-        val producer = lib.jars.firstNotNullOfOrNull { jarToSourceModule[it] } ?: return@mapNotNull null
-        // don't shadow own module generated, annotation processor generated code
-        // is just self-referential library, so ignore it immediately
-        if (producer.copy(aspectIds = WorkspaceAspectIds.EMPTY)
-          == lib.key.copy(aspectIds = WorkspaceAspectIds.EMPTY)) {
-          return@mapNotNull null
-        }
-        lib.key to producer
+        val producers = (lib.jars + lib.ijars).mapNotNull { lib.shadowingProducerOf(it) }.distinct()
+        if (producers.isEmpty()) null else lib.key to producers
       }
       .toMap()
 
-  val libraries: List<LibraryItem> = allLibraries.filterNot { it.key in libraryShadowsModule }
+  val libraries: List<LibraryItem> =
+    allLibraries.mapNotNull { lib ->
+      if (lib.key !in libraryShadowedProducers) return@mapNotNull lib
+      // Keep only the jars that no other source module produces. The shadowed
+      // jars come from module dependencies instead. See [JavaCustomPackagingTest]
+      val keptJars = lib.jars.filter { lib.shadowingProducerOf(it) == null }
+      val keptIjars = lib.ijars.filter { lib.shadowingProducerOf(it) == null }
+      if (keptJars.isEmpty() && keptIjars.isEmpty()) return@mapNotNull null
+      lib.copy(jars = keptJars, ijars = keptIjars)
+    }
 
   val moduleKeys: List<WorkspaceTargetKey> = targets.asSequence()
     .filter { it.kind.isJvmTarget() }
