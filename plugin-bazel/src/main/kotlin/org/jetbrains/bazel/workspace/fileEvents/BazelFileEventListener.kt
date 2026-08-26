@@ -290,7 +290,9 @@ class BazelFileEventListener : BulkFileListenerBackgroundable {
     val modulesAlreadyContainingFiles =
       applicableEvents.associateNewFilePathsWithExistingModules(existingModulesByEvent)
     val addedFilePaths = applicableEvents.mapNotNull { it.fileAdded }
+    val hasExternalCreateEvents = applicableEvents.any { it is SimplifiedFileEvent.ExternalCreate }
     val bazelQueryIsRequired =
+      hasExternalCreateEvents ||
       addedFilePaths.any {
         modulesToRemoveFilesFrom[it]?.isNotEmpty() == true || modulesAlreadyContainingFiles[it].isNullOrEmpty()
       }
