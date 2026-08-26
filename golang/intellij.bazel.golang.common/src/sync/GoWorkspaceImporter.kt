@@ -16,7 +16,6 @@ import com.intellij.platform.workspace.storage.EntitySource
 import com.intellij.platform.workspace.storage.MutableEntityStorage
 import com.intellij.platform.workspace.storage.impl.url.toVirtualFileUrl
 import com.intellij.util.containers.Interner
-import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.golang.workspace.GO_WORKSPACE_MODULE_NAME
@@ -201,6 +200,7 @@ internal class GoWorkspaceImporter : BazelWorkspaceImporter, BazelWorkspaceImpor
   private suspend fun onPostProcessing(context: WorkspaceImporterContext) {
     calculateAndAddGoSdk(context.progressReporter, context.project, context.taskId)
     PropertiesComponent.getInstance().setValue(DO_NOT_SHOW_NOTIFICATION_ABOUT_EMPTY_GOPATH, true)
+    GoExternalLibraryManager.getInstance(context.project).update()
   }
 
   private suspend fun calculateAndAddGoSdk(
