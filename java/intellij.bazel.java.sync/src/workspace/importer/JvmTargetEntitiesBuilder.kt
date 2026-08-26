@@ -86,7 +86,7 @@ class ImportContext(
 ) {
   val targets: List<BuildTarget> get() = plan.targets
 
-  val libraryShadowsModule: Map<WorkspaceTargetKey, WorkspaceTargetKey> get() = plan.libraryShadowsModule
+  val libraryShadowedProducers: Map<WorkspaceTargetKey, List<WorkspaceTargetKey>> get() = plan.libraryShadowedProducers
 
   val libraries: List<LibraryItem> get() = plan.libraries
 
@@ -102,7 +102,7 @@ class ImportContext(
     libraries.groupBy({ it.key.label }, { libraryNamesByKey[it.key]!! })
       .mapValues { (_, names) -> names.distinct() }
 
-  val dependencyBuilder: DependencyBuilder = DependencyBuilder(this.targets, jvmResolved, libraryShadowsModule)
+  val dependencyBuilder: DependencyBuilder = DependencyBuilder(this.targets, jvmResolved, libraryShadowedProducers)
   val dummyModuleSplitter: DummyModuleSplitter = DummyModuleSplitter(projectBasePath, fileToTargets)
 }
 
