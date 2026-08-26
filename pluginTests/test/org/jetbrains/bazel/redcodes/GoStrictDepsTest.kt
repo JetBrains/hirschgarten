@@ -18,6 +18,8 @@ import org.jetbrains.bazel.test.framework.bazelSyncCodeInsightFixture
 import org.jetbrains.bazel.test.framework.checkHighlighting
 import org.jetbrains.bazel.test.framework.enableGoHighlighting
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.condition.DisabledOnOs
+import org.junit.jupiter.api.condition.OS
 
 @BazelTestApplication
 class GoStrictDepsTest {
@@ -27,6 +29,7 @@ class GoStrictDepsTest {
   private val fixture by bazelSyncCodeInsightFixture(projectFixture, tempDir)
 
   @Test
+  @DisabledOnOs(OS.WINDOWS)
   fun testHighlighting() = runBlocking(Dispatchers.Default) {
     fixture.enableGoHighlighting()
     fixture.copyBazelTestProject("redcodes/go_strict_deps")

@@ -5,6 +5,7 @@ import com.intellij.psi.PsiDocumentManager
 import com.intellij.testFramework.IndexingTestUtil
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
 import org.jetbrains.bazel.languages.starlark.StarlarkBundle
+import org.jetbrains.bazel.languages.starlark.fixtures.StarlarkInspectionTestCase
 import org.jetbrains.bazel.project.BazelProjectFixtures.initializeBazelProject
 import org.junit.Before
 import org.junit.Test
@@ -12,12 +13,11 @@ import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
 
 @RunWith(JUnit4::class)
-class StarlarkLoadCycleInspectionTest : BasePlatformTestCase() {
+class StarlarkLoadCycleInspectionTest : StarlarkInspectionTestCase() {
   private val description = StarlarkBundle.message("inspection.description.load.cycle")
 
   @Before
   fun beforeEach() {
-    initializeBazelProject(project, myFixture.tempDirPath)
     myFixture.enableInspections(StarlarkLoadCycleInspection())
   }
 
