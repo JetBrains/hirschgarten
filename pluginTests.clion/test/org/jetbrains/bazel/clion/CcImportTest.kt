@@ -3,8 +3,6 @@ package org.jetbrains.bazel.clion
 import com.intellij.openapi.components.service
 import com.intellij.testFramework.common.timeoutRunBlocking
 import com.intellij.testFramework.junit5.SystemPropertyClassLevel
-import com.intellij.testFramework.junit5.fixture.projectFixture
-import com.intellij.testFramework.junit5.fixture.tempPathFixture
 import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.collections.shouldContainAll
@@ -12,13 +10,12 @@ import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.maps.shouldContain
 import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.runBlocking
 import org.jetbrains.bazel.clion.sync.CC_LANGUAGE_CLASS
 import org.jetbrains.bazel.clion.sync.CcBuildTarget
 import org.jetbrains.bazel.clion.sync.CcToolchainBuildTarget
 import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.config.BazelFeatureFlags
+import org.jetbrains.bazel.fixtures.clionBazelProjectFixture
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.matcher.shouldBeExecutionRootPath
 import org.jetbrains.bazel.matcher.shouldContainArtifact
@@ -29,32 +26,20 @@ import org.jetbrains.bazel.sync.workspace.persistence.WorkspaceSnapshotService
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
 import org.jetbrains.bazel.sync.workspace.snapshot.hasBuildData
 import org.jetbrains.bazel.test.framework.BazelTestApplication
-import org.jetbrains.bazel.test.framework.bazelSyncCodeInsightFixture
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.extractData
-import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
-import kotlin.time.Duration.Companion.minutes
 
+@SystemPropertyClassLevel(BazelFeatureFlags.USE_PTY, "false") // otherwise tests fail due to a leaked timer
 @BazelTestApplication
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-@SystemPropertyClassLevel(BazelFeatureFlags.USE_PTY, "false") // otherwise tests fail due to a leaked timer
 class CcImportTest {
 
-  private val projectFixture = projectFixture(openAfterCreation = true)
-  private val tempDir = tempPathFixture()
-  private val fixture by bazelSyncCodeInsightFixture(projectFixture, tempDir)
-
-  @BeforeAll
-  fun setup(): Unit = timeoutRunBlocking(timeout = 5.minutes) {
-    // note: loads test projects from testData sibling module
-    fixture.copyBazelTestProject("clion/simple")
-    fixture.performBazelSync()
-  }
+  private val project by clionBazelProjectFixture("clion/simple")
 
   private suspend fun findTarget(label: Label): List<BuildTarget> {
-    val snapshot = fixture.project.service<WorkspaceSnapshotService>().currentSnapshot()
+    val snapshot = project.service<WorkspaceSnapshotService>().currentSnapshot()
 
     return snapshot.targetGraph.allTargets
       .filter { it.targetKey.label == label }
@@ -67,7 +52,7 @@ class CcImportTest {
   }
 
   private suspend fun findTarget(key: WorkspaceTargetKey): BuildTarget? {
-    val snapshot = fixture.project.service<WorkspaceSnapshotService>().currentSnapshot()
+    val snapshot = project.service<WorkspaceSnapshotService>().currentSnapshot()
     return snapshot.targetGraph.findTargetByKey(key, strict = true)?.load(snapshot.targets, TargetLoadOptions.ALL)
   }
 
