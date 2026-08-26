@@ -183,6 +183,21 @@ class TargetUtils(private val project: Project, private val coroutineScope: Coro
     notifyTargetListUpdated()
   }
 
+  /**
+   * Merges partial sync targets into the cache without clearing existing entries.
+   * Updates labelToTargetInfo, moduleIdToTarget, and fileToTargets for the given targets
+   * while preserving all other project targets in the cache.
+   */
+  fun mergePartialTargets(targets: List<RawBuildTarget>, fileToTarget: Map<Path, List<Label>>) {
+    ThreadingAssertions.assertBackgroundThread()
+    val labelToTargetInfo = targets.associateBy { it.id }
+    db.addTargets(labelToTargetInfo, project)
+    for ((path, labels) in fileToTarget) {
+      db.addFileToTarget(path, labels)
+    }
+    notifyTargetListUpdated()
+  }
+
   // todo expensive operation
   fun computeFullLabelToTargetInfoMap(syncedTargetIdToTargetInfo: Map<Label, BuildTarget>): Map<Label, BuildTarget> =
     db.computeFullLabelToTargetInfoMap(syncedTargetIdToTargetInfo)

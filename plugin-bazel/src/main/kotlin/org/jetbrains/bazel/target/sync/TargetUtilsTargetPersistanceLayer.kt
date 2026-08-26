@@ -18,6 +18,16 @@ internal class TargetUtilsTargetPersistanceLayer : BazelTargetPersistenceLayer {
     )
   }
 
+  override suspend fun mergePartial(
+    project: Project,
+    spec: TargetPersistenceSpec,
+  ) {
+    project.targetUtils.mergePartialTargets(
+      targets = spec.targets,
+      fileToTarget = spec.file2Target,
+    )
+  }
+
   override suspend fun notifyAll(project: Project) {
     project.targetUtils.notifyTargetListUpdated()
   }

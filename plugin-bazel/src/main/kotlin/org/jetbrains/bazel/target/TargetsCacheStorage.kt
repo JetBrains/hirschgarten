@@ -207,7 +207,7 @@ class TargetsCacheStorage(
   }
 
   fun addTargets(labelToTargetInfo: Map<Label, BuildTarget>, project: Project) {
-    val hashStream = Hashing.xxh3_128()
+    val hashStream = Hashing.xxh3_64()
       .hashStream()
     for ((label, info) in labelToTargetInfo) {
       // must be canonical label
