@@ -58,6 +58,7 @@ jvm_library(
         "@community//platform/testIntegration",
         "@community//platform/testRunner",
         "@community//platform/workspace/jps",
+        "//plugins/bazel/intellij.bazel.projectview:projectview",
     ],
 )
 
@@ -110,6 +111,7 @@ jvm_library(
         "@community//platform/testIntegration:testIntegration_test_lib",
         "@community//platform/testRunner:testRunner_test_lib",
         "@community//platform/workspace/jps:jps_test_lib",
+        "//plugins/bazel/intellij.bazel.projectview:projectview_test_lib",
     ],
 )
 ### auto-generated section `build intellij.bazel.golang.common` end
