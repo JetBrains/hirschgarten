@@ -198,6 +198,7 @@ internal class GoWorkspaceImporter : BazelWorkspaceImporter, BazelWorkspaceImpor
   private suspend fun onPostProcessing(context: WorkspaceImporterContext) {
     calculateAndAddGoSdk(context.progressReporter, context.project, context.taskId)
     GoWrongSdkConfigurationNotificationProvider.disableNotification(context.project)
+    GoExternalLibraryManager.getInstance(context.project).update()
   }
 
   private suspend fun calculateAndAddGoSdk(

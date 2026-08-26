@@ -1,6 +1,6 @@
 package org.jetbrains.bazel.golang.sync
 
-import com.intellij.openapi.application.edtWriteAction
+import com.intellij.openapi.application.runWriteAction
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
@@ -9,14 +9,9 @@ import com.intellij.openapi.vfs.toNioPathOrNull
 import com.intellij.platform.backend.workspace.workspaceModel
 import com.intellij.platform.workspace.storage.entities
 import com.intellij.workspaceModel.ide.toPath
-import kotlinx.coroutines.sync.Mutex
-import kotlinx.coroutines.sync.withLock
-import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.config.isBazelProject
 import org.jetbrains.bazel.config.rootDir
-import org.jetbrains.bazel.coroutines.BazelCoroutineService
-import org.jetbrains.bazel.sync.ProjectPostSyncHook
-import org.jetbrains.bazel.utils.refreshAndFindVirtualFile
+import org.jetbrains.bazel.utils.findVirtualFile
 import org.jetbrains.bazel.workspacemodel.entities.BazelGoPackageEntity
 import java.nio.file.Path
 import kotlin.io.path.extension
@@ -24,31 +19,28 @@ import kotlin.io.path.extension
 @Service(Service.Level.PROJECT)
 internal class GoExternalLibraryManager(private val project: Project) {
   @Volatile
-  var library: GoExternalSyntheticLibrary? = null
+  var library: GoExternalSyntheticLibrary
     private set
 
-  private val updateMutex = Mutex()
-
   init {
-    update()
+    library = createExternalLibrary()
   }
 
   fun update() {
-    // this must be done asynchronously to be able to refresh and find virtual file under read lock
-    // https://youtrack.jetbrains.com/issue/BAZEL-2265
-    BazelCoroutineService.getInstance(project).start {
-      doUpdate()
+    val newLibrary = createExternalLibrary()
+    synchronized(this) {
+      if (library == newLibrary) return
+      library = newLibrary
     }
+    fireLibraryChanged(newLibrary)
   }
 
-  private suspend fun doUpdate() = updateMutex.withLock {
-    val files = getLibraryFiles(project).mapNotNull { it.refreshAndFindVirtualFile() }
-    val library = GoExternalSyntheticLibrary(files)
-    this.library = library
-    fireLibraryChanged(library)
+  private fun createExternalLibrary(): GoExternalSyntheticLibrary {
+    val files = getLibraryFiles(project).mapNotNull { it.findVirtualFile() }
+    return GoExternalSyntheticLibrary(files)
   }
 
-  fun getLibraryFiles(project: Project): List<Path> {
+  private fun getLibraryFiles(project: Project): List<Path> {
     if (!project.isBazelProject) return emptyList()
     val workspacePath = project.rootDir.toNioPathOrNull() ?: return emptyList()
 
@@ -61,28 +53,25 @@ internal class GoExternalLibraryManager(private val project: Project) {
         // Files inside the workspace are handled by GoWorkspaceImporter
         .filter { !it.startsWith(workspacePath) && it.extension == "go" }
         .distinct()
+        .sorted()  // Make sure resyncs without changes produce the same result
         .toList()
     return libraryFiles
   }
 
-  private suspend fun fireLibraryChanged(library: GoExternalSyntheticLibrary) = edtWriteAction {
-    AdditionalLibraryRootsListener.fireAdditionalLibraryChanged(
-      project,
-      library.presentableText,
-      emptyList(),
-      library.allRoots,
-      GoExternalLibraryManager::class.java.name,
-    )
+  private fun fireLibraryChanged(library: GoExternalSyntheticLibrary) {
+    runWriteAction {
+      AdditionalLibraryRootsListener.fireAdditionalLibraryChanged(
+        project,
+        library.presentableText,
+        emptyList(),
+        library.allRoots,
+        GoExternalLibraryManager::class.java.name,
+      )
+    }
   }
 
   companion object {
     @JvmStatic
     fun getInstance(project: Project): GoExternalLibraryManager = project.service<GoExternalLibraryManager>()
-  }
-}
-
-private class GoExternalLibraryPostSyncHook : ProjectPostSyncHook {
-  override suspend fun onPostSync(environment: ProjectPostSyncHook.ProjectPostSyncHookEnvironment) {
-    GoExternalLibraryManager.getInstance(environment.project).update()
   }
 }
