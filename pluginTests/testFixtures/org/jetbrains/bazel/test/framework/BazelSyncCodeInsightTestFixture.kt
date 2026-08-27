@@ -22,10 +22,14 @@ import com.intellij.testFramework.fixtures.IdeaProjectTestFixture
 import com.intellij.testFramework.fixtures.TempDirTestFixture
 import com.intellij.testFramework.fixtures.impl.CodeInsightTestFixtureImpl
 import com.intellij.testFramework.junit5.fixture.TestFixture
+import com.intellij.testFramework.junit5.fixture.projectFixture
+import com.intellij.testFramework.junit5.fixture.tempPathFixture
+import com.intellij.testFramework.junit5.fixture.testFixture
 import com.intellij.testFramework.replaceService
 import com.intellij.util.lang.UrlClassLoader
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
+import org.jetbrains.annotations.TestOnly
 import org.jetbrains.bazel.bazelrunner.BazelProcessLauncherProvider
 import org.jetbrains.bazel.bazelrunner.BazelProcessResult
 import org.jetbrains.bazel.bazelrunner.BazelRunner
@@ -80,6 +84,68 @@ fun bazelSyncCodeInsightFixture(
   projectFixture: TestFixture<Project>,
   tempDirFixture: TestFixture<Path>,
 ) = codeInsightFixture(projectFixture, tempDirFixture, ::BazelSyncCodeInsightTestFixtureImpl)
+
+/**
+ * Copies the project at [projectPath], syncs it, and returns the ready [Project].
+ *
+ * The copy and the sync run during the fixture setup. [configure] runs after the copy and before the
+ * sync. Use it for setup that a sync needs, for example [enableGoHighlighting].
+ *
+ * Use this when a test needs only the [Project]. Use [bazelSyncCodeInsightFixture] when the test also
+ * needs code insight, for example [checkHighlighting].
+ */
+@TestOnly
+fun bazelProjectFixture(
+  projectPath: String,
+  buildProject: Boolean = false,
+  bazelVersion: String? = null,
+  projectView: String? = null,
+  configure: suspend (BazelSyncCodeInsightTestFixture) -> Unit = {},
+): TestFixture<Project> = testFixture(debugString = "bazelProject") {
+  val fixture = bazelSyncCodeInsightFixture(projectFixture(openAfterCreation = true), tempPathFixture()).init()
+  fixture.syncBazelTestProject(projectPath, buildProject, bazelVersion, projectView, configure)
+  initialized(fixture.project) {}
+}
+
+/**
+ * Copies the project at [projectPath], syncs it, and returns the ready [BazelSyncCodeInsightTestFixture].
+ *
+ * The copy and the sync run during the fixture setup. [configure] runs after the copy and before the
+ * sync. Use it for setup that a sync needs, for example [enableGoHighlighting].
+ *
+ * Use this when a test needs code insight, for example [checkHighlighting]. Use [bazelProjectFixture]
+ * when the test needs only the [Project].
+ */
+@TestOnly
+fun bazelSyncCodeInsightFixture(
+  projectPath: String,
+  buildProject: Boolean = false,
+  bazelVersion: String? = null,
+  projectView: String? = null,
+  configure: suspend (BazelSyncCodeInsightTestFixture) -> Unit = {},
+): TestFixture<BazelSyncCodeInsightTestFixture> = testFixture(debugString = "bazelSyncCodeInsight") {
+  val fixture = bazelSyncCodeInsightFixture(projectFixture(openAfterCreation = true), tempPathFixture()).init()
+  fixture.syncBazelTestProject(projectPath, buildProject, bazelVersion, projectView, configure)
+  initialized(fixture) {}
+}
+
+private suspend fun BazelSyncCodeInsightTestFixture.syncBazelTestProject(
+  projectPath: String,
+  buildProject: Boolean,
+  bazelVersion: String?,
+  projectView: String?,
+  configure: suspend (BazelSyncCodeInsightTestFixture) -> Unit,
+) {
+  copyBazelTestProject(projectPath)
+  if (bazelVersion != null) {
+    setBazelVersion(bazelVersion)
+  }
+  if (projectView != null) {
+    setProjectView(projectView)
+  }
+  configure(this)
+  performBazelSync(buildProject)
+}
 
 class BazelSyncCodeInsightTestFixtureImpl(
   projectFixture: IdeaProjectTestFixture,

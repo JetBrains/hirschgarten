@@ -3,12 +3,10 @@ package org.jetbrains.bazel.fixtures
 import com.intellij.clion.testFramework.nolang.junit5.core.LanguageEngine
 import com.intellij.openapi.project.Project
 import com.intellij.testFramework.junit5.fixture.TestFixture
-import com.intellij.testFramework.junit5.fixture.projectFixture
-import com.intellij.testFramework.junit5.fixture.tempPathFixture
 import com.intellij.testFramework.junit5.fixture.testFixture
 import org.jetbrains.annotations.TestOnly
 import org.jetbrains.bazel.test.framework.BazelSyncCodeInsightTestFixture
-import org.jetbrains.bazel.test.framework.bazelSyncCodeInsightFixture
+import org.jetbrains.bazel.test.framework.bazelProjectFixture
 
 /**
  * Opens the Bazel test project at [projectPath], runs a real `performBazelSync`, brings up the CLion
@@ -35,18 +33,7 @@ internal fun clionBazelProjectFixture(
 
   System.setProperty("patch.engine.backend.freeze.timeout", "-1")
 
-  val fixture = bazelSyncCodeInsightFixture(projectFixture(openAfterCreation = true), tempPathFixture()).init()
-  fixture.copyBazelTestProject(projectPath)
-  if (bazelVersion != null) {
-    fixture.setBazelVersion(bazelVersion)
-  }
-  if (projectView != null) {
-    fixture.setProjectView(projectView)
-  }
-  configure(fixture)
-  fixture.performBazelSync(buildProject)
-
-  val project = fixture.project
+  val project = bazelProjectFixture(projectPath, buildProject, bazelVersion, projectView, configure).init()
   LanguageEngine.INSTANCE.afterProjectOpened(project)
   LanguageEngine.INSTANCE.waitForSymbols(project)
 
