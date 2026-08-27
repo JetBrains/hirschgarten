@@ -50,4 +50,23 @@ class StarlarkFoldingTest : BasePlatformTestCase() {
       description,
     )
   }
+
+  fun testRegion() = myFixture.testFolding(getTestDataPath() + "/region.bzl")
+
+  fun testRegionNoDescription() = myFixture.testFolding(getTestDataPath() + "/regionNoDescription.bzl")
+
+  fun testRegionNested() = myFixture.testFolding(getTestDataPath() + "/regionNested.bzl")
+
+  fun testRegionInFunction() = myFixture.testFolding(getTestDataPath() + "/regionInFunction.bzl")
+
+  /** An unpaired marker makes no region. */
+  fun testRegionUnmatched() = myFixture.testFolding(getTestDataPath() + "/regionUnmatched.bzl")
+
+  fun testRegionAroundCall() = myFixture.testFolding(getTestDataPath() + "/regionAroundCall.bzl")
+
+  /** Extra hash characters before the marker still make a region. */
+  fun testRegionExtraHashes() = myFixture.testFolding(getTestDataPath() + "/regionExtraHashes.bzl")
+
+  /** The NetBeans style markers also make a region. */
+  fun testEditorFold() = myFixture.testFolding(getTestDataPath() + "/editorFold.bzl")
 }

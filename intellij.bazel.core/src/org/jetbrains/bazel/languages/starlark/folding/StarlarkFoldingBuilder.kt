@@ -1,24 +1,32 @@
 package org.jetbrains.bazel.languages.starlark.folding
 
 import com.intellij.lang.ASTNode
-import com.intellij.lang.folding.FoldingBuilderEx
+import com.intellij.lang.folding.CustomFoldingBuilder
 import com.intellij.lang.folding.FoldingDescriptor
 import com.intellij.openapi.editor.Document
 import com.intellij.openapi.util.TextRange
 import com.intellij.psi.PsiElement
 import com.intellij.psi.util.PsiTreeUtil
+import org.jetbrains.bazel.languages.starlark.elements.StarlarkElementTypes
+import org.jetbrains.bazel.languages.starlark.elements.StarlarkTokenTypes
+import org.jetbrains.bazel.languages.starlark.psi.StarlarkFile
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkCallExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkListLiteralExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkParenthesizedExpression
 
-internal class StarlarkFoldingBuilder : FoldingBuilderEx() {
-  override fun buildFoldRegions(
+/**
+ * Folds Starlark expressions.
+ *
+ * The base class adds the custom folding regions, for example a `#region` and
+ * `#endregion` comment pair.
+ */
+internal class StarlarkFoldingBuilder : CustomFoldingBuilder() {
+  override fun buildLanguageFoldRegions(
+    descriptors: MutableList<FoldingDescriptor>,
     root: PsiElement,
     document: Document,
     quick: Boolean,
-  ): Array<FoldingDescriptor> {
-    val descriptors = mutableListOf<FoldingDescriptor>()
-
+  ) {
     val blockElements =
       listOf(
         PsiTreeUtil.findChildrenOfType(root, StarlarkParenthesizedExpression::class.java),
@@ -33,10 +41,9 @@ internal class StarlarkFoldingBuilder : FoldingBuilderEx() {
         descriptors.add(FoldingDescriptor(block.node, TextRange(startOffset, endOffset)))
       }
     }
-    return descriptors.toTypedArray()
   }
 
-  override fun getPlaceholderText(node: ASTNode): String? =
+  override fun getLanguagePlaceholderText(node: ASTNode, range: TextRange): String =
     when (val psiElement = node.psi) {
       is StarlarkParenthesizedExpression -> "(...)"
       is StarlarkListLiteralExpression -> "[...]"
@@ -50,5 +57,16 @@ internal class StarlarkFoldingBuilder : FoldingBuilderEx() {
     return "$functionName($targetName)"
   }
 
-  override fun isCollapsedByDefault(node: ASTNode): Boolean = false
+  override fun isRegionCollapsedByDefault(node: ASTNode): Boolean = false
+
+  /** Only a `#` comment can hold a custom folding marker. */
+  override fun isCustomFoldingCandidate(node: ASTNode): Boolean = node.elementType == StarlarkTokenTypes.COMMENT
+
+  /**
+   * Limits a custom folding region to one file or to one statement list.
+   *
+   * A start marker and an end marker in two different function bodies do not make a region.
+   */
+  override fun isCustomFoldingRoot(node: ASTNode): Boolean =
+    node.psi is StarlarkFile || node.elementType == StarlarkElementTypes.STATEMENT_LIST
 }
