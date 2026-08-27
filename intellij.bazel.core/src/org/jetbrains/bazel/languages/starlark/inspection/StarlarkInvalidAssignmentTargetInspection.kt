@@ -5,13 +5,11 @@ import com.intellij.codeInspection.ProblemsHolder
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiElementVisitor
 import com.intellij.psi.PsiFile
-import com.intellij.psi.tree.TokenSet
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.languages.starlark.StarlarkBundle
 import org.jetbrains.bazel.languages.starlark.StarlarkFileType
-import org.jetbrains.bazel.languages.starlark.elements.StarlarkTokenSets
-import org.jetbrains.bazel.languages.starlark.elements.StarlarkTokenTypes
-import org.jetbrains.bazel.languages.starlark.psi.StarlarkBaseElement
+import org.jetbrains.bazel.languages.starlark.StarlarkUtils.nearestRelevantBeforeOperator
+import org.jetbrains.bazel.languages.starlark.StarlarkUtils.selectLeftHandSideOfAssignment
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkElementVisitor
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkListLiteralExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkParenthesizedExpression
@@ -50,8 +48,6 @@ class StarlarkInvalidAssignmentTargetInspection : LocalInspectionTool() {
       else selectLeftHandSideOfAssignment(node)?.let(::searchForInvalidTargetAndReport)
     }
 
-    private fun selectLeftHandSideOfAssignment(node: PsiElement): PsiElement? = nearestRelevantBeforeOperator(node.firstChild)
-
     private fun searchForInvalidTargetAndReport(target: PsiElement) {
       val invalid = firstInvalidTarget(target) ?: return
       holder.registerProblem(
@@ -84,26 +80,5 @@ class StarlarkInvalidAssignmentTargetInspection : LocalInspectionTool() {
 
         else -> target
       }
-
-    private fun nearestRelevantBeforeOperator(node: PsiElement?): PsiElement? {
-      var current = node
-      while (current != null) {
-        val elementType = current.node?.elementType
-        if (ASSIGNMENT_OPERATORS.contains(elementType)) return null
-        if (current is StarlarkBaseElement && !WHITESPACES_AND_COMMENTS.contains(elementType)) return current
-        current = current.nextSibling
-      }
-      return null
-    }
-
-    companion object {
-      private val ASSIGNMENT_OPERATORS = TokenSet.create(
-        StarlarkTokenTypes.EQ,
-        *StarlarkTokenSets.COMPOUND_ASSIGN_OPERATIONS.types,
-        StarlarkTokenTypes.IN_KEYWORD,
-      )
-
-      private val WHITESPACES_AND_COMMENTS = TokenSet.orSet(StarlarkTokenSets.WHITESPACE, StarlarkTokenSets.COMMENT)
-    }
   }
 }
