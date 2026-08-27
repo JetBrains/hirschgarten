@@ -495,6 +495,22 @@
                      level="ERROR"
                      implementationClass="org.jetbrains.bazel.languages.starlark.inspection.StarlarkLoadCycleInspection"/>
 
+    <localInspection language="Starlark"
+                     key="inspection.display.name.starlark.collection.mutation.during.iteration.check"
+                     groupPath="Bazel"
+                     groupKey="starlark.inspection.group.name"
+                     enabledByDefault="true"
+                     level="ERROR"
+                     implementationClass="org.jetbrains.bazel.languages.starlark.inspection.StarlarkCollectionMutationDuringIterationInspection"/>
+
+    <localInspection language="Starlark"
+                     key="inspection.display.name.starlark.frozen.loaded.value.mutation.check"
+                     groupPath="Bazel"
+                     groupKey="starlark.inspection.group.name"
+                     enabledByDefault="true"
+                     level="ERROR"
+                     implementationClass="org.jetbrains.bazel.languages.starlark.inspection.StarlarkFrozenLoadedValueMutationInspection"/>
+
     <fileType
       extensions="bazelquery"
       fieldName="INSTANCE"
