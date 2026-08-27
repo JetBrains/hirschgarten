@@ -7,7 +7,9 @@ import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.collections.shouldContainAll
 import io.kotest.matchers.collections.shouldContainExactly
+import io.kotest.matchers.collections.shouldExist
 import io.kotest.matchers.maps.shouldContain
+import io.kotest.matchers.nulls.shouldBeNull
 import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
 import org.jetbrains.bazel.clion.sync.CC_LANGUAGE_CLASS
@@ -17,16 +19,14 @@ import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.fixtures.clionBazelProjectFixture
 import org.jetbrains.bazel.label.Label
-import org.jetbrains.bazel.matcher.shouldBeExecutionRootPath
-import org.jetbrains.bazel.matcher.shouldContainArtifact
-import org.jetbrains.bazel.matcher.shouldContainArtifacts
-import org.jetbrains.bazel.matcher.shouldContainExecutionRootPaths
 import org.jetbrains.bazel.sync.workspace.persistence.TargetLoadOptions
 import org.jetbrains.bazel.sync.workspace.persistence.WorkspaceSnapshotService
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
 import org.jetbrains.bazel.sync.workspace.snapshot.hasBuildData
 import org.jetbrains.bazel.test.framework.BazelTestApplication
 import org.jetbrains.bsp.protocol.BuildTarget
+import org.jetbrains.bsp.protocol.OutputLocation
+import org.jetbrains.bsp.protocol.OutputLocationCollection
 import org.jetbrains.bsp.protocol.extractData
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
@@ -73,15 +73,18 @@ class CcImportTest {
     val data = target.extractData<CcBuildTarget>().shouldNotBeNull()
 
     val compilationCtx = data.compilationContext
-    compilationCtx.headers.shouldContainArtifacts("lib/lib.h")
+    compilationCtx.headers.locations() shouldContain OutputLocation.Workspace("lib/lib.h")
     compilationCtx.defines.shouldContainExactly("SPACE_DEFINE=1 2 3", "SIMPLE_DEFINE=42")
-    compilationCtx.includes.shouldBeEmpty()
-    compilationCtx.quoteIncludes.shouldContainExecutionRootPaths(".", "bazel-bin", "external/rules_cc+")
-    compilationCtx.systemIncludes.shouldBeEmpty()
+    compilationCtx.includes.locations().shouldBeEmpty()
+    val quoteIncludes = compilationCtx.quoteIncludes.locations()
+    quoteIncludes shouldContain OutputLocation.Workspace(".")
+    quoteIncludes shouldContain OutputLocation.External("rules_cc+", "")
+    quoteIncludes.shouldContainBinOutput("")
+    compilationCtx.systemIncludes.locations().shouldBeEmpty()
 
     val ruleCtx = data.ruleContext.shouldNotBeNull()
-    ruleCtx.headers.shouldBeEmpty()
-    ruleCtx.textualHeaders.shouldBeEmpty()
+    ruleCtx.headers.locations().shouldBeEmpty()
+    ruleCtx.textualHeaders.locations().shouldBeEmpty()
     ruleCtx.copts.shouldContainExactly("-Wall")
     ruleCtx.conlyopts.shouldContainExactly("-DCONLYOPTS")
     ruleCtx.cxxopts.shouldContainExactly("-DCXXOPTS")
@@ -99,15 +102,17 @@ class CcImportTest {
     val data = target.extractData<CcBuildTarget>().shouldNotBeNull()
 
     val compilationCtx = data.compilationContext
-    compilationCtx.headers.shouldContainArtifact("lib/lib.h")
+    compilationCtx.headers.locations() shouldContain OutputLocation.Workspace("lib/lib.h")
     compilationCtx.defines.shouldBeEmpty()
-    compilationCtx.includes.shouldBeEmpty()
-    compilationCtx.quoteIncludes.shouldContainExecutionRootPaths(".", "bazel-bin")
-    compilationCtx.systemIncludes.shouldBeEmpty()
+    compilationCtx.includes.locations().shouldBeEmpty()
+    val quoteIncludes = compilationCtx.quoteIncludes.locations()
+    quoteIncludes shouldContain OutputLocation.Workspace(".")
+    quoteIncludes.shouldContainBinOutput("")
+    compilationCtx.systemIncludes.locations().shouldBeEmpty()
 
     val ruleCtx = data.ruleContext.shouldNotBeNull()
-    ruleCtx.headers.shouldContainArtifact("lib/lib.h")
-    ruleCtx.textualHeaders.shouldBeEmpty()
+    ruleCtx.headers.locations() shouldContain OutputLocation.Workspace("lib/lib.h")
+    ruleCtx.textualHeaders.locations().shouldBeEmpty()
     ruleCtx.copts.shouldBeEmpty()
     ruleCtx.conlyopts.shouldBeEmpty()
     ruleCtx.cxxopts.shouldBeEmpty()
@@ -125,16 +130,22 @@ class CcImportTest {
     val data = target.extractData<CcBuildTarget>().shouldNotBeNull()
 
     val compilationCtx = data.compilationContext
-    compilationCtx.headers.shouldContainArtifact("src/catch2/benchmark/catch_benchmark.hpp", "external/catch2+", isExternal = true)
-    compilationCtx.headers.shouldContainArtifact("src/catch2/benchmark/catch_clock.hpp", "external/catch2+", isExternal = true)
+    compilationCtx.headers.locations() shouldContainAll
+      listOf(
+        OutputLocation.External("catch2+", "src/catch2/benchmark/catch_benchmark.hpp"),
+        OutputLocation.External("catch2+", "src/catch2/benchmark/catch_clock.hpp"),
+      )
     compilationCtx.defines.shouldBeEmpty()
-    compilationCtx.includes.shouldContainExecutionRootPaths("bazel-bin/external/catch2+/_virtual_includes/catch2_generated")
-    compilationCtx.quoteIncludes.shouldContainExecutionRootPaths(".", "bazel-bin", "external/catch2+")
-    compilationCtx.systemIncludes.shouldContainExecutionRootPaths("external/catch2+/src")
+    compilationCtx.includes.locations().shouldContainBinOutput("external/catch2+/_virtual_includes/catch2_generated")
+    val quoteIncludes = compilationCtx.quoteIncludes.locations()
+    quoteIncludes shouldContain OutputLocation.Workspace(".")
+    quoteIncludes shouldContain OutputLocation.External("catch2+", "")
+    quoteIncludes.shouldContainBinOutput("")
+    compilationCtx.systemIncludes.locations() shouldContain OutputLocation.External("catch2+", "src")
 
     val ruleCtx = data.ruleContext.shouldNotBeNull()
-    ruleCtx.headers.shouldBeEmpty()
-    ruleCtx.textualHeaders.shouldBeEmpty()
+    ruleCtx.headers.locations().shouldBeEmpty()
+    ruleCtx.textualHeaders.locations().shouldBeEmpty()
     ruleCtx.copts.shouldBeEmpty()
     ruleCtx.conlyopts.shouldBeEmpty()
     ruleCtx.cxxopts.shouldBeEmpty()
@@ -157,11 +168,16 @@ class CcImportTest {
     data.compilerName.shouldBe("false")
     data.cppOption.shouldContainAll("-D__DEFINE__", "-std=c++17")
     data.cOption.shouldContainAll("-D__DEFINE__", "-std=c17")
-    data.cCompiler.shouldBeExecutionRootPath("/usr/bin/false")
-    data.cppCompiler.shouldBeExecutionRootPath("/usr/bin/false")
-    data.builtInIncludeDirectories.shouldBeEmpty()
-    data.sysroot.shouldBeExecutionRootPath("")
+    data.cCompiler.shouldBe(OutputLocation.Host("/usr/bin/false"))
+    data.cppCompiler.shouldBe(OutputLocation.Host("/usr/bin/false"))
+    data.builtInIncludeDirectories.locations().shouldBeEmpty()
+    data.sysroot.shouldBeNull()
     data.cppEnvironment.shouldContain("ENV_VARIABLE" to "ENV_VALUE")
     data.cppEnvironment.shouldContain("ENV_VARIABLE" to "ENV_VALUE")
   }
 }
+
+private fun OutputLocationCollection.locations(): List<OutputLocation> = getOutputLocations().toList()
+
+private fun List<OutputLocation>.shouldContainBinOutput(relativePath: String) =
+  shouldExist { it is OutputLocation.Output && it.root.segments.lastOrNull() == "bin" && it.relativePath == relativePath }

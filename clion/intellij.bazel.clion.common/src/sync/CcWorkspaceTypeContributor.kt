@@ -8,8 +8,6 @@ import org.jetbrains.bazel.sync.workspace.persistence.type
 internal class CcWorkspaceTypeContributor : WorkspaceTypeContributor {
 
   override fun contribute(project: Project): List<WorkspaceTypeEntry> = buildList {
-    type<ArtifactLocation>()
-    type<ExecutionRootPath>()
     type<CcBuildTarget>()
     type<CcBuildTarget.RuleContext>()
     type<CcBuildTarget.CompilationContext>()

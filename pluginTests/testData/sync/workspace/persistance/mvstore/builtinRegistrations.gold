@@ -35,3 +35,6 @@
 34 org.jetbrains.bsp.protocol.SourceFileCollection$Companion$EMPTY$1 org.jetbrains.bazel.sync.workspace.persistence.mvstore.SingletonSerializer 1
 35 org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetGraph$Companion$EMPTY$1 org.jetbrains.bazel.sync.workspace.persistence.mvstore.SingletonSerializer 1
 36 org.jetbrains.bazel.sync.workspace.snapshot.TrieSourceFileCollection org.jetbrains.bazel.sync.workspace.persistence.mvstore.TrieSourceFileCollectionSerializer 1
+37 org.jetbrains.bsp.protocol.OutputLocationCollection$Companion$EMPTY$1 org.jetbrains.bazel.sync.workspace.persistence.mvstore.SingletonSerializer 1
+38 org.jetbrains.bazel.sync.workspace.snapshot.TrieOutputLocationCollection org.jetbrains.bazel.sync.workspace.persistence.mvstore.TrieOutputLocationCollectionSerializer 1
+39 org.jetbrains.bsp.protocol.OutputRoot org.jetbrains.bazel.sync.workspace.persistence.mvstore.OutputRootSerializer 1

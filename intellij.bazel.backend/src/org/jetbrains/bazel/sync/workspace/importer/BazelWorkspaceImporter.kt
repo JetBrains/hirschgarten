@@ -10,7 +10,9 @@ import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceSnapshot
 import com.intellij.platform.workspace.storage.MutableEntityStorage
 import com.intellij.platform.workspace.storage.url.VirtualFileUrlManager
 import org.jetbrains.annotations.ApiStatus
+import org.jetbrains.bazel.commons.BazelInfo
 import org.jetbrains.bazel.progress.TaskConsole
+import org.jetbrains.bsp.protocol.OutputLocationResolver
 import org.jetbrains.bsp.protocol.TaskId
 
 /**
@@ -95,6 +97,8 @@ data class WorkspaceImporterContext(
   val taskId: TaskId,
   val vfuManager: VirtualFileUrlManager,
   val currentSnapshot: ImmutableEntityStorage,
+  val outputResolver: OutputLocationResolver,
+  val bazelInfo: BazelInfo,
 )
 
 /**

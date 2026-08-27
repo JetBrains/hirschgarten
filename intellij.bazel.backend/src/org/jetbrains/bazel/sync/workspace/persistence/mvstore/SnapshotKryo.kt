@@ -20,7 +20,7 @@ internal const val KRYO_POOL_INSTANCES: Int = 8
 
 // covers container layout, manifest codec, Kryo configuration, builtin registrations and the
 // binary formats of all handwritten serializers - bump on any change to those
-internal const val SNAPSHOT_FORMAT_VERSION: Int = 2
+internal const val SNAPSHOT_FORMAT_VERSION: Int = 3
 
 @ApiStatus.Internal
 class SnapshotKryo(val universe: SnapshotTypeUniverse) {

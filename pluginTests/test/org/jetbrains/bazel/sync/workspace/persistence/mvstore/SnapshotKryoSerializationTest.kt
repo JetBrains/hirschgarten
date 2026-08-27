@@ -4,6 +4,7 @@ import com.esotericsoftware.kryo.kryo5.io.Input
 import com.esotericsoftware.kryo.kryo5.io.Output
 import com.intellij.testFramework.junit5.TestApplication
 import com.intellij.testFramework.junit5.fixture.projectFixture
+import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.shouldBe
 import org.jetbrains.bazel.commons.BzlmodRepoMapping
 import org.jetbrains.bazel.commons.LanguageClass
@@ -30,6 +31,7 @@ import org.jetbrains.bazel.sync.workspace.languages.jvm.ScalaBuildTarget
 import org.jetbrains.bazel.sync.workspace.persistence.WorkspaceTypeContributor
 import org.jetbrains.bazel.sync.workspace.persistence.WorkspaceTypeEntry
 import org.jetbrains.bazel.sync.workspace.snapshot.CommonWorkspaceSyncConfig
+import org.jetbrains.bazel.sync.workspace.snapshot.OutputLocationCollectionBuilder
 import org.jetbrains.bazel.sync.workspace.snapshot.SourceFileCollectionBuilder
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceAspectIds
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceConfiguration
@@ -42,6 +44,9 @@ import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
 import org.jetbrains.bazel.test.framework.target.TestBuildTarget
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.BuildTargetData
+import org.jetbrains.bsp.protocol.OutputLocation
+import org.jetbrains.bsp.protocol.OutputLocationCollection
+import org.jetbrains.bsp.protocol.OutputRoot
 import org.jetbrains.bsp.protocol.SourceFileCollection
 import org.jetbrains.bsp.protocol.StrictDependencyCheckedType
 import org.junit.jupiter.api.Test
@@ -234,6 +239,54 @@ class SnapshotKryoSerializationTest {
     (restored.targetGraph === WorkspaceTargetGraph.EMPTY) shouldBe true
     restored.repoMapping shouldBe RepoMappingDisabled
     (serializeAndDeserializePolymorphic(SourceFileCollection.EMPTY) === SourceFileCollection.EMPTY) shouldBe true
+  }
+
+  @Test
+  fun `output location collection e2e`() {
+    val binRoot = OutputRoot.of(listOf("darwin_arm64-fastbuild", "bin"))
+    val locations = OutputLocationCollectionBuilder.buildExecroot(
+      listOf(
+        "src/main/lib.h",
+        "src/main/util.h",
+        "",
+        ".",
+        "bazel-out/darwin_arm64-fastbuild/bin/gen/a.h",
+        "bazel-out/darwin_arm64-fastbuild/bin/_virtual_includes/lib",
+        "external/catch2+/src",
+        "external/rules_cc+",
+        "../catch2+/include/catch.hpp",
+        "/usr/include/c++/v1",
+        """C:\Program Files\LLVM\include""",
+        "C:/Program Files/LLVM/lib",
+        "//server/share/include",
+      ),
+    )
+    val expected = listOf(
+      OutputLocation.Workspace("src/main/lib.h"),
+      OutputLocation.Workspace("src/main/util.h"),
+      OutputLocation.Workspace(""),
+      OutputLocation.Workspace("."),
+      OutputLocation.Output(binRoot, "gen/a.h"),
+      OutputLocation.Output(binRoot, "_virtual_includes/lib"),
+      OutputLocation.External("catch2+", "src"),
+      OutputLocation.External("rules_cc+", ""),
+      OutputLocation.External("catch2+", "include/catch.hpp", siblingLayout = true),
+      OutputLocation.Host("/usr/include/c++/v1"),
+      OutputLocation.Host("""C:\Program Files\LLVM\include"""),
+      OutputLocation.Host("C:/Program Files/LLVM/lib"),
+      OutputLocation.Host("//server/share/include"),
+    )
+    locations.getOutputLocations().toList() shouldContainExactlyInAnyOrder expected
+
+    val restored = serializeAndDeserializePolymorphic(locations) as OutputLocationCollection
+
+    restored.getOutputLocations().toList() shouldContainExactlyInAnyOrder expected
+    restored shouldBe locations
+    // the read must go through `OutputRoot.of`, else the interner holds a duplicate per snapshot load
+    restored.getOutputLocations()
+      .filterIsInstance<OutputLocation.Output>()
+      .forEach { (it.root === binRoot) shouldBe true }
+    (serializeAndDeserializePolymorphic(OutputLocationCollection.EMPTY) === OutputLocationCollection.EMPTY) shouldBe true
   }
 
   @Test

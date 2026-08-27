@@ -8,12 +8,14 @@ import com.intellij.platform.backend.workspace.WorkspaceModel
 import com.intellij.platform.util.progress.SequentialProgressReporter
 import com.intellij.platform.workspace.storage.MutableEntityStorage
 import org.jetbrains.annotations.ApiStatus
+import org.jetbrains.bazel.commons.BazelInfo
 import org.jetbrains.bazel.config.BazelBackendBundle
 import org.jetbrains.bazel.progress.TaskConsole
 import org.jetbrains.bazel.progress.syncConsole
 import org.jetbrains.bazel.progress.withSubtask
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceSnapshot
 import org.jetbrains.bazel.workspacemodel.entities.BazelProjectEntitySource
+import org.jetbrains.bsp.protocol.OutputLocationResolver
 import org.jetbrains.bsp.protocol.TaskId
 
 @ApiStatus.Internal
@@ -23,6 +25,8 @@ class WorkspaceImporterHelper(
   private val progressReporter: SequentialProgressReporter,
   private val taskId: TaskId,
   private val builder: MutableEntityStorage,
+  private val outputResolver: OutputLocationResolver,
+  private val bazelInfo: BazelInfo,
 ) {
   companion object {
     private val log = logger<WorkspaceImporterHelper>()
@@ -40,6 +44,8 @@ class WorkspaceImporterHelper(
       taskId = taskId,
       vfuManager = workspaceModel.getVirtualFileUrlManager(),
       currentSnapshot = workspaceModel.currentSnapshot,
+      outputResolver = outputResolver,
+      bazelInfo = bazelInfo,
     )
     val namingBuilder = GlobalNamingContextBuilder.create(snapshot.repoMapping)
 

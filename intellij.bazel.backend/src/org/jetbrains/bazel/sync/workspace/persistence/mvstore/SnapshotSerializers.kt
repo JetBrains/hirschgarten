@@ -8,10 +8,15 @@ import it.unimi.dsi.fastutil.ints.IntOpenHashSet
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap
 import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.sync.workspace.snapshot.PathsTrie
 import org.jetbrains.bazel.sync.workspace.snapshot.TrieNode
+import org.jetbrains.bazel.sync.workspace.snapshot.TrieOutputLocationCollection
 import org.jetbrains.bazel.sync.workspace.snapshot.TrieSourceFileCollection
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetGraph
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
+import org.jetbrains.bsp.protocol.OutputLocation
+import org.jetbrains.bsp.protocol.OutputLocationCollection
+import org.jetbrains.bsp.protocol.OutputRoot
 import org.jetbrains.bsp.protocol.SourceFileCollection
 import java.nio.file.Path
 import java.util.TreeMap
@@ -67,6 +72,9 @@ internal object SnapshotSerializers {
     kryo.register(WorkspaceTargetGraph.EMPTY.javaClass, SingletonSerializer(WorkspaceTargetGraph.EMPTY))
 
     kryo.register(TrieSourceFileCollection::class.java, TrieSourceFileCollectionSerializer())
+    kryo.register(OutputLocationCollection.EMPTY.javaClass, SingletonSerializer(OutputLocationCollection.EMPTY))
+    kryo.register(TrieOutputLocationCollection::class.java, TrieOutputLocationCollectionSerializer())
+    kryo.register(OutputRoot::class.java, OutputRootSerializer())
   }
 
   fun singletonSerializerFor(type: Class<*>): VersionedKryoSerializer<*> =
@@ -87,15 +95,7 @@ internal class TrieSourceFileCollectionSerializer : VersionedKryoSerializer<Trie
     for (path in obj.externalFiles) {
       kryo.writeObject(output, path)
     }
-    writeNode(output, obj.root)
-  }
-
-  private fun writeNode(output: Output, node: TrieNode) {
-    output.writeVarInt((node.children.size shl 1) or (if (node.isTerminal) 1 else 0), true)
-    for (child in node.children) {
-      output.writeString(child.segment)
-      writeNode(output, child)
-    }
+    writeTrieNode(output, obj.trie.root)
   }
 
   override fun read(kryo: Kryo, input: Input, type: Class<out TrieSourceFileCollection>): TrieSourceFileCollection {
@@ -105,19 +105,79 @@ internal class TrieSourceFileCollectionSerializer : VersionedKryoSerializer<Trie
     repeat(externalCount) {
       externalFiles.add(kryo.readObject(input, Path::class.java))
     }
-    val root = TrieNode(segment = "")
-    readNode(input, root)
-    return TrieSourceFileCollection(relativizeRoot = relativizeRoot, root = root, externalFiles = externalFiles)
+    val trie = PathsTrie()
+    readTrieNode(input, trie.root)
+    return TrieSourceFileCollection(relativizeRoot = relativizeRoot, trie = trie, externalFiles = externalFiles)
+  }
+}
+
+internal class TrieOutputLocationCollectionSerializer : VersionedKryoSerializer<TrieOutputLocationCollection>() {
+  init {
+    isImmutable = true
   }
 
-  private fun readNode(input: Input, node: TrieNode) {
-    val header = input.readVarInt(true)
-    node.isTerminal = (header and 1) != 0
-    repeat(header ushr 1) {
-      val child = TrieNode(segment = checkNotNull(input.readString()))
-      node.children.add(child)
-      readNode(input, child)
+  override val binaryFormatVersion: Int = 1
+
+  override fun write(kryo: Kryo, output: Output, obj: TrieOutputLocationCollection) {
+    output.writeVarInt(obj.roots.size, true)
+    for ((root, trie) in obj.roots) {
+      kryo.writeClassAndObject(output, root)
+      writeTrieNode(output, trie.root)
     }
+  }
+
+  override fun read(kryo: Kryo, input: Input, type: Class<out TrieOutputLocationCollection>): TrieOutputLocationCollection {
+    val rootCount = input.readVarInt(true)
+    val roots = LinkedHashMap<OutputLocation, PathsTrie>(rootCount)
+    repeat(rootCount) {
+      val root = kryo.readClassAndObject(input) as OutputLocation
+      val trie = PathsTrie()
+      readTrieNode(input, trie.root)
+      roots[root] = trie
+    }
+    return TrieOutputLocationCollection(roots)
+  }
+}
+
+internal class OutputRootSerializer : VersionedKryoSerializer<OutputRoot>() {
+  init {
+    isImmutable = true
+  }
+
+  override val binaryFormatVersion: Int = 1
+
+  override fun write(kryo: Kryo, output: Output, obj: OutputRoot) {
+    output.writeVarInt(obj.segments.size, true)
+    for (segment in obj.segments) {
+      output.writeString(segment)
+    }
+  }
+
+  override fun read(kryo: Kryo, input: Input, type: Class<out OutputRoot>): OutputRoot {
+    val segmentCount = input.readVarInt(true)
+    val segments = ArrayList<String>(segmentCount)
+    repeat(segmentCount) {
+      segments.add(checkNotNull(input.readString()))
+    }
+    return OutputRoot.of(segments)
+  }
+}
+
+private fun writeTrieNode(output: Output, node: TrieNode) {
+  output.writeVarInt((node.children.size shl 1) or (if (node.isTerminal) 1 else 0), true)
+  for (child in node.children) {
+    output.writeString(child.segment)
+    writeTrieNode(output, child)
+  }
+}
+
+private fun readTrieNode(input: Input, node: TrieNode) {
+  val header = input.readVarInt(true)
+  node.isTerminal = (header and 1) != 0
+  repeat(header ushr 1) {
+    val child = TrieNode(segment = checkNotNull(input.readString()))
+    node.children.add(child)
+    readTrieNode(input, child)
   }
 }
 

@@ -23,6 +23,7 @@ import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.languages.projectview.ProjectView
 import org.jetbrains.bazel.progress.syncConsole
 import org.jetbrains.bazel.server.BazelServerService
+import org.jetbrains.bazel.sync.workspace.DefaultOutputLocationResolver
 import org.jetbrains.bazel.sync.workspace.importer.WorkspaceImporterHelper
 import org.jetbrains.bazel.sync.workspace.mapper.BazelWorkspaceResolver
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceSnapshotBuilder
@@ -115,6 +116,7 @@ internal suspend fun doWorkspaceModelTest(
     resolved = resolvedWorkspace,
   )
   val builder = MutableEntityStorage.create()
+  val bazelInfo = server.runWithServer { it.bazelInfo }
   reportSequentialProgress { reporter ->
     val helper = WorkspaceImporterHelper(
       project = project,
@@ -122,6 +124,8 @@ internal suspend fun doWorkspaceModelTest(
       progressReporter = reporter,
       taskId = taskId,
       builder = builder,
+      outputResolver = DefaultOutputLocationResolver(bazelInfo),
+      bazelInfo = bazelInfo,
     )
 
     helper.invoke(reporter, workspaceSnapshot)

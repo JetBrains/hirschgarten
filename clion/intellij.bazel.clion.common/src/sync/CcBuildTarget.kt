@@ -1,6 +1,7 @@
 package org.jetbrains.bazel.clion.sync
 
 import org.jetbrains.bsp.protocol.BuildTargetData
+import org.jetbrains.bsp.protocol.OutputLocationCollection
 
 data class CcBuildTarget(val ruleContext: RuleContext?, val compilationContext: CompilationContext) : BuildTargetData {
 
@@ -9,8 +10,8 @@ data class CcBuildTarget(val ruleContext: RuleContext?, val compilationContext: 
    * for custom rules, since the semantic of their rule attributes is unknown.
    */
   data class RuleContext(
-    val headers: List<ArtifactLocation>,
-    val textualHeaders: List<ArtifactLocation>,
+    val headers: OutputLocationCollection,
+    val textualHeaders: OutputLocationCollection,
     val copts: List<String>,
     val conlyopts: List<String>,
     val cxxopts: List<String>,
@@ -23,10 +24,10 @@ data class CcBuildTarget(val ruleContext: RuleContext?, val compilationContext: 
    * Information collected from the CcInfoProvider; should always be present.
    */
   data class CompilationContext(
-    val headers: List<ArtifactLocation>,
+    val headers: OutputLocationCollection,
     val defines: List<String>,
-    val includes: List<ExecutionRootPath>,
-    val quoteIncludes: List<ExecutionRootPath>,
-    val systemIncludes: List<ExecutionRootPath>,
+    val includes: OutputLocationCollection,
+    val quoteIncludes: OutputLocationCollection,
+    val systemIncludes: OutputLocationCollection,
   )
 }
