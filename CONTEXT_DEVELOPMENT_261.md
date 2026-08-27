@@ -8,10 +8,10 @@
 > merges. Don't write "get PR reviewed/merged" — this doc lives in the repo and is read post-merge,
 > so those entries are immediately stale. Use `—` or omit the field when nothing remains.
 
-## Current State (as of 2026-08-18)
+## Current State (as of 2026-08-25)
 
 ### Working Branch
-`feat/file-event-batch-guard` — latest tip: `70a5a0b38b feat: skip new-file event processing when batch exceeds 5 files`
+`feat/partial-sync-button-fix` (new branch needed) — or add to `feat/file-event-batch-guard`
 
 ### Recently Completed Work (PR #33)
 
@@ -36,6 +36,18 @@
 **Problem**: `java_incremental_library` splits a target into one umbrella + N shard sub-targets. Importing shards as separate IntelliJ modules caused red code and bloated the module list.
 
 **Fix** (`AspectBazelProjectMapper.kt`, `UnsyncedTargetUpdater.kt`): Shard-tagged targets filtered before partition into workspace/non-workspace; shard deps dropped from umbrella dependency lists; `resolveShardFolkDependencies` removed; `UnsyncedTargetUpdater` skips shard-tagged targets like `no-ide`.
+
+**Partial sync button fix** — unmerged, needs PR (→ `development-261`).
+
+**Problem**: `TargetPersistenceLayerSyncHook.onSync()` uses `environment.workspace.targets` (partial sync scope = only that target + deps) and calls `saveAll()` → `TargetsCacheStorage.reset()`, which **wipes the entire target cache** for the whole project, then repopulates with only partial sync targets. This destroys all file→target and module→target mappings for everything else in the project.
+
+Root cause: in 251 (development branch), `TargetUtilsSyncHook` called `getOrFetchResolvedWorkspace()` with default `SecondPhaseSync` scope (always the full workspace). In 261, that hook was replaced by the upstream `TargetPersistenceLayerSyncHook` which blindly uses `environment.workspace`.
+
+**Fix** (4 files):
+1. `BazelTargetPersistenceLayer` — add `mergePartial()` with default fallback to `saveAll()`
+2. `TargetPersistenceLayerSyncHook` — call `mergePartial()` for `PartialProjectSync` instead of `saveAll()`
+3. `TargetUtils` — add `mergePartialTargets()` that calls `db.addTargets()` + `db.addFileToTarget()` additively (no `reset()`)
+4. `TargetUtilsTargetPersistanceLayer` — override `mergePartial()` to call `mergePartialTargets()`
 
 **Next step**: —
 
