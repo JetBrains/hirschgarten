@@ -1,9 +1,8 @@
 package org.jetbrains.bazel.redcodes
 
 import com.intellij.codeInspection.dataFlow.ConstantValueInspection
+import com.intellij.codeInspection.i18n.InvalidPropertyKeyInspection
 import com.intellij.openapi.application.EDT
-import com.intellij.testFramework.junit5.fixture.projectFixture
-import com.intellij.testFramework.junit5.fixture.tempPathFixture
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
@@ -17,16 +16,13 @@ import org.junit.jupiter.api.condition.OS
 @BazelTestApplication
 class RegularJarAnalysisTest {
 
-  private val projectFixture = projectFixture(openAfterCreation = true)
-  private val tempDir = tempPathFixture()
-  private val fixture by bazelSyncCodeInsightFixture(projectFixture, tempDir)
+  private val fixture by bazelSyncCodeInsightFixture("redcodes/regular_jar_analysis") {
+    it.enableInspections(ConstantValueInspection())
+  }
 
   @Test
   @DisabledOnOs(OS.WINDOWS) // coursier
   fun testHighlighting() = runBlocking(Dispatchers.Default) {
-    fixture.enableInspections(ConstantValueInspection())
-    fixture.copyBazelTestProject("redcodes/regular_jar_analysis")
-    fixture.performBazelSync()
     withContext(Dispatchers.EDT) {
       fixture.checkHighlighting("Usage.java")
     }

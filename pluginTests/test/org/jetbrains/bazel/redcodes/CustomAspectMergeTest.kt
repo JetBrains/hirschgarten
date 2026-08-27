@@ -5,8 +5,6 @@ import com.intellij.platform.backend.workspace.WorkspaceModel
 import com.intellij.platform.workspace.jps.entities.LibraryEntity
 import com.intellij.platform.workspace.jps.entities.ModuleEntity
 import com.intellij.testFramework.common.timeoutRunBlocking
-import com.intellij.testFramework.junit5.fixture.projectFixture
-import com.intellij.testFramework.junit5.fixture.tempPathFixture
 import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.collections.shouldHaveSize
 import kotlinx.coroutines.Dispatchers
@@ -21,15 +19,14 @@ import kotlin.time.Duration.Companion.minutes
 @BazelTestApplication
 class CustomAspectMergeTest {
 
-  private val projectFixture = projectFixture(openAfterCreation = true)
-  private val tempDir = tempPathFixture()
-  private val fixture by bazelSyncCodeInsightFixture(projectFixture, tempDir)
+  private val fixture by bazelSyncCodeInsightFixture(
+    "redcodes/custom_aspect_merge",
+    buildProject = true,
+    bazelVersion = "9.1.0",
+  )
 
   @Test
   fun testTwoAspectsOnOneTargetProduceDistinctFullKeyLibraries(): Unit = timeoutRunBlocking(timeout = 5.minutes) {
-    fixture.copyBazelTestProject("redcodes/custom_aspect_merge")
-    fixture.setBazelVersion("9.1.0")
-    fixture.performBazelSync(buildProject = true)
     withContext(Dispatchers.EDT) {
       fixture.checkHighlighting("app/App.java")
 

@@ -2,8 +2,6 @@ package org.jetbrains.bazel.redcodes
 
 import com.intellij.openapi.application.EDT
 import com.intellij.spring.SpringInspectionsRegistry
-import com.intellij.testFramework.junit5.fixture.projectFixture
-import com.intellij.testFramework.junit5.fixture.tempPathFixture
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
@@ -16,16 +14,14 @@ import org.junit.jupiter.api.condition.OS
 
 @BazelTestApplication
 class SpringBootProjectTest {
-  private val projectFixture = projectFixture(openAfterCreation = true)
-  private val tempDir = tempPathFixture()
-  private val fixture by bazelSyncCodeInsightFixture(projectFixture, tempDir)
+  private val fixture by bazelSyncCodeInsightFixture(
+    "redcodes/spring_boot",
+    configure = { it.enableInspections(*SpringInspectionsRegistry.getInstance().getTestSpringInspectionClasses()) },
+  )
 
   @Test
   @DisabledOnOs(OS.WINDOWS) // coursier
   fun testGutterMarks(): Unit = runBlocking(Dispatchers.Default) {
-    fixture.copyBazelTestProject("redcodes/spring_boot")
-    fixture.enableInspections(*SpringInspectionsRegistry.getInstance().getTestSpringInspectionClasses())
-    fixture.performBazelSync()
     val gutters = withContext(Dispatchers.EDT) {
       fixture.findAllGutters("src/main/java/com/example/greeting/GreetingModule.java").map { gutter ->
         gutter.tooltipText ?: "<null>"

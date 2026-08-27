@@ -2,8 +2,6 @@ package org.jetbrains.bazel.redcodes
 
 import com.intellij.codeInspection.i18n.InvalidPropertyKeyInspection
 import com.intellij.openapi.application.EDT
-import com.intellij.testFramework.junit5.fixture.projectFixture
-import com.intellij.testFramework.junit5.fixture.tempPathFixture
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
@@ -15,15 +13,13 @@ import org.junit.jupiter.api.Test
 @BazelTestApplication
 class LocalRepoResourcesTest {
 
-  private val projectFixture = projectFixture(openAfterCreation = true)
-  private val tempDir = tempPathFixture()
-  private val fixture by bazelSyncCodeInsightFixture(projectFixture, tempDir)
+  private val fixture by bazelSyncCodeInsightFixture(
+    "redcodes/local_repo_resources",
+    configure = { it.enableInspections(InvalidPropertyKeyInspection()) },
+  )
 
   @Test
   fun testHighlighting() = runBlocking(Dispatchers.Default) {
-    fixture.enableInspections(InvalidPropertyKeyInspection())
-    fixture.copyBazelTestProject("redcodes/local_repo_resources")
-    fixture.performBazelSync()
     withContext(Dispatchers.EDT) {
       fixture.checkHighlighting("module/src/main/java/com/example/Module.java")
     }

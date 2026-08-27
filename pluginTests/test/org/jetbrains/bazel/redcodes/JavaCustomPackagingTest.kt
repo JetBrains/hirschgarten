@@ -3,8 +3,6 @@ package org.jetbrains.bazel.redcodes
 import com.intellij.openapi.application.EDT
 import com.intellij.openapi.application.readAction
 import com.intellij.openapi.vfs.JarFileSystem
-import com.intellij.testFramework.junit5.fixture.projectFixture
-import com.intellij.testFramework.junit5.fixture.tempPathFixture
 import io.kotest.matchers.ints.shouldBeGreaterThanOrEqual
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldEndWith
@@ -29,14 +27,13 @@ import org.junit.jupiter.api.Test
 @BazelTestApplication
 class JavaCustomPackagingTest {
 
-  private val projectFixture = projectFixture(openAfterCreation = true)
-  private val tempDir = tempPathFixture()
-  private val fixture by bazelSyncCodeInsightFixture(projectFixture, tempDir)
+  private val fixture by bazelSyncCodeInsightFixture(
+    "redcodes/java_custom_packaging",
+    buildProject = true,
+  )
 
   @Test
   fun `test shadowed library`(): Unit = runBlocking(Dispatchers.Default) {
-    fixture.copyBazelTestProject("redcodes/java_custom_packaging")
-    fixture.performBazelSync(buildProject = true)
     withContext(Dispatchers.EDT) {
       fixture.checkHighlighting("app/App.java")
 

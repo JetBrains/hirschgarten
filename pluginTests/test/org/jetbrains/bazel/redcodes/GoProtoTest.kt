@@ -1,8 +1,6 @@
 package org.jetbrains.bazel.redcodes
 
 import com.intellij.openapi.application.EDT
-import com.intellij.testFramework.junit5.fixture.projectFixture
-import com.intellij.testFramework.junit5.fixture.tempPathFixture
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
@@ -17,16 +15,15 @@ import org.junit.jupiter.api.condition.OS
 @BazelTestApplication
 class GoProtoTest {
 
-  private val projectFixture = projectFixture(openAfterCreation = true)
-  private val tempDir = tempPathFixture()
-  private val fixture by bazelSyncCodeInsightFixture(projectFixture, tempDir)
+  private val fixture by bazelSyncCodeInsightFixture(
+    "redcodes/go_proto",
+    buildProject = true,
+    configure = { it.enableGoHighlighting() },
+  )
 
   @Test
   @DisabledOnOs(OS.WINDOWS) // proto c++ compilation
   fun testHighlighting() = runBlocking(Dispatchers.Default) {
-    fixture.enableGoHighlighting()
-    fixture.copyBazelTestProject("redcodes/go_proto")
-    fixture.performBazelSync(buildProject = true)
     withContext(Dispatchers.EDT) {
       fixture.checkHighlighting("main/main.go")
     }

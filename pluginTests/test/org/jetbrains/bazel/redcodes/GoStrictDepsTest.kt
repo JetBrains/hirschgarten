@@ -6,8 +6,6 @@ import com.intellij.openapi.actionSystem.IdeActions
 import com.intellij.openapi.application.EDT
 import com.intellij.openapi.project.Project
 import com.intellij.testFramework.ExpectedHighlightingData
-import com.intellij.testFramework.junit5.fixture.projectFixture
-import com.intellij.testFramework.junit5.fixture.tempPathFixture
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
@@ -24,16 +22,14 @@ import org.junit.jupiter.api.condition.OS
 @BazelTestApplication
 class GoStrictDepsTest {
 
-  private val projectFixture = projectFixture(openAfterCreation = true)
-  private val tempDir = tempPathFixture()
-  private val fixture by bazelSyncCodeInsightFixture(projectFixture, tempDir)
+  private val fixture by bazelSyncCodeInsightFixture(
+    "redcodes/go_strict_deps",
+    configure = { it.enableGoHighlighting() },
+  )
 
   @Test
   @DisabledOnOs(OS.WINDOWS)
   fun testHighlighting() = runBlocking(Dispatchers.Default) {
-    fixture.enableGoHighlighting()
-    fixture.copyBazelTestProject("redcodes/go_strict_deps")
-    fixture.performBazelSync()
     fixture.checkHighlighting(
       "a/a.go",
       expected = ExpectedHighlightingData(

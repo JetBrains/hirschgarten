@@ -7,8 +7,6 @@ import com.intellij.platform.backend.workspace.WorkspaceModel
 import com.intellij.platform.workspace.jps.entities.ModuleDependency
 import com.intellij.platform.workspace.jps.entities.ModuleEntity
 import com.intellij.testFramework.common.timeoutRunBlocking
-import com.intellij.testFramework.junit5.fixture.projectFixture
-import com.intellij.testFramework.junit5.fixture.tempPathFixture
 import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.ints.shouldBeGreaterThanOrEqual
 import io.kotest.matchers.shouldBe
@@ -19,44 +17,54 @@ import org.jetbrains.bazel.test.framework.BazelSyncCodeInsightTestFixture
 import org.jetbrains.bazel.test.framework.BazelTestApplication
 import org.jetbrains.bazel.test.framework.bazelSyncCodeInsightFixture
 import org.jetbrains.bazel.test.framework.checkHighlighting
+import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import kotlin.time.Duration.Companion.minutes
 
-@BazelTestApplication
 class JdepsLibraryShadowsModuleTest {
 
-  private val projectFixture = projectFixture(openAfterCreation = true)
-  private val tempDir = tempPathFixture()
-  private val fixture by bazelSyncCodeInsightFixture(projectFixture, tempDir)
+  @Nested
+  @BazelTestApplication
+  inner class OutOfScopeReExport {
 
-  @Test
-  fun `jar reached only through an out-of-scope re-exporting library resolves to source`(): Unit =
-    timeoutRunBlocking(timeout = 5.minutes) {
-      fixture.copyBazelTestProject("redcodes/jdeps_library_shadows_module")
-      fixture.setProjectView(projectview = ".managed.bazelproject")
-      fixture.setBazelVersion("9.1.0")
-      fixture.performBazelSync(buildProject = true)
+    private val fixture by bazelSyncCodeInsightFixture(
+      "redcodes/jdeps_library_shadows_module",
+      buildProject = true,
+      bazelVersion = "9.1.0",
+      projectView = ".managed.bazelproject",
+    )
 
-      fixture.assertResolvesToSource(
-        usage = "A.value",
-        expectedSource = "liba/A.java",
-        producerModule = "liba.a",
-      )
-    }
+    @Test
+    fun `jar reached only through an out-of-scope re-exporting library resolves to source`(): Unit =
+      timeoutRunBlocking(timeout = 5.minutes) {
+        fixture.assertResolvesToSource(
+          usage = "A.value",
+          expectedSource = "liba/A.java",
+          producerModule = "liba.a",
+        )
+      }
+  }
 
-  @Test
-  fun `jar exported through a custom code-gen aspect resolves to source`(): Unit =
-    timeoutRunBlocking(timeout = 5.minutes) {
-      fixture.copyBazelTestProject("redcodes/custom_aspect_runtime_shadow")
-      fixture.setBazelVersion("9.1.0")
-      fixture.performBazelSync(buildProject = true)
+  @Nested
+  @BazelTestApplication
+  inner class CustomCodeGenAspect {
 
-      fixture.assertResolvesToSource(
-        usage = "Message.text",
-        expectedSource = "rt/Message.java",
-        producerModule = "rt.rt",
-      )
-    }
+    private val fixture by bazelSyncCodeInsightFixture(
+      "redcodes/custom_aspect_runtime_shadow",
+      buildProject = true,
+      bazelVersion = "9.1.0",
+    )
+
+    @Test
+    fun `jar exported through a custom code-gen aspect resolves to source`(): Unit =
+      timeoutRunBlocking(timeout = 5.minutes) {
+        fixture.assertResolvesToSource(
+          usage = "Message.text",
+          expectedSource = "rt/Message.java",
+          producerModule = "rt.rt",
+        )
+      }
+  }
 }
 
 private suspend fun BazelSyncCodeInsightTestFixture.assertResolvesToSource(

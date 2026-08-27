@@ -6,8 +6,6 @@ import com.intellij.openapi.vfs.JarFileSystem
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiFile
 import com.intellij.testFramework.common.timeoutRunBlocking
-import com.intellij.testFramework.junit5.fixture.projectFixture
-import com.intellij.testFramework.junit5.fixture.tempPathFixture
 import io.kotest.matchers.ints.shouldBeGreaterThanOrEqual
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldEndWith
@@ -22,15 +20,14 @@ import kotlin.time.Duration.Companion.minutes
 @BazelTestApplication
 class SourceJarNavigationTest {
 
-  private val projectFixture = projectFixture(openAfterCreation = true)
-  private val tempDir = tempPathFixture()
-  private val fixture by bazelSyncCodeInsightFixture(projectFixture, tempDir)
+  private val fixture by bazelSyncCodeInsightFixture(
+    "redcodes/java_source_jar_navigation",
+    buildProject = true,
+    projectView = ".bazelproject",
+  )
 
   @Test
   fun testNavigation(): Unit = timeoutRunBlocking(timeout = 5.minutes) {
-    fixture.copyBazelTestProject("redcodes/java_source_jar_navigation")
-    fixture.setProjectView(projectview = ".bazelproject")
-    fixture.performBazelSync(buildProject = true)
     withContext(Dispatchers.EDT) {
       val psiFile = fixture.configureByFile("app/App.java")
       fixture.checkHighlighting()

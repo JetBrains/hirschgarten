@@ -7,8 +7,6 @@ import com.intellij.openapi.application.readAction
 import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiMethod
 import com.intellij.testFramework.common.timeoutRunBlocking
-import com.intellij.testFramework.junit5.fixture.projectFixture
-import com.intellij.testFramework.junit5.fixture.tempPathFixture
 import io.kotest.matchers.ints.shouldBeGreaterThanOrEqual
 import io.kotest.matchers.string.shouldContain
 import kotlinx.coroutines.Dispatchers
@@ -21,15 +19,16 @@ import kotlin.time.Duration.Companion.minutes
 @BazelTestApplication
 class InterfaceJarAnalysisSuppressionTest {
 
-  private val projectFixture = projectFixture(openAfterCreation = true)
-  private val tempDir = tempPathFixture()
-  private val fixture by bazelSyncCodeInsightFixture(projectFixture, tempDir)
+  private val fixture by bazelSyncCodeInsightFixture(
+    "redcodes/interface_jar_analysis",
+    buildProject = true,
+    projectView = ".bazelproject",
+  ) {
+    it.enableInspections(ConstantValueInspection())
+  }
 
   @Test
   fun testHighlighting(): Unit = timeoutRunBlocking(timeout = 5.minutes) {
-    fixture.copyBazelTestProject("redcodes/interface_jar_analysis")
-    fixture.setProjectView(projectview = ".bazelproject")
-    fixture.performBazelSync(buildProject = true)
     withContext(Dispatchers.EDT) {
       fixture.enableInspections(ConstantValueInspection(), DataFlowInspection())
       val psiFile = fixture.configureByFile("app/App.java")

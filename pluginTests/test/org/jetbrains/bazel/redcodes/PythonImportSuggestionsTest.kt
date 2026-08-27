@@ -9,8 +9,6 @@ import com.intellij.platform.backend.workspace.toVirtualFileUrl
 import com.intellij.platform.backend.workspace.workspaceModel
 import com.intellij.psi.util.QualifiedName
 import com.intellij.testFramework.IndexingTestUtil
-import com.intellij.testFramework.junit5.fixture.projectFixture
-import com.intellij.testFramework.junit5.fixture.tempPathFixture
 import com.intellij.util.indexing.FileBasedIndex
 import com.jetbrains.python.inspections.unresolvedReference.PyUnresolvedReferencesInspection
 import io.kotest.matchers.collections.shouldHaveSize
@@ -24,7 +22,9 @@ import org.jetbrains.bazel.test.framework.bazelSyncCodeInsightFixture
 import org.jetbrains.bazel.workspacemodel.entities.BazelProjectDirectoriesEntity
 import org.jetbrains.bazel.workspacemodel.entities.NonIndexableVirtualFileUrl
 import org.jetbrains.bazel.workspacemodel.entities.modifyBazelProjectDirectoriesEntity
+import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import kotlin.io.path.Path
 import kotlin.io.path.createDirectories
 import kotlin.io.path.writeText
 
@@ -34,19 +34,20 @@ import kotlin.io.path.writeText
  * `tools/helper` is a `py_library` without an `imports` attribute, so PyCharm cannot name `tools/helper/op.py` from
  * source roots and its auto-import cannot insert a working import for `op_func`.
  */
-@BazelTestApplication
 class PythonImportSuggestionsTest {
 
-  private val projectFixture = projectFixture(openAfterCreation = true)
-  private val tempDir = tempPathFixture()
-  private val fixture by bazelSyncCodeInsightFixture(projectFixture, tempDir)
+  @Nested
+  @BazelTestApplication
+  inner class NoImportsTarget {
 
-  @Test
-  fun testImportQuickFixForSymbolInNoImportsTarget() {
-    runBlocking(Dispatchers.Default) {
-      fixture.copyBazelTestProject("redcodes/python_imports")
-      replaceMainFile("op_fun<caret>c()\n")
-      fixture.performBazelSync(buildProject = true)
+    private val fixture by bazelSyncCodeInsightFixture(
+      "redcodes/python_imports",
+      buildProject = true,
+      configure = { it.replaceMainFile("op_fun<caret>c()\n") },
+    )
+
+    @Test
+    fun testImportQuickFixForSymbolInNoImportsTarget(): Unit = runBlocking(Dispatchers.Default) {
       withContext(Dispatchers.EDT) {
         fixture.enableInspections(PyUnresolvedReferencesInspection())
         fixture.configureFromTempProjectFile("main/main.py")
@@ -58,13 +59,19 @@ class PythonImportSuggestionsTest {
     }
   }
 
-  @Test
-  fun testImportQuickFixForSymbolInExternalBazelIndexedSource() {
-    runBlocking(Dispatchers.Default) {
-      fixture.copyBazelTestProject("redcodes/python_imports")
-      replaceMainFile("BaseMod<caret>el()\n")
-      fixture.performBazelSync(buildProject = true)
-      val pydanticMain = tempDir.get()
+  @Nested
+  @BazelTestApplication
+  inner class ExternalBazelIndexedSource {
+
+    private val fixture by bazelSyncCodeInsightFixture(
+      "redcodes/python_imports",
+      buildProject = true,
+      configure = { it.replaceMainFile("BaseMod<caret>el()\n") },
+    )
+
+    @Test
+    fun testImportQuickFixForSymbolInExternalBazelIndexedSource(): Unit = runBlocking(Dispatchers.Default) {
+      val pydanticMain = Path(fixture.tempDirPath)
         .resolveSibling("external-pydantic")
         .resolve("site-packages")
         .resolve("pydantic")
@@ -75,7 +82,7 @@ class PythonImportSuggestionsTest {
       fixture.project.updateBazelPythonResolveIndex(
         mapOf(QualifiedName.fromDottedString("pydantic.main") to pydanticMain),
       )
-      registerAdditionalIndexedFile(pydanticMainFile)
+      fixture.registerAdditionalIndexedFile(pydanticMainFile)
       FileBasedIndex.getInstance().requestReindex(pydanticMainFile)
       IndexingTestUtil.waitUntilIndexesAreReady(fixture.project)
 
@@ -89,26 +96,25 @@ class PythonImportSuggestionsTest {
       }
     }
   }
+}
 
-  private fun BazelSyncCodeInsightTestFixture.launchSingleImportIntention(moduleQName: String) {
-    val intentions = availableIntentions.filter { it.text.contains(moduleQName) }
-    intentions shouldHaveSize 1
-    launchAction(intentions.single())
-  }
+private fun BazelSyncCodeInsightTestFixture.launchSingleImportIntention(moduleQName: String) {
+  val intentions = availableIntentions.filter { it.text.contains(moduleQName) }
+  intentions shouldHaveSize 1
+  launchAction(intentions.single())
+}
 
-  private fun replaceMainFile(text: String) {
-    tempDir.get().resolve("main").resolve("main.py").writeText(text)
-  }
+private fun BazelSyncCodeInsightTestFixture.replaceMainFile(text: String) {
+  Path(tempDirPath).resolve("main").resolve("main.py").writeText(text)
+}
 
-  private fun registerAdditionalIndexedFile(file: VirtualFile) {
-    val project = fixture.project
-    val urlManager = project.workspaceModel.getVirtualFileUrlManager()
-    runWriteAction {
-      project.workspaceModel.updateProjectModel("register external Python source") { storage ->
-        val entity = storage.entities(BazelProjectDirectoriesEntity::class.java).first()
-        storage.modifyBazelProjectDirectoriesEntity(entity) {
-          indexAdditionalFiles += NonIndexableVirtualFileUrl(file.toVirtualFileUrl(urlManager))
-        }
+private fun BazelSyncCodeInsightTestFixture.registerAdditionalIndexedFile(file: VirtualFile) {
+  val urlManager = project.workspaceModel.getVirtualFileUrlManager()
+  runWriteAction {
+    project.workspaceModel.updateProjectModel("register external Python source") { storage ->
+      val entity = storage.entities(BazelProjectDirectoriesEntity::class.java).first()
+      storage.modifyBazelProjectDirectoriesEntity(entity) {
+        indexAdditionalFiles += NonIndexableVirtualFileUrl(file.toVirtualFileUrl(urlManager))
       }
     }
   }

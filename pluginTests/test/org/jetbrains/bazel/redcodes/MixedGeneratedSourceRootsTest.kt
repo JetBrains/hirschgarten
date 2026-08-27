@@ -6,8 +6,6 @@ import com.intellij.platform.backend.workspace.WorkspaceModel
 import com.intellij.platform.workspace.jps.entities.ModuleEntity
 import com.intellij.platform.workspace.jps.entities.SourceRootEntity
 import com.intellij.testFramework.common.timeoutRunBlocking
-import com.intellij.testFramework.junit5.fixture.projectFixture
-import com.intellij.testFramework.junit5.fixture.tempPathFixture
 import com.intellij.workspaceModel.ide.toPath
 import io.kotest.matchers.collections.shouldBeSingleton
 import kotlinx.coroutines.Dispatchers
@@ -25,9 +23,10 @@ import kotlin.time.Duration.Companion.minutes
 @BazelTestApplication
 class MixedGeneratedSourceRootsTest {
 
-  private val projectFixture = projectFixture(openAfterCreation = true)
-  private val tempDir = tempPathFixture()
-  private val fixture by bazelSyncCodeInsightFixture(projectFixture, tempDir)
+  private val fixture by bazelSyncCodeInsightFixture(
+    "redcodes/mixed_generated_source",
+    buildProject = true,
+  )
 
   @Test
   @DisabledOnOs(OS.WINDOWS) // can't find bash
@@ -35,8 +34,6 @@ class MixedGeneratedSourceRootsTest {
     check(BazelFeatureFlags.mergeSourceRoots) {
       "MixedGeneratedSourceRootsTest only makes sense with BazelFeatureFlags.mergeSourceRoots enabled"
     }
-    fixture.copyBazelTestProject("redcodes/mixed_generated_source")
-    fixture.performBazelSync(buildProject = true)
     withContext(Dispatchers.EDT) {
       val moduleEntity = WorkspaceModel.getInstance(fixture.project)
         .currentSnapshot

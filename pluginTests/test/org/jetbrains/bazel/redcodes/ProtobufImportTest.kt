@@ -1,8 +1,6 @@
 package org.jetbrains.bazel.redcodes
 
 import com.intellij.openapi.application.EDT
-import com.intellij.testFramework.junit5.fixture.projectFixture
-import com.intellij.testFramework.junit5.fixture.tempPathFixture
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
@@ -13,9 +11,7 @@ import org.junit.jupiter.api.Test
 
 @BazelTestApplication
 class ProtobufImportTest {
-  private val projectFixture = projectFixture(openAfterCreation = true)
-  private val tempDir = tempPathFixture()
-  private val fixture by bazelSyncCodeInsightFixture(projectFixture, tempDir)
+  private val fixture by bazelSyncCodeInsightFixture("redcodes/protobuf_import", buildProject = true)
 
   /**
    *   requests.proto's import "google/protobuf/timestamp.proto" resolved to two physically different files, and the Protobuf plugin flags
@@ -30,8 +26,6 @@ class ProtobufImportTest {
    */
   @Test
   fun testProtoHighlighting() = runBlocking(Dispatchers.Default) {
-    fixture.copyBazelTestProject("redcodes/protobuf_import")
-    fixture.performBazelSync(buildProject = true)
     withContext(Dispatchers.EDT) {
       fixture.checkHighlighting("requests/requests.proto")
     }

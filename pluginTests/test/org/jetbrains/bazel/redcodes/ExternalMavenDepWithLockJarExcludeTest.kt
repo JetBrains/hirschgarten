@@ -1,8 +1,6 @@
 package org.jetbrains.bazel.redcodes
 
 import com.intellij.openapi.application.EDT
-import com.intellij.testFramework.junit5.fixture.projectFixture
-import com.intellij.testFramework.junit5.fixture.tempPathFixture
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
@@ -16,15 +14,13 @@ import org.junit.jupiter.api.condition.OS
 @BazelTestApplication
 class ExternalMavenDepWithLockJarExcludeTest {
 
-  private val projectFixture = projectFixture(openAfterCreation = true)
-  private val tempDir = tempPathFixture()
-  private val fixture by bazelSyncCodeInsightFixture(projectFixture, tempDir)
+  private val fixture by bazelSyncCodeInsightFixture(
+    "redcodes/external_maven_dep_with_lock_jar_exclude",
+  )
 
   @Test
   @DisabledOnOs(OS.WINDOWS) // coursier
   fun testHighlighting() = runBlocking(Dispatchers.Default) {
-    fixture.copyBazelTestProject("redcodes/external_maven_dep_with_lock_jar_exclude")
-    fixture.performBazelSync()
     withContext(Dispatchers.EDT) {
       fixture.checkHighlighting("Usage.java")
     }

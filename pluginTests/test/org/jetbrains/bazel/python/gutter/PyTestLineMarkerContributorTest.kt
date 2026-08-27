@@ -3,8 +3,6 @@ package org.jetbrains.bazel.python.gutter
 import com.intellij.openapi.application.EDT
 import com.intellij.openapi.editor.LogicalPosition
 import com.intellij.psi.PsiNameIdentifierOwner
-import com.intellij.testFramework.junit5.fixture.projectFixture
-import com.intellij.testFramework.junit5.fixture.tempPathFixture
 import com.jetbrains.python.testing.PyTestLineMarkerContributor
 import io.kotest.matchers.nulls.shouldNotBeNull
 import kotlinx.coroutines.Dispatchers
@@ -19,17 +17,14 @@ import org.junit.jupiter.api.condition.OS
 
 @BazelTestApplication
 internal class PyTestLineMarkerContributorTest {
-  private val projectFixture = projectFixture(openAfterCreation = true)
-  private val tempDir = tempPathFixture()
-  private val fixture by bazelSyncCodeInsightFixture(projectFixture, tempDir)
+  private val fixture by bazelSyncCodeInsightFixture(
+    "redcodes/python_test_gutters",
+  )
   private val pyRunLineMarkerContributor = PyTestLineMarkerContributor()
 
   @Test
   @DisabledOnOs(OS.WINDOWS) // No suitable shell toolchain found
   fun `check that run gutters are shown for test methods`() = runBlocking(Dispatchers.Default) {
-    fixture.copyBazelTestProject("redcodes/python_test_gutters")
-    fixture.performBazelSync()
-
     withContext(Dispatchers.EDT) {
       fixture.openFileInEditor(fixture.project.rootDir.findChild("test_sample.py")!!)
       fixture.editor.caretModel.moveToLogicalPosition(LogicalPosition(0, 4))

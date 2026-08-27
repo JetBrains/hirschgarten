@@ -8,11 +8,8 @@ import com.intellij.openapi.vfs.newvfs.events.VFileEvent
 import com.intellij.openapi.vfs.newvfs.events.VFileMoveEvent
 import com.intellij.testFramework.ExpectedHighlightingData
 import com.intellij.testFramework.PlatformTestUtil
-import com.intellij.testFramework.junit5.fixture.projectFixture
-import com.intellij.testFramework.junit5.fixture.tempPathFixture
 import io.kotest.matchers.shouldBe
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import org.jetbrains.bazel.test.framework.BazelTestApplication
@@ -21,19 +18,13 @@ import org.jetbrains.bazel.test.framework.checkHighlighting
 import org.jetbrains.bazel.workspace.fileEvents.BazelFileEventProcessor
 import org.jetbrains.bazel.workspace.fileEvents.BazelFileEventProcessorResult
 import org.junit.jupiter.api.Test
-import kotlin.time.Duration.Companion.milliseconds
-import kotlin.time.Duration.Companion.seconds
 
 @BazelTestApplication
 internal class FileSystemRefreshTest {
-  private val projectFixture = projectFixture(openAfterCreation = true)
-  private val tempDir = tempPathFixture()
-  private val fixture by bazelSyncCodeInsightFixture(projectFixture, tempDir)
+  private val fixture by bazelSyncCodeInsightFixture("redcodes/file_system_refresh")
 
   @Test
   fun `model is updated on added file`() = runBlocking(Dispatchers.Default) {
-    fixture.copyBazelTestProject("redcodes/file_system_refresh")
-    fixture.performBazelSync()
     withContext(Dispatchers.EDT) {
       fixture.checkHighlighting(
         "module/src/com/example/Module.java",
@@ -130,8 +121,6 @@ internal class FileSystemRefreshTest {
 
   @Test
   fun `model is not invalidated on added resource file`() = runBlocking(Dispatchers.Default) {
-    fixture.copyBazelTestProject("redcodes/file_system_refresh")
-    fixture.performBazelSync()
     withContext(Dispatchers.EDT) {
       // Create resource file and resync FS
       val newFile = fixture.tempDirFixture.createFile(

@@ -4,8 +4,6 @@ import com.intellij.openapi.application.EDT
 import com.intellij.platform.backend.workspace.WorkspaceModel
 import com.intellij.platform.backend.workspace.toVirtualFileUrl
 import com.intellij.platform.workspace.jps.entities.ModuleEntity
-import com.intellij.testFramework.junit5.fixture.projectFixture
-import com.intellij.testFramework.junit5.fixture.tempPathFixture
 import io.kotest.matchers.collections.shouldHaveSingleElement
 import io.kotest.matchers.collections.shouldHaveSize
 import kotlinx.coroutines.Dispatchers
@@ -18,14 +16,12 @@ import org.junit.jupiter.api.Test
 @BazelTestApplication
 class SourceRootsOverlapTest {
 
-  private val projectFixture = projectFixture(openAfterCreation = true)
-  private val tempDir = tempPathFixture()
-  private val fixture by bazelSyncCodeInsightFixture(projectFixture, tempDir)
+  private val fixture by bazelSyncCodeInsightFixture(
+    "redcodes/source_roots_overlap",
+  )
 
   @Test
   fun testIndexing() = runBlocking(Dispatchers.Default) {
-    fixture.copyBazelTestProject("redcodes/source_roots_overlap")
-    fixture.performBazelSync()
     withContext(Dispatchers.EDT) {
       val moduleEntity = WorkspaceModel.getInstance(fixture.project)
         .currentSnapshot
