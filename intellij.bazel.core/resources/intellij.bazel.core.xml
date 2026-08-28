@@ -741,6 +741,10 @@
     <projectSettings service="org.jetbrains.bazel.languages.starlark.repomapping.PersistentBazelRepoMappingService"/>
     <projectSettings service="org.jetbrains.bazel.languages.bazelversion.service.BazelVersionCheckerService"/>
     <projectSettings service="org.jetbrains.bazel.languages.bazelversion.service.resolver.BazelGithubGlobalCacheService"/>
+
+    <projectService serviceInterface="org.jetbrains.bazel.sync.ProjectSyncService"
+                    serviceImplementation="org.jetbrains.bazel.sync.DefaultProjectSyncService"/>
+
   </extensions>
 
   <extensions defaultExtensionNs="com.intellij.multiverse">

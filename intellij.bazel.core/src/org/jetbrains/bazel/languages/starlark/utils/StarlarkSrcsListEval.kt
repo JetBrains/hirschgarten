@@ -25,10 +25,14 @@ class StarlarkSrcsListEval(private val project: Project) {
 
   private val fileTargetsCache = HashMap<VirtualFile, List<StarlarkTargetInfo>>()
 
+  fun findBuildFileForSourceFile(file: VirtualFile): VirtualFile? {
+    val root = findContainingBazelRepo(file) ?: return null
+    return findBuildFilePathFor(file, root)
+  }
+
   @RequiresReadLock
   fun findTargetsForSourceFile(file: VirtualFile): Map<Label, EnumSet<Kind>> {
-    val root = findContainingBazelRepo(file) ?: return emptyMap()
-    val buildFile = findBuildFilePathFor(file, root) ?: return emptyMap()
+    val buildFile = findBuildFileForSourceFile(file) ?: return emptyMap()
 
     val relativePath = VfsUtil.getRelativePath(file, buildFile.parent) ?: return emptyMap()
 

@@ -26,10 +26,15 @@ import com.intellij.testFramework.replaceService
 import com.intellij.testFramework.utils.vfs.refreshAndGetVirtualDirectory
 import com.intellij.testFramework.workspaceModel.updateProjectModel
 import com.intellij.workspaceModel.ide.toPath
+import io.kotest.assertions.withClue
 import io.kotest.matchers.booleans.shouldBeFalse
 import io.kotest.matchers.booleans.shouldBeTrue
+import io.kotest.matchers.collections.shouldBeEmpty
+import io.kotest.matchers.collections.shouldContainExactly
+import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import kotlinx.coroutines.CompletableDeferred
 import org.jetbrains.bazel.commons.RuleType
+import org.jetbrains.bazel.commons.constants.Constants
 import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.config.isBazelProject
 import org.jetbrains.bazel.config.rootDir
@@ -38,6 +43,7 @@ import org.jetbrains.bazel.magicmetamodel.formatAsModuleName
 import org.jetbrains.bazel.project.BazelProjectFixtures.deinitializeBazelProject
 import org.jetbrains.bazel.server.BazelServerService
 import org.jetbrains.bazel.sync.JavaLanguageClass
+import org.jetbrains.bazel.sync.ProjectDirtyStateService
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
 import org.jetbrains.bazel.target.targetStorage
 import org.jetbrains.bazel.test.framework.target.TestBuildTarget
@@ -483,6 +489,161 @@ class BazelFileEventListenerTest : WorkspaceModelBaseTest() {
     fileUrl.belongsToTarget(target1).shouldBeTrue()
   }
 
+  @Test
+  fun `an unresolved source file marks only its own BUILD file dirty`() {
+    project.rootDir.createFile("MODULE", "bazel")
+    val src = project.rootDir.createDirectory("src")
+    val buildFile = src.createFile("BUILD", "bazel")
+    val unknown1 = src.createFile("unknown1", "java")
+    val unknown2 = src.createFile("unknown2", "java")
+
+    processEventsWithRealQuery(createEvent(unknown1), createEvent(unknown2))
+
+    val dirtyState = ProjectDirtyStateService.getInstance(project).current()
+    dirtyState.wholeProject.shouldBeFalse()
+    dirtyState.paths shouldContainExactly setOf(Path.of(buildFile.parent.path))
+  }
+
+  @Test
+  fun `an unresolved source file outside every Bazel package marks nothing dirty`() {
+    // no BUILD file owns the file, so no target can own it either
+    project.rootDir.createFile("MODULE", "bazel")
+    val unknown = project.rootDir.createDirectory("src").createFile("unknown", "java")
+
+    processEventsWithRealQuery(createEvent(unknown))
+
+    val dirtyState = ProjectDirtyStateService.getInstance(project).current()
+    dirtyState.wholeProject.shouldBeFalse()
+    dirtyState.paths.shouldBeEmpty()
+  }
+
+  @Test
+  fun `a BUILD file event does not reach the workspace model`() {
+    val buildFile = project.rootDir.createDirectory("src").createFile("BUILD", "bazel")
+
+    createEvent(buildFile).process().shouldBeFalse()
+  }
+
+  @Test
+  fun `a content change event does not reach the workspace model`() {
+    val file = project.rootDir.createDirectory("src").createFile("aaa", "java")
+    createEvent(file).process().shouldBeTrue()
+
+    contentChangeEvent(file).process().shouldBeFalse()
+  }
+
+  @Test
+  fun `every kind of BUILD file event marks its package dirty`() {
+    val src = project.rootDir.createDirectory("src")
+    val buildFile = src.createFile("BUILD", "bazel")
+
+    listOf(
+      createEvent(buildFile),
+      contentChangeEvent(buildFile),
+      deleteEvent(buildFile),
+    ).forEach { event ->
+      clearDirtyState()
+      event.process()
+      dirtyPaths() shouldContainExactly listOf(Path.of(src.path))
+    }
+  }
+
+  @Test
+  fun `a BUILD file move marks both packages dirty`() {
+    val src = project.rootDir.createDirectory("src")
+    val other = project.rootDir.createDirectory("other")
+    val buildFile = src.createFile("BUILD", "bazel")
+
+    moveEvent(buildFile, other).process()
+
+    dirtyPaths() shouldContainExactlyInAnyOrder listOf(Path.of(src.path), Path.of(other.path))
+  }
+
+  @Test
+  fun `a rename away from BUILD marks the whole project dirty`() {
+    val src = project.rootDir.createDirectory("src")
+    val buildFile = src.createFile("BUILD", "bazel")
+    runTestWriteAction { buildFile.rename(requestor, "BUILD.old") }
+
+    // the rename deletes the package, and the new name tells the plugin nothing about the scope
+    renameEvent(buildFile, "BUILD", "BUILD.old").process()
+
+    wholeProjectIsDirty().shouldBeTrue()
+  }
+
+  @Test
+  fun `a load file change marks the whole project dirty`() {
+    // every package can load a .bzl file, so the plugin cannot narrow the scope
+    val loadFile = project.rootDir.createDirectory("src").createFile("defs", "bzl")
+
+    contentChangeEvent(loadFile).process()
+
+    wholeProjectIsDirty().shouldBeTrue()
+  }
+
+  @Test
+  fun `a root configuration file change marks the whole project dirty`() {
+    listOf("MODULE.bazel", ".bazelversion", ".bazelproject").forEach { name ->
+      clearDirtyState()
+      val file = project.rootDir.createFile(name)
+
+      contentChangeEvent(file).process()
+
+      withClue(name) { wholeProjectIsDirty().shouldBeTrue() }
+    }
+  }
+
+  @Test
+  fun `the module lock file does not mark anything dirty`() {
+    // Bazel rewrites it on every build
+    val lockFile = project.rootDir.createFile(Constants.MODULE_BAZEL_LOCK_FILE_NAME)
+
+    contentChangeEvent(lockFile).process()
+
+    dirtyPaths().shouldBeEmpty()
+  }
+
+  @Test
+  fun `a source file does not mark anything dirty`() {
+    val source = project.rootDir.createDirectory("src").createFile("aaa", "java")
+
+    createEvent(source).process()
+
+    dirtyPaths().shouldBeEmpty()
+  }
+
+  @Test
+  fun `a synthetic target BUILD file does not mark anything dirty`() {
+    val buildFile =
+      project.rootDir
+        .createDirectory(Constants.DOT_BAZELBSP_DIR_NAME)
+        .createDirectory(Constants.SYNTHETIC_TARGETS_DIR_NAME)
+        .createDirectory("target")
+        .createFile("BUILD", "bazel")
+
+    createEvent(buildFile).process()
+
+    dirtyPaths().shouldBeEmpty()
+  }
+
+  private fun dirtyPaths(): List<Path> = ProjectDirtyStateService.getInstance(project).current().paths.toList()
+
+  private fun wholeProjectIsDirty(): Boolean = ProjectDirtyStateService.getInstance(project).current().wholeProject
+
+  private fun clearDirtyState() = ProjectDirtyStateService.getInstance(project).clearAll()
+
+  private fun VirtualFile.createFile(name: String): VirtualFile {
+    if (!this.isDirectory) error("Can't create a file in a non-directory file")
+    return runTestWriteAction { this.createChildData(requestor, name) }
+  }
+
+  /** Runs the real target evaluation, so that the unresolved-file path runs too. */
+  private fun processEventsWithRealQuery(vararg events: VFileEvent) {
+    timeoutRunBlocking {
+      DefaultBazelFileEventProcessor(project).enqueue(events.toList()).await()
+    }
+  }
+
   private fun addMockTargetToProject(project: Project) {
     val mockLabel = Label.parse("//mock:target")
     val mockBuildTarget =
@@ -510,9 +671,8 @@ class BazelFileEventListenerTest : WorkspaceModelBaseTest() {
 
   private fun VirtualFile.createDirectory(name: String): VirtualFile {
     if (!this.isDirectory) error("Can't create a directory in a non-directory file")
-    return runTestWriteAction {
-      this.createChildDirectory(requestor, name)
-    }
+    // the fixture already creates some of these directories
+    return findChild(name) ?: runTestWriteAction { this.createChildDirectory(requestor, name) }
   }
 
   private fun VirtualFile.createExcludedDirectory(name: String): VirtualFile {

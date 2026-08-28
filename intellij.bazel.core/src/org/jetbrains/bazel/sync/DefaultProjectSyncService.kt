@@ -18,5 +18,6 @@ internal class DefaultProjectSyncService(private val project: Project) : Project
       onSyncTaskStarted = { lastSyncTaskId = it },
     )
     task.sync()
+    ProjectDirtyStateService.getInstance(project).finishSync(scope)
   }
 }

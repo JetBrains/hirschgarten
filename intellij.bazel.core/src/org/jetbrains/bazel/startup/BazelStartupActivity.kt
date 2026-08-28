@@ -10,6 +10,7 @@ import kotlinx.coroutines.flow.update
 import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.projectAware.BazelWorkspace
 import org.jetbrains.bazel.startup.utils.BazelProjectActivity
+import org.jetbrains.bazel.sync.ProjectDirtyStateService
 import org.jetbrains.bazel.sync.ProjectSyncScope
 import org.jetbrains.bazel.sync.ProjectSyncService
 import org.jetbrains.bazel.sync.environment.projectCtx
@@ -48,6 +49,7 @@ private suspend fun executeOnEveryProjectStartup(project: Project) {
   log.debug("Executing Bazel startup activities for every opening")
   updateBazelFileTargetsWidget(project)
   project.serviceAsync<BazelWorkspace>().initialize()
+  project.serviceAsync<ProjectDirtyStateService>() // must come after initialize(), because it reads the registered project id
   project.service<ModuleTargetService>() // warm up service
 }
 
