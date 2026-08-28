@@ -8,11 +8,7 @@ import org.jetbrains.bazel.test.framework.toBazelRcPath
 import org.jetbrains.intellij.build.dependencies.JdkDownloader.OS
 import java.io.IOException
 import java.nio.charset.StandardCharsets
-import java.nio.file.FileVisitResult
-import java.nio.file.Files
 import java.nio.file.Path
-import java.nio.file.SimpleFileVisitor
-import java.nio.file.attribute.BasicFileAttributes
 import java.security.MessageDigest
 import java.util.HexFormat
 import java.util.Locale
@@ -250,46 +246,21 @@ register_toolchains(
     )
   }
 
+  // Bazel plants junctions inside the output base (execroot source forest, local external repos).
+  // NIO reports a Windows junction as a directory rather than a symlink, so a plain recursive
+  // delete descends through it and empties the junction target (e.g. the fixture project).
+  // NioFiles.deleteRecursively deletes the junction entry itself and skips its subtree.
   internal fun cleanupWindowsNestedBazelRoots() {
     windowsNestedBazelRoots.forEach { root ->
       try {
         if (root.exists()) {
-          deleteRecursivelyWithoutFollowingJunctions(root)
+          NioFiles.deleteRecursively(root)
         }
         windowsNestedBazelRoots.remove(root)
       } catch (_: Exception) {
         // Best-effort cleanup; a terminated Bazel process may still hold a Windows file lock.
       }
     }
-  }
-
-  // Bazel plants junctions inside the output base (execroot source forest, local external repos).
-  // NIO reports Windows junctions as directories rather than symlinks, so a plain Files.walk would
-  // descend through them and delete the junction targets' contents (e.g. the fixture project).
-  private fun deleteRecursivelyWithoutFollowingJunctions(root: Path) {
-    Files.walkFileTree(
-      root,
-      object : SimpleFileVisitor<Path>() {
-        override fun preVisitDirectory(dir: Path, attrs: BasicFileAttributes): FileVisitResult {
-          if (attrs.isSymbolicLink || attrs.isOther || !attrs.isDirectory) {
-            Files.deleteIfExists(dir)
-            return FileVisitResult.SKIP_SUBTREE
-          }
-          return FileVisitResult.CONTINUE
-        }
-
-        override fun visitFile(file: Path, attrs: BasicFileAttributes): FileVisitResult {
-          Files.deleteIfExists(file)
-          return FileVisitResult.CONTINUE
-        }
-
-        override fun postVisitDirectory(dir: Path, exc: IOException?): FileVisitResult {
-          exc?.let { throw it }
-          Files.deleteIfExists(dir)
-          return FileVisitResult.CONTINUE
-        }
-      },
-    )
   }
 
   internal fun bazelCacheSetting(name: String, path: Path): String =

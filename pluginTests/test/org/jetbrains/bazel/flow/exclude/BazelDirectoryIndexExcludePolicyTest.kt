@@ -10,13 +10,13 @@ import com.intellij.testFramework.junit5.fixture.tempPathFixture
 import com.intellij.testFramework.utils.vfs.refreshAndGetVirtualDirectory
 import kotlinx.coroutines.runBlocking
 import org.jetbrains.bazel.project.BazelProjectFixtures.initializeBazelProject
+import org.jetbrains.bazel.symlinks.createBazelConvenienceSymlink
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.ValueSource
-import java.nio.file.Files
 import java.nio.file.Path
 
 @TestApplication
@@ -31,10 +31,7 @@ class BazelDirectoryIndexExcludePolicyTest {
 
   @BeforeEach
   fun setUp() {
-    val realDirectory = tempDir.resolve("execroot/bazel-out")
-    Files.createDirectories(realDirectory)
-    convenienceSymlink = tempDir.resolve("bazel-out")
-    Files.createSymbolicLink(convenienceSymlink, realDirectory)
+    convenienceSymlink = tempDir.createBazelConvenienceSymlink("bazel-out")
   }
 
   @ParameterizedTest(name = "isBazelProject = {0}")

@@ -8,6 +8,7 @@ import com.intellij.testFramework.junit5.fixture.tempPathFixture
 import com.intellij.testFramework.refreshVfs
 import kotlinx.coroutines.runBlocking
 import org.jetbrains.bazel.project.BazelProjectFixtures.initializeBazelProject
+import org.jetbrains.bazel.symlinks.createBazelConvenienceSymlink
 import org.jetbrains.bazel.workspace.bazelProjectDirectoriesEntity
 import org.jetbrains.bazel.workspacemodel.entities.BazelProjectDirectoriesEntityFixtures.emptyBazelDirectoryWorkspaceEntity
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -15,7 +16,6 @@ import org.junit.jupiter.api.Assertions.assertIterableEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.nio.file.Files
-import java.nio.file.Path
 
 @TestApplication
 internal class BazelSymlinkExcludeStartupActivityTest {
@@ -35,7 +35,8 @@ internal class BazelSymlinkExcludeStartupActivityTest {
   fun `should scan for bazel symlinks on project startup and update workspace model`() = runBlocking {
     // GIVEN
     val bazelSymlinkExcludeService = BazelSymlinkExcludeService.getInstance(project)
-    val convenientSymlink = createConvenientSymlink("bazel-bin")
+    val convenientSymlink = tempDir.createBazelConvenienceSymlink("bazel-bin")
+    tempDir.refreshVfs()
 
     project.workspaceModel.update("Initialize empty workspace entity for test") { mutableEntityStorage ->
       mutableEntityStorage.addEntity(emptyBazelDirectoryWorkspaceEntity(project))
@@ -51,14 +52,5 @@ internal class BazelSymlinkExcludeStartupActivityTest {
     // AND
     val actualPaths = project.bazelProjectDirectoriesEntity()!!.excludedRoots.mapNotNull { it.url.virtualFile?.toNioPath() }
     assertIterableEquals(listOf(convenientSymlink), actualPaths)
-  }
-
-  private fun createConvenientSymlink(name: String): Path {
-    val realDirectory = tempDir.resolve("execroot/$name")
-    Files.createDirectories(realDirectory)
-    val convenientSymlink = tempDir.resolve(name)
-    Files.createSymbolicLink(convenientSymlink, realDirectory)
-    tempDir.refreshVfs()
-    return convenientSymlink
   }
 }

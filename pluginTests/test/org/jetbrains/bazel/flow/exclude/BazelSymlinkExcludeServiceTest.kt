@@ -1,6 +1,7 @@
 package org.jetbrains.bazel.flow.exclude
 
 import com.intellij.openapi.application.edtWriteAction
+import com.intellij.openapi.util.io.NioFiles
 import com.intellij.platform.backend.workspace.WorkspaceModel
 import com.intellij.platform.backend.workspace.virtualFile
 import com.intellij.testFramework.common.timeoutRunBlocking
@@ -11,6 +12,7 @@ import com.intellij.testFramework.refreshVfs
 import kotlinx.coroutines.runBlocking
 import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.project.BazelProjectFixtures.initializeBazelProject
+import org.jetbrains.bazel.symlinks.createBazelConvenienceSymlink
 import org.jetbrains.bazel.workspace.bazelProjectDirectoriesEntity
 import org.jetbrains.bazel.workspacemodel.entities.BazelProjectDirectoriesEntityFixtures.emptyBazelDirectoryWorkspaceEntity
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -52,13 +54,17 @@ class BazelSymlinkExcludeServiceTest {
   fun `should compute bazel convenience symlinks when their targets cannot be accessed`(): Unit = timeoutRunBlocking {
     // GIVEN
     val bazelSymlinkExcludeService = BazelSymlinkExcludeService.getInstance(project)
-    val execRoot = tempDir.resolve("missing/execroot/_main")
+    val outputBase = tempDir.resolve("missing")
+    val execRoot = outputBase.resolve("execroot/_main")
     val convenientSymlinks = setOf(
-      createConvenientSymlink("bazel-bin", execRoot.resolve("bazel-out/platform-fastbuild/bin"), createTarget = false),
-      createConvenientSymlink("bazel-out", execRoot.resolve("bazel-out"), createTarget = false),
-      createConvenientSymlink("bazel-testlogs", execRoot.resolve("bazel-out/platform-fastbuild/testlogs"), createTarget = false),
-      createConvenientSymlink("bazel-${tempDir.name}", execRoot, createTarget = false),
+      createConvenientSymlink("bazel-bin", execRoot.resolve("bazel-out/platform-fastbuild/bin")),
+      createConvenientSymlink("bazel-out", execRoot.resolve("bazel-out")),
+      createConvenientSymlink("bazel-testlogs", execRoot.resolve("bazel-out/platform-fastbuild/testlogs")),
+      createConvenientSymlink("bazel-${tempDir.name}", execRoot),
     )
+    // A Windows junction needs the target at creation, so remove the whole output base afterwards.
+    NioFiles.deleteRecursively(outputBase)
+    tempDir.refreshVfs()
 
     // WHEN
     val bazelSymlinksToExclude = bazelSymlinkExcludeService.scanForBazelSymlinksToExclude(project.rootDir.toNioPath())
@@ -84,6 +90,25 @@ class BazelSymlinkExcludeServiceTest {
   }
 
   @Test
+  fun `should keep the symlinks from an earlier call`() = runBlocking {
+    // GIVEN
+    val bazelSymlinkExcludeService = BazelSymlinkExcludeService.getInstance(project)
+    val binSymlink = createConvenientSymlink("bazel-bin")
+    val outSymlink = createConvenientSymlink("bazel-out")
+
+    // WHEN
+    edtWriteAction {
+      bazelSymlinkExcludeService.addBazelSymlinksToExclude(setOf(binSymlink))
+    }
+    edtWriteAction {
+      bazelSymlinkExcludeService.addBazelSymlinksToExclude(setOf(outSymlink))
+    }
+
+    // THEN
+    assertEquals(setOf(binSymlink, outSymlink), bazelSymlinkExcludeService.getBazelSymlinksToExclude())
+  }
+
+  @Test
   fun `should add a new symlink to bazel workspace model`() = runBlocking {
     // GIVEN
     val bazelSymlinkExcludeService = BazelSymlinkExcludeService.getInstance(project)
@@ -105,17 +130,35 @@ class BazelSymlinkExcludeServiceTest {
     assertIterableEquals(listOf(convenientSymlink), actualPaths)
   }
 
+  @Test
+  fun `should add a symlink to bazel workspace model only once`() = runBlocking {
+    // GIVEN
+    val bazelSymlinkExcludeService = BazelSymlinkExcludeService.getInstance(project)
+    val convenientSymlink = createConvenientSymlink("bazel-out")
+    edtWriteAction {
+      bazelSymlinkExcludeService.addBazelSymlinksToExclude(setOf(convenientSymlink))
+    }
+
+    val workspaceModel = WorkspaceModel.getInstance(project)
+    workspaceModel.update("Initialize empty workspace entity for test") { mutableEntityStorage ->
+      mutableEntityStorage.addEntity(emptyBazelDirectoryWorkspaceEntity(project))
+    }
+
+    // WHEN the service refreshes the model twice, as the debounced flow can do
+    bazelSymlinkExcludeService.refreshWorkspaceModel()
+    bazelSymlinkExcludeService.refreshWorkspaceModel()
+
+    // THEN
+    val actualPaths = project.bazelProjectDirectoriesEntity()!!.excludedRoots.mapNotNull { it.url.virtualFile?.toNioPath() }
+    assertIterableEquals(listOf(convenientSymlink), actualPaths)
+  }
+
   private fun createConvenientSymlink(
     name: String,
     realDirectory: Path = tempDir.resolve("execroot/$name"),
-    createTarget: Boolean = true,
   ): Path {
-    if (createTarget) {
-      Files.createDirectories(realDirectory)
-    }
-    val convenientSymlink = tempDir.resolve(name)
-    Files.createSymbolicLink(convenientSymlink, realDirectory)
+    val link = tempDir.createBazelConvenienceSymlink(name, realDirectory)
     tempDir.refreshVfs()
-    return convenientSymlink
+    return link
   }
 }
