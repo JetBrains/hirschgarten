@@ -3,7 +3,6 @@ load("@rules_cc//cc:defs.bzl", "cc_binary", "cc_test")
 cc_binary(
     name = "main",
     srcs = ["main.cc"],
-    deps = ["//lib"],
     conlyopts = ["-DCONLYOPTS"],
     copts = [
         "-Wall",
@@ -14,6 +13,7 @@ cc_binary(
         'SPACE_DEFINE="1 2 3"',
         "SIMPLE_DEFINE=42",
     ],
+    deps = ["//lib"],
 )
 
 cc_test(

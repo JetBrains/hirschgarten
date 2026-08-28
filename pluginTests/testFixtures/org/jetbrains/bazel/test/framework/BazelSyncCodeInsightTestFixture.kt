@@ -23,6 +23,9 @@ import kotlin.io.path.Path
  *
  * It's important to use [copyBazelTestProject] because it provides correct setup of Bazel caches.
  * Not using it might not necessarily break the sync, but it will lead to VFS root access errors.
+ *
+ * Prefer the declarative [bazelProjectFixture] or [bazelSyncCodeInsightFixture] entry points. They copy
+ * and sync the project during the fixture setup, so a test does not repeat that boilerplate.
  */
 interface BazelSyncCodeInsightTestFixture : CodeInsightTestFixture {
 
@@ -42,6 +45,12 @@ interface BazelSyncCodeInsightTestFixture : CodeInsightTestFixture {
   suspend fun performBazelSync(buildProject: Boolean = false)
 }
 
+/**
+ * Composes a [BazelSyncCodeInsightTestFixture] from an existing [projectFixture] and [tempDirFixture].
+ *
+ * Use this only when a test must own the project and the temp dir fixtures. Otherwise prefer the
+ * declarative [bazelProjectFixture] or [bazelSyncCodeInsightFixture] with a project path.
+ */
 fun bazelSyncCodeInsightFixture(
   projectFixture: TestFixture<Project>,
   tempDirFixture: TestFixture<Path>,
@@ -62,6 +71,7 @@ fun bazelProjectFixture(
   buildProject: Boolean = false,
   bazelVersion: String? = null,
   projectView: String? = null,
+  projectsRoot: Path = BazelPathManager.testProjectsRoot,
   configure: suspend (Project) -> Unit = {},
 ): TestFixture<Project> = testFixture(debugString = "bazelProject") {
   val project = projectFixture(openAfterCreation = true).init()
@@ -71,7 +81,7 @@ fun bazelProjectFixture(
   installTestConsoleService(project, setupDisposable)
   initializeBazelProject(project, projectRoot)
 
-  BazelTestProject.copy(project, projectRoot, projectPath)
+  BazelTestProject.copy(project, projectRoot, projectPath, projectsRoot)
   if (bazelVersion != null) {
     writeBazelVersion(projectRoot, bazelVersion)
   }

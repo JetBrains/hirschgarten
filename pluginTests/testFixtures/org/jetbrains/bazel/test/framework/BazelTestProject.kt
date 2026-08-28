@@ -17,16 +17,22 @@ internal object BazelTestProject {
   /**
    * Copies the base project, then the test project at [path], into [projectRoot].
    *
-   * [path] is relative to [BazelPathManager.testProjectsRoot]. The base project is copied first, so a
-   * file from [path] overwrites a base file with the same name.
+   * [path] is relative to [projectsRoot]. The base project always comes from the shared
+   * [BazelPathManager.testProjectsRoot], and it is copied first, so a file from [path] overwrites a base
+   * file with the same name.
    *
    * It also writes the Bazel settings and caches, copies the Kotlin standard library, refreshes the
    * VFS, and waits for the indexes of [project].
    */
-  fun copy(project: Project, projectRoot: Path, path: String) {
+  fun copy(
+    project: Project,
+    projectRoot: Path,
+    path: String,
+    projectsRoot: Path = BazelPathManager.testProjectsRoot,
+  ) {
     copyDir(BazelPathManager.testProjectsRoot.resolve("base"), projectRoot)
     BazelTestCaches.setupBazelRc(projectRoot)
-    copyDir(BazelPathManager.testProjectsRoot.resolve(path), projectRoot)
+    copyDir(projectsRoot.resolve(path), projectRoot)
     BazelTestCaches.configureBazelCaches(projectRoot, path)
     BazelTestCaches.findKotlinStdlibInClasspath()
       .copyTo(projectRoot.resolve("toolchains").resolve("kotlin-stdlib.jar").createParentDirectories())

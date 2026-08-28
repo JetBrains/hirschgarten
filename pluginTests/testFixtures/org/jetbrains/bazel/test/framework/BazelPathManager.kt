@@ -20,6 +20,13 @@ object BazelPathManager {
       .resolve("testProjects")
   }
 
+  val clionTestProjectsRoot: Path by lazy {
+    pluginSourceRoot
+      .resolve("pluginTests.clion")
+      .resolve("testData")
+      .resolve("testProjects")
+  }
+
   val integrationTestProjectRoot: Path by lazy {
     pluginSourceRoot.resolve("integrationTests")
   }

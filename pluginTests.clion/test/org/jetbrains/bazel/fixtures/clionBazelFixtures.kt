@@ -5,6 +5,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.testFramework.junit5.fixture.TestFixture
 import com.intellij.testFramework.junit5.fixture.testFixture
 import org.jetbrains.annotations.TestOnly
+import org.jetbrains.bazel.test.framework.BazelPathManager
 import org.jetbrains.bazel.test.framework.bazelProjectFixture
 
 /**
@@ -32,7 +33,14 @@ internal fun clionBazelProjectFixture(
 
   System.setProperty("patch.engine.backend.freeze.timeout", "-1")
 
-  val project = bazelProjectFixture(projectPath, buildProject, bazelVersion, projectView, configure).init()
+  val project = bazelProjectFixture(
+    projectPath,
+    buildProject = buildProject,
+    bazelVersion = bazelVersion,
+    projectView = projectView,
+    projectsRoot = BazelPathManager.clionTestProjectsRoot,
+    configure = configure,
+  ).init()
   LanguageEngine.INSTANCE.afterProjectOpened(project)
   LanguageEngine.INSTANCE.waitForSymbols(project)
 
