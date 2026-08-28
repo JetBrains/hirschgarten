@@ -164,6 +164,9 @@ class BazelSyncCodeInsightTestFixtureImpl(
     installTestConsoleService(project, testRootDisposable)
   }
 
+  // See the comment on `NonTrackingCodeInsightTestFixture`
+  override fun shouldTrackVirtualFilePointers(): Boolean = false
+
   override fun copyBazelTestProject(path: String) {
     BazelTestProject.copy(project, projectRoot, path)
   }

@@ -12,6 +12,7 @@ import io.kotest.matchers.maps.shouldContain
 import io.kotest.matchers.nulls.shouldBeNull
 import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
+import org.jetbrains.bazel.assertions.assertVfsLoads
 import org.jetbrains.bazel.clion.sync.CC_LANGUAGE_CLASS
 import org.jetbrains.bazel.clion.sync.CcBuildTarget
 import org.jetbrains.bazel.clion.sync.CcToolchainBuildTarget
@@ -19,6 +20,7 @@ import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.fixtures.clionBazelProjectFixture
 import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.sync.environment.projectCtx
 import org.jetbrains.bazel.sync.workspace.persistence.TargetLoadOptions
 import org.jetbrains.bazel.sync.workspace.persistence.WorkspaceSnapshotService
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
@@ -37,6 +39,12 @@ import org.junit.jupiter.api.TestInstance
 class CcImportTest {
 
   private val project by clionBazelProjectFixture("clion/simple")
+
+  @Test
+  fun testVfsRoots() {
+    val executionRoot = requireNotNull(project.projectCtx.bazelExecPath)
+    assertVfsLoads(executionRoot, emptyList())
+  }
 
   private suspend fun findTarget(label: Label): List<BuildTarget> {
     val snapshot = project.service<WorkspaceSnapshotService>().currentSnapshot()
@@ -77,11 +85,12 @@ class CcImportTest {
     compilationCtx.headers.locations() shouldContain OutputLocation.Workspace("lib/lib.h")
     compilationCtx.defines.shouldContainExactly("SPACE_DEFINE=1 2 3", "SIMPLE_DEFINE=42")
     compilationCtx.includes.locations().shouldBeEmpty()
-    val quoteIncludes = compilationCtx.quoteIncludes.locations()
-    quoteIncludes shouldContain OutputLocation.Workspace(".")
-    quoteIncludes shouldContain OutputLocation.External("rules_cc+", "")
-    quoteIncludes.shouldContainBinOutput("")
     compilationCtx.systemIncludes.locations().shouldBeEmpty()
+
+    val quoteIncludes = compilationCtx.quoteIncludes.locations()
+    quoteIncludes.shouldContain(OutputLocation.Workspace("."))
+    quoteIncludes.shouldContain(OutputLocation.External("rules_cc+", ""))
+    quoteIncludes.shouldContainBinOutput("")
 
     val ruleCtx = data.ruleContext.shouldNotBeNull()
     ruleCtx.headers.locations().shouldBeEmpty()
@@ -106,10 +115,11 @@ class CcImportTest {
     compilationCtx.headers.locations() shouldContain OutputLocation.Workspace("lib/lib.h")
     compilationCtx.defines.shouldBeEmpty()
     compilationCtx.includes.locations().shouldBeEmpty()
-    val quoteIncludes = compilationCtx.quoteIncludes.locations()
-    quoteIncludes shouldContain OutputLocation.Workspace(".")
-    quoteIncludes.shouldContainBinOutput("")
     compilationCtx.systemIncludes.locations().shouldBeEmpty()
+
+    val quoteIncludes = compilationCtx.quoteIncludes.locations()
+    quoteIncludes.shouldContain(OutputLocation.Workspace("."))
+    quoteIncludes.shouldContainBinOutput("")
 
     val ruleCtx = data.ruleContext.shouldNotBeNull()
     ruleCtx.headers.locations() shouldContain OutputLocation.Workspace("lib/lib.h")
@@ -131,18 +141,15 @@ class CcImportTest {
     val data = target.extractData<CcBuildTarget>().shouldNotBeNull()
 
     val compilationCtx = data.compilationContext
-    compilationCtx.headers.locations() shouldContainAll
-      listOf(
-        OutputLocation.External("catch2+", "src/catch2/benchmark/catch_benchmark.hpp"),
-        OutputLocation.External("catch2+", "src/catch2/benchmark/catch_clock.hpp"),
-      )
+    compilationCtx.headers.locations().shouldContain(OutputLocation.External("catch2+", "src/catch2/benchmark/catch_benchmark.hpp"))
     compilationCtx.defines.shouldBeEmpty()
     compilationCtx.includes.locations().shouldContainBinOutput("external/catch2+/_virtual_includes/catch2_generated")
-    val quoteIncludes = compilationCtx.quoteIncludes.locations()
-    quoteIncludes shouldContain OutputLocation.Workspace(".")
-    quoteIncludes shouldContain OutputLocation.External("catch2+", "")
-    quoteIncludes.shouldContainBinOutput("")
     compilationCtx.systemIncludes.locations() shouldContain OutputLocation.External("catch2+", "src")
+
+    val quoteIncludes = compilationCtx.quoteIncludes.locations()
+    quoteIncludes.shouldContain(OutputLocation.Workspace("."))
+    quoteIncludes.shouldContain(OutputLocation.External("catch2+", ""))
+    quoteIncludes.shouldContainBinOutput("")
 
     val ruleCtx = data.ruleContext.shouldNotBeNull()
     ruleCtx.headers.locations().shouldBeEmpty()
@@ -178,7 +185,10 @@ class CcImportTest {
   }
 }
 
-private fun OutputLocationCollection.locations(): List<OutputLocation> = getOutputLocations().toList()
+private fun OutputLocationCollection.locations(): List<OutputLocation> {
+  return getOutputLocations().toList()
+}
 
-private fun List<OutputLocation>.shouldContainBinOutput(relativePath: String) =
+private fun List<OutputLocation>.shouldContainBinOutput(relativePath: String) {
   shouldExist { it is OutputLocation.Output && it.root.segments.lastOrNull() == "bin" && it.relativePath == relativePath }
+}

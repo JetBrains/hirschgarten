@@ -5,8 +5,10 @@ import com.intellij.testFramework.common.timeoutRunBlocking
 import io.kotest.matchers.collections.shouldContain
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import org.jetbrains.bazel.assertions.assertVfsLoads
 import org.jetbrains.bazel.fixtures.clionBazelProjectFixture
 import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.sync.environment.projectCtx
 import org.jetbrains.bazel.test.framework.BazelTestApplication
 import org.jetbrains.bazel.target.targetStorage
 import org.jetbrains.bsp.protocol.id
@@ -25,5 +27,11 @@ class MixedImportTest {
       importedTargets shouldContain Label.parse("//cpp:library")
       importedTargets shouldContain Label.parse("//kotlin:library")
     }
+  }
+
+  @Test
+  fun testVfsRoots() {
+    val executionRoot = requireNotNull(project.projectCtx.bazelExecPath)
+    assertVfsLoads(executionRoot, emptyList())
   }
 }
