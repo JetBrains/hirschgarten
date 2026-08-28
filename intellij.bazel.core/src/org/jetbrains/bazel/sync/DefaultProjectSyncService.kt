@@ -27,5 +27,6 @@ internal class DefaultProjectSyncService(private val project: Project) : Project
 
       is ProjectSyncScope.Files -> throw UnsupportedOperationException("not supported yet")
     }
+    ProjectDirtyStateService.getInstance(project).finishSync(scope)
   }
 }

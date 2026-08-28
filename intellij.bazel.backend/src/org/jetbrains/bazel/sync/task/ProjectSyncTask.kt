@@ -21,6 +21,7 @@ import com.intellij.platform.ide.progress.withBackgroundProgress
 import com.intellij.platform.util.progress.SequentialProgressReporter
 import com.intellij.platform.util.progress.reportSequentialProgress
 import com.intellij.platform.workspace.storage.MutableEntityStorage
+import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.action.saveAllFiles
 import org.jetbrains.bazel.commons.constants.Constants
 import org.jetbrains.bazel.config.BazelBackendBundle
@@ -62,7 +63,8 @@ import kotlin.random.Random
 
 private val log = logger<ProjectSyncTask>()
 
-internal class ProjectSyncTask(
+@ApiStatus.Internal
+class ProjectSyncTask(
   private val project: Project,
   private val onSyncTaskStarted: (TaskId) -> Unit = {},
 ) {

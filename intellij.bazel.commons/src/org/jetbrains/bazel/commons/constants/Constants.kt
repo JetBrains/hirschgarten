@@ -10,10 +10,6 @@ object Constants {
   const val BAZEL_BUILD_COMMAND: String = "build"
   const val BAZEL_TEST_COMMAND: String = "test"
   const val BAZEL_COVERAGE_COMMAND: String = "coverage"
-  const val ASPECTS_ROOT: String = "aspects"
-  const val CORE_BZL: String = "core.bzl"
-  const val EXTENSIONS_BZL: String = "extensions.bzl"
-  const val TEMPLATE_EXTENSION: String = ".template"
   const val DOT_BAZELBSP_DIR_NAME: String = ".bazelbsp"
   const val SYNTHETIC_TARGETS_DIR_NAME: String = "synthetic_targets"
 

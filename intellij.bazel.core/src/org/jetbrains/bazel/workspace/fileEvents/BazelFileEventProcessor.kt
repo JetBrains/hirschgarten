@@ -38,6 +38,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
 import org.jetbrains.annotations.ApiStatus
+import org.jetbrains.bazel.commons.constants.Constants
 import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.config.isBazelProject
@@ -47,9 +48,9 @@ import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.languages.starlark.utils.StarlarkSrcsListEval
 import org.jetbrains.bazel.progress.ShowConsole
 import org.jetbrains.bazel.progress.syncConsole
-import org.jetbrains.bazel.projectAware.BazelWorkspace
 import org.jetbrains.bazel.run.task.BazelBuildTaskListener
 import org.jetbrains.bazel.server.connection
+import org.jetbrains.bazel.sync.ProjectDirtyStateService
 import org.jetbrains.bazel.sync.ProjectSyncService
 import org.jetbrains.bazel.sync.status.SyncStatusService
 import org.jetbrains.bazel.target.ModuleTargetService
@@ -256,23 +257,21 @@ open class DefaultBazelFileEventProcessor(private val project: Project): BazelFi
   }
 
   private suspend fun processEventsBatchImpl(events: List<SimplifiedFileEvent>, context: ProcessingContext): BazelFileEventProcessorResult {
-    val result = doProcessFileEvents(
-      events.flatMap { event ->
-        if (event is CreateDirectory) {
-          collectCreatedFiles(event.newVirtualFile)
-        } else if (event.newVirtualFile?.isDirectory == true) {
-          emptyList() // ignore other directory events
-        } else {
-          listOf(event)
-        }
-      },
-      context,
-    )
+    val planarizedEvents = events.flatMap { event ->
+      if (event is CreateDirectory) {
+        collectCreatedFiles(event.newVirtualFile)
+      }
+      else if (event.newVirtualFile?.isDirectory == true) {
+        emptyList() // ignore other directory events
+      }
+      else {
+        listOf(event)
+      }
+    }
 
-    doProcessDirectoryEvents(
-      events.filterIsInstance<CreateDirectory>(),
-      context
-    )
+    val result = doProcessSourceFileEvents(planarizedEvents.filter { it.affectsSourceFile(project) }, context)
+    doProcessBazelFileEvents(planarizedEvents.filter { it.affectsBazelConfigFile() })
+    doProcessDirectoryEvents(events.filterIsInstance<CreateDirectory>(), context)
 
     // Finalize and apply changes
     context.progressReporter.finalisingStep {
@@ -305,7 +304,7 @@ open class DefaultBazelFileEventProcessor(private val project: Project): BazelFi
     return filesInDirectory
   }
 
-  private suspend fun doProcessFileEvents(events: List<SimplifiedFileEvent>, context: ProcessingContext): BazelFileEventProcessorResult {
+  private suspend fun doProcessSourceFileEvents(events: List<SimplifiedFileEvent>, context: ProcessingContext): BazelFileEventProcessorResult {
     if (events.isEmpty())
       return BazelFileEventProcessorResult.EMPTY
 
@@ -383,6 +382,21 @@ open class DefaultBazelFileEventProcessor(private val project: Project): BazelFi
     )
   }
 
+  /**
+   * Marks the package of every changed Bazel configuration file dirty, so that the IDE offers a sync.
+   */
+  private fun doProcessBazelFileEvents(events: List<SimplifiedFileEvent>) {
+    if (events.isEmpty()) return
+
+    val paths = events.flatMap { it.affectedPaths() }.distinct()
+    if (paths.any { it.fileName.toString() !in Constants.BUILD_FILE_NAMES }) {
+      ProjectDirtyStateService.getInstance(project).markWholeProjectDirty("Config file change")
+      return
+    }
+
+    ProjectDirtyStateService.getInstance(project).markDirty(paths.map { it.parent })
+  }
+
   private suspend fun doProcessDirectoryEvents(events: List<CreateDirectory>, context: ProcessingContext) {
     for (event in events) {
       // Update package marker
@@ -402,7 +416,7 @@ open class DefaultBazelFileEventProcessor(private val project: Project): BazelFi
     context: ProcessingContext,
   ): Map<Path, List<Label>> {
     // Heuristically evaluate targets by looking into PSI
-    val missingEvaluation = ArrayList<Path>()
+    val missingEvaluation = ArrayList<PathAndVFile>()
     val eval = StarlarkSrcsListEval(project)
 
     val evaluated: Map<Path, List<Label>> = files.mapNotNull { file ->
@@ -410,7 +424,7 @@ open class DefaultBazelFileEventProcessor(private val project: Project): BazelFi
       val targets = readAction { eval.findTargetsForSourceFile(file.vFile) }
       if (targets.isEmpty()) {
         // Cannot determine the targets for file - show "Resync" button.
-        missingEvaluation.add(file.path)
+        missingEvaluation.add(file)
         return@mapNotNull null
       }
       val srcTargets = targets.filter { it.value.contains(StarlarkSrcsListEval.Kind.Srcs) }.map { it.key }
@@ -425,19 +439,27 @@ open class DefaultBazelFileEventProcessor(private val project: Project): BazelFi
     val queried: Map<Path, List<Label>> = if (missingEvaluation.isNotEmpty() && allowBazelQuery) {
       logger.warn("Cannot evaluate targets for ${missingEvaluation.size} new files. Querying Bazel: ${missingEvaluation.take(3).joinToString()}")
       context.progressReporter.message(BazelPluginBundle.message("file.change.processing.step.query"))
-      queryTargetsForFile(project, missingEvaluation, taskId) ?: emptyMap()
+      queryTargetsForFile(project, missingEvaluation.map { it.path }, taskId) ?: emptyMap()
     } else {
       emptyMap()
     }
 
-    val missingFiles: List<Path> = missingEvaluation.filterNot { queried.containsKey(it) }
+    val missingFiles: List<PathAndVFile> = missingEvaluation.filterNot { queried.containsKey(it.path) }
     if (missingFiles.isNotEmpty()) {
       logger.warn(
         "Cannot evaluate targets for ${missingFiles.size} new files. Show \"Sync Bazel changes\" button. " +
-        missingFiles.take(3).joinToString { it.toString() },
+        missingFiles.take(3).joinToString { it.path.toString() },
       )
-      failedEvalPaths.addAll(missingFiles)
-      BazelWorkspace.notify(project)
+      failedEvalPaths.addAll(missingFiles.map { it.path })
+
+      // Marks the BUILD file that owns each file of [missingFiles] as dirty.
+      val dirtyState = ProjectDirtyStateService.getInstance(project)
+      for (file in missingFiles) {
+        val buildFile = eval.findBuildFileForSourceFile(file.vFile)
+        if (buildFile != null) {
+          dirtyState.markDirty(listOf(buildFile.parent.toNioPath()))
+        }
+      }
     }
 
     return evaluated + queried
@@ -535,20 +557,22 @@ open class DefaultBazelFileEventProcessor(private val project: Project): BazelFi
 
   private suspend fun List<SimplifiedFileEvent>.filterByProject(): List<SimplifiedFileEvent> {
     if (this.isEmpty() || !project.isBazelProject) return emptyList()
-    val rootDirPath =
-      try {
-        project.rootDir.toNioPath()
-      } catch (_: IllegalStateException) { // Bazel rootDir not set
-        return emptyList()
-      } catch (_: UnsupportedOperationException) { // unable to create a Path instance
-        return emptyList()
-      }
+    val rootDirPath = projectRootPath() ?: return emptyList()
     val fileIndex = ProjectRootManager.getInstance(project).fileIndex
     val fileSystem = LocalFileSystem.getInstance()
     return readAction {
       filter { it.doesAffectFolder(rootDirPath) && !it.affectsExcludedFiles(fileIndex, fileSystem) }
     }
   }
+
+  private fun projectRootPath(): Path? =
+    try {
+      project.rootDir.toNioPath()
+    } catch (_: IllegalStateException) { // Bazel rootDir not set
+      null
+    } catch (_: UnsupportedOperationException) { // unable to create a Path instance
+      null
+    }
 
   protected data class ProcessingContext(
     val urlManager: VirtualFileUrlManager,
