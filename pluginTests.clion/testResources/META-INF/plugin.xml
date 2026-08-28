@@ -20,6 +20,7 @@
     <module name="intellij.libraries.junit5.launcher" loading="required"/>
     <module name="intellij.libraries.junit5.params" loading="required"/>
     <module name="intellij.libraries.junit5.vintage" loading="required"/>
+    <module name="intellij.libraries.kaml" loading="required"/>
     <module name="intellij.libraries.opentest4j" loading="required"/>
     <module name="intellij.libraries.memoryfilesystem" loading="required"/>
     <module name="intellij.tools.testsBootstrap" loading="required"/>
