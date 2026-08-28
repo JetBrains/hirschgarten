@@ -26,5 +26,6 @@ targets:
   //plugins/bazel/clion/intellij.bazel.clion.common:all
   //plugins/bazel/pluginTests:all
   //plugins/bazel/pluginTests.clion:all
+  //build:idea_dev_build_with_bazel_all
 
 
