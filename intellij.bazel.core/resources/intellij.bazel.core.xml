@@ -569,6 +569,14 @@
                      level="ERROR"
                      implementationClass="org.jetbrains.bazel.languages.starlark.inspection.StarlarkFrozenLoadedValueMutationInspection"/>
 
+    <localInspection language="Starlark"
+                     key="inspection.display.name.starlark.invalid.dict.key.check"
+                     groupPath="Bazel"
+                     groupKey="starlark.inspection.group.name"
+                     enabledByDefault="true"
+                     level="ERROR"
+                     implementationClass="org.jetbrains.bazel.languages.starlark.inspection.StarlarkInvalidDictKeyInspection"/>
+
     <fileType
       extensions="bazelquery"
       fieldName="INSTANCE"
