@@ -15,7 +15,7 @@ import org.junit.jupiter.api.Test
 @BazelTestApplication
 class MixedImportTest {
 
-  private val project by clionBazelProjectFixture("import/mixed")
+  private val project by clionBazelProjectFixture("import/mixed", jvmToolchains = true)
 
   @Test
   fun testImportedTargets(): Unit = timeoutRunBlocking {

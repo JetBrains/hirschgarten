@@ -72,6 +72,7 @@ fun bazelProjectFixture(
   bazelVersion: String? = null,
   projectView: String? = null,
   projectsRoot: Path = BazelPathManager.testProjectsRoot,
+  jvmToolchains: Boolean = true,
   configure: suspend (Project) -> Unit = {},
 ): TestFixture<Project> = testFixture(debugString = "bazelProject") {
   val project = projectFixture(openAfterCreation = true).init()
@@ -81,7 +82,7 @@ fun bazelProjectFixture(
   installTestConsoleService(project, setupDisposable)
   initializeBazelProject(project, projectRoot)
 
-  BazelTestProject.copy(project, projectRoot, projectPath, projectsRoot)
+  BazelTestProject.copy(project, projectRoot, projectPath, projectsRoot, jvmToolchains)
   if (bazelVersion != null) {
     writeBazelVersion(projectRoot, bazelVersion)
   }

@@ -21,21 +21,25 @@ internal object BazelTestProject {
    * [BazelPathManager.testProjectsRoot], and it is copied first, so a file from [path] overwrites a base
    * file with the same name.
    *
-   * It also writes the Bazel settings and caches, copies the Kotlin standard library, refreshes the
-   * VFS, and waits for the indexes of [project].
+   * It also writes the Bazel settings and caches, refreshes the VFS, and waits for the indexes of
+   * [project]. When [jvmToolchains] is set, it adds the JVM toolchains: the Java runtime and the Kotlin
+   * standard library. A pure C++ project does not need them.
    */
   fun copy(
     project: Project,
     projectRoot: Path,
     path: String,
     projectsRoot: Path = BazelPathManager.testProjectsRoot,
+    jvmToolchains: Boolean = true,
   ) {
     copyDir(BazelPathManager.testProjectsRoot.resolve("base"), projectRoot)
-    BazelTestCaches.setupBazelRc(projectRoot)
+    BazelTestCaches.setupBazelRc(projectRoot, jvmToolchains)
     copyDir(projectsRoot.resolve(path), projectRoot)
     BazelTestCaches.configureBazelCaches(projectRoot, path)
-    BazelTestCaches.findKotlinStdlibInClasspath()
-      .copyTo(projectRoot.resolve("toolchains").resolve("kotlin-stdlib.jar").createParentDirectories())
+    if (jvmToolchains) {
+      BazelTestCaches.findKotlinStdlibInClasspath()
+        .copyTo(projectRoot.resolve("toolchains").resolve("kotlin-stdlib.jar").createParentDirectories())
+    }
 
     projectRoot.refreshVfs()
     IndexingTestUtil.waitUntilIndexesAreReady(project)

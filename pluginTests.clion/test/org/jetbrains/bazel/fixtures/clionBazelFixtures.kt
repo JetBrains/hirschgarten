@@ -28,6 +28,7 @@ internal fun clionBazelProjectFixture(
   projectView: String? = null,
   bazelVersion: String? = null,
   buildProject: Boolean = false,
+  jvmToolchains: Boolean = false,
   configure: suspend (Project) -> Unit = {},
 ): TestFixture<Project> = testFixture {
 
@@ -39,6 +40,7 @@ internal fun clionBazelProjectFixture(
     bazelVersion = bazelVersion,
     projectView = projectView,
     projectsRoot = BazelPathManager.clionTestProjectsRoot,
+    jvmToolchains = jvmToolchains,
     configure = configure,
   ).init()
   LanguageEngine.INSTANCE.afterProjectOpened(project)

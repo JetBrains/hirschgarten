@@ -20,24 +20,24 @@ internal object BazelTestCaches {
   private const val BAZEL_SETTINGS_END = "# END IntelliJ Bazel unit-test settings"
 
   // create %user_home%/bazel-test-temp
-  fun setupBazelRc(projectRoot: Path) {
+  fun setupBazelRc(projectRoot: Path, jvmToolchains: Boolean = true) {
     val bazelCachesPath: String = run {
       val testCaches = File(System.getProperty("user.home"), "bazel-test-temp")
       testCaches.createDirectory()
       serializeBazelRcPath(testCaches.absolutePath)
     }
 
-    projectRoot.resolve(".bazelrc")
-      .writeText(
-        """
-        startup --host_jvm_args=-Djava.io.tmpdir=$bazelCachesPath
-        common --action_env BAZEL_DO_NOT_DETECT_CPP_TOOLCHAIN=0
-        common --action_env BAZEL_NO_APPLE_CPP_TOOLCHAIN=0
-        build --java_runtime_version=remotejdk_21
-        build --action_env=TMP=$bazelCachesPath
-        build --action_env=TEMP=$bazelCachesPath
-        """.trimIndent()
-    )
+    val lines = buildList {
+      add("startup --host_jvm_args=-Djava.io.tmpdir=$bazelCachesPath")
+      add("common --action_env BAZEL_DO_NOT_DETECT_CPP_TOOLCHAIN=0")
+      add("common --action_env BAZEL_NO_APPLE_CPP_TOOLCHAIN=0")
+      if (jvmToolchains) {
+        add("build --java_runtime_version=remotejdk_21")
+      }
+      add("build --action_env=TMP=$bazelCachesPath")
+      add("build --action_env=TEMP=$bazelCachesPath")
+    }
+    projectRoot.resolve(".bazelrc").writeText(lines.joinToString("\n"))
   }
 
   fun configureBazelCaches(projectRoot: Path, testProjectPath: String) {
