@@ -5,7 +5,6 @@ import com.intellij.openapi.project.Project
 import com.intellij.testFramework.junit5.fixture.TestFixture
 import com.intellij.testFramework.junit5.fixture.testFixture
 import org.jetbrains.annotations.TestOnly
-import org.jetbrains.bazel.test.framework.BazelSyncCodeInsightTestFixture
 import org.jetbrains.bazel.test.framework.bazelProjectFixture
 
 /**
@@ -28,7 +27,7 @@ internal fun clionBazelProjectFixture(
   projectView: String? = null,
   bazelVersion: String? = null,
   buildProject: Boolean = false,
-  configure: suspend (BazelSyncCodeInsightTestFixture) -> Unit = {},
+  configure: suspend (Project) -> Unit = {},
 ): TestFixture<Project> = testFixture {
 
   System.setProperty("patch.engine.backend.freeze.timeout", "-1")

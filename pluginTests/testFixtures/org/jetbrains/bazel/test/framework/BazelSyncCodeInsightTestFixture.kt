@@ -1,6 +1,7 @@
 package org.jetbrains.bazel.test.framework
 
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.util.Disposer
 import com.intellij.platform.testFramework.junit5.codeInsight.fixture.codeInsightFixture
 import com.intellij.testFramework.fixtures.CodeInsightTestFixture
 import com.intellij.testFramework.fixtures.IdeaProjectTestFixture
@@ -61,11 +62,31 @@ fun bazelProjectFixture(
   buildProject: Boolean = false,
   bazelVersion: String? = null,
   projectView: String? = null,
-  configure: suspend (BazelSyncCodeInsightTestFixture) -> Unit = {},
+  configure: suspend (Project) -> Unit = {},
 ): TestFixture<Project> = testFixture(debugString = "bazelProject") {
-  val fixture = bazelSyncCodeInsightFixture(projectFixture(openAfterCreation = true), tempPathFixture()).init()
-  fixture.syncBazelTestProject(projectPath, buildProject, bazelVersion, projectView, configure)
-  initialized(fixture.project) {}
+  val project = projectFixture(openAfterCreation = true).init()
+  val projectRoot = tempPathFixture().init()
+
+  val setupDisposable = Disposer.newDisposable("bazelProjectFixture")
+  installTestConsoleService(project, setupDisposable)
+  initializeBazelProject(project, projectRoot)
+
+  BazelTestProject.copy(project, projectRoot, projectPath)
+  if (bazelVersion != null) {
+    writeBazelVersion(projectRoot, bazelVersion)
+  }
+  if (projectView != null) {
+    applyProjectView(project, projectRoot, projectView)
+  }
+  configure(project)
+  runBazelSync(project, buildProject)
+
+  initialized(project) {
+    // Stop the bazel server first, so it releases the file locks before the temp dir is removed.
+    stopBazelServer(project, projectRoot)
+    purgeProjectJdkTable()
+    Disposer.dispose(setupDisposable)
+  }
 }
 
 /**
