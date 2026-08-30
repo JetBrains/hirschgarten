@@ -179,7 +179,7 @@
     <orderEntry type="module" module-name="intellij.libraries.grpc" scope="TEST" />
     <orderEntry type="module" module-name="intellij.libraries.kotlinx.coroutines.test" />
     <orderEntry type="module" module-name="intellij.libraries.jediterm.core" />
-    <orderEntry type="library" name="google.protobuf.java.util" level="project" />
+    <orderEntry type="module" module-name="intellij.libraries.protobuf.java.util" />
     <orderEntry type="module" module-name="intellij.platform.util.classLoader" />
     <orderEntry type="module" module-name="intellij.platform.util.ex" scope="TEST" />
     <orderEntry type="module" module-name="intellij.kotlin.i18n" />
