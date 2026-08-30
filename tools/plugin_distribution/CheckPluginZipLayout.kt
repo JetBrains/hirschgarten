@@ -6,22 +6,19 @@ import java.nio.file.Paths
 import java.util.zip.ZipFile
 
 private data class Arguments(
-  val pluginContentYaml: Path,
+  val expectedEntries: Path,
   val pluginZip: Path,
-  val pluginRoot: String,
 )
 
 fun main(rawArgs: Array<String>) {
   val args = parseArguments(rawArgs.toList())
-  val pluginRoot = args.pluginRoot.trim('/')
-  require(pluginRoot.isNotEmpty()) { "plugin_root must not be empty" }
 
-  val expectedEntries = Files.readAllLines(args.pluginContentYaml)
+  val expectedEntries = Files.readAllLines(args.expectedEntries)
     .asSequence()
     .map { it.trim() }
-    .filter { it.startsWith("- name: lib/") }
-    .map { "$pluginRoot/${it.removePrefix("- name: ")}" }
+    .filter { it.isNotEmpty() }
     .toSortedSet()
+  require(expectedEntries.isNotEmpty()) { "${args.expectedEntries} names no entry" }
 
   val actualEntries = ZipFile(args.pluginZip.toFile()).use { zip ->
     zip.entries().asSequence()
@@ -45,9 +42,8 @@ fun main(rawArgs: Array<String>) {
 }
 
 private fun parseArguments(rawArgs: List<String>): Arguments {
-  var pluginContentYaml: Path? = null
+  var expectedEntries: Path? = null
   var pluginZip: Path? = null
-  var pluginRoot: String? = null
 
   var index = 0
   while (index < rawArgs.size) {
@@ -55,16 +51,14 @@ private fun parseArguments(rawArgs: List<String>): Arguments {
     require(index < rawArgs.size) { "missing value for $key" }
     val value = rawArgs[index++]
     when (key) {
-      "--plugin_content_yaml" -> pluginContentYaml = Paths.get(value)
+      "--expected_entries" -> expectedEntries = Paths.get(value)
       "--plugin_zip" -> pluginZip = Paths.get(value)
-      "--plugin_root" -> pluginRoot = value
       else -> error("unknown argument: $key")
     }
   }
 
   return Arguments(
-    pluginContentYaml = requireNotNull(pluginContentYaml) { "missing --plugin_content_yaml" },
+    expectedEntries = requireNotNull(expectedEntries) { "missing --expected_entries" },
     pluginZip = requireNotNull(pluginZip) { "missing --plugin_zip" },
-    pluginRoot = requireNotNull(pluginRoot) { "missing --plugin_root" },
   )
 }
