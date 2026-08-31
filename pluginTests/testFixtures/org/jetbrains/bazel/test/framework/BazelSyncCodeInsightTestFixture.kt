@@ -118,13 +118,12 @@ class BazelSyncCodeInsightTestFixtureImpl(
     val bazelCachesPath: String = run {
       val testCaches = File(System.getProperty("user.home"), "bazel-test-temp")
       testCaches.createDirectory()
-      testCaches.absolutePath.replace('\\', '/')
+      serializeBazelRcPath(testCaches.absolutePath)
     }
 
     File(tempDirPath, ".bazelrc")
       .writeText(
         """
-        startup --output_base=$bazelCachesPath
         startup --host_jvm_args=-Djava.io.tmpdir=$bazelCachesPath
 
         common --action_env BAZEL_DO_NOT_DETECT_CPP_TOOLCHAIN=0
