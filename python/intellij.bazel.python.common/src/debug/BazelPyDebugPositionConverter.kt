@@ -22,7 +22,7 @@ internal class BazelPyDebugPositionConverter(private val project: Project, priva
   override fun convertFromPython(position: PySourcePosition, frameName: String?): XSourcePosition? = convertFromPython(position)
 
   override fun convertFromPython(position: PySourcePosition): XSourcePosition? {
-    val file = PythonDebugUtils.findRealSourceFile(project, target, position.file)
+    val file = PythonDebugUtils.findRealSourceFile(project, target, position.file) ?: return null
     val line = position.line - 1
     return getXSourcePosition(file, line)
   }
