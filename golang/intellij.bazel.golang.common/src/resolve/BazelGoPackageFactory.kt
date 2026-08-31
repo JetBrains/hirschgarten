@@ -19,11 +19,10 @@ package org.jetbrains.bazel.golang.resolve
 import com.goide.project.GoPackageFactory
 import com.goide.psi.GoFile
 import com.goide.psi.impl.GoPackage
-import com.intellij.platform.backend.workspace.toVirtualFileUrl
+import com.intellij.platform.backend.workspace.findEntitiesByVirtualFile
 import com.intellij.platform.backend.workspace.workspaceModel
 import com.intellij.psi.PsiDirectory
 import org.jetbrains.annotations.ApiStatus
-import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.config.isBazelProject
 import org.jetbrains.bazel.workspacemodel.entities.BazelGoPackageEntity
 
@@ -48,7 +47,7 @@ internal fun getGoPackageEntity(goFile: GoFile): BazelGoPackageEntity? {
 
   // `BazelGoPackageEntity` is already part of VFU index due to `sources` property
   return snapshot.getVirtualFileUrlIndex()
-    .findEntitiesByUrl(fileUrl = virtualFile.toVirtualFileUrl(vfuManager))
+    .findEntitiesByVirtualFile(virtualFile = virtualFile, virtualFileUrlManager = vfuManager)
     .filterIsInstance<BazelGoPackageEntity>()
     .firstOrNull()
 }
