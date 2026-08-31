@@ -6,6 +6,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.projectRoots.Sdk
 import com.intellij.platform.backend.workspace.WorkspaceModel
 import com.intellij.platform.workspace.jps.entities.SdkDependency
+import com.jetbrains.python.debugger.PyDebugRunner
 import com.jetbrains.python.run.PythonCommandLineState
 import com.jetbrains.python.run.PythonConfigurationType
 import com.jetbrains.python.run.PythonRunConfiguration
@@ -14,13 +15,13 @@ import com.jetbrains.python.sdk.ModuleOrProject.ProjectOnly
 import com.jetbrains.python.sdk.createLocalSdkGuessingTypeByPath
 import com.jetbrains.python.sdk.legacy.PythonSdkUtil
 import kotlinx.coroutines.CompletableDeferred
+import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.languages.projectview.debugFlags
 import org.jetbrains.bazel.languages.projectview.pythonDebugFlags
 import org.jetbrains.bazel.run.BazelCommandLineStateBase
 import org.jetbrains.bazel.run.BazelProcessHandler
-import org.jetbrains.bazel.run.commandLine.transformProgramArguments
 import org.jetbrains.bazel.run.config.BazelRunConfiguration
 import org.jetbrains.bazel.run.task.BazelRunTaskListener
 import org.jetbrains.bazel.server.BazelServerFacade
@@ -31,12 +32,12 @@ import java.nio.file.Files
 import java.nio.file.LinkOption
 import java.nio.file.Path
 
-internal class PythonDebugCommandLineState(
+@ApiStatus.Internal
+class PythonDebugCommandLineState(
   private val environment: ExecutionEnvironment,
   private val programArguments: String?,
   val additionalBazelParams: String?,
-) :
-  BazelCommandLineStateBase(environment) {
+) : BazelCommandLineStateBase(environment) {
   val target: Label? = (environment.runProfile as? BazelRunConfiguration)?.targets?.singleOrNull()
 
   override fun createAndAddTaskListener(handler: BazelProcessHandler): BazelTaskListener = BazelRunTaskListener(handler)
@@ -52,7 +53,7 @@ internal class PythonDebugCommandLineState(
       CompileParams(
         targets = listOf(targetId),
         taskId = taskGroupId.task("py-debug"),
-        arguments = buildPythonDebugBazelArguments(server.projectView.debugFlags + server.projectView.pythonDebugFlags, additionalBazelParams),
+        arguments = PythonDebugUtils.buildPythonDebugBazelArguments(server.projectView.debugFlags + server.projectView.pythonDebugFlags, additionalBazelParams),
       )
     server.buildTargetCompile(buildParams)
   }
@@ -76,13 +77,16 @@ internal class PythonDebugCommandLineState(
         .createTemplateConfiguration(environment.project)
         as PythonRunConfiguration // should always succeed; that's what PythonConfigurationFactory produces
     return templateConfig.also {
+      it.interpreterOptions = "-X frozen_modules=off" // frozen modules improve performance but obscure stack traces
       it.scriptName = debugInfo.pythonFile.toAbsolutePath().toString()
       it.scriptParameters = programArguments
       it.workingDirectory = debugInfo.workingDirectory.toAbsolutePath().toString()
-      it.envs = debugInfo.environmentVariables
-      it.sdk =
+      val sdk =
         debugInfo.pythonBinary?.let { pythonBinary -> getOrCreateSdkForPythonBinary(environment.project, pythonBinary) }
         ?: getSdkForTarget(environment.project, target)
+      it.envs = debugInfo.environmentVariables +
+                (PyDebugRunner.LIBRARY_ROOTS to PythonDebugUtils.buildPythonLibraryRoots(sdk, debugInfo.libraryRoots))
+      it.sdk = sdk
     }
   }
 }
@@ -122,6 +126,3 @@ private fun getSdkForTarget(project: Project, target: Label): Sdk {
            ?.let { PythonSdkUtil.getAllSdks().firstOrNull { sdk -> sdk.name == it } } // the first SDK matching the module SDK dependency
          ?: error(BazelPluginBundle.message("python.debug.error.no.sdk", target))
 }
-
-internal fun buildPythonDebugBazelArguments(debugFlags: List<String>, additionalBazelParams: String?): List<String> =
-  debugFlags + transformProgramArguments(additionalBazelParams)
