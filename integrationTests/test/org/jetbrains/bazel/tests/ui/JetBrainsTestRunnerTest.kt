@@ -76,7 +76,6 @@ class JetBrainsTestRunnerTest : IdeStarterBaseProjectTest() {
         step("Rerun failed tests in TestJava.java") {
           execute { openFile("TestJava.java") }
           x { byAccessibleName("Rerun Failed Tests") }.click()
-          wait(15.seconds)
           verifyTestStatus(
             listOf("3 tests failed"),
             listOf(

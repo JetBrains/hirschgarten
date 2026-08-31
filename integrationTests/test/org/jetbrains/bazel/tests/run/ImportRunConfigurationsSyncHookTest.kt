@@ -46,7 +46,7 @@ import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
 
 private val IMPORT_RUN_CONFIGURATIONS_PROJECT = simpleBazelProject(
-  revision = "117e50dcb64427f17371bcc20fbbc582166fa80e",
+  revision = "7b691f083b4be04f9812134e40e665586cb5fa09",
   path = "importRunConfigurations",
   configureProject = { context ->
     BazelProjectConfigurer.configureProjectBeforeUseWithoutBazelClean(
@@ -232,6 +232,26 @@ class ImportRunConfigurationsSyncHookTest : IdeStarterCombinedBaseTest() {
         verifyTestStatus(
           listOf("1 test passed"),
           listOf($$"com.example.OuterTest$NestedTest", "anotherNestedTest"),
+        )
+      }
+    }
+  }
+
+  @Test
+  @Order(6)
+  fun `Rerun Failed Tests action works`() {
+    withDriver(bgRun) {
+      ideFrame {
+        openFile("src/com/example/FailingTest.java")
+        clickTestGutterOnLine(4)
+        verifyTestStatus(
+          listOf("2 tests failed,", " 2 passed"),
+          setOf("com.example.FailingTest", "testPasses", "testAnotherPasses", "testFails", "testAnotherFails"),
+        )
+        x { byAccessibleName("Rerun Failed Tests") }.click()
+        verifyTestStatus(
+          listOf("2 tests failed"),
+          setOf("com.example.FailingTest", "testFails", "testAnotherFails"),
         )
       }
     }
