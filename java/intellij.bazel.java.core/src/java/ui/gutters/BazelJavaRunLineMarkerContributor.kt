@@ -34,21 +34,16 @@ open class BazelJavaRunLineMarkerContributor : BazelRunLineMarkerContributor() {
         val methodParameterTypes = psiIdentifier.getMethodParameterTypes()
         "$className:$methodName:$methodParameterTypes"
       } else {
-        "${className.normalizeNestedClassSeparator()}.$methodName$"
+        getTestFilter(className, methodName)
       }
     } else {
       if (element.project.useJetBrainsTestRunner()) {
         className
       } else {
-        className.normalizeNestedClassSeparator()
+        getTestFilter(className, methodName = null)
       }
     }
   }
-
-  /**
-   * Any `$` separating a nested class is replaced with `.`, because `$` would otherwise be interpreted as a regex end-of-input anchor.
-   */
-  private fun String.normalizeNestedClassSeparator(): String = replace("$", ".")
 
   @ApiStatus.Internal
   protected open fun PsiNameIdentifierOwner.getMethodName(): String? = if (isMethod()) name else null
@@ -82,3 +77,19 @@ open class BazelJavaRunLineMarkerContributor : BazelRunLineMarkerContributor() {
   @ApiStatus.Internal
   protected open fun PsiNameIdentifierOwner.isMethod(): Boolean = this is PsiMethod
 }
+
+
+@ApiStatus.Internal
+fun getTestFilter(className: String, methodName: String?): String =
+  if (methodName != null) {
+    // Include
+    "${className.normalizeNestedClassSeparator()}.$methodName$"
+  }
+  else {
+    className.normalizeNestedClassSeparator()
+  }
+
+/**
+ * Any `$` separating a nested class is replaced with `.`, because `$` would otherwise be interpreted as a regex end-of-input anchor.
+ */
+private fun String.normalizeNestedClassSeparator(): String = replace("$", ".")

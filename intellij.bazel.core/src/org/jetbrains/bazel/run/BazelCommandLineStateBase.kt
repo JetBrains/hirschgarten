@@ -19,10 +19,10 @@ import org.jetbrains.bazel.coroutines.BazelCoroutineService
 import org.jetbrains.bazel.run.config.BazelRunConfiguration
 import org.jetbrains.bazel.run.test.BazelRerunFailedTestsAction
 import org.jetbrains.bazel.run.test.useJetBrainsTestRunner
+import org.jetbrains.bazel.server.BazelServerFacade
 import org.jetbrains.bazel.server.connection
 import org.jetbrains.bazel.taskEvents.BazelTaskEventsService
 import org.jetbrains.bazel.taskEvents.BazelTaskListener
-import org.jetbrains.bazel.server.BazelServerFacade
 import org.jetbrains.bsp.protocol.TaskGroupId
 import kotlin.random.Random
 
@@ -105,11 +105,8 @@ abstract class BazelCommandLineStateBase(environment: ExecutionEnvironment) : Co
     val actions = createActions(console, handler, executor)
 
     val executionResult = DefaultExecutionResult(console, handler, *actions)
-    if (useJetBrainsTestRunner) {
-      val rerunFailedTestsAction = BazelRerunFailedTestsAction(console)
-      rerunFailedTestsAction.setModelProvider { console.resultsViewer }
-      executionResult.setRestartActions(rerunFailedTestsAction)
-    }
+    val rerunFailedTestsAction = BazelRerunFailedTestsAction(console)
+    executionResult.setRestartActions(rerunFailedTestsAction)
     return executionResult
   }
 }
