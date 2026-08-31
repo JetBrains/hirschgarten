@@ -226,6 +226,26 @@ class ImportRunConfigurationsSyncHookTest : IdeStarterCombinedBaseTest() {
   }
 
   @Test
+  @Order(6)
+  fun `Rerun Failed Tests action works`() {
+    withDriver(bgRun) {
+      ideFrame {
+        openFile("src/com/example/FailingTest.java")
+        clickTestGutterOnLine(4)
+        verifyTestStatus(
+          listOf("2 tests failed,", " 2 passed"),
+          setOf("com.example.FailingTest", "testPasses", "testAnotherPasses", "testFails", "testAnotherFails"),
+        )
+        x { byAccessibleName("Rerun Failed Tests") }.click()
+        verifyTestStatus(
+          listOf("2 tests failed"),
+          setOf("com.example.FailingTest", "testFails", "testAnotherFails"),
+        )
+      }
+    }
+  }
+
+  @Test
   @Order(Int.MAX_VALUE)
   fun `check that running with profiler works`() {
     withDriver(bgRun) {

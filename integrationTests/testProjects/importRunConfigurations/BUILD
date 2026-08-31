@@ -61,3 +61,14 @@ java_test(
         "@maven//:junit_junit",
     ],
 )
+
+java_test(
+    name = "failing_test",
+    srcs = [
+        "src/com/example/FailingTest.java",
+    ],
+    test_class = "com.example.FailingTest",
+    deps = [
+        "@maven//:junit_junit",
+    ],
+)
