@@ -111,7 +111,7 @@ internal class JvmTestCommandLineState(
     if (useJetBrainsTestRunner) JetBrainsTestRunnerTaskListener(handler) else super.createAndAddTaskListener(handler)
 
   override fun createTestRestartActions(console: SMTRunnerConsoleView): Array<AnAction> =
-    if (useJetBrainsTestRunner) jetBrainsTestRunnerRestartActions(console) else super.createTestRestartActions(console)
+    arrayOf(BazelRerunFailedTestsAction(console))
 }
 
 internal class ScriptPathTestCommandLineState(
@@ -129,7 +129,7 @@ internal class ScriptPathTestCommandLineState(
     if (useJetBrainsTestRunner) JetBrainsTestRunnerTaskListener(handler) else BazelTestTaskListener(handler)
 
   override fun createTestRestartActions(console: SMTRunnerConsoleView): Array<AnAction> =
-    if (useJetBrainsTestRunner) jetBrainsTestRunnerRestartActions(console) else super.createTestRestartActions(console)
+    arrayOf(BazelRerunFailedTestsAction(console))
 
   override fun execute(executor: Executor, runner: ProgramRunner<*>): ExecutionResult = executeWithTestConsole(executor)
 
@@ -180,10 +180,3 @@ private class JetBrainsTestRunnerTaskListener(handler: BazelProcessHandler) : Ba
     return line.substring(0 until nameEnd) + " (cached)" + line.substring(nameEnd)
   }
 }
-
-private fun jetBrainsTestRunnerRestartActions(console: SMTRunnerConsoleView): Array<AnAction> =
-  arrayOf(
-    BazelRerunFailedTestsAction(console).apply {
-      setModelProvider { console.resultsViewer }
-    },
-  )

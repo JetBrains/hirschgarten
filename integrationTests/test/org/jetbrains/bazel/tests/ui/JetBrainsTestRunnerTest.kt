@@ -217,10 +217,6 @@ class JetBrainsTestRunnerTest : IdeStarterBaseProjectTest() {
             )
           }
 
-          step("There is no \"Rerun Failed Tests\" action") {
-            x { byAccessibleName("Rerun Failed Tests") }.waitNotFound(10.seconds)
-          }
-
           // Running twice also covers Bazel test caching: the " (cached)" suffix is added by the
           // JetBrains test runner listener only, so a regular target must never be decorated with it.
           repeat(2) { run ->
@@ -233,13 +229,6 @@ class JetBrainsTestRunnerTest : IdeStarterBaseProjectTest() {
                 listOf("RegularTest", "regularPass"),
               )
             }
-          }
-
-          step("Right-clicking a result does not offer a per-test rerun") {
-            testTreeView().rightClickRow { it.startsWith("regularPass") }
-            popup().waitNoTexts("Run 'regularPass'")
-            takeScreenshot("regularTestRightClick")
-            keyboard { escape() }
           }
         }
       }

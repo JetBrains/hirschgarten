@@ -35,12 +35,13 @@ open class BazelJavaRunConfigurationProducer : BazelRunConfigurationProducer() {
       if (target.usesJetBrainsTestRunner(element.project)) {
         val methodParameterTypes = psiMethod.getMethodParameterTypes()
         "$className:$methodName:$methodParameterTypes"
-      } else {
-        "${className.normalizeNestedClassSeparator()}.$methodName$"
+      }
+      else {
+        getTestFilter(className, methodName)
       }
     }
     else {
-      className.normalizeNestedClassSeparator()
+      getTestFilter(className, methodName = null)
     }
     val junitDisabledCondition = DisabledConditionUtil.getDisabledCondition(classOrMethod)
     return GutterAction(
@@ -50,7 +51,7 @@ open class BazelJavaRunConfigurationProducer : BazelRunConfigurationProducer() {
         junitDisabledCondition != null -> listOf("--wrapper_script_flag=--jvm_flag=-Djunit.jupiter.conditions.deactivate=$junitDisabledCondition")
         else -> emptyList()
       },
-      additionalLocationString = psiMethod?.name
+      additionalLocationString = psiMethod?.name,
     )
   }
 
@@ -62,15 +63,11 @@ open class BazelJavaRunConfigurationProducer : BazelRunConfigurationProducer() {
       if (type is PsiClassType) {
         // canonicalText will include type arguments if they are present, avoid that in simple cases
         type.resolve()?.qualifiedName
-      } else {
+      }
+      else {
         type.canonicalText
       }
     }.joinToString(separator = ",")
-
-  /**
-   * Any `$` separating a nested class is replaced with `.`, because `$` would otherwise be interpreted as a regex end-of-input anchor.
-   */
-  private fun String.normalizeNestedClassSeparator(): String = replace("$", ".")
 
   open fun getContainingClassFqn(element: PsiElement): String? {
     val psiClass = PsiTreeUtil.getParentOfType(element, PsiClass::class.java, false) ?: return null
@@ -87,3 +84,18 @@ open class BazelJavaRunConfigurationProducer : BazelRunConfigurationProducer() {
     )
   }
 }
+
+@ApiStatus.Internal
+fun getTestFilter(className: String, methodName: String?): String =
+  if (methodName != null) {
+    // Include
+    "${className.normalizeNestedClassSeparator()}.$methodName$"
+  }
+  else {
+    className.normalizeNestedClassSeparator()
+  }
+
+/**
+ * Any `$` separating a nested class is replaced with `.`, because `$` would otherwise be interpreted as a regex end-of-input anchor.
+ */
+private fun String.normalizeNestedClassSeparator(): String = replace("$", ".")

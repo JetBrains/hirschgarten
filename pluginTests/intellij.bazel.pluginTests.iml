@@ -224,5 +224,6 @@
     <orderEntry type="module" module-name="intellij.spring.core.plugin" scope="TEST" />
     <orderEntry type="module" module-name="intellij.javaee.platform.plugin" scope="TEST" />
     <orderEntry type="module" module-name="intellij.platform.execution.serviceView.plugin" scope="TEST" />
+    <orderEntry type="module" module-name="intellij.platform.testRunner" scope="TEST" />
   </component>
 </module>

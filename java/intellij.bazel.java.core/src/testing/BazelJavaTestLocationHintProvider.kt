@@ -30,7 +30,7 @@ class BazelJavaTestLocationHintProvider : BazelTestLocationHintProvider {
     val classnameToUse = classname ?: parentSuites.joinToString(SUITE_DELIMITER)
     val cleanClassName = classnameToUse.removeMisleadingDelimiters()
     val cleanTestName = testName.removeSuffix("()")
-    return "$TEST_CASE_PROTOCOL$PROTOCOL_DELIMITER$cleanClassName$FRAGMENT_DELIMITER$cleanTestName"
+    return "$TEST_CASE_PREFIX$cleanClassName$FRAGMENT_DELIMITER$cleanTestName"
   }
 
   /**
@@ -52,7 +52,7 @@ class BazelJavaTestLocationHintProvider : BazelTestLocationHintProvider {
         }
       }
     val cleanClassName = classnameToUse.removeMisleadingDelimiters()
-    return "$TEST_SUITE_PROTOCOL$PROTOCOL_DELIMITER$cleanClassName"
+    return "$TEST_SUITE_PREFIX$cleanClassName"
   }
 
   private fun String.removeMisleadingDelimiters(): String =
@@ -64,8 +64,7 @@ class BazelJavaTestLocationHintProvider : BazelTestLocationHintProvider {
   }
 }
 
-private const val TEST_CASE_PROTOCOL: String = "java:test"
-private const val TEST_SUITE_PROTOCOL: String = "java:suite"
-private const val PROTOCOL_DELIMITER = "://"
+internal const val TEST_SUITE_PREFIX = "java:suite://"
+internal const val TEST_CASE_PREFIX = "java:test://"
 private const val SUITE_DELIMITER = "$"
 private const val FRAGMENT_DELIMITER = "/"

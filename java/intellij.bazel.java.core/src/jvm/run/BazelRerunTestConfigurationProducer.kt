@@ -8,6 +8,9 @@ import com.intellij.openapi.util.Ref
 import com.intellij.psi.PsiElement
 import org.jetbrains.bazel.run.config.BazelRunConfiguration
 import org.jetbrains.bazel.run.config.bazelRunConfigurationFactory
+import org.jetbrains.bazel.run.state.AbstractGenericTestState
+import org.jetbrains.bazel.run.state.HasTestFilter
+import org.jetbrains.bazel.run.test.BazelTestFilterProvider
 
 /**
  * Allows right-clicking on a test in the test results and then rerunning it separately from other tests
@@ -22,11 +25,16 @@ internal class BazelRerunTestConfigurationProducer : LazyRunConfigurationProduce
     context: ConfigurationContext,
     sourceElement: Ref<PsiElement>,
   ): Boolean {
-    if (!configuration.targetsUseJetBrainsTestRunner()) return false
-    val testIds = getTestIdsFromTestConsole(context)
-    if (testIds.isEmpty()) return false
     val handler = configuration.handler ?: return false
-    JetBrainsTestRunner.setTestUniqueIds(handler.state, testIds.toList())
+    if (configuration.targetsUseJetBrainsTestRunner()) {
+      val testIds = getTestIdsFromTestConsole(context)
+      if (testIds.isEmpty()) return false
+      JetBrainsTestRunner.setTestUniqueIds(handler.state, testIds.toList())
+    }
+    else {
+      val testFilter = getTestFilterFromTestConsole(context) ?: return false
+      (handler.state as? AbstractGenericTestState<*>)?.testFilter = testFilter
+    }
 
     val selectedProxy = context.dataContext.getData(AbstractTestProxy.DATA_KEY)
     if (selectedProxy != null) {
@@ -43,14 +51,28 @@ internal class BazelRerunTestConfigurationProducer : LazyRunConfigurationProduce
     configuration: BazelRunConfiguration,
     context: ConfigurationContext,
   ): Boolean {
-    if (!configuration.targetsUseJetBrainsTestRunner()) return false
     val state = configuration.handler?.state ?: return false
-    val testIds = JetBrainsTestRunner.getTestUniqueIds(state) ?: return false
-    return testIds.isNotEmpty() && getTestIdsFromTestConsole(context) == testIds
+    return if (configuration.targetsUseJetBrainsTestRunner()) {
+      val testIds = JetBrainsTestRunner.getTestUniqueIds(state) ?: return false
+      testIds.isNotEmpty() && getTestIdsFromTestConsole(context) == testIds
+    }
+    else {
+      getTestFilterFromTestConsole(context) == (state as? HasTestFilter)?.testFilter
+    }
   }
 
   private fun getTestIdsFromTestConsole(context: ConfigurationContext): List<String> =
     context.dataContext.getData(AbstractTestProxy.DATA_KEYS).orEmpty().toList().getTestIds()
+
+  private fun getTestFilterFromTestConsole(context: ConfigurationContext): String? {
+    val filters =
+      context.dataContext
+        .getData(AbstractTestProxy.DATA_KEYS)
+        .orEmpty()
+        .mapNotNull { it.locationUrl?.let(BazelTestFilterProvider::testFilterFor) }
+        .distinct()
+    return filters.joinToString("|")
+  }
 
   private fun getConfigurationName(proxy: AbstractTestProxy): String? {
     // For a URL like java:test://com.example.TestClass/testMethod we will return testMethod
