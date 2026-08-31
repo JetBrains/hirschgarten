@@ -29,7 +29,7 @@ data class WorkspaceSnapshot(
   val executableTargets: ExecutableTargetsIndex,
   val syncConfigs: List<WorkspaceSyncConfig>,
   val repoMapping: RepoMapping,
-  val metadata: WorkspaceSnapshotMetadata
+  val metadata: WorkspaceSnapshotMetadata,
 ) {
   companion object {
     val EMPTY: WorkspaceSnapshot = WorkspaceSnapshot(
@@ -43,7 +43,7 @@ data class WorkspaceSnapshot(
       repoMapping = RepoMappingDisabled,
       metadata = WorkspaceSnapshotMetadata(
         version = 1,
-      )
+      ),
     )
   }
 }

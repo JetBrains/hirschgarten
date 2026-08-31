@@ -10,7 +10,6 @@ import org.jetbrains.bazel.sync.JavaLanguageClass
 import org.jetbrains.bazel.sync.workspace.persistence.InMemoryWorkspaceTargetMap
 import org.jetbrains.bazel.sync.workspace.persistence.TargetLoadOptions
 import org.jetbrains.bazel.sync.workspace.persistence.WorkspaceTargetMap
-import org.jetbrains.bazel.sync.workspace.persistence.WorkspaceTargetRef
 import org.jetbrains.bazel.test.framework.target.TestBuildTarget
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.SourceFileCollection
@@ -592,11 +591,11 @@ class WorkspaceTargetGraphTest {
   private fun targetMapOf(vararg targets: BuildTarget): WorkspaceTargetMap =
     InMemoryWorkspaceTargetMap(targets.associateBy { it.key })
 
-  private fun Sequence<WorkspaceTargetRef>.resolved(map: WorkspaceTargetMap): Set<BuildTarget> =
-    mapNotNull { it.load(map, TargetLoadOptions.ALL) }.toSet()
+  private fun Sequence<WorkspaceTargetKey>.resolved(map: WorkspaceTargetMap): Set<BuildTarget> =
+    mapNotNull { map.findTargetByKey(it, TargetLoadOptions.ALL) }.toSet()
 
-  private fun WorkspaceTargetRef?.resolved(map: WorkspaceTargetMap): BuildTarget? =
-    this?.load(map, TargetLoadOptions.ALL)
+  private fun WorkspaceTargetKey?.resolved(map: WorkspaceTargetMap): BuildTarget? =
+    this?.let { map.findTargetByKey(it, TargetLoadOptions.ALL) }
 
   private fun workspaceTarget(
     id: String,

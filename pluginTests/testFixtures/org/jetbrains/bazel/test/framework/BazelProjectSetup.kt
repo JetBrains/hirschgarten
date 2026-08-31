@@ -64,9 +64,9 @@ internal fun applyProjectView(project: Project, projectRoot: Path, projectView: 
 }
 
 /** Runs a full Bazel sync of [project]. */
-internal suspend fun runBazelSync(project: Project, buildProject: Boolean) {
-  LOG.info("Syncing ${project.name} (build=$buildProject)")
-  project.service<ProjectSyncService>().sync(ProjectSyncScope.Full(build = buildProject, phased = false))
+internal suspend fun runBazelSync(project: Project, scope: ProjectSyncScope) {
+  LOG.info("Syncing ${project.name} (scope=$scope)")
+  project.service<ProjectSyncService>().sync(scope)
   LOG.info("Finished the sync of ${project.name}")
 }
 

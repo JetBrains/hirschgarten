@@ -117,7 +117,7 @@ internal class BazelPythonWorkspaceImporter : BazelWorkspaceImporter, BazelWorks
 
     val importDepth = snapshot.commonSyncConfig.importDepth
     allPythonTargets = snapshot.targetGraph.findAllTargetsAtDepth(maxDepth = importDepth, useRelaxedDependencyExpansion = true)
-      .mapNotNull { it.load(snapshot.targets, TargetLoadOptions.ALL) }
+      .mapNotNull { snapshot.targets.findTargetByKey(it, TargetLoadOptions.ALL) }
       .filter { it.hasBuildData<PythonBuildTarget>() }
       .let { targets ->
         WorkspaceTargetMerger(mergeFunctions = pythonTargetMergeFunctions)
@@ -140,7 +140,7 @@ internal class BazelPythonWorkspaceImporter : BazelWorkspaceImporter, BazelWorks
         .map { it.first.key }
         .associateWith { workspaceTargetKey ->
           snapshot.targetGraph.findAllTransitiveSuccessorsWithoutRootTargets(workspaceTargetKey)
-            .mapNotNull { it.load(snapshot.targets, TargetLoadOptions.ALL) }
+            .mapNotNull { snapshot.targets.findTargetByKey(it, TargetLoadOptions.ALL) }
             .filterBuildTarget<PythonBuildTarget>()
             .filter { it.second.externalSources?.isEmpty() == false }
             .map { it.first.key }

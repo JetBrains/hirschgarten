@@ -25,7 +25,6 @@ import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.action.saveAllFiles
 import org.jetbrains.bazel.commons.constants.Constants
 import org.jetbrains.bazel.config.BazelBackendBundle
-import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.coroutines.BazelCoroutineService
 import org.jetbrains.bazel.fus.BazelSyncCollector
@@ -44,7 +43,6 @@ import org.jetbrains.bazel.sync.ProjectSyncHook.ProjectSyncHookEnvironment
 import org.jetbrains.bazel.sync.projectPostSyncHooks
 import org.jetbrains.bazel.sync.projectPreSyncHooks
 import org.jetbrains.bazel.sync.ProjectSyncScope
-import org.jetbrains.bazel.sync.SyncWorkspaceUpdate
 import org.jetbrains.bazel.sync.SyncWorkspaceUpdater
 import org.jetbrains.bazel.sync.projectStructure.ProjectModelApplicationTask
 import org.jetbrains.bazel.sync.projectSyncHooks
@@ -53,7 +51,6 @@ import org.jetbrains.bazel.sync.status.SyncStatusService
 import org.jetbrains.bazel.sync.workspace.DefaultOutputLocationResolver
 import org.jetbrains.bazel.sync.workspace.importer.WorkspaceImporterHelper
 import org.jetbrains.bazel.sync.workspace.persistence.WorkspaceSnapshotService
-import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceSnapshot
 import org.jetbrains.bazel.taskEvents.BazelTaskEventsService
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.TaskGroupId
@@ -80,7 +77,7 @@ class ProjectSyncTask(
           syncPhase(SyncPhase.SECOND, buildProject = scope.build)
         }
 
-      is ProjectSyncScope.Targets -> throw UnsupportedOperationException("not supported yet")
+      is ProjectSyncScope.Targets -> syncPhase(SyncPhase.SECOND, buildProject = scope.build)
       is ProjectSyncScope.Files -> throw UnsupportedOperationException("not supported yet")
     }
   }
@@ -303,6 +300,7 @@ class ProjectSyncTask(
     phaseDurations: MutableList<ProjectSyncPhaseDuration>,
   ): ProjectSyncResult {
     var shouldUpdateProjectModel = false
+    var syncScope: ProjectSyncScope = scope
     try {
       executePreSyncHooks(progressReporter, taskId)
 
@@ -316,7 +314,7 @@ class ProjectSyncTask(
       }
 
       return BazelServerService.getInstance(project).connection.runWithServer(taskId) { server ->
-        server.withOutFileHardLinksSync(projectModelUpdated = { shouldUpdateProjectModel }) {
+        server.withOutFileHardLinksSync(projectModelUpdated = { shouldUpdateProjectModel && syncScope is ProjectSyncScope.Full }) {
           server.bazelInfo.release.deprecated()?.let { deprecated ->
             project.syncConsole.addDiagnosticMessage(
               taskId = taskId,
@@ -355,6 +353,7 @@ class ProjectSyncTask(
               ),
             )
           }
+          syncScope = collectResult.scope
           val syncResult = collectResult.syncResult
           shouldUpdateProjectModel = syncResult.completionResult != ProjectSyncCompletionResult.FAILURE
           if (shouldUpdateProjectModel) {

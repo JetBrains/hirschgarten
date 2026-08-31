@@ -41,7 +41,7 @@ object ExecutableTargetsIndexBuilder {
       byKey[target.key] = target
     }
     val imported = targetGraph.findAllTargetsAtDepth(maxDepth = importDepth, useRelaxedDependencyExpansion = true)
-      .mapNotNull { byKey[it.targetKey] }
+      .mapNotNull { byKey[it] }
       .toList()
     val labelToTarget = imported.associateByTo(HashMap(imported.size)) { it.id }
     return ExecutableTargetsComputer.calculateExecutableTargets(targets = imported, labelToTargetInfo = labelToTarget)

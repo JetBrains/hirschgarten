@@ -6,7 +6,7 @@ import java.nio.file.Path
 @ApiStatus.Internal
 interface BazelOutFileHardLinks {
   fun onBeforeSync()
-  suspend fun onAfterSync(projectModelUpdated: Boolean)
+  suspend fun onAfterSync(fullProjectModelUpdated: Boolean)
 
   /**
    * Creates a hard link to Bazel's outputs during sync (e.g., jars).
@@ -45,7 +45,7 @@ interface BazelOutFileHardLinks {
   companion object {
     val NONE = object: BazelOutFileHardLinks {
       override fun onBeforeSync() {}
-      override suspend fun onAfterSync(projectModelUpdated: Boolean) {}
+      override suspend fun onAfterSync(fullProjectModelUpdated: Boolean) {}
       override suspend fun createOutputFileHardLink(originalFile: Path): Path = originalFile
       override suspend fun createOutputFileHardLinks(files: Collection<Path>): List<Path> = files.toList()
 

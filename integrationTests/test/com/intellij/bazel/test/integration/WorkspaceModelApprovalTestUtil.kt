@@ -106,6 +106,7 @@ internal suspend fun doWorkspaceModelTest(
     allKnownTargets = null,
     build = false,
     taskId = taskId,
+    selector = WorkspaceBuildTargetSelector.AllTargets,
   )
   resolvedWorkspace.targets.shouldNotBeEmpty()
 

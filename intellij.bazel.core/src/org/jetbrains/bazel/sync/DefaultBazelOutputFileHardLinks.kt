@@ -138,14 +138,14 @@ internal class DefaultBazelOutputFileHardLinks(
     allHardLinksCreatedSuccessfully = true
   }
 
-  override suspend fun onAfterSync(projectModelUpdated: Boolean) {
+  override suspend fun onAfterSync(fullProjectModelUpdated: Boolean) {
     if (syncRunning.compareAndSet(true, false)) {
       RefreshQueue.getInstance().refresh(
         recursive = false,
         hardLinksDuringSync.values.awaitAll().filter { it.requiresRefresh }.map { it.virtualFile },
       )
 
-      if (projectModelUpdated) {
+      if (fullProjectModelUpdated) {
         // If sync failed and project model wasn't updated, the user will still see outputs from the previous sync and code won't be red.
         deleteUnusedHardLinks()
       }

@@ -215,12 +215,12 @@ class SnapshotKryoSerializationTest {
     restored.labelId2Label shouldBe partial.labelId2Label
 
     val restoredGraph = restored.targetGraph
-    restoredGraph.allTargets.map { it.targetKey }.toSet() shouldBe setOf(rootKey, depKey)
-    restoredGraph.findTargetByKey(rootKey)?.targetKey shouldBe rootKey
-    restoredGraph.findAllTransitiveSuccessors(rootKey).map { it.targetKey }.toSet() shouldBe
-      graph.findAllTransitiveSuccessors(rootKey).map { it.targetKey }.toSet()
-    restoredGraph.findAllTargetsAtDepth(-1).map { it.targetKey }.toSet() shouldBe
-      graph.findAllTargetsAtDepth(-1).map { it.targetKey }.toSet()
+    restoredGraph.allTargets.toSet() shouldBe setOf(rootKey, depKey)
+    restoredGraph.findTargetByKey(rootKey) shouldBe rootKey
+    restoredGraph.findAllTransitiveSuccessors(rootKey).toSet() shouldBe
+      graph.findAllTransitiveSuccessors(rootKey).toSet()
+    restoredGraph.findAllTargetsAtDepth(-1).toSet() shouldBe
+      graph.findAllTargetsAtDepth(-1).toSet()
   }
 
   @Test

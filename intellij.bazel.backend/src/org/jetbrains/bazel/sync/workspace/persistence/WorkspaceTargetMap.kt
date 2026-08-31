@@ -23,25 +23,6 @@ interface WorkspaceTargetMap {
 }
 
 @ApiStatus.Internal
-interface WorkspaceTargetRef {
-  val targetKey: WorkspaceTargetKey
-
-  fun load(map: WorkspaceTargetMap, options: TargetLoadOptions): BuildTarget?
-
-  companion object {
-    fun of(key: WorkspaceTargetKey): WorkspaceTargetRef = object : WorkspaceTargetRef {
-      override val targetKey: WorkspaceTargetKey
-        get() = key
-
-      override fun load(
-        map: WorkspaceTargetMap,
-        options: TargetLoadOptions,
-      ): BuildTarget? = map.findTargetByKey(key, options)
-    }
-  }
-}
-
-@ApiStatus.Internal
 class InMemoryWorkspaceTargetMap(val targets: Map<WorkspaceTargetKey, BuildTarget>) : WorkspaceTargetMap {
   override fun findTargetByKey(
     key: WorkspaceTargetKey,

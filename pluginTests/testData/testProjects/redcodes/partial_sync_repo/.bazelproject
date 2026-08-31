@@ -1,0 +1,6 @@
+derive_targets_from_directories: false
+
+targets:
+  //base:base
+
+import_depth: -1

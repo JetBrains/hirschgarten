@@ -44,12 +44,13 @@ object BazelWorkspaceResolver {
     allKnownTargets: List<Label>?,
     build: Boolean,
     taskId: TaskId,
+    selector: WorkspaceBuildTargetSelector
   ): BazelResolvedWorkspace {
     return BazelServerService.getInstance(project).connection.runWithServer(taskId) { server ->
       reportIgnoredBazelBsp(project, taskId, server.bazelInfo.workspaceRoot)
 
       val syncProject =
-        server.workspaceBuildTargets(WorkspaceBuildTargetParams(WorkspaceBuildTargetSelector.AllTargets, build, allKnownTargets, taskId))
+        server.workspaceBuildTargets(WorkspaceBuildTargetParams(selector, build, allKnownTargets, taskId))
       reportImportedNoIdeTargets(project, taskId, syncProject.targets.values)
 
       val bazelMapper =

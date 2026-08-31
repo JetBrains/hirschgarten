@@ -16,6 +16,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import org.jetbrains.annotations.TestOnly
 import org.jetbrains.bazel.project.BazelProjectFixtures.initializeBazelProject
+import org.jetbrains.bazel.sync.ProjectSyncScope
 import java.nio.file.Path
 import kotlin.io.path.Path
 
@@ -45,7 +46,10 @@ interface BazelSyncCodeInsightTestFixture : CodeInsightTestFixture {
 
   fun setBazelVersion(version: String)
 
+  suspend fun performBazelSync(scope: ProjectSyncScope)
+
   suspend fun performBazelSync(buildProject: Boolean = false)
+   = performBazelSync(ProjectSyncScope.Full(build = buildProject, phased = false))
 }
 
 /**
@@ -95,7 +99,7 @@ fun bazelProjectFixture(
     applyProjectView(project, projectRoot, projectView)
   }
   configure(project)
-  runBazelSync(project, buildProject)
+  runBazelSync(project, ProjectSyncScope.Full(build = false, phased = false))
 
   LOG.info("The Bazel project fixture for $projectPath is ready")
   initialized(project) {
@@ -172,9 +176,7 @@ class BazelSyncCodeInsightTestFixtureImpl(
     writeBazelVersion(projectRoot, version)
   }
 
-  override suspend fun performBazelSync(buildProject: Boolean) {
-    runBazelSync(project, buildProject)
-  }
+  override suspend fun performBazelSync(scope: ProjectSyncScope) = runBazelSync(project, scope)
 
   override fun setUp() {
     super.setUp()

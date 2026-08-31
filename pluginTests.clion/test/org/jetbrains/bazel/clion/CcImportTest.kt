@@ -42,8 +42,8 @@ class CcImportTest {
     val snapshot = project.service<WorkspaceSnapshotService>().currentSnapshot()
 
     return snapshot.targetGraph.allTargets
-      .filter { it.targetKey.label == label }
-      .mapNotNull { it.load(snapshot.targets, TargetLoadOptions.ALL) }
+      .filter { it.label == label }
+      .mapNotNull { snapshot.targets.findTargetByKey(it, TargetLoadOptions.ALL) }
       .toList()
   }
 
@@ -53,7 +53,8 @@ class CcImportTest {
 
   private suspend fun findTarget(key: WorkspaceTargetKey): BuildTarget? {
     val snapshot = project.service<WorkspaceSnapshotService>().currentSnapshot()
-    return snapshot.targetGraph.findTargetByKey(key, strict = true)?.load(snapshot.targets, TargetLoadOptions.ALL)
+    return snapshot.targetGraph.findTargetByKey(key, strict = true)
+      ?.let { snapshot.targets.findTargetByKey(it, TargetLoadOptions.ALL) }
   }
 
   @Test

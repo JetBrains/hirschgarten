@@ -55,7 +55,7 @@ internal class GoWorkspaceImporter : BazelWorkspaceImporter, BazelWorkspaceImpor
       is WorkspaceImporterPhase.Initialize -> {
         val importDepth = snapshot.commonSyncConfig.importDepth
         val goBuildTargetList = snapshot.targetGraph.findAllTargetsAtDepth(maxDepth = importDepth, useRelaxedDependencyExpansion = true)
-          .mapNotNull { it.load(snapshot.targets, TargetLoadOptions.ALL) }
+          .mapNotNull { snapshot.targets.findTargetByKey(it, TargetLoadOptions.ALL) }
           .filterBuildTarget<GoBuildTarget>()
           .toList()
         goTargets = goBuildTargetList.associate { (target, goTarget) -> target.key to goTarget }

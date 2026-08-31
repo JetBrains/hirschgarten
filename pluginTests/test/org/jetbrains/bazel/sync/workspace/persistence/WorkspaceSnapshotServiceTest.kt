@@ -139,7 +139,9 @@ class WorkspaceSnapshotServiceTest {
         canonicalRepoNameToPath = mapOf("rules_jvm~" to Path.of("/external/rules_jvm")),
         nonLocalCanonicalRepoNames = setOf(),
       ),
-      metadata = WorkspaceSnapshotMetadata(version = 1),
+      metadata = WorkspaceSnapshotMetadata(
+        version = 1,
+      ),
     )
   }
 
@@ -151,7 +153,7 @@ class WorkspaceSnapshotServiceTest {
     actual.repoMapping shouldBe expected.repoMapping
 
     val expectedTargets = expected.targets.allTargets().toList()
-    actual.targetGraph.allTargets.map { it.targetKey }.toSet() shouldBe expectedTargets.map { it.key }.toSet()
+    actual.targetGraph.allTargets.toSet() shouldBe expectedTargets.map { it.key }.toSet()
     for (expectedRaw in expectedTargets) {
       val actualRaw = actual.targets.findTargetByKey(expectedRaw.key)
       actualRaw.shouldNotBeNull()

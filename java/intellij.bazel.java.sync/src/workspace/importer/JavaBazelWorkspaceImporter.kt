@@ -76,7 +76,7 @@ internal class JavaBazelWorkspaceImporter : BazelWorkspaceImporter, BazelWorkspa
     moduleTargets = snapshot.targetGraph.findAllTargetsAtDepth(
       maxDepth = commonSyncConfig.importDepth,
       useRelaxedDependencyExpansion = true,
-    ).mapNotNull { it.load(snapshot.targets, TargetLoadOptions.ALL) }.toList()
+    ).mapNotNull { snapshot.targets.findTargetByKey(it, TargetLoadOptions.ALL) }.toList()
     targets = moduleTargets
     jvmResolved = JvmBuildTargetResolver(
       allTargets = snapshot.targets.allTargets().associateBy { it.key },

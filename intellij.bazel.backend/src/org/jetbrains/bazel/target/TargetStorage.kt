@@ -61,7 +61,6 @@ private class CachedSnapshotView(val snapshot: WorkspaceSnapshot, private val pr
       // keep previous behavior, only targets at specific depth (from root targets) are imported
       importKeys = snapshot.targetGraph
         .findAllTargetsAtDepth(maxDepth = config.importDepth, useRelaxedDependencyExpansion = true)
-        .map { it.targetKey }
         .toHashSet()
 
       // precompute label -> key map for compatibility purposes

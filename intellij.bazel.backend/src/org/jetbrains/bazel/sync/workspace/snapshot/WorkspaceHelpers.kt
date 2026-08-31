@@ -17,7 +17,7 @@ inline fun <reified T : BuildTargetData> Sequence<BuildTarget>.filterBuildTarget
 
 @get:ApiStatus.Internal
 val WorkspaceSnapshot.allTargets: Sequence<BuildTarget>
-  get(): Sequence<BuildTarget> = targetGraph.allTargets.mapNotNull { it.load(targets, TargetLoadOptions.ALL) }
+  get(): Sequence<BuildTarget> = targetGraph.allTargets.mapNotNull { targets.findTargetByKey(it, TargetLoadOptions.ALL) }
 
 @get:ApiStatus.Internal
 val WorkspaceSnapshot.commonSyncConfig: CommonWorkspaceSyncConfig
