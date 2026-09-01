@@ -21,6 +21,7 @@ class GoInternalImportTest {
   @Test
   @DisabledOnOs(OS.WINDOWS)
   fun testHighlighting() = runBlocking(Dispatchers.Default) {
+    fixture.performBazelSync(true)
     fixture.checkHighlighting("foo/main.go")
   }
 }

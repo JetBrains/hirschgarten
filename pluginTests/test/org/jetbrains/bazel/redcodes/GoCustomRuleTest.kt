@@ -20,6 +20,7 @@ class GoCustomRuleTest {
 
   @Test
   fun testHighlighting() = runBlocking(Dispatchers.Default) {
+    fixture.performBazelSync(true)
     withContext(Dispatchers.EDT) {
       fixture.checkHighlighting("main.go")
     }

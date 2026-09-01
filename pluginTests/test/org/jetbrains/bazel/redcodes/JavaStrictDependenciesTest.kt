@@ -98,6 +98,7 @@ class JavaStrictDependenciesTest {
     @DisabledOnOs(OS.WINDOWS) //cpp toolchain
     // https://youtrack.jetbrains.com/issue/BAZEL-1423
     fun testStrictDepsWithProtobufReference() = runBlocking(Dispatchers.Default) {
+      fixture.performBazelSync(true)
       withContext(Dispatchers.EDT) {
         fixture.checkHighlighting("src/WorkRequestHandler.java")
       }

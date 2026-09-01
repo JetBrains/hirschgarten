@@ -21,6 +21,7 @@ class KotlinCompilerPluginTest {
   @Test
   @DisabledOnOs(OS.WINDOWS) // coursier
   fun testHighlighting() = runBlocking(Dispatchers.Default) {
+    fixture.performBazelSync(true)
     withContext(Dispatchers.EDT) {
       fixture.checkHighlighting("Lib.kt")
     }
