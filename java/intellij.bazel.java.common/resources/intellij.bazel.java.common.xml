@@ -1,12 +1,14 @@
 <idea-plugin visibility="public">
   <!-- region Generated dependencies - run `Generate Product Layouts` to regenerate -->
   <dependencies>
+    <module name="intellij.bazel.backend"/>
     <module name="intellij.bazel.commons"/>
   </dependencies>
   <!-- endregion -->
 
   <extensions defaultExtensionNs="org.jetbrains.bazel">
     <languageClassProvider implementation="org.jetbrains.bazel.sync.JavaLanguageClassProvider"/>
+    <targetKindProvider implementation="org.jetbrains.bazel.sync.workspace.languages.jvm.JavaBazelRules"/>
   </extensions>
 
 </idea-plugin>

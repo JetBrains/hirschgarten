@@ -2,6 +2,7 @@ package org.jetbrains.bazel.util
 
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.commons.BazelStatus
+import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.testing.BazelTestDetails
 import org.jetbrains.bsp.protocol.BazelTaskEventsHandler
@@ -27,9 +28,10 @@ class BspClientTestNotifier(private val taskEventsHandler: BazelTaskEventsHandle
   fun startTest(
     testDetails: BazelTestDetails,
     taskId: TaskId,
+    targetKind: TargetKind?,
   ) {
     val displayName = testDetails.displayName
-    val locationHint = BazelTestLocationHintProvider.getLocationHint(testDetails)
+    val locationHint = BazelTestLocationHintProvider.getLocationHint(testDetails, targetKind)
     val testStart = TestStart(displayName, testDetails.isSuite, locationHint)
     val taskStartParams =
       TaskStartParams(
@@ -84,9 +86,10 @@ class BspClientTestNotifier(private val taskEventsHandler: BazelTaskEventsHandle
     taskId: TaskId,
     status: TestStatus,
     message: String?,
+    targetKind: TargetKind?,
     data: TestFinishData? = null,
   ) {
-    startTest(testDetails, taskId)
+    startTest(testDetails, taskId, targetKind)
     finishTest(testDetails.displayName, taskId, status, message, data)
   }
 

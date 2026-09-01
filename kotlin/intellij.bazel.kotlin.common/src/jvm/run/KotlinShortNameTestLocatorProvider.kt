@@ -23,7 +23,7 @@ private object KotlinShortNameTestLocator : SMTestLocator {
     path: @NonNls String,
     project: @NonNls Project,
     scope: GlobalSearchScope,
-  ): List<Location<*>?> {
+  ): List<Location<*>> {
     if (protocol != TEST_PROTOCOL && protocol != SUITE_PROTOCOL) {
       return emptyList()
     }
@@ -42,7 +42,7 @@ private object KotlinShortNameTestLocator : SMTestLocator {
         }
       val cleanClassName = className.substringAfterLast('$')
       val kotlinFqn = findKotlinFqnByShortName(project, scope, cleanClassName, methodName)
-      val locationsFound: List<Location<*>?> = invokeDefaultJavaLocator(protocol, kotlinFqn, project, scope)
+      val locationsFound: List<Location<*>> = invokeDefaultJavaLocator(protocol, kotlinFqn, project, scope)
 
       return if (locationsFound.isNotEmpty()) {
         locationsFound
@@ -69,5 +69,5 @@ private fun findKotlinFqnByShortName(project: Project, scope: GlobalSearchScope,
     ?.let { "${it.kotlinFqName}${methodNamePostfix}" }
 }
 
-private fun invokeDefaultJavaLocator(protocol: String, fqn: String?, project: Project, scope: GlobalSearchScope): List<Location<*>?> =
+private fun invokeDefaultJavaLocator(protocol: String, fqn: String?, project: Project, scope: GlobalSearchScope): List<Location<*>> =
   (fqn?.let { JavaTestLocator.INSTANCE.getLocation(protocol, it, project, scope) } ?: emptyList())

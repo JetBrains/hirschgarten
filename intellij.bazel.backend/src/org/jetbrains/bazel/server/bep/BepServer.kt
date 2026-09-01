@@ -21,6 +21,7 @@ import org.jetbrains.bazel.commons.constants.Constants
 import org.jetbrains.bazel.label.AllRuleTargets
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.label.SyntheticLabel
+import org.jetbrains.bazel.languages.starlark.repomapping.toShortString
 import org.jetbrains.bazel.server.BazelTestFileNames
 import org.jetbrains.bazel.server.diagnostics.DiagnosticsService
 import org.jetbrains.bazel.server.sync.FALLBACK_CONFIG
@@ -32,6 +33,7 @@ import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceConfigurationId
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceConfigurationSummary
 import org.jetbrains.bazel.sync.workspace.snapshot.isExecConfig
 import org.jetbrains.bazel.sync.workspace.snapshot.workspaceTargetKey
+import org.jetbrains.bazel.target.targetStorage
 import org.jetbrains.bazel.testing.BazelTestDetails
 import org.jetbrains.bazel.util.BspClientTestNotifier
 import org.jetbrains.bsp.protocol.AnalysisCacheInvalidation
@@ -50,7 +52,7 @@ import java.nio.file.Files
 
 @ApiStatus.Internal
 class BepServer(
-  project: Project,
+  private val project: Project,
   private val taskEventsHandler: BazelTaskEventsHandler,
   private val diagnosticsService: DiagnosticsService,
   private val parentId: TaskId,
@@ -191,18 +193,20 @@ class BepServer(
 
       val testXml =
         testResult.testActionOutputList.find { it.name == BazelTestFileNames.XML.filename }?.let { bazelPathsResolver.resolve(it) }
+      val label = Label.parse(event.id.testResult.label)
+      val targetKind = project.targetStorage.getTargetSummary(label)?.kind
       // Test cases identified and sent to the client by TestXmlParser.
-      val reportedSuites = testXml?.let { TestXmlParser(bspClientTestNotifier).parseAndReport(taskId, it) } ?: 0
+      val reportedSuites = testXml?.let { TestXmlParser(bspClientTestNotifier).parseAndReport(taskId, it, targetKind) } ?: 0
       if (reportedSuites == 0) {
         // Nothing was reported per-test: the XML is missing, or present but empty / all-skipped.
         // Go tests via rules_go without verbose output don't emit <testcase> entries, so the parser
         // reports nothing. Fall back to a single target-level node so the target shows its status
         // instead of "No tests were found".
-        val targetName = event.id.testResult.label?.takeIf { it.isNotBlank() } ?: "Test"
+        val targetName = label.toShortString(project)
         val childId = taskId.uniqueSubTask("test")
 
         val testDetails = BazelTestDetails.testSuite(targetName).build()
-        bspClientTestNotifier.startAndFinishTest(testDetails, childId, testStatus, "Test finished")
+        bspClientTestNotifier.startAndFinishTest(testDetails, childId, testStatus, "Test finished", targetKind)
       }
     }
   }

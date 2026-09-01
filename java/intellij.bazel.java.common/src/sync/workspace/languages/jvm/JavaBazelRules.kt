@@ -1,5 +1,6 @@
-package org.jetbrains.bazel.sync.workspace.languages.java
+package org.jetbrains.bazel.sync.workspace.languages.jvm
 
+import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.sync.JavaLanguageClass
@@ -10,7 +11,7 @@ internal class JavaBazelRules: TargetKindProvider {
     setOf(
       TargetKind("java_library", setOf(JavaLanguageClass.JAVA), RuleType.LIBRARY),
       TargetKind("java_binary", setOf(JavaLanguageClass.JAVA), RuleType.BINARY),
-      TargetKind("java_test", setOf(JavaLanguageClass.JAVA), RuleType.TEST),
+      JAVA_TEST_KIND,
       // a workaround, register this target type as Java module in IntelliJ IDEA
       TargetKind("intellij_plugin_debug_target", setOf(JavaLanguageClass.JAVA), RuleType.BINARY),
       TargetKind("kt_jvm_library", setOf(JavaLanguageClass.JAVA, JavaLanguageClass.KOTLIN), RuleType.LIBRARY),
@@ -21,3 +22,6 @@ internal class JavaBazelRules: TargetKindProvider {
       TargetKind("scala_test", setOf(JavaLanguageClass.JAVA, JavaLanguageClass.SCALA), RuleType.TEST),
     )
 }
+
+@ApiStatus.Internal
+val JAVA_TEST_KIND: TargetKind = TargetKind("java_test", setOf(JavaLanguageClass.JAVA), RuleType.TEST)

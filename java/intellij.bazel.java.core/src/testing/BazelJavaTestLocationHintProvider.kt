@@ -1,10 +1,14 @@
 package org.jetbrains.bazel.testing
 
 import org.jetbrains.annotations.ApiStatus
+import org.jetbrains.bazel.commons.TargetKind
+import org.jetbrains.bazel.sync.includesJava
 import org.jetbrains.bazel.util.BazelTestLocationHintProvider
 
 @ApiStatus.Internal
 class BazelJavaTestLocationHintProvider : BazelTestLocationHintProvider {
+  override fun isApplicable(targetKind: TargetKind): Boolean = targetKind.includesJava()
+
   override fun getLocationHint(testDetails: BazelTestDetails): String =
     testDetails.run {
       if (isSuite) {
@@ -53,6 +57,11 @@ class BazelJavaTestLocationHintProvider : BazelTestLocationHintProvider {
 
   private fun String.removeMisleadingDelimiters(): String =
     replace(FRAGMENT_DELIMITER, SUITE_DELIMITER) // otherwise the delimiters might get misinterpreted
+
+  companion object {
+    fun getInstance(): BazelJavaTestLocationHintProvider =
+      checkNotNull(BazelTestLocationHintProvider.ep.findExtension(BazelJavaTestLocationHintProvider::class.java))
+  }
 }
 
 private const val TEST_CASE_PROTOCOL: String = "java:test"

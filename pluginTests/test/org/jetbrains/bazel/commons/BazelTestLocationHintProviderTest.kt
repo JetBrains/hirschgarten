@@ -3,16 +3,20 @@ package org.jetbrains.bazel.commons
 import com.intellij.testFramework.junit5.TestApplication
 import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.collections.shouldContainExactly
+import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldBeEmpty
 import io.kotest.matchers.string.shouldNotStartWith
 import io.kotest.matchers.string.shouldStartWith
+import org.jetbrains.bazel.sync.workspace.targetKind.TargetKindService
 import org.jetbrains.bazel.testing.BazelTestDetails
 import org.jetbrains.bazel.util.BazelTestLocationHintProvider
 import org.junit.jupiter.api.Test
 
 @TestApplication
 class BazelTestLocationHintProviderTest {
+  private val javaTargetKind = TargetKindService.getInstance().findPredefinedRule("java_test")
+
   @Test
   fun `generate a hint by file location`() {
     val testDetails1 =
@@ -36,10 +40,9 @@ class BazelTestLocationHintProviderTest {
         .withParentSuites(javaSuites)
         .withFileAndZeroBasedLine("src\\java\\package\\file.java", 17)
         .build()
-
-    val hint1 = BazelTestLocationHintProvider.getLocationHint(testDetails1)
-    val hint2 = BazelTestLocationHintProvider.getLocationHint(testDetails2)
-    val hint3 = BazelTestLocationHintProvider.getLocationHint(testDetails3)
+    val hint1 = BazelTestLocationHintProvider.getLocationHint(testDetails1, javaTargetKind)
+    val hint2 = BazelTestLocationHintProvider.getLocationHint(testDetails2, javaTargetKind)
+    val hint3 = BazelTestLocationHintProvider.getLocationHint(testDetails3, javaTargetKind)
 
     hint1 shouldBe "file://src/java/package/file.java:18" // line number conversion from zero-based to one-based
     hint2.shouldNotStartWith("file://") // not enough information
@@ -53,8 +56,8 @@ class BazelTestLocationHintProviderTest {
     val testDetails2 =
       BazelTestDetails.testSuite(suiteName).withClassname(nestedClassName).withParentSuites(javaSuites).build()
 
-    val hint1 = BazelTestLocationHintProvider.getLocationHint(testDetails1)
-    val hint2 = BazelTestLocationHintProvider.getLocationHint(testDetails2)
+    val hint1 = BazelTestLocationHintProvider.getLocationHint(testDetails1, javaTargetKind)
+    val hint2 = BazelTestLocationHintProvider.getLocationHint(testDetails2, javaTargetKind)
 
     hint1.shouldStartWith("java:suite://")
     hint2.shouldStartWith("java:suite://")
@@ -73,7 +76,7 @@ class BazelTestLocationHintProviderTest {
     val testDetails1 =
       BazelTestDetails.testSuite(suiteName).withParentSuites(javaSuites).build()
 
-    val hint1 = BazelTestLocationHintProvider.getLocationHint(testDetails1)
+    val hint1 = BazelTestLocationHintProvider.getLocationHint(testDetails1, javaTargetKind)
 
     hint1.shouldStartWith("java:suite://")
 
@@ -90,8 +93,8 @@ class BazelTestLocationHintProviderTest {
     val testDetails2 =
       BazelTestDetails.testCase(testName).withParentSuites(javaSuites).build()
 
-    val hint1 = BazelTestLocationHintProvider.getLocationHint(testDetails1)
-    val hint2 = BazelTestLocationHintProvider.getLocationHint(testDetails2)
+    val hint1 = BazelTestLocationHintProvider.getLocationHint(testDetails1, javaTargetKind)
+    val hint2 = BazelTestLocationHintProvider.getLocationHint(testDetails2, javaTargetKind)
 
     hint1.shouldStartWith("java:test://")
     hint2.shouldStartWith("java:test://")
@@ -112,8 +115,8 @@ class BazelTestLocationHintProviderTest {
     val testDetails2 =
       BazelTestDetails.testCase(testName).build()
 
-    val hint1 = BazelTestLocationHintProvider.getLocationHint(testDetails1)
-    val hint2 = BazelTestLocationHintProvider.getLocationHint(testDetails2)
+    val hint1 = BazelTestLocationHintProvider.getLocationHint(testDetails1, javaTargetKind)
+    val hint2 = BazelTestLocationHintProvider.getLocationHint(testDetails2, javaTargetKind)
 
     hint1.shouldStartWith("java:suite://")
     hint2.shouldStartWith("java:test://")
@@ -134,8 +137,8 @@ class BazelTestLocationHintProviderTest {
     val testDetails2 =
       BazelTestDetails.testCase("").withParentSuites(javaSuites).build()
 
-    val hint1 = BazelTestLocationHintProvider.getLocationHint(testDetails1)
-    val hint2 = BazelTestLocationHintProvider.getLocationHint(testDetails2)
+    val hint1 = BazelTestLocationHintProvider.getLocationHint(testDetails1, javaTargetKind)
+    val hint2 = BazelTestLocationHintProvider.getLocationHint(testDetails2, javaTargetKind)
 
     hint1.shouldStartWith("java:suite://")
     hint2.shouldStartWith("java:test://")
@@ -163,7 +166,8 @@ private val javaSuites =
     "NestedNested",
   )
 
-private fun parseJavaLocationHint(locationHint: String): JavaLocationHintData {
+private fun parseJavaLocationHint(locationHint: String?): JavaLocationHintData {
+  locationHint.shouldNotBeNull()
   val fragments = locationHint.substringAfter("://").split("/", limit = 2)
   val classNames =
     fragments.getOrNull(0)?.split("$")?.filter { it.isNotBlank() } ?: emptyList()
