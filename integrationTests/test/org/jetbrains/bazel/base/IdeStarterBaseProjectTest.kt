@@ -280,7 +280,7 @@ fun Driver.syncBazelProject(buildAndSync: Boolean = false) {
   execute(CommandChain().waitForSmartMode())
 }
 
-fun Driver.syncBazelProjectCloseDialog() {
+fun Driver.syncBazelProjectCloseDialog(buildAndSync: Boolean = false) {
   execute(CommandChain().takeScreenshot("startSync"))
   execute(CommandChain().openBspToolWindow())
   // close only the Git confirmation dialog; other popups like "Loading file" are not closable via dispose()
@@ -295,6 +295,9 @@ fun Driver.syncBazelProjectCloseDialog() {
   }
   execute(CommandChain().takeScreenshot("openBspToolWindow"))
   execute(CommandChain().waitForBazelSync())
+  if (buildAndSync) {
+    execute(CommandChain().buildAndSync())
+  }
   failIfFatalIdeErrorsPresent("Bazel sync")
   execute(CommandChain().waitForSmartMode())
 }
