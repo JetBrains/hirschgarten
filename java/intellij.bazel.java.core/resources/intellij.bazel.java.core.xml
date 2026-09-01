@@ -88,6 +88,7 @@
     />
     <attachSourcesProvider implementation="org.jetbrains.bazel.ui.notifications.BazelAttachSourcesProvider"/>
     <psi.clsCustomNavigationPolicy implementation="org.jetbrains.bazel.java.navigation.BazelJavaSourceJarNavigationPolicy"/>
+    <lang.jvm.bytecodeAnalysisSuppressor implementation="org.jetbrains.bazel.java.analysis.BazelInterfaceJarAnalysisSuppressor"/>
     <completion.contributor
       implementationClass="org.jetbrains.bazel.languages.starlark.completion.StarlarkClassnameCompletionContributor"
       language="Starlark"
