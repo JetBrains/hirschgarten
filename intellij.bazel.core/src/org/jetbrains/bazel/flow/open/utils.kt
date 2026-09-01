@@ -18,6 +18,7 @@ import org.jetbrains.bazel.coroutines.BazelApplicationCoroutineScopeService
 import java.nio.file.Files.isDirectory
 import java.nio.file.Files.isRegularFile
 import java.nio.file.Path
+import kotlin.io.path.Path
 import kotlin.io.path.extension
 import kotlin.io.path.name
 
@@ -27,7 +28,7 @@ import kotlin.io.path.name
  */
 @RequiresBackgroundThread
 internal tailrec fun findProjectFolderFromFile(path: Path?): Path? = when {
-  path == null -> null
+  path == null || path.shouldStopTraversal() -> null
   path.workspaceFile != null -> path
   // this is to prevent opening a file that is not an acceptable Bazel config file, #BAZEL-1940
   // TODO(Son): figure out how to write a test for it to avoid regression later
@@ -36,6 +37,22 @@ internal tailrec fun findProjectFolderFromFile(path: Path?): Path? = when {
   !path.hasExtensionOf(Constants.PROJECT_VIEW_FILE_EXTENSION) -> null
 
   else -> findProjectFolderFromFile(path.parent)
+}
+
+/**
+ * A Bazel project root should never be the filesystem root or the temp directory itself.
+ * A workspace file in one of those directories is most probably an accident, so the walk stops before it.
+ *
+ * It mostly matters for tests, especially when opening a directory from temp dir.
+ * It's really hard to guarantee in tests that any workspace file is not in the hierarchy.
+ *
+ * */
+private fun Path.shouldStopTraversal(): Boolean = this == root || this in rejectedDirectories
+
+private val rejectedDirectories: Set<Path> by lazy {
+  val tempPath = System.getProperty("java.io.tmpdir")?.let(::Path) ?: return@lazy emptySet()
+  val realTempPath = runCatching { tempPath.toRealPath() }.getOrNull()
+  setOfNotNull(tempPath, realTempPath)
 }
 
 @RequiresBackgroundThread

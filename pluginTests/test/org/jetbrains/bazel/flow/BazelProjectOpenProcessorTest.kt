@@ -1,68 +1,77 @@
 package org.jetbrains.bazel.flow
 
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.util.io.NioFiles
 import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.projectImport.ProjectOpenProcessor
-import com.intellij.testFramework.fixtures.BasePlatformTestCase
+import com.intellij.testFramework.junit5.SystemProperty
+import com.intellij.testFramework.junit5.TestApplication
+import com.intellij.testFramework.junit5.fixture.tempPathFixture
 import io.kotest.matchers.shouldBe
 import org.jetbrains.bazel.commons.constants.Constants
 import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.config.BazelPluginConstants
-import java.nio.file.Files
-import java.nio.file.Path
+import org.junit.jupiter.api.Test
+import java.nio.file.FileAlreadyExistsException
 import kotlin.io.path.createDirectories
-import kotlin.io.path.createTempDirectory
+import kotlin.io.path.createFile
+import kotlin.io.path.deleteIfExists
 
-class BazelProjectOpenProcessorTest : BasePlatformTestCase() {
-  private lateinit var directoryRoot: Path
-  private var originalAutoOpenProjectIfPresent: String? = null
+private const val TEMP_DIRECTORY_WORKSPACE_FILE_NAME = "WORKSPACE.bzlmod"
 
-  override fun setUp() {
-    super.setUp()
-    directoryRoot = Files.createTempDirectory(
-      Path.of("/tmp").also {
-        it.toFile().mkdirs()
-      },
-      "dir")
-    originalAutoOpenProjectIfPresent = System.getProperty(BazelFeatureFlags.AUTO_OPEN_PROJECT_IF_PRESENT)
-  }
+@TestApplication
+internal class BazelProjectOpenProcessorTest {
 
-  override fun tearDown() {
-    originalAutoOpenProjectIfPresent
-      ?.let { System.setProperty(BazelFeatureFlags.AUTO_OPEN_PROJECT_IF_PRESENT, it) }
-    ?: System.clearProperty(BazelFeatureFlags.AUTO_OPEN_PROJECT_IF_PRESENT)
-    NioFiles.deleteRecursively(directoryRoot)
+  private val directoryRoot by tempPathFixture()
 
-    super.tearDown()
-  }
-
-  fun `test should not open directory with dot idea when auto open is disabled`() {
-    setAutoOpenProjectIfPresent(false)
+  @Test
+  @SystemProperty(BazelFeatureFlags.AUTO_OPEN_PROJECT_IF_PRESENT, "false")
+  fun `should not open directory with dot idea when auto open is disabled`() {
     createDotIdeaDirectory()
     createWorkspaceFile()
 
     bazelProjectOpenProcessor().canOpenProject(refreshDirectoryRoot()) shouldBe false
   }
 
-  fun `test should open directory with dot idea when auto open is enabled`() {
-    setAutoOpenProjectIfPresent(true)
+  @Test
+  @SystemProperty(BazelFeatureFlags.AUTO_OPEN_PROJECT_IF_PRESENT, "true")
+  fun `should open directory with dot idea when auto open is enabled`() {
     createDotIdeaDirectory()
     createWorkspaceFile()
 
     bazelProjectOpenProcessor().canOpenProject(refreshDirectoryRoot()) shouldBe true
   }
 
-  fun `test should not open directory without workspace files`() {
-    setAutoOpenProjectIfPresent(true)
+  @Test
+  @SystemProperty(BazelFeatureFlags.AUTO_OPEN_PROJECT_IF_PRESENT, "true")
+  fun `should not open directory without workspace files`() {
     createDotIdeaDirectory()
 
     bazelProjectOpenProcessor().canOpenProject(refreshDirectoryRoot()) shouldBe false
   }
 
-  private fun setAutoOpenProjectIfPresent(value: Boolean) {
-    System.setProperty(BazelFeatureFlags.AUTO_OPEN_PROJECT_IF_PRESENT, value.toString())
+  @Test
+  @SystemProperty(BazelFeatureFlags.AUTO_OPEN_PROJECT_IF_PRESENT, "true")
+  fun `should not open directory when only the temp directory holds a workspace file`() {
+    withWorkspaceFileInTempDirectory {
+      bazelProjectOpenProcessor().canOpenProject(refreshDirectoryRoot()) shouldBe false
+    }
+  }
+
+  private fun withWorkspaceFileInTempDirectory(action: () -> Unit) {
+    val workspaceFile = directoryRoot.parent.resolve(TEMP_DIRECTORY_WORKSPACE_FILE_NAME)
+    val created = try {
+      workspaceFile.createFile()
+      true
+    }
+    catch (_: FileAlreadyExistsException) {
+      false
+    }
+    try {
+      action()
+    } finally {
+      if (created) workspaceFile.deleteIfExists()
+    }
   }
 
   private fun createDotIdeaDirectory() {
@@ -80,6 +89,4 @@ class BazelProjectOpenProcessorTest : BasePlatformTestCase() {
   private fun bazelProjectOpenProcessor(): ProjectOpenProcessor =
     ProjectOpenProcessor.EXTENSION_POINT_NAME.extensionList
       .single { it.name == BazelPluginConstants.BAZEL_DISPLAY_NAME }
-
-  private fun Path.createFile() = this.toFile().createNewFile()
 }
