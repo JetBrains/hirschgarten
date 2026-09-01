@@ -69,7 +69,7 @@ class JavaStrictDependenciesTest {
   fun testStrictDepsWithProtobufReference() = runBlocking(Dispatchers.Default) {
     fixture.copyBazelTestProject("redcodes/strict_dependencies/java_strict_deps_proto")
     fixture.enableInspections(JavaStrictDependenciesInspection())
-    fixture.performBazelSync()
+    fixture.performBazelSync(true)
     withContext(Dispatchers.EDT) {
       fixture.checkHighlighting("src/WorkRequestHandler.java")
     }

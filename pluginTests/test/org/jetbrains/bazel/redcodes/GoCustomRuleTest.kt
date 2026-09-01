@@ -23,7 +23,7 @@ class GoCustomRuleTest {
   fun testHighlighting() = runBlocking(Dispatchers.Default) {
     fixture.enableGoHighlighting()
     fixture.copyBazelTestProject("redcodes/go_custom_rule")
-    fixture.performBazelSync()
+    fixture.performBazelSync(true)
     withContext(Dispatchers.EDT) {
       fixture.checkHighlighting("main.go")
     }

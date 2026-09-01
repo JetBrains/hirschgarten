@@ -24,7 +24,7 @@ class GoInternalImportTest {
   fun testHighlighting() = runBlocking(Dispatchers.Default) {
     fixture.enableGoHighlighting()
     fixture.copyBazelTestProject("redcodes/go_internal_import")
-    fixture.performBazelSync()
+    fixture.performBazelSync(true)
     fixture.checkHighlighting("foo/main.go")
   }
 }
