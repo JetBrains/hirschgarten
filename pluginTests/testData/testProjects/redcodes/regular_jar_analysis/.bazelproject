@@ -1,0 +1,4 @@
+targets:
+  //...
+build_flags:
+    --@rules_jvm_external//settings:stamp_manifest=false

@@ -23,6 +23,8 @@ class RegularJarAnalysisTest {
   @Test
   @DisabledOnOs(OS.WINDOWS) // coursier
   fun testHighlighting() = runBlocking(Dispatchers.Default) {
+    fixture.setProjectView(".bazelproject")
+    fixture.performBazelSync()
     withContext(Dispatchers.EDT) {
       fixture.checkHighlighting("Usage.java")
     }
