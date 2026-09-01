@@ -26,6 +26,7 @@ class RegularJarAnalysisTest {
   fun testHighlighting() = runBlocking(Dispatchers.Default) {
     fixture.enableInspections(ConstantValueInspection())
     fixture.copyBazelTestProject("redcodes/regular_jar_analysis")
+    fixture.setProjectView(".bazelproject")
     fixture.performBazelSync()
     withContext(Dispatchers.EDT) {
       fixture.checkHighlighting("Usage.java")
