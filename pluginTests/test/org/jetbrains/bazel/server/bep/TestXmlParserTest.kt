@@ -5,7 +5,9 @@ import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 import io.kotest.matchers.string.shouldContain
+import org.jetbrains.bazel.sync.workspace.targetKind.TargetKindService
 import org.jetbrains.bazel.util.BspClientTestNotifier
+import org.jetbrains.bazel.workspace.model.test.framework.MockProjectBaseTest
 import org.jetbrains.bsp.protocol.BazelTaskEventsHandler
 import org.jetbrains.bsp.protocol.CachedTestLog
 import org.jetbrains.bsp.protocol.CoverageReport
@@ -16,33 +18,37 @@ import org.jetbrains.bsp.protocol.TaskFinishParams
 import org.jetbrains.bsp.protocol.TaskGroupId
 import org.jetbrains.bsp.protocol.TaskStartParams
 import org.jetbrains.bsp.protocol.TestFinish
+import org.jetbrains.bsp.protocol.TestStart
 import org.jetbrains.bsp.protocol.TestStatus
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 import java.nio.file.Path
 import kotlin.io.path.writeText
 
-class TestXmlParserTest {
-  private class MockBuildTaskEventsHandler : BazelTaskEventsHandler {
-    val taskStartCalls = mutableListOf<TaskStartParams>()
-    val taskFinishCalls = mutableListOf<TaskFinishParams>()
+class MockBuildTaskEventsHandler : BazelTaskEventsHandler {
+  val taskStartCalls = mutableListOf<TaskStartParams>()
+  val taskFinishCalls = mutableListOf<TaskFinishParams>()
 
-    override fun onBuildLogMessage(p0: LogMessageParams) {}
+  override fun onBuildLogMessage(p0: LogMessageParams) {}
 
-    override fun onBuildPublishDiagnostics(p0: PublishDiagnosticsParams) {}
+  override fun onBuildPublishDiagnostics(p0: PublishDiagnosticsParams) {}
 
-    override fun onBuildTaskStart(p0: TaskStartParams) {
-      p0.let { taskStartCalls.add(it) }
-    }
-
-    override fun onBuildTaskFinish(p0: TaskFinishParams) {
-      p0.let { taskFinishCalls.add(it) }
-    }
-
-    override fun onPublishCoverageReport(report: CoverageReport) {}
-
-    override fun onCachedTestLog(testLog: CachedTestLog) {}
+  override fun onBuildTaskStart(p0: TaskStartParams) {
+    p0.let { taskStartCalls.add(it) }
   }
+
+  override fun onBuildTaskFinish(p0: TaskFinishParams) {
+    p0.let { taskFinishCalls.add(it) }
+  }
+
+  override fun onPublishCoverageReport(report: CoverageReport) {}
+
+  override fun onCachedTestLog(testLog: CachedTestLog) {}
+}
+
+class TestXmlParserTest : MockProjectBaseTest() {
+  private val javaTargetKind = TargetKindService.getInstance().findPredefinedRule("java_test")
+  private val pythonTargetKind = TargetKindService.getInstance().findPredefinedRule("py_test")
 
   @Test
   fun `pytest, all passing`(
@@ -67,7 +73,7 @@ class TestXmlParserTest {
     val notifier = BspClientTestNotifier(client)
 
     // when
-    TestXmlParser(notifier).parseAndReport(TaskGroupId.EMPTY.task(""), writeTempFile(tempDir, samplePassingContents))
+    TestXmlParser(notifier).parseAndReport(TaskGroupId.EMPTY.task(""), writeTempFile(tempDir, samplePassingContents), pythonTargetKind)
 
     // then
     client.taskStartCalls.size shouldBe 5
@@ -163,7 +169,7 @@ class TestXmlParserTest {
     val notifier = BspClientTestNotifier(client)
 
     // when
-    TestXmlParser(notifier).parseAndReport(TaskGroupId.EMPTY.task(""), writeTempFile(tempDir, samplePassingContents))
+    TestXmlParser(notifier).parseAndReport(TaskGroupId.EMPTY.task(""), writeTempFile(tempDir, samplePassingContents), pythonTargetKind)
 
     // then
     client.taskStartCalls.size shouldBe 14
@@ -265,7 +271,7 @@ class TestXmlParserTest {
     val notifier = BspClientTestNotifier(client)
 
     // when
-    TestXmlParser(notifier).parseAndReport(TaskGroupId.EMPTY.task(""), writeTempFile(tempDir, samplePassingContents))
+    TestXmlParser(notifier).parseAndReport(TaskGroupId.EMPTY.task(""), writeTempFile(tempDir, samplePassingContents), javaTargetKind)
 
     // then
     client.taskStartCalls.size shouldBe 17 // one of the test suites in the XML is empty, so we hide it
@@ -372,10 +378,29 @@ class TestXmlParserTest {
 
     // when
     val taskId = TaskGroupId.EMPTY.task("")
-    TestXmlParser(notifier).parseAndReport(taskId, writeTempFile(tempDir, samplePassingContents))
+    TestXmlParser(notifier).parseAndReport(taskId, writeTempFile(tempDir, samplePassingContents), javaTargetKind)
 
     // then
+    val expectedTestHints = listOf(
+      "java:suite://com.example.optimization.TestSuite1",
+      "java:test://com.example.optimization.TestSuite1/test1",
+      "java:test://com.example.optimization.TestSuite1/sampleFailedTest",
+      "java:test://com.example.optimization.TestSuite1/test3",
+      "java:test://com.example.optimization.TestSuite1/test4",
+      "java:test://com.example.optimization.TestSuite1/sampleSkippedTest",
+      "java:suite://com.example.optimization.TestSuite2",
+      "java:test://com.example.optimization.TestSuite2/test1",
+      "java:test://com.example.optimization.TestSuite2/test2",
+      "java:test://com.example.optimization.TestSuite2/test3",
+      "java:test://com.example.optimization.TestSuite2/test4",
+      "java:test://com.example.optimization.TestSuite2/test5",
+      "java:suite://com.example.optimization.TestSuite3",
+      "java:test://com.example.optimization.TestSuite3/test1",
+      "java:suite://com.example.optimization.TestSuite4",
+      "java:test://com.example.optimization.TestSuite4/test1",
+    )
     client.taskStartCalls.size shouldBe 16 // one of the test suites in the XML is empty, so we hide it
+    client.taskStartCalls.map { (it.data as TestStart).locationHint } shouldBe expectedTestHints
 
     val expectedNames =
       listOf(
@@ -490,7 +515,7 @@ class TestXmlParserTest {
     val notifier = BspClientTestNotifier(client)
 
     // when
-    TestXmlParser(notifier).parseAndReport(TaskGroupId.EMPTY.task(""), writeTempFile(tempDir, sampleContents))
+    TestXmlParser(notifier).parseAndReport(TaskGroupId.EMPTY.task(""), writeTempFile(tempDir, sampleContents), javaTargetKind)
 
     // then
     client.taskStartCalls.size shouldBe 5
@@ -593,7 +618,7 @@ class TestXmlParserTest {
     val notifier = BspClientTestNotifier(client)
 
     // when
-    TestXmlParser(notifier).parseAndReport(TaskGroupId.EMPTY.task(""), writeTempFile(tempDir, sampleContents))
+    TestXmlParser(notifier).parseAndReport(TaskGroupId.EMPTY.task(""), writeTempFile(tempDir, sampleContents), javaTargetKind)
 
     // then
     client.taskStartCalls.size shouldBe 5
@@ -695,7 +720,7 @@ class TestXmlParserTest {
     val notifier = BspClientTestNotifier(client)
 
     // when
-    TestXmlParser(notifier).parseAndReport(TaskGroupId.EMPTY.task(""), writeTempFile(tempDir, sampleContents))
+    TestXmlParser(notifier).parseAndReport(TaskGroupId.EMPTY.task(""), writeTempFile(tempDir, sampleContents), javaTargetKind)
 
     // then
     client.taskStartCalls.size shouldBe 3 // two malformed rows should simply be ignored
@@ -774,7 +799,7 @@ class TestXmlParserTest {
     val notifier = BspClientTestNotifier(client)
 
     // when
-    TestXmlParser(notifier).parseAndReport(TaskGroupId.EMPTY.task(""), writeTempFile(tempDir, sampleContents))
+    TestXmlParser(notifier).parseAndReport(TaskGroupId.EMPTY.task(""), writeTempFile(tempDir, sampleContents), javaTargetKind)
 
     // then
     client.taskStartCalls.size shouldBe 3
@@ -817,7 +842,7 @@ class TestXmlParserTest {
     val notifier = BspClientTestNotifier(client)
 
     // when
-    TestXmlParser(notifier).parseAndReport(TaskGroupId.EMPTY.task(""), writeTempFile(tempDir, sampleContents))
+    TestXmlParser(notifier).parseAndReport(TaskGroupId.EMPTY.task(""), writeTempFile(tempDir, sampleContents), javaTargetKind)
 
     // then
     val lastFinish = client.taskFinishCalls.first().data as? TestFinish
@@ -915,7 +940,7 @@ WARNING: Delegated to the 'execute' command.
     val notifier = BspClientTestNotifier(client)
 
     // when
-    TestXmlParser(notifier).parseAndReport(TaskGroupId.EMPTY.task(""), writeTempFile(tempDir, sampleContents))
+    TestXmlParser(notifier).parseAndReport(TaskGroupId.EMPTY.task(""), writeTempFile(tempDir, sampleContents), javaTargetKind)
 
     // then
     val expectedNames =
@@ -984,7 +1009,7 @@ WARNING: Delegated to the 'execute' command.
     val notifier = BspClientTestNotifier(client)
 
     // when
-    TestXmlParser(notifier).parseAndReport(TaskGroupId.EMPTY.task(""), writeTempFile(tempDir, sampleContents))
+    TestXmlParser(notifier).parseAndReport(TaskGroupId.EMPTY.task(""), writeTempFile(tempDir, sampleContents), javaTargetKind)
 
     // then
     client.taskStartCalls.size shouldBe 4
@@ -1040,7 +1065,8 @@ WARNING: Delegated to the 'execute' command.
     val client = MockBuildTaskEventsHandler()
     val notifier = BspClientTestNotifier(client)
 
-    val reported = TestXmlParser(notifier).parseAndReport(TaskGroupId.EMPTY.task(""), writeTempFile(tempDir, sampleContents))
+    val reported =
+      TestXmlParser(notifier).parseAndReport(TaskGroupId.EMPTY.task(""), writeTempFile(tempDir, sampleContents), javaTargetKind)
 
     reported shouldBe 0
     client.taskStartCalls.size shouldBe 0
@@ -1067,7 +1093,7 @@ WARNING: Delegated to the 'execute' command.
     val client = MockBuildTaskEventsHandler()
     val notifier = BspClientTestNotifier(client)
 
-    val reported = TestXmlParser(notifier).parseAndReport(TaskGroupId.EMPTY.task(""), writeTempFile(tempDir, sampleContents))
+    val reported = TestXmlParser(notifier).parseAndReport(TaskGroupId.EMPTY.task(""), writeTempFile(tempDir, sampleContents), null)
 
     reported shouldBe 0
     client.taskStartCalls.size shouldBe 0
@@ -1090,7 +1116,8 @@ WARNING: Delegated to the 'execute' command.
     val client = MockBuildTaskEventsHandler()
     val notifier = BspClientTestNotifier(client)
 
-    val reported = TestXmlParser(notifier).parseAndReport(TaskGroupId.EMPTY.task(""), writeTempFile(tempDir, sampleContents))
+    val reported =
+      TestXmlParser(notifier).parseAndReport(TaskGroupId.EMPTY.task(""), writeTempFile(tempDir, sampleContents), pythonTargetKind)
 
     reported shouldBe 1
     val expectedNames = listOf("//src/go/passing:passing_test", "TestSomething")
@@ -1118,7 +1145,7 @@ WARNING: Delegated to the 'execute' command.
     val client = MockBuildTaskEventsHandler()
     val notifier = BspClientTestNotifier(client)
 
-    val reported = TestXmlParser(notifier).parseAndReport(TaskGroupId.EMPTY.task(""), writeTempFile(tempDir, sampleContents))
+    val reported = TestXmlParser(notifier).parseAndReport(TaskGroupId.EMPTY.task(""), writeTempFile(tempDir, sampleContents), null)
 
     reported shouldBe 1
     client.taskStartCalls.size shouldBe 2

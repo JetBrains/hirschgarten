@@ -7,7 +7,9 @@ import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlRootElement
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlText
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
+import com.intellij.openapi.extensions.ExtensionPointName
 import org.jetbrains.annotations.ApiStatus
+import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.testing.BazelTestDetails
 import org.jetbrains.bazel.util.BspClientTestNotifier
 import org.jetbrains.bsp.protocol.JUnitStyleTestCaseData
@@ -109,15 +111,15 @@ class TestXmlParser(private var bspClientTestNotifier: BspClientTestNotifier) {
    * event). Zero means nothing was reported — e.g. an empty `<testsuites>`, every suite skipped, or
    * the file could not be read/parsed — so the caller may report a target-level result instead.
    */
-  fun parseAndReport(parentId: TaskId, testXml: Path): Int {
+  fun parseAndReport(parentId: TaskId, testXml: Path, targetKind: TargetKind?): Int {
     val testSuites = parseTestXml(testXml, TestSuites::class.java)
     if (testSuites != null) {
-      return testSuites.testsuite.sumOf { processSuite(parentId, it) }
+      return testSuites.testsuite.sumOf { processSuite(parentId, it, targetKind) }
     }
     val fallbackTestSuites =
       parseTestXml(testXml, FallbackTestXmlParser.IncompleteTestSuites::class.java)
     val fallbackSuites = fallbackTestSuites?.testsuite ?: return 0
-    fallbackSuites.forEach { fallbackTestXmlParser.processIncompleteInfoSuite(parentId, it) }
+    fallbackSuites.forEach { fallbackTestXmlParser.processIncompleteInfoSuite(parentId, it, targetKind) }
     return fallbackSuites.size
   }
 
@@ -152,7 +154,7 @@ class TestXmlParser(private var bspClientTestNotifier: BspClientTestNotifier) {
    * @return 1 if the suite was reported, 0 if it was skipped (the caller may then report a
    * target-level result instead).
    */
-  private fun processSuite(parentId: TaskId, suite: TestSuite): Int {
+  private fun processSuite(parentId: TaskId, suite: TestSuite, targetKind: TargetKind?): Int {
     val suiteStatus =
       when {
         suite.tests > 0 && suite.testcase.isEmpty() -> return 0
@@ -165,9 +167,9 @@ class TestXmlParser(private var bspClientTestNotifier: BspClientTestNotifier) {
     val suiteData = JUnitStyleTestSuiteData(suite.time, null, suite.systemErr?.toString())
 
     val testDetails = BazelTestDetails.testSuite(suite.name).build()
-    bspClientTestNotifier.startTest(testDetails, suiteTaskId)
+    bspClientTestNotifier.startTest(testDetails, suiteTaskId, targetKind)
     suite.testcase.forEach { case ->
-      processTestCase(suiteTaskId, suite.name, case)
+      processTestCase(suiteTaskId, suite.name, case, targetKind)
     }
     bspClientTestNotifier.finishTest(
       suite.name,
@@ -189,6 +191,7 @@ class TestXmlParser(private var bspClientTestNotifier: BspClientTestNotifier) {
     parentId: TaskId,
     parentSuiteName: String,
     testCase: TestCase,
+    targetKind: TargetKind?,
   ) {
     val testCaseTaskId = parentId.subTask(UUID.randomUUID().toString())
 
@@ -247,6 +250,7 @@ class TestXmlParser(private var bspClientTestNotifier: BspClientTestNotifier) {
       testCaseTaskId,
       testStatusOutcome,
       "",
+      targetKind,
       testCaseData,
     )
   }
@@ -292,18 +296,17 @@ private class FallbackTestXmlParser(private var bspClientTestNotifier: BspClient
     val systemOut: String? = null,
   )
 
-  fun processIncompleteInfoSuite(parentId: TaskId, suite: IncompleteTestSuite) {
-    val containsJunit5 = suite.systemOut?.let(Junit5TestVisualOutputParser::textContainsJunit5VisualOutput)
-    if (containsJunit5 == true) {
-      val parser = Junit5TestVisualOutputParser(bspClientTestNotifier)
-      parser.processTestOutput(parentId, suite.systemOut)
-    } else {
-      defaultIncompleteInfoSuiteProcessing(parentId, suite)
+  fun processIncompleteInfoSuite(parentId: TaskId, suite: IncompleteTestSuite, targetKind: TargetKind?) {
+    if (suite.systemOut != null) {
+      for (parser in IncompleteTestSuiteParser.ep.extensionList) {
+        if (parser.processTestOutput(bspClientTestNotifier, parentId, suite.systemOut)) return
+      }
     }
+    defaultIncompleteInfoSuiteProcessing(parentId, suite, targetKind)
   }
 
   // A Bazel target is represented by a test suite containing one test case
-  private fun defaultIncompleteInfoSuiteProcessing(parentId: TaskId, suite: IncompleteTestSuite) {
+  private fun defaultIncompleteInfoSuiteProcessing(parentId: TaskId, suite: IncompleteTestSuite, targetKind: TargetKind?) {
     val suiteTaskId = parentId.subTask(suite.name)
     val suiteStatus =
       when {
@@ -314,10 +317,10 @@ private class FallbackTestXmlParser(private var bspClientTestNotifier: BspClient
     val testSuiteData = JUnitStyleTestSuiteData(null, suite.systemOut, null)
 
     val testDetails = BazelTestDetails.testSuite(suite.name).build()
-    bspClientTestNotifier.startTest(testDetails, suiteTaskId)
+    bspClientTestNotifier.startTest(testDetails, suiteTaskId, targetKind)
     val fallbackMessage = suite.systemOut.takeIf { suite.testcase.size == 1 }
     suite.testcase.forEach { testCase ->
-      processIncompleteInfoCase(testCase, suiteTaskId, suite.name, testCase.systemOut ?: fallbackMessage)
+      processIncompleteInfoCase(testCase, suiteTaskId, suite.name, testCase.systemOut ?: fallbackMessage, targetKind)
     }
     bspClientTestNotifier.finishTest(
       suite.name,
@@ -336,6 +339,7 @@ private class FallbackTestXmlParser(private var bspClientTestNotifier: BspClient
     parentId: TaskId,
     parentSuiteName: String,
     systemOut: String?,
+    targetKind: TargetKind?,
   ) {
     val testCaseTaskId = parentId.subTask(UUID.randomUUID().toString())
 
@@ -381,7 +385,17 @@ private class FallbackTestXmlParser(private var bspClientTestNotifier: BspClient
       testCaseTaskId,
       testStatus,
       message,
+      targetKind,
       testCaseData,
     )
+  }
+}
+
+@ApiStatus.Internal
+interface IncompleteTestSuiteParser {
+  fun processTestOutput(bspClientTestNotifier: BspClientTestNotifier, parentId: TaskId, systemOut: String): Boolean
+
+  companion object {
+    val ep: ExtensionPointName<IncompleteTestSuiteParser> = ExtensionPointName.create("org.jetbrains.bazel.incompleteTestSuiteParser")
   }
 }

@@ -66,9 +66,6 @@
 
     <javaSourceRootPrefixContributor
       implementation="org.jetbrains.bazel.sync.workspace.languages.java.sourceRoot.prefix.JavaProjectViewSourceRootPatternContributor"/>
-
-    <targetKindProvider implementation="org.jetbrains.bazel.sync.workspace.languages.java.JavaBazelRules"/>
-
     <languagePlugin id="JavaLanguagePlugin"
                     implementation="org.jetbrains.bazel.sync.workspace.languages.java.JavaLanguagePlugin"/>
     <languagePlugin id="KotlinLanguagePlugin"

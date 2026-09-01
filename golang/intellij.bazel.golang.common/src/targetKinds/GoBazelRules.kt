@@ -1,6 +1,5 @@
 package org.jetbrains.bazel.golang.targetKinds
 
-import org.jetbrains.bazel.commons.LanguageClass
 import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.golang.GoLanguageClass
@@ -26,7 +25,13 @@ internal enum class GoRuleTypes(
 
 internal class GoBazelRules : TargetKindProvider {
   override val targetKinds: Set<TargetKind>
-    get() = GoRuleTypes.entries.map { TargetKind(kind = it.kindString, ruleType = it.ruleType) }.toSet()
+    get() = GoRuleTypes.entries.map {
+      TargetKind(
+        kind = it.kindString,
+        languageClasses = setOf(GoLanguageClass.GO),
+        ruleType = it.ruleType,
+      )
+    }.toSet()
 }
 
 internal fun TargetKind.includesGo(): Boolean = languageClasses.contains(GoLanguageClass.GO)

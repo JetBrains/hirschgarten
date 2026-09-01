@@ -1,4 +1,4 @@
-package org.jetbrains.bazel.golang.ui.gutters
+package org.jetbrains.bazel.golang.run
 
 import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Test

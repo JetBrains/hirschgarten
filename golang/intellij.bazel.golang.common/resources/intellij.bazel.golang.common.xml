@@ -40,7 +40,7 @@
 
   <extensions defaultExtensionNs="com.intellij">
     <programRunner implementation="org.jetbrains.bazel.golang.debug.BazelGoDebugRunner" />
-    <runConfigurationProducer implementation="org.jetbrains.bazel.golang.ui.gutters.BazelGoRunConfigurationProducer"/>
+    <runConfigurationProducer implementation="org.jetbrains.bazel.golang.run.BazelGoRunConfigurationProducer"/>
     <stepsBeforeRunProvider implementation="org.jetbrains.bazel.golang.debug.ScriptPathDebugBeforeRunTaskProvider" />
     <documentationProvider implementation="org.jetbrains.bazel.golang.resolve.GoPackageDocumentationProvider" />
     <additionalLibraryRootsProvider implementation="org.jetbrains.bazel.golang.sync.GoAdditionalLibraryRootsProvider" />
@@ -70,7 +70,8 @@
     <bazelRuleSetProvider implementation="org.jetbrains.bazel.golang.sync.GoRuleSetPlugin"/>
     <workspaceTypeContributor implementation="org.jetbrains.bazel.golang.sync.GoWorkspaceTypeContributor"/>
     <targetsToBuildProvider implementation="org.jetbrains.bazel.golang.workspace.GoTargetsToBuildProvider"/>
-
+    <testLocationHintProvider implementation="org.jetbrains.bazel.golang.run.BazelGoTestLocationHintProvider"/>
+    <testLocatorProvider implementation="org.jetbrains.bazel.golang.run.BazelGoTestLocatorProvider"/>
   </extensions>
   <extensions defaultExtensionNs="com.goide">
     <dlv.positionConverterFactory

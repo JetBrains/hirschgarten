@@ -16,6 +16,7 @@ import kotlinx.coroutines.withTimeoutOrNull
 import org.jetbrains.bazel.run.BazelProcessHandler
 import org.jetbrains.bazel.server.bep.TestXmlParser
 import org.jetbrains.bazel.sync.environment.projectCtx
+import org.jetbrains.bazel.sync.workspace.languages.jvm.JAVA_TEST_KIND
 import org.jetbrains.bazel.taskEvents.BazelTaskEventsService
 import org.jetbrains.bazel.util.BspClientTestNotifier
 import org.jetbrains.bsp.protocol.TaskId
@@ -119,7 +120,11 @@ private fun findXmlOutputAndReport(taskId: TaskId, scriptPath: Path, project: Pr
   val taskHandler = BazelTaskEventsService.getInstance(project)
   val testNotifier = BspClientTestNotifier(taskHandler)
 
-  TestXmlParser(testNotifier).parseAndReport(taskId /* ??? */, absoluteXmlPath)
+  TestXmlParser(testNotifier).parseAndReport(
+    taskId, /* ??? */
+    absoluteXmlPath,
+    JAVA_TEST_KIND,
+  )
 }
 
 private val TEST_XML_OUTPUT_FILE_REGEX = Regex("XML_OUTPUT_FILE=(?<path>\\S+)")

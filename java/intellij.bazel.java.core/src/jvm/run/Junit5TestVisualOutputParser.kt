@@ -1,6 +1,8 @@
-package org.jetbrains.bazel.server.bep
+package org.jetbrains.bazel.jvm.run
 
 import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.server.bep.IncompleteTestSuiteParser
+import org.jetbrains.bazel.sync.workspace.languages.jvm.JAVA_TEST_KIND
 import org.jetbrains.bazel.testing.BazelTestDetails
 import org.jetbrains.bazel.util.BspClientTestNotifier
 import org.jetbrains.bsp.protocol.JUnitStyleTestCaseData
@@ -12,10 +14,12 @@ import java.util.regex.Pattern
 /**
  * Parses the nice-looking test execution tree Junit5 produces
  */
-internal class Junit5TestVisualOutputParser(private val bspClientTestNotifier: BspClientTestNotifier) {
-  fun processTestOutput(parentId: TaskId, output: String) {
-    val tree = generateTestResultTree(output, parentId)
-    notifyClient(tree)
+internal class Junit5TestVisualOutputParser : IncompleteTestSuiteParser {
+  override fun processTestOutput(bspClientTestNotifier: BspClientTestNotifier, parentId: TaskId, systemOut: String): Boolean {
+    if (!textContainsJunit5VisualOutput(systemOut)) return false
+    val tree = generateTestResultTree(systemOut, parentId)
+    notifyClient(bspClientTestNotifier, tree)
+    return true
   }
 
   /**
@@ -95,7 +99,7 @@ internal class Junit5TestVisualOutputParser(private val bspClientTestNotifier: B
     return testResultTrees
   }
 
-  private fun notifyClient(trees: List<TestResultTreeNode>) {
+  private fun notifyClient(bspClientTestNotifier: BspClientTestNotifier, trees: List<TestResultTreeNode>) {
     for (tree in trees) {
       tree.notifyClient(bspClientTestNotifier)
     }
@@ -220,7 +224,7 @@ private class TestResultTreeNode(
       val fullMessage = generateMessage()
 
       val testDetails = BazelTestDetails.testCase(name).withParentSuites(parentSuiteNames).build()
-      bspClientTestNotifier.startTest(testDetails, taskId)
+      bspClientTestNotifier.startTest(testDetails, taskId, JAVA_TEST_KIND)
 
       if (status == TestStatus.FAILED && parent?.isRootNode() == true && children.isEmpty()) {
         // BAZEL-2080: if an exception happens at the start of a test suit, there will be no test case run
@@ -237,6 +241,7 @@ private class TestResultTreeNode(
             TestStatus.FAILED,
           message = displayName,
           data = createTestCaseData(displayName, time),
+          targetKind = JAVA_TEST_KIND,
         )
       }
       bspClientTestNotifier.finishTest(
@@ -251,7 +256,7 @@ private class TestResultTreeNode(
       )
     } else {
       val testDetails = BazelTestDetails.testSuite(name).withParentSuites(parentSuiteNames).build()
-      bspClientTestNotifier.startTest(testDetails, taskId)
+      bspClientTestNotifier.startTest(testDetails, taskId, JAVA_TEST_KIND)
       children.forEach { it.value.notifyClient(bspClientTestNotifier) }
       bspClientTestNotifier.finishTest(
         displayName = name,

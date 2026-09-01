@@ -1,4 +1,4 @@
-package org.jetbrains.bazel.golang.ui.gutters
+package org.jetbrains.bazel.golang.run
 
 import com.goide.GoConstants
 import com.goide.execution.GoRunConfigurationProducerBase

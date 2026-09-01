@@ -12,5 +12,6 @@
     <orderEntry type="module" module-name="intellij.bazel.commons" />
     <orderEntry type="module" module-name="intellij.platform.core" />
     <orderEntry type="module" module-name="intellij.libraries.jetbrains.annotations" />
+    <orderEntry type="module" module-name="intellij.bazel.backend" />
   </component>
 </module>
