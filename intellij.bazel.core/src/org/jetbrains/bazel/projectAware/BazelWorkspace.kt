@@ -131,8 +131,7 @@ class BazelWorkspace(val project: Project) :
     @JvmStatic
     fun notify(project: Project) {
       val projectTracker = ExternalSystemProjectTracker.getInstance(project)
-      projectTracker.markDirty(getBazelProjectId(project.rootDir))
-      projectTracker.scheduleChangeProcessing()
+      projectTracker.markDirtyInternal(getBazelProjectId(project.rootDir))
     }
   }
 }
