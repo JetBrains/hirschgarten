@@ -58,6 +58,15 @@ internal object SdkUtils {
     if (javaSdkInstance.isValidSdkHome(javaHome.normalize().toString())) {
       return javaHome
     }
+    // Resolve symlinks — e.g. /nix/var/nix/profiles/default -> /nix/store/...-openjdk-21
+    try {
+      val realPath = javaHome.toRealPath()
+      if (realPath != javaHome && javaSdkInstance.isValidSdkHome(realPath.toString())) {
+        return realPath
+      }
+    } catch (_: Exception) {
+      // toRealPath() can throw if path doesn't exist
+    }
     logger.info("javaHome is not a valid JDK, attempting to resolve: $javaHome")
     val execRoot = findExecRoot(javaHome)
 

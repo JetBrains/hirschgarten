@@ -34,6 +34,7 @@ import org.jetbrains.bazel.scala.sdk.ScalaSdk
 import org.jetbrains.bazel.scala.sdk.scalaSdkExtension
 import org.jetbrains.bazel.scala.sdk.scalaSdkExtensionExists
 import org.jetbrains.bazel.sync.scope.FullProjectSync
+import org.jetbrains.bazel.sync.scope.PartialProjectSync
 import org.jetbrains.bazel.sync.scope.ProjectSyncScope
 import org.jetbrains.bazel.sync.workspace.BazelResolvedWorkspace
 import org.jetbrains.bazel.sync.workspace.BazelWorkspaceResolveService
@@ -85,9 +86,15 @@ internal class CollectProjectDetailsTask(
           projectDetails.defaultJdkName = SdkUtils.getProjectJdkOrMostRecentJdk(project)?.name
         }
       }
-      project.defaultJdkName = projectDetails.defaultJdkName
-      // Set the project SDK in IntelliJ's Project Structure to match the default JDK
-      SdkUtils.setProjectSdk(project, projectDetails.defaultJdkName)
+      // Only overwrite the project-level default JDK name during full sync. Partial sync should
+      // register its targets' SDKs (via addBspFetchedJdks) but not change the project default,
+      // since it only sees a subset of targets and could pick the wrong JDK.
+      // Note: setProjectSdk() is called later in postprocessingSubtask(), AFTER addBspFetchedJdks()
+      // registers the SDK in the JDK table. Calling it here would fail because the SDK doesn't
+      // exist in the table yet.
+      if (syncScope !is PartialProjectSync) {
+        project.defaultJdkName = projectDetails.defaultJdkName
+      }
     }
 
     if (scalaSdkExtensionExists()) {
@@ -284,6 +291,10 @@ internal class CollectProjectDetailsTask(
     // https://youtrack.jetbrains.com/issue/BAZEL-426/Configure-JDK-using-workspace-model-API-instead-of-ProjectJdkTable
     SdkUtils.cleanUpInvalidJdks(project)
     addBspFetchedJdks()
+    // Set project SDK AFTER addBspFetchedJdks() registers it in the JDK table.
+    // Previously this was called in execute() before the SDK existed in the table,
+    // so findJdk() returned null and the project SDK was never set.
+    SdkUtils.setProjectSdk(project, project.defaultJdkName)
     JavacConfiguration.getOptions(project, JavacConfiguration::class.java).ADDITIONAL_OPTIONS_OVERRIDE =
       requireNotNull(this.javacOptions) {
         "javacOptions is null but expected to be computed"
