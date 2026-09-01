@@ -35,7 +35,7 @@ class PyCharmCombinedTest : IdeStarterCombinedBaseTest() {
     createContext("pyCharmCombined", PyCharmBazelCases.withProject(PYCHARM_COMBINED_PROJECT))
 
   override fun Driver.syncBazelProject() {
-    syncBazelProjectCloseDialog()
+    syncBazelProjectCloseDialog(buildAndSync = true)
   }
 
   @Test @Order(1)
