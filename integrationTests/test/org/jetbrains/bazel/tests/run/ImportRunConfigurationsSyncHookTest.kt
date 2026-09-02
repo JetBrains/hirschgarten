@@ -6,7 +6,6 @@ import com.intellij.driver.sdk.singleProject
 import com.intellij.driver.sdk.step
 import com.intellij.driver.sdk.ui.UiText.Companion.asString
 import com.intellij.driver.sdk.ui.components.UiComponent.Companion.waitFound
-import com.intellij.driver.sdk.ui.components.common.GutterUiComponent
 import com.intellij.driver.sdk.ui.components.common.IdeaFrameUI
 import com.intellij.driver.sdk.ui.components.common.codeEditor
 import com.intellij.driver.sdk.ui.components.common.dialogs.editRunConfigurationsDialog
@@ -22,10 +21,7 @@ import com.intellij.driver.sdk.ui.pasteText
 import com.intellij.driver.sdk.ui.shouldBe
 import com.intellij.driver.sdk.waitFor
 import com.intellij.ide.starter.ide.IDETestContext
-import com.intellij.tools.ide.performanceTesting.commands.assertCurrentFile
-import com.intellij.tools.ide.performanceTesting.commands.delay
 import io.kotest.matchers.shouldBe
-import org.jetbrains.bazel.base.execute
 import org.jetbrains.bazel.base.openFile
 import org.jetbrains.bazel.data.BazelProjectConfigurer
 import org.jetbrains.bazel.data.IdeaBazelCases
@@ -35,9 +31,9 @@ import org.jetbrains.bazel.tests.ui.clickRunGutterOnLine
 import org.jetbrains.bazel.tests.ui.clickTestGutterOnLine
 import org.jetbrains.bazel.tests.ui.verifyAvailableRunGutterActions
 import org.jetbrains.bazel.tests.ui.verifyTestStatus
+import org.jetbrains.bazel.tests.ui.waitForGutterIcons
 import org.junit.jupiter.api.Order
 import org.junit.jupiter.api.Test
-import java.awt.Point
 import java.awt.event.KeyEvent
 import java.io.File
 import kotlin.time.Duration.Companion.minutes
@@ -52,6 +48,9 @@ private val IMPORT_RUN_CONFIGURATIONS_PROJECT = simpleBazelProject(
     )
   },
 )
+
+/** The line profiler renderer has no accessible name of its own, so the gutter reports the platform default. */
+private const val PROFILER_HINT_ACCESSIBLE_NAME = "marker: unknown"
 
 class ImportRunConfigurationsSyncHookTest : IdeStarterCombinedBaseTest() {
   override fun createContext(): IDETestContext =
@@ -193,11 +192,7 @@ class ImportRunConfigurationsSyncHookTest : IdeStarterCombinedBaseTest() {
     withDriver(bgRun) {
       ideFrame {
         openFile("src/com/example/KotlinTest.kt")
-        val runGutterLines = editorTabs()
-          .gutter()
-          .getGutterIcons()
-          .map { it.line }
-          .toSet()
+        val runGutterLines = waitForGutterIcons().map { it.line }.toSet()
         runGutterLines shouldBe setOf(4, 6)
       }
     }
@@ -288,11 +283,8 @@ class ImportRunConfigurationsSyncHookTest : IdeStarterCombinedBaseTest() {
           waitForProfilerDataReadyBubbleAppearAndClose()
 
           takeScreenshot("beforeClickingOnGutter")
-          editorTabs().gutter().clickLine(18)  // result += random.nextDouble();
-          execute {
-            delay(500)
-            assertCurrentFile("Random.java")  // Clicking on the line tooltip will navigate to the profiler hot path
-          }
+          clickProfilerHintOnLine(18)  // result += random.nextDouble();
+          waitForSelectedEditorTab("Random.java")  // Clicking on the profiler hint navigates to the hot path
 
           step("Check that run gutters exist") {
             openFile("src/com/example/Main.java")
@@ -324,22 +316,28 @@ class ImportRunConfigurationsSyncHookTest : IdeStarterCombinedBaseTest() {
           popup().waitOneText("Profile '//:calculator_test (testAdd)' with 'IntelliJ Profiler'").click()
           waitForProfilerDataReadyBubbleAppearAndClose()
           takeScreenshot("beforeClickingOnGutter")
-          editorTabs().gutter().clickLine(15)  // result += random.nextDouble();
-          execute {
-            delay(500)
-            assertCurrentFile("Random.java")  // Clicking on the line tooltip will navigate to the profiler hot path
-          }
+          clickProfilerHintOnLine(15)  // result += random.nextDouble();
+          waitForSelectedEditorTab("Random.java")  // Clicking on the profiler hint navigates to the hot path
         }
       }
     }
   }
 
-  private fun GutterUiComponent.clickLine(line: Int) {
-    click(pointAtLine(line))
+  /** Waits for the line profiler hint on [line] and clicks it. With one sampled callee, the click navigates to that callee. */
+  private fun IdeaFrameUI.clickProfilerHintOnLine(line: Int) {
+    editorTabs().gutter().clickLineMarkerAtLine(line, PROFILER_HINT_ACCESSIBLE_NAME)
   }
 
-  private fun GutterUiComponent.pointAtLine(line: Int): Point =
-    Point(iconAreaOffset - 20, waitOneText(line.toString()).point.y)
+  private fun IdeaFrameUI.waitForSelectedEditorTab(fileName: String) {
+    val editorTabs = editorTabs()
+    waitFor(
+      message = "$fileName is the selected editor tab",
+      timeout = 15.seconds,
+      errorMessage = { "The selected editor tab is $it, expected $fileName" },
+      getter = { editorTabs.selectedTabInfo?.text },
+      checker = { it == fileName },
+    )
+  }
 
   private fun IdeaFrameUI.waitForBazelBuildBeforeProfilerUi(target: String) =
     step("Wait for Bazel build $target before checking profiler UI") {

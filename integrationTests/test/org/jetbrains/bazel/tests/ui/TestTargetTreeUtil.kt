@@ -98,17 +98,30 @@ fun IdeaFrameUI.clickRunGutterOnLine(line: Int) {
   runGutter.click()
 }
 
+private val GUTTER_ICONS_TIMEOUT = 30.seconds
+
+/** Returns the gutter icons of the selected editor after at least one icon appears. */
+fun IdeaFrameUI.waitForGutterIcons(): List<GutterUiComponent.GutterIcon> {
+  val gutter = editorTabs().gutter()
+  return waitFor(
+    message = "Gutter icons in the selected editor",
+    timeout = GUTTER_ICONS_TIMEOUT,
+    getter = { gutter.icons },
+    checker = { it.isNotEmpty() },
+  )
+}
+
 fun IdeaFrameUI.getRunGutterOnLine(line: Int): GutterUiComponent.GutterIcon {
-  val runGutter = editorTabs()
-    .gutter()
-    .getGutterIcons()
-    .filter { it.line == line }
-    // Run gutter icons can interfere with annotations, but they are displayed first
-    .minByOrNull { it.location.x }
-  if (runGutter == null) {
-    error("Couldn't find a run gutter on line $line")
-  }
-  return runGutter
+  val gutter = editorTabs().gutter()
+  val icons = waitFor(
+    message = "Run gutter on line $line",
+    timeout = GUTTER_ICONS_TIMEOUT,
+    errorMessage = { icons -> "No run gutter on line $line, gutter icons are on lines ${icons.map { it.line }.sorted()}" },
+    getter = { gutter.icons },
+    checker = { icons -> icons.any { it.line == line } },
+  )
+  // Run gutter icons can interfere with annotations, but they are displayed first
+  return icons.filter { it.line == line }.minBy { it.location.x }
 }
 
 fun IdeaFrameUI.verifyAvailableRunGutterActions(texts: List<String>) {
