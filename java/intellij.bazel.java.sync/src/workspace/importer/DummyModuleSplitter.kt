@@ -1,6 +1,5 @@
 package org.jetbrains.bazel.workspace.importer
 
-import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.vfs.VFileProperty
 import com.intellij.openapi.vfs.VfsUtilCore
 import com.intellij.openapi.vfs.VirtualFile
@@ -15,13 +14,12 @@ import org.jetbrains.bazel.sync.workspace.snapshot.get
 import org.jetbrains.bazel.utils.findVirtualFile
 import java.io.File
 import java.nio.file.Path
+import java.util.concurrent.ConcurrentHashMap
 import kotlin.io.path.Path
 import kotlin.io.path.extension
 import kotlin.io.path.isDirectory
 import kotlin.io.path.name
 import kotlin.io.path.pathString
-
-private val log = logger<DummyModuleSplitter>()
 
 /**
  * This is a HACK for letting single source Java files to be resolved normally.
@@ -55,6 +53,8 @@ class DummyModuleSplitter(
     val sourceRoot: SourceRootBuilder.ResolvedSourceRoot,
     val baseDir: Path,
   )
+
+  private val virtualFileCache = ConcurrentHashMap<Path, VirtualFile>()
 
   fun split(
     baseDirectory: Path?,
@@ -194,49 +194,53 @@ class DummyModuleSplitter(
       .mapNotNull { sourceRootForParentDir(it, generated) }
       .groupingBy { it }
       .eachCount()
-}
 
-private fun sourceRootForParentDir(
-  sourceRoot: SourceRootBuilder.ResolvedSourceRoot,
-  generated: Boolean,
-): SourceRootBuilder.ResolvedSourceRoot? {
-  if (sourceRoot.sourcePath.isDirectory()) return null
-  val sourceParent = sourceRoot.sourcePath.parent.pathString
-  val sourceRootPath = Path(sourceParent)
-  return SourceRootBuilder.ResolvedSourceRoot(
-    sourcePath = sourceRootPath,
-    generated = generated,
-    packagePrefix = sourceRoot.packagePrefix,
-    rootType = sourceRoot.rootType,
-  )
-}
-
-private fun Map<SourceRootBuilder.ResolvedSourceRoot, Int>.restoreSourceRootFromPackagePrefix(
-  finder: UnknownFileFinder,
-  limit: Path? = null,
-): Map<SourceRootBuilder.ResolvedSourceRoot, Int> = this
-  .map { (sourceRoot, votes) -> sourceRoot.restoreSourceRootFromPackagePrefix(finder, limit) to votes }
-  .sumUpVotes()
-
-private fun SourceRootBuilder.ResolvedSourceRoot.restoreSourceRootFromPackagePrefix(
-  finder: UnknownFileFinder,
-  limit: Path? = null,
-): SourceRootBuilder.ResolvedSourceRoot {
-  val segments = packagePrefix.split('.').toMutableList()
-  var sourcePath: Path = this.sourcePath
-  while (sourcePath != limit && segments.lastOrNull() == sourcePath.name) {
-    sourcePath.parent ?: break
-    if (sourcePath.siblingsContainUnknownRelevantFiles(finder)) break
-    sourcePath = sourcePath.parent
-    segments.removeLast()
+  private fun sourceRootForParentDir(
+    sourceRoot: SourceRootBuilder.ResolvedSourceRoot,
+    generated: Boolean,
+  ): SourceRootBuilder.ResolvedSourceRoot? {
+    if (sourceRoot.sourcePath.extension !in Constants.JVM_LANGUAGES_EXTENSIONS && sourceRoot.sourcePath.isDirectory()) return null
+    val sourceParent = sourceRoot.sourcePath.parent.pathString
+    val sourceRootPath = Path(sourceParent)
+    return SourceRootBuilder.ResolvedSourceRoot(
+      sourcePath = sourceRootPath,
+      generated = generated,
+      packagePrefix = sourceRoot.packagePrefix,
+      rootType = sourceRoot.rootType,
+    )
   }
-  return copy(sourcePath = sourcePath, packagePrefix = segments.joinToString("."))
-}
 
-private fun Path.siblingsContainUnknownRelevantFiles(finder: UnknownFileFinder): Boolean {
-  val dir = parent.findOrRefreshVirtualFile() ?: return false
-  val thisFile = this.findOrRefreshVirtualFile()
-  return dir.children.any { it != thisFile && finder.containsUnknownMemo(it) }
+  private fun Map<SourceRootBuilder.ResolvedSourceRoot, Int>.restoreSourceRootFromPackagePrefix(
+    finder: UnknownFileFinder,
+    limit: Path? = null,
+  ): Map<SourceRootBuilder.ResolvedSourceRoot, Int> = this
+    .map { (sourceRoot, votes) -> sourceRoot.restoreSourceRootFromPackagePrefix(finder, limit) to votes }
+    .sumUpVotes()
+
+  private fun SourceRootBuilder.ResolvedSourceRoot.restoreSourceRootFromPackagePrefix(
+    finder: UnknownFileFinder,
+    limit: Path? = null,
+  ): SourceRootBuilder.ResolvedSourceRoot {
+    val segments = packagePrefix.split('.').toMutableList()
+    var sourcePath: Path = this.sourcePath
+    while (sourcePath != limit && segments.lastOrNull() == sourcePath.name) {
+      sourcePath.parent ?: break
+      if (sourcePath.siblingsContainUnknownRelevantFiles(finder)) break
+      sourcePath = sourcePath.parent
+      segments.removeLast()
+    }
+    return copy(sourcePath = sourcePath, packagePrefix = segments.joinToString("."))
+  }
+
+  private fun Path.siblingsContainUnknownRelevantFiles(finder: UnknownFileFinder): Boolean {
+    val dir = parent.findOrRefreshVirtualFile() ?: return false
+    val thisFile = this.findOrRefreshVirtualFile()
+    return dir.children.any { it != thisFile && finder.containsUnknownMemo(it) }
+  }
+
+  private fun Path.findOrRefreshVirtualFile(): VirtualFile? = virtualFileCache.getOrPut(this) {
+    this.findVirtualFile() ?: this.refreshAndFindVirtualFileOrDirectory() ?: return null
+  }
 }
 
 /**
@@ -276,12 +280,6 @@ private class UnknownFileFinder(
     }
     false
   }
-}
-
-private fun Path.findOrRefreshVirtualFile(): VirtualFile? {
-  val file = this.findVirtualFile() ?: this.refreshAndFindVirtualFileOrDirectory()
-  if (file == null) log.warn("Failed to find or refresh virtual file for path: $this!")
-  return file
 }
 
 private fun VirtualFile.allAncestorsSequence(): Sequence<VirtualFile> = generateSequence(this) { it.parent }

@@ -180,7 +180,12 @@ class SnapshotKryoSerializationTest {
       ),
       targetGraph = graph,
       syncConfigs = listOf(
-        CommonWorkspaceSyncConfig(projectRootDir = Path.of("/workspace"), projectName = "test", importDepth = -1),
+        CommonWorkspaceSyncConfig(
+          projectRootDir = Path.of("/workspace"),
+          projectName = "test",
+          importDepth = -1,
+          dotIdeaPath = null
+        ),
         JavaWorkspaceSyncConfig(
           testSourcesPatterns = listOf("**/test/**"),
           importIjars = true,

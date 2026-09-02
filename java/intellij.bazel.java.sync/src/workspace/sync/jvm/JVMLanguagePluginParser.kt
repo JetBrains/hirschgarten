@@ -2,9 +2,9 @@ package org.jetbrains.bazel.sync.workspace.languages.jvm
 
 import org.jetbrains.annotations.ApiStatus
 import java.nio.charset.Charset
+import java.nio.file.NoSuchFileException
 import java.nio.file.Path
 import kotlin.io.path.bufferedReader
-import kotlin.io.path.notExists
 
 @ApiStatus.Internal
 object JVMLanguagePluginParser {
@@ -15,10 +15,14 @@ object JVMLanguagePluginParser {
   fun calculateJVMSourceRootAndAdditionalData(source: Path, multipleLines: Boolean = false): String? = findPackage(source, multipleLines)
 
   private fun findPackage(source: Path, multipleLines: Boolean): String? {
-    if (source.notExists()) {
+    // avoid extra stat per file by handling exception
+    val reader = try {
+      source.bufferedReader(charset = ONE_BYTE_CHARSET, bufferSize = BUFFER_SIZE)
+    }
+    catch (_: NoSuchFileException) {
       return null
     }
-    source.bufferedReader(charset = ONE_BYTE_CHARSET, bufferSize = BUFFER_SIZE).use { bufferedReader ->
+    reader.use { bufferedReader ->
       // Not using UTF-8 charset because it is slower to decode
       val packages =
         bufferedReader.lineSequence().mapNotNull { line ->

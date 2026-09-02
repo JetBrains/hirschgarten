@@ -101,7 +101,7 @@ class TargetStorageTest {
       targetGraph = graph,
       fileToTarget = File2TargetMapBuilder.build(targets = targets),
       executableTargets = ExecutableTargetsIndexBuilder.build(targetGraph = graph, importDepth = importDepth, targets = targets),
-      syncConfigs = listOf(CommonWorkspaceSyncConfig(Path.of(project.basePath!!), "test", importDepth)),
+      syncConfigs = listOf(CommonWorkspaceSyncConfig(Path.of(project.basePath!!), null, "test", importDepth)),
       repoMapping = RepoMappingDisabled,
       metadata = WorkspaceSnapshotMetadata(version = 1),
     )
@@ -268,7 +268,7 @@ class TargetStorageTest {
     val guessed = NonImportedBuildTarget(
       label = label,
       kind = TargetKind(kind = "java_binary", ruleType = RuleType.BINARY, languageClasses = setOf(JavaLanguageClass.JAVA)),
-      baseDirectory = Path("/tmp/workspace")
+      baseDirectory = Path("/tmp/workspace"),
     )
 
     guessed.id shouldBe label

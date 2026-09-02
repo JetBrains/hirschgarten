@@ -161,6 +161,7 @@ internal class JavaBazelWorkspaceImporter : BazelWorkspaceImporter, BazelWorkspa
       currentCompiledSourceExcludeEntity = context.currentSnapshot
         .entities<CompiledSourceCodeInsideJarExcludeEntity>()
         .firstOrNull(),
+      dotIdeaPath = commonSyncConfig.dotIdeaPath,
     )
 
     bspTracer.spanBuilder("load.modules.ms").use {

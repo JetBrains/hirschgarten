@@ -71,6 +71,7 @@ interface WorkspaceSyncConfig
 @ApiStatus.Internal
 data class CommonWorkspaceSyncConfig(
   val projectRootDir: Path,
+  val dotIdeaPath: Path?,
   val projectName: String,
   val importDepth: Int,
 ) : WorkspaceSyncConfig

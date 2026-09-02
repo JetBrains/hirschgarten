@@ -73,6 +73,7 @@ class ImportContext(
   val jvmResolved: Map<WorkspaceTargetKey, JvmResolvedTarget>,
   val projectName: String,
   val projectBasePath: Path,
+  val dotIdeaPath: Path?,
   val defaultJdkName: String?,
   val testSourcesGlob: ProjectViewGlobSet,
   val packagePrefixes: JvmPackagePrefixCalculator,
@@ -168,8 +169,9 @@ class JvmTargetEntitiesBuilder(private val ctx: ImportContext) {
     // don't re-walk them. matches PackageMarkerEntityUpdater's `alreadyVisitedDirectories` initialization.
     val coveredDirs = plans
       .flatMap { (_, plan) -> plan.mainSourceRoots.map { it.sourcePath } }
-      .toMutableSet()
-    val packageMarkerBuilder = PackageMarkerBuilder(coveredDirs, PackageMarkerBuilder.excludedDirectoriesFrom(storage))
+      .toSet()
+    val packageMarkerBuilder =
+      PackageMarkerBuilder(coveredDirs, PackageMarkerBuilder.excludedDirectoriesFrom(ctx.projectBasePath, ctx.dotIdeaPath, storage))
 
     // phase 2: write entities sequentially.
     // `writtenNames` preserves the original `distinctBy { it.getModuleName() }` semantics: if two targets
@@ -386,7 +388,7 @@ class JvmTargetEntitiesBuilder(private val ctx: ImportContext) {
     // dummies get PackageMarkerEntity instead of SourceRootEntity: the source root path is the directory we
     // recursively walk for package markers, not a real source folder declaration.
     packageMarkerBuilder.write(
-      sourceRoots = listOf(dummy.sourceRoot),
+      sourceRoot = dummy.sourceRoot,
       parentModuleEntity = moduleEntity,
       virtualFileUrlManager = ctx.virtualFileUrlManager,
       storage = storage,

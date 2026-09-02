@@ -227,6 +227,7 @@ class TargetStorage(private val project: Project, private val coroutineScope: Co
           projectRootDir = Path.of(project.basePath!!),
           projectName = project.name,
           importDepth = 0,
+          dotIdeaPath = null,
         ),
       ),
       repoMapping = RepoMappingDisabled,

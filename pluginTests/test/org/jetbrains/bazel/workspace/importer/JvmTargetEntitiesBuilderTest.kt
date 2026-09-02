@@ -480,6 +480,7 @@ internal class JvmTargetEntitiesBuilderTest : WorkspaceModelBaseTest() {
       entitySource = BazelProjectEntitySource,
       excludeCompiledSourceCodeInsideJars = true,
       currentCompiledSourceExcludeEntity = null,
+      dotIdeaPath = null,
     )
     // JvmTargetEntitiesBuilder writes ctx.libraries (sourced from the resolver) in its phase 0
     JvmTargetEntitiesBuilder(ctx).writeAll(workspaceEntityStorageBuilder)

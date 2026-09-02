@@ -132,7 +132,12 @@ class WorkspaceSnapshotServiceTest {
       ),
       fileToTarget = FileToTargetMap.EMPTY,
       executableTargets = ExecutableTargetsIndex.EMPTY,
-      syncConfigs = listOf(CommonWorkspaceSyncConfig(projectRootDir = Path.of("/workspace"), projectName = "e2e", importDepth = -1)),
+      syncConfigs = listOf(CommonWorkspaceSyncConfig(
+        projectRootDir = Path.of("/workspace"),
+        projectName = "e2e",
+        importDepth = -1,
+        dotIdeaPath = null
+      )),
       repoMapping = BzlmodRepoMapping(
         canonicalRepoNameToLocalPath = mapOf("rules_jvm~" to Path.of("/cache/rules_jvm")),
         apparentRepoNameToCanonicalName = mapOf("rules_jvm" to "rules_jvm~"),
@@ -401,7 +406,12 @@ class WorkspaceSnapshotServiceTest {
       targetGraph = WorkspaceTargetGraphBuilder.build(rootTargets = setOf(binKey), targets = listOf(bin, lib)),
       fileToTarget = FileToTargetMap.EMPTY,
       executableTargets = ExecutableTargetsIndex.EMPTY,
-      syncConfigs = listOf(CommonWorkspaceSyncConfig(projectRootDir = Path.of("/workspace"), projectName = "e2e", importDepth = -1)),
+      syncConfigs = listOf(CommonWorkspaceSyncConfig(
+        projectRootDir = Path.of("/workspace"),
+        projectName = "e2e",
+        importDepth = -1,
+        dotIdeaPath = null
+      )),
       repoMapping = RepoMappingDisabled,
       metadata = WorkspaceSnapshotMetadata(version = 1),
     )
@@ -450,7 +460,12 @@ class WorkspaceSnapshotServiceTest {
       targetGraph = WorkspaceTargetGraphBuilder.build(rootTargets = setOf(binKey, binAltKey), targets = targets),
       fileToTarget = FileToTargetMap.EMPTY,
       executableTargets = ExecutableTargetsIndex.EMPTY,
-      syncConfigs = listOf(CommonWorkspaceSyncConfig(projectRootDir = Path.of("/workspace"), projectName = "e2e", importDepth = -1)),
+      syncConfigs = listOf(CommonWorkspaceSyncConfig(
+        projectRootDir = Path.of("/workspace"),
+        projectName = "e2e",
+        importDepth = -1,
+        dotIdeaPath = null
+      )),
       repoMapping = RepoMappingDisabled,
       metadata = WorkspaceSnapshotMetadata(version = 1),
     )

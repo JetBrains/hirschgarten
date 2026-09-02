@@ -10,9 +10,7 @@ import com.intellij.platform.workspace.jps.entities.ContentRootEntity
 import com.intellij.platform.workspace.jps.entities.ModuleEntity
 import com.intellij.platform.workspace.jps.entities.SourceRootEntity
 import com.intellij.platform.workspace.jps.entities.SourceRootTypeId
-import com.intellij.platform.workspace.jps.entities.modifyContentRootEntity
 import com.intellij.platform.workspace.jps.entities.modifyModuleEntity
-import com.intellij.platform.workspace.jps.entities.modifySourceRootEntity
 import com.intellij.platform.workspace.storage.MutableEntityStorage
 import com.intellij.platform.workspace.storage.impl.url.toVirtualFileUrl
 import com.intellij.platform.workspace.storage.url.VirtualFileUrlManager
@@ -83,12 +81,32 @@ object ResourceRootBuilder {
     if (resources.isEmpty()) {
       return
     }
-    val contentRoots = addContentRoots(resources.map { it.resourcePath }, parentModuleEntity, virtualFileUrlManager, storage)
-    val sourceRoots = (resources zip contentRoots).map { (resource, contentRoot) ->
-      addSourceRootEntity(storage, contentRoot, resource, parentModuleEntity, virtualFileUrlManager)
+    val entitySource = parentModuleEntity.entitySource
+    val contentRootEntities = resources.map { resource ->
+      ContentRootEntity(
+        url = resource.resourcePath.toResolvedVirtualFileUrl(virtualFileUrlManager),
+        excludedPatterns = emptyList(),
+        entitySource = entitySource,
+      ) {
+        this.sourceRoots = listOf(
+          SourceRootEntity(
+            url = resource.resourcePath.toVirtualFileUrl(virtualFileUrlManager),
+            rootTypeId = resource.rootType,
+            entitySource = entitySource,
+          ) {
+            this.javaResourceRoots = listOf(
+              JavaResourceRootPropertiesEntity(
+                generated = DEFAULT_GENERATED,
+                relativeOutputPath = resource.relativeOutputPath,
+                entitySource = entitySource,
+              ),
+            )
+          },
+        )
+      }
     }
-    for ((sourceRoot, resource) in sourceRoots zip resources) {
-      addJavaResourceRootPropertiesEntity(storage, sourceRoot, resource.relativeOutputPath)
+    storage.modifyModuleEntity(parentModuleEntity) {
+      contentRoots += contentRootEntities
     }
   }
 
@@ -99,59 +117,6 @@ object ResourceRootBuilder {
     else {
       JAVA_RESOURCE_ROOT_TYPE
     }
-
-  private fun addContentRoots(
-    paths: List<Path>,
-    parentModuleEntity: ModuleEntity,
-    virtualFileUrlManager: VirtualFileUrlManager,
-    storage: MutableEntityStorage,
-  ): List<ContentRootEntity> {
-    val entitySource = parentModuleEntity.entitySource
-    val entities = paths.map { path ->
-      ContentRootEntity(
-        url = path.toResolvedVirtualFileUrl(virtualFileUrlManager),
-        excludedPatterns = emptyList(),
-        entitySource = entitySource,
-      )
-    }
-    val updated = storage.modifyModuleEntity(parentModuleEntity) {
-      contentRoots += entities
-    }
-    return updated.contentRoots.takeLast(entities.size)
-  }
-
-  private fun addSourceRootEntity(
-    storage: MutableEntityStorage,
-    contentRoot: ContentRootEntity,
-    resource: ResolvedResourceRoot,
-    parentModuleEntity: ModuleEntity,
-    virtualFileUrlManager: VirtualFileUrlManager,
-  ): SourceRootEntity {
-    val entity = SourceRootEntity(
-      url = resource.resourcePath.toVirtualFileUrl(virtualFileUrlManager),
-      rootTypeId = resource.rootType,
-      entitySource = parentModuleEntity.entitySource,
-    )
-    val updated = storage.modifyContentRootEntity(contentRoot) {
-      sourceRoots += entity
-    }
-    return updated.sourceRoots.last()
-  }
-
-  private fun addJavaResourceRootPropertiesEntity(
-    storage: MutableEntityStorage,
-    sourceRoot: SourceRootEntity,
-    relativeOutputPath: String,
-  ) {
-    val entity = JavaResourceRootPropertiesEntity(
-      generated = DEFAULT_GENERATED,
-      relativeOutputPath = relativeOutputPath,
-      entitySource = sourceRoot.entitySource,
-    )
-    storage.modifySourceRootEntity(sourceRoot) {
-      javaResourceRoots += entity
-    }
-  }
 
   /**
    * The reference point for computing `relativeOutputPath`. For a directory resource root the

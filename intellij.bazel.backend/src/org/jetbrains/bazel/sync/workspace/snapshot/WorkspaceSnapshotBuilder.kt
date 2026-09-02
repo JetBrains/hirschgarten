@@ -1,6 +1,7 @@
 package org.jetbrains.bazel.sync.workspace.snapshot
 
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.vfs.toNioPathOrNull
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.commons.BzlmodRepoMapping
 import org.jetbrains.bazel.commons.RepoMapping
@@ -8,10 +9,12 @@ import org.jetbrains.bazel.commons.RepoMappingDisabled
 import org.jetbrains.bazel.config.bazelProjectName
 import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.languages.projectview.ProjectView
+import org.jetbrains.bazel.languages.projectview.dotIdeaDirectoryLocation
 import org.jetbrains.bazel.languages.projectview.importDepth
 import org.jetbrains.bazel.sync.workspace.BazelResolvedWorkspace
 import org.jetbrains.bazel.sync.workspace.languages.LanguagePlugin
 import org.jetbrains.bazel.sync.workspace.persistence.InMemoryWorkspaceTargetMap
+import java.nio.file.Path
 
 @ApiStatus.Internal
 object WorkspaceSnapshotBuilder {
@@ -26,6 +29,7 @@ object WorkspaceSnapshotBuilder {
       projectRootDir = workspaceRoot,
       projectName = project.bazelProjectName,
       importDepth = projectView.importDepth,
+      dotIdeaPath = dotIdeaPath(projectView, project),
     )
     val targets = resolved.targets.associateBy { it.key }
     val targetGraph = WorkspaceTargetGraphBuilder.build(resolved.rootTargets, targets.values)
@@ -49,6 +53,11 @@ object WorkspaceSnapshotBuilder {
     )
   }
 
+  private fun dotIdeaPath(
+    projectView: ProjectView,
+    project: Project,
+  ): Path? = projectView.dotIdeaDirectoryLocation ?: project.rootDir.toNioPathOrNull()?.resolve(Project.DIRECTORY_STORE_FOLDER)
+
   fun buildIncomplete(resolved: BazelResolvedWorkspace): IncompleteWorkspaceSnapshot {
     return IncompleteWorkspaceSnapshot(
       targets = resolved.targets.associateBy { it.key },
@@ -70,6 +79,7 @@ object WorkspaceSnapshotBuilder {
       projectRootDir = workspaceRoot,
       projectName = project.bazelProjectName,
       importDepth = projectView.importDepth,
+      dotIdeaPath = dotIdeaPath(projectView, project),
     )
     val targets = snapshots.flatMap { it.targets.values }.associateBy { it.key }
     val rootTargets = snapshots.flatMap { it.rootTargets }.toSet()
