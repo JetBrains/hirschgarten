@@ -87,5 +87,6 @@
       implementation="org.jetbrains.bazel.golang.resolve.BazelGoImportResolver"
       order="first"
     />
+    <sdk.targetSdkVersionProvider implementation="org.jetbrains.bazel.golang.resolve.BazelGoTargetSdkVersionProvider"/>
   </extensions>
 </idea-plugin>
