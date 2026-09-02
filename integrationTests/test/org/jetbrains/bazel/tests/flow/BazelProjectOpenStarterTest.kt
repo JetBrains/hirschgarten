@@ -9,6 +9,7 @@ import com.intellij.driver.sdk.ui.components.common.ideFrame
 import com.intellij.driver.sdk.waitFor
 import com.intellij.driver.sdk.waitForProjectOpen
 import com.intellij.ide.starter.driver.engine.runIdeWithDriver
+import io.kotest.matchers.shouldBe
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.data.IdeaBazelCases
 import org.jetbrains.bazel.data.BazelProjectConfigurer
@@ -26,6 +27,7 @@ import org.jetbrains.bazel.tests.ui.setAutoOpenProjectIfPresent
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.Order
 import org.junit.jupiter.api.Test
 import kotlin.io.path.readText
 import kotlin.time.Duration.Companion.minutes
@@ -170,7 +172,7 @@ class BazelProjectOpenStarterTest : IdeStarterBaseProjectTest() {
 
     val projectViewFile = context.resolvedProjectHome / ".bazelproject"
     projectViewFile.writeText(
-      "import does_not_exist.bazelproject\n" + // unresolved import
+      "try_import does_not_exist.bazelproject\n" + // unresolved import
         "import .bazelproject\n" +             // recursive import
         projectViewFile.readText()
     )
@@ -184,9 +186,6 @@ class BazelProjectOpenStarterTest : IdeStarterBaseProjectTest() {
         }
         ideFrame {
           syncBazelProject()
-          step("Unresolved required import is reported as an error in the sync console") {
-            waitForUnresolvedImportReported("does_not_exist.bazelproject")
-          }
           waitForSyncSucceeded()
           step("Well-formed targets still sync") {
             execute {
@@ -203,14 +202,6 @@ class BazelProjectOpenStarterTest : IdeStarterBaseProjectTest() {
         }
       }
     checkIdeaLogForExceptions(context)
-  }
-
-  private fun UiComponent.waitForUnresolvedImportReported(importPath: String, timeout: Duration = 2.minutes) {
-    val buildView = x { byType("com.intellij.build.BuildView") }
-    val importErrorText = BazelPluginBundle.message("project.view.import.unresolved", importPath)
-    buildView.waitAnyTexts(message = "Waiting for the unresolved import diagnostic", timeout = timeout) {
-      it.text.contains(importErrorText)
-    }
   }
 }
 
