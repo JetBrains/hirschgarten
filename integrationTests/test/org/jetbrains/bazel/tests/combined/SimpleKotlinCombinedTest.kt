@@ -42,6 +42,7 @@ import org.jetbrains.bazel.base.assertSyncedTargets
 import org.jetbrains.bazel.base.buildAndSync
 import org.jetbrains.bazel.base.execute
 import org.jetbrains.bazel.base.openFile
+import org.jetbrains.bazel.base.syncBazelProject
 import org.jetbrains.bazel.base.waitForSyncSucceeded
 import org.jetbrains.bazel.data.BazelProjectConfigurer
 import org.jetbrains.bazel.data.IdeaBazelCases
@@ -68,6 +69,10 @@ private val SIMPLE_KOTLIN_PROJECT = simpleBazelProject(
 class SimpleKotlinCombinedTest : IdeStarterCombinedBaseTest() {
   override fun createContext(): IDETestContext =
     createContext("simpleKotlinCombined", IdeaBazelCases.withProject(SIMPLE_KOTLIN_PROJECT))
+
+  override fun Driver.syncBazelProject() {
+    syncBazelProject(buildAndSync = true)
+  }
 
   @Test @Order(0)
   fun `pty terminal should have correct output after sync`() = ptyTerminal()

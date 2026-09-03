@@ -1,5 +1,6 @@
 package org.jetbrains.bazel.tests.run
 
+import com.intellij.driver.client.Driver
 import com.intellij.driver.sdk.getNotifications
 import com.intellij.driver.sdk.setRegistry
 import com.intellij.driver.sdk.singleProject
@@ -23,6 +24,7 @@ import com.intellij.driver.sdk.waitFor
 import com.intellij.ide.starter.ide.IDETestContext
 import io.kotest.matchers.shouldBe
 import org.jetbrains.bazel.base.openFile
+import org.jetbrains.bazel.base.syncBazelProject
 import org.jetbrains.bazel.data.BazelProjectConfigurer
 import org.jetbrains.bazel.data.IdeaBazelCases
 import org.jetbrains.bazel.data.simpleBazelProject
@@ -55,6 +57,10 @@ private const val PROFILER_HINT_ACCESSIBLE_NAME = "marker: unknown"
 class ImportRunConfigurationsSyncHookTest : IdeStarterCombinedBaseTest() {
   override fun createContext(): IDETestContext =
     createContext("importRunConfigurationsSyncHook", IdeaBazelCases.withProject(IMPORT_RUN_CONFIGURATIONS_PROJECT))
+
+  override fun Driver.syncBazelProject() {
+    syncBazelProject(buildAndSync = true)
+  }
 
   @Test
   @Order(1)
