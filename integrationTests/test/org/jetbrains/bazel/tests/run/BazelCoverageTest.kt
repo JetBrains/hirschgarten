@@ -42,7 +42,7 @@ class BazelCoverageTest : IdeStarterBaseProjectTest() {
       .runIdeWithDriver(runTimeout = timeout)
       .useDriverAndCloseIde {
         ideFrame {
-          syncBazelProject()
+          syncBazelProject(true)
           waitForIndicators(5.minutes)
 
           val expectedCoverageTabText = if (runConfigRunWithBazel) {

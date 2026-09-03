@@ -1,5 +1,6 @@
 package org.jetbrains.bazel.tests.run
 
+import com.intellij.driver.client.Driver
 import com.intellij.driver.sdk.getNotifications
 import com.intellij.driver.sdk.setRegistry
 import com.intellij.driver.sdk.singleProject
@@ -30,6 +31,7 @@ import org.jetbrains.bazel.data.IdeaBazelCases
 import org.jetbrains.bazel.data.simpleBazelProject
 import org.jetbrains.bazel.ideStarter.execute
 import org.jetbrains.bazel.ideStarter.openFile
+import org.jetbrains.bazel.ideStarter.syncBazelProject
 import org.jetbrains.bazel.tests.combined.IdeStarterCombinedBaseTest
 import org.jetbrains.bazel.tests.ui.clickRunGutterOnLine
 import org.jetbrains.bazel.tests.ui.clickTestGutterOnLine
@@ -57,6 +59,10 @@ private val IMPORT_RUN_CONFIGURATIONS_PROJECT = simpleBazelProject(
 class ImportRunConfigurationsSyncHookTest : IdeStarterCombinedBaseTest() {
   override fun createContext(): IDETestContext =
     createContext("importRunConfigurationsSyncHook", IdeaBazelCases.withProject(IMPORT_RUN_CONFIGURATIONS_PROJECT))
+
+  override fun Driver.syncBazelProject() {
+    syncBazelProject(true)
+  }
 
   @Test
   @Order(1)
