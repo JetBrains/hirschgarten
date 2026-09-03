@@ -6,10 +6,17 @@ def _bazel_plugin_zip_impl(ctx):
     args.add("--output", output)
     args.add("--platform", ctx.attr._platform_version[BuildSettingInfo].value)
 
+    if len(ctx.files.changelog_files) > 1:
+        fail("%s: changelog_files names %d files, and the builder reads exactly one path, plugins/bazel/CHANGELOG.md: %s" % (
+            ctx.label,
+            len(ctx.files.changelog_files),
+            [file.path for file in ctx.files.changelog_files],
+        ))
+
     ctx.actions.run(
         executable = ctx.executable._builder,
         arguments = [args],
-        inputs = ctx.files.versions_files,
+        inputs = ctx.files.versions_files + ctx.files.changelog_files,
         outputs = [output],
         mnemonic = "BazelPluginZip",
         progress_message = "Creating Bazel plugin distribution zip",
@@ -20,6 +27,16 @@ def _bazel_plugin_zip_impl(ctx):
 bazel_plugin_zip = rule(
     implementation = _bazel_plugin_zip_impl,
     attrs = {
+        "changelog_files": attr.label_list(
+            doc = """The plugin's `CHANGELOG.md`, which the builder stamps into the archive's `change-notes`.
+
+The builder resolves `plugins/bazel/CHANGELOG.md` under the repo root itself, and it treats a missing file as empty
+change notes. So this attribute names no file on a branch that carries none. The nightly deployment job writes the file
+just before `bazel build`, and a plugin release branch commits it. Naming it here declares it as an input of the
+action, exactly as `versions_files` declares the file the same builder reads beside it. The changelog then reaches the
+action, and it joins the action key, so a rewritten changelog builds a new archive instead of reusing a cached one.""",
+            allow_files = [".md"],
+        ),
         "versions_files": attr.label_list(mandatory = True, allow_files = [".bzl"]),
         "zip_filename": attr.string(mandatory = True),
         "_platform_version": attr.label(default = Label("//plugins/bazel:platform_version")),
