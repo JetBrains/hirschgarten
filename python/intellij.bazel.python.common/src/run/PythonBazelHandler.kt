@@ -21,7 +21,11 @@ abstract class PythonBazelHandler<T> : BazelRunHandler
 
   override fun getRunProfileState(executor: Executor, environment: ExecutionEnvironment): RunProfileState =
     if (executor.id == DefaultDebugExecutor.EXECUTOR_ID) {
-      PythonDebugCommandLineState(environment, state.programArguments, state.additionalBazelParams)
+      PythonDebugCommandLineState(
+        environment = environment,
+        runConfigArguments = state.programArguments,
+        additionalBazelParams = state.additionalBazelParams,
+      )
     } else {
       createCommandLineState(environment)
     }
