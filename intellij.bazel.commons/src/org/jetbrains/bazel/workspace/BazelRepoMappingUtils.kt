@@ -43,7 +43,8 @@ fun calculateLabel(
   buildFile: VirtualFile,
   targetName: String? = null,
 ): ResolvedLabel? {
-  val packageLabel = calculatePackageLabel(project, packageDirectory = buildFile.parent) ?: return null
+  val packageDirectory = buildFile.parent ?: return null
+  val packageLabel = calculatePackageLabel(project, packageDirectory) ?: return null
   return if (targetName != null) {
     packageLabel.copy(target = SingleTarget(targetName))
   }
