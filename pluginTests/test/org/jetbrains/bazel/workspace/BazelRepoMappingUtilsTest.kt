@@ -1,6 +1,7 @@
 package org.jetbrains.bazel.workspace
 
 import com.intellij.openapi.application.runWriteAction
+import com.intellij.testFramework.LightVirtualFile
 import com.intellij.testFramework.replaceService
 import com.intellij.testFramework.utils.vfs.createDirectory
 import com.intellij.testFramework.utils.vfs.createFile
@@ -70,5 +71,13 @@ internal class BazelRepoMappingUtilsTest : WorkspaceModelBaseTest() {
     val packageDir = project.rootDir.parent
     calculateLabel(project, packageDir) shouldBe null
     calculateWildcardLabel(project, packageDir) shouldBe null
+  }
+
+  @Test
+  fun testFileWithoutParent() {
+    val buildFile = LightVirtualFile("BUILD.bazel")
+
+    calculateLabel(project, buildFile, "mytarget") shouldBe null
+    calculateLabel(project, buildFile) shouldBe null
   }
 }
