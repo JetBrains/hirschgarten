@@ -9,6 +9,7 @@ import com.intellij.testFramework.junit5.TestDisposable
 import com.intellij.testFramework.junit5.fixture.projectFixture
 import com.intellij.testFramework.junit5.fixture.tempPathFixture
 import com.intellij.testFramework.replaceService
+import com.intellij.util.execution.ParametersListUtil
 import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.label.Label
@@ -335,7 +336,7 @@ class PythonDebugUtilsTest {
 
   @Test
   fun `python debug build arguments include debug flags additional bazel params and keep going`() {
-    val arguments = PythonDebugUtils.buildPythonDebugBazelArguments (
+    val bazelArguments = PythonDebugUtils.buildPythonDebugBazelArguments(
       debugFlags = listOf("--debug_flag=1"),
       additionalBazelParams = "--@rules_python//python/config_settings:bootstrap_impl=system_python --flag \"two words\"",
     )
@@ -347,7 +348,37 @@ class PythonDebugUtilsTest {
         "--flag",
         "two words",
       ),
-      arguments,
+      bazelArguments,
+    )
+  }
+
+  @Test
+  fun `python debug info includes target args`() {
+    val target = Label.parse("//tests/pytest:sample_test")
+    val targetArgs = listOf("--target-flag", "two words")
+    registerPythonTarget(
+      target = target,
+      ruleKind = "py_test",
+      ruleType = RuleType.TEST,
+      imports = emptyList(),
+      targetArgs = targetArgs,
+    )
+
+    val debugInfo = preparePythonDebug(project, target).assertNotNull()
+
+    assertEquals(targetArgs, debugInfo.targetArgs)
+  }
+
+  @Test
+  fun `python debug script parameters put target args before run configuration arguments`() {
+    val scriptParameters = PythonDebugUtils.buildPythonDebugScriptParameters(
+      targetArgs = listOf("--target-flag", "two words", "quote\"value"),
+      runConfigArguments = "--user-flag \"user words\"",
+    )
+
+    assertEquals(
+      listOf("--target-flag", "two words", "quote\"value", "--user-flag", "user words"),
+      ParametersListUtil.parse(scriptParameters.orEmpty()),
     )
   }
 
@@ -360,6 +391,7 @@ class PythonDebugUtilsTest {
     runnerScriptContent: String = "print('debug target')\n",
     mainFileName: String? = null,
     interpreter: Path? = tempDir.resolve("python3"),
+    targetArgs: List<String> = emptyList(),
   ): PythonTargetFixture {
     initializeProject(tempDir)
 
@@ -402,6 +434,7 @@ class PythonDebugUtilsTest {
               imports = imports,
               mainFile = mainFile,
               runnerScript = runnerScript,
+              targetArgs = targetArgs,
             ),
           ),
         ),

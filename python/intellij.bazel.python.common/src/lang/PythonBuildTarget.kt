@@ -20,8 +20,8 @@ data class PythonBuildTarget(
   val mainFile: Path? = null,
   val mainModule: String? = null,
   val runnerScript: Path? = null,
+  val targetArgs: List<String> = emptyList(),
 ) : BuildTargetData
 
 @ApiStatus.Internal
 fun extractPythonBuildTarget(target: BuildTarget): PythonBuildTarget? = target.extractData()
-

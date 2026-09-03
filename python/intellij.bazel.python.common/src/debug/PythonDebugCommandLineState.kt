@@ -35,7 +35,7 @@ import java.nio.file.Path
 @ApiStatus.Internal
 class PythonDebugCommandLineState(
   private val environment: ExecutionEnvironment,
-  private val programArguments: String?,
+  private val runConfigArguments: String?,
   val additionalBazelParams: String?,
 ) : BazelCommandLineStateBase(environment) {
   val target: Label? = (environment.runProfile as? BazelRunConfiguration)?.targets?.singleOrNull()
@@ -49,11 +49,12 @@ class PythonDebugCommandLineState(
   ) {
     val configuration = BazelRunConfiguration.get(environment)
     val targetId = configuration.targets.single()
+    val allFlags = server.projectView.debugFlags + server.projectView.pythonDebugFlags
     val buildParams =
       CompileParams(
         targets = listOf(targetId),
         taskId = taskGroupId.task("py-debug"),
-        arguments = PythonDebugUtils.buildPythonDebugBazelArguments(server.projectView.debugFlags + server.projectView.pythonDebugFlags, additionalBazelParams),
+        arguments = PythonDebugUtils.buildPythonDebugBazelArguments(allFlags, additionalBazelParams),
       )
     server.buildTargetCompile(buildParams)
   }
@@ -79,7 +80,7 @@ class PythonDebugCommandLineState(
     return templateConfig.also {
       it.interpreterOptions = "-X frozen_modules=off" // frozen modules improve performance but obscure stack traces
       it.scriptName = debugInfo.pythonFile.toAbsolutePath().toString()
-      it.scriptParameters = programArguments
+      it.scriptParameters = PythonDebugUtils.buildPythonDebugScriptParameters(debugInfo.targetArgs, runConfigArguments)
       it.workingDirectory = debugInfo.workingDirectory.toAbsolutePath().toString()
       val sdk =
         debugInfo.pythonBinary?.let { pythonBinary -> getOrCreateSdkForPythonBinary(environment.project, pythonBinary) }

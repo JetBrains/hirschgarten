@@ -1,5 +1,6 @@
 package org.jetbrains.bazel.python.debug
 
+import com.google.devtools.intellij.ideinfo.IntellijIdeInfo.TargetIdeInfo
 import com.intellij.execution.Platform
 import com.intellij.openapi.fileTypes.FileTypeRegistry
 import com.intellij.openapi.project.Project
@@ -7,6 +8,7 @@ import com.intellij.openapi.projectRoots.Sdk
 import com.intellij.openapi.roots.OrderRootType
 import com.intellij.openapi.vfs.toNioPathOrNull
 import com.intellij.util.EnvironmentUtil
+import com.intellij.util.execution.ParametersListUtil
 import com.jetbrains.python.PythonFileType
 import com.jetbrains.python.debugger.PyDebugRunner
 import org.jetbrains.annotations.ApiStatus
@@ -39,6 +41,7 @@ object PythonDebugUtils {
     val environmentVariables: Map<String, String> = emptyMap(),
     val libraryRoots: List<Path> = emptyList(),
     val workingDirectory: Path,
+    val targetArgs: List<String> = emptyList(),
   )
 
   fun preparePythonDebug(project: Project, target: Label): PythonDebugInfo? {
@@ -80,6 +83,7 @@ object PythonDebugUtils {
       environmentVariables = envs,
       libraryRoots = libraryRoots.distinct(),
       workingDirectory = workingDirectory,
+      targetArgs = pythonTargetData.targetArgs,
     )
   }
 
@@ -249,8 +253,16 @@ object PythonDebugUtils {
     }
   }
 
+  fun extractPythonTargetArgs(target: TargetIdeInfo): List<String> = target.pyIdeInfo.argsList.toList()
+
   fun buildPythonDebugBazelArguments(debugFlags: List<String>, additionalBazelParams: String?): List<String> =
     debugFlags + transformProgramArguments(additionalBazelParams)
+
+  fun buildPythonDebugScriptParameters(targetArgs: List<String>, runConfigArguments: String?): String? =
+    listOf(ParametersListUtil.join(targetArgs), runConfigArguments)
+      .filterNot { it.isNullOrBlank() }
+      .joinToString(" ")
+      .takeIf { it.isNotEmpty() }
 
   fun buildPythonLibraryRoots(sdk: Sdk, additionalRoots: List<Path>): String {
     val sdkRoots = sdk.rootProvider.getFiles(OrderRootType.CLASSES).map { it.path }

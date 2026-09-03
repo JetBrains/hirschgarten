@@ -308,6 +308,7 @@ class SnapshotKryoSerializationTest {
         mainFile = Path.of("/workspace/main.py"),
         mainModule = "main",
         runnerScript = null,
+        targetArgs = listOf("--flag"),
       ),
       GoBuildTarget(
         sdkHomePath = Path.of("/go/sdk"),

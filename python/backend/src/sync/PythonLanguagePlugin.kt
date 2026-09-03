@@ -12,13 +12,14 @@ import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.label.assumeResolved
 import org.jetbrains.bazel.label.label
 import org.jetbrains.bazel.languages.projectview.ProjectView
+import org.jetbrains.bazel.python.debug.PythonDebugUtils
 import org.jetbrains.bazel.python.lang.PythonBuildTarget
 import org.jetbrains.bazel.python.lang.PythonLanguageClass
+import org.jetbrains.bazel.server.BazelServerFacade
 import org.jetbrains.bazel.server.model.sourcesList
 import org.jetbrains.bazel.sync.workspace.languages.LanguagePlugin
 import org.jetbrains.bazel.sync.workspace.snapshot.SourceFileCollectionBuilder
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceSyncConfig
-import org.jetbrains.bazel.server.BazelServerFacade
 import org.jetbrains.bsp.protocol.BuildTargetData
 import java.nio.file.Files
 import java.nio.file.Path
@@ -76,6 +77,7 @@ internal class PythonLanguagePlugin : LanguagePlugin {
         mainFile = MainSourceFinder.findMainFile(target, pythonTarget, server.bazelPathsResolver, localRepositories),
         mainModule = pythonTarget.mainModule,
         runnerScript = runnerScript,
+        targetArgs = PythonDebugUtils.extractPythonTargetArgs(target),
       ),
     )
   }
