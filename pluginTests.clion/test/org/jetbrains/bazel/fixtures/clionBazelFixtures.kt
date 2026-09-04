@@ -1,6 +1,7 @@
 package org.jetbrains.bazel.fixtures
 
 import com.intellij.clion.testFramework.nolang.junit5.core.LanguageEngine
+import com.intellij.openapi.diagnostic.fileLogger
 import com.intellij.openapi.project.Project
 import com.intellij.testFramework.junit5.fixture.TestFixture
 import com.intellij.testFramework.junit5.fixture.testFixture
@@ -43,8 +44,15 @@ internal fun clionBazelProjectFixture(
     jvmToolchains = jvmToolchains,
     configure = configure,
   ).init()
+
+  LOG.info("Calling after project opened (engine)")
   LanguageEngine.INSTANCE.afterProjectOpened(project)
+
+  LOG.info("Waiting for symbols to load")
   LanguageEngine.INSTANCE.waitForSymbols(project)
 
+  LOG.info("The CLion Bazel project fixture for $projectPath is ready")
   initialized(project) {}
 }
+
+private val LOG = fileLogger()

@@ -4,6 +4,7 @@ import com.intellij.configurationStore.ProjectStoreImpl
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.application.WriteAction
 import com.intellij.openapi.components.service
+import com.intellij.openapi.diagnostic.fileLogger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.projectRoots.ProjectJdkTable
 import com.intellij.openapi.util.Disposer
@@ -32,8 +33,11 @@ import kotlin.io.path.writeText
  * fixture. Both the fixture and the declarative [bazelProjectFixture] use these steps.
  */
 
+private val LOG = fileLogger()
+
 /** Swaps in a [TestConsoleService] so a sync writes to the test log. Restored when [disposable] disposes. */
 internal fun installTestConsoleService(project: Project, disposable: Disposable) {
+  LOG.info("Installing the test console service for ${project.name}")
   project.replaceService(
     ConsoleService::class.java,
     TestConsoleService(project).also { Disposer.register(disposable, it) },
@@ -43,23 +47,32 @@ internal fun installTestConsoleService(project: Project, disposable: Disposable)
 
 /** Writes the `.bazelversion` file in [projectRoot]. */
 internal fun writeBazelVersion(projectRoot: Path, version: String) {
+  LOG.info("Writing .bazelversion $version")
   projectRoot.resolve(".bazelversion").writeText(version)
 }
 
 /** Copies the project view file [projectView] from [projectRoot] into the store descriptor location. */
 internal fun applyProjectView(project: Project, projectRoot: Path, projectView: String) {
-  val source = projectRoot.resolve(projectView).takeIf { it.exists() } ?: return
+  val source = projectRoot.resolve(projectView).takeIf { it.exists() }
+  if (source == null) {
+    LOG.info("Skipping the project view $projectView, because $projectRoot does not hold it")
+    return
+  }
+  LOG.info("Applying the project view $projectView")
   val descriptor = (project.stateStore as ProjectStoreImpl).storeDescriptor as BazelProjectStoreDescriptor
   source.copyTo(descriptor.projectViewFile.createParentDirectories(), overwrite = true)
 }
 
 /** Runs a full Bazel sync of [project]. */
 internal suspend fun runBazelSync(project: Project, buildProject: Boolean) {
+  LOG.info("Syncing ${project.name} (build=$buildProject)")
   project.service<ProjectSyncService>().sync(ProjectSyncScope.Full(build = buildProject, phased = false))
+  LOG.info("Finished the sync of ${project.name}")
 }
 
 /** Removes every JDK the sync added, so it does not leak into the next test. */
 internal fun purgeProjectJdkTable() {
+  LOG.info("Purging the project JDK table")
   WriteAction.runAndWait<Throwable> {
     ProjectJdkTable.getInstance().apply {
       allJdks.forEach(this::removeJdk)
@@ -69,6 +82,7 @@ internal fun purgeProjectJdkTable() {
 
 /** Stops the Bazel server, so it releases the file locks in [projectRoot] before the temp dir is removed. */
 internal suspend fun stopBazelServer(project: Project, projectRoot: Path): BazelProcessResult {
+  LOG.info("Stopping the Bazel server in $projectRoot")
   val bazelProcessLauncher =
     BazelProcessLauncherProvider.getInstance()
       .createBazelProcessLauncher(

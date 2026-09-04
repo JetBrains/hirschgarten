@@ -1,5 +1,6 @@
 package org.jetbrains.bazel.test.framework
 
+import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.io.FileUtil
 import com.intellij.testFramework.IndexingTestUtil
@@ -32,15 +33,18 @@ internal object BazelTestProject {
     projectsRoot: Path = BazelPathManager.testProjectsRoot,
     jvmToolchains: Boolean = true,
   ) {
+    LOG.info("Copying the test project $path into $projectRoot (jvmToolchains=$jvmToolchains)")
     copyDir(BazelPathManager.testProjectsRoot.resolve("base"), projectRoot)
     BazelTestCaches.setupBazelRc(projectRoot, jvmToolchains)
     copyDir(projectsRoot.resolve(path), projectRoot)
     BazelTestCaches.configureBazelCaches(projectRoot, path)
     if (jvmToolchains) {
+      LOG.info("Adding the JVM toolchains")
       BazelTestCaches.findKotlinStdlibInClasspath()
         .copyTo(projectRoot.resolve("toolchains").resolve("kotlin-stdlib.jar").createParentDirectories())
     }
 
+    LOG.info("Refreshing the VFS of $projectRoot")
     projectRoot.refreshVfs()
     IndexingTestUtil.waitUntilIndexesAreReady(project)
   }
@@ -50,4 +54,6 @@ internal object BazelTestProject {
   private fun copyDir(from: Path, to: Path) {
     FileUtil.copyDir(from.toFile(), to.toFile())
   }
+
+  private val LOG = logger<BazelTestProject>()
 }

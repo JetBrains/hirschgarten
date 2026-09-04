@@ -1,5 +1,6 @@
 package org.jetbrains.bazel.test.framework
 
+import com.intellij.openapi.diagnostic.fileLogger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Disposer
 import com.intellij.platform.testFramework.junit5.codeInsight.fixture.codeInsightFixture
@@ -17,6 +18,8 @@ import org.jetbrains.annotations.TestOnly
 import org.jetbrains.bazel.project.BazelProjectFixtures.initializeBazelProject
 import java.nio.file.Path
 import kotlin.io.path.Path
+
+private val LOG = fileLogger()
 
 /**
  * This fixture provides necessary functionality to perform a full Bazel sync in tests without a full IDE.
@@ -75,11 +78,13 @@ fun bazelProjectFixture(
   jvmToolchains: Boolean = true,
   configure: suspend (Project) -> Unit = {},
 ): TestFixture<Project> = testFixture(debugString = "bazelProject") {
+  LOG.info("Setting up the Bazel project fixture for $projectPath")
   val project = projectFixture(openAfterCreation = true).init()
   val projectRoot = tempPathFixture().init()
 
   val setupDisposable = Disposer.newDisposable("bazelProjectFixture")
   installTestConsoleService(project, setupDisposable)
+  LOG.info("Initializing the Bazel project ${project.name} at $projectRoot")
   initializeBazelProject(project, projectRoot)
 
   BazelTestProject.copy(project, projectRoot, projectPath, projectsRoot, jvmToolchains)
@@ -92,7 +97,9 @@ fun bazelProjectFixture(
   configure(project)
   runBazelSync(project, buildProject)
 
+  LOG.info("The Bazel project fixture for $projectPath is ready")
   initialized(project) {
+    LOG.info("Tearing down the Bazel project fixture for $projectPath")
     // Stop the bazel server first, so it releases the file locks before the temp dir is removed.
     stopBazelServer(project, projectRoot)
     purgeProjectJdkTable()
@@ -117,8 +124,10 @@ fun bazelSyncCodeInsightFixture(
   projectView: String? = null,
   configure: suspend (BazelSyncCodeInsightTestFixture) -> Unit = {},
 ): TestFixture<BazelSyncCodeInsightTestFixture> = testFixture(debugString = "bazelSyncCodeInsight") {
+  LOG.info("Setting up the Bazel code-insight fixture for $projectPath")
   val fixture = bazelSyncCodeInsightFixture(projectFixture(openAfterCreation = true), tempPathFixture()).init()
   fixture.syncBazelTestProject(projectPath, buildProject, bazelVersion, projectView, configure)
+  LOG.info("The Bazel code-insight fixture for $projectPath is ready")
   initialized(fixture) {}
 }
 
