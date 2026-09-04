@@ -19,7 +19,18 @@ internal class BazelRunConfigurationProducerSuppressor : RunConfigurationProduce
 
   private val producerNames = setOf(
     "com.android.tools.idea.run.configuration.AndroidWearRunConfigurationProducer",
-    "com.intellij.execution.junit.JavaRunConfigurationProducerBase",
+    // "com.intellij.execution.junit.JavaRunConfigurationProducerBase", <-- used by actual Bazel customers (BAZEL-3522)
+    "com.intellij.spring.boot.run.SpringBootApplicationRunConfigurationProducer",
+    "com.android.tools.idea.run.AndroidConfigurationProducer",
+    "com.intellij.execution.testDiscovery.TestDiscoveryConfigurationProducer",
+    "com.intellij.ktor.run.KtorRunConfigurationProducer",
+    "com.intellij.execution.testframework.AbstractJavaTestConfigurationProducer",
+    "com.android.tools.idea.testartifacts.instrumented.kmp.KotlinMultiplatformAndroidTestConfigurationProducer",
+    "com.intellij.execution.application.AbstractApplicationConfigurationProducer",
+    "com.intellij.micronaut.run.MnRunConfigurationProducer",
+    "com.android.tools.idea.testartifacts.instrumented.AndroidTestConfigurationProducer",
+    "org.jetbrains.plugins.cucumber.java.run.CucumberJavaRunConfigurationProducer",
+    "com.intellij.quarkus.run.application.QsApplicationRunConfigurationProducer",
     "org.jetbrains.kotlin.idea.gradleCodeInsightCommon.native.KotlinNativeRunConfigurationProducer",
     "org.jetbrains.plugins.gradle.execution.GradleRunConfigurationProducer",
     "org.jetbrains.kotlin.idea.junit.KotlinJUnitRunConfigurationProducer",
