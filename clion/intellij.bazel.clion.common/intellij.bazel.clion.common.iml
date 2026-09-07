@@ -40,6 +40,7 @@
     <orderEntry type="module" module-name="intellij.clion" />
     <orderEntry type="module" module-name="intellij.clion.radler" />
     <orderEntry type="module" module-name="intellij.cidr.projectModel" />
+    <orderEntry type="module" module-name="intellij.cidr.workspaceModel" />
     <orderEntry type="module" module-name="intellij.cidr.psi.base" />
     <orderEntry type="module" module-name="intellij.cidr.util.execution" />
     <orderEntry type="module" module-name="intellij.platform.scriptDebugger.backend" />

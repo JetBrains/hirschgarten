@@ -1,6 +1,6 @@
 package org.jetbrains.bazel.clion.workspace
 
-import com.intellij.openapi.application.writeAction
+import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.util.NlsContexts
 import com.jetbrains.cidr.lang.workspace.OCWorkspace
 import com.jetbrains.cidr.lang.workspace.OCWorkspaceImpl
@@ -16,9 +16,11 @@ import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceSnapshot
 private const val CLIENT_KEY = "BAZEL_CC"
 private const val CLIENT_VERSION = 0
 
+private val log = logger<CcWorkspaceImporter>()
+
 internal class CcWorkspaceImporter : BazelWorkspaceImporter, BazelWorkspaceImporter.Named {
 
-  lateinit var workspace: OCWorkspace.ModifiableModel
+  private var configurations: List<CcResolveConfiguration> = emptyList()
 
   override val importerName: @NlsContexts.ProgressTitle String
     get() = BazelClionBundle.message("cc.workspace.importer.name")
@@ -29,7 +31,8 @@ internal class CcWorkspaceImporter : BazelWorkspaceImporter, BazelWorkspaceImpor
     snapshot: WorkspaceSnapshot,
   ): Result<WorkspaceImporterResult> = when (phase) {
     is WorkspaceImporterPhase.Initialize -> onInitialize(context, snapshot)
-    is WorkspaceImporterPhase.WorkspaceApply -> onWorkspaceApply(context, snapshot)
+    is WorkspaceImporterPhase.WorkspaceApply -> onWorkspaceApply(phase)
+    is WorkspaceImporterPhase.PostProcessing -> onPostProcessing(context, snapshot)
     else -> Result.success(WorkspaceImporterResult.Success)
   }
 
@@ -40,28 +43,31 @@ internal class CcWorkspaceImporter : BazelWorkspaceImporter, BazelWorkspaceImpor
     val toolchain2Compiler = subtask(ctx, snapshot, "cc.import.task.compiler.settings") { buildCompilerSettings() }
     val target2Compiler = target2Toolchain.mapValues { toolchain2Compiler[it.value] }
 
-    val configurations = subtask(ctx, snapshot, "cc.import.task.equivalence.classes") { buildEquivalenceClasses(target2Compiler) }
-
-    workspace = OCWorkspaceImpl.getInstanceImpl(ctx.project).getModifiableModel(CLIENT_KEY, clear = true)
-    // TODO: how to dispose the model? Do we need to dispose it?
-
-    subtask(ctx, snapshot, "cc.import.task.oc.workspace") {
-      buildWorkspaceModel(configurations, workspace)
-    }
+    configurations = subtask(ctx, snapshot, "cc.import.task.equivalence.classes") { buildEquivalenceClasses(target2Compiler) }
 
     return Result.success(WorkspaceImporterResult.Success)
   }
 
-  private suspend fun onWorkspaceApply(ctx: WorkspaceImporterContext, snapshot: WorkspaceSnapshot): Result<WorkspaceImporterResult> {
+  private fun onWorkspaceApply(phase: WorkspaceImporterPhase.WorkspaceApply): Result<WorkspaceImporterResult> {
+    addCcWorkspaceModule(phase.builder, phase.entitySource)
+    return Result.success(WorkspaceImporterResult.Success)
+  }
+
+  private suspend fun onPostProcessing(ctx: WorkspaceImporterContext, snapshot: WorkspaceSnapshot): Result<WorkspaceImporterResult> {
+    // no module means the workspace apply dropped it, so the entity write would find nothing
+    if (findCcWorkspaceModuleId(ctx.project) == null) {
+      log.error("the module `$CC_WORKSPACE_MODULE_NAME` is absent, so the CC import drops ${configurations.size} configuration(s)")
+      return Result.success(WorkspaceImporterResult.Abort)
+    }
+
+    val workspace = OCWorkspaceImpl.getInstanceImpl(ctx.project).getModifiableModel(CLIENT_KEY, clear = true)
     workspace.setClientVersion(CLIENT_VERSION)
 
+    subtask(ctx, snapshot, "cc.import.task.oc.workspace") { buildWorkspaceModel(configurations, workspace) }
     subtask(ctx, snapshot, "cc.import.task.compiler.info") { collectCompilerInfo(workspace) }
-    workspace.preCommit()
 
-    writeAction {
-      // TODO: should we use commitAndContribute here instead?
-      workspace.commit()
-    }
+    workspace.preCommit()
+    workspace.commitAndContribute()
 
     return Result.success(WorkspaceImporterResult.Success)
   }
@@ -72,7 +78,7 @@ internal class CcWorkspaceImporter : BazelWorkspaceImporter, BazelWorkspaceImpor
     key: @PropertyKey(resourceBundle = BazelClionBundle.BUNDLE_FQN) String,
     body: suspend context(CcImportContext) () -> T,
   ): T {
-    return ctx.taskConsole.withSubtask(ctx.progressReporter, ctx.taskId.subTask(key), BazelClionBundle.message(key)) { taskId ->
+    return ctx.taskConsole.withSubtask(ctx.taskId.subTask(key), BazelClionBundle.message(key)) { taskId ->
       val taskCtx = CcImportContext.create(taskId, ctx, snapshot)
       body(taskCtx)
     }

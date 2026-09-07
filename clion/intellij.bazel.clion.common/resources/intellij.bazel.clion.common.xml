@@ -10,6 +10,7 @@
     <module name="intellij.cidr.projectModel"/>
     <module name="intellij.cidr.psi.base"/>
     <module name="intellij.cidr.util.execution"/>
+    <module name="intellij.cidr.workspaceModel"/>
     <module name="intellij.libraries.guava"/>
     <module name="intellij.libraries.stream"/>
     <module name="intellij.platform.analysis"/>
@@ -45,6 +46,10 @@
     <targetKindProvider implementation="org.jetbrains.bazel.clion.sync.CcTargetKindProvider"/>
     <languagePlugin implementation="org.jetbrains.bazel.clion.sync.CcLanguagePlugin"/>
     <syncWorkspaceImporter implementation="org.jetbrains.bazel.clion.workspace.CcWorkspaceImporter"/>
+  </extensions>
+
+  <extensions defaultExtensionNs="cidr.projectModel">
+    <ocWorkspaceStorageCustomizer implementation="org.jetbrains.bazel.clion.workspace.CcWorkspaceStorageCustomizer"/>
   </extensions>
 
 </idea-plugin>
