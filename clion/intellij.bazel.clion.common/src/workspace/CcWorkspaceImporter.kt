@@ -3,7 +3,6 @@ package org.jetbrains.bazel.clion.workspace
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.util.Disposer
 import com.intellij.openapi.util.NlsContexts
-import com.jetbrains.cidr.lang.workspace.OCWorkspace
 import com.jetbrains.cidr.lang.workspace.OCWorkspaceImpl
 import org.jetbrains.annotations.PropertyKey
 import org.jetbrains.bazel.clion.BazelClionBundle
@@ -17,7 +16,7 @@ import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceSnapshot
 private const val CLIENT_KEY = "BAZEL_CC"
 private const val CLIENT_VERSION = 0
 
-private val log = logger<CcWorkspaceImporter>()
+private val LOG = logger<CcWorkspaceImporter>()
 
 internal class CcWorkspaceImporter : BazelWorkspaceImporter, BazelWorkspaceImporter.Named {
 
@@ -55,13 +54,13 @@ internal class CcWorkspaceImporter : BazelWorkspaceImporter, BazelWorkspaceImpor
   }
 
   private suspend fun onPostProcessing(ctx: WorkspaceImporterContext, snapshot: WorkspaceSnapshot): Result<WorkspaceImporterResult> {
-    // no module means the workspace apply dropped it, so the entity write would find nothing
     if (findCcWorkspaceModuleId(ctx.project) == null) {
-      log.error("the module `$CC_WORKSPACE_MODULE_NAME` is absent, so the CC import drops ${configurations.size} configuration(s)")
+      LOG.error("CC workspace module is absent, dropping ${configurations.size} configuration(s)")
       return Result.success(WorkspaceImporterResult.Abort)
     }
 
     val workspace = OCWorkspaceImpl.getInstanceImpl(ctx.project).getModifiableModel(CLIENT_KEY, clear = true)
+
     try {
       workspace.setClientVersion(CLIENT_VERSION)
 
