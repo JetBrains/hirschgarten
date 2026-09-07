@@ -27,17 +27,20 @@ internal fun buildWorkspaceModel(
     val cKind = compilerKinds[settings.cCompiler].orUnknown()
     val cppKind = compilerKinds[settings.cppCompiler].orUnknown()
 
+    // TODO: port the copts processing i.e. com.google.idea.blaze.cpp.copts.CoptsProcessor
     val cSwitches = CompilerSpecificSwitchBuilder.getBuilder(cKind).apply {
       appendCompilationContext(config)
       withSwitches(settings.cSwitches)
+      withSwitches(config.shared.copts)
+      withSwitches(config.shared.conlyopts)
     }.build()
 
     val cppSwitches = CompilerSpecificSwitchBuilder.getBuilder(cppKind).apply {
       appendCompilationContext(config)
       withSwitches(settings.cppSwitches)
+      withSwitches(config.shared.copts)
+      withSwitches(config.shared.cxxopts)
     }.build()
-
-    // TODO: port the copts processing i.e. com.google.idea.blaze.cpp.copts.CoptsProcessor
 
     for (file in config.sources) {
       val languageKind = getDeclaredLanguageKind(file)
