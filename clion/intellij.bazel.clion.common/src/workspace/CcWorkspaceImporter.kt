@@ -1,10 +1,12 @@
 package org.jetbrains.bazel.clion.workspace
 
 import com.intellij.openapi.diagnostic.logger
+import com.intellij.openapi.progress.EmptyProgressIndicator
 import com.intellij.openapi.util.Disposer
 import com.intellij.openapi.util.NlsContexts
 import com.jetbrains.cidr.lang.workspace.OCWorkspace
 import com.jetbrains.cidr.lang.workspace.OCWorkspaceImpl
+import com.jetbrains.cidr.lang.workspace.compiler.CompilerInfoCache
 import org.jetbrains.annotations.PropertyKey
 import org.jetbrains.bazel.clion.BazelClionBundle
 import org.jetbrains.bazel.progress.withSubtask
@@ -65,8 +67,17 @@ internal class CcWorkspaceImporter : BazelWorkspaceImporter, BazelWorkspaceImpor
     try {
       workspace.setClientVersion(CLIENT_VERSION)
 
-      subtask(ctx, snapshot, "cc.import.task.oc.workspace") { buildWorkspaceModel(configurations, workspace) }
-      subtask(ctx, snapshot, "cc.import.task.compiler.info") { collectCompilerInfo(workspace) }
+      val environments = CcToolEnvironments()
+      // TODO: can we use a real indicator here?
+      val session = CompilerInfoCache().createSession<String>(EmptyProgressIndicator())
+      try {
+        subtask(ctx, snapshot, "cc.import.task.oc.workspace") { buildWorkspaceModel(configurations, workspace) }
+        subtask(ctx, snapshot, "cc.import.task.compiler.info") { collectCompilerInfo(session, workspace, configurations, environments) }
+      }
+      catch (ex: Throwable) {
+        session.dispose()
+        throw ex
+      }
 
       workspace.preCommit()
       workspace.commitAndContribute()
