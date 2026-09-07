@@ -212,6 +212,29 @@ class StarlarkVariableUsageInspectionTest : BasePlatformTestCase() {
   }
 
   @Test
+  fun `assignment to subscription expression using undefined variable as index should be highlighted`() {
+    myFixture.configureByText(
+      "test.bzl",
+      """
+      items = [0]
+      items[<error descr="$descriptionUndefined">x</error>] = 1
+      """.trimIndent()
+    )
+    myFixture.checkHighlighting(true, false, false)
+  }
+
+  @Test
+  fun `assignment to subscription expression using undefined receiver should be highlighted`() {
+    myFixture.configureByText(
+      "test.bzl",
+      """
+      <error descr="$descriptionUndefined">x</error>[0] = 1
+      """.trimIndent(),
+    )
+    myFixture.checkHighlighting(true, false, false)
+  }
+
+  @Test
   fun `variable assigned in the same scope should not be highlighted`() {
     myFixture.configureByText(
       "test.bzl",
@@ -275,6 +298,33 @@ class StarlarkVariableUsageInspectionTest : BasePlatformTestCase() {
   }
 
   @Test
+  fun `undefined variable as function parameter default should be highlighted`() {
+    myFixture.configureByText(
+      "test.bzl",
+      """
+      y = 1  
+      def f(x = <error descr="$descriptionUndefined">x</error>):
+        return x
+      def g(y = y):
+        return y  
+      """.trimIndent(),
+    )
+    myFixture.checkHighlighting(true, false, false)
+  }
+
+  @Test
+  fun `function parameter default should not see later parameter`() {
+    myFixture.configureByText(
+      "test.bzl",
+      """
+      def f(a = <error descr="$descriptionUndefined">x</error>, x = 1):
+        return x
+      """.trimIndent(),
+    )
+    myFixture.checkHighlighting(true, false, false)
+  }
+
+  @Test
   fun `qualified member call should not be highlighted as undefined variable`() {
     myFixture.configureByText(
       "test.bzl",
@@ -282,6 +332,216 @@ class StarlarkVariableUsageInspectionTest : BasePlatformTestCase() {
       out = []
       for item in [1, 2, 3]:
         out.append(str(item))
+      """.trimIndent(),
+    )
+    myFixture.checkHighlighting(true, false, false)
+  }
+
+  @Test
+  fun `first comprehension iterable should use outer scope`() {
+    myFixture.configureByText(
+      "test.bzl",
+      """
+      [x for x in <error descr="$descriptionUndefined">x</error>]
+      """.trimIndent(),
+    )
+    myFixture.checkHighlighting(true, false, false)
+  }
+
+  @Test
+  fun `first comprehension iterable should resolve outer variable`() {
+    myFixture.configureByText(
+      "test.bzl",
+      """
+      x = [1, 2]
+      [x for x in x]
+      """.trimIndent(),
+    )
+    myFixture.checkHighlighting(true, false, false)
+  }
+
+  @Test
+  fun `comprehension body should see target declared later textually`() {
+    myFixture.configureByText(
+      "test.bzl",
+      """
+      xs = [1, 2]
+      [x for x in xs]
+      """.trimIndent(),
+    )
+    myFixture.checkHighlighting(true, false, false)
+  }
+
+  @Test
+  fun `first destructuring comprehension iterable should use outer scope`() {
+    myFixture.configureByText(
+      "test.bzl",
+      """
+      [x for x, y in <error descr="$descriptionUndefined">x</error>]
+      """.trimIndent(),
+    )
+    myFixture.checkHighlighting(true, false, false)
+  }
+
+  @Test
+  fun `first parenthesized destructuring comprehension iterable should use outer scope`() {
+    myFixture.configureByText(
+      "test.bzl",
+      """
+      [x for (x, y) in <error descr="$descriptionUndefined">x</error>]
+      """.trimIndent(),
+    )
+    myFixture.checkHighlighting(true, false, false)
+  }
+
+  @Test
+  fun `comprehension body should see destructuring targets declared later textually`() {
+    myFixture.configureByText(
+      "test.bzl",
+      """
+      pairs = [(1, 2)]
+      [x + y for x, y in pairs]
+      """.trimIndent(),
+    )
+    myFixture.checkHighlighting(true, false, false)
+  }
+
+  @Test
+  fun `second comprehension iterable should see previous comprehension target`() {
+    myFixture.configureByText(
+      "test.bzl",
+      """
+      xs = [1, 2]
+      [(x, y) for x in xs for y in [x]]
+      """.trimIndent(),
+    )
+    myFixture.checkHighlighting(true, false, false)
+  }
+
+  @Test
+  fun `third comprehension iterable should see previous comprehension targets`() {
+    myFixture.configureByText(
+      "test.bzl",
+      """
+      xs = [1, 2]
+      [(x, y, z) for x in xs for y in [x] for z in [y]]
+      """.trimIndent(),
+    )
+    myFixture.checkHighlighting(true, false, false)
+  }
+
+  @Test
+  fun `later comprehension iterable should see destructuring target from previous clause`() {
+    myFixture.configureByText(
+      "test.bzl",
+      """
+      pairs = [(1, 2)]
+      [(x, y, z) for x, y in pairs for z in [x + y]]
+      """.trimIndent(),
+    )
+    myFixture.checkHighlighting(true, false, false)
+  }
+
+  @Test
+  fun `second comprehension iterable should not see later comprehension target`() {
+    myFixture.configureByText(
+      "test.bzl",
+      """
+      zs = [1, 2]
+      [(z, y, x) for z in zs for y in [<error descr="$descriptionUndefined">x</error>] for x in [1]]
+      """.trimIndent(),
+    )
+    myFixture.checkHighlighting(true, false, false)
+  }
+
+  @Test
+  fun `second comprehension if clause should not see later comprehension target`() {
+    myFixture.configureByText(
+      "test.bzl",
+      """
+      ys = [1, 2]
+      [(y, x) for y in ys if <error descr="$descriptionUndefined">x</error> for x in [1]]
+      """.trimIndent(),
+    )
+    myFixture.checkHighlighting(true, false, false)
+  }
+
+  @Test
+  fun `redeclared comprehension target iterable should see previous target with same name`() {
+    myFixture.configureByText(
+      "test.bzl",
+      """
+      xs = [1, 2]
+      [x for x in xs for x in [x]]
+      """.trimIndent(),
+    )
+    myFixture.checkHighlighting(true, false, false)
+  }
+
+  @Test
+  fun `first comprehension iterable should use outer scope even when later target has same name`() {
+    myFixture.configureByText(
+      "test.bzl",
+      """
+      [x for y in <error descr="$descriptionUndefined">x</error> for x in [1]]
+      """.trimIndent(),
+    )
+    myFixture.checkHighlighting(true, false, false)
+  }
+
+  @Test
+  fun `nested first comprehension iterable should see outer comprehension target`() {
+    myFixture.configureByText(
+      "test.bzl",
+      """
+      result = [[y for y in x] for x in [[1]]]
+      """.trimIndent()
+    )
+    myFixture.checkHighlighting(true, false, false)
+  }
+
+
+  @Test
+  fun `lambda parameter should not be highlighted as undefined`() {
+    myFixture.configureByText(
+      "test.bzl",
+      """
+      f = lambda x: x
+      """.trimIndent(),
+    )
+    myFixture.checkHighlighting(true, false, false)
+  }
+
+  @Test
+  fun `undefined variable in lambda body should be highlighted`() {
+    myFixture.configureByText(
+      "test.bzl",
+      """
+      f = lambda y: <error descr="$descriptionUndefined">x</error> + y
+      """.trimIndent(),
+    )
+    myFixture.checkHighlighting(true, false, false)
+  }
+
+  @Test
+  fun `undefined variable as lambda parameter default should be highlighted`() {
+    myFixture.configureByText(
+      "test.bzl",
+      """
+      y = 1
+      f = lambda x = <error descr="$descriptionUndefined">x</error>: x
+      g = lambda y = y: y
+      """.trimIndent()
+    )
+    myFixture.checkHighlighting(true, false, false)
+  }
+
+  @Test
+  fun `nested lambda should use nearest lambda parameter`() {
+    myFixture.configureByText(
+      "test.bzl",
+      """
+      f = lambda x: lambda x: x + 1
       """.trimIndent(),
     )
     myFixture.checkHighlighting(true, false, false)

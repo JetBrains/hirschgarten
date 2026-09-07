@@ -13,13 +13,24 @@ import com.intellij.psi.util.PsiTreeUtil
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.languages.starlark.StarlarkBundle
 import org.jetbrains.bazel.languages.starlark.StarlarkFileType
+import org.jetbrains.bazel.languages.starlark.StarlarkUtils.nearestRelevantBeforeOperator
+import org.jetbrains.bazel.languages.starlark.StarlarkUtils.selectLeftHandSideOfAssignment
 import org.jetbrains.bazel.languages.starlark.bazel.BazelGlobalFunctions
+import org.jetbrains.bazel.languages.starlark.elements.StarlarkTokenTypes
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkElementVisitor
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkFile
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkCallExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkCompExpression
+import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkLambdaExpression
+import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkListLiteralExpression
+import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkParenthesizedExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkReferenceExpression
+import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkSubscriptionExpression
+import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkTargetExpression
+import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkTupleExpression
+import org.jetbrains.bazel.languages.starlark.psi.functions.StarlarkCallable
 import org.jetbrains.bazel.languages.starlark.psi.functions.StarlarkFunctionDeclaration
+import org.jetbrains.bazel.languages.starlark.psi.functions.StarlarkParameterList
 import org.jetbrains.bazel.languages.starlark.psi.statements.StarlarkAssignmentStatement
 import org.jetbrains.bazel.languages.starlark.psi.statements.StarlarkForStatement
 import org.jetbrains.bazel.languages.starlark.psi.statements.StarlarkLoadStatement
@@ -56,11 +67,14 @@ class StarlarkVariableUsageInspection : LocalInspectionTool() {
         }
         StarlarkScopeIndex.RefUsage.Bound -> return
         StarlarkScopeIndex.RefUsage.Unbound -> {
-          ref.reference?.resolve()?.let { return }
+          if (!isInsideComprehension(ref)) ref.reference?.resolve()?.let { return }
           registerOnce(ref, StarlarkBundle.message("inspection.description.variable.undefined", name))
         }
       }
     }
+
+    private fun isInsideComprehension(ref: StarlarkReferenceExpression): Boolean =
+      PsiTreeUtil.getParentOfType(ref, StarlarkCompExpression::class.java, false) != null
 
     private fun collectReferences(file: StarlarkFile): Collection<StarlarkReferenceExpression> =
       PsiTreeUtil.collectElementsOfType(file, StarlarkReferenceExpression::class.java)
@@ -68,15 +82,34 @@ class StarlarkVariableUsageInspection : LocalInspectionTool() {
     private fun shouldAnalyzeReference(ref: StarlarkReferenceExpression): Boolean {
       val name = ref.name ?: return false
       if (name == "_") return false
-      if (isAssignmentTarget(ref, name)) return false
+      if (isAssignmentBinding(ref)) return false
       if (isQualifiedReference(ref)) return false
       if (name in knownGlobalNames) return false
       return true
     }
 
-    private fun isAssignmentTarget(ref: StarlarkReferenceExpression, name: String): Boolean {
-      val assignment = ref.parent as? StarlarkAssignmentStatement ?: return false
-      return assignment.name == name
+    private fun isAssignmentBinding(ref: StarlarkReferenceExpression): Boolean {
+      val assignment = PsiTreeUtil.getParentOfType(ref, StarlarkAssignmentStatement::class.java) ?: return false
+      val lhs = selectLeftHandSideOfAssignment(assignment) ?: return false
+
+      fun containsReference(target: PsiElement): Boolean =
+        when (target) {
+          ref -> true
+          is StarlarkSubscriptionExpression -> false
+          is StarlarkParenthesizedExpression -> target.getTuple()?.let { containsReference(it) } == true
+          is StarlarkTupleExpression -> target.getTargetExpressions().any { containsReference(it) }
+          is StarlarkListLiteralExpression -> {
+            var child = nearestRelevantBeforeOperator(target.firstChild)
+            while (child != null) {
+              if (containsReference(child)) return true
+              child = nearestRelevantBeforeOperator(child.nextSibling)
+            }
+            false
+          }
+          else -> false
+        }
+
+      return containsReference(lhs)
     }
 
     private fun isQualifiedReference(ref: StarlarkReferenceExpression): Boolean {
@@ -120,10 +153,8 @@ class StarlarkVariableUsageInspection : LocalInspectionTool() {
 
       if (isBoundByEnclosingComprehension(ref, name)) return RefUsage.Bound
 
-      val currentFirstOffset = currentScopeData.firstAssignmentByName[name]
-      if (currentFirstOffset != null) {
-        if (PsiTreeUtil.getParentOfType(ref, StarlarkCompExpression::class.java, false) != null) return RefUsage.Bound
-        return if (ref.textOffset < currentFirstOffset) RefUsage.BeforeAssignment(currentScopeData.label) else RefUsage.Bound
+      currentScopeData.firstAssignmentByName[name]?.let { offset ->
+        return if (ref.textOffset < offset) RefUsage.BeforeAssignment(currentScopeData.label) else RefUsage.Bound
       }
 
       var outer = currentScopeData.parentScope
@@ -143,8 +174,34 @@ class StarlarkVariableUsageInspection : LocalInspectionTool() {
     }
 
     private fun isBoundByEnclosingComprehension(ref: StarlarkReferenceExpression, name: String): Boolean {
-      val comp = PsiTreeUtil.getParentOfType(ref, StarlarkCompExpression::class.java, false) ?: return false
-      return comp.getCompVariables().any { it.name == name }
+      var comp = PsiTreeUtil.getParentOfType(ref, StarlarkCompExpression::class.java, false)
+      while (comp != null) {
+        val targets = comp.getCompVariables()
+        val firstTarget = targets.minByOrNull { it.textOffset }
+        if (firstTarget != null && !isInFirstComprehensionIterable(ref, firstTarget)) {
+          val isBodyExpression = ref.textOffset < firstTarget.textOffset
+          if (targets.any { it.name == name && (isBodyExpression || it.textOffset < ref.textOffset) }) {
+            return true
+          }
+        }
+        comp = PsiTreeUtil.getParentOfType(comp, StarlarkCompExpression::class.java, true)
+      }
+      return false
+    }
+
+    private fun isInFirstComprehensionIterable(ref: StarlarkReferenceExpression, firstTarget: StarlarkTargetExpression): Boolean =
+      findComprehensionIterableForTarget(firstTarget)?.let { PsiTreeUtil.isAncestor(it, ref, false) } ?: false
+
+    private fun findComprehensionIterableForTarget(target: StarlarkTargetExpression): PsiElement? {
+      var current: PsiElement? = target
+      while (current != null && current !is StarlarkCompExpression) {
+        val next = PsiTreeUtil.skipWhitespacesAndCommentsForward(current)
+        if (next?.node?.elementType == StarlarkTokenTypes.IN_KEYWORD) {
+          return PsiTreeUtil.skipWhitespacesAndCommentsForward(next)
+        }
+        current = current.parent
+      }
+      return null
     }
 
     // Handles simple outer->inner calls only. Does not cover deep call chains or indirect calls (e.g., via aliases or containers).
@@ -158,12 +215,16 @@ class StarlarkVariableUsageInspection : LocalInspectionTool() {
     private fun nearestScopeOwner(element: PsiElement): PsiElement? {
       var current: PsiElement? = element
       while (current != null) {
-        when (current) {
-          is StarlarkFunctionDeclaration, is StarlarkFile -> return current
-        }
+        if (isScopeOwner(current) && !isInOwnParameterList(element, current)) return current
         current = current.parent
       }
       return null
+    }
+
+    private fun isInOwnParameterList(element: PsiElement, scopeOwner: PsiElement): Boolean {
+      if (scopeOwner !is StarlarkCallable) return false
+      val parameterList = PsiTreeUtil.getChildOfType(scopeOwner as PsiElement, StarlarkParameterList::class.java) ?: return false
+      return PsiTreeUtil.isAncestor(parameterList, element, false)
     }
 
     private fun scopeData(scope: PsiElement): ScopeData? = scopeDataByScope[scope]
@@ -196,7 +257,8 @@ class StarlarkVariableUsageInspection : LocalInspectionTool() {
               parentScope = parentScope,
               kind = when (scope) {
                 is StarlarkFile -> ScopeKind.FILE
-                is StarlarkFunctionDeclaration -> ScopeKind.FUNCTION
+                is StarlarkFunctionDeclaration,
+                is StarlarkLambdaExpression -> ScopeKind.FUNCTION
                 else -> error("Unexpected scope type: ${scope::class.java.name}")
               },
             )
@@ -209,8 +271,23 @@ class StarlarkVariableUsageInspection : LocalInspectionTool() {
           if (name !in data.firstAssignmentByName) data.firstAssignmentByName[name] = offset
         }
 
-        fun putFunctionParameters(function: StarlarkFunctionDeclaration) =
-          function.getParameters().forEach { putFirstBinding(function, it.name, it.textOffset) }
+        fun putCallableParameters(scope: PsiElement, callable: StarlarkCallable) =
+          callable.getParameters().forEach { putFirstBinding(scope, it.name, it.textOffset) }
+
+        fun putTargetBindings(scope: PsiElement?, target: PsiElement?) {
+          when (target) {
+            is StarlarkTargetExpression, is StarlarkReferenceExpression -> putFirstBinding(scope, target.name, target.textOffset)
+            is StarlarkParenthesizedExpression -> putTargetBindings(scope, target.getTuple())
+            is StarlarkTupleExpression -> target.getTargetExpressions().forEach { putFirstBinding(scope, it.name, it.textOffset) }
+            is StarlarkListLiteralExpression -> {
+              var child = nearestRelevantBeforeOperator(target.firstChild)
+              while (child != null) {
+                putTargetBindings(scope, child)
+                child = nearestRelevantBeforeOperator(child.nextSibling)
+              }
+            }
+          }
+        }
 
         fun loadSymbolLocalName(loadValue: StarlarkLoadValue): String? = when (loadValue) {
           is StarlarkNamedLoadValue -> loadValue.name
@@ -219,20 +296,18 @@ class StarlarkVariableUsageInspection : LocalInspectionTool() {
         }
 
         fun walk(node: PsiElement, currentScope: PsiElement?) {
-          val scopeForNode = when (node) {
-            is StarlarkFile, is StarlarkFunctionDeclaration -> node
-            else -> currentScope
-          }
-
+          val scopeForNode = if (isScopeOwner(node)) node else currentScope
           if (scopeForNode === node) ensureScope(scopeForNode, currentScope)
 
           when (node) {
-            is StarlarkAssignmentStatement -> putFirstBinding(currentScope, node.name, node.textOffset)
+            is StarlarkAssignmentStatement -> putTargetBindings(currentScope, selectLeftHandSideOfAssignment(node))
 
             is StarlarkFunctionDeclaration -> {
               putFirstBinding(currentScope, node.name, node.textOffset)
-              putFunctionParameters(node)
+              putCallableParameters(node, node)
             }
+
+            is StarlarkLambdaExpression -> putCallableParameters(node, node)
 
             is StarlarkForStatement -> node.getLoopVariables().forEach { putFirstBinding(scopeForNode, it.name, it.textOffset) }
 
@@ -271,6 +346,11 @@ class StarlarkVariableUsageInspection : LocalInspectionTool() {
 
         return StarlarkScopeIndex(immutable)
       }
+
+      private fun isScopeOwner(element: PsiElement): Boolean =
+        element is StarlarkFile ||
+        element is StarlarkFunctionDeclaration ||
+        element is StarlarkLambdaExpression
     }
   }
 }
