@@ -85,7 +85,6 @@ class BazelPluginBranchCompatibilityTest {
           platformPrefix = PLATFORM_PREFIX,
           additionalModules = emptyList(),
           projectDir = ULTIMATE_HOME,
-          keepHttpClient = false,
           isBootClassPathCorrect = false,
           classesOutputDirectory = outputRoot.resolve("classes"),
         ))
