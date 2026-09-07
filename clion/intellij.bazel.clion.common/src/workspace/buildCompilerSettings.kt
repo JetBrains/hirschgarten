@@ -12,7 +12,6 @@ data class CcCompilerInfo(
   val cppCompiler: Path,
   val cSwitches: List<String>,
   val cppSwitches: List<String>,
-  val version: String,
   val name: String,
   val environment: Map<String, String>,
   val builtinIncludes: OutputLocationCollection,
@@ -32,8 +31,6 @@ internal fun buildCompilerSettings(): Map<WorkspaceTargetKey, CcCompilerInfo> {
       cppCompiler = ctx.resolve(toolchainInfo.cppCompiler) ?: continue,
       cSwitches = toolchainInfo.cOption,
       cppSwitches = toolchainInfo.cppOption,
-      // TODO: resolve the compiler version, or even the OCCompilerKind here already?
-      version = "unknown",
       name = toolchainInfo.compilerName,
       // TODO: port environment processing i.e. com.google.idea.blaze.cpp.environment.EnvironmentProcessor
       environment = mergeEnvironments(toolchainInfo.cEnvironment, toolchainInfo.cppEnvironment),

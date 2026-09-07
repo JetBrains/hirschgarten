@@ -5,35 +5,36 @@ import com.jetbrains.cidr.lang.CLanguageKind
 import com.jetbrains.cidr.lang.OCFileTypeHelpers
 import com.jetbrains.cidr.lang.OCLanguageKind
 import com.jetbrains.cidr.lang.workspace.OCWorkspace
-import com.jetbrains.cidr.lang.workspace.compiler.GCCCompilerKind
-import com.jetbrains.cidr.lang.workspace.compiler.GCCSwitchBuilder
+import com.jetbrains.cidr.lang.workspace.compiler.CompilerSpecificSwitchBuilder
+import com.jetbrains.cidr.lang.workspace.compiler.OCCompilerKind
 import org.jetbrains.bsp.protocol.OutputLocation
+import java.nio.file.Path
 import java.util.Objects
 import kotlin.sequences.forEach
 
 private val DEFAULT_LANGUAGE_KIND = CLanguageKind.CPP
 
 context(ctx: CcImportContext)
-internal fun buildWorkspaceModel(configs: List<CcResolveConfiguration>, model: OCWorkspace.ModifiableModel) {
+internal fun buildWorkspaceModel(
+  configs: List<CcResolveConfiguration>,
+  compilerKinds: Map<Path, OCCompilerKind>,
+  model: OCWorkspace.ModifiableModel,
+) {
   for (config in configs) {
     val workspaceConfig = model.addConfiguration(id = config.id, name = config.name, variant = null)
 
-    // TODO: use detected compiler for the configuration
-    val switchBuilder = GCCSwitchBuilder()
+    val settings = config.shared.compilerSettings
+    val cKind = compilerKinds[settings.cCompiler].orUnknown()
+    val cppKind = compilerKinds[settings.cppCompiler].orUnknown()
 
-    config.shared.transitiveDefines.forEach(switchBuilder::withMacro)
-    config.shared.transitiveIncludes.getOutputLocations().resolve().forEach(switchBuilder::withIncludePath)
-    config.shared.transitiveQuoteIncludes.getOutputLocations().resolve().forEach(switchBuilder::withQuoteIncludePath)
-    config.shared.transitiveSystemIncludes.getOutputLocations().resolve().forEach(switchBuilder::withSystemIncludePath)
-
-    val cSwitches = GCCSwitchBuilder().apply {
-      withSwitches(switchBuilder.build())
-      withSwitches(config.shared.compilerSettings.cSwitches)
+    val cSwitches = CompilerSpecificSwitchBuilder.getBuilder(cKind).apply {
+      appendCompilationContext(config)
+      withSwitches(settings.cSwitches)
     }.build()
 
-    val cppSwitches = GCCSwitchBuilder().apply {
-      withSwitches(switchBuilder.build())
-      withSwitches(config.shared.compilerSettings.cppSwitches)
+    val cppSwitches = CompilerSpecificSwitchBuilder.getBuilder(cppKind).apply {
+      appendCompilationContext(config)
+      withSwitches(settings.cppSwitches)
     }.build()
 
     // TODO: port the copts processing i.e. com.google.idea.blaze.cpp.copts.CoptsProcessor
@@ -43,28 +44,34 @@ internal fun buildWorkspaceModel(configs: List<CcResolveConfiguration>, model: O
       val fileConfig = workspaceConfig.addSource(file, languageKind)
 
       if (languageKind == CLanguageKind.C) {
-        // TODO: use detected compiler for the configuration
-        fileConfig.setCompiler(GCCCompilerKind, config.shared.compilerSettings.cCompiler.toFile(), ctx.execroot.toFile())
+        fileConfig.setCompiler(cKind, settings.cCompiler.toFile(), ctx.execroot.toFile())
         fileConfig.setCompilerSwitches(cSwitches)
       }
 
       if (languageKind == CLanguageKind.CPP) {
-        // TODO: use detected compiler for the configuration
-        fileConfig.setCompiler(GCCCompilerKind, config.shared.compilerSettings.cppCompiler.toFile(), ctx.execroot.toFile())
+        fileConfig.setCompiler(cppKind, settings.cppCompiler.toFile(), ctx.execroot.toFile())
         fileConfig.setCompilerSwitches(cppSwitches)
       }
     }
 
     workspaceConfig.getLanguageCompilerSettings(CLanguageKind.C).apply {
-      setCompiler(GCCCompilerKind, config.shared.compilerSettings.cCompiler.toFile(), ctx.execroot.toFile())
+      setCompiler(cKind, settings.cCompiler.toFile(), ctx.execroot.toFile())
       setCompilerSwitches(cSwitches)
     }
 
     workspaceConfig.getLanguageCompilerSettings(CLanguageKind.CPP).apply {
-      setCompiler(GCCCompilerKind, config.shared.compilerSettings.cppCompiler.toFile(), ctx.execroot.toFile())
+      setCompiler(cppKind, settings.cppCompiler.toFile(), ctx.execroot.toFile())
       setCompilerSwitches(cppSwitches)
     }
   }
+}
+
+context(ctx: CcImportContext)
+private fun CompilerSpecificSwitchBuilder.appendCompilationContext(config: CcResolveConfiguration) {
+  config.shared.transitiveDefines.forEach(::withMacro)
+  config.shared.transitiveIncludes.getOutputLocations().resolve().forEach(::withIncludePath)
+  config.shared.transitiveQuoteIncludes.getOutputLocations().resolve().forEach(::withQuoteIncludePath)
+  config.shared.transitiveSystemIncludes.getOutputLocations().resolve().forEach(::withSystemIncludePath)
 }
 
 private fun getDeclaredLanguageKind(sourceOrHeaderFile: VirtualFile): OCLanguageKind {
