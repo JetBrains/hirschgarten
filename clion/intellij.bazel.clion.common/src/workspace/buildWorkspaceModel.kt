@@ -6,7 +6,6 @@ import com.jetbrains.cidr.lang.OCFileTypeHelpers
 import com.jetbrains.cidr.lang.OCLanguageKind
 import com.jetbrains.cidr.lang.workspace.OCWorkspace
 import com.jetbrains.cidr.lang.workspace.compiler.CompilerSpecificSwitchBuilder
-import com.jetbrains.cidr.lang.workspace.compiler.OCCompilerKind
 import org.jetbrains.bsp.protocol.OutputLocation
 import java.nio.file.Path
 import java.util.Objects
@@ -15,27 +14,21 @@ import kotlin.sequences.forEach
 private val DEFAULT_LANGUAGE_KIND = CLanguageKind.CPP
 
 context(ctx: CcImportContext)
-internal fun buildWorkspaceModel(
-  configs: List<CcResolveConfiguration>,
-  compilerKinds: Map<Path, OCCompilerKind>,
-  model: OCWorkspace.ModifiableModel,
-) {
+internal fun buildWorkspaceModel(model: OCWorkspace.ModifiableModel, configs: List<CcResolveConfiguration>) {
   for (config in configs) {
     val workspaceConfig = model.addConfiguration(id = config.id, name = config.name, variant = null)
 
     val settings = config.shared.compilerSettings
-    val cKind = compilerKinds[settings.cCompiler].orUnknown()
-    val cppKind = compilerKinds[settings.cppCompiler].orUnknown()
 
     // TODO: port the copts processing i.e. com.google.idea.blaze.cpp.copts.CoptsProcessor
-    val cSwitches = CompilerSpecificSwitchBuilder.getBuilder(cKind).apply {
+    val cSwitches = CompilerSpecificSwitchBuilder.getBuilder(settings.cCompilerKind).apply {
       appendCompilationContext(config)
       withSwitches(settings.cSwitches)
       withSwitches(config.shared.copts)
       withSwitches(config.shared.conlyopts)
     }.build()
 
-    val cppSwitches = CompilerSpecificSwitchBuilder.getBuilder(cppKind).apply {
+    val cppSwitches = CompilerSpecificSwitchBuilder.getBuilder(settings.cppCompilerKind).apply {
       appendCompilationContext(config)
       withSwitches(settings.cppSwitches)
       withSwitches(config.shared.copts)
@@ -47,23 +40,23 @@ internal fun buildWorkspaceModel(
       val fileConfig = workspaceConfig.addSource(file, languageKind)
 
       if (languageKind == CLanguageKind.C) {
-        fileConfig.setCompiler(cKind, settings.cCompiler.toFile(), ctx.execroot.toFile())
+        fileConfig.setCompiler(settings.cCompilerKind, settings.cCompiler.toFile(), ctx.execroot.toFile())
         fileConfig.setCompilerSwitches(cSwitches)
       }
 
       if (languageKind == CLanguageKind.CPP) {
-        fileConfig.setCompiler(cppKind, settings.cppCompiler.toFile(), ctx.execroot.toFile())
+        fileConfig.setCompiler(settings.cppCompilerKind, settings.cppCompiler.toFile(), ctx.execroot.toFile())
         fileConfig.setCompilerSwitches(cppSwitches)
       }
     }
 
     workspaceConfig.getLanguageCompilerSettings(CLanguageKind.C).apply {
-      setCompiler(cKind, settings.cCompiler.toFile(), ctx.execroot.toFile())
+      setCompiler(settings.cCompilerKind, settings.cCompiler.toFile(), ctx.execroot.toFile())
       setCompilerSwitches(cSwitches)
     }
 
     workspaceConfig.getLanguageCompilerSettings(CLanguageKind.CPP).apply {
-      setCompiler(cppKind, settings.cppCompiler.toFile(), ctx.execroot.toFile())
+      setCompiler(settings.cppCompilerKind, settings.cppCompiler.toFile(), ctx.execroot.toFile())
       setCompilerSwitches(cppSwitches)
     }
   }

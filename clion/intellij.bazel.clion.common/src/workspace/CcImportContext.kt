@@ -1,6 +1,7 @@
 package org.jetbrains.bazel.clion.workspace
 
 import com.intellij.build.events.MessageEvent
+import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.NlsSafe
 import org.jetbrains.bazel.sync.workspace.importer.WorkspaceImporterContext
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceSnapshot
@@ -9,6 +10,8 @@ import org.jetbrains.bsp.protocol.TaskId
 import java.nio.file.Path
 
 internal interface CcImportContext {
+
+  val project: Project
 
   val snapshot: WorkspaceSnapshot
 
@@ -31,6 +34,9 @@ private class CcImportContextImpl(
   private val ctx: WorkspaceImporterContext,
   override val snapshot: WorkspaceSnapshot,
 ) : CcImportContext {
+
+  override val project: Project
+    get() = ctx.project
 
   override val execroot: Path
     get() = ctx.bazelInfo.execRoot

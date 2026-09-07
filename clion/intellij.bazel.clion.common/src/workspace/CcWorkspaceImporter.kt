@@ -67,16 +67,11 @@ internal class CcWorkspaceImporter : BazelWorkspaceImporter, BazelWorkspaceImpor
     try {
       workspace.setClientVersion(CLIENT_VERSION)
 
-      val environments = CcToolEnvironments()
       // TODO: can we use a real indicator here?
       val session = CompilerInfoCache().createSession<String>(EmptyProgressIndicator())
       try {
-        val compilerKinds = subtask(ctx, snapshot, "cc.import.task.compiler.kinds") {
-          resolveCompilerKinds(ctx.project, session, configurations, environments)
-        }
-
-        subtask(ctx, snapshot, "cc.import.task.oc.workspace") { buildWorkspaceModel(configurations, compilerKinds, workspace) }
-        subtask(ctx, snapshot, "cc.import.task.compiler.info") { collectCompilerInfo(session, workspace, configurations, environments) }
+        subtask(ctx, snapshot, "cc.import.task.oc.workspace") { buildWorkspaceModel(workspace, configurations) }
+        subtask(ctx, snapshot, "cc.import.task.compiler.info") { collectCompilerInfo(session, workspace, configurations) }
       }
       catch (ex: Throwable) {
         session.dispose()

@@ -11,12 +11,10 @@ internal fun collectCompilerInfo(
   session: CompilerInfoCache.Session<String>,
   model: OCWorkspace.ModifiableModel,
   configurations: List<CcResolveConfiguration>,
-  environments: CcToolEnvironments,
 ) {
   for (config in configurations) {
     val configModel = model.getConfigurationById(config.id) ?: continue
-    val environment = environments.of(config.shared.compilerSettings.environment)
-    session.schedule(config.id, configModel, environment, ctx.execroot.toString())
+    session.schedule(config.id, configModel, config.shared.compilerSettings.toolEnvironment, ctx.execroot.toString())
   }
 
   val messages = MultiMap<String, CompilerInfoCache.Message>()
