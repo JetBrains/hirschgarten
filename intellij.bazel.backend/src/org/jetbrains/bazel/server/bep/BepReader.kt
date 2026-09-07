@@ -2,14 +2,14 @@ package org.jetbrains.bazel.server.bep
 
 import com.google.devtools.build.lib.buildeventstream.BuildEventStreamProtos
 import com.intellij.openapi.diagnostic.logger
-import kotlinx.coroutines.delay
-import org.jetbrains.bazel.server.bsp.utils.DelimitedMessageReader
+import org.jetbrains.bazel.server.bsp.utils.awaitDelimitedMessageBytes
 import java.io.BufferedInputStream
 import java.nio.file.Path
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicLong
 import kotlin.io.path.inputStream
 import kotlin.time.Duration.Companion.milliseconds
+import kotlin.time.Duration.Companion.seconds
 
 internal class BepReader(val bepServer: BepServer, val eventFile: Path) {
   val serverPid = AtomicLong(0)
@@ -26,22 +26,10 @@ internal class BepReader(val bepServer: BepServer, val eventFile: Path) {
   }
 
   private suspend fun readBepEvents(inputStream: BufferedInputStream) {
-    val reader =
-        DelimitedMessageReader(
-            inputStream,
-            BuildEventStreamProtos.BuildEvent.parser(),
-        )
-
-    while(true) {
-      val event: BuildEventStreamProtos.BuildEvent? = reader.nextMessage()
-      if (event == null) {
-        if (bazelBuildFinished.get())
-          break
-
-        delay(PollInterval)
-        continue
-      }
-
+    val parser = BuildEventStreamProtos.BuildEvent.parser()
+    while (true) {
+      val eventBytes = inputStream.awaitDelimitedMessageBytes(Timeout, PollInterval) { bazelBuildFinished.get() } ?: break
+      val event = parser.parsePartialFrom(eventBytes)
       bepServer.handleBuildEventStreamProtosEvent(event)
       setServerPid(event)
     }
@@ -60,6 +48,7 @@ internal class BepReader(val bepServer: BepServer, val eventFile: Path) {
   companion object {
     private val logger = logger<BepReader>()
     private val PollInterval = 10.milliseconds
+    private val Timeout = 30.seconds
 
     private fun Path.setFilePermissions() {
       with(toFile()) {
