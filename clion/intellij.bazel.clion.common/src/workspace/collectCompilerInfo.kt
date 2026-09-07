@@ -15,12 +15,18 @@ internal fun collectCompilerInfo(model: OCWorkspace.ModifiableModel) {
   // TODO: can we use a real indicator here?
   val session = compilerInfoCache.createSession<Int>(EmptyProgressIndicator())
 
-  for ((i, config) in model.configurations.withIndex()) {
-    session.schedule(i, config, CidrToolEnvironment(), ctx.execroot.toString())
-  }
-
   val messages = MultiMap<Int, CompilerInfoCache.Message>()
-  session.waitForAll(messages)
+  try {
+    for ((i, config) in model.configurations.withIndex()) {
+      session.schedule(i, config, CidrToolEnvironment(), ctx.execroot.toString())
+    }
+
+    session.waitForAll(messages)
+  }
+  catch (ex: Throwable) {
+    session.dispose()
+    throw ex
+  }
 
   reportProblems(messages)
 }

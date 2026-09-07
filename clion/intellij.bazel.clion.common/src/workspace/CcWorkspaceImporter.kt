@@ -1,6 +1,7 @@
 package org.jetbrains.bazel.clion.workspace
 
 import com.intellij.openapi.diagnostic.logger
+import com.intellij.openapi.util.Disposer
 import com.intellij.openapi.util.NlsContexts
 import com.jetbrains.cidr.lang.workspace.OCWorkspace
 import com.jetbrains.cidr.lang.workspace.OCWorkspaceImpl
@@ -61,13 +62,19 @@ internal class CcWorkspaceImporter : BazelWorkspaceImporter, BazelWorkspaceImpor
     }
 
     val workspace = OCWorkspaceImpl.getInstanceImpl(ctx.project).getModifiableModel(CLIENT_KEY, clear = true)
-    workspace.setClientVersion(CLIENT_VERSION)
+    try {
+      workspace.setClientVersion(CLIENT_VERSION)
 
-    subtask(ctx, snapshot, "cc.import.task.oc.workspace") { buildWorkspaceModel(configurations, workspace) }
-    subtask(ctx, snapshot, "cc.import.task.compiler.info") { collectCompilerInfo(workspace) }
+      subtask(ctx, snapshot, "cc.import.task.oc.workspace") { buildWorkspaceModel(configurations, workspace) }
+      subtask(ctx, snapshot, "cc.import.task.compiler.info") { collectCompilerInfo(workspace) }
 
-    workspace.preCommit()
-    workspace.commitAndContribute()
+      workspace.preCommit()
+      workspace.commitAndContribute()
+    }
+    finally {
+      Disposer.dispose(workspace)
+      configurations = emptyList()
+    }
 
     return Result.success(WorkspaceImporterResult.Success)
   }
