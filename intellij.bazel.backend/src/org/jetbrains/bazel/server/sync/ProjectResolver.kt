@@ -288,7 +288,7 @@ class ProjectResolver(
               taskLogger,
               allTargets,
             )
-          var remainingShardedTargetsSpecs = shardedResult.targets.toTargetCollections().toMutableList()
+          var remainingShardedTargetsSpecs = shardedResult.targets.toMutableList()
           var shardNumber = 1
           var shardedBuildResult: BazelBspAspectsManagerResult = BazelBspAspectsManagerResult.emptyResult()
           var suggestedTargetShardSize: Int = projectView.targetShardSize
