@@ -8,6 +8,7 @@ import com.intellij.testFramework.junit5.fixture.testFixture
 import org.jetbrains.annotations.TestOnly
 import org.jetbrains.bazel.test.framework.BazelPathManager
 import org.jetbrains.bazel.test.framework.bazelProjectFixture
+import org.jetbrains.bazel.test.framework.writeProjectView
 
 /**
  * Opens the Bazel test project at [projectPath], runs a real `performBazelSync`, brings up the CLion
@@ -21,29 +22,30 @@ import org.jetbrains.bazel.test.framework.bazelProjectFixture
  * backend attaches to an empty one — but the structure is ready: point [projectPath] at a C++
  * project and add resolve assertions once the aspect lands.
  *
+ * [configure] builds the project view of the test. The fixture writes it before the sync, so the test
+ * does not need a project view file in its test data.
+ *
  * For the backend to actually come up, `RESHARPER_HOST_BIN` must point at a built `dotnet/Bin.RiderBackend`.
  */
 @TestOnly
 internal fun clionBazelProjectFixture(
   projectPath: String,
-  projectView: String? = null,
   bazelVersion: String? = null,
   buildProject: Boolean = false,
   jvmToolchains: Boolean = false,
-  configure: suspend (Project) -> Unit = {},
+  configure: ProjectViewBuilder.() -> Unit = {},
 ): TestFixture<Project> = testFixture {
-
   System.setProperty("patch.engine.backend.freeze.timeout", "-1")
+
+  val projectView = ProjectViewBuilder().addDirectories(".").apply(configure).build()
 
   val project = bazelProjectFixture(
     projectPath,
     buildProject = buildProject,
     bazelVersion = bazelVersion,
-    projectView = projectView,
     projectsRoot = BazelPathManager.clionTestProjectsRoot,
     jvmToolchains = jvmToolchains,
-    configure = configure,
-  ).init()
+  ) { writeProjectView(it, projectView) }.init()
 
   LOG.info("Calling after project opened (engine)")
   LanguageEngine.INSTANCE.afterProjectOpened(project)

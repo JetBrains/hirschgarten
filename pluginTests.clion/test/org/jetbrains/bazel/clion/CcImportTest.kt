@@ -18,6 +18,7 @@ import org.jetbrains.bazel.clion.sync.CcBuildTarget
 import org.jetbrains.bazel.clion.sync.CcToolchainBuildTarget
 import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.config.BazelFeatureFlags
+import org.jetbrains.bazel.fixtures.ProjectViewBuilder
 import org.jetbrains.bazel.fixtures.clionBazelProjectFixture
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.sync.environment.projectCtx
@@ -38,7 +39,9 @@ import org.junit.jupiter.api.TestInstance
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class CcImportTest {
 
-  private val project by clionBazelProjectFixture("clion/simple")
+  private val project by clionBazelProjectFixture("clion/simple") {
+    addBuildFlags("--extra_toolchains=//toolchain:toolchain")
+  }
 
   @Test
   fun testVfsRoots() {

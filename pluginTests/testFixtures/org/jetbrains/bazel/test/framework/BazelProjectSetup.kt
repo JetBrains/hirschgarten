@@ -10,6 +10,7 @@ import com.intellij.openapi.projectRoots.ProjectJdkTable
 import com.intellij.openapi.util.Disposer
 import com.intellij.project.stateStore
 import com.intellij.testFramework.replaceService
+import org.jetbrains.annotations.TestOnly
 import org.jetbrains.bazel.bazelrunner.BazelProcessLauncherProvider
 import org.jetbrains.bazel.bazelrunner.BazelProcessResult
 import org.jetbrains.bazel.bazelrunner.BazelRunner
@@ -59,8 +60,18 @@ internal fun applyProjectView(project: Project, projectRoot: Path, projectView: 
     return
   }
   LOG.info("Applying the project view $projectView")
+  source.copyTo(projectViewFile(project), overwrite = true)
+}
+
+fun writeProjectView(project: Project, content: String) {
+  LOG.info("Writing the project view of ${project.name}")
+  projectViewFile(project).writeText(content)
+}
+
+/** Returns the project view path of [project], with the parent directories in place. */
+private fun projectViewFile(project: Project): Path {
   val descriptor = (project.stateStore as ProjectStoreImpl).storeDescriptor as BazelProjectStoreDescriptor
-  source.copyTo(descriptor.projectViewFile.createParentDirectories(), overwrite = true)
+  return descriptor.projectViewFile.createParentDirectories()
 }
 
 /** Runs a full Bazel sync of [project]. */

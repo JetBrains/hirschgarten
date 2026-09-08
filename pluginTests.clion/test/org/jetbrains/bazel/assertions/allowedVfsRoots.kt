@@ -70,7 +70,7 @@ private fun getChildrenInVfs(dir: VirtualFile): Sequence<Path> = sequence {
   }
 }
 
-fun assertVfsLoads(executionRoot: Path, allowedRoots: List<AllowedVfsRoot>) {
+internal fun assertVfsLoads(executionRoot: Path, allowedRoots: List<AllowedVfsRoot>) {
   val root = VfsUtil.findFile(executionRoot, /* refreshIfNeeded = */ false) ?: return
 
   for (child in getChildrenInVfs(root)) {
