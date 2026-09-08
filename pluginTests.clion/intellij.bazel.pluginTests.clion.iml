@@ -11,224 +11,27 @@
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="module" module-name="intellij.bazel.pluginTests" scope="TEST" />
-    <orderEntry type="module" module-name="intellij.libraries.guava" scope="TEST" />
-    <orderEntry type="module" module-name="intellij.libraries.fastutil" scope="TEST" />
-    <orderEntry type="module" module-name="intellij.libraries.gson" scope="TEST" />
-    <orderEntry type="module" module-name="intellij.libraries.kryo5" scope="TEST" />
     <orderEntry type="library" scope="TEST" name="kotlin-stdlib" level="project" />
-    <orderEntry type="module" module-name="intellij.libraries.kotlinc.analysis.api.platform.interface" scope="TEST" />
-    <orderEntry type="module" module-name="intellij.libraries.kotlinc.kotlin.compiler.common" scope="TEST" />
-    <orderEntry type="library" scope="TEST" name="kotlinc.kotlin-jps-plugin-classpath" level="project" />
-    <orderEntry type="module" module-name="intellij.libraries.kotlinx.collections.immutable" scope="TEST" />
-    <orderEntry type="module" module-name="intellij.libraries.kotlinx.coroutines.guava" scope="TEST" />
-    <orderEntry type="module" module-name="intellij.libraries.kotlinx.datetime" scope="TEST" />
-    <orderEntry type="module" module-name="intellij.libraries.opentelemetry" scope="TEST" />
-    <orderEntry type="module" module-name="intellij.libraries.protobuf" scope="TEST" />
-    <orderEntry type="module" module-name="intellij.libraries.stream" scope="TEST" />
-    <orderEntry type="library" scope="TEST" name="studio-platform" level="project" />
-    <orderEntry type="module" module-name="intellij.libraries.swingx" scope="TEST" />
-    <orderEntry type="module" module-name="intellij.libraries.caffeine" scope="TEST" />
-    <orderEntry type="module" module-name="intellij.libraries.oro.matcher" scope="TEST" />
-    <orderEntry type="module" module-name="intellij.devkit.core" scope="TEST" />
     <orderEntry type="module" module-name="intellij.nativeDebug.plugin" scope="TEST" />
     <orderEntry type="module" module-name="intellij.clion" scope="TEST" />
+    <orderEntry type="module" module-name="intellij.cidr.projectModel" scope="TEST" />
+    <orderEntry type="module" module-name="intellij.cidr.psi.base" scope="TEST" />
     <orderEntry type="module" module-name="intellij.clion.radler" scope="RUNTIME" />
     <orderEntry type="module" module-name="intellij.clion.radler.testFramework.junit5" scope="RUNTIME" />
     <orderEntry type="module" module-name="intellij.clion.radler.backend.marker" scope="RUNTIME" />
     <orderEntry type="module" module-name="intellij.clion.testFramework.nolang.junit5.core" scope="TEST" />
     <orderEntry type="module" module-name="intellij.rider.rdclient.dotnet" scope="RUNTIME" />
-    <orderEntry type="module" module-name="intellij.rd.ide.model.generated" scope="TEST" />
-    <orderEntry type="module" module-name="intellij.libraries.rd.core" scope="TEST" />
-    <orderEntry type="module" module-name="intellij.libraries.rd.framework" scope="TEST" />
-    <orderEntry type="module" module-name="intellij.java" scope="TEST" />
-    <orderEntry type="module" module-name="intellij.java.analysis.impl" scope="TEST" />
-    <orderEntry type="module" module-name="intellij.java.compiler" scope="TEST" />
-    <orderEntry type="module" module-name="intellij.java.compiler.impl" scope="TEST" />
-    <orderEntry type="module" module-name="intellij.java.execution" scope="TEST" />
-    <orderEntry type="module" module-name="intellij.java.execution.impl" scope="TEST" />
-    <orderEntry type="module" module-name="intellij.java.impl" scope="TEST" />
-    <orderEntry type="module" module-name="intellij.java.psi" scope="TEST" />
-    <orderEntry type="module" module-name="intellij.java.ui" scope="TEST" />
-    <orderEntry type="module" module-name="intellij.performanceTesting" scope="TEST" />
     <orderEntry type="module" module-name="intellij.platform.analysis" scope="TEST" />
-    <orderEntry type="module" module-name="intellij.platform.codeStyle" scope="TEST" />
-    <orderEntry type="module" module-name="intellij.platform.macro" scope="TEST" />
-    <orderEntry type="module" module-name="intellij.platform.backend.observation" scope="TEST" />
-    <orderEntry type="module" module-name="intellij.platform.backend.split" scope="TEST" />
-    <orderEntry type="module" module-name="intellij.platform.backend.workspace" scope="TEST" />
-    <orderEntry type="module" module-name="intellij.platform.codeStyle.impl" scope="TEST" />
-    <orderEntry type="module" module-name="intellij.platform.collaborationTools" scope="TEST" />
-    <orderEntry type="module" module-name="intellij.platform.configurationStore.impl" scope="TEST" />
-    <orderEntry type="module" module-name="intellij.platform.concurrency" scope="TEST" />
     <orderEntry type="module" module-name="intellij.platform.core" scope="TEST" />
     <orderEntry type="module" module-name="intellij.platform.core.impl" scope="TEST" />
-    <orderEntry type="module" module-name="intellij.platform.core.ui" scope="TEST" />
-    <orderEntry type="module" module-name="intellij.platform.debugger" scope="TEST" />
-    <orderEntry type="module" module-name="intellij.platform.debugger.impl" scope="TEST" />
-    <orderEntry type="module" module-name="intellij.platform.diagnostic.telemetry" scope="TEST" />
-    <orderEntry type="module" module-name="intellij.platform.diagnostic.telemetry.exporters" scope="TEST" />
-    <orderEntry type="module" module-name="intellij.platform.editor.ui" scope="TEST" />
-    <orderEntry type="module" module-name="intellij.platform.execution" scope="TEST" />
-    <orderEntry type="module" module-name="intellij.platform.execution.impl" scope="TEST" />
-    <orderEntry type="module" module-name="intellij.platform.externalSystem" scope="TEST" />
-    <orderEntry type="module" module-name="intellij.platform.externalSystem.impl" scope="TEST" />
-    <orderEntry type="module" module-name="intellij.platform.ide" scope="TEST" />
-    <orderEntry type="module" module-name="intellij.platform.ide.core.impl" scope="TEST" />
-    <orderEntry type="module" module-name="intellij.platform.ide.core" scope="TEST" />
-    <orderEntry type="module" module-name="intellij.platform.ide.impl" scope="TEST" />
-    <orderEntry type="module" module-name="intellij.platform.settings.local" scope="TEST" />
-    <orderEntry type="module" module-name="intellij.platform.backend.main" scope="TEST" />
-    <orderEntry type="module" module-name="intellij.platform.ide.observable" scope="TEST" />
-    <orderEntry type="module" module-name="intellij.platform.indexing" scope="TEST" />
-    <orderEntry type="module" module-name="intellij.platform.jps.model" scope="TEST" />
-    <orderEntry type="module" module-name="intellij.platform.lang.core" scope="TEST" />
-    <orderEntry type="module" module-name="intellij.platform.lang.impl" scope="TEST" />
-    <orderEntry type="module" module-name="intellij.platform.markdown.utils" scope="TEST" />
-    <orderEntry type="module" module-name="intellij.platform.projectModel" scope="TEST" />
-    <orderEntry type="module" module-name="intellij.platform.rd.community" scope="TEST" />
-    <orderEntry type="module" module-name="intellij.platform.scriptDebugger.backend" scope="TEST" />
-    <orderEntry type="module" module-name="intellij.platform.scriptDebugger.ui" scope="TEST" />
-    <orderEntry type="module" module-name="intellij.platform.smRunner" scope="TEST" />
-    <orderEntry type="module" module-name="intellij.platform.syntax" scope="TEST" />
-    <orderEntry type="module" module-name="intellij.platform.usageView" scope="TEST" />
-    <orderEntry type="module" module-name="intellij.platform.usageView.impl" scope="TEST" />
-    <orderEntry type="module" module-name="intellij.platform.util" scope="TEST" />
-    <orderEntry type="module" module-name="intellij.platform.util.base" scope="TEST" />
-    <orderEntry type="module" module-name="intellij.platform.util.jdom" scope="TEST" />
-    <orderEntry type="module" module-name="intellij.platform.util.progress" scope="TEST" />
-    <orderEntry type="module" module-name="intellij.platform.util.ui" scope="TEST" />
-    <orderEntry type="module" module-name="intellij.platform.vcs" scope="TEST" />
-    <orderEntry type="module" module-name="intellij.platform.workspace.jps" scope="TEST" />
-    <orderEntry type="module" module-name="intellij.platform.workspace.storage" scope="TEST" />
-    <orderEntry type="module" module-name="intellij.python.community.impl" scope="TEST" />
-    <orderEntry type="module" module-name="intellij.python.sdk.backend" scope="TEST" />
-    <orderEntry type="module" module-name="intellij.remoteDev.util" scope="TEST" />
-    <orderEntry type="module" module-name="intellij.kotlin.base.facet" scope="TEST" />
-    <orderEntry type="module" module-name="intellij.kotlin.base.projectStructure" scope="TEST" />
-    <orderEntry type="module" module-name="kotlin.testsFromCompiler" scope="TEST" />
-    <orderEntry type="module" module-name="intellij.kotlin.base.psi" scope="TEST" />
-    <orderEntry type="module" module-name="intellij.kotlin.base.resources" scope="TEST" />
-    <orderEntry type="module" module-name="intellij.kotlin.base.util" scope="TEST" />
-    <orderEntry type="module" module-name="intellij.kotlin.preferences" scope="TEST" />
-    <orderEntry type="module" module-name="intellij.kotlin.projectConfiguration" scope="TEST" />
-    <orderEntry type="module" module-name="intellij.python.pydev" scope="TEST" />
-    <orderEntry type="module" module-name="intellij.platform.coverage" scope="TEST" />
-    <orderEntry type="module" module-name="intellij.platform.coverage.agent" scope="TEST" />
-    <orderEntry type="module" module-name="intellij.platform.util.coroutines" scope="TEST" />
-    <orderEntry type="module" module-name="intellij.protoeditor.core" scope="TEST" />
-    <orderEntry type="module" module-name="intellij.kotlin.projectWizard.idea" scope="TEST" />
-    <orderEntry type="module" module-name="intellij.platform.util.text.matching" scope="TEST" />
-    <orderEntry type="module" module-name="intellij.java.debugger.impl.shared" scope="TEST" />
-    <orderEntry type="module" module-name="intellij.kotlin.jvm.debugger.coroutines" scope="TEST" />
-    <orderEntry type="module" module-name="intellij.platform.projectModel.impl" scope="TEST" />
-    <orderEntry type="module" module-name="intellij.platform.searchEverywhere" scope="TEST" />
-    <orderEntry type="module" module-name="intellij.platform.ide.rpc" scope="TEST" />
-    <orderEntry type="module" module-name="intellij.terminal" scope="TEST" />
-    <orderEntry type="module" module-name="intellij.terminal.completion" scope="TEST" />
-    <orderEntry type="module" module-name="intellij.driver.sdk" scope="TEST" />
-    <orderEntry type="module" module-name="intellij.platform.refactoring" scope="TEST" />
-    <orderEntry type="module" module-name="intellij.platform.statistics" scope="TEST" />
-    <orderEntry type="module" module-name="intellij.platform.statistics.testFramework" scope="TEST" />
-    <orderEntry type="module" module-name="intellij.java.testFramework" scope="TEST" />
-    <orderEntry type="module" module-name="intellij.java.rt" scope="TEST" />
-    <orderEntry type="module" module-name="intellij.platform.testFramework.core" scope="TEST" />
     <orderEntry type="module" module-name="intellij.platform.testFramework" scope="TEST" />
     <orderEntry type="module" module-name="intellij.platform.testFramework.junit5" scope="TEST" />
-    <orderEntry type="module" module-name="intellij.platform.testFramework.junit5.codeInsight" scope="TEST" />
-    <orderEntry type="module" module-name="intellij.platform.testFramework.junit5.eel" scope="TEST" />
-    <orderEntry type="module" module-name="intellij.tools.ide.metrics.benchmark" scope="TEST" />
-    <orderEntry type="module" module-name="intellij.python.commonTests" scope="TEST" />
-    <orderEntry type="module" module-name="intellij.python.community.plugin.impl" scope="TEST" />
-    <orderEntry type="module" module-name="intellij.python.community.testFramework" scope="TEST" />
-    <orderEntry type="module" module-name="intellij.python.community.plugin" scope="TEST" />
-    <orderEntry type="module" module-name="intellij.python.plugin" scope="TEST" />
-    <orderEntry type="module" module-name="intellij.python.community.plugin.modules" scope="TEST" />
-    <orderEntry type="module" module-name="intellij.python.community.aliasProvider" scope="TEST" />
-    <orderEntry type="module" module-name="intellij.java.plugin" scope="TEST" />
-    <orderEntry type="module" module-name="intellij.java.debugger" scope="TEST" />
-    <orderEntry type="module" module-name="intellij.java.debugger.impl" scope="TEST" />
-    <orderEntry type="module" module-name="intellij.platform.editor.ex" scope="TEST" />
-    <orderEntry type="module" module-name="intellij.java.guiForms.designer" scope="TEST" />
-    <orderEntry type="module" module-name="intellij.xml.dom.impl" scope="TEST" />
-    <orderEntry type="module" module-name="intellij.java.jam.impl" scope="TEST" />
-    <orderEntry type="module" module-name="intellij.platform.vcs.impl" scope="TEST" />
-    <orderEntry type="module" module-name="intellij.platform.lvcs.impl" scope="TEST" />
-    <orderEntry type="module" module-name="intellij.java.langInjection" scope="TEST" />
-    <orderEntry type="module" module-name="intellij.xml.langInjection" scope="TEST" />
-    <orderEntry type="module" module-name="intellij.platform.tests" scope="TEST" />
-    <orderEntry type="module" module-name="intellij.xml.tests" scope="TEST" />
-    <orderEntry type="module" module-name="intellij.idea.ultimate.customization" scope="RUNTIME" />
-    <orderEntry type="module" module-name="intellij.properties.psi" scope="TEST" />
-    <orderEntry type="module" module-name="intellij.properties.backend.psi" scope="TEST" />
-    <orderEntry type="module" module-name="intellij.platform.commercial" scope="RUNTIME" />
-    <orderEntry type="module" module-name="intellij.platform.util.tests" scope="TEST" />
-    <orderEntry type="module" module-name="intellij.platform.lang.tests" scope="TEST" />
-    <orderEntry type="module" module-name="intellij.idea.ultimate.codeInsight.tests" scope="TEST" />
-    <orderEntry type="module" module-name="intellij.platform.vcs.tests" scope="TEST" />
-    <orderEntry type="module" module-name="intellij.platform.testExtensions" scope="TEST" />
-    <orderEntry type="module" module-name="intellij.platform.inspect" scope="TEST" />
-    <orderEntry type="module" module-name="intellij.platform.ide.bootstrap" scope="TEST" />
-    <orderEntry type="module" module-name="intellij.platform.ide.progress" scope="TEST" />
-    <orderEntry type="module" module-name="intellij.java.tests" scope="TEST" />
-    <orderEntry type="module" module-name="intellij.java.frontback.psi" scope="TEST" />
-    <orderEntry type="module" module-name="intellij.libraries.mvstore" scope="TEST" />
-    <orderEntry type="module" module-name="intellij.libraries.hash4j" scope="TEST" />
-    <orderEntry type="module" module-name="intellij.libraries.jackson" scope="TEST" />
-    <orderEntry type="module" module-name="intellij.libraries.jackson.databind" scope="TEST" />
-    <orderEntry type="module" module-name="intellij.libraries.jackson.module.kotlin" scope="TEST" />
-    <orderEntry type="module" module-name="intellij.libraries.kotlinTestAssertionsCoreJvm" scope="TEST" />
-    <orderEntry type="module" module-name="intellij.libraries.mockito" scope="TEST" />
-    <orderEntry type="library" scope="TEST" name="jmock" level="project" />
     <orderEntry type="module" module-name="intellij.libraries.assertj.core" scope="TEST" />
-    <orderEntry type="module" module-name="intellij.libraries.kotlinTest" scope="TEST" />
-    <orderEntry type="module" module-name="intellij.libraries.kotlinx.coroutines.core" scope="TEST" />
-    <orderEntry type="module" module-name="intellij.libraries.grpc" scope="TEST" />
-    <orderEntry type="module" module-name="intellij.libraries.kotlinx.coroutines.test" scope="TEST" />
-    <orderEntry type="module" module-name="intellij.libraries.jediterm.core" scope="TEST" />
-    <orderEntry type="module" module-name="intellij.libraries.protobuf.java.util" scope="TEST" />
-    <orderEntry type="module" module-name="intellij.platform.util.classLoader" scope="TEST" />
-    <orderEntry type="module" module-name="intellij.platform.util.ex" scope="TEST" />
-    <orderEntry type="module" module-name="intellij.kotlin.i18n" scope="TEST" />
-    <orderEntry type="module" module-name="intellij.kotlin.codeInsight.api" scope="TEST" />
     <orderEntry type="module" module-name="intellij.kotlin.plugin.community.main" scope="RUNTIME" />
-    <orderEntry type="module" module-name="intellij.bazel" scope="TEST" />
-    <orderEntry type="module" module-name="intellij.bazel.bazelisk" scope="TEST" />
-    <orderEntry type="module" module-name="intellij.bazel.bytecodeViewer" scope="TEST" />
     <orderEntry type="module" module-name="intellij.bazel.commons" scope="TEST" />
     <orderEntry type="module" module-name="intellij.bazel.backend" scope="TEST" />
     <orderEntry type="module" module-name="intellij.bazel.core" scope="TEST" />
-    <orderEntry type="module" module-name="intellij.bazel.core.performancePlugin" scope="TEST" />
-    <orderEntry type="module" module-name="intellij.bazel.coverage" scope="TEST" />
-    <orderEntry type="module" module-name="intellij.bazel.coverage.performancePlugin" scope="TEST" />
-    <orderEntry type="module" module-name="intellij.bazel.devkit" scope="TEST" />
     <orderEntry type="module" module-name="intellij.bazel.clion.common" scope="TEST" />
-    <orderEntry type="module" module-name="intellij.bazel.golang.common" scope="TEST" />
-    <orderEntry type="module" module-name="intellij.bazel.java.core" scope="TEST" />
-    <orderEntry type="module" module-name="intellij.bazel.java.common.performancePlugin" scope="TEST" />
-    <orderEntry type="module" module-name="intellij.bazel.java.coverage" scope="TEST" />
-    <orderEntry type="module" module-name="intellij.bazel.kotlin.common" scope="TEST" />
-    <orderEntry type="module" module-name="intellij.bazel.kotlin.common.performancePlugin" scope="TEST" />
-    <orderEntry type="module" module-name="intellij.bazel.kotlin.coverage" scope="TEST" />
-    <orderEntry type="module" module-name="intellij.bazel.kotlin.k2" scope="TEST" />
-    <orderEntry type="module" module-name="intellij.bazel.plugin" scope="TEST" />
-    <orderEntry type="module" module-name="intellij.bazel.projectview" scope="TEST" />
-    <orderEntry type="module" module-name="intellij.bazel.protobuf" scope="TEST" />
-    <orderEntry type="module" module-name="intellij.bazel.protoedit" scope="TEST" />
-    <orderEntry type="module" module-name="intellij.bazel.python.common" scope="TEST" />
-    <orderEntry type="module" module-name="intellij.bazel.python.common.performancePlugin" scope="TEST" />
-    <orderEntry type="module" module-name="intellij.bazel.remoteDevelopment" scope="TEST" />
-    <orderEntry type="module" module-name="intellij.bazel.kotlin.sync" scope="TEST" />
-    <orderEntry type="module" module-name="intellij.bazel.java.sync" scope="TEST" />
-    <orderEntry type="module" module-name="intellij.bazel.python.backend" scope="TEST" />
-    <orderEntry type="module" module-name="intellij.python.community.services.systemPython" scope="TEST" />
-    <orderEntry type="module" module-name="intellij.libraries.bazel.aspect.sdk" scope="TEST" />
-    <orderEntry type="module" module-name="intellij.libraries.junit4" scope="TEST" />
     <orderEntry type="module" module-name="intellij.libraries.junit5" scope="TEST" />
-    <orderEntry type="module" module-name="intellij.libraries.junit5.params" scope="TEST" />
-    <orderEntry type="module" module-name="intellij.bazel.java.common" scope="TEST" />
-    <orderEntry type="module" module-name="intellij.spring" scope="TEST" />
-    <orderEntry type="module" module-name="intellij.spring.core.plugin" scope="TEST" />
-    <orderEntry type="module" module-name="intellij.javaee.platform.plugin" scope="TEST" />
-    <orderEntry type="module" module-name="intellij.platform.execution.serviceView.plugin" scope="TEST" />
   </component>
 </module>
