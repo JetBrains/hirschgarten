@@ -25,6 +25,7 @@ import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.diagnostic.logger
+import com.intellij.openapi.diagnostic.runAndLogException
 import com.intellij.openapi.project.DumbAwareAction
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Disposer
@@ -128,7 +129,10 @@ abstract class BaseTaskConsole(
   }
 
   private fun addPtyToDescriptor(taskId: TaskId, taskDescriptor: DefaultBuildDescriptor) {
-    val consoleDelegate = TerminalExecutionConsoleBuilder(project).build()
+    val consoleDelegate = log.runAndLogException {
+      TerminalExecutionConsoleBuilder(project).build()
+    } ?: return
+
     val console = object : ConsoleView by consoleDelegate, BuildProgressListener {
       override fun onEvent(buildId: Any, event: BuildEvent) {
         if (event is OutputBuildEvent) {
