@@ -3,8 +3,8 @@ package org.jetbrains.bazel.assertions
 import com.intellij.openapi.vfs.VfsUtil
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.newvfs.persistent.PersistentFS
+import org.assertj.core.api.Assertions.assertThat
 import org.jetbrains.bazel.assertions.AllowedVfsRoot.Configuration
-import org.junit.jupiter.api.Assertions.assertTrue
 import java.nio.file.Path
 
 data class AllowedVfsRoot(
@@ -74,10 +74,10 @@ internal fun assertVfsLoads(executionRoot: Path, allowedRoots: List<AllowedVfsRo
   val root = VfsUtil.findFile(executionRoot, /* refreshIfNeeded = */ false) ?: return
 
   for (child in getChildrenInVfs(root)) {
-    assertTrue(allowedRoots.any { matches(it, executionRoot.relativize(child)) }) {
+    assertThat(allowedRoots.any { matches(it, executionRoot.relativize(child)) }).withFailMessage {
       val roots = allowedRoots.joinToString(";")
       "$child is not in allowed roots: [$roots], debug with: '-Dfile.system.trace.loading=$child'"
-    }
+    }.isTrue()
   }
 }
 
