@@ -5,10 +5,12 @@ import com.intellij.testFramework.junit5.SystemPropertyClassLevel
 import com.jetbrains.cidr.lang.CLanguageKind
 import com.jetbrains.cidr.lang.workspace.compiler.OCCompilerId
 import org.jetbrains.bazel.assertions.assertThat
+import org.jetbrains.bazel.assertions.assertVfsLoads
 import org.jetbrains.bazel.assertions.findCompilerSetting
 import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.fixtures.clionBazelProjectFixture
 import org.jetbrains.bazel.test.framework.BazelTestApplication
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 
@@ -18,6 +20,10 @@ import org.junit.jupiter.api.TestInstance
 class CcLocalToolchainTest {
 
   private val project by clionBazelProjectFixture("clion/simple")
+
+  @Test
+  @Disabled("Correctly reports that we do cause indexing in bazel-bin for this project.")
+  fun testVfsRoots() = project.assertVfsLoads(emptyList())
 
   @Test
   fun testCompilerSettings(): Unit = timeoutRunBlocking {

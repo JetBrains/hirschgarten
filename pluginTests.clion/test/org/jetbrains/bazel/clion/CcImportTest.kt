@@ -34,10 +34,7 @@ class CcImportTest {
   }
 
   @Test
-  fun testVfsRoots() {
-    val executionRoot = requireNotNull(project.projectCtx.bazelExecPath)
-    assertVfsLoads(executionRoot, emptyList())
-  }
+  fun testVfsRoots() = project.assertVfsLoads(emptyList())
 
   @Test
   fun testTargetsFound(): Unit = timeoutRunBlocking {

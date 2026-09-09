@@ -1,10 +1,12 @@
 package org.jetbrains.bazel.assertions
 
+import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VfsUtil
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.newvfs.persistent.PersistentFS
 import org.assertj.core.api.Assertions.assertThat
 import org.jetbrains.bazel.assertions.AllowedVfsRoot.Configuration
+import org.jetbrains.bazel.sync.environment.projectCtx
 import java.nio.file.Path
 
 data class AllowedVfsRoot(
@@ -70,10 +72,11 @@ private fun getChildrenInVfs(dir: VirtualFile): Sequence<Path> = sequence {
   }
 }
 
-internal fun assertVfsLoads(executionRoot: Path, allowedRoots: List<AllowedVfsRoot>) {
-  val root = VfsUtil.findFile(executionRoot, /* refreshIfNeeded = */ false) ?: return
+internal fun Project.assertVfsLoads(allowedRoots: List<AllowedVfsRoot>) {
+  val executionRoot = requireNotNull(projectCtx.bazelExecPath)
+  val executionRootFile = VfsUtil.findFile(executionRoot, /* refreshIfNeeded = */ false) ?: return
 
-  for (child in getChildrenInVfs(root)) {
+  for (child in getChildrenInVfs(executionRootFile)) {
     assertThat(allowedRoots.any { matches(it, executionRoot.relativize(child)) }).withFailMessage {
       val roots = allowedRoots.joinToString(";")
       "$child is not in allowed roots: [$roots], debug with: '-Dfile.system.trace.loading=$child'"
