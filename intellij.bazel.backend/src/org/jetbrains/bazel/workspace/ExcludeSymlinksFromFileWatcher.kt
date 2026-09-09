@@ -5,6 +5,7 @@ import com.intellij.openapi.diagnostic.fileLogger
 import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.openapi.vfs.impl.local.WatchRootsManager
 import org.jetbrains.annotations.ApiStatus
+import org.jetbrains.bazel.commons.symlinks.BazelSymlinksCalculator
 import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.sync.environment.BazelApplicationContextService
 import org.jetbrains.bazel.utils.isUnder
@@ -61,7 +62,7 @@ private fun tryExcludeSymlinksFromFileWatcher(symlinksToExclude: List<Path>) {
 
     symlinksByPathWithExcludes.addExcludes(
       symlinksToExclude +
-      symlinksToExclude.mapNotNull { runCatching { it.toRealPath() }.getOrNull() },  // Also exclude directories to which the symlinks resolve
+      symlinksToExclude.mapNotNull { BazelSymlinksCalculator.resolveSymlinkTarget(it) },
     )
   }
 }
