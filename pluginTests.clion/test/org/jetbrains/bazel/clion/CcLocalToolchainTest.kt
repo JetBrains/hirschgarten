@@ -1,21 +1,18 @@
 package org.jetbrains.bazel.clion
 
 import com.intellij.testFramework.common.timeoutRunBlocking
-import com.intellij.testFramework.junit5.SystemPropertyClassLevel
 import com.jetbrains.cidr.lang.CLanguageKind
 import com.jetbrains.cidr.lang.workspace.compiler.OCCompilerId
 import org.jetbrains.bazel.assertions.assertThat
 import org.jetbrains.bazel.assertions.assertVfsLoads
 import org.jetbrains.bazel.assertions.findCompilerSetting
-import org.jetbrains.bazel.config.BazelFeatureFlags
+import org.jetbrains.bazel.fixtures.CcTestApplication
 import org.jetbrains.bazel.fixtures.clionBazelProjectFixture
-import org.jetbrains.bazel.test.framework.BazelTestApplication
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 
-@SystemPropertyClassLevel(BazelFeatureFlags.USE_PTY, "false")
-@BazelTestApplication
+@CcTestApplication
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class CcLocalToolchainTest {
 

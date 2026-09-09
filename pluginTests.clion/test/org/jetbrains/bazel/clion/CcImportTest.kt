@@ -1,8 +1,6 @@
 package org.jetbrains.bazel.clion
 
-import com.intellij.openapi.components.service
 import com.intellij.testFramework.common.timeoutRunBlocking
-import com.intellij.testFramework.junit5.SystemPropertyClassLevel
 import org.assertj.core.api.Assertions.assertThat
 import org.jetbrains.bazel.assertions.assertNotNull
 import org.jetbrains.bazel.assertions.assertThat
@@ -15,17 +13,14 @@ import org.jetbrains.bazel.clion.sync.CC_LANGUAGE_CLASS
 import org.jetbrains.bazel.clion.sync.CcBuildTarget
 import org.jetbrains.bazel.clion.sync.CcToolchainBuildTarget
 import org.jetbrains.bazel.commons.RuleType
-import org.jetbrains.bazel.config.BazelFeatureFlags
+import org.jetbrains.bazel.fixtures.CcTestApplication
 import org.jetbrains.bazel.fixtures.clionBazelProjectFixture
-import org.jetbrains.bazel.sync.environment.projectCtx
 import org.jetbrains.bazel.sync.workspace.snapshot.hasBuildData
-import org.jetbrains.bazel.test.framework.BazelTestApplication
 import org.jetbrains.bsp.protocol.extractData
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 
-@SystemPropertyClassLevel(BazelFeatureFlags.USE_PTY, "false") // otherwise tests fail due to a leaked timer
-@BazelTestApplication
+@CcTestApplication
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class CcImportTest {
 

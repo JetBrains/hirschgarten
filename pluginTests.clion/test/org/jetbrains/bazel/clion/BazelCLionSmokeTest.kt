@@ -5,11 +5,11 @@ import com.intellij.ide.plugins.PluginManagerCore
 import com.intellij.openapi.extensions.PluginId
 import org.assertj.core.api.Assertions.assertThat
 import org.jetbrains.bazel.commons.LanguageClassService
+import org.jetbrains.bazel.fixtures.CcTestApplication
 import org.jetbrains.bazel.fixtures.clionBazelProjectFixture
-import org.jetbrains.bazel.test.framework.BazelTestApplication
 import org.junit.jupiter.api.Test
 
-@BazelTestApplication
+@CcTestApplication
 class BazelCLionSmokeTest {
 
   private val project by clionBazelProjectFixture("import/mixed")

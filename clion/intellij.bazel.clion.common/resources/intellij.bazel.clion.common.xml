@@ -17,6 +17,15 @@
   </dependencies>
   <!-- endregion -->
 
+  <extensions defaultExtensionNs="com.intellij">
+    <registryKey
+      defaultValue="false"
+      description="Enable the C/C++ support of the Bazel plugin."
+      key="bazel.clion.enable"
+      restartRequired="true"
+    />
+  </extensions>
+
   <extensions defaultExtensionNs="org.jetbrains.bazel">
     <workspaceTypeContributor implementation="org.jetbrains.bazel.clion.sync.CcWorkspaceTypeContributor"/>
     <languageClassProvider implementation="org.jetbrains.bazel.clion.sync.CcLanguageClassProvider"/>

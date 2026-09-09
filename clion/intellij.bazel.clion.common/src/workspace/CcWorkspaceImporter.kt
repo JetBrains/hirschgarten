@@ -6,6 +6,7 @@ import com.intellij.openapi.util.NlsContexts
 import com.jetbrains.cidr.lang.workspace.OCWorkspaceImpl
 import org.jetbrains.annotations.PropertyKey
 import org.jetbrains.bazel.clion.BazelClionBundle
+import org.jetbrains.bazel.clion.BazelCLionFeatureFlags
 import org.jetbrains.bazel.progress.withSubtask
 import org.jetbrains.bazel.sync.workspace.importer.BazelWorkspaceImporter
 import org.jetbrains.bazel.sync.workspace.importer.WorkspaceImporterContext
@@ -29,11 +30,15 @@ internal class CcWorkspaceImporter : BazelWorkspaceImporter, BazelWorkspaceImpor
     context: WorkspaceImporterContext,
     phase: WorkspaceImporterPhase,
     snapshot: WorkspaceSnapshot,
-  ): Result<WorkspaceImporterResult> = when (phase) {
-    is WorkspaceImporterPhase.Initialize -> onInitialize(context, snapshot)
-    is WorkspaceImporterPhase.WorkspaceApply -> onWorkspaceApply(phase)
-    is WorkspaceImporterPhase.PostProcessing -> onPostProcessing(context, snapshot)
-    else -> Result.success(WorkspaceImporterResult.Success)
+  ): Result<WorkspaceImporterResult> {
+    if (!BazelCLionFeatureFlags.isCLionEnabled) return Result.success(WorkspaceImporterResult.Abort)
+
+    return when (phase) {
+      is WorkspaceImporterPhase.Initialize -> onInitialize(context, snapshot)
+      is WorkspaceImporterPhase.WorkspaceApply -> onWorkspaceApply(phase)
+      is WorkspaceImporterPhase.PostProcessing -> onPostProcessing(context, snapshot)
+      else -> Result.success(WorkspaceImporterResult.Success)
+    }
   }
 
   private suspend fun onInitialize(ctx: WorkspaceImporterContext, snapshot: WorkspaceSnapshot): Result<WorkspaceImporterResult> {
