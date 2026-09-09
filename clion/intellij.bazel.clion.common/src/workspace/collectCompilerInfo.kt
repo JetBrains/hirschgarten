@@ -15,8 +15,10 @@ internal fun collectCompilerInfo(model: OCWorkspace.ModifiableModel, configurati
 
   try {
     for (config in configurations) {
-      val configModel = model.getConfigurationById(config.id) ?: continue
-      session.schedule(config.id, configModel, config.shared.compilerSettings.toolEnvironment, ctx.execroot.toString())
+      val identifier = config.id.encode()
+      val configModel = requireNotNull(model.getConfigurationById(identifier))
+
+      session.schedule(identifier, configModel, config.shared.compilerSettings.toolEnvironment, ctx.execroot.toString())
     }
 
     val messages = MultiMap<String, CompilerInfoCache.Message>()

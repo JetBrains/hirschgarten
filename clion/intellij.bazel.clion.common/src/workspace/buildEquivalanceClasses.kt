@@ -4,6 +4,7 @@ import com.intellij.openapi.util.NlsSafe
 import com.intellij.openapi.vfs.VfsUtil
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.util.containers.MultiMap
+import com.jetbrains.cidr.lang.workspace.OCResolveConfiguration
 import org.jetbrains.bazel.clion.sync.CcBuildTarget
 import org.jetbrains.bazel.sync.workspace.persistence.TargetLoadOptions
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceConfigurationId
@@ -12,8 +13,10 @@ import org.jetbrains.bsp.protocol.OutputLocationCollection
 import org.jetbrains.bsp.protocol.extractData
 import kotlin.collections.orEmpty
 
+private const val CC_CONFIGURATION_MARKER = "BAZEL_CC"
+
 data class CcResolveConfiguration(
-  val id: String,
+  val id: Identifier,
   val name: @NlsSafe String,
   val shared: EquivalenceClass,
   val targets: List<WorkspaceTargetKey>,
@@ -34,6 +37,12 @@ data class CcResolveConfiguration(
     val transitiveSystemIncludes: OutputLocationCollection,
 
     val transitiveDefines: List<String>,
+  )
+
+  /** Wrapper class for the unique identifier for an [OCResolveConfiguration]. */
+  data class Identifier(
+    val hashCode: Int,
+    val configurationId: WorkspaceConfigurationId,
   )
 }
 
@@ -61,14 +70,13 @@ internal fun buildEquivalenceClasses(target2Compiler: Map<WorkspaceTargetKey, Cc
 
   // TODO: report discovered C configurations here, format: "%s unique C configurations, %s C targets"
 
-  return equivalenceClasses.entrySet().map { entry ->
+  return equivalenceClasses.entrySet().map { (clazz, targets) ->
     CcResolveConfiguration(
-      shared = entry.key,
-      targets = entry.value.toList(),
-      sources = collectSources(entry.value),
-      // TODO: introduce equivalence to com.google.idea.blaze.cpp.BlazeResolveConfigurationID, i.e. CcResolveConfigurationID
-      id = computeDisplayName(entry.value),
-      name = computeDisplayName(entry.value),
+      id = CcResolveConfiguration.Identifier(clazz.hashCode(), clazz.configuration),
+      shared = clazz,
+      targets = targets.toList(),
+      sources = collectSources(targets),
+      name = computeDisplayName(targets),
     )
   }
 }
@@ -99,4 +107,21 @@ private fun computeDisplayName(targets: Collection<WorkspaceTargetKey>): String 
       append(" and ${targets.size - 1} other target(s)")
     }
   }
+}
+
+internal fun CcResolveConfiguration.Identifier.encode(): String {
+  return "$CC_CONFIGURATION_MARKER:$hashCode:${configurationId.shortChecksum}"
+}
+
+fun OCResolveConfiguration.getCcIdentifier(): CcResolveConfiguration.Identifier? {
+  val parts = uniqueId.split(':')
+  if (parts.size != 3) return null
+
+  val (marker, hashCode, configurationId) = parts
+  if (marker != CC_CONFIGURATION_MARKER) return null
+
+  return CcResolveConfiguration.Identifier(
+    hashCode = hashCode.toIntOrNull() ?: return null,
+    configurationId = WorkspaceConfigurationId.of(configurationId),
+  )
 }

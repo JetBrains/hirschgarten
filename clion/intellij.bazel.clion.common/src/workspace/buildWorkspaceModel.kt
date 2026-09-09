@@ -16,7 +16,7 @@ private val DEFAULT_LANGUAGE_KIND = CLanguageKind.CPP
 context(ctx: CcImportContext)
 internal fun buildWorkspaceModel(model: OCWorkspace.ModifiableModel, configs: List<CcResolveConfiguration>) {
   for (config in configs) {
-    val workspaceConfig = model.addConfiguration(id = config.id, name = config.name, variant = null)
+    val workspaceConfig = model.addConfiguration(id = config.id.encode(), name = config.name, variant = null)
 
     val settings = config.shared.compilerSettings
 
