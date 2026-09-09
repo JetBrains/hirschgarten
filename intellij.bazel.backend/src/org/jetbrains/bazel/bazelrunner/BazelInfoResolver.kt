@@ -32,11 +32,12 @@ class BazelInfoResolver(val workspaceRoot: Path) {
       bazelRunner
         .runBazelCommand(command, taskId)
         .waitAndGetResult()
-    if (processResult.isNotSuccess) error(
-      "Querying bazel info failed.\n${processResult.stdoutLines.joinToString("\n")}\n${
-        processResult.stderrLines.joinToString("\n")
-      }",
-    )
+    if (processResult.isNotSuccess)
+      error(
+        "Querying bazel info failed.\n" +
+        "stdout: ${processResult.stdoutLines.joinToString("\n")}\n" +
+        "stderr: ${processResult.stderrLines.joinToString("\n")}",
+      )
     return parseBazelInfo(processResult.stdoutLines, processResult.stderrLines)
   }
 

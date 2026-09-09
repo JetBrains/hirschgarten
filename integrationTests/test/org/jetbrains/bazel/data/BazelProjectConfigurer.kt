@@ -1,9 +1,11 @@
 package org.jetbrains.bazel.data
 
 import com.intellij.ide.starter.ide.IDETestContext
+import com.intellij.openapi.util.io.NioFiles
 import org.jetbrains.bazel.commons.constants.Constants
 import org.jetbrains.bazel.test.framework.serializeBazelRcPath
 import org.jetbrains.bazel.test.framework.toBazelRcPath
+import org.jetbrains.intellij.build.dependencies.JdkDownloader.OS
 import java.io.IOException
 import java.nio.charset.StandardCharsets
 import java.nio.file.FileVisitResult
@@ -170,9 +172,14 @@ register_toolchains(
       lines.add("common --$flagName=bazel_downloader.cfg")
     }
 
-    lines.add("common --java_runtime_version=remotejdk_21")
     lines.add("common --java_language_version=21")
+    lines.add("common --java_runtime_version=remotejdk_21")
     lines.add("common --tool_java_runtime_version=remotejdk_21")
+    lines.add("common --noexperimental_check_external_repository_files")
+
+    if (OS.current == OS.WINDOWS) {
+      lines.add("common --experimental_convenience_symlinks=ignore")
+    }
 
     writeGeneratedBazelSettings(context.resolvedBazelProjectHome, lines)
   }

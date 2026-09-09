@@ -56,6 +56,7 @@ import org.jetbrains.bazel.performanceImpl.FileKindCheck
 import org.jetbrains.bazel.test.compat.IntegrationTestCompat
 import org.jetbrains.bazel.testing.IS_IN_IDE_STARTER_TEST
 import org.jetbrains.bazel.tests.combined.VirtualFileManager
+import org.jetbrains.intellij.build.dependencies.JdkDownloader.OS
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.kodein.di.DI
@@ -64,6 +65,7 @@ import java.io.File
 import java.net.URI
 import java.nio.file.Path
 import java.util.function.Predicate
+import kotlin.io.path.absolutePathString
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
@@ -107,6 +109,7 @@ abstract class IdeStarterBaseProjectTest {
       .patchPathVariable()
       .enableCppToolchainDetectionForNestedBazel()
       .filterOutRunfileVariables()
+      .applyWindowsEnvironment()
       .addIdeStarterTestMarker()
       .applyVMOptionsPatch {
         addSystemProperty("JETBRAINS_LICENSE_SERVER", "https://flsv1.labs.jb.gg")
@@ -133,7 +136,7 @@ abstract class IdeStarterBaseProjectTest {
   }
 
   @AfterEach
-  fun tearDown(): Unit = timeoutRunBlocking {
+  fun tearDown(): Unit = timeoutRunBlocking(timeout = 1.minutes) {
     killBazelProcesses()
     killCefProcesses()
   }
@@ -189,6 +192,24 @@ abstract class IdeStarterBaseProjectTest {
     return this
   }
 
+  private fun IDETestContext.applyWindowsEnvironment(): IDETestContext {
+    if (OS.current == OS.WINDOWS) {
+      val tempDir = paths.tempDir.absolutePathString()   // IDEDataPaths.tempDir = <testHome>/temp
+      val localAppData =
+        System.getenv("LocalAppData")?.takeIf { it.isNotEmpty() }
+        ?: Path.of(System.getProperty("user.home"), "AppData", "Local").absolutePathString()
+
+      applyVMOptionsPatch {
+        withEnv("BAZEL_SH", "c:\\msys64\\usr\\bin\\bash.exe")
+        withEnv("LOCALAPPDATA", localAppData)
+        withEnv("USERPROFILE", System.getProperty("user.home"))
+        withEnv("TMP", tempDir)
+        withEnv("TEMP", tempDir)
+      }
+    }
+    return this
+  }
+
   private fun IDETestContext.addIdeStarterTestMarker(): IDETestContext {
     applyVMOptionsPatch {
       addSystemProperty(IS_IN_IDE_STARTER_TEST, "true")
@@ -222,8 +243,8 @@ abstract class IdeStarterBaseProjectTest {
         val cefProcesses = getProcessList(
           Predicate { p ->
             p.name.contains("cef_server") &&
-              p.arguments.any { it.contains("/ide-tests/") || it.contains("\\ide-tests\\") }
-          }
+            p.arguments.any { it.contains("/ide-tests/") || it.contains("\\ide-tests\\") }
+          },
         )
         if (cefProcesses.isEmpty()) {
           println("Killing orphaned JCEF helper processes: no processes were detected")
