@@ -1,6 +1,8 @@
 package org.jetbrains.bazel.commons.symlinks
 
+import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.openapi.vfs.toNioPathOrNull
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.commons.constants.Constants.WORKSPACE_FILE_NAMES
 import java.io.IOException
@@ -12,6 +14,7 @@ import java.nio.file.attribute.BasicFileAttributes
 import kotlin.io.path.exists
 import kotlin.io.path.invariantSeparatorsPathString
 import kotlin.io.path.name
+import kotlin.io.path.readSymbolicLink
 
 @ApiStatus.Internal
 object BazelSymlinksCalculator {
@@ -25,9 +28,9 @@ object BazelSymlinksCalculator {
     val visitor =
       object : SimpleFileVisitor<Path>() {
         override fun visitFile(file: Path, attrs: BasicFileAttributes): FileVisitResult {
-          if (!attrs.isSymbolicLink) return FileVisitResult.CONTINUE
-          if (!isBazelSymlink(workspaceRoot.name, file)) return FileVisitResult.CONTINUE
-          symlinksToExclude.add(file)
+          if (attrs.isSymbolicLink && isBazelSymlink(workspaceRoot.name, file)) {
+            symlinksToExclude.add(file)
+          }
           return FileVisitResult.CONTINUE
         }
       }
@@ -41,27 +44,41 @@ object BazelSymlinksCalculator {
     return symlinksToExclude
   }
 
-  fun isBazelSymlink(workspaceRootName: String, file: Path): Boolean {
-    if (bazelSymlinkSuffixes(workspaceRootName).none { file.name.endsWith(it) }) {
+  fun isBazelSymlink(workspaceRootName: String, symlink: Path): Boolean {
+    if (bazelSymlinkSuffixes(workspaceRootName).none { symlink.name.endsWith(it) }) {
       return false
     }
 
-    val realPath =
-      try {
-        file.toRealPath()
-      } catch (_: IOException) {
-        // Symlink may have a broken target after bazel clean
-        return false
-      }
+    val target = resolveSymlinkTarget(symlink)
+    if (target == null) {
+      log.info("Symlink $symlink not excluded - cannot resolve the symlink's target")
+      return false
+    }
 
     // See https://bazel.build/remote/output-directories
     // This string used to be "execroot/_main", but for projects without Bzlmod the relevant path is actually "execroot/<my-project>"
-    return realPath.invariantSeparatorsPathString.contains("/execroot/")
+    if (target.invariantSeparatorsPathString.contains("/execroot/")) {
+      return true
+    } else {
+      log.info("Symlink $symlink not excluded - symlink does not point to a Bazel output directory")
+      return false
+    }
+  }
+
+  fun resolveSymlinkTarget(symlink: Path): Path? {
+    val target =
+      try {
+        symlink.readSymbolicLink()
+      } catch (_: IOException) {
+        return null
+      }
+    return symlink.resolveSibling(target).normalize()
   }
 
   fun isBazelSymlink(workspaceRootName: String, file: VirtualFile): Boolean =
-    bazelSymlinkSuffixes(workspaceRootName).any { file.name.endsWith(it) } &&
-    file.canonicalPath?.contains("/execroot/") == true
+    file.toNioPathOrNull()?.let { isBazelSymlink(workspaceRootName, it) } == true
 
   private fun bazelSymlinkSuffixes(workspaceRootName: String): List<String> = listOf("bin", "out", "testlogs", workspaceRootName)
+
+  private val log = logger<BazelSymlinksCalculator>()
 }
