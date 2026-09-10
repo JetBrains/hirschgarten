@@ -7,6 +7,8 @@ import org.jetbrains.bazel.commons.RepoMapping
 import org.jetbrains.bazel.commons.orFallbackVersion
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.languages.projectview.ProjectView
+import org.jetbrains.bazel.server.BazelQueryParams
+import org.jetbrains.bazel.server.BazelQueryResult
 import org.jetbrains.bazel.server.BazelServerFacade
 import org.jetbrains.bazel.server.model.AspectSyncProject
 import org.jetbrains.bazel.server.model.PhasedSyncProject
@@ -80,6 +82,8 @@ open class BuildServerMock(
 
   override suspend fun jvmToolchainInfoForTarget(target: Label): JvmToolchainInfo =
     JvmToolchainInfo("/path/to/java/home", "/path/to/bazel/toolchain", emptyList())
+
+  override suspend fun <T> query(params: BazelQueryParams<T>): BazelQueryResult<T> = error("mock does not support query")
 
   private fun <T> wrapInFuture(value: T?): T = value ?: error("mock value is null")
 }

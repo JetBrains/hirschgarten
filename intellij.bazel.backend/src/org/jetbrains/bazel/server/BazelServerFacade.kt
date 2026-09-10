@@ -66,4 +66,7 @@ interface BazelServerFacade {
 
   @ApiStatus.Internal
   suspend fun jvmToolchainInfoForTarget(target: Label): JvmToolchainInfo
+
+  @ApiStatus.Internal
+  suspend fun <T> query(params: BazelQueryParams<T>): BazelQueryResult<T>
 }

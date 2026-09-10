@@ -12,6 +12,7 @@ import org.jetbrains.bazel.bazelrunner.mockBazelProcessLauncher
 import org.jetbrains.bazel.commons.BazelInfo
 import org.jetbrains.bazel.commons.BazelPathsResolver
 import org.jetbrains.bazel.commons.BazelRelease
+import org.jetbrains.bazel.commons.BazelStatus
 import org.jetbrains.bazel.commons.BzlmodRepoMapping
 import org.jetbrains.bazel.commons.RepoMapping
 import org.jetbrains.bazel.commons.RepoMappingDisabled
@@ -496,6 +497,7 @@ class WorkspaceDirectoriesFromProjectViewTest : BasePlatformTestCase() {
     }
 
     val result = mock(BazelProcessResult::class.java)
+    `when`(result.bazelStatus).thenReturn(BazelStatus.SUCCESS)
     `when`(result.isNotSuccess).thenReturn(false)
     `when`(result.stdout).thenAnswer { mockBuildfilesOutput().toByteArray() }
     `when`(result.stderr).thenReturn(ByteArray(0))

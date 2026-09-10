@@ -130,6 +130,7 @@ internal class DefaultBazelServerConnection(private val project: Project) : Baze
       projectResolver = projectResolver,
       firstPhaseProjectResolver = firstPhaseProjectResolver,
       executeService = executeService,
+      bazelRunner = bazelRunner,
       projectView = projectView,
       bazelInfo = bazelInfo,
       bazelPathsResolver = bazelPathsResolver,

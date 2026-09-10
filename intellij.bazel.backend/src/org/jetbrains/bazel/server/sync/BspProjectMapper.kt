@@ -3,6 +3,7 @@ package org.jetbrains.bazel.server.sync
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.bazelrunner.BazelRunner
 import org.jetbrains.bazel.commons.BazelPathsResolver
+import org.jetbrains.bazel.commons.BazelStatus
 import org.jetbrains.bazel.commons.ExcludableValue
 import org.jetbrains.bazel.commons.RepoMapping
 import org.jetbrains.bazel.commons.constants.Constants
@@ -12,6 +13,9 @@ import org.jetbrains.bazel.label.assumeResolved
 import org.jetbrains.bazel.languages.projectview.ProjectView
 import org.jetbrains.bazel.languages.projectview.directories
 import org.jetbrains.bazel.languages.projectview.targets
+import org.jetbrains.bazel.server.BazelQueryOutput
+import org.jetbrains.bazel.server.BazelQueryParams
+import org.jetbrains.bazel.server.runBazelQuery
 import org.jetbrains.bsp.protocol.InverseSourcesParams
 import org.jetbrains.bsp.protocol.InverseSourcesResult
 import org.jetbrains.bsp.protocol.JvmToolchainInfo
@@ -127,18 +131,11 @@ class BspProjectMapper(
       append("))")
     }
 
-    val command = bazelRunner.buildBazelCommand(projectView) {
-      queryExpression(expr) {
-        options.add("--keep_going")
-      }
-    }
-    val process = bazelRunner.runBazelCommand(command, logProcessOutput = false, taskId = taskId)
-    val result = process.waitAndGetResult()
-
-    if (result.isNotSuccess) {
+    val result = runBazelQuery(bazelRunner, projectView, BazelQueryParams(expr, BazelQueryOutput.Raw(), taskId))
+    if (result.status != BazelStatus.SUCCESS) {
       throw RuntimeException("bazel query failed: ${result.stderrLines.joinToString("\n")}")
     }
-    return result.stdout.decodeToString()
+    return result.result
   }
 
   // bazel symlinks exclusion logic is taken care by BazelSymlinkExcludeService

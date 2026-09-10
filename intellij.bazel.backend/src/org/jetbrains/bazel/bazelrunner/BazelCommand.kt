@@ -164,46 +164,12 @@ abstract class BazelCommand(val bazelBinary: String) {
       return BazelCommandExecutionDescriptor(
         commandLine,
         enablePty,
-        finishCallback = {
-          try {
-            Files.deleteIfExists(targetPatternFile)
-          }
-          catch (e: IOException) {
-            log.warn("Failed to delete target pattern file", e)
-          }
-        },
+        finishCallback = { deleteBazelCommandFile(TARGET_PATTERN_FILE, targetPatternFile) },
       )
     }
 
-    fun prepareTargetPatternFile(): Path {
-      var targetPatternFile: Path? = null
-      try {
-        val tmpDir = PathManager.getTempDir().createDirectories()
-        Files.createDirectories(tmpDir)
-
-        targetPatternFile = Files.createTempFile(tmpDir, "targets-", "").also { it.toFile().deleteOnExit() }
-
-        val targetsList = (targets.map { it.toString() } + excludedTargets.map { "-$it" })
-
-        targetPatternFile.writeLines(targetsList, Charsets.UTF_8, StandardOpenOption.WRITE)
-      }
-      catch (e: IOException) {
-        targetPatternFile?.let {
-          try {
-            Files.deleteIfExists(it)
-          }
-          catch (deleteException: IOException) {
-            throw IllegalStateException("Couldn't delete file after creation failure", deleteException)
-          }
-        }
-        throw IllegalStateException("Couldn't create target pattern file", e)
-      }
-      return targetPatternFile
-    }
-
-    companion object {
-      val log = logger<BazelCommand>()
-    }
+    fun prepareTargetPatternFile(): Path =
+      createBazelCommandFile(TARGET_PATTERN_FILE, targets.map { it.toString() } + excludedTargets.map { "-$it" })
   }
 
   class Test(bazelBinary: String) :
@@ -396,5 +362,68 @@ abstract class BazelCommand(val bazelBinary: String) {
 
   class ModDumpRepoMapping(bazelBinary: String) : SimpleCommand(bazelBinary, listOf("mod", "dump_repo_mapping"))
 
-  class QueryExpression(bazelBinary: String, expression: String) : SimpleCommand(bazelBinary, listOf("query", expression))
+  class QueryExpression(bazelBinary: String, private val expression: String) : BazelCommand(bazelBinary) {
+    override fun buildExecutionDescriptor(): BazelCommandExecutionDescriptor {
+      val commandLine = mutableListOf(bazelBinary)
+
+      commandLine.addAll(startupOptions)
+      commandLine.add("query")
+      commandLine.addAll(options)
+
+      // large query might not fit into command line, spill to file when needed
+      if (expression.length <= MAX_INLINE_QUERY_EXPRESSION_LENGTH) {
+        commandLine.add(expression)
+        return BazelCommandExecutionDescriptor(commandLine, enablePty)
+      }
+
+      val queryFile = createBazelCommandFile(QUERY_FILE, listOf(expression))
+      commandLine.add(BazelFlag.queryFile(queryFile.toString()))
+
+      return BazelCommandExecutionDescriptor(
+        commandLine,
+        enablePty,
+        finishCallback = { deleteBazelCommandFile(QUERY_FILE, queryFile) },
+      )
+    }
+  }
+}
+
+private val log = logger<BazelCommand>()
+
+private const val MAX_INLINE_QUERY_EXPRESSION_LENGTH = 8_000
+
+private val TARGET_PATTERN_FILE = BazelCommandFile(what = "target pattern", prefix = "targets-")
+
+private val QUERY_FILE = BazelCommandFile(what = "query", prefix = "query-")
+
+private class BazelCommandFile(val what: String, val prefix: String)
+
+private fun createBazelCommandFile(kind: BazelCommandFile, lines: List<String>): Path {
+  var file: Path? = null
+  try {
+    val tmpDir = PathManager.getTempDir().createDirectories()
+    file = Files.createTempFile(tmpDir, kind.prefix, "").also { it.toFile().deleteOnExit() }
+    file.writeLines(lines, Charsets.UTF_8, StandardOpenOption.WRITE)
+  }
+  catch (e: IOException) {
+    file?.let {
+      try {
+        Files.deleteIfExists(it)
+      }
+      catch (deleteException: IOException) {
+        throw IllegalStateException("Couldn't delete file after creation failure", deleteException)
+      }
+    }
+    throw IllegalStateException("Couldn't create ${kind.what} file", e)
+  }
+  return file
+}
+
+private fun deleteBazelCommandFile(kind: BazelCommandFile, file: Path) {
+  try {
+    Files.deleteIfExists(file)
+  }
+  catch (e: IOException) {
+    log.warn("Failed to delete ${kind.what} file", e)
+  }
 }

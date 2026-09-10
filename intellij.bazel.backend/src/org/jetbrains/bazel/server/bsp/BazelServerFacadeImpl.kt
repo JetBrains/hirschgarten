@@ -1,14 +1,18 @@
 package org.jetbrains.bazel.server.bsp
 
 import org.jetbrains.annotations.ApiStatus
+import org.jetbrains.bazel.bazelrunner.BazelRunner
 import org.jetbrains.bazel.commons.BazelInfo
 import org.jetbrains.bazel.commons.BazelPathsResolver
 import org.jetbrains.bazel.commons.RepoMapping
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.languages.projectview.ProjectView
+import org.jetbrains.bazel.server.BazelQueryParams
+import org.jetbrains.bazel.server.BazelQueryResult
 import org.jetbrains.bazel.server.BazelServerFacade
 import org.jetbrains.bazel.server.model.AspectSyncProject
 import org.jetbrains.bazel.server.model.PhasedSyncProject
+import org.jetbrains.bazel.server.runBazelQuery
 import org.jetbrains.bazel.server.sync.BspProjectMapper
 import org.jetbrains.bazel.server.sync.ExecuteService
 import org.jetbrains.bazel.server.sync.ProjectResolver
@@ -37,6 +41,7 @@ class BazelServerFacadeImpl(
   private val projectResolver: ProjectResolver,
   private val firstPhaseProjectResolver: FirstPhaseProjectResolver,
   private val executeService: ExecuteService,
+  private val bazelRunner: BazelRunner,
   override val projectView: ProjectView,
   override val bazelInfo: BazelInfo,
   override val bazelPathsResolver: BazelPathsResolver,
@@ -79,4 +84,6 @@ class BazelServerFacadeImpl(
   override suspend fun jvmToolchainInfoForTarget(target: Label): JvmToolchainInfo {
     return bspMapper.jvmBuilderParamsForTarget(target)
   }
+
+  override suspend fun <T> query(params: BazelQueryParams<T>): BazelQueryResult<T> = runBazelQuery(bazelRunner, projectView, params)
 }

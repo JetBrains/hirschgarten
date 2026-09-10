@@ -78,6 +78,9 @@ object BazelFlag {
   fun targetPatternFile(file: String): String = arg("target_pattern_file", file)
 
   @JvmStatic
+  fun queryFile(file: String): String = arg("query_file", file)
+
+  @JvmStatic
   fun remoteDownloadOutputsTopLevel(): String = arg("remote_download_outputs", "toplevel")
 
   @JvmStatic
@@ -90,6 +93,7 @@ object BazelFlag {
   private fun flag(name: String) = "--$name"
 
   object OutputFormat {
+    @JvmStatic fun label(): String = outputFlag("label")
     @JvmStatic fun json() = outputFlag("json")
     @JvmStatic fun xml() = outputFlag("xml")
     @JvmStatic fun proto() = outputFlag("proto")
