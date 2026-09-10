@@ -3,6 +3,7 @@ package org.jetbrains.bsp.protocol
 import com.google.devtools.intellij.aspect.Common
 import com.intellij.util.containers.Interner
 import org.jetbrains.annotations.ApiStatus
+import org.jetbrains.annotations.Debug
 import org.jetbrains.bazel.commons.LocalRepositoryMapping
 import org.jetbrains.bazel.commons.RepoMapping
 import org.jetbrains.bazel.commons.getLocalRepositories
@@ -105,10 +106,14 @@ fun OutputLocation.toExecrootPath(): String = when (this) {
 
 internal fun joinNonEmpty(vararg parts: String): String = parts.filter { it.isNotEmpty() }.joinToString("/")
 
+@Debug.Renderer(hasChildren = "!isEmpty()", childrenArray = "arrayOfLocations()")
 @ApiStatus.Internal
 interface OutputLocationCollection {
   fun isEmpty(): Boolean
   fun getOutputLocations(): Sequence<OutputLocation>
+
+  @Suppress("unused")
+  fun arrayOfLocations(): Array<OutputLocation> = getOutputLocations().toList().toTypedArray()
 
   companion object {
     val EMPTY: OutputLocationCollection = object : OutputLocationCollection {
