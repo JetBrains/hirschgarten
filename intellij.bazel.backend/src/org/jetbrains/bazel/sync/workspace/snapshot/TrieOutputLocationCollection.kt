@@ -42,7 +42,7 @@ object OutputLocationCollectionBuilder {
   fun buildExecroot(locations: Iterable<String>): OutputLocationCollection =
     ofLocations(locations.map(OutputLocation::parseExecrootPath))
 
-  private fun ofLocations(locations: List<OutputLocation>): OutputLocationCollection {
+  fun ofLocations(locations: List<OutputLocation>): OutputLocationCollection {
     if (locations.isEmpty()) {
       return OutputLocationCollection.EMPTY
     }

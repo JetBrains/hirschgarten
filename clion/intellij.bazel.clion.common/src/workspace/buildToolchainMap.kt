@@ -1,6 +1,7 @@
 package org.jetbrains.bazel.clion.workspace
 
 import com.intellij.build.events.MessageEvent
+import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.clion.BazelClionBundle
 import org.jetbrains.bazel.clion.sync.CcBuildTarget
 import org.jetbrains.bazel.clion.sync.CcToolchainBuildTarget
@@ -9,8 +10,9 @@ import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
 import org.jetbrains.bazel.sync.workspace.snapshot.hasBuildData
 import org.jetbrains.bsp.protocol.BuildTarget
 
+@ApiStatus.Internal
 context(ctx: CcImportContext)
-internal fun buildToolchainMap(): Map<WorkspaceTargetKey, WorkspaceTargetKey> {
+fun buildToolchainMap(): Map<WorkspaceTargetKey, WorkspaceTargetKey> {
   val toolchains = ctx.snapshot.targets.allTargets()
     .filter { it.hasBuildData<CcToolchainBuildTarget>() }
     .map { it.key }

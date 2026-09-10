@@ -5,6 +5,7 @@ import com.intellij.platform.workspace.storage.impl.url.toVirtualFileUrl
 import com.intellij.platform.workspace.storage.url.VirtualFileUrl
 import com.intellij.util.containers.MultiMap
 import com.jetbrains.cidr.lang.workspace.OCResolveConfiguration
+import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.clion.sync.CcBuildTarget
 import org.jetbrains.bazel.sync.workspace.persistence.TargetLoadOptions
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceConfigurationId
@@ -46,8 +47,9 @@ data class CcResolveConfiguration(
   )
 }
 
+@ApiStatus.Internal
 context(ctx: CcImportContext)
-internal fun buildEquivalenceClasses(target2Compiler: Map<WorkspaceTargetKey, CcCompilerInfo?>): List<CcResolveConfiguration> {
+fun buildEquivalenceClasses(target2Compiler: Map<WorkspaceTargetKey, CcCompilerInfo?>): List<CcResolveConfiguration> {
   val equivalenceClasses = MultiMap<CcResolveConfiguration.EquivalenceClass, WorkspaceTargetKey>()
 
   for (target in ctx.snapshot.targets.allTargets()) {
@@ -67,8 +69,6 @@ internal fun buildEquivalenceClasses(target2Compiler: Map<WorkspaceTargetKey, Cc
 
     equivalenceClasses.putValue(configuration, target.key)
   }
-
-  // TODO: report discovered C configurations here, format: "%s unique C configurations, %s C targets"
 
   return equivalenceClasses.entrySet().map { (clazz, targets) ->
     CcResolveConfiguration(

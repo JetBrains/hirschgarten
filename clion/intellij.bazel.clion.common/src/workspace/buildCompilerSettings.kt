@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalStdlibApi::class)
+
 package org.jetbrains.bazel.clion.workspace
 
 import com.intellij.build.events.MessageEvent
@@ -6,6 +8,7 @@ import com.jetbrains.cidr.lang.toolchains.CidrToolEnvironment
 import com.jetbrains.cidr.lang.workspace.compiler.OCCompilerKind
 import com.jetbrains.cidr.lang.workspace.compiler.isUnknown
 import com.jetbrains.cidr.lang.workspace.compiler.resolver.OCCompilerResolver
+import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.clion.BazelClionBundle
 import org.jetbrains.bazel.clion.sync.CcToolchainBuildTarget
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
@@ -23,10 +26,13 @@ data class CcCompilerInfo(
   val cppSwitches: List<String>,
   val name: String,
   val environment: Map<String, String>,
-  val toolEnvironment: CidrToolEnvironment,
   val builtinIncludes: OutputLocationCollection,
   val sysroot: OutputLocation?,
-)
+) {
+
+  // TODO: create specialized environment for clang-cl and MSVC
+  val toolEnvironment: CidrToolEnvironment by lazy { createToolEnvironment(environment) }
+}
 
 private class CcToolEnvironment(private val environment: Map<String, String>) : CidrToolEnvironment() {
 
@@ -36,9 +42,9 @@ private class CcToolEnvironment(private val environment: Map<String, String>) : 
   }
 }
 
-@OptIn(ExperimentalStdlibApi::class)
+@ApiStatus.Internal
 context(ctx: CcImportContext)
-internal fun buildCompilerSettings(): Map<WorkspaceTargetKey, CcCompilerInfo> {
+fun buildCompilerSettings(): Map<WorkspaceTargetKey, CcCompilerInfo> {
   val result = mutableMapOf<WorkspaceTargetKey, CcCompilerInfo>()
   val cache = mutableMapOf<OutputLocation, Pair<Path, OCCompilerKind>?>()
 
@@ -66,7 +72,6 @@ internal fun buildCompilerSettings(): Map<WorkspaceTargetKey, CcCompilerInfo> {
       cppSwitches = toolchainInfo.cppOption,
       name = toolchainInfo.compilerName,
       environment = environment,
-      toolEnvironment = toolEnvironment,
       builtinIncludes = toolchainInfo.builtInIncludeDirectories,
       sysroot = toolchainInfo.sysroot,
     )

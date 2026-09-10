@@ -3,6 +3,7 @@ package org.jetbrains.bazel.clion.workspace
 import com.intellij.build.events.MessageEvent
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.NlsSafe
+import org.jetbrains.annotations.ApiStatus
 import com.intellij.platform.workspace.storage.url.VirtualFileUrlManager
 import org.jetbrains.bazel.sync.workspace.importer.WorkspaceImporterContext
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceSnapshot
@@ -10,7 +11,8 @@ import org.jetbrains.bsp.protocol.OutputLocation
 import org.jetbrains.bsp.protocol.TaskId
 import java.nio.file.Path
 
-internal interface CcImportContext {
+@ApiStatus.Internal
+interface CcImportContext {
 
   val project: Project
 
