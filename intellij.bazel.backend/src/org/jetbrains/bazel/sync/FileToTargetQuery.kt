@@ -3,11 +3,13 @@ package org.jetbrains.bazel.sync
 import com.google.devtools.build.lib.query2.proto.proto2api.Build
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.bazelrunner.params.BazelFlag
+import org.jetbrains.bazel.commons.RepoMapping
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.server.BazelQueryOutput
 import org.jetbrains.bazel.server.BazelQueryParams
 import org.jetbrains.bazel.server.BazelServerFacade
 import org.jetbrains.bsp.protocol.TaskId
+import java.nio.file.Path
 
 @ApiStatus.Internal
 object FileToTargetQuery {
@@ -35,6 +37,20 @@ object FileToTargetQuery {
         ),
       )
     return fileLabels.associateWith { emptyList<Label>() } + result.result.targetsByFile(fileLabels)
+  }
+
+  suspend fun findDependantTargetsFromPaths(
+    server: BazelServerFacade,
+    paths: Collection<Path>,
+    repoMapping: RepoMapping,
+    taskId: TaskId? = null,
+  ): Map<Path, List<Label>> {
+    val classifier = SyncFileClassifier(repoMapping = repoMapping, bazelInfo = server.bazelInfo)
+    val pathsByFileLabel = paths.asSequence()
+      .mapNotNull { path -> (classifier.classify(path).kind as? SyncFileKind.Source)?.let { kind -> kind.label to path } }
+      .toMap()
+    val targetsByFileLabel = findDependantTargetsFromFiles(server = server, fileLabels = pathsByFileLabel.keys, taskId = taskId)
+    return pathsByFileLabel.entries.associate { (fileLabel, path) -> path to targetsByFileLabel[fileLabel].orEmpty() }
   }
 
   private fun expressionOf(fileLabels: Set<Label>): String =

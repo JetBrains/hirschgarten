@@ -17,8 +17,6 @@ import org.jetbrains.bsp.protocol.AnalysisDebugParams
 import org.jetbrains.bsp.protocol.AnalysisDebugResult
 import org.jetbrains.bsp.protocol.CompileParams
 import org.jetbrains.bsp.protocol.CompileResult
-import org.jetbrains.bsp.protocol.InverseSourcesParams
-import org.jetbrains.bsp.protocol.InverseSourcesResult
 import org.jetbrains.bsp.protocol.JvmToolchainInfo
 import org.jetbrains.bsp.protocol.RunParams
 import org.jetbrains.bsp.protocol.RunResult
@@ -32,7 +30,6 @@ import java.nio.file.Paths
 import kotlin.io.path.Path
 
 open class BuildServerMock(
-  private val inverseSourcesResult: InverseSourcesResult? = null,
   private val compileResult: CompileResult? = null,
   private val runResult: RunResult? = null,
   private val testResult: TestResult? = null,
@@ -46,9 +43,6 @@ open class BuildServerMock(
 
   override suspend fun workspaceBuildPhasedTargets(params: WorkspaceBuildTargetPhasedParams): PhasedSyncProject =
     wrapInFuture(phasedSyncProjectResult)
-
-  override suspend fun buildTargetInverseSources(inverseSourcesParams: InverseSourcesParams): InverseSourcesResult =
-    wrapInFuture(inverseSourcesResult)
 
   override suspend fun buildTargetCompile(compileParams: CompileParams): CompileResult = wrapInFuture(compileResult)
 

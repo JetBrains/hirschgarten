@@ -16,8 +16,6 @@ import org.jetbrains.bazel.languages.projectview.targets
 import org.jetbrains.bazel.server.BazelQueryOutput
 import org.jetbrains.bazel.server.BazelQueryParams
 import org.jetbrains.bazel.server.runBazelQuery
-import org.jetbrains.bsp.protocol.InverseSourcesParams
-import org.jetbrains.bsp.protocol.InverseSourcesResult
 import org.jetbrains.bsp.protocol.JvmToolchainInfo
 import org.jetbrains.bsp.protocol.TaskId
 import org.jetbrains.bsp.protocol.WorkspaceDirectoriesResult
@@ -143,10 +141,6 @@ class BspProjectMapper(
     mutableSetOf(
       workspaceRoot.resolve(Constants.DOT_BAZELBSP_DIR_NAME),
     )
-
-  internal suspend fun inverseSources(workspaceRoot: Path, inverseSourcesParams: InverseSourcesParams): InverseSourcesResult {
-    return InverseSourcesQuery.inverseSourcesQuery(inverseSourcesParams, workspaceRoot, bazelRunner, projectView)
-  }
 
   suspend fun jvmBuilderParamsForTarget(target: Label): JvmToolchainInfo =
     JvmToolchainQuery.jvmToolchainQueryForTarget(bazelRunner, projectView, target)

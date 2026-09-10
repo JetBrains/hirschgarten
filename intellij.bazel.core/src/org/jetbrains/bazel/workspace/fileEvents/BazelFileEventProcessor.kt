@@ -50,9 +50,11 @@ import org.jetbrains.bazel.progress.ShowConsole
 import org.jetbrains.bazel.progress.syncConsole
 import org.jetbrains.bazel.run.task.BazelBuildTaskListener
 import org.jetbrains.bazel.server.connection
+import org.jetbrains.bazel.sync.FileToTargetQuery
 import org.jetbrains.bazel.sync.ProjectDirtyStateService
 import org.jetbrains.bazel.sync.ProjectSyncService
 import org.jetbrains.bazel.sync.status.SyncStatusService
+import org.jetbrains.bazel.sync.workspace.persistence.WorkspaceSnapshotService
 import org.jetbrains.bazel.target.ModuleTargetService
 import org.jetbrains.bazel.target.targetStorage
 import org.jetbrains.bazel.taskEvents.BazelTaskEventsService
@@ -65,7 +67,6 @@ import org.jetbrains.bazel.workspacemodel.entities.PackageMarkerEntity
 import org.jetbrains.bazel.workspacemodel.entities.PackageMarkerEntityBuilder
 import org.jetbrains.bazel.workspacemodel.entities.bazelModuleExtension
 import org.jetbrains.bazel.workspacemodel.entities.packageMarkerEntities
-import org.jetbrains.bsp.protocol.InverseSourcesParams
 import org.jetbrains.bsp.protocol.TaskGroupId
 import org.jetbrains.bsp.protocol.TaskId
 import java.nio.file.Path
@@ -592,10 +593,15 @@ private suspend fun queryTargetsForFile(project: Project, filePaths: List<Path>,
     return null
 
   return try {
-    project
-      .connection
-      .runWithServer(taskId) { it.buildTargetInverseSources(InverseSourcesParams(taskId, filePaths)) }
-      .targets
+    val repoMapping = project.serviceAsync<WorkspaceSnapshotService>().currentSnapshot().repoMapping
+    project.connection.runWithServer(taskId) { server ->
+      FileToTargetQuery.findDependantTargetsFromPaths(
+        server = server,
+        paths = filePaths,
+        repoMapping = repoMapping,
+        taskId = taskId,
+      )
+    }.filterValues { targets -> targets.isNotEmpty() }
   }
   catch (ex: Exception) {
     rethrowControlFlowException(ex)

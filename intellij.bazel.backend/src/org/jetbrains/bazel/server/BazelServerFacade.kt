@@ -13,8 +13,6 @@ import org.jetbrains.bsp.protocol.AnalysisDebugParams
 import org.jetbrains.bsp.protocol.AnalysisDebugResult
 import org.jetbrains.bsp.protocol.CompileParams
 import org.jetbrains.bsp.protocol.CompileResult
-import org.jetbrains.bsp.protocol.InverseSourcesParams
-import org.jetbrains.bsp.protocol.InverseSourcesResult
 import org.jetbrains.bsp.protocol.JvmToolchainInfo
 import org.jetbrains.bsp.protocol.RunParams
 import org.jetbrains.bsp.protocol.RunResult
@@ -42,9 +40,6 @@ interface BazelServerFacade {
 
   @ApiStatus.Internal
   suspend fun workspaceBuildPhasedTargets(params: WorkspaceBuildTargetPhasedParams): PhasedSyncProject
-
-  @ApiStatus.Internal
-  suspend fun buildTargetInverseSources(params: InverseSourcesParams): InverseSourcesResult
 
   @ApiStatus.Internal
   suspend fun buildTargetCompile(params: CompileParams): CompileResult
