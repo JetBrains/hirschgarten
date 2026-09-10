@@ -103,12 +103,6 @@ val ProjectView.importIjars: Boolean
   get() = getSection(IMPORT_IJARS_KEY)
 
 @Internal
-val DERIVE_INSTRUMENTATION_FILTER_FROM_TARGETS_KEY: SectionKey<Boolean> = SectionKey("derive_instrumentation_filter_from_targets", true)
-val ProjectView.deriveInstrumentationFilterFromTargets: Boolean
-  @Internal
-  get() = getSection(DERIVE_INSTRUMENTATION_FILTER_FROM_TARGETS_KEY)
-
-@Internal
 val INDEX_ADDITIONAL_FILES_IN_DIRECTORIES_KEY: SectionKey<List<String>> = SectionKey("index_additional_files_in_directories", emptyList())
 val ProjectView.indexAdditionalFilesInDirectories: List<String>
   @Internal

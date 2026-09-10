@@ -51,6 +51,10 @@
                     interface="org.jetbrains.bazel.languages.starlark.bazel.bzlmod.BazelModuleResolver"
                     dynamic="true"
     />
+    <extensionPoint qualifiedName="org.jetbrains.bazel.runConfigurationEditorCustomizer"
+                    interface="org.jetbrains.bazel.run.config.BazelRunConfigurationEditorCustomizer"
+                    dynamic="true"
+    />
     <extensionPoint qualifiedName="org.jetbrains.bazel.syntheticRunTargetTemplateGenerator"
                     dynamic="true"
                     beanClass="com.intellij.lang.LanguageExtensionPoint">

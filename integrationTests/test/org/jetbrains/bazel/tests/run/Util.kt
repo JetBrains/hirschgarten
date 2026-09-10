@@ -2,9 +2,9 @@ package org.jetbrains.bazel.tests.run
 
 import com.intellij.driver.client.Driver
 import com.intellij.driver.sdk.invokeAction
+import com.intellij.driver.sdk.ui.Finder
 import com.intellij.driver.sdk.ui.components.UiComponent.Companion.waitFound
 import com.intellij.driver.sdk.ui.components.common.IdeaFrameUI
-import com.intellij.driver.sdk.ui.components.common.dialogs.EditRunConfigurationsDialogUiComponent
 import com.intellij.driver.sdk.ui.components.common.popups.runConfigurationsList
 import com.intellij.driver.sdk.ui.components.common.popups.runConfigurationsPopup
 import com.intellij.driver.sdk.ui.components.elements.JTextComponentUI
@@ -29,12 +29,21 @@ fun Driver.closeCoverageReport() {
   invokeAction("HideCoverage")
 }
 
-var EditRunConfigurationsDialogUiComponent.bazelFlags: String
+var Finder.bazelFlags: String
   get() = bazelFlagsField.text
   set(value) {
     bazelFlagsField.text = value
   }
 
-private val EditRunConfigurationsDialogUiComponent.bazelFlagsField: JTextComponentUI
+private val Finder.bazelFlagsField: JTextComponentUI
   get() = textField { byClass("ExpandableTextField").and(byAccessibleName("Bazel flags")) }
     .waitFound(10.seconds)
+
+var Finder.instrumentationFilter: String
+  get() = instrumentationFilterField.waitFound(10.seconds).text
+  set(value) {
+    instrumentationFilterField.waitFound(10.seconds).text = value
+  }
+
+val Finder.instrumentationFilterField: JTextComponentUI
+  get() = textField { byClass("JBTextField").and(byAccessibleName("Instrumentation filter")) }

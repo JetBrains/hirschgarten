@@ -7,16 +7,9 @@ import com.intellij.execution.ui.CommonTags
 import com.intellij.execution.ui.RunConfigurationFragmentedEditor
 import com.intellij.execution.ui.SettingsEditorFragment
 import com.intellij.openapi.externalSystem.service.execution.configuration.fragments.SettingsEditorFragmentContainer
-import com.intellij.openapi.externalSystem.service.execution.configuration.fragments.addLabeledSettingsEditorFragment
-import com.intellij.openapi.externalSystem.service.ui.util.LabeledSettingsFragmentInfo
-import com.intellij.ui.TextFieldWithAutoCompletion
-import com.intellij.util.textCompletion.TextFieldWithCompletion
 import org.jetbrains.annotations.ApiStatus
-import org.jetbrains.bazel.assets.BazelPluginIcons
 import org.jetbrains.bazel.config.BazelPluginBundle
-import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.run.BazelRunHandler
-import org.jetbrains.bazel.target.targetStorage
 
 /**
  * The base editor for a Bazel run configuration.
@@ -30,7 +23,17 @@ class BazelRunConfigurationEditor(
 ) :
   RunConfigurationFragmentedEditor<BazelRunConfiguration>(runConfiguration, handler?.extensionsManager) {
 
-  private lateinit var targetLabelsFragment: SettingsEditorFragment<*, *>
+  override fun initFragments(fragments: Collection<SettingsEditorFragment<BazelRunConfiguration, *>>) {
+    super.initFragments(fragments)
+    val allFragments = fragments.toList()
+    BazelRunConfigurationEditorCustomizer.EP_NAME.forEachExtensionSafe { it.fragmentsCreated(runConfiguration, allFragments) }
+  }
+
+  override fun resetEditorFrom(s: BazelRunConfiguration) {
+    super.resetEditorFrom(s)
+    val allFragments = fragments.toList()
+    BazelRunConfigurationEditorCustomizer.EP_NAME.forEachExtensionSafe { it.fragmentsReset(s, allFragments) }
+  }
 
   override fun createRunFragments(): List<SettingsEditorFragment<BazelRunConfiguration, *>> =
     SettingsEditorFragmentContainer.fragments {
@@ -53,53 +56,12 @@ class BazelRunConfigurationEditor(
   }
 
   private fun SettingsEditorFragmentContainer<BazelRunConfiguration>.addTargetLabelsFragment() {
-    this.addLabeledSettingsEditorFragment(
-      object : LabeledSettingsFragmentInfo { // TODO: Use bundle
-        override val settingsId: String = "bsp.target.fragment"
-        override val editorLabel: String = "Targets to run"
-        override val settingsName: String = "Targets to run"
-        override val settingsGroup: String = "Bazel"
-        override val settingsHint: String = "Specify all the targets to run separated by space. Each target must be executable!"
-        override val settingsActionHint: String = "Specify the targets to run."
-      },
-      {
-        val provider = TextFieldWithAutoCompletion.StringsCompletionProvider(
-          /* variants = */
-          project
-            .targetStorage
-            .allExecutableTargetLabels,
-          /* icon = */ BazelPluginIcons.bazel,
-        )
-        TextFieldWithCompletion(
-          /* project = */ project,
-          /* provider = */ provider,
-          /* value = */ "",
-          /* oneLineMode = */ true,
-          /* autoPopup = */ true,
-          /* forceAutoPopup = */ false,
-          /* showHint = */ true,
-        )
-      },
-      { config, field ->
-        field.text = config.targets.joinToString(" ") { it.toString() }
-      },
-      { config, field ->
-        if (field.text.isNotBlank()) {
-          val targets = field.text
-            .trim()
-            .split(" ")
-            .map(Label::parse)
-          config.updateTargets(targets)
-        } else {
-          config.updateTargets(emptyList())
-        }
-      },
-      { true },
-    ).also { targetLabelsFragment = it }
+    add(TargetsFragment(project))
   }
 
   fun focusTargetLabelsFragment() {
-    fragments  // make sure createFragments is called lazily
-    targetLabelsFragment.editorComponent.requestFocus()
+    fragments.filterIsInstance<TargetsFragment>().forEach {
+      it.editorComponent.requestFocus()
+    }
   }
 }

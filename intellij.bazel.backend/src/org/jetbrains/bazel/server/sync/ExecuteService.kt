@@ -22,7 +22,6 @@ import org.jetbrains.bazel.commons.TargetCollection
 import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.languages.projectview.ProjectView
-import org.jetbrains.bazel.languages.projectview.deriveInstrumentationFilterFromTargets
 import org.jetbrains.bazel.server.BazelTestFileNames
 import org.jetbrains.bazel.server.bep.AnalysisCacheInvalidationParser
 import org.jetbrains.bazel.server.bep.BepBuildResult
@@ -188,31 +187,33 @@ class ExecuteService(
   suspend fun test(params: TestParams): TestResult {
     val targetsSpec = TargetCollection(params.targets, emptyList())
     val command =
-      when (val instrumentationFilter = params.coverageInstrumentationFilter) {
-        null -> bazelRunner.buildBazelCommand(projectView) { test() }
-
-        else ->
-          bazelRunner.buildBazelCommand(projectView) { coverage() }.also {
-            it.options.add(BazelFlag.combinedReportLcov())
-            if (projectView.deriveInstrumentationFilterFromTargets) {
-              it.options.add(BazelFlag.instrumentationFilter(instrumentationFilter))
-            }
-          }
+      when {
+        params.useCoverage -> bazelRunner.buildBazelCommand(projectView) { coverage() }.also { command ->
+          command.options.add(BazelFlag.combinedReportLcov())
+        }
+        else -> bazelRunner.buildBazelCommand(projectView) { test() }
       }
 
-    params.additionalBazelParams?.let { additionalParams ->
-      (command as HasAdditionalBazelOptions).additionalBazelOptions.addAll(additionalParams.split(" "))
+    val instrumentationFilter = params.coverageInstrumentationFilter?.takeIf { params.useCoverage }
+    val testFilter = params.testFilter
+    // separate fields options should overwrite additional options
+    val separateFieldsOptions = listOfNotNull(
+      testFilter?.let(BazelFlag::testFilter),
+      instrumentationFilter?.let(BazelFlag::instrumentationFilter)
+    )
+    val additionalOptions = params.additionalBazelParams
+      ?.split(" ")
+      ?.filter { it.isNotBlank() }
+      .orEmpty()
+      .plus(separateFieldsOptions)
+    if (additionalOptions.isNotEmpty()) {
+      (command as HasAdditionalBazelOptions).additionalBazelOptions.addAll(additionalOptions)
     }
 
     if (params.streamTestOutput) {
       // Ensure streamed test output for live UI in IDE
       ensureTestOutputStreamed(command)
     }
-
-    params.testFilter?.let { testFilter ->
-      command.options.add(BazelFlag.testFilter(testFilter))
-    }
-
     params.environmentVariables?.let { (command as HasEnvironment).environment.putAll(it) }
     params.arguments?.let { (command as HasProgramArguments).programArguments.addAll(it) }
     command.options.add(BazelFlag.buildEventBinaryPathConversion(false))

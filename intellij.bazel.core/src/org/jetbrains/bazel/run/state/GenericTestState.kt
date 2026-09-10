@@ -16,7 +16,8 @@ open class AbstractGenericTestState<T : AbstractGenericTestState<T>> :
   HasEnv,
   HasProgramArguments,
   HasTestFilter,
-  HasBazelParams {
+  HasBazelParams,
+  HasCoverageInstrumentationFilter {
   @com.intellij.configurationStore.Property(description = "Test filter")
   @get:Attribute("testFilter")
   override var testFilter: String? by string()
@@ -34,11 +35,16 @@ open class AbstractGenericTestState<T : AbstractGenericTestState<T>> :
   @com.intellij.configurationStore.Property(description = "Bazel parameters")
   override var additionalBazelParams: String? by string()
 
+  @com.intellij.configurationStore.Property(description = "Coverage instrumentation filter")
+  @get:Attribute("coverageInstrumentationFilter")
+  override var coverageInstrumentationFilter: String? by string()
+
   override fun createFragments(configuration: BazelRunConfiguration): Collection<SettingsEditorFragment<BazelRunConfiguration, *>> =
     SettingsEditorFragmentContainer.fragments {
       add(bazelParamsFragment())
       addTestFilterFragment()
       add(programArgumentsFragment())
       addEnvironmentFragment()
+      add(CoverageWithBazelFragment())
     }
 }

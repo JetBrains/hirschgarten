@@ -7,7 +7,6 @@ import org.jetbrains.bazel.languages.projectview.sections.AllowManualTargetsSync
 import org.jetbrains.bazel.languages.projectview.sections.BazelBinarySection
 import org.jetbrains.bazel.languages.projectview.sections.BuildFlagsSection
 import org.jetbrains.bazel.languages.projectview.sections.DebugFlagsSection
-import org.jetbrains.bazel.languages.projectview.sections.DeriveInstrumentationFilterFromTargetsSection
 import org.jetbrains.bazel.languages.projectview.sections.DeriveTargetsFromDirectoriesSection
 import org.jetbrains.bazel.languages.projectview.sections.DirectoriesSection
 import org.jetbrains.bazel.languages.projectview.sections.DotIdeaDirectoryLocationSection
@@ -42,7 +41,6 @@ internal class DefaultProjectViewSectionProvider : ProjectViewSectionProvider {
       BazelBinarySection(),
       BuildFlagsSection(),
       DebugFlagsSection(),
-      DeriveInstrumentationFilterFromTargetsSection(),
       DeriveTargetsFromDirectoriesSection(),
       DirectoriesSection(),
       GazelleTargetSection(),

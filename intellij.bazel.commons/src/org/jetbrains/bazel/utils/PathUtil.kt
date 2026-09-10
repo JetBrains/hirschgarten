@@ -9,15 +9,11 @@ import java.nio.file.Path
 @ApiStatus.Internal
 fun Path.allAncestorsSequence(): Sequence<Path> = generateSequence(this) { it.parent }
 
-internal fun List<String>.allAncestorsSequence(): Sequence<List<String>> = generateSequence(this) { if (it.isEmpty()) null else it.dropLast(1) }
-
 /**
  * See [com.intellij.openapi.vfs.VfsUtilCore.isUnder]
  */
 @ApiStatus.Internal
 fun Path.isUnder(ancestors: Set<Path>): Boolean = this.allAncestorsSequence().any { it in ancestors }
-
-internal fun List<String>.isUnder(ancestors: Set<List<String>>): Boolean = this.allAncestorsSequence().any { it in ancestors }
 
 /**
  * See [com.intellij.openapi.vfs.VfsUtilCore.getCommonAncestor].
@@ -62,10 +58,6 @@ fun Collection<Path>.commonAncestor(): Path? {
 
 @ApiStatus.Internal
 fun Set<Path>.filterPathsThatDontContainEachOther(): List<Path> = filter { path -> !path.parent.isUnder(this) }
-
-// Can't be named the same because of platform declaration clash
-@ApiStatus.Internal
-fun Set<List<String>>.filterPathsThatDontContainEachOther2(): List<List<String>> = filter { path -> !path.dropLast(1).isUnder(this) }
 
 @ApiStatus.Internal
 fun Path.refreshAndFindVirtualFile(): VirtualFile? = VirtualFileManager.getInstance().refreshAndFindFileByNioPath(this)

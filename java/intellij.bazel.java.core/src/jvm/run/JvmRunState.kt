@@ -10,8 +10,8 @@ import org.jetbrains.bazel.languages.projectview.runConfigRunWithBazel
 import org.jetbrains.bazel.run.config.BazelRunConfiguration
 import org.jetbrains.bazel.run.state.AbstractGenericRunState
 import org.jetbrains.bazel.run.state.HasRunWithBazel
+import org.jetbrains.bazel.run.state.RunWithBazelFragment
 import org.jetbrains.bazel.run.state.addEnvironmentFragment
-import org.jetbrains.bazel.run.state.addRunWithBazelFragment
 import org.jetbrains.bazel.run.state.bazelParamsFragment
 import org.jetbrains.bazel.run.state.programArgumentsFragment
 
@@ -34,6 +34,6 @@ class JvmRunState(project: Project) :
       add(bazelParamsFragment())
       add(programArgumentsFragment())
       addEnvironmentFragment()
-      addRunWithBazelFragment()
+      add(RunWithBazelFragment())
     }
 }

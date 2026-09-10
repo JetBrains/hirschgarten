@@ -15,9 +15,10 @@ import org.jetbrains.bazel.languages.projectview.projectView
 import org.jetbrains.bazel.languages.projectview.runConfigRunWithBazel
 import org.jetbrains.bazel.run.config.BazelRunConfiguration
 import org.jetbrains.bazel.run.state.AbstractGenericTestState
+import org.jetbrains.bazel.run.state.CoverageWithBazelFragment
 import org.jetbrains.bazel.run.state.HasRunWithBazel
+import org.jetbrains.bazel.run.state.RunWithBazelFragment
 import org.jetbrains.bazel.run.state.addEnvironmentFragment
-import org.jetbrains.bazel.run.state.addRunWithBazelFragment
 import org.jetbrains.bazel.run.state.addTestFilterFragment
 import org.jetbrains.bazel.run.state.bazelParamsFragment
 import org.jetbrains.bazel.run.state.programArgumentsFragment
@@ -42,7 +43,8 @@ class JvmTestState(project: Project) :
       addTestFilterFragment()
       add(programArgumentsFragment())
       addEnvironmentFragment()
-      addRunWithBazelFragment()
+      add(RunWithBazelFragment())
+      add(CoverageWithBazelFragment())
     }
 }
 

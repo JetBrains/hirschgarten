@@ -1,6 +1,8 @@
 package org.jetbrains.bazel.tests.run
 
 import com.intellij.driver.sdk.step
+import com.intellij.driver.sdk.ui.components.UIComponentsList.Companion.waitAny
+import com.intellij.driver.sdk.ui.components.UIComponentsList.Companion.waitNotFound
 import com.intellij.driver.sdk.ui.components.UiComponent.Companion.waitFound
 import com.intellij.driver.sdk.ui.components.common.IdeaFrameUI
 import com.intellij.driver.sdk.ui.components.common.dialogs.editRunConfigurationsDialog
@@ -8,9 +10,12 @@ import com.intellij.driver.sdk.ui.components.common.ideFrame
 import com.intellij.driver.sdk.ui.components.common.popups.runConfigurationsPopup
 import com.intellij.driver.sdk.ui.components.common.toolwindows.coverageToolWindow
 import com.intellij.driver.sdk.ui.components.elements.button
+import com.intellij.driver.sdk.ui.components.elements.checkBoxWithName
+import com.intellij.driver.sdk.ui.components.elements.dialog
 import com.intellij.driver.sdk.ui.components.elements.list
 import com.intellij.driver.sdk.ui.components.elements.popup
 import com.intellij.driver.sdk.ui.components.elements.tree
+import com.intellij.driver.sdk.ui.components.elements.tryToScrollDown
 import com.intellij.driver.sdk.ui.should
 import com.intellij.ide.starter.driver.engine.runIdeWithDriver
 import com.intellij.openapi.ui.playback.commands.AbstractCommand.CMD_PREFIX
@@ -44,11 +49,10 @@ class BazelCoverageTest : IdeStarterBaseProjectTest() {
     )
       .also { it.pluginConfigurator.disablePlugins("com.intellij.ml.llm") }
       .setRunConfigRunWithBazel(runConfigRunWithBazel)
-      .runIdeWithDriver(runTimeout = timeout)
+      .runIdeWithDriver(runTimeout = timeout, pauseOnIndexing = 5.minutes)
       .useDriverAndCloseIde {
         ideFrame {
           syncBazelProject(true)
-          waitForIndicators(5.minutes)
 
           step("Run test with coverage") {
             execute { openFile("src/test/com/example/CalculatorTest.java") }
@@ -79,24 +83,74 @@ class BazelCoverageTest : IdeStarterBaseProjectTest() {
   }
 
   @Test
-  fun `bazel flags are applied properly to Bazel coverage`() {
+  fun `the Run with Bazel check box swaps the coverage settings`() {
     createContext(
-      "bazelCoverage-bazelFlags",
+      "bazelCoverage-settingsSwap",
       IdeaBazelCases.withProject(BAZEL_COVERAGE_PROJECT),
     )
       .also { it.pluginConfigurator.disablePlugins("com.intellij.ml.llm") }
       .setRunConfigRunWithBazel(true)
-      .runIdeWithDriver(runTimeout = timeout)
+      .runIdeWithDriver(runTimeout = timeout, pauseOnIndexing = 5.minutes)
       .useDriverAndCloseIde {
         ideFrame {
-          syncBazelProject()
-          waitForIndicators(5.minutes)
+          syncBazelProject(true)
 
-          step("Run test with the derived filter") {
+          step("Open the run configuration of the test") {
+            // "Modify Run Configuration…" opens the editor without a run, so this test runs no test.
+            execute { openFile("src/test/com/example/CalculatorTest.java") }
+            clickRunGutterOnLine(4)
+            popup().waitOneText("Modify Run Configuration…").click()
+          }
+
+          step("Verify that the editor starts with the Bazel coverage settings") {
+            // Without this check, the step below passes even if the field never shows at all.
+            dialog {
+              instrumentationFilterField.waitFound()
+              waitNotFound(NO_IDEA_COVERAGE_OPTIONS) { byClass(COVERAGE_FILTER_EDITOR) }
+            }
+          }
+
+          step("Clear Run with Bazel and verify that the IDEA coverage options replace the filter") {
+            dialog {
+              checkBoxWithName(RUN_WITH_BAZEL).uncheck()
+              instrumentationFilterField.waitNotFound()
+              waitAny(IDEA_COVERAGE_OPTIONS) { byClass(COVERAGE_FILTER_EDITOR) }
+              takeScreenshot("afterUncheckRunWithBazel")
+            }
+          }
+
+          step("Set Run with Bazel and verify that the filter replaces the IDEA coverage options") {
+            dialog {
+              checkBoxWithName(RUN_WITH_BAZEL).check()
+              instrumentationFilterField.waitFound()
+              waitNotFound(NO_IDEA_COVERAGE_OPTIONS) { byClass(COVERAGE_FILTER_EDITOR) }
+              takeScreenshot("afterCheckRunWithBazel")
+              cancelButton.click()
+            }
+          }
+        }
+      }
+  }
+
+  @Test
+  fun `the instrumentation filter and the bazel flags are applied properly to Bazel coverage`() {
+    createContext(
+      "bazelCoverage-instrumentationFilter",
+      IdeaBazelCases.withProject(BAZEL_COVERAGE_PROJECT),
+    )
+      .setRunConfigRunWithBazel(true)
+      .runIdeWithDriver(runTimeout = timeout, pauseOnIndexing = 5.minutes)
+      .useDriverAndCloseIde {
+        ideFrame {
+          syncBazelProject(true)
+
+          step("Run the test with the filter of the .bazelrc file") {
+            // The run configuration holds no filter, so the coverage scope comes from the .bazelrc file.
+            // That file sets ^//, so the report holds both packages.
             execute { openFile("src/test/com/example/CalculatorTest.java") }
             runCalculatorTestWithCoverage()
             waitForCoverageReport(present = listOf("Calculator.java", "OtherPackage.java"))
-            takeScreenshot("afterDerivedFilterCoverage")
+            takeScreenshot("afterBazelrcFilterCoverage")
           }
 
           step("Close the coverage report") {
@@ -104,18 +158,35 @@ class BazelCoverageTest : IdeStarterBaseProjectTest() {
           }
 
           step("Set the instrumentation filter in the Bazel flags") {
-            runConfigurationsPopup {
-              list().clickItem("Edit Configurations", fullMatch = false)
-            }
+            openRunConfigurationEditor()
             editRunConfigurationsDialog {
-              waitFound()
-              bazelFlags = "--instrumentation_filter=^//src/main/com/example"
+              bazelFlags = "--instrumentation_filter=^//src/main/org/other_package[/:]"
               takeScreenshot("afterSetBazelFlags")
               button("OK").click()
             }
           }
 
-          step("Re-run the test and verify that only Calculator is covered") {
+          step("Re-run the test and verify that the Bazel flags beat the .bazelrc file") {
+            execute { openFile("src/test/com/example/CalculatorTest.java") }
+            runCalculatorTestWithCoverage()
+            waitForCoverageReport(present = listOf("OtherPackage.java"), absent = listOf("Calculator.java"))
+            takeScreenshot("afterBazelFlagsCoverage")
+          }
+
+          step("Close the coverage report") {
+            closeCoverageReport()
+          }
+
+          step("Set the instrumentation filter of the run configuration") {
+            openRunConfigurationEditor()
+            editRunConfigurationsDialog {
+              instrumentationFilter = "^//src/main/com/example[/:]"
+              takeScreenshot("afterSetInstrumentationFilter")
+              button("OK").click()
+            }
+          }
+
+          step("Re-run the test and verify that the filter of the run configuration wins") {
             execute { openFile("src/test/com/example/CalculatorTest.java") }
             runCalculatorTestWithCoverage()
             waitForCoverageReport(present = listOf("Calculator.java"), absent = listOf("OtherPackage.java"))
@@ -125,6 +196,21 @@ class BazelCoverageTest : IdeStarterBaseProjectTest() {
           }
         }
       }
+  }
+}
+
+private const val RUN_WITH_BAZEL = "Run with Bazel"
+
+private const val COVERAGE_FILTER_EDITOR = "CoverageClassFilterEditor"
+private const val IDEA_COVERAGE_OPTIONS = "The IDEA coverage options show"
+private const val NO_IDEA_COVERAGE_OPTIONS = "The IDEA coverage options hide"
+
+private fun IdeaFrameUI.openRunConfigurationEditor() {
+  runConfigurationsPopup {
+    list().clickItem("Edit Configurations", fullMatch = false)
+  }
+  editRunConfigurationsDialog {
+    waitFound()
   }
 }
 

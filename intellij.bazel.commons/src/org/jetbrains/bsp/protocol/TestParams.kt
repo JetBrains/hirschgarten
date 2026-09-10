@@ -9,6 +9,7 @@ data class TestParams(
   val targets: List<Label>,
   val arguments: List<String>? = null,
   val environmentVariables: Map<String, String>? = null,
+  val useCoverage: Boolean = false,
   val coverageInstrumentationFilter: String? = null,
   val testFilter: String? = null,
   val additionalBazelParams: String? = null,

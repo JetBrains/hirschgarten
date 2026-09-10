@@ -14,6 +14,7 @@ import com.intellij.execution.configurations.coverage.CoverageEnabledConfigurati
 import com.intellij.openapi.module.Module
 import com.intellij.openapi.project.Project
 import org.jetbrains.bazel.jvm.run.JvmTestHandler
+import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.run.config.BazelRunConfiguration
 
 /**
@@ -87,10 +88,13 @@ internal class BazelJavaAgentCoverageEngine : JavaCoverageEngine() {
 internal fun isJavaAgentCoverageApplicableTo(configuration: RunProfile?): Boolean {
   if (configuration !is BazelRunConfiguration) return false
   val handler = configuration.handler as? JvmTestHandler ?: return false
-  // Only one target can be run with --script_path
-  if (configuration.targets.size != 1) return false
-  // Vanilla "bazel coverage" works with remote execution,
-  // but BazelJavaAgentCoverageEngine doesn't as it uses -javaagent with a jar file from the local system.
-  // So here we give the choice to the user
-  return !handler.state.runWithBazel
+  return isJavaAgentCoverageApplicableTo(configuration.targets, handler.state.runWithBazel)
+}
+
+internal fun isJavaAgentCoverageApplicableTo(targets: List<Label>, runWithBazel: Boolean): Boolean {
+  // 1. Only one concrete target can be run with --script_path
+  // 2. Vanilla "bazel coverage" works with remote execution,
+  //    but BazelJavaAgentCoverageEngine doesn't as it uses -javaagent with a jar file from the local system.
+  //    So here we give the choice to the user
+  return targets.singleOrNull()?.isWildcard == false && !runWithBazel
 }

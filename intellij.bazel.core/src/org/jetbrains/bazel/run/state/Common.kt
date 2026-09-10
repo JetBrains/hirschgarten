@@ -6,25 +6,19 @@ import com.intellij.execution.configuration.EnvironmentVariablesData
 import com.intellij.execution.ui.CommandLinePanel
 import com.intellij.execution.ui.CommonParameterFragments
 import com.intellij.execution.ui.SettingsEditorFragment
-import com.intellij.execution.ui.SettingsEditorFragmentType
 import com.intellij.ide.macro.MacrosDialog
 import com.intellij.openapi.components.BaseState
 import com.intellij.openapi.externalSystem.service.execution.configuration.addEnvironmentFragment
 import com.intellij.openapi.externalSystem.service.execution.configuration.fragments.SettingsEditorFragmentContainer
-import com.intellij.openapi.externalSystem.service.execution.configuration.fragments.addSettingsEditorFragment
 import com.intellij.openapi.externalSystem.service.ui.util.LabeledSettingsFragmentInfo
-import com.intellij.openapi.externalSystem.service.ui.util.SettingsFragmentInfo
-import com.intellij.openapi.ui.DialogPanel
 import com.intellij.openapi.ui.ValidationInfo
 import com.intellij.ui.RawCommandLineEditor
 import com.intellij.ui.components.TextComponentEmptyText
-import com.intellij.ui.dsl.builder.panel
 import com.intellij.util.xmlb.annotations.Tag
 import com.intellij.util.xmlb.annotations.XMap
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.run.config.BazelRunConfiguration
-import javax.swing.JCheckBox
 
 @ApiStatus.Internal
 interface HasEnv {
@@ -181,38 +175,4 @@ fun bazelParamsFragment(): SettingsEditorFragment<BazelRunConfiguration, RawComm
   }
 
   return parameters
-}
-
-
-@ApiStatus.Internal
-interface HasRunWithBazel {
-  var runWithBazel: Boolean
-}
-
-private val BazelRunConfiguration.runWithBazelState: HasRunWithBazel?
-  get() = handler?.state as? HasRunWithBazel
-
-@ApiStatus.Internal
-fun SettingsEditorFragmentContainer<BazelRunConfiguration>.addRunWithBazelFragment(): SettingsEditorFragment<BazelRunConfiguration, DialogPanel> {
-  val checkBox = JCheckBox(BazelPluginBundle.message("runconfig.run.with.bazel"))
-  return addSettingsEditorFragment(
-    object : SettingsFragmentInfo {
-      override val settingsName: String = "Run with Bazel"
-      override val settingsId: String = settingsName
-      override val settingsGroup = settingsName
-      override val settingsPriority: Int = 1
-      override val settingsType: SettingsEditorFragmentType = SettingsEditorFragmentType.EDITOR
-      override val settingsHint: String? = null
-      override val settingsActionHint: String? = null
-    },
-    {
-      panel {
-        row {
-          cell(checkBox).contextHelp(BazelPluginBundle.message("runconfig.run.with.bazel.hint"))
-        }
-      }
-    },
-    { configuration, _ -> checkBox.isSelected = configuration.runWithBazelState?.runWithBazel ?: false },
-    { configuration, _ -> configuration.runWithBazelState?.runWithBazel = checkBox.isSelected },
-  )
 }

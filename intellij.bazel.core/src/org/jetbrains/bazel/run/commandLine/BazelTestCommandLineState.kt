@@ -5,7 +5,6 @@ import com.intellij.execution.ExecutionResult
 import com.intellij.execution.Executor
 import com.intellij.execution.runners.ExecutionEnvironment
 import com.intellij.execution.runners.ProgramRunner
-import com.intellij.openapi.project.Project
 import kotlinx.coroutines.CompletableDeferred
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.config.BazelPluginBundle
@@ -15,9 +14,7 @@ import org.jetbrains.bazel.run.config.BazelRunConfiguration
 import org.jetbrains.bazel.run.state.AbstractGenericTestState
 import org.jetbrains.bazel.run.task.BazelTestTaskListener
 import org.jetbrains.bazel.server.BazelServerFacade
-import org.jetbrains.bazel.target.targetStorage
 import org.jetbrains.bazel.taskEvents.BazelTaskListener
-import org.jetbrains.bazel.utils.filterPathsThatDontContainEachOther2
 import org.jetbrains.bsp.protocol.TestParams
 import java.nio.file.Path
 
@@ -45,13 +42,6 @@ open class BazelTestCommandLineState(
       throw ExecutionException(BazelPluginBundle.message("bsp.run.error.cannotRun"))
     }
 
-    val coverageInstrumentationFilter =
-      if (environment.executor.id == COVERAGE_EXECUTOR_ID) {
-        getCoverageInstrumentationFilter(configuration.project)
-      } else {
-        null
-      }
-
     // TODO: add pidDeferred to TestParams
     val params =
       TestParams(
@@ -59,26 +49,13 @@ open class BazelTestCommandLineState(
         taskId = taskGroupId.task("test"),
         arguments = transformProgramArguments(state.programArguments),
         environmentVariables = state.env.envs,
-        coverageInstrumentationFilter = coverageInstrumentationFilter,
+        useCoverage = environment.executor.id == COVERAGE_EXECUTOR_ID,
+        coverageInstrumentationFilter = state.coverageInstrumentationFilter,
         testFilter = state.testFilter,
         additionalBazelParams = state.additionalBazelParams,
         streamTestOutput = false,
       )
     server.buildTargetTest(transformTestParams(params))
-  }
-
-  private fun getCoverageInstrumentationFilter(project: Project): String {
-    val packages =
-      project.targetStorage
-        .allTargets()
-        .map { it.packagePath.pathSegments }
-        .toSet()
-        .filterPathsThatDontContainEachOther2()
-    if (packages.isEmpty() || packages.singleOrNull() == emptyList<String>()) {
-      // Cover all packages
-      return "^//"
-    }
-    return "^//(${packages.joinToString("|") { it.joinToString("/") }})[/:]"
   }
 
   companion object {
