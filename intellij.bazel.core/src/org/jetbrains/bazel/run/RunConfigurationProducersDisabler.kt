@@ -40,5 +40,6 @@ internal class BazelRunConfigurationProducerSuppressor : RunConfigurationProduce
     "com.jetbrains.python.testing.AbstractPythonTestConfigurationProducer",
     "com.jetbrains.python.testing.tox.PyToxConfigurationProducer",
     "com.goide.execution.GoRunConfigurationProducerBase",
+    "com.jetbrains.cidr.cpp.runfile.CppFileTargetRunConfigurationProducer",
   )
 }
