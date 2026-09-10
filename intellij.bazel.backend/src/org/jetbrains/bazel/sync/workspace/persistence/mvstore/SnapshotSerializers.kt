@@ -20,6 +20,7 @@ import org.jetbrains.bsp.protocol.OutputRoot
 import org.jetbrains.bsp.protocol.SourceFileCollection
 import java.nio.file.Path
 import java.util.TreeMap
+import kotlin.io.path.Path
 
 // TODO: Ideas of improving overall snapshot size:
 //        - using string pool for segments inside each path/label
@@ -87,7 +88,7 @@ internal class TrieSourceFileCollectionSerializer : VersionedKryoSerializer<Trie
     isImmutable = true
   }
 
-  override val binaryFormatVersion: Int = 1
+  override val binaryFormatVersion: Int = 2
 
   override fun write(kryo: Kryo, output: Output, obj: TrieSourceFileCollection) {
     kryo.writeObjectOrNull(output, obj.relativizeRoot, Path::class.java)
@@ -95,7 +96,7 @@ internal class TrieSourceFileCollectionSerializer : VersionedKryoSerializer<Trie
     for (path in obj.externalFiles) {
       kryo.writeObject(output, path)
     }
-    writeTrieNode(output, obj.trie.root)
+    writeTrieNode(kryo, output, obj.trie.root)
   }
 
   override fun read(kryo: Kryo, input: Input, type: Class<out TrieSourceFileCollection>): TrieSourceFileCollection {
@@ -106,7 +107,7 @@ internal class TrieSourceFileCollectionSerializer : VersionedKryoSerializer<Trie
       externalFiles.add(kryo.readObject(input, Path::class.java))
     }
     val trie = PathsTrie()
-    readTrieNode(input, trie.root)
+    readTrieNode(kryo, input, trie.root)
     return TrieSourceFileCollection(relativizeRoot = relativizeRoot, trie = trie, externalFiles = externalFiles)
   }
 }
@@ -116,13 +117,13 @@ internal class TrieOutputLocationCollectionSerializer : VersionedKryoSerializer<
     isImmutable = true
   }
 
-  override val binaryFormatVersion: Int = 1
+  override val binaryFormatVersion: Int = 2
 
   override fun write(kryo: Kryo, output: Output, obj: TrieOutputLocationCollection) {
     output.writeVarInt(obj.roots.size, true)
     for ((root, trie) in obj.roots) {
       kryo.writeClassAndObject(output, root)
-      writeTrieNode(output, trie.root)
+      writeTrieNode(kryo, output, trie.root)
     }
   }
 
@@ -132,7 +133,7 @@ internal class TrieOutputLocationCollectionSerializer : VersionedKryoSerializer<
     repeat(rootCount) {
       val root = kryo.readClassAndObject(input) as OutputLocation
       val trie = PathsTrie()
-      readTrieNode(input, trie.root)
+      readTrieNode(kryo, input, trie.root)
       roots[root] = trie
     }
     return TrieOutputLocationCollection(roots)
@@ -144,12 +145,12 @@ internal class OutputRootSerializer : VersionedKryoSerializer<OutputRoot>() {
     isImmutable = true
   }
 
-  override val binaryFormatVersion: Int = 1
+  override val binaryFormatVersion: Int = 2
 
   override fun write(kryo: Kryo, output: Output, obj: OutputRoot) {
     output.writeVarInt(obj.segments.size, true)
     for (segment in obj.segments) {
-      output.writeString(segment)
+      kryo.writePooledString(output, segment)
     }
   }
 
@@ -157,71 +158,46 @@ internal class OutputRootSerializer : VersionedKryoSerializer<OutputRoot>() {
     val segmentCount = input.readVarInt(true)
     val segments = ArrayList<String>(segmentCount)
     repeat(segmentCount) {
-      segments.add(checkNotNull(input.readString()))
+      segments.add(kryo.readPooledString(input))
     }
     return OutputRoot.of(segments)
   }
 }
 
-private fun writeTrieNode(output: Output, node: TrieNode) {
+private fun writeTrieNode(kryo: Kryo, output: Output, node: TrieNode) {
   output.writeVarInt((node.children.size shl 1) or (if (node.isTerminal) 1 else 0), true)
   for (child in node.children) {
-    output.writeString(child.segment)
-    writeTrieNode(output, child)
+    kryo.writePooledString(output, child.segment)
+    writeTrieNode(kryo, output, child)
   }
 }
 
-private fun readTrieNode(input: Input, node: TrieNode) {
+private fun readTrieNode(kryo: Kryo, input: Input, node: TrieNode) {
   val header = input.readVarInt(true)
   node.isTerminal = (header and 1) != 0
   repeat(header ushr 1) {
-    val child = TrieNode(segment = checkNotNull(input.readString()))
+    val child = TrieNode(segment = kryo.readPooledString(input))
     node.children.add(child)
-    readTrieNode(input, child)
+    readTrieNode(kryo, input, child)
   }
 }
 
 internal class LabelSerializer : VersionedKryoSerializer<Label>() {
-  companion object {
-    private const val LABEL_INLINE: Byte = 0
-    private const val LABEL_TABLE_REF: Byte = 1
-  }
-
-  override val binaryFormatVersion: Int = 1
+  override val binaryFormatVersion: Int = 2
 
   override fun write(
     kryo: Kryo,
     output: Output,
     obj: Label,
   ) {
-    val table = kryo.graphContext.get(STRING_TABLE_WRITE_KEY) as? StringTableWriter?
-    if (table != null) {
-      output.writeByte(LABEL_TABLE_REF)
-      output.writeVarInt(table.idFor(obj.toString()), true)
-    }
-    else {
-      output.writeByte(LABEL_INLINE)
-      output.writeString(obj.toString())
-    }
+    kryo.writePooledString(output, obj.toString())
   }
 
   override fun read(
     kryo: Kryo,
     input: Input,
     type: Class<out Label>,
-  ): Label {
-    val text = when (val marker = input.readByte()) {
-      LABEL_TABLE_REF -> {
-        val table = kryo.graphContext.get(STRING_TABLE_READ_KEY) as? StringTableReader?
-                    ?: error("string table is required to decode label reference")
-        table.get(input.readVarInt(true))
-      }
-
-      LABEL_INLINE -> input.readString()
-      else -> error("invalid label marker: $marker")
-    }
-    return Label.parse(text)
-  }
+  ): Label = Label.parse(kryo.readPooledString(input))
 }
 
 internal class Object2IntOpenHashMapSerializer : VersionedKryoSerializer<Object2IntOpenHashMap<Any>>() {
@@ -327,40 +303,42 @@ private class SingletonSerializer(private val instance: Any) : VersionedKryoSeri
 }
 
 private class PathSerializer : VersionedKryoSerializer<Path>() {
-  companion object {
-    private const val PATH_INLINE: Byte = 0
-    private const val PATH_TABLE_REF: Byte = 1
-  }
-
   init {
     isImmutable = true
   }
 
-  override val binaryFormatVersion: Int = 3
+  override val binaryFormatVersion: Int = 4
 
-  override fun write(kryo: Kryo, output: Output, path: Path) {
-    val table = kryo.graphContext.get(STRING_TABLE_WRITE_KEY) as StringTableWriter?
-    if (table != null) {
-      output.writeByte(PATH_TABLE_REF)
-      output.writeVarInt(table.idFor(path.toString()), true)
-    }
-    else {
-      output.writeByte(PATH_INLINE)
-      output.writeString(path.toString())
-    }
+  override fun write(kryo: Kryo, output: Output, path: Path) = kryo.writePooledString(output, path.toString())
+
+  override fun read(kryo: Kryo, input: Input, type: Class<out Path>): Path = Path(kryo.readPooledString(input))
+}
+
+private const val POOLED_STRING_INLINE: Byte = 0
+private const val POOLED_STRING_REF: Byte = 1
+
+internal fun Kryo.writePooledString(output: Output, str: String) {
+  val table = this.graphContext.get(STRING_TABLE_WRITE_KEY) as StringTableWriter?
+  if (table != null) {
+    output.writeByte(POOLED_STRING_REF)
+    output.writeVarInt(table.idFor(str), true)
   }
+  else {
+    output.writeByte(POOLED_STRING_INLINE)
+    output.writeString(str)
+  }
+}
 
-  override fun read(kryo: Kryo, input: Input, type: Class<out Path>): Path {
-    val text = when (val marker = input.readByte()) {
-      PATH_TABLE_REF -> {
-        val table = kryo.graphContext.get(STRING_TABLE_READ_KEY) as? StringTableReader?
-                    ?: error("string table is required to decode path ref")
-        table.get(input.readVarInt(true))
-      }
-
-      PATH_INLINE -> input.readString()
-      else -> error("invalid path marker: $marker")
+internal fun Kryo.readPooledString(input: Input): String {
+  return when (val marker = input.readByte()) {
+    POOLED_STRING_REF -> {
+      val table = this.graphContext.get(STRING_TABLE_READ_KEY) as? StringTableReader?
+                  ?: error("string table is required to decode string ref")
+      table.get(input.readVarInt(true))
     }
-    return Path.of(text)
+
+    POOLED_STRING_INLINE -> input.readString()
+
+    else -> error("invalid string marker: $marker")
   }
 }
