@@ -20,9 +20,8 @@
   <extensions defaultExtensionNs="com.intellij">
     <registryKey
       defaultValue="false"
-      description="Enable the C/C++ support of the Bazel plugin."
+      description="Enable the C/C++ support of the Bazel plugin. (requires re-sync)"
       key="bazel.clion.enable"
-      restartRequired="true"
     />
   </extensions>
 
