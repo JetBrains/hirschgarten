@@ -1,6 +1,7 @@
 package org.jetbrains.bazel.clion.workspace
 
 import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.platform.workspace.storage.url.VirtualFileUrl
 import com.jetbrains.cidr.lang.CLanguageKind
 import com.jetbrains.cidr.lang.OCFileTypeHelpers
 import com.jetbrains.cidr.lang.OCLanguageKind
@@ -37,7 +38,7 @@ internal fun buildWorkspaceModel(model: OCWorkspace.ModifiableModel, configs: Li
 
     for (file in config.sources) {
       val languageKind = getDeclaredLanguageKind(file)
-      val fileConfig = workspaceConfig.addSource(file, languageKind)
+      val fileConfig = workspaceConfig.addSource(file.url, languageKind)
 
       if (languageKind == CLanguageKind.C) {
         fileConfig.setCompiler(settings.cCompilerKind, settings.cCompiler.toFile(), ctx.execroot.toFile())
@@ -70,8 +71,8 @@ private fun CompilerSpecificSwitchBuilder.appendCompilationContext(config: CcRes
   config.shared.transitiveSystemIncludes.getOutputLocations().resolve().forEach(::withSystemIncludePath)
 }
 
-private fun getDeclaredLanguageKind(sourceOrHeaderFile: VirtualFile): OCLanguageKind {
-  val name = sourceOrHeaderFile.name
+private fun getDeclaredLanguageKind(sourceOrHeaderFile: VirtualFileUrl): OCLanguageKind {
+  val name = sourceOrHeaderFile.fileName
 
   if (OCFileTypeHelpers.isSourceFile(name)) {
     return OCFileTypeHelpers.getLanguageKind(name) ?: DEFAULT_LANGUAGE_KIND

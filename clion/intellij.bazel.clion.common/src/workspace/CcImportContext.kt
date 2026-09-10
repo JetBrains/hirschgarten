@@ -3,6 +3,7 @@ package org.jetbrains.bazel.clion.workspace
 import com.intellij.build.events.MessageEvent
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.NlsSafe
+import com.intellij.platform.workspace.storage.url.VirtualFileUrlManager
 import org.jetbrains.bazel.sync.workspace.importer.WorkspaceImporterContext
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceSnapshot
 import org.jetbrains.bsp.protocol.OutputLocation
@@ -12,6 +13,8 @@ import java.nio.file.Path
 internal interface CcImportContext {
 
   val project: Project
+
+  val vfuManager: VirtualFileUrlManager
 
   val snapshot: WorkspaceSnapshot
 
@@ -37,6 +40,9 @@ private class CcImportContextImpl(
 
   override val project: Project
     get() = ctx.project
+
+  override val vfuManager: VirtualFileUrlManager
+    get() = ctx.vfuManager
 
   override val execroot: Path
     get() = ctx.bazelInfo.execRoot

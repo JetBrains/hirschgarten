@@ -1,8 +1,8 @@
 package org.jetbrains.bazel.clion.workspace
 
 import com.intellij.openapi.util.NlsSafe
-import com.intellij.openapi.vfs.VfsUtil
-import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.platform.workspace.storage.impl.url.toVirtualFileUrl
+import com.intellij.platform.workspace.storage.url.VirtualFileUrl
 import com.intellij.util.containers.MultiMap
 import com.jetbrains.cidr.lang.workspace.OCResolveConfiguration
 import org.jetbrains.bazel.clion.sync.CcBuildTarget
@@ -20,7 +20,7 @@ data class CcResolveConfiguration(
   val name: @NlsSafe String,
   val shared: EquivalenceClass,
   val targets: List<WorkspaceTargetKey>,
-  val sources: List<VirtualFile>,
+  val sources: List<VirtualFileUrl>,
 ) {
 
   /** Represents a set of compiler settings that are shared across multiple targets. */
@@ -82,13 +82,11 @@ internal fun buildEquivalenceClasses(target2Compiler: Map<WorkspaceTargetKey, Cc
 }
 
 context(ctx: CcImportContext)
-private fun collectSources(targets: Collection<WorkspaceTargetKey>): List<VirtualFile> {
+private fun collectSources(targets: Collection<WorkspaceTargetKey>): List<VirtualFileUrl> {
   return targets.asSequence()
-    .mapNotNull { ctx.snapshot.targetGraph.findTargetByKey(it) }
-    .mapNotNull { ctx.snapshot.targets.findTargetByKey(it, TargetLoadOptions.MINIMAL) }
+    .mapNotNull { ctx.snapshot.targets.findTargetByKey(it, TargetLoadOptions.ALL) }
     .flatMap { target -> target.sources.getFiles() + target.generatedSources.getFiles() }
-    // TODO: do we need to call this with refresh true, or switch to URLs?
-    .mapNotNull { VfsUtil.findFile(it, /* refreshIfNeeded = */ false) }
+    .map { it.toVirtualFileUrl(ctx.vfuManager) }
     .toList()
 }
 
