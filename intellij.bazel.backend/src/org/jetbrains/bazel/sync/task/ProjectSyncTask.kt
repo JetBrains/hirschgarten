@@ -81,8 +81,7 @@ class ProjectSyncTask(
           syncPhase(SyncPhase.SECOND, buildProject = scope.build)
         }
 
-      is ProjectSyncScope.Targets -> syncPhase(SyncPhase.SECOND, buildProject = scope.build)
-      is ProjectSyncScope.Files -> throw UnsupportedOperationException("not supported yet")
+      else -> syncPhase(SyncPhase.SECOND, buildProject = scope.build)
     }
   }
 
@@ -324,7 +323,7 @@ class ProjectSyncTask(
           server.bazelInfo.release.deprecated()?.let { deprecated ->
             project.syncConsole.addDiagnosticMessage(
               taskId = taskId,
-              message = "$deprecated Sync might give incomplete results.",
+              message = BazelBackendBundle.message("progress.text.sync.might.give.incomplete.results", deprecated),
               severity = MessageEvent.Kind.WARNING,
             )
           }

@@ -3,6 +3,7 @@ package org.jetbrains.bazel.progress
 import com.intellij.build.events.EventResult
 import com.intellij.build.events.MessageEvent
 import com.intellij.build.events.impl.SuccessResultImpl
+import com.intellij.openapi.util.NlsContexts
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bsp.protocol.TaskId
 import java.nio.file.Path
@@ -21,8 +22,8 @@ interface TaskConsole {
    */
   fun startTask(
     taskId: TaskId,
-    title: String,
-    message: String,
+    @NlsContexts.ProgressTitle title: String,
+    @NlsContexts.ProgressText message: String,
     cancelAction: () -> Unit = {},
     redoAction: (suspend () -> Unit)? = null,
     showConsole: ShowConsole = ShowConsole.ALWAYS,
@@ -40,7 +41,7 @@ interface TaskConsole {
    */
   fun finishTask(
     taskId: TaskId,
-    message: String,
+    @NlsContexts.ProgressText message: String,
     result: EventResult = SuccessResultImpl(),
   )
 
@@ -54,7 +55,7 @@ interface TaskConsole {
    */
   fun startSubtask(
     subtaskId: TaskId,
-    message: String,
+    @NlsContexts.ProgressText message: String,
   )
 
   /**
@@ -66,7 +67,7 @@ interface TaskConsole {
    */
   fun finishSubtask(
     subtaskId: TaskId,
-    message: String? = null,
+    @NlsContexts.ProgressText message: String? = null,
     result: EventResult = SuccessResultImpl(),
   )
 
@@ -86,7 +87,7 @@ interface TaskConsole {
     path: Path? = null,
     line: Int = -1,
     column: Int = -1,
-    message: String,
+    @NlsContexts.ProgressText message: String,
     description: String? = null,
     severity: MessageEvent.Kind,
   )
