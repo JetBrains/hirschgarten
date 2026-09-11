@@ -75,7 +75,7 @@ sealed class SimplifiedFileEvent private constructor(
   fun doesAffectFolder(folderPath: Path): Boolean =
     fileRemoved?.startsWith(folderPath) == true || fileAdded?.startsWith(folderPath) == true
 
-  @RequiresReadLock
+  @RequiresReadLock(generateAssertion = false /* IJPL-115548 */)
   fun affectsExcludedFiles(fileIndex: ProjectFileIndex, fileSystem: LocalFileSystem): Boolean =
     newVirtualFile.isExcludedInFileIndex(fileIndex) ||
     fileRemoved?.getFirstExistingAncestor()?.let { fileSystem.findFileByNioFile(it) }.isExcludedInFileIndex(fileIndex)

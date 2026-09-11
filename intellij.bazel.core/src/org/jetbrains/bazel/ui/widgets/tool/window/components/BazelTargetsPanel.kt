@@ -59,7 +59,7 @@ internal class BazelTargetsPanel(project: Project, model: BazelTargetsPanelModel
     remove(message)
   }
 
-  @RequiresEdt
+  @RequiresEdt(generateAssertion = false /* IJPL-115548 */)
   fun update(
     visibleTargets: List<Label>,
     searchRegex: Regex?,

@@ -27,7 +27,7 @@ import kotlin.io.path.name
  * when a file/subdirectory is selected for opening a Bazel project,
  * this method provides information about the real project directory to open
  */
-@RequiresBackgroundThread
+@RequiresBackgroundThread(generateAssertion = false /* IJPL-115548 */)
 internal tailrec fun findProjectFolderFromFile(path: Path?): Path? = when {
   path == null || path.shouldStopTraversal() -> null
   path.workspaceFile != null -> path
@@ -56,7 +56,7 @@ private val rejectedDirectories: Set<Path> by lazy {
   setOfNotNull(tempPath, realTempPath)
 }
 
-@RequiresBackgroundThread
+@RequiresBackgroundThread(generateAssertion = false /* IJPL-115548 */)
 internal fun findProjectFolderFromVFile(projectIdentityFile: VirtualFile?): VirtualFile? =
   projectIdentityFile
     ?.toNioPathOrNull()

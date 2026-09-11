@@ -47,7 +47,7 @@ internal class BazelJavaRunConfigurationExtension : RunConfigurationExtension() 
 
 @ApiStatus.Internal
 interface FullyQualifiedNameProvider {
-  @RequiresReadLock
+  @RequiresReadLock(generateAssertion = false /* IJPL-115548 */)
   fun getFullyQualifiedName(psiElement: PsiElement): String?
 
   companion object {

@@ -73,7 +73,7 @@ suspend fun jumpToBuildFile(project: Project, target: Label) {
   }
 }
 
-@RequiresReadLock
+@RequiresReadLock(generateAssertion = false /* IJPL-115548 */)
 private fun findDefinition(project: Project, target: Label): PsiElement? {
   val file = resolveLabel(project, target)
   if (file !is StarlarkFile) return file

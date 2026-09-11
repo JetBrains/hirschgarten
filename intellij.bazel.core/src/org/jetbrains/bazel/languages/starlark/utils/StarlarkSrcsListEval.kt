@@ -30,7 +30,7 @@ class StarlarkSrcsListEval(private val project: Project) {
     return findBuildFilePathFor(file, root)
   }
 
-  @RequiresReadLock
+  @RequiresReadLock(generateAssertion = false /* IJPL-115548 */)
   fun findTargetsForSourceFile(file: VirtualFile): Map<Label, EnumSet<Kind>> {
     val buildFile = findBuildFileForSourceFile(file) ?: return emptyMap()
 

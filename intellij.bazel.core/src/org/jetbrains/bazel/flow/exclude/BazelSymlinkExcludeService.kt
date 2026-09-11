@@ -73,7 +73,7 @@ class BazelSymlinkExcludeService(
     return computedSymlinks
   }
 
-  @RequiresWriteLock
+  @RequiresWriteLock(generateAssertion = false /* IJPL-115548 */)
   fun addBazelSymlinksToExclude(newSymlinks: Set<Path>) {
     ThreadingAssertions.assertWriteAccess()
     logger.info("Excluding newly detected Bazel symlinks: $newSymlinks")
@@ -87,8 +87,8 @@ class BazelSymlinkExcludeService(
   }
 
   @VisibleForTesting
-  @RequiresBackgroundThread
-  @RequiresReadLockAbsence
+  @RequiresBackgroundThread(generateAssertion = false /* IJPL-115548 */)
+  @RequiresReadLockAbsence(generateAssertion = false /* IJPL-115548 */)
   suspend fun refreshWorkspaceModel() {
     logger.info("Refreshing workspace model with excluded symlinks")
     val workspaceModel = WorkspaceModel.getInstance(project)

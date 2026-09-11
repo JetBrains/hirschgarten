@@ -27,7 +27,7 @@ import org.jetbrains.bazel.workspace.canonicalRepoNameToPath
  * @see ExternalRepoResolveTest
  */
 @ApiStatus.Internal
-@RequiresReadLock
+@RequiresReadLock(generateAssertion = false /* IJPL-115548 */)
 fun resolveLabel(
   project: Project,
   label: Label,
