@@ -305,9 +305,3 @@ internal class ModuleResolver(
     const val USE_ALL_THRESHOLD = 64
   }
 }
-
-internal class JsonProto {
-  // Class representations of the relevant parts of some messages from https://github.com/bazelbuild/bazel/blob/master/src/main/protobuf/build.proto
-  data class Attribute(val name: String, val stringValue: String?, val stringListValue: List<String>?)
-  data class Repository(val moduleKey: String?, val canonicalName: String?, val repoRuleName: String?, val attribute: List<Attribute>)
-}

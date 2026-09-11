@@ -2,10 +2,12 @@ package org.jetbrains.bazel.server.bsp.managers
 
 import com.google.gson.JsonObject
 import com.google.gson.JsonParser
+import com.intellij.diagnostic.rethrowControlFlowException
 import com.intellij.openapi.diagnostic.logger
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.bazelrunner.BazelProcessResult
 import org.jetbrains.bazel.bazelrunner.BazelRunner
+import org.jetbrains.bazel.bazelrunner.JsonProto.Attribute
 import org.jetbrains.bazel.commons.BzlmodRepoMapping
 import org.jetbrains.bazel.commons.RepoMapping
 import org.jetbrains.bazel.commons.gson.bazelGson
@@ -18,11 +20,6 @@ import org.jetbrains.bazel.server.diagnostics.DiagnosticsService
 import org.jetbrains.bsp.protocol.BazelTaskEventsHandler
 import org.jetbrains.bsp.protocol.TaskId
 import org.jetbrains.bsp.protocol.asLogger
-import org.w3c.dom.Document
-import org.w3c.dom.NodeList
-import javax.xml.parsers.DocumentBuilderFactory
-import javax.xml.xpath.XPathConstants
-import javax.xml.xpath.XPathFactory
 
 @ApiStatus.Internal
 interface BazelExternalRulesetsQuery {
@@ -59,7 +56,14 @@ internal class BazelExternalRulesetsQueryImpl(
     ).fetchExternalRulesetNames()
 }
 
-internal class BazelWorkspaceExternalRulesetsQueryImpl(
+/**
+ * Finds the external rulesets that a `WORKSPACE` file declares with `git_repository` or `http_archive`.
+ *
+ * The query uses `--output=streamed_jsonproto`, so Bazel prints one target per line. The parser reads the lines one by
+ * one, and the output size has no limit. See [parseWorkspaceExternalRulesetNames].
+ */
+@ApiStatus.Internal
+class BazelWorkspaceExternalRulesetsQueryImpl(
   private val taskId: TaskId,
   private val bazelRunner: BazelRunner,
   private val isWorkspaceEnabled: Boolean,
@@ -69,13 +73,14 @@ internal class BazelWorkspaceExternalRulesetsQueryImpl(
   override suspend fun fetchExternalRulesetNames(): List<String> =
     if (!isWorkspaceEnabled) {
       emptyList()
-    } else {
+    }
+    else {
       bazelRunner.run {
         val command =
           buildBazelCommand(projectView) {
             query {
               targets.add(Label.parse("//external:*"))
-              options.addAll(listOf("--output=xml", "--order_output=no"))
+              options.addAll(QUERY_OPTIONS)
             }
           }
 
@@ -86,44 +91,68 @@ internal class BazelWorkspaceExternalRulesetsQueryImpl(
               val queryFailedMessage = getQueryFailedMessage(result)
               taskEventsHandler.asLogger(taskId).warn(queryFailedMessage)
               log.warn(queryFailedMessage)
-              null
-            } else {
-              try {
-                DocumentBuilderFactory
-                  .newInstance()
-                  .newDocumentBuilder()
-                  .parse(result.stdout.inputStream())
-                  .calculateEligibleRules()
-              } catch (e: Exception) {
-                log.error("Failed to parse string to xml", e)
-                null
-              }
+              emptyList()
             }
-          }.orEmpty()
+            else {
+              parseWorkspaceExternalRulesetNames(result.stdoutLines)
+            }
+          }
       }
     }
 
-  private fun Document.calculateEligibleRules(): List<String> {
-    val xPath = XPathFactory.newInstance().newXPath()
-    val expression =
-      "/query/rule[contains(@class, 'git_repository') or contains(@class, 'http_archive') and " +
-        "(not(string[@name='generator_function']) or string[@name='generator_function' and contains(@value, 'http_archive')])" +
-        "]//string[@name='name']"
-    val eligibleItems = xPath.evaluate(expression, this, XPathConstants.NODESET) as NodeList
-    val returnList = mutableListOf<String>()
-    for (i in 0 until eligibleItems.length) {
-      eligibleItems
-        .item(i)
-        .attributes
-        .getNamedItem("value")
-        ?.nodeValue
-        ?.let { returnList.add(it) }
-    }
-    return returnList.toList()
-  }
-
   companion object {
-    private val log = logger<BazelExternalRulesetsQueryImpl>()
+    private val log = logger<BazelWorkspaceExternalRulesetsQueryImpl>()
+
+    /**
+     * The query options. Only the `name` and the `generator_function` attributes are needed, so the other attributes
+     * are not printed.
+     */
+    private val QUERY_OPTIONS: List<String> =
+      listOf(
+        "--output=streamed_jsonproto",
+        "--order_output=no",
+        "--proto:output_rule_attrs=name,generator_function",
+      )
+
+    /**
+     * Parses the ndjson output of `bazel query //external:* --output=streamed_jsonproto`.
+     *
+     * Each line holds one target in the `blaze_query.Target` JSON form. The result holds the `name` attribute of each
+     * eligible rule, in the output order. A rule is eligible when its class contains `git_repository`, or when its
+     * class contains `http_archive` and the rule is not an output of a macro other than an `http_archive` wrapper.
+     * A blank line is skipped. A line that does not parse is logged and skipped, so it does not drop the other rules.
+     */
+    fun parseWorkspaceExternalRulesetNames(stdoutLines: List<String>): List<String> =
+      stdoutLines.mapNotNull { line ->
+        parseTarget(line)
+          ?.rule
+          ?.takeIf { it.isEligible() }
+          ?.attributeValue("name")
+      }
+
+    private fun parseTarget(line: String): JsonProto.Target? {
+      if (line.isBlank()) return null
+      return try {
+        bazelGson.fromJson(line, JsonProto.Target::class.java)?.takeIf { it.type == "RULE" }
+      }
+      catch (e: Exception) {
+        rethrowControlFlowException(e)
+        log.warn("Failed to parse a query output line as json: $line", e)
+        null
+      }
+    }
+
+    private fun JsonProto.Rule.isEligible(): Boolean {
+      val ruleClass = ruleClass ?: return false
+      if (ruleClass.contains("git_repository")) return true
+      if (!ruleClass.contains("http_archive")) return false
+      // Bazel prints the default value of `generator_function`, an empty string, for a rule that no macro created.
+      val generatorFunction = attributeValue("generator_function")
+      return generatorFunction.isNullOrEmpty() || generatorFunction.contains("http_archive")
+    }
+
+    private fun JsonProto.Rule.attributeValue(attributeName: String): String? =
+      attribute?.firstOrNull { it.name == attributeName }?.stringValue
   }
 }
 
@@ -218,4 +247,22 @@ data class BzlmodGraph(
 
   fun includedByDirectDeps(rootRulesetName: String, transitiveRulesetName: String): List<BzlmodDependency> =
     dependencies.find { it.name == rootRulesetName }?.dependencies?.filter { it.name == transitiveRulesetName } ?: emptyList()
+}
+
+/**
+ * Representations of the messages from
+ * https://github.com/bazelbuild/bazel/blob/master/src/main/protobuf/build.proto
+ * in the JSON form that `--output=streamed_jsonproto` prints.
+ */
+private class JsonProto {
+  data class Target(
+    val type: String?,
+    val rule: Rule?,
+  )
+
+  data class Rule(
+    val name: String?,
+    val ruleClass: String?,
+    val attribute: List<Attribute>?,
+  )
 }
