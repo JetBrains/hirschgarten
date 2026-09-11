@@ -1,5 +1,6 @@
 package org.jetbrains.bazel.fixtures
 
+import com.intellij.util.containers.MultiMap
 import com.jetbrains.cidr.lang.workspace.compiler.GCCCompilerKind
 import com.jetbrains.cidr.lang.workspace.compiler.OCCompilerKind
 import org.jetbrains.bazel.clion.sync.CC_LANGUAGE_CLASS
@@ -23,7 +24,6 @@ import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.OutputLocation
 import org.jetbrains.bsp.protocol.OutputLocationCollection
 import org.jetbrains.bsp.protocol.extractData
-import org.jetbrains.bsp.protocol.toExecrootPath
 import java.nio.file.Path
 
 /**
@@ -63,7 +63,7 @@ internal class CcProjectBuilder(private val workspaceRoot: Path) {
   fun ccTest(declare: CcTargetBuilder.() -> Unit): BuildTarget = ccTarget("cc_test", RuleType.TEST, declare)
 
   private fun ccTarget(kind: String, ruleType: RuleType, declare: CcTargetBuilder.() -> Unit): BuildTarget {
-    return CcTargetBuilder(kind, ruleType).apply(declare).build(workspaceRoot) { defaultToolchain }.also(targets::add)
+    return CcTargetBuilder(kind, ruleType).apply(declare).build(workspaceRoot, ::defaultToolchain).also(targets::add)
   }
 
   fun ccToolchain(declare: CcToolchainBuilder.() -> Unit): BuildTarget {
@@ -98,7 +98,8 @@ internal class CcTargetBuilder(private val kind: String, private val ruleType: R
   private val includes = mutableListOf<String>()
   private val quoteIncludes = mutableListOf<String>()
   private val systemIncludes = mutableListOf<String>()
-  private val deps = mutableListOf<BuildTarget>()
+  private val deps = MultiMap<DependencyLabelKind, BuildTarget>()
+  private var useDefaultToolchain = true
 
   fun label(label: String) {
     this.label = label
@@ -146,14 +147,22 @@ internal class CcTargetBuilder(private val kind: String, private val ruleType: R
   }
 
   fun deps(vararg targets: BuildTarget) {
-    deps += targets
+    deps(DependencyLabelKind.COMPILE, *targets)
+  }
+
+  fun deps(kind: DependencyLabelKind, vararg targets: BuildTarget) {
+    deps.putValues(kind, targets.toList())
+  }
+
+  fun noToolchain() {
+    useDefaultToolchain = false
   }
 
   internal fun build(root: Path, defaultToolchain: () -> BuildTarget): BuildTarget {
     val label = requireNotNull(label)
 
-    if (deps.none { it.hasBuildData<CcToolchainBuildTarget>() }) {
-      deps += defaultToolchain()
+    if (useDefaultToolchain && deps.values().none { it.hasBuildData<CcToolchainBuildTarget>() }) {
+      deps(DependencyLabelKind.TOOLCHAIN, defaultToolchain())
     }
 
     val allHeaders = hdrs.map(OutputLocation::Workspace).toMutableList<OutputLocation>()
@@ -161,7 +170,7 @@ internal class CcTargetBuilder(private val kind: String, private val ruleType: R
     val allQuoteIncludes = quoteIncludes.map(OutputLocation::parseExecrootPath).toMutableList()
     val allSystemIncludes = systemIncludes.map(OutputLocation::parseExecrootPath).toMutableList()
 
-    for (dep in deps) {
+    for (dep in deps.values()) {
       dep.extractData<CcBuildTarget>()?.let { data ->
         allHeaders.addAll(data.compilationContext.headers.getOutputLocations())
         allIncludes.addAll(data.compilationContext.includes.getOutputLocations())
@@ -178,7 +187,7 @@ internal class CcTargetBuilder(private val kind: String, private val ruleType: R
     return TestBuildTarget(
       key = targetKey(label, configurationId),
       kind = TargetKind(kind = kind, languageClasses = setOf(CC_LANGUAGE_CLASS), ruleType = ruleType),
-      dependencies = deps.map { DependencyLabel(it.key) },
+      dependencies = deps.entrySet().flatMap { it.value.map { target -> DependencyLabel(target.key, it.key) } },
       baseDirectory = root.resolve(packagePathOf(label)),
       sources = SourceFileCollectionBuilder.build(
         relativeRoot = Path.of(packagePathOf(label)),

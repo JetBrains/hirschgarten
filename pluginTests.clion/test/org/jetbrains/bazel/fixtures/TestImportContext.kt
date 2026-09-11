@@ -26,17 +26,20 @@ internal class TestImportContext(
   override val execroot: Path = Path.of("/execroot"),
 ) : CcImportContext {
 
-  val events: MutableList<String> = mutableListOf()
+  val events: MutableList<TestImportEvent> = mutableListOf()
 
   override val vfuManager: VirtualFileUrlManager by lazy {
     IdeVirtualFileUrlManagerImpl()
   }
 
   override fun reportEvent(severity: MessageEvent.Kind, message: String, description: String?) {
-    events += "$severity: $message"
+    events += TestImportEvent(severity, message, description)
   }
 
   override fun resolve(location: OutputLocation): Path {
     return execroot.resolve(location.toExecrootPath())
   }
 }
+
+/** An event that an import step reported. */
+internal data class TestImportEvent(val severity: MessageEvent.Kind, val message: String, val description: String?)

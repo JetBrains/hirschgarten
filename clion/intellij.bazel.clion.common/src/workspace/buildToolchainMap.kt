@@ -21,9 +21,6 @@ fun buildToolchainMap(): Map<WorkspaceTargetKey, WorkspaceTargetKey> {
   // pick an arbitrary fallback toolchain
   val fallbackToolchain = toolchains.firstOrNull()
 
-  // early return if there are no toolchains
-  if (fallbackToolchain == null) return emptyMap()
-
   val problems = mutableMapOf<WorkspaceTargetKey, List<WorkspaceTargetKey>>()
   val result = mutableMapOf<WorkspaceTargetKey, WorkspaceTargetKey>()
 
@@ -35,7 +32,8 @@ fun buildToolchainMap(): Map<WorkspaceTargetKey, WorkspaceTargetKey> {
       problems[target.key] = candidates
     }
 
-    result[target.key] = candidates.firstOrNull() ?: fallbackToolchain
+    val toolchain = candidates.firstOrNull() ?: fallbackToolchain
+    if (toolchain != null) result[target.key] = toolchain
   }
 
   reportProblems(problems)

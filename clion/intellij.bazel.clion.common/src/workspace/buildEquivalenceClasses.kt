@@ -94,12 +94,7 @@ private fun computeDisplayName(targets: Collection<WorkspaceTargetKey>): String 
   val minTargetKey = targets.minBy { it.label }
 
   return buildString {
-    append(minTargetKey.label)
-
-    // on resolve configuration can cover multiple Bazel configurations with same compiler option
-    if (!minTargetKey.configuration.shortChecksum.isNullOrBlank()) {
-      append(" (${minTargetKey.configuration.shortChecksum})")
-    }
+    append(minTargetKey.presentable())
 
     if (targets.size > 1) {
       append(" and ${targets.size - 1} other target(s)")
