@@ -11,9 +11,7 @@ import org.jetbrains.bazel.config.rootDir
 
 internal fun Project.findCompilerSettings(relativePath: String, language: OCLanguageKind = CLanguageKind.CPP): List<OCCompilerSettings> {
   val file = rootDir.findFileByRelativePath(relativePath).assertNotNull()
-
   val configurations = OCWorkspace.getInstance(this).getConfigurationsForFile(file)
-  assertThat(configurations).isNotEmpty()
 
   return configurations.map { it.getCompilerSettings(language, file) }
 }
@@ -27,11 +25,7 @@ internal fun Project.findCompilerSetting(relativePath: String, language: OCLangu
 
 internal fun Project.findResolveConfigurations(relativePath: String): List<OCResolveConfiguration> {
   val file = rootDir.findFileByRelativePath(relativePath).assertNotNull()
-
-  val configurations = OCWorkspace.getInstance(this).getConfigurationsForFile(file)
-  assertThat(configurations).isNotEmpty()
-
-  return configurations
+  return OCWorkspace.getInstance(this).getConfigurationsForFile(file)
 }
 
 internal fun Project.findResolveConfiguration(relativePath: String): OCResolveConfiguration {
