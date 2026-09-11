@@ -30,17 +30,21 @@ class CcLocalToolchainTest {
     val expectedCompiler = if (SystemInfoRt.isWindows) OCCompilerId.MSVC else OCCompilerId.GCC
 
     assertThat(compilerSettingsCPP)
+      .hasCompilerKindWrapper()
       .hasCompiler(expectedCompiler)
       .containsHeaders("iostream", "stdio.h")
       .containsSwitches("-Wall", "-DCXXOPTS")
       .doesNotContainSwitches("-DCONLYOPTS")
-      .containsDefines("SIMPLE_DEFINE=42", "SPACE_DEFINE=1 2 3")
+      .hasDefine("SIMPLE_DEFINE", "42")
+      .hasDefine("SPACE_DEFINE", "1 2 3")
 
     assertThat(compilerSettingsC)
+      .hasCompilerKindWrapper()
       .hasCompiler(expectedCompiler)
       .containsHeaders("stdio.h")
       .containsSwitches("-Wall", "-DCONLYOPTS")
       .doesNotContainSwitches("-DCXXOPTS")
-      .containsDefines("SIMPLE_DEFINE=42", "SPACE_DEFINE=1 2 3")
+      .hasDefine("SIMPLE_DEFINE", "42")
+      .hasDefine("SPACE_DEFINE", "1 2 3")
   }
 }

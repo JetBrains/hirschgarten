@@ -6,6 +6,9 @@ import com.jetbrains.cidr.lang.workspace.OCCompilerSettings
 import com.jetbrains.cidr.lang.workspace.compiler.OCCompilerId
 import org.assertj.core.api.AbstractObjectAssert
 import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Condition
+import org.jetbrains.bazel.clion.workspace.CcCompilerKind
+import kotlin.jvm.java
 
 internal fun assertThat(actual: OCCompilerSettings?) = CompilerSettingsAssert(actual)
 
@@ -15,6 +18,12 @@ internal class CompilerSettingsAssert(actual: OCCompilerSettings?) :
   fun hasCompiler(expected: OCCompilerId): CompilerSettingsAssert {
     isNotNull()
     assertThat(actual.compilerKind?.id).isEqualTo(expected)
+    return this
+  }
+
+  fun hasCompilerKindWrapper(): CompilerSettingsAssert {
+    isNotNull()
+    assertThat(actual.compilerKind).isInstanceOf(CcCompilerKind::class.java)
     return this
   }
 
@@ -37,14 +46,20 @@ internal class CompilerSettingsAssert(actual: OCCompilerSettings?) :
     return this
   }
 
-  /** Asserts that the preprocessor defines contain every `name=value` pair in [expected]. */
-  fun containsDefines(vararg expected: String): CompilerSettingsAssert {
+  /** Asserts that the preprocessor define [name] has exactly the value [value]. */
+  fun hasDefine(name: String, value: String): CompilerSettingsAssert {
+    return hasDefine(name, condition("exactly '$value'") { it == value })
+  }
+
+  /** Asserts that the preprocessor define [name] exists, and that [value] matches its value. */
+  fun hasDefine(name: String, value: Condition<in String>): CompilerSettingsAssert {
     isNotNull()
-    val resolved = expected.mapNotNull { definition ->
-      val name = definition.substringBefore('=')
-      actual.resolveDefine(name)?.let { value -> "$name=$value" }
-    }
-    assertThat(resolved).contains(*expected)
+
+    assertThat(actual.resolveDefine(name))
+      .describedAs("the value of the preprocessor define '%s'", name)
+      .isNotNull()
+      .has(value)
+
     return this
   }
 }

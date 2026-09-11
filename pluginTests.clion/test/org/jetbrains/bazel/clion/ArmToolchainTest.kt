@@ -50,6 +50,7 @@ class ArmToolchainTest {
     val compilerSettings = project.findCompilerSetting("srcs/main.c", CLanguageKind.C)
 
     assertThat(compilerSettings)
+      .hasCompilerKindWrapper()
       .hasCompiler(OCCompilerId.GCC)
       .containsSwitches("-mcpu=cortex-m33", "-mthumb", "-DSTM32U575xx")
   }
