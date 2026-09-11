@@ -22,6 +22,7 @@ import org.jetbrains.bsp.protocol.OutputLocation
 import org.jetbrains.bsp.protocol.OutputLocationCollection
 import org.jetbrains.bsp.protocol.extractData
 import java.nio.file.Path
+import kotlin.io.path.extension
 
 @ApiStatus.Internal
 val JAVA_SOURCE_ROOT_TYPE: SourceRootTypeId = SourceRootTypeId("java-source")
@@ -130,9 +131,13 @@ object SourceRootBuilder {
       this.javaSourceRoots = listOf(
         JavaSourceRootPropertiesEntity(
           generated = sourceRoot.generated,
-          packagePrefix = sourceRoot.packagePrefix,
+          packagePrefix = "",
           entitySource = entitySource,
-        ),
+        ) {
+          // Bazel does not require that a directory under a source root corresponds to a JVM package. A source root inside a jar keeps
+          // the correspondence, because a jar stores a class file at the path which the package name defines.
+          this.packageMatchesDirectory = sourceRoot.sourcePath.extension == "jar"
+        },
       )
     }
 }

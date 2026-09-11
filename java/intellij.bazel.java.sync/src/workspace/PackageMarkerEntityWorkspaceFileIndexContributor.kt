@@ -27,12 +27,13 @@ internal class PackageMarkerEntityWorkspaceFileIndexContributor : WorkspaceFileI
       entity = entity,
       customData =
         ModuleSourceRootData(
-          module,
-          entity.root.virtualFile,
-          SourceRootTypeId("java-source"),
-          entity.packagePrefix,
-          false,
-          null,
+          module = module,
+          customContentRoot = entity.root.virtualFile,
+          rootTypeId = SourceRootTypeId("java-source"),
+          packagePrefix = "",
+          packageMatchesDirectory = false,
+          forGeneratedSources = false,
+          languageLevelId = null,
         ),
     )
   }
