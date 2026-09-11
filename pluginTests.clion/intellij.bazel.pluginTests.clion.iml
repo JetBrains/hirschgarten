@@ -17,6 +17,7 @@
     <orderEntry type="module" module-name="intellij.cidr.projectModel" scope="TEST" />
     <orderEntry type="module" module-name="intellij.cidr.psi.base" scope="TEST" />
     <orderEntry type="module" module-name="intellij.clion.radler" scope="RUNTIME" />
+    <orderEntry type="module" module-name="intellij.clion.runFile.nova" scope="RUNTIME" />
     <orderEntry type="module" module-name="intellij.clion.radler.testFramework.junit5" scope="RUNTIME" />
     <orderEntry type="module" module-name="intellij.clion.radler.backend.marker" scope="RUNTIME" />
     <orderEntry type="module" module-name="intellij.clion.testFramework.nolang.junit5.core" scope="TEST" />
@@ -36,5 +37,9 @@
     <orderEntry type="module" module-name="intellij.bazel.core" scope="TEST" />
     <orderEntry type="module" module-name="intellij.bazel.clion.common" scope="TEST" />
     <orderEntry type="module" module-name="intellij.libraries.junit5" scope="TEST" />
+    <orderEntry type="module" module-name="intellij.platform.execution" scope="TEST" />
+    <orderEntry type="module" module-name="intellij.platform.smRunner" scope="TEST" />
+    <orderEntry type="module" module-name="intellij.platform.ide.core" scope="TEST" />
+    <orderEntry type="module" module-name="intellij.platform.testRunner" scope="TEST" />
   </component>
 </module>

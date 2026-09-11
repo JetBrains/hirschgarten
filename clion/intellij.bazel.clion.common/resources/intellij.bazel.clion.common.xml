@@ -9,6 +9,7 @@
     <module name="intellij.cidr.psi.base"/>
     <module name="intellij.cidr.util.execution"/>
     <module name="intellij.cidr.workspaceModel"/>
+    <module name="intellij.clion.runFile"/>
     <module name="intellij.platform.analysis"/>
     <module name="intellij.platform.core"/>
     <module name="intellij.platform.lang"/>
@@ -23,6 +24,7 @@
       description="Enable the C/C++ support of the Bazel plugin. (requires re-sync)"
       key="bazel.clion.enable"
     />
+    <runConfigurationProducer implementation="org.jetbrains.bazel.clion.run.BazelCcRunConfigurationProducer"/>
   </extensions>
 
   <extensions defaultExtensionNs="org.jetbrains.bazel">
