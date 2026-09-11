@@ -87,7 +87,7 @@ class BazelPluginBranchCompatibilityTest {
           projectDir = ULTIMATE_HOME,
           isBootClassPathCorrect = false,
           classesOutputDirectory = outputRoot.resolve("classes"),
-        ))
+        )).runDir
       }
 
       val verifier = block("Downloading plugin verifier") {
