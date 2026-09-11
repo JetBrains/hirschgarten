@@ -11,3 +11,7 @@ fun OCCompilerSettings.lookupCompilerSwitch(flag: String): List<String> {
     .filter { it.startsWith(flag) }
     .map { it.substring(flag.length).trimStart('=') }
 }
+
+fun OCCompilerSettings.resolveCompilerSwitches(): List<String> {
+  return compilerSwitches?.getList(CidrCompilerSwitches.Format.BASH_SHELL).orEmpty()
+}

@@ -8,6 +8,7 @@ import org.assertj.core.api.AbstractObjectAssert
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Condition
 import org.jetbrains.bazel.clion.workspace.CcCompilerKind
+import org.jetbrains.bazel.resolveCompilerSwitches
 import kotlin.jvm.java
 
 internal fun assertThat(actual: OCCompilerSettings?) = CompilerSettingsAssert(actual)
@@ -36,13 +37,13 @@ internal class CompilerSettingsAssert(actual: OCCompilerSettings?) :
 
   fun containsSwitches(vararg expected: String): CompilerSettingsAssert {
     isNotNull()
-    assertThat(actual.compilerSwitchesList()).contains(*expected)
+    assertThat(actual.resolveCompilerSwitches()).contains(*expected)
     return this
   }
 
   fun doesNotContainSwitches(vararg expected: String): CompilerSettingsAssert {
     isNotNull()
-    assertThat(actual.compilerSwitchesList()).doesNotContain(*expected)
+    assertThat(actual.resolveCompilerSwitches()).doesNotContain(*expected)
     return this
   }
 
@@ -69,10 +70,6 @@ private fun OCCompilerSettings.resolveHeader(name: String): VirtualFile? {
     .mapNotNull { it.virtualFile }
     .mapNotNull { it.findFileByRelativePath(name) }
     .firstOrNull { it.exists() }
-}
-
-private fun OCCompilerSettings.compilerSwitchesList(): List<String> {
-  return compilerSwitches?.getList(CidrCompilerSwitches.Format.BASH_SHELL).orEmpty()
 }
 
 private fun OCCompilerSettings.resolveDefine(needle: String): String? {
