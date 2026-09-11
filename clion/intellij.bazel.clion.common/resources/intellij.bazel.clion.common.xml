@@ -36,8 +36,9 @@
     <syncWorkspaceImporter implementation="org.jetbrains.bazel.clion.workspace.CcWorkspaceImporter"/>
   </extensions>
 
-  <extensions defaultExtensionNs="cidr.projectModel">
-    <ocWorkspaceStorageCustomizer implementation="org.jetbrains.bazel.clion.workspace.CcWorkspaceStorageCustomizer"/>
+  <extensions defaultExtensionNs="cidr">
+    <projectModel.ocWorkspaceStorageCustomizer implementation="org.jetbrains.bazel.clion.workspace.CcWorkspaceStorageCustomizer"/>
+    <lang.compilerKindProvider implementation="org.jetbrains.bazel.clion.workspace.CcCompilerKindProvider"/>
   </extensions>
 
 </idea-plugin>
