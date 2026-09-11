@@ -13,7 +13,7 @@ import kotlinx.coroutines.runBlocking
 import org.jetbrains.bazel.commons.BazelStatus
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.jvm.run.ScriptPathBeforeRunTaskProvider.Task
-import org.jetbrains.bazel.run.commandLine.transformProgramArguments
+import org.jetbrains.bazel.run.commandLine.parseAsProgramArguments
 import org.jetbrains.bazel.run.config.BazelRunConfiguration
 import org.jetbrains.bazel.run.state.HasBazelParams
 import org.jetbrains.bazel.run.state.HasProgramArguments
@@ -62,8 +62,8 @@ internal class ScriptPathBeforeRunTaskProvider : BeforeRunTaskProvider<Task>() {
       try {
         val buildTargetTask = if (scriptPath != null) {
           val state = runConfiguration.handler?.state
-          val programArguments = transformProgramArguments((state as? HasProgramArguments)?.programArguments)
-          val additionalBazelParams = transformProgramArguments((state as? HasBazelParams)?.additionalBazelParams)
+          val programArguments = parseAsProgramArguments((state as? HasProgramArguments)?.programArguments)
+          val additionalBazelParams = parseAsProgramArguments((state as? HasBazelParams)?.additionalBazelParams)
           ScriptPathBuildTargetTask(
             scriptPath = scriptPath,
             programArguments = programArguments,

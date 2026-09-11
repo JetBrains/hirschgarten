@@ -35,9 +35,9 @@ class BazelRunCommandLineState(environment: ExecutionEnvironment, private val ru
         target = configuration.targets.single(),
         taskId = taskGroupId.task("run"),
         checkVisibility = configuration.doVisibilityCheck,
-        arguments = transformProgramArguments(runState.programArguments),
+        arguments = parseAsProgramArguments(runState.programArguments),
         environmentVariables = runState.env.envs,
-        additionalBazelParams = runState.additionalBazelParams,
+        additionalBazelParams = parseAsProgramArguments(runState.additionalBazelParams),
         pidDeferred = pidDeferred,
       )
     server.buildTargetRun(runParams)

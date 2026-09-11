@@ -47,12 +47,12 @@ open class BazelTestCommandLineState(
       TestParams(
         targets = configuration.targets,
         taskId = taskGroupId.task("test"),
-        arguments = transformProgramArguments(state.programArguments),
+        arguments = parseAsProgramArguments(state.programArguments),
         environmentVariables = state.env.envs,
         useCoverage = environment.executor.id == COVERAGE_EXECUTOR_ID,
         coverageInstrumentationFilter = state.coverageInstrumentationFilter,
         testFilter = state.testFilter,
-        additionalBazelParams = state.additionalBazelParams,
+        additionalBazelParams = parseAsProgramArguments(state.additionalBazelParams),
         streamTestOutput = false,
       )
     server.buildTargetTest(transformTestParams(params))

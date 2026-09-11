@@ -38,6 +38,7 @@ import org.jetbrains.bazel.performanceImpl.FileKindCheck.NOT_IN_TARGETS
 import org.jetbrains.bazel.performanceImpl.FileKindCheck.NOT_IN_WSM
 import org.jetbrains.bazel.performanceImpl.FileKindCheck.OUTSIDE_CONTENT
 import org.jetbrains.bazel.tests.ui.clickRunGutterOnLine
+import org.jetbrains.bazel.tests.ui.consoleView
 import org.jetbrains.bazel.tests.ui.getRunGutterOnLine
 import org.jetbrains.bazel.tests.ui.verifyAvailableRunGutterActions
 import org.jetbrains.bazel.tests.ui.verifyTestStatus
@@ -420,7 +421,6 @@ class ProjectViewCombinedTest : IdeStarterBaseProjectTest() {
           }
           gutter.click()
         }
-        val consoleView = x { byClass("ConsoleViewImpl") }
         step("Check run gutters for custom_binary") {
           clickRunGutterOnLine(15)
           verifyAvailableRunGutterActions(listOf("Build Target", "Run '//binary:custom_binary'"))

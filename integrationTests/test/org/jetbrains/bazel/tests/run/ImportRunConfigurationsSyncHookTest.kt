@@ -31,6 +31,7 @@ import org.jetbrains.bazel.data.simpleBazelProject
 import org.jetbrains.bazel.tests.combined.IdeStarterCombinedBaseTest
 import org.jetbrains.bazel.tests.ui.clickRunGutterOnLine
 import org.jetbrains.bazel.tests.ui.clickTestGutterOnLine
+import org.jetbrains.bazel.tests.ui.consoleView
 import org.jetbrains.bazel.tests.ui.verifyAvailableRunGutterActions
 import org.jetbrains.bazel.tests.ui.verifyTestStatus
 import org.jetbrains.bazel.tests.ui.waitForGutterIcons
@@ -112,7 +113,6 @@ class ImportRunConfigurationsSyncHookTest : IdeStarterCombinedBaseTest() {
         }
 
         step("Execute the run configuration") { x { byAccessibleName("Run 'Bazel run :main'") }.click() }
-        val consoleView = x { byClass("ConsoleViewImpl") }
         step("Wait for run config to finish") {
           consoleView.shouldBe { present() }
           consoleView.waitContainsText("2 + 2 = 4", timeout = 3.minutes)
@@ -252,6 +252,39 @@ class ImportRunConfigurationsSyncHookTest : IdeStarterCombinedBaseTest() {
   }
 
   @Test
+  @Order(7)
+  fun `bazel arguments with whitespaces are not split`() {
+    withDriver(bgRun) {
+      ideFrame {
+        selectRunConfiguration("Bazel run :main")
+        runConfigurationsPopup {
+          list().clickItem("Edit Configurations", fullMatch = false)
+        }
+        editRunConfigurationsDialog {
+          bazelFlags += " --foo=\"foo value\""
+          runButton.click()
+        }
+        consoleView.waitOneText { it.text == "ERROR: --foo=foo value :: Unrecognized option: --foo=foo value" }
+        runConfigurationsPopup {
+          list().clickItem("Edit Configurations", fullMatch = false)
+        }
+        editRunConfigurationsDialog {
+          bazelFlags = bazelFlags.replace("--foo=\"foo value\"", "--bar='bar value'")
+          runButton.click()
+        }
+        consoleView.waitOneText { it.text == "ERROR: --bar=bar value :: Unrecognized option: --bar=bar value" }
+        runConfigurationsPopup {
+          list().clickItem("Edit Configurations", fullMatch = false)
+        }
+        editRunConfigurationsDialog {
+          bazelFlags = bazelFlags.replace("--bar='bar value'", "")
+          okButton.click()
+        }
+      }
+    }
+  }
+
+  @Test
   @Order(Int.MAX_VALUE)
   fun `check that running with profiler works`() {
     withDriver(bgRun) {
@@ -304,7 +337,6 @@ class ImportRunConfigurationsSyncHookTest : IdeStarterCombinedBaseTest() {
           waitForBazelBuildBeforeProfilerUi("//:main")
           waitContainsText("Stop Recording and Show Results")
           waitContainsText("CPU")
-          val consoleView = x { byClass("ConsoleViewImpl") }
           consoleView.waitContainsText("The result is", timeout = 3.minutes)
           waitForProfilerDataReadyBubbleAppearAndClose()
 

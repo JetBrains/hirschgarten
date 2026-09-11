@@ -16,7 +16,7 @@ import org.jetbrains.annotations.VisibleForTesting
 import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.python.lang.PythonBuildTarget
-import org.jetbrains.bazel.run.commandLine.transformProgramArguments
+import org.jetbrains.bazel.run.commandLine.parseAsProgramArguments
 import org.jetbrains.bazel.target.getTargetDataForLabel
 import org.jetbrains.bazel.target.targetStorage
 import org.jetbrains.bazel.utils.isUnder
@@ -256,7 +256,7 @@ object PythonDebugUtils {
   fun extractPythonTargetArgs(target: TargetIdeInfo): List<String> = target.pyIdeInfo.argsList.toList()
 
   fun buildPythonDebugBazelArguments(debugFlags: List<String>, additionalBazelParams: String?): List<String> =
-    debugFlags + transformProgramArguments(additionalBazelParams)
+    debugFlags + parseAsProgramArguments(additionalBazelParams)
 
   fun buildPythonDebugScriptParameters(targetArgs: List<String>, runConfigArguments: String?): String? =
     listOf(ParametersListUtil.join(targetArgs), runConfigArguments)

@@ -28,6 +28,7 @@ import org.jetbrains.bazel.base.openFile
 import org.jetbrains.bazel.base.syncBazelProject
 import org.jetbrains.bazel.base.waitForBazelDebuggerUiReady
 import org.jetbrains.bazel.base.withBazelFeatureFlag
+import org.jetbrains.bazel.tests.ui.consoleView
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.ValueSource
 import kotlin.time.Duration.Companion.minutes
@@ -152,7 +153,6 @@ class FastBuildTest : IdeStarterBaseProjectTest() {
             waitForBazelDebuggerUiReady().resumeButton.click()
           }
 
-          val consoleView = x { byClass("ConsoleViewImpl") }
           step("Wait for program to finish running after hotswap") {
             consoleView.waitContainsText("2 + 2 = 5", timeout = 30.seconds)
           }

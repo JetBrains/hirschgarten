@@ -143,6 +143,9 @@ fun IdeaFrameUI.verifyAvailableRunGutterActions(texts: List<String>) {
 val IdeaFrameUI.debuggerFramesUi
   get() = x("//div[@class='XDebuggerFramesList']")
 
+val IdeaFrameUI.consoleView
+  get() = x("//div[@class='ConsoleViewImpl']")
+
 private data class DebuggerPauseState(
   val toolWindowPresent: Boolean = false,
   val resumeEnabled: Boolean = false,

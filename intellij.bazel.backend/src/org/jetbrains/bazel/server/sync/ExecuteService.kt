@@ -137,7 +137,7 @@ class ExecuteService(
 
   suspend fun compile(params: CompileParams): CompileResult =
     if (params.targets.isNotEmpty()) {
-      val result = build(params.targets, params.taskId, params.arguments ?: emptyList())
+      val result = build(params.targets, params.taskId, params.arguments)
       CompileResult(statusCode = result.bazelStatus)
     }
     else {
@@ -174,9 +174,9 @@ class ExecuteService(
           }
           additionalOptions?.let { options.addAll(it) }
           additionalProgramArguments?.let { programArguments.addAll(it) }
-          params.environmentVariables?.let { environment.putAll(it) }
-          params.arguments?.let { programArguments.addAll(it) }
-          params.additionalBazelParams?.let { additionalBazelOptions.addAll(it.trim().split(" ")) }
+          environment.putAll(params.environmentVariables)
+          programArguments.addAll(params.arguments)
+          additionalBazelOptions.addAll(params.additionalBazelParams)
           enablePty = true
         }
       }
@@ -201,11 +201,7 @@ class ExecuteService(
       testFilter?.let(BazelFlag::testFilter),
       instrumentationFilter?.let(BazelFlag::instrumentationFilter)
     )
-    val additionalOptions = params.additionalBazelParams
-      ?.split(" ")
-      ?.filter { it.isNotBlank() }
-      .orEmpty()
-      .plus(separateFieldsOptions)
+    val additionalOptions = params.additionalBazelParams + separateFieldsOptions
     if (additionalOptions.isNotEmpty()) {
       (command as HasAdditionalBazelOptions).additionalBazelOptions.addAll(additionalOptions)
     }
@@ -214,8 +210,8 @@ class ExecuteService(
       // Ensure streamed test output for live UI in IDE
       ensureTestOutputStreamed(command)
     }
-    params.environmentVariables?.let { (command as HasEnvironment).environment.putAll(it) }
-    params.arguments?.let { (command as HasProgramArguments).programArguments.addAll(it) }
+    (command as HasEnvironment).environment.putAll(params.environmentVariables)
+    (command as HasProgramArguments).programArguments.addAll(params.arguments)
     command.options.add(BazelFlag.buildEventBinaryPathConversion(false))
     // Ensure all test xml, log, and lcov files are downloaded even when remote_download_outputs=minimal is set
     command.options.addAll(

@@ -100,7 +100,7 @@ internal class JvmTestCommandLineState(
 
   override fun transformTestParams(params: TestParams): TestParams = when {
     useJetBrainsTestRunner -> params.copy(
-      environmentVariables = params.environmentVariables.orEmpty() + JetBrainsTestRunner.envs(params.testFilter),
+      environmentVariables = params.environmentVariables + JetBrainsTestRunner.envs(params.testFilter),
       testFilter = null,
       streamTestOutput = true,
     )

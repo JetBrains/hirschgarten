@@ -18,6 +18,7 @@ import org.jetbrains.bazel.tests.combined.IdeStarterCombinedBaseTest
 import org.jetbrains.bazel.tests.run.selectRunConfiguration
 import org.jetbrains.bazel.tests.ui.clickRunGutterOnLine
 import org.jetbrains.bazel.tests.ui.clickTestGutterOnLine
+import org.jetbrains.bazel.tests.ui.consoleView
 import org.jetbrains.bazel.tests.ui.verifyAvailableRunGutterActions
 import org.jetbrains.bazel.tests.ui.verifyTestStatus
 import org.jetbrains.bazel.tests.ui.waitForDebuggerPausedAt
@@ -51,7 +52,6 @@ internal class GoRunConfigurationsTest : IdeStarterCombinedBaseTest() {
 
         step("Run with debug") { x { byAccessibleName("Debug '//:main_binary'") }.click() }
 
-        val consoleView = x { byClass("ConsoleViewImpl") }
         step("Wait for run config to finish") {
           consoleView.waitFound(timeout = 3.minutes)
           consoleView.waitContainsText("Execution finished", timeout = 3.minutes)

@@ -7,5 +7,5 @@ import org.jetbrains.bazel.label.Label
 data class CompileParams(
   val taskId: TaskId,
   val targets: List<Label>,
-  val arguments: List<String>? = null,
+  val arguments: List<String> = emptyList(),
 )

@@ -14,7 +14,6 @@ import org.jetbrains.bazel.run.import.GooglePluginAwareRunHandlerProvider
 import org.jetbrains.bazel.run.state.AbstractGenericTestState
 import org.jetbrains.bazel.run.state.GenericTestState
 import org.jetbrains.bsp.protocol.TestParams
-import kotlin.collections.orEmpty
 import kotlin.collections.toMutableMap
 import kotlin.text.contains
 
@@ -49,7 +48,7 @@ class PythonBazelTestHandler : PythonBazelHandler<GenericTestState>() {
   companion object {
     @VisibleForTesting
     fun addJunitXmlOptionsToEnvironment(testParams: TestParams): TestParams {
-      val envs = testParams.environmentVariables.orEmpty().toMutableMap()
+      val envs = testParams.environmentVariables.toMutableMap()
       val originalPytestOpts = envs["PYTEST_ADDOPTS"]
       if (originalPytestOpts == null) {
         envs["PYTEST_ADDOPTS"] = $$"--junitxml=${XML_OUTPUT_FILE} -o junit_family=xunit1"

@@ -7,11 +7,11 @@ import org.jetbrains.bazel.label.Label
 data class TestParams(
   val taskId: TaskId,
   val targets: List<Label>,
-  val arguments: List<String>? = null,
-  val environmentVariables: Map<String, String>? = null,
+  val arguments: List<String> = emptyList(),
+  val environmentVariables: Map<String, String> = emptyMap(),
   val useCoverage: Boolean = false,
   val coverageInstrumentationFilter: String? = null,
   val testFilter: String? = null,
-  val additionalBazelParams: String? = null,
+  val additionalBazelParams: List<String> = emptyList(),
   val streamTestOutput: Boolean = false,
 )

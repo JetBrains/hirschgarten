@@ -10,11 +10,10 @@ import com.intellij.openapi.util.Key
 import kotlinx.coroutines.runBlocking
 import org.jetbrains.bazel.commons.BazelStatus
 import org.jetbrains.bazel.commons.RuleType
-import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.golang.targetKinds.includesGo
 import org.jetbrains.bazel.label.Label
-import org.jetbrains.bazel.run.commandLine.transformProgramArguments
+import org.jetbrains.bazel.run.commandLine.parseAsProgramArguments
 import org.jetbrains.bazel.run.config.BazelRunConfiguration
 import org.jetbrains.bazel.run.state.HasBazelParams
 import org.jetbrains.bazel.server.tasks.ScriptPathBuildTargetTask
@@ -84,10 +83,8 @@ internal class ScriptPathDebugBeforeRunTaskProvider : BeforeRunTaskProvider<Scri
     return true
   }
 
-  private fun BazelRunConfiguration.extractAdditionalBazelParams() = (handler?.state as? HasBazelParams)
-    ?.additionalBazelParams
-    ?.let(::transformProgramArguments)
-    .orEmpty()
+  private fun BazelRunConfiguration.extractAdditionalBazelParams() =
+    parseAsProgramArguments((handler?.state as? HasBazelParams)?.additionalBazelParams)
 
   private fun handleScriptParsingErrors(error: Throwable, target: Label) {
     val content = when (error) {

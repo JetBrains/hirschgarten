@@ -9,8 +9,8 @@ data class RunParams(
   val taskId: TaskId,
   val target: Label,
   val checkVisibility: Boolean,
-  val arguments: List<String>? = null,
-  val environmentVariables: Map<String, String>? = null,
-  val additionalBazelParams: String? = null,
+  val arguments: List<String> = emptyList(),
+  val environmentVariables: Map<String, String> = emptyMap(),
+  val additionalBazelParams: List<String> = emptyList(),
   val pidDeferred: CompletableDeferred<Long?>? = null,
 )

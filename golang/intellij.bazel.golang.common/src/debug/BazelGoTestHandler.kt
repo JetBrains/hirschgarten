@@ -90,5 +90,5 @@ private class BazelGoTestCommandLineState(
 ) : BazelTestCommandLineState(environment, state) {
   override fun transformTestParams(
     params: TestParams
-  ): TestParams = params.copy(environmentVariables = GO_TEST_WRAP_TESTV_1 + params.environmentVariables.orEmpty())
+  ): TestParams = params.copy(environmentVariables = GO_TEST_WRAP_TESTV_1 + params.environmentVariables)
 }
