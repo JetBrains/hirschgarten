@@ -6,10 +6,14 @@ import com.intellij.build.events.impl.SkippedResultImpl
 import com.intellij.build.events.impl.SuccessResultImpl
 import com.intellij.ide.SaveAndSyncHandler
 import com.intellij.ide.trustedProjects.TrustedProjects
+import com.intellij.openapi.application.ApplicationManager
+import com.intellij.openapi.application.ModalityState
+import com.intellij.openapi.application.TransactionGuard
 import com.intellij.openapi.application.edtWriteAction
 import com.intellij.openapi.components.service
 import com.intellij.openapi.components.serviceAsync
 import com.intellij.openapi.diagnostic.logger
+import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.openapi.project.IncompleteDependenciesService
 import com.intellij.openapi.project.IncompleteDependenciesService.IncompleteDependenciesAccessToken
 import com.intellij.openapi.project.Project
@@ -40,10 +44,10 @@ import org.jetbrains.bazel.server.BazelServerService
 import org.jetbrains.bazel.sync.ProjectPostSyncHook
 import org.jetbrains.bazel.sync.ProjectPreSyncHook
 import org.jetbrains.bazel.sync.ProjectSyncHook.ProjectSyncHookEnvironment
-import org.jetbrains.bazel.sync.projectPostSyncHooks
-import org.jetbrains.bazel.sync.projectPreSyncHooks
 import org.jetbrains.bazel.sync.ProjectSyncScope
 import org.jetbrains.bazel.sync.SyncWorkspaceUpdater
+import org.jetbrains.bazel.sync.projectPostSyncHooks
+import org.jetbrains.bazel.sync.projectPreSyncHooks
 import org.jetbrains.bazel.sync.projectStructure.ProjectModelApplicationTask
 import org.jetbrains.bazel.sync.projectSyncHooks
 import org.jetbrains.bazel.sync.status.SyncAlreadyInProgressException
@@ -105,8 +109,10 @@ class ProjectSyncTask(
   }
 
   private suspend fun syncPhase(phase: SyncPhase, buildProject: Boolean): ProjectSyncResult {
-    if (!TrustedProjects.isProjectTrusted(project)) return ProjectSyncResult(ProjectSyncCompletionResult.SKIPPED)
+    if (!TrustedProjects.isProjectTrusted(project))
+      return ProjectSyncResult(ProjectSyncCompletionResult.SKIPPED)
 
+    FileDocumentManager.getInstance().saveAllDocuments()
     return bspTracer.spanBuilder("bsp.sync.project.ms").setAttribute("project.name", project.name).useWithScope {
       runSyncTask(phase, buildProject)
     }
