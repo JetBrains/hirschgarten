@@ -21,10 +21,10 @@ enum class StarlarkQuote(val quote: String) {
   companion object {
     fun ofString(string: String): StarlarkQuote =
       when {
-        string.startsWith(SINGLE.quote) -> SINGLE
-        string.startsWith(DOUBLE.quote) -> DOUBLE
         string.startsWith(TRIPLE_SINGLE.quote) -> TRIPLE_SINGLE
         string.startsWith(TRIPLE_DOUBLE.quote) -> TRIPLE_DOUBLE
+        string.startsWith(SINGLE.quote) -> SINGLE
+        string.startsWith(DOUBLE.quote) -> DOUBLE
         else -> UNQUOTED
       }
   }
