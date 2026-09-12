@@ -2,8 +2,7 @@ package org.jetbrains.bazel.workspace
 
 import com.intellij.openapi.components.service
 import com.intellij.openapi.diagnostic.fileLogger
-import com.intellij.openapi.vfs.LocalFileSystem
-import com.intellij.openapi.vfs.impl.local.WatchRootsManager
+import com.intellij.openapi.vfs.WatchRoots
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.commons.symlinks.BazelSymlinksCalculator
 import org.jetbrains.bazel.config.BazelFeatureFlags
@@ -17,7 +16,7 @@ import java.util.NavigableMap
 private val LOG = fileLogger()
 
 /**
- * WatchRootsManager doesn't check whether the symlinks it's watching are excluded.
+ * WatchRootsServiceImpl doesn't check whether the symlinks it's watching are excluded.
  * Because IDEA 2025.2 has code freeze in place it can't be fixed on platform side :(
  * See:
  * https://youtrack.jetbrains.com/issue/IJPL-199364/Excluded-symlinks-are-watched-by-WatchRootsManager
@@ -42,21 +41,20 @@ private fun tryExcludeSymlinksFromFileWatcher(symlinksToExclude: List<Path>) {
     return
   }
 
-  val localFileSystem = LocalFileSystem.getInstance()
-  val watchRootsManager: WatchRootsManager = localFileSystem.getFieldWithReflection("myWatchRootsManager")
-  val lock: Object = watchRootsManager.getFieldWithReflection("myLock")
+  val watchRoots = WatchRoots.getInstance()
+  val lock: Object = watchRoots.getFieldWithReflection("myLock")
   synchronized(lock) {
-    val symlinksByPath: NavigableMap<String, Any> = watchRootsManager.getFieldWithReflection("mySymlinksByPath")
+    val symlinksByPath: NavigableMap<String, Any> = watchRoots.getFieldWithReflection("mySymlinksByPath")
 
-    // Insane hack: replace WatchRootsManager#mySymlinksByPath with a map that prevents adding excluded symlink paths.
-    // This way, WatchRootsManager#collectSymlinkRequests will not iterate over them.
+    // Insane hack: replace WatchRootsServiceImpl#mySymlinksByPath with a map that prevents adding excluded symlink paths.
+    // This way, WatchRootsServiceImpl#collectSymlinkRequests will not iterate over them.
     val symlinksByPathWithExcludes: MapWithExcludes =
       if (symlinksByPath is MapWithExcludes) {
         symlinksByPath
       }
       else {
         MapWithExcludes(symlinksByPath).also {
-          watchRootsManager.setFieldWithReflection("mySymlinksByPath", it)
+          watchRoots.setFieldWithReflection("mySymlinksByPath", it)
         }
       }
 
