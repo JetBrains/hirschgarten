@@ -55,8 +55,10 @@ class BazelJavaTestLocationHintProvider : BazelTestLocationHintProvider {
     replace(FRAGMENT_DELIMITER, SUITE_DELIMITER) // otherwise the delimiters might get misinterpreted
 }
 
-private const val TEST_CASE_PROTOCOL: String = "java:test"
-private const val TEST_SUITE_PROTOCOL: String = "java:suite"
-private const val PROTOCOL_DELIMITER = "://"
-private const val SUITE_DELIMITER = "$"
-private const val FRAGMENT_DELIMITER = "/"
+// Internal rather than private so that the location hints written here can also be read back --
+// see [org.jetbrains.bazel.jvm.run.JavaTestFilterProvider].
+internal const val TEST_CASE_PROTOCOL: String = "java:test"
+internal const val TEST_SUITE_PROTOCOL: String = "java:suite"
+internal const val PROTOCOL_DELIMITER = "://"
+internal const val SUITE_DELIMITER = "$"
+internal const val FRAGMENT_DELIMITER = "/"
