@@ -9,7 +9,7 @@ import com.intellij.openapi.actionSystem.CommonDataKeys
 import com.intellij.openapi.actionSystem.PlatformCoreDataKeys
 import com.intellij.openapi.actionSystem.impl.SimpleDataContext
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.vfs.LocalFileSystem
+import com.intellij.openapi.vfs.VirtualFileManager
 import com.intellij.openapi.vfs.newvfs.impl.VfsRootAccess
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
@@ -145,7 +145,7 @@ internal class BazelRunConfigurationProducerSuppressorTest : BazelBasePlatformTe
 
     val filePath = directory.resolve(fileName)
     Files.writeString(filePath, text)
-    val virtualFile = LocalFileSystem.getInstance().refreshAndFindFileByNioFile(filePath)!!
+    val virtualFile = VirtualFileManager.getInstance().refreshAndFindFileByNioPath(filePath)!!
     myFixture.configureFromExistingVirtualFile(virtualFile)
     return myFixture.file
   }

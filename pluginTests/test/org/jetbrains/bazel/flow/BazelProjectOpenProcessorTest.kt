@@ -1,8 +1,8 @@
 package org.jetbrains.bazel.flow
 
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.openapi.vfs.VirtualFileManager
 import com.intellij.projectImport.ProjectOpenProcessor
 import com.intellij.testFramework.junit5.SystemProperty
 import com.intellij.testFramework.junit5.TestApplication
@@ -83,7 +83,7 @@ internal class BazelProjectOpenProcessorTest {
   }
 
   private fun refreshDirectoryRoot(): VirtualFile =
-    LocalFileSystem.getInstance().refreshAndFindFileByNioFile(directoryRoot)
+    VirtualFileManager.getInstance().refreshAndFindFileByNioPath(directoryRoot)
     ?: error("Cannot refresh test directory $directoryRoot")
 
   private fun bazelProjectOpenProcessor(): ProjectOpenProcessor =

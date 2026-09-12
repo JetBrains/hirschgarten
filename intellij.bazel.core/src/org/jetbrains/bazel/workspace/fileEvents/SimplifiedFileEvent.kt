@@ -3,8 +3,8 @@ package org.jetbrains.bazel.workspace.fileEvents
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.roots.ProjectFileIndex
 import com.intellij.openapi.util.io.toNioPathOrNull
-import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.openapi.vfs.VirtualFileManager
 import com.intellij.openapi.vfs.newvfs.events.VFileContentChangeEvent
 import com.intellij.openapi.vfs.newvfs.events.VFileCopyEvent
 import com.intellij.openapi.vfs.newvfs.events.VFileCreateEvent
@@ -76,9 +76,9 @@ sealed class SimplifiedFileEvent private constructor(
     fileRemoved?.startsWith(folderPath) == true || fileAdded?.startsWith(folderPath) == true
 
   @RequiresReadLock(generateAssertion = false /* IJPL-115548 */)
-  fun affectsExcludedFiles(fileIndex: ProjectFileIndex, fileSystem: LocalFileSystem): Boolean =
+  fun affectsExcludedFiles(fileIndex: ProjectFileIndex, fileManager: VirtualFileManager): Boolean =
     newVirtualFile.isExcludedInFileIndex(fileIndex) ||
-    fileRemoved?.getFirstExistingAncestor()?.let { fileSystem.findFileByNioFile(it) }.isExcludedInFileIndex(fileIndex)
+    fileRemoved?.getFirstExistingAncestor()?.let { fileManager.findFileByNioPath(it) }.isExcludedInFileIndex(fileIndex)
 
   private fun VirtualFile?.isExcludedInFileIndex(fileIndex: ProjectFileIndex): Boolean =
     this?.let { fileIndex.isExcluded(it) } == true

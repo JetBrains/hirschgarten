@@ -3,7 +3,7 @@ package org.jetbrains.bazel.ui.console
 import com.intellij.execution.filters.OpenFileHyperlinkInfo
 import com.intellij.openapi.application.runWriteAction
 import com.intellij.openapi.util.io.findOrCreateFile
-import com.intellij.openapi.vfs.LocalFileSystem
+import com.intellij.openapi.vfs.VirtualFileManager
 import com.intellij.util.io.delete
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
@@ -261,7 +261,7 @@ proto_library(
         .findOrCreateFile()
         .also {
           it.writeText(testBazelFileContent)
-        }.also { LocalFileSystem.getInstance().refreshAndFindFileByNioFile(it) }
+        }.also { VirtualFileManager.getInstance().refreshAndFindFileByNioPath(it) }
     }
 
   private fun createBazelFileInProject(relativePath: String, buildFileName: String = "BUILD"): Path =

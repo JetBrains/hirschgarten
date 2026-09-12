@@ -21,8 +21,8 @@ import com.goide.dlv.location.DlvPositionConverter
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.openapi.vfs.VirtualFileManager
 import kotlinx.coroutines.runBlocking
 import org.jetbrains.bazel.golang.sync.GoLanguagePlugin
 import org.jetbrains.bazel.server.connection
@@ -46,7 +46,7 @@ internal class BspDlvPositionConverter(
       runBlocking {
         val resolvedMap = resolveRemoteToLocalOnServer(remotePaths.toList())
         resolvedMap.forEach { (remote, localPath) ->
-          val vf = LocalFileSystem.getInstance().findFileByNioFile(localPath)
+          val vf = VirtualFileManager.getInstance().findFileByNioPath(localPath)
           if (vf != null && vf.isValid) {
             remoteToLocalCache[remote] = vf
           }
@@ -105,7 +105,7 @@ internal class BspDlvPositionConverter(
       return null
     }
 
-    val vf = LocalFileSystem.getInstance().findFileByNioFile(localAbsolute)
+    val vf = VirtualFileManager.getInstance().findFileByNioPath(localAbsolute)
     if (vf != null && vf.isValid) {
       remoteToLocalCache[remotePath] = vf
       return vf

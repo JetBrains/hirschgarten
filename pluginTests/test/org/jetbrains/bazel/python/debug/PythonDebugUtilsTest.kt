@@ -2,7 +2,7 @@ package org.jetbrains.bazel.python.debug
 
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.vfs.LocalFileSystem
+import com.intellij.openapi.vfs.VirtualFileManager
 import com.intellij.testFramework.LightVirtualFile
 import com.intellij.testFramework.junit5.TestApplication
 import com.intellij.testFramework.junit5.TestDisposable
@@ -130,7 +130,7 @@ class PythonDebugUtilsTest {
     assertEquals(fixture.runnerScript, debugInfoBefore.pythonFile)
 
     Files.writeString(fixture.runnerScript, "#!/usr/bin/env bash\necho debug target\n")
-    LocalFileSystem.getInstance().refreshAndFindFileByNioFile(fixture.runnerScript)
+    VirtualFileManager.getInstance().refreshAndFindFileByNioPath(fixture.runnerScript)
 
     val debugInfoAfter = preparePythonDebug(project, target).assertNotNull()
     assertEquals(fixture.mainFile, debugInfoAfter.pythonFile)

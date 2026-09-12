@@ -3,7 +3,7 @@ package org.jetbrains.bazel.kotlin.ideStarter
 import com.intellij.openapi.application.edtWriteAction
 import com.intellij.openapi.ui.playback.PlaybackContext
 import com.intellij.openapi.ui.playback.commands.PlaybackCommandCoroutineAdapter
-import com.intellij.openapi.vfs.LocalFileSystem
+import com.intellij.openapi.vfs.VirtualFileManager
 import org.jetbrains.bazel.config.rootDir
 import kotlin.io.path.name
 
@@ -23,7 +23,7 @@ internal class CreateDirectoryCommand(text: String, line: Int) : PlaybackCommand
       val rootDir = context.project.rootDir
       val rootDirPath = rootDir.toNioPath().resolve(directoryPath)
 
-      val parent = checkNotNull(LocalFileSystem.getInstance().findFileByNioFile(rootDirPath.parent))
+      val parent = checkNotNull(VirtualFileManager.getInstance().findFileByNioPath(rootDirPath.parent))
       parent.createChildDirectory(null, rootDirPath.name)
     }
 }

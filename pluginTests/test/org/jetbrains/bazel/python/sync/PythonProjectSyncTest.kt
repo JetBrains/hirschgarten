@@ -9,7 +9,7 @@ import com.intellij.openapi.application.edtWriteAction
 import com.intellij.openapi.application.runReadActionBlocking
 import com.intellij.openapi.diagnostic.fileLogger
 import com.intellij.openapi.projectRoots.ProjectJdkTable
-import com.intellij.openapi.vfs.LocalFileSystem
+import com.intellij.openapi.vfs.VirtualFileManager
 import com.intellij.platform.backend.workspace.WorkspaceModel
 import com.intellij.platform.util.progress.reportSequentialProgress
 import com.intellij.platform.workspace.jps.entities.ContentRootEntity
@@ -370,7 +370,7 @@ class PythonProjectSyncTest : MockProjectBaseTest() {
     val bazelBin = execRoot.resolve("bin").createDirectories()
     val generatedFile = bazelBin.resolve("part.py")
     generatedFile.writeText("P = 1\n")
-    LocalFileSystem.getInstance().refreshAndFindFileByNioFile(generatedFile)
+    VirtualFileManager.getInstance().refreshAndFindFileByNioPath(generatedFile)
 
     val info =
       GeneratedTargetInfo(
@@ -798,7 +798,7 @@ class PythonProjectSyncTest : MockProjectBaseTest() {
     val path = projectDir.get().resolve(relativePath)
     path.parent.createDirectories()
     path.writeText(text)
-    val virtualFile = LocalFileSystem.getInstance().refreshAndFindFileByNioFile(path)!!
+    val virtualFile = VirtualFileManager.getInstance().refreshAndFindFileByNioPath(path)!!
     return runReadActionBlocking {
       PsiManager.getInstance(project).findFile(virtualFile) as PyFile
     }

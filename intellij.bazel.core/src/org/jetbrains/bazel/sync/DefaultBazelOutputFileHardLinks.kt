@@ -5,9 +5,9 @@ import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.getProjectDataPath
 import com.intellij.openapi.util.io.NioFiles
-import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.openapi.vfs.VfsUtilCore
 import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.openapi.vfs.VirtualFileManager
 import com.intellij.openapi.vfs.VirtualFileVisitor
 import com.intellij.openapi.vfs.newvfs.RefreshQueue
 import com.intellij.openapi.vfs.newvfs.impl.NullVirtualFile
@@ -101,17 +101,17 @@ internal class DefaultBazelOutputFileHardLinks(
         BazelCoroutineService.getInstance(project).startAsync {
           withContext(limitedDispatcher) {
             try {
-              val localFileSystem = LocalFileSystem.getInstance()
+              val fileManager = VirtualFileManager.getInstance()
               var requiresRefresh = true
               val hardLinkFile = if (!targetHardLink.exists() || targetHardLink.getLastModifiedTime() != realFile.getLastModifiedTime()) {
                 targetHardLink.deleteIfExists()
                 targetHardLink.createParentDirectories()
                 Files.createLink(targetHardLink, realFile)
-                localFileSystem.refreshAndFindFileByNioFile(targetHardLink)
+                fileManager.refreshAndFindFileByNioPath(targetHardLink)
               }
               else {
                 requiresRefresh = false
-                localFileSystem.findFileByNioFile(targetHardLink) ?: localFileSystem.refreshAndFindFileByNioFile(targetHardLink)
+                fileManager.findFileByNioPath(targetHardLink) ?: fileManager.refreshAndFindFileByNioPath(targetHardLink)
               }
               checkNotNull(hardLinkFile) { "Can't find virtual find for $targetHardLink" }
               HardLink(realFile, hardLinkFile, requiresRefresh)
@@ -154,7 +154,7 @@ internal class DefaultBazelOutputFileHardLinks(
   }
 
   private suspend fun deleteUnusedHardLinks() {
-    val cacheDirFile = LocalFileSystem.getInstance().refreshAndFindFileByNioFile(cacheDir)
+    val cacheDirFile = VirtualFileManager.getInstance().refreshAndFindFileByNioPath(cacheDir)
                        ?: return
 
     val hardLinksFilesUsedDuringSync = mutableSetOf(cacheDirFile)

@@ -5,7 +5,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.roots.ProjectFileIndex
 import com.intellij.openapi.vcs.ProjectLevelVcsManager
 import com.intellij.openapi.vcs.VcsDirectoryMapping
-import com.intellij.openapi.vfs.LocalFileSystem
+import com.intellij.openapi.vfs.StandardFileSystems
 import com.intellij.openapi.vfs.VfsUtilCore
 import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.sync.ProjectPostSyncHook
@@ -25,7 +25,7 @@ internal class RemoveExcludedVcsMappingsSyncHook : ProjectPostSyncHook {
 
   private suspend fun isExcludedPath(project: Project, mapping: VcsDirectoryMapping): Boolean {
     if (mapping.isDefaultMapping) return false
-    val file = LocalFileSystem.getInstance().findFileByPath(mapping.directory) ?: return false
+    val file = StandardFileSystems.local().findFileByPath(mapping.directory) ?: return false
     // If the project root is a child of the VCS root, then keep it
     // E.g., if you import ultimate/plugin/bazel, but the VCS root is ultimate, then all is good
     if (VfsUtilCore.isAncestor(file, project.rootDir, false)) return false

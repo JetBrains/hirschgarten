@@ -4,7 +4,7 @@ import com.intellij.openapi.application.readAction
 import com.intellij.openapi.roots.ProjectFileIndex
 import com.intellij.openapi.ui.playback.PlaybackContext
 import com.intellij.openapi.ui.playback.commands.PlaybackCommandCoroutineAdapter
-import com.intellij.openapi.vfs.LocalFileSystem
+import com.intellij.openapi.vfs.StandardFileSystems
 
 internal class TestSourceCheckCommand(text: String, line: Int) : PlaybackCommandCoroutineAdapter(text, line) {
   companion object {
@@ -19,7 +19,7 @@ internal class TestSourceCheckCommand(text: String, line: Int) : PlaybackCommand
 
     val basePath = context.project.basePath ?: error("No project base path")
     val file = readAction {
-      LocalFileSystem.getInstance().findFileByPath("$basePath/$relativePath")
+      StandardFileSystems.local().findFileByPath("$basePath/$relativePath")
     } ?: error("File not found: $relativePath")
 
     val isTest = readAction {

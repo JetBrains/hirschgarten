@@ -1,7 +1,7 @@
 package org.jetbrains.bazel.run.coverage
 
 import com.intellij.coverage.CoverageLoadErrorReporter
-import com.intellij.openapi.vfs.LocalFileSystem
+import com.intellij.openapi.vfs.VirtualFileManager
 import com.intellij.testFramework.junit5.TestApplication
 import com.intellij.testFramework.junit5.fixture.projectFixture
 import io.kotest.matchers.shouldBe
@@ -24,7 +24,7 @@ class LcovBazelCoverageReportParserTest {
     validReport.writeText("SF:source.go\nDA:1,7\nend_of_record\n")
     val brokenReport = tempDir.resolve("broken.lcov")
     brokenReport.writeText("DA:1,1\n")
-    val projectRoot = checkNotNull(LocalFileSystem.getInstance().refreshAndFindFileByNioFile(tempDir))
+    val projectRoot = checkNotNull(VirtualFileManager.getInstance().refreshAndFindFileByNioPath(tempDir))
     val reporter = RecordingCoverageLoadErrorReporter()
     val coverage = mutableListOf<Triple<Path, Int, Long>>()
 

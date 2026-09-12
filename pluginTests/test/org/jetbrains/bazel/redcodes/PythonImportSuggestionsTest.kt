@@ -3,8 +3,8 @@ package org.jetbrains.bazel.redcodes
 import com.intellij.bazel.python.backend.updateBazelPythonResolveIndex
 import com.intellij.openapi.application.EDT
 import com.intellij.openapi.application.runWriteAction
-import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.openapi.vfs.VirtualFileManager
 import com.intellij.platform.backend.workspace.toVirtualFileUrl
 import com.intellij.platform.backend.workspace.workspaceModel
 import com.intellij.psi.util.QualifiedName
@@ -78,7 +78,7 @@ class PythonImportSuggestionsTest {
         .resolve("main.py")
       pydanticMain.parent.createDirectories()
       pydanticMain.writeText("class BaseModel:\n    pass\n")
-      val pydanticMainFile = LocalFileSystem.getInstance().refreshAndFindFileByNioFile(pydanticMain)!!
+      val pydanticMainFile = VirtualFileManager.getInstance().refreshAndFindFileByNioPath(pydanticMain)!!
       fixture.project.updateBazelPythonResolveIndex(
         mapOf(QualifiedName.fromDottedString("pydantic.main") to pydanticMain),
       )

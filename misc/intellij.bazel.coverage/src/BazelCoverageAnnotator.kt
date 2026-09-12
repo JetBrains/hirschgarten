@@ -8,7 +8,7 @@ import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.roots.ProjectFileIndex
-import com.intellij.openapi.vfs.LocalFileSystem
+import com.intellij.openapi.vfs.StandardFileSystems
 import com.intellij.openapi.vfs.VirtualFile
 import org.jetbrains.bazel.commons.LanguageClass
 import java.io.File
@@ -32,7 +32,7 @@ internal class BazelCoverageAnnotator(project: Project) : SimpleCoverageAnnotato
     // Only include Java/Kotlin/etc. files in the total count
     if (LanguageClass.fromExtension(file.extension) == null) return null
 
-    val virtualFile = LocalFileSystem.getInstance().findFileByIoFile(file) ?: return null
+    val virtualFile = StandardFileSystems.local().findFileByPath(file.absolutePath) ?: return null
     if (runReadAction {
         ProjectFileIndex.getInstance(project).isInTestSourceContent(virtualFile) ||
           !ProjectFileIndex.getInstance(project).isInSource(virtualFile)

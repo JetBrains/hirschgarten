@@ -9,7 +9,7 @@ import com.intellij.coverage.FailedCoverageLoadingResult
 import com.intellij.coverage.SuccessCoverageLoadingResult
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.progress.ProgressManager
-import com.intellij.openapi.vfs.LocalFileSystem
+import com.intellij.openapi.vfs.StandardFileSystems
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.rt.coverage.data.LineData
 import com.intellij.rt.coverage.data.ProjectData
@@ -27,7 +27,7 @@ internal class BazelCoverageRunner : CoverageRunner() {
 
     fun getNameInCoverageData(sourceFile: VirtualFile): String = sourceFile.path
 
-    fun getFileByCoverageDataName(name: String): VirtualFile? = LocalFileSystem.getInstance().findFileByPath(name)
+    fun getFileByCoverageDataName(name: String): VirtualFile? = StandardFileSystems.local().findFileByPath(name)
 
     private const val ID: String = "BazelCoverageRunner"
   }

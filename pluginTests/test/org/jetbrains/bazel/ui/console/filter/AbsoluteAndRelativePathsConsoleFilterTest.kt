@@ -3,7 +3,7 @@ package org.jetbrains.bazel.ui.console.filter
 import com.intellij.execution.filters.Filter
 import com.intellij.execution.filters.OpenFileHyperlinkInfo
 import com.intellij.openapi.application.readAction
-import com.intellij.openapi.vfs.LocalFileSystem
+import com.intellij.openapi.vfs.VirtualFileManager
 import io.kotest.matchers.shouldBe
 import kotlinx.coroutines.runBlocking
 import org.jetbrains.bazel.workspace.model.test.framework.WorkspaceModelBaseTest
@@ -367,7 +367,7 @@ class AbsoluteAndRelativePathsConsoleFilterTest : WorkspaceModelBaseTest() {
     projectBasePath
       .resolve(relativePath)
       .createDirectories()
-      .also { LocalFileSystem.getInstance().refreshAndFindFileByNioFile(it) }
+      .also { VirtualFileManager.getInstance().refreshAndFindFileByNioPath(it) }
 
   private fun Filter.ResultItem.shouldHave(
     expectedStartOffset: Int,

@@ -1,6 +1,5 @@
 package org.jetbrains.bazel.utils
 
-import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.VirtualFileManager
 import org.jetbrains.annotations.ApiStatus
@@ -63,7 +62,7 @@ fun Set<Path>.filterPathsThatDontContainEachOther(): List<Path> = filter { path 
 fun Path.refreshAndFindVirtualFile(): VirtualFile? = VirtualFileManager.getInstance().refreshAndFindFileByNioPath(this)
 
 @ApiStatus.Internal
-fun Path.findVirtualFileLocal(): VirtualFile? = LocalFileSystem.getInstance().findFileByNioFile(this)
+fun Path.findVirtualFileLocal(): VirtualFile? = VirtualFileManager.getInstance().findFileByNioPath(this)
 
 @ApiStatus.Internal
 fun Path.findVirtualFile(): VirtualFile? = VirtualFileManager.getInstance().findFileByNioPath(this)

@@ -11,9 +11,9 @@ import com.intellij.diagnostic.rethrowControlFlowException
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.roots.ProjectFileIndex
 import com.intellij.openapi.roots.ProjectRootManager
-import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.openapi.vfs.VfsUtilCore
 import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.openapi.vfs.VirtualFileManager
 import com.intellij.openapi.vfs.newvfs.events.VFileEvent
 import com.intellij.platform.backend.workspace.WorkspaceModel
 import com.intellij.platform.backend.workspace.toVirtualFileUrl
@@ -560,9 +560,9 @@ open class DefaultBazelFileEventProcessor(private val project: Project): BazelFi
     if (this.isEmpty() || !project.isBazelProject) return emptyList()
     val rootDirPath = projectRootPath() ?: return emptyList()
     val fileIndex = ProjectRootManager.getInstance(project).fileIndex
-    val fileSystem = LocalFileSystem.getInstance()
+    val fileManager = VirtualFileManager.getInstance()
     return readAction {
-      filter { it.doesAffectFolder(rootDirPath) && !it.affectsExcludedFiles(fileIndex, fileSystem) }
+      filter { it.doesAffectFolder(rootDirPath) && !it.affectsExcludedFiles(fileIndex, fileManager) }
     }
   }
 

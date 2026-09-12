@@ -1,7 +1,7 @@
 package org.jetbrains.bazel.python.debug
 
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.vfs.LocalFileSystem
+import com.intellij.openapi.vfs.StandardFileSystems
 import com.intellij.xdebugger.XDebuggerUtil
 import com.intellij.xdebugger.XSourcePosition
 import com.jetbrains.python.debugger.PyPositionConverter
@@ -31,7 +31,7 @@ internal class BazelPyDebugPositionConverter(private val project: Project, priva
 }
 
 private fun getXSourcePosition(file: String, line: Int): XSourcePosition? {
-  val virtualFile = LocalFileSystem.getInstance().findFileByPath(file)
+  val virtualFile = StandardFileSystems.local().findFileByPath(file)
   return XDebuggerUtil.getInstance().createPosition(virtualFile, line)
 }
 

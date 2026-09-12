@@ -7,7 +7,7 @@ import com.intellij.openapi.externalSystem.autolink.ExternalSystemProjectLinkLis
 import com.intellij.openapi.externalSystem.autolink.ExternalSystemUnlinkedProjectAware
 import com.intellij.openapi.externalSystem.model.ProjectSystemId
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.vfs.LocalFileSystem
+import com.intellij.openapi.vfs.StandardFileSystems
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.toNioPathOrNull
 import org.jetbrains.annotations.ApiStatus
@@ -32,7 +32,7 @@ class BazelUnlinkedProjectAware : ExternalSystemUnlinkedProjectAware {
   override suspend fun linkAndLoadProjectAsync(project: Project, externalProjectPath: String) {
     BazelApplicationCoroutineScopeService.getInstance().launch {
       val file = readAction {
-        LocalFileSystem.getInstance()
+        StandardFileSystems.local()
           .findFileByPath(externalProjectPath)
           ?.children
           ?.firstOrNull { isBuildFile(project, it) }
