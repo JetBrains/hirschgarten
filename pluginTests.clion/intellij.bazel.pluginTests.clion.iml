@@ -19,7 +19,6 @@
     <orderEntry type="module" module-name="intellij.clion.radler" scope="RUNTIME" />
     <orderEntry type="module" module-name="intellij.clion.runFile.nova" scope="RUNTIME" />
     <orderEntry type="module" module-name="intellij.clion.radler.testFramework.junit5" scope="RUNTIME" />
-    <orderEntry type="module" module-name="intellij.clion.radler.backend.marker" scope="RUNTIME" />
     <orderEntry type="module" module-name="intellij.clion.testFramework.nolang.junit5.core" scope="TEST" />
     <orderEntry type="module" module-name="intellij.rider.rdclient.dotnet" scope="RUNTIME" />
     <orderEntry type="module" module-name="intellij.platform.analysis" scope="TEST" />
