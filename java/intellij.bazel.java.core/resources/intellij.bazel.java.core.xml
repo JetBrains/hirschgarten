@@ -133,6 +133,6 @@
                      implementationClass="org.jetbrains.bazel.inspections.JavaStrictDependenciesInspection"
                      key="inspections.display.name.javastrictdeps"/>
     <runConfigurationProducer implementation="org.jetbrains.bazel.jvm.run.BazelRerunTestConfigurationProducer"/>
-
+    <librarySourcesMismatchSuppressor implementation="org.jetbrains.bazel.java.analysis.BazelInterfaceJarSourceMismatchSuppressor"/>
   </extensions>
 </idea-plugin>
