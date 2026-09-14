@@ -1,0 +1,2 @@
+bazel_dep(name = "rules_python", version = "2.2.0")
+bazel_dep(name = "rules_python_gazelle_plugin", version = "2.2.0")
