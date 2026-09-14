@@ -63,8 +63,11 @@ class BazelBspAspectsManager(
     externalRulesetDefinitions: Map<String, ShowRepoResult?>,
     externalAutoloads: List<String>,
   ): List<RulesetLanguage> {
+    // All our canonal rulesets either have empty strip_prefix or strip the top-level directory (consiting of rule name plus version).
+    // Filter out sub-rules which are built from the same archive, but stripping out top-level directory plus a subdirectory.
+    val externalTopLevelHttpArchives = externalRulesetDefinitions.filter { (it.value as? ShowRepoResult.HttpArchiveRepository)?.stripPrefix?.indexOf('/') == -1  }
     val httpArchiveUpstreamURLsByCanonicalName =
-      externalRulesetDefinitions.values.mapNotNull { definition -> (definition as? ShowRepoResult.HttpArchiveRepository)?.let { it.name to it.urls } }
+      externalTopLevelHttpArchives.values.mapNotNull { definition -> (definition as? ShowRepoResult.HttpArchiveRepository)?.let { it.name to it.urls } }
     val canonicalRepoByHostLocation =
       httpArchiveUpstreamURLsByCanonicalName.flatMap { (k, v) -> v.map { Pair(k, it) } }.associateBy { it.second }
         .mapValues { (k, v) -> v.first }
