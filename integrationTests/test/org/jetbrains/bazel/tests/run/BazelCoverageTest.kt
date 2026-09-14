@@ -42,6 +42,7 @@ class BazelCoverageTest : IdeStarterBaseProjectTest() {
       "bazelCoverage-${if (runConfigRunWithBazel) "withBazel" else "withoutBazel"}",
       IdeaBazelCases.withProject(BAZEL_COVERAGE_PROJECT),
     )
+      .also { it.pluginConfigurator.disablePlugins("com.intellij.ml.llm") }
       .setRunConfigRunWithBazel(runConfigRunWithBazel)
       .runIdeWithDriver(runTimeout = timeout)
       .useDriverAndCloseIde {
@@ -49,17 +50,10 @@ class BazelCoverageTest : IdeStarterBaseProjectTest() {
           syncBazelProject()
           waitForIndicators(5.minutes)
 
-          val expectedCoverageTabText = if (runConfigRunWithBazel) {
-            "Statistics, %"
-          }
-          else {
-            "Line, %"
-          }
-
           step("Run test with coverage") {
             execute { openFile("src/test/com/example/CalculatorTest.java") }
             runCalculatorTestWithCoverage()
-            waitOneText(expectedCoverageTabText, timeout = 1.minutes)
+            coverageToolWindow().waitFound(1.minutes).reportTable.waitFound()
             if (!runConfigRunWithBazel) {
               // When running with default IDEA coverage, respect the default include filter for packages
               waitNoTexts("org.other_package")
@@ -90,6 +84,7 @@ class BazelCoverageTest : IdeStarterBaseProjectTest() {
       "bazelCoverage-bazelFlags",
       IdeaBazelCases.withProject(BAZEL_COVERAGE_PROJECT),
     )
+      .also { it.pluginConfigurator.disablePlugins("com.intellij.ml.llm") }
       .setRunConfigRunWithBazel(true)
       .runIdeWithDriver(runTimeout = timeout)
       .useDriverAndCloseIde {
@@ -139,8 +134,9 @@ private fun IdeaFrameUI.runCalculatorTestWithCoverage() {
 }
 
 private fun IdeaFrameUI.waitForCoverageReport(present: List<String>, absent: List<String> = emptyList()) {
-  waitOneText("Statistics, %", timeout = 1.minutes)
   coverageToolWindow {
+    waitFound(1.minutes)
+    reportTable.waitFound()
     val tree = tree()
     tree.expandAll()
     tree.should(
