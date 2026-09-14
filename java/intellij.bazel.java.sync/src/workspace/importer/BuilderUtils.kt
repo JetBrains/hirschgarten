@@ -15,7 +15,7 @@ internal fun Path.toResolvedVirtualFileUrl(virtualFileUrlManager: VirtualFileUrl
 }
 
 internal fun String.toResolvedVirtualFileUrl(virtualFileUrlManager: VirtualFileUrlManager): VirtualFileUrl {
-  val url = virtualFileUrlManager.getOrCreateFromUrl(this)
+  val url = virtualFileUrlManager.storeAndGet(this)
   // Add the virtual file to the VFS immediately to avoid doing it in a write action inside WorkspaceModelImpl.replaceProjectModel
   url.virtualFile
   return url

@@ -52,11 +52,11 @@ internal class LibraryBuilderTest : WorkspaceModelBaseTest() {
             name = expectedName,
             roots = listOf(
               LibraryRoot(
-                url = virtualFileUrlManager.getOrCreateFromUrl("jar:///dependency/test/1.0.0/test-1.0.0-sources.jar!/"),
+                url = virtualFileUrlManager.storeAndGet("jar:///dependency/test/1.0.0/test-1.0.0-sources.jar!/"),
                 type = LibraryRootTypeId.SOURCES,
               ),
               LibraryRoot(
-                url = virtualFileUrlManager.getOrCreateFromUrl("jar:///dependency/test/1.0.0/test-1.0.0.jar!/"),
+                url = virtualFileUrlManager.storeAndGet("jar:///dependency/test/1.0.0/test-1.0.0.jar!/"),
                 type = LibraryRootTypeId.COMPILED,
               ),
             ),
@@ -107,11 +107,11 @@ internal class LibraryBuilderTest : WorkspaceModelBaseTest() {
             name = item1.key.label.formatAsModuleName(RepoMappingDisabled),
             roots = listOf(
               LibraryRoot(
-                url = virtualFileUrlManager.getOrCreateFromUrl("jar:///dependency/test1/1.0.0/test1-1.0.0-sources.jar!/"),
+                url = virtualFileUrlManager.storeAndGet("jar:///dependency/test1/1.0.0/test1-1.0.0-sources.jar!/"),
                 type = LibraryRootTypeId.SOURCES,
               ),
               LibraryRoot(
-                url = virtualFileUrlManager.getOrCreateFromUrl("jar:///dependency/test1/1.0.0/test1-1.0.0.jar!/"),
+                url = virtualFileUrlManager.storeAndGet("jar:///dependency/test1/1.0.0/test1-1.0.0.jar!/"),
                 type = LibraryRootTypeId.COMPILED,
               ),
             ),
@@ -126,11 +126,11 @@ internal class LibraryBuilderTest : WorkspaceModelBaseTest() {
             name = item2.key.label.formatAsModuleName(RepoMappingDisabled),
             roots = listOf(
               LibraryRoot(
-                url = virtualFileUrlManager.getOrCreateFromUrl("jar:///dependency/test2/2.0.0/test2-2.0.0-sources.jar!/"),
+                url = virtualFileUrlManager.storeAndGet("jar:///dependency/test2/2.0.0/test2-2.0.0-sources.jar!/"),
                 type = LibraryRootTypeId.SOURCES,
               ),
               LibraryRoot(
-                url = virtualFileUrlManager.getOrCreateFromUrl("jar:///dependency/test2/2.0.0/test2-2.0.0.jar!/"),
+                url = virtualFileUrlManager.storeAndGet("jar:///dependency/test2/2.0.0/test2-2.0.0.jar!/"),
                 type = LibraryRootTypeId.COMPILED,
               ),
             ),
