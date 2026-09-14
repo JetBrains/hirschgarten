@@ -20,10 +20,13 @@ import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.LibraryItem
 import org.jetbrains.bsp.protocol.MavenCoordinates
 import org.jetbrains.bsp.protocol.allJars
+import org.jetbrains.bsp.protocol.utils.StringUtils
 import java.nio.file.Path
 import kotlin.io.path.name
 
 private typealias DependencyLabelPatcher = (DependencyLabel) -> DependencyLabel
+
+private const val KOTLIN_STDLIB_LIBRARY_NAME = "rules_kotlin_kotlin-stdlibs"
 
 @ApiStatus.Internal
 class JvmBuildTargetResolver(
@@ -403,23 +406,8 @@ class JvmBuildTargetResolver(
   ): Map<WorkspaceTargetKey, List<LibraryItem>> {
     val result = HashMap<WorkspaceTargetKey, MutableList<LibraryItem>>()
 
-    val stdlibJars =
-      allTargets.values.mapNotNull { it.findBuildData<KotlinBuildTarget>() }.flatMap { it.stdlibHardLinkedJars.getFiles().toList() }
-        .distinct()
-    if (stdlibJars.isNotEmpty()) {
-      val stdlibSources =
-        allTargets.values.mapNotNull { it.findBuildData<KotlinBuildTarget>() }.flatMap { it.stdlibInferredSourceJars.getFiles().toList() }
-          .distinct()
-      val stdlib =
-        createLibrary(
-          WorkspaceTargetKey(label = Label.synthetic("rules_kotlin_kotlin-stdlibs")),
-          ijars = emptySet(),
-          jars = stdlibJars.toSet(),
-          sourceJars = stdlibSources.toSet(),
-        )
-      targetsToImport.filterValues { it.findBuildData<KotlinBuildTarget>() != null }.keys.forEach {
-        result.getOrPut(it) { mutableListOf() }.add(stdlib)
-      }
+    for ((targetKey, stdlib) in calculateKotlinStdlibLibraries(targetsToImport)) {
+      result.getOrPut(targetKey) { mutableListOf() }.add(stdlib)
     }
 
     val sdkLibByJar =
@@ -448,6 +436,56 @@ class JvmBuildTargetResolver(
       if (libs.isNotEmpty()) {
         result.getOrPut(key) { mutableListOf() }.addAll(libs)
       }
+    }
+    return result
+  }
+
+  /**
+   * Creates one stdlib library per Kotlin toolchain and maps every Kotlin target to its library.
+   *
+   * Bazel resolves the Kotlin toolchain per configuration, so the targets of one configuration share the stdlib jars.
+   * A target without a configuration id is grouped by its stdlib jar set instead.
+   *
+   * Module dependencies resolve a library by its label, so the group goes into the synthetic label,
+   * as the configuration checksum or as a hash of the jar set. A single group keeps the plain library name.
+   * See https://youtrack.jetbrains.com/issue/BAZEL-3549
+   */
+  private fun calculateKotlinStdlibLibraries(
+    targetsToImport: Map<WorkspaceTargetKey, BuildTarget>,
+  ): Map<WorkspaceTargetKey, LibraryItem> {
+    data class KotlinStdlib(
+      val jars: List<Path>,
+      val sourceJars: List<Path>,
+    )
+
+    val stdlibByTarget: List<Pair<WorkspaceTargetKey, KotlinStdlib>> =
+      targetsToImport.mapNotNull { (key, target) ->
+        val kotlinTarget = target.findBuildData<KotlinBuildTarget>() ?: return@mapNotNull null
+        if (kotlinTarget.stdlibHardLinkedJars.isEmpty()) return@mapNotNull null
+        key to KotlinStdlib(
+          jars = kotlinTarget.stdlibHardLinkedJars.getFiles().toList(),
+          sourceJars = kotlinTarget.stdlibInferredSourceJars.getFiles().toList(),
+        )
+      }
+    if (stdlibByTarget.isEmpty())
+      return emptyMap()
+
+    val groups: Map<String, List<Pair<WorkspaceTargetKey, KotlinStdlib>>> =
+      stdlibByTarget.groupBy { (key, stdlib) ->
+        key.configuration.shortChecksum
+        ?: StringUtils.md5Hash(stdlib.jars.map { it.toString() }.sorted().joinToString(","), 5)
+      }
+
+    val result = HashMap<WorkspaceTargetKey, LibraryItem>()
+    for ((suffix, entries) in groups) {
+      val name = if (groups.size == 1) KOTLIN_STDLIB_LIBRARY_NAME else "$KOTLIN_STDLIB_LIBRARY_NAME-$suffix"
+      val library = createLibrary(
+        key = WorkspaceTargetKey(label = Label.synthetic(name)),
+        ijars = emptySet(),
+        jars = entries.flatMap { it.second.jars }.distinct(),
+        sourceJars = entries.flatMap { it.second.sourceJars }.distinct(),
+      )
+      entries.forEach { (key, _) -> result[key] = library }
     }
     return result
   }

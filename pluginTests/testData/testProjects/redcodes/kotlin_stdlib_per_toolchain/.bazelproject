@@ -1,0 +1,5 @@
+derive_targets_from_directories: false
+
+targets:
+  //:app_a
+  //:app_b

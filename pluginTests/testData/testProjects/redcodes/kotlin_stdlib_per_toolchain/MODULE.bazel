@@ -1,0 +1,27 @@
+bazel_dep(name = "rules_kotlin", version = "2.2.2")
+bazel_dep(name = "rules_java", version = "9.6.1")
+bazel_dep(name = "bazel_skylib", version = "1.7.1")
+bazel_dep(name = "hermetic_cc_toolchain", version = "4.1.0")
+
+# rules_kotlin registers Go toolchains from an old rules_go, which does not load under Bazel 9
+bazel_dep(name = "rules_go", version = "0.63.0")
+
+# an older Kotlin stdlib than the one bundled with rules_kotlin
+http_file = use_repo_rule("@bazel_tools//tools/build_defs/repo:http.bzl", "http_file")
+
+http_file(
+    name = "kotlin_stdlib_1_9_25",
+    downloaded_file_path = "kotlin-stdlib-1.9.25.jar",
+    sha256 = "f9cdcdbff1f5de85380ae526977e683726c2aa42db1ed6e6e50ae89e496e95fd",
+    url = "https://cache-redirector.jetbrains.com/repo1.maven.org/maven2/org/jetbrains/kotlin/kotlin-stdlib/1.9.25/kotlin-stdlib-1.9.25.jar",
+)
+
+toolchains = use_extension("@hermetic_cc_toolchain//toolchain:ext.bzl", "toolchains")
+use_repo(toolchains, "zig_sdk")
+
+register_toolchains(
+    "//toolchains:kt_a",
+    "//toolchains:kt_b",
+    "@zig_sdk//toolchain/...",
+    "@zig_sdk//libc_aware/toolchain/...",
+)
