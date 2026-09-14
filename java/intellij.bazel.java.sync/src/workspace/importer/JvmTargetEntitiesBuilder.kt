@@ -79,12 +79,13 @@ class ImportContext(
   val packagePrefixes: JvmPackagePrefixCalculator,
   val fileToTargets: FileToTargetMap,
   val virtualFileUrlManager: VirtualFileUrlManager,
-  val importIJars: Boolean,
   val entitySource: EntitySource,
   val excludeCompiledSourceCodeInsideJars: Boolean,
   val currentCompiledSourceExcludeEntity: CompiledSourceCodeInsideJarExcludeEntity?,
   val progressReporter: RawProgressReporter? = null,
 ) {
+  private val targetKeys: Set<WorkspaceTargetKey> by lazy { plan.targets.mapTo(mutableSetOf(), BuildTarget::key) }
+
   val targets: List<BuildTarget> get() = plan.targets
 
   val libraryShadowedProducers: Map<WorkspaceTargetKey, List<WorkspaceTargetKey>> get() = plan.libraryShadowedProducers
@@ -105,6 +106,9 @@ class ImportContext(
 
   val dependencyBuilder: DependencyBuilder = DependencyBuilder(this.targets, jvmResolved, libraryShadowedProducers)
   val dummyModuleSplitter: DummyModuleSplitter = DummyModuleSplitter(projectBasePath, fileToTargets)
+
+  // targets contain stripped keys, so we need to ensure that `key` is stripped too
+  fun isInTargets(key: WorkspaceTargetKey): Boolean = targetKeys.contains(key.stripAspects())
 }
 
 // intentionally skip propagated aspect IDs, they're stripped before anyway
@@ -138,11 +142,11 @@ class JvmTargetEntitiesBuilder(private val ctx: ImportContext) {
     // phase 0: write independent libraries
     LibraryBuilder.writeAll(
       libraryItems = ctx.libraries,
-      importIjars = ctx.importIJars,
       virtualFileUrlManager = ctx.virtualFileUrlManager,
       entitySource = ctx.entitySource,
       libraryNameProvider = { key -> ctx.libraryNamesByKey.getValue(key) },
       storage = storage,
+      isTargetImported = ctx::isInTargets,
     )
 
     ctx.progressReporter?.text(BazelJavaBackendBundle.message("workspace.java.importer.resolving.targets", ctx.targets.size))

@@ -26,6 +26,7 @@ import org.jetbrains.jps.model.serialization.library.JpsLibraryTableSerializer
 import java.nio.file.Path
 
 typealias LibraryNameProvider = (key: WorkspaceTargetKey) -> String
+typealias ImportedTargetPredicate = (key: WorkspaceTargetKey) -> Boolean
 
 // RC: replaces `LibraryEntityUpdater`; goes straight from `LibraryItem` to `LibraryEntity` + `BazelLibraryExtensionEntity`,
 // dropping the old `Library` wrapper
@@ -33,21 +34,21 @@ typealias LibraryNameProvider = (key: WorkspaceTargetKey) -> String
 object LibraryBuilder {
   fun writeAll(
     libraryItems: List<LibraryItem>,
-    importIjars: Boolean,
     virtualFileUrlManager: VirtualFileUrlManager,
     entitySource: EntitySource,
     libraryNameProvider: LibraryNameProvider,
     storage: MutableEntityStorage,
+    isTargetImported: ImportedTargetPredicate,
   ): List<LibraryEntity> =
-    libraryItems.map { write(it, importIjars, virtualFileUrlManager, entitySource, libraryNameProvider, storage) }
+    libraryItems.map { write(it, virtualFileUrlManager, entitySource, libraryNameProvider, storage, isTargetImported) }
 
   fun write(
     libraryItem: LibraryItem,
-    importIjars: Boolean,
     virtualFileUrlManager: VirtualFileUrlManager,
     entitySource: EntitySource,
     libraryNameProvider: LibraryNameProvider,
     storage: MutableEntityStorage,
+    isTargetImported: ImportedTargetPredicate,
   ): LibraryEntity {
     val tableId = LibraryTableId.ProjectLibraryTableId
     val displayName = libraryNameProvider(libraryItem.key)
@@ -58,7 +59,7 @@ object LibraryBuilder {
 
     val sourcesRoots = libraryItem.sourceJars
       .map { it.toLibraryRoot(virtualFileUrlManager, LibraryRootTypeId.SOURCES) }
-    val classesRoots = libraryItem.classesOrIJars(importIjars)
+    val classesRoots = libraryItem.fullOrInterfaceJars(isTargetImported)
       .map { it.toLibraryRoot(virtualFileUrlManager, LibraryRootTypeId.COMPILED) }
 
     val libraryEntity =
@@ -84,8 +85,27 @@ object LibraryBuilder {
     return storage.addEntity(libraryEntity)
   }
 
-  private fun LibraryItem.classesOrIJars(importIjars: Boolean): List<Path> =
-    if (importIjars) ijars.ifEmpty { jars } else jars.ifEmpty { ijars }
+  /**
+   * Prefers the interface jar only for a library that:
+   * 1. Comes from a target that is not imported (limited depth case)
+   * 2. Comes from a target that this workspace builds
+   * 3. Source jars are present - should be true if other conditions hold, but let's ensure it is.
+   *
+   * Every other library keeps the full jar.
+   *
+   * The usage of interface jars results in smaller indices, and from the user perspective should not be easily distinguishable from the full jar.
+   *
+   * Noticeable differences:
+   * 1. The lack of resources in the index, which could affect the resources-related inspections.
+   *    Although, this seems to be an edge case, and in some cases even desired behavior - skipping a high amount of resources that are not needed for any inspections seems to be a nice saving.
+   *    In case of somebody really needing resources, importing a given target is the solution here e.g., by increasing the import depth.
+   *    Introducing ijars opt-out option should be the last resort here.
+   * 2. The lack of bytecode analysis, which is a natural consequence of using interface jars. It does not seem to be that relevant.
+   */
+  private fun LibraryItem.fullOrInterfaceJars(isTargetImported: ImportedTargetPredicate): List<Path> = when {
+    containsInternalJars && sourceJars.isNotEmpty() && !isTargetImported(key) -> ijars.ifEmpty { jars }
+    else -> jars.ifEmpty { ijars }
+  }
 
   private fun Path.toLibraryRoot(virtualFileUrlManager: VirtualFileUrlManager, type: LibraryRootTypeId): LibraryRoot =
     LibraryRoot(

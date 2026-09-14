@@ -188,7 +188,6 @@ class SnapshotKryoSerializationTest {
         ),
         JavaWorkspaceSyncConfig(
           testSourcesPatterns = listOf("**/test/**"),
-          importIjars = true,
           excludeCompiledSourceCodeInsideJars = false,
           sourceRootOptimizationMode = SourceRootOptimizationMode.MavenLayout(
             patterns = JavaSourceRootPatterns(

@@ -9,7 +9,6 @@ import java.nio.file.Path
 @ApiStatus.Internal
 data class JavaWorkspaceSyncConfig(
   val testSourcesPatterns: List<String>,
-  val importIjars: Boolean,
   val excludeCompiledSourceCodeInsideJars: Boolean,
   val sourceRootOptimizationMode: SourceRootOptimizationMode,
 ) : WorkspaceSyncConfig

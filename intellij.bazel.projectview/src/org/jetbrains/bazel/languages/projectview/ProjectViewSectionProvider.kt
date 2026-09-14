@@ -12,7 +12,6 @@ import org.jetbrains.bazel.languages.projectview.sections.DirectoriesSection
 import org.jetbrains.bazel.languages.projectview.sections.DotIdeaDirectoryLocationSection
 import org.jetbrains.bazel.languages.projectview.sections.GazelleTargetSection
 import org.jetbrains.bazel.languages.projectview.sections.ImportDepthSection
-import org.jetbrains.bazel.languages.projectview.sections.ImportIjarsSection
 import org.jetbrains.bazel.languages.projectview.sections.ImportRunConfigurationsSection
 import org.jetbrains.bazel.languages.projectview.sections.IndexAllFilesInDirectoriesSection
 import org.jetbrains.bazel.languages.projectview.sections.PythonDebugFlagsSection
@@ -45,7 +44,6 @@ internal class DefaultProjectViewSectionProvider : ProjectViewSectionProvider {
       DirectoriesSection(),
       GazelleTargetSection(),
       ImportDepthSection(),
-      ImportIjarsSection(),
       ImportRunConfigurationsSection(),
       IndexAllFilesInDirectoriesSection(),
       PythonDebugFlagsSection(),

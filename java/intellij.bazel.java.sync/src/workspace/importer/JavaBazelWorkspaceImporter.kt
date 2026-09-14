@@ -155,7 +155,6 @@ internal class JavaBazelWorkspaceImporter : BazelWorkspaceImporter, BazelWorkspa
       packagePrefixes = packagePrefixes,
       fileToTargets = snapshot.fileToTarget,
       virtualFileUrlManager = context.vfuManager,
-      importIJars = javaSyncConfig.importIjars,
       entitySource = entitySource,
       excludeCompiledSourceCodeInsideJars = javaSyncConfig.excludeCompiledSourceCodeInsideJars,
       currentCompiledSourceExcludeEntity = context.currentSnapshot

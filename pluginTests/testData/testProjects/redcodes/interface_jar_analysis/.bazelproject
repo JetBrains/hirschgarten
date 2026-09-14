@@ -4,4 +4,3 @@ targets:
   //app:app
 
 import_depth: 0
-import_ijars: true

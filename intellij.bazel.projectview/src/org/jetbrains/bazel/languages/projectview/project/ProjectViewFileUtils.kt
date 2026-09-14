@@ -17,9 +17,8 @@ private val INFERRED_DIRECTORY_PROJECT_VIEW_TEMPLATE =
   derive_targets_from_directories: true
   directories: %s
   
-  # Uncomment these lines to make indexing quicker:
+  # Uncomment this line to make indexing quicker:
   # import_depth: 0
-  # import_ijars: true
   
   """.trimIndent()
 

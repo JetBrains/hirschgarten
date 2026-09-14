@@ -35,11 +35,11 @@ internal class LibraryBuilderTest : WorkspaceModelBaseTest() {
     val returned =
       LibraryBuilder.write(
         libraryItem = libraryItem,
-        importIjars = false,
         virtualFileUrlManager = virtualFileUrlManager,
         entitySource = BazelDummyEntitySource,
         libraryNameProvider = { key -> key.formatAsLibraryName(RepoMappingDisabled, withFullKey = true) },
         storage = workspaceEntityStorageBuilder,
+        isTargetImported = { false },
       )
 
 
@@ -92,11 +92,11 @@ internal class LibraryBuilderTest : WorkspaceModelBaseTest() {
     val returned =
       LibraryBuilder.writeAll(
         libraryItems = listOf(item1, item2),
-        importIjars = false,
         virtualFileUrlManager = virtualFileUrlManager,
         entitySource = BazelDummyEntitySource,
         libraryNameProvider = { key -> key.formatAsLibraryName(RepoMappingDisabled, withFullKey = true) },
         storage = workspaceEntityStorageBuilder,
+        isTargetImported = { false },
       )
 
     val expected1 =
@@ -156,21 +156,242 @@ internal class LibraryBuilderTest : WorkspaceModelBaseTest() {
 
     LibraryBuilder.write(
       libraryItem = item,
-      importIjars = false,
       virtualFileUrlManager = virtualFileUrlManager,
       entitySource = BazelDummyEntitySource,
       libraryNameProvider = { key -> key.formatAsLibraryName(RepoMappingDisabled, withFullKey = true) },
       storage = workspaceEntityStorageBuilder,
+      isTargetImported = { false },
     )
     LibraryBuilder.write(
       libraryItem = item,
-      importIjars = false,
       virtualFileUrlManager = virtualFileUrlManager,
       entitySource = BazelDummyEntitySource,
       libraryNameProvider = { key -> key.formatAsLibraryName(RepoMappingDisabled, withFullKey = true) },
       storage = workspaceEntityStorageBuilder,
+      isTargetImported = { false },
     )
 
     loadedEntries(LibraryEntity::class.java).size shouldBe 1
+  }
+
+  @Test
+  fun `should prefer the interface jar for a library of a target that the import leaves out`() {
+    val libraryItem =
+      LibraryItem(
+        key = WorkspaceTargetKey(label = Label.parse("//dependency/test:test")),
+        ijars = listOf(Path("/dependency/test/test-hjar.jar")),
+        jars = listOf(Path("/dependency/test/test.jar")),
+        sourceJars = listOf(Path("/dependency/test/test-src.jar")),
+        mavenCoordinates = null,
+        containsInternalJars = true,
+      )
+
+    val returned =
+      LibraryBuilder.write(
+        libraryItem = libraryItem,
+        virtualFileUrlManager = virtualFileUrlManager,
+        entitySource = BazelDummyEntitySource,
+        libraryNameProvider = { key -> key.formatAsLibraryName(RepoMappingDisabled, withFullKey = true) },
+        storage = workspaceEntityStorageBuilder,
+        isTargetImported = { false },
+      )
+
+    val expected =
+      ExpectedLibraryEntity(
+        libraryEntity =
+          LibraryEntity(
+            tableId = LibraryTableId.ProjectLibraryTableId,
+            name = libraryItem.key.label.formatAsModuleName(RepoMappingDisabled),
+            roots = listOf(
+              LibraryRoot(
+                url = virtualFileUrlManager.getOrCreateFromUrl("jar:///dependency/test/test-src.jar!/"),
+                type = LibraryRootTypeId.SOURCES,
+              ),
+              LibraryRoot(
+                url = virtualFileUrlManager.getOrCreateFromUrl("jar:///dependency/test/test-hjar.jar!/"),
+                type = LibraryRootTypeId.COMPILED,
+              ),
+            ),
+            entitySource = BazelDummyEntitySource,
+          ),
+      )
+
+    returned shouldBeEqual expected
+  }
+
+  @Test
+  fun `should prefer the full jar when the library has no source jars`() {
+    val libraryItem =
+      LibraryItem(
+        key = WorkspaceTargetKey(label = Label.parse("//dependency/test:test")),
+        ijars = listOf(Path("/dependency/test/test-hjar.jar")),
+        jars = listOf(Path("/dependency/test/test.jar")),
+        sourceJars = emptyList(),
+        mavenCoordinates = null,
+        containsInternalJars = true,
+      )
+
+    val returned =
+      LibraryBuilder.write(
+        libraryItem = libraryItem,
+        virtualFileUrlManager = virtualFileUrlManager,
+        entitySource = BazelDummyEntitySource,
+        libraryNameProvider = { key -> key.formatAsLibraryName(RepoMappingDisabled, withFullKey = true) },
+        storage = workspaceEntityStorageBuilder,
+        isTargetImported = { false },
+      )
+
+    val expected =
+      ExpectedLibraryEntity(
+        libraryEntity =
+          LibraryEntity(
+            tableId = LibraryTableId.ProjectLibraryTableId,
+            name = libraryItem.key.label.formatAsModuleName(RepoMappingDisabled),
+            roots = listOf(
+              LibraryRoot(
+                url = virtualFileUrlManager.getOrCreateFromUrl("jar:///dependency/test/test.jar!/"),
+                type = LibraryRootTypeId.COMPILED,
+              ),
+            ),
+            entitySource = BazelDummyEntitySource,
+          ),
+      )
+
+    returned shouldBeEqual expected
+  }
+
+  @Test
+  fun `should prefer the full jar for a library of an imported module`() {
+    val libraryItem =
+      LibraryItem(
+        key = WorkspaceTargetKey(label = Label.parse("//dependency/test:test")),
+        ijars = listOf(Path("/dependency/test/test-hjar.jar")),
+        jars = listOf(Path("/dependency/test/test.jar")),
+        sourceJars = listOf(Path("/dependency/test/test-src.jar")),
+        mavenCoordinates = null,
+        containsInternalJars = true,
+      )
+
+    val returned =
+      LibraryBuilder.write(
+        libraryItem = libraryItem,
+        virtualFileUrlManager = virtualFileUrlManager,
+        entitySource = BazelDummyEntitySource,
+        libraryNameProvider = { key -> key.formatAsLibraryName(RepoMappingDisabled, withFullKey = true) },
+        storage = workspaceEntityStorageBuilder,
+        isTargetImported = { it == libraryItem.key },
+      )
+
+    val expected =
+      ExpectedLibraryEntity(
+        libraryEntity =
+          LibraryEntity(
+            tableId = LibraryTableId.ProjectLibraryTableId,
+            name = libraryItem.key.label.formatAsModuleName(RepoMappingDisabled),
+            roots = listOf(
+              LibraryRoot(
+                url = virtualFileUrlManager.getOrCreateFromUrl("jar:///dependency/test/test-src.jar!/"),
+                type = LibraryRootTypeId.SOURCES,
+              ),
+              LibraryRoot(
+                url = virtualFileUrlManager.getOrCreateFromUrl("jar:///dependency/test/test.jar!/"),
+                type = LibraryRootTypeId.COMPILED,
+              ),
+            ),
+            entitySource = BazelDummyEntitySource,
+          ),
+      )
+
+    returned shouldBeEqual expected
+  }
+
+  @Test
+  fun `should prefer the full jar for an external library with source jars`() {
+    val libraryItem =
+      LibraryItem(
+        key = WorkspaceTargetKey(label = Label.parse("@maven//:com_example_lib")),
+        ijars = listOf(Path("/external/maven/lib-ijar.jar")),
+        jars = listOf(Path("/external/maven/lib.jar")),
+        sourceJars = listOf(Path("/external/maven/lib-sources.jar")),
+        mavenCoordinates = null,
+        containsInternalJars = false,
+      )
+
+    val returned =
+      LibraryBuilder.write(
+        libraryItem = libraryItem,
+        virtualFileUrlManager = virtualFileUrlManager,
+        entitySource = BazelDummyEntitySource,
+        libraryNameProvider = { key -> key.formatAsLibraryName(RepoMappingDisabled, withFullKey = true) },
+        storage = workspaceEntityStorageBuilder,
+        isTargetImported = { false },
+      )
+
+    val expected =
+      ExpectedLibraryEntity(
+        libraryEntity =
+          LibraryEntity(
+            tableId = LibraryTableId.ProjectLibraryTableId,
+            name = libraryItem.key.label.formatAsModuleName(RepoMappingDisabled),
+            roots = listOf(
+              LibraryRoot(
+                url = virtualFileUrlManager.getOrCreateFromUrl("jar:///external/maven/lib-sources.jar!/"),
+                type = LibraryRootTypeId.SOURCES,
+              ),
+              LibraryRoot(
+                url = virtualFileUrlManager.getOrCreateFromUrl("jar:///external/maven/lib.jar!/"),
+                type = LibraryRootTypeId.COMPILED,
+              ),
+            ),
+            entitySource = BazelDummyEntitySource,
+          ),
+      )
+
+    returned shouldBeEqual expected
+  }
+
+  @Test
+  fun `should fall back to the full jar when the target has no interface jar`() {
+    val libraryItem =
+      LibraryItem(
+        key = WorkspaceTargetKey(label = Label.parse("//dependency/test:test")),
+        ijars = emptyList(),
+        jars = listOf(Path("/dependency/test/test.jar")),
+        sourceJars = listOf(Path("/dependency/test/test-src.jar")),
+        mavenCoordinates = null,
+        containsInternalJars = true,
+      )
+
+    val returned =
+      LibraryBuilder.write(
+        libraryItem = libraryItem,
+        virtualFileUrlManager = virtualFileUrlManager,
+        entitySource = BazelDummyEntitySource,
+        libraryNameProvider = { key -> key.formatAsLibraryName(RepoMappingDisabled, withFullKey = true) },
+        storage = workspaceEntityStorageBuilder,
+        isTargetImported = { false },
+      )
+
+    val expected =
+      ExpectedLibraryEntity(
+        libraryEntity =
+          LibraryEntity(
+            tableId = LibraryTableId.ProjectLibraryTableId,
+            name = libraryItem.key.label.formatAsModuleName(RepoMappingDisabled),
+            roots = listOf(
+              LibraryRoot(
+                url = virtualFileUrlManager.getOrCreateFromUrl("jar:///dependency/test/test-src.jar!/"),
+                type = LibraryRootTypeId.SOURCES,
+              ),
+              LibraryRoot(
+                url = virtualFileUrlManager.getOrCreateFromUrl("jar:///dependency/test/test.jar!/"),
+                type = LibraryRootTypeId.COMPILED,
+              ),
+            ),
+            entitySource = BazelDummyEntitySource,
+          ),
+      )
+
+    returned shouldBeEqual expected
   }
 }

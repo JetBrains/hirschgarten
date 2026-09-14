@@ -324,6 +324,34 @@ internal class JvmTargetEntitiesBuilderTest : WorkspaceModelBaseTest() {
   }
 
   @Test
+  fun `keeps the full jar for a library whose key carries a propagated aspect id`(): Unit = timeoutRunBlocking {
+    val label = Label.parse("//gen")
+    val kind = TargetKind(kind = "java_library", ruleType = RuleType.LIBRARY, languageClasses = setOf(JavaLanguageClass.JAVA))
+    // a custom aspect carries the JavaInfo, so only the aspect variant holds the jars. See `custom_aspect_codegen`
+    val aspectKey = WorkspaceTargetKey(label = label, aspectIds = WorkspaceAspectIds.of(listOf("//gen:defs.bzl%gen_aspect")))
+    val target = createTestBuildTarget(id = label, kind = kind, data = listOf(JvmBuildTarget())).copy(key = aspectKey)
+    val libraryItem = LibraryItem(
+      key = aspectKey,
+      ijars = listOf(Path("/gen/gen-hjar.jar")),
+      jars = listOf(Path("/gen/gen.jar")),
+      sourceJars = listOf(Path("/gen/gen-src.jar")),
+      mavenCoordinates = null,
+      containsInternalJars = true,
+    )
+
+    // `JvmImportPlan` strips the aspect ids from the target key, so `ImportContext` has to strip before the lookup
+    val strippedKey = WorkspaceTargetKey(label = label)
+    runImport(
+      targets = listOf(target),
+      resolved = mapOf(strippedKey to JvmResolvedTarget(strippedKey, listOf(libraryItem), emptyList(), null, "")),
+    )
+
+    val roots = loadedEntries(LibraryEntity::class.java).single().roots.map { it.url.url }
+    roots shouldContain "jar:///gen/gen.jar!/"
+    roots shouldNotContain "jar:///gen/gen-hjar.jar!/"
+  }
+
+  @Test
   fun `a library dependency shadowing a source module becomes a exported module dependency`(): Unit = timeoutRunBlocking {
     val kind = TargetKind(kind = "java_library", ruleType = RuleType.LIBRARY, languageClasses = setOf(JavaLanguageClass.JAVA))
     val producer = Label.parse("//producer")
@@ -476,7 +504,6 @@ internal class JvmTargetEntitiesBuilderTest : WorkspaceModelBaseTest() {
       packagePrefixes = jvmPackagePrefixes,
       fileToTargets = FileToTargetMap.EMPTY,
       virtualFileUrlManager = virtualFileUrlManager,
-      importIJars = false,
       entitySource = BazelProjectEntitySource,
       excludeCompiledSourceCodeInsideJars = true,
       currentCompiledSourceExcludeEntity = null,

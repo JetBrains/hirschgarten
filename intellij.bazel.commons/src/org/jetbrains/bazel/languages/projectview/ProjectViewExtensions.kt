@@ -97,12 +97,6 @@ val ProjectView.pythonDebugFlags: List<String>
   get() = getSection(PYTHON_DEBUG_FLAGS_KEY)
 
 @Internal
-val IMPORT_IJARS_KEY: SectionKey<Boolean> = SectionKey("import_ijars", false)
-val ProjectView.importIjars: Boolean
-  @Internal
-  get() = getSection(IMPORT_IJARS_KEY)
-
-@Internal
 val INDEX_ADDITIONAL_FILES_IN_DIRECTORIES_KEY: SectionKey<List<String>> = SectionKey("index_additional_files_in_directories", emptyList())
 val ProjectView.indexAdditionalFilesInDirectories: List<String>
   @Internal

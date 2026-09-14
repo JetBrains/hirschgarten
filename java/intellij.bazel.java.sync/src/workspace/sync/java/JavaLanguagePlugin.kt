@@ -19,7 +19,6 @@ import org.jetbrains.bazel.label.ResolvedLabel
 import org.jetbrains.bazel.label.assumeResolved
 import org.jetbrains.bazel.label.label
 import org.jetbrains.bazel.languages.projectview.ProjectView
-import org.jetbrains.bazel.languages.projectview.importIjars
 import org.jetbrains.bazel.languages.projectview.testSources
 import org.jetbrains.bazel.server.BazelServerFacade
 import org.jetbrains.bazel.server.model.generatedSourcesList
@@ -59,10 +58,6 @@ class JavaLanguagePlugin : LanguagePlugin {
     return listOf(
       JavaWorkspaceSyncConfig(
         testSourcesPatterns = projectView.testSources,
-
-        // RC: we bypass `WorkspaceContext` here completely
-        importIjars = projectView.importIjars,
-
         // RC: as you can see we pass `SourceRootOptimizationMode` as `WorkspaceSyncConfig`
         //  property, so can compare it against previous snapshot and assess whatever it has changes
         //  thus performing automatic full importer invalidation
