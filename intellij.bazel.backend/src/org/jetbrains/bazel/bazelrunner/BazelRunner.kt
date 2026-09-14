@@ -149,26 +149,23 @@ class BazelRunner(
     command: BazelCommand,
     taskId: TaskId?,
     logProcessOutput: Boolean = true,
-    logOnlyErrors: Boolean = false,
-  ): BazelProcess = runBazelCommand(command.buildExecutionDescriptor(), taskId, logProcessOutput, logOnlyErrors)
+  ): BazelProcess = runBazelCommand(command.buildExecutionDescriptor(), taskId, logProcessOutput)
 
   fun runBazelCommand(
     executionDescriptor: BazelCommandExecutionDescriptor,
     taskId: TaskId?,
     logProcessOutput: Boolean = true,
-    logOnlyErrors: Boolean = false,
   ): BazelProcess {
     val finishCallback = executionDescriptor.finishCallback
     val processArgs = executionDescriptor.command
     val environment = executionDescriptor.environment
 
-    val outputLogger = taskId?.let { taskEventsHandler.takeIf { logProcessOutput }?.asLogger(taskId) }?.let {
-      if (logOnlyErrors) BazelTaskLoggerOnlyErrors(delegate = it) else it
-    }
-    if (outputLogger != null) {
+    val taskLogger = taskId?.let { taskEventsHandler?.asLogger(it) }
+    if (taskLogger != null) {
       val log = "${envToString(environment)} ${processArgs.joinToString(" ")}"
-      outputLogger.info(log)
+      taskLogger.info(log)
     }
+    val outputLogger = taskLogger?.let { if (logProcessOutput) it else BazelTaskLoggerWithoutProcessOutput(delegate = it) }
 
     val process = bazelProcessLauncher.launchProcess(executionDescriptor)
     val showStdout = BazelFeatureFlags.showBazelStdout || executionDescriptor.alwaysShowStdout
@@ -189,7 +186,7 @@ class BazelRunner(
   private fun envToString(environment: Map<String, String>): String = environment.entries.joinToString(" ") { "${it.key}=${it.value}" }
 }
 
-private class BazelTaskLoggerOnlyErrors(private val delegate: BazelTaskLogger) : BazelTaskLogger by delegate {
+private class BazelTaskLoggerWithoutProcessOutput(private val delegate: BazelTaskLogger) : BazelTaskLogger by delegate {
   override fun message(message: String) {
     // Do nothing
   }

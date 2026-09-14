@@ -24,6 +24,7 @@ import org.jetbrains.bazel.languages.projectview.ProjectView
 import org.jetbrains.bazel.languages.projectview.allowManualTargetsSync
 import org.jetbrains.bazel.server.sync.sharding.WildcardTargetExpander.ExpandedTargetsResult
 import org.jetbrains.bsp.protocol.BazelTaskLogger
+import org.jetbrains.bsp.protocol.TaskId
 
 /** Expands wildcard target patterns into individual Bazel targets.  */
 internal object WildcardTargetExpander {
@@ -46,6 +47,7 @@ internal object WildcardTargetExpander {
     excludes: List<Label>,
     bazelRunner: BazelRunner,
     taskLogger: BazelTaskLogger,
+    taskId: TaskId,
     projectView: ProjectView,
   ): ExpandedTargetsResult? {
     val shards =
@@ -58,7 +60,7 @@ internal object WildcardTargetExpander {
     val singleTargets = mutableSetOf<Label>()
     var buildResult = BazelStatus.SUCCESS
     for (shard in shards) {
-      val result = queryIndividualTargets(shard, excludes, bazelRunner, projectView)
+      val result = queryIndividualTargets(shard, excludes, bazelRunner, taskId, projectView)
       singleTargets.addAll(result.singleTargets)
       buildResult = buildResult.merge(result.buildResult)
       if (buildResult == BazelStatus.FATAL_ERROR) {
@@ -74,6 +76,7 @@ internal object WildcardTargetExpander {
     includedPatterns: List<Label>,
     excludedTargets: List<Label>,
     bazelRunner: BazelRunner,
+    taskId: TaskId,
     projectView: ProjectView,
   ): ExpandedTargetsResult {
     val targetsSpec =
@@ -93,7 +96,7 @@ internal object WildcardTargetExpander {
       }
     val queryResult =
       bazelRunner
-        .runBazelCommand(command, logProcessOutput = false, taskId = null)
+        .runBazelCommand(command, taskId = taskId, logProcessOutput = false)
         .waitAndGetResult()
     return ExpandedTargetsResult(
       singleTargets = queryResult.stdoutLines.mapTo(LinkedHashSet()) { Label.parse(it) },

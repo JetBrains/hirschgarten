@@ -203,7 +203,7 @@ internal class ModuleResolver(
       }
     val processResult =
       bazelRunner
-        .runBazelCommand(command, taskId, logOnlyErrors = true)
+        .runBazelCommand(command, taskId, logProcessOutput = false)
         .waitAndGetResult()
     if (bazelInfo.isWorkspaceEnabled && processResult.isNotSuccess) {
       // work around https://github.com/bazelbuild/bazel/issues/28601
@@ -249,7 +249,7 @@ internal class ModuleResolver(
       }
     val processResult =
       bazelRunner
-        .runBazelCommand(command, taskId, logOnlyErrors = true)
+        .runBazelCommand(command, taskId, logProcessOutput = false)
         .waitAndGetResult()
 
     if (processResult.isNotSuccess) {

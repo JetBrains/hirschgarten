@@ -286,6 +286,7 @@ class ProjectResolver(
               projectView,
               bazelRunner,
               taskLogger,
+              taskId,
               allTargets,
             )
           var remainingShardedTargetsSpecs = shardedResult.targets.toMutableList()

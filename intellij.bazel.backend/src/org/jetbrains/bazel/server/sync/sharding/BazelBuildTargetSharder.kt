@@ -28,6 +28,7 @@ import org.jetbrains.bazel.languages.projectview.shardingApproach
 import org.jetbrains.bazel.languages.projectview.targetShardSize
 import org.jetbrains.bazel.server.sync.sharding.WildcardTargetExpander.ExpandedTargetsResult
 import org.jetbrains.bsp.protocol.BazelTaskLogger
+import org.jetbrains.bsp.protocol.TaskId
 import kotlin.math.min
 
 /**
@@ -50,6 +51,7 @@ object BazelBuildTargetSharder {
     projectView: ProjectView,
     bazelRunner: BazelRunner,
     taskLogger: BazelTaskLogger,
+    taskId: TaskId,
     allTargets: List<Label>?, /* all known targets, if any, from first phase */
   ): ShardedTargetsResult {
     if (allTargets != null) {
@@ -70,7 +72,7 @@ object BazelBuildTargetSharder {
 
       ShardingApproach.QUERY_AND_SHARD -> {
         val singleTargets =
-          WildcardTargetExpander.queryIndividualTargets(includes, excludes, bazelRunner, projectView)
+          WildcardTargetExpander.queryIndividualTargets(includes, excludes, bazelRunner, taskId, projectView)
         ShardedTargetsResult(
           shardTargetsToBatches(singleTargets.singleTargets, emptyList(), getTargetShardSize(projectView)),
           singleTargets.buildResult,
@@ -85,6 +87,7 @@ object BazelBuildTargetSharder {
             excludes,
             bazelRunner,
             taskLogger,
+            taskId,
             projectView,
           )
         if (expandedTargets.buildResult == BazelStatus.FATAL_ERROR) {
@@ -118,6 +121,7 @@ object BazelBuildTargetSharder {
     excludes: List<Label>,
     bazelRunner: BazelRunner,
     taskLogger: BazelTaskLogger,
+    taskId: TaskId,
     projectView: ProjectView,
   ): ExpandedTargetsResult {
     val wildcardIncludes = includes.filter { it.isWildcard }
@@ -148,6 +152,7 @@ object BazelBuildTargetSharder {
           excludes,
           bazelRunner,
           taskLogger,
+          taskId,
           projectView,
         ).orEmpty()
 
