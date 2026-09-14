@@ -23,7 +23,7 @@ sealed interface ShowRepoResult {
    */
   data class LocalRepository(override val name: String, val path: String) : ShowRepoResult
 
-  data class HttpArchiveRepository(override val name: String, val urls: List<String>) : ShowRepoResult
+  data class HttpArchiveRepository(override val name: String, val urls: List<String>, val stripPrefix: String) : ShowRepoResult
 
   /**
    * Any other output that doesn't match the expected format but contains the name of the module.
@@ -103,7 +103,8 @@ class ModuleOutputParser {
       }
       else if (stanza.any { it.contains("http_archive") }) {
         val urls = extractAttributeList(stanza, "urls")
-        return ShowRepoResult.HttpArchiveRepository(name, urls)
+        val stripPrefix = extractAttribute(stanza, "strip_prefix")
+        return ShowRepoResult.HttpArchiveRepository(name, urls, stripPrefix)
       }
       else {
         return ShowRepoResult.Unknown(name, stanza.joinToString("\n") + "\n")
@@ -132,6 +133,7 @@ class ModuleOutputParser {
           key to ShowRepoResult.HttpArchiveRepository(
             description.canonicalName,
             description.attribute.filter { it.name == "urls" }.flatMap { it.stringListValue ?: emptyList() },
+            description.attribute.filter { it.name == "strip_prefix" }.mapNotNull { it.stringValue }.firstOrNull() ?: "",
           ),
         ),
           listOf())
