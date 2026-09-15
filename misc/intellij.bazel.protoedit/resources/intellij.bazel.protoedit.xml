@@ -7,11 +7,13 @@
     <module name="intellij.bazel.core"/>
     <module name="intellij.libraries.bazel.aspect.sdk"/>
     <module name="intellij.libraries.mvstore"/>
+    <module name="intellij.platform.backend.workspace"/>
     <module name="intellij.platform.core"/>
     <module name="intellij.platform.ide"/>
     <module name="intellij.platform.ide.core"/>
     <module name="intellij.platform.projectModel"/>
     <module name="intellij.platform.util.ex"/>
+    <module name="intellij.platform.workspace.storage"/>
   </dependencies>
   <!-- endregion -->
 

@@ -6,6 +6,8 @@
     <module name="intellij.bazel.commons"/>
     <module name="intellij.bazel.core"/>
     <module name="intellij.platform.analysis"/>
+    <module name="intellij.platform.backend.workspace"/>
+    <module name="intellij.platform.concurrency"/>
     <module name="intellij.platform.core"/>
     <module name="intellij.platform.debugger"/>
     <module name="intellij.platform.debugger.impl"/>
@@ -20,7 +22,9 @@
     <module name="intellij.platform.projectModel"/>
     <module name="intellij.platform.smRunner"/>
     <module name="intellij.platform.testRunner"/>
+    <module name="intellij.platform.util.progress"/>
     <module name="intellij.platform.workspace.jps"/>
+    <module name="intellij.platform.workspace.storage"/>
     <module name="intellij.python.community.impl"/>
     <module name="intellij.python.community.services.systemPython"/>
     <module name="intellij.python.pydev"/>
