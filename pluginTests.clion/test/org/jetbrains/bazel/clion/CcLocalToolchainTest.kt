@@ -1,5 +1,6 @@
 package org.jetbrains.bazel.clion
 
+import com.intellij.openapi.util.SystemInfoRt
 import com.intellij.testFramework.common.timeoutRunBlocking
 import com.jetbrains.cidr.lang.CLanguageKind
 import com.jetbrains.cidr.lang.workspace.compiler.OCCompilerId
@@ -26,16 +27,17 @@ class CcLocalToolchainTest {
   fun testCompilerSettings(): Unit = timeoutRunBlocking {
     val compilerSettingsC = project.findCompilerSetting("main/main.cc", language = CLanguageKind.C)
     val compilerSettingsCPP = project.findCompilerSetting("main/main.cc", language = CLanguageKind.CPP)
+    val expectedCompiler = if (SystemInfoRt.isWindows) OCCompilerId.MSVC else OCCompilerId.GCC
 
     assertThat(compilerSettingsCPP)
-      .hasCompiler(OCCompilerId.GCC)
+      .hasCompiler(expectedCompiler)
       .containsHeaders("iostream", "stdio.h")
       .containsSwitches("-Wall", "-DCXXOPTS")
       .doesNotContainSwitches("-DCONLYOPTS")
       .containsDefines("SIMPLE_DEFINE=42", "SPACE_DEFINE=1 2 3")
 
     assertThat(compilerSettingsC)
-      .hasCompiler(OCCompilerId.GCC)
+      .hasCompiler(expectedCompiler)
       .containsHeaders("stdio.h")
       .containsSwitches("-Wall", "-DCONLYOPTS")
       .doesNotContainSwitches("-DCXXOPTS")
