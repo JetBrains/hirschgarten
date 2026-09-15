@@ -17,6 +17,7 @@ class SpringBootProjectTest {
   private val fixture by bazelSyncCodeInsightFixture(
     "redcodes/spring_boot",
     configure = { it.enableInspections(*SpringInspectionsRegistry.getInstance().getTestSpringInspectionClasses()) },
+    buildProject = true,
   )
 
   @Test

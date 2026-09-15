@@ -16,6 +16,7 @@ class ExternalMavenDepWithLockJarExcludeTest {
 
   private val fixture by bazelSyncCodeInsightFixture(
     "redcodes/external_maven_dep_with_lock_jar_exclude",
+    buildProject = true,
   )
 
   @Test
