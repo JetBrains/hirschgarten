@@ -264,7 +264,7 @@ class ProjectSyncTask(
     return try {
       preSync()
       UnindexedFilesScannerExecutor.getInstance(project).suspendScanningAndIndexingThenExecute(syncActivityName) {
-        saveAndSyncHandler.disableAutoSave().use {
+        saveAndSyncHandler.withDisabledAutoSave {
           withBackgroundProgress(project, BazelBackendBundle.message("background.progress.syncing.project"), true) {
             reportSequentialProgress { progressReporter ->
               syncResult = executeSyncPipeline(
