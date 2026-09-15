@@ -66,7 +66,7 @@ private fun OCCompilerSettings.resolveDefine(needle: String): String? {
     val name = definition.takeWhile { !it.isWhitespace() }
 
     if (name == needle) {
-      return definition.drop(name.length).trimStart()
+      return definition.drop(name.length).trim()
     }
   }
 
