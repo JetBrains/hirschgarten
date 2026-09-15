@@ -19,14 +19,17 @@ import kotlinx.serialization.json.JsonNull
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.contentOrNull
+import org.jetbrains.bazel.commons.BazelPathsResolver
 import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.languages.projectview.ProjectView
 import org.jetbrains.bazel.progress.syncConsole
 import org.jetbrains.bazel.server.BazelServerService
+import org.jetbrains.bazel.sync.BazelOutFileHardLinks
 import org.jetbrains.bazel.sync.workspace.DefaultOutputLocationResolver
 import org.jetbrains.bazel.sync.workspace.importer.WorkspaceImporterHelper
 import org.jetbrains.bazel.sync.workspace.mapper.BazelWorkspaceResolver
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceSnapshotBuilder
+import org.jetbrains.bsp.protocol.OutputLocationParser
 import org.jetbrains.bsp.protocol.TaskGroupId
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetSelector
 import org.junit.jupiter.api.fail
@@ -125,7 +128,8 @@ internal suspend fun doWorkspaceModelTest(
       progressReporter = reporter,
       taskId = taskId,
       builder = builder,
-      outputResolver = DefaultOutputLocationResolver(bazelInfo),
+      outputResolver = DefaultOutputLocationResolver(bazelInfo, BazelOutFileHardLinks.NONE),
+      outputParser = OutputLocationParser(BazelPathsResolver(bazelInfo), BazelOutFileHardLinks.NONE),
       bazelInfo = bazelInfo,
     )
 

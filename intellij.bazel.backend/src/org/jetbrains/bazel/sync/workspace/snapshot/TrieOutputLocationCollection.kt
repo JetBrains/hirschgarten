@@ -4,6 +4,7 @@ import com.google.devtools.intellij.aspect.Common
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bsp.protocol.OutputLocation
 import org.jetbrains.bsp.protocol.OutputLocationCollection
+import org.jetbrains.bsp.protocol.OutputLocationParser
 
 internal fun OutputLocation.root(): OutputLocation = withPath(path = "")
 
@@ -36,11 +37,11 @@ internal class TrieOutputLocationCollection(val roots: Map<OutputLocation, Paths
 
 @ApiStatus.Internal
 object OutputLocationCollectionBuilder {
-  fun build(locations: Iterable<Common.ArtifactLocation>): OutputLocationCollection =
-    ofLocations(locations.map(OutputLocation::parse))
+  suspend fun build(locations: List<Common.ArtifactLocation>, parser: OutputLocationParser): OutputLocationCollection =
+    ofLocations(parser.parse(locations))
 
-  fun buildExecroot(locations: Iterable<String>): OutputLocationCollection =
-    ofLocations(locations.map(OutputLocation::parseExecrootPath))
+  suspend fun buildExecroot(locations: List<String>, parser: OutputLocationParser): OutputLocationCollection =
+    ofLocations(parser.parseExecrootPath(locations))
 
   fun ofLocations(locations: List<OutputLocation>): OutputLocationCollection {
     if (locations.isEmpty()) {

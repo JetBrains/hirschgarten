@@ -15,6 +15,7 @@ import org.jetbrains.bazel.progress.syncConsole
 import org.jetbrains.bazel.progress.withSubtask
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceSnapshot
 import org.jetbrains.bazel.workspacemodel.entities.BazelProjectEntitySource
+import org.jetbrains.bsp.protocol.OutputLocationParser
 import org.jetbrains.bsp.protocol.OutputLocationResolver
 import org.jetbrains.bsp.protocol.TaskId
 
@@ -26,6 +27,7 @@ class WorkspaceImporterHelper(
   private val taskId: TaskId,
   private val builder: MutableEntityStorage,
   private val outputResolver: OutputLocationResolver,
+  private val outputParser: OutputLocationParser,
   private val bazelInfo: BazelInfo,
 ) {
   companion object {
@@ -45,6 +47,7 @@ class WorkspaceImporterHelper(
       vfuManager = workspaceModel.getVirtualFileUrlManager(),
       currentSnapshot = workspaceModel.currentSnapshot,
       outputResolver = outputResolver,
+      outputParser = outputParser,
       bazelInfo = bazelInfo,
     )
     val namingBuilder = GlobalNamingContextBuilder.create(snapshot.repoMapping)

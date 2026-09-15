@@ -7,7 +7,6 @@ import org.jetbrains.bazel.assertions.assertVfsLoads
 import org.jetbrains.bazel.assertions.findCompilerSettings
 import org.jetbrains.bazel.fixtures.CcTestApplication
 import org.jetbrains.bazel.fixtures.clionBazelProjectFixture
-import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 
@@ -18,7 +17,6 @@ class TargetCompatibleTest {
   private val project by clionBazelProjectFixture("clion/target_compatible")
 
   @Test
-  @Disabled("Correctly reports that we do cause indexing in bazel-bin for this project.")
   fun testVfsRoots() = project.assertVfsLoads(emptyList())
 
   @Test

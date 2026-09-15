@@ -5,8 +5,8 @@ import com.intellij.openapi.util.Disposer
 import com.intellij.openapi.util.NlsContexts
 import com.jetbrains.cidr.lang.workspace.OCWorkspaceImpl
 import org.jetbrains.annotations.PropertyKey
-import org.jetbrains.bazel.clion.BazelClionBundle
 import org.jetbrains.bazel.clion.BazelCLionFeatureFlags
+import org.jetbrains.bazel.clion.BazelClionBundle
 import org.jetbrains.bazel.progress.withSubtask
 import org.jetbrains.bazel.sync.workspace.importer.BazelWorkspaceImporter
 import org.jetbrains.bazel.sync.workspace.importer.WorkspaceImporterContext

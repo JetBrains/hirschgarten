@@ -9,7 +9,7 @@ import org.jetbrains.bazel.server.BazelServerFacade
 import org.jetbrains.bazel.sync.workspace.languages.LanguagePlugin
 import org.jetbrains.bazel.sync.workspace.snapshot.OutputLocationCollectionBuilder
 import org.jetbrains.bsp.protocol.BuildTargetData
-import org.jetbrains.bsp.protocol.OutputLocation
+import org.jetbrains.bsp.protocol.OutputLocationParser
 import kotlin.reflect.KClass
 
 @ApiStatus.Internal
@@ -35,24 +35,24 @@ class CcLanguagePlugin : LanguagePlugin {
     repoMapping: RepoMapping,
   ): List<BuildTargetData> {
     return when {
-      target.hasCIdeInfo() -> listOf(mapIdeInfo(target.cIdeInfo))
-      target.hasCToolchainIdeInfo() -> listOf(mapToolchainIdeInfo(target.cToolchainIdeInfo))
+      target.hasCIdeInfo() -> listOf(mapIdeInfo(target.cIdeInfo, server.outputParser))
+      target.hasCToolchainIdeInfo() -> listOf(mapToolchainIdeInfo(target.cToolchainIdeInfo, server.outputParser))
       else -> emptyList()
     }
   }
 }
 
-private fun mapIdeInfo(info: CIdeInfo): CcBuildTarget {
+private suspend fun mapIdeInfo(info: CIdeInfo, outputParser: OutputLocationParser): CcBuildTarget {
   return CcBuildTarget(
-    ruleContext = if (info.hasRuleContext()) mapRuleContext(info.ruleContext) else null,
-    compilationContext = mapCompilationContext(info.compilationContext),
+    ruleContext = if (info.hasRuleContext()) mapRuleContext(info.ruleContext, outputParser) else null,
+    compilationContext = mapCompilationContext(info.compilationContext, outputParser),
   )
 }
 
-private fun mapRuleContext(ctx: CIdeInfo.RuleContext): CcBuildTarget.RuleContext {
+private suspend fun mapRuleContext(ctx: CIdeInfo.RuleContext, outputParser: OutputLocationParser): CcBuildTarget.RuleContext {
   return CcBuildTarget.RuleContext(
-    headers = OutputLocationCollectionBuilder.build(ctx.headersList),
-    textualHeaders = OutputLocationCollectionBuilder.build(ctx.textualHeadersList),
+    headers = OutputLocationCollectionBuilder.build(ctx.headersList, outputParser),
+    textualHeaders = OutputLocationCollectionBuilder.build(ctx.textualHeadersList, outputParser),
     copts = ctx.coptsList.toList(),
     conlyopts = ctx.conlyoptsList.toList(),
     cxxopts = ctx.cxxoptsList.toList(),
@@ -62,26 +62,29 @@ private fun mapRuleContext(ctx: CIdeInfo.RuleContext): CcBuildTarget.RuleContext
   )
 }
 
-private fun mapCompilationContext(ctx: CIdeInfo.CompilationContext): CcBuildTarget.CompilationContext {
+private suspend fun mapCompilationContext(
+  ctx: CIdeInfo.CompilationContext,
+  outputParser: OutputLocationParser,
+): CcBuildTarget.CompilationContext {
   return CcBuildTarget.CompilationContext(
-    headers = OutputLocationCollectionBuilder.build(ctx.headersList),
+    headers = OutputLocationCollectionBuilder.build(ctx.headersList, outputParser),
     defines = ctx.definesList.toList(),
-    includes = OutputLocationCollectionBuilder.buildExecroot(ctx.includesList),
-    quoteIncludes = OutputLocationCollectionBuilder.buildExecroot(ctx.quoteIncludesList),
-    systemIncludes = OutputLocationCollectionBuilder.buildExecroot(ctx.systemIncludesList),
+    includes = OutputLocationCollectionBuilder.buildExecroot(ctx.includesList, outputParser),
+    quoteIncludes = OutputLocationCollectionBuilder.buildExecroot(ctx.quoteIncludesList, outputParser),
+    systemIncludes = OutputLocationCollectionBuilder.buildExecroot(ctx.systemIncludesList, outputParser),
   )
 }
 
-private fun mapToolchainIdeInfo(info: IntellijIdeInfo.CToolchainIdeInfo): CcToolchainBuildTarget {
+private suspend fun mapToolchainIdeInfo(info: IntellijIdeInfo.CToolchainIdeInfo, parser: OutputLocationParser): CcToolchainBuildTarget {
   return CcToolchainBuildTarget(
     targetName = info.targetName,
     compilerName = info.compilerName,
     cppOption = info.cppOptionList.toList(),
     cOption = info.cOptionList.toList(),
-    cCompiler = OutputLocation.parseExecrootPath(info.cCompiler),
-    cppCompiler = OutputLocation.parseExecrootPath(info.cppCompiler),
-    builtInIncludeDirectories = OutputLocationCollectionBuilder.buildExecroot(info.builtInIncludeDirectoryList),
-    sysroot = info.sysroot.takeIf { it.isNotEmpty() }?.let(OutputLocation::parseExecrootPath),
+    cCompiler = parser.parseExecrootPath(info.cCompiler),
+    cppCompiler = parser.parseExecrootPath(info.cppCompiler),
+    builtInIncludeDirectories = OutputLocationCollectionBuilder.buildExecroot(info.builtInIncludeDirectoryList, parser),
+    sysroot = info.sysroot.takeIf { it.isNotEmpty() }?.let { parser.parseExecrootPath(it) },
     cEnvironment = info.cEnvironmentMap.toMap(),
     cppEnvironment = info.cppEnvironmentMap.toMap(),
   )

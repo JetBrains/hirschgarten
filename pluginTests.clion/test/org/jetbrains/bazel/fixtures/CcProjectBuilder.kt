@@ -23,6 +23,7 @@ import org.jetbrains.bazel.test.framework.target.TestBuildTarget
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.OutputLocation
 import org.jetbrains.bsp.protocol.OutputLocationCollection
+import org.jetbrains.bsp.protocol.OutputLocationParserWithoutHardlink
 import org.jetbrains.bsp.protocol.extractData
 import java.nio.file.Path
 
@@ -166,9 +167,9 @@ internal class CcTargetBuilder(private val kind: String, private val ruleType: R
     }
 
     val allHeaders = hdrs.map(OutputLocation::Workspace).toMutableList<OutputLocation>()
-    val allIncludes = includes.map(OutputLocation::parseExecrootPath).toMutableList()
-    val allQuoteIncludes = quoteIncludes.map(OutputLocation::parseExecrootPath).toMutableList()
-    val allSystemIncludes = systemIncludes.map(OutputLocation::parseExecrootPath).toMutableList()
+    val allIncludes = includes.map(OutputLocationParserWithoutHardlink::parseExecrootPath).toMutableList()
+    val allQuoteIncludes = quoteIncludes.map(OutputLocationParserWithoutHardlink::parseExecrootPath).toMutableList()
+    val allSystemIncludes = systemIncludes.map(OutputLocationParserWithoutHardlink::parseExecrootPath).toMutableList()
 
     for (dep in deps.values()) {
       dep.extractData<CcBuildTarget>()?.let { data ->
@@ -285,10 +286,10 @@ internal class CcToolchainBuilder {
         compilerName = compilerName,
         cppOption = cppOptions,
         cOption = cOptions,
-        cCompiler = OutputLocation.parseExecrootPath(cCompiler),
-        cppCompiler = OutputLocation.parseExecrootPath(cppCompiler),
+        cCompiler = OutputLocationParserWithoutHardlink.parseExecrootPath(cCompiler),
+        cppCompiler = OutputLocationParserWithoutHardlink.parseExecrootPath(cppCompiler),
         builtInIncludeDirectories = locations(builtinIncludes.map(OutputLocation::Workspace)),
-        sysroot = sysroot?.let(OutputLocation::parseExecrootPath),
+        sysroot = sysroot?.let(OutputLocationParserWithoutHardlink::parseExecrootPath),
         cEnvironment = env,
         cppEnvironment = env,
       ),

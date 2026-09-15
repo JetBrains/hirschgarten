@@ -6,12 +6,13 @@ import com.intellij.openapi.util.NlsContexts
 import com.intellij.platform.util.progress.SequentialProgressReporter
 import com.intellij.platform.workspace.storage.EntitySource
 import com.intellij.platform.workspace.storage.ImmutableEntityStorage
-import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceSnapshot
 import com.intellij.platform.workspace.storage.MutableEntityStorage
 import com.intellij.platform.workspace.storage.url.VirtualFileUrlManager
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.commons.BazelInfo
 import org.jetbrains.bazel.progress.TaskConsole
+import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceSnapshot
+import org.jetbrains.bsp.protocol.OutputLocationParser
 import org.jetbrains.bsp.protocol.OutputLocationResolver
 import org.jetbrains.bsp.protocol.TaskId
 
@@ -98,6 +99,7 @@ data class WorkspaceImporterContext(
   val vfuManager: VirtualFileUrlManager,
   val currentSnapshot: ImmutableEntityStorage,
   val outputResolver: OutputLocationResolver,
+  val outputParser: OutputLocationParser,
   val bazelInfo: BazelInfo,
 )
 

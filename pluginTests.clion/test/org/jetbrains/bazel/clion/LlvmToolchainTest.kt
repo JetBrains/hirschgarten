@@ -10,7 +10,6 @@ import org.jetbrains.bazel.assertions.findCompilerSetting
 import org.jetbrains.bazel.fixtures.CcTestApplication
 import org.jetbrains.bazel.fixtures.clionBazelProjectFixture
 import org.jetbrains.bazel.lookupCompilerSwitch
-import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.api.condition.DisabledOnOs
@@ -26,7 +25,6 @@ class LlvmToolchainTest {
   }
 
   @Test
-  @Disabled("Correctly reports that we do cause indexing in bazel-bin for this project.")
   fun testVfsRoots() = project.assertVfsLoads(emptyList())
 
   @Test

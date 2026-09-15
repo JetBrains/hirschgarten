@@ -42,7 +42,7 @@ private class CoptsProcessorStream(val sink: CompilerSpecificSwitchBuilder, val 
   private var pending: CoptsProcessor? = null
 
   context(ctx: CcImportContext)
-  fun consume(option: String) {
+  suspend fun consume(option: String) {
     // Bazel writes an empty option when a make variable expands to nothing. A blank value drops its flag as well.
     if (option.isBlank()) {
       pending = null
@@ -74,7 +74,7 @@ private class CoptsProcessorStream(val sink: CompilerSpecificSwitchBuilder, val 
 
 @ApiStatus.Internal
 context(ctx: CcImportContext)
-fun CompilerSpecificSwitchBuilder.applyCopts(kind: OCCompilerKind, options: List<String>) {
+suspend fun CompilerSpecificSwitchBuilder.applyCopts(kind: OCCompilerKind, options: List<String>) {
   // TODO: add support for other compiler, e.g. MSVC
   val isGnu = kind.getId() in GNU_COMPILERS
 

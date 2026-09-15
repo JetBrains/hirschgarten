@@ -1,6 +1,5 @@
 package org.jetbrains.bsp.protocol
 
-import com.google.devtools.intellij.aspect.Common
 import com.intellij.util.containers.Interner
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.annotations.Debug
@@ -42,12 +41,6 @@ sealed interface OutputLocation {
 
   // host path, e.g. /usr/bin/clang
   data class Host(val absolutePath: String) : OutputLocation
-
-  companion object {
-    fun parseExecrootPath(raw: String): OutputLocation = OutputLocationParser.parseExecrootPath(raw)
-
-    fun parse(location: Common.ArtifactLocation): OutputLocation = OutputLocationParser.parse(location)
-  }
 }
 
 @get:ApiStatus.Internal

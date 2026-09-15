@@ -40,6 +40,13 @@ interface BazelOutFileHardLinks {
    */
   suspend fun createOutputFileHardLinks(files: Collection<Path>): List<Path>
 
+  /**
+   * [createOutputFileHardLink] only supports files, not directories.
+   * If you hardlinked an output file and want to resolve its parent directory from another place in the code, use this function.
+   * May return a non-existent path if none of the transitive children of [fileOrDir] were ever hardlinked.
+   */
+  fun resolveCachedPath(fileOrDir: Path): Path
+
   val allHardLinksCreatedSuccessfully: Boolean
 
   companion object {
@@ -48,6 +55,7 @@ interface BazelOutFileHardLinks {
       override suspend fun onAfterSync(fullProjectModelUpdated: Boolean) {}
       override suspend fun createOutputFileHardLink(originalFile: Path): Path = originalFile
       override suspend fun createOutputFileHardLinks(files: Collection<Path>): List<Path> = files.toList()
+      override fun resolveCachedPath(fileOrDir: Path): Path = fileOrDir
 
       override val allHardLinksCreatedSuccessfully: Boolean
         get() = false

@@ -18,21 +18,29 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.withContext
+import org.jetbrains.annotations.ApiStatus
+import org.jetbrains.annotations.VisibleForTesting
 import org.jetbrains.bazel.commons.BazelInfo
 import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.coroutines.BazelCoroutineService
 import org.jetbrains.bazel.sync.BazelOutFileHardLinks
-import java.nio.file.Files
+import java.io.IOException
+import java.nio.file.LinkOption
 import java.nio.file.Path
+import java.nio.file.attribute.BasicFileAttributes
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicBoolean
+import kotlin.io.path.createLinkPointingTo
+import kotlin.io.path.createSymbolicLinkPointingTo
 import kotlin.io.path.deleteIfExists
 import kotlin.io.path.exists
 import kotlin.io.path.getLastModifiedTime
 import kotlin.io.path.isDirectory
+import kotlin.io.path.readAttributes
 import kotlin.io.path.relativeTo
 
-internal class DefaultBazelOutputFileHardLinks(
+@ApiStatus.Internal
+class DefaultBazelOutputFileHardLinks(
   private val project: Project,
   bazelInfo: BazelInfo,
 ): BazelOutFileHardLinks {
@@ -45,7 +53,8 @@ internal class DefaultBazelOutputFileHardLinks(
    * thereby preventing overly high disk usage. However, in that case the IDE will get red code.
    * Regular `bazel clean` or `--remote_download_minimal` won't have an effect as they only affect execroot, not the whole output base.
    */
-  private val cacheDir: Path = bazelOutputBase.resolve("intellij-hardlinks")
+  @VisibleForTesting
+  val cacheDir: Path = bazelOutputBase.resolve("intellij-hardlinks")
   private val hardLinksDuringSync = ConcurrentHashMap<Path, Deferred<HardLink>>()
   private val syncRunning = AtomicBoolean(false)
 
@@ -68,7 +77,7 @@ internal class DefaultBazelOutputFileHardLinks(
     val realPaths: Map<Path, Deferred<Path?>> = coroutineScope {
       files.associateWith { originalFile ->
         async(limitedDispatcher) {
-          originalFile.takeIf { it.exists() }?.toRealPath()
+          originalFile.takeIf { it.exists() && !it.isDirectory() }?.toRealPath()
         }
       }
     }
@@ -77,19 +86,13 @@ internal class DefaultBazelOutputFileHardLinks(
     for (originalFile in files) {
       val realFile = realPaths[originalFile]?.await() ?: continue
 
-      if (realFile.startsWith(rootDirPath)) {
-        // It's a source file, no need to hard link
-        (retainedPaths ?: mutableListOf<Path>().also { retainedPaths = it }).add(originalFile)
-        continue
-      }
-
       // Hardlink only Bazel output files
-      if (!realFile.startsWith(bazelOutputBase)) {
+      if (!originalFile.startsWith(bazelOutputBase)) {
         (retainedPaths ?: mutableListOf<Path>().also { retainedPaths = it }).add(originalFile)
         continue
       }
 
-      val bazelOutRelativePath = realFile.relativeTo(bazelOutputBase)
+      val bazelOutRelativePath = originalFile.relativeTo(bazelOutputBase)
       /**
        * Don't recreate the hard link unnecessarily to avoid spamming the file watcher (and because creating a link is expensive).
        * Also, the hard link may exist on disk, but if we delete the original file
@@ -97,24 +100,34 @@ internal class DefaultBazelOutputFileHardLinks(
        */
       val targetHardLink = cacheDir.resolve(bazelOutRelativePath)
       // Use await() on a Deferred instead of a blocking computeIfAbsent to avoid thread starvation (BAZEL-3095)
-      val hardLink = hardLinksDuringSync.computeIfAbsent(targetHardLink) {
+      val hardLink = hardLinksDuringSync.computeIfAbsent(targetHardLink) { targetHardLink ->
         BazelCoroutineService.getInstance(project).startAsync {
           withContext(limitedDispatcher) {
             try {
               val fileManager = VirtualFileManager.getInstance()
-              var requiresRefresh = true
-              val hardLinkFile = if (!targetHardLink.exists() || targetHardLink.getLastModifiedTime() != realFile.getLastModifiedTime()) {
+              val targetHardLinkAttributes =
+                runCatching { targetHardLink.readAttributes<BasicFileAttributes>(LinkOption.NOFOLLOW_LINKS) }.getOrNull()
+              val isUpToDate = when {
+                targetHardLinkAttributes == null -> false
+                // Symbolic link. If the target stays the same, we don't really know if the target file was modified,
+                // hence the targetHardLinkAttributes?.isSymbolicLink check below in requiresRefresh
+                shouldCreateSymLink(realFile, rootDirPath) ->
+                  targetHardLinkAttributes.isSymbolicLink && runCatching { targetHardLink.toRealPath() }.getOrNull() == realFile
+                // Hard link. Bazel always deletes and recreates a file when modifying it,
+                // meaning the hard link is gonna point to a deleted file with an older timestamp in that case.
+                else -> !targetHardLinkAttributes.isSymbolicLink && targetHardLinkAttributes.lastModifiedTime() == realFile.getLastModifiedTime()
+              }
+              val hardLinkFile = if (!isUpToDate) {
                 targetHardLink.deleteIfExists()
                 targetHardLink.createParentDirectories()
-                Files.createLink(targetHardLink, realFile)
+                createHardLinkOrSymbolicLink(targetHardLink, realFile, rootDirPath)
                 fileManager.refreshAndFindFileByNioPath(targetHardLink)
               }
               else {
-                requiresRefresh = false
                 fileManager.findFileByNioPath(targetHardLink) ?: fileManager.refreshAndFindFileByNioPath(targetHardLink)
               }
               checkNotNull(hardLinkFile) { "Can't find virtual find for $targetHardLink" }
-              HardLink(realFile, hardLinkFile, requiresRefresh)
+              HardLink(realFile, hardLinkFile, requiresRefresh = !isUpToDate || targetHardLinkAttributes?.isSymbolicLink == true)
             }
             catch (e: Throwable) {
               logger.warn("Failed to create hard link for $realFile", e)
@@ -131,6 +144,27 @@ internal class DefaultBazelOutputFileHardLinks(
       return retainedPaths ?: emptyList()
 
     return (retainedPaths ?: emptyList()) + hardLinkedPaths.awaitAll().map { it.path }
+  }
+
+  private fun createHardLinkOrSymbolicLink(targetHardLink: Path, realFile: Path, rootDirPath: Path) {
+    if (shouldCreateSymLink(realFile, rootDirPath)) {
+      // realFile is a source file, meaning the originalFile was a symlink into the source tree.
+      // Let's try to create a symlink instead, so that we know where to find the original file (used, e.g., by the CLion engine)
+      try {
+        targetHardLink.createSymbolicLinkPointingTo(realFile)
+        return
+      }
+      catch (e: IOException) {
+        logger.debug("Failed to create symlink, Windows without Developer Mode?", e)
+      }
+    }
+    targetHardLink.createLinkPointingTo(realFile)
+  }
+
+  private fun shouldCreateSymLink(realFile: Path, rootDirPath: Path): Boolean {
+    // If realFile is a source file, that means the originalFile was a symlink into the source tree.
+    // In that case we should try to create a symlink instead, so that we know where to find the original file (used by CLion: CPP-52156)
+    return realFile.startsWith(rootDirPath)
   }
 
   override fun onBeforeSync() {
@@ -151,6 +185,12 @@ internal class DefaultBazelOutputFileHardLinks(
       }
       hardLinksDuringSync.clear()
     }
+  }
+
+  override fun resolveCachedPath(fileOrDir: Path): Path {
+    if (!fileOrDir.startsWith(bazelOutputBase)) return fileOrDir
+    val bazelOutRelativePath = fileOrDir.relativeTo(bazelOutputBase)
+    return cacheDir.resolve(bazelOutRelativePath)
   }
 
   private suspend fun deleteUnusedHardLinks() {

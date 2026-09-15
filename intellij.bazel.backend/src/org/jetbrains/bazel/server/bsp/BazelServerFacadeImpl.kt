@@ -23,6 +23,8 @@ import org.jetbrains.bsp.protocol.AnalysisDebugResult
 import org.jetbrains.bsp.protocol.CompileParams
 import org.jetbrains.bsp.protocol.CompileResult
 import org.jetbrains.bsp.protocol.JvmToolchainInfo
+import org.jetbrains.bsp.protocol.OutputLocationParser
+import org.jetbrains.bsp.protocol.OutputLocationResolver
 import org.jetbrains.bsp.protocol.RunParams
 import org.jetbrains.bsp.protocol.RunResult
 import org.jetbrains.bsp.protocol.TaskId
@@ -44,6 +46,8 @@ class BazelServerFacadeImpl(
   override val bazelInfo: BazelInfo,
   override val bazelPathsResolver: BazelPathsResolver,
   override val outFileHardLinks: BazelOutFileHardLinks,
+  override val outputResolver: OutputLocationResolver,
+  override val outputParser: OutputLocationParser,
 ) : BazelServerFacade {
 
   override suspend fun workspaceBuildTargets(params: WorkspaceBuildTargetParams): AspectSyncProject {

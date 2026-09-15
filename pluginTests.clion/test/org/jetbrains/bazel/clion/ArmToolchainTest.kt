@@ -13,7 +13,6 @@ import org.jetbrains.bazel.assertions.findTarget
 import org.jetbrains.bazel.clion.workspace.getCcIdentifier
 import org.jetbrains.bazel.fixtures.CcTestApplication
 import org.jetbrains.bazel.fixtures.clionBazelProjectFixture
-import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 
@@ -27,7 +26,6 @@ class ArmToolchainTest {
   }
 
   @Test
-  @Disabled("Correctly reports that we do cause indexing in bazel-bin for this project.")
   fun testVfsRoots() = project.assertVfsLoads(emptyList())
 
   /**

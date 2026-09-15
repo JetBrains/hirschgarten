@@ -12,7 +12,6 @@ import org.jetbrains.bazel.clion.workspace.getCcIdentifier
 import org.jetbrains.bazel.fixtures.CcTestApplication
 import org.jetbrains.bazel.fixtures.clionBazelProjectFixture
 import org.jetbrains.bazel.resolveCompilerSwitches
-import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 
@@ -26,7 +25,6 @@ class TransitionTest {
   }
 
   @Test
-  @Disabled("Correctly reports that we do cause indexing in bazel-bin for this project.")
   fun testVfsRoots() = project.assertVfsLoads(emptyList())
 
   @Test

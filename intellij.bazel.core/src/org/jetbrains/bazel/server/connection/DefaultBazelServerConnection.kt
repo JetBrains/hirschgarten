@@ -25,8 +25,10 @@ import org.jetbrains.bazel.server.sync.firstPhase.FirstPhaseProjectResolver
 import org.jetbrains.bazel.sync.BazelEnvironmentService
 import org.jetbrains.bazel.sync.BazelOutFileHardLinks
 import org.jetbrains.bazel.sync.environment.BazelApplicationContextService
+import org.jetbrains.bazel.sync.workspace.DefaultOutputLocationResolver
 import org.jetbrains.bazel.sync.workspace.mapper.normal.DefaultBazelOutputFileHardLinks
 import org.jetbrains.bazel.taskEvents.BazelTaskEventsService
+import org.jetbrains.bsp.protocol.OutputLocationParser
 import org.jetbrains.bsp.protocol.TaskId
 import java.util.concurrent.atomic.AtomicReference
 
@@ -135,6 +137,8 @@ internal class DefaultBazelServerConnection(private val project: Project) : Baze
       bazelInfo = bazelInfo,
       bazelPathsResolver = bazelPathsResolver,
       outFileHardLinks = outFileHardLinks,
+      outputResolver = DefaultOutputLocationResolver(bazelInfo, outFileHardLinks),
+      outputParser = OutputLocationParser(bazelPathsResolver, outFileHardLinks),
     )
   }
 }

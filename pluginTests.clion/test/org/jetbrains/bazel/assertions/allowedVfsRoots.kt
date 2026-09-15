@@ -8,6 +8,7 @@ import org.assertj.core.api.Assertions.assertThat
 import org.jetbrains.bazel.assertions.AllowedVfsRoot.Configuration
 import org.jetbrains.bazel.sync.environment.projectCtx
 import java.nio.file.Path
+import kotlin.io.path.Path
 
 data class AllowedVfsRoot(
   val configuration: Configuration,
@@ -77,7 +78,13 @@ internal fun Project.assertVfsLoads(allowedRoots: List<AllowedVfsRoot>) {
   val executionRootFile = VfsUtil.findFile(executionRoot, /* refreshIfNeeded = */ false) ?: return
 
   for (child in getChildrenInVfs(executionRootFile)) {
-    assertThat(allowedRoots.any { matches(it, executionRoot.relativize(child)) }).withFailMessage {
+    val relativePath = executionRoot.relativize(child)
+    if (relativePath.startsWith(Path("external"))) {
+      // Things downloaded into external/ almost never change, so adding it as a VFS root directly won't cause too many events anyway.
+      continue
+    }
+
+    assertThat(allowedRoots.any { matches(it, relativePath) }).withFailMessage {
       val roots = allowedRoots.joinToString(";")
       "$child is not in allowed roots: [$roots], debug with: '-Dfile.system.trace.loading=$child'"
     }.isTrue()

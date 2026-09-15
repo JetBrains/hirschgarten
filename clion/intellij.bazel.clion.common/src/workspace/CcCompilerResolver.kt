@@ -26,7 +26,7 @@ internal class CcCompilerResolver(private val ctx: CcImportContext) {
   }
 
   private fun doResolve(location: OutputLocation): Result? {
-    val path = ctx.resolve(location) ?: return null
+    val path = ctx.outputResolver.resolve(location) ?: return null
     val kind = OCCompilerResolver.resolve(ctx.project, path, environment)
 
     return Result(mapKind(kind), path)

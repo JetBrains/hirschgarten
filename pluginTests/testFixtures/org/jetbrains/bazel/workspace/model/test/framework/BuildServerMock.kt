@@ -13,11 +13,14 @@ import org.jetbrains.bazel.server.BazelServerFacade
 import org.jetbrains.bazel.server.model.AspectSyncProject
 import org.jetbrains.bazel.server.model.PhasedSyncProject
 import org.jetbrains.bazel.sync.BazelOutFileHardLinks
+import org.jetbrains.bazel.sync.workspace.DefaultOutputLocationResolver
 import org.jetbrains.bsp.protocol.AnalysisDebugParams
 import org.jetbrains.bsp.protocol.AnalysisDebugResult
 import org.jetbrains.bsp.protocol.CompileParams
 import org.jetbrains.bsp.protocol.CompileResult
 import org.jetbrains.bsp.protocol.JvmToolchainInfo
+import org.jetbrains.bsp.protocol.OutputLocationParser
+import org.jetbrains.bsp.protocol.OutputLocationResolver
 import org.jetbrains.bsp.protocol.RunParams
 import org.jetbrains.bsp.protocol.RunResult
 import org.jetbrains.bsp.protocol.TaskId
@@ -73,6 +76,12 @@ open class BuildServerMock(
 
   override val outFileHardLinks: BazelOutFileHardLinks
     get() = BazelOutFileHardLinks.NONE
+
+  override val outputResolver: OutputLocationResolver
+    get() = DefaultOutputLocationResolver(bazelInfo, outFileHardLinks)
+
+  override val outputParser: OutputLocationParser
+    get() = OutputLocationParser(bazelPathsResolver, outFileHardLinks)
 
   override suspend fun jvmToolchainInfoForTarget(target: Label): JvmToolchainInfo =
     JvmToolchainInfo("/path/to/java/home", "/path/to/bazel/toolchain", emptyList())

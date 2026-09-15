@@ -42,10 +42,10 @@ import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetGraph
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetGraphBuilder
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
 import org.jetbrains.bazel.test.framework.target.TestBuildTarget
-import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.BuildTargetData
 import org.jetbrains.bsp.protocol.OutputLocation
 import org.jetbrains.bsp.protocol.OutputLocationCollection
+import org.jetbrains.bsp.protocol.OutputLocationParserWithoutHardlink
 import org.jetbrains.bsp.protocol.OutputRoot
 import org.jetbrains.bsp.protocol.SourceFileCollection
 import org.jetbrains.bsp.protocol.StrictDependencyCheckedType
@@ -249,7 +249,7 @@ class SnapshotKryoSerializationTest {
   @Test
   fun `output location collection e2e`() {
     val binRoot = OutputRoot.of(listOf("darwin_arm64-fastbuild", "bin"))
-    val locations = OutputLocationCollectionBuilder.buildExecroot(
+    val locations = OutputLocationCollectionBuilder.ofLocations(
       listOf(
         "src/main/lib.h",
         "src/main/util.h",
@@ -264,7 +264,7 @@ class SnapshotKryoSerializationTest {
         """C:\Program Files\LLVM\include""",
         "C:/Program Files/LLVM/lib",
         "//server/share/include",
-      ),
+      ).map(OutputLocationParserWithoutHardlink::parseExecrootPath),
     )
     val expected = listOf(
       OutputLocation.Workspace("src/main/lib.h"),

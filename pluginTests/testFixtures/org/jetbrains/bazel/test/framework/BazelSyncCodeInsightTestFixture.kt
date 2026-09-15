@@ -112,7 +112,7 @@ fun bazelProjectFixture(
     }
   }.init()
   configure(project)
-  runBazelSync(project, ProjectSyncScope.Full(build = false, phased = false))
+  runBazelSync(project, ProjectSyncScope.Full(build = buildProject, phased = false))
 
   LOG.info("The Bazel project fixture for $projectPath is ready")
   initialized(project) {}

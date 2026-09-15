@@ -7,6 +7,7 @@ import com.jetbrains.cidr.lang.workspace.compiler.CompilerSpecificSwitchBuilder
 import com.jetbrains.cidr.lang.workspace.compiler.GCCCompilerKind
 import com.jetbrains.cidr.lang.workspace.compiler.MSVCCompilerKind
 import com.jetbrains.cidr.lang.workspace.compiler.OCCompilerKind
+import kotlinx.coroutines.runBlocking
 import org.assertj.core.api.Assertions.assertThat
 import org.jetbrains.bazel.clion.workspace.CcCompilerKind
 import org.jetbrains.bazel.clion.workspace.copts.applyCopts
@@ -203,7 +204,7 @@ class CcCoptsTest {
   private fun doTest(compilers: List<OCCompilerKind>, copts: List<String>, expected: List<String>) {
     for (compiler in compilers) {
       val (ctx, switches) = withTestImportContext(WorkspaceSnapshot.EMPTY, project, EXECROOT) {
-        CompilerSpecificSwitchBuilder.getBuilder(compiler).apply { applyCopts(compiler, copts) }.buildRaw()
+        CompilerSpecificSwitchBuilder.getBuilder(compiler).apply { runBlocking { applyCopts(compiler, copts) } }.buildRaw()
       }
 
       assertThat(ctx.events).isEmpty()

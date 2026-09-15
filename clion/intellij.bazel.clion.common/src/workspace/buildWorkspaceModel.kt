@@ -17,7 +17,7 @@ import java.util.Objects
 private val DEFAULT_LANGUAGE_KIND = CLanguageKind.CPP
 
 context(ctx: CcImportContext)
-internal fun buildWorkspaceModel(model: OCWorkspace.ModifiableModel, configs: List<CcResolveConfiguration>) {
+internal suspend fun buildWorkspaceModel(model: OCWorkspace.ModifiableModel, configs: List<CcResolveConfiguration>) {
   for (config in configs) {
     val workspaceConfig = model.addConfiguration(id = config.id.encode(), name = config.name, variant = null)
 
@@ -68,7 +68,7 @@ internal fun buildWorkspaceModel(model: OCWorkspace.ModifiableModel, configs: Li
 
 /** Builds the switches of one language. Every list of [options] passes the copts processing. */
 context(_: CcImportContext)
-private fun buildSwitches(
+private suspend fun buildSwitches(
   config: CcResolveConfiguration,
   kind: OCCompilerKind,
   vararg options: List<String>,
@@ -98,5 +98,5 @@ private fun getDeclaredLanguageKind(sourceOrHeaderFile: VirtualFileUrl): OCLangu
 context(ctx: CcImportContext)
 private fun Sequence<OutputLocation>.resolve(): Sequence<String> {
   // TODO: again, do we want to report errors when a resolve fails?
-  return mapNotNull(ctx::resolve).map(Objects::toString)
+  return mapNotNull { ctx.outputResolver.resolve(it) }.map(Objects::toString)
 }

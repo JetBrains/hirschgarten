@@ -6,9 +6,6 @@ import com.intellij.build.events.impl.SkippedResultImpl
 import com.intellij.build.events.impl.SuccessResultImpl
 import com.intellij.ide.SaveAndSyncHandler
 import com.intellij.ide.trustedProjects.TrustedProjects
-import com.intellij.openapi.application.ApplicationManager
-import com.intellij.openapi.application.ModalityState
-import com.intellij.openapi.application.TransactionGuard
 import com.intellij.openapi.application.edtWriteAction
 import com.intellij.openapi.components.service
 import com.intellij.openapi.components.serviceAsync
@@ -52,7 +49,6 @@ import org.jetbrains.bazel.sync.projectStructure.ProjectModelApplicationTask
 import org.jetbrains.bazel.sync.projectSyncHooks
 import org.jetbrains.bazel.sync.status.SyncAlreadyInProgressException
 import org.jetbrains.bazel.sync.status.SyncStatusService
-import org.jetbrains.bazel.sync.workspace.DefaultOutputLocationResolver
 import org.jetbrains.bazel.sync.workspace.importer.WorkspaceImporterHelper
 import org.jetbrains.bazel.sync.workspace.persistence.WorkspaceSnapshotService
 import org.jetbrains.bazel.taskEvents.BazelTaskEventsService
@@ -353,7 +349,8 @@ class ProjectSyncTask(
                 progressReporter = progressReporter,
                 taskId = taskId,
                 builder = storage,
-                outputResolver = DefaultOutputLocationResolver(server.bazelInfo),
+                outputResolver = server.outputResolver,
+                outputParser = server.outputParser,
                 bazelInfo = server.bazelInfo,
               ),
             )

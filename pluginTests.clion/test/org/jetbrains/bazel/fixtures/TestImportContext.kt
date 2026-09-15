@@ -5,9 +5,13 @@ import com.intellij.openapi.project.Project
 import com.intellij.platform.workspace.storage.url.VirtualFileUrlManager
 import com.intellij.workspaceModel.ide.impl.IdeVirtualFileUrlManagerImpl
 import org.jetbrains.bazel.clion.workspace.CcImportContext
+import org.jetbrains.bazel.commons.BazelPathsResolver
+import org.jetbrains.bazel.sync.BazelOutFileHardLinks
+import org.jetbrains.bazel.sync.workspace.DefaultOutputLocationResolver
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceSnapshot
-import org.jetbrains.bsp.protocol.OutputLocation
-import org.jetbrains.bsp.protocol.toExecrootPath
+import org.jetbrains.bazel.test.framework.testBazelInfo
+import org.jetbrains.bsp.protocol.OutputLocationParser
+import org.jetbrains.bsp.protocol.OutputLocationResolver
 import java.nio.file.Path
 
 internal fun <T> withTestImportContext(
@@ -25,6 +29,14 @@ internal class TestImportContext(
   override val project: Project,
   override val execroot: Path = Path.of("/execroot"),
 ) : CcImportContext {
+  // Just resolve everything against execroot in unit tests
+  val testBazelInfo = testBazelInfo(workspaceRoot = execroot, outputBase = execroot, execRoot = execroot)
+
+  override val outputParser: OutputLocationParser
+    get() = OutputLocationParser(BazelPathsResolver(testBazelInfo), BazelOutFileHardLinks.NONE)
+
+  override val outputResolver: OutputLocationResolver
+    get() = DefaultOutputLocationResolver(testBazelInfo, BazelOutFileHardLinks.NONE)
 
   val events: MutableList<TestImportEvent> = mutableListOf()
 
@@ -34,10 +46,6 @@ internal class TestImportContext(
 
   override fun reportEvent(severity: MessageEvent.Kind, message: String, description: String?) {
     events += TestImportEvent(severity, message, description)
-  }
-
-  override fun resolve(location: OutputLocation): Path {
-    return execroot.resolve(location.toExecrootPath())
   }
 }
 

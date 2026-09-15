@@ -14,6 +14,8 @@ import org.jetbrains.bsp.protocol.AnalysisDebugResult
 import org.jetbrains.bsp.protocol.CompileParams
 import org.jetbrains.bsp.protocol.CompileResult
 import org.jetbrains.bsp.protocol.JvmToolchainInfo
+import org.jetbrains.bsp.protocol.OutputLocationParser
+import org.jetbrains.bsp.protocol.OutputLocationResolver
 import org.jetbrains.bsp.protocol.RunParams
 import org.jetbrains.bsp.protocol.RunResult
 import org.jetbrains.bsp.protocol.TaskId
@@ -34,6 +36,12 @@ interface BazelServerFacade {
   val bazelPathsResolver: BazelPathsResolver
 
   val projectView: ProjectView
+
+  @get:ApiStatus.Internal
+  val outputResolver: OutputLocationResolver
+
+  @get:ApiStatus.Internal
+  val outputParser: OutputLocationParser
 
   @ApiStatus.Internal
   suspend fun workspaceBuildTargets(params: WorkspaceBuildTargetParams): AspectSyncProject

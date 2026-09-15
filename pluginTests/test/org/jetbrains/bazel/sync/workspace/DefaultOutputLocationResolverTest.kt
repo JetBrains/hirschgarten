@@ -3,21 +3,24 @@ package org.jetbrains.bazel.sync.workspace
 import io.kotest.matchers.shouldBe
 import org.jetbrains.bazel.commons.BzlmodRepoMapping
 import org.jetbrains.bazel.commons.getLocalRepositories
+import org.jetbrains.bazel.sync.BazelOutFileHardLinks
 import org.jetbrains.bazel.test.framework.testBazelInfo
 import org.jetbrains.bsp.protocol.OutputLocation
 import org.jetbrains.bsp.protocol.OutputRoot
 import org.junit.jupiter.api.Test
+import java.nio.file.Path
 import kotlin.io.path.Path
 
 class DefaultOutputLocationResolverTest {
 
-  private fun newResolver(): DefaultOutputLocationResolver =
+  private fun newResolver(hardLinks: BazelOutFileHardLinks = BazelOutFileHardLinks.NONE): DefaultOutputLocationResolver =
     DefaultOutputLocationResolver(
       testBazelInfo(
         workspaceRoot = Path("workspace"),
         outputBase = Path("bazel-out-base"),
         execRoot = Path("bazel-exec"),
       ),
+      hardLinks = hardLinks,
     )
 
   private val localOverride = BzlmodRepoMapping(
@@ -77,6 +80,7 @@ class DefaultOutputLocationResolverTest {
         outputBase = Path("bazel-out-base"),
         execRoot = Path("bazel-exec/_main"),
       ),
+      BazelOutFileHardLinks.NONE,
     )
     val generated = OutputLocation.External("foo+", "bazel-out/k8-fastbuild/bin/pkg/gen.h", siblingLayout = true)
     resolver.resolve(generated, localOverride) shouldBe
@@ -87,5 +91,21 @@ class DefaultOutputLocationResolverTest {
   fun `ignores local overrides`() {
     newResolver().resolve(OutputLocation.External("foo+", "a/b/E.java"), localOverride = null) shouldBe
       Path("bazel-out-base/external/foo+/a/b/E.java")
+  }
+
+  @Test
+  fun `resolves an output file via hardlinks`() {
+    val hardLinks = object : BazelOutFileHardLinks {
+      override fun onBeforeSync() {}
+      override suspend fun onAfterSync(fullProjectModelUpdated: Boolean) {}
+      override suspend fun createOutputFileHardLinks(files: Collection<Path>): List<Path> = files.toList()
+      override fun resolveCachedPath(fileOrDir: Path): Path =
+        Path("cached").resolve(fileOrDir.fileName)
+
+      override val allHardLinksCreatedSuccessfully: Boolean = true
+    }
+    val resolved =
+      newResolver(hardLinks).resolve(OutputLocation.Output(OutputRoot.of(listOf("k8-fastbuild", "bin")), "c/d.jar"), localOverride)
+    resolved shouldBe Path("cached/d.jar")
   }
 }

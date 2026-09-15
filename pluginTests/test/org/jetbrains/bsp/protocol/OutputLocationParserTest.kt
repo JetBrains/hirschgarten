@@ -3,9 +3,15 @@ package org.jetbrains.bsp.protocol
 import com.google.devtools.intellij.aspect.Common
 import io.kotest.matchers.booleans.shouldBeFalse
 import io.kotest.matchers.booleans.shouldBeTrue
+import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.shouldBe
+import kotlinx.coroutines.test.runTest
+import org.jetbrains.bazel.commons.BazelPathsResolver
 import org.jetbrains.bazel.commons.BzlmodRepoMapping
+import org.jetbrains.bazel.sync.BazelOutFileHardLinks
+import org.jetbrains.bazel.test.framework.testBazelInfo
 import org.junit.jupiter.api.Test
+import java.nio.file.Path
 import kotlin.io.path.Path
 
 class OutputLocationParserTest {
@@ -29,66 +35,66 @@ class OutputLocationParserTest {
 
   @Test
   fun `classifies an absolute unix path as host`() {
-    OutputLocation.parseExecrootPath("/usr/bin/clang") shouldBe OutputLocation.Host("/usr/bin/clang")
+    OutputLocationParserWithoutHardlink.parseExecrootPath("/usr/bin/clang") shouldBe OutputLocation.Host("/usr/bin/clang")
   }
 
   @Test
   fun `classifies an absolute windows path as host`() {
-    OutputLocation.parseExecrootPath("C:\\LLVM\\bin\\clang.exe") shouldBe OutputLocation.Host("C:\\LLVM\\bin\\clang.exe")
+    OutputLocationParserWithoutHardlink.parseExecrootPath("C:\\LLVM\\bin\\clang.exe") shouldBe OutputLocation.Host("C:\\LLVM\\bin\\clang.exe")
   }
 
   @Test
   fun `strips the proc self cwd marker`() {
-    OutputLocation.parseExecrootPath("/proc/self/cwd/bazel-out/k8-opt/bin/foo/gen.h") shouldBe
+    OutputLocationParserWithoutHardlink.parseExecrootPath("/proc/self/cwd/bazel-out/k8-opt/bin/foo/gen.h") shouldBe
       output("k8-opt", "bin", relativePath = "foo/gen.h")
   }
 
   @Test
   fun `does not strip a proc self cwd prefix without a segment boundary`() {
-    OutputLocation.parseExecrootPath("/proc/self/cwdfoo") shouldBe OutputLocation.Host("/proc/self/cwdfoo")
+    OutputLocationParserWithoutHardlink.parseExecrootPath("/proc/self/cwdfoo") shouldBe OutputLocation.Host("/proc/self/cwdfoo")
   }
 
   @Test
   fun `maps the exact proc self cwd marker to the empty workspace location`() {
-    OutputLocation.parseExecrootPath("/proc/self/cwd") shouldBe OutputLocation.Workspace("")
+    OutputLocationParserWithoutHardlink.parseExecrootPath("/proc/self/cwd") shouldBe OutputLocation.Workspace("")
   }
 
   @Test
   fun `splits the output root into the mnemonic and the output directory`() {
-    OutputLocation.parseExecrootPath("bazel-out/k8-opt/bin/pkg/f.h") shouldBe
+    OutputLocationParserWithoutHardlink.parseExecrootPath("bazel-out/k8-opt/bin/pkg/f.h") shouldBe
       output("k8-opt", "bin", relativePath = "pkg/f.h")
   }
 
   @Test
   fun `classifies an external path`() {
-    OutputLocation.parseExecrootPath("external/rules_cc+/include/x.h") shouldBe
+    OutputLocationParserWithoutHardlink.parseExecrootPath("external/rules_cc+/include/x.h") shouldBe
       OutputLocation.External("rules_cc+", "include/x.h")
   }
 
   @Test
   fun `classifies a sibling layout path as external`() {
-    OutputLocation.parseExecrootPath("../llvm+/include/x.h") shouldBe
+    OutputLocationParserWithoutHardlink.parseExecrootPath("../llvm+/include/x.h") shouldBe
       OutputLocation.External("llvm+", "include/x.h", siblingLayout = true)
   }
 
   @Test
   fun `maps a convenience symlink name to the workspace`() {
-    OutputLocation.parseExecrootPath("bazel-bin/foo/gen.h") shouldBe OutputLocation.Workspace("bazel-bin/foo/gen.h")
+    OutputLocationParserWithoutHardlink.parseExecrootPath("bazel-bin/foo/gen.h") shouldBe OutputLocation.Workspace("bazel-bin/foo/gen.h")
   }
 
   @Test
   fun `maps a plain relative path to the workspace`() {
-    OutputLocation.parseExecrootPath("foo/bar.h") shouldBe OutputLocation.Workspace("foo/bar.h")
+    OutputLocationParserWithoutHardlink.parseExecrootPath("foo/bar.h") shouldBe OutputLocation.Workspace("foo/bar.h")
   }
 
   @Test
   fun `maps the empty string to the empty workspace location`() {
-    OutputLocation.parseExecrootPath("") shouldBe OutputLocation.Workspace("")
+    OutputLocationParserWithoutHardlink.parseExecrootPath("") shouldBe OutputLocation.Workspace("")
   }
 
   @Test
   fun `keeps a dot path`() {
-    OutputLocation.parseExecrootPath(".") shouldBe OutputLocation.Workspace(".")
+    OutputLocationParserWithoutHardlink.parseExecrootPath(".") shouldBe OutputLocation.Workspace(".")
   }
 
   @Test
@@ -107,42 +113,49 @@ class OutputLocationParserTest {
       "",
     )
     for (path in paths) {
-      OutputLocation.parseExecrootPath(path).toExecrootPath() shouldBe path
+      OutputLocationParserWithoutHardlink.parseExecrootPath(path).toExecrootPath() shouldBe path
     }
   }
 
   @Test
   fun `parses a main workspace source`() {
-    OutputLocation.parse(proto("", "c/d/E.java")) shouldBe OutputLocation.Workspace("c/d/E.java")
+    OutputLocationParserWithoutHardlink.parse(proto("", "c/d/E.java")) shouldBe OutputLocation.Workspace("c/d/E.java")
   }
 
   @Test
   fun `parses an external source with an external root`() {
-    OutputLocation.parse(proto("external/foo+", "d/E.java", isExternal = true)) shouldBe
+    OutputLocationParserWithoutHardlink.parse(proto("external/foo+", "d/E.java", isExternal = true)) shouldBe
       OutputLocation.External("foo+", "d/E.java")
   }
 
   @Test
   fun `parses an external source with a sibling root`() {
-    OutputLocation.parse(proto("../foo+", "d/E.java", isExternal = true)) shouldBe
+    OutputLocationParserWithoutHardlink.parse(proto("../foo+", "d/E.java", isExternal = true)) shouldBe
       OutputLocation.External("foo+", "d/E.java", siblingLayout = true)
   }
 
   @Test
   fun `parses a generated file`() {
-    OutputLocation.parse(proto("bazel-out/k8-fastbuild/bin", "pkg/gen.h", isSource = false)) shouldBe
+    OutputLocationParserWithoutHardlink.parse(proto("bazel-out/k8-fastbuild/bin", "pkg/gen.h", isSource = false)) shouldBe
       output("k8-fastbuild", "bin", relativePath = "pkg/gen.h")
   }
 
   @Test
   fun `parses a generated file of an external target as an output`() {
-    OutputLocation.parse(proto("bazel-out/k8-fastbuild/bin", "external/bar+/lib.jar", isSource = false, isExternal = true)) shouldBe
+    OutputLocationParserWithoutHardlink.parse(
+      proto(
+        "bazel-out/k8-fastbuild/bin",
+        "external/bar+/lib.jar",
+        isSource = false,
+        isExternal = true,
+      ),
+    ) shouldBe
       output("k8-fastbuild", "bin", relativePath = "external/bar+/lib.jar")
   }
 
   @Test
   fun `parses a sibling layout generated external file`() {
-    OutputLocation.parse(
+    OutputLocationParserWithoutHardlink.parse(
       proto("../repo+", "bazel-out/k8-fastbuild/bin/pkg/gen.h", isSource = false, isExternal = true),
     ) shouldBe OutputLocation.External("repo+", "bazel-out/k8-fastbuild/bin/pkg/gen.h", siblingLayout = true)
   }
@@ -150,36 +163,36 @@ class OutputLocationParserTest {
   @Test
   fun `parses an absolute from_execpath location as host`() {
     // local_jdk java_home: from_execpath sets is_source = false and an empty root
-    OutputLocation.parse(proto("", "/Library/Java/home", isSource = false)) shouldBe
+    OutputLocationParserWithoutHardlink.parse(proto("", "/Library/Java/home", isSource = false)) shouldBe
       OutputLocation.Host("/Library/Java/home")
   }
 
   @Test
   fun `parses an external from_execpath location`() {
     // remotejdk java_home: from_execpath sets is_external = true for an external root
-    OutputLocation.parse(proto("external/remotejdk17+", "some/dir", isSource = false, isExternal = true)) shouldBe
+    OutputLocationParserWithoutHardlink.parse(proto("external/remotejdk17+", "some/dir", isSource = false, isExternal = true)) shouldBe
       OutputLocation.External("remotejdk17+", "some/dir")
   }
 
   @Test
   fun `classifies identically from a string and from a proto`() {
-    val fromString = OutputLocation.parseExecrootPath("bazel-out/k8-opt/bin/pkg/f.h")
-    val fromProto = OutputLocation.parse(proto("bazel-out/k8-opt/bin", "pkg/f.h", isSource = false))
+    val fromString = OutputLocationParserWithoutHardlink.parseExecrootPath("bazel-out/k8-opt/bin/pkg/f.h")
+    val fromProto = OutputLocationParserWithoutHardlink.parse(proto("bazel-out/k8-opt/bin", "pkg/f.h", isSource = false))
     fromString shouldBe fromProto
   }
 
   @Test
   fun `isExternal is structural`() {
-    OutputLocation.parse(proto("external/bar+", "a/b/c/d/E.java", isExternal = true)).isExternal.shouldBeTrue()
-    OutputLocation.parse(proto("../bar+", "a/b/c/d/E.java", isExternal = true)).isExternal.shouldBeTrue()
-    OutputLocation.parse(proto("", "c/d/E.java")).isExternal.shouldBeFalse()
+    OutputLocationParserWithoutHardlink.parse(proto("external/bar+", "a/b/c/d/E.java", isExternal = true)).isExternal.shouldBeTrue()
+    OutputLocationParserWithoutHardlink.parse(proto("../bar+", "a/b/c/d/E.java", isExternal = true)).isExternal.shouldBeTrue()
+    OutputLocationParserWithoutHardlink.parse(proto("", "c/d/E.java")).isExternal.shouldBeFalse()
     output("k8-fastbuild", "bin", relativePath = "external/bar+/lib.jar").isExternal.shouldBeFalse()
     OutputLocation.Host("/usr/bin/clang").isExternal.shouldBeFalse()
   }
 
   @Test
   fun `isSource excludes a sibling layout generated external file`() {
-    val generated = OutputLocation.parse(
+    val generated = OutputLocationParserWithoutHardlink.parse(
       proto("../repo+", "bazel-out/k8-fastbuild/bin/pkg/gen.h", isSource = false, isExternal = true),
     )
     generated.isGenerated.shouldBeTrue()
@@ -225,8 +238,45 @@ class OutputLocationParserTest {
 
   @Test
   fun `keeps the sibling form for an external source`() {
-    val location = OutputLocation.parseExecrootPath("../llvm+/include/x.h")
+    val location = OutputLocationParserWithoutHardlink.parseExecrootPath("../llvm+/include/x.h")
     location shouldBe OutputLocation.External("llvm+", "include/x.h", siblingLayout = true)
     location.toExecrootPath() shouldBe "../llvm+/include/x.h"
+  }
+
+  @Test
+  fun `creates hard links when parsing an output location`() = runTest {
+    val linked = mutableListOf<Path>()
+    val hardLinks = object : BazelOutFileHardLinks {
+      override fun onBeforeSync() {}
+      override suspend fun onAfterSync(fullProjectModelUpdated: Boolean) {}
+      override suspend fun createOutputFileHardLinks(files: Collection<Path>): List<Path> {
+        linked.addAll(files)
+        return files.toList()
+      }
+
+      override suspend fun createOutputFileHardLink(originalFile: Path): Path {
+        linked.add(originalFile)
+        return originalFile
+      }
+
+      override fun resolveCachedPath(fileOrDir: Path): Path = fileOrDir
+      override val allHardLinksCreatedSuccessfully: Boolean = true
+    }
+    val bazelInfo = testBazelInfo(
+      workspaceRoot = Path("/workspace"),
+      outputBase = Path("/bazel-out-base"),
+      execRoot = Path("/bazel-exec"),
+    )
+    val pathsResolver = BazelPathsResolver(bazelInfo)
+    val parser = OutputLocationParser(pathsResolver, hardLinks)
+
+    parser.parseExecrootPath("bazel-out/k8-opt/bin/pkg/f.h")
+    parser.parse(proto("bazel-out/k8-fastbuild/bin", "pkg/gen.h", isSource = false))
+    parser.parseExecrootPath("foo/bar.h")
+
+    linked shouldContainExactly listOf(
+      Path("/bazel-exec/bazel-out/k8-opt/bin/pkg/f.h"),
+      Path("/bazel-exec/bazel-out/k8-fastbuild/bin/pkg/gen.h"),
+    )
   }
 }

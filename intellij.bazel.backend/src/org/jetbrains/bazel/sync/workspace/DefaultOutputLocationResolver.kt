@@ -3,6 +3,7 @@ package org.jetbrains.bazel.sync.workspace
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.commons.BazelInfo
 import org.jetbrains.bazel.commons.LocalRepositoryMapping
+import org.jetbrains.bazel.sync.BazelOutFileHardLinks
 import org.jetbrains.bsp.protocol.OutputLocation
 import org.jetbrains.bsp.protocol.OutputLocationResolver
 import org.jetbrains.bsp.protocol.isGenerated
@@ -12,7 +13,10 @@ import java.nio.file.Path
 import kotlin.io.path.Path
 
 @ApiStatus.Internal
-class DefaultOutputLocationResolver(private val bazelInfo: BazelInfo) : OutputLocationResolver {
+class DefaultOutputLocationResolver(
+  private val bazelInfo: BazelInfo,
+  private val hardLinks: BazelOutFileHardLinks,
+) : OutputLocationResolver {
 
   override fun resolve(
     location: OutputLocation,
@@ -21,7 +25,7 @@ class DefaultOutputLocationResolver(private val bazelInfo: BazelInfo) : OutputLo
     when (location) {
       is OutputLocation.Host -> Path(location.absolutePath)
       is OutputLocation.Workspace -> bazelInfo.workspaceRoot.resolve(location.relativePath)
-      is OutputLocation.Output -> bazelInfo.execRoot.resolve(location.toExecrootPath())
+      is OutputLocation.Output -> hardLinks.resolveCachedPath(bazelInfo.execRoot.resolve(location.toExecrootPath()))
       is OutputLocation.External -> resolveExternal(location, localOverride)
     }
   }

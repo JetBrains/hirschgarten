@@ -68,8 +68,8 @@ import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceSnapshot
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceSnapshotBuilder
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
 import org.jetbrains.bazel.sync.workspace.snapshot.allSources
-import org.jetbrains.bazel.test.framework.testBazelInfo
 import org.jetbrains.bazel.test.framework.target.TestBuildTarget
+import org.jetbrains.bazel.test.framework.testBazelInfo
 import org.jetbrains.bazel.workspace.model.matchers.entries.ExpectedModuleEntity
 import org.jetbrains.bazel.workspace.model.matchers.entries.ExpectedSourceRootEntity
 import org.jetbrains.bazel.workspace.model.matchers.entries.shouldContainExactlyInAnyOrder
@@ -78,7 +78,6 @@ import org.jetbrains.bazel.workspace.model.test.framework.MockBuildServerService
 import org.jetbrains.bazel.workspace.model.test.framework.MockProjectBaseTest
 import org.jetbrains.bazel.workspacemodel.entities.BazelProjectEntitySource
 import org.jetbrains.bsp.protocol.BuildTarget
-import org.jetbrains.bsp.protocol.OutputLocationResolver
 import org.jetbrains.bsp.protocol.SourceFileCollection
 import org.jetbrains.bsp.protocol.TaskGroupId
 import org.junit.jupiter.api.AfterEach
@@ -618,6 +617,7 @@ class PythonProjectSyncTest : MockProjectBaseTest() {
     runPostProcessing: Boolean = false,
   ) = runBlocking {
     //ExtensionTestUtil.maskExtensions(BazelWorkspaceImporter.EP_NAME, listOf(...))
+    val buildServerMock = BuildServerMock()
     reportSequentialProgress { reporter ->
       val helper = WorkspaceImporterHelper(
         project = project,
@@ -625,7 +625,8 @@ class PythonProjectSyncTest : MockProjectBaseTest() {
         progressReporter = reporter,
         taskId = TaskGroupId.EMPTY.task("test"),
         builder = builder,
-        outputResolver = OutputLocationResolver.NOOP,
+        outputResolver = buildServerMock.outputResolver,
+        outputParser = buildServerMock.outputParser,
         bazelInfo = testBazelInfo(),
       )
       helper.invoke(reporter, snapshot)
