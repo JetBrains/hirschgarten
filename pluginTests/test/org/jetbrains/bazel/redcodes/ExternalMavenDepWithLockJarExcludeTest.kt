@@ -24,7 +24,7 @@ class ExternalMavenDepWithLockJarExcludeTest {
   @DisabledOnOs(OS.WINDOWS) // coursier
   fun testHighlighting() = runBlocking(Dispatchers.Default) {
     fixture.copyBazelTestProject("redcodes/external_maven_dep_with_lock_jar_exclude")
-    fixture.performBazelSync()
+    fixture.performBazelSync(true)
     withContext(Dispatchers.EDT) {
       fixture.checkHighlighting("Usage.java")
     }

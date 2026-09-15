@@ -25,7 +25,7 @@ class SpringBootProjectTest {
   fun testGutterMarks(): Unit = runBlocking(Dispatchers.Default) {
     fixture.copyBazelTestProject("redcodes/spring_boot")
     fixture.enableInspections(*SpringInspectionsRegistry.getInstance().getTestSpringInspectionClasses())
-    fixture.performBazelSync()
+    fixture.performBazelSync(true)
     val gutters = withContext(Dispatchers.EDT) {
       fixture.findAllGutters("src/main/java/com/example/greeting/GreetingModule.java").map { gutter ->
         gutter.tooltipText ?: "<null>"
