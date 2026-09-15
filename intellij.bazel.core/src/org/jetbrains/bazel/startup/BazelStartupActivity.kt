@@ -4,9 +4,12 @@ import com.intellij.openapi.components.service
 import com.intellij.openapi.components.serviceAsync
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.util.Key
 import com.intellij.platform.backend.workspace.WorkspaceModel
 import com.intellij.workspaceModel.ide.impl.WorkspaceModelImpl
 import kotlinx.coroutines.flow.update
+import org.jetbrains.annotations.ApiStatus
+import org.jetbrains.annotations.TestOnly
 import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.projectAware.BazelWorkspace
 import org.jetbrains.bazel.startup.utils.BazelProjectActivity
@@ -21,6 +24,14 @@ import org.jetbrains.bazel.ui.widgets.fileTargets.updateBazelFileTargetsWidget
 import kotlin.io.path.isDirectory
 
 private val log = logger<BazelStartupActivity>()
+private val skipStartupSync = Key.create<Boolean>("bazel.skip.startup.sync.in.tests")
+
+/** Controls automatic startup sync for one test project. Explicit sync is not affected. */
+@TestOnly
+@ApiStatus.Internal
+fun setBazelStartupSyncEnabledInTests(project: Project, enabled: Boolean) {
+  project.putUserData(skipStartupSync, if (enabled) null else true)
+}
 
 /**
  * Runs actions after the project has started up and the index is up to date.
@@ -54,6 +65,9 @@ private suspend fun executeOnEveryProjectStartup(project: Project) {
 }
 
 private suspend fun resyncProjectIfNeeded(project: Project) {
+  if (project.getUserData(skipStartupSync) == true)
+    return
+
   if (!isProjectInIncompleteState(project))
     return
 
