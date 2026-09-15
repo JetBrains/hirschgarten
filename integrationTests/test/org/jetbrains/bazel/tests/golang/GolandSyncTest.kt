@@ -75,6 +75,11 @@ abstract class GolandSyncBaseTest(
     createContext(projectName, case)
       .withDisabledPlugins(setOf(GO_LINTER_PLUGIN_ID))
       .withBazelFeatureFlag(BazelFeatureFlags.BUILD_PROJECT_ON_SYNC)
+      .applyVMOptionsPatch {
+        if (!usesGoLandWelcomeScreen) {
+          addSystemProperty("idea.welcome.screen.non.modal.enabled", "false")
+        }
+      }
 
   @Test
   @Order(1)
