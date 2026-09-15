@@ -18,6 +18,7 @@ import org.jetbrains.bazel.ideStarter.navigateToFile
 import org.jetbrains.bazel.ideStarter.syncBazelProjectCloseDialog
 import org.jetbrains.bazel.data.BazelProjectConfigurer
 import org.jetbrains.bazel.data.simpleBazelProject
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Order
 import org.junit.jupiter.api.Test
 import kotlin.time.Duration.Companion.seconds
@@ -44,6 +45,8 @@ class PyCharmCombinedTest : IdeStarterCombinedBaseTest() {
   @Test @Order(2)
   fun `Python test line markers should be available for test files`() = pyCharmTestLineMarkers()
 
+  // Build and sync triggers BAZEL-3382. Should be reenabled once BAZEL-3382 is fixed.
+  @Disabled
   @Test @Order(3)
   fun `Python import statements should resolve correctly`() = pyCharmImportStatements()
 
