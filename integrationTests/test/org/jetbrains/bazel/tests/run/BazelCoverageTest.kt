@@ -49,7 +49,7 @@ class BazelCoverageTest : IdeStarterBaseProjectTest() {
     )
       .also { it.pluginConfigurator.disablePlugins("com.intellij.ml.llm") }
       .setRunConfigRunWithBazel(runConfigRunWithBazel)
-      .runIdeWithDriver(runTimeout = timeout, pauseOnIndexing = 5.minutes)
+      .runIdeWithDriver(runTimeout = timeout, pauseOnIndicators = 5.minutes)
       .useDriverAndCloseIde {
         ideFrame {
           syncBazelProject(true)
@@ -90,7 +90,7 @@ class BazelCoverageTest : IdeStarterBaseProjectTest() {
     )
       .also { it.pluginConfigurator.disablePlugins("com.intellij.ml.llm") }
       .setRunConfigRunWithBazel(true)
-      .runIdeWithDriver(runTimeout = timeout, pauseOnIndexing = 5.minutes)
+      .runIdeWithDriver(runTimeout = timeout, pauseOnIndicators = 5.minutes)
       .useDriverAndCloseIde {
         ideFrame {
           syncBazelProject(true)
@@ -139,7 +139,7 @@ class BazelCoverageTest : IdeStarterBaseProjectTest() {
       IdeaBazelCases.withProject(BAZEL_COVERAGE_PROJECT),
     )
       .setRunConfigRunWithBazel(true)
-      .runIdeWithDriver(runTimeout = timeout, pauseOnIndexing = 5.minutes)
+      .runIdeWithDriver(runTimeout = timeout, pauseOnIndicators = 5.minutes)
       .useDriverAndCloseIde {
         ideFrame {
           syncBazelProject(true)
