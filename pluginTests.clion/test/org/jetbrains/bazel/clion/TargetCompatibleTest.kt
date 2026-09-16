@@ -1,5 +1,6 @@
 package org.jetbrains.bazel.clion
 
+import com.intellij.openapi.util.SystemInfoRt
 import com.intellij.testFramework.common.timeoutRunBlocking
 import org.assertj.core.api.Assertions.assertThat
 import org.jetbrains.bazel.assertions.assertVfsLoads
@@ -22,8 +23,8 @@ class TargetCompatibleTest {
 
   @Test
   fun testCompilerSettings(): Unit = timeoutRunBlocking {
-    assertThat(project.findCompilerSettings("main/linux.cc")).hasSize(1)
-    assertThat(project.findCompilerSettings("main/macos.cc")).hasSize(0)
-    assertThat(project.findCompilerSettings("main/windows.cc")).hasSize(0)
+    assertThat(project.findCompilerSettings("main/linux.cc")).hasSize(if (SystemInfoRt.isLinux) 1 else 0)
+    assertThat(project.findCompilerSettings("main/macos.cc")).hasSize(if (SystemInfoRt.isMac) 1 else 0)
+    assertThat(project.findCompilerSettings("main/windows.cc")).hasSize(if (SystemInfoRt.isWindows) 1 else 0)
   }
 }
