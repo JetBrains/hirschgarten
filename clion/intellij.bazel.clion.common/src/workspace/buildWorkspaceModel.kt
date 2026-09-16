@@ -1,16 +1,18 @@
+@file:Suppress("IO_FILE_USAGE") // required by API
+
 package org.jetbrains.bazel.clion.workspace
 
-import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.platform.workspace.storage.url.VirtualFileUrl
 import com.jetbrains.cidr.lang.CLanguageKind
 import com.jetbrains.cidr.lang.OCFileTypeHelpers
 import com.jetbrains.cidr.lang.OCLanguageKind
+import com.jetbrains.cidr.lang.toolchains.CidrCompilerSwitches
 import com.jetbrains.cidr.lang.workspace.OCWorkspace
 import com.jetbrains.cidr.lang.workspace.compiler.CompilerSpecificSwitchBuilder
+import com.jetbrains.cidr.lang.workspace.compiler.OCCompilerKind
+import org.jetbrains.bazel.clion.workspace.copts.applyCopts
 import org.jetbrains.bsp.protocol.OutputLocation
-import java.nio.file.Path
 import java.util.Objects
-import kotlin.sequences.forEach
 
 private val DEFAULT_LANGUAGE_KIND = CLanguageKind.CPP
 
@@ -21,20 +23,21 @@ internal fun buildWorkspaceModel(model: OCWorkspace.ModifiableModel, configs: Li
 
     val settings = config.shared.compilerSettings
 
-    // TODO: port the copts processing i.e. com.google.idea.blaze.cpp.copts.CoptsProcessor
-    val cSwitches = CompilerSpecificSwitchBuilder.getBuilder(settings.cCompilerKind).apply {
-      appendCompilationContext(config)
-      withSwitches(settings.cSwitches)
-      withSwitches(config.shared.copts)
-      withSwitches(config.shared.conlyopts)
-    }.build()
+    val cSwitches = buildSwitches(
+      config,
+      settings.cCompilerKind,
+      settings.cSwitches,
+      config.shared.copts,
+      config.shared.conlyopts,
+    )
 
-    val cppSwitches = CompilerSpecificSwitchBuilder.getBuilder(settings.cppCompilerKind).apply {
-      appendCompilationContext(config)
-      withSwitches(settings.cppSwitches)
-      withSwitches(config.shared.copts)
-      withSwitches(config.shared.cxxopts)
-    }.build()
+    val cppSwitches = buildSwitches(
+      config,
+      settings.cppCompilerKind,
+      settings.cppSwitches,
+      config.shared.copts,
+      config.shared.cxxopts,
+    )
 
     for (file in config.sources) {
       val languageKind = getDeclaredLanguageKind(file)
@@ -62,6 +65,17 @@ internal fun buildWorkspaceModel(model: OCWorkspace.ModifiableModel, configs: Li
     }
   }
 }
+
+/** Builds the switches of one language. Every list of [options] passes the copts processing. */
+context(_: CcImportContext)
+private fun buildSwitches(
+  config: CcResolveConfiguration,
+  kind: OCCompilerKind,
+  vararg options: List<String>,
+): CidrCompilerSwitches = CompilerSpecificSwitchBuilder.getBuilder(kind).apply {
+  appendCompilationContext(config)
+  options.forEach { applyCopts(kind, it) }
+}.build()
 
 context(ctx: CcImportContext)
 private fun CompilerSpecificSwitchBuilder.appendCompilationContext(config: CcResolveConfiguration) {
