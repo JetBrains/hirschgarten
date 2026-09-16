@@ -4,6 +4,7 @@ import com.intellij.openapi.diagnostic.fileLogger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Disposer
 import com.intellij.platform.testFramework.junit5.codeInsight.fixture.codeInsightFixture
+import com.intellij.testFramework.common.runAllSuspend
 import com.intellij.testFramework.fixtures.CodeInsightTestFixture
 import com.intellij.testFramework.fixtures.IdeaProjectTestFixture
 import com.intellij.testFramework.fixtures.TempDirTestFixture
@@ -83,32 +84,38 @@ fun bazelProjectFixture(
   configure: suspend (Project) -> Unit = {},
 ): TestFixture<Project> = testFixture(debugString = "bazelProject") {
   LOG.info("Setting up the Bazel project fixture for $projectPath")
-  val project = projectFixture(openAfterCreation = true).init()
-  val projectRoot = tempPathFixture().init()
+  val project = testFixture(debugString = "bazelProjectSetup") {
+    val project = testFixture(debugString = "bazelProjectConsole") {
+      val project = projectFixture(openAfterCreation = true).init()
+      val setupDisposable = Disposer.newDisposable("bazelProjectFixture")
+      installTestConsoleService(project, setupDisposable)
+      initialized(project) { Disposer.dispose(setupDisposable) }
+    }.init()
+    val projectRoot = tempPathFixture().init()
 
-  val setupDisposable = Disposer.newDisposable("bazelProjectFixture")
-  installTestConsoleService(project, setupDisposable)
-  LOG.info("Initializing the Bazel project ${project.name} at $projectRoot")
-  initializeBazelProject(project, projectRoot)
+    LOG.info("Initializing the Bazel project ${project.name} at $projectRoot")
+    initializeBazelProject(project, projectRoot)
 
-  BazelTestProject.copy(project, projectRoot, projectPath, projectsRoot, jvmToolchains)
-  if (bazelVersion != null) {
-    writeBazelVersion(projectRoot, bazelVersion)
-  }
-  if (projectView != null) {
-    applyProjectView(project, projectRoot, projectView)
-  }
+    BazelTestProject.copy(project, projectRoot, projectPath, projectsRoot, jvmToolchains)
+    if (bazelVersion != null) {
+      writeBazelVersion(projectRoot, bazelVersion)
+    }
+    if (projectView != null) {
+      applyProjectView(project, projectRoot, projectView)
+    }
+    initialized(project) {
+      LOG.info("Tearing down the Bazel project fixture for $projectPath")
+      runAllSuspend(
+        { stopBazelServer(project, projectRoot) },
+        { purgeProjectJdkTable() },
+      )
+    }
+  }.init()
   configure(project)
   runBazelSync(project, ProjectSyncScope.Full(build = false, phased = false))
 
   LOG.info("The Bazel project fixture for $projectPath is ready")
-  initialized(project) {
-    LOG.info("Tearing down the Bazel project fixture for $projectPath")
-    // Stop the bazel server first, so it releases the file locks before the temp dir is removed.
-    stopBazelServer(project, projectRoot)
-    purgeProjectJdkTable()
-    Disposer.dispose(setupDisposable)
-  }
+  initialized(project) {}
 }
 
 /**

@@ -13,9 +13,12 @@ import org.jetbrains.bazel.lookupCompilerSwitch
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
+import org.junit.jupiter.api.condition.DisabledOnOs
+import org.junit.jupiter.api.condition.OS
 
 @CcTestApplication
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
+@DisabledOnOs(OS.WINDOWS, disabledReason = "toolchains_llvm 1.7.0 does not register toolchains on Windows")
 class LlvmToolchainTest {
 
   private val project by clionBazelProjectFixture("clion/llvm_toolchain") {
