@@ -14,11 +14,11 @@ import org.jetbrains.bsp.protocol.OutputLocationParser
 import org.jetbrains.bsp.protocol.OutputLocationResolver
 import java.nio.file.Path
 
-internal fun <T> withTestImportContext(
+internal suspend fun <T> withTestImportContext(
   snapshot: WorkspaceSnapshot,
   project: Project,
   execroot: Path = Path.of("/execroot"),
-  body: context(CcImportContext) () -> T,
+  body: suspend context(CcImportContext) () -> T,
 ): Pair<TestImportContext, T> {
   val ctx = TestImportContext(snapshot, project, execroot)
   return ctx to body(ctx)

@@ -1,6 +1,7 @@
 package org.jetbrains.bazel.clion
 
 import com.intellij.build.events.MessageEvent
+import com.intellij.testFramework.common.timeoutRunBlocking
 import com.intellij.testFramework.junit5.fixture.projectFixture
 import org.assertj.core.api.Assertions.assertThat
 import org.jetbrains.bazel.assertions.assertThat
@@ -178,9 +179,11 @@ class CcToolchainMapTest {
     assertThat(toolchains).isEmpty()
   }
 
-  private fun resolve(declare: CcProjectBuilder.() -> Unit): Pair<List<TestImportEvent>, Map<WorkspaceTargetKey, WorkspaceTargetKey>> {
-    val  (ctx, result) = withTestImportContext(ccProject(declare = declare), project) { buildToolchainMap() }
-    return ctx.events to result
+  private fun resolve(
+    declare: CcProjectBuilder.() -> Unit,
+  ): Pair<List<TestImportEvent>, Map<WorkspaceTargetKey, WorkspaceTargetKey>> = timeoutRunBlocking {
+    val (ctx, result) = withTestImportContext(ccProject(declare = declare), project) { buildToolchainMap() }
+    ctx.events to result
   }
 }
 

@@ -1,5 +1,6 @@
 package org.jetbrains.bazel.clion
 
+import com.intellij.testFramework.common.timeoutRunBlocking
 import com.intellij.testFramework.junit5.fixture.projectFixture
 import org.assertj.core.api.Assertions.assertThat
 import org.jetbrains.bazel.assertions.assertThat
@@ -311,7 +312,7 @@ class CcEquivalenceClassesTest {
     assertThat(configurations.byName("@//foo/bar:one and 1 other target(s)").copts).isEmpty()
   }
 
-  private fun resolve(declare: CcProjectBuilder.() -> Unit): List<CcResolveConfiguration> {
+  private fun resolve(declare: CcProjectBuilder.() -> Unit): List<CcResolveConfiguration> = timeoutRunBlocking {
     val (ctx, result) = withTestImportContext(ccProject(declare = declare), project = project) {
       val target2Toolchain = buildToolchainMap()
       val toolchain2Compiler = buildCompilerSettings()
@@ -320,7 +321,7 @@ class CcEquivalenceClassesTest {
     }
     assertThat(ctx.events).isEmpty()
 
-    return result
+    result
   }
 }
 

@@ -11,6 +11,8 @@ import org.jetbrains.bsp.protocol.OutputLocationCollection
 import org.jetbrains.bsp.protocol.extractData
 import java.nio.file.Path
 
+private const val PROC_SELF_CWD = "/proc/self/cwd"
+
 data class CcCompilerInfo(
   val cCompiler: Path,
   val cCompilerKind: OCCompilerKind,
@@ -38,15 +40,14 @@ private class CcToolEnvironment(private val environment: Map<String, String>) : 
 
 @ApiStatus.Internal
 context(ctx: CcImportContext)
-fun buildCompilerSettings(): Map<WorkspaceTargetKey, CcCompilerInfo> {
+suspend fun buildCompilerSettings(): Map<WorkspaceTargetKey, CcCompilerInfo> {
   val result = mutableMapOf<WorkspaceTargetKey, CcCompilerInfo>()
   val resolver = CcCompilerResolver(ctx)
 
   for (target in ctx.snapshot.targets.allTargets()) {
     val toolchainInfo = target.extractData<CcToolchainBuildTarget>() ?: continue
 
-    // TODO: port environment processing i.e. com.google.idea.blaze.cpp.environment.EnvironmentProcessor
-    val environment = mergeEnvironments(toolchainInfo.cEnvironment, toolchainInfo.cppEnvironment)
+    val environment = resolveProcSelfCwd(mergeEnvironments(toolchainInfo.cEnvironment, toolchainInfo.cppEnvironment))
 
     val cCompiler = resolver.resolve(toolchainInfo.cCompiler) ?: continue
     val cppCompiler = resolver.resolve(toolchainInfo.cppCompiler) ?: continue
@@ -79,6 +80,14 @@ private fun mergeEnvironments(vararg environments: Map<String, String>): Map<Str
   }
 
   return merged
+}
+
+context(ctx: CcImportContext)
+private suspend fun resolveProcSelfCwd(environment: Map<String, String>): Map<String, String> {
+  return environment.mapValues { (_, value) ->
+    if (!value.startsWith(PROC_SELF_CWD)) return@mapValues value
+    ctx.outputResolver.resolve(ctx.outputParser.parseExecrootPath(value))?.toString() ?: value
+  }
 }
 
 private fun createToolEnvironment(environment: Map<String, String>): CidrToolEnvironment {
