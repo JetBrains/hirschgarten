@@ -24,6 +24,7 @@ jvm_library(
         "//plugins/bazel/intellij.bazel.commons:commons",
         "@community//platform/core-api:core",
         "@lib//:jetbrains-annotations",
+        "//plugins/bazel/intellij.bazel.backend:backend",
     ],
 )
 
