@@ -42,7 +42,6 @@ import java.nio.file.Paths
 import kotlin.io.path.exists
 import kotlin.io.path.extension
 import kotlin.io.path.inputStream
-import kotlin.io.path.name
 import kotlin.io.path.relativeToOrSelf
 import kotlin.reflect.KClass
 
@@ -139,7 +138,6 @@ class JavaLanguagePlugin : LanguagePlugin {
       )
     }
     val jdepsJarItems = dependencyJarsFromJdepsFiles(server, target, localRepositories)
-      .filterNot { shouldSkipJdepsJar(it) }
       .map { JdepsJar(syntheticLabel = syntheticLabel(server, it), jar = server.outFileHardLinks.createOutputFileHardLink(it) ?: it) }
     val pluginJars = server.outFileHardLinks.createOutputFileHardLinks(getIntellijPluginJars(server, target, localRepositories).toList())
 
@@ -218,10 +216,6 @@ class JavaLanguagePlugin : LanguagePlugin {
    * we should only include deps that are actually used by the compiler
    */
   private fun Deps.Dependency.isRelevant() = kind in sequenceOf(Deps.Dependency.Kind.EXPLICIT, Deps.Dependency.Kind.IMPLICIT)
-
-  // See https://github.com/bazel-contrib/rules_jvm_external/issues/786
-  private fun shouldSkipJdepsJar(jar: Path): Boolean =
-    jar.name.startsWith("header_") && jar.resolveSibling("processed_${jar.name.substring(7)}").exists()
 
   private val replacementRegex = "[^0-9a-zA-Z]".toRegex()
 
