@@ -1,5 +1,9 @@
 package org.jetbrains.bazel.languages.starlark.findusages
 
+import com.intellij.openapi.application.ReadAction
+import com.intellij.openapi.application.readAction
+import com.intellij.openapi.application.runReadActionBlocking
+import com.intellij.psi.PsiReference
 import com.intellij.psi.search.LocalSearchScope
 import com.intellij.psi.search.searches.ReferencesSearch
 import io.kotest.matchers.collections.shouldBeEmpty
@@ -182,7 +186,7 @@ class StarlarkFileFindUsagesTest : StarlarkFindUsagesTestCase() {
       """.trimIndent(),
     )
     val localScope = LocalSearchScope(buildFile1)
-    val usages = ReferencesSearch.search(javaFile, localScope).findAll()
+    val usages = runReadActionBlocking { ReferencesSearch.search(javaFile, localScope).findAll() }
     usages.shouldBeSingleton { it.element.containingFile shouldBe buildFile1.containingFile }
   }
 }
