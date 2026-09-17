@@ -25,6 +25,6 @@ java_library(
 java_library(
     name = "devkit_for_tests",
     testonly = 1,
-    visibility = ["//plugin_dev:__pkg__"],
+    visibility = ["//visibility:public"],
     exports = [":devkit_internal"],
 )
