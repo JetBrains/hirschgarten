@@ -12,6 +12,7 @@ load("@rules_java//java:java_library.bzl", "java_library")
 #   listed here may depend on these libraries.
 load(
     ":build_defs.bzl",
+    "select_for_plugin_api",
     "select_from_plugin_api_directory",
 )
 
@@ -162,6 +163,17 @@ java_library(
     ),
 )
 
+# IntelliJ Bytecode Viewer plugin
+java_library(
+    name = "bytecode_viewer_for_tests",
+    testonly = 1,
+    exports = select_from_plugin_api_directory(
+        android_studio = [],
+        clion = [],
+        intellij = [":bytecode_viewer"],
+    ),
+)
+
 # IntelliJ TestRunner plugin
 java_library(
     name = "testrunner",
@@ -171,6 +183,17 @@ java_library(
     ],
     exports = select_from_plugin_api_directory(
         android_studio = [":testrunner"],
+        clion = [],
+        intellij = [":testrunner"],
+    ),
+)
+
+# IntelliJ TestRunner plugin
+java_library(
+    name = "testrunner_for_tests",
+    testonly = 1,
+    exports = select_from_plugin_api_directory(
+        android_studio = [],
         clion = [],
         intellij = [":testrunner"],
     ),
@@ -187,6 +210,17 @@ java_library(
     ),
 )
 
+# SDK plugin jars that //pluginTests needs
+java_library(
+    name = "bundled_plugins_for_tests",
+    testonly = 1,
+    exports = select_from_plugin_api_directory(
+        android_studio = [],
+        clion = [],
+        intellij = [":bundled_plugins_for_tests"],
+    ),
+)
+
 filegroup(
     name = "application_info_json",
     srcs = select_from_plugin_api_directory(
@@ -194,4 +228,25 @@ filegroup(
         clion = [],
         intellij = [":application_info_json"],
     ),
+)
+
+# IntelliJ test framework. Not bundled in the IDE distribution
+java_library(
+    name = "test_framework",
+    testonly = 1,
+    exports = select_for_plugin_api({
+        "intellij-2026.2": [
+            "@test_framework//jar",
+            "@test_framework_core//jar",
+            "@test_framework_common//jar",
+            "@test_framework_junit5//jar",
+            "@test_framework_junit5_code_insight//jar",
+            "@test_extensions//jar",
+            "@java_test_framework//jar",
+            "@java_test_framework_shared//jar",
+            "@statistics_test_framework//jar",
+            "@test_framework_team_city//jar",
+            "@tests_bootstrap//jar",
+        ],
+    }),
 )

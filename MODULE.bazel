@@ -6,11 +6,13 @@ http_jar = use_repo_rule("@bazel_tools//tools/build_defs/repo:http.bzl", "http_j
 
 http_archive = use_repo_rule("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
+http_file = use_repo_rule("@bazel_tools//tools/build_defs/repo:http.bzl", "http_file")
+
 # dependency on the new aspect's sdk
 bazel_dep(name = "intellij_aspect_sdk")
 git_override(
     module_name = "intellij_aspect_sdk",
-    commit = "c1bead5258594a9c389ae14f295356e49a6f9419",
+    commit = "a3f8ec94e1a9ce26078bf3143a4005580da3d8e6",
     remote = "https://github.com/JetBrains/intellij-aspect.git",
 )
 
@@ -31,6 +33,29 @@ maven = use_extension("@rules_jvm_external//:extensions.bzl", "maven")
 maven.install(
     artifacts = [
         "com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.19.0",
+        # Test-only, used by //pluginTests
+        "org.junit.jupiter:junit-jupiter:5.14.4",
+        "org.junit.platform:junit-platform-launcher:1.14.4",
+        "org.junit.vintage:junit-vintage-engine:5.14.4",
+        "io.kotest:kotest-assertions-core-jvm:5.5.4",
+        "org.mockito:mockito-core:5.19.0",
+        "org.jetbrains.kotlinx:kotlinx-coroutines-test:1.10.2",
+        "org.jetbrains.kotlin:kotlin-test:2.4.20",
+        "net.java.dev.jna:jna:5.19.1",
+        "org.jetbrains.pty4j:pty4j:0.13.12",
+        "org.assertj:assertj-core:4.0.0-M1",
+    ],
+    excluded_artifacts = [
+        "org.jetbrains.kotlin:kotlin-stdlib",
+        "org.jetbrains.kotlin:kotlin-stdlib-common",
+        "org.jetbrains.kotlin:kotlin-stdlib-jdk7",
+        "org.jetbrains.kotlin:kotlin-stdlib-jdk8",
+        "org.jetbrains.kotlin:kotlin-reflect",
+        "org.jetbrains.kotlinx:kotlinx-coroutines-core",
+        "org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm",
+        "org.jetbrains.kotlinx:kotlinx-coroutines-jdk8",
+        "org.jetbrains:annotations",
+        "net.java.dev.jna:jna-platform",
     ],
     lock_file = "//:maven_install.json",
     repositories = [
@@ -63,7 +88,7 @@ java_import(
 )
 filegroup(
   name = "python_helpers",
-  srcs = glob(["python-ce/helpers/**/*"]),
+  srcs = ["python-ce/helpers"],
   visibility = ["//visibility:public"],
 )
 """
@@ -90,17 +115,17 @@ java_import(
 
 # SDK 262
 
-SDK_262_BASE_VERSION = "262.8665"
+SDK_262_BASE_VERSION = "262.9437"
 
-SDK_262_INTELLIJ_REPO_VERSION = SDK_262_BASE_VERSION + ".258"
+SDK_262_INTELLIJ_REPO_VERSION = SDK_262_BASE_VERSION + ".185"
 
-SDK_262_INTELLIJ_VERSION = SDK_262_BASE_VERSION + ".258"
+SDK_262_INTELLIJ_VERSION = SDK_262_BASE_VERSION + ".185"
 
 SDK_262_INTELLIJ_REPOSITORY = "releases"  # releases or snapshots
 
 IC_262_URL = "https://www.jetbrains.com/intellij-repository/%s/com/jetbrains/intellij/idea/ideaIU/%s/ideaIU-%s.zip" % (SDK_262_INTELLIJ_REPOSITORY, SDK_262_INTELLIJ_VERSION, SDK_262_INTELLIJ_VERSION)
 
-IC_262_SHA = "af239a432cde8f54e5ca3f02b34adcd35367a1235126d85fb169fd18a300f385"
+IC_262_SHA = "4c8067d7dfeb59fc10ff08bebe0a1eeb22e7b4e263eb0159d5e3b0aa1fc0e659"
 
 http_archive(
     name = "intellij_ce_2026_2",
@@ -111,7 +136,7 @@ http_archive(
 
 IC_262_SOURCES_URL = "https://www.jetbrains.com/intellij-repository/%s/com/jetbrains/intellij/idea/ideaIU/%s/ideaIU-%s-sources.jar" % (SDK_262_INTELLIJ_REPOSITORY, SDK_262_INTELLIJ_VERSION, SDK_262_INTELLIJ_VERSION)
 
-IC_262_SOURCES_SHA = "2ab7bbe36741062d0da9d0824044b78952e3b4a04ad6923c23e9aef9e97582a7"
+IC_262_SOURCES_SHA = "80de9470e68b697ffce845f07b49ab7314fb282823afa972a2456f25d5969ddf"
 
 http_jar(
     name = "intellij_ce_2026_2_sources",
@@ -119,11 +144,11 @@ http_jar(
     url = IC_262_SOURCES_URL,
 )
 
-DEVKIT_262_VERSION = SDK_262_BASE_VERSION + ".176"
+DEVKIT_262_VERSION = SDK_262_BASE_VERSION + ".142"
 
 DEVKIT_262_URL = "https://plugins.jetbrains.com/maven/com/jetbrains/plugins/DevKit/%s/DevKit-%s.zip" % (DEVKIT_262_VERSION, DEVKIT_262_VERSION)
 
-DEVKIT_262_SHA = "09dd22e106f01910a2524aedda3127bcd4dbcc82a4e26d36b4c687485656ed77"
+DEVKIT_262_SHA = "eab34ab5c7d2c9b289263a76e4c73bec3e94bd449131d9963bec52e70894497c"
 
 http_archive(
     name = "devkit_2026_2",
@@ -134,7 +159,7 @@ http_archive(
 
 PYTHON_PLUGIN_262_URL = "https://plugins.jetbrains.com/maven/com/jetbrains/plugins/PythonCore/%s/PythonCore-%s.zip" % (SDK_262_INTELLIJ_REPO_VERSION, SDK_262_INTELLIJ_REPO_VERSION)
 
-PYTHON_PLUGIN_262_SHA = "44fca95b2104c40e2609bf7724be3816a62a4727a0090278a3330b0025dbe1f0"
+PYTHON_PLUGIN_262_SHA = "d6046f360cae5cc6d027cc9d12f9bf5c1a40123f99f7bd3746bb0f2d8fbec41c"
 
 http_archive(
     name = "python_2026_2",
@@ -145,7 +170,7 @@ http_archive(
 
 GO_PLUGIN_262_URL = "https://plugins.jetbrains.com/maven/com/jetbrains/plugins/org.jetbrains.plugins.go/%s/org.jetbrains.plugins.go-%s.zip" % (SDK_262_INTELLIJ_REPO_VERSION, SDK_262_INTELLIJ_REPO_VERSION)
 
-GO_PLUGIN_262_SHA = "04def39162e5716241d5a2d18917fe8cca05def84e2749cee11e59bd46b5565a"
+GO_PLUGIN_262_SHA = "2e401d8fbc2ac959066756f962209e08c1d14e0428e577a4f0c87a57d9526ad0"
 
 http_archive(
     name = "go_2026_2",
@@ -156,7 +181,7 @@ http_archive(
 
 PERFORMANCE_PLUGIN_262_URL = "https://www.jetbrains.com/intellij-repository/%s/com/jetbrains/intellij/performanceTesting/performance-testing/%s/performance-testing-%s.jar" % (SDK_262_INTELLIJ_REPOSITORY, SDK_262_INTELLIJ_REPO_VERSION, SDK_262_INTELLIJ_REPO_VERSION)
 
-PERFORMANCE_PLUGIN_262_SHA = "d9971e65ba8650a7fd30cbebfb8bbdc910d1d63541e5c59650dcc9f19fc6e6f3"
+PERFORMANCE_PLUGIN_262_SHA = "df35df10e0c31e482059a3c7d2e03ea1b201e889edc015892bd245663c3569e7"
 
 http_jar(
     name = "performance_2026_2",
@@ -164,9 +189,103 @@ http_jar(
     url = PERFORMANCE_PLUGIN_262_URL,
 )
 
+# IntelliJ test framework is NOT part of the IDE distribution zip; published as separate jars next to it, at the same build number
+TEST_FRAMEWORK_262_VERSION = SDK_262_INTELLIJ_VERSION
+TEST_FRAMEWORK_262_URL = "https://www.jetbrains.com/intellij-repository/%s/com/jetbrains/intellij/%%s/%%s/%s/%%s-%s.jar" % (SDK_262_INTELLIJ_REPOSITORY, TEST_FRAMEWORK_262_VERSION, TEST_FRAMEWORK_262_VERSION)
+
+http_jar(
+    name = "test_framework",
+    sha256 = "2f63fc00c7f5e01cadbc04e1f1ddd56e2c7cca4337635908d14e7027396b0028",
+    url = TEST_FRAMEWORK_262_URL % ("platform", "test-framework", "test-framework"),
+)
+
+http_jar(
+    name = "test_framework_core",
+    sha256 = "2680da5da14830adf79fece75a66881e5e3e62ae414cd70b2f84b8a81e73dbcc",
+    url = TEST_FRAMEWORK_262_URL % ("platform", "test-framework-core", "test-framework-core"),
+)
+
+http_jar(
+    name = "test_framework_common",
+    sha256 = "52b79677d1e8127c8c0f6d17bd9a862dc226f6a3a35ec3eb8c73f18b7ac27dc6",
+    url = TEST_FRAMEWORK_262_URL % ("platform", "test-framework-common", "test-framework-common"),
+)
+
+http_jar(
+    name = "test_framework_junit5",
+    sha256 = "1251143283e42fdbb33ee53376d1bdbeb9fb6d7ac146cd75db60a09a80f4f135",
+    url = TEST_FRAMEWORK_262_URL % ("platform", "test-framework-junit5", "test-framework-junit5"),
+)
+
+http_jar(
+    name = "test_framework_junit5_code_insight",
+    sha256 = "556412f1664e55ed97c8061a7227ddb36c000ff41b54aa19f1afecf39199f337",
+    url = TEST_FRAMEWORK_262_URL % ("platform", "test-framework-junit5-code-insight", "test-framework-junit5-code-insight"),
+)
+
+http_jar(
+    name = "test_extensions",
+    sha256 = "479a6eb2b5b52ffee25c55d89ad85113bc1e53476f7d868181b3eb3d1c56cab9",
+    url = TEST_FRAMEWORK_262_URL % ("platform", "test-extensions", "test-extensions"),
+)
+
+http_jar(
+    name = "statistics_test_framework",
+    sha256 = "f4fc0dfadc92adb79dcd056551984b4c0fee1534bd83beccfac415cfe0150090",
+    url = TEST_FRAMEWORK_262_URL % ("platform", "statistics-test-framework", "statistics-test-framework"),
+)
+
+http_jar(
+    name = "test_framework_team_city",
+    sha256 = "31148ce9a8c1ef9afb39dfaaca1cd68bc9e12fcdb60ca40f128dd42ddcaac4e8",
+    url = TEST_FRAMEWORK_262_URL % ("platform", "test-framework-team-city", "test-framework-team-city"),
+)
+
+http_jar(
+    name = "java_test_framework",
+    sha256 = "a721c352c4ac1371dd37439d8ad28a39916cd7546a2638a4f5c1ee43ce327105",
+    url = TEST_FRAMEWORK_262_URL % ("java", "java-test-framework", "java-test-framework"),
+)
+
+http_jar(
+    name = "java_test_framework_shared",
+    sha256 = "883f5b7d109247ee2df9ee64064d4c552d92a48a8c37ac722322ecce8fd11dd6",
+    url = TEST_FRAMEWORK_262_URL % ("java", "java-test-framework-shared", "java-test-framework-shared"),
+)
+
+http_jar(
+    name = "tests_bootstrap",
+    sha256 = "3d16d6ea3ee9bc31d833d668e2ec19be56fd2fc8616cd68b09ad5ddb9db1fbbb",
+    url = TEST_FRAMEWORK_262_URL % ("tools", "tests-bootstrap", "tests-bootstrap"),
+)
+
+# Mock JDK used by the IntelliJ test framework (IdeaTestUtil.getMockJdk17); lives only in the community sources,
+# fetched from the public mirror at the last commit that touched it. Laid out under //java:mockJDK for the test runfiles.
+MOCK_JDK_COMMIT = "aa6829d7c1a80a3b6b805a942d5e11c89c3432c3"
+
+MOCK_JDK_URL = "https://raw.githubusercontent.com/JetBrains/intellij-community/%s/java/mockJDK-1.7/%%s" % MOCK_JDK_COMMIT
+
+http_file(
+    name = "mock_jdk_17_rt_jar",
+    sha256 = "1091b85962d637a462541e186800c87e3187e8ed6b2bc21b8cf98845acd500aa",
+    url = MOCK_JDK_URL % "jre/lib/rt.jar",
+)
+
+http_file(
+    name = "mock_jdk_17_rt_jar_license",
+    sha256 = "ce61e20060403da0cc40d35515fa886bc4cfa182b62727fddecd3cc2bd69d8d8",
+    url = MOCK_JDK_URL % "jre/lib/rt.jar_LICENSE",
+)
+
+http_file(
+    name = "mock_jdk_17_src_zip",
+    sha256 = "f279bbbd9249bd6b8f899830861914f5f19827b69a7c8ef657759271219b0b8c",
+    url = MOCK_JDK_URL % "src.zip",
+)
+
 CODE_WITH_ME_262_URL = "https://www.jetbrains.com/intellij-repository/%s/com/jetbrains/intellij/platform/backend-split/%s/backend-split-%s.jar" % (SDK_262_INTELLIJ_REPOSITORY, SDK_262_INTELLIJ_REPO_VERSION, SDK_262_INTELLIJ_REPO_VERSION)
 
-CODE_WITH_ME_262_SHA = "27c3f3b31165ee0504fb973736a694e100d1a3868f16990294d8ac4e7989cfd5"
+CODE_WITH_ME_262_SHA = "71c74e8458d45a4776d167e51fe1b788567ef909e5e2fbd024180e0501bd4828"
 
 http_jar(
     name = "code_with_me_2026_2",
@@ -186,7 +305,7 @@ http_jar(
 
 TERMINAL_PLUGIN_262_URL = "https://www.jetbrains.com/intellij-repository/%s/com/jetbrains/intellij/terminal/terminal/%s/terminal-%s.jar" % (SDK_262_INTELLIJ_REPOSITORY, SDK_262_INTELLIJ_REPO_VERSION, SDK_262_INTELLIJ_REPO_VERSION)
 
-TERMINAL_PLUGIN_262_SHA = "2bfc3ba33b60748b4fabd2eada607c59c7aef411c0403d396dd7cd7914762a64"
+TERMINAL_PLUGIN_262_SHA = "3d66c8350916878fad9f7aae7acc2bd8b9c927e99d7e874db7585b46bd3fdc97"
 
 http_jar(
     name = "terminal_2026_2",
@@ -204,7 +323,7 @@ http_jar(
     url = TERMINAL_COMPLETION_PLUGIN_262_URL,
 )
 
-PROTOEDIT_PLUGIN_262_VERSION = SDK_262_BASE_VERSION + ".173"
+PROTOEDIT_PLUGIN_262_VERSION = "262.8665.173"
 
 PROTOEDIT_PLUGIN_262_URL = "https://plugins.jetbrains.com/maven/com/jetbrains/plugins/idea.plugin.protoeditor/%s/idea.plugin.protoeditor-%s.zip" % (PROTOEDIT_PLUGIN_262_VERSION, PROTOEDIT_PLUGIN_262_VERSION)
 
@@ -219,7 +338,7 @@ http_archive(
 
 JAVA_COVERAGE_262_URL = "https://www.jetbrains.com/intellij-repository/%s/com/jetbrains/intellij/java/java-coverage/%s/java-coverage-%s.jar" % (SDK_262_INTELLIJ_REPOSITORY, SDK_262_INTELLIJ_REPO_VERSION, SDK_262_INTELLIJ_REPO_VERSION)
 
-JAVA_COVERAGE_262_SHA = "970511ef980920d4ed0bb7c4ed50f36d9d284688cf89212d1a1dcbcf4bfe3b39"
+JAVA_COVERAGE_262_SHA = "6efdcb46877466439ed0fc63eaa84381dd1c868f73e86d0e01121a9a3d74f764"
 
 http_jar(
     name = "java_coverage_2026_2",

@@ -20,8 +20,12 @@
 #
 # Plugin source jars for IntelliJ CE, accessed remotely.
 load("@rules_java//java:java_import.bzl", "java_import")
+load("@rules_jvm//pluginTests:sdk_test_deps.bzl", "SDK_TEST_JARS")
+load("@rules_jvm//rules_intellij/intellij_platform_sdk:plugin_files.bzl", "plugin_bundled_files")
 
 package(default_visibility = ["//visibility:public"])
+
+TEST_JARS = [jar for jar in SDK_TEST_JARS if " " not in jar]
 
 java_import(
     name = "sdk",
@@ -78,6 +82,18 @@ java_import(
         "plugins/json/lib/modules/*.jar",
         "plugins/toml/lib/*.jar",
     ]),
+)
+
+plugin_bundled_files(
+    name = "bundled_plugins_for_tests_files",
+    plugin_dirs = {"plugins/" + jar.split("/")[1]: None for jar in TEST_JARS}.keys(),
+)
+
+java_import(
+    name = "bundled_plugins_for_tests",
+    testonly = 1,
+    data = [":bundled_plugins_for_tests_files"],
+    jars = SDK_TEST_JARS,
 )
 
 filegroup(

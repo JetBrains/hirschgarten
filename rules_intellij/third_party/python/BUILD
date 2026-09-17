@@ -23,7 +23,6 @@ filegroup(
     srcs = select_for_plugin_api({
         "intellij-2026.2": ["@python_2026_2//:python_helpers"],
     }),
-    visibility = ["//visibility:private"],
 )
 
 java_library(

@@ -8,7 +8,15 @@
 load("@rules_java//java:java_import.bzl", "java_import")
 load("@rules_java//java:java_library.bzl", "java_library")
 load("@rules_java//java:java_single_jar.bzl", "java_single_jar")
+load("@rules_java//java:java_test.bzl", "java_test")
 load("@rules_kotlin//kotlin:jvm.bzl", "kt_jvm_library")
+load(
+    "//rules/testing:commons.bzl",
+    "ADD_OPENS_FLAGS",
+    "ENGINE_DEPS",
+    "INTELLIJ_JVM_FLAGS",
+    "TEST_DEPS",
+)
 
 def _optstr(name, value):
     return ("--" + name) if value else ""
@@ -418,11 +426,24 @@ def jvm_library(
             "//rules_intellij/intellij_platform_sdk:junit",
             "//rules_intellij/intellij_platform_sdk:testrunner",
         ],
-        runtime_deps = [],  # ignore, this is only used for tests which we don't support
+        runtime_deps = [],  # only meaningful for *_test_lib targets, see below
         kotlinc_opts = None,  # ignore, we use the options from Kotlin toolchain instead
         **kwargs):
     if name.endswith("_test_lib"):
-        # We don't support tests, don't create a target
+        if not srcs:
+            return
+        kwargs.pop("testonly", None)
+        kt_jvm_library(
+            name = name,
+            testonly = True,
+            srcs = srcs,
+            deps = _rewrite_deps(deps) + TEST_DEPS,
+            exports = _rewrite_deps(exports),
+            runtime_deps = _rewrite_deps(runtime_deps),
+            data = kwargs.pop("resource_jars", []),
+            visibility = visibility,
+            **kwargs
+        )
         return
 
     deps = _rewrite_deps(deps)
@@ -491,3 +512,35 @@ def jvm_library(
 def jvm_provided_library(name, lib, visibility = None):
     # Create an empty library as a stub
     java_library(name = name, srcs = [], visibility = visibility)
+
+def resourcegroup(name, srcs, strip_prefix = None, visibility = None, **kwargs):
+    # the monorepo packs these into a resource jar; here it's read by path, so a filegroup is enough
+    native.filegroup(name = name, srcs = srcs, visibility = visibility, **kwargs)
+
+_PYTHON_HELPERS = "//rules_intellij/third_party/python:python_helpers"
+
+def jps_test(name, runtime_deps = [], data = [], jvm_flags = [], env = {}, tags = [], **kwargs):
+    """Stand-in for the monorepo `jps_test`.
+    It runs the same runner, `com.intellij.tests.JUnit5BazelRunner`
+    """
+
+    all_env = dict(env)
+    all_env["JB_TEST_SANDBOX"] = "true"
+    java_test(
+        name = name,
+        use_testrunner = False,
+        main_class = "com.intellij.tests.JUnit5BazelRunner",
+        env = all_env,
+        jvm_flags = ADD_OPENS_FLAGS + INTELLIJ_JVM_FLAGS + [
+            "-Didea.python.helpers.path=$${TEST_SRCDIR}/$(rlocationpath %s)" % _PYTHON_HELPERS,
+        ] + jvm_flags,
+        runtime_deps = runtime_deps + ENGINE_DEPS + [
+            "//intellij.bazel.plugin:plugin_xml_with_versions",
+            "//intellij.bazel.resource:resource",
+        ],
+        # //java:mockJDK: IdeaTestUtil.getMockJdk17() resolves $TEST_SRCDIR/_main/java/mockJDK-1.7
+        data = data + ["//java:mockJDK", _PYTHON_HELPERS],
+        size = "enormous",
+        tags = tags + ["exclusive"],
+        **kwargs
+    )

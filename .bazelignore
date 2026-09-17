@@ -1,5 +1,5 @@
 .jps-compiled
 out
 node_modules
-pluginTests
+pluginTests/testData/testProjects
 integrationTests/testProjects
