@@ -52,7 +52,6 @@ interface ProjectSyncHook {
     val taskId: TaskId,
     val diff: MutableEntityStorage,
     val progressReporter: SequentialProgressReporter,
-    val deferredApplyActions: MutableList<suspend () -> Unit> = mutableListOf(),
   )
 }
 

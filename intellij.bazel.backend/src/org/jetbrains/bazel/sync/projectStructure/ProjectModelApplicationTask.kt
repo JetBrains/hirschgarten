@@ -16,8 +16,7 @@ import org.jetbrains.bsp.protocol.TaskId
 
 internal class ProjectModelApplicationTask(
   private val project: Project,
-  private val taskId: TaskId,
-  private val postActions: List<suspend () -> Unit>,
+  private val taskId: TaskId
 ) {
   companion object {
     private const val MAX_REPLACE_WSM_ATTEMPTS = 3
@@ -43,7 +42,5 @@ internal class ProjectModelApplicationTask(
         }
       }
     }
-
-    postActions.forEach { it() }
   }
 }

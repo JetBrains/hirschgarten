@@ -623,15 +623,14 @@ class PythonProjectSyncTest : MockProjectBaseTest() {
         project = project,
         taskConsole = project.syncConsole,
         progressReporter = reporter,
-        taskId = TaskGroupId.EMPTY.task("test"),
         builder = builder,
         outputResolver = buildServerMock.outputResolver,
         outputParser = buildServerMock.outputParser,
         bazelInfo = testBazelInfo(),
       )
-      helper.invoke(reporter, snapshot)
+      helper.invoke(reporter, snapshot, TaskGroupId.EMPTY.task("test"))
       if (runPostProcessing) {
-        helper.invokeLate(reporter, snapshot)
+        helper.invokeLate(reporter, snapshot, TaskGroupId.EMPTY.task("test"))
       }
     }
   }

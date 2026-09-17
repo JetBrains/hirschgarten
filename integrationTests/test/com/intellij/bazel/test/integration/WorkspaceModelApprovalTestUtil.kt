@@ -126,14 +126,13 @@ internal suspend fun doWorkspaceModelTest(
       project = project,
       taskConsole = project.syncConsole,
       progressReporter = reporter,
-      taskId = taskId,
       builder = builder,
       outputResolver = DefaultOutputLocationResolver(bazelInfo, BazelOutFileHardLinks.NONE),
       outputParser = OutputLocationParser(BazelPathsResolver(bazelInfo), BazelOutFileHardLinks.NONE),
       bazelInfo = bazelInfo,
     )
 
-    helper.invoke(reporter, workspaceSnapshot)
+    helper.invoke(reporter, workspaceSnapshot, taskId)
   }
 
   val relativizeDirsOrder =

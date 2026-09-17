@@ -65,11 +65,9 @@ f:org.jetbrains.bazel.sync.ProjectSyncHook$ProjectSyncHookEnvironment
 - f:component5():org.jetbrains.bsp.protocol.TaskId
 - f:component6():com.intellij.platform.workspace.storage.MutableEntityStorage
 - f:component7():com.intellij.platform.util.progress.SequentialProgressReporter
-- f:component8():java.util.List
-- f:copy(com.intellij.openapi.project.Project,org.jetbrains.bazel.sync.ProjectSyncScope,org.jetbrains.bazel.server.BazelServerFacade,org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceSnapshot,org.jetbrains.bsp.protocol.TaskId,com.intellij.platform.workspace.storage.MutableEntityStorage,com.intellij.platform.util.progress.SequentialProgressReporter,java.util.List):org.jetbrains.bazel.sync.ProjectSyncHook$ProjectSyncHookEnvironment
-- bs:copy$default(org.jetbrains.bazel.sync.ProjectSyncHook$ProjectSyncHookEnvironment,com.intellij.openapi.project.Project,org.jetbrains.bazel.sync.ProjectSyncScope,org.jetbrains.bazel.server.BazelServerFacade,org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceSnapshot,org.jetbrains.bsp.protocol.TaskId,com.intellij.platform.workspace.storage.MutableEntityStorage,com.intellij.platform.util.progress.SequentialProgressReporter,java.util.List,I,java.lang.Object):org.jetbrains.bazel.sync.ProjectSyncHook$ProjectSyncHookEnvironment
+- f:copy(com.intellij.openapi.project.Project,org.jetbrains.bazel.sync.ProjectSyncScope,org.jetbrains.bazel.server.BazelServerFacade,org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceSnapshot,org.jetbrains.bsp.protocol.TaskId,com.intellij.platform.workspace.storage.MutableEntityStorage,com.intellij.platform.util.progress.SequentialProgressReporter):org.jetbrains.bazel.sync.ProjectSyncHook$ProjectSyncHookEnvironment
+- bs:copy$default(org.jetbrains.bazel.sync.ProjectSyncHook$ProjectSyncHookEnvironment,com.intellij.openapi.project.Project,org.jetbrains.bazel.sync.ProjectSyncScope,org.jetbrains.bazel.server.BazelServerFacade,org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceSnapshot,org.jetbrains.bsp.protocol.TaskId,com.intellij.platform.workspace.storage.MutableEntityStorage,com.intellij.platform.util.progress.SequentialProgressReporter,I,java.lang.Object):org.jetbrains.bazel.sync.ProjectSyncHook$ProjectSyncHookEnvironment
 - equals(java.lang.Object):Z
-- f:getDeferredApplyActions():java.util.List
 - f:getDiff():com.intellij.platform.workspace.storage.MutableEntityStorage
 - f:getProgressReporter():com.intellij.platform.util.progress.SequentialProgressReporter
 - f:getProject():com.intellij.openapi.project.Project

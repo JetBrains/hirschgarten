@@ -24,7 +24,6 @@ class WorkspaceImporterHelper(
   private val project: Project,
   private val taskConsole: TaskConsole,
   private val progressReporter: SequentialProgressReporter,
-  private val taskId: TaskId,
   private val builder: MutableEntityStorage,
   private val outputResolver: OutputLocationResolver,
   private val outputParser: OutputLocationParser,
@@ -38,7 +37,7 @@ class WorkspaceImporterHelper(
   private val toSkip = mutableSetOf<BazelWorkspaceImporter>()
   private lateinit var context: WorkspaceImporterContext
 
-  suspend fun invoke(reporter: SequentialProgressReporter, snapshot: WorkspaceSnapshot) {
+  suspend fun invoke(reporter: SequentialProgressReporter, snapshot: WorkspaceSnapshot, taskId: TaskId) {
     context = WorkspaceImporterContext(
       project = project,
       taskConsole = taskConsole,
@@ -120,7 +119,7 @@ class WorkspaceImporterHelper(
     }
   }
 
-  suspend fun invokeLate(reporter: SequentialProgressReporter, snapshot: WorkspaceSnapshot) {
+  suspend fun invokeLate(reporter: SequentialProgressReporter, snapshot: WorkspaceSnapshot, taskId: TaskId) {
     taskConsole.withSubtask(
       reporter, taskId.subTask("workspace-importers-post-apply"),
       BazelBackendBundle.message("bazel.workspace.post.apply.task.name"),
