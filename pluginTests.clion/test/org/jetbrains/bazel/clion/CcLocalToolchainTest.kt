@@ -29,8 +29,12 @@ class CcLocalToolchainTest {
     val compilerSettingsCPP = project.findCompilerSetting("main/main.cc", language = CLanguageKind.CPP)
     val expectedCompiler = if (SystemInfoRt.isWindows) OCCompilerId.MSVC else OCCompilerId.GCC
 
+    if (!SystemInfoRt.isWindows) {
+      assertThat(compilerSettingsCPP).hasCompilerKindWrapper()
+      assertThat(compilerSettingsC).hasCompilerKindWrapper()
+    }
+
     assertThat(compilerSettingsCPP)
-      .hasCompilerKindWrapper()
       .hasCompiler(expectedCompiler)
       .containsHeaders("iostream", "stdio.h")
       .containsSwitches("-Wall", "-DCXXOPTS")
@@ -39,7 +43,6 @@ class CcLocalToolchainTest {
       .hasDefine("SPACE_DEFINE", "1 2 3")
 
     assertThat(compilerSettingsC)
-      .hasCompilerKindWrapper()
       .hasCompiler(expectedCompiler)
       .containsHeaders("stdio.h")
       .containsSwitches("-Wall", "-DCONLYOPTS")

@@ -1,10 +1,7 @@
 package org.jetbrains.bazel.java.analysis
 
 import com.intellij.codeInspection.bytecodeAnalysis.BytecodeAnalysisSuppressor
-import com.intellij.openapi.vfs.JarFileSystem
 import com.intellij.openapi.vfs.VirtualFile
-
-private val INTERFACE_JAR_SUFFIXES = arrayOf("-ijar.jar", "-hjar.jar", ".abi.jar")
 
 /**
  * Interface jars have most of the bytecode removed (e.g., method bodies), so the bytecode analysis will be incorrect, leading to false positives.
@@ -21,10 +18,5 @@ internal class BazelInterfaceJarAnalysisSuppressor : BytecodeAnalysisSuppressor 
   // needs to be bumped if algorithm changes
   override fun getVersion(): Int = 1
 
-  override fun shouldSuppress(file: VirtualFile): Boolean {
-    val jar = JarFileSystem.getInstance().getVirtualFileForJar(file) ?: return false
-    val name = jar.name
-    return INTERFACE_JAR_SUFFIXES.any { suffix -> name.endsWith(suffix) }
-           && generateSequence(jar.parent) { it.parent }.any { it.name == "bazel-out" }
-  }
+  override fun shouldSuppress(file: VirtualFile): Boolean = file.isBazelInterfaceJar()
 }

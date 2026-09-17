@@ -24,11 +24,14 @@
     <module name="intellij.java.ui"/>
     <module name="intellij.libraries.kotlinx.coroutines.core"/>
     <module name="intellij.platform.analysis"/>
+    <module name="intellij.platform.backend.workspace"/>
+    <module name="intellij.platform.concurrency"/>
     <module name="intellij.platform.core"/>
     <module name="intellij.platform.core.impl"/>
     <module name="intellij.platform.core.ui"/>
     <module name="intellij.platform.debugger.impl"/>
     <module name="intellij.platform.diagnostic.telemetry"/>
+    <module name="intellij.platform.diagnostic.telemetry.exporters"/>
     <module name="intellij.platform.editor.ui"/>
     <module name="intellij.platform.execution"/>
     <module name="intellij.platform.execution.impl"/>
@@ -45,7 +48,9 @@
     <module name="intellij.platform.projectModel.impl"/>
     <module name="intellij.platform.smRunner"/>
     <module name="intellij.platform.testRunner"/>
+    <module name="intellij.platform.util.progress"/>
     <module name="intellij.platform.util.ui"/>
+    <module name="intellij.platform.workspace.storage"/>
   </dependencies>
   <!-- endregion -->
 
@@ -133,6 +138,6 @@
                      implementationClass="org.jetbrains.bazel.inspections.JavaStrictDependenciesInspection"
                      key="inspections.display.name.javastrictdeps"/>
     <runConfigurationProducer implementation="org.jetbrains.bazel.jvm.run.BazelRerunTestConfigurationProducer"/>
-
+    <librarySourcesMismatchSuppressor implementation="org.jetbrains.bazel.java.analysis.BazelInterfaceJarSourceMismatchSuppressor"/>
   </extensions>
 </idea-plugin>

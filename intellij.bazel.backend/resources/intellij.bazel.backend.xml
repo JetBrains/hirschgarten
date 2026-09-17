@@ -26,8 +26,11 @@
     <module name="intellij.libraries.velocity"/>
     <module name="intellij.platform.analysis"/>
     <module name="intellij.platform.backend"/>
+    <module name="intellij.platform.backend.workspace"/>
     <module name="intellij.platform.core"/>
     <module name="intellij.platform.diagnostic.telemetry"/>
+    <module name="intellij.platform.diagnostic.telemetry.exporters"/>
+    <module name="intellij.platform.eel.provider"/>
     <module name="intellij.platform.externalSystem"/>
     <module name="intellij.platform.externalSystem.impl"/>
     <module name="intellij.platform.ide"/>
@@ -42,7 +45,9 @@
     <module name="intellij.platform.statistics"/>
     <module name="intellij.platform.util.coroutines"/>
     <module name="intellij.platform.util.ex"/>
+    <module name="intellij.platform.util.progress"/>
     <module name="intellij.platform.workspace.jps"/>
+    <module name="intellij.platform.workspace.storage"/>
   </dependencies>
   <!-- endregion -->
 
