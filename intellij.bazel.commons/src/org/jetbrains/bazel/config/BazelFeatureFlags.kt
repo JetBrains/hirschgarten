@@ -10,7 +10,6 @@ object BazelFeatureFlags {
   const val BUILD_PROJECT_ON_SYNC = "bazel.build.project.on.sync"
   private const val SHORTEN_MODULE_LIBRARY_NAMES = "bsp.shorten.module.library.names"
   private const val EXCLUDE_COMPILED_SOURCE_CODE_INSIDE_JARS = "bsp.exclude.compiled.source.code.inside.jars"
-  private const val ENABLE_PARTIAL_SYNC = "bsp.enable.partial.sync"
   private const val SYMLINK_SCAN_MAX_DEPTH = "bazel.symlink.scan.max.depth"
   private const val SHUTDOWN_BEFORE_SHARD_BUILD = "bazel.shutdown.before.shard.build"
   @VisibleForTesting
@@ -48,9 +47,6 @@ object BazelFeatureFlags {
 
   val excludeCompiledSourceCodeInsideJars: Boolean
     get() = isEnabled(EXCLUDE_COMPILED_SOURCE_CODE_INSIDE_JARS)
-
-  val enablePartialSync: Boolean
-    get() = isEnabled(ENABLE_PARTIAL_SYNC)
 
   val symlinkScanMaxDepth: Int
     get() = Registry.intValue(SYMLINK_SCAN_MAX_DEPTH)

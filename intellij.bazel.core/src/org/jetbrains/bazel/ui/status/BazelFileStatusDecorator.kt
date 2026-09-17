@@ -16,6 +16,7 @@ import com.intellij.openapi.fileEditor.impl.EditorTabTitleProvider
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.roots.ProjectFileIndex
 import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.openapi.vfs.toNioPathOrNull
 import com.intellij.ui.EditorNotificationPanel
 import com.intellij.ui.EditorNotificationProvider
 import com.intellij.ui.EditorNotifications
@@ -98,9 +99,18 @@ internal class BazelSourceFileNotificationProvider : EditorNotificationProvider 
           openProjectView(project)
         }
       }
-      createActionLabel(BazelPluginBundle.message("resync.action.text")) {
-        BazelCoroutineService.getInstance(project).start {
-          project.service<ProjectSyncService>().sync(ProjectSyncScope.Full(build = false, phased = false))
+      val localFile = fileEditor.file.toNioPathOrNull()
+      if (localFile != null) {
+        createActionLabel(BazelPluginBundle.message("sync.status.unsynced.source.file.banner.resync.file")) {
+          BazelCoroutineService.getInstance(project).start {
+            project.service<ProjectSyncService>().sync(ProjectSyncScope.Files(files = listOf(localFile), build = false))
+          }
+        }
+      } else {
+        createActionLabel(BazelPluginBundle.message("resync.action.text")) {
+          BazelCoroutineService.getInstance(project).start {
+            project.service<ProjectSyncService>().sync(ProjectSyncScope.Full(build = false, phased = false))
+          }
         }
       }
     }

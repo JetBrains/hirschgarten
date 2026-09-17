@@ -18,7 +18,6 @@ import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkCallExpres
 import org.jetbrains.bazel.languages.starlark.psi.statements.StarlarkExpressionStatement
 import org.jetbrains.bazel.languages.starlark.repomapping.calculateLabel
 import org.jetbrains.bazel.runnerAction.BuildTargetAction
-import org.jetbrains.bazel.sync.action.ResyncTargetAction
 import org.jetbrains.bazel.sync.workspace.targetKind.TargetKindService
 import org.jetbrains.bazel.target.targetStorage
 
@@ -63,9 +62,9 @@ open class StarlarkRunLineMarkerContributor : RunLineMarkerContributor() {
 
   private fun calculateLineMarkerInfo(project: Project, buildFile: VirtualFile, targetLabel: ResolvedLabel, ruleName: String): Info {
     val actions = calculateEligibleActions(project, buildFile, targetLabel, ruleName).toTypedArray()
-    val onlyBuild = actions.singleOrNull() is BuildTargetAction
+    val hasRunAction = actions.any { it !is BuildTargetAction }
     return Info(
-      if (onlyBuild) AllIcons.Actions.Compile else AllIcons.Actions.Execute,
+      if (hasRunAction) AllIcons.Actions.Execute else AllIcons.Actions.Compile,
       actions,
     )
   }
@@ -76,9 +75,6 @@ open class StarlarkRunLineMarkerContributor : RunLineMarkerContributor() {
     val targetKind = targetInfo?.kind ?: TargetKindService.getInstance().guessFromRuleName(ruleName)
 
     add(BuildTargetAction(targetLabel))
-    targetInfo?.let {
-      ResyncTargetAction.createIfEnabled(targetLabel)?.let { add(it) }
-    }
 
     if (targetKind.isExecutable) {
       val executableTarget = targetInfo ?: NonImportedBuildTarget(targetLabel, targetKind, (buildFile.parent ?: buildFile).toNioPath())

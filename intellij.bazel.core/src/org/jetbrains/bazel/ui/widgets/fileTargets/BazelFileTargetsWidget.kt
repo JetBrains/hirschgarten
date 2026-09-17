@@ -23,7 +23,6 @@ import org.jetbrains.bazel.debug.actions.StarlarkDebugAction
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.languages.starlark.repomapping.toShortString
 import org.jetbrains.bazel.runnerAction.BuildTargetAction
-import org.jetbrains.bazel.sync.action.ResyncTargetAction
 import org.jetbrains.bazel.target.targetStorage
 import org.jetbrains.bazel.ui.gutters.getExecutorActions
 import org.jetbrains.bazel.ui.widgets.BazelJumpToBuildFileAction
@@ -102,7 +101,6 @@ internal class BazelFileTargetsWidget(project: Project) : EditorBasedStatusBarPo
 
   private fun BuildTarget.calculatePopupGroup(): ActionGroup =
     createActionGroup(id.toShortString(project)).also {
-      ResyncTargetAction.createIfEnabled(id)?.let { resyncTargetAction -> it.add(resyncTargetAction) }
       it.add(CopyTargetIdAction.FromTargetInfo(this))
       it.addSeparator()
       it.add(BuildTargetAction(id))

@@ -6,6 +6,7 @@ import org.jetbrains.bazel.commons.RepoMapping
 import org.jetbrains.bazel.config.BazelBackendBundle
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.label.ResolvedLabel
+import org.jetbrains.bazel.languages.starlark.repomapping.toShortString
 import org.jetbrains.bazel.progress.syncConsole
 import org.jetbrains.bazel.progress.withSubtask
 import org.jetbrains.bazel.sync.task.SyncPhase
@@ -51,6 +52,12 @@ internal class SyncWorkspaceUpdater(private val project: Project) {
         //  Solution here is to track output artifact identity (modification time, content length for local artifacts)
         //  and compare those against previous state. As a result we get "artifact diff" and we invoke textproto read + parse
         //  only on changed files.
+        project.syncConsole.addDiagnosticMessage(
+          taskId = context.taskId,
+          message = BazelBackendBundle.message("progress.text.resyncing.targets", scope.patterns.size),
+          description = scope.patterns.joinToString(separator = "\n") { it.toShortString(project) },
+          severity = MessageEvent.Kind.INFO,
+        )
         val resolved = resolveWorkspace(context, WorkspaceBuildTargetSelector.SpecificTargets(scope.patterns))
         val incomplete = WorkspaceSnapshotBuilder.buildIncomplete(resolved = resolved)
         val snapshot = project.syncConsole.withSubtask(

@@ -790,6 +790,14 @@
       />
     </action>
 
+    <action
+      class="org.jetbrains.bazel.sync.action.ResyncFilesAction$XmlRegistered"
+      id="Bazel.ResyncFilesAction"
+    >
+      <add-to-group anchor="last" group-id="ProjectViewPopupMenu"/>
+      <add-to-group anchor="last" group-id="EditorTabPopupMenu"/>
+    </action>
+
     <group id="Bazel.ActionsToolbar">
       <reference id="Bazel.ResyncAction"/>
       <reference id="Bazel.BuildAndResyncAction"/>

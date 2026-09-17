@@ -26,7 +26,8 @@ import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.debug.actions.StarlarkDebugAction
 import org.jetbrains.bazel.runnerAction.BuildTargetAction
-import org.jetbrains.bazel.sync.action.ResyncTargetAction
+import org.jetbrains.bazel.sync.action.ResyncFilesAction
+import org.jetbrains.bazel.sync.action.isResyncable
 import org.jetbrains.bazel.ui.gutters.BazelRunLocation
 import org.jetbrains.bazel.ui.gutters.getExecutorActions
 import org.jetbrains.bazel.ui.widgets.BazelJumpToBuildFileAction
@@ -88,7 +89,6 @@ internal abstract class LoadedTargetsMouseListener(private val project: Project)
 
   private fun calculatePopupGroup(target: BuildTarget): ActionGroup =
     DefaultActionGroup().apply {
-      ResyncTargetAction.createIfEnabled(target.id)?.let { addAction(it) }
       addAction(copyTargetIdAction)
       addSeparator()
       addAction(BuildTargetAction(target.id))
@@ -99,6 +99,10 @@ internal abstract class LoadedTargetsMouseListener(private val project: Project)
 
   private fun calculatePopupGroup(directory: VirtualFile): ActionGroup =
     DefaultActionGroup().apply {
+      if (directory.isResyncable()) {
+        addAction(ResyncFilesAction.NonXmlRegistered(listOf(directory)))
+        addSeparator()
+      }
       addAll(
         runReadActionBlocking {
           val psiDirectory = PsiManager.getInstance(project).findDirectory(directory)
