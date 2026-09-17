@@ -39,6 +39,13 @@ jvm_library(
         "//plugins/bazel/kotlin/intellij.bazel.kotlin.common:bazel-kotlin-common",
         "@community//platform/external-system-impl:externalSystem-impl",
         "@community//platform/external-system-api:externalSystem",
+        "@lib//:kotlinc-analysis-api-provided",
+        "@lib//:kotlinc-analysis-api-platform-interface-provided",
+        "@lib//:kotlinc-kotlin-compiler-common-provided",
+        "@lib//:kotlinc-kotlin-jps-plugin-classpath-provided",
+        "@community//plugins/kotlin/base/psi",
+        "@community//platform/core-impl",
+        "@community//java/java-psi-api:psi",
     ],
 )
 
@@ -71,6 +78,13 @@ jvm_library(
         "//plugins/bazel/kotlin/intellij.bazel.kotlin.common:bazel-kotlin-common_test_lib",
         "@community//platform/external-system-impl:externalSystem-impl_test_lib",
         "@community//platform/external-system-api:externalSystem_test_lib",
+        "@lib//:kotlinc-analysis-api-provided",
+        "@lib//:kotlinc-analysis-api-platform-interface-provided",
+        "@lib//:kotlinc-kotlin-compiler-common-provided",
+        "@lib//:kotlinc-kotlin-jps-plugin-classpath-provided",
+        "@community//plugins/kotlin/base/psi:psi_test_lib",
+        "@community//platform/core-impl:core-impl_test_lib",
+        "@community//java/java-psi-api:psi_test_lib",
     ],
 )
 ### auto-generated section `build intellij.bazel.devkit.monorepo` end

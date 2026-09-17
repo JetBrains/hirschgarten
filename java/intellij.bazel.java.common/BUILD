@@ -24,6 +24,7 @@ jvm_library(
         "//plugins/bazel/intellij.bazel.commons:commons",
         "@community//platform/core-api:core",
         "@lib//:jetbrains-annotations",
+        "//plugins/bazel/intellij.bazel.backend:backend",
     ],
 )
 
@@ -41,6 +42,7 @@ jvm_library(
         ":bazel-java-common",
         "//plugins/bazel/intellij.bazel.commons:commons_test_lib",
         "@community//platform/core-api:core_test_lib",
+        "//plugins/bazel/intellij.bazel.backend:backend_test_lib",
     ],
 )
 ### auto-generated section `build intellij.bazel.java.common` end
