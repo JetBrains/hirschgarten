@@ -105,11 +105,12 @@ abstract class BazelCommandLineStateBase(environment: ExecutionEnvironment) : Co
     val actions = createActions(console, handler, executor)
 
     val executionResult = DefaultExecutionResult(console, handler, *actions)
-    if (useJetBrainsTestRunner) {
-      val rerunFailedTestsAction = BazelRerunFailedTestsAction(console)
-      rerunFailedTestsAction.setModelProvider { console.resultsViewer }
-      executionResult.setRestartActions(rerunFailedTestsAction)
-    }
+    // The rerun-failed action works with any test runner: it re-runs by the JetBrains runner's
+    // test unique ids when that runner is used, and by a generic bazel --test_filter otherwise
+    // (see BazelRerunFailedTestsAction).
+    val rerunFailedTestsAction = BazelRerunFailedTestsAction(console)
+    rerunFailedTestsAction.setModelProvider { console.resultsViewer }
+    executionResult.setRestartActions(rerunFailedTestsAction)
     return executionResult
   }
 }
