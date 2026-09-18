@@ -1,0 +1,5 @@
+targets:
+  //...
+
+shard_sync: true
+sharding_approach: query_and_shard

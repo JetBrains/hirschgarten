@@ -6,19 +6,21 @@ import org.jetbrains.bazel.commons.constants.Constants.VERSION
 
 @ApiStatus.Internal
 object BazelFlag {
-  @JvmStatic fun runUnder(command: String) = arg("run_under", command)
+  @JvmStatic fun runUnder(command: String): String = arg("run_under", command)
 
-  @JvmStatic fun color(enabled: Boolean) = yesNoArg("color", enabled)
+  @JvmStatic fun color(enabled: Boolean): String = yesNoArg("color", enabled)
 
-  @JvmStatic fun keepGoing() = flag("keep_going")
+  @JvmStatic fun keepGoing(): String = flag("keep_going")
 
-  @JvmStatic fun noRunValidations() = flag("norun_validations")
+  @JvmStatic fun skipIncompatibleExplicitTargets(): String = flag("skip_incompatible_explicit_targets")
 
-  @JvmStatic fun javaTestDebug() = flag("java_debug")
+  @JvmStatic fun noRunValidations(): String = flag("norun_validations")
 
-  @JvmStatic fun outputGroups(groups: List<String>) = arg("output_groups", groups.joinToString(","))
+  @JvmStatic fun javaTestDebug(): String = flag("java_debug")
 
-  @JvmStatic fun aspect(name: String) = arg("aspects", name)
+  @JvmStatic fun outputGroups(groups: List<String>): String = arg("output_groups", groups.joinToString(","))
+
+  @JvmStatic fun aspect(name: String): String = arg("aspects", name)
 
   @JvmStatic fun buildManualTests(): String = flag("build_manual_tests")
 
@@ -94,10 +96,10 @@ object BazelFlag {
 
   object OutputFormat {
     @JvmStatic fun label(): String = outputFlag("label")
-    @JvmStatic fun json() = outputFlag("json")
-    @JvmStatic fun xml() = outputFlag("xml")
-    @JvmStatic fun proto() = outputFlag("proto")
-    @JvmStatic fun streamed_proto() = outputFlag("streamed_proto")
+    @JvmStatic fun json(): String = outputFlag("json")
+    @JvmStatic fun xml(): String = outputFlag("xml")
+    @JvmStatic fun proto(): String = outputFlag("proto")
+    @JvmStatic fun streamed_proto(): String = outputFlag("streamed_proto")
 
     private fun outputFlag(format: String) = arg("output", format)
   }

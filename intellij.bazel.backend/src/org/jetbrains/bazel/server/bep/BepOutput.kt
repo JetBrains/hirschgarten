@@ -1,6 +1,7 @@
 package org.jetbrains.bazel.server.bep
 
 import com.google.common.collect.Queues
+import com.intellij.openapi.diagnostic.logger
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.commons.BazelRelease
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceConfiguration
@@ -30,16 +31,16 @@ class BepOutput(
     val visited = HashSet<String>(rootIds)
     while (!toVisit.isEmpty()) {
       val fileSetId = toVisit.remove()
-      val fileSet = textProtoFileSets[fileSetId]
-      result.addAll(fileSet!!.files)
-      val children = fileSet.children
-      children
-        .asSequence()
-        .filter { child: String -> !visited.contains(child) }
-        .forEach { e: String ->
-          visited.add(e)
-          toVisit.add(e)
+      val fileSet = textProtoFileSets[fileSetId] ?: run {
+        logger.error("Missing textproto for $fileSetId")
+        continue
+      }
+      result.addAll(fileSet.files)
+      for (child in fileSet.children) {
+        if (visited.add(child)) {
+          toVisit.add(child)
         }
+      }
     }
     return result
   }
@@ -47,8 +48,8 @@ class BepOutput(
   /**
    * Rename all namedSetOfFiles occurring in the BepOutput by encoding the run number.
    */
-  fun renameNamedSets(runNumber: Int) : BepOutput  {
-    val renameSetName = { name : String -> "${runNumber}.${name}" }
+  fun renameNamedSets(runNumber: Int): BepOutput {
+    val renameSetName = { name: String -> "${runNumber}.${name}" }
     return BepOutput(
       infoOutputGroupFileSets = infoOutputGroupFileSets.map(renameSetName).toSet(),
       textProtoFileSets = textProtoFileSets.map { (key, entry) -> renameSetName(key) to TextProtoDepSet(entry.files, entry.children.map(renameSetName) ) }.toMap(),
@@ -57,8 +58,7 @@ class BepOutput(
       configurations = configurations,
       buildToolVersion = buildToolVersion,
     )
- }
-
+  }
 
 
   fun merge(anotherBepOutput: BepOutput): BepOutput =
@@ -78,4 +78,8 @@ class BepOutput(
                          ?: anotherBepOutput.buildToolVersion.takeIf { it != BazelRelease.FALLBACK_VERSION }
                          ?: BazelRelease.FALLBACK_VERSION,
     )
+
+  companion object {
+    private val logger = logger<BepOutput>()
+  }
 }

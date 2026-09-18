@@ -1,0 +1,5 @@
+targets:
+  //...
+
+shard_sync: true
+sharding_approach: expand_and_shard

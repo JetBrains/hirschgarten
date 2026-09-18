@@ -235,9 +235,16 @@ class ProjectResolver(
     val syncLanguages = ruleSets.map { it.ruleset.aspectLanguage }.toSet()
 
     val buildAspectResult =
-      measured(
-        "Building project with aspect",
-      ) { buildProjectWithAspect(projectView, syncLanguages, build, targetsToSync, allTargets, taskId) }
+      measured("Building project with aspect") {
+        buildProjectWithAspect(
+          projectView = projectView,
+          languages = syncLanguages,
+          build = build,
+          targetsToSync = targetsToSync,
+          allTargets = allTargets,
+          taskId = taskId,
+        )
+      }
 
     return Pair(repoMapping, buildAspectResult)
   }

@@ -113,7 +113,7 @@ object BazelBuildTargetSharder {
   private fun getTargetShardSize(projectView: ProjectView): Int = min(projectView.targetShardSize, MAX_TARGET_SHARD_SIZE)
 
   /**
-   *  Expand wildcard target patterns into individual bazel targets.
+   *  Expand wildcard target patterns into individual Bazel targets.
    */
   private suspend fun expandWildcardTargets(
     pathsResolver: BazelPathsResolver,
@@ -244,6 +244,8 @@ object BazelBuildTargetSharder {
    */
   fun shardTargetsRetainingOrdering(targets: List<Label>, shardSize: Int): List<List<Label>> = targets.chunked(shardSize)
 
-  /** Result of expanding then sharding wildcard target patterns  */
-  data class ShardedTargetsResult(val targets: List<TargetCollection>, val buildResult: BazelStatus)
+  data class ShardedTargetsResult(
+    val targets: List<TargetCollection>,
+    val buildResult: BazelStatus,
+  )
 }

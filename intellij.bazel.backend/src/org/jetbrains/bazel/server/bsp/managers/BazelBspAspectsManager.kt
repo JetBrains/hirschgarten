@@ -11,6 +11,7 @@ import org.jetbrains.bazel.bazelrunner.params.BazelFlag.keepGoing
 import org.jetbrains.bazel.bazelrunner.params.BazelFlag.noRunValidations
 import org.jetbrains.bazel.bazelrunner.params.BazelFlag.outputGroups
 import org.jetbrains.bazel.bazelrunner.params.BazelFlag.remoteDownloadOutputsTopLevel
+import org.jetbrains.bazel.bazelrunner.params.BazelFlag.skipIncompatibleExplicitTargets
 import org.jetbrains.bazel.commons.BazelRelease
 import org.jetbrains.bazel.commons.BazelStatus
 import org.jetbrains.bazel.commons.BzlmodRepoMapping
@@ -143,11 +144,12 @@ class BazelBspAspectsManager(
     if (targetsSpec.values.isEmpty()) return BazelBspAspectsManagerResult(BepOutput(), BazelStatus.SUCCESS)
     val defaultFlags =
       listOf(
-        aspect(aspects.map { resolveAspectLabel(it) }.joinToString(",")),
+        aspect(aspects.joinToString(",") { resolveAspectLabel(it) }),
         outputGroups(outputGroups),
         keepGoing(),
         // Validations don't contribute to the project model and only slow down sync, so disable them.
         noRunValidations(),
+        skipIncompatibleExplicitTargets()
       )
     val allowManualTargetsSyncFlags = if (projectView.allowManualTargetsSync) listOf(buildManualTests()) else emptyList()
     val syncFlags = projectView.syncFlags
