@@ -5,11 +5,11 @@ import org.jetbrains.annotations.Nls
 import org.jetbrains.annotations.NonNls
 import org.jetbrains.annotations.PropertyKey
 
-internal object BazelClionCoreBundle {
+internal object BazelCLionCoreBundle {
 
-  const val BUNDLE_FQN: @NonNls String = "messages.BazelClionCoreBundle"
+  const val BUNDLE_FQN: @NonNls String = "messages.BazelCLionCoreBundle"
 
-  private val BUNDLE = DynamicBundle(BazelClionCoreBundle::class.java, BUNDLE_FQN)
+  private val BUNDLE = DynamicBundle(BazelCLionCoreBundle::class.java, BUNDLE_FQN)
 
   fun message(
     @NonNls @PropertyKey(resourceBundle = BUNDLE_FQN) key: String,

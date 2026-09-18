@@ -1,7 +1,7 @@
 package org.jetbrains.bazel.clion.debug
 
 import com.intellij.openapi.project.Project
-import org.jetbrains.bazel.clion.BazelClionCoreBundle
+import org.jetbrains.bazel.clion.BazelCLionCoreBundle
 import org.jetbrains.bazel.clion.sync.CcBuildTarget
 import org.jetbrains.bazel.clion.sync.CcToolchainBuildTarget
 import org.jetbrains.bazel.clion.workspace.presentable
@@ -24,7 +24,7 @@ internal class DebugTargetInfoAction : BazelDebugAction() {
       fail("no target found in the workspace snapshot")
     }
 
-    val chosen = chooseInPopup(project, BazelClionCoreBundle.message("debug.popup.targets.title"), summaries) {
+    val chosen = chooseInPopup(project, BazelCLionCoreBundle.message("debug.popup.targets.title"), summaries) {
       "${it.kind.kind} rule ${it.key.presentable()}"
     }
 

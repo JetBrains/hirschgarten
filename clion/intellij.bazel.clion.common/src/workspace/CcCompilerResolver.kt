@@ -8,7 +8,7 @@ import com.jetbrains.cidr.lang.workspace.compiler.OCCompilerId
 import com.jetbrains.cidr.lang.workspace.compiler.OCCompilerKind
 import com.jetbrains.cidr.lang.workspace.compiler.isUnknown
 import com.jetbrains.cidr.lang.workspace.compiler.resolver.OCCompilerResolver
-import org.jetbrains.bazel.clion.BazelClionCommonBundle
+import org.jetbrains.bazel.clion.BazelCLionCommonBundle
 import org.jetbrains.bsp.protocol.OutputLocation
 import java.nio.file.Path
 
@@ -43,8 +43,8 @@ internal class CcCompilerResolver(private val ctx: CcImportContext) {
   fun reportProblems() {
     val problems = cache.entries.mapNotNull { (location, result) ->
       when {
-        result == null -> BazelClionCommonBundle.message("cc.compiler.path.resolve.failed", location)
-        result.kind.isUnknown() -> BazelClionCommonBundle.message("cc.compiler.kind.resolve.failed", location)
+        result == null -> BazelCLionCommonBundle.message("cc.compiler.path.resolve.failed", location)
+        result.kind.isUnknown() -> BazelCLionCommonBundle.message("cc.compiler.kind.resolve.failed", location)
         else -> null
       }
     }
@@ -52,7 +52,7 @@ internal class CcCompilerResolver(private val ctx: CcImportContext) {
     if (problems.isEmpty()) return
 
     ctx.reportEvent(
-      message = BazelClionCommonBundle.message("cc.compiler.resolve.failed"),
+      message = BazelCLionCommonBundle.message("cc.compiler.resolve.failed"),
       description = problems.joinToString("\n"),
       severity = MessageEvent.Kind.WARNING,
     )

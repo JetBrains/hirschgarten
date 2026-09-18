@@ -26,7 +26,7 @@
     <runConfigurationProducer implementation="org.jetbrains.bazel.clion.run.BazelCcRunConfigurationProducer"/>
   </extensions>
 
-  <actions resource-bundle="messages.BazelClionCoreBundle">
+  <actions resource-bundle="messages.BazelCLionCoreBundle">
     <group id="Bazel.CLion.DebugActions">
       <action id="Bazel.CLion.DebugBazelConfiguration" class="org.jetbrains.bazel.clion.debug.DebugBazelConfigurationAction"/>
       <action id="Bazel.CLion.DebugExcrootVFS" class="org.jetbrains.bazel.clion.debug.DebugExcrootVFSAction"/>

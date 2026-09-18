@@ -7,7 +7,7 @@ import com.jetbrains.cidr.lang.toolchains.CidrCompilerSwitches
 import com.jetbrains.cidr.lang.workspace.OCCompilerSettings
 import com.jetbrains.cidr.lang.workspace.OCResolveConfiguration
 import com.jetbrains.cidr.lang.workspace.OCWorkspace
-import org.jetbrains.bazel.clion.BazelClionCoreBundle
+import org.jetbrains.bazel.clion.BazelCLionCoreBundle
 import org.jetbrains.bazel.clion.workspace.CC_CLIENT_KEY
 import org.jetbrains.bazel.clion.workspace.getCcIdentifier
 import kotlin.collections.orEmpty
@@ -32,7 +32,7 @@ internal class DebugOCResolveContextAction : BazelDebugAction() {
 
     val chosen = chooseInPopup(
       project,
-      BazelClionCoreBundle.message("debug.popup.resolve.configurations.title"),
+      BazelCLionCoreBundle.message("debug.popup.resolve.configurations.title"),
       configurations,
     ) { it.displayName }
 
