@@ -96,10 +96,7 @@ fun bazelProjectFixture(
     LOG.info("Initializing the Bazel project ${project.name} at $projectRoot")
     initializeBazelProject(project, projectRoot)
 
-    BazelTestProject.copy(project, projectRoot, projectPath, projectsRoot, jvmToolchains)
-    if (bazelVersion != null) {
-      writeBazelVersion(projectRoot, bazelVersion)
-    }
+    BazelTestProject.copy(project, projectRoot, projectPath, projectsRoot, jvmToolchains, bazelVersion)
     if (projectView != null) {
       applyProjectView(project, projectRoot, projectView)
     }

@@ -25,6 +25,9 @@ internal object BazelTestProject {
    * It also writes the Bazel settings and caches, refreshes the VFS, and waits for the indexes of
    * [project]. When [jvmToolchains] is set, it adds the JVM toolchains: the Java runtime and the Kotlin
    * standard library. A pure C++ project does not need them.
+   *
+   * [bazelVersion] replaces the `.bazelversion` file of the test project, and it also keys the Bazel output
+   * base, so that two versions of the same test project do not share one.
    */
   fun copy(
     project: Project,
@@ -32,12 +35,16 @@ internal object BazelTestProject {
     path: String,
     projectsRoot: Path = BazelPathManager.testProjectsRoot,
     jvmToolchains: Boolean = true,
+    bazelVersion: String? = null,
   ) {
     LOG.info("Copying the test project $path into $projectRoot (jvmToolchains=$jvmToolchains)")
     copyDir(BazelPathManager.testProjectsRoot.resolve("base"), projectRoot)
     BazelTestCaches.setupBazelRc(projectRoot, jvmToolchains)
     copyDir(projectsRoot.resolve(path), projectRoot)
-    BazelTestCaches.configureBazelCaches(projectRoot, path)
+    if (bazelVersion != null) {
+      writeBazelVersion(projectRoot, bazelVersion)
+    }
+    BazelTestCaches.configureBazelCaches(projectRoot, path, bazelVersion)
     if (jvmToolchains) {
       LOG.info("Adding the JVM toolchains")
       BazelTestCaches.findKotlinStdlibInClasspath()

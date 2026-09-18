@@ -5,14 +5,19 @@ import org.jetbrains.bazel.assertions.assertVfsLoads
 import org.jetbrains.bazel.assertions.findTarget
 import org.jetbrains.bazel.fixtures.CcTestApplication
 import org.jetbrains.bazel.fixtures.clionBazelProjectFixture
+import org.jetbrains.bazel.test.framework.BazelVersions
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 
-@CcTestApplication
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-class MixedImportTest {
+abstract class MixedImportTest(bazelVersion: String) {
+  @CcTestApplication
+  class Bazel7 : MixedImportTest(BazelVersions.BAZEL_7)
 
-  private val project by clionBazelProjectFixture("import/mixed", jvmToolchains = true)
+  @CcTestApplication
+  class Bazel8 : MixedImportTest(BazelVersions.BAZEL_8)
+
+  private val project by clionBazelProjectFixture("import/mixed", jvmToolchains = true, bazelVersion = bazelVersion)
 
   @Test
   fun testVfsRoots() = project.assertVfsLoads(emptyList())
