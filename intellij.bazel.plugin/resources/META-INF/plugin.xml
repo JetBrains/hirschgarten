@@ -51,6 +51,7 @@
 
     <!-- cpp modules -->
     <module name="intellij.bazel.clion.common"/>
+    <module name="intellij.bazel.clion.core"/>
 
     <!-- go modules -->
     <module name="intellij.bazel.golang.common"/>

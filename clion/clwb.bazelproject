@@ -24,6 +24,7 @@ import_depth: -1
 
 targets:
   //plugins/bazel/clion/intellij.bazel.clion.common:all
+  //plugins/bazel/clion/intellij.bazel.clion.core:all
   //plugins/bazel/pluginTests:all
   //plugins/bazel/pluginTests.clion:all
   //build:idea_dev_build_with_bazel_all

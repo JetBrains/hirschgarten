@@ -36,6 +36,7 @@
     <orderEntry type="module" module-name="intellij.bazel.backend" scope="TEST" />
     <orderEntry type="module" module-name="intellij.bazel.core" scope="TEST" />
     <orderEntry type="module" module-name="intellij.bazel.clion.common" scope="TEST" />
+    <orderEntry type="module" module-name="intellij.bazel.clion.core" scope="TEST" />
     <orderEntry type="module" module-name="intellij.libraries.junit5" scope="TEST" />
     <orderEntry type="module" module-name="intellij.platform.execution" scope="TEST" />
     <orderEntry type="module" module-name="intellij.platform.smRunner" scope="TEST" />
