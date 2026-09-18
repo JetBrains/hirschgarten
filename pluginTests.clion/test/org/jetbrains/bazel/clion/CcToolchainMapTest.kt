@@ -97,6 +97,7 @@ class CcToolchainMapTest {
 
       ccBinary {
         label("//main:main")
+        srcs("main/main.cc")
         noToolchain()
       }
     }
@@ -118,6 +119,7 @@ class CcToolchainMapTest {
 
       ccBinary {
         label("//main:main")
+        srcs("main/main.cc")
         deps(DependencyLabelKind.TOOLCHAIN, one, two)
       }
     }
@@ -136,6 +138,7 @@ class CcToolchainMapTest {
     val (events, toolchains) = resolve {
       ccBinary {
         label("//main:main")
+        srcs("main/main.cc")
         noToolchain()
       }
     }
@@ -158,6 +161,7 @@ class CcToolchainMapTest {
 
       ccBinary {
         label("//main:main")
+        srcs("main/main.cc")
         noToolchain()
         deps(DependencyLabelKind.TOOLCHAIN, library)
         deps(DependencyLabelKind.COMPILE, library)
@@ -166,6 +170,156 @@ class CcToolchainMapTest {
 
     assertThat(events).hasSize(1)
     assertThat(toolchains.byLabel("//main:main")).hasLabel("//toolchain:fallback")
+  }
+
+  @Test
+  fun testNoToolchainWithoutSources() {
+    val (events, toolchains) = resolve {
+      ccToolchain { label("//toolchain:fallback") }
+
+      ccBinary {
+        label("//main:main")
+        noToolchain()
+      }
+    }
+
+    assertThat(events).isEmpty()
+    assertThat(toolchains.byLabel("//main:main")).hasLabel("//toolchain:fallback")
+  }
+
+  @Test
+  fun testMultipleToolchainsWithoutSources() {
+    val (events, toolchains) = resolve {
+      val one = ccToolchain { label("//toolchain:one") }
+      val two = ccToolchain { label("//toolchain:two") }
+
+      ccBinary {
+        label("//main:main")
+        deps(DependencyLabelKind.TOOLCHAIN, one, two)
+      }
+    }
+
+    assertThat(events).isEmpty()
+    assertThat(toolchains.byLabel("//main:main")).hasLabel("//toolchain:one")
+  }
+
+  @Test
+  fun testNoToolchainWithGeneratedSources() {
+    val (events, toolchains) = resolve {
+      ccToolchain { label("//toolchain:fallback") }
+
+      ccBinary {
+        label("//main:main")
+        srcs("main/main.generated.cc", generated = true)
+        noToolchain()
+      }
+    }
+
+    assertThat(events).hasSize(1)
+    assertThat(toolchains.byLabel("//main:main")).hasLabel("//toolchain:fallback")
+
+    val issue = events.single()
+    assertThat(issue.severity).isEqualTo(MessageEvent.Kind.WARNING)
+    assertThat(issue.message).isEqualTo("Unexpected number of C/C++ toolchain dependencies for 1 target(s)")
+    assertThat(issue.description).isEqualTo("@//main:main: No dependency on a C/C++ toolchain found")
+  }
+
+  @Test
+  fun testMultipleToolchainsWithGeneratedSources() {
+    val (events, toolchains) = resolve {
+      val one = ccToolchain { label("//toolchain:one") }
+      val two = ccToolchain { label("//toolchain:two") }
+
+      ccBinary {
+        label("//main:main")
+        srcs("main/main.generated.cc", generated = true)
+        deps(DependencyLabelKind.TOOLCHAIN, one, two)
+      }
+    }
+
+    assertThat(events).hasSize(1)
+    assertThat(toolchains.byLabel("//main:main")).hasLabel("//toolchain:one")
+
+    val issue = events.single()
+    assertThat(issue.severity).isEqualTo(MessageEvent.Kind.WARNING)
+    assertThat(issue.message).isEqualTo("Unexpected number of C/C++ toolchain dependencies for 1 target(s)")
+    assertThat(issue.description).isEqualTo("@//main:main: @//toolchain:one, @//toolchain:two")
+  }
+
+  @Test
+  fun testNoToolchainWithDeclaredAndGeneratedSources() {
+    val (events, toolchains) = resolve {
+      ccToolchain { label("//toolchain:fallback") }
+
+      ccBinary {
+        label("//main:main")
+        srcs("main/main.cc")
+        srcs("main/main.generated.cc", generated = true)
+        noToolchain()
+      }
+    }
+
+    assertThat(events).hasSize(1)
+    assertThat(toolchains.byLabel("//main:main")).hasLabel("//toolchain:fallback")
+
+    val issue = events.single()
+    assertThat(issue.description).isEqualTo("@//main:main: No dependency on a C/C++ toolchain found")
+  }
+
+  @Test
+  fun testNoToolchainForAspectTargetWithGeneratedSources() {
+    val (events, toolchains) = resolve {
+      ccToolchain { label("//toolchain:fallback") }
+
+      ccBinary {
+        label("//main:main")
+        srcs("main/main.generated.cc", generated = true)
+        aspectIds("cc_info_aspect")
+        noToolchain()
+      }
+    }
+
+    assertThat(events).isEmpty()
+    assertThat(toolchains.byLabel("//main:main")).hasLabel("//toolchain:fallback")
+  }
+
+  @Test
+  fun testNoToolchainForAspectTarget() {
+    val (events, toolchains) = resolve {
+      ccToolchain { label("//toolchain:fallback") }
+
+      ccBinary {
+        label("//main:main")
+        srcs("main/main.cc")
+        aspectIds("cc_info_aspect")
+        noToolchain()
+      }
+    }
+
+    assertThat(events).isEmpty()
+    assertThat(toolchains.byLabel("//main:main")).hasLabel("//toolchain:fallback")
+  }
+
+  @Test
+  fun testMultipleToolchainsForAspectTarget() {
+    val (events, toolchains) = resolve {
+      val one = ccToolchain { label("//toolchain:one") }
+      val two = ccToolchain { label("//toolchain:two") }
+
+      ccBinary {
+        label("//main:main")
+        srcs("main/main.cc")
+        aspectIds("cc_info_aspect")
+        deps(DependencyLabelKind.TOOLCHAIN, one, two)
+      }
+    }
+
+    assertThat(events).hasSize(1)
+    assertThat(toolchains.byLabel("//main:main")).hasLabel("//toolchain:one")
+
+    val issue = events.single()
+    assertThat(issue.severity).isEqualTo(MessageEvent.Kind.WARNING)
+    assertThat(issue.description).isEqualTo("@//main:main: @//toolchain:one, @//toolchain:two")
   }
 
   @Test

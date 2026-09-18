@@ -28,7 +28,13 @@ fun buildToolchainMap(): Map<WorkspaceTargetKey, WorkspaceTargetKey> {
     if (!target.hasBuildData<CcBuildTarget>()) continue
     val candidates = findTargetToolchain(target, toolchains)
 
-    if (candidates.size != 1) {
+    // if the CcInfo was provided by an aspect, we do not know what toolchain the aspect used
+    val plainTarget = target.key.aspectIds.ids.isEmpty()
+
+    // no need to report an error if the target has no sources
+    val hasSources = !target.sources.isEmpty() || !target.generatedSources.isEmpty()
+
+    if (hasSources && (candidates.size > 1 || (candidates.isEmpty() && plainTarget))) {
       problems[target.key] = candidates
     }
 

@@ -14,6 +14,7 @@ import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.sync.workspace.persistence.InMemoryWorkspaceTargetMap
 import org.jetbrains.bazel.sync.workspace.snapshot.OutputLocationCollectionBuilder
 import org.jetbrains.bazel.sync.workspace.snapshot.SourceFileCollectionBuilder
+import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceAspectIds
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceConfigurationId
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceSnapshot
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetGraphBuilder
@@ -89,8 +90,10 @@ internal class CcTargetBuilder(private val kind: String, private val ruleType: R
 
   private var label: String? = null
   private var configurationId: String? = null
+  private val aspectIds = mutableListOf<String>()
 
   private val srcs = mutableListOf<String>()
+  private val generatedSrcs = mutableListOf<String>()
   private val hdrs = mutableListOf<String>()
   private val copts = mutableListOf<String>()
   private val conlyopts = mutableListOf<String>()
@@ -110,8 +113,17 @@ internal class CcTargetBuilder(private val kind: String, private val ruleType: R
     this.configurationId = configurationId
   }
 
-  fun srcs(vararg paths: String) {
-    srcs += paths
+  /** Marks the target as a target that an aspect created. */
+  fun aspectIds(vararg ids: String) {
+    aspectIds += ids
+  }
+
+  fun srcs(vararg paths: String, generated: Boolean = false) {
+    if (generated) {
+      generatedSrcs += paths
+    } else {
+      srcs += paths
+    }
   }
 
   /** Declares a header. It reaches both the rule context and the compilation context. */
@@ -186,13 +198,17 @@ internal class CcTargetBuilder(private val kind: String, private val ruleType: R
     allIncludes.add(OutputLocation.Workspace(packagePathOf(label)))
 
     return TestBuildTarget(
-      key = targetKey(label, configurationId),
+      key = targetKey(label, configurationId, aspectIds),
       kind = TargetKind(kind = kind, languageClasses = setOf(CC_LANGUAGE_CLASS), ruleType = ruleType),
       dependencies = deps.entrySet().flatMap { it.value.map { target -> DependencyLabel(target.key, it.key) } },
       baseDirectory = root.resolve(packagePathOf(label)),
       sources = SourceFileCollectionBuilder.build(
         relativeRoot = Path.of(packagePathOf(label)),
         paths = srcs.map(root::resolve),
+      ),
+      generatedSources = SourceFileCollectionBuilder.build(
+        relativeRoot = Path.of(packagePathOf(label)),
+        paths = generatedSrcs.map(root::resolve),
       ),
       data = listOf(
         CcBuildTarget(
@@ -330,8 +346,8 @@ internal class PlainTargetBuilder {
   }
 }
 
-private fun targetKey(label: String, configurationId: String?): WorkspaceTargetKey {
-  return WorkspaceTargetKey(Label.parse(label), WorkspaceConfigurationId.of(configurationId))
+private fun targetKey(label: String, configurationId: String?, aspectIds: List<String> = emptyList()): WorkspaceTargetKey {
+  return WorkspaceTargetKey(Label.parse(label), WorkspaceConfigurationId.of(configurationId), WorkspaceAspectIds.of(aspectIds))
 }
 
 private fun locations(paths: Collection<OutputLocation>): OutputLocationCollection {
