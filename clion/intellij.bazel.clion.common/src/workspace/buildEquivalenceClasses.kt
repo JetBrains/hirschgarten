@@ -102,7 +102,8 @@ private fun computeDisplayName(targets: Collection<WorkspaceTargetKey>): String 
   }
 }
 
-internal fun CcResolveConfiguration.Identifier.encode(): String {
+@ApiStatus.Internal
+fun CcResolveConfiguration.Identifier.encode(): String {
   return "$CC_CONFIGURATION_MARKER:$hashCode:${configurationId.shortChecksum}"
 }
 

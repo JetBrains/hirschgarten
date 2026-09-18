@@ -4,6 +4,7 @@ import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.util.Disposer
 import com.intellij.openapi.util.NlsContexts
 import com.jetbrains.cidr.lang.workspace.OCWorkspaceImpl
+import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.annotations.PropertyKey
 import org.jetbrains.bazel.clion.BazelClionCommonBundle
 import org.jetbrains.bazel.clion.BazelCLionFeatureFlags
@@ -14,7 +15,9 @@ import org.jetbrains.bazel.sync.workspace.importer.WorkspaceImporterPhase
 import org.jetbrains.bazel.sync.workspace.importer.WorkspaceImporterResult
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceSnapshot
 
-private const val CLIENT_KEY = "BAZEL_CC"
+@ApiStatus.Internal
+const val CC_CLIENT_KEY: String = "BAZEL_CC"
+
 private const val CLIENT_VERSION = 0
 
 private val LOG = logger<CcWorkspaceImporter>()
@@ -64,7 +67,7 @@ internal class CcWorkspaceImporter : BazelWorkspaceImporter, BazelWorkspaceImpor
       return Result.success(WorkspaceImporterResult.Abort)
     }
 
-    val workspace = OCWorkspaceImpl.getInstanceImpl(ctx.project).getModifiableModel(CLIENT_KEY, clear = true)
+    val workspace = OCWorkspaceImpl.getInstanceImpl(ctx.project).getModifiableModel(CC_CLIENT_KEY, clear = true)
 
     try {
       workspace.setClientVersion(CLIENT_VERSION)
