@@ -7,13 +7,13 @@ import java.nio.file.Path
 import kotlin.io.path.invariantSeparatorsPathString
 
 @Internal
-val DIRECTORIES_KEY: SectionKey<List<ExcludableValue<Path>>> = SectionKey("directories", emptyList())
+val DIRECTORIES_KEY: ProjectViewSectionKey<List<ExcludableValue<Path>>> = ProjectViewSectionKey("directories", emptyList())
 val ProjectView.directories: List<ExcludableValue<Path>>
   // Default to workspace root if no directories specified
   get() = getSection(DIRECTORIES_KEY).takeIf { it.isNotEmpty() } ?: listOf(ExcludableValue.included(Path.of(".")))
 
 @Internal
-val TARGETS_KEY: SectionKey<List<ExcludableValue<Label>>> = SectionKey("targets", emptyList())
+val TARGETS_KEY: ProjectViewSectionKey<List<ExcludableValue<Label>>> = ProjectViewSectionKey("targets", emptyList())
 
 val ProjectView.targets: List<ExcludableValue<Label>>
   @Internal

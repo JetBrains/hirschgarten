@@ -3,6 +3,7 @@ package org.jetbrains.bazel.languages.projectview.completion
 import com.intellij.openapi.application.runWriteAction
 import com.intellij.platform.backend.workspace.workspaceModel
 import com.intellij.platform.testFramework.junit5.codeInsight.fixture.codeInsightFixture
+import com.intellij.testFramework.DumbModeTestUtils
 import com.intellij.testFramework.junit5.TestApplication
 import com.intellij.testFramework.junit5.fixture.moduleFixture
 import com.intellij.testFramework.junit5.fixture.projectFixture
@@ -262,4 +263,52 @@ class ProjectViewSectionItemCompletionContributorTest {
 
     lookups shouldContainExactlyInAnyOrder listOf("subpackage/config.xml", "otherDir/other_config.xml")
   }
+
+  @Test
+  fun `should complete build flags in dumb mode`() {
+    codeInsightFixture.configureByText(".bazelproject", "build_flags:\n  <caret>")
+    codeInsightFixture.type("action")
+
+    completeBasicInDumbMode() shouldContainAll listOf("--action_env")
+  }
+
+  @Test
+  fun `should complete boolean sections in dumb mode`() {
+    codeInsightFixture.configureByText(".bazelproject", "shard_sync: <caret>")
+
+    completeBasicInDumbMode() shouldContainExactlyInAnyOrder listOf("true", "false")
+  }
+
+  @Test
+  fun `should complete directories in dumb mode`() {
+    codeInsightFixture.addFileToProject("main/BUILD", "some text")
+    codeInsightFixture.addFileToProject("module1/BUILD", "some text")
+    codeInsightFixture.configureByText(".bazelproject", "directories:\n  m<caret>")
+
+    completeBasicInDumbMode() shouldContainAll listOf("main", "module1")
+  }
+
+  @Test
+  fun `should complete import run configuration section in dumb mode`() {
+    codeInsightFixture.addFileToProject("subpackage/config.xml", "")
+    codeInsightFixture.addFileToProject("otherDir/other_config.xml", "")
+    codeInsightFixture.configureByText(".bazelproject", "import_run_configurations:\n  <caret>")
+    codeInsightFixture.type("x")
+
+    completeBasicInDumbMode() shouldContainExactlyInAnyOrder listOf("subpackage/config.xml", "otherDir/other_config.xml")
+  }
+
+  @Test
+  fun `should complete import section in dumb mode`() {
+    codeInsightFixture.addFileToProject("subpackage/sub.bazelproject", "")
+    codeInsightFixture.configureByText(".bazelproject", "import <caret>")
+    codeInsightFixture.type("baz")
+
+    completeBasicInDumbMode() shouldContainAll listOf("subpackage/sub.bazelproject")
+  }
+
+  private fun completeBasicInDumbMode(): List<String> =
+    DumbModeTestUtils.computeInDumbModeSynchronously(project) {
+      codeInsightFixture.completeBasic().flatMap { it.allLookupStrings }
+    }
 }

@@ -9,17 +9,18 @@ import com.intellij.codeInsight.completion.InsertHandler
 import com.intellij.codeInsight.completion.InsertionContext
 import com.intellij.codeInsight.lookup.LookupElement
 import com.intellij.codeInsight.lookup.LookupElementBuilder
+import com.intellij.openapi.project.DumbAware
 import com.intellij.patterns.PlatformPatterns.psiComment
 import com.intellij.patterns.PlatformPatterns.psiElement
 import com.intellij.util.PlatformIcons
 import com.intellij.util.ProcessingContext
-import org.jetbrains.bazel.languages.projectview.ProjectViewSections
-import org.jetbrains.bazel.languages.projectview.ScalarSection
+import org.jetbrains.bazel.languages.projectview.ProjectViewSection
 import org.jetbrains.bazel.languages.projectview.base.ProjectViewLanguage
+import org.jetbrains.bazel.languages.projectview.isScalar
 import org.jetbrains.bazel.languages.projectview.lexer.ProjectViewTokenType
 import org.jetbrains.bazel.languages.projectview.psi.ProjectViewPsiFile
 
-internal class ProjectViewSectionCompletionContributor : CompletionContributor() {
+internal class ProjectViewSectionCompletionContributor : CompletionContributor(), DumbAware {
   init {
     extend(
       CompletionType.BASIC,
@@ -44,9 +45,9 @@ internal class ProjectViewSectionCompletionContributor : CompletionContributor()
     ) {
       result.addElement(LookupElementBuilder.create("import").withIcon(PlatformIcons.FUNCTION_ICON))
       result.addAllElements(
-        ProjectViewSections.REGISTERED_SECTIONS.map {
-          sectionLookupElement(it.name, it is ScalarSection<*>)
-        },
+        ProjectViewSection.allRegistered
+          .map { sectionLookupElement(it.key.name, it.type.isScalar()) }
+          .toList(),
       )
     }
 

@@ -2,20 +2,27 @@ package org.jetbrains.bazel.languages.projectview.psi.sections
 
 import com.intellij.lang.ASTNode
 import com.intellij.psi.PsiElement
-import com.intellij.psi.util.PsiTreeUtil
-import com.intellij.psi.util.elementType
+import com.intellij.psi.util.childrenOfType
+import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.languages.projectview.lexer.ProjectViewTokenType
 import org.jetbrains.bazel.languages.projectview.psi.ProjectViewBaseElement
 import org.jetbrains.bazel.languages.projectview.psi.ProjectViewElementVisitor
 
-internal class ProjectViewPsiSection(node: ASTNode) : ProjectViewBaseElement(node) {
+@ApiStatus.Internal
+class ProjectViewPsiSection(node: ASTNode) : ProjectViewBaseElement(node) {
   override fun acceptVisitor(visitor: ProjectViewElementVisitor) {
     visitor.visitSection(this)
   }
 
   fun getKeyword(): PsiElement = firstChild
 
-  fun getItems(): Array<ProjectViewPsiSectionItem> = PsiTreeUtil.getChildrenOfType(this, ProjectViewPsiSectionItem::class.java) ?: emptyArray()
+  fun getItems(): List<ProjectViewPsiSectionItem> = childrenOfType<ProjectViewPsiSectionItem>()
 
-  fun getColon(): PsiElement? = PsiTreeUtil.getChildrenOfType(this, PsiElement::class.java)?.find { it.elementType == ProjectViewTokenType.COLON }
+  fun getColon(): PsiElement? = findChildByType(ProjectViewTokenType.COLON)
+
+  companion object {
+
+    fun findByName(psi: PsiElement, name: String): ProjectViewPsiSection? = psi.childrenOfType<ProjectViewPsiSection>()
+      .firstOrNull { it.getKeyword().text.trim() == name }
+  }
 }

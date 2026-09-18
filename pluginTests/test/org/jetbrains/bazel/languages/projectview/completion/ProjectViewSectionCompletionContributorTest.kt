@@ -1,9 +1,10 @@
 package org.jetbrains.bazel.languages.projectview.completion
 
+import com.intellij.testFramework.DumbModeTestUtils
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
 import io.kotest.matchers.collections.shouldContainAll
 import io.kotest.matchers.collections.shouldNotContainAll
-import org.jetbrains.bazel.languages.projectview.ProjectViewSections
+import org.jetbrains.bazel.languages.projectview.ProjectViewSection
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
@@ -17,8 +18,22 @@ class ProjectViewSectionCompletionContributorTest : BasePlatformTestCase() {
     myFixture.type("a")
 
     val lookups = myFixture.completeBasic().flatMap { it.allLookupStrings }
-    val expected = ProjectViewSections.REGISTERED_SECTIONS.filter { it.name.contains("a") }.map { it.name }
+    val expected = ProjectViewSection.allRegistered
+      .filter { it.key.name.contains("a") }
+      .map { it.key.name }
+      .toList()
     lookups shouldContainAll expected
+  }
+
+  @Test
+  fun `should suggest section names in dumb mode`() {
+    myFixture.configureByText(".bazelproject", "")
+    myFixture.type("a")
+
+    DumbModeTestUtils.runInDumbModeSynchronously(project) {
+      val lookups = myFixture.completeBasic().flatMap { it.allLookupStrings }
+      lookups shouldContainAll listOf("targets", "shard_sync")
+    }
   }
 
   @Test
@@ -28,7 +43,10 @@ class ProjectViewSectionCompletionContributorTest : BasePlatformTestCase() {
     myFixture.type("a")
 
     val lookups = myFixture.completeBasic().flatMap { it.allLookupStrings }
-    lookups shouldNotContainAll ProjectViewSections.REGISTERED_SECTIONS.filter { it.name.contains("a") }.map { it.name }
+    lookups shouldNotContainAll ProjectViewSection.allRegistered
+      .filter { it.key.name.contains("a") }
+      .map { it.key.name }
+      .toList()
   }
 
   @Test
@@ -45,6 +63,9 @@ class ProjectViewSectionCompletionContributorTest : BasePlatformTestCase() {
     myFixture.type("a")
 
     val lookups = myFixture.completeBasic().flatMap { it.allLookupStrings }
-    lookups shouldNotContainAll ProjectViewSections.REGISTERED_SECTIONS.filter { it.name.contains("a") }.map { it.name }
+    lookups shouldNotContainAll ProjectViewSection.allRegistered
+      .filter { it.key.name.contains("a") }
+      .map { it.key.name }
+      .toList()
   }
 }

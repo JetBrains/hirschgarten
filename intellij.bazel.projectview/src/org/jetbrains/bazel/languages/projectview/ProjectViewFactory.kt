@@ -87,12 +87,12 @@ object ProjectViewFactory {
     visited: Set<Path>,
   ): ProjectView {
     val imports = mutableListOf<Import>()
-    val sections = mutableMapOf<SectionKey<*>, Any>()
+    val sections = mutableMapOf<ProjectViewSectionKey<*>, Any>()
     for (it in psi.children) {
       when (it) {
         is ProjectViewPsiSection -> {
           val (section, value) = it.toSectionWithValue() ?: continue
-          mergeSection(sections, section.sectionKey, value)
+          mergeSection(sections, section.key, value)
         }
 
         is ProjectViewPsiImportBase -> {
@@ -115,8 +115,8 @@ object ProjectViewFactory {
   }
 
   private fun mergeSection(
-    target: MutableMap<SectionKey<*>, Any>,
-    sectionKey: SectionKey<*>,
+    target: MutableMap<ProjectViewSectionKey<*>, Any>,
+    sectionKey: ProjectViewSectionKey<*>,
     value: Any,
   ) {
     val existing = target[sectionKey]
@@ -131,7 +131,7 @@ object ProjectViewFactory {
   private fun parseImport(
     project: Project,
     import: Import.Resolved,
-    into: MutableMap<SectionKey<*>, Any>,
+    into: MutableMap<ProjectViewSectionKey<*>, Any>,
     root: Path,
     visited: Set<Path>,
   ) {
@@ -164,11 +164,10 @@ object ProjectViewFactory {
     return psiFile as? ProjectViewPsiFile ?: error("Expected ${ProjectViewPsiFile::class.simpleName} for $name, got ${psiFile?.javaClass?.name}")
   }
 
-  private fun ProjectViewPsiSection.toSectionWithValue(): Pair<Section<*>, Any>? {
-    val name = getKeyword().text.trim()
+  private fun ProjectViewPsiSection.toSectionWithValue(): Pair<ProjectViewSection<*>, Any>? {
     val contents = getItems().map { it.text.trim() }
-    val section = ProjectViewSections.getSectionByName(name) ?: return null
-    val value = section.fromRawValues(contents) ?: return null
+    val section = ProjectViewSection.findByPsi(this) ?: return null
+    val value = section.type.readFrom(contents) ?: return null
     return section to value
   }
 

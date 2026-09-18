@@ -30,8 +30,8 @@ import kotlin.io.path.absolutePathString
 /**
  * This sync hook does three important things:
  * 1. Creates the WSM entity
- * 2. Supports [org.jetbrains.bazel.languages.projectview.language.sections.IndexAdditionalFilesInDirectoriesSection],
- *    see documentation for that class.
+ * 2. Supports the `index_additional_files_in_directories:` section, see its documentation in
+ *    [org.jetbrains.bazel.languages.projectview.ProjectViewSectionProvider].
  * 3. Loads all non-indexable files that happen to be under `directories:` (and not excluded) into the VFS,
  *    so that "Go to file by name" is quicker, see https://youtrack.jetbrains.com/issue/IJPL-207088
  */

@@ -6,11 +6,12 @@ import com.intellij.codeInsight.completion.CompletionType
 import com.intellij.codeInsight.completion.PrefixMatcher
 import com.intellij.codeInsight.editorActions.TypedHandlerDelegate
 import com.intellij.openapi.editor.Editor
+import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.project.Project
 import com.intellij.patterns.PlatformPatterns.psiElement
 import com.intellij.psi.PsiFile
 import org.jetbrains.annotations.ApiStatus
-import org.jetbrains.bazel.languages.projectview.ProjectViewSections
+import org.jetbrains.bazel.languages.projectview.ProjectViewSection
 import org.jetbrains.bazel.languages.projectview.base.ProjectViewLanguage
 import org.jetbrains.bazel.languages.projectview.psi.ProjectViewPsiFile
 import org.jetbrains.bazel.languages.projectview.psi.sections.ProjectViewPsiImport
@@ -24,7 +25,7 @@ class ProjectViewPrefixMatcher(prefix: String) : PrefixMatcher(prefix) {
   override fun cloneWithPrefix(newPrefix: String): PrefixMatcher = ProjectViewPrefixMatcher(newPrefix)
 }
 
-internal class ProjectViewSectionItemCompletionContributor : CompletionContributor() {
+internal class ProjectViewSectionItemCompletionContributor : CompletionContributor(), DumbAware {
   class AutoPopup : TypedHandlerDelegate() {
     private val acceptedChars = listOf('/', ':', '_')
 
@@ -42,11 +43,11 @@ internal class ProjectViewSectionItemCompletionContributor : CompletionContribut
   }
 
   init {
-    for (section in ProjectViewSections.REGISTERED_SECTIONS) {
-      val provider = section.completionProvider ?: continue
+    for (section in ProjectViewSection.allRegistered) {
+      val provider = section.type.completionProvider ?: continue
       extend(
         CompletionType.BASIC,
-        sectionItemElement(section.name),
+        sectionItemElement(section.key.name),
         provider,
       )
     }

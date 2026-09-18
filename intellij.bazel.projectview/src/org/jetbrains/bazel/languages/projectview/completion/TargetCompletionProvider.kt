@@ -7,9 +7,9 @@ import com.intellij.codeInsight.lookup.LookupElement
 import com.intellij.codeInsight.lookup.LookupElementBuilder
 import com.intellij.openapi.components.service
 import com.intellij.psi.util.startOffset
-import com.intellij.util.PlatformIcons
 import com.intellij.util.ProcessingContext
 import org.jetbrains.bazel.languages.projectview.ProjectViewCodeInsightSupport
+import org.jetbrains.bazel.languages.projectview.base.ProjectViewFileType
 import org.jetbrains.bazel.languages.projectview.lexer.ProjectViewTokenType
 
 internal class TargetCompletionProvider : CompletionProvider<CompletionParameters>() {
@@ -42,5 +42,5 @@ internal class TargetCompletionProvider : CompletionProvider<CompletionParameter
   private fun labelLookupElement(label: String): LookupElement =
     LookupElementBuilder
       .create(label)
-      .withIcon(PlatformIcons.PACKAGE_ICON)
+      .withIcon(ProjectViewFileType.bazelIcon)
 }

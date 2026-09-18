@@ -1,13 +1,13 @@
 package org.jetbrains.bazel.sync.workspace.languages.java.sourceRoot.projectview
 
 import org.jetbrains.bazel.languages.projectview.ProjectView
-import org.jetbrains.bazel.languages.projectview.SectionKey
+import org.jetbrains.bazel.languages.projectview.ProjectViewSectionKey
 
-internal val JAVA_SOURCE_ROOT_OPTIMIZATION_KEY: SectionKey<Boolean> = SectionKey("java_source_root_optimization_enable", false)
+internal val JAVA_SOURCE_ROOT_OPTIMIZATION_KEY: ProjectViewSectionKey<Boolean> = ProjectViewSectionKey("java_source_root_optimization_enable", false)
 internal val ProjectView.javaSROEnable: Boolean
   get() = getSection(JAVA_SOURCE_ROOT_OPTIMIZATION_KEY)
 
-internal val JAVA_SOURCE_ROOT_OPTIMIZATION_PATTERNS_KEY: SectionKey<List<String>> = SectionKey(
+internal val JAVA_SOURCE_ROOT_OPTIMIZATION_PATTERNS_KEY: ProjectViewSectionKey<List<String>> = ProjectViewSectionKey(
   "java_source_root_optimization_patterns",
   listOf(
     "src/main/java",

@@ -62,7 +62,7 @@
       language="ProjectView"
     />
     <annotator
-      implementationClass="org.jetbrains.bazel.languages.projectview.annotation.ProjectViewAnnotator"
+      implementationClass="org.jetbrains.bazel.languages.projectview.annotation.ProjectViewProblemsAnnotator"
       language="ProjectView"
     />
 

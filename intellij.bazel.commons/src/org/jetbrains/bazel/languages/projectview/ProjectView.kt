@@ -7,14 +7,14 @@ import org.jetbrains.bazel.languages.projectview.imports.Import
  * Immutable representation of a ProjectView: a map of section keys to parsed values.
  */
 class ProjectView @Internal constructor(
-  @get:Internal val sections: Map<SectionKey<*>, Any>,
+  @get:Internal val sections: Map<ProjectViewSectionKey<*>, Any>,
   @get:Internal val imports: List<Import>,
 ) {
   @Internal
   fun isEmpty(): Boolean = sections.isEmpty() && imports.isEmpty()
 
   @Internal
-  fun <T> getSection(key: SectionKey<T>): T {
+  fun <T> getSection(key: ProjectViewSectionKey<T>): T {
     val value = sections[key]
     if (value != null) {
       @Suppress("UNCHECKED_CAST")

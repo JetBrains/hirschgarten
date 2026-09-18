@@ -19,11 +19,13 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.intellij.lang.annotations.Language
 import org.jetbrains.bazel.commons.ExcludableValue
+import org.jetbrains.bazel.commons.ShardingApproach
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.languages.projectview.DIRECTORIES_KEY
 import org.jetbrains.bazel.languages.projectview.IMPORT_DEPTH_KEY
 import org.jetbrains.bazel.languages.projectview.ProjectView
 import org.jetbrains.bazel.languages.projectview.ProjectViewFactory
+import org.jetbrains.bazel.languages.projectview.SHARDING_APPROACH_KEY
 import org.jetbrains.bazel.languages.projectview.SHARD_SYNC_KEY
 import org.jetbrains.bazel.languages.projectview.TARGETS_KEY
 import org.jetbrains.bazel.languages.projectview.buildFlags
@@ -116,6 +118,12 @@ class ProjectViewTest {
     projectView.getSection(SHARD_SYNC_KEY) shouldBe true
     projectView.getSection(IMPORT_DEPTH_KEY) shouldBe 42
     projectView.dotIdeaDirectoryLocation shouldBe Path("custom/.idea")
+  }
+
+  @Test
+  fun `test an enum section is parsed from its lower case name`() {
+    val projectView = parse("sharding_approach: expand_and_shard")
+    projectView.getSection(SHARDING_APPROACH_KEY) shouldBe ShardingApproach.EXPAND_AND_SHARD
   }
 
   @Test
