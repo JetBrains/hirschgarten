@@ -21,4 +21,9 @@
     <module name="intellij.platform.lang"/>
   </dependencies>
   <!-- endregion -->
+
+  <extensions defaultExtensionNs="com.intellij">
+    <runConfigurationProducer implementation="org.jetbrains.bazel.clion.run.BazelCcRunConfigurationProducer"/>
+  </extensions>
+
 </idea-plugin>

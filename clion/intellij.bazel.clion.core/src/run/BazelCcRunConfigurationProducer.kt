@@ -2,7 +2,6 @@ package org.jetbrains.bazel.clion.run
 
 import com.intellij.psi.PsiElement
 import com.jetbrains.cidr.cpp.runfile.CppFileEntryPointDetector
-import org.jetbrains.bazel.clion.BazelCLionFeatureFlags
 import org.jetbrains.bazel.clion.sync.CC_LANGUAGE_CLASS
 import org.jetbrains.bazel.ui.gutters.BazelRunConfigurationProducer
 import org.jetbrains.bsp.protocol.BuildTarget
