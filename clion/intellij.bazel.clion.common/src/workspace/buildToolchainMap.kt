@@ -2,7 +2,7 @@ package org.jetbrains.bazel.clion.workspace
 
 import com.intellij.build.events.MessageEvent
 import org.jetbrains.annotations.ApiStatus
-import org.jetbrains.bazel.clion.BazelClionBundle
+import org.jetbrains.bazel.clion.BazelClionCommonBundle
 import org.jetbrains.bazel.clion.sync.CcBuildTarget
 import org.jetbrains.bazel.clion.sync.CcToolchainBuildTarget
 import org.jetbrains.bazel.label.DependencyLabelKind
@@ -60,7 +60,7 @@ private fun reportProblems(problems: Map<WorkspaceTargetKey, List<WorkspaceTarge
 
   val description = problems.entries.joinToString("\n") { problem ->
     val candidates = if (problem.value.isEmpty()) {
-      BazelClionBundle.message("cc.toolchain.no.dependencies.found")
+      BazelClionCommonBundle.message("cc.toolchain.no.dependencies.found")
     }
     else {
       problem.value.joinToString(", ") { it.presentable() }
@@ -70,7 +70,7 @@ private fun reportProblems(problems: Map<WorkspaceTargetKey, List<WorkspaceTarge
   }
 
   ctx.reportEvent(
-    message = BazelClionBundle.message("cc.toolchain.unexpected.dependency.count", problems.size),
+    message = BazelClionCommonBundle.message("cc.toolchain.unexpected.dependency.count", problems.size),
     description = description,
     severity = MessageEvent.Kind.WARNING,
   )

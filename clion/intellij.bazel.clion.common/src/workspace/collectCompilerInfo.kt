@@ -5,7 +5,7 @@ import com.intellij.openapi.progress.EmptyProgressIndicator
 import com.intellij.util.containers.MultiMap
 import com.jetbrains.cidr.lang.workspace.OCWorkspace
 import com.jetbrains.cidr.lang.workspace.compiler.CompilerInfoCache
-import org.jetbrains.bazel.clion.BazelClionBundle
+import org.jetbrains.bazel.clion.BazelClionCommonBundle
 
 context(ctx: CcImportContext)
 internal fun collectCompilerInfo(model: OCWorkspace.ModifiableModel, configurations: List<CcResolveConfiguration>) {
@@ -39,7 +39,7 @@ private fun reportProblems(problems: MultiMap<String, CompilerInfoCache.Message>
   }
 
   ctx.reportEvent(
-    message = BazelClionBundle.message("cc.compiler.info.failed", problems.keySet().size),
+    message = BazelClionCommonBundle.message("cc.compiler.info.failed", problems.keySet().size),
     description = description,
     severity = MessageEvent.Kind.WARNING,
   )

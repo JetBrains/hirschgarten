@@ -5,8 +5,8 @@ import com.intellij.openapi.util.Disposer
 import com.intellij.openapi.util.NlsContexts
 import com.jetbrains.cidr.lang.workspace.OCWorkspaceImpl
 import org.jetbrains.annotations.PropertyKey
+import org.jetbrains.bazel.clion.BazelClionCommonBundle
 import org.jetbrains.bazel.clion.BazelCLionFeatureFlags
-import org.jetbrains.bazel.clion.BazelClionBundle
 import org.jetbrains.bazel.progress.withSubtask
 import org.jetbrains.bazel.sync.workspace.importer.BazelWorkspaceImporter
 import org.jetbrains.bazel.sync.workspace.importer.WorkspaceImporterContext
@@ -24,7 +24,7 @@ internal class CcWorkspaceImporter : BazelWorkspaceImporter, BazelWorkspaceImpor
   private var configurations: List<CcResolveConfiguration> = emptyList()
 
   override val importerName: @NlsContexts.ProgressTitle String
-    get() = BazelClionBundle.message("cc.workspace.importer.name")
+    get() = BazelClionCommonBundle.message("cc.workspace.importer.name")
 
   override suspend fun import(
     context: WorkspaceImporterContext,
@@ -86,10 +86,10 @@ internal class CcWorkspaceImporter : BazelWorkspaceImporter, BazelWorkspaceImpor
   private suspend fun <T> subtask(
     ctx: WorkspaceImporterContext,
     snapshot: WorkspaceSnapshot,
-    key: @PropertyKey(resourceBundle = BazelClionBundle.BUNDLE_FQN) String,
+    key: @PropertyKey(resourceBundle = BazelClionCommonBundle.BUNDLE_FQN) String,
     body: suspend context(CcImportContext) () -> T,
   ): T {
-    return ctx.taskConsole.withSubtask(ctx.taskId.subTask(key), BazelClionBundle.message(key)) { taskId ->
+    return ctx.taskConsole.withSubtask(ctx.taskId.subTask(key), BazelClionCommonBundle.message(key)) { taskId ->
       val taskCtx = CcImportContext.create(taskId, ctx, snapshot)
       body(taskCtx)
     }
