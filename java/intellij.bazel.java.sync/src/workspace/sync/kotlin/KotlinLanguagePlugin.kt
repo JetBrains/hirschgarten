@@ -45,10 +45,27 @@ class KotlinLanguagePlugin : LanguagePlugin {
     }
     val kotlinTarget = target.kotlinTargetInfo
     val localRepositories = repoMapping.getLocalRepositories()
-    val stdlibJars = kotlinTarget.stdlibsList.map { server.bazelPathsResolver.resolve(it, localRepositories) }.distinct()
-    val inferredSourceJars = stdlibJars
-      .map { it.parent.resolve(it.fileName.toString().replace(".jar", "-sources.jar")) }
-      .filter { it.exists() }
+
+    val ktStdlibJars = ArrayList<Path>()
+    val ktStdlibSources = ArrayList<Path>()
+    for (output in kotlinTarget.stdlibJarsList.orEmpty()) {
+      val jars =
+        output.binaryJarsList
+          .map { server.bazelPathsResolver.resolve(it, localRepositories) }
+      val sources =
+        output.sourceJarsList
+          .map { server.bazelPathsResolver.resolve(it, localRepositories) }
+          .takeIf { it.isNotEmpty() } ?: run {
+          // fallback to hack, awaits proper fix in rules_kotlin
+          // https://github.com/bazel-contrib/rules_kotlin/pull/1761
+          jars.map { it.parent.resolve(it.fileName.toString().replace(".jar", "-sources.jar")) }
+            .filter { it.exists() }
+        }
+
+      ktStdlibJars.addAll(jars)
+      ktStdlibSources.addAll(sources)
+    }
+
     val kspSourceJars = if (target.hasJvmTargetInfo()) {
       val target = target.javaCommon
       target.generatedJarsList.asSequence()
@@ -67,8 +84,8 @@ class KotlinLanguagePlugin : LanguagePlugin {
         associates = kotlinTarget.associatedTargetsList.map { it.toWorkspaceTargetKey() },
         moduleName = kotlinTarget.moduleName.takeIf { it.isNotBlank() },
         kotlincOptions = kotlinTarget.toKotlincOptArguments(server, localRepositories).toList(),
-        stdlibHardLinkedJars = SourceFileCollectionBuilder.build(server.outFileHardLinks.createOutputFileHardLinks(stdlibJars)),
-        stdlibInferredSourceJars = SourceFileCollectionBuilder.build(server.outFileHardLinks.createOutputFileHardLinks(inferredSourceJars)),
+        stdlibHardLinkedJars = SourceFileCollectionBuilder.build(server.outFileHardLinks.createOutputFileHardLinks(ktStdlibJars)),
+        stdlibInferredSourceJars = SourceFileCollectionBuilder.build(server.outFileHardLinks.createOutputFileHardLinks(ktStdlibSources)),
         exportedCompilerPluginTargetsList = kotlinTarget.exportedCompilerPluginTargetsList.map { it.toWorkspaceTargetKey() },
         kspSourceJars = SourceFileCollectionBuilder.build(paths = kspSourceJars),
       ),
