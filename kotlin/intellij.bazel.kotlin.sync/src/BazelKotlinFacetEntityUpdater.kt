@@ -97,7 +97,7 @@ class BazelKotlinFacetEntityUpdater : KotlinFacetEntityUpdater {
   ): KotlinSettingsEntity {
     val updatedParentModuleEntity =
       modifyModuleEntity(parentModuleEntity) {
-        this.kotlinSettings += kotlinSettingsEntity
+        this.moduleSettings += kotlinSettingsEntity
       }
 
     return updatedParentModuleEntity.kotlinSettings.last()
