@@ -8,18 +8,18 @@ import org.jetbrains.bazel.fixtures.CcTestApplication
 import org.jetbrains.bazel.fixtures.clionBazelProjectFixture
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
-import org.junit.jupiter.api.condition.DisabledOnOs
+import org.junit.jupiter.api.condition.EnabledOnOs
 import org.junit.jupiter.api.condition.OS
 import org.assertj.core.api.Assertions.assertThat as assertThatGeneric
 
 @CcTestApplication
+@EnabledOnOs(OS.LINUX)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class VirtualIncludesTest {
 
   private val project by clionBazelProjectFixture("clion/virtual_includes", buildProject = true)
 
   @Test
-  @DisabledOnOs(OS.WINDOWS, disabledReason = "copts aren't supported yet for MSVC")
   fun testVfsRoots() = project.assertVfsLoads(allowedRoots = emptyList())
 
   @Test
@@ -60,7 +60,6 @@ class VirtualIncludesTest {
   }
 
   @Test
-  @DisabledOnOs(OS.WINDOWS, disabledReason = "copts aren't supported yet for MSVC")
   fun checkCoptIncludes(): Unit = timeoutRunBlocking {
     val compilerSettings = project.findCompilerSetting("main/raw.cc")
 

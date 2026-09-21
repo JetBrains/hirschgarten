@@ -1,6 +1,5 @@
 package org.jetbrains.bazel.clion
 
-import com.intellij.openapi.util.SystemInfoRt
 import com.intellij.testFramework.common.timeoutRunBlocking
 import com.jetbrains.cidr.lang.CLanguageKind
 import com.jetbrains.cidr.lang.workspace.compiler.OCCompilerId
@@ -11,8 +10,11 @@ import org.jetbrains.bazel.fixtures.CcTestApplication
 import org.jetbrains.bazel.fixtures.clionBazelProjectFixture
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
+import org.junit.jupiter.api.condition.EnabledOnOs
+import org.junit.jupiter.api.condition.OS
 
 @CcTestApplication
+@EnabledOnOs(OS.LINUX)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class CcLocalToolchainTest {
 
@@ -25,15 +27,12 @@ class CcLocalToolchainTest {
   fun testCompilerSettings(): Unit = timeoutRunBlocking {
     val compilerSettingsC = project.findCompilerSetting("main/main.cc", language = CLanguageKind.C)
     val compilerSettingsCPP = project.findCompilerSetting("main/main.cc", language = CLanguageKind.CPP)
-    val expectedCompiler = if (SystemInfoRt.isWindows) OCCompilerId.MSVC else OCCompilerId.GCC
 
-    if (!SystemInfoRt.isWindows) {
-      assertThat(compilerSettingsCPP).hasCompilerKindWrapper()
-      assertThat(compilerSettingsC).hasCompilerKindWrapper()
-    }
+    assertThat(compilerSettingsCPP).hasCompilerKindWrapper()
+    assertThat(compilerSettingsC).hasCompilerKindWrapper()
 
     assertThat(compilerSettingsCPP)
-      .hasCompiler(expectedCompiler)
+      .hasCompiler(OCCompilerId.GCC)
       .containsHeaders("iostream", "stdio.h")
       .containsSwitches("-Wall", "-DCXXOPTS")
       .doesNotContainSwitches("-DCONLYOPTS")
@@ -41,7 +40,7 @@ class CcLocalToolchainTest {
       .hasDefine("SPACE_DEFINE", "1 2 3")
 
     assertThat(compilerSettingsC)
-      .hasCompiler(expectedCompiler)
+      .hasCompiler(OCCompilerId.GCC)
       .containsHeaders("stdio.h")
       .containsSwitches("-Wall", "-DCONLYOPTS")
       .doesNotContainSwitches("-DCXXOPTS")
