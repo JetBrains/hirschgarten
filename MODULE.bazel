@@ -10,7 +10,7 @@ http_archive = use_repo_rule("@bazel_tools//tools/build_defs/repo:http.bzl", "ht
 bazel_dep(name = "intellij_aspect_sdk")
 git_override(
     module_name = "intellij_aspect_sdk",
-    commit = "0f69e30192ddb87c97da2f9f4b7f853ae010e88d",
+    commit = "3aa9f404d5c5416a86ca32d466a4690965d8a34f",
     remote = "https://github.com/JetBrains/intellij-aspect.git",
 )
 
