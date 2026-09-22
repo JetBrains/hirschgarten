@@ -30,18 +30,11 @@ open class BazelJavaRunConfigurationProducer : BazelRunConfigurationProducer() {
     }
 
     val className = getContainingClassFqn(psiIdentifier) ?: return null
-    val testFilter = if (psiMethod != null) {
-      val methodName = psiMethod.name
-      if (target.usesJetBrainsTestRunner(element.project)) {
-        val methodParameterTypes = psiMethod.getMethodParameterTypes()
-        "$className:$methodName:$methodParameterTypes"
-      }
-      else {
-        getTestFilter(className, methodName)
-      }
-    }
-    else {
-      getTestFilter(className, methodName = null)
+    val usesJetBrainsTestRunner = target.usesJetBrainsTestRunner(element.project)
+    val testFilter = when {
+      !usesJetBrainsTestRunner -> getTestFilter(className, psiMethod?.name)
+      psiMethod == null -> getTestFilter(className, methodName = null)
+      else -> "$className:${psiMethod.name}:${psiMethod.getMethodParameterTypes()}"
     }
     val junitDisabledCondition = DisabledConditionUtil.getDisabledCondition(classOrMethod)
     return GutterAction(
