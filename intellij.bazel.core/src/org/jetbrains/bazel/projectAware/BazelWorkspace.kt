@@ -21,6 +21,7 @@ import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.config.BazelPluginConstants
 import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.coroutines.BazelCoroutineService
+import org.jetbrains.bazel.sync.ProjectDirtyStateService
 import org.jetbrains.bazel.sync.ProjectSyncScope
 import org.jetbrains.bazel.sync.ProjectSyncService
 import org.jetbrains.bazel.sync.status.SyncStatusListener
@@ -58,8 +59,16 @@ class BazelWorkspace(val project: Project) :
 
   override fun reloadProject(context: ExternalSystemProjectReloadContext) {
     if (context.isExplicitReload) {
+      // TODO: use context after https://youtrack.jetbrains.com/issue/BAZEL-3570
+      val dirtyStateService = ProjectDirtyStateService.getInstance(project)
       BazelCoroutineService.getInstance(project).start {
-        project.service<ProjectSyncService>().sync(ProjectSyncScope.Full(build = false, phased = false))
+        val dirtyState = dirtyStateService.current()
+        val scope = if (dirtyState.isEmpty /* Generally should not happen */ || dirtyState.wholeProject) {
+          ProjectSyncScope.Full(build = false, phased = false)
+        } else {
+          ProjectSyncScope.Files(files = dirtyState.paths.toList(), build = false)
+        }
+        project.service<ProjectSyncService>().sync(scope)
       }
     }
   }

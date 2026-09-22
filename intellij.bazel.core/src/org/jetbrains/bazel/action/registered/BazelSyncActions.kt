@@ -10,13 +10,22 @@ import org.jetbrains.bazel.sync.ProjectSyncService
 import org.jetbrains.bazel.sync.status.isSyncInProgress
 import org.jetbrains.bazel.ui.console.isBuildInProgress
 
-internal class BuildAndResyncAction : SuspendableAction({ BazelPluginBundle.message("build.and.resync.action.text") }) {
+internal abstract class BazelSyncActionBase(text: () -> String) : SuspendableAction(text) {
+  protected abstract val scope: ProjectSyncScope
+
   override suspend fun actionPerformed(project: Project, e: AnActionEvent) {
-    project.service<ProjectSyncService>().sync(ProjectSyncScope.Full(build = true, phased = false))
+    project.service<ProjectSyncService>().sync(scope)
   }
 
   override fun update(project: Project, e: AnActionEvent) {
-    // TODO: https://youtrack.jetbrains.com/issue/BAZEL-1237
     e.presentation.isEnabled = !project.isSyncInProgress() && !project.isBuildInProgress()
   }
+}
+
+internal class BuildAndResyncAction : BazelSyncActionBase({ BazelPluginBundle.message("build.and.resync.action.text") }) {
+  override val scope = ProjectSyncScope.Full(build = true, phased = false)
+}
+
+internal class ResyncAction : BazelSyncActionBase({ BazelPluginBundle.message("resync.action.text") }) {
+  override val scope = ProjectSyncScope.Full(build = false, phased = false)
 }

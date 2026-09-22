@@ -42,6 +42,8 @@ data class ProjectDirtyState(
  * which recalculates the CRC of every tracked file on each change (BAZEL-3506).
  *
  * A future partial sync reads this state to find the scope of the next sync.
+ *
+ * [TODO] drop as a part of https://youtrack.jetbrains.com/issue/BAZEL-3570
  */
 @Service(Service.Level.PROJECT)
 @ApiStatus.Internal
