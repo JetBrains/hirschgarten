@@ -1,9 +1,14 @@
 package org.jetbrains.bazel.languages.projectview.completion
 
+import com.intellij.codeInsight.completion.PrioritizedLookupElement
+import com.intellij.codeInsight.lookup.LookupElement
+import com.intellij.codeInsight.lookup.LookupElementPresentation
 import com.intellij.testFramework.DumbModeTestUtils
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
 import io.kotest.matchers.collections.shouldContainAll
 import io.kotest.matchers.collections.shouldNotContainAll
+import io.kotest.matchers.doubles.shouldBeLessThan
+import io.kotest.matchers.shouldBe
 import org.jetbrains.bazel.languages.projectview.ProjectViewSection
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -35,6 +40,23 @@ class ProjectViewSectionCompletionContributorTest : BasePlatformTestCase() {
       lookups shouldContainAll listOf("targets", "shard_sync")
     }
   }
+
+  @Test
+  fun `should strike out and deprioritise a deprecated section`() {
+    myFixture.configureByText(".bazelproject", "")
+
+    myFixture.type("debug")
+
+    val lookups = myFixture.completeBasic().orEmpty()
+    val deprecated = lookups.single { it.lookupString == "python_debug_flags" }
+    val replacement = lookups.single { it.lookupString == "debug_flags" }
+
+    LookupElementPresentation.renderElement(deprecated).isStrikeout shouldBe true
+    LookupElementPresentation.renderElement(replacement).isStrikeout shouldBe false
+    deprecated.priority() shouldBeLessThan replacement.priority()
+  }
+
+  private fun LookupElement.priority(): Double = `as`(PrioritizedLookupElement.CLASS_CONDITION_KEY)?.priority ?: 0.0
 
   @Test
   fun `should not suggest anything if not top level`() {

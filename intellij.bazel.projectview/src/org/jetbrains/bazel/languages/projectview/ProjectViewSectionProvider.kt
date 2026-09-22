@@ -120,6 +120,7 @@ private val PythonDebugFlagsSection: ProjectViewSection<List<String>> = ProjectV
   key = PYTHON_DEBUG_FLAGS_KEY,
   type = ProjectViewSectionType.flag("run", "test").list(),
   documentation = BazelProjectViewBundle.message("bazel.language.projectview.docs.python_debug_flags"),
+  deprecation = ProjectViewSection.Deprecation.withMergeQuickFix(DEBUG_FLAGS_KEY)
 )
 
 private val RunConfigRunWithBazelSection: ProjectViewSection<Boolean> = ProjectViewSection(

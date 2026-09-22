@@ -7,6 +7,7 @@ import com.intellij.codeInsight.completion.CompletionResultSet
 import com.intellij.codeInsight.completion.CompletionType
 import com.intellij.codeInsight.completion.InsertHandler
 import com.intellij.codeInsight.completion.InsertionContext
+import com.intellij.codeInsight.completion.PrioritizedLookupElement
 import com.intellij.codeInsight.lookup.LookupElement
 import com.intellij.codeInsight.lookup.LookupElementBuilder
 import com.intellij.openapi.project.DumbAware
@@ -46,7 +47,8 @@ internal class ProjectViewSectionCompletionContributor : CompletionContributor()
       result.addElement(LookupElementBuilder.create("import").withIcon(PlatformIcons.FUNCTION_ICON))
       result.addAllElements(
         ProjectViewSection.allRegistered
-          .map { sectionLookupElement(it.key.name, it.type.isScalar()) }
+          .filter { it.deprecation == null || it.deprecation.level == ProjectViewSection.Deprecation.Level.Warning }
+          .map { it.lookupElement() }
           .toList(),
       )
     }
@@ -65,10 +67,16 @@ internal class ProjectViewSectionCompletionContributor : CompletionContributor()
       }
     }
 
-    private fun sectionLookupElement(sectionName: String, isScalar: Boolean): LookupElement =
-      LookupElementBuilder
-        .create(sectionName)
-        .withIcon(PlatformIcons.FUNCTION_ICON)
-        .withInsertHandler(SectionInsertionHandle(isScalar))
+    private fun ProjectViewSection<*>.lookupElement(): LookupElement = LookupElementBuilder
+      .create(key.name)
+      .withIcon(PlatformIcons.FUNCTION_ICON)
+      .withInsertHandler(SectionInsertionHandle(type.isScalar()))
+      .withStrikeoutness(deprecation != null)
+      .let {
+        when (deprecation) {
+          null -> it
+          else -> PrioritizedLookupElement.withPriority(it, -1.0)
+        }
+      }
   }
 }

@@ -24,6 +24,7 @@ fun interface ProjectViewChecker<T> {
     private val checkers = listOf(
       unsupportedSectionChecker,
       typeValueChecker,
+      sectionDeprecationChecker,
     )
 
     fun run(section: ProjectViewPsiSection, sink: Sink) {
@@ -53,6 +54,25 @@ private val typeValueChecker = ProjectViewPsiSectionChecker { project, subject, 
   subject.getItems().forEach {
     type.valueChecker?.check(project, it.text.trim(), sink.withElement(it))
   }
+}
+
+private val sectionDeprecationChecker = ProjectViewPsiSectionChecker { _, subject, sink ->
+  val section = ProjectViewSection.findByPsi(subject) ?: return@ProjectViewPsiSectionChecker
+  val deprecation = section.deprecation ?: return@ProjectViewPsiSectionChecker
+  sink.report(
+    ProjectViewProblem(
+      message = deprecation.message,
+      severity = deprecation.level.toSeverity(),
+      type = ProjectViewProblem.Type.Deprecation,
+      element = subject.getKeyword(),
+      quickFixes = deprecation.quickFixes
+    )
+  )
+}
+
+private fun ProjectViewSection.Deprecation.Level.toSeverity() = when (this) {
+  ProjectViewSection.Deprecation.Level.Warning -> ProjectViewProblem.Severity.WeakWarning
+  ProjectViewSection.Deprecation.Level.Error -> ProjectViewProblem.Severity.Error
 }
 
 private fun ProjectViewChecker.Sink.withElement(element: PsiElement): ProjectViewChecker.Sink {
