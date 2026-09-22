@@ -15,4 +15,11 @@ data class CcToolchainBuildTarget(
   val sysroot: OutputLocation?,
   val cEnvironment: Map<String, String>,
   val cppEnvironment: Map<String, String>,
-) : BuildTargetData
+  val xcodeInfo: XcodeInfo?,
+) : BuildTargetData {
+
+  data class XcodeInfo(
+    val macosSdkVersion: String,
+    val xcodeVersion: String,
+  )
+}

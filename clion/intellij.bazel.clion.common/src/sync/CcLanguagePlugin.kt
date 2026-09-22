@@ -21,7 +21,7 @@ class CcLanguagePlugin : LanguagePlugin {
   override fun getSupportedLanguages(): Set<LanguageClass> = setOf(CC_LANGUAGE_CLASS)
 
   override fun collectUsedLanguages(target: IntellijIdeInfo.TargetIdeInfo): List<LanguageClass> {
-    return if (target.hasCIdeInfo() || target.hasCToolchainIdeInfo()) {
+    return if (target.hasCIdeInfo() || target.hasCToolchainIdeInfo() || target.hasXcodeIdeInfo()) {
       listOf(CC_LANGUAGE_CLASS)
     }
     else {
@@ -36,7 +36,7 @@ class CcLanguagePlugin : LanguagePlugin {
   ): List<BuildTargetData> {
     return when {
       target.hasCIdeInfo() -> listOf(mapIdeInfo(target.cIdeInfo, server.outputParser))
-      target.hasCToolchainIdeInfo() -> listOf(mapToolchainIdeInfo(target.cToolchainIdeInfo, server.outputParser))
+      target.hasCToolchainIdeInfo() -> listOf(mapToolchainIdeInfo(target, server.outputParser))
       else -> emptyList()
     }
   }
@@ -75,7 +75,9 @@ private suspend fun mapCompilationContext(
   )
 }
 
-private suspend fun mapToolchainIdeInfo(info: IntellijIdeInfo.CToolchainIdeInfo, parser: OutputLocationParser): CcToolchainBuildTarget {
+private suspend fun mapToolchainIdeInfo(target: IntellijIdeInfo.TargetIdeInfo, parser: OutputLocationParser): CcToolchainBuildTarget {
+  val info = target.cToolchainIdeInfo
+
   return CcToolchainBuildTarget(
     targetName = info.targetName,
     compilerName = info.compilerName,
@@ -87,6 +89,13 @@ private suspend fun mapToolchainIdeInfo(info: IntellijIdeInfo.CToolchainIdeInfo,
     sysroot = info.sysroot.takeIf { it.isNotEmpty() }?.let { parser.parseExecrootPath(it) },
     cEnvironment = info.cEnvironmentMap.toMap(),
     cppEnvironment = info.cppEnvironmentMap.toMap(),
+    xcodeInfo = target.xcodeIdeInfo.takeIf { target.hasXcodeIdeInfo() }?.let(::mapXcodeIdeInfo),
   )
 }
 
+private fun mapXcodeIdeInfo(info: IntellijIdeInfo.XcodeIdeInfo): CcToolchainBuildTarget.XcodeInfo {
+  return CcToolchainBuildTarget.XcodeInfo(
+    macosSdkVersion = info.macosSdkVersion,
+    xcodeVersion = info.xcodeVersion,
+  )
+}

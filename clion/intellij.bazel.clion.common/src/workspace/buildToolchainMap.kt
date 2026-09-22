@@ -2,6 +2,7 @@ package org.jetbrains.bazel.clion.workspace
 
 import com.intellij.build.events.MessageEvent
 import org.jetbrains.annotations.ApiStatus
+import org.jetbrains.annotations.VisibleForTesting
 import org.jetbrains.bazel.clion.BazelCLionCommonBundle
 import org.jetbrains.bazel.clion.sync.CcBuildTarget
 import org.jetbrains.bazel.clion.sync.CcToolchainBuildTarget
@@ -47,7 +48,9 @@ fun buildToolchainMap(): Map<WorkspaceTargetKey, WorkspaceTargetKey> {
   return result
 }
 
-private fun findTargetToolchain(target: BuildTarget, toolchains: Set<WorkspaceTargetKey>): List<WorkspaceTargetKey> {
+@VisibleForTesting
+@ApiStatus.Internal
+fun findTargetToolchain(target: BuildTarget, toolchains: Set<WorkspaceTargetKey>): List<WorkspaceTargetKey> {
   val candidates = target.dependencies
     .filter { it.kind == DependencyLabelKind.TOOLCHAIN }
     .map { it.targetKey }

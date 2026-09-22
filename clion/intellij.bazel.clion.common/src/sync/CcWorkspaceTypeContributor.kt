@@ -12,5 +12,6 @@ internal class CcWorkspaceTypeContributor : WorkspaceTypeContributor {
     type<CcBuildTarget.RuleContext>()
     type<CcBuildTarget.CompilationContext>()
     type<CcToolchainBuildTarget>()
+    type<CcToolchainBuildTarget.XcodeInfo>()
   }
 }
