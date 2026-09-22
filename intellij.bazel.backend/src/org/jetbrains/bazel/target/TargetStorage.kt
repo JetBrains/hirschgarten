@@ -229,7 +229,7 @@ class TargetStorage(private val project: Project, private val coroutineScope: Co
       workspaceName = null,
       configurations = mapOf(),
       targetGraph = graph,
-      fileToTarget = File2TargetMapBuilder.build(targets = targets),
+      fileToTarget = File2TargetMapBuilder(bazelInfo, repoMapping).build(targets = targets),
       executableTargets = ExecutableTargetsIndexBuilder.build(targetGraph = graph, importDepth = 0, targets = targets),
       syncConfigs = listOf(
         CommonWorkspaceSyncConfig(

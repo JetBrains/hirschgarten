@@ -10,7 +10,6 @@ import org.jetbrains.bazel.sync.workspace.languages.jvm.JvmBuildTarget
 import org.jetbrains.bazel.sync.workspace.languages.jvm.KotlinBuildTarget
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetMerger
-import org.jetbrains.bazel.sync.workspace.snapshot.allSources
 import org.jetbrains.bazel.sync.workspace.snapshot.findBuildData
 import org.jetbrains.bazel.sync.workspace.snapshot.isTestTarget
 import org.jetbrains.bsp.protocol.BuildTarget
@@ -38,7 +37,7 @@ class JvmImportPlan(
     targets.asSequence()
 
       // build `jar -> source module` map
-      .filter { it.allSources.any { path -> path.hasJvmSourceExtension() } }
+      .filter { target -> target.sources.getOutputLocations().any { it.hasJvmSourceExtension() } }
       .flatMap { target ->
         target.findBuildData<JvmBuildTarget>()
           ?.let { it.binaryOutputs.resolvePaths(resolveLocation) + it.outputInterfaceJars.resolvePaths(resolveLocation) }.orEmpty()

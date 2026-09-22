@@ -61,7 +61,7 @@ import org.jetbrains.bazel.workspacemodel.entities.WorkspaceModelTargetKey
 import org.jetbrains.bazel.workspacemodel.entities.WorkspaceModelTargetLabelList
 import org.jetbrains.bazel.workspacemodel.entities.WorkspaceModelTargetSourceRootTypeId
 import org.jetbrains.bazel.workspacemodel.entities.bazelModuleExtension
-import org.jetbrains.bsp.protocol.SourceFileCollection
+import org.jetbrains.bsp.protocol.OutputLocationCollection
 import org.jetbrains.bsp.protocol.StrictDependencyCheckedType
 import org.jetbrains.bsp.protocol.TaskId
 import org.junit.jupiter.api.BeforeEach
@@ -580,9 +580,8 @@ class BazelFileEventListenerTest : WorkspaceModelBaseTest() {
               ruleType = RuleType.LIBRARY,
               languageClasses = setOf(JavaLanguageClass.JAVA),
             ),
-          sources = SourceFileCollection.EMPTY,
-          generatedSources = SourceFileCollection.EMPTY,
-          resources = SourceFileCollection.EMPTY,
+          sources = OutputLocationCollection.EMPTY,
+          resources = OutputLocationCollection.EMPTY,
           baseDirectory = Path("/"),
         ),
       ),
@@ -782,9 +781,8 @@ class BazelFileEventListenerTest : WorkspaceModelBaseTest() {
         baseDirectory = projectBasePath,
         isWorkspace = true,
         dependencies = listOf(),
-        sources = SourceFileCollection.EMPTY,
-        generatedSources = SourceFileCollection.EMPTY,
-        resources = SourceFileCollection.EMPTY,
+        sources = OutputLocationCollection.EMPTY,
+        resources = OutputLocationCollection.EMPTY,
         generatorName = null,
         isTestOnly = false,
       )

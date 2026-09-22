@@ -9,7 +9,7 @@ import org.jetbrains.bazel.sync.workspace.languages.jvm.JvmBuildTarget
 import org.jetbrains.bazel.sync.workspace.languages.jvm.KotlinBuildTarget
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
 import org.jetbrains.bsp.protocol.BuildTargetData
-import org.jetbrains.bsp.protocol.SourceFileCollection
+import org.jetbrains.bsp.protocol.OutputLocationCollection
 import kotlin.io.path.Path
 
 object TestBuildTargetFactory {
@@ -54,9 +54,8 @@ object TestBuildTargetFactory {
       languageClasses = languages,
     ),
     data = data,
-    sources = SourceFileCollection.EMPTY,
-    generatedSources = SourceFileCollection.EMPTY,
-    resources = SourceFileCollection.EMPTY,
+    sources = OutputLocationCollection.EMPTY,
+    resources = OutputLocationCollection.EMPTY,
     baseDirectory = Path("base/dir"),
   )
 }

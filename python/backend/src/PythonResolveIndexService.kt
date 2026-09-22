@@ -16,18 +16,23 @@ import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.annotations.TestOnly
 import org.jetbrains.annotations.VisibleForTesting
 import org.jetbrains.bazel.commons.LanguageClass
+import org.jetbrains.bazel.commons.getLocalRepositories
 import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.coroutines.BazelCoroutineService
 import org.jetbrains.bazel.python.lang.PythonLanguageClass
 import org.jetbrains.bazel.python.lang.extractPythonBuildTarget
 import org.jetbrains.bazel.sync.BazelOutFileHardLinks
-import org.jetbrains.bazel.sync.environment.projectCtx
-import org.jetbrains.bazel.sync.workspace.snapshot.allSources
+import org.jetbrains.bazel.sync.workspace.DefaultOutputLocationResolver
+import org.jetbrains.bazel.sync.workspace.importer.WorkspaceImporterContext
+import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceSnapshot
 import org.jetbrains.bsp.protocol.BuildTarget
-import org.jetbrains.bsp.protocol.OutputLocationResolver
+import org.jetbrains.bsp.protocol.OutputLocation
+import org.jetbrains.bsp.protocol.isGenerated
+import org.jetbrains.bsp.protocol.isSource
+import org.jetbrains.bsp.protocol.isUserCode
+import org.jetbrains.bsp.protocol.relativeNioPath
 import java.nio.file.FileSystems
 import java.nio.file.Path
-import java.nio.file.Paths
 import java.util.concurrent.atomic.AtomicReference
 import kotlin.io.path.createParentDirectories
 import kotlin.io.path.deleteIfExists
@@ -36,7 +41,7 @@ import kotlin.io.path.extension
 import kotlin.io.path.isRegularFile
 import kotlin.io.path.pathString
 import kotlin.io.path.reader
-import kotlin.io.path.relativeTo
+import kotlin.io.path.relativeToOrNull
 import kotlin.io.path.writer
 
 private const val PYINDEX_STORAGE_VERSION: Int = 1
@@ -70,11 +75,12 @@ internal class PythonResolveIndexService(private val project: Project) {
   fun getStubScope(): GlobalSearchScope = resolveIndexSnapshotRef.get().stubScope
 
   suspend fun updatePythonResolveIndex(
+    context: WorkspaceImporterContext,
+    snapshot: WorkspaceSnapshot,
     pythonTargets: List<BuildTarget>,
     outFilesHardLink: BazelOutFileHardLinks,
-    execrootResolver: OutputLocationResolver,
   ) {
-    val nameToPathIndex = buildIndex(pythonTargets, outFilesHardLink, execrootResolver)
+    val nameToPathIndex = buildIndex(context, snapshot, pythonTargets, outFilesHardLink)
 
     updateResolveIndexSnapshot(nameToPathIndex)
     store(project.pyIndexStoragePath(), nameToPathIndex)
@@ -102,42 +108,27 @@ internal class PythonResolveIndexService(private val project: Project) {
   }
 
   private suspend fun buildIndex(
+    context: WorkspaceImporterContext,
+    snapshot: WorkspaceSnapshot,
     pythonTargets: List<BuildTarget>,
     outFilesHardLink: BazelOutFileHardLinks,
-    execrootResolver: OutputLocationResolver,
   ): Map<QualifiedName, Path> {
-    val executionRoot = project.projectCtx.bazelExecPath ?: return emptyMap()
     val rootDir = Path.of(project.rootDir.path)
-    val bazelBin = project.projectCtx.bazelBinPath ?: return emptyMap()
+    val localRepositories = snapshot.repoMapping.getLocalRepositories()
+    val execrootResolver = DefaultOutputLocationResolver.createExecrootResolving(context.bazelInfo)
 
-    fun Path.toExecRootRelativePath(): Path {
-      if (this.startsWith(bazelBin)) {
-        val relativePath = this.relativeTo(bazelBin)
-        if (relativePath.startsWith("external"))
-          return relativePath.subpath(2, relativePath.nameCount)
-        return relativePath
-      }
+    fun resolve(location: OutputLocation): Path? = context.outputResolver.resolve(location, localRepositories)
 
-      return this
-        .relativeTo(executionRoot)
-        // if this is an absolute path pointing to $install_base/external, then we remove this prefix and point it to the same copy under execution root
-        .removeParentParentPrefix()
-        .let {
-          if (it.startsWith("external")) {
-            // if this is a file under external/, then we trim the "external/{repo_name}" part
-            Path.of(it.subpath(2, it.nameCount).toString())
-          }
-          else {
-            it
-          }
-        }
-    }
+    fun workspaceRelativePythonSources(target: BuildTarget): List<Path> =
+      target.sources.getOutputLocations()
+        .filter { it.isPythonLanguage() && it.isSource && it.isUserCode(snapshot.repoMapping) }
+        .mapNotNull { resolve(it) }
+        .filter { it.isPythonFile() }
+        .mapNotNull { it.relativeToOrNull(rootDir) }
+        .toList()
 
     val allPYSourcesInMainWorkspace: List<Path> by lazy {
-      pythonTargets
-        .flatMap { it.allSources }
-        .filter { it.isPythonFile() && it.startsWith(rootDir) }
-        .map { it.relativeTo(rootDir) }
+      pythonTargets.flatMap { workspaceRelativePythonSources(it) }
     }
 
     val targetNames: List<Map<QualifiedName, Path>> = pythonTargets.map { target ->
@@ -148,33 +139,36 @@ internal class PythonResolveIndexService(private val project: Project) {
           if (target.isWorkspace) {
             explicitImportsPaths
               .flatMap { importsPath ->
-                allPYSourcesInMainWorkspace.filter { it.startsWith(importsPath) }.toList()
+                allPYSourcesInMainWorkspace.filter { it.startsWith(importsPath) }
               }
-              .ifEmpty {
-                target.allSources
-                  .filter { it.isPythonFile() && it.startsWith(rootDir) }
-                  .map { it.relativeTo(rootDir) }
-                  .toList()
-              }
+              .ifEmpty { workspaceRelativePythonSources(target) }
               .associateWith { path -> rootDir.resolve(path) }
           }
           else {
-            target.allSources
-              .filter { it.isPythonFile() }
-              .associateBy { sourceItem -> sourceItem.toExecRootRelativePath() }
+            target.sources.getOutputLocations()
+              .filter { it.isPythonLanguage() }
+              .mapNotNull { location ->
+                val relativePath = location.toRepoRelativePath() ?: return@mapNotNull null
+                val path = resolve(location)?.takeIf { it.isPythonFile() } ?: return@mapNotNull null
+                relativePath to path
+              }
+              .toMap()
           }
         val generatedSourceFiles =
-          (target.generatedSources.getFiles() +
-           (extractPythonBuildTarget(target)?.generatedSources?.getOutputLocations()?.mapNotNull { execrootResolver.resolve(it) }
-            ?: emptySequence()))
-        val getSourcesRelativePathToAbsolutePath: Map<Path, Path> =
+          target.sources.getOutputLocations().filter { it.isGenerated } +
+          (extractPythonBuildTarget(target)?.generatedSources?.getOutputLocations() ?: emptySequence())
+        val generatedSourcesRelativePathToAbsolutePath: Map<Path, Path> =
           generatedSourceFiles
             .distinct()
             .filter { it.isPythonLanguage() }
-            .associate { path ->
-              path.toExecRootRelativePath() to (outFilesHardLink.createOutputFileHardLink(path) ?: path.toAbsolutePath())
+            .mapNotNull { location ->
+              val relativePath = location.toRepoRelativePath() ?: return@mapNotNull null
+              val path = execrootResolver.resolve(location, localRepositories) ?: return@mapNotNull null
+              relativePath to path
             }
-        expandPathsToQualifiedNames(qualifiedNameImportPaths, sourcesRelativePathToAbsolutePath + getSourcesRelativePathToAbsolutePath)
+            .toList()
+            .associate { (relativePath, path) -> relativePath to (outFilesHardLink.createOutputFileHardLink(path) ?: path.toAbsolutePath()) }
+        expandPathsToQualifiedNames(qualifiedNameImportPaths, sourcesRelativePathToAbsolutePath + generatedSourcesRelativePathToAbsolutePath)
       }
     }.awaitAll()
 
@@ -195,14 +189,18 @@ internal class PythonResolveIndexService(private val project: Project) {
    *
    * All intermediate relative paths are converted to QualifiedNames for the result map
    * */
-  private fun expandPathsToQualifiedNames(importsPaths: List<PythonImportUtils.ImportsPath>, filePaths: Map<Path, Path>): Map<QualifiedName, Path> {
+  private fun expandPathsToQualifiedNames(
+    importsPaths: List<PythonImportUtils.ImportsPath>,
+    filePaths: Map<Path, Path>,
+  ): Map<QualifiedName, Path> {
     val newMap = hashMapOf<QualifiedName, Path>()
     for ((rootRelativePath, absolutePath) in filePaths) {
       val qualifiedNames =
         if (importsPaths.isNotEmpty()) {
           importsPaths
             .mapNotNull { it.relativizePath(rootRelativePath)?.toQualifiedName() }
-        } else {
+        }
+        else {
           listOfNotNull(rootRelativePath.toQualifiedName())
         }
 
@@ -312,14 +310,15 @@ private fun Path.isPythonFile(): Boolean =
 private fun Path.isPythonLanguage(): Boolean =
   LanguageClass.fromExtension(this.extension) == PythonLanguageClass.PYTHON
 
-private val parentPath = Paths.get("..")
+// we only care about the extension, so the relative path of the location is enough
+private fun OutputLocation.isPythonLanguage(): Boolean = relativeNioPath.isPythonLanguage()
 
-// Drop "../../" from beginning
-private fun Path.removeParentParentPrefix(): Path {
-  if (this.nameCount > 2 && this.getName(0) == parentPath && this.getName(1) == parentPath) {
-    return this.subpath(2, this.nameCount)
-  }
-  return this
+// the path inside the repository, without the output root and the `external/<repo>` prefix
+private fun OutputLocation.toRepoRelativePath(): Path? = when (this) {
+  is OutputLocation.Workspace -> relativeNioPath
+  is OutputLocation.External -> relativeNioPath
+  is OutputLocation.Output -> relativeNioPath.let { if (it.startsWith("external") && it.nameCount > 2) it.subpath(2, it.nameCount) else it }
+  is OutputLocation.Host -> null
 }
 
 @ApiStatus.Internal

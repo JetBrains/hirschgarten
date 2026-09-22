@@ -23,7 +23,6 @@ import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetGraphImpl
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
 import org.jetbrains.bsp.protocol.OutputLocation
 import org.jetbrains.bsp.protocol.OutputLocationCollection
-import org.jetbrains.bsp.protocol.SourceFileCollection
 import org.jetbrains.bsp.protocol.StrictDependencyCheckedType
 
 internal class DefaultWorkspaceTypeContributor : WorkspaceTypeContributor {
@@ -54,13 +53,11 @@ internal class DefaultWorkspaceTypeContributor : WorkspaceTypeContributor {
     type<LanguageClass>()
     sealed<RepoMapping>()
 
-    // TrieSourceFileCollection/PathsTrie/TrieNode are NOT contributed: they are registered as builtins with a
-    // handwritten serializer (see SnapshotSerializers.registerBuiltinTypes) - contributing them here
-    // would re-register the class with the default reflective serializer
-    type<SourceFileCollection>()
-
     type<StrictDependencyCheckedType>()
 
+    // TrieOutputLocationCollection/PathsTrie/TrieNode are NOT contributed: they are registered as builtins with a
+    // handwritten serializer (see SnapshotSerializers.registerBuiltinTypes) - contributing them here
+    // would re-register the class with the default reflective serializer
     sealed<OutputLocation>()
     type<OutputLocationCollection>()
 

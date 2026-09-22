@@ -9,7 +9,7 @@ import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.sync.JavaLanguageClass
 import org.jetbrains.bazel.test.framework.target.TestBuildTarget
 import org.jetbrains.bsp.protocol.BuildTarget
-import org.jetbrains.bsp.protocol.SourceFileCollection
+import org.jetbrains.bsp.protocol.OutputLocationCollection
 import org.junit.jupiter.api.Test
 import java.nio.file.Path
 
@@ -28,9 +28,8 @@ class ExecutableTargetsIndexTest {
         ruleType = if (executable) RuleType.BINARY else RuleType.LIBRARY,
         languageClasses = setOf(JavaLanguageClass.JAVA),
       ),
-      sources = SourceFileCollection.EMPTY,
-      generatedSources = SourceFileCollection.EMPTY,
-      resources = SourceFileCollection.EMPTY,
+      sources = OutputLocationCollection.EMPTY,
+      resources = OutputLocationCollection.EMPTY,
       baseDirectory = Path.of("/workspace"),
     )
   }

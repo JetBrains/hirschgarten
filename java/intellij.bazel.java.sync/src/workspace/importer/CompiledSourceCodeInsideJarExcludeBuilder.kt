@@ -13,6 +13,10 @@ import org.jetbrains.bazel.workspacemodel.entities.CompiledSourceCodeInsideJarEx
 import org.jetbrains.bazel.workspacemodel.entities.LibraryCompiledSourceCodeInsideJarExcludeEntity
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.LibraryItem
+import org.jetbrains.bsp.protocol.OutputLocation
+import org.jetbrains.bsp.protocol.isSource
+import org.jetbrains.bsp.protocol.nonGeneratedSources
+import java.nio.file.Path
 import java.util.Locale
 import kotlin.io.path.invariantSeparatorsPathString
 
@@ -37,6 +41,7 @@ object CompiledSourceCodeInsideJarExcludeBuilder {
     targets: Collection<BuildTarget>,
     libraries: List<LibraryItem>,
     packagePrefixes: JvmPackagePrefixCalculator,
+    resolveLocation: (OutputLocation) -> Path?,
     storage: MutableEntityStorage,
     currentExcludeEntity: CompiledSourceCodeInsideJarExcludeEntity? = null,
   ) {
@@ -45,7 +50,7 @@ object CompiledSourceCodeInsideJarExcludeBuilder {
       return
     }
 
-    val relativePathsInsideJarToExclude = calculateRelativePathsInsideJarToExclude(targets, packagePrefixes)
+    val relativePathsInsideJarToExclude = calculateRelativePathsInsideJarToExclude(targets, packagePrefixes, resolveLocation)
 
     val excludeEntityId =
       if (currentExcludeEntity == null) {
@@ -84,11 +89,12 @@ object CompiledSourceCodeInsideJarExcludeBuilder {
   fun calculateRelativePathsInsideJarToExclude(
     targets: Collection<BuildTarget>,
     packagePrefixes: JvmPackagePrefixCalculator,
+    resolveLocation: (OutputLocation) -> Path?,
   ): Set<String> {
     val result = HashSet<String>()
     for (target in targets) {
       val jvmPackagePrefixes = packagePrefixes.get(target)
-      for (sourceRoot in target.sources.getFiles()) {
+      for (sourceRoot in target.nonGeneratedSources().mapNotNull(resolveLocation)) {
         val sourceName = sourceRoot.fileName.toString()
         val classNames =
           when {

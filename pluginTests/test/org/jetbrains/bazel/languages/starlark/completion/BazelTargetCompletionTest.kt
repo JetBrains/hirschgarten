@@ -12,7 +12,7 @@ import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
 import org.jetbrains.bazel.target.targetStorage
 import org.jetbrains.bazel.test.framework.BazelBasePlatformTestCase
 import org.jetbrains.bazel.test.framework.target.TestBuildTarget
-import org.jetbrains.bsp.protocol.SourceFileCollection
+import org.jetbrains.bsp.protocol.OutputLocationCollection
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -33,9 +33,8 @@ class BazelTargetCompletionTest : BazelBasePlatformTestCase() {
               ruleType = RuleType.LIBRARY,
               languageClasses = setOf(JavaLanguageClass.JAVA),
             ),
-          sources = SourceFileCollection.EMPTY,
-          generatedSources = SourceFileCollection.EMPTY,
-          resources = SourceFileCollection.EMPTY,
+          sources = OutputLocationCollection.EMPTY,
+          resources = OutputLocationCollection.EMPTY,
           baseDirectory = Path("/"),
         )
       },

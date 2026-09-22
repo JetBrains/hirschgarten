@@ -22,8 +22,13 @@ import org.jetbrains.bsp.protocol.MavenCoordinates
 import org.jetbrains.bsp.protocol.OutputLocation
 import org.jetbrains.bsp.protocol.OutputLocationCollection
 import org.jetbrains.bsp.protocol.allJars
+import org.jetbrains.bsp.protocol.isGenerated
+import org.jetbrains.bsp.protocol.isSource
+import org.jetbrains.bsp.protocol.nonGeneratedSources
+import org.jetbrains.bsp.protocol.relativeNioPath
 import org.jetbrains.bsp.protocol.utils.StringUtils
 import java.nio.file.Path
+import kotlin.io.path.extension
 import kotlin.io.path.name
 
 private typealias DependencyLabelPatcher = (DependencyLabel) -> DependencyLabel
@@ -316,12 +321,7 @@ class JvmBuildTargetResolver(
   }
 
   private fun hasKnownJvmSources(target: BuildTarget): Boolean =
-    target.sources.getFiles().any {
-      val path = it.toString()
-      path.endsWith(".java") ||
-      path.endsWith(".kt") ||
-      path.endsWith(".scala")
-    }
+    target.nonGeneratedSources().any { it.hasJvmSourceExtension() }
 
   private fun shouldCreateOutputJarsLibrary(target: BuildTarget): Boolean {
     // Resource-only targets and non-JVM targets never produce output jars worth indexing.
@@ -329,10 +329,10 @@ class JvmBuildTargetResolver(
       return false
     }
 
-    val hasGeneratedSrcJar = target.generatedSources.getFiles().any { it.toString().endsWith(".srcjar") }
-    val hasOnlyNonJvmSources = target.sources.getFiles().any() && !hasKnownJvmSources(target)
+    val hasGeneratedSrcJar = target.sources.getOutputLocations().any { it.isGenerated && it.relativeNioPath.extension == "srcjar" }
+    val hasOnlyNonJvmSources = target.nonGeneratedSources().any() && !hasKnownJvmSources(target)
     val isUnknownTargetWithoutSources =
-      target.sources.getFiles().none() && target.kind.kind !in wellKnownTargetKinds &&
+      target.nonGeneratedSources().none() && target.kind.kind !in wellKnownTargetKinds &&
       !(target.findBuildData<JvmBuildTarget>()?.hasExecutableInfo ?: false)
     val hasApiGeneratingPlugins = target.findBuildData<JavaProviderData>()?.hasApiGeneratingPlugins ?: false
     val dependsOnExportedApiGeneratingPlugins =

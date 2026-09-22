@@ -7,6 +7,7 @@ import com.intellij.util.containers.MultiMap
 import com.jetbrains.cidr.lang.workspace.OCResolveConfiguration
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.clion.sync.CcBuildTarget
+import org.jetbrains.bazel.commons.getLocalRepositories
 import org.jetbrains.bazel.sync.workspace.persistence.TargetLoadOptions
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceConfigurationId
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
@@ -85,7 +86,8 @@ context(ctx: CcImportContext)
 private fun collectSources(targets: Collection<WorkspaceTargetKey>): List<VirtualFileUrl> {
   return targets.asSequence()
     .mapNotNull { ctx.snapshot.targets.findTargetByKey(it, TargetLoadOptions.ALL) }
-    .flatMap { target -> target.sources.getFiles() + target.generatedSources.getFiles() }
+    .flatMap { target -> target.sources.getOutputLocations() }
+    .mapNotNull { ctx.outputResolver.resolve(it, localOverride = ctx.snapshot.repoMapping.getLocalRepositories()) }
     .map { it.toVirtualFileUrl(ctx.vfuManager) }
     .toList()
 }

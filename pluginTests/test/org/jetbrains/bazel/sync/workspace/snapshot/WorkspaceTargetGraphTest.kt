@@ -12,7 +12,7 @@ import org.jetbrains.bazel.sync.workspace.persistence.TargetLoadOptions
 import org.jetbrains.bazel.sync.workspace.persistence.WorkspaceTargetMap
 import org.jetbrains.bazel.test.framework.target.TestBuildTarget
 import org.jetbrains.bsp.protocol.BuildTarget
-import org.jetbrains.bsp.protocol.SourceFileCollection
+import org.jetbrains.bsp.protocol.OutputLocationCollection
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -620,9 +620,8 @@ class WorkspaceTargetGraphTest {
         ruleType = RuleType.LIBRARY,
         languageClasses = setOf(JavaLanguageClass.JAVA),
       ),
-      sources = SourceFileCollection.EMPTY,
-      generatedSources = SourceFileCollection.EMPTY,
-      resources = SourceFileCollection.EMPTY,
+      sources = OutputLocationCollection.EMPTY,
+      resources = OutputLocationCollection.EMPTY,
       baseDirectory = Path.of("/tmp"),
       generatorName = generatorName,
     )
@@ -635,9 +634,8 @@ class WorkspaceTargetGraphTest {
       key = targetKey,
       dependencies = emptyList(),
       kind = TargetKind(kind = "java_library", ruleType = RuleType.LIBRARY, languageClasses = setOf(JavaLanguageClass.JAVA)),
-      sources = SourceFileCollection.EMPTY,
-      generatedSources = SourceFileCollection.EMPTY,
-      resources = SourceFileCollection.EMPTY,
+      sources = OutputLocationCollection.EMPTY,
+      resources = OutputLocationCollection.EMPTY,
       baseDirectory = Path.of("/tmp"),
     )
   }
@@ -652,9 +650,8 @@ class WorkspaceTargetGraphTest {
       key = targetKey,
       dependencies = rawDeps.map { DependencyLabel(targetKey = it, kind = DependencyLabelKind.COMPILE) },
       kind = TargetKind(kind = "java_library", ruleType = RuleType.LIBRARY, languageClasses = setOf(JavaLanguageClass.JAVA)),
-      sources = SourceFileCollection.EMPTY,
-      generatedSources = SourceFileCollection.EMPTY,
-      resources = SourceFileCollection.EMPTY,
+      sources = OutputLocationCollection.EMPTY,
+      resources = OutputLocationCollection.EMPTY,
       baseDirectory = Path.of("/tmp"),
     )
   }

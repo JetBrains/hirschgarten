@@ -17,7 +17,6 @@ import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceConfigurationId
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
 import org.jetbrains.bsp.protocol.OutputLocation
 import org.jetbrains.bsp.protocol.OutputLocationCollection
-import org.jetbrains.bsp.protocol.SourceFileCollection
 import org.jetbrains.bsp.protocol.toExecrootPath
 import java.io.File
 
@@ -32,7 +31,6 @@ internal val bazelDebugGson: Gson = bazelGson.newBuilder()
   .registerSerializer(::serializeCcIdentifier)
   .registerSerializer(::serializeFile)
   .registerSerializer(::serializeVirtualFile)
-  .registerSerializer(::serializeSourceFileCollection)
   .create()
 
 private inline fun <reified T : Any> GsonBuilder.registerSerializer(crossinline body: (JsonWriter, T) -> Unit): GsonBuilder {
@@ -111,10 +109,4 @@ private fun serializeFile(writer: JsonWriter, value: File) {
 
 private fun serializeVirtualFile(writer: JsonWriter, value: VirtualFile) {
   writer.value(value.path)
-}
-
-private fun serializeSourceFileCollection(writer: JsonWriter, value: SourceFileCollection) {
-  writer.beginArray()
-  value.getFiles().forEach { writer.value(it.toString()) }
-  writer.endArray()
 }

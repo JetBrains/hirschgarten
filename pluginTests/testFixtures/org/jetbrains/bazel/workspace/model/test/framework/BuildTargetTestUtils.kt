@@ -7,11 +7,9 @@ import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.sync.JavaLanguageClass
 import org.jetbrains.bazel.sync.workspace.DefaultOutputLocationResolver
 import org.jetbrains.bazel.sync.workspace.snapshot.OutputLocationCollectionBuilder
-import org.jetbrains.bazel.sync.workspace.snapshot.SourceFileCollectionBuilder
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
 import org.jetbrains.bazel.test.framework.target.TestBuildTarget
 import org.jetbrains.bazel.test.framework.testBazelInfo
-import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.BuildTargetData
 import org.jetbrains.bsp.protocol.OutputLocation
 import org.jetbrains.bsp.protocol.OutputLocationCollection
@@ -41,7 +39,7 @@ fun createTestBuildTarget(
     languageClasses = setOf(JavaLanguageClass.JAVA),
   ),
   sources: List<Path> = emptyList(),
-  generatedSources: List<Path> = emptyList(),
+  generatedSources: List<OutputLocation> = emptyList(),
   resources: List<Path> = emptyList(),
   baseDirectory: Path = Path("/base/dir"),
   data: List<BuildTargetData> = emptyList(),
@@ -51,9 +49,8 @@ fun createTestBuildTarget(
     key = WorkspaceTargetKey(label = id),
     dependencies = dependencies,
     kind = kind,
-    sources = SourceFileCollectionBuilder.build(relativeRoot = baseDirectory, paths = sources),
-    generatedSources = SourceFileCollectionBuilder.build(relativeRoot = baseDirectory, paths = generatedSources),
-    resources = SourceFileCollectionBuilder.build(relativeRoot = baseDirectory, paths = resources),
+    sources = OutputLocationCollectionBuilder.ofLocations(sources.map(::testLocation) + generatedSources),
+    resources = testLocations(resources),
     baseDirectory = baseDirectory,
     data = data,
     isTestOnly = isTestOnly,

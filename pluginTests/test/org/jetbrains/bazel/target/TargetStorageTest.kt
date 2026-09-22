@@ -27,7 +27,7 @@ import org.jetbrains.bazel.sync.workspace.persistence.WorkspaceSnapshotService
 import org.jetbrains.bazel.sync.workspace.snapshot.CommonWorkspaceSyncConfig
 import org.jetbrains.bazel.sync.workspace.snapshot.ExecutableTargetsIndexBuilder
 import org.jetbrains.bazel.sync.workspace.snapshot.File2TargetMapBuilder
-import org.jetbrains.bazel.sync.workspace.snapshot.SourceFileCollectionBuilder
+import org.jetbrains.bazel.sync.workspace.snapshot.OutputLocationCollectionBuilder
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceConfigurationId
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceSnapshot
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceSnapshotMetadata
@@ -39,7 +39,8 @@ import org.jetbrains.bazel.ui.gutters.NonImportedBuildTarget
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.BuildTargetData
 import org.jetbrains.bsp.protocol.BuildTargetTag
-import org.jetbrains.bsp.protocol.SourceFileCollection
+import org.jetbrains.bsp.protocol.OutputLocation
+import org.jetbrains.bsp.protocol.OutputLocationCollection
 import org.jetbrains.bsp.protocol.data
 import org.jetbrains.bsp.protocol.id
 import org.junit.jupiter.api.Test
@@ -65,7 +66,7 @@ class TargetStorageTest {
     data: List<BuildTargetData> = emptyList(),
     isWorkspace: Boolean = true,
     baseDirectory: Path = Path.of("/workspace"),
-    sources: SourceFileCollection = SourceFileCollection.EMPTY,
+    sources: OutputLocationCollection = OutputLocationCollection.EMPTY,
     key: WorkspaceTargetKey = WorkspaceTargetKey(label = Label.parse(label)),
     tags: List<String> = emptyList(),
   ): TestBuildTarget =
@@ -78,13 +79,16 @@ class TargetStorageTest {
         languageClasses = setOf(JavaLanguageClass.JAVA),
       ),
       sources = sources,
-      generatedSources = SourceFileCollection.EMPTY,
-      resources = SourceFileCollection.EMPTY,
+      resources = OutputLocationCollection.EMPTY,
       baseDirectory = baseDirectory,
       data = data,
       isWorkspace = isWorkspace,
       tags = tags,
     )
+
+  // the file map indexes only workspace sources, see `File2TargetMapBuilder`
+  private fun workspaceSources(vararg relativePaths: String): OutputLocationCollection =
+    OutputLocationCollectionBuilder.ofLocations(relativePaths.map { OutputLocation.Workspace(it) })
 
   private fun BuildTarget.summaryView(): List<Any?> = listOf(key, kind, baseDirectory, tags, isWorkspace)
 
@@ -95,16 +99,17 @@ class TargetStorageTest {
     importDepth: Int = -1,
   ): WorkspaceSnapshot {
     val graph = WorkspaceTargetGraphBuilder.build(rootTargets = roots.map { it.key }.toSet(), targets = targets)
+    val bazelInfo = testBazelInfo(workspaceRoot = Path.of("/workspace"))
     return WorkspaceSnapshot(
       targets = InMemoryWorkspaceTargetMap(targets.associateBy { it.key }),
       workspaceName = null,
       configurations = mapOf(),
       targetGraph = graph,
-      fileToTarget = File2TargetMapBuilder.build(targets = targets),
+      fileToTarget = File2TargetMapBuilder(bazelInfo, RepoMappingDisabled).build(targets = targets),
       executableTargets = ExecutableTargetsIndexBuilder.build(targetGraph = graph, importDepth = importDepth, targets = targets),
       syncConfigs = listOf(CommonWorkspaceSyncConfig(Path.of(project.basePath!!), null, "test", importDepth)),
       repoMapping = RepoMappingDisabled,
-      bazelInfo = testBazelInfo(workspaceRoot = Path.of("/workspace")),
+      bazelInfo = bazelInfo,
       metadata = WorkspaceSnapshotMetadata(version = 1),
     )
   }
@@ -210,7 +215,7 @@ class TargetStorageTest {
       "//app:bin",
       deps = listOf("//lib:lib"),
       executable = true,
-      sources = SourceFileCollectionBuilder.build(relativeRoot = Path.of("/workspace"), paths = listOf(file)),
+      sources = workspaceSources("app/Bin.java"),
     )
     val lib = target("//lib:lib", data = listOf(jvmData))
     publish(project, snapshot(project, targets = listOf(bin, lib), roots = listOf(bin)))
@@ -246,7 +251,7 @@ class TargetStorageTest {
     summary.baseDirectory shouldBe bin.baseDirectory
     summary.tags shouldBe bin.tags
 
-    summary.sources.getFiles().toList() shouldBe bin.sources.getFiles().toList()
+    summary.sources.getOutputLocations().toList() shouldBe bin.sources.getOutputLocations().toList()
     summary.dependencies shouldBe bin.dependencies
     summary.data(JvmBuildTarget::class.java) shouldBe jvmData
 
@@ -299,7 +304,7 @@ class TargetStorageTest {
   fun `getTargetsForPath returns only one target with multiple configurations`(): Unit = runBlocking {
     val label = Label.parse("//lib:lib")
     val file = Path.of("/workspace/app/Bin.java")
-    val sourceCollection = SourceFileCollectionBuilder.build(relativeRoot = Path.of("/workspace"), paths = listOf(file))
+    val sourceCollection = workspaceSources("app/Bin.java")
     val firstKey = WorkspaceTargetKey(label = label, configuration = WorkspaceConfigurationId.of("abcdef1"))
     val secondKey = WorkspaceTargetKey(label = label, configuration = WorkspaceConfigurationId.of("abcdef2"))
     val first = target("//lib:lib", key = firstKey, baseDirectory = Path.of("/workspace"), sources = sourceCollection)

@@ -12,8 +12,10 @@ import org.jetbrains.bazel.sync.workspace.languages.java.sourceRoot.JvmPackagePr
 import org.jetbrains.bazel.test.framework.target.TestBuildTarget
 import org.jetbrains.bazel.workspace.indexAdditionalFiles.ProjectViewGlobSet
 import org.jetbrains.bazel.workspace.model.test.framework.createTestBuildTarget
+import org.jetbrains.bazel.workspace.model.test.framework.generatedTestLocation
 import org.jetbrains.bazel.workspace.model.test.framework.resolveTestLocation
 import org.jetbrains.bsp.protocol.BuildTarget
+import org.jetbrains.bsp.protocol.OutputLocation
 import org.junit.jupiter.api.Test
 import java.nio.file.Path
 import kotlin.io.path.Path
@@ -99,12 +101,13 @@ class SourceRootBuilderTest {
 
   @Test
   fun `should preserve the generated flag on the source item`() {
-    val generatedPath = Path("/project/gen/Generated.java")
+    val generatedLocation = generatedTestLocation("gen/Generated.java")
+    val generatedPath = resolveTestLocation(generatedLocation)
     val handPath = Path("/project/main/Hand.java")
     val target = libraryTarget(
       label = "//target",
       sources = listOf(handPath),
-      generatedSources = listOf(generatedPath),
+      generatedSources = listOf(generatedLocation),
     )
 
     val roots = SourceRootBuilder.resolve(
@@ -143,7 +146,7 @@ class SourceRootBuilderTest {
     label: String,
     ruleType: RuleType = RuleType.LIBRARY,
     sources: List<Path> = emptyList(),
-    generatedSources: List<Path> = emptyList(),
+    generatedSources: List<OutputLocation> = emptyList(),
     isTestOnly: Boolean = false,
   ): TestBuildTarget = createTestBuildTarget(
     id = Label.parse(label),

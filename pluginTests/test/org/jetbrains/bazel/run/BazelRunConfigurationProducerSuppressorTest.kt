@@ -29,10 +29,9 @@ import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
 import org.jetbrains.bazel.target.targetStorage
 import org.jetbrains.bazel.test.framework.BazelBasePlatformTestCase
 import org.jetbrains.bazel.test.framework.target.TestBuildTarget
-import org.jetbrains.bazel.workspace.model.test.framework.testLocation
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.OutputLocationCollection
-import org.jetbrains.bsp.protocol.SourceFileCollection
+import org.jetbrains.bazel.workspace.model.test.framework.testLocation
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -220,9 +219,8 @@ internal class BazelRunConfigurationProducerSuppressorTest : BazelBasePlatformTe
           languageClasses = setOf(PythonLanguageClass.PYTHON),
           ruleType = ruleType,
         ),
-      sources = SourceFileCollection.EMPTY,
-      generatedSources = SourceFileCollection.EMPTY,
-      resources = SourceFileCollection.EMPTY,
+      sources = OutputLocationCollection.EMPTY,
+      resources = OutputLocationCollection.EMPTY,
       baseDirectory = Path.of(myFixture.tempDirPath, "base_dir"),
       data = listOf(
         PythonBuildTarget(

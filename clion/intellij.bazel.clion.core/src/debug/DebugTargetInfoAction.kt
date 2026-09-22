@@ -50,7 +50,6 @@ private fun BuildTarget.toJsonMap(): Map<String, Any?> {
     "tags" to tags,
     "dependencies" to dependencies,
     "sources" to sources,
-    "generated_sources" to generatedSources,
     "resources" to resources,
     "data" to data.associate { it.javaClass.simpleName to it.toJsonMap() },
   )

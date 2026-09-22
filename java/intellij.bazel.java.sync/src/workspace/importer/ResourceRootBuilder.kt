@@ -51,7 +51,7 @@ object ResourceRootBuilder {
     resolveLocation: (OutputLocation) -> Path?,
   ): List<ResolvedResourceRoot> {
     val rootType = target.inferRootType()
-    val resourceFiles = target.resources.getFiles().toList()
+    val resourceFiles = target.resources.resolvePaths(resolveLocation)
     if (resourceFiles.isEmpty()) return emptyList()
     val stripPrefixes = extractStripPrefixOrNull(target, resolveLocation) ?: defaultStripPrefixes(target, resourceFiles)
     val resourcesSet = resourceFiles.toSet()

@@ -32,7 +32,6 @@ import org.jetbrains.bazel.sync.workspace.persistence.WorkspaceTypeContributor
 import org.jetbrains.bazel.sync.workspace.persistence.WorkspaceTypeEntry
 import org.jetbrains.bazel.sync.workspace.snapshot.CommonWorkspaceSyncConfig
 import org.jetbrains.bazel.sync.workspace.snapshot.OutputLocationCollectionBuilder
-import org.jetbrains.bazel.sync.workspace.snapshot.SourceFileCollectionBuilder
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceAspectIds
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceConfiguration
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceConfigurationId
@@ -49,7 +48,6 @@ import org.jetbrains.bsp.protocol.OutputLocation
 import org.jetbrains.bsp.protocol.OutputLocationCollection
 import org.jetbrains.bsp.protocol.OutputLocationParserWithoutHardlink
 import org.jetbrains.bsp.protocol.OutputRoot
-import org.jetbrains.bsp.protocol.SourceFileCollection
 import org.jetbrains.bsp.protocol.StrictDependencyCheckedType
 import org.junit.jupiter.api.Test
 import java.nio.file.Path
@@ -91,9 +89,6 @@ class SnapshotKryoSerializationTest {
       aspectIds = WorkspaceAspectIds.of(aspectIds),
     )
 
-  private fun sources(vararg paths: String): SourceFileCollection =
-    SourceFileCollectionBuilder.build(relativeRoot = Path.of("/workspace"), paths = paths.map { Path.of(it) })
-
   private fun locations(vararg locations: OutputLocation): OutputLocationCollection =
     OutputLocationCollectionBuilder.ofLocations(locations.toList())
 
@@ -110,9 +105,8 @@ class SnapshotKryoSerializationTest {
         languageClasses = setOf(LanguageClass("java", setOf("java"))),
         ruleType = RuleType.LIBRARY,
       ),
-      sources = sources("/workspace/src/Main.java", "/external/gen/Gen.java"),
-      generatedSources = SourceFileCollection.EMPTY,
-      resources = sources("/workspace/resources/app.properties"),
+      sources = locations(OutputLocation.Workspace("src/Main.java"), OutputLocation.External("gen", "Gen.java")),
+      resources = locations(OutputLocation.Workspace("resources/app.properties")),
       baseDirectory = Path.of("/workspace/src"),
       data = data,
       generatorName = "my_macro",
@@ -249,7 +243,7 @@ class SnapshotKryoSerializationTest {
     val restored = serializeAndDeserialize(partial)
     (restored.targetGraph === WorkspaceTargetGraph.EMPTY) shouldBe true
     restored.repoMapping shouldBe RepoMappingDisabled
-    (serializeAndDeserializePolymorphic(SourceFileCollection.EMPTY) === SourceFileCollection.EMPTY) shouldBe true
+    (serializeAndDeserializePolymorphic(OutputLocationCollection.EMPTY) === OutputLocationCollection.EMPTY) shouldBe true
   }
 
   @Test
@@ -331,9 +325,8 @@ class SnapshotKryoSerializationTest {
     serializeAndDeserialize(deps).dependencies shouldBe deps.dependencies
 
     val heavy = HeavyWorkspaceTarget(
-      sources = sources("/workspace/a/A.kt", "/workspace/a/b/B.kt"),
-      generatedSources = SourceFileCollection.EMPTY,
-      resources = sources("/external/res.txt"),
+      sources = locations(OutputLocation.Workspace("a/A.kt"), OutputLocation.Workspace("a/b/B.kt")),
+      resources = locations(OutputLocation.External("res", "res.txt")),
     )
     val restoredHeavy = serializeAndDeserialize(heavy)
     restoredHeavy.sources shouldBe heavy.sources

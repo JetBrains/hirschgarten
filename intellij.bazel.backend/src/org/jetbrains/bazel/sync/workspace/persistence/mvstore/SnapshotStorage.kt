@@ -30,7 +30,7 @@ import org.jetbrains.bazel.sync.workspace.persistence.TargetSection
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.BuildTargetData
-import org.jetbrains.bsp.protocol.SourceFileCollection
+import org.jetbrains.bsp.protocol.OutputLocationCollection
 import java.lang.ref.WeakReference
 import java.nio.ByteBuffer
 import java.nio.file.Path
@@ -42,9 +42,8 @@ private const val INITIAL_VALUE_BUFFER_SIZE = 8 * 1024
 private const val ENCODE_CHUNK_SIZE = 256
 
 private val EMPTY_FILE_SETS = HeavyWorkspaceTarget(
-  sources = SourceFileCollection.EMPTY,
-  generatedSources = SourceFileCollection.EMPTY,
-  resources = SourceFileCollection.EMPTY,
+  sources = OutputLocationCollection.EMPTY,
+  resources = OutputLocationCollection.EMPTY,
 )
 
 // limit frame encoder threads to avoid lock contention on kryo instance pool
@@ -500,7 +499,6 @@ class SnapshotGeneration internal constructor(
     val targetDeps = WorkspaceTargetDeps(dependencies = raw.dependencies)
     val heavyTarget = HeavyWorkspaceTarget(
       sources = raw.sources,
-      generatedSources = raw.generatedSources,
       resources = raw.resources,
     )
 

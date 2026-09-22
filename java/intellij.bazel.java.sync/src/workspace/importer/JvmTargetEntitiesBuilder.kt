@@ -41,7 +41,6 @@ import org.jetbrains.bazel.sync.workspace.languages.jvm.extractJvmBuildTarget
 import org.jetbrains.bazel.sync.workspace.snapshot.FileToTargetMap
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceAspectIds
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
-import org.jetbrains.bazel.sync.workspace.snapshot.allSources
 import org.jetbrains.bazel.sync.workspace.snapshot.findBuildData
 import org.jetbrains.bazel.workspace.indexAdditionalFiles.ProjectViewGlobSet
 import org.jetbrains.bazel.workspacemodel.entities.BazelDummyEntitySource
@@ -57,9 +56,11 @@ import org.jetbrains.bsp.protocol.LibraryItem
 import org.jetbrains.bsp.protocol.OutputLocation
 import org.jetbrains.bsp.protocol.OutputLocationCollection
 import org.jetbrains.bsp.protocol.StrictDependencyCheckedType
+import org.jetbrains.bsp.protocol.relativeNioPath
 import org.jetbrains.bsp.protocol.utils.StringUtils
 import java.nio.file.Path
 import java.util.concurrent.atomic.AtomicInteger
+import kotlin.io.path.extension
 import com.intellij.platform.workspace.jps.entities.DependencyScope as EntitiesDependencyScope
 
 /**
@@ -204,6 +205,7 @@ class JvmTargetEntitiesBuilder(private val ctx: ImportContext) {
         targets = ctx.targets,
         libraries = ctx.libraries,
         packagePrefixes = ctx.packagePrefixes,
+        resolveLocation = ctx.resolveLocation,
         storage = storage,
         currentExcludeEntity = ctx.currentCompiledSourceExcludeEntity,
       )
@@ -233,7 +235,7 @@ class JvmTargetEntitiesBuilder(private val ctx: ImportContext) {
     val associates = kotlinTarget?.associates?.distinct()
       ?.mapNotNull { ctx.moduleNamesByKey[it.copy(aspectIds = WorkspaceAspectIds.EMPTY)] }.orEmpty()
 
-    val hasSources = target.allSources.any()
+    val hasSources = !target.sources.isEmpty()
     val hasResources = !target.resources.isEmpty()
     val isJavaKotlin = target.kind.includesJava() || target.kind.includesKotlin()
 
@@ -558,10 +560,9 @@ class JvmTargetEntitiesBuilder(private val ctx: ImportContext) {
 @ApiStatus.Internal
 fun String.scalaVersionToScalaSdkName(): String = "scala-sdk-$this"
 
-internal fun Path.hasJvmSourceExtension(): Boolean {
-  val name = fileName?.toString() ?: return false
-  return name.endsWith(".java") || name.endsWith(".kt") || name.endsWith(".scala")
-}
+private val JVM_SOURCE_EXTENSIONS = setOf("java", "kt", "scala")
+
+internal fun OutputLocation.hasJvmSourceExtension(): Boolean = relativeNioPath.extension in JVM_SOURCE_EXTENSIONS
 
 @ApiStatus.Internal
 fun OutputLocationCollection.resolvePaths(resolve: (OutputLocation) -> Path?): List<Path> =

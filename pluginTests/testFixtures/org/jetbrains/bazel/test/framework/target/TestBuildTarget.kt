@@ -9,7 +9,7 @@ import org.jetbrains.bazel.sync.workspace.persistence.TargetLoadOptions
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.BuildTargetData
-import org.jetbrains.bsp.protocol.SourceFileCollection
+import org.jetbrains.bsp.protocol.OutputLocationCollection
 import java.nio.file.Path
 import kotlin.io.path.Path
 
@@ -21,9 +21,8 @@ data class TestBuildTarget(
     ruleType = RuleType.LIBRARY,
     languageClasses = setOf(JavaLanguageClass.JAVA),
   ),
-  override val sources: SourceFileCollection = SourceFileCollection.EMPTY,
-  override val generatedSources: SourceFileCollection = SourceFileCollection.EMPTY,
-  override val resources: SourceFileCollection = SourceFileCollection.EMPTY,
+  override val sources: OutputLocationCollection = OutputLocationCollection.EMPTY,
+  override val resources: OutputLocationCollection = OutputLocationCollection.EMPTY,
   override val baseDirectory: Path = Path("/base/dir"),
   override val data: List<BuildTargetData> = emptyList(),
   override val generatorName: String? = null,
@@ -40,7 +39,6 @@ fun BuildTarget.asTestBuildTarget(): TestBuildTarget =
     dependencies = dependencies,
     kind = kind,
     sources = sources,
-    generatedSources = generatedSources,
     resources = resources,
     baseDirectory = baseDirectory,
     data = data,

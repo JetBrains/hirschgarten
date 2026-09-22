@@ -16,7 +16,7 @@ import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
 import org.jetbrains.bazel.test.framework.target.TestBuildTarget
 import org.jetbrains.bazel.workspace.model.test.framework.createTestBuildTarget
 import org.jetbrains.bsp.protocol.BuildTarget
-import org.jetbrains.bsp.protocol.SourceFileCollection
+import org.jetbrains.bsp.protocol.OutputLocationCollection
 import org.jetbrains.bsp.protocol.StrictDependencyCheckedType
 import org.junit.jupiter.api.Test
 
@@ -168,9 +168,8 @@ class DependencyBuilderTest {
         ruleType = RuleType.LIBRARY,
         languageClasses = setOf(JavaLanguageClass.JAVA),
       ),
-      sources = SourceFileCollection.EMPTY,
-      generatedSources = SourceFileCollection.EMPTY,
-      resources = SourceFileCollection.EMPTY,
+      sources = OutputLocationCollection.EMPTY,
+      resources = OutputLocationCollection.EMPTY,
       baseDirectory = kotlin.io.path.Path("base/dir"),
       data = listOf(
         JvmBuildTarget(

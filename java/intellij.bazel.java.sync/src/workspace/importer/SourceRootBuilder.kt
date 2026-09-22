@@ -21,6 +21,7 @@ import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.OutputLocation
 import org.jetbrains.bsp.protocol.OutputLocationCollection
 import org.jetbrains.bsp.protocol.extractData
+import org.jetbrains.bsp.protocol.isGenerated
 import java.nio.file.Path
 import kotlin.io.path.extension
 
@@ -74,8 +75,9 @@ object SourceRootBuilder {
     // that allow our plugin to correctly handle things like two-way references, or access to internal members.
     val kspSrcJars = target.extractData<KotlinBuildTarget>()?.kspSourceJars ?: OutputLocationCollection.EMPTY
 
-    return (target.sources.getFiles().map { it.convert(generated = false) } +
-            target.generatedSources.getFiles().map { it.convert(generated = true) }).toList() +
+    return target.sources.getOutputLocations()
+             .mapNotNull { location -> resolveLocation(location)?.convert(generated = location.isGenerated) }
+             .toList() +
            kspSrcJars.resolvePaths(resolveLocation).map { it.convert(generated = true) }
   }
 

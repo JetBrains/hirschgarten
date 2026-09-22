@@ -25,12 +25,13 @@ import org.jetbrains.bazel.performance.measure
 import org.jetbrains.bazel.server.BazelServerFacade
 import org.jetbrains.bazel.sync.workspace.languages.LanguagePlugin
 import org.jetbrains.bazel.sync.workspace.languages.createLanguageProjectMappers
-import org.jetbrains.bazel.sync.workspace.snapshot.SourceFileCollectionBuilder
+import org.jetbrains.bazel.sync.workspace.snapshot.OutputLocationCollectionBuilder
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTarget
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
 import org.jetbrains.bazel.sync.workspace.snapshot.toWorkspaceTargetKey
 import org.jetbrains.bazel.sync.workspace.targetKind.TargetKindService
 import org.jetbrains.bsp.protocol.BuildTarget
+import org.jetbrains.bsp.protocol.OutputLocationCollection
 import org.jetbrains.bsp.protocol.TaskId
 import java.nio.file.Path
 import kotlin.io.path.exists
@@ -102,33 +103,27 @@ class AspectBazelProjectMapper(
 
     val missingFilesReporter = MissingFilesReporter(project, taskId, label, build)
 
-    fun resolveSourceSet(srcs: List<ArtifactLocation>, category: MissingFileCategory): List<Path> {
-      return srcs.mapNotNull { src: ArtifactLocation ->
+    suspend fun resolveSourceSet(
+      srcs: List<ArtifactLocation>,
+      category: (ArtifactLocation) -> MissingFileCategory,
+    ): OutputLocationCollection {
+      val existing = srcs.filter { src ->
         val path = bazelPathsResolver.resolve(src, localRepositories)
         if (!path.exists()) {
-          missingFilesReporter.add(category, src, path)
-          return@mapNotNull null
+          missingFilesReporter.add(category(src), src, path)
+          return@filter false
         }
-        path
-      }.distinct()
+        true
+      }
+      return OutputLocationCollectionBuilder.build(existing, server.outputParser)
     }
 
     return WorkspaceTarget(
       key = target.key.toWorkspaceTargetKey(),
       dependencies = target.depsList.map { it.toDependencyLabel() },
       kind = targetKind,
-      sources = SourceFileCollectionBuilder.build(
-        relativeRoot = baseDirectory,
-        paths = resolveSourceSet(target.srcsList.filter { it.isSource }, MissingFileCategory.SOURCES),
-      ),
-      generatedSources = SourceFileCollectionBuilder.build(
-        relativeRoot = baseDirectory,
-        paths = resolveSourceSet(target.srcsList.filter { !it.isSource }, MissingFileCategory.GENERATED_SOURCES),
-      ),
-      resources = SourceFileCollectionBuilder.build(
-        relativeRoot = baseDirectory,
-        paths = resolveSourceSet(target.jvmTargetInfo.resourcesList, MissingFileCategory.RESOURCES),
-      ),
+      sources = resolveSourceSet(target.srcsList) { src -> if (src.isSource) MissingFileCategory.SOURCES else MissingFileCategory.GENERATED_SOURCES },
+      resources = resolveSourceSet(target.jvmTargetInfo.resourcesList) { MissingFileCategory.RESOURCES },
       baseDirectory = baseDirectory,
       data = buildData,
       generatorName = target.generatorName,

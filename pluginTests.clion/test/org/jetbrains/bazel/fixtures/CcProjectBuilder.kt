@@ -13,7 +13,6 @@ import org.jetbrains.bazel.label.DependencyLabelKind
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.sync.workspace.persistence.InMemoryWorkspaceTargetMap
 import org.jetbrains.bazel.sync.workspace.snapshot.OutputLocationCollectionBuilder
-import org.jetbrains.bazel.sync.workspace.snapshot.SourceFileCollectionBuilder
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceAspectIds
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceConfigurationId
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceSnapshot
@@ -25,6 +24,7 @@ import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.OutputLocation
 import org.jetbrains.bsp.protocol.OutputLocationCollection
 import org.jetbrains.bsp.protocol.OutputLocationParserWithoutHardlink
+import org.jetbrains.bsp.protocol.OutputRoot
 import org.jetbrains.bsp.protocol.extractData
 import java.nio.file.Path
 
@@ -92,8 +92,7 @@ internal class CcTargetBuilder(private val kind: String, private val ruleType: R
   private var configurationId: String? = null
   private val aspectIds = mutableListOf<String>()
 
-  private val srcs = mutableListOf<String>()
-  private val generatedSrcs = mutableListOf<String>()
+  private val srcs = mutableListOf<OutputLocation>()
   private val hdrs = mutableListOf<String>()
   private val copts = mutableListOf<String>()
   private val conlyopts = mutableListOf<String>()
@@ -119,10 +118,13 @@ internal class CcTargetBuilder(private val kind: String, private val ruleType: R
   }
 
   fun srcs(vararg paths: String, generated: Boolean = false) {
-    if (generated) {
-      generatedSrcs += paths
-    } else {
-      srcs += paths
+    srcs += paths.map {
+      if (generated) {
+        OutputLocation.Output(OutputRoot.of(listOf("k8-fastbuild", "bin")), it)
+      }
+      else {
+        OutputLocation.Workspace(it)
+      }
     }
   }
 
@@ -202,14 +204,7 @@ internal class CcTargetBuilder(private val kind: String, private val ruleType: R
       kind = TargetKind(kind = kind, languageClasses = setOf(CC_LANGUAGE_CLASS), ruleType = ruleType),
       dependencies = deps.entrySet().flatMap { it.value.map { target -> DependencyLabel(target.key, it.key) } },
       baseDirectory = root.resolve(packagePathOf(label)),
-      sources = SourceFileCollectionBuilder.build(
-        relativeRoot = Path.of(packagePathOf(label)),
-        paths = srcs.map(root::resolve),
-      ),
-      generatedSources = SourceFileCollectionBuilder.build(
-        relativeRoot = Path.of(packagePathOf(label)),
-        paths = generatedSrcs.map(root::resolve),
-      ),
+      sources = locations(srcs),
       data = listOf(
         CcBuildTarget(
           ruleContext = CcBuildTarget.RuleContext(

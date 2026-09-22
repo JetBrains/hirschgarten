@@ -13,7 +13,7 @@ import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceSyncConfig
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetGraph
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
 import org.jetbrains.bsp.protocol.BuildTarget
-import org.jetbrains.bsp.protocol.SourceFileCollection
+import org.jetbrains.bsp.protocol.OutputLocationCollection
 import java.nio.file.Path
 
 // contain lightweight parts of `WorkspaceSnapshot` which
@@ -52,9 +52,8 @@ class WorkspaceTargetDeps(
 
 @ApiStatus.Internal
 class HeavyWorkspaceTarget(
-  val sources: SourceFileCollection,
-  val generatedSources: SourceFileCollection,
-  val resources: SourceFileCollection,
+  val sources: OutputLocationCollection,
+  val resources: OutputLocationCollection,
 )
 
 @ApiStatus.Internal

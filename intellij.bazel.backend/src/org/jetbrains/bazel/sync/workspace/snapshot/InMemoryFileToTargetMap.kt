@@ -5,7 +5,10 @@ import it.unimi.dsi.fastutil.longs.Long2ObjectMap
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.annotations.VisibleForTesting
-import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.commons.BazelInfo
+import org.jetbrains.bazel.commons.RepoMapping
+import org.jetbrains.bazel.commons.getLocalRepositories
+import org.jetbrains.bazel.sync.workspace.DefaultOutputLocationResolver
 import org.jetbrains.bsp.protocol.BuildTarget
 import java.nio.file.Path
 import java.util.concurrent.ConcurrentHashMap
@@ -13,8 +16,6 @@ import java.util.concurrent.locks.ReentrantReadWriteLock
 import kotlin.concurrent.read
 import kotlin.concurrent.write
 import kotlin.io.path.absolutePathString
-import kotlin.io.path.relativeToOrNull
-import kotlin.io.path.relativeToOrSelf
 
 @ApiStatus.Internal
 interface FileToTargetMap {
@@ -80,11 +81,13 @@ class InMemoryFileToTargetMap internal constructor(
 operator fun FileToTargetMap.get(path: Path): List<WorkspaceTargetKey> = getTargetsByFile(path)
 
 @ApiStatus.Internal
-object File2TargetMapBuilder {
+class File2TargetMapBuilder(val bazelInfo: BazelInfo, val repoMapping: RepoMapping) {
   fun build(targets: Iterable<BuildTarget>): FileToTargetMap {
     val hash2Targets = Long2ObjectOpenHashMap<ArrayList<WorkspaceTargetKey>>()
+    val resolver = DefaultOutputLocationResolver.createLocalWorkspaceOnly(bazelInfo, repoMapping)
     for (target in targets) {
-      for (source in target.allSources) {
+      for (location in target.sources.getOutputLocations()) {
+        val source = resolver.resolve(location, repoMapping.getLocalRepositories()) ?: continue
         hash2Targets.computeIfAbsent(hashFilePath(source)) { ArrayList() }
           .add(target.key)
       }
@@ -94,11 +97,13 @@ object File2TargetMapBuilder {
     )
   }
 
-  @VisibleForTesting
-  fun build(targets: Map<Path, List<WorkspaceTargetKey>>): FileToTargetMap =
-    InMemoryFileToTargetMap(
-      hash2Targets = Long2ObjectOpenHashMap(targets.entries.associate { (k, v) -> hashFilePath(k) to ArrayList(v) }),
-    )
+  companion object {
+    @VisibleForTesting
+    fun build(targets: Map<Path, List<WorkspaceTargetKey>>): FileToTargetMap =
+      InMemoryFileToTargetMap(
+        hash2Targets = Long2ObjectOpenHashMap(targets.entries.associate { (k, v) -> hashFilePath(k) to ArrayList(v) }),
+      )
+  }
 }
 
 private fun hashFilePath(path: Path): Long = Hashing.xxh3_64().hashStream().putString(path.absolutePathString()).asLong

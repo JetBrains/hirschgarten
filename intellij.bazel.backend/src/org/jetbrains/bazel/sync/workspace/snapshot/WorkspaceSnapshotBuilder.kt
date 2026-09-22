@@ -40,7 +40,7 @@ object WorkspaceSnapshotBuilder {
       workspaceName = resolved.workspaceName,
       configurations = resolved.configurations,
       targetGraph = targetGraph,
-      fileToTarget = File2TargetMapBuilder.build(targets = targets.values),
+      fileToTarget = File2TargetMapBuilder(bazelInfo, repoMapping).build(targets = targets.values),
       executableTargets = ExecutableTargetsIndexBuilder.build(
         targetGraph = targetGraph,
         importDepth = commonSyncConfig.importDepth,
@@ -113,7 +113,7 @@ object WorkspaceSnapshotBuilder {
       workspaceName = snapshots.last().workspaceName,
       configurations = configurations,
       targetGraph = targetGraph,
-      fileToTarget = File2TargetMapBuilder.build(targets = targets.values),
+      fileToTarget = File2TargetMapBuilder(bazelInfo, repoMapping).build(targets = targets.values),
       executableTargets = ExecutableTargetsIndexBuilder.build(
         targetGraph = targetGraph,
         importDepth = commonSyncConfig.importDepth,

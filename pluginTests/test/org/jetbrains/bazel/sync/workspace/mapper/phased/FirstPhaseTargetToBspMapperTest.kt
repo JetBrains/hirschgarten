@@ -16,14 +16,15 @@ import org.jetbrains.bazel.languages.projectview.ALLOW_MANUAL_TARGETS_SYNC_KEY
 import org.jetbrains.bazel.languages.projectview.ProjectView
 import org.jetbrains.bazel.sync.JavaLanguageClass
 import org.jetbrains.bazel.sync.workspace.mapper.PhasedBazelProjectMapper
-import org.jetbrains.bazel.sync.workspace.snapshot.SourceFileCollectionBuilder
+import org.jetbrains.bazel.sync.workspace.snapshot.OutputLocationCollectionBuilder
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
 import org.jetbrains.bazel.test.framework.target.TestBuildTarget
 import org.jetbrains.bazel.test.framework.target.asTestBuildTarget
 import org.jetbrains.bazel.workspace.model.test.framework.BazelPathsResolverMock
 import org.jetbrains.bazel.workspace.model.test.framework.WorkspaceModelBaseTest
 import org.jetbrains.bsp.protocol.BuildTargetTag
-import org.jetbrains.bsp.protocol.SourceFileCollection
+import org.jetbrains.bsp.protocol.OutputLocation
+import org.jetbrains.bsp.protocol.OutputLocationCollection
 import org.jetbrains.bsp.protocol.id
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
@@ -38,16 +39,20 @@ import kotlin.io.path.createTempDirectory
 import kotlin.io.path.writeText
 
 // Helper: creates a mock source file at the given relative path with the given package.
-private fun Path.createMockSourceFile(relativePath: String, fullPackage: String): Path {
-  val file = resolve(relativePath).createParentDirectories().createFile()
-  file.writeText(
+private fun Path.createMockSourceFile(relativePath: String, fullPackage: String): OutputLocation {
+  resolve(relativePath).createParentDirectories().createFile().writeText(
     """
       |package $fullPackage;
       |
       |class A { }
     """.trimMargin(),
   )
-  return file
+  return OutputLocation.Workspace(relativePath)
+}
+
+private fun Path.createMockResourceFile(relativePath: String): OutputLocation {
+  resolve(relativePath).createParentDirectories().createFile()
+  return OutputLocation.Workspace(relativePath)
 }
 
 class FirstPhaseTargetToBspMapperTest : WorkspaceModelBaseTest() {
@@ -71,6 +76,9 @@ class FirstPhaseTargetToBspMapperTest : WorkspaceModelBaseTest() {
       )
     bazelPathsResolver = BazelPathsResolver(bazelInfo)
   }
+
+  private fun workspaceLocations(vararg locations: OutputLocation): OutputLocationCollection =
+    OutputLocationCollectionBuilder.ofLocations(locations.toList())
 
   @Nested
   @DisplayName(".toWorkspaceBuildTargetsResult(project)")
@@ -173,13 +181,13 @@ class FirstPhaseTargetToBspMapperTest : WorkspaceModelBaseTest() {
       val fgSrc2 = workspaceRoot.createMockSourceFile("filegroupSources/src2.java", "com.fg")
 
       // Create resource files for targets that use resources:
-      val target1Resource1 = workspaceRoot.resolve("target1/resource1.txt").createParentDirectories().createFile()
-      val target1Resource2 = workspaceRoot.resolve("target1/a/resource2.txt").createParentDirectories().createFile()
-      val target3Resource1 = workspaceRoot.resolve("target3/resource1.txt").createParentDirectories().createFile()
-      val target3Resource2 = workspaceRoot.resolve("target3/resource2.txt").createParentDirectories().createFile()
-      val target8Resource1 = workspaceRoot.resolve("target8/resource1.txt").createParentDirectories().createFile()
-      val fgRes1 = workspaceRoot.resolve("filegroupResources/file1.txt").createParentDirectories().createFile()
-      val fgRes2 = workspaceRoot.resolve("filegroupResources/file2.txt").createParentDirectories().createFile()
+      val target1Resource1 = workspaceRoot.createMockResourceFile("target1/resource1.txt")
+      val target1Resource2 = workspaceRoot.createMockResourceFile("target1/a/resource2.txt")
+      val target3Resource1 = workspaceRoot.createMockResourceFile("target3/resource1.txt")
+      val target3Resource2 = workspaceRoot.createMockResourceFile("target3/resource2.txt")
+      val target8Resource1 = workspaceRoot.createMockResourceFile("target8/resource1.txt")
+      val fgRes1 = workspaceRoot.createMockResourceFile("filegroupResources/file1.txt")
+      val fgRes2 = workspaceRoot.createMockResourceFile("filegroupResources/file2.txt")
 
       // when
       val mapper = PhasedBazelProjectMapper(BazelPathsResolverMock.create(workspaceRoot), ProjectView.EMPTY)
@@ -198,15 +206,8 @@ class FirstPhaseTargetToBspMapperTest : WorkspaceModelBaseTest() {
                 ruleType = RuleType.LIBRARY,
                 languageClasses = setOf(JavaLanguageClass.JAVA),
               ),
-            sources = SourceFileCollectionBuilder.build(
-              relativeRoot = workspaceRoot.resolve(Path("target1")),
-              paths = listOf(target1Src1, target1Src2),
-            ),
-            generatedSources = SourceFileCollection.EMPTY,
-            resources = SourceFileCollectionBuilder.build(
-              relativeRoot = workspaceRoot.resolve(Path("target1")),
-              paths = listOf(target1Resource1, target1Resource2),
-            ),
+            sources = workspaceLocations(target1Src1, target1Src2),
+            resources = workspaceLocations(target1Resource1, target1Resource2),
             //data = listOf(
             //  JvmPackagePrefixData(mapOf(
             //    target1Src1 to "com.example",
@@ -226,12 +227,8 @@ class FirstPhaseTargetToBspMapperTest : WorkspaceModelBaseTest() {
                 ruleType = RuleType.BINARY,
                 languageClasses = setOf(JavaLanguageClass.JAVA),
               ),
-            sources = SourceFileCollectionBuilder.build(
-              relativeRoot = workspaceRoot.resolve(Path("target2")),
-              paths = listOf(target2Src1, target2Src2),
-            ),
-            generatedSources = SourceFileCollection.EMPTY,
-            resources = SourceFileCollection.EMPTY,
+            sources = workspaceLocations(target2Src1, target2Src2),
+            resources = OutputLocationCollection.EMPTY,
             baseDirectory = workspaceRoot.resolve(Path("target2")),
             //data = listOf(
             //  JvmPackagePrefixData(mapOf(
@@ -250,12 +247,8 @@ class FirstPhaseTargetToBspMapperTest : WorkspaceModelBaseTest() {
                 ruleType = RuleType.TEST,
                 languageClasses = setOf(JavaLanguageClass.JAVA),
               ),
-            sources = SourceFileCollection.EMPTY,
-            generatedSources = SourceFileCollection.EMPTY,
-            resources = SourceFileCollectionBuilder.build(
-              relativeRoot = workspaceRoot.resolve(Path("target3")),
-              paths = listOf(target3Resource1, target3Resource2),
-            ),
+            sources = OutputLocationCollection.EMPTY,
+            resources = workspaceLocations(target3Resource1, target3Resource2),
             baseDirectory = workspaceRoot.resolve(Path("target3")),
           ),
           // // target4
@@ -268,9 +261,8 @@ class FirstPhaseTargetToBspMapperTest : WorkspaceModelBaseTest() {
                 ruleType = RuleType.LIBRARY,
                 languageClasses = setOf(JavaLanguageClass.JAVA, JavaLanguageClass.KOTLIN),
               ),
-            sources = SourceFileCollection.EMPTY,
-            generatedSources = SourceFileCollection.EMPTY,
-            resources = SourceFileCollection.EMPTY,
+            sources = OutputLocationCollection.EMPTY,
+            resources = OutputLocationCollection.EMPTY,
             baseDirectory = workspaceRoot.resolve(Path("target4")),
           ),
           // // target5
@@ -283,9 +275,8 @@ class FirstPhaseTargetToBspMapperTest : WorkspaceModelBaseTest() {
                 ruleType = RuleType.BINARY,
                 languageClasses = setOf(JavaLanguageClass.JAVA, JavaLanguageClass.KOTLIN),
               ),
-            sources = SourceFileCollection.EMPTY,
-            generatedSources = SourceFileCollection.EMPTY,
-            resources = SourceFileCollection.EMPTY,
+            sources = OutputLocationCollection.EMPTY,
+            resources = OutputLocationCollection.EMPTY,
             baseDirectory = workspaceRoot.resolve(Path("target5")),
           ),
           // // target6
@@ -298,9 +289,8 @@ class FirstPhaseTargetToBspMapperTest : WorkspaceModelBaseTest() {
                 ruleType = RuleType.TEST,
                 languageClasses = setOf(JavaLanguageClass.JAVA, JavaLanguageClass.KOTLIN),
               ),
-            sources = SourceFileCollection.EMPTY,
-            generatedSources = SourceFileCollection.EMPTY,
-            resources = SourceFileCollection.EMPTY,
+            sources = OutputLocationCollection.EMPTY,
+            resources = OutputLocationCollection.EMPTY,
             baseDirectory = workspaceRoot.resolve(Path("target6")),
           ),
           // // target7: now with its created source files
@@ -313,12 +303,8 @@ class FirstPhaseTargetToBspMapperTest : WorkspaceModelBaseTest() {
                 ruleType = RuleType.LIBRARY,
                 languageClasses = setOf(JavaLanguageClass.JAVA),
               ),
-            sources = SourceFileCollectionBuilder.build(
-              relativeRoot = workspaceRoot.resolve(Path("target7")),
-              paths = listOf(target7Src1, target7Src2),
-            ),
-            generatedSources = SourceFileCollection.EMPTY,
-            resources = SourceFileCollection.EMPTY,
+            sources = workspaceLocations(target7Src1, target7Src2),
+            resources = OutputLocationCollection.EMPTY,
             //data = listOf(
             //  JvmPackagePrefixData(mapOf(
             //    target7Src1 to "com.example",
@@ -337,21 +323,14 @@ class FirstPhaseTargetToBspMapperTest : WorkspaceModelBaseTest() {
                 ruleType = RuleType.LIBRARY,
                 languageClasses = setOf(JavaLanguageClass.JAVA),
               ),
-            sources = SourceFileCollectionBuilder.build(
-              relativeRoot = workspaceRoot.resolve(Path("target8")),
-              // note: the direct mapping for "//target8:src1.kt" becomes workspaceRoot/target8/src1.kt
-              // then the dependency from filegroupSources (its own direct source items)
-              paths = listOf(target8Src1, fgSrc1, fgSrc2),
-            ),
-            generatedSources = SourceFileCollection.EMPTY,
-            resources = SourceFileCollectionBuilder.build(
-              relativeRoot = workspaceRoot.resolve(Path("target8")),
-              paths = listOf(
-                target8Resource1,
-                // resources merged from filegroupResources dependency
-                workspaceRoot.resolve("filegroupResources/file1.txt"),
-                workspaceRoot.resolve("filegroupResources/file2.txt"),
-              ),
+            // note: the direct mapping for "//target8:src1.kt" becomes workspaceRoot/target8/src1.kt
+            // then the dependency from filegroupSources (its own direct source items)
+            sources = workspaceLocations(target8Src1, fgSrc1, fgSrc2),
+            resources = workspaceLocations(
+              target8Resource1,
+              // resources merged from filegroupResources dependency
+              fgRes1,
+              fgRes2,
             ),
             //data = listOf(
             //  JvmPackagePrefixData(mapOf(
@@ -369,12 +348,8 @@ class FirstPhaseTargetToBspMapperTest : WorkspaceModelBaseTest() {
                 ruleType = RuleType.LIBRARY,
                 languageClasses = setOf(JavaLanguageClass.JAVA),
               ),
-            sources = SourceFileCollectionBuilder.build(
-              relativeRoot = workspaceRoot.resolve(Path("filegroupSources")),
-              paths = listOf(fgSrc1, fgSrc2),
-            ),
-            generatedSources = SourceFileCollection.EMPTY,
-            resources = SourceFileCollection.EMPTY,
+            sources = workspaceLocations(fgSrc1, fgSrc2),
+            resources = OutputLocationCollection.EMPTY,
             //data = listOf(
             //  JvmPackagePrefixData(mapOf(
             //    fgSrc1 to "com.fg",

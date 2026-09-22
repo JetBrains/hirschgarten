@@ -8,7 +8,7 @@ import org.jetbrains.bazel.sync.workspace.persistence.TargetLoadOptions
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.BuildTargetData
-import org.jetbrains.bsp.protocol.SourceFileCollection
+import org.jetbrains.bsp.protocol.OutputLocationCollection
 import java.nio.file.Path
 
 @ApiStatus.Internal
@@ -33,9 +33,8 @@ data class NonImportedBuildTarget(
 
   override val dependencies: List<DependencyLabel> get() = listOf()
 
-  override val sources: SourceFileCollection get() = SourceFileCollection.EMPTY
-  override val generatedSources: SourceFileCollection get() = SourceFileCollection.EMPTY
-  override val resources: SourceFileCollection get() = SourceFileCollection.EMPTY
+  override val sources: OutputLocationCollection get() = OutputLocationCollection.EMPTY
+  override val resources: OutputLocationCollection get() = OutputLocationCollection.EMPTY
 
   override val data: List<BuildTargetData> get() = listOf()
 }

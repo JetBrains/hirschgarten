@@ -11,13 +11,11 @@ import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.sync.workspace.snapshot.PathsTrie
 import org.jetbrains.bazel.sync.workspace.snapshot.TrieNode
 import org.jetbrains.bazel.sync.workspace.snapshot.TrieOutputLocationCollection
-import org.jetbrains.bazel.sync.workspace.snapshot.TrieSourceFileCollection
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetGraph
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
 import org.jetbrains.bsp.protocol.OutputLocation
 import org.jetbrains.bsp.protocol.OutputLocationCollection
 import org.jetbrains.bsp.protocol.OutputRoot
-import org.jetbrains.bsp.protocol.SourceFileCollection
 import java.nio.file.Path
 import java.util.TreeMap
 import kotlin.io.path.Path
@@ -69,10 +67,8 @@ internal object SnapshotSerializers {
     kryo.register(Int2ObjectBiMap::class.java, Int2ObjectBiMapSerializer())
 
     // anonymous-object singletons cannot pass WorkspaceTypeContributor schema validation
-    kryo.register(SourceFileCollection.EMPTY.javaClass, SingletonSerializer(SourceFileCollection.EMPTY))
     kryo.register(WorkspaceTargetGraph.EMPTY.javaClass, SingletonSerializer(WorkspaceTargetGraph.EMPTY))
 
-    kryo.register(TrieSourceFileCollection::class.java, TrieSourceFileCollectionSerializer())
     kryo.register(OutputLocationCollection.EMPTY.javaClass, SingletonSerializer(OutputLocationCollection.EMPTY))
     kryo.register(TrieOutputLocationCollection::class.java, TrieOutputLocationCollectionSerializer())
     kryo.register(OutputRoot::class.java, OutputRootSerializer())
@@ -80,36 +76,6 @@ internal object SnapshotSerializers {
 
   fun singletonSerializerFor(type: Class<*>): VersionedKryoSerializer<*> =
     SingletonSerializer(type.getDeclaredField("INSTANCE").get(null))
-}
-
-// manual trie serializer to avoid reflective access, optimized based on profiling results
-internal class TrieSourceFileCollectionSerializer : VersionedKryoSerializer<TrieSourceFileCollection>() {
-  init {
-    isImmutable = true
-  }
-
-  override val binaryFormatVersion: Int = 2
-
-  override fun write(kryo: Kryo, output: Output, obj: TrieSourceFileCollection) {
-    kryo.writeObjectOrNull(output, obj.relativizeRoot, Path::class.java)
-    output.writeVarInt(obj.externalFiles.size, true)
-    for (path in obj.externalFiles) {
-      kryo.writeObject(output, path)
-    }
-    writeTrieNode(kryo, output, obj.trie.root)
-  }
-
-  override fun read(kryo: Kryo, input: Input, type: Class<out TrieSourceFileCollection>): TrieSourceFileCollection {
-    val relativizeRoot = kryo.readObjectOrNull(input, Path::class.java)
-    val externalCount = input.readVarInt(true)
-    val externalFiles = ArrayList<Path>(externalCount)
-    repeat(externalCount) {
-      externalFiles.add(kryo.readObject(input, Path::class.java))
-    }
-    val trie = PathsTrie()
-    readTrieNode(kryo, input, trie.root)
-    return TrieSourceFileCollection(relativizeRoot = relativizeRoot, trie = trie, externalFiles = externalFiles)
-  }
 }
 
 internal class TrieOutputLocationCollectionSerializer : VersionedKryoSerializer<TrieOutputLocationCollection>() {

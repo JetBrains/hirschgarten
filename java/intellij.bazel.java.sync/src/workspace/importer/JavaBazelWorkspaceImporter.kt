@@ -150,6 +150,7 @@ internal class JavaBazelWorkspaceImporter(val context: WorkspaceImporterContext)
     val resolveLocation = locationResolver(context, snapshot)
     val packagePrefixes = DefaultJvmPackagePrefixCalculator(
       sourceRootOptimizationMode = javaSyncConfig.sourceRootOptimizationMode,
+      resolveLocation = resolveLocation,
     ).also { it.calculate(targets) }
 
     val importContext = ImportContext(

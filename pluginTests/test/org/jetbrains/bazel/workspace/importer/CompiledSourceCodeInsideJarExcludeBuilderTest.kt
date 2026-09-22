@@ -11,8 +11,11 @@ import org.jetbrains.bazel.sync.workspace.languages.java.sourceRoot.JvmPackagePr
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
 import org.jetbrains.bazel.test.framework.target.TestBuildTarget
 import org.jetbrains.bazel.workspace.model.test.framework.createTestBuildTarget
+import org.jetbrains.bazel.workspace.model.test.framework.generatedTestLocation
+import org.jetbrains.bazel.workspace.model.test.framework.resolveTestLocation
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.LibraryItem
+import org.jetbrains.bsp.protocol.OutputLocation
 import org.junit.jupiter.api.Test
 import java.nio.file.Path
 import kotlin.io.path.Path
@@ -26,7 +29,7 @@ class CompiledSourceCodeInsideJarExcludeBuilderTest {
     val prefixes = fixedPrefixes(mapOf(sourcePath to "com.example"))
 
     val result = CompiledSourceCodeInsideJarExcludeBuilder
-      .calculateRelativePathsInsideJarToExclude(listOf(target), prefixes)
+      .calculateRelativePathsInsideJarToExclude(listOf(target), prefixes, ::resolveTestLocation)
 
     result shouldContainExactlyInAnyOrder setOf(
       "com/example/Foo.java",
@@ -41,7 +44,7 @@ class CompiledSourceCodeInsideJarExcludeBuilderTest {
     val prefixes = fixedPrefixes(mapOf(sourcePath to "com.example"))
 
     val result = CompiledSourceCodeInsideJarExcludeBuilder
-      .calculateRelativePathsInsideJarToExclude(listOf(target), prefixes)
+      .calculateRelativePathsInsideJarToExclude(listOf(target), prefixes, ::resolveTestLocation)
 
     result shouldContainExactlyInAnyOrder setOf(
       "com/example/main.kt",
@@ -52,12 +55,12 @@ class CompiledSourceCodeInsideJarExcludeBuilderTest {
 
   @Test
   fun `should skip generated sources`() {
-    val sourcePath = Path("/repo/com/example/Generated.java")
-    val target = targetWithSources(sources = emptyList(), genSources =  listOf(sourcePath))
-    val prefixes = fixedPrefixes(mapOf(sourcePath to "com.example"))
+    val sourceLocation = generatedTestLocation("com/example/Generated.java")
+    val target = targetWithSources(sources = emptyList(), genSources = listOf(sourceLocation))
+    val prefixes = fixedPrefixes(mapOf(resolveTestLocation(sourceLocation)!! to "com.example"))
 
     val result = CompiledSourceCodeInsideJarExcludeBuilder
-      .calculateRelativePathsInsideJarToExclude(listOf(target), prefixes)
+      .calculateRelativePathsInsideJarToExclude(listOf(target), prefixes, ::resolveTestLocation)
 
     result shouldContainExactlyInAnyOrder emptySet()
   }
@@ -69,7 +72,7 @@ class CompiledSourceCodeInsideJarExcludeBuilderTest {
     val prefixes = fixedPrefixes(mapOf(sourcePath to "com.example"))
 
     val result = CompiledSourceCodeInsideJarExcludeBuilder
-      .calculateRelativePathsInsideJarToExclude(listOf(target), prefixes)
+      .calculateRelativePathsInsideJarToExclude(listOf(target), prefixes, ::resolveTestLocation)
 
     result shouldContainExactlyInAnyOrder emptySet()
   }
@@ -81,7 +84,7 @@ class CompiledSourceCodeInsideJarExcludeBuilderTest {
     val prefixes = fixedPrefixes(emptyMap())
 
     val result = CompiledSourceCodeInsideJarExcludeBuilder
-      .calculateRelativePathsInsideJarToExclude(listOf(target), prefixes)
+      .calculateRelativePathsInsideJarToExclude(listOf(target), prefixes, ::resolveTestLocation)
 
     result shouldContainExactlyInAnyOrder setOf("Foo.java", "Foo.class")
   }
@@ -93,7 +96,7 @@ class CompiledSourceCodeInsideJarExcludeBuilderTest {
     val prefixes = fixedPrefixes(mapOf(sourcePath to "com.example"))
 
     val result = CompiledSourceCodeInsideJarExcludeBuilder
-      .calculateRelativePathsInsideJarToExclude(listOf(target), prefixes)
+      .calculateRelativePathsInsideJarToExclude(listOf(target), prefixes, ::resolveTestLocation)
 
     result shouldContainExactlyInAnyOrder setOf(
       "com/example/myUtil.kt",
@@ -150,7 +153,7 @@ class CompiledSourceCodeInsideJarExcludeBuilderTest {
     )
   }
 
-  private fun targetWithSources(sources: List<Path>, genSources: List<Path> = emptyList()): TestBuildTarget = createTestBuildTarget(
+  private fun targetWithSources(sources: List<Path>, genSources: List<OutputLocation> = emptyList()): TestBuildTarget = createTestBuildTarget(
     id = Label.parse("//target"),
     kind = TargetKind(
       kind = "java_library",

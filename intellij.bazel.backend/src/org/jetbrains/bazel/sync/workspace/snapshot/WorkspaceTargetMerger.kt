@@ -8,9 +8,7 @@ import org.jetbrains.bazel.label.DependencyLabel
 import org.jetbrains.bsp.protocol.BuildTargetData
 import org.jetbrains.bsp.protocol.OutputLocation
 import org.jetbrains.bsp.protocol.OutputLocationCollection
-import org.jetbrains.bsp.protocol.SourceFileCollection
 import org.jetbrains.bsp.protocol.isManual
-import java.nio.file.Path
 import kotlin.reflect.KClass
 
 typealias MergeFunctionMap = Map<KClass<out BuildTargetData>, MergeFunction<*>>
@@ -55,9 +53,8 @@ class WorkspaceTargetMerger(val mergeFunctions: MergeFunctionMap) {
       override val dependencies: List<DependencyLabel> = (left.dependencies + right.dependencies)
         .distinctBy { it.copy(targetKey = it.targetKey.copy(aspectIds = WorkspaceAspectIds.EMPTY)) }
 
-      override val sources: SourceFileCollection = mergeFileCollections(left.sources, right.sources)
-      override val generatedSources: SourceFileCollection = mergeFileCollections(left.generatedSources, right.generatedSources)
-      override val resources: SourceFileCollection = mergeFileCollections(left.resources, right.resources)
+      override val sources: OutputLocationCollection = mergeLocationCollections(left.sources, right.sources)
+      override val resources: OutputLocationCollection = mergeLocationCollections(left.resources, right.resources)
 
       override val data: List<BuildTargetData> = mergeBuildData(left.data.asSequence() + right.data.asSequence())
     }
@@ -107,17 +104,5 @@ fun mergeLocationCollections(left: OutputLocationCollection, right: OutputLocati
   return object : OutputLocationCollection {
     override fun isEmpty(): Boolean = left.isEmpty() && right.isEmpty()
     override fun getOutputLocations(): Sequence<OutputLocation> = (left.getOutputLocations() + right.getOutputLocations()).distinct()
-  }
-}
-
-@ApiStatus.Internal
-fun mergeFileCollections(left: SourceFileCollection, right: SourceFileCollection): SourceFileCollection {
-  if (left == right) {
-    return left
-  }
-  // merging, building trie inside another trie :p
-  return object : SourceFileCollection {
-    override fun isEmpty(): Boolean = left.isEmpty() && right.isEmpty()
-    override fun getFiles(): Sequence<Path> = (left.getFiles() + right.getFiles()).distinct()
   }
 }

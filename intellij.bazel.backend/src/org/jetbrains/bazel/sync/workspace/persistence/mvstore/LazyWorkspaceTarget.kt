@@ -7,7 +7,7 @@ import org.jetbrains.bazel.sync.workspace.persistence.TargetLoadOptions
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.BuildTargetData
-import org.jetbrains.bsp.protocol.SourceFileCollection
+import org.jetbrains.bsp.protocol.OutputLocationCollection
 import java.nio.file.Path
 
 internal class LazyWorkspaceTarget(
@@ -24,10 +24,8 @@ internal class LazyWorkspaceTarget(
   private val dataSection: LazyTargetSection<List<BuildTargetData>>,
 ) : BuildTarget {
   override val dependencies: List<DependencyLabel> get() = depsSection.value
-
-  override val sources: SourceFileCollection get() = fileSetsSection.value.sources
-  override val generatedSources: SourceFileCollection get() = fileSetsSection.value.generatedSources
-  override val resources: SourceFileCollection get() = fileSetsSection.value.resources
+  override val sources: OutputLocationCollection get() = fileSetsSection.value.sources
+  override val resources: OutputLocationCollection get() = fileSetsSection.value.resources
 
   override val data: List<BuildTargetData> get() = dataSection.value
 }

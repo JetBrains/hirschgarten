@@ -28,9 +28,8 @@ interface BuildTarget {
   val dependencies: List<DependencyLabel>
 
   // TargetSection.FILE_SETS
-  val sources: SourceFileCollection
-  val generatedSources: SourceFileCollection
-  val resources: SourceFileCollection
+  val sources: OutputLocationCollection
+  val resources: OutputLocationCollection
 
   // language-specific data, selected by TargetLoadOptions.targetData
   val data: List<BuildTargetData>
@@ -70,3 +69,6 @@ inline fun <reified Data> BuildTarget.extractData(): Data? = this.data.filterIsI
 @get:ApiStatus.Internal
 val BuildTarget.isManual: Boolean
   get() = BuildTargetTag.MANUAL in tags
+
+@ApiStatus.Internal
+fun BuildTarget.nonGeneratedSources(): Sequence<OutputLocation> = sources.getOutputLocations().filter { it.isSource }

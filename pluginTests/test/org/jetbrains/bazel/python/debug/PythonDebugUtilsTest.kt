@@ -20,8 +20,8 @@ import org.jetbrains.bazel.sync.environment.BazelProjectContextService
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
 import org.jetbrains.bazel.target.targetStorage
 import org.jetbrains.bazel.test.framework.target.TestBuildTarget
+import org.jetbrains.bsp.protocol.OutputLocationCollection
 import org.jetbrains.bazel.workspace.model.test.framework.testLocation
-import org.jetbrains.bsp.protocol.SourceFileCollection
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertNotNull
 import org.junit.jupiter.api.io.TempDir
@@ -424,9 +424,8 @@ class PythonDebugUtilsTest {
             languageClasses = setOf(PythonLanguageClass.PYTHON),
             ruleType = ruleType,
           ),
-          sources = SourceFileCollection.EMPTY,
-          generatedSources = SourceFileCollection.EMPTY,
-          resources = SourceFileCollection.EMPTY,
+          sources = OutputLocationCollection.EMPTY,
+          resources = OutputLocationCollection.EMPTY,
           baseDirectory = tempDir.resolve(target.packagePath.toString()),
           data = listOf(
             PythonBuildTarget(

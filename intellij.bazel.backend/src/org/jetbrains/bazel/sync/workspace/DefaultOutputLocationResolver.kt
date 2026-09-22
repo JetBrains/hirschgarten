@@ -3,10 +3,12 @@ package org.jetbrains.bazel.sync.workspace
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.commons.BazelInfo
 import org.jetbrains.bazel.commons.LocalRepositoryMapping
+import org.jetbrains.bazel.commons.RepoMapping
 import org.jetbrains.bazel.sync.BazelOutFileHardLinks
 import org.jetbrains.bsp.protocol.OutputLocation
 import org.jetbrains.bsp.protocol.OutputLocationResolver
 import org.jetbrains.bsp.protocol.isGenerated
+import org.jetbrains.bsp.protocol.isUserCode
 import org.jetbrains.bsp.protocol.toExecrootPath
 import java.nio.file.InvalidPathException
 import java.nio.file.Path
@@ -18,6 +20,16 @@ open class DefaultOutputLocationResolver private constructor(
 ) : OutputLocationResolver {
 
   companion object {
+    fun createLocalWorkspaceOnly(bazelInfo: BazelInfo, repoMapping: RepoMapping): OutputLocationResolver =
+      object : DefaultOutputLocationResolver(bazelInfo) {
+        override fun resolve(location: OutputLocation, localOverride: LocalRepositoryMapping?): Path? {
+          if (!location.isUserCode(repoMapping) || location.isGenerated) {
+            return null
+          }
+          return super.resolve(location, localOverride)
+        }
+      }
+
     fun createHardlinkResolving(
       bazelInfo: BazelInfo,
       hardlinks: BazelOutFileHardLinks = BazelOutFileHardLinks.NONE,

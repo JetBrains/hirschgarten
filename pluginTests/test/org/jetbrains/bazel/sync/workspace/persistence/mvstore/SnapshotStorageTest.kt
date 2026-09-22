@@ -19,20 +19,22 @@ import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.label.DependencyLabel
 import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.sync.workspace.DefaultOutputLocationResolver
 import org.jetbrains.bazel.sync.workspace.languages.jvm.JavaToolchainData
 import org.jetbrains.bazel.sync.workspace.languages.jvm.JvmBuildTarget
 import org.jetbrains.bazel.sync.workspace.persistence.BuildTargetLoadHint
 import org.jetbrains.bazel.sync.workspace.persistence.TargetLoadOptions
 import org.jetbrains.bazel.sync.workspace.persistence.TargetSection
 import org.jetbrains.bazel.sync.workspace.persistence.WorkspaceTypeContributor
-import org.jetbrains.bazel.sync.workspace.snapshot.SourceFileCollectionBuilder
+import org.jetbrains.bazel.sync.workspace.snapshot.OutputLocationCollectionBuilder
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceSnapshotMetadata
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetGraph
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
 import org.jetbrains.bazel.test.framework.target.TestBuildTarget
 import org.jetbrains.bazel.test.framework.testBazelInfo
 import org.jetbrains.bsp.protocol.BuildTarget
-import org.jetbrains.bsp.protocol.SourceFileCollection
+import org.jetbrains.bsp.protocol.OutputLocation
+import org.jetbrains.bsp.protocol.OutputLocationCollection
 import org.jetbrains.bsp.protocol.isFull
 import org.junit.jupiter.api.Test
 import java.lang.ref.Reference
@@ -52,8 +54,12 @@ class SnapshotStorageTest {
 
   private fun key(label: String): WorkspaceTargetKey = WorkspaceTargetKey(label = Label.parse(label))
 
-  private fun sources(vararg paths: Path): SourceFileCollection =
-    SourceFileCollectionBuilder.build(relativeRoot = Path.of("/workspace"), paths = paths.toList())
+  private val bazelInfo = testBazelInfo(workspaceRoot = Path.of("/workspace"))
+
+  private val outputResolver = DefaultOutputLocationResolver.createHardlinkResolving(bazelInfo)
+
+  private fun sources(vararg relativePaths: String): OutputLocationCollection =
+    OutputLocationCollectionBuilder.ofLocations(relativePaths.map { OutputLocation.Workspace(it) })
 
   private fun rawTarget(key: WorkspaceTargetKey, index: Int): TestBuildTarget =
     TestBuildTarget(
@@ -64,9 +70,8 @@ class SnapshotStorageTest {
         languageClasses = setOf(LanguageClass("java", setOf("java"))),
         ruleType = RuleType.LIBRARY,
       ),
-      sources = sources(Path.of("/workspace/pkg$index/Main.java"), Path.of("/workspace/shared/Shared.java")),
-      generatedSources = SourceFileCollection.EMPTY,
-      resources = SourceFileCollection.EMPTY,
+      sources = sources("pkg$index/Main.java", "shared/Shared.java"),
+      resources = OutputLocationCollection.EMPTY,
       baseDirectory = Path.of("/workspace/pkg$index"),
       data = listOf(
         JvmBuildTarget(javacOpts = listOf("-parameters"), mainClass = "com.example.Main$index"),
@@ -96,7 +101,7 @@ class SnapshotStorageTest {
       labelId2Label[keyId] = targetKey.label
       targets[targetKey] = raw
       generation.saveTarget(WorkspaceTargetToSave(keyId = keyId, target = raw))
-      raw.sources.getFiles().forEach { file ->
+      raw.sources.getOutputLocations().mapNotNull(outputResolver::resolve).forEach { file ->
         hash2KeyIds.computeIfAbsent(hashFilePath(file)) { IntArrayList() }.add(keyId)
       }
     }
@@ -108,7 +113,7 @@ class SnapshotStorageTest {
       targetGraph = WorkspaceTargetGraph.EMPTY,
       syncConfigs = emptyList(),
       repoMapping = RepoMappingDisabled,
-      bazelInfo = testBazelInfo(workspaceRoot = Path.of("/workspace")),
+      bazelInfo = bazelInfo,
       metadata = WorkspaceSnapshotMetadata(version = 7),
       keyId2Target = keyId2Target,
       labelId2Label = labelId2Label,
@@ -142,7 +147,7 @@ class SnapshotStorageTest {
       labelId2Label[keyId] = targetKey.label
       targets[targetKey] = raw
       toSave += WorkspaceTargetToSave(keyId = keyId, target = raw)
-      raw.sources.getFiles().forEach { file ->
+      raw.sources.getOutputLocations().mapNotNull(outputResolver::resolve).forEach { file ->
         hash2KeyIds.computeIfAbsent(hashFilePath(file)) { IntArrayList() }.add(keyId)
       }
     }
@@ -155,7 +160,7 @@ class SnapshotStorageTest {
       targetGraph = WorkspaceTargetGraph.EMPTY,
       syncConfigs = emptyList(),
       repoMapping = RepoMappingDisabled,
-      bazelInfo = testBazelInfo(workspaceRoot = Path.of("/workspace")),
+      bazelInfo = bazelInfo,
       metadata = WorkspaceSnapshotMetadata(version = 7),
       keyId2Target = keyId2Target,
       labelId2Label = labelId2Label,

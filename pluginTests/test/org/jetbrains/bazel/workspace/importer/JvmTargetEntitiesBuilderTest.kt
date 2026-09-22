@@ -513,7 +513,7 @@ internal class JvmTargetEntitiesBuilderTest : WorkspaceModelBaseTest() {
     targets: List<BuildTarget>,
     resolved: Map<WorkspaceTargetKey, JvmResolvedTarget> = defaultResolved(targets),
   ) {
-    val calc = DefaultJvmPackagePrefixCalculator(SourceRootOptimizationMode.Disabled)
+    val calc = DefaultJvmPackagePrefixCalculator(SourceRootOptimizationMode.Disabled, ::resolveTestLocation)
     calc.calculate(targets)
     val jvmPackagePrefixes: JvmPackagePrefixCalculator = calc
     val plan = JvmImportPlan(rawTargets = targets, jvmResolved = resolved, resolveLocation = ::resolveTestLocation)

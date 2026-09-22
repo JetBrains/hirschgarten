@@ -27,7 +27,7 @@ import org.jetbrains.bazel.sync.workspace.languages.jvm.JvmBuildTarget
 import org.jetbrains.bazel.sync.workspace.snapshot.CommonWorkspaceSyncConfig
 import org.jetbrains.bazel.sync.workspace.snapshot.ExecutableTargetsIndex
 import org.jetbrains.bazel.sync.workspace.snapshot.FileToTargetMap
-import org.jetbrains.bazel.sync.workspace.snapshot.SourceFileCollectionBuilder
+import org.jetbrains.bazel.sync.workspace.snapshot.OutputLocationCollectionBuilder
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceConfiguration
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceConfigurationId
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceConfigurationSummary
@@ -38,12 +38,15 @@ import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
 import org.jetbrains.bazel.test.framework.target.TestBuildTarget
 import org.jetbrains.bazel.test.framework.testBazelInfo
 import org.jetbrains.bsp.protocol.BuildTarget
-import org.jetbrains.bsp.protocol.SourceFileCollection
+import org.jetbrains.bsp.protocol.OutputLocation
+import org.jetbrains.bsp.protocol.OutputLocationCollection
 import org.junit.jupiter.api.Test
 import java.nio.file.Path
 import kotlin.io.path.createDirectories
 import kotlin.io.path.exists
 import kotlin.time.Duration.Companion.seconds
+
+private val WORKSPACE_ROOT: Path = Path.of("/workspace")
 
 @TestApplication
 class WorkspaceSnapshotServiceTest {
@@ -80,8 +83,9 @@ class WorkspaceSnapshotServiceTest {
 
   private fun key(label: String): WorkspaceTargetKey = WorkspaceTargetKey(label = Label.parse(label))
 
-  private fun sources(vararg paths: Path): SourceFileCollection =
-    SourceFileCollectionBuilder.build(relativeRoot = Path.of("/workspace"), paths = paths.toList())
+  // the file map indexes only workspace sources, see `File2TargetMapBuilder`
+  private fun sources(vararg relativePaths: String): OutputLocationCollection =
+    OutputLocationCollectionBuilder.ofLocations(relativePaths.map { OutputLocation.Workspace(it) })
 
   private fun rawTarget(key: WorkspaceTargetKey, index: Int): TestBuildTarget =
     TestBuildTarget(
@@ -92,9 +96,8 @@ class WorkspaceSnapshotServiceTest {
         languageClasses = setOf(LanguageClass("java", setOf("java"))),
         ruleType = RuleType.LIBRARY,
       ),
-      sources = sources(Path.of("/workspace/pkg$index/Main.java"), Path.of("/workspace/shared/Shared.java")),
-      generatedSources = SourceFileCollection.EMPTY,
-      resources = SourceFileCollection.EMPTY,
+      sources = sources("pkg$index/Main.java", "shared/Shared.java"),
+      resources = OutputLocationCollection.EMPTY,
       baseDirectory = Path.of("/workspace/pkg$index"),
       data = listOf(
         JvmBuildTarget(javacOpts = listOf("-parameters"), mainClass = "com.example.Main$index"),
@@ -145,7 +148,7 @@ class WorkspaceSnapshotServiceTest {
         canonicalRepoNameToPath = mapOf("rules_jvm~" to Path.of("/external/rules_jvm")),
         nonLocalCanonicalRepoNames = setOf(),
       ),
-      bazelInfo = testBazelInfo(workspaceRoot = Path.of("/workspace")),
+      bazelInfo = testBazelInfo(workspaceRoot = WORKSPACE_ROOT),
       metadata = WorkspaceSnapshotMetadata(
         version = 1,
       ),
@@ -270,7 +273,7 @@ class WorkspaceSnapshotServiceTest {
 
       val target = restored.targets.findTargetByKey(key("@//pkg0:target"))
       target.shouldNotBeNull()
-      target.sources shouldBe sources(Path.of("/workspace/pkg0/Main.java"), Path.of("/workspace/shared/Shared.java"))
+      target.sources shouldBe sources("pkg0/Main.java", "shared/Shared.java")
 
       restored.fileToTarget.getTargetsByFile(Path.of("/workspace/pkg2/Main.java")) shouldBe emptyList()
       restored.fileToTarget.getTargetsByFile(Path.of("/workspace/pkg3/Main.java")) shouldBe listOf(addedKey)
@@ -282,22 +285,25 @@ class WorkspaceSnapshotServiceTest {
   @Test
   fun `re-store drops file rows for removed sources`(): Unit = runBlocking {
     val changedKey = key("@//pkg1:target")
-    val generatedFile = Path.of("/workspace/gen/pkg1/Gen.java")
+    val extraFile = "gen/pkg1/Gen.java"
 
-    // pkg1 carries a generated source G in addition to its normal sources
+    // pkg1 carries an extra source G in addition to its normal sources
     val base = buildSnapshot()
     base.targets.findTargetByKey(changedKey).shouldNotBeNull()
     // build the variant from the same recipe buildSnapshot() used, rather than reading one back to copy it
-    val withGeneratedSource = rawTarget(changedKey, 1).copy(generatedSources = sources(generatedFile))
+    val baseTarget = rawTarget(changedKey, 1)
+    val withExtraSource = baseTarget.copy(
+      sources = sources("pkg1/Main.java", "shared/Shared.java", extraFile),
+    )
     val expected = base.copy(
-      targets = InMemoryWorkspaceTargetMap(base.targets.allTargets().associateBy { it.key } + (changedKey to withGeneratedSource)),
+      targets = InMemoryWorkspaceTargetMap(base.targets.allTargets().associateBy { it.key } + (changedKey to withExtraSource)),
     )
 
     withProject(isNew = true, saveOnClose = true) { project ->
       project.getService(WorkspaceSnapshotService::class.java).update { expected to Unit }
     }
 
-    val changed = withGeneratedSource.copy(generatedSources = SourceFileCollection.EMPTY)
+    val changed = withExtraSource.copy(sources = baseTarget.sources)
     val reStoredTargets = expected.targets.allTargets().associateBy { it.key } + (changedKey to changed)
     withProject(saveOnClose = true) { project ->
       val service = project.getService(WorkspaceSnapshotService::class.java)
@@ -309,7 +315,7 @@ class WorkspaceSnapshotServiceTest {
 
     withProject { project ->
       val restored = awaitLoadedSnapshot(project)
-      restored.fileToTarget.getTargetsByFile(generatedFile) shouldBe emptyList()
+      restored.fileToTarget.getTargetsByFile(WORKSPACE_ROOT.resolve(extraFile)) shouldBe emptyList()
       restored.fileToTarget.getTargetsByFile(Path.of("/workspace/pkg1/Main.java")) shouldBe listOf(changedKey)
       checkNotNull(restored.targets.findTargetByKey(changedKey))
     }
@@ -390,9 +396,8 @@ class WorkspaceSnapshotServiceTest {
         languageClasses = setOf(JavaLanguageClass.JAVA),
         ruleType = if (executable) RuleType.BINARY else RuleType.LIBRARY,
       ),
-      sources = SourceFileCollection.EMPTY,
-      generatedSources = SourceFileCollection.EMPTY,
-      resources = SourceFileCollection.EMPTY,
+      sources = OutputLocationCollection.EMPTY,
+      resources = OutputLocationCollection.EMPTY,
       baseDirectory = Path.of("/workspace"),
     )
 
@@ -415,7 +420,7 @@ class WorkspaceSnapshotServiceTest {
         dotIdeaPath = null
       )),
       repoMapping = RepoMappingDisabled,
-      bazelInfo = testBazelInfo(workspaceRoot = Path.of("/workspace")),
+      bazelInfo = testBazelInfo(workspaceRoot = WORKSPACE_ROOT),
       metadata = WorkspaceSnapshotMetadata(version = 1),
     )
   }
@@ -470,7 +475,7 @@ class WorkspaceSnapshotServiceTest {
         dotIdeaPath = null
       )),
       repoMapping = RepoMappingDisabled,
-      bazelInfo = testBazelInfo(workspaceRoot = Path.of("/workspace")),
+      bazelInfo = testBazelInfo(workspaceRoot = WORKSPACE_ROOT),
       metadata = WorkspaceSnapshotMetadata(version = 1),
     )
 

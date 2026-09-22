@@ -33,7 +33,7 @@ fun buildToolchainMap(): Map<WorkspaceTargetKey, WorkspaceTargetKey> {
     val plainTarget = target.key.aspectIds.ids.isEmpty()
 
     // no need to report an error if the target has no sources
-    val hasSources = !target.sources.isEmpty() || !target.generatedSources.isEmpty()
+    val hasSources = !target.sources.isEmpty()
 
     if (hasSources && (candidates.size > 1 || (candidates.isEmpty() && plainTarget))) {
       problems[target.key] = candidates

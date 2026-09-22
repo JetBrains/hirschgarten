@@ -45,7 +45,6 @@ import org.jetbrains.bazel.progress.withSubtask
 import org.jetbrains.bazel.python.lang.PythonBuildTarget
 import org.jetbrains.bazel.server.connection
 import org.jetbrains.bazel.sync.environment.projectCtx
-import org.jetbrains.bazel.sync.workspace.DefaultOutputLocationResolver
 import org.jetbrains.bazel.sync.workspace.importer.BazelWorkspaceImporter
 import org.jetbrains.bazel.sync.workspace.importer.BazelWorkspaceImporterFactory
 import org.jetbrains.bazel.sync.workspace.importer.GlobalNamingContext
@@ -60,7 +59,6 @@ import org.jetbrains.bazel.sync.workspace.snapshot.CommonWorkspaceSyncConfig
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceSnapshot
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetMerger
-import org.jetbrains.bazel.sync.workspace.snapshot.allSources
 import org.jetbrains.bazel.sync.workspace.snapshot.allTargets
 import org.jetbrains.bazel.sync.workspace.snapshot.commonSyncConfig
 import org.jetbrains.bazel.sync.workspace.snapshot.filterBuildTarget
@@ -228,11 +226,7 @@ internal class BazelPythonWorkspaceImporter(val context: WorkspaceImporterContex
 
     context.project.connection.runWithServer { server ->
       context.project.serviceAsync<PythonResolveIndexService>()
-        .updatePythonResolveIndex(
-          pythonTargets = pyTargets,
-          outFilesHardLink = server.outFileHardLinks,
-          execrootResolver = DefaultOutputLocationResolver.createExecrootResolving(context.bazelInfo),
-        )
+        .updatePythonResolveIndex(context, snapshot, pyTargets, server.outFileHardLinks)
     }
     return WorkspaceImporterResult.Success
   }
@@ -327,7 +321,7 @@ internal class BazelPythonWorkspaceImporter(val context: WorkspaceImporterContex
     naming: GlobalNamingContext,
     sourceDependencyLibraries: List<LibraryEntity> = emptyList(),
   ): ModuleEntity {
-    val contentRoots = getContentRootEntities(target, entitySource, virtualFileUrlManager)
+    val contentRoots = getContentRootEntities(snapshot, target, entitySource, virtualFileUrlManager)
 
     val libraryDependencies =
       sourceDependencyLibraries.map {
@@ -380,32 +374,36 @@ internal class BazelPythonWorkspaceImporter(val context: WorkspaceImporterContex
   }
 
   private fun getContentRootEntities(
+    snapshot: WorkspaceSnapshot,
     target: BuildTarget,
     entitySource: EntitySource,
     virtualFileUrlManager: VirtualFileUrlManager,
   ): List<ContentRootEntityBuilder> {
-    val sourceContentRootEntities = getSourceContentRootEntities(target, entitySource, virtualFileUrlManager)
-    val resourceContentRootEntities = getResourceContentRootEntities(target, entitySource, virtualFileUrlManager)
+    val sourceContentRootEntities = getSourceContentRootEntities(snapshot, target, entitySource, virtualFileUrlManager)
+    val resourceContentRootEntities = getResourceContentRootEntities(snapshot, target, entitySource, virtualFileUrlManager)
 
     return sourceContentRootEntities + resourceContentRootEntities
   }
 
   private fun getSourceContentRootEntities(
+    snapshot: WorkspaceSnapshot,
     target: BuildTarget,
     entitySource: EntitySource,
     virtualFileUrlManager: VirtualFileUrlManager,
-  ): List<ContentRootEntityBuilder> = computeSourceRootPaths(target)
+  ): List<ContentRootEntityBuilder> = computeSourceRootPaths(snapshot, target)
     .map { it.toContentRoot(PYTHON_SOURCE_ROOT_TYPE, entitySource, virtualFileUrlManager) }
 
   private fun getResourceContentRootEntities(
+    snapshot: WorkspaceSnapshot,
     target: BuildTarget,
     entitySource: EntitySource,
     virtualFileUrlManager: VirtualFileUrlManager,
-  ): List<ContentRootEntityBuilder> = target.resources.getFiles()
+  ): List<ContentRootEntityBuilder> = target.resources.getOutputLocations()
+    .mapNotNull { context.outputResolver.resolve(it, snapshot.repoMapping.getLocalRepositories()) }
     .map { resource -> resource.toContentRoot(PYTHON_RESOURCE_ROOT_TYPE, entitySource, virtualFileUrlManager) }
     .toList()
 
-  private fun computeSourceRootPaths(target: BuildTarget): Set<Path> {
+  private fun computeSourceRootPaths(snapshot: WorkspaceSnapshot, target: BuildTarget): Set<Path> {
     val projectCtx = context.project.projectCtx
     // imports for generated files should be resolved against bazel-bin
     val basePaths = listOfNotNull(projectCtx.projectRootDir?.toNioPath(), projectCtx.bazelBinPath).distinct()
@@ -416,7 +414,8 @@ internal class BazelPythonWorkspaceImporter(val context: WorkspaceImporterContex
             base.resolve(importPath).normalize().takeIf { it.startsWith(base) && it.isDirectory() }
           }
         }.toSet()
-    val individualFiles = target.allSources
+    val individualFiles = target.sources.getOutputLocations()
+      .mapNotNull { context.outputResolver.resolve(it, snapshot.repoMapping.getLocalRepositories()) }
       .filter { !it.isUnder(importRoots) }
       .toSet()
     return importRoots + individualFiles

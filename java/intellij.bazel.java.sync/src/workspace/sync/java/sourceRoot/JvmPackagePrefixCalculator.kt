@@ -14,6 +14,9 @@ import org.jetbrains.bazel.sync.workspace.languages.java.sourceRoot.projectview.
 import org.jetbrains.bazel.sync.workspace.languages.jvm.JvmBuildTarget
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
 import org.jetbrains.bsp.protocol.BuildTarget
+import org.jetbrains.bsp.protocol.OutputLocation
+import org.jetbrains.bsp.protocol.isSource
+import org.jetbrains.bsp.protocol.nonGeneratedSources
 import java.nio.file.Path
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.io.path.extension
@@ -56,6 +59,7 @@ sealed interface SourceRootOptimizationMode {
 @ApiStatus.Internal
 class DefaultJvmPackagePrefixCalculator(
   val sourceRootOptimizationMode: SourceRootOptimizationMode,
+  private val resolveLocation: (OutputLocation) -> Path?,
 ) : JvmPackagePrefixCalculator {
   private val packageResolver = DefaultJvmPackageResolver()
   private val packageInference = JavaSourceRootPackageInference(packageResolver)
@@ -81,7 +85,10 @@ class DefaultJvmPackagePrefixCalculator(
   }
 
   private fun calculateForTarget(target: BuildTarget): Map<Path, String> {
-    val sources = target.sources.getFiles().filter { it.extension != "srcjar" }.toList()
+    val sources = target.nonGeneratedSources()
+      .mapNotNull(resolveLocation)
+      .filter { it.extension != "srcjar" }
+      .toList()
 
     val result = HashMap<Path, String>()
     when (sourceRootOptimizationMode) {

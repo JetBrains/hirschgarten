@@ -25,7 +25,9 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import org.jetbrains.annotations.ApiStatus
+import org.jetbrains.bazel.commons.getLocalRepositories
 import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.sync.workspace.DefaultOutputLocationResolver
 import org.jetbrains.bazel.sync.workspace.persistence.WorkspaceSnapshotService
 import org.jetbrains.bazel.sync.workspace.persistence.WorkspaceSnapshotUpdater
 import org.jetbrains.bazel.sync.workspace.snapshot.CommonWorkspaceSyncConfig
@@ -33,7 +35,6 @@ import org.jetbrains.bazel.sync.workspace.snapshot.ExecutableTargetsIndexBuilder
 import org.jetbrains.bazel.sync.workspace.snapshot.InMemoryFileToTargetMap
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceSnapshot
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
-import org.jetbrains.bazel.sync.workspace.snapshot.allSources
 import org.jetbrains.bsp.protocol.BuildTarget
 import java.nio.ByteBuffer
 import java.nio.file.AtomicMoveNotSupportedException
@@ -254,6 +255,9 @@ class DefaultWorkspaceSnapshotService(
     val targetsToSave = ArrayList<WorkspaceTargetToSave>(allTargets.size)
     var nextKeyId = 1
     var nextLabelId = 1
+    // index only the sources of the local workspace
+    val resolver = DefaultOutputLocationResolver.createLocalWorkspaceOnly(snapshot.bazelInfo, snapshot.repoMapping)
+    val localRepositories = snapshot.repoMapping.getLocalRepositories()
     for (raw in allTargets) {
       // setup global key/label IDs
       val key = raw.key
@@ -268,8 +272,9 @@ class DefaultWorkspaceSnapshotService(
       // prepare saved target
       targetsToSave += WorkspaceTargetToSave(keyId = keyId, target = raw)
 
-      // prepare file map
-      raw.allSources.forEach { file -> hash2KeyIds.computeIfAbsent(hashFilePath(file)) { IntArrayList() }.add(keyId) }
+      raw.sources.getOutputLocations()
+        .mapNotNull { resolver.resolve(it, localRepositories) }
+        .forEach { file -> hash2KeyIds.computeIfAbsent(hashFilePath(file)) { IntArrayList() }.add(keyId) }
     }
 
     val pendingDelta = computePendingFileMappingDelta(
