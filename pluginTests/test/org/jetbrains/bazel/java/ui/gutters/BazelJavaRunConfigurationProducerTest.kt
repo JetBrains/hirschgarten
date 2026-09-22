@@ -11,6 +11,7 @@ import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
 import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.commons.TargetKind
+import org.jetbrains.bazel.jvm.run.JetBrainsTestRunner
 import org.jetbrains.bazel.test.framework.BazelBasePlatformTestCase
 import org.jetbrains.bazel.kotlin.ui.gutters.BazelKotlinRunConfigurationProducer
 import org.jetbrains.bazel.label.Label
@@ -36,6 +37,17 @@ class BazelJavaRunConfigurationProducerTest : BazelBasePlatformTestCase() {
       languageClasses = setOf(JavaLanguageClass.JAVA),
     ),
     Path("base/directory"),
+  )
+
+  private val jetBrainsTestRunnerTarget = NonImportedBuildTarget(
+    Label.synthetic("mock-test"),
+    TargetKind(
+      kind = "java_test",
+      ruleType = RuleType.TEST,
+      languageClasses = setOf(JavaLanguageClass.JAVA),
+    ),
+    Path("base/directory"),
+    tags = listOf(JetBrainsTestRunner.TAG),
   )
 
   private fun CodeInsightTestFixture.getKotlinTestFile(): PsiFile =
@@ -203,5 +215,35 @@ class BazelJavaRunConfigurationProducerTest : BazelBasePlatformTestCase() {
     // then
     val expectedSingleTestFilter = "com.example.OuterTest.NestedTest.nestedTest$"
     result shouldBe expectedSingleTestFilter
+  }
+
+  @Test
+  fun `should keep $ in a nested test class for the JetBrains test runner`() {
+    // given
+    myFixture.getJavaNestedTestFile()
+    val psiElement = myFixture.findElementByText("NestedTest", PsiClass::class.java).childrenOfType<PsiIdentifier>().first()
+    val runConfigurationProducer = BazelJavaRunConfigurationProducer()
+
+    // when
+    val result = runConfigurationProducer.getGutterAction(psiElement, jetBrainsTestRunnerTarget)?.testFilter
+
+    // then
+    // JB_TEST_FILTER selects the class by name, so the dollar of the JVM name has to survive. A dotted name
+    // reaches `DiscoverySelectors.selectClass` as is and fails with a ClassNotFoundException.
+    result shouldBe "com.example.OuterTest\$NestedTest"
+  }
+
+  @Test
+  fun `should keep $ in a nested test method for the JetBrains test runner`() {
+    // given
+    myFixture.getJavaNestedTestFile()
+    val psiElement = myFixture.findElementByText("nestedTest", PsiMethod::class.java).childrenOfType<PsiIdentifier>().first()
+    val runConfigurationProducer = BazelJavaRunConfigurationProducer()
+
+    // when
+    val result = runConfigurationProducer.getGutterAction(psiElement, jetBrainsTestRunnerTarget)?.testFilter
+
+    // then
+    result shouldBe "com.example.OuterTest\$NestedTest:nestedTest:"
   }
 }

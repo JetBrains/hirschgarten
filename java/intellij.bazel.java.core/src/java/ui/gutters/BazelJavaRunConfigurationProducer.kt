@@ -33,7 +33,7 @@ open class BazelJavaRunConfigurationProducer : BazelRunConfigurationProducer() {
     val usesJetBrainsTestRunner = target.usesJetBrainsTestRunner(element.project)
     val testFilter = when {
       !usesJetBrainsTestRunner -> getTestFilter(className, psiMethod?.name)
-      psiMethod == null -> getTestFilter(className, methodName = null)
+      psiMethod == null -> className
       else -> "$className:${psiMethod.name}:${psiMethod.getMethodParameterTypes()}"
     }
     val junitDisabledCondition = DisabledConditionUtil.getDisabledCondition(classOrMethod)
