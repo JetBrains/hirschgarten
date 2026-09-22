@@ -14,6 +14,11 @@
       key="bazel.build.project.on.sync"
     />
     <registryKey
+      defaultValue="false"
+      description="On sync, also request the SYNC output group which contains only source files in the sense of bazel."
+      key="bazel.sync.request.sources"
+    />
+    <registryKey
       defaultValue="true"
       description="Shorten module/library names by hashing the first parts and retaining the others"
       key="bsp.shorten.module.library.names"
