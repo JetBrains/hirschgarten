@@ -7,4 +7,9 @@ class StarlarkStringAnnotatorTest : StarlarkAnnotatorTestCase() {
     myFixture.configureByFile("StringAnnotatorTestData.bzl")
     myFixture.checkHighlighting(true, true, true)
   }
+
+  fun testStringPrefixes() {
+    myFixture.configureByFile("StringPrefixesAnnotatorTestData.bzl")
+    myFixture.checkHighlighting(true, true, true)
+  }
 }

@@ -67,11 +67,20 @@ class StarlarkStringLiteralExpression(node: ASTNode) : StarlarkBaseElement(node)
 
   override fun acceptVisitor(visitor: StarlarkElementVisitor) = visitor.visitStringLiteralExpression(this)
 
-  fun getStringContents(): String = getQuote().unwrap(text)
+  fun getStringContents(): String = getQuote().unwrap(getTextWithQuotes())
 
-  fun getStringContentsOffset(): TextRange = getQuote().rangeWithinQuotes(text)
+  fun getStringContentsOffset(): TextRange = getQuote().rangeWithinQuotes(getTextWithQuotes()).shiftRight(getRawPrefixLength())
 
-  fun getQuote(): StarlarkQuote = StarlarkQuote.ofString(text)
+  fun getQuote(): StarlarkQuote = StarlarkQuote.ofString(getTextWithQuotes())
+
+  fun getTextWithQuotes(): String = text.drop(getRawPrefixLength())
+
+  private fun getRawPrefixLength(): Int {
+    val prefix = text.takeWhile { !it.isQuote() }
+    return if (prefix in ALLOWED_STRING_PREFIXES) prefix.length else 0
+  }
+
+  private fun Char?.isQuote(): Boolean = this == '\'' || this == '"'
 
   /**
    * Detects whether this string literal is the value of the target name attribute.
@@ -137,5 +146,6 @@ class StarlarkStringLiteralExpression(node: ASTNode) : StarlarkBaseElement(node)
     if (arguments.isEmpty()) return null
     return arguments[0].firstChild as? StarlarkStringLiteralExpression
   }
-
 }
+
+private val ALLOWED_STRING_PREFIXES = setOf("", "r", "b", "rb", "br") // capital letters are not allowed here in Starlark

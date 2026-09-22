@@ -13,7 +13,7 @@ private const val TRIPLE_APOSTROPHE = "\'\'\'"
 internal class StarlarkStringAnnotator : Annotator {
   override fun annotate(element: PsiElement, holder: AnnotationHolder) {
     if (element is StarlarkStringLiteralExpression) {
-      element.firstChild.text.annotateUnterminated(element, holder)
+      element.getTextWithQuotes().annotateUnterminated(element, holder)
     }
   }
 

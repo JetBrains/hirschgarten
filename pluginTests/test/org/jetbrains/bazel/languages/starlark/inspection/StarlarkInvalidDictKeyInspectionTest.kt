@@ -432,11 +432,10 @@ class StarlarkInvalidDictKeyInspectionTest : BasePlatformTestCase() {
       """
       d = {
         "a": 1,
-        <error descr="$descriptionDuplicate"><error descr="Missing closing quote [r]">r"a"</error></error>: 2,
+        <error descr="$descriptionDuplicate">r"a"</error>: 2,
       }
       """.trimIndent(),
     )
-    // TODO: Remove nested parser error marker after BAZEL-3528 is fixed.
 
     myFixture.checkHighlighting(true, false, false)
   }

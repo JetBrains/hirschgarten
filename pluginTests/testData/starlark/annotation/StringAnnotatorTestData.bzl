@@ -5,4 +5,13 @@
 <error descr="Missing closing quote [\"]">"This literal contains odd number of backslashes\\\\\\\"</error>
 
 """Hello world!"""
+
+"""Multiline
+
+message!"""
+
+'''Multiline
+
+message!'''
+
 <error descr="Missing closing triple quote">"""Hello world!</error>

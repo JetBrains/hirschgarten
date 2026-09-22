@@ -12,7 +12,13 @@ enum class StarlarkQuote(val quote: String) {
   UNQUOTED(""),
   ;
 
-  fun rangeWithinQuotes(string: String): TextRange = TextRange(quote.length, string.length - quote.length)
+  fun rangeWithinQuotes(string: String): TextRange {
+    val hasClosingQuote = string.length >= quote.length * 2 &&
+      string.endsWith(quote) &&
+      string.dropLast(quote.length).takeLastWhile { it == '\\' }.length % 2 == 0
+    val endOffset = if (hasClosingQuote) string.length - quote.length else string.length
+    return TextRange(quote.length, endOffset)
+  }
 
   fun wrap(toWrap: String): String = quote + toWrap + quote
 

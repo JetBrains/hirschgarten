@@ -1,0 +1,2 @@
+[*.bzl]
+insert_final_newline = false  # automatic new line can break red-code tests (they need exact file form) without the developer noticing
