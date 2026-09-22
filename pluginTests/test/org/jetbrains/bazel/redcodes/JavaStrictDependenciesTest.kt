@@ -36,6 +36,42 @@ class JavaStrictDependenciesTest {
 
   @Nested
   @BazelTestApplication
+  inner class DirectAndIndirectMultiverseDependency {
+
+    private val fixture by bazelSyncCodeInsightFixture(
+      "redcodes/strict_dependencies/java_strict_deps_direct_and_indirect",
+      configure = { it.enableInspections(JavaStrictDependenciesInspection()) },
+    )
+
+    // https://youtrack.jetbrains.com/issue/BAZEL-3569
+    @Test
+    fun testStrictDepsWithClassFromDirectAndIndirectDependency() = runBlocking(Dispatchers.Default) {
+      withContext(Dispatchers.EDT) {
+        fixture.checkHighlighting("Main.java")
+      }
+    }
+  }
+
+  @Nested
+  @BazelTestApplication
+  inner class DirectAndIndirectDependencyCopies {
+
+    private val fixture by bazelSyncCodeInsightFixture(
+      "redcodes/strict_dependencies/java_strict_deps_direct_and_indirect_copies",
+      configure = { it.enableInspections(JavaStrictDependenciesInspection()) },
+    )
+
+    // https://youtrack.jetbrains.com/issue/BAZEL-3569
+    @Test
+    fun testStrictDepsWithClassCopiedIntoDirectAndIndirectDependency() = runBlocking(Dispatchers.Default) {
+      withContext(Dispatchers.EDT) {
+        fixture.checkHighlighting("Main.java")
+      }
+    }
+  }
+
+  @Nested
+  @BazelTestApplication
   inner class CustomExportingRule {
 
     private val fixture by bazelSyncCodeInsightFixture(
