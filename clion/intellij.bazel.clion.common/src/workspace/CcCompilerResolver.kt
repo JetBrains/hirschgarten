@@ -36,6 +36,7 @@ internal class CcCompilerResolver(private val ctx: CcImportContext) {
     return when (kind.getId()) {
       OCCompilerId.CLANG -> CcCompilerKind.CLANG
       OCCompilerId.GCC -> CcCompilerKind.GCC
+      OCCompilerId.APPLE_CLANG -> CcCompilerKind.APPLE_CLANG
       else -> kind
     }
   }

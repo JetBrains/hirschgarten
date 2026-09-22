@@ -4,6 +4,7 @@ package org.jetbrains.bazel.clion.workspace
 
 import com.intellij.openapi.project.Project
 import com.jetbrains.cidr.lang.toolchains.CidrToolEnvironment
+import com.jetbrains.cidr.lang.workspace.compiler.AppleClangCompilerKind
 import com.jetbrains.cidr.lang.workspace.compiler.BasicCompilerCommandLineShortener
 import com.jetbrains.cidr.lang.workspace.compiler.ClangCompilerKind
 import com.jetbrains.cidr.lang.workspace.compiler.GCCCompiler
@@ -31,6 +32,8 @@ abstract class CcCompilerKind private constructor(private val delegate: OCCompil
   object GCC : CcCompilerKind(GCCCompilerKind)
 
   object CLANG : CcCompilerKind(ClangCompilerKind)
+
+  object APPLE_CLANG : CcCompilerKind(AppleClangCompilerKind)
 
   override fun getId(): OCCompilerId? = delegate.getId()
 
@@ -73,5 +76,5 @@ private class CcGccCompiler(
 
 internal class CcCompilerKindProvider : OCCompilerKindProvider {
 
-  override fun getCompilerKinds(): List<OCCompilerKind> = listOf(CcCompilerKind.GCC, CcCompilerKind.CLANG)
+  override fun getCompilerKinds(): List<OCCompilerKind> = listOf(CcCompilerKind.GCC, CcCompilerKind.CLANG, CcCompilerKind.APPLE_CLANG)
 }
