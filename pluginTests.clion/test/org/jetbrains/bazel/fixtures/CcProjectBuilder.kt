@@ -308,6 +308,7 @@ internal class CcToolchainBuilder {
         sysroot = sysroot?.let(OutputLocationParserWithoutHardlink::parseExecrootPath),
         cEnvironment = env,
         cppEnvironment = env,
+        xcodeInfo = null,
       ),
     ),
   )

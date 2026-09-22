@@ -8,6 +8,7 @@ import org.jetbrains.bazel.assertions.assertVfsLoads
 import org.jetbrains.bazel.assertions.bazelBin
 import org.jetbrains.bazel.assertions.external
 import org.jetbrains.bazel.assertions.findTarget
+import org.jetbrains.bazel.assertions.findToolchain
 import org.jetbrains.bazel.assertions.workspace
 import org.jetbrains.bazel.clion.sync.CC_LANGUAGE_CLASS
 import org.jetbrains.bazel.clion.sync.CcBuildTarget
@@ -15,16 +16,32 @@ import org.jetbrains.bazel.clion.sync.CcToolchainBuildTarget
 import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.fixtures.CcTestApplication
 import org.jetbrains.bazel.fixtures.clionBazelProjectFixture
-import org.jetbrains.bazel.sync.workspace.snapshot.hasBuildData
+import org.jetbrains.bazel.test.framework.BazelVersionedTest
+import org.jetbrains.bazel.test.framework.BazelVersions
+import org.jetbrains.bazel.test.framework.majorBazelVersion
 import org.jetbrains.bsp.protocol.extractData
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
+import org.junit.jupiter.api.condition.DisabledOnOs
+import org.junit.jupiter.api.condition.OS
 
 @CcTestApplication
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-class CcImportTest {
+abstract class CcImportTest(override val bazelVersion: String) : BazelVersionedTest {
 
-  private val project by clionBazelProjectFixture("clion/simple") {
+  @DisabledOnOs(OS.WINDOWS)
+  @CcTestApplication
+  class Bazel7 : CcImportTest(BazelVersions.BAZEL_7)
+
+  @DisabledOnOs(OS.WINDOWS)
+  @CcTestApplication
+  class Bazel8 : CcImportTest(BazelVersions.BAZEL_8)
+
+  @DisabledOnOs(OS.WINDOWS)
+  @CcTestApplication
+  class Bazel9 : CcImportTest(BazelVersions.BAZEL_9)
+
+  private val project by clionBazelProjectFixture("clion/simple", bazelVersion = bazelVersion) {
     addBuildFlags("--extra_toolchains=//toolchain:toolchain")
   }
 
@@ -110,7 +127,13 @@ class CcImportTest {
     assertThat(compilationCtx.headers).haveAtLeastOne(external("catch2+", "src/catch2/benchmark/catch_benchmark.hpp"))
     assertThat(compilationCtx.defines).isEmpty()
     assertThat(compilationCtx.includes).haveAtLeastOne(bazelBin("external/catch2+/_virtual_includes/catch2_generated"))
-    assertThat(compilationCtx.systemIncludes).haveAtLeastOne(external("catch2+", "src"))
+
+    // the builtin rules treat includes slightly different
+    if (majorBazelVersion <= 8) {
+      assertThat(compilationCtx.systemIncludes).haveAtLeastOne(external("catch2+", "src"))
+    } else {
+      assertThat(compilationCtx.systemIncludes).isEmpty()
+    }
 
     assertThat(compilationCtx.quoteIncludes)
       .haveAtLeastOne(workspace("."))
@@ -131,11 +154,12 @@ class CcImportTest {
   fun testToolchainInfo(): Unit = timeoutRunBlocking {
     val target = project.findTarget("//main:main")
 
-    val toolchain = target.dependencies
-      .map { project.findTarget(it.targetKey) }
-      .single { it.hasBuildData<CcToolchainBuildTarget>() }
+    val toolchain = project.findToolchain(target).single()
 
-    assertThat(toolchain.kind.kind).isEqualTo("cc_toolchain_alias")
+    // only with toolchains aspects enabled can we discover the actual toolchain
+    val toolchainKind = if (majorBazelVersion <= 8)  "cc_toolchain_alias" else "cc_toolchain"
+
+    assertThat(toolchain.kind.kind).isEqualTo(toolchainKind)
     assertThat(toolchain.kind.languageClasses).contains(CC_LANGUAGE_CLASS)
 
     val data = toolchain.extractData<CcToolchainBuildTarget>().assertNotNull()
