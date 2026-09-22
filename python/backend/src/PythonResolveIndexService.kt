@@ -24,6 +24,7 @@ import org.jetbrains.bazel.sync.BazelOutFileHardLinks
 import org.jetbrains.bazel.sync.environment.projectCtx
 import org.jetbrains.bazel.sync.workspace.snapshot.allSources
 import org.jetbrains.bsp.protocol.BuildTarget
+import org.jetbrains.bsp.protocol.OutputLocationResolver
 import java.nio.file.FileSystems
 import java.nio.file.Path
 import java.nio.file.Paths
@@ -68,8 +69,12 @@ internal class PythonResolveIndexService(private val project: Project) {
 
   fun getStubScope(): GlobalSearchScope = resolveIndexSnapshotRef.get().stubScope
 
-  suspend fun updatePythonResolveIndex(pythonTargets: List<BuildTarget>, outFilesHardLink: BazelOutFileHardLinks) {
-    val nameToPathIndex = buildIndex(pythonTargets, outFilesHardLink)
+  suspend fun updatePythonResolveIndex(
+    pythonTargets: List<BuildTarget>,
+    outFilesHardLink: BazelOutFileHardLinks,
+    execrootResolver: OutputLocationResolver,
+  ) {
+    val nameToPathIndex = buildIndex(pythonTargets, outFilesHardLink, execrootResolver)
 
     updateResolveIndexSnapshot(nameToPathIndex)
     store(project.pyIndexStoragePath(), nameToPathIndex)
@@ -99,6 +104,7 @@ internal class PythonResolveIndexService(private val project: Project) {
   private suspend fun buildIndex(
     pythonTargets: List<BuildTarget>,
     outFilesHardLink: BazelOutFileHardLinks,
+    execrootResolver: OutputLocationResolver,
   ): Map<QualifiedName, Path> {
     val executionRoot = project.projectCtx.bazelExecPath ?: return emptyMap()
     val rootDir = Path.of(project.rootDir.path)
@@ -158,7 +164,9 @@ internal class PythonResolveIndexService(private val project: Project) {
               .associateBy { sourceItem -> sourceItem.toExecRootRelativePath() }
           }
         val generatedSourceFiles =
-          (target.generatedSources.getFiles() + (extractPythonBuildTarget(target)?.generatedSources?.getFiles() ?: emptySequence()))
+          (target.generatedSources.getFiles() +
+           (extractPythonBuildTarget(target)?.generatedSources?.getOutputLocations()?.mapNotNull { execrootResolver.resolve(it) }
+            ?: emptySequence()))
         val getSourcesRelativePathToAbsolutePath: Map<Path, Path> =
           generatedSourceFiles
             .distinct()

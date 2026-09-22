@@ -26,6 +26,7 @@ import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceSnapshotMetadata
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetGraph
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
 import org.jetbrains.bazel.test.framework.target.TestBuildTarget
+import org.jetbrains.bazel.test.framework.testBazelInfo
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.SourceFileCollection
 import org.jetbrains.bsp.protocol.isFull
@@ -102,6 +103,7 @@ class SnapshotStorageTest {
       targetGraph = WorkspaceTargetGraph.EMPTY,
       syncConfigs = emptyList(),
       repoMapping = RepoMappingDisabled,
+      bazelInfo = testBazelInfo(workspaceRoot = Path.of("/workspace")),
       metadata = WorkspaceSnapshotMetadata(version = 7),
       keyId2Target = keyId2Target,
       labelId2Label = labelId2Label,
@@ -147,6 +149,7 @@ class SnapshotStorageTest {
       targetGraph = WorkspaceTargetGraph.EMPTY,
       syncConfigs = emptyList(),
       repoMapping = RepoMappingDisabled,
+      bazelInfo = testBazelInfo(workspaceRoot = Path.of("/workspace")),
       metadata = WorkspaceSnapshotMetadata(version = 7),
       keyId2Target = keyId2Target,
       labelId2Label = labelId2Label,

@@ -24,6 +24,7 @@ import org.jetbrains.bazel.utils.findVirtualFile
 import org.jetbrains.bazel.sync.workspace.snapshot.isTestTarget
 import org.jetbrains.bazel.utils.isUnder
 import org.jetbrains.bsp.protocol.BuildTarget
+import org.jetbrains.bsp.protocol.OutputLocation
 import java.nio.file.Path
 import kotlin.io.path.Path as KPath
 import kotlin.io.path.exists
@@ -47,11 +48,12 @@ object ResourceRootBuilder {
     bazelProjectName: String,
     workspaceRoot: Path,
     sourceContentRoots: List<Path> = emptyList(),
+    resolveLocation: (OutputLocation) -> Path?,
   ): List<ResolvedResourceRoot> {
     val rootType = target.inferRootType()
-    val stripPrefixes = extractStripPrefixOrNull(target) ?: defaultStripPrefixes(target)
     val resourceFiles = target.resources.getFiles().toList()
     if (resourceFiles.isEmpty()) return emptyList()
+    val stripPrefixes = extractStripPrefixOrNull(target, resolveLocation) ?: defaultStripPrefixes(target, resourceFiles)
     val resourcesSet = resourceFiles.toSet()
     val dirtinessCache = DirtinessCache(resourcesSet, bazelProjectName)
     val result = stripPrefixes.fold(MergeResult(leftovers = resourcesSet)) { acc, prefix ->
@@ -305,30 +307,26 @@ object ResourceRootBuilder {
     )
   }
 
-  private fun extractStripPrefixOrNull(target: BuildTarget) = extractJvmBuildTarget(target)
+  private fun extractStripPrefixOrNull(target: BuildTarget, resolveLocation: (OutputLocation) -> Path?) = extractJvmBuildTarget(target)
     ?.resolvedResourceStripPrefix
+    ?.let(resolveLocation)
     ?.let(::setOf)
 
-  private fun defaultStripPrefixes(target: BuildTarget): Set<Path> = when {
-    extractKotlinBuildTarget(target) != null -> defaultStripPrefixesKotlin(target)
-    extractScalaBuildTarget(target) != null -> defaultStripPrefixesScala(target)
-    extractJvmBuildTarget(target) != null -> defaultStripPrefixesJava(target)
+  private fun defaultStripPrefixes(target: BuildTarget, resources: List<Path>): Set<Path> = when {
+    extractKotlinBuildTarget(target) != null -> defaultStripPrefixesKotlin(resources)
+    extractScalaBuildTarget(target) != null -> defaultStripPrefixesScala(resources)
+    extractJvmBuildTarget(target) != null -> defaultStripPrefixesJava(resources)
     else -> emptySet()
   }
 
-  private fun defaultStripPrefixesJava(target: BuildTarget): MutableSet<Path> = target
-    .resources
-    .getFiles()
-    .mapNotNullTo(mutableSetOf()) { it.takeSrcResourcesPrefixOrNull() ?: it.takeJavaLayoutPrefixOrNull() }
+  private fun defaultStripPrefixesJava(resources: List<Path>): MutableSet<Path> =
+    resources.mapNotNullTo(mutableSetOf()) { it.takeSrcResourcesPrefixOrNull() ?: it.takeJavaLayoutPrefixOrNull() }
 
-  private fun defaultStripPrefixesKotlin(target: BuildTarget): Set<Path> {
-    val resources = target.resources.getFiles().toList()
-    return kotlinConventionalSegments
+  private fun defaultStripPrefixesKotlin(resources: List<Path>): Set<Path> =
+    kotlinConventionalSegments
       .flatMapTo(mutableSetOf()) { resources.findPrefixesEndingWith(it) }
-  }
 
-  private fun defaultStripPrefixesScala(target: BuildTarget): Set<Path> {
-    val resources = target.resources.getFiles().toList()
+  private fun defaultStripPrefixesScala(resources: List<Path>): Set<Path> {
     val externalPrefixes = resources.mapNotNullTo(mutableSetOf()) { resource ->
       val index = resource.indexOfFirst { it.name == "external" }
       val next = index + 1

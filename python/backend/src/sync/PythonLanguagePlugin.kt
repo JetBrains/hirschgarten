@@ -8,9 +8,6 @@ import org.jetbrains.bazel.commons.LanguageClass
 import org.jetbrains.bazel.commons.LocalRepositoryMapping
 import org.jetbrains.bazel.commons.RepoMapping
 import org.jetbrains.bazel.commons.getLocalRepositories
-import org.jetbrains.bazel.config.BazelFeatureFlags
-import org.jetbrains.bazel.label.assumeResolved
-import org.jetbrains.bazel.label.label
 import org.jetbrains.bazel.languages.projectview.ProjectView
 import org.jetbrains.bazel.python.debug.PythonDebugUtils
 import org.jetbrains.bazel.python.lang.PythonBuildTarget
@@ -18,14 +15,19 @@ import org.jetbrains.bazel.python.lang.PythonLanguageClass
 import org.jetbrains.bazel.server.BazelServerFacade
 import org.jetbrains.bazel.server.model.sourcesList
 import org.jetbrains.bazel.sync.workspace.languages.LanguagePlugin
-import org.jetbrains.bazel.sync.workspace.snapshot.SourceFileCollectionBuilder
+import org.jetbrains.bazel.sync.workspace.snapshot.OutputLocationCollectionBuilder
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceSyncConfig
+import org.jetbrains.bazel.utils.allAncestorsSequence
 import org.jetbrains.bsp.protocol.BuildTargetData
+import org.jetbrains.bsp.protocol.OutputLocation
+import org.jetbrains.bsp.protocol.OutputLocationCollection
+import org.jetbrains.bsp.protocol.mapPath
+import org.jetbrains.bsp.protocol.toExecrootPath
 import java.nio.file.Files
-import java.nio.file.Path
 import kotlin.io.path.exists
 import kotlin.io.path.extension
 import kotlin.io.path.isDirectory
+import kotlin.io.path.name
 import kotlin.io.path.nameWithoutExtension
 import kotlin.reflect.KClass
 
@@ -39,6 +41,7 @@ internal class PythonLanguagePlugin : LanguagePlugin {
       return listOf(PythonLanguageClass.PYTHON)
     return emptyList()
   }
+
   override suspend fun createSyncConfigs(project: Project, projectView: ProjectView): List<WorkspaceSyncConfig> {
     val config = PythonWorkspaceSyncConfig
     return listOf(config)
@@ -52,7 +55,6 @@ internal class PythonLanguagePlugin : LanguagePlugin {
     if (!target.hasPythonTargetInfo()) {
       return emptyList()
     }
-    val baseDirectory = server.bazelPathsResolver.toDirectoryPath(target.label().assumeResolved(), repoMapping)
     val localRepositories = repoMapping.getLocalRepositories()
     val pythonTarget = target.pythonTargetInfo
     val runnerScript =
@@ -65,15 +67,12 @@ internal class PythonLanguagePlugin : LanguagePlugin {
     return listOf(
       PythonBuildTarget(
         version = pythonTarget.version.takeUnless(String::isNullOrEmpty),
-        interpreter = calculateInterpreterPath(server, interpreter = pythonTarget.interpreter, localRepositories),
+        interpreter = pythonTarget.parseInterpreter(server),
         imports = pythonTarget.importsList.toList(),
-        generatedSources = SourceFileCollectionBuilder.build(
-          relativeRoot = baseDirectory,
-          paths = pythonTarget.resolveGeneratedSources(server, repoMapping),
-        ),
-        externalSources = getExternalSources(server, target, localRepositories)
-          .map { calculateExternalSourcePath(server, it, localRepositories) }
-          .let { SourceFileCollectionBuilder.build(relativeRoot = baseDirectory, paths = it) },
+        generatedSources = pythonTarget.resolveGeneratedSources(server, localRepositories),
+        externalSources = server.outputParser.parse(getExternalSources(server, target, localRepositories))
+          .map { it.toSitePackagesDirectory() }
+          .let { OutputLocationCollectionBuilder.ofLocations(it) },
         mainFile = MainSourceFinder.findMainFile(target, pythonTarget, server.bazelPathsResolver, localRepositories),
         mainModule = pythonTarget.mainModule,
         runnerScript = runnerScript,
@@ -82,54 +81,58 @@ internal class PythonLanguagePlugin : LanguagePlugin {
     )
   }
 
-  private fun calculateInterpreterPath(server: BazelServerFacade, interpreter: ArtifactLocation?, localRepositories: LocalRepositoryMapping): Path? =
-    interpreter
-      ?.takeUnless { it.relativePath.isNullOrEmpty() }
-      ?.let { server.bazelPathsResolver.resolve(it, localRepositories) }
-
-  private fun getExternalSources(server: BazelServerFacade, targetInfo: TargetIdeInfo, localRepositories: LocalRepositoryMapping): List<ArtifactLocation> =
+  private fun getExternalSources(
+    server: BazelServerFacade,
+    targetInfo: TargetIdeInfo,
+    localRepositories: LocalRepositoryMapping,
+  ): List<ArtifactLocation> =
     targetInfo.sourcesList.mapNotNull { it.takeIf { server.bazelPathsResolver.isExternal(it, localRepositories) } }.toList()
 
-  private fun calculateExternalSourcePath(server: BazelServerFacade, externalSource: ArtifactLocation, localRepositories: LocalRepositoryMapping): Path {
-    val path = server.bazelPathsResolver.resolve(externalSource, localRepositories)
-    return server.bazelPathsResolver.resolve(findSitePackagesSubdirectory(path) ?: path)
-  }
+  private suspend fun IntellijIdeInfo.PythonTargetInfo.parseInterpreter(server: BazelServerFacade): OutputLocation? =
+    when {
+      interpreterPath.isNotEmpty() -> server.outputParser.parseExecrootPath(interpreterPath)
+      hasInterpreter() && interpreter.relativePath.isNotEmpty() -> server.outputParser.parse(interpreter)
+      else -> null
+    }
 
-  private fun IntellijIdeInfo.PythonTargetInfo.resolveGeneratedSources(server: BazelServerFacade, repoMapping: RepoMapping): Sequence<Path> {
-    val localRepositories = repoMapping.getLocalRepositories()
-    return generatedSourcesList
-      .asSequence()
-      .flatMap { location ->
-        val sourceFile = server.bazelPathsResolver.resolve(location, localRepositories)
+  private suspend fun IntellijIdeInfo.PythonTargetInfo.resolveGeneratedSources(
+    server: BazelServerFacade,
+    localRepositories: LocalRepositoryMapping,
+  ): OutputLocationCollection {
+    val roots = server.outputParser.parse(generatedSourcesList)
+    val files = generatedSourcesList.zip(roots)
+      .flatMap { (artifact, root) ->
+        val rootFile = server.bazelPathsResolver.resolve(artifact, localRepositories)
         // some code gen rules return directories. we need to figure out what files are there
-        if (sourceFile.isDirectory()) {
-          Files
-            .walk(sourceFile)
-            .toList()
+        if (rootFile.isDirectory()) {
+          Files.walk(rootFile).use { stream ->
+            stream.toList().map { file -> file to root.mapPath { it.resolve(rootFile.relativize(file)) } }
+          }
         }
         else {
-          listOf(sourceFile)
+          listOf(rootFile to root)
         }
       }
-      .filter { it.extension == "py" || it.extension == "pyw" }
-      .map { sourceFile ->
+      .filter { (file, _) -> file.extension == "py" || file.extension == "pyw" }
+      .map { (file, location) ->
         // If type annotation exists - use it instead of generated .py file
         // https://peps.python.org/pep-0484/#the-type-of-class-objects
-        if (sourceFile.extension == "py") {
-          val interfaceStub = sourceFile.parent.resolve("${sourceFile.nameWithoutExtension}.pyi")
-          if (interfaceStub.exists())
-            return@map interfaceStub
+        if (file.extension == "py" && file.resolveSibling("${file.nameWithoutExtension}.pyi").exists()) {
+          location.mapPath { it.resolveSibling("${it.nameWithoutExtension}.pyi") }
         }
-
-        sourceFile
+        else {
+          location
+        }
       }
+    // parse again to hard link the files inside the directories and the `.pyi` stubs
+    return OutputLocationCollectionBuilder.buildExecroot(files.map { it.toExecrootPath() }, server.outputParser)
   }
+}
 
-  private tailrec fun findSitePackagesSubdirectory(path: Path?): Path? =
-    when {
-      path == null -> null
-      // PyNames.SITE_PACKAGES
-      path.endsWith("site-packages") -> path
-      else -> findSitePackagesSubdirectory(path.parent)
-    }
+// PyNames.SITE_PACKAGES
+private const val SITE_PACKAGES = "site-packages"
+
+// the closest `site-packages` directory that contains the location, or the location itself
+private fun OutputLocation.toSitePackagesDirectory(): OutputLocation = mapPath { path ->
+  path.allAncestorsSequence().firstOrNull { it.name == SITE_PACKAGES } ?: path
 }

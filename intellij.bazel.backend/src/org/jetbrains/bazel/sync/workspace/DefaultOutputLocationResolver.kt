@@ -13,10 +13,24 @@ import java.nio.file.Path
 import kotlin.io.path.Path
 
 @ApiStatus.Internal
-class DefaultOutputLocationResolver(
+open class DefaultOutputLocationResolver private constructor(
   private val bazelInfo: BazelInfo,
-  private val hardLinks: BazelOutFileHardLinks,
 ) : OutputLocationResolver {
+
+  companion object {
+    fun createHardlinkResolving(
+      bazelInfo: BazelInfo,
+      hardlinks: BazelOutFileHardLinks = BazelOutFileHardLinks.NONE,
+    ): OutputLocationResolver =
+      object : DefaultOutputLocationResolver(bazelInfo = bazelInfo) {
+        override fun resolveExecrootPath(execrootPath: Path): Path = hardlinks.resolveCachedPath(execrootPath)
+      }
+
+    /**
+     * Resolved locations can be located inside bazel execroot.
+     */
+    fun createExecrootResolving(bazelInfo: BazelInfo): OutputLocationResolver = object : DefaultOutputLocationResolver(bazelInfo) {}
+  }
 
   override fun resolve(
     location: OutputLocation,
@@ -25,7 +39,7 @@ class DefaultOutputLocationResolver(
     when (location) {
       is OutputLocation.Host -> Path(location.absolutePath)
       is OutputLocation.Workspace -> bazelInfo.workspaceRoot.resolve(location.relativePath)
-      is OutputLocation.Output -> hardLinks.resolveCachedPath(bazelInfo.execRoot.resolve(location.toExecrootPath()))
+      is OutputLocation.Output -> resolveExecrootPath(bazelInfo.execRoot.resolve(location.toExecrootPath()))
       is OutputLocation.External -> resolveExternal(location, localOverride)
     }
   }
@@ -46,4 +60,6 @@ class DefaultOutputLocationResolver(
       .resolve(location.repoName)
       .resolve(location.relativePath)
   }
+
+  protected open fun resolveExecrootPath(execrootPath: Path): Path = execrootPath
 }

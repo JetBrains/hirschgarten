@@ -20,11 +20,16 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.annotations.TestOnly
+import org.jetbrains.bazel.commons.BazelInfo
+import org.jetbrains.bazel.commons.LocalRepositoryMapping
+import org.jetbrains.bazel.commons.RepoMapping
 import org.jetbrains.bazel.commons.RepoMappingDisabled
 import org.jetbrains.bazel.commons.RuleType
+import org.jetbrains.bazel.commons.getLocalRepositories
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.languages.starlark.repomapping.toCanonicalLabelOrThis
 import org.jetbrains.bazel.languages.starlark.repomapping.toShortString
+import org.jetbrains.bazel.sync.workspace.DefaultOutputLocationResolver
 import org.jetbrains.bazel.sync.workspace.persistence.BuildTargetLoadHint
 import org.jetbrains.bazel.sync.workspace.persistence.InMemoryWorkspaceTargetMap
 import org.jetbrains.bazel.sync.workspace.persistence.TargetLoadOptions
@@ -40,6 +45,8 @@ import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetGraphBuilder
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.BuildTargetData
+import org.jetbrains.bsp.protocol.OutputLocation
+import org.jetbrains.bsp.protocol.OutputLocationResolver
 import org.jetbrains.bsp.protocol.data
 import org.jetbrains.bsp.protocol.id
 import org.jetbrains.bsp.protocol.isManual
@@ -50,6 +57,7 @@ private data object EmptyBuildTargetData : BuildTargetData
 private class CachedSnapshotView(val snapshot: WorkspaceSnapshot, private val project: Project) {
   val importKeys: Set<WorkspaceTargetKey>
   val label2Key: Map<Label, WorkspaceTargetKey>
+  val outputLocationResolver: OutputLocationResolver
 
   init {
     val config = snapshot.syncConfigs.filterIsInstance<CommonWorkspaceSyncConfig>().firstOrNull()
@@ -74,6 +82,7 @@ private class CachedSnapshotView(val snapshot: WorkspaceSnapshot, private val pr
       }
       this.label2Key = label2Key
     }
+    outputLocationResolver = DefaultOutputLocationResolver.createExecrootResolving(snapshot.bazelInfo)
   }
 
   private class TargetSummaryAggregate(val summaries: List<BuildTarget>, val byKey: Map<WorkspaceTargetKey, BuildTarget>)
@@ -210,7 +219,7 @@ class TargetStorage(private val project: Project, private val coroutineScope: Co
   }
 
   @TestOnly
-  fun setTargets(targets: List<BuildTarget>) {
+  fun setTargets(targets: List<BuildTarget>, bazelInfo: BazelInfo = BazelInfo.DEFAULT, repoMapping: RepoMapping = RepoMappingDisabled) {
     val graph = WorkspaceTargetGraphBuilder.build(
       rootTargets = targets.map { it.key }.toSet(),
       targets = targets,
@@ -230,7 +239,8 @@ class TargetStorage(private val project: Project, private val coroutineScope: Co
           dotIdeaPath = null,
         ),
       ),
-      repoMapping = RepoMappingDisabled,
+      repoMapping = repoMapping,
+      bazelInfo = bazelInfo,
       metadata = WorkspaceSnapshotMetadata(version = 1),
     )
     runBlocking { service.update { snapshot to Unit } }
@@ -270,6 +280,9 @@ class TargetStorage(private val project: Project, private val coroutineScope: Co
     label.toCanonicalLabelOrThis(project)?.let { view().data(it, type) }
 
   fun getTotalFileCount(): Int = view().snapshot.fileToTarget.size
+
+  fun resolveExecrootOutputLocation(location: OutputLocation): Path? =
+    view().let { view -> view.outputLocationResolver.resolve(location, view.snapshot.repoMapping.getLocalRepositories()) }
 }
 
 @ApiStatus.Internal

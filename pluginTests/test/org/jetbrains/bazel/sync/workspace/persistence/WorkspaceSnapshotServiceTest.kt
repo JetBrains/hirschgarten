@@ -36,6 +36,7 @@ import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceSnapshotMetadata
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetGraphBuilder
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
 import org.jetbrains.bazel.test.framework.target.TestBuildTarget
+import org.jetbrains.bazel.test.framework.testBazelInfo
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.SourceFileCollection
 import org.junit.jupiter.api.Test
@@ -144,6 +145,7 @@ class WorkspaceSnapshotServiceTest {
         canonicalRepoNameToPath = mapOf("rules_jvm~" to Path.of("/external/rules_jvm")),
         nonLocalCanonicalRepoNames = setOf(),
       ),
+      bazelInfo = testBazelInfo(workspaceRoot = Path.of("/workspace")),
       metadata = WorkspaceSnapshotMetadata(
         version = 1,
       ),
@@ -413,6 +415,7 @@ class WorkspaceSnapshotServiceTest {
         dotIdeaPath = null
       )),
       repoMapping = RepoMappingDisabled,
+      bazelInfo = testBazelInfo(workspaceRoot = Path.of("/workspace")),
       metadata = WorkspaceSnapshotMetadata(version = 1),
     )
   }
@@ -467,6 +470,7 @@ class WorkspaceSnapshotServiceTest {
         dotIdeaPath = null
       )),
       repoMapping = RepoMappingDisabled,
+      bazelInfo = testBazelInfo(workspaceRoot = Path.of("/workspace")),
       metadata = WorkspaceSnapshotMetadata(version = 1),
     )
 

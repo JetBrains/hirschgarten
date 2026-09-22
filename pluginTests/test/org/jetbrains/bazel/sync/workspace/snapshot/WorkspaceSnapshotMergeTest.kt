@@ -15,6 +15,7 @@ import org.jetbrains.bazel.sync.workspace.BazelResolvedWorkspace
 import org.jetbrains.bazel.sync.workspace.persistence.TargetLoadOptions
 import org.jetbrains.bazel.test.framework.BazelTestApplication
 import org.jetbrains.bazel.test.framework.target.TestBuildTarget
+import org.jetbrains.bazel.test.framework.testBazelInfo
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.junit.jupiter.api.Test
 import java.nio.file.Path
@@ -164,6 +165,7 @@ class WorkspaceSnapshotMergeTest {
       project = project,
       projectView = ProjectView.EMPTY,
       repoMapping = resolved.repoMapping,
+      bazelInfo = testBazelInfo(),
       resolved = resolved,
     )
 
@@ -172,6 +174,7 @@ class WorkspaceSnapshotMergeTest {
     return WorkspaceSnapshotBuilder.merge(
       project = project,
       projectView = ProjectView.EMPTY,
+      bazelInfo = testBazelInfo(),
       snapshots = listOf(previous.toIncompleteSnapshot(), incomplete),
     )
   }

@@ -3,6 +3,7 @@ package org.jetbrains.bazel.commons
 import com.intellij.util.text.SemVer
 import org.jetbrains.annotations.ApiStatus
 import java.nio.file.Path
+import kotlin.io.path.Path
 import kotlin.io.path.isReadable
 import kotlin.io.path.readText
 
@@ -22,8 +23,21 @@ data class BazelInfo(
   val externalAutoloads: List<String>,
 
   /** `true` when plugin should support configurations  */
-  val isConfigurationSupportEnabled: Boolean = false
-)
+  val isConfigurationSupportEnabled: Boolean = false,
+) {
+  companion object {
+    val DEFAULT: BazelInfo = BazelInfo(
+      execRoot = Path("execRoot"),
+      outputBase = Path("outputBase"),
+      workspaceRoot = Path("workspace"),
+      bazelBin = Path("bazel-bin"),
+      release = BazelRelease(7),
+      isBzlModEnabled = true,
+      isWorkspaceEnabled = true,
+      externalAutoloads = emptyList(),
+    )
+  }
+}
 
 @ApiStatus.Internal
 data class BazelRelease(val major: Int, val minor: Int = 0, val patch: Int = 0) {
@@ -46,7 +60,8 @@ data class BazelRelease(val major: Int, val minor: Int = 0, val patch: Int = 0) 
       return BAZEL_VERSION_REGEX.find(versionString)?.toBazelRelease()
     }
 
-    private fun MatchResult.toBazelRelease() = BazelRelease(groupValues[1].toInt(), groupValues[2].toInt(), groupValues[3].toIntOrNull() ?: 0)
+    private fun MatchResult.toBazelRelease() =
+      BazelRelease(groupValues[1].toInt(), groupValues[2].toInt(), groupValues[3].toIntOrNull() ?: 0)
 
     private val BAZEL_VERSION_REGEX = """^(\d+)\.(\d+)(?:\.(\d+))?""".toRegex()
 
@@ -65,7 +80,8 @@ data class BazelRelease(val major: Int, val minor: Int = 0, val patch: Int = 0) 
   fun deprecated(): String? {
     if (major < OLDEST_SUPPORTED_MAJOR) return "Bazel major version $major is deprecated; the oldest supported version is $OLDEST_SUPPORTED_MAJOR.${MINIMAL_MINOR_VERSION[OLDEST_SUPPORTED_MAJOR] ?: 0}."
 
-    if (minor < (MINIMAL_MINOR_VERSION[major] ?: 0)) return "Bazel-$major versions older than $major.${MINIMAL_MINOR_VERSION[major] ?: 0} are unsupported."
+    if (minor < (MINIMAL_MINOR_VERSION[major]
+                 ?: 0)) return "Bazel-$major versions older than $major.${MINIMAL_MINOR_VERSION[major] ?: 0} are unsupported."
 
     return null
   }

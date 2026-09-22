@@ -54,7 +54,8 @@ import org.jetbrains.bazel.workspacemodel.entities.WorkspaceModelTargetSourceRoo
 import org.jetbrains.bazel.workspacemodel.entities.bazelModuleExtension
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.LibraryItem
-import org.jetbrains.bsp.protocol.SourceFileCollection
+import org.jetbrains.bsp.protocol.OutputLocation
+import org.jetbrains.bsp.protocol.OutputLocationCollection
 import org.jetbrains.bsp.protocol.StrictDependencyCheckedType
 import org.jetbrains.bsp.protocol.utils.StringUtils
 import java.nio.file.Path
@@ -82,6 +83,8 @@ class ImportContext(
   val entitySource: EntitySource,
   val excludeCompiledSourceCodeInsideJars: Boolean,
   val currentCompiledSourceExcludeEntity: CompiledSourceCodeInsideJarExcludeEntity?,
+  val resolveLocation: (OutputLocation) -> Path?,
+  val resolveExecrootLocation: (OutputLocation) -> Path? = resolveLocation,
   val progressReporter: RawProgressReporter? = null,
 ) {
   private val targetKeys: Set<WorkspaceTargetKey> by lazy { plan.targets.mapTo(mutableSetOf(), BuildTarget::key) }
@@ -220,7 +223,8 @@ class JvmTargetEntitiesBuilder(private val ctx: ImportContext) {
     val jdkName = jdkNameFor(target)
     val javaLangVersion = ctx.jvmResolved[target.key.copy(aspectIds = WorkspaceAspectIds.EMPTY)]?.javaVersion
     val javacOptions = target.findBuildData<JvmBuildTarget>()?.javacOpts.orEmpty()
-    val jvmBinaryJars = target.findBuildData<JvmBuildTarget>()?.rawBinaryOutputs ?: SourceFileCollection.EMPTY
+    // keep binary JARs stored as execroot paths for hotswap
+    val jvmBinaryJars = target.findBuildData<JvmBuildTarget>()?.binaryOutputs?.resolvePaths(ctx.resolveExecrootLocation).orEmpty()
     val scalaTarget = target.findBuildData<ScalaBuildTarget>()
     val kotlinTarget = target.findBuildData<KotlinBuildTarget>()
     val associates = kotlinTarget?.associates?.distinct()
@@ -246,7 +250,7 @@ class JvmTargetEntitiesBuilder(private val ctx: ImportContext) {
         null
 
       else -> {
-        val resolvedSourceRoots = SourceRootBuilder.resolve(target, ctx.testSourcesGlob, ctx.packagePrefixes)
+        val resolvedSourceRoots = SourceRootBuilder.resolve(target, ctx.testSourcesGlob, ctx.packagePrefixes, ctx.resolveLocation)
         val splitResult = ctx.dummyModuleSplitter.split(target.baseDirectory, resolvedSourceRoots)
         val mainSourceRoots = when (splitResult) {
           is DummyModuleSplitter.MergedRoots -> splitResult.mergedSourceRoots
@@ -258,6 +262,7 @@ class JvmTargetEntitiesBuilder(private val ctx: ImportContext) {
           bazelProjectName = ctx.projectName,
           workspaceRoot = ctx.projectBasePath,
           sourceContentRoots = mainSourceRoots.map { it.sourcePath },
+          resolveLocation = ctx.resolveLocation,
         )
         TargetPlan.Full(
           moduleName = moduleName,
@@ -325,7 +330,7 @@ class JvmTargetEntitiesBuilder(private val ctx: ImportContext) {
     addJavaModuleSettings(moduleEntity, plan.javaLangVersion, storage)
 
     if (plan.scalaTarget != null) {
-      ScalaAddendumBuilder.write(plan.scalaTarget, moduleEntity, ctx.virtualFileUrlManager, storage)
+      ScalaAddendumBuilder.write(plan.scalaTarget, ctx.resolveLocation, moduleEntity, ctx.virtualFileUrlManager, storage)
     }
 
     ResourceRootBuilder.write(plan.resourceRoots, moduleEntity, ctx.virtualFileUrlManager, storage)
@@ -535,7 +540,7 @@ class JvmTargetEntitiesBuilder(private val ctx: ImportContext) {
       override val jdkName: String?,
       override val javaLangVersion: String?,
       val javacOptions: List<String>,
-      val jvmBinaryJars: SourceFileCollection,
+      val jvmBinaryJars: List<Path>,
       val scalaTarget: ScalaBuildTarget?,
       val kotlinTarget: KotlinBuildTarget?,
       val associates: List<String>,
@@ -554,6 +559,10 @@ internal fun Path.hasJvmSourceExtension(): Boolean {
   val name = fileName?.toString() ?: return false
   return name.endsWith(".java") || name.endsWith(".kt") || name.endsWith(".scala")
 }
+
+@ApiStatus.Internal
+fun OutputLocationCollection.resolvePaths(resolve: (OutputLocation) -> Path?): List<Path> =
+  getOutputLocations().mapNotNull(resolve).toList()
 
 @ApiStatus.Internal
 fun String.projectNameToBaseJdkName(): String = "$this-jdk"

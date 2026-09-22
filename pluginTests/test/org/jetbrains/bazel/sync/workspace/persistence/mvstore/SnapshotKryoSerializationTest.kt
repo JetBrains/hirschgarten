@@ -42,6 +42,8 @@ import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetGraph
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetGraphBuilder
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
 import org.jetbrains.bazel.test.framework.target.TestBuildTarget
+import org.jetbrains.bazel.test.framework.testBazelInfo
+import org.jetbrains.bazel.workspace.model.test.framework.generatedTestLocation
 import org.jetbrains.bsp.protocol.BuildTargetData
 import org.jetbrains.bsp.protocol.OutputLocation
 import org.jetbrains.bsp.protocol.OutputLocationCollection
@@ -92,6 +94,9 @@ class SnapshotKryoSerializationTest {
   private fun sources(vararg paths: String): SourceFileCollection =
     SourceFileCollectionBuilder.build(relativeRoot = Path.of("/workspace"), paths = paths.map { Path.of(it) })
 
+  private fun locations(vararg locations: OutputLocation): OutputLocationCollection =
+    OutputLocationCollectionBuilder.ofLocations(locations.toList())
+
   private fun rawTarget(
     key: WorkspaceTargetKey,
     dependencies: List<DependencyLabel> = emptyList(),
@@ -118,18 +123,17 @@ class SnapshotKryoSerializationTest {
   private fun jvmBuildTarget(): JvmBuildTarget =
     JvmBuildTarget(
       javacOpts = listOf("-parameters"),
-      binaryOutputs = sources("/workspace/bazel-bin/foo.jar"),
-      rawBinaryOutputs = sources("/workspace/bazel-bin/raw/foo.jar"),
+      binaryOutputs = locations(generatedTestLocation("foo.jar")),
       environmentVariables = mapOf("KEY" to "value"),
       mainClass = "com.example.Main",
       jvmArgs = listOf("-Xmx1g"),
       programArgs = listOf("--flag"),
-      resolvedResourceStripPrefix = Path.of("/workspace/resources"),
-      outputInterfaceJars = sources("/workspace/bazel-bin/foo-hjar.jar"),
-      outputSourceJars = sources("/workspace/bazel-bin/foo-src.jar"),
-      generatedJars = listOf(JvmOutputs(binaryJars = sources("/workspace/bazel-bin/gen.jar"))),
-      jdepsJars = listOf(JdepsJar(syntheticLabel = Label.parse("@//foo:bar"), jar = Path.of("/workspace/bazel-bin/foo.jdeps"))),
-      intellijPluginJars = SourceFileCollection.EMPTY,
+      resolvedResourceStripPrefix = OutputLocation.Workspace("resources"),
+      outputInterfaceJars = locations(generatedTestLocation("foo-hjar.jar")),
+      outputSourceJars = locations(generatedTestLocation("foo-src.jar")),
+      generatedJars = listOf(JvmOutputs(binaryJars = locations(generatedTestLocation("gen.jar")))),
+      jdepsJars = listOf(JdepsJar(syntheticLabel = Label.parse("@//foo:bar"), jar = generatedTestLocation("foo.jdeps"))),
+      intellijPluginJars = OutputLocationCollection.EMPTY,
       containsInternalJars = true,
       hasExecutableInfo = true,
       checkStrictDependencies = StrictDependencyCheckedType.WARNING,
@@ -203,6 +207,7 @@ class SnapshotKryoSerializationTest {
         canonicalRepoNameToPath = mapOf("rules_jvm~" to Path.of("/external/rules_jvm")),
         nonLocalCanonicalRepoNames = setOf(),
       ),
+      bazelInfo = testBazelInfo(workspaceRoot = Path.of("/workspace")),
       metadata = WorkspaceSnapshotMetadata(version = 3),
       keyId2Target = targetId2Target,
       labelId2Label = labelId2Target,
@@ -214,6 +219,7 @@ class SnapshotKryoSerializationTest {
     restored.configurations shouldBe partial.configurations
     restored.syncConfigs shouldBe partial.syncConfigs
     restored.repoMapping shouldBe partial.repoMapping
+    restored.bazelInfo shouldBe partial.bazelInfo
     restored.metadata shouldBe partial.metadata
     restored.keyId2Target shouldBe partial.keyId2Target
     restored.labelId2Label shouldBe partial.labelId2Label
@@ -235,6 +241,7 @@ class SnapshotKryoSerializationTest {
       targetGraph = WorkspaceTargetGraph.EMPTY,
       syncConfigs = emptyList(),
       repoMapping = RepoMappingDisabled,
+      bazelInfo = testBazelInfo(),
       metadata = WorkspaceSnapshotMetadata(version = 1),
       keyId2Target = Int2ObjectBiMap(),
       labelId2Label = Int2ObjectBiMap(),
@@ -343,27 +350,27 @@ class SnapshotKryoSerializationTest {
         kotlincOptions = listOf("-Xjvm-default=all"),
         associates = listOf(key("@//foo:assoc")),
         moduleName = "foo",
-        stdlibHardLinkedJars = sources("/workspace/bazel-bin/kotlin-stdlib.jar"),
-        stdlibInferredSourceJars = SourceFileCollection.EMPTY,
+        stdlibJars = locations(generatedTestLocation("kotlin-stdlib.jar")),
+        stdlibInferredSourceJars = OutputLocationCollection.EMPTY,
         exportedCompilerPluginTargetsList = listOf(key("@//plugin:compiler")),
       ),
       ScalaBuildTarget(
         scalaVersion = "3.4.1",
-        sdkJars = sources("/workspace/bazel-bin/scala-sdk.jar"),
+        sdkJars = locations(generatedTestLocation("scala-sdk.jar")),
         scalacOptions = listOf("-deprecation"),
         scalatestClasspathTargets = listOf(Label.parse("@//scala:test")),
       ),
-      JavaProviderData(fullCompileJars = sources("/workspace/bazel-bin/full.jar"), hasApiGeneratingPlugins = true),
+      JavaProviderData(fullCompileJars = locations(generatedTestLocation("full.jar")), hasApiGeneratingPlugins = true),
       JavaToolchainData(
         sourceVersion = "17",
         targetVersion = "17",
-        javaHome = Path.of("/jdk"),
+        javaHome = OutputLocation.Host("/jdk"),
         bootClasspathJavaHome = null,
         isExecConfig = false,
       ),
       PythonBuildTarget(
         version = "3.12",
-        interpreter = Path.of("/usr/bin/python3"),
+        interpreter = OutputLocation.Host("/usr/bin/python3"),
         imports = listOf("src"),
         mainFile = Path.of("/workspace/main.py"),
         mainModule = "main",
@@ -371,13 +378,13 @@ class SnapshotKryoSerializationTest {
         targetArgs = listOf("--flag"),
       ),
       GoBuildTarget(
-        sdkHomePath = Path.of("/go/sdk"),
+        sdkHomePath = OutputLocation.External("go_sdk", ""),
         importPath = "main",
-        sources = sources("/workspace/main.go"),
+        sources = locations(OutputLocation.Workspace("main.go")),
         embed = listOf()
       ),
       ProtobufBuildTarget(sources = mapOf("foo/bar.proto" to "/workspace/foo/bar.proto")),
-      GoBuildTarget(importPath = "example.com/foo", sources = SourceFileCollection.EMPTY, embed = listOf())
+      GoBuildTarget(importPath = "example.com/foo", sources = OutputLocationCollection.EMPTY, embed = listOf())
     )
 
     for (sample in samples) {

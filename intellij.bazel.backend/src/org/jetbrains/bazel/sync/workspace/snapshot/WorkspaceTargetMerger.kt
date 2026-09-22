@@ -6,6 +6,8 @@ import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bazel.label.DependencyLabel
 import org.jetbrains.bsp.protocol.BuildTargetData
+import org.jetbrains.bsp.protocol.OutputLocation
+import org.jetbrains.bsp.protocol.OutputLocationCollection
 import org.jetbrains.bsp.protocol.SourceFileCollection
 import org.jetbrains.bsp.protocol.isManual
 import java.nio.file.Path
@@ -94,6 +96,17 @@ class WorkspaceTargetMerger(val mergeFunctions: MergeFunctionMap) {
           }
         }
       }
+  }
+}
+
+@ApiStatus.Internal
+fun mergeLocationCollections(left: OutputLocationCollection, right: OutputLocationCollection): OutputLocationCollection {
+  if (left == right) {
+    return left
+  }
+  return object : OutputLocationCollection {
+    override fun isEmpty(): Boolean = left.isEmpty() && right.isEmpty()
+    override fun getOutputLocations(): Sequence<OutputLocation> = (left.getOutputLocations() + right.getOutputLocations()).distinct()
   }
 }
 

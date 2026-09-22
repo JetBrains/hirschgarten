@@ -6,6 +6,7 @@ import org.jetbrains.bazel.commons.getLocalRepositories
 import org.jetbrains.bazel.sync.BazelOutFileHardLinks
 import org.jetbrains.bazel.test.framework.testBazelInfo
 import org.jetbrains.bsp.protocol.OutputLocation
+import org.jetbrains.bsp.protocol.OutputLocationResolver
 import org.jetbrains.bsp.protocol.OutputRoot
 import org.junit.jupiter.api.Test
 import java.nio.file.Path
@@ -13,14 +14,14 @@ import kotlin.io.path.Path
 
 class DefaultOutputLocationResolverTest {
 
-  private fun newResolver(hardLinks: BazelOutFileHardLinks = BazelOutFileHardLinks.NONE): DefaultOutputLocationResolver =
-    DefaultOutputLocationResolver(
+  private fun newResolver(hardLinks: BazelOutFileHardLinks = BazelOutFileHardLinks.NONE): OutputLocationResolver =
+    DefaultOutputLocationResolver.createHardlinkResolving(
       testBazelInfo(
         workspaceRoot = Path("workspace"),
         outputBase = Path("bazel-out-base"),
         execRoot = Path("bazel-exec"),
       ),
-      hardLinks = hardLinks,
+      hardlinks = hardLinks,
     )
 
   private val localOverride = BzlmodRepoMapping(
@@ -74,13 +75,12 @@ class DefaultOutputLocationResolverTest {
   fun `resolves a generated file of a locally overridden repo under the exec root`() {
     // a local override points at a source checkout, which never holds a generated file.
     // the sibling repository layout puts the file next to the exec root of the main repository.
-    val resolver = DefaultOutputLocationResolver(
+    val resolver = DefaultOutputLocationResolver.createHardlinkResolving(
       testBazelInfo(
         workspaceRoot = Path("workspace"),
         outputBase = Path("bazel-out-base"),
         execRoot = Path("bazel-exec/_main"),
       ),
-      BazelOutFileHardLinks.NONE,
     )
     val generated = OutputLocation.External("foo+", "bazel-out/k8-fastbuild/bin/pkg/gen.h", siblingLayout = true)
     resolver.resolve(generated, localOverride) shouldBe

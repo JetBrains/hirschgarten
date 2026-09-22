@@ -18,7 +18,8 @@ import org.jetbrains.bazel.sync.workspace.languages.jvm.KotlinBuildTarget
 import org.jetbrains.bazel.sync.workspace.snapshot.isTestTarget
 import org.jetbrains.bazel.workspace.indexAdditionalFiles.ProjectViewGlobSet
 import org.jetbrains.bsp.protocol.BuildTarget
-import org.jetbrains.bsp.protocol.SourceFileCollection
+import org.jetbrains.bsp.protocol.OutputLocation
+import org.jetbrains.bsp.protocol.OutputLocationCollection
 import org.jetbrains.bsp.protocol.extractData
 import java.nio.file.Path
 
@@ -50,6 +51,7 @@ object SourceRootBuilder {
     target: BuildTarget,
     testSourcesGlob: ProjectViewGlobSet,
     packagePrefixes: JvmPackagePrefixCalculator,
+    resolveLocation: (OutputLocation) -> Path?,
   ): List<ResolvedSourceRoot> {
     val prefixes = packagePrefixes.get(target)
     fun Path.convert(generated: Boolean) =
@@ -69,11 +71,11 @@ object SourceRootBuilder {
     // the issue is that rules_kotlin treat KSP outputs in the same way as normal compiler artifacts.
     // Correct way of representing ksp sources is to put then side-by-side to real sources
     // that allow our plugin to correctly handle things like two-way references, or access to internal members.
-    val kspSrcJars = target.extractData<KotlinBuildTarget>()?.kspSourceJars ?: SourceFileCollection.EMPTY
+    val kspSrcJars = target.extractData<KotlinBuildTarget>()?.kspSourceJars ?: OutputLocationCollection.EMPTY
 
     return (target.sources.getFiles().map { it.convert(generated = false) } +
             target.generatedSources.getFiles().map { it.convert(generated = true) }).toList() +
-           kspSrcJars.getFiles().map { it.convert(generated = true) }
+           kspSrcJars.resolvePaths(resolveLocation).map { it.convert(generated = true) }
   }
 
   /**

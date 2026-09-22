@@ -7,21 +7,18 @@ import com.intellij.openapi.diagnostic.logger
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.commons.BazelPathsResolver
 import org.jetbrains.bazel.commons.LanguageClass
-import org.jetbrains.bazel.commons.LocalRepositoryMapping
 import org.jetbrains.bazel.commons.RepoMapping
-import org.jetbrains.bazel.commons.getLocalRepositories
 import org.jetbrains.bazel.golang.GoLanguageClass
-import org.jetbrains.bazel.label.assumeResolved
-import org.jetbrains.bazel.label.label
 import org.jetbrains.bazel.server.BazelServerFacade
 import org.jetbrains.bazel.sync.workspace.languages.LanguagePlugin
-import org.jetbrains.bazel.sync.workspace.snapshot.SourceFileCollectionBuilder
+import org.jetbrains.bazel.sync.workspace.snapshot.OutputLocationCollectionBuilder
 import org.jetbrains.bazel.sync.workspace.snapshot.toWorkspaceTargetKey
 import org.jetbrains.bsp.protocol.BazelResolveLocalToRemoteParams
 import org.jetbrains.bsp.protocol.BazelResolveLocalToRemoteResult
 import org.jetbrains.bsp.protocol.BazelResolveRemoteToLocalParams
 import org.jetbrains.bsp.protocol.BazelResolveRemoteToLocalResult
 import org.jetbrains.bsp.protocol.BuildTargetData
+import org.jetbrains.bsp.protocol.OutputLocation
 import java.nio.file.Path
 import java.nio.file.Paths
 import kotlin.io.path.absolute
@@ -49,30 +46,24 @@ class GoLanguagePlugin : LanguagePlugin {
       return emptyList()
     }
     val goTarget = target.goTargetInfo
-    val localRepositories = repoMapping.getLocalRepositories()
-    val baseDirectory = server.bazelPathsResolver.toDirectoryPath(target.label().assumeResolved(), repoMapping)
     return listOf(
       GoBuildTarget(
-        sdkHomePath = calculateSdkPath(server, goTarget.sdkHomePath, localRepositories),
+        sdkHomePath = calculateSdkPath(server, goTarget.sdkHomePath),
         importPath = goTarget.importPath,
-        sources = SourceFileCollectionBuilder.build(
-          relativeRoot = baseDirectory,
-          paths = server.outFileHardLinks.createOutputFileHardLinks(
-            goTarget.sourcesList.map { server.bazelPathsResolver.resolve(it, localRepositories) },
-          ),
-        ),
+        sources = OutputLocationCollectionBuilder.build(goTarget.sourcesList, server.outputParser),
         embed = goTarget.embedList.map { it.toWorkspaceTargetKey() },
       ),
     )
   }
 
-  private fun calculateSdkPath(server: BazelServerFacade, sdk: Common.ArtifactLocation?, localRepositories: LocalRepositoryMapping): Path? =
-    sdk
-      ?.takeUnless { it.relativePath.isNullOrEmpty() }
-      ?.let {
-        val goBinaryPath = server.bazelPathsResolver.resolve(it, localRepositories)
-        goBinaryPath.parent.parent
-      }
+  // the aspect gives the `go` binary, the SDK home is two directories above it: `<home>/bin/go`
+  private suspend fun calculateSdkPath(server: BazelServerFacade, sdk: Common.ArtifactLocation?): OutputLocation? {
+    if (sdk == null || sdk.relativePath.isNullOrEmpty()) {
+      return null
+    }
+    val homePath = sdk.relativePath.split('/').dropLast(2).joinToString("/")
+    return server.outputParser.parse(sdk.toBuilder().setRelativePath(homePath).build())
+  }
 
   companion object {
     private val logger: Logger = logger<GoLanguagePlugin>()

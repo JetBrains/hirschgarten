@@ -6,29 +6,26 @@ import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.BuildTargetData
-import org.jetbrains.bsp.protocol.SourceFileCollection
+import org.jetbrains.bsp.protocol.OutputLocation
+import org.jetbrains.bsp.protocol.OutputLocationCollection
 import org.jetbrains.bsp.protocol.StrictDependencyCheckedType
 import org.jetbrains.bsp.protocol.extractData
-import java.nio.file.Path
 
 @ApiStatus.Internal
 data class JvmBuildTarget(
   val javacOpts: List<String> = listOf(),
-  val binaryOutputs: SourceFileCollection = SourceFileCollection.EMPTY,
-
-  // not hard-linked outputs, needed for hotswap, bytecode viewer, etc.
-  val rawBinaryOutputs: SourceFileCollection = SourceFileCollection.EMPTY,
+  val binaryOutputs: OutputLocationCollection = OutputLocationCollection.EMPTY,
 
   val environmentVariables: Map<String, String> = mapOf(),
   val mainClass: String? = null,
   val jvmArgs: List<String> = listOf(),
   val programArgs: List<String> = listOf(),
-  val resolvedResourceStripPrefix: Path? = null,
-  val outputInterfaceJars: SourceFileCollection = SourceFileCollection.EMPTY,
-  val outputSourceJars: SourceFileCollection = SourceFileCollection.EMPTY,
+  val resolvedResourceStripPrefix: OutputLocation? = null,
+  val outputInterfaceJars: OutputLocationCollection = OutputLocationCollection.EMPTY,
+  val outputSourceJars: OutputLocationCollection = OutputLocationCollection.EMPTY,
   val generatedJars: List<JvmOutputs> = emptyList(),
   val jdepsJars: List<JdepsJar> = emptyList(),
-  val intellijPluginJars: SourceFileCollection = SourceFileCollection.EMPTY,
+  val intellijPluginJars: OutputLocationCollection = OutputLocationCollection.EMPTY,
   val containsInternalJars: Boolean = false,
   val hasExecutableInfo: Boolean = false,
   val checkStrictDependencies: StrictDependencyCheckedType = StrictDependencyCheckedType.OFF,
@@ -41,36 +38,36 @@ data class KotlinBuildTarget(
   val kotlincOptions: List<String>,
   val associates: List<WorkspaceTargetKey>,
   val moduleName: String? = null,
-  val stdlibHardLinkedJars: SourceFileCollection = SourceFileCollection.EMPTY,
-  val stdlibInferredSourceJars: SourceFileCollection = SourceFileCollection.EMPTY,
+  val stdlibJars: OutputLocationCollection = OutputLocationCollection.EMPTY,
+  val stdlibInferredSourceJars: OutputLocationCollection = OutputLocationCollection.EMPTY,
   val exportedCompilerPluginTargetsList: List<WorkspaceTargetKey> = emptyList(),
-  val kspSourceJars: SourceFileCollection = SourceFileCollection.EMPTY
+  val kspSourceJars: OutputLocationCollection = OutputLocationCollection.EMPTY
 ) : BuildTargetData
 
 @ApiStatus.Internal
 data class ScalaBuildTarget(
   val scalaVersion: String,
-  val sdkJars: SourceFileCollection = SourceFileCollection.EMPTY,
+  val sdkJars: OutputLocationCollection = OutputLocationCollection.EMPTY,
   val scalacOptions: List<String>,
   val scalatestClasspathTargets: List<Label> = emptyList(),
 ) : BuildTargetData
 
 @ApiStatus.Internal
 data class JvmOutputs(
-  val binaryJars: SourceFileCollection = SourceFileCollection.EMPTY,
-  val interfaceJars: SourceFileCollection = SourceFileCollection.EMPTY,
-  val sourceJars: SourceFileCollection = SourceFileCollection.EMPTY,
+  val binaryJars: OutputLocationCollection = OutputLocationCollection.EMPTY,
+  val interfaceJars: OutputLocationCollection = OutputLocationCollection.EMPTY,
+  val sourceJars: OutputLocationCollection = OutputLocationCollection.EMPTY,
 )
 
 @ApiStatus.Internal
 data class JdepsJar(
   val syntheticLabel: Label,
-  val jar: Path,
+  val jar: OutputLocation,
 )
 
 @ApiStatus.Internal
 data class JavaProviderData(
-  val fullCompileJars: SourceFileCollection = SourceFileCollection.EMPTY,
+  val fullCompileJars: OutputLocationCollection = OutputLocationCollection.EMPTY,
   val hasApiGeneratingPlugins: Boolean = false,
 ) : BuildTargetData
 
@@ -78,8 +75,8 @@ data class JavaProviderData(
 data class JavaToolchainData(
   val sourceVersion: String? = null,
   val targetVersion: String? = null,
-  val javaHome: Path? = null,
-  val bootClasspathJavaHome: Path? = null,
+  val javaHome: OutputLocation? = null,
+  val bootClasspathJavaHome: OutputLocation? = null,
   val isExecConfig: Boolean = false,
 ) : BuildTargetData
 

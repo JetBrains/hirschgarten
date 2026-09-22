@@ -1,6 +1,7 @@
 package org.jetbrains.bazel.sync.workspace.snapshot
 
 import org.jetbrains.annotations.ApiStatus
+import org.jetbrains.bazel.commons.BazelInfo
 import org.jetbrains.bazel.commons.RepoMapping
 import org.jetbrains.bazel.commons.RepoMappingDisabled
 import org.jetbrains.bazel.sync.workspace.importer.BazelWorkspaceImporter
@@ -29,6 +30,7 @@ data class WorkspaceSnapshot(
   val executableTargets: ExecutableTargetsIndex,
   val syncConfigs: List<WorkspaceSyncConfig>,
   val repoMapping: RepoMapping,
+  val bazelInfo: BazelInfo,
   val metadata: WorkspaceSnapshotMetadata,
 ) {
   companion object {
@@ -41,6 +43,7 @@ data class WorkspaceSnapshot(
       executableTargets = ExecutableTargetsIndex.EMPTY,
       syncConfigs = emptyList(),
       repoMapping = RepoMappingDisabled,
+      bazelInfo = BazelInfo.DEFAULT,
       metadata = WorkspaceSnapshotMetadata(
         version = 1,
       ),

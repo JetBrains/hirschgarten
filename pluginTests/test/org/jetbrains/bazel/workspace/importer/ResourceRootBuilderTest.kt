@@ -14,6 +14,8 @@ import org.jetbrains.bazel.sync.workspace.languages.jvm.ScalaBuildTarget
 import org.jetbrains.bazel.test.framework.target.TestBuildTarget
 import org.jetbrains.bazel.workspace.model.test.framework.createTestBuildTarget
 import org.jetbrains.bazel.workspace.model.test.framework.MockProjectBaseTest
+import org.jetbrains.bazel.workspace.model.test.framework.resolveTestLocation
+import org.jetbrains.bazel.workspace.model.test.framework.testLocation
 import org.jetbrains.bsp.protocol.BuildTargetData
 import org.junit.jupiter.api.DynamicTest
 import org.junit.jupiter.api.Test
@@ -207,7 +209,7 @@ class ResourceRootBuilderTest : MockProjectBaseTest() {
       resources = listOf(res1, res2),
       data = listOf(
         JvmBuildTarget(
-          resolvedResourceStripPrefix = prefix,
+          resolvedResourceStripPrefix = testLocation(prefix),
         ),
       ),
     )
@@ -386,7 +388,7 @@ class ResourceRootBuilderTest : MockProjectBaseTest() {
           associates = emptyList(),
           moduleName = null,
         ),
-        JvmBuildTarget(resolvedResourceStripPrefix = stripPrefix),
+        JvmBuildTarget(resolvedResourceStripPrefix = testLocation(stripPrefix)),
       ),
     )
 
@@ -405,7 +407,7 @@ class ResourceRootBuilderTest : MockProjectBaseTest() {
 
     val target = javaTarget(
       resources = listOf(resourceFile),
-      data = listOf(JvmBuildTarget(resolvedResourceStripPrefix = stripPrefix)),
+      data = listOf(JvmBuildTarget(resolvedResourceStripPrefix = testLocation(stripPrefix))),
     )
 
     val roots = resolve(target)
@@ -795,6 +797,7 @@ class ResourceRootBuilderTest : MockProjectBaseTest() {
       bazelProjectName = projectName,
       workspaceRoot = projectRoot,
       sourceContentRoots = sourceContentRoots,
+      resolveLocation = ::resolveTestLocation,
     )
 
   private fun javaTarget(

@@ -3,6 +3,7 @@ package org.jetbrains.bazel.sync.workspace.snapshot
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.toNioPathOrNull
 import org.jetbrains.annotations.ApiStatus
+import org.jetbrains.bazel.commons.BazelInfo
 import org.jetbrains.bazel.commons.BzlmodRepoMapping
 import org.jetbrains.bazel.commons.RepoMapping
 import org.jetbrains.bazel.commons.RepoMappingDisabled
@@ -22,6 +23,7 @@ object WorkspaceSnapshotBuilder {
     project: Project,
     projectView: ProjectView,
     repoMapping: RepoMapping,
+    bazelInfo: BazelInfo,
     resolved: BazelResolvedWorkspace,
   ): WorkspaceSnapshot {
     val workspaceRoot = project.rootDir.toNioPath()
@@ -47,6 +49,7 @@ object WorkspaceSnapshotBuilder {
       syncConfigs = listOf(commonSyncConfig) + LanguagePlugin.EP_NAME.extensionList
         .flatMap { it.createSyncConfigs(project, projectView) },
       repoMapping = repoMapping,
+      bazelInfo = bazelInfo,
       metadata = WorkspaceSnapshotMetadata(
         version = 1,
       ),
@@ -71,6 +74,7 @@ object WorkspaceSnapshotBuilder {
   suspend fun merge(
     project: Project,
     projectView: ProjectView,
+    bazelInfo: BazelInfo,
     snapshots: List<IncompleteWorkspaceSnapshot>,
   ): WorkspaceSnapshot {
     // newest snapshot comes last
@@ -118,6 +122,7 @@ object WorkspaceSnapshotBuilder {
       syncConfigs = listOf(commonSyncConfig) + LanguagePlugin.EP_NAME.extensionList
         .flatMap { it.createSyncConfigs(project, projectView) },
       repoMapping = repoMapping,
+      bazelInfo = bazelInfo,
       metadata = WorkspaceSnapshotMetadata(
         version = 1,
       ),

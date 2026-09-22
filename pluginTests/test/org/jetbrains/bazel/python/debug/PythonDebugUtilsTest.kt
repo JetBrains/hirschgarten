@@ -20,6 +20,7 @@ import org.jetbrains.bazel.sync.environment.BazelProjectContextService
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
 import org.jetbrains.bazel.target.targetStorage
 import org.jetbrains.bazel.test.framework.target.TestBuildTarget
+import org.jetbrains.bazel.workspace.model.test.framework.testLocation
 import org.jetbrains.bsp.protocol.SourceFileCollection
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertNotNull
@@ -430,7 +431,7 @@ class PythonDebugUtilsTest {
           data = listOf(
             PythonBuildTarget(
               version = "3.8",
-              interpreter = interpreter,
+              interpreter = interpreter?.let(::testLocation),
               imports = imports,
               mainFile = mainFile,
               runnerScript = runnerScript,

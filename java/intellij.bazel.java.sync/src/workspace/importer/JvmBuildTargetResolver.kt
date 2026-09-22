@@ -19,6 +19,8 @@ import org.jetbrains.bazel.sync.workspace.snapshot.findBuildData
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.LibraryItem
 import org.jetbrains.bsp.protocol.MavenCoordinates
+import org.jetbrains.bsp.protocol.OutputLocation
+import org.jetbrains.bsp.protocol.OutputLocationCollection
 import org.jetbrains.bsp.protocol.allJars
 import org.jetbrains.bsp.protocol.utils.StringUtils
 import java.nio.file.Path
@@ -33,6 +35,8 @@ class JvmBuildTargetResolver(
   private val allTargets: Map<WorkspaceTargetKey, BuildTarget>,
   private val targetsToImport: Map<WorkspaceTargetKey, BuildTarget>,
   private val javaSyncConfig: JavaWorkspaceSyncConfig,
+  private val resolveLocation: (OutputLocation) -> Path?,
+  private val resolveExecrootLocation: (OutputLocation) -> Path?,
 ) {
   private var extraLibDependencies: Map<WorkspaceTargetKey, List<DependencyLabel>> = mapOf()
   private var toolchainDependencies: Map<WorkspaceTargetKey, List<DependencyLabel>> = mapOf()
@@ -43,14 +47,14 @@ class JvmBuildTargetResolver(
   private val outputJarsByLabel: Map<Label, Set<Path>> =
     buildMap<Label, MutableSet<Path>> {
       for ((key, target) in allTargets) {
-        val jars = target.rawOutputBinaryJars()
+        val jars = target.outputBinaryJars()
         if (jars.isNotEmpty()) {
           getOrPut(key.label) { mutableSetOf() } += jars
         }
       }
     }
 
-  private val projectJavaHome: Path? by lazy { JdkResolver(allTargets).resolve()?.javaHome }
+  private val projectJavaHome: Path? by lazy { JdkResolver(allTargets, resolveExecrootLocation).resolve()?.javaHome }
 
   fun resolveAll(): Map<WorkspaceTargetKey, JvmResolvedTarget> {
     wellKnownTargetKeyByMavenCoordinates = computeWellKnownTargetKeyByMavenCoordinates()
@@ -146,14 +150,14 @@ class JvmBuildTargetResolver(
           { it }
         }
         else {
-          val outputJars = target.rawOutputBinaryJars();
-          DependencyLabelPatcher@{ dependency ->
+          val outputJars = target.outputBinaryJars()
+          fun(dependency: DependencyLabel): DependencyLabel {
             // Over-approximate to label to keep correct behavior when target depend on targets with different configuration/aspects
             val depJars = outputJarsByLabel[dependency.targetKey.label] ?: emptySet()
             if (outputJars.intersect(depJars).isNotEmpty())
-              return@DependencyLabelPatcher dependency.copy(kind = DependencyLabelKind.EXPORTED_COMPILE_TIME)
+              return dependency.copy(kind = DependencyLabelKind.EXPORTED_COMPILE_TIME)
 
-            dependency
+            return dependency
           }
         }
 
@@ -381,14 +385,14 @@ class JvmBuildTargetResolver(
         val libKey = target.key
         val generated = target.findBuildData<JvmBuildTarget>()?.generatedJars.orEmpty()
         val kspSourceJars = target.findBuildData<KotlinBuildTarget>()
-          ?.kspSourceJars?.getFiles()?.toSet().orEmpty()
+          ?.kspSourceJars?.resolvePaths(resolveLocation)?.toSet().orEmpty()
         libKey to
           createLibrary(
             // `Label.toString()` round-trips the raw target label, so this matches the pre-refactor `key.label + "_generated"`
             key = libKey.copy(label = Label.synthetic(target.key.label.toString() + "_generated")),
             ijars = emptySet(),
-            jars = generated.flatMap { it.binaryJars.getFiles().toList() }.toSet(),
-            sourceJars = generated.flatMap { it.sourceJars.getFiles().toList() }
+            jars = generated.flatMap { it.binaryJars.resolvePaths(resolveLocation) }.toSet(),
+            sourceJars = generated.flatMap { it.sourceJars.resolvePaths(resolveLocation) }
               // we don't want KSP source jars inside library source JARs,
               // it won't have it's compiled jar equivalent anyway
               .filterNot { it in kspSourceJars }
@@ -411,7 +415,7 @@ class JvmBuildTargetResolver(
     }
 
     val sdkLibByJar =
-      allTargets.values.mapNotNull { it.findBuildData<ScalaBuildTarget>() }.flatMap { it.sdkJars.getFiles().toList() }.toSet()
+      allTargets.values.mapNotNull { it.findBuildData<ScalaBuildTarget>() }.flatMap { it.sdkJars.resolvePaths(resolveLocation) }.toSet()
         .associateWith {
           createLibrary(
             WorkspaceTargetKey(label = Label.synthetic(it.name)),
@@ -431,7 +435,7 @@ class JvmBuildTargetResolver(
       }
     targetsToImport.forEach { (key, target) ->
       val scala = target.findBuildData<ScalaBuildTarget>() ?: return@forEach
-      val libs = (scala.sdkJars.getFiles().mapNotNull { sdkLibByJar[it] }.toList() + target.scalatestClasspathJars()
+      val libs = (scala.sdkJars.resolvePaths(resolveLocation).mapNotNull { sdkLibByJar[it] } + target.scalatestClasspathJars()
         .mapNotNull { testLibByJar[it] }).distinct()
       if (libs.isNotEmpty()) {
         result.getOrPut(key) { mutableListOf() }.addAll(libs)
@@ -461,10 +465,10 @@ class JvmBuildTargetResolver(
     val stdlibByTarget: List<Pair<WorkspaceTargetKey, KotlinStdlib>> =
       targetsToImport.mapNotNull { (key, target) ->
         val kotlinTarget = target.findBuildData<KotlinBuildTarget>() ?: return@mapNotNull null
-        if (kotlinTarget.stdlibHardLinkedJars.isEmpty()) return@mapNotNull null
+        if (kotlinTarget.stdlibJars.isEmpty()) return@mapNotNull null
         key to KotlinStdlib(
-          jars = kotlinTarget.stdlibHardLinkedJars.getFiles().toList(),
-          sourceJars = kotlinTarget.stdlibInferredSourceJars.getFiles().toList(),
+          jars = kotlinTarget.stdlibJars.resolvePaths(resolveLocation),
+          sourceJars = kotlinTarget.stdlibInferredSourceJars.resolvePaths(resolveLocation),
         )
       }
     if (stdlibByTarget.isEmpty())
@@ -529,7 +533,9 @@ class JvmBuildTargetResolver(
 
   private val jdepsLabelByJar: Map<Path, Label> =
     allTargets.values.asSequence().mapNotNull { it.findBuildData<JvmBuildTarget>() }
-      .flatMap { it.jdepsJars.asSequence() }.associate { it.jar to it.syntheticLabel }
+      .flatMap { it.jdepsJars.asSequence() }
+      .mapNotNull { jdepsJar -> resolveLocation(jdepsJar.jar)?.let { it to jdepsJar.syntheticLabel } }
+      .toMap()
 
   private fun getAllJdepsDependencies(
     targetsToImport: Map<WorkspaceTargetKey, BuildTarget>,
@@ -537,7 +543,7 @@ class JvmBuildTargetResolver(
   ): Map<WorkspaceTargetKey, Set<Path>> {
     val jdepsJars =
       targetsToImport
-        .mapValues { (_, target) -> target.findBuildData<JvmBuildTarget>()?.jdepsJars.orEmpty().map { it.jar }.toSet() }
+        .mapValues { (_, target) -> target.findBuildData<JvmBuildTarget>()?.jdepsJars.orEmpty().mapNotNull { resolveLocation(it.jar) }.toSet() }
         .filterValues { it.isNotEmpty() }
 
     val allJdepsJars =
@@ -655,28 +661,27 @@ class JvmBuildTargetResolver(
   private fun Collection<Path>.isEmptyJarList(): Boolean = isEmpty() || singleOrNull()?.name == "empty.jar"
 
   private fun getIntellijPluginJars(target: BuildTarget): Set<Path> =
-    target.findBuildData<JvmBuildTarget>()?.intellijPluginJars?.getFiles()?.toSet().orEmpty()
+    target.findBuildData<JvmBuildTarget>()?.intellijPluginJars.resolvePathSet()
 
   private fun getSourceJarPaths(target: BuildTarget): Set<Path> =
-    target.findBuildData<JvmBuildTarget>()?.outputSourceJars?.getFiles()?.toSet().orEmpty()
+    target.findBuildData<JvmBuildTarget>()?.outputSourceJars.resolvePathSet()
 
   private fun getTargetOutputJarsList(target: BuildTarget): List<Path> {
     // proto generator put the generated jar into `javaProvider.fullCompileJarsList`
     // See test `plugins/bazel/integrationTests/testProjects/protobufStrictDepsTest`
     if (target.kind.kind == "scala_proto_library")
-      return target.findBuildData<JavaProviderData>()?.fullCompileJars?.getFiles()?.toList().orEmpty()
+      return target.findBuildData<JavaProviderData>()?.fullCompileJars?.resolvePaths(resolveLocation).orEmpty()
 
     return target.outputBinaryJars().toList()
   }
 
   private fun BuildTarget.outputBinaryJars(): Set<Path> =
-    findBuildData<JvmBuildTarget>()?.binaryOutputs?.getFiles()?.toSet() ?: emptySet()
-
-  private fun BuildTarget.rawOutputBinaryJars(): Set<Path> =
-    findBuildData<JvmBuildTarget>()?.rawBinaryOutputs?.getFiles()?.toSet() ?: emptySet()
+    findBuildData<JvmBuildTarget>()?.binaryOutputs.resolvePathSet()
 
   private fun getTargetInterfaceJarsList(target: BuildTarget): List<Path> =
-    target.findBuildData<JvmBuildTarget>()?.outputInterfaceJars?.getFiles()?.toList().orEmpty()
+    target.findBuildData<JvmBuildTarget>()?.outputInterfaceJars?.resolvePaths(resolveLocation).orEmpty()
+
+  private fun OutputLocationCollection?.resolvePathSet(): Set<Path> = this?.resolvePaths(resolveLocation)?.toSet().orEmpty()
 
   private fun containsAnyInternalJars(target: BuildTarget): Boolean =
     target.findBuildData<JvmBuildTarget>()?.containsInternalJars ?: false
@@ -691,7 +696,7 @@ class JvmBuildTargetResolver(
 
   private fun BuildTarget.scalatestClasspathJars(): List<Path> =
     findBuildData<ScalaBuildTarget>()?.scalatestClasspathTargets.orEmpty().flatMap { label ->
-      allTargets[key.copy(label = label)]?.findBuildData<JavaProviderData>()?.fullCompileJars?.getFiles()?.toList().orEmpty()
+      allTargets[key.copy(label = label)]?.findBuildData<JavaProviderData>()?.fullCompileJars?.resolvePaths(resolveLocation).orEmpty()
     }
 
   private fun <K, V> concatenateMaps(maps: Collection<Map<K, List<V>>>): Map<K, List<V>> =

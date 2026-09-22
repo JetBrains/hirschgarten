@@ -1,38 +1,23 @@
 package org.jetbrains.bazel.scala.sdk
 
 import com.google.devtools.intellij.ideinfo.IntellijIdeInfo.TargetIdeInfo
-import org.jetbrains.bazel.commons.BazelPathsResolver
-import org.jetbrains.bazel.commons.LocalRepositoryMapping
-import java.nio.file.Path
 import java.util.regex.Pattern
 
-internal class ScalaSdkResolver(private val bazelPathsResolver: BazelPathsResolver) {
-  fun resolveSdk(targetInfo: TargetIdeInfo, localRepositories : LocalRepositoryMapping): ScalaSdk? {
+internal object ScalaSdkResolver {
+  fun resolveScalaVersion(targetInfo: TargetIdeInfo): String? {
     if (!targetInfo.hasScalaTargetInfo()) {
       return null
     }
-    val scalaTarget = targetInfo.scalaTargetInfo
-    val compilerJars = bazelPathsResolver.resolvePaths(scalaTarget.compilerClasspathList, localRepositories).sorted()
-    val maybeVersions = compilerJars.mapNotNull(::extractVersion)
-    if (maybeVersions.none()) {
-      return null
-    }
-    val version = maybeVersions.distinct().maxOf { it }
-    return ScalaSdk(
-      name = "",
-      scalaVersion = version,
-      sdkJars = compilerJars.map(bazelPathsResolver::resolve).map { it.toUri() },
-    )
+    return targetInfo.scalaTargetInfo.compilerClasspathList
+      .mapNotNull { extractVersion(it.relativePath.substringAfterLast('/')) }
+      .maxOfOrNull { it }
   }
 
-  private fun extractVersion(path: Path): String? {
-    val name = path.fileName.toString()
-    val matcher = VERSION_PATTERN.matcher(name)
+  private fun extractVersion(fileName: String): String? {
+    val matcher = VERSION_PATTERN.matcher(fileName)
     return if (matcher.matches()) matcher.group(1) else null
   }
 
-  companion object {
-    private val VERSION_PATTERN =
-      Pattern.compile("(?:processed_)?scala3?-(?:library|compiler|reflect)(?:_3)?-([.\\d]+)\\.jar")
-  }
+  private val VERSION_PATTERN =
+    Pattern.compile("(?:processed_)?scala3?-(?:library|compiler|reflect)(?:_3)?-([.\\d]+)\\.jar")
 }

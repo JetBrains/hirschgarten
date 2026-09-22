@@ -2,6 +2,7 @@ package org.jetbrains.bazel.workspace.importer
 
 import com.intellij.openapi.application.edtWriteAction
 import com.intellij.openapi.externalSystem.service.project.IdeModifiableModelsProviderImpl
+import org.jetbrains.bazel.commons.getLocalRepositories
 import org.jetbrains.bazel.scala.sdk.ScalaSdk
 import org.jetbrains.bazel.scala.sdk.scalaSdkExtension
 import org.jetbrains.bazel.scala.sdk.scalaSdkExtensionExists
@@ -12,6 +13,8 @@ import org.jetbrains.bazel.sync.workspace.importer.WorkspaceImporterResult
 import org.jetbrains.bazel.sync.workspace.languages.jvm.extractScalaBuildTarget
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceSnapshot
 import org.jetbrains.bsp.protocol.BuildTarget
+import org.jetbrains.bsp.protocol.OutputLocation
+import java.nio.file.Path
 
 internal class ScalaBazelWorkspaceImporter : BazelWorkspaceImporter {
   private var scalaSdks: Set<ScalaSdk>? = null
@@ -26,7 +29,7 @@ internal class ScalaBazelWorkspaceImporter : BazelWorkspaceImporter {
         if (!scalaSdkExtensionExists()) {
           return Result.success(WorkspaceImporterResult.Abort)
         }
-        scalaSdks = calculateAllScalaSdkInfos(snapshot)
+        scalaSdks = calculateAllScalaSdkInfos(context, snapshot)
       }
 
       WorkspaceImporterPhase.PostProcessing -> {
@@ -47,18 +50,20 @@ internal class ScalaBazelWorkspaceImporter : BazelWorkspaceImporter {
     return Result.success(WorkspaceImporterResult.Success)
   }
 
-  private fun calculateAllScalaSdkInfos(snapshot: WorkspaceSnapshot): Set<ScalaSdk> =
-    snapshot.targets.allTargets().mapNotNull { createScalaSdk(it) }.toSet()
+  private fun calculateAllScalaSdkInfos(context: WorkspaceImporterContext, snapshot: WorkspaceSnapshot): Set<ScalaSdk> {
+    val localRepositories = snapshot.repoMapping.getLocalRepositories()
+    return snapshot.targets.allTargets()
+      .mapNotNull { target -> createScalaSdk(target) { context.outputResolver.resolve(it, localRepositories) } }
+      .toSet()
+  }
 
-  private fun createScalaSdk(target: BuildTarget): ScalaSdk? =
+  private fun createScalaSdk(target: BuildTarget, resolveLocation: (OutputLocation) -> Path?): ScalaSdk? =
     extractScalaBuildTarget(target)
       ?.let { scalaBuildTarget ->
         ScalaSdk(
           name = scalaBuildTarget.scalaVersion.scalaVersionToScalaSdkName(),
           scalaVersion = scalaBuildTarget.scalaVersion,
-          sdkJars = scalaBuildTarget.sdkJars.getFiles()
-            .map { path -> path.toUri() }
-            .toList(),
+          sdkJars = scalaBuildTarget.sdkJars.resolvePaths(resolveLocation).map { path -> path.toUri() },
         )
       }
 }

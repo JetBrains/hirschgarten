@@ -6,6 +6,7 @@ import com.intellij.platform.util.progress.SequentialProgressReporter
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.progress.syncConsole
 import org.jetbrains.bazel.progress.withSubtask
+import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceSnapshot
 import org.jetbrains.bsp.protocol.TaskId
 
 /**

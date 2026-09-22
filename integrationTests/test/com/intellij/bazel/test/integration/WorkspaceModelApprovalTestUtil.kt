@@ -113,21 +113,22 @@ internal suspend fun doWorkspaceModelTest(
   )
   resolvedWorkspace.targets.shouldNotBeEmpty()
 
+  val bazelInfo = server.runWithServer { it.bazelInfo }
   val workspaceSnapshot = WorkspaceSnapshotBuilder.build(
     project = project,
     projectView = ProjectView.EMPTY,
     repoMapping = resolvedWorkspace.repoMapping,
+    bazelInfo = bazelInfo,
     resolved = resolvedWorkspace,
   )
   val builder = MutableEntityStorage.create()
-  val bazelInfo = server.runWithServer { it.bazelInfo }
   reportSequentialProgress { reporter ->
     val helper = WorkspaceImporterHelper(
       project = project,
       taskConsole = project.syncConsole,
       progressReporter = reporter,
       builder = builder,
-      outputResolver = DefaultOutputLocationResolver(bazelInfo, BazelOutFileHardLinks.NONE),
+      outputResolver = DefaultOutputLocationResolver.createHardlinkResolving(bazelInfo),
       outputParser = OutputLocationParser(BazelPathsResolver(bazelInfo), BazelOutFileHardLinks.NONE),
       bazelInfo = bazelInfo,
     )

@@ -58,6 +58,7 @@ private class HotSwapTask(
     .map { URI.create(it.url) }  // Don't use VFS here as we're dealing with files in bazel-out
     .distinct()
     .mapNotNull { Path.of(it) }
+    .mapNotNull { runCatching { it.toRealPath() }.getOrNull() }
     .toList()
 
   override suspend fun postRun(result: BazelStatus) {

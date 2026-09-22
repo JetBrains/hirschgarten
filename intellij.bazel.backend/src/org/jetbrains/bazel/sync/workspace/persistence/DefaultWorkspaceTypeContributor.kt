@@ -1,6 +1,8 @@
 package org.jetbrains.bazel.sync.workspace.persistence
 
 import com.intellij.openapi.project.Project
+import org.jetbrains.bazel.commons.BazelInfo
+import org.jetbrains.bazel.commons.BazelRelease
 import org.jetbrains.bazel.commons.LanguageClass
 import org.jetbrains.bazel.commons.RepoMapping
 import org.jetbrains.bazel.commons.RuleType
@@ -61,5 +63,8 @@ internal class DefaultWorkspaceTypeContributor : WorkspaceTypeContributor {
 
     sealed<OutputLocation>()
     type<OutputLocationCollection>()
+
+    type<BazelInfo>()
+    type<BazelRelease>()
   }
 }

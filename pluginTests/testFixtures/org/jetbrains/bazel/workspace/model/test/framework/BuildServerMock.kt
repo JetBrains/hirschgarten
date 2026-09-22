@@ -78,7 +78,7 @@ open class BuildServerMock(
     get() = BazelOutFileHardLinks.NONE
 
   override val outputResolver: OutputLocationResolver
-    get() = DefaultOutputLocationResolver(bazelInfo, outFileHardLinks)
+    get() = DefaultOutputLocationResolver.createHardlinkResolving(bazelInfo, outFileHardLinks)
 
   override val outputParser: OutputLocationParser
     get() = OutputLocationParser(bazelPathsResolver, outFileHardLinks)

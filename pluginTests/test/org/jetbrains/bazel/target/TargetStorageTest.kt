@@ -34,6 +34,7 @@ import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceSnapshotMetadata
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetGraphBuilder
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
 import org.jetbrains.bazel.test.framework.target.TestBuildTarget
+import org.jetbrains.bazel.test.framework.testBazelInfo
 import org.jetbrains.bazel.ui.gutters.NonImportedBuildTarget
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.BuildTargetData
@@ -103,6 +104,7 @@ class TargetStorageTest {
       executableTargets = ExecutableTargetsIndexBuilder.build(targetGraph = graph, importDepth = importDepth, targets = targets),
       syncConfigs = listOf(CommonWorkspaceSyncConfig(Path.of(project.basePath!!), null, "test", importDepth)),
       repoMapping = RepoMappingDisabled,
+      bazelInfo = testBazelInfo(workspaceRoot = Path.of("/workspace")),
       metadata = WorkspaceSnapshotMetadata(version = 1),
     )
   }

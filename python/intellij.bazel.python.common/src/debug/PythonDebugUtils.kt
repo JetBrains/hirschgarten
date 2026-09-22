@@ -20,6 +20,7 @@ import org.jetbrains.bazel.run.commandLine.parseAsProgramArguments
 import org.jetbrains.bazel.target.getTargetDataForLabel
 import org.jetbrains.bazel.target.targetStorage
 import org.jetbrains.bazel.utils.isUnder
+import org.jetbrains.bsp.protocol.relativeNioPath
 import java.nio.charset.StandardCharsets
 import java.nio.file.FileVisitOption
 import java.nio.file.Files
@@ -52,7 +53,7 @@ object PythonDebugUtils {
     val runfiles = pythonTargetData.findRunfilesWorkspaceRoot() ?: return null
     val runfilesRoot = runfiles.parent
     val pythonPath = buildPythonPathEnv(runfiles, pythonTargetData.imports, EnvironmentUtil.getValue("PYTHONPATH"))
-    val pythonBinary = pythonTargetData.findPythonBinary(runfiles, target)
+    val pythonBinary = pythonTargetData.findPythonBinary(project, runfiles, target)
     val projectRoots = listOfNotNull(project.rootDir.toNioPathOrNull(), runfiles)
     val libraryRoots = listOfNotNull(
       runnerScript.takeIf { pythonTargetData.mainFile != runnerScript },
@@ -87,15 +88,16 @@ object PythonDebugUtils {
     )
   }
 
-  private fun PythonBuildTarget.findPythonBinary(runfilesWorkspaceRoot: Path, target: Label): Path? =
-    findVenvPythonBinary(runfilesWorkspaceRoot, target) ?: interpreter
+  private fun PythonBuildTarget.findPythonBinary(project: Project, runfilesWorkspaceRoot: Path, target: Label): Path? =
+    findVenvPythonBinary(runfilesWorkspaceRoot, target) ?: interpreter?.let { project.targetStorage.resolveExecrootOutputLocation(it) }
 
   private fun PythonBuildTarget.findVenvPythonBinary(runfilesWorkspaceRoot: Path, target: Label): Path? {
     val runfilesRoot = runfilesWorkspaceRoot.parent ?: return null
     val manifest = runfilesRoot.resolve(RUNFILES_MANIFEST_NAME)
     if (!Files.isRegularFile(manifest)) return null
 
-    val pythonBinaryNames = (listOfNotNull(interpreter?.fileName?.toString()) + DEFAULT_PYTHON_BINARY_NAMES).distinct().toSet()
+    val interpreterName = interpreter?.relativeNioPath?.name?.ifEmpty { null }
+    val pythonBinaryNames = (listOfNotNull(interpreterName) + DEFAULT_PYTHON_BINARY_NAMES).distinct().toSet()
     return runCatching {
       Files.newBufferedReader(manifest).useLines { lines ->
         lines.firstNotNullOfOrNull { line ->

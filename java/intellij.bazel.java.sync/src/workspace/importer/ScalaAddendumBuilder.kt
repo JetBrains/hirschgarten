@@ -9,6 +9,8 @@ import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.sync.workspace.languages.jvm.ScalaBuildTarget
 import org.jetbrains.bazel.workspacemodel.entities.ScalaAddendumEntity
 import org.jetbrains.bazel.workspacemodel.entities.scalaAddendumEntity
+import org.jetbrains.bsp.protocol.OutputLocation
+import java.nio.file.Path
 
 // RC: replaces `ScalaAddendumEntityUpdater`; the old `ScalaAddendum` wrapper is dropped,
 // we go straight from `ScalaBuildTarget` to `ScalaAddendumEntity`
@@ -16,6 +18,7 @@ import org.jetbrains.bazel.workspacemodel.entities.scalaAddendumEntity
 object ScalaAddendumBuilder {
   fun write(
     scalaBuildTarget: ScalaBuildTarget?,
+    resolveLocation: (OutputLocation) -> Path?,
     parentModuleEntity: ModuleEntity,
     virtualFileUrlManager: VirtualFileUrlManager,
     storage: MutableEntityStorage,
@@ -26,7 +29,7 @@ object ScalaAddendumBuilder {
         entitySource = parentModuleEntity.entitySource,
         compilerVersion = target.scalaVersion,
         scalacOptions = target.scalacOptions,
-        sdkClasspaths = target.sdkJars.getFiles().map { it.toVirtualFileUrl(virtualFileUrlManager) }.toList(),
+        sdkClasspaths = target.sdkJars.resolvePaths(resolveLocation).map { it.toVirtualFileUrl(virtualFileUrlManager) },
       )
     storage.modifyModuleEntity(parentModuleEntity) {
       this.scalaAddendumEntity = entity

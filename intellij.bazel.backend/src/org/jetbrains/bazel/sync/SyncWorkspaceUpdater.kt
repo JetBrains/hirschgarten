@@ -33,6 +33,7 @@ internal class SyncWorkspaceUpdater(private val project: Project) {
           project = project,
           projectView = context.server.projectView,
           repoMapping = resolved.repoMapping,
+          bazelInfo = context.server.bazelInfo,
           resolved = resolved,
         )
         SyncWorkspaceUpdate(
@@ -67,6 +68,7 @@ internal class SyncWorkspaceUpdater(private val project: Project) {
           WorkspaceSnapshotBuilder.merge(
             project = project,
             projectView = context.server.projectView,
+            bazelInfo = context.server.bazelInfo,
             snapshots = listOf(previous.toIncompleteSnapshot(), incomplete),
           )
         }

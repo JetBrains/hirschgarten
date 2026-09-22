@@ -1,5 +1,6 @@
 package org.jetbrains.bazel.sync.workspace.languages.kotlin
 
+import com.google.devtools.intellij.aspect.Common.ArtifactLocation
 import com.google.devtools.intellij.ideinfo.IntellijIdeInfo
 import com.google.devtools.intellij.ideinfo.IntellijIdeInfo.TargetIdeInfo
 import org.jetbrains.annotations.ApiStatus
@@ -11,13 +12,10 @@ import org.jetbrains.bazel.server.BazelServerFacade
 import org.jetbrains.bazel.sync.JavaLanguageClass
 import org.jetbrains.bazel.sync.workspace.languages.LanguagePlugin
 import org.jetbrains.bazel.sync.workspace.languages.jvm.KotlinBuildTarget
-import org.jetbrains.bazel.sync.workspace.snapshot.SourceFileCollectionBuilder
+import org.jetbrains.bazel.sync.workspace.snapshot.OutputLocationCollectionBuilder
 import org.jetbrains.bazel.sync.workspace.snapshot.toWorkspaceTargetKey
 import org.jetbrains.bsp.protocol.BuildTargetData
-import java.nio.file.Path
 import kotlin.io.path.exists
-import kotlin.io.path.extension
-import kotlin.io.path.nameWithoutExtension
 import kotlin.reflect.KClass
 
 @ApiStatus.Internal
@@ -46,20 +44,16 @@ class KotlinLanguagePlugin : LanguagePlugin {
     val kotlinTarget = target.kotlinTargetInfo
     val localRepositories = repoMapping.getLocalRepositories()
 
-    val ktStdlibJars = ArrayList<Path>()
-    val ktStdlibSources = ArrayList<Path>()
+    val ktStdlibJars = ArrayList<ArtifactLocation>()
+    val ktStdlibSources = ArrayList<ArtifactLocation>()
     for (output in kotlinTarget.stdlibJarsList.orEmpty()) {
-      val jars =
-        output.binaryJarsList
-          .map { server.bazelPathsResolver.resolve(it, localRepositories) }
+      val jars = output.binaryJarsList
       val sources =
-        output.sourceJarsList
-          .map { server.bazelPathsResolver.resolve(it, localRepositories) }
-          .takeIf { it.isNotEmpty() } ?: run {
+        output.sourceJarsList.takeIf { it.isNotEmpty() } ?: run {
           // fallback to hack, awaits proper fix in rules_kotlin
           // https://github.com/bazel-contrib/rules_kotlin/pull/1761
-          jars.map { it.parent.resolve(it.fileName.toString().replace(".jar", "-sources.jar")) }
-            .filter { it.exists() }
+          jars.map { it.toSourcesJar() }
+            .filter { server.bazelPathsResolver.resolve(it, localRepositories).exists() }
         }
 
       ktStdlibJars.addAll(jars)
@@ -70,8 +64,7 @@ class KotlinLanguagePlugin : LanguagePlugin {
       val target = target.javaCommon
       target.generatedJarsList.asSequence()
         .flatMap { it.sourceJarsList }
-        .map { server.bazelPathsResolver.resolve(it, localRepositories) }
-        .filter { it.isKspSourceJar() && !it.startsWith(server.bazelInfo.workspaceRoot) }
+        .filter { it.isKspSourceJar() && !server.bazelPathsResolver.resolve(it, localRepositories).startsWith(server.bazelInfo.workspaceRoot) }
         .toList()
     }
     else {
@@ -84,10 +77,10 @@ class KotlinLanguagePlugin : LanguagePlugin {
         associates = kotlinTarget.associatedTargetsList.map { it.toWorkspaceTargetKey() },
         moduleName = kotlinTarget.moduleName.takeIf { it.isNotBlank() },
         kotlincOptions = kotlinTarget.toKotlincOptArguments(server, localRepositories).toList(),
-        stdlibHardLinkedJars = SourceFileCollectionBuilder.build(server.outFileHardLinks.createOutputFileHardLinks(ktStdlibJars)),
-        stdlibInferredSourceJars = SourceFileCollectionBuilder.build(server.outFileHardLinks.createOutputFileHardLinks(ktStdlibSources)),
+        stdlibJars = OutputLocationCollectionBuilder.build(ktStdlibJars, server.outputParser),
+        stdlibInferredSourceJars = OutputLocationCollectionBuilder.build(ktStdlibSources, server.outputParser),
         exportedCompilerPluginTargetsList = kotlinTarget.exportedCompilerPluginTargetsList.map { it.toWorkspaceTargetKey() },
-        kspSourceJars = SourceFileCollectionBuilder.build(paths = kspSourceJars),
+        kspSourceJars = OutputLocationCollectionBuilder.build(kspSourceJars, server.outputParser),
       ),
     )
   }
@@ -120,6 +113,13 @@ class KotlinLanguagePlugin : LanguagePlugin {
   // KSP inside rules_kotlin is special, rules_kotlin/intellij-aspect doesn't distinguish between
   // normal compiler outputs and KSP ones, that's why we have to use this heuristic.
   // Ideally `KtJvmInfo` provider should expose something like ksp_srcjars for plugin.
-  private fun Path.isKspSourceJar(): Boolean =
-    nameWithoutExtension.endsWith("ksp-gensrc") && extension == "jar"
+  private fun ArtifactLocation.isKspSourceJar(): Boolean =
+    relativePath.endsWith("ksp-gensrc.jar")
+
+  // the `-sources.jar` sibling of a jar
+  private fun ArtifactLocation.toSourcesJar(): ArtifactLocation {
+    val directory = relativePath.substringBeforeLast('/', missingDelimiterValue = "")
+    val fileName = relativePath.substringAfterLast('/').replace(".jar", "-sources.jar")
+    return toBuilder().setRelativePath(if (directory.isEmpty()) fileName else "$directory/$fileName").build()
+  }
 }

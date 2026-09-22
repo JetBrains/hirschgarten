@@ -33,7 +33,6 @@ import org.jetbrains.bazel.sync.workspace.languages.jvm.JvmDependency
 import org.jetbrains.bazel.sync.workspace.languages.jvm.KotlinBuildTarget
 import org.jetbrains.bazel.sync.workspace.languages.jvm.extractJvmBuildTarget
 import org.jetbrains.bazel.sync.workspace.snapshot.FileToTargetMap
-import org.jetbrains.bazel.sync.workspace.snapshot.SourceFileCollectionBuilder
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceAspectIds
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceConfigurationId
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
@@ -41,6 +40,8 @@ import org.jetbrains.bazel.test.framework.target.TestBuildTarget
 import org.jetbrains.bazel.workspace.indexAdditionalFiles.ProjectViewGlobSet
 import org.jetbrains.bazel.workspace.model.test.framework.WorkspaceModelBaseTest
 import org.jetbrains.bazel.workspace.model.test.framework.createTestBuildTarget
+import org.jetbrains.bazel.workspace.model.test.framework.resolveTestLocation
+import org.jetbrains.bazel.workspace.model.test.framework.testLocations
 import org.jetbrains.bazel.workspacemodel.entities.BazelProjectEntitySource
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.LibraryItem
@@ -361,7 +362,7 @@ internal class JvmTargetEntitiesBuilderTest : WorkspaceModelBaseTest() {
       id = producer,
       kind = kind,
       sources = listOf(Path("/base/dir/Producer.java")),
-      data = listOf(JvmBuildTarget(outputInterfaceJars = SourceFileCollectionBuilder.build(listOf(producerJar)))),
+      data = listOf(JvmBuildTarget(outputInterfaceJars = testLocations(listOf(producerJar)))),
     )
     val shadowLibraryKey = WorkspaceTargetKey(label = Label.parse("//producer-jdeps-lib"))
     val shadowLibrary = LibraryItem(
@@ -489,7 +490,7 @@ internal class JvmTargetEntitiesBuilderTest : WorkspaceModelBaseTest() {
     val calc = DefaultJvmPackagePrefixCalculator(SourceRootOptimizationMode.Disabled)
     calc.calculate(targets)
     val jvmPackagePrefixes: JvmPackagePrefixCalculator = calc
-    val plan = JvmImportPlan(rawTargets = targets, jvmResolved = resolved)
+    val plan = JvmImportPlan(rawTargets = targets, jvmResolved = resolved, resolveLocation = ::resolveTestLocation)
     val naming = GlobalNamingContextBuilder.create(RepoMappingDisabled)
       .apply { plan.declareNames(this) }
       .build()
@@ -508,6 +509,7 @@ internal class JvmTargetEntitiesBuilderTest : WorkspaceModelBaseTest() {
       excludeCompiledSourceCodeInsideJars = true,
       currentCompiledSourceExcludeEntity = null,
       dotIdeaPath = null,
+      resolveLocation = ::resolveTestLocation,
     )
     // JvmTargetEntitiesBuilder writes ctx.libraries (sourced from the resolver) in its phase 0
     JvmTargetEntitiesBuilder(ctx).writeAll(workspaceEntityStorageBuilder)

@@ -7,6 +7,7 @@ import org.jetbrains.bazel.sync.workspace.languages.jvm.JavaToolchainData
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
 import org.jetbrains.bazel.sync.workspace.snapshot.findBuildData
 import org.jetbrains.bsp.protocol.BuildTarget
+import org.jetbrains.bsp.protocol.OutputLocation
 import java.nio.file.Path
 import kotlin.collections.mapNotNull
 import kotlin.io.path.Path
@@ -14,6 +15,7 @@ import kotlin.io.path.exists
 
 internal class JdkResolver(
   private val allTargets: Map<WorkspaceTargetKey, BuildTarget>,
+  private val resolveExecrootLocation: (OutputLocation) -> Path?,
 ) {
   fun resolve(): Jdk? {
     val allCandidates = allTargets.values.mapNotNull { resolveJdkData(it) }.toList()
@@ -36,7 +38,7 @@ internal class JdkResolver(
         runtimeHome to JdkType.RUNTIME
       }
     }
-    return JdkCandidate(jdkType = jdkType, javaHome = javaHome.takeIf { it.exists() } ?: return null)
+    return JdkCandidate(jdkType = jdkType, javaHome = resolveExecrootLocation(javaHome)?.takeIf { it.exists() } ?: return null)
   }
 
   private data class JdkCandidate(val jdkType: JdkType, val javaHome: Path)

@@ -36,7 +36,7 @@ internal class TestImportContext(
     get() = OutputLocationParser(BazelPathsResolver(testBazelInfo), BazelOutFileHardLinks.NONE)
 
   override val outputResolver: OutputLocationResolver
-    get() = DefaultOutputLocationResolver(testBazelInfo, BazelOutFileHardLinks.NONE)
+    get() = DefaultOutputLocationResolver.createHardlinkResolving(testBazelInfo)
 
   val events: MutableList<TestImportEvent> = mutableListOf()
 

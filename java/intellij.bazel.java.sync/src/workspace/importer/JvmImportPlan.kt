@@ -16,6 +16,7 @@ import org.jetbrains.bazel.sync.workspace.snapshot.isTestTarget
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.BuildTargetTag
 import org.jetbrains.bsp.protocol.LibraryItem
+import org.jetbrains.bsp.protocol.OutputLocation
 import java.nio.file.Path
 
 @ApiStatus.Internal
@@ -25,6 +26,7 @@ val JVM_NAME_PRODUCER: NameProducer = NameProducer(id = "jvm")
 class JvmImportPlan(
   rawTargets: Collection<BuildTarget>,
   jvmResolved: Map<WorkspaceTargetKey, JvmResolvedTarget>,
+  resolveLocation: (OutputLocation) -> Path?,
 ) {
   // merge aspect-only duplicates so the whole pipeline sees one target per (label, configuration);
   // `mergeByTargetKey` strips the aspect ids, so every key below is already aspect-free
@@ -38,7 +40,8 @@ class JvmImportPlan(
       // build `jar -> source module` map
       .filter { it.allSources.any { path -> path.hasJvmSourceExtension() } }
       .flatMap { target ->
-        target.findBuildData<JvmBuildTarget>()?.let { (it.binaryOutputs.getFiles() + it.outputInterfaceJars.getFiles()).toList() }.orEmpty()
+        target.findBuildData<JvmBuildTarget>()
+          ?.let { it.binaryOutputs.resolvePaths(resolveLocation) + it.outputInterfaceJars.resolvePaths(resolveLocation) }.orEmpty()
           .asSequence().map { it to target.key }
       }
       .groupBy({ it.first }, { it.second })

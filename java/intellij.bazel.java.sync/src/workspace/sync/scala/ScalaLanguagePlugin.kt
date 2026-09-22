@@ -4,16 +4,14 @@ import com.google.devtools.intellij.ideinfo.IntellijIdeInfo.TargetIdeInfo
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.commons.LanguageClass
 import org.jetbrains.bazel.commons.RepoMapping
-import org.jetbrains.bazel.commons.getLocalRepositories
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.scala.sdk.ScalaSdkResolver
 import org.jetbrains.bazel.server.BazelServerFacade
 import org.jetbrains.bazel.sync.JavaLanguageClass
 import org.jetbrains.bazel.sync.workspace.languages.LanguagePlugin
 import org.jetbrains.bazel.sync.workspace.languages.jvm.ScalaBuildTarget
-import org.jetbrains.bazel.sync.workspace.snapshot.SourceFileCollectionBuilder
+import org.jetbrains.bazel.sync.workspace.snapshot.OutputLocationCollectionBuilder
 import org.jetbrains.bsp.protocol.BuildTargetData
-import java.nio.file.Path
 import kotlin.reflect.KClass
 
 @ApiStatus.Internal
@@ -34,16 +32,11 @@ class ScalaLanguagePlugin : LanguagePlugin {
     if (!target.hasScalaTargetInfo()) {
       return emptyList()
     }
-    val scalaSdkResolver = ScalaSdkResolver(server.bazelPathsResolver)
-    val sdk = scalaSdkResolver.resolveSdk(target, repoMapping.getLocalRepositories()) ?: return emptyList()
+    val scalaVersion = ScalaSdkResolver.resolveScalaVersion(target) ?: return emptyList()
     return listOf(
       ScalaBuildTarget(
-        scalaVersion = sdk.scalaVersion,
-        sdkJars = SourceFileCollectionBuilder.build(
-          server.outFileHardLinks.createOutputFileHardLinks(
-            sdk.sdkJars.map { uri -> Path.of(uri) }
-          )
-        ),
+        scalaVersion = scalaVersion,
+        sdkJars = OutputLocationCollectionBuilder.build(target.scalaTargetInfo.compilerClasspathList, server.outputParser),
         scalacOptions = target.scalaTargetInfo.scalacOptsList.toList(),
         scalatestClasspathTargets = target.scalaTargetInfo.scalatestClasspathTargetsList.map { Label.parse(it) },
       ),

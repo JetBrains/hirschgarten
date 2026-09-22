@@ -38,10 +38,12 @@ import com.jetbrains.python.sdk.createLocalSdkGuessingTypeByPath
 import com.jetbrains.python.sdk.internal.PYTHON_MODULE_ID
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.annotations.VisibleForTesting
+import org.jetbrains.bazel.commons.getLocalRepositories
 import org.jetbrains.bazel.progress.withSubtask
 import org.jetbrains.bazel.python.lang.PythonBuildTarget
 import org.jetbrains.bazel.server.connection
 import org.jetbrains.bazel.sync.environment.projectCtx
+import org.jetbrains.bazel.sync.workspace.DefaultOutputLocationResolver
 import org.jetbrains.bazel.sync.workspace.importer.BazelWorkspaceImporter
 import org.jetbrains.bazel.sync.workspace.importer.GlobalNamingContext
 import org.jetbrains.bazel.sync.workspace.importer.GlobalNamingContext.NameProducer
@@ -68,6 +70,7 @@ import org.jetbrains.bazel.workspacemodel.entities.WorkspaceModelTargetLabelList
 import org.jetbrains.bazel.workspacemodel.entities.WorkspaceModelTargetSourceRootTypeId
 import org.jetbrains.bazel.workspacemodel.entities.bazelModuleExtension
 import org.jetbrains.bsp.protocol.BuildTarget
+import org.jetbrains.bsp.protocol.OutputLocation
 import org.jetbrains.bsp.protocol.StrictDependencyCheckedType
 import org.jetbrains.bsp.protocol.utils.StringUtils
 import java.nio.file.Path
@@ -91,7 +94,7 @@ internal class BazelPythonWorkspaceImporter : BazelWorkspaceImporter, BazelWorks
   private lateinit var pythonSyncConfig: PythonWorkspaceSyncConfig
   private lateinit var allPythonTargets: Map<WorkspaceTargetKey, BuildTarget>
 
-  private var defaultInterpreter: Path? = null
+  private var defaultInterpreter: OutputLocation? = null
   private var defaultVersion: String? = null
   private var externalSourceDependenciesByTarget: Map<WorkspaceTargetKey, List<WorkspaceTargetKey>> = mapOf()
 
@@ -104,6 +107,7 @@ internal class BazelPythonWorkspaceImporter : BazelWorkspaceImporter, BazelWorks
       is WorkspaceImporterPhase.Initialize -> onInitialize(snapshot, phase.naming)
       is WorkspaceImporterPhase.WorkspaceApply ->
         onWorkspaceApply(context, snapshot, phase.builder, context.vfuManager, phase.entitySource, phase.naming)
+
       WorkspaceImporterPhase.PostProcessing -> onPostProcessing(context, snapshot)
       else -> WorkspaceImporterResult.Success
     }
@@ -142,7 +146,7 @@ internal class BazelPythonWorkspaceImporter : BazelWorkspaceImporter, BazelWorks
           snapshot.targetGraph.findAllTransitiveSuccessorsWithoutRootTargets(workspaceTargetKey)
             .mapNotNull { snapshot.targets.findTargetByKey(it, TargetLoadOptions.ALL) }
             .filterBuildTarget<PythonBuildTarget>()
-            .filter { it.second.externalSources?.isEmpty() == false }
+            .filter { !it.second.externalSources.isEmpty() }
             .map { it.first.key }
             .distinct()
             .toList()
@@ -178,7 +182,7 @@ internal class BazelPythonWorkspaceImporter : BazelWorkspaceImporter, BazelWorks
         .mapNotNull { dependencyKey ->
           // calculate one external source path list per iteration to avoid keeping everything in memory at once
           val dependencyTarget = allTargetsByKey[dependencyKey] ?: return@mapNotNull null
-          val externalSources = getExternalSourcePaths(dependencyTarget)
+          val externalSources = getExternalSourcePaths(context, snapshot, dependencyTarget)
           if (externalSources.isEmpty()) return@mapNotNull null
           addSourceDependencyLibrary(builder, dependencyKey, naming, externalSources, entitySource, vfuManager)
             ?.let { dependencyKey to it }
@@ -187,6 +191,7 @@ internal class BazelPythonWorkspaceImporter : BazelWorkspaceImporter, BazelWorks
     for ((targetKey, target) in allPythonTargets) {
       addModuleEntityFromTarget(
         context = context,
+        snapshot = snapshot,
         builder = builder,
         target = target,
         moduleName = naming.findOrFallback(NameSpace.MODULE, NAME_PRODUCER, targetKey),
@@ -199,9 +204,13 @@ internal class BazelPythonWorkspaceImporter : BazelWorkspaceImporter, BazelWorks
     return WorkspaceImporterResult.Success
   }
 
-  private fun getExternalSourcePaths(target: BuildTarget): List<Path> {
+  private fun getExternalSourcePaths(context: WorkspaceImporterContext, snapshot: WorkspaceSnapshot, target: BuildTarget): List<Path> {
     val pythonTarget = target.findBuildData<PythonBuildTarget>() ?: return emptyList()
-    return pythonTarget.externalSources?.getFiles()?.distinct()?.toList().orEmpty()
+    val localRepositories = snapshot.repoMapping.getLocalRepositories()
+    return pythonTarget.externalSources.getOutputLocations()
+      .mapNotNull { context.outputResolver.resolve(it, localRepositories) }
+      .distinct()
+      .toList()
   }
 
   private suspend fun onPostProcessing(context: WorkspaceImporterContext, snapshot: WorkspaceSnapshot): WorkspaceImporterResult {
@@ -217,7 +226,11 @@ internal class BazelPythonWorkspaceImporter : BazelWorkspaceImporter, BazelWorks
 
     context.project.connection.runWithServer { server ->
       context.project.serviceAsync<PythonResolveIndexService>()
-        .updatePythonResolveIndex(pyTargets, server.outFileHardLinks)
+        .updatePythonResolveIndex(
+          pythonTargets = pyTargets,
+          outFilesHardLink = server.outFileHardLinks,
+          execrootResolver = DefaultOutputLocationResolver.createExecrootResolving(context.bazelInfo),
+        )
     }
     return WorkspaceImporterResult.Success
   }
@@ -244,25 +257,31 @@ internal class BazelPythonWorkspaceImporter : BazelWorkspaceImporter, BazelWorks
     return snapshot.allTargets.filterBuildTarget<PythonBuildTarget>()
       .filter { (_, pyTarget) -> (pyTarget.interpreter) != null }
       .associateBy { (target, _) -> target.key }
-      .mapValues { (_, value) -> findOrAddSdk(value.second, context.project) }
+      .mapValues { (_, value) -> findOrAddSdk(context, snapshot, value.second, context.project) }
   }
 
-  private suspend fun findOrAddSdk(pythonTarget: PythonBuildTarget, project: Project): Sdk? {
+  private suspend fun findOrAddSdk(
+    context: WorkspaceImporterContext,
+    snapshot: WorkspaceSnapshot,
+    pythonTarget: PythonBuildTarget,
+    project: Project,
+  ): Sdk? {
     // Before this change we had toString() here so in case of null there would be "null"
     // This !! fails fast
     // TODO: Make make interpreter non-null
-    val interpreter = pythonTarget.interpreter
-                      ?: defaultInterpreter
-                      ?: return null
-    val sdkName = chooseSdkName(interpreter, project.name)
+    val interpreterLocation = pythonTarget.interpreter
+                              ?: defaultInterpreter
+                              ?: return null
+    val interpreterPath = context.outputResolver.resolve(interpreterLocation, snapshot.repoMapping.getLocalRepositories()) ?: return null
+    val sdkName = chooseSdkName(interpreterPath, project.name)
     val sdkTable = ProjectJdkTable.getInstance()
 
     val existingSdk = sdkTable.findJdk(sdkName, PythonSdkType.getInstance().toString())
     if (existingSdk != null) return existingSdk
 
-    return when (val r = createSdkFromPython(interpreter, project, sdkName)) {
+    return when (val r = createSdkFromPython(interpreterPath, project, sdkName)) {
       is com.jetbrains.python.Result.Failure -> {
-        logger.warn("Failed to create SDK for $interpreter: ${r.error}")
+        logger.warn("Failed to create SDK for $interpreterPath: ${r.error}")
         null
       }
 
@@ -304,6 +323,7 @@ internal class BazelPythonWorkspaceImporter : BazelWorkspaceImporter, BazelWorks
 
   private fun addModuleEntityFromTarget(
     context: WorkspaceImporterContext,
+    snapshot: WorkspaceSnapshot,
     builder: MutableEntityStorage,
     target: BuildTarget,
     moduleName: String,
@@ -330,9 +350,9 @@ internal class BazelPythonWorkspaceImporter : BazelWorkspaceImporter, BazelWorks
       }
 
     val pythonTarget = target.findBuildData<PythonBuildTarget>()
-    val interpreter = pythonTarget?.interpreter
-                      ?: defaultInterpreter
-    val sdkName = interpreter?.let { chooseSdkName(interpreter, context.project.name) }
+    val interpreterLocation = pythonTarget?.interpreter ?: defaultInterpreter
+    val interpreterPath = interpreterLocation?.let { context.outputResolver.resolve(it, snapshot.repoMapping.getLocalRepositories()) }
+    val sdkName = interpreterPath?.let { chooseSdkName(it, context.project.name) }
                   ?: chooseSystemSdkName(context.project.name)
     val sdkDependency = SdkDependency(SdkId(sdkName, PyNames.PYTHON_SDK_ID_NAME))
 

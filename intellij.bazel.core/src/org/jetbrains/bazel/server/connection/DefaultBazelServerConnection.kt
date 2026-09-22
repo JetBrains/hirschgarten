@@ -76,12 +76,11 @@ internal class DefaultBazelServerConnection(private val project: Project) : Baze
     val bazelInfo = bazelInfoResolver.resolveBazelInfo(bazelRunner, projectView, taskId)
     val bazelPathsResolver = BazelPathsResolver(bazelInfo)
 
-    val outFileHardLinks =
-      if (BazelFeatureFlags.hardLinkOutputFiles &&
-          !service<BazelApplicationContextService>().disableHardLinksOutputFiles)
-        DefaultBazelOutputFileHardLinks(project, bazelInfo)
-      else
-        BazelOutFileHardLinks.NONE
+    val outFileHardLinks = if (BazelFeatureFlags.hardLinkOutputFiles &&
+                               !service<BazelApplicationContextService>().disableHardLinksOutputFiles)
+      DefaultBazelOutputFileHardLinks(project, bazelInfo)
+    else
+      BazelOutFileHardLinks.NONE
 
     val executeService =
       ExecuteService(
@@ -137,7 +136,7 @@ internal class DefaultBazelServerConnection(private val project: Project) : Baze
       bazelInfo = bazelInfo,
       bazelPathsResolver = bazelPathsResolver,
       outFileHardLinks = outFileHardLinks,
-      outputResolver = DefaultOutputLocationResolver(bazelInfo, outFileHardLinks),
+      outputResolver = DefaultOutputLocationResolver.createHardlinkResolving(bazelInfo, outFileHardLinks),
       outputParser = OutputLocationParser(bazelPathsResolver, outFileHardLinks),
     )
   }

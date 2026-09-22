@@ -12,6 +12,7 @@ import org.jetbrains.bazel.sync.workspace.languages.java.sourceRoot.JvmPackagePr
 import org.jetbrains.bazel.test.framework.target.TestBuildTarget
 import org.jetbrains.bazel.workspace.indexAdditionalFiles.ProjectViewGlobSet
 import org.jetbrains.bazel.workspace.model.test.framework.createTestBuildTarget
+import org.jetbrains.bazel.workspace.model.test.framework.resolveTestLocation
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.junit.jupiter.api.Test
 import java.nio.file.Path
@@ -31,6 +32,7 @@ class SourceRootBuilderTest {
       target = target,
       testSourcesGlob = ProjectViewGlobSet.EMPTY,
       packagePrefixes = fixedPrefixes(emptyMap()),
+      resolveLocation = ::resolveTestLocation,
     )
 
     roots.map { it.rootType } shouldContainExactly listOf(JAVA_TEST_SOURCE_ROOT_TYPE)
@@ -48,6 +50,7 @@ class SourceRootBuilderTest {
       target = target,
       testSourcesGlob = ProjectViewGlobSet.EMPTY,
       packagePrefixes = fixedPrefixes(emptyMap()),
+      resolveLocation = ::resolveTestLocation,
     )
 
     roots.map { it.rootType } shouldContainExactly listOf(JAVA_SOURCE_ROOT_TYPE)
@@ -66,6 +69,7 @@ class SourceRootBuilderTest {
       target = target,
       testSourcesGlob = ProjectViewGlobSet.EMPTY,
       packagePrefixes = fixedPrefixes(emptyMap()),
+      resolveLocation = ::resolveTestLocation,
     )
 
     roots.map { it.rootType } shouldContainExactly listOf(JAVA_TEST_SOURCE_ROOT_TYPE)
@@ -86,6 +90,7 @@ class SourceRootBuilderTest {
       target = target,
       testSourcesGlob = glob,
       packagePrefixes = fixedPrefixes(emptyMap()),
+      resolveLocation = ::resolveTestLocation,
     )
 
     roots.first { it.sourcePath == matchingPath }.rootType shouldBe JAVA_TEST_SOURCE_ROOT_TYPE
@@ -106,6 +111,7 @@ class SourceRootBuilderTest {
       target = target,
       testSourcesGlob = ProjectViewGlobSet.EMPTY,
       packagePrefixes = fixedPrefixes(emptyMap()),
+      resolveLocation = ::resolveTestLocation,
     )
 
     roots.first { it.sourcePath == generatedPath }.generated shouldBe true
@@ -126,6 +132,7 @@ class SourceRootBuilderTest {
       target = target,
       testSourcesGlob = ProjectViewGlobSet.EMPTY,
       packagePrefixes = prefixes,
+      resolveLocation = ::resolveTestLocation,
     )
 
     roots.first { it.sourcePath == withPrefix }.packagePrefix shouldBe "com.example"

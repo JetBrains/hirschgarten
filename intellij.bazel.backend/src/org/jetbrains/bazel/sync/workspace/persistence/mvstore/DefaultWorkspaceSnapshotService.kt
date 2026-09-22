@@ -200,6 +200,7 @@ class DefaultWorkspaceSnapshotService(
       executableTargets = PersistentExecutableTargetsIndex(partialSnapshot = partial, generation = generation),
       syncConfigs = partial.syncConfigs,
       repoMapping = partial.repoMapping,
+      bazelInfo = partial.bazelInfo,
       metadata = partial.metadata,
     )
   }
@@ -294,6 +295,7 @@ class DefaultWorkspaceSnapshotService(
       targetGraph = snapshot.targetGraph,
       syncConfigs = snapshot.syncConfigs,
       repoMapping = snapshot.repoMapping,
+      bazelInfo = snapshot.bazelInfo,
       metadata = snapshot.metadata.copy(version = newGeneration),
 
       // extras
@@ -343,6 +345,7 @@ class DefaultWorkspaceSnapshotService(
       executableTargets = PersistentExecutableTargetsIndex(partialSnapshot = partial, generation = generation),
       syncConfigs = partial.syncConfigs,
       repoMapping = partial.repoMapping,
+      bazelInfo = partial.bazelInfo,
       metadata = partial.metadata,
     )
     // set BEFORE publishing, the debounce collector must skip the twin emission

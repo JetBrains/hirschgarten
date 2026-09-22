@@ -30,18 +30,20 @@ internal class BazelBytecodeViewerClassFileFinder : BytecodeViewerClassFileFinde
     return targetUtils.getTargetsForFile(vFile)
       .asSequence()
       .mapNotNull { targetUtils.getTargetDataForLabel<JvmBuildTarget>(it) }
-      .flatMap { it.rawBinaryOutputs.getFiles() }
-      .map { it.toCompiledClassesVFSRoot(project)?.toFullClassPath(targetElement, containing) }
-      .firstOrNull()
+      .flatMap { it.binaryOutputs.getOutputLocations() }
+      .mapNotNull { targetUtils.resolveExecrootOutputLocation(it) }
+      .firstNotNullOfOrNull { it.toCompiledClassesVFSRoot(project)?.toFullClassPath(element, containing) }
   }
 
   private fun Path.toCompiledClassesVFSRoot(project: Project): VirtualFile? {
     val isArchive = this.extension == "jar" || this.extension == "zip"
     val vfsManager = project.workspaceModel.getVirtualFileUrlManager()
+    val file = this.toVirtualFileUrl(vfsManager).virtualFile ?: return null
     return if (isArchive) {
-      this.toVirtualFileUrl(vfsManager).virtualFile?.let { JarFileSystem.getInstance().getJarRootForLocalFile(it) }
-    } else {
-      this.toVirtualFileUrl(vfsManager).virtualFile
+      JarFileSystem.getInstance().getJarRootForLocalFile(file)
+    }
+    else {
+      file
     }
   }
 
@@ -62,7 +64,8 @@ internal class BazelBytecodeViewerClassFileFinder : BytecodeViewerClassFileFinde
       }
       if (aClass is PsiAnonymousClass) {
         return parentName + JavaAnonymousClassesHelper.getName(aClass)
-      } else {
+      }
+      else {
         return parentName + JavaLocalClassesHelper.getName(aClass)
       }
     }

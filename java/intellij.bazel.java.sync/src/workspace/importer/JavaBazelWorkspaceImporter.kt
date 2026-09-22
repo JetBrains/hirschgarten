@@ -7,11 +7,13 @@ import com.intellij.platform.diagnostic.telemetry.helpers.use
 import com.intellij.platform.workspace.storage.EntitySource
 import com.intellij.platform.workspace.storage.MutableEntityStorage
 import com.intellij.platform.workspace.storage.entities
+import org.jetbrains.bazel.commons.getLocalRepositories
 import org.jetbrains.bazel.config.BazelJavaBackendBundle
 import org.jetbrains.bazel.config.bazelProjectName
 import org.jetbrains.bazel.performance.bspTracer
 import org.jetbrains.bazel.progress.withSubtask
 import org.jetbrains.bazel.sync.environment.projectCtx
+import org.jetbrains.bazel.sync.workspace.DefaultOutputLocationResolver
 import org.jetbrains.bazel.sync.workspace.importer.BazelWorkspaceImporter
 import org.jetbrains.bazel.sync.workspace.importer.GlobalNamingContext
 import org.jetbrains.bazel.sync.workspace.importer.GlobalNamingContextBuilder
@@ -28,7 +30,7 @@ import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
 import org.jetbrains.bazel.workspace.indexAdditionalFiles.ProjectViewGlobSet
 import org.jetbrains.bazel.workspacemodel.entities.CompiledSourceCodeInsideJarExcludeEntity
 import org.jetbrains.bsp.protocol.BuildTarget
-import org.jetbrains.bsp.protocol.id
+import org.jetbrains.bsp.protocol.OutputLocation
 import java.nio.file.Path
 
 internal class JavaBazelWorkspaceImporter : BazelWorkspaceImporter, BazelWorkspaceImporter.Named {
@@ -78,13 +80,16 @@ internal class JavaBazelWorkspaceImporter : BazelWorkspaceImporter, BazelWorkspa
       useRelaxedDependencyExpansion = true,
     ).mapNotNull { snapshot.targets.findTargetByKey(it, TargetLoadOptions.ALL) }.toList()
     targets = moduleTargets
+    val resolveLocation = locationResolver(context, snapshot)
     jvmResolved = JvmBuildTargetResolver(
       allTargets = snapshot.targets.allTargets().associateBy { it.key },
       targetsToImport = moduleTargets.associateBy { it.key },
       javaSyncConfig = snapshot.syncConfigs.filterIsInstance<JavaWorkspaceSyncConfig>().first(),
+      resolveLocation = resolveLocation,
+      resolveExecrootLocation = execrootLocationResolver(context, snapshot),
     ).resolveAll()
 
-    plan = JvmImportPlan(rawTargets = moduleTargets, jvmResolved = jvmResolved)
+    plan = JvmImportPlan(rawTargets = moduleTargets, jvmResolved = jvmResolved, resolveLocation = resolveLocation)
     plan.declareNames(naming)
 
     // TODO: check why is this even needed - can't we just write SdkEntity into the project workspace model
@@ -140,6 +145,7 @@ internal class JavaBazelWorkspaceImporter : BazelWorkspaceImporter, BazelWorkspa
     entitySource: EntitySource,
     naming: GlobalNamingContext,
   ) {
+    val resolveLocation = locationResolver(context, snapshot)
     val packagePrefixes = DefaultJvmPackagePrefixCalculator(
       sourceRootOptimizationMode = javaSyncConfig.sourceRootOptimizationMode,
     ).also { it.calculate(targets) }
@@ -161,6 +167,8 @@ internal class JavaBazelWorkspaceImporter : BazelWorkspaceImporter, BazelWorkspa
         .entities<CompiledSourceCodeInsideJarExcludeEntity>()
         .firstOrNull(),
       dotIdeaPath = commonSyncConfig.dotIdeaPath,
+      resolveLocation = resolveLocation,
+      resolveExecrootLocation = execrootLocationResolver(context, snapshot),
     )
 
     bspTracer.spanBuilder("load.modules.ms").use {
@@ -168,6 +176,17 @@ internal class JavaBazelWorkspaceImporter : BazelWorkspaceImporter, BazelWorkspa
     }
 
     javacOptions = calculateAllJavacOptions(importContext)
+  }
+
+  private fun locationResolver(context: WorkspaceImporterContext, snapshot: WorkspaceSnapshot): (OutputLocation) -> Path? {
+    val localRepositories = snapshot.repoMapping.getLocalRepositories()
+    return { context.outputResolver.resolve(it, localRepositories) }
+  }
+
+  private fun execrootLocationResolver(context: WorkspaceImporterContext, snapshot: WorkspaceSnapshot): (OutputLocation) -> Path? {
+    val localRepositories = snapshot.repoMapping.getLocalRepositories()
+    val resolver = DefaultOutputLocationResolver.createExecrootResolving(context.bazelInfo)
+    return { resolver.resolve(it, localRepositories) }
   }
 
   private fun calculateAllJavacOptions(ctx: ImportContext): HashMap<String, String> {

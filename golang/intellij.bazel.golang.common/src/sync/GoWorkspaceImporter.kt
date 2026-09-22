@@ -8,7 +8,6 @@ import com.intellij.openapi.application.edtWriteAction
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.NlsContexts
 import com.intellij.openapi.vfs.toNioPathOrNull
-import com.intellij.platform.util.progress.SequentialProgressReporter
 import com.intellij.platform.workspace.jps.entities.ContentRootEntity
 import com.intellij.platform.workspace.jps.entities.ModuleEntity
 import com.intellij.platform.workspace.jps.entities.ModuleSourceDependency
@@ -16,7 +15,7 @@ import com.intellij.platform.workspace.storage.EntitySource
 import com.intellij.platform.workspace.storage.MutableEntityStorage
 import com.intellij.platform.workspace.storage.impl.url.toVirtualFileUrl
 import com.intellij.util.containers.Interner
-import org.jetbrains.bazel.config.BazelFeatureFlags
+import org.jetbrains.bazel.commons.getLocalRepositories
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.golang.workspace.GO_WORKSPACE_MODULE_NAME
@@ -35,7 +34,6 @@ import org.jetbrains.bazel.utils.filterPathsThatDontContainEachOther
 import org.jetbrains.bazel.workspacemodel.entities.BazelGoPackageEntity
 import org.jetbrains.bazel.workspacemodel.entities.BazelGoTargetEntity
 import org.jetbrains.bazel.workspacemodel.entities.WorkspaceModelTargetKey
-import org.jetbrains.bsp.protocol.TaskId
 import java.nio.file.Path
 
 internal class GoWorkspaceImporter : BazelWorkspaceImporter, BazelWorkspaceImporter.Named {
@@ -66,11 +64,11 @@ internal class GoWorkspaceImporter : BazelWorkspaceImporter, BazelWorkspaceImpor
       }
 
       is WorkspaceImporterPhase.WorkspaceApply -> {
-        onWorkspaceApply(context, phase.builder, phase.entitySource)
+        onWorkspaceApply(context, snapshot, phase.builder, phase.entitySource)
       }
 
       WorkspaceImporterPhase.PostProcessing -> {
-        onPostProcessing(context)
+        onPostProcessing(context, snapshot)
       }
 
       else -> {}
@@ -80,11 +78,12 @@ internal class GoWorkspaceImporter : BazelWorkspaceImporter, BazelWorkspaceImpor
 
   private fun onWorkspaceApply(
     context: WorkspaceImporterContext,
+    snapshot: WorkspaceSnapshot,
     builder: MutableEntityStorage,
     entitySource: EntitySource,
   ) {
-    addGoWorkspaceModule(builder, context, entitySource)
-    addGoPackageEntities(builder, context, entitySource)
+    addGoWorkspaceModule(builder, context, snapshot, entitySource)
+    addGoPackageEntities(builder, context, snapshot, entitySource)
   }
 
   /**
@@ -95,6 +94,7 @@ internal class GoWorkspaceImporter : BazelWorkspaceImporter, BazelWorkspaceImpor
   private fun addGoWorkspaceModule(
     builder: MutableEntityStorage,
     context: WorkspaceImporterContext,
+    snapshot: WorkspaceSnapshot,
     entitySource: EntitySource,
   ) {
     val project = context.project
@@ -102,7 +102,10 @@ internal class GoWorkspaceImporter : BazelWorkspaceImporter, BazelWorkspaceImpor
     val workspacePath = project.rootDir.toNioPath()
 
     val goSourcesParentDirectories = goTargets.values
-      .flatMap { it.sources.getFiles() }
+      .flatMap {
+        it.sources.getOutputLocations()
+          .mapNotNull { location -> context.outputResolver.resolve(location, snapshot.repoMapping.getLocalRepositories()) }
+      }
       .filter { it.startsWith(workspacePath) }  // External files are handled in GoExternalLibraryManager
       .map { source -> source.parent }
       .toSet()
@@ -130,6 +133,7 @@ internal class GoWorkspaceImporter : BazelWorkspaceImporter, BazelWorkspaceImpor
   private fun addGoPackageEntities(
     builder: MutableEntityStorage,
     context: WorkspaceImporterContext,
+    snapshot: WorkspaceSnapshot,
     entitySource: EntitySource,
   ) {
     val inferredImportPath = inferImportPath(goTargets)
@@ -140,7 +144,10 @@ internal class GoWorkspaceImporter : BazelWorkspaceImporter, BazelWorkspaceImpor
       // Group targets with the same importpath, see doc for BazelGoPackageEntity
       val packageEntity = builder addEntity BazelGoPackageEntity(
         importPath = importPathInterner.intern(importPath),
-        sources = goTargets.flatMap { it.value.sources.getFiles() }
+        sources = goTargets.flatMap { (_, target) ->
+          target.sources.getOutputLocations()
+            .mapNotNull { location -> context.outputResolver.resolve(location, snapshot.repoMapping.getLocalRepositories()) }
+        }
           .distinct()
           .map { it.toVirtualFileUrl(context.vfuManager) },
         directDepsImportPaths = goTargets.asSequence()
@@ -195,24 +202,26 @@ internal class GoWorkspaceImporter : BazelWorkspaceImporter, BazelWorkspaceImpor
     return inferredImportPath
   }
 
-  private suspend fun onPostProcessing(context: WorkspaceImporterContext) {
-    calculateAndAddGoSdk(context.progressReporter, context.project, context.taskId)
+  private suspend fun onPostProcessing(context: WorkspaceImporterContext, snapshot: WorkspaceSnapshot) {
+    calculateAndAddGoSdk(context, snapshot, context.project)
     GoWrongSdkConfigurationNotificationProvider.disableNotification(context.project)
     GoExternalLibraryManager.getInstance(context.project).update()
   }
 
   private suspend fun calculateAndAddGoSdk(
-    reporter: SequentialProgressReporter,
-    project: Project,
-    taskId: TaskId,
+    context: WorkspaceImporterContext,
+    snapshot: WorkspaceSnapshot, project: Project,
   ) = project.syncConsole.withSubtask(
-    reporter = reporter,
-    subtaskId = taskId.subTask("calculate-and-add-go-sdk"),
+    reporter = context.progressReporter,
+    subtaskId = context.taskId.subTask("calculate-and-add-go-sdk"),
     text = BazelPluginBundle.message("console.task.model.calculate.add.go.fetched.sdk"),
   ) {
     goTargets
       .values
-      .firstNotNullOfOrNull { it.sdkHomePath }
+      .firstNotNullOfOrNull { goTarget ->
+        goTarget.sdkHomePath
+          ?.let { context.outputResolver.resolve(it, snapshot.repoMapping.getLocalRepositories()) }
+      }
       .let { it ?: GoSdkUtil.suggestSdkDirectory()?.toNioPathOrNull() }
       ?.let { path -> GoSdk.fromHomePath(path.toString()) }
       ?.setAsUsed(project)

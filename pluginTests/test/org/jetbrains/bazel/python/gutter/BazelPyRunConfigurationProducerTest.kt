@@ -23,6 +23,8 @@ import org.jetbrains.bazel.target.targetStorage
 import org.jetbrains.bazel.test.framework.target.TestBuildTarget
 import org.jetbrains.bazel.ui.gutters.BazelContainingTargetsLocationsProvider
 import org.jetbrains.bazel.ui.gutters.NonImportedBuildTarget
+import org.jetbrains.bazel.workspace.model.test.framework.testLocation
+import org.jetbrains.bsp.protocol.OutputLocationCollection
 import org.jetbrains.bsp.protocol.SourceFileCollection
 import org.junit.Before
 import org.junit.Test
@@ -355,10 +357,10 @@ internal class BazelPyRunConfigurationProducerTest : CodeInsightFixtureTestCase<
           data = listOf(
             PythonBuildTarget(
               version = "3.8",
-              interpreter = Path.of(myFixture.tempDirPath, "python3"),
+              interpreter = testLocation(Path.of(myFixture.tempDirPath, "python3")),
               listOf(),
-              SourceFileCollection.EMPTY,
-              SourceFileCollection.EMPTY,
+              OutputLocationCollection.EMPTY,
+              OutputLocationCollection.EMPTY,
               mainFile = mainFile?.virtualFile?.toNioPath(),
               mainModule = mainModule,
             ),

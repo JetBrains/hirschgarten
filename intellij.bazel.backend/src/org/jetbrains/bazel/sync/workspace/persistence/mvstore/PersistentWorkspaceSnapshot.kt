@@ -1,6 +1,7 @@
 package org.jetbrains.bazel.sync.workspace.persistence.mvstore
 
 import org.jetbrains.annotations.ApiStatus
+import org.jetbrains.bazel.commons.BazelInfo
 import org.jetbrains.bazel.commons.RepoMapping
 import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.label.DependencyLabel
@@ -26,6 +27,7 @@ class PersistentWorkspaceSnapshot(
   val targetGraph: WorkspaceTargetGraph,
   val syncConfigs: List<WorkspaceSyncConfig>,
   val repoMapping: RepoMapping,
+  val bazelInfo: BazelInfo,
   val metadata: WorkspaceSnapshotMetadata,
 
   // extra things

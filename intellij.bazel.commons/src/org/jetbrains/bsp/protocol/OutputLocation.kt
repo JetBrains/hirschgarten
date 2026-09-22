@@ -1,5 +1,6 @@
 package org.jetbrains.bsp.protocol
 
+import com.intellij.openapi.util.io.OSAgnosticPathUtil
 import com.intellij.util.containers.Interner
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.annotations.Debug
@@ -7,6 +8,9 @@ import org.jetbrains.bazel.commons.LocalRepositoryMapping
 import org.jetbrains.bazel.commons.RepoMapping
 import org.jetbrains.bazel.commons.getLocalRepositories
 import java.nio.file.Path
+import kotlin.io.path.Path
+import kotlin.io.path.invariantSeparatorsPathString
+import kotlin.io.path.pathString
 
 /**
  * Represent location root under `bazel-out`, e.g. "k8-fastbuild/bin"
@@ -99,6 +103,34 @@ fun OutputLocation.toExecrootPath(): String = when (this) {
 
 internal fun joinNonEmpty(vararg parts: String): String = parts.filter { it.isNotEmpty() }.joinToString("/")
 
+
+/**
+ * Obtain relative path, for real path resolution use [OutputLocationResolver]
+ */
+@get:ApiStatus.Internal
+val OutputLocation.relativeNioPath: Path
+  get() = when (this) {
+    is OutputLocation.Workspace -> Path(relativePath)
+    is OutputLocation.Output -> Path(relativePath)
+    is OutputLocation.External -> Path(relativePath)
+    is OutputLocation.Host -> Path(absolutePath)
+  }
+
+@ApiStatus.Internal
+fun OutputLocation.mapPath(transform: (path: Path) -> Path): OutputLocation {
+  fun Path.toOutputRelativePath(): String = this.invariantSeparatorsPathString.also { require(!OSAgnosticPathUtil.isAbsolute(it)) }
+
+  fun OutputLocation.withNioPath(path: Path): OutputLocation = when (this) {
+    is OutputLocation.Workspace -> copy(relativePath = path.toOutputRelativePath())
+    is OutputLocation.Output -> copy(relativePath = path.toOutputRelativePath())
+    is OutputLocation.External -> copy(relativePath = path.toOutputRelativePath())
+    is OutputLocation.Host -> copy(absolutePath = path.pathString.also { require(OSAgnosticPathUtil.isAbsolute(it)) })
+  }
+
+  return withNioPath(transform(relativeNioPath))
+}
+
+
 @Debug.Renderer(hasChildren = "!isEmpty()", childrenArray = "arrayOfLocations()")
 @ApiStatus.Internal
 interface OutputLocationCollection {
@@ -129,10 +161,4 @@ interface OutputLocationResolver {
    * @return `null` when the stored path is not a valid path on this platform.
    */
   fun resolve(location: OutputLocation, localOverride: LocalRepositoryMapping? = null): Path?
-
-  companion object {
-    val NOOP: OutputLocationResolver = object : OutputLocationResolver {
-      override fun resolve(location: OutputLocation, localOverride: LocalRepositoryMapping?): Path? = null
-    }
-  }
 }
