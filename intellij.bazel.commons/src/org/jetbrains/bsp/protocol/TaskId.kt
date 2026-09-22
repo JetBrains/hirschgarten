@@ -1,9 +1,7 @@
 package org.jetbrains.bsp.protocol
 
-import org.jetbrains.annotations.ApiStatus
 import kotlin.random.Random
 
-@ApiStatus.Internal
 data class TaskGroupId(val id: String) {
   fun task(taskId: String): TaskId = TaskId(this, taskId)
 
@@ -17,10 +15,10 @@ data class TaskGroupId(val id: String) {
 
 /**
  * Represents hierarchical tasks.
+ * Used as the build ID in Bazel build and sync events, allowing listeners to identify tasks.
  * Note: the task tree presentation in UI does not match the TaskId hierarchy 1:1,
  * however, respects the parent-child relationship.
  */
-@ApiStatus.Internal
 data class TaskId(val taskGroupId: TaskGroupId, val id: String, val parent: TaskId? = null) {
   init {
     if (parent != null && parent.taskGroupId != taskGroupId)
