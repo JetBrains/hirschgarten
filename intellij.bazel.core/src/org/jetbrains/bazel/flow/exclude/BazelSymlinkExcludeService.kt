@@ -87,7 +87,7 @@ class BazelSymlinkExcludeService(
 
   @VisibleForTesting
   @RequiresBackgroundThread(generateAssertion = false /* IJPL-115548 */)
-  @RequiresReadLockAbsence(generateAssertion = false /* IJPL-115548 */)
+  @RequiresReadLockAbsence
   suspend fun refreshWorkspaceModel() {
     logger.info("Refreshing workspace model with excluded symlinks")
     val workspaceModel = WorkspaceModel.getInstance(project)
