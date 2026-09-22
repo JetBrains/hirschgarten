@@ -12,6 +12,7 @@ import org.jetbrains.bazel.inspections.JavaStrictDependenciesInspection
 import org.jetbrains.bazel.test.framework.BazelTestApplication
 import org.jetbrains.bazel.test.framework.bazelSyncCodeInsightFixture
 import org.jetbrains.bazel.test.framework.checkHighlighting
+import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.condition.DisabledOnOs
 import org.junit.jupiter.api.condition.OS
@@ -30,6 +31,28 @@ class JavaStrictDependenciesTest {
     fixture.performBazelSync()
     withContext(Dispatchers.EDT) {
       fixture.checkHighlighting("src/main/com/example/a/A.java")
+    }
+  }
+
+  // https://youtrack.jetbrains.com/issue/BAZEL-3569
+  @Test
+  fun testStrictDepsWithClassFromDirectAndIndirectDependency() = runBlocking(Dispatchers.Default) {
+    fixture.copyBazelTestProject("redcodes/strict_dependencies/java_strict_deps_direct_and_indirect")
+    fixture.enableInspections(JavaStrictDependenciesInspection())
+    fixture.performBazelSync()
+    withContext(Dispatchers.EDT) {
+      fixture.checkHighlighting("Main.java")
+    }
+  }
+
+  // https://youtrack.jetbrains.com/issue/BAZEL-3569
+  @Test
+  fun testStrictDepsWithClassCopiedIntoDirectAndIndirectDependency() = runBlocking(Dispatchers.Default) {
+    fixture.copyBazelTestProject("redcodes/strict_dependencies/java_strict_deps_direct_and_indirect_copies")
+    fixture.enableInspections(JavaStrictDependenciesInspection())
+    fixture.performBazelSync()
+    withContext(Dispatchers.EDT) {
+      fixture.checkHighlighting("Main.java")
     }
   }
 
