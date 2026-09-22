@@ -1,2 +1,2 @@
-org/jetbrains/bsp/protocol/TaskId
+kotlin/jvm/internal/DefaultConstructorMarker
 org/jetbrains/bsp/protocol/TextDocumentIdentifier

@@ -105,3 +105,30 @@ f:org.jetbrains.bsp.protocol.PublishDiagnosticsParams
 - f:getTaskId():org.jetbrains.bsp.protocol.TaskId
 - f:getTextDocument():org.jetbrains.bsp.protocol.TextDocumentIdentifier
 - hashCode():I
+f:org.jetbrains.bsp.protocol.TaskGroupId
+- sf:Companion:org.jetbrains.bsp.protocol.TaskGroupId$Companion
+- <init>(java.lang.String):V
+- f:component1():java.lang.String
+- f:copy(java.lang.String):org.jetbrains.bsp.protocol.TaskGroupId
+- bs:copy$default(org.jetbrains.bsp.protocol.TaskGroupId,java.lang.String,I,java.lang.Object):org.jetbrains.bsp.protocol.TaskGroupId
+- equals(java.lang.Object):Z
+- f:getId():java.lang.String
+- hashCode():I
+- f:task(java.lang.String):org.jetbrains.bsp.protocol.TaskId
+f:org.jetbrains.bsp.protocol.TaskGroupId$Companion
+- f:getEMPTY():org.jetbrains.bsp.protocol.TaskGroupId
+f:org.jetbrains.bsp.protocol.TaskId
+- <init>(org.jetbrains.bsp.protocol.TaskGroupId,java.lang.String,org.jetbrains.bsp.protocol.TaskId):V
+- b:<init>(org.jetbrains.bsp.protocol.TaskGroupId,java.lang.String,org.jetbrains.bsp.protocol.TaskId,I,kotlin.jvm.internal.DefaultConstructorMarker):V
+- f:component1():org.jetbrains.bsp.protocol.TaskGroupId
+- f:component2():java.lang.String
+- f:component3():org.jetbrains.bsp.protocol.TaskId
+- f:copy(org.jetbrains.bsp.protocol.TaskGroupId,java.lang.String,org.jetbrains.bsp.protocol.TaskId):org.jetbrains.bsp.protocol.TaskId
+- bs:copy$default(org.jetbrains.bsp.protocol.TaskId,org.jetbrains.bsp.protocol.TaskGroupId,java.lang.String,org.jetbrains.bsp.protocol.TaskId,I,java.lang.Object):org.jetbrains.bsp.protocol.TaskId
+- equals(java.lang.Object):Z
+- f:getId():java.lang.String
+- f:getParent():org.jetbrains.bsp.protocol.TaskId
+- f:getTaskGroupId():org.jetbrains.bsp.protocol.TaskGroupId
+- hashCode():I
+- f:subTask(java.lang.String):org.jetbrains.bsp.protocol.TaskId
+- f:uniqueSubTask(java.lang.String):org.jetbrains.bsp.protocol.TaskId
