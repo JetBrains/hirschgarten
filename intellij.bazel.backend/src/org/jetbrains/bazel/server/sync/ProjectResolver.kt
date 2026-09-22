@@ -256,7 +256,10 @@ class ProjectResolver(
     coroutineScope {
       val aspects = listOf(ASPECT_NAME)
       val taskLogger = taskEventsHandler.asLogger(taskId)
-      val outputGroups = mutableListOf(OutputGroups.INFO.groupName, OutputGroups.SYNC.groupName)
+      val outputGroups = mutableListOf(OutputGroups.INFO.groupName)
+      if (BazelFeatureFlags.isSyncRequestSourcesEnabled) {
+        outputGroups.add(OutputGroups.SYNC.groupName)
+      }
       if (build) {
         outputGroups.add(OutputGroups.BUILD.groupName)
       }

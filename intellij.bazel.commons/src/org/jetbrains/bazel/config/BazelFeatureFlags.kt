@@ -8,6 +8,7 @@ import org.jetbrains.annotations.VisibleForTesting
 object BazelFeatureFlags {
   @VisibleForTesting
   const val BUILD_PROJECT_ON_SYNC = "bazel.build.project.on.sync"
+  private const val SYNC_REQUEST_SOURCES = "bazel.sync.request.sources"
   private const val SHORTEN_MODULE_LIBRARY_NAMES = "bsp.shorten.module.library.names"
   private const val EXCLUDE_COMPILED_SOURCE_CODE_INSIDE_JARS = "bsp.exclude.compiled.source.code.inside.jars"
   private const val SYMLINK_SCAN_MAX_DEPTH = "bazel.symlink.scan.max.depth"
@@ -41,6 +42,9 @@ object BazelFeatureFlags {
 
   val isBuildProjectOnSyncEnabled: Boolean
     get() = isEnabled(BUILD_PROJECT_ON_SYNC)
+
+  val isSyncRequestSourcesEnabled: Boolean
+    get() = isEnabled(SYNC_REQUEST_SOURCES)
 
   val isShortenModuleLibraryNamesEnabled: Boolean
     get() = isEnabled(SHORTEN_MODULE_LIBRARY_NAMES)
