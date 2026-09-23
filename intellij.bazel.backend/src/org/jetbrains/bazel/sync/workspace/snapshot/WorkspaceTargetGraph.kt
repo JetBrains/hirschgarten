@@ -92,12 +92,13 @@ interface WorkspaceTargetGraph {
   ): Sequence<WorkspaceTargetKey>
 
   /**
-   * Find all transitive successors to [targetKey] excluding traversal over root targets
+   * Find transitive successors of [targetKey]. Skip root targets only on direct edges from [targetKey].
+   * Include root targets reached on later edges.
    *
    * @param targetKey Target key
    * @param useRelaxedDependencyExpansion Ignore propagated aspect when traversing through dependencies
    *
-   * @return Sequence of all transitive successors of [targetKey] exclusing root targets
+   * @return Transitive successors of [targetKey]
    */
   fun findAllTransitiveSuccessorsWithoutRootTargets(
     targetKey: WorkspaceTargetKey,
@@ -298,14 +299,26 @@ internal class WorkspaceTargetGraphImpl internal constructor(
       return emptySequence()
     }
     val allSuccessors = if (useRelaxedDependencyExpansion) id2RelaxedAllSuccessors else id2AllSuccessors
-    return allSuccessors[targetId]
-      .asSequence()
-      .filterNot { depId -> rootTargetIds.contains(depId) }
-      .flatMap { depId ->
-        computeTransitiveSuccessorIds(depId, useRelaxedDependencyExpansion)
-          .asSequence() + sequenceOf(depId)
+    val compileSuccessors = if (useRelaxedDependencyExpansion) id2RelaxedCompileSuccessors else id2CompileSuccessors
+    return sequence {
+      val visited = IntOpenHashSet()
+      val toVisit = IntArrayList()
+      for (successorId in allSuccessors[targetId]) {
+        if (!rootTargetIds.contains(successorId) && visited.add(successorId)) {
+          toVisit.add(successorId)
+        }
       }
-      .map { transitiveSuccId -> id2WorkspaceTarget[transitiveSuccId] }
+      var index = 0
+      while (index < toVisit.size) {
+        val currentId = toVisit.getInt(index++)
+        yield(id2WorkspaceTarget[currentId])
+        for (successorId in compileSuccessors[currentId]) {
+          if (visited.add(successorId)) {
+            toVisit.add(successorId)
+          }
+        }
+      }
+    }
   }
 
   private fun computeTransitiveSuccessorIds(targetId: Int, useRelaxedDependencyExpansion: Boolean): IntArray =

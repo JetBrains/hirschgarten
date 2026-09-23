@@ -121,6 +121,110 @@ class WorkspaceTargetGraphTest {
   @DisplayName("WorkspaceTargetGraph.findAllTransitiveSuccessorsWithoutRootTargets")
   inner class FindAllTransitiveSuccessorsWithoutRootTargetsTest {
     @Test
+    fun `should visit shared descendants once across many branches`() {
+      val leaves = (0 until 200).map { workspaceTarget("//leaf$it") }
+      val shared = workspaceTarget("//shared", compileDeps = (0 until 200).map { "//leaf$it" to null })
+      val branches = (0 until 200).map { workspaceTarget("//branch$it", compileDeps = listOf("//shared" to null)) }
+      val root = workspaceTarget("//root", compileDeps = (0 until 200).map { "//branch$it" to null })
+      val graph = WorkspaceTargetGraphBuilder.build(setOf(root.key), listOf(root, shared) + branches + leaves)
+
+      val result = graph.findAllTransitiveSuccessorsWithoutRootTargets(root.key).toList()
+
+      result.size shouldBe branches.size + leaves.size + 1
+      result.toSet() shouldBe (branches + shared + leaves).map { it.key }.toSet()
+    }
+
+    @Test
+    fun `should visit each target once in a cycle`() {
+      val root = workspaceTarget("//root", compileDeps = listOf("//first" to null))
+      val first = workspaceTarget("//first", compileDeps = listOf("//second" to null))
+      val second = workspaceTarget("//second", compileDeps = listOf("//first" to null, "//root" to null))
+      val graph = buildGraph(listOf(root), root, first, second)
+
+      val result = graph.findAllTransitiveSuccessorsWithoutRootTargets(root.key).toList()
+
+      result.toSet() shouldBe setOf(root.key, first.key, second.key)
+      result.size shouldBe 3
+    }
+
+    @Test
+    fun `should include a direct root successor reached through a deeper path`() {
+      val leaf = workspaceTarget("//leaf")
+      val directRoot = workspaceTarget("//directRoot", compileDeps = listOf("//leaf" to null))
+      val middle = workspaceTarget("//middle", compileDeps = listOf("//directRoot" to null))
+      val root = workspaceTarget("//root", compileDeps = listOf("//directRoot" to null, "//middle" to null))
+      val graph = buildGraph(listOf(root, directRoot), root, directRoot, middle, leaf)
+
+      val result = graph.findAllTransitiveSuccessorsWithoutRootTargets(root.key).toSet()
+
+      result shouldBe setOf(middle.key, directRoot.key, leaf.key)
+    }
+
+    @Test
+    fun `should follow runtime edges only from the requested target`() {
+      val compileLeaf = workspaceTarget("//compileLeaf")
+      val runtimeLeaf = workspaceTarget("//runtimeLeaf")
+      val compileChild = workspaceTarget("//compileChild", runtimeDeps = listOf("//runtimeLeaf"))
+      val runtimeChild = workspaceTarget(
+        "//runtimeChild",
+        compileDeps = listOf("//compileLeaf" to null),
+        runtimeDeps = listOf("//runtimeLeaf"),
+      )
+      val root = workspaceTarget(
+        "//root",
+        compileDeps = listOf("//compileChild" to null),
+        runtimeDeps = listOf("//runtimeChild"),
+      )
+      val graph = buildGraph(listOf(root), root, compileChild, runtimeChild, compileLeaf, runtimeLeaf)
+
+      val result = graph.findAllTransitiveSuccessorsWithoutRootTargets(root.key).toSet()
+
+      result shouldBe setOf(compileChild.key, runtimeChild.key, compileLeaf.key)
+    }
+
+    @Test
+    fun `should keep configured successors distinct`() {
+      val firstLeaf = workspaceTarget("//firstLeaf")
+      val secondLeaf = workspaceTarget("//secondLeaf")
+      val first = workspaceTarget("//lib", configuration = "first", compileDeps = listOf("//firstLeaf" to null))
+      val second = workspaceTarget("//lib", configuration = "second", compileDeps = listOf("//secondLeaf" to null))
+      val root = workspaceTarget("//root", compileDeps = listOf("//lib" to "first"))
+      val graph = buildGraph(listOf(root), root, first, second, firstLeaf, secondLeaf)
+
+      val result = graph.findAllTransitiveSuccessorsWithoutRootTargets(root.key).toSet()
+
+      result shouldBe setOf(first.key, firstLeaf.key)
+    }
+
+    @Test
+    fun `should use strict or relaxed edges at each depth`() {
+      val plainLeaf = workspaceTarget("//plainLeaf")
+      val shadowLeaf = shadowTarget("//shadowLeaf", aspectIds = listOf("aspect"))
+      val plain = workspaceTarget("//dep", compileDeps = listOf("//plainLeaf" to null))
+      val shadow = shadowTarget("//dep", aspectIds = listOf("aspect")).copy(
+        dependencies = listOf(DependencyLabel(WorkspaceTargetKey(Label.parse("//shadowLeaf")), DependencyLabelKind.COMPILE)),
+      )
+      val otherConfiguration = shadowTarget("//dep", aspectIds = listOf("aspect")).copy(
+        key = WorkspaceTargetKey(
+          label = Label.parse("//dep"),
+          configuration = WorkspaceConfigurationId.of("other"),
+          aspectIds = WorkspaceAspectIds.of(listOf("aspect")),
+        ),
+      )
+      val root = workspaceTargetWithShadowDeps(
+        aspectIds = emptyList(),
+        rawDeps = listOf(WorkspaceTargetKey(Label.parse("//dep"))),
+      )
+      val graph = buildGraph(listOf(root), root, plain, shadow, otherConfiguration, plainLeaf, shadowLeaf)
+
+      val strict = graph.findAllTransitiveSuccessorsWithoutRootTargets(root.key).toSet()
+      val relaxed = graph.findAllTransitiveSuccessorsWithoutRootTargets(root.key, useRelaxedDependencyExpansion = true).toSet()
+
+      strict shouldBe setOf(plain.key, plainLeaf.key)
+      relaxed shouldBe setOf(plain.key, shadow.key, plainLeaf.key, shadowLeaf.key)
+    }
+
+    @Test
     fun `should return direct and transitive successors including root targets that are not direct successors`() {
       val f = workspaceTarget("//f")
       val g = workspaceTarget("//g")
