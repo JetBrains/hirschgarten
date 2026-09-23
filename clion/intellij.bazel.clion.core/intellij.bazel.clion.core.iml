@@ -15,6 +15,7 @@
     <orderEntry type="module" module-name="intellij.bazel.backend" />
     <orderEntry type="module" module-name="intellij.platform.core" />
     <orderEntry type="module" module-name="intellij.platform.lang" />
+    <orderEntry type="module" module-name="intellij.platform.execution" />
     <orderEntry type="module" module-name="intellij.platform.analysis" />
     <orderEntry type="module" module-name="intellij.clion.runFile" />
     <orderEntry type="module" module-name="intellij.cidr.projectModel" />
