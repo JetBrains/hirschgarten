@@ -338,7 +338,7 @@ class BazelRunnerBuilderTest {
         "--curses=no",
         "--color=yes",
         "--noprogress_in_terminal_title",
-        "in1",
+        "\"in1\"",
       )
   }
 
@@ -362,7 +362,7 @@ class BazelRunnerBuilderTest {
         "--curses=no",
         "--color=yes",
         "--noprogress_in_terminal_title",
-        "in1 + in2 - ex1 - ex2",
+        "\"in1\" + \"in2\" - \"ex1\" - \"ex2\"",
       )
   }
 
@@ -386,7 +386,7 @@ class BazelRunnerBuilderTest {
         "flag1",
         "flag2",
         "--",
-        "in1",
+        "\"in1\"",
       )
   }
 

@@ -125,7 +125,7 @@ class BspProjectMapper(
     if (patterns.isEmpty()) return ""
     val expr = buildString {
       append("buildfiles(set(")
-      patterns.joinTo(this, separator = " ") { it.toString() }
+      patterns.joinTo(this, separator = " ") { "\"$it\"" }
       append("))")
     }
 

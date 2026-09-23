@@ -15,6 +15,7 @@ import org.jetbrains.bsp.protocol.BazelTaskLogger
 import org.jetbrains.bsp.protocol.TaskId
 import org.jetbrains.bsp.protocol.asLogger
 import java.nio.file.Path
+import kotlin.io.path.invariantSeparatorsPathString
 import kotlin.io.path.pathString
 
 /**
@@ -72,7 +73,7 @@ class BazelRunner(
 
     /** Special version of `query` for asking Bazel about files instead of a target */
     fun fileQuery(filePaths: List<Path>, builder: BazelCommand.QueryExpression.() -> Unit = {}): BazelCommand.QueryExpression {
-      val fileString = filePaths.joinToString(prefix = "set(", separator = " ", postfix = ")")
+      val fileString = filePaths.joinToString(prefix = "set(", separator = " ", postfix = ")") { "\"${it.invariantSeparatorsPathString}\"" }
       return queryExpression(fileString, builder)
     }
 

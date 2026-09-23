@@ -241,10 +241,14 @@ class LabelParser {
   private fun parseImpl(value: String): Label {
     if (value.endsWith(SYNTHETIC_TAG)) return synthetic(value)
     val normalized = value.trim().trimStart('@')
-    if (normalized.contains(" ")) throw IllegalArgumentException("Label $normalized cannot have whitespaces")
     val repoName = normalized.substringBefore("//", "")
     val pathAndName = normalized.substringAfter("//")
     val packagePath = pathAndName.substringBefore(":")
+
+    // Package names are allowed to have spaces, but target names are not: https://bazel.build/concepts/labels
+    val targetName = pathAndName.substringAfter(":", packagePath.substringAfterLast(PATH_SEGMENT_SEPARATOR))
+    if (targetName.contains(" ")) throw IllegalArgumentException("Label \"$normalized\" is not allowed to have whitespaces in target name")
+
     val packageSegments = packagePath.split(PATH_SEGMENT_SEPARATOR).mapNotNull { if (it.isEmpty()) null else it.intern() }
     val packageType =
       if (packageSegments.lastOrNull() == ALL_PACKAGES_BENEATH) {
@@ -252,7 +256,6 @@ class LabelParser {
       } else {
         Package(packageSegments)
       }
-    val targetName = pathAndName.substringAfter(":", packagePath.substringAfterLast(PATH_SEGMENT_SEPARATOR))
 
     val target =
       when {

@@ -319,4 +319,16 @@ class LabelTest {
   fun `should parse label with leading whitespaces`() {
     Label.parse("   @//path/to/target    ") shouldBe Label.parse("@//path/to/target")
   }
+
+  @Test
+  fun `should parse label with spaces in package path`() {
+    Label.parse("@//path with spaces/to:target").toString() shouldBe "@//path with spaces/to:target"
+  }
+
+  @Test
+  fun `should not parse label with spaces in target name`() {
+    shouldThrow<IllegalArgumentException> {
+      Label.parse("@//path/to:target with spaces")
+    }
+  }
 }

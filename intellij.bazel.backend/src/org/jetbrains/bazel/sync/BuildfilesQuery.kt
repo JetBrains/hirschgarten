@@ -54,8 +54,8 @@ object BuildfilesQuery {
       .removeDuplicatedLocalRepos(repoMapping)
   }
 
-  private fun expressionOf(workspaceRelativePaths: Set<Path>): String =
-    "rbuildfiles(${workspaceRelativePaths.joinToString(separator = ",") { it.invariantSeparatorsPathString }})"
+  fun expressionOf(workspaceRelativePaths: Set<Path>): String =
+    "rbuildfiles(${workspaceRelativePaths.joinToString(separator = ",") { "\"${it.invariantSeparatorsPathString}\"" }})"
 
   private fun universeScopeOf(universeRepos: Set<RepoType>): String =
     (universeRepos + Main)

@@ -59,6 +59,7 @@ interface HasMultipleTargets {
     }
   }
 
+  // no need to quote targets here - they are passed as separate strings to the command builder
   fun targetCommandLine(): List<String> {
     val commandLine = mutableListOf("--")
     commandLine.addAll(targets.map { it.toString() })
@@ -267,9 +268,7 @@ abstract class BazelCommand(val bazelBinary: String) {
 
     fun queryString(allowManualTargetsSync: Boolean): String {
       if (targets.isEmpty()) return ""
-      val includesString = targets.joinToString(separator = " + ")
-      val excludesString = excludedTargets.joinToString(separator = " - ")
-      val targetString = if (excludesString.isEmpty()) includesString else "$includesString - $excludesString"
+      val targetString = targetQueryExpression()
       return if (allowManualTargetsSync) {
         targetString
       }
@@ -299,7 +298,7 @@ abstract class BazelCommand(val bazelBinary: String) {
       commandLine.addAll(startupOptions)
       commandLine.add("cquery")
       commandLine.addAll(options)
-      commandLine.addAll(targetCommandLine())
+      commandLine.addAll(targetQueryCommandLine())
 
       return BazelCommandExecutionDescriptor(commandLine, enablePty)
     }
@@ -317,7 +316,7 @@ abstract class BazelCommand(val bazelBinary: String) {
       commandLine.addAll(startupOptions)
       commandLine.add("aquery")
       commandLine.addAll(options)
-      commandLine.addAll(targetCommandLine())
+      commandLine.addAll(targetQueryCommandLine())
 
       return BazelCommandExecutionDescriptor(commandLine, enablePty)
     }
@@ -387,6 +386,15 @@ abstract class BazelCommand(val bazelBinary: String) {
     }
   }
 }
+
+private fun HasMultipleTargets.targetQueryExpression(): String {
+  val includesString = targets.joinToString(separator = " + ") { "\"$it\"" }
+  val excludesString = excludedTargets.joinToString(separator = " - ") { "\"$it\"" }
+  return if (excludesString.isEmpty()) includesString else "$includesString - $excludesString"
+}
+
+private fun HasMultipleTargets.targetQueryCommandLine(): List<String> =
+  if (targets.isEmpty()) listOf("--") else listOf("--", targetQueryExpression())
 
 private val log = logger<BazelCommand>()
 

@@ -2,19 +2,21 @@ package org.jetbrains.bazel.server.sync
 
 import com.google.gson.Gson
 import com.google.gson.JsonObject
+import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.bazelrunner.BazelRunner
 import org.jetbrains.bazel.commons.ExecUtils
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.languages.projectview.ProjectView
 import org.jetbrains.bsp.protocol.JvmToolchainInfo
 
-internal object JvmToolchainQuery {
+@ApiStatus.Internal
+object JvmToolchainQuery {
   suspend fun jvmToolchainQueryForTarget(
     bazelRunner: BazelRunner,
     projectView: ProjectView,
     target: Label,
   ): JvmToolchainInfo {
-    val aqueryExpression = "mnemonic(\"Javac\", $target)"
+    val aqueryExpression = javacMnemonic(target)
     val command =
       bazelRunner.buildBazelCommand(projectView = projectView, inheritProjectviewOptionsOverride = true) {
         aquery {
@@ -29,6 +31,8 @@ internal object JvmToolchainQuery {
 
     return parseJavaHomeAndToolchainPathFromAquery(aqueryResult.stdout)
   }
+
+  fun javacMnemonic(target: Label): String = "mnemonic(\"Javac\", \"$target\")"
 
   /**
    * Extract java_home, toolchain_path, and jvm_opts from aquery result.

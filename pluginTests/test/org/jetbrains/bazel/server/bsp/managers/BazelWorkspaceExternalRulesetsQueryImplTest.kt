@@ -131,7 +131,7 @@ internal class BazelWorkspaceExternalRulesetsQueryImplTest {
     commandLine shouldContain "query"
     commandLine shouldContain "--output=streamed_jsonproto"
     commandLine shouldNotContain "--output=xml"
-    commandLine.last() shouldEndWith "//external:*"
+    commandLine.last().removeSurrounding("\"") shouldEndWith "//external:*"
   }
 
   @Test
