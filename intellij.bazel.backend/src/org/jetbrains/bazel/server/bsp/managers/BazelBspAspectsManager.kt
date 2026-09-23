@@ -38,11 +38,27 @@ data class BazelBspAspectsManagerResult(val bepOutput: BepOutput, val status: Ba
   fun renameNamedSets(runNumber: Int): BazelBspAspectsManagerResult =
     BazelBspAspectsManagerResult(bepOutput.renameNamedSets(runNumber), status)
 
-  fun merge(anotherResult: BazelBspAspectsManagerResult): BazelBspAspectsManagerResult =
-    BazelBspAspectsManagerResult(bepOutput.merge(anotherResult.bepOutput), status.merge(anotherResult.status))
+  fun merge(anotherResult: BazelBspAspectsManagerResult): BazelBspAspectsManagerResult = mergeAll(listOf(this, anotherResult))
+
+  class Accumulator {
+    private val bepOutput = BepOutput.Accumulator()
+    private var status = BazelStatus.SUCCESS
+
+    fun add(result: BazelBspAspectsManagerResult): Accumulator {
+      bepOutput.add(result.bepOutput)
+      status = status.merge(result.status)
+      return this
+    }
+
+    fun build(): BazelBspAspectsManagerResult = BazelBspAspectsManagerResult(bepOutput.build(), status)
+  }
 
   companion object {
     fun emptyResult(): BazelBspAspectsManagerResult = BazelBspAspectsManagerResult(BepOutput(), BazelStatus.SUCCESS)
+
+    fun mergeAll(results: Iterable<BazelBspAspectsManagerResult>): BazelBspAspectsManagerResult = Accumulator().apply {
+      results.forEach { add(it) }
+    }.build()
   }
 }
 
