@@ -109,6 +109,18 @@ class ProjectViewProblemsAnnotatorTest {
     checkHighlighting("""shard_sync: <error descr="$message">not_a_boolean</error>""", dumbMode = true)
   }
 
+  @Test
+  fun `should warn about deprecated test_sources`() {
+    val message = BazelProjectViewBundle.message("annotator.deprecated.section.test_sources")
+
+    checkHighlighting(
+      """
+      <weak_warning descr="$message">test_sources</weak_warning>:
+        **/test/**
+      """.trimIndent(),
+    )
+  }
+
   private fun checkHighlighting(text: String, dumbMode: Boolean = false) {
     timeoutRunBlocking(30.seconds) {
       withContext(Dispatchers.EDT) {
