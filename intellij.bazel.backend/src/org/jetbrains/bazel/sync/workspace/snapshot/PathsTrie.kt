@@ -1,5 +1,6 @@
 package org.jetbrains.bazel.sync.workspace.snapshot
 
+import com.intellij.util.containers.Interner
 import org.jetbrains.annotations.ApiStatus
 
 /**
@@ -30,7 +31,8 @@ class PathsTrie(val root: TrieNode = TrieNode(segment = "")) {
       if (node.isTerminal) {
         yield(path ?: "")
       }
-      for (child in node.children) {
+      val children = node.children ?: continue
+      for (child in children) {
         val childPath = if (path == null) child.segment else path + SEPARATOR + child.segment
         stack.addLast(childPath to child)
       }
@@ -45,23 +47,32 @@ class PathsTrie(val root: TrieNode = TrieNode(segment = "")) {
 @ApiStatus.Internal
 class TrieNode(
   val segment: String,
-  val children: MutableList<TrieNode> = ArrayList(),
+  var children: MutableList<TrieNode>? = null,
   var isTerminal: Boolean = false,
 ) {
-  fun isEmpty(): Boolean = !isTerminal && children.isEmpty()
+  fun isEmpty(): Boolean = !isTerminal && children?.isEmpty() != false
 
   fun findChild(segment: String): TrieNode? {
+    val children = children ?: return null
     val idx = children.binarySearch { it.segment.compareTo(segment) }
     return if (idx >= 0) children[idx] else null
   }
 
   fun findOrInsertChild(segment: String): TrieNode {
+    val children = getOrCreateChildren()
     val idx = children.binarySearch { it.segment.compareTo(segment) }
     if (idx >= 0) {
       return children[idx]
     }
-    val node = TrieNode(segment)
+    val node = TrieNode(interner.intern(segment))
     children.add(-(idx + 1), node)
     return node
+  }
+
+  fun getOrCreateChildren(): MutableList<TrieNode> =
+    children ?: mutableListOf<TrieNode>().also { children = it }
+
+  private companion object {
+    val interner = Interner.createWeakInterner<String>()
   }
 }

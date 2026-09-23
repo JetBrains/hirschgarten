@@ -19,7 +19,6 @@ import com.intellij.navigation.ItemPresentation
 import com.intellij.openapi.roots.SyntheticLibrary
 import com.intellij.openapi.vfs.VirtualFile
 import org.jetbrains.annotations.ApiStatus
-import org.jetbrains.annotations.VisibleForTesting
 import org.jetbrains.bazel.assets.BazelPluginIcons
 import javax.swing.Icon
 
@@ -34,4 +33,9 @@ data class GoExternalSyntheticLibrary(private val files: List<VirtualFile>) :
   override fun getPresentableText(): String = GO_EXTERNAL_LIBRARY_ROOT_NAME
 
   override fun getIcon(unused: Boolean): Icon = BazelPluginIcons.bazel
+
+  /**
+   * Prevent [files] from polluting [com.intellij.util.indexing.dependenciesCache.SyntheticLibraryDescriptor.debugLibraryName]
+   */
+  override fun toString(): String = GO_EXTERNAL_LIBRARY_ROOT_NAME
 }

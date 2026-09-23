@@ -7,23 +7,21 @@ import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceConfiguration
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceConfigurationId
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
 import java.nio.file.Path
-import java.util.concurrent.ConcurrentHashMap
-import java.util.concurrent.ConcurrentMap
 
 @ApiStatus.Internal
 class BepOutput(
-  private val outputGroups: Map<String, Set<String>> = emptyMap(),
+  private val infoOutputGroupFileSets: Set<String> = emptySet(),
   private val textProtoFileSets: Map<String, TextProtoDepSet> = emptyMap(),
   private val rootTargets: Set<WorkspaceTargetKey> = emptySet(),
   val options: List<String> = emptyList(),
   val configurations: Map<WorkspaceConfigurationId, WorkspaceConfiguration> = emptyMap(),
-  var buildToolVersion: BazelRelease = BazelRelease.FALLBACK_VERSION
+  var buildToolVersion: BazelRelease = BazelRelease.FALLBACK_VERSION,
 ) {
 
   fun rootTargets(): Set<WorkspaceTargetKey> = rootTargets
 
-  fun filesByOutputGroupNameTransitive(outputGroup: String): Set<Path> {
-    val rootIds = outputGroups.getOrDefault(outputGroup, emptySet())
+  fun filesByInfoOutputGroup(): Set<Path> {
+    val rootIds = infoOutputGroupFileSets
     if (rootIds.isEmpty()) {
       return emptySet()
     }
@@ -52,7 +50,7 @@ class BepOutput(
   fun renameNamedSets(runNumber: Int) : BepOutput  {
     val renameSetName = { name : String -> "${runNumber}.${name}" }
     return BepOutput(
-      outputGroups = outputGroups.mapValues {  (_, entries) -> entries.map(renameSetName).toSet() },
+      infoOutputGroupFileSets = infoOutputGroupFileSets.map(renameSetName).toSet(),
       textProtoFileSets = textProtoFileSets.map { (key, entry) -> renameSetName(key) to TextProtoDepSet(entry.files, entry.children.map(renameSetName) ) }.toMap(),
       rootTargets = rootTargets,
       options = options,
@@ -65,9 +63,7 @@ class BepOutput(
 
   fun merge(anotherBepOutput: BepOutput): BepOutput =
     BepOutput(
-      outputGroups = (outputGroups.keys + anotherBepOutput.outputGroups.keys).associateWith { k ->
-        (outputGroups[k] ?: emptySet()) + (anotherBepOutput.outputGroups[k] ?: emptySet())
-      },
+      infoOutputGroupFileSets = infoOutputGroupFileSets + anotherBepOutput.infoOutputGroupFileSets,
       textProtoFileSets = (textProtoFileSets.keys + anotherBepOutput.textProtoFileSets.keys).associateWith { k ->
         val left = textProtoFileSets[k] ?: TextProtoDepSet(emptyList(), emptyList())
         val right = anotherBepOutput.textProtoFileSets[k] ?: TextProtoDepSet(emptyList(), emptyList())

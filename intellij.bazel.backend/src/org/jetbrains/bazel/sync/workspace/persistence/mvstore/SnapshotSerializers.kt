@@ -165,8 +165,8 @@ internal class OutputRootSerializer : VersionedKryoSerializer<OutputRoot>() {
 }
 
 private fun writeTrieNode(kryo: Kryo, output: Output, node: TrieNode) {
-  output.writeVarInt((node.children.size shl 1) or (if (node.isTerminal) 1 else 0), true)
-  for (child in node.children) {
+  output.writeVarInt((node.children.orEmpty().size shl 1) or (if (node.isTerminal) 1 else 0), true)
+  for (child in node.children.orEmpty()) {
     kryo.writePooledString(output, child.segment)
     writeTrieNode(kryo, output, child)
   }
@@ -177,7 +177,7 @@ private fun readTrieNode(kryo: Kryo, input: Input, node: TrieNode) {
   node.isTerminal = (header and 1) != 0
   repeat(header ushr 1) {
     val child = TrieNode(segment = kryo.readPooledString(input))
-    node.children.add(child)
+    node.getOrCreateChildren().add(child)
     readTrieNode(kryo, input, child)
   }
 }

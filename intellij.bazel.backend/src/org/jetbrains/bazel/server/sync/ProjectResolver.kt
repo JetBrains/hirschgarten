@@ -371,7 +371,7 @@ class ProjectResolver(
   internal suspend fun extractAspectOutputPaths(buildAspectResult: BazelBspAspectsManagerResult): Set<Path> =
     measured(
       "Reading aspect output paths",
-    ) { buildAspectResult.bepOutput.filesByOutputGroupNameTransitive(OutputGroups.INFO.groupName) }
+    ) { buildAspectResult.bepOutput.filesByInfoOutputGroup() }
 
   companion object {
     private val logger = logger<ProjectResolver>()
