@@ -15,6 +15,7 @@ import org.jetbrains.bazel.sync.workspace.importer.WorkspaceImporterContext
 import org.jetbrains.bazel.sync.workspace.importer.WorkspaceImporterPhase
 import org.jetbrains.bazel.sync.workspace.importer.WorkspaceImporterResult
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceSnapshot
+import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
 import org.jetbrains.bsp.protocol.TaskId
 
 @ApiStatus.Internal
@@ -32,6 +33,7 @@ internal class CcWorkspaceImporter(val context: WorkspaceImporterContext) : Baze
   }
 
   private var configurations: List<CcResolveConfiguration> = emptyList()
+  private var toolchain2Compiler: Map<WorkspaceTargetKey, CcCompilerInfo> = emptyMap()
 
   override val importerName: @NlsContexts.ProgressTitle String
     get() = BazelCLionCommonBundle.message("cc.workspace.importer.name")
@@ -54,13 +56,15 @@ internal class CcWorkspaceImporter(val context: WorkspaceImporterContext) : Baze
     val toolchain2Compiler = subtask(snapshot, "cc.import.task.compiler.settings", taskId) { buildCompilerSettings() }
     val target2Compiler = target2Toolchain.mapValues { toolchain2Compiler[it.value] }
 
-    configurations = subtask(snapshot, "cc.import.task.equivalence.classes", taskId) { buildEquivalenceClasses(target2Compiler) }
+    this.configurations = subtask(snapshot, "cc.import.task.equivalence.classes", taskId) { buildEquivalenceClasses(target2Compiler) }
+    this.toolchain2Compiler = toolchain2Compiler
 
     return Result.success(WorkspaceImporterResult.Success)
   }
 
   private fun onWorkspaceApply(phase: WorkspaceImporterPhase.WorkspaceApply): Result<WorkspaceImporterResult> {
     addCcWorkspaceModule(phase.builder, phase.entitySource)
+    addCcCompilerInfoEntities(phase.builder, phase.entitySource, toolchain2Compiler)
     return Result.success(WorkspaceImporterResult.Success)
   }
 
@@ -84,6 +88,7 @@ internal class CcWorkspaceImporter(val context: WorkspaceImporterContext) : Baze
     finally {
       Disposer.dispose(workspace)
       configurations = emptyList()
+      toolchain2Compiler = emptyMap()
     }
 
     return Result.success(WorkspaceImporterResult.Success)
