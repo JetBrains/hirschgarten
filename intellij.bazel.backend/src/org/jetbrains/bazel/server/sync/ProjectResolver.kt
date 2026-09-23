@@ -203,19 +203,16 @@ class ProjectResolver(
       taskId,
     )
 
-    val ruleLanguages =
-      measured(
-        "Mapping rule names to languages",
-      ) {
-        bazelBspAspectsManager.calculateRulesetLanguages(
+    val ruleSets = measured("Mapping rule names to languages") {
+        bazelBspAspectsManager.calculateRulesets(
           externalRulesetNames,
           repoDefinitions,
           bazelInfo.externalAutoloads,
         )
       }
 
-    ruleLanguages.forEach {
-      it.language.deprecated?.let {
+    ruleSets.forEach {
+      it.ruleset.deprecated?.let {
         project.syncConsole.addDiagnosticMessage(
           taskId, null, 0, 0, it, null,
           MessageEvent.Kind.WARNING,
@@ -225,7 +222,7 @@ class ProjectResolver(
 
     measured("Realizing language aspect files from templates") {
       bazelBspAspectsManager.deployIntelliJAspect(
-        ruleLanguages,
+        ruleSets,
         bazelInfo.release,
         repoMapping,
       )
@@ -235,7 +232,7 @@ class ProjectResolver(
       requestedTargetsToSync
         ?.let { TargetCollection(it, emptyList()) } ?: TargetCollection.fromExcludableList(projectView.targets)
 
-    val syncLanguages = ruleLanguages.map { it.language.aspectLanguage }.toSet()
+    val syncLanguages = ruleSets.map { it.ruleset.aspectLanguage }.toSet()
 
     val buildAspectResult =
       measured(

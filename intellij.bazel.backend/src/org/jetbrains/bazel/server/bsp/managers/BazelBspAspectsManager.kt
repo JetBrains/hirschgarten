@@ -17,13 +17,14 @@ import org.jetbrains.bazel.commons.BzlmodRepoMapping
 import org.jetbrains.bazel.commons.RepoMapping
 import org.jetbrains.bazel.commons.TargetCollection
 import org.jetbrains.bazel.commons.constants.Constants
-import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.languages.projectview.ProjectView
 import org.jetbrains.bazel.languages.projectview.allowManualTargetsSync
 import org.jetbrains.bazel.languages.projectview.syncFlags
 import org.jetbrains.bazel.server.bep.BepOutput
 import org.jetbrains.bazel.server.sync.ExecuteService
-import org.jetbrains.bazel.util.relevantRuleSets
+import org.jetbrains.bazel.util.BazelRuleSet
+import org.jetbrains.bazel.util.BazelRuleSetProvider
+import org.jetbrains.bazel.util.isBundledFor
 import org.jetbrains.bsp.protocol.TaskId
 import java.nio.file.Path
 
@@ -32,7 +33,8 @@ data class BazelBspAspectsManagerResult(val bepOutput: BepOutput, val status: Ba
   val isFailure: Boolean
     get() = status != BazelStatus.SUCCESS
 
-  fun renameNamedSets(runNumber: Int) = BazelBspAspectsManagerResult(bepOutput.renameNamedSets(runNumber), status)
+  fun renameNamedSets(runNumber: Int): BazelBspAspectsManagerResult =
+    BazelBspAspectsManagerResult(bepOutput.renameNamedSets(runNumber), status)
 
   fun merge(anotherResult: BazelBspAspectsManagerResult): BazelBspAspectsManagerResult =
     BazelBspAspectsManagerResult(bepOutput.merge(anotherResult.bepOutput), status.merge(anotherResult.status))
@@ -44,13 +46,11 @@ data class BazelBspAspectsManagerResult(val bepOutput: BepOutput, val status: Ba
 
 @ApiStatus.Internal
 sealed interface RuleSetName
-
-@ApiStatus.Internal
-data class ApparentRulesetName(val name: String) : RuleSetName
+internal data class ApparentRulesetName(val name: String) : RuleSetName
 internal data class CanonicalRulesetName(val name: String) : RuleSetName
 
 @ApiStatus.Internal
-data class RulesetLanguage(val rulesetName: RuleSetName?, val language: Language)
+data class RulesetInstance(val rulesetName: RuleSetName?, val ruleset: BazelRuleSet)
 
 @ApiStatus.Internal
 class BazelBspAspectsManager(
@@ -58,11 +58,11 @@ class BazelBspAspectsManager(
   private val executeService: ExecuteService,
   private val bazelRelease: BazelRelease,
 ) {
-  fun calculateRulesetLanguages(
+  fun calculateRulesets(
     externalRulesetNames: List<String>,
     externalRulesetDefinitions: Map<String, ShowRepoResult?>,
     externalAutoloads: List<String>,
-  ): List<RulesetLanguage> {
+  ): List<RulesetInstance> {
     // All our canonal rulesets either have empty strip_prefix or strip the top-level directory (consiting of rule name plus version).
     // Filter out sub-rules which are built from the same archive, but stripping out top-level directory plus a subdirectory.
     val externalTopLevelHttpArchives = externalRulesetDefinitions.filter { (it.value as? ShowRepoResult.HttpArchiveRepository)?.stripPrefix?.indexOf('/') == -1  }
@@ -71,49 +71,42 @@ class BazelBspAspectsManager(
     val canonicalRepoByHostLocation =
       httpArchiveUpstreamURLsByCanonicalName.flatMap { (k, v) -> v.map { Pair(k, it) } }.associateBy { it.second }
         .mapValues { (k, v) -> v.first }
-    return Language
-      .entries
-      .mapNotNull { language ->
-        language.hostLocations.firstNotNullOfOrNull { location -> canonicalRepoByHostLocation.keys.firstOrNull { it.startsWith(location) } }
+    return BazelRuleSetProvider.all()
+      .mapNotNull { ruleSet ->
+        ruleSet.hostLocations.firstNotNullOfOrNull { location -> canonicalRepoByHostLocation.keys.firstOrNull { it.startsWith(location) } }
           ?.let {
-            return@mapNotNull RulesetLanguage(canonicalRepoByHostLocation[it]?.let { CanonicalRulesetName(it) }, language)
+            return@mapNotNull RulesetInstance(canonicalRepoByHostLocation[it]?.let { CanonicalRulesetName(it) }, ruleSet)
           }
-        val rulesetName = language.rulesetNames.firstOrNull { it in externalRulesetNames }
+        val rulesetName = ruleSet.rulesetNames.firstOrNull { it in externalRulesetNames }
         rulesetName?.let {
-          return@mapNotNull RulesetLanguage(ApparentRulesetName(it), language)
+          return@mapNotNull RulesetInstance(ApparentRulesetName(it), ruleSet)
         }
-        if (language.isBundledFor(bazelRelease, externalAutoloads)) {
-          return@mapNotNull RulesetLanguage(null, language)
+        if (ruleSet.isBundledFor(bazelRelease, externalAutoloads)) {
+          return@mapNotNull RulesetInstance(null, ruleSet)
         }
         null
       }
-      .restrictToRequestedRuleSets()
-  }
-
-  private fun List<RulesetLanguage>.restrictToRequestedRuleSets(): List<RulesetLanguage> {
-    val requested = relevantRuleSets()
-    return filter { it.language.rulesetNames.any { requested.contains(it) } }
   }
 
   fun deployIntelliJAspect(
-    rulesetLanguages: List<RulesetLanguage>,
+    ruleSetInstances: List<RulesetInstance>,
     bazelRelease: BazelRelease,
     repoMapping: RepoMapping,
   ) {
-    val ruleNameMapping = rulesetLanguages.mapNotNull {
+    val ruleNameMapping = ruleSetInstances.mapNotNull {
       // As the versions of rules_java for bazel 7 do not provide full information, we
       // prefer to the builtin rules.
-      if ((it.language == Language.Java) && (bazelRelease.major <= 7)) return@mapNotNull null
+      if ((it.ruleset.aspectLanguage == Rules.JAVA) && (bazelRelease.major <= 7)) return@mapNotNull null
       val canonicalRuleName = it.calculateCanonicalName(repoMapping) ?: return@mapNotNull null
-      it.language.aspectLanguage to "@${canonicalRuleName}"
+      it.ruleset.aspectLanguage to "@${canonicalRuleName}"
     }.toMap()
 
     // Languages for which the built-in rule set (bazel 8 and earlier) is used.
     // As the versions of rules_java for bazel 7 do not provide full information, we
     // prefer to the builtin rules.
-    val builtInLanguages = rulesetLanguages.filter {
+    val builtInLanguages = ruleSetInstances.filter {
       it.calculateCanonicalName(repoMapping) == null
-    }.map { it.language.aspectLanguage }.toSet() + (if (bazelRelease.major <= 7) setOf(Rules.JAVA) else setOf())
+    }.map { it.ruleset.aspectLanguage }.toSet() + (if (bazelRelease.major <= 7) setOf(Rules.JAVA) else setOf())
 
     deployAspectZip(
       workspaceRoot,
@@ -122,13 +115,12 @@ class BazelBspAspectsManager(
         bazelVersion = "${bazelRelease.major}",
         repoMapping = ruleNameMapping,
         useBuiltin = builtInLanguages,
-        rulesets = rulesetLanguages.map { it.language.aspectLanguage }.toSet(),
+        rulesets = ruleSetInstances.map { it.ruleset.aspectLanguage }.toSet(),
       ),
     )
-
   }
 
-  private fun RulesetLanguage.calculateCanonicalName(repoMapping: RepoMapping): String? =
+  private fun RulesetInstance.calculateCanonicalName(repoMapping: RepoMapping): String? =
     when {
       // If the name is already a conical one, we can take it; however we have the canonical name without
       // prefix, so we have to add @ to indicate it as canonical, as the template adds a single @ as prefix.
