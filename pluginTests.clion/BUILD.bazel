@@ -164,6 +164,8 @@ jvm_library(
         "//CIDR/clion-test-google:clion-test-google_test_lib",
         "//CIDR/clion-test-catch",
         "//CIDR/clion-test-catch:clion-test-catch_test_lib",
+        "@community//platform/scratch/plugin",
+        "@community//platform/scratch/plugin:plugin_test_lib",
     ],
 )
 ### auto-generated section `build intellij.bazel.pluginTests.clion` end
