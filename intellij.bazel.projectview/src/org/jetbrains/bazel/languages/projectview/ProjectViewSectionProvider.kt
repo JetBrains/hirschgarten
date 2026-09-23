@@ -116,13 +116,6 @@ private val IndexAllFilesInDirectoriesSection: ProjectViewSection<Boolean> = Pro
   documentation = BazelProjectViewBundle.message("bazel.language.projectview.docs.index_all_files_in_directories"),
 )
 
-private val PythonDebugFlagsSection: ProjectViewSection<List<String>> = ProjectViewSection(
-  key = PYTHON_DEBUG_FLAGS_KEY,
-  type = ProjectViewSectionType.flag("run", "test").list(),
-  documentation = BazelProjectViewBundle.message("bazel.language.projectview.docs.python_debug_flags"),
-  deprecation = ProjectViewSection.Deprecation.withMergeQuickFix(DEBUG_FLAGS_KEY)
-)
-
 private val RunConfigRunWithBazelSection: ProjectViewSection<Boolean> = ProjectViewSection(
   key = RUN_CONFIG_RUN_WITH_BAZEL_KEY,
   type = ProjectViewSectionType.boolean,
@@ -165,8 +158,18 @@ private val TestFlagsSection: ProjectViewSection<List<String>> = ProjectViewSect
   documentation = BazelProjectViewBundle.message("bazel.language.projectview.docs.test_flags"),
 )
 
+// deprecated sections
+
+private val PythonDebugFlagsSection: ProjectViewSection<List<String>> = ProjectViewSection(
+  key = PYTHON_DEBUG_FLAGS_KEY,
+  type = ProjectViewSectionType.flag("run", "test").list(),
+  documentation = BazelProjectViewBundle.message("bazel.language.projectview.docs.python_debug_flags"),
+  deprecation = ProjectViewSection.Deprecation.withMergeQuickFix(DEBUG_FLAGS_KEY)
+)
+
 private val TestSourcesSection: ProjectViewSection<List<String>> = ProjectViewSection(
   key = TEST_SOURCES_KEY,
   type = ProjectViewSectionType.string().list(),
   documentation = BazelProjectViewBundle.message("bazel.language.projectview.docs.test_sources"),
+  deprecation = ProjectViewSection.Deprecation(BazelProjectViewBundle.message("annotator.deprecated.section.test_sources")),
 )
