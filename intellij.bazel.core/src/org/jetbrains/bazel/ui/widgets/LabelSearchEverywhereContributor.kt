@@ -11,7 +11,6 @@ import com.intellij.navigation.PsiElementNavigationItem
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.application.EDT
 import com.intellij.openapi.application.ModalityState
-import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.progress.util.ProgressIndicatorUtils
 import com.intellij.openapi.project.Project
@@ -19,7 +18,6 @@ import com.intellij.psi.PsiElement
 import com.intellij.psi.codeStyle.NameUtil
 import com.intellij.ui.SimpleListCellRenderer
 import com.intellij.util.Processor
-import com.intellij.util.containers.ContainerUtil
 import com.intellij.util.text.matching.MatchingMode
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -61,17 +59,7 @@ internal class LabelSearchEverywhereContributor(private val project: Project) :
         .typoTolerant()
         .withMatchingMode(MatchingMode.IGNORE_CASE)
         .build()
-
-    val foundItems =
-      project.targetStorage
-        .allTargets()
-        .mapNotNull { label ->
-          val fullString = label.toString()
-          if (!matcher.matches(fullString)) return@mapNotNull null
-          val targetElement = runReadAction { resolveLabel(project, label) } ?: return@mapNotNull null
-          val displayName = label.toShortString(project)
-          FoundItemDescriptor(LabelWithPreview(displayName, targetElement), matcher.matchingDegree(fullString))
-        }.toList()
+    val labels = project.targetStorage.allTargets()
 
     // Copied from AbstractGotoSEContributor
     if (ModalityState.defaultModalityState() == ModalityState.nonModal()) {
@@ -80,7 +68,15 @@ internal class LabelSearchEverywhereContributor(private val project: Project) :
     }
     @Suppress("UsagesOfObsoleteApi", "DEPRECATION")
     ProgressIndicatorUtils.runInReadActionWithWriteActionPriority({
-      ContainerUtil.process(foundItems, consumer)
+      for (label in labels) {
+        progressIndicator.checkCanceled()
+        val fullString = label.toString()
+        if (!matcher.matches(fullString)) continue
+        val targetElement = resolveLabel(project, label) ?: continue
+        val displayName = label.toShortString(project)
+        val descriptor = FoundItemDescriptor(LabelWithPreview(displayName, targetElement), matcher.matchingDegree(fullString))
+        if (!consumer.process(descriptor)) break
+      }
     }, progressIndicator)
   }
 

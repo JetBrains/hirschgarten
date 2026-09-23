@@ -2,7 +2,10 @@ package org.jetbrains.bazel.languages.starlark.psi
 
 import com.intellij.extapi.psi.PsiFileBase
 import com.intellij.openapi.fileTypes.FileType
+import com.intellij.openapi.progress.ProgressManager
 import com.intellij.psi.FileViewProvider
+import com.intellij.psi.util.CachedValueProvider
+import com.intellij.psi.util.CachedValuesManager
 import com.intellij.util.Processor
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.languages.starlark.StarlarkFileType
@@ -31,10 +34,17 @@ open class StarlarkFile(viewProvider: FileViewProvider) :
       .mapNotNull { it.callExpressionOrNull() }
       .filter { it.isRuleTarget() }
 
-  fun findTargetRule(targetName: String): StarlarkCallExpression? =
-    getTargetRules().firstOrNull {
-      it.getNameAttributeValue() == targetName
+  fun findTargetRule(targetName: String): StarlarkCallExpression? {
+    val rulesByName = CachedValuesManager.getCachedValue(this) {
+      val rulesByName = HashMap<String, StarlarkCallExpression>()
+      for (rule in getTargetRules()) {
+        ProgressManager.checkCanceled()
+        rulesByName.putIfAbsent(rule.getNameAttributeValue()!!, rule)
+      }
+      CachedValueProvider.Result.create(rulesByName, this)
     }
+    return rulesByName[targetName]
+  }
 
   fun searchInLoads(processor: Processor<StarlarkElement>): Boolean =
     findChildrenByClass(StarlarkLoadStatement::class.java).flatMap { it.getLoadedSymbolsPsi() }.all(processor::process)
