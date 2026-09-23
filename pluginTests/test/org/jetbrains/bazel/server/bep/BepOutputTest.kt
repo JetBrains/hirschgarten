@@ -9,7 +9,15 @@ import com.google.devtools.build.lib.buildeventstream.BuildEventStreamProtos.Tar
 import com.intellij.openapi.command.impl.DummyProject
 import io.kotest.matchers.shouldBe
 import org.jetbrains.bazel.commons.BazelPathsResolver
+import org.jetbrains.bazel.commons.BazelRelease
+import org.jetbrains.bazel.commons.BazelStatus
+import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.server.bsp.managers.BazelBspAspectsManagerResult
 import org.jetbrains.bazel.server.diagnostics.DiagnosticsService
+import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceConfiguration
+import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceConfigurationId
+import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceConfigurationSummary
+import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
 import org.jetbrains.bazel.test.framework.BazelTestApplication
 import org.jetbrains.bazel.test.framework.testproject.testProjectBazelInfo
 import org.jetbrains.bsp.protocol.BazelTaskEventsHandler
@@ -200,5 +208,96 @@ internal class BepOutputTest {
       "more_build_and_sync_3.intellij-info.txt",
       "even_more_build_and_sync_3.intellij-info.txt",
     )
+  }
+
+  @Test
+  fun testMergeAllPreservesDuplicateKeys() {
+    val configurationId = WorkspaceConfigurationId.of("1234567")
+    val firstConfiguration = WorkspaceConfiguration(
+      configurationId,
+      WorkspaceConfigurationSummary("first", "first", "", "", false),
+      emptyList(),
+    )
+    val secondConfiguration = firstConfiguration.copy(summary = firstConfiguration.summary.copy(hash = "second"))
+    val firstTarget = WorkspaceTargetKey(Label.parse("//:first"))
+    val secondTarget = WorkspaceTargetKey(Label.parse("//:second"))
+    val first = BepOutput(
+      infoOutputGroupFileSets = setOf("shared"),
+      textProtoFileSets = mapOf(
+        "shared" to TextProtoDepSet(listOf(Path("first.txt")), listOf("first-child")),
+        "first-child" to TextProtoDepSet(listOf(Path("first-child.txt")), emptyList()),
+      ),
+      rootTargets = setOf(firstTarget),
+      options = listOf("--first"),
+      configurations = mapOf(configurationId to firstConfiguration),
+    )
+    val second = BepOutput(
+      infoOutputGroupFileSets = setOf("shared", "second-only"),
+      textProtoFileSets = mapOf(
+        "shared" to TextProtoDepSet(listOf(Path("second.txt")), listOf("second-child")),
+        "second-child" to TextProtoDepSet(listOf(Path("second-child.txt")), emptyList()),
+        "second-only" to TextProtoDepSet(listOf(Path("second-only.txt")), emptyList()),
+      ),
+      rootTargets = setOf(firstTarget, secondTarget),
+      options = listOf("--second", "--last"),
+      configurations = mapOf(configurationId to secondConfiguration),
+      buildToolVersion = BazelRelease(8),
+    )
+
+    val merged = BepOutput.mergeAll(listOf(first, second, BepOutput(buildToolVersion = BazelRelease(9))))
+    merged.filesByInfoOutputGroup().map { it.toString() }.toSet() shouldBe setOf(
+      "first.txt", "first-child.txt", "second.txt", "second-child.txt", "second-only.txt",
+    )
+    merged.rootTargets() shouldBe setOf(firstTarget, secondTarget)
+    merged.options shouldBe listOf("--first", "--second", "--last")
+    merged.configurations[configurationId] shouldBe secondConfiguration
+    merged.buildToolVersion shouldBe BazelRelease(8)
+    first.merge(second).filesByInfoOutputGroup().map { it.toString() }.toSet() shouldBe
+      merged.filesByInfoOutputGroup().map { it.toString() }.toSet()
+  }
+
+  @Test
+  fun testMergeAllPreservesNestedSetsAcrossManyShards() {
+    val shards = (1..128).map { shard ->
+      BepOutput(
+        infoOutputGroupFileSets = setOf("root"),
+        textProtoFileSets = mapOf(
+          "root" to TextProtoDepSet(listOf(Path("root-$shard.txt")), listOf("leaf")),
+          "leaf" to TextProtoDepSet(listOf(Path("leaf-$shard.txt")), emptyList()),
+        ),
+        options = listOf("--shard=$shard"),
+      ).renameNamedSets(shard)
+    }
+
+    val merged = BepOutput.mergeAll(shards)
+    merged.filesByInfoOutputGroup().map { it.toString() }.toSet() shouldBe (1..128).flatMap { shard ->
+      listOf("root-$shard.txt", "leaf-$shard.txt")
+    }.toSet()
+    merged.options shouldBe (1..128).map { "--shard=$it" }
+  }
+
+  @Test
+  fun testMergeAllAcceptsEmptyInput() {
+    val merged = BepOutput.mergeAll(emptyList())
+    merged.rootTargets() shouldBe emptySet()
+    merged.filesByInfoOutputGroup() shouldBe emptySet()
+    merged.options shouldBe emptyList()
+    merged.configurations shouldBe emptyMap()
+    merged.buildToolVersion shouldBe BazelRelease.FALLBACK_VERSION
+    BazelBspAspectsManagerResult.mergeAll(emptyList()).status shouldBe BazelStatus.SUCCESS
+  }
+
+  @Test
+  fun testMergeAllPreservesStatusPriority() {
+    val results = listOf(
+      BazelBspAspectsManagerResult(BepOutput(options = listOf("first")), BazelStatus.BUILD_ERROR),
+      BazelBspAspectsManagerResult(BepOutput(options = listOf("second")), BazelStatus.OOM_ERROR),
+      BazelBspAspectsManagerResult(BepOutput(options = listOf("third")), BazelStatus.FATAL_ERROR),
+    )
+
+    val merged = BazelBspAspectsManagerResult.mergeAll(results)
+    merged.status shouldBe BazelStatus.OOM_ERROR
+    merged.bepOutput.options shouldBe listOf("first", "second", "third")
+    results[0].merge(results[1]).merge(results[2]).status shouldBe merged.status
   }
 }

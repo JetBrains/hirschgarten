@@ -235,7 +235,7 @@ class ProjectResolver(
             )
           var remainingShardedTargetsSpecs = shardedResult.targets.toMutableList()
           var shardNumber = 1
-          var shardedBuildResult: BazelBspAspectsManagerResult = BazelBspAspectsManagerResult.emptyResult()
+          val shardedBuildResult = BazelBspAspectsManagerResult.Accumulator()
           var suggestedTargetShardSize: Int = projectView.targetShardSize
           while (remainingShardedTargetsSpecs.isNotEmpty()) {
             ensureActive()
@@ -283,7 +283,7 @@ class ProjectResolver(
             // As bazel starts the naming of the namedSetOfFiles freshly (starting from "0") on each run, we have to distinguish
             // them somehow; we do this by encoding the shard number in their names.
             val runResult = result.renameNamedSets(shardNumber)
-            shardedBuildResult = shardedBuildResult.merge(runResult)
+            shardedBuildResult.add(runResult)
 
             taskLogger.message("---")
             ++shardNumber
@@ -292,7 +292,7 @@ class ProjectResolver(
             taskLogger.message("Bazel ran out of memory during sync. To mitigate, consider setting shard size in your project view file: `target_shard_size: $suggestedTargetShardSize`")
             taskLogger.message("---")
           }
-          shardedBuildResult
+          shardedBuildResult.build()
         }
         else {
           nonShardBuild()

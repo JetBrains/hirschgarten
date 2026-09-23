@@ -60,26 +60,52 @@ class BepOutput(
     )
   }
 
+  fun merge(anotherBepOutput: BepOutput): BepOutput = mergeAll(listOf(this, anotherBepOutput))
 
-  fun merge(anotherBepOutput: BepOutput): BepOutput =
-    BepOutput(
-      infoOutputGroupFileSets = infoOutputGroupFileSets + anotherBepOutput.infoOutputGroupFileSets,
-      textProtoFileSets = (textProtoFileSets.keys + anotherBepOutput.textProtoFileSets.keys).associateWith { k ->
-        val left = textProtoFileSets[k] ?: TextProtoDepSet(emptyList(), emptyList())
-        val right = anotherBepOutput.textProtoFileSets[k] ?: TextProtoDepSet(emptyList(), emptyList())
-        TextProtoDepSet(left.files + right.files, left.children + right.children)
-      },
-      rootTargets = rootTargets + anotherBepOutput.rootTargets,
-      options = options + anotherBepOutput.options,
-      configurations = configurations + anotherBepOutput.configurations,
+  class Accumulator {
+    private class MutableDepSet {
+      val files: MutableList<Path> = ArrayList()
+      val children: MutableList<String> = ArrayList()
+    }
 
-      // pick first that isn't `BazelRelease.FALLBACK_VERSION`
-      buildToolVersion = buildToolVersion.takeIf { it != BazelRelease.FALLBACK_VERSION }
-                         ?: anotherBepOutput.buildToolVersion.takeIf { it != BazelRelease.FALLBACK_VERSION }
-                         ?: BazelRelease.FALLBACK_VERSION,
+    private val infoOutputGroupFileSets: MutableSet<String> = LinkedHashSet()
+    private val textProtoFileSets: MutableMap<String, MutableDepSet> = LinkedHashMap()
+    private val rootTargets: MutableSet<WorkspaceTargetKey> = LinkedHashSet()
+    private val options: MutableList<String> = ArrayList()
+    private val configurations: MutableMap<WorkspaceConfigurationId, WorkspaceConfiguration> = LinkedHashMap()
+    private var buildToolVersion: BazelRelease = BazelRelease.FALLBACK_VERSION
+
+    fun add(output: BepOutput): Accumulator {
+      infoOutputGroupFileSets.addAll(output.infoOutputGroupFileSets)
+      for ((id, depSet) in output.textProtoFileSets) {
+        val merged = textProtoFileSets.getOrPut(id) { MutableDepSet() }
+        merged.files.addAll(depSet.files)
+        merged.children.addAll(depSet.children)
+      }
+      rootTargets.addAll(output.rootTargets)
+      options.addAll(output.options)
+      configurations.putAll(output.configurations)
+      if (buildToolVersion == BazelRelease.FALLBACK_VERSION) {
+        buildToolVersion = output.buildToolVersion
+      }
+      return this
+    }
+
+    fun build(): BepOutput = BepOutput(
+      infoOutputGroupFileSets = infoOutputGroupFileSets.toSet(),
+      textProtoFileSets = textProtoFileSets.mapValues { (_, depSet) -> TextProtoDepSet(depSet.files.toList(), depSet.children.toList()) },
+      rootTargets = rootTargets.toSet(),
+      options = options.toList(),
+      configurations = configurations.toMap(),
+      buildToolVersion = buildToolVersion,
     )
+  }
 
   companion object {
     private val logger = logger<BepOutput>()
+
+    fun mergeAll(outputs: Iterable<BepOutput>): BepOutput = Accumulator().apply {
+      outputs.forEach { add(it) }
+    }.build()
   }
 }
