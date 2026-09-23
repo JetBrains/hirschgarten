@@ -658,6 +658,130 @@ class PythonProjectSyncTest {
   }
 
   @Test
+  fun `should index all sources for many targets with the same import root`() {
+    val sources = (0 until 40).map { index ->
+      val relativePath = "src/shared/module$index.py"
+      createPythonFile(relativePath, "VALUE = $index\n")
+      testBazel.workspaceRoot.resolve(relativePath)
+    }
+    val targets = sources.mapIndexed { index, _ ->
+      testPythonTarget("@@//:module$index", imports = listOf("src")) { srcs(*Array(2) { "src/shared/module$index.py" }) }
+    }
+
+    runPythonImporter(generateWorkspaceSnapshot(targets), MutableEntityStorage.create(), runPostProcessing = true)
+
+    sources.forEachIndexed { index, source ->
+      testBazel.project.findBazelPythonShortestQualifiedName(source) shouldBe "shared.module$index"
+    }
+  }
+
+  @Test
+  fun `should keep import order for overlapping roots and target overwrite order`() {
+    val firstSource = testBazel.workspaceRoot.resolve("src/pkg/item.py")
+    val overlappingSource = testBazel.workspaceRoot.resolve("src/deep/pkg/item.py")
+    val otherSource = testBazel.workspaceRoot.resolve("other/pkg/item.py")
+    createPythonFile("src/pkg/item.py", "VALUE = 1\n")
+    createPythonFile("src/deep/pkg/item.py", "VALUE = 2\n")
+    createPythonFile("other/pkg/item.py", "VALUE = 3\n")
+    val firstTarget = testPythonTarget("@@//:other", imports = listOf("other")) {
+      deps("@@//:overlap")
+      srcs("other/pkg/item.py")
+    }
+    val laterTarget = testPythonTarget("@@//:overlap", imports = listOf("src/deep", "src")) {
+      srcs("src/pkg/item.py", "src/deep/pkg/item.py")
+    }
+
+    runPythonImporter(
+      generateWorkspaceSnapshot(listOf(firstTarget, laterTarget), rootTargets = setOf(firstTarget.key)),
+      MutableEntityStorage.create(),
+      runPostProcessing = true,
+    )
+
+    testBazel.project.findBazelPythonShortestQualifiedName(overlappingSource) shouldBe "pkg.item"
+    testBazel.project.findBazelPythonShortestQualifiedName(firstSource) shouldBe null
+    testBazel.project.findBazelPythonShortestQualifiedName(otherSource) shouldBe null
+  }
+
+  @Test
+  fun `should let a later shared target overwrite a generated source collision`() {
+    val workspaceSource = testBazel.workspaceRoot.resolve("src/item.py")
+    createPythonFile("src/item.py", "VALUE = 1\n")
+    val bazelBin = testBazel.workspaceRoot.resolve("bazel-out/${TEST_OUTPUT_ROOT.path}").createDirectories()
+    val generatedSource = bazelBin.resolve("src/item.py")
+    generatedSource.parent.createDirectories()
+    generatedSource.writeText("VALUE = 2\n")
+    val firstTarget = testPythonTarget("@@//:first", imports = listOf("src")) {
+      deps("@@//:middle")
+      srcs("src/item.py")
+    }
+    val middleTarget = testPythonTarget("@@//:middle", imports = listOf("src")) { deps("@@//:generated") }
+    val generatedTarget = testPythonTarget("@@//:generated", imports = listOf("src")) {
+      deps("@@//:last")
+      srcs("src/item.py", generated = true)
+    }
+    val lastTarget = testPythonTarget("@@//:last", imports = listOf("src"))
+
+    runPythonImporter(
+      generateWorkspaceSnapshot(listOf(firstTarget, middleTarget, generatedTarget, lastTarget), rootTargets = setOf(firstTarget.key)),
+      MutableEntityStorage.create(),
+      runPostProcessing = true,
+    )
+
+    testBazel.project.findBazelPythonShortestQualifiedName(workspaceSource) shouldBe "item"
+  }
+
+  @Test
+  fun `should let a generated source overwrite an earlier shared target`() {
+    val workspaceSource = testBazel.workspaceRoot.resolve("src/item.py")
+    createPythonFile("src/item.py", "VALUE = 1\n")
+    val bazelBin = testBazel.workspaceRoot.resolve("bazel-out/${TEST_OUTPUT_ROOT.path}").createDirectories()
+    val generatedSource = bazelBin.resolve("src/item.py")
+    generatedSource.parent.createDirectories()
+    generatedSource.writeText("VALUE = 2\n")
+    val firstTarget = testPythonTarget("@@//:first", imports = listOf("src")) {
+      deps("@@//:generated")
+      srcs("src/item.py")
+    }
+    val generatedTarget = testPythonTarget("@@//:generated", imports = listOf("src")) { srcs("src/item.py", generated = true) }
+
+    runPythonImporter(
+      generateWorkspaceSnapshot(listOf(firstTarget, generatedTarget), rootTargets = setOf(firstTarget.key)),
+      MutableEntityStorage.create(),
+      runPostProcessing = true,
+    )
+
+    testBazel.project.hasBazelPythonQualifiedName("item") shouldBe true
+    testBazel.project.findBazelPythonShortestQualifiedName(workspaceSource) shouldBe null
+  }
+
+  @Test
+  fun `should keep target sources when an explicit root matches no workspace source`() {
+    createPythonFile("local.py", "VALUE = 1\n")
+    val target = testPythonTarget("@@//:fallback", imports = listOf("absent")) { srcs("local.py") }
+
+    runPythonImporter(generateWorkspaceSnapshot(listOf(target)), MutableEntityStorage.create(), runPostProcessing = true)
+
+    testBazel.project.hasBazelPythonQualifiedName("local").shouldBeFalse()
+  }
+
+  @Test
+  fun `should keep external Python source paths outside the workspace index`() {
+    val externalSource = testBazel.workspaceRoot.resolve("external/repo/pkg/external.py")
+    createPythonFile("external/repo/pkg/external.py", "VALUE = 1\n")
+    val externalTarget = testPythonTarget("@@repo//pkg:external")
+      .copy(sources = OutputLocationCollectionBuilder.ofLocations(listOf(OutputLocation.External("repo", "pkg/external.py"))))
+    val ownerTarget = testPythonTarget("@@//:owner") { deps("@@repo//pkg:external") }
+
+    runPythonImporter(
+      generateWorkspaceSnapshot(listOf(ownerTarget, externalTarget), rootTargets = setOf(ownerTarget.key)),
+      MutableEntityStorage.create(),
+      runPostProcessing = true,
+    )
+
+    testBazel.project.findBazelPythonShortestQualifiedName(externalSource) shouldBe "pkg.external"
+  }
+
+  @Test
   fun `should create a library for external pip dependency`() {
     // Mimics `//project:lib` depending on `@pypi//aaa`: the pip target is a non-root dependency whose sources
     // live under an external `site-packages` directory (reported via PythonBuildTarget.externalSources).

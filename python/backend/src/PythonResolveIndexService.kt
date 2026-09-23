@@ -12,6 +12,7 @@ import com.intellij.psi.search.GlobalSearchScope
 import com.intellij.psi.util.QualifiedName
 import com.jetbrains.python.PyNames
 import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.ensureActive
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.annotations.TestOnly
 import org.jetbrains.annotations.VisibleForTesting
@@ -56,6 +57,11 @@ private class ResolveIndexSnapshot(
 ) {
   val stubScope: GlobalSearchScope by lazy(computeStubScope) // search scope for Python stubs
 }
+
+private data class IndexContribution(
+  val qualifiedNamesToPaths: Map<QualifiedName, Path>,
+  val sharedImports: List<Path>?,
+)
 
 @Service(Service.Level.PROJECT)
 internal class PythonResolveIndexService(private val project: Project) {
@@ -131,52 +137,99 @@ internal class PythonResolveIndexService(private val project: Project) {
         .mapNotNull { it.relativeToOrNull(rootDir) }
         .toList()
 
-    val allPYSourcesInMainWorkspace: List<Path> by lazy {
-      pythonTargets.flatMap { workspaceRelativePythonSources(it) }
-    }
-
-    val targetNames: List<Map<QualifiedName, Path>> = pythonTargets.map { target ->
+    val (importsByTarget, sharedSourcesByImports, sharedIndexesByImports) =
       BazelCoroutineService.getInstance(project).startAsync {
-        val explicitImportsPaths = PythonImportUtils.assembleExplicitImportsPaths(target)
+        val importsByTarget = pythonTargets.map { PythonImportUtils.assembleExplicitImportsPaths(it) }
+        val workspaceImports = importsByTarget.indices
+          .filter { pythonTargets[it].isWorkspace(snapshot.repoMapping) && importsByTarget[it].isNotEmpty() }
+          .map { importsByTarget[it] }
+          .distinct()
+        val importRoots = workspaceImports.flatten().toSet()
+        val sourcesByImportRoot = hashMapOf<Path, MutableList<Path>>()
+        if (importRoots.isNotEmpty()) {
+          pythonTargets.asSequence()
+            .flatMap { workspaceRelativePythonSources(it) }
+            .distinct()
+            .forEach { source ->
+              ensureActive()
+              for (length in 1..source.nameCount) {
+                val prefix = source.subpath(0, length)
+                if (prefix in importRoots) {
+                  sourcesByImportRoot.getOrPut(prefix) { mutableListOf() }.add(source)
+                }
+              }
+            }
+        }
+        val sharedSourcesByImports = workspaceImports.associateWith { imports ->
+          imports.flatMap { sourcesByImportRoot[it].orEmpty() }
+        }
+        val sharedIndexesByImports = sharedSourcesByImports.mapValues { (imports, sources) ->
+          ensureActive()
+          if (sources.isEmpty()) null
+          else expandPathsToQualifiedNames(
+            PythonImportUtils.assembleQualifiedNameImportPaths(imports),
+            sources.associateWith { rootDir.resolve(it) },
+          )
+        }
+        Triple(importsByTarget, sharedSourcesByImports, sharedIndexesByImports)
+      }.await()
+
+    val targetContributions: List<IndexContribution> = pythonTargets.mapIndexed { index, target ->
+      BazelCoroutineService.getInstance(project).startAsync {
+        val explicitImportsPaths = importsByTarget[index]
         val qualifiedNameImportPaths = PythonImportUtils.assembleQualifiedNameImportPaths(explicitImportsPaths)
-        val sourcesRelativePathToAbsolutePath: Map<Path, Path> =
-          if (target.isWorkspace(snapshot.repoMapping)) {
-            explicitImportsPaths
-              .flatMap { importsPath ->
-                allPYSourcesInMainWorkspace.filter { it.startsWith(importsPath) }
-              }
-              .ifEmpty { workspaceRelativePythonSources(target) }
-              .associateWith { path -> rootDir.resolve(path) }
-          }
-          else {
-            target.sources.getOutputLocations()
-              .filter { it.isPythonLanguage() }
-              .mapNotNull { location ->
-                val relativePath = location.toRepoRelativePath() ?: return@mapNotNull null
-                val path = resolve(location)?.takeIf { it.isPythonFile() } ?: return@mapNotNull null
-                relativePath to path
-              }
-              .toMap()
-          }
         val generatedSourceFiles =
           target.sources.getOutputLocations().filter { it.isGenerated } +
           (extractPythonBuildTarget(target)?.generatedSources?.getOutputLocations() ?: emptySequence())
-        val generatedSourcesRelativePathToAbsolutePath: Map<Path, Path> =
-          generatedSourceFiles
-            .distinct()
-            .filter { it.isPythonLanguage() }
-            .mapNotNull { location ->
-              val relativePath = location.toRepoRelativePath() ?: return@mapNotNull null
-              val path = execrootResolver.resolve(location, localRepositories) ?: return@mapNotNull null
-              relativePath to (generatedSourcePaths[path] ?: path.toAbsolutePath())
-            }.toMap()
-        expandPathsToQualifiedNames(qualifiedNameImportPaths, sourcesRelativePathToAbsolutePath + generatedSourcesRelativePathToAbsolutePath)
+        val generatedPythonSources = generatedSourceFiles.distinct().filter { it.isPythonLanguage() }.toList()
+        val sharedIndex = if (generatedPythonSources.isEmpty() && target.isWorkspace(snapshot.repoMapping)) {
+          sharedIndexesByImports[explicitImportsPaths]
+        }
+        else null
+        if (sharedIndex != null) {
+          IndexContribution(sharedIndex, explicitImportsPaths)
+        }
+        else {
+          val sourcesRelativePathToAbsolutePath: Map<Path, Path> =
+            if (target.isWorkspace(snapshot.repoMapping)) {
+              sharedSourcesByImports[explicitImportsPaths].orEmpty()
+                .ifEmpty { workspaceRelativePythonSources(target) }
+                .associateWith { path -> rootDir.resolve(path) }
+            }
+            else {
+              target.sources.getOutputLocations()
+                .filter { it.isPythonLanguage() }
+                .mapNotNull { location ->
+                  val relativePath = location.toRepoRelativePath() ?: return@mapNotNull null
+                  val path = resolve(location)?.takeIf { it.isPythonFile() } ?: return@mapNotNull null
+                  relativePath to path
+                }
+                .toMap()
+            }
+          val generatedSourcesRelativePathToAbsolutePath = generatedPythonSources.mapNotNull { location ->
+            val relativePath = location.toRepoRelativePath() ?: return@mapNotNull null
+            val path = execrootResolver.resolve(location, localRepositories) ?: return@mapNotNull null
+            relativePath to (generatedSourcePaths[path] ?: path.toAbsolutePath())
+          }.toMap()
+          val allSourcesRelativePathToAbsolutePath = sourcesRelativePathToAbsolutePath + generatedSourcesRelativePathToAbsolutePath
+          IndexContribution(
+            expandPathsToQualifiedNames(qualifiedNameImportPaths, allSourcesRelativePathToAbsolutePath),
+            null,
+          )
+        }
       }
     }.awaitAll()
 
+    val lastSharedIndexByImports = targetContributions.withIndex().mapNotNull { (index, contribution) ->
+      contribution.sharedImports?.let { it to index }
+    }.toMap()
+    val seenSharedImports = hashSetOf<List<Path>>()
     val qualifiedNamesResolverMap = hashMapOf<QualifiedName, Path>()
-    for (targetData in targetNames) {
-      for ((qualifiedName, path) in targetData) {
+    // Keep the first write for map iteration order and the last write for target overwrite order.
+    for ((index, contribution) in targetContributions.withIndex()) {
+      val sharedImports = contribution.sharedImports
+      if (sharedImports != null && !seenSharedImports.add(sharedImports) && lastSharedIndexByImports[sharedImports] != index) continue
+      for ((qualifiedName, path) in contribution.qualifiedNamesToPaths) {
         qualifiedNamesResolverMap[qualifiedName] = path
       }
     }
