@@ -1,6 +1,6 @@
 package org.jetbrains.bazel.server.sync
 
-import com.intellij.aspect.lib.Aspects
+import com.intellij.aspect.lib.ASPECT_NAME
 import com.intellij.aspect.lib.OutputGroups
 import com.intellij.aspect.lib.Rules
 import com.intellij.build.events.MessageEvent
@@ -235,26 +235,23 @@ class ProjectResolver(
       requestedTargetsToSync
         ?.let { TargetCollection(it, emptyList()) } ?: TargetCollection.fromExcludableList(projectView.targets)
 
-    val syncLanguages = ruleLanguages.map { it.language.aspectLanguage }.toSet()
-
     val buildAspectResult =
       measured(
         "Building project with aspect",
-      ) { buildProjectWithAspect(projectView, syncLanguages, build, targetsToSync, allTargets, taskId) }
+      ) { buildProjectWithAspect(projectView, build, targetsToSync, allTargets, taskId) }
 
     return Pair(repoMapping, buildAspectResult)
   }
 
   private suspend fun buildProjectWithAspect(
     projectView: ProjectView,
-    languages: Set<Rules>,
     build: Boolean,
     targetsToSync: TargetCollection,
     allTargets: List<Label>?, /* all known targets, if any, from first phase */
     taskId: TaskId,
   ): BazelBspAspectsManagerResult =
     coroutineScope {
-      val aspects = Aspects.forRules(languages).map { it.toString() }
+      val aspects = listOf(ASPECT_NAME)
       val taskLogger = taskEventsHandler.asLogger(taskId)
       val outputGroups = mutableListOf(OutputGroups.INFO.groupName)
       if (BazelFeatureFlags.isSyncRequestSourcesEnabled) {
