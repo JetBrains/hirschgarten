@@ -16,8 +16,6 @@ import com.intellij.driver.sdk.wait
 import com.intellij.driver.sdk.waitFor
 import com.intellij.ide.starter.ide.IDETestContext
 import com.intellij.openapi.ui.playback.commands.AbstractCommand.CMD_PREFIX
-import com.intellij.tools.ide.metrics.collector.telemetry.OpentelemetrySpanJsonParser
-import com.intellij.tools.ide.metrics.collector.telemetry.SpanFilter
 import com.intellij.tools.ide.performanceTesting.commands.CommandChain
 import com.intellij.tools.ide.performanceTesting.commands.DebugStepTypes
 import com.intellij.tools.ide.performanceTesting.commands.Keys
@@ -36,8 +34,8 @@ import com.intellij.tools.ide.performanceTesting.commands.setBreakpoint
 import com.intellij.tools.ide.performanceTesting.commands.sleep
 import com.intellij.tools.ide.performanceTesting.commands.takeScreenshot
 import com.intellij.tools.ide.performanceTesting.commands.waitForSmartMode
-import io.kotest.assertions.withClue
 import io.kotest.matchers.booleans.shouldBeTrue
+import io.kotest.matchers.collections.shouldNotContain
 import org.jetbrains.bazel.base.assertSyncedTargets
 import org.jetbrains.bazel.base.buildAndSync
 import org.jetbrains.bazel.base.execute
@@ -52,7 +50,6 @@ import org.jetbrains.bazel.tests.ui.verifyTestStatus
 import org.jetbrains.bazel.tests.ui.waitForDebuggerPausedAt
 import org.junit.jupiter.api.Order
 import org.junit.jupiter.api.Test
-import kotlin.io.path.div
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
 
@@ -329,8 +326,12 @@ class SimpleKotlinCombinedTest : IdeStarterCombinedBaseTest() {
         step("Apply hotswap") {
           execute { reloadFiles() }
           execute { build(listOf("SimpleKotlinTest")) }
-          waitForIndicators(timeout = 30.seconds)
+        }
+
+        step("Assert hotswap success") {
+          waitAnyTexts("Code has been reloaded", timeout = 30.seconds)
           execute { takeScreenshot("finishBuildAction") }
+          getAllTexts().map { it.text }.shouldNotContain("Loaded classes are up to date. Nothing to reload.")
         }
 
         step("Add a code comment") {
@@ -354,22 +355,10 @@ class SimpleKotlinCombinedTest : IdeStarterCombinedBaseTest() {
           execute { sleep(2000) }
           execute { takeScreenshot("afterHotSwapDebugStep") }
         }
-      }
-    }
 
-    val notificationSpanElements =
-      OpentelemetrySpanJsonParser(SpanFilter.nameEquals("show notification")).getSpanElements(
-        startResult.runContext.logsDir / "opentelemetry.json",
-      )
-    val expectedMessages = listOf("Code has been reloaded", "Loaded classes are up to date. Nothing to reload.")
-    for (expectedMessage in expectedMessages) {
-      val foundMessage = notificationSpanElements.any {
-        it.tags.any { tagsPair ->
-          tagsPair.second.contains(expectedMessage)
+        step("Make sure adding a comment didn't cause hotswap") {
+          waitAnyTexts("Loaded classes are up to date. Nothing to reload.")
         }
-      }
-      withClue("Cannot find expected hotswap message: $expectedMessage") {
-        foundMessage.shouldBeTrue()
       }
     }
   }
