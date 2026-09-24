@@ -18,6 +18,7 @@ import org.jetbrains.bazel.commons.BzlmodRepoMapping
 import org.jetbrains.bazel.commons.RepoMapping
 import org.jetbrains.bazel.commons.TargetCollection
 import org.jetbrains.bazel.commons.constants.Constants
+import org.jetbrains.bazel.commons.toVersionString
 import org.jetbrains.bazel.languages.projectview.ProjectView
 import org.jetbrains.bazel.languages.projectview.allowManualTargetsSync
 import org.jetbrains.bazel.languages.projectview.syncFlags
@@ -113,7 +114,7 @@ class BazelBspAspectsManager(
       workspaceRoot,
       Path.of(Constants.DOT_BAZELBSP_DIR_NAME),
       AspectConfig(
-        bazelVersion = "${bazelRelease.major}",
+        bazelVersion = bazelRelease.toVersionString(),
         repoMapping = ruleNameMapping,
         useBuiltin = builtInLanguages,
         rulesets = ruleSetInstances.map { it.ruleset.aspectLanguage }.toSet(),
