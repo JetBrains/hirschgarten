@@ -272,10 +272,9 @@ class OutputLocationParserTest {
 
     parser.parseExecrootPath("bazel-out/k8-opt/bin/pkg/f.h")
     parser.parse(proto("bazel-out/k8-fastbuild/bin", "pkg/gen.h", isSource = false))
-    parser.parseExecrootPath("foo/bar.h")
+    parser.parse(proto("foo", "bar.h", isSource = false))
 
     linked shouldContainExactly listOf(
-      Path("/bazel-exec/bazel-out/k8-opt/bin/pkg/f.h"),
       Path("/bazel-exec/bazel-out/k8-fastbuild/bin/pkg/gen.h"),
     )
   }

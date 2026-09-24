@@ -1,5 +1,6 @@
 package org.jetbrains.bazel.sync
 
+import com.intellij.testFramework.common.timeoutRunBlocking
 import com.intellij.util.io.createDirectories
 import com.intellij.util.io.delete
 import kotlinx.coroutines.runBlocking
@@ -9,11 +10,13 @@ import org.jetbrains.bazel.sync.workspace.mapper.normal.DefaultBazelOutputFileHa
 import org.jetbrains.bazel.test.framework.testBazelInfo
 import org.jetbrains.bazel.workspace.model.test.framework.MockProjectBaseTest
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.io.TempDir
 import org.junit.jupiter.api.condition.DisabledOnOs
 import org.junit.jupiter.api.condition.OS
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.ValueSource
 import java.nio.file.Files
+import java.nio.file.Path
 import java.nio.file.attribute.FileTime
 import kotlin.io.path.Path
 import kotlin.io.path.createSymbolicLinkPointingTo
@@ -73,5 +76,24 @@ internal class BazelOutFileHardLinksTest : MockProjectBaseTest() {
     assertThat(Files.isReadable(original)).isTrue()
     assertThat(links.allHardLinksCreatedSuccessfully).isFalse()
     assertThat(paths).containsExactly(source)
+  }
+
+  @Test
+  fun `symlink to directory should work`(@TempDir outputBase: Path): Unit = timeoutRunBlocking {
+    val root = Path(checkNotNull(project.basePath)).toRealPath()
+    BazelProjectFixtures.initializeBazelProject(project, root)
+    val info = testBazelInfo(workspaceRoot = root, outputBase = outputBase)
+    val links = DefaultBazelOutputFileHardLinks(project, info)
+    val tree = info.execRoot.resolve("bazel-out/k8-fastbuild/bin/tree").createDirectories()
+    tree.resolve("header.h").writeText("VALUE 42")
+
+    val original = tree.resolveSibling("tree-link").createSymbolicLinkPointingTo(tree)
+    links.onBeforeSync()
+
+    val cached = checkNotNull(links.createOutputFileHardLink(original))
+    assertThat(cached).isEqualTo(links.resolveCachedPath(original))
+    links.onAfterSync(true)
+    assertThat(cached.resolve("header.h").readText()).isEqualTo("VALUE 42")
+    assertThat(links.allHardLinksCreatedSuccessfully).isTrue()
   }
 }

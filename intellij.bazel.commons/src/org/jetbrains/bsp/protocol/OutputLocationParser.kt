@@ -21,15 +21,13 @@ class OutputLocationParser(
    * A workspace convenience symlink name, for example `bazel-bin`, maps to [Workspace].
    * The workspace root then resolves it through the symlink.
    * An empty input maps to `Workspace("")`.
+   *
+   * No hard linking happens here; we assume the target that produces the artifacts will call [parse] to do it.
    */
-  suspend fun parseExecrootPath(raw: List<String>): List<OutputLocation> = raw
+  fun parseExecrootPath(raw: List<String>): List<OutputLocation> = raw
     .map { OutputLocationParserWithoutHardlink.parseExecrootPath(it) }
-    .also { hardLinkOutputs(it) }
 
-  /**
-   * Prefer to use the override that takes a `List` for parallel IO during hardlink creation
-   */
-  suspend fun parseExecrootPath(raw: String): OutputLocation = parseExecrootPath(listOf(raw)).single()
+  fun parseExecrootPath(raw: String): OutputLocation = OutputLocationParserWithoutHardlink.parseExecrootPath(raw)
 
   /**
    * Parses an aspect [Common.ArtifactLocation].

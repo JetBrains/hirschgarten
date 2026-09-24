@@ -30,14 +30,18 @@ import java.nio.file.Path
 import java.nio.file.attribute.BasicFileAttributes
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicBoolean
+import kotlin.io.path.ExperimentalPathApi
+import kotlin.io.path.PathWalkOption
 import kotlin.io.path.createLinkPointingTo
 import kotlin.io.path.createSymbolicLinkPointingTo
 import kotlin.io.path.deleteIfExists
+import kotlin.io.path.deleteRecursively
 import kotlin.io.path.exists
 import kotlin.io.path.getLastModifiedTime
 import kotlin.io.path.isDirectory
 import kotlin.io.path.readAttributes
 import kotlin.io.path.relativeTo
+import kotlin.io.path.walk
 
 @ApiStatus.Internal
 class DefaultBazelOutputFileHardLinks(
@@ -77,7 +81,7 @@ class DefaultBazelOutputFileHardLinks(
     val realPaths: Map<Path, Deferred<Path?>> = coroutineScope {
       files.associateWith { originalFile ->
         async(limitedDispatcher) {
-          originalFile.takeIf { it.exists() && !it.isDirectory() }?.toRealPath()
+          originalFile.takeIf { it.exists() }?.toRealPath()
         }
       }
     }
@@ -99,36 +103,25 @@ class DefaultBazelOutputFileHardLinks(
        * Also, the hard link may exist on disk, but if we delete the original file
        * and recreate it, then the link will point to the old version!
        */
-      val targetHardLink = cacheDir.resolve(bazelOutRelativePath)
       // Use await() on a Deferred instead of a blocking computeIfAbsent to avoid thread starvation (BAZEL-3095)
-      val hardLink = hardLinksDuringSync.computeIfAbsent(targetHardLink) { targetHardLink ->
+      val hardLink = hardLinksDuringSync.computeIfAbsent(originalFile) { originalFile ->
         BazelCoroutineService.getInstance(project).startAsync {
           withContext(limitedDispatcher) {
+            val targetHardLink = cacheDir.resolve(bazelOutRelativePath)
             try {
               val fileManager = VirtualFileManager.getInstance()
               val targetHardLinkAttributes =
                 runCatching { targetHardLink.readAttributes<BasicFileAttributes>(LinkOption.NOFOLLOW_LINKS) }.getOrNull()
-              val isUpToDate = when {
-                targetHardLinkAttributes == null -> false
-                // Symbolic link. If the target stays the same, we don't really know if the target file was modified,
-                // hence the targetHardLinkAttributes?.isSymbolicLink check below in requiresRefresh
-                shouldCreateSymLink(realFile, rootDirPath) ->
-                  targetHardLinkAttributes.isSymbolicLink && runCatching { targetHardLink.toRealPath() }.getOrNull() == realFile
-                // Hard link. Bazel always deletes and recreates a file when modifying it,
-                // meaning the hard link is gonna point to a deleted file with an older timestamp in that case.
-                else -> !targetHardLinkAttributes.isSymbolicLink && targetHardLinkAttributes.lastModifiedTime() == realFile.getLastModifiedTime()
-              }
-              val hardLinkFile = if (!isUpToDate) {
-                targetHardLink.deleteIfExists()
-                targetHardLink.createParentDirectories()
-                createHardLinkOrSymbolicLink(targetHardLink, realFile, rootDirPath)
+              val requiresRefresh =
+                createHardLinkOrSymbolicLink(targetHardLink, targetHardLinkAttributes, rootDirPath, realFile, originalFile)
+              val hardLinkFile = if (requiresRefresh) {
                 fileManager.refreshAndFindFileByNioPath(targetHardLink)
               }
               else {
                 fileManager.findFileByNioPath(targetHardLink) ?: fileManager.refreshAndFindFileByNioPath(targetHardLink)
               }
               checkNotNull(hardLinkFile) { "Can't find virtual find for $targetHardLink" }
-              HardLink(hardLinkFile, requiresRefresh = !isUpToDate || targetHardLinkAttributes?.isSymbolicLink == true)
+              HardLink(hardLinkFile, requiresRefresh = requiresRefresh)
             }
             catch (e: Throwable) {
               logger.warn("Failed to create hard link for $realFile", e)
@@ -147,19 +140,46 @@ class DefaultBazelOutputFileHardLinks(
     return (retainedPaths ?: emptyList()) + hardLinkedPaths.awaitAll().map { it.path }
   }
 
-  private fun createHardLinkOrSymbolicLink(targetHardLink: Path, realFile: Path, rootDirPath: Path) {
+  @OptIn(ExperimentalPathApi::class)
+  private suspend fun createHardLinkOrSymbolicLink(
+    targetHardLink: Path,
+    targetHardLinkAttributes: BasicFileAttributes?,
+    rootDirPath: Path,
+    realFile: Path,
+    originalFile: Path,
+  ): Boolean {
     if (shouldCreateSymLink(realFile, rootDirPath)) {
-      // realFile is a source file, meaning the originalFile was a symlink into the source tree.
-      // Let's try to create a symlink instead, so that we know where to find the original file (used, e.g., by the CLion engine)
+      if (targetHardLinkAttributes?.isSymbolicLink == true && runCatching { targetHardLink.toRealPath() }.getOrNull() == realFile) {
+        return true  // The symlink stayed the same, but we don't know whether its contents changed
+      }
       try {
+        targetHardLink.deleteRecursively()
+        targetHardLink.createParentDirectories()
         targetHardLink.createSymbolicLinkPointingTo(realFile)
-        return
+        return true
       }
       catch (e: IOException) {
-        logger.debug("Failed to create symlink, Windows without Developer Mode?", e)
+        logger.warn("Failed to create symlink, Windows without Developer Mode?", e)
+        // fallthrough to hardlinking
       }
     }
-    targetHardLink.createLinkPointingTo(realFile)
+    if (originalFile.isDirectory()) {
+      if (targetHardLinkAttributes != null && !targetHardLinkAttributes.isDirectory) targetHardLink.deleteRecursively()
+      createOutputFileHardLinks(originalFile.walk(PathWalkOption.FOLLOW_LINKS).toList())
+      return true
+    }
+    else {
+      // Hard link. Bazel always deletes and recreates a file when modifying it,
+      // meaning the hard link is gonna point to a deleted file with an older timestamp in that case.
+      if (targetHardLinkAttributes != null && !targetHardLinkAttributes.isSymbolicLink && !targetHardLinkAttributes.isDirectory
+          && targetHardLinkAttributes.lastModifiedTime() == realFile.getLastModifiedTime()) {
+        return false  // refresh not required
+      }
+      targetHardLink.deleteRecursively()
+      targetHardLink.createParentDirectories()
+      targetHardLink.createLinkPointingTo(realFile)
+      return true
+    }
   }
 
   private fun shouldCreateSymLink(realFile: Path, rootDirPath: Path): Boolean {
@@ -209,7 +229,7 @@ class DefaultBazelOutputFileHardLinks(
     val toDeleteVF = mutableListOf<VirtualFile>()
     VfsUtilCore.visitChildrenRecursively(
       cacheDirFile,
-      object : VirtualFileVisitor<Nothing>() {
+      object : VirtualFileVisitor<Nothing>(NO_FOLLOW_SYMLINKS) {
         override fun visitFile(file: VirtualFile): Boolean {
           if (file !in hardLinksFilesUsedDuringSync) {
             toDeleteVF.add(file)

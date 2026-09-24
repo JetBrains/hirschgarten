@@ -1,0 +1,10 @@
+module(name = "external_ccinfo_includes_repro")
+
+# 0.2.25 gives unknown compiler kind errors in ide
+bazel_dep(name = "rules_cc", version = "0.2.22")
+
+fakelib = use_repo_rule("//third_party:fakelib.bzl", "fakelib")
+
+fakelib(
+    name = "fakelib",
+)
