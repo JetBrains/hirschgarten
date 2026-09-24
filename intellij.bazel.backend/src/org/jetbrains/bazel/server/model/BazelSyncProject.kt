@@ -5,8 +5,6 @@ import com.google.devtools.build.lib.query2.proto.proto2api.Build.Target
 import com.google.devtools.intellij.ideinfo.IntellijIdeInfo
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.commons.BazelRelease
-import org.jetbrains.bazel.commons.RepoMapping
-import org.jetbrains.bazel.commons.RepoMappingDisabled
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceConfiguration
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceConfigurationId
@@ -17,7 +15,6 @@ import java.nio.file.Path
 data class PhasedSyncProject(
   val workspaceRoot: Path,
   val bazelRelease: BazelRelease,
-  val repoMapping: RepoMapping,
   val modules: Map<Label, Target>,
   val hasError: Boolean = false,
 )
@@ -27,7 +24,6 @@ data class PhasedSyncProject(
 data class AspectSyncProject(
   val workspaceRoot: Path,
   val bazelRelease: BazelRelease,
-  val repoMapping: RepoMapping = RepoMappingDisabled,
   val workspaceName: String,
   val hasError: Boolean = false,
   val targets: Map<WorkspaceTargetKey, IntellijIdeInfo.TargetIdeInfo>,

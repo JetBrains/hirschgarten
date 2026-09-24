@@ -29,6 +29,7 @@ import org.jetbrains.bazel.config.BazelBackendBundle
 import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.coroutines.BazelCoroutineService
 import org.jetbrains.bazel.fus.BazelSyncCollector
+import org.jetbrains.bazel.commons.RepoMapping
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.languages.projectview.ProjectViewService
 import org.jetbrains.bazel.languages.projectview.unresolvedRequiredImports
@@ -348,6 +349,7 @@ class ProjectSyncTask(
                   phase = phase,
                   buildProject = buildProject,
                   allKnownTargets = allKnownTargets,
+                  knownRepoMapping = knownRepoMapping,
                   server = server,
                   taskId = subtaskId,
                 )
@@ -378,6 +380,7 @@ class ProjectSyncTask(
           val statistics = syncedTargets.syncStatistics()
           if (phase == SyncPhase.FIRST) {
             allKnownTargets = syncedTargets.map { it.id }
+            knownRepoMapping = workspaceSnapshot.repoMapping
           }
 
           val importerHelper = WorkspaceImporterHelper(
@@ -478,6 +481,9 @@ class ProjectSyncTask(
 
   // remember from first phase to second phase for proper sharding
   private var allKnownTargets: List<Label>? = null
+
+  // remember from first phase to second phase to fetch the repo mapping once per sync
+  private var knownRepoMapping: RepoMapping? = null
 
   private suspend fun updateProjectModel(
     progressReporter: SequentialProgressReporter,

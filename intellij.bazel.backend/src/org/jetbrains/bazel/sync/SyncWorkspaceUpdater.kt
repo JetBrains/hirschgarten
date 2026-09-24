@@ -3,6 +3,7 @@ package org.jetbrains.bazel.sync
 import com.intellij.build.events.MessageEvent
 import com.intellij.openapi.project.Project
 import org.jetbrains.bazel.commons.RepoMapping
+import org.jetbrains.bazel.commons.RepoMappingDisabled
 import org.jetbrains.bazel.config.BazelBackendBundle
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.label.ResolvedLabel
@@ -24,7 +25,8 @@ internal class SyncWorkspaceUpdater(private val project: Project) {
     val scope = effectiveScope(context, previous, requested)
     return when (scope) {
       is ProjectSyncScope.Full -> {
-        val resolved = resolveWorkspace(context, WorkspaceBuildTargetSelector.AllTargets)
+        val repoMapping = context.knownRepoMapping ?: context.server.workspaceRepoMapping(context.taskId)
+        val resolved = resolveWorkspace(context, repoMapping, WorkspaceBuildTargetSelector.AllTargets)
         // resolve which produced nothing cannot overwrite what is already there
         if (resolved.hasError && resolved.targets.isEmpty()) {
           return SyncWorkspaceUpdate(scope = scope, status = SyncWorkspaceStatus.FATAL, snapshot = previous)
@@ -59,7 +61,7 @@ internal class SyncWorkspaceUpdater(private val project: Project) {
           description = scope.patterns.joinToString(separator = "\n") { it.toShortString(project) },
           severity = MessageEvent.Kind.INFO,
         )
-        val resolved = resolveWorkspace(context, WorkspaceBuildTargetSelector.SpecificTargets(scope.patterns))
+        val resolved = resolveWorkspace(context, partialSyncRepoMapping(context, previous), WorkspaceBuildTargetSelector.SpecificTargets(scope.patterns))
         val incomplete = WorkspaceSnapshotBuilder.buildIncomplete(resolved = resolved)
         val snapshot = project.syncConsole.withSubtask(
           subtaskId = context.taskId.subTask("workspace_snapshot_merge"),
@@ -83,15 +85,25 @@ internal class SyncWorkspaceUpdater(private val project: Project) {
     }
   }
 
-  private suspend fun resolveWorkspace(context: SyncWorkspaceContext, selector: WorkspaceBuildTargetSelector) =
+  private suspend fun partialSyncRepoMapping(context: SyncWorkspaceContext, previous: WorkspaceSnapshot): RepoMapping =
+    if (previous.repoMapping is RepoMappingDisabled && context.server.bazelInfo.isBzlModEnabled) {
+      context.server.workspaceRepoMapping(context.taskId)
+    }
+    else {
+      previous.repoMapping
+    }
+
+  private suspend fun resolveWorkspace(context: SyncWorkspaceContext, repoMapping: RepoMapping, selector: WorkspaceBuildTargetSelector) =
     when (context.phase) {
       SyncPhase.FIRST -> BazelWorkspaceResolver.fetchPhasedWorkspace(
         project = project,
+        repoMapping = repoMapping,
         taskId = context.taskId,
       )
 
       SyncPhase.SECOND -> BazelWorkspaceResolver.fetchAspectWorkspace(
         project = project,
+        repoMapping = repoMapping,
         allKnownTargets = context.allKnownTargets,
         build = context.buildProject,
         taskId = context.taskId,

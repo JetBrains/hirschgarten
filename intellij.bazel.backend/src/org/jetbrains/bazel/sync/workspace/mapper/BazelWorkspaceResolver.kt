@@ -4,6 +4,7 @@ import com.google.devtools.intellij.ideinfo.IntellijIdeInfo
 import com.intellij.build.events.MessageEvent
 import com.intellij.openapi.project.Project
 import org.jetbrains.annotations.ApiStatus
+import org.jetbrains.bazel.commons.RepoMapping
 import org.jetbrains.bazel.commons.constants.Constants
 import org.jetbrains.bazel.config.BazelBackendBundle
 import org.jetbrains.bazel.ignore.BazelIgnoreService
@@ -11,6 +12,7 @@ import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.label.label
 import org.jetbrains.bazel.progress.syncConsole
 import org.jetbrains.bazel.server.BazelServerService
+import org.jetbrains.bazel.server.bzlmod.extendRepoMapping
 import org.jetbrains.bazel.sync.workspace.BazelResolvedWorkspace
 import org.jetbrains.bsp.protocol.TaskId
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetParams
@@ -20,17 +22,17 @@ import java.nio.file.Path
 
 @ApiStatus.Internal
 object BazelWorkspaceResolver {
-  suspend fun fetchPhasedWorkspace(project: Project, taskId: TaskId): BazelResolvedWorkspace {
+  suspend fun fetchPhasedWorkspace(project: Project, repoMapping: RepoMapping, taskId: TaskId): BazelResolvedWorkspace {
     return BazelServerService.getInstance(project).connection.runWithServer(taskId) { server ->
       val phasedSyncProject = server.workspaceBuildPhasedTargets(WorkspaceBuildTargetPhasedParams(taskId))
       val phasedMapper = PhasedBazelProjectMapper(
         bazelPathsResolver = server.bazelPathsResolver,
         projectView = server.projectView,
       )
-      val targets = phasedMapper.mapTargets(phasedSyncProject.repoMapping, phasedSyncProject.modules)
+      val targets = phasedMapper.mapTargets(repoMapping, phasedSyncProject.modules)
       BazelResolvedWorkspace(
         workspaceName = null,
-        repoMapping = phasedSyncProject.repoMapping,
+        repoMapping = repoMapping,
         rootTargets = targets.map { it.key }.toSet(),
         targets = targets,
         hasError = phasedSyncProject.hasError,
@@ -41,6 +43,7 @@ object BazelWorkspaceResolver {
 
   suspend fun fetchAspectWorkspace(
     project: Project,
+    repoMapping: RepoMapping,
     allKnownTargets: List<Label>?,
     build: Boolean,
     taskId: TaskId,
@@ -50,8 +53,10 @@ object BazelWorkspaceResolver {
       reportIgnoredBazelBsp(project, taskId, server.bazelInfo.workspaceRoot)
 
       val syncProject =
-        server.workspaceBuildTargets(WorkspaceBuildTargetParams(selector, build, allKnownTargets, taskId))
+        server.workspaceBuildTargets(WorkspaceBuildTargetParams(selector, build, allKnownTargets, repoMapping, taskId))
       reportImportedNoIdeTargets(project, taskId, syncProject.targets.values)
+
+      val extendedRepoMapping = extendRepoMapping(server, repoMapping, syncProject.targets.keys.map { it.label }, taskId)
 
       val bazelMapper =
         AspectBazelProjectMapper(
@@ -60,14 +65,14 @@ object BazelWorkspaceResolver {
         )
       val targets = bazelMapper.mapTargets(
         allTargets = syncProject.targets,
-        repoMapping = syncProject.repoMapping,
+        repoMapping = extendedRepoMapping,
         build = build,
         taskId = taskId,
       )
 
       BazelResolvedWorkspace(
         workspaceName = syncProject.workspaceName,
-        repoMapping = syncProject.repoMapping,
+        repoMapping = extendedRepoMapping,
         rootTargets = syncProject.rootTargets,
         targets = targets,
         hasError = syncProject.hasError,

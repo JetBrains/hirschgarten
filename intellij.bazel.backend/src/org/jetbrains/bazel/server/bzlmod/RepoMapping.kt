@@ -8,8 +8,12 @@ import org.jetbrains.bazel.commons.BazelInfo
 import org.jetbrains.bazel.commons.BzlmodRepoMapping
 import org.jetbrains.bazel.commons.RepoMapping
 import org.jetbrains.bazel.commons.RepoMappingDisabled
+import org.jetbrains.bazel.label.Canonical
+import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.label.ResolvedLabel
 import org.jetbrains.bazel.languages.projectview.ProjectView
 import org.jetbrains.bazel.languages.starlark.repomapping.externalRepositoriesTreatedAsInternal
+import org.jetbrains.bazel.server.BazelServerFacade
 import org.jetbrains.bsp.protocol.BazelTaskLogger
 import org.jetbrains.bsp.protocol.TaskId
 import java.nio.file.Path
@@ -62,15 +66,15 @@ internal suspend fun calculateRepoNameMappingOnly(
       .orEmpty()
 
   return BzlmodRepoMapping(
-      mapOf(),
-      moduleApparentNameToCanonicalNameForNeededTransitiveRules + moduleApparentNameToCanonicalName,
-      mapOf(),
-      setOf(),
-    )
+    mapOf(),
+    moduleApparentNameToCanonicalNameForNeededTransitiveRules + moduleApparentNameToCanonicalName,
+    mapOf(),
+    setOf(),
+  )
 }
 
 internal suspend fun extendRepoMappingByPathInfo(
-  nameMapping : RepoMapping,
+  nameMapping: RepoMapping,
   projectView: ProjectView,
   bazelRunner: BazelRunner,
   bazelInfo: BazelInfo,
@@ -89,7 +93,8 @@ internal suspend fun extendRepoMappingByPathInfo(
     moduleApparentNameToCanonicalName[name]?.let { knownRepoDefinitions.containsKey(it) } ?: false
   }
   val knownCanonicalNames = known.map { moduleApparentNameToCanonicalName[it] }
-  val resolvedModules = moduleResolver.resolveModules(unknown, bazelInfo).result + knownRepoDefinitions.filter { (k,v) -> knownCanonicalNames.contains(k) }
+  val resolvedModules =
+    moduleResolver.resolveModules(unknown, bazelInfo).result + knownRepoDefinitions.filter { (k, v) -> knownCanonicalNames.contains(k) }
 
   resolvedModules.forEach { externalRepo, showRepoResult ->
     try {
@@ -150,4 +155,46 @@ internal suspend fun calculateRepoMapping(
     calculateRepoNameMappingOnly(projectView, bazelRunner, bazelInfo, taskLogger, taskId),
     projectView, bazelRunner, bazelInfo, taskLogger, mapOf(), taskId,
   )
+}
+
+internal suspend fun extendRepoMapping(
+  server: BazelServerFacade,
+  repoMapping: RepoMapping,
+  targetLabels: Collection<Label>,
+  taskId: TaskId,
+): RepoMapping {
+  return when (repoMapping) {
+    is RepoMappingDisabled -> RepoMappingDisabled
+    is BzlmodRepoMapping -> {
+      // If we discovered new repositories in the transitive dependencies, verify if some of
+      // them are local repositories and update our mapping to local paths accordingly.
+      // Additionally, for those newly discovered local repositories, update the path to
+      // point to the source tree (rather than the output map).
+      val involvedRepos = targetLabels.mapNotNull { (it as? ResolvedLabel)?.repo as? Canonical }.distinct()
+      val needsPath = involvedRepos
+        .filter { !(repoMapping.nonLocalCanonicalRepoNames.contains(it.repoName)) }
+        .filter { !(repoMapping.canonicalRepoNameToLocalPath.contains(it.repoName)) }
+        .map { it.toString() }
+      val extraRepositoryDescriptions =
+        server.showRepos(needsPath, taskId).result
+      val extraPaths = extraRepositoryDescriptions.map { (name, description) ->
+        when (description) {
+          is ShowRepoResult.LocalRepository -> mapOf(description.name to Path(description.path))
+          else -> mapOf()
+        }
+      }.reduceOrNull { acc, map -> acc + map }
+        .orEmpty()
+      val extraPathsResolved = extraPaths.mapValues { (_, path) -> server.bazelInfo.workspaceRoot.resolve(path) }
+      val extraNonLocalCanonicalRepoNames = extraRepositoryDescriptions.filter { it.value != null && it.value !is ShowRepoResult.LocalRepository }.mapNotNull { it.value?.name }
+      // `bazel mod show_repo` does not describe every repository, for example `@@bazel_tools`.
+      // add such a repository as non-local, so that the next sync does not ask Bazel again.
+      val undescribedCanonicalRepoNames = needsPath.map { it.removePrefix("@@") }.filter { it !in extraPaths }
+      BzlmodRepoMapping(
+        repoMapping.canonicalRepoNameToLocalPath + extraPaths,
+        repoMapping.apparentRepoNameToCanonicalName,
+        repoMapping.canonicalRepoNameToPath + extraPathsResolved,
+        repoMapping.nonLocalCanonicalRepoNames + extraNonLocalCanonicalRepoNames + undescribedCanonicalRepoNames,
+      )
+    }
+  }
 }

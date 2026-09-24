@@ -115,7 +115,6 @@ internal class DefaultBazelServerConnection(private val project: Project) : Baze
         bazelRunner = bazelRunner,
         projectView = projectView,
         bazelInfo = bazelInfo,
-        taskEventsHandler = taskEventsHandler,
       )
 
     val bspProjectMapper =
@@ -132,6 +131,7 @@ internal class DefaultBazelServerConnection(private val project: Project) : Baze
       firstPhaseProjectResolver = firstPhaseProjectResolver,
       executeService = executeService,
       bazelRunner = bazelRunner,
+      taskEventsHandler = taskEventsHandler,
       projectView = projectView,
       bazelInfo = bazelInfo,
       bazelPathsResolver = bazelPathsResolver,

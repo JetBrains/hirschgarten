@@ -1,6 +1,7 @@
 package org.jetbrains.bazel.server
 
 import org.jetbrains.annotations.ApiStatus
+import org.jetbrains.bazel.bazelrunner.ResolvedModulesAndWarning
 import org.jetbrains.bazel.commons.BazelInfo
 import org.jetbrains.bazel.commons.BazelPathsResolver
 import org.jetbrains.bazel.commons.RepoMapping
@@ -42,6 +43,12 @@ interface BazelServerFacade {
 
   @get:ApiStatus.Internal
   val outputParser: OutputLocationParser
+
+  @ApiStatus.Internal
+  suspend fun workspaceRepoMapping(taskId: TaskId): RepoMapping
+
+  @ApiStatus.Internal
+  suspend fun showRepos(repoNames: List<String>, taskId: TaskId): ResolvedModulesAndWarning
 
   @ApiStatus.Internal
   suspend fun workspaceBuildTargets(params: WorkspaceBuildTargetParams): AspectSyncProject

@@ -1,9 +1,11 @@
 package org.jetbrains.bazel.workspace.model.test.framework
 
+import org.jetbrains.bazel.bazelrunner.ResolvedModulesAndWarning
 import org.jetbrains.bazel.commons.BazelInfo
 import org.jetbrains.bazel.commons.BazelPathsResolver
 import org.jetbrains.bazel.commons.BazelRelease
 import org.jetbrains.bazel.commons.RepoMapping
+import org.jetbrains.bazel.commons.RepoMappingDisabled
 import org.jetbrains.bazel.commons.orFallbackVersion
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.languages.projectview.ProjectView
@@ -41,6 +43,11 @@ open class BuildServerMock(
   private val aspectSyncProject: AspectSyncProject? = null,
   private val phasedSyncProjectResult: PhasedSyncProject? = null,
 ) : BazelServerFacade {
+  override suspend fun workspaceRepoMapping(taskId: TaskId): RepoMapping = RepoMappingDisabled
+
+  override suspend fun showRepos(repoNames: List<String>, taskId: TaskId): ResolvedModulesAndWarning =
+    ResolvedModulesAndWarning(emptyMap(), emptyList())
+
   override suspend fun workspaceBuildTargets(params: WorkspaceBuildTargetParams): AspectSyncProject =
     wrapInFuture(aspectSyncProject)
 

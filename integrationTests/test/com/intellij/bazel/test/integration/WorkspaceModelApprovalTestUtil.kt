@@ -104,8 +104,10 @@ internal suspend fun doWorkspaceModelTest(
 ) {
   val taskId = TaskGroupId.EMPTY.task("main")
   val server = BazelServerService.getInstance(project).connection
+  val repoMapping = server.runWithServer(taskId) { it.workspaceRepoMapping(taskId) }
   val resolvedWorkspace = BazelWorkspaceResolver.fetchAspectWorkspace(
     project = project,
+    repoMapping = repoMapping,
     allKnownTargets = null,
     build = false,
     taskId = taskId,

@@ -1,5 +1,6 @@
 package org.jetbrains.bazel.sync.task
 
+import org.jetbrains.bazel.commons.RepoMapping
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.server.BazelServerFacade
 import org.jetbrains.bsp.protocol.TaskId
@@ -13,6 +14,7 @@ internal data class SyncWorkspaceContext(
   val phase: SyncPhase,
   val buildProject: Boolean,
   val allKnownTargets: List<Label>?,
+  val knownRepoMapping: RepoMapping?,
   val server: BazelServerFacade,
   val taskId: TaskId,
 )

@@ -12,37 +12,29 @@ import kotlinx.coroutines.ensureActive
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.bazelrunner.BazelRunner
 import org.jetbrains.bazel.bazelrunner.ModuleResolver
-import org.jetbrains.bazel.bazelrunner.ShowRepoResult
 import org.jetbrains.bazel.commons.BazelInfo
 import org.jetbrains.bazel.commons.BazelPathsResolver
 import org.jetbrains.bazel.commons.BazelStatus
 import org.jetbrains.bazel.commons.BzlmodRepoMapping
 import org.jetbrains.bazel.commons.RepoMapping
-import org.jetbrains.bazel.commons.RepoMappingDisabled
 import org.jetbrains.bazel.commons.TargetCollection
 import org.jetbrains.bazel.config.BazelFeatureFlags
-import org.jetbrains.bazel.label.Canonical
 import org.jetbrains.bazel.label.Label
-import org.jetbrains.bazel.label.ResolvedLabel
 import org.jetbrains.bazel.languages.projectview.ProjectView
 import org.jetbrains.bazel.languages.projectview.shardSync
 import org.jetbrains.bazel.languages.projectview.targetShardSize
 import org.jetbrains.bazel.languages.projectview.targets
-import org.jetbrains.bazel.languages.starlark.repomapping.externalRepositoriesTreatedAsInternal
 import org.jetbrains.bazel.performance.bspTracer
 import org.jetbrains.bazel.progress.syncConsole
 import org.jetbrains.bazel.server.bsp.managers.BazelBspAspectsManager
 import org.jetbrains.bazel.server.bsp.managers.BazelBspAspectsManagerResult
 import org.jetbrains.bazel.server.bsp.managers.BazelExternalRulesetsQueryImpl
-import org.jetbrains.bazel.server.bzlmod.calculateRepoNameMappingOnly
-import org.jetbrains.bazel.server.bzlmod.extendRepoMappingByPathInfo
 import org.jetbrains.bazel.server.model.AspectSyncProject
 import org.jetbrains.bazel.server.sync.sharding.BazelBuildTargetSharder
 import org.jetbrains.bsp.protocol.BazelTaskEventsHandler
 import org.jetbrains.bsp.protocol.TaskId
 import org.jetbrains.bsp.protocol.asLogger
 import java.nio.file.Path
-import kotlin.io.path.Path
 
 internal class IllegalTargetsSizeException(message: String) : Exception(message)
 
@@ -74,12 +66,11 @@ class ProjectResolver(
     build: Boolean,
     requestedTargetsToSync: List<Label>?,
     allTargets: List<Label>?, /* all known targets, if any, from first phase */
+    repoMapping: RepoMapping,
     taskId: TaskId,
   ): AspectSyncProject {
     return bspTracer.spanBuilder("Resolve project").useWithScope {
-      val buildAspectResult = buildProjectWithAspectAndSetup(build, requestedTargetsToSync, allTargets, taskId)
-      val repoMapping = buildAspectResult.first
-      val aspectResult = buildAspectResult.second
+      val aspectResult = buildProjectWithAspectAndSetup(build, requestedTargetsToSync, allTargets, repoMapping, taskId)
 
       val configurations = fetchConfigurationsFromAnalysisCache(projectView, bazelRunner, taskId)
         .onFailure { logger.warn("`bazel config` invocation failed, falling back to BEP configurations", it) }
@@ -94,46 +85,12 @@ class ProjectResolver(
             .readTargetMapFromAspectOutputs(aspectOutputs)
         }
 
-      val newRepoMapping = when (repoMapping) {
-        is RepoMappingDisabled -> RepoMappingDisabled
-        is BzlmodRepoMapping -> {
-          // If we discovered new repositories in the transitive dependencies, verify if some of
-          // them are local repositories and update our mapping to local paths accordingly.
-          // Additionally, for those newly discovered local repositories, update the path to
-          // point to the source tree (rather than the output map).
-          val involvedRepos = targets.keys.mapNotNull { (it.label as? ResolvedLabel)?.repo as? Canonical }.distinct()
-          val needsPath = involvedRepos
-            .filter { !(repoMapping.nonLocalCanonicalRepoNames.contains(it.repoName)) }
-            .filter { !(repoMapping.canonicalRepoNameToLocalPath.contains(it.repoName)) }
-            .map { it.toString() }
-          val extraRepositoryDescriptions =
-            ModuleResolver(bazelRunner, projectView, taskId).resolveModules(needsPath, bazelInfo).result
-          val extraPaths = extraRepositoryDescriptions.map { (name, description) ->
-            when (description) {
-              is ShowRepoResult.LocalRepository -> mapOf(description.name to Path(description.path))
-              else -> mapOf()
-            }
-          }.reduceOrNull { acc, map -> acc + map }
-            .orEmpty()
-          val extraPathsResolved = extraPaths.mapValues { (_, path) -> bazelInfo.workspaceRoot.resolve(path) }
-          val extraNonLocalCanonicalRepoNames = extraRepositoryDescriptions.filter { it.value != null && it.value !is ShowRepoResult.LocalRepository }.mapNotNull { it.value?.name }
-          BzlmodRepoMapping(
-            repoMapping.canonicalRepoNameToLocalPath + extraPaths,
-            repoMapping.apparentRepoNameToCanonicalName,
-            repoMapping.canonicalRepoNameToPath + extraPathsResolved,
-            repoMapping.nonLocalCanonicalRepoNames + extraNonLocalCanonicalRepoNames,
-          )
-        }
-      }
-
-
       val workspaceName = targets.values.firstOrNull()?.workspaceName ?: "_main"
       val rootTargets = aspectResult.bepOutput.rootTargets()
 
       return@useWithScope AspectSyncProject(
         workspaceRoot = bazelInfo.workspaceRoot,
         bazelRelease = bazelInfo.release,
-        repoMapping = newRepoMapping,
         workspaceName = workspaceName,
         hasError = aspectResult.isFailure,
         targets = targets,
@@ -147,13 +104,9 @@ class ProjectResolver(
     build: Boolean,
     requestedTargetsToSync: List<Label>?,
     allTargets: List<Label>?, /* all known targets, if any, from first phase */
+    repoMapping: RepoMapping,
     taskId: TaskId,
-  ): Pair<RepoMapping, BazelBspAspectsManagerResult> {
-    val repoMappingOnly =
-      measured("Calculating external repository mapping") {
-        calculateRepoNameMappingOnly(projectView, bazelRunner, bazelInfo, taskEventsHandler.asLogger(taskId), taskId)
-      }
-
+  ): BazelBspAspectsManagerResult {
     val bazelExternalRulesetsQuery =
       BazelExternalRulesetsQueryImpl(
         taskId,
@@ -162,7 +115,7 @@ class ProjectResolver(
         bazelInfo.isWorkspaceEnabled,
         taskEventsHandler,
         projectView,
-        repoMappingOnly,
+        repoMapping,
       )
 
     val externalRulesetNames =
@@ -170,18 +123,13 @@ class ProjectResolver(
         "Discovering supported external rules",
       ) { bazelExternalRulesetsQuery.fetchExternalRulesetNames() }
 
-    val mapping = (repoMappingOnly as? BzlmodRepoMapping)?.apparentRepoNameToCanonicalName
-
-    val externalRepos = mapping?.let { mapping ->
+    val externalRepos = (repoMapping as? BzlmodRepoMapping)?.apparentRepoNameToCanonicalName?.let { mapping ->
       externalRulesetNames.mapNotNull { repoName -> mapping[repoName] }.filter { it != "" }.map { "@@" + it }
     } ?: emptyList()
 
-    val extraDefinitionsNeeded =
-      projectView.externalRepositoriesTreatedAsInternal.map { repoName -> mapping?.get(repoName)?.let { "@@" + it } ?: repoName }
-
     val repoDefinitionsWithWarnings =
       measured("Looking up definitions of external rules") {
-        ModuleResolver(bazelRunner, projectView, taskId).resolveModules(externalRepos + extraDefinitionsNeeded, bazelInfo)
+        ModuleResolver(bazelRunner, projectView, taskId).resolveModules(externalRepos, bazelInfo)
       }
 
     repoDefinitionsWithWarnings.warnings.forEach {
@@ -192,16 +140,6 @@ class ProjectResolver(
     }
 
     val repoDefinitions = repoDefinitionsWithWarnings.result
-
-    val repoMapping = extendRepoMappingByPathInfo(
-      repoMappingOnly,
-      projectView,
-      bazelRunner,
-      bazelInfo,
-      taskEventsHandler.asLogger(taskId),
-      repoDefinitions,
-      taskId,
-    )
 
     val ruleSets = measured("Mapping rule names to languages") {
         bazelBspAspectsManager.calculateRulesets(
@@ -243,7 +181,7 @@ class ProjectResolver(
         )
       }
 
-    return Pair(repoMapping, buildAspectResult)
+    return buildAspectResult
   }
 
   private suspend fun buildProjectWithAspect(

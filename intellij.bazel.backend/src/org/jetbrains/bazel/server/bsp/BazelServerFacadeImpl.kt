@@ -1,15 +1,20 @@
 package org.jetbrains.bazel.server.bsp
 
+import com.intellij.platform.diagnostic.telemetry.helpers.useWithScope
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.bazelrunner.BazelRunner
+import org.jetbrains.bazel.bazelrunner.ModuleResolver
+import org.jetbrains.bazel.bazelrunner.ResolvedModulesAndWarning
 import org.jetbrains.bazel.commons.BazelInfo
 import org.jetbrains.bazel.commons.BazelPathsResolver
 import org.jetbrains.bazel.commons.RepoMapping
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.languages.projectview.ProjectView
+import org.jetbrains.bazel.performance.bspTracer
 import org.jetbrains.bazel.server.BazelQueryParams
 import org.jetbrains.bazel.server.BazelQueryResult
 import org.jetbrains.bazel.server.BazelServerFacade
+import org.jetbrains.bazel.server.bzlmod.calculateRepoMapping
 import org.jetbrains.bazel.server.model.AspectSyncProject
 import org.jetbrains.bazel.server.model.PhasedSyncProject
 import org.jetbrains.bazel.server.runBazelQuery
@@ -20,6 +25,7 @@ import org.jetbrains.bazel.server.sync.firstPhase.FirstPhaseProjectResolver
 import org.jetbrains.bazel.sync.BazelOutFileHardLinks
 import org.jetbrains.bsp.protocol.AnalysisDebugParams
 import org.jetbrains.bsp.protocol.AnalysisDebugResult
+import org.jetbrains.bsp.protocol.BazelTaskEventsHandler
 import org.jetbrains.bsp.protocol.CompileParams
 import org.jetbrains.bsp.protocol.CompileResult
 import org.jetbrains.bsp.protocol.JvmToolchainInfo
@@ -34,6 +40,7 @@ import org.jetbrains.bsp.protocol.WorkspaceBuildTargetParams
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetPhasedParams
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetSelector
 import org.jetbrains.bsp.protocol.WorkspaceDirectoriesResult
+import org.jetbrains.bsp.protocol.asLogger
 
 @ApiStatus.Internal
 class BazelServerFacadeImpl(
@@ -42,6 +49,7 @@ class BazelServerFacadeImpl(
   private val firstPhaseProjectResolver: FirstPhaseProjectResolver,
   private val executeService: ExecuteService,
   private val bazelRunner: BazelRunner,
+  private val taskEventsHandler: BazelTaskEventsHandler,
   override val projectView: ProjectView,
   override val bazelInfo: BazelInfo,
   override val bazelPathsResolver: BazelPathsResolver,
@@ -49,6 +57,14 @@ class BazelServerFacadeImpl(
   override val outputResolver: OutputLocationResolver,
   override val outputParser: OutputLocationParser,
 ) : BazelServerFacade {
+
+  override suspend fun workspaceRepoMapping(taskId: TaskId): RepoMapping =
+    bspTracer.spanBuilder("Calculating external repository mapping").useWithScope {
+      calculateRepoMapping(projectView, bazelRunner, bazelInfo, taskEventsHandler.asLogger(taskId), taskId)
+    }
+
+  override suspend fun showRepos(repoNames: List<String>, taskId: TaskId): ResolvedModulesAndWarning =
+    ModuleResolver(bazelRunner, projectView, taskId).resolveModules(repoNames, bazelInfo)
 
   override suspend fun workspaceBuildTargets(params: WorkspaceBuildTargetParams): AspectSyncProject {
     val targetsToSync = when (val selector = params.selector) {
@@ -59,6 +75,7 @@ class BazelServerFacadeImpl(
       build = params.build,
       targetsToSync,
       params.allTargets,
+      params.repoMapping,
       params.taskId
     )
   }

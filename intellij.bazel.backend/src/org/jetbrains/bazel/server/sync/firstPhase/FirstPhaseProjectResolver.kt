@@ -9,11 +9,8 @@ import org.jetbrains.bazel.commons.BazelInfo
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.languages.projectview.ProjectView
 import org.jetbrains.bazel.languages.projectview.targets
-import org.jetbrains.bazel.server.bzlmod.calculateRepoMapping
 import org.jetbrains.bazel.server.model.PhasedSyncProject
-import org.jetbrains.bsp.protocol.BazelTaskEventsHandler
 import org.jetbrains.bsp.protocol.TaskId
-import org.jetbrains.bsp.protocol.asLogger
 import java.nio.file.Path
 
 @ApiStatus.Internal
@@ -22,7 +19,6 @@ class FirstPhaseProjectResolver(
   private val bazelRunner: BazelRunner,
   private val projectView: ProjectView,
   private val bazelInfo: BazelInfo,
-  private val taskEventsHandler: BazelTaskEventsHandler,
 ) {
   suspend fun resolve(taskId: TaskId): PhasedSyncProject =
     coroutineScope {
@@ -45,13 +41,10 @@ class FirstPhaseProjectResolver(
       val targets: Sequence<Target> = generateSequence { Target.parseDelimitedFrom(inputStream) }
       val modules: Map<Label, Target> = targets.associateBy { Label.parse(it.rule.name) }
 
-      val repoMapping = calculateRepoMapping(projectView, bazelRunner, bazelInfo, taskEventsHandler.asLogger(taskId), taskId)
-
       PhasedSyncProject(
         workspaceRoot = workspaceRoot,
         bazelRelease = bazelInfo.release,
         modules = modules,
-        repoMapping = repoMapping,
         hasError = bazelResult.isNotSuccess
       )
     }
