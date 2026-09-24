@@ -14,7 +14,6 @@ import org.jetbrains.bazel.languages.starlark.psi.StarlarkElementVisitor
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkListLiteralExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkParenthesizedExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkReferenceExpression
-import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkSliceExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkSubscriptionExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkTargetExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkTupleExpression
@@ -60,8 +59,7 @@ class StarlarkInvalidAssignmentTargetInspection : LocalInspectionTool() {
       when (target) {
         is StarlarkTargetExpression,
         is StarlarkSubscriptionExpression,
-        is StarlarkReferenceExpression,
-        is StarlarkSliceExpression -> null
+        is StarlarkReferenceExpression -> null
 
         is StarlarkParenthesizedExpression -> {
           val tuple = target.getTuple()
