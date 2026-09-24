@@ -56,12 +56,12 @@ internal suspend fun buildWorkspaceModel(model: OCWorkspace.ModifiableModel, con
 
     workspaceConfig.getLanguageCompilerSettings(CLanguageKind.C).apply {
       setCompiler(settings.cCompilerKind, settings.cCompiler.toFile(), ctx.execroot.toFile())
-      setCompilerSwitches(cSwitches)
+      setCompilerSwitches(buildSwitches(config, settings.cCompilerKind, settings.cSwitches, config.shared.conlyopts))
     }
 
     workspaceConfig.getLanguageCompilerSettings(CLanguageKind.CPP).apply {
       setCompiler(settings.cppCompilerKind, settings.cppCompiler.toFile(), ctx.execroot.toFile())
-      setCompilerSwitches(cppSwitches)
+      setCompilerSwitches(buildSwitches(config, settings.cppCompilerKind, settings.cppSwitches, config.shared.cxxopts))
     }
   }
 }

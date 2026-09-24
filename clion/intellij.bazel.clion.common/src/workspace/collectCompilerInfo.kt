@@ -25,8 +25,9 @@ internal fun collectCompilerInfo(model: OCWorkspace.ModifiableModel, configurati
     session.waitForAll(messages)
 
     reportProblems(messages)
-  } finally {
-      session.dispose()
+  }
+  finally {
+    session.dispose()
   }
 }
 
@@ -34,7 +35,7 @@ context(ctx: CcImportContext)
 private fun reportProblems(problems: MultiMap<String, CompilerInfoCache.Message>) {
   if (problems.isEmpty()) return
 
-  val description = problems.entrySet().joinToString("\n") { (configId, messages) ->
+  val description = problems.entrySet().filter { it.value.isNotEmpty() }.joinToString("\n") { (configId, messages) ->
     messages.joinToString("\n") { problem -> "$configId: ${problem.type}: ${problem.text.trim()}" }
   }
 
