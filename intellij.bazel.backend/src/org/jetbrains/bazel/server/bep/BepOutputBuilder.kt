@@ -3,11 +3,11 @@ package org.jetbrains.bazel.server.bep
 import com.google.devtools.build.lib.buildeventstream.BuildEventStreamProtos
 import com.google.devtools.build.lib.buildeventstream.BuildEventStreamProtos.NamedSetOfFiles
 import com.google.devtools.build.lib.buildeventstream.BuildEventStreamProtos.OutputGroup
+import com.intellij.aspect.lib.OutputGroups
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.commons.BazelPathsResolver
 import org.jetbrains.bazel.commons.BazelRelease
 import org.jetbrains.bazel.commons.constants.Constants
-import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceConfiguration
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceConfigurationId
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
@@ -19,7 +19,7 @@ import kotlin.io.path.Path
 data class TextProtoDepSet(val files: Collection<Path>, val children: Collection<String>)
 
 internal class BepOutputBuilder(private val bazelPathsResolver: BazelPathsResolver) {
-  private val outputGroups: MutableMap<String, MutableSet<String>> = HashMap()
+  private val infoOutputGroupFileSets: MutableSet<String> = HashSet()
   private val textProtoFileSets: MutableMap<String, TextProtoDepSet> = HashMap()
   private val rootTargets: MutableSet<WorkspaceTargetKey> = HashSet()
   private val options: MutableList<String> = mutableListOf()
@@ -32,6 +32,7 @@ internal class BepOutputBuilder(private val bazelPathsResolver: BazelPathsResolv
         files =
           namedSetOfFiles
             .filesList
+            .filter { it.name.endsWith(Constants.ASPECT_INFO_OUTPUT_EXTENSION) }
             .map { it.toLocalPath() },
         children = namedSetOfFiles.fileSetsList.map { it.id },
       )
@@ -48,11 +49,9 @@ internal class BepOutputBuilder(private val bazelPathsResolver: BazelPathsResolv
 
   fun storeTargetOutputGroups(target: WorkspaceTargetKey, outputGroups: List<OutputGroup>) {
     rootTargets.add(target)
-
-    for (group in outputGroups) {
-      val fileSets = group.fileSetsList.map { it.id }
-      this.outputGroups.computeIfAbsent(group.name) { HashSet() }.addAll(fileSets)
-    }
+    val infoGroup = outputGroups.firstOrNull { it.name == OutputGroups.INFO.groupName } ?: return
+    val fileSets = infoGroup.fileSetsList.map { it.id }
+    infoOutputGroupFileSets.addAll(fileSets)
   }
 
   fun storeOptions(cmdline: List<String>) {
@@ -64,7 +63,7 @@ internal class BepOutputBuilder(private val bazelPathsResolver: BazelPathsResolv
   }
 
   fun clear() {
-    outputGroups.clear()
+    infoOutputGroupFileSets.clear()
     textProtoFileSets.clear()
     rootTargets.clear()
     options.clear()
@@ -72,11 +71,11 @@ internal class BepOutputBuilder(private val bazelPathsResolver: BazelPathsResolv
   }
 
   fun build(): BepOutput = BepOutput(
-    outputGroups,
+    infoOutputGroupFileSets,
     textProtoFileSets,
     rootTargets,
     options,
     configurations,
-    buildToolVersion
+    buildToolVersion,
   )
 }

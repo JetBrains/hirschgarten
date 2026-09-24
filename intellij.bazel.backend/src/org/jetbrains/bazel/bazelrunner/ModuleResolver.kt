@@ -28,7 +28,7 @@ sealed interface ShowRepoResult {
   /**
    * Any other output that doesn't match the expected format but contains the name of the module.
    */
-  data class Unknown(override val name: String, val output: String) : ShowRepoResult
+  data class Unknown(override val name: String) : ShowRepoResult
 }
 
 @ApiStatus.Internal
@@ -107,7 +107,7 @@ class ModuleOutputParser {
         return ShowRepoResult.HttpArchiveRepository(name, urls, stripPrefix)
       }
       else {
-        return ShowRepoResult.Unknown(name, stanza.joinToString("\n") + "\n")
+        return ShowRepoResult.Unknown(name)
       }
     }
     catch (e: Exception) {
@@ -125,7 +125,10 @@ class ModuleOutputParser {
 
       if (description.repoRuleName == "local_repository") {
         val pathValues = description.attribute.filter { it.name == "path" }.map { it.stringValue }.filterNotNull()
-        if (pathValues.isEmpty()) return ResolvedModulesAndWarning(mapOf(key to ShowRepoResult.Unknown(description.canonicalName, jsonText)), listOf())
+        if (pathValues.isEmpty()) return ResolvedModulesAndWarning(
+          mapOf(key to ShowRepoResult.Unknown(description.canonicalName)),
+          listOf(),
+        )
         return ResolvedModulesAndWarning(mapOf(key to ShowRepoResult.LocalRepository(description.canonicalName, pathValues.last())), listOf())
       }
       else if (description.repoRuleName == "http_archive") {
@@ -138,7 +141,7 @@ class ModuleOutputParser {
         ),
           listOf())
       }
-      return  ResolvedModulesAndWarning(mapOf (key to ShowRepoResult.Unknown(description.canonicalName, jsonText)), listOf())
+      return ResolvedModulesAndWarning(mapOf(key to ShowRepoResult.Unknown(description.canonicalName)), listOf())
     }
     catch (ex: Throwable) {
       return ResolvedModulesAndWarning(mapOf(), listOf("Could not parse repository json description: $jsonText"))

@@ -91,8 +91,8 @@ internal class TrieSourceFileCollectionSerializer : VersionedKryoSerializer<Trie
   }
 
   private fun writeNode(output: Output, node: TrieNode) {
-    output.writeVarInt((node.children.size shl 1) or (if (node.isTerminal) 1 else 0), true)
-    for (child in node.children) {
+    output.writeVarInt((node.children.orEmpty().size shl 1) or (if (node.isTerminal) 1 else 0), true)
+    for (child in node.children.orEmpty()) {
       output.writeString(child.segment)
       writeNode(output, child)
     }
@@ -115,7 +115,7 @@ internal class TrieSourceFileCollectionSerializer : VersionedKryoSerializer<Trie
     node.isTerminal = (header and 1) != 0
     repeat(header ushr 1) {
       val child = TrieNode(segment = checkNotNull(input.readString()))
-      node.children.add(child)
+      node.getOrCreateChildren().add(child)
       readNode(input, child)
     }
   }

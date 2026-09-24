@@ -53,9 +53,9 @@ internal class DefaultBazelOutputFileHardLinks(
   override var allHardLinksCreatedSuccessfully: Boolean = true
     private set
 
-  private class HardLink(val originalPath: Path, val virtualFile: VirtualFile, val requiresRefresh: Boolean) {
+  private class HardLink(val virtualFile: VirtualFile, val requiresRefresh: Boolean, val originalPathIfFailed: Path? = null) {
     val path: Path
-      get() = if (virtualFile == NullVirtualFile.INSTANCE) originalPath else virtualFile.toNioPath()
+      get() = if (virtualFile == NullVirtualFile.INSTANCE) checkNotNull(originalPathIfFailed) else virtualFile.toNioPath()
   }
 
   override suspend fun createOutputFileHardLinks(files: Collection<Path>): List<Path> {
@@ -90,6 +90,7 @@ internal class DefaultBazelOutputFileHardLinks(
       }
 
       val bazelOutRelativePath = realFile.relativeTo(bazelOutputBase)
+
       /**
        * Don't recreate the hard link unnecessarily to avoid spamming the file watcher (and because creating a link is expensive).
        * Also, the hard link may exist on disk, but if we delete the original file
@@ -114,12 +115,12 @@ internal class DefaultBazelOutputFileHardLinks(
                 localFileSystem.findFileByNioFile(targetHardLink) ?: localFileSystem.refreshAndFindFileByNioFile(targetHardLink)
               }
               checkNotNull(hardLinkFile) { "Can't find virtual find for $targetHardLink" }
-              HardLink(realFile, hardLinkFile, requiresRefresh)
+              HardLink(hardLinkFile, requiresRefresh)
             }
             catch (e: Throwable) {
               logger.warn("Failed to create hard link for $realFile", e)
               allHardLinksCreatedSuccessfully = false
-              HardLink(realFile, NullVirtualFile.INSTANCE, false)
+              HardLink(NullVirtualFile.INSTANCE, false, originalPathIfFailed = realFile)
             }
           }
         }

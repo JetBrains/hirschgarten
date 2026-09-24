@@ -84,142 +84,130 @@ internal class BepOutputTest : MockProjectBaseTest() {
   @Test
   fun testBasicOutputGroups() {
     val server = newBepSever()
-    server.handleBuildEventStreamProtosEvent(namedSet("0", listOf("foo.txt"), listOf()))
-    server.handleBuildEventStreamProtosEvent(namedSet("1", listOf("bar.txt"), listOf("0")))
-    server.handleBuildEventStreamProtosEvent(targetCompleted("//:foobar", mapOf("foobar" to listOf("1"), "foo" to listOf("0"))))
+    server.handleBuildEventStreamProtosEvent(namedSet("0", listOf("foo.intellij-info.txt"), listOf()))
+    server.handleBuildEventStreamProtosEvent(namedSet("1", listOf("bar.intellij-info.txt"), listOf("0")))
+    server.handleBuildEventStreamProtosEvent(targetCompleted("//:foobar", mapOf("intellij-info" to listOf("1"), "foo" to listOf("0"))))
     val bepOutput = server.getOutputForTesting()
-    bepOutput.filesByOutputGroupNameTransitive("foo")
-      .map { it.relativeToOrNull(Path("execRoot"))?.toString() }.toSet() shouldBe setOf("foo.txt")
-    bepOutput.filesByOutputGroupNameTransitive("foobar")
-      .map { it.relativeToOrNull(Path("execRoot"))?.toString() }.toSet() shouldBe setOf("foo.txt", "bar.txt")
+    bepOutput.filesByInfoOutputGroup()
+      .map { it.relativeToOrNull(Path("execRoot"))?.toString() }.toSet() shouldBe setOf("foo.intellij-info.txt", "bar.intellij-info.txt")
 
     // Renaming should not affect output group
     val renamed = bepOutput.renameNamedSets(2)
-    renamed.filesByOutputGroupNameTransitive("foo")
-      .map { it.relativeToOrNull(Path("execRoot"))?.toString() }.toSet() shouldBe setOf("foo.txt")
-    renamed.filesByOutputGroupNameTransitive("foobar")
-      .map { it.relativeToOrNull(Path("execRoot"))?.toString() }.toSet() shouldBe setOf("foo.txt", "bar.txt")
+    renamed.filesByInfoOutputGroup()
+      .map { it.relativeToOrNull(Path("execRoot"))?.toString() }.toSet() shouldBe setOf("foo.intellij-info.txt", "bar.intellij-info.txt")
   }
 
   @Test
   fun testCombineShards() {
     val firstRunServer = newBepSever()
-    firstRunServer.handleBuildEventStreamProtosEvent(namedSet("0", listOf("firstfoo.txt"), listOf()))
-    firstRunServer.handleBuildEventStreamProtosEvent(namedSet("1", listOf("firstbar.txt"), listOf()))
-    firstRunServer.handleBuildEventStreamProtosEvent(targetCompleted("//:first", mapOf("foo" to listOf("0"), "bar" to listOf("1"))))
+    firstRunServer.handleBuildEventStreamProtosEvent(namedSet("0", listOf("firstfoo.intellij-info.txt"), listOf()))
+    firstRunServer.handleBuildEventStreamProtosEvent(namedSet("1", listOf("firstbar.intellij-info.txt"), listOf()))
+    firstRunServer.handleBuildEventStreamProtosEvent(
+      targetCompleted(
+        "//:first",
+        mapOf("intellij-info" to listOf("0"), "bar" to listOf("1")),
+      ),
+    )
     val firstResult = firstRunServer.getOutputForTesting().renameNamedSets(1)
-    firstResult.filesByOutputGroupNameTransitive("foo")
-      .map { it.relativeToOrNull(Path("execRoot"))?.toString() }.toSet() shouldBe setOf("firstfoo.txt")
-    firstResult.filesByOutputGroupNameTransitive("bar")
-      .map { it.relativeToOrNull(Path("execRoot"))?.toString() }.toSet() shouldBe setOf("firstbar.txt")
+    firstResult.filesByInfoOutputGroup()
+      .map { it.relativeToOrNull(Path("execRoot"))?.toString() }.toSet() shouldBe setOf("firstfoo.intellij-info.txt")
 
     val secondRunServer = newBepSever()
-    secondRunServer.handleBuildEventStreamProtosEvent(namedSet("0", listOf("secondbar.txt"), listOf()))
-    secondRunServer.handleBuildEventStreamProtosEvent(namedSet("1", listOf("secondfoo.txt"), listOf()))
-    secondRunServer.handleBuildEventStreamProtosEvent(targetCompleted("//:second", mapOf("foo" to listOf("1"), "bar" to listOf("0"))))
+    secondRunServer.handleBuildEventStreamProtosEvent(namedSet("0", listOf("secondbar.intellij-info.txt"), listOf()))
+    secondRunServer.handleBuildEventStreamProtosEvent(namedSet("1", listOf("secondfoo.intellij-info.txt"), listOf()))
+    secondRunServer.handleBuildEventStreamProtosEvent(
+      targetCompleted(
+        "//:second",
+        mapOf("intellij-info" to listOf("1"), "bar" to listOf("0")),
+      ),
+    )
     val secondResult = secondRunServer.getOutputForTesting().renameNamedSets(2)
-    secondResult.filesByOutputGroupNameTransitive("foo")
-      .map { it.relativeToOrNull(Path("execRoot"))?.toString() }.toSet() shouldBe setOf("secondfoo.txt")
-    secondResult.filesByOutputGroupNameTransitive("bar")
-      .map { it.relativeToOrNull(Path("execRoot"))?.toString() }.toSet() shouldBe setOf("secondbar.txt")
+    secondResult.filesByInfoOutputGroup()
+      .map { it.relativeToOrNull(Path("execRoot"))?.toString() }.toSet() shouldBe setOf("secondfoo.intellij-info.txt")
 
     val combined = firstResult.merge(secondResult)
-    combined.filesByOutputGroupNameTransitive("foo")
-      .map { it.relativeToOrNull(Path("execRoot"))?.toString() }.toSet() shouldBe setOf("firstfoo.txt", "secondfoo.txt")
-    combined.filesByOutputGroupNameTransitive("bar")
-      .map { it.relativeToOrNull(Path("execRoot"))?.toString() }.toSet() shouldBe setOf("firstbar.txt", "secondbar.txt")
+    combined.filesByInfoOutputGroup()
+      .map { it.relativeToOrNull(Path("execRoot"))?.toString() }.toSet() shouldBe setOf(
+      "firstfoo.intellij-info.txt",
+      "secondfoo.intellij-info.txt",
+    )
   }
 
   @Test
   fun testNestedOutputs() {
     val server = newBepSever()
-    server.handleBuildEventStreamProtosEvent(namedSet("0", listOf("common_a.txt"), listOf()))
-    server.handleBuildEventStreamProtosEvent(namedSet("1", listOf("common_b.txt"), listOf()))
+    server.handleBuildEventStreamProtosEvent(namedSet("0", listOf("common_a.intellij-info.txt"), listOf()))
+    server.handleBuildEventStreamProtosEvent(namedSet("1", listOf("common_b.intellij-info.txt"), listOf()))
     server.handleBuildEventStreamProtosEvent(namedSet("2", listOf(), listOf("0", "1")))
-    server.handleBuildEventStreamProtosEvent(namedSet("3", listOf("foo.txt"), listOf()))
-    server.handleBuildEventStreamProtosEvent(namedSet("4", listOf("foobar.txt"), listOf("3")))
-    server.handleBuildEventStreamProtosEvent(namedSet("5", listOf("baz.txt"), listOf()))
+    server.handleBuildEventStreamProtosEvent(namedSet("3", listOf("foo.intellij-info.txt"), listOf()))
+    server.handleBuildEventStreamProtosEvent(namedSet("4", listOf("foobar.intellij-info.txt"), listOf("3")))
+    server.handleBuildEventStreamProtosEvent(namedSet("5", listOf("baz.intellij-info.txt"), listOf()))
     server.handleBuildEventStreamProtosEvent(
       targetCompleted(
         "//:foobarbaz",
-        mapOf("foobar" to listOf("4", "2"), "baz" to listOf("5", "2")),
+        mapOf("foobar" to listOf("4", "2"), "intellij-info" to listOf("5", "2")),
       ),
     )
     val bepOutput = server.getOutputForTesting()
-    bepOutput.filesByOutputGroupNameTransitive("foobar")
+    bepOutput.filesByInfoOutputGroup()
       .map { it.relativeToOrNull(Path("execRoot"))?.toString() }.toSet() shouldBe setOf(
-      "foobar.txt",
-      "foo.txt",
-      "common_b.txt",
-      "common_a.txt",
+      "baz.intellij-info.txt",
+      "common_b.intellij-info.txt",
+      "common_a.intellij-info.txt",
     )
-    bepOutput.filesByOutputGroupNameTransitive("baz")
-      .map { it.relativeToOrNull(Path("execRoot"))?.toString() }.toSet() shouldBe setOf("baz.txt", "common_b.txt", "common_a.txt")
 
     // Renaming should not affect output group
     val renamed = bepOutput.renameNamedSets(42)
-    renamed.filesByOutputGroupNameTransitive("foobar")
+    renamed.filesByInfoOutputGroup()
       .map { it.relativeToOrNull(Path("execRoot"))?.toString() }.toSet() shouldBe setOf(
-      "foobar.txt",
-      "foo.txt",
-      "common_b.txt",
-      "common_a.txt",
+      "baz.intellij-info.txt",
+      "common_b.intellij-info.txt",
+      "common_a.intellij-info.txt",
     )
-    renamed.filesByOutputGroupNameTransitive("baz")
-      .map { it.relativeToOrNull(Path("execRoot"))?.toString() }.toSet() shouldBe setOf("baz.txt", "common_b.txt", "common_a.txt")
   }
 
   @Test
   fun testNestedOutputsCombined() {
     val firstServer = newBepSever()
-    firstServer.handleBuildEventStreamProtosEvent(namedSet("0", listOf("common_a.txt"), listOf()))
-    firstServer.handleBuildEventStreamProtosEvent(namedSet("1", listOf("common_b.txt"), listOf()))
+    firstServer.handleBuildEventStreamProtosEvent(namedSet("0", listOf("common_a.intellij-info.txt"), listOf()))
+    firstServer.handleBuildEventStreamProtosEvent(namedSet("1", listOf("common_b.intellij-info.txt"), listOf()))
     firstServer.handleBuildEventStreamProtosEvent(namedSet("2", listOf(), listOf("0", "1")))
-    firstServer.handleBuildEventStreamProtosEvent(namedSet("3", listOf("build_only.txt"), listOf("2")))
-    firstServer.handleBuildEventStreamProtosEvent(targetCompleted("//:common", mapOf("sync" to listOf("2"), "build" to listOf("3"))))
+    firstServer.handleBuildEventStreamProtosEvent(namedSet("3", listOf("build_only.intellij-info.txt"), listOf("2")))
+    firstServer.handleBuildEventStreamProtosEvent(
+      targetCompleted(
+        "//:common",
+        mapOf("sync" to listOf("2"), "intellij-info" to listOf("3")),
+      ),
+    )
     val afterFirstRun = firstServer.getOutputForTesting().renameNamedSets(1)
-    val firstBuild = afterFirstRun.filesByOutputGroupNameTransitive("build")
+    val firstBuild = afterFirstRun.filesByInfoOutputGroup()
       .map { it.relativeToOrNull(Path("execRoot"))?.toString() }.toSet()
-    firstBuild shouldBe setOf("common_a.txt", "common_b.txt", "build_only.txt")
-    val firstSync = afterFirstRun.filesByOutputGroupNameTransitive("sync")
-      .map { it.relativeToOrNull(Path("execRoot"))?.toString() }.toSet()
-    firstSync shouldBe setOf("common_a.txt", "common_b.txt")
+    firstBuild shouldBe setOf("common_a.intellij-info.txt", "common_b.intellij-info.txt", "build_only.intellij-info.txt")
 
     val secondServer = newBepSever()
-    secondServer.handleBuildEventStreamProtosEvent(namedSet("0", listOf("build_2.txt"), listOf()))
-    secondServer.handleBuildEventStreamProtosEvent(namedSet("1", listOf("sync_2.txt"), listOf()))
-    secondServer.handleBuildEventStreamProtosEvent(targetCompleted("//:two", mapOf("sync" to listOf("1"), "build" to listOf("0"))))
+    secondServer.handleBuildEventStreamProtosEvent(namedSet("0", listOf("build_2.intellij-info.txt"), listOf()))
+    secondServer.handleBuildEventStreamProtosEvent(namedSet("1", listOf("sync_2.intellij-info.txt"), listOf()))
+    secondServer.handleBuildEventStreamProtosEvent(targetCompleted("//:two", mapOf("sync" to listOf("1"), "intellij-info" to listOf("0"))))
     val afterSecondRun = afterFirstRun.merge(secondServer.getOutputForTesting().renameNamedSets(2))
-    val secondBuild = afterSecondRun.filesByOutputGroupNameTransitive("build")
+    val secondBuild = afterSecondRun.filesByInfoOutputGroup()
       .map { it.relativeToOrNull(Path("execRoot"))?.toString() }.toSet()
-    secondBuild shouldBe firstBuild + setOf("build_2.txt")
-    val secondSync = afterSecondRun.filesByOutputGroupNameTransitive("sync")
-      .map { it.relativeToOrNull(Path("execRoot"))?.toString() }.toSet()
-    secondSync shouldBe firstSync + setOf("sync_2.txt")
+    secondBuild shouldBe firstBuild + setOf("build_2.intellij-info.txt")
 
     val thirdServer = newBepSever()
-    thirdServer.handleBuildEventStreamProtosEvent(namedSet("0", listOf("build_and_sync_3.txt"), listOf()))
-    thirdServer.handleBuildEventStreamProtosEvent(namedSet("1", listOf("more_build_and_sync_3.txt"), listOf("0")))
-    thirdServer.handleBuildEventStreamProtosEvent(namedSet("2", listOf("even_more_build_and_sync_3.txt"), listOf("1")))
-    thirdServer.handleBuildEventStreamProtosEvent(namedSet("3", listOf("build_3.txt"), listOf("2")))
-    thirdServer.handleBuildEventStreamProtosEvent(namedSet("4", listOf("sync_3.txt"), listOf("2")))
-    thirdServer.handleBuildEventStreamProtosEvent(targetCompleted("//:three", mapOf("sync" to listOf("4"), "build" to listOf("3"))))
+    thirdServer.handleBuildEventStreamProtosEvent(namedSet("0", listOf("build_and_sync_3.intellij-info.txt"), listOf()))
+    thirdServer.handleBuildEventStreamProtosEvent(namedSet("1", listOf("more_build_and_sync_3.intellij-info.txt"), listOf("0")))
+    thirdServer.handleBuildEventStreamProtosEvent(namedSet("2", listOf("even_more_build_and_sync_3.intellij-info.txt"), listOf("1")))
+    thirdServer.handleBuildEventStreamProtosEvent(namedSet("3", listOf("build_3.intellij-info.txt"), listOf("2")))
+    thirdServer.handleBuildEventStreamProtosEvent(namedSet("4", listOf("sync_3.intellij-info.txt"), listOf("2")))
+    thirdServer.handleBuildEventStreamProtosEvent(targetCompleted("//:three", mapOf("sync" to listOf("4"), "intellij-info" to listOf("3"))))
     val afterThirdRun = afterSecondRun.merge(thirdServer.getOutputForTesting().renameNamedSets(3))
-    val thirdBuild = afterThirdRun.filesByOutputGroupNameTransitive("build")
+    val thirdBuild = afterThirdRun.filesByInfoOutputGroup()
       .map { it.relativeToOrNull(Path("execRoot"))?.toString() }.toSet()
     thirdBuild shouldBe secondBuild + setOf(
-      "build_3.txt",
-      "build_and_sync_3.txt",
-      "more_build_and_sync_3.txt",
-      "even_more_build_and_sync_3.txt",
-    )
-    val thirdSync = afterThirdRun.filesByOutputGroupNameTransitive("sync")
-      .map { it.relativeToOrNull(Path("execRoot"))?.toString() }.toSet()
-    thirdSync shouldBe secondSync + setOf(
-      "sync_3.txt",
-      "build_and_sync_3.txt",
-      "more_build_and_sync_3.txt",
-      "even_more_build_and_sync_3.txt",
+      "build_3.intellij-info.txt",
+      "build_and_sync_3.intellij-info.txt",
+      "more_build_and_sync_3.intellij-info.txt",
+      "even_more_build_and_sync_3.intellij-info.txt",
     )
   }
 }

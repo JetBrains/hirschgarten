@@ -5,9 +5,9 @@ import com.google.devtools.intellij.ideinfo.IntellijIdeInfo.TargetIdeInfo
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.text.StringUtil
+import com.intellij.platform.util.coroutines.mapConcurrent
+import com.intellij.util.containers.Interner
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.async
-import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.withContext
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.commons.LanguageClass
@@ -69,20 +69,15 @@ class AspectBazelProjectMapper(
   ): List<BuildTarget> {
     val localRepositories = repoMapping.getLocalRepositories()
     return withContext(Dispatchers.Default) {
-      val tasks =
-        allTargets.values.map { target ->
-          async {
-            createWorkspaceTarget(
-              target = target,
-              repoMapping = repoMapping,
-              localRepositories = localRepositories,
-              build = build,
-              taskId = taskId,
-            )
-          }
-        }
-
-      tasks.awaitAll()
+      allTargets.values.mapConcurrent { target ->
+        createWorkspaceTarget(
+          target = target,
+          repoMapping = repoMapping,
+          localRepositories = localRepositories,
+          build = build,
+          taskId = taskId,
+        )
+      }.toList()
     }
   }
 
@@ -239,7 +234,9 @@ class AspectBazelProjectMapper(
         else -> RuleType.BINARY
       }
 
-      return TargetKind(kind = targetKind.kind, languageClasses = languages, ruleType = ruleType)
+      return interner.intern(TargetKind(kind = targetKind.kind, languageClasses = languages, ruleType = ruleType))
     }
+
+    private val interner = Interner.createWeakInterner<TargetKind>()
   }
 }
