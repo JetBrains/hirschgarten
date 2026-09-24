@@ -59,13 +59,7 @@ sealed class SimplifiedFileEvent private constructor(
     if (affectedPaths().all { it.startsWith(bazelBsp) })
       return false
 
-    //
-    return if (this is CreateDirectory) {
-      fileAdded != null && newVirtualFile?.isValid == true
-    }
-    else {
-      affectsBazelConfigFile() || affectsSourceFile(project)
-    }
+    return this !is CreateDirectory || fileAdded != null && newVirtualFile?.isValid == true
   }
 
   private fun Path.isSourceFile(project: Project): Boolean =
