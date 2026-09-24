@@ -38,11 +38,11 @@ private class DisableVfsAccessChecksExtension : BeforeAllCallback, AfterAllCallb
 private class BazelIdeaTextExtension : BeforeAllCallback, AfterAllCallback {
   val disposable = Disposer.newDisposable()
 
-  override fun beforeAll(context: ExtensionContext?) {
+  override fun beforeAll(context: ExtensionContext) {
     PluginTestsCompat.setupTestSuite(disposable)
   }
 
-  override fun afterAll(context: ExtensionContext?) {
+  override fun afterAll(context: ExtensionContext) {
     Disposer.dispose(disposable)
   }
 }
