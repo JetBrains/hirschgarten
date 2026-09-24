@@ -25,7 +25,7 @@ class CcLocalToolchainTest {
 
   @Test
   fun testCompilerSettings(): Unit = timeoutRunBlocking {
-    val compilerSettingsC = project.findCompilerSetting("main/main.cc", language = CLanguageKind.C)
+    val compilerSettingsC = project.findCompilerSetting("main/util.c", language = CLanguageKind.C)
     val compilerSettingsCPP = project.findCompilerSetting("main/main.cc", language = CLanguageKind.CPP)
 
     assertThat(compilerSettingsCPP).hasCompilerKindWrapper()
@@ -34,7 +34,7 @@ class CcLocalToolchainTest {
     assertThat(compilerSettingsCPP)
       .hasCompiler(OCCompilerId.GCC)
       .containsHeaders("iostream", "stdio.h")
-      .containsSwitches("-Wall", "-DCXXOPTS")
+      .containsSwitches("-Wall", "-DCOPTS", "-DCXXOPTS")
       .doesNotContainSwitches("-DCONLYOPTS")
       .hasDefine("SIMPLE_DEFINE", "42")
       .hasDefine("SPACE_DEFINE", "1 2 3")
@@ -42,9 +42,28 @@ class CcLocalToolchainTest {
     assertThat(compilerSettingsC)
       .hasCompiler(OCCompilerId.GCC)
       .containsHeaders("stdio.h")
-      .containsSwitches("-Wall", "-DCONLYOPTS")
+      .containsSwitches("-Wall", "-DCOPTS", "-DCONLYOPTS")
       .doesNotContainSwitches("-DCXXOPTS")
       .hasDefine("SIMPLE_DEFINE", "42")
       .hasDefine("SPACE_DEFINE", "1 2 3")
+  }
+
+  @Test
+  fun testLanguageCompilerSettings(): Unit = timeoutRunBlocking {
+    // settings for a language that does not match the file's language fall back to the language specific settings
+    val compilerSettingsC = project.findCompilerSetting("main/main.cc", language = CLanguageKind.C)
+    val compilerSettingsCPP = project.findCompilerSetting("main/util.c", language = CLanguageKind.CPP)
+
+    assertThat(compilerSettingsCPP)
+      .hasCompiler(OCCompilerId.GCC)
+      .containsSwitches("-DCXXOPTS")
+      .doesNotContainSwitches("-DCONLYOPTS", "-DCOPTS")
+      .hasDefine("SIMPLE_DEFINE", "42")
+
+    assertThat(compilerSettingsC)
+      .hasCompiler(OCCompilerId.GCC)
+      .containsSwitches("-DCONLYOPTS")
+      .doesNotContainSwitches("-DCXXOPTS", "-DCOPTS")
+      .hasDefine("SIMPLE_DEFINE", "42")
   }
 }

@@ -2,10 +2,14 @@ load("@rules_cc//cc:defs.bzl", "cc_binary", "cc_test")
 
 cc_binary(
     name = "main",
-    srcs = ["main.cc"],
+    srcs = [
+        "main.cc",
+        "util.c",
+    ],
     conlyopts = ["-DCONLYOPTS"],
     copts = [
         "-Wall",
+        "-DCOPTS",
         "$(STACK_FRAME_UNLIMITED)",  # empty make variable should be stripped by make variable tokenization
     ],
     cxxopts = ["-DCXXOPTS"],

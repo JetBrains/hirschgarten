@@ -61,7 +61,7 @@ class CcImportTest {
     val ruleCtx = data.ruleContext.assertNotNull()
     assertThat(ruleCtx.headers).isEmpty()
     assertThat(ruleCtx.textualHeaders).isEmpty()
-    assertThat(ruleCtx.copts).containsExactly("-Wall")
+    assertThat(ruleCtx.copts).containsExactly("-Wall", "-DCOPTS")
     assertThat(ruleCtx.conlyopts).containsExactly("-DCONLYOPTS")
     assertThat(ruleCtx.cxxopts).containsExactly("-DCXXOPTS")
     assertThat(ruleCtx.stripIncludePrefix).isEqualTo("")
