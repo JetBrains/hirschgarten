@@ -10,6 +10,7 @@ import org.junit.runners.JUnit4
 @RunWith(JUnit4::class)
 class StarlarkInvalidAssignmentTargetInspectionTest : BasePlatformTestCase() {
   private val invalid = StarlarkBundle.message("inspection.description.assignment.target.invalid", "1")
+  private val invalidSlice = StarlarkBundle.message("inspection.description.assignment.target.invalid", "a[1:2]")
   private val augmentedSeq = StarlarkBundle.message("inspection.description.assignment.target.augmented.sequence")
   private val invalidCall = StarlarkBundle.message("inspection.description.assignment.target.invalid", "f()")
   private val invalidBinary = StarlarkBundle.message("inspection.description.assignment.target.invalid", "a + b")
@@ -58,6 +59,18 @@ class StarlarkInvalidAssignmentTargetInspectionTest : BasePlatformTestCase() {
       "test.bzl",
       """
       [a, <error descr="$invalid">1</error>] = [1, 2]
+      """.trimIndent(),
+    )
+    myFixture.checkHighlighting(true, false, false)
+  }
+
+  @Test
+  fun `slice lhs should be highlighted`() {
+    myFixture.configureByText(
+      "test.bzl",
+      """
+      a = [1, 2, 3]
+      <error descr="$invalidSlice">a[1:2]</error> = [20]
       """.trimIndent(),
     )
     myFixture.checkHighlighting(true, false, false)
