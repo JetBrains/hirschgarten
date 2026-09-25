@@ -173,10 +173,6 @@ register_toolchains(
     lines.add("common --tool_java_runtime_version=remotejdk_21")
     lines.add("common --noexperimental_check_external_repository_files")
 
-    if (OS.current == OS.WINDOWS) {
-      lines.add("common --experimental_convenience_symlinks=ignore")
-    }
-
     writeGeneratedBazelSettings(context.resolvedBazelProjectHome, lines)
   }
 
