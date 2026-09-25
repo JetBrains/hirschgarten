@@ -24,6 +24,7 @@ import org.jetbrains.bazel.commons.BazelInfo
 import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.coroutines.BazelCoroutineService
 import org.jetbrains.bazel.sync.BazelOutFileHardLinks
+import org.jetbrains.bazel.utils.readSymbolicLinkTarget
 import java.io.IOException
 import java.nio.file.LinkOption
 import java.nio.file.Path
@@ -36,7 +37,6 @@ import kotlin.io.path.createLinkPointingTo
 import kotlin.io.path.createSymbolicLinkPointingTo
 import kotlin.io.path.deleteIfExists
 import kotlin.io.path.deleteRecursively
-import kotlin.io.path.exists
 import kotlin.io.path.getLastModifiedTime
 import kotlin.io.path.isDirectory
 import kotlin.io.path.readAttributes
@@ -81,13 +81,29 @@ class DefaultBazelOutputFileHardLinks(
     val realPaths: Map<Path, Deferred<Path?>> = coroutineScope {
       files.associateWith { originalFile ->
         async(limitedDispatcher) {
-          originalFile.takeIf { it.exists() }?.toRealPath()
+          if (hardLinksDuringSync.containsKey(originalFile)) return@async null  // avoid duplicate computation
+          val attributes = runCatching { originalFile.readAttributes<BasicFileAttributes>(LinkOption.NOFOLLOW_LINKS) }.getOrNull()
+          if (attributes == null) {  // file doesn't exist
+            null
+          }
+          else if (!attributes.isSymbolicLink) {
+            originalFile
+          }
+          else {
+            // We can be missing directory symlinks here by only resolving the last path segment. But this is much quicker than toRealPath on macOS.
+            // This is OK for C++ virtual headers that only symlink files (see, e.g., VirtualIncludesTest), but can be problematic in the future.
+            originalFile.readSymbolicLinkTarget()
+          }
         }
       }
     }
 
     val rootDirPath = project.rootDir.toNioPath()
     for (originalFile in files) {
+      hardLinksDuringSync[originalFile]?.let { existing ->
+        (hardLinkedPaths ?: mutableListOf<Deferred<HardLink>>().also { hardLinkedPaths = it }).add(existing)
+        continue
+      }
       val realFile = realPaths[originalFile]?.await() ?: continue
 
       // Hardlink only Bazel output files

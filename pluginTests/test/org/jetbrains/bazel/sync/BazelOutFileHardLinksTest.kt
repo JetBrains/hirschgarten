@@ -10,9 +10,9 @@ import org.jetbrains.bazel.sync.workspace.mapper.normal.DefaultBazelOutputFileHa
 import org.jetbrains.bazel.test.framework.testBazelInfo
 import org.jetbrains.bazel.workspace.model.test.framework.MockProjectBaseTest
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.io.TempDir
 import org.junit.jupiter.api.condition.DisabledOnOs
 import org.junit.jupiter.api.condition.OS
+import org.junit.jupiter.api.io.TempDir
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.ValueSource
 import java.nio.file.Files
@@ -95,5 +95,23 @@ internal class BazelOutFileHardLinksTest : MockProjectBaseTest() {
     links.onAfterSync(true)
     assertThat(cached.resolve("header.h").readText()).isEqualTo("VALUE 42")
     assertThat(links.allHardLinksCreatedSuccessfully).isTrue()
+  }
+
+  @Test
+  fun `relative output symlink remains readable`(@TempDir outputBase: Path): Unit = timeoutRunBlocking {
+    val root = Path.of(checkNotNull(project.basePath)).toRealPath()
+    BazelProjectFixtures.initializeBazelProject(project, root)
+    val info = testBazelInfo(workspaceRoot = root, outputBase = outputBase)
+    val links = DefaultBazelOutputFileHardLinks(project, info)
+    val bin = info.execRoot.resolve("bazel-out/k8-fastbuild/bin/pkg").createDirectories()
+    bin.resolve("generated.h").writeText("VALUE 42")
+    val original = bin.resolve("alias.h").createSymbolicLinkPointingTo(Path.of("generated.h"))
+
+    links.onBeforeSync()
+    val cached = checkNotNull(links.createOutputFileHardLink(original))
+    assertThat(cached).isEqualTo(links.resolveCachedPath(original))
+    assertThat(cached.readText()).isEqualTo("VALUE 42")
+    assertThat(links.allHardLinksCreatedSuccessfully).isTrue()
+    links.onAfterSync(false)
   }
 }

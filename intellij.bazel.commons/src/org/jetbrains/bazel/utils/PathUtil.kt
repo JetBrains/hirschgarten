@@ -1,7 +1,6 @@
 package org.jetbrains.bazel.utils
 
 import com.intellij.openapi.util.SystemInfoRt
-import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.VirtualFileManager
 import org.jetbrains.annotations.ApiStatus
@@ -10,6 +9,7 @@ import java.nio.file.LinkOption
 import java.nio.file.Path
 import java.nio.file.attribute.BasicFileAttributes
 import kotlin.io.path.readAttributes
+import kotlin.io.path.readSymbolicLink
 
 @ApiStatus.Internal
 fun Path.allAncestorsSequence(): Sequence<Path> = generateSequence(this) { it.parent }
@@ -45,6 +45,15 @@ val Path.isWindowsJunction: Boolean get() = try {
 catch (_: IOException) {
   false
 }
+
+@ApiStatus.Internal
+fun Path.readSymbolicLinkTarget(): Path? =
+  try {
+    this.resolveSibling(this.readSymbolicLink()).normalize()  // readSymbolicLink can be a relative path!
+  }
+  catch (_: IOException) {
+    null
+  }
 
 /**
  * See [com.intellij.openapi.vfs.VfsUtilCore.getCommonAncestor].

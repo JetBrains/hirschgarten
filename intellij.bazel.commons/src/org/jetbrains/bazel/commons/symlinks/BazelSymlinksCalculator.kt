@@ -8,6 +8,7 @@ import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.commons.constants.Constants.WORKSPACE_FILE_NAMES
 import org.jetbrains.bazel.utils.isSymbolicLinkOrJunction
 import org.jetbrains.bazel.utils.isWindowsJunction
+import org.jetbrains.bazel.utils.readSymbolicLinkTarget
 import java.io.IOException
 import java.nio.file.FileVisitResult
 import java.nio.file.Path
@@ -87,15 +88,7 @@ object BazelSymlinksCalculator {
     }
   }
 
-  fun resolveSymlinkTarget(symlink: Path): Path? = readSymbolicLinkTarget(symlink) ?: readJunctionTarget(symlink)
-
-  private fun readSymbolicLinkTarget(symlink: Path): Path? =
-    try {
-      symlink.resolveSibling(symlink.readSymbolicLink()).normalize()
-    }
-    catch (_: IOException) {
-      null
-    }
+  fun resolveSymlinkTarget(symlink: Path): Path? = symlink.readSymbolicLinkTarget() ?: readJunctionTarget(symlink)
 
   /**
    * Reads the target of a Windows junction.
