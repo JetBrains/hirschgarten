@@ -15,12 +15,12 @@ import java.nio.file.Paths
 import kotlin.io.path.exists
 
 data class BazelProjectSettings @ApiStatus.Internal constructor(
-  @ApiStatus.Internal internal val buildifierExecutablePath: Path? = null,
+  @ApiStatus.Internal val buildifierExecutablePath: Path? = null,
   @ApiStatus.Internal val runBuildifierOnSave: Boolean = true,
   // experimental settings
 ) {
   @ApiStatus.Internal
-  fun withNewBuildifierExecutablePath(newBuildifierExecutablePath: Path): BazelProjectSettings =
+  fun withNewBuildifierExecutablePath(newBuildifierExecutablePath: Path?): BazelProjectSettings =
     copy(buildifierExecutablePath = newBuildifierExecutablePath)
 
   @ApiStatus.Internal

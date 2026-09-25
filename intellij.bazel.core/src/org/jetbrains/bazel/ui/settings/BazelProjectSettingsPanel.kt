@@ -1,6 +1,7 @@
 package org.jetbrains.bazel.ui.settings
 
 import com.intellij.execution.Platform
+import com.intellij.icons.AllIcons
 import com.intellij.openapi.extensions.BaseExtensionPointName
 import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory
 import com.intellij.openapi.observable.util.whenTextChanged
@@ -9,16 +10,23 @@ import com.intellij.openapi.options.Configurable
 import com.intellij.openapi.options.ConfigurableProvider
 import com.intellij.openapi.options.UnnamedConfigurable
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.ui.ComponentValidator
 import com.intellij.openapi.ui.DialogPanel
 import com.intellij.openapi.ui.TextFieldWithBrowseButton
 import com.intellij.openapi.ui.ValidationInfo
+import com.intellij.openapi.ui.emptyText
 import com.intellij.openapi.util.SystemInfo
 import com.intellij.openapi.util.io.OSAgnosticPathUtil
 import com.intellij.ui.components.JBCheckBox
+import com.intellij.ui.components.TextComponentEmptyText
+import com.intellij.ui.components.fields.ExtendableTextComponent
+import com.intellij.ui.components.fields.ExtendableTextField
 import com.intellij.ui.dsl.builder.Align
 import com.intellij.ui.dsl.builder.COLUMNS_SHORT
+import com.intellij.ui.dsl.builder.DslComponentProperty
 import com.intellij.ui.dsl.builder.columns
 import com.intellij.ui.dsl.builder.panel
+import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.buildifier.BuildifierUtil
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.languages.projectview.ProjectViewService
@@ -32,7 +40,8 @@ import kotlin.io.path.isDirectory
 import kotlin.io.path.isExecutable
 import kotlin.io.path.isRegularFile
 
-internal class BazelProjectSettingsConfigurable(private val project: Project) :
+@ApiStatus.Internal
+class BazelProjectSettingsConfigurable(private val project: Project) :
   BoundCompositeSearchableConfigurable<UnnamedConfigurable>(
     displayName = BazelPluginBundle.message(DISPLAY_NAME_KEY),
     helpTopic = "",
@@ -43,6 +52,16 @@ internal class BazelProjectSettingsConfigurable(private val project: Project) :
   private val runBuildifierOnSaveCheckBox: JBCheckBox
 
   private var currentProjectSettings = project.bazelProjectSettings
+
+  private var detectedBuildifier: String? = null
+
+  private val buildifierRevertExtension =
+    ExtendableTextComponent.Extension.create(
+      AllIcons.Actions.Rollback,
+      AllIcons.Actions.Rollback,
+      BazelPluginBundle.message("project.settings.buildifier.revert.tooltip"),
+      true,
+    ) { buildifierExecutablePathField.text = "" }
 
   init {
     projectViewPathField = initProjectViewFileField()
@@ -79,6 +98,7 @@ internal class BazelProjectSettingsConfigurable(private val project: Project) :
 
   private fun initBuildifierExecutablePathField(): TextFieldWithBrowseButton =
     TextFieldWithBrowseButton().apply {
+      putClientProperty(DslComponentProperty.INTERACTIVE_COMPONENT, textField)
       val title = BazelPluginBundle.message("buildifier.select.path.to.executable")
       addBrowseFolderListener(
         project,
@@ -86,19 +106,28 @@ internal class BazelProjectSettingsConfigurable(private val project: Project) :
           .singleFile()
           .withTitle(title),
       )
+      val executableTextField = textField as ExtendableTextField
+      TextComponentEmptyText.setupPlaceholderVisibility(executableTextField)
+      updateBuildifierRevertButton(executableTextField)
+
       whenTextChanged {
-        if (text.isNotBlank()) {
-          val newPath = Path(text)
-          currentProjectSettings = currentProjectSettings.withNewBuildifierExecutablePath(newPath)
-        }
+        updateBuildifierRevertButton(executableTextField)
+        val newPath = text.takeIf { it.isNotBlank() }?.let { Path(it) }
+        currentProjectSettings = currentProjectSettings.withNewBuildifierExecutablePath(newPath)
       }
     }
 
+  private fun updateBuildifierRevertButton(textField: ExtendableTextField) {
+    if (detectedBuildifier != null && textField.text.isNotEmpty()) {
+      textField.addExtension(buildifierRevertExtension)
+    }
+    else {
+      textField.removeExtension(buildifierRevertExtension)
+    }
+  }
+
   private fun buildifierExecutableValidationInfo(): ValidationInfo? =
-    validateBuildifierExecutable(
-      buildifierExecutablePathField.text.takeIf { it.isNotBlank() }
-      ?: BuildifierUtil.detectBuildifierExecutable(project),
-    )
+    validateBuildifierExecutable(buildifierExecutablePathField.text.takeIf { it.isNotBlank() })
 
   private fun initRunBuildifierOnSaveCheckBox(): JBCheckBox =
     JBCheckBox(BazelPluginBundle.message("project.settings.plugin.run.buildifier.on.save.checkbox.text")).apply {
@@ -119,16 +148,26 @@ internal class BazelProjectSettingsConfigurable(private val project: Project) :
 
   override fun reset() {
     super<BoundCompositeSearchableConfigurable>.reset()
+    val savedSettings = project.bazelProjectSettings
     projectViewPathField.text = ProjectViewService.getInstance(project).projectViewPath.toString()
-    buildifierExecutablePathField.text = getBuildifierExecPathPlaceholderMessage()
-    runBuildifierOnSaveCheckBox.isSelected = project.bazelProjectSettings.runBuildifierOnSave
 
-    currentProjectSettings = project.bazelProjectSettings
+    detectedBuildifier = BuildifierUtil.detectBuildifierExecutable(project)
+    buildifierExecutablePathField.text = savedSettings.buildifierExecutablePath?.toString().orEmpty()
+    updateBuildifierEmptyText()
+    updateBuildifierRevertButton(buildifierExecutablePathField.textField as ExtendableTextField)
+
+    runBuildifierOnSaveCheckBox.isSelected = savedSettings.runBuildifierOnSave
+
+    currentProjectSettings = savedSettings
+    ComponentValidator.getInstance(buildifierExecutablePathField.textField).ifPresent { it.revalidate() }
   }
 
-  private fun getBuildifierExecPathPlaceholderMessage(): String =
-    currentProjectSettings.getBuildifierPathString(project)
-    ?: BazelPluginBundle.message("buildifier.executable.not.found", if (SystemInfo.isWindows) 0 else 1)
+  private fun updateBuildifierEmptyText() {
+    val newEmptyText =
+      detectedBuildifier?.let { BazelPluginBundle.message("project.settings.buildifier.placeholder", it) }
+      ?: BazelPluginBundle.message("buildifier.executable.not.found", if (SystemInfo.isWindows) 0 else 1)
+    buildifierExecutablePathField.emptyText.text = newEmptyText
+  }
 
   override fun getDisplayName(): String = BazelPluginBundle.message(DISPLAY_NAME_KEY)
 
@@ -152,7 +191,12 @@ internal class BazelProjectSettingsConfigurable(private val project: Project) :
   private fun validateBuildifierExecutable(executablePath: String?): ValidationInfo? {
     val message =
       when {
-        executablePath.isNullOrEmpty() -> BazelPluginBundle.message("path.validation.field.empty")
+        executablePath.isNullOrEmpty() ->
+          if (detectedBuildifier == null) {
+            BazelPluginBundle.message("buildifier.executable.not.found.brief")
+          } else {
+            null
+          }
         !isAbsolutePath(executablePath) -> BazelPluginBundle.message("path.validation.must.be.absolute")
         executablePath.endsWith(" ") -> BazelPluginBundle.message("path.validation.ends.with.whitespace")
         else ->

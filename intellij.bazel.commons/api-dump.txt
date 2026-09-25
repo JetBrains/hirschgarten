@@ -80,6 +80,7 @@ f:org.jetbrains.bazel.languages.projectview.ProjectViewExtensionsKt
 f:org.jetbrains.bazel.languages.projectview.ProjectViewTargetsKt
 - sf:getDirectories(org.jetbrains.bazel.languages.projectview.ProjectView):java.util.List
 f:org.jetbrains.bazel.settings.bazel.BazelProjectSettings
+- f:component1():java.nio.file.Path
 - f:component2():Z
 - f:copy(java.nio.file.Path,Z):org.jetbrains.bazel.settings.bazel.BazelProjectSettings
 - bs:copy$default(org.jetbrains.bazel.settings.bazel.BazelProjectSettings,java.nio.file.Path,Z,I,java.lang.Object):org.jetbrains.bazel.settings.bazel.BazelProjectSettings
