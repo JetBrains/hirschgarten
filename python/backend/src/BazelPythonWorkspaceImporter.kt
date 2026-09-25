@@ -45,6 +45,7 @@ import org.jetbrains.bazel.server.connection
 import org.jetbrains.bazel.sync.environment.projectCtx
 import org.jetbrains.bazel.sync.workspace.DefaultOutputLocationResolver
 import org.jetbrains.bazel.sync.workspace.importer.BazelWorkspaceImporter
+import org.jetbrains.bazel.sync.workspace.importer.BazelWorkspaceImporterFactory
 import org.jetbrains.bazel.sync.workspace.importer.GlobalNamingContext
 import org.jetbrains.bazel.sync.workspace.importer.GlobalNamingContext.NameProducer
 import org.jetbrains.bazel.sync.workspace.importer.GlobalNamingContext.NameSpace
@@ -82,9 +83,14 @@ private const val PYTHON_RESOURCE_ROOT_TYPE = "python-resource"
 private val PYTHON_MODULE_TYPE = ModuleTypeId(PYTHON_MODULE_ID)
 private val NAME_PRODUCER = NameProducer(id = "python")
 
-internal class BazelPythonWorkspaceImporter : BazelWorkspaceImporter, BazelWorkspaceImporter.Named {
+internal class BazelPythonWorkspaceImporter(val context: WorkspaceImporterContext) : BazelWorkspaceImporter, BazelWorkspaceImporter.Named {
   companion object {
     internal val logger = logger<BazelPythonWorkspaceImporter>()
+  }
+
+  class Factory : BazelWorkspaceImporterFactory {
+    override fun createWorkspaceImporter(context: WorkspaceImporterContext): BazelWorkspaceImporter =
+      BazelPythonWorkspaceImporter(context)
   }
 
   override val importerName: @NlsContexts.ProgressTitle String
@@ -98,17 +104,12 @@ internal class BazelPythonWorkspaceImporter : BazelWorkspaceImporter, BazelWorks
   private var defaultVersion: String? = null
   private var externalSourceDependenciesByTarget: Map<WorkspaceTargetKey, List<WorkspaceTargetKey>> = mapOf()
 
-  override suspend fun import(
-    context: WorkspaceImporterContext,
-    phase: WorkspaceImporterPhase,
-    snapshot: WorkspaceSnapshot,
-  ): Result<WorkspaceImporterResult> = runCatching {
+  override suspend fun import(phase: WorkspaceImporterPhase, snapshot: WorkspaceSnapshot): Result<WorkspaceImporterResult> = runCatching {
     when (phase) {
       is WorkspaceImporterPhase.Initialize -> onInitialize(snapshot, phase.naming)
       is WorkspaceImporterPhase.WorkspaceApply ->
-        onWorkspaceApply(context, snapshot, phase.builder, context.vfuManager, phase.entitySource, phase.naming)
-
-      WorkspaceImporterPhase.PostProcessing -> onPostProcessing(context, snapshot)
+        onWorkspaceApply(snapshot, phase.builder, context.vfuManager, phase.entitySource, phase.naming)
+      WorkspaceImporterPhase.PostProcessing -> onPostProcessing(snapshot)
       else -> WorkspaceImporterResult.Success
     }
   }
@@ -169,7 +170,6 @@ internal class BazelPythonWorkspaceImporter : BazelWorkspaceImporter, BazelWorks
       .distinct()
 
   private fun onWorkspaceApply(
-    context: WorkspaceImporterContext,
     snapshot: WorkspaceSnapshot,
     builder: MutableEntityStorage,
     vfuManager: VirtualFileUrlManager,
@@ -190,7 +190,6 @@ internal class BazelPythonWorkspaceImporter : BazelWorkspaceImporter, BazelWorks
 
     for ((targetKey, target) in allPythonTargets) {
       addModuleEntityFromTarget(
-        context = context,
         snapshot = snapshot,
         builder = builder,
         target = target,
@@ -213,12 +212,12 @@ internal class BazelPythonWorkspaceImporter : BazelWorkspaceImporter, BazelWorks
       .toList()
   }
 
-  private suspend fun onPostProcessing(context: WorkspaceImporterContext, snapshot: WorkspaceSnapshot): WorkspaceImporterResult {
+  private suspend fun onPostProcessing(snapshot: WorkspaceSnapshot): WorkspaceImporterResult {
     /**
      * Because of PY-86494, PythonSdkUpdater fails to add SDK paths unless there's at least one module in the project.
      * Hence, we're forced to do it in post-processing, after WSM has been applied already.
      */
-    calculateAndAddSdksWithProgress(context, snapshot)
+    calculateAndAddSdksWithProgress(snapshot)
 
     val pyTargets = allPythonTargets.values
       .filter { it.hasBuildData<PythonBuildTarget>() }
@@ -235,25 +234,19 @@ internal class BazelPythonWorkspaceImporter : BazelWorkspaceImporter, BazelWorks
     return WorkspaceImporterResult.Success
   }
 
-  private suspend fun calculateAndAddSdksWithProgress(
-    context: WorkspaceImporterContext,
-    snapshot: WorkspaceSnapshot,
-  ): Map<WorkspaceTargetKey, Sdk?> =
+  private suspend fun calculateAndAddSdksWithProgress(snapshot: WorkspaceSnapshot): Map<WorkspaceTargetKey, Sdk?> =
     context.progressReporter.indeterminateStep(text = BazelPythonBackendBundle.message("progress.bar.calculate.python.sdk.infos")) {
       context.taskConsole.withSubtask(
         subtaskId = context.taskId.subTask("calculate-and-add-all-python-sdk-infos"),
         message = BazelPythonBackendBundle.message("console.task.model.calculate.python.sdks"),
       ) {
-        calculateAndAddSdks(context, snapshot)
+        calculateAndAddSdks(snapshot)
       }
     }
 
   // MAYBE RC: we probably should postpone sdk table modification
   //   to post processing step for now its fine
-  private suspend fun calculateAndAddSdks(
-    context: WorkspaceImporterContext,
-    snapshot: WorkspaceSnapshot,
-  ): Map<WorkspaceTargetKey, Sdk?> {
+  private suspend fun calculateAndAddSdks(snapshot: WorkspaceSnapshot): Map<WorkspaceTargetKey, Sdk?> {
     return snapshot.allTargets.filterBuildTarget<PythonBuildTarget>()
       .filter { (_, pyTarget) -> (pyTarget.interpreter) != null }
       .associateBy { (target, _) -> target.key }
@@ -322,7 +315,6 @@ internal class BazelPythonWorkspaceImporter : BazelWorkspaceImporter, BazelWorks
   }
 
   private fun addModuleEntityFromTarget(
-    context: WorkspaceImporterContext,
     snapshot: WorkspaceSnapshot,
     builder: MutableEntityStorage,
     target: BuildTarget,
@@ -332,7 +324,7 @@ internal class BazelPythonWorkspaceImporter : BazelWorkspaceImporter, BazelWorks
     naming: GlobalNamingContext,
     sourceDependencyLibraries: List<LibraryEntity> = emptyList(),
   ): ModuleEntity {
-    val contentRoots = getContentRootEntities(context, target, entitySource, virtualFileUrlManager)
+    val contentRoots = getContentRootEntities(target, entitySource, virtualFileUrlManager)
 
     val libraryDependencies =
       sourceDependencyLibraries.map {
@@ -385,23 +377,21 @@ internal class BazelPythonWorkspaceImporter : BazelWorkspaceImporter, BazelWorks
   }
 
   private fun getContentRootEntities(
-    context: WorkspaceImporterContext,
     target: BuildTarget,
     entitySource: EntitySource,
     virtualFileUrlManager: VirtualFileUrlManager,
   ): List<ContentRootEntityBuilder> {
-    val sourceContentRootEntities = getSourceContentRootEntities(context, target, entitySource, virtualFileUrlManager)
+    val sourceContentRootEntities = getSourceContentRootEntities(target, entitySource, virtualFileUrlManager)
     val resourceContentRootEntities = getResourceContentRootEntities(target, entitySource, virtualFileUrlManager)
 
     return sourceContentRootEntities + resourceContentRootEntities
   }
 
   private fun getSourceContentRootEntities(
-    context: WorkspaceImporterContext,
     target: BuildTarget,
     entitySource: EntitySource,
     virtualFileUrlManager: VirtualFileUrlManager,
-  ): List<ContentRootEntityBuilder> = computeSourceRootPaths(context, target)
+  ): List<ContentRootEntityBuilder> = computeSourceRootPaths(target)
     .map { it.toContentRoot(PYTHON_SOURCE_ROOT_TYPE, entitySource, virtualFileUrlManager) }
 
   private fun getResourceContentRootEntities(
@@ -412,7 +402,7 @@ internal class BazelPythonWorkspaceImporter : BazelWorkspaceImporter, BazelWorks
     .map { resource -> resource.toContentRoot(PYTHON_RESOURCE_ROOT_TYPE, entitySource, virtualFileUrlManager) }
     .toList()
 
-  private fun computeSourceRootPaths(context: WorkspaceImporterContext, target: BuildTarget): Set<Path> {
+  private fun computeSourceRootPaths(target: BuildTarget): Set<Path> {
     val projectCtx = context.project.projectCtx
     // imports for generated files should be resolved against bazel-bin
     val basePaths = listOfNotNull(projectCtx.projectRootDir?.toNioPath(), projectCtx.bazelBinPath).distinct()

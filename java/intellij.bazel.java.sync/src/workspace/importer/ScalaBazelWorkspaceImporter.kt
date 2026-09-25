@@ -7,6 +7,7 @@ import org.jetbrains.bazel.scala.sdk.ScalaSdk
 import org.jetbrains.bazel.scala.sdk.scalaSdkExtension
 import org.jetbrains.bazel.scala.sdk.scalaSdkExtensionExists
 import org.jetbrains.bazel.sync.workspace.importer.BazelWorkspaceImporter
+import org.jetbrains.bazel.sync.workspace.importer.BazelWorkspaceImporterFactory
 import org.jetbrains.bazel.sync.workspace.importer.WorkspaceImporterContext
 import org.jetbrains.bazel.sync.workspace.importer.WorkspaceImporterPhase
 import org.jetbrains.bazel.sync.workspace.importer.WorkspaceImporterResult
@@ -16,14 +17,15 @@ import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.OutputLocation
 import java.nio.file.Path
 
-internal class ScalaBazelWorkspaceImporter : BazelWorkspaceImporter {
+internal class ScalaBazelWorkspaceImporter(val context: WorkspaceImporterContext) : BazelWorkspaceImporter {
+  class Factory : BazelWorkspaceImporterFactory {
+    override fun createWorkspaceImporter(context: WorkspaceImporterContext): BazelWorkspaceImporter =
+      ScalaBazelWorkspaceImporter(context)
+  }
+
   private var scalaSdks: Set<ScalaSdk>? = null
 
-  override suspend fun import(
-    context: WorkspaceImporterContext,
-    phase: WorkspaceImporterPhase,
-    snapshot: WorkspaceSnapshot,
-  ): Result<WorkspaceImporterResult> {
+  override suspend fun import(phase: WorkspaceImporterPhase, snapshot: WorkspaceSnapshot): Result<WorkspaceImporterResult> {
     when (phase) {
       is WorkspaceImporterPhase.Initialize -> {
         if (!scalaSdkExtensionExists()) {

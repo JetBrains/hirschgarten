@@ -60,7 +60,7 @@
   </extensions>
 
   <extensions defaultExtensionNs="org.jetbrains.bazel">
-    <syncWorkspaceImporter implementation="org.jetbrains.bazel.golang.sync.GoWorkspaceImporter"/>
+    <syncWorkspaceImporterFactory implementation="org.jetbrains.bazel.golang.sync.GoWorkspaceImporter$Factory"/>
     <projectPreSyncHook implementation="org.jetbrains.bazel.golang.sync.RunGazelleTargetPreSyncHook"/>
     <projectPostSyncHook implementation="org.jetbrains.bazel.golang.sync.GoModuleSupportPostSyncHook" />
     <runHandlerProvider implementation="org.jetbrains.bazel.golang.debug.BazelGoRunHandler$BazelGoRunHandlerProvider" />

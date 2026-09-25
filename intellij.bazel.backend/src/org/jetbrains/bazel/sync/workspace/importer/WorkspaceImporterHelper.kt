@@ -3,6 +3,7 @@ package org.jetbrains.bazel.sync.workspace.importer
 import com.intellij.build.events.impl.FailureResultImpl
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.extensions.forEachExtensionSafeInline
+import com.intellij.openapi.externalSystem.autolink.mapExtensionSafe
 import com.intellij.openapi.project.Project
 import com.intellij.platform.backend.workspace.WorkspaceModel
 import com.intellij.platform.util.progress.SequentialProgressReporter
@@ -35,10 +36,10 @@ class WorkspaceImporterHelper(
 
   private val workspaceModel = WorkspaceModel.getInstance(project)
   private val toSkip = mutableSetOf<BazelWorkspaceImporter>()
-  private lateinit var context: WorkspaceImporterContext
+  private lateinit var importers: List<BazelWorkspaceImporter>
 
   suspend fun invoke(reporter: SequentialProgressReporter, snapshot: WorkspaceSnapshot, taskId: TaskId) {
-    context = WorkspaceImporterContext(
+    val context = WorkspaceImporterContext(
       project = project,
       taskConsole = taskConsole,
       progressReporter = progressReporter,
@@ -49,6 +50,7 @@ class WorkspaceImporterHelper(
       outputParser = outputParser,
       bazelInfo = bazelInfo,
     )
+    importers = BazelWorkspaceImporterFactory.EP_NAME.mapExtensionSafe { it.createWorkspaceImporter(context) }
     val namingBuilder = GlobalNamingContextBuilder.create(snapshot.repoMapping)
 
     taskConsole.withSubtask(
@@ -59,12 +61,12 @@ class WorkspaceImporterHelper(
         subtaskId = taskId.subTask("workspace-importers-init"),
         message = BazelBackendBundle.message("workspace.importer.phase.initialization.progress"),
       ) { taskId ->
-        BazelWorkspaceImporter.EP_NAME.forEachExtensionSafeInline { ep ->
-          ep.runContextual(taskId, context, WorkspaceImporterPhase.Initialize(namingBuilder), snapshot)
-            .onFailure { toSkip += ep }
+        importers.forEach { importer ->
+          importer.runContextual(taskId, WorkspaceImporterPhase.Initialize(namingBuilder), snapshot)
+            .onFailure { toSkip += importer }
             .onSuccess { result ->
               when (result) {
-                WorkspaceImporterResult.Abort -> toSkip += ep
+                WorkspaceImporterResult.Abort -> toSkip += importer
                 WorkspaceImporterResult.Success -> {
                   /* noop */
                 }
@@ -80,15 +82,15 @@ class WorkspaceImporterHelper(
         subtaskId = taskId.subTask("workspace-importers-wsm-building"),
         message = BazelBackendBundle.message("build.workspace.model"),
       ) { taskId ->
-        BazelWorkspaceImporter.EP_NAME.forEachExtensionSafeInline { ep ->
-          if (ep in toSkip) {
-            return@forEachExtensionSafeInline
+        importers.forEach { importer ->
+          if (importer in toSkip) {
+            return@forEach
           }
-          ep.runContextual(taskId, context, WorkspaceImporterPhase.WorkspaceApply(builder, BazelProjectEntitySource, naming), snapshot)
-            .onFailure { toSkip += ep }
+          importer.runContextual(taskId, WorkspaceImporterPhase.WorkspaceApply(builder, BazelProjectEntitySource, naming), snapshot)
+            .onFailure { toSkip += importer }
             .onSuccess { result ->
               when (result) {
-                WorkspaceImporterResult.Abort -> toSkip += ep
+                WorkspaceImporterResult.Abort -> toSkip += importer
                 WorkspaceImporterResult.Success -> { /* noop */
                 }
               }
@@ -100,15 +102,15 @@ class WorkspaceImporterHelper(
         subtaskId = taskId.subTask("workspace-importers-finalize"),
         message = BazelBackendBundle.message("workspace.importer.phase.finalization"),
       ) { taskId ->
-        BazelWorkspaceImporter.EP_NAME.forEachExtensionSafeInline { ep ->
-          if (ep in toSkip) {
-            return@forEachExtensionSafeInline
+        importers.forEach { importer ->
+          if (importer in toSkip) {
+            return@forEach
           }
-          ep.runContextual(taskId, context, WorkspaceImporterPhase.Finalize, snapshot)
+          importer.runContextual(taskId, WorkspaceImporterPhase.Finalize, snapshot)
             .onFailure { /* noop */ }
             .onSuccess { result ->
               when (result) {
-                WorkspaceImporterResult.Abort -> toSkip += ep
+                WorkspaceImporterResult.Abort -> toSkip += importer
                 WorkspaceImporterResult.Success -> {
                   /* noop */
                 }
@@ -124,11 +126,11 @@ class WorkspaceImporterHelper(
       reporter, taskId.subTask("workspace-importers-post-apply"),
       BazelBackendBundle.message("bazel.workspace.post.apply.task.name"),
     ) { taskId ->
-      BazelWorkspaceImporter.EP_NAME.forEachExtensionSafeInline { ep ->
-        if (ep in toSkip) {
-          return@forEachExtensionSafeInline
+      importers.forEach { importer ->
+        if (importer in toSkip) {
+          return@forEach
         }
-        ep.runContextual(taskId, context, WorkspaceImporterPhase.PostProcessing, snapshot)
+        importer.runContextual(taskId, WorkspaceImporterPhase.PostProcessing, snapshot)
       }
     }
   }
@@ -146,7 +148,6 @@ class WorkspaceImporterHelper(
   // MAYBE RC: using context parameters for `TaskId` would be great fit here
   private suspend fun BazelWorkspaceImporter.runContextual(
     taskId: TaskId,
-    context: WorkspaceImporterContext,
     phase: WorkspaceImporterPhase,
     snapshot: WorkspaceSnapshot,
   ): Result<WorkspaceImporterResult> = runCatching {
@@ -154,12 +155,12 @@ class WorkspaceImporterHelper(
       taskConsole.withSubtask(
         taskId.uniqueSubTask("importer"),
         BazelBackendBundle.message("workspace.importer.phase.executing", this.importerName),
-      ) { taskId ->
-        this.import(context.copy(taskId = taskId), phase, snapshot)
+      ) {
+        this.import(phase, snapshot)
       }
     }
     else {
-      this.import(context.copy(taskId = taskId), phase, snapshot)
+      this.import(phase, snapshot)
     }
   }
     .fold(

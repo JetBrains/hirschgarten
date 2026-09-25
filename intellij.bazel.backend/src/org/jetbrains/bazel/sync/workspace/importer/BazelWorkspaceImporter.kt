@@ -49,18 +49,22 @@ interface BazelWorkspaceImporter {
   /**
    * Perform phased workspace import. Adhear to rules found in [WorkspaceImporterPhase] documentation.
    *
-   * @param context Common workspace importer context
    * @param phase Current importer phase
    * @param snapshot Immutable workspace snapshot
    */
-  // MAYBE RC: is Result<...> good fit here?
-  suspend fun import(
-    context: WorkspaceImporterContext, phase: WorkspaceImporterPhase,
-    snapshot: WorkspaceSnapshot,
-  ): Result<WorkspaceImporterResult>
+  suspend fun import(phase: WorkspaceImporterPhase, snapshot: WorkspaceSnapshot): Result<WorkspaceImporterResult>
+}
+
+/**
+ * Factory for creating [BazelWorkspaceImporter],
+ * workspace importer instance is created at start of each sync
+ */
+@ApiStatus.Internal
+interface BazelWorkspaceImporterFactory {
+  fun createWorkspaceImporter(context: WorkspaceImporterContext): BazelWorkspaceImporter
 
   companion object {
-    val EP_NAME: ExtensionPointName<BazelWorkspaceImporter> = ExtensionPointName("org.jetbrains.bazel.syncWorkspaceImporter")
+    val EP_NAME: ExtensionPointName<BazelWorkspaceImporterFactory> = ExtensionPointName("org.jetbrains.bazel.syncWorkspaceImporterFactory")
   }
 }
 
@@ -108,7 +112,7 @@ data class WorkspaceImporterContext(
  *
  * Phase call order
  * ```
- * Initialize -> WorkspaceApply -> Finalize
+ * Initialize -> WorkspaceApply -> Finalize -> PostProcessing (After workspace model apply)
  * ```
  */
 // RC: for now support only monolithic updates to shared `MutableEntityStorage`
@@ -149,5 +153,3 @@ sealed interface WorkspaceImporterPhase {
   data object PostProcessing : WorkspaceImporterPhase
 
 }
-
-

@@ -22,6 +22,7 @@ import org.jetbrains.bazel.golang.workspace.GO_WORKSPACE_MODULE_NAME
 import org.jetbrains.bazel.progress.syncConsole
 import org.jetbrains.bazel.progress.withSubtask
 import org.jetbrains.bazel.sync.workspace.importer.BazelWorkspaceImporter
+import org.jetbrains.bazel.sync.workspace.importer.BazelWorkspaceImporterFactory
 import org.jetbrains.bazel.sync.workspace.importer.WorkspaceImporterContext
 import org.jetbrains.bazel.sync.workspace.importer.WorkspaceImporterPhase
 import org.jetbrains.bazel.sync.workspace.importer.WorkspaceImporterResult
@@ -36,7 +37,12 @@ import org.jetbrains.bazel.workspacemodel.entities.BazelGoTargetEntity
 import org.jetbrains.bazel.workspacemodel.entities.WorkspaceModelTargetKey
 import java.nio.file.Path
 
-internal class GoWorkspaceImporter : BazelWorkspaceImporter, BazelWorkspaceImporter.Named {
+internal class GoWorkspaceImporter(val context: WorkspaceImporterContext) : BazelWorkspaceImporter, BazelWorkspaceImporter.Named {
+  class Factory : BazelWorkspaceImporterFactory {
+    override fun createWorkspaceImporter(context: WorkspaceImporterContext): BazelWorkspaceImporter =
+      GoWorkspaceImporter(context)
+  }
+
   lateinit var goTargets: Map<WorkspaceTargetKey, GoBuildTarget>
   lateinit var goTargetDependencies: Map<WorkspaceTargetKey, List<WorkspaceTargetKey>>
   private val importPathInterner = Interner.createWeakInterner<String>()
@@ -44,11 +50,7 @@ internal class GoWorkspaceImporter : BazelWorkspaceImporter, BazelWorkspaceImpor
   override val importerName: @NlsContexts.ProgressTitle String
     get() = BazelPluginBundle.message("console.task.model.go.importer")
 
-  override suspend fun import(
-    context: WorkspaceImporterContext,
-    phase: WorkspaceImporterPhase,
-    snapshot: WorkspaceSnapshot,
-  ): Result<WorkspaceImporterResult> {
+  override suspend fun import(phase: WorkspaceImporterPhase, snapshot: WorkspaceSnapshot): Result<WorkspaceImporterResult> {
     when (phase) {
       is WorkspaceImporterPhase.Initialize -> {
         val importDepth = snapshot.commonSyncConfig.importDepth
@@ -64,11 +66,11 @@ internal class GoWorkspaceImporter : BazelWorkspaceImporter, BazelWorkspaceImpor
       }
 
       is WorkspaceImporterPhase.WorkspaceApply -> {
-        onWorkspaceApply(context, snapshot, phase.builder, phase.entitySource)
+        onWorkspaceApply(snapshot, phase.builder, phase.entitySource)
       }
 
       WorkspaceImporterPhase.PostProcessing -> {
-        onPostProcessing(context, snapshot)
+        onPostProcessing(snapshot)
       }
 
       else -> {}
@@ -77,13 +79,12 @@ internal class GoWorkspaceImporter : BazelWorkspaceImporter, BazelWorkspaceImpor
   }
 
   private fun onWorkspaceApply(
-    context: WorkspaceImporterContext,
     snapshot: WorkspaceSnapshot,
     builder: MutableEntityStorage,
     entitySource: EntitySource,
   ) {
-    addGoWorkspaceModule(builder, context, snapshot, entitySource)
-    addGoPackageEntities(builder, context, snapshot, entitySource)
+    addGoWorkspaceModule(builder, snapshot, entitySource)
+    addGoPackageEntities(builder, snapshot, entitySource)
   }
 
   /**
@@ -93,7 +94,6 @@ internal class GoWorkspaceImporter : BazelWorkspaceImporter, BazelWorkspaceImpor
    */
   private fun addGoWorkspaceModule(
     builder: MutableEntityStorage,
-    context: WorkspaceImporterContext,
     snapshot: WorkspaceSnapshot,
     entitySource: EntitySource,
   ) {
@@ -132,7 +132,6 @@ internal class GoWorkspaceImporter : BazelWorkspaceImporter, BazelWorkspaceImpor
 
   private fun addGoPackageEntities(
     builder: MutableEntityStorage,
-    context: WorkspaceImporterContext,
     snapshot: WorkspaceSnapshot,
     entitySource: EntitySource,
   ) {
@@ -202,14 +201,13 @@ internal class GoWorkspaceImporter : BazelWorkspaceImporter, BazelWorkspaceImpor
     return inferredImportPath
   }
 
-  private suspend fun onPostProcessing(context: WorkspaceImporterContext, snapshot: WorkspaceSnapshot) {
-    calculateAndAddGoSdk(context, snapshot, context.project)
+  private suspend fun onPostProcessing(snapshot: WorkspaceSnapshot) {
+    calculateAndAddGoSdk(snapshot, context.project)
     GoWrongSdkConfigurationNotificationProvider.disableNotification(context.project)
     GoExternalLibraryManager.getInstance(context.project).update()
   }
 
   private suspend fun calculateAndAddGoSdk(
-    context: WorkspaceImporterContext,
     snapshot: WorkspaceSnapshot, project: Project,
   ) = project.syncConsole.withSubtask(
     reporter = context.progressReporter,

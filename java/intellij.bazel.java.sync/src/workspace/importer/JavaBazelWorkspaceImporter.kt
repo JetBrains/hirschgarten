@@ -15,6 +15,7 @@ import org.jetbrains.bazel.progress.withSubtask
 import org.jetbrains.bazel.sync.environment.projectCtx
 import org.jetbrains.bazel.sync.workspace.DefaultOutputLocationResolver
 import org.jetbrains.bazel.sync.workspace.importer.BazelWorkspaceImporter
+import org.jetbrains.bazel.sync.workspace.importer.BazelWorkspaceImporterFactory
 import org.jetbrains.bazel.sync.workspace.importer.GlobalNamingContext
 import org.jetbrains.bazel.sync.workspace.importer.GlobalNamingContextBuilder
 import org.jetbrains.bazel.sync.workspace.importer.WorkspaceImporterContext
@@ -33,7 +34,12 @@ import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.OutputLocation
 import java.nio.file.Path
 
-internal class JavaBazelWorkspaceImporter : BazelWorkspaceImporter, BazelWorkspaceImporter.Named {
+internal class JavaBazelWorkspaceImporter(val context: WorkspaceImporterContext) : BazelWorkspaceImporter, BazelWorkspaceImporter.Named {
+  class Factory : BazelWorkspaceImporterFactory {
+    override fun createWorkspaceImporter(context: WorkspaceImporterContext): BazelWorkspaceImporter =
+      JavaBazelWorkspaceImporter(context)
+  }
+
   private var javacOptions: Map<String, String>? = null
   private lateinit var moduleTargets: List<BuildTarget>
   private lateinit var targets: List<BuildTarget>
@@ -47,21 +53,16 @@ internal class JavaBazelWorkspaceImporter : BazelWorkspaceImporter, BazelWorkspa
   override val importerName: @NlsContexts.ProgressTitle String
     get() = BazelJavaBackendBundle.message("workspace.java.importer.name")
 
-  override suspend fun import(
-    context: WorkspaceImporterContext,
-    phase: WorkspaceImporterPhase,
-    snapshot: WorkspaceSnapshot,
-  ): Result<WorkspaceImporterResult> = runCatching {
+  override suspend fun import(phase: WorkspaceImporterPhase, snapshot: WorkspaceSnapshot): Result<WorkspaceImporterResult> = runCatching {
     when (phase) {
-      is WorkspaceImporterPhase.Initialize -> onInitialize(context, snapshot, phase.naming)
-      is WorkspaceImporterPhase.WorkspaceApply -> onWorkspaceApply(context, snapshot, phase.builder, phase.entitySource, phase.naming)
-      WorkspaceImporterPhase.Finalize -> onFinalize(context, snapshot)
-      WorkspaceImporterPhase.PostProcessing -> onPostProcessing(context, snapshot)
+      is WorkspaceImporterPhase.Initialize -> onInitialize(snapshot, phase.naming)
+      is WorkspaceImporterPhase.WorkspaceApply -> onWorkspaceApply(snapshot, phase.builder, phase.entitySource, phase.naming)
+      WorkspaceImporterPhase.Finalize -> onFinalize(snapshot)
+      WorkspaceImporterPhase.PostProcessing -> onPostProcessing(snapshot)
     }
   }
 
   fun onInitialize(
-    context: WorkspaceImporterContext,
     snapshot: WorkspaceSnapshot,
     naming: GlobalNamingContextBuilder,
   ): WorkspaceImporterResult {
@@ -105,7 +106,7 @@ internal class JavaBazelWorkspaceImporter : BazelWorkspaceImporter, BazelWorkspa
   }
 
   suspend fun onWorkspaceApply(
-    context: WorkspaceImporterContext, snapshot: WorkspaceSnapshot,
+    snapshot: WorkspaceSnapshot,
     builder: MutableEntityStorage, entitySource: EntitySource,
     naming: GlobalNamingContext,
   ): WorkspaceImporterResult {
@@ -113,16 +114,16 @@ internal class JavaBazelWorkspaceImporter : BazelWorkspaceImporter, BazelWorkspa
       context.taskId.subTask("update-internal-model"),
       BazelJavaBackendBundle.message("workspace.java.importer.update.internal.model"),
     ) {
-      updateInternalModelSubtask(context, snapshot, builder, entitySource, naming)
+      updateInternalModelSubtask(snapshot, builder, entitySource, naming)
     }
     return WorkspaceImporterResult.Success
   }
 
-  fun onFinalize(context: WorkspaceImporterContext, snapshot: WorkspaceSnapshot): WorkspaceImporterResult {
+  fun onFinalize(snapshot: WorkspaceSnapshot): WorkspaceImporterResult {
     return WorkspaceImporterResult.Success
   }
 
-  suspend fun onPostProcessing(context: WorkspaceImporterContext, snapshot: WorkspaceSnapshot): WorkspaceImporterResult {
+  suspend fun onPostProcessing(snapshot: WorkspaceSnapshot): WorkspaceImporterResult {
     SdkUtils.cleanUpInvalidJdks(context.project)
     uniqueJavaHomes.forEach {
       SdkUtils.addJdkIfNeeded(
@@ -139,7 +140,6 @@ internal class JavaBazelWorkspaceImporter : BazelWorkspaceImporter, BazelWorkspa
   }
 
   private suspend fun updateInternalModelSubtask(
-    context: WorkspaceImporterContext,
     snapshot: WorkspaceSnapshot,
     builder: MutableEntityStorage,
     entitySource: EntitySource,

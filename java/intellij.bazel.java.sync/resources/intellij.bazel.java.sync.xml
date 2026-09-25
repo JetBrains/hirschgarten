@@ -66,8 +66,8 @@
     <projectViewSectionProvider
       implementation="org.jetbrains.bazel.sync.workspace.languages.java.sourceRoot.projectview.JavaSROProjectViewSectionProvider"/>
 
-    <syncWorkspaceImporter implementation="org.jetbrains.bazel.workspace.importer.JavaBazelWorkspaceImporter"/>
-    <syncWorkspaceImporter implementation="org.jetbrains.bazel.workspace.importer.ScalaBazelWorkspaceImporter"/>
+    <syncWorkspaceImporterFactory implementation="org.jetbrains.bazel.workspace.importer.JavaBazelWorkspaceImporter$Factory"/>
+    <syncWorkspaceImporterFactory implementation="org.jetbrains.bazel.workspace.importer.ScalaBazelWorkspaceImporter$Factory"/>
 
     <javaSourceRootPrefixContributor
       implementation="org.jetbrains.bazel.sync.workspace.languages.java.sourceRoot.prefix.JavaProjectViewSourceRootPatternContributor"/>
