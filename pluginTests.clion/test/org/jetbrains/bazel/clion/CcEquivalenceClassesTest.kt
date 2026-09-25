@@ -356,6 +356,51 @@ class CcEquivalenceClassesTest {
     assertThat(configurations.byName("@//foo/bar:one and 1 other target(s)").copts).isEmpty()
   }
 
+  @Test
+  fun testTargetWithoutSourcesHasNoGroup() {
+    val configurations = resolve {
+      val lib = ccLibrary {
+        label("//lib:lib")
+        hdrs("lib/lib.h")
+      }
+      ccBinary {
+        label("//foo/bar:one")
+        srcs("foo/bar/one.c")
+        deps(lib)
+      }
+    }
+
+    assertThat(configurations).hasSize(1)
+    assertThat(configurations.forLabel("//foo/bar:one")).hasSize(1)
+    assertThat(configurations.forLabel("//lib:lib")).hasSize(0)
+  }
+
+  @Test
+  fun testPrebuiltLibrariesHaveNoGroup() {
+    val configurations = resolve {
+      ccLibrary {
+        label("//prebuild:prebuild")
+        srcs("prebuild/libshared.so", "prebuild/libstatic.a")
+        hdrs("prebuild/lib.h")
+      }
+    }
+
+    assertThat(configurations).isEmpty()
+  }
+
+  @Test
+  fun testPrebuiltLibrariesAreNotSources() {
+    val configurations = resolve {
+      ccLibrary {
+        label("//foo/bar:one")
+        srcs("foo/bar/one.c", "foo/bar/libshared.so")
+      }
+    }
+
+    assertThat(configurations).hasSize(1)
+    assertThat(configurations.single().sources.map { it.fileName }).containsExactly("one.c")
+  }
+
   private fun resolve(declare: CcProjectBuilder.() -> Unit): List<CcResolveConfiguration> = timeoutRunBlocking {
     val (ctx, result) = withTestImportContext(ccProject(declare = declare), project = project) {
       val target2Toolchain = buildToolchainMap()
