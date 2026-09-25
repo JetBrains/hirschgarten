@@ -9,6 +9,10 @@ import io.kotest.matchers.shouldBe
 import it.unimi.dsi.fastutil.ints.IntArrayList
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap
 import kotlinx.coroutines.runBlocking
+import org.h2.mvstore.MVMap
+import org.h2.mvstore.MVStore
+import org.h2.mvstore.type.IntegerDataType
+import org.h2.mvstore.type.StringDataType
 import org.jetbrains.bazel.commons.LanguageClass
 import org.jetbrains.bazel.commons.RepoMappingDisabled
 import org.jetbrains.bazel.commons.RuleType
@@ -31,6 +35,7 @@ import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.SourceFileCollection
 import org.jetbrains.bsp.protocol.isFull
 import org.junit.jupiter.api.Test
+import java.lang.ref.Reference
 import java.nio.file.Path
 
 @TestApplication
@@ -121,7 +126,7 @@ class SnapshotStorageTest {
     actual.data.toSet() shouldBe expected.data.toSet()
   }
 
-  private suspend fun saveAllBulk(generation: SnapshotGeneration, count: Int): SavedState {
+  private suspend fun saveAllBulk(generation: SnapshotGeneration, count: Int, firstIndex: Int = 0): SavedState {
     val keyId2Target = Int2ObjectBiMap<WorkspaceTargetKey>()
     val labelId2Label = Int2ObjectBiMap<Label>()
     val targets = LinkedHashMap<WorkspaceTargetKey, BuildTarget>()
@@ -129,8 +134,9 @@ class SnapshotStorageTest {
     val toSave = ArrayList<WorkspaceTargetToSave>(count)
 
     for (n in 0 until count) {
-      val targetKey = key("@//pkg$n:target")
-      val raw = rawTarget(targetKey, n)
+      val index = firstIndex + n
+      val targetKey = key("@//pkg$index:target")
+      val raw = rawTarget(targetKey, index)
       val keyId = n + 1
       keyId2Target[keyId] = targetKey
       labelId2Label[keyId] = targetKey.label
@@ -171,7 +177,7 @@ class SnapshotStorageTest {
 
     val reopenedStorage = SnapshotStorage(dbFile, buildKryo())
     try {
-      val reopened = reopenedStorage.openGeneration(1)
+      val reopened = reopenedStorage.openGeneration(1).shouldNotBeNull()
       for ((targetKey, raw) in state.targets) {
         assertComposedEquals(reopened.findOrLoadTarget(state.partial, targetKey, TargetLoadOptions.ALL), raw)
       }
@@ -195,7 +201,7 @@ class SnapshotStorageTest {
     }
 
     val reopenedStorage = SnapshotStorage(dbFile, buildKryo())
-    val reopened = reopenedStorage.openGeneration(1)
+    val reopened = reopenedStorage.openGeneration(1).shouldNotBeNull()
     try {
       for ((targetKey, raw) in state.targets) {
         assertComposedEquals(reopened.findOrLoadTarget(state.partial, targetKey, TargetLoadOptions.ALL), raw)
@@ -221,7 +227,7 @@ class SnapshotStorageTest {
     }
 
     val reopenedStorage = SnapshotStorage(dbFile, buildKryo())
-    val reopened = reopenedStorage.openGeneration(1)
+    val reopened = reopenedStorage.openGeneration(1).shouldNotBeNull()
     try {
       val skipFiles = reopened.findOrLoadTarget(
         state.partial,
@@ -275,7 +281,7 @@ class SnapshotStorageTest {
     }
 
     val reopenedStorage = SnapshotStorage(dbFile, buildKryo())
-    val reopened = reopenedStorage.openGeneration(1)
+    val reopened = reopenedStorage.openGeneration(1).shouldNotBeNull()
     try {
       val targetKey = key("@//pkg0:target")
       val summary = reopened.findOrLoadTarget(state.partial, targetKey, TargetLoadOptions.SUMMARY)
@@ -303,7 +309,7 @@ class SnapshotStorageTest {
     }
 
     val reopenedStorage = SnapshotStorage(dbFile, buildKryo())
-    val summary = reopenedStorage.openGeneration(1)
+    val summary = reopenedStorage.openGeneration(1).shouldNotBeNull()
       .findOrLoadTarget(state.partial, key("@//pkg0:target"), TargetLoadOptions.SUMMARY)
     summary.shouldNotBeNull()
     reopenedStorage.close()
@@ -328,7 +334,7 @@ class SnapshotStorageTest {
     val targetKey = key("@//pkg0:target")
     val expected = state.targets.getValue(targetKey)
     val reopenedStorage = SnapshotStorage(dbFile, buildKryo())
-    val summary = reopenedStorage.openGeneration(1)
+    val summary = reopenedStorage.openGeneration(1).shouldNotBeNull()
       .findOrLoadTarget(state.partial, targetKey, TargetLoadOptions.SUMMARY)
     summary.shouldNotBeNull()
 
@@ -356,7 +362,7 @@ class SnapshotStorageTest {
 
     val storage = SnapshotStorage(dbFile, buildKryo())
     try {
-      val depsOnly = storage.openGeneration(1)
+      val depsOnly = storage.openGeneration(1).shouldNotBeNull()
         .scanAllTargets(state.partial, TargetLoadOptions(TargetSection.INFO, TargetSection.DEPS))
         .toList()
       depsOnly.size shouldBe 20
@@ -384,7 +390,7 @@ class SnapshotStorageTest {
     }
 
     val reopenedStorage = SnapshotStorage(dbFile, buildKryo())
-    val reopened = reopenedStorage.openGeneration(1)
+    val reopened = reopenedStorage.openGeneration(1).shouldNotBeNull()
     try {
       val skipFileSets = TargetLoadOptions(TargetSection.INFO, TargetSection.DEPS, targetData = BuildTargetLoadHint.All)
       val partial1 = reopened.findOrLoadTarget(state.partial, key("@//pkg0:target"), skipFileSets)
@@ -416,7 +422,7 @@ class SnapshotStorageTest {
     }
 
     val reopenedStorage = SnapshotStorage(dbFile, buildKryo())
-    val reopened = reopenedStorage.openGeneration(1)
+    val reopened = reopenedStorage.openGeneration(1).shouldNotBeNull()
     try {
       reopened.findTargetsByFile(state.partial, Path.of("/workspace/shared/Shared.java")).toSet() shouldBe state.targets.keys
       for (n in 0 until count) {
@@ -444,7 +450,7 @@ class SnapshotStorageTest {
 
     val storage = SnapshotStorage(dbFile, buildKryo())
     try {
-      val generation = storage.openGeneration(1)
+      val generation = storage.openGeneration(1).shouldNotBeNull()
       val scanned = generation.scanAllTargets(state.partial, TargetLoadOptions.ALL).toList()
       scanned.map { it.key }.toSet() shouldBe state.targets.keys
       for (target in scanned) {
@@ -533,6 +539,101 @@ class SnapshotStorageTest {
     }
     finally {
       storage.close()
+    }
+  }
+
+  @Test
+  fun `store retried into the generation of a failed store reads back only the retried targets`(): Unit = runBlocking {
+    val dbFile = tempDir.resolve("snapshot_db.data")
+    val storage = SnapshotStorage(dbFile, buildKryo())
+    try {
+      val failed = storage.createGeneration(2)
+      saveAllBulk(failed, count = 20)
+      storage.commit()
+
+      storage.sweepGenerationsExcept(setOf(1))
+      val retried = storage.createGeneration(2)
+      val state = saveAllBulk(retried, count = 20, firstIndex = 100)
+      storage.commit()
+
+      val scanned = retried.scanAllTargets(state.partial, TargetLoadOptions.ALL).toList()
+      scanned.map { it.key } shouldBe state.targets.keys.toList()
+      for (target in scanned) {
+        assertComposedEquals(target, state.targets.getValue(target.key))
+      }
+      Reference.reachabilityFence(failed)
+    }
+    finally {
+      storage.close()
+    }
+  }
+
+  @Test
+  fun `generation without its string table is removed instead of opened`(): Unit = runBlocking {
+    val dbFile = tempDir.resolve("snapshot_db.data")
+    SnapshotStorage(dbFile, buildKryo()).let { storage ->
+      saveAllBulk(storage.createGeneration(1), count = 20)
+      storage.commit()
+      storage.close()
+    }
+
+    MVStore.Builder().fileName(dbFile.toString()).open().use { rawStore ->
+      val strings = MVMap.Builder<Int, String>()
+        .keyType(IntegerDataType.INSTANCE)
+        .valueType(StringDataType.INSTANCE)
+        .singleWriter()
+      rawStore.removeMap(rawStore.openMap("snapshot.g1.strings", strings))
+      rawStore.commit()
+    }
+
+    val reopened = SnapshotStorage(dbFile, buildKryo())
+    try {
+      reopened.hasGeneration(1) shouldBe false
+      reopened.openGeneration(1) shouldBe null
+      reopened.commit()
+    }
+    finally {
+      reopened.close()
+    }
+
+    MVStore.Builder().fileName(dbFile.toString()).readOnly().open().use { rawStore ->
+      rawStore.mapNames.filter { it.startsWith("snapshot.g1.") } shouldBe emptyList()
+    }
+  }
+
+  @Test
+  fun `close keeps the last committed state visible after reopen`(): Unit = runBlocking {
+    val dbFile = tempDir.resolve("snapshot_db.data")
+    val extraFile = Path.of("/workspace/extra/Extra.java")
+    var previous: SavedState? = null
+
+    for (generation in 1..4) {
+      if (previous != null) {
+        val check = SnapshotStorage(dbFile, buildKryo())
+        try {
+          check.hasGeneration(generation - 2) shouldBe false
+          val reopened = check.openGeneration(generation - 1).shouldNotBeNull()
+          reopened.findTargetsByFile(previous.partial, extraFile).toList() shouldBe listOf(key("@//pkg0:target"))
+        }
+        finally {
+          check.close()
+        }
+      }
+      val storage = SnapshotStorage(dbFile, buildKryo())
+      try {
+        val current = storage.createGeneration(generation)
+        val state = saveAllBulk(current, count = 300)
+        storage.commit()
+        storage.sweepGenerationsExcept(setOf(generation))
+        storage.commit()
+        storage.compactFile(5_000)
+        current.putFileMapping(hashFilePath(extraFile), IntArrayList(intArrayOf(1)))
+        storage.tryCommit()
+        previous = state
+      }
+      finally {
+        storage.close()
+      }
     }
   }
 

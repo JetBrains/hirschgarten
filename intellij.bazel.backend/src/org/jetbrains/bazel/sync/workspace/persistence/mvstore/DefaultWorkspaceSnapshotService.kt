@@ -185,11 +185,11 @@ class DefaultWorkspaceSnapshotService(
 
     // the blob is the sole authority on the current generation, metadata.version IS the generation
     val generationId = partial.metadata.version
-    if (!storage.hasGeneration(generationId)) {
-      log.info("Workspace snapshot blob refer generation $generationId which is not in the db")
+    val generation = storage.openGeneration(generationId)
+    if (generation == null) {
+      log.info("Workspace snapshot blob refer generation $generationId which is not complete in the db")
       return WorkspaceSnapshot.EMPTY
     }
-    val generation = storage.openGeneration(generationId)
 
     return WorkspaceSnapshot(
       targets = PersistentWorkspaceTargetMap(partialSnapshot = partial, generation = generation),

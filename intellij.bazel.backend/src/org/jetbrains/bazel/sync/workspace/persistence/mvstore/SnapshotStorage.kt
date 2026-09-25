@@ -7,7 +7,6 @@ import com.esotericsoftware.kryo.kryo5.util.Pool
 import com.github.benmanes.caffeine.cache.Cache
 import com.github.benmanes.caffeine.cache.Caffeine
 import com.intellij.openapi.diagnostic.logger
-import com.intellij.util.io.mvstore.openOrResetMap
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap
 import it.unimi.dsi.fastutil.ints.IntArrayList
 import it.unimi.dsi.fastutil.ints.IntList
@@ -86,7 +85,13 @@ class SnapshotStorage(
   companion object {
     private val log = logger<SnapshotStorage>()
 
+    private val GENERATION_MAP_SUFFIXES =
+      listOf("id2PartialTarget", "id2TargetDeps", "id2HeavyTarget", "id2TargetData", "file2KeyIds", "executables", "strings")
+
     private fun mapName(generation: Int, suffix: String) = "snapshot.g$generation.$suffix"
+
+    private fun generationOf(mapName: String): Int? =
+      if (mapName.startsWith("snapshot.g")) mapName.removePrefix("snapshot.g").substringBefore('.').toIntOrNull() else null
   }
 
   private val store = createOrResetMvStore(log, dbFile)
@@ -102,10 +107,42 @@ class SnapshotStorage(
   val isClosed: Boolean
     get() = store.isClosed
 
-  fun hasGeneration(generation: Int): Boolean = store.hasMap(mapName(generation, "id2PartialTarget"))
+  // safely check, we can consider generation valid only if all required maps are present
+  fun hasGeneration(generation: Int): Boolean = GENERATION_MAP_SUFFIXES.all { store.hasMap(mapName(generation, it)) }
 
-  fun openGeneration(generation: Int): SnapshotGeneration {
-    val handle =  SnapshotGeneration(
+  fun openGeneration(generation: Int): SnapshotGeneration? {
+    if (!hasGeneration(generation)) {
+      dropGeneration(generation)
+      return null
+    }
+    return try {
+      openGenerationMaps(generation)
+    }
+    catch (e: Exception) {
+      log.warn("Cannot open snapshot generation $generation, the generation will be removed", e)
+      dropGeneration(generation)
+      null
+    }
+  }
+
+  fun createGeneration(generation: Int): SnapshotGeneration {
+    dropGeneration(generation)
+    return openGenerationMaps(generation)
+  }
+
+  fun sweepGenerationsExcept(keep: Set<Int>) {
+    val generations = store.mapNames.mapNotNullTo(HashSet()) { generationOf(it) }
+    for (generation in generations) {
+      // decide once per generation, a reference cleared in the middle must not split the generation
+      if (generation in keep || isGenerationReferenced(generation)) {
+        continue
+      }
+      dropGeneration(generation)
+    }
+  }
+
+  private fun openGenerationMaps(generation: Int): SnapshotGeneration {
+    val handle = SnapshotGeneration(
       generation = generation,
       storage = this,
       id2PartialTarget = openFrameMap(mapName(generation, "id2PartialTarget"), IntegerDataType.INSTANCE),
@@ -121,23 +158,13 @@ class SnapshotStorage(
     return handle
   }
 
-  // openOrResetMap opens-or-creates, so createGeneration == openGeneration on names that were just swept
-  fun createGeneration(generation: Int): SnapshotGeneration = openGeneration(generation)
-
-  fun sweepGenerationsExcept(keep: Set<Int>) {
+  private fun dropGeneration(generation: Int) {
     for (name in store.mapNames.toList()) {
-      if (!name.startsWith("snapshot.g")) {
-        continue
+      if (generationOf(name) == generation) {
+        store.removeMap(openedMaps.remove(name) ?: openUnknownMap(name))
       }
-      val generation = name.removePrefix("snapshot.g").substringBefore('.').toIntOrNull() ?: continue
-      if (generation in keep) {
-        continue
-      }
-      if (isGenerationReferenced(generation)) {
-        continue
-      }
-      store.removeMap(openedMaps.remove(name) ?: openUnknownMap(name))
     }
+    generationRefMap.remove(generation)
   }
 
   private fun isGenerationReferenced(generation: Int): Boolean {
@@ -177,7 +204,13 @@ class SnapshotStorage(
   }
 
   fun close() {
-    store.closeImmediately()
+    try {
+      store.close()
+    }
+    catch (e: Throwable) {
+      log.warn("MVStore close failed, closing immediately", e)
+      store.closeImmediately()
+    }
   }
 
   internal fun encodeFrame(kryo: Kryo, output: Output, value: Any, stringTable: StringTableWriter? = null): ValueFrame {
@@ -225,7 +258,7 @@ class SnapshotStorage(
     builder.setKeyType(keyType)
     builder.setValueType(createFrameDataType())
     builder.singleWriter()
-    return openOrResetMap(store, name, builder) { log }
+    return store.openMap(name, builder)
       .also { openedMaps[name] = it }
   }
 
@@ -234,7 +267,7 @@ class SnapshotStorage(
     builder.setKeyType(keyType)
     builder.setValueType(valueType)
     builder.singleWriter()
-    return openOrResetMap(store, name, builder) { log }
+    return store.openMap(name, builder)
       .also { openedMaps[name] = it }
   }
 }
