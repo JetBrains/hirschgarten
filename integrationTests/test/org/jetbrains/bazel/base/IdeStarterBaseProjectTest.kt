@@ -567,3 +567,8 @@ private fun <T : CommandChain> T.runBazelClean(): T {
   addCommand(CMD_PREFIX + "runBazelClean")
   return this
 }
+
+fun <T : CommandChain> T.waitForBazelFileEventProcessorIdle(): T {
+  addCommand(CMD_PREFIX + "waitForBazelFileEventProcessorIdle")
+  return this
+}

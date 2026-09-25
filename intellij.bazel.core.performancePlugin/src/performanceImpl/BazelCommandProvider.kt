@@ -19,5 +19,6 @@ internal class BazelCommandProvider : CommandProvider {
       SwitchProjectViewCommand.PREFIX to CreateCommand(::SwitchProjectViewCommand),
       RefreshFileCommand.PREFIX to CreateCommand(::RefreshFileCommand),
       RunBazelCleanCommand.PREFIX to CreateCommand(::RunBazelCleanCommand),
+      WaitForBazelFileEventProcessorIdleCommand.PREFIX to CreateCommand(::WaitForBazelFileEventProcessorIdleCommand),
     )
 }

@@ -17,12 +17,14 @@ import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.newvfs.events.VFileEvent
 import com.intellij.platform.backend.workspace.WorkspaceModel
 import com.intellij.platform.backend.workspace.toVirtualFileUrl
+import com.intellij.platform.backend.workspace.virtualFile
 import com.intellij.platform.workspace.jps.entities.ContentRootEntity
 import com.intellij.platform.workspace.jps.entities.ModuleEntity
 import com.intellij.platform.workspace.jps.entities.SourceRootEntity
 import com.intellij.platform.workspace.jps.entities.modifyModuleEntity
 import com.intellij.platform.workspace.storage.ImmutableEntityStorage
 import com.intellij.platform.workspace.storage.MutableEntityStorage
+import com.intellij.platform.workspace.storage.entities
 import com.intellij.platform.workspace.storage.url.VirtualFileUrl
 import com.intellij.platform.workspace.storage.url.VirtualFileUrlManager
 import com.intellij.workspaceModel.core.fileIndex.WorkspaceFileIndex
@@ -57,13 +59,19 @@ import org.jetbrains.bazel.target.ModuleTargetService
 import org.jetbrains.bazel.target.targetStorage
 import org.jetbrains.bazel.taskEvents.BazelTaskEventsService
 import org.jetbrains.bazel.ui.status.BazelFileStatusRefresher
+import org.jetbrains.bazel.workspace.bazelProjectDirectoriesEntity
 import org.jetbrains.bazel.workspace.fileEvents.SimplifiedFileEvent.Create
 import org.jetbrains.bazel.workspace.fileEvents.SimplifiedFileEvent.CreateDirectory
+import org.jetbrains.bazel.workspace.indexAdditionalFiles.AdditionalFilesCollector
+import org.jetbrains.bazel.workspace.indexAdditionalFiles.ProjectViewGlobSet
+import org.jetbrains.bazel.workspace.indexAdditionalFiles.limitedFilesIndexingGlobOrNull
 import org.jetbrains.bazel.workspace.packageMarker.concatenatePackages
 import org.jetbrains.bazel.workspacemodel.entities.BazelDummyEntitySource
+import org.jetbrains.bazel.workspacemodel.entities.NonIndexableVirtualFileUrl
 import org.jetbrains.bazel.workspacemodel.entities.PackageMarkerEntity
 import org.jetbrains.bazel.workspacemodel.entities.PackageMarkerEntityBuilder
 import org.jetbrains.bazel.workspacemodel.entities.bazelModuleExtension
+import org.jetbrains.bazel.workspacemodel.entities.modifyBazelProjectDirectoriesEntity
 import org.jetbrains.bazel.workspacemodel.entities.packageMarkerEntities
 import org.jetbrains.bsp.protocol.InverseSourcesParams
 import org.jetbrains.bsp.protocol.TaskGroupId
@@ -175,6 +183,7 @@ open class DefaultBazelFileEventProcessor(private val project: Project): BazelFi
     val taskId = taskGroupId.task("file-event-processing")
 
     val events = batches.flatMap { it.events }
+    val currentLimitedFilesIndexingGlob = project.limitedFilesIndexingGlobOrNull()
     val result = AtomicReference(BazelFileEventProcessorResult.EMPTY)
 
     val processingJob = jobManager.runFileEventsProcessing {
@@ -195,7 +204,8 @@ open class DefaultBazelFileEventProcessor(private val project: Project): BazelFi
 
             val processed = processEventsBatchImpl(
               events = events,
-              context = context
+              context = context,
+              limitedFilesIndexingGlob = currentLimitedFilesIndexingGlob,
             )
             result.set(processed)
           }
@@ -256,31 +266,40 @@ open class DefaultBazelFileEventProcessor(private val project: Project): BazelFi
     }
   }
 
-  private suspend fun processEventsBatchImpl(events: List<SimplifiedFileEvent>, context: ProcessingContext): BazelFileEventProcessorResult {
+  private suspend fun processEventsBatchImpl(
+    events: List<SimplifiedFileEvent>,
+    context: ProcessingContext,
+    limitedFilesIndexingGlob: ProjectViewGlobSet?,
+  ): BazelFileEventProcessorResult {
     val planarizedEvents = events.flatMap { event ->
       if (event is CreateDirectory) {
         collectCreatedFiles(event.newVirtualFile)
-      }
-      else if (event.newVirtualFile?.isDirectory == true) {
+      } else if (event.newVirtualFile?.isDirectory == true) {
         emptyList() // ignore other directory events
-      }
-      else {
+      } else {
         listOf(event)
       }
     }
 
-    val result = doProcessSourceFileEvents(planarizedEvents.filter { it.affectsSourceFile(project) }, context)
+    val sourceProcessingResult = doProcessSourceFileEvents(planarizedEvents.filter { it.affectsSourceFile(project) }, context)
+    val sourceModelChanged = sourceProcessingResult.removedFromModel.isNotEmpty() || sourceProcessingResult.addedToModel.isNotEmpty()
+
     doProcessBazelFileEvents(planarizedEvents.filter { it.affectsBazelConfigFile() })
-    doProcessDirectoryEvents(events.filterIsInstance<CreateDirectory>(), context)
+
+    val additionalFilesModelChanged = updateAdditionalFilesInModel(planarizedEvents, context, limitedFilesIndexingGlob)
+
+    val packageMarkersModelChanged = doProcessDirectoryEvents(events.filterIsInstance<CreateDirectory>(), context)
 
     // Finalize and apply changes
-    context.progressReporter.finalisingStep {
-      context.workspaceModel.update("File event processing (Bazel)") {
-        it.applyChangesFrom(context.entityStorageDiff)
+    if (sourceModelChanged || additionalFilesModelChanged || packageMarkersModelChanged) {
+      context.progressReporter.finalisingStep {
+        context.workspaceModel.update("File event processing (Bazel)") {
+          it.applyChangesFrom(context.entityStorageDiff)
+        }
       }
     }
 
-    return result
+    return sourceProcessingResult
   }
 
   private fun collectCreatedFiles(root: VirtualFile?): List<Create> {
@@ -302,6 +321,51 @@ open class DefaultBazelFileEventProcessor(private val project: Project): BazelFi
       logger.debug("Stopped collecting created files for stale directory ${root.path}", ex)
     }
     return filesInDirectory
+  }
+
+  private fun updateAdditionalFilesInModel(
+    events: List<SimplifiedFileEvent>,
+    context: ProcessingContext,
+    limitedFilesIndexingGlob: ProjectViewGlobSet?,
+  ): Boolean {
+    // The glob is derived from the current Project View, while the entity reflects the Workspace Model
+    // state created during the last sync. If they diverge, the model has not yet been updated after
+    // the project view change. Avoid partial incremental updates of indexAdditionalFiles and let the next
+    // sync rebuild the whole project-directories entity consistently.
+    if (limitedFilesIndexingGlob == null) return false
+    val projectDirectoriesEntity = context.entityStorageDiff.bazelProjectDirectoriesEntity() ?: return false
+    if (projectDirectoriesEntity.indexAllFilesInIncludedRoots) return false
+
+    val includedRoots = projectDirectoriesEntity.includedRoots.mapNotNullTo(hashSetOf()) { it.url.virtualFile }
+    val excludedRoots = projectDirectoriesEntity.excludedRoots.mapNotNullTo(hashSetOf()) { it.url.virtualFile }
+    val contentRoots =
+      context.entityStorageDiff
+        .entities<ContentRootEntity>()
+        .map { it.url }
+        .mapNotNullTo(hashSetOf()) { it.virtualFile }
+    val additionalFilesCollector = AdditionalFilesCollector(limitedFilesIndexingGlob, includedRoots, excludedRoots, contentRoots)
+
+    val removedUrls = events
+      .mapNotNull { it.fileRemoved }
+      .mapTo(hashSetOf()) { context.urlManager.fromPath(it.toString()) }
+
+    val addedUrls = events
+      .mapNotNull { event ->
+        val file = event.newVirtualFile?.takeIf(additionalFilesCollector::shouldIndexFile) ?: return@mapNotNull null
+        file.toVirtualFileUrl(context.urlManager)
+      }
+
+    if (removedUrls.isEmpty() && addedUrls.isEmpty()) return false
+
+    val currentAdditionalFiles = projectDirectoriesEntity.indexAdditionalFiles
+    val updatedIndexAdditionalFiles =
+      (currentAdditionalFiles.filterNot { it.url in removedUrls } + addedUrls.map(::NonIndexableVirtualFileUrl)).distinctBy { it.url }
+    if (updatedIndexAdditionalFiles == currentAdditionalFiles) return false
+
+    context.entityStorageDiff.modifyBazelProjectDirectoriesEntity(projectDirectoriesEntity) {
+      indexAdditionalFiles = updatedIndexAdditionalFiles.toMutableList()
+    }
+    return true
   }
 
   private suspend fun doProcessSourceFileEvents(events: List<SimplifiedFileEvent>, context: ProcessingContext): BazelFileEventProcessorResult {
@@ -397,7 +461,8 @@ open class DefaultBazelFileEventProcessor(private val project: Project): BazelFi
     ProjectDirtyStateService.getInstance(project).markDirty(paths.map { it.parent })
   }
 
-  private suspend fun doProcessDirectoryEvents(events: List<CreateDirectory>, context: ProcessingContext) {
+  private suspend fun doProcessDirectoryEvents(events: List<CreateDirectory>, context: ProcessingContext): Boolean {
+    var modelChanged = false
     for (event in events) {
       // Update package marker
       val entity = updatePackageMarkerEntity(event, context)
@@ -405,8 +470,10 @@ open class DefaultBazelFileEventProcessor(private val project: Project): BazelFi
         context.entityStorageDiff.modifyModuleEntity(entity.first) {
           this.packageMarkerEntities += entity.second
         }
+        modelChanged = true
       }
     }
+    return modelChanged
   }
 
   protected open suspend fun invertedSourcesQuery(

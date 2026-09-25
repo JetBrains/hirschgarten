@@ -2,10 +2,6 @@ package org.jetbrains.bazel.flow.sync
 
 import com.intellij.openapi.components.serviceAsync
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.vfs.VfsUtilCore
-import com.intellij.openapi.vfs.VirtualFile
-import com.intellij.openapi.vfs.VirtualFileVisitor
-import com.intellij.openapi.vfs.toNioPathOrNull
 import com.intellij.platform.backend.workspace.WorkspaceModel
 import com.intellij.platform.backend.workspace.toVirtualFileUrl
 import com.intellij.platform.backend.workspace.virtualFile
@@ -19,23 +15,18 @@ import org.jetbrains.bazel.commons.constants.Constants
 import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.flow.exclude.BazelSymlinkExcludeService
 import org.jetbrains.bazel.languages.projectview.ProjectView
-import org.jetbrains.bazel.languages.projectview.indexAdditionalFilesInDirectories
 import org.jetbrains.bazel.languages.projectview.indexAllFilesInDirectories
 import org.jetbrains.bazel.project.projectViewFile
 import org.jetbrains.bazel.sync.ProjectSyncHook
 import org.jetbrains.bazel.sync.ProjectSyncHook.ProjectSyncHookEnvironment
 import org.jetbrains.bazel.sync.withSubtask
+import org.jetbrains.bazel.workspace.indexAdditionalFiles.AdditionalFilesCollector
 import org.jetbrains.bazel.workspace.indexAdditionalFiles.IndexAdditionalFilesContributor
-import org.jetbrains.bazel.workspace.indexAdditionalFiles.ProjectViewGlobSet
+import org.jetbrains.bazel.workspace.indexAdditionalFiles.limitedFilesIndexingGlobOrNull
 import org.jetbrains.bazel.workspacemodel.entities.BazelProjectDirectoriesEntity
 import org.jetbrains.bazel.workspacemodel.entities.BazelProjectEntitySource
 import org.jetbrains.bazel.workspacemodel.entities.NonIndexableVirtualFileUrl
 import kotlin.io.path.absolutePathString
-
-private val INDEX_ADDITIONAL_FILES_DEFAULT =
-  Constants.WORKSPACE_FILE_NAMES + Constants.BUILD_FILE_NAMES + Constants.MODULE_BAZEL_FILE_NAME +
-  Constants.SUPPORTED_EXTENSIONS.map { extension -> "*.$extension" }
-
 
 /**
  * This sync hook does three important things:
@@ -121,16 +112,9 @@ internal class DirectoriesSyncHook : ProjectSyncHook {
     directoryRoots: DirectoryRoots,
     virtualFileUrlManager: VirtualFileUrlManager,
   ): List<VirtualFileUrl> {
-    if (projectView.indexAllFilesInDirectories) {
-      return emptyList()
-    }
-    val indexAdditionalFilesGlob =
-      ProjectViewGlobSet(
-        project.rootDir.toNioPath(),
-        projectView.indexAdditionalFilesInDirectories + INDEX_ADDITIONAL_FILES_DEFAULT,
-      )
+    val limitedFilesIndexingGlob = project.limitedFilesIndexingGlobOrNull(projectView) ?: return emptyList()
 
-    val includedRoots = directoryRoots.included.mapNotNull { it.url.virtualFile }
+    val includedRoots = directoryRoots.included.mapNotNullTo(hashSetOf()) { it.url.virtualFile }
     val excludedRoots = directoryRoots.excluded.mapNotNullTo(hashSetOf()) { it.url.virtualFile }
     val contentRoots =
       mutableEntityStorage
@@ -138,39 +122,9 @@ internal class DirectoriesSyncHook : ProjectSyncHook {
         .map { it.url }
         .mapNotNullTo(hashSetOf()) { it.virtualFile }
 
-    fun VirtualFile.isUnderContentRoot(): Boolean {
-      var current: VirtualFile? = this
-      while (current != null) {
-        if (current in contentRoots) return true
-        if (current in excludedRoots) return false
-        current = current.parent
-      }
-      return false
-    }
-
-    val includedRootsToIterate = includedRoots.filter { !it.isUnderContentRoot() }
-    val visited = hashSetOf<VirtualFile>()
-
-    val indexAdditionalFiles = hashSetOf<VirtualFile>()
-
-    for (includedRoot in includedRootsToIterate) {
-      VfsUtilCore.visitChildrenRecursively(
-        includedRoot,
-        object : VirtualFileVisitor<Unit>() {
-          override fun visitFileEx(file: VirtualFile): Result {
-            if (file in excludedRoots || file in contentRoots) return SKIP_CHILDREN
-            if (!visited.add(file)) return SKIP_CHILDREN
-            if (file.isDirectory) return CONTINUE
-            if (file.toNioPathOrNull()?.let { indexAdditionalFilesGlob.matches(it) } == true) {
-              indexAdditionalFiles.add(file)
-            }
-            return CONTINUE
-          }
-        },
-      )
-    }
-
-    return indexAdditionalFiles.map { it.toVirtualFileUrl(virtualFileUrlManager) }
+    return AdditionalFilesCollector(limitedFilesIndexingGlob, includedRoots, excludedRoots, contentRoots)
+      .collectAdditionalFilesToIndex()
+      .map { it.toVirtualFileUrl(virtualFileUrlManager) }
   }
 
   private fun getProjectView(project: Project, virtualFileUrlManager: VirtualFileUrlManager): List<VirtualFileUrl> =

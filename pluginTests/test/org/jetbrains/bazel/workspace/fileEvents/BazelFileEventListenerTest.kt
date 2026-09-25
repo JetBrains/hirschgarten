@@ -48,12 +48,16 @@ import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
 import org.jetbrains.bazel.target.targetStorage
 import org.jetbrains.bazel.test.framework.target.TestBuildTarget
 import org.jetbrains.bazel.test.framework.target.TestBuildTargetFactory
+import org.jetbrains.bazel.workspace.bazelProjectDirectoriesEntity
 import org.jetbrains.bazel.workspace.importer.JAVA_SOURCE_ROOT_TYPE
 import org.jetbrains.bazel.workspace.model.test.framework.BuildServerMock
 import org.jetbrains.bazel.workspace.model.test.framework.MockBuildServerService
 import org.jetbrains.bazel.workspace.model.test.framework.WorkspaceModelBaseTest
 import org.jetbrains.bazel.workspacemodel.entities.BazelModuleEntitySource
 import org.jetbrains.bazel.workspacemodel.entities.BazelModuleExtensionEntity
+import org.jetbrains.bazel.workspacemodel.entities.BazelProjectDirectoriesEntity
+import org.jetbrains.bazel.workspacemodel.entities.BazelProjectEntitySource
+import org.jetbrains.bazel.workspacemodel.entities.NonIndexableVirtualFileUrl
 import org.jetbrains.bazel.workspacemodel.entities.WorkspaceModelTargetKey
 import org.jetbrains.bazel.workspacemodel.entities.WorkspaceModelTargetLabelList
 import org.jetbrains.bazel.workspacemodel.entities.WorkspaceModelTargetSourceRootTypeId
@@ -97,9 +101,11 @@ class BazelFileEventListenerTest : WorkspaceModelBaseTest() {
   override fun beforeEach() {
     super.beforeEach()
 
+    invertedSourcesQueryCount.set(0)
     project.replaceService(BazelServerService::class.java, MockBuildServerService(BuildServerMock()), disposable)
     project.replaceService(BazelFileEventProcessor::class.java, MockBazelFileEventProcessor, disposable)
     addMockTargetToProject(project)
+    addProjectDirectoriesEntity()
 
     createModule(target1)
     createModule(target2)
@@ -271,6 +277,90 @@ class BazelFileEventListenerTest : WorkspaceModelBaseTest() {
   }
 
   @Test
+  fun `additional bazel file creation`() {
+    val file = project.rootDir.createFile("new_file", "bzl")
+
+    createEvent(file).process().shouldBeFalse()
+    file.isIndexedAdditionalFile().shouldBeTrue()
+    assertEquals(0, invertedSourcesQueryCount.get())
+  }
+
+  @Test
+  fun `should not add additional bazel file outside included roots`() {
+    val included = project.rootDir.createDirectory("included")
+    addProjectDirectoriesEntity(includedRoots = listOf(included))
+
+    val file = project.rootDir.createFile("new_file", "bzl")
+
+    createEvent(file).process().shouldBeFalse()
+    file.isIndexedAdditionalFile().shouldBeFalse()
+  }
+
+  @Test
+  fun `should not add additional bazel file under content root`() {
+    val src = project.rootDir.createDirectory("src")
+    val srcUrl = src.toVirtualFileUrl(virtualFileUrlManager)
+    val module = workspaceModel.currentSnapshot.resolveModule(target1)
+
+    runTestWriteAction {
+      workspaceModel.updateProjectModel {
+        it.modifyModuleEntity(module) {
+          contentRoots = listOf(
+            ContentRootEntity(
+              url = srcUrl,
+              excludedPatterns = emptyList(),
+              entitySource = module.entitySource,
+            )
+          )
+        }
+      }
+    }
+
+    val file = src.createFile("new_file", "bzl")
+
+    createEvent(file).process().shouldBeFalse()
+    file.isIndexedAdditionalFile().shouldBeFalse()
+  }
+
+  @Test
+  fun `should not add additional bazel file when all files in directories are indexed`() {
+    addProjectDirectoriesEntity(indexAllFilesInIncludedRoots = true)
+
+    val file = project.rootDir.createFile("new_file", "bzl")
+
+    createEvent(file).process().shouldBeFalse()
+    file.isIndexedAdditionalFile().shouldBeFalse()
+    assertEquals(0, invertedSourcesQueryCount.get())
+  }
+
+  @Test
+  fun `source file should be processed when all files in directories are indexed`() {
+    addProjectDirectoriesEntity(indexAllFilesInIncludedRoots = true)
+
+    val file = project.rootDir.createDirectory("src").createFile("aaa", "java")
+
+    createEvent(file).process().shouldBeTrue()
+    file.assertFileBelongsToTargets(
+      target1 to true,
+      target2 to true,
+    )
+  }
+
+  @Test
+  fun `additional bazel file rename`() {
+    val file = project.rootDir.createFile("old_name", "bzl")
+
+    createEvent(file).process().shouldBeFalse()
+    file.isIndexedAdditionalFile().shouldBeTrue()
+
+    runTestWriteAction { file.rename(requestor, "new_name.bzl") }
+
+    renameEvent(file, "old_name.bzl", "new_name.bzl").process().shouldBeFalse()
+    indexedAdditionalFilePaths().any { it.endsWith("/old_name.bzl") }.shouldBeFalse()
+    indexedAdditionalFilePaths().any { it.endsWith("/new_name.bzl") }.shouldBeTrue()
+  }
+
+  @Test
   fun `multiple simultaneous file events should be processed`() {
     val src = project.rootDir.createDirectory("src")
     val pack = src.createDirectory("package")
@@ -312,10 +402,50 @@ class BazelFileEventListenerTest : WorkspaceModelBaseTest() {
   }
 
   @Test
-  fun `should ignore non-source file`() {
+  fun `unrelated file should not update model or trigger source processing`() {
     val file = project.rootDir.createDirectory("src").createFile("aaa", "txt")
     createEvent(file).process().shouldBeFalse()
     deleteEvent(file).process().shouldBeFalse()
+    file.isIndexedAdditionalFile().shouldBeFalse()
+    assertEquals(0, invertedSourcesQueryCount.get())
+  }
+
+  @Test
+  fun `unrelated file event should not prevent source file processing in the same batch`() {
+    val src = project.rootDir.createDirectory("src")
+    val unrelatedFile = src.createFile("notes", "txt")
+    val sourceFile = src.createFile("aaa", "java")
+
+    processEvents(
+      createEvent(unrelatedFile),
+      createEvent(sourceFile),
+    ).shouldBeTrue()
+
+    unrelatedFile.isIndexedAdditionalFile().shouldBeFalse()
+    sourceFile.assertFileBelongsToTargets(
+      target1 to true,
+      target2 to true,
+    )
+    assertEquals(1, invertedSourcesQueryCount.get())
+  }
+
+  @Test
+  fun `additional bazel file event should not trigger target processing`() {
+    val src = project.rootDir.createDirectory("src")
+    val additionalFile = project.rootDir.createFile("defs", "bzl")
+    val sourceFile = src.createFile("aaa", "java")
+
+    processEvents(
+      createEvent(additionalFile),
+      createEvent(sourceFile),
+    ).shouldBeTrue()
+
+    additionalFile.isIndexedAdditionalFile().shouldBeTrue()
+    sourceFile.assertFileBelongsToTargets(
+      target1 to true,
+      target2 to true,
+    )
+    assertEquals(1, invertedSourcesQueryCount.get())
   }
 
   @Test
@@ -662,6 +792,29 @@ class BazelFileEventListenerTest : WorkspaceModelBaseTest() {
     project.targetStorage.setTargets(listOf(mockBuildTarget))
   }
 
+  private fun addProjectDirectoriesEntity(
+    includedRoots: List<VirtualFile> = listOf(project.rootDir),
+    excludedRoots: List<VirtualFile> = emptyList(),
+    indexAllFilesInIncludedRoots: Boolean = false,
+  ) {
+    val rootUrl = project.rootDir.toVirtualFileUrl(virtualFileUrlManager)
+    runTestWriteAction {
+      workspaceModel.updateProjectModel {
+        project.bazelProjectDirectoriesEntity()?.let(it::removeEntity)
+        it.addEntity(
+          BazelProjectDirectoriesEntity(
+            projectRoot = rootUrl,
+            includedRoots = includedRoots.map { root -> NonIndexableVirtualFileUrl(root.toVirtualFileUrl(virtualFileUrlManager)) },
+            excludedRoots = excludedRoots.map { root -> NonIndexableVirtualFileUrl(root.toVirtualFileUrl(virtualFileUrlManager)) },
+            indexAllFilesInIncludedRoots = indexAllFilesInIncludedRoots,
+            indexAdditionalFiles = emptyList(),
+            entitySource = BazelProjectEntitySource,
+          )
+        )
+      }
+    }
+  }
+
   private fun VirtualFile.createFile(name: String, extension: String): VirtualFile {
     if (!this.isDirectory) error("Can't create a file in a non-directory file")
     return runTestWriteAction {
@@ -801,6 +954,15 @@ class BazelFileEventListenerTest : WorkspaceModelBaseTest() {
     val moduleId = ModuleId(target.formatAsModuleName(project))
     return resolve(moduleId) ?: error("Module for $target does not exist")
   }
+
+  private fun VirtualFile.isIndexedAdditionalFile(): Boolean =
+    project.bazelProjectDirectoriesEntity()?.indexAdditionalFiles.orEmpty()
+      .any { it.url == toVirtualFileUrl(virtualFileUrlManager) }
+
+  private fun indexedAdditionalFilePaths(): Set<String> =
+    project.bazelProjectDirectoriesEntity()?.indexAdditionalFiles.orEmpty()
+      .map { it.url.url }
+      .toSet()
 }
 
 private object MockBazelFileEventProcessor : BazelFileEventProcessor {

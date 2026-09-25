@@ -19,6 +19,7 @@ import org.jetbrains.bazel.ideStarter.assertFileKind
 import org.jetbrains.bazel.ideStarter.checkIdeaLogForExceptions
 import org.jetbrains.bazel.ideStarter.execute
 import org.jetbrains.bazel.ideStarter.syncBazelProject
+import org.jetbrains.bazel.ideStarter.waitForBazelFileEventProcessorIdle
 import org.jetbrains.bazel.ideStarter.withBazelFeatureFlag
 import org.jetbrains.bazel.data.simpleBazelProject
 import org.jetbrains.bazel.performanceImpl.FileKindCheck
@@ -76,7 +77,12 @@ class MoveKotlinFileTest : IdeStarterBaseProjectTest() {
             }
           }
 
-          execute { saveDocumentsAndSettings() }
+          execute {
+            saveDocumentsAndSettings()
+
+            // SHOW_AS_UNSYNCED returns false while Bazel file events are still being processed, so wait until file events processor becomes idle
+            waitForBazelFileEventProcessorIdle()
+          }
 
           step("Check that Class2.kt is correct after move") {
             execute {
