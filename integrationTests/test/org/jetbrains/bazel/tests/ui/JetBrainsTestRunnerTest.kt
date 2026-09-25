@@ -38,7 +38,7 @@ class JetBrainsTestRunnerTest : IdeStarterBaseProjectTest() {
 
           verifyTestStatus(
             listOf("1 test passed"),
-            listOf("JUnit Jupiter", "TestKotlin", "interesting#test ()"),
+            listOf("TestKotlin", "interesting#test ()"),
           )
         }
 
@@ -48,7 +48,7 @@ class JetBrainsTestRunnerTest : IdeStarterBaseProjectTest() {
 
           verifyTestStatus(
             listOf("1 test passed"),
-            listOf("JUnit Jupiter", "TestKotlin", "interesting#test ()"),
+            listOf("TestKotlin", "interesting#test ()"),
           )
         }
 
@@ -59,7 +59,6 @@ class JetBrainsTestRunnerTest : IdeStarterBaseProjectTest() {
           verifyTestStatus(
             listOf("3 tests failed,", " 2 passed"),
             listOf(
-              "JUnit Jupiter",
               "TestJava",
               "medium fail 3",
               "testWithClasses(Class)",
@@ -78,7 +77,6 @@ class JetBrainsTestRunnerTest : IdeStarterBaseProjectTest() {
           verifyTestStatus(
             listOf("3 tests failed"),
             listOf(
-              "JUnit Jupiter",
               "TestJava",
               "medium fail 3",
               "testWithClasses(Class)",
@@ -96,7 +94,6 @@ class JetBrainsTestRunnerTest : IdeStarterBaseProjectTest() {
           verifyTestStatus(
             listOf("1 test failed,", " 1 passed"),
             listOf(
-              "JUnit Jupiter",
               "TestJava",
               "testWithClasses(Class)",
               "[1] myClass=class java.lang.String",
@@ -113,7 +110,6 @@ class JetBrainsTestRunnerTest : IdeStarterBaseProjectTest() {
           verifyTestStatus(
             listOf("1 test passed"),
             listOf(
-              "JUnit Jupiter",
               "TestJava",
               "testWithClasses(Class)",
               "[1] myClass=class java.lang.String",
@@ -135,7 +131,6 @@ class JetBrainsTestRunnerTest : IdeStarterBaseProjectTest() {
           verifyTestStatus(
             listOf("1 test passed, ", "1 ignored"),
             listOf(
-              "JUnit Jupiter",
               "TestDisabled",
               "normalTest()",
               "disabledTest()",
@@ -150,7 +145,6 @@ class JetBrainsTestRunnerTest : IdeStarterBaseProjectTest() {
           verifyTestStatus(
             listOf("1 test passed"),
             listOf(
-              "JUnit Jupiter",
               "TestDisabled",
               "disabledTest()",
             ),
@@ -177,7 +171,7 @@ class JetBrainsTestRunnerTest : IdeStarterBaseProjectTest() {
 
             verifyTestStatus(
               listOf("1 test passed"),
-              listOf("JUnit Jupiter", "TestKotlin", "interesting#test ()"),
+              listOf("TestKotlin", "interesting#test ()"),
             )
           }
 
@@ -187,7 +181,7 @@ class JetBrainsTestRunnerTest : IdeStarterBaseProjectTest() {
 
             verifyTestStatus(
               listOf("1 test passed"),
-              listOf("JUnit Jupiter", "TestKotlin", "interesting#test () (cached)"),
+              listOf("TestKotlin", "interesting#test () (cached)"),
             )
           }
         }
