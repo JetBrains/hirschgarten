@@ -32,7 +32,12 @@ internal class ScalaSdkResolver(private val bazelPathsResolver: BazelPathsResolv
   }
 
   companion object {
+    // The version may carry a pre-release/build suffix (3.10.0-RC2, 3.8.0-RC1-bin-20250901-abc-NIGHTLY);
+    // -sources/-javadoc classifier jars are not treated as versions.
     private val VERSION_PATTERN =
-      Pattern.compile("(?:processed_)?scala3?-(?:library|compiler|reflect)(?:_3)?-([.\\d]+)\\.jar")
+      Pattern.compile(
+        "(?:processed_)?scala3?-(?:library|compiler|reflect)(?:_3)?-" +
+          "(\\d[.\\d]*(?:-[0-9A-Za-z.-]+)?)(?<!-sources)(?<!-javadoc)\\.jar",
+      )
   }
 }
