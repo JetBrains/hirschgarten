@@ -4,6 +4,7 @@ import com.intellij.openapi.util.NlsSafe
 import com.intellij.platform.workspace.storage.impl.url.toVirtualFileUrl
 import com.intellij.platform.workspace.storage.url.VirtualFileUrl
 import com.intellij.util.containers.MultiMap
+import com.jetbrains.cidr.lang.OCFileTypeHelpers
 import com.jetbrains.cidr.lang.workspace.OCResolveConfiguration
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.clion.sync.CcBuildTarget
@@ -88,6 +89,7 @@ private fun collectSources(targets: Collection<WorkspaceTargetKey>): List<Virtua
     .mapNotNull { ctx.snapshot.targets.findTargetByKey(it, TargetLoadOptions.ALL) }
     .flatMap { target -> target.sources.getOutputLocations() }
     .mapNotNull { ctx.outputResolver.resolve(it, localOverride = ctx.snapshot.repoMapping.getLocalRepositories()) }
+    .filter { OCFileTypeHelpers.isSourceFile(it.fileName.toString()) }
     .map { it.toVirtualFileUrl(ctx.vfuManager) }
     .toList()
 }
