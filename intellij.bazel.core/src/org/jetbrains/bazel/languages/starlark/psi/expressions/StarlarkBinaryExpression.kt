@@ -1,11 +1,10 @@
 package org.jetbrains.bazel.languages.starlark.psi.expressions
 
 import com.intellij.lang.ASTNode
-import org.jetbrains.annotations.ApiStatus
 import com.intellij.psi.PsiElement
-import com.intellij.psi.PsiWhiteSpace
 import com.intellij.psi.tree.IElementType
 import com.intellij.psi.util.elementType
+import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.languages.starlark.elements.StarlarkElementTypes
 import org.jetbrains.bazel.languages.starlark.elements.StarlarkTokenSets
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkBaseElement
@@ -22,8 +21,14 @@ class StarlarkBinaryExpression(node: ASTNode) : StarlarkBaseElement(node) {
   fun getRightOperand(): PsiElement? = getOperands().getOrNull(1)
 
   /**
-   * The IElementType of the operator token that sits between the two operands (e.g. `+`, `-`).
-   * For compound operations ("not in" and "is not") the first keyword is returned
+   * The PsiElement of the operator token that sits between the two operands.
+   * For compound operations the first keyword element is returned.
    */
-  fun getOperator(): IElementType? = findChildByType<PsiElement>(StarlarkTokenSets.BINARY_OPERATIONS)?.elementType
+  fun getOperatorElement(): PsiElement? = findChildByType<PsiElement>(StarlarkTokenSets.BINARY_OPERATIONS)
+
+  /**
+   * The IElementType of the operator token that sits between the two operands (e.g. `+`, `-`).
+   * For compound operations ("not in" and "is not") the first keyword is returned.
+   */
+  fun getOperator(): IElementType? = getOperatorElement()?.elementType
 }
