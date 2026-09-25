@@ -40,6 +40,10 @@
   <extensions defaultExtensionNs="cidr">
     <projectModel.ocWorkspaceStorageCustomizer implementation="org.jetbrains.bazel.clion.workspace.CcWorkspaceStorageCustomizer"/>
     <lang.compilerKindProvider implementation="org.jetbrains.bazel.clion.workspace.CcCompilerKindProvider"/>
+    <projectModel.resolveConfigurationChooser
+      implementation="org.jetbrains.bazel.clion.workspace.CcDirectoryBasedChooser"
+      order="after com.jetbrains.cidr.lang.workspace.RunConfigurationBasedChooser, before com.jetbrains.cidr.lang.workspace.ClosestConfigurationBasedChooser"
+    />
   </extensions>
 
 </idea-plugin>
