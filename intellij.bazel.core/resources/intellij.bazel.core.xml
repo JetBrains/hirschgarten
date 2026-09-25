@@ -523,6 +523,14 @@
                      level="ERROR"
                      implementationClass="org.jetbrains.bazel.languages.starlark.inspection.StarlarkInvalidDictKeyInspection"/>
 
+    <localInspection language="Starlark"
+                     key="inspection.display.name.starlark.unsupported.syntax.check"
+                     groupPath="Bazel"
+                     groupKey="starlark.inspection.group.name"
+                     enabledByDefault="true"
+                     level="ERROR"
+                     implementationClass="org.jetbrains.bazel.languages.starlark.inspection.StarlarkUnsupportedPythonSyntaxInspection"/>
+
     <fileType
       extensions="bazelquery"
       fieldName="INSTANCE"
