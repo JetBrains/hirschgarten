@@ -5,7 +5,7 @@ import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.toNioPathOrNull
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.commons.constants.Constants.WORKSPACE_FILE_NAMES
-import java.io.IOException
+import org.jetbrains.bazel.utils.readSymbolicLinkTarget
 import java.nio.file.FileVisitResult
 import java.nio.file.Files
 import java.nio.file.Path
@@ -14,7 +14,6 @@ import java.nio.file.attribute.BasicFileAttributes
 import kotlin.io.path.exists
 import kotlin.io.path.invariantSeparatorsPathString
 import kotlin.io.path.name
-import kotlin.io.path.readSymbolicLink
 
 @ApiStatus.Internal
 object BazelSymlinksCalculator {
@@ -65,15 +64,7 @@ object BazelSymlinksCalculator {
     }
   }
 
-  fun resolveSymlinkTarget(symlink: Path): Path? {
-    val target =
-      try {
-        symlink.readSymbolicLink()
-      } catch (_: IOException) {
-        return null
-      }
-    return symlink.resolveSibling(target).normalize()
-  }
+  fun resolveSymlinkTarget(symlink: Path): Path? = symlink.readSymbolicLinkTarget()
 
   fun isBazelSymlink(workspaceRootName: String, file: VirtualFile): Boolean =
     file.toNioPathOrNull()?.let { isBazelSymlink(workspaceRootName, it) } == true

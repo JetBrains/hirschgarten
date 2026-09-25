@@ -4,7 +4,9 @@ import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.VirtualFileManager
 import org.jetbrains.annotations.ApiStatus
+import java.io.IOException
 import java.nio.file.Path
+import kotlin.io.path.readSymbolicLink
 
 @ApiStatus.Internal
 fun Path.allAncestorsSequence(): Sequence<Path> = generateSequence(this) { it.parent }
@@ -18,6 +20,15 @@ internal fun List<String>.allAncestorsSequence(): Sequence<List<String>> = gener
 fun Path.isUnder(ancestors: Set<Path>): Boolean = this.allAncestorsSequence().any { it in ancestors }
 
 internal fun List<String>.isUnder(ancestors: Set<List<String>>): Boolean = this.allAncestorsSequence().any { it in ancestors }
+
+@ApiStatus.Internal
+fun Path.readSymbolicLinkTarget(): Path? =
+  try {
+    this.resolveSibling(this.readSymbolicLink()).normalize()  // readSymbolicLink can be a relative path!
+  }
+  catch (_: IOException) {
+    null
+  }
 
 /**
  * See [com.intellij.openapi.vfs.VfsUtilCore.getCommonAncestor].
