@@ -11,6 +11,7 @@ import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiReferenceBase
 import com.intellij.psi.util.PsiTreeUtil
+import com.intellij.util.IconUtil
 import com.intellij.util.PlatformIcons
 import com.intellij.util.containers.reverse
 import org.jetbrains.bazel.commons.constants.Constants.BUILD_FILE_NAMES
@@ -124,12 +125,9 @@ internal class BazelLabelReference(element: StarlarkStringLiteralExpression, sof
     // tree starting from the second one, neither of these conditions should occur.
     val lookupElements =
       allFiles
-        .map {
-          getCompletionLookupElement(
-            VfsUtilCore
-              .getRelativePath(it, currentDirectory)!!,
-            PlatformIcons.FILE_ICON,
-          )
+        .mapNotNull {
+          val elementName = VfsUtilCore.getRelativePath(it, currentDirectory) ?: return@mapNotNull null
+          getCompletionLookupElement(elementName, IconUtil.getIcon(it, 0, element.project))
         }.toTypedArray()
     return lookupElements
   }

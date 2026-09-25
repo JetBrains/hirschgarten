@@ -1,17 +1,39 @@
 package org.jetbrains.bazel.languages.starlark.completion
 
-import com.intellij.testFramework.fixtures.BasePlatformTestCase
+import com.intellij.testFramework.fixtures.TestLookupElementPresentation
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.collections.shouldNotContainAnyOf
-import org.jetbrains.bazel.project.BazelProjectFixtures.initializeBazelProject
+import io.kotest.matchers.shouldBe
 import org.jetbrains.bazel.test.framework.BazelBasePlatformTestCase
-import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
 
 @RunWith(JUnit4::class)
 class StarlarkFileCompletionTest : BazelBasePlatformTestCase() {
+  @Test
+  fun `should show file icons in completion`() {
+    val files = listOf("source.kt", "nested/defs.bzl").associateWith { myFixture.addFileToProject(it, "") }
+
+    myFixture.configureByText(
+      "BUILD",
+      """
+      filegroup(
+        name = "testTarget",
+        srcs = ["<caret>"]
+      )
+      """.trimIndent(),
+    )
+    val lookups = myFixture.completeBasic().associateBy { it.lookupString }
+
+    lookups.keys shouldContainExactlyInAnyOrder files.keys.map { "\"$it\"" }
+    for ((path, file) in files) {
+      val presentation = TestLookupElementPresentation.renderReal(lookups.getValue("\"$path\""))
+      TestLookupElementPresentation.unwrapIcon(presentation.icon) shouldBe
+        TestLookupElementPresentation.unwrapIcon(file.getIcon(0))
+    }
+  }
+
   @Test
   fun `should complete in src`() {
     myFixture.addFileToProject("a.kt", "")
