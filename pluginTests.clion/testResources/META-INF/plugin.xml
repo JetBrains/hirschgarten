@@ -18,7 +18,7 @@
     <module name="intellij.libraries.junit5" loading="required"/>
     <module name="intellij.libraries.junit5.jupiter" loading="required"/>
     <module name="intellij.libraries.junit5.launcher" loading="required"/>
-    <module name="intellij.libraries.junit5.params" loading="required"/>
+    <module name="intellij.libraries.junit6.params" loading="required"/>
     <module name="intellij.libraries.junit6.vintage" loading="required"/>
     <module name="intellij.libraries.kaml" loading="required"/>
     <module name="intellij.libraries.opentest4j" loading="required"/>
