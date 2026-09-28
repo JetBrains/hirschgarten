@@ -312,6 +312,7 @@ internal class PlainTargetBuilder {
   private var label: String? = null
   private var configurationId: String? = null
   private val deps = mutableListOf<DependencyLabel>()
+  private val srcs = mutableListOf<OutputLocation>()
 
   fun label(label: String) {
     this.label = label
@@ -329,12 +330,24 @@ internal class PlainTargetBuilder {
     deps += targets.map { DependencyLabel(targetKey = it, kind = kind) }
   }
 
+  fun srcs(vararg paths: String, generated: Boolean = false) {
+    srcs += paths.map {
+      if (generated) {
+          OutputLocation.Output(OutputRoot.of(listOf("k8-fastbuild", "bin")), it)
+      }
+      else {
+          OutputLocation.Workspace(it)
+      }
+    }
+  }
+
   internal fun build(): BuildTarget {
     val label = requireNotNull(this.label)
 
     return TestBuildTarget(
       key = targetKey(label, configurationId),
       kind = TargetKind(kind = "plain", languageClasses = setOf(), ruleType = RuleType.UNKNOWN),
+      sources = locations(srcs),
     )
   }
 }

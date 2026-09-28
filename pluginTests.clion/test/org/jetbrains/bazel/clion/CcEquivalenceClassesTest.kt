@@ -30,9 +30,18 @@ class CcEquivalenceClassesTest {
   @Test
   fun testGroupsEqualTargets() {
     val configurations = resolve {
-      ccBinary { label("//foo/bar:one") }
-      ccBinary { label("//foo/bar:two") }
-      ccBinary { label("//foo/bar:three") }
+      ccBinary {
+        label("//foo/bar:one")
+        srcs("foo/bar/one.c")
+      }
+      ccBinary {
+        label("//foo/bar:two")
+        srcs("foo/bar/two.c")
+      }
+      ccBinary {
+        label("//foo/bar:three")
+        srcs("foo/bar/three.c")
+      }
     }
 
     assertThat(configurations).hasSize(1)
@@ -52,14 +61,17 @@ class CcEquivalenceClassesTest {
     val configurations = resolve {
       ccBinary {
         label("//foo/bar:one")
+        srcs("foo/bar/one.c")
         copts(SAME_COPT)
       }
       ccBinary {
         label("//foo/bar:two")
+        srcs("foo/bar/two.c")
         copts(SAME_COPT)
       }
       ccBinary {
         label("//foo/bar:three")
+        srcs("foo/bar/three.c")
         copts(DIFFERENT_COPT)
       }
     }
@@ -74,14 +86,17 @@ class CcEquivalenceClassesTest {
     val configurations = resolve {
       ccBinary {
         label("//foo/bar:one")
+        srcs("foo/bar/one.c")
         includes("foo/same")
       }
       ccBinary {
         label("//foo/bar:two")
+        srcs("foo/bar/two.c")
         includes("foo/same")
       }
       ccBinary {
         label("//foo/bar:three")
+        srcs("foo/bar/three.c")
         includes("foo/different")
       }
     }
@@ -96,14 +111,17 @@ class CcEquivalenceClassesTest {
     val configurations = resolve {
       ccBinary {
         label("//foo/bar:one")
+        srcs("foo/bar/one.c")
         defines(SAME_DEFINE)
       }
       ccBinary {
         label("//foo/bar:two")
+        srcs("foo/bar/two.c")
         defines(SAME_DEFINE)
       }
       ccBinary {
         label("//foo/bar:three")
+        srcs("foo/bar/three.c")
         defines(DIFFERENT_DEFINE)
       }
     }
@@ -118,14 +136,17 @@ class CcEquivalenceClassesTest {
     val configurations = resolve {
       ccBinary {
         label("//foo/bar:one")
+        srcs("foo/bar/one.c")
         conlyopts(SAME_COPT)
       }
       ccBinary {
         label("//foo/bar:two")
+        srcs("foo/bar/two.c")
         conlyopts(DIFFERENT_COPT)
       }
       ccBinary {
         label("//foo/bar:three")
+        srcs("foo/bar/three.c")
       }
     }
 
@@ -140,14 +161,17 @@ class CcEquivalenceClassesTest {
     val configurations = resolve {
       ccBinary {
         label("//foo/bar:one")
+        srcs("foo/bar/one.c")
         cxxopts(SAME_COPT)
       }
       ccBinary {
         label("//foo/bar:two")
+        srcs("foo/bar/two.c")
         cxxopts(DIFFERENT_COPT)
       }
       ccBinary {
         label("//foo/bar:three")
+        srcs("foo/bar/three.c")
       }
     }
 
@@ -176,6 +200,7 @@ class CcEquivalenceClassesTest {
       ccBinary {
         label("//foo/bar:one")
         configurationId("configA")
+        srcs("foo/bar/one.c")
       }
     }
 
@@ -188,14 +213,17 @@ class CcEquivalenceClassesTest {
     val configurations = resolve {
       ccBinary {
         label("//foo/bar:one")
+        srcs("foo/bar/one.c")
         configurationId("configA")
       }
       ccBinary {
         label("//foo/bar:two")
+        srcs("foo/bar/two.c")
         configurationId("configB")
       }
       ccBinary {
         label("//foo/bar:three")
+        srcs("foo/bar/three.c")
       }
     }
 
@@ -211,10 +239,12 @@ class CcEquivalenceClassesTest {
     val configurations = resolve {
       ccBinary {
         label("//foo/bar:one")
+        srcs("foo/bar/one.c")
         configurationId("configA")
       }
       ccBinary {
         label("//foo/bar:one")
+        srcs("foo/bar/one.c")
         configurationId("configB")
       }
     }
@@ -239,10 +269,12 @@ class CcEquivalenceClassesTest {
 
       ccBinary {
         label("//foo/bar:one")
+        srcs("foo/bar/one.c")
         deps(gcc)
       }
       ccBinary {
         label("//foo/bar:two")
+        srcs("foo/bar/tow.c")
         deps(clang)
       }
     }
@@ -260,10 +292,12 @@ class CcEquivalenceClassesTest {
 
       ccBinary {
         label("//foo/bar:one")
+        srcs("foo/bar/one.c")
         deps(toolchainOne)
       }
       ccBinary {
         label("//foo/bar:two")
+        srcs("foo/bar/two.c")
         deps(toolchainTwo)
       }
     }
@@ -275,8 +309,14 @@ class CcEquivalenceClassesTest {
   @Test
   fun testPlainTargetHasNoGroup() {
     val configurations = resolve {
-      ccBinary { label("//foo/bar:one") }
-      plainTarget { label("//foo/bar:two") }
+      ccBinary {
+        label("//foo/bar:one")
+        srcs("foo/bar/one.c")
+      }
+      plainTarget {
+        label("//foo/bar:two")
+        srcs("foo/bar/two.c")
+      }
     }
 
     assertThat(configurations).hasSize(1)
@@ -289,19 +329,23 @@ class CcEquivalenceClassesTest {
     val configurations = resolve {
       val libOne = ccLibrary {
         label("//lib:one")
+        srcs("lib/one.c")
         copts(SAME_COPT)
       }
       val libTwo = ccLibrary {
         label("//lib:two")
+        srcs("lib/two.c")
         copts(DIFFERENT_COPT)
       }
 
       ccBinary {
         label("//foo/bar:one")
+        srcs("foo/bar/one.c")
         deps(libOne)
       }
       ccBinary {
         label("//foo/bar:two")
+        srcs("foo/bar/two.c")
         deps(libTwo)
       }
     }

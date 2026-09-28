@@ -72,15 +72,24 @@ fun buildEquivalenceClasses(target2Compiler: Map<WorkspaceTargetKey, CcCompilerI
     equivalenceClasses.putValue(configuration, target.key)
   }
 
-  return equivalenceClasses.entrySet().map { (clazz, targets) ->
-    CcResolveConfiguration(
-      id = CcResolveConfiguration.Identifier(clazz.hashCode(), clazz.configuration),
-      shared = clazz,
-      targets = targets.toList(),
-      sources = collectSources(targets),
-      name = computeDisplayName(targets),
-    )
-  }
+  return equivalenceClasses.entrySet().mapNotNull { (clazz, targets) -> createResolveConfiguration(clazz, targets) }
+}
+
+context(ctx: CcImportContext)
+private fun createResolveConfiguration(
+  clazz: CcResolveConfiguration.EquivalenceClass,
+  targets: Collection<WorkspaceTargetKey>,
+): CcResolveConfiguration? {
+  val sources = collectSources(targets)
+  if (sources.isEmpty()) return null
+
+  return CcResolveConfiguration(
+    id = CcResolveConfiguration.Identifier(clazz.hashCode(), clazz.configuration),
+    shared = clazz,
+    targets = targets.toList(),
+    sources = sources,
+    name = computeDisplayName(targets),
+  )
 }
 
 context(ctx: CcImportContext)
