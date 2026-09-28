@@ -3,13 +3,12 @@ package org.jetbrains.bazel.assertions
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import org.assertj.core.api.Assertions.assertThat
-import org.jetbrains.bazel.clion.sync.CcToolchainBuildTarget
+import org.jetbrains.bazel.clion.workspace.CcTargetUtils
 import org.jetbrains.bazel.clion.workspace.findTargetToolchain
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.sync.workspace.persistence.TargetLoadOptions
 import org.jetbrains.bazel.sync.workspace.persistence.WorkspaceSnapshotService
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
-import org.jetbrains.bazel.sync.workspace.snapshot.hasBuildData
 import org.jetbrains.bsp.protocol.BuildTarget
 
 internal suspend fun Project.findTargets(label: Label): List<BuildTarget> {
@@ -47,11 +46,6 @@ internal suspend fun Project.findTarget(key: WorkspaceTargetKey): BuildTarget {
 internal suspend fun Project.findToolchain(target: BuildTarget): List<BuildTarget> {
   val snapshot = service<WorkspaceSnapshotService>().currentSnapshot()
 
-  val toolchains = snapshot.targetGraph.allTargets
-    .mapNotNull { snapshot.targets.findTargetByKey(it, TargetLoadOptions.ALL) }
-    .filter { it.hasBuildData<CcToolchainBuildTarget>() }
-    .map { it.key }
-    .toSet()
-
+  val toolchains = CcTargetUtils.findAllToolchains(snapshot)
   return findTargetToolchain(target, toolchains).mapNotNull { snapshot.targets.findTargetByKey(it, TargetLoadOptions.ALL) }
 }
