@@ -4,12 +4,12 @@ import io.kotest.matchers.shouldBe
 import org.jetbrains.bazel.commons.BzlmodRepoMapping
 import org.jetbrains.bazel.commons.getLocalRepositories
 import org.jetbrains.bazel.sync.BazelOutFileHardLinks
+import org.jetbrains.bazel.test.framework.RecordingBazelOutFileHardLinks
 import org.jetbrains.bazel.test.framework.testBazelInfo
 import org.jetbrains.bsp.protocol.OutputLocation
 import org.jetbrains.bsp.protocol.OutputLocationResolver
 import org.jetbrains.bsp.protocol.OutputRoot
 import org.junit.jupiter.api.Test
-import java.nio.file.Path
 import kotlin.io.path.Path
 
 class DefaultOutputLocationResolverTest {
@@ -95,17 +95,28 @@ class DefaultOutputLocationResolverTest {
 
   @Test
   fun `resolves an output file via hardlinks`() {
-    val hardLinks = object : BazelOutFileHardLinks {
-      override fun onBeforeSync() {}
-      override suspend fun onAfterSync(fullProjectModelUpdated: Boolean) {}
-      override suspend fun createOutputFileHardLinks(files: Collection<Path>): List<Path> = files.toList()
-      override fun resolveCachedPath(fileOrDir: Path): Path =
-        Path("cached").resolve(fileOrDir.fileName)
+    val resolved = newResolver(RecordingBazelOutFileHardLinks())
+      .resolve(OutputLocation.Output(OutputRoot.of(listOf("k8-fastbuild", "bin")), "c/d.jar"), localOverride)
+    resolved shouldBe Path("cached/bazel-exec/bazel-out/k8-fastbuild/bin/c/d.jar")
+  }
 
-      override val allHardLinksCreatedSuccessfully: Boolean = true
-    }
-    val resolved =
-      newResolver(hardLinks).resolve(OutputLocation.Output(OutputRoot.of(listOf("k8-fastbuild", "bin")), "c/d.jar"), localOverride)
-    resolved shouldBe Path("cached/d.jar")
+  @Test
+  fun `resolves generated file of a sibling external repository via hardlinks`() {
+    val resolver = DefaultOutputLocationResolver.createHardlinkResolving(
+      testBazelInfo(
+        workspaceRoot = Path("workspace"),
+        outputBase = Path("bazel-out-base"),
+        execRoot = Path("bazel-exec/_main"),
+      ),
+      RecordingBazelOutFileHardLinks(),
+    )
+    val generated = OutputLocation.External("repo+", "bazel-out/k8-fastbuild/bin/pkg/lib.jar", siblingLayout = true)
+    resolver.resolve(generated) shouldBe Path("cached/bazel-exec/repo+/bazel-out/k8-fastbuild/bin/pkg/lib.jar")
+  }
+
+  @Test
+  fun `resolves external source file without hardlinks`() {
+    newResolver(RecordingBazelOutFileHardLinks()).resolve(OutputLocation.External("repo+", "pkg/E.java", siblingLayout = true)) shouldBe
+      Path("bazel-out-base/external/repo+/pkg/E.java")
   }
 }

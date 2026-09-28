@@ -8,10 +8,9 @@ import io.kotest.matchers.shouldBe
 import kotlinx.coroutines.test.runTest
 import org.jetbrains.bazel.commons.BazelPathsResolver
 import org.jetbrains.bazel.commons.BzlmodRepoMapping
-import org.jetbrains.bazel.sync.BazelOutFileHardLinks
+import org.jetbrains.bazel.test.framework.RecordingBazelOutFileHardLinks
 import org.jetbrains.bazel.test.framework.testBazelInfo
 import org.junit.jupiter.api.Test
-import java.nio.file.Path
 import kotlin.io.path.Path
 
 class OutputLocationParserTest {
@@ -245,23 +244,7 @@ class OutputLocationParserTest {
 
   @Test
   fun `creates hard links when parsing an output location`() = runTest {
-    val linked = mutableListOf<Path>()
-    val hardLinks = object : BazelOutFileHardLinks {
-      override fun onBeforeSync() {}
-      override suspend fun onAfterSync(fullProjectModelUpdated: Boolean) {}
-      override suspend fun createOutputFileHardLinks(files: Collection<Path>): List<Path> {
-        linked.addAll(files)
-        return files.toList()
-      }
-
-      override suspend fun createOutputFileHardLink(originalFile: Path): Path {
-        linked.add(originalFile)
-        return originalFile
-      }
-
-      override fun resolveCachedPath(fileOrDir: Path): Path = fileOrDir
-      override val allHardLinksCreatedSuccessfully: Boolean = true
-    }
+    val hardLinks = RecordingBazelOutFileHardLinks()
     val bazelInfo = testBazelInfo(
       workspaceRoot = Path("/workspace"),
       outputBase = Path("/bazel-out-base"),
@@ -273,9 +256,12 @@ class OutputLocationParserTest {
     parser.parseExecrootPath("bazel-out/k8-opt/bin/pkg/f.h")
     parser.parse(proto("bazel-out/k8-fastbuild/bin", "pkg/gen.h", isSource = false))
     parser.parse(proto("foo", "bar.h", isSource = false))
+    parser.parse(proto("../repo+", "bazel-out/k8-fastbuild/bin/pkg/lib.jar", isSource = false, isExternal = true))
+    parser.parse(proto("../repo+", "pkg/E.java", isExternal = true))
 
-    linked shouldContainExactly listOf(
+    hardLinks.linkedFiles shouldContainExactly listOf(
       Path("/bazel-exec/bazel-out/k8-fastbuild/bin/pkg/gen.h"),
+      Path("/repo+/bazel-out/k8-fastbuild/bin/pkg/lib.jar"),
     )
   }
 }

@@ -1,14 +1,18 @@
 package org.jetbrains.bazel.sync
 
+import com.google.devtools.intellij.aspect.Common
 import com.intellij.testFramework.common.timeoutRunBlocking
 import com.intellij.util.io.createDirectories
 import com.intellij.util.io.delete
 import kotlinx.coroutines.runBlocking
 import org.assertj.core.api.Assertions.assertThat
+import org.jetbrains.bazel.commons.BazelPathsResolver
 import org.jetbrains.bazel.project.BazelProjectFixtures
+import org.jetbrains.bazel.sync.workspace.DefaultOutputLocationResolver
 import org.jetbrains.bazel.sync.workspace.mapper.normal.DefaultBazelOutputFileHardLinks
 import org.jetbrains.bazel.test.framework.testBazelInfo
 import org.jetbrains.bazel.workspace.model.test.framework.MockProjectBaseTest
+import org.jetbrains.bsp.protocol.OutputLocationParser
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.condition.DisabledOnOs
 import org.junit.jupiter.api.condition.OS
@@ -114,4 +118,34 @@ internal class BazelOutFileHardLinksTest : MockProjectBaseTest() {
     assertThat(links.allHardLinksCreatedSuccessfully).isTrue()
     links.onAfterSync(false)
   }
+
+  @Test
+  fun `generated jar of a sibling external repository remains readable after bazel removes it`(@TempDir outputBase: Path): Unit =
+    timeoutRunBlocking {
+      val root = Path(checkNotNull(project.basePath)).toRealPath()
+      BazelProjectFixtures.initializeBazelProject(project, root)
+      val info = testBazelInfo(workspaceRoot = root, outputBase = outputBase)
+      val links = DefaultBazelOutputFileHardLinks(project, info)
+      val parser = OutputLocationParser(BazelPathsResolver(info), links)
+      val resolver = DefaultOutputLocationResolver.createHardlinkResolving(info, links)
+      val original = info.execRoot.resolve("../repo+/bazel-out/k8-fastbuild/bin/pkg/lib.jar").normalize()
+      original.parent.createDirectories()
+      original.writeText("JAR")
+      val aspectLocation = Common.ArtifactLocation.newBuilder()
+        .setRootPath("../repo+")
+        .setRelativePath("bazel-out/k8-fastbuild/bin/pkg/lib.jar")
+        .setIsSource(false)
+        .setIsExternal(true)
+        .build()
+
+      links.onBeforeSync()
+      val location = parser.parse(aspectLocation)
+      links.onAfterSync(true)
+      val imported = checkNotNull(resolver.resolve(location))
+      original.delete()
+
+      assertThat(imported).isEqualTo(links.cacheDir.resolve("execroot/repo+/bazel-out/k8-fastbuild/bin/pkg/lib.jar"))
+      assertThat(imported.readText()).isEqualTo("JAR")
+      assertThat(links.allHardLinksCreatedSuccessfully).isTrue()
+    }
 }

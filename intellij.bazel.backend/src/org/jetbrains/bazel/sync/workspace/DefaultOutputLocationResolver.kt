@@ -48,11 +48,16 @@ open class DefaultOutputLocationResolver private constructor(
     location: OutputLocation,
     localOverride: LocalRepositoryMapping?,
   ): Path? = try {
-    when (location) {
+    val resolved = when (location) {
       is OutputLocation.Host -> Path(location.absolutePath)
       is OutputLocation.Workspace -> bazelInfo.workspaceRoot.resolve(location.relativePath)
-      is OutputLocation.Output -> resolveExecrootPath(bazelInfo.execRoot.resolve(location.toExecrootPath()))
+      is OutputLocation.Output -> bazelInfo.execRoot.resolve(location.toExecrootPath())
       is OutputLocation.External -> resolveExternal(location, localOverride)
+    }
+    if (location.isGenerated) {
+      resolveExecrootPath(resolved)
+    } else {
+      resolved
     }
   }
   catch (_: InvalidPathException) {

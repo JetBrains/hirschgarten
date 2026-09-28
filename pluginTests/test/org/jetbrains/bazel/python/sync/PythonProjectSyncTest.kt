@@ -70,6 +70,7 @@ import org.jetbrains.bazel.sync.workspace.snapshot.OutputLocationCollectionBuild
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceSnapshot
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceSnapshotBuilder
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
+import org.jetbrains.bazel.test.framework.CopyingBazelOutHardLinks
 import org.jetbrains.bazel.test.framework.target.TestBuildTarget
 import org.jetbrains.bazel.test.framework.testBazelInfo
 import org.jetbrains.bazel.workspace.model.matchers.entries.ExpectedModuleEntity
@@ -91,11 +92,8 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.nio.file.Files
 import java.nio.file.Path
-import kotlin.io.path.copyTo
+import kotlin.io.path.Path
 import kotlin.io.path.createDirectories
-import kotlin.io.path.createParentDirectories
-import kotlin.io.path.exists
-import kotlin.io.path.relativeTo
 import kotlin.io.path.writeText
 
 private data class PythonTestSet(
@@ -410,7 +408,7 @@ class PythonProjectSyncTest : MockProjectBaseTest() {
     val bazelBin = execRoot.resolve("bazel-out/k8-fastbuild/bin")
     bazelBin.resolve("genpy").createDirectories().resolve("part_pb2.py").writeText("P = 1\n")
     val hardLinksRoot = execRoot.resolve("intellij-hardlinks")
-    val hardLinks = CopyingHardLinks(outputBase = execRoot, hardLinksRoot = hardLinksRoot)
+    val hardLinks = CopyingBazelOutHardLinks(outputBase = execRoot, hardLinksRoot = hardLinksRoot)
 
     val info =
       GeneratedTargetInfo(
@@ -845,25 +843,4 @@ class PythonProjectSyncTest : MockProjectBaseTest() {
       PsiManager.getInstance(project).findFile(virtualFile) as PyFile
     }
   }
-}
-
-private class CopyingHardLinks(private val outputBase: Path, private val hardLinksRoot: Path) : BazelOutFileHardLinks {
-  val linkedFiles: MutableList<Path> = mutableListOf()
-
-  override fun onBeforeSync() {}
-
-  override suspend fun onAfterSync(fullProjectModelUpdated: Boolean) {}
-
-  override suspend fun createOutputFileHardLinks(files: Collection<Path>): List<Path> =
-    files.filter { it.exists() }.map { file ->
-      val link = resolveCachedPath(file)
-      link.createParentDirectories()
-      file.copyTo(link, overwrite = true)
-      linkedFiles.add(link)
-      link
-    }
-
-  override fun resolveCachedPath(fileOrDir: Path): Path = hardLinksRoot.resolve(fileOrDir.relativeTo(outputBase))
-
-  override val allHardLinksCreatedSuccessfully: Boolean = true
 }
