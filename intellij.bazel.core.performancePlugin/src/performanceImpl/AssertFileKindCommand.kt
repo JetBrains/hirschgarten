@@ -12,6 +12,7 @@ import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.target.targetStorage
 import org.jetbrains.bazel.ui.status.showAsUnsyncedSourceFile
+import org.jetbrains.bazel.workspace.fileEvents.BazelFileEventProcessor
 
 internal class AssertFileKindCommand(text: String, line: Int) : PlaybackCommandCoroutineAdapter(text, line) {
   companion object {
@@ -37,6 +38,14 @@ internal class AssertFileKindCommand(text: String, line: Int) : PlaybackCommandC
       }
     }
   }
+}
+
+private fun awaitFileEvensProcessed(project: Project) {
+  val startTime = System.currentTimeMillis()
+  do {
+    if (BazelFileEventProcessor.getInstance(project).isIdle())
+      return
+  } while (System.currentTimeMillis() - startTime < 10_000)
 }
 
 @ApiStatus.Internal
@@ -93,14 +102,18 @@ enum class FileKindCheck {
   },
 
   SHOW_AS_SYNCED {
-    override fun verify(project: Project, file: VirtualFile): Boolean =
-      !showAsUnsyncedSourceFile(project, file)
+    override fun verify(project: Project, file: VirtualFile): Boolean {
+      awaitFileEvensProcessed(project)
+      return !showAsUnsyncedSourceFile(project, file)
+    }
 
     override fun displayName(): String = "show as synced"
   },
   SHOW_AS_UNSYNCED {
-    override fun verify(project: Project, file: VirtualFile): Boolean =
-      showAsUnsyncedSourceFile(project, file)
+    override fun verify(project: Project, file: VirtualFile): Boolean {
+      awaitFileEvensProcessed(project)
+      return showAsUnsyncedSourceFile(project, file)
+    }
 
     override fun displayName(): String = "show as unsynced"
   },

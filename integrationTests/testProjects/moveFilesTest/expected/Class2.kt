@@ -1,6 +1,4 @@
-package src.subpackage
-
-import src.Class3
+package src
 
 class Class2 {
   fun foo() {

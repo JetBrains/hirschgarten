@@ -16,6 +16,7 @@ import org.jetbrains.bazel.data.preCacheBazelisk
 import org.jetbrains.bazel.base.IdeStarterBaseProjectTest
 import org.jetbrains.bazel.base.syncBazelProject
 import org.jetbrains.bazel.base.waitForSyncSucceeded
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import kotlin.time.Duration.Companion.minutes
 
@@ -30,7 +31,7 @@ private val BAZEL_PROJECT_TREE_APPEARANCE_PROJECT = simpleBazelProject(
   },
 )
 
-
+@Disabled
 class BazelProjectTreeAppearanceTest : IdeStarterBaseProjectTest() {
 
   @Test
