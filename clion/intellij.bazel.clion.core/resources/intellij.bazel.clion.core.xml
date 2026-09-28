@@ -5,14 +5,27 @@
     <module name="intellij.bazel.clion.common"/>
     <module name="intellij.bazel.commons"/>
     <module name="intellij.bazel.core"/>
+    <module name="intellij.cidr.core"/>
+    <module name="intellij.cidr.debugger.backend"/>
+    <module name="intellij.cidr.debugger.core"/>
+    <module name="intellij.cidr.debugger.profiles.backend"/>
     <module name="intellij.cidr.projectModel"/>
     <module name="intellij.cidr.psi.base"/>
+    <module name="intellij.cidr.runner"/>
+    <module name="intellij.cidr.util.execution"/>
+    <module name="intellij.clion.execution"/>
     <module name="intellij.clion.runFile"/>
+    <module name="intellij.clion.toolchains"/>
     <module name="intellij.libraries.gson"/>
     <module name="intellij.platform.analysis"/>
+    <module name="intellij.platform.buildView"/>
+    <module name="intellij.platform.concurrency"/>
+    <module name="intellij.platform.consoleView"/>
     <module name="intellij.platform.core"/>
     <module name="intellij.platform.core.impl"/>
     <module name="intellij.platform.core.ui"/>
+    <module name="intellij.platform.debugger"/>
+    <module name="intellij.platform.debugger.impl"/>
     <module name="intellij.platform.editor.ui"/>
     <module name="intellij.platform.execution"/>
     <module name="intellij.platform.ide"/>
@@ -20,11 +33,25 @@
     <module name="intellij.platform.ide.impl"/>
     <module name="intellij.platform.ide.progress"/>
     <module name="intellij.platform.lang"/>
+    <module name="intellij.platform.lang.impl"/>
+    <module name="intellij.platform.projectModel"/>
+    <module name="intellij.platform.smRunner"/>
+    <module name="intellij.platform.testRunner"/>
+    <module name="intellij.platform.util.ui"/>
   </dependencies>
   <!-- endregion -->
 
   <extensions defaultExtensionNs="com.intellij">
     <runConfigurationProducer implementation="org.jetbrains.bazel.clion.run.BazelCcRunConfigurationProducer"/>
+    <programRunner implementation="org.jetbrains.bazel.clion.run.CcDebugRunner"/>
+  </extensions>
+
+  <extensions defaultExtensionNs="org.jetbrains.bazel">
+    <runHandlerProvider implementation="org.jetbrains.bazel.clion.run.CcRunHandler$Provider"/>
+  </extensions>
+
+  <extensions defaultExtensionNs="cidr">
+    <debugger.debugProfilesEnabler implementation="org.jetbrains.bazel.clion.run.CcRunHandler$DebugProfileEnabler"/>
   </extensions>
 
   <actions resource-bundle="messages.BazelCLionCoreBundle">
