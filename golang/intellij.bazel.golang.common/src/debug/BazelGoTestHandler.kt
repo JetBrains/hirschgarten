@@ -9,7 +9,6 @@ import com.intellij.execution.runners.ExecutionEnvironment
 import com.intellij.openapi.util.Key
 import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.commons.TargetKind
-import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.golang.targetKinds.includesGo
 import org.jetbrains.bazel.golang.workspace.GoWorkspaceModuleUtil
@@ -21,6 +20,7 @@ import org.jetbrains.bazel.run.config.BazelRunConfigurationType
 import org.jetbrains.bazel.run.import.GooglePluginAwareRunHandlerProvider
 import org.jetbrains.bazel.run.state.AbstractGenericTestState
 import org.jetbrains.bazel.run.state.GenericTestState
+import org.jetbrains.bazel.utils.ExecutableInfo
 import org.jetbrains.bsp.protocol.TestParams
 import java.util.concurrent.atomic.AtomicReference
 

@@ -13,6 +13,7 @@ import com.intellij.openapi.module.Module
 import org.jetbrains.bazel.run.state.EnvironmentVariablesDataOptions
 import org.jetbrains.bazel.run.state.GenericRunState
 import org.jetbrains.bazel.run.state.GenericTestState
+import org.jetbrains.bazel.utils.ExecutableInfo
 import kotlin.collections.set
 import kotlin.io.path.pathString
 

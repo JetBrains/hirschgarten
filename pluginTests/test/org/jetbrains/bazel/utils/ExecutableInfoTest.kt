@@ -1,4 +1,4 @@
-package org.jetbrains.bazel.golang.debug
+package org.jetbrains.bazel.utils
 
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.shouldBe
