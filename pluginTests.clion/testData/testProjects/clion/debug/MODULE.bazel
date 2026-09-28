@@ -1,0 +1,8 @@
+bazel_dep(name = "rules_cc", version = "0.2.25")
+
+# local external dependency
+bazel_dep(name = "external_lib")
+local_path_override(
+    module_name = "external_lib",
+    path = "lib/external",
+)
