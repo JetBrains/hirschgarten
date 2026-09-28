@@ -17,7 +17,19 @@
     <orderEntry type="module" module-name="intellij.platform.lang" />
     <orderEntry type="module" module-name="intellij.platform.execution" />
     <orderEntry type="module" module-name="intellij.platform.analysis" />
+    <orderEntry type="module" module-name="intellij.platform.debugger" />
+    <orderEntry type="module" module-name="intellij.platform.debugger.impl" />
+    <orderEntry type="module" module-name="intellij.platform.projectModel" />
+    <orderEntry type="module" module-name="intellij.platform.smRunner" />
+    <orderEntry type="module" module-name="intellij.platform.lang.impl" />
+    <orderEntry type="module" module-name="intellij.platform.testRunner" />
+    <orderEntry type="module" module-name="intellij.platform.concurrency" />
+    <orderEntry type="module" module-name="intellij.platform.util.ui" />
+    <orderEntry type="module" module-name="intellij.platform.ide.util.io" />
+    <orderEntry type="module" module-name="intellij.platform.buildView" />
+    <orderEntry type="module" module-name="intellij.platform.consoleView" />
     <orderEntry type="module" module-name="intellij.clion.runFile" />
+    <orderEntry type="module" module-name="intellij.cidr.core" />
     <orderEntry type="module" module-name="intellij.cidr.projectModel" />
     <orderEntry type="module" module-name="intellij.cidr.psi.base" />
     <orderEntry type="module" module-name="intellij.platform.ide" />
@@ -28,5 +40,12 @@
     <orderEntry type="module" module-name="intellij.platform.ide.core" />
     <orderEntry type="module" module-name="intellij.platform.ide.impl" />
     <orderEntry type="module" module-name="intellij.libraries.gson" />
+    <orderEntry type="module" module-name="intellij.cidr.runner" />
+    <orderEntry type="module" module-name="intellij.cidr.util.execution" />
+    <orderEntry type="module" module-name="intellij.cidr.debugger.core" />
+    <orderEntry type="module" module-name="intellij.cidr.debugger.backend" />
+    <orderEntry type="module" module-name="intellij.cidr.debugger.profiles.backend" />
+    <orderEntry type="module" module-name="intellij.clion.execution" />
+    <orderEntry type="module" module-name="intellij.clion.toolchains" />
   </component>
 </module>

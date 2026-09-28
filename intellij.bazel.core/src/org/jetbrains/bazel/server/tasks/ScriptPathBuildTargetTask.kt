@@ -26,18 +26,20 @@ class ScriptPathBuildTargetTask(
     taskId: TaskId,
     debugFlags: List<String>,
   ): BazelStatus {
-    val scriptPathParams = listOf("--script_path=$scriptPath", "--test_sharding_strategy=disabled")
     val params = RunParams(
       taskId = taskId,
       target = targetIds.single(),
       arguments = programArguments,
-      additionalBazelParams = scriptPathParams + additionalBazelParams,
+      additionalBazelParams = scriptPathParams(scriptPath) + additionalBazelParams,
       checkVisibility = true,
     )
     return server.buildTargetRun(params).statusCode
   }
 
   companion object {
+    /** Returns the Bazel flags that make `bazel run` write a script for the target to [scriptPath] instead of running it. */
+    fun scriptPathParams(scriptPath: Path): List<String> = listOf("--script_path=$scriptPath", "--test_sharding_strategy=disabled")
+
     fun createTempScriptFile(): Path {
       // on Windows, the only way to have an executable script is to have a
       // .bat file, but on unix the extension doesn't matter
