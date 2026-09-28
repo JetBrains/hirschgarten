@@ -31,7 +31,7 @@ internal class BazelProjectStatisticsCollector : ProjectUsagesCollector() {
     internal val COUNT_TARGETS =
       GROUP.registerEvent(
         "count.targets",
-        EventFields.LogarithmicInt("count_targets", "number of targets synced"),
+        EventFields.LogarithmicInt("count_targets", "Number of targets synced."),
       )
     internal val COUNT_FILES =
       GROUP.registerEvent(
