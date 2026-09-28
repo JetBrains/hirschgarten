@@ -2,6 +2,7 @@
   <dependencies>
     <plugin id="org.jetbrains.bazel"/>
     <plugin id="org.jetbrains.kotlin"/>
+    <plugin id="com.intellij.grid"/>
     <module name="intellij.python.community.services.systemPython"/>
   </dependencies>
 </idea-plugin>
