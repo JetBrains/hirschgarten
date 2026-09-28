@@ -48,6 +48,7 @@ fun buildToolchainMap(): Map<WorkspaceTargetKey, WorkspaceTargetKey> {
   return result
 }
 
+/** Prefer [CcTargetUtils.findToolchain] over directly calling this function. */
 @VisibleForTesting
 @ApiStatus.Internal
 fun findTargetToolchain(target: BuildTarget, toolchains: Set<WorkspaceTargetKey>): List<WorkspaceTargetKey> {
