@@ -9,7 +9,7 @@ import com.intellij.openapi.updateSettings.impl.UpdateSettings
 import org.jetbrains.annotations.ApiStatus
 
 @ApiStatus.Internal
-const val BAZEL_PLUGIN_ID = "org.jetbrains.bazel"
+const val BAZEL_PLUGIN_ID: String = "org.jetbrains.bazel"
 
 @Suppress("UnstableApiUsage")
 @ApiStatus.Internal
@@ -56,7 +56,5 @@ object BazelPluginUpdater {
   }
 
   fun getPluginDescriptorForId(id: String): IdeaPluginDescriptorImpl? =
-    PluginManagerCore.getPlugin(getPluginId(id)) as? IdeaPluginDescriptorImpl
-
-  private fun getPluginId(pluginIdString: String): PluginId? = PluginId.findId(pluginIdString)
+    PluginManagerCore.getPlugin(PluginId.getId(id)) as? IdeaPluginDescriptorImpl
 }
