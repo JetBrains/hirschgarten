@@ -29,7 +29,6 @@
     <module name="intellij.libraries.mvstore"/>
     <module name="intellij.libraries.protobuf"/>
     <module name="intellij.libraries.stream"/>
-    <module name="intellij.libraries.swingx"/>
     <module name="intellij.libraries.velocity"/>
     <module name="intellij.platform.analysis"/>
     <module name="intellij.platform.backend.observation"/>
