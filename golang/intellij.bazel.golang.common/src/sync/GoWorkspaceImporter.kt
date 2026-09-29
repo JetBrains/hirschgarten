@@ -35,6 +35,7 @@ import org.jetbrains.bazel.utils.filterPathsThatDontContainEachOther
 import org.jetbrains.bazel.workspacemodel.entities.BazelGoPackageEntity
 import org.jetbrains.bazel.workspacemodel.entities.BazelGoTargetEntity
 import org.jetbrains.bazel.workspacemodel.entities.WorkspaceModelTargetKey
+import org.jetbrains.bsp.protocol.TaskId
 import java.nio.file.Path
 
 internal class GoWorkspaceImporter(val context: WorkspaceImporterContext) : BazelWorkspaceImporter, BazelWorkspaceImporter.Named {
@@ -50,7 +51,7 @@ internal class GoWorkspaceImporter(val context: WorkspaceImporterContext) : Baze
   override val importerName: @NlsContexts.ProgressTitle String
     get() = BazelPluginBundle.message("console.task.model.go.importer")
 
-  override suspend fun import(phase: WorkspaceImporterPhase, snapshot: WorkspaceSnapshot): Result<WorkspaceImporterResult> {
+  override suspend fun import(phase: WorkspaceImporterPhase, snapshot: WorkspaceSnapshot, taskId: TaskId): Result<WorkspaceImporterResult> {
     when (phase) {
       is WorkspaceImporterPhase.Initialize -> {
         val importDepth = snapshot.commonSyncConfig.importDepth
@@ -70,7 +71,7 @@ internal class GoWorkspaceImporter(val context: WorkspaceImporterContext) : Baze
       }
 
       WorkspaceImporterPhase.PostProcessing -> {
-        onPostProcessing(snapshot)
+        onPostProcessing(snapshot, taskId)
       }
 
       else -> {}
@@ -201,17 +202,18 @@ internal class GoWorkspaceImporter(val context: WorkspaceImporterContext) : Baze
     return inferredImportPath
   }
 
-  private suspend fun onPostProcessing(snapshot: WorkspaceSnapshot) {
-    calculateAndAddGoSdk(snapshot, context.project)
+  private suspend fun onPostProcessing(snapshot: WorkspaceSnapshot, taskId: TaskId) {
+    calculateAndAddGoSdk(snapshot, context.project, taskId)
     GoWrongSdkConfigurationNotificationProvider.disableNotification(context.project)
     GoExternalLibraryManager.getInstance(context.project).update()
   }
 
   private suspend fun calculateAndAddGoSdk(
     snapshot: WorkspaceSnapshot, project: Project,
+    taskId: TaskId,
   ) = project.syncConsole.withSubtask(
     reporter = context.progressReporter,
-    subtaskId = context.taskId.subTask("calculate-and-add-go-sdk"),
+    subtaskId = taskId.subTask("calculate-and-add-go-sdk"),
     text = BazelPluginBundle.message("console.task.model.calculate.add.go.fetched.sdk"),
   ) {
     goTargets

@@ -75,6 +75,7 @@ import org.jetbrains.bazel.workspacemodel.entities.bazelModuleExtension
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.OutputLocation
 import org.jetbrains.bsp.protocol.StrictDependencyCheckedType
+import org.jetbrains.bsp.protocol.TaskId
 import org.jetbrains.bsp.protocol.utils.StringUtils
 import java.nio.file.Path
 import kotlin.io.path.isDirectory
@@ -106,12 +107,12 @@ internal class BazelPythonWorkspaceImporter(val context: WorkspaceImporterContex
   private var defaultVersion: String? = null
   private var externalSourceDependenciesByTarget: Map<WorkspaceTargetKey, List<WorkspaceTargetKey>> = mapOf()
 
-  override suspend fun import(phase: WorkspaceImporterPhase, snapshot: WorkspaceSnapshot): Result<WorkspaceImporterResult> = runCatching {
+  override suspend fun import(phase: WorkspaceImporterPhase, snapshot: WorkspaceSnapshot, taskId: TaskId): Result<WorkspaceImporterResult> = runCatching {
     when (phase) {
       is WorkspaceImporterPhase.Initialize -> onInitialize(snapshot, phase.naming)
       is WorkspaceImporterPhase.WorkspaceApply ->
         onWorkspaceApply(snapshot, phase.builder, context.vfuManager, phase.entitySource, phase.naming)
-      WorkspaceImporterPhase.PostProcessing -> onPostProcessing(snapshot)
+      WorkspaceImporterPhase.PostProcessing -> onPostProcessing(snapshot, taskId)
       else -> WorkspaceImporterResult.Success
     }
   }
@@ -214,12 +215,12 @@ internal class BazelPythonWorkspaceImporter(val context: WorkspaceImporterContex
       .toList()
   }
 
-  private suspend fun onPostProcessing(snapshot: WorkspaceSnapshot): WorkspaceImporterResult {
+  private suspend fun onPostProcessing(snapshot: WorkspaceSnapshot, taskId: TaskId): WorkspaceImporterResult {
     /**
      * Because of PY-86494, PythonSdkUpdater fails to add SDK paths unless there's at least one module in the project.
      * Hence, we're forced to do it in post-processing, after WSM has been applied already.
      */
-    calculateAndAddSdksWithProgress(snapshot)
+    calculateAndAddSdksWithProgress(snapshot, taskId)
 
     val pyTargets = allPythonTargets.values
       .filter { it.hasBuildData<PythonBuildTarget>() }
@@ -236,10 +237,10 @@ internal class BazelPythonWorkspaceImporter(val context: WorkspaceImporterContex
     return WorkspaceImporterResult.Success
   }
 
-  private suspend fun calculateAndAddSdksWithProgress(snapshot: WorkspaceSnapshot): Map<WorkspaceTargetKey, Sdk?> =
+  private suspend fun calculateAndAddSdksWithProgress(snapshot: WorkspaceSnapshot, taskId: TaskId): Map<WorkspaceTargetKey, Sdk?> =
     context.progressReporter.indeterminateStep(text = BazelPythonBackendBundle.message("progress.bar.calculate.python.sdk.infos")) {
       context.taskConsole.withSubtask(
-        subtaskId = context.taskId.subTask("calculate-and-add-all-python-sdk-infos"),
+        subtaskId = taskId.subTask("calculate-and-add-all-python-sdk-infos"),
         message = BazelPythonBackendBundle.message("console.task.model.calculate.python.sdks"),
       ) {
         calculateAndAddSdks(snapshot)

@@ -2,7 +2,6 @@ package org.jetbrains.bazel.sync.workspace.importer
 
 import com.intellij.build.events.impl.FailureResultImpl
 import com.intellij.openapi.diagnostic.logger
-import com.intellij.openapi.extensions.forEachExtensionSafeInline
 import com.intellij.openapi.externalSystem.autolink.mapExtensionSafe
 import com.intellij.openapi.project.Project
 import com.intellij.platform.backend.workspace.WorkspaceModel
@@ -43,7 +42,6 @@ class WorkspaceImporterHelper(
       project = project,
       taskConsole = taskConsole,
       progressReporter = progressReporter,
-      taskId = taskId,
       vfuManager = workspaceModel.getVirtualFileUrlManager(),
       currentSnapshot = workspaceModel.currentSnapshot,
       outputResolver = outputResolver,
@@ -155,12 +153,12 @@ class WorkspaceImporterHelper(
       taskConsole.withSubtask(
         taskId.uniqueSubTask("importer"),
         BazelBackendBundle.message("workspace.importer.phase.executing", this.importerName),
-      ) {
-        this.import(phase, snapshot)
+      ) { importerTaskId ->
+        this.import(phase, snapshot, importerTaskId)
       }
     }
     else {
-      this.import(phase, snapshot)
+      this.import(phase, snapshot, taskId)
     }
   }
     .fold(

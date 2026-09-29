@@ -32,6 +32,7 @@ import org.jetbrains.bazel.workspace.indexAdditionalFiles.ProjectViewGlobSet
 import org.jetbrains.bazel.workspacemodel.entities.CompiledSourceCodeInsideJarExcludeEntity
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.OutputLocation
+import org.jetbrains.bsp.protocol.TaskId
 import java.nio.file.Path
 
 internal class JavaBazelWorkspaceImporter(val context: WorkspaceImporterContext) : BazelWorkspaceImporter, BazelWorkspaceImporter.Named {
@@ -53,10 +54,10 @@ internal class JavaBazelWorkspaceImporter(val context: WorkspaceImporterContext)
   override val importerName: @NlsContexts.ProgressTitle String
     get() = BazelJavaBackendBundle.message("workspace.java.importer.name")
 
-  override suspend fun import(phase: WorkspaceImporterPhase, snapshot: WorkspaceSnapshot): Result<WorkspaceImporterResult> = runCatching {
+  override suspend fun import(phase: WorkspaceImporterPhase, snapshot: WorkspaceSnapshot, taskId: TaskId): Result<WorkspaceImporterResult> = runCatching {
     when (phase) {
       is WorkspaceImporterPhase.Initialize -> onInitialize(snapshot, phase.naming)
-      is WorkspaceImporterPhase.WorkspaceApply -> onWorkspaceApply(snapshot, phase.builder, phase.entitySource, phase.naming)
+      is WorkspaceImporterPhase.WorkspaceApply -> onWorkspaceApply(snapshot, phase.builder, phase.entitySource, phase.naming, taskId)
       WorkspaceImporterPhase.Finalize -> onFinalize(snapshot)
       WorkspaceImporterPhase.PostProcessing -> onPostProcessing(snapshot)
     }
@@ -109,9 +110,10 @@ internal class JavaBazelWorkspaceImporter(val context: WorkspaceImporterContext)
     snapshot: WorkspaceSnapshot,
     builder: MutableEntityStorage, entitySource: EntitySource,
     naming: GlobalNamingContext,
+    taskId: TaskId,
   ): WorkspaceImporterResult {
     context.taskConsole.withSubtask(
-      context.taskId.subTask("update-internal-model"),
+      taskId.subTask("update-internal-model"),
       BazelJavaBackendBundle.message("workspace.java.importer.update.internal.model"),
     ) {
       updateInternalModelSubtask(snapshot, builder, entitySource, naming)

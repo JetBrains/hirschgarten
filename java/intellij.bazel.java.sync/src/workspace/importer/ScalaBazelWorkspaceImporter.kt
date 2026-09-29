@@ -15,6 +15,7 @@ import org.jetbrains.bazel.sync.workspace.languages.jvm.extractScalaBuildTarget
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceSnapshot
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.OutputLocation
+import org.jetbrains.bsp.protocol.TaskId
 import java.nio.file.Path
 
 internal class ScalaBazelWorkspaceImporter(val context: WorkspaceImporterContext) : BazelWorkspaceImporter {
@@ -25,7 +26,7 @@ internal class ScalaBazelWorkspaceImporter(val context: WorkspaceImporterContext
 
   private var scalaSdks: Set<ScalaSdk>? = null
 
-  override suspend fun import(phase: WorkspaceImporterPhase, snapshot: WorkspaceSnapshot): Result<WorkspaceImporterResult> {
+  override suspend fun import(phase: WorkspaceImporterPhase, snapshot: WorkspaceSnapshot, taskId: TaskId): Result<WorkspaceImporterResult> {
     when (phase) {
       is WorkspaceImporterPhase.Initialize -> {
         if (!scalaSdkExtensionExists()) {

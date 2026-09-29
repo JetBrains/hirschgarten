@@ -15,6 +15,7 @@ import org.jetbrains.bazel.sync.workspace.importer.WorkspaceImporterContext
 import org.jetbrains.bazel.sync.workspace.importer.WorkspaceImporterPhase
 import org.jetbrains.bazel.sync.workspace.importer.WorkspaceImporterResult
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceSnapshot
+import org.jetbrains.bsp.protocol.TaskId
 
 @ApiStatus.Internal
 const val CC_CLIENT_KEY: String = "BAZEL_CC"
@@ -35,25 +36,25 @@ internal class CcWorkspaceImporter(val context: WorkspaceImporterContext) : Baze
   override val importerName: @NlsContexts.ProgressTitle String
     get() = BazelCLionCommonBundle.message("cc.workspace.importer.name")
 
-  override suspend fun import(phase: WorkspaceImporterPhase, snapshot: WorkspaceSnapshot): Result<WorkspaceImporterResult> {
+  override suspend fun import(phase: WorkspaceImporterPhase, snapshot: WorkspaceSnapshot, taskId: TaskId): Result<WorkspaceImporterResult> {
     if (!BazelCLionFeatureFlags.isCLionEnabled) return Result.success(WorkspaceImporterResult.Abort)
 
     return when (phase) {
-      is WorkspaceImporterPhase.Initialize -> onInitialize(snapshot)
+      is WorkspaceImporterPhase.Initialize -> onInitialize(snapshot, taskId)
       is WorkspaceImporterPhase.WorkspaceApply -> onWorkspaceApply(phase)
-      is WorkspaceImporterPhase.PostProcessing -> onPostProcessing(snapshot)
+      is WorkspaceImporterPhase.PostProcessing -> onPostProcessing(snapshot, taskId)
       else -> Result.success(WorkspaceImporterResult.Success)
     }
   }
 
-  private suspend fun onInitialize(snapshot: WorkspaceSnapshot): Result<WorkspaceImporterResult> {
-    val target2Toolchain = subtask(snapshot, "cc.import.task.toolchain.map") { buildToolchainMap() }
+  private suspend fun onInitialize(snapshot: WorkspaceSnapshot, taskId: TaskId): Result<WorkspaceImporterResult> {
+    val target2Toolchain = subtask(snapshot, "cc.import.task.toolchain.map", taskId) { buildToolchainMap() }
     if (target2Toolchain.isEmpty()) return Result.success(WorkspaceImporterResult.Abort)
 
-    val toolchain2Compiler = subtask(snapshot, "cc.import.task.compiler.settings") { buildCompilerSettings() }
+    val toolchain2Compiler = subtask(snapshot, "cc.import.task.compiler.settings", taskId) { buildCompilerSettings() }
     val target2Compiler = target2Toolchain.mapValues { toolchain2Compiler[it.value] }
 
-    configurations = subtask(snapshot, "cc.import.task.equivalence.classes") { buildEquivalenceClasses(target2Compiler) }
+    configurations = subtask(snapshot, "cc.import.task.equivalence.classes", taskId) { buildEquivalenceClasses(target2Compiler) }
 
     return Result.success(WorkspaceImporterResult.Success)
   }
@@ -63,7 +64,7 @@ internal class CcWorkspaceImporter(val context: WorkspaceImporterContext) : Baze
     return Result.success(WorkspaceImporterResult.Success)
   }
 
-  private suspend fun onPostProcessing(snapshot: WorkspaceSnapshot): Result<WorkspaceImporterResult> {
+  private suspend fun onPostProcessing(snapshot: WorkspaceSnapshot, taskId: TaskId): Result<WorkspaceImporterResult> {
     if (findCcWorkspaceModuleId(context.project) == null) {
       LOG.error("CC workspace module is absent, dropping ${configurations.size} configuration(s)")
       return Result.success(WorkspaceImporterResult.Abort)
@@ -74,8 +75,8 @@ internal class CcWorkspaceImporter(val context: WorkspaceImporterContext) : Baze
     try {
       workspace.setClientVersion(CLIENT_VERSION)
 
-      subtask(snapshot, "cc.import.task.oc.workspace") { buildWorkspaceModel(workspace, configurations) }
-      subtask(snapshot, "cc.import.task.compiler.info") { collectCompilerInfo(workspace, configurations) }
+      subtask(snapshot, "cc.import.task.oc.workspace", taskId) { buildWorkspaceModel(workspace, configurations) }
+      subtask(snapshot, "cc.import.task.compiler.info", taskId) { collectCompilerInfo(workspace, configurations) }
 
       workspace.preCommit()
       workspace.commitAndContribute()
@@ -91,9 +92,10 @@ internal class CcWorkspaceImporter(val context: WorkspaceImporterContext) : Baze
   private suspend fun <T> subtask(
     snapshot: WorkspaceSnapshot,
     key: @PropertyKey(resourceBundle = BazelCLionCommonBundle.BUNDLE_FQN) String,
+    parentTaskId: TaskId,
     body: suspend context(CcImportContext) () -> T,
   ): T {
-    return context.taskConsole.withSubtask(context.taskId.subTask(key), BazelCLionCommonBundle.message(key)) { taskId ->
+    return context.taskConsole.withSubtask(parentTaskId.subTask(key), BazelCLionCommonBundle.message(key)) { taskId ->
       val taskCtx = CcImportContext.create(taskId, context, snapshot)
       body(taskCtx)
     }

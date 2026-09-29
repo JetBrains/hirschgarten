@@ -51,8 +51,9 @@ interface BazelWorkspaceImporter {
    *
    * @param phase Current importer phase
    * @param snapshot Immutable workspace snapshot
+   * @param taskId Parent [TaskId] of the current phase for this importer
    */
-  suspend fun import(phase: WorkspaceImporterPhase, snapshot: WorkspaceSnapshot): Result<WorkspaceImporterResult>
+  suspend fun import(phase: WorkspaceImporterPhase, snapshot: WorkspaceSnapshot, taskId: TaskId): Result<WorkspaceImporterResult>
 }
 
 /**
@@ -91,7 +92,6 @@ sealed interface WorkspaceImporterResult {
  * @property project Current project, don't use [project] to collect data that can change [BazelWorkspaceImporter] behavior
  * @property taskConsole Current [TaskConsole]
  * @property progressReporter Current [SequentialProgressReporter]
- * @property taskId Importer specific [TaskId]
  * @property vfuManager [VirtualFileUrlManager] that shall be used for workspace model building
  */
 @ApiStatus.Internal
@@ -99,7 +99,6 @@ data class WorkspaceImporterContext(
   val project: Project,
   val taskConsole: TaskConsole,
   val progressReporter: SequentialProgressReporter,
-  val taskId: TaskId,
   val vfuManager: VirtualFileUrlManager,
   val currentSnapshot: ImmutableEntityStorage,
   val outputResolver: OutputLocationResolver,
