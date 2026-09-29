@@ -29,6 +29,8 @@ import com.intellij.platform.workspace.storage.EntitySource
 import com.intellij.platform.workspace.storage.MutableEntityStorage
 import com.intellij.platform.workspace.storage.impl.url.toVirtualFileUrl
 import com.intellij.platform.workspace.storage.url.VirtualFileUrlManager
+import com.intellij.python.sdk.backend.PythonInterpreter
+import com.intellij.python.sdk.backend.getSdkAPI
 import com.jetbrains.python.PyNames
 import com.jetbrains.python.PythonBinary
 import com.jetbrains.python.errorProcessing.PyResult
@@ -278,7 +280,7 @@ internal class BazelPythonWorkspaceImporter(val context: WorkspaceImporterContex
         null
       }
 
-      is com.jetbrains.python.Result.Success -> r.result
+      is com.jetbrains.python.Result.Success -> r.result.getSdkAPI()
     }
   }
 
@@ -444,7 +446,7 @@ internal class BazelPythonWorkspaceImporter(val context: WorkspaceImporterContex
     interpreter: Path,
     project: Project,
     sdkName: String?,
-  ): PyResult<Sdk> = createLocalSdkGuessingTypeByPath(interpreter, ProjectOnly(project), sdkName)
+  ): PyResult<PythonInterpreter> = createLocalSdkGuessingTypeByPath(interpreter, ProjectOnly(project), sdkName)
 }
 
 @ApiStatus.Internal

@@ -6,6 +6,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.projectRoots.Sdk
 import com.intellij.platform.backend.workspace.WorkspaceModel
 import com.intellij.platform.workspace.jps.entities.SdkDependency
+import com.intellij.python.sdk.backend.getSdkAPI
 import com.jetbrains.python.debugger.PyDebugRunner
 import com.jetbrains.python.run.PythonCommandLineState
 import com.jetbrains.python.run.PythonConfigurationType
@@ -97,7 +98,7 @@ internal suspend fun getOrCreateSdkForPythonBinary(project: Project, pythonBinar
   getSdkForPythonBinary(pythonBinary)?.let { return it }
   return when (val result = createLocalSdkGuessingTypeByPath(pythonBinary, ProjectOnly(project))) {
     is com.jetbrains.python.Result.Failure -> null
-    is com.jetbrains.python.Result.Success -> result.result
+    is com.jetbrains.python.Result.Success -> result.result.getSdkAPI()
   }
 }
 
