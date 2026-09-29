@@ -147,6 +147,7 @@
     <module name="intellij.platform.util.text.matching"/>
     <module name="intellij.platform.util.ui"/>
     <module name="intellij.platform.vcs"/>
+    <module name="intellij.platform.vcs.impl"/>
     <module name="intellij.platform.workspace.jps"/>
     <module name="intellij.platform.workspace.storage"/>
   </dependencies>
@@ -175,7 +176,6 @@
 
     <projectPostSyncHook implementation="org.jetbrains.bazel.workspace.CleanupLabelsCacheSyncHook"/>
     <projectPostSyncHook implementation="org.jetbrains.bazel.ui.widgets.fileTargets.BazelFileTargetsWidgetSyncHook"/>
-    <projectPostSyncHook implementation="org.jetbrains.bazel.flow.sync.RemoveExcludedVcsMappingsSyncHook"/>
     <projectPostSyncHook implementation="org.jetbrains.bazel.workspace.SyncCacheClearProjectSyncHook"/>
     <projectPostSyncHook implementation="org.jetbrains.bazel.languages.bazelversion.sync.BazelVersionFetchSyncHook"/>
     <projectPostSyncHook
@@ -261,6 +261,7 @@
     <postStartupActivity implementation="org.jetbrains.bazel.startup.BazelStartupActivity"/>
     <postStartupActivity implementation="org.jetbrains.bazel.flow.exclude.BazelSymlinkExcludeStartupActivity"/>
     <directoryIndexExcludePolicy implementation="org.jetbrains.bazel.flow.exclude.BazelDirectoryIndexExcludePolicy"/>
+    <vcsRootErrorFilter implementation="org.jetbrains.bazel.flow.vcs.BazelVcsRootErrorFilter"/>
 
     <treeStructureProvider implementation="org.jetbrains.bazel.ui.projectTree.BazelTreeStructureProvider"/>
     <projectViewNodeDecorator implementation="org.jetbrains.bazel.ui.projectTree.BazelProjectViewNodeDecorator"/>

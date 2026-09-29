@@ -16,6 +16,7 @@ import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.config.isBazelProject
 import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.coroutines.BazelApplicationCoroutineScopeService
+import org.jetbrains.bazel.flow.vcs.BazelVcsRootErrorFilter
 import org.jetbrains.bazel.project.DefaultProjectViewService
 
 internal class OpenBazelProjectAndSyncStartupActivity : InitProjectActivity {
@@ -55,6 +56,13 @@ internal class OpenBazelProjectAndSyncStartupActivity : InitProjectActivity {
     // user can start working even when project isn't synced yet.
     val virtualFileUrlManager = project.serviceAsync<WorkspaceModel>().getVirtualFileUrlManager()
     registerProjectRoot(project, project.rootDir.toVirtualFileUrl(virtualFileUrlManager))
+
+    // An earlier session may have persisted a Git mapping in a Bazel output directory in vcs.xml (BAZEL-948), e.g.,
+    // the execution root or the bazel-<workspace> symlink. Remove it here, before the VCS initialization activates Git for it,
+    // as Git over the whole Bazel output tree can freeze the IDE. This is the only cleanup: BazelVcsRootErrorFilter keeps
+    // new such mappings from being auto-registered. Mappings outside the Bazel output directories stay untouched.
+    // It has to be this activity, since projectPreInit accepts only approved classes (see ProjectManagerImpl.runApprovedExtensions).
+    BazelVcsRootErrorFilter.removeBazelOutputMappings(project)
   }
 
   companion object {
