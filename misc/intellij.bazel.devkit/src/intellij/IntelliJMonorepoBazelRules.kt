@@ -18,7 +18,6 @@ internal class IntelliJMonorepoBazelRules : TargetKindProvider {
       TargetKind("intellij_dev_run_configuration", setOf(JavaLanguageClass.JAVA, JavaLanguageClass.KOTLIN), RuleType.BINARY),
       // the Go launcher of a dev run configuration, which takes the java stub's debug options
       TargetKind("intellij_dev_launcher", setOf(JavaLanguageClass.JAVA, JavaLanguageClass.KOTLIN), RuleType.BINARY),
-      TargetKind("intellij_dev_binary_community", setOf(JavaLanguageClass.JAVA, JavaLanguageClass.KOTLIN), RuleType.BINARY),
       TargetKind("server_bundle", setOf(JavaLanguageClass.JAVA, JavaLanguageClass.KOTLIN), RuleType.BINARY),
     )
 }
