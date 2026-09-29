@@ -196,7 +196,6 @@ class ModuleResolver(
    */
   private suspend fun resolveOneModuleBatch(moduleNames: List<String>, bazelInfo: BazelInfo, requestAll: Boolean) : ResolvedModulesAndWarning {
     var currentModuleNames = moduleNames
-    var currentRequestAll = requestAll
     val excludedRepos = mutableMapOf<String, ShowRepoResult?>()
     val warnings = mutableListOf<String>()
 
@@ -208,7 +207,7 @@ class ModuleResolver(
             if (json_output) {
               options.add("--output=streamed_jsonproto")
             }
-            if (currentRequestAll) {
+            if (requestAll) {
               options.add("--all_repos")
             } else {
               options.addAll(currentModuleNames)
@@ -228,7 +227,15 @@ class ModuleResolver(
           excludedRepos[badRepo] = null
           warnings.add("Bazel failed to show_repo $badRepo: excluded from batch and skipped")
           currentModuleNames = currentModuleNames.filter { it != badRepo }
-          currentRequestAll = false
+          if (requestAll) {
+             // When switching from requesting all repositories to requesting individual repositories,
+             // we have to ensure we're not exceeding limits and batch accordingly.
+            val builder = ResolvedModulesAndWarning.Builder().update(ResolvedModulesAndWarning(excludedRepos, warnings))
+            batchModules(currentModuleNames)
+              .map { resolveOneModuleBatch(it, bazelInfo, requestAll = false) }
+              .forEach { builder.update(it) }
+            return builder.build()
+          }
           continue
         }
         if (currentModuleNames.size == 1) {
@@ -243,7 +250,7 @@ class ModuleResolver(
                else individualResults.builder().update(ResolvedModulesAndWarning(excludedRepos, warnings)).build()
       }
 
-      val parsed = moduleOutputParser.parseShowRepoResults(processResult, json_output, if (currentRequestAll) null else currentModuleNames)
+      val parsed = moduleOutputParser.parseShowRepoResults(processResult, json_output, if (requestAll) null else currentModuleNames)
       return if (excludedRepos.isEmpty()) parsed
              else parsed.builder().update(ResolvedModulesAndWarning(excludedRepos, warnings)).build()
     }
