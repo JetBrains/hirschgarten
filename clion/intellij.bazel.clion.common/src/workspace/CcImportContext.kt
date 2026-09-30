@@ -15,6 +15,8 @@ import java.nio.file.Path
 @ApiStatus.Internal
 interface CcImportContext {
 
+  val taskId: TaskId
+
   val project: Project
 
   val vfuManager: VirtualFileUrlManager
@@ -32,14 +34,14 @@ interface CcImportContext {
   companion object {
 
     fun create(taskId: TaskId, ctx: WorkspaceImporterContext, snapshot: WorkspaceSnapshot): CcImportContext {
-      return CcImportContextImpl(taskId, ctx, snapshot)
+      return CcImportContextImpl(ctx, taskId, snapshot)
     }
   }
 }
 
 private class CcImportContextImpl(
-  private val taskId: TaskId,
   private val ctx: WorkspaceImporterContext,
+  override val taskId: TaskId,
   override val snapshot: WorkspaceSnapshot,
 ) : CcImportContext {
 
