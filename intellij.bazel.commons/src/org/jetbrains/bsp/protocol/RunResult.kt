@@ -4,4 +4,4 @@ import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.commons.BazelStatus
 
 @ApiStatus.Internal
-data class RunResult(val taskId: TaskId, val statusCode: BazelStatus)
+data class RunResult(val taskId: TaskId, val statusCode: BazelStatus, val stdout: String?)
