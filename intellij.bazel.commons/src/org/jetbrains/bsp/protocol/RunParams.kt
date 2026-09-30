@@ -13,4 +13,5 @@ data class RunParams(
   val environmentVariables: Map<String, String> = emptyMap(),
   val additionalBazelParams: List<String> = emptyList(),
   val pidDeferred: CompletableDeferred<Long?>? = null,
+  val captureStdout: Boolean = false,
 )

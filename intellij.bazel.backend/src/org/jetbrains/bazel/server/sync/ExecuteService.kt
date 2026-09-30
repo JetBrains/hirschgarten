@@ -177,11 +177,15 @@ class ExecuteService(
           environment.putAll(params.environmentVariables)
           programArguments.addAll(params.arguments)
           additionalBazelOptions.addAll(params.additionalBazelParams)
-          enablePty = true
+          enablePty = !params.captureStdout // otherwise stderr is merged into stdout
         }
       }
     val result = runWithBepServer(command, params.taskId, BazelInvocationContext.RUN, pidDeferred = params.pidDeferred)
-    return RunResult(statusCode = result.processResult.bazelStatus, taskId = params.taskId)
+    return RunResult(
+      statusCode = result.processResult.bazelStatus,
+      taskId = params.taskId,
+      stdout = if (params.captureStdout) result.processResult.stdout.decodeToString() else null,
+    )
   }
 
   suspend fun test(params: TestParams): TestResult {
