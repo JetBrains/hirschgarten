@@ -78,6 +78,9 @@ private suspend fun mapCompilationContext(
 private suspend fun mapToolchainIdeInfo(target: IntellijIdeInfo.TargetIdeInfo, parser: OutputLocationParser): CcToolchainBuildTarget {
   val info = target.cToolchainIdeInfo
 
+  // we don't need to store them, they just need to be hardlinked
+  parser.parse(info.allFilesList)
+
   return CcToolchainBuildTarget(
     targetName = info.targetName,
     compilerName = info.compilerName,
