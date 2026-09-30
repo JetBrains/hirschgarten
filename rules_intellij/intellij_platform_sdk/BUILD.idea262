@@ -77,6 +77,8 @@ java_import(
         "plugins/json/lib/*.jar",
         "plugins/json/lib/modules/*.jar",
         "plugins/toml/lib/*.jar",
+        "plugins/sh-plugin/lib/*.jar",
+        "plugins/sh-plugin/lib/modules/*.jar",
     ]),
 )
 
