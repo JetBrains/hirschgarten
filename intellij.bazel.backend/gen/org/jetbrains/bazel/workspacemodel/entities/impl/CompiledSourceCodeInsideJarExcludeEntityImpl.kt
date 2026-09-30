@@ -113,7 +113,6 @@ internal class CompiledSourceCodeInsideJarExcludeEntityImpl(private val dataSour
         changedProperty.add("entitySource")
       }
     private val relativePathsInsideJarToExcludeUpdater: (value: Set<String>) -> Unit = { value ->
-
       changedProperty.add("relativePathsInsideJarToExclude")
     }
     override var relativePathsInsideJarToExclude: MutableSet<String>
@@ -134,7 +133,6 @@ internal class CompiledSourceCodeInsideJarExcludeEntityImpl(private val dataSour
         relativePathsInsideJarToExcludeUpdater.invoke(value)
       }
     private val librariesFromInternalTargetsUrlsUpdater: (value: Set<String>) -> Unit = { value ->
-
       changedProperty.add("librariesFromInternalTargetsUrls")
     }
     override var librariesFromInternalTargetsUrls: MutableSet<String>

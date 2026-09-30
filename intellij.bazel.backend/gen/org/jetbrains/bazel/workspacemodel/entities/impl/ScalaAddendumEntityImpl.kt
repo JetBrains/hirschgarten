@@ -139,7 +139,6 @@ internal class ScalaAddendumEntityImpl(private val dataSource: ScalaAddendumEnti
         changedProperty.add("compilerVersion")
       }
     private val scalacOptionsUpdater: (value: List<String>) -> Unit = { value ->
-
       changedProperty.add("scalacOptions")
     }
     override var scalacOptions: MutableList<String>
@@ -160,8 +159,9 @@ internal class ScalaAddendumEntityImpl(private val dataSource: ScalaAddendumEnti
         scalacOptionsUpdater.invoke(value)
       }
     private val sdkClasspathsUpdater: (value: List<VirtualFileUrl>) -> Unit = { value ->
-      val _diff = diff
-      if (_diff != null) index(this, "sdkClasspaths", value)
+      if (diff != null) {
+        index(this, "sdkClasspaths", value)
+      }
       changedProperty.add("sdkClasspaths")
     }
     override var sdkClasspaths: MutableList<VirtualFileUrl>

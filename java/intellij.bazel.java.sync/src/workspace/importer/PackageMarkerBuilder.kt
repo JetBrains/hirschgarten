@@ -98,7 +98,7 @@ class PackageMarkerBuilder(
       val excludedDirectoriesFromEntities = storage.entities<BazelProjectDirectoriesEntity>()
         .firstOrNull()?.excludedRoots
         .orEmpty()
-        .map { it.url.toPath() }
+        .map { it.toPath() }
         .toSet()
       val projectExcludedDirectories = setOf(
         // .idea or alternative project store

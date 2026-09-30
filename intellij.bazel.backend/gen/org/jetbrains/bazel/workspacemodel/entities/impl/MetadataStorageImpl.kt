@@ -811,24 +811,8 @@ internal object MetadataStorageImpl : MetadataStorageBase() {
             generics = listOf(
               ValueTypeMetadata.SimpleType.CustomType(
                 isNullable = false,
-                typeMetadata = FinalClassMetadata.ClassMetadata(
-                  fqName = "org.jetbrains.bazel.workspacemodel.entities.NonIndexableVirtualFileUrl",
-                  properties = listOf(
-                    OwnPropertyMetadata(
-                      isComputable = false,
-                      isKey = false,
-                      isOpen = false,
-                      name = "url",
-                      valueType = ValueTypeMetadata.SimpleType.CustomType(
-                        isNullable = false,
-                        typeMetadata = FinalClassMetadata.KnownClass(
-                          fqName = "com.intellij.platform.workspace.storage.url.VirtualFileUrl",
-                        ),
-                      ),
-                      withDefault = false,
-                    ),
-                  ),
-                  supertypes = listOf(),
+                typeMetadata = FinalClassMetadata.KnownClass(
+                  fqName = "com.intellij.platform.workspace.storage.url.VirtualFileUrl",
                 ),
               ),
             ),
@@ -845,24 +829,8 @@ internal object MetadataStorageImpl : MetadataStorageBase() {
             generics = listOf(
               ValueTypeMetadata.SimpleType.CustomType(
                 isNullable = false,
-                typeMetadata = FinalClassMetadata.ClassMetadata(
-                  fqName = "org.jetbrains.bazel.workspacemodel.entities.NonIndexableVirtualFileUrl",
-                  properties = listOf(
-                    OwnPropertyMetadata(
-                      isComputable = false,
-                      isKey = false,
-                      isOpen = false,
-                      name = "url",
-                      valueType = ValueTypeMetadata.SimpleType.CustomType(
-                        isNullable = false,
-                        typeMetadata = FinalClassMetadata.KnownClass(
-                          fqName = "com.intellij.platform.workspace.storage.url.VirtualFileUrl",
-                        ),
-                      ),
-                      withDefault = false,
-                    ),
-                  ),
-                  supertypes = listOf(),
+                typeMetadata = FinalClassMetadata.KnownClass(
+                  fqName = "com.intellij.platform.workspace.storage.url.VirtualFileUrl",
                 ),
               ),
             ),
@@ -887,24 +855,8 @@ internal object MetadataStorageImpl : MetadataStorageBase() {
             generics = listOf(
               ValueTypeMetadata.SimpleType.CustomType(
                 isNullable = false,
-                typeMetadata = FinalClassMetadata.ClassMetadata(
-                  fqName = "org.jetbrains.bazel.workspacemodel.entities.NonIndexableVirtualFileUrl",
-                  properties = listOf(
-                    OwnPropertyMetadata(
-                      isComputable = false,
-                      isKey = false,
-                      isOpen = false,
-                      name = "url",
-                      valueType = ValueTypeMetadata.SimpleType.CustomType(
-                        isNullable = false,
-                        typeMetadata = FinalClassMetadata.KnownClass(
-                          fqName = "com.intellij.platform.workspace.storage.url.VirtualFileUrl",
-                        ),
-                      ),
-                      withDefault = false,
-                    ),
-                  ),
-                  supertypes = listOf(),
+                typeMetadata = FinalClassMetadata.KnownClass(
+                  fqName = "com.intellij.platform.workspace.storage.url.VirtualFileUrl",
                 ),
               ),
             ),
@@ -1484,8 +1436,7 @@ internal object MetadataStorageImpl : MetadataStorageBase() {
     addMetadataHash(typeFqn = "com.intellij.platform.workspace.jps.entities.SourceRootTypeId", metadataHash = 619871016)
     addMetadataHash(typeFqn = "org.jetbrains.bazel.workspacemodel.entities.WorkspaceModelTargetLabelList", metadataHash = 1283568167)
     addMetadataHash(typeFqn = "org.jetbrains.bsp.protocol.StrictDependencyCheckedType", metadataHash = -2089160899)
-    addMetadataHash(typeFqn = "org.jetbrains.bazel.workspacemodel.entities.BazelProjectDirectoriesEntity", metadataHash = 2065560361)
-    addMetadataHash(typeFqn = "org.jetbrains.bazel.workspacemodel.entities.NonIndexableVirtualFileUrl", metadataHash = 1788161052)
+    addMetadataHash(typeFqn = "org.jetbrains.bazel.workspacemodel.entities.BazelProjectDirectoriesEntity", metadataHash = 1532901196)
     addMetadataHash(
       typeFqn = "org.jetbrains.bazel.workspacemodel.entities.CompiledSourceCodeInsideJarExcludeEntity",
       metadataHash = -844721890,

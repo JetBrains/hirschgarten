@@ -3,7 +3,7 @@ package org.jetbrains.bazel.flow.sync
 import com.intellij.openapi.components.serviceAsync
 import com.intellij.openapi.project.Project
 import com.intellij.platform.backend.workspace.WorkspaceModel
-import com.intellij.platform.backend.workspace.toVirtualFileUrl
+import com.intellij.platform.backend.workspace.storeAndGet
 import com.intellij.platform.backend.workspace.virtualFile
 import com.intellij.platform.workspace.jps.entities.ContentRootEntity
 import com.intellij.platform.workspace.storage.MutableEntityStorage
@@ -25,7 +25,6 @@ import org.jetbrains.bazel.workspace.indexAdditionalFiles.IndexAdditionalFilesCo
 import org.jetbrains.bazel.workspace.indexAdditionalFiles.limitedFilesIndexingGlobOrNull
 import org.jetbrains.bazel.workspacemodel.entities.BazelProjectDirectoriesEntity
 import org.jetbrains.bazel.workspacemodel.entities.BazelProjectEntitySource
-import org.jetbrains.bazel.workspacemodel.entities.NonIndexableVirtualFileUrl
 import kotlin.io.path.absolutePathString
 
 /**
@@ -51,7 +50,7 @@ internal class DirectoriesSyncHook : ProjectSyncHook {
     val indexAllFilesInIncludedRoots = environment.server.projectView.indexAllFilesInDirectories
     environment.diff.addEntity(
       BazelProjectDirectoriesEntity(
-        projectRoot = environment.project.rootDir.toVirtualFileUrl(virtualFileUrlManager),
+        projectRoot = virtualFileUrlManager.storeAndGet(environment.project.rootDir),
         includedRoots = directoryRoots.included,
         excludedRoots = directoryRoots.excluded,
         indexAllFilesInIncludedRoots = indexAllFilesInIncludedRoots,
@@ -62,8 +61,8 @@ internal class DirectoriesSyncHook : ProjectSyncHook {
   }
 
   private data class DirectoryRoots(
-    val included: List<NonIndexableVirtualFileUrl>,
-    val excluded: List<NonIndexableVirtualFileUrl>
+    val included: List<VirtualFileUrl>,
+    val excluded: List<VirtualFileUrl>
   )
 
   private suspend fun computeProjectDirectories(environment: ProjectSyncHookEnvironment, virtualFileUrlManager: VirtualFileUrlManager): DirectoryRoots {
@@ -77,8 +76,8 @@ internal class DirectoriesSyncHook : ProjectSyncHook {
       additionalExcludes.map { it.toVirtualFileUrl(virtualFileUrlManager) }
 
     return DirectoryRoots(
-      included = includedRoots.map { NonIndexableVirtualFileUrl(it) },
-      excluded = excludedRoots.map { NonIndexableVirtualFileUrl(it) },
+      included = includedRoots,
+      excluded = excludedRoots,
     )
   }
 
@@ -87,7 +86,7 @@ internal class DirectoriesSyncHook : ProjectSyncHook {
     environment: ProjectSyncHookEnvironment,
     virtualFileUrlManager: VirtualFileUrlManager,
     directoryRoots: DirectoryRoots,
-  ): List<NonIndexableVirtualFileUrl> {
+  ): List<VirtualFileUrl> {
     val project = environment.project
     val mutableEntityStorage = environment.diff
 
@@ -102,7 +101,7 @@ internal class DirectoriesSyncHook : ProjectSyncHook {
         }
       }
 
-    return indexAdditionalFiles.map { NonIndexableVirtualFileUrl(it) }
+    return indexAdditionalFiles.toList()
   }
 
   private fun indexAdditionalFilesByName(
@@ -114,8 +113,8 @@ internal class DirectoriesSyncHook : ProjectSyncHook {
   ): List<VirtualFileUrl> {
     val limitedFilesIndexingGlob = project.limitedFilesIndexingGlobOrNull(projectView) ?: return emptyList()
 
-    val includedRoots = directoryRoots.included.mapNotNullTo(hashSetOf()) { it.url.virtualFile }
-    val excludedRoots = directoryRoots.excluded.mapNotNullTo(hashSetOf()) { it.url.virtualFile }
+    val includedRoots = directoryRoots.included.mapNotNullTo(hashSetOf()) { it.virtualFile }
+    val excludedRoots = directoryRoots.excluded.mapNotNullTo(hashSetOf()) { it.virtualFile }
     val contentRoots =
       mutableEntityStorage
         .entities<ContentRootEntity>()
@@ -124,18 +123,18 @@ internal class DirectoriesSyncHook : ProjectSyncHook {
 
     return AdditionalFilesCollector(limitedFilesIndexingGlob, includedRoots, excludedRoots, contentRoots)
       .collectAdditionalFilesToIndex()
-      .map { it.toVirtualFileUrl(virtualFileUrlManager) }
+      .map { virtualFileUrlManager.storeAndGet(it) }
   }
 
   private fun getProjectView(project: Project, virtualFileUrlManager: VirtualFileUrlManager): List<VirtualFileUrl> =
-    listOfNotNull(project.projectViewFile.toVirtualFileUrl(virtualFileUrlManager))
+    listOfNotNull(virtualFileUrlManager.storeAndGet(project.projectViewFile))
 
   private fun getWorkspaceFiles(project: Project, virtualFileUrlManager: VirtualFileUrlManager): List<VirtualFileUrl> =
     Constants.WORKSPACE_FILE_NAMES
       .mapNotNull { name ->
         project.rootDir.findChild(name)
       }.map {
-        it.toVirtualFileUrl(virtualFileUrlManager)
+        virtualFileUrlManager.storeAndGet(it)
       }
 
 }

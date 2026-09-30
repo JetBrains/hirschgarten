@@ -12,7 +12,7 @@ import com.intellij.openapi.vfs.newvfs.events.VFileDeleteEvent
 import com.intellij.openapi.vfs.newvfs.events.VFileEvent
 import com.intellij.openapi.vfs.newvfs.events.VFileMoveEvent
 import com.intellij.openapi.vfs.newvfs.events.VFilePropertyChangeEvent
-import com.intellij.platform.backend.workspace.toVirtualFileUrl
+import com.intellij.platform.backend.workspace.storeAndGet
 import com.intellij.platform.workspace.jps.entities.ContentRootEntity
 import com.intellij.platform.workspace.jps.entities.ModuleEntity
 import com.intellij.platform.workspace.jps.entities.ModuleId
@@ -57,7 +57,6 @@ import org.jetbrains.bazel.workspacemodel.entities.BazelModuleEntitySource
 import org.jetbrains.bazel.workspacemodel.entities.BazelModuleExtensionEntity
 import org.jetbrains.bazel.workspacemodel.entities.BazelProjectDirectoriesEntity
 import org.jetbrains.bazel.workspacemodel.entities.BazelProjectEntitySource
-import org.jetbrains.bazel.workspacemodel.entities.NonIndexableVirtualFileUrl
 import org.jetbrains.bazel.workspacemodel.entities.WorkspaceModelTargetKey
 import org.jetbrains.bazel.workspacemodel.entities.WorkspaceModelTargetLabelList
 import org.jetbrains.bazel.workspacemodel.entities.WorkspaceModelTargetSourceRootTypeId
@@ -172,8 +171,8 @@ class BazelFileEventListenerTest : WorkspaceModelBaseTest() {
 
     runTestWriteAction { file.rename(requestor, "bbb.java") }
 
-    file.toVirtualFileUrl(virtualFileUrlManager).belongsToTarget(target1).shouldBeFalse()
-    file.toVirtualFileUrl(virtualFileUrlManager).belongsToTarget(target2).shouldBeFalse()
+    virtualFileUrlManager.storeAndGet(file).belongsToTarget(target1).shouldBeFalse()
+    virtualFileUrlManager.storeAndGet(file).belongsToTarget(target2).shouldBeFalse()
 
     renameEvent(file, "aaa.java", "bbb.java").process().shouldBeTrue()
 
@@ -299,7 +298,7 @@ class BazelFileEventListenerTest : WorkspaceModelBaseTest() {
   @Test
   fun `should not add additional bazel file under content root`() {
     val src = project.rootDir.createDirectory("src")
-    val srcUrl = src.toVirtualFileUrl(virtualFileUrlManager)
+    val srcUrl = virtualFileUrlManager.storeAndGet(src)
     val module = workspaceModel.currentSnapshot.resolveModule(target1)
 
     runTestWriteAction {
@@ -567,7 +566,7 @@ class BazelFileEventListenerTest : WorkspaceModelBaseTest() {
   @Test
   fun `should not add file to model if its parent is already there`() {
     val src = project.rootDir.createDirectory("src")
-    val srcUrl = src.toVirtualFileUrl(virtualFileUrlManager)
+    val srcUrl = virtualFileUrlManager.storeAndGet(src)
     val module = workspaceModel.currentSnapshot.resolveModule(target1)
 
     project.targetStorage.setTargets(
@@ -610,7 +609,7 @@ class BazelFileEventListenerTest : WorkspaceModelBaseTest() {
     }
 
     val file = src.createFile("aaa", "java")
-    val fileUrl = file.toVirtualFileUrl(virtualFileUrlManager)
+    val fileUrl = virtualFileUrlManager.storeAndGet(file)
     createEvent(file).process().shouldBeTrue()
 
     // should not be added to target1's model
@@ -797,15 +796,15 @@ class BazelFileEventListenerTest : WorkspaceModelBaseTest() {
     excludedRoots: List<VirtualFile> = emptyList(),
     indexAllFilesInIncludedRoots: Boolean = false,
   ) {
-    val rootUrl = project.rootDir.toVirtualFileUrl(virtualFileUrlManager)
+    val rootUrl = virtualFileUrlManager.storeAndGet(project.rootDir)
     runTestWriteAction {
       workspaceModel.updateProjectModel {
         project.bazelProjectDirectoriesEntity()?.let(it::removeEntity)
         it.addEntity(
           BazelProjectDirectoriesEntity(
             projectRoot = rootUrl,
-            includedRoots = includedRoots.map { root -> NonIndexableVirtualFileUrl(root.toVirtualFileUrl(virtualFileUrlManager)) },
-            excludedRoots = excludedRoots.map { root -> NonIndexableVirtualFileUrl(root.toVirtualFileUrl(virtualFileUrlManager)) },
+            includedRoots = includedRoots.map { root -> virtualFileUrlManager.storeAndGet(root) },
+            excludedRoots = excludedRoots.map { root -> virtualFileUrlManager.storeAndGet(root) },
             indexAllFilesInIncludedRoots = indexAllFilesInIncludedRoots,
             indexAdditionalFiles = emptyList(),
             entitySource = BazelProjectEntitySource,
@@ -831,7 +830,7 @@ class BazelFileEventListenerTest : WorkspaceModelBaseTest() {
   private fun VirtualFile.createExcludedDirectory(name: String): VirtualFile {
     val directory = this.createDirectory(name)
     val module = workspaceModel.currentSnapshot.resolveModule(target1)
-    val srcUrl = this.toVirtualFileUrl(virtualFileUrlManager)
+    val srcUrl = virtualFileUrlManager.storeAndGet(this)
     val contentRoot =
       ContentRootEntity(
         url = srcUrl,
@@ -900,7 +899,7 @@ class BazelFileEventListenerTest : WorkspaceModelBaseTest() {
 
   private fun VirtualFile.assertFileBelongsToTargets(vararg expectedBelongingStatus: Pair<Label, Boolean>) {
     val vFile = this
-    val vfUrl = vFile.toVirtualFileUrl(virtualFileUrlManager)
+    val vfUrl = virtualFileUrlManager.storeAndGet(vFile)
     val relativePath = Path.of(vFile.path).relativeTo(projectBasePath)
 
     for ((target, shouldBeAdded) in expectedBelongingStatus) {
@@ -921,7 +920,7 @@ class BazelFileEventListenerTest : WorkspaceModelBaseTest() {
     val contentRoots =
       contentRootFiles.map {
         ContentRootEntity(
-          url = it.toVirtualFileUrl(virtualFileUrlManager),
+          url = virtualFileUrlManager.storeAndGet(it),
           excludedPatterns = emptyList(),
           entitySource = entitySource,
         )
@@ -957,11 +956,11 @@ class BazelFileEventListenerTest : WorkspaceModelBaseTest() {
 
   private fun VirtualFile.isIndexedAdditionalFile(): Boolean =
     project.bazelProjectDirectoriesEntity()?.indexAdditionalFiles.orEmpty()
-      .any { it.url == toVirtualFileUrl(virtualFileUrlManager) }
+      .any { it == virtualFileUrlManager.storeAndGet(this) }
 
   private fun indexedAdditionalFilePaths(): Set<String> =
     project.bazelProjectDirectoriesEntity()?.indexAdditionalFiles.orEmpty()
-      .map { it.url.url }
+      .map { it.url }
       .toSet()
 }
 

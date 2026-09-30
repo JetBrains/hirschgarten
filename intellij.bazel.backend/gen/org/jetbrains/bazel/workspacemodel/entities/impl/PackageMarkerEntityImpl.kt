@@ -116,7 +116,9 @@ internal class PackageMarkerEntityImpl(private val dataSource: PackageMarkerEnti
         getEntityData(true).root = value
         changedProperty.add("root")
         val _diff = diff
-        if (_diff != null) index(this, "root", value)
+        if (_diff != null) {
+          index(this, "root", value)
+        }
       }
     override var packagePrefix: String
       get() = getEntityData().packagePrefix

@@ -13,22 +13,19 @@ import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.findOrCreateDirectory
 import com.intellij.platform.backend.workspace.WorkspaceModel
-import com.intellij.platform.backend.workspace.toVirtualFileUrl
+import com.intellij.platform.backend.workspace.storeAndGet
 import com.intellij.platform.ide.progress.runWithModalProgressBlocking
 import com.intellij.testFramework.LightProjectDescriptor
 import com.intellij.testFramework.TestActionEvent
-import com.intellij.testFramework.fixtures.BasePlatformTestCase
 import com.intellij.testFramework.fixtures.TempDirTestFixture
 import com.intellij.testFramework.fixtures.impl.TempDirTestFixtureImpl
 import com.intellij.testFramework.workspaceModel.updateProjectModel
 import org.intellij.lang.annotations.Language
 import org.jetbrains.bazel.languages.projectview.ProjectViewService
 import org.jetbrains.bazel.languages.projectview.directories
-import org.jetbrains.bazel.project.BazelProjectFixtures.initializeBazelProject
 import org.jetbrains.bazel.project.BazelProjectFixtures.initializeBazelProjectViaProjectView
 import org.jetbrains.bazel.test.framework.BazelBasePlatformTestCase
 import org.jetbrains.bazel.workspacemodel.entities.BazelProjectDirectoriesEntityFixtures.emptyBazelDirectoryWorkspaceEntity
-import org.jetbrains.bazel.workspacemodel.entities.NonIndexableVirtualFileUrl
 import kotlin.io.path.pathString
 
 abstract class ProjectViewDirectoriesActionTestCase(
@@ -72,8 +69,8 @@ abstract class ProjectViewDirectoriesActionTestCase(
         )
       }
       val entity = emptyBazelDirectoryWorkspaceEntity(project).also {
-        it.includedRoots = includes.mapTo(arrayListOf()) { NonIndexableVirtualFileUrl(it.toVirtualFileUrl(manager)) }
-        it.excludedRoots = excludes.mapTo(arrayListOf()) { NonIndexableVirtualFileUrl(it.toVirtualFileUrl(manager)) }
+        it.includedRoots = includes.mapTo(arrayListOf()) { manager.storeAndGet(it) }
+        it.excludedRoots = excludes.mapTo(arrayListOf()) { manager.storeAndGet(it) }
       }
       edtWriteAction { workspaceModel.updateProjectModel { updater -> updater.addEntity(entity) } }
     }

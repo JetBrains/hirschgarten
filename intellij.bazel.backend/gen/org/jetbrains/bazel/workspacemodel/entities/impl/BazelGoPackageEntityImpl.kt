@@ -122,8 +122,9 @@ internal class BazelGoPackageEntityImpl(private val dataSource: BazelGoPackageEn
         changedProperty.add("importPath")
       }
     private val sourcesUpdater: (value: List<VirtualFileUrl>) -> Unit = { value ->
-      val _diff = diff
-      if (_diff != null) index(this, "sources", value)
+      if (diff != null) {
+        index(this, "sources", value)
+      }
       changedProperty.add("sources")
     }
     override var sources: MutableList<VirtualFileUrl>
@@ -144,7 +145,6 @@ internal class BazelGoPackageEntityImpl(private val dataSource: BazelGoPackageEn
         sourcesUpdater.invoke(value)
       }
     private val directDepsImportPathsUpdater: (value: Set<String>) -> Unit = { value ->
-
       changedProperty.add("directDepsImportPaths")
     }
     override var directDepsImportPaths: MutableSet<String>

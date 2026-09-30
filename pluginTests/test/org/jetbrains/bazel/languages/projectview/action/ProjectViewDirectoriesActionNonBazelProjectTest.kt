@@ -8,7 +8,7 @@ import com.intellij.openapi.application.runWriteAction
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.findOrCreateDirectory
 import com.intellij.openapi.vfs.refreshAndFindVirtualDirectory
-import com.intellij.platform.backend.workspace.toVirtualFileUrl
+import com.intellij.platform.backend.workspace.storeAndGet
 import com.intellij.platform.backend.workspace.workspaceModel
 import com.intellij.testFramework.IndexingTestUtil
 import com.intellij.testFramework.TestActionEvent
@@ -18,7 +18,6 @@ import com.intellij.testFramework.junit5.fixture.tempPathFixture
 import com.intellij.testFramework.workspaceModel.updateProjectModel
 import io.kotest.matchers.shouldBe
 import org.jetbrains.bazel.workspacemodel.entities.BazelProjectDirectoriesEntityFixtures.emptyBazelDirectoryWorkspaceEntity
-import org.jetbrains.bazel.workspacemodel.entities.NonIndexableVirtualFileUrl
 import org.junit.jupiter.api.Test
 
 @TestApplication
@@ -64,7 +63,7 @@ class ProjectViewDirectoriesActionNonBazelProjectTest {
     val workspaceModel = project.workspaceModel
     val urlManager = workspaceModel.getVirtualFileUrlManager()
     val entity = emptyBazelDirectoryWorkspaceEntity(project)
-    entity.includedRoots = mutableListOf(NonIndexableVirtualFileUrl(directory.toVirtualFileUrl(urlManager)))
+    entity.includedRoots = mutableListOf(urlManager.storeAndGet(directory))
     runWriteAction {
       workspaceModel.updateProjectModel { storage -> storage.addEntity(entity) }
     }

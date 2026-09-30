@@ -5,7 +5,7 @@ import com.intellij.openapi.application.EDT
 import com.intellij.openapi.application.runWriteAction
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.VirtualFileManager
-import com.intellij.platform.backend.workspace.toVirtualFileUrl
+import com.intellij.platform.backend.workspace.storeAndGet
 import com.intellij.platform.backend.workspace.workspaceModel
 import com.intellij.psi.util.QualifiedName
 import com.intellij.testFramework.IndexingTestUtil
@@ -20,7 +20,6 @@ import org.jetbrains.bazel.test.framework.BazelSyncCodeInsightTestFixture
 import org.jetbrains.bazel.test.framework.BazelTestApplication
 import org.jetbrains.bazel.test.framework.bazelSyncCodeInsightFixture
 import org.jetbrains.bazel.workspacemodel.entities.BazelProjectDirectoriesEntity
-import org.jetbrains.bazel.workspacemodel.entities.NonIndexableVirtualFileUrl
 import org.jetbrains.bazel.workspacemodel.entities.modifyBazelProjectDirectoriesEntity
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -114,7 +113,7 @@ private fun BazelSyncCodeInsightTestFixture.registerAdditionalIndexedFile(file: 
     project.workspaceModel.updateProjectModel("register external Python source") { storage ->
       val entity = storage.entities(BazelProjectDirectoriesEntity::class.java).first()
       storage.modifyBazelProjectDirectoriesEntity(entity) {
-        indexAdditionalFiles += NonIndexableVirtualFileUrl(file.toVirtualFileUrl(urlManager))
+        indexAdditionalFiles += urlManager.storeAndGet(file)
       }
     }
   }

@@ -3,6 +3,7 @@ package org.jetbrains.bazel.workspacemodel.entities
 import com.intellij.openapi.util.NlsSafe
 import com.intellij.platform.workspace.storage.SymbolicEntityId
 import com.intellij.platform.workspace.storage.WorkspaceEntityWithSymbolicId
+import com.intellij.platform.workspace.storage.annotations.IndexVfu
 import com.intellij.platform.workspace.storage.url.VirtualFileUrl
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
@@ -29,6 +30,7 @@ interface BazelGoPackageEntity : WorkspaceEntityWithSymbolicId {
     get() = ImportPathId(importPath)
 
   val importPath: String
+  @IndexVfu
   val sources: List<VirtualFileUrl>
   val directDepsImportPaths: Set<String>
 }

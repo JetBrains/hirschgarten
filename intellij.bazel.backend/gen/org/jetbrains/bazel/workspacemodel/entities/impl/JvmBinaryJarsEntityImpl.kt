@@ -110,8 +110,9 @@ internal class JvmBinaryJarsEntityImpl(private val dataSource: JvmBinaryJarsEnti
         changedProperty.add("entitySource")
       }
     private val jarsUpdater: (value: List<VirtualFileUrl>) -> Unit = { value ->
-      val _diff = diff
-      if (_diff != null) index(this, "jars", value)
+      if (diff != null) {
+        index(this, "jars", value)
+      }
       changedProperty.add("jars")
     }
     override var jars: MutableList<VirtualFileUrl>

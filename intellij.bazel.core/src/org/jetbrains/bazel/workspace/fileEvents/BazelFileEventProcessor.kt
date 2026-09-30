@@ -69,7 +69,6 @@ import org.jetbrains.bazel.workspace.indexAdditionalFiles.ProjectViewGlobSet
 import org.jetbrains.bazel.workspace.indexAdditionalFiles.limitedFilesIndexingGlobOrNull
 import org.jetbrains.bazel.workspace.packageMarker.concatenatePackages
 import org.jetbrains.bazel.workspacemodel.entities.BazelDummyEntitySource
-import org.jetbrains.bazel.workspacemodel.entities.NonIndexableVirtualFileUrl
 import org.jetbrains.bazel.workspacemodel.entities.PackageMarkerEntity
 import org.jetbrains.bazel.workspacemodel.entities.PackageMarkerEntityBuilder
 import org.jetbrains.bazel.workspacemodel.entities.bazelModuleExtension
@@ -337,8 +336,8 @@ open class DefaultBazelFileEventProcessor(private val project: Project): BazelFi
     val projectDirectoriesEntity = context.entityStorageDiff.bazelProjectDirectoriesEntity() ?: return false
     if (projectDirectoriesEntity.indexAllFilesInIncludedRoots) return false
 
-    val includedRoots = projectDirectoriesEntity.includedRoots.mapNotNullTo(hashSetOf()) { it.url.virtualFile }
-    val excludedRoots = projectDirectoriesEntity.excludedRoots.mapNotNullTo(hashSetOf()) { it.url.virtualFile }
+    val includedRoots = projectDirectoriesEntity.includedRoots.mapNotNullTo(hashSetOf()) { it.virtualFile }
+    val excludedRoots = projectDirectoriesEntity.excludedRoots.mapNotNullTo(hashSetOf()) { it.virtualFile }
     val contentRoots =
       context.entityStorageDiff
         .entities<ContentRootEntity>()
@@ -360,7 +359,7 @@ open class DefaultBazelFileEventProcessor(private val project: Project): BazelFi
 
     val currentAdditionalFiles = projectDirectoriesEntity.indexAdditionalFiles
     val updatedIndexAdditionalFiles =
-      (currentAdditionalFiles.filterNot { it.url in removedUrls } + addedUrls.map(::NonIndexableVirtualFileUrl)).distinctBy { it.url }
+      (currentAdditionalFiles.filterNot { it in removedUrls } + addedUrls).distinct()
     if (updatedIndexAdditionalFiles == currentAdditionalFiles) return false
 
     context.entityStorageDiff.modifyBazelProjectDirectoriesEntity(projectDirectoriesEntity) {

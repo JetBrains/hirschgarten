@@ -20,7 +20,6 @@ import com.intellij.platform.workspace.storage.url.VirtualFileUrl
 import org.jetbrains.annotations.ApiStatus.Internal
 import org.jetbrains.bazel.workspacemodel.entities.BazelProjectDirectoriesEntity
 import org.jetbrains.bazel.workspacemodel.entities.BazelProjectDirectoriesEntityBuilder
-import org.jetbrains.bazel.workspacemodel.entities.NonIndexableVirtualFileUrl
 
 @Internal
 @GeneratedCodeApiVersion(3)
@@ -34,12 +33,12 @@ internal class BazelProjectDirectoriesEntityImpl(private val dataSource: BazelPr
       readField("projectRoot")
       return dataSource.projectRoot
     }
-  override val includedRoots: List<NonIndexableVirtualFileUrl>
+  override val includedRoots: List<VirtualFileUrl>
     get() {
       readField("includedRoots")
       return dataSource.includedRoots
     }
-  override val excludedRoots: List<NonIndexableVirtualFileUrl>
+  override val excludedRoots: List<VirtualFileUrl>
     get() {
       readField("excludedRoots")
       return dataSource.excludedRoots
@@ -49,7 +48,7 @@ internal class BazelProjectDirectoriesEntityImpl(private val dataSource: BazelPr
       readField("indexAllFilesInIncludedRoots")
       return dataSource.indexAllFilesInIncludedRoots
     }
-  override val indexAdditionalFiles: List<NonIndexableVirtualFileUrl>
+  override val indexAdditionalFiles: List<VirtualFileUrl>
     get() {
       readField("indexAdditionalFiles")
       return dataSource.indexAdditionalFiles
@@ -139,13 +138,14 @@ internal class BazelProjectDirectoriesEntityImpl(private val dataSource: BazelPr
         getEntityData(true).projectRoot = value
         changedProperty.add("projectRoot")
         val _diff = diff
-        if (_diff != null) index(this, "projectRoot", value)
+        if (_diff != null) {
+          index(this, "projectRoot", value)
+        }
       }
-    private val includedRootsUpdater: (value: List<NonIndexableVirtualFileUrl>) -> Unit = { value ->
-
+    private val includedRootsUpdater: (value: List<VirtualFileUrl>) -> Unit = { value ->
       changedProperty.add("includedRoots")
     }
-    override var includedRoots: MutableList<NonIndexableVirtualFileUrl>
+    override var includedRoots: MutableList<VirtualFileUrl>
       get() {
         val collection_includedRoots = getEntityData().includedRoots
         if (collection_includedRoots !is MutableWorkspaceList) return collection_includedRoots
@@ -162,11 +162,10 @@ internal class BazelProjectDirectoriesEntityImpl(private val dataSource: BazelPr
         getEntityData(true).includedRoots = value
         includedRootsUpdater.invoke(value)
       }
-    private val excludedRootsUpdater: (value: List<NonIndexableVirtualFileUrl>) -> Unit = { value ->
-
+    private val excludedRootsUpdater: (value: List<VirtualFileUrl>) -> Unit = { value ->
       changedProperty.add("excludedRoots")
     }
-    override var excludedRoots: MutableList<NonIndexableVirtualFileUrl>
+    override var excludedRoots: MutableList<VirtualFileUrl>
       get() {
         val collection_excludedRoots = getEntityData().excludedRoots
         if (collection_excludedRoots !is MutableWorkspaceList) return collection_excludedRoots
@@ -190,11 +189,10 @@ internal class BazelProjectDirectoriesEntityImpl(private val dataSource: BazelPr
         getEntityData(true).indexAllFilesInIncludedRoots = value
         changedProperty.add("indexAllFilesInIncludedRoots")
       }
-    private val indexAdditionalFilesUpdater: (value: List<NonIndexableVirtualFileUrl>) -> Unit = { value ->
-
+    private val indexAdditionalFilesUpdater: (value: List<VirtualFileUrl>) -> Unit = { value ->
       changedProperty.add("indexAdditionalFiles")
     }
-    override var indexAdditionalFiles: MutableList<NonIndexableVirtualFileUrl>
+    override var indexAdditionalFiles: MutableList<VirtualFileUrl>
       get() {
         val collection_indexAdditionalFiles = getEntityData().indexAdditionalFiles
         if (collection_indexAdditionalFiles !is MutableWorkspaceList) return collection_indexAdditionalFiles
@@ -219,10 +217,10 @@ internal class BazelProjectDirectoriesEntityImpl(private val dataSource: BazelPr
 @OptIn(WorkspaceEntityInternalApi::class)
 internal class BazelProjectDirectoriesEntityData : WorkspaceEntityData<BazelProjectDirectoriesEntity>() {
   lateinit var projectRoot: VirtualFileUrl
-  lateinit var includedRoots: MutableList<NonIndexableVirtualFileUrl>
-  lateinit var excludedRoots: MutableList<NonIndexableVirtualFileUrl>
+  lateinit var includedRoots: MutableList<VirtualFileUrl>
+  lateinit var excludedRoots: MutableList<VirtualFileUrl>
   var indexAllFilesInIncludedRoots: Boolean = false
-  lateinit var indexAdditionalFiles: MutableList<NonIndexableVirtualFileUrl>
+  lateinit var indexAdditionalFiles: MutableList<VirtualFileUrl>
   internal fun isProjectRootInitialized(): Boolean = ::projectRoot.isInitialized
   internal fun isIncludedRootsInitialized(): Boolean = ::includedRoots.isInitialized
   internal fun isExcludedRootsInitialized(): Boolean = ::excludedRoots.isInitialized

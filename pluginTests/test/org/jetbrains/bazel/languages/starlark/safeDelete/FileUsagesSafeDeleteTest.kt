@@ -4,7 +4,7 @@ import com.intellij.openapi.application.runWriteAction
 import com.intellij.openapi.roots.ModuleRootModificationUtil
 import com.intellij.openapi.vfs.VfsUtil
 import com.intellij.openapi.vfs.VirtualFile
-import com.intellij.platform.backend.workspace.toVirtualFileUrl
+import com.intellij.platform.backend.workspace.storeAndGet
 import com.intellij.platform.backend.workspace.workspaceModel
 import com.intellij.platform.testFramework.junit5.codeInsight.fixture.codeInsightFixture
 import com.intellij.refactoring.safeDelete.SafeDeleteHandler
@@ -17,7 +17,6 @@ import com.intellij.testFramework.runInEdtAndWait
 import org.jetbrains.bazel.project.BazelProjectFixtures.initializeBazelProject
 import org.jetbrains.bazel.workspacemodel.entities.BazelProjectDirectoriesEntity
 import org.jetbrains.bazel.workspacemodel.entities.BazelProjectDirectoriesEntityFixtures.emptyBazelDirectoryWorkspaceEntity
-import org.jetbrains.bazel.workspacemodel.entities.NonIndexableVirtualFileUrl
 import org.jetbrains.bazel.workspacemodel.entities.modifyBazelProjectDirectoriesEntity
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -88,7 +87,7 @@ internal class FileUsagesSafeDeleteTest {
       project.workspaceModel.updateProjectModel("register BUILD file") { storage ->
         val entity = storage.entities(BazelProjectDirectoriesEntity::class.java).first()
         storage.modifyBazelProjectDirectoriesEntity(entity) {
-          indexAdditionalFiles = mutableListOf(NonIndexableVirtualFileUrl(buildFileVf.toVirtualFileUrl(urlManager)))
+          indexAdditionalFiles = mutableListOf(urlManager.storeAndGet(buildFileVf))
         }
       }
     }

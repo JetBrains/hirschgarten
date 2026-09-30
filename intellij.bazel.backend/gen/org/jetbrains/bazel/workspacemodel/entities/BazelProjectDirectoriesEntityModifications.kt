@@ -17,10 +17,10 @@ import org.jetbrains.bazel.workspacemodel.entities.impl.BazelProjectDirectoriesE
 interface BazelProjectDirectoriesEntityBuilder : WorkspaceEntityBuilder<BazelProjectDirectoriesEntity> {
   override var entitySource: EntitySource
   var projectRoot: VirtualFileUrl
-  var includedRoots: MutableList<NonIndexableVirtualFileUrl>
-  var excludedRoots: MutableList<NonIndexableVirtualFileUrl>
+  var includedRoots: MutableList<VirtualFileUrl>
+  var excludedRoots: MutableList<VirtualFileUrl>
   var indexAllFilesInIncludedRoots: Boolean
-  var indexAdditionalFiles: MutableList<NonIndexableVirtualFileUrl>
+  var indexAdditionalFiles: MutableList<VirtualFileUrl>
 }
 
 internal object BazelProjectDirectoriesEntityType : EntityType<BazelProjectDirectoriesEntity, BazelProjectDirectoriesEntityBuilder>() {
@@ -28,10 +28,10 @@ internal object BazelProjectDirectoriesEntityType : EntityType<BazelProjectDirec
   override val entityImplBuilderClass: Class<*> get() = BazelProjectDirectoriesEntityImpl.Builder::class.java
   operator fun invoke(
     projectRoot: VirtualFileUrl,
-    includedRoots: List<NonIndexableVirtualFileUrl>,
-    excludedRoots: List<NonIndexableVirtualFileUrl>,
+    includedRoots: List<VirtualFileUrl>,
+    excludedRoots: List<VirtualFileUrl>,
     indexAllFilesInIncludedRoots: Boolean,
-    indexAdditionalFiles: List<NonIndexableVirtualFileUrl>,
+    indexAdditionalFiles: List<VirtualFileUrl>,
     entitySource: EntitySource,
     init: (BazelProjectDirectoriesEntityBuilder.() -> Unit)? = null,
   ): BazelProjectDirectoriesEntityBuilder {
@@ -58,10 +58,10 @@ fun MutableEntityStorage.modifyBazelProjectDirectoriesEntity(
 @JvmName("createBazelProjectDirectoriesEntity")
 fun BazelProjectDirectoriesEntity(
   projectRoot: VirtualFileUrl,
-  includedRoots: List<NonIndexableVirtualFileUrl>,
-  excludedRoots: List<NonIndexableVirtualFileUrl>,
+  includedRoots: List<VirtualFileUrl>,
+  excludedRoots: List<VirtualFileUrl>,
   indexAllFilesInIncludedRoots: Boolean,
-  indexAdditionalFiles: List<NonIndexableVirtualFileUrl>,
+  indexAdditionalFiles: List<VirtualFileUrl>,
   entitySource: EntitySource,
   init: (BazelProjectDirectoriesEntityBuilder.() -> Unit)? = null,
 ): BazelProjectDirectoriesEntityBuilder = BazelProjectDirectoriesEntityType(

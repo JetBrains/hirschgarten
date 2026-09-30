@@ -18,7 +18,6 @@ import org.jetbrains.bazel.ui.projectTree.BazelTreeNodeType.ROOT
 import org.jetbrains.bazel.ui.projectTree.BazelTreeNodeType.UNIMPORTED
 import org.jetbrains.bazel.workspace.bazelProjectDirectoriesEntity
 import org.jetbrains.bazel.workspacemodel.entities.BazelProjectDirectoriesEntityFixtures.emptyBazelDirectoryWorkspaceEntity
-import org.jetbrains.bazel.workspacemodel.entities.NonIndexableVirtualFileUrl
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertNull
@@ -203,10 +202,8 @@ internal class BazelTreeStructureControllerTest {
 
     val newWorkspaceEntity = emptyBazelDirectoryWorkspaceEntity(project).also { entity ->
       entity.includedRoots = included.map { it.toVirtualFileUrl(workspaceModelUrlManager) }
-        .map { NonIndexableVirtualFileUrl(it) }
         .toMutableList()
       entity.excludedRoots = excluded.map { it.toVirtualFileUrl(workspaceModelUrlManager) }
-        .map { NonIndexableVirtualFileUrl(it) }
         .toMutableList()
     }
 
