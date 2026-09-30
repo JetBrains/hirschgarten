@@ -22,6 +22,7 @@ import org.jetbrains.bazel.clion.BazelCLionCoreBundle
 import org.jetbrains.bazel.clion.workspace.CcCompilerInfo
 import org.jetbrains.bazel.clion.workspace.CcTargetUtils
 import org.jetbrains.bazel.commons.BazelStatus
+import org.jetbrains.bazel.commons.RepoMapping
 import org.jetbrains.bazel.coroutines.BazelCoroutineService
 import org.jetbrains.bazel.utils.ExecutableInfo
 import org.jetbrains.bazel.utils.RunfileManifestOnlyException
@@ -131,12 +132,16 @@ private suspend fun prepareDebugSession(
 
   // TODO: check if target is debuggable
 
-  state.executionInfo = subTask("debug.task.discover.execution.environment") { collectExecutableInfo(targetInfo) }
+  val executionInfo = subTask("debug.task.discover.execution.environment") { collectExecutableInfo(targetInfo) }
+
+  state.targetInfo = targetInfo
+  state.executionInfo = executionInfo
 }
 
 data class CcDebugTargetInfo(
   val target: BuildTarget,
   val compiler: CcCompilerInfo,
+  val repoMapping: RepoMapping,
 )
 
 @Throws(ExecutionException::class)
@@ -156,7 +161,7 @@ private suspend fun collectDebugTargetInfo(): CcDebugTargetInfo {
   val compilerInfo = CcTargetUtils.findToolchainCompiler(ctx.environment.project, toolchain)
     ?: throw ExecutionException(BazelCLionCoreBundle.message("debug.error.no.compiler.info", label))
 
-  return CcDebugTargetInfo(target, compilerInfo)
+  return CcDebugTargetInfo(target, compilerInfo, snapshot.repoMapping)
 }
 
 @Throws(ExecutionException::class)

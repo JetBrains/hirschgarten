@@ -21,6 +21,8 @@ import com.jetbrains.cidr.execution.TrivialRunParameters
 import com.jetbrains.cidr.execution.debugger.CidrLocalDebugProcess
 import com.jetbrains.cidr.execution.debugger.backend.DebuggerDriver
 import com.jetbrains.cidr.execution.runOnEDT
+import org.jetbrains.bazel.commons.RepoMapping
+import org.jetbrains.bazel.commons.getLocalRepositories
 import org.jetbrains.bazel.run.state.GenericRunState
 import org.jetbrains.bazel.sync.environment.projectCtx
 import org.jetbrains.bazel.utils.ExecutableInfo
@@ -37,6 +39,7 @@ internal class CcDebugCommandLineState(
 ) : CidrCommandLineState(environment, CcCidrLauncher(environment.project, bazelState)) {
 
   // set by org.jetbrains.bazel.clion.run.CcDebugRunner
+  var targetInfo: CcDebugTargetInfo? = null
   var executionInfo: ExecutableInfo? = null
 }
 
@@ -48,6 +51,7 @@ private class CcCidrLauncher(private val project: Project, private val bazelStat
     val ccState = state as CcDebugCommandLineState
 
     // should always be set by org.jetbrains.bazel.clion.run.CcDebugRunner before this is reached
+    val targetInfo = requireNotNull(ccState.targetInfo)
     val executionInfo = requireNotNull(ccState.executionInfo)
 
     // should always be present due to org.jetbrains.bazel.clion.run.CcRunHandler.DebugProfileEnabler
@@ -65,18 +69,21 @@ private class CcCidrLauncher(private val project: Project, private val bazelStat
     )
 
     // external paths must be mapped before the workspace root, since one is a prefix of the other
-    val sourceMappings = mapOf(
+    val sourceMappings = buildMap {
       // /proc/self/cwd mappings used on linux
-      PROC_CWD.resolve("external") to executionRoot.resolve("external"),
-      PROC_CWD to workspaceRoot,
+      putLocalRepoMapping(PROC_CWD, workspaceRoot, targetInfo.repoMapping)
+      put(PROC_CWD.resolve("external"), executionRoot.resolve("external"))
+      put(PROC_CWD, workspaceRoot)
 
       // execution root mappings used on Windows
-      executionRoot.resolve("external") to executionRoot.resolve("external"),
-      executionRoot to workspaceRoot,
+      // executionRoot.resolve("external") to executionRoot.resolve("external"), this one looks weired (check them later)
+      // executionRoot to workspaceRoot,
 
       // relative mappings used on macOS
-      Path.of("external") to executionRoot.resolve("external"),
-    )
+      putLocalRepoMapping(Path.of(""), workspaceRoot, targetInfo.repoMapping)
+      put(Path.of("external"), executionRoot.resolve("external"))
+      put(Path.of(""), workspaceRoot)
+    }
 
     val prentEnvironment = if (bazelState.env.isPassParentEnvs) {
       GeneralCommandLine.ParentEnvironmentType.CONSOLE
@@ -109,6 +116,12 @@ private class CcCidrLauncher(private val project: Project, private val bazelStat
 
   override fun createProcess(state: CommandLineState): ProcessHandler? {
     throw UnsupportedOperationException("run is handled by the generic Bazel handler")
+  }
+}
+
+private fun MutableMap<Path, Path>.putLocalRepoMapping(execroot: Path, workspace: Path, repoMapping: RepoMapping) {
+  for ((name, path) in repoMapping.getLocalRepositories().localRepositories) {
+    put(execroot.resolve("external", name), workspace.resolve(path))
   }
 }
 
