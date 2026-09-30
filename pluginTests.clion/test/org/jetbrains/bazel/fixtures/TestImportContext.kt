@@ -12,6 +12,8 @@ import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceSnapshot
 import org.jetbrains.bazel.test.framework.testBazelInfo
 import org.jetbrains.bsp.protocol.OutputLocationParser
 import org.jetbrains.bsp.protocol.OutputLocationResolver
+import org.jetbrains.bsp.protocol.TaskGroupId
+import org.jetbrains.bsp.protocol.TaskId
 import java.nio.file.Path
 
 internal suspend fun <T> withTestImportContext(
@@ -31,6 +33,9 @@ internal class TestImportContext(
 ) : CcImportContext {
   // Just resolve everything against execroot in unit tests
   val testBazelInfo = testBazelInfo(workspaceRoot = execroot, outputBase = execroot, execRoot = execroot)
+
+  override val taskId: TaskId
+    get() = TaskGroupId("test").task("task")
 
   override val outputParser: OutputLocationParser
     get() = OutputLocationParser(BazelPathsResolver(testBazelInfo), BazelOutFileHardLinks.NONE)
