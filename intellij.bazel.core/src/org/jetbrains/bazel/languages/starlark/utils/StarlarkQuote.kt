@@ -12,6 +12,9 @@ enum class StarlarkQuote(val quote: String) {
   UNQUOTED(""),
   ;
 
+  val isTriple: Boolean
+    get() = this == TRIPLE_SINGLE || this == TRIPLE_DOUBLE
+
   fun rangeWithinQuotes(string: String): TextRange = TextRange(quote.length, string.length - quote.length)
 
   fun wrap(toWrap: String): String = quote + toWrap + quote
