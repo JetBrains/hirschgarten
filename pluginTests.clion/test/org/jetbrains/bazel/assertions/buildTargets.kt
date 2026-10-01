@@ -3,6 +3,7 @@ package org.jetbrains.bazel.assertions
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import org.assertj.core.api.Assertions.assertThat
+import org.jetbrains.bazel.clion.workspace.CcCompilerInfo
 import org.jetbrains.bazel.clion.workspace.CcTargetUtils
 import org.jetbrains.bazel.clion.workspace.findTargetToolchain
 import org.jetbrains.bazel.label.Label
@@ -38,14 +39,12 @@ internal suspend fun Project.findTarget(label: String): BuildTarget {
   return targets.single()
 }
 
-internal suspend fun Project.findTarget(key: WorkspaceTargetKey): BuildTarget {
+internal suspend fun Project.findToolchain(target: BuildTarget): BuildTarget? {
   val snapshot = service<WorkspaceSnapshotService>().currentSnapshot()
-  return snapshot.targets.findTargetByKey(key, TargetLoadOptions.ALL).assertNotNull()
+  return CcTargetUtils.findToolchain(snapshot, target)
 }
 
-internal suspend fun Project.findToolchain(target: BuildTarget): List<BuildTarget> {
+internal suspend fun Project.findCompiler(target: BuildTarget): CcCompilerInfo? {
   val snapshot = service<WorkspaceSnapshotService>().currentSnapshot()
-
-  val toolchains = CcTargetUtils.findAllToolchains(snapshot)
-  return findTargetToolchain(target, toolchains).mapNotNull { snapshot.targets.findTargetByKey(it, TargetLoadOptions.ALL) }
+  return CcTargetUtils.findCompiler(this, snapshot, target)
 }

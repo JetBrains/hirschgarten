@@ -12,26 +12,22 @@ import org.jetbrains.bsp.protocol.BuildTarget
 @ApiStatus.Internal
 object CcTargetUtils {
 
-  /** Returns the keys of all cc_toolchain targets in the snapshot. */
-  fun findAllToolchains(snapshot: WorkspaceSnapshot): Set<WorkspaceTargetKey> {
-    return snapshot.allTargets
+  fun findToolchainKey(snapshot: WorkspaceSnapshot, target: BuildTarget): WorkspaceTargetKey? {
+    val toolchains = snapshot.allTargets
       .filter { it.hasBuildData<CcToolchainBuildTarget>() }
       .map { it.key }
       .toSet()
+
+    return findTargetToolchain(target, toolchains).singleOrNull()
   }
 
   /** Returns the toolchain of a CC target, or null if the toolchain is ambiguous or not found. */
-  fun findToolchain(snapshot: WorkspaceSnapshot, target: BuildTarget): WorkspaceTargetKey? {
-    return findTargetToolchain(target, findAllToolchains(snapshot)).singleOrNull()
+  fun findToolchain(snapshot: WorkspaceSnapshot, target: BuildTarget): BuildTarget? {
+    return findToolchainKey(snapshot, target)?.let { snapshot.targets.findTargetByKey(it) }
   }
 
   /** Returns the compiler of a CC target, or null if the toolchain or its compiler is unknown. */
   fun findCompiler(project: Project, snapshot: WorkspaceSnapshot, target: BuildTarget): CcCompilerInfo? {
-    return findToolchain(snapshot, target)?.let { findToolchainCompiler(project, it) }
-  }
-
-  /** Returns the compiler of a cc_toolchain target. */
-  fun findToolchainCompiler(project: Project, toolchain: WorkspaceTargetKey): CcCompilerInfo? {
-    return CcCompilerInfoService.getInstance(project).get(toolchain)
+    return findToolchainKey(snapshot, target)?.let { CcCompilerInfoService.getInstance(project).get(it) }
   }
 }
