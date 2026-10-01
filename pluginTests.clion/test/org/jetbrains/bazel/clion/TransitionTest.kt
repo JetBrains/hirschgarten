@@ -25,7 +25,7 @@ class TransitionTest {
   }
 
   @Test
-  fun testVfsRoots() = project.assertVfsLoads(emptyList())
+  fun testVfsRoots() = project.assertVfsLoads()
 
   @Test
   fun testCompilerSettings(): Unit = timeoutRunBlocking {

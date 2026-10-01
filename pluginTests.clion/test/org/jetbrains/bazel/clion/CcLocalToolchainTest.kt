@@ -43,7 +43,7 @@ abstract class CcLocalToolchainTest(override val bazelVersion: String) : BazelVe
   private val project by clionBazelProjectFixture("clion/simple", bazelVersion = bazelVersion)
 
   @Test
-  fun testVfsRoots() = project.assertVfsLoads(emptyList())
+  fun testVfsRoots() = project.assertVfsLoads()
 
   @Test
   fun testCompilerSettings(): Unit = timeoutRunBlocking {

@@ -26,7 +26,7 @@ class ArmToolchainTest {
   }
 
   @Test
-  fun testVfsRoots() = project.assertVfsLoads(emptyList())
+  fun testVfsRoots() = project.assertVfsLoads()
 
   /**
    * The platform_transition_binary transitions to a single platform, so main.c should have exactly one resolve

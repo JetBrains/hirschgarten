@@ -46,7 +46,7 @@ abstract class CcImportTest(override val bazelVersion: String) : BazelVersionedT
   }
 
   @Test
-  fun testVfsRoots() = project.assertVfsLoads(emptyList())
+  fun testVfsRoots() = project.assertVfsLoads()
 
   @Test
   fun testTargetsFound(): Unit = timeoutRunBlocking {

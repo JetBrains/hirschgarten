@@ -20,7 +20,7 @@ abstract class MixedImportTest(bazelVersion: String) {
   private val project by clionBazelProjectFixture("import/mixed", jvmToolchains = true, bazelVersion = bazelVersion)
 
   @Test
-  fun testVfsRoots() = project.assertVfsLoads(emptyList())
+  fun testVfsRoots() = project.assertVfsLoads()
 
   @Test
   fun testImportedTargets(): Unit = timeoutRunBlocking {

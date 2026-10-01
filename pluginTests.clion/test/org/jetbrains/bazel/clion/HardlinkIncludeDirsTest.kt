@@ -19,7 +19,7 @@ class HardlinkIncludeDirsTest {
   private val project by clionBazelProjectFixture("clion/hardlink_include_dirs", buildProject = true)
 
   @Test
-  fun testVfsRoots() = project.assertVfsLoads(emptyList())
+  fun testVfsRoots() = project.assertVfsLoads()
 
   @Test
   fun checkResolveConfiguration(): Unit = timeoutRunBlocking {

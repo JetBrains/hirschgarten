@@ -4,60 +4,11 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VfsUtil
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.newvfs.persistent.PersistentFS
-import org.assertj.core.api.Assertions.assertThat
-import org.jetbrains.bazel.assertions.AllowedVfsRoot.Configuration
 import org.jetbrains.bazel.sync.environment.projectCtx
+import org.junit.jupiter.api.fail
 import java.nio.file.Path
 import kotlin.io.path.Path
 
-data class AllowedVfsRoot(
-  val configuration: Configuration,
-  val path: Path,
-  val recursive: Boolean,
-) {
-
-  enum class Configuration { ANY, FASTBUILD, DEBUG }
-
-  companion object {
-
-    fun flat(path: String, configuration: Configuration = Configuration.FASTBUILD): AllowedVfsRoot = AllowedVfsRoot(
-      configuration = configuration,
-      path = Path.of(path),
-      recursive = false,
-    )
-
-    fun recursive(path: String, configuration: Configuration = Configuration.FASTBUILD): AllowedVfsRoot = AllowedVfsRoot(
-      configuration = configuration,
-      path = Path.of(path),
-      recursive = true,
-    )
-  }
-
-  override fun toString(): String = buildString {
-    append("[$configuration]: ")
-    if (recursive) append('|')
-    append(path.toString())
-  }
-}
-
-private fun matches(root: AllowedVfsRoot, path: Path): Boolean {
-  require(!path.isAbsolute) { "the path should relative to the execution root" }
-  require(path.nameCount > 3) { "the path should contain more then three segments" }
-  require(path.getName(0).toString() == "bazel-out") { "the path should start with bazel-out" }
-  require(path.getName(2).toString() == "bin") { "the path should reside in bazel-bin" }
-
-  val actualConfiguration = path.getName(1).toString()
-  if (root.configuration == Configuration.FASTBUILD && !actualConfiguration.contains("fastbuild")) return false
-  if (root.configuration == Configuration.DEBUG && !actualConfiguration.contains("dbg")) return false
-
-  val actualPath = path.subpath(3, path.nameCount)
-  return if (root.recursive) {
-    actualPath.startsWith(root.path)
-  }
-  else {
-    root.path == actualPath.parent
-  }
-}
 private fun getChildrenInVfs(dir: VirtualFile): Sequence<Path> = sequence {
   val persistentFS = PersistentFS.getInstance()
   if (!persistentFS.wereChildrenAccessed(dir)) return@sequence
@@ -73,7 +24,7 @@ private fun getChildrenInVfs(dir: VirtualFile): Sequence<Path> = sequence {
   }
 }
 
-internal fun Project.assertVfsLoads(allowedRoots: List<AllowedVfsRoot>) {
+internal fun Project.assertVfsLoads() {
   val executionRoot = requireNotNull(projectCtx.bazelExecPath)
   val executionRootFile = VfsUtil.findFile(executionRoot, /* refreshIfNeeded = */ false) ?: return
 
@@ -84,10 +35,7 @@ internal fun Project.assertVfsLoads(allowedRoots: List<AllowedVfsRoot>) {
       continue
     }
 
-    assertThat(allowedRoots.any { matches(it, relativePath) }).withFailMessage {
-      val roots = allowedRoots.joinToString(";")
-      "$child is not in allowed roots: [$roots], debug with: '-Dfile.system.trace.loading=$child'"
-    }.isTrue()
+    fail { "$child is not in allowed VFS, debug with: '-Dfile.system.trace.loading=$child'" }
   }
 }
 

@@ -20,7 +20,7 @@ class VirtualIncludesTest {
   private val project by clionBazelProjectFixture("clion/virtual_includes", buildProject = true)
 
   @Test
-  fun testVfsRoots() = project.assertVfsLoads(allowedRoots = emptyList())
+  fun testVfsRoots() = project.assertVfsLoads()
 
   @Test
   fun checkIncludes(): Unit = timeoutRunBlocking {
