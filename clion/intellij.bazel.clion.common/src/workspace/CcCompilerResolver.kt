@@ -18,14 +18,11 @@ internal class CcCompilerResolver(private val ctx: CcImportContext) {
 
   private val cache = mutableMapOf<OutputLocation, Result?>()
 
-  // for version resolution, the environment does not really matter
-  private val environment = CidrToolEnvironment()
-
-  fun resolve(location: OutputLocation): Result? {
-    return cache.getOrPutIfMissing(location) { doResolve(location) }
+  fun resolve(location: OutputLocation, environment: CidrToolEnvironment): Result? {
+    return cache.getOrPutIfMissing(location) { doResolve(location, environment) }
   }
 
-  private fun doResolve(location: OutputLocation): Result? {
+  private fun doResolve(location: OutputLocation, environment: CidrToolEnvironment): Result? {
     val path = ctx.resolveOutputLocation(location) ?: return null
     val kind = OCCompilerResolver.resolve(ctx.project, path, environment)
 
@@ -43,9 +40,11 @@ internal class CcCompilerResolver(private val ctx: CcImportContext) {
 
   fun reportProblems() {
     val problems = cache.entries.mapNotNull { (location, result) ->
+      val compilerPath = ctx.resolveOutputLocation(location).toString()
+
       when {
-        result == null -> BazelCLionCommonBundle.message("cc.compiler.path.resolve.failed", location)
-        result.kind.isUnknown() -> BazelCLionCommonBundle.message("cc.compiler.kind.resolve.failed", location)
+        result == null -> BazelCLionCommonBundle.message("cc.compiler.path.resolve.failed", compilerPath)
+        result.kind.isUnknown() -> BazelCLionCommonBundle.message("cc.compiler.kind.resolve.failed", compilerPath)
         else -> null
       }
     }
