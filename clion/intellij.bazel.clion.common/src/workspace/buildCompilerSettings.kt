@@ -47,7 +47,7 @@ suspend fun buildCompilerSettings(): Map<WorkspaceTargetKey, CcCompilerInfo> {
   for (target in ctx.snapshot.targets.allTargets()) {
     val toolchainInfo = target.extractData<CcToolchainBuildTarget>() ?: continue
 
-    val environment = resolveProcSelfCwd(mergeEnvironments(toolchainInfo.cEnvironment, toolchainInfo.cppEnvironment))
+    val environment = createEnvironment(toolchainInfo.cEnvironment, toolchainInfo.cppEnvironment)
 
     val cCompiler = resolver.resolve(toolchainInfo.cCompiler) ?: continue
     val cppCompiler = resolver.resolve(toolchainInfo.cppCompiler) ?: continue
@@ -73,21 +73,24 @@ suspend fun buildCompilerSettings(): Map<WorkspaceTargetKey, CcCompilerInfo> {
   return result
 }
 
-private fun mergeEnvironments(vararg environments: Map<String, String>): Map<String, String> {
+context(ctx: CcImportContext)
+private fun createEnvironment(vararg environments: Map<String, String>): Map<String, String> {
   val merged = mutableMapOf<String, String>()
   for (environment in environments) {
-    merged.putAll(environment)
+    for ((key, value) in environment.entries) {
+      merged[key] = resolveProcSelfCwd(value)
+    }
   }
 
   return merged
 }
 
 context(ctx: CcImportContext)
-private suspend fun resolveProcSelfCwd(environment: Map<String, String>): Map<String, String> {
-  return environment.mapValues { (_, value) ->
-    if (!value.startsWith(PROC_SELF_CWD)) return@mapValues value
-    ctx.outputResolver.resolve(ctx.outputParser.parseExecrootPath(value))?.toString() ?: value
-  }
+private fun resolveProcSelfCwd(value: String): String {
+  if (!value.startsWith(PROC_SELF_CWD)) return value
+
+  val resolved = ctx.resolveExecutionRootPath(value) ?: return value
+  return resolved.toString()
 }
 
 private fun createToolEnvironment(environment: Map<String, String>): CidrToolEnvironment {
