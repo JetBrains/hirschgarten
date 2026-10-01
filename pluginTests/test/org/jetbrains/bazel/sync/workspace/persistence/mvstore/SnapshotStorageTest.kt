@@ -72,13 +72,11 @@ class SnapshotStorageTest {
       ),
       sources = sources("pkg$index/Main.java", "shared/Shared.java"),
       resources = OutputLocationCollection.EMPTY,
-      baseDirectory = Path.of("/workspace/pkg$index"),
       data = listOf(
         JvmBuildTarget(javacOpts = listOf("-parameters"), mainClass = "com.example.Main$index"),
         JavaToolchainData(sourceVersion = "17", targetVersion = "17"),
       ),
       generatorName = null,
-      isWorkspace = true,
       isTestOnly = false,
     )
 
@@ -124,7 +122,6 @@ class SnapshotStorageTest {
   private fun assertComposedEquals(actual: BuildTarget?, expected: BuildTarget) {
     actual.shouldNotBeNull()
     actual.kind shouldBe expected.kind
-    actual.baseDirectory shouldBe expected.baseDirectory
     actual.dependencies shouldBe expected.dependencies
     actual.sources shouldBe expected.sources
     // composition orders data by registration id

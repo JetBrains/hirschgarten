@@ -172,8 +172,6 @@ internal object MonorepoRunLineMarkerContributorUtil {
       return emptyList()
     }
 
-    val baseDirectory = (containingFile.parent ?: containingFile).toNioPath()
-
     if (mainClassFqn != null) {
       val binaryLabel = getBinaryLabel(module, mainClassFqn) ?: return emptyList()
       val kind = TargetKindService.getInstance().guessFromRuleName("java_binary")
@@ -181,7 +179,6 @@ internal object MonorepoRunLineMarkerContributorUtil {
         NonImportedBuildTarget(
           label = binaryLabel,
           kind = kind,
-          baseDirectory = baseDirectory,
         ),
       )
     }
@@ -192,7 +189,6 @@ internal object MonorepoRunLineMarkerContributorUtil {
         NonImportedBuildTarget(
           label = Label.parse(target.removeSuffix(JAR_SUFFIX)),
           kind = kind,
-          baseDirectory = baseDirectory,
         )
       },
     )

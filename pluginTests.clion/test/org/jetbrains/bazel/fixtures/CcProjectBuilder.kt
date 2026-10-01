@@ -65,15 +65,15 @@ internal class CcProjectBuilder(private val workspaceRoot: Path) {
   fun ccTest(declare: CcTargetBuilder.() -> Unit): BuildTarget = ccTarget("cc_test", RuleType.TEST, declare)
 
   private fun ccTarget(kind: String, ruleType: RuleType, declare: CcTargetBuilder.() -> Unit): BuildTarget {
-    return CcTargetBuilder(kind, ruleType).apply(declare).build(workspaceRoot, ::defaultToolchain).also(targets::add)
+    return CcTargetBuilder(kind, ruleType).apply(declare).build(::defaultToolchain).also(targets::add)
   }
 
   fun ccToolchain(declare: CcToolchainBuilder.() -> Unit): BuildTarget {
-    return CcToolchainBuilder().apply(declare).build(workspaceRoot).also(targets::add)
+    return CcToolchainBuilder().apply(declare).build().also(targets::add)
   }
 
   fun plainTarget(declare: PlainTargetBuilder.() -> Unit): BuildTarget {
-    return PlainTargetBuilder().apply(declare).build(workspaceRoot).also(targets::add)
+    return PlainTargetBuilder().apply(declare).build().also(targets::add)
   }
 
   fun build(): WorkspaceSnapshot {
@@ -173,7 +173,7 @@ internal class CcTargetBuilder(private val kind: String, private val ruleType: R
     useDefaultToolchain = false
   }
 
-  internal fun build(root: Path, defaultToolchain: () -> BuildTarget): BuildTarget {
+  internal fun build(defaultToolchain: () -> BuildTarget): BuildTarget {
     val label = requireNotNull(label)
 
     if (useDefaultToolchain && deps.values().none { it.hasBuildData<CcToolchainBuildTarget>() }) {
@@ -203,7 +203,6 @@ internal class CcTargetBuilder(private val kind: String, private val ruleType: R
       key = targetKey(label, configurationId, aspectIds),
       kind = TargetKind(kind = kind, languageClasses = setOf(CC_LANGUAGE_CLASS), ruleType = ruleType),
       dependencies = deps.entrySet().flatMap { it.value.map { target -> DependencyLabel(target.key, it.key) } },
-      baseDirectory = root.resolve(packagePathOf(label)),
       sources = locations(srcs),
       data = listOf(
         CcBuildTarget(
@@ -287,10 +286,9 @@ internal class CcToolchainBuilder {
     env.putAll(entries)
   }
 
-  internal fun build(root: Path): BuildTarget = TestBuildTarget(
+  internal fun build(): BuildTarget = TestBuildTarget(
     key = targetKey(label, configurationId),
     kind = TargetKind(kind = "cc_toolchain_alias", languageClasses = setOf(CC_LANGUAGE_CLASS), ruleType = RuleType.UNKNOWN),
-    baseDirectory = root.resolve(packagePathOf(label)),
     data = listOf(
       CcToolchainBuildTarget(
         targetName = "toolchain",
@@ -331,13 +329,12 @@ internal class PlainTargetBuilder {
     deps += targets.map { DependencyLabel(targetKey = it, kind = kind) }
   }
 
-  internal fun build(root: Path): BuildTarget {
+  internal fun build(): BuildTarget {
     val label = requireNotNull(this.label)
 
     return TestBuildTarget(
       key = targetKey(label, configurationId),
       kind = TargetKind(kind = "plain", languageClasses = setOf(), ruleType = RuleType.UNKNOWN),
-      baseDirectory = root.resolve(packagePathOf(label)),
     )
   }
 }

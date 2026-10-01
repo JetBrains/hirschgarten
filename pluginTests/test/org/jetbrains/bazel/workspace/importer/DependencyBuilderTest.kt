@@ -2,6 +2,7 @@ package org.jetbrains.bazel.workspace.importer
 
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.shouldBe
+import org.jetbrains.bazel.commons.RepoMappingDisabled
 import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.label.DependencyLabel
@@ -170,13 +171,11 @@ class DependencyBuilderTest {
       ),
       sources = OutputLocationCollection.EMPTY,
       resources = OutputLocationCollection.EMPTY,
-      baseDirectory = kotlin.io.path.Path("base/dir"),
       data = listOf(
         JvmBuildTarget(
           checkStrictDependencies = StrictDependencyCheckedType.WARNING,
         ),
       ),
-      isWorkspace = false,
     )
 
     val resolved = listOf(target).resolveDeps(target)
@@ -338,7 +337,7 @@ class DependencyBuilderTest {
     val targetB = jvmTarget(label = b.toString())
     val targetC = jvmTarget(label = c.toString())
 
-    val builder = DependencyBuilder(listOf(aNormal, aExec, targetB, targetC), resolvedByKey)
+    val builder = DependencyBuilder(listOf(aNormal, aExec, targetB, targetC), resolvedByKey, RepoMappingDisabled)
 
     builder.resolve(aNormal).strictDependencies shouldContainExactlyInAnyOrder listOf(b)
     builder.resolve(aExec).strictDependencies shouldContainExactlyInAnyOrder listOf(c)
@@ -348,7 +347,7 @@ class DependencyBuilderTest {
     target: BuildTarget,
     libraryShadowedProducers: Map<WorkspaceTargetKey, List<WorkspaceTargetKey>> = emptyMap(),
   ): DependencyBuilder.Resolved =
-    DependencyBuilder(this, resolvedByKey, libraryShadowedProducers).resolve(target)
+    DependencyBuilder(this, resolvedByKey, RepoMappingDisabled, libraryShadowedProducers).resolve(target)
 
   private fun jvmTarget(
     label: String,

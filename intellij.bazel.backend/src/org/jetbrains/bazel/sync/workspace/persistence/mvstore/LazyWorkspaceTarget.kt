@@ -8,14 +8,11 @@ import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.BuildTargetData
 import org.jetbrains.bsp.protocol.OutputLocationCollection
-import java.nio.file.Path
 
 internal class LazyWorkspaceTarget(
   override val key: WorkspaceTargetKey,
   override val kind: TargetKind,
-  override val baseDirectory: Path,
   override val generatorName: String?,
-  override val isWorkspace: Boolean,
   override val isTestOnly: Boolean,
   override val tags: List<String>,
   override val loaded: TargetLoadOptions,

@@ -573,9 +573,9 @@ class ResourceRootBuilderTest : MockProjectBaseTest() {
     val nested = baseDir.resolve("sub/b.txt").also { it.parent.createDirectories() }.createFile()
     val deeper = baseDir.resolve("sub/deeper/c.txt").also { it.parent.createDirectories() }.createFile()
 
-    val target = filegroupTarget(resources = listOf(flat, nested, deeper), baseDirectory = baseDir)
+    val target = filegroupTarget(resources = listOf(flat, nested, deeper))
 
-    val roots = resolve(target)
+    val roots = resolve(target, baseDirectory = baseDir)
 
     roots.map { it.resourcePath } shouldContainExactlyInAnyOrder listOf(baseDir)
   }
@@ -591,9 +591,9 @@ class ResourceRootBuilderTest : MockProjectBaseTest() {
     val inputRes = input.resolve("a.txt").createFile()
     val outputRes = output.resolve("b.txt").createFile()
 
-    val target = filegroupTarget(resources = listOf(inputRes, outputRes), baseDirectory = baseDir)
+    val target = filegroupTarget(resources = listOf(inputRes, outputRes))
 
-    val roots = resolve(target)
+    val roots = resolve(target, baseDirectory = baseDir)
 
     roots.map { it.resourcePath } shouldContainExactlyInAnyOrder listOf(testResources)
   }
@@ -603,9 +603,9 @@ class ResourceRootBuilderTest : MockProjectBaseTest() {
     val baseDir = projectRoot.resolve("pkg").createDirectories()
     val nested = baseDir.resolve("sub/x.txt").also { it.parent.createDirectories() }.createFile()
 
-    val target = filegroupTarget(resources = listOf(nested), baseDirectory = baseDir)
+    val target = filegroupTarget(resources = listOf(nested))
 
-    val roots = resolve(target)
+    val roots = resolve(target, baseDirectory = baseDir)
 
     roots.map { it.resourcePath } shouldContainExactlyInAnyOrder listOf(baseDir)
   }
@@ -619,9 +619,9 @@ class ResourceRootBuilderTest : MockProjectBaseTest() {
     val b = areaB.resolve("y.txt").createFile()
     baseDir.resolve("README.md").createFile()
 
-    val target = filegroupTarget(resources = listOf(a, b), baseDirectory = baseDir)
+    val target = filegroupTarget(resources = listOf(a, b))
 
-    val roots = resolve(target)
+    val roots = resolve(target, baseDirectory = baseDir)
 
     roots.map { it.resourcePath } shouldContainExactlyInAnyOrder listOf(areaA, areaB)
   }
@@ -634,9 +634,9 @@ class ResourceRootBuilderTest : MockProjectBaseTest() {
     val files1 = (1..200).map { data1.resolve("$it.txt").createFile() }
     val files2 = (1..200).map { data2.resolve("$it.json").createFile() }
 
-    val target = filegroupTarget(resources = files1 + files2, baseDirectory = baseDir)
+    val target = filegroupTarget(resources = files1 + files2)
 
-    val roots = resolve(target)
+    val roots = resolve(target, baseDirectory = baseDir)
 
     roots.map { it.resourcePath } shouldContainExactlyInAnyOrder listOf(baseDir)
   }
@@ -675,9 +675,9 @@ class ResourceRootBuilderTest : MockProjectBaseTest() {
     val sibling = baseDir.resolve("sibling/deep/deeper").createDirectories()
     sibling.resolve("Code.java").createFile()
 
-    val target = filegroupTarget(resources = listOf(resource), baseDirectory = baseDir)
+    val target = filegroupTarget(resources = listOf(resource))
 
-    val roots = resolve(target)
+    val roots = resolve(target, baseDirectory = baseDir)
 
     roots.map { it.resourcePath } shouldContainExactlyInAnyOrder listOf(res)
   }
@@ -791,9 +791,10 @@ class ResourceRootBuilderTest : MockProjectBaseTest() {
     }
   }
 
-  private fun resolve(target: TestBuildTarget, sourceContentRoots: List<Path> = emptyList()) =
+  private fun resolve(target: TestBuildTarget, sourceContentRoots: List<Path> = emptyList(), baseDirectory: Path? = null) =
     ResourceRootBuilder.resolve(
       target = target,
+      baseDirectory = baseDirectory,
       bazelProjectName = projectName,
       workspaceRoot = projectRoot,
       sourceContentRoots = sourceContentRoots,
@@ -870,7 +871,6 @@ class ResourceRootBuilderTest : MockProjectBaseTest() {
   private fun filegroupTarget(
     label: String = "//target",
     resources: List<Path> = emptyList(),
-    baseDirectory: Path,
   ): TestBuildTarget = createTestBuildTarget(
     id = Label.parse(label),
     kind = TargetKind(
@@ -879,7 +879,6 @@ class ResourceRootBuilderTest : MockProjectBaseTest() {
       languageClasses = emptySet(),
     ),
     resources = resources,
-    baseDirectory = baseDirectory,
     data = emptyList(),
   )
 }

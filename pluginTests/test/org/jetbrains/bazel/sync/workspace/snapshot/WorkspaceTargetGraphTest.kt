@@ -16,7 +16,6 @@ import org.jetbrains.bsp.protocol.OutputLocationCollection
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
-import java.nio.file.Path
 
 class WorkspaceTargetGraphTest {
   @Nested
@@ -622,7 +621,6 @@ class WorkspaceTargetGraphTest {
       ),
       sources = OutputLocationCollection.EMPTY,
       resources = OutputLocationCollection.EMPTY,
-      baseDirectory = Path.of("/tmp"),
       generatorName = generatorName,
     )
   }
@@ -636,7 +634,6 @@ class WorkspaceTargetGraphTest {
       kind = TargetKind(kind = "java_library", ruleType = RuleType.LIBRARY, languageClasses = setOf(JavaLanguageClass.JAVA)),
       sources = OutputLocationCollection.EMPTY,
       resources = OutputLocationCollection.EMPTY,
-      baseDirectory = Path.of("/tmp"),
     )
   }
 
@@ -652,7 +649,6 @@ class WorkspaceTargetGraphTest {
       kind = TargetKind(kind = "java_library", ruleType = RuleType.LIBRARY, languageClasses = setOf(JavaLanguageClass.JAVA)),
       sources = OutputLocationCollection.EMPTY,
       resources = OutputLocationCollection.EMPTY,
-      baseDirectory = Path.of("/tmp"),
     )
   }
 

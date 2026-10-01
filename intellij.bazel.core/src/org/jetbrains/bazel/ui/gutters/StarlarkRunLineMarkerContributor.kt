@@ -4,7 +4,6 @@ import com.intellij.execution.lineMarker.RunLineMarkerContributor
 import com.intellij.icons.AllIcons
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiElement
 import com.intellij.psi.util.elementType
 import org.jetbrains.annotations.ApiStatus
@@ -17,6 +16,7 @@ import org.jetbrains.bazel.languages.starlark.psi.StarlarkFile
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkCallExpression
 import org.jetbrains.bazel.languages.starlark.psi.statements.StarlarkExpressionStatement
 import org.jetbrains.bazel.languages.starlark.repomapping.calculateLabel
+import org.jetbrains.bazel.languages.starlark.repomapping.toCanonicalLabelOrThis
 import org.jetbrains.bazel.runnerAction.BuildTargetAction
 import org.jetbrains.bazel.sync.workspace.targetKind.TargetKindService
 import org.jetbrains.bazel.target.targetStorage
@@ -58,17 +58,16 @@ open class StarlarkRunLineMarkerContributor : RunLineMarkerContributor() {
     val targetName = visitor.targetName ?: return null
     val tags = visitor.tags
     val targetLabel = calculateLabel(project, virtualFile, targetName) ?: return null
-    return calculateLineMarkerInfo(project, virtualFile, targetLabel, ruleName, tags).takeIf { it.actions.isNotEmpty() }
+    return calculateLineMarkerInfo(project, targetLabel, ruleName, tags).takeIf { it.actions.isNotEmpty() }
   }
 
   private fun calculateLineMarkerInfo(
     project: Project,
-    buildFile: VirtualFile,
     targetLabel: ResolvedLabel,
     ruleName: String,
     tags: List<String>?,
   ): Info {
-    val actions = calculateEligibleActions(project, buildFile, targetLabel, ruleName, tags).toTypedArray()
+    val actions = calculateEligibleActions(project, targetLabel, ruleName, tags).toTypedArray()
     val hasRunAction = actions.any { it !is BuildTargetAction }
     return Info(
       if (hasRunAction) AllIcons.Actions.Execute else AllIcons.Actions.Compile,
@@ -78,7 +77,6 @@ open class StarlarkRunLineMarkerContributor : RunLineMarkerContributor() {
 
   private fun calculateEligibleActions(
     project: Project,
-    buildFile: VirtualFile,
     targetLabel: ResolvedLabel,
     ruleName: String,
     tags: List<String>?,
@@ -92,7 +90,7 @@ open class StarlarkRunLineMarkerContributor : RunLineMarkerContributor() {
 
     if (targetKind.isExecutable) {
       val executableTarget =
-        targetInfo ?: NonImportedBuildTarget(targetLabel, targetKind, (buildFile.parent ?: buildFile).toNioPath(), tags)
+        targetInfo ?: NonImportedBuildTarget(targetLabel, targetKind, tags)
       addAll(getExecutorActions(project, executableTarget))
     }
   }

@@ -25,6 +25,7 @@ import org.jetbrains.bazel.sync.BazelOutFileHardLinks
 import org.jetbrains.bazel.sync.workspace.DefaultOutputLocationResolver
 import org.jetbrains.bazel.sync.workspace.importer.WorkspaceImporterContext
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceSnapshot
+import org.jetbrains.bazel.target.isWorkspace
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.OutputLocation
 import org.jetbrains.bsp.protocol.isGenerated
@@ -136,7 +137,7 @@ internal class PythonResolveIndexService(private val project: Project) {
         val explicitImportsPaths = PythonImportUtils.assembleExplicitImportsPaths(target)
         val qualifiedNameImportPaths = PythonImportUtils.assembleQualifiedNameImportPaths(explicitImportsPaths)
         val sourcesRelativePathToAbsolutePath: Map<Path, Path> =
-          if (target.isWorkspace) {
+          if (target.isWorkspace(snapshot.repoMapping)) {
             explicitImportsPaths
               .flatMap { importsPath ->
                 allPYSourcesInMainWorkspace.filter { it.startsWith(importsPath) }

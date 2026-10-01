@@ -23,6 +23,7 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
 import org.jetbrains.annotations.ApiStatus
+import org.jetbrains.bazel.commons.RepoMapping
 import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.config.BazelJavaBackendBundle
@@ -42,6 +43,7 @@ import org.jetbrains.bazel.sync.workspace.snapshot.FileToTargetMap
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceAspectIds
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
 import org.jetbrains.bazel.sync.workspace.snapshot.findBuildData
+import org.jetbrains.bazel.target.baseDirectoryLocation
 import org.jetbrains.bazel.workspace.indexAdditionalFiles.ProjectViewGlobSet
 import org.jetbrains.bazel.workspacemodel.entities.BazelDummyEntitySource
 import org.jetbrains.bazel.workspacemodel.entities.BazelModuleEntitySource
@@ -73,6 +75,7 @@ class ImportContext(
   val plan: JvmImportPlan,
   val naming: GlobalNamingContext,
   val jvmResolved: Map<WorkspaceTargetKey, JvmResolvedTarget>,
+  val repoMapping: RepoMapping,
   val projectName: String,
   val projectBasePath: Path,
   val dotIdeaPath: Path?,
@@ -108,7 +111,7 @@ class ImportContext(
     libraries.groupBy({ it.key.label }, { libraryNamesByKey[it.key]!! })
       .mapValues { (_, names) -> names.distinct() }
 
-  val dependencyBuilder: DependencyBuilder = DependencyBuilder(this.targets, jvmResolved, libraryShadowedProducers)
+  val dependencyBuilder: DependencyBuilder = DependencyBuilder(this.targets, jvmResolved, repoMapping, libraryShadowedProducers)
   val dummyModuleSplitter: DummyModuleSplitter = DummyModuleSplitter(projectBasePath, fileToTargets)
 
   // targets contain stripped keys, so we need to ensure that `key` is stripped too
@@ -256,7 +259,8 @@ class JvmTargetEntitiesBuilder(private val ctx: ImportContext) {
 
       else -> {
         val resolvedSourceRoots = SourceRootBuilder.resolve(target, ctx.testSourcesGlob, ctx.packagePrefixes, ctx.resolveLocation)
-        val splitResult = ctx.dummyModuleSplitter.split(target.baseDirectory, resolvedSourceRoots)
+        val baseDirectory = ctx.resolveLocation(target.baseDirectoryLocation)
+        val splitResult = ctx.dummyModuleSplitter.split(baseDirectory, resolvedSourceRoots)
         val mainSourceRoots = when (splitResult) {
           is DummyModuleSplitter.MergedRoots -> splitResult.mergedSourceRoots
           is DummyModuleSplitter.DummyModulesToAdd -> splitResult.originalSourceRoots
@@ -264,6 +268,7 @@ class JvmTargetEntitiesBuilder(private val ctx: ImportContext) {
         val dummies = (splitResult as? DummyModuleSplitter.DummyModulesToAdd)?.dummies.orEmpty()
         val resourceRoots = ResourceRootBuilder.resolve(
           target = target,
+          baseDirectory = baseDirectory,
           bazelProjectName = ctx.projectName,
           workspaceRoot = ctx.projectBasePath,
           sourceContentRoots = mainSourceRoots.map { it.sourcePath },

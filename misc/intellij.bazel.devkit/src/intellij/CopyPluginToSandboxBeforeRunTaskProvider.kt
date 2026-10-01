@@ -16,6 +16,7 @@ import org.jetbrains.bazel.run.config.BazelRunConfiguration
 import org.jetbrains.bazel.sync.environment.projectCtx
 import org.jetbrains.bazel.target.targetStorage
 import org.jetbrains.bazel.ui.notifications.BazelBalloonNotifier
+import org.jetbrains.bsp.protocol.id
 import java.io.IOException
 import java.nio.charset.StandardCharsets
 import java.nio.file.Files
@@ -84,17 +85,16 @@ internal class CopyPluginToSandboxBeforeRunTaskProvider : BeforeRunTaskProvider<
    */
   private fun guessDeployInfoPath(project: Project, targetLabel: Label): Path? {
     val bazelBinPath = project.projectCtx.bazelBinPath ?: return null
-    val workspaceRoot = project.projectCtx.projectRootDir?.toNioPath() ?: return null
 
     val targetInfo = project.targetStorage.getTargetSummary(targetLabel) ?: return null
 
-    // required for save relativize call below, but should always hold
-    if (!targetInfo.baseDirectory.startsWith(workspaceRoot)) {
+    // bazel-bin mirrors the package path of a main workspace target
+    if (!targetInfo.id.isMainWorkspace) {
       return null
     }
 
     val deployInfoFile = bazelBinPath
-      .resolve(workspaceRoot.relativize(targetInfo.baseDirectory))
+      .resolve(targetInfo.id.packagePath.toString())
       .resolve(targetLabel.targetName + DEPLOY_INFO_EXTENSION)
 
     return if (Files.exists(deployInfoFile)) deployInfoFile else null

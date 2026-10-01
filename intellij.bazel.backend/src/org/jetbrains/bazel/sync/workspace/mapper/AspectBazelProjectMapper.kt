@@ -11,12 +11,10 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.commons.LanguageClass
-import org.jetbrains.bazel.commons.LocalRepositoryMapping
-import org.jetbrains.bazel.commons.RepoMapping
+import org.jetbrains.bazel.commons.NoLocalRepositories
 import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.commons.constants.Constants
-import org.jetbrains.bazel.commons.getLocalRepositories
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.label.assumeResolved
 import org.jetbrains.bazel.label.label
@@ -47,7 +45,6 @@ class AspectBazelProjectMapper(
 
   suspend fun mapTargets(
     allTargets: Map<WorkspaceTargetKey, TargetIdeInfo>,
-    repoMapping: RepoMapping,
     build: Boolean,
     taskId: TaskId,
   ): List<BuildTarget> {
@@ -56,7 +53,7 @@ class AspectBazelProjectMapper(
       allTargets.filterKeys { key -> key.label.packagePath.pathSegments.firstOrNull() != Constants.DOT_BAZELBSP_DIR_NAME }
 
     val rawTargets: List<BuildTarget> = measure("create raw targets") {
-      createWorkspaceTargets(allImportableTargets, repoMapping, build, taskId)
+      createWorkspaceTargets(allImportableTargets, build, taskId)
     }
 
     return rawTargets
@@ -64,17 +61,13 @@ class AspectBazelProjectMapper(
 
   private suspend fun createWorkspaceTargets(
     allTargets: Map<WorkspaceTargetKey, TargetIdeInfo>,
-    repoMapping: RepoMapping,
     build: Boolean,
     taskId: TaskId,
   ): List<BuildTarget> {
-    val localRepositories = repoMapping.getLocalRepositories()
     return withContext(Dispatchers.Default) {
       allTargets.values.mapConcurrent { target ->
         createWorkspaceTarget(
           target = target,
-          repoMapping = repoMapping,
-          localRepositories = localRepositories,
           build = build,
           taskId = taskId,
         )
@@ -84,17 +77,14 @@ class AspectBazelProjectMapper(
 
   private suspend fun createWorkspaceTarget(
     target: TargetIdeInfo,
-    repoMapping: RepoMapping,
-    localRepositories: LocalRepositoryMapping,
     build: Boolean,
     taskId: TaskId,
   ): BuildTarget {
     val label = target.label().assumeResolved()
     val targetKind = inferTargetKind(target)
-    val baseDirectory = bazelPathsResolver.toDirectoryPath(label, repoMapping)
 
     val buildData = langMappers.all().flatMap { plugin ->
-      plugin.mapBuildTargetData(server, target, repoMapping).also { data ->
+      plugin.mapBuildTargetData(server, target).also { data ->
         if (!plugin.providedBuildTargetTypes.containsAll(data.map { it::class })) {
           error("Language plugin $plugin returned unregistered build target data: ${data.joinToString()}")
         }
@@ -108,7 +98,7 @@ class AspectBazelProjectMapper(
       category: (ArtifactLocation) -> MissingFileCategory,
     ): OutputLocationCollection {
       val existing = srcs.filter { src ->
-        val path = bazelPathsResolver.resolve(src, localRepositories)
+        val path = bazelPathsResolver.resolve(src, NoLocalRepositories)
         if (!path.exists()) {
           missingFilesReporter.add(category(src), src, path)
           return@filter false
@@ -124,11 +114,8 @@ class AspectBazelProjectMapper(
       kind = targetKind,
       sources = resolveSourceSet(target.srcsList) { src -> if (src.isSource) MissingFileCategory.SOURCES else MissingFileCategory.GENERATED_SOURCES },
       resources = resolveSourceSet(target.jvmTargetInfo.resourcesList) { MissingFileCategory.RESOURCES },
-      baseDirectory = baseDirectory,
       data = buildData,
       generatorName = target.generatorName,
-      isWorkspace = label.isMainWorkspace ||
-                    localRepositories.localRepositories.containsKey(label.assumeResolved().repoName),
       isTestOnly = target.testonly,
       tags = target.tagsList.toList(),
     ).also {

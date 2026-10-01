@@ -4,7 +4,6 @@ import com.google.devtools.intellij.ideinfo.IntellijIdeInfo
 import com.google.devtools.intellij.ideinfo.IntellijIdeInfo.CIdeInfo
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.commons.LanguageClass
-import org.jetbrains.bazel.commons.RepoMapping
 import org.jetbrains.bazel.server.BazelServerFacade
 import org.jetbrains.bazel.sync.workspace.languages.LanguagePlugin
 import org.jetbrains.bazel.sync.workspace.snapshot.OutputLocationCollectionBuilder
@@ -32,7 +31,6 @@ class CcLanguagePlugin : LanguagePlugin {
   override suspend fun mapBuildTargetData(
     server: BazelServerFacade,
     target: IntellijIdeInfo.TargetIdeInfo,
-    repoMapping: RepoMapping,
   ): List<BuildTargetData> {
     return when {
       target.hasCIdeInfo() -> listOf(mapIdeInfo(target.cIdeInfo, server.outputParser))

@@ -8,7 +8,7 @@ import org.jetbrains.bsp.protocol.BuildTargetData
  */
 @ApiStatus.Internal
 enum class TargetSection {
-  // base directory, generator name, `isWorkspace`, `isTestOnly`, tags
+  // generator name, `isTestOnly`, tags
   INFO,
 
   // target deps

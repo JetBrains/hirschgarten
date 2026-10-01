@@ -18,7 +18,7 @@ data class PythonBuildTarget(
   // Not used after full sync. Mapping is saved in `PythonResolveIndexService`
   val generatedSources: OutputLocationCollection = OutputLocationCollection.EMPTY,
   val externalSources: OutputLocationCollection = OutputLocationCollection.EMPTY,
-  val mainFile: Path? = null,
+  val mainFile: OutputLocation? = null,
   val mainModule: String? = null,
   val runnerScript: Path? = null,
   val targetArgs: List<String> = emptyList(),

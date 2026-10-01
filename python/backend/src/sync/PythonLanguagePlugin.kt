@@ -5,9 +5,7 @@ import com.google.devtools.intellij.ideinfo.IntellijIdeInfo
 import com.google.devtools.intellij.ideinfo.IntellijIdeInfo.TargetIdeInfo
 import com.intellij.openapi.project.Project
 import org.jetbrains.bazel.commons.LanguageClass
-import org.jetbrains.bazel.commons.LocalRepositoryMapping
-import org.jetbrains.bazel.commons.RepoMapping
-import org.jetbrains.bazel.commons.getLocalRepositories
+import org.jetbrains.bazel.commons.NoLocalRepositories
 import org.jetbrains.bazel.languages.projectview.ProjectView
 import org.jetbrains.bazel.python.debug.PythonDebugUtils
 import org.jetbrains.bazel.python.lang.PythonBuildTarget
@@ -50,16 +48,14 @@ internal class PythonLanguagePlugin : LanguagePlugin {
   override suspend fun mapBuildTargetData(
     server: BazelServerFacade,
     target: TargetIdeInfo,
-    repoMapping: RepoMapping,
   ): List<BuildTargetData> {
     if (!target.hasPythonTargetInfo()) {
       return emptyList()
     }
-    val localRepositories = repoMapping.getLocalRepositories()
     val pythonTarget = target.pythonTargetInfo
     val runnerScript =
       if (target.hasExecutableInfo()) {
-        server.bazelPathsResolver.resolve(target.executableInfo.executableFile, localRepositories)
+        server.bazelPathsResolver.resolve(target.executableInfo.executableFile, NoLocalRepositories)
       }
       else {
         null
@@ -69,11 +65,11 @@ internal class PythonLanguagePlugin : LanguagePlugin {
         version = pythonTarget.version.takeUnless(String::isNullOrEmpty),
         interpreter = pythonTarget.parseInterpreter(server),
         imports = pythonTarget.importsList.toList(),
-        generatedSources = pythonTarget.resolveGeneratedSources(server, localRepositories),
-        externalSources = server.outputParser.parse(getExternalSources(server, target, localRepositories))
+        generatedSources = pythonTarget.resolveGeneratedSources(server),
+        externalSources = server.outputParser.parse(getExternalSources(server, target))
           .map { it.toSitePackagesDirectory() }
           .let { OutputLocationCollectionBuilder.ofLocations(it) },
-        mainFile = MainSourceFinder.findMainFile(target, pythonTarget, server.bazelPathsResolver, localRepositories),
+        mainFile = MainSourceFinder.findMainFile(target, pythonTarget)?.let { server.outputParser.parse(it) },
         mainModule = pythonTarget.mainModule,
         runnerScript = runnerScript,
         targetArgs = PythonDebugUtils.extractPythonTargetArgs(target),
@@ -84,9 +80,8 @@ internal class PythonLanguagePlugin : LanguagePlugin {
   private fun getExternalSources(
     server: BazelServerFacade,
     targetInfo: TargetIdeInfo,
-    localRepositories: LocalRepositoryMapping,
   ): List<ArtifactLocation> =
-    targetInfo.sourcesList.mapNotNull { it.takeIf { server.bazelPathsResolver.isExternal(it, localRepositories) } }.toList()
+    targetInfo.sourcesList.mapNotNull { it.takeIf { server.bazelPathsResolver.isExternal(it, NoLocalRepositories) } }.toList()
 
   private suspend fun IntellijIdeInfo.PythonTargetInfo.parseInterpreter(server: BazelServerFacade): OutputLocation? =
     when {
@@ -97,12 +92,11 @@ internal class PythonLanguagePlugin : LanguagePlugin {
 
   private suspend fun IntellijIdeInfo.PythonTargetInfo.resolveGeneratedSources(
     server: BazelServerFacade,
-    localRepositories: LocalRepositoryMapping,
   ): OutputLocationCollection {
     val roots = server.outputParser.parse(generatedSourcesList)
     val files = generatedSourcesList.zip(roots)
       .flatMap { (artifact, root) ->
-        val rootFile = server.bazelPathsResolver.resolve(artifact, localRepositories)
+        val rootFile = server.bazelPathsResolver.resolve(artifact, NoLocalRepositories)
         // some code gen rules return directories. we need to figure out what files are there
         if (rootFile.isDirectory()) {
           Files.walk(rootFile).use { stream ->

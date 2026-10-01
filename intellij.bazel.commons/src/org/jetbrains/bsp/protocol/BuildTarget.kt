@@ -6,7 +6,6 @@ import org.jetbrains.bazel.label.DependencyLabel
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.sync.workspace.persistence.TargetLoadOptions
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
-import java.nio.file.Path
 
 @ApiStatus.Internal
 interface BuildTarget {
@@ -15,12 +14,7 @@ interface BuildTarget {
   val loaded: TargetLoadOptions
 
   // TargetSection.INFO
-  val baseDirectory: Path
   val generatorName: String?
-  /**
-   * Indicates if this target belongs to workspace, or counted as "external"
-   */
-  val isWorkspace: Boolean
   val isTestOnly: Boolean
   val tags: List<String>
 

@@ -341,9 +341,7 @@ class SnapshotGeneration internal constructor(
     return LazyWorkspaceTarget(
       key = key,
       kind = partialData.kind,
-      baseDirectory = partialData.baseDirectory,
       generatorName = partialData.generatorName,
-      isWorkspace = partialData.isWorkspace,
       isTestOnly = partialData.isTestOnly,
       tags = partialData.tags,
       loaded = options.copy(sections = options.sections + TargetSection.INFO),
@@ -490,9 +488,7 @@ class SnapshotGeneration internal constructor(
 
     val partialTarget = PartialWorkspaceTarget(
       kind = raw.kind,
-      baseDirectory = raw.baseDirectory,
       generatorName = raw.generatorName,
-      isWorkspace = raw.isWorkspace,
       isTestOnly = raw.isTestOnly,
       tags = raw.tags,
     )

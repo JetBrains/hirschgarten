@@ -55,8 +55,9 @@ object PythonDebugUtils {
     val pythonPath = buildPythonPathEnv(runfiles, pythonTargetData.imports, EnvironmentUtil.getValue("PYTHONPATH"))
     val pythonBinary = pythonTargetData.findPythonBinary(project, runfiles, target)
     val projectRoots = listOfNotNull(project.rootDir.toNioPathOrNull(), runfiles)
+    val mainFile = pythonTargetData.mainFile?.let { project.targetStorage.resolveExecrootOutputLocation(it) }
     val libraryRoots = listOfNotNull(
-      runnerScript.takeIf { pythonTargetData.mainFile != runnerScript },
+      runnerScript.takeIf { mainFile != runnerScript },
       runfilesRoot,
       findStage2Bootstrap(runfiles, runnerScript),
       pythonBinary?.findRunfilesInterpreterRoot(runfilesRoot),
@@ -76,7 +77,7 @@ object PythonDebugUtils {
       if (runnerScript.isPythonScript()) {
         runnerScript
       } else {
-        pythonTargetData.mainFile ?: return null
+        mainFile ?: return null
       }
     return PythonDebugInfo(
       pythonFile = pythonFile,

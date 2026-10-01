@@ -91,7 +91,6 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.nio.file.Files
 import java.nio.file.Path
-import kotlin.io.path.Path
 import kotlin.io.path.copyTo
 import kotlin.io.path.createDirectories
 import kotlin.io.path.createParentDirectories
@@ -747,7 +746,6 @@ class PythonProjectSyncTest : MockProjectBaseTest() {
           ruleType = RuleType.BINARY,
           languageClasses = setOf(PythonLanguageClass.PYTHON),
         ),
-        baseDirectory = Path("/targets_base_dir"),
         data = listOf(
           PythonBuildTarget(
             version = "3",

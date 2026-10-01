@@ -9,26 +9,22 @@ import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.BuildTargetData
 import org.jetbrains.bsp.protocol.OutputLocationCollection
-import java.nio.file.Path
 
 @ApiStatus.Internal
 data class NonImportedBuildTarget(
   override val key: WorkspaceTargetKey,
   override val kind: TargetKind,
-  override val baseDirectory: Path,
   override val tags: List<String> = emptyList()
 ) : BuildTarget {
   constructor(
     label: Label,
     kind: TargetKind,
-    baseDirectory: Path,
     tags: List<String> = emptyList(),
-  ) : this(WorkspaceTargetKey(label = label), kind, baseDirectory, tags)
+  ) : this(WorkspaceTargetKey(label = label), kind, tags)
 
   override val loaded: TargetLoadOptions get() = TargetLoadOptions.MINIMAL
 
   override val generatorName: String? get() = null
-  override val isWorkspace: Boolean get() = true
   override val isTestOnly: Boolean get() = false
 
   override val dependencies: List<DependencyLabel> get() = listOf()

@@ -221,7 +221,6 @@ internal class BazelRunConfigurationProducerSuppressorTest : BazelBasePlatformTe
         ),
       sources = OutputLocationCollection.EMPTY,
       resources = OutputLocationCollection.EMPTY,
-      baseDirectory = Path.of(myFixture.tempDirPath, "base_dir"),
       data = listOf(
         PythonBuildTarget(
           version = "3.8",
@@ -229,7 +228,7 @@ internal class BazelRunConfigurationProducerSuppressorTest : BazelBasePlatformTe
           listOf(),
           OutputLocationCollection.EMPTY,
           OutputLocationCollection.EMPTY,
-          mainFile = mainFile?.virtualFile?.toNioPath(),
+          mainFile = mainFile?.virtualFile?.toNioPath()?.let(::testLocation),
           mainModule = null,
         ),
       ),

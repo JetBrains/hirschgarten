@@ -91,7 +91,6 @@ class ProjectPostSyncHookTest : MockProjectBaseTest() {
           languageClasses = setOf(LanguageClass("go", setOf("go"))),
         ),
         sources = listOf(source),
-        baseDirectory = projectDir.get(),
         data = listOf(
           GoBuildTarget(
             importPath = "example.com/app",

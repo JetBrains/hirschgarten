@@ -26,7 +26,6 @@ data class JvmBuildTarget(
   val generatedJars: List<JvmOutputs> = emptyList(),
   val jdepsJars: List<JdepsJar> = emptyList(),
   val intellijPluginJars: OutputLocationCollection = OutputLocationCollection.EMPTY,
-  val containsInternalJars: Boolean = false,
   val hasExecutableInfo: Boolean = false,
   val checkStrictDependencies: StrictDependencyCheckedType = StrictDependencyCheckedType.OFF,
 ) : BuildTargetData

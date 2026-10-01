@@ -40,6 +40,7 @@ import com.jetbrains.python.sdk.createLocalSdkGuessingTypeByPath
 import com.jetbrains.python.sdk.internal.PYTHON_MODULE_ID
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.annotations.VisibleForTesting
+import org.jetbrains.bazel.commons.RepoMapping
 import org.jetbrains.bazel.commons.getLocalRepositories
 import org.jetbrains.bazel.progress.withSubtask
 import org.jetbrains.bazel.python.lang.PythonBuildTarget
@@ -74,6 +75,7 @@ import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.OutputLocation
 import org.jetbrains.bsp.protocol.StrictDependencyCheckedType
 import org.jetbrains.bsp.protocol.TaskId
+import org.jetbrains.bsp.protocol.isUserCode
 import org.jetbrains.bsp.protocol.utils.StringUtils
 import java.nio.file.Path
 import kotlin.io.path.isDirectory
@@ -148,7 +150,7 @@ internal class BazelPythonWorkspaceImporter(val context: WorkspaceImporterContex
           snapshot.targetGraph.findAllTransitiveSuccessorsWithoutRootTargets(workspaceTargetKey)
             .mapNotNull { snapshot.targets.findTargetByKey(it, TargetLoadOptions.ALL) }
             .filterBuildTarget<PythonBuildTarget>()
-            .filter { !it.second.externalSources.isEmpty() }
+            .filter { it.second.nonLocalExternalSources(snapshot.repoMapping).any() }
             .map { it.first.key }
             .distinct()
             .toList()
@@ -207,11 +209,14 @@ internal class BazelPythonWorkspaceImporter(val context: WorkspaceImporterContex
   private fun getExternalSourcePaths(context: WorkspaceImporterContext, snapshot: WorkspaceSnapshot, target: BuildTarget): List<Path> {
     val pythonTarget = target.findBuildData<PythonBuildTarget>() ?: return emptyList()
     val localRepositories = snapshot.repoMapping.getLocalRepositories()
-    return pythonTarget.externalSources.getOutputLocations()
+    return pythonTarget.nonLocalExternalSources(snapshot.repoMapping)
       .mapNotNull { context.outputResolver.resolve(it, localRepositories) }
       .distinct()
       .toList()
   }
+
+  private fun PythonBuildTarget.nonLocalExternalSources(repoMapping: RepoMapping): Sequence<OutputLocation> =
+    externalSources.getOutputLocations().filterNot { it.isUserCode(repoMapping) }
 
   private suspend fun onPostProcessing(snapshot: WorkspaceSnapshot, taskId: TaskId): WorkspaceImporterResult {
     /**

@@ -8,6 +8,7 @@ import com.intellij.platform.workspace.jps.entities.ModuleDependencyItem
 import com.intellij.platform.workspace.storage.SymbolicEntityId
 import com.intellij.util.containers.Interner
 import org.jetbrains.annotations.ApiStatus
+import org.jetbrains.bazel.commons.RepoMapping
 import org.jetbrains.bazel.label.DependencyLabel
 import org.jetbrains.bazel.label.DependencyLabelKind
 import org.jetbrains.bazel.label.Label
@@ -15,6 +16,7 @@ import org.jetbrains.bazel.sync.workspace.languages.jvm.JvmDependency
 import org.jetbrains.bazel.sync.workspace.languages.jvm.extractJvmBuildTarget
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceAspectIds
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
+import org.jetbrains.bazel.target.isWorkspace
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.StrictDependencyCheckedType
 import com.intellij.platform.workspace.jps.entities.DependencyScope as EntitiesDependencyScope
@@ -35,6 +37,7 @@ private val idInterner: Interner<SymbolicEntityId<*>> = Interner.createWeakInter
 class DependencyBuilder(
   private val targets: Collection<BuildTarget>,
   private val jvmResolved: Map<WorkspaceTargetKey, JvmResolvedTarget>,
+  private val repoMapping: RepoMapping,
   private val libraryShadowedProducers: Map<WorkspaceTargetKey, List<WorkspaceTargetKey>> = emptyMap(),
 ) {
   private val strictDependencies: Map<WorkspaceTargetKey, List<Label>> = calculateExportedDependenciesTransitiveClosure()
@@ -67,7 +70,7 @@ class DependencyBuilder(
   }
 
   private fun checkStrictDependencies(target: BuildTarget): StrictDependencyCheckedType {
-    if (!target.isWorkspace) return StrictDependencyCheckedType.OFF
+    if (!target.isWorkspace(repoMapping)) return StrictDependencyCheckedType.OFF
     return extractJvmBuildTarget(target)?.checkStrictDependencies ?: StrictDependencyCheckedType.OFF
   }
 

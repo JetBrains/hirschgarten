@@ -14,7 +14,6 @@ import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetGraph
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.OutputLocationCollection
-import java.nio.file.Path
 
 // contain lightweight parts of `WorkspaceSnapshot` which
 // shall be serialized into on disk blob
@@ -38,9 +37,7 @@ class PersistentWorkspaceSnapshot(
 @ApiStatus.Internal
 class PartialWorkspaceTarget(
   val kind: TargetKind,
-  val baseDirectory: Path,
   val generatorName: String?,
-  val isWorkspace: Boolean,
   val isTestOnly: Boolean,
   val tags: List<String>
 )

@@ -6,13 +6,7 @@ import com.intellij.bazel.python.backend.sync.MainSourceFinder
 import io.kotest.assertions.throwables.shouldNotThrowAny
 import io.kotest.matchers.nulls.shouldBeNull
 import io.kotest.matchers.shouldBe
-import org.jetbrains.bazel.commons.BazelInfo
-import org.jetbrains.bazel.commons.BazelPathsResolver
-import org.jetbrains.bazel.commons.BazelRelease
-import org.jetbrains.bazel.commons.LocalRepositoryMapping
 import org.junit.jupiter.api.Test
-import java.nio.file.Path
-import kotlin.io.path.Path
 
 class MainSourceFinderTest {
   @Test
@@ -23,7 +17,7 @@ class MainSourceFinderTest {
 
     val fileFound = findMainFile(targetInfo)
 
-    fileFound shouldBe absolutePackagePath().resolve(mainFile)
+    fileFound shouldBe artifactLocation(mainFile)
   }
 
   @Test
@@ -39,7 +33,7 @@ class MainSourceFinderTest {
 
     val fileFound = findMainFile(targetInfo)
 
-    fileFound shouldBe absolutePackagePath().resolve(mainSource)
+    fileFound shouldBe artifactLocation(mainSource)
   }
 
   @Test
@@ -63,8 +57,8 @@ class MainSourceFinderTest {
     val fileFound1 = findMainFile(targetInfo1)
     val fileFound2 = findMainFile(targetInfo2)
 
-    fileFound1 shouldBe absolutePackagePath().resolve(mainSource)
-    fileFound2 shouldBe absolutePackagePath().resolve(Path.of("tools", mainSource))
+    fileFound1 shouldBe artifactLocation(mainSource)
+    fileFound2 shouldBe artifactLocation("tools/$mainSource")
   }
 
   @Test
@@ -90,11 +84,8 @@ class MainSourceFinderTest {
     val fileFound1 = findMainFile(targetInfo1)
     val fileFound2 = findMainFile(targetInfo2)
 
-    val expected1 = absolutePackagePath(REPO_MODULE).resolve(mainSource)
-    val expected2 = absolutePackagePath(REPO_DEEPER).resolve(Path.of("tools", mainSource))
-
-    fileFound1 shouldBe expected1
-    fileFound2 shouldBe expected2
+    fileFound1 shouldBe artifactLocation(mainSource, repoRootPath(REPO_MODULE))
+    fileFound2 shouldBe artifactLocation("tools/$mainSource", repoRootPath(REPO_DEEPER))
   }
 
   @Test
@@ -133,42 +124,20 @@ class MainSourceFinderTest {
     val fileFound1 = findMainFile(targetInfo1)
     val fileFound2 = findMainFile(targetInfo2)
 
-    fileFound1 shouldBe absolutePackagePath().resolve(mainSource)
-    fileFound2 shouldBe absolutePackagePath(REPO_MODULE).resolve(mainSource)
+    fileFound1 shouldBe artifactLocation(mainSource)
+    fileFound2 shouldBe artifactLocation(mainSource, repoRootPath(REPO_MODULE))
   }
 }
 
-private val WORKSPACE_ROOT = Path.of("projects", "mockProject")
 private const val REPO_MODULE = "module+"
 private const val REPO_DEEPER = "deeper"
 
 private const val PACKAGE_STRING = "aaa/bbb"
-private val PACKAGE_RELATIVE_PATH = Path.of("aaa", "bbb")
 
-private val repoPaths =
-  mapOf(
-    REPO_MODULE to Path.of("module"),
-    REPO_DEEPER to Path.of("level", "deeper"),
-  )
+private fun repoRootPath(repo: String): String = "external/$repo"
 
-private val localRepositoryMapping = LocalRepositoryMapping(localRepositories = repoPaths)
-
-private val mockBazelInfo =
-  BazelInfo(
-    execRoot = Path("execRoot"),
-    outputBase = Path("outputBase"),
-    workspaceRoot = WORKSPACE_ROOT,
-    bazelBin = Path("bazel-bin"),
-    release = BazelRelease(7),
-    isBzlModEnabled = true,
-    isWorkspaceEnabled = true,
-    externalAutoloads = emptyList(),
-  )
-
-private val bazelPathsResolver = BazelPathsResolver(mockBazelInfo)
-
-private fun findMainFile(targetInfo: IntellijIdeInfo.TargetIdeInfo): Path? =
-  MainSourceFinder.findMainFile(targetInfo, targetInfo.pythonTargetInfo, bazelPathsResolver, localRepositoryMapping)
+private fun findMainFile(targetInfo: IntellijIdeInfo.TargetIdeInfo): Common.ArtifactLocation? =
+  MainSourceFinder.findMainFile(targetInfo, targetInfo.pythonTargetInfo)
 
 private fun createTargetInfo(
   label: String,
@@ -176,7 +145,7 @@ private fun createTargetInfo(
   mainFileRelativePath: String?,
   repo: String? = null,
 ): IntellijIdeInfo.TargetIdeInfo {
-  val repoRootPath = if (repo != null) "external/$repo" else ""
+  val repoRootPath = if (repo != null) repoRootPath(repo) else ""
   return IntellijIdeInfo.TargetIdeInfo.newBuilder()
     .setKey(targetKey(label))
     .addAllSrcs(sources.map { artifactLocation(it, repoRootPath) })
@@ -208,11 +177,3 @@ private fun pythonInfo(mainFileRelativePath: String?, rootPath: String = "") =
         setMain(mainValue)
       }
     }.build()
-
-private fun absolutePackagePath(repoName: String? = null): Path {
-  val repoPath = when (repoName) {
-    null -> WORKSPACE_ROOT
-    else -> WORKSPACE_ROOT.resolve(repoPaths[repoName]!!)
-  }
-  return repoPath.resolve(PACKAGE_RELATIVE_PATH)
-}

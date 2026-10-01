@@ -7,7 +7,6 @@ import com.intellij.openapi.diagnostic.logger
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.commons.BazelPathsResolver
 import org.jetbrains.bazel.commons.LanguageClass
-import org.jetbrains.bazel.commons.RepoMapping
 import org.jetbrains.bazel.golang.GoLanguageClass
 import org.jetbrains.bazel.server.BazelServerFacade
 import org.jetbrains.bazel.sync.workspace.languages.LanguagePlugin
@@ -40,7 +39,6 @@ class GoLanguagePlugin : LanguagePlugin {
   override suspend fun mapBuildTargetData(
     server: BazelServerFacade,
     target: TargetIdeInfo,
-    repoMapping: RepoMapping,
   ): List<BuildTargetData> {
     if (!target.hasGoTargetInfo()) {
       return emptyList()

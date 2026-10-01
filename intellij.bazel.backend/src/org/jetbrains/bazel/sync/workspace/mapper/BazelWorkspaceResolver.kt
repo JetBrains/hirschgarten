@@ -29,7 +29,7 @@ object BazelWorkspaceResolver {
         bazelPathsResolver = server.bazelPathsResolver,
         projectView = server.projectView,
       )
-      val targets = phasedMapper.mapTargets(repoMapping, phasedSyncProject.modules)
+      val targets = phasedMapper.mapTargets(phasedSyncProject.modules)
       BazelResolvedWorkspace(
         workspaceName = null,
         repoMapping = repoMapping,
@@ -65,7 +65,6 @@ object BazelWorkspaceResolver {
         )
       val targets = bazelMapper.mapTargets(
         allTargets = syncProject.targets,
-        repoMapping = extendedRepoMapping,
         build = build,
         taskId = taskId,
       )

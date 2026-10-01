@@ -6,6 +6,9 @@ import org.jetbrains.bazel.clion.sync.CcBuildTarget
 import org.jetbrains.bazel.clion.sync.CcToolchainBuildTarget
 import org.jetbrains.bazel.clion.workspace.presentable
 import org.jetbrains.bazel.sync.workspace.persistence.TargetLoadOptions
+import org.jetbrains.bazel.commons.RepoMapping
+import org.jetbrains.bazel.target.baseDirectoryLocation
+import org.jetbrains.bazel.target.isWorkspace
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.BuildTargetData
 import org.jetbrains.bsp.protocol.isFull
@@ -35,17 +38,17 @@ internal class DebugTargetInfoAction : BazelDebugAction() {
       fail("target ${chosen.key} did not load every section")
     }
 
-    return target.toJsonMap()
+    return target.toJsonMap(snapshot.repoMapping)
   }
 }
 
-private fun BuildTarget.toJsonMap(): Map<String, Any?> {
+private fun BuildTarget.toJsonMap(repoMapping: RepoMapping): Map<String, Any?> {
   return mapOf(
     "key" to key,
     "kind" to kind,
-    "base_directory" to baseDirectory,
+    "base_directory" to baseDirectoryLocation,
     "generator_name" to generatorName,
-    "is_workspace" to isWorkspace,
+    "is_workspace" to isWorkspace(repoMapping),
     "is_test_only" to isTestOnly,
     "tags" to tags,
     "dependencies" to dependencies,

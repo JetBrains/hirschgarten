@@ -23,5 +23,12 @@ data object RepoMappingDisabled : RepoMapping
 @ApiStatus.Internal
 data class LocalRepositoryMapping(val localRepositories: Map<String, Path>)
 
+/**
+ * A mapping without local repositories.
+ * Use it for a generated artifact or an existence check, which the local override does not change.
+ */
+@ApiStatus.Internal
+val NoLocalRepositories: LocalRepositoryMapping = LocalRepositoryMapping(emptyMap())
+
 @ApiStatus.Internal
 fun RepoMapping.getLocalRepositories() = LocalRepositoryMapping((this as? BzlmodRepoMapping)?.canonicalRepoNameToLocalPath ?: emptyMap())

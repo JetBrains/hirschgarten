@@ -10,7 +10,6 @@ import org.jetbrains.bazel.sync.workspace.languages.jvm.KotlinBuildTarget
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
 import org.jetbrains.bsp.protocol.BuildTargetData
 import org.jetbrains.bsp.protocol.OutputLocationCollection
-import kotlin.io.path.Path
 
 object TestBuildTargetFactory {
   fun createSimpleJavaLibraryTarget(id: Label): TestBuildTarget =
@@ -56,6 +55,5 @@ object TestBuildTargetFactory {
     data = data,
     sources = OutputLocationCollection.EMPTY,
     resources = OutputLocationCollection.EMPTY,
-    baseDirectory = Path("base/dir"),
   )
 }

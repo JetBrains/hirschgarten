@@ -45,6 +45,7 @@ object ResourceRootBuilder {
 
   fun resolve(
     target: BuildTarget,
+    baseDirectory: Path?,
     bazelProjectName: String,
     workspaceRoot: Path,
     sourceContentRoots: List<Path> = emptyList(),
@@ -62,7 +63,7 @@ object ResourceRootBuilder {
     val leftoverPaths = collapseLeftoversByTopology(
       leftovers = result.leftovers,
       alreadyMerged = result.merged,
-      ceilingFor = { parent -> collapseCeiling(parent, target.baseDirectory, workspaceRoot) },
+      ceilingFor = { parent -> collapseCeiling(parent, baseDirectory, workspaceRoot) },
       dirtinessCache = dirtinessCache,
     )
     return (result.merged + leftoverPaths).map { path ->
@@ -273,8 +274,8 @@ object ResourceRootBuilder {
   //    in this case treat closest bazel package as collapse celling, generally safe
   // by widening scope of resource file merging we prevent creating single file resource content roots per
   // resource file which with big enough resource file set can cause OOM
-  private fun collapseCeiling(parent: Path, baseDirectory: Path, workspaceRoot: Path): Path? =
-    if (parent.startsWith(baseDirectory)) baseDirectory else findClosestOwningPackage(parent, workspaceRoot)
+  private fun collapseCeiling(parent: Path, baseDirectory: Path?, workspaceRoot: Path): Path? =
+    if (baseDirectory != null && parent.startsWith(baseDirectory)) baseDirectory else findClosestOwningPackage(parent, workspaceRoot)
 
   private fun findClosestOwningPackage(path: Path, workspaceRoot: Path): Path? {
     var next: Path? = path

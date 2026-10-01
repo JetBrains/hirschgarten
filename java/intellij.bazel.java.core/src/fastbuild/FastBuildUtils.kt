@@ -35,7 +35,6 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Key
 import com.intellij.openapi.util.io.toCanonicalPath
 import com.intellij.openapi.vfs.VirtualFile
-import com.intellij.openapi.vfs.VirtualFileManager
 import com.intellij.task.ProjectTaskRunner
 import com.intellij.task.TaskRunnerResults
 import kotlinx.coroutines.Dispatchers
@@ -102,7 +101,6 @@ internal object FastBuildUtils {
   suspend fun fastBuildFiles(project: Project, files: List<VirtualFile>) {
     val workspaceRoot = project.rootDir.toNioPath()
     val targetUtils = project.targetStorage
-    val virtualFileManager = VirtualFileManager.getInstance()
     val fastBuildService = FastBuildStatusService.getInstance(project)
     val buildInfos =
       files
@@ -128,10 +126,9 @@ internal object FastBuildUtils {
           ),
         )
       }
-      val relativePath =
-        entry.value.baseDirectory.let {
-          virtualFileManager.findFileByNioPath(it)?.toNioPath()?.relativeTo(workspaceRoot)
-        } ?: continue
+      // bazel-bin mirrors the package path of a main workspace target
+      if (!entry.value.id.isMainWorkspace) continue
+      val relativePath = entry.value.id.packagePath.toString()
       val isLib = targetUtils.isLibrary(entry.value.id)
       val bazelBin =
         project.projectCtx.bazelBinPath ?: throw ExecutionException(BazelPluginBundle.message("widget.fastbuild.error.missing.path"))

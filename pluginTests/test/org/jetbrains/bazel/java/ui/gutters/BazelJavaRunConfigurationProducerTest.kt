@@ -26,7 +26,6 @@ import org.jetbrains.kotlin.psi.psiUtil.getChildOfType
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
-import kotlin.io.path.Path
 
 @RunWith(JUnit4::class)
 class BazelJavaRunConfigurationProducerTest : BazelBasePlatformTestCase() {
@@ -37,7 +36,6 @@ class BazelJavaRunConfigurationProducerTest : BazelBasePlatformTestCase() {
       ruleType = RuleType.BINARY,
       languageClasses = setOf(JavaLanguageClass.JAVA),
     ),
-    Path("base/directory"),
   )
 
   private val jetBrainsTestRunnerTarget = NonImportedBuildTarget(
@@ -47,7 +45,6 @@ class BazelJavaRunConfigurationProducerTest : BazelBasePlatformTestCase() {
       ruleType = RuleType.TEST,
       languageClasses = setOf(JavaLanguageClass.JAVA),
     ),
-    Path("base/directory"),
     tags = listOf(JetBrainsTestRunner.TAG),
   )
 

@@ -281,6 +281,8 @@ class TargetStorage(private val project: Project, private val coroutineScope: Co
 
   fun getTotalFileCount(): Int = view().snapshot.fileToTarget.size
 
+  fun repoMapping(): RepoMapping = view().snapshot.repoMapping
+
   fun resolveExecrootOutputLocation(location: OutputLocation): Path? =
     view().let { view -> view.outputLocationResolver.resolve(location, view.snapshot.repoMapping.getLocalRepositories()) }
 }

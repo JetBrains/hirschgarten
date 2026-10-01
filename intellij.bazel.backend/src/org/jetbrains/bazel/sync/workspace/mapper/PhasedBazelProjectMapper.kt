@@ -4,7 +4,6 @@ import com.google.devtools.build.lib.query2.proto.proto2api.Build
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.commons.BazelPathsResolver
 import org.jetbrains.bazel.commons.LanguageClass
-import org.jetbrains.bazel.commons.RepoMapping
 import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.commons.phased.generatorName
 import org.jetbrains.bazel.commons.phased.interestingDeps
@@ -35,7 +34,6 @@ class PhasedBazelProjectMapper(
   private val projectView: ProjectView,
 ) {
   fun mapTargets(
-    repoMapping: RepoMapping,
     targets: Map<Label, Build.Target>
   ): List<BuildTarget> {
     val shouldSyncManualTargets = projectView.allowManualTargetsSync
@@ -46,24 +44,21 @@ class PhasedBazelProjectMapper(
         .filter { it.isSupported() }
         .filter { shouldSyncManualTargets || !it.isManual }
         .filterNot { it.isNoIde }
-        .map { it.toBspBuildTarget(repoMapping, targets) }
+        .map { it.toBspBuildTarget(targets) }
         .toList()
     return targets
   }
 
-  private fun Build.Target.toBspBuildTarget(repoMapping: RepoMapping, targets: Map<Label, Build.Target>): BuildTarget {
+  private fun Build.Target.toBspBuildTarget(targets: Map<Label, Build.Target>): BuildTarget {
     val label = Label.parse(name).assumeResolved()
-    val baseDirectory = bazelPathsResolver.toDirectoryPath(label, repoMapping)
     return WorkspaceTarget(
       key = WorkspaceTargetKey(label = label),
       dependencies = interestingDeps.map { DependencyLabel.parse(it) },
       kind = inferKind(),
       sources = OutputLocationCollectionBuilder.ofLocations(calculateSources(targets)),
       resources = OutputLocationCollectionBuilder.ofLocations(calculateResources(targets)),
-      baseDirectory = baseDirectory,
       data = emptyList(),
       generatorName = generatorName,
-      isWorkspace = true, // TODO
       isTestOnly = false,
       tags = tags,
     )

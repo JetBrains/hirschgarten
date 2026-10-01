@@ -6,7 +6,6 @@ import com.intellij.openapi.project.Project
 import com.intellij.util.IncorrectOperationException
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.commons.LanguageClass
-import org.jetbrains.bazel.commons.RepoMapping
 import org.jetbrains.bazel.languages.projectview.ProjectView
 import org.jetbrains.bazel.sync.workspace.importer.BazelWorkspaceImporter
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceSyncConfig
@@ -34,7 +33,6 @@ interface LanguagePlugin {
   suspend fun mapBuildTargetData(
     server: BazelServerFacade,
     target: IntellijIdeInfo.TargetIdeInfo,
-    repoMapping: RepoMapping,
   ): List<BuildTargetData>
 
   companion object {

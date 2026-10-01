@@ -68,8 +68,9 @@ private fun PyFile.isMainFileInTarget(target: BuildTarget): Boolean {
   }
   val pythonBuildTargetData = project.targetStorage.getTargetDataForLabel<PythonBuildTarget>(target.id) ?: return false
   val fileNioPath = virtualFile.toNioPathOrNull()
-  return if (pythonBuildTargetData.hasMainFileDefined()) {
-    pythonBuildTargetData.mainFile == fileNioPath
+  val mainFile = pythonBuildTargetData.mainFile?.let { project.targetStorage.resolveExecrootOutputLocation(it) }
+  return if (mainFile != null && mainFile.isRegularFile()) {
+    mainFile == fileNioPath
   } else if (pythonBuildTargetData.mainModule.isNullOrEmpty()) {
     // When both the main file and main module aren't defined, py_binary expects targetName + ".py".
     virtualFile.name == "${target.id.targetName}.py"
@@ -78,8 +79,6 @@ private fun PyFile.isMainFileInTarget(target: BuildTarget): Boolean {
     false
   }
 }
-
-private fun PythonBuildTarget.hasMainFileDefined(): Boolean = mainFile != null && mainFile.isRegularFile()
 
 private fun PsiElement.getTestFunctionFromContext(): PyFunction? =
   getTestFunctionFromNameIdentifier()

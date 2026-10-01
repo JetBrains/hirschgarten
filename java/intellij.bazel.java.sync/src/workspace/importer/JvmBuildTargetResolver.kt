@@ -2,6 +2,7 @@ package org.jetbrains.bazel.workspace.importer
 
 import com.intellij.openapi.util.Ref
 import org.jetbrains.annotations.ApiStatus
+import org.jetbrains.bazel.commons.RepoMapping
 import org.jetbrains.bazel.label.DependencyLabel
 import org.jetbrains.bazel.label.DependencyLabelKind
 import org.jetbrains.bazel.label.Label
@@ -16,6 +17,7 @@ import org.jetbrains.bazel.sync.workspace.mapper.normal.MavenCoordinatesResolver
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceConfigurationId
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
 import org.jetbrains.bazel.sync.workspace.snapshot.findBuildData
+import org.jetbrains.bazel.target.isWorkspace
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.LibraryItem
 import org.jetbrains.bsp.protocol.MavenCoordinates
@@ -24,6 +26,7 @@ import org.jetbrains.bsp.protocol.OutputLocationCollection
 import org.jetbrains.bsp.protocol.allJars
 import org.jetbrains.bsp.protocol.isGenerated
 import org.jetbrains.bsp.protocol.isSource
+import org.jetbrains.bsp.protocol.isUserCode
 import org.jetbrains.bsp.protocol.nonGeneratedSources
 import org.jetbrains.bsp.protocol.relativeNioPath
 import org.jetbrains.bsp.protocol.utils.StringUtils
@@ -33,6 +36,10 @@ import kotlin.io.path.name
 
 private typealias DependencyLabelPatcher = (DependencyLabel) -> DependencyLabel
 
+internal fun JvmBuildTarget.containsInternalJars(repoMapping: RepoMapping): Boolean =
+  outputSourceJars.getOutputLocations().any { it.isUserCode(repoMapping) } &&
+  binaryOutputs.getOutputLocations().any { it.isUserCode(repoMapping) }
+
 private const val KOTLIN_STDLIB_LIBRARY_NAME = "rules_kotlin_kotlin-stdlibs"
 
 @ApiStatus.Internal
@@ -40,6 +47,7 @@ class JvmBuildTargetResolver(
   private val allTargets: Map<WorkspaceTargetKey, BuildTarget>,
   private val targetsToImport: Map<WorkspaceTargetKey, BuildTarget>,
   private val javaSyncConfig: JavaWorkspaceSyncConfig,
+  private val repoMapping: RepoMapping,
   private val resolveLocation: (OutputLocation) -> Path?,
   private val resolveExecrootLocation: (OutputLocation) -> Path?,
 ) {
@@ -178,7 +186,7 @@ class JvmBuildTargetResolver(
   private fun computeWellKnownTargetKeyByMavenCoordinates(): Map<MavenCoordinatesKey, WorkspaceTargetKey> {
     val unknownTargetsWithMavenCoordinates = allTargets.values
       .asSequence()
-      .filter { it.kind.kind !in wellKnownTargetKinds && it.isWorkspace }
+      .filter { it.kind.kind !in wellKnownTargetKinds && it.isWorkspace(repoMapping) }
       .mapNotNull {
         val key = it.mavenCoordinatesKeyOrNull() ?: return@mapNotNull null
         key to it.key
@@ -187,7 +195,7 @@ class JvmBuildTargetResolver(
     val result = mutableMapOf<MavenCoordinatesKey, WorkspaceTargetKey>()
     val ambiguousResults = mutableSetOf<MavenCoordinatesKey>()
     for (target in allTargets.values) {
-      if (target.kind.kind !in wellKnownTargetKinds || !target.isWorkspace) continue
+      if (target.kind.kind !in wellKnownTargetKinds || !target.isWorkspace(repoMapping)) continue
       val coordinatesKey = target.mavenCoordinatesKeyOrNull() ?: continue
       val targetsToReplaceKeys = unknownTargetsWithMavenCoordinates[coordinatesKey] ?: continue
       val targetsToReplace = targetsToReplaceKeys.mapNotNull { allTargets[it] }.ifEmpty { null } ?: continue
@@ -205,7 +213,7 @@ class JvmBuildTargetResolver(
 
   private fun DependencyLabel.toWellKnownTargetByMavenCoordinates(): DependencyLabel {
     val target = allTargets[targetKey] ?: return this
-    if (target.kind.kind in wellKnownTargetKinds || !target.isWorkspace) return this
+    if (target.kind.kind in wellKnownTargetKinds || !target.isWorkspace(repoMapping)) return this
     val coordinatesKey = target.mavenCoordinatesKeyOrNull() ?: return this
     val libraryKey = wellKnownTargetKeyByMavenCoordinates[coordinatesKey] ?: return this
     return this.copy(targetKey = libraryKey)
@@ -237,7 +245,7 @@ class JvmBuildTargetResolver(
   }
 
   private fun BuildTarget.shouldBeExportedForMavenArtifact(): Boolean =
-    isWorkspace && mavenCoordinatesKeyOrNull() == null
+    isWorkspace(repoMapping) && mavenCoordinatesKeyOrNull() == null
 
   private fun calculateAllLibraries(
     targetsToImport: Map<WorkspaceTargetKey, BuildTarget>,
@@ -684,7 +692,7 @@ class JvmBuildTargetResolver(
   private fun OutputLocationCollection?.resolvePathSet(): Set<Path> = this?.resolvePaths(resolveLocation)?.toSet().orEmpty()
 
   private fun containsAnyInternalJars(target: BuildTarget): Boolean =
-    target.findBuildData<JvmBuildTarget>()?.containsInternalJars ?: false
+    target.findBuildData<JvmBuildTarget>()?.containsInternalJars(repoMapping) ?: false
 
   private fun collectInterfacesAndClasses(targets: Collection<BuildTarget>): Map<WorkspaceTargetKey, Set<Path>> {
     return targets.associate { target ->

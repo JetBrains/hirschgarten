@@ -6,7 +6,6 @@ import io.kotest.matchers.nulls.shouldNotBeNull
 import org.jetbrains.bazel.commons.BazelInfo
 import org.jetbrains.bazel.commons.BazelPathsResolver
 import org.jetbrains.bazel.commons.BazelRelease
-import org.jetbrains.bazel.commons.RepoMappingDisabled
 import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.commons.orFallbackVersion
@@ -191,7 +190,7 @@ class FirstPhaseTargetToBspMapperTest : WorkspaceModelBaseTest() {
 
       // when
       val mapper = PhasedBazelProjectMapper(BazelPathsResolverMock.create(workspaceRoot), ProjectView.EMPTY)
-      val resultTargets = mapper.mapTargets(RepoMappingDisabled, targets.associateBy { Label.parse(it.rule.name) })
+      val resultTargets = mapper.mapTargets(targets.associateBy { Label.parse(it.rule.name) })
 
       // then: update expected build targets as per the new merged behavior
       resultTargets.map { it.asTestBuildTarget() } shouldContainExactlyInAnyOrder
@@ -214,7 +213,6 @@ class FirstPhaseTargetToBspMapperTest : WorkspaceModelBaseTest() {
             //    target1Src2 to "com.example.a",
             //  ))
             //),
-            baseDirectory = workspaceRoot.resolve(Path("target1")),
             generatorName = "generator_name_example",
           ),
           // target2
@@ -229,7 +227,6 @@ class FirstPhaseTargetToBspMapperTest : WorkspaceModelBaseTest() {
               ),
             sources = workspaceLocations(target2Src1, target2Src2),
             resources = OutputLocationCollection.EMPTY,
-            baseDirectory = workspaceRoot.resolve(Path("target2")),
             //data = listOf(
             //  JvmPackagePrefixData(mapOf(
             //    target2Src1 to "com.example",
@@ -249,7 +246,6 @@ class FirstPhaseTargetToBspMapperTest : WorkspaceModelBaseTest() {
               ),
             sources = OutputLocationCollection.EMPTY,
             resources = workspaceLocations(target3Resource1, target3Resource2),
-            baseDirectory = workspaceRoot.resolve(Path("target3")),
           ),
           // // target4
           TestBuildTarget(
@@ -263,7 +259,6 @@ class FirstPhaseTargetToBspMapperTest : WorkspaceModelBaseTest() {
               ),
             sources = OutputLocationCollection.EMPTY,
             resources = OutputLocationCollection.EMPTY,
-            baseDirectory = workspaceRoot.resolve(Path("target4")),
           ),
           // // target5
           TestBuildTarget(
@@ -277,7 +272,6 @@ class FirstPhaseTargetToBspMapperTest : WorkspaceModelBaseTest() {
               ),
             sources = OutputLocationCollection.EMPTY,
             resources = OutputLocationCollection.EMPTY,
-            baseDirectory = workspaceRoot.resolve(Path("target5")),
           ),
           // // target6
           TestBuildTarget(
@@ -291,7 +285,6 @@ class FirstPhaseTargetToBspMapperTest : WorkspaceModelBaseTest() {
               ),
             sources = OutputLocationCollection.EMPTY,
             resources = OutputLocationCollection.EMPTY,
-            baseDirectory = workspaceRoot.resolve(Path("target6")),
           ),
           // // target7: now with its created source files
           TestBuildTarget(
@@ -311,7 +304,6 @@ class FirstPhaseTargetToBspMapperTest : WorkspaceModelBaseTest() {
             //    target7Src2 to "com.example.a",
             //  ))
             //),
-            baseDirectory = workspaceRoot.resolve(Path("target7")),
           ),
           // // target8: merging its own source and the sources from filegroupSources dependency
           TestBuildTarget(
@@ -337,7 +329,6 @@ class FirstPhaseTargetToBspMapperTest : WorkspaceModelBaseTest() {
             //    target8Src1 to "com.example"
             //  ))
             //),
-            baseDirectory = workspaceRoot.resolve(Path("target8")),
           ),
           TestBuildTarget(
             key = WorkspaceTargetKey(label = Label.parse("//filegroupSources")),
@@ -356,7 +347,6 @@ class FirstPhaseTargetToBspMapperTest : WorkspaceModelBaseTest() {
             //    fgSrc2 to "com.fg",
             //  ))
             //),
-            baseDirectory = workspaceRoot.resolve(Path("filegroupSources")),
           ),
         )
     }
@@ -380,7 +370,7 @@ class FirstPhaseTargetToBspMapperTest : WorkspaceModelBaseTest() {
       // when
       val mapper =
         PhasedBazelProjectMapper(BazelPathsResolverMock.create(), ProjectView(mapOf(ALLOW_MANUAL_TARGETS_SYNC_KEY to true), emptyList()))
-      val resultTargets = mapper.mapTargets(RepoMappingDisabled, targets.associateBy { Label.parse(it.rule.name) })
+      val resultTargets = mapper.mapTargets(targets.associateBy { Label.parse(it.rule.name) })
 
       // then
       val strings =

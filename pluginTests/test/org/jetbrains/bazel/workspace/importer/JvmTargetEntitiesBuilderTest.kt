@@ -36,19 +36,22 @@ import org.jetbrains.bazel.sync.workspace.snapshot.FileToTargetMap
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceAspectIds
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceConfigurationId
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
+import org.jetbrains.bazel.sync.workspace.DefaultOutputLocationResolver
+import org.jetbrains.bazel.test.framework.testBazelInfo
 import org.jetbrains.bazel.test.framework.target.TestBuildTarget
 import org.jetbrains.bazel.workspace.indexAdditionalFiles.ProjectViewGlobSet
 import org.jetbrains.bazel.workspace.model.test.framework.WorkspaceModelBaseTest
 import org.jetbrains.bazel.workspace.model.test.framework.createTestBuildTarget
-import org.jetbrains.bazel.workspace.model.test.framework.resolveTestLocation
 import org.jetbrains.bazel.workspace.model.test.framework.testLocations
 import org.jetbrains.bazel.workspacemodel.entities.BazelProjectEntitySource
 import org.jetbrains.bazel.workspacemodel.entities.PackageMarkerEntity
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.LibraryItem
+import org.jetbrains.bsp.protocol.OutputLocation
 import org.jetbrains.bsp.protocol.id
 import org.junit.jupiter.api.Test
 import java.nio.file.Files
+import java.nio.file.Path
 import kotlin.io.path.Path
 import kotlin.io.path.createDirectories
 import kotlin.io.path.writeText
@@ -56,6 +59,10 @@ import kotlin.io.path.writeText
 private val FOO_BAR: Label = Label.parse("//foo:bar")
 
 internal class JvmTargetEntitiesBuilderTest : WorkspaceModelBaseTest() {
+
+  private val projectLocationResolver by lazy {
+    DefaultOutputLocationResolver.createHardlinkResolving(testBazelInfo(workspaceRoot = projectBasePath))
+  }
 
   @Test
   fun `writes a single java module with no sources or resources`() = timeoutRunBlocking {
@@ -83,7 +90,6 @@ internal class JvmTargetEntitiesBuilderTest : WorkspaceModelBaseTest() {
       id = Label.parse("//foo"),
       kind = TargetKind(kind = "java_library", ruleType = RuleType.LIBRARY, languageClasses = setOf(JavaLanguageClass.JAVA)),
       sources = listOf(sourcePath),
-      baseDirectory = projectBasePath,
     )
 
     runImport(targets = listOf(target))
@@ -137,7 +143,6 @@ internal class JvmTargetEntitiesBuilderTest : WorkspaceModelBaseTest() {
       id = Label.parse("//foo"),
       kind = TargetKind(kind = "java_library", ruleType = RuleType.LIBRARY, languageClasses = setOf(JavaLanguageClass.JAVA)),
       sources = listOf(fooPath, barPath),
-      baseDirectory = projectBasePath,
     )
 
     runImport(targets = listOf(target))
@@ -169,7 +174,6 @@ internal class JvmTargetEntitiesBuilderTest : WorkspaceModelBaseTest() {
       id = Label.parse("//foo"),
       kind = TargetKind(kind = "java_library", ruleType = RuleType.LIBRARY, languageClasses = setOf(JavaLanguageClass.JAVA)),
       sources = listOf(mainPath, testPath),
-      baseDirectory = projectBasePath,
     )
 
     runImport(targets = listOf(target))
@@ -197,7 +201,6 @@ internal class JvmTargetEntitiesBuilderTest : WorkspaceModelBaseTest() {
       id = Label.parse("//foo"),
       kind = TargetKind(kind = "java_library", ruleType = RuleType.LIBRARY, languageClasses = setOf(JavaLanguageClass.JAVA)),
       sources = listOf(sourcePath),
-      baseDirectory = projectBasePath,
     )
 
     runImport(targets = listOf(target))
@@ -224,7 +227,6 @@ internal class JvmTargetEntitiesBuilderTest : WorkspaceModelBaseTest() {
       id = Label.parse("//src/mod-impl:mod-impl"),
       kind = TargetKind(kind = "kt_jvm_library", ruleType = RuleType.LIBRARY, languageClasses = setOf(JavaLanguageClass.KOTLIN)),
       sources = listOf(rootSource, utilSource),
-      baseDirectory = sourceRoot.parent,
       data = listOf(JvmBuildTarget()),
     )
 
@@ -303,7 +305,7 @@ internal class JvmTargetEntitiesBuilderTest : WorkspaceModelBaseTest() {
     val kind = TargetKind(kind = "java_library", ruleType = RuleType.LIBRARY, languageClasses = setOf(JavaLanguageClass.JAVA))
     val sourcePath = projectBasePath.resolve("Proto.java")
     sourcePath.writeText("class Proto {}")
-    val bare = createTestBuildTarget(id = label, kind = kind, sources = listOf(sourcePath), baseDirectory = projectBasePath)
+    val bare = createTestBuildTarget(id = label, kind = kind, sources = listOf(sourcePath))
     val withProvider = createTestBuildTarget(
       id = label,
       kind = kind,
@@ -509,14 +511,16 @@ internal class JvmTargetEntitiesBuilderTest : WorkspaceModelBaseTest() {
       isTestOnly = isTestOnly,
     )
 
+  private fun resolveProjectLocation(location: OutputLocation): Path? = projectLocationResolver.resolve(location)
+
   private suspend fun runImport(
     targets: List<BuildTarget>,
     resolved: Map<WorkspaceTargetKey, JvmResolvedTarget> = defaultResolved(targets),
   ) {
-    val calc = DefaultJvmPackagePrefixCalculator(SourceRootOptimizationMode.Disabled, ::resolveTestLocation)
+    val calc = DefaultJvmPackagePrefixCalculator(SourceRootOptimizationMode.Disabled, ::resolveProjectLocation)
     calc.calculate(targets)
     val jvmPackagePrefixes: JvmPackagePrefixCalculator = calc
-    val plan = JvmImportPlan(rawTargets = targets, jvmResolved = resolved, resolveLocation = ::resolveTestLocation)
+    val plan = JvmImportPlan(rawTargets = targets, jvmResolved = resolved, resolveLocation = ::resolveProjectLocation)
     val naming = GlobalNamingContextBuilder.create(RepoMappingDisabled)
       .apply { plan.declareNames(this) }
       .build()
@@ -524,6 +528,7 @@ internal class JvmTargetEntitiesBuilderTest : WorkspaceModelBaseTest() {
       plan = plan,
       naming = naming,
       jvmResolved = resolved,
+      repoMapping = RepoMappingDisabled,
       projectName = "test-project",
       projectBasePath = projectBasePath,
       defaultJdkName = null,
@@ -535,7 +540,7 @@ internal class JvmTargetEntitiesBuilderTest : WorkspaceModelBaseTest() {
       excludeCompiledSourceCodeInsideJars = true,
       currentCompiledSourceExcludeEntity = null,
       dotIdeaPath = null,
-      resolveLocation = ::resolveTestLocation,
+      resolveLocation = ::resolveProjectLocation,
     )
     // JvmTargetEntitiesBuilder writes ctx.libraries (sourced from the resolver) in its phase 0
     JvmTargetEntitiesBuilder(ctx).writeAll(workspaceEntityStorageBuilder)

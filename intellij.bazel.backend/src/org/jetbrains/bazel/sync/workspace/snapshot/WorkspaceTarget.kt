@@ -9,7 +9,6 @@ import org.jetbrains.bazel.sync.workspace.persistence.TargetLoadOptions
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.BuildTargetData
 import org.jetbrains.bsp.protocol.OutputLocationCollection
-import java.nio.file.Path
 
 @Debug.Renderer(text = "this.getKey()")
 internal class WorkspaceTarget(
@@ -18,10 +17,8 @@ internal class WorkspaceTarget(
   override val kind: TargetKind,
   override val sources: OutputLocationCollection,
   override val resources: OutputLocationCollection,
-  override val baseDirectory: Path,
   override val data: List<BuildTargetData>,
   override val generatorName: String?,
-  override val isWorkspace: Boolean,
   override val isTestOnly: Boolean,
   override val tags: List<String>,
 ) : BuildTarget {

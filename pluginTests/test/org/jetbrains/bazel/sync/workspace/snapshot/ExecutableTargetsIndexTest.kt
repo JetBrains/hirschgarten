@@ -11,7 +11,6 @@ import org.jetbrains.bazel.test.framework.target.TestBuildTarget
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.OutputLocationCollection
 import org.junit.jupiter.api.Test
-import java.nio.file.Path
 
 class ExecutableTargetsIndexTest {
   private fun target(
@@ -30,7 +29,6 @@ class ExecutableTargetsIndexTest {
       ),
       sources = OutputLocationCollection.EMPTY,
       resources = OutputLocationCollection.EMPTY,
-      baseDirectory = Path.of("/workspace"),
     )
   }
 

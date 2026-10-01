@@ -1,8 +1,6 @@
 package com.intellij.bazel.python.backend.sync
 
 import org.jetbrains.annotations.ApiStatus
-import org.jetbrains.bazel.commons.BazelPathsResolver
-import org.jetbrains.bazel.commons.LocalRepositoryMapping
 import com.google.devtools.intellij.aspect.Common.ArtifactLocation
 import com.google.devtools.intellij.ideinfo.IntellijIdeInfo.TargetIdeInfo
 import com.google.devtools.intellij.ideinfo.IntellijIdeInfo.PythonTargetInfo
@@ -16,17 +14,13 @@ object MainSourceFinder {
   fun findMainFile(
     target: TargetIdeInfo,
     pythonTarget: PythonTargetInfo,
-    pathsResolver: BazelPathsResolver,
-    localRepositories: LocalRepositoryMapping,
-  ): Path? {
+  ): ArtifactLocation? {
     val mainFileDeclared = pythonTarget.main?.relativePath?.isNotEmpty() == true
-    val artifactLocation =
-      if (mainFileDeclared) {
-        pythonTarget.main
-      } else {
-        findMainFileAmongSources(target)
-      }
-    return artifactLocation?.let { pathsResolver.resolve(it, localRepositories) }
+    return if (mainFileDeclared) {
+      pythonTarget.main
+    } else {
+      findMainFileAmongSources(target)
+    }
   }
 
   private fun findMainFileAmongSources(target: TargetIdeInfo): ArtifactLocation? {

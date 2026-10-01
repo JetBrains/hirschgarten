@@ -24,7 +24,6 @@ class InMemoryFileToTargetMapTest {
       kind = TargetKind(kind = "java_binary", ruleType = RuleType.BINARY, languageClasses = setOf(JavaLanguageClass.JAVA)),
       sources = OutputLocationCollectionBuilder.ofLocations(listOf(OutputLocation.Workspace("app/Main.java"))),
       resources = OutputLocationCollection.EMPTY,
-      baseDirectory = workspaceRoot.resolve("app"),
     )
 
     val map = File2TargetMapBuilder(testBazelInfo(workspaceRoot = workspaceRoot), RepoMappingDisabled).build(targets = listOf(target))

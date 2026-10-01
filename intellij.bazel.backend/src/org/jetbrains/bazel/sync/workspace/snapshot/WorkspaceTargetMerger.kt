@@ -63,10 +63,8 @@ class WorkspaceTargetMerger(val mergeFunctions: MergeFunctionMap) {
   private fun BuildTarget.isCompatibleWith(other: BuildTarget): Boolean =
     kind.kind == other.kind.kind
     && kind.ruleType == other.kind.ruleType
-    && baseDirectory == other.baseDirectory
     && generatorName == other.generatorName
     && isManual == other.isManual
-    && isWorkspace == other.isWorkspace
     && isTestOnly == other.isTestOnly
 
   private fun mergeBuildData(input: Sequence<BuildTargetData>): List<BuildTargetData> {

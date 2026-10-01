@@ -98,13 +98,11 @@ class WorkspaceSnapshotServiceTest {
       ),
       sources = sources("pkg$index/Main.java", "shared/Shared.java"),
       resources = OutputLocationCollection.EMPTY,
-      baseDirectory = Path.of("/workspace/pkg$index"),
       data = listOf(
         JvmBuildTarget(javacOpts = listOf("-parameters"), mainClass = "com.example.Main$index"),
         JavaToolchainData(sourceVersion = "17", targetVersion = "17"),
       ),
       generatorName = null,
-      isWorkspace = true,
       isTestOnly = false,
     )
 
@@ -168,7 +166,6 @@ class WorkspaceSnapshotServiceTest {
       val actualRaw = actual.targets.findTargetByKey(expectedRaw.key)
       actualRaw.shouldNotBeNull()
       actualRaw.kind shouldBe expectedRaw.kind
-      actualRaw.baseDirectory shouldBe expectedRaw.baseDirectory
       actualRaw.dependencies shouldBe expectedRaw.dependencies
       actualRaw.sources shouldBe expectedRaw.sources
       actualRaw.data.toSet() shouldBe expectedRaw.data.toSet()
@@ -269,7 +266,6 @@ class WorkspaceSnapshotServiceTest {
 
       val addedTarget = restored.targets.findTargetByKey(addedKey)
       addedTarget.shouldNotBeNull()
-      addedTarget.baseDirectory shouldBe Path.of("/workspace/pkg3")
 
       val target = restored.targets.findTargetByKey(key("@//pkg0:target"))
       target.shouldNotBeNull()
@@ -398,7 +394,6 @@ class WorkspaceSnapshotServiceTest {
       ),
       sources = OutputLocationCollection.EMPTY,
       resources = OutputLocationCollection.EMPTY,
-      baseDirectory = Path.of("/workspace"),
     )
 
   private fun binDependsOnLibSnapshot(): WorkspaceSnapshot {

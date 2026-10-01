@@ -15,7 +15,6 @@ internal val jvmTargetMergeFunctions = mapOf(
       generatedJars = (left.generatedJars + right.generatedJars).distinct(),
       jdepsJars = (left.jdepsJars + right.jdepsJars).distinct(),
       intellijPluginJars = mergeLocationCollections(left.intellijPluginJars, right.intellijPluginJars),
-      containsInternalJars = left.containsInternalJars || right.containsInternalJars,
       hasExecutableInfo = left.hasExecutableInfo || right.hasExecutableInfo,
     )
   },

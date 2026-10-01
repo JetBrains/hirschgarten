@@ -6,8 +6,7 @@ import com.google.devtools.intellij.ideinfo.IntellijIdeInfo.TargetIdeInfo
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.commons.LanguageClass
 import org.jetbrains.bazel.commons.LocalRepositoryMapping
-import org.jetbrains.bazel.commons.RepoMapping
-import org.jetbrains.bazel.commons.getLocalRepositories
+import org.jetbrains.bazel.commons.NoLocalRepositories
 import org.jetbrains.bazel.server.BazelServerFacade
 import org.jetbrains.bazel.sync.JavaLanguageClass
 import org.jetbrains.bazel.sync.workspace.languages.LanguagePlugin
@@ -36,13 +35,12 @@ class KotlinLanguagePlugin : LanguagePlugin {
   override suspend fun mapBuildTargetData(
     server: BazelServerFacade,
     target: TargetIdeInfo,
-    repoMapping: RepoMapping,
   ): List<BuildTargetData> {
     if (!target.hasKotlinTargetInfo()) {
       return emptyList()
     }
     val kotlinTarget = target.kotlinTargetInfo
-    val localRepositories = repoMapping.getLocalRepositories()
+    // the paths below are generated jars, existence checks or compiler arguments, so the local override does not matter
 
     val ktStdlibJars = ArrayList<ArtifactLocation>()
     val ktStdlibSources = ArrayList<ArtifactLocation>()
@@ -53,7 +51,7 @@ class KotlinLanguagePlugin : LanguagePlugin {
           // fallback to hack, awaits proper fix in rules_kotlin
           // https://github.com/bazel-contrib/rules_kotlin/pull/1761
           jars.map { it.toSourcesJar() }
-            .filter { server.bazelPathsResolver.resolve(it, localRepositories).exists() }
+            .filter { server.bazelPathsResolver.resolve(it, NoLocalRepositories).exists() }
         }
 
       ktStdlibJars.addAll(jars)
@@ -64,7 +62,7 @@ class KotlinLanguagePlugin : LanguagePlugin {
       val target = target.javaCommon
       target.generatedJarsList.asSequence()
         .flatMap { it.sourceJarsList }
-        .filter { it.isKspSourceJar() && !server.bazelPathsResolver.resolve(it, localRepositories).startsWith(server.bazelInfo.workspaceRoot) }
+        .filter { it.isKspSourceJar() && !server.bazelPathsResolver.resolve(it, NoLocalRepositories).startsWith(server.bazelInfo.workspaceRoot) }
         .toList()
     }
     else {
@@ -76,7 +74,7 @@ class KotlinLanguagePlugin : LanguagePlugin {
         apiVersion = kotlinTarget.apiVersion.takeIf { it.isNotBlank() },
         associates = kotlinTarget.associatedTargetsList.map { it.toWorkspaceTargetKey() },
         moduleName = kotlinTarget.moduleName.takeIf { it.isNotBlank() },
-        kotlincOptions = kotlinTarget.toKotlincOptArguments(server, localRepositories).toList(),
+        kotlincOptions = kotlinTarget.toKotlincOptArguments(server, NoLocalRepositories).toList(),
         stdlibJars = OutputLocationCollectionBuilder.build(ktStdlibJars, server.outputParser),
         stdlibInferredSourceJars = OutputLocationCollectionBuilder.build(ktStdlibSources, server.outputParser),
         exportedCompilerPluginTargetsList = kotlinTarget.exportedCompilerPluginTargetsList.map { it.toWorkspaceTargetKey() },

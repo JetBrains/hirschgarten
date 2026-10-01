@@ -17,7 +17,6 @@ import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
-import kotlin.io.path.Path
 
 @RunWith(JUnit4::class)
 class BazelTargetCompletionTest : BazelBasePlatformTestCase() {
@@ -35,7 +34,6 @@ class BazelTargetCompletionTest : BazelBasePlatformTestCase() {
             ),
           sources = OutputLocationCollection.EMPTY,
           resources = OutputLocationCollection.EMPTY,
-          baseDirectory = Path("/"),
         )
       },
     )

@@ -41,7 +41,6 @@ fun createTestBuildTarget(
   sources: List<Path> = emptyList(),
   generatedSources: List<OutputLocation> = emptyList(),
   resources: List<Path> = emptyList(),
-  baseDirectory: Path = Path("/base/dir"),
   data: List<BuildTargetData> = emptyList(),
   isTestOnly: Boolean = false,
 ): TestBuildTarget =
@@ -51,7 +50,6 @@ fun createTestBuildTarget(
     kind = kind,
     sources = OutputLocationCollectionBuilder.ofLocations(sources.map(::testLocation) + generatedSources),
     resources = testLocations(resources),
-    baseDirectory = baseDirectory,
     data = data,
     isTestOnly = isTestOnly,
   )

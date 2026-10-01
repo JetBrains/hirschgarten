@@ -30,7 +30,6 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
 import java.nio.file.Path
-import kotlin.io.path.Path
 
 @RunWith(JUnit4::class)
 internal class BazelPyRunConfigurationProducerTest : CodeInsightFixtureTestCase<ModuleFixtureBuilder<ModuleFixture>>() {
@@ -351,7 +350,6 @@ internal class BazelPyRunConfigurationProducerTest : CodeInsightFixtureTestCase<
             ),
           sources = OutputLocationCollection.EMPTY,
           resources = OutputLocationCollection.EMPTY,
-          baseDirectory = Path.of(myFixture.tempDirPath, "base_dir"),
           data = listOf(
             PythonBuildTarget(
               version = "3.8",
@@ -359,7 +357,7 @@ internal class BazelPyRunConfigurationProducerTest : CodeInsightFixtureTestCase<
               listOf(),
               OutputLocationCollection.EMPTY,
               OutputLocationCollection.EMPTY,
-              mainFile = mainFile?.virtualFile?.toNioPath(),
+              mainFile = mainFile?.virtualFile?.toNioPath()?.let(::testLocation),
               mainModule = mainModule,
             ),
           ),
@@ -379,6 +377,6 @@ internal class BazelPyRunConfigurationProducerTest : CodeInsightFixtureTestCase<
   companion object {
     private val LABEL = Label.parse("//foo:bar")
     private val executableTarget =
-      NonImportedBuildTarget(LABEL, TargetKind("py_test", setOf(PythonLanguageClass.PYTHON), RuleType.TEST), Path("base/directory"))
+      NonImportedBuildTarget(LABEL, TargetKind("py_test", setOf(PythonLanguageClass.PYTHON), RuleType.TEST))
   }
 }

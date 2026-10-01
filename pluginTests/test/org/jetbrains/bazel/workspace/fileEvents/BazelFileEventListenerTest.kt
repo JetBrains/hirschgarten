@@ -68,7 +68,6 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.nio.file.Path
 import java.util.concurrent.atomic.AtomicInteger
-import kotlin.io.path.Path
 import kotlin.io.path.invariantSeparatorsPathString
 import kotlin.io.path.relativeTo
 import kotlin.test.assertEquals
@@ -582,7 +581,6 @@ class BazelFileEventListenerTest : WorkspaceModelBaseTest() {
             ),
           sources = OutputLocationCollection.EMPTY,
           resources = OutputLocationCollection.EMPTY,
-          baseDirectory = Path("/"),
         ),
       ),
     )
@@ -778,8 +776,6 @@ class BazelFileEventListenerTest : WorkspaceModelBaseTest() {
       TestBuildTarget(
         key = WorkspaceTargetKey(mockLabel),
         kind = TargetKind("mock", emptySet(), RuleType.LIBRARY),
-        baseDirectory = projectBasePath,
-        isWorkspace = true,
         dependencies = listOf(),
         sources = OutputLocationCollection.EMPTY,
         resources = OutputLocationCollection.EMPTY,

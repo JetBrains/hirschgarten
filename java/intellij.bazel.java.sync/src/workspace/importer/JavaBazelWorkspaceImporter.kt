@@ -87,6 +87,7 @@ internal class JavaBazelWorkspaceImporter(val context: WorkspaceImporterContext)
       allTargets = snapshot.targets.allTargets().associateBy { it.key },
       targetsToImport = moduleTargets.associateBy { it.key },
       javaSyncConfig = snapshot.syncConfigs.filterIsInstance<JavaWorkspaceSyncConfig>().first(),
+      repoMapping = snapshot.repoMapping,
       resolveLocation = resolveLocation,
       resolveExecrootLocation = execrootLocationResolver(context, snapshot),
     ).resolveAll()
@@ -157,6 +158,7 @@ internal class JavaBazelWorkspaceImporter(val context: WorkspaceImporterContext)
       plan = plan,
       naming = naming,
       jvmResolved = jvmResolved,
+      repoMapping = snapshot.repoMapping,
       projectName = commonSyncConfig.projectName,
       projectBasePath = commonSyncConfig.projectRootDir,
       defaultJdkName = defaultJdkName,

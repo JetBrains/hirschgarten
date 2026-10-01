@@ -426,13 +426,12 @@ class PythonDebugUtilsTest {
           ),
           sources = OutputLocationCollection.EMPTY,
           resources = OutputLocationCollection.EMPTY,
-          baseDirectory = tempDir.resolve(target.packagePath.toString()),
           data = listOf(
             PythonBuildTarget(
               version = "3.8",
               interpreter = interpreter?.let(::testLocation),
               imports = imports,
-              mainFile = mainFile,
+              mainFile = testLocation(mainFile),
               runnerScript = runnerScript,
               targetArgs = targetArgs,
             ),

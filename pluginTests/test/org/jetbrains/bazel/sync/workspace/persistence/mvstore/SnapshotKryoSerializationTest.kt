@@ -107,10 +107,8 @@ class SnapshotKryoSerializationTest {
       ),
       sources = locations(OutputLocation.Workspace("src/Main.java"), OutputLocation.External("gen", "Gen.java")),
       resources = locations(OutputLocation.Workspace("resources/app.properties")),
-      baseDirectory = Path.of("/workspace/src"),
       data = data,
       generatorName = "my_macro",
-      isWorkspace = true,
       isTestOnly = false,
     )
 
@@ -128,7 +126,6 @@ class SnapshotKryoSerializationTest {
       generatedJars = listOf(JvmOutputs(binaryJars = locations(generatedTestLocation("gen.jar")))),
       jdepsJars = listOf(JdepsJar(syntheticLabel = Label.parse("@//foo:bar"), jar = generatedTestLocation("foo.jdeps"))),
       intellijPluginJars = OutputLocationCollection.EMPTY,
-      containsInternalJars = true,
       hasExecutableInfo = true,
       checkStrictDependencies = StrictDependencyCheckedType.WARNING,
     )
@@ -302,17 +299,13 @@ class SnapshotKryoSerializationTest {
         languageClasses = setOf(LanguageClass("kotlin", setOf("kt"))),
         ruleType = RuleType.LIBRARY,
       ),
-      baseDirectory = Path.of("/workspace/foo"),
       generatorName = null,
-      isWorkspace = true,
       isTestOnly = true,
       tags = listOf("no-ide"),
     )
     val restoredPartial = serializeAndDeserialize(partialTarget)
     restoredPartial.kind shouldBe partialTarget.kind
-    restoredPartial.baseDirectory shouldBe partialTarget.baseDirectory
     restoredPartial.generatorName shouldBe partialTarget.generatorName
-    restoredPartial.isWorkspace shouldBe partialTarget.isWorkspace
     restoredPartial.isTestOnly shouldBe partialTarget.isTestOnly
     restoredPartial.tags shouldBe partialTarget.tags
 
@@ -365,7 +358,7 @@ class SnapshotKryoSerializationTest {
         version = "3.12",
         interpreter = OutputLocation.Host("/usr/bin/python3"),
         imports = listOf("src"),
-        mainFile = Path.of("/workspace/main.py"),
+        mainFile = OutputLocation.Workspace("main.py"),
         mainModule = "main",
         runnerScript = null,
         targetArgs = listOf("--flag"),
@@ -376,7 +369,7 @@ class SnapshotKryoSerializationTest {
         sources = locations(OutputLocation.Workspace("main.go")),
         embed = listOf()
       ),
-      ProtobufBuildTarget(sources = mapOf("foo/bar.proto" to "/workspace/foo/bar.proto")),
+      ProtobufBuildTarget(sources = mapOf("foo/bar.proto" to OutputLocation.Workspace("foo/bar.proto"))),
       GoBuildTarget(importPath = "example.com/foo", sources = OutputLocationCollection.EMPTY, embed = listOf())
     )
 

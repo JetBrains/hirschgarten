@@ -45,7 +45,6 @@ import org.jetbrains.bsp.protocol.data
 import org.jetbrains.bsp.protocol.id
 import org.junit.jupiter.api.Test
 import java.nio.file.Path
-import kotlin.io.path.Path
 
 @TestApplication
 class TargetStorageTest {
@@ -64,8 +63,6 @@ class TargetStorageTest {
     deps: List<String> = emptyList(),
     executable: Boolean = false,
     data: List<BuildTargetData> = emptyList(),
-    isWorkspace: Boolean = true,
-    baseDirectory: Path = Path.of("/workspace"),
     sources: OutputLocationCollection = OutputLocationCollection.EMPTY,
     key: WorkspaceTargetKey = WorkspaceTargetKey(label = Label.parse(label)),
     tags: List<String> = emptyList(),
@@ -80,9 +77,7 @@ class TargetStorageTest {
       ),
       sources = sources,
       resources = OutputLocationCollection.EMPTY,
-      baseDirectory = baseDirectory,
       data = data,
-      isWorkspace = isWorkspace,
       tags = tags,
     )
 
@@ -90,7 +85,7 @@ class TargetStorageTest {
   private fun workspaceSources(vararg relativePaths: String): OutputLocationCollection =
     OutputLocationCollectionBuilder.ofLocations(relativePaths.map { OutputLocation.Workspace(it) })
 
-  private fun BuildTarget.summaryView(): List<Any?> = listOf(key, kind, baseDirectory, tags, isWorkspace)
+  private fun BuildTarget.summaryView(): List<Any?> = listOf(key, kind, tags)
 
   private fun snapshot(
     project: Project,
@@ -174,12 +169,12 @@ class TargetStorageTest {
     val label = Label.parse("//lib:lib")
     val configuredKey = WorkspaceTargetKey(label = label, configuration = WorkspaceConfigurationId.of("abcdef1"))
     val plainKey = WorkspaceTargetKey(label = label)
-    val configured = target("//lib:lib", key = configuredKey, baseDirectory = Path.of("/workspace/configured"))
-    val plain = target("//lib:lib", key = plainKey, baseDirectory = Path.of("/workspace/plain"))
+    val configured = target("//lib:lib", key = configuredKey)
+    val plain = target("//lib:lib", key = plainKey)
     publish(project, snapshot(project, targets = listOf(configured, plain), roots = listOf(configured, plain)))
 
     val summary = project.targetStorage.getTargetSummary(label)
-    summary?.baseDirectory shouldBe Path.of("/workspace/plain")
+    summary?.key shouldBe plainKey
   }
 
   @Test
@@ -248,7 +243,6 @@ class TargetStorageTest {
     summary.loaded.sections shouldBe setOf(TargetSection.INFO)
 
     summary.kind shouldBe bin.kind
-    summary.baseDirectory shouldBe bin.baseDirectory
     summary.tags shouldBe bin.tags
 
     summary.sources.getOutputLocations().toList() shouldBe bin.sources.getOutputLocations().toList()
@@ -275,7 +269,6 @@ class TargetStorageTest {
     val guessed = NonImportedBuildTarget(
       label = label,
       kind = TargetKind(kind = "java_binary", ruleType = RuleType.BINARY, languageClasses = setOf(JavaLanguageClass.JAVA)),
-      baseDirectory = Path("/tmp/workspace"),
     )
 
     guessed.id shouldBe label
@@ -307,8 +300,8 @@ class TargetStorageTest {
     val sourceCollection = workspaceSources("app/Bin.java")
     val firstKey = WorkspaceTargetKey(label = label, configuration = WorkspaceConfigurationId.of("abcdef1"))
     val secondKey = WorkspaceTargetKey(label = label, configuration = WorkspaceConfigurationId.of("abcdef2"))
-    val first = target("//lib:lib", key = firstKey, baseDirectory = Path.of("/workspace"), sources = sourceCollection)
-    val second = target("//lib:lib", key = secondKey, baseDirectory = Path.of("/workspace"), sources = sourceCollection)
+    val first = target("//lib:lib", key = firstKey, sources = sourceCollection)
+    val second = target("//lib:lib", key = secondKey, sources = sourceCollection)
     publish(project, snapshot(project, targets = listOf(first, second), roots = listOf(first, second)))
 
     val targetUtils = project.targetStorage

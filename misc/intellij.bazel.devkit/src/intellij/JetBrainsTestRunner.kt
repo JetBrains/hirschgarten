@@ -31,6 +31,7 @@ import org.jetbrains.bazel.run.state.HasEnv
 import org.jetbrains.bazel.run.state.HasTestFilter
 import org.jetbrains.bazel.run.task.BazelRunTaskListener
 import org.jetbrains.bazel.sync.workspace.languages.jvm.JvmBuildTarget
+import org.jetbrains.bazel.target.baseDirectory
 import org.jetbrains.bazel.target.getTargetDataForLabel
 import org.jetbrains.bazel.target.targetStorage
 import org.jetbrains.bazel.taskEvents.BazelTaskListener
@@ -72,7 +73,7 @@ private fun expandWildcardTarget(project: Project, target: Label): List<Label> {
   val baseDirectory = findReferredPackage(project, target.assumeResolved())?.toNioPathOrNull()
                       ?: return listOf(target)
   return testableSummaries
-    .filter { it.baseDirectory.startsWith(baseDirectory) }
+    .filter { it.baseDirectory(project)?.startsWith(baseDirectory) ?: false }
     .map { it.id }
            .takeIf { it.isNotEmpty() } ?: listOf(target)
 }

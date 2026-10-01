@@ -10,9 +10,7 @@ import com.intellij.util.io.DigestUtil
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.commons.LanguageClass
 import org.jetbrains.bazel.commons.LanguageClassService
-import org.jetbrains.bazel.commons.LocalRepositoryMapping
-import org.jetbrains.bazel.commons.RepoMapping
-import org.jetbrains.bazel.commons.getLocalRepositories
+import org.jetbrains.bazel.commons.NoLocalRepositories
 import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.label.ResolvedLabel
@@ -68,10 +66,9 @@ class JavaLanguagePlugin : LanguagePlugin {
   override suspend fun mapBuildTargetData(
     server: BazelServerFacade,
     target: TargetIdeInfo,
-    repoMapping: RepoMapping,
   ): List<BuildTargetData> {
     return listOfNotNull(
-      createJvmBuildTargetData(server, target, repoMapping),
+      createJvmBuildTargetData(server, target),
       createJavaProviderData(server, target),
       createJavaToolchainData(server, target),
     )
@@ -104,11 +101,10 @@ class JavaLanguagePlugin : LanguagePlugin {
     )
   }
 
-  private suspend fun createJvmBuildTargetData(server: BazelServerFacade, target: TargetIdeInfo, repoMapping: RepoMapping): JvmBuildTarget? {
+  private suspend fun createJvmBuildTargetData(server: BazelServerFacade, target: TargetIdeInfo): JvmBuildTarget? {
     if (!target.javaCommon.jvmTarget) {
       return null
     }
-    val localRepositories = repoMapping.getLocalRepositories()
     val jvmTarget = target.jvmTargetInfo
     val parser = server.outputParser
     val environmentVariables =
@@ -129,13 +125,12 @@ class JavaLanguagePlugin : LanguagePlugin {
       mainClass = getMainClass(jvmTarget),
       jvmArgs = jvmTarget.jvmFlagsList.toList(),
       programArgs = jvmTarget.argsList.toList(),
-      resolvedResourceStripPrefix = target.resourceStripPrefixLocation(localRepositories),
+      resolvedResourceStripPrefix = target.resourceStripPrefixLocation(),
       outputInterfaceJars = OutputLocationCollectionBuilder.build(target.javaCommon.jarsList.flatMap { it.interfaceJarsList }, parser),
       outputSourceJars = OutputLocationCollectionBuilder.build(target.javaCommon.jarsList.flatMap { it.sourceJarsList }, parser),
       generatedJars = generatedJvmOutputs,
-      jdepsJars = createJdepsJars(server, target, localRepositories),
+      jdepsJars = createJdepsJars(server, target),
       intellijPluginJars = OutputLocationCollectionBuilder.build(getIntellijPluginJars(target), parser),
-      containsInternalJars = target.containsAnyInternalJars(server, localRepositories),
       hasExecutableInfo = target.hasExecutableInfo(),
       checkStrictDependencies = targetChecksStrictDeps(target),
     )
@@ -169,20 +164,20 @@ class JavaLanguagePlugin : LanguagePlugin {
   private suspend fun createJdepsJars(
     server: BazelServerFacade,
     targetInfo: TargetIdeInfo,
-    localRepositories: LocalRepositoryMapping,
   ): List<JdepsJar> {
     // the absolute path checks the file and gives the synthetic label, the execroot path gives the location
-    val jars = dependencyJarsFromJdepsFiles(server, targetInfo, localRepositories)
+    val jars = dependencyJarsFromJdepsFiles(server, targetInfo)
       .map { it to server.bazelPathsResolver.resolveOutput(Paths.get(it)) }
     val locations = server.outputParser.parseExecrootPath(jars.map { (execrootPath, _) -> execrootPath })
     return jars.zip(locations) { (_, path), location -> JdepsJar(syntheticLabel = syntheticLabel(server, path), jar = location) }
   }
 
   // returns the execroot paths of the jars
-  private fun dependencyJarsFromJdepsFiles(server: BazelServerFacade, targetInfo: TargetIdeInfo, localRepositories: LocalRepositoryMapping): Set<String> =
+  private fun dependencyJarsFromJdepsFiles(server: BazelServerFacade, targetInfo: TargetIdeInfo): Set<String> =
     targetInfo.javaCommon.jdepsList
       .flatMap { jdeps ->
-        val path = server.bazelPathsResolver.resolve(jdeps, localRepositories)
+        // a jdeps file is generated, so the local override does not change its path
+        val path = server.bazelPathsResolver.resolve(jdeps, NoLocalRepositories)
         if (path.exists()) {
           val dependencyList =
             path.inputStream().use {
@@ -218,15 +213,6 @@ class JavaLanguagePlugin : LanguagePlugin {
     )
   }
 
-  private fun TargetIdeInfo.containsAnyInternalJars(server: BazelServerFacade, localRepositories: LocalRepositoryMapping) = javaCommon.jarsList.any { jars ->
-    jars.sourceJarsList.any {
-      !server.bazelPathsResolver.isExternal(
-        it,
-        localRepositories,
-      )
-    } && jars.binaryJarsList.any { !server.bazelPathsResolver.isExternal(it, localRepositories) }
-  }
-
   private fun getIntellijPluginJars(targetInfo: TargetIdeInfo): List<ArtifactLocation> {
     // _repackaged_files is created upon calling repackaged_files in rules_intellij
     if (targetInfo.kind != "_repackaged_files") return emptyList()
@@ -235,12 +221,12 @@ class JavaLanguagePlugin : LanguagePlugin {
       .toList()
   }
 
-  // a prefix in a local repository is external, so the local override resolves it to the local checkout
-  private fun TargetIdeInfo.resourceStripPrefixLocation(repositories: LocalRepositoryMapping): OutputLocation? {
+  // a prefix in an external repository stays external, so the local override resolves it to the local checkout at import
+  private fun TargetIdeInfo.resourceStripPrefixLocation(): OutputLocation? {
     if (!hasJvmTargetInfo()) return null
     val prefix = jvmTargetInfo.resourceStripPrefix.ifEmpty { null } ?: return null
     val label = label()
-    if (label is ResolvedLabel && label.repoName in repositories.localRepositories) {
+    if (label is ResolvedLabel && !label.isMainWorkspace) {
       return OutputLocation.External(repoName = label.repoName, relativePath = prefix)
     }
     return OutputLocation.Workspace(prefix)

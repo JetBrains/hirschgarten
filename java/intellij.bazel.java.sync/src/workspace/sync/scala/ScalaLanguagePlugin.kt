@@ -3,7 +3,6 @@ package org.jetbrains.bazel.sync.workspace.languages.scala
 import com.google.devtools.intellij.ideinfo.IntellijIdeInfo.TargetIdeInfo
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.commons.LanguageClass
-import org.jetbrains.bazel.commons.RepoMapping
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.scala.sdk.ScalaSdkResolver
 import org.jetbrains.bazel.server.BazelServerFacade
@@ -27,7 +26,6 @@ class ScalaLanguagePlugin : LanguagePlugin {
   override suspend fun mapBuildTargetData(
     server: BazelServerFacade,
     target: TargetIdeInfo,
-    repoMapping: RepoMapping,
   ): List<BuildTargetData> {
     if (!target.hasScalaTargetInfo()) {
       return emptyList()

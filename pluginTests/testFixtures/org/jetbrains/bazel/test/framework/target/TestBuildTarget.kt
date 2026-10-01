@@ -10,8 +10,6 @@ import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.BuildTargetData
 import org.jetbrains.bsp.protocol.OutputLocationCollection
-import java.nio.file.Path
-import kotlin.io.path.Path
 
 data class TestBuildTarget(
   override val key: WorkspaceTargetKey = WorkspaceTargetKey(label = Label.parse("//target")),
@@ -23,10 +21,8 @@ data class TestBuildTarget(
   ),
   override val sources: OutputLocationCollection = OutputLocationCollection.EMPTY,
   override val resources: OutputLocationCollection = OutputLocationCollection.EMPTY,
-  override val baseDirectory: Path = Path("/base/dir"),
   override val data: List<BuildTargetData> = emptyList(),
   override val generatorName: String? = null,
-  override val isWorkspace: Boolean = true,
   override val isTestOnly: Boolean = false,
   override val tags: List<String> = emptyList(),
   override val loaded: TargetLoadOptions = TargetLoadOptions.ALL,
@@ -40,10 +36,8 @@ fun BuildTarget.asTestBuildTarget(): TestBuildTarget =
     kind = kind,
     sources = sources,
     resources = resources,
-    baseDirectory = baseDirectory,
     data = data,
     generatorName = generatorName,
-    isWorkspace = isWorkspace,
     isTestOnly = isTestOnly,
     tags = tags,
     loaded = loaded,
