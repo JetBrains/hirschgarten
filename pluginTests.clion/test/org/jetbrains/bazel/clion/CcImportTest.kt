@@ -151,7 +151,7 @@ abstract class CcImportTest(override val bazelVersion: String) : BazelVersionedT
   fun testToolchainInfo(): Unit = timeoutRunBlocking {
     val target = project.findTarget("//main:main")
 
-    val toolchain = project.findToolchain(target).single()
+    val toolchain = project.findToolchain(target).assertNotNull()
 
     // only with toolchains aspects enabled can we discover the actual toolchain
     val toolchainKind = if (majorBazelVersion <= 8)  "cc_toolchain_alias" else "cc_toolchain"

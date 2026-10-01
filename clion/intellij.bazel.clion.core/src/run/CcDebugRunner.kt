@@ -156,10 +156,8 @@ private suspend fun collectDebugTargetInfo(): CcDebugTargetInfo {
   val target = snapshot.allTargets.firstOrNull { it.key.label == label }
     ?: throw ExecutionException(BazelCLionCoreBundle.message("debug.error.target.not.found", label))
 
-  val toolchain = CcTargetUtils.findToolchain(snapshot, target)
+  val compilerInfo = CcTargetUtils.findCompiler(ctx.environment.project, snapshot, target)
     ?: throw ExecutionException(BazelCLionCoreBundle.message("debug.error.no.compiler", label))
-  val compilerInfo = CcTargetUtils.findToolchainCompiler(ctx.environment.project, toolchain)
-    ?: throw ExecutionException(BazelCLionCoreBundle.message("debug.error.no.compiler.info", label))
 
   return CcDebugTargetInfo(target, compilerInfo, snapshot.repoMapping)
 }
