@@ -3,6 +3,7 @@ package org.jetbrains.bazel.clion.workspace
 import com.intellij.execution.configurations.GeneralCommandLine
 import com.jetbrains.cidr.lang.toolchains.CidrToolEnvironment
 import com.jetbrains.cidr.lang.workspace.compiler.OCCompilerKind
+import kotlinx.coroutines.coroutineScope
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.clion.sync.CcToolchainBuildTarget
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
@@ -40,17 +41,25 @@ private class CcToolEnvironment(private val environment: Map<String, String>) : 
 
 @ApiStatus.Internal
 context(ctx: CcImportContext)
-suspend fun buildCompilerSettings(): Map<WorkspaceTargetKey, CcCompilerInfo> {
+suspend fun buildCompilerSettings(): Map<WorkspaceTargetKey, CcCompilerInfo> = coroutineScope {
   val result = mutableMapOf<WorkspaceTargetKey, CcCompilerInfo>()
-  val resolver = CcCompilerResolver(ctx)
+
+  val compilerResolver = CcCompilerResolver(ctx)
+  val xcodeLocator = CcXcodeLocator(ctx, this@coroutineScope)
 
   for (target in ctx.snapshot.targets.allTargets()) {
     val toolchainInfo = target.extractData<CcToolchainBuildTarget>() ?: continue
 
-    val environment = createEnvironment(toolchainInfo.cEnvironment, toolchainInfo.cppEnvironment)
+    val environment = createEnvironment(
+      toolchainInfo.cEnvironment,
+      toolchainInfo.cppEnvironment,
+      xcodeLocator.resolve(toolchainInfo.xcodeInfo).toMap(),
+    )
 
-    val cCompiler = resolver.resolve(toolchainInfo.cCompiler) ?: continue
-    val cppCompiler = resolver.resolve(toolchainInfo.cppCompiler) ?: continue
+    val toolEnvironment = createToolEnvironment(environment)
+
+    val cCompiler = compilerResolver.resolve(toolchainInfo.cCompiler, toolEnvironment) ?: continue
+    val cppCompiler = compilerResolver.resolve(toolchainInfo.cppCompiler, toolEnvironment) ?: continue
 
     val compilerInfo = CcCompilerInfo(
       cCompiler = cCompiler.path,
@@ -68,9 +77,10 @@ suspend fun buildCompilerSettings(): Map<WorkspaceTargetKey, CcCompilerInfo> {
     result[target.key] = compilerInfo
   }
 
-  resolver.reportProblems()
+  compilerResolver.reportProblems()
+  xcodeLocator.reportProblems()
 
-  return result
+  result
 }
 
 context(ctx: CcImportContext)
@@ -100,4 +110,13 @@ private fun createToolEnvironment(environment: Map<String, String>): CidrToolEnv
   else {
     CcToolEnvironment(environment)
   }
+}
+
+private fun CcXcodeLocator.Result?.toMap(): Map<String, String> {
+  if (this == null) return emptyMap()
+
+  return mapOf(
+    "DEVELOPER_DIR" to developerDir.toString(),
+    "SDKROOT" to sdkRoot.toString(),
+  )
 }
