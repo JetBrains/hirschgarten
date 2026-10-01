@@ -7,6 +7,7 @@ import com.intellij.testFramework.junit5.fixture.TestFixture
 import com.intellij.testFramework.junit5.fixture.testFixture
 import org.jetbrains.annotations.TestOnly
 import org.jetbrains.bazel.test.framework.BazelPathManager
+import org.jetbrains.bazel.test.framework.assertLastSyncSucceeded
 import org.jetbrains.bazel.test.framework.bazelProjectFixture
 import org.jetbrains.bazel.test.framework.writeProjectView
 import java.net.URI
@@ -53,6 +54,8 @@ internal fun clionBazelProjectFixture(
     jvmToolchains = jvmToolchains,
     registries = listOf(BazelPathManager.clionTestRegistry.toUri(), BAZEL_CENTRAL_REGISTRY),
   ) { writeProjectView(it, projectView) }.init()
+
+  assertLastSyncSucceeded(project)
 
   LOG.info("Calling after project opened (engine)")
   LanguageEngine.INSTANCE.afterProjectOpened(project)

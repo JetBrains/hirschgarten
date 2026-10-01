@@ -23,7 +23,7 @@ import org.junit.jupiter.api.Assertions.assertEquals
  * A sync that ends with `Sync partially succeeded with errors` does not log an error, so a test
  * that expects a clean sync must call this. The failure message lists the sync warnings and errors.
  */
-internal fun assertLastSyncSucceeded(project: Project) {
+fun assertLastSyncSucceeded(project: Project) {
   val console = ConsoleService.getInstance(project) as TestConsoleService
   val lastFinishMessage = console.syncFinishMessages.lastOrNull()
   val diagnostics = console.syncDiagnostics.joinToString("\n")
