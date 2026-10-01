@@ -80,10 +80,6 @@ public final class IjSmTestExecutionListener implements TestExecutionListener {
       // fail-safe: keep originals
     }
 
-    // Signal start of testing to IDE
-    serviceMessage("enteredTheMatrix", Collections.emptyMap());
-    serviceMessage("testingStarted", Collections.emptyMap());
-
     // Pre-emit full test tree disabled for Bazel SM converter compatibility
     // Previously emitted testTreeStarted/testTreeNode/testTreeEnded which some converters don't handle and spam console.
     // We rely on live execution events (testSuiteStarted/testStarted) instead.
@@ -290,7 +286,6 @@ public final class IjSmTestExecutionListener implements TestExecutionListener {
     startedTests.clear();
     startedSuites.clear();
 
-    serviceMessage("testingFinished", Collections.emptyMap());
     this.testPlan = null;
 
     // Restore streams
@@ -491,9 +486,6 @@ public final class IjSmTestExecutionListener implements TestExecutionListener {
         serviceMessage("testSuiteFinished", fin);
       }
       startedSuites.clear();
-
-      // Ensure closing marker
-      serviceMessage("testingFinished", Collections.emptyMap());
     } catch (Throwable ignore) {
       // best-effort
     } finally {

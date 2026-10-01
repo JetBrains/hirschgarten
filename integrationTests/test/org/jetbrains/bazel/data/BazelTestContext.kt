@@ -10,6 +10,7 @@ enum class BazelTestContext {
   GOLAND,
   PYCHARM,
   IDEA_GO_PLUGIN,
+  IDEA_DEVKIT_PLUGIN,
   ;
 
   fun getIdeInfo(): IdeInfo = when(this) {
@@ -17,5 +18,6 @@ enum class BazelTestContext {
     GOLAND -> IdeInfo.GoLand
     PYCHARM -> IdeInfo.PyCharm
     IDEA_GO_PLUGIN -> IdeInfo.IdeaUltimate.copy(additionalModules = IdeInfo.IdeaUltimate.additionalModules + listOf("intellij.go.plugin"))
+    IDEA_DEVKIT_PLUGIN -> IdeInfo.IdeaUltimate.copy(additionalModules = IdeInfo.IdeaUltimate.additionalModules + listOf("intellij.devkit"))
   }
 }

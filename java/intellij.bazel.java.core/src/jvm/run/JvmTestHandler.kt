@@ -7,7 +7,6 @@ import com.intellij.execution.configuration.RunConfigurationExtensionsManager
 import com.intellij.execution.configurations.RunConfigurationBase
 import com.intellij.execution.configurations.RunProfileState
 import com.intellij.execution.executors.DefaultDebugExecutor
-import com.intellij.execution.process.ProcessOutputType
 import com.intellij.execution.runners.ExecutionEnvironment
 import com.intellij.execution.runners.ProgramRunner
 import com.intellij.execution.testframework.sm.runner.ui.SMTRunnerConsoleView
@@ -17,21 +16,17 @@ import com.intellij.openapi.util.Ref
 import kotlinx.coroutines.CompletableDeferred
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.commons.RuleType
-import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.run.BazelProcessHandler
 import org.jetbrains.bazel.run.BazelRunHandler
 import org.jetbrains.bazel.run.commandLine.BazelTestCommandLineState
 import org.jetbrains.bazel.run.config.BazelRunConfiguration
 import org.jetbrains.bazel.run.import.GooglePluginAwareRunHandlerProvider
-import org.jetbrains.bazel.run.task.BazelRunTaskListener
-import org.jetbrains.bazel.run.task.BazelTestTaskListener
 import org.jetbrains.bazel.server.BazelServerFacade
 import org.jetbrains.bazel.sync.isJvmTarget
 import org.jetbrains.bazel.taskEvents.BazelTaskListener
+import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.TestParams
-import java.nio.file.Path
-import kotlin.io.path.useLines
 
 @ApiStatus.Internal
 class JvmTestHandler(private val configuration: BazelRunConfiguration) : BazelRunHandler {
@@ -74,13 +69,14 @@ class JvmTestHandler(private val configuration: BazelRunConfiguration) : BazelRu
 
     override fun createRunHandler(configuration: BazelRunConfiguration): BazelRunHandler = JvmTestHandler(configuration)
 
-    override fun canRun(targets: List<TargetKind>): Boolean =
+    override fun canRun(project: Project, targets: List<BuildTarget>): Boolean =
       targets.all {
-        (it.isJvmTarget() && it.ruleType == RuleType.TEST)
+        (it.kind.isJvmTarget() && it.kind.ruleType == RuleType.TEST)
       }
 
     override fun canRunNonImported(project: Project, targets: List<Label>): Boolean =
-      targetsUseJetBrainsTestRunner(project, targets)
+      // If a custom extension accepts those targets, then it follows it can run them (even though they aren't imported)
+      JvmTestRunnerExtension.getInstance(project, targets) !is DefaultJvmTestRunnerExtension
 
     override val googleHandlerId: String = "BlazeJavaRunConfigurationHandlerProvider"
     override val isTestHandler: Boolean = true
@@ -92,23 +88,14 @@ internal class JvmTestCommandLineState(
   state: JvmTestState,
 ) : BazelTestCommandLineState(environment = environment, state = state) {
 
-  private val useJetBrainsTestRunner by lazy { BazelRunConfiguration.get(environment).targetsUseJetBrainsTestRunner() }
+  private val testRunner by lazy { BazelRunConfiguration.get(environment).getJvmTestRunnerExtension() }
+  override val isIdBasedTestTree: Boolean get() = testRunner.isIdBasedTestTree
+  override val testRunnerEmitsServiceMessages: Boolean get() = testRunner.testRunnerEmitsServiceMessages
 
-  override val isIdBasedTestTree: Boolean get() = useJetBrainsTestRunner
-
-  override val testRunnerEmitsServiceMessages: Boolean get() = useJetBrainsTestRunner
-
-  override fun transformTestParams(params: TestParams): TestParams = when {
-    useJetBrainsTestRunner -> params.copy(
-      environmentVariables = params.environmentVariables + JetBrainsTestRunner.envs(params.testFilter),
-      testFilter = null,
-      streamTestOutput = true,
-    )
-    else -> params
-  }
+  override fun transformTestParams(params: TestParams): TestParams = testRunner.transformTestParams(params)
 
   override fun createAndAddTaskListener(handler: BazelProcessHandler): BazelTaskListener =
-    if (useJetBrainsTestRunner) JetBrainsTestRunnerTaskListener(handler) else super.createAndAddTaskListener(handler)
+    testRunner.createTaskListener(handler, coverageReportListener)
 
   override fun createTestRestartActions(console: SMTRunnerConsoleView): Array<AnAction> =
     arrayOf(BazelRerunFailedTestsAction(console))
@@ -119,14 +106,11 @@ internal class ScriptPathTestCommandLineState(
   val settings: JvmTestState,
   configuration: BazelRunConfiguration,
 ) : JvmDebuggableCommandLineState(environment, settings.debugPort, configuration) {
-  private val useJetBrainsTestRunner by lazy { BazelRunConfiguration.get(environment).targetsUseJetBrainsTestRunner() }
+  private val testRunner by lazy { BazelRunConfiguration.get(environment).getJvmTestRunnerExtension() }
+  override val isIdBasedTestTree: Boolean get() = testRunner.isIdBasedTestTree
+  override val testRunnerEmitsServiceMessages: Boolean get() = testRunner.testRunnerEmitsServiceMessages
 
-  override val isIdBasedTestTree: Boolean get() = useJetBrainsTestRunner
-
-  override val testRunnerEmitsServiceMessages: Boolean get() = useJetBrainsTestRunner
-
-  override fun createAndAddTaskListener(handler: BazelProcessHandler): BazelTaskListener =
-    if (useJetBrainsTestRunner) JetBrainsTestRunnerTaskListener(handler) else BazelTestTaskListener(handler)
+  override fun createAndAddTaskListener(handler: BazelProcessHandler): BazelTaskListener = testRunner.createTaskListener(handler, null)
 
   override fun createTestRestartActions(console: SMTRunnerConsoleView): Array<AnAction> =
     arrayOf(BazelRerunFailedTestsAction(console))
@@ -139,44 +123,21 @@ internal class ScriptPathTestCommandLineState(
       handler: BazelProcessHandler,
   ) {
     val scriptPath = checkNotNull(environment.getCopyableUserData(SCRIPT_PATH_KEY)?.get()) { "Missing --script_path" }
-    val filter = settings.testFilter
+    val (env, testFilter) = testRunner.transformScriptPathEnvAndTestFilter(settings.env.envs, settings.testFilter)
     runWithScriptPath(
       taskGroupId.task("jvm-test"),
       scriptPath = scriptPath,
       project = environment.project,
       pidDeferred = pidDeferred,
       handler = handler,
-      env = if (useJetBrainsTestRunner) settings.env.envs + JetBrainsTestRunner.envs(filter) else settings.env.envs,
+      env = env,
       additionalScriptParameters = getAdditionalJvmRunParameters(environment, settings.debugPort),
       isTest = true,
-      testFilter = if (useJetBrainsTestRunner) null else filter,
+      testFilter = testFilter,
     ) { processHandler ->
       attachJvmRunExtensions(environment, processHandler)
     }
   }
 }
 
-private const val TEAMCITY_PREFIX = "##teamcity[test"
-private const val TEST_NAME_TAG = " name='"
-private const val JAVA_TEST_SCHEMA = "java:test://"
-
-private class JetBrainsTestRunnerTaskListener(handler: BazelProcessHandler) : BazelRunTaskListener(handler) {
-  override fun onCachedTestLog(testLog: Path) {
-    testLog.useLines { lines ->
-      lines.map { line ->
-        markTestNameAsCached(line)
-      }.forEach { line ->
-        handler.notifyTextAvailable(line + "\n", ProcessOutputType.STDOUT)
-      }
-    }
-  }
-
-  private fun markTestNameAsCached(line: String): String {
-    if (!line.startsWith(TEAMCITY_PREFIX)) return line
-    if (JAVA_TEST_SCHEMA !in line) return line
-    val nameStart = line.indexOf(TEST_NAME_TAG)
-    if (nameStart == -1) return line
-    val nameEnd = line.indexOf('\'', startIndex = nameStart + TEST_NAME_TAG.length)
-    return line.substring(0 until nameEnd) + " (cached)" + line.substring(nameEnd)
-  }
-}
+private fun BazelRunConfiguration.getJvmTestRunnerExtension(): JvmTestRunnerExtension = JvmTestRunnerExtension.getInstance(project, targets)

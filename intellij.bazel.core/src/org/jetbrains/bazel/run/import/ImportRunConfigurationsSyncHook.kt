@@ -93,7 +93,7 @@ internal class ImportRunConfigurationsSyncHook : ProjectSyncHook {
     val targets = listOf(target)
     val runHandler =
       GooglePluginAwareRunHandlerProvider.getRunHandlerProvider(googleHandlerId, bazelCommand)
-        ?: RunHandlerProvider.getRunHandlerProvider(project, targets)
+      ?: RunHandlerProvider.getRunHandlerProviderOrThrow(project, targets)
     configuration.updateTargets(targets, runHandler)
     val state = configuration.handler?.state
     (state as? HasBazelParams)?.additionalBazelParams = additionalBazelParams

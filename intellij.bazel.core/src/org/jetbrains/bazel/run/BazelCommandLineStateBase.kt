@@ -19,10 +19,10 @@ import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.action.saveAllFiles
 import org.jetbrains.bazel.coroutines.BazelCoroutineService
 import org.jetbrains.bazel.run.config.BazelRunConfiguration
+import org.jetbrains.bazel.server.BazelServerFacade
 import org.jetbrains.bazel.server.connection
 import org.jetbrains.bazel.taskEvents.BazelTaskEventsService
 import org.jetbrains.bazel.taskEvents.BazelTaskListener
-import org.jetbrains.bazel.server.BazelServerFacade
 import org.jetbrains.bsp.protocol.TaskGroupId
 import kotlin.random.Random
 

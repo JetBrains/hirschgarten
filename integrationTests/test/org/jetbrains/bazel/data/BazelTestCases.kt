@@ -38,6 +38,8 @@ object GoPluginBazelCases : BaseBazelCasesParametrized(BazelTestContext.IDEA_GO_
 
 object PyCharmBazelCases : BaseBazelCasesParametrized(BazelTestContext.PYCHARM)
 
+object DevKitBazelCases : BaseBazelCasesParametrized(BazelTestContext.IDEA_DEVKIT_PLUGIN)
+
 fun preCacheBazelisk(context: IDETestContext) {
   val systemBazelisk = listOf("/opt/homebrew/bin/bazelisk", "/usr/local/bin/bazelisk")
     .map { Path.of(it) }

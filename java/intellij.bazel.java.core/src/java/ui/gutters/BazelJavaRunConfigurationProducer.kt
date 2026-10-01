@@ -5,13 +5,11 @@ import com.intellij.lang.jvm.util.JvmClassUtil
 import com.intellij.lang.jvm.util.JvmMainMethodUtil
 import com.intellij.openapi.vfs.JarFileSystem
 import com.intellij.psi.PsiClass
-import com.intellij.psi.PsiClassType
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiMethod
 import com.intellij.psi.PsiNameIdentifierOwner
 import com.intellij.psi.util.PsiTreeUtil
 import org.jetbrains.annotations.ApiStatus
-import org.jetbrains.bazel.jvm.run.usesJetBrainsTestRunner
 import org.jetbrains.bazel.ui.gutters.BazelRunConfigurationProducer
 import org.jetbrains.bsp.protocol.BuildTarget
 
@@ -30,12 +28,7 @@ open class BazelJavaRunConfigurationProducer : BazelRunConfigurationProducer() {
     }
 
     val className = getContainingClassFqn(psiIdentifier) ?: return null
-    val usesJetBrainsTestRunner = target.usesJetBrainsTestRunner(element.project)
-    val testFilter = when {
-      !usesJetBrainsTestRunner -> getTestFilter(className, psiMethod?.name)
-      psiMethod == null -> className
-      else -> "$className:${psiMethod.name}:${psiMethod.getMethodParameterTypes()}"
-    }
+    val testFilter = JvmTestFilterExtension.getInstance(element.project, target).getTestFilter(className, psiMethod)
     val junitDisabledCondition = DisabledConditionUtil.getDisabledCondition(classOrMethod)
     return GutterAction(
       testFilter = testFilter,
@@ -47,20 +40,6 @@ open class BazelJavaRunConfigurationProducer : BazelRunConfigurationProducer() {
       additionalLocationString = psiMethod?.name,
     )
   }
-
-  /**
-   * See [JUnit docs](https://docs.junit.org/5.2.0/api/org/junit/platform/engine/discovery/MethodSelector.html#getMethodParameterTypes())
-   */
-  private fun PsiMethod.getMethodParameterTypes(): String =
-    this.parameterList.parameters.map { it.type }.mapNotNull { type ->
-      if (type is PsiClassType) {
-        // canonicalText will include type arguments if they are present, avoid that in simple cases
-        type.resolve()?.qualifiedName
-      }
-      else {
-        type.canonicalText
-      }
-    }.joinToString(separator = ",")
 
   open fun getContainingClassFqn(element: PsiElement): String? {
     val psiClass = PsiTreeUtil.getParentOfType(element, PsiClass::class.java, false) ?: return null

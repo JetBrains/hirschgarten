@@ -4,10 +4,10 @@ import com.intellij.openapi.diagnostic.thisLogger
 import com.intellij.openapi.extensions.ExtensionPointName
 import com.intellij.openapi.project.Project
 import org.jetbrains.annotations.ApiStatus
-import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.run.config.BazelRunConfiguration
 import org.jetbrains.bazel.target.targetStorage
+import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.id
 
 @ApiStatus.Internal
@@ -25,8 +25,9 @@ interface RunHandlerProvider {
 
   /**
    * Returns true if this provider can create a {@link BspRunHandler} for running the given targets.
+   * Implementations should generally handle [org.jetbrains.bazel.ui.gutters.NonImportedBuildTarget] as well.
    */
-  fun canRun(targets: List<TargetKind>): Boolean
+  fun canRun(project: Project, targets: List<BuildTarget>): Boolean
 
   fun canRunNonImported(project: Project, targets: List<Label>): Boolean = false
 
@@ -35,14 +36,14 @@ interface RunHandlerProvider {
       ExtensionPointName.create("org.jetbrains.bazel.runHandlerProvider")
 
     /** Finds a BspRunHandlerProvider that will be able to create a BspRunHandler for the given targets */
-    fun getRunHandlerProvider(targets: List<TargetKind>): RunHandlerProvider? =
+    fun getRunHandlerProvider(project: Project, targets: List<BuildTarget>): RunHandlerProvider? =
       ep.extensionList.firstOrNull {
-        it.canRun(targets)
+        it.canRun(project, targets)
       }
 
     /** Finds a BspRunHandlerProvider that will be able to create a BspRunHandler for the given targets.
      *  Needs to query WM for Build Target Infos. */
-    fun getRunHandlerProvider(project: Project, targets: List<Label>): RunHandlerProvider {
+    fun getRunHandlerProviderOrThrow(project: Project, targets: List<Label>): RunHandlerProvider {
       val targetUtils = project.targetStorage
       val targetInfos =
         targets.mapNotNull {
@@ -54,15 +55,15 @@ interface RunHandlerProvider {
 
       require(targetInfos.isNotEmpty()) { "targetInfos should not be empty" }
 
-      return getRunHandlerProvider(targetInfos.map { it.kind })
+      return getRunHandlerProvider(project, targetInfos)
         ?: throw IllegalArgumentException("No BspRunHandlerProvider found for targets: $targets")
     }
 
     fun getRunHandlerProviderOrNull(project: Project, targets: List<Label>): RunHandlerProvider? {
       val targetUtils = project.targetStorage
-      val targetKinds = targets.mapNotNull { targetUtils.getTargetSummary(it)?.kind }
-      return if (targetKinds.isNotEmpty()) {
-        getRunHandlerProvider(targetKinds)
+      val targetInfos = targets.mapNotNull { targetUtils.getTargetSummary(it) }
+      return if (targetInfos.isNotEmpty()) {
+        getRunHandlerProvider(project, targetInfos)
       }
       else {
         ep.extensionList.firstOrNull { it.canRunNonImported(project, targets) }

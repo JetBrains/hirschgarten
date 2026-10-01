@@ -69,7 +69,7 @@ class BazelRunConfiguration internal constructor(
     val providers = selectedTargets
       .mapTo(mutableSetOf()) { target ->
         RunHandlerProvider
-          .getRunHandlerProvider(listOf(target.kind))
+          .getRunHandlerProvider(project, listOf(target))
         ?: throw RuntimeConfigurationError(message("runconfig.bazel.errors.target.not.supported", target.id))
       }
     if (providers.size > 1) {
@@ -182,7 +182,7 @@ class BazelRunConfiguration internal constructor(
       }
     } else {
       logger.warn("Failed to find run handler provider with ID $providerId")
-      val newProvider = RunHandlerProvider.getRunHandlerProvider(project, this.targets)
+      val newProvider = RunHandlerProvider.getRunHandlerProviderOrThrow(project, this.targets)
       updateHandlerIfDifferentProvider(newProvider)
     }
 

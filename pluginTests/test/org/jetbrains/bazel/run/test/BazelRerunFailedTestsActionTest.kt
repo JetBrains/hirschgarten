@@ -3,7 +3,8 @@ package org.jetbrains.bazel.run.test
 import com.intellij.execution.testframework.sm.runner.SMTestProxy
 import io.kotest.matchers.nulls.shouldBeNull
 import io.kotest.matchers.shouldBe
-import org.jetbrains.bazel.jvm.run.testFilterFromFailedTests
+import org.jetbrains.bazel.jvm.run.failedLeafTests
+import org.jetbrains.bazel.jvm.run.testFilterFromTests
 import org.jetbrains.bazel.test.framework.BazelTestApplication
 import org.junit.jupiter.api.Test
 
@@ -24,13 +25,13 @@ class BazelRerunFailedTestsActionTest {
     val bar = leafTest("com.example.MyTest", "bar")
     val suite = classSuite("com.example.MyTest", foo, bar)
 
-    testFilterFromFailedTests(listOf(suite, foo, bar)) shouldBe "com.example.MyTest.foo$|com.example.MyTest.bar$"
+    testFilterFromTests(failedLeafTests(listOf(suite, foo, bar))) shouldBe "com.example.MyTest.foo$|com.example.MyTest.bar$"
   }
 
   @Test
   fun `returns null when only non-leaf containers failed`() {
     val suite = classSuite("com.example.MyTest", leafTest("com.example.MyTest", "foo"))
 
-    testFilterFromFailedTests(listOf(suite)).shouldBeNull()
+    testFilterFromTests(failedLeafTests(listOf(suite))).shouldBeNull()
   }
 }

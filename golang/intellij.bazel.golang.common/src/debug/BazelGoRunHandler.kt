@@ -6,9 +6,8 @@ import com.intellij.execution.Executor
 import com.intellij.execution.configurations.RunProfileState
 import com.intellij.execution.executors.DefaultDebugExecutor
 import com.intellij.execution.runners.ExecutionEnvironment
+import com.intellij.openapi.project.Project
 import org.jetbrains.bazel.commons.RuleType
-import org.jetbrains.bazel.commons.TargetKind
-import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.golang.targetKinds.includesGo
 import org.jetbrains.bazel.golang.workspace.GoWorkspaceModuleUtil
@@ -19,6 +18,7 @@ import org.jetbrains.bazel.run.config.BazelRunConfiguration
 import org.jetbrains.bazel.run.config.BazelRunConfigurationType
 import org.jetbrains.bazel.run.import.GooglePluginAwareRunHandlerProvider
 import org.jetbrains.bazel.run.state.GenericRunState
+import org.jetbrains.bsp.protocol.BuildTarget
 import java.util.concurrent.atomic.AtomicReference
 
 internal class BazelGoRunHandler(configuration: BazelRunConfiguration) : BazelRunHandler {
@@ -68,8 +68,8 @@ internal class BazelGoRunHandler(configuration: BazelRunConfiguration) : BazelRu
 
     override fun createRunHandler(configuration: BazelRunConfiguration): BazelRunHandler = BazelGoRunHandler(configuration)
 
-    override fun canRun(targets: List<TargetKind>): Boolean =
-      targets.all { it.includesGo() && it.ruleType == RuleType.BINARY }
+    override fun canRun(project: Project, targets: List<BuildTarget>): Boolean =
+      targets.all { it.kind.includesGo() && it.kind.ruleType == RuleType.BINARY }
 
     override val googleHandlerId: String = "BlazeGoRunConfigurationHandlerProvider"
     override val isTestHandler: Boolean = false

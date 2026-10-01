@@ -10,7 +10,7 @@ import com.intellij.tools.ide.performanceTesting.commands.openFile
 import org.jetbrains.bazel.base.IdeStarterBaseProjectTest
 import org.jetbrains.bazel.base.execute
 import org.jetbrains.bazel.base.syncBazelProject
-import org.jetbrains.bazel.data.IdeaBazelCases
+import org.jetbrains.bazel.data.DevKitBazelCases
 import org.jetbrains.bazel.data.simpleBazelProject
 import org.junit.jupiter.api.Test
 import kotlin.time.Duration.Companion.minutes
@@ -24,7 +24,7 @@ class JetBrainsTestRunnerTest : IdeStarterBaseProjectTest() {
 
   @Test
   fun `JetBrains test runner should execute tests and show results tree`() {
-    createContext("jetBrainsTestRunner", IdeaBazelCases.withProject(JETBRAINS_TEST_RUNNER_PROJECT))
+    createContext("jetBrainsTestRunner", DevKitBazelCases.withProject(JETBRAINS_TEST_RUNNER_PROJECT))
       .setRunConfigRunWithBazel(false)
       .runIdeWithDriver(runTimeout = timeout)
       .useDriverAndCloseIde {
@@ -156,7 +156,7 @@ class JetBrainsTestRunnerTest : IdeStarterBaseProjectTest() {
 
   @Test
   fun `test results should be cached when running with Bazel`() {
-    createContext("jetBrainsTestRunnerCached", IdeaBazelCases.withProject(JETBRAINS_TEST_RUNNER_PROJECT))
+    createContext("jetBrainsTestRunnerCached", DevKitBazelCases.withProject(JETBRAINS_TEST_RUNNER_PROJECT))
       // This is required for Bazel test caching!
       .setRunConfigRunWithBazel(true)
       .runIdeWithDriver(runTimeout = timeout)
@@ -192,7 +192,7 @@ class JetBrainsTestRunnerTest : IdeStarterBaseProjectTest() {
   fun `a regular test target is not run with the JetBrains test runner`() {
     createContext(
       "regularTestRunner",
-      IdeaBazelCases.withProject(JETBRAINS_TEST_RUNNER_PROJECT),
+      DevKitBazelCases.withProject(JETBRAINS_TEST_RUNNER_PROJECT),
     )
       .runIdeWithDriver(runTimeout = timeout)
       .useDriverAndCloseIde {

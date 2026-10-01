@@ -10,21 +10,22 @@ import com.intellij.execution.configurations.RunProfileState
 import com.intellij.execution.executors.DefaultDebugExecutor
 import com.intellij.execution.process.OSProcessHandler
 import com.intellij.execution.runners.ExecutionEnvironment
+import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Key
 import com.intellij.openapi.util.Ref
 import kotlinx.coroutines.CompletableDeferred
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.commons.RuleType
-import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.run.BazelProcessHandler
 import org.jetbrains.bazel.run.BazelRunHandler
 import org.jetbrains.bazel.run.commandLine.BazelRunCommandLineState
 import org.jetbrains.bazel.run.config.BazelRunConfiguration
 import org.jetbrains.bazel.run.import.GooglePluginAwareRunHandlerProvider
 import org.jetbrains.bazel.run.task.BazelRunTaskListener
-import org.jetbrains.bazel.taskEvents.BazelTaskListener
 import org.jetbrains.bazel.server.BazelServerFacade
 import org.jetbrains.bazel.sync.isJvmTarget
+import org.jetbrains.bazel.taskEvents.BazelTaskListener
+import org.jetbrains.bsp.protocol.BuildTarget
 
 internal val COROUTINE_JVM_FLAGS_KEY = Key.create<Ref<List<String>>>("bazel.coroutine.jvm.flags")
 
@@ -68,9 +69,9 @@ class JvmRunHandler(private val configuration: BazelRunConfiguration) : BazelRun
 
     override fun createRunHandler(configuration: BazelRunConfiguration): BazelRunHandler = JvmRunHandler(configuration)
 
-    override fun canRun(targets: List<TargetKind>): Boolean =
+    override fun canRun(project: Project, targets: List<BuildTarget>): Boolean =
       targets.all {
-        it.isJvmTarget() && it.ruleType != RuleType.TEST
+        it.kind.isJvmTarget() && it.kind.ruleType != RuleType.TEST
       }
 
     override val googleHandlerId: String = "BlazeJavaRunConfigurationHandlerProvider"

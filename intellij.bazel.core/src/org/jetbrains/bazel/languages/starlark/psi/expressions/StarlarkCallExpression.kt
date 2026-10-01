@@ -6,15 +6,11 @@ import com.intellij.model.psi.PsiSymbolService
 import com.intellij.navigation.ItemPresentation
 import com.intellij.psi.ElementManipulators
 import com.intellij.psi.PsiElement
-import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiNameIdentifierOwner
 import com.intellij.psi.search.SearchScope
-import com.intellij.psi.util.elementType
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.assets.BazelPluginIcons
 import org.jetbrains.bazel.languages.starlark.bazel.BazelFileType
-import org.jetbrains.bazel.languages.starlark.starlarkProjectScope
-import javax.swing.Icon
 import org.jetbrains.bazel.languages.starlark.bazel.BazelGlobalFunctions
 import org.jetbrains.bazel.languages.starlark.elements.StarlarkElementTypes
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkBaseElement
@@ -22,6 +18,8 @@ import org.jetbrains.bazel.languages.starlark.psi.StarlarkElementVisitor
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkFile
 import org.jetbrains.bazel.languages.starlark.psi.functions.StarlarkArgumentList
 import org.jetbrains.bazel.languages.starlark.references.BazelGlobalFunctionReference
+import org.jetbrains.bazel.languages.starlark.starlarkProjectScope
+import javax.swing.Icon
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.contract
 
@@ -96,6 +94,16 @@ class StarlarkCallExpression(node: ASTNode) :
   fun getNameAttributeValue(): String? = nameArgumentStringLiteral()?.getStringContents()
   fun getCalledFunctionName(): String? = (getCalledExpression() as? StarlarkReferenceExpression)?.text
   fun getCalledExpression(): PsiElement? = findChildByType(StarlarkElementTypes.EXPRESSIONS)
+
+  fun getTags(): List<String>? = getArgumentList()
+    ?.getKeywordArgument("tags")
+    ?.children
+    ?.filterIsInstance<StarlarkListLiteralExpression>()
+    ?.firstOrNull()
+    ?.getElements()
+    ?.filterIsInstance<StarlarkStringLiteralExpression>()
+    ?.map { it.getStringContents() }
+
   fun getArgumentList(): StarlarkArgumentList? = findChildrenByClass(StarlarkArgumentList::class.java).firstOrNull()
 
   override fun getOwnReferences(): Collection<PsiSymbolReference> {

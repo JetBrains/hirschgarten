@@ -12,6 +12,7 @@
     <module name="intellij.java.execution"/>
     <module name="intellij.java.execution.impl"/>
     <module name="intellij.java.impl"/>
+    <module name="intellij.java.psi"/>
     <module name="intellij.libraries.protobuf"/>
     <module name="intellij.platform.core"/>
     <module name="intellij.platform.core.ui"/>
@@ -29,12 +30,25 @@
   </dependencies>
   <!-- endregion -->
 
+  <extensionPoints>
+    <extensionPoint qualifiedName="org.jetbrains.bazel.jetBrainsTestRunnerDetector"
+                    interface="org.jetbrains.bazel.intellij.JetBrainsTestRunner$Detector"
+                    dynamic="true"/>
+  </extensionPoints>
+
   <extensions defaultExtensionNs="org.jetbrains.bazel">
     <runHandlerProvider
       implementation="org.jetbrains.bazel.intellij.IntellijPluginRunHandlerProvider"
       order="before JvmRunHandlerProvider"
     />
     <targetKindProvider implementation="org.jetbrains.bazel.intellij.IntelliJMonorepoBazelRules"/>
+    <jvmTestRunnerExtension implementation="org.jetbrains.bazel.intellij.JetBrainsTestRunnerExtension"/>
+    <jvmTestRerunExtension implementation="org.jetbrains.bazel.intellij.JetBrainsTestRerunExtension"/>
+    <jvmTestFilterExtension implementation="org.jetbrains.bazel.intellij.JetBrainsTestFilterExtension"/>
+    <runHandlerProvider
+      id="JetBrainsTestSuiteHandlerProvider"
+      implementation="org.jetbrains.bazel.intellij.JetBrainsTestSuiteHandler$JetBrainsTestSuiteHandlerProvider"
+    />
   </extensions>
   <extensions defaultExtensionNs="com.intellij">
     <stepsBeforeRunProvider implementation="org.jetbrains.bazel.intellij.BuildPluginBeforeRunTaskProvider"/>

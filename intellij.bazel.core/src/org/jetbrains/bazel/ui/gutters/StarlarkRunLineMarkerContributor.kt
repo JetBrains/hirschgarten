@@ -56,12 +56,19 @@ open class StarlarkRunLineMarkerContributor : RunLineMarkerContributor() {
     this.accept(visitor)
     val ruleName = visitor.ruleName ?: return null
     val targetName = visitor.targetName ?: return null
+    val tags = visitor.tags
     val targetLabel = calculateLabel(project, virtualFile, targetName) ?: return null
-    return calculateLineMarkerInfo(project, virtualFile, targetLabel, ruleName).takeIf { it.actions.isNotEmpty() }
+    return calculateLineMarkerInfo(project, virtualFile, targetLabel, ruleName, tags).takeIf { it.actions.isNotEmpty() }
   }
 
-  private fun calculateLineMarkerInfo(project: Project, buildFile: VirtualFile, targetLabel: ResolvedLabel, ruleName: String): Info {
-    val actions = calculateEligibleActions(project, buildFile, targetLabel, ruleName).toTypedArray()
+  private fun calculateLineMarkerInfo(
+    project: Project,
+    buildFile: VirtualFile,
+    targetLabel: ResolvedLabel,
+    ruleName: String,
+    tags: List<String>?,
+  ): Info {
+    val actions = calculateEligibleActions(project, buildFile, targetLabel, ruleName, tags).toTypedArray()
     val hasRunAction = actions.any { it !is BuildTargetAction }
     return Info(
       if (hasRunAction) AllIcons.Actions.Execute else AllIcons.Actions.Compile,
@@ -69,15 +76,23 @@ open class StarlarkRunLineMarkerContributor : RunLineMarkerContributor() {
     )
   }
 
-  private fun calculateEligibleActions(project: Project, buildFile: VirtualFile, targetLabel: ResolvedLabel, ruleName: String): List<AnAction> = buildList {
+  private fun calculateEligibleActions(
+    project: Project,
+    buildFile: VirtualFile,
+    targetLabel: ResolvedLabel,
+    ruleName: String,
+    tags: List<String>?,
+  ): List<AnAction> = buildList {
     val targetUtils = project.targetStorage
     val targetInfo = targetUtils.getTargetSummary(targetLabel)
     val targetKind = targetInfo?.kind ?: TargetKindService.getInstance().guessFromRuleName(ruleName)
+    val tags = targetInfo?.tags ?: tags ?: emptyList()
 
     add(BuildTargetAction(targetLabel))
 
     if (targetKind.isExecutable) {
-      val executableTarget = targetInfo ?: NonImportedBuildTarget(targetLabel, targetKind, (buildFile.parent ?: buildFile).toNioPath())
+      val executableTarget =
+        targetInfo ?: NonImportedBuildTarget(targetLabel, targetKind, (buildFile.parent ?: buildFile).toNioPath(), tags)
       addAll(getExecutorActions(project, executableTarget))
     }
   }
@@ -86,9 +101,11 @@ open class StarlarkRunLineMarkerContributor : RunLineMarkerContributor() {
 private class StarlarkCallExpressionVisitor : StarlarkElementVisitor() {
   var ruleName: String? = null
   var targetName: String? = null
+  var tags: List<String>? = null
 
   override fun visitCallExpression(node: StarlarkCallExpression) {
     ruleName = node.getCalledFunctionName()
     targetName = node.getNameAttributeValue()
+    tags = node.getTags()
   }
 }

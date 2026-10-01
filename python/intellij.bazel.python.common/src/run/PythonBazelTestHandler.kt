@@ -1,10 +1,10 @@
 package org.jetbrains.bazel.python.run
 
 import com.intellij.execution.runners.ExecutionEnvironment
+import com.intellij.openapi.project.Project
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.annotations.VisibleForTesting
 import org.jetbrains.bazel.commons.RuleType
-import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.python.lang.PythonLanguageClass
 import org.jetbrains.bazel.run.BazelCommandLineStateBase
 import org.jetbrains.bazel.run.BazelRunHandler
@@ -13,9 +13,8 @@ import org.jetbrains.bazel.run.config.BazelRunConfiguration
 import org.jetbrains.bazel.run.import.GooglePluginAwareRunHandlerProvider
 import org.jetbrains.bazel.run.state.AbstractGenericTestState
 import org.jetbrains.bazel.run.state.GenericTestState
+import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.TestParams
-import kotlin.collections.toMutableMap
-import kotlin.text.contains
 
 @ApiStatus.Internal
 class PythonBazelTestHandler : PythonBazelHandler<GenericTestState>() {
@@ -36,9 +35,9 @@ class PythonBazelTestHandler : PythonBazelHandler<GenericTestState>() {
 
     override fun createRunHandler(configuration: BazelRunConfiguration): BazelRunHandler = PythonBazelTestHandler()
 
-    override fun canRun(targets: List<TargetKind>): Boolean =
+    override fun canRun(project: Project, targets: List<BuildTarget>): Boolean =
       targets.all {
-        it.languageClasses.contains(PythonLanguageClass.PYTHON) && it.ruleType == RuleType.TEST
+        it.kind.languageClasses.contains(PythonLanguageClass.PYTHON) && it.kind.ruleType == RuleType.TEST
       }
 
     override val googleHandlerId: String = "BlazePyTestConfigurationHandlerProvider"

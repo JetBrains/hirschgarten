@@ -6,22 +6,23 @@ import com.intellij.psi.PsiIdentifier
 import com.intellij.psi.PsiMethod
 import com.intellij.psi.impl.source.tree.LeafPsiElement
 import com.intellij.psi.util.childrenOfType
+import com.intellij.testFramework.ExtensionTestUtil
 import com.intellij.testFramework.fixtures.CodeInsightTestFixture
 import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
 import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.commons.TargetKind
-import org.jetbrains.bazel.jvm.run.JetBrainsTestRunner
-import org.jetbrains.bazel.test.framework.BazelBasePlatformTestCase
+import org.jetbrains.bazel.intellij.JetBrainsTestFilterExtension
+import org.jetbrains.bazel.intellij.JetBrainsTestRunner
 import org.jetbrains.bazel.kotlin.ui.gutters.BazelKotlinRunConfigurationProducer
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.sync.JavaLanguageClass
+import org.jetbrains.bazel.test.framework.BazelBasePlatformTestCase
 import org.jetbrains.bazel.ui.gutters.NonImportedBuildTarget
 import org.jetbrains.kotlin.psi.KtClass
 import org.jetbrains.kotlin.psi.KtClassBody
 import org.jetbrains.kotlin.psi.KtNamedFunction
 import org.jetbrains.kotlin.psi.psiUtil.getChildOfType
-import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
@@ -217,9 +218,13 @@ class BazelJavaRunConfigurationProducerTest : BazelBasePlatformTestCase() {
     result shouldBe expectedSingleTestFilter
   }
 
+  private fun registerJetBrainsTestRunner() =
+    ExtensionTestUtil.maskExtensions(JvmTestFilterExtension.ep, listOf(JetBrainsTestFilterExtension()), testRootDisposable)
+
   @Test
   fun `should keep $ in a nested test class for the JetBrains test runner`() {
     // given
+    registerJetBrainsTestRunner()
     myFixture.getJavaNestedTestFile()
     val psiElement = myFixture.findElementByText("NestedTest", PsiClass::class.java).childrenOfType<PsiIdentifier>().first()
     val runConfigurationProducer = BazelJavaRunConfigurationProducer()
@@ -236,6 +241,7 @@ class BazelJavaRunConfigurationProducerTest : BazelBasePlatformTestCase() {
   @Test
   fun `should keep $ in a nested test method for the JetBrains test runner`() {
     // given
+    registerJetBrainsTestRunner()
     myFixture.getJavaNestedTestFile()
     val psiElement = myFixture.findElementByText("nestedTest", PsiMethod::class.java).childrenOfType<PsiIdentifier>().first()
     val runConfigurationProducer = BazelJavaRunConfigurationProducer()

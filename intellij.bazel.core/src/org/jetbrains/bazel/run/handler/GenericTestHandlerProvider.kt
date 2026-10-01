@@ -2,11 +2,11 @@ package org.jetbrains.bazel.run.handler
 
 import com.intellij.openapi.project.Project
 import org.jetbrains.bazel.commons.RuleType
-import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.run.BazelRunHandler
 import org.jetbrains.bazel.run.config.BazelRunConfiguration
 import org.jetbrains.bazel.run.import.GooglePluginAwareRunHandlerProvider
+import org.jetbrains.bsp.protocol.BuildTarget
 
 internal class GenericTestHandlerProvider : GooglePluginAwareRunHandlerProvider {
   override val id: String
@@ -14,7 +14,7 @@ internal class GenericTestHandlerProvider : GooglePluginAwareRunHandlerProvider 
 
   override fun createRunHandler(configuration: BazelRunConfiguration): BazelRunHandler = GenericBazelTestHandler()
 
-  override fun canRun(targets: List<TargetKind>): Boolean = targets.all { it.ruleType == RuleType.TEST }
+  override fun canRun(project: Project, targets: List<BuildTarget>): Boolean = targets.all { it.kind.ruleType == RuleType.TEST }
 
   override fun canRunNonImported(project: Project, targets: List<Label>): Boolean = true
 

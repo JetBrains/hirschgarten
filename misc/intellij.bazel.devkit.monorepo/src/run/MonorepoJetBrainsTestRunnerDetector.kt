@@ -3,7 +3,7 @@ package com.intellij.bazel.devkit.monorepo.run
 import com.intellij.monorepo.devkit.bazel.BazelTargetsInfo
 import com.intellij.monorepo.devkit.bazel.BazelTargetsInfoCache
 import com.intellij.openapi.project.Project
-import org.jetbrains.bazel.jvm.run.JetBrainsTestRunner
+import org.jetbrains.bazel.intellij.JetBrainsTestRunner
 import org.jetbrains.bazel.label.AllRuleTargets
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.label.Main

@@ -71,8 +71,14 @@
     <extensionPoint qualifiedName="org.jetbrains.bazel.runWithScriptPathExtension"
                     interface="org.jetbrains.bazel.jvm.run.RunWithScriptPathExtension"
                     dynamic="true"/>
-    <extensionPoint qualifiedName="org.jetbrains.bazel.jetBrainsTestRunnerDetector"
-                    interface="org.jetbrains.bazel.jvm.run.JetBrainsTestRunner.Detector"
+    <extensionPoint qualifiedName="org.jetbrains.bazel.jvmTestRunnerExtension"
+                    interface="org.jetbrains.bazel.jvm.run.JvmTestRunnerExtension"
+                    dynamic="true"/>
+    <extensionPoint qualifiedName="org.jetbrains.bazel.jvmTestRerunExtension"
+                    interface="org.jetbrains.bazel.jvm.run.JvmTestRerunExtension"
+                    dynamic="true"/>
+    <extensionPoint qualifiedName="org.jetbrains.bazel.jvmTestFilterExtension"
+                    interface="org.jetbrains.bazel.java.ui.gutters.JvmTestFilterExtension"
                     dynamic="true"/>
   </extensionPoints>
 
@@ -99,6 +105,9 @@
     <starlarkClassParametersProvider implementation="org.jetbrains.bazel.languages.starlark.bazel.DefaultStarlarkClassParametersProvider"/>
     <runWithScriptPathExtension implementation="org.jetbrains.bazel.jvm.run.DefaultRunWithScriptPathExtension"/>
     <runWithScriptPathExtension implementation="org.jetbrains.bazel.jvm.run.DebugRunWithScriptPathExtension"/>
+    <jvmTestRunnerExtension implementation="org.jetbrains.bazel.jvm.run.DefaultJvmTestRunnerExtension" order="last"/>
+    <jvmTestRerunExtension implementation="org.jetbrains.bazel.jvm.run.DefaultJvmTestRerunExtension" order="last"/>
+    <jvmTestFilterExtension implementation="org.jetbrains.bazel.java.ui.gutters.DefaultJvmTestFilterExtension" order="last"/>
 
     <testLocationHintProvider implementation="org.jetbrains.bazel.testing.BazelJavaTestLocationHintProvider"/>
     <incompleteTestSuiteParser implementation="org.jetbrains.bazel.jvm.run.Junit5TestVisualOutputParser"/>

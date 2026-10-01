@@ -45,7 +45,7 @@ internal class SyntheticRunConfigurationProducer : LazyRunConfigurationProducer<
     val syntheticTargetId = templateGenerator.getSyntheticTargetLabel(target, targetElement)
 
     // this runner is inferred from the original target
-    val originalTargetProvider = RunHandlerProvider.getRunHandlerProvider(listOf(target.kind)) ?: return false
+    val originalTargetProvider = RunHandlerProvider.getRunHandlerProvider(configuration.project, listOf(target)) ?: return false
     configuration.updateRunProvider(listOf(syntheticTargetId), originalTargetProvider)
 
     val provider =

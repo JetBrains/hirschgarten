@@ -34,7 +34,7 @@ abstract class BazelRunConfigurationProducer : LazyRunConfigurationProducer<Baze
     if (!acceptsTarget(target)) return false
     val element = location.originalLocation.psiElement
     val gutterAction = getGutterAction(element, target) ?: return false
-    configuration.updateTargets(listOf(target.id), RunHandlerProvider.getRunHandlerProvider(listOf(target.kind)))
+    configuration.updateTargets(listOf(target.id), RunHandlerProvider.getRunHandlerProvider(context.project, listOf(target)))
     configuration.handler?.state?.let { gutterAction.applyTo(it) } ?: return false
     configuration.handler?.extensionsManager?.extendCreatedConfiguration(configuration, location)
     val targetName = target.id.toShortString(context.project)
