@@ -98,5 +98,5 @@ private fun getDeclaredLanguageKind(sourceOrHeaderFile: VirtualFileUrl): OCLangu
 context(ctx: CcImportContext)
 private fun Sequence<OutputLocation>.resolve(): Sequence<String> {
   // TODO: again, do we want to report errors when a resolve fails?
-  return mapNotNull { ctx.outputResolver.resolve(it) }.map(Objects::toString)
+  return mapNotNull { ctx.resolveOutputLocation(it) }.map(Objects::toString)
 }
