@@ -10,6 +10,7 @@ import org.jetbrains.bazel.assertions.findCompilerSetting
 import org.jetbrains.bazel.fixtures.CcTestApplication
 import org.jetbrains.bazel.fixtures.clionBazelProjectFixture
 import org.jetbrains.bazel.lookupCompilerSwitch
+import org.jetbrains.bazel.test.framework.BazelVersions
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.api.condition.DisabledOnOs
@@ -17,10 +18,18 @@ import org.junit.jupiter.api.condition.OS
 
 @CcTestApplication
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-@DisabledOnOs(OS.WINDOWS, disabledReason = "toolchains_llvm 1.7.0 does not register toolchains on Windows")
-class LlvmToolchainTest {
+abstract class LlvmToolchainTest(bazelVersion: String) {
 
-  private val project by clionBazelProjectFixture("clion/llvm_toolchain") {
+  @DisabledOnOs(OS.WINDOWS, disabledReason = "toolchains_llvm does not register toolchains on Windows")
+  class Bazel7 : LlvmToolchainTest(BazelVersions.BAZEL_7)
+
+  @DisabledOnOs(OS.WINDOWS, disabledReason = "toolchains_llvm does not register toolchains on Windows")
+  class Bazel8 : LlvmToolchainTest(BazelVersions.BAZEL_8)
+
+  @DisabledOnOs(OS.WINDOWS, disabledReason = "toolchains_llvm does not register toolchains on Windows")
+  class Bazel9 : LlvmToolchainTest(BazelVersions.BAZEL_9)
+
+  private val project by clionBazelProjectFixture("clion/llvm_toolchain", bazelVersion = bazelVersion) {
     addBuildFlags("--platforms=@toolchains_llvm//platforms:wasm32")
   }
 

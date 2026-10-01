@@ -6,6 +6,7 @@ import org.jetbrains.bazel.assertions.assertVfsLoads
 import org.jetbrains.bazel.assertions.findCompilerSetting
 import org.jetbrains.bazel.fixtures.CcTestApplication
 import org.jetbrains.bazel.fixtures.clionBazelProjectFixture
+import org.jetbrains.bazel.test.framework.BazelVersions
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.api.condition.EnabledOnOs
@@ -13,11 +14,19 @@ import org.junit.jupiter.api.condition.OS
 import org.assertj.core.api.Assertions.assertThat as assertThatGeneric
 
 @CcTestApplication
-@EnabledOnOs(OS.LINUX)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-class VirtualIncludesTest {
+abstract class VirtualIncludesTest(bazelVersion: String) {
 
-  private val project by clionBazelProjectFixture("clion/virtual_includes", buildProject = true)
+  @EnabledOnOs(OS.LINUX)
+  class Bazel7 : VirtualIncludesTest(BazelVersions.BAZEL_7)
+
+  @EnabledOnOs(OS.LINUX)
+  class Bazel8 : VirtualIncludesTest(BazelVersions.BAZEL_8)
+
+  @EnabledOnOs(OS.LINUX)
+  class Bazel9 : VirtualIncludesTest(BazelVersions.BAZEL_9)
+
+  private val project by clionBazelProjectFixture("clion/virtual_includes", buildProject = true, bazelVersion = bazelVersion)
 
   @Test
   fun testVfsRoots() = project.assertVfsLoads()

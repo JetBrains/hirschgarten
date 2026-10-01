@@ -30,15 +30,12 @@ import org.junit.jupiter.api.condition.OS
 abstract class CcImportTest(override val bazelVersion: String) : BazelVersionedTest {
 
   @DisabledOnOs(OS.WINDOWS)
-  @CcTestApplication
   class Bazel7 : CcImportTest(BazelVersions.BAZEL_7)
 
   @DisabledOnOs(OS.WINDOWS)
-  @CcTestApplication
   class Bazel8 : CcImportTest(BazelVersions.BAZEL_8)
 
   @DisabledOnOs(OS.WINDOWS)
-  @CcTestApplication
   class Bazel9 : CcImportTest(BazelVersions.BAZEL_9)
 
   private val project by clionBazelProjectFixture("clion/simple", bazelVersion = bazelVersion) {

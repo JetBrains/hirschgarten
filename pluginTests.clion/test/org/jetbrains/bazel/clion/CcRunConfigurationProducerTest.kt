@@ -13,6 +13,7 @@ import org.jetbrains.bazel.fixtures.CcTestApplication
 import org.jetbrains.bazel.fixtures.clionBazelProjectFixture
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.run.config.BazelRunConfiguration
+import org.jetbrains.bazel.test.framework.BazelVersions
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 
@@ -20,9 +21,8 @@ import org.junit.jupiter.api.TestInstance
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class CcRunConfigurationProducerTest {
 
-  private val project by clionBazelProjectFixture("clion/simple") {
-    addBuildFlags("--extra_toolchains=//toolchain:toolchain")
-  }
+  // no need to run this test on different versions
+  private val project by clionBazelProjectFixture("clion/simple", bazelVersion = BazelVersions.BAZEL_9)
 
   @Test
   fun testEntryPointRunsItsTarget(): Unit = timeoutRunBlocking {

@@ -7,6 +7,7 @@ import org.jetbrains.bazel.assertions.assertVfsLoads
 import org.jetbrains.bazel.assertions.findCompilerSettings
 import org.jetbrains.bazel.fixtures.CcTestApplication
 import org.jetbrains.bazel.fixtures.clionBazelProjectFixture
+import org.jetbrains.bazel.test.framework.BazelVersions
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 
@@ -14,7 +15,8 @@ import org.junit.jupiter.api.TestInstance
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class TargetCompatibleTest {
 
-  private val project by clionBazelProjectFixture("clion/target_compatible")
+  // no need to run this test on different versions
+  private val project by clionBazelProjectFixture("clion/target_compatible", bazelVersion = BazelVersions.BAZEL_9)
 
   @Test
   fun testVfsRoots() = project.assertVfsLoads()

@@ -36,7 +36,7 @@ private val BAZEL_CENTRAL_REGISTRY = URI.create("https://bcr.bazel.build/")
 @TestOnly
 internal fun clionBazelProjectFixture(
   projectPath: String,
-  bazelVersion: String? = null,
+  bazelVersion: String,
   buildProject: Boolean = false,
   jvmToolchains: Boolean = false,
   configure: ProjectViewBuilder.() -> Unit = {},

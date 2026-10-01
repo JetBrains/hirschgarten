@@ -13,14 +13,21 @@ import org.jetbrains.bazel.assertions.findTarget
 import org.jetbrains.bazel.clion.workspace.getCcIdentifier
 import org.jetbrains.bazel.fixtures.CcTestApplication
 import org.jetbrains.bazel.fixtures.clionBazelProjectFixture
+import org.jetbrains.bazel.test.framework.BazelVersions
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 
 @CcTestApplication
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-class ArmToolchainTest {
+abstract class ArmToolchainTest(bazelVersion: String) {
 
-  private val project by clionBazelProjectFixture("clion/arm_toolchain") {
+  class Bazel7 : ArmToolchainTest(BazelVersions.BAZEL_7)
+
+  class Bazel8 : ArmToolchainTest(BazelVersions.BAZEL_8)
+
+  class Bazel9 : ArmToolchainTest(BazelVersions.BAZEL_9)
+
+  private val project by clionBazelProjectFixture("clion/arm_toolchain", bazelVersion = bazelVersion) {
     deriveTargetsFromDirectories(false)
     addTargets("//:main_u575")
   }

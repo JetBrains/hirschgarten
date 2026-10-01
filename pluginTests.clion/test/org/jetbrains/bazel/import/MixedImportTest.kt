@@ -9,13 +9,13 @@ import org.jetbrains.bazel.test.framework.BazelVersions
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 
+@CcTestApplication
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 abstract class MixedImportTest(bazelVersion: String) {
-  @CcTestApplication
-  class Bazel7 : MixedImportTest(BazelVersions.BAZEL_7)
 
-  @CcTestApplication
   class Bazel8 : MixedImportTest(BazelVersions.BAZEL_8)
+
+  class Bazel9 : MixedImportTest(BazelVersions.BAZEL_9)
 
   private val project by clionBazelProjectFixture("import/mixed", jvmToolchains = true, bazelVersion = bazelVersion)
 

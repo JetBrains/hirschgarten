@@ -25,19 +25,17 @@ import org.junit.jupiter.api.condition.DisabledOnOs
 import org.junit.jupiter.api.condition.EnabledOnOs
 import org.junit.jupiter.api.condition.OS
 
+@CcTestApplication
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 abstract class CcLocalToolchainTest(override val bazelVersion: String) : BazelVersionedTest {
 
   @DisabledOnOs(OS.WINDOWS)
-  @CcTestApplication
   class Bazel7 : CcLocalToolchainTest(BazelVersions.BAZEL_7)
 
   @DisabledOnOs(OS.WINDOWS)
-  @CcTestApplication
   class Bazel8 : CcLocalToolchainTest(BazelVersions.BAZEL_8)
 
   @DisabledOnOs(OS.WINDOWS)
-  @CcTestApplication
   class Bazel9 : CcLocalToolchainTest(BazelVersions.BAZEL_9)
 
   private val project by clionBazelProjectFixture("clion/simple", bazelVersion = bazelVersion)
