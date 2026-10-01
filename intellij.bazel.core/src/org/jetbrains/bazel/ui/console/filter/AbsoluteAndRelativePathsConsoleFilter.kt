@@ -4,12 +4,11 @@ import com.intellij.execution.filters.ConsoleFilterProvider
 import com.intellij.execution.filters.Filter
 import com.intellij.execution.filters.OpenFileHyperlinkInfo
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.util.io.toNioPathOrNull
+import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.openapi.vfs.VirtualFile
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.config.isBazelProject
 import org.jetbrains.bazel.config.rootDir
-import org.jetbrains.bazel.utils.findCanonicalVirtualFileThatExists
 
 private const val PATH_GROUP_ID = "path"
 private const val LINE_GROUP_ID = "line"
@@ -72,9 +71,9 @@ class AbsoluteAndRelativePathsConsoleFilter(private val project: Project) : Filt
 
   private fun String.toVirtualFileInTheProject(): VirtualFile? {
     if ('/' !in this && '\\' !in this) return null
-    return toAbsolutePath()
-      .toNioPathOrNull()
-      ?.findCanonicalVirtualFileThatExists()
+    val path = toAbsolutePath()
+    val virtualFile = LocalFileSystem.getInstance().findFileByPathWithoutCaching(path) ?: return null
+    return virtualFile.takeIf { it.exists() }
   }
 
   private fun String.toAbsolutePath() = if (isAbsolutePath()) this else "${project.rootDir.path}/$this"

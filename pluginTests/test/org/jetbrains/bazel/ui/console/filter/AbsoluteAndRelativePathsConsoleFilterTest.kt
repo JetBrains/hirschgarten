@@ -4,6 +4,7 @@ import com.intellij.execution.filters.Filter
 import com.intellij.execution.filters.OpenFileHyperlinkInfo
 import com.intellij.openapi.application.readAction
 import com.intellij.openapi.vfs.VirtualFileManager
+import com.intellij.openapi.vfs.newvfs.persistent.PersistentFS
 import io.kotest.matchers.shouldBe
 import kotlinx.coroutines.runBlocking
 import org.jetbrains.bazel.workspace.model.test.framework.WorkspaceModelBaseTest
@@ -361,6 +362,22 @@ class AbsoluteAndRelativePathsConsoleFilterTest : WorkspaceModelBaseTest() {
       expectedLine = 11,
       expectedColumn = 36,
     )
+  }
+
+  @Test
+  fun `should not pollute VFS with paths in Bazel's output (BAZEL-3614)`() {
+    // given
+    val path = projectBasePath.resolve("bazel-bin/path/in/output").createDirectories()
+    val bazelBin = VirtualFileManager.getInstance().refreshAndFindFileByNioPath(projectBasePath.resolve("bazel-bin"))!!
+
+    val line = "$path\n"
+
+    // when
+    val result = filter.applyFilter(line, line.length)
+
+    // then
+    result.resultItems.size shouldBe 1
+    PersistentFS.getInstance().wereChildrenAccessed(bazelBin) shouldBe false
   }
 
   private fun createPathInProject(relativePath: String): Path =
