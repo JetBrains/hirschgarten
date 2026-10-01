@@ -1,20 +1,21 @@
 package org.jetbrains.bazel.clion
 
 import com.intellij.testFramework.common.timeoutRunBlocking
+import com.intellij.testFramework.junit5.TestApplication
 import com.intellij.testFramework.junit5.fixture.projectFixture
 import org.assertj.core.api.Assertions.assertThat
 import org.jetbrains.bazel.clion.workspace.CcCompilerInfo
 import org.jetbrains.bazel.clion.workspace.buildCompilerSettings
 import org.jetbrains.bazel.fixtures.CcProjectBuilder
-import org.jetbrains.bazel.fixtures.CcTestApplication
 import org.jetbrains.bazel.fixtures.ccProject
 import org.jetbrains.bazel.fixtures.withTestImportContext
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.condition.DisabledOnOs
 import org.junit.jupiter.api.condition.OS
 
-@CcTestApplication
-@DisabledOnOs(OS.WINDOWS, disabledReason = "Bazel emits /proc/self/cwd only from a Linux cc_toolchain")
+
+@TestApplication
+@DisabledOnOs(OS.WINDOWS)
 class CcCompilerSettingsTest {
 
   private val project by projectFixture()

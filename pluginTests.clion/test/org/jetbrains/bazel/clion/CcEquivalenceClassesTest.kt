@@ -1,6 +1,7 @@
 package org.jetbrains.bazel.clion
 
 import com.intellij.testFramework.common.timeoutRunBlocking
+import com.intellij.testFramework.junit5.TestApplication
 import com.intellij.testFramework.junit5.fixture.projectFixture
 import org.assertj.core.api.Assertions.assertThat
 import org.jetbrains.bazel.assertions.assertThat
@@ -11,7 +12,6 @@ import org.jetbrains.bazel.clion.workspace.buildCompilerSettings
 import org.jetbrains.bazel.clion.workspace.buildEquivalenceClasses
 import org.jetbrains.bazel.clion.workspace.buildToolchainMap
 import org.jetbrains.bazel.fixtures.CcProjectBuilder
-import org.jetbrains.bazel.fixtures.CcTestApplication
 import org.jetbrains.bazel.fixtures.ccProject
 import org.jetbrains.bazel.fixtures.withTestImportContext
 import org.jetbrains.bazel.label.Label
@@ -22,7 +22,7 @@ private const val DIFFERENT_DEFINE = "DIFFERENT=1"
 private const val SAME_COPT = "-D$SAME_DEFINE"
 private const val DIFFERENT_COPT = "-D$DIFFERENT_DEFINE"
 
-@CcTestApplication
+@TestApplication
 class CcEquivalenceClassesTest {
 
   private val project by projectFixture()

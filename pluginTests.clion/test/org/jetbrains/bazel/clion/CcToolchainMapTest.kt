@@ -2,12 +2,12 @@ package org.jetbrains.bazel.clion
 
 import com.intellij.build.events.MessageEvent
 import com.intellij.testFramework.common.timeoutRunBlocking
+import com.intellij.testFramework.junit5.TestApplication
 import com.intellij.testFramework.junit5.fixture.projectFixture
 import org.assertj.core.api.Assertions.assertThat
 import org.jetbrains.bazel.assertions.assertThat
 import org.jetbrains.bazel.clion.workspace.buildToolchainMap
 import org.jetbrains.bazel.fixtures.CcProjectBuilder
-import org.jetbrains.bazel.fixtures.CcTestApplication
 import org.jetbrains.bazel.fixtures.TestImportEvent
 import org.jetbrains.bazel.fixtures.ccProject
 import org.jetbrains.bazel.fixtures.withTestImportContext
@@ -16,7 +16,7 @@ import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
 import org.junit.jupiter.api.Test
 
-@CcTestApplication
+@TestApplication
 class CcToolchainMapTest {
 
   private val project by projectFixture()
