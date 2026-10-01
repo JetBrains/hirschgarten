@@ -1,0 +1,8 @@
+module(
+    name = "cc_false_toolchain",
+    version = "local",
+)
+
+bazel_dep(name = "rules_cc", version = "0.2.25")
+
+register_toolchains("//:toolchain")

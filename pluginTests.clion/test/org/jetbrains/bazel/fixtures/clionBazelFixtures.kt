@@ -9,6 +9,9 @@ import org.jetbrains.annotations.TestOnly
 import org.jetbrains.bazel.test.framework.BazelPathManager
 import org.jetbrains.bazel.test.framework.bazelProjectFixture
 import org.jetbrains.bazel.test.framework.writeProjectView
+import java.net.URI
+
+private val BAZEL_CENTRAL_REGISTRY = URI.create("https://bcr.bazel.build/")
 
 /**
  * Opens the Bazel test project at [projectPath], runs a real `performBazelSync`, brings up the CLion
@@ -24,6 +27,9 @@ import org.jetbrains.bazel.test.framework.writeProjectView
  *
  * [configure] builds the project view of the test. The fixture writes it before the sync, so the test
  * does not need a project view file in its test data.
+ *
+ * The test project can resolve modules from the local test registry, [BazelPathManager.clionTestRegistry],
+ * for example the `cc_false_toolchain`.
  *
  * For the backend to actually come up, `RESHARPER_HOST_BIN` must point at a built `dotnet/Bin.RiderBackend`.
  */
@@ -45,6 +51,7 @@ internal fun clionBazelProjectFixture(
     bazelVersion = bazelVersion,
     projectsRoot = BazelPathManager.clionTestProjectsRoot,
     jvmToolchains = jvmToolchains,
+    registries = listOf(BazelPathManager.clionTestRegistry.toUri(), BAZEL_CENTRAL_REGISTRY),
   ) { writeProjectView(it, projectView) }.init()
 
   LOG.info("Calling after project opened (engine)")

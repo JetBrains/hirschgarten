@@ -1,0 +1,6 @@
+module(
+    name = "false_launcher",
+    version = "local",
+)
+
+register_toolchains("//:toolchain")

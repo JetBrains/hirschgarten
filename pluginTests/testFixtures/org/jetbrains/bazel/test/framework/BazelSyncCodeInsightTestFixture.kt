@@ -18,6 +18,7 @@ import kotlinx.coroutines.runBlocking
 import org.jetbrains.annotations.TestOnly
 import org.jetbrains.bazel.project.BazelProjectFixtures.initializeBazelProject
 import org.jetbrains.bazel.sync.ProjectSyncScope
+import java.net.URI
 import java.nio.file.Path
 import kotlin.io.path.Path
 
@@ -81,6 +82,7 @@ fun bazelProjectFixture(
   projectView: String? = null,
   projectsRoot: Path = BazelPathManager.testProjectsRoot,
   jvmToolchains: Boolean = true,
+  registries: List<URI> = emptyList(),
   configure: suspend (Project) -> Unit = {},
 ): TestFixture<Project> = testFixture(debugString = "bazelProject") {
   LOG.info("Setting up the Bazel project fixture for $projectPath")
@@ -96,7 +98,7 @@ fun bazelProjectFixture(
     LOG.info("Initializing the Bazel project ${project.name} at $projectRoot")
     initializeBazelProject(project, projectRoot)
 
-    BazelTestProject.copy(project, projectRoot, projectPath, projectsRoot, jvmToolchains, bazelVersion)
+    BazelTestProject.copy(project, projectRoot, projectPath, projectsRoot, jvmToolchains, bazelVersion, registries)
     if (projectView != null) {
       applyProjectView(project, projectRoot, projectView)
     }

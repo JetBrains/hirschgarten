@@ -3,6 +3,7 @@ package org.jetbrains.bazel.test.framework
 import com.intellij.openapi.application.PathManager
 import org.jetbrains.kotlin.incremental.createDirectory
 import java.io.File
+import java.net.URI
 import java.nio.file.Path
 import kotlin.io.path.createDirectories
 import kotlin.io.path.exists
@@ -40,7 +41,12 @@ internal object BazelTestCaches {
     projectRoot.resolve(".bazelrc").writeText(lines.joinToString("\n"))
   }
 
-  fun configureBazelCaches(projectRoot: Path, testProjectPath: String, bazelVersion: String? = null) {
+  fun configureBazelCaches(
+    projectRoot: Path,
+    testProjectPath: String,
+    bazelVersion: String? = null,
+    registries: List<URI> = emptyList(),
+  ) {
     val cacheRoot = testCacheRoot()
       .resolve(cacheGroup(testProjectPath))
       .createDirectories()
@@ -52,13 +58,14 @@ internal object BazelTestCaches {
     val diskCache = cacheRoot.resolve("disk-cache").createDirectories()
     val outputUserRoot = cacheRoot.resolve("output-user-root").createDirectories()
     val outputBase = cacheRoot.outputBasePath(testProjectPath, bazelVersion).createDirectories()
-    val lines = listOf(
-      "startup --max_idle_secs=${bazelServerMaxIdleSeconds()}",
-      "startup --output_user_root=${outputUserRoot.toBazelRcPath()}",
-      "startup --output_base=${outputBase.toBazelRcPath()}",
-      "common --repository_cache=${repositoryCache.toBazelRcPath()}",
-      "common --disk_cache=${diskCache.toBazelRcPath()}",
-    )
+    val lines = buildList {
+      add("startup --max_idle_secs=${bazelServerMaxIdleSeconds()}")
+      add("startup --output_user_root=${outputUserRoot.toBazelRcPath()}")
+      add("startup --output_base=${outputBase.toBazelRcPath()}")
+      add("common --repository_cache=${repositoryCache.toBazelRcPath()}")
+      add("common --disk_cache=${diskCache.toBazelRcPath()}")
+      registries.forEach { add("common --registry=$it") }
+    }
     writeManagedBazelrcBlock(projectRoot.resolve(".bazelrc"), lines)
   }
 

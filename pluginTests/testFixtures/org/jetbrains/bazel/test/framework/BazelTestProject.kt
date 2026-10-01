@@ -5,6 +5,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.io.FileUtil
 import com.intellij.testFramework.IndexingTestUtil
 import com.intellij.testFramework.refreshVfs
+import java.net.URI
 import java.nio.file.Path
 import kotlin.io.path.copyTo
 import kotlin.io.path.createParentDirectories
@@ -28,6 +29,9 @@ internal object BazelTestProject {
    *
    * [bazelVersion] replaces the `.bazelversion` file of the test project, and it also keys the Bazel output
    * base, so that two versions of the same test project do not share one.
+   *
+   * [registries] are URI to local or remote registries used by the test fixture. If set and BCR should be
+   * accessible, it needs to be provided here as well.
    */
   fun copy(
     project: Project,
@@ -36,6 +40,7 @@ internal object BazelTestProject {
     projectsRoot: Path = BazelPathManager.testProjectsRoot,
     jvmToolchains: Boolean = true,
     bazelVersion: String? = null,
+    registries: List<URI> = emptyList(),
   ) {
     LOG.info("Copying the test project $path into $projectRoot (jvmToolchains=$jvmToolchains)")
     copyDir(BazelPathManager.testProjectsRoot.resolve("base"), projectRoot)
@@ -44,7 +49,7 @@ internal object BazelTestProject {
     if (bazelVersion != null) {
       writeBazelVersion(projectRoot, bazelVersion)
     }
-    BazelTestCaches.configureBazelCaches(projectRoot, path, bazelVersion)
+    BazelTestCaches.configureBazelCaches(projectRoot, path, bazelVersion, registries)
     if (jvmToolchains) {
       LOG.info("Adding the JVM toolchains")
       BazelTestCaches.findKotlinStdlibInClasspath()
