@@ -107,7 +107,7 @@ private class BazelDirectoryNode(
     super.updateImpl(data)
     if (!settings.isFlattenPackages && settings.isHideEmptyMiddlePackages) {
       val parentDirectory = parent?.value as? PsiDirectory ?: return
-      val name = VfsUtilCore.getRelativePath(value.virtualFile, parentDirectory.virtualFile, '.') ?: return
+      val name = VfsUtilCore.getRelativePath(value.virtualFile, parentDirectory.virtualFile, '/') ?: return
       data.clearText()
       data.presentableText = name
     }
@@ -144,7 +144,10 @@ private class BazelDirectoryNode(
     val helper = BazelProjectViewDirectoryHelper(project)
     val children = helper.getDirectoryChildren(directory, settings, true, filter)
     if (!settings.isFlattenPackages) {
-      if (settings.isHideEmptyMiddlePackages && !helper.skipDirectory(directory)) {
+      if (!settings.isHideEmptyMiddlePackages) {
+        return children
+      }
+      if (!helper.skipDirectory(directory)) {
         return children.map { child ->
           if (child !is PsiDirectoryNode) return@map child
           var childDirectory = child.value
@@ -157,7 +160,16 @@ private class BazelDirectoryNode(
           BazelDirectoryNode(project, childDirectory, settings, filter)
         }
       }
-      return children
+      // outside of source roots, directories don't correspond to packages, so collapse middle directories by the structure only
+      return children.map { child ->
+        if (child !is PsiDirectoryNode) return@map child
+        var childDirectory = child.value
+        while (!helper.isSourceRoot(childDirectory)) {
+          ProgressManager.checkCanceled()
+          childDirectory = helper.findCollapsibleSubdirectory(childDirectory, filter) ?: break
+        }
+        BazelDirectoryNode(project, childDirectory, settings, filter)
+      }
     }
 
     if (helper.skipDirectory(directory)) {

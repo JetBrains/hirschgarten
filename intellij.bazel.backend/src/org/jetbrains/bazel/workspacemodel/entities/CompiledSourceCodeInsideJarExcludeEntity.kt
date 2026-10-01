@@ -14,10 +14,14 @@ data class CompiledSourceCodeInsideJarExcludeId(val id: Int) : SymbolicEntityId<
 
 @ApiStatus.Internal
 interface CompiledSourceCodeInsideJarExcludeEntity : WorkspaceEntityWithSymbolicId {
-  public val relativePathsInsideJarToExclude: Set<String>
-  public val librariesFromInternalTargetsUrls: Set<String>
+  /**
+   * Paths of the project source files whose compiled classes and copies have to be excluded from internal jars.
+   * Package of a file inside a jar is approximated by its relative path, see `CompiledSourceFileIndex`.
+   */
+  val relativePathsInsideJarToExclude: Set<String>
+  val librariesFromInternalTargetsUrls: Set<String>
 
-  public val excludeId: CompiledSourceCodeInsideJarExcludeId
+  val excludeId: CompiledSourceCodeInsideJarExcludeId
   override val symbolicId: CompiledSourceCodeInsideJarExcludeId
     get() = excludeId
 }

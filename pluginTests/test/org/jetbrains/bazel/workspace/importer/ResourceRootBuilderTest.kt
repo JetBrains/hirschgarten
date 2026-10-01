@@ -543,7 +543,7 @@ class ResourceRootBuilderTest : MockProjectBaseTest() {
   }
 
   @Test
-  fun `should collapse inside a source content root and set relativeOutputPath so the FQN is preserved`() {
+  fun `should collapse inside a dirty strip prefix and set relativeOutputPath so the FQN is preserved`() {
     val gateRoot = projectRoot.resolve("src/main/resources").createDirectories()
     val gateResource = gateRoot.resolve("app.properties").createFile()
     val kotlinRoot = projectRoot.resolve("src/main/kotlin").createDirectories()
@@ -557,13 +557,61 @@ class ResourceRootBuilderTest : MockProjectBaseTest() {
       resources = listOf(gateResource, bundle1, bundle2),
     )
 
-    val roots = resolve(target, sourceContentRoots = listOf(kotlinRoot))
+    val roots = resolve(target)
 
     roots.map { it.resourcePath } shouldContainExactlyInAnyOrder listOf(gateRoot, messages)
     val messagesRoot = roots.single { it.resourcePath == messages }
     messagesRoot.relativeOutputPath shouldBe "messages"
     val gateRootResolved = roots.single { it.resourcePath == gateRoot }
     gateRootResolved.relativeOutputPath shouldBe ""
+  }
+
+  @Test
+  fun `should set relativeOutputPath of a single-file root relative to the default java strip prefix`() {
+    val javaRoot = projectRoot.resolve("src/main/java").createDirectories()
+    val packageDir = javaRoot.resolve("com/example").createDirectories()
+    val sourceFile = packageDir.resolve("Module.java").createFile()
+    val adjacent = packageDir.resolve("Adjacent.properties").createFile()
+    val messages = javaRoot.resolve("messages").createDirectories()
+    val bundle = messages.resolve("JavaBundle.properties").createFile()
+
+    val target = javaTarget(sources = listOf(sourceFile), resources = listOf(adjacent, bundle))
+
+    val roots = resolve(target)
+
+    roots.map { it.resourcePath } shouldContainExactlyInAnyOrder listOf(adjacent, messages)
+    roots.single { it.resourcePath == adjacent }.relativeOutputPath shouldBe "com/example"
+    roots.single { it.resourcePath == messages }.relativeOutputPath shouldBe "messages"
+  }
+
+  @Test
+  fun `should set relativeOutputPath relative to the explicit strip prefix`() {
+    val stripPrefix = projectRoot.resolve("mypackage/res").createDirectories()
+    stripPrefix.resolve("Foreign.java").createFile()
+    val messages = stripPrefix.resolve("org/messages").createDirectories()
+    val bundle = messages.resolve("Bundle.properties").createFile()
+
+    val target = javaTarget(
+      resources = listOf(bundle),
+      data = listOf(JvmBuildTarget(resolvedResourceStripPrefix = testLocation(stripPrefix))),
+    )
+
+    val roots = resolve(target)
+
+    roots.map { it.resourcePath } shouldHaveSingleElement messages
+    roots.single().relativeOutputPath shouldBe "org/messages"
+  }
+
+  @Test
+  fun `should not set relativeOutputPath when there is no strip prefix`() {
+    val standalone = projectRoot.resolve("standalone").createDirectories()
+    val bundle = standalone.resolve("StandaloneBundle.properties").createFile()
+
+    val target = javaTarget(resources = listOf(bundle))
+
+    val roots = resolve(target)
+
+    roots.single().relativeOutputPath shouldBe ""
   }
 
   @Test
@@ -797,7 +845,6 @@ class ResourceRootBuilderTest : MockProjectBaseTest() {
       baseDirectory = baseDirectory,
       bazelProjectName = projectName,
       workspaceRoot = projectRoot,
-      sourceContentRoots = sourceContentRoots,
       resolveLocation = ::resolveTestLocation,
     )
 

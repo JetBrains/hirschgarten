@@ -56,7 +56,6 @@ intellij_plugin_zip_and_debug_target(
         "//kotlin/intellij.bazel.kotlin.common",
         "//kotlin/intellij.bazel.kotlin.common.performancePlugin",
         "//kotlin/intellij.bazel.kotlin.coverage",
-        "//kotlin/intellij.bazel.kotlin.k2",
         "//kotlin/intellij.bazel.kotlin.projectWizard",
         "//kotlin/intellij.bazel.kotlin.sync",
         "//intellij.bazel.projectview",

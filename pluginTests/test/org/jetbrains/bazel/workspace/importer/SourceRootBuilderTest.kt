@@ -2,13 +2,10 @@ package org.jetbrains.bazel.workspace.importer
 
 import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.shouldBe
-import org.jetbrains.bazel.commons.LanguageClass
 import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.sync.JavaLanguageClass
-import org.jetbrains.bazel.sync.workspace.languages.java.sourceRoot.JvmPackagePrefixCalculator
-import org.jetbrains.bazel.sync.workspace.languages.java.sourceRoot.JvmPackagePrefixes
 import org.jetbrains.bazel.test.framework.target.TestBuildTarget
 import org.jetbrains.bazel.workspace.indexAdditionalFiles.ProjectViewGlobSet
 import org.jetbrains.bazel.workspace.model.test.framework.createTestBuildTarget
@@ -33,7 +30,6 @@ class SourceRootBuilderTest {
     val roots = SourceRootBuilder.resolve(
       target = target,
       testSourcesGlob = ProjectViewGlobSet.EMPTY,
-      packagePrefixes = fixedPrefixes(emptyMap()),
       resolveLocation = ::resolveTestLocation,
     )
 
@@ -51,7 +47,6 @@ class SourceRootBuilderTest {
     val roots = SourceRootBuilder.resolve(
       target = target,
       testSourcesGlob = ProjectViewGlobSet.EMPTY,
-      packagePrefixes = fixedPrefixes(emptyMap()),
       resolveLocation = ::resolveTestLocation,
     )
 
@@ -70,7 +65,6 @@ class SourceRootBuilderTest {
     val roots = SourceRootBuilder.resolve(
       target = target,
       testSourcesGlob = ProjectViewGlobSet.EMPTY,
-      packagePrefixes = fixedPrefixes(emptyMap()),
       resolveLocation = ::resolveTestLocation,
     )
 
@@ -91,7 +85,6 @@ class SourceRootBuilderTest {
     val roots = SourceRootBuilder.resolve(
       target = target,
       testSourcesGlob = glob,
-      packagePrefixes = fixedPrefixes(emptyMap()),
       resolveLocation = ::resolveTestLocation,
     )
 
@@ -113,33 +106,11 @@ class SourceRootBuilderTest {
     val roots = SourceRootBuilder.resolve(
       target = target,
       testSourcesGlob = ProjectViewGlobSet.EMPTY,
-      packagePrefixes = fixedPrefixes(emptyMap()),
       resolveLocation = ::resolveTestLocation,
     )
 
     roots.first { it.sourcePath == generatedPath }.generated shouldBe true
     roots.first { it.sourcePath == handPath }.generated shouldBe false
-  }
-
-  @Test
-  fun `should inject packagePrefix from the calculator and default to empty string when missing`() {
-    val withPrefix = Path("/project/main/Foo.java")
-    val withoutPrefix = Path("/project/main/Bar.java")
-    val target = libraryTarget(
-      label = "//target",
-      sources = listOf(withPrefix, withoutPrefix),
-    )
-    val prefixes = fixedPrefixes(mapOf(withPrefix to "com.example"))
-
-    val roots = SourceRootBuilder.resolve(
-      target = target,
-      testSourcesGlob = ProjectViewGlobSet.EMPTY,
-      packagePrefixes = prefixes,
-      resolveLocation = ::resolveTestLocation,
-    )
-
-    roots.first { it.sourcePath == withPrefix }.packagePrefix shouldBe "com.example"
-    roots.first { it.sourcePath == withoutPrefix }.packagePrefix shouldBe ""
   }
 
   private fun libraryTarget(
@@ -159,9 +130,4 @@ class SourceRootBuilderTest {
     generatedSources = generatedSources,
     isTestOnly = isTestOnly,
   )
-
-  private fun fixedPrefixes(map: Map<Path, String>): JvmPackagePrefixCalculator =
-    object : JvmPackagePrefixCalculator {
-      override fun get(target: BuildTarget): JvmPackagePrefixes = JvmPackagePrefixes(map)
-    }
 }

@@ -22,7 +22,6 @@ import org.jetbrains.bazel.server.model.generatedSourcesList
 import org.jetbrains.bazel.server.model.sourcesList
 import org.jetbrains.bazel.sync.JavaLanguageClass
 import org.jetbrains.bazel.sync.workspace.languages.LanguagePlugin
-import org.jetbrains.bazel.sync.workspace.languages.java.sourceRoot.SourceRootOptimizationMode
 import org.jetbrains.bazel.sync.workspace.languages.jvm.JavaProviderData
 import org.jetbrains.bazel.sync.workspace.languages.jvm.JavaToolchainData
 import org.jetbrains.bazel.sync.workspace.languages.jvm.JdepsJar
@@ -54,10 +53,6 @@ class JavaLanguagePlugin : LanguagePlugin {
     return listOf(
       JavaWorkspaceSyncConfig(
         testSourcesPatterns = projectView.testSources,
-        // RC: as you can see we pass `SourceRootOptimizationMode` as `WorkspaceSyncConfig`
-        //  property, so can compare it against previous snapshot and assess whatever it has changes
-        //  thus performing automatic full importer invalidation
-        sourceRootOptimizationMode = SourceRootOptimizationMode.createFromProject(project),
         excludeCompiledSourceCodeInsideJars = BazelFeatureFlags.excludeCompiledSourceCodeInsideJars,
       ),
     )

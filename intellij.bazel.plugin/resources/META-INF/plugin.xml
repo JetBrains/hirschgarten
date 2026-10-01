@@ -46,7 +46,6 @@
     <module name="intellij.bazel.kotlin.common.performancePlugin"/>
     <module name="intellij.bazel.kotlin.coverage"/>
     <module name="intellij.bazel.kotlin.sync"/>
-    <module name="intellij.bazel.kotlin.k2"/>
     <module name="intellij.bazel.kotlin.projectWizard"/>
 
     <!-- cpp modules -->

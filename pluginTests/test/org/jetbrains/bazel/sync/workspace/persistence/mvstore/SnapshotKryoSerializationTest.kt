@@ -18,9 +18,6 @@ import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.protobuf.target.ProtobufBuildTarget
 import org.jetbrains.bazel.python.lang.PythonBuildTarget
 import org.jetbrains.bazel.sync.workspace.languages.java.JavaWorkspaceSyncConfig
-import org.jetbrains.bazel.sync.workspace.languages.java.sourceRoot.SourceRootOptimizationMode
-import org.jetbrains.bazel.sync.workspace.languages.java.sourceRoot.prefix.JavaSourceRootPatterns
-import org.jetbrains.bazel.sync.workspace.languages.java.sourceRoot.prefix.ProjectViewGlobPattern
 import org.jetbrains.bazel.sync.workspace.languages.jvm.JavaProviderData
 import org.jetbrains.bazel.sync.workspace.languages.jvm.JavaToolchainData
 import org.jetbrains.bazel.sync.workspace.languages.jvm.JdepsJar
@@ -184,12 +181,6 @@ class SnapshotKryoSerializationTest {
         JavaWorkspaceSyncConfig(
           testSourcesPatterns = listOf("**/test/**"),
           excludeCompiledSourceCodeInsideJars = false,
-          sourceRootOptimizationMode = SourceRootOptimizationMode.MavenLayout(
-            patterns = JavaSourceRootPatterns(
-              includes = listOf(ProjectViewGlobPattern(rootDir = Path.of("/workspace"), patterns = listOf("src/**"))),
-              excludes = listOf(),
-            ),
-          ),
         ),
       ),
       repoMapping = BzlmodRepoMapping(

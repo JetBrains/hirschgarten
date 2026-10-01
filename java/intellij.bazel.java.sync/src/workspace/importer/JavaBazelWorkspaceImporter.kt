@@ -22,7 +22,6 @@ import org.jetbrains.bazel.sync.workspace.importer.WorkspaceImporterContext
 import org.jetbrains.bazel.sync.workspace.importer.WorkspaceImporterPhase
 import org.jetbrains.bazel.sync.workspace.importer.WorkspaceImporterResult
 import org.jetbrains.bazel.sync.workspace.languages.java.JavaWorkspaceSyncConfig
-import org.jetbrains.bazel.sync.workspace.languages.java.sourceRoot.DefaultJvmPackagePrefixCalculator
 import org.jetbrains.bazel.sync.workspace.languages.jvm.extractJvmBuildTarget
 import org.jetbrains.bazel.sync.workspace.persistence.TargetLoadOptions
 import org.jetbrains.bazel.sync.workspace.snapshot.CommonWorkspaceSyncConfig
@@ -149,10 +148,6 @@ internal class JavaBazelWorkspaceImporter(val context: WorkspaceImporterContext)
     naming: GlobalNamingContext,
   ) {
     val resolveLocation = locationResolver(context, snapshot)
-    val packagePrefixes = DefaultJvmPackagePrefixCalculator(
-      sourceRootOptimizationMode = javaSyncConfig.sourceRootOptimizationMode,
-      resolveLocation = resolveLocation,
-    ).also { it.calculate(targets) }
 
     val importContext = ImportContext(
       plan = plan,
@@ -163,7 +158,6 @@ internal class JavaBazelWorkspaceImporter(val context: WorkspaceImporterContext)
       projectBasePath = commonSyncConfig.projectRootDir,
       defaultJdkName = defaultJdkName,
       testSourcesGlob = ProjectViewGlobSet(commonSyncConfig.projectRootDir, javaSyncConfig.testSourcesPatterns),
-      packagePrefixes = packagePrefixes,
       fileToTargets = snapshot.fileToTarget,
       virtualFileUrlManager = context.vfuManager,
       entitySource = entitySource,
@@ -171,7 +165,6 @@ internal class JavaBazelWorkspaceImporter(val context: WorkspaceImporterContext)
       currentCompiledSourceExcludeEntity = context.currentSnapshot
         .entities<CompiledSourceCodeInsideJarExcludeEntity>()
         .firstOrNull(),
-      dotIdeaPath = commonSyncConfig.dotIdeaPath,
       resolveLocation = resolveLocation,
       resolveExecrootLocation = execrootLocationResolver(context, snapshot),
     )

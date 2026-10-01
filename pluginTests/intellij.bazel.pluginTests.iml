@@ -207,7 +207,6 @@
     <orderEntry type="module" module-name="intellij.bazel.kotlin.common" scope="TEST" />
     <orderEntry type="module" module-name="intellij.bazel.kotlin.common.performancePlugin" scope="TEST" />
     <orderEntry type="module" module-name="intellij.bazel.kotlin.coverage" scope="TEST" />
-    <orderEntry type="module" module-name="intellij.bazel.kotlin.k2" scope="TEST" />
     <orderEntry type="module" module-name="intellij.bazel.plugin" scope="TEST" />
     <orderEntry type="module" module-name="intellij.bazel.projectview" scope="TEST" />
     <orderEntry type="module" module-name="intellij.bazel.protobuf" scope="TEST" />

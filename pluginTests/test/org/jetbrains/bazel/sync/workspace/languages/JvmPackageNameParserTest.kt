@@ -1,7 +1,7 @@
 package org.jetbrains.bazel.sync.workspace.languages
 
 import io.kotest.matchers.shouldBe
-import org.jetbrains.bazel.sync.workspace.languages.jvm.JVMLanguagePluginParser
+import org.jetbrains.bazel.sync.workspace.languages.jvm.JvmPackageNameParser
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -10,7 +10,7 @@ import java.nio.file.Path
 import kotlin.io.path.createTempDirectory
 import kotlin.io.path.writeText
 
-class JVMLanguagePluginParserTest {
+class JvmPackageNameParserTest {
   private lateinit var tempRoot: Path
 
   @BeforeEach
@@ -41,7 +41,7 @@ class JVMLanguagePluginParserTest {
     sourceFile.writeText(fileContent)
 
     // when
-    val calculatedSourceRoot = JVMLanguagePluginParser.calculateJVMSourceRootAndAdditionalData(sourceFile)
+    val calculatedSourceRoot = JvmPackageNameParser.findPackage(sourceFile)
 
     // then
     calculatedSourceRoot shouldBe null
@@ -67,7 +67,7 @@ class JVMLanguagePluginParserTest {
     sourceFile.writeText(fileContent)
 
     // when
-    val calculatedSourceRoot = JVMLanguagePluginParser.calculateJVMSourceRootAndAdditionalData(sourceFile)
+    val calculatedSourceRoot = JvmPackageNameParser.findPackage(sourceFile)
 
     // then
     calculatedSourceRoot shouldBe packageName
@@ -93,7 +93,7 @@ class JVMLanguagePluginParserTest {
     sourceFile.writeText(fileContent)
 
     // when
-    val calculatedSourceRoot = JVMLanguagePluginParser.calculateJVMSourceRootAndAdditionalData(sourceFile)
+    val calculatedSourceRoot = JvmPackageNameParser.findPackage(sourceFile)
 
     // then
     calculatedSourceRoot shouldBe packageName
@@ -119,7 +119,7 @@ class JVMLanguagePluginParserTest {
     sourceFile.writeText(fileContent)
 
     // when
-    val calculatedSourceRoot = JVMLanguagePluginParser.calculateJVMSourceRootAndAdditionalData(sourceFile)
+    val calculatedSourceRoot = JvmPackageNameParser.findPackage(sourceFile)
 
     // then
     calculatedSourceRoot shouldBe "com.example"
@@ -145,7 +145,7 @@ class JVMLanguagePluginParserTest {
     sourceFile.writeText(fileContent)
 
     // when
-    val calculatedSourceRoot = JVMLanguagePluginParser.calculateJVMSourceRootAndAdditionalData(sourceFile)
+    val calculatedSourceRoot = JvmPackageNameParser.findPackage(sourceFile)
 
     // then
     calculatedSourceRoot shouldBe "com.example"
@@ -172,7 +172,7 @@ class JVMLanguagePluginParserTest {
     sourceFile.writeText(fileContent)
 
     // when
-    val calculatedSourceRoot = JVMLanguagePluginParser.calculateJVMSourceRootAndAdditionalData(sourceFile)
+    val calculatedSourceRoot = JvmPackageNameParser.findPackage(sourceFile)
 
     // then
     calculatedSourceRoot shouldBe packageName

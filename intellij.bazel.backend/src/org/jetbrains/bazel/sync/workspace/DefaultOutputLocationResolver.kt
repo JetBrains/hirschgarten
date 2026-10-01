@@ -70,7 +70,7 @@ open class DefaultOutputLocationResolver private constructor(
     }
     val overriddenRoot = localOverride?.localRepositories?.get(location.repoName)
     if (overriddenRoot != null) {
-      return bazelInfo.workspaceRoot.resolve(overriddenRoot).resolve(location.relativePath)
+      return bazelInfo.workspaceRoot.resolve(overriddenRoot).resolve(location.relativePath).normalize()
     }
     // a source file lives in the output base in both layouts
     return bazelInfo.outputBase.resolve("external")

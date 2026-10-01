@@ -20,15 +20,14 @@ import org.jetbrains.bazel.commons.symlinks.BazelSymlinksCalculator
 import org.jetbrains.bazel.sync.workspace.languages.jvm.extractJvmBuildTarget
 import org.jetbrains.bazel.sync.workspace.languages.jvm.extractKotlinBuildTarget
 import org.jetbrains.bazel.sync.workspace.languages.jvm.extractScalaBuildTarget
-import org.jetbrains.bazel.utils.findVirtualFile
 import org.jetbrains.bazel.sync.workspace.snapshot.isTestTarget
+import org.jetbrains.bazel.utils.findVirtualFile
 import org.jetbrains.bazel.utils.isUnder
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.OutputLocation
 import java.nio.file.Path
-import kotlin.io.path.Path as KPath
-import kotlin.io.path.exists
 import kotlin.io.path.isDirectory
+import kotlin.io.path.isRegularFile
 import kotlin.io.path.name
 
 private val log = logger<ResourceRootBuilder>()
@@ -48,7 +47,6 @@ object ResourceRootBuilder {
     baseDirectory: Path?,
     bazelProjectName: String,
     workspaceRoot: Path,
-    sourceContentRoots: List<Path> = emptyList(),
     resolveLocation: (OutputLocation) -> Path?,
   ): List<ResolvedResourceRoot> {
     val rootType = target.inferRootType()
@@ -70,7 +68,7 @@ object ResourceRootBuilder {
       ResolvedResourceRoot(
         resourcePath = path,
         rootType = rootType,
-        relativeOutputPath = computeRelativeOutputPath(rootForFqnComputation(path), sourceContentRoots),
+        relativeOutputPath = computeRelativeOutputPath(rootForFqnComputation(path), stripPrefixes),
       )
     }
   }
@@ -125,19 +123,18 @@ object ResourceRootBuilder {
    * The reference point for computing `relativeOutputPath`. For a directory resource root the
    * directory itself is the reference; for a file-level root the file's parent is, so a file at
    * `kotlin/messages/XXX.properties` and a directory root at `kotlin/messages/` produce the same
-   * relative output path when both sit inside a source root at `kotlin/`.
+   * relative output path when both sit inside a strip prefix `kotlin/`.
    */
   private fun rootForFqnComputation(path: Path): Path =
     if (path.isDirectory()) path else path.parent ?: path
 
   /**
-   * When a resource root sits strictly inside one of the module's source content roots, expose
-   * the path-from-enclosing-source-root as the resource's package prefix. This keeps `getResource`
-   * / `@PropertyKey` resolution behaving as if the source root still owned the subtree - a pure
-   * Java-visibility fix, not a content-root layout change.
+   * A strip prefix is the directory which Bazel maps to the classpath root. When a resource root can't be the strip prefix
+   * itself (e.g., the strip prefix also contains sources) and sits strictly inside it, expose the path from the strip prefix
+   * as the resource's package prefix, so `getResource` / `@PropertyKey` resolve the same path as at runtime.
    */
-  private fun computeRelativeOutputPath(referencePath: Path, sourceContentRoots: List<Path>): String {
-    val enclosing = sourceContentRoots
+  private fun computeRelativeOutputPath(referencePath: Path, stripPrefixes: Set<Path>): String {
+    val enclosing = stripPrefixes
                       .filter { referencePath != it && referencePath.startsWith(it) }
                       .maxByOrNull { it.nameCount } ?: return DEFAULT_RELATIVE_OUTPUT_PATH
     val relative = enclosing.relativize(referencePath)
@@ -220,7 +217,7 @@ object ResourceRootBuilder {
   ): Boolean {
     // no source-content-root rejection: a resource root nested inside a source content root is
     // fine because we set `relativeOutputPath` on the resulting root so its files keep the same
-    // FQN they would have had through the enclosing source root.
+    // FQN they would have had through the enclosing strip prefix.
     val overlapsMerged = alreadyMerged.any { it.startsWith(parent) || parent.startsWith(it) }
     return !overlapsMerged && !dirtinessCache.isDirty(parent)
   }
@@ -288,7 +285,7 @@ object ResourceRootBuilder {
       }
 
       // nearest package found
-      if (Constants.BUILD_FILE_NAMES.any { candidate.resolve(it).exists() }) {
+      if (Constants.BUILD_FILE_NAMES.any { candidate.resolve(it).isRegularFile() }) {
         return candidate
       }
 
@@ -404,16 +401,16 @@ object ResourceRootBuilder {
 
   private val javaCommonPackagePrefixes = setOf("com", "org", "net")
 
-  private val kotlinConventionalSegments = listOf(
-    KPath("src/main/java"),
-    KPath("src/main/resources"),
-    KPath("src/test/java"),
-    KPath("src/test/resources"),
-    KPath("kotlin"),
+  private val kotlinConventionalSegments: List<Path> = listOf(
+    Path.of("src/main/java"),
+    Path.of("src/main/resources"),
+    Path.of("src/test/java"),
+    Path.of("src/test/resources"),
+    Path.of("kotlin"),
   )
 
-  private val scalaConventionalSegments = listOf(
-    KPath("resources"),
-    KPath("java"),
+  private val scalaConventionalSegments: List<Path> = listOf(
+    Path.of("resources"),
+    Path.of("java"),
   )
 }
