@@ -6,10 +6,13 @@ import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.isFile
 import com.intellij.platform.workspace.jps.entities.LibraryRootTypeId
 import com.intellij.platform.workspace.storage.EntityStorage
+import com.intellij.util.containers.CollectionFactory
 import com.intellij.workspaceModel.core.fileIndex.WorkspaceFileIndexContributor
 import com.intellij.workspaceModel.core.fileIndex.WorkspaceFileSetExclusionCondition
 import com.intellij.workspaceModel.core.fileIndex.WorkspaceFileSetRegistrar
 import org.jetbrains.bazel.sync.JavaLanguageClass
+import org.jetbrains.bazel.workspace.importer.CompiledSourceFileIndex
+import org.jetbrains.bazel.workspacemodel.entities.CompiledSourceCodeInsideJarExcludeId
 import org.jetbrains.bazel.workspacemodel.entities.LibraryCompiledSourceCodeInsideJarExcludeEntity
 
 /**
@@ -37,10 +40,10 @@ private val JVM_EXTENSIONS =
  *       contain xml files that need to be indexed in order for the XML references to resolve properly.
  *    2. In source jars. Source jars are supposed to contain, well, source code, e.g., `.java`/`.kt` files.
  *       Still, source jars can contain HTML/JS/other junk that slows down indexing for no good reason.
- * 2. We don't index `.class` and `.java`/`.kt`/`.scala` files inside jars if there's already a source file in the project with the same
- *    fully-qualified class name. [CompiledSourceCodeInsideJarExcludeEntityUpdater] takes in the source files and computes the
- *    relative paths that we don't have to index. E.g., if there's a Java source file that defines a class with the following FQN:
- *    `com.example.Example`, then we will skip `*.jar!/com/example/Example.class` during indexing.
+ * 2. We don't index `.class` and `.java`/`.kt` files inside jars if there's already a source file in the project with the same
+ *    fully-qualified class name. `CompiledSourceCodeInsideJarExcludeBuilder` collects the source files, and [CompiledSourceFileIndex]
+ *    approximates the package of a file inside a jar by its relative path. E.g., if there's a source file `.../com/example/Example.java`,
+ *    then we will skip `*.jar!/com/example/Example.class` during indexing.
  *    This is done mainly to prevent resolve from navigating into jars instead of source code (see https://youtrack.jetbrains.com/issue/BAZEL-1672),
  *    but this also helps with indexing performance.
  */
@@ -48,6 +51,8 @@ internal class CompiledSourceCodeInsideJarExcludeWorkspaceFileIndexContributor :
   WorkspaceFileIndexContributor<LibraryCompiledSourceCodeInsideJarExcludeEntity> {
   override val entityClass: Class<LibraryCompiledSourceCodeInsideJarExcludeEntity>
     get() = LibraryCompiledSourceCodeInsideJarExcludeEntity::class.java
+
+  private val sourceFileIndexes = CollectionFactory.createConcurrentWeakMap<CompiledSourceCodeInsideJarExcludeId, CompiledSourceFileIndex>()
 
   override fun registerFileSets(
     entity: LibraryCompiledSourceCodeInsideJarExcludeEntity,
@@ -57,11 +62,14 @@ internal class CompiledSourceCodeInsideJarExcludeWorkspaceFileIndexContributor :
     val library = storage.resolve(entity.libraryId) ?: return
     val compiledSourceCodeInsideJarExcludeEntity = storage.resolve(entity.compiledSourceCodeInsideJarExcludeId) ?: return
 
-    val relativePathsToExclude: Set<String> = compiledSourceCodeInsideJarExcludeEntity.relativePathsInsideJarToExclude
+    val excludeId = compiledSourceCodeInsideJarExcludeEntity.excludeId
+    val sourceFileIndex = sourceFileIndexes.computeIfAbsent(excludeId) {
+      CompiledSourceFileIndex(compiledSourceCodeInsideJarExcludeEntity.relativePathsInsideJarToExclude)
+    }
     val librariesFromInternalTargetsUrls: Set<String> = compiledSourceCodeInsideJarExcludeEntity.librariesFromInternalTargetsUrls
     val entityId = compiledSourceCodeInsideJarExcludeEntity.excludeId.id
     val internalTargetsExclusionCondition =
-      InternalTargetsJarExclusionCondition(relativePathsToExclude, librariesFromInternalTargetsUrls, entityId)
+      InternalTargetsJarExclusionCondition(sourceFileIndex, librariesFromInternalTargetsUrls, entityId)
 
     library.roots.forEach { libraryRoot ->
       val contentRootUrl = libraryRoot.url
@@ -83,7 +91,7 @@ internal class CompiledSourceCodeInsideJarExcludeWorkspaceFileIndexContributor :
 }
 
 private class InternalTargetsJarExclusionCondition(
-  private val relativePathsToExclude: Set<String>,
+  private val sourceFileIndex: CompiledSourceFileIndex,
   private val librariesFromInternalTargetsUrls: Set<String>,
   private val entityId: Int,
 ) : WorkspaceFileSetExclusionCondition {
@@ -97,7 +105,7 @@ private class InternalTargetsJarExclusionCondition(
 
     val relativePath = file.getRelativePathInsideJar(rootFile)
     val relativePathWithoutNestedClass = removeNestedClass(relativePath)
-    return relativePathWithoutNestedClass in relativePathsToExclude
+    return sourceFileIndex.hasSourceFor(relativePathWithoutNestedClass)
   }
 
   override fun equals(other: Any?): Boolean {

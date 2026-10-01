@@ -28,7 +28,8 @@ class SourceRootsOverlapTest {
         .entities(ModuleEntity::class.java)
         .single()
       moduleEntity.contentRoots.shouldHaveSize(2)
-      moduleEntity.shouldHaveSingleContentRoot("java-source", "module/src/main/java")
+      // the source directory contains a resource of the target, so the source is not merged into it
+      moduleEntity.shouldHaveSingleContentRoot("java-source", "module/src/main/java/com/example/A.java")
       moduleEntity.shouldHaveSingleContentRoot("java-resource", "module/src/main/java/com/example/data.html")
     }
   }

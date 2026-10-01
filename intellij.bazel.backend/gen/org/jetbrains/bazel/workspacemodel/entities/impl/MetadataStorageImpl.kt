@@ -1260,77 +1260,6 @@ internal object MetadataStorageImpl : MetadataStorageBase() {
     )
     addMetadata(typeMetadata)
     typeMetadata = EntityMetadata(
-      fqName = "org.jetbrains.bazel.workspacemodel.entities.PackageMarkerEntity",
-      entityDataFqName = "org.jetbrains.bazel.workspacemodel.entities.impl.PackageMarkerEntityData",
-      supertypes = listOf("com.intellij.platform.workspace.storage.WorkspaceEntity"),
-      properties = listOf(
-        OwnPropertyMetadata(
-          isComputable = false,
-          isKey = false,
-          isOpen = false,
-          name = "entitySource",
-          valueType = ValueTypeMetadata.SimpleType.CustomType(
-            isNullable = false,
-            typeMetadata = FinalClassMetadata.KnownClass(
-              fqName = "com.intellij.platform.workspace.storage.EntitySource",
-            ),
-          ),
-          withDefault = false,
-        ),
-        OwnPropertyMetadata(
-          isComputable = false,
-          isKey = false,
-          isOpen = false,
-          name = "root",
-          valueType = ValueTypeMetadata.SimpleType.CustomType(
-            isNullable = false,
-            typeMetadata = FinalClassMetadata.KnownClass(
-              fqName = "com.intellij.platform.workspace.storage.url.VirtualFileUrl",
-            ),
-          ),
-          withDefault = false,
-        ),
-        OwnPropertyMetadata(
-          isComputable = false,
-          isKey = false,
-          isOpen = false,
-          name = "packagePrefix",
-          valueType = primitiveTypeStringNotNullable,
-          withDefault = false,
-        ),
-        OwnPropertyMetadata(
-          isComputable = false,
-          isKey = false,
-          isOpen = false,
-          name = "module",
-          valueType = ValueTypeMetadata.EntityReference(
-            connectionType = ConnectionId.ConnectionType.ONE_TO_MANY,
-            entityFqName = "com.intellij.platform.workspace.jps.entities.ModuleEntity",
-            isChild = false,
-            isNullable = false,
-          ),
-          withDefault = false,
-        ),
-      ),
-      extProperties = listOf(
-        ExtPropertyMetadata(
-          isComputable = false,
-          isOpen = false,
-          name = "packageMarkerEntities",
-          receiverFqn = "com.intellij.platform.workspace.jps.entities.ModuleEntity",
-          valueType = ValueTypeMetadata.EntityReference(
-            connectionType = ConnectionId.ConnectionType.ONE_TO_MANY,
-            entityFqName = "org.jetbrains.bazel.workspacemodel.entities.PackageMarkerEntity",
-            isChild = true,
-            isNullable = false,
-          ),
-          withDefault = false,
-        ),
-      ),
-      isAbstract = false,
-    )
-    addMetadata(typeMetadata)
-    typeMetadata = EntityMetadata(
       fqName = "org.jetbrains.bazel.workspacemodel.entities.ScalaAddendumEntity",
       entityDataFqName = "org.jetbrains.bazel.workspacemodel.entities.impl.ScalaAddendumEntityData",
       supertypes = listOf("com.intellij.platform.workspace.storage.WorkspaceEntity"),
@@ -1459,7 +1388,6 @@ internal object MetadataStorageImpl : MetadataStorageBase() {
       typeFqn = "com.intellij.platform.workspace.jps.entities.LibraryTableId\$ProjectLibraryTableId",
       metadataHash = 824092854,
     )
-    addMetadataHash(typeFqn = "org.jetbrains.bazel.workspacemodel.entities.PackageMarkerEntity", metadataHash = -1844349399)
     addMetadataHash(typeFqn = "org.jetbrains.bazel.workspacemodel.entities.ScalaAddendumEntity", metadataHash = 950673911)
     addMetadataHash(typeFqn = "com.intellij.platform.workspace.storage.EntitySource", metadataHash = 1674399842)
     addMetadataHash(typeFqn = "org.jetbrains.bazel.workspacemodel.entities.BazelDummyEntitySource", metadataHash = 1476524774)

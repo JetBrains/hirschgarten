@@ -3,15 +3,14 @@ package org.jetbrains.bazel.workspace.fileEvents
 import com.intellij.build.events.impl.FailureResultImpl
 import com.intellij.build.events.impl.SkippedResultImpl
 import com.intellij.build.events.impl.SuccessResultImpl
+import com.intellij.diagnostic.rethrowControlFlowException
 import com.intellij.openapi.application.readAction
 import com.intellij.openapi.components.service
 import com.intellij.openapi.components.serviceAsync
 import com.intellij.openapi.diagnostic.Logger
-import com.intellij.diagnostic.rethrowControlFlowException
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.roots.ProjectFileIndex
 import com.intellij.openapi.roots.ProjectRootManager
-import com.intellij.openapi.vfs.VfsUtilCore
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.VirtualFileManager
 import com.intellij.openapi.vfs.newvfs.events.VFileEvent
@@ -29,10 +28,8 @@ import com.intellij.platform.workspace.storage.url.VirtualFileUrl
 import com.intellij.platform.workspace.storage.url.VirtualFileUrlManager
 import com.intellij.workspaceModel.core.fileIndex.WorkspaceFileIndex
 import com.intellij.workspaceModel.core.fileIndex.WorkspaceFileSetWithCustomData
-import com.intellij.workspaceModel.core.fileIndex.impl.JvmPackageRootDataInternal
 import com.intellij.workspaceModel.core.fileIndex.impl.ModuleRelatedRootData
 import com.intellij.workspaceModel.ide.isEqualOrParentOf
-import com.intellij.workspaceModel.ide.legacyBridge.findModuleEntity
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Deferred
@@ -67,13 +64,8 @@ import org.jetbrains.bazel.workspace.fileEvents.SimplifiedFileEvent.CreateDirect
 import org.jetbrains.bazel.workspace.indexAdditionalFiles.AdditionalFilesCollector
 import org.jetbrains.bazel.workspace.indexAdditionalFiles.ProjectViewGlobSet
 import org.jetbrains.bazel.workspace.indexAdditionalFiles.limitedFilesIndexingGlobOrNull
-import org.jetbrains.bazel.workspace.packageMarker.concatenatePackages
-import org.jetbrains.bazel.workspacemodel.entities.BazelDummyEntitySource
-import org.jetbrains.bazel.workspacemodel.entities.PackageMarkerEntity
-import org.jetbrains.bazel.workspacemodel.entities.PackageMarkerEntityBuilder
 import org.jetbrains.bazel.workspacemodel.entities.bazelModuleExtension
 import org.jetbrains.bazel.workspacemodel.entities.modifyBazelProjectDirectoriesEntity
-import org.jetbrains.bazel.workspacemodel.entities.packageMarkerEntities
 import org.jetbrains.bsp.protocol.TaskGroupId
 import org.jetbrains.bsp.protocol.TaskId
 import java.nio.file.Path
@@ -288,10 +280,8 @@ open class DefaultBazelFileEventProcessor(private val project: Project): BazelFi
 
     val additionalFilesModelChanged = updateAdditionalFilesInModel(planarizedEvents, context, limitedFilesIndexingGlob)
 
-    val packageMarkersModelChanged = doProcessDirectoryEvents(events.filterIsInstance<CreateDirectory>(), context)
-
     // Finalize and apply changes
-    if (sourceModelChanged || additionalFilesModelChanged || packageMarkersModelChanged) {
+    if (sourceModelChanged || additionalFilesModelChanged) {
       context.progressReporter.finalisingStep {
         context.workspaceModel.update("File event processing (Bazel)") {
           it.applyChangesFrom(context.entityStorageDiff)
@@ -461,21 +451,6 @@ open class DefaultBazelFileEventProcessor(private val project: Project): BazelFi
     ProjectDirtyStateService.getInstance(project).markDirty(paths.map { it.parent })
   }
 
-  private suspend fun doProcessDirectoryEvents(events: List<CreateDirectory>, context: ProcessingContext): Boolean {
-    var modelChanged = false
-    for (event in events) {
-      // Update package marker
-      val entity = updatePackageMarkerEntity(event, context)
-      if (entity != null) {
-        context.entityStorageDiff.modifyModuleEntity(entity.first) {
-          this.packageMarkerEntities += entity.second
-        }
-        modelChanged = true
-      }
-    }
-    return modelChanged
-  }
-
   protected open suspend fun invertedSourcesQuery(
     taskId: TaskId,
     files: Collection<PathAndVFile>,
@@ -530,27 +505,6 @@ open class DefaultBazelFileEventProcessor(private val project: Project): BazelFi
     }
 
     return evaluated + queried
-  }
-
-  private suspend fun updatePackageMarkerEntity(
-    event: CreateDirectory,
-    context: ProcessingContext,
-  ): Pair<ModuleEntity, PackageMarkerEntityBuilder>? {
-    val workspaceModelIndex = WorkspaceFileIndex.getInstance(project)
-    val dir = event.newVirtualFile ?: return null
-    if (!dir.isValid) return null
-    val moduleRoot = generateSequence(dir.parent) { it.parent }.firstNotNullOfOrNull { file ->
-      findModuleSourceRoot(workspaceModelIndex, file)
-    } ?: return null
-    val moduleEntity = moduleRoot.data.module.findModuleEntity(context.workspaceSnapshot) ?: return null
-    val basePackagePrefix = (moduleRoot.data as? JvmPackageRootDataInternal)?.packagePrefix ?: return null
-    val relativePackagePrefix = VfsUtilCore.getRelativePath(dir, moduleRoot.root, '.') ?: return null
-    val packagePrefix = concatenatePackages(basePackagePrefix, relativePackagePrefix)
-    return moduleEntity to PackageMarkerEntity(
-      root = dir.toVirtualFileUrl(context.urlManager),
-      packagePrefix = packagePrefix,
-      entitySource = BazelDummyEntitySource,
-    )
   }
 
   private suspend fun findModuleSourceRoot(

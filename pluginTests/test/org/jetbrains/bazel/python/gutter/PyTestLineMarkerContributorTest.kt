@@ -28,13 +28,15 @@ internal class PyTestLineMarkerContributorTest {
     withContext(Dispatchers.EDT) {
       fixture.openFileInEditor(fixture.project.rootDir.findChild("test_sample.py")!!)
       fixture.editor.caretModel.moveToLogicalPosition(LogicalPosition(0, 4))
-      pyRunLineMarkerContributor.getInfo((fixture.elementAtCaret as PsiNameIdentifierOwner).nameIdentifier!!).shouldNotBeNull()
+      val identifier = (fixture.elementAtCaret as PsiNameIdentifierOwner).nameIdentifier ?: error("no matching identifier at ${fixture.editor.caretModel.logicalPosition}")
+      pyRunLineMarkerContributor.getInfo(identifier).shouldNotBeNull()
     }
 
     withContext(Dispatchers.EDT) {
       fixture.openFileInEditor(fixture.project.rootDir.findChild("unittest_test.py")!!)
       fixture.editor.caretModel.moveToLogicalPosition(LogicalPosition(3, 8))
-      pyRunLineMarkerContributor.getInfo((fixture.elementAtCaret as PsiNameIdentifierOwner).nameIdentifier!!).shouldNotBeNull()
+      val identifier = (fixture.elementAtCaret as PsiNameIdentifierOwner).nameIdentifier ?: error("no matching identifier at ${fixture.editor.caretModel.logicalPosition}")
+      pyRunLineMarkerContributor.getInfo(identifier).shouldNotBeNull()
     }
     Unit
   }

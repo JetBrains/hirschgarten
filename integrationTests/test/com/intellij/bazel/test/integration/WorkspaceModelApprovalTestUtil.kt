@@ -55,9 +55,26 @@ internal suspend fun EntityStorage.toApprovalTestString(
   relativize: (fileUrl: String) -> String,
 ): String {
   val jsonArray = project.service<WorkspaceModelJsonDumpService>().getWorkspaceEntitiesAsJsonArray(this)
-  val relativized = jsonArray.relativizeFileUrls(relativize)
+  val relativized = jsonArray.normalizeExcludeIds().relativizeFileUrls(relativize)
   return approvalJson.encodeToString(relativized)
 }
+
+/** The ID of `CompiledSourceCodeInsideJarExcludeEntity` is random, so the golden files store it as `0`. */
+private fun JsonElement.normalizeExcludeIds(): JsonElement = when (this) {
+  is JsonArray -> JsonArray(map { it.normalizeExcludeIds() })
+  is JsonObject -> {
+    val presentableName = (this["presentableName"] as? JsonPrimitive)?.contentOrNull
+    if (presentableName != null && presentableName.startsWith("$EXCLUDE_ID_CLASS_NAME(")) {
+      JsonObject(mapOf("id" to JsonPrimitive(0), "presentableName" to JsonPrimitive("$EXCLUDE_ID_CLASS_NAME(id=0)")))
+    }
+    else {
+      JsonObject(mapValues { (_, value) -> value.normalizeExcludeIds() })
+    }
+  }
+  else -> this
+}
+
+private const val EXCLUDE_ID_CLASS_NAME = "CompiledSourceCodeInsideJarExcludeId"
 
 private fun JsonElement.relativizeFileUrls(relativize: (String) -> String): JsonElement = when (this) {
   is JsonArray -> JsonArray(map { it.relativizeFileUrls(relativize) }.sortedBy { it.toString() })

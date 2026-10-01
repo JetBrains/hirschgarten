@@ -25,9 +25,6 @@ import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.magicmetamodel.formatAsModuleName
 import org.jetbrains.bazel.sync.JavaLanguageClass
 import org.jetbrains.bazel.sync.workspace.importer.GlobalNamingContextBuilder
-import org.jetbrains.bazel.sync.workspace.languages.java.sourceRoot.DefaultJvmPackagePrefixCalculator
-import org.jetbrains.bazel.sync.workspace.languages.java.sourceRoot.JvmPackagePrefixCalculator
-import org.jetbrains.bazel.sync.workspace.languages.java.sourceRoot.SourceRootOptimizationMode
 import org.jetbrains.bazel.sync.workspace.languages.jvm.JvmBuildTarget
 import org.jetbrains.bazel.sync.workspace.languages.jvm.JvmDependency
 import org.jetbrains.bazel.sync.workspace.languages.jvm.KotlinBuildTarget
@@ -44,7 +41,6 @@ import org.jetbrains.bazel.workspace.model.test.framework.WorkspaceModelBaseTest
 import org.jetbrains.bazel.workspace.model.test.framework.createTestBuildTarget
 import org.jetbrains.bazel.workspace.model.test.framework.testLocations
 import org.jetbrains.bazel.workspacemodel.entities.BazelProjectEntitySource
-import org.jetbrains.bazel.workspacemodel.entities.PackageMarkerEntity
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.LibraryItem
 import org.jetbrains.bsp.protocol.OutputLocation
@@ -53,7 +49,6 @@ import org.junit.jupiter.api.Test
 import java.nio.file.Files
 import java.nio.file.Path
 import kotlin.io.path.Path
-import kotlin.io.path.createDirectories
 import kotlin.io.path.writeText
 
 private val FOO_BAR: Label = Label.parse("//foo:bar")
@@ -214,29 +209,6 @@ internal class JvmTargetEntitiesBuilderTest : WorkspaceModelBaseTest() {
   }
 
   private fun Label.formatAsModuleNameTest(): String = this.formatAsModuleName(RepoMappingDisabled)
-
-  @Test
-  fun `package markers follow nested source declarations`(): Unit = timeoutRunBlocking {
-    val sourceRoot = projectBasePath.resolve("src/mod-impl/src").createDirectories()
-    val rootSource = sourceRoot.resolve("ModImpl.java").apply { writeText("package com.example.mod.impl; class ModImpl {}") }
-    val utilDirectory = sourceRoot.resolve("com/example/mod/util").createDirectories()
-    val utilSource = utilDirectory.resolve("Util.kt").apply { writeText("package com.example.mod.util\nobject Util") }
-    sourceRoot.resolve("com/example/mod/somethingelse").createDirectories().resolve("Something.kt")
-      .writeText("package com.example.mod.somethingelse\nobject Something")
-    val target = createTestBuildTarget(
-      id = Label.parse("//src/mod-impl:mod-impl"),
-      kind = TargetKind(kind = "kt_jvm_library", ruleType = RuleType.LIBRARY, languageClasses = setOf(JavaLanguageClass.KOTLIN)),
-      sources = listOf(rootSource, utilSource),
-      data = listOf(JvmBuildTarget()),
-    )
-
-    runImport(targets = listOf(target))
-
-    val markers = loadedEntries(PackageMarkerEntity::class.java).associate { it.root.url to it.packagePrefix }
-    markers[sourceRoot.toVirtualFileUrl(virtualFileUrlManager).url] shouldBe ""
-    markers[sourceRoot.resolve("com/example/mod").toVirtualFileUrl(virtualFileUrlManager).url] shouldBe "com.example.mod"
-    markers[utilDirectory.toVirtualFileUrl(virtualFileUrlManager).url] shouldBe "com.example.mod.util"
-  }
 
   @Test
   fun `disambiguates module names for a label imported under multiple configurations`(): Unit = timeoutRunBlocking {
@@ -517,9 +489,6 @@ internal class JvmTargetEntitiesBuilderTest : WorkspaceModelBaseTest() {
     targets: List<BuildTarget>,
     resolved: Map<WorkspaceTargetKey, JvmResolvedTarget> = defaultResolved(targets),
   ) {
-    val calc = DefaultJvmPackagePrefixCalculator(SourceRootOptimizationMode.Disabled, ::resolveProjectLocation)
-    calc.calculate(targets)
-    val jvmPackagePrefixes: JvmPackagePrefixCalculator = calc
     val plan = JvmImportPlan(rawTargets = targets, jvmResolved = resolved, resolveLocation = ::resolveProjectLocation)
     val naming = GlobalNamingContextBuilder.create(RepoMappingDisabled)
       .apply { plan.declareNames(this) }
@@ -533,13 +502,11 @@ internal class JvmTargetEntitiesBuilderTest : WorkspaceModelBaseTest() {
       projectBasePath = projectBasePath,
       defaultJdkName = null,
       testSourcesGlob = ProjectViewGlobSet(projectBasePath, emptyList()),
-      packagePrefixes = jvmPackagePrefixes,
       fileToTargets = FileToTargetMap.EMPTY,
       virtualFileUrlManager = virtualFileUrlManager,
       entitySource = BazelProjectEntitySource,
       excludeCompiledSourceCodeInsideJars = true,
       currentCompiledSourceExcludeEntity = null,
-      dotIdeaPath = null,
       resolveLocation = ::resolveProjectLocation,
     )
     // JvmTargetEntitiesBuilder writes ctx.libraries (sourced from the resolver) in its phase 0

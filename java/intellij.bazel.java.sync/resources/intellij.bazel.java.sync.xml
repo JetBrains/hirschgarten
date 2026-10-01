@@ -9,6 +9,7 @@
     <module name="intellij.java.compiler.impl"/>
     <module name="intellij.java.impl"/>
     <module name="intellij.java.syntax"/>
+    <module name="intellij.libraries.guava"/>
     <module name="intellij.libraries.jetbrains.annotations"/>
     <module name="intellij.libraries.kotlinx.coroutines.core"/>
     <module name="intellij.libraries.protobuf"/>
@@ -44,12 +45,6 @@
   <extensionPoints>
     <extensionPoint
       dynamic="true"
-      interface="org.jetbrains.bazel.sync.workspace.languages.java.sourceRoot.prefix.JavaSourceRootPatternContributor"
-      qualifiedName="org.jetbrains.bazel.javaSourceRootPrefixContributor"
-    />
-
-    <extensionPoint
-      dynamic="true"
       interface="org.jetbrains.bazel.scala.sdk.ScalaSdkExtension"
       qualifiedName="org.jetbrains.bazel.scalaSdkExtension"
     />
@@ -63,14 +58,9 @@
 
   <extensions defaultExtensionNs="org.jetbrains.bazel">
 
-    <projectViewSectionProvider
-      implementation="org.jetbrains.bazel.sync.workspace.languages.java.sourceRoot.projectview.JavaSROProjectViewSectionProvider"/>
-
     <syncWorkspaceImporterFactory implementation="org.jetbrains.bazel.workspace.importer.JavaBazelWorkspaceImporter$Factory"/>
     <syncWorkspaceImporterFactory implementation="org.jetbrains.bazel.workspace.importer.ScalaBazelWorkspaceImporter$Factory"/>
 
-    <javaSourceRootPrefixContributor
-      implementation="org.jetbrains.bazel.sync.workspace.languages.java.sourceRoot.prefix.JavaProjectViewSourceRootPatternContributor"/>
     <languagePlugin id="JavaLanguagePlugin"
                     implementation="org.jetbrains.bazel.sync.workspace.languages.java.JavaLanguagePlugin"/>
     <languagePlugin id="KotlinLanguagePlugin"
@@ -85,16 +75,9 @@
   </extensions>
 
   <extensions defaultExtensionNs="com.intellij">
-    <moduleType
-      id="BAZEL_DUMMY_MODULE_TYPE"
-      implementationClass="org.jetbrains.bazel.workspace.importer.BazelDummyModuleType"
-    />
 
     <workspaceModel.fileIndexContributor
       implementation="org.jetbrains.bazel.workspace.CompiledSourceCodeInsideJarExcludeWorkspaceFileIndexContributor"
-    />
-    <workspaceModel.fileIndexContributor
-      implementation="org.jetbrains.bazel.workspace.PackageMarkerEntityWorkspaceFileIndexContributor"
     />
 
   </extensions>

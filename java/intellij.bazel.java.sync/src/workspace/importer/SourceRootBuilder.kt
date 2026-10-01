@@ -13,7 +13,6 @@ import com.intellij.platform.workspace.storage.MutableEntityStorage
 import com.intellij.platform.workspace.storage.url.VirtualFileUrlManager
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.config.BazelFeatureFlags
-import org.jetbrains.bazel.sync.workspace.languages.java.sourceRoot.JvmPackagePrefixCalculator
 import org.jetbrains.bazel.sync.workspace.languages.jvm.KotlinBuildTarget
 import org.jetbrains.bazel.sync.workspace.snapshot.isTestTarget
 import org.jetbrains.bazel.workspace.indexAdditionalFiles.ProjectViewGlobSet
@@ -45,22 +44,18 @@ object SourceRootBuilder {
   data class ResolvedSourceRoot(
     val sourcePath: Path,
     val generated: Boolean,
-    val packagePrefix: String,
     val rootType: SourceRootTypeId,
   )
 
   fun resolve(
     target: BuildTarget,
     testSourcesGlob: ProjectViewGlobSet,
-    packagePrefixes: JvmPackagePrefixCalculator,
     resolveLocation: (OutputLocation) -> Path?,
   ): List<ResolvedSourceRoot> {
-    val prefixes = packagePrefixes.get(target)
     fun Path.convert(generated: Boolean) =
       ResolvedSourceRoot(
         sourcePath = this,
         generated = generated,
-        packagePrefix = prefixes[this] ?: "",
         rootType = when {
           target.isTestTarget() -> JAVA_TEST_SOURCE_ROOT_TYPE
           testSourcesGlob.matches(this) -> JAVA_TEST_SOURCE_ROOT_TYPE

@@ -76,7 +76,8 @@ class KotlinStdlibPerToolchainTest {
         stdlib.hasRoot(OLD_STDLIB_JAR) shouldBe true
         stdlib.hasRoot(BUNDLED_STDLIB_JAR) shouldBe false
 
-        moduleDependingOn(snapshot, stdlib).hasContentRoot("/nested") shouldBe true
+        // a source located directly in the package root is never merged into a directory root
+        moduleDependingOn(snapshot, stdlib).hasContentRoot("/nested/Lib.kt") shouldBe true
       }
     }
   }

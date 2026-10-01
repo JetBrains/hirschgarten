@@ -2,9 +2,6 @@ package org.jetbrains.bazel.workspace.sync.jvm
 
 import com.intellij.openapi.project.Project
 import org.jetbrains.bazel.sync.workspace.languages.java.JavaWorkspaceSyncConfig
-import org.jetbrains.bazel.sync.workspace.languages.java.sourceRoot.SourceRootOptimizationMode
-import org.jetbrains.bazel.sync.workspace.languages.java.sourceRoot.prefix.JavaSourceRootPatterns
-import org.jetbrains.bazel.sync.workspace.languages.java.sourceRoot.prefix.ProjectViewGlobPattern
 import org.jetbrains.bazel.sync.workspace.languages.jvm.JavaProviderData
 import org.jetbrains.bazel.sync.workspace.languages.jvm.JavaToolchainData
 import org.jetbrains.bazel.sync.workspace.languages.jvm.JdepsJar
@@ -29,8 +26,5 @@ internal class JvmWorkspaceTypeContributor : WorkspaceTypeContributor  {
     type<JavaToolchainData>()
     sealed<JvmDependency>()
     type<JavaWorkspaceSyncConfig>()
-    sealed<SourceRootOptimizationMode>()
-    type<JavaSourceRootPatterns>()
-    type<ProjectViewGlobPattern>()
   }
 }

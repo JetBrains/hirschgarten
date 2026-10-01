@@ -34,7 +34,6 @@ import org.jetbrains.bazel.sync.includesKotlin
 import org.jetbrains.bazel.sync.isJvmTarget
 import org.jetbrains.bazel.sync.workspace.importer.GlobalNamingContext
 import org.jetbrains.bazel.sync.workspace.importer.GlobalNamingContext.NameSpace
-import org.jetbrains.bazel.sync.workspace.languages.java.sourceRoot.JvmPackagePrefixCalculator
 import org.jetbrains.bazel.sync.workspace.languages.jvm.JvmBuildTarget
 import org.jetbrains.bazel.sync.workspace.languages.jvm.KotlinBuildTarget
 import org.jetbrains.bazel.sync.workspace.languages.jvm.ScalaBuildTarget
@@ -57,7 +56,6 @@ import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.LibraryItem
 import org.jetbrains.bsp.protocol.OutputLocation
 import org.jetbrains.bsp.protocol.OutputLocationCollection
-import org.jetbrains.bsp.protocol.StrictDependencyCheckedType
 import org.jetbrains.bsp.protocol.relativeNioPath
 import org.jetbrains.bsp.protocol.utils.StringUtils
 import java.nio.file.Path
@@ -78,10 +76,8 @@ class ImportContext(
   val repoMapping: RepoMapping,
   val projectName: String,
   val projectBasePath: Path,
-  val dotIdeaPath: Path?,
   val defaultJdkName: String?,
   val testSourcesGlob: ProjectViewGlobSet,
-  val packagePrefixes: JvmPackagePrefixCalculator,
   val fileToTargets: FileToTargetMap,
   val virtualFileUrlManager: VirtualFileUrlManager,
   val entitySource: EntitySource,
@@ -112,7 +108,7 @@ class ImportContext(
       .mapValues { (_, names) -> names.distinct() }
 
   val dependencyBuilder: DependencyBuilder = DependencyBuilder(this.targets, jvmResolved, repoMapping, libraryShadowedProducers)
-  val dummyModuleSplitter: DummyModuleSplitter = DummyModuleSplitter(projectBasePath, fileToTargets)
+  val sourceRootMerger: JavaSourceRootMerger = JavaSourceRootMerger(fileToTargets)
 
   // targets contain stripped keys, so we need to ensure that `key` is stripped too
   fun isInTargets(key: WorkspaceTargetKey): Boolean = targetKeys.contains(key.stripAspects())
@@ -123,19 +119,15 @@ private val TARGET_KEY_COMPARATOR = compareBy<WorkspaceTargetKey> { it.label }
   .thenBy { it.configuration.shortChecksum }
 
 /**
- * Writes the full set of JVM workspace-model entities for all [ImportContext.targets] (plus any dummy modules
- * they split into) directly into the supplied [MutableEntityStorage].
+ *  Writes the full set of JVM workspace-model entities for all [ImportContext.targets] directly
+ *  into the supplied [MutableEntityStorage].
  *
- * Runs two passes: first resolves every target into a [TargetPlan] (pure, no writes) so the dummy modules know
- * which directories are already covered by real source roots; then writes all entities sequentially.
+ * Runs two passes: first resolves every target into a [TargetPlan] (in parallel, no writes);
+ * then writes all entities sequentially.
  */
-// RC: the spine - replaces `ProjectDetailsToModuleDetailsTransformer` + `TargetIdToModuleEntitiesMap` +
-// `ModuleDetailsToJavaModuleTransformer` + `JavaModuleUpdater` + `ModuleEntityUpdater`, and drops the
-// `JavaModule` / `GenericModuleInfo` / `JavaAddendum` / `Dependency` wrappers
 @ApiStatus.Internal
 class JvmTargetEntitiesBuilder(private val ctx: ImportContext) {
   private val javaModuleType = ModuleTypeId("JAVA_MODULE")
-  private val dummyModuleType = ModuleTypeId(BazelDummyModuleType.ID)
   private val resolverParallelism = Runtime.getRuntime().availableProcessors() * 2
   private val resolverBatchSize = 512
 
@@ -173,20 +165,6 @@ class JvmTargetEntitiesBuilder(private val ctx: ImportContext) {
       .awaitAll()
       .flatten()
 
-    ctx.progressReporter?.text(BazelJavaBackendBundle.message("workspace.java.importer.computing.packages"))
-    ctx.progressReporter?.fraction(0.0)
-
-    // collect every directory already covered by a real (non-dummy) source root, so dummy package markers
-    // don't re-walk them. matches PackageMarkerEntityUpdater's `alreadyVisitedDirectories` initialization.
-    val sourceRoots = plans.flatMap { (_, plan) -> plan.mainSourceRoots }
-    val coveredDirs = sourceRoots.map { it.sourcePath }.toSet()
-    val packageMarkerBuilder =
-      PackageMarkerBuilder(
-        coveredDirs,
-        PackageMarkerBuilder.excludedDirectoriesFrom(ctx.projectBasePath, ctx.dotIdeaPath, storage),
-        sourceRoots,
-      )
-
     // phase 2: write entities sequentially.
     // `writtenNames` preserves the original `distinctBy { it.getModuleName() }` semantics: if two targets
     // (or dummies) end up with the same module name, the first one wins and the rest are skipped,
@@ -198,7 +176,7 @@ class JvmTargetEntitiesBuilder(private val ctx: ImportContext) {
       .thenBy { (_, plan) -> plan.moduleName }
     plans.sortedWith(comparator)
       .forEachIndexed { index, (target, plan) ->
-        writeOne(target, plan, packageMarkerBuilder, writtenNames, storage)
+        writeOne(target, plan, writtenNames, storage)
         ctx.progressReporter?.fraction((index + 1).toDouble() / plans.size)
       }
 
@@ -207,7 +185,6 @@ class JvmTargetEntitiesBuilder(private val ctx: ImportContext) {
       CompiledSourceCodeInsideJarExcludeBuilder.write(
         targets = ctx.targets,
         libraries = ctx.libraries,
-        packagePrefixes = ctx.packagePrefixes,
         resolveLocation = ctx.resolveLocation,
         storage = storage,
         currentExcludeEntity = ctx.currentCompiledSourceExcludeEntity,
@@ -258,20 +235,20 @@ class JvmTargetEntitiesBuilder(private val ctx: ImportContext) {
         null
 
       else -> {
-        val resolvedSourceRoots = SourceRootBuilder.resolve(target, ctx.testSourcesGlob, ctx.packagePrefixes, ctx.resolveLocation)
-        val baseDirectory = ctx.resolveLocation(target.baseDirectoryLocation)
-        val splitResult = ctx.dummyModuleSplitter.split(baseDirectory, resolvedSourceRoots)
-        val mainSourceRoots = when (splitResult) {
-          is DummyModuleSplitter.MergedRoots -> splitResult.mergedSourceRoots
-          is DummyModuleSplitter.DummyModulesToAdd -> splitResult.originalSourceRoots
-        }
-        val dummies = (splitResult as? DummyModuleSplitter.DummyModulesToAdd)?.dummies.orEmpty()
+        val resolvedSourceRoots = SourceRootBuilder.resolve(target, ctx.testSourcesGlob, ctx.resolveLocation)
+        val baseDirectory = ctx.resolveLocation(target.baseDirectoryLocation) ?: return null
+        val mainSourceRoots = ctx.sourceRootMerger.merge(
+          baseDirectory = baseDirectory,
+          sourceRoots = resolvedSourceRoots,
+          resourceFiles = target.resources.getOutputLocations()
+            .mapNotNull { ctx.resolveLocation(it) }
+            .toList()
+        )
         val resourceRoots = ResourceRootBuilder.resolve(
           target = target,
           baseDirectory = baseDirectory,
           bazelProjectName = ctx.projectName,
           workspaceRoot = ctx.projectBasePath,
-          sourceContentRoots = mainSourceRoots.map { it.sourcePath },
           resolveLocation = ctx.resolveLocation,
         )
         TargetPlan.Full(
@@ -285,7 +262,6 @@ class JvmTargetEntitiesBuilder(private val ctx: ImportContext) {
           kotlinTarget = kotlinTarget,
           associates = associates,
           mainSourceRoots = mainSourceRoots,
-          dummies = dummies,
           resourceRoots = resourceRoots,
         )
       }
@@ -295,7 +271,6 @@ class JvmTargetEntitiesBuilder(private val ctx: ImportContext) {
   private fun writeOne(
     target: BuildTarget,
     plan: TargetPlan,
-    packageMarkerBuilder: PackageMarkerBuilder,
     writtenNames: MutableSet<String>,
     storage: MutableEntityStorage,
   ) {
@@ -304,7 +279,7 @@ class JvmTargetEntitiesBuilder(private val ctx: ImportContext) {
     }
     when (plan) {
       is TargetPlan.WithoutSources -> writeWithoutSources(target, plan, storage)
-      is TargetPlan.Full -> writeFull(target, plan, packageMarkerBuilder, writtenNames, storage)
+      is TargetPlan.Full -> writeFull(target, plan, storage)
     }
   }
 
@@ -324,8 +299,6 @@ class JvmTargetEntitiesBuilder(private val ctx: ImportContext) {
   private fun writeFull(
     target: BuildTarget,
     plan: TargetPlan.Full,
-    packageMarkerBuilder: PackageMarkerBuilder,
-    writtenNames: MutableSet<String>,
     storage: MutableEntityStorage,
   ) {
     val scalaSdkDep = plan.scalaTarget?.takeIf { scalaSdkExtensionExists() }
@@ -360,66 +333,6 @@ class JvmTargetEntitiesBuilder(private val ctx: ImportContext) {
         kotlinBuildTarget = plan.kotlinTarget,
         isTestModule = target.kind.ruleType == RuleType.TEST,
         associates = plan.associates.toSet(),
-        parentModuleEntity = moduleEntity,
-        storage = storage,
-      )
-    }
-
-    // matches old MMM behavior: dummy modules' hardcoded kind always includesKotlin(), so when the kotlin
-    // facet EP is absent (kotlin plugin disabled), `JavaModuleUpdater.addKotlinModuleIfPossible` returned
-    // null and the dummies were silently dropped, preserve that here
-    if (KotlinFacetEntityUpdater.ep.extensionList.isNotEmpty()) {
-      for (dummy in plan.dummies) {
-        if (!writtenNames.add(dummy.name)) {
-          continue
-        }
-        writeDummy(target, dummy, plan, packageMarkerBuilder, storage)
-      }
-    }
-  }
-
-  private fun writeDummy(
-    parentTarget: BuildTarget,
-    dummy: DummyModuleSplitter.DummyModule,
-    parentPlan: TargetPlan.Full,
-    packageMarkerBuilder: PackageMarkerBuilder,
-    storage: MutableEntityStorage,
-  ) {
-    val deps = baseDependencies(parentPlan.jdkName)
-    val entitySource = BazelModuleEntitySource(dummy.name)
-    val moduleEntity = storage.addEntity(
-      ModuleEntity(
-        name = dummy.name,
-        dependencies = deps,
-        entitySource = entitySource,
-      ) {
-        this.type = dummyModuleType
-        this.bazelModuleExtension = BazelModuleExtensionEntity(
-          _targetKey = WorkspaceModelTargetKey.of(parentTarget.key),
-          rootTypeId = WorkspaceModelTargetSourceRootTypeId(JAVA_SOURCE_ROOT_TYPE),
-          strictDependencies = WorkspaceModelTargetLabelList(StrictDependencyCheckedType.OFF, emptyList()),
-          entitySource = entitySource,
-        )
-      },
-    )
-    addJavaModuleSettings(moduleEntity, parentPlan.javaLangVersion, storage)
-
-    // dummies get PackageMarkerEntity instead of SourceRootEntity: the source root path is the directory we
-    // recursively walk for package markers, not a real source folder declaration.
-    packageMarkerBuilder.write(
-      sourceRoot = dummy.sourceRoot,
-      parentModuleEntity = moduleEntity,
-      virtualFileUrlManager = ctx.virtualFileUrlManager,
-      storage = storage,
-    )
-
-    // dummies always get a kotlin facet (their kind always includesKotlin); options are inherited from the
-    // parent target (which may be null for non-kotlin parents - KotlinFacetEntityUpdater handles null options).
-    if (KotlinFacetEntityUpdater.ep.extensionList.isNotEmpty()) {
-      KotlinFacetBuilder.write(
-        kotlinBuildTarget = parentPlan.kotlinTarget,
-        isTestModule = parentTarget.kind.ruleType == RuleType.TEST,
-        associates = emptySet(),
         parentModuleEntity = moduleEntity,
         storage = storage,
       )
@@ -555,7 +468,6 @@ class JvmTargetEntitiesBuilder(private val ctx: ImportContext) {
       val kotlinTarget: KotlinBuildTarget?,
       val associates: List<String>,
       override val mainSourceRoots: List<SourceRootBuilder.ResolvedSourceRoot>,
-      val dummies: List<DummyModuleSplitter.DummyModule>,
       val resourceRoots: List<ResourceRootBuilder.ResolvedResourceRoot>,
     ) : TargetPlan
   }

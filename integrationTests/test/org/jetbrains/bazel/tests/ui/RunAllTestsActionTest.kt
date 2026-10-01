@@ -66,7 +66,7 @@ class RunAllTestsActionTest : IdeStarterBaseProjectTest() {
         }
 
         step("Run all tests in root directory") {
-          projectView().projectViewTree.rightClickRow { it.contains("runAllTests") }
+          projectView().projectViewTree.rightClickRow { it.substringBefore(' ') == "runAllTests" }
           verifyTestsInRoot()
         }
 

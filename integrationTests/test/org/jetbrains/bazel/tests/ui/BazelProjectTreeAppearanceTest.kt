@@ -16,7 +16,6 @@ import org.jetbrains.bazel.data.preCacheBazelisk
 import org.jetbrains.bazel.base.IdeStarterBaseProjectTest
 import org.jetbrains.bazel.base.syncBazelProject
 import org.jetbrains.bazel.base.waitForSyncSucceeded
-import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import kotlin.time.Duration.Companion.minutes
 
@@ -30,6 +29,9 @@ private val BAZEL_PROJECT_TREE_APPEARANCE_PROJECT = simpleBazelProject(
     preCacheBazelisk(context)
   },
 )
+
+private const val COMMON_COLLAPSED = "src/main/java/com/example/common"
+private val COMMON_NESTED = arrayOf("src", "main", "java", "com", "example", "common")
 
 class BazelProjectTreeAppearanceTest : IdeStarterBaseProjectTest() {
 
@@ -46,18 +48,9 @@ class BazelProjectTreeAppearanceTest : IdeStarterBaseProjectTest() {
           leftToolWindowToolbar.projectButton.open()
 
           projectView {
-            // Expand tree
-            step("Expand common/src/main/java") {
-              projectViewTree.expandSourceRoots("common", "main")
-            }
-
             // Compact middle packages: true (default)
-            step("Under common/src/main/java a compacted node 'com.example.common' exists") {
-              projectViewTree.should("compacted node 'com.example.common' under common/src/main/java") {
-                collectExpandedPaths().any {
-                  checkPathAboveLast(it.path, "com.example.common", listOf("java", "main", "src", "common"))
-                }
-              }
+            step("Under common a collapsed node 'src/main/java/com/example/common' exists") {
+              projectViewTree.expandNodeChain("common", COMMON_COLLAPSED)
             }
           }
 
@@ -68,17 +61,10 @@ class BazelProjectTreeAppearanceTest : IdeStarterBaseProjectTest() {
 
           projectView {
             // Compact middle packages: false
-            step("Under common/src/main/java separate nodes 'com', 'example', 'common' exist (no compaction)") {
-              projectViewTree.should("separate package nodes under common/src/main/java") {
-                val paths = collectExpandedPaths().map { it.path }
-                val underCommonSrcMainJava = paths.filter {
-                  checkPathAboveLast(it, "java", listOf("main", "src", "common"))
-                }.map { p ->
-                  val idx = p.indexOfLast { it == "java" }
-                  p.drop(idx + 1)
-                }
-
-                underCommonSrcMainJava.any { it.size == 3 && it[0] == "com" && it[1] == "example" && it[2] == "common" }
+            step("Under common separate nodes 'src', 'main', 'java', 'com', 'example', 'common' exist (no collapsing)") {
+              projectViewTree.expandNodeChain("common", *COMMON_NESTED)
+              projectViewTree.should("no collapsed node under common") {
+                collectExpandedPaths().none { COMMON_COLLAPSED in it.path }
               }
             }
           }
@@ -100,25 +86,13 @@ class BazelProjectTreeAppearanceTest : IdeStarterBaseProjectTest() {
           leftToolWindowToolbar.projectButton.open()
 
           projectView {
-            // Expand tree
-            step("Expand app/src/main/java") {
-              projectViewTree.expandSourceRoots("app", "main", "other")
-            }
-
             // Compact middle packages: true (default)
-            step("Under app/src/main/java a compacted node 'com.example.app' exists") {
-              projectViewTree.should("compacted node 'com.example.app' under app/src/main/java") {
-                collectExpandedPaths().any {
-                  checkPathAboveLast(it.path, "com.example.app", listOf("java", "main", "src", "app"))
-                }
-              }
+            // 'src' has two children, so it does not collapse, but each of its children collapses into a source root
+            step("Under app/src a collapsed node 'main/java/com/example/app' exists") {
+              projectViewTree.expandNodeChain("app", "src", "main/java/com/example/app")
             }
-            step("Under app/src/other/java a compacted node 'com.example.other' exists") {
-              projectViewTree.should("compacted node 'com.example.other' under app/src/other/java") {
-                collectExpandedPaths().any {
-                  checkPathAboveLast(it.path, "com.example.other", listOf("java", "other", "src", "app"))
-                }
-              }
+            step("Under app/src a collapsed node 'other/java/com/example/other' exists") {
+              projectViewTree.expandNodeChain("app", "src", "other/java/com/example/other")
             }
           }
 
@@ -129,31 +103,11 @@ class BazelProjectTreeAppearanceTest : IdeStarterBaseProjectTest() {
 
           projectView {
             // Compact middle packages: false
-            step("Under app/src/main/java separate nodes 'com', 'example', 'app' exist (no compaction)") {
-              projectViewTree.should("separate package nodes under app/src/main/java") {
-                val paths = collectExpandedPaths().map { it.path }
-                val underAppSrcMainJava = paths.filter {
-                  checkPathAboveLast(it, "java", listOf("main", "src", "app"))
-                }.map { p ->
-                  val idx = p.indexOfLast { it == "java" }
-                  p.drop(idx + 1)
-                }
-
-                underAppSrcMainJava.any { it.size == 3 && it[0] == "com" && it[1] == "example" && it[2] == "app" }
-              }
+            step("Under app/src separate nodes 'main', 'java', 'com', 'example', 'app' exist (no collapsing)") {
+              projectViewTree.expandNodeChain("app", "src", "main", "java", "com", "example", "app")
             }
-            step("Under app/src/other/java separate nodes 'com', 'example', 'other' exist (no compaction)") {
-              projectViewTree.should("separate package nodes under app/src/other/java") {
-                val paths = collectExpandedPaths().map { it.path }
-                val underAppSrcOtherJava = paths.filter {
-                  checkPathAboveLast(it, "java", listOf("other", "src", "app"))
-                }.map { p ->
-                  val idx = p.indexOfLast { it == "java" }
-                  p.drop(idx + 1)
-                }
-
-                underAppSrcOtherJava.any { it.size == 3 && it[0] == "com" && it[1] == "example" && it[2] == "other" }
-              }
+            step("Under app/src separate nodes 'other', 'java', 'com', 'example', 'other' exist (no collapsing)") {
+              projectViewTree.expandNodeChain("app", "src", "other", "java", "com", "example", "other")
             }
           }
         }
@@ -161,7 +115,7 @@ class BazelProjectTreeAppearanceTest : IdeStarterBaseProjectTest() {
   }
 
   @Test
-  fun `flatten packages works in Bazel project tree`() {
+  fun `flatten packages does not change directories outside source roots in Bazel project tree`() {
     createContext("bazelProjectTreeAppearance", IdeaBazelCases.withProject(BAZEL_PROJECT_TREE_APPEARANCE_PROJECT))
       .runIdeWithDriver(runTimeout = timeout)
       .useDriverAndCloseIde {
@@ -171,13 +125,6 @@ class BazelProjectTreeAppearanceTest : IdeStarterBaseProjectTest() {
           waitForSyncSucceeded()
 
           leftToolWindowToolbar.projectButton.open()
-
-          projectView {
-            // Expand tree
-            step("Expand common/src/main/java") {
-              projectViewTree.expandSourceRoots("common", "main")
-            }
-          }
 
           // Turn off Compact Middle Packages
           step("Disable Appearance > Compact Middle Packages option") {
@@ -190,22 +137,11 @@ class BazelProjectTreeAppearanceTest : IdeStarterBaseProjectTest() {
           }
 
           projectView {
-            // Flatten packages: true
-            step("Under common/src/main/java a compacted nodes 'com', 'com.example', 'com.example.common' exist") {
-              projectViewTree.should("compacted node 'com' under common/src/main/java") {
-                collectExpandedPaths().any {
-                  checkPathAboveLast(it.path, "com", listOf("java", "main", "src", "common"))
-                }
-              }
-              projectViewTree.should("compacted node 'com.example' under common/src/main/java") {
-                collectExpandedPaths().any {
-                  checkPathAboveLast(it.path, "com.example", listOf("java", "main", "src", "common"))
-                }
-              }
-              projectViewTree.should("compacted node 'com.example.common' under common/src/main/java") {
-                collectExpandedPaths().any {
-                  checkPathAboveLast(it.path, "com.example.common", listOf("java", "main", "src", "common"))
-                }
+            // Flatten packages: true. The source root is the deepest directory, so the directories above it stay nested.
+            step("Under common separate nodes 'src', 'main', 'java', 'com', 'example', 'common' exist") {
+              projectViewTree.expandNodeChain("common", *COMMON_NESTED)
+              projectViewTree.should("no flattened package nodes under common") {
+                collectExpandedPaths().none { info -> info.path.any { it == "com.example" || it == "com.example.common" } }
               }
             }
           }
@@ -214,7 +150,7 @@ class BazelProjectTreeAppearanceTest : IdeStarterBaseProjectTest() {
   }
 
   @Test
-  fun `hide empty middle packages works in Bazel project tree`() {
+  fun `hide empty middle packages does not change directories outside source roots in Bazel project tree`() {
     createContext("bazelProjectTreeAppearance", IdeaBazelCases.withProject(BAZEL_PROJECT_TREE_APPEARANCE_PROJECT))
       .runIdeWithDriver(runTimeout = timeout)
       .useDriverAndCloseIde {
@@ -224,13 +160,6 @@ class BazelProjectTreeAppearanceTest : IdeStarterBaseProjectTest() {
           waitForSyncSucceeded()
 
           leftToolWindowToolbar.projectButton.open()
-
-          projectView {
-            // Expand tree
-            step("Expand common/src/main/java") {
-              projectViewTree.expandSourceRoots("common", "main")
-            }
-          }
 
           // Turn off Compact Middle Packages
           step("Disable Appearance > Compact Middle Packages option") {
@@ -243,30 +172,17 @@ class BazelProjectTreeAppearanceTest : IdeStarterBaseProjectTest() {
           }
 
           // Turn on Hide Empty Middle Packages
-          step("Disable Appearance > Compact Middle Packages option") {
+          step("Enable Appearance > Hide Empty Middle Packages option") {
             switchProjectViewOption("Appearance", "Hide Empty Middle Packages")
           }
 
-
           projectView {
-            // Flatten packages: true
-            step("Under common/src/main/java exists only one compacted node 'com.example.common'") {
-              projectViewTree.should("compacted node 'com.example.common' under common/src/main/java") {
-                val paths = collectExpandedPaths()
-                paths.any {
-                  checkPathAboveLast(it.path, "com.example.common", listOf("java", "main", "src", "common"))
-                }
-              }
-              projectViewTree.should("NOT compacted node 'com.example' under common/src/main/java") {
-                val paths = collectExpandedPaths()
-                paths.none {
-                  checkPathAboveLast(it.path, "com.example", listOf("java", "main", "src", "common"))
-                }
-              }
-              projectViewTree.should("NOT compacted node 'com' under common/src/main/java") {
-                val paths = collectExpandedPaths()
-                paths.none {
-                  checkPathAboveLast(it.path, "com", listOf("java", "main", "src", "common"))
+            // Flatten packages and hide empty middle packages: true. Directories outside source roots collapse only in compact mode.
+            step("Under common separate nodes 'src', 'main', 'java', 'com', 'example', 'common' exist") {
+              projectViewTree.expandNodeChain("common", *COMMON_NESTED)
+              projectViewTree.should("no collapsed or flattened nodes under common") {
+                collectExpandedPaths().none { info ->
+                  info.path.any { it == COMMON_COLLAPSED || it == "com.example" || it == "com.example.common" }
                 }
               }
             }
@@ -290,11 +206,12 @@ class BazelProjectTreeAppearanceTest : IdeStarterBaseProjectTest() {
           leftToolWindowToolbar.projectButton.open()
 
           projectView {
-            step("Expand common/src/main/java") {
-              projectViewTree.expandSourceRoots("common", "main")
+            // the source root is the file, so the collapsed node ends at its directory, which is the content root
+            step("Expand common/src/main/java/com/example/common") {
+              projectViewTree.expandNodeChain("common", COMMON_COLLAPSED)
             }
 
-            step("Directories in common/src/main/java path have no module info") {
+            step("Directories under common have no module info") {
               val violating = projectViewTree.collectExpandedPaths()
                 .filter { it.path.contains("common") }
                 .filter { info ->
@@ -309,11 +226,10 @@ class BazelProjectTreeAppearanceTest : IdeStarterBaseProjectTest() {
       }
   }
 
-  private fun JTreeUiComponent.expandSourceRoots(module: String, vararg children: String) {
-    expandNodeEndingWith(module)
-    expandNodeEndingWith(module, "src")
-    for (child in children) {
-      expandNodeEndingWith(module, "src", child)
+  /** Expands the nodes along [segments], each node is a child of the previous one. */
+  private fun JTreeUiComponent.expandNodeChain(vararg segments: String) {
+    for (count in 1..segments.size) {
+      expandNodeEndingWith(*segments.copyOfRange(0, count))
     }
   }
 
@@ -336,15 +252,6 @@ class BazelProjectTreeAppearanceTest : IdeStarterBaseProjectTest() {
 
   private fun List<String>.endsWith(vararg segments: String): Boolean =
     size >= segments.size && subList(size - segments.size, size) == segments.asList()
-
-  private fun checkPathAboveLast(path: List<String>, elem: String, expectedUp: List<String>): Boolean {
-    val idx = path.lastIndexOf(elem)
-    if (idx <= expectedUp.size) return false
-    for (i in 1..expectedUp.size) {
-      if (path[idx - i] != expectedUp[i - 1]) return false
-    }
-    return true
-  }
 
   private fun com.intellij.driver.sdk.ui.components.common.IdeaFrameUI.switchProjectViewOption(
     category: String,

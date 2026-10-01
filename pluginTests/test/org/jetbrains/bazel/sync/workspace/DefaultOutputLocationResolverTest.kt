@@ -28,6 +28,7 @@ class DefaultOutputLocationResolverTest {
     canonicalRepoNameToLocalPath = mapOf(
       "foo+" to Path("bar/baz"),
       "abs+" to Path("/opt/checkout"),
+      "sibling+" to Path("../sibling"),
     ),
     apparentRepoNameToCanonicalName = mapOf(),
     canonicalRepoNameToPath = mapOf(),
@@ -45,6 +46,12 @@ class DefaultOutputLocationResolverTest {
     // pins the semantics of BazelPathsResolverTest.pathResolutionWithExternalRepositories
     newResolver().resolve(OutputLocation.External("foo+", "a/b/E.java"), localOverride) shouldBe
       Path("workspace/bar/baz/a/b/E.java")
+  }
+
+  @Test
+  fun `normalizes a relative local override outside of the workspace`() {
+    newResolver().resolve(OutputLocation.External("sibling+", "a/b/E.java"), localOverride) shouldBe
+      Path("sibling/a/b/E.java")
   }
 
   @Test
