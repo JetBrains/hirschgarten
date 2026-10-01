@@ -26,6 +26,8 @@ import org.jetbrains.bazel.workspacemodel.entities.PackageMarkerEntity
 import org.jetbrains.bazel.workspacemodel.entities.PackageMarkerEntityBuilder
 import org.jetbrains.bazel.workspacemodel.entities.packageMarkerEntities
 import java.nio.file.Path
+import kotlin.io.path.extension
+import kotlin.io.path.name
 
 /**
  * Adds [PackageMarkerEntity] instances for dummy modules so the workspace model can attribute
@@ -37,14 +39,18 @@ import java.nio.file.Path
  *
  * The directory tree is read through the VFS. A symlink, an excluded directory, a `.idea` directory,
  * and a directory that already has a marker prune their whole subtree.
+ *
+ * @param sourceRoots The source roots with package prefixes from source declarations.
  */
 // RC: replaces `PackageMarkerEntityUpdater`; `alreadyVisitedDirectories` matches the old `alreadyVisitedDirectories` seed
 @ApiStatus.Internal
 class PackageMarkerBuilder(
   alreadyCoveredDirectories: Set<Path>,
   private val excludedDirectories: Set<Path>,
+  sourceRoots: List<SourceRootBuilder.ResolvedSourceRoot>,
 ) {
   private val alreadyVisitedDirectories: MutableSet<Path> = alreadyCoveredDirectories.toMutableSet()
+  private val packagePrefixesByDirectory = collectPackagePrefixes(sourceRoots)
 
   fun write(
     sourceRoot: SourceRootBuilder.ResolvedSourceRoot,
@@ -56,7 +62,7 @@ class PackageMarkerBuilder(
                ?: sourceRoot.sourcePath.refreshAndFindVirtualFileOrDirectory()
                ?: return
     val newEntities = ArrayList<PackageMarkerEntityBuilder>()
-    collect(root, sourceRoot, virtualFileUrlManager, newEntities)
+    collect(root, sourceRoot.packagePrefix, virtualFileUrlManager, newEntities)
     if (newEntities.isEmpty()) {
       return
     }
@@ -68,7 +74,7 @@ class PackageMarkerBuilder(
   @Suppress("UnsafeVfsRecursion")
   private fun collect(
     dir: VirtualFile,
-    sourceRoot: SourceRootBuilder.ResolvedSourceRoot,
+    inheritedPackagePrefix: String,
     virtualFileUrlManager: VirtualFileUrlManager,
     into: MutableList<PackageMarkerEntityBuilder>,
   ) {
@@ -79,20 +85,36 @@ class PackageMarkerBuilder(
     if (path in excludedDirectories || !alreadyVisitedDirectories.add(path)) {
       return
     }
-    val relativePath = sourceRoot.sourcePath.relativize(path)
-    val relativePackagePrefix = relativePath.toString().replace(relativePath.fileSystem.separator, ".")
+    val packagePrefix = packagePrefixesByDirectory[path] ?: inheritedPackagePrefix
     into +=
       PackageMarkerEntity(
         root = dir.toVirtualFileUrl(virtualFileUrlManager),
-        packagePrefix = concatenatePackages(sourceRoot.packagePrefix, relativePackagePrefix),
+        packagePrefix = packagePrefix,
         entitySource = BazelDummyEntitySource,
       )
     for (child in dir.children ?: return) {
-      collect(child, sourceRoot, virtualFileUrlManager, into)
+      collect(child, concatenatePackages(packagePrefix, child.name), virtualFileUrlManager, into)
     }
   }
 
   companion object {
+    private fun collectPackagePrefixes(sourceRoots: List<SourceRootBuilder.ResolvedSourceRoot>): Map<Path, String> = buildMap {
+      for (sourceRoot in sourceRoots) {
+        if (sourceRoot.sourcePath.extension !in Constants.JVM_LANGUAGES_EXTENSIONS) continue
+        var directory = sourceRoot.sourcePath.parent ?: continue
+        var prefix = sourceRoot.packagePrefix
+        while (true) {
+          val previousPrefix = get(directory)
+          if (previousPrefix == null || prefix.isEmpty() || previousPrefix.endsWith(".$prefix")) {
+            put(directory, prefix)
+          }
+          if (prefix.isEmpty() || directory.name != prefix.substringAfterLast('.')) break
+          directory = directory.parent ?: break
+          prefix = prefix.substringBeforeLast('.', "")
+        }
+      }
+    }
+
     // reads excluded directories from the `BazelProjectDirectoriesEntity` already in the storage.
     fun excludedDirectoriesFrom(projectRootDir: Path, dotIdeaPath: Path?, storage: MutableEntityStorage): Set<Path> {
       val excludedDirectoriesFromEntities = storage.entities<BazelProjectDirectoriesEntity>()

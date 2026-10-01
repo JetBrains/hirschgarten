@@ -105,6 +105,7 @@
   </extensions>
 
   <extensions defaultExtensionNs="com.intellij">
+    <projectViewNodeDecorator implementation="org.jetbrains.bazel.java.ui.projectTree.BazelJavaPackageNodeDecorator" order="first"/>
     <programRunner implementation="org.jetbrains.bazel.jvm.run.BazelJvmDebugRunner"/>
     <stepsBeforeRunProvider implementation="org.jetbrains.bazel.jvm.run.ScriptPathBeforeRunTaskProvider"/>
     <stepsBeforeRunProvider implementation="org.jetbrains.bazel.jvm.run.KotlinCoroutineLibraryFinderBeforeRunTaskProvider"/>

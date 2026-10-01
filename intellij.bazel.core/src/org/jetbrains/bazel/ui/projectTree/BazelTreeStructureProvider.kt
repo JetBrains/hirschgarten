@@ -12,13 +12,17 @@ import com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode
 import com.intellij.ide.projectView.impl.nodes.PsiFileNode
 import com.intellij.ide.projectView.impl.nodes.PsiFileSystemItemFilter
 import com.intellij.ide.util.treeView.AbstractTreeNode
+import com.intellij.openapi.fileTypes.FileTypeRegistry
 import com.intellij.openapi.module.ModuleManager
+import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.vfs.VfsUtilCore
 import com.intellij.psi.PsiDirectory
 import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiFileSystemItem
 import com.intellij.psi.PsiManager
 import com.intellij.util.containers.addIfNotNull
+import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.config.isBazelProject
 import org.jetbrains.bazel.config.rootDir
@@ -26,7 +30,8 @@ import org.jetbrains.bazel.ui.projectTree.BazelTreeNodeType.EXCLUDED
 import org.jetbrains.bazel.ui.projectTree.BazelTreeNodeType.ROOT
 import org.jetbrains.bazel.ui.projectTree.BazelTreeNodeType.UNIMPORTED
 
-private class BazelTreeStructureProvider : TreeStructureProvider {
+@ApiStatus.Internal
+class BazelTreeStructureProvider : TreeStructureProvider {
   // We want to get rid of all the module (group) nodes from the project view tree;
   // in rare cases with complicated project (modules) structure IJ
   // doesn't know how to render the project tree,
@@ -98,6 +103,16 @@ private class BazelDirectoryNode(
 
   override fun shouldShowModuleName(): Boolean = false
 
+  override fun updateImpl(data: PresentationData) {
+    super.updateImpl(data)
+    if (!settings.isFlattenPackages && settings.isHideEmptyMiddlePackages) {
+      val parentDirectory = parent?.value as? PsiDirectory ?: return
+      val name = VfsUtilCore.getRelativePath(value.virtualFile, parentDirectory.virtualFile, '.') ?: return
+      data.clearText()
+      data.presentableText = name
+    }
+  }
+
   private fun PsiDirectory.calculateCustomChildrenNodes(project: Project, settings: ViewSettings?): Collection<AbstractTreeNode<*>>? =
     if (project.shouldNotCalculateCustomNodes()) {
       null
@@ -124,7 +139,49 @@ private class BazelDirectoryNode(
   override fun getChildrenImpl(): Collection<AbstractTreeNode<*>?>? {
     val virtualFile = virtualFile ?: return null
     val directory = PsiManager.getInstance(project).findDirectory(virtualFile) ?: return null
-    return directory.calculateCustomChildrenNodes(project, settings) ?: super.getChildrenImpl()
+    directory.calculateCustomChildrenNodes(project, settings)?.let { return it }
+
+    val helper = BazelProjectViewDirectoryHelper(project)
+    val children = helper.getDirectoryChildren(directory, settings, true, filter)
+    if (!settings.isFlattenPackages) {
+      if (settings.isHideEmptyMiddlePackages && !helper.skipDirectory(directory)) {
+        return children.map { child ->
+          if (child !is PsiDirectoryNode) return@map child
+          var childDirectory = child.value
+          while (!helper.isSourceRoot(childDirectory) && helper.isEmptyMiddleDirectory(childDirectory, true, filter)) {
+            ProgressManager.checkCanceled()
+            childDirectory = childDirectory.subdirectories.single {
+              !FileTypeRegistry.getInstance().isFileIgnored(it.virtualFile) && filter?.shouldShow(it) != false
+            }
+          }
+          BazelDirectoryNode(project, childDirectory, settings, filter)
+        }
+      }
+      return children
+    }
+
+    if (helper.skipDirectory(directory)) {
+      return children
+    }
+    val parentDirectory = directory.parentDirectory
+    if (parentDirectory != null && !helper.skipDirectory(parentDirectory)) {
+      return children
+    }
+
+    val result = children.filterTo(mutableListOf()) { it !is PsiDirectoryNode || helper.skipDirectory(it.value) }
+    val directories = ArrayDeque<PsiDirectory>()
+    directories.addAll(directory.subdirectories)
+    while (directories.isNotEmpty()) {
+      ProgressManager.checkCanceled()
+      val subdirectory = directories.removeFirst()
+      if (helper.skipDirectory(subdirectory) || filter?.shouldShow(subdirectory) == false) {
+        continue
+      } else if (!settings.isHideEmptyMiddlePackages || !helper.isEmptyMiddleDirectory(subdirectory, false, filter)) {
+        result.add(BazelDirectoryNode(project, subdirectory, settings, filter))
+      }
+      directories.addAll(subdirectory.subdirectories)
+    }
+    return result
   }
 
   override fun getTypeSortWeight(sortByType: Boolean): Int = BazelTreeStructureOrder.ROOT.weight

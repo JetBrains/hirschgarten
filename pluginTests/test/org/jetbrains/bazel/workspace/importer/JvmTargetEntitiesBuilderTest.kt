@@ -43,12 +43,14 @@ import org.jetbrains.bazel.workspace.model.test.framework.createTestBuildTarget
 import org.jetbrains.bazel.workspace.model.test.framework.resolveTestLocation
 import org.jetbrains.bazel.workspace.model.test.framework.testLocations
 import org.jetbrains.bazel.workspacemodel.entities.BazelProjectEntitySource
+import org.jetbrains.bazel.workspacemodel.entities.PackageMarkerEntity
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.LibraryItem
 import org.jetbrains.bsp.protocol.id
 import org.junit.jupiter.api.Test
 import java.nio.file.Files
 import kotlin.io.path.Path
+import kotlin.io.path.createDirectories
 import kotlin.io.path.writeText
 
 private val FOO_BAR: Label = Label.parse("//foo:bar")
@@ -209,6 +211,30 @@ internal class JvmTargetEntitiesBuilderTest : WorkspaceModelBaseTest() {
   }
 
   private fun Label.formatAsModuleNameTest(): String = this.formatAsModuleName(RepoMappingDisabled)
+
+  @Test
+  fun `package markers follow nested source declarations`(): Unit = timeoutRunBlocking {
+    val sourceRoot = projectBasePath.resolve("src/mod-impl/src").createDirectories()
+    val rootSource = sourceRoot.resolve("ModImpl.java").apply { writeText("package com.example.mod.impl; class ModImpl {}") }
+    val utilDirectory = sourceRoot.resolve("com/example/mod/util").createDirectories()
+    val utilSource = utilDirectory.resolve("Util.kt").apply { writeText("package com.example.mod.util\nobject Util") }
+    sourceRoot.resolve("com/example/mod/somethingelse").createDirectories().resolve("Something.kt")
+      .writeText("package com.example.mod.somethingelse\nobject Something")
+    val target = createTestBuildTarget(
+      id = Label.parse("//src/mod-impl:mod-impl"),
+      kind = TargetKind(kind = "kt_jvm_library", ruleType = RuleType.LIBRARY, languageClasses = setOf(JavaLanguageClass.KOTLIN)),
+      sources = listOf(rootSource, utilSource),
+      baseDirectory = sourceRoot.parent,
+      data = listOf(JvmBuildTarget()),
+    )
+
+    runImport(targets = listOf(target))
+
+    val markers = loadedEntries(PackageMarkerEntity::class.java).associate { it.root.url to it.packagePrefix }
+    markers[sourceRoot.toVirtualFileUrl(virtualFileUrlManager).url] shouldBe ""
+    markers[sourceRoot.resolve("com/example/mod").toVirtualFileUrl(virtualFileUrlManager).url] shouldBe "com.example.mod"
+    markers[utilDirectory.toVirtualFileUrl(virtualFileUrlManager).url] shouldBe "com.example.mod.util"
+  }
 
   @Test
   fun `disambiguates module names for a label imported under multiple configurations`(): Unit = timeoutRunBlocking {

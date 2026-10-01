@@ -174,11 +174,14 @@ class JvmTargetEntitiesBuilder(private val ctx: ImportContext) {
 
     // collect every directory already covered by a real (non-dummy) source root, so dummy package markers
     // don't re-walk them. matches PackageMarkerEntityUpdater's `alreadyVisitedDirectories` initialization.
-    val coveredDirs = plans
-      .flatMap { (_, plan) -> plan.mainSourceRoots.map { it.sourcePath } }
-      .toSet()
+    val sourceRoots = plans.flatMap { (_, plan) -> plan.mainSourceRoots }
+    val coveredDirs = sourceRoots.map { it.sourcePath }.toSet()
     val packageMarkerBuilder =
-      PackageMarkerBuilder(coveredDirs, PackageMarkerBuilder.excludedDirectoriesFrom(ctx.projectBasePath, ctx.dotIdeaPath, storage))
+      PackageMarkerBuilder(
+        coveredDirs,
+        PackageMarkerBuilder.excludedDirectoriesFrom(ctx.projectBasePath, ctx.dotIdeaPath, storage),
+        sourceRoots,
+      )
 
     // phase 2: write entities sequentially.
     // `writtenNames` preserves the original `distinctBy { it.getModuleName() }` semantics: if two targets

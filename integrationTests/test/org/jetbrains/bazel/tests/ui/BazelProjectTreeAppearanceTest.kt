@@ -31,7 +31,6 @@ private val BAZEL_PROJECT_TREE_APPEARANCE_PROJECT = simpleBazelProject(
   },
 )
 
-@Disabled
 class BazelProjectTreeAppearanceTest : IdeStarterBaseProjectTest() {
 
   @Test
