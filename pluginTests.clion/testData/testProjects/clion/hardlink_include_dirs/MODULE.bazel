@@ -1,7 +1,15 @@
 module(name = "external_ccinfo_includes_repro")
 
-# 0.2.25 gives unknown compiler kind errors in ide
-bazel_dep(name = "rules_cc", version = "0.2.22")
+bazel_dep(name = "rules_cc", version = "0.2.25")
+
+# the project is built, so it needs a working toolchain
+bazel_dep(name = "toolchains_llvm", version = "1.10.0")
+
+llvm = use_extension("@toolchains_llvm//toolchain/extensions:llvm.bzl", "llvm")
+llvm.toolchain(llvm_version = "19.1.0")
+use_repo(llvm, "llvm_toolchain")
+
+register_toolchains("@llvm_toolchain//:all")
 
 fakelib = use_repo_rule("//third_party:fakelib.bzl", "fakelib")
 
