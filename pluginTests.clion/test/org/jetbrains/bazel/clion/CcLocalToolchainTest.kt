@@ -9,6 +9,7 @@ import org.assertj.core.api.Assertions.fail
 import org.jetbrains.bazel.assertions.assertNotNull
 import org.jetbrains.bazel.assertions.assertThat
 import org.jetbrains.bazel.assertions.assertVfsLoads
+import org.jetbrains.bazel.assertions.findCompiler
 import org.jetbrains.bazel.assertions.findCompilerSetting
 import org.jetbrains.bazel.assertions.findTarget
 import org.jetbrains.bazel.assertions.findToolchain
@@ -29,16 +30,16 @@ import org.junit.jupiter.api.condition.OS
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 abstract class CcLocalToolchainTest(override val bazelVersion: String) : BazelVersionedTest {
 
-  @DisabledOnOs(OS.WINDOWS)
+  @EnabledOnOs(OS.LINUX)
   class Bazel7 : CcLocalToolchainTest(BazelVersions.BAZEL_7)
 
-  @DisabledOnOs(OS.WINDOWS)
+  @EnabledOnOs(OS.LINUX)
   class Bazel8 : CcLocalToolchainTest(BazelVersions.BAZEL_8)
 
   @DisabledOnOs(OS.WINDOWS)
   class Bazel9 : CcLocalToolchainTest(BazelVersions.BAZEL_9)
 
-  private val project by clionBazelProjectFixture("clion/simple", bazelVersion = bazelVersion)
+  private val project by clionBazelProjectFixture("clion/simple", buildProject = true, bazelVersion = bazelVersion)
 
   @Test
   fun testVfsRoots() = project.assertVfsLoads()
@@ -48,17 +49,11 @@ abstract class CcLocalToolchainTest(override val bazelVersion: String) : BazelVe
     val compilerSettingsC = project.findCompilerSetting("main/util.c", language = CLanguageKind.C)
     val compilerSettingsCPP = project.findCompilerSetting("main/main.cc", language = CLanguageKind.CPP)
 
-    val expectedCompiler = when {
-      SystemInfoRt.isLinux -> OCCompilerId.GCC
-      SystemInfoRt.isMac -> OCCompilerId.APPLE_CLANG
-      else -> fail("unsupported platform")
-    }
-
     assertThat(compilerSettingsCPP).hasCompilerKindWrapper()
     assertThat(compilerSettingsC).hasCompilerKindWrapper()
 
     assertThat(compilerSettingsCPP)
-      .hasCompiler(expectedCompiler)
+      .hasCompiler(platformDefaultCompiler())
       .containsHeaders("iostream", "stdio.h")
       .containsSwitches("-Wall", "-DCOPTS", "-DCXXOPTS")
       .doesNotContainSwitches("-DCONLYOPTS")
@@ -66,7 +61,7 @@ abstract class CcLocalToolchainTest(override val bazelVersion: String) : BazelVe
       .hasDefine("SPACE_DEFINE", "1 2 3")
 
     assertThat(compilerSettingsC)
-      .hasCompiler(expectedCompiler)
+      .hasCompiler(platformDefaultCompiler())
       .containsHeaders("stdio.h")
       .containsSwitches("-Wall", "-DCOPTS", "-DCONLYOPTS")
       .doesNotContainSwitches("-DCXXOPTS")
@@ -81,13 +76,13 @@ abstract class CcLocalToolchainTest(override val bazelVersion: String) : BazelVe
     val compilerSettingsCPP = project.findCompilerSetting("main/util.c", language = CLanguageKind.CPP)
 
     assertThat(compilerSettingsCPP)
-      .hasCompiler(OCCompilerId.GCC)
+      .hasCompiler(platformDefaultCompiler())
       .containsSwitches("-DCXXOPTS")
       .doesNotContainSwitches("-DCONLYOPTS", "-DCOPTS")
       .hasDefine("SIMPLE_DEFINE", "42")
 
     assertThat(compilerSettingsC)
-      .hasCompiler(OCCompilerId.GCC)
+      .hasCompiler(platformDefaultCompiler())
       .containsSwitches("-DCONLYOPTS")
       .doesNotContainSwitches("-DCXXOPTS", "-DCOPTS")
       .hasDefine("SIMPLE_DEFINE", "42")
@@ -100,11 +95,24 @@ abstract class CcLocalToolchainTest(override val bazelVersion: String) : BazelVe
     val target = project.findTarget("//main:main")
 
     val toolchain = project.findToolchain(target)
-      .single()
+      .assertNotNull()
       .extractData<CcToolchainBuildTarget>()
       .assertNotNull()
 
     assertThat(toolchain.xcodeInfo?.xcodeVersion).isNotNull().isNotBlank()
     assertThat(toolchain.xcodeInfo?.macosSdkVersion).isNotNull().isNotBlank()
+
+    val compiler = project.findCompiler(target).assertNotNull()
+
+    assertThat(compiler.environment).containsKey("DEVELOPER_DIR")
+    assertThat(compiler.environment).containsKey("SDKROOT")
+  }
+}
+
+private fun platformDefaultCompiler(): OCCompilerId {
+  return when {
+    SystemInfoRt.isLinux -> OCCompilerId.GCC
+    SystemInfoRt.isMac -> OCCompilerId.APPLE_CLANG
+    else -> fail("unsupported platform")
   }
 }
