@@ -10,6 +10,7 @@ import org.jetbrains.bazel.assertions.findResolveConfiguration
 import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.fixtures.CcTestApplication
 import org.jetbrains.bazel.fixtures.clionBazelProjectFixture
+import org.jetbrains.bazel.test.framework.BazelVersions
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 import java.nio.file.Files
@@ -18,7 +19,7 @@ import java.nio.file.Files
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class CcNewFileTest {
 
-  private val project by clionBazelProjectFixture("clion/simple")
+  private val project by clionBazelProjectFixture("clion/simple", bazelVersion = BazelVersions.BAZEL_9)
 
   @Test
   fun testFileInPackageDirectory() = assertConfiguration("lib/new.cc", expectedFrom = "lib/lib.cc")
