@@ -20,10 +20,12 @@ import com.intellij.xdebugger.XDebugSession
 import com.intellij.xdebugger.XDebuggerManager
 import com.intellij.xdebugger.impl.XDebugSessionImpl
 import org.jdom.Element
+import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.run.config.BazelRunConfiguration
 import java.util.concurrent.atomic.AtomicReference
 
-internal class BazelJvmDebugRunner : GenericProgramRunner<BazelDebugRunnerSetting>() {
+@ApiStatus.Internal
+open class BazelJvmDebugRunner : GenericProgramRunner<BazelDebugRunnerSetting>() {
   override fun getRunnerId(): String = "BazelJvmDebugRunner"
 
   override fun canRun(executorId: String, profile: RunProfile): Boolean {
@@ -64,7 +66,8 @@ internal class BazelJvmDebugRunner : GenericProgramRunner<BazelDebugRunnerSettin
   }
 }
 
-internal class BazelDebugRunnerSetting : RunnerSettings {
+@ApiStatus.Internal
+class BazelDebugRunnerSetting : RunnerSettings {
   override fun readExternal(element: Element?) {
     // empty settings, don't do anything
   }

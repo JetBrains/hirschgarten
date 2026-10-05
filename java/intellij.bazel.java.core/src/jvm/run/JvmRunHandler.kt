@@ -27,7 +27,8 @@ import org.jetbrains.bazel.sync.isJvmTarget
 import org.jetbrains.bazel.taskEvents.BazelTaskListener
 import org.jetbrains.bsp.protocol.BuildTarget
 
-internal val COROUTINE_JVM_FLAGS_KEY = Key.create<Ref<List<String>>>("bazel.coroutine.jvm.flags")
+@ApiStatus.Internal
+val COROUTINE_JVM_FLAGS_KEY: Key<Ref<List<String>>> = Key.create("bazel.coroutine.jvm.flags")
 
 @ApiStatus.Internal
 class JvmRunHandler(private val configuration: BazelRunConfiguration) : BazelRunHandler {
@@ -110,28 +111,43 @@ internal class RunScriptPathCommandLineState(
 }
 
 internal fun getAdditionalJvmRunParameters(environment: ExecutionEnvironment, debugPort: Int): List<String> = buildList {
-  val configuration = environment.runProfile as? BazelRunConfiguration ?: return@buildList
+  if (environment.runProfile !is BazelRunConfiguration) return@buildList
 
   if (environment.executor is DefaultDebugExecutor) {
     // https://bazel.build/reference/command-line-reference#flag--java_debug
     // https://github.com/bazelbuild/rules_java/blob/747bddd6091a624c54a42c1ac20308190c1ad849/java/bazel/rules/java_stub_template.txt#L23
     this += "--wrapper_script_flag=--debug=$debugPort"
-    val debugParameters = JavaParameters()
-    debugParameters.vmParametersList.addAll(retrieveKotlinCoroutineParams(environment, environment.project))
-    // async stacks and the log-capture console decoration require the debugger agent inside the debuggee
-    addDebuggerAgent(debugParameters, environment.project, false)
-    this += debugParameters.vmParametersList.parameters.map { wrapVmOptionAsArg(it) }
   }
+  this += getJvmDebuggerAgentVmOptions(environment).map { wrapVmOptionAsArg(it) }
+  this += getJvmRunExtensionVmOptions(environment).map { wrapVmOptionAsArg(it) }
+}
 
+/**
+ * The VM options of the coroutine agent and the debugger agent when [environment] debugs, else an empty list.
+ * The JDWP agent option is not in the list.
+ */
+@ApiStatus.Internal
+fun getJvmDebuggerAgentVmOptions(environment: ExecutionEnvironment): List<String> {
+  if (environment.executor !is DefaultDebugExecutor) return emptyList()
+  val debugParameters = JavaParameters()
+  debugParameters.vmParametersList.addAll(retrieveKotlinCoroutineParams(environment, environment.project))
+  // async stacks and the log-capture console decoration require the debugger agent inside the debuggee
+  addDebuggerAgent(debugParameters, environment.project, false)
+  return debugParameters.vmParametersList.parameters
+}
+
+/** The VM options that the run configuration extensions add, for example for the profiler or the coverage. */
+@ApiStatus.Internal
+fun getJvmRunExtensionVmOptions(environment: ExecutionEnvironment): List<String> {
+  val configuration = environment.runProfile as? BazelRunConfiguration ?: return emptyList()
   val profilerParameters = JavaParameters()
-  // Add Java options for, e.g., Profiler or Coverage
   JavaRunConfigurationExtensionManager.instance.updateJavaParameters(
     configuration,
     profilerParameters,
     environment.runnerSettings,
     environment.executor,
   )
-  this += profilerParameters.vmParametersList.parameters.map { wrapVmOptionAsArg(it) }
+  return profilerParameters.vmParametersList.parameters
 }
 
 private fun wrapVmOptionAsArg(vmOption: String): String {
@@ -139,7 +155,8 @@ private fun wrapVmOptionAsArg(vmOption: String): String {
   return "--wrapper_script_flag=--jvm_flag=$vmOption"
 }
 
-internal fun attachJvmRunExtensions(environment: ExecutionEnvironment, processHandler: OSProcessHandler) {
+@ApiStatus.Internal
+fun attachJvmRunExtensions(environment: ExecutionEnvironment, processHandler: OSProcessHandler) {
   val configuration = environment.runProfile as? BazelRunConfiguration ?: return
   JavaRunConfigurationExtensionManager.instance.attachExtensionsToProcess(configuration, processHandler, environment.runnerSettings)
 }

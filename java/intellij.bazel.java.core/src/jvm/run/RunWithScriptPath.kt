@@ -13,6 +13,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runInterruptible
 import kotlinx.coroutines.withTimeoutOrNull
+import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.run.BazelProcessHandler
 import org.jetbrains.bazel.server.bep.TestXmlParser
 import org.jetbrains.bazel.sync.environment.projectCtx
@@ -60,6 +61,25 @@ internal suspend fun runWithScriptPath(
     commandLine.environment[BAZEL_TEST_FILTER_ENV] = testFilter
   }
 
+  runJvmCommandLine(commandLine, pidDeferred, handler, processHandlerCreated)
+  runInterruptible(Dispatchers.IO) {
+    findXmlOutputAndReport(taskId, scriptPath, project)
+  }
+}
+
+/**
+ * Starts [commandLine] and copies its output to [handler].
+ * When [handler] is destroyed, the process is destroyed too.
+ * [pidDeferred] gets the pid when the JVM can take an attach, or after 5 seconds.
+ * The function returns when the process ends.
+ */
+@ApiStatus.Internal
+suspend fun runJvmCommandLine(
+  commandLine: GeneralCommandLine,
+  pidDeferred: CompletableDeferred<Long?>,
+  handler: BazelProcessHandler,
+  processHandlerCreated: suspend (OSProcessHandler) -> Unit,
+) {
   val scriptHandler = OSProcessHandler(commandLine)
   scriptHandler.addProcessListener(
     object : ProcessListener {
@@ -101,7 +121,6 @@ internal suspend fun runWithScriptPath(
   runInterruptible(Dispatchers.IO) {
     pidDeferred.complete(pid)
     scriptHandler.waitFor()
-    findXmlOutputAndReport(taskId, scriptPath, project)
   }
 }
 
