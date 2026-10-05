@@ -70,6 +70,7 @@
     <module name="intellij.bazel.protoedit"/>
     <module name="intellij.bazel.remoteDevelopment"/>
     <module name="intellij.bazel.java.profiler"/>
+    <module name="intellij.bazel.sh"/>
 
     <!-- library wrappers -->
     <module name="intellij.libraries.bazel.aspect.sdk" loading="required"/>

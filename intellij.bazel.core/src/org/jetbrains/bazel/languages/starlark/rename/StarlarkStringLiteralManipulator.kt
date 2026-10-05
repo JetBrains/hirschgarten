@@ -3,7 +3,7 @@ package org.jetbrains.bazel.languages.starlark.rename
 import com.intellij.openapi.util.TextRange
 import com.intellij.psi.AbstractElementManipulator
 import com.intellij.psi.impl.source.tree.LeafElement
-import org.jetbrains.bazel.languages.starlark.injection.StarlarkStringLiteralEscaper
+import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkStringLiteralEscaper
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkStringLiteralExpression
 
 /**

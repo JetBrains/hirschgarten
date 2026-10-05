@@ -1,8 +1,7 @@
-package org.jetbrains.bazel.languages.starlark.injection
+package org.jetbrains.bazel.languages.starlark.psi.expressions
 
 import com.intellij.openapi.util.TextRange
 import com.intellij.psi.LiteralTextEscaper
-import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkStringLiteralExpression
 import org.jetbrains.bazel.languages.starlark.utils.StarlarkQuote
 
 /**
@@ -144,16 +143,21 @@ internal class StarlarkStringLiteralEscaper(host: StarlarkStringLiteralExpressio
       if (content.endsWith('\\') || content.endsWith(quoteChar)) return false
       if (!quote.isTriple && (content.contains('\n') || content.contains('\r'))) return false
       var index = 0
-      var quoteRun = 0
+      var consecutiveQuotes = 0
       while (index < content.length) {
         val char = content[index]
-        if (char == '\\' && index + 1 < content.length && content[index + 1] == quoteChar) {
+        if (char == '\\' && index + 1 < content.length && content[index + 1] == '\\') {  // The first backslash escapes the second
           index += 2
-          quoteRun = 0
+          consecutiveQuotes = 0
           continue
         }
-        quoteRun = if (char == quoteChar) quoteRun + 1 else 0
-        if (quoteRun == quote.quote.length) return false
+        if (char == '\\' && index + 1 < content.length && content[index + 1] == quoteChar) {  // The quote is escaped
+          index += 2
+          consecutiveQuotes = 0
+          continue
+        }
+        consecutiveQuotes = if (char == quoteChar) consecutiveQuotes + 1 else 0
+        if (consecutiveQuotes == quote.quote.length) return false
         index++
       }
       return true
