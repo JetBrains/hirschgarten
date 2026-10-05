@@ -57,9 +57,6 @@ internal fun clionBazelProjectFixture(
 
   assertLastSyncSucceeded(project)
 
-  LOG.info("Calling after project opened (engine)")
-  LanguageEngine.INSTANCE.afterProjectOpened(project)
-
   LOG.info("Waiting for symbols to load")
   LanguageEngine.INSTANCE.waitForSymbols(project)
 
