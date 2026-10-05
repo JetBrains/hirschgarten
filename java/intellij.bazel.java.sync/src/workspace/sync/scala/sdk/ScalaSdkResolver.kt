@@ -1,16 +1,19 @@
 package org.jetbrains.bazel.scala.sdk
 
 import com.google.devtools.intellij.ideinfo.IntellijIdeInfo.TargetIdeInfo
+import com.intellij.openapi.util.Version
+import org.jetbrains.annotations.ApiStatus
 import java.util.regex.Pattern
 
-internal object ScalaSdkResolver {
+@ApiStatus.Internal
+object ScalaSdkResolver {
   fun resolveScalaVersion(targetInfo: TargetIdeInfo): String? {
     if (!targetInfo.hasScalaTargetInfo()) {
       return null
     }
     return targetInfo.scalaTargetInfo.compilerClasspathList
       .mapNotNull { extractVersion(it.relativePath.substringAfterLast('/')) }
-      .maxOfOrNull { it }
+      .maxByOrNull { Version.parseVersion(it) ?: Version(0, 0, 0) }
   }
 
   private fun extractVersion(fileName: String): String? {
@@ -19,5 +22,5 @@ internal object ScalaSdkResolver {
   }
 
   private val VERSION_PATTERN =
-    Pattern.compile("(?:processed_)?scala3?-(?:library|compiler|reflect)(?:_3)?-([.\\d]+)\\.jar")
+    Pattern.compile("(?:processed_)?scala3?-(?:library|compiler|reflect)(?:_3)?-([.\\d]+).*?\\.jar")
 }
