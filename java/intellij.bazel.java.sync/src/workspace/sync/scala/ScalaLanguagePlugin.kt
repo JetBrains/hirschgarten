@@ -34,14 +34,13 @@ class ScalaLanguagePlugin : LanguagePlugin {
     if (!target.hasScalaTargetInfo()) {
       return emptyList()
     }
-    val scalaSdkResolver = ScalaSdkResolver(server.bazelPathsResolver)
-    val sdk = scalaSdkResolver.resolveSdk(target, repoMapping.getLocalRepositories()) ?: return emptyList()
+    val scalaVersion = ScalaSdkResolver.resolveScalaVersion(target) ?: return emptyList()
     return listOf(
       ScalaBuildTarget(
-        scalaVersion = sdk.scalaVersion,
+        scalaVersion = scalaVersion,
         sdkJars = SourceFileCollectionBuilder.build(
           server.outFileHardLinks.createOutputFileHardLinks(
-            sdk.sdkJars.map { uri -> Path.of(uri) }
+            server.bazelPathsResolver.resolvePaths(target.scalaTargetInfo.compilerClasspathList, repoMapping.getLocalRepositories())
           )
         ),
         scalacOptions = target.scalaTargetInfo.scalacOptsList.toList(),
