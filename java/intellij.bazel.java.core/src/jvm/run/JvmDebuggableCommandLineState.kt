@@ -7,10 +7,12 @@ import com.intellij.execution.configurations.RemoteConnection
 import com.intellij.execution.configurations.RunConfigurationBase
 import com.intellij.execution.runners.ExecutionEnvironment
 import com.intellij.execution.ui.ConsoleView
+import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.run.BazelCommandLineStateBase
 import org.jetbrains.bazel.run.config.BazelRunConfiguration
 
-internal abstract class JvmDebuggableCommandLineState(
+@ApiStatus.Internal
+abstract class JvmDebuggableCommandLineState(
   environment: ExecutionEnvironment,
   private val port: Int,
   private val configuration: BazelRunConfiguration,

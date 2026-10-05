@@ -13,6 +13,7 @@
     <module name="intellij.java.execution.impl"/>
     <module name="intellij.java.impl"/>
     <module name="intellij.java.psi"/>
+    <module name="intellij.libraries.gson"/>
     <module name="intellij.libraries.protobuf"/>
     <module name="intellij.platform.core"/>
     <module name="intellij.platform.core.ui"/>
@@ -41,6 +42,10 @@
       implementation="org.jetbrains.bazel.intellij.IntellijPluginRunHandlerProvider"
       order="before JvmRunHandlerProvider"
     />
+    <runHandlerProvider
+      implementation="org.jetbrains.bazel.intellij.IntellijDevLaunchRunHandlerProvider"
+      order="before JvmRunHandlerProvider"
+    />
     <targetKindProvider implementation="org.jetbrains.bazel.intellij.IntelliJMonorepoBazelRules"/>
     <jvmTestRunnerExtension implementation="org.jetbrains.bazel.intellij.JetBrainsTestRunnerExtension"/>
     <jvmTestRerunExtension implementation="org.jetbrains.bazel.intellij.JetBrainsTestRerunExtension"/>
@@ -54,5 +59,6 @@
     <stepsBeforeRunProvider implementation="org.jetbrains.bazel.intellij.BuildPluginBeforeRunTaskProvider"/>
     <stepsBeforeRunProvider implementation="org.jetbrains.bazel.intellij.CopyPluginToSandboxBeforeRunTaskProvider"/>
     <programRunner implementation="org.jetbrains.bazel.intellij.IntellijPluginDebuggerRunner"/>
+    <programRunner implementation="org.jetbrains.bazel.intellij.IntellijDevLaunchDebugRunner"/>
   </extensions>
 </idea-plugin>

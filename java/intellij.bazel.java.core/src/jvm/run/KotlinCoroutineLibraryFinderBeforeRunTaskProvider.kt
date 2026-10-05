@@ -19,6 +19,7 @@ import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.platform.ide.progress.withBackgroundProgress
 import com.intellij.util.PathsList
 import com.intellij.util.text.SemVer
+import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.run.config.BazelRunConfiguration
@@ -32,7 +33,8 @@ private const val PROVIDER_NAME = "KotlinCoroutineLibraryFinderBeforeRunTaskProv
 
 private val PROVIDER_ID = Key.create<KotlinCoroutineLibraryFinderBeforeRunTaskProvider.Task>(PROVIDER_NAME)
 
-internal class KotlinCoroutineLibraryFinderBeforeRunTaskProvider :
+@ApiStatus.Internal
+class KotlinCoroutineLibraryFinderBeforeRunTaskProvider :
   BeforeRunTaskProvider<KotlinCoroutineLibraryFinderBeforeRunTaskProvider.Task>() {
   override fun getId(): Key<Task> = PROVIDER_ID
 

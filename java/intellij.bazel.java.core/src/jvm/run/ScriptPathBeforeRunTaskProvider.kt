@@ -10,6 +10,7 @@ import com.intellij.openapi.util.Key
 import com.intellij.openapi.util.Ref
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.runBlocking
+import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.commons.BazelStatus
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.jvm.run.ScriptPathBeforeRunTaskProvider.Task
@@ -22,7 +23,8 @@ import org.jetbrains.bazel.server.tasks.ScriptPathBuildTargetTask
 import org.jetbrains.bazel.server.tasks.runBuildTargetTask
 import java.nio.file.Path
 
-internal val SCRIPT_PATH_KEY: Key<Ref<Path>> = Key.create("bazel.jvm.script.path")
+@ApiStatus.Internal
+val SCRIPT_PATH_KEY: Key<Ref<Path>> = Key.create("bazel.jvm.script.path")
 
 private const val PROVIDER_NAME = "BuildScriptBeforeRunTaskProvider"
 
@@ -38,7 +40,8 @@ private val PROVIDER_ID = Key.create<Task>(PROVIDER_NAME)
  * - Hotswap while debugging a test (because the lock is released)
  * - Because debugger is attached only once the ready script is run, it doesn't have to wait for the build (and possibly timeout)
  */
-internal class ScriptPathBeforeRunTaskProvider : BeforeRunTaskProvider<Task>() {
+@ApiStatus.Internal
+class ScriptPathBeforeRunTaskProvider : BeforeRunTaskProvider<Task>() {
   fun createTaskInstance(): Task = Task()
 
   override fun createTask(runConfiguration: RunConfiguration): Task? {
