@@ -19,7 +19,6 @@ object BazelFeatureFlags {
   @VisibleForTesting
   const val FAST_BUILD_ENABLED = "bazel.enable.jvm.fastbuild"
   const val AUTO_OPEN_PROJECT_IF_PRESENT = "bazel.project.auto.open.if.present"
-  private const val EXCLUDE_SYMLINKS_FROM_FILE_WATCHER_VIA_REFLECTION = "bazel.exclude.symlinks.from.file.watcher.via.reflection"
 
   @VisibleForTesting
   const val SYNTHETIC_RUN_ENABLE = "bazel.run.synthetic.enable"
@@ -66,9 +65,6 @@ object BazelFeatureFlags {
 
   val autoOpenProjectIfPresent: Boolean
     get() = isEnabled(AUTO_OPEN_PROJECT_IF_PRESENT)
-
-  val excludeSymlinksFromFileWatcherViaReflection: Boolean
-    get() = isEnabled(EXCLUDE_SYMLINKS_FROM_FILE_WATCHER_VIA_REFLECTION)
 
   val runConfigRunWithBazel: Boolean
     get() = isEnabled(RUN_CONFIG_RUN_WITH_BAZEL)
