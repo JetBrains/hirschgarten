@@ -404,7 +404,7 @@
     <lineIndentProvider
       implementation="org.jetbrains.bazel.languages.starlark.indentation.StarlarkLineIndentProvider"
     />
-    <colorSettingsPage implementation="org.jetbrains.bazel.languages.starlark.highlighting.StarlarkColorSettingsPage"/>
+    <colorSettings implementation="org.jetbrains.bazel.languages.starlark.highlighting.StarlarkColorSettingsPage" displayName="Starlark"/>
     <additionalTextAttributes
       file="colorSchemes/StarlarkDefault.xml"
       scheme="Default"
