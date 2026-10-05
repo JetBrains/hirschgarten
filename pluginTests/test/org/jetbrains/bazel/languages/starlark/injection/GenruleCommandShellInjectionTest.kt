@@ -1,11 +1,10 @@
 package org.jetbrains.bazel.languages.starlark.injection
 
-import com.intellij.lang.Language
 import com.intellij.lang.injection.InjectedLanguageManager
 import com.intellij.psi.PsiFile
 import com.intellij.psi.util.PsiTreeUtil
+import com.intellij.sh.ShLanguage
 import io.kotest.matchers.collections.shouldBeEmpty
-import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
 import org.jetbrains.bazel.languages.starlark.fixtures.StarlarkPsiTestCase
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkStringLiteralExpression
@@ -14,19 +13,12 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
 
-private const val SHELL_SCRIPT_LANGUAGE_ID = "Shell Script"
-
 /**
  * BUILD file contents are written as Kotlin raw strings, which have no escape sequences of their own. Since `"""`
  * cannot appear in a Kotlin raw string, Starlark triple-quoted strings use `'''`.
  */
 @RunWith(JUnit4::class)
 class GenruleCommandShellInjectionTest : StarlarkPsiTestCase() {
-  @Test
-  fun `should have the shell script language available`() {
-    Language.findLanguageByID(SHELL_SCRIPT_LANGUAGE_ID).shouldNotBeNull()
-  }
-
   @Test
   fun `should inject shell script into a triple quoted genrule cmd`() {
     // given
@@ -49,7 +41,7 @@ class GenruleCommandShellInjectionTest : StarlarkPsiTestCase() {
 
     // then
     injected.size shouldBe 1
-    injected.single().language.id shouldBe SHELL_SCRIPT_LANGUAGE_ID
+    injected.single().language shouldBe ShLanguage.INSTANCE
     getUnescapedText(injected.single()) shouldBe "\nset -e\ncat $(location in.txt) > $@\n"
   }
 
@@ -63,7 +55,7 @@ class GenruleCommandShellInjectionTest : StarlarkPsiTestCase() {
 
     // then
     injected.size shouldBe 1
-    injected.single().language.id shouldBe SHELL_SCRIPT_LANGUAGE_ID
+    injected.single().language shouldBe ShLanguage.INSTANCE
     getUnescapedText(injected.single()) shouldBe "echo \"a\\tb\" > $@\n"
   }
 
@@ -93,7 +85,7 @@ class GenruleCommandShellInjectionTest : StarlarkPsiTestCase() {
     for (literal in literals) {
       val injected = injectedFiles(literal)
       injected.size shouldBe 1
-      injected.single().language.id shouldBe SHELL_SCRIPT_LANGUAGE_ID
+      injected.single().language shouldBe ShLanguage.INSTANCE
       getUnescapedText(injected.single()) shouldBe "mkdir -p $(@D)/be && echo a >> $(@D)/be/a && zip -qj $@ $(@D)/be/*"
     }
   }

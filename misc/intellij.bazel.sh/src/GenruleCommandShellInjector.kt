@@ -1,11 +1,9 @@
-package org.jetbrains.bazel.languages.starlark.injection
+package org.jetbrains.bazel.sh
 
-import com.intellij.lang.Language
 import com.intellij.lang.injection.MultiHostInjector
 import com.intellij.lang.injection.MultiHostRegistrar
-import com.intellij.openapi.fileTypes.FileTypeRegistry
-import com.intellij.openapi.fileTypes.LanguageFileType
 import com.intellij.psi.PsiElement
+import com.intellij.sh.ShLanguage
 import org.jetbrains.bazel.languages.starlark.elements.StarlarkElementTypes
 import org.jetbrains.bazel.languages.starlark.elements.StarlarkTokenTypes
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkBinaryExpression
@@ -54,8 +52,7 @@ internal class GenruleCommandShellInjector : MultiHostInjector {
       }
     }
     if (places.isEmpty()) return
-    val shellLanguage = findShellScriptLanguage() ?: return
-    val injection = registrar.startInjecting(shellLanguage)
+    val injection = registrar.startInjecting(ShLanguage.INSTANCE)
     places.forEachIndexed { index, place ->
       val suffix = if (index == places.lastIndex) pendingText.toString() else ""
       injection.addPlace(place.prefix.ifEmpty { null }, suffix.ifEmpty { null }, place.host, place.host.getStringContentsOffset())
@@ -143,21 +140,10 @@ internal class GenruleCommandShellInjector : MultiHostInjector {
     val functionName = call.getCalledFunctionName() ?: return false
     return functionName in GENRULE_FUNCTIONS
   }
-
-  /**
-   * Languages are registered when they are first instantiated, which for the Shell Script language may not have
-   * happened yet. Instantiating its file type also instantiates the language.
-   */
-  private fun findShellScriptLanguage(): Language? =
-    Language.findLanguageByID(SHELL_SCRIPT_LANGUAGE_ID)
-    ?: (FileTypeRegistry.getInstance().findFileTypeByName(SHELL_SCRIPT_LANGUAGE_ID) as? LanguageFileType)?.language
-
-  private companion object {
-    /** Both the language ID and the file type name of the Shell Script plugin. */
-    const val SHELL_SCRIPT_LANGUAGE_ID = "Shell Script"
-    const val MISSING_VALUE = "missing_value"
-    const val JOIN_METHOD = "join"
-    val SHELL_COMMAND_ARGUMENTS = setOf("cmd", "cmd_bash")
-    val GENRULE_FUNCTIONS = setOf("genrule", "native.genrule")
-  }
 }
+
+/** Both the language ID and the file type name of the Shell Script plugin. */
+private const val MISSING_VALUE = "missing_value"
+private const val JOIN_METHOD = "join"
+private val SHELL_COMMAND_ARGUMENTS = setOf("cmd", "cmd_bash")
+private val GENRULE_FUNCTIONS = setOf("genrule", "native.genrule")

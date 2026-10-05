@@ -1,4 +1,4 @@
-package org.jetbrains.bazel.languages.starlark.injection
+package org.jetbrains.bazel.languages.starlark.psi.expressions
 
 import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.util.Computable
@@ -6,7 +6,6 @@ import com.intellij.psi.ElementManipulators
 import com.intellij.psi.util.PsiTreeUtil
 import io.kotest.matchers.shouldBe
 import org.jetbrains.bazel.languages.starlark.fixtures.StarlarkPsiTestCase
-import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkStringLiteralExpression
 import org.jetbrains.bazel.languages.starlark.utils.StarlarkQuote
 import org.junit.Test
 import org.junit.runner.RunWith
