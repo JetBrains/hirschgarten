@@ -417,6 +417,7 @@ def jvm_library(
             "//rules_intellij/intellij_platform_sdk:bytecode_viewer",
             "//rules_intellij/intellij_platform_sdk:junit",
             "//rules_intellij/intellij_platform_sdk:testrunner",
+            "//rules_intellij/intellij_platform_sdk:sh",
         ],
         runtime_deps = [],  # ignore, this is only used for tests which we don't support
         kotlinc_opts = None,  # ignore, we use the options from Kotlin toolchain instead

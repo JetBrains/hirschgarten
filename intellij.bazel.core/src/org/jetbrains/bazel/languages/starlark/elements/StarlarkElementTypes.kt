@@ -3,6 +3,7 @@ package org.jetbrains.bazel.languages.starlark.elements
 import com.intellij.lang.ASTNode
 import com.intellij.psi.PsiElement
 import com.intellij.psi.tree.TokenSet
+import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkBinaryExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkCallExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkConditionalExpression
@@ -56,7 +57,8 @@ import org.jetbrains.bazel.languages.starlark.psi.statements.StarlarkReturnState
 import org.jetbrains.bazel.languages.starlark.psi.statements.StarlarkStatementList
 import org.jetbrains.bazel.languages.starlark.psi.statements.StarlarkStringLoadValue
 
-internal object StarlarkElementTypes {
+@ApiStatus.Internal
+object StarlarkElementTypes {
   val ASSIGNMENT_STATEMENT = StarlarkElementType("ASSIGNMENT_STATEMENT")
   val AUG_ASSIGNMENT_STATEMENT = StarlarkElementType("AUG_ASSIGNMENT_STATEMENT")
   val BREAK_STATEMENT = StarlarkElementType("BREAK_STATEMENT")

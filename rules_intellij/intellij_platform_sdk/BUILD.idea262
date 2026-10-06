@@ -69,6 +69,11 @@ java_import(
 )
 
 java_import(
+    name = "sh",
+    jars = glob(["plugins/sh-plugin/lib/*.jar", "plugins/sh-plugin/lib/modules/*.jar"]),
+)
+
+java_import(
     name = "bundled_plugins",
     jars = glob([
         "plugins/java-i18n/lib/*.jar",

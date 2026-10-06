@@ -1,0 +1,13 @@
+<idea-plugin>
+  <!-- region Generated dependencies - run `Generate Product Layouts` to regenerate -->
+  <dependencies>
+    <module name="intellij.bazel.core"/>
+    <module name="intellij.sh.core"/>
+  </dependencies>
+  <!-- endregion -->
+  <extensions defaultExtensionNs="com.intellij">
+    <multiHostInjector
+      implementation="org.jetbrains.bazel.sh.GenruleCommandShellInjector"
+    />
+  </extensions>
+</idea-plugin>

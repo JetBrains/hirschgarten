@@ -176,6 +176,19 @@ java_library(
     ),
 )
 
+java_library(
+    name = "sh",
+    neverlink = 1,
+    visibility = [
+        "//visibility:public",
+    ],
+    exports = select_from_plugin_api_directory(
+        android_studio = [":sh"],
+        clion = [],
+        intellij = [":sh"],
+    ),
+)
+
 # Bundled plugins required by integration tests
 java_library(
     name = "bundled_plugins",
