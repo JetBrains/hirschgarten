@@ -6,9 +6,7 @@ import com.intellij.execution.configurations.RunProfile
 import com.intellij.execution.configurations.RunProfileState
 import com.intellij.execution.executors.DefaultDebugExecutor
 import com.intellij.execution.runners.ExecutionEnvironment
-import com.intellij.execution.ui.RunContentDescriptor
 import com.intellij.openapi.application.EDT
-import com.intellij.openapi.application.ReadAction
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import com.intellij.xdebugger.XDebugSession
@@ -46,35 +44,6 @@ internal class PythonBspDebugRunner : PyDebugRunner() {
       profile.handler is PythonBazelHandler<*> &&
       profile.targets.size == 1 &&
       profile.project.basePath != null
-
-  override fun execute(environment: ExecutionEnvironment, state: RunProfileState): Promise<RunContentDescriptor?> {
-    val debugState = state as? PythonDebugCommandLineState ?: error(BazelPluginBundle.message("python.debug.error.wrong.state"))
-    val target = state.target ?: error(BazelPluginBundle.message("python.debug.error.no.id"))
-    val promise = AsyncPromise<RunContentDescriptor?>()
-    buildTargetInDebugMode(
-      environment.project,
-      target,
-      debugState.additionalBazelParams,
-      onBuildComplete = {
-        try {
-          withContext(Dispatchers.EDT) {
-            val nativeState = debugState.asPythonState()
-            val superResult = ReadAction.compute<Promise<RunContentDescriptor?>, Throwable> { super.execute(environment, nativeState) }
-            superResult.onSuccess { promise.setResult(it) }
-            superResult.onError { promise.setError(it) }
-          }
-        } catch (e: CancellationException) {
-          throw e
-        } catch (e: Throwable) {
-          withContext(Dispatchers.EDT) {
-            promise.setError(e)
-          }
-        }
-      },
-      onBuildFailed = { promise.setPythonBuildError(target, it) },
-    )
-    return promise
-  }
 
   override fun createSessionEx(state: RunProfileState, environment: ExecutionEnvironment): Promise<XSessionStartedResult> {
     val debugState = state as? PythonDebugCommandLineState ?: error(BazelPluginBundle.message("python.debug.error.wrong.state"))
@@ -130,15 +99,9 @@ internal class PythonBspDebugRunner : PyDebugRunner() {
 
   override fun createDebugProcess(
     session: XDebugSession,
-    serverPort: Int,
-    result: ExecutionResult?,
-  ): PyDebugProcess = super.createDebugProcess(session, serverPort, result).withPositionConverter()
-
-  override fun createDebugProcess(
-    session: XDebugSession,
-    serverSocket: ServerSocket?,
-    result: ExecutionResult?,
-    pyState: PythonCommandLineState?,
+    serverSocket: ServerSocket,
+    result: ExecutionResult,
+    pyState: PythonCommandLineState,
   ): PyDebugProcess = super.createDebugProcess(session, serverSocket, result, pyState).withPositionConverter()
 
   private fun PyDebugProcess.withPositionConverter(): PyDebugProcess =
