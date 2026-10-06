@@ -1,0 +1,131 @@
+load("@community//platform/build-scripts/bazel-rules:content_module_jar.bzl", "content_module_jar")
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+
+### auto-generated section `dev intellij.bazel.clion.core` start
+content_module_jar(module = ":bazel-clion-core")
+### auto-generated section `dev intellij.bazel.clion.core` end
+
+### auto-generated section `build intellij.bazel.clion.core` start
+jvm_library(
+    name = "bazel-clion-core",
+    srcs = glob(
+        [
+            "src/**/*.kt",
+            "src/**/*.java",
+            "src/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.bazel.clion.core",
+    resource_strip_prefix = "resources",
+    resources = glob(
+        ["resources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    deps = [
+        # do not sort,
+        "@lib//:kotlin-stdlib",
+        "//plugins/bazel/clion/intellij.bazel.clion.common:bazel-clion-common",
+        "//plugins/bazel/intellij.bazel.core:core",
+        "//plugins/bazel/intellij.bazel.commons:commons",
+        "//plugins/bazel/intellij.bazel.backend:backend",
+        "@community//platform/core-api:core",
+        "@community//platform/lang-api:lang",
+        "@community//platform/execution",
+        "@community//platform/analysis-api:analysis",
+        "@community//platform/xdebugger-api:debugger",
+        "@community//platform/xdebugger-impl:debugger-impl",
+        "@community//platform/projectModel-api:projectModel",
+        "@community//platform/smRunner",
+        "@community//platform/lang-impl",
+        "@community//platform/testRunner",
+        "@community//platform/util/concurrency",
+        "@community//platform/util:util-ui",
+        "@community//platform/platform-util-io:ide-util-io",
+        "@community//platform/buildView",
+        "@community//platform/consoleView",
+        "//CIDR/clion-runFile",
+        "//CIDR/cidr-core",
+        "//CIDR/cidr-projectModel",
+        "//CIDR/cidr-psi-base",
+        "@community//platform/platform-api:ide",
+        "@community//platform/progress/shared:ide-progress",
+        "@community//platform/core-impl",
+        "@community//platform/core-ui",
+        "@community//platform/editor-ui-api:editor-ui",
+        "@community//platform/ide-core",
+        "@community//platform/platform-impl:ide-impl",
+        "@community//libraries/gson",
+        "//CIDR/cidr-runner",
+        "//CIDR/cidr-util/execution",
+        "//CIDR/cidr-debugger/core",
+        "//CIDR/cidr-debugger/backend-api:cidr-debugger-backend",
+        "//CIDR/cidr-debugger/profiles/backend",
+        "//CIDR/clion-execution",
+        "//CIDR/clion-toolchains",
+    ],
+)
+
+jvm_library(
+    name = "bazel-clion-core_test_lib",
+    testonly = True,
+    srcs = glob(
+        [],
+        allow_empty = True,
+    ),
+    module_name = "intellij.bazel.clion.core",
+    visibility = ["//visibility:public"],
+    runtime_deps = [
+        # do not sort,
+        ":bazel-clion-core",
+        "//plugins/bazel/clion/intellij.bazel.clion.common:bazel-clion-common_test_lib",
+        "//plugins/bazel/intellij.bazel.core:core_test_lib",
+        "//plugins/bazel/intellij.bazel.commons:commons_test_lib",
+        "//plugins/bazel/intellij.bazel.backend:backend_test_lib",
+        "@community//platform/core-api:core_test_lib",
+        "@community//platform/lang-api:lang_test_lib",
+        "@community//platform/execution:execution_test_lib",
+        "@community//platform/analysis-api:analysis_test_lib",
+        "@community//platform/xdebugger-api:debugger_test_lib",
+        "@community//platform/xdebugger-impl:debugger-impl_test_lib",
+        "@community//platform/projectModel-api:projectModel_test_lib",
+        "@community//platform/smRunner:smRunner_test_lib",
+        "@community//platform/lang-impl:lang-impl_test_lib",
+        "@community//platform/testRunner:testRunner_test_lib",
+        "@community//platform/util/concurrency:concurrency_test_lib",
+        "@community//platform/util:util-ui_test_lib",
+        "@community//platform/platform-util-io:ide-util-io_test_lib",
+        "@community//platform/buildView:buildView_test_lib",
+        "@community//platform/consoleView:consoleView_test_lib",
+        "//CIDR/clion-runFile:clion-runFile_test_lib",
+        "//CIDR/cidr-core:cidr-core_test_lib",
+        "//CIDR/cidr-projectModel:cidr-projectModel_test_lib",
+        "//CIDR/cidr-psi-base:cidr-psi-base_test_lib",
+        "@community//platform/platform-api:ide_test_lib",
+        "@community//platform/progress/shared:ide-progress_test_lib",
+        "@community//platform/core-impl:core-impl_test_lib",
+        "@community//platform/core-ui:core-ui_test_lib",
+        "@community//platform/editor-ui-api:editor-ui_test_lib",
+        "@community//platform/ide-core:ide-core_test_lib",
+        "@community//platform/platform-impl:ide-impl_test_lib",
+        "@community//libraries/gson:gson_test_lib",
+        "//CIDR/cidr-runner:cidr-runner_test_lib",
+        "//CIDR/cidr-util/execution:execution_test_lib",
+        "//CIDR/cidr-debugger/core:core_test_lib",
+        "//CIDR/cidr-debugger/backend-api:cidr-debugger-backend_test_lib",
+        "//CIDR/cidr-debugger/profiles/backend:backend_test_lib",
+        "//CIDR/clion-execution:clion-execution_test_lib",
+        "//CIDR/clion-toolchains:clion-toolchains_test_lib",
+    ],
+)
+### auto-generated section `build intellij.bazel.clion.core` end
+
+### auto-generated section `iml intellij.bazel.clion.core` start
+exports_files(
+    [
+        "intellij.bazel.clion.core.iml",
+        "resources/intellij.bazel.clion.core.xml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.bazel.clion.core` end

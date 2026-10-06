@@ -1,0 +1,19 @@
+java_library(
+    name = "lib_a",
+    srcs = ["src/LibA.java"],
+)
+
+java_library(
+    name = "lib_b",
+    srcs = ["src/LibB.java"],
+)
+
+java_library(
+    name = "lib_c",
+    srcs = ["src/LibC.java"],
+)
+
+java_library(
+    name = "lib_d",
+    srcs = ["src/LibD.java"],
+)

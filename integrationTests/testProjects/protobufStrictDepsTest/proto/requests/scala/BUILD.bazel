@@ -1,0 +1,10 @@
+load("@rules_scala//scala_proto:scala_proto.bzl", "scala_proto_library")
+
+package(default_visibility = ["//visibility:public"])
+
+# Separate package: the Windows fixture variant drops rules_scala from MODULE.bazel,
+# and its sync scope (the //appj closure) must not load any package that needs it.
+scala_proto_library(
+    name = "requests_scala_proto",
+    deps = ["//proto/requests:requests_proto"],
+)

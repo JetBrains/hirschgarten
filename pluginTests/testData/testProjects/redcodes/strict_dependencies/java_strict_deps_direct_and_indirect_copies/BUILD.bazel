@@ -1,0 +1,30 @@
+load("@rules_java//java:java_library.bzl", "java_library")
+
+java_library(
+    name = "main",
+    srcs = ["Main.java"],
+    deps = [
+        "//:lib_a",
+        "//:lib_b_direct",
+    ],
+)
+
+java_library(
+    name = "lib_a",
+    srcs = ["A.java"],
+    deps = ["//:lib_b_indirect"],
+)
+
+# Both targets below provide their own copy of the class `B`, mirroring two maven
+# installs that ship the same artifact. `lib_b_direct` is a direct dependency of
+# `:main`, `lib_b_indirect` is reachable only through `:lib_a`.
+
+java_library(
+    name = "lib_b_direct",
+    srcs = ["direct/B.java"],
+)
+
+java_library(
+    name = "lib_b_indirect",
+    srcs = ["indirect/B.java"],
+)

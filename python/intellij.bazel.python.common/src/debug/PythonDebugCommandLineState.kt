@@ -5,6 +5,7 @@ import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.projectRoots.Sdk
 import com.intellij.platform.backend.workspace.WorkspaceModel
+import com.intellij.platform.eel.provider.getEelDescriptor
 import com.intellij.platform.workspace.jps.entities.SdkDependency
 import com.intellij.python.sdk.backend.getSdkAPI
 import com.jetbrains.python.debugger.PyDebugRunner
@@ -105,7 +106,7 @@ internal suspend fun getOrCreateSdkForPythonBinary(project: Project, pythonBinar
 internal fun getSdkForPythonBinary(pythonBinary: Path): Sdk? {
   if (!pythonBinary.isAbsolute) return null
   val normalizedPythonBinary = pythonBinary.toSdkLookupPath()
-  return PythonSdkUtil.getAllSdks().firstOrNull { sdk ->
+  return PythonSdkUtil.getAllSdksOn(pythonBinary.getEelDescriptor()).firstOrNull { sdk ->
     sdk.homePath?.let { sdkHome ->
       runCatching { Path.of(sdkHome).toSdkLookupPath() == normalizedPythonBinary }.getOrDefault(false)
     } == true
@@ -125,6 +126,6 @@ private fun getSdkForTarget(project: Project, target: Label): Sdk {
            ?.firstNotNullOfOrNull { it as? SdkDependency } // first SDK dependency
            ?.sdk
            ?.name
-           ?.let { PythonSdkUtil.getAllSdks().firstOrNull { sdk -> sdk.name == it } } // the first SDK matching the module SDK dependency
+           ?.let { PythonSdkUtil.getAllSdks(project).firstOrNull { sdk -> sdk.name == it } } // the first SDK matching the module SDK dependency
          ?: error(BazelPluginBundle.message("python.debug.error.no.sdk", target))
 }
