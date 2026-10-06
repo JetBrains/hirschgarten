@@ -60,7 +60,7 @@ internal class WorkspaceImportApprovalTests {
       ApprovalTestCase(
         project = TestCase(
           ideInfo = IdeInfo.IdeaUltimate,
-          projectInfo = GitHubProject.fromGithub(
+          projectInfo = GitHubProject.fromGithubOverSsh(
             branchName = "master",
             commitHash = "4d58c711cc49a90b454a2353046ce8392243a1fb",
             repoRelativeUrl = "Jetbrains/intellij-community",
