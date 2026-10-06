@@ -99,8 +99,10 @@ class BazelInfoResolver(val workspaceRoot: Path) {
         "enable_workspace=false" in starlarkSemantics -> false
         else -> bazelReleaseVersion.major <= 7
       }
-    val autoloadsDisabled = "incompatible_disable_autoloads_in_main_repo=true" in starlarkSemantics
-
+    val autoloadsDisabled = (
+      ("incompatible_disable_autoloads_in_main_repo=true" in starlarkSemantics)
+      || ((bazelReleaseVersion.major >= 9) && ("incompatible_disable_autoloads_in_main_repo=false" !in starlarkSemantics))
+                            )
     // https://github.com/bazelbuild/bazel/issues/23043
     // https://bazel.build/reference/command-line-reference#flag--incompatible_autoload_externally
     val externalAutoloads = if (autoloadsDisabled) emptyList()
