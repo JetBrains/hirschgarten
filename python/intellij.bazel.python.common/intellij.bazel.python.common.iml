@@ -37,5 +37,6 @@
     <orderEntry type="module" module-name="intellij.platform.smRunner" />
     <orderEntry type="module" module-name="intellij.platform.testRunner" />
     <orderEntry type="module" module-name="intellij.python.community.services.systemPython" />
+    <orderEntry type="module" module-name="intellij.platform.eel.nioFs" />
   </component>
 </module>
