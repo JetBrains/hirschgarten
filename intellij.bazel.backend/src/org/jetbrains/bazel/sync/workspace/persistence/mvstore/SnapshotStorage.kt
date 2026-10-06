@@ -344,6 +344,7 @@ class SnapshotGeneration internal constructor(
       generatorName = partialData.generatorName,
       isTestOnly = partialData.isTestOnly,
       tags = partialData.tags,
+      workspaceName = partialData.workspaceName,
       loaded = options.copy(sections = options.sections + TargetSection.INFO),
       depsSection = depsSection,
       fileSetsSection = fileSetsSection,
@@ -491,6 +492,7 @@ class SnapshotGeneration internal constructor(
       generatorName = raw.generatorName,
       isTestOnly = raw.isTestOnly,
       tags = raw.tags,
+      workspaceName = raw.workspaceName,
     )
     val targetDeps = WorkspaceTargetDeps(dependencies = raw.dependencies)
     val heavyTarget = HeavyWorkspaceTarget(

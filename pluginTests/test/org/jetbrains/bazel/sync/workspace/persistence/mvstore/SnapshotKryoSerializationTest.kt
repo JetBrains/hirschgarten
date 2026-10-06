@@ -302,12 +302,14 @@ class SnapshotKryoSerializationTest {
       generatorName = null,
       isTestOnly = true,
       tags = listOf("no-ide"),
+      workspaceName = "_main",
     )
     val restoredPartial = serializeAndDeserialize(partialTarget)
     restoredPartial.kind shouldBe partialTarget.kind
     restoredPartial.generatorName shouldBe partialTarget.generatorName
     restoredPartial.isTestOnly shouldBe partialTarget.isTestOnly
     restoredPartial.tags shouldBe partialTarget.tags
+    restoredPartial.workspaceName shouldBe partialTarget.workspaceName
 
     val deps = WorkspaceTargetDeps(
       dependencies = listOf(

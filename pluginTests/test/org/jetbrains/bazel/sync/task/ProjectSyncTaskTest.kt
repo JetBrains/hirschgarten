@@ -32,7 +32,10 @@ import org.jetbrains.bsp.protocol.WorkspaceBuildTargetParams
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
+import java.nio.file.Path
 import kotlin.io.path.Path
+import kotlin.io.path.createDirectories
+import kotlin.io.path.writeText
 import kotlin.test.assertNotNull
 
 @DisplayName("ProjectSyncTask tests")
@@ -53,8 +56,7 @@ class ProjectSyncTaskTest : MockProjectBaseTest() {
           aspectSyncProject = AspectSyncProject(
             workspaceRoot = Path(""),
             bazelRelease = BazelRelease(9, 0),
-            workspaceName = "",
-            targets = emptyMap(),
+            targetProtoPaths = emptySet(),
             rootTargets = emptySet(),
             configurations = emptyMap(),
           ),
@@ -107,9 +109,8 @@ class ProjectSyncTaskTest : MockProjectBaseTest() {
           aspectSyncProject = AspectSyncProject(
             workspaceRoot = Path(""),
             bazelRelease = BazelRelease(9, 0),
-            workspaceName = "",
             hasError = true,
-            targets = emptyMap(),
+            targetProtoPaths = emptySet(),
             rootTargets = emptySet(),
             configurations = emptyMap(),
           ),
@@ -172,8 +173,7 @@ class ProjectSyncTaskTest : MockProjectBaseTest() {
           aspectSyncProject = AspectSyncProject(
             workspaceRoot = Path(""),
             bazelRelease = BazelRelease(9, 0),
-            workspaceName = "",
-            targets = toIdToTargetInfoMap(javaTarget, kotlinTarget),
+            targetProtoPaths = writeTargetProtos(projectDir.get().resolve("target-protos"), javaTarget, kotlinTarget),
             rootTargets = setOf(javaTarget.workspaceTargetKey(), kotlinTarget.workspaceTargetKey()),
             configurations = emptyMap(),
           ),
@@ -241,7 +241,10 @@ private fun targetInfo(id: String, kind: String): TargetIdeInfo =
     .setKind(kind)
     .build()
 
-private fun toIdToTargetInfoMap(vararg targets: TargetIdeInfo): Map<WorkspaceTargetKey, TargetIdeInfo> =
-  targets.associateBy { it.workspaceTargetKey() }
+private fun writeTargetProtos(directory: Path, vararg targets: TargetIdeInfo): Set<Path> {
+  directory.createDirectories()
+  return targets.mapIndexed { index, target -> directory.resolve("target$index.intellij-info.txt").apply { writeText(target.toString()) } }
+    .toSet()
+}
 
 private fun TargetIdeInfo.workspaceTargetKey(): WorkspaceTargetKey = WorkspaceTargetKey(label = Label.parse(key.label))

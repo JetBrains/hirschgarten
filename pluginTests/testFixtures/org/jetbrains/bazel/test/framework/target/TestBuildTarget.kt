@@ -25,6 +25,7 @@ data class TestBuildTarget(
   override val generatorName: String? = null,
   override val isTestOnly: Boolean = false,
   override val tags: List<String> = emptyList(),
+  override val workspaceName: String = "_main",
   override val loaded: TargetLoadOptions = TargetLoadOptions.ALL,
 ) : BuildTarget
 
@@ -40,5 +41,6 @@ fun BuildTarget.asTestBuildTarget(): TestBuildTarget =
     generatorName = generatorName,
     isTestOnly = isTestOnly,
     tags = tags,
+    workspaceName = workspaceName,
     loaded = loaded,
   )

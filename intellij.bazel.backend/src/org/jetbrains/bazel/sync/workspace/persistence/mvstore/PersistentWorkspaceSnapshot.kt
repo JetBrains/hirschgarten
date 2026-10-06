@@ -39,7 +39,8 @@ class PartialWorkspaceTarget(
   val kind: TargetKind,
   val generatorName: String?,
   val isTestOnly: Boolean,
-  val tags: List<String>
+  val tags: List<String>,
+  val workspaceName: String
 )
 
 @ApiStatus.Internal

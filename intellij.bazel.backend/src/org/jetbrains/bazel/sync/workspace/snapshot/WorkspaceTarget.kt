@@ -21,6 +21,7 @@ internal class WorkspaceTarget(
   override val generatorName: String?,
   override val isTestOnly: Boolean,
   override val tags: List<String>,
+  override val workspaceName: String
 ) : BuildTarget {
   override val loaded: TargetLoadOptions
     get() = TargetLoadOptions.ALL

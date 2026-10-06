@@ -61,6 +61,7 @@ class PhasedBazelProjectMapper(
       generatorName = generatorName,
       isTestOnly = false,
       tags = tags,
+      workspaceName = "_main",
     )
   }
 

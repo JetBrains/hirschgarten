@@ -2,10 +2,11 @@ package org.jetbrains.bazel.sync.workspace.mapper
 
 import com.google.devtools.intellij.aspect.Common.ArtifactLocation
 import com.google.devtools.intellij.ideinfo.IntellijIdeInfo.TargetIdeInfo
+import com.intellij.aspect.lib.readTargetFromFile
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.text.StringUtil
-import com.intellij.platform.util.coroutines.mapConcurrent
+import com.intellij.platform.util.coroutines.mapNotNullConcurrent
 import com.intellij.util.containers.Interner
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -25,12 +26,13 @@ import org.jetbrains.bazel.sync.workspace.languages.LanguagePlugin
 import org.jetbrains.bazel.sync.workspace.languages.createLanguageProjectMappers
 import org.jetbrains.bazel.sync.workspace.snapshot.OutputLocationCollectionBuilder
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTarget
-import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
 import org.jetbrains.bazel.sync.workspace.snapshot.toWorkspaceTargetKey
 import org.jetbrains.bazel.sync.workspace.targetKind.TargetKindService
+import org.jetbrains.bazel.taskEvents.BazelTaskEventsService
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.OutputLocationCollection
 import org.jetbrains.bsp.protocol.TaskId
+import org.jetbrains.bsp.protocol.asLogger
 import java.nio.file.Path
 import kotlin.io.path.exists
 import kotlin.io.path.extension
@@ -44,34 +46,23 @@ class AspectBazelProjectMapper(
   private val langMappers = createLanguageProjectMappers()
 
   suspend fun mapTargets(
-    allTargets: Map<WorkspaceTargetKey, TargetIdeInfo>,
+    targetInfoPaths: Collection<Path>,
     build: Boolean,
     taskId: TaskId,
-  ): List<BuildTarget> {
-    // Ignore .bazelbsp and all its dependencies (if any)
-    val allImportableTargets =
-      allTargets.filterKeys { key -> key.label.packagePath.pathSegments.firstOrNull() != Constants.DOT_BAZELBSP_DIR_NAME }
-
-    val rawTargets: List<BuildTarget> = measure("create raw targets") {
-      createWorkspaceTargets(allImportableTargets, build, taskId)
-    }
-
-    return rawTargets
-  }
-
-  private suspend fun createWorkspaceTargets(
-    allTargets: Map<WorkspaceTargetKey, TargetIdeInfo>,
-    build: Boolean,
-    taskId: TaskId,
-  ): List<BuildTarget> {
-    return withContext(Dispatchers.Default) {
-      allTargets.values.mapConcurrent { target ->
-        createWorkspaceTarget(
-          target = target,
-          build = build,
-          taskId = taskId,
-        )
-      }.toList()
+  ): List<BuildTarget> = measure("create raw targets") {
+    val taskLogger = BazelTaskEventsService.getInstance(project).asLogger(taskId)
+    withContext(Dispatchers.Default) {
+      targetInfoPaths
+        .mapNotNullConcurrent { path ->
+          val target = readTargetFromFile(path) { msg -> taskLogger.error("Could not read target info $path: $msg") }
+                       ?: return@mapNotNullConcurrent null
+          val isBazelBsp = target.label().packagePath.pathSegments.firstOrNull() == Constants.DOT_BAZELBSP_DIR_NAME
+          if (isBazelBsp) {
+            return@mapNotNullConcurrent null
+          }
+          createWorkspaceTarget(target = target, build = build, taskId = taskId)
+        }
+        .toList()
     }
   }
 
@@ -118,6 +109,7 @@ class AspectBazelProjectMapper(
       generatorName = target.generatorName,
       isTestOnly = target.testonly,
       tags = target.tagsList.toList(),
+      workspaceName = target.workspaceName,
     ).also {
       missingFilesReporter.report()
     }
