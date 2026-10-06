@@ -77,25 +77,15 @@ class ProjectResolver(
         .getOrElse { aspectResult.bepOutput.configurations.values } // fallback to BEP configurations
 
       val aspectOutputs = extractAspectOutputPaths(aspectResult)
-      val targets =
-        measured(
-          "Parsing aspect outputs",
-        ) {
-          TargetInfoReader(taskEventsHandler.asLogger(taskId))
-            .readTargetMapFromAspectOutputs(aspectOutputs)
-        }
-
-      val workspaceName = targets.values.firstOrNull()?.workspaceName ?: "_main"
       val rootTargets = aspectResult.bepOutput.rootTargets()
 
       return@useWithScope AspectSyncProject(
         workspaceRoot = bazelInfo.workspaceRoot,
         bazelRelease = bazelInfo.release,
-        workspaceName = workspaceName,
         hasError = aspectResult.isFailure,
-        targets = targets,
         rootTargets = rootTargets,
         configurations = configurations.associateBy { it.id },
+        targetProtoPaths = aspectOutputs,
       )
     }
   }

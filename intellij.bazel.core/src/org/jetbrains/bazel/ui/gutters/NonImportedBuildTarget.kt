@@ -26,6 +26,7 @@ data class NonImportedBuildTarget(
 
   override val generatorName: String? get() = null
   override val isTestOnly: Boolean get() = false
+  override val workspaceName: String = "_main"
 
   override val dependencies: List<DependencyLabel> get() = listOf()
 

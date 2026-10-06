@@ -15,6 +15,7 @@ internal class LazyWorkspaceTarget(
   override val generatorName: String?,
   override val isTestOnly: Boolean,
   override val tags: List<String>,
+  override val workspaceName: String,
   override val loaded: TargetLoadOptions,
   private val depsSection: LazyTargetSection<List<DependencyLabel>>,
   private val fileSetsSection: LazyTargetSection<HeavyWorkspaceTarget>,

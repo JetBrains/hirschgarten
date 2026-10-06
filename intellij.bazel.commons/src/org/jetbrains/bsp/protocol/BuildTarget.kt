@@ -17,6 +17,7 @@ interface BuildTarget {
   val generatorName: String?
   val isTestOnly: Boolean
   val tags: List<String>
+  val workspaceName: String
 
   // TargetSection.DEPS
   val dependencies: List<DependencyLabel>

@@ -24,9 +24,11 @@ data class PhasedSyncProject(
 data class AspectSyncProject(
   val workspaceRoot: Path,
   val bazelRelease: BazelRelease,
-  val workspaceName: String,
   val hasError: Boolean = false,
-  val targets: Map<WorkspaceTargetKey, IntellijIdeInfo.TargetIdeInfo>,
+
+  // TODO: use abstract BEP artifact access here instead of java.nio.Path
+  val targetProtoPaths: Set<Path>,
+
   val rootTargets: Set<WorkspaceTargetKey>,
   val configurations: Map<WorkspaceConfigurationId, WorkspaceConfiguration>
 ) {
@@ -38,8 +40,8 @@ data class AspectSyncProject(
       error("Cannot add projects with different bazel versions: $bazelRelease and ${project.bazelRelease}")
     }
 
-    val newTargets = targets + project.targets
-    return copy(targets = newTargets)
+    val newTargets = targetProtoPaths + project.targetProtoPaths
+    return copy(targetProtoPaths = newTargets)
   }
 }
 
