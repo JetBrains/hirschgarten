@@ -5,6 +5,7 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
 import org.jetbrains.annotations.ApiStatus
+import org.jetbrains.bazel.commons.constants.Constants
 import org.jetbrains.bazel.languages.projectview.projectView
 import org.jetbrains.bazel.sync.workspace.languages.DefaultJvmPackageResolver
 import org.jetbrains.bazel.sync.workspace.languages.java.sourceRoot.prefix.JavaSourceRootPatternContributor
@@ -13,10 +14,12 @@ import org.jetbrains.bazel.sync.workspace.languages.java.sourceRoot.prefix.Sourc
 import org.jetbrains.bazel.sync.workspace.languages.java.sourceRoot.projectview.javaSROEnable
 import org.jetbrains.bazel.sync.workspace.languages.jvm.JvmBuildTarget
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
+import org.jetbrains.bazel.sync.workspace.snapshot.allSources
 import org.jetbrains.bsp.protocol.BuildTarget
 import java.nio.file.Path
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.io.path.extension
+import kotlin.io.path.isDirectory
 
 @ApiStatus.Internal
 class JvmPackagePrefixes(private val prefixes: Map<Path, String>) {
@@ -81,7 +84,7 @@ class DefaultJvmPackagePrefixCalculator(
   }
 
   private fun calculateForTarget(target: BuildTarget): Map<Path, String> {
-    val sources = target.sources.getFiles().filter { it.extension != "srcjar" }.toList()
+    val sources = target.allSources.filter { it.extension in Constants.JVM_LANGUAGES_EXTENSIONS && !it.isDirectory() }.toList()
 
     val result = HashMap<Path, String>()
     when (sourceRootOptimizationMode) {
