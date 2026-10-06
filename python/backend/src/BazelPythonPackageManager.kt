@@ -2,9 +2,9 @@ package com.intellij.bazel.python.backend
 
 import com.intellij.openapi.module.Module
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.projectRoots.Sdk
 import com.intellij.python.pyproject.PyDependencyGroup
 import com.intellij.python.requirements.PyPackageVersion
+import com.intellij.python.sdk.backend.PythonInterpreter
 import com.jetbrains.python.Result
 import com.jetbrains.python.errorProcessing.MessageError
 import com.jetbrains.python.errorProcessing.PyResult
@@ -23,18 +23,15 @@ import org.jetbrains.bazel.config.isBazelProject
 import java.nio.file.Path
 
 internal class BazelPythonPackageManagerProvider : PythonPackageManagerProvider {
-  override fun createPackageManagerForSdk(
-    project: Project,
-    sdk: Sdk,
-  ): PythonPackageManager? {
+  override fun createPackageManager(project: Project, interpreter: PythonInterpreter): PythonPackageManager? {
     if (!project.isBazelProject) return null
-    return BazelPythonPackageManager(project, sdk)
+    return BazelPythonPackageManager(project, interpreter)
   }
 }
 
 // TODO: fetch the list of installed Python packages properly from Bazel.
 //  For now this just hardcodes pytest to make run gutters work
-private class BazelPythonPackageManager(project: Project, sdk: Sdk) : PythonPackageManager(project, sdk) {
+private class BazelPythonPackageManager(project: Project, interpreter: PythonInterpreter) : PythonPackageManager(project, interpreter) {
   private companion object {
     val PYTEST = PythonPackage("pytest", "1.0.0", false)
   }

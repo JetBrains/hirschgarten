@@ -4,6 +4,7 @@ import com.intellij.openapi.diagnostic.fileLogger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Disposer
 import com.intellij.platform.testFramework.junit5.codeInsight.fixture.codeInsightFixture
+import com.intellij.python.pyproject.model.evolution.EvoPyProjectModel
 import com.intellij.testFramework.common.runAllSuspend
 import com.intellij.testFramework.fixtures.CodeInsightTestFixture
 import com.intellij.testFramework.fixtures.IdeaProjectTestFixture
@@ -112,6 +113,7 @@ fun bazelProjectFixture(
   }.init()
   configure(project)
   runBazelSync(project, ProjectSyncScope.Full(build = buildProject, phased = false))
+  awaitPythonInterpreters(project)
 
   LOG.info("The Bazel project fixture for $projectPath is ready")
   initialized(project) {}
@@ -137,6 +139,7 @@ fun bazelSyncCodeInsightFixture(
   LOG.info("Setting up the Bazel code-insight fixture for $projectPath")
   val fixture = bazelSyncCodeInsightFixture(projectFixture(openAfterCreation = true), tempPathFixture()).init()
   fixture.syncBazelTestProject(projectPath, buildProject, bazelVersion, projectView, configure)
+  awaitPythonInterpreters(fixture.project)
   LOG.info("The Bazel code-insight fixture for $projectPath is ready")
   initialized(fixture) {}
 }
@@ -157,6 +160,11 @@ private suspend fun BazelSyncCodeInsightTestFixture.syncBazelTestProject(
   }
   configure(this)
   performBazelSync(buildProject)
+}
+
+/** Waits until the snapshot holds the interpreters of the synced Python modules. Python code insight reads it. */
+private suspend fun awaitPythonInterpreters(project: Project) {
+  EvoPyProjectModel.getInstance(project).awaitCurrentInterpreters()
 }
 
 class BazelSyncCodeInsightTestFixtureImpl(
