@@ -770,7 +770,7 @@
 
     <projectService serviceInterface="org.jetbrains.bazel.sync.ProjectSyncService"
                     serviceImplementation="org.jetbrains.bazel.sync.DefaultProjectSyncService"/>
-
+    <watchRootExcludePolicy implementation="org.jetbrains.bazel.sync.BazelWatchRootExcludePolicy"/>
   </extensions>
 
   <extensions defaultExtensionNs="com.intellij.multiverse">

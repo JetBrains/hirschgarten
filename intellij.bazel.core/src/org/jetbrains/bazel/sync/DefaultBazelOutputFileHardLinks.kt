@@ -43,6 +43,8 @@ import kotlin.io.path.readAttributes
 import kotlin.io.path.relativeTo
 import kotlin.io.path.walk
 
+internal const val HARDLINKS_DIR_NAME = "intellij-hardlinks"
+
 @ApiStatus.Internal
 class DefaultBazelOutputFileHardLinks(
   private val project: Project,
@@ -58,7 +60,7 @@ class DefaultBazelOutputFileHardLinks(
    * Regular `bazel clean` or `--remote_download_minimal` won't have an effect as they only affect execroot, not the whole output base.
    */
   @VisibleForTesting
-  val cacheDir: Path = bazelOutputBase.resolve("intellij-hardlinks")
+  val cacheDir: Path = bazelOutputBase.resolve(HARDLINKS_DIR_NAME)
   private val hardLinksDuringSync = ConcurrentHashMap<Path, Deferred<HardLink>>()
   private val syncRunning = AtomicBoolean(false)
 
