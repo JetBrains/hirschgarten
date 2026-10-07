@@ -140,8 +140,8 @@ class HirschgartenUpgradeTest : IdeStarterBaseProjectTest() {
       pluginZipOverride = pluginZip,
     )
 
-    context
-      .runIdeWithDriver(runTimeout = timeout)
+    val run = context.runIdeWithDriver(runTimeout = timeout)
+    run
       .useDriverAndCloseIde {
         ideFrame {
           waitForIndicators(5.minutes)
@@ -160,8 +160,8 @@ class HirschgartenUpgradeTest : IdeStarterBaseProjectTest() {
       ?.forEach { it.deleteRecursively() }
     IntegrationTestCompat.onPostCreateContext(context)
 
-    context
-      .runIdeWithDriver(runTimeout = timeout)
+    run
+      .restart()
       .useDriverAndCloseIde {
         step("Verify no resync happens after plugin upgrade") {
           ideFrame {
