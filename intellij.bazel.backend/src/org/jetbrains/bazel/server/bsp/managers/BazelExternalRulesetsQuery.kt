@@ -15,6 +15,7 @@ import org.jetbrains.bazel.label.AllRuleTargets
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.label.SyntheticLabel
 import org.jetbrains.bazel.languages.projectview.ProjectView
+import org.jetbrains.bazel.languages.projectview.enabledRules
 import org.jetbrains.bazel.server.bzlmod.rootRulesToNeededTransitiveRules
 import org.jetbrains.bazel.server.diagnostics.DiagnosticsService
 import org.jetbrains.bsp.protocol.BazelTaskEventsHandler
@@ -38,22 +39,44 @@ internal class BazelExternalRulesetsQueryImpl(
   private val projectView: ProjectView,
   private val repoMapping: RepoMapping,
 ) : BazelExternalRulesetsQuery {
-  override suspend fun fetchExternalRulesetNames(): List<String> =
-    BazelBzlModExternalRulesetsQueryImpl(
-      taskId,
-      bazelRunner,
-      isBzlModEnabled,
-      taskEventsHandler,
-      projectView,
-      repoMapping,
-    ).fetchExternalRulesetNames() +
-    BazelWorkspaceExternalRulesetsQueryImpl(
-      taskId,
-      bazelRunner,
-      isWorkspaceEnabled,
-      taskEventsHandler,
-      projectView,
-    ).fetchExternalRulesetNames()
+  override suspend fun fetchExternalRulesetNames(): List<String> {
+    val enabledRules = projectView.enabledRules
+    if (enabledRules.isNotEmpty()) {
+      return BazelEnabledRulesetsQueryImpl(enabledRules).fetchExternalRulesetNames()
+    }
+    val bzlModRulesets =
+      BazelBzlModExternalRulesetsQueryImpl(
+        taskId,
+        bazelRunner,
+        isBzlModEnabled,
+        taskEventsHandler,
+        projectView,
+        repoMapping,
+      ).fetchExternalRulesetNames()
+    val workspaceRulesets =
+      BazelWorkspaceExternalRulesetsQueryImpl(
+        taskId,
+        bazelRunner,
+        isWorkspaceEnabled,
+        taskEventsHandler,
+        projectView,
+      ).fetchExternalRulesetNames()
+    return bzlModRulesets + workspaceRulesets
+  }
+}
+
+/**
+ * Returns the rulesets from the `enabled_rules` project view section, and the rulesets that they need.
+ * Bazel is not queried.
+ */
+@ApiStatus.Internal
+class BazelEnabledRulesetsQueryImpl(private val enabledRules: List<String>) : BazelExternalRulesetsQuery {
+  override suspend fun fetchExternalRulesetNames(): List<String> = fetchExternalRulesetNamesImpl()
+
+  fun fetchExternalRulesetNamesImpl(): List<String> {
+    val neededTransitiveRules = enabledRules.flatMap { rootRulesToNeededTransitiveRules[it].orEmpty() }
+    return (enabledRules + neededTransitiveRules).distinct()
+  }
 }
 
 /**

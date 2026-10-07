@@ -28,6 +28,7 @@ internal class DefaultProjectViewSectionProvider : ProjectViewSectionProvider {
       DeriveTargetsFromDirectoriesSection,
       DirectoriesSection,
       DotIdeaDirectoryLocationSection,
+      EnabledRulesSection,
       GazelleTargetSection,
       ImportDepthSection,
       ImportRunConfigurationsSection,
@@ -87,6 +88,12 @@ private val DotIdeaDirectoryLocationSection: ProjectViewSection<Path?> = Project
   key = DOT_IDEA_DIRECTORY_LOCATION_KEY,
   type = ProjectViewSectionType.path(),
   documentation = BazelProjectViewBundle.message("bazel.language.projectview.docs.dot_idea_directory_location"),
+)
+
+private val EnabledRulesSection: ProjectViewSection<List<String>> = ProjectViewSection(
+  key = ENABLED_RULES_KEY,
+  type = ProjectViewSectionType.string().list(),
+  documentation = BazelProjectViewBundle.message("bazel.language.projectview.docs.enabled_rules"),
 )
 
 private val GazelleTargetSection: ProjectViewSection<Label?> = ProjectViewSection(

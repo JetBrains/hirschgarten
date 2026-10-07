@@ -55,6 +55,12 @@ val ProjectView.importDepth: Int
   get() = getSection(IMPORT_DEPTH_KEY)
 
 @Internal
+val ENABLED_RULES_KEY: ProjectViewSectionKey<List<String>> = ProjectViewSectionKey("enabled_rules", emptyList())
+val ProjectView.enabledRules: List<String>
+  @Internal
+  get() = getSection(ENABLED_RULES_KEY)
+
+@Internal
 val SHARD_SYNC_KEY: ProjectViewSectionKey<Boolean> = ProjectViewSectionKey("shard_sync", false)
 val ProjectView.shardSync: Boolean
   @Internal
