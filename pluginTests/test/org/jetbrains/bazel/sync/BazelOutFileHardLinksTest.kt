@@ -1,6 +1,12 @@
 package org.jetbrains.bazel.sync
 
 import com.google.devtools.intellij.aspect.Common
+import com.intellij.openapi.application.ApplicationManager
+import com.intellij.openapi.vfs.VfsUtilCore
+import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.openapi.vfs.VirtualFileManager
+import com.intellij.openapi.vfs.newvfs.BulkFileListener
+import com.intellij.openapi.vfs.newvfs.events.VFileEvent
 import com.intellij.testFramework.common.timeoutRunBlocking
 import com.intellij.util.io.createDirectories
 import com.intellij.util.io.delete
@@ -26,6 +32,7 @@ import org.junit.jupiter.params.provider.ValueSource
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.attribute.FileTime
+import java.util.concurrent.atomic.AtomicInteger
 import kotlin.io.path.Path
 import kotlin.io.path.createSymbolicLinkPointingTo
 import kotlin.io.path.isSymbolicLink
@@ -184,5 +191,128 @@ internal class BazelOutFileHardLinksTest : MockProjectBaseTest() {
     val link = checkNotNull(links.createOutputFileHardLink(original))
     links.onAfterSync(true)
     assertThat(link.readText()).isEqualTo("second")
+  }
+
+  @Test
+  fun `hard links are visible in the VFS after sync`(@TempDir outputBase: Path): Unit = timeoutRunBlocking {
+    val root = Path.of(checkNotNull(project.basePath)).toRealPath()
+    BazelProjectFixtures.initializeBazelProject(project, root)
+    val info = testBazelInfo(workspaceRoot = root, outputBase = outputBase)
+    val links = DefaultBazelOutputFileHardLinks(project, info)
+    val fileManager = VirtualFileManager.getInstance()
+    val bin = info.execRoot.resolve("bazel-out/k8-fastbuild/bin/pkg").createDirectories()
+    val first = bin.resolve("first.jar").also { it.writeText("first") }
+    val second = bin.resolve("second.jar").also { it.writeText("second") }
+    val third = bin.resolve("nested/third.jar").also { it.parent.createDirectories(); it.writeText("third") }
+
+    links.onBeforeSync()
+    val firstLink = checkNotNull(links.createOutputFileHardLink(first))
+    links.onAfterSync(true)
+    assertThat(VfsUtilCore.loadText(checkNotNull(fileManager.findFileByNioPath(firstLink)))).isEqualTo("first")
+    // Load all children, so that the VFS does not look for a new child on disk (BAZEL-3647)
+    checkNotNull(fileManager.findFileByNioPath(firstLink.parent)).children
+
+    first.delete()
+    first.writeText("first, rebuilt")
+    first.setLastModifiedTime(FileTime.fromMillis(1_700_000_000_000))
+    val refreshes = AtomicInteger()
+    val connection = ApplicationManager.getApplication().messageBus.connect()
+    connection.subscribe(VirtualFileManager.VFS_CHANGES, object : BulkFileListener {
+      override fun after(events: List<VFileEvent>) {
+        if (events.any { Path.of(it.path).startsWith(links.cacheDir) }) refreshes.incrementAndGet()
+      }
+    })
+    val secondSyncLinks: List<Path>
+    val newLinkBeforeRefresh: VirtualFile?
+    try {
+      links.onBeforeSync()
+      secondSyncLinks = links.createOutputFileHardLinks(listOf(first, second, third))
+      newLinkBeforeRefresh = fileManager.findFileByNioPath(links.resolveCachedPath(second))
+      links.onAfterSync(true)
+    }
+    finally {
+      connection.disconnect()
+    }
+    assertThat(refreshes.get()).describedAs("VFS refreshes of the cache directory").isEqualTo(1)
+    assertThat(newLinkBeforeRefresh).describedAs("new hard link in the VFS before the refresh").isNull()
+    assertThat(secondSyncLinks).containsExactly(firstLink, links.resolveCachedPath(second), links.resolveCachedPath(third))
+    assertThat(secondSyncLinks.map { VfsUtilCore.loadText(checkNotNull(fileManager.findFileByNioPath(it))) })
+      .containsExactly("first, rebuilt", "second", "third")
+
+    links.onBeforeSync()
+    links.createOutputFileHardLink(first)
+    links.onAfterSync(true)
+    assertThat(links.resolveCachedPath(second)).doesNotExist()
+    assertThat(fileManager.findFileByNioPath(links.resolveCachedPath(second))).isNull()
+    assertThat(links.resolveCachedPath(third).parent).doesNotExist()
+    assertThat(firstLink.readText()).isEqualTo("first, rebuilt")
+  }
+
+  @Test
+  fun `cleanup deletes an unused file next to a used file`(@TempDir outputBase: Path): Unit = timeoutRunBlocking {
+    val links = hardLinksInOutputBase(outputBase)
+    val bin = outputBase.resolve("execroot/_main/bazel-out/k8-fastbuild/bin").createDirectories()
+    val used = bin.resolve("used.jar").also { it.writeText("used") }
+    val unused = bin.resolve("unused.jar").also { it.writeText("unused") }
+
+    sync(links, used, unused)
+    assertThat(links.resolveCachedPath(unused)).exists()
+
+    sync(links, used)
+    assertThat(links.resolveCachedPath(used)).hasContent("used")
+    assertThat(links.resolveCachedPath(unused)).doesNotExist()
+  }
+
+  @Test
+  fun `cleanup keeps the directories of a used hard link`(@TempDir outputBase: Path): Unit = timeoutRunBlocking {
+    val links = hardLinksInOutputBase(outputBase)
+    val bin = outputBase.resolve("execroot/_main/bazel-out/k8-fastbuild/bin")
+    val used = bin.resolve("a/b/used.jar")
+    val unusedFile = bin.resolve("a/unused.jar")
+    val unusedDir = bin.resolve("a/b/unused")
+    val unusedTopDir = bin.resolve("other")
+    for (file in listOf(used, unusedFile, unusedDir.resolve("file.jar"), unusedTopDir.resolve("file.jar"))) {
+      file.parent.createDirectories()
+      file.writeText(file.fileName.toString())
+    }
+
+    sync(links, used, unusedFile, unusedDir, unusedTopDir)
+    assertThat(links.resolveCachedPath(unusedDir.resolve("file.jar"))).exists()
+
+    sync(links, used)
+    assertThat(links.resolveCachedPath(used)).hasContent("used.jar")
+    assertThat(links.resolveCachedPath(unusedFile)).doesNotExist()
+    assertThat(links.resolveCachedPath(unusedDir)).doesNotExist()
+    assertThat(links.resolveCachedPath(unusedTopDir)).doesNotExist()
+  }
+
+  @Test
+  fun `cleanup deletes an unused directory in the cache directory`(@TempDir outputBase: Path): Unit = timeoutRunBlocking {
+    val links = hardLinksInOutputBase(outputBase)
+    val used = outputBase.resolve("execroot/_main/bazel-out/k8-fastbuild/bin/used.jar")
+    val unused = outputBase.resolve("external/repo/unused.jar")
+    for (file in listOf(used, unused)) {
+      file.parent.createDirectories()
+      file.writeText(file.fileName.toString())
+    }
+
+    sync(links, used, unused)
+    assertThat(links.cacheDir.resolve("external")).exists()
+
+    sync(links, used)
+    assertThat(links.resolveCachedPath(used)).hasContent("used.jar")
+    assertThat(links.cacheDir.resolve("external")).doesNotExist()
+  }
+
+  private fun hardLinksInOutputBase(outputBase: Path): DefaultBazelOutputFileHardLinks {
+    val root = Path.of(checkNotNull(project.basePath)).toRealPath()
+    BazelProjectFixtures.initializeBazelProject(project, root)
+    return DefaultBazelOutputFileHardLinks(project, testBazelInfo(workspaceRoot = root, outputBase = outputBase))
+  }
+
+  private suspend fun sync(links: DefaultBazelOutputFileHardLinks, vararg files: Path) {
+    links.onBeforeSync()
+    links.createOutputFileHardLinks(files.toList())
+    links.onAfterSync(true)
   }
 }
