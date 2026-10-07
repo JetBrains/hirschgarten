@@ -43,7 +43,8 @@ import kotlin.io.path.readAttributes
 import kotlin.io.path.relativeTo
 import kotlin.io.path.walk
 
-internal const val HARDLINKS_DIR_NAME = "intellij-hardlinks"
+@ApiStatus.Internal
+const val HARDLINKS_DIR_NAME: String = "intellij-hardlinks"
 
 @ApiStatus.Internal
 class DefaultBazelOutputFileHardLinks(
