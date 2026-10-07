@@ -15,7 +15,8 @@ import org.jetbrains.bazel.languages.starlark.references.StarlarkQualifiedRefere
 @ApiStatus.Internal
 class StarlarkReferenceExpression(node: ASTNode) :
   StarlarkBaseElement(node),
-  StarlarkLocalVariableElement {
+  StarlarkLocalVariableElement,
+  StarlarkQualifiableExpression {
   override fun acceptVisitor(visitor: StarlarkElementVisitor) = visitor.visitReferenceExpression(this)
 
   override fun getReference(): PsiReference? =
@@ -34,17 +35,7 @@ class StarlarkReferenceExpression(node: ASTNode) :
   override fun getNameIdentifier(): PsiElement? = findChildByType(StarlarkTokenTypes.IDENTIFIER)
   override fun getName(): String? = getNameIdentifier()?.text
 
-  /**
-   * If the expression is qualified (of the form "a.b") return the part the qualifier applies to ("a") as PsiElement
-   */
-  fun getQualifierExpression(): PsiElement? {
-    if (!isQualified()) return null
-    return node.firstChildNode?.psi
-  }
-
   private fun isBeforeDot(): Boolean = generateSequence(node.treeNext) { it.treeNext }.any { it.elementType == StarlarkTokenTypes.DOT }
 
   private fun isThrowaway(): Boolean = name == "_"
-
-  private fun isQualified(): Boolean = node.findChildByType(StarlarkTokenTypes.DOT) != null
 }

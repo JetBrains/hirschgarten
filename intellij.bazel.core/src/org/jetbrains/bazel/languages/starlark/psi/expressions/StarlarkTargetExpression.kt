@@ -19,7 +19,8 @@ import javax.swing.Icon
 @ApiStatus.Internal
 class StarlarkTargetExpression(node: ASTNode) :
   StarlarkNamedElement(node),
-  StarlarkLocalVariableElement {
+  StarlarkLocalVariableElement,
+  StarlarkQualifiableExpression {
   override fun acceptVisitor(visitor: StarlarkElementVisitor) = visitor.visitTargetExpression(this)
 
   override fun getReference(): PsiReference = StarlarkLocalVariableReference(this, true)
