@@ -149,14 +149,12 @@ class ModuleOutputParser {
     }
   }
 
-  fun parseShowRepoResults(bazelProcessResult: BazelProcessResult, isJson: Boolean, moduleNames: List<String>?): ResolvedModulesAndWarning {
-   val warnings =  if (bazelProcessResult.isSuccess) listOf() else
-     listOf("Project depends on broken modules; bazel failed to show_repo ${moduleNames?.joinToString() ?: "--all_repos"}:\n" + bazelProcessResult.stderrLines.joinToString("\n"))
+  fun parseShowRepoResults(bazelProcessResult: BazelProcessResult, isJson: Boolean): ResolvedModulesAndWarning {
     if (!isJson) {
-      return ResolvedModulesAndWarning(splitInfoGroups (bazelProcessResult.stdoutLines).mapValues { (_, stanza) -> parseShowRepoStanza(stanza) }, warnings)
+      return ResolvedModulesAndWarning(splitInfoGroups (bazelProcessResult.stdoutLines).mapValues { (_, stanza) -> parseShowRepoStanza(stanza) }, emptyList())
     }
     // The output is new-line-delimited JSON, i.e., each line is a JSON description of one repository.
-    val builder = ResolvedModulesAndWarning.Builder(mapOf(), warnings)
+    val builder = ResolvedModulesAndWarning.Builder(mapOf(), emptyList())
     bazelProcessResult.stdoutLines
       .map { parseJsonRepoDescription(it) }
       .forEach { builder.update(it) }
@@ -171,6 +169,7 @@ class ModuleResolver(
   private val projectView: ProjectView,
   private val taskId: TaskId,
 ) {
+  private val gson = bazelGson
   private val moduleOutputParser = ModuleOutputParser()
 
   /**
@@ -181,8 +180,11 @@ class ModuleResolver(
                                                                         emptyList()) // avoid bazel call if no information is needed
     val moduleNames = unsortedModuleNames.sorted().distinct()
     val supportsAllRequest = (bazelInfo.release.major >= 9 || (bazelInfo.release.major == 8 && bazelInfo.release.minor >= 6))
-    if (supportsAllRequest && moduleNames.size > USE_ALL_THRESHOLD) {
-      return resolveOneModuleBatch(moduleNames, bazelInfo, requestAll = true)
+    // The `--all_repos` output names each repository by its canonical name, so only canonical requests can be matched.
+    val allNamesCanonical = moduleNames.all { it.startsWith("@@") }
+    if (supportsAllRequest && allNamesCanonical && moduleNames.size > USE_ALL_THRESHOLD) {
+      // `--all_repos` returns all repositories of the module graph, so keep only the requested ones.
+      return resolveOneModuleBatch(moduleNames, bazelInfo, requestAll = true).onlyRepositories(moduleNames)
     }
     val builder = ResolvedModulesAndWarning.Builder()
     batchModules(moduleNames)
@@ -250,10 +252,36 @@ class ModuleResolver(
                else individualResults.builder().update(ResolvedModulesAndWarning(excludedRepos, warnings)).build()
       }
 
-      val parsed = moduleOutputParser.parseShowRepoResults(processResult, json_output, if (requestAll) null else currentModuleNames)
+      val parsed = moduleOutputParser.parseShowRepoResults(
+        bazelProcessResult = processResult,
+        isJson = json_output,
+      ).let {
+        if (processResult.isSuccess)
+          it
+        else
+          it.copy(
+            warnings = listOf(
+              buildString {
+                append("Project depends on broken modules; bazel failed to show_repo ")
+                append(if (requestAll) "--all_repos" else currentModuleNames.joinToString())
+                appendLine()
+                append(processResult.stderrLines.joinToString("\n"))
+              },
+            ) + it.warnings,
+          )
+      }
       return if (excludedRepos.isEmpty()) parsed
              else parsed.builder().update(ResolvedModulesAndWarning(excludedRepos, warnings)).build()
     }
+  }
+
+  /**
+   * Keeps the repositories in [canonicalModuleNames]. A described repository matches by its canonical name.
+   * A `null` entry marks a requested repository that Bazel could not describe, so it matches by its key.
+   */
+  private fun ResolvedModulesAndWarning.onlyRepositories(canonicalModuleNames: List<String>): ResolvedModulesAndWarning {
+    val names = canonicalModuleNames.toSet()
+    return copy(result = result.filter { (key, repository) -> if (repository == null) key in names else "@@${repository.name}" in names })
   }
 
   private suspend fun resolveModulesIndividually(moduleNames: List<String>, bazelInfo: BazelInfo): ResolvedModulesAndWarning {
@@ -263,8 +291,6 @@ class ModuleResolver(
       .forEach { builder.update(it) }
     return builder.build()
   }
-
-  val gson = bazelGson
 
   /**
    * Obtains the mappings from apparent repo names to canonical repo names in the context of `canonicalRepoNames`.

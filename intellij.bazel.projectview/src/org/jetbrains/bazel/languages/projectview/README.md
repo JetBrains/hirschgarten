@@ -154,6 +154,28 @@ The default value is -1, meaning that all transitive dependencies will be import
 
 ---
 
+#### enabled_rules
+
+A list of apparent names of the external rulesets that the sync uses.
+When the list is not empty, the plugin does not query Bazel for the rulesets.
+The plugin adds the rulesets that a listed ruleset needs. For example, `rules_kotlin` adds `rules_java`.
+
+Use this section to exclude a ruleset that the module graph contains but the project does not use.
+
+##### example:
+
+```
+enabled_rules:
+  rules_java
+  rules_python
+```
+
+##### default:
+
+An empty list. The plugin queries Bazel for the rulesets.
+
+---
+
 #### shard_sync
 
 enable shard sync, split and build targets in batches to avoid Bazel OOM.
