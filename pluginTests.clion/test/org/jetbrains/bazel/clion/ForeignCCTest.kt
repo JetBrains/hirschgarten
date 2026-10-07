@@ -27,4 +27,10 @@ class ForeignCCTest {
     val compilerSettings = project.findCompilerSetting("make/test.c")
     assertThat(compilerSettings).containsHeaders("format_utils.h")
   }
+
+  @Test
+  fun testCMakeBinary(): Unit = timeoutRunBlocking {
+    val compilerSettings = project.findCompilerSetting("cmake/hello.cpp")
+    assertThat(compilerSettings).containsHeaders("Speaker.h")
+  }
 }
