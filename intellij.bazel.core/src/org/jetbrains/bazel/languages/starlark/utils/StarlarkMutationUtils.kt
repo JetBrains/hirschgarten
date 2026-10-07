@@ -7,7 +7,8 @@ import org.jetbrains.bazel.languages.starlark.StarlarkUtils.selectLeftHandSideOf
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkCallExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkReferenceExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkSubscriptionExpression
-import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkTargetExpression
+import org.jetbrains.bazel.languages.starlark.psi.expressions.getSimpleNameOrNull
+import org.jetbrains.bazel.languages.starlark.psi.expressions.isSimpleNameExpression
 import org.jetbrains.bazel.languages.starlark.psi.statements.StarlarkAssignmentStatement
 import org.jetbrains.bazel.languages.starlark.psi.statements.StarlarkAugAssignmentStatement
 
@@ -16,28 +17,28 @@ object StarlarkMutationUtils {
   data class Mutation(
     val target: PsiElement,
     val problemElement: PsiElement,
-  )
+    val kind: Kind,
+    val methodName: String? = null,
+  ) {
+    enum class Kind { METHOD_CALL, SUBSCRIPTION_ASSIGNMENT, AUGMENTED_ASSIGNMENT }
+  }
 
   fun mutationOrNull(element: PsiElement): Mutation? =
     getMutatingCall(element)
     ?: getMutatingAssignment(element)
     ?: getMutatingAugAssignment(element)
 
-  fun referenceName(element: PsiElement?): String? =
-    when (element) {
-      is StarlarkReferenceExpression -> element.takeIf { it.getQualifierExpression() == null }?.name
-      is StarlarkTargetExpression -> element.name
-      else -> null
-    }
-
   fun areReferencesEqual(left: PsiElement, right: PsiElement): Boolean {
     val leftResolved = left.reference?.resolve()
     val rightResolved = right.reference?.resolve()
     if (leftResolved != null && rightResolved != null) return leftResolved == rightResolved
-    return referenceName(left) == referenceName(right)
+
+    val leftName = left.getSimpleNameOrNull() ?: return false
+    val rightName = right.getSimpleNameOrNull() ?: return false
+    return leftName == rightName
   }
 
-  fun isKnownMutatingMethod(name: String): Boolean = name in KNOWN_MUTATING_METHODS
+  fun isKnownMutatingMethod(name: String): Boolean = name in StarlarkStaticValueKind.KNOWN_MUTATING_METHODS
 
   private fun getMutatingCall(element: PsiElement): Mutation? {
     val call = element as? StarlarkCallExpression ?: return null
@@ -45,42 +46,26 @@ object StarlarkMutationUtils {
     val methodName = calledExpression.name ?: return null
     if (!isKnownMutatingMethod(methodName)) return null
 
-    val target = calledExpression.getQualifierExpression()?.takeIf { referenceName(it) != null } ?: return null
-    return Mutation(target, calledExpression)
+    val target = calledExpression.getQualifierExpression()?.takeIf { it.isSimpleNameExpression() } ?: return null
+    return Mutation(target, calledExpression, Mutation.Kind.METHOD_CALL, methodName)
   }
 
   private fun getMutatingAssignment(element: PsiElement): Mutation? {
     val assignment = element as? StarlarkAssignmentStatement ?: return null
     val lhs = selectLeftHandSideOfAssignment(assignment) ?: return null
     val target = extractSubscriptionReceiver(lhs) ?: return null
-    return Mutation(target, lhs)
+    return Mutation(target, lhs, Mutation.Kind.SUBSCRIPTION_ASSIGNMENT)
   }
 
   private fun getMutatingAugAssignment(element: PsiElement): Mutation? {
     val assignment = element as? StarlarkAugAssignmentStatement ?: return null
     val lhs = selectLeftHandSideOfAssignment(assignment) ?: return null
-    val target = lhs.takeIf { referenceName(it) != null } ?: extractSubscriptionReceiver(lhs) ?: return null
-    return Mutation(target, lhs)
+    val target = lhs.takeIf { it.isSimpleNameExpression() } ?: extractSubscriptionReceiver(lhs) ?: return null
+    return Mutation(target, lhs, Mutation.Kind.AUGMENTED_ASSIGNMENT)
   }
 
   private fun extractSubscriptionReceiver(element: PsiElement?): PsiElement? {
     val subscription = element as? StarlarkSubscriptionExpression ?: return null
-    return nearestRelevantBeforeOperator(subscription.firstChild)?.takeIf { referenceName(it) != null }
+    return nearestRelevantBeforeOperator(subscription.firstChild)?.takeIf { it.isSimpleNameExpression() }
   }
-  private val KNOWN_MUTATING_METHODS = setOf(
-    "add",
-    "append",
-    "clear",
-    "difference_update",
-    "discard",
-    "extend",
-    "insert",
-    "intersection_update",
-    "pop",
-    "popitem",
-    "remove",
-    "setdefault",
-    "symmetric_difference_update",
-    "update",
-  )
 }

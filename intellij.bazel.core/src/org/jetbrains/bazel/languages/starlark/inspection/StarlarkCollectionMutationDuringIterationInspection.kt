@@ -16,6 +16,7 @@ import org.jetbrains.bazel.languages.starlark.psi.StarlarkElementVisitor
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkCompExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkDictCompExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkListCompExpression
+import org.jetbrains.bazel.languages.starlark.psi.expressions.isSimpleNameExpression
 import org.jetbrains.bazel.languages.starlark.psi.functions.StarlarkCallable
 import org.jetbrains.bazel.languages.starlark.psi.statements.StarlarkForStatement
 import org.jetbrains.bazel.languages.starlark.utils.StarlarkMutationUtils
@@ -43,7 +44,7 @@ class StarlarkCollectionMutationDuringIterationInspection : LocalInspectionTool(
     }
 
     private fun reportMutationsOfIteratedCollections(collectionExpressions: List<PsiElement>, scope: PsiElement) {
-      val iteratedCollections = collectionExpressions.filter { StarlarkMutationUtils.referenceName(it) != null }
+      val iteratedCollections = collectionExpressions.filter { it.isSimpleNameExpression() }
       if (iteratedCollections.isEmpty()) return
 
       val reported = mutableSetOf<PsiElement>()
