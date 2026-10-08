@@ -8,8 +8,8 @@ import com.intellij.util.io.delete
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
 import org.jetbrains.bazel.config.rootDir
-import org.jetbrains.bazel.languages.starlark.repomapping.PersistentBazelRepoMappingService
 import org.jetbrains.bazel.test.framework.BazelBasePlatformTestCase
+import org.jetbrains.bazel.workspace.setRepoMapping
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
@@ -28,7 +28,7 @@ class BazelBuildTargetConsoleFilterTest : BazelBasePlatformTestCase() {
   override fun setUp() {
     super.setUp()
     filter = BazelBuildTargetConsoleFilter(project)
-    PersistentBazelRepoMappingService.getInstance(project).canonicalRepoNameToPath = mapOf("" to project.rootDir.toNioPath())
+    project.setRepoMapping { mainRepo(project.rootDir.toNioPath()) }
   }
 
   @Test
@@ -89,8 +89,10 @@ class BazelBuildTargetConsoleFilterTest : BazelBasePlatformTestCase() {
     val path = createBazelFile(externalRootDir, "plugin-bazel/src")
     val bazelTarget = "@@externalRepo//plugin-bazel/src:test_fixtures"
     val line = "$TEST_LINE_PREFIX$bazelTarget$TEST_LINE_SUFFIX"
-    PersistentBazelRepoMappingService.getInstance(project).canonicalRepoNameToPath =
-      mapOf("externalRepo" to externalRootDir, "" to project.rootDir.toNioPath())
+    project.setRepoMapping {
+      mainRepo(project.rootDir.toNioPath())
+      repo("externalRepo", externalRootDir)
+    }
 
     // when
     val result = filter.applyFilter(line, line.length + 100)
@@ -112,9 +114,10 @@ class BazelBuildTargetConsoleFilterTest : BazelBasePlatformTestCase() {
     val bazelTarget = "@externalRepo2//plugin-bazel/src:test_fixtures"
     val line = "$TEST_LINE_PREFIX$bazelTarget$TEST_LINE_SUFFIX"
 
-    PersistentBazelRepoMappingService.getInstance(project).canonicalRepoNameToPath =
-      mapOf("externalRepo2+" to externalRootDir, "" to project.rootDir.toNioPath())
-    PersistentBazelRepoMappingService.getInstance(project).apparentRepoNameToCanonicalName = mapOf("externalRepo2" to "externalRepo2+")
+    project.setRepoMapping {
+      mainRepo(project.rootDir.toNioPath())
+      repo("externalRepo2+", externalRootDir, apparentName = "externalRepo2")
+    }
 
     // when
     val result = filter.applyFilter(line, line.length + 100)

@@ -75,14 +75,13 @@ import kotlin.time.measureTimedValue
  * Overall goal should be to make it only update targets that actually have changes.
  */
 @OptIn(FlowPreview::class)
-@ApiStatus.Internal
-class DefaultWorkspaceSnapshotService(
+internal class PersistentWorkspaceSnapshotService(
   private val project: Project,
   private val coroutineScope: CoroutineScope,
 ) : WorkspaceSnapshotService, SettingsSavingComponent, Disposable {
 
   companion object {
-    private val log = logger<DefaultWorkspaceSnapshotService>()
+    private val log = logger<PersistentWorkspaceSnapshotService>()
     private const val BLOB_FILE_NAME = "snapshot_blob.data"
     private const val DB_FILE_NAME = "snapshot_db.data"
 

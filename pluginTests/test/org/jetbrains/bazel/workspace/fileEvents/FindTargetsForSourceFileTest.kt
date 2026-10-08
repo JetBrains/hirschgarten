@@ -6,8 +6,8 @@ import com.intellij.testFramework.fixtures.BasePlatformTestCase
 import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.shouldBe
-import org.jetbrains.bazel.languages.starlark.repomapping.injectCanonicalRepoNameToPath
 import org.jetbrains.bazel.languages.starlark.utils.StarlarkSrcsListEval
+import org.jetbrains.bazel.workspace.setRepoMapping
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
@@ -19,7 +19,7 @@ class FindTargetsForSourceFileTest : BasePlatformTestCase() {
     super.setUp()
     val moduleFile = myFixture.addFileToProject("MODULE.bazel", "")
     val rootPath = Path.of(moduleFile.virtualFile.parent.path)
-    project.injectCanonicalRepoNameToPath(mapOf("" to rootPath))
+    project.setRepoMapping { mainRepo(rootPath) }
   }
 
   @Test

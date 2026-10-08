@@ -23,10 +23,10 @@ import org.jetbrains.bazel.golang.sync.GAZELLE_TARGET_OVERRIDE_KEY
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.languages.projectview.gazelleTarget
 import org.jetbrains.bazel.languages.projectview.projectView
+import org.jetbrains.bazel.languages.starlark.repomapping.canonicalRepoNameToPath
 import org.jetbrains.bazel.languages.starlark.repomapping.toShortString
 import org.jetbrains.bazel.sync.ProjectSyncScope
 import org.jetbrains.bazel.sync.ProjectSyncService
-import org.jetbrains.bazel.workspace.canonicalRepoNameToPath
 import org.jetbrains.bazel.workspacemodel.entities.ImportPathId
 
 @ApiStatus.Internal

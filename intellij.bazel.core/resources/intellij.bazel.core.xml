@@ -165,10 +165,6 @@
       id="DirectoriesSyncHook"
       implementation="org.jetbrains.bazel.flow.sync.DirectoriesSyncHook"
     />
-    <projectSyncHook
-      id="BazelRepoMappingSyncHook"
-      implementation="org.jetbrains.bazel.languages.starlark.repomapping.BazelRepoMappingSyncHook"
-    />
     <projectSyncHook implementation="org.jetbrains.bazel.run.import.ImportRunConfigurationsSyncHook"/>
     <projectSyncHook
       implementation="org.jetbrains.bazel.ignore.UpdateBazelIgnoreSyncHook"
@@ -212,8 +208,6 @@
 
     <vfs.asyncListener implementation="org.jetbrains.bazel.flow.exclude.BazelSymlinkExcludeFileListener"/>
 
-    <projectService serviceImplementation="org.jetbrains.bazel.languages.starlark.repomapping.BazelRepoMappingServiceAdapter"
-                    serviceInterface="org.jetbrains.bazel.workspace.BazelRepoMappingService"/>
     <projectService
       serviceImplementation="org.jetbrains.bazel.sync.environment.IJBazelProjectContextService"
       serviceInterface="org.jetbrains.bazel.sync.environment.BazelProjectContextService"
@@ -764,7 +758,6 @@
     <execution.processHandlerPidProvider implementation="org.jetbrains.bazel.run.BazelProcessHandlerPidProvider"/>
     <applicationSettings service="org.jetbrains.bazel.ui.settings.BazelApplicationSettingsService"/>
     <projectSettings service="org.jetbrains.bazel.sync.environment.IJBazelProjectContextService"/>
-    <projectSettings service="org.jetbrains.bazel.languages.starlark.repomapping.PersistentBazelRepoMappingService"/>
     <projectSettings service="org.jetbrains.bazel.languages.bazelversion.service.BazelVersionCheckerService"/>
     <projectSettings service="org.jetbrains.bazel.languages.bazelversion.service.resolver.BazelGithubGlobalCacheService"/>
 

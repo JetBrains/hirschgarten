@@ -12,11 +12,9 @@ import com.intellij.testFramework.fixtures.IdeaTestFixtureFactory
 import com.intellij.testFramework.fixtures.ModuleFixture
 import com.intellij.testFramework.fixtures.impl.TempDirTestFixtureImpl
 import io.kotest.matchers.collections.shouldContainAll
-import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.languages.starlark.references.getCanonicalRepoNameToBzlFiles
-import org.jetbrains.bazel.languages.starlark.repomapping.injectCanonicalRepoNameToApparentName
-import org.jetbrains.bazel.languages.starlark.repomapping.injectCanonicalRepoNameToPath
 import org.jetbrains.bazel.project.BazelProjectFixtures.initializeBazelProject
+import org.jetbrains.bazel.workspace.setRepoMapping
 import org.jetbrains.bazel.workspacemodel.entities.BazelProjectDirectoriesEntityFixtures.emptyBazelDirectoryWorkspaceEntity
 import org.junit.Rule
 import org.junit.Test
@@ -39,8 +37,7 @@ class BazelLoadFilepathCompletionTest : CodeInsightFixtureTestCase<ModuleFixture
 
     val myRootPath = myFixture.tempDirFixture.tempDirPath.toNioPathOrNull()!!
 
-    val newRepoNameToPathMap = mapOf("" to myRootPath)
-    project.injectCanonicalRepoNameToPath(newRepoNameToPathMap)
+    project.setRepoMapping { mainRepo(myRootPath) }
     getCanonicalRepoNameToBzlFiles(project)
     IndexingTestUtil.forceSkipWaiting
 
@@ -65,10 +62,7 @@ class BazelLoadFilepathCompletionTest : CodeInsightFixtureTestCase<ModuleFixture
     tempFolder.newFile("rules_kotlin/kt_jvm_library.bzl")
     tempFolder.newFile("rules_kotlin/package/kt_jvm_binary.bzl")
 
-    val newRepoNameToPathMap = mapOf("rules_kotlin" to rulesDir.path.toNioPathOrNull()!!)
-    val newCanonicalRepoNameToApparentName = mapOf("rules_kotlin" to "rules_kotlin")
-    project.injectCanonicalRepoNameToPath(newRepoNameToPathMap)
-    project.injectCanonicalRepoNameToApparentName(newCanonicalRepoNameToApparentName)
+    project.setRepoMapping { repo("rules_kotlin", rulesDir.toPath()) }
     getCanonicalRepoNameToBzlFiles(project)
 
     myFixture.configureByText("BUILD.bazel", """load("//:<caret>)""")
@@ -91,10 +85,7 @@ class BazelLoadFilepathCompletionTest : CodeInsightFixtureTestCase<ModuleFixture
     tempFolder.newFile("rules_jvm_external/defs.bzl")
     tempFolder.newFile("rules_jvm_external/extensions.bzl")
 
-    val newRepoNameToPathMap = mapOf("rules_jvm_external" to rulesDir.path.toNioPathOrNull()!!)
-    val newCanonicalRepoNameToApparentName = mapOf("rules_jvm_external" to "rules_jvm_external")
-    project.injectCanonicalRepoNameToPath(newRepoNameToPathMap)
-    project.injectCanonicalRepoNameToApparentName(newCanonicalRepoNameToApparentName)
+    project.setRepoMapping { repo("rules_jvm_external", rulesDir.toPath()) }
     getCanonicalRepoNameToBzlFiles(project)
 
     myFixture.configureByText("MODULE.bazel", """maven = use_extension("<caret>)""")

@@ -1,9 +1,11 @@
 package org.jetbrains.bazel.languages.projectview.references
 
+import com.intellij.openapi.util.io.toNioPathOrNull
 import com.intellij.testFramework.builders.ModuleFixtureBuilder
 import com.intellij.testFramework.fixtures.CodeInsightFixtureTestCase
 import com.intellij.testFramework.fixtures.ModuleFixture
 import org.jetbrains.bazel.project.BazelProjectFixtures.initializeBazelProject
+import org.jetbrains.bazel.workspace.setRepoMapping
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
@@ -13,6 +15,7 @@ class ProjectViewLabelReferenceTest : CodeInsightFixtureTestCase<ModuleFixtureBu
   override fun setUp() {
     super.setUp()
     initializeBazelProject(project, myFixture.tempDirPath)
+    project.setRepoMapping { mainRepo(myFixture.tempDirPath.toNioPathOrNull()!!) }
   }
 
   @Test

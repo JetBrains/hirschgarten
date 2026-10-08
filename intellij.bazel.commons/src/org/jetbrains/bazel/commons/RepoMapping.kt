@@ -32,3 +32,15 @@ val NoLocalRepositories: LocalRepositoryMapping = LocalRepositoryMapping(emptyMa
 
 @ApiStatus.Internal
 fun RepoMapping.getLocalRepositories() = LocalRepositoryMapping((this as? BzlmodRepoMapping)?.canonicalRepoNameToLocalPath ?: emptyMap())
+
+@get:ApiStatus.Internal
+val RepoMapping.apparentRepoNameToCanonicalName: Map<String, String>
+  get() = (this as? BzlmodRepoMapping)?.apparentRepoNameToCanonicalName?.takeIf { it.isNotEmpty() } ?: mapOf("" to "")
+
+@get:ApiStatus.Internal
+val RepoMapping.canonicalRepoNameToApparentName: Map<String, String>
+  get() = (this as? BzlmodRepoMapping)?.canonicalRepoNameToApparentName?.takeIf { it.isNotEmpty() } ?: mapOf("" to "")
+
+@ApiStatus.Internal
+fun RepoMapping.canonicalRepoNameToPath(workspaceRoot: Path): Map<String, Path> =
+  (this as? BzlmodRepoMapping)?.canonicalRepoNameToPath?.takeIf { it.isNotEmpty() } ?: mapOf("" to workspaceRoot)
