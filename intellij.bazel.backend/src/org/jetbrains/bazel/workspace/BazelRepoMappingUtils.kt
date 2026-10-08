@@ -9,6 +9,8 @@ import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.commons.BzlmodRepoMapping
 import org.jetbrains.bazel.commons.RepoMapping
 import org.jetbrains.bazel.commons.RepoMappingDisabled
+import org.jetbrains.bazel.commons.apparentRepoNameToCanonicalName
+import org.jetbrains.bazel.commons.canonicalRepoNameToApparentName
 import org.jetbrains.bazel.commons.constants.Constants.WORKSPACE_FILE_NAMES
 import org.jetbrains.bazel.label.AllPackagesBeneath
 import org.jetbrains.bazel.label.AllRuleTargets
@@ -24,9 +26,6 @@ import org.jetbrains.bazel.label.SingleTarget
 import org.jetbrains.bazel.label.assumeResolved
 import org.jetbrains.bazel.languages.projectview.ProjectView
 import org.jetbrains.bazel.languages.projectview.targets
-import org.jetbrains.bazel.workspace.apparentRepoNameToCanonicalName
-import org.jetbrains.bazel.workspace.canonicalRepoNameToApparentName
-import org.jetbrains.bazel.workspace.canonicalRepoNameToPath
 import java.nio.file.Path
 
 @ApiStatus.Internal
@@ -102,7 +101,7 @@ fun Label.toApparentLabelOrThis(repoMapping: RepoMapping): Label = toApparentLab
 fun Label.toApparentLabel(project: Project): ResolvedLabel? {
   if (this !is ResolvedLabel) return null
   if (this.repo !is Canonical) return this
-  val apparentRepoName = project.canonicalRepoNameToApparentName[this.repo.repoName] ?: return null
+  val apparentRepoName = project.repoMapping.canonicalRepoNameToApparentName[this.repo.repoName] ?: return null
   return this.copy(repo = Apparent(apparentRepoName))
 }
 
@@ -153,7 +152,7 @@ fun Label.toCanonicalLabel(project: Project): ResolvedLabel? {
       repo
     }
     else {
-      val canonicalRepoName = project.apparentRepoNameToCanonicalName[repo.repoName] ?: return null
+      val canonicalRepoName = project.repoMapping.apparentRepoNameToCanonicalName[repo.repoName] ?: return null
       Canonical.createCanonicalOrMain(canonicalRepoName)
     }
   val target = when (target) {
@@ -200,7 +199,7 @@ private fun Label.toShortString(): String {
   val targetPart =
     when {
       label.target is AmbiguousEmptyTarget -> ""
-      label.target is SingleTarget && label.target.targetName == (label.packagePath as? Package)?.name() -> ""
+      label.target is SingleTarget && (label.target as SingleTarget).targetName == (label.packagePath as? Package)?.name() -> ""
       else -> ":${label.target}"
     }
   return "$repoPart//$packagePart$targetPart"

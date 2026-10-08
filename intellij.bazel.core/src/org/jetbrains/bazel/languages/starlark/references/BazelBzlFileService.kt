@@ -11,11 +11,10 @@ import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.label.Package
 import org.jetbrains.bazel.label.ResolvedLabel
 import org.jetbrains.bazel.label.SingleTarget
+import org.jetbrains.bazel.languages.starlark.repomapping.canonicalRepoNameToPath
 import org.jetbrains.bazel.sync.SyncCache
-import org.jetbrains.bazel.workspace.canonicalRepoNameToPath
 import org.jetbrains.bazel.workspace.excludedRoots
 import java.nio.file.Path
-import kotlin.io.path.Path
 import kotlin.io.path.invariantSeparatorsPathString
 import kotlin.io.path.relativeToOrNull
 
@@ -31,15 +30,16 @@ private val canonicalRepoNameToBzlFilesValue =
 private fun calculateApparentRepoNameToFiles(project: Project): Map<String, List<ResolvedLabel>> {
   val newMap = mutableMapOf<String, List<ResolvedLabel>>()
 
+  val canonicalRepoNameToPath = project.canonicalRepoNameToPath
   val canonicalRepoPaths: Set<VirtualFile> =
-    project.canonicalRepoNameToPath.values
+    canonicalRepoNameToPath.values
       .mapNotNull {
         VirtualFileManager.getInstance().findFileByNioPath(it)
       }.toSet()
 
   val excludedRoots = project.excludedRoots() ?: return emptyMap()
 
-  for ((canonicalName, repoPath) in project.canonicalRepoNameToPath) {
+  for ((canonicalName, repoPath) in canonicalRepoNameToPath) {
     val root = VirtualFileManager.getInstance().findFileByNioPath(repoPath) ?: continue
     val dirToPackagePath = mutableMapOf<VirtualFile, Path?>()
     VfsUtilCore.visitChildrenRecursively(

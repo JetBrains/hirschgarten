@@ -1,17 +1,15 @@
 package org.jetbrains.bazel.languages.starlark.repomapping
 
 import com.intellij.openapi.application.runWriteAction
-import com.intellij.testFramework.replaceService
 import io.kotest.matchers.shouldBe
 import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.label.assumeResolved
 import org.jetbrains.bazel.languages.starlark.references.findReferredPackage
-import org.jetbrains.bazel.workspace.BazelRepoMappingService
 import org.jetbrains.bazel.workspace.model.test.framework.WorkspaceModelBaseTest
+import org.jetbrains.bazel.workspace.setRepoMapping
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import java.nio.file.Path
 
 class BazelRepoMappingUtilsTest : WorkspaceModelBaseTest() {
   @BeforeEach
@@ -25,15 +23,11 @@ class BazelRepoMappingUtilsTest : WorkspaceModelBaseTest() {
         .createChildDirectory(this, "package")
       project.rootDir.createChildDirectory(this, "repo2")
     }
-    val repoMappingService = object : BazelRepoMappingService {
-      override val apparentRepoNameToCanonicalName: Map<String, String>
-        get() = mapOf("" to "", "repo" to "repo~", "repo2" to "repo2+")
-      override val canonicalRepoNameToApparentName: Map<String, String>
-        get() = mapOf("" to "", "repo~" to "repo", "repo2+" to "repo2")
-      override val canonicalRepoNameToPath: Map<String, Path>
-        get() = mapOf("" to rootDir, "repo~" to rootDir.resolve("my", "repo"), "repo2+" to rootDir.resolve("repo2"))
+    project.setRepoMapping {
+      mainRepo(rootDir)
+      repo("repo~", rootDir.resolve("my", "repo"), apparentName = "repo")
+      repo("repo2+", rootDir.resolve("repo2"), apparentName = "repo2")
     }
-    project.replaceService(BazelRepoMappingService::class.java, repoMappingService, disposable)
   }
 
   @Test

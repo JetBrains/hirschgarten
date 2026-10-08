@@ -8,6 +8,7 @@ import com.intellij.lang.java.JavaLanguage
 import com.intellij.monorepo.devkit.bazel.BazelTargetsInfoCache
 import com.intellij.monorepo.devkit.bazel.JpsToBazelConverterRunner
 import com.intellij.monorepo.devkit.bazel.useBazelCompile
+import com.intellij.openapi.components.service
 import com.intellij.openapi.diagnostic.fileLogger
 import com.intellij.openapi.module.Module
 import com.intellij.openapi.project.Project
@@ -19,16 +20,17 @@ import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiManager
 import com.intellij.psi.PsiNameIdentifierOwner
 import com.intellij.psi.util.PsiTreeUtil
+import org.jetbrains.bazel.commons.BzlmodRepoMapping
 import org.jetbrains.bazel.config.isBazelProject
 import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.java.ui.gutters.BazelJavaRunConfigurationProducer
 import org.jetbrains.bazel.kotlin.ui.gutters.BazelKotlinRunConfigurationProducer
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkFile
-import org.jetbrains.bazel.languages.starlark.repomapping.PersistentBazelRepoMappingService
 import org.jetbrains.bazel.languages.starlark.repomapping.calculateLabel
 import org.jetbrains.bazel.project.DefaultProjectViewService
 import org.jetbrains.bazel.run.config.BazelRunConfiguration
+import org.jetbrains.bazel.sync.workspace.persistence.WorkspaceSnapshotService
 import org.jetbrains.bazel.sync.workspace.targetKind.TargetKindService
 import org.jetbrains.bazel.ui.gutters.BazelRunLocation
 import org.jetbrains.bazel.ui.gutters.NonImportedBuildTarget
@@ -119,17 +121,29 @@ internal class MonorepoProjectViewStartupActivity : ProjectActivity {
   override suspend fun execute(project: Project) {
     if (!MonorepoRunLineMarkerContributorUtil.isProjectApplicable(project)) return
 
-    // Set the mapping to support community repo targets
+    val rootDirPath = project.rootDir.toNioPath()
+    val repoNameToPath = mapOf(
+      "community+" to rootDirPath.resolve("community"),
+      "" to rootDirPath,
+    )
+    val repoMapping = BzlmodRepoMapping(
+      apparentRepoNameToCanonicalName = mapOf("community" to "community+", "" to ""),
+      canonicalRepoNameToPath = repoNameToPath,
+      canonicalRepoNameToLocalPath = repoNameToPath,
+      nonLocalCanonicalRepoNames = setOf(),
+    )
+
+    project.service<WorkspaceSnapshotService>().update { snapshot -> snapshot.copy(repoMapping = repoMapping) to Unit }
+
     val rootDir = project.rootDir
-    val rootDirPath = rootDir.toNioPath()
-    val mapping = PersistentBazelRepoMappingService.getInstance(project)
-    mapping.canonicalRepoNameToPath = mapOf("community+" to rootDirPath.resolve("community"), "" to rootDirPath)
-    mapping.apparentRepoNameToCanonicalName = mapOf("community" to "community+", "" to "")
-    mapping.canonicalRepoNameToApparentName = mapOf("community+" to "community", "" to "")
 
     // Set the project view. This is needed for these fields:
     // run_config_run_with_bazel: false
-    val projectViewPath = sequenceOf(rootDir.findChild(".bazelproject"), rootDir.findChild("ultimate.bazelproject"), rootDir.findChild("community.bazelproject"))
+    val projectViewPath = sequenceOf(
+      rootDir.findChild(".bazelproject"),
+      rootDir.findChild("ultimate.bazelproject"),
+      rootDir.findChild("community.bazelproject"),
+    )
       .firstOrNull { it != null && it.exists() }
     if (projectViewPath == null) {
       LOG.warn("Missing project view path")

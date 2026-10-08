@@ -31,10 +31,10 @@ import org.jetbrains.bazel.languages.starlark.psi.functions.StarlarkArgumentList
 import org.jetbrains.bazel.languages.starlark.psi.statements.StarlarkFilenameLoadValue
 import org.jetbrains.bazel.languages.starlark.psi.statements.StarlarkLoadStatement
 import org.jetbrains.bazel.languages.starlark.rename.StarlarkStringLiteralManipulator
+import org.jetbrains.bazel.languages.starlark.repomapping.canonicalRepoNameToPath
 import org.jetbrains.bazel.languages.starlark.repomapping.findContainingBazelRepo
 import org.jetbrains.bazel.languages.starlark.repomapping.toShortString
 import org.jetbrains.bazel.target.targetStorage
-import org.jetbrains.bazel.workspace.canonicalRepoNameToPath
 import java.nio.file.Path
 import kotlin.io.path.Path
 import kotlin.io.path.invariantSeparatorsPathString
@@ -72,9 +72,10 @@ internal class BazelLabelReference(element: StarlarkStringLiteralExpression, sof
 
     val packageName = packagePath.relativeToOrNull(repoPath)?.invariantSeparatorsPathString ?: return null
     val targetName = filePath.relativeToOrNull(packagePath)?.invariantSeparatorsPathString ?: return null
+    val canonicalRepoNameToPath = element.project.canonicalRepoNameToPath
     val label =
       ResolvedLabel(
-        repo = Canonical.createCanonicalOrMain(element.project.canonicalRepoNameToPath.reverse()[repoPath] ?: return null),
+        repo = Canonical.createCanonicalOrMain(canonicalRepoNameToPath.reverse()[repoPath] ?: return null),
         packagePath = Package(packageName.split("/")),
         target = SingleTarget(targetName),
       )
@@ -95,7 +96,8 @@ internal class BazelLabelReference(element: StarlarkStringLiteralExpression, sof
     val fileNameIndex =
       if (label != null && oldContent.contains(":")) {
         oldContent.lastIndexOf(':') + 1 + label.target.toString().lastIndexOf('/')
-      } else {
+      }
+      else {
         oldContent.lastIndexOf('/')
       }
     return if (fileNameIndex >= 0) oldContent.take(fileNameIndex + 1) + newFilename else newFilename
@@ -142,7 +144,8 @@ internal class BazelLabelReference(element: StarlarkStringLiteralExpression, sof
     for (child in children) {
       if (child.isFile && !child.isBazelFile()) {
         allFiles.add(child)
-      } else if (child.isDirectory) {
+      }
+      else if (child.isDirectory) {
         if (findBuildFile(child) == null) {
           searchForAllFiles(index, child, allFiles)
         }

@@ -2,6 +2,7 @@ package org.jetbrains.bazel.sync.workspace.persistence
 
 import com.intellij.configurationStore.SettingsSavingComponent
 import com.intellij.ide.impl.OpenProjectTask
+import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.ex.ProjectManagerEx
 import com.intellij.openapi.project.getProjectDataPath
@@ -66,6 +67,7 @@ class WorkspaceSnapshotServiceTest {
     }
     val project = ProjectManagerEx.getInstanceEx().openProjectAsync(projectDir, options)
                   ?: error("failed to open project")
+    (project.service<WorkspaceSnapshotService>() as? WorkspaceSnapshotServiceImpl)?.forcePersistent = true
     try {
       return action(project)
     }

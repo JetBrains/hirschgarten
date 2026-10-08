@@ -16,6 +16,7 @@ import com.intellij.util.EnvironmentUtil
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import org.jetbrains.bazel.commons.apparentRepoNameToCanonicalName
 import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.jvm.run.BazelJvmDebugRunner
 import org.jetbrains.bazel.jvm.run.COROUTINE_JVM_FLAGS_KEY
@@ -29,6 +30,7 @@ import org.jetbrains.bazel.jvm.run.getJvmDebuggerAgentVmOptions
 import org.jetbrains.bazel.jvm.run.getJvmRunExtensionVmOptions
 import org.jetbrains.bazel.jvm.run.runJvmCommandLine
 import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.languages.starlark.repomapping.repoMapping
 import org.jetbrains.bazel.run.BazelProcessHandler
 import org.jetbrains.bazel.run.BazelRunHandler
 import org.jetbrains.bazel.run.RunHandlerProvider
@@ -38,7 +40,6 @@ import org.jetbrains.bazel.run.task.BazelRunTaskListener
 import org.jetbrains.bazel.server.BazelServerFacade
 import org.jetbrains.bazel.sync.environment.projectCtx
 import org.jetbrains.bazel.taskEvents.BazelTaskListener
-import org.jetbrains.bazel.workspace.apparentRepoNameToCanonicalName
 import org.jetbrains.bsp.protocol.BuildTarget
 import java.io.IOException
 import java.nio.file.Files
@@ -146,7 +147,7 @@ private fun findLaunchFile(project: Project, target: Label): Path {
   // Since we're only using this for our monorepo, and the monorepo doesn't do such things,
   // adding code to our BEP support just for this one case isn't worth the time and effort for now.
   val bazelBinPath = project.projectCtx.bazelBinPath ?: project.rootDir.toNioPath().resolve("out/bazel-bin")
-  return bazelBinPath?.let { intellijDevLaunchFile(it, target, project.apparentRepoNameToCanonicalName) }
+  return bazelBinPath?.let { intellijDevLaunchFile(it, target, project.repoMapping.apparentRepoNameToCanonicalName) }
          ?: throw ExecutionException(BazelDevKitBundle.message("dev.launch.error.no.bazel.bin", target))
 }
 

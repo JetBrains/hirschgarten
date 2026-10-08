@@ -24,6 +24,7 @@ import org.jetbrains.bazel.sync.workspace.persistence.InMemoryWorkspaceTargetMap
 import org.jetbrains.bazel.sync.workspace.persistence.TargetLoadOptions
 import org.jetbrains.bazel.sync.workspace.persistence.TargetSection
 import org.jetbrains.bazel.sync.workspace.persistence.WorkspaceSnapshotService
+import org.jetbrains.bazel.sync.workspace.persistence.WorkspaceSnapshotServiceImpl
 import org.jetbrains.bazel.sync.workspace.snapshot.CommonWorkspaceSyncConfig
 import org.jetbrains.bazel.sync.workspace.snapshot.ExecutableTargetsIndexBuilder
 import org.jetbrains.bazel.sync.workspace.snapshot.File2TargetMapBuilder
@@ -44,6 +45,7 @@ import org.jetbrains.bsp.protocol.OutputLocation
 import org.jetbrains.bsp.protocol.OutputLocationCollection
 import org.jetbrains.bsp.protocol.data
 import org.jetbrains.bsp.protocol.id
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.nio.file.Path
 
@@ -52,6 +54,11 @@ class TargetStorageTest {
 
   private val projectFixture = projectFixture()
   private val project by projectFixture
+
+  @BeforeEach
+  fun before() {
+    (project.service<WorkspaceSnapshotService>() as? WorkspaceSnapshotServiceImpl)?.forcePersistent = true
+  }
 
   private suspend fun publish(project: Project, snapshot: WorkspaceSnapshot) {
     project.service<WorkspaceSnapshotService>().update { snapshot to Unit }
