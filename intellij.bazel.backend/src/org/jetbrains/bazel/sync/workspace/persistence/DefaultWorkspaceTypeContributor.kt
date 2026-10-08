@@ -58,7 +58,6 @@ internal class DefaultWorkspaceTypeContributor : WorkspaceTypeContributor {
     // TrieOutputLocationCollection/PathsTrie/TrieNode are NOT contributed: they are registered as builtins with a
     // handwritten serializer (see SnapshotSerializers.registerBuiltinTypes) - contributing them here
     // would re-register the class with the default reflective serializer
-    sealed<OutputLocation>()
     type<OutputLocationCollection>()
 
     type<BazelInfo>()

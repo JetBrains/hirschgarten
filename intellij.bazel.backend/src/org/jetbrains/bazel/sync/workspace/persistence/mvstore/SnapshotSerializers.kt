@@ -1,5 +1,6 @@
 package org.jetbrains.bazel.sync.workspace.persistence.mvstore
 
+import com.dynatrace.hash4j.hashing.HashValue128
 import com.esotericsoftware.kryo.kryo5.Kryo
 import com.esotericsoftware.kryo.kryo5.io.Input
 import com.esotericsoftware.kryo.kryo5.io.Output
@@ -8,9 +9,7 @@ import it.unimi.dsi.fastutil.ints.IntOpenHashSet
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap
 import org.jetbrains.bazel.label.Label
-import org.jetbrains.bazel.sync.workspace.snapshot.PathsTrie
-import org.jetbrains.bazel.sync.workspace.snapshot.TrieNode
-import org.jetbrains.bazel.sync.workspace.snapshot.TrieOutputLocationCollection
+import org.jetbrains.bazel.sync.workspace.snapshot.InterningOutputLocationCollection
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetGraph
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
 import org.jetbrains.bsp.protocol.OutputLocation
@@ -70,39 +69,36 @@ internal object SnapshotSerializers {
     kryo.register(WorkspaceTargetGraph.EMPTY.javaClass, SingletonSerializer(WorkspaceTargetGraph.EMPTY))
 
     kryo.register(OutputLocationCollection.EMPTY.javaClass, SingletonSerializer(OutputLocationCollection.EMPTY))
-    kryo.register(TrieOutputLocationCollection::class.java, TrieOutputLocationCollectionSerializer())
+    kryo.register(InterningOutputLocationCollection::class.java, InterningOutputLocationCollectionSerializer())
     kryo.register(OutputRoot::class.java, OutputRootSerializer())
+
+    val outputLocationTypes = OutputLocation::class.sealedSubclasses + listOf(OutputLocation::class)
+    outputLocationTypes.forEach { type -> kryo.register(type.java, OutputLocationSerializer()) }
   }
 
   fun singletonSerializerFor(type: Class<*>): VersionedKryoSerializer<*> =
     SingletonSerializer(type.getDeclaredField("INSTANCE").get(null))
 }
 
-internal class TrieOutputLocationCollectionSerializer : VersionedKryoSerializer<TrieOutputLocationCollection>() {
+// locations go through the ref table, so equal locations are stored once per generation
+internal class InterningOutputLocationCollectionSerializer : VersionedKryoSerializer<InterningOutputLocationCollection>() {
   init {
     isImmutable = true
   }
 
-  override val binaryFormatVersion: Int = 2
+  override val binaryFormatVersion: Int = 3
 
-  override fun write(kryo: Kryo, output: Output, obj: TrieOutputLocationCollection) {
-    output.writeVarInt(obj.roots.size, true)
-    for ((root, trie) in obj.roots) {
-      kryo.writeClassAndObject(output, root)
-      writeTrieNode(kryo, output, trie.root)
-    }
+  override fun write(kryo: Kryo, output: Output, obj: InterningOutputLocationCollection) {
+    kryo.writeRefList(output, obj.locations)
   }
 
-  override fun read(kryo: Kryo, input: Input, type: Class<out TrieOutputLocationCollection>): TrieOutputLocationCollection {
-    val rootCount = input.readVarInt(true)
-    val roots = LinkedHashMap<OutputLocation, PathsTrie>(rootCount)
-    repeat(rootCount) {
-      val root = kryo.readClassAndObject(input) as OutputLocation
-      val trie = PathsTrie()
-      readTrieNode(kryo, input, trie.root)
-      roots[root] = trie
-    }
-    return TrieOutputLocationCollection(roots)
+  override fun read(
+    kryo: Kryo,
+    input: Input,
+    type: Class<out InterningOutputLocationCollection>,
+  ): InterningOutputLocationCollection {
+    val locations = kryo.readRefList(input) { it as OutputLocation }
+    return InterningOutputLocationCollection.create(locations)
   }
 }
 
@@ -127,24 +123,6 @@ internal class OutputRootSerializer : VersionedKryoSerializer<OutputRoot>() {
       segments.add(kryo.readPooledString(input))
     }
     return OutputRoot.of(segments)
-  }
-}
-
-private fun writeTrieNode(kryo: Kryo, output: Output, node: TrieNode) {
-  output.writeVarInt((node.children.orEmpty().size shl 1) or (if (node.isTerminal) 1 else 0), true)
-  for (child in node.children.orEmpty()) {
-    kryo.writePooledString(output, child.segment)
-    writeTrieNode(kryo, output, child)
-  }
-}
-
-private fun readTrieNode(kryo: Kryo, input: Input, node: TrieNode) {
-  val header = input.readVarInt(true)
-  node.isTerminal = (header and 1) != 0
-  repeat(header ushr 1) {
-    val child = TrieNode(segment = kryo.readPooledString(input))
-    node.getOrCreateChildren().add(child)
-    readTrieNode(kryo, input, child)
   }
 }
 
@@ -280,6 +258,94 @@ private class PathSerializer : VersionedKryoSerializer<Path>() {
   override fun read(kryo: Kryo, input: Input, type: Class<out Path>): Path = Path(kryo.readPooledString(input))
 }
 
+private class OutputLocationSerializer : VersionedKryoSerializer<OutputLocation>() {
+  companion object {
+    private const val LOCATION_WORKSPACE_ID: Byte = 0
+    private const val LOCATION_OUTPUT_ID: Byte = 1
+    private const val LOCATION_EXTERNAL_ID: Byte = 2
+    private const val LOCATION_HOST_ID: Byte = 3
+    private const val RELATIVE_PATH_SEPARATOR = "/"
+  }
+
+  override val binaryFormatVersion: Int = 1
+
+  override fun write(
+    kryo: Kryo,
+    output: Output,
+    obj: OutputLocation,
+  ) {
+    when (obj) {
+      is OutputLocation.Workspace -> {
+        output.writeByte(LOCATION_WORKSPACE_ID)
+        kryo.writePooledPathString(output, obj.relativePath)
+      }
+
+      is OutputLocation.Output -> {
+        output.writeByte(LOCATION_OUTPUT_ID)
+        kryo.writeRef(output, obj.root)
+        kryo.writePooledPathString(output, obj.relativePath)
+      }
+
+      is OutputLocation.External -> {
+        output.writeByte(LOCATION_EXTERNAL_ID)
+        kryo.writePooledString(output, obj.repoName)
+        kryo.writePooledPathString(output, obj.relativePath)
+        output.writeBoolean(obj.siblingLayout)
+      }
+
+      is OutputLocation.Host -> {
+        output.writeByte(LOCATION_HOST_ID)
+        kryo.writePooledPathString(output, obj.absolutePath)
+      }
+    }
+  }
+
+  override fun read(
+    kryo: Kryo,
+    input: Input,
+    type: Class<out OutputLocation>,
+  ): OutputLocation =
+    when (input.readByte()) {
+      LOCATION_WORKSPACE_ID ->
+        OutputLocation.Workspace(relativePath = kryo.readPooledPathString(input))
+
+      LOCATION_OUTPUT_ID -> {
+        val outputRoot = kryo.readRef(input) as OutputRoot
+        val relativePath = kryo.readPooledPathString(input)
+        OutputLocation.Output(outputRoot, relativePath)
+      }
+
+      LOCATION_EXTERNAL_ID -> {
+        val repoName = kryo.readPooledString(input)
+        val relativePath = kryo.readPooledPathString(input)
+        val siblingLayout = input.readBoolean()
+        OutputLocation.External(repoName, relativePath, siblingLayout)
+      }
+
+      LOCATION_HOST_ID ->
+        OutputLocation.Host(absolutePath = kryo.readPooledPathString(input))
+
+
+      else -> error("Unknown `${OutputLocation::class}` discriminator")
+    }
+
+  private fun Kryo.writePooledPathString(output: Output, str: String) {
+    val segments = str.split(RELATIVE_PATH_SEPARATOR)
+    output.writeVarInt(segments.size, true)
+    for (segment in segments) {
+      this.writePooledString(output, segment)
+    }
+  }
+
+  private fun Kryo.readPooledPathString(input: Input): String {
+    val size = input.readVarInt(true)
+    val segments = ArrayList<String>(size)
+    repeat(size) { segments += this.readPooledString(input) }
+    return segments.joinToString(separator = RELATIVE_PATH_SEPARATOR)
+  }
+
+}
+
 private const val POOLED_STRING_INLINE: Byte = 0
 private const val POOLED_STRING_REF: Byte = 1
 
@@ -307,4 +373,79 @@ internal fun Kryo.readPooledString(input: Input): String {
 
     else -> error("invalid string marker: $marker")
   }
+}
+
+private const val REF_INLINE: Byte = 0
+private const val REF_ID: Byte = 1
+
+internal fun Kryo.writeRef(output: Output, obj: Any) {
+  val table = this.graphContext.get(REF_TABLE_WRITE_KEY) as RefTableWriter?
+  if (table != null) {
+    output.writeByte(REF_ID)
+    output.writeVarInt(table.idFor(obj), true)
+  }
+  else {
+    output.writeByte(REF_INLINE)
+    writeClassAndObject(output, obj)
+  }
+}
+
+internal fun Kryo.readRef(input: Input): Any {
+  return when (val marker = input.readByte()) {
+    REF_ID -> {
+      val table = this.graphContext.get(REF_TABLE_READ_KEY) as? RefTableReader?
+                  ?: error("ref table is required to decode ref")
+      table.get(input.readVarInt(true))
+    }
+
+    REF_INLINE -> readClassAndObject(input)
+
+    else -> error("invalid ref marker: $marker")
+  }
+}
+
+internal fun Kryo.writeRefList(output: Output, values: List<Any>) {
+  output.writeVarInt(values.size, true)
+  if (values.isEmpty()) {
+    return
+  }
+  val table = this.graphContext.get(REF_TABLE_WRITE_KEY) as RefTableWriter?
+  if (table != null) {
+    output.writeByte(REF_ID)
+    for (value in values) {
+      output.writeVarInt(table.idFor(value), true)
+    }
+  }
+  else {
+    output.writeByte(REF_INLINE)
+    for (value in values) {
+      writeClassAndObject(output, value)
+    }
+  }
+}
+
+internal inline fun <T> Kryo.readRefList(input: Input, cast: (Any) -> T): List<T> {
+  val size = input.readVarInt(true)
+  if (size == 0) {
+    return emptyList()
+  }
+  val result = ArrayList<T>(size)
+  when (val marker = input.readByte()) {
+    REF_ID -> {
+      val table = this.graphContext.get(REF_TABLE_READ_KEY) as? RefTableReader?
+                  ?: error("ref table is required to decode ref")
+      repeat(size) {
+        val obj = table.get(input.readVarInt(true))
+        result.add(cast(obj))
+      }
+    }
+
+    REF_INLINE -> repeat(size) {
+      val obj = readClassAndObject(input)
+      result.add(cast(obj))
+    }
+
+    else -> error("invalid ref marker: $marker")
+  }
+  return result
 }

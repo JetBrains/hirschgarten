@@ -1,5 +1,8 @@
 package org.jetbrains.bsp.protocol
 
+import com.dynatrace.hash4j.hashing.HashStream128
+import com.dynatrace.hash4j.hashing.HashValue128
+import com.dynatrace.hash4j.hashing.Hashing
 import com.intellij.openapi.util.io.OSAgnosticPathUtil
 import com.intellij.util.containers.Interner
 import org.jetbrains.annotations.ApiStatus
@@ -144,6 +147,8 @@ interface OutputLocationCollection {
     val EMPTY: OutputLocationCollection = object : OutputLocationCollection {
       override fun isEmpty(): Boolean = true
       override fun getOutputLocations(): Sequence<OutputLocation> = sequenceOf()
+      override fun equals(other: Any?): Boolean = other is OutputLocationCollection && other.isEmpty()
+      override fun hashCode(): Int = EMPTY_CONTENT_HASH.asInt
     }
   }
 }
@@ -161,4 +166,59 @@ interface OutputLocationResolver {
    * @return `null` when the stored path is not a valid path on this platform.
    */
   fun resolve(location: OutputLocation, localOverride: LocalRepositoryMapping? = null): Path?
+}
+
+private val EMPTY_CONTENT_HASH = contentHash(listOf())
+
+@ApiStatus.Internal
+fun OutputLocationCollection.contentEquals(other: OutputLocationCollection): Boolean =
+  getOutputLocations().toHashSet() == other.getOutputLocations().toHashSet()
+
+@ApiStatus.Internal
+fun OutputLocationCollection.contentHashCode(): Int = contentHash().asInt
+
+@ApiStatus.Internal
+fun OutputLocationCollection.contentHash(): HashValue128 = contentHash(getOutputLocations().toHashSet())
+
+// addition is commutative, using that property the same hash will be produced regardless of input order
+// that mean we can avoid expensive sorting of location collection
+@ApiStatus.Internal
+fun contentHash(locations: Iterable<OutputLocation>): HashValue128 {
+  val stream = Hashing.xxh3_128().hashStream()
+  var hi = 0L
+  var lo = 0L
+  for (location in locations) {
+    val hash = location.hash(stream.reset())
+    hi += hash.mostSignificantBits
+    lo += hash.leastSignificantBits
+  }
+  return HashValue128(hi, lo)
+}
+
+private fun OutputLocation.hash(stream: HashStream128): HashValue128 {
+  when (this) {
+    is OutputLocation.Workspace -> {
+      stream.putByte(0)
+      stream.putString(relativePath)
+    }
+
+    is OutputLocation.Output -> {
+      stream.putByte(1)
+      stream.putString(root.path)
+      stream.putString(relativePath)
+    }
+
+    is OutputLocation.External -> {
+      stream.putByte(2)
+      stream.putString(repoName)
+      stream.putString(relativePath)
+      stream.putBoolean(siblingLayout)
+    }
+
+    is OutputLocation.Host -> {
+      stream.putByte(3)
+      stream.putString(absolutePath)
+    }
+  }
+  return stream.get()
 }
