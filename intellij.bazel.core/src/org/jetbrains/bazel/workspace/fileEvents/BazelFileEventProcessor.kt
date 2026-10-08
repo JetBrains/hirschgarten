@@ -26,9 +26,6 @@ import com.intellij.platform.workspace.storage.MutableEntityStorage
 import com.intellij.platform.workspace.storage.entities
 import com.intellij.platform.workspace.storage.url.VirtualFileUrl
 import com.intellij.platform.workspace.storage.url.VirtualFileUrlManager
-import com.intellij.workspaceModel.core.fileIndex.WorkspaceFileIndex
-import com.intellij.workspaceModel.core.fileIndex.WorkspaceFileSetWithCustomData
-import com.intellij.workspaceModel.core.fileIndex.impl.ModuleRelatedRootData
 import com.intellij.workspaceModel.ide.isEqualOrParentOf
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CompletableDeferred
@@ -52,6 +49,7 @@ import org.jetbrains.bazel.server.connection
 import org.jetbrains.bazel.sync.FileToTargetQuery
 import org.jetbrains.bazel.sync.ProjectDirtyStateService
 import org.jetbrains.bazel.sync.ProjectSyncService
+import org.jetbrains.bazel.sync.environment.projectCtx
 import org.jetbrains.bazel.sync.status.SyncStatusService
 import org.jetbrains.bazel.sync.workspace.persistence.WorkspaceSnapshotService
 import org.jetbrains.bazel.target.ModuleTargetService
@@ -97,9 +95,9 @@ interface BazelFileEventProcessor {
  */
 @ApiStatus.Internal
 class BazelFileEventProcessorResult(
-  val removedFromModel: List<Path>,
-  val addedToModel: List<Path>,
-  val failedToEvaluate: List<Path>,
+  val removedFromModel: Collection<Path>,
+  val addedToModel: Collection<Path>,
+  val failedToEvaluate: Collection<Path>,
 ) {
   fun isEmpty(): Boolean =
     removedFromModel.isEmpty() && addedToModel.isEmpty() && failedToEvaluate.isEmpty()
@@ -146,6 +144,10 @@ open class DefaultBazelFileEventProcessor(private val project: Project): BazelFi
     // if a project has no targets, there is no point in processing (also, it could interrupt the initial sync)
     targetUtils.awaitLoaded()
     if (!targetUtils.allTargets().any())
+      return CompletableDeferred(BazelFileEventProcessorResult.EMPTY)
+
+    // No directory is known. Startup or tests?
+    if (project.projectCtx.projectRootDir == null)
       return CompletableDeferred(BazelFileEventProcessorResult.EMPTY)
 
     val simplifiedEvents = events
@@ -382,8 +384,8 @@ open class DefaultBazelFileEventProcessor(private val project: Project): BazelFi
     val visitedRemovedPaths = HashSet<Path>()
     val visitedAddedPaths = HashSet<Path>()
 
-    val removedFromWSM = ArrayList<Path>()
-    val addedToWSM = ArrayList<Path>()
+    val removedFromWSM = HashSet<Path>()
+    val addedToWSM = HashSet<Path>()
 
     context.progressReporter.updateModelStep {
       for (event in events) {
@@ -401,8 +403,7 @@ open class DefaultBazelFileEventProcessor(private val project: Project): BazelFi
         if (removedFile != null && oldTargets.isNotEmpty() && visitedRemovedPaths.add(removedFile)) {
           targetUtils.removeFileToTargetIdEntry(removedFile)
           oldTargets.forEach { toRemove ->
-            val module = toRemove.toModuleEntity(context.workspaceSnapshot, project)
-            if (module != null) {
+            for (module in toRemove.toModuleEntities(context.workspaceSnapshot, project)) {
               val contentRoots = module.contentRoots.filter {
                 it.url == removedFileUrl ||
                 !newTargets.contains(toRemove) && it.url == addedFileUrl
@@ -418,8 +419,7 @@ open class DefaultBazelFileEventProcessor(private val project: Project): BazelFi
         if (addedFile != null && newTargets.isNotEmpty() && visitedAddedPaths.add(addedFile) && addedFileUrl != null) {
           targetUtils.addFileToTargetIdEntry(addedFile, newTargets)
           newTargets.forEach { toAdd ->
-            val module = toAdd.toModuleEntity(context.workspaceSnapshot, project)
-            if (module != null) {
+            for (module in toAdd.toModuleEntities(context.workspaceSnapshot, project)) {
               if (addFileToModule(addedFileUrl, context.entityStorageDiff, module)) {
                 addedToWSM.add(addedFile)
               }
@@ -507,24 +507,6 @@ open class DefaultBazelFileEventProcessor(private val project: Project): BazelFi
     return evaluated + queried
   }
 
-  private suspend fun findModuleSourceRoot(
-    workspaceModelIndex: WorkspaceFileIndex,
-    file: VirtualFile,
-  ): WorkspaceFileSetWithCustomData<ModuleRelatedRootData>? =
-    readAction {
-      workspaceModelIndex.findFileSetWithCustomData(
-        file = file,
-        honorExclusion = true,
-        includeContentSets = true,
-        includeContentNonIndexableSets = true,
-        includeExternalSets = false,
-        includeExternalSourceSets = false,
-        includeExternalNonIndexableSets = false,
-        includeCustomKindSets = false,
-        customDataClass = ModuleRelatedRootData::class.java,
-      )
-    }
-
   protected data class PathAndVFile(val path: Path, val vFile: VirtualFile)
 
   private fun SimplifiedFileEvent.toPathAndVFile(): PathAndVFile? {
@@ -605,8 +587,8 @@ open class DefaultBazelFileEventProcessor(private val project: Project): BazelFi
   )
 }
 
-private fun Label.toModuleEntity(storage: ImmutableEntityStorage, project: Project): ModuleEntity? =
-  project.service<ModuleTargetService>().findModulesByLabel(storage, this).firstOrNull()
+private fun Label.toModuleEntities(storage: ImmutableEntityStorage, project: Project): List<ModuleEntity> =
+  project.service<ModuleTargetService>().findModulesByLabel(storage, this)
 
 private suspend fun queryTargetsForFile(project: Project, filePaths: List<Path>, taskId: TaskId): Map<Path, List<Label>>? {
   if (project.serviceAsync<SyncStatusService>().isSyncInProgress)
