@@ -158,7 +158,6 @@
     <orderEntry type="module" module-name="intellij.platform.commercial" scope="RUNTIME" />
     <orderEntry type="module" module-name="intellij.platform.util.tests" scope="TEST" />
     <orderEntry type="module" module-name="intellij.platform.lang.tests" scope="TEST" />
-    <orderEntry type="module" module-name="intellij.idea.ultimate.codeInsight.tests" scope="TEST" />
     <orderEntry type="module" module-name="intellij.platform.vcs.tests" scope="TEST" />
     <orderEntry type="module" module-name="intellij.vcs.git" scope="TEST" />
     <orderEntry type="module" module-name="intellij.vcs.git.backend" scope="TEST" />
