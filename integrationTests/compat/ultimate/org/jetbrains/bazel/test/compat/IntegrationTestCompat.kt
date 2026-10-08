@@ -10,7 +10,7 @@ import com.intellij.ide.starter.runner.AdditionalModulesForDevBuildServer.IdeTar
 
 object IntegrationTestCompat {
   val requiredModules = arrayOf("intellij.bazel.plugin", "intellij.protoeditor")
-  val requiredFrontendModules = arrayOf("intellij.idea.frontend.split.customization")
+  val requiredFrontendModules = arrayOf("intellij.idea.customization.plugin")
   val requiredPlugins = arrayOf("org.jetbrains.bazel", "idea.plugin.protoeditor")
 
   fun onPreCreateContext() {
