@@ -4,6 +4,10 @@ import com.google.devtools.intellij.aspect.Common
 import com.intellij.testFramework.common.timeoutRunBlocking
 import com.intellij.util.io.createDirectories
 import com.intellij.util.io.delete
+import kotlinx.coroutines.CoroutineStart
+import kotlinx.coroutines.awaitCancellation
+import kotlinx.coroutines.cancelAndJoin
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import org.assertj.core.api.Assertions.assertThat
 import org.jetbrains.bazel.commons.BazelPathsResolver
@@ -148,4 +152,37 @@ internal class BazelOutFileHardLinksTest : MockProjectBaseTest() {
       assertThat(imported.readText()).isEqualTo("JAR")
       assertThat(links.allHardLinksCreatedSuccessfully).isTrue()
     }
+
+  @Test
+  fun `sync after a cancelled sync links the current content`(@TempDir outputBase: Path): Unit = timeoutRunBlocking {
+    val root = Path(checkNotNull(project.basePath)).toRealPath()
+    BazelProjectFixtures.initializeBazelProject(project, root)
+    val info = testBazelInfo(workspaceRoot = root, outputBase = outputBase)
+    val links = DefaultBazelOutputFileHardLinks(project, info)
+    val original = info.execRoot.resolve("bazel-out/k8-fastbuild/bin/pkg/lib.jar")
+    original.parent.createDirectories()
+    original.writeText("first")
+
+    links.onBeforeSync()
+    links.createOutputFileHardLink(original)
+    // ProjectSyncTask calls onAfterSync in a finally block, also when the user cancels the sync
+    val cancelledSync = launch(start = CoroutineStart.UNDISPATCHED) {
+      try {
+        awaitCancellation()
+      }
+      finally {
+        links.onAfterSync(true)
+      }
+    }
+    cancelledSync.cancelAndJoin()
+
+    // Bazel deletes and recreates an output file when it changes it
+    original.delete()
+    original.writeText("second")
+    original.setLastModifiedTime(FileTime.fromMillis(1_700_000_000_000))
+    links.onBeforeSync()
+    val link = checkNotNull(links.createOutputFileHardLink(original))
+    links.onAfterSync(true)
+    assertThat(link.readText()).isEqualTo("second")
+  }
 }

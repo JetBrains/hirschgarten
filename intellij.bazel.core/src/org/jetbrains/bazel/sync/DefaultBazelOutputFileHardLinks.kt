@@ -207,22 +207,27 @@ class DefaultBazelOutputFileHardLinks(
   }
 
   override fun onBeforeSync() {
+    hardLinksDuringSync.clear()
     syncRunning.set(true)
     allHardLinksCreatedSuccessfully = true
   }
 
   override suspend fun onAfterSync(fullProjectModelUpdated: Boolean) {
     if (syncRunning.compareAndSet(true, false)) {
-      RefreshQueue.getInstance().refresh(
-        recursive = false,
-        hardLinksDuringSync.values.awaitAll().filter { it.requiresRefresh }.map { it.virtualFile },
-      )
+      try {
+        RefreshQueue.getInstance().refresh(
+          recursive = false,
+          hardLinksDuringSync.values.awaitAll().filter { it.requiresRefresh }.map { it.virtualFile },
+        )
 
-      if (fullProjectModelUpdated) {
-        // If sync failed and project model wasn't updated, the user will still see outputs from the previous sync and code won't be red.
-        deleteUnusedHardLinks()
+        if (fullProjectModelUpdated) {
+          // If sync failed and project model wasn't updated, the user will still see outputs from the previous sync and code won't be red.
+          deleteUnusedHardLinks()
+        }
       }
-      hardLinksDuringSync.clear()
+      finally {
+        hardLinksDuringSync.clear()
+      }
     }
   }
 
