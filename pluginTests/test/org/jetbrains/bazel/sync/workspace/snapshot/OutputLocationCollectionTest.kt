@@ -4,10 +4,14 @@ import io.kotest.matchers.booleans.shouldBeFalse
 import io.kotest.matchers.booleans.shouldBeTrue
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.shouldNotBe
 import kotlinx.coroutines.test.runTest
 import org.jetbrains.bazel.workspace.model.test.framework.BuildServerMock
 import org.jetbrains.bsp.protocol.OutputLocation
+import org.jetbrains.bsp.protocol.OutputLocationCollection
 import org.jetbrains.bsp.protocol.OutputRoot
+import org.jetbrains.bsp.protocol.contentEquals
+import org.jetbrains.bsp.protocol.contentHashCode
 import org.junit.jupiter.api.Test
 
 class OutputLocationCollectionTest {
@@ -59,5 +63,31 @@ class OutputLocationCollectionTest {
 
     (a == b).shouldBeTrue()
     a.hashCode() shouldBe b.hashCode()
+  }
+
+  @Test
+  fun `equals tell sibling layout apart`() {
+    val external = OutputLocationCollectionBuilder.ofLocations(listOf(OutputLocation.External("catch2+", "src/a.h")))
+    val sibling = OutputLocationCollectionBuilder.ofLocations(listOf(OutputLocation.External("catch2+", "src/a.h", siblingLayout = true)))
+
+    external shouldNotBe sibling
+  }
+
+  @Test
+  fun `equals tell one changed element apart`() {
+    val locations = List(100_000) { OutputLocation.Workspace("src/pkg${it / 100}/file$it.h") }
+
+    val a = OutputLocationCollectionBuilder.ofLocations(locations)
+    val reversed = OutputLocationCollectionBuilder.ofLocations(locations.reversed())
+    val changed = OutputLocationCollectionBuilder.ofLocations(locations.dropLast(1) + OutputLocation.Workspace("src/other.h"))
+
+    a shouldBe reversed
+    a.hashCode() shouldBe reversed.hashCode()
+    a shouldNotBe changed
+  }
+
+  @Test
+  fun `empty collections are equal`() {
+    OutputLocationCollectionBuilder.ofLocations(emptyList()) shouldBe OutputLocationCollection.EMPTY
   }
 }

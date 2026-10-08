@@ -7,6 +7,7 @@ import com.esotericsoftware.kryo.kryo5.util.Pool
 import com.github.benmanes.caffeine.cache.Cache
 import com.github.benmanes.caffeine.cache.Caffeine
 import com.intellij.openapi.diagnostic.logger
+import com.intellij.util.io.CorruptedException
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap
 import it.unimi.dsi.fastutil.ints.IntArrayList
 import it.unimi.dsi.fastutil.ints.IntList
@@ -75,6 +76,8 @@ private val KRYO_OUTPUT_POOL: Pool<Output> =
  * Some custom Kryo serializers use global string table (only for selected types) to avoid duplication enormous amount of data,
  * for ultimate case it caused near double reduction ~110mb -> ~60mb in on disk database size, and overall read/write speed improvements
  * for full materializations.
+ * The global ref table applies the same idea to objects of any type, e.g. output locations.
+ * Each ref value frame keeps the type of the object.
  */
 @ApiStatus.Internal
 class SnapshotStorage(
@@ -85,7 +88,7 @@ class SnapshotStorage(
     private val log = logger<SnapshotStorage>()
 
     private val GENERATION_MAP_SUFFIXES =
-      listOf("id2PartialTarget", "id2TargetDeps", "id2HeavyTarget", "id2TargetData", "file2KeyIds", "executables", "strings")
+      listOf("id2PartialTarget", "id2TargetDeps", "id2HeavyTarget", "id2TargetData", "file2KeyIds", "executables", "strings", "refs")
 
     private fun mapName(generation: Int, suffix: String) = "snapshot.g$generation.$suffix"
 
@@ -151,6 +154,7 @@ class SnapshotStorage(
       file2KeyIds = openMap(mapName(generation, "file2KeyIds"), LongDataType.INSTANCE, IntListDataType),
       executables = openMap(mapName(generation, "executables"), IntegerDataType.INSTANCE, IntListDataType),
       strings = openMap(mapName(generation, "strings"), IntegerDataType.INSTANCE, StringDataType.INSTANCE),
+      refs = openFrameMap(mapName(generation, "refs"), IntegerDataType.INSTANCE),
     )
     generationRefMap.computeIfAbsent(generation) { CopyOnWriteArrayList() }
       .add(WeakReference(handle))
@@ -212,12 +216,21 @@ class SnapshotStorage(
     }
   }
 
-  internal fun encodeFrame(kryo: Kryo, output: Output, value: Any, stringTable: StringTableWriter? = null): ValueFrame {
+  internal fun encodeFrame(
+    kryo: Kryo,
+    output: Output,
+    value: Any,
+    stringTable: StringTableWriter? = null,
+    refTable: RefTableWriter? = null,
+  ): ValueFrame {
     try {
       output.reset()
+      // cleared by kryo's auto-reset after the top-level write
       if (stringTable != null) {
-        // cleared by kryo's auto-reset after the top-level write
         kryo.graphContext.put(STRING_TABLE_WRITE_KEY, stringTable)
+      }
+      if (refTable != null) {
+        kryo.graphContext.put(REF_TABLE_WRITE_KEY, refTable)
       }
       kryo.writeClassAndObject(output, value)
       return ValueFrame.Present(SNAPSHOT_FORMAT_VERSION, output.toBytes())
@@ -228,28 +241,40 @@ class SnapshotStorage(
     }
   }
 
-  internal fun <T> decodeFrame(frame: ValueFrame?, type: Class<T>, stringTable: StringTableReader? = null): T? {
+  internal fun <T> decodeFrame(
+    frame: ValueFrame,
+    type: Class<T>,
+    stringTable: StringTableReader? = null,
+    refTable: RefTableReader? = null,
+  ): T {
     if (frame !is ValueFrame.Present) {
-      return null
+      throw CorruptedException("${type} frame corrupted")
     }
     if (frame.version != SNAPSHOT_FORMAT_VERSION) {
-      return null
+      // this is illegal state, MVStore database is guarded by on-disk blob
+      throw CorruptedException("${type} frame version mismatch")
     }
-    return try {
+    val obj = try {
       val input = ByteBufferInput(ByteBuffer.wrap(frame.payload))
-      val obj = kryo.valuePool.use { k ->
+      // a nested decode of a ref value obtains another kryo, the pool creates one when it is empty
+      kryo.valuePool.use { k ->
+        // cleared by kryo's auto-reset after the top-level read
         if (stringTable != null) {
-          // cleared by kryo's auto-reset after the top-level read
           k.graphContext.put(STRING_TABLE_READ_KEY, stringTable)
+        }
+        if (refTable != null) {
+          k.graphContext.put(REF_TABLE_READ_KEY, refTable)
         }
         k.readClassAndObject(input)
       }
-      type.cast(obj)
+    } catch (e: Throwable) {
+      throw CorruptedException("Frame decode error", e)
     }
-    catch (e: Throwable) {
-      log.error("Error deserializing snapshot value", e)
-      null
+    // frames are encoded from non-null values only
+    if (!type.isInstance(obj)) {
+      throw CorruptedException("${type} frame holds ${obj?.javaClass}")
     }
+    return type.cast(obj)
   }
 
   private fun <K> openFrameMap(name: String, keyType: DataType<K>): MVMap<K, ValueFrame> {
@@ -284,6 +309,7 @@ class SnapshotGeneration internal constructor(
   private val file2KeyIds: MVMap<Long, IntArrayList>,
   private val executables: MVMap<Int, IntArrayList>,
   private val strings: MVMap<Int, String>,
+  private val refs: MVMap<Int, ValueFrame>,
 ) {
   private val fullTargetCache: Cache<WorkspaceTargetKey, BuildTarget?> = Caffeine.newBuilder()
     .weakValues() // TODO: check if cleaning cache after sync is better
@@ -295,7 +321,12 @@ class SnapshotGeneration internal constructor(
   // we can access this table on the fly while reading/writing objects
   private val stringTable = StringTableReader(strings)
 
+  // global generation object table, same idea as the string table but for objects of any type
+  private val refTable: RefTableReader = RefTableReader(refs) { frame -> decodeValue(frame, Any::class.java) }
+
   internal fun isLive(): Boolean = !id2PartialTarget.isClosed
+
+  private fun <T> decodeValue(frame: ValueFrame, type: Class<T>): T = storage.decodeFrame(frame, type, stringTable, refTable)
 
   private fun composeNewWorkspaceTarget(
     partialSnapshot: PersistentWorkspaceSnapshot,
@@ -307,8 +338,8 @@ class SnapshotGeneration internal constructor(
       // TODO: assert
       return null
     }
-    val partialData = storage.decodeFrame(id2PartialTarget[keyId], PartialWorkspaceTarget::class.java, stringTable)
-                      ?: return null
+    val partialFrame = id2PartialTarget[keyId] ?: return null
+    val partialData = decodeValue(partialFrame, PartialWorkspaceTarget::class.java)
     return composeFromFrames(
       key = key,
       options = options,
@@ -352,17 +383,19 @@ class SnapshotGeneration internal constructor(
     )
   }
 
+  // an absent frame is a valid state, e.g. a retired generation, and decodes to an empty section
   private fun decodeDeps(frame: ValueFrame?): List<DependencyLabel> =
-    storage.decodeFrame(frame, WorkspaceTargetDeps::class.java, stringTable)?.dependencies ?: listOf()
+    if (frame == null) listOf() else decodeValue(frame, WorkspaceTargetDeps::class.java).dependencies
 
   private fun decodeFileSets(frame: ValueFrame?): HeavyWorkspaceTarget =
-    storage.decodeFrame(frame, HeavyWorkspaceTarget::class.java, stringTable) ?: EMPTY_FILE_SETS
+    if (frame == null) EMPTY_FILE_SETS else decodeValue(frame, HeavyWorkspaceTarget::class.java)
 
   private inline fun decodeData(typeIds: IntList, dataFrameForType: (typeId: Int) -> ValueFrame?): List<BuildTargetData> {
     val loadedData = ArrayList<BuildTargetData>(typeIds.size)
     for (n in typeIds.indices) {
-      val frame = dataFrameForType(typeIds.getInt(n))
-      loadedData += storage.decodeFrame(frame, BuildTargetData::class.java, stringTable) ?: continue
+      // a target has frames only for the data types it holds
+      val frame = dataFrameForType(typeIds.getInt(n)) ?: continue
+      loadedData += decodeValue(frame, BuildTargetData::class.java)
     }
     return loadedData
   }
@@ -403,7 +436,7 @@ class SnapshotGeneration internal constructor(
 
     for ((keyId, partialFrame) in id2PartialTarget.entries) {
       val key = partialSnapshot.keyId2Target.get(keyId) ?: continue
-      val partialData = storage.decodeFrame(partialFrame, PartialWorkspaceTarget::class.java, stringTable) ?: continue
+      val partialData = decodeValue(partialFrame, PartialWorkspaceTarget::class.java)
 
       val depsFrame = depsCursor?.advanceTo(keyId.toLong())
       val heavyFrame = heavyCursor?.advanceTo(keyId.toLong())
@@ -452,26 +485,25 @@ class SnapshotGeneration internal constructor(
 
   suspend fun saveTargets(targets: List<WorkspaceTargetToSave>) {
     val stringTable = StringTableWriter()
-    val encodedChunks = withContext(ENCODE_DISPATCHER) {
-      targets.chunked(ENCODE_CHUNK_SIZE)
-        .map { chunk ->
-          async {
-            // use single kryo for batch to avoid pool lock contention
-            storage.kryo.valuePool.use { kryo ->
-              KRYO_OUTPUT_POOL.use { output ->
-                chunk.map { encodeTarget(it, kryo, output, stringTable) }
-              }
-            }
-          }
-        }
-        .awaitAll()
-    }
+    val refTable = RefTableWriter()
+    val encodedChunks = encodeInChunks(targets) { kryo, output, target -> encodeTarget(target, kryo, output, stringTable, refTable) }
     for (chunk in encodedChunks) {
       for (target in chunk) {
         appendTarget(target)
       }
     }
-    // persisted in the same commit as the frames that reference it
+
+    // ref values are encoded without the ref table, so a ref inside a ref value is written inline
+    val encodedRefs =
+      encodeInChunks(refTable.sortedEntries()) { kryo, output, (id, ref) -> id to storage.encodeFrame(kryo, output, ref, stringTable) }
+    for (chunk in encodedRefs) {
+      for ((id, ref) in chunk) {
+        refs.append(id, ref)
+      }
+    }
+
+    // persisted in the same commit as the frames that reference it,
+    // written last because the ref values can add strings
     for ((id, value) in stringTable.sortedEntries()) {
       strings.append(id, value)
     }
@@ -479,11 +511,29 @@ class SnapshotGeneration internal constructor(
     fullTargetCache.invalidateAll()
   }
 
+  // result chunks keep the order of `items`
+  private suspend fun <T, R> encodeInChunks(items: List<T>, encode: (kryo: Kryo, output: Output, item: T) -> R): List<List<R>> =
+    withContext(ENCODE_DISPATCHER) {
+      items.chunked(ENCODE_CHUNK_SIZE)
+        .map { chunk ->
+          async {
+            // use single kryo for batch to avoid pool lock contention
+            storage.kryo.valuePool.use { kryo ->
+              KRYO_OUTPUT_POOL.use { output ->
+                chunk.map { encode(kryo, output, it) }
+              }
+            }
+          }
+        }
+        .awaitAll()
+    }
+
   private fun encodeTarget(
     target: WorkspaceTargetToSave,
     kryo: Kryo,
     output: Output,
     stringTable: StringTableWriter? = null,
+    refTable: RefTableWriter? = null,
   ): EncodedWorkspaceTarget {
     val raw = target.target
 
@@ -513,10 +563,10 @@ class SnapshotGeneration internal constructor(
 
     return EncodedWorkspaceTarget(
       keyId = target.keyId,
-      partialFrame = storage.encodeFrame(kryo, output, partialTarget, stringTable),
-      depsFrame = storage.encodeFrame(kryo, output, targetDeps, stringTable),
-      heavyFrame = storage.encodeFrame(kryo, output, heavyTarget, stringTable),
-      dataFrames = sortedData.map { (dataId, data) -> dataId to storage.encodeFrame(kryo, output, data, stringTable) },
+      partialFrame = storage.encodeFrame(kryo, output, partialTarget, stringTable, refTable),
+      depsFrame = storage.encodeFrame(kryo, output, targetDeps, stringTable, refTable),
+      heavyFrame = storage.encodeFrame(kryo, output, heavyTarget, stringTable, refTable),
+      dataFrames = sortedData.map { (dataId, data) -> dataId to storage.encodeFrame(kryo, output, data, stringTable, refTable) },
     )
   }
 
@@ -566,6 +616,9 @@ class SnapshotGeneration internal constructor(
   }
 
   fun fileCount(): Int = if (isLive()) file2KeyIds.size else 0
+
+  @VisibleForTesting
+  fun refCount(): Int = if (isLive()) refs.size else 0
 
   // <label id> -> <list of label id>
   fun saveExecutableTargets(map: Int2ObjectMap<IntArrayList>) {

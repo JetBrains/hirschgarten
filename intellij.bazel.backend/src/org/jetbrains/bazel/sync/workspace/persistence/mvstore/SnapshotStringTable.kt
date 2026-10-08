@@ -1,5 +1,6 @@
 package org.jetbrains.bazel.sync.workspace.persistence.mvstore
 
+import com.intellij.util.containers.CollectionFactory
 import org.h2.mvstore.MVMap
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicInteger
@@ -21,7 +22,7 @@ internal class StringTableWriter {
 }
 
 internal class StringTableReader(private val strings: MVMap<Int, String>) {
-  private val cache = ConcurrentHashMap<Int, String>()
+  private val cache = CollectionFactory.createConcurrentWeakValueMap<Int, String>()
 
   fun get(id: Int): String =
     cache.computeIfAbsent(id) { strings[it] ?: error("string table has no entry for id $it") }
