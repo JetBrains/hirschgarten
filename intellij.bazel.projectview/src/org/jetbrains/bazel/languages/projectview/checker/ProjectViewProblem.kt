@@ -33,5 +33,10 @@ data class ProjectViewProblem(
      * Can only be applied to section PSI element.
      */
     data class MergeIntoSection(val targetSectionKey: ProjectViewSectionKey<*>) : QuickFix
+
+    /**
+     * Special quick fix to replace deprecated `index_...` sections with `index`.
+     */
+    data object ReplaceWithIndex : QuickFix
   }
 }

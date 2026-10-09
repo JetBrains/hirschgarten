@@ -19,8 +19,9 @@ interface BazelProjectDirectoriesEntityBuilder : WorkspaceEntityBuilder<BazelPro
   var projectRoot: VirtualFileUrl
   var includedRoots: MutableList<VirtualFileUrl>
   var excludedRoots: MutableList<VirtualFileUrl>
-  var indexAllFilesInIncludedRoots: Boolean
-  var indexAdditionalFiles: MutableList<VirtualFileUrl>
+  var indexPatterns: MutableList<String>
+  var indexableRecursiveRoots: MutableList<VirtualFileUrl>
+  var indexableNonRecursiveRoots: MutableList<VirtualFileUrl>
 }
 
 internal object BazelProjectDirectoriesEntityType : EntityType<BazelProjectDirectoriesEntity, BazelProjectDirectoriesEntityBuilder>() {
@@ -30,8 +31,9 @@ internal object BazelProjectDirectoriesEntityType : EntityType<BazelProjectDirec
     projectRoot: VirtualFileUrl,
     includedRoots: List<VirtualFileUrl>,
     excludedRoots: List<VirtualFileUrl>,
-    indexAllFilesInIncludedRoots: Boolean,
-    indexAdditionalFiles: List<VirtualFileUrl>,
+    indexPatterns: List<String>,
+    indexableRecursiveRoots: List<VirtualFileUrl>,
+    indexableNonRecursiveRoots: List<VirtualFileUrl>,
     entitySource: EntitySource,
     init: (BazelProjectDirectoriesEntityBuilder.() -> Unit)? = null,
   ): BazelProjectDirectoriesEntityBuilder {
@@ -39,8 +41,9 @@ internal object BazelProjectDirectoriesEntityType : EntityType<BazelProjectDirec
     builder.projectRoot = projectRoot
     builder.includedRoots = includedRoots.toMutableWorkspaceList()
     builder.excludedRoots = excludedRoots.toMutableWorkspaceList()
-    builder.indexAllFilesInIncludedRoots = indexAllFilesInIncludedRoots
-    builder.indexAdditionalFiles = indexAdditionalFiles.toMutableWorkspaceList()
+    builder.indexPatterns = indexPatterns.toMutableWorkspaceList()
+    builder.indexableRecursiveRoots = indexableRecursiveRoots.toMutableWorkspaceList()
+    builder.indexableNonRecursiveRoots = indexableNonRecursiveRoots.toMutableWorkspaceList()
     builder.entitySource = entitySource
     init?.invoke(builder)
     return builder
@@ -60,16 +63,18 @@ fun BazelProjectDirectoriesEntity(
   projectRoot: VirtualFileUrl,
   includedRoots: List<VirtualFileUrl>,
   excludedRoots: List<VirtualFileUrl>,
-  indexAllFilesInIncludedRoots: Boolean,
-  indexAdditionalFiles: List<VirtualFileUrl>,
+  indexPatterns: List<String>,
+  indexableRecursiveRoots: List<VirtualFileUrl>,
+  indexableNonRecursiveRoots: List<VirtualFileUrl>,
   entitySource: EntitySource,
   init: (BazelProjectDirectoriesEntityBuilder.() -> Unit)? = null,
 ): BazelProjectDirectoriesEntityBuilder = BazelProjectDirectoriesEntityType(
   projectRoot,
   includedRoots,
   excludedRoots,
-  indexAllFilesInIncludedRoots,
-  indexAdditionalFiles,
+  indexPatterns,
+  indexableRecursiveRoots,
+  indexableNonRecursiveRoots,
   entitySource,
   init,
 )

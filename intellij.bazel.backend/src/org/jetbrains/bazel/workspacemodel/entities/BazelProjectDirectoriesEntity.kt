@@ -11,6 +11,12 @@ interface BazelProjectDirectoriesEntity : WorkspaceEntity {
   public val projectRoot: VirtualFileUrl
   public val includedRoots: List<VirtualFileUrl>
   public val excludedRoots: List<VirtualFileUrl>
-  public val indexAllFilesInIncludedRoots: Boolean
-  public val indexAdditionalFiles: List<VirtualFileUrl>
+
+  /**
+   * Patterns used to compute [indexableRecursiveRoots] and [indexableNonRecursiveRoots].
+   * We need to preserve them to properly process file events and keep [indexableNonRecursiveRoots] up to date.
+   */
+  public val indexPatterns: List<String>
+  public val indexableRecursiveRoots: List<VirtualFileUrl>
+  public val indexableNonRecursiveRoots: List<VirtualFileUrl>
 }

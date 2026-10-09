@@ -19,6 +19,10 @@ class ProjectViewParsingAllSectionsTest : ProjectViewParsingTestCase("sections")
     doTest(true)
   }
 
+  fun testIndex() {
+    doTest(true)
+  }
+
   fun testShardSync() {
     doTest(true)
   }

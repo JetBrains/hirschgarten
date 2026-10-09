@@ -85,22 +85,10 @@ val ProjectView.gazelleTarget: Label?
   get() = getSection(GAZELLE_TARGET_KEY)
 
 @Internal
-val INDEX_ALL_FILES_IN_DIRECTORIES_KEY: ProjectViewSectionKey<Boolean> = ProjectViewSectionKey("index_all_files_in_directories", false)
-val ProjectView.indexAllFilesInDirectories: Boolean
-  @Internal
-  get() = getSection(INDEX_ALL_FILES_IN_DIRECTORIES_KEY)
-
-@Internal
 val PYTHON_DEBUG_FLAGS_KEY: ProjectViewSectionKey<List<String>> = ProjectViewSectionKey("python_debug_flags", emptyList())
 val ProjectView.pythonDebugFlags: List<String>
   @Internal
   get() = getSection(PYTHON_DEBUG_FLAGS_KEY)
-
-@Internal
-val INDEX_ADDITIONAL_FILES_IN_DIRECTORIES_KEY: ProjectViewSectionKey<List<String>> = ProjectViewSectionKey("index_additional_files_in_directories", emptyList())
-val ProjectView.indexAdditionalFilesInDirectories: List<String>
-  @Internal
-  get() = getSection(INDEX_ADDITIONAL_FILES_IN_DIRECTORIES_KEY)
 
 @Internal
 val RUN_CONFIG_RUN_WITH_BAZEL_KEY: ProjectViewSectionKey<Boolean> = ProjectViewSectionKey("run_config_run_with_bazel", BazelFeatureFlags.runConfigRunWithBazel)
@@ -119,3 +107,16 @@ val DOT_IDEA_DIRECTORY_LOCATION_KEY: ProjectViewSectionKey<Path?> = ProjectViewS
 val ProjectView.dotIdeaDirectoryLocation: Path?
   @Internal
   get() = getSection(DOT_IDEA_DIRECTORY_LOCATION_KEY)
+
+@Internal
+val INDEX_KEY: ProjectViewSectionKey<List<String>> = ProjectViewSectionKey("index", emptyList())
+val ProjectView.index: List<String>
+  @Internal
+  get() = getSection(INDEX_KEY).ifEmpty {
+    if (getSection(INDEX_ALL_FILES_IN_DIRECTORIES_KEY)) listOf("*") else getSection(INDEX_ADDITIONAL_FILES_IN_DIRECTORIES_KEY)
+  }
+
+@Internal
+val INDEX_ALL_FILES_IN_DIRECTORIES_KEY: ProjectViewSectionKey<Boolean> = ProjectViewSectionKey("index_all_files_in_directories", false)
+@Internal
+val INDEX_ADDITIONAL_FILES_IN_DIRECTORIES_KEY: ProjectViewSectionKey<List<String>> = ProjectViewSectionKey("index_additional_files_in_directories", emptyList())

@@ -24,3 +24,6 @@ interface ProjectViewService {
 
 @ApiStatus.Internal
 fun Project.projectView(): ProjectView = ProjectViewService.getInstance(this).projectView
+
+@ApiStatus.Internal
+fun Project.projectViewPath(): Path? = ProjectViewService.getInstance(this).projectViewPath

@@ -1,6 +1,5 @@
 package org.jetbrains.bazel.languages.starlark.safeDelete
 
-import com.intellij.openapi.application.runWriteAction
 import com.intellij.openapi.roots.ModuleRootModificationUtil
 import com.intellij.openapi.vfs.VfsUtil
 import com.intellij.openapi.vfs.VirtualFile
@@ -14,6 +13,8 @@ import com.intellij.testFramework.junit5.fixture.moduleFixture
 import com.intellij.testFramework.junit5.fixture.projectFixture
 import com.intellij.testFramework.junit5.fixture.tempPathFixture
 import com.intellij.testFramework.runInEdtAndWait
+import io.kotest.common.runBlocking
+import kotlinx.coroutines.test.runTest
 import org.jetbrains.bazel.project.BazelProjectFixtures.initializeBazelProject
 import org.jetbrains.bazel.workspacemodel.entities.BazelProjectDirectoriesEntity
 import org.jetbrains.bazel.workspacemodel.entities.BazelProjectDirectoriesEntityFixtures.emptyBazelDirectoryWorkspaceEntity
@@ -45,11 +46,11 @@ internal class FileUsagesSafeDeleteTest {
   fun setUp() {
     initializeBazelProject(project, tempDir)
     replaceDefaultContentRoot(tempDir.resolve("src").createDirectories())
-    addBazelDirectoriesEntity()
+    runBlocking { addBazelDirectoriesEntity() }
   }
 
   @Test
-  fun `safe delete should not prevent deleting source file when referred in glob`() {
+  fun `safe delete should not prevent deleting source file when referred in glob`() = runTest {
     val sourceFile = codeInsightFixture.addFileToProject("src/com/example/Foo.kt", "package com.example\nclass Foo")
     addBuildFile("""
       kt_jvm_library(
@@ -63,7 +64,7 @@ internal class FileUsagesSafeDeleteTest {
   }
 
   @Test
-  fun `safe delete should not prevent deleting source file when referred explicitly`() {
+  fun `safe delete should not prevent deleting source file when referred explicitly`() = runTest {
     val sourceFile = codeInsightFixture.addFileToProject("src/com/example/Foo.kt", "package com.example\nclass Foo")
     addBuildFile("""
       kt_jvm_library(
@@ -76,19 +77,17 @@ internal class FileUsagesSafeDeleteTest {
     }
   }
 
-  private fun addBuildFile(content: String) {
+  private suspend fun addBuildFile(content: String) {
     val buildFile = codeInsightFixture.addFileToProject("BUILD.bazel", content)
     registerBuildFile(buildFile.virtualFile)
   }
 
-  private fun registerBuildFile(buildFileVf: VirtualFile) {
+  private suspend fun registerBuildFile(buildFileVf: VirtualFile) {
     val urlManager = project.workspaceModel.getVirtualFileUrlManager()
-    runWriteAction {
-      project.workspaceModel.updateProjectModel("register BUILD file") { storage ->
-        val entity = storage.entities(BazelProjectDirectoriesEntity::class.java).first()
-        storage.modifyBazelProjectDirectoriesEntity(entity) {
-          indexAdditionalFiles = mutableListOf(urlManager.storeAndGet(buildFileVf))
-        }
+    project.workspaceModel.update("register BUILD file") { storage ->
+      val entity = storage.entities(BazelProjectDirectoriesEntity::class.java).first()
+      storage.modifyBazelProjectDirectoriesEntity(entity) {
+        indexableNonRecursiveRoots = mutableListOf(urlManager.storeAndGet(buildFileVf))
       }
     }
     IndexingTestUtil.waitUntilIndexesAreReady(project)
@@ -102,11 +101,9 @@ internal class FileUsagesSafeDeleteTest {
     }
   }
 
-  private fun addBazelDirectoriesEntity() {
-    runWriteAction {
-      project.workspaceModel.updateProjectModel("add BazelProjectDirectoriesEntity") {
-        it.addEntity(emptyBazelDirectoryWorkspaceEntity(project))
-      }
+  private suspend fun addBazelDirectoriesEntity() {
+    project.workspaceModel.update("add BazelProjectDirectoriesEntity") {
+      it.addEntity(emptyBazelDirectoryWorkspaceEntity(project))
     }
   }
 }

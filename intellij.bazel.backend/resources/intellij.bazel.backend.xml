@@ -96,8 +96,8 @@
       interface="org.jetbrains.bazel.sync.workspace.importer.BazelWorkspaceImporterFactory"
       qualifiedName="org.jetbrains.bazel.syncWorkspaceImporterFactory"
     />
-    <extensionPoint qualifiedName="org.jetbrains.bazel.indexAdditionalFilesContributor"
-                    interface="org.jetbrains.bazel.workspace.indexAdditionalFiles.IndexAdditionalFilesContributor"
+    <extensionPoint qualifiedName="org.jetbrains.bazel.indexableContentContributor"
+                    interface="org.jetbrains.bazel.workspace.indexing.IndexableContentContributor"
                     dynamic="true"
     />
     <extensionPoint qualifiedName="org.jetbrains.bazel.workspaceTypeContributor"

@@ -165,9 +165,8 @@ object ProjectViewFactory {
   }
 
   private fun ProjectViewPsiSection.toSectionWithValue(): Pair<ProjectViewSection<*>, Any>? {
-    val contents = getItems().map { it.text.trim() }
     val section = ProjectViewSection.findByPsi(this) ?: return null
-    val value = section.type.readFrom(contents) ?: return null
+    val value = read(type = section.type) ?: return null
     return section to value
   }
 

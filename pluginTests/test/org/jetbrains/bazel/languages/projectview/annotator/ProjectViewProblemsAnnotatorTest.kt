@@ -121,6 +121,25 @@ class ProjectViewProblemsAnnotatorTest {
     )
   }
 
+  @Test
+  fun `should warn about deprecated index_additional_files_in_directories section and point at its replacement`() {
+    val message = BazelProjectViewBundle.message("annotator.deprecated.section.with.replacement.warning", "index")
+
+    checkHighlighting(
+      """
+      <weak_warning descr="$message">index_additional_files_in_directories</weak_warning>:
+        *.xml
+      """.trimIndent(),
+    )
+  }
+
+  @Test
+  fun `should warn about deprecated index_all_files_in_directories section and point at its replacement`() {
+    val message = BazelProjectViewBundle.message("annotator.deprecated.section.with.replacement.warning", "index")
+
+    checkHighlighting("""<weak_warning descr="$message">index_all_files_in_directories</weak_warning>: true""")
+  }
+
   private fun checkHighlighting(text: String, dumbMode: Boolean = false) {
     timeoutRunBlocking(30.seconds) {
       withContext(Dispatchers.EDT) {

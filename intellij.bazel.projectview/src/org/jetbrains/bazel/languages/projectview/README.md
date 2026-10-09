@@ -10,13 +10,6 @@ from [Bazel Plugin for Intellij](https://ij.bazel.build/docs/project-views.html)
 >
 > In general, you can start with just `directories` and add more sections as you want to further tweak your IDE workspace.
 
-## Usage
-
-**Note:** We will be changing this mechanism in future releases.
-
-`$ cs launch org.jetbrains.bsp:bazel-bsp:<version> -M org.jetbrains.bazel.install.Install -- -p <path/to/projectview_file>`.
-For more details, see `--help`.
-
 ## Available sections
 
 ---
@@ -96,7 +89,7 @@ The server will deduct bazel path from `$PATH`
 
 #### directories
 
-A list of directories to be mapped into bazel targets.
+A list of directories to include in the project.
 
 You can use negative directories to have server ignore certain directories (
 e.g. `-executioncontext/projectview/src/main/kotlin/org/jetbrains/bazel/projectview/parser/...`).
@@ -174,7 +167,7 @@ default to `1000`
 
 ---
 
-#### shard_approach
+#### sharding_approach
 
 Used alongside with `shard_sync`. It decides the sharding strategy used to shard the list of original targets.
 
@@ -187,12 +180,6 @@ There are three options to use:
 ##### default
 
 default to `QUERY_AND_SHARD`
-
----
-
-#### exclude_library
-
-_We are working on it, you can expect support for this section in future releases._
 
 ---
 
@@ -273,37 +260,32 @@ _IntelliJ and GoLand only_
 
 Points to the gazelle target to be used by the plugin during a sync. The plugin will run this target on the contents of directories at the beginning of the sync operation.
 
-#### index_all_files_in_directories
+#### index
 
-- When `true`, all files inside directories (as specified in the `directories` project view section) will be indexed.
-- When `false`, only files belonging to a Bazel target will be indexed (to speed up indexing).
+A list of glob patterns. The plugin indexes the files inside `directories` that match a pattern.
+This is in addition to the sources, resources, and libraries that the project defines.
+
+- A pattern without a slash matches a filename anywhere, for example `package.json` or `*.xml`.
+- A pattern with a slash matches a workspace-relative path prefix, for example `docs/*`.
+- The pattern `*` indexes all files inside `directories`.
+
+The plugin always indexes `BUILD` and `WORKSPACE` files, `MODULE.bazel`, `*.bazel`, `*.bzl`, `*.bzlmod` and `*.bazelproject` files.
+You cannot index fewer files than that.
 
 ##### example:
 
 ```
-index_all_files_in_directories: true
+index:
+  *.xml
+  package.json
+  docs/*
 ```
 
-##### default:
+#### index_all_files_in_directories
 
-```
-index_all_files_in_directories: false
-```
+**Deprecated.** Use `index` instead.
+`index_all_files_in_directories: true` is the same as `index: *`.
 
 #### index_additional_files_in_directories
 
-List of filenames to index in addition to sources, resources, and libraries defined in the project.
-
-The filenames are scanned inside directories defined in the `directories:` section.
-
-This speeds up searching for these files and can be needed for custom plugins to work on them.
-
-Has no effect if `index_all_files_in_directories` is set to `true`.
-
-##### example:
-
-```
-index_additional_files_in_directories:
-  *.xml
-  package.json
-```
+**Deprecated.** Use `index` instead. It accepts the same patterns.

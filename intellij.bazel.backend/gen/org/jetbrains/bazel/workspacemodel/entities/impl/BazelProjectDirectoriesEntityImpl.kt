@@ -20,6 +20,16 @@ import com.intellij.platform.workspace.storage.url.VirtualFileUrl
 import org.jetbrains.annotations.ApiStatus.Internal
 import org.jetbrains.bazel.workspacemodel.entities.BazelProjectDirectoriesEntity
 import org.jetbrains.bazel.workspacemodel.entities.BazelProjectDirectoriesEntityBuilder
+import kotlin.Any
+import kotlin.Boolean
+import kotlin.Int
+import kotlin.OptIn
+import kotlin.String
+import kotlin.Unit
+import kotlin.error
+import kotlin.hashCode
+import kotlin.invoke
+import kotlin.isInitialized
 
 @Internal
 @GeneratedCodeApiVersion(3)
@@ -43,15 +53,20 @@ internal class BazelProjectDirectoriesEntityImpl(private val dataSource: BazelPr
       readField("excludedRoots")
       return dataSource.excludedRoots
     }
-  override val indexAllFilesInIncludedRoots: Boolean
+  override val indexPatterns: List<String>
     get() {
-      readField("indexAllFilesInIncludedRoots")
-      return dataSource.indexAllFilesInIncludedRoots
+      readField("indexPatterns")
+      return dataSource.indexPatterns
     }
-  override val indexAdditionalFiles: List<VirtualFileUrl>
+  override val indexableRecursiveRoots: List<VirtualFileUrl>
     get() {
-      readField("indexAdditionalFiles")
-      return dataSource.indexAdditionalFiles
+      readField("indexableRecursiveRoots")
+      return dataSource.indexableRecursiveRoots
+    }
+  override val indexableNonRecursiveRoots: List<VirtualFileUrl>
+    get() {
+      readField("indexableNonRecursiveRoots")
+      return dataSource.indexableNonRecursiveRoots
     }
   override val entitySource: EntitySource
     get() {
@@ -82,8 +97,14 @@ internal class BazelProjectDirectoriesEntityImpl(private val dataSource: BazelPr
       if (!getEntityData().isExcludedRootsInitialized()) {
         error("Field BazelProjectDirectoriesEntity#excludedRoots should be initialized")
       }
-      if (!getEntityData().isIndexAdditionalFilesInitialized()) {
-        error("Field BazelProjectDirectoriesEntity#indexAdditionalFiles should be initialized")
+      if (!getEntityData().isIndexPatternsInitialized()) {
+        error("Field BazelProjectDirectoriesEntity#indexPatterns should be initialized")
+      }
+      if (!getEntityData().isIndexableRecursiveRootsInitialized()) {
+        error("Field BazelProjectDirectoriesEntity#indexableRecursiveRoots should be initialized")
+      }
+      if (!getEntityData().isIndexableNonRecursiveRootsInitialized()) {
+        error("Field BazelProjectDirectoriesEntity#indexableNonRecursiveRoots should be initialized")
       }
     }
 
@@ -100,9 +121,17 @@ internal class BazelProjectDirectoriesEntityImpl(private val dataSource: BazelPr
       if (collection_excludedRoots is MutableWorkspaceList<*>) {
         collection_excludedRoots.cleanModificationUpdateAction()
       }
-      val collection_indexAdditionalFiles = getEntityData().indexAdditionalFiles
-      if (collection_indexAdditionalFiles is MutableWorkspaceList<*>) {
-        collection_indexAdditionalFiles.cleanModificationUpdateAction()
+      val collection_indexPatterns = getEntityData().indexPatterns
+      if (collection_indexPatterns is MutableWorkspaceList<*>) {
+        collection_indexPatterns.cleanModificationUpdateAction()
+      }
+      val collection_indexableRecursiveRoots = getEntityData().indexableRecursiveRoots
+      if (collection_indexableRecursiveRoots is MutableWorkspaceList<*>) {
+        collection_indexableRecursiveRoots.cleanModificationUpdateAction()
+      }
+      val collection_indexableNonRecursiveRoots = getEntityData().indexableNonRecursiveRoots
+      if (collection_indexableNonRecursiveRoots is MutableWorkspaceList<*>) {
+        collection_indexableNonRecursiveRoots.cleanModificationUpdateAction()
       }
     }
 
@@ -113,10 +142,11 @@ internal class BazelProjectDirectoriesEntityImpl(private val dataSource: BazelPr
       if (this.projectRoot != dataSource.projectRoot) this.projectRoot = dataSource.projectRoot
       if (this.includedRoots != dataSource.includedRoots) this.includedRoots = dataSource.includedRoots.toMutableList()
       if (this.excludedRoots != dataSource.excludedRoots) this.excludedRoots = dataSource.excludedRoots.toMutableList()
-      if (this.indexAllFilesInIncludedRoots != dataSource.indexAllFilesInIncludedRoots) this.indexAllFilesInIncludedRoots =
-        dataSource.indexAllFilesInIncludedRoots
-      if (this.indexAdditionalFiles != dataSource.indexAdditionalFiles) this.indexAdditionalFiles =
-        dataSource.indexAdditionalFiles.toMutableList()
+      if (this.indexPatterns != dataSource.indexPatterns) this.indexPatterns = dataSource.indexPatterns.toMutableList()
+      if (this.indexableRecursiveRoots != dataSource.indexableRecursiveRoots) this.indexableRecursiveRoots =
+        dataSource.indexableRecursiveRoots.toMutableList()
+      if (this.indexableNonRecursiveRoots != dataSource.indexableNonRecursiveRoots) this.indexableNonRecursiveRoots =
+        dataSource.indexableNonRecursiveRoots.toMutableList()
       updateChildToParentReferences(parents)
     }
 
@@ -182,32 +212,65 @@ internal class BazelProjectDirectoriesEntityImpl(private val dataSource: BazelPr
         getEntityData(true).excludedRoots = value
         excludedRootsUpdater.invoke(value)
       }
-    override var indexAllFilesInIncludedRoots: Boolean
-      get() = getEntityData().indexAllFilesInIncludedRoots
-      set(value) {
-        checkModificationAllowed()
-        getEntityData(true).indexAllFilesInIncludedRoots = value
-        changedProperty.add("indexAllFilesInIncludedRoots")
-      }
-    private val indexAdditionalFilesUpdater: (value: List<VirtualFileUrl>) -> Unit = { value ->
-      changedProperty.add("indexAdditionalFiles")
+    private val indexPatternsUpdater: (value: List<String>) -> Unit = { value ->
+      changedProperty.add("indexPatterns")
     }
-    override var indexAdditionalFiles: MutableList<VirtualFileUrl>
+    override var indexPatterns: MutableList<String>
       get() {
-        val collection_indexAdditionalFiles = getEntityData().indexAdditionalFiles
-        if (collection_indexAdditionalFiles !is MutableWorkspaceList) return collection_indexAdditionalFiles
+        val collection_indexPatterns = getEntityData().indexPatterns
+        if (collection_indexPatterns !is MutableWorkspaceList) return collection_indexPatterns
         if (diff == null || modifiable.get()) {
-          collection_indexAdditionalFiles.setModificationUpdateAction(indexAdditionalFilesUpdater)
+          collection_indexPatterns.setModificationUpdateAction(indexPatternsUpdater)
         }
         else {
-          collection_indexAdditionalFiles.cleanModificationUpdateAction()
+          collection_indexPatterns.cleanModificationUpdateAction()
         }
-        return collection_indexAdditionalFiles
+        return collection_indexPatterns
       }
       set(value) {
         checkModificationAllowed()
-        getEntityData(true).indexAdditionalFiles = value
-        indexAdditionalFilesUpdater.invoke(value)
+        getEntityData(true).indexPatterns = value
+        indexPatternsUpdater.invoke(value)
+      }
+    private val indexableRecursiveRootsUpdater: (value: List<VirtualFileUrl>) -> Unit = { value ->
+      changedProperty.add("indexableRecursiveRoots")
+    }
+    override var indexableRecursiveRoots: MutableList<VirtualFileUrl>
+      get() {
+        val collection_indexableRecursiveRoots = getEntityData().indexableRecursiveRoots
+        if (collection_indexableRecursiveRoots !is MutableWorkspaceList) return collection_indexableRecursiveRoots
+        if (diff == null || modifiable.get()) {
+          collection_indexableRecursiveRoots.setModificationUpdateAction(indexableRecursiveRootsUpdater)
+        }
+        else {
+          collection_indexableRecursiveRoots.cleanModificationUpdateAction()
+        }
+        return collection_indexableRecursiveRoots
+      }
+      set(value) {
+        checkModificationAllowed()
+        getEntityData(true).indexableRecursiveRoots = value
+        indexableRecursiveRootsUpdater.invoke(value)
+      }
+    private val indexableNonRecursiveRootsUpdater: (value: List<VirtualFileUrl>) -> Unit = { value ->
+      changedProperty.add("indexableNonRecursiveRoots")
+    }
+    override var indexableNonRecursiveRoots: MutableList<VirtualFileUrl>
+      get() {
+        val collection_indexableNonRecursiveRoots = getEntityData().indexableNonRecursiveRoots
+        if (collection_indexableNonRecursiveRoots !is MutableWorkspaceList) return collection_indexableNonRecursiveRoots
+        if (diff == null || modifiable.get()) {
+          collection_indexableNonRecursiveRoots.setModificationUpdateAction(indexableNonRecursiveRootsUpdater)
+        }
+        else {
+          collection_indexableNonRecursiveRoots.cleanModificationUpdateAction()
+        }
+        return collection_indexableNonRecursiveRoots
+      }
+      set(value) {
+        checkModificationAllowed()
+        getEntityData(true).indexableNonRecursiveRoots = value
+        indexableNonRecursiveRootsUpdater.invoke(value)
       }
 
     override fun getEntityClass(): Class<BazelProjectDirectoriesEntity> = BazelProjectDirectoriesEntity::class.java
@@ -219,12 +282,15 @@ internal class BazelProjectDirectoriesEntityData : WorkspaceEntityData<BazelProj
   lateinit var projectRoot: VirtualFileUrl
   lateinit var includedRoots: MutableList<VirtualFileUrl>
   lateinit var excludedRoots: MutableList<VirtualFileUrl>
-  var indexAllFilesInIncludedRoots: Boolean = false
-  lateinit var indexAdditionalFiles: MutableList<VirtualFileUrl>
+  lateinit var indexPatterns: MutableList<String>
+  lateinit var indexableRecursiveRoots: MutableList<VirtualFileUrl>
+  lateinit var indexableNonRecursiveRoots: MutableList<VirtualFileUrl>
   internal fun isProjectRootInitialized(): Boolean = ::projectRoot.isInitialized
   internal fun isIncludedRootsInitialized(): Boolean = ::includedRoots.isInitialized
   internal fun isExcludedRootsInitialized(): Boolean = ::excludedRoots.isInitialized
-  internal fun isIndexAdditionalFilesInitialized(): Boolean = ::indexAdditionalFiles.isInitialized
+  internal fun isIndexPatternsInitialized(): Boolean = ::indexPatterns.isInitialized
+  internal fun isIndexableRecursiveRootsInitialized(): Boolean = ::indexableRecursiveRoots.isInitialized
+  internal fun isIndexableNonRecursiveRootsInitialized(): Boolean = ::indexableNonRecursiveRoots.isInitialized
   override fun newInstance(): BazelProjectDirectoriesEntity = BazelProjectDirectoriesEntityImpl(this)
   override fun newBuilderInstance(): ModifiableWorkspaceEntityBase<BazelProjectDirectoriesEntity, *> =
     BazelProjectDirectoriesEntityImpl.Builder(null)
@@ -238,7 +304,9 @@ internal class BazelProjectDirectoriesEntityData : WorkspaceEntityData<BazelProj
     clonedEntity as BazelProjectDirectoriesEntityData
     clonedEntity.includedRoots = clonedEntity.includedRoots.toMutableWorkspaceList()
     clonedEntity.excludedRoots = clonedEntity.excludedRoots.toMutableWorkspaceList()
-    clonedEntity.indexAdditionalFiles = clonedEntity.indexAdditionalFiles.toMutableWorkspaceList()
+    clonedEntity.indexPatterns = clonedEntity.indexPatterns.toMutableWorkspaceList()
+    clonedEntity.indexableRecursiveRoots = clonedEntity.indexableRecursiveRoots.toMutableWorkspaceList()
+    clonedEntity.indexableNonRecursiveRoots = clonedEntity.indexableNonRecursiveRoots.toMutableWorkspaceList()
     return clonedEntity
   }
 
@@ -251,8 +319,9 @@ internal class BazelProjectDirectoriesEntityData : WorkspaceEntityData<BazelProj
       projectRoot,
       includedRoots,
       excludedRoots,
-      indexAllFilesInIncludedRoots,
-      indexAdditionalFiles,
+      indexPatterns,
+      indexableRecursiveRoots,
+      indexableNonRecursiveRoots,
       entitySource,
     )
   }
@@ -270,8 +339,9 @@ internal class BazelProjectDirectoriesEntityData : WorkspaceEntityData<BazelProj
     if (this.projectRoot != other.projectRoot) return false
     if (this.includedRoots != other.includedRoots) return false
     if (this.excludedRoots != other.excludedRoots) return false
-    if (this.indexAllFilesInIncludedRoots != other.indexAllFilesInIncludedRoots) return false
-    if (this.indexAdditionalFiles != other.indexAdditionalFiles) return false
+    if (this.indexPatterns != other.indexPatterns) return false
+    if (this.indexableRecursiveRoots != other.indexableRecursiveRoots) return false
+    if (this.indexableNonRecursiveRoots != other.indexableNonRecursiveRoots) return false
     return true
   }
 
@@ -282,8 +352,9 @@ internal class BazelProjectDirectoriesEntityData : WorkspaceEntityData<BazelProj
     if (this.projectRoot != other.projectRoot) return false
     if (this.includedRoots != other.includedRoots) return false
     if (this.excludedRoots != other.excludedRoots) return false
-    if (this.indexAllFilesInIncludedRoots != other.indexAllFilesInIncludedRoots) return false
-    if (this.indexAdditionalFiles != other.indexAdditionalFiles) return false
+    if (this.indexPatterns != other.indexPatterns) return false
+    if (this.indexableRecursiveRoots != other.indexableRecursiveRoots) return false
+    if (this.indexableNonRecursiveRoots != other.indexableNonRecursiveRoots) return false
     return true
   }
 
@@ -292,8 +363,9 @@ internal class BazelProjectDirectoriesEntityData : WorkspaceEntityData<BazelProj
     result = 31 * result + projectRoot.hashCode()
     result = 31 * result + includedRoots.hashCode()
     result = 31 * result + excludedRoots.hashCode()
-    result = 31 * result + indexAllFilesInIncludedRoots.hashCode()
-    result = 31 * result + indexAdditionalFiles.hashCode()
+    result = 31 * result + indexPatterns.hashCode()
+    result = 31 * result + indexableRecursiveRoots.hashCode()
+    result = 31 * result + indexableNonRecursiveRoots.hashCode()
     return result
   }
 
@@ -302,8 +374,9 @@ internal class BazelProjectDirectoriesEntityData : WorkspaceEntityData<BazelProj
     result = 31 * result + projectRoot.hashCode()
     result = 31 * result + includedRoots.hashCode()
     result = 31 * result + excludedRoots.hashCode()
-    result = 31 * result + indexAllFilesInIncludedRoots.hashCode()
-    result = 31 * result + indexAdditionalFiles.hashCode()
+    result = 31 * result + indexPatterns.hashCode()
+    result = 31 * result + indexableRecursiveRoots.hashCode()
+    result = 31 * result + indexableNonRecursiveRoots.hashCode()
     return result
   }
 }

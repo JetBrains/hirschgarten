@@ -1,5 +1,5 @@
 derive_targets_from_directories: true
-index_all_files_in_directories: true
+index: *
 
 directories:
   app

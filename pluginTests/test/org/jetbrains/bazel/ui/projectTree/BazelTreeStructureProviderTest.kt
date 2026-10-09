@@ -283,8 +283,9 @@ internal class BazelTreeStructureProviderTest : WorkspaceModelBaseTest() {
             projectRoot = projectRoot,
             includedRoots = listOf(projectRoot),
             excludedRoots = excludedPaths.map { projectBasePath.resolve(it).toVirtualFileUrl(virtualFileUrlManager) },
-            indexAllFilesInIncludedRoots = false,
-            indexAdditionalFiles = emptyList(),
+            indexPatterns = emptyList(),
+            indexableRecursiveRoots = emptyList(),
+            indexableNonRecursiveRoots = emptyList(),
             entitySource = BazelProjectEntitySource,
           ),
         )

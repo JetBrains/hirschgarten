@@ -27,6 +27,8 @@ abstract class IdeStarterCombinedBaseTest : IdeStarterBaseProjectTest() {
 
   abstract fun createContext(): IDETestContext
 
+  protected open fun IDETestContext.runIde(): BackgroundRun = runIdeWithDriver(runTimeout = timeout, disableNonModalWelcomeScreen = true)
+
   protected open fun Driver.syncBazelProject() {
     syncBazelProject(buildAndSync = false)
   }
@@ -34,7 +36,7 @@ abstract class IdeStarterCombinedBaseTest : IdeStarterBaseProjectTest() {
   @BeforeAll
   protected fun startIdeAndSync() {
     ctx = createContext()
-    bgRun = ctx.runIdeWithDriver(runTimeout = timeout, disableNonModalWelcomeScreen = true)
+    bgRun = ctx.runIde()
     withDriver(bgRun) {
       ideFrame {
         syncBazelProject()
