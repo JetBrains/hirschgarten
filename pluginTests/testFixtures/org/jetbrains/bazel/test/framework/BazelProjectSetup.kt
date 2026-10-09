@@ -5,6 +5,7 @@ import com.intellij.openapi.Disposable
 import com.intellij.openapi.application.WriteAction
 import com.intellij.openapi.components.service
 import com.intellij.openapi.diagnostic.fileLogger
+import com.intellij.openapi.extensions.LoadingOrder
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.projectRoots.ProjectJdkTable
 import com.intellij.openapi.projectRoots.Sdk
@@ -15,6 +16,8 @@ import com.intellij.openapi.vfs.jrt.JrtFileSystem
 import com.intellij.project.stateStore
 import com.intellij.testFramework.replaceService
 import org.jetbrains.annotations.TestOnly
+import org.jetbrains.bazel.bazelrunner.BazelCommandExecutionDescriptor
+import org.jetbrains.bazel.bazelrunner.BazelProcessLauncher
 import org.jetbrains.bazel.bazelrunner.BazelProcessLauncherProvider
 import org.jetbrains.bazel.bazelrunner.BazelProcessResult
 import org.jetbrains.bazel.bazelrunner.BazelRunner
@@ -49,6 +52,38 @@ internal fun installTestConsoleService(project: Project, disposable: Disposable)
     disposable,
   )
 }
+
+/**
+ * Makes each Bazel command ignore the rc files of the host until [disposable] is disposed.
+ *
+ * Bazel reads `~/.bazelrc` after the workspace `.bazelrc`, so a host setting can replace a test setting. Bazel accepts
+ * `--nohome_rc` and `--nosystem_rc` only on the command line, not in an rc file.
+ */
+internal fun installHostRcIsolation(disposable: Disposable) {
+  val launcherProvider = BazelProcessLauncherProvider.getInstance()
+  val isolatingProvider = object : BazelProcessLauncherProvider {
+    override fun createBazelProcessLauncher(workspaceRoot: Path, parentEnvironment: Map<String, String>): BazelProcessLauncher {
+      val launcher = launcherProvider.createBazelProcessLauncher(workspaceRoot, parentEnvironment)
+      return object : BazelProcessLauncher {
+        override fun launchProcess(executionDescriptor: BazelCommandExecutionDescriptor): Process =
+          launcher.launchProcess(executionDescriptor.copy(command = executionDescriptor.command.withoutHostRcFiles()))
+      }
+    }
+  }
+  try {
+    BazelProcessLauncherProvider.ep.point.registerExtension(isolatingProvider, LoadingOrder.FIRST, disposable)
+  }
+  catch (e: IllegalStateException) {
+    // A test that masks the extension point launches its own processes, so it does not run the host Bazel.
+    LOG.info("Skipping the host rc isolation: ${e.message}")
+  }
+}
+
+private val HOST_RC_STARTUP_OPTIONS = listOf("--nohome_rc", "--nosystem_rc")
+
+// The startup options follow the Bazel binary. A nested install must not add them twice.
+private fun List<String>.withoutHostRcFiles(): List<String> =
+  take(1) + HOST_RC_STARTUP_OPTIONS.filter { it !in this } + drop(1)
 
 /** Writes the `.bazelversion` file in [projectRoot]. */
 internal fun writeBazelVersion(projectRoot: Path, version: String) {

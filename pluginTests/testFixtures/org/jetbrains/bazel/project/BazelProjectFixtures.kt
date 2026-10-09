@@ -2,7 +2,9 @@ package org.jetbrains.bazel.project
 
 import com.intellij.configurationStore.ProjectStoreImpl
 import com.intellij.configurationStore.ProjectStorePathManager
+import com.intellij.openapi.Disposable
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.util.Disposer
 import com.intellij.openapi.util.io.toNioPathOrNull
 import com.intellij.openapi.vfs.refreshAndFindVirtualFile
 import com.intellij.project.stateStore
@@ -49,6 +51,20 @@ object BazelProjectFixtures {
       historicalProjectBasePath = rootDir,
       projectViewFile = projectViewFile,
     )
+  }
+
+  /**
+   * Gives [project] its current store descriptor back when [disposable] is disposed, and turns the startup sync on again.
+   *
+   * Call it before [initializeBazelProject] on a project that outlives the test, such as the light project.
+   */
+  fun restoreProjectStoreOnDispose(project: Project, disposable: Disposable) {
+    val projectStoreImpl = project.stateStore as ProjectStoreImpl
+    val storeDescriptor = projectStoreImpl.storeDescriptor
+    Disposer.register(disposable) {
+      projectStoreImpl.storeDescriptor = storeDescriptor
+      setBazelStartupSyncEnabledInTests(project, true)
+    }
   }
 
   fun deinitializeBazelProject(project: Project) {

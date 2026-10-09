@@ -3,7 +3,6 @@ package org.jetbrains.bazel.sync.workspace.projectTree
 import com.intellij.platform.ide.progress.ModalTaskOwner
 import com.intellij.platform.ide.progress.TaskCancellation
 import com.intellij.platform.ide.progress.runWithModalProgressBlocking
-import com.intellij.testFramework.fixtures.BasePlatformTestCase
 import kotlinx.coroutines.runBlocking
 import org.jetbrains.bazel.bazelrunner.BazelProcess
 import org.jetbrains.bazel.bazelrunner.BazelProcessResult
@@ -21,6 +20,7 @@ import org.jetbrains.bazel.languages.projectview.ProjectViewFactory
 import org.jetbrains.bazel.project.BazelProjectFixtures.initializeBazelProject
 import org.jetbrains.bazel.server.sync.BspProjectMapper
 import org.jetbrains.bazel.sync.workspace.projectTree.BazelRunnerSpyStubbingHelper.captureBazelCommandFromMock
+import org.jetbrains.bazel.test.framework.BazelBasePlatformTestCase
 import org.jetbrains.bsp.protocol.TaskGroupId
 import org.jetbrains.bsp.protocol.WorkspaceDirectoriesResult
 import org.mockito.Mockito.mock
@@ -33,7 +33,7 @@ import kotlin.io.path.createDirectories
 import kotlin.io.path.createFile
 import kotlin.io.path.createTempDirectory
 
-class WorkspaceDirectoriesFromProjectViewTest : BasePlatformTestCase() {
+class WorkspaceDirectoriesFromProjectViewTest : BazelBasePlatformTestCase() {
 
   private lateinit var workspaceRoot: Path
   private lateinit var bazelRunner: BazelRunner

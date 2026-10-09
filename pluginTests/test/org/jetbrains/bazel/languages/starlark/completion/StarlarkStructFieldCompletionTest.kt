@@ -1,14 +1,13 @@
 package org.jetbrains.bazel.languages.starlark.completion
 
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
-import org.jetbrains.bazel.languages.starlark.fixtures.StarlarkCompletionTestCase
-import org.jetbrains.bazel.project.BazelProjectFixtures
+import org.jetbrains.bazel.test.framework.BazelBasePlatformTestCase
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
 
 @RunWith(JUnit4::class)
-class StarlarkStructFieldCompletionTest : StarlarkCompletionTestCase() {
+class StarlarkStructFieldCompletionTest : BazelBasePlatformTestCase() {
   @Test
   fun `should complete local struct fields`() {
     myFixture.configureByText(

@@ -13,16 +13,19 @@ class StarlarkGlobAnnotatorTest : StarlarkAnnotatorTestCase() {
   private val patternMsg = StarlarkBundle.message("annotator.glob.empty.pattern")
 
   private fun runWithBazel7VersionSet(action: () -> Unit) {
-    fun setBazelVersion(version: String) {
-      myFixture.project.getService(BazelVersionCheckerService::class.java).loadState(
-        BazelVersionCheckerService.State().apply {
-          currentBazelVersion = version
-        }
-      )
+    val versionService = myFixture.project.getService(BazelVersionCheckerService::class.java)
+    val oldState = versionService.state
+    versionService.loadState(
+      BazelVersionCheckerService.State().apply {
+        currentBazelVersion = "7.7.0"
+      }
+    )
+    try {
+      action()
     }
-    setBazelVersion("7.7.0")
-    action()
-    setBazelVersion("8.0.0")
+    finally {
+      versionService.loadState(oldState)
+    }
   }
 
   @Test
@@ -83,6 +86,7 @@ class StarlarkGlobAnnotatorTest : StarlarkAnnotatorTestCase() {
       )
       """.trimIndent(),
       )
+      myFixture.checkHighlighting(true, false, false)
     }
   }
 

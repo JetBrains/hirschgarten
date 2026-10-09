@@ -24,9 +24,14 @@ class BazelGlobalFunctionsTest {
     private val codeInsightFixture by codeInsightFixture(projectFixture, tempPathFixture())
   }
 
-  private fun getFunction(name: String): BazelGlobalFunction =
-    BazelGlobalFunctions.getFunctionByName(name, codeInsightFixture.project)
-      ?: error("Function '$name' not found")
+  // All tests share one project, so each test sets the release that it checks.
+  private fun functionsFor(release: BazelRelease): Map<String, BazelGlobalFunction> {
+    codeInsightFixture.project.projectCtx.bazelRelease = release
+    return BazelGlobalFunctions.globalFunctions(codeInsightFixture.project)
+  }
+
+  private fun getFunction(name: String, release: BazelRelease = latestRelease): BazelGlobalFunction =
+    functionsFor(release)[name] ?: error("Function '$name' not found for Bazel $release")
 
   @TestFactory
   fun `builtin functions should be present across all versions`(): List<DynamicTest> {
@@ -103,7 +108,6 @@ class BazelGlobalFunctionsTest {
   fun `rules should have common params`(): List<DynamicTest> =
     expectedRuleNames.map { name ->
       dynamicTest(name) {
-        codeInsightFixture.project.projectCtx.bazelRelease = BazelRelease(9, 1)
         val paramNames = getFunction(name).params.map { it.name }
         paramNames.shouldContainAll(commonParamNames)
       }
@@ -113,7 +117,6 @@ class BazelGlobalFunctionsTest {
   fun `test rules should have test params`(): List<DynamicTest> =
     expectedRuleNames.filter { it.endsWith("_test") }.map { name ->
       dynamicTest(name) {
-        codeInsightFixture.project.projectCtx.bazelRelease = BazelRelease(9, 1)
         val paramNames = getFunction(name).params.map { it.name }
         paramNames.shouldContainAll(testParamNames)
       }
@@ -123,7 +126,6 @@ class BazelGlobalFunctionsTest {
   fun `binary rules should have binary params`(): List<DynamicTest> =
     expectedRuleNames.filter { it.endsWith("_binary") }.map { name ->
       dynamicTest(name) {
-        codeInsightFixture.project.projectCtx.bazelRelease = BazelRelease(9, 1)
         val paramNames = getFunction(name).params.map { it.name }
         paramNames.shouldContainAll(binaryParamNames)
       }
@@ -144,7 +146,6 @@ class BazelGlobalFunctionsTest {
     )
     return backtickConversionExamples.map { (name, expectedFragment) ->
       dynamicTest(name) {
-        codeInsightFixture.project.projectCtx.bazelRelease = BazelRelease(9, 1)
         val func = getFunction(name)
         func.doc shouldNotBe null
         func.doc!! shouldContain expectedFragment
@@ -156,8 +157,8 @@ class BazelGlobalFunctionsTest {
   @TestFactory
   fun `docs should not contain non-HTTP links`(): List<DynamicTest> {
     val nonHttpLinkRegex = Regex("""<a\s[^>]*href\s*=\s*["'](?!https?://)[^"']*["'][^>]*>""", RegexOption.DOT_MATCHES_ALL)
-    return BazelGlobalFunctions.globalFunctions(codeInsightFixture.project).flatMap { (name, func) ->
-      majorVersions.map { version ->
+    return majorVersions.flatMap { version ->
+      functionsFor(version).map { (name, func) ->
         dynamicTest("$version - $name") {
           val allDocs = buildList {
             func.doc?.let(::add)
@@ -170,17 +171,15 @@ class BazelGlobalFunctionsTest {
           }
         }
       }
-
     }
   }
 
   @TestFactory
   fun `docs should not contain bare markdown references`(): List<DynamicTest> {
     val bareMarkdownRegex = Regex("""\[([A-Za-z]\w*)](?!\()""")
-    return BazelGlobalFunctions.globalFunctions(codeInsightFixture.project).flatMap { (name, func) ->
-      majorVersions.map { version ->
+    return majorVersions.flatMap { version ->
+      functionsFor(version).map { (name, func) ->
         dynamicTest("$version - $name") {
-          codeInsightFixture.project.projectCtx.bazelRelease = BazelRelease(9, 1)
           val allDocs = buildList {
             func.doc?.let(::add)
             func.params.mapNotNull { it.doc }.forEach(::add)
@@ -198,8 +197,8 @@ class BazelGlobalFunctionsTest {
   @TestFactory
   fun `docs should not contain markdown links`(): List<DynamicTest> {
     val markdownLinkRegex = Regex("""\[[^]]+]\([^)]+\)""")
-    return BazelGlobalFunctions.globalFunctions(codeInsightFixture.project).flatMap { (name, func) ->
-      majorVersions.map { version ->
+    return majorVersions.flatMap { version ->
+      functionsFor(version).map { (name, func) ->
         dynamicTest("$version - $name") {
           val allDocs = buildList {
             func.doc?.let(::add)
@@ -242,6 +241,8 @@ private fun String.toBazelRelease(): BazelRelease {
 }
 
 private val majorVersions = listOf(BazelRelease(7, 5), BazelRelease(8), BazelRelease(9))
+
+private val latestRelease = BazelRelease(9, 1)
 
 private val builtinVersions = listOf(
   "7.5.0", "7.6.0", "7.7.0", "8.0.0", "8.1.0", "8.2.0", "8.3.0",
