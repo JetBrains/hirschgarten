@@ -5,6 +5,7 @@ import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.getProjectDataPath
 import com.intellij.openapi.util.io.NioFiles
+import com.intellij.openapi.vfs.VfsUtil
 import com.intellij.openapi.vfs.VirtualFileManager
 import com.intellij.openapi.vfs.newvfs.RefreshQueue
 import com.intellij.util.io.createParentDirectories
@@ -217,12 +218,14 @@ class DefaultBazelOutputFileHardLinks(
 
   /**
    * Updates the VFS with all changes in [cacheDir] in one refresh session.
-   * The file watcher does not watch [cacheDir] (BAZEL-3612).
+   * The file watcher does not watch [cacheDir] (BAZEL-3612), so no file in it is dirty.
+   * A recursive refresh skips a file that is not dirty, so [cacheDir] is marked dirty first.
    */
   private suspend fun refreshCacheDir() {
     val cacheDirFile = withContext(Dispatchers.IO) {
       VirtualFileManager.getInstance().refreshAndFindFileByNioPath(cacheDir)
     } ?: return
+    VfsUtil.markDirty(/* recursive = */ true, /* reloadChildren = */ false, cacheDirFile)
     RefreshQueue.getInstance().refresh(recursive = true, listOf(cacheDirFile))
   }
 
