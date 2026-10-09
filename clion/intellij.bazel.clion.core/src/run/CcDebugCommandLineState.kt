@@ -1,6 +1,6 @@
 package org.jetbrains.bazel.clion.run
 
-import com.intellij.cidr.debugger.profiles.CidrDebugProfileManager
+import com.intellij.cidr.debugger.profiles.CidrDebugProfile
 import com.intellij.execution.configurations.CommandLineState
 import com.intellij.execution.configurations.GeneralCommandLine
 import com.intellij.execution.process.ProcessHandler
@@ -41,6 +41,7 @@ internal class CcDebugCommandLineState(
   // set by org.jetbrains.bazel.clion.run.CcDebugRunner
   var targetInfo: CcDebugTargetInfo? = null
   var executionInfo: ExecutableInfo? = null
+  var debugProfile: CidrDebugProfile<*>? = null
 }
 
 private class CcCidrLauncher(private val project: Project, private val bazelState: GenericRunState) : CidrLauncher() {
@@ -53,9 +54,7 @@ private class CcCidrLauncher(private val project: Project, private val bazelStat
     // should always be set by org.jetbrains.bazel.clion.run.CcDebugRunner before this is reached
     val targetInfo = requireNotNull(ccState.targetInfo)
     val executionInfo = requireNotNull(ccState.executionInfo)
-
-    // should always be present due to org.jetbrains.bazel.clion.run.CcRunHandler.DebugProfileEnabler
-    val debugProfile = requireNotNull(CidrDebugProfileManager.getInstance().getCurrentDebugProfile(project))
+    val debugProfile = requireNotNull(ccState.debugProfile)
 
     // TODO: when can these be null and what to do then?
     val executionRoot = requireNotNull(project.projectCtx.bazelExecPath)
