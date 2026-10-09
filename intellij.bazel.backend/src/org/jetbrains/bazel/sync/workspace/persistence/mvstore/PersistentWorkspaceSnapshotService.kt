@@ -22,6 +22,7 @@ import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.dropWhile
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import org.jetbrains.annotations.ApiStatus
@@ -75,7 +76,8 @@ import kotlin.time.measureTimedValue
  * Overall goal should be to make it only update targets that actually have changes.
  */
 @OptIn(FlowPreview::class)
-internal class PersistentWorkspaceSnapshotService(
+@ApiStatus.Internal
+class PersistentWorkspaceSnapshotService(
   private val project: Project,
   private val coroutineScope: CoroutineScope,
 ) : WorkspaceSnapshotService, SettingsSavingComponent, Disposable {
@@ -95,7 +97,11 @@ internal class PersistentWorkspaceSnapshotService(
   private val storageLazy = lazy { SnapshotStorage(dbFile = dbFile, kryo = kryo) }
   private val storage by storageLazy
   private val updateLock = Mutex()
+  // guards every storage access and the storage close
   private val storeLock = Mutex()
+
+  @Volatile
+  private var closing = false
 
   @Volatile
   private var lastStoredSnapshot: WorkspaceSnapshot = WorkspaceSnapshot.EMPTY
@@ -107,13 +113,16 @@ internal class PersistentWorkspaceSnapshotService(
 
   private val initialLoad: Job = coroutineScope.launch {
     try {
-      val (loaded, time) = measureTimedValue { load() }
+      val (loaded, time) = measureTimedValue { storeLock.withLock { load() } }
       log.info("`WorkspaceSnapshot` initial load time: ${time.toString(DurationUnit.MILLISECONDS, 2)}")
       if (loaded !== WorkspaceSnapshot.EMPTY) {
         lastStoredSnapshot = loaded
         lastStoredSource = loaded
         commits.compareAndSet(WorkspaceSnapshot.EMPTY, loaded)
       }
+    }
+    catch (e: CancellationException) {
+      throw e
     }
     catch (e: Throwable) {
       log.error("Error loading workspace snapshot", e)
@@ -150,7 +159,7 @@ internal class PersistentWorkspaceSnapshotService(
       store(pending)
     }
     storeLock.withLock {
-      if (storageLazy.isInitialized() && !storage.isClosed) {
+      if (!closing && storageLazy.isInitialized() && !storage.isClosed) {
         (commits.value.fileToTarget as? PersistentFileToTargetMap)?.flush()
         storage.tryCommit()
       }
@@ -158,7 +167,7 @@ internal class PersistentWorkspaceSnapshotService(
   }
 
   private suspend fun load(): WorkspaceSnapshot {
-    if (!blobFile.exists()) {
+    if (closing || !blobFile.exists()) {
       return WorkspaceSnapshot.EMPTY
     }
     // TODO: can be optimized to zero-copy file channel
@@ -207,7 +216,7 @@ internal class PersistentWorkspaceSnapshotService(
 
   private suspend fun store(snapshot: WorkspaceSnapshot) {
     storeLock.withLock {
-      if (storage.isClosed) {
+      if (closing || storage.isClosed) {
         return
       }
       if (snapshot === lastStoredSnapshot || snapshot === lastStoredSource) {
@@ -367,7 +376,10 @@ internal class PersistentWorkspaceSnapshotService(
       },
     )
     storage.commit()
-    storage.compactFile(COMPACT_TIME_BUDGET_MILLIS)
+    // compaction is optional, do not make dispose() wait for it
+    if (!closing) {
+      storage.compactFile(COMPACT_TIME_BUDGET_MILLIS)
+    }
   }
 
   private fun saveExecutableTargetIndex(
@@ -465,8 +477,15 @@ internal class PersistentWorkspaceSnapshotService(
   }
 
   override fun dispose() {
-    if (storageLazy.isInitialized()) {
-      storage.close()
+    closing = true
+    // the scope cancellation does not wait for a store in progress, so wait for it here.
+    // close() must be synchronous, a reopened project cannot open the database while this store holds it
+    runBlocking {
+      storeLock.withLock {
+        if (storageLazy.isInitialized()) {
+          storage.close()
+        }
+      }
     }
   }
 }
