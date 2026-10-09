@@ -44,7 +44,7 @@ internal object BazelTestCaches {
   fun configureBazelCaches(
     projectRoot: Path,
     testProjectPath: String,
-    bazelVersion: String? = null,
+    outputBase: Path,
     registries: List<URI> = emptyList(),
   ) {
     val cacheRoot = testCacheRoot()
@@ -57,7 +57,6 @@ internal object BazelTestCaches {
     val repositoryCache = cacheRoot.resolve("repository-cache").createDirectories()
     val diskCache = cacheRoot.resolve("disk-cache").createDirectories()
     val outputUserRoot = cacheRoot.resolve("output-user-root").createDirectories()
-    val outputBase = cacheRoot.outputBasePath(testProjectPath, bazelVersion).createDirectories()
     val lines = buildList {
       add("startup --max_idle_secs=${bazelServerMaxIdleSeconds()}")
       add("startup --output_user_root=${outputUserRoot.toBazelRcPath()}")
@@ -102,11 +101,6 @@ internal object BazelTestCaches {
 
   private fun cacheKey(testProjectPath: String): String =
     testProjectPath.replace('/', '_').replace('\\', '_')
-
-  private fun Path.outputBasePath(testProjectPath: String, bazelVersion: String?): Path {
-    val key = cacheKey(testProjectPath)
-    return resolve("output-bases").resolve(if (bazelVersion == null) key else "$key-$bazelVersion")
-  }
 
   private fun localDefaultCacheRoot(): Path {
     val userHome = Path.of(System.getProperty("user.home"))

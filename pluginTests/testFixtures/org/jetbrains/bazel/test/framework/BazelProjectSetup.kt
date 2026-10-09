@@ -7,7 +7,11 @@ import com.intellij.openapi.components.service
 import com.intellij.openapi.diagnostic.fileLogger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.projectRoots.ProjectJdkTable
+import com.intellij.openapi.projectRoots.Sdk
 import com.intellij.openapi.util.Disposer
+import com.intellij.openapi.util.io.FileUtil
+import com.intellij.openapi.vfs.impl.jrt.JrtFileSystemImpl
+import com.intellij.openapi.vfs.jrt.JrtFileSystem
 import com.intellij.project.stateStore
 import com.intellij.testFramework.replaceService
 import org.jetbrains.annotations.TestOnly
@@ -86,7 +90,26 @@ internal fun purgeProjectJdkTable() {
   LOG.info("Purging the project JDK table")
   WriteAction.runAndWait<Throwable> {
     ProjectJdkTable.getInstance().apply {
-      allJdks.forEach(this::removeJdk)
+      val jdks = allJdks
+      releaseJrtFileSystems(jdks)
+      jdks.forEach(this::removeJdk)
+    }
+  }
+}
+
+/**
+ * Closes the JRT file systems of [jdks]. An open JRT file system holds `lib/modules`, and Windows then
+ * cannot delete a JDK in the output base.
+ */
+private fun releaseJrtFileSystems(jdks: Array<Sdk>) {
+  val jrtFileSystem = JrtFileSystem.getInstance() as JrtFileSystemImpl
+  for (homePath in jdks.mapNotNull { it.homePath }) {
+    try {
+      jrtFileSystem.release(FileUtil.toSystemIndependentName(homePath))
+      LOG.info("Released the JRT file system of $homePath")
+    }
+    catch (ignored: IllegalArgumentException) {
+      // the test did not read this JDK through JRT
     }
   }
 }

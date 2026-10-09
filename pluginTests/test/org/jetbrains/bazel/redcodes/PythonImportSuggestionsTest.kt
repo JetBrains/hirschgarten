@@ -9,6 +9,7 @@ import com.intellij.platform.backend.workspace.workspaceModel
 import com.intellij.python.pyproject.model.evolution.EvoPyProjectModel
 import com.intellij.psi.util.QualifiedName
 import com.intellij.testFramework.IndexingTestUtil
+import com.intellij.testFramework.junit5.fixture.tempPathFixture
 import com.intellij.util.indexing.FileBasedIndex
 import com.jetbrains.python.inspections.unresolvedReference.PyUnresolvedReferencesInspection
 import io.kotest.matchers.collections.shouldHaveSize
@@ -63,6 +64,8 @@ class PythonImportSuggestionsTest {
   @BazelTestApplication
   inner class ExternalBazelIndexedSource {
 
+    private val externalSources by tempPathFixture(prefix = "external-pydantic")
+
     private val fixture by bazelSyncCodeInsightFixture(
       "redcodes/python_imports",
       buildProject = true,
@@ -71,8 +74,7 @@ class PythonImportSuggestionsTest {
 
     @Test
     fun testImportQuickFixForSymbolInExternalBazelIndexedSource(): Unit = runBlocking(Dispatchers.Default) {
-      val pydanticMain = Path(fixture.tempDirPath)
-        .resolveSibling("external-pydantic")
+      val pydanticMain = externalSources
         .resolve("site-packages")
         .resolve("pydantic")
         .resolve("main.py")
