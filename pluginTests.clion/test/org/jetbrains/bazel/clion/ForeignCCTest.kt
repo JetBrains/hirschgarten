@@ -35,4 +35,10 @@ class ForeignCCTest {
     val compilerSettings = project.findCompilerSetting("cmake/hello.cpp")
     assertThat(compilerSettings).containsHeaders("Speaker.h")
   }
+
+  @Test
+  fun testMesonMain() : Unit = timeoutRunBlocking {
+    val compilerSettings = project.findCompilerSetting("meson/main.cpp")
+    assertThat(compilerSettings).containsHeaders("include/hello.h")
+  }
 }

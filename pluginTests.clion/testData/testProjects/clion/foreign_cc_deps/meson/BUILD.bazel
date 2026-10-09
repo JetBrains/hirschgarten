@@ -1,0 +1,19 @@
+load("@rules_foreign_cc//foreign_cc:defs.bzl", "meson")
+load("@rules_cc//cc:defs.bzl", "cc_binary")
+
+filegroup(
+  name = "srcs",
+  srcs = glob(["srcs/**"]),
+)
+
+meson(
+  name = "hello",
+  lib_source = ":srcs",
+  out_static_libs = ["libhello.a"],
+)
+
+cc_binary(
+  name = "main",
+  srcs = ["main.cpp"],
+  deps = [":hello"],
+)
