@@ -20,15 +20,15 @@ internal object BazelTestCaches {
   private const val BAZEL_SETTINGS_START = "# BEGIN IntelliJ Bazel unit-test settings"
   private const val BAZEL_SETTINGS_END = "# END IntelliJ Bazel unit-test settings"
 
-  // create %user_home%/bazel-test-temp
-  fun setupBazelRc(projectRoot: Path, jvmToolchains: Boolean = true) {
+  // The tmpdir is the same for every test, because --action_env=TMP is part of the action key.
+  private fun testSettings(jvmToolchains: Boolean): List<String> {
     val bazelCachesPath: String = run {
       val testCaches = File(System.getProperty("user.home"), "bazel-test-temp")
       testCaches.createDirectory()
       serializeBazelRcPath(testCaches.absolutePath)
     }
 
-    val lines = buildList {
+    return buildList {
       add("startup --host_jvm_args=-Djava.io.tmpdir=$bazelCachesPath")
       add("common --action_env BAZEL_DO_NOT_DETECT_CPP_TOOLCHAIN=0")
       add("common --action_env BAZEL_NO_APPLE_CPP_TOOLCHAIN=0")
@@ -38,14 +38,20 @@ internal object BazelTestCaches {
       add("build --action_env=TMP=$bazelCachesPath")
       add("build --action_env=TEMP=$bazelCachesPath")
     }
-    projectRoot.resolve(".bazelrc").writeText(lines.joinToString("\n"))
   }
 
+  /**
+   * Appends the test settings and the cache settings to the `.bazelrc` in [projectRoot], as one managed block.
+   *
+   * Call it after the copy of the test project. The block keeps the lines of a project `.bazelrc`, and it comes after
+   * them, so its settings win.
+   */
   fun configureBazelCaches(
     projectRoot: Path,
     testProjectPath: String,
     outputBase: Path,
     registries: List<URI> = emptyList(),
+    jvmToolchains: Boolean = true,
   ) {
     val cacheRoot = testCacheRoot()
       .resolve(cacheGroup(testProjectPath))
@@ -58,6 +64,7 @@ internal object BazelTestCaches {
     val diskCache = cacheRoot.resolve("disk-cache").createDirectories()
     val outputUserRoot = cacheRoot.resolve("output-user-root").createDirectories()
     val lines = buildList {
+      addAll(testSettings(jvmToolchains))
       add("startup --max_idle_secs=${bazelServerMaxIdleSeconds()}")
       add("startup --output_user_root=${outputUserRoot.toBazelRcPath()}")
       add("startup --output_base=${outputBase.toBazelRcPath()}")

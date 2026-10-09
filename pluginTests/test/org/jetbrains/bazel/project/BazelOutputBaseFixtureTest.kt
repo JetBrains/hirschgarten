@@ -35,4 +35,18 @@ internal class BazelOutputBaseFixtureTest {
 
     assertThat(outputBase).doesNotExist()
   }
+
+  @Test
+  fun `output base name does not depend on the test name`(): Unit = timeoutRunBlocking {
+    val fixtureJob = SupervisorJob(coroutineContext.job)
+    val fixture = bazelOutputBaseFixture() as TestFixtureImpl<Path>
+    val outputBase = fixture.init(CoroutineScope(coroutineContext + fixtureJob), context).await().first
+
+    try {
+      assertThat(outputBase.fileName.toString()).matches("ob-[0-9a-f]{8}")
+    }
+    finally {
+      fixtureJob.cancelAndJoin()
+    }
+  }
 }

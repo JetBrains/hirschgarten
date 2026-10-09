@@ -44,13 +44,13 @@ internal object BazelTestProject {
     registries: List<URI> = emptyList(),
   ) {
     LOG.info("Copying the test project $path into $projectRoot (jvmToolchains=$jvmToolchains)")
+    BazelServerProbe.registerWorkspace(projectRoot)
     copyDir(BazelPathManager.testProjectsRoot.resolve("base"), projectRoot)
-    BazelTestCaches.setupBazelRc(projectRoot, jvmToolchains)
     copyDir(projectsRoot.resolve(path), projectRoot)
     if (bazelVersion != null) {
       writeBazelVersion(projectRoot, bazelVersion)
     }
-    BazelTestCaches.configureBazelCaches(projectRoot, path, outputBase, registries)
+    BazelTestCaches.configureBazelCaches(projectRoot, path, outputBase, registries, jvmToolchains)
     if (jvmToolchains) {
       LOG.info("Adding the JVM toolchains")
       BazelTestCaches.findKotlinStdlibInClasspath()
