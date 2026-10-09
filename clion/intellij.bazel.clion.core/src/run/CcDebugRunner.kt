@@ -1,6 +1,7 @@
 package org.jetbrains.bazel.clion.run
 
 import com.intellij.build.events.impl.FailureResultImpl
+import com.intellij.cidr.debugger.profiles.CidrDebugProfileManager
 import com.intellij.execution.ExecutionException
 import com.intellij.execution.configurations.RunProfile
 import com.intellij.execution.configurations.RunProfileState
@@ -12,6 +13,8 @@ import com.intellij.execution.ui.RunContentDescriptor
 import com.intellij.openapi.application.EDT
 import com.intellij.openapi.components.service
 import com.intellij.util.asSafely
+import com.jetbrains.cidr.cpp.execution.DebugProfileErrorWithCustomNotification
+import com.jetbrains.cidr.cpp.execution.showMissingDebugProfileNotification
 import com.jetbrains.cidr.execution.CidrRunner
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -66,6 +69,13 @@ class CcDebugRunner : AsyncProgramRunner<RunnerSettings>() {
   override fun execute(environment: ExecutionEnvironment, state: RunProfileState): Promise<RunContentDescriptor?> {
     val ccState = state.asSafely<CcDebugCommandLineState>()
       ?: throw ExecutionException(BazelCLionCoreBundle.message("debug.error.invalid.state"))
+
+    val debugProfile = CidrDebugProfileManager.getInstance().getCurrentDebugProfile(environment.project)
+    if (debugProfile == null) {
+      showMissingDebugProfileNotification(environment.project)
+      throw DebugProfileErrorWithCustomNotification()
+    }
+    ccState.debugProfile = debugProfile
 
     val console = ConsoleService.getInstance(environment.project).buildConsole
     val taskGroupId = TaskGroupId("cc-debug-${Random.nextBytes(8).toHexString()}")
