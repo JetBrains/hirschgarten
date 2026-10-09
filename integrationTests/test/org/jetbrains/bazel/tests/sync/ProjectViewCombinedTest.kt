@@ -1,5 +1,6 @@
 package org.jetbrains.bazel.tests.sync
 
+import com.intellij.driver.client.Driver
 import com.intellij.driver.sdk.WaitForException
 import com.intellij.driver.sdk.step
 import com.intellij.driver.sdk.ui.components.common.editorTabs
@@ -7,21 +8,12 @@ import com.intellij.driver.sdk.ui.components.common.gutter
 import com.intellij.driver.sdk.ui.components.common.ideFrame
 import com.intellij.driver.sdk.ui.components.elements.popup
 import com.intellij.driver.sdk.wait
-import com.intellij.ide.starter.driver.engine.BackgroundRun
-import com.intellij.ide.starter.driver.engine.runIdeWithDriver
 import com.intellij.ide.starter.ide.IDETestContext
 import com.intellij.tools.ide.performanceTesting.commands.goto
 import com.intellij.tools.ide.performanceTesting.commands.waitForSmartMode
-import org.jetbrains.bazel.data.IdeaBazelCases
-import org.jetbrains.bazel.data.BazelProjectConfigurer
-import org.jetbrains.bazel.data.IdeStarterOs
-import org.jetbrains.bazel.data.simpleBazelProject
-import org.jetbrains.bazel.data.preCacheBazelisk
-import org.jetbrains.bazel.base.IdeStarterBaseProjectTest
 import org.jetbrains.bazel.base.assertFileKind
 import org.jetbrains.bazel.base.assertSyncedTargets
 import org.jetbrains.bazel.base.buildAndSync
-import org.jetbrains.bazel.base.checkIdeaLogForExceptions
 import org.jetbrains.bazel.base.execute
 import org.jetbrains.bazel.base.openFile
 import org.jetbrains.bazel.base.refreshFile
@@ -29,6 +21,11 @@ import org.jetbrains.bazel.base.switchProjectView
 import org.jetbrains.bazel.base.switchProjectViewWithPreview
 import org.jetbrains.bazel.base.syncBazelProject
 import org.jetbrains.bazel.base.waitForSyncSucceeded
+import org.jetbrains.bazel.data.BazelProjectConfigurer
+import org.jetbrains.bazel.data.IdeStarterOs
+import org.jetbrains.bazel.data.IdeaBazelCases
+import org.jetbrains.bazel.data.preCacheBazelisk
+import org.jetbrains.bazel.data.simpleBazelProject
 import org.jetbrains.bazel.performanceImpl.FileKindCheck.INDEXABLE
 import org.jetbrains.bazel.performanceImpl.FileKindCheck.IN_CONTENT
 import org.jetbrains.bazel.performanceImpl.FileKindCheck.IN_TARGETS
@@ -37,24 +34,16 @@ import org.jetbrains.bazel.performanceImpl.FileKindCheck.NON_INDEXABLE
 import org.jetbrains.bazel.performanceImpl.FileKindCheck.NOT_IN_TARGETS
 import org.jetbrains.bazel.performanceImpl.FileKindCheck.NOT_IN_WSM
 import org.jetbrains.bazel.performanceImpl.FileKindCheck.OUTSIDE_CONTENT
+import org.jetbrains.bazel.tests.combined.IdeStarterCombinedBaseTest
 import org.jetbrains.bazel.tests.ui.clickRunGutterOnLine
 import org.jetbrains.bazel.tests.ui.consoleView
 import org.jetbrains.bazel.tests.ui.getRunGutterOnLine
 import org.jetbrains.bazel.tests.ui.verifyAvailableRunGutterActions
 import org.jetbrains.bazel.tests.ui.verifyTestStatus
-import org.junit.jupiter.api.AfterAll
-import org.junit.jupiter.api.AfterEach
-import org.junit.jupiter.api.Assumptions
-import org.junit.jupiter.api.BeforeAll
-import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.MethodOrderer
 import org.junit.jupiter.api.Order
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.TestInstance
-import org.junit.jupiter.api.TestMethodOrder
 import kotlin.io.path.div
 import kotlin.io.path.writeText
-import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
 
 private val PROJECT_VIEW_COMBINED_PROJECT = simpleBazelProject(
@@ -71,7 +60,7 @@ private val PROJECT_VIEW_COMBINED_PROJECT = simpleBazelProject(
       (context.resolvedProjectHome / "build-flags-with-toolchain.bazelproject").writeText(
         """
         derive_targets_from_directories: true
-        index_all_files_in_directories: true
+        index: *
 
         directories:
           app
@@ -89,38 +78,20 @@ private val PROJECT_VIEW_COMBINED_PROJECT = simpleBazelProject(
   },
 )
 
-@TestInstance(TestInstance.Lifecycle.PER_CLASS)
-@TestMethodOrder(MethodOrderer.OrderAnnotation::class)
-class ProjectViewCombinedTest : IdeStarterBaseProjectTest() {
-  private lateinit var bgRun: BackgroundRun
-  private lateinit var ctx: IDETestContext
+class ProjectViewCombinedTest : IdeStarterCombinedBaseTest() {
+  override fun createContext(): IDETestContext = createContext(
+    projectName = "projectViewCombined",
+    case = IdeaBazelCases.withProject(PROJECT_VIEW_COMBINED_PROJECT),
+  )
 
-  @BeforeAll
-  fun startIdeAndSync() {
-    ctx = createContext("projectViewCombined", IdeaBazelCases.withProject(PROJECT_VIEW_COMBINED_PROJECT))
-    bgRun = ctx.runIdeWithDriver(runTimeout = timeout)
-    withDriver(bgRun) {
-      ideFrame {
-        syncBazelProject(buildAndSync = true)
-        waitForIndicators(5.minutes)
-        waitForSyncSucceeded()
-      }
-    }
-  }
-
-  @BeforeEach
-  fun skipIfCriticalFailed() = Assumptions.assumeFalse(criticalProblemOccurred)
-
-  @AfterEach
-  fun checkIdeState() {
-    if (!criticalProblemOccurred && ::bgRun.isInitialized && !bgRun.driver.isConnected) {
-      criticalProblemOccurred = true
-    }
+  override fun Driver.syncBazelProject() {
+    syncBazelProject(buildAndSync = true)
   }
 
   // Verifies that switching from all-targets to subset-targets properly updates the file index
   // and non-target files remain visible (not stale from the previous broader sync)
-  @Test @Order(1)
+  @Test
+  @Order(1)
   fun `index should update when switching from all targets to subset targets`() {
     withDriver(bgRun) {
       ideFrame {
@@ -165,7 +136,8 @@ class ProjectViewCombinedTest : IdeStarterBaseProjectTest() {
   // and resyncing picks up the new target list — the basic project view edit workflow.
   // Switches back to projectview.bazelproject first, since @Order(1) may have changed
   // the active view to a different file.
-  @Test @Order(2)
+  @Test
+  @Order(2)
   fun `modifying active project view file and resyncing should update targets`() {
     withDriver(bgRun) {
       ideFrame {
@@ -185,10 +157,10 @@ class ProjectViewCombinedTest : IdeStarterBaseProjectTest() {
           (ctx.resolvedProjectHome / "projectview.bazelproject")
             .writeText(
               "derive_targets_from_directories: false\n" +
-                "index_all_files_in_directories: true\n\n" +
-                "directories:\n  .\n\n" +
-                "targets:\n  //app:app\n  //common:common\n  //server:server\n\n" +
-                "import_depth: 0\n",
+              "index:\n  *\n\n" +
+              "directories:\n  .\n\n" +
+              "targets:\n  //app:app\n  //common:common\n  //server:server\n\n" +
+              "import_depth: 0\n",
             )
           execute { refreshFile("projectview.bazelproject") }
           wait(3.seconds)
@@ -205,10 +177,10 @@ class ProjectViewCombinedTest : IdeStarterBaseProjectTest() {
           (ctx.resolvedProjectHome / "projectview.bazelproject")
             .writeText(
               "derive_targets_from_directories: false\n" +
-                "index_all_files_in_directories: true\n\n" +
-                "directories:\n  .\n\n" +
-                "targets:\n  //app:app\n  //common:common\n\n" +
-                "import_depth: 0\n",
+              "index:\n  *\n\n" +
+              "directories:\n  .\n\n" +
+              "targets:\n  //app:app\n  //common:common\n\n" +
+              "import_depth: 0\n",
             )
           execute { refreshFile("projectview.bazelproject") }
           wait(3.seconds)
@@ -225,7 +197,8 @@ class ProjectViewCombinedTest : IdeStarterBaseProjectTest() {
 
   // BAZEL-2082: directories: . includes all dirs, but only 2 out of 10 have targets.
   // Files in the other 8 directories (including custom_java_lib rule targets) must remain in project content.
-  @Test @Order(100)
+  @Test
+  @Order(100)
   fun `non-target directories should stay in project content when included via directories section`() {
     withDriver(bgRun) {
       ideFrame {
@@ -247,14 +220,62 @@ class ProjectViewCombinedTest : IdeStarterBaseProjectTest() {
           execute { assertFileKind("common/src/main/java/com/example/common/Common.java", IN_TARGETS, IN_WSM, IN_CONTENT, INDEXABLE) }
         }
         step("Verify files in non-target directories are still in project and indexable") {
-          execute { assertFileKind("server/src/main/java/com/example/server/Server.java", NOT_IN_TARGETS, NOT_IN_WSM, IN_CONTENT, INDEXABLE) }
-          execute { assertFileKind("client/src/main/java/com/example/client/Client.java", NOT_IN_TARGETS, NOT_IN_WSM, IN_CONTENT, INDEXABLE) }
-          execute { assertFileKind("database/src/main/java/com/example/database/Database.java", NOT_IN_TARGETS, NOT_IN_WSM, IN_CONTENT, INDEXABLE) }
-          execute { assertFileKind("frontend/src/main/java/com/example/frontend/Frontend.java", NOT_IN_TARGETS, NOT_IN_WSM, IN_CONTENT, INDEXABLE) }
-          execute { assertFileKind("webapp/src/main/java/com/example/webapp/Webapp.java", NOT_IN_TARGETS, NOT_IN_WSM, IN_CONTENT, INDEXABLE) }
+          execute {
+            assertFileKind(
+              "server/src/main/java/com/example/server/Server.java",
+              NOT_IN_TARGETS,
+              NOT_IN_WSM,
+              IN_CONTENT,
+              INDEXABLE,
+            )
+          }
+          execute {
+            assertFileKind(
+              "client/src/main/java/com/example/client/Client.java",
+              NOT_IN_TARGETS,
+              NOT_IN_WSM,
+              IN_CONTENT,
+              INDEXABLE,
+            )
+          }
+          execute {
+            assertFileKind(
+              "database/src/main/java/com/example/database/Database.java",
+              NOT_IN_TARGETS,
+              NOT_IN_WSM,
+              IN_CONTENT,
+              INDEXABLE,
+            )
+          }
+          execute {
+            assertFileKind(
+              "frontend/src/main/java/com/example/frontend/Frontend.java",
+              NOT_IN_TARGETS,
+              NOT_IN_WSM,
+              IN_CONTENT,
+              INDEXABLE,
+            )
+          }
+          execute {
+            assertFileKind(
+              "webapp/src/main/java/com/example/webapp/Webapp.java",
+              NOT_IN_TARGETS,
+              NOT_IN_WSM,
+              IN_CONTENT,
+              INDEXABLE,
+            )
+          }
           execute { assertFileKind("tools/src/main/java/com/example/tools/Tools.java", NOT_IN_TARGETS, NOT_IN_WSM, IN_CONTENT, INDEXABLE) }
           execute { assertFileKind("infra/src/main/java/com/example/infra/Infra.java", NOT_IN_TARGETS, NOT_IN_WSM, IN_CONTENT, INDEXABLE) }
-          execute { assertFileKind("testing/src/main/java/com/example/testing/Testing.java", NOT_IN_TARGETS, NOT_IN_WSM, IN_CONTENT, INDEXABLE) }
+          execute {
+            assertFileKind(
+              "testing/src/main/java/com/example/testing/Testing.java",
+              NOT_IN_TARGETS,
+              NOT_IN_WSM,
+              IN_CONTENT,
+              INDEXABLE,
+            )
+          }
         }
       }
     }
@@ -262,7 +283,8 @@ class ProjectViewCombinedTest : IdeStarterBaseProjectTest() {
 
   // BAZEL-1986: project view with only targets (no directories section).
   // All BUILD files should be indexed, so smart code features work in them properly.
-  @Test @Order(101)
+  @Test
+  @Order(101)
   fun `non-targeted BUILD files should also be indexed when using the targets-only project view`() {
     withDriver(bgRun) {
       ideFrame {
@@ -297,9 +319,10 @@ class ProjectViewCombinedTest : IdeStarterBaseProjectTest() {
   }
 
   // BAZEL-2937: build_flags with --extra_toolchains causes bazel query to fail,
-  // which breaks IndexAdditionalFilesSyncHook and makes all directories visible.
+  // which breaks DirectoriesSyncHook and makes all directories visible.
   // After sync with build_flags, directory scoping must still work correctly.
-  @Test @Order(102)
+  @Test
+  @Order(102)
   fun `build_flags should not break directory scoping`() {
     withDriver(bgRun) {
       ideFrame {
@@ -332,7 +355,8 @@ class ProjectViewCombinedTest : IdeStarterBaseProjectTest() {
   // Verifies that Bazel config files like MODULE.bazel, WORKSPACE.bazel, etc. residing in the
   // root project directory are always indexed when the projectview file doesn't contain "." in the
   // "directories" section
-  @Test @Order(103)
+  @Test
+  @Order(103)
   fun `bazel configs in root project directory should be indexed`() {
     withDriver(bgRun) {
       ideFrame {
@@ -364,7 +388,8 @@ class ProjectViewCombinedTest : IdeStarterBaseProjectTest() {
   // BAZEL-1451: derive_targets_from_directories: false with no targets: section.
   // The plugin should NOT silently fall back to //... (all targets).
   // Expected: zero targets synced (or an error), not a full-repo sync.
-  @Test @Order(104)
+  @Test
+  @Order(104)
   fun `empty targets with derive_targets_from_directories false should not fallback to all targets`() {
     withDriver(bgRun) {
       ideFrame {
@@ -474,11 +499,5 @@ class ProjectViewCombinedTest : IdeStarterBaseProjectTest() {
         }
       }
     }
-  }
-
-  @AfterAll
-  fun closeIde() {
-    if (::bgRun.isInitialized) bgRun.closeIdeAndWait()
-    if (::ctx.isInitialized) checkIdeaLogForExceptions(ctx)
   }
 }

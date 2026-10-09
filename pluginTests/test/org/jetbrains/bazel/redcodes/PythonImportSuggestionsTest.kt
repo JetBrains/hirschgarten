@@ -2,11 +2,11 @@ package org.jetbrains.bazel.redcodes
 
 import com.intellij.bazel.python.backend.updateBazelPythonResolveIndex
 import com.intellij.openapi.application.EDT
-import com.intellij.openapi.application.runWriteAction
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.VirtualFileManager
 import com.intellij.platform.backend.workspace.storeAndGet
 import com.intellij.platform.backend.workspace.workspaceModel
+import com.intellij.python.pyproject.model.evolution.EvoPyProjectModel
 import com.intellij.psi.util.QualifiedName
 import com.intellij.testFramework.IndexingTestUtil
 import com.intellij.util.indexing.FileBasedIndex
@@ -47,6 +47,7 @@ class PythonImportSuggestionsTest {
 
     @Test
     fun testImportQuickFixForSymbolInNoImportsTarget(): Unit = runBlocking(Dispatchers.Default) {
+      EvoPyProjectModel.getInstance(fixture.project).awaitCurrentInterpreters()
       withContext(Dispatchers.EDT) {
         fixture.enableInspections(PyUnresolvedReferencesInspection())
         fixture.configureFromTempProjectFile("main/main.py")
@@ -84,6 +85,7 @@ class PythonImportSuggestionsTest {
       fixture.registerAdditionalIndexedFile(pydanticMainFile)
       FileBasedIndex.getInstance().requestReindex(pydanticMainFile)
       IndexingTestUtil.waitUntilIndexesAreReady(fixture.project)
+      EvoPyProjectModel.getInstance(fixture.project).awaitCurrentInterpreters()
 
       withContext(Dispatchers.EDT) {
         fixture.enableInspections(PyUnresolvedReferencesInspection())
@@ -107,14 +109,12 @@ private fun BazelSyncCodeInsightTestFixture.replaceMainFile(text: String) {
   Path(tempDirPath).resolve("main").resolve("main.py").writeText(text)
 }
 
-private fun BazelSyncCodeInsightTestFixture.registerAdditionalIndexedFile(file: VirtualFile) {
+private suspend fun BazelSyncCodeInsightTestFixture.registerAdditionalIndexedFile(file: VirtualFile) {
   val urlManager = project.workspaceModel.getVirtualFileUrlManager()
-  runWriteAction {
-    project.workspaceModel.updateProjectModel("register external Python source") { storage ->
-      val entity = storage.entities(BazelProjectDirectoriesEntity::class.java).first()
-      storage.modifyBazelProjectDirectoriesEntity(entity) {
-        indexAdditionalFiles += urlManager.storeAndGet(file)
-      }
+  project.workspaceModel.update("register external Python source") { storage ->
+    val entity = storage.entities(BazelProjectDirectoriesEntity::class.java).first()
+    storage.modifyBazelProjectDirectoriesEntity(entity) {
+      indexableNonRecursiveRoots += urlManager.storeAndGet(file)
     }
   }
 }

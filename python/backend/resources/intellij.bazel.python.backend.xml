@@ -51,7 +51,7 @@
   </extensions>
 
   <extensions defaultExtensionNs="org.jetbrains.bazel">
-    <indexAdditionalFilesContributor implementation="com.intellij.bazel.python.backend.PythonIndexAdditionalFilesContributor"/>
+    <indexableContentContributor implementation="com.intellij.bazel.python.backend.PythonIndexableContentContributor"/>
     <syncWorkspaceImporterFactory implementation="com.intellij.bazel.python.backend.BazelPythonWorkspaceImporter$Factory"/>
     <languagePlugin implementation="com.intellij.bazel.python.backend.sync.PythonLanguagePlugin"/>
     <bazelRuleSetProvider implementation="com.intellij.bazel.python.backend.sync.PythonRuleSetPlugin"/>

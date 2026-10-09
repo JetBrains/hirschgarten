@@ -7,6 +7,19 @@ import com.intellij.workspaceModel.core.fileIndex.WorkspaceFileSetRegistrar
 import com.intellij.workspaceModel.ide.toPath
 import org.jetbrains.bazel.workspacemodel.entities.BazelProjectDirectoriesEntity
 
+/**
+ * Registers the file sets of [BazelProjectDirectoriesEntity].
+ *
+ * The project root is non-indexable content.
+ * Thus, all the files under it are part of the project, but the IDE does not index them.
+ * Indexing of the files other than the sources can be very slow, see https://youtrack.jetbrains.com/issue/BAZEL-2088.
+ *
+ * [org.jetbrains.bazel.workspace.indexing.IndexableContentCollector] selects the files to index in addition to the target sources.
+ * These are the files that match the `index` patterns, the Bazel files, the root workspace files and the project view file.
+ * They also include the files from [org.jetbrains.bazel.workspace.indexing.IndexableContentContributor].
+ * [registerIndexableRecursiveRoots] indexes the directories that the patterns match recursively.
+ * [registerIndexableNonRecursiveRoots] indexes each of the other selected files.
+ */
 internal class BazelProjectDirectoriesWorkspaceFileIndexContributor : WorkspaceFileIndexContributor<BazelProjectDirectoriesEntity> {
   override val entityClass: Class<BazelProjectDirectoriesEntity> = BazelProjectDirectoriesEntity::class.java
 
@@ -15,16 +28,8 @@ internal class BazelProjectDirectoriesWorkspaceFileIndexContributor : WorkspaceF
     registrar: WorkspaceFileSetRegistrar,
     storage: EntityStorage,
   ) {
-    /**
-     * This makes files under the project root part of the project without actually having to index them
-     * (which can be very slow if there files other than source files, see https://youtrack.jetbrains.com/issue/BAZEL-2088).
-     * If for some reason we do want to index files that aren't part of any target, then we can call [registerIncludedDirectories].
-     * Conversely, in IDEA 2025.1, where [WorkspaceFileKind.CONTENT_NON_INDEXABLE] isn't available, we have to do it regardless.
-     */
-    if (entity.indexAllFilesInIncludedRoots) {
-      registrar.registerIncludedDirectories(entity)
-    }
-    registrar.registerIndexAdditionalFiles(entity)
+    registrar.registerIndexableRecursiveRoots(entity)
+    registrar.registerIndexableNonRecursiveRoots(entity)
     registrar.registerExcludedDirectories(entity)
 
     registrar.registerFileSet(
@@ -35,8 +40,8 @@ internal class BazelProjectDirectoriesWorkspaceFileIndexContributor : WorkspaceF
     )
   }
 
-  private fun WorkspaceFileSetRegistrar.registerIncludedDirectories(entity: BazelProjectDirectoriesEntity) =
-    entity.includedRoots.forEach {
+  private fun WorkspaceFileSetRegistrar.registerIndexableRecursiveRoots(entity: BazelProjectDirectoriesEntity) =
+    entity.indexableRecursiveRoots.forEach {
       registerFileSet(
         root = it,
         kind = WorkspaceFileKind.CONTENT,
@@ -55,8 +60,8 @@ internal class BazelProjectDirectoriesWorkspaceFileIndexContributor : WorkspaceF
     }
   }
 
-  private fun WorkspaceFileSetRegistrar.registerIndexAdditionalFiles(entity: BazelProjectDirectoriesEntity) {
-    entity.indexAdditionalFiles.forEach {
+  private fun WorkspaceFileSetRegistrar.registerIndexableNonRecursiveRoots(entity: BazelProjectDirectoriesEntity) {
+    entity.indexableNonRecursiveRoots.forEach {
       registerNonRecursiveFileSet(
         file = it,
         kind = WorkspaceFileKind.CONTENT,

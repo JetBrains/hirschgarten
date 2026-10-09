@@ -13,8 +13,14 @@ internal class ProjectViewElementFactory(private val project: Project) {
 
   fun createSection(name: String, items: List<String> = emptyList()): ProjectViewPsiSection {
     val itemLines = items.joinToString(separator = "") { "  $it\n" }
-    return createFile("$name:\n$itemLines").childrenOfType<ProjectViewPsiSection>().first()
+    return createFile("$name:\n$itemLines")
+      .childrenOfType<ProjectViewPsiSection>()
+      .first()
   }
+
+  fun createSingleLineSection(name: String, item: String): ProjectViewPsiSection = createFile("$name: $item\n")
+    .childrenOfType<ProjectViewPsiSection>()
+    .first()
 
   private fun createFile(text: String): PsiFile =
     PsiFileFactory

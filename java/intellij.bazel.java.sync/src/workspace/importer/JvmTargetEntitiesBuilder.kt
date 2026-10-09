@@ -43,7 +43,7 @@ import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceAspectIds
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
 import org.jetbrains.bazel.sync.workspace.snapshot.findBuildData
 import org.jetbrains.bazel.target.baseDirectoryLocation
-import org.jetbrains.bazel.workspace.indexAdditionalFiles.ProjectViewGlobSet
+import org.jetbrains.bazel.workspace.ProjectViewGlobSet
 import org.jetbrains.bazel.workspacemodel.entities.BazelDummyEntitySource
 import org.jetbrains.bazel.workspacemodel.entities.BazelModuleEntitySource
 import org.jetbrains.bazel.workspacemodel.entities.BazelModuleExtensionEntity

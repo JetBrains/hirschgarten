@@ -842,15 +842,38 @@ internal object MetadataStorageImpl : MetadataStorageBase() {
           isComputable = false,
           isKey = false,
           isOpen = false,
-          name = "indexAllFilesInIncludedRoots",
-          valueType = primitiveTypeBooleanNotNullable,
+          name = "indexPatterns",
+          valueType = ValueTypeMetadata.ParameterizedType(
+            generics = listOf(
+              primitiveTypeStringNotNullable,
+            ),
+            primitive = primitiveTypeListNotNullable,
+          ),
           withDefault = false,
         ),
         OwnPropertyMetadata(
           isComputable = false,
           isKey = false,
           isOpen = false,
-          name = "indexAdditionalFiles",
+          name = "indexableRecursiveRoots",
+          valueType = ValueTypeMetadata.ParameterizedType(
+            generics = listOf(
+              ValueTypeMetadata.SimpleType.CustomType(
+                isNullable = false,
+                typeMetadata = FinalClassMetadata.KnownClass(
+                  fqName = "com.intellij.platform.workspace.storage.url.VirtualFileUrl",
+                ),
+              ),
+            ),
+            primitive = primitiveTypeListNotNullable,
+          ),
+          withDefault = false,
+        ),
+        OwnPropertyMetadata(
+          isComputable = false,
+          isKey = false,
+          isOpen = false,
+          name = "indexableNonRecursiveRoots",
           valueType = ValueTypeMetadata.ParameterizedType(
             generics = listOf(
               ValueTypeMetadata.SimpleType.CustomType(
@@ -1365,7 +1388,7 @@ internal object MetadataStorageImpl : MetadataStorageBase() {
     addMetadataHash(typeFqn = "com.intellij.platform.workspace.jps.entities.SourceRootTypeId", metadataHash = 619871016)
     addMetadataHash(typeFqn = "org.jetbrains.bazel.workspacemodel.entities.WorkspaceModelTargetLabelList", metadataHash = 1283568167)
     addMetadataHash(typeFqn = "org.jetbrains.bsp.protocol.StrictDependencyCheckedType", metadataHash = -2089160899)
-    addMetadataHash(typeFqn = "org.jetbrains.bazel.workspacemodel.entities.BazelProjectDirectoriesEntity", metadataHash = 1532901196)
+    addMetadataHash(typeFqn = "org.jetbrains.bazel.workspacemodel.entities.BazelProjectDirectoriesEntity", metadataHash = -904551720)
     addMetadataHash(
       typeFqn = "org.jetbrains.bazel.workspacemodel.entities.CompiledSourceCodeInsideJarExcludeEntity",
       metadataHash = -844721890,

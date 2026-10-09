@@ -36,7 +36,7 @@ import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
 import org.jetbrains.bazel.sync.workspace.DefaultOutputLocationResolver
 import org.jetbrains.bazel.test.framework.testBazelInfo
 import org.jetbrains.bazel.test.framework.target.TestBuildTarget
-import org.jetbrains.bazel.workspace.indexAdditionalFiles.ProjectViewGlobSet
+import org.jetbrains.bazel.workspace.ProjectViewGlobSet
 import org.jetbrains.bazel.workspace.model.test.framework.WorkspaceModelBaseTest
 import org.jetbrains.bazel.workspace.model.test.framework.createTestBuildTarget
 import org.jetbrains.bazel.workspace.model.test.framework.testLocations
@@ -501,7 +501,7 @@ internal class JvmTargetEntitiesBuilderTest : WorkspaceModelBaseTest() {
       projectName = "test-project",
       projectBasePath = projectBasePath,
       defaultJdkName = null,
-      testSourcesGlob = ProjectViewGlobSet(projectBasePath, emptyList()),
+      testSourcesGlob = ProjectViewGlobSet.of(projectBasePath, emptyList()),
       fileToTargets = FileToTargetMap.EMPTY,
       virtualFileUrlManager = virtualFileUrlManager,
       entitySource = BazelProjectEntitySource,

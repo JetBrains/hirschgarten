@@ -7,7 +7,7 @@ import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.sync.JavaLanguageClass
 import org.jetbrains.bazel.test.framework.target.TestBuildTarget
-import org.jetbrains.bazel.workspace.indexAdditionalFiles.ProjectViewGlobSet
+import org.jetbrains.bazel.workspace.ProjectViewGlobSet
 import org.jetbrains.bazel.workspace.model.test.framework.createTestBuildTarget
 import org.jetbrains.bazel.workspace.model.test.framework.generatedTestLocation
 import org.jetbrains.bazel.workspace.model.test.framework.resolveTestLocation
@@ -80,7 +80,7 @@ class SourceRootBuilderTest {
       label = "//target",
       sources = listOf(matchingPath, nonMatchingPath),
     )
-    val glob = ProjectViewGlobSet(projectRoot, listOf("javatests/*"))
+    val glob = ProjectViewGlobSet.of(projectRoot, "javatests/*")
 
     val roots = SourceRootBuilder.resolve(
       target = target,
@@ -90,6 +90,27 @@ class SourceRootBuilderTest {
 
     roots.first { it.sourcePath == matchingPath }.rootType shouldBe JAVA_TEST_SOURCE_ROOT_TYPE
     roots.first { it.sourcePath == nonMatchingPath }.rootType shouldBe JAVA_SOURCE_ROOT_TYPE
+  }
+
+  @Test
+  fun `should not mark sources in a sibling directory with the same prefix as test roots`() {
+    val projectRoot = Path("/project").toAbsolutePath()
+    val matchingPath = projectRoot.resolve("javatests/package/File.java")
+    val siblingPath = projectRoot.resolve("javatests_util/package/File.java")
+    val target = libraryTarget(
+      label = "//target",
+      sources = listOf(matchingPath, siblingPath),
+    )
+    val glob = ProjectViewGlobSet.of(projectRoot, "javatests/*")
+
+    val roots = SourceRootBuilder.resolve(
+      target = target,
+      testSourcesGlob = glob,
+      resolveLocation = ::resolveTestLocation,
+    )
+
+    roots.first { it.sourcePath == matchingPath }.rootType shouldBe JAVA_TEST_SOURCE_ROOT_TYPE
+    roots.first { it.sourcePath == siblingPath }.rootType shouldBe JAVA_SOURCE_ROOT_TYPE
   }
 
   @Test

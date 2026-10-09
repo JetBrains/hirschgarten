@@ -275,27 +275,38 @@ class BazelFileEventListenerTest : WorkspaceModelBaseTest() {
   }
 
   @Test
-  fun `additional bazel file creation`() {
+  fun `indexable bazel file creation`() {
     val file = project.rootDir.createFile("new_file", "bzl")
 
     createEvent(file).process().shouldBeFalse()
-    file.isIndexedAdditionalFile().shouldBeTrue()
+    file.isIndexableNonRecursiveRoot().shouldBeTrue()
     assertEquals(0, invertedSourcesQueryCount.get())
   }
 
   @Test
-  fun `should not add additional bazel file outside included roots`() {
+  fun `should not add indexable bazel file outside included roots`() {
     val included = project.rootDir.createDirectory("included")
     addProjectDirectoriesEntity(includedRoots = listOf(included))
 
     val file = project.rootDir.createFile("new_file", "bzl")
 
     createEvent(file).process().shouldBeFalse()
-    file.isIndexedAdditionalFile().shouldBeFalse()
+    file.isIndexableNonRecursiveRoot().shouldBeFalse()
   }
 
   @Test
-  fun `should not add additional bazel file under content root`() {
+  fun `should add root workspace file outside included roots`() {
+    val included = project.rootDir.createDirectory("included")
+    addProjectDirectoriesEntity(includedRoots = listOf(included))
+
+    val file = project.rootDir.createFile("WORKSPACE", "bazel")
+
+    createEvent(file).process()
+    file.isIndexableNonRecursiveRoot().shouldBeTrue()
+  }
+
+  @Test
+  fun `should not add indexable bazel file under content root`() {
     val src = project.rootDir.createDirectory("src")
     val srcUrl = virtualFileUrlManager.storeAndGet(src)
     val module = workspaceModel.currentSnapshot.resolveModule(target1)
@@ -317,23 +328,35 @@ class BazelFileEventListenerTest : WorkspaceModelBaseTest() {
     val file = src.createFile("new_file", "bzl")
 
     createEvent(file).process().shouldBeFalse()
-    file.isIndexedAdditionalFile().shouldBeFalse()
+    file.isIndexableNonRecursiveRoot().shouldBeFalse()
   }
 
   @Test
-  fun `should not add additional bazel file when all files in directories are indexed`() {
-    addProjectDirectoriesEntity(indexAllFilesInIncludedRoots = true)
+  fun `should not add indexable bazel file under an indexable root`() {
+    addProjectDirectoriesEntity(indexPatterns = listOf("*"), indexableRecursiveRoots = listOf(project.rootDir))
 
     val file = project.rootDir.createFile("new_file", "bzl")
 
     createEvent(file).process().shouldBeFalse()
-    file.isIndexedAdditionalFile().shouldBeFalse()
+    file.isIndexableNonRecursiveRoot().shouldBeFalse()
     assertEquals(0, invertedSourcesQueryCount.get())
   }
 
   @Test
-  fun `source file should be processed when all files in directories are indexed`() {
-    addProjectDirectoriesEntity(indexAllFilesInIncludedRoots = true)
+  fun `deleting an untracked file should not update the model`() {
+    val trackedFiles = (1..5).map { project.rootDir.createFile("defs$it", "bzl") }
+    addProjectDirectoriesEntity(indexableNonRecursiveRoots = trackedFiles)
+    val untrackedFile = project.rootDir.createDirectory("src").createFile("aaa", "txt")
+    val snapshotBefore = workspaceModel.currentSnapshot
+
+    deleteEvent(untrackedFile).process().shouldBeFalse()
+
+    (workspaceModel.currentSnapshot === snapshotBefore).shouldBeTrue()
+  }
+
+  @Test
+  fun `source file should be processed under an indexable root`() {
+    addProjectDirectoriesEntity(indexPatterns = listOf("*"), indexableRecursiveRoots = listOf(project.rootDir))
 
     val file = project.rootDir.createDirectory("src").createFile("aaa", "java")
 
@@ -345,17 +368,17 @@ class BazelFileEventListenerTest : WorkspaceModelBaseTest() {
   }
 
   @Test
-  fun `additional bazel file rename`() {
+  fun `indexable bazel file rename`() {
     val file = project.rootDir.createFile("old_name", "bzl")
 
     createEvent(file).process().shouldBeFalse()
-    file.isIndexedAdditionalFile().shouldBeTrue()
+    file.isIndexableNonRecursiveRoot().shouldBeTrue()
 
     runTestWriteAction { file.rename(requestor, "new_name.bzl") }
 
     renameEvent(file, "old_name.bzl", "new_name.bzl").process().shouldBeFalse()
-    indexedAdditionalFilePaths().any { it.endsWith("/old_name.bzl") }.shouldBeFalse()
-    indexedAdditionalFilePaths().any { it.endsWith("/new_name.bzl") }.shouldBeTrue()
+    indexableNonRecursiveRootPaths().any { it.endsWith("/old_name.bzl") }.shouldBeFalse()
+    indexableNonRecursiveRootPaths().any { it.endsWith("/new_name.bzl") }.shouldBeTrue()
   }
 
   @Test
@@ -404,7 +427,7 @@ class BazelFileEventListenerTest : WorkspaceModelBaseTest() {
     val file = project.rootDir.createDirectory("src").createFile("aaa", "txt")
     createEvent(file).process().shouldBeFalse()
     deleteEvent(file).process().shouldBeFalse()
-    file.isIndexedAdditionalFile().shouldBeFalse()
+    file.isIndexableNonRecursiveRoot().shouldBeFalse()
     assertEquals(0, invertedSourcesQueryCount.get())
   }
 
@@ -419,7 +442,7 @@ class BazelFileEventListenerTest : WorkspaceModelBaseTest() {
       createEvent(sourceFile),
     ).shouldBeTrue()
 
-    unrelatedFile.isIndexedAdditionalFile().shouldBeFalse()
+    unrelatedFile.isIndexableNonRecursiveRoot().shouldBeFalse()
     sourceFile.assertFileBelongsToTargets(
       target1 to true,
       target2 to true,
@@ -428,17 +451,17 @@ class BazelFileEventListenerTest : WorkspaceModelBaseTest() {
   }
 
   @Test
-  fun `additional bazel file event should not trigger target processing`() {
+  fun `indexable bazel file event should not trigger target processing`() {
     val src = project.rootDir.createDirectory("src")
-    val additionalFile = project.rootDir.createFile("defs", "bzl")
+    val indexableFile = project.rootDir.createFile("defs", "bzl")
     val sourceFile = src.createFile("aaa", "java")
 
     processEvents(
-      createEvent(additionalFile),
+      createEvent(indexableFile),
       createEvent(sourceFile),
     ).shouldBeTrue()
 
-    additionalFile.isIndexedAdditionalFile().shouldBeTrue()
+    indexableFile.isIndexableNonRecursiveRoot().shouldBeTrue()
     sourceFile.assertFileBelongsToTargets(
       target1 to true,
       target2 to true,
@@ -788,7 +811,9 @@ class BazelFileEventListenerTest : WorkspaceModelBaseTest() {
   private fun addProjectDirectoriesEntity(
     includedRoots: List<VirtualFile> = listOf(project.rootDir),
     excludedRoots: List<VirtualFile> = emptyList(),
-    indexAllFilesInIncludedRoots: Boolean = false,
+    indexPatterns: List<String> = emptyList(),
+    indexableRecursiveRoots: List<VirtualFile> = emptyList(),
+    indexableNonRecursiveRoots: List<VirtualFile> = emptyList(),
   ) {
     val rootUrl = virtualFileUrlManager.storeAndGet(project.rootDir)
     runTestWriteAction {
@@ -799,8 +824,9 @@ class BazelFileEventListenerTest : WorkspaceModelBaseTest() {
             projectRoot = rootUrl,
             includedRoots = includedRoots.map { root -> virtualFileUrlManager.storeAndGet(root) },
             excludedRoots = excludedRoots.map { root -> virtualFileUrlManager.storeAndGet(root) },
-            indexAllFilesInIncludedRoots = indexAllFilesInIncludedRoots,
-            indexAdditionalFiles = emptyList(),
+            indexPatterns = indexPatterns,
+            indexableRecursiveRoots = indexableRecursiveRoots.map { root -> virtualFileUrlManager.storeAndGet(root) },
+            indexableNonRecursiveRoots = indexableNonRecursiveRoots.map { root -> virtualFileUrlManager.storeAndGet(root) },
             entitySource = BazelProjectEntitySource,
           )
         )
@@ -948,12 +974,12 @@ class BazelFileEventListenerTest : WorkspaceModelBaseTest() {
     return resolve(moduleId) ?: error("Module for $target does not exist")
   }
 
-  private fun VirtualFile.isIndexedAdditionalFile(): Boolean =
-    project.bazelProjectDirectoriesEntity()?.indexAdditionalFiles.orEmpty()
+  private fun VirtualFile.isIndexableNonRecursiveRoot(): Boolean =
+    project.bazelProjectDirectoriesEntity()?.indexableNonRecursiveRoots.orEmpty()
       .any { it == virtualFileUrlManager.storeAndGet(this) }
 
-  private fun indexedAdditionalFilePaths(): Set<String> =
-    project.bazelProjectDirectoriesEntity()?.indexAdditionalFiles.orEmpty()
+  private fun indexableNonRecursiveRootPaths(): Set<String> =
+    project.bazelProjectDirectoriesEntity()?.indexableNonRecursiveRoots.orEmpty()
       .map { it.url }
       .toSet()
 }

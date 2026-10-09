@@ -5,6 +5,7 @@ import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.commons.ExcludableValue
 import org.jetbrains.bazel.commons.ShardingApproach
 import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.languages.projectview.checker.ProjectViewProblem
 import org.jetbrains.bazel.languages.projectview.completion.DirectoriesCompletionProvider
 import java.nio.file.Path
 
@@ -31,9 +32,7 @@ internal class DefaultProjectViewSectionProvider : ProjectViewSectionProvider {
       GazelleTargetSection,
       ImportDepthSection,
       ImportRunConfigurationsSection,
-      IndexAdditionalFilesInDirectoriesSection,
-      IndexAllFilesInDirectoriesSection,
-      PythonDebugFlagsSection,
+      IndexSection,
       RunConfigRunWithBazelSection,
       ShardSyncSection,
       ShardingApproachSection,
@@ -41,6 +40,10 @@ internal class DefaultProjectViewSectionProvider : ProjectViewSectionProvider {
       TargetShardSizeSection,
       TargetsSection,
       TestFlagsSection,
+      // deprecated sections
+      IndexAdditionalFilesInDirectoriesSection,
+      IndexAllFilesInDirectoriesSection,
+      PythonDebugFlagsSection,
       TestSourcesSection,
     )
 }
@@ -111,16 +114,10 @@ private val ImportRunConfigurationsSection: ProjectViewSection<List<Path>> = Pro
   documentation = BazelProjectViewBundle.message("bazel.language.projectview.docs.import_run_configurations"),
 )
 
-private val IndexAdditionalFilesInDirectoriesSection: ProjectViewSection<List<String>> = ProjectViewSection(
-  key = INDEX_ADDITIONAL_FILES_IN_DIRECTORIES_KEY,
+private val IndexSection: ProjectViewSection<List<String>> = ProjectViewSection(
+  key = INDEX_KEY,
   type = ProjectViewSectionType.string().list(),
-  documentation = BazelProjectViewBundle.message("bazel.language.projectview.docs.index_additional_files_in_directories"),
-)
-
-private val IndexAllFilesInDirectoriesSection: ProjectViewSection<Boolean> = ProjectViewSection(
-  key = INDEX_ALL_FILES_IN_DIRECTORIES_KEY,
-  type = ProjectViewSectionType.boolean,
-  documentation = BazelProjectViewBundle.message("bazel.language.projectview.docs.index_all_files_in_directories"),
+  documentation = BazelProjectViewBundle.message("bazel.language.projectview.docs.index"),
 )
 
 private val RunConfigRunWithBazelSection: ProjectViewSection<Boolean> = ProjectViewSection(
@@ -166,6 +163,26 @@ private val TestFlagsSection: ProjectViewSection<List<String>> = ProjectViewSect
 )
 
 // deprecated sections
+
+private val indexingDeprecation = ProjectViewSection.Deprecation(
+  message = BazelProjectViewBundle.message("annotator.deprecated.section.with.replacement.warning", INDEX_KEY.name),
+  level = ProjectViewSection.Deprecation.Level.Warning,
+  quickFixes = listOf(ProjectViewProblem.QuickFix.ReplaceWithIndex),
+)
+
+private val IndexAdditionalFilesInDirectoriesSection: ProjectViewSection<List<String>> = ProjectViewSection(
+  key = INDEX_ADDITIONAL_FILES_IN_DIRECTORIES_KEY,
+  type = ProjectViewSectionType.string().list(),
+  documentation = BazelProjectViewBundle.message("bazel.language.projectview.docs.index_additional_files_in_directories"),
+  deprecation = indexingDeprecation,
+)
+
+private val IndexAllFilesInDirectoriesSection: ProjectViewSection<Boolean> = ProjectViewSection(
+  key = INDEX_ALL_FILES_IN_DIRECTORIES_KEY,
+  type = ProjectViewSectionType.boolean,
+  documentation = BazelProjectViewBundle.message("bazel.language.projectview.docs.index_all_files_in_directories"),
+  deprecation = indexingDeprecation,
+)
 
 private val PythonDebugFlagsSection: ProjectViewSection<List<String>> = ProjectViewSection(
   key = PYTHON_DEBUG_FLAGS_KEY,

@@ -14,6 +14,7 @@ import org.jetbrains.bazel.languages.projectview.completion.FiletypeCompletionPr
 import org.jetbrains.bazel.languages.projectview.completion.FlagCompletionProvider
 import org.jetbrains.bazel.languages.projectview.completion.SimpleCompletionProvider
 import org.jetbrains.bazel.languages.projectview.completion.TargetCompletionProvider
+import org.jetbrains.bazel.languages.projectview.psi.sections.ProjectViewPsiSection
 import java.nio.file.Path
 import kotlin.collections.contains
 import kotlin.enums.EnumEntries
@@ -98,6 +99,10 @@ interface ProjectViewSectionType<T : Any> {
 
 @ApiStatus.Internal
 fun ProjectViewSectionType<*>.isScalar(): Boolean = this is ProjectViewSectionType.Scalar<*>
+
+@ApiStatus.Internal
+fun <T : Any> ProjectViewPsiSection.read(type: ProjectViewSectionType<T>): T? =
+  type.readFrom(this.getItems().map { it.text.trim() })
 
 @ApiStatus.Internal
 fun <T : Any> ProjectViewSectionType.Scalar<T>.excludable(): ProjectViewSectionType.Scalar<ExcludableValue<T>> {

@@ -27,7 +27,7 @@ import org.jetbrains.bazel.sync.workspace.persistence.TargetLoadOptions
 import org.jetbrains.bazel.sync.workspace.snapshot.CommonWorkspaceSyncConfig
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceSnapshot
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
-import org.jetbrains.bazel.workspace.indexAdditionalFiles.ProjectViewGlobSet
+import org.jetbrains.bazel.workspace.ProjectViewGlobSet
 import org.jetbrains.bazel.workspacemodel.entities.CompiledSourceCodeInsideJarExcludeEntity
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.OutputLocation
@@ -157,7 +157,7 @@ internal class JavaBazelWorkspaceImporter(val context: WorkspaceImporterContext)
       projectName = commonSyncConfig.projectName,
       projectBasePath = commonSyncConfig.projectRootDir,
       defaultJdkName = defaultJdkName,
-      testSourcesGlob = ProjectViewGlobSet(commonSyncConfig.projectRootDir, javaSyncConfig.testSourcesPatterns),
+      testSourcesGlob = ProjectViewGlobSet.of(commonSyncConfig.projectRootDir, javaSyncConfig.testSourcesPatterns),
       fileToTargets = snapshot.fileToTarget,
       virtualFileUrlManager = context.vfuManager,
       entitySource = entitySource,

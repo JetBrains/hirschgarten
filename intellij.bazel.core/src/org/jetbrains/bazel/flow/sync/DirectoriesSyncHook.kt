@@ -1,140 +1,106 @@
 package org.jetbrains.bazel.flow.sync
 
 import com.intellij.openapi.components.serviceAsync
-import com.intellij.openapi.project.Project
 import com.intellij.platform.backend.workspace.WorkspaceModel
 import com.intellij.platform.backend.workspace.storeAndGet
 import com.intellij.platform.backend.workspace.virtualFile
 import com.intellij.platform.workspace.jps.entities.ContentRootEntity
-import com.intellij.platform.workspace.storage.MutableEntityStorage
 import com.intellij.platform.workspace.storage.entities
 import com.intellij.platform.workspace.storage.impl.url.toVirtualFileUrl
 import com.intellij.platform.workspace.storage.url.VirtualFileUrl
 import com.intellij.platform.workspace.storage.url.VirtualFileUrlManager
-import org.jetbrains.bazel.commons.constants.Constants
 import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.flow.exclude.BazelSymlinkExcludeService
-import org.jetbrains.bazel.languages.projectview.ProjectView
-import org.jetbrains.bazel.languages.projectview.indexAllFilesInDirectories
-import org.jetbrains.bazel.project.projectViewFile
+import org.jetbrains.bazel.languages.projectview.index
 import org.jetbrains.bazel.sync.ProjectSyncHook
 import org.jetbrains.bazel.sync.ProjectSyncHook.ProjectSyncHookEnvironment
 import org.jetbrains.bazel.sync.withSubtask
-import org.jetbrains.bazel.workspace.indexAdditionalFiles.AdditionalFilesCollector
-import org.jetbrains.bazel.workspace.indexAdditionalFiles.IndexAdditionalFilesContributor
-import org.jetbrains.bazel.workspace.indexAdditionalFiles.limitedFilesIndexingGlobOrNull
+import org.jetbrains.bazel.workspace.indexing.IndexableContent
+import org.jetbrains.bazel.workspace.indexing.IndexableContentCollector
 import org.jetbrains.bazel.workspacemodel.entities.BazelProjectDirectoriesEntity
 import org.jetbrains.bazel.workspacemodel.entities.BazelProjectEntitySource
-import kotlin.io.path.absolutePathString
+import java.nio.file.Path
 
 /**
  * This sync hook does three important things:
  * 1. Creates the WSM entity
- * 2. Supports the `index_additional_files_in_directories:` section, see its documentation in
+ * 2. Supports the `index:` section, see its documentation in
  *    [org.jetbrains.bazel.languages.projectview.ProjectViewSectionProvider].
  * 3. Loads all non-indexable files that happen to be under `directories:` (and not excluded) into the VFS,
  *    so that "Go to file by name" is quicker, see https://youtrack.jetbrains.com/issue/IJPL-207088
  */
 internal class DirectoriesSyncHook : ProjectSyncHook {
-  override suspend fun onSync(environment: ProjectSyncHookEnvironment) {
-    val virtualFileUrlManager = environment.project.serviceAsync<WorkspaceModel>().getVirtualFileUrlManager()
 
+  override suspend fun onSync(environment: ProjectSyncHookEnvironment) {
+    val project = environment.project
+    val virtualFileUrlManager = project.serviceAsync<WorkspaceModel>().getVirtualFileUrlManager()
     val directoryRoots = environment.withSubtask("Collect project directories") {
       computeProjectDirectories(environment, virtualFileUrlManager)
     }
-
-    val indexAdditionalFiles = environment.withSubtask("Collect additional files to index") {
-      computeIndexAdditionalFiles(environment, virtualFileUrlManager, directoryRoots)
+    val indexPatterns = environment.server.projectView.index
+    val indexableContent = environment.withSubtask("Collect indexable content") {
+      computeIndexableContent(environment, indexPatterns, directoryRoots, virtualFileUrlManager)
     }
-
-    val indexAllFilesInIncludedRoots = environment.server.projectView.indexAllFilesInDirectories
     environment.diff.addEntity(
       BazelProjectDirectoriesEntity(
-        projectRoot = virtualFileUrlManager.storeAndGet(environment.project.rootDir),
-        includedRoots = directoryRoots.included,
-        excludedRoots = directoryRoots.excluded,
-        indexAllFilesInIncludedRoots = indexAllFilesInIncludedRoots,
-        indexAdditionalFiles = indexAdditionalFiles,
+        projectRoot = virtualFileUrlManager.storeAndGet(project.rootDir),
+        includedRoots = directoryRoots.included.toList(),
+        excludedRoots = directoryRoots.excluded.toList(),
+        indexPatterns = indexPatterns,
+        indexableRecursiveRoots = indexableContent.recursiveRoots.toList(),
+        indexableNonRecursiveRoots = indexableContent.nonRecursiveRoots.toList(),
         entitySource = BazelProjectEntitySource,
-      )
+      ),
     )
   }
 
   private data class DirectoryRoots(
-    val included: List<VirtualFileUrl>,
-    val excluded: List<VirtualFileUrl>
+    val included: Set<VirtualFileUrl>,
+    val excluded: Set<VirtualFileUrl>,
   )
 
-  private suspend fun computeProjectDirectories(environment: ProjectSyncHookEnvironment, virtualFileUrlManager: VirtualFileUrlManager): DirectoryRoots {
-    val directories = environment.server.workspaceDirectories(environment.snapshot.repoMapping, environment.taskId)
-    val additionalExcludes = BazelSymlinkExcludeService.getInstance(environment.project).scanForBazelSymlinksToExclude(environment.project.rootDir.toNioPath())
-
-    val includedRoots =
-      directories.includedDirectories.map { virtualFileUrlManager.fromPath(it.absolutePathString()) }
-    val excludedRoots =
-      directories.excludedDirectories.map { virtualFileUrlManager.fromPath(it.absolutePathString()) } +
-      additionalExcludes.map { it.toVirtualFileUrl(virtualFileUrlManager) }
-
+  private suspend fun computeProjectDirectories(
+    environment: ProjectSyncHookEnvironment,
+    virtualFileUrlManager: VirtualFileUrlManager,
+  ): DirectoryRoots {
+    val directories = environment
+      .server
+      .workspaceDirectories(environment.snapshot.repoMapping, environment.taskId)
+    val symlinkExcludes = BazelSymlinkExcludeService
+      .getInstance(environment.project)
+      .scanForBazelSymlinksToExclude(environment.project.rootDir.toNioPath())
+      .toVirtualUrlSet(virtualFileUrlManager)
+    val includedRoots = directories
+      .includedDirectories
+      .toVirtualUrlSet(virtualFileUrlManager)
+    val excludedRoots = directories
+      .excludedDirectories
+      .toVirtualUrlSet(virtualFileUrlManager)
     return DirectoryRoots(
       included = includedRoots,
-      excluded = excludedRoots,
+      excluded = excludedRoots + symlinkExcludes,
     )
   }
 
-
-  private fun computeIndexAdditionalFiles(
+  private fun computeIndexableContent(
     environment: ProjectSyncHookEnvironment,
-    virtualFileUrlManager: VirtualFileUrlManager,
-    directoryRoots: DirectoryRoots,
-  ): List<VirtualFileUrl> {
-    val project = environment.project
-    val mutableEntityStorage = environment.diff
-
-    val indexAdditionalFiles: Set<VirtualFileUrl> =
-      buildSet {
-        addAll(indexAdditionalFilesByName(project, environment.server.projectView, mutableEntityStorage, directoryRoots, virtualFileUrlManager))
-        addAll(getProjectView(project, virtualFileUrlManager))
-        addAll(getWorkspaceFiles(project, virtualFileUrlManager))
-
-        for (contributor in IndexAdditionalFilesContributor.ep.extensionList) {
-          addAll(contributor.getAdditionalFiles(project))
-        }
-      }
-
-    return indexAdditionalFiles.toList()
-  }
-
-  private fun indexAdditionalFilesByName(
-    project: Project,
-    projectView: ProjectView,
-    mutableEntityStorage: MutableEntityStorage,
+    indexPatterns: List<String>,
     directoryRoots: DirectoryRoots,
     virtualFileUrlManager: VirtualFileUrlManager,
-  ): List<VirtualFileUrl> {
-    val limitedFilesIndexingGlob = project.limitedFilesIndexingGlobOrNull(projectView) ?: return emptyList()
-
-    val includedRoots = directoryRoots.included.mapNotNullTo(hashSetOf()) { it.virtualFile }
-    val excludedRoots = directoryRoots.excluded.mapNotNullTo(hashSetOf()) { it.virtualFile }
-    val contentRoots =
-      mutableEntityStorage
+  ): IndexableContent {
+    val collector = IndexableContentCollector(
+      project = environment.project,
+      indexPatterns = indexPatterns,
+      includedRoots = directoryRoots.included.mapNotNullTo(mutableSetOf(), VirtualFileUrl::virtualFile),
+      excludedRoots = directoryRoots.excluded.mapNotNullTo(mutableSetOf(), VirtualFileUrl::virtualFile),
+      contentRoots = environment.diff
         .entities<ContentRootEntity>()
-        .map { it.url }
-        .mapNotNullTo(hashSetOf()) { it.virtualFile }
-
-    return AdditionalFilesCollector(limitedFilesIndexingGlob, includedRoots, excludedRoots, contentRoots)
-      .collectAdditionalFilesToIndex()
-      .map { virtualFileUrlManager.storeAndGet(it) }
+        .mapNotNullTo(mutableSetOf()) { it.url.virtualFile },
+    )
+    return collector.collect(virtualFileUrlManager)
   }
 
-  private fun getProjectView(project: Project, virtualFileUrlManager: VirtualFileUrlManager): List<VirtualFileUrl> =
-    listOfNotNull(virtualFileUrlManager.storeAndGet(project.projectViewFile))
-
-  private fun getWorkspaceFiles(project: Project, virtualFileUrlManager: VirtualFileUrlManager): List<VirtualFileUrl> =
-    Constants.WORKSPACE_FILE_NAMES
-      .mapNotNull { name ->
-        project.rootDir.findChild(name)
-      }.map {
-        virtualFileUrlManager.storeAndGet(it)
-      }
-
+  private fun Collection<Path>.toVirtualUrlSet(
+    manager: VirtualFileUrlManager,
+  ): Set<VirtualFileUrl> = mapTo(mutableSetOf()) { it.toVirtualFileUrl(manager) }
 }

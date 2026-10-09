@@ -10,6 +10,7 @@ import com.intellij.openapi.project.DumbAware
 import com.intellij.psi.PsiElement
 import com.intellij.psi.util.parentOfType
 import org.jetbrains.bazel.languages.projectview.annotation.quickfix.MergeIntoSectionQuickFix
+import org.jetbrains.bazel.languages.projectview.annotation.quickfix.ReplaceWithIndexQuickFix
 import org.jetbrains.bazel.languages.projectview.checker.ProjectViewChecker
 import org.jetbrains.bazel.languages.projectview.checker.ProjectViewProblem
 import org.jetbrains.bazel.languages.projectview.psi.sections.ProjectViewPsiSection
@@ -51,6 +52,7 @@ internal class ProjectViewProblemsAnnotator : Annotator, DumbAware {
     val section = element?.parentOfType<ProjectViewPsiSection>(withSelf = true) ?: return null
     return when (this) {
       is ProjectViewProblem.QuickFix.MergeIntoSection -> MergeIntoSectionQuickFix(section, this.targetSectionKey)
+      ProjectViewProblem.QuickFix.ReplaceWithIndex -> ReplaceWithIndexQuickFix(section)
     }
   }
 

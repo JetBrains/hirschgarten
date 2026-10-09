@@ -44,7 +44,7 @@ private val STRICT_DEPS_PROJECT = simpleBazelProject(
         targets:
           //appj:appj
 
-        index_all_files_in_directories: true
+        index: *
         """.trimIndent() + "\n",
       )
     }
