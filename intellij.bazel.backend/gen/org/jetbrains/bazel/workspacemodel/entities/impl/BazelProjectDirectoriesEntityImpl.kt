@@ -20,16 +20,6 @@ import com.intellij.platform.workspace.storage.url.VirtualFileUrl
 import org.jetbrains.annotations.ApiStatus.Internal
 import org.jetbrains.bazel.workspacemodel.entities.BazelProjectDirectoriesEntity
 import org.jetbrains.bazel.workspacemodel.entities.BazelProjectDirectoriesEntityBuilder
-import kotlin.Any
-import kotlin.Boolean
-import kotlin.Int
-import kotlin.OptIn
-import kotlin.String
-import kotlin.Unit
-import kotlin.error
-import kotlin.hashCode
-import kotlin.invoke
-import kotlin.isInitialized
 
 @Internal
 @GeneratedCodeApiVersion(3)
