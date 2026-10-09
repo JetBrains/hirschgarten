@@ -36,6 +36,7 @@ import java.io.InputStream
 import java.nio.file.Path
 import java.util.concurrent.TimeUnit
 import kotlin.io.path.exists
+import kotlin.io.path.readLines
 import kotlin.test.assertFailsWith
 
 @BazelTestApplication
@@ -49,6 +50,7 @@ internal class BazelProjectFixtureCleanupTest {
     lateinit var project: Project
     lateinit var console: Disposable
     lateinit var root: Path
+    lateinit var outputBase: Path
     val commands = mutableListOf<List<String>>()
     val launcherProvider = object : BazelProcessLauncherProvider {
       override fun createBazelProcessLauncher(workspaceRoot: Path, parentEnvironment: Map<String, String>): BazelProcessLauncher {
@@ -56,6 +58,7 @@ internal class BazelProjectFixtureCleanupTest {
         return object : BazelProcessLauncher {
           override fun launchProcess(executionDescriptor: BazelCommandExecutionDescriptor): Process {
             assertThat(root).exists()
+            assertThat(outputBase).exists()
             assertThat(project.isDisposed).isFalse()
             assertThat(Disposer.isDisposed(console)).isFalse()
             commands.add(executionDescriptor.command)
@@ -73,6 +76,10 @@ internal class BazelProjectFixtureCleanupTest {
     val failure = IllegalStateException("Expected fixture setup failure")
     val fixture = bazelProjectFixture("base", jvmToolchains = false) {
       project = it
+      root = Path.of(project.basePath!!)
+      val outputBaseSetting = root.resolve(".bazelrc").readLines().single { it.startsWith("startup --output_base=") }
+      outputBase = Path.of(outputBaseSetting.substringAfter('=').removeSurrounding("'"))
+      assertThat(outputBase).isNotEqualTo(root)
       console = project.service<ConsoleService>() as Disposable
       writeProjectView(project, "directories:\n  .\nbazel_binary:\n  bazel\n")
       if (stage == FailureStage.CONFIGURE) throw failure
@@ -98,6 +105,7 @@ internal class BazelProjectFixtureCleanupTest {
     assertThat(commands).hasSize(1)
     assertThat(commands.single()).contains("shutdown")
     assertThat(root.exists()).isFalse()
+    assertThat(outputBase).doesNotExist()
     assertThat(project.isDisposed).isTrue()
     assertThat(Disposer.isDisposed(console)).isTrue()
   }

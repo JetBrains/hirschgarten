@@ -27,8 +27,8 @@ internal object BazelTestProject {
    * [project]. When [jvmToolchains] is set, it adds the JVM toolchains: the Java runtime and the Kotlin
    * standard library. A pure C++ project does not need them.
    *
-   * [bazelVersion] replaces the `.bazelversion` file of the test project, and it also keys the Bazel output
-   * base, so that two versions of the same test project do not share one.
+   * [outputBase] is the temporary Bazel output base owned by the test fixture.
+   * [bazelVersion] replaces the `.bazelversion` file of the test project.
    *
    * [registries] are URI to local or remote registries used by the test fixture. If set and BCR should be
    * accessible, it needs to be provided here as well.
@@ -37,6 +37,7 @@ internal object BazelTestProject {
     project: Project,
     projectRoot: Path,
     path: String,
+    outputBase: Path,
     projectsRoot: Path = BazelPathManager.testProjectsRoot,
     jvmToolchains: Boolean = true,
     bazelVersion: String? = null,
@@ -49,7 +50,7 @@ internal object BazelTestProject {
     if (bazelVersion != null) {
       writeBazelVersion(projectRoot, bazelVersion)
     }
-    BazelTestCaches.configureBazelCaches(projectRoot, path, bazelVersion, registries)
+    BazelTestCaches.configureBazelCaches(projectRoot, path, outputBase, registries)
     if (jvmToolchains) {
       LOG.info("Adding the JVM toolchains")
       BazelTestCaches.findKotlinStdlibInClasspath()

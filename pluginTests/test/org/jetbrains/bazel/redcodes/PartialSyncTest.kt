@@ -33,7 +33,7 @@ class PartialSyncTest {
 
   @Test
   fun `partial sync adds the requested target and keeps the targets of the previous sync`(): Unit =
-    timeoutRunBlocking(timeout = 10.minutes) {
+    timeoutRunBlocking(timeout = 10.minutes, context = Dispatchers.Default) {
       fixture.copyBazelTestProject("redcodes/partial_sync")
       fixture.setProjectView(".bazelproject")
       fixture.performBazelSync()
@@ -54,7 +54,7 @@ class PartialSyncTest {
 
   @Test
   fun `partial sync without a previous sync imports the requested target only`(): Unit =
-    timeoutRunBlocking(timeout = 10.minutes) {
+    timeoutRunBlocking(timeout = 10.minutes, context = Dispatchers.Default) {
       fixture.copyBazelTestProject("redcodes/partial_sync")
       fixture.setProjectView(".bazelproject")
 
@@ -70,7 +70,7 @@ class PartialSyncTest {
 
   @Test
   fun `partial sync refreshes a target that changed after the previous sync`(): Unit =
-    timeoutRunBlocking(timeout = 10.minutes) {
+    timeoutRunBlocking(timeout = 10.minutes, context = Dispatchers.Default) {
       fixture.copyBazelTestProject("redcodes/partial_sync")
       fixture.setProjectView(".bazelproject")
       fixture.performBazelSync()
@@ -118,7 +118,7 @@ class PartialSyncTest {
 
   @Test
   fun `partial sync adds a target from a local bzlmod repository`(): Unit =
-    timeoutRunBlocking(timeout = 10.minutes) {
+    timeoutRunBlocking(timeout = 10.minutes, context = Dispatchers.Default) {
       fixture.copyBazelTestProject("redcodes/partial_sync_repo")
       fixture.setProjectView(".bazelproject")
       fixture.performBazelSync()
@@ -143,7 +143,7 @@ class PartialSyncTest {
 
   @Test
   fun `file sync adds the target that owns a changed source file`(): Unit =
-    timeoutRunBlocking(timeout = 10.minutes) {
+    timeoutRunBlocking(timeout = 10.minutes, context = Dispatchers.Default) {
       fixture.copyBazelTestProject("redcodes/partial_sync")
       fixture.setProjectView(".bazelproject")
       fixture.performBazelSync()
@@ -163,7 +163,7 @@ class PartialSyncTest {
 
   @Test
   fun `file sync adds every rule target of a changed BUILD file`(): Unit =
-    timeoutRunBlocking(timeout = 10.minutes) {
+    timeoutRunBlocking(timeout = 10.minutes, context = Dispatchers.Default) {
       fixture.copyBazelTestProject("redcodes/partial_sync")
       fixture.setProjectView(".bazelproject")
       fixture.performBazelSync()
@@ -181,7 +181,7 @@ class PartialSyncTest {
 
   @Test
   fun `file sync of a directory adds every rule target beneath it`(): Unit =
-    timeoutRunBlocking(timeout = 10.minutes) {
+    timeoutRunBlocking(timeout = 10.minutes, context = Dispatchers.Default) {
       fixture.copyBazelTestProject("redcodes/partial_sync")
       fixture.setProjectView(".bazelproject")
       fixture.performBazelSync()
@@ -201,7 +201,7 @@ class PartialSyncTest {
 
   @Test
   fun `file sync of a source file that no target uses keeps the previous sync`(): Unit =
-    timeoutRunBlocking(timeout = 10.minutes) {
+    timeoutRunBlocking(timeout = 10.minutes, context = Dispatchers.Default) {
       fixture.copyBazelTestProject("redcodes/partial_sync")
       fixture.setProjectView(".bazelproject")
       fixture.performBazelSync()
@@ -219,7 +219,7 @@ class PartialSyncTest {
 
   @Test
   fun `file sync of a file outside every package keeps the previous sync`(): Unit =
-    timeoutRunBlocking(timeout = 10.minutes) {
+    timeoutRunBlocking(timeout = 10.minutes, context = Dispatchers.Default) {
       fixture.copyBazelTestProject("redcodes/partial_sync")
       fixture.setProjectView(".bazelproject")
       fixture.performBazelSync()
@@ -233,7 +233,7 @@ class PartialSyncTest {
 
   @Test
   fun `file sync refreshes a target whose source and BUILD file changed`(): Unit =
-    timeoutRunBlocking(timeout = 10.minutes) {
+    timeoutRunBlocking(timeout = 10.minutes, context = Dispatchers.Default) {
       fixture.copyBazelTestProject("redcodes/partial_sync")
       fixture.setProjectView(".bazelproject")
       fixture.performBazelSync()
@@ -281,7 +281,7 @@ class PartialSyncTest {
 
   @Test
   fun `file sync of a starlark file adds every target of the BUILD files that load it`(): Unit =
-    timeoutRunBlocking(timeout = 10.minutes) {
+    timeoutRunBlocking(timeout = 10.minutes, context = Dispatchers.Default) {
       fixture.copyBazelTestProject("redcodes/partial_sync")
       fixture.setProjectView(".bazelproject")
       fixture.performBazelSync()
@@ -302,7 +302,7 @@ class PartialSyncTest {
 
   @Test
   fun `file sync of a changed starlark file and its BUILD file adds the target once`(): Unit =
-    timeoutRunBlocking(timeout = 10.minutes) {
+    timeoutRunBlocking(timeout = 10.minutes, context = Dispatchers.Default) {
       fixture.copyBazelTestProject("redcodes/partial_sync")
       fixture.setProjectView(".bazelproject")
       fixture.performBazelSync()
@@ -336,7 +336,7 @@ class PartialSyncTest {
 
   @Test
   fun `file sync of a starlark file that no package holds does a full resync`(): Unit =
-    timeoutRunBlocking(timeout = 10.minutes) {
+    timeoutRunBlocking(timeout = 10.minutes, context = Dispatchers.Default) {
       fixture.copyBazelTestProject("redcodes/partial_sync")
       fixture.setProjectView(".bazelproject")
       fixture.performBazelSync()
@@ -352,7 +352,7 @@ class PartialSyncTest {
 
   @Test
   fun `file sync of a starlark file of a local bzlmod repository adds the targets of that repository`(): Unit =
-    timeoutRunBlocking(timeout = 10.minutes) {
+    timeoutRunBlocking(timeout = 10.minutes, context = Dispatchers.Default) {
       fixture.copyBazelTestProject("redcodes/partial_sync_repo")
       fixture.setProjectView(".bazelproject")
       fixture.performBazelSync()
@@ -372,7 +372,7 @@ class PartialSyncTest {
 
   @Test
   fun `file sync of MODULE dot bazel does a full resync and drops the extra target`(): Unit =
-    timeoutRunBlocking(timeout = 10.minutes) {
+    timeoutRunBlocking(timeout = 10.minutes, context = Dispatchers.Default) {
       fixture.copyBazelTestProject("redcodes/partial_sync")
       fixture.setProjectView(".bazelproject")
       fixture.performBazelSync()
@@ -394,7 +394,7 @@ class PartialSyncTest {
 
   @Test
   fun `file sync of the project view file does a full resync`(): Unit =
-    timeoutRunBlocking(timeout = 10.minutes) {
+    timeoutRunBlocking(timeout = 10.minutes, context = Dispatchers.Default) {
       fixture.copyBazelTestProject("redcodes/partial_sync")
       fixture.setProjectView(".bazelproject")
       fixture.performBazelSync()

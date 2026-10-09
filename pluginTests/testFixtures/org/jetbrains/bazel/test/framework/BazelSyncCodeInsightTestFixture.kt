@@ -64,7 +64,16 @@ interface BazelSyncCodeInsightTestFixture : CodeInsightTestFixture {
 fun bazelSyncCodeInsightFixture(
   projectFixture: TestFixture<Project>,
   tempDirFixture: TestFixture<Path>,
-) = codeInsightFixture(projectFixture, tempDirFixture, ::BazelSyncCodeInsightTestFixtureImpl)
+): TestFixture<BazelSyncCodeInsightTestFixture> {
+  val outputBaseFixture = bazelOutputBaseFixture()
+  val projectWithOutputBaseFixture = testFixture {
+    outputBaseFixture.init()
+    initialized(projectFixture.init()) {}
+  }
+  return codeInsightFixture(projectWithOutputBaseFixture, tempDirFixture) { project, tempDir ->
+    BazelSyncCodeInsightTestFixtureImpl(project, tempDir, outputBaseFixture.get())
+  }
+}
 
 /**
  * Copies the project at [projectPath], syncs it, and returns the ready [Project].
@@ -95,11 +104,12 @@ fun bazelProjectFixture(
       initialized(project) { Disposer.dispose(setupDisposable) }
     }.init()
     val projectRoot = tempPathFixture().init()
+    val outputBase = bazelOutputBaseFixture().init()
 
     LOG.info("Initializing the Bazel project ${project.name} at $projectRoot")
     initializeBazelProject(project, projectRoot)
 
-    BazelTestProject.copy(project, projectRoot, projectPath, projectsRoot, jvmToolchains, bazelVersion, registries)
+    BazelTestProject.copy(project, projectRoot, projectPath, outputBase, projectsRoot, jvmToolchains, bazelVersion, registries)
     if (projectView != null) {
       applyProjectView(project, projectRoot, projectView)
     }
@@ -139,7 +149,6 @@ fun bazelSyncCodeInsightFixture(
   LOG.info("Setting up the Bazel code-insight fixture for $projectPath")
   val fixture = bazelSyncCodeInsightFixture(projectFixture(openAfterCreation = true), tempPathFixture()).init()
   fixture.syncBazelTestProject(projectPath, buildProject, bazelVersion, projectView, configure)
-  awaitPythonInterpreters(fixture.project)
   LOG.info("The Bazel code-insight fixture for $projectPath is ready")
   initialized(fixture) {}
 }
@@ -170,6 +179,7 @@ private suspend fun awaitPythonInterpreters(project: Project) {
 class BazelSyncCodeInsightTestFixtureImpl(
   projectFixture: IdeaProjectTestFixture,
   tempDirTestFixture: TempDirTestFixture,
+  private val outputBase: Path,
 ) : CodeInsightTestFixtureImpl(projectFixture, tempDirTestFixture), BazelSyncCodeInsightTestFixture {
   private val projectRoot: Path
     get() = Path(tempDirPath)
@@ -182,7 +192,7 @@ class BazelSyncCodeInsightTestFixtureImpl(
   override fun shouldTrackVirtualFilePointers(): Boolean = false
 
   override fun copyBazelTestProject(path: String) {
-    BazelTestProject.copy(project, projectRoot, path)
+    BazelTestProject.copy(project, projectRoot, path, outputBase)
   }
 
   override fun setProjectView(projectview: String) {
@@ -193,7 +203,10 @@ class BazelSyncCodeInsightTestFixtureImpl(
     writeBazelVersion(projectRoot, version)
   }
 
-  override suspend fun performBazelSync(scope: ProjectSyncScope) = runBazelSync(project, scope)
+  override suspend fun performBazelSync(scope: ProjectSyncScope) {
+    runBazelSync(project, scope)
+    awaitPythonInterpreters(project)
+  }
 
   override fun setUp() {
     super.setUp()
