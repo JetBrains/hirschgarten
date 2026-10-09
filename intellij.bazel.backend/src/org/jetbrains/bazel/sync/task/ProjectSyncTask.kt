@@ -414,6 +414,7 @@ class ProjectSyncTask(
             }
           }
 
+          server.outFileHardLinks.onBeforeProjectModelUpdate()
           phaseDurations.trackSyncPhase(ProjectSyncPhase.APPLY_PROJECT_MODEL) {
             updateProjectModel(
               progressReporter = progressReporter,

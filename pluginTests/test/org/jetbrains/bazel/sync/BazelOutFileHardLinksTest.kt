@@ -304,6 +304,24 @@ internal class BazelOutFileHardLinksTest : MockProjectBaseTest() {
     assertThat(links.cacheDir.resolve("external")).doesNotExist()
   }
 
+  @Test
+  fun `hard links are visible in the VFS before the project model update`(@TempDir outputBase: Path): Unit = timeoutRunBlocking {
+    val links = hardLinksInOutputBase(outputBase)
+    val fileManager = VirtualFileManager.getInstance()
+    val jar = outputBase.resolve("execroot/_main/bazel-out/k8-fastbuild/bin/lib.jar")
+    jar.parent.createDirectories()
+    jar.writeText("jar")
+    // Load all children of the output base before the cache directory exists, as on CI with a reused output base
+    checkNotNull(fileManager.refreshAndFindFileByNioPath(outputBase)).children
+
+    links.onBeforeSync()
+    val link = checkNotNull(links.createOutputFileHardLink(jar))
+    assertThat(fileManager.findFileByNioPath(link)).describedAs("hard link in the VFS before the hook").isNull()
+    links.onBeforeProjectModelUpdate()
+    assertThat(fileManager.findFileByNioPath(link)).describedAs("hard link in the VFS after the hook").isNotNull()
+    links.onAfterSync(true)
+  }
+
   private fun hardLinksInOutputBase(outputBase: Path): DefaultBazelOutputFileHardLinks {
     val root = Path.of(checkNotNull(project.basePath)).toRealPath()
     BazelProjectFixtures.initializeBazelProject(project, root)
