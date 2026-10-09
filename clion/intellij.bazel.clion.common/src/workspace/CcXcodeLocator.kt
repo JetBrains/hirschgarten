@@ -1,6 +1,7 @@
 package org.jetbrains.bazel.clion.workspace
 
 import com.intellij.build.events.MessageEvent
+import com.intellij.util.system.OS
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.async
@@ -24,7 +25,8 @@ internal class CcXcodeLocator(private val ctx: CcImportContext, private val scop
   private val cache = mutableMapOf<CcToolchainBuildTarget.XcodeInfo, Deferred<Result?>>()
 
   suspend fun resolve(info: CcToolchainBuildTarget.XcodeInfo?): Result? {
-    if (info == null || info.xcodeVersion.isEmpty() || info.macosSdkVersion.isEmpty()) return null
+    @Suppress("OPT_IN_USAGE")
+    if (OS.CURRENT != OS.macOS || info == null || info.xcodeVersion.isEmpty() || info.macosSdkVersion.isEmpty()) return null
 
     return cache.computeIfAbsent(info) { scope.async { doResolve(info) } }.await()
   }

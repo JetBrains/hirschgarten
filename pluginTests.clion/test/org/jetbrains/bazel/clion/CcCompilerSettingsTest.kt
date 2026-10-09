@@ -2,13 +2,22 @@ package org.jetbrains.bazel.clion
 
 import com.intellij.testFramework.common.timeoutRunBlocking
 import com.intellij.testFramework.junit5.TestApplication
+import com.intellij.testFramework.junit5.fixture.disposableFixture
 import com.intellij.testFramework.junit5.fixture.projectFixture
+import com.intellij.testFramework.registerOrReplaceServiceInstance
 import org.assertj.core.api.Assertions.assertThat
 import org.jetbrains.bazel.clion.workspace.CcCompilerInfo
 import org.jetbrains.bazel.clion.workspace.buildCompilerSettings
+import org.jetbrains.bazel.commons.BazelStatus
 import org.jetbrains.bazel.fixtures.CcProjectBuilder
 import org.jetbrains.bazel.fixtures.ccProject
 import org.jetbrains.bazel.fixtures.withTestImportContext
+import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.server.BazelServerService
+import org.jetbrains.bazel.workspace.model.test.framework.BuildServerMock
+import org.jetbrains.bazel.workspace.model.test.framework.MockBuildServerService
+import org.jetbrains.bsp.protocol.RunParams
+import org.jetbrains.bsp.protocol.RunResult
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.condition.DisabledOnOs
 import org.junit.jupiter.api.condition.OS
@@ -19,6 +28,7 @@ import org.junit.jupiter.api.condition.OS
 class CcCompilerSettingsTest {
 
   private val project by projectFixture()
+  private val disposable by disposableFixture()
 
   @Test
   fun testRewritesProcSelfCwdValueToAbsolutePath() {
@@ -84,6 +94,19 @@ class CcCompilerSettingsTest {
       .containsEntry("SEARCH", "/usr/bin:/proc/self/cwd/bin")
   }
 
+  @Test
+  @DisabledOnOs(OS.MAC)
+  fun testDoesNotRunTheXcodeLocatorOnANonDarwinHost() {
+    val server = RecordingBuildServer()
+    project.registerOrReplaceServiceInstance(BazelServerService::class.java, MockBuildServerService(server), disposable)
+
+    resolve {
+      ccToolchain { xcodeInfo(xcodeVersion = "None", macosSdkVersion = "10.11") }
+    }
+
+    assertThat(server.runTargets).isEmpty()
+  }
+
   private fun resolve(declare: CcProjectBuilder.() -> Unit): CcCompilerInfo = timeoutRunBlocking {
     val (ctx, compilers) = withTestImportContext(ccProject(declare = declare), project = project) {
       buildCompilerSettings()
@@ -93,5 +116,15 @@ class CcCompilerSettingsTest {
     assertThat(compilers).hasSize(1)
 
     compilers.values.single()
+  }
+}
+
+private class RecordingBuildServer : BuildServerMock() {
+
+  val runTargets: MutableList<Label> = mutableListOf()
+
+  override suspend fun buildTargetRun(runParams: RunParams): RunResult {
+    runTargets += runParams.target
+    return RunResult(runParams.taskId, BazelStatus.BUILD_ERROR, null)
   }
 }

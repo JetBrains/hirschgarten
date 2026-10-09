@@ -238,6 +238,7 @@ internal class CcToolchainBuilder {
   private var cppCompiler: String = "/usr/bin/g++"
   private var compilerKind: OCCompilerKind = GCCCompilerKind
   private var sysroot: String? = null
+  private var xcodeInfo: CcToolchainBuildTarget.XcodeInfo? = null
 
   private val cOptions = mutableListOf<String>()
   private val cppOptions = mutableListOf<String>()
@@ -267,6 +268,10 @@ internal class CcToolchainBuilder {
 
   fun sysroot(path: String) {
     sysroot = path
+  }
+
+  fun xcodeInfo(xcodeVersion: String, macosSdkVersion: String) {
+    xcodeInfo = CcToolchainBuildTarget.XcodeInfo(macosSdkVersion = macosSdkVersion, xcodeVersion = xcodeVersion)
   }
 
   fun cOptions(vararg options: String) {
@@ -301,7 +306,7 @@ internal class CcToolchainBuilder {
         sysroot = sysroot?.let(OutputLocationParserWithoutHardlink::parseExecrootPath),
         cEnvironment = env,
         cppEnvironment = env,
-        xcodeInfo = null,
+        xcodeInfo = xcodeInfo,
       ),
     ),
   )
