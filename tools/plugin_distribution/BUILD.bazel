@@ -5,4 +5,5 @@ kt_jvm_binary(
     srcs = ["CheckPluginZipLayout.kt"],
     main_class = "org.jetbrains.bazel.tools.pluginDistribution.CheckPluginZipLayoutKt",
     visibility = ["//plugins/bazel:__pkg__"],
+    deps = ["@lib//:kotlin-stdlib"],
 )

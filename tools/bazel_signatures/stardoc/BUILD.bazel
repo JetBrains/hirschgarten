@@ -10,5 +10,6 @@ kt_jvm_binary(
         "//plugins/bazel/tools/bazel_signatures/common",
         "@community//libraries/gson",
         "@community//libraries/protobuf",
+        "@lib//:kotlin-stdlib",
     ],
 )

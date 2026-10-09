@@ -6,5 +6,6 @@ kt_jvm_library(
     visibility = ["//plugins/bazel/tools/bazel_signatures:__subpackages__"],
     deps = [
         "@community//libraries/gson",
+        "@lib//:kotlin-stdlib",
     ],
 )
