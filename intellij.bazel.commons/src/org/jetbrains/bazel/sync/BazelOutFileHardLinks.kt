@@ -6,6 +6,13 @@ import java.nio.file.Path
 @ApiStatus.Internal
 interface BazelOutFileHardLinks {
   fun onBeforeSync()
+
+  /**
+   * Makes the hard links of the current sync visible in the VFS.
+   * The sync calls this function before the project model update, so that the project model can find the hard links.
+   */
+  suspend fun onBeforeProjectModelUpdate() {}
+
   suspend fun onAfterSync(fullProjectModelUpdated: Boolean)
 
   /**

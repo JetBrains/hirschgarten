@@ -200,6 +200,12 @@ class DefaultBazelOutputFileHardLinks(
     allHardLinksCreatedSuccessfully = true
   }
 
+  override suspend fun onBeforeProjectModelUpdate() {
+    if (!syncRunning.get()) return
+    hardLinksDuringSync.values.awaitAll()
+    refreshCacheDir()
+  }
+
   override suspend fun onAfterSync(fullProjectModelUpdated: Boolean) {
     if (syncRunning.compareAndSet(true, false)) {
       try {
