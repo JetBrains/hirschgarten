@@ -53,6 +53,7 @@ intellij_plugin_zip_and_debug_target(
         "//java/intellij.bazel.java.coverage",
         "//java/intellij.bazel.java.profiler",
         "//java/intellij.bazel.java.sync",
+        "//javascript/intellij.bazel.javascript.common",
         "//kotlin/intellij.bazel.kotlin.common",
         "//kotlin/intellij.bazel.kotlin.common.performancePlugin",
         "//kotlin/intellij.bazel.kotlin.coverage",
