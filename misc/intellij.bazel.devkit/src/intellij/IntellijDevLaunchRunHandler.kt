@@ -145,7 +145,7 @@ private fun findLaunchFile(project: Project, target: Label): Path {
   // TODO: this may be the wrong bazel bin path if the configuration adds Bazel flags that change the output just for this target.
   // Since we're only using this for our monorepo, and the monorepo doesn't do such things,
   // adding code to our BEP support just for this one case isn't worth the time and effort for now.
-  val bazelBinPath = project.projectCtx.bazelBinPath
+  val bazelBinPath = project.projectCtx.bazelBinPath ?: project.rootDir.toNioPath().resolve("out/bazel-bin")
   return bazelBinPath?.let { intellijDevLaunchFile(it, target, project.apparentRepoNameToCanonicalName) }
          ?: throw ExecutionException(BazelDevKitBundle.message("dev.launch.error.no.bazel.bin", target))
 }
