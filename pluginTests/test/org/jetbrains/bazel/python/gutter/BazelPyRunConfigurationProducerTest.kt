@@ -23,6 +23,7 @@ import org.jetbrains.bazel.target.targetStorage
 import org.jetbrains.bazel.test.framework.target.TestBuildTarget
 import org.jetbrains.bazel.ui.gutters.BazelContainingTargetsLocationsProvider
 import org.jetbrains.bazel.ui.gutters.NonImportedBuildTarget
+import org.jetbrains.bazel.workspace.model.test.framework.setTargets
 import org.jetbrains.bsp.protocol.OutputLocationCollection
 import org.jetbrains.bazel.workspace.model.test.framework.testLocation
 import org.junit.Before
@@ -337,7 +338,7 @@ internal class BazelPyRunConfigurationProducerTest : CodeInsightFixtureTestCase<
     mainFile: PsiFile?,
     mainModule: String?,
   ) {
-    targetStorage.setTargets(
+    setTargets(
       listOf(
         TestBuildTarget(
           key = WorkspaceTargetKey(label = label),

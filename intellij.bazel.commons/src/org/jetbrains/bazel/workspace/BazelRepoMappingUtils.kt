@@ -121,6 +121,31 @@ fun Label.toApparentLabel(repoMapping: RepoMapping): ResolvedLabel? {
  * Converts this [Label]'s repository either to [Canonical] or to [Main].
  */
 @ApiStatus.Internal
+fun Label.toCanonicalLabel(repoMapping: RepoMapping): ResolvedLabel? {
+  if (this !is ResolvedLabel) return null
+  val repo =
+    if (repo !is Apparent) {
+      repo
+    }
+    else if (repoMapping is BzlmodRepoMapping) {
+      val canonicalRepoName = repoMapping.apparentRepoNameToCanonicalName[repo.repoName] ?: return null
+      Canonical.createCanonicalOrMain(canonicalRepoName)
+    }
+    else {
+      return null
+    }
+  val target = when (target) {
+    AllRuleTargets -> target
+    AllRuleTargetsAndFiles -> target
+    else -> this.singleTarget() ?: return null
+  }
+  return this.copy(repo = repo, target = target)
+}
+
+/**
+ * Converts this [Label]'s repository either to [Canonical] or to [Main].
+ */
+@ApiStatus.Internal
 fun Label.toCanonicalLabel(project: Project): ResolvedLabel? {
   if (this !is ResolvedLabel) return null
   val repo =
@@ -143,6 +168,9 @@ fun Label.toCanonicalLabel(project: Project): ResolvedLabel? {
 fun Label.toCanonicalLabelOrThis(project: Project): ResolvedLabel? = toCanonicalLabel(project) ?: this as? ResolvedLabel
 
 @ApiStatus.Internal
+fun Label.toCanonicalLabelOrThis(repoMapping: RepoMapping): ResolvedLabel? = toCanonicalLabel(repoMapping) ?: this as? ResolvedLabel
+
+@ApiStatus.Internal
 fun Label.singleTarget(): SingleTarget? {
   return when (val oldTarget = target) {
     is AmbiguousEmptyTarget -> packagePath.pathSegments.lastOrNull()?.let { SingleTarget(it) }
@@ -153,8 +181,18 @@ fun Label.singleTarget(): SingleTarget? {
 
 @NlsSafe
 @ApiStatus.Internal
-fun Label.toShortString(project: Project): String {
-  val label = this.toApparentLabelOrThis(project)
+fun Label.toShortString(project: Project): String =
+  this.toApparentLabelOrThis(project).toShortString()
+
+@NlsSafe
+@ApiStatus.Internal
+fun Label.toShortString(repoMapping: RepoMapping): String =
+  this.toApparentLabelOrThis(repoMapping).toShortString()
+
+
+@NlsSafe
+private fun Label.toShortString(): String {
+  val label = this
   if (label !is ResolvedLabel) return label.toString()
 
   val repoPart = if (label.repo !is Main) label.repo.toString() else ""

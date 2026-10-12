@@ -20,6 +20,7 @@ import org.jetbrains.bazel.sync.environment.BazelProjectContextService
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
 import org.jetbrains.bazel.target.targetStorage
 import org.jetbrains.bazel.test.framework.target.TestBuildTarget
+import org.jetbrains.bazel.workspace.model.test.framework.setTargets
 import org.jetbrains.bsp.protocol.OutputLocationCollection
 import org.jetbrains.bazel.workspace.model.test.framework.testLocation
 import org.junit.jupiter.api.Test
@@ -414,7 +415,7 @@ class PythonDebugUtilsTest {
     val importRoots = imports.map { runfilesWorkspaceRoot.resolve(it).createDirectories() }
     val sitePackagesRoot = runfilesRoot.resolve("rules_python++pip+pypi__pytest/site-packages").createDirectories()
 
-    project.targetStorage.setTargets(
+    project.setTargets(
       listOf(
         TestBuildTarget(
           key = WorkspaceTargetKey(label = target),

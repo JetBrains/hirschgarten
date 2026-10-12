@@ -29,6 +29,7 @@ import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
 import org.jetbrains.bazel.target.targetStorage
 import org.jetbrains.bazel.test.framework.BazelBasePlatformTestCase
 import org.jetbrains.bazel.test.framework.target.TestBuildTarget
+import org.jetbrains.bazel.workspace.model.test.framework.setTargets
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.OutputLocationCollection
 import org.jetbrains.bazel.workspace.model.test.framework.testLocation
@@ -181,11 +182,11 @@ internal class BazelRunConfigurationProducerSuppressorTest : BazelBasePlatformTe
   }
 
   private fun Project.addPyBinaryTargets(vararg targets: BuildTarget) {
-    targetStorage.setTargets(targets.toList())
+    setTargets(targets.toList())
   }
 
   private fun Project.addPyTestTarget(label: Label) {
-    targetStorage.setTargets(listOf(pyTestTarget(label)))
+    setTargets(listOf(pyTestTarget(label)))
   }
 
   private fun pyBinaryTarget(label: Label, mainFile: PsiFile): TestBuildTarget =

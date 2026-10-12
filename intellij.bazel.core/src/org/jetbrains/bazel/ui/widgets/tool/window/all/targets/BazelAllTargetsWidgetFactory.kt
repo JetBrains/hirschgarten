@@ -37,7 +37,7 @@ import org.jetbrains.bazel.ui.widgets.tool.window.components.configureBazelToolW
 import org.jetbrains.bsp.protocol.id
 import java.awt.BorderLayout
 
-private class BazelAllTargetsWidgetFactory :
+internal class BazelAllTargetsWidgetFactory :
   ToolWindowFactory,
   DumbAware {
   private val contentRequested = Semaphore(permits = 1, acquiredPermits = 1)
@@ -90,7 +90,7 @@ private class BazelAllTargetsWidgetFactory :
       val targetStorage = project.serviceAsync<TargetStorage>()
       // update immediately, avoid any delays
       updateVisibleTargets(targetStorage = targetStorage, project = project, model = model, targetPanel = targetPanel)
-      merge(targetStorage.targetListUpdated, updateRequests)
+      merge(targetStorage.views, updateRequests)
         .throttle(300)
         .collectLatest {
           updateVisibleTargets(targetStorage = targetStorage, project = project, model = model, targetPanel = targetPanel)
