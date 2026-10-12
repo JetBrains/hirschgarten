@@ -1,5 +1,6 @@
 package com.intellij.bazel.python.backend
 
+import com.jetbrains.python.sdk.withSdkConfigurationLock
 import org.jetbrains.bazel.workspacemodel.entities.targetKey
 import com.intellij.workspaceModel.ide.legacyBridge.findModule
 import com.intellij.platform.backend.workspace.workspaceModel
@@ -316,7 +317,8 @@ internal class BazelPythonWorkspaceImporter(val context: WorkspaceImporterContex
         subtaskId = taskId.subTask("calculate-and-add-all-python-sdk-infos"),
         message = BazelPythonBackendBundle.message("console.task.model.calculate.python.sdks"),
       ) {
-        setInterpreters(snapshot)
+        // The module SDKs are written under the configuration lock, as every other write of an interpreter.
+        withSdkConfigurationLock(context.project) { setInterpreters(snapshot) }
       }
     }
   }
