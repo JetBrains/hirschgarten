@@ -36,6 +36,7 @@ import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
 import org.jetbrains.bazel.test.framework.target.TestBuildTarget
 import org.jetbrains.bazel.test.framework.testBazelInfo
 import org.jetbrains.bazel.ui.gutters.NonImportedBuildTarget
+import org.jetbrains.bazel.workspace.model.test.framework.setTargets
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.BuildTargetData
 import org.jetbrains.bsp.protocol.BuildTargetTag
@@ -287,7 +288,7 @@ class TargetStorageTest {
     val second = targetUtils.allTargetSummaries()
     second shouldBeSameInstanceAs first
 
-    targetUtils.setTargets(listOf(bin))
+    project.setTargets(listOf(bin))
 
     val afterNewSnapshot = targetUtils.allTargetSummaries()
     afterNewSnapshot shouldNotBeSameInstanceAs first

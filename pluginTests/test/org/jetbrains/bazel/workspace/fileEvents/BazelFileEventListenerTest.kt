@@ -53,6 +53,7 @@ import org.jetbrains.bazel.workspace.importer.JAVA_SOURCE_ROOT_TYPE
 import org.jetbrains.bazel.workspace.model.test.framework.BuildServerMock
 import org.jetbrains.bazel.workspace.model.test.framework.MockBuildServerService
 import org.jetbrains.bazel.workspace.model.test.framework.WorkspaceModelBaseTest
+import org.jetbrains.bazel.workspace.model.test.framework.setTargets
 import org.jetbrains.bazel.workspacemodel.entities.BazelModuleEntitySource
 import org.jetbrains.bazel.workspacemodel.entities.BazelModuleExtensionEntity
 import org.jetbrains.bazel.workspacemodel.entities.BazelProjectDirectoriesEntity
@@ -110,7 +111,7 @@ class BazelFileEventListenerTest : WorkspaceModelBaseTest() {
     createModule(target3)
     createModule(target4)
 
-    project.targetStorage.setTargets(
+    project.setTargets(
       listOf(
         TestBuildTargetFactory.createSimpleJavaLibraryTarget(id = target1),
         TestBuildTargetFactory.createSimpleJavaLibraryTarget(id = target2),
@@ -564,7 +565,7 @@ class BazelFileEventListenerTest : WorkspaceModelBaseTest() {
 
   @Test
   fun `should ignore projects without any targets`() {
-    project.targetStorage.setTargets(emptyList())
+    project.setTargets(emptyList())
     val file = project.rootDir.createDirectory("src").createFile("aaa", "java")
     createEvent(file).process().shouldBeFalse()
     deleteEvent(file).process().shouldBeFalse()
@@ -591,7 +592,7 @@ class BazelFileEventListenerTest : WorkspaceModelBaseTest() {
     val srcUrl = virtualFileUrlManager.storeAndGet(src)
     val module = workspaceModel.currentSnapshot.resolveModule(target1)
 
-    project.targetStorage.setTargets(
+    project.setTargets(
       listOf(
         TestBuildTarget(
           key = WorkspaceTargetKey(label = target1),
@@ -805,7 +806,7 @@ class BazelFileEventListenerTest : WorkspaceModelBaseTest() {
         generatorName = null,
         isTestOnly = false,
       )
-    project.targetStorage.setTargets(listOf(mockBuildTarget))
+    project.setTargets(listOf(mockBuildTarget))
   }
 
   private fun addProjectDirectoriesEntity(

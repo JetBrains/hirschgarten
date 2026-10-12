@@ -53,6 +53,7 @@ import org.jetbrains.bazel.sync.status.SyncAlreadyInProgressException
 import org.jetbrains.bazel.sync.status.SyncStatusService
 import org.jetbrains.bazel.sync.workspace.importer.WorkspaceImporterHelper
 import org.jetbrains.bazel.sync.workspace.persistence.WorkspaceSnapshotService
+import org.jetbrains.bazel.target.TargetStorage
 import org.jetbrains.bazel.taskEvents.BazelTaskEventsService
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.TaskGroupId
@@ -356,11 +357,14 @@ class ProjectSyncTask(
 
                 // the only snapshot update of the pipeline: the provider infers the effective scope, resolves
                 // and derives the new snapshot, all against the very same base snapshot
-                project.service<WorkspaceSnapshotService>()
+                val workspaceUpdate = project.service<WorkspaceSnapshotService>()
                   .update { previous ->
-                    SyncWorkspaceUpdater(project).update(scope, previous, context).let { it.snapshot to it }
+                    val syncUpdate = SyncWorkspaceUpdater(project).update(scope, previous, context)
+                    syncUpdate.snapshot to syncUpdate
                   }
                   .second
+                project.service<TargetStorage>().awaitLoaded() // sync caches
+                workspaceUpdate
               }
             }
           }

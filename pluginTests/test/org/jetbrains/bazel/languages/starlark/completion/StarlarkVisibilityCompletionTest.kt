@@ -15,6 +15,7 @@ import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
 import org.jetbrains.bazel.target.targetStorage
 import org.jetbrains.bazel.test.framework.BazelBasePlatformTestCase
 import org.jetbrains.bazel.test.framework.target.TestBuildTarget
+import org.jetbrains.bazel.workspace.model.test.framework.setTargets
 import org.jetbrains.bsp.protocol.OutputLocationCollection
 import org.junit.Before
 import org.junit.Test
@@ -24,7 +25,7 @@ import org.junit.runners.JUnit4
 @RunWith(JUnit4::class)
 class StarlarkVisibilityCompletionTest : BazelBasePlatformTestCase() {
   private fun setTargets(targets: List<String>) {
-    project.targetStorage.setTargets(
+    project.setTargets(
       targets.map {
         TestBuildTarget(
           key = WorkspaceTargetKey(label = Label.parse(it)),

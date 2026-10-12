@@ -42,7 +42,6 @@ fun setBazelStartupSyncEnabledInTests(project: Project, enabled: Boolean) {
 internal class BazelStartupActivity : BazelProjectActivity() {
   override suspend fun executeForBazelProject(project: Project) {
     log.info("Executing Bazel startup activity for project: $project")
-    project.serviceAsync<TargetStorage>()
     val trackerService = project.serviceAsync<BspConfigurationTrackerService>()
     try {
       trackerService.isRunning.update { true }
@@ -61,7 +60,8 @@ private suspend fun executeOnEveryProjectStartup(project: Project) {
   updateBazelFileTargetsWidget(project)
   project.serviceAsync<BazelWorkspace>().initialize()
   project.serviceAsync<ProjectDirtyStateService>() // must come after initialize(), because it reads the registered project id
-  project.service<ModuleTargetService>() // warm up service
+  project.serviceAsync<ModuleTargetService>() // warm up service
+  project.serviceAsync<TargetStorage>() // warm up service
 }
 
 private suspend fun resyncProjectIfNeeded(project: Project) {

@@ -143,7 +143,7 @@ open class DefaultBazelFileEventProcessor(private val project: Project) : BazelF
   override suspend fun enqueue(events: List<VFileEvent>): Deferred<BazelFileEventProcessorResult> {
     // if a project has no targets, there is no point in processing (also, it could interrupt the initial sync)
     targetUtils.awaitLoaded()
-    if (!targetUtils.allTargets().any())
+    if (targetUtils.getTotalTargetCount() == 0)
       return CompletableDeferred(BazelFileEventProcessorResult.EMPTY)
 
     // No directory is known. Startup or tests?

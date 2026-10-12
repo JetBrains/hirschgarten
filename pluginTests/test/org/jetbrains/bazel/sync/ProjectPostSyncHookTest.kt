@@ -30,6 +30,7 @@ import org.jetbrains.bazel.workspace.model.test.framework.BuildServerMock
 import org.jetbrains.bazel.workspace.model.test.framework.MockBuildServerService
 import org.jetbrains.bazel.workspace.model.test.framework.MockProjectBaseTest
 import org.jetbrains.bazel.workspace.model.test.framework.createTestBuildTarget
+import org.jetbrains.bazel.workspace.model.test.framework.setTargets
 import org.jetbrains.bsp.protocol.TaskGroupId
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
@@ -99,7 +100,7 @@ class ProjectPostSyncHookTest : MockProjectBaseTest() {
           ),
         ),
       )
-    project.targetStorage.setTargets(listOf(target))
+    project.setTargets(listOf(target))
   }
 
   private fun ProjectPostSyncHook.isEnabledForTest(): Boolean =
