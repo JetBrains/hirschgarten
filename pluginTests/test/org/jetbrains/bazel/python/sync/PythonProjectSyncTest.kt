@@ -11,6 +11,7 @@ import com.intellij.openapi.diagnostic.fileLogger
 import com.intellij.openapi.projectRoots.ProjectJdkTable
 import com.intellij.openapi.vfs.VirtualFileManager
 import com.intellij.platform.backend.workspace.WorkspaceModel
+import com.intellij.platform.eel.provider.localEel
 import com.intellij.platform.util.progress.reportSequentialProgress
 import com.intellij.platform.workspace.jps.entities.ContentRootEntity
 import com.intellij.platform.workspace.jps.entities.DependencyScope
@@ -128,7 +129,7 @@ class PythonProjectSyncTest : MockProjectBaseTest() {
     // Python plugin validates file.
     // The real python should have been used, but in absence of it this path is good enough as most agents on TC are Ubuntu
     pythonBinary =
-      timeoutRunBlocking { SystemPythonService().findSystemPythons().firstOrNull()?.pythonBinary ?: Path.of("/usr/bin/python3") }
+      timeoutRunBlocking { SystemPythonService().findSystemPythons(localEel).firstOrNull()?.pythonBinary ?: Path.of("/usr/bin/python3") }
     logger.info("Found python $pythonBinary for project ${project.name}")
   }
 
