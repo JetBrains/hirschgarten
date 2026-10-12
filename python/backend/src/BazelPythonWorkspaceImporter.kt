@@ -1,11 +1,17 @@
 package com.intellij.bazel.python.backend
 
+import org.jetbrains.bazel.workspacemodel.entities.targetKey
+import com.intellij.workspaceModel.ide.legacyBridge.findModule
+import com.intellij.platform.backend.workspace.workspaceModel
+import com.jetbrains.python.onFailure
+import com.jetbrains.python.project.PyProject.Companion.asPyProject
+import com.intellij.python.pyproject.model.evolution.setPythonInterpreter
+import com.jetbrains.python.sdk.ModuleOrProject.ProjectOnly
+import com.jetbrains.python.sdk.createLocalSdkGuessingTypeByPath
 import com.intellij.bazel.python.backend.sync.PythonWorkspaceSyncConfig
 import com.intellij.openapi.components.serviceAsync
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.projectRoots.ProjectJdkTable
-import com.intellij.openapi.projectRoots.Sdk
 import com.intellij.openapi.util.NlsContexts
 import com.intellij.platform.workspace.jps.entities.ContentRootEntity
 import com.intellij.platform.workspace.jps.entities.ContentRootEntityBuilder
@@ -21,8 +27,6 @@ import com.intellij.platform.workspace.jps.entities.ModuleEntity
 import com.intellij.platform.workspace.jps.entities.ModuleId
 import com.intellij.platform.workspace.jps.entities.ModuleSourceDependency
 import com.intellij.platform.workspace.jps.entities.ModuleTypeId
-import com.intellij.platform.workspace.jps.entities.SdkDependency
-import com.intellij.platform.workspace.jps.entities.SdkId
 import com.intellij.platform.workspace.jps.entities.SourceRootEntity
 import com.intellij.platform.workspace.jps.entities.SourceRootTypeId
 import com.intellij.platform.workspace.storage.EntitySource
@@ -30,13 +34,8 @@ import com.intellij.platform.workspace.storage.MutableEntityStorage
 import com.intellij.platform.workspace.storage.impl.url.toVirtualFileUrl
 import com.intellij.platform.workspace.storage.url.VirtualFileUrlManager
 import com.intellij.python.sdk.backend.PythonInterpreter
-import com.intellij.python.sdk.backend.getSdkAPI
-import com.jetbrains.python.PyNames
 import com.jetbrains.python.PythonBinary
 import com.jetbrains.python.errorProcessing.PyResult
-import com.jetbrains.python.sdk.ModuleOrProject.ProjectOnly
-import com.jetbrains.python.sdk.PythonSdkType
-import com.jetbrains.python.sdk.createLocalSdkGuessingTypeByPath
 import com.jetbrains.python.sdk.internal.PYTHON_MODULE_ID
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.annotations.VisibleForTesting
@@ -311,52 +310,55 @@ internal class BazelPythonWorkspaceImporter(val context: WorkspaceImporterContex
     return WorkspaceImporterResult.Success
   }
 
-  private suspend fun calculateAndAddSdksWithProgress(snapshot: WorkspaceSnapshot, taskId: TaskId): Map<WorkspaceTargetKey, Sdk?> =
+  private suspend fun calculateAndAddSdksWithProgress(snapshot: WorkspaceSnapshot, taskId: TaskId) {
     context.progressReporter.indeterminateStep(text = BazelPythonBackendBundle.message("progress.bar.calculate.python.sdk.infos")) {
       context.taskConsole.withSubtask(
         subtaskId = taskId.subTask("calculate-and-add-all-python-sdk-infos"),
         message = BazelPythonBackendBundle.message("console.task.model.calculate.python.sdks"),
       ) {
-        calculateAndAddSdks(snapshot)
+        setInterpreters(snapshot)
       }
     }
-
-  // MAYBE RC: we probably should postpone sdk table modification
-  //   to post processing step for now its fine
-  private suspend fun calculateAndAddSdks(snapshot: WorkspaceSnapshot): Map<WorkspaceTargetKey, Sdk?> {
-    return snapshot.allTargets.filterBuildTarget<PythonBuildTarget>()
-      .filter { (_, pyTarget) -> (pyTarget.interpreter) != null }
-      .associateBy { (target, _) -> target.key }
-      .mapValues { (_, value) -> findOrAddSdk(context, snapshot, value.second, context.project) }
   }
 
-  private suspend fun findOrAddSdk(
-    context: WorkspaceImporterContext,
-    snapshot: WorkspaceSnapshot,
-    pythonTarget: PythonBuildTarget,
-    project: Project,
-  ): Sdk? {
-    // Before this change we had toString() here so in case of null there would be "null"
-    // This !! fails fast
-    // TODO: Make make interpreter non-null
-    val interpreterLocation = pythonTarget.interpreter
-                              ?: defaultInterpreter
-                              ?: return null
-    val interpreterPath = context.outputResolver.resolve(interpreterLocation, snapshot.repoMapping.getLocalRepositories()) ?: return null
-    val sdkName = chooseSdkName(interpreterPath, project.name)
-    val sdkTable = ProjectJdkTable.getInstance()
-
-    val existingSdk = sdkTable.findJdk(sdkName, PythonSdkType.getInstance().toString())
-    if (existingSdk != null) return existingSdk
-
-    return when (val r = createSdkFromPython(interpreterPath, project, sdkName)) {
-      is com.jetbrains.python.Result.Failure -> {
-        logger.warn("Failed to create SDK for $interpreterPath: ${r.error}")
-        null
+  /**
+   * Sets an interpreter on the module of each Python target. The importer builds one interpreter for each Python binary,
+   * owned by the Bazel project root, and sets it on every module that uses that binary.
+   */
+  private suspend fun setInterpreters(snapshot: WorkspaceSnapshot) {
+    val project = context.project
+    val binaryByTarget = snapshot.allTargets.filterBuildTarget<PythonBuildTarget>()
+      .mapNotNull { (target, pythonTarget) -> interpreterPath(snapshot, pythonTarget)?.let { target.key to it } }
+      .toMap()
+    val storage = project.workspaceModel.currentSnapshot
+    val modulesByBinary = storage.entities(ModuleEntity::class.java)
+      .mapNotNull { entity ->
+        val binary = entity.bazelModuleExtension?.targetKey?.let { binaryByTarget[it] } ?: return@mapNotNull null
+        val module = entity.findModule(storage) ?: return@mapNotNull null
+        binary to module
       }
-
-      is com.jetbrains.python.Result.Success -> r.result.getSdkAPI()
+      .toList()
+      .groupBy({ it.first }, { it.second })
+    for ((binary, modules) in modulesByBinary) {
+      val interpreter = when (val result = createInterpreter(binary, project)) {
+        is com.jetbrains.python.Result.Success -> result.result
+        is com.jetbrains.python.Result.Failure -> {
+          logger.warn("Failed to create an interpreter for $binary: ${result.error}")
+          continue
+        }
+      }
+      for (module in modules) {
+        module.asPyProject()?.setPythonInterpreter(interpreter, waitForSnapshot = false)?.onFailure {
+          logger.warn("Failed to set the interpreter $binary on ${module.name}: $it")
+        }
+      }
     }
+  }
+
+  /** The Python binary of [pythonTarget], or of the default target when it has none. */
+  private fun interpreterPath(snapshot: WorkspaceSnapshot, pythonTarget: PythonBuildTarget): Path? {
+    val interpreterLocation = pythonTarget.interpreter ?: defaultInterpreter ?: return null
+    return context.outputResolver.resolve(interpreterLocation, snapshot.repoMapping.getLocalRepositories())
   }
 
   private fun addSourceDependencyLibrary(
@@ -418,17 +420,12 @@ internal class BazelPythonWorkspaceImporter(val context: WorkspaceImporterContex
         )
       }
 
-    val pythonTarget = target.findBuildData<PythonBuildTarget>()
-    val interpreterLocation = pythonTarget?.interpreter ?: defaultInterpreter
-    val interpreterPath = interpreterLocation?.let { context.outputResolver.resolve(it, snapshot.repoMapping.getLocalRepositories()) }
-    val sdkName = interpreterPath?.let { chooseSdkName(it, context.project.name) }
-                  ?: chooseSystemSdkName(context.project.name)
-    val sdkDependency = SdkDependency(SdkId(sdkName, PyNames.PYTHON_SDK_ID_NAME))
-
+    // The module gets its interpreter in post-processing, through PyProject.setPythonInterpreter. The importer does not
+    // name an SDK here.
     val allDependencies =
       buildList {
         addAll(dependencies)
-        addAll(listOf(ModuleSourceDependency, sdkDependency))
+        add(ModuleSourceDependency)
         addAll(libraryDependencies)
       }
 
@@ -529,11 +526,12 @@ internal class BazelPythonWorkspaceImporter(val context: WorkspaceImporterContex
     }
   }
 
-  private suspend fun createSdkFromPython(
-    interpreter: Path,
-    project: Project,
-    sdkName: String?,
-  ): PyResult<PythonInterpreter> = createLocalSdkGuessingTypeByPath(interpreter, ProjectOnly(project), sdkName)
+  /**
+   * An interpreter for [binary], owned by the project working directory, the Bazel project root. It is not registered
+   * yet: setting it on a module registers it.
+   */
+  private suspend fun createInterpreter(binary: Path, project: Project): PyResult<PythonInterpreter> =
+    createLocalSdkGuessingTypeByPath(binary, ProjectOnly(project), chooseSdkName(binary, project.name))
 }
 
 @ApiStatus.Internal
@@ -541,5 +539,3 @@ internal class BazelPythonWorkspaceImporter(val context: WorkspaceImporterContex
 fun chooseSdkName(interpreter: PythonBinary, projectName: String): String =
   "$projectName-python-${StringUtils.md5Hash(interpreter.pathString, 5)}"
 
-private fun chooseSystemSdkName(projectName: String): String =
-  "$projectName-python"
