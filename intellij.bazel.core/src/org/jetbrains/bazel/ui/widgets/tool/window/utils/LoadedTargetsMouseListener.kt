@@ -115,7 +115,7 @@ internal abstract class LoadedTargetsMouseListener(private val project: Project)
 }
 
 @ApiStatus.Internal
-@RequiresEdt(generateAssertion = false /* IJPL-115548 */)
+@RequiresEdt
 fun runOrBuildTarget(project: Project, target: BuildTarget) {
   when (target.kind.ruleType) {
     RuleType.TEST, RuleType.BINARY -> {
