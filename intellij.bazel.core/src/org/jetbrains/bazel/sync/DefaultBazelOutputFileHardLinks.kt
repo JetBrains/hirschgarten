@@ -18,6 +18,7 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.withContext
+import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.commons.BazelInfo
 import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.coroutines.BazelCoroutineService
@@ -32,7 +33,8 @@ import kotlin.io.path.getLastModifiedTime
 import kotlin.io.path.isDirectory
 import kotlin.io.path.relativeTo
 
-internal class DefaultBazelOutputFileHardLinks(
+@ApiStatus.Internal
+class DefaultBazelOutputFileHardLinks(
   private val project: Project,
   bazelInfo: BazelInfo,
 ): BazelOutFileHardLinks {
@@ -135,22 +137,27 @@ internal class DefaultBazelOutputFileHardLinks(
   }
 
   override fun onBeforeSync() {
+    hardLinksDuringSync.clear()
     syncRunning.set(true)
     allHardLinksCreatedSuccessfully = true
   }
 
   override suspend fun onAfterSync(projectModelUpdated: Boolean) {
     if (syncRunning.compareAndSet(true, false)) {
-      RefreshQueue.getInstance().refresh(
-        recursive = false,
-        hardLinksDuringSync.values.awaitAll().filter { it.requiresRefresh }.map { it.virtualFile },
-      )
+      try {
+        RefreshQueue.getInstance().refresh(
+          recursive = false,
+          hardLinksDuringSync.values.awaitAll().filter { it.requiresRefresh }.map { it.virtualFile },
+        )
 
-      if (projectModelUpdated) {
-        // If sync failed and project model wasn't updated, the user will still see outputs from the previous sync and code won't be red.
-        deleteUnusedHardLinks()
+        if (projectModelUpdated) {
+          // If sync failed and project model wasn't updated, the user will still see outputs from the previous sync and code won't be red.
+          deleteUnusedHardLinks()
+        }
       }
-      hardLinksDuringSync.clear()
+      finally {
+        hardLinksDuringSync.clear()
+      }
     }
   }
 
