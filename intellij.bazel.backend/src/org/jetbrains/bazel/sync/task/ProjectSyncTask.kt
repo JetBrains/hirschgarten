@@ -348,6 +348,7 @@ class ProjectSyncTask(
           }
           shouldUpdateProjectModel = syncResult.completionResult != ProjectSyncCompletionResult.FAILURE
           if (shouldUpdateProjectModel) {
+            server.outFileHardLinks.onBeforeProjectModelUpdate()
             phaseDurations.trackSyncPhase(ProjectSyncPhase.APPLY_PROJECT_MODEL) {
               updateProjectModel(
                 progressReporter = progressReporter,

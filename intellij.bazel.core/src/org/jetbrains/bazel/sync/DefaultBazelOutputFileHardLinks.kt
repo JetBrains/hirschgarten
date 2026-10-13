@@ -1,16 +1,13 @@
 package org.jetbrains.bazel.sync.workspace.mapper.normal
 
-import com.intellij.openapi.application.readAction
+import com.intellij.openapi.diagnostic.rethrowControlFlowException
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.getProjectDataPath
 import com.intellij.openapi.util.io.NioFiles
 import com.intellij.openapi.vfs.LocalFileSystem
-import com.intellij.openapi.vfs.VfsUtilCore
-import com.intellij.openapi.vfs.VirtualFile
-import com.intellij.openapi.vfs.VirtualFileVisitor
+import com.intellij.openapi.vfs.VfsUtil
 import com.intellij.openapi.vfs.newvfs.RefreshQueue
-import com.intellij.openapi.vfs.newvfs.impl.NullVirtualFile
 import com.intellij.util.io.createParentDirectories
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Dispatchers
@@ -24,6 +21,7 @@ import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.coroutines.BazelCoroutineService
 import org.jetbrains.bazel.sync.BazelOutFileHardLinks
 import java.nio.file.Files
+import java.nio.file.LinkOption
 import java.nio.file.Path
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicBoolean
@@ -31,6 +29,7 @@ import kotlin.io.path.deleteIfExists
 import kotlin.io.path.exists
 import kotlin.io.path.getLastModifiedTime
 import kotlin.io.path.isDirectory
+import kotlin.io.path.listDirectoryEntries
 import kotlin.io.path.relativeTo
 
 @ApiStatus.Internal
@@ -55,10 +54,10 @@ class DefaultBazelOutputFileHardLinks(
   override var allHardLinksCreatedSuccessfully: Boolean = true
     private set
 
-  private class HardLink(val virtualFile: VirtualFile, val requiresRefresh: Boolean, val originalPathIfFailed: Path? = null) {
-    val path: Path
-      get() = if (virtualFile == NullVirtualFile.INSTANCE) checkNotNull(originalPathIfFailed) else virtualFile.toNioPath()
-  }
+  /**
+   * @param path the hard link, or the original file when [failed] is true
+   */
+  private class HardLink(val path: Path, val failed: Boolean = false)
 
   override suspend fun createOutputFileHardLinks(files: Collection<Path>): List<Path> {
     if (files.isEmpty()) return emptyList()
@@ -104,25 +103,18 @@ class DefaultBazelOutputFileHardLinks(
         BazelCoroutineService.getInstance(project).startAsync {
           withContext(limitedDispatcher) {
             try {
-              val localFileSystem = LocalFileSystem.getInstance()
-              var requiresRefresh = true
-              val hardLinkFile = if (!targetHardLink.exists() || targetHardLink.getLastModifiedTime() != realFile.getLastModifiedTime()) {
+              if (!targetHardLink.exists() || targetHardLink.getLastModifiedTime() != realFile.getLastModifiedTime()) {
                 targetHardLink.deleteIfExists()
                 targetHardLink.createParentDirectories()
                 Files.createLink(targetHardLink, realFile)
-                localFileSystem.refreshAndFindFileByNioFile(targetHardLink)
               }
-              else {
-                requiresRefresh = false
-                localFileSystem.findFileByNioFile(targetHardLink) ?: localFileSystem.refreshAndFindFileByNioFile(targetHardLink)
-              }
-              checkNotNull(hardLinkFile) { "Can't find virtual find for $targetHardLink" }
-              HardLink(hardLinkFile, requiresRefresh)
+              HardLink(targetHardLink)
             }
             catch (e: Throwable) {
+              rethrowControlFlowException(e)
               logger.warn("Failed to create hard link for $realFile", e)
               allHardLinksCreatedSuccessfully = false
-              HardLink(NullVirtualFile.INSTANCE, false, originalPathIfFailed = realFile)
+              HardLink(realFile, failed = true)
             }
           }
         }
@@ -142,18 +134,21 @@ class DefaultBazelOutputFileHardLinks(
     allHardLinksCreatedSuccessfully = true
   }
 
+  override suspend fun onBeforeProjectModelUpdate() {
+    if (!syncRunning.get()) return
+    hardLinksDuringSync.values.awaitAll()
+    refreshCacheDir()
+  }
+
   override suspend fun onAfterSync(projectModelUpdated: Boolean) {
     if (syncRunning.compareAndSet(true, false)) {
       try {
-        RefreshQueue.getInstance().refresh(
-          recursive = false,
-          hardLinksDuringSync.values.awaitAll().filter { it.requiresRefresh }.map { it.virtualFile },
-        )
-
+        val hardLinks = hardLinksDuringSync.values.awaitAll()
         if (projectModelUpdated) {
           // If sync failed and project model wasn't updated, the user will still see outputs from the previous sync and code won't be red.
-          deleteUnusedHardLinks()
+          deleteUnusedHardLinks(hardLinks)
         }
+        refreshCacheDir()
       }
       finally {
         hardLinksDuringSync.clear()
@@ -161,44 +156,38 @@ class DefaultBazelOutputFileHardLinks(
     }
   }
 
-  private suspend fun deleteUnusedHardLinks() {
-    val cacheDirFile = LocalFileSystem.getInstance().refreshAndFindFileByNioFile(cacheDir)
-                       ?: return
+  /**
+   * Updates the VFS with all changes in [cacheDir] in one refresh session.
+   * The file watcher does not watch [cacheDir] (BAZEL-3612), so no file in it is dirty.
+   * A recursive refresh skips a file that is not dirty, so [cacheDir] is marked dirty first.
+   */
+  private suspend fun refreshCacheDir() {
+    val cacheDirFile = withContext(Dispatchers.IO) {
+      LocalFileSystem.getInstance().refreshAndFindFileByNioFile(cacheDir)
+    } ?: return
+    VfsUtil.markDirty(/* recursive = */ true, /* reloadChildren = */ false, cacheDirFile)
+    RefreshQueue.getInstance().refresh(recursive = true, listOf(cacheDirFile))
+  }
 
-    val hardLinksFilesUsedDuringSync = mutableSetOf(cacheDirFile)
-    hardLinksDuringSync.values.awaitAll().filter { it.virtualFile != NullVirtualFile.INSTANCE }.forEach { hardLink ->
-      var parent: VirtualFile? = hardLink.virtualFile
-      while (parent != null && hardLinksFilesUsedDuringSync.add(parent)) {
-        parent = parent.parent
-      }
-    }
+  /**
+   * Deletes each file and directory in [cacheDir] that the sync did not use.
+   *
+   * A used path is a hard link of this sync, or a directory that contains one.
+   * The cleanup lists the children of the used directories on disk, not in the VFS (BAZEL-3494, BAZEL-3647).
+   * It deletes an unused directory with all its contents.
+   */
+  private suspend fun deleteUnusedHardLinks(hardLinks: List<HardLink>) = withContext(Dispatchers.IO) {
+    val pathsUsedDuringSync = hardLinks.asSequence()
+      .filterNot { it.failed }
+      .flatMap { hardLink -> generateSequence(hardLink.path) { it.parent }.takeWhile { it != cacheDir } }
+      .plusElement(cacheDir)  // plus() would add the name elements of the path, because Path is Iterable
+      .toHashSet()
 
-    val toDeleteVF = mutableListOf<VirtualFile>()
-    VfsUtilCore.visitChildrenRecursively(
-      cacheDirFile,
-      object : VirtualFileVisitor<Nothing>() {
-        override fun visitFile(file: VirtualFile): Boolean {
-          if (file !in hardLinksFilesUsedDuringSync) {
-            toDeleteVF.add(file)
-            return false
-          }
-          return true
-        }
-      },
-    )
-
-    // https://youtrack.jetbrains.com/issue/BAZEL-3494
-    val toDeleteNio = readAction {
-      toDeleteVF.asSequence().filter { it.isValid }.map { it.toNioPath() }.toList()
-    }
-    for (path in toDeleteNio) {
-      if (path.isDirectory()) {
-        NioFiles.deleteRecursively(path)
-      } else {
-        path.deleteIfExists()
-      }
-    }
-    RefreshQueue.getInstance().refresh(true, toDeleteVF)
+    val usedDirectories = pathsUsedDuringSync.filter { it.isDirectory(LinkOption.NOFOLLOW_LINKS) }
+    val unusedPaths = usedDirectories
+      .flatMap { it.listDirectoryEntries() }
+      .filterNot { it in pathsUsedDuringSync }
+    unusedPaths.forEach(NioFiles::deleteRecursively)
 
     // Drop the old cache directories because the name is changed. Delete this code in 26.2
     NioFiles.deleteRecursively(project.getProjectDataPath("bazelOutputFilesHardLinks"))
