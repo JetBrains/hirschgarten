@@ -6,6 +6,11 @@ http_jar = use_repo_rule("@bazel_tools//tools/build_defs/repo:http.bzl", "http_j
 
 http_archive = use_repo_rule("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
+community_stub = use_repo_rule("//rules_intellij:community_stub.bzl", "community_stub")
+
+# generated BUILD.bazel files load monorepo macros from @community
+community_stub(name = "community")
+
 # dependency on the new aspect's sdk
 bazel_dep(name = "intellij_aspect_sdk")
 git_override(
