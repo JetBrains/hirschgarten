@@ -1,0 +1,4 @@
+java_library(
+    name = "database",
+    srcs = glob(["src/main/java/**/*.java"]),
+)

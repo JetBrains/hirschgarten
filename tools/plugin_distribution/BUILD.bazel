@@ -1,0 +1,8 @@
+load("@rules_kotlin//kotlin:jvm.bzl", "kt_jvm_binary")
+
+kt_jvm_binary(
+    name = "check_plugin_zip_layout",
+    srcs = ["CheckPluginZipLayout.kt"],
+    main_class = "org.jetbrains.bazel.tools.pluginDistribution.CheckPluginZipLayoutKt",
+    visibility = ["//plugins/bazel:__pkg__"],
+)

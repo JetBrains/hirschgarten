@@ -1,0 +1,91 @@
+load("@community//platform/build-scripts/bazel-rules:content_module_jar.bzl", "content_module_jar")
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+
+### auto-generated section `dev intellij.bazel.clion.common` start
+content_module_jar(module = ":bazel-clion-common")
+### auto-generated section `dev intellij.bazel.clion.common` end
+
+### auto-generated section `build intellij.bazel.clion.common` start
+jvm_library(
+    name = "bazel-clion-common",
+    srcs = glob(
+        [
+            "src/**/*.kt",
+            "src/**/*.java",
+            "src/**/*.form",
+            "gen/**/*.kt",
+            "gen/**/*.java",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.bazel.clion.common",
+    resource_strip_prefix = "resources",
+    resources = glob(
+        ["resources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    deps = [
+        # do not sort,
+        "@lib//:kotlin-stdlib",
+        "//plugins/bazel/intellij.bazel.core:core",
+        "//plugins/bazel/intellij.bazel.commons:commons",
+        "//plugins/bazel/intellij.bazel.backend:backend",
+        "@community//platform/core-api:core",
+        "@community//platform/lang-api:lang",
+        "@community//platform/buildView",
+        "@community//platform/analysis-api:analysis",
+        "@community//platform/projectModel-api:projectModel",
+        "@community//platform/workspace/storage",
+        "@community//platform/backend/workspace",
+        "@community//platform/platform-util-io:ide-util-io",
+        "//CIDR/clion",
+        "//CIDR/cidr-projectModel",
+        "//CIDR/cidr-workspaceModel",
+        "//CIDR/cidr-psi-base",
+        "//CIDR/cidr-util/execution",
+        "@community//platform/workspace/jps",
+    ],
+)
+
+jvm_library(
+    name = "bazel-clion-common_test_lib",
+    testonly = True,
+    srcs = glob(
+        [],
+        allow_empty = True,
+    ),
+    module_name = "intellij.bazel.clion.common",
+    visibility = ["//visibility:public"],
+    runtime_deps = [
+        # do not sort,
+        ":bazel-clion-common",
+        "//plugins/bazel/intellij.bazel.core:core_test_lib",
+        "//plugins/bazel/intellij.bazel.commons:commons_test_lib",
+        "//plugins/bazel/intellij.bazel.backend:backend_test_lib",
+        "@community//platform/core-api:core_test_lib",
+        "@community//platform/lang-api:lang_test_lib",
+        "@community//platform/buildView:buildView_test_lib",
+        "@community//platform/analysis-api:analysis_test_lib",
+        "@community//platform/projectModel-api:projectModel_test_lib",
+        "@community//platform/workspace/storage:storage_test_lib",
+        "@community//platform/backend/workspace:workspace_test_lib",
+        "@community//platform/platform-util-io:ide-util-io_test_lib",
+        "//CIDR/clion:clion_test_lib",
+        "//CIDR/cidr-projectModel:cidr-projectModel_test_lib",
+        "//CIDR/cidr-workspaceModel:cidr-workspaceModel_test_lib",
+        "//CIDR/cidr-psi-base:cidr-psi-base_test_lib",
+        "//CIDR/cidr-util/execution:execution_test_lib",
+        "@community//platform/workspace/jps:jps_test_lib",
+    ],
+)
+### auto-generated section `build intellij.bazel.clion.common` end
+
+### auto-generated section `iml intellij.bazel.clion.common` start
+exports_files(
+    [
+        "intellij.bazel.clion.common.iml",
+        "resources/intellij.bazel.clion.common.xml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.bazel.clion.common` end

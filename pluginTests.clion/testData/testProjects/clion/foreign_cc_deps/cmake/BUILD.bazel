@@ -1,0 +1,21 @@
+load("@rules_cc//cc:defs.bzl", "cc_binary")
+load("@rules_foreign_cc//foreign_cc:defs.bzl", "cmake")
+
+filegroup(
+    name = "srcs",
+    srcs = glob(["Speaker/**"]) + ["CMakeLists.txt"],
+    visibility = ["//visibility:public"],
+)
+
+cmake(
+    name = "libspeaker",
+    lib_source = ":srcs",
+    out_include_dir = "include/greeting/v1.23",
+)
+
+cc_binary(
+    name = "hello",
+    # includes just hello.h, include directory: "include/version123"
+    srcs = ["hello.cpp"],
+    deps = [":libspeaker"],
+)
