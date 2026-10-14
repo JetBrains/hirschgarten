@@ -162,7 +162,7 @@ class FastBuildTest : IdeStarterBaseProjectTest() {
   }
 }
 
-@Remote(value = "com.intellij.task.ProjectTaskManager")
+@Remote(value = "com.intellij.task.ProjectTaskManager", plugin = "com.intellij/intellij.platform.execution")
 interface ProjectTaskManager {
   fun compile(files: Array<VirtualFile>): Promise
 }
