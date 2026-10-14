@@ -1,22 +1,33 @@
 package org.jetbrains.bazel.languages.starlark.completion
 
+import com.intellij.codeInsight.lookup.LookupElement
+import com.intellij.openapi.Disposable
+import com.intellij.openapi.application.EDT
 import com.intellij.openapi.project.Project
 import com.intellij.testFramework.ExtensionTestUtil
+import com.intellij.testFramework.common.timeoutRunBlocking
+import com.intellij.testFramework.junit5.TestDisposable
 import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.collections.shouldContainExactly
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import org.jetbrains.bazel.languages.starlark.bazel.bzlmod.BazelModuleResolver
-import org.jetbrains.bazel.test.framework.BazelBasePlatformTestCase
-import org.junit.Before
-import org.junit.Test
-import org.junit.runner.RunWith
-import org.junit.runners.JUnit4
+import org.jetbrains.bazel.test.framework.BazelTestApplication
+import org.jetbrains.bazel.test.framework.bazelCodeInsightFixture
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
 
-@RunWith(JUnit4::class)
-class BazelDepModuleCompletionTest : BazelBasePlatformTestCase() {
-  @Before
+@BazelTestApplication
+class BazelDepModuleCompletionTest {
+  private val myFixture by bazelCodeInsightFixture()
+
+  @TestDisposable
+  lateinit var disposable: Disposable
+
+  @BeforeEach
   fun beforeEach() {
-    ExtensionTestUtil.maskExtensions(BazelModuleResolver.EP_NAME, listOf(provider), testRootDisposable)
+    ExtensionTestUtil.maskExtensions(BazelModuleResolver.EP_NAME, listOf(provider), disposable)
   }
 
   private val provider =
@@ -48,7 +59,7 @@ class BazelDepModuleCompletionTest : BazelBasePlatformTestCase() {
       """.trimMargin(),
     )
 
-    val lookups = myFixture.completeBasic().map { it.lookupString }
+    val lookups = completeBasic().map { it.lookupString }
 
     lookups.shouldContain("\"module_name\"")
   }
@@ -65,7 +76,7 @@ class BazelDepModuleCompletionTest : BazelBasePlatformTestCase() {
       """.trimMargin(),
     )
 
-    val lookups = myFixture.completeBasic().map { it.lookupString }
+    val lookups = completeBasic().map { it.lookupString }
 
     lookups.shouldContainExactly(listOf("\"1.0.0\"", "\"0.1.0\""))
   }
@@ -82,8 +93,14 @@ class BazelDepModuleCompletionTest : BazelBasePlatformTestCase() {
       """.trimMargin(),
     )
 
-    val lookups = myFixture.completeBasic().map { it.lookupString }
+    val lookups = completeBasic().map { it.lookupString }
 
     lookups.shouldBeEmpty()
+  }
+
+  private fun completeBasic(): Array<LookupElement> = timeoutRunBlocking {
+    withContext(Dispatchers.EDT) {
+      myFixture.completeBasic()
+    }
   }
 }

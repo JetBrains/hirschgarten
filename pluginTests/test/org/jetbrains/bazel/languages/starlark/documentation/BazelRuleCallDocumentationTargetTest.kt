@@ -1,13 +1,13 @@
 package org.jetbrains.bazel.languages.starlark.documentation
 
 import com.intellij.lang.documentation.psi.psiDocumentationTargets
+import com.intellij.openapi.application.runReadActionBlocking
 import com.intellij.openapi.editor.colors.EditorColorsManager
 import com.intellij.openapi.editor.colors.TextAttributesKey
 import com.intellij.platform.backend.documentation.DocumentationTarget
 import com.intellij.platform.backend.documentation.impl.computeDocumentationBlocking
 import com.intellij.psi.PsiElement
 import com.intellij.psi.util.descendantsOfType
-import com.intellij.testFramework.fixtures.BasePlatformTestCase
 import com.intellij.ui.ColorUtil
 import io.kotest.matchers.nulls.shouldBeNull
 import io.kotest.matchers.nulls.shouldNotBeNull
@@ -18,14 +18,14 @@ import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkTargetExpr
 import org.jetbrains.bazel.languages.starlark.psi.requireCallWithNameAttribute
 import org.jetbrains.bazel.languages.starlark.psi.statements.StarlarkLoadStatement
 import org.jetbrains.bazel.project.BazelProjectFixtures.initializeBazelProject
-import org.jetbrains.bazel.test.framework.BazelBasePlatformTestCase
-import org.junit.Before
-import org.junit.Test
-import org.junit.runner.RunWith
-import org.junit.runners.JUnit4
+import org.jetbrains.bazel.test.framework.BazelTestApplication
+import org.jetbrains.bazel.test.framework.bazelCodeInsightFixture
+import org.junit.jupiter.api.Test
 
-@RunWith(JUnit4::class)
-class BazelRuleCallDocumentationTargetTest : BazelBasePlatformTestCase() {
+@BazelTestApplication
+class BazelRuleCallDocumentationTargetTest {
+  private val myFixture by bazelCodeInsightFixture()
+
   private val functionColor by lazy { textAttributeColor("STARLARK_FUNCTION_DECLARATION") }
   private val namedArgColor by lazy { textAttributeColor("STARLARK_NAMED_ARGUMENT") }
   private val stringColor by lazy { textAttributeColor("STARLARK_STRING") }
@@ -51,7 +51,7 @@ class BazelRuleCallDocumentationTargetTest : BazelBasePlatformTestCase() {
   fun `should return proper documentation HTML for target name`() {
     configureBuildFileWithDepAndLib()
 
-    val element = myFixture.requireCallWithNameAttribute("lib")
+    val element = runReadActionBlocking { myFixture.requireCallWithNameAttribute("lib") }
     val html = getDocumentationTargets(element).singleOrNull()?.computeDocumentationHtml()
     html shouldBe """
       <div class="definition"><pre style="white-space: pre; overflow-x: auto">
@@ -68,8 +68,8 @@ class BazelRuleCallDocumentationTargetTest : BazelBasePlatformTestCase() {
   fun `should return proper documentation hint for target name`() {
     configureBuildFileWithDepAndLib()
 
-    val element = myFixture.requireCallWithNameAttribute("lib")
-    val hint = getDocumentationTargets(element).singleOrNull()?.computeDocumentationHint()
+    val element = runReadActionBlocking { myFixture.requireCallWithNameAttribute("lib") }
+    val hint = getDocumentationTargets(element).singleOrNull()?.let { runReadActionBlocking { it.computeDocumentationHint() } }
     hint shouldBe """
       <pre style="white-space: pre; overflow-x: auto">
       <span style="color:$functionColor;">java_library</span><span style="">(</span>
@@ -85,13 +85,13 @@ class BazelRuleCallDocumentationTargetTest : BazelBasePlatformTestCase() {
   fun `should return proper presentation for target name`() {
     configureBuildFileWithDepAndLib()
 
-    val element = myFixture.requireCallWithNameAttribute("lib")
+    val element = runReadActionBlocking { myFixture.requireCallWithNameAttribute("lib") }
     val presentation = getDocumentationTargets(element).singleOrNull()
       .shouldNotBeNull()
-      .computePresentation()
+      .let { runReadActionBlocking { it.computePresentation() } }
     presentation.presentableText shouldBe "lib"
     presentation.icon shouldBe BazelPluginIcons.bazel
-    presentation.locationText shouldBe "/src/BUILD"
+    presentation.locationText shouldBe "BUILD"
     presentation.locationIcon shouldBe BazelPluginIcons.bazel
   }
 
@@ -115,7 +115,7 @@ class BazelRuleCallDocumentationTargetTest : BazelBasePlatformTestCase() {
     configureBuildFileWithDepAndLib()
 
     val element = findLabelTarget(":dep")
-    val hint = getDocumentationTargets(element).singleOrNull()?.computeDocumentationHint()
+    val hint = getDocumentationTargets(element).singleOrNull()?.let { runReadActionBlocking { it.computeDocumentationHint() } }
     hint shouldBe """
       <pre style="white-space: pre; overflow-x: auto">
       <span style="color:$functionColor;">java_library</span><span style="">(</span>
@@ -132,10 +132,10 @@ class BazelRuleCallDocumentationTargetTest : BazelBasePlatformTestCase() {
     val element = findLabelTarget(":dep")
     val presentation = getDocumentationTargets(element).singleOrNull()
       .shouldNotBeNull()
-      .computePresentation()
+      .let { runReadActionBlocking { it.computePresentation() } }
     presentation.presentableText shouldBe "dep"
     presentation.icon shouldBe BazelPluginIcons.bazel
-    presentation.locationText shouldBe "/src/BUILD"
+    presentation.locationText shouldBe "BUILD"
     presentation.locationIcon shouldBe BazelPluginIcons.bazel
   }
 
@@ -151,11 +151,12 @@ class BazelRuleCallDocumentationTargetTest : BazelBasePlatformTestCase() {
       """.trimIndent(),
     )
 
-    val element = myFixture
-      .file
-      .descendantsOfType<StarlarkStringLiteralExpression>()
-      .find { it.getStringContents() == "Lib.java" }
-      .shouldNotBeNull()
+    val element = runReadActionBlocking {
+      myFixture
+        .file
+        .descendantsOfType<StarlarkStringLiteralExpression>()
+        .find { it.getStringContents() == "Lib.java" }
+    }.shouldNotBeNull()
     getDocumentationTargets(element)
       .singleOrNull()
       .shouldNotBeNull()
@@ -172,9 +173,10 @@ class BazelRuleCallDocumentationTargetTest : BazelBasePlatformTestCase() {
       """.trimIndent(),
     )
 
-    val element = myFixture.file.descendantsOfType<StarlarkLoadStatement>()
-      .firstOrNull()
-      .shouldNotBeNull()
+    val element = runReadActionBlocking {
+      myFixture.file.descendantsOfType<StarlarkLoadStatement>()
+        .firstOrNull()
+    }.shouldNotBeNull()
     getDocumentationTargets(element)
       .singleOrNull()
       .shouldNotBeNull()
@@ -191,9 +193,10 @@ class BazelRuleCallDocumentationTargetTest : BazelBasePlatformTestCase() {
       """.trimIndent(),
     )
 
-    val element = myFixture.file.descendantsOfType<StarlarkTargetExpression>()
-      .singleOrNull()
-      .shouldNotBeNull()
+    val element = runReadActionBlocking {
+      myFixture.file.descendantsOfType<StarlarkTargetExpression>()
+        .singleOrNull()
+    }.shouldNotBeNull()
     getDocumentationTargets(element)
       .singleOrNull()
       .shouldNotBeNull()
@@ -201,19 +204,20 @@ class BazelRuleCallDocumentationTargetTest : BazelBasePlatformTestCase() {
       .shouldBeNull()
   }
 
-  private fun getDocumentationTargets(element: PsiElement) = psiDocumentationTargets(element, element)
+  private fun getDocumentationTargets(element: PsiElement) = runReadActionBlocking { psiDocumentationTargets(element, element) }
 
   private fun DocumentationTarget.computeDocumentationHtml(): String? {
-    return computeDocumentationBlocking(createPointer())?.html
+    return computeDocumentationBlocking(runReadActionBlocking { createPointer() })?.html
   }
 
   private fun findLabelTarget(label: String): PsiElement =
-    myFixture.file
-      .descendantsOfType<StarlarkStringLiteralExpression>()
-      .first { it.getStringContents() == label }
-      .reference
-      ?.resolve()
-      .shouldNotBeNull()
+    runReadActionBlocking {
+      myFixture.file
+        .descendantsOfType<StarlarkStringLiteralExpression>()
+        .first { it.getStringContents() == label }
+        .reference
+        ?.resolve()
+    }.shouldNotBeNull()
 
   private fun String.singleLineHtml(): String = trimIndent().replace("\n", "")
 

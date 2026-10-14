@@ -3,20 +3,18 @@ package org.jetbrains.bazel.languages.starlark.inspection
 import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.psi.PsiDocumentManager
 import com.intellij.testFramework.IndexingTestUtil
-import com.intellij.testFramework.fixtures.BasePlatformTestCase
+import com.intellij.testFramework.runInEdtAndWait
 import org.jetbrains.bazel.languages.starlark.StarlarkBundle
 import org.jetbrains.bazel.languages.starlark.fixtures.StarlarkInspectionTestCase
-import org.jetbrains.bazel.project.BazelProjectFixtures.initializeBazelProject
-import org.junit.Before
-import org.junit.Test
-import org.junit.runner.RunWith
-import org.junit.runners.JUnit4
+import org.jetbrains.bazel.test.framework.BazelTestApplication
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
 
-@RunWith(JUnit4::class)
+@BazelTestApplication
 class StarlarkLoadCycleInspectionTest : StarlarkInspectionTestCase() {
   private val description = StarlarkBundle.message("inspection.description.load.cycle")
 
-  @Before
+  @BeforeEach
   fun beforeEach() {
     myFixture.enableInspections(StarlarkLoadCycleInspection())
   }
@@ -342,8 +340,11 @@ class StarlarkLoadCycleInspectionTest : StarlarkInspectionTestCase() {
   }
 
   private fun waitUntilIndexesAreReady() {
-    PsiDocumentManager.getInstance(project).commitAllDocuments()
-    FileDocumentManager.getInstance().saveAllDocuments()
+    val project = myFixture.project
+    runInEdtAndWait {
+      PsiDocumentManager.getInstance(project).commitAllDocuments()
+      FileDocumentManager.getInstance().saveAllDocuments()
+    }
     IndexingTestUtil.waitUntilIndexesAreReady(project)
   }
 }

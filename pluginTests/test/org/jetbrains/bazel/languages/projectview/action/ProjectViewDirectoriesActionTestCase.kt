@@ -10,40 +10,41 @@ import com.intellij.openapi.actionSystem.impl.SimpleDataContext
 import com.intellij.openapi.application.edtWriteAction
 import com.intellij.openapi.components.service
 import com.intellij.openapi.fileEditor.FileEditorManager
+import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.findOrCreateDirectory
 import com.intellij.platform.backend.workspace.WorkspaceModel
 import com.intellij.platform.backend.workspace.storeAndGet
 import com.intellij.platform.ide.progress.runWithModalProgressBlocking
-import com.intellij.testFramework.LightProjectDescriptor
 import com.intellij.testFramework.TestActionEvent
-import com.intellij.testFramework.fixtures.TempDirTestFixture
-import com.intellij.testFramework.fixtures.impl.TempDirTestFixtureImpl
+import com.intellij.testFramework.runInEdtAndGet
+import com.intellij.testFramework.runInEdtAndWait
 import com.intellij.testFramework.workspaceModel.updateProjectModel
 import org.intellij.lang.annotations.Language
 import org.jetbrains.bazel.languages.projectview.ProjectViewService
 import org.jetbrains.bazel.languages.projectview.directories
 import org.jetbrains.bazel.project.BazelProjectFixtures.initializeBazelProjectViaProjectView
-import org.jetbrains.bazel.test.framework.BazelBasePlatformTestCase
+import org.jetbrains.bazel.test.framework.bazelCodeInsightFixture
 import org.jetbrains.bazel.workspacemodel.entities.BazelProjectDirectoriesEntityFixtures.emptyBazelDirectoryWorkspaceEntity
 import kotlin.io.path.pathString
 
 abstract class ProjectViewDirectoriesActionTestCase(
   protected val actionId: String,
-) : BazelBasePlatformTestCase() {
+) {
+  protected val myFixture by bazelCodeInsightFixture()
+
+  protected val project: Project get() = myFixture.project
 
   protected val bazelProjectView
-    get() = runWithModalProgressBlocking(project, "Getting project view") {
-      val service = project.service<ProjectViewService>()
-      service.forceReparseCurrentProjectViewFiles()
-      service.projectView
+    get() = runInEdtAndGet {
+      runWithModalProgressBlocking(project, "Getting project view") {
+        val service = project.service<ProjectViewService>()
+        service.forceReparseCurrentProjectViewFiles()
+        service.projectView
+      }
     }
 
   protected val action: AnAction get() = ActionManager.getInstance().getAction(actionId)
-
-  override fun getProjectDescriptor() = LightProjectDescriptor()
-
-  override fun createTempDirTestFixture(): TempDirTestFixture = TempDirTestFixtureImpl()
 
   protected fun testPresentationOn(context: DataContext): Presentation {
     val event = TestActionEvent.createTestEvent(context)
@@ -55,24 +56,27 @@ abstract class ProjectViewDirectoriesActionTestCase(
     val projectView = myFixture.tempDirFixture.createFile(".user.bazelproject", content)
     initializeBazelProjectViaProjectView(myFixture.project, projectView.toNioPath())
     // initializes editor with some file
-    myFixture.openFileInEditor(myFixture.createFile("Foo.kt", ""))
+    val file = myFixture.createFile("Foo.kt", "")
+    runInEdtAndWait { myFixture.openFileInEditor(file) }
     val workspaceModel = WorkspaceModel.getInstance(project)
     val manager = workspaceModel.getVirtualFileUrlManager()
     val root = myFixture.tempDirFixture.findOrCreateDir(".")
     val bazelProjectView = bazelProjectView
-    runWithModalProgressBlocking(project, "Syncing project view...") {
-      val (includes, excludes) = edtWriteAction {
-        val (includedDirs, excludedDirs) = bazelProjectView.directories.partition { it.isIncluded() }
-        Pair(
-          includedDirs.map { root.findOrCreateDirectory(it.value.pathString) },
-          excludedDirs.map { root.findOrCreateDirectory(it.value.pathString) },
-        )
+    runInEdtAndWait {
+      runWithModalProgressBlocking(project, "Syncing project view...") {
+        val (includes, excludes) = edtWriteAction {
+          val (includedDirs, excludedDirs) = bazelProjectView.directories.partition { it.isIncluded() }
+          Pair(
+            includedDirs.map { root.findOrCreateDirectory(it.value.pathString) },
+            excludedDirs.map { root.findOrCreateDirectory(it.value.pathString) },
+          )
+        }
+        val entity = emptyBazelDirectoryWorkspaceEntity(project).also {
+          it.includedRoots = includes.mapTo(arrayListOf()) { manager.storeAndGet(it) }
+          it.excludedRoots = excludes.mapTo(arrayListOf()) { manager.storeAndGet(it) }
+        }
+        edtWriteAction { workspaceModel.updateProjectModel { updater -> updater.addEntity(entity) } }
       }
-      val entity = emptyBazelDirectoryWorkspaceEntity(project).also {
-        it.includedRoots = includes.mapTo(arrayListOf()) { manager.storeAndGet(it) }
-        it.excludedRoots = excludes.mapTo(arrayListOf()) { manager.storeAndGet(it) }
-      }
-      edtWriteAction { workspaceModel.updateProjectModel { updater -> updater.addEntity(entity) } }
     }
   }
 

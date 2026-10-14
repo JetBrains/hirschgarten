@@ -4,10 +4,12 @@ import com.intellij.execution.actions.ConfigurationContext
 import com.intellij.execution.actions.RunContextAction
 import com.intellij.execution.configurations.RunConfiguration
 import com.intellij.execution.executors.DefaultRunExecutor
+import com.intellij.openapi.Disposable
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.CommonDataKeys
 import com.intellij.openapi.actionSystem.PlatformCoreDataKeys
 import com.intellij.openapi.actionSystem.impl.SimpleDataContext
+import com.intellij.openapi.application.runReadActionBlocking
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFileManager
 import com.intellij.openapi.vfs.newvfs.impl.VfsRootAccess
@@ -15,9 +17,7 @@ import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import com.intellij.psi.util.PsiUtilCore
 import com.intellij.testFramework.TestActionEvent
-import com.intellij.testFramework.fixtures.TempDirTestFixture
-import com.intellij.testFramework.fixtures.impl.TempDirTestFixtureImpl
-import com.intellij.testFramework.rules.TempDirectory
+import com.intellij.testFramework.junit5.TestDisposable
 import io.kotest.matchers.types.shouldBeInstanceOf
 import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.commons.TargetKind
@@ -27,28 +27,33 @@ import org.jetbrains.bazel.python.lang.PythonLanguageClass
 import org.jetbrains.bazel.run.config.BazelRunConfiguration
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
 import org.jetbrains.bazel.target.targetStorage
-import org.jetbrains.bazel.test.framework.BazelBasePlatformTestCase
+import org.jetbrains.bazel.test.framework.BazelTestApplication
+import org.jetbrains.bazel.test.framework.bazelCodeInsightFixture
 import org.jetbrains.bazel.test.framework.target.TestBuildTarget
 import org.jetbrains.bazel.workspace.model.test.framework.setTargets
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.OutputLocationCollection
 import org.jetbrains.bazel.workspace.model.test.framework.testLocation
-import org.junit.Rule
-import org.junit.Test
-import org.junit.runner.RunWith
-import org.junit.runners.JUnit4
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertFalse
+import org.junit.jupiter.api.Assertions.assertNull
+import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.io.TempDir
 import java.nio.file.Files
 import java.nio.file.Path
 
-@RunWith(JUnit4::class)
-internal class BazelRunConfigurationProducerSuppressorTest : BazelBasePlatformTestCase() {
-  @Rule
-  @JvmField
-  val tempDirectory = TempDirectory()
+@BazelTestApplication
+internal class BazelRunConfigurationProducerSuppressorTest {
+  private val myFixture by bazelCodeInsightFixture()
 
-  override fun createTempDirTestFixture(): TempDirTestFixture {
-    return TempDirTestFixtureImpl()
-  }
+  private val project get() = myFixture.project
+
+  @TestDisposable
+  lateinit var disposable: Disposable
+
+  @TempDir
+  lateinit var tempDirectory: Path
 
   @Test
   fun `should show standard Run context action with Bazel configuration for Python main file`() {
@@ -62,9 +67,9 @@ internal class BazelRunConfigurationProducerSuppressorTest : BazelBasePlatformTe
     project.addPyBinaryTarget(label = LABEL, mainFile = psiFile)
     project.addFileToTargets(psiFile, LABEL)
 
-    val element = PsiUtilCore.getElementAtOffset(psiFile, myFixture.caretOffset)
+    val element = runReadActionBlocking { PsiUtilCore.getElementAtOffset(psiFile, myFixture.caretOffset) }
 
-    val context = ConfigurationContext(element)
+    val context = runReadActionBlocking { ConfigurationContext(element) }
     val configuration = assertSingleBazelConfiguration(context)
     assertEquals(listOf(LABEL), configuration.targets())
     assertFalse(configuration.isTestHandler())
@@ -83,9 +88,9 @@ internal class BazelRunConfigurationProducerSuppressorTest : BazelBasePlatformTe
     project.addPyTestTarget(label = LABEL)
     project.addFileToTargets(psiFile, LABEL)
 
-    val element = PsiUtilCore.getElementAtOffset(psiFile, myFixture.caretOffset)
+    val element = runReadActionBlocking { PsiUtilCore.getElementAtOffset(psiFile, myFixture.caretOffset) }
 
-    val context = ConfigurationContext(element)
+    val context = runReadActionBlocking { ConfigurationContext(element) }
     val configuration = assertSingleBazelConfiguration(context)
     assertEquals(listOf(LABEL), configuration.targets())
     assertTrue(configuration.isTestHandler())
@@ -102,11 +107,11 @@ internal class BazelRunConfigurationProducerSuppressorTest : BazelBasePlatformTe
           print('Hello')
       """.trimIndent(),
     )
-    val element = PsiUtilCore.getElementAtOffset(psiFile, myFixture.caretOffset)
+    val element = runReadActionBlocking { PsiUtilCore.getElementAtOffset(psiFile, myFixture.caretOffset) }
 
-    val context = ConfigurationContext(element)
-    assertNull(context.configuration)
-    assertEmpty(context.configurationsFromContext.orEmpty())
+    val context = runReadActionBlocking { ConfigurationContext(element) }
+    assertNull(runReadActionBlocking { context.configuration })
+    assertTrue(runReadActionBlocking { context.configurationsFromContext.orEmpty() }.isEmpty())
     assertRunContextActionHidden(element)
   }
 
@@ -125,16 +130,16 @@ internal class BazelRunConfigurationProducerSuppressorTest : BazelBasePlatformTe
     )
     project.addFileToTargets(psiFile, LABEL, SECOND_LABEL)
 
-    val element = PsiUtilCore.getElementAtOffset(psiFile, myFixture.caretOffset)
+    val element = runReadActionBlocking { PsiUtilCore.getElementAtOffset(psiFile, myFixture.caretOffset) }
 
-    val context = ConfigurationContext(element)
-    context.configurationsFromContext?.forEach {
+    val context = runReadActionBlocking { ConfigurationContext(element) }
+    runReadActionBlocking { context.configurationsFromContext }?.forEach {
       it.configuration.shouldBeInstanceOf<BazelRunConfiguration>()
     }
   }
 
   private fun assertSingleBazelConfiguration(context: ConfigurationContext): RunConfiguration {
-    val configurations = context.configurationsFromContext.orEmpty()
+    val configurations = runReadActionBlocking { context.configurationsFromContext.orEmpty() }
     assertEquals(1, configurations.size)
     val configuration = configurations.single().configurationSettings.configuration
     assertEquals("org.jetbrains.bazel.run.config.BazelRunConfiguration", configuration.javaClass.name)
@@ -142,8 +147,8 @@ internal class BazelRunConfigurationProducerSuppressorTest : BazelBasePlatformTe
   }
 
   private fun configurePhysicalPythonFile(fileName: String, text: String): PsiFile {
-    val directory = tempDirectory.newDirectoryPath()
-    VfsRootAccess.allowRootAccess(testRootDisposable, directory.toRealPath().toString())
+    val directory = Files.createTempDirectory(tempDirectory, "")
+    VfsRootAccess.allowRootAccess(disposable, directory.toRealPath().toString())
 
     val filePath = directory.resolve(fileName)
     Files.writeString(filePath, text)
@@ -154,16 +159,14 @@ internal class BazelRunConfigurationProducerSuppressorTest : BazelBasePlatformTe
 
   private fun assertRunContextActionAvailable(element: PsiElement) {
     val action = RunContextAction(DefaultRunExecutor.getRunExecutorInstance())
-    val event = createRunContextActionEvent(action, element)
-    action.update(event)
+    val event = runReadActionBlocking { createRunContextActionEvent(action, element).also { action.update(it) } }
     assertTrue(event.presentation.isVisible)
     assertTrue(event.presentation.isEnabled)
   }
 
   private fun assertRunContextActionHidden(element: PsiElement) {
     val action = RunContextAction(DefaultRunExecutor.getRunExecutorInstance())
-    val event = createRunContextActionEvent(action, element)
-    action.update(event)
+    val event = runReadActionBlocking { createRunContextActionEvent(action, element).also { action.update(it) } }
     assertFalse(event.presentation.isVisible)
     assertFalse(event.presentation.isEnabled)
   }

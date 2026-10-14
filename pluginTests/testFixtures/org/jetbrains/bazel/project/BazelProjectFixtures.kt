@@ -53,20 +53,6 @@ object BazelProjectFixtures {
     )
   }
 
-  /**
-   * Gives [project] its current store descriptor back when [disposable] is disposed, and turns the startup sync on again.
-   *
-   * Call it before [initializeBazelProject] on a project that outlives the test, such as the light project.
-   */
-  fun restoreProjectStoreOnDispose(project: Project, disposable: Disposable) {
-    val projectStoreImpl = project.stateStore as ProjectStoreImpl
-    val storeDescriptor = projectStoreImpl.storeDescriptor
-    Disposer.register(disposable) {
-      projectStoreImpl.storeDescriptor = storeDescriptor
-      setBazelStartupSyncEnabledInTests(project, true)
-    }
-  }
-
   fun deinitializeBazelProject(project: Project) {
     val projectStoreImpl = project.stateStore as ProjectStoreImpl
     val basePath = projectStoreImpl.storeDescriptor.historicalProjectBasePath

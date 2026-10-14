@@ -2,20 +2,20 @@ package org.jetbrains.bazel.languages.starlark.inspection
 
 import com.intellij.openapi.project.Project
 import com.intellij.testFramework.ExtensionTestUtil
-import com.intellij.testFramework.fixtures.BasePlatformTestCase
 import org.jetbrains.bazel.languages.starlark.StarlarkBundle
 import org.jetbrains.bazel.languages.starlark.bazel.BazelGlobalFunction
 import org.jetbrains.bazel.languages.starlark.bazel.BazelGlobalFunctionParameter
 import org.jetbrains.bazel.languages.starlark.bazel.Environment
 import org.jetbrains.bazel.languages.starlark.bazel.StarlarkGlobalFunctionProvider
-import org.jetbrains.bazel.test.framework.BazelBasePlatformTestCase
-import org.junit.Before
-import org.junit.Test
-import org.junit.runner.RunWith
-import org.junit.runners.JUnit4
+import org.jetbrains.bazel.test.framework.BazelTestApplication
+import org.jetbrains.bazel.test.framework.bazelCodeInsightFixture
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
 
-@RunWith(JUnit4::class)
-class StarlarkFunctionCallValidationInspectionTest : BazelBasePlatformTestCase() {
+@BazelTestApplication
+class StarlarkFunctionCallValidationInspectionTest {
+  private val myFixture by bazelCodeInsightFixture()
+
   val positionalAfterKeywordOrStar = StarlarkBundle.message("inspection.description.call.positional.after.keyword.or.star")
   val argumentAfterKwargs = StarlarkBundle.message("inspection.description.call.argument.after.kwargs")
   val multipleKwargsUnpacking = StarlarkBundle.message("inspection.description.call.multiple.kwargs.unpacking")
@@ -29,7 +29,7 @@ class StarlarkFunctionCallValidationInspectionTest : BazelBasePlatformTestCase()
   val positionalOnly = StarlarkBundle.message("inspection.description.call.unnamed.arg.with.name", "argOne")
   val wrongEnvironment = StarlarkBundle.message("inspection.description.call.not.available.in.environment", "simple", "BZL", "MODULE")
 
-  @Before
+  @BeforeEach
   fun beforeEach() {
     myFixture.enableInspections(StarlarkFunctionCallValidationInspection())
     ExtensionTestUtil.maskExtensions(

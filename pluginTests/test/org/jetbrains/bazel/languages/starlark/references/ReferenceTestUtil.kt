@@ -1,5 +1,6 @@
 package org.jetbrains.bazel.languages.starlark.references
 
+import com.intellij.openapi.application.runReadActionBlocking
 import com.intellij.psi.PsiDocumentManager
 import com.intellij.psi.PsiElement
 import com.intellij.testFramework.fixtures.CodeInsightTestFixture
@@ -22,23 +23,26 @@ internal fun CodeInsightTestFixture.verifyTargetOfReferenceAtCaret(text: String)
       .firstOrNull()
   fixture.configureByText("test.bzl", text.replace("<target>", ""))
 
-  // when
-  val reference = fixture.file.findReferenceAt(fixture.caretOffset)
-  if (expectedLine == null && reference == null) {
-    // If we expect no target, we may not even have a reference.
-    return
-  }
-  val resolved = reference!!.resolve()
+  // The PSI and the editor reads need a read action, because the test runs off the EDT.
+  runReadActionBlocking {
+    // when
+    val reference = fixture.file.findReferenceAt(fixture.caretOffset)
+    if (expectedLine == null && reference == null) {
+      // If we expect no target, we may not even have a reference.
+      return@runReadActionBlocking
+    }
+    val resolved = reference!!.resolve()
 
-  // then
-  if (expectedLine != null) {
-    check(expectedColumn != null)
-    resolved.shouldNotBeNull()
-    resolved shouldBe instanceOf<PsiElement>()
-    resolved.line shouldBe expectedLine
-    resolved.column shouldBe expectedColumn
-  } else {
-    resolved.shouldBeNull()
+    // then
+    if (expectedLine != null) {
+      check(expectedColumn != null)
+      resolved.shouldNotBeNull()
+      resolved shouldBe instanceOf<PsiElement>()
+      resolved.line shouldBe expectedLine
+      resolved.column shouldBe expectedColumn
+    } else {
+      resolved.shouldBeNull()
+    }
   }
 }
 

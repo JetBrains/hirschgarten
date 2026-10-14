@@ -1,22 +1,26 @@
 package org.jetbrains.bazel.languages.starlark.quickFixes
 
+import com.intellij.openapi.Disposable
 import com.intellij.openapi.vfs.newvfs.impl.VfsRootAccess
+import com.intellij.testFramework.junit5.TestDisposable
 import org.jetbrains.bazel.languages.starlark.StarlarkBundle
-import org.jetbrains.bazel.test.framework.BazelBasePlatformTestCase
 import org.jetbrains.bazel.test.framework.BazelPathManager
-import org.junit.Before
-import org.junit.Test
-import org.junit.runner.RunWith
-import org.junit.runners.JUnit4
+import org.jetbrains.bazel.test.framework.BazelTestApplication
+import org.jetbrains.bazel.test.framework.bazelCodeInsightFixture
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
 
-@RunWith(JUnit4::class)
-class StarlarkGlobAllowEmptyQuickFixTest : BazelBasePlatformTestCase() {
-  override fun getTestDataPath(): String =
-    BazelPathManager.getTestFixture("starlark/quickFixes")
+@BazelTestApplication
+class StarlarkGlobAllowEmptyQuickFixTest {
+  private val myFixture by bazelCodeInsightFixture()
 
-  @Before
+  @TestDisposable
+  lateinit var disposable: Disposable
+
+  @BeforeEach
   fun beforeEach() {
-    VfsRootAccess.allowRootAccess(this.testRootDisposable, this.testDataPath)
+    myFixture.testDataPath = BazelPathManager.getTestFixture("starlark/quickFixes")
+    VfsRootAccess.allowRootAccess(disposable, myFixture.testDataPath)
   }
 
   @Test

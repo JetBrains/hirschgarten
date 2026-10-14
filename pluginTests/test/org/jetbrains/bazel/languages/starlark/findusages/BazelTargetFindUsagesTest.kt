@@ -1,18 +1,23 @@
 package org.jetbrains.bazel.languages.starlark.findusages
 
-import com.intellij.testFramework.fixtures.BasePlatformTestCase
+import com.intellij.openapi.application.EDT
+import com.intellij.openapi.application.runReadActionBlocking
+import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.testFramework.common.timeoutRunBlocking
 import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.collections.shouldHaveSingleElement
 import io.kotest.matchers.collections.shouldHaveSize
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import org.jetbrains.bazel.project.BazelProjectFixtures
-import org.jetbrains.bazel.test.framework.BazelBasePlatformTestCase
-import org.junit.Before
-import org.junit.Test
-import org.junit.runner.RunWith
-import org.junit.runners.JUnit4
+import org.jetbrains.bazel.test.framework.BazelTestApplication
+import org.jetbrains.bazel.test.framework.bazelCodeInsightFixture
+import org.junit.jupiter.api.Test
 
-@RunWith(JUnit4::class)
-class BazelTargetFindUsagesTest : BazelBasePlatformTestCase() {
+@BazelTestApplication
+class BazelTargetFindUsagesTest {
+  private val myFixture by bazelCodeInsightFixture()
+
   @Test
   fun `should find usage of target name in same BUILD file`() {
     myFixture.configureByText(
@@ -29,8 +34,8 @@ class BazelTargetFindUsagesTest : BazelBasePlatformTestCase() {
       """.trimIndent(),
     )
 
-    val usages = myFixture.findBazelTargetUsages("lib")
-    usages.shouldHaveSingleElement { it.element?.text == "\":lib\"" }
+    val usages = runReadActionBlocking { myFixture.findBazelTargetUsages("lib") }
+    runReadActionBlocking { usages.shouldHaveSingleElement { it.element?.text == "\":lib\"" } }
   }
 
   @Test
@@ -54,9 +59,9 @@ class BazelTargetFindUsagesTest : BazelBasePlatformTestCase() {
       )
       """.trimIndent(),
     )
-    myFixture.openFileInEditor(libFile.virtualFile)
-    val usages = myFixture.findBazelTargetUsages("lib")
-    usages.shouldHaveSingleElement { it.element?.text == "\"//core:lib\"" }
+    openFileInEditor(libFile.virtualFile)
+    val usages = runReadActionBlocking { myFixture.findBazelTargetUsages("lib") }
+    runReadActionBlocking { usages.shouldHaveSingleElement { it.element?.text == "\"//core:lib\"" } }
   }
 
   @Test
@@ -89,9 +94,9 @@ class BazelTargetFindUsagesTest : BazelBasePlatformTestCase() {
       )
       """.trimIndent(),
     )
-    myFixture.openFileInEditor(libFile.virtualFile)
+    openFileInEditor(libFile.virtualFile)
 
-    val usages = myFixture.findBazelTargetUsages("lib")
+    val usages = runReadActionBlocking { myFixture.findBazelTargetUsages("lib") }
     usages shouldHaveSize 3
   }
 
@@ -114,7 +119,7 @@ class BazelTargetFindUsagesTest : BazelBasePlatformTestCase() {
       """.trimIndent(),
     )
 
-    myFixture.findBazelTargetUsages("core_lib").shouldBeEmpty()
+    runReadActionBlocking { myFixture.findBazelTargetUsages("core_lib") }.shouldBeEmpty()
   }
 
   @Test
@@ -133,7 +138,7 @@ class BazelTargetFindUsagesTest : BazelBasePlatformTestCase() {
       """.trimIndent(),
     )
 
-    myFixture.findBazelTargetUsages("lib").shouldBeEmpty()
+    runReadActionBlocking { myFixture.findBazelTargetUsages("lib") }.shouldBeEmpty()
   }
 
   @Test
@@ -161,7 +166,7 @@ class BazelTargetFindUsagesTest : BazelBasePlatformTestCase() {
           )
       """.trimIndent(),
     )
-    myFixture.findBazelTargetUsages("lib").shouldBeEmpty()
+    runReadActionBlocking { myFixture.findBazelTargetUsages("lib") }.shouldBeEmpty()
   }
 
   @Test
@@ -185,9 +190,9 @@ class BazelTargetFindUsagesTest : BazelBasePlatformTestCase() {
       )
       """.trimIndent(),
     )
-    myFixture.openFileInEditor(libFile.virtualFile)
-    val usages = myFixture.findBazelTargetUsages("core")
-    usages.shouldHaveSingleElement { it.element?.text == "\"//core\"" }
+    openFileInEditor(libFile.virtualFile)
+    val usages = runReadActionBlocking { myFixture.findBazelTargetUsages("core") }
+    runReadActionBlocking { usages.shouldHaveSingleElement { it.element?.text == "\"//core\"" } }
   }
 
   @Test
@@ -211,9 +216,9 @@ class BazelTargetFindUsagesTest : BazelBasePlatformTestCase() {
       )
       """.trimIndent(),
     )
-    myFixture.openFileInEditor(libFile.virtualFile)
-    val usages = myFixture.findBazelTargetUsages("bar")
-    usages.shouldHaveSingleElement { it.element?.text == "\"//lib/bar\"" }
+    openFileInEditor(libFile.virtualFile)
+    val usages = runReadActionBlocking { myFixture.findBazelTargetUsages("bar") }
+    runReadActionBlocking { usages.shouldHaveSingleElement { it.element?.text == "\"//lib/bar\"" } }
   }
 
   @Test
@@ -237,8 +242,14 @@ class BazelTargetFindUsagesTest : BazelBasePlatformTestCase() {
       )
       """.trimIndent(),
     )
-    myFixture.openFileInEditor(libFile.virtualFile)
-    val usages = myFixture.findBazelTargetUsages("lib")
-    usages.shouldHaveSingleElement { it.element?.text == "\"//:lib\"" }
+    openFileInEditor(libFile.virtualFile)
+    val usages = runReadActionBlocking { myFixture.findBazelTargetUsages("lib") }
+    runReadActionBlocking { usages.shouldHaveSingleElement { it.element?.text == "\"//:lib\"" } }
+  }
+
+  private fun openFileInEditor(file: VirtualFile): Unit = timeoutRunBlocking {
+    withContext(Dispatchers.EDT) {
+      myFixture.openFileInEditor(file)
+    }
   }
 }
