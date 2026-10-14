@@ -11,6 +11,7 @@ import com.intellij.platform.workspace.storage.url.VirtualFileUrlManager
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.commons.BazelInfo
 import org.jetbrains.bazel.progress.TaskConsole
+import org.jetbrains.bazel.sync.BazelOutFileHardLinks
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceSnapshot
 import org.jetbrains.bsp.protocol.OutputLocationParser
 import org.jetbrains.bsp.protocol.OutputLocationResolver
@@ -103,6 +104,7 @@ data class WorkspaceImporterContext(
   val currentSnapshot: ImmutableEntityStorage,
   val outputResolver: OutputLocationResolver,
   val outputParser: OutputLocationParser,
+  val outFileHardLinks: BazelOutFileHardLinks,
   val bazelInfo: BazelInfo,
 )
 

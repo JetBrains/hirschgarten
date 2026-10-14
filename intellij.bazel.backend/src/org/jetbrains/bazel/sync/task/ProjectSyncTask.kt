@@ -394,6 +394,7 @@ class ProjectSyncTask(
             builder = storage,
             outputResolver = server.outputResolver,
             outputParser = server.outputParser,
+            outFileHardLinks = server.outFileHardLinks,
             bazelInfo = server.bazelInfo,
           )
           importerHelper.invoke(progressReporter, workspaceSnapshot, taskId)

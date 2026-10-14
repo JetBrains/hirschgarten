@@ -10,15 +10,13 @@ import com.intellij.driver.sdk.ui.xQuery
 import com.intellij.driver.sdk.wait
 import com.intellij.ide.starter.ide.IDETestContext
 import com.intellij.tools.ide.performanceTesting.commands.openFile
-import io.kotest.matchers.booleans.shouldBeTrue
-import io.kotest.matchers.collections.shouldHaveSize
+import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import org.jetbrains.bazel.data.PyCharmBazelCases
 import org.jetbrains.bazel.data.BazelProjectConfigurer
 import org.jetbrains.bazel.data.simpleBazelProject
 import org.jetbrains.bazel.base.execute
 import org.jetbrains.bazel.base.navigateToFile
 import org.jetbrains.bazel.base.syncBazelProjectCloseDialog
-import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Order
 import org.junit.jupiter.api.Test
 import kotlin.time.Duration.Companion.seconds
@@ -44,8 +42,6 @@ class PyCharmCombinedTest : IdeStarterCombinedBaseTest() {
   @Test @Order(2)
   fun `Python test line markers should be available for test files`() = pyCharmTestLineMarkers()
 
-  // Build and sync triggers BAZEL-3382. Should be reenabled once BAZEL-3382 is fixed.
-  @Disabled
   @Test @Order(3)
   fun `Python import statements should resolve correctly`() = pyCharmImportStatements()
 
@@ -58,7 +54,13 @@ class PyCharmCombinedTest : IdeStarterCombinedBaseTest() {
         }
 
         step("Verify run line marker text") {
-          verifyRunLineMarkerText(listOf("Run '//python:binary'", "Debug '//python:binary'"))
+          verifyRunLineMarkerText(
+            listOf(
+              "Run '//python:binary'",
+              "Debug '//python:binary'",
+              "Modify Run Configuration\u2026",
+            )
+          )
         }
       }
     }
@@ -73,7 +75,14 @@ class PyCharmCombinedTest : IdeStarterCombinedBaseTest() {
         }
 
         step("Verify run line marker text") {
-          verifyRunLineMarkerText(listOf("Run '//python:test'", "Debug '//python:test'", "Run '//python:test' with Coverage"))
+          verifyRunLineMarkerText(
+            listOf(
+              "Run '//python:test'",
+              "Debug '//python:test'",
+              "Run '//python:test' with Coverage",
+              "Modify Run Configuration\u2026",
+            )
+          )
         }
       }
     }
@@ -130,11 +139,12 @@ class PyCharmCombinedTest : IdeStarterCombinedBaseTest() {
       val heavyWeightWindow = popup(xQuery { byClass("HeavyWeightWindow") })
       try {
         takeScreenshot("afterClickingOnRunLineMarker")
-        val texts = heavyWeightWindow.getAllTexts()
-        texts.shouldHaveSize(expectedTexts.size)
-        expectedTexts.forEach { expected ->
-          texts.any { actual -> actual.text == expected }.shouldBeTrue()
-        }
+        val actionTexts =
+          heavyWeightWindow
+            .getAllTexts()
+            .map { it.text }
+            .filter { it !in RUN_FROM_CONTEXT_KEYBOARD_SHORTCUTS }
+        actionTexts.shouldContainExactlyInAnyOrder(expectedTexts)
       }
       finally {
         heavyWeightWindow.close()
@@ -142,3 +152,5 @@ class PyCharmCombinedTest : IdeStarterCombinedBaseTest() {
     }
   }
 }
+
+private val RUN_FROM_CONTEXT_KEYBOARD_SHORTCUTS = setOf("⌃⇧R", "⌃⇧D", "Ctrl+Shift+F10")

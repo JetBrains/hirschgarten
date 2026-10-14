@@ -60,6 +60,7 @@ class DefaultBazelOutputFileHardLinks(
   @VisibleForTesting
   val cacheDir: Path = bazelOutputBase.resolve(HARDLINKS_DIR_NAME)
   private val hardLinksDuringSync = ConcurrentHashMap<Path, Deferred<HardLink>>()
+  private val missingFilesDuringSync = ConcurrentHashMap.newKeySet<Path>()
   private val syncRunning = AtomicBoolean(false)
 
   @Volatile
@@ -104,7 +105,11 @@ class DefaultBazelOutputFileHardLinks(
         (hardLinkedPaths ?: mutableListOf<Deferred<HardLink>>().also { hardLinkedPaths = it }).add(existing)
         continue
       }
-      val realFile = realPaths[originalFile]?.await() ?: continue
+      val realFile = realPaths[originalFile]?.await()
+      if (realFile == null) {
+        missingFilesDuringSync.add(originalFile)
+        continue
+      }
 
       // Hardlink only Bazel output files
       if (!originalFile.startsWith(bazelOutputBase)) {
@@ -196,6 +201,7 @@ class DefaultBazelOutputFileHardLinks(
 
   override fun onBeforeSync() {
     hardLinksDuringSync.clear()
+    missingFilesDuringSync.clear()
     syncRunning.set(true)
     allHardLinksCreatedSuccessfully = true
   }
@@ -218,6 +224,7 @@ class DefaultBazelOutputFileHardLinks(
       }
       finally {
         hardLinksDuringSync.clear()
+        missingFilesDuringSync.clear()
       }
     }
   }
@@ -240,6 +247,9 @@ class DefaultBazelOutputFileHardLinks(
     val bazelOutRelativePath = fileOrDir.relativeTo(bazelOutputBase)
     return cacheDir.resolve(bazelOutRelativePath)
   }
+
+  override suspend fun findPreparedOutputFile(originalFile: Path): Path? =
+    hardLinksDuringSync[originalFile]?.await()?.path ?: originalFile.takeIf { it in missingFilesDuringSync }
 
   /**
    * Deletes each file and directory in [cacheDir] that the sync did not use.

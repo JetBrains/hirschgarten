@@ -22,6 +22,7 @@ data class PythonBuildTarget(
   val mainModule: String? = null,
   val runnerScript: Path? = null,
   val targetArgs: List<String> = emptyList(),
+  val generatedSourceOverrides: Map<OutputLocation, OutputLocation> = emptyMap(),
 ) : BuildTargetData
 
 @ApiStatus.Internal

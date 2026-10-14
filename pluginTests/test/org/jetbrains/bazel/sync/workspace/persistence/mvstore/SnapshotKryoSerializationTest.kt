@@ -355,6 +355,7 @@ class SnapshotKryoSerializationTest {
         mainModule = "main",
         runnerScript = null,
         targetArgs = listOf("--flag"),
+        generatedSourceOverrides = mapOf(generatedTestLocation("generated.py") to OutputLocation.Host("/exec/bazel-out/bin/generated.py")),
       ),
       GoBuildTarget(
         sdkHomePath = OutputLocation.External("go_sdk", ""),
