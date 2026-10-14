@@ -1,0 +1,11 @@
+load(":toolchain.bzl", "windows_toolchain")
+
+toolchain_type(name = "type")
+
+windows_toolchain(name = "implementation")
+
+toolchain(
+    name = "toolchain",
+    toolchain = ":implementation",
+    toolchain_type = ":type",
+)

@@ -1,0 +1,17 @@
+load("@rules_python//python:defs.bzl", "py_binary", "py_library")
+
+py_library(
+    name = "hirschgarten_python_test",
+    srcs = glob(["*.py"]),
+    deps = [
+        "//proto:example_py_pb2",
+        "@uv_deps//:requests",
+        "@uv_deps//:types-requests",
+    ],
+)
+
+py_binary(
+    name = "main",
+    main_module = "hirschgarten_python_test",
+    deps = [":hirschgarten_python_test"],
+)

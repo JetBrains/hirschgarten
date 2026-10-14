@@ -1,0 +1,21 @@
+load("@rules_kotlin//kotlin:jvm.bzl", "kt_jvm_test")
+
+kt_jvm_test(
+    name = "TestCoroutine",
+    srcs = ["TestCoroutine.kt"],
+    args = [
+        "--select-class=org.example.TestCoroutine",
+        "--fail-if-no-tests",
+    ],
+    main_class = "org.junit.platform.console.ConsoleLauncher",
+    deps = [
+        "//src/main/org/example:Main",
+        "@maven//:io_kotest_kotest_assertions_api_jvm",
+        "@maven//:io_kotest_kotest_assertions_core_jvm",
+        "@maven//:io_kotest_kotest_assertions_shared_jvm",
+        "@maven//:io_kotest_kotest_common_jvm",
+        "@maven//:org_jetbrains_kotlinx_kotlinx_coroutines_test",
+        "@maven//:org_junit_jupiter_junit_jupiter",
+        "@maven//:org_junit_platform_junit_platform_console",
+    ],
+)

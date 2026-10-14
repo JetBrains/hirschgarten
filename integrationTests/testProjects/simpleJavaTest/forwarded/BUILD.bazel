@@ -1,0 +1,13 @@
+load(":forward.bzl", "forward")
+
+forward(
+    name = "fwd",
+    testonly = 1,
+    dep = "//basenameConflict:basename",
+)
+
+forward(
+    name = "nested/fwd",
+    testonly = 1,
+    dep = "//basenameConflict:nested/basename",
+)

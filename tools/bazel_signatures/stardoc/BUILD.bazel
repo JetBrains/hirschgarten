@@ -1,0 +1,14 @@
+load("@rules_kotlin//kotlin:jvm.bzl", "kt_jvm_binary")
+
+kt_jvm_binary(
+    name = "generator",
+    srcs = glob(["src/**/*.kt"]),
+    main_class = "org.jetbrains.bazel.tools.generator.StardocSignaturesGeneratorKt",
+    visibility = ["//plugins/bazel:__pkg__"],
+    deps = [
+        "//plugins/bazel/protobuf",
+        "//plugins/bazel/tools/bazel_signatures/common",
+        "@community//libraries/gson",
+        "@community//libraries/protobuf",
+    ],
+)

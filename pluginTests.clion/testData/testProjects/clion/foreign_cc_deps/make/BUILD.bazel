@@ -1,0 +1,31 @@
+load("@rules_cc//cc:cc_binary.bzl", "cc_binary")
+load("@rules_cc//cc:cc_test.bzl", "cc_test")
+load("@rules_foreign_cc//foreign_cc:defs.bzl", "make")
+
+filegroup(
+    name = "srcs",
+    srcs = [
+        "Makefile",
+        "include/format_utils.h",
+        "src/format_utils.c",
+    ],
+)
+
+make(
+    name = "format_utils",
+    args = ["PREFIX=$$INSTALLDIR$$"],
+    lib_source = ":srcs",
+    out_static_libs = ["libformat_utils.a"],
+)
+
+cc_binary(
+    name = "format_app",
+    srcs = ["main.c"],
+    deps = [":format_utils"],
+)
+
+cc_test(
+    name = "format_test",
+    srcs = ["test.c"],
+    deps = [":format_utils"],
+)

@@ -1,0 +1,22 @@
+load("@rules_python//python:defs.bzl", "py_binary", "py_library")
+
+py_library(
+    name = "pure_lib",
+    srcs = [
+        "src/lib/foo/__init__.py",
+        "src/lib/foo/foo.py",
+    ],
+)
+
+py_library(
+    name = "lib",
+    imports = ["src"],
+    visibility = ["//visibility:public"],
+    deps = [":pure_lib"],
+)
+
+py_binary(
+    name = "main",
+    srcs = ["main.py"],
+    deps = [":lib"],
+)
