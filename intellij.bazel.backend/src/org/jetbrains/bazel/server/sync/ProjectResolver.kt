@@ -2,7 +2,6 @@ package org.jetbrains.bazel.server.sync
 
 import com.intellij.aspect.lib.ASPECT_NAME
 import com.intellij.aspect.lib.OutputGroups
-import com.intellij.aspect.lib.Rules
 import com.intellij.build.events.MessageEvent
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
@@ -18,7 +17,9 @@ import org.jetbrains.bazel.commons.BazelStatus
 import org.jetbrains.bazel.commons.BzlmodRepoMapping
 import org.jetbrains.bazel.commons.RepoMapping
 import org.jetbrains.bazel.commons.TargetCollection
+import org.jetbrains.bazel.commons.dropExcludedPatternsWithoutPackages
 import org.jetbrains.bazel.config.BazelFeatureFlags
+import org.jetbrains.bazel.ignore.BazelIgnoreService
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.languages.projectview.ProjectView
 import org.jetbrains.bazel.languages.projectview.shardSync
@@ -158,7 +159,7 @@ class ProjectResolver(
 
     val targetsToSync =
       requestedTargetsToSync
-        ?.let { TargetCollection(it, emptyList()) } ?: TargetCollection.fromExcludableList(projectView.targets)
+        ?.let { TargetCollection(it, emptyList()) } ?: projectViewTargetsToSync()
 
     val buildAspectResult =
       measured("Building project with aspect") {
@@ -173,6 +174,16 @@ class ProjectResolver(
 
     return buildAspectResult
   }
+
+  private suspend fun projectViewTargetsToSync(): TargetCollection =
+    measured("Dropping excluded patterns without packages") {
+      TargetCollection
+        .fromExcludableList(projectView.targets)
+        .dropExcludedPatternsWithoutPackages(
+          bazelInfo.workspaceRoot,
+          BazelIgnoreService.getInstance(project),
+        )
+    }
 
   private suspend fun buildProjectWithAspect(
     projectView: ProjectView,
