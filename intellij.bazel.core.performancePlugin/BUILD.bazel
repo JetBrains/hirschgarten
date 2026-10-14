@@ -1,7 +1,11 @@
+load("@community//platform/build-scripts/bazel-rules:content_module_jar.bzl", "content_module_jar")
 load("@rules_jvm//:jvm.bzl", "jvm_library", "jvm_provided_library")
 
-### auto-generated section `build intellij.bazel.core.performancePlugin` start
+### auto-generated section `dev intellij.bazel.core.performancePlugin` start
+content_module_jar(module = ":core-performancePlugin")
+### auto-generated section `dev intellij.bazel.core.performancePlugin` end
 
+### auto-generated section `build intellij.bazel.core.performancePlugin` start
 jvm_provided_library(
     name = "community_libraries_opentelemetry_provided",
     lib = "@community//libraries/opentelemetry",
@@ -37,7 +41,7 @@ jvm_library(
         "@community//libraries/guava",
         "@community//libraries/fastutil",
         "@community//libraries/gson",
-        "@lib//:jetbrains-annotations",
+        "@community//libraries/jetbrains/annotations",
         "@lib//:kotlin-stdlib",
         "@community//libraries/kotlinx/collections-immutable:libraries-kotlinx-collections-immutable",
         "@community//libraries/kotlinx/datetime",
@@ -69,6 +73,7 @@ jvm_library(
         "@community//platform/platform-api:ide",
         "@community//platform/ide-core-impl",
         "@community//platform/platform-impl:ide-impl",
+        "@community//platform/platform-impl/playback",
         "@community//platform/observable",
         "@community//platform/indexing-api:indexing",
         "@community//jps/model-api:model",
@@ -138,6 +143,7 @@ jvm_library(
         "@community//libraries/guava:guava_test_lib",
         "@community//libraries/fastutil:fastutil_test_lib",
         "@community//libraries/gson:gson_test_lib",
+        "@community//libraries/jetbrains/annotations:annotations_test_lib",
         "@community//libraries/kotlinx/collections-immutable:libraries-kotlinx-collections-immutable_test_lib",
         "@community//libraries/kotlinx/datetime:datetime_test_lib",
         "@community//libraries/opentelemetry",
@@ -172,6 +178,7 @@ jvm_library(
         "@community//platform/platform-api:ide_test_lib",
         "@community//platform/ide-core-impl:ide-core-impl_test_lib",
         "@community//platform/platform-impl:ide-impl_test_lib",
+        "@community//platform/platform-impl/playback:playback_test_lib",
         "@community//platform/observable:observable_test_lib",
         "@community//platform/indexing-api:indexing_test_lib",
         "@community//jps/model-api:model_test_lib",
@@ -224,6 +231,7 @@ jvm_library(
 exports_files(
     [
         "intellij.bazel.core.performancePlugin.iml",
+        "resources/intellij.bazel.core.performancePlugin.xml",
     ],
     visibility = ["//visibility:public"],
 )

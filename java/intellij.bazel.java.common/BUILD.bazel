@@ -1,7 +1,11 @@
+load("@community//platform/build-scripts/bazel-rules:content_module_jar.bzl", "content_module_jar")
 load("@rules_jvm//:jvm.bzl", "jvm_library")
 
-### auto-generated section `build intellij.bazel.java.common` start
+### auto-generated section `dev intellij.bazel.java.common` start
+content_module_jar(module = ":bazel-java-common")
+### auto-generated section `dev intellij.bazel.java.common` end
 
+### auto-generated section `build intellij.bazel.java.common` start
 jvm_library(
     name = "bazel-java-common",
     srcs = glob(
@@ -23,7 +27,8 @@ jvm_library(
         "@lib//:kotlin-stdlib",
         "//plugins/bazel/intellij.bazel.commons:commons",
         "@community//platform/core-api:core",
-        "@lib//:jetbrains-annotations",
+        "@community//libraries/jetbrains/annotations",
+        "//plugins/bazel/intellij.bazel.backend:backend",
     ],
 )
 
@@ -41,6 +46,8 @@ jvm_library(
         ":bazel-java-common",
         "//plugins/bazel/intellij.bazel.commons:commons_test_lib",
         "@community//platform/core-api:core_test_lib",
+        "@community//libraries/jetbrains/annotations:annotations_test_lib",
+        "//plugins/bazel/intellij.bazel.backend:backend_test_lib",
     ],
 )
 ### auto-generated section `build intellij.bazel.java.common` end
@@ -49,6 +56,7 @@ jvm_library(
 exports_files(
     [
         "intellij.bazel.java.common.iml",
+        "resources/intellij.bazel.java.common.xml",
     ],
     visibility = ["//visibility:public"],
 )

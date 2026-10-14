@@ -1,7 +1,11 @@
+load("@community//platform/build-scripts/bazel-rules:content_module_jar.bzl", "content_module_jar")
 load("@rules_jvm//:jvm.bzl", "jvm_library")
 
-### auto-generated section `build intellij.bazel.coverage` start
+### auto-generated section `dev intellij.bazel.coverage` start
+content_module_jar(module = ":bazel-coverage")
+### auto-generated section `dev intellij.bazel.coverage` end
 
+### auto-generated section `build intellij.bazel.coverage` start
 jvm_library(
     name = "bazel-coverage",
     srcs = glob(
@@ -54,8 +58,6 @@ jvm_library(
     runtime_deps = [
         # do not sort,
         ":bazel-coverage",
-        "@community//libraries/kotlin/test:libraries-kotlinTest",
-        "@community//libraries/kotlin/test:libraries-kotlinTest_test_lib",
         "@community//libraries/kotlinx/coroutines/core:core_test_lib",
         "//plugins/bazel/intellij.bazel.core:core_test_lib",
         "//plugins/bazel/intellij.bazel.commons:commons_test_lib",
@@ -83,6 +85,7 @@ jvm_library(
 exports_files(
     [
         "intellij.bazel.coverage.iml",
+        "resources/intellij.bazel.coverage.xml",
     ],
     visibility = ["//visibility:public"],
 )

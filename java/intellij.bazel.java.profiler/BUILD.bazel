@@ -1,7 +1,11 @@
+load("@community//platform/build-scripts/bazel-rules:content_module_jar.bzl", "content_module_jar")
 load("@rules_jvm//:jvm.bzl", "jvm_library")
 
-### auto-generated section `build intellij.bazel.java.profiler` start
+### auto-generated section `dev intellij.bazel.java.profiler` start
+content_module_jar(module = ":bazel-java-profiler")
+### auto-generated section `dev intellij.bazel.java.profiler` end
 
+### auto-generated section `build intellij.bazel.java.profiler` start
 jvm_library(
     name = "bazel-java-profiler",
     srcs = glob(
@@ -72,6 +76,7 @@ jvm_library(
 exports_files(
     [
         "intellij.bazel.java.profiler.iml",
+        "resources/intellij.bazel.java.profiler.xml",
     ],
     visibility = ["//visibility:public"],
 )

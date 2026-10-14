@@ -1,7 +1,11 @@
+load("@community//platform/build-scripts/bazel-rules:content_module_jar.bzl", "content_module_jar")
 load("@rules_jvm//:jvm.bzl", "jvm_library")
 
-### auto-generated section `build intellij.bazel.kotlin.coverage` start
+### auto-generated section `dev intellij.bazel.kotlin.coverage` start
+content_module_jar(module = ":bazel-kotlin-coverage")
+### auto-generated section `dev intellij.bazel.kotlin.coverage` end
 
+### auto-generated section `build intellij.bazel.kotlin.coverage` start
 jvm_library(
     name = "bazel-kotlin-coverage",
     srcs = glob(
@@ -21,9 +25,8 @@ jvm_library(
     deps = [
         # do not sort,
         "@lib//:kotlin-stdlib",
-        "@lib//:kotlinc-kotlin-compiler-common-provided",
-        "@lib//:kotlinc-kotlin-jps-common-provided",
-        "@lib//:kotlinc-analysis-api-platform-interface-provided",
+        "@community//libraries/kotlinc/kotlin-compiler-common:libraries-kotlinc-kotlin-compiler-common",
+        "@community//libraries/kotlinc/analysis-api-platform-interface:libraries-kotlinc-analysis-api-platform-interface",
         "//plugins/bazel/misc/intellij.bazel.coverage:bazel-coverage",
         "@community//platform/core-api:core",
         "@community//plugins/kotlin/base/plugin",
@@ -46,9 +49,8 @@ jvm_library(
     runtime_deps = [
         # do not sort,
         ":bazel-kotlin-coverage",
-        "@lib//:kotlinc-kotlin-compiler-common-provided",
-        "@lib//:kotlinc-kotlin-jps-common-provided",
-        "@lib//:kotlinc-analysis-api-platform-interface-provided",
+        "@community//libraries/kotlinc/kotlin-compiler-common:libraries-kotlinc-kotlin-compiler-common_test_lib",
+        "@community//libraries/kotlinc/analysis-api-platform-interface:libraries-kotlinc-analysis-api-platform-interface_test_lib",
         "//plugins/bazel/misc/intellij.bazel.coverage:bazel-coverage_test_lib",
         "@community//platform/core-api:core_test_lib",
         "@community//plugins/kotlin/base/plugin:plugin_test_lib",
@@ -64,6 +66,7 @@ jvm_library(
 exports_files(
     [
         "intellij.bazel.kotlin.coverage.iml",
+        "resources/intellij.bazel.kotlin.coverage.xml",
     ],
     visibility = ["//visibility:public"],
 )

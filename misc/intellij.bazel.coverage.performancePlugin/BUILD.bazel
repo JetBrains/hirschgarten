@@ -1,7 +1,11 @@
+load("@community//platform/build-scripts/bazel-rules:content_module_jar.bzl", "content_module_jar")
 load("@rules_jvm//:jvm.bzl", "jvm_library")
 
-### auto-generated section `build intellij.bazel.coverage.performancePlugin` start
+### auto-generated section `dev intellij.bazel.coverage.performancePlugin` start
+content_module_jar(module = ":bazel-coverage-performancePlugin")
+### auto-generated section `dev intellij.bazel.coverage.performancePlugin` end
 
+### auto-generated section `build intellij.bazel.coverage.performancePlugin` start
 jvm_library(
     name = "bazel-coverage-performancePlugin",
     srcs = glob(
@@ -29,6 +33,7 @@ jvm_library(
         "@community//platform/core-impl",
         "@community//platform/platform-api:ide",
         "@community//platform/platform-impl:ide-impl",
+        "@community//platform/platform-impl/playback",
         "@community//platform/lang-api:lang",
         "@community//platform/lang-impl",
         "@community//platform/execution",
@@ -55,8 +60,6 @@ jvm_library(
     runtime_deps = [
         # do not sort,
         ":bazel-coverage-performancePlugin",
-        "@community//libraries/kotlin/test:libraries-kotlinTest",
-        "@community//libraries/kotlin/test:libraries-kotlinTest_test_lib",
         "@community//libraries/kotlinx/coroutines/core:core_test_lib",
         "//plugins/bazel/misc/intellij.bazel.coverage:bazel-coverage_test_lib",
         "//plugins/bazel/intellij.bazel.core:core_test_lib",
@@ -66,6 +69,7 @@ jvm_library(
         "@community//platform/core-impl:core-impl_test_lib",
         "@community//platform/platform-api:ide_test_lib",
         "@community//platform/platform-impl:ide-impl_test_lib",
+        "@community//platform/platform-impl/playback:playback_test_lib",
         "@community//platform/lang-api:lang_test_lib",
         "@community//platform/lang-impl:lang-impl_test_lib",
         "@community//platform/execution:execution_test_lib",
@@ -85,6 +89,7 @@ jvm_library(
 exports_files(
     [
         "intellij.bazel.coverage.performancePlugin.iml",
+        "resources/intellij.bazel.coverage.performancePlugin.xml",
     ],
     visibility = ["//visibility:public"],
 )

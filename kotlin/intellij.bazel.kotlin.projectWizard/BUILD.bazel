@@ -1,7 +1,11 @@
+load("@community//platform/build-scripts/bazel-rules:content_module_jar.bzl", "content_module_jar")
 load("@rules_jvm//:jvm.bzl", "jvm_library")
 
-### auto-generated section `build intellij.bazel.kotlin.projectWizard` start
+### auto-generated section `dev intellij.bazel.kotlin.projectWizard` start
+content_module_jar(module = ":bazel-kotlin-projectWizard")
+### auto-generated section `dev intellij.bazel.kotlin.projectWizard` end
 
+### auto-generated section `build intellij.bazel.kotlin.projectWizard` start
 jvm_library(
     name = "bazel-kotlin-projectWizard",
     srcs = glob(
@@ -68,6 +72,7 @@ jvm_library(
 exports_files(
     [
         "intellij.bazel.kotlin.projectWizard.iml",
+        "resources/intellij.bazel.kotlin.projectWizard.xml",
     ],
     visibility = ["//visibility:public"],
 )

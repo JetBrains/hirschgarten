@@ -1,7 +1,11 @@
+load("@community//platform/build-scripts/bazel-rules:content_module_jar.bzl", "content_module_jar")
 load("@rules_jvm//:jvm.bzl", "jvm_library")
 
-### auto-generated section `build intellij.bazel.protoedit` start
+### auto-generated section `dev intellij.bazel.protoedit` start
+content_module_jar(module = ":bazel-protoedit")
+### auto-generated section `dev intellij.bazel.protoedit` end
 
+### auto-generated section `build intellij.bazel.protoedit` start
 jvm_library(
     name = "bazel-protoedit",
     srcs = glob(
@@ -74,6 +78,7 @@ jvm_library(
 exports_files(
     [
         "intellij.bazel.protoedit.iml",
+        "resources/intellij.bazel.protoedit.xml",
     ],
     visibility = ["//visibility:public"],
 )

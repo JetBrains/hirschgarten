@@ -1,7 +1,11 @@
+load("@community//platform/build-scripts/bazel-rules:content_module_jar.bzl", "content_module_jar")
 load("@rules_jvm//:jvm.bzl", "jvm_library")
 
-### auto-generated section `build intellij.bazel.python.common` start
+### auto-generated section `dev intellij.bazel.python.common` start
+content_module_jar(module = ":bazel-python-common")
+### auto-generated section `dev intellij.bazel.python.common` end
 
+### auto-generated section `build intellij.bazel.python.common` start
 jvm_library(
     name = "bazel-python-common",
     srcs = glob(
@@ -43,12 +47,13 @@ jvm_library(
         "@community//platform/projectModel-api:projectModel",
         "@community//platform/util/concurrency",
         "@community//platform/util/progress",
-        "@community//python/python-sdk:sdk",
+        "@community//python/python-sdk/backend",
         "@community//python:python-pydev",
         "@community//platform/util/jdom",
         "@community//platform/smRunner",
         "@community//platform/testRunner",
         "@community//python/services/system-python",
+        "@community//platform/eel-nioFs",
     ],
 )
 
@@ -86,12 +91,13 @@ jvm_library(
         "@community//platform/projectModel-api:projectModel_test_lib",
         "@community//platform/util/concurrency:concurrency_test_lib",
         "@community//platform/util/progress:progress_test_lib",
-        "@community//python/python-sdk:sdk_test_lib",
+        "@community//python/python-sdk/backend:backend_test_lib",
         "@community//python:python-pydev_test_lib",
         "@community//platform/util/jdom:jdom_test_lib",
         "@community//platform/smRunner:smRunner_test_lib",
         "@community//platform/testRunner:testRunner_test_lib",
         "@community//python/services/system-python:system-python_test_lib",
+        "@community//platform/eel-nioFs:eel-nioFs_test_lib",
     ],
 )
 ### auto-generated section `build intellij.bazel.python.common` end
@@ -100,6 +106,7 @@ jvm_library(
 exports_files(
     [
         "intellij.bazel.python.common.iml",
+        "resources/intellij.bazel.python.common.xml",
     ],
     visibility = ["//visibility:public"],
 )
