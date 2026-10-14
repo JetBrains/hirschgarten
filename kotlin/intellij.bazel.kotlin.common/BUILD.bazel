@@ -1,7 +1,11 @@
+load("@community//platform/build-scripts/bazel-rules:content_module_jar.bzl", "content_module_jar")
 load("@rules_jvm//:jvm.bzl", "jvm_library")
 
-### auto-generated section `build intellij.bazel.kotlin.common` start
+### auto-generated section `dev intellij.bazel.kotlin.common` start
+content_module_jar(module = ":bazel-kotlin-common")
+### auto-generated section `dev intellij.bazel.kotlin.common` end
 
+### auto-generated section `build intellij.bazel.kotlin.common` start
 jvm_library(
     name = "bazel-kotlin-common",
     srcs = glob(
@@ -43,9 +47,10 @@ jvm_library(
         "@community//java/debugger/impl",
         "@community//java/idea-ui:ui",
         "@community//plugins/kotlin/references",
-        "@lib//:kotlinc-analysis-api-provided",
-        "@lib//:kotlinc-analysis-api-platform-interface-provided",
-        "@lib//:kotlinc-kotlin-compiler-common-provided",
+        "@community//libraries/kotlinc/analysis-api:libraries-kotlinc-analysis-api",
+        "@community//libraries/kotlinc/analysis-api-platform-interface:libraries-kotlinc-analysis-api-platform-interface",
+        "@community//libraries/kotlinc/kotlin-compiler-common:libraries-kotlinc-kotlin-compiler-common",
+        "@community//libraries/kotlinc/symbol-light-classes:libraries-kotlinc-symbol-light-classes",
         "@lib//:kotlinc-kotlin-jps-plugin-classpath-provided",
         "@community//plugins/kotlin/base/facet",
         "@community//plugins/kotlin/base/project-structure",
@@ -103,9 +108,10 @@ jvm_library(
         "@community//java/debugger/impl:impl_test_lib",
         "@community//java/idea-ui:ui_test_lib",
         "@community//plugins/kotlin/references:references_test_lib",
-        "@lib//:kotlinc-analysis-api-provided",
-        "@lib//:kotlinc-analysis-api-platform-interface-provided",
-        "@lib//:kotlinc-kotlin-compiler-common-provided",
+        "@community//libraries/kotlinc/analysis-api:libraries-kotlinc-analysis-api_test_lib",
+        "@community//libraries/kotlinc/analysis-api-platform-interface:libraries-kotlinc-analysis-api-platform-interface_test_lib",
+        "@community//libraries/kotlinc/kotlin-compiler-common:libraries-kotlinc-kotlin-compiler-common_test_lib",
+        "@community//libraries/kotlinc/symbol-light-classes:libraries-kotlinc-symbol-light-classes_test_lib",
         "@lib//:kotlinc-kotlin-jps-plugin-classpath-provided",
         "@community//plugins/kotlin/base/facet:facet_test_lib",
         "@community//plugins/kotlin/base/project-structure:project-structure_test_lib",
@@ -134,6 +140,7 @@ jvm_library(
 exports_files(
     [
         "intellij.bazel.kotlin.common.iml",
+        "resources/intellij.bazel.kotlin.common.xml",
     ],
     visibility = ["//visibility:public"],
 )

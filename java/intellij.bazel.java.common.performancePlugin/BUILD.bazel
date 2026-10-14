@@ -1,7 +1,11 @@
+load("@community//platform/build-scripts/bazel-rules:content_module_jar.bzl", "content_module_jar")
 load("@rules_jvm//:jvm.bzl", "jvm_library")
 
-### auto-generated section `build intellij.bazel.java.common.performancePlugin` start
+### auto-generated section `dev intellij.bazel.java.common.performancePlugin` start
+content_module_jar(module = ":bazel-java-common-performancePlugin")
+### auto-generated section `dev intellij.bazel.java.common.performancePlugin` end
 
+### auto-generated section `build intellij.bazel.java.common.performancePlugin` start
 jvm_library(
     name = "bazel-java-common-performancePlugin",
     srcs = glob(
@@ -120,6 +124,7 @@ jvm_library(
 exports_files(
     [
         "intellij.bazel.java.common.performancePlugin.iml",
+        "resources/intellij.bazel.java.common.performancePlugin.xml",
     ],
     visibility = ["//visibility:public"],
 )

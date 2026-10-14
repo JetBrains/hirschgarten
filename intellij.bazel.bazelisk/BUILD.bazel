@@ -1,7 +1,11 @@
+load("@community//platform/build-scripts/bazel-rules:content_module_jar.bzl", "content_module_jar")
 load("@rules_jvm//:jvm.bzl", "jvm_library")
 
-### auto-generated section `build intellij.bazel.bazelisk` start
+### auto-generated section `dev intellij.bazel.bazelisk` start
+content_module_jar(module = ":bazelisk")
+### auto-generated section `dev intellij.bazel.bazelisk` end
 
+### auto-generated section `build intellij.bazel.bazelisk` start
 jvm_library(
     name = "bazelisk",
     srcs = glob(
@@ -68,6 +72,7 @@ jvm_library(
 exports_files(
     [
         "intellij.bazel.bazelisk.iml",
+        "resources/intellij.bazel.bazelisk.xml",
     ],
     visibility = ["//visibility:public"],
 )
