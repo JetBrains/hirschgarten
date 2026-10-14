@@ -1,7 +1,11 @@
+load("@community//platform/build-scripts/bazel-rules:content_module_jar.bzl", "content_module_jar")
 load("@rules_jvm//:jvm.bzl", "jvm_library", "jvm_provided_library")
 
-### auto-generated section `build intellij.bazel.java.core` start
+### auto-generated section `dev intellij.bazel.java.core` start
+content_module_jar(module = ":bazel-java-core")
+### auto-generated section `dev intellij.bazel.java.core` end
 
+### auto-generated section `build intellij.bazel.java.core` start
 jvm_provided_library(
     name = "community_libraries_opentelemetry_provided",
     lib = "@community//libraries/opentelemetry",
@@ -43,7 +47,9 @@ jvm_library(
         "@community//platform/ide-core",
         "@community//platform/execution",
         "@community//platform/execution-impl",
+        "@community//platform/consoleView",
         "@community//platform/analysis-api:analysis",
+        "@community//platform/indexing-api:indexing",
         "@community//platform/lang-api:lang",
         "@community//platform/lang-core",
         "@community//java/java-analysis-impl:analysis-impl",
@@ -63,6 +69,7 @@ jvm_library(
         "@community//platform/external-system-api:externalSystem",
         "@community//java/java-impl:impl",
         "@community//java/java-psi-api:psi",
+        "@community//java/java-psi-impl:psi-impl",
         "@community//java/java-syntax:syntax",
         "@community//java/idea-ui:ui",
         "@community//java/java-frontback-psi-api:frontback-psi",
@@ -82,6 +89,7 @@ jvm_library(
         "@community//platform/editor-ui-api:editor-ui",
         "@community//platform/testRunner",
         "@community//java/java-backend:backend",
+        "@community//plugins/junit",
         ":community_libraries_opentelemetry_provided",
         ":community_libraries_opentelemetry-extension-kotlin_provided",
     ],
@@ -111,7 +119,9 @@ jvm_library(
         "@community//platform/ide-core:ide-core_test_lib",
         "@community//platform/execution:execution_test_lib",
         "@community//platform/execution-impl:execution-impl_test_lib",
+        "@community//platform/consoleView:consoleView_test_lib",
         "@community//platform/analysis-api:analysis_test_lib",
+        "@community//platform/indexing-api:indexing_test_lib",
         "@community//platform/lang-api:lang_test_lib",
         "@community//platform/lang-core:lang-core_test_lib",
         "@community//java/java-analysis-impl:analysis-impl_test_lib",
@@ -131,6 +141,7 @@ jvm_library(
         "@community//platform/external-system-api:externalSystem_test_lib",
         "@community//java/java-impl:impl_test_lib",
         "@community//java/java-psi-api:psi_test_lib",
+        "@community//java/java-psi-impl:psi-impl_test_lib",
         "@community//java/java-syntax:syntax_test_lib",
         "@community//java/idea-ui:ui_test_lib",
         "@community//java/java-frontback-psi-api:frontback-psi_test_lib",
@@ -154,6 +165,7 @@ jvm_library(
         "@community//platform/editor-ui-api:editor-ui_test_lib",
         "@community//platform/testRunner:testRunner_test_lib",
         "@community//java/java-backend:backend_test_lib",
+        "@community//plugins/junit:junit_test_lib",
     ],
 )
 ### auto-generated section `build intellij.bazel.java.core` end
@@ -162,6 +174,7 @@ jvm_library(
 exports_files(
     [
         "intellij.bazel.java.core.iml",
+        "resources/intellij.bazel.java.core.xml",
     ],
     visibility = ["//visibility:public"],
 )

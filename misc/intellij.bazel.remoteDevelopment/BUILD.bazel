@@ -1,7 +1,11 @@
+load("@community//platform/build-scripts/bazel-rules:content_module_jar.bzl", "content_module_jar")
 load("@rules_jvm//:jvm.bzl", "jvm_library")
 
-### auto-generated section `build intellij.bazel.remoteDevelopment` start
+### auto-generated section `dev intellij.bazel.remoteDevelopment` start
+content_module_jar(module = ":bazel-remoteDevelopment")
+### auto-generated section `dev intellij.bazel.remoteDevelopment` end
 
+### auto-generated section `build intellij.bazel.remoteDevelopment` start
 jvm_library(
     name = "bazel-remoteDevelopment",
     srcs = glob(
@@ -64,6 +68,7 @@ jvm_library(
 exports_files(
     [
         "intellij.bazel.remoteDevelopment.iml",
+        "resources/intellij.bazel.remoteDevelopment.xml",
     ],
     visibility = ["//visibility:public"],
 )

@@ -1,9 +1,13 @@
+load("@community//platform/build-scripts/bazel-rules:content_module_jar.bzl", "content_module_jar")
 load("@rules_jvm//:jvm.bzl", "jvm_library")
 
-### auto-generated section `build intellij.bazel.coverage.performancePlugin` start
+### auto-generated section `dev intellij.bazel.coverage` start
+content_module_jar(module = ":bazel-coverage")
+### auto-generated section `dev intellij.bazel.coverage` end
 
+### auto-generated section `build intellij.bazel.coverage` start
 jvm_library(
-    name = "bazel-coverage-performancePlugin",
+    name = "bazel-coverage",
     srcs = glob(
         [
             "src/**/*.kt",
@@ -12,7 +16,7 @@ jvm_library(
         ],
         allow_empty = True,
     ),
-    module_name = "intellij.bazel.coverage.performancePlugin",
+    module_name = "intellij.bazel.coverage",
     resource_strip_prefix = "resources",
     resources = glob(
         ["resources/**/*"],
@@ -21,14 +25,13 @@ jvm_library(
     deps = [
         # do not sort,
         "@community//libraries/kotlinx/coroutines/core",
-        "//plugins/bazel/misc/intellij.bazel.coverage:bazel-coverage",
         "//plugins/bazel/intellij.bazel.core:core",
         "//plugins/bazel/intellij.bazel.commons:commons",
-        "@community//plugins/performanceTesting/core:performanceTesting",
         "@community//platform/core-api:core",
         "@community//platform/core-impl",
         "@community//platform/platform-api:ide",
         "@community//platform/platform-impl:ide-impl",
+        "@community//platform/ide-core",
         "@community//platform/lang-api:lang",
         "@community//platform/lang-impl",
         "@community//platform/execution",
@@ -38,34 +41,33 @@ jvm_library(
         "@community//plugins/coverage-common:coverage",
         "@community//plugins/coverage-common/intellij.platform.coverage.agent:coverage-agent",
         "@community//platform/editor-ui-api:editor-ui",
-        "@community//plugins/coverage",
-        "@community//java/java-psi-api:psi",
+        "@community//platform/util:util-ui",
+        "@community//platform/testRunner",
     ],
 )
 
 jvm_library(
-    name = "bazel-coverage-performancePlugin_test_lib",
+    name = "bazel-coverage_test_lib",
     testonly = True,
     srcs = glob(
         [],
         allow_empty = True,
     ),
-    module_name = "intellij.bazel.coverage.performancePlugin",
+    module_name = "intellij.bazel.coverage",
     visibility = ["//visibility:public"],
     runtime_deps = [
         # do not sort,
-        ":bazel-coverage-performancePlugin",
+        ":bazel-coverage",
         "@community//libraries/kotlin/test:libraries-kotlinTest",
         "@community//libraries/kotlin/test:libraries-kotlinTest_test_lib",
         "@community//libraries/kotlinx/coroutines/core:core_test_lib",
-        "//plugins/bazel/misc/intellij.bazel.coverage:bazel-coverage_test_lib",
         "//plugins/bazel/intellij.bazel.core:core_test_lib",
         "//plugins/bazel/intellij.bazel.commons:commons_test_lib",
-        "@community//plugins/performanceTesting/core:performanceTesting_test_lib",
         "@community//platform/core-api:core_test_lib",
         "@community//platform/core-impl:core-impl_test_lib",
         "@community//platform/platform-api:ide_test_lib",
         "@community//platform/platform-impl:ide-impl_test_lib",
+        "@community//platform/ide-core:ide-core_test_lib",
         "@community//platform/lang-api:lang_test_lib",
         "@community//platform/lang-impl:lang-impl_test_lib",
         "@community//platform/execution:execution_test_lib",
@@ -75,17 +77,18 @@ jvm_library(
         "@community//plugins/coverage-common:coverage_test_lib",
         "@community//plugins/coverage-common/intellij.platform.coverage.agent:coverage-agent_test_lib",
         "@community//platform/editor-ui-api:editor-ui_test_lib",
-        "@community//plugins/coverage:coverage_test_lib",
-        "@community//java/java-psi-api:psi_test_lib",
+        "@community//platform/util:util-ui_test_lib",
+        "@community//platform/testRunner:testRunner_test_lib",
     ],
 )
-### auto-generated section `build intellij.bazel.coverage.performancePlugin` end
+### auto-generated section `build intellij.bazel.coverage` end
 
-### auto-generated section `iml intellij.bazel.coverage.performancePlugin` start
+### auto-generated section `iml intellij.bazel.coverage` start
 exports_files(
     [
-        "intellij.bazel.coverage.performancePlugin.iml",
+        "intellij.bazel.coverage.iml",
+        "resources/intellij.bazel.coverage.xml",
     ],
     visibility = ["//visibility:public"],
 )
-### auto-generated section `iml intellij.bazel.coverage.performancePlugin` end
+### auto-generated section `iml intellij.bazel.coverage` end
