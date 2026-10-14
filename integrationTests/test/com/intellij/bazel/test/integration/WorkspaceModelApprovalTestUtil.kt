@@ -149,6 +149,7 @@ internal suspend fun doWorkspaceModelTest(
       builder = builder,
       outputResolver = DefaultOutputLocationResolver.createHardlinkResolving(bazelInfo),
       outputParser = OutputLocationParser(BazelPathsResolver(bazelInfo), BazelOutFileHardLinks.NONE),
+      outFileHardLinks = BazelOutFileHardLinks.NONE,
       bazelInfo = bazelInfo,
     )
 

@@ -40,12 +40,14 @@ import com.jetbrains.python.sdk.createLocalSdkGuessingTypeByPath
 import com.jetbrains.python.sdk.internal.PYTHON_MODULE_ID
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.annotations.VisibleForTesting
+import org.jetbrains.bazel.commons.LanguageClass
 import org.jetbrains.bazel.commons.RepoMapping
 import org.jetbrains.bazel.commons.getLocalRepositories
 import org.jetbrains.bazel.progress.withSubtask
 import org.jetbrains.bazel.python.lang.PythonBuildTarget
-import org.jetbrains.bazel.server.connection
+import org.jetbrains.bazel.python.lang.PythonLanguageClass
 import org.jetbrains.bazel.sync.environment.projectCtx
+import org.jetbrains.bazel.sync.workspace.DefaultOutputLocationResolver
 import org.jetbrains.bazel.sync.workspace.importer.BazelWorkspaceImporter
 import org.jetbrains.bazel.sync.workspace.importer.BazelWorkspaceImporterFactory
 import org.jetbrains.bazel.sync.workspace.importer.GlobalNamingContext
@@ -75,10 +77,16 @@ import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.OutputLocation
 import org.jetbrains.bsp.protocol.StrictDependencyCheckedType
 import org.jetbrains.bsp.protocol.TaskId
+import org.jetbrains.bsp.protocol.isGenerated
 import org.jetbrains.bsp.protocol.isUserCode
 import org.jetbrains.bsp.protocol.utils.StringUtils
+import java.io.IOException
+import java.nio.file.Files
 import java.nio.file.Path
+import kotlin.io.path.exists
+import kotlin.io.path.extension
 import kotlin.io.path.isDirectory
+import kotlin.io.path.isRegularFile
 import kotlin.io.path.pathString
 
 private const val PYTHON_SOURCE_ROOT_TYPE = "python-source"
@@ -102,6 +110,8 @@ internal class BazelPythonWorkspaceImporter(val context: WorkspaceImporterContex
   private lateinit var commonSyncConfig: CommonWorkspaceSyncConfig
   private lateinit var pythonSyncConfig: PythonWorkspaceSyncConfig
   private lateinit var allPythonTargets: Map<WorkspaceTargetKey, BuildTarget>
+  private var generatedSourcePaths: Map<Path, Path> = emptyMap()
+  private var generatedSourceRoots: Map<Path, Path> = emptyMap()
 
   private var defaultInterpreter: OutputLocation? = null
   private var defaultVersion: String? = null
@@ -117,7 +127,10 @@ internal class BazelPythonWorkspaceImporter(val context: WorkspaceImporterContex
     }
   }
 
-  private fun onInitialize(snapshot: WorkspaceSnapshot, naming: GlobalNamingContextBuilder): WorkspaceImporterResult {
+  private suspend fun onInitialize(
+    snapshot: WorkspaceSnapshot,
+    naming: GlobalNamingContextBuilder,
+  ): WorkspaceImporterResult {
     commonSyncConfig = snapshot.syncConfigs.filterIsInstance<CommonWorkspaceSyncConfig>()
                          .firstOrNull() ?: throw IllegalStateException()
     pythonSyncConfig = snapshot.syncConfigs.filterIsInstance<PythonWorkspaceSyncConfig>()
@@ -132,6 +145,8 @@ internal class BazelPythonWorkspaceImporter(val context: WorkspaceImporterContex
           .mergeByTargetKey(targets = targets.toList())
       }
       .associateBy { it.key }
+
+    collectGeneratedSourcePaths(snapshot)
 
     val defaultPythonTarget = snapshot.allTargets
       .filterBuildTarget<PythonBuildTarget>()
@@ -166,6 +181,68 @@ internal class BazelPythonWorkspaceImporter(val context: WorkspaceImporterContex
 
     return WorkspaceImporterResult.Success
   }
+
+  private suspend fun collectGeneratedSourcePaths(snapshot: WorkspaceSnapshot) {
+    val overrides = allPythonTargets.values.asSequence()
+      .mapNotNull { it.findBuildData<PythonBuildTarget>() }
+      .flatMap { it.generatedSourceOverrides.asSequence() }
+      .associate { it.toPair() }
+    val locationsWithoutOverrides = allPythonTargets.values.asSequence()
+      .flatMap { target ->
+        val targetOverrides = target.findBuildData<PythonBuildTarget>()?.generatedSourceOverrides.orEmpty()
+        generatedSources(target).filter { it !in targetOverrides }
+      }.toSet()
+    val execrootResolver = DefaultOutputLocationResolver.createExecrootResolving(context.bazelInfo)
+    val localRepositories = snapshot.repoMapping.getLocalRepositories()
+    val roots = mutableMapOf<Path, Path>()
+    generatedSourcePaths = allPythonTargets.values.asSequence()
+      .flatMap { generatedSources(it) }
+      .filter { it.isGenerated }
+      .distinct()
+      .toList()
+      .mapNotNull { location ->
+        val original = execrootResolver.resolve(location, localRepositories) ?: return@mapNotNull null
+        if (LanguageClass.fromExtension(original.extension) != PythonLanguageClass.PYTHON) return@mapNotNull null
+        val cached = context.outputResolver.resolve(location, localRepositories)
+        val fallback = overrides[location]?.let { context.outputResolver.resolve(it, localRepositories) }
+        val effective = context.outFileHardLinks.findPreparedOutputFile(original)
+                        ?: cached?.takeIf { location in locationsWithoutOverrides && canReplaceFallback(it, fallback) }
+                        ?: fallback ?: cached
+                        ?: return@mapNotNull null
+        if (effective == cached) {
+          collectGeneratedSourceRoots(original, effective, roots)
+        }
+        original to effective
+      }.toMap()
+    generatedSourceRoots = roots
+  }
+
+  private fun canReplaceFallback(cached: Path, fallback: Path?): Boolean {
+    if (fallback == null) return true
+    if (!cached.isRegularFile()) return false
+    if (!fallback.exists()) return true
+    return try {
+      Files.isSameFile(cached, fallback)
+    } catch (_: IOException) {
+      false
+    }
+  }
+
+  private fun collectGeneratedSourceRoots(original: Path, effective: Path, roots: MutableMap<Path, Path>) {
+    val bazelBin = context.bazelInfo.bazelBin
+    if (original == effective || !original.startsWith(bazelBin) || !effective.endsWith(bazelBin.relativize(original))) return
+    var effectiveRoot: Path? = effective.parent
+    for (root in generateSequence(original.parent) { it.parent }) {
+      if (!root.startsWith(bazelBin)) break
+      val mappedRoot = effectiveRoot ?: break
+      if (roots.putIfAbsent(root, mappedRoot) != null) break
+      effectiveRoot = mappedRoot.parent
+    }
+  }
+
+  private fun generatedSources(target: BuildTarget): Sequence<OutputLocation> =
+    target.sources.getOutputLocations().filter { it.isGenerated } +
+    (target.findBuildData<PythonBuildTarget>()?.generatedSources?.getOutputLocations() ?: emptySequence())
 
   private fun externalSourceDependencyKeys(): List<WorkspaceTargetKey> =
     allPythonTargets.keys
@@ -229,10 +306,8 @@ internal class BazelPythonWorkspaceImporter(val context: WorkspaceImporterContex
       .filter { it.hasBuildData<PythonBuildTarget>() }
       .toList()
 
-    context.project.connection.runWithServer { server ->
-      context.project.serviceAsync<PythonResolveIndexService>()
-        .updatePythonResolveIndex(context, snapshot, pyTargets, server.outFileHardLinks)
-    }
+    context.project.serviceAsync<PythonResolveIndexService>()
+      .updatePythonResolveIndex(context, snapshot, pyTargets, generatedSourcePaths)
     return WorkspaceImporterResult.Success
   }
 
@@ -411,16 +486,23 @@ internal class BazelPythonWorkspaceImporter(val context: WorkspaceImporterContex
   private fun computeSourceRootPaths(snapshot: WorkspaceSnapshot, target: BuildTarget): Set<Path> {
     val projectCtx = context.project.projectCtx
     // imports for generated files should be resolved against bazel-bin
-    val basePaths = listOfNotNull(projectCtx.projectRootDir?.toNioPath(), projectCtx.bazelBinPath).distinct()
+    val basePaths = listOfNotNull(projectCtx.projectRootDir?.toNioPath(), context.bazelInfo.bazelBin).distinct()
     val importRoots =
       PythonImportUtils.assembleExplicitImportsPaths(target)
         .mapNotNull { importPath ->
           basePaths.firstNotNullOfOrNull { base ->
-            base.resolve(importPath).normalize().takeIf { it.startsWith(base) && it.isDirectory() }
+            base.resolve(importPath).normalize().takeIf { it.startsWith(base) }
+              ?.let { generatedSourceRoots[it] ?: it }
+              ?.takeIf { it.isDirectory() }
           }
         }.toSet()
-    val individualFiles = target.sources.getOutputLocations()
-      .mapNotNull { context.outputResolver.resolve(it, snapshot.repoMapping.getLocalRepositories()) }
+    val execrootResolver = DefaultOutputLocationResolver.createExecrootResolving(context.bazelInfo)
+    val localRepositories = snapshot.repoMapping.getLocalRepositories()
+    val individualFiles = (target.sources.getOutputLocations() + generatedSources(target))
+      .mapNotNull { location ->
+        execrootResolver.resolve(location, localRepositories)?.let { generatedSourcePaths[it] }
+        ?: context.outputResolver.resolve(location, localRepositories)
+      }
       .filter { !it.isUnder(importRoots) }
       .toSet()
     return importRoots + individualFiles

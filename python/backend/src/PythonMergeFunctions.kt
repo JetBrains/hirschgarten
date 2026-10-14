@@ -10,6 +10,7 @@ internal val pythonTargetMergeFunctions: MergeFunctionMap = mapOf(
     left.copy(
       imports = (left.imports + right.imports).distinct(),
       generatedSources = mergeLocationCollections(left.generatedSources, right.generatedSources),
+      generatedSourceOverrides = left.generatedSourceOverrides + right.generatedSourceOverrides,
       externalSources = mergeLocationCollections(left.externalSources, right.externalSources),
     )
   },

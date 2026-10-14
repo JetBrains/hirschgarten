@@ -21,7 +21,6 @@ import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.coroutines.BazelCoroutineService
 import org.jetbrains.bazel.python.lang.PythonLanguageClass
 import org.jetbrains.bazel.python.lang.extractPythonBuildTarget
-import org.jetbrains.bazel.sync.BazelOutFileHardLinks
 import org.jetbrains.bazel.sync.workspace.DefaultOutputLocationResolver
 import org.jetbrains.bazel.sync.workspace.importer.WorkspaceImporterContext
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceSnapshot
@@ -79,9 +78,9 @@ internal class PythonResolveIndexService(private val project: Project) {
     context: WorkspaceImporterContext,
     snapshot: WorkspaceSnapshot,
     pythonTargets: List<BuildTarget>,
-    outFilesHardLink: BazelOutFileHardLinks,
+    generatedSourcePaths: Map<Path, Path>,
   ) {
-    val nameToPathIndex = buildIndex(context, snapshot, pythonTargets, outFilesHardLink)
+    val nameToPathIndex = buildIndex(context, snapshot, pythonTargets, generatedSourcePaths)
 
     updateResolveIndexSnapshot(nameToPathIndex)
     store(project.pyIndexStoragePath(), nameToPathIndex)
@@ -112,7 +111,7 @@ internal class PythonResolveIndexService(private val project: Project) {
     context: WorkspaceImporterContext,
     snapshot: WorkspaceSnapshot,
     pythonTargets: List<BuildTarget>,
-    outFilesHardLink: BazelOutFileHardLinks,
+    generatedSourcePaths: Map<Path, Path>,
   ): Map<QualifiedName, Path> {
     val rootDir = Path.of(project.rootDir.path)
     val localRepositories = snapshot.repoMapping.getLocalRepositories()
@@ -165,10 +164,8 @@ internal class PythonResolveIndexService(private val project: Project) {
             .mapNotNull { location ->
               val relativePath = location.toRepoRelativePath() ?: return@mapNotNull null
               val path = execrootResolver.resolve(location, localRepositories) ?: return@mapNotNull null
-              relativePath to path
-            }
-            .toList()
-            .associate { (relativePath, path) -> relativePath to (outFilesHardLink.createOutputFileHardLink(path) ?: path.toAbsolutePath()) }
+              relativePath to (generatedSourcePaths[path] ?: path.toAbsolutePath())
+            }.toMap()
         expandPathsToQualifiedNames(qualifiedNameImportPaths, sourcesRelativePathToAbsolutePath + generatedSourcesRelativePathToAbsolutePath)
       }
     }.awaitAll()
