@@ -180,7 +180,7 @@ class AspectBazelProjectMapper(
         }
       }
 
-      log.error("Target ${target} has missing $grandTotal ${StringUtil.pluralize("file", grandTotal)}: " + description)
+      log.warn("Target ${target} has missing $grandTotal ${StringUtil.pluralize("file", grandTotal)}: " + description)
     }
 
     companion object {
