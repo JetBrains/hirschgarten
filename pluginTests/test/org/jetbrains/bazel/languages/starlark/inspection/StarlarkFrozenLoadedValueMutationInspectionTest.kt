@@ -1,19 +1,20 @@
 package org.jetbrains.bazel.languages.starlark.inspection
 
 import org.jetbrains.bazel.languages.starlark.StarlarkBundle
-import org.jetbrains.bazel.test.framework.BazelBasePlatformTestCase
-import org.junit.Before
-import org.junit.Test
-import org.junit.runner.RunWith
-import org.junit.runners.JUnit4
+import org.jetbrains.bazel.test.framework.BazelTestApplication
+import org.jetbrains.bazel.test.framework.bazelCodeInsightFixture
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
 
-@RunWith(JUnit4::class)
-class StarlarkFrozenLoadedValueMutationInspectionTest : BazelBasePlatformTestCase() {
+@BazelTestApplication
+class StarlarkFrozenLoadedValueMutationInspectionTest {
+  private val myFixture by bazelCodeInsightFixture()
+
   private val xsDescription = StarlarkBundle.message("inspection.description.loaded.value.mutation", "xs")
   private val dataDescription = StarlarkBundle.message("inspection.description.loaded.value.mutation", "data")
   private val aliasDescription = StarlarkBundle.message("inspection.description.loaded.value.mutation", "alias")
 
-  @Before
+  @BeforeEach
   fun beforeEach() {
     myFixture.addFileToProject("MODULE.bazel", "")
     myFixture.addFileToProject("BUILD", "")

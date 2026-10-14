@@ -2,19 +2,18 @@ package org.jetbrains.bazel.languages.starlark.inspection
 
 import org.jetbrains.bazel.languages.starlark.StarlarkBundle
 import org.jetbrains.bazel.languages.starlark.fixtures.StarlarkInspectionTestCase
-import org.junit.Before
-import org.junit.Test
-import org.junit.runner.RunWith
-import org.junit.runners.JUnit4
+import org.jetbrains.bazel.test.framework.BazelTestApplication
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
 
 
-@RunWith(JUnit4::class)
+@BazelTestApplication
 internal class StarlarkLoadPlacementInspectionTest : StarlarkInspectionTestCase() {
   val descriptionModule = StarlarkBundle.message("inspection.description.load.not.allowed.in.module.bazel")
   val descriptionTopLevel = StarlarkBundle.message("inspection.description.load.not.at.top.level")
   val descriptionAfter = StarlarkBundle.message("inspection.description.load.after.statement")
 
-  @Before
+  @BeforeEach
   fun beforeEach() {
     myFixture.enableInspections(StarlarkLoadPlacementInspection())
   }

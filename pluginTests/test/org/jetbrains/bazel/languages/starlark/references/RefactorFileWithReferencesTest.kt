@@ -1,15 +1,25 @@
 package org.jetbrains.bazel.languages.starlark.references
 
-import org.jetbrains.bazel.test.framework.BazelBasePlatformTestCase
+import com.intellij.openapi.application.EDT
+import com.intellij.openapi.application.runReadActionBlocking
+import com.intellij.psi.PsiElement
+import com.intellij.testFramework.common.timeoutRunBlocking
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import org.jetbrains.bazel.test.framework.BazelTestApplication
+import org.jetbrains.bazel.test.framework.bazelCodeInsightFixture
 import org.jetbrains.bazel.workspace.setRepoMapping
-import org.junit.Test
-import org.junit.runner.RunWith
-import org.junit.runners.JUnit4
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Test
 import java.nio.file.Path
 import kotlin.io.path.Path
 
-@RunWith(JUnit4::class)
-internal class RefactorFileWithReferencesTest : BazelBasePlatformTestCase()  {
+@BazelTestApplication
+internal class RefactorFileWithReferencesTest {
+  private val myFixture by bazelCodeInsightFixture()
+
+  private val project get() = myFixture.project
+
   private val rootPath: Path
     get() = Path(myFixture.tempDirFixture.getFile(".")!!.path)
 
@@ -34,7 +44,7 @@ internal class RefactorFileWithReferencesTest : BazelBasePlatformTestCase()  {
       """.trimIndent(),
     )
 
-    myFixture.renameElement(kotlinFile, "RenamedClass.kt")
+    renameElement(kotlinFile, "RenamedClass.kt")
 
     myFixture.checkResult(
       """
@@ -67,7 +77,7 @@ internal class RefactorFileWithReferencesTest : BazelBasePlatformTestCase()  {
       """.trimIndent(),
     )
 
-    myFixture.renameElement(javaFile, "RenamedClass.java")
+    renameElement(javaFile, "RenamedClass.java")
 
     myFixture.checkResult(
       """
@@ -101,7 +111,7 @@ internal class RefactorFileWithReferencesTest : BazelBasePlatformTestCase()  {
       """.trimIndent(),
     )
 
-    myFixture.renameElement(starlarkFile, "custom_java_rules.bzl")
+    renameElement(starlarkFile, "custom_java_rules.bzl")
 
     myFixture.checkResult(
       """
@@ -136,7 +146,7 @@ internal class RefactorFileWithReferencesTest : BazelBasePlatformTestCase()  {
       """.trimIndent(),
     )
 
-    myFixture.renameElement(kotlinFile, "TestUtilsRenamed.kt")
+    renameElement(kotlinFile, "TestUtilsRenamed.kt")
 
     myFixture.checkResult(
       """
@@ -180,7 +190,7 @@ internal class RefactorFileWithReferencesTest : BazelBasePlatformTestCase()  {
         """.trimIndent(),
       )
 
-    myFixture.renameElement(sharedFile, "UtilsRenamed.java")
+    renameElement(sharedFile, "UtilsRenamed.java")
 
     assertEquals(
       """
@@ -189,7 +199,7 @@ internal class RefactorFileWithReferencesTest : BazelBasePlatformTestCase()  {
           srcs = ["../shared/UtilsRenamed.java"],
       )
       """.trimIndent(),
-      buildFile1.text,
+      runReadActionBlocking { buildFile1.text },
     )
     assertEquals(
       """
@@ -198,7 +208,7 @@ internal class RefactorFileWithReferencesTest : BazelBasePlatformTestCase()  {
           srcs = ["../shared/UtilsRenamed.java"],
       )
       """.trimIndent(),
-      buildFile2.text,
+      runReadActionBlocking { buildFile2.text },
     )
   }
 
@@ -234,7 +244,7 @@ internal class RefactorFileWithReferencesTest : BazelBasePlatformTestCase()  {
       """.trimIndent(),
     )
 
-    myFixture.renameElement(fileToRename, "UtilsRenamed.kt")
+    renameElement(fileToRename, "UtilsRenamed.kt")
 
     myFixture.checkResult(
       """
@@ -288,7 +298,7 @@ internal class RefactorFileWithReferencesTest : BazelBasePlatformTestCase()  {
       """.trimIndent(),
     )
 
-    myFixture.moveFile("com/example/A.kt", "com")
+    moveFile("com/example/A.kt", "com")
 
     myFixture.checkResult(
       "com/example/BUILD",
@@ -347,7 +357,7 @@ internal class RefactorFileWithReferencesTest : BazelBasePlatformTestCase()  {
       """.trimIndent(),
     )
 
-    myFixture.moveFile("com/example/A.java", "com")
+    moveFile("com/example/A.java", "com")
 
     myFixture.checkResult(
       "com/example/BUILD",
@@ -392,7 +402,7 @@ internal class RefactorFileWithReferencesTest : BazelBasePlatformTestCase()  {
       """.trimIndent(),
     )
 
-    myFixture.moveFile("com/example/bzl/custom.bzl", "com/example")
+    moveFile("com/example/bzl/custom.bzl", "com/example")
 
     myFixture.checkResult(
       "com/example/BUILD",
@@ -427,7 +437,7 @@ internal class RefactorFileWithReferencesTest : BazelBasePlatformTestCase()  {
       """.trimIndent(),
     )
 
-    myFixture.moveFile("com/example/custom.bzl", "com")
+    moveFile("com/example/custom.bzl", "com")
 
     myFixture.checkResult(
       "com/example/BUILD",
@@ -467,7 +477,7 @@ internal class RefactorFileWithReferencesTest : BazelBasePlatformTestCase()  {
     myFixture.addFileToProject("com/example/MODULE.bazel", "module(name = 'example')")
     myFixture.addFileToProject("com/example/BUILD", "")
 
-    myFixture.moveFile("custom.bzl", "com/example")
+    moveFile("custom.bzl", "com/example")
 
     myFixture.checkResult(
       "BUILD",
@@ -501,7 +511,7 @@ internal class RefactorFileWithReferencesTest : BazelBasePlatformTestCase()  {
       """.trimIndent(),
     )
 
-    myFixture.moveFile("com/example/A.kt", "com")
+    moveFile("com/example/A.kt", "com")
 
     myFixture.checkResult(
       "com/example/BUILD",
@@ -514,5 +524,13 @@ internal class RefactorFileWithReferencesTest : BazelBasePlatformTestCase()  {
       """.trimIndent(),
       true,
     )
+  }
+
+  private fun renameElement(element: PsiElement, newName: String): Unit = timeoutRunBlocking {
+    withContext(Dispatchers.EDT) { myFixture.renameElement(element, newName) }
+  }
+
+  private fun moveFile(filePath: String, to: String): Unit = timeoutRunBlocking {
+    withContext(Dispatchers.EDT) { myFixture.moveFile(filePath, to) }
   }
 }

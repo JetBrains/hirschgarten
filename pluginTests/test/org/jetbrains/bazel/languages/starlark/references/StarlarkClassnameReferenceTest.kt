@@ -1,21 +1,28 @@
 package org.jetbrains.bazel.languages.starlark.references
 
+import com.intellij.openapi.Disposable
+import com.intellij.openapi.application.runReadActionBlocking
 import com.intellij.psi.PsiClass
 import com.intellij.testFramework.ExtensionTestUtil
-import com.intellij.testFramework.fixtures.BasePlatformTestCase
+import com.intellij.testFramework.junit5.TestDisposable
 import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.instanceOf
 import org.jetbrains.bazel.languages.starlark.bazel.StarlarkClassParametersProvider
-import org.jetbrains.bazel.project.BazelProjectFixtures.initializeBazelProject
-import org.jetbrains.bazel.test.framework.BazelBasePlatformTestCase
-import org.junit.Before
-import org.junit.Test
-import org.junit.runner.RunWith
-import org.junit.runners.JUnit4
+import org.jetbrains.bazel.test.framework.BazelTestApplication
+import org.jetbrains.bazel.test.framework.bazelCodeInsightFixture
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNotNull
+import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.Test
 
-@RunWith(JUnit4::class)
-class StarlarkClassnameReferenceTest : BazelBasePlatformTestCase() {
+@BazelTestApplication
+class StarlarkClassnameReferenceTest {
+  private val myFixture by bazelCodeInsightFixture()
+
+  @TestDisposable
+  lateinit var disposable: Disposable
+
   @Test
   fun `should resolve kotlin class`() {
     // given
@@ -41,13 +48,15 @@ class StarlarkClassnameReferenceTest : BazelBasePlatformTestCase() {
       """.trimMargin(),
     )
 
-    val reference = myFixture.file.findReferenceAt(myFixture.caretOffset)
-    val resolved = reference!!.resolve()
+    val resolved = runReadActionBlocking {
+      val reference = myFixture.file.findReferenceAt(myFixture.caretOffset)
+      reference!!.resolve()
+    }
 
     // then
     resolved.shouldNotBeNull()
     resolved shouldBe instanceOf<PsiClass>()
-    (resolved as? PsiClass)?.name shouldBe "KotlinClass"
+    runReadActionBlocking { (resolved as? PsiClass)?.name } shouldBe "KotlinClass"
   }
 
   @Test
@@ -76,13 +85,15 @@ class StarlarkClassnameReferenceTest : BazelBasePlatformTestCase() {
       """.trimMargin(),
     )
 
-    val reference = myFixture.file.findReferenceAt(myFixture.caretOffset)
-    val resolved = reference!!.resolve()
+    val resolved = runReadActionBlocking {
+      val reference = myFixture.file.findReferenceAt(myFixture.caretOffset)
+      reference!!.resolve()
+    }
 
     // then
     resolved.shouldNotBeNull()
     resolved shouldBe instanceOf<PsiClass>()
-    (resolved as? PsiClass)?.name shouldBe "JavaClass"
+    runReadActionBlocking { (resolved as? PsiClass)?.name } shouldBe "JavaClass"
   }
 
   @Test
@@ -92,7 +103,7 @@ class StarlarkClassnameReferenceTest : BazelBasePlatformTestCase() {
       object : StarlarkClassParametersProvider {
         override fun getClassnameParameters(): List<String> = listOf("name_of_the_class")
       }
-    ExtensionTestUtil.maskExtensions(StarlarkClassParametersProvider.EP_NAME, listOf(provider), testRootDisposable)
+    ExtensionTestUtil.maskExtensions(StarlarkClassParametersProvider.EP_NAME, listOf(provider), disposable)
 
     myFixture.addFileToProject(
       "com/example/MyClass.java",
@@ -114,11 +125,11 @@ class StarlarkClassnameReferenceTest : BazelBasePlatformTestCase() {
     )
 
     // when
-    val element = myFixture.getReferenceAtCaretPosition()?.resolve()
+    val element = runReadActionBlocking { myFixture.getReferenceAtCaretPosition()?.resolve() }
 
     // then
     assertNotNull(element)
     assertTrue(element is PsiClass)
-    assertEquals("MyClass", (element as PsiClass).name)
+    assertEquals("MyClass", runReadActionBlocking { (element as PsiClass).name })
   }
 }

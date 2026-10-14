@@ -1,21 +1,27 @@
 package org.jetbrains.bazel.languages.starlark.rename
 
+import com.intellij.openapi.application.EDT
+import com.intellij.openapi.application.runReadActionBlocking
+import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.refactoring.BaseRefactoringProcessor
-import com.intellij.testFramework.fixtures.BasePlatformTestCase
+import com.intellij.testFramework.common.timeoutRunBlocking
 import com.intellij.testFramework.fixtures.CodeInsightTestFixture
 import io.kotest.assertions.throwables.shouldThrowWithMessage
 import io.kotest.matchers.shouldBe
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import org.jetbrains.bazel.languages.starlark.StarlarkBundle
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkNamedElement
 import org.jetbrains.bazel.project.BazelProjectFixtures
-import org.jetbrains.bazel.test.framework.BazelBasePlatformTestCase
-import org.junit.Test
-import org.junit.runner.RunWith
-import org.junit.runners.JUnit4
+import org.jetbrains.bazel.test.framework.BazelTestApplication
+import org.jetbrains.bazel.test.framework.bazelCodeInsightFixture
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Test
 
-@RunWith(JUnit4::class)
-class StarlarkRenameTest : BazelBasePlatformTestCase() {
+@BazelTestApplication
+class StarlarkRenameTest {
+  private val myFixture by bazelCodeInsightFixture()
 
   // region Functions
 
@@ -62,7 +68,7 @@ class StarlarkRenameTest : BazelBasePlatformTestCase() {
       result = helper(42)
       """.trimIndent(),
     )
-    myFixture.openFileInEditor(defsFile.virtualFile)
+    openFileInEditor(defsFile.virtualFile)
     myFixture.renameStarlarkElement("helper", "util")
     myFixture.checkResult(
       """
@@ -76,7 +82,7 @@ class StarlarkRenameTest : BazelBasePlatformTestCase() {
 
       result = util(42)
       """.trimIndent(),
-      consumerFile.text,
+      runReadActionBlocking { consumerFile.text },
     )
   }
 
@@ -140,7 +146,7 @@ class StarlarkRenameTest : BazelBasePlatformTestCase() {
       x = MY_CONST + 1
       """.trimIndent(),
     )
-    myFixture.openFileInEditor(defsFile.virtualFile)
+    openFileInEditor(defsFile.virtualFile)
     myFixture.renameStarlarkElement("MY_CONST", "MY_VALUE")
     myFixture.checkResult(
       """
@@ -153,7 +159,7 @@ class StarlarkRenameTest : BazelBasePlatformTestCase() {
 
       x = MY_VALUE + 1
       """.trimIndent(),
-      consumerFile.text,
+      runReadActionBlocking { consumerFile.text },
     )
   }
 
@@ -273,7 +279,7 @@ class StarlarkRenameTest : BazelBasePlatformTestCase() {
       This project uses `foo` function.
       """.trimIndent(),
     )
-    val readmeContentBefore = readme.text
+    val readmeContentBefore = runReadActionBlocking { readme.text }
 
     myFixture.renameStarlarkElement("foo", "new_foo")
 
@@ -286,7 +292,7 @@ class StarlarkRenameTest : BazelBasePlatformTestCase() {
           new_foo()
       """.trimIndent(),
     )
-    readme.text shouldBe readmeContentBefore
+    runReadActionBlocking { readme.text } shouldBe readmeContentBefore
   }
 
   // endregion
@@ -506,6 +512,12 @@ class StarlarkRenameTest : BazelBasePlatformTestCase() {
 
   // endregion
 
+  private fun openFileInEditor(file: VirtualFile): Unit = timeoutRunBlocking {
+    withContext(Dispatchers.EDT) {
+      myFixture.openFileInEditor(file)
+    }
+  }
+
   private fun conflictMessage(newName: String, fileName: String): String =
     StarlarkBundle.message("rename.name.conflict.already.exists", newName, fileName)
 
@@ -517,8 +529,14 @@ class StarlarkRenameTest : BazelBasePlatformTestCase() {
 }
 
 private fun CodeInsightTestFixture.renameStarlarkElement(oldName: String, newName: String) {
-  val element = PsiTreeUtil.collectElementsOfType(file, StarlarkNamedElement::class.java)
-    .find { it.name == oldName }
-    ?: error("StarlarkNamedElement with name '$oldName' not found")
-  renameElement(element, newName)
+  val element = runReadActionBlocking {
+    PsiTreeUtil.collectElementsOfType(file, StarlarkNamedElement::class.java)
+      .find { it.name == oldName }
+      ?: error("StarlarkNamedElement with name '$oldName' not found")
+  }
+  timeoutRunBlocking {
+    withContext(Dispatchers.EDT) {
+      renameElement(element, newName)
+    }
+  }
 }

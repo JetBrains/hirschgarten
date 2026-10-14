@@ -1,8 +1,12 @@
 package org.jetbrains.bazel.languages.starlark.completion
 
-import com.intellij.testFramework.fixtures.BasePlatformTestCase
+import com.intellij.codeInsight.lookup.LookupElement
+import com.intellij.openapi.application.EDT
+import com.intellij.testFramework.common.timeoutRunBlocking
 import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.label.Label
@@ -10,17 +14,19 @@ import org.jetbrains.bazel.project.BazelProjectFixtures.initializeBazelProject
 import org.jetbrains.bazel.sync.JavaLanguageClass
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
 import org.jetbrains.bazel.target.targetStorage
-import org.jetbrains.bazel.test.framework.BazelBasePlatformTestCase
+import org.jetbrains.bazel.test.framework.BazelTestApplication
+import org.jetbrains.bazel.test.framework.bazelCodeInsightFixture
 import org.jetbrains.bazel.test.framework.target.TestBuildTarget
 import org.jetbrains.bazel.workspace.model.test.framework.setTargets
 import org.jetbrains.bsp.protocol.OutputLocationCollection
-import org.junit.Before
-import org.junit.Test
-import org.junit.runner.RunWith
-import org.junit.runners.JUnit4
+import org.junit.jupiter.api.Test
 
-@RunWith(JUnit4::class)
-class BazelTargetCompletionTest : BazelBasePlatformTestCase() {
+@BazelTestApplication
+class BazelTargetCompletionTest {
+  private val myFixture by bazelCodeInsightFixture()
+
+  private val project get() = myFixture.project
+
   private fun setTargets(targets: List<String>) {
     project.setTargets(
       targets.map {
@@ -60,7 +66,7 @@ class BazelTargetCompletionTest : BazelBasePlatformTestCase() {
       """.trimMargin(),
     )
     myFixture.type("\"")
-    val lookups = myFixture.completeBasic().flatMap { it.allLookupStrings }
+    val lookups = completeBasic().flatMap { it.allLookupStrings }
 
     lookups shouldContainExactlyInAnyOrder listOf("\"//target1\"", "\"//target2\"")
   }
@@ -71,7 +77,7 @@ class BazelTargetCompletionTest : BazelBasePlatformTestCase() {
 
     myFixture.configureByText("BUILD", "")
     myFixture.type("\"")
-    val lookups = myFixture.completeBasic().flatMap { it.allLookupStrings }
+    val lookups = completeBasic().flatMap { it.allLookupStrings }
 
     lookups.shouldBeEmpty()
   }
@@ -88,16 +94,22 @@ class BazelTargetCompletionTest : BazelBasePlatformTestCase() {
       """.trimMargin(),
     )
     myFixture.type("\"12")
-    val lookups = myFixture.completeBasic().flatMap { it.allLookupStrings }
+    val lookups = completeBasic().flatMap { it.allLookupStrings }
 
     myFixture.type("3")
-    val lookups2 = myFixture.completeBasic().flatMap { it.allLookupStrings }
+    val lookups2 = completeBasic().flatMap { it.allLookupStrings }
 
     myFixture.type("4")
-    val lookups3 = myFixture.completeBasic().flatMap { it.allLookupStrings }
+    val lookups3 = completeBasic().flatMap { it.allLookupStrings }
 
     lookups shouldContainExactlyInAnyOrder listOf("\"//abcd1234\"", "\"//abcd1239\"", "\"//abcd1299\"")
     lookups2 shouldContainExactlyInAnyOrder listOf("\"//abcd1234\"", "\"//abcd1239\"")
     lookups3 shouldContainExactlyInAnyOrder listOf("\"//abcd1234\"")
+  }
+
+  private fun completeBasic(): Array<LookupElement> = timeoutRunBlocking {
+    withContext(Dispatchers.EDT) {
+      myFixture.completeBasic()
+    }
   }
 }

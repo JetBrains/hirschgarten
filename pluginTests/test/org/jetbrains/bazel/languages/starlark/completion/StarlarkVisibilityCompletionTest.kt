@@ -1,11 +1,15 @@
 package org.jetbrains.bazel.languages.starlark.completion
 
-import com.intellij.testFramework.fixtures.BasePlatformTestCase
+import com.intellij.codeInsight.lookup.LookupElement
+import com.intellij.openapi.application.EDT
+import com.intellij.testFramework.common.timeoutRunBlocking
 import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.collections.shouldBeIn
 import io.kotest.matchers.collections.shouldContainAll
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.collections.shouldNotContain
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.label.Label
@@ -13,17 +17,19 @@ import org.jetbrains.bazel.project.BazelProjectFixtures.initializeBazelProject
 import org.jetbrains.bazel.sync.JavaLanguageClass
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
 import org.jetbrains.bazel.target.targetStorage
-import org.jetbrains.bazel.test.framework.BazelBasePlatformTestCase
+import org.jetbrains.bazel.test.framework.BazelTestApplication
+import org.jetbrains.bazel.test.framework.bazelCodeInsightFixture
 import org.jetbrains.bazel.test.framework.target.TestBuildTarget
 import org.jetbrains.bazel.workspace.model.test.framework.setTargets
 import org.jetbrains.bsp.protocol.OutputLocationCollection
-import org.junit.Before
-import org.junit.Test
-import org.junit.runner.RunWith
-import org.junit.runners.JUnit4
+import org.junit.jupiter.api.Test
 
-@RunWith(JUnit4::class)
-class StarlarkVisibilityCompletionTest : BazelBasePlatformTestCase() {
+@BazelTestApplication
+class StarlarkVisibilityCompletionTest {
+  private val myFixture by bazelCodeInsightFixture()
+
+  private val project get() = myFixture.project
+
   private fun setTargets(targets: List<String>) {
     project.setTargets(
       targets.map {
@@ -59,7 +65,7 @@ class StarlarkVisibilityCompletionTest : BazelBasePlatformTestCase() {
       """.trimMargin(),
     )
     myFixture.type("\"")
-    val lookups = myFixture.completeBasic().flatMap { it.allLookupStrings }
+    val lookups = completeBasic().flatMap { it.allLookupStrings }
 
     lookups shouldContainExactlyInAnyOrder
       listOf(
@@ -90,7 +96,7 @@ class StarlarkVisibilityCompletionTest : BazelBasePlatformTestCase() {
       """.trimMargin(),
     )
     myFixture.type("\"")
-    val lookups = myFixture.completeBasic().flatMap { it.allLookupStrings }
+    val lookups = completeBasic().flatMap { it.allLookupStrings }
 
     lookups shouldContainExactlyInAnyOrder
       listOf(
@@ -118,7 +124,7 @@ class StarlarkVisibilityCompletionTest : BazelBasePlatformTestCase() {
       """.trimMargin(),
     )
     myFixture.type("\"")
-    val lookups = myFixture.completeBasic().flatMap { it.allLookupStrings }
+    val lookups = completeBasic().flatMap { it.allLookupStrings }
 
     lookups shouldNotContain "\"//visibility:private\""
     lookups shouldNotContain "\"//visibility:public\""
@@ -134,7 +140,7 @@ class StarlarkVisibilityCompletionTest : BazelBasePlatformTestCase() {
 
     myFixture.configureByText("BUILD", "")
     myFixture.type("\"")
-    val lookups = myFixture.completeBasic().flatMap { it.allLookupStrings }
+    val lookups = completeBasic().flatMap { it.allLookupStrings }
 
     lookups.shouldBeEmpty()
   }
@@ -151,16 +157,16 @@ class StarlarkVisibilityCompletionTest : BazelBasePlatformTestCase() {
       """.trimMargin(),
     )
     myFixture.type("\"")
-    val lookups = myFixture.completeBasic().flatMap { it.allLookupStrings }
+    val lookups = completeBasic().flatMap { it.allLookupStrings }
 
     myFixture.type("12")
-    val lookups2 = myFixture.completeBasic().flatMap { it.allLookupStrings }
+    val lookups2 = completeBasic().flatMap { it.allLookupStrings }
 
     myFixture.type("3")
-    val lookups3 = myFixture.completeBasic().flatMap { it.allLookupStrings }
+    val lookups3 = completeBasic().flatMap { it.allLookupStrings }
 
     myFixture.type("4")
-    val lookups4 = myFixture.completeBasic().flatMap { it.allLookupStrings }
+    val lookups4 = completeBasic().flatMap { it.allLookupStrings }
 
     lookups shouldContainAll
       listOf(
@@ -207,9 +213,15 @@ class StarlarkVisibilityCompletionTest : BazelBasePlatformTestCase() {
       """.trimMargin(),
     )
     myFixture.type("\"")
-    val lookups = myFixture.completeBasic().flatMap { it.allLookupStrings }
+    val lookups = completeBasic().flatMap { it.allLookupStrings }
 
     lookups[0] shouldBeIn listOf("\"//visibility:private\"", "\"//visibility:public\"")
     lookups[1] shouldBeIn listOf("\"//visibility:private\"", "\"//visibility:public\"")
+  }
+
+  private fun completeBasic(): Array<LookupElement> = timeoutRunBlocking {
+    withContext(Dispatchers.EDT) {
+      myFixture.completeBasic()
+    }
   }
 }

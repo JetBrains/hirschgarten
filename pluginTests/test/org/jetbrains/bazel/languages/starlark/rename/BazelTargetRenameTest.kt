@@ -1,18 +1,24 @@
 package org.jetbrains.bazel.languages.starlark.rename
 
+import com.intellij.openapi.application.EDT
+import com.intellij.openapi.application.runReadActionBlocking
+import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.refactoring.BaseRefactoringProcessor
-import com.intellij.testFramework.fixtures.BasePlatformTestCase
+import com.intellij.testFramework.common.timeoutRunBlocking
 import io.kotest.assertions.throwables.shouldThrowWithMessage
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import org.jetbrains.bazel.languages.starlark.StarlarkBundle
 import org.jetbrains.bazel.project.BazelProjectFixtures
-import org.jetbrains.bazel.test.framework.BazelBasePlatformTestCase
-import org.junit.Before
-import org.junit.Test
-import org.junit.runner.RunWith
-import org.junit.runners.JUnit4
+import org.jetbrains.bazel.test.framework.BazelTestApplication
+import org.jetbrains.bazel.test.framework.bazelCodeInsightFixture
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Test
 
-@RunWith(JUnit4::class)
-class BazelTargetRenameTest : BazelBasePlatformTestCase() {
+@BazelTestApplication
+class BazelTargetRenameTest {
+  private val myFixture by bazelCodeInsightFixture()
+
   @Test
   fun `rename target should update short label reference in same file`() {
     myFixture.configureByText(
@@ -29,7 +35,7 @@ class BazelTargetRenameTest : BazelBasePlatformTestCase() {
       """.trimIndent(),
     )
 
-    myFixture.renameBazelTarget("my_lib", "renamed_lib")
+    renameBazelTarget("my_lib", "renamed_lib")
 
     myFixture.checkResult(
       """
@@ -66,8 +72,8 @@ class BazelTargetRenameTest : BazelBasePlatformTestCase() {
       )
       """.trimIndent(),
     )
-    myFixture.openFileInEditor(libFile.virtualFile)
-    myFixture.renameBazelTarget("lib", "renamed_lib")
+    openFileInEditor(libFile.virtualFile)
+    renameBazelTarget("lib", "renamed_lib")
     myFixture.checkResult(
       """
       java_library(
@@ -83,7 +89,7 @@ class BazelTargetRenameTest : BazelBasePlatformTestCase() {
           deps = ["//core:renamed_lib"],
       )
       """.trimIndent(),
-      otherBuildFile.text,
+      runReadActionBlocking { otherBuildFile.text },
     )
   }
 
@@ -106,11 +112,11 @@ class BazelTargetRenameTest : BazelBasePlatformTestCase() {
       This project uses `core_lib` for core functionality.
       """.trimIndent(),
     )
-    val readmeContentBefore = readme.text
+    val readmeContentBefore = runReadActionBlocking { readme.text }
 
-    myFixture.renameBazelTarget("core_lib", "other_lib")
+    renameBazelTarget("core_lib", "other_lib")
 
-    assertEquals(readmeContentBefore, readme.text)
+    assertEquals(readmeContentBefore, runReadActionBlocking { readme.text })
   }
 
   @Test
@@ -129,7 +135,7 @@ class BazelTargetRenameTest : BazelBasePlatformTestCase() {
       """.trimIndent(),
     )
     shouldThrowConflict(StarlarkBundle.message("rename.target.conflict.already.exists", "other_lib", "BUILD")) {
-      myFixture.renameBazelTarget("my_lib", "other_lib")
+      renameBazelTarget("my_lib", "other_lib")
     }
   }
 
@@ -145,7 +151,7 @@ class BazelTargetRenameTest : BazelBasePlatformTestCase() {
           )
       """.trimIndent(),
     )
-    myFixture.renameBazelTarget("my_lib", "new_lib")
+    renameBazelTarget("my_lib", "new_lib")
     myFixture.checkResult(
       """
       def my_macro():
@@ -155,6 +161,18 @@ class BazelTargetRenameTest : BazelBasePlatformTestCase() {
           )
       """.trimIndent()
     )
+  }
+
+  private fun openFileInEditor(file: VirtualFile): Unit = timeoutRunBlocking {
+    withContext(Dispatchers.EDT) {
+      myFixture.openFileInEditor(file)
+    }
+  }
+
+  private fun renameBazelTarget(old: String, new: String): Unit = timeoutRunBlocking {
+    withContext(Dispatchers.EDT) {
+      myFixture.renameBazelTarget(old, new)
+    }
   }
 
   private inline fun shouldThrowConflict(message: String, block: () -> Unit) {

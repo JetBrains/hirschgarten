@@ -5,12 +5,13 @@ import io.kotest.matchers.shouldBe
 import org.jetbrains.bazel.commons.ExcludableValue.Companion.included
 import org.jetbrains.bazel.languages.projectview.directories
 import org.jetbrains.bazel.languages.projectview.targets
-import org.junit.Test
-import org.junit.runner.RunWith
-import org.junit.runners.JUnit4
+import org.jetbrains.bazel.test.framework.BazelTestApplication
+import org.junit.jupiter.api.Assertions.assertFalse
+import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.Test
 import kotlin.io.path.Path
 
-@RunWith(JUnit4::class)
+@BazelTestApplication
 class AddToProjectViewDirectoriesActionTest : ProjectViewDirectoriesActionTestCase("Bazel.AddToProjectViewDirectoriesAction") {
 
   @Test

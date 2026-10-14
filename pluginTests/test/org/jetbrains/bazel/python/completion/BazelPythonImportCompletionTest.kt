@@ -1,23 +1,25 @@
 package org.jetbrains.bazel.python.completion
 
 import com.intellij.bazel.python.backend.updateBazelPythonResolveIndex
+import com.intellij.openapi.application.EDT
 import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.psi.util.QualifiedName
-import com.intellij.testFramework.LightProjectDescriptor
-import com.intellij.testFramework.fixtures.DefaultLightProjectDescriptor
-import com.intellij.testFramework.fixtures.TempDirTestFixture
-import com.intellij.testFramework.fixtures.impl.TempDirTestFixtureImpl
+import com.intellij.testFramework.common.timeoutRunBlocking
 import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.collections.shouldNotContain
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import org.jetbrains.bazel.config.rootDir
-import org.jetbrains.bazel.test.framework.BazelBasePlatformTestCase
+import org.jetbrains.bazel.test.framework.BazelTestApplication
+import org.jetbrains.bazel.test.framework.bazelCodeInsightFixture
+import org.junit.jupiter.api.Test
 import java.nio.file.Path
 
-class BazelPythonImportCompletionTest : BazelBasePlatformTestCase() {
+@BazelTestApplication
+class BazelPythonImportCompletionTest {
+  private val myFixture by bazelCodeInsightFixture()
 
-  override fun getProjectDescriptor(): LightProjectDescriptor? = DefaultLightProjectDescriptor()
-
-  override fun createTempDirTestFixture(): TempDirTestFixture = TempDirTestFixtureImpl()
+  private val project get() = myFixture.project
 
   private lateinit var lib: Path
   private lateinit var things: Path
@@ -50,67 +52,79 @@ class BazelPythonImportCompletionTest : BazelBasePlatformTestCase() {
     )
   }
 
+  @Test
   fun testShouldCompleteIndexedChildOfImportSourceWithoutBazelImports() {
     setUpLibIndex()
 
     myFixture.configureByText("main.py", "from lib.<caret>")
-    val lookups = myFixture.completeBasic().orEmpty().flatMap { it.allLookupStrings }
+    val lookups = completeBasic()
 
     lookups shouldContain "things"
     lookups shouldContain "widgets"
     lookups shouldNotContain "places"
   }
 
+  @Test
   fun testShouldCompleteTopLevelQualifiedNameInFromImport() {
     setUpLibIndex()
 
     myFixture.configureByText("main.py", "from li<caret>")
-    val lookups = myFixture.completeBasic().orEmpty().flatMap { it.allLookupStrings }
+    val lookups = completeBasic()
 
     lookups shouldContain "lib"
     lookups shouldContain "libExtra"
   }
 
+  @Test
   fun testShouldCompleteTopLevelQualifiedNameInPlainImport() {
     setUpLibIndex()
 
     myFixture.configureByText("main.py", "import li<caret>")
-    val lookups = myFixture.completeBasic().orEmpty().flatMap { it.allLookupStrings }
+    val lookups = completeBasic()
 
     lookups shouldContain "lib"
     lookups shouldContain "libExtra"
   }
 
+  @Test
   fun testShouldCompleteIndexedChildOfImportSourceInPlainImport() {
     setUpLibIndex()
 
     myFixture.configureByText("main.py", "import lib.<caret>")
-    val lookups = myFixture.completeBasic().orEmpty().flatMap { it.allLookupStrings }
+    val lookups = completeBasic()
 
     lookups shouldContain "things"
     lookups shouldContain "widgets"
     lookups shouldNotContain "places"
   }
 
+  @Test
   fun testShouldCompleteChildOfImportSourceWithTrailingImportKeyword() {
     setUpLibIndex()
 
     myFixture.configureByText("main.py", "from lib.<caret> import x")
-    val lookups = myFixture.completeBasic().orEmpty().flatMap { it.allLookupStrings }
+    val lookups = completeBasic()
 
     lookups shouldContain "things"
     lookups shouldContain "widgets"
     lookups shouldNotContain "places"
   }
 
+  @Test
   fun testShouldCompleteChildOfImportSourceInPlainImportWithTrailingCode() {
     setUpLibIndex()
 
     myFixture.configureByText("main.py", "import lib.<caret>\nx = 1\n")
-    val lookups = myFixture.completeBasic().orEmpty().flatMap { it.allLookupStrings }
+    val lookups = completeBasic()
 
     lookups shouldContain "things"
     lookups shouldContain "widgets"
     lookups shouldNotContain "places"
+  }
+
+  private fun completeBasic(): List<String> = timeoutRunBlocking {
+    withContext(Dispatchers.EDT) {
+      myFixture.completeBasic().orEmpty().flatMap { it.allLookupStrings }
+    }
   }
 }

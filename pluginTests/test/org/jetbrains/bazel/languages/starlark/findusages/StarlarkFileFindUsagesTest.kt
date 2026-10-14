@@ -6,16 +6,16 @@ import com.intellij.openapi.application.runReadActionBlocking
 import com.intellij.psi.PsiReference
 import com.intellij.psi.search.LocalSearchScope
 import com.intellij.psi.search.searches.ReferencesSearch
+import com.intellij.testFramework.common.timeoutRunBlocking
 import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.collections.shouldBeSingleton
 import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.shouldBe
 import org.jetbrains.bazel.languages.starlark.fixtures.StarlarkFindUsagesTestCase
-import org.junit.Test
-import org.junit.runner.RunWith
-import org.junit.runners.JUnit4
+import org.jetbrains.bazel.test.framework.BazelTestApplication
+import org.junit.jupiter.api.Test
 
-@RunWith(JUnit4::class)
+@BazelTestApplication
 class StarlarkFileFindUsagesTest : StarlarkFindUsagesTestCase() {
   @Test
   fun `should find usage for java file`() {
@@ -38,7 +38,7 @@ class StarlarkFileFindUsagesTest : StarlarkFindUsagesTestCase() {
       """.trimIndent(),
     )
 
-    val usages = myFixture.findUsages(javaFile).mapNotNull { it.element?.text }
+    val usages = timeoutRunBlocking { readAction { myFixture.findUsages(javaFile).mapNotNull { it.element?.text } } }
     usages.shouldContain(
       """
       "com/example/MyClass.java"
@@ -67,7 +67,7 @@ class StarlarkFileFindUsagesTest : StarlarkFindUsagesTestCase() {
       """.trimIndent(),
     )
 
-    val usages = myFixture.findUsages(ktFile).mapNotNull { it.element?.text }
+    val usages = timeoutRunBlocking { readAction { myFixture.findUsages(ktFile).mapNotNull { it.element?.text } } }
     usages.shouldContain(
       """
       "com/example/MyClass.kt"
@@ -97,7 +97,7 @@ class StarlarkFileFindUsagesTest : StarlarkFindUsagesTestCase() {
       """.trimIndent(),
     )
 
-    val usages = myFixture.findUsages(ktFile).mapNotNull { it.element?.parent?.text }
+    val usages = timeoutRunBlocking { readAction { myFixture.findUsages(ktFile).mapNotNull { it.element?.parent?.text } } }
     usages.shouldContain(
       """
       glob(["**/*.kt"])
@@ -127,7 +127,7 @@ class StarlarkFileFindUsagesTest : StarlarkFindUsagesTestCase() {
       """.trimIndent(),
     )
 
-    val usages = myFixture.findUsages(ktFile)
+    val usages = timeoutRunBlocking { readAction { myFixture.findUsages(ktFile) } }
     usages.shouldBeEmpty()
   }
 
@@ -153,7 +153,7 @@ class StarlarkFileFindUsagesTest : StarlarkFindUsagesTestCase() {
       """.trimIndent(),
     )
 
-    val usages = myFixture.findUsages(ktFile)
+    val usages = timeoutRunBlocking { readAction { myFixture.findUsages(ktFile) } }
     usages.shouldBeEmpty()
   }
 
@@ -185,8 +185,12 @@ class StarlarkFileFindUsagesTest : StarlarkFindUsagesTestCase() {
       )
       """.trimIndent(),
     )
-    val localScope = LocalSearchScope(buildFile1)
-    val usages = runReadActionBlocking { ReferencesSearch.search(javaFile, localScope).findAll() }
-    usages.shouldBeSingleton { it.element.containingFile shouldBe buildFile1.containingFile }
+    val usages = runReadActionBlocking {
+      val localScope = LocalSearchScope(buildFile1)
+      ReferencesSearch.search(javaFile, localScope).findAll()
+    }
+    runReadActionBlocking {
+      usages.shouldBeSingleton { it.element.containingFile shouldBe buildFile1.containingFile }
+    }
   }
 }

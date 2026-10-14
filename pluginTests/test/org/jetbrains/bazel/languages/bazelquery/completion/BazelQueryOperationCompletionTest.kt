@@ -1,20 +1,25 @@
 package org.jetbrains.bazel.languages.bazelquery.completion
 
+import com.intellij.openapi.application.EDT
+import com.intellij.testFramework.common.timeoutRunBlocking
 import io.kotest.matchers.collections.shouldContainAll
-import org.jetbrains.bazel.test.framework.BazelBasePlatformTestCase
-import org.junit.Test
-import org.junit.runner.RunWith
-import org.junit.runners.JUnit4
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import org.jetbrains.bazel.test.framework.BazelTestApplication
+import org.jetbrains.bazel.test.framework.bazelCodeInsightFixture
+import org.junit.jupiter.api.Test
 
-@RunWith(JUnit4::class)
-class BazelQueryOperationCompletionTest : BazelBasePlatformTestCase() {
+@BazelTestApplication
+class BazelQueryOperationCompletionTest {
+  private val myFixture by bazelCodeInsightFixture()
+
   @Test
   fun `beginning of line should complete operations`() {
     // given
     myFixture.configureByText(".bazelquery", "<caret>")
 
     // when
-    val lookups = myFixture.completeBasic().flatMap { it.allLookupStrings }
+    val lookups = completeBasic()
 
     // then
     lookups shouldContainAll knownOperations
@@ -26,7 +31,7 @@ class BazelQueryOperationCompletionTest : BazelBasePlatformTestCase() {
     myFixture.configureByText(".bazelquery", """l<caret>""")
 
     // when
-    val lookups = myFixture.completeBasic().flatMap { it.allLookupStrings }
+    val lookups = completeBasic()
 
     // then
     lookups shouldContainAll listOf("let  in")
@@ -38,7 +43,7 @@ class BazelQueryOperationCompletionTest : BazelBasePlatformTestCase() {
     myFixture.configureByText(".bazelquery", """"<caret>""")
 
     // when
-    val lookups = myFixture.completeBasic().flatMap { it.allLookupStrings }
+    val lookups = completeBasic()
 
     // then
     lookups shouldContainAll knownOperations
@@ -50,7 +55,7 @@ class BazelQueryOperationCompletionTest : BazelBasePlatformTestCase() {
     myFixture.configureByText(".bazelquery", "'<caret>'")
 
     // when
-    val lookups = myFixture.completeBasic().flatMap { it.allLookupStrings }
+    val lookups = completeBasic()
 
     // then
     lookups shouldContainAll knownOperations
@@ -62,9 +67,15 @@ class BazelQueryOperationCompletionTest : BazelBasePlatformTestCase() {
     myFixture.configureByText(".bazelquery", "//my:target <caret>")
 
     // when
-    val lookups = myFixture.completeBasic().flatMap { it.allLookupStrings }
+    val lookups = completeBasic()
 
     // then
     lookups shouldContainAll listOf("union", "except", "intersect")
+  }
+
+  private fun completeBasic(): List<String> = timeoutRunBlocking {
+    withContext(Dispatchers.EDT) {
+      myFixture.completeBasic().flatMap { it.allLookupStrings }
+    }
   }
 }

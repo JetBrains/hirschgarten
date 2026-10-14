@@ -3,11 +3,10 @@ package org.jetbrains.bazel.languages.starlark.annotation
 import org.jetbrains.bazel.languages.bazelversion.service.BazelVersionCheckerService
 import org.jetbrains.bazel.languages.starlark.StarlarkBundle
 import org.jetbrains.bazel.languages.starlark.fixtures.StarlarkAnnotatorTestCase
-import org.junit.Test
-import org.junit.runner.RunWith
-import org.junit.runners.JUnit4
+import org.jetbrains.bazel.test.framework.BazelTestApplication
+import org.junit.jupiter.api.Test
 
-@RunWith(JUnit4::class)
+@BazelTestApplication
 class StarlarkGlobAnnotatorTest : StarlarkAnnotatorTestCase() {
   private val globMsg = StarlarkBundle.message("annotator.glob.empty")
   private val patternMsg = StarlarkBundle.message("annotator.glob.empty.pattern")

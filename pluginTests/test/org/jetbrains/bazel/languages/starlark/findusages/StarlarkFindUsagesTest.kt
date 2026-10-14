@@ -1,21 +1,26 @@
 package org.jetbrains.bazel.languages.starlark.findusages
 
+import com.intellij.openapi.application.EDT
+import com.intellij.openapi.application.runReadActionBlocking
+import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.util.PsiTreeUtil
-import com.intellij.testFramework.fixtures.BasePlatformTestCase
+import com.intellij.testFramework.common.timeoutRunBlocking
 import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.nulls.shouldNotBeNull
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkNamedElement
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkTargetExpression
 import org.jetbrains.bazel.project.BazelProjectFixtures
 import org.jetbrains.bazel.languages.starlark.psi.functions.StarlarkParameter
-import org.jetbrains.bazel.test.framework.BazelBasePlatformTestCase
-import org.junit.Test
-import org.junit.runner.RunWith
-import org.junit.runners.JUnit4
+import org.jetbrains.bazel.test.framework.BazelTestApplication
+import org.jetbrains.bazel.test.framework.bazelCodeInsightFixture
+import org.junit.jupiter.api.Test
 
-@RunWith(JUnit4::class)
-class StarlarkFindUsagesTest : BazelBasePlatformTestCase() {
+@BazelTestApplication
+class StarlarkFindUsagesTest {
+  private val myFixture by bazelCodeInsightFixture()
 
   // region Functions
 
@@ -53,7 +58,7 @@ class StarlarkFindUsagesTest : BazelBasePlatformTestCase() {
       result = helper(42)
       """.trimIndent(),
     )
-    myFixture.openFileInEditor(defsFile.virtualFile)
+    openFileInEditor(defsFile.virtualFile)
     myFixture.findStarlarkUsages("helper") shouldHaveSize 2
   }
 
@@ -118,7 +123,7 @@ class StarlarkFindUsagesTest : BazelBasePlatformTestCase() {
       x = MY_CONST + 1
       """.trimIndent(),
     )
-    myFixture.openFileInEditor(defsFile.virtualFile)
+    openFileInEditor(defsFile.virtualFile)
     myFixture.findStarlarkUsages("MY_CONST") shouldHaveSize 2
   }
 
@@ -220,10 +225,13 @@ class StarlarkFindUsagesTest : BazelBasePlatformTestCase() {
           return x
       """.trimIndent(),
     )
-    val compTarget = PsiTreeUtil.collectElementsOfType(myFixture.file, StarlarkTargetExpression::class.java)
-      .findLast { it.name == "x" }
-      .shouldNotBeNull()
-    myFixture.findUsages(compTarget) shouldHaveSize 1
+    val usages = runReadActionBlocking {
+      val compTarget = PsiTreeUtil.collectElementsOfType(myFixture.file, StarlarkTargetExpression::class.java)
+        .findLast { it.name == "x" }
+        .shouldNotBeNull()
+      myFixture.findUsages(compTarget)
+    }
+    usages shouldHaveSize 1
   }
 
   @Test
@@ -236,10 +244,13 @@ class StarlarkFindUsagesTest : BazelBasePlatformTestCase() {
       y = x + 2
       """.trimIndent(),
     )
-    val lambdaParam = PsiTreeUtil.collectElementsOfType(myFixture.file, StarlarkParameter::class.java)
-      .find { it.name == "x" }
-      .shouldNotBeNull()
-    myFixture.findUsages(lambdaParam) shouldHaveSize 1
+    val usages = runReadActionBlocking {
+      val lambdaParam = PsiTreeUtil.collectElementsOfType(myFixture.file, StarlarkParameter::class.java)
+        .find { it.name == "x" }
+        .shouldNotBeNull()
+      myFixture.findUsages(lambdaParam)
+    }
+    usages shouldHaveSize 1
   }
 
   // endregion
@@ -282,11 +293,19 @@ class StarlarkFindUsagesTest : BazelBasePlatformTestCase() {
   }
 
   // endregion
+
+  private fun openFileInEditor(file: VirtualFile): Unit = timeoutRunBlocking {
+    withContext(Dispatchers.EDT) {
+      myFixture.openFileInEditor(file)
+    }
+  }
 }
 
 private fun com.intellij.testFramework.fixtures.CodeInsightTestFixture.findStarlarkUsages(name: String) =
-  findUsages(
-    PsiTreeUtil.collectElementsOfType(file, StarlarkNamedElement::class.java)
-      .find { it.name == name }
-      ?: error("StarlarkNamedElement with name '$name' not found"),
-  )
+  runReadActionBlocking {
+    findUsages(
+      PsiTreeUtil.collectElementsOfType(file, StarlarkNamedElement::class.java)
+        .find { it.name == name }
+        ?: error("StarlarkNamedElement with name '$name' not found"),
+    )
+  }

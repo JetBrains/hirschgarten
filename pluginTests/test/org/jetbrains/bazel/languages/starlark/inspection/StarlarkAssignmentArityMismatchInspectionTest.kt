@@ -2,22 +2,27 @@ package org.jetbrains.bazel.languages.starlark.inspection
 
 import com.intellij.codeInspection.InspectionManager
 import com.intellij.codeInspection.ProblemsHolder
+import com.intellij.openapi.application.readAction
 import com.intellij.psi.util.PsiTreeUtil
+import com.intellij.testFramework.common.timeoutRunBlocking
 import org.jetbrains.bazel.languages.starlark.StarlarkBundle
 import org.jetbrains.bazel.languages.starlark.psi.statements.StarlarkAssignmentStatement
-import org.jetbrains.bazel.test.framework.BazelBasePlatformTestCase
-import org.junit.Before
-import org.junit.Test
-import org.junit.runner.RunWith
-import org.junit.runners.JUnit4
+import org.jetbrains.bazel.test.framework.BazelTestApplication
+import org.jetbrains.bazel.test.framework.bazelCodeInsightFixture
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
 
-@RunWith(JUnit4::class)
-class StarlarkAssignmentArityMismatchInspectionTest : BazelBasePlatformTestCase() {
+@BazelTestApplication
+class StarlarkAssignmentArityMismatchInspectionTest {
+  private val myFixture by bazelCodeInsightFixture()
+
   private val twoTargetsZeroValues = StarlarkBundle.message("inspection.description.assignment.arity.mismatch", 2, 0)
   private val twoTargetsOneValue = StarlarkBundle.message("inspection.description.assignment.arity.mismatch", 2, 1)
   private val twoTargetsThreeValues = StarlarkBundle.message("inspection.description.assignment.arity.mismatch", 2, 3)
 
-  @Before
+  @BeforeEach
   fun beforeEach() {
     myFixture.enableInspections(StarlarkAssignmentArityMismatchInspection())
   }
@@ -228,7 +233,7 @@ class StarlarkAssignmentArityMismatchInspectionTest : BazelBasePlatformTestCase(
   }
 
   @Test
-  fun `literal assignment targets should not crash`() {
+  fun `literal assignment targets should not crash`(): Unit = timeoutRunBlocking {
     val file = myFixture.configureByText(
       "test.bzl",
       """
@@ -240,12 +245,16 @@ class StarlarkAssignmentArityMismatchInspectionTest : BazelBasePlatformTestCase(
       {1: 2} = {1: 2}
       """.trimIndent(),
     )
-    val holder = ProblemsHolder(InspectionManager.getInstance(project), file, false)
-    val visitor = StarlarkAssignmentArityMismatchInspection().buildVisitor(holder, false)
-    val assignments = PsiTreeUtil.findChildrenOfType(file, StarlarkAssignmentStatement::class.java)
-    assertSize(6, assignments)
-    for (assignment in assignments) { assignment.accept(visitor) }
-    assertEmpty(holder.results)
+    readAction {
+      val holder = ProblemsHolder(InspectionManager.getInstance(myFixture.project), file, false)
+      val visitor = StarlarkAssignmentArityMismatchInspection().buildVisitor(holder, false)
+      val assignments = PsiTreeUtil.findChildrenOfType(file, StarlarkAssignmentStatement::class.java)
+      assertEquals(6, assignments.size)
+      for (assignment in assignments) {
+        assignment.accept(visitor)
+      }
+      assertTrue(holder.results.isEmpty())
+    }
   }
 
   @Test
@@ -314,4 +323,3 @@ class StarlarkAssignmentArityMismatchInspectionTest : BazelBasePlatformTestCase(
     myFixture.checkHighlighting(true, false, false)
   }
 }
-

@@ -1,5 +1,7 @@
 package org.jetbrains.bazel.java.ui.gutters
 
+import com.intellij.openapi.Disposable
+import com.intellij.openapi.application.runReadActionBlocking
 import com.intellij.psi.PsiClass
 import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiIdentifier
@@ -8,6 +10,7 @@ import com.intellij.psi.impl.source.tree.LeafPsiElement
 import com.intellij.psi.util.childrenOfType
 import com.intellij.testFramework.ExtensionTestUtil
 import com.intellij.testFramework.fixtures.CodeInsightTestFixture
+import com.intellij.testFramework.junit5.TestDisposable
 import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
 import org.jetbrains.bazel.commons.RuleType
@@ -17,18 +20,22 @@ import org.jetbrains.bazel.intellij.JetBrainsTestRunner
 import org.jetbrains.bazel.kotlin.ui.gutters.BazelKotlinRunConfigurationProducer
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.sync.JavaLanguageClass
-import org.jetbrains.bazel.test.framework.BazelBasePlatformTestCase
+import org.jetbrains.bazel.test.framework.BazelTestApplication
+import org.jetbrains.bazel.test.framework.bazelCodeInsightFixture
 import org.jetbrains.bazel.ui.gutters.NonImportedBuildTarget
 import org.jetbrains.kotlin.psi.KtClass
 import org.jetbrains.kotlin.psi.KtClassBody
 import org.jetbrains.kotlin.psi.KtNamedFunction
 import org.jetbrains.kotlin.psi.psiUtil.getChildOfType
-import org.junit.Test
-import org.junit.runner.RunWith
-import org.junit.runners.JUnit4
+import org.junit.jupiter.api.Test
 
-@RunWith(JUnit4::class)
-class BazelJavaRunConfigurationProducerTest : BazelBasePlatformTestCase() {
+@BazelTestApplication
+class BazelJavaRunConfigurationProducerTest {
+  private val myFixture by bazelCodeInsightFixture()
+
+  @TestDisposable
+  lateinit var disposable: Disposable
+
   private val mockTarget = NonImportedBuildTarget(
     Label.synthetic("mock"),
     TargetKind(
@@ -74,7 +81,7 @@ class BazelJavaRunConfigurationProducerTest : BazelBasePlatformTestCase() {
   fun `should return single test filter for Kotlin test function`() {
     // given
     val testFile = myFixture.getKotlinTestFile()
-    val psiElement =
+    val psiElement = runReadActionBlocking {
       testFile
         .getChildOfType<KtClass>()
         ?.getChildOfType<KtClassBody>()
@@ -82,11 +89,12 @@ class BazelJavaRunConfigurationProducerTest : BazelBasePlatformTestCase() {
         ?.getChildOfType<LeafPsiElement>()
         ?.nextSibling
         ?.nextSibling
+    }
     psiElement.shouldNotBeNull()
     val runConfigurationProducer = BazelKotlinRunConfigurationProducer()
 
     // when
-    val result = runConfigurationProducer.getGutterAction(psiElement, mockTarget)?.testFilter
+    val result = runReadActionBlocking { runConfigurationProducer.getGutterAction(psiElement, mockTarget)?.testFilter }
 
     // then
     val expectedSingleTestFilter = "org.jetbrains.bazel.ui.gutters.BspJVMRunLineMarkerContributorTestData.should add 1 plus 1$"
@@ -97,17 +105,18 @@ class BazelJavaRunConfigurationProducerTest : BazelBasePlatformTestCase() {
   fun `should return single test filter for Kotlin test class`() {
     // given
     val testFile = myFixture.getKotlinTestFile()
-    val psiElement =
+    val psiElement = runReadActionBlocking {
       testFile
         .getChildOfType<KtClass>()
         ?.getChildOfType<LeafPsiElement>()
         ?.nextSibling
         ?.nextSibling
+    }
     psiElement.shouldNotBeNull()
     val runConfigurationProducer = BazelKotlinRunConfigurationProducer()
 
     // when
-    val result = runConfigurationProducer.getGutterAction(psiElement, mockTarget)?.testFilter
+    val result = runReadActionBlocking { runConfigurationProducer.getGutterAction(psiElement, mockTarget)?.testFilter }
 
     // then
     val expectedSingleTestFilter = "org.jetbrains.bazel.ui.gutters.BspJVMRunLineMarkerContributorTestData"
@@ -137,7 +146,7 @@ class BazelJavaRunConfigurationProducerTest : BazelBasePlatformTestCase() {
   fun `should return single test filter for Java test function`() {
     // given
     val testFile = myFixture.getJavaTestFile()
-    val psiElement =
+    val psiElement = runReadActionBlocking {
       testFile
         .getChildOfType<PsiClass>()
         ?.getChildOfType<PsiMethod>()
@@ -145,11 +154,12 @@ class BazelJavaRunConfigurationProducerTest : BazelBasePlatformTestCase() {
         ?.nextSibling
         ?.nextSibling
         ?.nextSibling
+    }
     psiElement.shouldNotBeNull()
     val runConfigurationProducer = BazelJavaRunConfigurationProducer()
 
     // when
-    val result = runConfigurationProducer.getGutterAction(psiElement, mockTarget)?.testFilter
+    val result = runReadActionBlocking { runConfigurationProducer.getGutterAction(psiElement, mockTarget)?.testFilter }
 
     // then
     val expectedSingleTestFilter = "org.jetbrains.bazel.ui.gutters.BspJVMRunLineMarkerContributorTestData.addOnePlusOne$"
@@ -160,18 +170,19 @@ class BazelJavaRunConfigurationProducerTest : BazelBasePlatformTestCase() {
   fun `should return FQN test filter for Java test class`() {
     // given
     val testFile = myFixture.getJavaTestFile()
-    val psiElement =
+    val psiElement = runReadActionBlocking {
       testFile
         .getChildOfType<PsiClass>()
         ?.getChildOfType<LeafPsiElement>()
         ?.nextSibling
         ?.nextSibling
         ?.nextSibling
+    }
     psiElement.shouldNotBeNull()
     val runConfigurationProducer = BazelJavaRunConfigurationProducer()
 
     // when
-    val result = runConfigurationProducer.getGutterAction(psiElement, mockTarget)?.testFilter
+    val result = runReadActionBlocking { runConfigurationProducer.getGutterAction(psiElement, mockTarget)?.testFilter }
 
     // then
     val expectedSingleTestFilter = "org.jetbrains.bazel.ui.gutters.BspJVMRunLineMarkerContributorTestData"
@@ -204,11 +215,11 @@ class BazelJavaRunConfigurationProducerTest : BazelBasePlatformTestCase() {
   fun `should return FQN without $ for nested JUnit 4 test class`() {
     // given
     myFixture.getJavaNestedTestFile()
-    val psiElement = myFixture.findElementByText("nestedTest", PsiMethod::class.java).childrenOfType<PsiIdentifier>().first()
+    val psiElement = runReadActionBlocking { myFixture.findElementByText("nestedTest", PsiMethod::class.java).childrenOfType<PsiIdentifier>().first() }
     val runConfigurationProducer = BazelJavaRunConfigurationProducer()
 
     // when
-    val result = runConfigurationProducer.getGutterAction(psiElement, mockTarget)?.testFilter
+    val result = runReadActionBlocking { runConfigurationProducer.getGutterAction(psiElement, mockTarget)?.testFilter }
 
     // then
     val expectedSingleTestFilter = "com.example.OuterTest.NestedTest.nestedTest$"
@@ -216,18 +227,18 @@ class BazelJavaRunConfigurationProducerTest : BazelBasePlatformTestCase() {
   }
 
   private fun registerJetBrainsTestRunner() =
-    ExtensionTestUtil.maskExtensions(JvmTestFilterExtension.ep, listOf(JetBrainsTestFilterExtension()), testRootDisposable)
+    ExtensionTestUtil.maskExtensions(JvmTestFilterExtension.ep, listOf(JetBrainsTestFilterExtension()), disposable)
 
   @Test
   fun `should keep $ in a nested test class for the JetBrains test runner`() {
     // given
     registerJetBrainsTestRunner()
     myFixture.getJavaNestedTestFile()
-    val psiElement = myFixture.findElementByText("NestedTest", PsiClass::class.java).childrenOfType<PsiIdentifier>().first()
+    val psiElement = runReadActionBlocking { myFixture.findElementByText("NestedTest", PsiClass::class.java).childrenOfType<PsiIdentifier>().first() }
     val runConfigurationProducer = BazelJavaRunConfigurationProducer()
 
     // when
-    val result = runConfigurationProducer.getGutterAction(psiElement, jetBrainsTestRunnerTarget)?.testFilter
+    val result = runReadActionBlocking { runConfigurationProducer.getGutterAction(psiElement, jetBrainsTestRunnerTarget)?.testFilter }
 
     // then
     // JB_TEST_FILTER selects the class by name, so the dollar of the JVM name has to survive. A dotted name
@@ -240,11 +251,11 @@ class BazelJavaRunConfigurationProducerTest : BazelBasePlatformTestCase() {
     // given
     registerJetBrainsTestRunner()
     myFixture.getJavaNestedTestFile()
-    val psiElement = myFixture.findElementByText("nestedTest", PsiMethod::class.java).childrenOfType<PsiIdentifier>().first()
+    val psiElement = runReadActionBlocking { myFixture.findElementByText("nestedTest", PsiMethod::class.java).childrenOfType<PsiIdentifier>().first() }
     val runConfigurationProducer = BazelJavaRunConfigurationProducer()
 
     // when
-    val result = runConfigurationProducer.getGutterAction(psiElement, jetBrainsTestRunnerTarget)?.testFilter
+    val result = runReadActionBlocking { runConfigurationProducer.getGutterAction(psiElement, jetBrainsTestRunnerTarget)?.testFilter }
 
     // then
     result shouldBe "com.example.OuterTest\$NestedTest:nestedTest:"
