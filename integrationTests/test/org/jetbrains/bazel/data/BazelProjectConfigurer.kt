@@ -2,6 +2,7 @@ package org.jetbrains.bazel.data
 
 import com.intellij.ide.starter.ide.IDETestContext
 import com.intellij.openapi.util.io.NioFiles
+import org.jetbrains.bazel.base.HermeticityGuard
 import org.jetbrains.bazel.commons.constants.Constants
 import org.jetbrains.bazel.test.framework.serializeBazelRcPath
 import org.jetbrains.bazel.test.framework.toBazelRcPath
@@ -27,11 +28,11 @@ object BazelProjectConfigurer {
   private const val USER_BAZELRC_IMPORT = "try-import %workspace%/user.bazelrc"
   private val nestedBazelInvocationSequence = AtomicLong()
   private val nestedBazelProcessIdentity = "${ProcessHandle.current().pid()}-${System.currentTimeMillis()}"
-  private val windowsNestedBazelRoots = ConcurrentHashMap.newKeySet<Path>()
+  private val nestedBazelRoots = ConcurrentHashMap.newKeySet<Path>()
 
   init {
     Runtime.getRuntime().addShutdownHook(
-      Thread(::cleanupWindowsNestedBazelRoots, "Windows nested Bazel roots cleanup"),
+      Thread(::cleanupNestedBazelRoots, "Nested Bazel roots cleanup"),
     )
   }
 
@@ -40,7 +41,6 @@ object BazelProjectConfigurer {
     createProjectView: Boolean = true,
     bazelServerMaxIdleSecs: Int? = null,
   ) {
-    runBazelClean(context)
     configureProjectFiles(
       context,
       createProjectView = createProjectView,
@@ -114,20 +114,6 @@ register_toolchains(
     }
   }
 
-  private fun runBazelClean(context: IDETestContext) {
-    if (System.getenv("TEST_TMPDIR") != null) {
-      return
-    }
-
-    val exitCode =
-      ProcessBuilder("bazel", "clean", "--expunge")
-        .directory(context.resolvedBazelProjectHome.toFile())
-        .start()
-        .waitFor()
-    check(exitCode == 0) { "Bazel clean exited with code $exitCode" }
-  }
-
-
   private val defaultCacheRoot: Path =
     Path.of(System.getProperty("user.home"), ".cache", "ide-starter-bazel")
 
@@ -176,6 +162,11 @@ register_toolchains(
     writeGeneratedBazelSettings(context.resolvedBazelProjectHome, lines)
   }
 
+  /**
+   * Gives the nested Bazel of one context its own output user root and output base.
+   * Another test, or another run on the same host, then cannot share its server, its outputs or its lock.
+   * The install base, the repository cache and the disk cache stay shared, because Bazel supports their concurrent use.
+   */
   internal fun nestedBazelStartupOptions(
     projectRoot: Path,
     environment: Map<String, String> = System.getenv(),
@@ -183,28 +174,39 @@ register_toolchains(
     userHome: String = System.getProperty("user.home"),
     invocationId: String? = null,
     registerCleanup: Boolean = false,
-  ): List<String> = if (hostOs == IdeStarterOs.WINDOWS && environment.containsKey("TEST_TMPDIR")) {
-    val home = userHome.trimEnd('/', '\\')
-    val rootKey = windowsNestedBazelRootKey(
+    tempDir: String = System.getProperty("java.io.tmpdir"),
+  ): List<String> {
+    val rootKey = nestedBazelRootKey(
       projectRoot,
       environment,
       invocationId ?: "$nestedBazelProcessIdentity-${nestedBazelInvocationSequence.incrementAndGet()}",
     )
-    val invocationRoot = "$home/ijr/$rootKey"
-    if (registerCleanup) {
-      windowsNestedBazelRoots.add(Path.of(userHome).resolve("ijr").resolve(rootKey))
+    if (hostOs == IdeStarterOs.WINDOWS && environment.containsKey("TEST_TMPDIR")) {
+      val home = userHome.trimEnd('/', '\\')
+      val invocationRoot = "$home/ijr/$rootKey"
+      if (registerCleanup) {
+        nestedBazelRoots.add(Path.of(userHome).resolve("ijr").resolve(rootKey))
+      }
+      return listOf(
+        "startup --batch",
+        "startup --output_user_root=${serializeBazelRcPath("$invocationRoot/u")}",
+        "startup --install_base=${serializeBazelRcPath("$invocationRoot/i")}",
+        "startup --output_base=${serializeBazelRcPath("$invocationRoot/b")}",
+      )
     }
-    listOf(
-      "startup --batch",
-      "startup --output_user_root=${serializeBazelRcPath("$invocationRoot/u")}",
-      "startup --install_base=${serializeBazelRcPath("$invocationRoot/i")}",
-      "startup --output_base=${serializeBazelRcPath("$invocationRoot/b")}",
+    // Bazel passes the real path of the output base to its server. Write the real path, so the teardown can find the server.
+    val realTempDir = runCatching { Path.of(tempDir).toRealPath() }.getOrElse { Path.of(tempDir).toAbsolutePath() }
+    val invocationRoot = realTempDir.resolve("ijr").resolve(rootKey)
+    if (registerCleanup) {
+      nestedBazelRoots.add(invocationRoot)
+    }
+    return listOf(
+      "startup --output_user_root=${invocationRoot.resolve("u").toBazelRcPath()}",
+      "startup --output_base=${invocationRoot.resolve("b").toBazelRcPath()}",
     )
-  } else {
-    emptyList()
   }
 
-  private fun windowsNestedBazelRootKey(
+  private fun nestedBazelRootKey(
     projectRoot: Path,
     environment: Map<String, String>,
     invocationId: String,
@@ -242,17 +244,22 @@ register_toolchains(
     )
   }
 
+  /** The output bases that this JVM wrote to a `user.bazelrc` and did not delete yet. */
+  internal fun registeredOutputBases(): Set<String> =
+    nestedBazelRoots.mapTo(mutableSetOf()) { HermeticityGuard.normalize(it.resolve("b").toString()) }
+
   // Bazel plants junctions inside the output base (execroot source forest, local external repos).
   // NIO reports a Windows junction as a directory rather than a symlink, so a plain recursive
   // delete descends through it and empties the junction target (e.g. the fixture project).
   // NioFiles.deleteRecursively deletes the junction entry itself and skips its subtree.
-  internal fun cleanupWindowsNestedBazelRoots() {
-    windowsNestedBazelRoots.forEach { root ->
+  internal fun cleanupNestedBazelRoots(outputBases: Set<String>? = null) {
+    nestedBazelRoots.toList().forEach { root ->
+      if (outputBases != null && HermeticityGuard.normalize(root.resolve("b").toString()) !in outputBases) return@forEach
       try {
         if (root.exists()) {
           NioFiles.deleteRecursively(root)
         }
-        windowsNestedBazelRoots.remove(root)
+        nestedBazelRoots.remove(root)
       } catch (_: Exception) {
         // Best-effort cleanup; a terminated Bazel process may still hold a Windows file lock.
       }
@@ -338,6 +345,6 @@ register_toolchains(
       """.trimIndent()
   }
 
-  private val IDETestContext.resolvedBazelProjectHome: Path
+  internal val IDETestContext.resolvedBazelProjectHome: Path
     get() = resolvedProjectHome.takeIf { it.isDirectory() && it.name != ".ijwb" } ?: resolvedProjectHome.parent
 }
