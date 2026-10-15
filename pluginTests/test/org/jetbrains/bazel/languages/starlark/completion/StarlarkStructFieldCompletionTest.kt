@@ -1,10 +1,6 @@
 package org.jetbrains.bazel.languages.starlark.completion
 
-import com.intellij.openapi.application.EDT
-import com.intellij.testFramework.common.timeoutRunBlocking
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 import org.jetbrains.bazel.test.framework.BazelTestApplication
 import org.jetbrains.bazel.test.framework.bazelCodeInsightFixture
 import org.junit.jupiter.api.Test
@@ -111,9 +107,5 @@ class StarlarkStructFieldCompletionTest {
     completeBasicLookupStrings() shouldContainExactlyInAnyOrder listOf("delta", "gamma")
   }
 
-  private fun completeBasicLookupStrings(): List<String> = timeoutRunBlocking {
-    withContext(Dispatchers.EDT) {
-      myFixture.completeBasic().flatMap { it.allLookupStrings }
-    }
-  }
+  private fun completeBasicLookupStrings(): List<String> = myFixture.completeBasic().flatMap { it.allLookupStrings }
 }

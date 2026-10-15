@@ -1,15 +1,11 @@
 package org.jetbrains.bazel.languages.starlark.completion
 
 import com.intellij.codeInsight.lookup.LookupElement
-import com.intellij.openapi.application.EDT
 import com.intellij.openapi.application.runReadActionBlocking
-import com.intellij.testFramework.common.timeoutRunBlocking
 import com.intellij.testFramework.fixtures.TestLookupElementPresentation
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.collections.shouldNotContainAnyOf
 import io.kotest.matchers.shouldBe
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 import org.jetbrains.bazel.test.framework.BazelTestApplication
 import org.jetbrains.bazel.test.framework.bazelCodeInsightFixture
 import org.junit.jupiter.api.Test
@@ -189,9 +185,5 @@ class StarlarkFileCompletionTest {
       )
   }
 
-  private fun completeBasic(): Array<LookupElement> = timeoutRunBlocking {
-    withContext(Dispatchers.EDT) {
-      myFixture.completeBasic()
-    }
-  }
+  private fun completeBasic(): Array<LookupElement> = myFixture.completeBasic()
 }

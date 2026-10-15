@@ -1,10 +1,6 @@
 package org.jetbrains.bazel.languages.bazelquery.completion
 
-import com.intellij.openapi.application.EDT
-import com.intellij.testFramework.common.timeoutRunBlocking
 import io.kotest.matchers.collections.shouldContainAll
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 import org.jetbrains.bazel.test.framework.BazelTestApplication
 import org.jetbrains.bazel.test.framework.bazelCodeInsightFixture
 import org.junit.jupiter.api.Test
@@ -73,9 +69,5 @@ class BazelQueryOperationCompletionTest {
     lookups shouldContainAll listOf("union", "except", "intersect")
   }
 
-  private fun completeBasic(): List<String> = timeoutRunBlocking {
-    withContext(Dispatchers.EDT) {
-      myFixture.completeBasic().flatMap { it.allLookupStrings }
-    }
-  }
+  private fun completeBasic(): List<String> = myFixture.completeBasic().flatMap { it.allLookupStrings }
 }

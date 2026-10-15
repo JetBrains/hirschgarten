@@ -2,16 +2,12 @@ package org.jetbrains.bazel.languages.starlark.completion
 
 import com.intellij.codeInsight.lookup.LookupElement
 import com.intellij.openapi.Disposable
-import com.intellij.openapi.application.EDT
 import com.intellij.openapi.project.Project
 import com.intellij.testFramework.ExtensionTestUtil
-import com.intellij.testFramework.common.timeoutRunBlocking
 import com.intellij.testFramework.junit5.TestDisposable
 import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.collections.shouldContainExactly
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 import org.jetbrains.bazel.languages.starlark.bazel.bzlmod.BazelModuleResolver
 import org.jetbrains.bazel.test.framework.BazelTestApplication
 import org.jetbrains.bazel.test.framework.bazelCodeInsightFixture
@@ -98,9 +94,5 @@ class BazelDepModuleCompletionTest {
     lookups.shouldBeEmpty()
   }
 
-  private fun completeBasic(): Array<LookupElement> = timeoutRunBlocking {
-    withContext(Dispatchers.EDT) {
-      myFixture.completeBasic()
-    }
-  }
+  private fun completeBasic(): Array<LookupElement> = myFixture.completeBasic()
 }
