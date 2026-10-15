@@ -6,6 +6,8 @@ import com.intellij.testFramework.common.timeoutRunBlocking
 import com.intellij.testFramework.replaceService
 import org.jetbrains.bazel.project.BazelProjectFixtures.initializeBazelProject
 import org.jetbrains.bazel.project.BazelProjectFixtures.initializeBazelProjectViaProjectView
+import org.jetbrains.bazel.sync.ProjectSyncCompletionResult
+import org.jetbrains.bazel.sync.ProjectSyncOutcome
 import org.jetbrains.bazel.sync.ProjectSyncScope
 import org.jetbrains.bazel.sync.ProjectSyncService
 import org.jetbrains.bazel.workspace.model.test.framework.MockProjectBaseTest
@@ -76,7 +78,8 @@ private class RecordingSyncService : ProjectSyncService {
   override val lastSyncTaskId: TaskId? = null
   val scopes = mutableListOf<ProjectSyncScope>()
 
-  override suspend fun sync(scope: ProjectSyncScope) {
+  override suspend fun sync(scope: ProjectSyncScope): ProjectSyncOutcome {
     scopes.add(scope)
+    return ProjectSyncOutcome(ProjectSyncCompletionResult.SUCCESS)
   }
 }
