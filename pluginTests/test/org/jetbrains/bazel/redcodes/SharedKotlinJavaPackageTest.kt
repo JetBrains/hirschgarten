@@ -8,9 +8,10 @@ import org.jetbrains.bazel.test.framework.BazelTestApplication
 import org.jetbrains.bazel.test.framework.bazelSyncCodeInsightFixture
 import org.jetbrains.bazel.test.framework.checkHighlighting
 import org.junit.jupiter.api.Test
-
+import org.junit.jupiter.api.TestInstance
 
 @BazelTestApplication
+@TestInstance(TestInstance.Lifecycle.PER_CLASS) // Both tests only read the highlighting, so they share one sync.
 class SharedKotlinJavaPackageTest {
 
   private val fixture by bazelSyncCodeInsightFixture(

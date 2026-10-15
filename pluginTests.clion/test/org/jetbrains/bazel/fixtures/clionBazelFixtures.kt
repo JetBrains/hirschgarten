@@ -8,14 +8,13 @@ import com.intellij.testFramework.junit5.fixture.TestFixture
 import com.intellij.testFramework.junit5.fixture.testFixture
 import org.jetbrains.annotations.TestOnly
 import org.jetbrains.bazel.test.framework.BazelPathManager
+import org.jetbrains.bazel.test.framework.BazelRegistrySnapshot
+import org.jetbrains.bazel.test.framework.BazelTestCaches.testCacheRoot
 import org.jetbrains.bazel.test.framework.assertLastSyncSucceeded
 import org.jetbrains.bazel.test.framework.bazelProjectFixture
 import org.jetbrains.bazel.test.framework.writeProjectView
-import java.net.URI
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.minutes
-
-private val BAZEL_CENTRAL_REGISTRY = URI.create("https://bcr.bazel.build/")
 
 private const val FREEZE_TIMEOUT_PROPERTY = "patch.engine.backend.freeze.timeout"
 
@@ -34,7 +33,7 @@ private const val FREEZE_TIMEOUT_PROPERTY = "patch.engine.backend.freeze.timeout
  * [configure] builds the project view of the test. The fixture writes it before the sync, so the test
  * does not need a project view file in its test data.
  *
- * The test project can resolve modules from the local test registry, [BazelPathManager.clionTestRegistry],
+ * The test project can resolve modules from the local test registry, [BazelPathManager.testRegistry],
  * for example the `cc_false_toolchain`.
  *
  * For the backend to actually come up, `RESHARPER_HOST_BIN` must point at a built `dotnet/Bin.RiderBackend`.
@@ -69,7 +68,7 @@ internal fun clionBazelProjectFixture(
         bazelVersion = bazelVersion,
         projectsRoot = BazelPathManager.clionTestProjectsRoot,
         jvmToolchains = jvmToolchains,
-        registries = listOf(BazelPathManager.clionTestRegistry.toUri(), BAZEL_CENTRAL_REGISTRY),
+        registries = listOf(BazelPathManager.testRegistry.toUri(), BazelRegistrySnapshot.registry(testCacheRoot()).toUri()),
       ) { writeProjectView(it, projectView) }.init()
     },
     waitForSymbols = { project ->

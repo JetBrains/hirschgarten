@@ -31,7 +31,7 @@ internal object BazelTestProject {
    * [bazelVersion] replaces the `.bazelversion` file of the test project.
    *
    * [registries] are URI to local or remote registries used by the test fixture. If set and BCR should be
-   * accessible, it needs to be provided here as well.
+   * accessible, it needs to be provided here as well. The default is [BazelTestCaches.defaultRegistries].
    */
   fun copy(
     project: Project,
@@ -41,7 +41,7 @@ internal object BazelTestProject {
     projectsRoot: Path = BazelPathManager.testProjectsRoot,
     jvmToolchains: Boolean = true,
     bazelVersion: String? = null,
-    registries: List<URI> = emptyList(),
+    registries: List<URI> = BazelTestCaches.defaultRegistries,
   ) {
     LOG.info("Copying the test project $path into $projectRoot (jvmToolchains=$jvmToolchains)")
     BazelServerProbe.registerWorkspace(projectRoot)
