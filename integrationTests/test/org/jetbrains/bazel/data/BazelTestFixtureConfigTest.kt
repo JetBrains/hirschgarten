@@ -2,8 +2,10 @@ package org.jetbrains.bazel.data
 
 import com.intellij.ide.starter.di.di
 import com.intellij.ide.starter.path.GlobalPaths
+import org.jetbrains.bazel.base.HermeticityGuard
 import org.jetbrains.bazel.test.framework.BazelPathManager
 import org.jetbrains.bazel.test.framework.serializeBazelRcPath
+import org.jetbrains.bazel.test.framework.toBazelRcPath
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertNotEquals
@@ -107,6 +109,71 @@ internal class BazelTestFixtureConfigTest {
     }
   }
 
+  @Test
+  fun `two contexts of one fixture get distinct project dirs`(@TempDir tempDir: Path) {
+    val fixturesRoot = tempDir.resolve("fixtures").createDirectories()
+    fixturesRoot.resolve("sharedFixture").createDirectories().resolve("MODULE.bazel").writeText("module(name = \"fixture\")")
+
+    withTemporaryStarterPaths(tempDir.resolve("starter")) {
+      val project = IdeStarterBazelProject("sharedFixture", {}, fixturesRoot)
+      val firstContextHome = checkNotNull(project.downloadAndUnpackProject())
+      val secondContextHome = checkNotNull(project.downloadAndUnpackProject())
+
+      assertEquals(emptyList<String>(), HermeticityGuard.projectHomeViolations(firstContextHome))
+      assertEquals(emptyList<String>(), HermeticityGuard.projectHomeViolations(secondContextHome))
+    }
+  }
+
+  @Test
+  fun `nested Bazel gets its own output roots on every OS`(@TempDir tempDir: Path) {
+    val projectRoot = tempDir.resolve("project").createDirectories()
+    val bazelTempDir = tempDir.resolve("tmp").createDirectories().toRealPath()
+    val bazelTestEnvironment = mapOf("TEST_TMPDIR" to "deep-test-output-root")
+
+    listOf(
+      IdeStarterOs.LINUX to bazelTestEnvironment,
+      IdeStarterOs.MACOS to emptyMap(),
+      IdeStarterOs.WINDOWS to emptyMap(),
+    ).forEach { (hostOs, environment) ->
+      fun options() = BazelProjectConfigurer.nestedBazelStartupOptions(
+        projectRoot,
+        environment,
+        hostOs,
+        tempDir.toString(),
+        tempDir = bazelTempDir.toString(),
+      )
+
+      val first = options()
+      assertEquals(2, first.size, "$hostOs")
+      assertTrue(
+        first[0].startsWith("startup --output_user_root=${bazelTempDir.resolve("ijr").toBazelRcPath().removeSuffix("'")}/"),
+        "$hostOs: ${first[0]}",
+      )
+      assertTrue(first[1].startsWith("startup --output_base="), "$hostOs")
+      assertNotEquals(first, options(), "$hostOs: two contexts of one project must not share roots")
+    }
+  }
+
+  @Test
+  fun `generated settings give the context its own Bazel output roots`(@TempDir projectRoot: Path) {
+    BazelProjectConfigurer.writeGeneratedBazelSettings(projectRoot, BazelProjectConfigurer.nestedBazelStartupOptions(projectRoot))
+    val outputBase = checkNotNull(HermeticityGuard.outputBase(projectRoot))
+
+    assertEquals(emptyList<String>(), HermeticityGuard.bazelRootViolations(projectRoot, setOf(outputBase)))
+  }
+
+  @Test
+  fun `guard fails when another process wrote the user bazelrc of a shared checkout`(@TempDir projectRoot: Path) {
+    BazelProjectConfigurer.writeGeneratedBazelSettings(projectRoot, BazelProjectConfigurer.nestedBazelStartupOptions(projectRoot))
+    val ownOutputBase = checkNotNull(HermeticityGuard.outputBase(projectRoot))
+    BazelProjectConfigurer.writeGeneratedBazelSettings(projectRoot, BazelProjectConfigurer.nestedBazelStartupOptions(projectRoot))
+
+    val violations = HermeticityGuard.bazelRootViolations(projectRoot, setOf(ownOutputBase))
+
+    assertEquals(1, violations.size, "$violations")
+    assertTrue("another process wrote the file" in violations.single(), violations.single())
+  }
+
   private fun <T> withTemporaryStarterPaths(checkoutDir: Path, action: () -> T): T {
     val previousDi = di
     di = DI {
@@ -121,7 +188,7 @@ internal class BazelTestFixtureConfigTest {
   }
 
   @Test
-  fun `nested Bazel uses short isolated roots only in Windows Bazel tests`(@TempDir projectRoot: Path) {
+  fun `nested Bazel uses short isolated roots in Windows Bazel tests`(@TempDir projectRoot: Path) {
     val bazelTestEnvironment = mapOf(
       "TEST_TMPDIR" to "deep-test-output-root",
       "LOCALAPPDATA" to "Z:\\Users\\builder\\AppData\\Local",
@@ -154,14 +221,6 @@ internal class BazelTestFixtureConfigTest {
     assertTrue(windowsOptions[2].startsWith("startup --install_base="))
     assertTrue(windowsOptions[3].startsWith("startup --output_base="))
     assertTrue(windowsOptions.none { it.contains("deep-test-output-root") })
-    assertEquals(
-      emptyList<String>(),
-      BazelProjectConfigurer.nestedBazelStartupOptions(projectRoot, bazelTestEnvironment, IdeStarterOs.LINUX),
-    )
-    assertEquals(
-      emptyList<String>(),
-      BazelProjectConfigurer.nestedBazelStartupOptions(projectRoot, emptyMap(), IdeStarterOs.WINDOWS),
-    )
     assertEquals(
       windowsOptions,
       BazelProjectConfigurer.nestedBazelStartupOptions(
@@ -344,7 +403,7 @@ internal class BazelTestFixtureConfigTest {
 
     assertNotEquals(firstInstallBase, secondInstallBase)
     assertTrue(secondInstallBase.resolve("embedded_tools/MODULE.bazel").exists())
-    BazelProjectConfigurer.cleanupWindowsNestedBazelRoots()
+    BazelProjectConfigurer.cleanupNestedBazelRoots()
     assertFalse(secondInstallBase.exists())
   }
 
