@@ -66,11 +66,6 @@ internal class JavaBazelWorkspaceImporter(val context: WorkspaceImporterContext)
     snapshot: WorkspaceSnapshot,
     naming: GlobalNamingContextBuilder,
   ): WorkspaceImporterResult {
-    if (!context.project.projectCtx.avoidExternalSystem) {
-      // store generated IML files outside the project directory
-      ExternalProjectsManagerImpl.getInstance(context.project).setStoreExternally(true)
-    }
-
     commonSyncConfig = snapshot.syncConfigs.filterIsInstance<CommonWorkspaceSyncConfig>()
                          .firstOrNull() ?: throw IllegalStateException()
     javaSyncConfig = snapshot.syncConfigs.filterIsInstance<JavaWorkspaceSyncConfig>()

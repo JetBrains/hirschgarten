@@ -115,7 +115,6 @@
   </extensionPoints>
 
   <extensions defaultExtensionNs="org.jetbrains.bazel">
-    <projectSyncHook implementation="org.jetbrains.bazel.sync.hooks.PathSyncHook"/>
     <targetKindProvider implementation="org.jetbrains.bazel.sync.workspace.targetKind.GenericBazelRules" order="last"/>
 
     <workspaceTypeContributor implementation="org.jetbrains.bazel.sync.workspace.persistence.DefaultWorkspaceTypeContributor"/>

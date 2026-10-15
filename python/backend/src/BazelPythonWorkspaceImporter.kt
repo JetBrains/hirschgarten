@@ -117,15 +117,17 @@ internal class BazelPythonWorkspaceImporter(val context: WorkspaceImporterContex
   private var defaultVersion: String? = null
   private var externalSourceDependenciesByTarget: Map<WorkspaceTargetKey, List<WorkspaceTargetKey>> = mapOf()
 
-  override suspend fun import(phase: WorkspaceImporterPhase, snapshot: WorkspaceSnapshot, taskId: TaskId): Result<WorkspaceImporterResult> = runCatching {
-    when (phase) {
-      is WorkspaceImporterPhase.Initialize -> onInitialize(snapshot, phase.naming)
-      is WorkspaceImporterPhase.WorkspaceApply ->
-        onWorkspaceApply(snapshot, phase.builder, context.vfuManager, phase.entitySource, phase.naming)
-      WorkspaceImporterPhase.PostProcessing -> onPostProcessing(snapshot, taskId)
-      else -> WorkspaceImporterResult.Success
+  override suspend fun import(phase: WorkspaceImporterPhase, snapshot: WorkspaceSnapshot, taskId: TaskId): Result<WorkspaceImporterResult> =
+    runCatching {
+      when (phase) {
+        is WorkspaceImporterPhase.Initialize -> onInitialize(snapshot, phase.naming)
+        is WorkspaceImporterPhase.WorkspaceApply ->
+          onWorkspaceApply(snapshot, phase.builder, context.vfuManager, phase.entitySource, phase.naming)
+
+        WorkspaceImporterPhase.PostProcessing -> onPostProcessing(snapshot, taskId)
+        else -> WorkspaceImporterResult.Success
+      }
     }
-  }
 
   private suspend fun onInitialize(
     snapshot: WorkspaceSnapshot,

@@ -11,15 +11,6 @@ import java.nio.file.Path
 interface BazelProjectContextService {
   val isBazelProject: Boolean
   val projectRootDir: VirtualFile?
-
-  var workspaceName: String?
-  var bazelBinPath: Path?
-  var bazelExecPath: Path?
-
-  var bazelRelease: BazelRelease?
-
-  val avoidExternalSystem: Boolean
-    get() = false
 }
 
 val Project.projectCtx: BazelProjectContextService

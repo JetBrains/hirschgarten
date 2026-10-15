@@ -11,7 +11,7 @@ import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.string.shouldContain
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import org.jetbrains.bazel.sync.environment.projectCtx
+import org.jetbrains.bazel.sync.workspace.snapshot.workspaceSnapshotOrNull
 import org.jetbrains.bazel.test.framework.BazelTestApplication
 import org.jetbrains.bazel.test.framework.bazelSyncCodeInsightFixture
 import org.jetbrains.bazel.test.framework.checkHighlighting
@@ -49,7 +49,7 @@ class PythonGeneratedCodeTest {
   }
 
   private suspend fun checkGeneratedReferences(expectedDefinition: String) {
-    fixture.project.projectCtx.bazelBinPath!!.resolve("genpy/data.py").exists().shouldBeTrue()
+    checkNotNull(fixture.project.workspaceSnapshotOrNull).bazelInfo.bazelBin.resolve("genpy/data.py").exists().shouldBeTrue()
     withContext(Dispatchers.EDT) {
       fixture.enableInspections(PyUnresolvedReferencesInspection())
       fixture.checkHighlighting("genpy/consumer.py")

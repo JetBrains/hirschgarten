@@ -1,7 +1,10 @@
 package org.jetbrains.bazel.sync.workspace.snapshot
 
+import com.intellij.openapi.components.service
+import com.intellij.openapi.project.Project
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.sync.workspace.persistence.TargetLoadOptions
+import org.jetbrains.bazel.sync.workspace.persistence.WorkspaceSnapshotService
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.BuildTargetData
 
@@ -22,3 +25,7 @@ val WorkspaceSnapshot.allTargets: Sequence<BuildTarget>
 @get:ApiStatus.Internal
 val WorkspaceSnapshot.commonSyncConfig: CommonWorkspaceSyncConfig
   get() = syncConfigs.filterIsInstance<CommonWorkspaceSyncConfig>().first()
+
+@get:ApiStatus.Internal
+val Project.workspaceSnapshotOrNull: WorkspaceSnapshot?
+  get() = service<WorkspaceSnapshotService>().snapshot.value.takeIf { it != WorkspaceSnapshot.EMPTY }

@@ -7,6 +7,7 @@ import com.intellij.openapi.vfs.VirtualFileManager
 import com.intellij.openapi.vfs.newvfs.ManagingFS
 import com.intellij.openapi.vfs.newvfs.NewVirtualFile
 import org.jetbrains.bazel.sync.environment.projectCtx
+import org.jetbrains.bazel.sync.workspace.snapshot.workspaceSnapshotOrNull
 
 private const val NO_EXTENSION = "<none>"
 
@@ -14,7 +15,7 @@ private const val NO_EXTENSION = "<none>"
 internal class DebugExcrootVFSAction : BazelDebugAction() {
 
   override suspend fun exec(project: Project): Any {
-    val root = project.projectCtx.bazelExecPath ?: fail("no execution root found")
+    val root = project.workspaceSnapshotOrNull?.bazelInfo?.execRoot ?: fail("no execution root found")
 
     return readAction {
       val virtualRoot = VirtualFileManager.getInstance().findFileByNioPath(root)
