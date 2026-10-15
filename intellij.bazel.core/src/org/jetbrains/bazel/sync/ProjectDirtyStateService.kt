@@ -1,7 +1,9 @@
 package org.jetbrains.bazel.sync
 
+import com.intellij.openapi.application.readAction
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.service
+import com.intellij.openapi.components.serviceIfCreated
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.externalSystem.autoimport.ExternalSystemProjectTracker
 import com.intellij.openapi.project.Project
@@ -104,10 +106,17 @@ class ProjectDirtyStateService(private val project: Project, coroutineScope: Cor
     mutableState.value = ProjectDirtyState.EMPTY
   }
 
-  private fun notifyPlatform() {
-    if (project.isDisposed) return
-    ExternalSystemProjectTracker.getInstance(project)
-      .markDirtyInternal(BazelWorkspace.getInstance(project).projectId)
+  /**
+   * Project disposal runs inside a write action, so the read action keeps the disposal from starting during this call (BAZEL-3453).
+   * The call does not create [BazelWorkspace] or the tracker. Without a registered [BazelWorkspace], there is nothing to mark.
+   */
+  private suspend fun notifyPlatform() {
+    readAction {
+      if (project.isDisposed) return@readAction
+      val workspace = project.serviceIfCreated<BazelWorkspace>() ?: return@readAction
+      val tracker = project.serviceIfCreated<ExternalSystemProjectTracker>() ?: return@readAction
+      tracker.markDirtyInternal(workspace.projectId)
+    }
   }
 
   companion object {
