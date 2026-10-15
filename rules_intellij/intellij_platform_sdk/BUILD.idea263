@@ -30,7 +30,7 @@ java_import(
         ]
     ),
     tags = ["intellij-provided-by-sdk"],
-    srcjar = "@intellij_ce_2026_2_sources//jar",
+    srcjar = "@intellij_ce_2026_3_sources//jar",
 )
 
 java_import(
@@ -44,8 +44,18 @@ java_import(
 )
 
 java_import(
+    name = "platform_vcs",
+    jars = glob(["plugins/platform-vcs-plugin/lib/*.jar", "plugins/platform-vcs-plugin/lib/modules/*.jar"]),
+)
+
+java_import(
+    name = "sh",
+    jars = glob(["plugins/sh-plugin/lib/*.jar", "plugins/sh-plugin/lib/modules/*.jar"]),
+)
+
+java_import(
     name = "kotlin",
-    jars = glob(["plugins/Kotlin/lib/*.jar"]),
+    jars = glob(["plugins/Kotlin/lib/*.jar", "plugins/Kotlin/lib/modules/*.jar"]),
 )
 
 filegroup(

@@ -27,8 +27,8 @@ config_setting(
 )
 
 config_setting(
-    name = "intellij-2026.2",
-    values = {"define": "ij_product=intellij-2026.2"},
+    name = "intellij-2026.3",
+    values = {"define": "ij_product=intellij-2026.3"},
 )
 
 # The purpose of this rule is to hide the versioning
@@ -48,6 +48,8 @@ java_library(
         intellij = [
             ":sdk",
             ":platform_images",
+            ":platform_vcs",
+            ":sh",
         ],
     ),
 )
