@@ -1,14 +1,10 @@
 package org.jetbrains.bazel.languages.starlark.completion
 
 import com.intellij.codeInsight.lookup.LookupElement
-import com.intellij.openapi.application.EDT
-import com.intellij.testFramework.common.timeoutRunBlocking
 import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.collections.shouldContainOnly
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 import org.jetbrains.bazel.project.BazelProjectFixtures.initializeBazelProject
 import org.jetbrains.bazel.test.framework.BazelTestApplication
 import org.jetbrains.bazel.test.framework.bazelCodeInsightFixture
@@ -445,9 +441,5 @@ class StarlarkClassCompletionTest {
     lookups.shouldContainOnly("\"com.example.Valid\"")
   }
 
-  private fun completeBasic(): Array<LookupElement> = timeoutRunBlocking {
-    withContext(Dispatchers.EDT) {
-      myFixture.completeBasic()
-    }
-  }
+  private fun completeBasic(): Array<LookupElement> = myFixture.completeBasic()
 }

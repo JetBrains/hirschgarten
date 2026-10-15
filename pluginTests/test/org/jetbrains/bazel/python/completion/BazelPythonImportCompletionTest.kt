@@ -1,14 +1,10 @@
 package org.jetbrains.bazel.python.completion
 
 import com.intellij.bazel.python.backend.updateBazelPythonResolveIndex
-import com.intellij.openapi.application.EDT
 import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.psi.util.QualifiedName
-import com.intellij.testFramework.common.timeoutRunBlocking
 import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.collections.shouldNotContain
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.test.framework.BazelTestApplication
 import org.jetbrains.bazel.test.framework.bazelCodeInsightFixture
@@ -122,9 +118,5 @@ class BazelPythonImportCompletionTest {
     lookups shouldNotContain "places"
   }
 
-  private fun completeBasic(): List<String> = timeoutRunBlocking {
-    withContext(Dispatchers.EDT) {
-      myFixture.completeBasic().orEmpty().flatMap { it.allLookupStrings }
-    }
-  }
+  private fun completeBasic(): List<String> = myFixture.completeBasic().orEmpty().flatMap { it.allLookupStrings }
 }
