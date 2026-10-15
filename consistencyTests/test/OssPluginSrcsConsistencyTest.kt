@@ -35,7 +35,6 @@ internal class OssPluginSrcsConsistencyTest {
       "intellij.bazel.clion.core" to CLION_REASON,
       "intellij.bazel.clion.test.catch" to CLION_REASON,
       "intellij.bazel.clion.test.google" to CLION_REASON,
-      "intellij.bazel.sh" to "the open-source SDK has no sh plugin target yet",
     )
   }
 
