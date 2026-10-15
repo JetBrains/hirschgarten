@@ -7,5 +7,9 @@ import org.jetbrains.bsp.protocol.TaskId
 interface ProjectSyncService {
   val lastSyncTaskId: TaskId?
 
-  suspend fun sync(scope: ProjectSyncScope)
+  /**
+   * Runs a sync and returns how it ended. The result is [ProjectSyncCompletionResult.SKIPPED] when another sync is running
+   * and when the project is not trusted.
+   */
+  suspend fun sync(scope: ProjectSyncScope): ProjectSyncOutcome
 }

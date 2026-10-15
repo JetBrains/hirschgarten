@@ -11,34 +11,34 @@ import com.intellij.openapi.Disposable
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Disposer
-import org.jetbrains.bazel.config.BazelBackendBundle
 import org.jetbrains.bazel.progress.ConsoleService
 import org.jetbrains.bazel.progress.TaskConsole
+import org.jetbrains.bazel.sync.ProjectSyncCompletionResult
+import org.jetbrains.bazel.sync.ProjectSyncOutcome
+import org.jetbrains.bazel.sync.status.SyncStatusService
 import org.jetbrains.bazel.ui.console.task.TestTaskConsole
-import org.junit.jupiter.api.Assertions.assertEquals
 
 /**
- * Fails unless the last sync of [project] finished with the `Sync done.` message.
+ * Fails unless the last sync of [project] ended in [ProjectSyncCompletionResult.SUCCESS], and also when no sync finished.
  *
- * A sync that ends with `Sync partially succeeded with errors` does not log an error, so a test
- * that expects a clean sync must call this. The failure message lists the sync warnings and errors.
+ * A sync that ends in a partial success does not log an error, so a test that expects a clean sync must call this. The
+ * failure message lists the sync warnings and errors. A partial success fails here, unlike [ProjectSyncOutcome.isSuccessful].
  */
 fun assertLastSyncSucceeded(project: Project) {
+  val outcome = SyncStatusService.getInstance(project).status.value.lastOutcome
+  if (outcome?.completionResult == ProjectSyncCompletionResult.SUCCESS) return
+
   val console = ConsoleService.getInstance(project) as TestConsoleService
-  val lastFinishMessage = console.syncFinishMessages.lastOrNull()
   val diagnostics = console.syncDiagnostics.joinToString("\n")
-  assertEquals(BazelBackendBundle.message("console.task.sync.success"), lastFinishMessage) {
-    "The last sync did not succeed. Sync diagnostics:\n$diagnostics"
-  }
+  throw AssertionError(
+    "The last sync did not succeed. Its result: ${outcome?.completionResult ?: "no sync finished"}. Sync diagnostics:\n$diagnostics",
+    outcome?.failureCause,
+  )
 }
 
 internal class TestConsoleService(project: Project) : ConsoleService, Disposable {
   override val buildConsole: TaskConsole
   override val syncConsole: TaskConsole
-
-  /** The finish message of every sync task, oldest first. */
-  val syncFinishMessages: List<String>
-    field = ArrayList<String>()
 
   /** Every warning and error message of the sync console, oldest first. */
   val syncDiagnostics: List<String>
@@ -50,14 +50,8 @@ internal class TestConsoleService(project: Project) : ConsoleService, Disposable
     this?.trimEnd { it.isWhitespace() || it == '\r' || it == '\n' }
 
   private fun storeEvent(event: BuildEvent) {
-    when (event) {
-        is FinishEvent ->
-          syncFinishMessages.add(event.message.trimCrLf().orEmpty())
-
-      is MessageEvent ->
-        if (event.kind == MessageEvent.Kind.WARNING || event.kind == MessageEvent.Kind.ERROR) {
-          syncDiagnostics.add(event.message.trimCrLf().orEmpty())
-        }
+    if (event is MessageEvent && (event.kind == MessageEvent.Kind.WARNING || event.kind == MessageEvent.Kind.ERROR)) {
+      syncDiagnostics.add(event.message.trimCrLf().orEmpty())
     }
   }
 

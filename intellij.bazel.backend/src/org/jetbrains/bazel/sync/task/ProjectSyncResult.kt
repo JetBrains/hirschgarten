@@ -1,6 +1,8 @@
 package org.jetbrains.bazel.sync.task
 
 import org.jetbrains.bazel.commons.LanguageClass
+import org.jetbrains.bazel.sync.ProjectSyncCompletionResult
+import org.jetbrains.bazel.sync.ProjectSyncOutcome
 import org.jetbrains.bsp.protocol.BuildTarget
 
 internal data class ProjectSyncResult(
@@ -8,14 +10,8 @@ internal data class ProjectSyncResult(
   val statistics: ProjectSyncStatistics? = null,
   val phaseDurations: List<ProjectSyncPhaseDuration> = emptyList(),
   val failureCause: Throwable? = null,
-)
-
-internal enum class ProjectSyncCompletionResult {
-  SUCCESS,
-  PARTIAL_SUCCESS,
-  FAILURE,
-  CANCELLED,
-  SKIPPED,
+) {
+  fun toOutcome(): ProjectSyncOutcome = ProjectSyncOutcome(completionResult, failureCause)
 }
 
 internal enum class ProjectSyncPhase {
