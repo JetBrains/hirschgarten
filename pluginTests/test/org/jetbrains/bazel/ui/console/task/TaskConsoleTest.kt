@@ -106,7 +106,8 @@ class TestTaskConsole(
   taskView: BuildProgressListener,
   basePath: String,
   project: Project,
-) : BaseTaskConsole(taskView, basePath, project) {
+  usePty: Boolean = false
+) : BaseTaskConsole(taskView, basePath, project, usePty) {
   override fun calculateRedoAction(redoAction: (suspend () -> Unit)?): AnAction =
     object : SuspendableAction({ "test" }) {
       override suspend fun actionPerformed(project: Project, e: AnActionEvent) {}

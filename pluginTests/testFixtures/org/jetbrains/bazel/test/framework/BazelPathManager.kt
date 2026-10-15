@@ -27,10 +27,9 @@ object BazelPathManager {
       .resolve("testProjects")
   }
 
-  val clionTestRegistry: Path by lazy {
-    pluginSourceRoot
-      .resolve("pluginTests.clion")
-      .resolve("testData")
+  /** The local Bazel registry of the tests. It holds light toolchains, for example `cc_false_toolchain`. */
+  val testRegistry: Path by lazy {
+    testDataRoot
       .resolve("testRegistry")
   }
 

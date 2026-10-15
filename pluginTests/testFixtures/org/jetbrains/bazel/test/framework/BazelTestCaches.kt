@@ -16,7 +16,7 @@ import kotlin.io.path.writeText
  * The setup keeps the Bazel output base and the caches out of the project root. This avoids VFS root
  * access errors during a test sync.
  */
-internal object BazelTestCaches {
+object BazelTestCaches {
   private const val BAZEL_SETTINGS_START = "# BEGIN IntelliJ Bazel unit-test settings"
   private const val BAZEL_SETTINGS_END = "# END IntelliJ Bazel unit-test settings"
 
@@ -50,7 +50,7 @@ internal object BazelTestCaches {
     projectRoot: Path,
     testProjectPath: String,
     outputBase: Path,
-    registries: List<URI> = emptyList(),
+    registries: List<URI> = defaultRegistries,
     jvmToolchains: Boolean = true,
   ) {
     val cacheRoot = testCacheRoot()
@@ -61,6 +61,7 @@ internal object BazelTestCaches {
     projectRoot.resolve(".bazeliskrc").writeText("BAZELISK_HOME=${bazeliskCache.toBazelPath()}\n")
 
     val repositoryCache = cacheRoot.resolve("repository-cache").createDirectories()
+    val repoContentsCache = cacheRoot.resolve("repo-contents-cache").createDirectories()
     val diskCache = cacheRoot.resolve("disk-cache").createDirectories()
     val outputUserRoot = cacheRoot.resolve("output-user-root").createDirectories()
     val lines = buildList {
@@ -69,10 +70,25 @@ internal object BazelTestCaches {
       add("startup --output_user_root=${outputUserRoot.toBazelRcPath()}")
       add("startup --output_base=${outputBase.toBazelRcPath()}")
       add("common --repository_cache=${repositoryCache.toBazelRcPath()}")
+      if (supportsRepoContentsCache(projectRoot)) {
+        // Bazel 8 keeps the cache off, and Bazel 9 puts it into the repository cache. A separate directory lets a
+        // cache archive keep the downloads and leave out the extracted repositories, because Bazel can extract them again.
+        add("common --repo_contents_cache=${repoContentsCache.toBazelRcPath()}")
+      }
       add("common --disk_cache=${diskCache.toBazelRcPath()}")
       registries.forEach { add("common --registry=$it") }
     }
     writeManagedBazelrcBlock(projectRoot.resolve(".bazelrc"), lines)
+  }
+
+  /**
+   * The registries of a test project: the local test registry, then the pinned [BazelRegistrySnapshot] of the Bazel Central
+   * Registry.
+   *
+   * The local test registry holds light toolchains, for example `cc_false_toolchain` and `false_launcher`.
+   */
+  val defaultRegistries: List<URI> by lazy {
+    listOf(BazelPathManager.testRegistry.toUri(), BazelRegistrySnapshot.registry(testCacheRoot()).toUri())
   }
 
   fun findKotlinStdlibInClasspath(): Path {
@@ -88,7 +104,7 @@ internal object BazelTestCaches {
       ?.toIntOrNull()
     ?: 7200
 
-  private fun testCacheRoot(): Path {
+  fun testCacheRoot(): Path {
     val cacheRoot = System.getenv("BAZEL_PLUGIN_TEST_CACHE_ROOT")
                       ?.let { Path.of(it) }
                     ?: System.getProperty("bazel.plugin.test.cache.root")
@@ -101,6 +117,18 @@ internal object BazelTestCaches {
                       ?.let { Path.of(it, "bazel-plugin-test-cache") }
                     ?: localDefaultCacheRoot()
     return cacheRoot.toAbsolutePath()
+  }
+
+  private fun bazelVersion(projectRoot: Path): String? =
+    projectRoot.resolve(".bazelversion").takeIf { it.exists() }?.readText()?.trim()?.takeIf { it.isNotEmpty() }
+
+  /** Tells if the Bazel version of [projectRoot] knows `--repo_contents_cache`. Bazel 8.3 added it. */
+  private fun supportsRepoContentsCache(projectRoot: Path): Boolean {
+    val version = bazelVersion(projectRoot) ?: return true
+    val parts = version.split('.')
+    val major = parts[0].toIntOrNull() ?: return true
+    val minor = parts.getOrNull(1)?.toIntOrNull() ?: 0
+    return major > 8 || major == 8 && minor >= 3
   }
 
   private fun cacheGroup(testProjectPath: String): String =

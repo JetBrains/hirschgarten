@@ -50,6 +50,7 @@ abstract class BaseTaskConsole(
   private val taskView: BuildProgressListener,
   private val basePath: String,
   private val project: Project,
+  private val usePty: Boolean = BazelFeatureFlags.usePty
 ) : TaskConsole {
   companion object {
     private val log = logger<BaseTaskConsole>()
@@ -108,7 +109,7 @@ abstract class BaseTaskConsole(
     }
     addRedoActionToDescriptor(taskDescriptor, redoAction)
     addCancelActionToDescriptor(taskId, taskDescriptor, cancelAction)
-    if (BazelFeatureFlags.usePty)
+    if (usePty)
       addPtyToDescriptor(taskId, taskDescriptor)
     val startEvent = StartBuildEvent.builder(message, taskDescriptor).build()
     taskView.onEvent(taskId, startEvent)
