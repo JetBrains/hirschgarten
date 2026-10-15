@@ -45,6 +45,7 @@ import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.coroutines.BazelCoroutineService
 import org.jetbrains.bazel.server.tasks.runBuildTargetTask
 import org.jetbrains.bazel.sync.environment.projectCtx
+import org.jetbrains.bazel.sync.workspace.snapshot.workspaceSnapshotOrNull
 import org.jetbrains.bazel.target.targetStorage
 import org.jetbrains.bsp.protocol.id
 import org.jetbrains.concurrency.AsyncPromise
@@ -74,7 +75,8 @@ internal object FastBuildUtils {
         fastBuildService.startFastBuild()
         fastBuildFiles(project, files)
         promise.setResult(TaskRunnerResults.SUCCESS)
-      } catch (e: Exception) {
+      }
+      catch (e: Exception) {
         promise.setResult(TaskRunnerResults.FAILURE)
         NotificationGroupManager
           .getInstance()
@@ -131,7 +133,8 @@ internal object FastBuildUtils {
       val relativePath = entry.value.id.packagePath.toString()
       val isLib = targetUtils.isLibrary(entry.value.id)
       val bazelBin =
-        project.projectCtx.bazelBinPath ?: throw ExecutionException(BazelPluginBundle.message("widget.fastbuild.error.missing.path"))
+        project.workspaceSnapshotOrNull?.bazelInfo?.bazelBin
+        ?: throw ExecutionException(BazelPluginBundle.message("widget.fastbuild.error.missing.path"))
       val targetJar = Path.of("$bazelBin/$relativePath/${if (isLib) "lib" else ""}${entry.value.id.targetName}.jar")
 
       var fastBuildTargetStatus: FastBuildTargetStatus? = null
@@ -156,162 +159,174 @@ internal object FastBuildUtils {
       val compileTask = CompilerTask(project, BazelPluginBundle.message("widget.fastbuild.recompile"), false, false, true, false)
       val compileScope = OneProjectItemCompileScope(project, inputFile)
       val compileContext = CompileContextImpl(project, compileTask, compileScope, true, false)
-      compileTask.start({
-        try {
-          val indicator = ProgressManager.getInstance().progressIndicator
+      compileTask.start(
+        {
+          try {
+            val indicator = ProgressManager.getInstance().progressIndicator
 
-          indicator.checkCanceled()
+            indicator.checkCanceled()
 
-          val tempDir = Files.createTempDirectory("cdb-fast-compile")
-          logger.debug("Using '$tempDir' for fast compile")
-          val outputJar = tempDir.resolve("output.jar")
+            val tempDir = Files.createTempDirectory("cdb-fast-compile")
+            logger.debug("Using '$tempDir' for fast compile")
+            val outputJar = tempDir.resolve("output.jar")
 
-          val paramsFile0 =
-            updateAndWriteCompile0Params(
-              originalParamsFile,
-              tempDir,
-              outputJar,
-              Path.of(inputFile.canonicalPath),
-              Path.of(workspaceRoot.toCanonicalPath()),
-              targetJar,
-            )
-          val paramsFile1 =
-            updateAndWriteCompile1Params(
-              originalParamsFile1,
-              tempDir,
-            )
+            val paramsFile0 =
+              updateAndWriteCompile0Params(
+                originalParamsFile,
+                tempDir,
+                outputJar,
+                Path.of(inputFile.canonicalPath),
+                Path.of(workspaceRoot.toCanonicalPath()),
+                targetJar,
+              )
+            val paramsFile1 =
+              updateAndWriteCompile1Params(
+                originalParamsFile1,
+                tempDir,
+              )
 
-          indicator.checkCanceled()
+            indicator.checkCanceled()
 
-          val toolchainInfo =
-            try {
-              ToolchainInfoSyncHook.JvmToolchainInfoService
-                .getInstance(project)
-                .getOrQueryJvmToolchainInfo(project, entry.value.id)
-            } catch (e: Exception) {
-              throw ExecutionException(BazelPluginBundle.message("widget.fastbuild.error.null.jvm.toolchain"))
-            }
+            val toolchainInfo =
+              try {
+                ToolchainInfoSyncHook.JvmToolchainInfoService
+                  .getInstance(project)
+                  .getOrQueryJvmToolchainInfo(project, entry.value.id)
+              }
+              catch (e: Exception) {
+                throw ExecutionException(BazelPluginBundle.message("widget.fastbuild.error.null.jvm.toolchain"))
+              }
 
-          val arguments =
-            buildList {
-              add(toolchainInfo.java_home + File.separator + "bin" + File.separator + ExecUtils.calculateExecutableName("java"))
-              toolchainInfo.jvm_opts.forEach { add(it) }
-              add("-jar")
-              add(toolchainInfo.toolchain_path)
-              add("@${paramsFile0.pathString}")
-              add("@${paramsFile1.pathString}")
-            }
+            val arguments =
+              buildList {
+                add(toolchainInfo.java_home + File.separator + "bin" + File.separator + ExecUtils.calculateExecutableName("java"))
+                toolchainInfo.jvm_opts.forEach { add(it) }
+                add("-jar")
+                add(toolchainInfo.toolchain_path)
+                add("@${paramsFile0.pathString}")
+                add("@${paramsFile1.pathString}")
+              }
 
-          val command =
-            GeneralCommandLine(arguments).apply {
-              withWorkingDirectory(project.projectCtx.bazelExecPath ?: throw ExecutionException(BazelPluginBundle.message("widget.fastbuild.error.null.bazel.exec.path")))
-            }
-          val handler = OSProcessHandler(command)
-          handler.addProcessListener(
-            object : ProcessListener {
-              // TODO: adapt EclipseOutputParser and JavacOutputParser and group parse errors properly
-              val JAVAC_WARNING = "warning:"
-              val JAVAC_ERROR = "error:"
-              val ECLIPSE_PROBLEM_SEPARATOR = "----------"
-              val ECLIPSE_WARNING = ". WARNING in "
-              val ECLIPSE_ERROR = ". ERROR in "
+            val command =
+              GeneralCommandLine(arguments).apply {
+                withWorkingDirectory(
+                  project.workspaceSnapshotOrNull?.bazelInfo?.execRoot
+                  ?: throw ExecutionException(BazelPluginBundle.message("widget.fastbuild.error.null.bazel.exec.path")),
+                )
+              }
+            val handler = OSProcessHandler(command)
+            handler.addProcessListener(
+              object : ProcessListener {
+                // TODO: adapt EclipseOutputParser and JavacOutputParser and group parse errors properly
+                val JAVAC_WARNING = "warning:"
+                val JAVAC_ERROR = "error:"
+                val ECLIPSE_PROBLEM_SEPARATOR = "----------"
+                val ECLIPSE_WARNING = ". WARNING in "
+                val ECLIPSE_ERROR = ". ERROR in "
 
-              var isWarning = false
+                var isWarning = false
 
-              override fun onTextAvailable(event: ProcessEvent, outputType: Key<*>) {
-                if (outputType == ProcessOutputType.STDERR) {
-                  if (ECLIPSE_PROBLEM_SEPARATOR in event.text) return
-                  if (JAVAC_WARNING in event.text || ECLIPSE_WARNING in event.text) {
-                    isWarning = true
-                  } else if (JAVAC_ERROR in event.text || ECLIPSE_ERROR in event.text) {
-                    isWarning = false
+                override fun onTextAvailable(event: ProcessEvent, outputType: Key<*>) {
+                  if (outputType == ProcessOutputType.STDERR) {
+                    if (ECLIPSE_PROBLEM_SEPARATOR in event.text) return
+                    if (JAVAC_WARNING in event.text || ECLIPSE_WARNING in event.text) {
+                      isWarning = true
+                    }
+                    else if (JAVAC_ERROR in event.text || ECLIPSE_ERROR in event.text) {
+                      isWarning = false
+                    }
+                    val compilerCategory = if (isWarning) CompilerMessageCategory.WARNING else CompilerMessageCategory.ERROR
+
+                    val parts = event.text.split(':')
+                    val line = parts.firstOrNull()?.trim()?.toIntOrNull()
+                    if (parts.size >= 4 && line != null) {
+                      val error = parts[3]
+                      compileContext.addMessage(
+                        CompilerMessageImpl(
+                          project,
+                          compilerCategory,
+                          error,
+                          inputFile,
+                          line,
+                          0,
+                          null,
+                        ),
+                      )
+                    }
+                    else {
+                      compileContext.addMessage(
+                        CompilerMessageImpl(
+                          project,
+                          compilerCategory,
+                          event.text,
+                        ),
+                      )
+                    }
                   }
-                  val compilerCategory = if (isWarning) CompilerMessageCategory.WARNING else CompilerMessageCategory.ERROR
-
-                  val parts = event.text.split(':')
-                  val line = parts.firstOrNull()?.trim()?.toIntOrNull()
-                  if (parts.size >= 4 && line != null) {
-                    val error = parts[3]
+                  else if (outputType == ProcessOutputType.STDOUT) {
                     compileContext.addMessage(
                       CompilerMessageImpl(
                         project,
-                        compilerCategory,
-                        error,
-                        inputFile,
-                        line,
-                        0,
-                        null,
-                      ),
-                    )
-                  } else {
-                    compileContext.addMessage(
-                      CompilerMessageImpl(
-                        project,
-                        compilerCategory,
+                        CompilerMessageCategory.INFORMATION,
                         event.text,
                       ),
                     )
                   }
-                } else if (outputType == ProcessOutputType.STDOUT) {
-                  compileContext.addMessage(
-                    CompilerMessageImpl(
-                      project,
-                      CompilerMessageCategory.INFORMATION,
-                      event.text,
-                    ),
-                  )
                 }
-              }
-            },
-          )
-          handler.startNotify()
-          if (!handler.waitFor() || handler.exitCode != 0) {
-            compileTask.setEndCompilationStamp(ExitStatus.ERRORS, System.currentTimeMillis())
-            // tempDir.delete()
+              },
+            )
+            handler.startNotify()
+            if (!handler.waitFor() || handler.exitCode != 0) {
+              compileTask.setEndCompilationStamp(ExitStatus.ERRORS, System.currentTimeMillis())
+              // tempDir.delete()
+              fastBuildTargetStatus =
+                FastBuildTargetStatus(
+                  inputFile = inputFile,
+                  targetJar = targetJar,
+                  status = FastBuildActionStatus.ERROR,
+                )
+              return@start
+            }
+            compileTask.setEndCompilationStamp(ExitStatus.SUCCESS, System.currentTimeMillis())
+            fastBuildTargetStatus =
+              FastBuildTargetStatus(
+                inputFile = inputFile,
+                targetJar = targetJar,
+                status = FastBuildActionStatus.SUCCESS,
+              )
+            processAndHotswapOutput(tempDir, outputJar, project)
+          }
+          catch (e: ExecutionException) {
+            compileContext.addMessage(
+              CompilerMessageImpl(
+                project,
+                CompilerMessageCategory.ERROR,
+                e.message,
+              ),
+            )
             fastBuildTargetStatus =
               FastBuildTargetStatus(
                 inputFile = inputFile,
                 targetJar = targetJar,
                 status = FastBuildActionStatus.ERROR,
               )
+            compileTask.setEndCompilationStamp(ExitStatus.ERRORS, System.currentTimeMillis())
             return@start
           }
-          compileTask.setEndCompilationStamp(ExitStatus.SUCCESS, System.currentTimeMillis())
-          fastBuildTargetStatus =
-            FastBuildTargetStatus(
-              inputFile = inputFile,
-              targetJar = targetJar,
-              status = FastBuildActionStatus.SUCCESS,
-            )
-          processAndHotswapOutput(tempDir, outputJar, project)
-        } catch (e: ExecutionException) {
-          compileContext.addMessage(
-            CompilerMessageImpl(
-              project,
-              CompilerMessageCategory.ERROR,
-              e.message,
-            ),
-          )
-          fastBuildTargetStatus =
-            FastBuildTargetStatus(
-              inputFile = inputFile,
-              targetJar = targetJar,
-              status = FastBuildActionStatus.ERROR,
-            )
-          compileTask.setEndCompilationStamp(ExitStatus.ERRORS, System.currentTimeMillis())
-          return@start
-        } finally {
-          if (fastBuildTargetStatus == null) {
-            fastBuildTargetStatus =
-              FastBuildTargetStatus(
-                inputFile = inputFile,
-                targetJar = targetJar,
-                status = FastBuildActionStatus.UNKNOWN,
-              )
+          finally {
+            if (fastBuildTargetStatus == null) {
+              fastBuildTargetStatus =
+                FastBuildTargetStatus(
+                  inputFile = inputFile,
+                  targetJar = targetJar,
+                  status = FastBuildActionStatus.UNKNOWN,
+                )
+            }
+            fastBuildService.finishFastBuildTarget(fastBuildTargetStatus)
           }
-          fastBuildService.finishFastBuildTarget(fastBuildTargetStatus)
-        }
-      }, null)
+        },
+        null,
+      )
     }
   }
 
@@ -498,10 +513,14 @@ internal object FastBuildUtils {
       ApplicationManager.getApplication().executeOnPooledThread {
         try {
           val sessionMap = sessionsToHotswap.associateWith { hotswapMap }
-          ProgressManager.getInstance().runProcess({
-            HotSwapManager.reloadModifiedClasses(sessionMap, progress)
-          }, progress.progressIndicator)
-        } finally {
+          ProgressManager.getInstance().runProcess(
+            {
+              HotSwapManager.reloadModifiedClasses(sessionMap, progress)
+            },
+            progress.progressIndicator,
+          )
+        }
+        finally {
           triggerHotswapSuccessNotification(project, progress)
           progress.finished()
           tempDir.delete()
@@ -528,7 +547,8 @@ internal object FastBuildUtils {
           .setIcon(AllIcons.Status.Success)
           .notify(project)
       }
-    } catch (e: Exception) {
+    }
+    catch (e: Exception) {
       logger.warn("Failed to trigger hotswap completed notification", e)
     }
   }
@@ -543,7 +563,8 @@ internal object FastBuildUtils {
       }
 
       return runHotswapDialog.sessionsToReload
-    } else {
+    }
+    else {
       return sessions
     }
   }

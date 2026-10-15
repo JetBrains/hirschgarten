@@ -66,7 +66,6 @@ import org.jetbrains.bazel.python.lang.PythonBuildTarget
 import org.jetbrains.bazel.python.lang.PythonLanguageClass
 import org.jetbrains.bazel.server.BazelServerService
 import org.jetbrains.bazel.sync.BazelOutFileHardLinks
-import org.jetbrains.bazel.sync.environment.projectCtx
 import org.jetbrains.bazel.sync.workspace.BazelResolvedWorkspace
 import org.jetbrains.bazel.sync.workspace.DefaultOutputLocationResolver
 import org.jetbrains.bazel.sync.workspace.importer.WorkspaceImporterHelper
@@ -78,6 +77,7 @@ import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
 import org.jetbrains.bazel.test.framework.CopyingBazelOutHardLinks
 import org.jetbrains.bazel.test.framework.target.TestBuildTarget
 import org.jetbrains.bazel.test.framework.testBazelInfo
+import org.jetbrains.bazel.test.framework.updateBazelInfo
 import org.jetbrains.bazel.workspace.model.matchers.entries.ExpectedModuleEntity
 import org.jetbrains.bazel.workspace.model.matchers.entries.ExpectedSourceRootEntity
 import org.jetbrains.bazel.workspace.model.matchers.entries.shouldContainExactlyInAnyOrder
@@ -266,8 +266,12 @@ class PythonProjectSyncTest : MockProjectBaseTest() {
         resources = emptyList(),
       )
 
-    project.projectCtx.bazelExecPath = projectDir.get()
-    project.projectCtx.bazelBinPath = projectDir.get().resolve("bazel-bin")
+    project.updateBazelInfo { bazelInfo ->
+      bazelInfo.copy(
+        execRoot = projectDir.get(),
+        bazelBin = projectDir.get().resolve("bazel-bin"),
+      )
+    }
     project.registerOrReplaceServiceInstance(BazelServerService::class.java, MockBuildServerService(BuildServerMock()), disposable)
     runPythonImporter(
       generateWorkspaceSnapshot(listOf(targetWithoutImports, targetWithImports)),
@@ -326,8 +330,7 @@ class PythonProjectSyncTest : MockProjectBaseTest() {
         resources = emptyList(),
       )
 
-    project.projectCtx.bazelExecPath = projectDir.get()
-    project.projectCtx.bazelBinPath = projectDir.get().resolve("bazel-bin")
+    project.updateBazelInfo { info -> info.copy(execRoot = projectDir.get(), bazelBin = projectDir.get().resolve("bazel-bin")) }
     project.registerOrReplaceServiceInstance(BazelServerService::class.java, MockBuildServerService(BuildServerMock()), disposable)
     runPythonImporter(generateWorkspaceSnapshot(listOf(target)), MutableEntityStorage.create(), runPostProcessing = true)
 
@@ -364,8 +367,7 @@ class PythonProjectSyncTest : MockProjectBaseTest() {
         resources = emptyList(),
       )
 
-    project.projectCtx.bazelExecPath = projectDir.get()
-    project.projectCtx.bazelBinPath = projectDir.get().resolve("bazel-bin")
+    project.updateBazelInfo { info -> info.copy(execRoot = projectDir.get(), bazelBin = projectDir.get().resolve("bazel-bin")) }
     project.registerOrReplaceServiceInstance(BazelServerService::class.java, MockBuildServerService(BuildServerMock()), disposable)
     runPythonImporter(generateWorkspaceSnapshot(listOf(target)), MutableEntityStorage.create(), runPostProcessing = true)
 
@@ -399,11 +401,15 @@ class PythonProjectSyncTest : MockProjectBaseTest() {
         resources = emptyList(),
       )
 
-    project.projectCtx.bazelExecPath = execRoot
-    project.projectCtx.bazelBinPath = bazelBin
+    project.updateBazelInfo { info -> info.copy(execRoot = execRoot, bazelBin = bazelBin) }
     project.registerOrReplaceServiceInstance(BazelServerService::class.java, MockBuildServerService(BuildServerMock()), disposable)
 
-    runPythonImporter(generateWorkspaceSnapshot(listOf(target)), MutableEntityStorage.create(), runPostProcessing = true, execRoot = execRoot)
+    runPythonImporter(
+      generateWorkspaceSnapshot(listOf(target)),
+      MutableEntityStorage.create(),
+      runPostProcessing = true,
+      execRoot = execRoot,
+    )
 
     val resolved =
       runReadActionBlocking {
@@ -469,8 +475,7 @@ class PythonProjectSyncTest : MockProjectBaseTest() {
       },
       resources = emptyList(),
     )
-    project.projectCtx.bazelExecPath = info.execRoot
-    project.projectCtx.bazelBinPath = info.bazelBin
+    project.updateBazelInfo { it.copy(execRoot = info.execRoot, bazelBin = info.bazelBin) }
     links.onBeforeSync()
     val mappedTarget = try {
       mapGeneratedTarget(target, server)
@@ -708,7 +713,9 @@ class PythonProjectSyncTest : MockProjectBaseTest() {
     generatedDir.resolve("pkg").createDirectories().resolve("aaa.py").writeText("A = 1\n")
     val previousBazelBin = outputDir.resolve("previous-bazel-bin")
     previousBazelBin.resolve("generated").createDirectories()
-    project.projectCtx.bazelBinPath = previousBazelBin.takeIf { hasPreviousSync }
+    if (hasPreviousSync) {
+      project.updateBazelInfo { it.copy(bazelBin = previousBazelBin) }
+    }
     val links = DefaultBazelOutputFileHardLinks(project, info)
     val server = object : BuildServerMock() {
       override val bazelInfo = info
@@ -758,8 +765,7 @@ class PythonProjectSyncTest : MockProjectBaseTest() {
         pythonGeneratedSources = listOf(OutputLocation.Output(OutputRoot.of(listOf("k8-fastbuild", "bin")), "genpy/part_pb2.py")),
       )
 
-    project.projectCtx.bazelExecPath = execRoot
-    project.projectCtx.bazelBinPath = bazelBin
+    project.updateBazelInfo { info -> info.copy(execRoot = execRoot, bazelBin = bazelBin) }
     val server = object : BuildServerMock() {
       override val bazelInfo: BazelInfo = bazelInfo()
       override val outFileHardLinks: BazelOutFileHardLinks = hardLinks
@@ -1140,7 +1146,7 @@ class PythonProjectSyncTest : MockProjectBaseTest() {
         repoMapping = RepoMappingDisabled,
         rootTargets = rootTargets,
         targets = targets,
-        configurations = emptyMap()
+        configurations = emptyMap(),
       ),
     )
   }
@@ -1171,8 +1177,10 @@ class PythonProjectSyncTest : MockProjectBaseTest() {
   }
 
   private fun generateExpectedSourceRootEntities(target: BuildTarget, parentModuleEntity: ModuleEntity): List<ExpectedSourceRootEntity> =
-    (target.sources.getOutputLocations().mapNotNull { outputResolver().resolve(it) }.map { generateExpectedSourceRootEntity(it, "python-source", parentModuleEntity) } +
-     target.resources.getOutputLocations().mapNotNull { outputResolver().resolve(it) }.map { generateExpectedSourceRootEntity(it, "python-resource", parentModuleEntity) }).toList()
+    (target.sources.getOutputLocations().mapNotNull { outputResolver().resolve(it) }
+       .map { generateExpectedSourceRootEntity(it, "python-source", parentModuleEntity) } +
+     target.resources.getOutputLocations().mapNotNull { outputResolver().resolve(it) }
+       .map { generateExpectedSourceRootEntity(it, "python-resource", parentModuleEntity) }).toList()
 
   private fun bazelInfo(execRoot: Path = projectDir.get()): BazelInfo =
     testBazelInfo(workspaceRoot = projectDir.get(), outputBase = projectDir.get(), execRoot = execRoot)

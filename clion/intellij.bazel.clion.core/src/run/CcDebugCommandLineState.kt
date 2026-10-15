@@ -27,6 +27,7 @@ import org.jetbrains.bazel.run.state.AbstractGenericTestState
 import org.jetbrains.bazel.run.state.GenericRunConfigurationState
 import org.jetbrains.bazel.run.state.HasTestFilter
 import org.jetbrains.bazel.sync.environment.projectCtx
+import org.jetbrains.bazel.sync.workspace.snapshot.workspaceSnapshotOrNull
 import org.jetbrains.bazel.utils.ExecutableInfo
 import java.nio.file.Path
 
@@ -59,7 +60,7 @@ private class CcCidrLauncher(private val project: Project, private val bazelStat
     val debugProfile = requireNotNull(ccState.debugProfile)
 
     // TODO: when can these be null and what to do then?
-    val executionRoot = requireNotNull(project.projectCtx.bazelExecPath)
+    val executionRoot = requireNotNull(project.workspaceSnapshotOrNull?.bazelInfo?.execRoot)
     val workspaceRoot = requireNotNull(project.projectCtx.projectRootDir?.toNioPathOrNull())
 
     val debugDriver = debugProfile.createDriverConfiguration(

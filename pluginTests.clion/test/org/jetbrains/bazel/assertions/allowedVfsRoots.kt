@@ -5,6 +5,7 @@ import com.intellij.openapi.vfs.VfsUtil
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.newvfs.persistent.PersistentFS
 import org.jetbrains.bazel.sync.environment.projectCtx
+import org.jetbrains.bazel.sync.workspace.snapshot.workspaceSnapshotOrNull
 import org.junit.jupiter.api.fail
 import java.nio.file.Path
 import kotlin.io.path.Path
@@ -25,7 +26,7 @@ private fun getChildrenInVfs(dir: VirtualFile): Sequence<Path> = sequence {
 }
 
 internal fun Project.assertVfsLoads() {
-  val executionRoot = requireNotNull(projectCtx.bazelExecPath)
+  val executionRoot = requireNotNull(this.workspaceSnapshotOrNull?.bazelInfo?.execRoot)
   val executionRootFile = VfsUtil.findFile(executionRoot, /* refreshIfNeeded = */ false) ?: return
 
   for (child in getChildrenInVfs(executionRootFile)) {

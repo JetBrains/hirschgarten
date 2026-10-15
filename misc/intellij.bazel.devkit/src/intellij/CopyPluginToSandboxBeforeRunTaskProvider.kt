@@ -13,7 +13,7 @@ import com.intellij.openapi.util.io.NioFiles
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.run.config.BazelRunConfiguration
-import org.jetbrains.bazel.sync.environment.projectCtx
+import org.jetbrains.bazel.sync.workspace.snapshot.workspaceSnapshotOrNull
 import org.jetbrains.bazel.target.targetStorage
 import org.jetbrains.bazel.ui.notifications.BazelBalloonNotifier
 import org.jetbrains.bsp.protocol.id
@@ -61,7 +61,7 @@ internal class CopyPluginToSandboxBeforeRunTaskProvider : BeforeRunTaskProvider<
       return false
     }
 
-    val executionRoot = configuration.project.projectCtx.bazelExecPath
+    val executionRoot = configuration.project.workspaceSnapshotOrNull?.bazelInfo?.execRoot
     if (executionRoot == null) {
       showError("Cannot determine the execution root")
       return false
@@ -84,7 +84,7 @@ internal class CopyPluginToSandboxBeforeRunTaskProvider : BeforeRunTaskProvider<
    * default output group, but the current BEP infrastructure does not support retrieving build artifacts for a target.
    */
   private fun guessDeployInfoPath(project: Project, targetLabel: Label): Path? {
-    val bazelBinPath = project.projectCtx.bazelBinPath ?: return null
+    val bazelBinPath = project.workspaceSnapshotOrNull?.bazelInfo?.bazelBin ?: return null
 
     val targetInfo = project.targetStorage.getTargetSummary(targetLabel) ?: return null
 

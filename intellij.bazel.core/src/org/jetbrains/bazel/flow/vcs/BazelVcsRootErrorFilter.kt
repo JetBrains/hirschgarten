@@ -16,6 +16,7 @@ import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.config.isBazelProject
 import org.jetbrains.bazel.flow.exclude.BazelSymlinkExcludeService
 import org.jetbrains.bazel.sync.environment.projectCtx
+import org.jetbrains.bazel.sync.workspace.snapshot.workspaceSnapshotOrNull
 import org.jetbrains.bazel.utils.isWindowsJunction
 import java.io.IOException
 import java.nio.file.Files
@@ -60,7 +61,8 @@ class BazelVcsRootErrorFilter : VcsRootErrorFilter {
     fun bazelOutputDirectoryPredicate(project: Project): IsBazelOutputDirectoryPredicate {
       val workspace = project.projectCtx.projectRootDir?.toNioPathOrNull()
       val knownSymlinks = BazelSymlinkExcludeService.getInstance(project).getBazelSymlinksToExclude()
-      val outputTrees = (knownSymlinks + listOfNotNull(project.projectCtx.bazelExecPath)).mapNotNullTo(mutableSetOf()) { it.toRealPathOrNull() }
+      val outputTrees = (knownSymlinks + listOfNotNull(project.workspaceSnapshotOrNull?.bazelInfo?.execRoot))
+        .mapNotNullTo(mutableSetOf()) { it.toRealPathOrNull() }
 
       return object : IsBazelOutputDirectoryPredicate {
         override fun invoke(directory: String): Boolean {
