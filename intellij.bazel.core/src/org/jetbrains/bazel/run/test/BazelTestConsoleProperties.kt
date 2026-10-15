@@ -7,6 +7,7 @@ import com.intellij.execution.testframework.sm.runner.SMTRunnerConsoleProperties
 import com.intellij.execution.testframework.sm.runner.SMTestLocator
 import com.intellij.openapi.extensions.ExtensionPointName
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.util.ModificationTracker
 import com.intellij.psi.search.GlobalSearchScope
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.config.BazelPluginConstants
@@ -39,7 +40,15 @@ private object CombinedTestLocator : SMTestLocator {
       block(locator).takeIf { it.isNotEmpty() }
     }.orEmpty()
 
+  override fun getLocationCacheModificationTracker(project: Project): ModificationTracker =
+    CompositeModificationTracker(BazelTestLocatorProvider.testLocators().map { it.getLocationCacheModificationTracker(project) })
+
   override fun isDumbAware(): Boolean = BazelTestLocatorProvider.testLocators().all { it.isDumbAware }
+}
+
+@ApiStatus.Internal
+class CompositeModificationTracker(private val trackers: List<ModificationTracker>) : ModificationTracker {
+  override fun getModificationCount(): Long = trackers.sumOf { it.modificationCount }
 }
 
 @ApiStatus.Internal

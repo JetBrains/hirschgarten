@@ -8,9 +8,7 @@ import com.intellij.execution.process.ProcessOutputType
 import com.intellij.execution.runners.ExecutionEnvironment
 import com.intellij.execution.testframework.sm.SMTestRunnerConnectionUtil
 import com.intellij.execution.testframework.sm.ServiceMessageBuilder
-import com.intellij.execution.testframework.sm.runner.ui.SMTRunnerConsoleView
 import com.intellij.execution.ui.RunContentManager
-import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.application.EDT
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
@@ -35,8 +33,6 @@ abstract class BazelCommandLineStateBase(environment: ExecutionEnvironment) : Co
   protected open val testRunnerEmitsServiceMessages: Boolean get() = false
 
   protected abstract fun createAndAddTaskListener(handler: BazelProcessHandler): BazelTaskListener
-
-  protected open fun createTestRestartActions(console: SMTRunnerConsoleView): Array<AnAction> = emptyArray()
 
   /** Run the actual BSP command or throw an exception if the server does not support running the configuration */
   protected abstract suspend fun startBsp(
@@ -108,9 +104,9 @@ abstract class BazelCommandLineStateBase(environment: ExecutionEnvironment) : Co
     val actions = createActions(console, handler, executor)
 
     val executionResult = DefaultExecutionResult(console, handler, *actions)
-    val restartActions = createTestRestartActions(console)
-    if (restartActions.isNotEmpty()) {
-      executionResult.setRestartActions(*restartActions)
+    val testRerunExtension = BazelTestRerunExtension.getInstance(configuration)
+    if (testRerunExtension != null) {
+      executionResult.setRestartActions(BazelRerunFailedTestsAction(console, testRerunExtension))
     }
     return executionResult
   }

@@ -43,10 +43,6 @@
                     interface="org.jetbrains.bazel.run.test.BazelTestLocatorProvider"
                     dynamic="true"
     />
-    <extensionPoint qualifiedName="org.jetbrains.bazel.testFilterProvider"
-                    interface="org.jetbrains.bazel.run.test.BazelTestFilterProvider"
-                    dynamic="true"
-    />
     <extensionPoint qualifiedName="org.jetbrains.bazel.bzlmodResolver"
                     interface="org.jetbrains.bazel.languages.starlark.bazel.bzlmod.BazelModuleResolver"
                     dynamic="true"
@@ -60,6 +56,10 @@
                     beanClass="com.intellij.lang.LanguageExtensionPoint">
       <with attribute="implementationClass" implements="org.jetbrains.bazel.run.synthetic.SyntheticRunTargetTemplateGenerator"/>
     </extensionPoint>
+
+    <extensionPoint qualifiedName="org.jetbrains.bazel.testRerunExtension"
+                    interface="org.jetbrains.bazel.run.BazelTestRerunExtension"
+                    dynamic="true"/>
   </extensionPoints>
 
   <resource-bundle>messages.BazelPluginBundle</resource-bundle>

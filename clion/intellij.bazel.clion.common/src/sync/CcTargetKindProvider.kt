@@ -3,8 +3,6 @@ package org.jetbrains.bazel.clion.sync
 import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.sync.workspace.targetKind.TargetKindProvider
-import kotlin.collections.map
-import kotlin.collections.toSet
 
 private val CC_RULE_TYPES = mapOf(
   "cc_binary" to RuleType.BINARY,
