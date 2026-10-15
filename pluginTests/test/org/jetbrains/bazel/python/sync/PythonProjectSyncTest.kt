@@ -3,7 +3,6 @@ package org.jetbrains.bazel.python.sync
 import com.google.devtools.intellij.aspect.Common.ArtifactLocation
 import com.google.devtools.intellij.ideinfo.IntellijIdeInfo
 import com.intellij.bazel.python.backend.BazelPyImportResolver
-import com.intellij.bazel.python.backend.chooseSdkName
 import com.intellij.bazel.python.backend.findBazelPythonShortestQualifiedName
 import com.intellij.bazel.python.backend.hasBazelPythonQualifiedName
 import com.intellij.bazel.python.backend.sync.PythonLanguagePlugin
@@ -28,7 +27,6 @@ import com.intellij.platform.workspace.jps.entities.ModuleId
 import com.intellij.platform.workspace.jps.entities.ModuleSourceDependency
 import com.intellij.platform.workspace.jps.entities.ModuleTypeId
 import com.intellij.platform.workspace.jps.entities.SdkDependency
-import com.intellij.platform.workspace.jps.entities.SdkId
 import com.intellij.platform.workspace.jps.entities.SourceRootEntity
 import com.intellij.platform.workspace.jps.entities.SourceRootTypeId
 import com.intellij.platform.workspace.storage.MutableEntityStorage
@@ -47,6 +45,7 @@ import com.jetbrains.python.sdk.PythonSdkUtil
 import com.jetbrains.python.sdk.internal.PYTHON_MODULE_ID
 import io.kotest.matchers.booleans.shouldBeFalse
 import io.kotest.matchers.collections.shouldExist
+import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeInstanceOf
@@ -172,7 +171,8 @@ class PythonProjectSyncTest : MockProjectBaseTest() {
         .filter { it.type == ModuleTypeId(PYTHON_MODULE_ID) }
     logger.info("Checking for project ${project.name}")
     actualModuleEntities shouldContainExactlyInAnyOrder pythonTestTargets.expectedModuleEntities
-    actualModuleEntities.shouldAllHaveTheSameSDK()
+    // The importer sets the interpreter through the Python project after the modules exist, so the diff has no SDK.
+    actualModuleEntities.shouldHaveNoSdk()
   }
 
   @Test
@@ -1149,8 +1149,6 @@ class PythonProjectSyncTest : MockProjectBaseTest() {
     targetInfo: GeneratedTargetInfo,
     dependenciesTargetInfo: List<GeneratedTargetInfo>,
   ): ExpectedModuleEntity {
-    val sdkName = chooseSdkName(pythonBinary, project.name)
-    val sdkDependency: ModuleDependencyItem = SdkDependency(SdkId(sdkName, "Python SDK"))
     val moduleDependencies: List<ModuleDependencyItem> =
       dependenciesTargetInfo.map {
         ModuleDependency(
@@ -1165,7 +1163,7 @@ class PythonProjectSyncTest : MockProjectBaseTest() {
         ModuleEntity(
           name = targetInfo.targetId.formatAsModuleName(project),
           entitySource = BazelProjectEntitySource,
-          dependencies = moduleDependencies + ModuleSourceDependency + sdkDependency,
+          dependencies = moduleDependencies + ModuleSourceDependency,
         ) {
           type = ModuleTypeId(PYTHON_MODULE_ID)
         },
@@ -1193,10 +1191,8 @@ class PythonProjectSyncTest : MockProjectBaseTest() {
     return ExpectedSourceRootEntity(sourceRootEntity, contentRootEntity, parentModuleEntity)
   }
 
-  private fun List<ModuleEntity>.shouldAllHaveTheSameSDK() {
-    val sdks = this.map { module -> module.dependencies.firstNotNullOfOrNull { it as? SdkDependency } }
-    sdks.any { it == null }.shouldBeFalse()
-    sdks.distinct().size shouldBe 1
+  private fun List<ModuleEntity>.shouldHaveNoSdk() {
+    flatMap { it.dependencies }.filterIsInstance<SdkDependency>().shouldBeEmpty()
   }
 
   private fun createPythonFile(relativePath: String, text: String): PyFile {
