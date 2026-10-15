@@ -14,7 +14,7 @@ java_library(
     name = "performance_internal",
     visibility = ["//visibility:private"],
     exports = select_for_plugin_api({
-        "intellij-2026.2": ["@performance_2026_2//jar"],
+        "intellij-2026.3": ["@performance_2026_3//jar"],
     }),
 )
 

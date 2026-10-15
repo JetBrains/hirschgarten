@@ -172,6 +172,6 @@ java_import(
     name = "jackson_dataformat_without_deps",
     jars = select_for_plugin_api({
         # The version must match IDEA's Jackson version exactly to the prevent exceptions in runtime
-        "intellij-2026.2": ["@maven//:com_fasterxml_jackson_dataformat_jackson_dataformat_xml_2_19_0_extension"],
+        "intellij-2026.3": ["@maven//:com_fasterxml_jackson_dataformat_jackson_dataformat_xml_2_19_0_extension"],
     }),
 )

@@ -14,14 +14,14 @@ java_library(
     name = "python_internal",
     visibility = ["//visibility:private"],
     exports = select_for_plugin_api({
-        "intellij-2026.2": ["@python_2026_2//:python"],
+        "intellij-2026.3": ["@python_2026_3//:python"],
     }),
 )
 
 filegroup(
     name = "python_helpers",
     srcs = select_for_plugin_api({
-        "intellij-2026.2": ["@python_2026_2//:python_helpers"],
+        "intellij-2026.3": ["@python_2026_3//:python_helpers"],
     }),
     visibility = ["//visibility:private"],
 )

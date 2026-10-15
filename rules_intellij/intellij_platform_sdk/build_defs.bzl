@@ -6,15 +6,15 @@
 
 # The current indirect ij_product mapping (eg. "intellij-latest")
 INDIRECT_IJ_PRODUCTS = {
-    "intellij-latest": "intellij-2026.2",
+    "intellij-latest": "intellij-2026.3",
 }
 
 (CHANNEL_STABLE, CHANNEL_BETA, CHANNEL_CANARY, CHANNEL_FREEFORM) = ("stable", "beta", "canary", "freeform")
 
 DIRECT_IJ_PRODUCTS = {
-    "intellij-2026.2": struct(
+    "intellij-2026.3": struct(
         ide = "intellij",
-        directory = "intellij_ce_2026_2",
+        directory = "intellij_ce_2026_3",
     ),
 }
 

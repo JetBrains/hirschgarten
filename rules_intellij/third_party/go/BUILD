@@ -14,7 +14,7 @@ java_library(
     name = "go_internal",
     visibility = ["//visibility:private"],
     exports = select_for_plugin_api({
-        "intellij-2026.2": ["@go_2026_2//:go"],
+        "intellij-2026.3": ["@go_2026_3//:go"],
         "default": [],
     }),
 )

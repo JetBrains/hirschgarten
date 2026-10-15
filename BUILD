@@ -9,7 +9,7 @@ kt_kotlinc_options(
     name = "kotlinc_options",
     include_stdlibs = "none",
     jvm_target = select_for_plugin_api({
-        "intellij-2026.2": "25",
+        "intellij-2026.3": "25",
     }),
     x_optin = ["org.jetbrains.kotlin.analysis.api.KaPlatformInterface"],
 )
@@ -17,15 +17,15 @@ kt_kotlinc_options(
 define_kt_toolchain(
     name = "kotlin_toolchain",
     api_version = select_for_plugin_api({
-        "intellij-2026.2": "2.4",
+        "intellij-2026.3": "2.4",
     }),
     experimental_multiplex_workers = True,
     jvm_target = select_for_plugin_api({
-        "intellij-2026.2": "25",
+        "intellij-2026.3": "25",
     }),
     kotlinc_options = ":kotlinc_options",
     language_version = select_for_plugin_api({
-        "intellij-2026.2": "2.4",
+        "intellij-2026.3": "2.4",
     }),
 )
 
