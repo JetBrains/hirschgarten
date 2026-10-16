@@ -9,6 +9,7 @@ import com.intellij.openapi.application.edtWriteAction
 import com.intellij.openapi.project.Project
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.progress.syncConsole
 import org.jetbrains.bazel.sync.ProjectSyncHook
 import org.jetbrains.bazel.sync.withSubtask
@@ -20,6 +21,8 @@ import kotlin.io.path.exists
  * so that IDE features relying on Node.js (TypeScript service, JS test runners, ...) use the same version as Bazel.
  */
 internal class BazelNodeInterpreterSyncHook : ProjectSyncHook {
+  override fun isEnabled(project: Project): Boolean = BazelFeatureFlags.isJavaScriptSupportEnabled
+
   override suspend fun onSync(environment: ProjectSyncHook.ProjectSyncHookEnvironment) {
     val platform = NodePlatform.host() ?: return
     val externalDir = environment.server.bazelInfo.outputBase.resolve("external")

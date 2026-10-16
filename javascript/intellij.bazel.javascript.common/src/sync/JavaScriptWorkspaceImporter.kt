@@ -10,6 +10,7 @@ import com.intellij.platform.workspace.storage.url.VirtualFileUrlManager
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.jetbrains.annotations.ApiStatus
+import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.sync.workspace.importer.BazelWorkspaceImporter
 import org.jetbrains.bazel.sync.workspace.importer.WorkspaceImporterContext
@@ -40,6 +41,9 @@ internal class JavaScriptWorkspaceImporter : BazelWorkspaceImporter {
   ): Result<WorkspaceImporterResult> {
     when (phase) {
       is WorkspaceImporterPhase.Initialize -> {
+        if (!BazelFeatureFlags.isJavaScriptSupportEnabled) {
+          return Result.success(WorkspaceImporterResult.Abort)
+        }
         val workspaceRoot = context.project.rootDir.toNioPath()
         val targetDirectories =
           snapshot.targetGraph.allTargets
