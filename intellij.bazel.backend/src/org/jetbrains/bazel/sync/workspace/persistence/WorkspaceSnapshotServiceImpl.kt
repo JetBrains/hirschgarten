@@ -24,7 +24,7 @@ class WorkspaceSnapshotServiceImpl(
 ) : WorkspaceSnapshotService, SettingsSavingComponent, Disposable {
   private val delegate: WorkspaceSnapshotService by lazy {
     when {
-      (!project.isBazelProject || isEphemeral) && !forcePersistent -> InMemoryWorkspaceSnapshotService()
+      (isEphemeral || !project.isBazelProject) && !forcePersistent -> InMemoryWorkspaceSnapshotService()
       else -> PersistentWorkspaceSnapshotService(project, coroutineScope)
     }
   }
