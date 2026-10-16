@@ -31,7 +31,7 @@ class ScriptPathBuildTargetTask(
       taskId = taskId,
       target = targetIds.single(),
       arguments = programArguments,
-      additionalBazelParams = (scriptPathParams + additionalBazelParams).joinToString(" "),
+      additionalBazelParams = (scriptPathParams + debugFlags + additionalBazelParams).joinToString(" "),
       environmentVariables = null,
       checkVisibility = true,
     )
