@@ -43,7 +43,7 @@ internal class GoRunConfigurationsTest : IdeStarterCombinedBaseTest() {
 
   @Test
   @Order(1)
-  fun `debugging main_binary has correct program arguments and env vars`() {
+  fun `debugging main_binary has correct program arguments, env vars and Bazel flags`() {
     withDriver(bgRun) {
       ideFrame {
         step("Select //:main_binary configuration") {
@@ -60,6 +60,14 @@ internal class GoRunConfigurationsTest : IdeStarterCombinedBaseTest() {
         step("Check that env vars and program arguments are passed") {
           consoleView.waitContainsText("Program arguments: [example_arg=example_value another_arg=another_value]", timeout = 5.seconds)
           consoleView.waitContainsText("Environment variable EXAMPLE_ENV: EXAMPLE_VALUE", timeout = 5.seconds)
+        }
+
+        step("Check that debug_flags and the run configuration Bazel params override the flags in this order") {
+          consoleView.waitContainsText("Flag precedence: a=debug_flags b=run_configuration", timeout = 5.seconds)
+        }
+
+        step("Check that the forced --compilation_mode=dbg overrides --compilation_mode=opt from debug_flags") {
+          consoleView.waitContainsText("Compilation mode: dbg", timeout = 5.seconds)
         }
       }
     }

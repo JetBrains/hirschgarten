@@ -50,7 +50,7 @@ suspend fun runBuildTargetTask(
     return withBackgroundProgress(project, BazelPluginBundle.message("background.progress.building.targets")) {
       // some languages require running `bazel build` with additional flags before debugging. e.g., python, c++
       // when this happens, isDebug should be set to true, and flags from "debug_flags" section of the project view file will be added
-      val debugFlag = if (isDebug) project.connection.runWithServer { it.projectView.debugFlags } else listOf()
+      val debugFlags = if (isDebug) project.connection.runWithServer { it.projectView.debugFlags } else listOf()
       val taskGroupId = TaskGroupId("build-" + Random.nextBytes(8).toHexString())
       val taskId = taskGroupId.task("build-${project.name}-${Random.nextBytes(8).toHexString()}")
       project.connection.runWithServer(taskId) { server ->
@@ -76,7 +76,7 @@ suspend fun runBuildTargetTask(
               },
             )
 
-            val buildDeferred = async { buildTargetTask.build(server, targetIds, bspBuildConsole, taskId, debugFlag) }
+            val buildDeferred = async { buildTargetTask.build(server, targetIds, bspBuildConsole, taskId, debugFlags) }
             return@coroutineScope BspTaskStatusLogger(buildDeferred, bspBuildConsole, taskId).getStatus()
           }
           finally {

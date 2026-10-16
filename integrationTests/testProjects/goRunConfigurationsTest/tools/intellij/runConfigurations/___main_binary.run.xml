@@ -3,6 +3,7 @@
     <bsp-state handler-provider-id="BazelGoRunHandlerProvider" check-visibility="true">
       <bsp-target>@//:main_binary</bsp-target>
       <handler-state programArguments="example_arg=example_value another_arg=another_value">
+        <option name="additionalBazelParams" value="--define=precedence_b=run_configuration" />
         <option name="env">
           <EnvironmentVariablesDataOptions>
             <envs>

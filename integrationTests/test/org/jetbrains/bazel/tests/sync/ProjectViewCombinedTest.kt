@@ -6,6 +6,8 @@ import com.intellij.driver.sdk.step
 import com.intellij.driver.sdk.ui.components.common.editorTabs
 import com.intellij.driver.sdk.ui.components.common.gutter
 import com.intellij.driver.sdk.ui.components.common.ideFrame
+import com.intellij.driver.sdk.ui.components.common.toolwindows.debugToolWindow
+import com.intellij.driver.sdk.ui.components.common.toolwindows.runToolWindow
 import com.intellij.driver.sdk.ui.components.elements.popup
 import com.intellij.driver.sdk.wait
 import com.intellij.ide.starter.ide.IDETestContext
@@ -35,6 +37,7 @@ import org.jetbrains.bazel.performanceImpl.FileKindCheck.NOT_IN_TARGETS
 import org.jetbrains.bazel.performanceImpl.FileKindCheck.NOT_IN_WSM
 import org.jetbrains.bazel.performanceImpl.FileKindCheck.OUTSIDE_CONTENT
 import org.jetbrains.bazel.tests.combined.IdeStarterCombinedBaseTest
+import org.jetbrains.bazel.tests.run.selectRunConfiguration
 import org.jetbrains.bazel.tests.ui.clickRunGutterOnLine
 import org.jetbrains.bazel.tests.ui.consoleView
 import org.jetbrains.bazel.tests.ui.getRunGutterOnLine
@@ -44,6 +47,7 @@ import org.junit.jupiter.api.Order
 import org.junit.jupiter.api.Test
 import kotlin.io.path.div
 import kotlin.io.path.writeText
+import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
 
 private val PROJECT_VIEW_COMBINED_PROJECT = simpleBazelProject(
@@ -496,6 +500,50 @@ class ProjectViewCombinedTest : IdeStarterCombinedBaseTest() {
               emptyList()
             }
           check(gutterIcons.isEmpty()) { "Expected no gutter icons in MODULE.bazel, got: $gutterIcons" }
+        }
+      }
+    }
+  }
+
+  @Test
+  @Order(106)
+  fun `project view flags override each other in the correct order`() {
+    withDriver(bgRun) {
+      ideFrame {
+        step("Switch to debug-flags view") {
+          execute { switchProjectView("debug-flags.bazelproject") }
+        }
+        step("Resync with debug-flags view") {
+          execute {
+            buildAndSync()
+            waitForSmartMode()
+          }
+          waitForSyncSucceeded()
+        }
+        step("Select the imported FlagPrecedence configuration") {
+          selectRunConfiguration(targetText = "FlagPrecedence")
+        }
+        step("Run and check the flag values that won") {
+          x { byAccessibleName("Run 'FlagPrecedence'") }.click()
+          runToolWindow {
+            consoleView.waitContainsText("Flag precedence: a=build_flags b=run_configuration", timeout = 3.minutes)
+          }
+        }
+        step("Debug and check the flag values that won") {
+          x { byAccessibleName("Debug 'FlagPrecedence'") }.click()
+          debugToolWindow {
+            consoleTab.click()
+            consoleView.waitContainsText("Flag precedence: a=debug_flags b=run_configuration", timeout = 3.minutes)
+          }
+        }
+        step("Run //flag_precedence:flag_precedence_test via its run gutter and check that it passes") {
+          openFile("flag_precedence/BUILD.bazel")
+          clickRunGutterOnLine(11)
+          popup().waitOneText("Run '//flag_precedence:flag_precedence_test'").click()
+          verifyTestStatus(
+            listOf("1 test passed"),
+            listOf("com.example.FlagPrecedenceTest", "testFlagPrecedence"),
+          )
         }
       }
     }
