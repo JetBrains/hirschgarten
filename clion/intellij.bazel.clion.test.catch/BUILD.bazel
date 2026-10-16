@@ -1,0 +1,71 @@
+load("@community//platform/build-scripts/bazel-rules:content_module_jar.bzl", "content_module_jar")
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+
+### auto-generated section `dev intellij.bazel.clion.test.catch` start
+content_module_jar(module = ":bazel-clion-test-catch")
+### auto-generated section `dev intellij.bazel.clion.test.catch` end
+
+### auto-generated section `build intellij.bazel.clion.test.catch` start
+jvm_library(
+    name = "bazel-clion-test-catch",
+    srcs = glob(
+        [
+            "src/**/*.kt",
+            "src/**/*.java",
+            "src/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.bazel.clion.test.catch",
+    resource_strip_prefix = "resources",
+    resources = glob(
+        ["resources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    deps = [
+        # do not sort,
+        "@lib//:kotlin-stdlib",
+        "//CIDR/clion-test-catch",
+        "//plugins/bazel/clion/intellij.bazel.clion.core:bazel-clion-core",
+        "@community//platform/smRunner",
+        "@community//platform/core-api:core",
+        "@community//platform/execution",
+        "//CIDR/cidr-execution",
+        "@community//libraries/jetbrains/annotations",
+        "@community//platform/util",
+    ],
+)
+
+jvm_library(
+    name = "bazel-clion-test-catch_test_lib",
+    testonly = True,
+    srcs = glob(
+        [],
+        allow_empty = True,
+    ),
+    module_name = "intellij.bazel.clion.test.catch",
+    visibility = ["//visibility:public"],
+    runtime_deps = [
+        # do not sort,
+        ":bazel-clion-test-catch",
+        "//CIDR/clion-test-catch:clion-test-catch_test_lib",
+        "//plugins/bazel/clion/intellij.bazel.clion.core:bazel-clion-core_test_lib",
+        "@community//platform/smRunner:smRunner_test_lib",
+        "@community//platform/core-api:core_test_lib",
+        "@community//platform/execution:execution_test_lib",
+        "//CIDR/cidr-execution:cidr-execution_test_lib",
+        "@community//libraries/jetbrains/annotations:annotations_test_lib",
+        "@community//platform/util:util_test_lib",
+    ],
+)
+### auto-generated section `build intellij.bazel.clion.test.catch` end
+
+### auto-generated section `iml intellij.bazel.clion.test.catch` start
+exports_files(
+    [
+        "intellij.bazel.clion.test.catch.iml",
+        "resources/intellij.bazel.clion.test.catch.xml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.bazel.clion.test.catch` end

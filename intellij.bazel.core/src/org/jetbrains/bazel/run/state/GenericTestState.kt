@@ -13,10 +13,8 @@ class GenericTestState : AbstractGenericTestState<GenericTestState>()
 @ApiStatus.Internal
 open class AbstractGenericTestState<T : AbstractGenericTestState<T>> :
   BazelRunConfigurationState<T>(),
-  HasEnv,
-  HasProgramArguments,
+  GenericRunConfigurationState,
   HasTestFilter,
-  HasBazelParams,
   HasCoverageInstrumentationFilter {
   @com.intellij.configurationStore.Property(description = "Test filter")
   @get:Attribute("testFilter")

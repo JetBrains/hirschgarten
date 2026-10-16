@@ -48,7 +48,7 @@
     />
     <targetKindProvider implementation="org.jetbrains.bazel.intellij.IntelliJMonorepoBazelRules"/>
     <jvmTestRunnerExtension implementation="org.jetbrains.bazel.intellij.JetBrainsTestRunnerExtension"/>
-    <jvmTestRerunExtension implementation="org.jetbrains.bazel.intellij.JetBrainsTestRerunExtension"/>
+    <testRerunExtension implementation="org.jetbrains.bazel.intellij.JetBrainsTestRerunExtension"/>
     <jvmTestFilterExtension implementation="org.jetbrains.bazel.intellij.JetBrainsTestFilterExtension"/>
     <runHandlerProvider
       id="JetBrainsTestSuiteHandlerProvider"

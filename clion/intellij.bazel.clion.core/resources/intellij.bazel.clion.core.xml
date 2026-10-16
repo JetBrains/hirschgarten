@@ -9,6 +9,7 @@
     <module name="intellij.cidr.debugger.backend"/>
     <module name="intellij.cidr.debugger.core"/>
     <module name="intellij.cidr.debugger.profiles.backend"/>
+    <module name="intellij.cidr.execution"/>
     <module name="intellij.cidr.projectModel"/>
     <module name="intellij.cidr.psi.base"/>
     <module name="intellij.cidr.runner"/>
@@ -42,16 +43,21 @@
   <!-- endregion -->
 
   <extensions defaultExtensionNs="com.intellij">
-    <runConfigurationProducer implementation="org.jetbrains.bazel.clion.run.BazelCcRunConfigurationProducer"/>
+    <runConfigurationProducer implementation="org.jetbrains.bazel.clion.run.BazelCcMainRunConfigurationProducer"/>
+    <runConfigurationProducer implementation="org.jetbrains.bazel.clion.run.BazelCcTestRunConfigurationProducer"/>
     <programRunner implementation="org.jetbrains.bazel.clion.run.CcDebugRunner"/>
   </extensions>
 
   <extensions defaultExtensionNs="org.jetbrains.bazel">
     <runHandlerProvider implementation="org.jetbrains.bazel.clion.run.CcRunHandler$Provider"/>
+    <runHandlerProvider implementation="org.jetbrains.bazel.clion.run.CcTestHandler$Provider"/>
+    <testLocationHintProvider implementation="org.jetbrains.bazel.clion.run.BazelCcTestLocationHintProvider"/>
+    <testLocatorProvider implementation="org.jetbrains.bazel.clion.run.BazelCcTestLocatorProvider"/>
+    <testRerunExtension implementation="org.jetbrains.bazel.clion.run.BazelCcTestRerunExtension"/>
   </extensions>
 
   <extensions defaultExtensionNs="cidr">
-    <debugger.debugProfilesEnabler implementation="org.jetbrains.bazel.clion.run.CcRunHandler$DebugProfileEnabler"/>
+    <debugger.debugProfilesEnabler implementation="org.jetbrains.bazel.clion.run.DebugProfileEnabler"/>
   </extensions>
 
   <actions resource-bundle="messages.BazelCLionCoreBundle">
@@ -62,5 +68,11 @@
       <action id="Bazel.CLion.DebugTargetInfo" class="org.jetbrains.bazel.clion.debug.DebugTargetInfoAction"/>
     </group>
   </actions>
+
+  <extensionPoints>
+    <extensionPoint interface="org.jetbrains.bazel.clion.run.BazelCcTestFrameworkSupport"
+                    qualifiedName="org.jetbrains.bazel.ccTestSupport"
+                    dynamic="true"/>
+  </extensionPoints>
 
 </idea-plugin>

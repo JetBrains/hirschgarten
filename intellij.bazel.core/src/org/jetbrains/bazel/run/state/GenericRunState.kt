@@ -11,11 +11,12 @@ import org.jetbrains.bazel.run.config.BazelRunConfiguration
 class GenericRunState : AbstractGenericRunState<GenericRunState>()
 
 @ApiStatus.Internal
+interface GenericRunConfigurationState : HasEnv, HasProgramArguments, HasBazelParams
+
+@ApiStatus.Internal
 open class AbstractGenericRunState<T : AbstractGenericRunState<T>> :
   BazelRunConfigurationState<T>(),
-  HasEnv,
-  HasProgramArguments,
-  HasBazelParams {
+  GenericRunConfigurationState {
   @com.intellij.configurationStore.Property(description = "Arguments")
   @get:Attribute("programArguments")
   override var programArguments: String? by string()

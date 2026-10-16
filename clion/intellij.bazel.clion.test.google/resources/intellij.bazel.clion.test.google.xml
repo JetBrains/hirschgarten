@@ -1,0 +1,16 @@
+<idea-plugin>
+  <!-- region Generated dependencies - run `Generate Product Layouts` to regenerate -->
+  <dependencies>
+    <plugin id="org.jetbrains.plugins.clion.test.google"/>
+    <module name="intellij.bazel.clion.core"/>
+    <module name="intellij.cidr.execution"/>
+    <module name="intellij.libraries.jetbrains.annotations"/>
+    <module name="intellij.platform.core"/>
+    <module name="intellij.platform.execution"/>
+    <module name="intellij.platform.smRunner"/>
+  </dependencies>
+  <!-- endregion -->
+  <extensions defaultExtensionNs="org.jetbrains.bazel">
+    <ccTestSupport implementation="org.jetbrains.bazel.clion.test.google.GoogleTestSupport"/>
+  </extensions>
+</idea-plugin>

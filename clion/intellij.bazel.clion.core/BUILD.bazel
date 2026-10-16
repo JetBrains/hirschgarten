@@ -63,6 +63,7 @@ jvm_library(
         "//CIDR/cidr-debugger/profiles/backend",
         "//CIDR/clion-execution",
         "//CIDR/clion-toolchains",
+        "//CIDR/cidr-execution",
     ],
 )
 
@@ -116,6 +117,7 @@ jvm_library(
         "//CIDR/cidr-debugger/profiles/backend:backend_test_lib",
         "//CIDR/clion-execution:clion-execution_test_lib",
         "//CIDR/clion-toolchains:clion-toolchains_test_lib",
+        "//CIDR/cidr-execution:cidr-execution_test_lib",
     ],
 )
 ### auto-generated section `build intellij.bazel.clion.core` end

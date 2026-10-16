@@ -14,7 +14,6 @@ import com.intellij.psi.PsiMethod
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.java.ui.gutters.JvmTestFilterExtension
-import org.jetbrains.bazel.jvm.run.JvmTestRerunExtension
 import org.jetbrains.bazel.jvm.run.JvmTestRunnerExtension
 import org.jetbrains.bazel.label.AllRuleTargets
 import org.jetbrains.bazel.label.Label
@@ -23,6 +22,7 @@ import org.jetbrains.bazel.languages.starlark.references.findReferredPackage
 import org.jetbrains.bazel.run.BazelProcessHandler
 import org.jetbrains.bazel.run.BazelRunConfigurationState
 import org.jetbrains.bazel.run.BazelRunHandler
+import org.jetbrains.bazel.run.BazelTestRerunExtension
 import org.jetbrains.bazel.run.RunHandlerProvider
 import org.jetbrains.bazel.run.commandLine.BazelTestCommandLineState
 import org.jetbrains.bazel.run.config.BazelRunConfiguration
@@ -154,18 +154,20 @@ internal class JetBrainsTestRunnerExtension : JvmTestRunnerExtension {
     JetBrainsTestRunnerTaskListener(handler)
 }
 
-internal class JetBrainsTestRerunExtension : JvmTestRerunExtension {
+internal class JetBrainsTestRerunExtension : BazelTestRerunExtension {
   override fun isApplicable(configuration: BazelRunConfiguration): Boolean =
     targetsUseJetBrainsTestRunner(configuration.project, configuration.targets)
 
-  override fun setTestsToRerun(state: BazelRunConfigurationState<*>, tests: List<AbstractTestProxy>): Boolean {
+  override fun setTestsToRerun(configuration: BazelRunConfiguration, tests: List<AbstractTestProxy>): Boolean {
     val testIds = tests.getTestIds()
     if (testIds.isEmpty()) return false
+    val state = configuration.handler?.state ?: return false
     JetBrainsTestRunner.setTestUniqueIds(state, testIds)
     return true
   }
 
-  override fun isRerunOf(state: BazelRunConfigurationState<*>, tests: List<AbstractTestProxy>): Boolean {
+  override fun isRerunOf(configuration: BazelRunConfiguration, tests: List<AbstractTestProxy>): Boolean {
+    val state = configuration.handler?.state ?: return false
     val testIds = JetBrainsTestRunner.getTestUniqueIds(state) ?: return false
     return testIds.isNotEmpty() && tests.getTestIds() == testIds
   }

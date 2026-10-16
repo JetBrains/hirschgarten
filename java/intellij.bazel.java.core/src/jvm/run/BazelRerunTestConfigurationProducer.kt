@@ -6,12 +6,13 @@ import com.intellij.execution.configurations.ConfigurationFactory
 import com.intellij.execution.testframework.AbstractTestProxy
 import com.intellij.openapi.util.Ref
 import com.intellij.psi.PsiElement
+import org.jetbrains.bazel.run.BazelTestRerunExtension
 import org.jetbrains.bazel.run.config.BazelRunConfiguration
 import org.jetbrains.bazel.run.config.bazelRunConfigurationFactory
 
 /**
  * Allows right-clicking on a test in the test results and then rerunning it separately from other tests
- * @see BazelRerunFailedTestsAction
+ * @see org.jetbrains.bazel.run.BazelRerunFailedTestsAction
  * @see com.intellij.execution.junit.UniqueIdConfigurationProducer
  */
 internal class BazelRerunTestConfigurationProducer : LazyRunConfigurationProducer<BazelRunConfiguration>() {
@@ -22,8 +23,8 @@ internal class BazelRerunTestConfigurationProducer : LazyRunConfigurationProduce
     context: ConfigurationContext,
     sourceElement: Ref<PsiElement>,
   ): Boolean {
-    val handler = configuration.handler ?: return false
-    if (!JvmTestRerunExtension.getInstance(configuration).setTestsToRerun(handler.state, getTestsFromTestConsole(context))) return false
+    if (BazelTestRerunExtension.getInstance(configuration)
+        ?.setTestsToRerun(configuration, getTestsFromTestConsole(context)) != true) return false
 
     val selectedProxy = context.dataContext.getData(AbstractTestProxy.DATA_KEY)
     if (selectedProxy != null) {
@@ -40,8 +41,7 @@ internal class BazelRerunTestConfigurationProducer : LazyRunConfigurationProduce
     configuration: BazelRunConfiguration,
     context: ConfigurationContext,
   ): Boolean {
-    val state = configuration.handler?.state ?: return false
-    return JvmTestRerunExtension.getInstance(configuration).isRerunOf(state, getTestsFromTestConsole(context))
+    return BazelTestRerunExtension.getInstance(configuration)?.isRerunOf(configuration, getTestsFromTestConsole(context)) == true
   }
 
   private fun getTestsFromTestConsole(context: ConfigurationContext): List<AbstractTestProxy> =

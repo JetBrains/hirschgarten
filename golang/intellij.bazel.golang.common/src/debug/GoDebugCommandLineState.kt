@@ -10,11 +10,11 @@ import com.goide.util.GoCommandLineParameter
 import com.goide.util.GoExecutor
 import com.intellij.execution.runners.ExecutionEnvironment
 import com.intellij.openapi.module.Module
+import org.jetbrains.bazel.run.commandLine.BAZEL_TEST_FILTER_ENV
 import org.jetbrains.bazel.run.state.EnvironmentVariablesDataOptions
 import org.jetbrains.bazel.run.state.GenericRunState
 import org.jetbrains.bazel.run.state.GenericTestState
 import org.jetbrains.bazel.utils.ExecutableInfo
-import kotlin.collections.set
 import kotlin.io.path.pathString
 
 internal interface GoDebugCommandLineState {
@@ -57,7 +57,7 @@ internal class GoTestWithDebugCommandLineState(
     val executableInfo = environment.getCopyableUserData(EXECUTABLE_KEY)?.get()
     if (executableInfo != null) applyExecutableInfo(executableInfo)
     applyState(settings.env, settings.programArguments)
-    configuration.customEnvironment["TESTBRIDGE_TEST_ONLY"] = settings.testFilter?.takeIf { it.isNotBlank() } ?: ".*"
+    configuration.customEnvironment[BAZEL_TEST_FILTER_ENV] = settings.testFilter?.takeIf { it.isNotBlank() } ?: ".*"
     // GO_TEST_WRAP=0 ensures the tests are run in the debugged process, not a child process
     configuration.customEnvironment["GO_TEST_WRAP"] = "0"
   }

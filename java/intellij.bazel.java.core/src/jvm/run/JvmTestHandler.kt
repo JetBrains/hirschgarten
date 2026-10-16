@@ -9,8 +9,6 @@ import com.intellij.execution.configurations.RunProfileState
 import com.intellij.execution.executors.DefaultDebugExecutor
 import com.intellij.execution.runners.ExecutionEnvironment
 import com.intellij.execution.runners.ProgramRunner
-import com.intellij.execution.testframework.sm.runner.ui.SMTRunnerConsoleView
-import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Ref
 import kotlinx.coroutines.CompletableDeferred
@@ -96,9 +94,6 @@ internal class JvmTestCommandLineState(
 
   override fun createAndAddTaskListener(handler: BazelProcessHandler): BazelTaskListener =
     testRunner.createTaskListener(handler, coverageReportListener)
-
-  override fun createTestRestartActions(console: SMTRunnerConsoleView): Array<AnAction> =
-    arrayOf(BazelRerunFailedTestsAction(console))
 }
 
 internal class ScriptPathTestCommandLineState(
@@ -111,9 +106,6 @@ internal class ScriptPathTestCommandLineState(
   override val testRunnerEmitsServiceMessages: Boolean get() = testRunner.testRunnerEmitsServiceMessages
 
   override fun createAndAddTaskListener(handler: BazelProcessHandler): BazelTaskListener = testRunner.createTaskListener(handler, null)
-
-  override fun createTestRestartActions(console: SMTRunnerConsoleView): Array<AnAction> =
-    arrayOf(BazelRerunFailedTestsAction(console))
 
   override fun execute(executor: Executor, runner: ProgramRunner<*>): ExecutionResult = executeWithTestConsole(executor)
 
@@ -133,6 +125,7 @@ internal class ScriptPathTestCommandLineState(
       env = env,
       additionalScriptParameters = getAdditionalJvmRunParameters(environment, settings.debugPort),
       isTest = true,
+      isPassParentEnvs = settings.env.isPassParentEnvs,
       testFilter = testFilter,
     ) { processHandler ->
       attachJvmRunExtensions(environment, processHandler)

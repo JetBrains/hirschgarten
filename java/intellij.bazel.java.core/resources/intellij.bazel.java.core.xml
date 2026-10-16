@@ -75,9 +75,6 @@
     <extensionPoint qualifiedName="org.jetbrains.bazel.jvmTestRunnerExtension"
                     interface="org.jetbrains.bazel.jvm.run.JvmTestRunnerExtension"
                     dynamic="true"/>
-    <extensionPoint qualifiedName="org.jetbrains.bazel.jvmTestRerunExtension"
-                    interface="org.jetbrains.bazel.jvm.run.JvmTestRerunExtension"
-                    dynamic="true"/>
     <extensionPoint qualifiedName="org.jetbrains.bazel.jvmTestFilterExtension"
                     interface="org.jetbrains.bazel.java.ui.gutters.JvmTestFilterExtension"
                     dynamic="true"/>
@@ -85,7 +82,6 @@
 
   <extensions defaultExtensionNs="org.jetbrains.bazel">
     <testLocatorProvider id="defaultJavaLocator" implementation="org.jetbrains.bazel.jvm.run.JavaTestLocatorProvider"/>
-    <testFilterProvider id="defaultJavaFilter" implementation="org.jetbrains.bazel.jvm.run.JavaTestFilterProvider"/>
     <syntheticRunTargetTemplateGenerator language="JAVA"
                                          implementationClass="org.jetbrains.bazel.java.run.JavaSyntheticRunTargetTemplateGenerator"/>
 
@@ -107,11 +103,11 @@
     <runWithScriptPathExtension implementation="org.jetbrains.bazel.jvm.run.DefaultRunWithScriptPathExtension"/>
     <runWithScriptPathExtension implementation="org.jetbrains.bazel.jvm.run.DebugRunWithScriptPathExtension"/>
     <jvmTestRunnerExtension implementation="org.jetbrains.bazel.jvm.run.DefaultJvmTestRunnerExtension" order="last"/>
-    <jvmTestRerunExtension implementation="org.jetbrains.bazel.jvm.run.DefaultJvmTestRerunExtension" order="last"/>
     <jvmTestFilterExtension implementation="org.jetbrains.bazel.java.ui.gutters.DefaultJvmTestFilterExtension" order="last"/>
 
     <testLocationHintProvider implementation="org.jetbrains.bazel.testing.BazelJavaTestLocationHintProvider"/>
     <incompleteTestSuiteParser implementation="org.jetbrains.bazel.jvm.run.Junit5TestVisualOutputParser"/>
+    <testRerunExtension implementation="org.jetbrains.bazel.jvm.run.DefaultJvmTestRerunExtension" order="last"/>
   </extensions>
 
   <extensions defaultExtensionNs="com.intellij">
