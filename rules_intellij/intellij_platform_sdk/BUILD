@@ -162,6 +162,20 @@ java_library(
     ),
 )
 
+# IntelliJ JavaScript plugin
+java_library(
+    name = "javascript",
+    neverlink = 1,
+    visibility = [
+        "//visibility:public",
+    ],
+    exports = select_from_plugin_api_directory(
+        android_studio = [],
+        clion = [],
+        intellij = [":javascript"],
+    ),
+)
+
 # IntelliJ TestRunner plugin
 java_library(
     name = "testrunner",
