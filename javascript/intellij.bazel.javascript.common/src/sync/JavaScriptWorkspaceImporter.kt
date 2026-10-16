@@ -13,6 +13,7 @@ import kotlinx.coroutines.withContext
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.javascript.BazelJavaScriptBundle
 import org.jetbrains.bazel.commons.getLocalRepositories
+import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.sync.workspace.importer.BazelWorkspaceImporter
 import org.jetbrains.bazel.sync.workspace.importer.BazelWorkspaceImporterFactory
@@ -50,6 +51,9 @@ internal class JavaScriptWorkspaceImporter(private val context: WorkspaceImporte
   override suspend fun import(phase: WorkspaceImporterPhase, snapshot: WorkspaceSnapshot, taskId: TaskId): WorkspaceImporterResult {
     when (phase) {
       is WorkspaceImporterPhase.Initialize -> {
+        if (!BazelFeatureFlags.isJavaScriptSupportEnabled) {
+          return WorkspaceImporterResult.Abort
+        }
         val workspaceRoot = context.project.rootDir.toNioPath()
         val localRepositories = snapshot.repoMapping.getLocalRepositories()
         val targetDirectories =
