@@ -1,0 +1,29 @@
+load("@rules_java//java:java_binary.bzl", "java_binary")
+load("@rules_java//java:java_test.bzl", "java_test")
+load(":defs.bzl", "FLAG_SOURCES", "PRECEDENCE_JVM_FLAGS")
+
+java_binary(
+    name = "flag_precedence_binary",
+    srcs = ["FlagPrecedence.java"],
+    jvm_flags = PRECEDENCE_JVM_FLAGS,
+    main_class = "FlagPrecedence",
+)
+
+java_test(
+    name = "flag_precedence_test",
+    srcs = ["FlagPrecedenceTest.java"],
+    jvm_flags = PRECEDENCE_JVM_FLAGS,
+    test_class = "com.example.FlagPrecedenceTest",
+)
+
+[
+    config_setting(
+        name = "precedence_%s_%s" % (a, b),
+        define_values = {
+            "precedence_a": a,
+            "precedence_b": b,
+        },
+    )
+    for a in FLAG_SOURCES
+    for b in FLAG_SOURCES
+]

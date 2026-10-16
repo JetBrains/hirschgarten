@@ -1,14 +1,49 @@
 load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library", "go_test")
 
+FLAG_SOURCES = [
+    "build_flags",
+    "debug_flags",
+    "run_configuration",
+]
+
+[
+    config_setting(
+        name = "precedence_%s_%s" % (a, b),
+        define_values = {
+            "precedence_a": a,
+            "precedence_b": b,
+        },
+    )
+    for a in FLAG_SOURCES
+    for b in FLAG_SOURCES
+]
+
+config_setting(
+    name = "compilation_mode_dbg",
+    values = {"compilation_mode": "dbg"},
+)
+
 go_library(
     name = "main_library",
     srcs = ["main.go"],
     importpath = "main",
     visibility = ["//visibility:private"],
+    x_defs = select({
+        ":compilation_mode_dbg": {"main.compilationMode": "dbg"},
+        "//conditions:default": {},
+    }),
 )
 
 go_binary(
     name = "main_binary",
     embed = [":main_library"],
     visibility = ["//visibility:public"],
+    x_defs = select({
+        ":precedence_%s_%s" % (a, b): {
+            "main.precedenceA": a,
+            "main.precedenceB": b,
+        }
+        for a in FLAG_SOURCES
+        for b in FLAG_SOURCES
+    } | {"//conditions:default": {}}),
 )

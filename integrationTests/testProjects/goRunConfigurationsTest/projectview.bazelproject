@@ -5,3 +5,12 @@ directories:
   .
 
 derive_targets_from_directories: true
+
+build_flags:
+  --define=precedence_a=build_flags
+  --define=precedence_b=build_flags
+
+debug_flags:
+  --define=precedence_a=debug_flags
+  --define=precedence_b=debug_flags
+  --compilation_mode=opt

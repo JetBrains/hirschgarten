@@ -30,7 +30,7 @@ class ScriptPathBuildTargetTask(
       taskId = taskId,
       target = targetIds.single(),
       arguments = programArguments,
-      additionalBazelParams = scriptPathParams(scriptPath) + additionalBazelParams,
+      additionalBazelParams = scriptPathParams(scriptPath) + debugFlags + additionalBazelParams,
       checkVisibility = true,
     )
     return server.buildTargetRun(params).statusCode
