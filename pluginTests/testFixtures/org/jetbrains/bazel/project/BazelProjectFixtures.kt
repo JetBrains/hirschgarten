@@ -1,7 +1,6 @@
 package org.jetbrains.bazel.project
 
 import com.intellij.configurationStore.ProjectStoreImpl
-import com.intellij.configurationStore.ProjectStorePathManager
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Disposer
@@ -18,8 +17,11 @@ import java.nio.file.Path
 import kotlin.io.path.isRegularFile
 
 object BazelProjectFixtures {
-  /** Marks a test project as Bazel. Set [runStartupSync] to test automatic startup sync. */
-  fun initializeBazelProject(project: Project, rootDir: Path, runStartupSync: Boolean = false) {
+  /**
+   * Marks a test project as Bazel. Set [runStartupSync] to test automatic startup sync.
+   * Without [projectViewFile], the plugin picks the project view as for a real project.
+   */
+  fun initializeBazelProject(project: Project, rootDir: Path, runStartupSync: Boolean = false, projectViewFile: Path? = null) {
     rootDir.createDirectories().refreshVfs()
     val projectStoreImpl = project.stateStore as ProjectStoreImpl
     val projectIdentityFile = rootDir.resolve("MODULE.bazel")
@@ -28,7 +30,7 @@ object BazelProjectFixtures {
       projectIdentityFile = projectIdentityFile,
       dotIdea = rootDir.resolve(Project.DIRECTORY_STORE_FOLDER),
       historicalProjectBasePath = rootDir,
-      projectViewFile = pickProjectViewFileForProject(projectIdentityFile, rootDir),
+      projectViewFile = projectViewFile ?: pickProjectViewFileForProject(projectIdentityFile, rootDir),
     )
     // projectview virtual file lookup requires a VFS refresh in test environment
     ProjectViewService.getInstance(project).projectViewPath?.refreshAndFindVirtualFile()
@@ -53,10 +55,12 @@ object BazelProjectFixtures {
     )
   }
 
-  fun deinitializeBazelProject(project: Project) {
+  fun restoreProjectStoreOnDispose(project: Project, disposable: Disposable) {
     val projectStoreImpl = project.stateStore as ProjectStoreImpl
-    val basePath = projectStoreImpl.storeDescriptor.historicalProjectBasePath
-    projectStoreImpl.storeDescriptor = ProjectStorePathManager.getInstance().getStoreDescriptor(basePath)
-    setBazelStartupSyncEnabledInTests(project, true)
+    val storeDescriptor = projectStoreImpl.storeDescriptor
+    Disposer.register(disposable) {
+      projectStoreImpl.storeDescriptor = storeDescriptor
+      setBazelStartupSyncEnabledInTests(project, true)
+    }
   }
 }

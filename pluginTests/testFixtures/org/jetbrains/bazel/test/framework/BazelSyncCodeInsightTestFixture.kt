@@ -2,7 +2,6 @@ package org.jetbrains.bazel.test.framework
 
 import com.intellij.openapi.diagnostic.fileLogger
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.util.Disposer
 import com.intellij.platform.testFramework.junit5.codeInsight.fixture.codeInsightFixture
 import com.intellij.python.pyproject.model.evolution.EvoPyProjectModel
 import com.intellij.testFramework.common.runAllSuspend
@@ -17,8 +16,12 @@ import com.intellij.testFramework.junit5.fixture.testFixture
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import org.jetbrains.annotations.TestOnly
-import org.jetbrains.bazel.project.BazelProjectFixtures.initializeBazelProject
 import org.jetbrains.bazel.sync.ProjectSyncScope
+import org.jetbrains.bazel.test.framework.testproject.installedProjectFixture
+import org.jetbrains.bazel.test.framework.testproject.outputBase
+import org.jetbrains.bazel.test.framework.testproject.testBazelProjectFixture
+import org.jetbrains.bazel.test.framework.testproject.workspaceRoot
+import org.jetbrains.bazel.test.framework.testproject.workspaceRootFixture
 import java.net.URI
 import java.nio.file.Path
 import kotlin.io.path.Path
@@ -65,13 +68,9 @@ fun bazelSyncCodeInsightFixture(
   projectFixture: TestFixture<Project>,
   tempDirFixture: TestFixture<Path>,
 ): TestFixture<BazelSyncCodeInsightTestFixture> {
-  val outputBaseFixture = bazelOutputBaseFixture()
-  val projectWithOutputBaseFixture = testFixture {
-    outputBaseFixture.init()
-    initialized(projectFixture.init()) {}
-  }
-  return codeInsightFixture(projectWithOutputBaseFixture, tempDirFixture) { project, tempDir ->
-    BazelSyncCodeInsightTestFixtureImpl(project, tempDir, outputBaseFixture.get())
+  val testBazelFixture = projectFixture.testBazelProjectFixture(tempDirFixture, realBazel = true)
+  return codeInsightFixture(testBazelFixture.installedProjectFixture(), testBazelFixture.workspaceRootFixture()) { project, tempDir ->
+    BazelSyncCodeInsightTestFixtureImpl(project, tempDir, testBazelFixture.get().outputBase)
   }
 }
 
@@ -97,21 +96,12 @@ fun bazelProjectFixture(
 ): TestFixture<Project> = testFixture(debugString = "bazelProject") {
   LOG.info("Setting up the Bazel project fixture for $projectPath")
   val project = testFixture(debugString = "bazelProjectSetup") {
-    val project = testFixture(debugString = "bazelProjectConsole") {
-      val project = projectFixture(openAfterCreation = true).init()
-      val setupDisposable = Disposer.newDisposable("bazelProjectFixture")
-      installTestConsoleService(project, setupDisposable)
-      installHostRcIsolation(setupDisposable)
-      installStableJdkPaths(setupDisposable)
-      initialized(project) { Disposer.dispose(setupDisposable) }
-    }.init()
-    val projectRoot = tempPathFixture().init()
-    val outputBase = bazelOutputBaseFixture().init()
+    val testBazel = projectFixture(openAfterCreation = true).testBazelProjectFixture(tempPathFixture(), realBazel = true).init()
+    val project = testBazel.project
+    val projectRoot = testBazel.workspaceRoot
+    LOG.info("Initialized the Bazel project ${project.name} at $projectRoot")
 
-    LOG.info("Initializing the Bazel project ${project.name} at $projectRoot")
-    initializeBazelProject(project, projectRoot)
-
-    BazelTestProject.copy(project, projectRoot, projectPath, outputBase, projectsRoot, jvmToolchains, bazelVersion, registries)
+    BazelTestProject.copy(project, projectRoot, projectPath, testBazel.outputBase, projectsRoot, jvmToolchains, bazelVersion, registries)
     if (projectView != null) {
       applyProjectView(project, projectRoot, projectView)
     }
@@ -189,12 +179,6 @@ class BazelSyncCodeInsightTestFixtureImpl(
   /** The test project of the last [copyBazelTestProject] call. */
   private var testProjectPath: String? = null
 
-  init {
-    installTestConsoleService(project, testRootDisposable)
-    installHostRcIsolation(testRootDisposable)
-    installStableJdkPaths(testRootDisposable)
-  }
-
   // See the comment on `NonTrackingCodeInsightTestFixture`
   override fun shouldTrackVirtualFilePointers(): Boolean = false
 
@@ -216,11 +200,6 @@ class BazelSyncCodeInsightTestFixtureImpl(
   override suspend fun performBazelSync(scope: ProjectSyncScope) {
     runBazelSync(project, scope)
     awaitPythonInterpreters(project)
-  }
-
-  override fun setUp() {
-    super.setUp()
-    initializeBazelProject(project, projectRoot)
   }
 
   override fun tearDown() {

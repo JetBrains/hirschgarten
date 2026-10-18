@@ -5,7 +5,6 @@ import com.intellij.openapi.project.Project
 import kotlinx.coroutines.runBlocking
 import org.jetbrains.annotations.TestOnly
 import org.jetbrains.bazel.commons.BzlmodRepoMapping
-import org.jetbrains.bazel.commons.RepoMapping
 import org.jetbrains.bazel.sync.workspace.persistence.WorkspaceSnapshotService
 import java.nio.file.Path
 
@@ -33,11 +32,7 @@ class TestRepoMappingBuilder internal constructor() {
 
 @TestOnly
 fun Project.setRepoMapping(builder: TestRepoMappingBuilder.() -> Unit) {
-  setRepoMapping(TestRepoMappingBuilder().apply(builder).build())
-}
-
-@TestOnly
-fun Project.setRepoMapping(repoMapping: RepoMapping) {
+  val repoMapping = TestRepoMappingBuilder().apply(builder).build()
   runBlocking {
     service<WorkspaceSnapshotService>().update { snapshot -> snapshot.copy(repoMapping = repoMapping) to Unit }
   }
