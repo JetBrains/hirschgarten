@@ -56,23 +56,46 @@ def get_pr_title(num: int) -> str:
 def add_prefix(p: str, pre: str) -> str:
     return p if p.startswith(pre) or p == "/dev/null" else pre + p
 
-def rewrite(patch: str, pre: str) -> str:
+def to_monorepo_path(p: str, pre: str, root: Path) -> str:
+    """Hirschgarten mirrors `~X` as `X`; map an OSS `X` back to `~X` when the monorepo has it."""
+    prefixed = add_prefix(p, pre)
+    if prefixed == "/dev/null":
+        return prefixed
+    target = Path(prefixed)
+    override = target.with_name(f"~{target.name}")
+    return override.as_posix() if (root / override).is_file() else prefixed
+
+def rewrite(patch: str, pre: str, root: Path) -> str:
     out = []
+    touched = set()
+
+    def conv(p: str) -> str:
+        mapped = to_monorepo_path(p, pre, root)
+        touched.add(mapped)
+        return mapped
+
     for ln in patch.splitlines(keepends=True):
         if ln.startswith("diff --git"):
             m = re.match(r"diff --git a/(.+?) b/(.+)", ln)
             if m:
                 a, b = m.groups()
-                ln = f"diff --git a/{add_prefix(a, pre)} b/{add_prefix(b, pre)}\n"
+                ln = f"diff --git a/{conv(a)} b/{conv(b)}\n"
         elif ln.startswith("--- a/"):
-            ln = f"--- a/{add_prefix(ln[6:].strip(), pre)}\n"
+            ln = f"--- a/{conv(ln[6:].strip())}\n"
         elif ln.startswith("+++ b/"):
-            ln = f"+++ b/{add_prefix(ln[6:].strip(), pre)}\n"
+            ln = f"+++ b/{conv(ln[6:].strip())}\n"
         elif ln.startswith("rename from "):
-            ln = f"rename from {add_prefix(ln[12:].strip(), pre)}\n"
+            ln = f"rename from {conv(ln[12:].strip())}\n"
         elif ln.startswith("rename to "):
-            ln = f"rename to {add_prefix(ln[10:].strip(), pre)}\n"
+            ln = f"rename to {conv(ln[10:].strip())}\n"
         out.append(ln)
+    for path in sorted(touched):
+        if Path(path).name == "BUILD.bazel" and any((root / path).parent.glob("*.iml")):
+            print(
+                f"# warning: {path} is generated from .iml files by ./build/jpsModelToBazel.cmd; "
+                "apply the change to the .iml or to a ~BUILD override, or it will be overwritten",
+                file=sys.stderr,
+            )
     return "".join(out)
 
 def main(argv=None):
@@ -88,7 +111,7 @@ def main(argv=None):
     diff = get_aggregate_diff(a.pr)
 
     print(f"# rewriting paths with prefix {a.prefix}")
-    rewritten = rewrite(diff, a.prefix)
+    rewritten = rewrite(diff, a.prefix, Path(sh(["git", "rev-parse", "--show-toplevel"])))
 
     patch_content = f"""From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 {author}
