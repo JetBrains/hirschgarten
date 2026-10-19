@@ -239,7 +239,7 @@ class ExecuteService(
     val command =
       bazelRunner.buildBazelCommand(projectView) {
         build {
-          options.addAll(additionalArguments)
+          additionalBazelOptions.addAll(additionalArguments)
           targets.addAll(allTargets)
           enablePty = true
         }

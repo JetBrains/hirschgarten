@@ -23,6 +23,7 @@ import org.jetbrains.bazel.commons.BazelStatus
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.coroutines.BazelCoroutineService
 import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.languages.projectview.pythonDebugFlags
 import org.jetbrains.bazel.python.debug.BazelPyDebugPositionConverter
 import org.jetbrains.bazel.python.debug.PythonDebugCommandLineState
 import org.jetbrains.bazel.progress.TaskConsole
@@ -164,7 +165,7 @@ private class PythonDebugBuildTargetTask(private val additionalBazelParams: Stri
       CompileParams(
         targets = targetIds,
         taskId = taskId,
-        arguments = PythonDebugUtils.buildPythonDebugBazelArguments(debugFlags, additionalBazelParams),
+        arguments = PythonDebugUtils.buildPythonDebugBazelArguments(debugFlags + server.projectView.pythonDebugFlags, additionalBazelParams),
       )
     return server.buildTargetCompile(compileParams).statusCode
   }
