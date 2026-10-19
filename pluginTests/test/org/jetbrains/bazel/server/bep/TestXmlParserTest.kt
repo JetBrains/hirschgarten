@@ -302,6 +302,38 @@ class TestXmlParserTest : MockProjectBaseTest() {
   }
 
   @Test
+  fun `junit, per-test output is retained`(
+    @TempDir tempDir: Path,
+  ) {
+    val report =
+      """
+      <testsuites>
+        <testsuite name="com.example.OutputTest" timestamp="2026-10-08T00:00:00Z" hostname="localhost"
+                   tests="2" failures="1" errors="0" time="0.1" id="0">
+          <testcase name="passing" classname="com.example.OutputTest" time="0.05">
+            <system-out>passing stdout</system-out>
+            <system-err>passing stderr</system-err>
+          </testcase>
+          <testcase name="failing" classname="com.example.OutputTest" time="0.05">
+            <failure message="failure" type="java.lang.AssertionError">failure trace</failure>
+            <system-out>failing stdout</system-out>
+            <system-err>failing stderr</system-err>
+          </testcase>
+        </testsuite>
+      </testsuites>
+      """.trimIndent()
+
+    val client = MockBuildTaskEventsHandler()
+    TestXmlParser(BspClientTestNotifier(client)).parseAndReport(TaskGroupId.EMPTY.task(""), writeTempFile(tempDir, report), javaTargetKind)
+
+    val testCases = client.taskFinishCalls.map { it.data as TestFinish }.filter { it.data is JUnitStyleTestCaseData }
+    val passing = testCases.single { it.displayName == "passing" }.data as JUnitStyleTestCaseData
+    passing.output shouldBe "stdout:\npassing stdout\nstderr:\npassing stderr"
+    val failing = testCases.single { it.displayName == "failing" }.data as JUnitStyleTestCaseData
+    failing.output shouldBe "failure trace\nstdout:\nfailing stdout\nstderr:\nfailing stderr"
+  }
+
+  @Test
   fun `junit4, with skip and failures`(
     @TempDir tempDir: Path,
   ) {
