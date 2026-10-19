@@ -39,12 +39,13 @@ import kotlin.io.path.deleteIfExists
 import kotlin.io.path.exists
 import kotlin.io.path.extension
 import kotlin.io.path.isRegularFile
+import kotlin.io.path.nameWithoutExtension
 import kotlin.io.path.pathString
 import kotlin.io.path.reader
 import kotlin.io.path.relativeToOrNull
 import kotlin.io.path.writer
 
-private const val PYINDEX_STORAGE_VERSION: Int = 1
+private const val PYINDEX_STORAGE_VERSION: Int = 2
 private fun Project.pyIndexStoragePath(): Path = getProjectDataPath("bazel-pyindex-v$PYINDEX_STORAGE_VERSION.db")
 
 private class ResolveIndexSnapshot(
@@ -63,8 +64,11 @@ internal class PythonResolveIndexService(private val project: Project) {
   val resolveIndex: Map<QualifiedName, Path>
     get() = resolveIndexSnapshotRef.get().qualifiedNamesToPaths
 
-  fun findShortestQualifiedName(path: Path): QualifiedName? =
-    resolveIndexSnapshotRef.get().shortestQualifiedNamesByPath[path]
+  fun findShortestQualifiedName(path: Path): QualifiedName? {
+    val shortestQualifiedNamesByPath = resolveIndexSnapshotRef.get().shortestQualifiedNamesByPath
+    return shortestQualifiedNamesByPath[path]
+           ?: path.takeIf { it.isPackageInitFile() }?.parent?.let { shortestQualifiedNamesByPath[it] }
+  }
 
   fun findShortestQualifiedName(file: VirtualFile): QualifiedName? =
     file.toNioPathOrNull()?.let { findShortestQualifiedName(it) }
@@ -102,7 +106,7 @@ internal class PythonResolveIndexService(private val project: Project) {
     val virtualFileManager = VirtualFileManager.getInstance()
     val files = paths.asSequence()
       .mapNotNull { virtualFileManager.findFileByNioPath(it) }
-      .filterNot { it.isDirectory }
+      .flatMap { if (it.isDirectory) it.findPackageInitFiles() else listOf(it) }
       .toSet()
     return if (files.isEmpty()) GlobalSearchScope.EMPTY_SCOPE else GlobalSearchScope.filesWithLibrariesScope(project, files)
   }
@@ -204,7 +208,9 @@ internal class PythonResolveIndexService(private val project: Project) {
 
       for (qualifiedName in qualifiedNames) {
         var qName = qualifiedName
-        var qNamePath = absolutePath
+
+        // qualified name of `__init__` is the py package, so walk starts at the package directory
+        var qNamePath = if (absolutePath.isPackageInitFile()) absolutePath.parent else absolutePath
 
         while (qName.componentCount > 0) {
           if (newMap.containsKey(qName))
@@ -301,6 +307,12 @@ private fun Path.toQualifiedName(): QualifiedName? {
   if (relativePathParts.any { it.contains(".") }) return null
   return QualifiedName.fromComponents(relativePathParts.flatMap { it.split(".") }.filter { it.isNotEmpty() })
 }
+
+private fun Path.isPackageInitFile(): Boolean =
+  nameWithoutExtension == PyNames.INIT && isPythonLanguage()
+
+internal fun VirtualFile.findPackageInitFiles(): List<VirtualFile> =
+  listOfNotNull(findChild(PyNames.INIT_DOT_PY), findChild(PyNames.INIT_DOT_PYI))
 
 private fun Path.isPythonFile(): Boolean =
   this.isRegularFile() && this.isPythonLanguage()

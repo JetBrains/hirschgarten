@@ -60,6 +60,25 @@ class BazelPyCanonicalPathProviderTest : BazelBasePlatformTestCase() {
     result shouldBe QualifiedName.fromDottedString("pkg.mymod")
   }
 
+  fun testShouldReturnPkgQualifiedNameForSymbolInInitFile() {
+    lateinit var initFile: VirtualFile
+    WriteCommandAction.runWriteCommandAction(project) {
+      val pkgDir = project.rootDir
+        .createChildDirectory(this, "src")
+        .createChildDirectory(this, "pkg")
+      initFile = pkgDir.createChildData(this, "__init__.py")
+      VfsUtil.saveText(initFile, "class MyClass:\n    pass\n")
+    }
+    val myClass = (PsiManager.getInstance(project).findFile(initFile) as PyFile).topLevelClasses.first()
+    // index maps a package to its directory, not to it `__init__.py` file.
+    project.updateBazelPythonResolveIndex(mapOf(QualifiedName.fromDottedString("pkg") to initFile.parent.toNioPath()))
+
+    val result = BazelPyCanonicalPathProvider()
+      .getCanonicalPath(myClass, QualifiedName.fromDottedString("src.pkg"), myClass.containingFile)
+
+    result shouldBe QualifiedName.fromDottedString("pkg")
+  }
+
   fun testShouldDeferForFileNotInIndex() {
     val myClass = createModuleWithClass()
     project.updateBazelPythonResolveIndex(emptyMap())
