@@ -73,31 +73,39 @@ class PythonImportSuggestionsTest {
     )
 
     @Test
-    fun testImportQuickFixForSymbolInExternalBazelIndexedSource(): Unit = runBlocking(Dispatchers.Default) {
-      val pydanticMain = externalSources
-        .resolve("site-packages")
-        .resolve("pydantic")
-        .resolve("main.py")
-      pydanticMain.parent.createDirectories()
-      pydanticMain.writeText("class BaseModel:\n    pass\n")
-      val pydanticMainFile = VirtualFileManager.getInstance().refreshAndFindFileByNioPath(pydanticMain)!!
-      fixture.project.updateBazelPythonResolveIndex(
-        mapOf(QualifiedName.fromDottedString("pydantic.main") to pydanticMain),
-      )
-      fixture.registerAdditionalIndexedFile(pydanticMainFile)
-      FileBasedIndex.getInstance().requestReindex(pydanticMainFile)
-      IndexingTestUtil.waitUntilIndexesAreReady(fixture.project)
-      EvoPyProjectModel.getInstance(fixture.project).awaitCurrentInterpreters()
-
-      withContext(Dispatchers.EDT) {
-        fixture.enableInspections(PyUnresolvedReferencesInspection())
-        fixture.configureFromTempProjectFile("main/main.py")
-        fixture.doHighlighting()
-
-        fixture.launchSingleImportIntention("pydantic.main")
-        fixture.file.text shouldContain "from pydantic.main import BaseModel"
-      }
+    fun `test import quickfix for symbol in external bazel indexed source`() {
+      checkImportQuickFix(sourcePath = "pydantic/main.py", indexedQualifiedName = "pydantic.main", indexedPath = "pydantic/main.py")
     }
+
+    @Test
+    fun `test import quickfix for symbol in external package init file`() {
+      checkImportQuickFix(sourcePath = "pydantic/__init__.py", indexedQualifiedName = "pydantic", indexedPath = "pydantic")
+    }
+
+    private fun checkImportQuickFix(sourcePath: String, indexedQualifiedName: String, indexedPath: String): Unit =
+      runBlocking(Dispatchers.Default) {
+        val sitePackages = externalSources.resolve("site-packages")
+        val source = sitePackages.resolve(sourcePath)
+        source.parent.createDirectories()
+        source.writeText("class BaseModel:\n    pass\n")
+        val sourceFile = VirtualFileManager.getInstance().refreshAndFindFileByNioPath(source)!!
+        fixture.project.updateBazelPythonResolveIndex(
+          mapOf(QualifiedName.fromDottedString(indexedQualifiedName) to sitePackages.resolve(indexedPath)),
+        )
+        fixture.registerAdditionalIndexedFile(sourceFile)
+        FileBasedIndex.getInstance().requestReindex(sourceFile)
+        IndexingTestUtil.waitUntilIndexesAreReady(fixture.project)
+        EvoPyProjectModel.getInstance(fixture.project).awaitCurrentInterpreters()
+
+        withContext(Dispatchers.EDT) {
+          fixture.enableInspections(PyUnresolvedReferencesInspection())
+          fixture.configureFromTempProjectFile("main/main.py")
+          fixture.doHighlighting()
+
+          fixture.launchSingleImportIntention(indexedQualifiedName)
+          fixture.file.text shouldContain "from $indexedQualifiedName import BaseModel"
+        }
+      }
   }
 }
 
