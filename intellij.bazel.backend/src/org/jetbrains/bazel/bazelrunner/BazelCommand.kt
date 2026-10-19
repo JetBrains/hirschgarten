@@ -145,11 +145,13 @@ abstract class BazelCommand(val bazelBinary: String) {
   class Build(bazelBinary: String) :
     BazelCommand(bazelBinary),
     HasEnvironment,
-    HasMultipleTargets {
+    HasMultipleTargets,
+    HasAdditionalBazelOptions {
     override val targets: MutableList<Label> = mutableListOf()
     override val excludedTargets: MutableList<Label> = mutableListOf()
     override val environment: MutableMap<String, String> = mutableMapOf()
     override val inheritedEnvironment: MutableList<String> = mutableListOf()
+    override val additionalBazelOptions: MutableList<String> = mutableListOf()
 
     override fun buildExecutionDescriptor(): BazelCommandExecutionDescriptor {
       val commandLine = mutableListOf(bazelBinary)
@@ -157,6 +159,7 @@ abstract class BazelCommand(val bazelBinary: String) {
       commandLine.addAll(startupOptions)
       commandLine.add("build")
       commandLine.addAll(options)
+      commandLine.addAll(additionalBazelOptions)
       commandLine.addAll(environment.map { (key, value) -> "--action_env=$key=$value" })
       commandLine.addAll(inheritedEnvironment.map { "--action_env=$it" })
       val targetPatternFile = prepareTargetPatternFile()
