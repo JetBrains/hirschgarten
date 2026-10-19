@@ -1,7 +1,14 @@
 package org.jetbrains.bazel.test.framework
 
+import com.intellij.openapi.components.service
+import com.intellij.openapi.project.Project
+import com.intellij.project.stateStore
 import com.intellij.testFramework.junit5.impl.testApplication
 import org.jetbrains.annotations.TestOnly
+import org.jetbrains.bazel.config.isBazelProject
+import org.jetbrains.bazel.languages.bazelversion.service.BazelVersionCheckerService
+import org.jetbrains.bazel.sync.environment.bazelProjectInfo
+import org.jetbrains.bazel.sync.workspace.snapshot.workspaceSnapshotOrNull
 import org.junit.jupiter.api.extension.AfterAllCallback
 import org.junit.jupiter.api.extension.BeforeAllCallback
 import org.junit.jupiter.api.extension.ExtensionContext
@@ -167,15 +174,10 @@ internal class LightProjectBazelStateProbe(private val project: Project) : State
 
   private fun read(): Map<String, String?> {
     val storeDescriptor = project.stateStore.storeDescriptor
-    val context = project.projectCtx
     val versionCache = project.service<BazelVersionCheckerService>().state
     return mapOf(
       "isBazelProject" to project.isBazelProject.toString(),
       "store descriptor" to "${storeDescriptor.javaClass.simpleName}(${storeDescriptor.historicalProjectBasePath})",
-      "Bazel release" to context.bazelRelease?.toString(),
-      "workspace name" to context.workspaceName,
-      "bazel-bin path" to context.bazelBinPath?.toString(),
-      "execution root" to context.bazelExecPath?.toString(),
       "current Bazel version in BazelVersionCheckerService" to versionCache.currentBazelVersion,
       "latest Bazel version in BazelVersionCheckerService" to versionCache.latestBazelVersion,
     )
