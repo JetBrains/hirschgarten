@@ -11,6 +11,6 @@ internal class SyncFlagsSection : FlagListSection(COMMAND) {
       "only when necessary, as they can defeat caching."
 
   companion object {
-    const val COMMAND = "sync"
+    const val COMMAND = "build"
   }
 }

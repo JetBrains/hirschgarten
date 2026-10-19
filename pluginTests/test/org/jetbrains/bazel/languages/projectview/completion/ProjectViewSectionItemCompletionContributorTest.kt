@@ -87,7 +87,7 @@ class ProjectViewSectionItemCompletionContributorTest {
         .filter {
           it.key.contains("b") &&
             it.value.option.commands.any { cmd ->
-              cmd == "sync"
+              cmd == "build"
             }
         }.map { it.key }
 

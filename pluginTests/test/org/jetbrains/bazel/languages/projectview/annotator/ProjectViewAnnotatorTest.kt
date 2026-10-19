@@ -63,6 +63,11 @@ class ProjectViewAnnotatorTest {
     checkHighlighting("""build_flags: <warning descr="$message">--dump_all</warning>""")
   }
 
+  @Test
+  fun `should accept a build flag in sync_flags`() {
+    checkHighlighting("""sync_flags: --define=foo=bar""")
+  }
+
   private fun checkHighlighting(text: String) {
     timeoutRunBlocking(30.seconds) {
       withContext(Dispatchers.EDT) {
