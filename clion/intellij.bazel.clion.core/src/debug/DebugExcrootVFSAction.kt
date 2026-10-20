@@ -6,7 +6,6 @@ import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.VirtualFileManager
 import com.intellij.openapi.vfs.newvfs.ManagingFS
 import com.intellij.openapi.vfs.newvfs.NewVirtualFile
-import org.jetbrains.bazel.sync.environment.projectCtx
 import org.jetbrains.bazel.sync.workspace.snapshot.workspaceSnapshotOrNull
 
 private const val NO_EXTENSION = "<none>"

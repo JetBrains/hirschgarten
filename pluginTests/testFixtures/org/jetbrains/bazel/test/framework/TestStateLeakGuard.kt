@@ -1,13 +1,7 @@
 package org.jetbrains.bazel.test.framework
 
-import com.intellij.openapi.components.service
-import com.intellij.openapi.project.Project
-import com.intellij.project.stateStore
 import com.intellij.testFramework.junit5.impl.testApplication
 import org.jetbrains.annotations.TestOnly
-import org.jetbrains.bazel.config.isBazelProject
-import org.jetbrains.bazel.languages.bazelversion.service.BazelVersionCheckerService
-import org.jetbrains.bazel.sync.environment.projectCtx
 import org.junit.jupiter.api.extension.AfterAllCallback
 import org.junit.jupiter.api.extension.BeforeAllCallback
 import org.junit.jupiter.api.extension.ExtensionContext

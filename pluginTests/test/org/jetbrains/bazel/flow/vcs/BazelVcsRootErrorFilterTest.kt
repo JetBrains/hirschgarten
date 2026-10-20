@@ -25,7 +25,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.jetbrains.bazel.flow.exclude.BazelSymlinkExcludeService
 import org.jetbrains.bazel.project.BazelProjectFixtures.initializeBazelProject
-import org.jetbrains.bazel.sync.environment.projectCtx
 import org.jetbrains.bazel.symlinks.createBazelConvenienceSymlink
 import org.jetbrains.bazel.symlinks.createSymlinkOrJunction
 import org.jetbrains.bazel.test.framework.updateBazelInfo

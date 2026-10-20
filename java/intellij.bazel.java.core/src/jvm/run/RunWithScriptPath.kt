@@ -17,7 +17,6 @@ import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.run.BazelProcessHandler
 import org.jetbrains.bazel.run.commandLine.scriptPathCommandLine
 import org.jetbrains.bazel.server.bep.TestXmlParser
-import org.jetbrains.bazel.sync.environment.projectCtx
 import org.jetbrains.bazel.sync.workspace.languages.jvm.JAVA_TEST_KIND
 import org.jetbrains.bazel.sync.workspace.snapshot.workspaceSnapshotOrNull
 import org.jetbrains.bazel.taskEvents.BazelTaskEventsService

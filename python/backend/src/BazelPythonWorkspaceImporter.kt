@@ -46,7 +46,7 @@ import org.jetbrains.bazel.commons.getLocalRepositories
 import org.jetbrains.bazel.progress.withSubtask
 import org.jetbrains.bazel.python.lang.PythonBuildTarget
 import org.jetbrains.bazel.python.lang.PythonLanguageClass
-import org.jetbrains.bazel.sync.environment.projectCtx
+import org.jetbrains.bazel.sync.environment.bazelProjectInfo
 import org.jetbrains.bazel.sync.workspace.DefaultOutputLocationResolver
 import org.jetbrains.bazel.sync.workspace.importer.BazelWorkspaceImporter
 import org.jetbrains.bazel.sync.workspace.importer.BazelWorkspaceImporterFactory
@@ -485,9 +485,9 @@ internal class BazelPythonWorkspaceImporter(val context: WorkspaceImporterContex
     .toList()
 
   private fun computeSourceRootPaths(snapshot: WorkspaceSnapshot, target: BuildTarget): Set<Path> {
-    val projectCtx = context.project.projectCtx
+    val projectInfo = context.project.bazelProjectInfo
     // imports for generated files should be resolved against bazel-bin
-    val basePaths = listOfNotNull(projectCtx.projectRootDir?.toNioPath(), context.bazelInfo.bazelBin).distinct()
+    val basePaths = listOfNotNull(projectInfo.projectRootDir?.toNioPath(), context.bazelInfo.bazelBin).distinct()
     val importRoots =
       PythonImportUtils.assembleExplicitImportsPaths(target)
         .mapNotNull { importPath ->

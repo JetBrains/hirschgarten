@@ -1,7 +1,6 @@
 package org.jetbrains.bazel.workspace.importer
 
 import com.intellij.compiler.impl.javaCompiler.javac.JavacConfiguration
-import com.intellij.openapi.externalSystem.service.project.manage.ExternalProjectsManagerImpl
 import com.intellij.openapi.util.NlsContexts
 import com.intellij.platform.diagnostic.telemetry.helpers.use
 import com.intellij.platform.workspace.storage.EntitySource
@@ -12,7 +11,6 @@ import org.jetbrains.bazel.config.BazelJavaBackendBundle
 import org.jetbrains.bazel.config.bazelProjectName
 import org.jetbrains.bazel.performance.bspTracer
 import org.jetbrains.bazel.progress.withSubtask
-import org.jetbrains.bazel.sync.environment.projectCtx
 import org.jetbrains.bazel.sync.workspace.DefaultOutputLocationResolver
 import org.jetbrains.bazel.sync.workspace.importer.BazelWorkspaceImporter
 import org.jetbrains.bazel.sync.workspace.importer.BazelWorkspaceImporterFactory

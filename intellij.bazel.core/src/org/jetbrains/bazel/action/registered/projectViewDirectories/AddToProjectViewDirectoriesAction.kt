@@ -19,7 +19,7 @@ import org.jetbrains.bazel.languages.projectview.psi.isDirectoriesNullOrEmpty
 import org.jetbrains.bazel.languages.projectview.psi.removeDirectoriesExclude
 import org.jetbrains.bazel.project.projectViewFile
 import org.jetbrains.bazel.project.projectViewFilePsiFile
-import org.jetbrains.bazel.sync.environment.BazelProjectContextService
+import org.jetbrains.bazel.sync.environment.BazelProjectInfoService
 import org.jetbrains.bazel.utils.findNearestParent
 import org.jetbrains.bazel.utils.selectedDirectory
 import org.jetbrains.bazel.workspace.excludedRoots
@@ -58,7 +58,7 @@ internal class AddToProjectViewDirectoriesAction : AnAction() {
   override fun update(e: AnActionEvent) {
     val project = e.project
     val projectViewFile = project?.getProjectViewIfApplicableTo(e)
-    val rootDir = project?.service<BazelProjectContextService>()?.projectRootDir
+    val rootDir = project?.service<BazelProjectInfoService>()?.projectRootDir
     if (projectViewFile == null || rootDir == null) {
       e.presentation.isEnabledAndVisible = false
       return

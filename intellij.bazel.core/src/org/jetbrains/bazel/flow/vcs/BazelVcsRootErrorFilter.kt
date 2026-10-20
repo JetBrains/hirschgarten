@@ -15,7 +15,7 @@ import org.jetbrains.bazel.commons.symlinks.BazelSymlinksCalculator
 import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.config.isBazelProject
 import org.jetbrains.bazel.flow.exclude.BazelSymlinkExcludeService
-import org.jetbrains.bazel.sync.environment.projectCtx
+import org.jetbrains.bazel.sync.environment.bazelProjectInfo
 import org.jetbrains.bazel.sync.workspace.snapshot.workspaceSnapshotOrNull
 import org.jetbrains.bazel.utils.isWindowsJunction
 import java.io.IOException
@@ -59,7 +59,7 @@ class BazelVcsRootErrorFilter : VcsRootErrorFilter {
      * A directory under a Bazel symlink is recognized even before that collection finishes, by checking its own path.
      */
     fun bazelOutputDirectoryPredicate(project: Project): IsBazelOutputDirectoryPredicate {
-      val workspace = project.projectCtx.projectRootDir?.toNioPathOrNull()
+      val workspace = project.bazelProjectInfo.projectRootDir?.toNioPathOrNull()
       val knownSymlinks = BazelSymlinkExcludeService.getInstance(project).getBazelSymlinksToExclude()
       val outputTrees = (knownSymlinks + listOfNotNull(project.workspaceSnapshotOrNull?.bazelInfo?.execRoot))
         .mapNotNullTo(mutableSetOf()) { it.toRealPathOrNull() }

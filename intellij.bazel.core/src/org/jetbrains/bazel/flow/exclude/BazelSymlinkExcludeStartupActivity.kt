@@ -1,12 +1,11 @@
 package org.jetbrains.bazel.flow.exclude
 
-import com.intellij.openapi.application.edtWriteAction
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.guessProjectDir
 import com.intellij.openapi.startup.ProjectActivity
 import com.intellij.openapi.vfs.toNioPathOrNull
 import org.jetbrains.annotations.ApiStatus
-import org.jetbrains.bazel.sync.environment.projectCtx
+import org.jetbrains.bazel.sync.environment.bazelProjectInfo
 import java.nio.file.Path
 
 /**
@@ -23,7 +22,7 @@ class BazelSymlinkExcludeStartupActivity : ProjectActivity {
   }
 
   private fun Project.guessBazelWorkspaceDir(): Path? {
-    val virtualFile = projectCtx.projectRootDir ?: guessProjectDir()
+    val virtualFile = bazelProjectInfo.projectRootDir ?: guessProjectDir()
     return virtualFile?.toNioPathOrNull()
   }
 }

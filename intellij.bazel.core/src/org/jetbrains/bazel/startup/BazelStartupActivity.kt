@@ -1,6 +1,5 @@
 package org.jetbrains.bazel.startup
 
-import com.intellij.openapi.components.service
 import com.intellij.openapi.components.serviceAsync
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.externalSystem.service.project.manage.ExternalProjectsManagerImpl
@@ -17,7 +16,6 @@ import org.jetbrains.bazel.startup.utils.BazelProjectActivity
 import org.jetbrains.bazel.sync.ProjectDirtyStateService
 import org.jetbrains.bazel.sync.ProjectSyncScope
 import org.jetbrains.bazel.sync.ProjectSyncService
-import org.jetbrains.bazel.sync.environment.projectCtx
 import org.jetbrains.bazel.sync.workspace.snapshot.workspaceSnapshotOrNull
 import org.jetbrains.bazel.target.ModuleTargetService
 import org.jetbrains.bazel.target.TargetStorage

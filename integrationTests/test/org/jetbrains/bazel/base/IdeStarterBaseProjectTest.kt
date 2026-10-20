@@ -552,13 +552,13 @@ fun Driver.openFile(relativePath: String, waitForCodeAnalysis: Boolean = true): 
 fun Driver.findFile(relativePath: String): VirtualFile? = projectRootDir.findFileByRelativePath(relativePath)
 
 val Driver.isBazelProject: Boolean
-  get() = service<BazelProjectContextService>(singleProject()).isBazelProject
+  get() = service<BazelProjectInfoService>(singleProject()).isBazelProject
 
 val Driver.projectRootDir: VirtualFile
-  get() = service<BazelProjectContextService>(singleProject()).projectRootDir
+  get() = service<BazelProjectInfoService>(singleProject()).projectRootDir
 
-@Remote("org.jetbrains.bazel.sync.environment.BazelProjectContextService", plugin = "org.jetbrains.bazel/intellij.bazel.commons")
-interface BazelProjectContextService {
+@Remote("org.jetbrains.bazel.sync.environment.BazelProjectInfoService", plugin = "org.jetbrains.bazel/intellij.bazel.commons")
+interface BazelProjectInfoService {
   var isBazelProject: Boolean
   var projectRootDir: VirtualFile
 }

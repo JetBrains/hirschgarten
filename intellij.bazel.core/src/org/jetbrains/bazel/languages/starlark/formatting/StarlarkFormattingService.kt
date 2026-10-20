@@ -31,7 +31,7 @@ import org.jetbrains.bazel.languages.starlark.StarlarkFileType
 import org.jetbrains.bazel.languages.starlark.bazel.BazelFileType
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkFile
 import org.jetbrains.bazel.settings.bazel.bazelProjectSettings
-import org.jetbrains.bazel.sync.environment.BazelProjectContextService
+import org.jetbrains.bazel.sync.environment.BazelProjectInfoService
 import java.io.File
 
 private val LOG = logger<StarlarkFormattingService>()
@@ -91,7 +91,7 @@ internal class StarlarkFormattingService : AsyncDocumentFormattingService() {
     val project = request.context.project
     // Formatter can be called for non-Bazel projects as well (if they contain some Starlark).
     // Don't use project.rootDir as it will throw.
-    val rootDir = project.service<BazelProjectContextService>().projectRootDir ?: project.guessProjectDir() ?: return null
+    val rootDir = project.service<BazelProjectInfoService>().projectRootDir ?: project.guessProjectDir() ?: return null
     val commandLine =
       GeneralCommandLine()
         .withParentEnvironmentType(GeneralCommandLine.ParentEnvironmentType.CONSOLE)
