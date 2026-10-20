@@ -50,5 +50,7 @@ internal class BazelExperimentalProjectSettingsConfigurable(private val project:
 }
 
 internal class BazelExperimentalProjectSettingsConfigurableProvider(private val project: Project) : ConfigurableProvider() {
+  override fun canCreateConfigurable(): Boolean = project.bazelExperimentalSettingsProviders.isNotEmpty()
+
   override fun createConfigurable(): Configurable = BazelExperimentalProjectSettingsConfigurable(project)
 }
