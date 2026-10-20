@@ -13,8 +13,14 @@ import org.jetbrains.bazel.commons.getLocalRepositories
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceConfiguration
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceConfigurationId
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
+import org.jetbrains.bsp.protocol.BuildTarget
+import org.jetbrains.bsp.protocol.OutputLocation
 import org.jetbrains.bsp.protocol.OutputLocationCollection
 import org.jetbrains.bsp.protocol.extractData
+import org.jetbrains.bsp.protocol.isGenerated
+import org.jetbrains.bazel.utils.toRealPathOrNull
+import java.nio.file.Path
+import kotlin.io.path.isSymbolicLink
 import kotlin.collections.orEmpty
 
 private const val CC_CONFIGURATION_MARKER = "BAZEL_CC"
@@ -97,11 +103,21 @@ context(ctx: CcImportContext)
 private fun collectSources(targets: Collection<WorkspaceTargetKey>): List<VirtualFileUrl> {
   return targets.asSequence()
     .mapNotNull { ctx.snapshot.targets.findTargetByKey(it) }
-    .flatMap { target -> target.sources.getOutputLocations() }
-    .mapNotNull { ctx.outputResolver.resolve(it, localOverride = ctx.snapshot.repoMapping.getLocalRepositories()) }
-    .filter { OCFileTypeHelpers.isSourceFile(it.fileName.toString()) }
+    .flatMap { target -> target.sources.getOutputLocations() + target.directHeaders() }
+    .mapNotNull { location -> ctx.outputResolver.resolve(location, localOverride = ctx.snapshot.repoMapping.getLocalRepositories())?.let { location to it } }
+    .filter { (_, path) -> path.fileName.toString().let { name -> OCFileTypeHelpers.isSourceFile(name) || OCFileTypeHelpers.isHeaderFile(name) } }
+    .map { (location, path) -> if (location.isGenerated) path.originalFile() else path }
+    .distinct()
     .map { it.toVirtualFileUrl(ctx.vfuManager) }
     .toList()
+}
+
+/** Returns the source file of a symlinked output, which the sync creates for CPP-52156. */
+private fun Path.originalFile(): Path = if (isSymbolicLink()) toRealPathOrNull() ?: this else this
+
+private fun BuildTarget.directHeaders(): Sequence<OutputLocation> {
+  val compilationContext = extractData<CcBuildTarget>()?.compilationContext ?: return emptySequence()
+  return compilationContext.directHeaders.getOutputLocations()
 }
 
 context(ctx: CcImportContext)

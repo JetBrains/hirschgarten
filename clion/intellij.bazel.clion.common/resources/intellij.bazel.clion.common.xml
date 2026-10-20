@@ -29,6 +29,11 @@
       description="Enable the C/C++ support of the Bazel plugin. (requires re-sync)"
       key="bazel.clion.enable"
     />
+    <registryKey
+      defaultValue="false"
+      description="Enable backend support for files without any compilation properties. `radler.deep.project.scan` must be enabled for this to work. (requires re-sync)"
+      key="bazel.clion.deep.project.scan"
+    />
   </extensions>
 
   <extensions defaultExtensionNs="org.jetbrains.bazel">
@@ -44,6 +49,7 @@
     <projectModel.ocWorkspaceStorageCustomizer implementation="org.jetbrains.bazel.clion.workspace.CcWorkspaceStorageCustomizer"/>
     <lang.compilerKindProvider implementation="org.jetbrains.bazel.clion.workspace.CcCompilerKindProvider"/>
     <lang.followSymlinkRootsProvider implementation="org.jetbrains.bazel.clion.workspace.CcFollowSymlinkRootsProvider"/>
+    <projectModel.deepProjectScanDisabler implementation="org.jetbrains.bazel.clion.workspace.CcDeepProjectScanDisabler"/>
     <projectModel.resolveConfigurationChooser
       id="Bazel.ccDirectoryBasedChooser"
       implementation="org.jetbrains.bazel.clion.workspace.CcDirectoryBasedChooser"

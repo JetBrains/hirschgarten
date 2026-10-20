@@ -69,6 +69,7 @@ private suspend fun mapCompilationContext(
 ): CcBuildTarget.CompilationContext {
   return CcBuildTarget.CompilationContext(
     headers = OutputLocationCollectionBuilder.build(ctx.headersList, outputParser),
+    directHeaders = OutputLocationCollectionBuilder.build(ctx.directHeadersList, outputParser),
     defines = StringsCollection.of(ctx.definesList),
     includes = OutputLocationCollectionBuilder.buildExecroot(ctx.includesList, outputParser),
     quoteIncludes = OutputLocationCollectionBuilder.buildExecroot(ctx.quoteIncludesList, outputParser),

@@ -96,6 +96,8 @@ internal class CcTargetBuilder(private val kind: String, private val ruleType: R
 
   private val srcs = mutableListOf<OutputLocation>()
   private val hdrs = mutableListOf<String>()
+  private val privateHdrs = mutableListOf<String>()
+  private val generatedHdrs = mutableListOf<String>()
   private val copts = mutableListOf<String>()
   private val conlyopts = mutableListOf<String>()
   private val cxxopts = mutableListOf<String>()
@@ -105,6 +107,7 @@ internal class CcTargetBuilder(private val kind: String, private val ruleType: R
   private val systemIncludes = mutableListOf<String>()
   private val deps = MultiMap<DependencyLabelKind, BuildTarget>()
   private var useDefaultToolchain = true
+  private var useRuleContext = true
 
   fun label(label: String) {
     this.label = label
@@ -133,6 +136,16 @@ internal class CcTargetBuilder(private val kind: String, private val ruleType: R
   /** Declares a header. It reaches both the rule context and the compilation context. */
   fun hdrs(vararg paths: String) {
     hdrs += paths
+  }
+
+  /** Declares a header that the rule attributes do not report, the way a private or textual header is. */
+  fun privateHdrs(vararg paths: String) {
+    privateHdrs += paths
+  }
+
+  /** Declares a header that Bazel generates, the way `strip_include_prefix` re-exports one. */
+  fun generatedHdrs(vararg paths: String) {
+    generatedHdrs += paths
   }
 
   fun copts(vararg options: String) {
@@ -175,6 +188,10 @@ internal class CcTargetBuilder(private val kind: String, private val ruleType: R
     useDefaultToolchain = false
   }
 
+  fun noRuleContext() {
+    useRuleContext = false
+  }
+
   internal fun build(defaultToolchain: () -> BuildTarget): BuildTarget {
     val label = requireNotNull(label)
 
@@ -182,7 +199,11 @@ internal class CcTargetBuilder(private val kind: String, private val ruleType: R
       deps(DependencyLabelKind.TOOLCHAIN, defaultToolchain())
     }
 
-    val allHeaders = hdrs.map(OutputLocation::Workspace).toMutableList<OutputLocation>()
+    val ruleHeaders = hdrs.map(OutputLocation::Workspace)
+    val directHeaders = ruleHeaders +
+                        privateHdrs.map(OutputLocation::Workspace) +
+                        generatedHdrs.map { OutputLocation.Output(TEST_OUTPUT_ROOT, it) }
+    val allHeaders = ruleHeaders.toMutableList<OutputLocation>()
     val allIncludes = includes.map(OutputLocationParserWithoutHardlink::parseExecrootPath).toMutableList()
     val allQuoteIncludes = quoteIncludes.map(OutputLocationParserWithoutHardlink::parseExecrootPath).toMutableList()
     val allSystemIncludes = systemIncludes.map(OutputLocationParserWithoutHardlink::parseExecrootPath).toMutableList()
@@ -208,8 +229,8 @@ internal class CcTargetBuilder(private val kind: String, private val ruleType: R
       sources = locations(srcs),
       data = listOf(
         CcBuildTarget(
-          ruleContext = CcBuildTarget.RuleContext(
-            headers = locations(hdrs.map(OutputLocation::Workspace)),
+          ruleContext = if (!useRuleContext) null else CcBuildTarget.RuleContext(
+            headers = locations(ruleHeaders),
             textualHeaders = OutputLocationCollection.EMPTY,
             copts = StringsCollection.of(copts),
             conlyopts = StringsCollection.of(conlyopts),
@@ -220,6 +241,7 @@ internal class CcTargetBuilder(private val kind: String, private val ruleType: R
           ),
           compilationContext = CcBuildTarget.CompilationContext(
             headers = locations(allHeaders),
+            directHeaders = locations(directHeaders),
             defines = StringsCollection.of(defines),
             includes = locations(allIncludes),
             quoteIncludes = locations(allQuoteIncludes),
