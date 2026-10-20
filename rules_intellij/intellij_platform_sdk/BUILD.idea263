@@ -82,20 +82,6 @@ java_import(
     jars = glob(["plugins/platform-testRunner-plugin/lib/*.jar", "plugins/platform-testRunner-plugin/lib/modules/*.jar"]),
 )
 
-java_import(
-    name = "bundled_plugins",
-    jars = glob([
-        "plugins/java-i18n/lib/*.jar",
-        "plugins/junit/lib/*.jar",
-        "plugins/properties/lib/*.jar",
-        "plugins/json/lib/*.jar",
-        "plugins/json/lib/modules/*.jar",
-        "plugins/toml/lib/*.jar",
-        "plugins/sh-plugin/lib/*.jar",
-        "plugins/sh-plugin/lib/modules/*.jar",
-    ]),
-)
-
 plugin_bundled_files(
     name = "bundled_plugins_for_tests_files",
     plugin_dirs = {"plugins/" + jar.split("/")[1]: None for jar in TEST_JARS}.keys(),
