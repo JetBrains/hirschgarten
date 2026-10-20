@@ -2,6 +2,7 @@ package org.jetbrains.bazel.flow.vcs
 
 import com.intellij.openapi.components.serviceAsync
 import com.intellij.openapi.diagnostic.logger
+import com.intellij.openapi.progress.runBlockingMaybeCancellable
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.io.toNioPathOrNull
 import com.intellij.openapi.vcs.ProjectLevelVcsManager
@@ -16,6 +17,8 @@ import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.config.isBazelProject
 import org.jetbrains.bazel.flow.exclude.BazelSymlinkExcludeService
 import org.jetbrains.bazel.sync.environment.bazelProjectInfo
+import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceSnapshot
+import org.jetbrains.bazel.sync.workspace.snapshot.currentWorkspaceSnapshotOrNull
 import org.jetbrains.bazel.sync.workspace.snapshot.workspaceSnapshotOrNull
 import org.jetbrains.bazel.utils.isWindowsJunction
 import java.io.IOException
@@ -43,7 +46,8 @@ import kotlin.io.path.name
 class BazelVcsRootErrorFilter : VcsRootErrorFilter {
   override fun filterErrors(project: Project, errors: Collection<VcsRootError>): Collection<VcsRootError> {
     if (!project.isBazelProject || errors.none { it.type == VcsRootError.Type.UNREGISTERED_ROOT }) return errors
-    val isBazelOutputDirectory = bazelOutputDirectoryPredicate(project)
+    val snapshot = runBlockingMaybeCancellable { project.currentWorkspaceSnapshotOrNull() }
+    val isBazelOutputDirectory = bazelOutputDirectoryPredicate(project, snapshot)
     return errors.filterNot { it.type == VcsRootError.Type.UNREGISTERED_ROOT && isBazelOutputDirectory(it.mapping.directory) }
   }
 
@@ -58,10 +62,10 @@ class BazelVcsRootErrorFilter : VcsRootErrorFilter {
      * The real output trees come from the Bazel symlinks [BazelSymlinkExcludeService] has already collected and from the execution root.
      * A directory under a Bazel symlink is recognized even before that collection finishes, by checking its own path.
      */
-    fun bazelOutputDirectoryPredicate(project: Project): IsBazelOutputDirectoryPredicate {
+    fun bazelOutputDirectoryPredicate(project: Project, snapshot: WorkspaceSnapshot?): IsBazelOutputDirectoryPredicate {
       val workspace = project.bazelProjectInfo.projectRootDir?.toNioPathOrNull()
       val knownSymlinks = BazelSymlinkExcludeService.getInstance(project).getBazelSymlinksToExclude()
-      val outputTrees = (knownSymlinks + listOfNotNull(project.workspaceSnapshotOrNull?.bazelInfo?.execRoot))
+      val outputTrees = (knownSymlinks + listOfNotNull(snapshot?.bazelInfo?.execRoot))
         .mapNotNullTo(mutableSetOf()) { it.toRealPathOrNull() }
 
       return object : IsBazelOutputDirectoryPredicate {
@@ -89,7 +93,8 @@ class BazelVcsRootErrorFilter : VcsRootErrorFilter {
         return
 
       val (bazelOutputMappings, otherMappings) = withContext(Dispatchers.IO) {
-        val isBazelOutputDirectory = bazelOutputDirectoryPredicate(project)
+        val snapshot = project.currentWorkspaceSnapshotOrNull()
+        val isBazelOutputDirectory = bazelOutputDirectoryPredicate(project, snapshot)
         mappings.partition { !it.isDefaultMapping && isBazelOutputDirectory(it.directory) }
       }
       if (bazelOutputMappings.isEmpty())

@@ -28,4 +28,11 @@ val WorkspaceSnapshot.commonSyncConfig: CommonWorkspaceSyncConfig
 
 @get:ApiStatus.Internal
 val Project.workspaceSnapshotOrNull: WorkspaceSnapshot?
-  get() = service<WorkspaceSnapshotService>().snapshot.value.takeIf { it != WorkspaceSnapshot.EMPTY }
+  get() = service<WorkspaceSnapshotService>().snapshot.value.takeIf { it !== WorkspaceSnapshot.EMPTY }
+
+/**
+ * Await initial workspace snapshot load, return `null` when snapshot is [WorkspaceSnapshot.EMPTY]`
+ */
+@ApiStatus.Internal
+suspend fun Project.currentWorkspaceSnapshotOrNull(): WorkspaceSnapshot? =
+  service<WorkspaceSnapshotService>().currentSnapshot().takeIf { it !== WorkspaceSnapshot.EMPTY }
