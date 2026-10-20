@@ -39,7 +39,6 @@ internal class DefaultProjectViewSectionProvider : ProjectViewSectionProvider {
       SyncFlagsSection,
       TargetShardSizeSection,
       TargetsSection,
-      TestFlagsSection,
       // deprecated sections
       IndexAdditionalFilesInDirectoriesSection,
       IndexAllFilesInDirectoriesSection,
@@ -154,12 +153,6 @@ private val TargetsSection: ProjectViewSection<List<ExcludableValue<Label>>> = P
   key = TARGETS_KEY,
   type = ProjectViewSectionType.label.excludable().list(),
   documentation = BazelProjectViewBundle.message("bazel.language.projectview.docs.targets"),
-)
-
-private val TestFlagsSection: ProjectViewSection<List<String>> = ProjectViewSection(
-  key = TEST_FLAGS_KEY,
-  type = ProjectViewSectionType.flag("test").list(),
-  documentation = BazelProjectViewBundle.message("bazel.language.projectview.docs.test_flags"),
 )
 
 // deprecated sections

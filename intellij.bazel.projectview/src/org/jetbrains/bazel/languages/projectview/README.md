@@ -239,12 +239,6 @@ No flags.
 
 ---
 
-#### test_flags
-
-_We are working on it, you can expect support for this section in future releases._
-
----
-
 #### import_run_configurations
 
 A list of XML files which will be imported as run configurations during Bazel sync.
