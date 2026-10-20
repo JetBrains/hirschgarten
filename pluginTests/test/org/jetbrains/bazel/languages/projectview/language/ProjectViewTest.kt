@@ -35,7 +35,6 @@ import org.jetbrains.bazel.languages.projectview.directories
 import org.jetbrains.bazel.languages.projectview.dotIdeaDirectoryLocation
 import org.jetbrains.bazel.languages.projectview.imports.Import
 import org.jetbrains.bazel.languages.projectview.syncFlags
-import org.jetbrains.bazel.languages.projectview.testFlags
 import org.jetbrains.bazel.project.BazelProjectFixtures.initializeBazelProject
 import org.jetbrains.bazel.test.framework.BazelTestApplication
 import org.jetbrains.bazel.utils.findVirtualFile
@@ -150,15 +149,12 @@ class ProjectViewTest {
         --define=ij_product=intellij-latest
       debug_flags:
         --java_debug
-      test_flags:
-        --test_output=all
       """.trimIndent(),
     )
 
     projectView.syncFlags shouldContain "--announce_rc"
     projectView.buildFlags shouldContain "--define=ij_product=intellij-latest"
     projectView.debugFlags shouldContain "--java_debug"
-    projectView.testFlags shouldContain "--test_output=all"
   }
 
   @Test

@@ -27,12 +27,6 @@ val ProjectView.debugFlags: List<String>
   get() = getSection(DEBUG_FLAGS_KEY)
 
 @Internal
-val TEST_FLAGS_KEY: ProjectViewSectionKey<List<String>> = ProjectViewSectionKey("test_flags", emptyList())
-val ProjectView.testFlags: List<String>
-  @Internal
-  get() = getSection(TEST_FLAGS_KEY)
-
-@Internal
 val BAZEL_BINARY_KEY: ProjectViewSectionKey<Path?> = ProjectViewSectionKey("bazel_binary", null)
 val ProjectView.bazelBinary: Path?
   @Internal

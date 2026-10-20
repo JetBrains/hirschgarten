@@ -96,25 +96,6 @@ class ProjectViewSectionItemCompletionContributorTest {
   }
 
   @Test
-  fun `should complete test flags variants`() {
-    codeInsightFixture.configureByText(".bazelproject", "test_flags:\n  <caret>")
-    codeInsightFixture.type("action")
-
-    val lookups = codeInsightFixture.completeBasic().flatMap { it.allLookupStrings }
-    val expectedFlags =
-      Flag
-        .all()
-        .filter {
-          it.key.contains("action") &&
-            it.value.option.commands.any { cmd ->
-              cmd == "test"
-            }
-        }.map { it.key }
-
-    lookups shouldContainExactlyInAnyOrder expectedFlags
-  }
-
-  @Test
   fun `should complete debug flags variants`() {
     codeInsightFixture.configureByText(".bazelproject", "debug_flags:\n  <caret>")
     codeInsightFixture.type("action")
