@@ -4,20 +4,18 @@ import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import org.jetbrains.annotations.ApiStatus
-import org.jetbrains.bazel.commons.BazelRelease
-import java.nio.file.Path
 
 @ApiStatus.Internal
-interface BazelProjectContextService {
+interface BazelProjectInfoService {
   val isBazelProject: Boolean
   val projectRootDir: VirtualFile?
 }
 
-val Project.projectCtx: BazelProjectContextService
+val Project.bazelProjectInfo: BazelProjectInfoService
   @ApiStatus.Internal
-  get() = service<BazelProjectContextService>()
+  get() = service<BazelProjectInfoService>()
 
 @ApiStatus.Internal
-fun BazelProjectContextService.getProjectRootDirOrThrow(): VirtualFile {
+fun BazelProjectInfoService.getProjectRootDirOrThrow(): VirtualFile {
   return projectRootDir ?: error("Project root directory is not initialized")
 }

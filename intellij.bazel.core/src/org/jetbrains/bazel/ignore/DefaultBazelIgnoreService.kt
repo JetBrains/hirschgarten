@@ -13,7 +13,7 @@ import org.jetbrains.bazel.languages.starlark.repomapping.canonicalRepoNameToPat
 import org.jetbrains.bazel.progress.syncConsole
 import org.jetbrains.bazel.sync.ProjectSyncHook
 import org.jetbrains.bazel.sync.ProjectSyncHook.ProjectSyncHookEnvironment
-import org.jetbrains.bazel.sync.environment.BazelProjectContextService
+import org.jetbrains.bazel.sync.environment.BazelProjectInfoService
 import org.jetbrains.bazel.sync.withSubtask
 import java.nio.file.Path
 import java.util.concurrent.atomic.AtomicReference
@@ -47,7 +47,7 @@ class DefaultBazelIgnoreService(val project: Project): BazelIgnoreService {
     if (state != null)
       return state
 
-    val projectRootDir = project.service<BazelProjectContextService>().projectRootDir ?: return null
+    val projectRootDir = project.service<BazelProjectInfoService>().projectRootDir ?: return null
     val localRepos = project.canonicalRepoNameToPath.values
     val newState = scan(Path.of(projectRootDir.path), localRepos)
     if (this.state.compareAndSet(null, newState)) {

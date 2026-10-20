@@ -38,7 +38,6 @@ import org.jetbrains.bazel.run.commandLine.parseAsProgramArguments
 import org.jetbrains.bazel.run.config.BazelRunConfiguration
 import org.jetbrains.bazel.run.task.BazelRunTaskListener
 import org.jetbrains.bazel.server.BazelServerFacade
-import org.jetbrains.bazel.sync.environment.projectCtx
 import org.jetbrains.bazel.sync.workspace.snapshot.workspaceSnapshotOrNull
 import org.jetbrains.bazel.taskEvents.BazelTaskListener
 import org.jetbrains.bsp.protocol.BuildTarget

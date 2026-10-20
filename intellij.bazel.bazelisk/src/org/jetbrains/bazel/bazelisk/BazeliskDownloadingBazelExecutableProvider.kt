@@ -14,7 +14,7 @@ import com.intellij.util.system.OS
 import org.jetbrains.bazel.commons.constants.Constants
 import org.jetbrains.bazel.sync.BazelEnvironmentService
 import org.jetbrains.bazel.sync.environment.BazelApplicationContextService
-import org.jetbrains.bazel.sync.environment.BazelProjectContextService
+import org.jetbrains.bazel.sync.environment.BazelProjectInfoService
 import org.jetbrains.bazel.sync.environment.getProjectRootDirOrThrow
 import org.jetbrains.bazel.workspace.BazelExecutableProvider
 import java.io.IOException
@@ -30,7 +30,7 @@ internal class BazeliskDownloadingBazelExecutableProvider : BazelExecutableProvi
   }
 
   override suspend fun computeBazelExecutable(project: Project): Path? {
-    val workspaceRoot = project.service<BazelProjectContextService>()
+    val workspaceRoot = project.service<BazelProjectInfoService>()
       .getProjectRootDirOrThrow().toNioPath()
     val bazeliskVersion = readBazeliskVersion(workspaceRoot)
     if (bazeliskVersion != null) {

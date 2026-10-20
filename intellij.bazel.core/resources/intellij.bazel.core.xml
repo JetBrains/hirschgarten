@@ -209,8 +209,8 @@
     <vfs.asyncListener implementation="org.jetbrains.bazel.flow.exclude.BazelSymlinkExcludeFileListener"/>
 
     <projectService
-      serviceImplementation="org.jetbrains.bazel.sync.environment.IJBazelProjectContextService"
-      serviceInterface="org.jetbrains.bazel.sync.environment.BazelProjectContextService"
+      serviceImplementation="org.jetbrains.bazel.sync.environment.IJBazelProjectInfoService"
+      serviceInterface="org.jetbrains.bazel.sync.environment.BazelProjectInfoService"
     />
 
     <applicationService
@@ -757,7 +757,7 @@
 
     <execution.processHandlerPidProvider implementation="org.jetbrains.bazel.run.BazelProcessHandlerPidProvider"/>
     <applicationSettings service="org.jetbrains.bazel.ui.settings.BazelApplicationSettingsService"/>
-    <projectSettings service="org.jetbrains.bazel.sync.environment.IJBazelProjectContextService"/>
+    <projectSettings service="org.jetbrains.bazel.sync.environment.IJBazelProjectInfoService"/>
     <projectSettings service="org.jetbrains.bazel.languages.bazelversion.service.BazelVersionCheckerService"/>
     <projectSettings service="org.jetbrains.bazel.languages.bazelversion.service.resolver.BazelGithubGlobalCacheService"/>
 

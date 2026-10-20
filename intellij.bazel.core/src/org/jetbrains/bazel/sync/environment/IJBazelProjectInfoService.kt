@@ -9,8 +9,8 @@ import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.flow.open.BazelProjectStoreDescriptor
 import org.jetbrains.bazel.utils.findVirtualFile
 
-internal class IJBazelProjectContextService(private val project: Project)
-  : BazelProjectContextService {
+internal class IJBazelProjectInfoService(private val project: Project)
+  : BazelProjectInfoService {
 
   override val isBazelProject: Boolean
     get() = project.stateStoreOrNull?.storeDescriptor is BazelProjectStoreDescriptor
