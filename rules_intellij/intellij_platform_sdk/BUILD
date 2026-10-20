@@ -201,17 +201,6 @@ java_library(
     ),
 )
 
-# Bundled plugins required by integration tests
-java_library(
-    name = "bundled_plugins",
-    testonly = 1,
-    runtime_deps = select_from_plugin_api_directory(
-        android_studio = [":bundled_plugins"],
-        clion = [],
-        intellij = [":bundled_plugins"],
-    ),
-)
-
 # SDK plugin jars that //pluginTests needs
 java_library(
     name = "bundled_plugins_for_tests",
