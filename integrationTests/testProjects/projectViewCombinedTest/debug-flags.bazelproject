@@ -9,7 +9,7 @@ targets:
   //flag_precedence:flag_precedence_test
 
 import_run_configurations:
-  tools/intellij/runConfigurations/flag_precedence_binary.run.xml
+  tools/intellij/runConfigurations/flag_precedence_binary.xml
 
 build_flags:
   --define=precedence_a=build_flags
