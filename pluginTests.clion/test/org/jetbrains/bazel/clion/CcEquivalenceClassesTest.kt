@@ -11,6 +11,8 @@ import org.jetbrains.bazel.clion.workspace.CcResolveConfiguration
 import org.jetbrains.bazel.clion.workspace.buildCompilerSettings
 import org.jetbrains.bazel.clion.workspace.buildEquivalenceClasses
 import org.jetbrains.bazel.clion.workspace.buildToolchainMap
+import org.jetbrains.bazel.commons.BazelInfo
+import org.jetbrains.bazel.fixtures.CC_TEST_BAZEL_INFO
 import org.jetbrains.bazel.fixtures.CcProjectBuilder
 import org.jetbrains.bazel.fixtures.ccProject
 import org.jetbrains.bazel.fixtures.withTestImportContext
@@ -18,7 +20,14 @@ import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceConfiguration
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceConfigurationId
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceConfigurationSummary
+import org.jetbrains.bazel.test.framework.testproject.testProjectBazelInfo
+import org.jetbrains.bazel.workspace.model.test.framework.TEST_OUTPUT_ROOT
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.io.TempDir
+import java.nio.file.Path
+import kotlin.io.path.createDirectories
+import kotlin.io.path.createSymbolicLinkPointingTo
+import kotlin.io.path.writeText
 
 private const val SAME_DEFINE = "SAME=1"
 private const val DIFFERENT_DEFINE = "DIFFERENT=1"
@@ -379,7 +388,7 @@ class CcEquivalenceClassesTest {
   }
 
   @Test
-  fun testTargetWithoutSourcesHasNoGroup() {
+  fun testHeaderOnlyTargetHasItsOwnGroup() {
     val configurations = resolve {
       val lib = ccLibrary {
         label("//lib:lib")
@@ -392,13 +401,13 @@ class CcEquivalenceClassesTest {
       }
     }
 
-    assertThat(configurations).hasSize(1)
+    assertThat(configurations).hasSize(2)
     assertThat(configurations.forLabel("//foo/bar:one")).hasSize(1)
-    assertThat(configurations.forLabel("//lib:lib")).hasSize(0)
+    assertThat(configurations.forLabel("//lib:lib")).hasSize(1)
   }
 
   @Test
-  fun testPrebuiltLibrariesHaveNoGroup() {
+  fun testPrebuiltLibrariesContributeOnlyTheirHeaders() {
     val configurations = resolve {
       ccLibrary {
         label("//prebuild:prebuild")
@@ -407,7 +416,68 @@ class CcEquivalenceClassesTest {
       }
     }
 
-    assertThat(configurations).isEmpty()
+    assertThat(configurations).hasSize(1)
+    assertThat(configurations.single().sources.map { it.fileName }).containsExactly("lib.h")
+  }
+
+  @Test
+  fun testGeneratedHeaderSymlinkedToItsSourceIsOneFile(@TempDir workspaceRoot: Path) {
+    val bazelInfo = testProjectBazelInfo(workspaceRoot = workspaceRoot)
+
+    val source = workspaceRoot.resolve("lib/include/feature.h")
+    source.parent.createDirectories()
+    source.writeText("int feature();")
+
+    val reExport = TEST_OUTPUT_ROOT.segments
+      .fold(bazelInfo.execRoot.resolve("bazel-out"), Path::resolve)
+      .resolve("lib/_virtual_includes/feature/feature.h")
+    reExport.parent.createDirectories()
+    reExport.createSymbolicLinkPointingTo(source)
+
+    val configurations = resolve(bazelInfo = bazelInfo) {
+      ccLibrary {
+        label("//lib:feature")
+        srcs("lib/src/feature.cc")
+        hdrs("lib/include/feature.h")
+        generatedHdrs("lib/_virtual_includes/feature/feature.h")
+      }
+    }
+
+    assertThat(configurations).hasSize(1)
+    assertThat(configurations.single().sources.map { it.fileName }).containsExactly("feature.cc", "feature.h")
+    assertThat(configurations.single().sources.map { it.url }).noneMatch { it.contains("_virtual_includes") }
+  }
+
+  @Test
+  fun testPrivateHeadersBecomeSources() {
+    val configurations = resolve {
+      ccLibrary {
+        label("//lib:lib")
+        srcs("lib/lib.cc")
+        hdrs("lib/public.h")
+        privateHdrs("lib/private.h")
+      }
+    }
+
+    assertThat(configurations).hasSize(1)
+    assertThat(configurations.single().sources.map { it.fileName })
+      .containsExactlyInAnyOrder("lib.cc", "public.h", "private.h")
+  }
+
+  @Test
+  fun testHeadersOfTargetWithoutRuleContextBecomeSources() {
+    val configurations = resolve {
+      ccLibrary {
+        label("//custom:custom")
+        srcs("custom/custom.cc")
+        privateHdrs("custom/custom.h")
+        noRuleContext()
+      }
+    }
+
+    assertThat(configurations).hasSize(1)
+    assertThat(configurations.single().sources.map { it.fileName })
+      .containsExactlyInAnyOrder("custom.cc", "custom.h")
   }
 
   @Test
@@ -425,9 +495,10 @@ class CcEquivalenceClassesTest {
 
   private fun resolve(
     configurations: Map<WorkspaceConfigurationId, WorkspaceConfiguration> = emptyMap(),
+    bazelInfo: BazelInfo = CC_TEST_BAZEL_INFO,
     declare: CcProjectBuilder.() -> Unit,
   ): List<CcResolveConfiguration> = timeoutRunBlocking {
-    val snapshot = ccProject(declare = declare).copy(configurations = configurations)
+    val snapshot = ccProject(bazelInfo = bazelInfo, declare = declare).copy(configurations = configurations)
     val (ctx, result) = withTestImportContext(snapshot, project = project) {
       val target2Toolchain = buildToolchainMap()
       val toolchain2Compiler = buildCompilerSettings()

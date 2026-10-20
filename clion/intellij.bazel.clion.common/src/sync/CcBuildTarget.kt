@@ -26,6 +26,7 @@ data class CcBuildTarget(val ruleContext: RuleContext?, val compilationContext: 
    */
   data class CompilationContext(
     val headers: OutputLocationCollection,
+    val directHeaders: OutputLocationCollection,
     val defines: StringsCollection,
     val includes: OutputLocationCollection,
     val quoteIncludes: OutputLocationCollection,
