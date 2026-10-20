@@ -1,5 +1,5 @@
 import_run_configurations:
-  tools/intellij/runConfigurations/__main_binary.run.xml
+  tools/intellij/runConfigurations/main_binary.xml
 
 directories:
   .
