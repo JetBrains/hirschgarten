@@ -2,10 +2,12 @@ package org.jetbrains.bazel.test.framework
 
 import com.intellij.configurationStore.ProjectStoreImpl
 import com.intellij.openapi.Disposable
+import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.WriteAction
 import com.intellij.openapi.components.service
 import com.intellij.openapi.diagnostic.fileLogger
 import com.intellij.openapi.extensions.LoadingOrder
+import com.intellij.openapi.externalSystem.service.execution.ExternalSystemJdkProvider
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.projectRoots.ProjectJdkTable
 import com.intellij.openapi.projectRoots.Sdk
@@ -79,7 +81,24 @@ internal fun installHostRcIsolation(disposable: Disposable) {
   }
 }
 
-private val HOST_RC_STARTUP_OPTIONS = listOf("--nohome_rc", "--nosystem_rc")
+/**
+ * Makes each JDK of a sync point at the real path of its home until [disposable] is disposed.
+ *
+ * A fresh output base gives the JDK a new path in each test, so the test application indexes the JDK again. The JDK
+ * directory in the output base links into the repo contents cache, and its real path is the same in each test.
+ */
+internal fun installStableJdkPaths(disposable: Disposable) {
+  val jdkProvider = ExternalSystemJdkProvider.getInstance()
+  val stableJdkProvider = object : ExternalSystemJdkProvider by jdkProvider {
+    override fun createJdk(jdkName: String?, homePath: String): Sdk {
+      val realHome = Path.of(homePath).takeIf { it.exists() }?.toRealPath()?.toString() ?: homePath
+      return jdkProvider.createJdk(jdkName, realHome)
+    }
+  }
+  ApplicationManager.getApplication().replaceService(ExternalSystemJdkProvider::class.java, stableJdkProvider, disposable)
+}
+
+private val HOST_RC_STARTUP_OPTIONS =listOf("--nohome_rc", "--nosystem_rc")
 
 // The startup options follow the Bazel binary. A nested install must not add them twice.
 private fun List<String>.withoutHostRcFiles(): List<String> =
