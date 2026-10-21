@@ -26,6 +26,7 @@
     <orderEntry type="module" module-name="intellij.libraries.stream" />
     <orderEntry type="module" module-name="intellij.libraries.caffeine" />
     <orderEntry type="module" module-name="intellij.bazel.commons" />
+    <orderEntry type="module" module-name="intellij.bazel.languages" />
     <orderEntry type="module" module-name="intellij.bazel.protobuf" />
     <orderEntry type="module" module-name="intellij.platform.analysis" />
     <orderEntry type="module" module-name="intellij.platform.codeStyle" />

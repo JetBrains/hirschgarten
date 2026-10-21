@@ -12,6 +12,7 @@
     <orderEntry type="library" name="kotlin-stdlib" level="project" />
     <orderEntry type="module" module-name="intellij.libraries.stream" />
     <orderEntry type="module" module-name="intellij.bazel.core" />
+    <orderEntry type="module" module-name="intellij.bazel.languages" />
     <orderEntry type="module" module-name="intellij.bazel.commons" />
     <orderEntry type="module" module-name="intellij.bazel.coverage" />
     <orderEntry type="module" module-name="intellij.platform.coverage" />

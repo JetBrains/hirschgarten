@@ -50,6 +50,7 @@ jvm_library(
         "@community//libraries/stream",
         "@community//libraries/caffeine",
         "//plugins/bazel/intellij.bazel.commons:commons",
+        "//plugins/bazel/intellij.bazel.languages:languages",
         "//plugins/bazel/protobuf",
         "@community//platform/analysis-api:analysis",
         "@community//platform/code-style-api:codeStyle",
@@ -161,6 +162,7 @@ jvm_library(
         "@community//libraries/stream:stream_test_lib",
         "@community//libraries/caffeine:caffeine_test_lib",
         "//plugins/bazel/intellij.bazel.commons:commons_test_lib",
+        "//plugins/bazel/intellij.bazel.languages:languages_test_lib",
         "//plugins/bazel/protobuf:protobuf_test_lib",
         "@community//platform/analysis-api:analysis_test_lib",
         "@community//platform/code-style-api:codeStyle_test_lib",
@@ -243,8 +245,6 @@ jvm_library(
 exports_files(
     [
         "intellij.bazel.core.iml",
-        "resources/colorSchemes/StarlarkDarcula.xml",
-        "resources/colorSchemes/StarlarkDefault.xml",
         "resources/intellij.bazel.core.xml",
     ],
     visibility = ["//visibility:public"],

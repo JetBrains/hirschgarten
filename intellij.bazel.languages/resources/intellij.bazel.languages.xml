@@ -1,0 +1,152 @@
+<idea-plugin visibility="public">
+  <!-- region Generated dependencies - run `Generate Product Layouts` to regenerate -->
+  <dependencies>
+    <module name="intellij.bazel.resource"/>
+    <module name="intellij.libraries.fastutil"/>
+    <module name="intellij.libraries.jetbrains.annotations"/>
+    <module name="intellij.platform.analysis"/>
+    <module name="intellij.platform.codeStyle"/>
+    <module name="intellij.platform.codeStyle.impl"/>
+    <module name="intellij.platform.core"/>
+    <module name="intellij.platform.core.impl"/>
+    <module name="intellij.platform.core.ui"/>
+    <module name="intellij.platform.editor.ui"/>
+    <module name="intellij.platform.ide.impl"/>
+    <module name="intellij.platform.lang"/>
+    <module name="intellij.platform.lang.impl"/>
+    <module name="intellij.platform.util.ui"/>
+  </dependencies>
+  <!-- endregion -->
+  <extensions defaultExtensionNs="com.intellij">
+    <fileType
+      extensions="bzl;bazel;bzlmod;star"
+      fieldName="INSTANCE"
+      fileNames="BUILD;WORKSPACE"
+      implementationClass="org.jetbrains.bazel.languages.starlark.StarlarkFileType"
+      language="Starlark"
+      name="Starlark"
+      patterns="*.bzl.template"
+    />
+    <lang.fileViewProviderFactory
+      implementationClass="org.jetbrains.bazel.languages.starlark.psi.StarlarkViewProviderFactory"
+      language="Starlark"
+    />
+    <enterBetweenBracesDelegate
+      implementationClass="org.jetbrains.bazel.languages.starlark.indentation.StarlarkEnterBetweenBracesHandler"
+      language="Starlark"
+    />
+    <lang.parserDefinition
+      implementationClass="org.jetbrains.bazel.languages.starlark.parser.StarlarkParserDefinition"
+      language="Starlark"
+    />
+
+    <lang.syntaxHighlighterFactory
+      implementationClass="org.jetbrains.bazel.languages.starlark.highlighting.StarlarkSyntaxHighlighterFactory"
+      language="Starlark"
+    />
+    <lang.commenter
+      implementationClass="org.jetbrains.bazel.languages.starlark.commenter.StarlarkCommenter"
+      language="Starlark"
+    />
+    <lang.braceMatcher
+      implementationClass="org.jetbrains.bazel.languages.starlark.matching.StarlarkBraceMatcher"
+      language="Starlark"
+    />
+    <lang.quoteHandler
+      implementationClass="org.jetbrains.bazel.languages.starlark.matching.StarlarkQuoteHandler"
+      language="Starlark"
+    />
+
+    <lang.foldingBuilder
+      implementationClass="org.jetbrains.bazel.languages.starlark.folding.StarlarkFoldingBuilder"
+      language="Starlark"
+    />
+    <lineIndentProvider
+      implementation="org.jetbrains.bazel.languages.starlark.indentation.StarlarkLineIndentProvider"
+    />
+    <colorSettingsPage implementation="org.jetbrains.bazel.languages.starlark.highlighting.StarlarkColorSettingsPage"/>
+    <additionalTextAttributes
+      file="colorSchemes/StarlarkDefault.xml"
+      scheme="Default"
+    />
+    <additionalTextAttributes
+      file="colorSchemes/StarlarkDarcula.xml"
+      scheme="Darcula"
+    />
+
+    <fileType
+      extensions="bazelquery"
+      fieldName="INSTANCE"
+      implementationClass="org.jetbrains.bazel.languages.bazelquery.BazelQueryFileType"
+      language="BazelQuery"
+      name="BazelQuery"
+    />
+
+    <lang.parserDefinition
+      implementationClass="org.jetbrains.bazel.languages.bazelquery.parser.BazelQueryParserDefinition"
+      language="BazelQuery"
+    />
+
+    <lang.syntaxHighlighterFactory
+      implementationClass="org.jetbrains.bazel.languages.bazelquery.highlighting.BazelQuerySyntaxHighlighterFactory"
+      language="BazelQuery"
+    />
+
+    <fileType
+      extensions="bazelqueryflags"
+      fieldName="INSTANCE"
+      implementationClass="org.jetbrains.bazel.languages.bazelquery.BazelQueryFlagsFileType"
+      language="BazelQueryFlags"
+      name="BazelQueryFlags"
+    />
+
+    <lang.parserDefinition
+      implementationClass="org.jetbrains.bazel.languages.bazelquery.parser.BazelQueryFlagsParserDefinition"
+      language="BazelQueryFlags"
+    />
+
+    <lang.syntaxHighlighterFactory
+      implementationClass="org.jetbrains.bazel.languages.bazelquery.highlighting.BazelQuerySyntaxHighlighterFactory"
+      language="BazelQueryFlags"
+    />
+
+    <fileType name="BazelVersion"
+              implementationClass="org.jetbrains.bazel.languages.bazelversion.BazelVersionFileType"
+              fieldName="INSTANCE"
+              language="BazelVersion"
+              fileNames=".bazelversion"
+              extensions="bazelversion"/>
+
+    <lang.parserDefinition language="BazelVersion"
+                           implementationClass="org.jetbrains.bazel.languages.bazelversion.parser.BazelVersionParserDefinition"/>
+
+    <fileType
+      extensions="bazelrc"
+      fieldName="INSTANCE"
+      fileNames=".bazelrc"
+      implementationClass="org.jetbrains.bazel.languages.bazelrc.BazelrcFileType"
+      language="Bazelrc"
+      name="Bazelrc"
+    />
+
+    <lang.syntaxHighlighterFactory
+      implementationClass="org.jetbrains.bazel.languages.bazelrc.highlighting.BazelrcSyntaxHighlighterFactory"
+      language="Bazelrc"
+    />
+
+    <lang.parserDefinition
+      implementationClass="org.jetbrains.bazel.languages.bazelrc.parser.BazelrcParserDefinition"
+      language="Bazelrc"
+    />
+
+    <lang.commenter
+      implementationClass="org.jetbrains.bazel.languages.bazelrc.commenter.BazelrcCommenter"
+      language="Bazelrc"
+    />
+
+    <lang.quoteHandler
+      implementationClass="org.jetbrains.bazel.languages.bazelrc.matching.BazelrcQuoteHandler"
+      language="Bazelrc"
+    />
+  </extensions>
+</idea-plugin>

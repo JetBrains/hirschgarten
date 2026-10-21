@@ -1,0 +1,87 @@
+load("@community//platform/build-scripts/bazel-rules:content_module_jar.bzl", "content_module_jar")
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+
+### auto-generated section `dev intellij.bazel.languages` start
+content_module_jar(module = ":languages")
+### auto-generated section `dev intellij.bazel.languages` end
+
+### auto-generated section `build intellij.bazel.languages` start
+jvm_library(
+    name = "languages",
+    srcs = glob(
+        [
+            "src/**/*.kt",
+            "src/**/*.java",
+            "src/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.bazel.languages",
+    resource_strip_prefix = "resources",
+    resources = glob(
+        ["resources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    deps = [
+        # do not sort,
+        "@lib//:kotlin-stdlib",
+        "@community//libraries/jetbrains/annotations",
+        "//plugins/bazel/intellij.bazel.resource:resource",
+        "@community//platform/core-api:core",
+        "@community//platform/core-impl",
+        "@community//platform/util",
+        "@community//platform/analysis-api:analysis",
+        "@community//platform/lang-api:lang",
+        "@community//platform/editor-ui-api:editor-ui",
+        "@community//platform/code-style-api:codeStyle",
+        "@community//platform/code-style-impl:codeStyle-impl",
+        "@community//platform/core-ui",
+        "@community//platform/util:util-ui",
+        "@community//platform/lang-impl",
+        "@community//platform/platform-impl:ide-impl",
+        "@community//libraries/fastutil",
+    ],
+)
+
+jvm_library(
+    name = "languages_test_lib",
+    testonly = True,
+    srcs = glob(
+        [],
+        allow_empty = True,
+    ),
+    module_name = "intellij.bazel.languages",
+    visibility = ["//visibility:public"],
+    runtime_deps = [
+        # do not sort,
+        ":languages",
+        "@community//libraries/jetbrains/annotations:annotations_test_lib",
+        "//plugins/bazel/intellij.bazel.resource:resource_test_lib",
+        "@community//platform/core-api:core_test_lib",
+        "@community//platform/core-impl:core-impl_test_lib",
+        "@community//platform/util:util_test_lib",
+        "@community//platform/analysis-api:analysis_test_lib",
+        "@community//platform/lang-api:lang_test_lib",
+        "@community//platform/editor-ui-api:editor-ui_test_lib",
+        "@community//platform/code-style-api:codeStyle_test_lib",
+        "@community//platform/code-style-impl:codeStyle-impl_test_lib",
+        "@community//platform/core-ui:core-ui_test_lib",
+        "@community//platform/util:util-ui_test_lib",
+        "@community//platform/lang-impl:lang-impl_test_lib",
+        "@community//platform/platform-impl:ide-impl_test_lib",
+        "@community//libraries/fastutil:fastutil_test_lib",
+    ],
+)
+### auto-generated section `build intellij.bazel.languages` end
+
+### auto-generated section `iml intellij.bazel.languages` start
+exports_files(
+    [
+        "intellij.bazel.languages.iml",
+        "resources/colorSchemes/StarlarkDarcula.xml",
+        "resources/colorSchemes/StarlarkDefault.xml",
+        "resources/intellij.bazel.languages.xml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.bazel.languages` end
