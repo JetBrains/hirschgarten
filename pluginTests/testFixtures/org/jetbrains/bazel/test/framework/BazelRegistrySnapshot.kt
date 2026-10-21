@@ -3,12 +3,9 @@ package org.jetbrains.bazel.test.framework
 import com.intellij.openapi.diagnostic.fileLogger
 import com.intellij.openapi.util.io.NioFiles
 import com.intellij.util.io.Decompressor
+import com.intellij.util.io.HttpRequests
 import com.intellij.util.io.sha256Hex
 import java.io.IOException
-import java.net.URI
-import java.net.http.HttpClient
-import java.net.http.HttpRequest
-import java.net.http.HttpResponse
 import java.nio.file.FileSystemException
 import java.nio.file.Files
 import java.nio.file.Path
@@ -24,13 +21,15 @@ private val LOG = fileLogger()
  * A test project resolves its modules from local files. So a sync sends no registry request, and it needs no lockfile.
  * The pin is the BCR snapshot of the IntelliJ aspect repository. Every module version of a test project must exist in it.
  *
- * The `BAZEL_PLUGIN_TEST_BCR_URL` environment variable or the `bazel.plugin.test.bcr.url` system property replaces the
- * download URL, for example with a mirror. The archive must still match the pinned checksum.
+ * The download tries the JetBrains cache redirector first, then GitHub. The `BAZEL_PLUGIN_TEST_BCR_URL` environment
+ * variable or the `bazel.plugin.test.bcr.url` system property replaces both URLs, for example with a mirror. The archive
+ * must still match the pinned checksum.
  */
 object BazelRegistrySnapshot {
   private const val COMMIT = "63104ee4f2bd000d5b227cc1b5327512278ff078"
   private const val SHA256 = "ddcd494b74cc75d8dd9eaf19b810c3dc660c08b0f67fe504b4f9d4ceda51e870"
-  private const val DEFAULT_URL = "https://github.com/bazelbuild/bazel-central-registry/archive/$COMMIT.zip"
+  private const val GITHUB_URL = "https://github.com/bazelbuild/bazel-central-registry/archive/$COMMIT.zip"
+  private const val REDIRECTOR_URL = "https://cache-redirector.jetbrains.com/github.com/bazelbuild/bazel-central-registry/archive/$COMMIT.zip"
 
   /** Returns the registry directory in [cacheRoot]. The first call downloads and unpacks the archive. */
   @Synchronized
@@ -44,11 +43,7 @@ object BazelRegistrySnapshot {
     val staging = Files.createTempDirectory(parent, "$COMMIT.")
     try {
       val archive = staging.resolve("bcr.zip")
-      val url = archiveUrl()
-      LOG.info("Downloading the BCR snapshot $COMMIT from $url")
-      download(url, archive)
-      val checksum = sha256Hex(archive)
-      check(checksum == SHA256) { "The BCR snapshot from $url has the checksum $checksum, expected $SHA256" }
+      downloadArchive(archive)
 
       val unpacked = staging.resolve("registry")
       Decompressor.Zip(archive).removePrefixPath("bazel-central-registry-$COMMIT").extract(unpacked)
@@ -67,16 +62,27 @@ object BazelRegistrySnapshot {
     return registry
   }
 
-  private fun archiveUrl(): String =
-    System.getenv("BAZEL_PLUGIN_TEST_BCR_URL")?.takeIf { it.isNotBlank() }
-    ?: System.getProperty("bazel.plugin.test.bcr.url")?.takeIf { it.isNotBlank() }
-    ?: DEFAULT_URL
+  private fun archiveUrls(): List<String> {
+    val url = System.getenv("BAZEL_PLUGIN_TEST_BCR_URL")?.takeIf { it.isNotBlank() }
+              ?: System.getProperty("bazel.plugin.test.bcr.url")?.takeIf { it.isNotBlank() }
+    return if (url != null) listOf(url) else listOf(REDIRECTOR_URL, GITHUB_URL)
+  }
 
-  private fun download(url: String, target: Path) {
-    val client = HttpClient.newBuilder().followRedirects(HttpClient.Redirect.NORMAL).build()
-    val response = client.send(HttpRequest.newBuilder(URI.create(url)).GET().build(), HttpResponse.BodyHandlers.ofFile(target))
-    if (response.statusCode() != 200) {
-      throw IOException("Cannot download the BCR snapshot from $url: HTTP ${response.statusCode()}")
+  private fun downloadArchive(archive: Path) {
+    val failures = mutableListOf<Exception>()
+    for (url in archiveUrls()) {
+      try {
+        LOG.info("Downloading the BCR snapshot $COMMIT from $url")
+        HttpRequests.request(url).saveToFile(archive, null)
+        val checksum = sha256Hex(archive)
+        if (checksum != SHA256) throw IOException("The BCR snapshot from $url has the checksum $checksum, expected $SHA256")
+        return
+      }
+      catch (e: IOException) {
+        LOG.warn("Cannot download the BCR snapshot from $url: ${e.message}")
+        failures.add(e)
+      }
     }
+    throw IOException("Cannot download the BCR snapshot $COMMIT").apply { failures.forEach(::addSuppressed) }
   }
 }

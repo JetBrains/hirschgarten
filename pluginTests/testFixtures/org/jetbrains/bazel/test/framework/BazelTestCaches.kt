@@ -1,6 +1,7 @@
 package org.jetbrains.bazel.test.framework
 
 import com.intellij.openapi.application.PathManager
+import org.jetbrains.bazel.commons.BazelRelease
 import org.jetbrains.kotlin.incremental.createDirectory
 import java.io.File
 import java.net.URI
@@ -57,6 +58,7 @@ object BazelTestCaches {
       .resolve(cacheGroup(testProjectPath))
       .createDirectories()
 
+    val bazelVersion = BazelRelease.fromBazelVersionFile(projectRoot)
     val bazeliskCache = cacheRoot.resolve("bazelisk").createDirectories()
     projectRoot.resolve(".bazeliskrc").writeText("BAZELISK_HOME=${bazeliskCache.toBazelPath()}\n")
 
@@ -70,12 +72,13 @@ object BazelTestCaches {
       add("startup --output_user_root=${outputUserRoot.toBazelRcPath()}")
       add("startup --output_base=${outputBase.toBazelRcPath()}")
       add("common --repository_cache=${repositoryCache.toBazelRcPath()}")
-      if (supportsRepoContentsCache(projectRoot)) {
+      if (bazelVersion.supportsRepoContentsCache()) {
         // Bazel 8 keeps the cache off, and Bazel 9 puts it into the repository cache. A separate directory lets a
         // cache archive keep the downloads and leave out the extracted repositories, because Bazel can extract them again.
         add("common --repo_contents_cache=${repoContentsCache.toBazelRcPath()}")
       }
       add("common --disk_cache=${diskCache.toBazelRcPath()}")
+      add("common --${bazelVersion.downloaderConfigFlag()}=${BazelPathManager.downloaderConfig.toBazelRcPath()}")
       registries.forEach { add("common --registry=$it") }
     }
     writeManagedBazelrcBlock(projectRoot.resolve(".bazelrc"), lines)
@@ -119,16 +122,16 @@ object BazelTestCaches {
     return cacheRoot.toAbsolutePath()
   }
 
-  private fun bazelVersion(projectRoot: Path): String? =
-    projectRoot.resolve(".bazelversion").takeIf { it.exists() }?.readText()?.trim()?.takeIf { it.isNotEmpty() }
-
-  /** Tells if the Bazel version of [projectRoot] knows `--repo_contents_cache`. Bazel 8.3 added it. */
-  private fun supportsRepoContentsCache(projectRoot: Path): Boolean {
-    val version = bazelVersion(projectRoot) ?: return true
-    val parts = version.split('.')
-    val major = parts[0].toIntOrNull() ?: return true
-    val minor = parts.getOrNull(1)?.toIntOrNull() ?: 0
+  /** Tells if the Bazel version knows `--repo_contents_cache`. Bazel 8.3 added it. */
+  private fun BazelRelease?.supportsRepoContentsCache(): Boolean {
+    if (this == null) return true
     return major > 8 || major == 8 && minor >= 3
+  }
+
+  /** Returns the name of the downloader config flag. Bazel 7 knows only the experimental name. */
+  private fun BazelRelease?.downloaderConfigFlag(): String {
+    if (this == null) return "downloader_config"
+    return if (major >= 8) "downloader_config" else "experimental_downloader_config"
   }
 
   private fun cacheGroup(testProjectPath: String): String =
