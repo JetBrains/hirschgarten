@@ -1,6 +1,7 @@
 package org.jetbrains.bazel.languages.starlark.psi.expressions
 
 import com.intellij.lang.ASTNode
+import com.intellij.openapi.components.serviceOrNull
 import com.intellij.psi.PsiReference
 import com.intellij.psi.search.LocalSearchScope
 import com.intellij.psi.search.SearchScope
@@ -10,10 +11,10 @@ import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.languages.starlark.starlarkProjectScope
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkElementVisitor
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkNamedElement
+import org.jetbrains.bazel.languages.starlark.psi.StarlarkReferenceSupport
 import org.jetbrains.bazel.languages.starlark.psi.functions.StarlarkCallable
 import org.jetbrains.bazel.languages.starlark.psi.statements.StarlarkAssignmentStatement
 import org.jetbrains.bazel.languages.starlark.references.StarlarkLocalVariableElement
-import org.jetbrains.bazel.languages.starlark.references.StarlarkLocalVariableReference
 import javax.swing.Icon
 
 @ApiStatus.Internal
@@ -23,7 +24,7 @@ class StarlarkTargetExpression(node: ASTNode) :
   StarlarkQualifiableExpression {
   override fun acceptVisitor(visitor: StarlarkElementVisitor) = visitor.visitTargetExpression(this)
 
-  override fun getReference(): PsiReference = StarlarkLocalVariableReference(this, true)
+  override fun getReference(): PsiReference? = serviceOrNull<StarlarkReferenceSupport>()?.getReference(this)
 
   override fun getIcon(flags: Int): Icon? = PlatformIcons.VARIABLE_ICON
 

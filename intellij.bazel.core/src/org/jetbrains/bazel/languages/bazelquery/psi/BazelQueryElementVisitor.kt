@@ -1,8 +1,10 @@
 package org.jetbrains.bazel.languages.bazelquery.psi
 
 import com.intellij.psi.PsiElementVisitor
+import org.jetbrains.annotations.ApiStatus
 
-internal open class BazelQueryElementVisitor : PsiElementVisitor() {
+@ApiStatus.Internal
+open class BazelQueryElementVisitor : PsiElementVisitor() {
   fun visitCommand(node: BazelQueryCommand) {
     visitElement(node)
   }

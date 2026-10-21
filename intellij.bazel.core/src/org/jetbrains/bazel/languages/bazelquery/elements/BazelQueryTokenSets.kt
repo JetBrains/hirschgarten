@@ -2,9 +2,11 @@ package org.jetbrains.bazel.languages.bazelquery.elements
 
 import com.intellij.psi.TokenType
 import com.intellij.psi.tree.TokenSet
+import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.languages.bazelquery.elements.BazelQueryTokenTypes.COMMENT
 
-internal object BazelQueryTokenSets {
+@ApiStatus.Internal
+object BazelQueryTokenSets {
   val WHITE_SPACES = TokenSet.create(TokenType.WHITE_SPACE)
 
   val COMMENTS = TokenSet.create(COMMENT)

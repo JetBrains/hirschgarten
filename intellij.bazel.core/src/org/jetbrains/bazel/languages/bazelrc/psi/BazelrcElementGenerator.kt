@@ -5,12 +5,14 @@ import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFileFactory
 import com.intellij.psi.impl.PsiFileFactoryImpl
 import com.intellij.testFramework.LightVirtualFile
+import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.languages.bazelrc.BazelrcFileType
 import org.jetbrains.bazel.languages.bazelrc.BazelrcLanguage
 
 private const val DUMMY_FILENAME = "dummy.bazelrc"
 
-internal class BazelrcElementGenerator(val project: Project) {
+@ApiStatus.Internal
+class BazelrcElementGenerator(val project: Project) {
   private fun createDummyFile(contents: String): BazelrcFile {
     val factory = PsiFileFactory.getInstance(project)
     val virtualFile = LightVirtualFile(DUMMY_FILENAME, BazelrcFileType, contents)

@@ -8,10 +8,12 @@ import com.intellij.openapi.fileTypes.SyntaxHighlighterFactory
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.tree.IElementType
+import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.languages.starlark.elements.StarlarkTokenTypes
 import org.jetbrains.bazel.languages.starlark.lexer.StarlarkHighlightingLexer
 
-internal object StarlarkSyntaxHighlighter : SyntaxHighlighterBase() {
+@ApiStatus.Internal
+object StarlarkSyntaxHighlighter : SyntaxHighlighterBase() {
   private val keys =
     mapOf(
       StarlarkTokenTypes.DEF_KEYWORD to StarlarkHighlightingColors.KEYWORD,

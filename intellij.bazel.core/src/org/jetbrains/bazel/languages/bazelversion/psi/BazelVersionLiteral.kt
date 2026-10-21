@@ -20,7 +20,8 @@ sealed interface BazelVersionLiteral {
   }
 }
 
-internal fun BazelVersionLiteral.toBazelVersionStringLiteral(): String =
+@ApiStatus.Internal
+fun BazelVersionLiteral.toBazelVersionStringLiteral(): String =
   when (this) {
     is BazelVersionLiteral.Forked -> "$fork/${version.toBazelVersionStringLiteral()}"
     is BazelVersionLiteral.Latest -> if (offset == 0) "latest" else "latest-$offset"
@@ -31,7 +32,8 @@ internal fun BazelVersionLiteral.toBazelVersionStringLiteral(): String =
     is BazelVersionLiteral.Specific -> "$version"
   }
 
-internal fun BazelVersionLiteral.toSemVer(): SemVer? =
+@ApiStatus.Internal
+fun BazelVersionLiteral.toSemVer(): SemVer? =
   when (this) {
     is BazelVersionLiteral.Forked -> this.version.toSemVer()
     is BazelVersionLiteral.Other -> SemVer.parseFromText(version)

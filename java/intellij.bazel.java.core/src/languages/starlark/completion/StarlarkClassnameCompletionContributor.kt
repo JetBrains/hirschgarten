@@ -19,7 +19,6 @@ import com.intellij.util.ProcessingContext
 import org.jetbrains.bazel.config.isBazelProject
 import org.jetbrains.bazel.languages.starlark.StarlarkLanguage
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkStringLiteralExpression
-import org.jetbrains.bazel.languages.starlark.psi.expressions.getCompletionLookupElement
 import org.jetbrains.bazel.languages.starlark.reference.StarlarkClassnameReferenceProvider
 
 internal class StarlarkClassnameCompletionContributor : CompletionContributor() {

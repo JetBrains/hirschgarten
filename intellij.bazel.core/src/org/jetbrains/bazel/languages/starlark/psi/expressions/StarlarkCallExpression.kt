@@ -2,22 +2,21 @@ package org.jetbrains.bazel.languages.starlark.psi.expressions
 
 import com.intellij.lang.ASTNode
 import com.intellij.model.psi.PsiSymbolReference
-import com.intellij.model.psi.PsiSymbolService
 import com.intellij.navigation.ItemPresentation
+import com.intellij.openapi.components.serviceOrNull
 import com.intellij.psi.ElementManipulators
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiNameIdentifierOwner
 import com.intellij.psi.search.SearchScope
 import org.jetbrains.annotations.ApiStatus
-import org.jetbrains.bazel.assets.BazelPluginIcons
+import org.jetbrains.bazel.languages.BazelLanguagesIcons
 import org.jetbrains.bazel.languages.starlark.bazel.BazelFileType
-import org.jetbrains.bazel.languages.starlark.bazel.BazelGlobalFunctions
 import org.jetbrains.bazel.languages.starlark.elements.StarlarkElementTypes
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkBaseElement
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkElementVisitor
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkFile
+import org.jetbrains.bazel.languages.starlark.psi.StarlarkReferenceSupport
 import org.jetbrains.bazel.languages.starlark.psi.functions.StarlarkArgumentList
-import org.jetbrains.bazel.languages.starlark.references.BazelGlobalFunctionReference
 import org.jetbrains.bazel.languages.starlark.starlarkProjectScope
 import javax.swing.Icon
 import kotlin.contracts.ExperimentalContracts
@@ -38,7 +37,8 @@ fun PsiElement.isRuleTarget(): Boolean {
  * Whether this call expression is a top-level function call in a BUILD or MODULE.bazel file.
  */
 @OptIn(ExperimentalContracts::class)
-internal fun PsiElement.isBazelFileTopLevelCall(): Boolean {
+@ApiStatus.Internal
+fun PsiElement.isBazelFileTopLevelCall(): Boolean {
   contract { returns(true) implies (this@isBazelFileTopLevelCall is StarlarkCallExpression) }
   if (this !is StarlarkCallExpression) return false
   // when StarlarkCallExpression is a top-level call, it is a child of StarlarkExpressionStatement, which is a child of the StarlarkFile
@@ -106,14 +106,8 @@ class StarlarkCallExpression(node: ASTNode) :
 
   fun getArgumentList(): StarlarkArgumentList? = findChildrenByClass(StarlarkArgumentList::class.java).firstOrNull()
 
-  override fun getOwnReferences(): Collection<PsiSymbolReference> {
-    val name = getCalledFunctionName() ?: return emptyList()
-    val function = BazelGlobalFunctions.getFunctionByName(name, project) ?: return emptyList()
-    return listOfNotNull(
-      BazelGlobalFunctionReference(this, function),
-      getCalledExpression()?.reference?.let { PsiSymbolService.getInstance().asSymbolReference(it) },
-    )
-  }
+  override fun getOwnReferences(): Collection<PsiSymbolReference> =
+    serviceOrNull<StarlarkReferenceSupport>()?.getOwnReferences(this) ?: emptyList()
 
   private fun nameArgumentStringLiteral(): StarlarkStringLiteralExpression? = getArgumentList()
     ?.getNameArgument()
@@ -123,7 +117,7 @@ class StarlarkCallExpression(node: ASTNode) :
 private class BazelTargetPresentation(private val target: StarlarkCallExpression) : ItemPresentation {
   override fun getPresentableText(): String? = target.getNameAttributeValue()
 
-  override fun getIcon(unused: Boolean): Icon = BazelPluginIcons.bazel
+  override fun getIcon(unused: Boolean): Icon = BazelLanguagesIcons.bazel
 
   override fun getLocationString(): String? {
     val virtualFile = target.containingFile?.virtualFile ?: return null

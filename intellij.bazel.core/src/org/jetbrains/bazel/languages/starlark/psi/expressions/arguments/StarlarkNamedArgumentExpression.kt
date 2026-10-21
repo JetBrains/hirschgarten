@@ -2,14 +2,14 @@ package org.jetbrains.bazel.languages.starlark.psi.expressions.arguments
 
 import com.intellij.lang.ASTNode
 import com.intellij.model.psi.PsiSymbolReference
+import com.intellij.openapi.components.serviceOrNull
 import com.intellij.psi.PsiReference
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.languages.starlark.elements.StarlarkTokenTypes
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkBaseElement
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkElementVisitor
+import org.jetbrains.bazel.languages.starlark.psi.StarlarkReferenceSupport
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkStringLiteralExpression
-import org.jetbrains.bazel.languages.starlark.references.BazelGlobalFunctionArgumentReference
-import org.jetbrains.bazel.languages.starlark.references.StarlarkNamedArgumentReference
 
 @Suppress("UnstableApiUsage")
 @ApiStatus.Internal
@@ -18,11 +18,7 @@ class StarlarkNamedArgumentExpression(node: ASTNode) :
   StarlarkArgumentElement {
   override fun acceptVisitor(visitor: StarlarkElementVisitor) = visitor.visitNamedArgumentExpression(this)
 
-  override fun getReference(): PsiReference? =
-    getNameNode()?.let {
-      val range = it.textRange.relativeTo(this)
-      StarlarkNamedArgumentReference(this, range)
-    }
+  override fun getReference(): PsiReference? = serviceOrNull<StarlarkReferenceSupport>()?.getReference(this)
 
   override fun getName(): String? = getNameNode()?.text
 
@@ -41,5 +37,5 @@ class StarlarkNamedArgumentExpression(node: ASTNode) :
   fun getArgumentStringValue(): String? = findChildByClass(StarlarkStringLiteralExpression::class.java)?.getStringContents()
 
   override fun getOwnReferences(): Collection<PsiSymbolReference> =
-    name?.let { listOf(BazelGlobalFunctionArgumentReference(this)) } ?: emptyList()
+    serviceOrNull<StarlarkReferenceSupport>()?.getOwnReferences(this) ?: emptyList()
 }

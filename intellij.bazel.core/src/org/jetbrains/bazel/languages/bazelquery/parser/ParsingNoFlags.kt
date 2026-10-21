@@ -4,7 +4,7 @@ import com.intellij.lang.ASTNode
 import com.intellij.lang.PsiBuilder
 import com.intellij.psi.tree.IElementType
 import com.intellij.psi.tree.TokenSet
-import org.jetbrains.bazel.config.BazelPluginBundle
+import org.jetbrains.bazel.languages.BazelLanguagesBundle
 import org.jetbrains.bazel.languages.bazelquery.elements.BazelQueryElementTypes
 import org.jetbrains.bazel.languages.bazelquery.elements.BazelQueryTokenSets
 import org.jetbrains.bazel.languages.bazelquery.elements.BazelQueryTokenTypes
@@ -85,7 +85,7 @@ internal open class ParsingNoFlags(private val root: IElementType, val builder: 
     parseExpr(BazelQueryTokenTypes.WHITE_SPACE)
 
     while (!eof()) {
-      utils.advanceError(BazelPluginBundle.message("bazelquery.error.unexpected.token"))
+      utils.advanceError(BazelLanguagesBundle.message("bazelquery.error.unexpected.token"))
     }
 
     prompt.done(root)
@@ -117,7 +117,7 @@ internal open class ParsingNoFlags(private val root: IElementType, val builder: 
         if (utils.atToken(queryQuotes)) return queryQuotes
         utils.expectToken(BazelQueryTokenTypes.EQUALS)
         if (utils.atToken(queryQuotes)) return queryQuotes
-        if (utils.atToken(BazelQueryTokenTypes.IN)) error(BazelPluginBundle.message("bazelquery.error.missing.variable.value"))
+        if (utils.atToken(BazelQueryTokenTypes.IN)) error(BazelLanguagesBundle.message("bazelquery.error.missing.variable.value"))
         queryQuotes = parseExpr(queryQuotes)
         utils.expectToken(BazelQueryTokenTypes.IN)
         if (utils.atToken(queryQuotes)) return queryQuotes
@@ -136,18 +136,18 @@ internal open class ParsingNoFlags(private val root: IElementType, val builder: 
         if (utils.atToken(queryQuotes)) return queryQuotes
         utils.expectToken(BazelQueryTokenTypes.LEFT_PAREN)
         if (!utils.matchAnyToken(getAvailableWordsSet(queryQuotes))) {
-          utils.advanceError(BazelPluginBundle.message("bazelquery.error.missing.target"))
+          utils.advanceError(BazelLanguagesBundle.message("bazelquery.error.missing.target"))
         }
         while (!utils.atToken(BazelQueryTokenTypes.RIGHT_PAREN) && !utils.atToken(queryQuotes) && !eof()) {
           if (!utils.matchAnyToken(getAvailableWordsSet(queryQuotes))) {
-            utils.advanceError(BazelPluginBundle.message("bazelquery.error.missing.target"))
+            utils.advanceError(BazelLanguagesBundle.message("bazelquery.error.missing.target"))
           }
         }
         if (!utils.matchToken(
             BazelQueryTokenTypes.RIGHT_PAREN,
           )
         ) {
-          error(BazelPluginBundle.message("bazelquery.error.missing.right.parenthesis"))
+          error(BazelLanguagesBundle.message("bazelquery.error.missing.right.parenthesis"))
         }
       }
 
@@ -158,13 +158,13 @@ internal open class ParsingNoFlags(private val root: IElementType, val builder: 
       utils.atToken(BazelQueryTokenTypes.UNION) ||
         utils.atToken(BazelQueryTokenTypes.EXCEPT) ||
         utils.atToken(BazelQueryTokenTypes.INTERSECT) ->
-        utils.advanceError(BazelPluginBundle.message("bazelquery.error.unexpected.token.infix.operator"))
+        utils.advanceError(BazelLanguagesBundle.message("bazelquery.error.unexpected.token.infix.operator"))
 
       utils.atToken(BazelQueryTokenTypes.INTEGER) ->
-        utils.advanceError(BazelPluginBundle.message("bazelquery.error.unexpected.token.integer"))
+        utils.advanceError(BazelLanguagesBundle.message("bazelquery.error.unexpected.token.integer"))
 
       utils.atToken(BazelQueryTokenTypes.RIGHT_PAREN) ->
-        utils.advanceError(BazelPluginBundle.message("bazelquery.error.unexpected.token.paren"))
+        utils.advanceError(BazelLanguagesBundle.message("bazelquery.error.unexpected.token.paren"))
     }
 
     when {
@@ -193,13 +193,13 @@ internal open class ParsingNoFlags(private val root: IElementType, val builder: 
       utils.atToken(BazelQueryTokenTypes.COMMA) ||
       eof()
     ) {
-      error(BazelPluginBundle.message("bazelquery.error.missing.expression"))
+      error(BazelLanguagesBundle.message("bazelquery.error.missing.expression"))
     } else if (utils.atToken(BazelQueryTokenTypes.INTEGER)) {
-      utils.advanceError(BazelPluginBundle.message("bazelquery.error.missing.expression.got.integer"))
+      utils.advanceError(BazelLanguagesBundle.message("bazelquery.error.missing.expression.got.integer"))
     } else if (utils.atToken(BazelQueryTokenTypes.SQ_PATTERN) ||
       utils.atToken(BazelQueryTokenTypes.DQ_PATTERN)
     ) {
-      utils.advanceError(BazelPluginBundle.message("bazelquery.error.incorrect.word"))
+      utils.advanceError(BazelLanguagesBundle.message("bazelquery.error.incorrect.word"))
     } else {
       queryQuotes = parseExpr(queryQuotes)
     }
@@ -212,9 +212,9 @@ internal open class ParsingNoFlags(private val root: IElementType, val builder: 
       utils.atToken(BazelQueryTokenTypes.COMMA) ||
       eof()
     ) {
-      error(BazelPluginBundle.message("bazelquery.error.missing.word"))
+      error(BazelLanguagesBundle.message("bazelquery.error.missing.word"))
     } else if (!utils.atAnyToken(getAvailableWordsSet(queryQuotes))) {
-      utils.advanceError(BazelPluginBundle.message("bazelquery.error.missing.word"))
+      utils.advanceError(BazelLanguagesBundle.message("bazelquery.error.missing.word"))
     } else {
       queryQuotes = parseWord(queryQuotes)
     }
@@ -228,11 +228,11 @@ internal open class ParsingNoFlags(private val root: IElementType, val builder: 
       utils.atToken(BazelQueryTokenTypes.COMMA) ||
       eof()
     ) {
-      error(BazelPluginBundle.message("bazelquery.error.missing.word"))
+      error(BazelLanguagesBundle.message("bazelquery.error.missing.word"))
     } else if (!utils.atAnyToken(getAvailablePatternsSet(queryQuotes)) &&
       !utils.atToken(BazelQueryTokenTypes.INTEGER)
     ) {
-      utils.advanceError(BazelPluginBundle.message("bazelquery.error.missing.word"))
+      utils.advanceError(BazelLanguagesBundle.message("bazelquery.error.missing.word"))
     } else {
       queryQuotes = parseWord(queryQuotes)
     }
@@ -246,9 +246,9 @@ internal open class ParsingNoFlags(private val root: IElementType, val builder: 
         utils.atToken(BazelQueryTokenTypes.COMMA) ||
         eof()
       ) {
-        error(BazelPluginBundle.message("bazelquery.error.missing.expression"))
+        error(BazelLanguagesBundle.message("bazelquery.error.missing.expression"))
       } else if (!utils.atToken(BazelQueryTokenTypes.INTEGER)) {
-        utils.advanceError(BazelPluginBundle.message("bazelquery.error.missing.integer"))
+        utils.advanceError(BazelLanguagesBundle.message("bazelquery.error.missing.integer"))
       } else {
         parseInteger()
       }
@@ -268,7 +268,7 @@ internal open class ParsingNoFlags(private val root: IElementType, val builder: 
         utils.atToken(BazelQueryTokenTypes.RIGHT_PAREN) ||
         eof()
       ) {
-        error(BazelPluginBundle.message("bazelquery.error.missing.expression"))
+        error(BazelLanguagesBundle.message("bazelquery.error.missing.expression"))
       } else if (utils.atToken(BazelQueryTokenTypes.INTEGER)) {
         parseInteger()
       } else {
@@ -304,7 +304,7 @@ internal open class ParsingNoFlags(private val root: IElementType, val builder: 
       BazelQueryTokenTypes.VISIBLE,
       -> {
         queryQuotes = parseExprArg(queryQuotes)
-        if (!utils.matchToken(BazelQueryTokenTypes.COMMA)) error(BazelPluginBundle.message("bazelquery.error.missing.comma"))
+        if (!utils.matchToken(BazelQueryTokenTypes.COMMA)) error(BazelLanguagesBundle.message("bazelquery.error.missing.comma"))
         queryQuotes = parseExprArg(queryQuotes)
       }
 
@@ -313,7 +313,7 @@ internal open class ParsingNoFlags(private val root: IElementType, val builder: 
       BazelQueryTokenTypes.FILTER,
       -> {
         queryQuotes = parsePatternArg(queryQuotes)
-        if (!utils.matchToken(BazelQueryTokenTypes.COMMA)) error(BazelPluginBundle.message("bazelquery.error.missing.comma"))
+        if (!utils.matchToken(BazelQueryTokenTypes.COMMA)) error(BazelLanguagesBundle.message("bazelquery.error.missing.comma"))
         queryQuotes = parseExprArg(queryQuotes)
       }
 
@@ -327,35 +327,35 @@ internal open class ParsingNoFlags(private val root: IElementType, val builder: 
 
       BazelQueryTokenTypes.RDEPS -> {
         queryQuotes = parseExprArg(queryQuotes)
-        if (!utils.matchToken(BazelQueryTokenTypes.COMMA)) error(BazelPluginBundle.message("bazelquery.error.missing.comma"))
+        if (!utils.matchToken(BazelQueryTokenTypes.COMMA)) error(BazelLanguagesBundle.message("bazelquery.error.missing.comma"))
         queryQuotes = parseExprArg(queryQuotes)
         parseOptionalIntArg(queryQuotes)
       }
 
       BazelQueryTokenTypes.ATTR -> {
         queryQuotes = parseWordArg(queryQuotes)
-        if (!utils.matchToken(BazelQueryTokenTypes.COMMA)) error(BazelPluginBundle.message("bazelquery.error.missing.comma"))
+        if (!utils.matchToken(BazelQueryTokenTypes.COMMA)) error(BazelLanguagesBundle.message("bazelquery.error.missing.comma"))
         queryQuotes = parsePatternArg(queryQuotes)
-        if (!utils.matchToken(BazelQueryTokenTypes.COMMA)) error(BazelPluginBundle.message("bazelquery.error.missing.comma"))
+        if (!utils.matchToken(BazelQueryTokenTypes.COMMA)) error(BazelLanguagesBundle.message("bazelquery.error.missing.comma"))
         queryQuotes = parseExprArg(queryQuotes)
       }
 
       BazelQueryTokenTypes.RBUILDFILES -> {
         queryQuotes = parseWordArg(queryQuotes)
         while (utils.atToken(BazelQueryTokenTypes.COMMA) && !eof()) {
-          if (!utils.matchToken(BazelQueryTokenTypes.COMMA)) utils.advanceError(BazelPluginBundle.message("bazelquery.error.missing.comma"))
+          if (!utils.matchToken(BazelQueryTokenTypes.COMMA)) utils.advanceError(BazelLanguagesBundle.message("bazelquery.error.missing.comma"))
           queryQuotes = parseWordArg(queryQuotes)
         }
       }
       else -> queryQuotes = parseUnknownArgs(queryQuotes)
     }
 
-    if (eof() || utils.atToken(queryQuotes)) error(BazelPluginBundle.message("bazelquery.error.missing.right.parenthesis"))
+    if (eof() || utils.atToken(queryQuotes)) error(BazelLanguagesBundle.message("bazelquery.error.missing.right.parenthesis"))
     while (!eof() && !utils.atToken(queryQuotes) && !utils.atToken(BazelQueryTokenTypes.RIGHT_PAREN)) {
-      utils.advanceError(BazelPluginBundle.message("bazelquery.error.unexpected.token"))
+      utils.advanceError(BazelLanguagesBundle.message("bazelquery.error.unexpected.token"))
     }
     if (!utils.matchToken(BazelQueryTokenTypes.RIGHT_PAREN)) {
-      error(BazelPluginBundle.message("bazelquery.error.missing.right.parenthesis"))
+      error(BazelLanguagesBundle.message("bazelquery.error.missing.right.parenthesis"))
     }
     command.done(BazelQueryElementTypes.COMMAND)
 
@@ -371,13 +371,13 @@ internal open class ParsingNoFlags(private val root: IElementType, val builder: 
     if (utils.atToken(BazelQueryTokenTypes.SQ_EMPTY) ||
       utils.atToken(BazelQueryTokenTypes.DQ_EMPTY)
     ) {
-      utils.advanceError(BazelPluginBundle.message("bazelquery.error.empty.quotation"))
+      utils.advanceError(BazelLanguagesBundle.message("bazelquery.error.empty.quotation"))
     } else if (utils.matchToken(BazelQueryTokenTypes.SQ_UNFINISHED) ||
       utils.matchToken(BazelQueryTokenTypes.DQ_UNFINISHED)
     ) {
-      error(BazelPluginBundle.message("bazelquery.error.missing.quote"))
+      error(BazelLanguagesBundle.message("bazelquery.error.missing.quote"))
     } else if (utils.atToken(BazelQueryTokenTypes.ERR_WORD)) {
-      utils.advanceError(BazelPluginBundle.message("bazelquery.error.incorrect.word"))
+      utils.advanceError(BazelLanguagesBundle.message("bazelquery.error.incorrect.word"))
     } else {
       if (queryQuotes == BazelQueryTokenTypes.WHITE_SPACE) {
         if (utils.atToken(BazelQueryTokenTypes.SQ_WORD)) {
@@ -400,7 +400,7 @@ internal open class ParsingNoFlags(private val root: IElementType, val builder: 
     if (utils.atToken(BazelQueryTokenTypes.INTEGER)) {
       advanceLexer()
     } else {
-      utils.advanceError(BazelPluginBundle.message("bazelquery.error.missing.integer"))
+      utils.advanceError(BazelLanguagesBundle.message("bazelquery.error.missing.integer"))
     }
 
     integer.done(BazelQueryElementTypes.INTEGER)

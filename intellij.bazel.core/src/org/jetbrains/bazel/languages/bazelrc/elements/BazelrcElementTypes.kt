@@ -2,11 +2,13 @@ package org.jetbrains.bazel.languages.bazelrc.elements
 
 import com.intellij.lang.ASTNode
 import com.intellij.psi.PsiElement
+import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.languages.bazelrc.psi.BazelrcFlag
 import org.jetbrains.bazel.languages.bazelrc.psi.BazelrcImport
 import org.jetbrains.bazel.languages.bazelrc.psi.BazelrcLine
 
-internal object BazelrcElementTypes {
+@ApiStatus.Internal
+object BazelrcElementTypes {
   val LINE = BazelrcElementType("LINE")
   val FLAG = BazelrcElementType("FLAG")
   val IMPORT = BazelrcElementType("IMPORT")

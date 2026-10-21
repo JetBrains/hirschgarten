@@ -5,7 +5,7 @@ import com.intellij.openapi.fileTypes.SyntaxHighlighter
 import com.intellij.openapi.options.colors.AttributesDescriptor
 import com.intellij.openapi.options.colors.ColorDescriptor
 import com.intellij.openapi.options.colors.ColorSettingsPage
-import org.jetbrains.bazel.assets.BazelPluginIcons
+import org.jetbrains.bazel.languages.BazelLanguagesIcons
 import org.jetbrains.bazel.languages.starlark.StarlarkBundle
 import org.jetbrains.bazel.languages.starlark.StarlarkLanguage
 import javax.swing.Icon
@@ -35,7 +35,7 @@ internal class StarlarkColorSettingsPage : ColorSettingsPage {
 
   override fun getDisplayName(): String = StarlarkLanguage.id
 
-  override fun getIcon(): Icon = BazelPluginIcons.bazel
+  override fun getIcon(): Icon = BazelLanguagesIcons.bazel
 
   override fun getHighlighter(): SyntaxHighlighter = StarlarkSyntaxHighlighter
 

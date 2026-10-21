@@ -3,8 +3,10 @@ package org.jetbrains.bazel.languages.bazelquery.psi
 import com.intellij.extapi.psi.ASTWrapperPsiElement
 import com.intellij.lang.ASTNode
 import com.intellij.psi.PsiElementVisitor
+import org.jetbrains.annotations.ApiStatus
 
-internal abstract class BazelQueryBaseElement(node: ASTNode) :
+@ApiStatus.Internal
+abstract class BazelQueryBaseElement(node: ASTNode) :
   ASTWrapperPsiElement(node),
   BazelQueryElement {
   override fun accept(visitor: PsiElementVisitor) {

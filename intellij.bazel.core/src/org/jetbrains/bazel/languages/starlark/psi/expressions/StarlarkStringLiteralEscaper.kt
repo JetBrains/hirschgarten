@@ -2,6 +2,7 @@ package org.jetbrains.bazel.languages.starlark.psi.expressions
 
 import com.intellij.openapi.util.TextRange
 import com.intellij.psi.LiteralTextEscaper
+import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.languages.starlark.utils.StarlarkQuote
 
 /**
@@ -15,7 +16,8 @@ import org.jetbrains.bazel.languages.starlark.utils.StarlarkQuote
  * The companion also provides the inverse operation, [escape], which is used when the contents of a literal are
  * replaced.
  */
-internal class StarlarkStringLiteralEscaper(host: StarlarkStringLiteralExpression) :
+@ApiStatus.Internal
+class StarlarkStringLiteralEscaper(host: StarlarkStringLiteralExpression) :
   LiteralTextEscaper<StarlarkStringLiteralExpression>(host) {
   /** For every offset in the decoded text, the corresponding offset in the (sub-)text of the host. */
   private var outSourceOffsets: IntArray = IntArray(0)

@@ -4,12 +4,14 @@ import com.intellij.lang.ASTNode
 import com.intellij.psi.PsiWhiteSpace
 import com.intellij.psi.PsiElement
 import com.intellij.psi.tree.TokenSet
+import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.languages.starlark.elements.StarlarkTokenSets
 import org.jetbrains.bazel.languages.starlark.elements.StarlarkTokenType
 import org.jetbrains.bazel.languages.starlark.elements.StarlarkTokenTypes
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkBaseElement
 
-internal object StarlarkUtils {
+@ApiStatus.Internal
+object StarlarkUtils {
   val STARLARK_ASSIGNMENT_OPERATORS = TokenSet.create(
     StarlarkTokenTypes.EQ,
     *StarlarkTokenSets.COMPOUND_ASSIGN_OPERATIONS.types,

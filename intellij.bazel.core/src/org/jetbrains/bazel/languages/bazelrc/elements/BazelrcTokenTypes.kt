@@ -1,6 +1,9 @@
 package org.jetbrains.bazel.languages.bazelrc.elements
 
-internal object BazelrcTokenTypes {
+import org.jetbrains.annotations.ApiStatus
+
+@ApiStatus.Internal
+object BazelrcTokenTypes {
   @JvmField
   val IMPORT = BazelrcTokenType("IMPORT")
 

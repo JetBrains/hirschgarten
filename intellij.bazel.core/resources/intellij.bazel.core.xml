@@ -218,6 +218,19 @@
       serviceInterface="org.jetbrains.bazel.sync.environment.BazelApplicationContextService"
     />
 
+    <applicationService
+      serviceImplementation="org.jetbrains.bazel.languages.starlark.references.StarlarkReferenceSupportImpl"
+      serviceInterface="org.jetbrains.bazel.languages.starlark.psi.StarlarkReferenceSupport"
+    />
+    <applicationService
+      serviceImplementation="org.jetbrains.bazel.languages.bazelrc.references.BazelrcReferenceSupportImpl"
+      serviceInterface="org.jetbrains.bazel.languages.bazelrc.psi.BazelrcReferenceSupport"
+    />
+    <applicationService
+      serviceImplementation="org.jetbrains.bazel.languages.bazelquery.references.BazelQueryReferenceSupportImpl"
+      serviceInterface="org.jetbrains.bazel.languages.bazelquery.psi.BazelQueryReferenceSupport"
+    />
+
     <projectService
       serviceImplementation="org.jetbrains.bazel.project.DefaultProjectViewService"
       serviceInterface="org.jetbrains.bazel.languages.projectview.ProjectViewService"

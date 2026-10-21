@@ -1,8 +1,10 @@
 package org.jetbrains.bazel.languages.starlark.elements
 
 import com.intellij.psi.tree.TokenSet
+import org.jetbrains.annotations.ApiStatus
 
-internal object StarlarkTokenSets {
+@ApiStatus.Internal
+object StarlarkTokenSets {
   val WHITESPACE =
     TokenSet.create(
       StarlarkTokenTypes.SPACE,

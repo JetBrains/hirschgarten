@@ -3,7 +3,7 @@ package org.jetbrains.bazel.languages.bazelquery.parser
 import com.intellij.lang.ASTNode
 import com.intellij.lang.PsiBuilder
 import com.intellij.psi.tree.IElementType
-import org.jetbrains.bazel.config.BazelPluginBundle
+import org.jetbrains.bazel.languages.BazelLanguagesBundle
 import org.jetbrains.bazel.languages.bazelquery.elements.BazelQueryElementTypes
 import org.jetbrains.bazel.languages.bazelquery.elements.BazelQueryTokenSets
 import org.jetbrains.bazel.languages.bazelquery.elements.BazelQueryTokenTypes
@@ -16,7 +16,7 @@ internal open class ParsingFlags(private val root: IElementType, val builder: Ps
     while (!eof()) {
       when {
         utils.atAnyToken(BazelQueryTokenSets.FLAGS) -> parseFlag()
-        else -> utils.advanceError(BazelPluginBundle.message("bazelquery.error.unexpected.token"))
+        else -> utils.advanceError(BazelLanguagesBundle.message("bazelquery.error.unexpected.token"))
       }
     }
     flagsList.done(root)
@@ -27,18 +27,18 @@ internal open class ParsingFlags(private val root: IElementType, val builder: Ps
     val flag = mark()
 
     if (utils.atToken(BazelQueryTokenTypes.UNFINISHED_FLAG)) {
-      utils.advanceError(BazelPluginBundle.message("bazelquery.error.unfinished.flag"))
+      utils.advanceError(BazelLanguagesBundle.message("bazelquery.error.unfinished.flag"))
       utils.expectToken(BazelQueryTokenTypes.WHITE_SPACE)
     } else if (utils.atToken(BazelQueryTokenTypes.FLAG)) {
       advanceLexer()
 
       if (!utils.matchToken(BazelQueryTokenTypes.EQUALS)) {
-        utils.advanceError(BazelPluginBundle.message("bazelquery.error.missing.flag"))
+        utils.advanceError(BazelLanguagesBundle.message("bazelquery.error.missing.flag"))
       } else {
         if (utils.matchToken(BazelQueryTokenTypes.UNFINISHED_VAL)) {
-          error(BazelPluginBundle.message("bazelquery.error.missing.quote"))
+          error(BazelLanguagesBundle.message("bazelquery.error.missing.quote"))
         } else if (!utils.matchAnyToken(BazelQueryTokenSets.FLAG_VALS)) {
-          error(BazelPluginBundle.message("bazelquery.error.missing.flag"))
+          error(BazelLanguagesBundle.message("bazelquery.error.missing.flag"))
         } else if (!eof()) {
           utils.expectToken(BazelQueryTokenTypes.WHITE_SPACE)
         }
@@ -46,7 +46,7 @@ internal open class ParsingFlags(private val root: IElementType, val builder: Ps
     } else {
       advanceLexer()
       while (utils.matchToken(BazelQueryTokenTypes.MISSING_SPACE)) {
-        utils.advanceError(BazelPluginBundle.message("bazelquery.error.missing.space"))
+        utils.advanceError(BazelLanguagesBundle.message("bazelquery.error.missing.space"))
       }
       utils.matchToken(BazelQueryTokenTypes.WHITE_SPACE)
     }
