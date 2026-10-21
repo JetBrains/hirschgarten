@@ -24,7 +24,7 @@ open class StarlarkFile(viewProvider: FileViewProvider) :
 
   fun isBuildFile(): Boolean = this.getBazelFileType() == BazelFileType.BUILD
 
-  internal fun getBazelFileType(): BazelFileType = BazelFileType.ofFileName(name)
+  fun getBazelFileType(): BazelFileType = BazelFileType.ofFileName(name)
 
   fun getTargetRules(): List<StarlarkCallExpression> =
     findChildrenByClass(StarlarkExpressionStatement::class.java)
@@ -36,10 +36,10 @@ open class StarlarkFile(viewProvider: FileViewProvider) :
       it.getNameAttributeValue() == targetName
     }
 
-  internal fun searchInLoads(processor: Processor<StarlarkElement>): Boolean =
+  fun searchInLoads(processor: Processor<StarlarkElement>): Boolean =
     findChildrenByClass(StarlarkLoadStatement::class.java).flatMap { it.getLoadedSymbolsPsi() }.all(processor::process)
 
-  internal fun searchInFunctionCalls(processor: Processor<StarlarkElement>): Boolean =
+  fun searchInFunctionCalls(processor: Processor<StarlarkElement>): Boolean =
     findChildrenByClass(StarlarkExpressionStatement::class.java)
       .mapNotNull { it.callExpressionOrNull() }
       .all(processor::process)

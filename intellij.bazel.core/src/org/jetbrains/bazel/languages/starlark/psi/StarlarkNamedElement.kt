@@ -6,7 +6,7 @@ import com.intellij.psi.PsiNameIdentifierOwner
 import com.intellij.psi.util.startOffset
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.languages.starlark.elements.StarlarkTokenTypes
-import org.jetbrains.bazel.languages.starlark.rename.RenameUtils
+import org.jetbrains.bazel.languages.starlark.rename.StarlarkElementGenerator
 
 @ApiStatus.Internal
 abstract class StarlarkNamedElement(node: ASTNode) :
@@ -16,7 +16,7 @@ abstract class StarlarkNamedElement(node: ASTNode) :
 
   override fun setName(name: String): PsiElement {
     val oldNode = getNameIdentifier()?.node ?: return this
-    val newNode = RenameUtils.createNewName(project, name)
+    val newNode = StarlarkElementGenerator(project).createNameIdentifier(name)
     node.replaceChild(oldNode, newNode)
     return this
   }

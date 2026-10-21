@@ -1,6 +1,9 @@
 package org.jetbrains.bazel.languages.bazelquery.elements
 
-internal object BazelQueryTokenTypes {
+import org.jetbrains.annotations.ApiStatus
+
+@ApiStatus.Internal
+object BazelQueryTokenTypes {
   @JvmField
   val COMMENT = BazelQueryTokenType("COMMENT")
 

@@ -1,5 +1,7 @@
 package org.jetbrains.bazel.languages.starlark.lexer
 
 import com.intellij.lexer.FlexAdapter
+import org.jetbrains.annotations.ApiStatus
 
-internal class StarlarkHighlightingLexer : FlexAdapter(_StarlarkLexer(null))
+@ApiStatus.Internal
+class StarlarkHighlightingLexer : FlexAdapter(_StarlarkLexer(null))

@@ -1,6 +1,9 @@
 package org.jetbrains.bazel.languages.starlark.bazel
 
-internal enum class BazelFileType {
+import org.jetbrains.annotations.ApiStatus
+
+@ApiStatus.Internal
+enum class BazelFileType {
   BUILD,
   EXTENSION,
   MODULE,

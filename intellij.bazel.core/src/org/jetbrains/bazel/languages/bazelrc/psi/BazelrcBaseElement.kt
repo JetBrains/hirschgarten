@@ -3,8 +3,10 @@ package org.jetbrains.bazel.languages.bazelrc.psi
 import com.intellij.extapi.psi.ASTWrapperPsiElement
 import com.intellij.lang.ASTNode
 import com.intellij.psi.PsiElementVisitor
+import org.jetbrains.annotations.ApiStatus
 
-internal abstract class BazelrcBaseElement(node: ASTNode) :
+@ApiStatus.Internal
+abstract class BazelrcBaseElement(node: ASTNode) :
   ASTWrapperPsiElement(node),
   BazelrcElement {
   override fun accept(visitor: PsiElementVisitor) {

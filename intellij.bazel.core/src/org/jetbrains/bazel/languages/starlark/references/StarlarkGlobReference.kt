@@ -11,6 +11,7 @@ import com.intellij.psi.PsiPolyVariantReference
 import com.intellij.psi.PsiPolyVariantReferenceBase
 import com.intellij.psi.ResolveResult
 import org.jetbrains.annotations.ApiStatus
+import org.jetbrains.bazel.languages.starlark.globbing.getGlob
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkGlobExpression
 
 @ApiStatus.Internal

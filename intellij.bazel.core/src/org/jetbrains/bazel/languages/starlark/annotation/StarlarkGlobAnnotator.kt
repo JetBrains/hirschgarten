@@ -6,6 +6,7 @@ import com.intellij.lang.annotation.HighlightSeverity
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.DumbAware
 import com.intellij.psi.PsiElement
+import com.intellij.psi.PsiPolyVariantReference
 import com.intellij.psi.util.parentOfType
 import org.jetbrains.bazel.languages.bazelversion.psi.toSemVer
 import org.jetbrains.bazel.languages.bazelversion.service.BazelVersionCheckerService
@@ -68,7 +69,7 @@ internal class StarlarkGlobAnnotator : Annotator, DumbAware {
   private fun isGlobValid(expr: StarlarkGlobExpression): Boolean {
     if (isAllowedEmpty(expr)) return true
 
-    val matchedFiles = expr.reference.multiResolve(false)
+    val matchedFiles = (expr.reference as? PsiPolyVariantReference)?.multiResolve(false) ?: return true
     return matchedFiles.isNotEmpty()
   }
 

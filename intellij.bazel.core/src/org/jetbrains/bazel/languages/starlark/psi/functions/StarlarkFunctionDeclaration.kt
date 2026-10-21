@@ -31,7 +31,7 @@ class StarlarkFunctionDeclaration(node: ASTNode) :
 
   override fun getParameters(): List<StarlarkParameter> = findChildByClass(StarlarkParameterList::class.java)?.getParameters().orEmpty()
 
-  internal fun getStatementList(): StarlarkStatementList = findChildByClass(StarlarkStatementList::class.java)!!
+  fun getStatementList(): StarlarkStatementList = findChildByClass(StarlarkStatementList::class.java)!!
 
   private fun isFilePrivate() = name?.startsWith("_") == true
 }

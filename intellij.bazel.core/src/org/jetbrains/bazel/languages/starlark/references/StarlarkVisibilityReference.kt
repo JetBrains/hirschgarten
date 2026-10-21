@@ -6,8 +6,8 @@ import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiReferenceBase
 import com.intellij.util.PlatformIcons
 import org.jetbrains.bazel.config.isBazelProject
+import org.jetbrains.bazel.languages.starlark.completion.getCompletionLookupElement
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkStringLiteralExpression
-import org.jetbrains.bazel.languages.starlark.psi.expressions.getCompletionLookupElement
 import org.jetbrains.bazel.target.targetStorage
 
 internal class StarlarkVisibilityReference(element: StarlarkStringLiteralExpression) :

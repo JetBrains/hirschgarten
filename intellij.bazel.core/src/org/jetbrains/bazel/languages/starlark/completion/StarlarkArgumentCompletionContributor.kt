@@ -63,7 +63,8 @@ private object StarlarkArgumentCompletionProvider : CompletionProvider<Completio
       addCompletionForGlobalFunction(result, globalFunction, argumentList)
     } else {
       val argument = PsiTreeUtil.getParentOfType(parameters.position, StarlarkArgumentExpression::class.java) ?: return
-      argument.reference.variants
+      val reference = argument.reference ?: return
+      reference.variants
         .filterIsInstance<StarlarkNamedLookupElement>()
         .forEach { result.addElement(it) }
     }

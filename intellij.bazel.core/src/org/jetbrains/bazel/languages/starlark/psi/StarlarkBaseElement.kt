@@ -26,7 +26,8 @@ abstract class StarlarkBaseElement(node: ASTNode) :
 
   override fun getUseScope(): SearchScope = LocalSearchScope(containingFile)
 
-  internal companion object {
+  @ApiStatus.Internal
+  companion object {
     fun TextRange.relativeTo(element: PsiElement): TextRange = shiftLeft(element.startOffset)
   }
 }

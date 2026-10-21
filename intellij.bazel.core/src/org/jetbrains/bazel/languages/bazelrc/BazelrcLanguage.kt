@@ -2,18 +2,21 @@ package org.jetbrains.bazel.languages.bazelrc
 
 import com.intellij.lang.Language
 import com.intellij.openapi.fileTypes.LanguageFileType
-import org.jetbrains.bazel.assets.BazelPluginIcons
-import org.jetbrains.bazel.config.BazelPluginBundle
+import org.jetbrains.annotations.ApiStatus
+import org.jetbrains.bazel.languages.BazelLanguagesBundle
+import org.jetbrains.bazel.languages.BazelLanguagesIcons
 import javax.swing.Icon
 
-internal object BazelrcLanguage : Language("Bazelrc")
+@ApiStatus.Internal
+object BazelrcLanguage : Language("Bazelrc")
 
-internal object BazelrcFileType : LanguageFileType(BazelrcLanguage) {
+@ApiStatus.Internal
+object BazelrcFileType : LanguageFileType(BazelrcLanguage) {
   override fun getName(): String = "Bazelrc"
 
-  override fun getDescription(): String = BazelPluginBundle.message("bazelrc.language.description")
+  override fun getDescription(): String = BazelLanguagesBundle.message("bazelrc.language.description")
 
   override fun getDefaultExtension(): String = "bazelrc"
 
-  override fun getIcon(): Icon = BazelPluginIcons.bazel
+  override fun getIcon(): Icon = BazelLanguagesIcons.bazel
 }

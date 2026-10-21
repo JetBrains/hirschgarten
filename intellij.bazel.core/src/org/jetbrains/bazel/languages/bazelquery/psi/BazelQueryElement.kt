@@ -1,5 +1,7 @@
 package org.jetbrains.bazel.languages.bazelquery.psi
 
 import com.intellij.psi.NavigatablePsiElement
+import org.jetbrains.annotations.ApiStatus
 
-internal interface BazelQueryElement : NavigatablePsiElement
+@ApiStatus.Internal
+interface BazelQueryElement : NavigatablePsiElement

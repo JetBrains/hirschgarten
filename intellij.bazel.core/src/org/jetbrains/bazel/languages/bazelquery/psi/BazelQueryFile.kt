@@ -3,15 +3,18 @@ package org.jetbrains.bazel.languages.bazelquery.psi
 import com.intellij.extapi.psi.PsiFileBase
 import com.intellij.openapi.fileTypes.FileType
 import com.intellij.psi.FileViewProvider
+import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.languages.bazelquery.BazelQueryFileType
 import org.jetbrains.bazel.languages.bazelquery.BazelQueryFlagsFileType
 import org.jetbrains.bazel.languages.bazelquery.BazelQueryFlagsLanguage
 import org.jetbrains.bazel.languages.bazelquery.BazelQueryLanguage
 
-internal class BazelQueryFile(viewProvider: FileViewProvider) : PsiFileBase(viewProvider, BazelQueryLanguage) {
+@ApiStatus.Internal
+class BazelQueryFile(viewProvider: FileViewProvider) : PsiFileBase(viewProvider, BazelQueryLanguage) {
   override fun getFileType(): FileType = BazelQueryFileType
 }
 
-internal class BazelQueryFlagsFile(viewProvider: FileViewProvider) : PsiFileBase(viewProvider, BazelQueryFlagsLanguage) {
+@ApiStatus.Internal
+class BazelQueryFlagsFile(viewProvider: FileViewProvider) : PsiFileBase(viewProvider, BazelQueryFlagsLanguage) {
   override fun getFileType(): FileType = BazelQueryFlagsFileType
 }

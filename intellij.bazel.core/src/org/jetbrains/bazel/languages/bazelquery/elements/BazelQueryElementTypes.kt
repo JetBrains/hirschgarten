@@ -2,13 +2,15 @@ package org.jetbrains.bazel.languages.bazelquery.elements
 
 import com.intellij.lang.ASTNode
 import com.intellij.psi.PsiElement
+import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.languages.bazelquery.psi.BazelQueryCommand
 import org.jetbrains.bazel.languages.bazelquery.psi.BazelQueryFlag
 import org.jetbrains.bazel.languages.bazelquery.psi.BazelQueryFlagVal
 import org.jetbrains.bazel.languages.bazelquery.psi.BazelQueryInteger
 import org.jetbrains.bazel.languages.bazelquery.psi.BazelQueryWord
 
-internal object BazelQueryElementTypes {
+@ApiStatus.Internal
+object BazelQueryElementTypes {
   val COMMAND = BazelQueryElementType("COMMAND")
   val WORD = BazelQueryElementType("WORD")
   val INTEGER = BazelQueryElementType("INTEGER")

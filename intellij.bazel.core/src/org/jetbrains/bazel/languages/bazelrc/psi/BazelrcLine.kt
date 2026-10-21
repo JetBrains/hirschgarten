@@ -3,9 +3,11 @@ package org.jetbrains.bazel.languages.bazelrc.psi
 import com.intellij.lang.ASTNode
 import com.intellij.psi.PsiElement
 import com.intellij.psi.tree.TokenSet
+import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.languages.bazelrc.elements.BazelrcTokenTypes
 
-internal class BazelrcLine(node: ASTNode) : BazelrcBaseElement(node) {
+@ApiStatus.Internal
+class BazelrcLine(node: ASTNode) : BazelrcBaseElement(node) {
   override fun acceptVisitor(visitor: BazelrcElementVisitor) = visitor.visitLine(this)
 
   val config: String?

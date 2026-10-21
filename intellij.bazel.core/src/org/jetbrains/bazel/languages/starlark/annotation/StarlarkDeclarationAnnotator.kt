@@ -44,7 +44,7 @@ internal class StarlarkDeclarationAnnotator : Annotator, DumbAware {
     if (parent !is StarlarkTargetExpression) return parent.reference?.resolve() == null && parent.isUnreferenced()
     // If a variable is not inside assignment, we consider it a fresh declaration
     if (!parent.isInsideAssignStatement()) return parent.isUnreferenced()
-    val originalAssignment = parent.reference.resolve() ?: return parent.isUnreferenced()
+    val originalAssignment = parent.reference?.resolve() ?: return parent.isUnreferenced()
     // A reassignment is unused only when the canonical (first) binding itself is
     // unreferenced — i.e. nothing besides other reassignments refers to it.
     return originalAssignment.isUnreferenced()
