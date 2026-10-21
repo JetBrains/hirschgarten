@@ -58,6 +58,7 @@ jvm_library(
         "@community//platform/platform-util-io:ide-util-io",
         "@community//platform/ide-core",
         "@community//platform/smRunner",
+        "//goland/intellij-go/go-resources",
         "//goland/intellij-go/go-frontback",
         "//goland/intellij-go/impl",
         "@community//platform/script-debugger/debugger-ui:scriptDebugger-ui",
