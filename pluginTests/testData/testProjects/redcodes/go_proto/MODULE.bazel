@@ -1,12 +1,5 @@
 bazel_dep(name = "rules_go", version = "0.61.1")
-bazel_dep(name = "protobuf", version = "32.0")
-
-# Keep this fixture on the same protobuf line as plugins/bazel/integrationTests/testProjects/protobufTest.
-# rules_jvm_external otherwise upgrades protobuf to 33.x, whose upb tools fail with Zig on Linux CI.
-single_version_override(
-    module_name = "protobuf",
-    version = "32.0",
-)
+bazel_dep(name = "protobuf", version = "33.4")
 
 go_sdk = use_extension("@rules_go//go:extensions.bzl", "go_sdk")
 go_sdk.download(version = "1.26.4")
@@ -14,6 +7,8 @@ use_repo(go_sdk, "go_toolchains")
 register_toolchains("@go_toolchains//:all")
 
 ### Hermetic CC Toolchain
+
+# rules_go needs a real C toolchain for cgo. The .bazelrc selects the prebuilt protoc, so the build compiles no protobuf C++.
 
 bazel_dep(name = "hermetic_cc_toolchain", version = "4.0.1")
 bazel_dep(name = "toolchains_llvm", version = "1.4.0")
