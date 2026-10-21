@@ -22,7 +22,6 @@ test_suite(
         "//plugins/bazel/integrationTests/e2e/bazel-project-model-modifier:windows",
         "//plugins/bazel/integrationTests/e2e/bazel-project-open:windows",
         "//plugins/bazel/integrationTests/e2e/bazel-project-tree-appearance:windows",
-        "//plugins/bazel/integrationTests/e2e/broken-deps:windows",
         "//plugins/bazel/integrationTests/e2e/compiled-source-inside-jar-exclude:windows",
         "//plugins/bazel/integrationTests/e2e/coroutine-debug:windows",
         "//plugins/bazel/integrationTests/e2e/disabled-kotlin-plugin:windows",
