@@ -20,7 +20,6 @@
     <orderEntry type="module" module-name="intellij.libraries.gson" />
     <orderEntry type="module" module-name="intellij.libraries.commons.cli" />
     <orderEntry type="module" module-name="intellij.libraries.commons.io" />
-    <orderEntry type="module" module-name="intellij.libraries.kotlinx.coroutines.core" scope="PROVIDED" />
     <orderEntry type="module" module-name="intellij.libraries.opentelemetry.extension.kotlin" scope="PROVIDED" />
     <orderEntry type="module" module-name="intellij.libraries.hash4j" />
     <orderEntry type="module" module-name="intellij.libraries.jetbrains.annotations" />

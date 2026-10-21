@@ -1,0 +1,18 @@
+load(":include_dir.bzl", "include_dir")
+
+package(default_visibility = ["//visibility:public"])
+
+genrule(
+    name = "config_files",
+    outs = [
+        "answer.h",
+        "version.h",
+    ],
+    cmd = "touch $(OUTS)",
+)
+
+include_dir(
+    name = "config_headers",
+    hdrs = [":config_files"],
+    include_prefix = "config",
+)

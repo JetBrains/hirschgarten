@@ -2,10 +2,12 @@ package org.jetbrains.bazel.sync.workspace.persistence.mvstore
 
 import org.h2.mvstore.WriteBuffer
 import org.h2.mvstore.type.BasicDataType
+import org.jetbrains.annotations.ApiStatus
 import java.nio.ByteBuffer
 
 // used only for unopened MVMap pruning
-internal object UnknownDataType : BasicDataType<ByteArray>() {
+@ApiStatus.Internal
+object UnknownDataType : BasicDataType<ByteArray>() {
   override fun isMemoryEstimationAllowed(): Boolean = false
 
   override fun getMemory(obj: ByteArray): Int = obj.size

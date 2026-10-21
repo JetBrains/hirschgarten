@@ -34,8 +34,10 @@ import com.intellij.ide.starter.driver.execute
 import com.intellij.ide.starter.ide.IDETestContext
 import com.intellij.ide.starter.models.TestCase
 import com.intellij.ide.starter.path.GlobalPaths
+import com.intellij.ide.starter.process.ProcessInfo
 import com.intellij.ide.starter.process.findAndKillProcesses
 import com.intellij.ide.starter.process.getProcessList
+import com.intellij.ide.starter.process.ProcessKiller.killProcesses
 import com.intellij.ide.starter.project.GitProjectInfo
 import com.intellij.ide.starter.project.LocalProjectInfo
 import com.intellij.ide.starter.project.ProjectInfoSpec
@@ -52,6 +54,7 @@ import com.intellij.tools.ide.performanceTesting.commands.takeScreenshot
 import com.intellij.tools.ide.performanceTesting.commands.waitForSmartMode
 import org.jetbrains.bazel.config.BazelBackendBundle
 import org.jetbrains.bazel.data.BazelProjectConfigurer
+import org.jetbrains.bazel.data.IdeStarterBazelProject
 import org.jetbrains.bazel.performanceImpl.FileKindCheck
 import org.jetbrains.bazel.test.compat.IntegrationTestCompat
 import org.jetbrains.bazel.testing.IS_IN_IDE_STARTER_TEST
@@ -59,22 +62,39 @@ import org.jetbrains.bazel.tests.combined.VirtualFileManager
 import org.jetbrains.intellij.build.dependencies.JdkDownloader.OS
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.TestInstance
+import org.junit.jupiter.api.extension.AfterAllCallback
+import org.junit.jupiter.api.extension.ExtendWith
+import org.junit.jupiter.api.extension.ExtensionContext
 import org.kodein.di.DI
 import org.kodein.di.bindSingleton
 import java.io.File
 import java.net.URI
 import java.nio.file.Path
 import java.util.function.Predicate
+import kotlin.coroutines.cancellation.CancellationException
 import kotlin.io.path.absolutePathString
+import kotlin.io.path.createDirectories
+import kotlin.io.path.createFile
+import kotlin.io.path.exists
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
 
+@ExtendWith(IdeStarterBaseProjectTest.StopOwnedProcessesAfterClass::class)
 abstract class IdeStarterBaseProjectTest {
   protected open val timeout: Duration
     get() = (System.getProperty("bazel.ide.starter.test.timeout.seconds")?.toIntOrNull() ?: 1200).seconds
 
   protected var criticalProblemOccurred = false
+
+  private val contexts = mutableListOf<IDETestContext>()
+
+  /** The output bases of [contexts]. A context of a shared checkout writes the same `user.bazelrc` again, so read each one only once. */
+  private val ownedOutputBases = mutableSetOf<String>()
+
+  internal val ideStaysOpenBetweenTests: Boolean
+    get() = this::class.java.getAnnotation(TestInstance::class.java)?.value == TestInstance.Lifecycle.PER_CLASS
 
   protected fun isDriverConnected(bgRun: BackgroundRun): Boolean =
     bgRun.driver.isConnected
@@ -94,7 +114,10 @@ abstract class IdeStarterBaseProjectTest {
     pluginZipOverride: Path? = null,
   ): IDETestContext {
     IntegrationTestCompat.onPreCreateContext()
+    hideOuterBazeliskrcFromProjects()
     val ctx = Starter.newContext(projectName, case)
+    ownedOutputBases.add(HermeticityGuard.assertContextIsolated(ctx, ownsProjectDir = case.projectInfo is IdeStarterBazelProject))
+    contexts.add(ctx)
     if (pluginZipOverride != null) {
       ctx.pluginConfigurator.installPluginFromPath(pluginZipOverride)
     } else {
@@ -135,10 +158,33 @@ abstract class IdeStarterBaseProjectTest {
       }
   }
 
+  /**
+   * A PER_CLASS test keeps one IDE open for all its methods.
+   * It stops its processes in [StopOwnedProcessesAfterClass], after the IDE closes.
+   */
   @AfterEach
-  fun tearDown(): Unit = timeoutRunBlocking(timeout = 1.minutes) {
-    killBazelProcesses()
-    killCefProcesses()
+  fun tearDown() {
+    if (!ideStaysOpenBetweenTests) stopOwnedProcesses()
+  }
+
+  /** Stops the Bazel servers and the JCEF helpers of the contexts of this test, and deletes their Bazel output roots. */
+  internal fun stopOwnedProcesses() {
+    val outputBases = ownedOutputBases.toSet()
+    timeoutRunBlocking(timeout = 1.minutes) {
+      val servers = findBazelServers(outputBases)
+      HermeticityGuard.assertTeardownOwnsProcesses(outputBases, servers)
+      stopProcesses("Bazel server", servers)
+      stopProcesses("JCEF helper", findCefProcesses(contexts.map { it.paths.testHome }))
+    }
+    // A big output base can take longer than the timeout to delete, so this step has no timeout and does not fail the test.
+    BazelProjectConfigurer.cleanupNestedBazelRoots(outputBases)
+  }
+
+  internal class StopOwnedProcessesAfterClass : AfterAllCallback {
+    override fun afterAll(context: ExtensionContext) {
+      val test = context.testInstance.orElse(null) as? IdeStarterBaseProjectTest ?: return
+      if (test.ideStaysOpenBetweenTests) test.stopOwnedProcesses()
+    }
   }
 
   private fun IDETestContext.propagateSystemProperty(key: String): IDETestContext {
@@ -164,6 +210,17 @@ abstract class IdeStarterBaseProjectTest {
       withEnv("HOME", System.getProperty("user.home"))
     }
     return this
+  }
+
+  /**
+   * Bazelisk 1.30+ uses the nearest `.bazeliskrc` in the project directory or in any parent directory.
+   * Test projects are unpacked inside the outer execroot, which links the monorepo `.bazeliskrc`,
+   * and its `BAZELISK_BASE_URL` points to the JetBrains Bazel fork.
+   * An empty `.bazeliskrc` above the projects stops the lookup there; a project with its own `.bazeliskrc` still uses it.
+   */
+  private fun hideOuterBazeliskrcFromProjects() {
+    val bazeliskrc = GlobalPaths.instance.cacheDirForProjects.createDirectories().resolve(".bazeliskrc")
+    if (!bazeliskrc.exists()) bazeliskrc.createFile()
   }
 
   private fun IDETestContext.enableCppToolchainDetectionForNestedBazel(): IDETestContext {
@@ -218,21 +275,60 @@ abstract class IdeStarterBaseProjectTest {
   }
 
   companion object {
+    private fun isBazelServer(p: ProcessInfo): Boolean =
+      p.arguments.any { arg ->
+        arg.contains("A-server.jar") || arg.endsWith("/server.jar") || arg.endsWith("\\server.jar") || arg.endsWith("-server.jar")
+      }
+
+    private val isIdeTestsBazelServer = Predicate<ProcessInfo> { p ->
+      val fromIdeTestsWorkspace = p.arguments.any { arg ->
+        arg.startsWith("--workspace_directory=") && (arg.contains("/ide-tests/") || arg.contains("\\ide-tests\\"))
+      }
+      isBazelServer(p) && fromIdeTestsWorkspace
+    }
+
+    /** Finds the Bazel servers that run with one of the [outputBases]. */
+    internal suspend fun findBazelServers(outputBases: Set<String>): List<ProcessInfo> {
+      if (outputBases.isEmpty()) return emptyList()
+      return getProcessList(
+        Predicate { p ->
+          isBazelServer(p) && p.arguments.any { arg ->
+            arg.startsWith("--output_base=") && HermeticityGuard.normalize(arg.removePrefix("--output_base=")) in outputBases
+          }
+        },
+      )
+    }
+
+    /** Finds the JCEF helpers of the IDEs that ran in one of the [testHomes]. */
+    private suspend fun findCefProcesses(testHomes: List<Path>): List<ProcessInfo> {
+      if (testHomes.isEmpty()) return emptyList()
+      val homes = testHomes.map { HermeticityGuard.normalize(it.toAbsolutePath().toString()) }
+      return getProcessList(
+        Predicate { p ->
+          p.name.contains("cef_server") && p.arguments.any { arg -> homes.any { HermeticityGuard.normalize(arg).contains(it) } }
+        },
+      )
+    }
+
+    private suspend fun stopProcesses(description: String, processes: List<ProcessInfo>) {
+      try {
+        if (processes.isEmpty()) {
+          println("Stopping $description processes: no processes were detected")
+          return
+        }
+        println("Stopping $description processes: [${processes.joinToString(", ")}] will be stopped")
+        killProcesses(processes)
+      } catch (e: CancellationException) {
+        throw e
+      } catch (t: Throwable) {
+        System.err.println("Failed to stop $description processes: ${t.message}")
+      }
+    }
+
     suspend fun killBazelProcesses() {
       try {
         // Kill Bazel server Java processes started for the test workspace
-        findAndKillProcesses(
-          message = "Killing Bazel server processes",
-          filter = Predicate { p ->
-            val hasServerJar = p.arguments.any { arg ->
-              arg.contains("A-server.jar") || arg.endsWith("/server.jar") || arg.endsWith("\\server.jar") || arg.endsWith("-server.jar")
-            }
-            val fromIdeTestsWorkspace = p.arguments.any { arg ->
-              arg.startsWith("--workspace_directory=") && (arg.contains("/ide-tests/") || arg.contains("\\ide-tests\\"))
-            }
-            hasServerJar && fromIdeTestsWorkspace
-          },
-        )
+        findAndKillProcesses(message = "Killing Bazel server processes", filter = isIdeTestsBazelServer)
       } catch (t: Throwable) {
         System.err.println("Failed to find/kill Bazel server processes: ${t.message}")
       }
@@ -471,13 +567,13 @@ fun Driver.openFile(relativePath: String, waitForCodeAnalysis: Boolean = true): 
 fun Driver.findFile(relativePath: String): VirtualFile? = projectRootDir.findFileByRelativePath(relativePath)
 
 val Driver.isBazelProject: Boolean
-  get() = service<BazelProjectContextService>(singleProject()).isBazelProject
+  get() = service<BazelProjectInfoService>(singleProject()).isBazelProject
 
 val Driver.projectRootDir: VirtualFile
-  get() = service<BazelProjectContextService>(singleProject()).projectRootDir
+  get() = service<BazelProjectInfoService>(singleProject()).projectRootDir
 
-@Remote("org.jetbrains.bazel.sync.environment.BazelProjectContextService", plugin = "org.jetbrains.bazel/intellij.bazel.commons")
-interface BazelProjectContextService {
+@Remote("org.jetbrains.bazel.sync.environment.BazelProjectInfoService", plugin = "org.jetbrains.bazel/intellij.bazel.commons")
+interface BazelProjectInfoService {
   var isBazelProject: Boolean
   var projectRootDir: VirtualFile
 }
@@ -558,7 +654,7 @@ fun getProjectInfoFromSystemProperties(): ProjectInfoSpec {
       configureProjectBeforeUse = ::configureProjectWithHermeticCcToolchain,
     )
   }
-  val projectUrl = System.getProperty("bazel.ide.starter.test.project.url") ?: "https://github.com/JetBrains/hirschgarten.git"
+  val projectUrl = System.getProperty("bazel.ide.starter.test.project.url") ?: "ssh://git@github.com/JetBrains/hirschgarten.git"
   val commitHash = System.getProperty("bazel.ide.starter.test.commit.hash").orEmpty()
   val branchName = System.getProperty("bazel.ide.starter.test.branch.name") ?: "252"
   val projectHomeRelativePath: String? = System.getProperty("bazel.ide.starter.test.project.home.relative.path")

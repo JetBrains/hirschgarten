@@ -7,10 +7,12 @@ import org.jetbrains.bazel.fixtures.CcTestApplication
 import org.jetbrains.bazel.fixtures.clionBazelProjectFixture
 import org.jetbrains.bazel.test.framework.BazelVersions
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.api.condition.DisabledOnOs
 import org.junit.jupiter.api.condition.OS
 
 @CcTestApplication
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @DisabledOnOs(OS.WINDOWS)
 class ForeignCCTest {
 
@@ -32,5 +34,11 @@ class ForeignCCTest {
   fun testCMakeBinary(): Unit = timeoutRunBlocking {
     val compilerSettings = project.findCompilerSetting("cmake/hello.cpp")
     assertThat(compilerSettings).containsHeaders("Speaker.h")
+  }
+
+  @Test
+  fun testMesonMain() : Unit = timeoutRunBlocking {
+    val compilerSettings = project.findCompilerSetting("meson/main.cpp")
+    assertThat(compilerSettings).containsHeaders("include/hello.h")
   }
 }

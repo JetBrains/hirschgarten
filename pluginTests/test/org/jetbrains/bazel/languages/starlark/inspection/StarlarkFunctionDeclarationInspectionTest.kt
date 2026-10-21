@@ -1,21 +1,19 @@
 package org.jetbrains.bazel.languages.starlark.inspection
 
-import com.intellij.testFramework.fixtures.BasePlatformTestCase
 import org.jetbrains.bazel.languages.starlark.StarlarkBundle
 import org.jetbrains.bazel.languages.starlark.fixtures.StarlarkInspectionTestCase
-import org.junit.Before
-import org.junit.Test
-import org.junit.runner.RunWith
-import org.junit.runners.JUnit4
+import org.jetbrains.bazel.test.framework.BazelTestApplication
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
 
 
-@RunWith(JUnit4::class)
+@BazelTestApplication
 internal class StarlarkFunctionDeclarationInspectionTest : StarlarkInspectionTestCase() {
   val descriptionBuild = StarlarkBundle.message("inspection.description.function.declaration.in.build.file")
   val descriptionModule = StarlarkBundle.message("inspection.description.function.declaration.in.module.file")
   val descriptionWorkspace = StarlarkBundle.message("inspection.description.function.declaration.in.workspace.file")
 
-  @Before
+  @BeforeEach
   fun beforeEach() {
     myFixture.enableInspections(StarlarkFunctionDeclarationInspection())
   }

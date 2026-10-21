@@ -1,0 +1,8 @@
+load("//plugins/bazel/integrationTests/e2e:ide_starter_matrix.bzl", "ide_starter_e2e_matrix")
+
+ide_starter_e2e_matrix(
+    bazel_versions = ["8.2.1"],
+    default_bazel_version = "8.2.1",
+    os_list = ["windows"],
+    test_class = "org.jetbrains.bazel.tests.kotlin.MoveKotlinFileTest",
+)

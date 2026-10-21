@@ -140,7 +140,7 @@ private val ShardingApproachSection: ProjectViewSection<ShardingApproach?> = Pro
 
 private val SyncFlagsSection: ProjectViewSection<List<String>> = ProjectViewSection(
   key = SYNC_FLAGS_KEY,
-  type = ProjectViewSectionType.flag("sync").list(),
+  type = ProjectViewSectionType.flag("build").list(),
   documentation = BazelProjectViewBundle.message("bazel.language.projectview.docs.sync_flags"),
 )
 

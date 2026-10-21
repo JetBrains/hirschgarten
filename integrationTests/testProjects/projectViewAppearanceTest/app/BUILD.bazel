@@ -1,0 +1,11 @@
+java_library(
+    name = "app",
+    srcs = glob(["src/main/java/**/*.java"]),
+    deps = ["//common"],
+)
+
+java_library(
+    name = "other",
+    srcs = glob(["src/other/java/**/*.java"]),
+    deps = ["//common"],
+)

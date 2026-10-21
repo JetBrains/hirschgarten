@@ -25,9 +25,9 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.jetbrains.bazel.flow.exclude.BazelSymlinkExcludeService
 import org.jetbrains.bazel.project.BazelProjectFixtures.initializeBazelProject
-import org.jetbrains.bazel.sync.environment.projectCtx
 import org.jetbrains.bazel.symlinks.createBazelConvenienceSymlink
 import org.jetbrains.bazel.symlinks.createSymlinkOrJunction
+import org.jetbrains.bazel.test.framework.updateBazelInfo
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -135,7 +135,7 @@ class BazelVcsRootErrorFilterTest {
   @Test
   fun `regular repositories are registered as VCS roots as without Bazel`(): Unit = timeoutRunBlocking {
     // GIVEN the state after a sync, when the execution root is known
-    project.projectCtx.bazelExecPath = execRoot
+    project.updateBazelInfo { info -> info.copy(execRoot = execRoot) }
 
     // WHEN
     val mappings = detectAndRegisterVcsRoots().map { Path.of(it) }
@@ -149,7 +149,8 @@ class BazelVcsRootErrorFilterTest {
   @Test
   fun `startup removes only the persisted VCS mappings of Bazel output directories`(): Unit = timeoutRunBlocking {
     // GIVEN the state after a sync, and the mappings an earlier session persisted in vcs.xml
-    project.projectCtx.bazelExecPath = execRoot
+    project.updateBazelInfo { info -> info.copy(execRoot = execRoot) }
+
     val regularMappings = setMappingsOfRegularRepositoriesAndBazelOutputs()
 
     // WHEN

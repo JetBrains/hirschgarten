@@ -15,9 +15,10 @@ import kotlinx.coroutines.runInterruptible
 import kotlinx.coroutines.withTimeoutOrNull
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.run.BazelProcessHandler
+import org.jetbrains.bazel.run.commandLine.scriptPathCommandLine
 import org.jetbrains.bazel.server.bep.TestXmlParser
-import org.jetbrains.bazel.sync.environment.projectCtx
 import org.jetbrains.bazel.sync.workspace.languages.jvm.JAVA_TEST_KIND
+import org.jetbrains.bazel.sync.workspace.snapshot.workspaceSnapshotOrNull
 import org.jetbrains.bazel.taskEvents.BazelTaskEventsService
 import org.jetbrains.bazel.util.BspClientTestNotifier
 import org.jetbrains.bsp.protocol.TaskId
@@ -25,9 +26,6 @@ import java.nio.file.Path
 import kotlin.io.path.readText
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
-
-// See: https://bazel.build/reference/test-encyclopedia
-private const val BAZEL_TEST_FILTER_ENV = "TESTBRIDGE_TEST_ONLY"
 
 /**
  * See [ScriptPathBeforeRunTaskProvider], we have to pass [env] to the script process manually
@@ -42,24 +40,11 @@ internal suspend fun runWithScriptPath(
   env: Map<String, String>,
   additionalScriptParameters: List<String>,
   isTest: Boolean,
+  isPassParentEnvs: Boolean,
   testFilter: String?,
   processHandlerCreated: suspend (OSProcessHandler) -> Unit,
 ) {
-  val parentEnvironment = if (isTest) {
-    // Bazel tests don't receive the full environment because of sandboxing
-    GeneralCommandLine.ParentEnvironmentType.NONE
-  } else {
-    GeneralCommandLine.ParentEnvironmentType.CONSOLE
-  }
-  val commandLine =
-    GeneralCommandLine()
-      .withExePath(scriptPath.toString())
-      .withParentEnvironmentType(parentEnvironment)
-      .withEnvironment(env)
-      .withParameters(additionalScriptParameters)
-  if (testFilter != null) {
-    commandLine.environment[BAZEL_TEST_FILTER_ENV] = testFilter
-  }
+  val commandLine = scriptPathCommandLine(scriptPath, env, isTest, isPassParentEnvs, testFilter, additionalScriptParameters)
 
   runJvmCommandLine(commandLine, pidDeferred, handler, processHandlerCreated)
   runInterruptible(Dispatchers.IO) {
@@ -127,7 +112,7 @@ suspend fun runJvmCommandLine(
 private fun findXmlOutputAndReport(taskId: TaskId, scriptPath: Path, project: Project) {
   val scriptContent = scriptPath.readText()
 
-  val execRoot = project.projectCtx.bazelExecPath ?: return
+  val execRoot = project.workspaceSnapshotOrNull?.bazelInfo?.execRoot ?: return
   val xmlPath =
     TEST_XML_OUTPUT_FILE_REGEX
       .find(scriptContent)

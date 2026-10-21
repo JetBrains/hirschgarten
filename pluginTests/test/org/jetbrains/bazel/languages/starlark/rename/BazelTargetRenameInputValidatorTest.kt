@@ -1,17 +1,20 @@
 package org.jetbrains.bazel.languages.starlark.rename
 
+import com.intellij.openapi.application.runReadActionBlocking
 import com.intellij.refactoring.rename.RenameUtil
-import com.intellij.testFramework.fixtures.BasePlatformTestCase
 import org.jetbrains.bazel.languages.starlark.psi.requireCallWithNameAttribute
 import org.jetbrains.bazel.project.BazelProjectFixtures
-import org.jetbrains.bazel.test.framework.BazelBasePlatformTestCase
-import org.junit.Before
-import org.junit.Test
-import org.junit.runner.RunWith
-import org.junit.runners.JUnit4
+import org.jetbrains.bazel.test.framework.BazelTestApplication
+import org.jetbrains.bazel.test.framework.bazelCodeInsightFixture
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Test
 
-@RunWith(JUnit4::class)
-class BazelTargetRenameInputValidatorTest : BazelBasePlatformTestCase() {
+@BazelTestApplication
+class BazelTargetRenameInputValidatorTest {
+  private val myFixture by bazelCodeInsightFixture()
+
+  private val project get() = myFixture.project
+
   @Test
   fun `valid simple name`() {
     assertTargetNameValid("my_lib", expected = true)
@@ -66,7 +69,10 @@ class BazelTargetRenameInputValidatorTest : BazelBasePlatformTestCase() {
       )
       """.trimIndent(),
     )
-    val element = myFixture.requireCallWithNameAttribute("my_lib")
-    assertEquals(expected, RenameUtil.isValidName(project, element, newName))
+    val isValid = runReadActionBlocking {
+      val element = myFixture.requireCallWithNameAttribute("my_lib")
+      RenameUtil.isValidName(project, element, newName)
+    }
+    assertEquals(expected, isValid)
   }
 }

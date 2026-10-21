@@ -72,7 +72,7 @@ class BazelSymlinkExcludeService(
     return computedSymlinks
   }
 
-  @RequiresWriteLock(generateAssertion = false /* IJPL-115548 */)
+  @RequiresWriteLock
   fun addBazelSymlinksToExclude(newSymlinks: Set<Path>) {
     ThreadingAssertions.assertWriteAccess()
     logger.info("Excluding newly detected Bazel symlinks: $newSymlinks")

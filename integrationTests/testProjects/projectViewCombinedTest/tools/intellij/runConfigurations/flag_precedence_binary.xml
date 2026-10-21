@@ -1,0 +1,11 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="FlagPrecedence" type="BazelRunConfigurationType">
+    <bsp-state handler-provider-id="JvmRunHandlerProvider" check-visibility="true">
+      <bsp-target>@//flag_precedence:flag_precedence_binary</bsp-target>
+      <handler-state>
+        <option name="additionalBazelParams" value="--define=precedence_b=run_configuration" />
+      </handler-state>
+    </bsp-state>
+    <method v="2" />
+  </configuration>
+</component>

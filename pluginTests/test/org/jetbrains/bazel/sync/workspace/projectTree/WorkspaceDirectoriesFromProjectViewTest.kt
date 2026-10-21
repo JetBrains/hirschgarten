@@ -3,6 +3,10 @@ package org.jetbrains.bazel.sync.workspace.projectTree
 import com.intellij.platform.ide.progress.ModalTaskOwner
 import com.intellij.platform.ide.progress.TaskCancellation
 import com.intellij.platform.ide.progress.runWithModalProgressBlocking
+import com.intellij.testFramework.runInEdtAndGet
+import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
+import io.kotest.matchers.collections.shouldNotBeEmpty
+import io.kotest.matchers.collections.shouldNotContain
 import kotlinx.coroutines.runBlocking
 import org.jetbrains.bazel.bazelrunner.BazelProcess
 import org.jetbrains.bazel.bazelrunner.BazelProcessResult
@@ -20,9 +24,12 @@ import org.jetbrains.bazel.languages.projectview.ProjectViewFactory
 import org.jetbrains.bazel.project.BazelProjectFixtures.initializeBazelProject
 import org.jetbrains.bazel.server.sync.BspProjectMapper
 import org.jetbrains.bazel.sync.workspace.projectTree.BazelRunnerSpyStubbingHelper.captureBazelCommandFromMock
-import org.jetbrains.bazel.test.framework.BazelBasePlatformTestCase
+import org.jetbrains.bazel.test.framework.BazelTestApplication
+import org.jetbrains.bazel.test.framework.bazelCodeInsightFixture
 import org.jetbrains.bsp.protocol.TaskGroupId
 import org.jetbrains.bsp.protocol.WorkspaceDirectoriesResult
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.spy
 import org.mockito.Mockito.`when`
@@ -33,20 +40,25 @@ import kotlin.io.path.createDirectories
 import kotlin.io.path.createFile
 import kotlin.io.path.createTempDirectory
 
-class WorkspaceDirectoriesFromProjectViewTest : BazelBasePlatformTestCase() {
+@BazelTestApplication
+class WorkspaceDirectoriesFromProjectViewTest {
+  private val myFixture by bazelCodeInsightFixture()
+
+  private val project get() = myFixture.project
 
   private lateinit var workspaceRoot: Path
   private lateinit var bazelRunner: BazelRunner
   private lateinit var dotBazelBspPath: Path
 
-  override fun setUp() {
-    super.setUp()
+  @BeforeEach
+  fun setUp() {
     workspaceRoot = createTempDirectory("workspace")
     initializeBazelProject(project, workspaceRoot)
     bazelRunner = createMockBazelRunner()
     dotBazelBspPath = workspaceRoot.resolve(".bazelbsp")
   }
 
+  @Test
   fun `test should add workspace root to included directories when there is no directories section`() {
     // GIVEN
     val projectViewContent =
@@ -58,12 +70,10 @@ class WorkspaceDirectoriesFromProjectViewTest : BazelBasePlatformTestCase() {
     val result = runMapper(projectViewContent)
 
     // THEN
-    assertSameElements(
-      result.includedDirectories,
-      listOf(workspaceRoot),
-    )
+    result.includedDirectories shouldContainExactlyInAnyOrder listOf(workspaceRoot)
   }
 
+  @Test
   fun `test should correctly identify included and excluded directories`() {
     val includedDir = workspaceRoot.resolve("included").createDirectories()
     val excludedDir = workspaceRoot.resolve("excluded").createDirectories()
@@ -78,17 +88,12 @@ class WorkspaceDirectoriesFromProjectViewTest : BazelBasePlatformTestCase() {
 
     val result = runMapper(projectViewContent)
 
-    assertSameElements(
-      result.includedDirectories,
-      listOf(includedDir),
-    )
+    result.includedDirectories shouldContainExactlyInAnyOrder listOf(includedDir)
 
-    assertSameElements(
-      result.excludedDirectories,
-      listOf(excludedDir, dotBazelBspPath)
-    )
+    result.excludedDirectories shouldContainExactlyInAnyOrder listOf(excludedDir, dotBazelBspPath)
   }
 
+  @Test
   fun `test include target should override exclude directory when derive_targets_from_directories is false`() {
     val includedDir = workspaceRoot.resolve("included").createDirectories()
     val pkg = workspaceRoot.resolve("pkg").createDirectories()
@@ -106,12 +111,10 @@ class WorkspaceDirectoriesFromProjectViewTest : BazelBasePlatformTestCase() {
 
     val result = runMapper(projectViewContent)
 
-    assertSameElements(
-      result.includedDirectories,
-      listOf(includedDir, pkg),
-    )
+    result.includedDirectories shouldContainExactlyInAnyOrder listOf(includedDir, pkg)
   }
 
+  @Test
   fun `test include target should not override exclude directory when derive_targets_from_directories is true`() {
     val includedDir = workspaceRoot.resolve("included").createDirectories()
     val pkg = workspaceRoot.resolve("pkg").createDirectories()
@@ -129,12 +132,10 @@ class WorkspaceDirectoriesFromProjectViewTest : BazelBasePlatformTestCase() {
 
     val result = runMapper(projectViewContent)
 
-    assertSameElements(
-      result.includedDirectories,
-      listOf(includedDir),
-    )
+    result.includedDirectories shouldContainExactlyInAnyOrder listOf(includedDir)
   }
 
+  @Test
   fun `test include package by target should not include subpackages`() {
     val includedDir = workspaceRoot.resolve("included").createDirectories()
     val pkg = workspaceRoot.resolve("pkg").createDirectories()
@@ -153,16 +154,11 @@ class WorkspaceDirectoriesFromProjectViewTest : BazelBasePlatformTestCase() {
 
     val result = runMapper(projectViewContent)
 
-    assertSameElements(
-      result.includedDirectories,
-      listOf(includedDir, pkg),
-    )
-    assertSameElements(
-      result.excludedDirectories,
-      listOf(subpkg, dotBazelBspPath),
-    )
+    result.includedDirectories shouldContainExactlyInAnyOrder listOf(includedDir, pkg)
+    result.excludedDirectories shouldContainExactlyInAnyOrder listOf(subpkg, dotBazelBspPath)
   }
 
+  @Test
   fun `test should include subpackage by target even if its parent is excluded when derive_targets_from_directories is false`() {
     val includedDir = workspaceRoot.resolve("included").createDirectories()
     val pkg = workspaceRoot.resolve("pkg").createDirectories()
@@ -183,16 +179,11 @@ class WorkspaceDirectoriesFromProjectViewTest : BazelBasePlatformTestCase() {
 
     val result = runMapper(projectViewContent)
 
-    assertSameElements(
-      result.includedDirectories,
-      listOf(includedDir, subpkg)
-    )
-    assertSameElements(
-      result.excludedDirectories,
-      listOf(pkg, dotBazelBspPath)
-    )
+    result.includedDirectories shouldContainExactlyInAnyOrder listOf(includedDir, subpkg)
+    result.excludedDirectories shouldContainExactlyInAnyOrder listOf(pkg, dotBazelBspPath)
   }
 
+  @Test
   fun `test should not include subpackage by target if its parent is excluded when derive_targets_from_directories is true`() {
     val includedDir = workspaceRoot.resolve("included").createDirectories()
     val pkg = workspaceRoot.resolve("pkg").createDirectories()
@@ -213,16 +204,11 @@ class WorkspaceDirectoriesFromProjectViewTest : BazelBasePlatformTestCase() {
 
     val result = runMapper(projectViewContent)
 
-    assertSameElements(
-      result.includedDirectories,
-      listOf(includedDir),
-    )
-    assertSameElements(
-      result.excludedDirectories,
-      listOf(pkg, subpkg, dotBazelBspPath),
-    )
+    result.includedDirectories shouldContainExactlyInAnyOrder listOf(includedDir)
+    result.excludedDirectories shouldContainExactlyInAnyOrder listOf(pkg, subpkg, dotBazelBspPath)
   }
 
+  @Test
   fun `test should include all subpackages if target is recursive`() {
     val includedDir = workspaceRoot.resolve("included").createDirectories()
     val pkg = workspaceRoot.resolve("pkg").createDirectories()
@@ -240,16 +226,11 @@ class WorkspaceDirectoriesFromProjectViewTest : BazelBasePlatformTestCase() {
 
     val result = runMapper(projectViewContent)
 
-    assertSameElements(
-      result.includedDirectories,
-      listOf(includedDir, pkg, subpkg)
-    )
-    assertSameElements(
-      result.excludedDirectories,
-      listOf(dotBazelBspPath),
-    )
+    result.includedDirectories shouldContainExactlyInAnyOrder listOf(includedDir, pkg, subpkg)
+    result.excludedDirectories shouldContainExactlyInAnyOrder listOf(dotBazelBspPath)
   }
 
+  @Test
   fun `test should exclude directory form directories section even if it is included by recursive target when derive_targets_from_directories is true`() {
     val includedDir = workspaceRoot.resolve("included").createDirectories()
     val pkg = workspaceRoot.resolve("pkg").createDirectories()
@@ -269,16 +250,11 @@ class WorkspaceDirectoriesFromProjectViewTest : BazelBasePlatformTestCase() {
 
     val result = runMapper(projectViewContent)
 
-    assertSameElements(
-      result.includedDirectories,
-      listOf(includedDir, pkg)
-    )
-    assertSameElements(
-      result.excludedDirectories,
-      listOf(subpkg, dotBazelBspPath)
-    )
+    result.includedDirectories shouldContainExactlyInAnyOrder listOf(includedDir, pkg)
+    result.excludedDirectories shouldContainExactlyInAnyOrder listOf(subpkg, dotBazelBspPath)
   }
 
+  @Test
   fun `test should not exclude directory form directories section if it is included by recursive target when derive_targets_from_directories is false`() {
     val includedDir = workspaceRoot.resolve("included").createDirectories()
     val pkg = workspaceRoot.resolve("pkg").createDirectories()
@@ -298,16 +274,11 @@ class WorkspaceDirectoriesFromProjectViewTest : BazelBasePlatformTestCase() {
 
     val result = runMapper(projectViewContent)
 
-    assertSameElements(
-      result.includedDirectories,
-      listOf(includedDir, pkg, subpkg)
-    )
-    assertSameElements(
-      result.excludedDirectories,
-      listOf(dotBazelBspPath)
-    )
+    result.includedDirectories shouldContainExactlyInAnyOrder listOf(includedDir, pkg, subpkg)
+    result.excludedDirectories shouldContainExactlyInAnyOrder listOf(dotBazelBspPath)
   }
 
+  @Test
   fun `test should exclude non-bazel-package directory form directories section even if it is included by recursive target when derive_targets_from_directories is false`() {
     val includedDir = workspaceRoot.resolve("included").createDirectories()
     val pkg = workspaceRoot.resolve("pkg").createDirectories()
@@ -328,16 +299,11 @@ class WorkspaceDirectoriesFromProjectViewTest : BazelBasePlatformTestCase() {
 
     val result = runMapper(projectViewContent)
 
-    assertSameElements(
-      result.includedDirectories,
-      listOf(includedDir, pkg, subpkg),
-    )
-    assertSameElements(
-      result.excludedDirectories,
-      listOf(subdir, dotBazelBspPath)
-    )
+    result.includedDirectories shouldContainExactlyInAnyOrder listOf(includedDir, pkg, subpkg)
+    result.excludedDirectories shouldContainExactlyInAnyOrder listOf(subdir, dotBazelBspPath)
   }
 
+  @Test
   fun `test root non-recursive target should not exclude other directories when root is included`() {
     // GIVEN
     val aspectDir = workspaceRoot.resolve("aspect").createDirectories()
@@ -360,19 +326,13 @@ class WorkspaceDirectoriesFromProjectViewTest : BazelBasePlatformTestCase() {
     val result = runMapper(projectViewContent)
 
     // THEN aspect/testing and workspace root should be included
-    assertSameElements(
-      result.includedDirectories,
-      aspectTestingDir,
-      workspaceRoot
-    )
+    result.includedDirectories shouldContainExactlyInAnyOrder listOf(aspectTestingDir, workspaceRoot)
 
     // AND aspect should NOT be excluded because of 'directories: .'
-    assertDoesntContain(
-      result.excludedDirectories,
-      aspectDir
-    )
+    result.excludedDirectories shouldNotContain aspectDir
   }
 
+  @Test
   fun `test should not include aspects directory when all directories are imported and targets are derived`() {
     // GIVEN
     val aspectsDir = workspaceRoot.resolve(".bazelbsp/aspects").createDirectories()
@@ -388,12 +348,10 @@ class WorkspaceDirectoriesFromProjectViewTest : BazelBasePlatformTestCase() {
     val result = runMapper(projectViewContent)
 
     // THEN
-    assertDoesntContain(
-      result.includedDirectories,
-      aspectsDir
-    )
+    result.includedDirectories shouldNotContain aspectsDir
   }
 
+  @Test
   fun `test should include target directory from mapped external repository`() {
     // GIVEN
     val toolboxDir = workspaceRoot.resolve("toolbox").createDirectories()
@@ -411,12 +369,10 @@ class WorkspaceDirectoriesFromProjectViewTest : BazelBasePlatformTestCase() {
     val result = runMapper(projectViewContent, createRepoMapping("community", "community+", workspaceRoot.resolve("community")))
 
     // THEN
-    assertSameElements(
-      result.includedDirectories,
-      listOf(toolboxDir, communityKernelDir),
-    )
+    result.includedDirectories shouldContainExactlyInAnyOrder listOf(toolboxDir, communityKernelDir)
   }
 
+  @Test
   fun `test should not pass build flags to bazel query command`() {
     // GIVEN
     val extraToolchainsOption = "--extra_toolchains=//some_directory/non_existing_toolchain:non_existing_toolchain"
@@ -434,8 +390,8 @@ class WorkspaceDirectoriesFromProjectViewTest : BazelBasePlatformTestCase() {
 
     // THEN
     val bazelCommand = captureBazelCommandFromMock(bazelRunner)
-    assertNotEmpty(bazelCommand.options)
-    assertDoesntContain(bazelCommand.options, extraToolchainsOption)
+    bazelCommand.options.shouldNotBeEmpty()
+    bazelCommand.options shouldNotContain extraToolchainsOption
   }
 
   private fun runMapper(
@@ -445,12 +401,15 @@ class WorkspaceDirectoriesFromProjectViewTest : BazelBasePlatformTestCase() {
     val projectView = ProjectViewFactory.from(project, projectViewContent, root = workspaceRoot)
     val owner = ModalTaskOwner.guess()
     val mapper = BspProjectMapper(workspaceRoot, bazelRunner, projectView, BazelPathsResolver(createBazelInfo()))
-    return runWithModalProgressBlocking(
-      owner,
-      "Running Bazel Query",
-      TaskCancellation.cancellable(),
-    ) {
-      mapper.workspaceDirectories(repoMapping, TaskGroupId.EMPTY.task(""))
+    // runWithModalProgressBlocking enters a modal state, and this needs the EDT.
+    return runInEdtAndGet {
+      runWithModalProgressBlocking(
+        owner,
+        "Running Bazel Query",
+        TaskCancellation.cancellable(),
+      ) {
+        mapper.workspaceDirectories(repoMapping, TaskGroupId.EMPTY.task(""))
+      }
     }
   }
 

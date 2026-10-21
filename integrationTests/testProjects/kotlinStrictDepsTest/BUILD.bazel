@@ -1,0 +1,24 @@
+load("@rules_kotlin//kotlin:core.bzl", "define_kt_toolchain")
+load("@rules_kotlin//kotlin:jvm.bzl", "kt_jvm_library")
+
+package(default_visibility = ["//visibility:public"])
+
+define_kt_toolchain(
+    name = "kotlin_strict_deps_toolchain",
+    experimental_strict_kotlin_deps = "error",
+)
+
+java_proto_library(
+    name = "worker_protocol_java_proto",
+    deps = ["@bazel_worker_api//:worker_protocol_proto"],
+)
+
+kt_jvm_library(
+    name = "main",
+    srcs = glob(["Main.kt"]),
+    deps = [
+        "//:worker_protocol_java_proto",
+        "@maven//:com_google_protobuf_protobuf_java",
+        "@maven//:com_google_protobuf_protobuf_java_util",
+    ],
+)

@@ -1,0 +1,10 @@
+load("@rules_java//java:defs.bzl", "java_library")
+
+java_library(
+    name = "app",
+    srcs = ["Main.java"],
+    deps = [
+        "@maven//:software_amazon_awssdk_auth",
+        # "@maven//:software_amazon_awssdk_utils",  <-- compiles OK without this dep!
+    ],
+)

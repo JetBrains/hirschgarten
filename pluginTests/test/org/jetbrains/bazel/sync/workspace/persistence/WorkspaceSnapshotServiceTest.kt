@@ -2,6 +2,7 @@ package org.jetbrains.bazel.sync.workspace.persistence
 
 import com.intellij.configurationStore.SettingsSavingComponent
 import com.intellij.ide.impl.OpenProjectTask
+import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.ex.ProjectManagerEx
 import com.intellij.openapi.project.getProjectDataPath
@@ -11,6 +12,10 @@ import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.ints.shouldBeGreaterThan
 import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
+import kotlinx.coroutines.Deferred
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeout
@@ -24,6 +29,7 @@ import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.sync.JavaLanguageClass
 import org.jetbrains.bazel.sync.workspace.languages.jvm.JavaToolchainData
 import org.jetbrains.bazel.sync.workspace.languages.jvm.JvmBuildTarget
+import org.jetbrains.bazel.sync.workspace.persistence.mvstore.PersistentWorkspaceSnapshotService
 import org.jetbrains.bazel.sync.workspace.snapshot.CommonWorkspaceSyncConfig
 import org.jetbrains.bazel.sync.workspace.snapshot.ExecutableTargetsIndex
 import org.jetbrains.bazel.sync.workspace.snapshot.FileToTargetMap
@@ -42,6 +48,8 @@ import org.jetbrains.bsp.protocol.OutputLocation
 import org.jetbrains.bsp.protocol.OutputLocationCollection
 import org.junit.jupiter.api.Test
 import java.nio.file.Path
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.TimeUnit
 import kotlin.io.path.createDirectories
 import kotlin.io.path.exists
 import kotlin.time.Duration.Companion.seconds
@@ -66,6 +74,7 @@ class WorkspaceSnapshotServiceTest {
     }
     val project = ProjectManagerEx.getInstanceEx().openProjectAsync(projectDir, options)
                   ?: error("failed to open project")
+    (project.service<WorkspaceSnapshotService>() as? WorkspaceSnapshotServiceImpl)?.forcePersistent = true
     try {
       return action(project)
     }
@@ -316,6 +325,58 @@ class WorkspaceSnapshotServiceTest {
       checkNotNull(restored.targets.findTargetByKey(changedKey))
     }
   }
+
+  @Test
+  fun `project close waits for the store in progress`(): Unit = runBlocking {
+    val storeStarted = CountDownLatch(1)
+    val storeRelease = CountDownLatch(1)
+    val expected = buildSnapshot()
+    // store() reads all targets under the store lock, block it there
+    val blockingTargets = object : WorkspaceTargetMap by expected.targets {
+      override fun allTargets(options: TargetLoadOptions): Sequence<BuildTarget> {
+        storeStarted.countDown()
+        storeRelease.await(60, TimeUnit.SECONDS)
+        return expected.targets.allTargets(options)
+      }
+    }
+
+    val projectDir = tempDir.resolve("project").createDirectories()
+    val project = ProjectManagerEx.getInstanceEx().openProjectAsync(projectDir, OpenProjectTask {
+      isNewProject = true
+      runConfigurators = false
+      useDefaultProjectAsTemplate = false
+    }) ?: error("failed to open project")
+    (project.service<WorkspaceSnapshotService>() as? WorkspaceSnapshotServiceImpl)?.forcePersistent = true
+    var close: Deferred<Boolean>? = null
+    try {
+      project.getService(WorkspaceSnapshotService::class.java).update { expected.copy(targets = blockingTargets) to Unit }
+      storeStarted.await(60, TimeUnit.SECONDS) shouldBe true
+
+      val closing = async(Dispatchers.Default) { ProjectManagerEx.getInstanceEx().forceCloseProjectAsync(project, save = false) }
+      close = closing
+      withTimeout(60.seconds) {
+        while (!closing.isCompleted && !isDisposeWaiting()) {
+          delay(10)
+        }
+      }
+      // dispose() must not complete and close the storage while the store runs
+      closing.isCompleted shouldBe false
+    }
+    finally {
+      storeRelease.countDown()
+      // a failure before the close must not leak the project into the next tests
+      if (close == null) {
+        ProjectManagerEx.getInstanceEx().forceCloseProjectAsync(project, save = false)
+      }
+    }
+    withTimeout(60.seconds) { checkNotNull(close).await() } shouldBe true
+  }
+
+  private fun isDisposeWaiting(): Boolean =
+    Thread.getAllStackTraces().any { (thread, stack) ->
+      (thread.state == Thread.State.WAITING || thread.state == Thread.State.TIMED_WAITING) &&
+      stack.any { it.className == PersistentWorkspaceSnapshotService::class.java.name && it.methodName == "dispose" }
+    }
 
   @Test
   fun `save before anything is stored does not create the database`(): Unit = runBlocking {

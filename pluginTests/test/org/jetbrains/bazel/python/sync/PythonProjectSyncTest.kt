@@ -1,9 +1,11 @@
 package org.jetbrains.bazel.python.sync
 
+import com.google.devtools.intellij.aspect.Common.ArtifactLocation
+import com.google.devtools.intellij.ideinfo.IntellijIdeInfo
 import com.intellij.bazel.python.backend.BazelPyImportResolver
-import com.intellij.bazel.python.backend.chooseSdkName
 import com.intellij.bazel.python.backend.findBazelPythonShortestQualifiedName
 import com.intellij.bazel.python.backend.hasBazelPythonQualifiedName
+import com.intellij.bazel.python.backend.sync.PythonLanguagePlugin
 import com.intellij.ide.util.ModuleRendererFactory
 import com.intellij.openapi.application.edtWriteAction
 import com.intellij.openapi.application.runReadActionBlocking
@@ -25,7 +27,6 @@ import com.intellij.platform.workspace.jps.entities.ModuleId
 import com.intellij.platform.workspace.jps.entities.ModuleSourceDependency
 import com.intellij.platform.workspace.jps.entities.ModuleTypeId
 import com.intellij.platform.workspace.jps.entities.SdkDependency
-import com.intellij.platform.workspace.jps.entities.SdkId
 import com.intellij.platform.workspace.jps.entities.SourceRootEntity
 import com.intellij.platform.workspace.jps.entities.SourceRootTypeId
 import com.intellij.platform.workspace.storage.MutableEntityStorage
@@ -35,6 +36,7 @@ import com.intellij.psi.PsiManager
 import com.intellij.psi.util.QualifiedName
 import com.intellij.python.community.services.systemPython.SystemPythonService
 import com.intellij.testFramework.common.timeoutRunBlocking
+import com.intellij.testFramework.junit5.fixture.tempPathFixture
 import com.intellij.testFramework.registerOrReplaceServiceInstance
 import com.jetbrains.python.PythonBinary
 import com.jetbrains.python.psi.PyFile
@@ -43,6 +45,7 @@ import com.jetbrains.python.sdk.PythonSdkUtil
 import com.jetbrains.python.sdk.internal.PYTHON_MODULE_ID
 import io.kotest.matchers.booleans.shouldBeFalse
 import io.kotest.matchers.collections.shouldExist
+import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeInstanceOf
@@ -63,10 +66,10 @@ import org.jetbrains.bazel.python.lang.PythonBuildTarget
 import org.jetbrains.bazel.python.lang.PythonLanguageClass
 import org.jetbrains.bazel.server.BazelServerService
 import org.jetbrains.bazel.sync.BazelOutFileHardLinks
-import org.jetbrains.bazel.sync.environment.projectCtx
 import org.jetbrains.bazel.sync.workspace.BazelResolvedWorkspace
-import org.jetbrains.bazel.sync.workspace.importer.WorkspaceImporterHelper
 import org.jetbrains.bazel.sync.workspace.DefaultOutputLocationResolver
+import org.jetbrains.bazel.sync.workspace.importer.WorkspaceImporterHelper
+import org.jetbrains.bazel.sync.workspace.mapper.normal.DefaultBazelOutputFileHardLinks
 import org.jetbrains.bazel.sync.workspace.snapshot.OutputLocationCollectionBuilder
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceSnapshot
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceSnapshotBuilder
@@ -74,6 +77,7 @@ import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
 import org.jetbrains.bazel.test.framework.CopyingBazelOutHardLinks
 import org.jetbrains.bazel.test.framework.target.TestBuildTarget
 import org.jetbrains.bazel.test.framework.testBazelInfo
+import org.jetbrains.bazel.test.framework.updateBazelInfo
 import org.jetbrains.bazel.workspace.model.matchers.entries.ExpectedModuleEntity
 import org.jetbrains.bazel.workspace.model.matchers.entries.ExpectedSourceRootEntity
 import org.jetbrains.bazel.workspace.model.matchers.entries.shouldContainExactlyInAnyOrder
@@ -88,13 +92,19 @@ import org.jetbrains.bsp.protocol.OutputLocation
 import org.jetbrains.bsp.protocol.OutputLocationResolver
 import org.jetbrains.bsp.protocol.OutputRoot
 import org.jetbrains.bsp.protocol.TaskGroupId
+import org.jetbrains.bsp.protocol.toExecrootPath
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.CsvSource
+import org.junit.jupiter.params.provider.ValueSource
 import java.nio.file.Files
 import java.nio.file.Path
+import java.util.Collections
 import kotlin.io.path.Path
 import kotlin.io.path.createDirectories
+import kotlin.io.path.deleteExisting
 import kotlin.io.path.writeText
 
 private data class PythonTestSet(
@@ -113,6 +123,7 @@ private data class GeneratedTargetInfo(
 
 // TODO: convert it to real `BazelWorkspaceImporter` test fixture
 class PythonProjectSyncTest : MockProjectBaseTest() {
+  private val outputDir by tempPathFixture()
   lateinit var virtualFileUrlManager: VirtualFileUrlManager
   lateinit var pythonBinary: PythonBinary
 
@@ -160,7 +171,8 @@ class PythonProjectSyncTest : MockProjectBaseTest() {
         .filter { it.type == ModuleTypeId(PYTHON_MODULE_ID) }
     logger.info("Checking for project ${project.name}")
     actualModuleEntities shouldContainExactlyInAnyOrder pythonTestTargets.expectedModuleEntities
-    actualModuleEntities.shouldAllHaveTheSameSDK()
+    // The importer sets the interpreter through the Python project after the modules exist, so the diff has no SDK.
+    actualModuleEntities.shouldHaveNoSdk()
   }
 
   @Test
@@ -254,8 +266,12 @@ class PythonProjectSyncTest : MockProjectBaseTest() {
         resources = emptyList(),
       )
 
-    project.projectCtx.bazelExecPath = projectDir.get()
-    project.projectCtx.bazelBinPath = projectDir.get().resolve("bazel-bin")
+    project.updateBazelInfo { bazelInfo ->
+      bazelInfo.copy(
+        execRoot = projectDir.get(),
+        bazelBin = projectDir.get().resolve("bazel-bin"),
+      )
+    }
     project.registerOrReplaceServiceInstance(BazelServerService::class.java, MockBuildServerService(BuildServerMock()), disposable)
     runPythonImporter(
       generateWorkspaceSnapshot(listOf(targetWithoutImports, targetWithImports)),
@@ -314,8 +330,7 @@ class PythonProjectSyncTest : MockProjectBaseTest() {
         resources = emptyList(),
       )
 
-    project.projectCtx.bazelExecPath = projectDir.get()
-    project.projectCtx.bazelBinPath = projectDir.get().resolve("bazel-bin")
+    project.updateBazelInfo { info -> info.copy(execRoot = projectDir.get(), bazelBin = projectDir.get().resolve("bazel-bin")) }
     project.registerOrReplaceServiceInstance(BazelServerService::class.java, MockBuildServerService(BuildServerMock()), disposable)
     runPythonImporter(generateWorkspaceSnapshot(listOf(target)), MutableEntityStorage.create(), runPostProcessing = true)
 
@@ -352,8 +367,7 @@ class PythonProjectSyncTest : MockProjectBaseTest() {
         resources = emptyList(),
       )
 
-    project.projectCtx.bazelExecPath = projectDir.get()
-    project.projectCtx.bazelBinPath = projectDir.get().resolve("bazel-bin")
+    project.updateBazelInfo { info -> info.copy(execRoot = projectDir.get(), bazelBin = projectDir.get().resolve("bazel-bin")) }
     project.registerOrReplaceServiceInstance(BazelServerService::class.java, MockBuildServerService(BuildServerMock()), disposable)
     runPythonImporter(generateWorkspaceSnapshot(listOf(target)), MutableEntityStorage.create(), runPostProcessing = true)
 
@@ -387,11 +401,15 @@ class PythonProjectSyncTest : MockProjectBaseTest() {
         resources = emptyList(),
       )
 
-    project.projectCtx.bazelExecPath = execRoot
-    project.projectCtx.bazelBinPath = bazelBin
+    project.updateBazelInfo { info -> info.copy(execRoot = execRoot, bazelBin = bazelBin) }
     project.registerOrReplaceServiceInstance(BazelServerService::class.java, MockBuildServerService(BuildServerMock()), disposable)
 
-    runPythonImporter(generateWorkspaceSnapshot(listOf(target)), MutableEntityStorage.create(), runPostProcessing = true, execRoot = execRoot)
+    runPythonImporter(
+      generateWorkspaceSnapshot(listOf(target)),
+      MutableEntityStorage.create(),
+      runPostProcessing = true,
+      execRoot = execRoot,
+    )
 
     val resolved =
       runReadActionBlocking {
@@ -401,6 +419,329 @@ class PythonProjectSyncTest : MockProjectBaseTest() {
     resolved.shouldNotBeNull()
     resolved.shouldBeInstanceOf<PyFile>()
     resolved.virtualFile.name shouldBe "part.py"
+  }
+
+  @ParameterizedTest
+  @CsvSource(
+    "common, false, enabled",
+    "common, true, enabled",
+    "python, false, enabled",
+    "python, true, enabled",
+    "directory, true, enabled",
+    "both, true, enabled",
+    "common, true, disabled",
+    "python, true, disabled",
+    "common, true, partial",
+    "python, true, partial",
+  )
+  fun `generated roots and resolve index use the same paths`(sourceCollection: String, explicitImports: Boolean, mode: String) {
+    val info = testBazelInfo(workspaceRoot = projectDir.get(), outputBase = outputDir.toRealPath())
+      .let { it.copy(bazelBin = it.execRoot.resolve("bazel-out/${TEST_OUTPUT_ROOT.path}")) }
+    val generatedDir = info.bazelBin.resolve("generated").createDirectories()
+    val first = generatedDir.resolve("aaa.py").also { it.writeText("A = 1\n") }
+    val second = generatedDir.resolve("bbb.pyi").also { it.writeText("B: int\n") }
+    val sources = listOf(first, second)
+    val sourceLocations = listOf("generated/aaa.py", "generated/bbb.pyi").map { generatedTestLocation(it) }
+    VirtualFileManager.getInstance().refreshAndFindFileByNioPath(generatedDir)?.refresh(false, true)
+    val links = DefaultBazelOutputFileHardLinks(project, info)
+    val requests = Collections.synchronizedList(mutableListOf<Path>())
+    val hardLinks = object : BazelOutFileHardLinks by links {
+      override suspend fun createOutputFileHardLink(originalFile: Path): Path? {
+        requests.add(originalFile)
+        return when {
+          mode == "disabled" || mode == "partial" && originalFile == second -> originalFile
+          else -> links.createOutputFileHardLink(originalFile)
+        }
+      }
+
+      override fun resolveCachedPath(fileOrDir: Path): Path =
+        if (mode == "disabled") fileOrDir else links.resolveCachedPath(fileOrDir)
+    }
+    val server = object : BuildServerMock() {
+      override val bazelInfo = info
+      override val outFileHardLinks = hardLinks
+    }
+    val target = generateTarget(
+      GeneratedTargetInfo(
+        targetId = Label.parse("@@server//:generated"),
+        type = PYTHON_MODULE_ID,
+        imports = if (explicitImports) listOf("generated") else emptyList(),
+      ),
+      sources = if (sourceCollection == "common" || sourceCollection == "both") sourceLocations else emptyList(),
+      pythonGeneratedSources = when (sourceCollection) {
+        "common" -> emptyList()
+        "directory" -> listOf(generatedTestLocation("generated"))
+        else -> sourceLocations
+      },
+      resources = emptyList(),
+    )
+    project.updateBazelInfo { it.copy(execRoot = info.execRoot, bazelBin = info.bazelBin) }
+    links.onBeforeSync()
+    val mappedTarget = try {
+      mapGeneratedTarget(target, server)
+    }
+    finally {
+      runBlocking { links.onAfterSync(false) }
+    }
+    requests.map { it.toString() }.toSet() shouldBe sources.map { it.toString() }.toSet()
+    requests.size shouldBe sources.size
+    mappedTarget.data.filterIsInstance<PythonBuildTarget>().single().generatedSourceOverrides shouldBe
+      if (mode == "partial") mapOf(sourceLocations[1] to OutputLocation.Host(second.toString())) else emptyMap()
+    val snapshot = generateWorkspaceSnapshot(listOf(mappedTarget))
+    val effectivePaths = sources.map { path ->
+      if (mode == "disabled" || mode == "partial" && path == second) path else links.resolveCachedPath(path)
+    }
+
+    repeat(2) {
+      requests.clear()
+      val diff = MutableEntityStorage.create()
+      links.onBeforeSync()
+      try {
+        runPythonImporter(snapshot, diff, runPostProcessing = true, buildServerMock = server)
+      }
+      finally {
+        runBlocking { links.onAfterSync(false) }
+      }
+
+      requests shouldBe emptyList()
+      val expectedRoots = when {
+        !explicitImports -> effectivePaths.toSet()
+        mode == "disabled" -> setOf(generatedDir)
+        mode == "partial" -> setOf(links.resolveCachedPath(generatedDir), second)
+        else -> setOf(links.resolveCachedPath(generatedDir))
+      }
+      diff.entities(SourceRootEntity::class.java).map { it.url }.toSet() shouldBe
+        expectedRoots.map { it.toVirtualFileUrl(virtualFileUrlManager) }.toSet()
+
+      runReadActionBlocking {
+        val context = PyQualifiedNameResolveContextImpl(PsiManager.getInstance(project), null, null, null)
+        for ((name, expectedPath) in listOf("aaa", "bbb").zip(effectivePaths)) {
+          val qualifiedName = if (explicitImports) name else "generated.$name"
+          val resolved = BazelPyImportResolver().resolveImportReference(QualifiedName.fromDottedString(qualifiedName), context, false)
+          resolved.shouldNotBeNull()
+          resolved.shouldBeInstanceOf<PyFile>()
+          resolved.virtualFile.toNioPath().toString() shouldBe expectedPath.toString()
+          project.findBazelPythonShortestQualifiedName(expectedPath) shouldBe qualifiedName
+        }
+      }
+    }
+  }
+
+  @Test
+  fun `generated sources use the current output resolver`() {
+    val info = testBazelInfo(workspaceRoot = projectDir.get(), outputBase = outputDir.toRealPath())
+      .let { it.copy(bazelBin = it.execRoot.resolve("bazel-out/${TEST_OUTPUT_ROOT.path}")) }
+    val generatedDir = info.bazelBin.resolve("generated").createDirectories()
+    val source = generatedDir.resolve("aaa.py").also { it.writeText("A = 1\n") }
+    val initialLinks = CopyingBazelOutHardLinks(info.outputBase, outputDir.resolve("initial-cache"))
+    val initialServer = object : BuildServerMock() {
+      override val bazelInfo = info
+      override val outFileHardLinks = initialLinks
+    }
+    val target = generateTarget(
+      GeneratedTargetInfo(
+        targetId = Label.parse("@@server//:generated"),
+        type = PYTHON_MODULE_ID,
+        imports = listOf("generated"),
+      ),
+      sources = emptyList(),
+      pythonGeneratedSources = listOf(generatedTestLocation("generated/aaa.py")),
+      resources = emptyList(),
+    )
+    val snapshot = generateWorkspaceSnapshot(listOf(mapGeneratedTarget(target, initialServer)))
+    val currentLinks = CopyingBazelOutHardLinks(info.outputBase, outputDir.resolve("current-cache"))
+    timeoutRunBlocking { currentLinks.createOutputFileHardLink(source) }
+    currentLinks.linkedFiles.clear()
+    val currentServer = object : BuildServerMock() {
+      override val bazelInfo = info
+      override val outFileHardLinks = currentLinks
+    }
+    val diff = MutableEntityStorage.create()
+
+    runPythonImporter(snapshot, diff, runPostProcessing = true, buildServerMock = currentServer)
+
+    currentLinks.linkedFiles shouldBe emptyList()
+    diff.entities(SourceRootEntity::class.java).map { it.url }.toSet() shouldBe
+      setOf(currentLinks.resolveCachedPath(generatedDir).toVirtualFileUrl(virtualFileUrlManager))
+    val expectedPath = currentLinks.resolveCachedPath(source)
+    VirtualFileManager.getInstance().refreshAndFindFileByNioPath(expectedPath).shouldNotBeNull()
+    runReadActionBlocking {
+      val context = PyQualifiedNameResolveContextImpl(PsiManager.getInstance(project), null, null, null)
+      val resolved = BazelPyImportResolver().resolveImportReference(QualifiedName.fromComponents("aaa"), context, false)
+      resolved.shouldBeInstanceOf<PyFile>()
+      resolved.virtualFile.toNioPath() shouldBe expectedPath
+    }
+  }
+
+  @ParameterizedTest
+  @CsvSource("common, false", "common, true", "python, false", "python, true")
+  fun `partial sync replaces a shared generated source fallback`(sourceCollection: String, reverseTargets: Boolean): Unit = timeoutRunBlocking {
+    val info = testBazelInfo(workspaceRoot = projectDir.get(), outputBase = outputDir.toRealPath())
+      .let { it.copy(bazelBin = it.execRoot.resolve("bazel-out/${TEST_OUTPUT_ROOT.path}")) }
+    val source = info.bazelBin.resolve("generated/shared.py")
+    val location = generatedTestLocation("generated/shared.py")
+    val links = DefaultBazelOutputFileHardLinks(project, info)
+    val server = object : BuildServerMock() {
+      override val bazelInfo = info
+      override val outFileHardLinks = links
+    }
+    val targets = listOf("first", "second").map { name ->
+      generateTarget(
+        GeneratedTargetInfo(targetId = Label.parse("@@server//:$name"), type = PYTHON_MODULE_ID),
+        sources = if (sourceCollection == "common") listOf(location) else emptyList(),
+        pythonGeneratedSources = if (sourceCollection == "python") listOf(location) else emptyList(),
+        resources = emptyList(),
+      )
+    }
+    links.onBeforeSync()
+    val previousTargets = try {
+      targets.map { mapGeneratedTarget(it, server) }
+    }
+    finally {
+      links.onAfterSync(false)
+    }
+
+    source.parent.createDirectories()
+    source.writeText("VALUE = 42\n")
+    links.onBeforeSync()
+    try {
+      val updatedTarget = mapGeneratedTarget(targets.first(), server)
+      val mergedTargets = listOf(updatedTarget, previousTargets.last()).let { if (reverseTargets) it.reversed() else it }
+      source.deleteExisting()
+      links.onBeforeProjectModelUpdate()
+      val snapshot = generateWorkspaceSnapshot(mergedTargets)
+      repeat(2) {
+        val diff = MutableEntityStorage.create()
+        runPythonImporter(snapshot, diff, runPostProcessing = true, buildServerMock = server)
+
+        val cachedSource = links.resolveCachedPath(source)
+        diff.entities(SourceRootEntity::class.java).map { it.url }.toList() shouldBe
+          List(2) { cachedSource.toVirtualFileUrl(virtualFileUrlManager) }
+        runReadActionBlocking {
+          val context = PyQualifiedNameResolveContextImpl(PsiManager.getInstance(project), null, null, null)
+          val resolved = BazelPyImportResolver().resolveImportReference(QualifiedName.fromDottedString("generated.shared"), context, false)
+          resolved.shouldBeInstanceOf<PyFile>()
+          resolved.virtualFile.toNioPath() shouldBe cachedSource
+        }
+        links.onAfterSync(false)
+        links.onBeforeSync()
+      }
+    }
+    finally {
+      links.onAfterSync(false)
+    }
+  }
+
+  @Test
+  fun `shared source fallback does not select an outdated hardlink`(): Unit = timeoutRunBlocking {
+    val info = testBazelInfo(workspaceRoot = projectDir.get(), outputBase = outputDir.toRealPath())
+    val source = info.execRoot.resolve("bazel-out/${TEST_OUTPUT_ROOT.path}/generated/shared.py")
+    source.parent.createDirectories()
+    source.writeText("VALUE = 1\n")
+    val location = generatedTestLocation("generated/shared.py")
+    val links = DefaultBazelOutputFileHardLinks(project, info)
+    val server = object : BuildServerMock() {
+      override val bazelInfo = info
+      override val outFileHardLinks = links
+    }
+    val targets = listOf("first", "second").map { name ->
+      generateTarget(
+        GeneratedTargetInfo(targetId = Label.parse("@@server//:$name"), type = PYTHON_MODULE_ID),
+        sources = listOf(location),
+        resources = emptyList(),
+      )
+    }
+    links.onBeforeSync()
+    val previousTarget = try {
+      mapGeneratedTarget(targets.first(), server)
+    }
+    finally {
+      links.onAfterSync(false)
+    }
+    source.deleteExisting()
+    source.writeText("VALUE = 2\n")
+    val failedServer = object : BuildServerMock() {
+      override val bazelInfo = info
+      override val outFileHardLinks = object : BazelOutFileHardLinks by BazelOutFileHardLinks.NONE {
+        override fun resolveCachedPath(fileOrDir: Path): Path = links.resolveCachedPath(fileOrDir)
+      }
+    }
+    val updatedTarget = mapGeneratedTarget(targets.last(), failedServer)
+    val diff = MutableEntityStorage.create()
+
+    runPythonImporter(generateWorkspaceSnapshot(listOf(previousTarget, updatedTarget)), diff, buildServerMock = failedServer)
+
+    diff.entities(SourceRootEntity::class.java).map { it.url }.toList() shouldBe
+      List(2) { source.toVirtualFileUrl(virtualFileUrlManager) }
+  }
+
+  @Test
+  fun `generated source fallback does not redirect parent directories`() {
+    val info = testBazelInfo(workspaceRoot = projectDir.get(), outputBase = outputDir.toRealPath())
+      .let { it.copy(bazelBin = it.execRoot.resolve("bazel-out/${TEST_OUTPUT_ROOT.path}")) }
+    val importPath = List(20) { "nested" }.joinToString("/")
+    val generatedDir = info.bazelBin.resolve(importPath).createDirectories()
+    generatedDir.resolve("alias.py").writeText("VALUE = 42\n")
+    val fallback = outputDir.resolve("fallback.py").also { it.writeText("VALUE = 42\n") }
+    val links = object : BazelOutFileHardLinks by BazelOutFileHardLinks.NONE {
+      override suspend fun createOutputFileHardLink(originalFile: Path): Path = fallback
+      override fun resolveCachedPath(fileOrDir: Path): Path = outputDir.resolve("cache").resolve(info.outputBase.relativize(fileOrDir))
+    }
+    val server = object : BuildServerMock() {
+      override val bazelInfo = info
+      override val outFileHardLinks = links
+    }
+    val target = generateTarget(
+      GeneratedTargetInfo(targetId = Label.parse("@@server//:generated"), type = PYTHON_MODULE_ID, imports = listOf(importPath)),
+      sources = listOf(generatedTestLocation("$importPath/alias.py")),
+      resources = emptyList(),
+    )
+    val diff = MutableEntityStorage.create()
+
+    runPythonImporter(generateWorkspaceSnapshot(listOf(mapGeneratedTarget(target, server))), diff, buildServerMock = server)
+
+    diff.entities(SourceRootEntity::class.java).map { it.url }.toSet() shouldBe
+      setOf(generatedDir, fallback).map { it.toVirtualFileUrl(virtualFileUrlManager) }.toSet()
+  }
+
+  @ParameterizedTest
+  @ValueSource(booleans = [false, true])
+  fun `generated import roots use current sync paths`(hasPreviousSync: Boolean) {
+    val info = testBazelInfo(workspaceRoot = projectDir.get(), outputBase = outputDir.toRealPath())
+      .let { it.copy(bazelBin = it.execRoot.resolve("bazel-out/${TEST_OUTPUT_ROOT.path}")) }
+    val generatedDir = info.bazelBin.resolve("generated")
+    generatedDir.resolve("pkg").createDirectories().resolve("aaa.py").writeText("A = 1\n")
+    val previousBazelBin = outputDir.resolve("previous-bazel-bin")
+    previousBazelBin.resolve("generated").createDirectories()
+    if (hasPreviousSync) {
+      project.updateBazelInfo { it.copy(bazelBin = previousBazelBin) }
+    }
+    val links = DefaultBazelOutputFileHardLinks(project, info)
+    val server = object : BuildServerMock() {
+      override val bazelInfo = info
+      override val outFileHardLinks = links
+    }
+    val target = generateTarget(
+      GeneratedTargetInfo(
+        targetId = Label.parse("@@server//:generated"),
+        type = PYTHON_MODULE_ID,
+        imports = listOf("generated"),
+      ),
+      sources = listOf(generatedTestLocation("generated/pkg/aaa.py")),
+      resources = emptyList(),
+    )
+    val diff = MutableEntityStorage.create()
+    links.onBeforeSync()
+    try {
+      val mappedTarget = mapGeneratedTarget(target, server)
+      runPythonImporter(generateWorkspaceSnapshot(listOf(mappedTarget)), diff, buildServerMock = server)
+    }
+    finally {
+      runBlocking { links.onAfterSync(false) }
+    }
+
+    diff.entities(SourceRootEntity::class.java).map { it.url }.toSet() shouldBe
+      setOf(links.resolveCachedPath(generatedDir).toVirtualFileUrl(virtualFileUrlManager))
   }
 
   @Test
@@ -424,18 +765,21 @@ class PythonProjectSyncTest : MockProjectBaseTest() {
         pythonGeneratedSources = listOf(OutputLocation.Output(OutputRoot.of(listOf("k8-fastbuild", "bin")), "genpy/part_pb2.py")),
       )
 
-    project.projectCtx.bazelExecPath = execRoot
-    project.projectCtx.bazelBinPath = bazelBin
+    project.updateBazelInfo { info -> info.copy(execRoot = execRoot, bazelBin = bazelBin) }
     val server = object : BuildServerMock() {
       override val bazelInfo: BazelInfo = bazelInfo()
       override val outFileHardLinks: BazelOutFileHardLinks = hardLinks
     }
-    project.registerOrReplaceServiceInstance(BazelServerService::class.java, MockBuildServerService(server), disposable)
-
-    runPythonImporter(generateWorkspaceSnapshot(listOf(target)), MutableEntityStorage.create(), runPostProcessing = true)
+    val mappedTarget = mapGeneratedTarget(target, server)
+    runPythonImporter(
+      generateWorkspaceSnapshot(listOf(mappedTarget)),
+      MutableEntityStorage.create(),
+      runPostProcessing = true,
+      buildServerMock = server,
+    )
 
     val expectedHardLink = hardLinksRoot.resolve("bazel-out/k8-fastbuild/bin/genpy/part_pb2.py")
-    hardLinks.linkedFiles shouldBe listOf(expectedHardLink)
+    hardLinks.linkedFiles.toSet() shouldBe setOf(expectedHardLink)
     VirtualFileManager.getInstance().refreshAndFindFileByNioPath(expectedHardLink).shouldNotBeNull()
     val resolved =
       runReadActionBlocking {
@@ -647,23 +991,49 @@ class PythonProjectSyncTest : MockProjectBaseTest() {
   private fun renderModuleLocationText(element: Any): String =
     ModuleRendererFactory.findInstance(element).getModuleTextWithIcon(element)!!.text
 
+  private fun mapGeneratedTarget(target: TestBuildTarget, server: BuildServerMock): TestBuildTarget = timeoutRunBlocking {
+    val pythonTarget = target.data.filterIsInstance<PythonBuildTarget>().single()
+    fun artifact(location: OutputLocation): ArtifactLocation = ArtifactLocation.newBuilder()
+      .setRelativePath(location.toExecrootPath())
+      .setIsSource(false)
+      .build()
+    val targetInfo = IntellijIdeInfo.TargetIdeInfo.newBuilder()
+      .setKey(IntellijIdeInfo.TargetKey.newBuilder().setLabel(target.key.label.toString()))
+      .addAllSrcs(target.sources.getOutputLocations().map { artifact(it) }.toList())
+      .setPythonTargetInfo(
+        IntellijIdeInfo.PythonTargetInfo.newBuilder()
+          .addAllGeneratedSources(pythonTarget.generatedSources.getOutputLocations().map { artifact(it) }.toList()),
+      )
+      .build()
+    val mapped = PythonLanguagePlugin().mapBuildTargetData(server, targetInfo).filterIsInstance<PythonBuildTarget>().single()
+    val data = pythonTarget.copy(
+      generatedSources = mapped.generatedSources,
+      generatedSourceOverrides = mapped.generatedSourceOverrides,
+    )
+    target.copy(data = listOf(data))
+  }
+
   private fun runPythonImporter(
     snapshot: WorkspaceSnapshot,
     builder: MutableEntityStorage,
     runPostProcessing: Boolean = false,
     execRoot: Path = projectDir.get(),
+    buildServerMock: BuildServerMock = object : BuildServerMock() {
+      override val bazelInfo: BazelInfo = bazelInfo(execRoot)
+    },
   ) = runBlocking {
     //ExtensionTestUtil.maskExtensions(BazelWorkspaceImporter.EP_NAME, listOf(...))
-    val buildServerMock = BuildServerMock()
+    project.registerOrReplaceServiceInstance(BazelServerService::class.java, MockBuildServerService(buildServerMock), disposable)
     reportSequentialProgress { reporter ->
       val helper = WorkspaceImporterHelper(
         project = project,
         taskConsole = project.syncConsole,
         progressReporter = reporter,
         builder = builder,
-        outputResolver = outputResolver(execRoot),
+        outputResolver = buildServerMock.outputResolver,
         outputParser = buildServerMock.outputParser,
-        bazelInfo = bazelInfo(execRoot),
+        outFileHardLinks = buildServerMock.outFileHardLinks,
+        bazelInfo = buildServerMock.bazelInfo,
       )
       helper.invoke(reporter, snapshot, TaskGroupId.EMPTY.task("test"))
       if (runPostProcessing) {
@@ -776,7 +1146,7 @@ class PythonProjectSyncTest : MockProjectBaseTest() {
         repoMapping = RepoMappingDisabled,
         rootTargets = rootTargets,
         targets = targets,
-        configurations = emptyMap()
+        configurations = emptyMap(),
       ),
     )
   }
@@ -785,8 +1155,6 @@ class PythonProjectSyncTest : MockProjectBaseTest() {
     targetInfo: GeneratedTargetInfo,
     dependenciesTargetInfo: List<GeneratedTargetInfo>,
   ): ExpectedModuleEntity {
-    val sdkName = chooseSdkName(pythonBinary, project.name)
-    val sdkDependency: ModuleDependencyItem = SdkDependency(SdkId(sdkName, "Python SDK"))
     val moduleDependencies: List<ModuleDependencyItem> =
       dependenciesTargetInfo.map {
         ModuleDependency(
@@ -801,7 +1169,7 @@ class PythonProjectSyncTest : MockProjectBaseTest() {
         ModuleEntity(
           name = targetInfo.targetId.formatAsModuleName(project),
           entitySource = BazelProjectEntitySource,
-          dependencies = moduleDependencies + ModuleSourceDependency + sdkDependency,
+          dependencies = moduleDependencies + ModuleSourceDependency,
         ) {
           type = ModuleTypeId(PYTHON_MODULE_ID)
         },
@@ -809,8 +1177,10 @@ class PythonProjectSyncTest : MockProjectBaseTest() {
   }
 
   private fun generateExpectedSourceRootEntities(target: BuildTarget, parentModuleEntity: ModuleEntity): List<ExpectedSourceRootEntity> =
-    (target.sources.getOutputLocations().mapNotNull { outputResolver().resolve(it) }.map { generateExpectedSourceRootEntity(it, "python-source", parentModuleEntity) } +
-     target.resources.getOutputLocations().mapNotNull { outputResolver().resolve(it) }.map { generateExpectedSourceRootEntity(it, "python-resource", parentModuleEntity) }).toList()
+    (target.sources.getOutputLocations().mapNotNull { outputResolver().resolve(it) }
+       .map { generateExpectedSourceRootEntity(it, "python-source", parentModuleEntity) } +
+     target.resources.getOutputLocations().mapNotNull { outputResolver().resolve(it) }
+       .map { generateExpectedSourceRootEntity(it, "python-resource", parentModuleEntity) }).toList()
 
   private fun bazelInfo(execRoot: Path = projectDir.get()): BazelInfo =
     testBazelInfo(workspaceRoot = projectDir.get(), outputBase = projectDir.get(), execRoot = execRoot)
@@ -829,10 +1199,8 @@ class PythonProjectSyncTest : MockProjectBaseTest() {
     return ExpectedSourceRootEntity(sourceRootEntity, contentRootEntity, parentModuleEntity)
   }
 
-  private fun List<ModuleEntity>.shouldAllHaveTheSameSDK() {
-    val sdks = this.map { module -> module.dependencies.firstNotNullOfOrNull { it as? SdkDependency } }
-    sdks.any { it == null }.shouldBeFalse()
-    sdks.distinct().size shouldBe 1
+  private fun List<ModuleEntity>.shouldHaveNoSdk() {
+    flatMap { it.dependencies }.filterIsInstance<SdkDependency>().shouldBeEmpty()
   }
 
   private fun createPythonFile(relativePath: String, text: String): PyFile {

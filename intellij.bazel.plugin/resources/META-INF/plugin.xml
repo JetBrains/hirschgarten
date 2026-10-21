@@ -51,6 +51,8 @@
     <!-- cpp modules -->
     <module name="intellij.bazel.clion.common"/>
     <module name="intellij.bazel.clion.core"/>
+    <module name="intellij.bazel.clion.test.catch"/>
+    <module name="intellij.bazel.clion.test.google"/>
 
     <!-- go modules -->
     <module name="intellij.bazel.golang.common"/>

@@ -1,5 +1,6 @@
 package org.jetbrains.bazel.languages.starlark.bazel
 
+import com.intellij.openapi.project.Project
 import com.intellij.platform.testFramework.junit5.codeInsight.fixture.codeInsightFixture
 import com.intellij.testFramework.junit5.TestApplication
 import com.intellij.testFramework.junit5.fixture.projectFixture
@@ -11,10 +12,12 @@ import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.string.shouldContain
 import io.kotest.matchers.string.shouldNotContain
 import org.jetbrains.bazel.commons.BazelRelease
-import org.jetbrains.bazel.sync.environment.projectCtx
+import org.jetbrains.bazel.sync.workspace.snapshot.CommonWorkspaceSyncConfig
+import org.jetbrains.bazel.test.framework.updateWorkspaceSnapshot
 import org.junit.jupiter.api.DynamicTest
 import org.junit.jupiter.api.DynamicTest.dynamicTest
 import org.junit.jupiter.api.TestFactory
+import kotlin.io.path.Path
 
 @TestApplication
 class BazelGlobalFunctionsTest {
@@ -26,12 +29,26 @@ class BazelGlobalFunctionsTest {
 
   // All tests share one project, so each test sets the release that it checks.
   private fun functionsFor(release: BazelRelease): Map<String, BazelGlobalFunction> {
-    codeInsightFixture.project.projectCtx.bazelRelease = release
+    codeInsightFixture.project.setBazelReleaseVersion(release)
     return BazelGlobalFunctions.globalFunctions(codeInsightFixture.project)
   }
 
   private fun getFunction(name: String, release: BazelRelease = latestRelease): BazelGlobalFunction =
     functionsFor(release)[name] ?: error("Function '$name' not found for Bazel $release")
+
+  private fun Project.setBazelReleaseVersion(release: BazelRelease) = updateWorkspaceSnapshot { snapshot ->
+    snapshot.copy(
+      bazelInfo = snapshot.bazelInfo.copy(release = release),
+      syncConfigs = listOf(
+        CommonWorkspaceSyncConfig(
+          projectRootDir = Path(basePath!!),
+          dotIdeaPath = null,
+          projectName = name,
+          importDepth = 0,
+        ),
+      ),
+    )
+  }
 
   @TestFactory
   fun `builtin functions should be present across all versions`(): List<DynamicTest> {
@@ -44,7 +61,7 @@ class BazelGlobalFunctionsTest {
     return builtinFunctionNames.flatMap { name ->
       majorVersions.map { version ->
         dynamicTest("$version: $name") {
-          codeInsightFixture.project.projectCtx.bazelRelease = version
+          codeInsightFixture.project.setBazelReleaseVersion(version)
           BazelGlobalFunctions.getFunctionByName(name, codeInsightFixture.project) shouldNotBe null
         }
       }
@@ -62,7 +79,7 @@ class BazelGlobalFunctionsTest {
     return ruleNames.flatMap { name ->
       majorVersions.map { version ->
         dynamicTest("$version: $name") {
-          codeInsightFixture.project.projectCtx.bazelRelease = version
+          codeInsightFixture.project.setBazelReleaseVersion(version)
           BazelGlobalFunctions.getFunctionByName(name, codeInsightFixture.project) shouldNotBe null
         }
       }
@@ -84,7 +101,7 @@ class BazelGlobalFunctionsTest {
       }
     }
 
-  @TestFactory  
+  @TestFactory
   fun `expected external kotlin functions should be present`(): List<DynamicTest> =
     expectedKotlinFunctions.map { name ->
       dynamicTest(name) {
@@ -215,11 +232,13 @@ class BazelGlobalFunctionsTest {
   }
 
   private fun MutableList<DynamicTest>.addPresenceTest(funcName: String, version: String) {
-    add(dynamicTest("$version: $funcName is present") {
-      codeInsightFixture.project.projectCtx.bazelRelease = version.toBazelRelease()
-      BazelGlobalFunctions.getFunctionByName(funcName, codeInsightFixture.project)
+    add(
+      dynamicTest("$version: $funcName is present") {
+        codeInsightFixture.project.setBazelReleaseVersion(version.toBazelRelease())
+        BazelGlobalFunctions.getFunctionByName(funcName, codeInsightFixture.project)
         ?: error("Function '$funcName' not found for Bazel $version")
-    })
+      },
+    )
   }
 
   private fun MutableList<DynamicTest>.addAbsenceTest(funcName: String, version: String) {
@@ -227,7 +246,7 @@ class BazelGlobalFunctionsTest {
     if (prevIndex < 0) return
     val previousVersion = builtinVersions[prevIndex]
     val test = dynamicTest("$previousVersion: $funcName is absent") {
-      codeInsightFixture.project.projectCtx.bazelRelease = previousVersion.toBazelRelease()
+      codeInsightFixture.project.setBazelReleaseVersion(previousVersion.toBazelRelease())
       BazelGlobalFunctions.getFunctionByName(funcName, codeInsightFixture.project)
         ?.let { error("Function '$funcName' should not exist for Bazel $previousVersion") }
     }

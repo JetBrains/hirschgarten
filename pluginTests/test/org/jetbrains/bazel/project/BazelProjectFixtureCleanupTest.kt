@@ -19,6 +19,7 @@ import org.jetbrains.bazel.bazelrunner.BazelCommandExecutionDescriptor
 import org.jetbrains.bazel.bazelrunner.BazelProcessLauncher
 import org.jetbrains.bazel.bazelrunner.BazelProcessLauncherProvider
 import org.jetbrains.bazel.progress.ConsoleService
+import org.jetbrains.bazel.sync.ProjectSyncOutcome
 import org.jetbrains.bazel.sync.ProjectSyncScope
 import org.jetbrains.bazel.sync.ProjectSyncService
 import org.jetbrains.bazel.test.framework.BazelTestApplication
@@ -86,7 +87,7 @@ internal class BazelProjectFixtureCleanupTest {
       project.replaceService(ProjectSyncService::class.java, object : ProjectSyncService {
         override val lastSyncTaskId: TaskId? = null
 
-        override suspend fun sync(scope: ProjectSyncScope) {
+        override suspend fun sync(scope: ProjectSyncScope): ProjectSyncOutcome {
           throw failure
         }
       }, project)

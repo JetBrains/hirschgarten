@@ -1,0 +1,57 @@
+test_suite(
+    name = "linux",
+    tests = [
+        "//plugins/bazel/integrationTests/e2e/protobuf-resolve:linux",
+        "//plugins/bazel/integrationTests/e2e/simple-java-combined:linux",
+    ],
+)
+
+test_suite(
+    name = "macos",
+    tests = [
+        "//plugins/bazel/integrationTests/e2e/protobuf-resolve:macos",
+        "//plugins/bazel/integrationTests/e2e/simple-java-combined:macos",
+    ],
+)
+
+test_suite(
+    name = "windows",
+    tests = [
+        "//plugins/bazel/integrationTests/e2e/basic-scala:windows",
+        "//plugins/bazel/integrationTests/e2e/bazel-coverage:windows",
+        "//plugins/bazel/integrationTests/e2e/bazel-project-model-modifier:windows",
+        "//plugins/bazel/integrationTests/e2e/bazel-project-open:windows",
+        "//plugins/bazel/integrationTests/e2e/bazel-project-tree-appearance:windows",
+        "//plugins/bazel/integrationTests/e2e/compiled-source-inside-jar-exclude:windows",
+        "//plugins/bazel/integrationTests/e2e/coroutine-debug:windows",
+        "//plugins/bazel/integrationTests/e2e/disabled-kotlin-plugin:windows",
+        "//plugins/bazel/integrationTests/e2e/environment-variables:windows",
+        "//plugins/bazel/integrationTests/e2e/external-repo-resolve:windows",
+        "//plugins/bazel/integrationTests/e2e/fast-build:windows",
+        "//plugins/bazel/integrationTests/e2e/go-mod:windows",
+        "//plugins/bazel/integrationTests/e2e/go-run-configurations:windows",
+        "//plugins/bazel/integrationTests/e2e/goland-sync:windows",
+        "//plugins/bazel/integrationTests/e2e/hirschgarten-upgrade:windows",
+        "//plugins/bazel/integrationTests/e2e/import-depth-zero:windows",
+        "//plugins/bazel/integrationTests/e2e/import-run-configurations:windows",
+        "//plugins/bazel/integrationTests/e2e/index-section:windows",
+        "//plugins/bazel/integrationTests/e2e/jetbrains-test-runner:windows",
+        "//plugins/bazel/integrationTests/e2e/local-path-override:windows",
+        "//plugins/bazel/integrationTests/e2e/move-kotlin-file:windows",
+        "//plugins/bazel/integrationTests/e2e/non-module-targets:windows",
+        "//plugins/bazel/integrationTests/e2e/project-view-combined:windows",
+        "//plugins/bazel/integrationTests/e2e/protobuf-resolve:windows",
+        "//plugins/bazel/integrationTests/e2e/pycharm-check-red-code:windows",
+        "//plugins/bazel/integrationTests/e2e/pycharm-combined:windows",
+        "//plugins/bazel/integrationTests/e2e/python-protobuf:windows",
+        "//plugins/bazel/integrationTests/e2e/resync-actions:windows",
+        "//plugins/bazel/integrationTests/e2e/rules-proto:windows",
+        "//plugins/bazel/integrationTests/e2e/run-all-tests-action:windows",
+        "//plugins/bazel/integrationTests/e2e/search-everywhere:windows",
+        "//plugins/bazel/integrationTests/e2e/simple-java-combined:windows",
+        "//plugins/bazel/integrationTests/e2e/simple-kotlin-combined:windows",
+        "//plugins/bazel/integrationTests/e2e/strict-deps:windows",
+        "//plugins/bazel/integrationTests/e2e/synthetic-run-targets:windows",
+        "//plugins/bazel/integrationTests/e2e/test-source-marking:windows",
+    ],
+)

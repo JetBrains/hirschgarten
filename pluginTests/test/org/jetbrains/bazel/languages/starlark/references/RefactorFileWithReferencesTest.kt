@@ -1,20 +1,27 @@
 package org.jetbrains.bazel.languages.starlark.references
 
-import com.intellij.openapi.components.service
-import org.jetbrains.bazel.languages.starlark.repomapping.PersistentBazelRepoMappingService
-import org.jetbrains.bazel.test.framework.BazelBasePlatformTestCase
-import org.junit.Test
-import org.junit.runner.RunWith
-import org.junit.runners.JUnit4
-import java.lang.reflect.Field
+import com.intellij.openapi.application.EDT
+import com.intellij.openapi.application.runReadActionBlocking
+import com.intellij.psi.PsiElement
+import com.intellij.testFramework.common.timeoutRunBlocking
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import org.jetbrains.bazel.test.framework.BazelTestApplication
+import org.jetbrains.bazel.test.framework.bazelCodeInsightFixture
+import org.jetbrains.bazel.workspace.setRepoMapping
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Test
 import java.nio.file.Path
 import kotlin.io.path.Path
 
-@RunWith(JUnit4::class)
-internal class RefactorFileWithReferencesTest : BazelBasePlatformTestCase()  {
-  private lateinit var persistent: PersistentBazelRepoMappingService
-  private lateinit var canonicalRepoNameToPath: Field
-  private lateinit var rootPath: Path
+@BazelTestApplication
+internal class RefactorFileWithReferencesTest {
+  private val myFixture by bazelCodeInsightFixture()
+
+  private val project get() = myFixture.project
+
+  private val rootPath: Path
+    get() = Path(myFixture.tempDirFixture.getFile(".")!!.path)
 
   @Test
   fun `rename kotlin file should update label in build file`() {
@@ -37,7 +44,7 @@ internal class RefactorFileWithReferencesTest : BazelBasePlatformTestCase()  {
       """.trimIndent(),
     )
 
-    myFixture.renameElement(kotlinFile, "RenamedClass.kt")
+    renameElement(kotlinFile, "RenamedClass.kt")
 
     myFixture.checkResult(
       """
@@ -70,7 +77,7 @@ internal class RefactorFileWithReferencesTest : BazelBasePlatformTestCase()  {
       """.trimIndent(),
     )
 
-    myFixture.renameElement(javaFile, "RenamedClass.java")
+    renameElement(javaFile, "RenamedClass.java")
 
     myFixture.checkResult(
       """
@@ -104,7 +111,7 @@ internal class RefactorFileWithReferencesTest : BazelBasePlatformTestCase()  {
       """.trimIndent(),
     )
 
-    myFixture.renameElement(starlarkFile, "custom_java_rules.bzl")
+    renameElement(starlarkFile, "custom_java_rules.bzl")
 
     myFixture.checkResult(
       """
@@ -139,7 +146,7 @@ internal class RefactorFileWithReferencesTest : BazelBasePlatformTestCase()  {
       """.trimIndent(),
     )
 
-    myFixture.renameElement(kotlinFile, "TestUtilsRenamed.kt")
+    renameElement(kotlinFile, "TestUtilsRenamed.kt")
 
     myFixture.checkResult(
       """
@@ -183,7 +190,7 @@ internal class RefactorFileWithReferencesTest : BazelBasePlatformTestCase()  {
         """.trimIndent(),
       )
 
-    myFixture.renameElement(sharedFile, "UtilsRenamed.java")
+    renameElement(sharedFile, "UtilsRenamed.java")
 
     assertEquals(
       """
@@ -192,7 +199,7 @@ internal class RefactorFileWithReferencesTest : BazelBasePlatformTestCase()  {
           srcs = ["../shared/UtilsRenamed.java"],
       )
       """.trimIndent(),
-      buildFile1.text,
+      runReadActionBlocking { buildFile1.text },
     )
     assertEquals(
       """
@@ -201,7 +208,7 @@ internal class RefactorFileWithReferencesTest : BazelBasePlatformTestCase()  {
           srcs = ["../shared/UtilsRenamed.java"],
       )
       """.trimIndent(),
-      buildFile2.text,
+      runReadActionBlocking { buildFile2.text },
     )
   }
 
@@ -237,7 +244,7 @@ internal class RefactorFileWithReferencesTest : BazelBasePlatformTestCase()  {
       """.trimIndent(),
     )
 
-    myFixture.renameElement(fileToRename, "UtilsRenamed.kt")
+    renameElement(fileToRename, "UtilsRenamed.kt")
 
     myFixture.checkResult(
       """
@@ -255,9 +262,7 @@ internal class RefactorFileWithReferencesTest : BazelBasePlatformTestCase()  {
 
   @Test
   fun `Move File on kotlin file should change label in BUILD file`() {
-    setupRepoMappings()
-    setField("canonicalRepoNameToPath",mapOf("" to rootPath))
-    setField("canonicalRepoNameToApparentName", mapOf("" to ""))
+    project.setRepoMapping { mainRepo(rootPath) }
 
     myFixture.addFileToProject("MODULE.bazel", "")
     myFixture.addFileToProject("BUILD", "")
@@ -293,7 +298,7 @@ internal class RefactorFileWithReferencesTest : BazelBasePlatformTestCase()  {
       """.trimIndent(),
     )
 
-    myFixture.moveFile("com/example/A.kt", "com")
+    moveFile("com/example/A.kt", "com")
 
     myFixture.checkResult(
       "com/example/BUILD",
@@ -317,9 +322,7 @@ internal class RefactorFileWithReferencesTest : BazelBasePlatformTestCase()  {
 
   @Test
   fun `Move File on java file should change label in BUILD file`() {
-    setupRepoMappings()
-    setField("canonicalRepoNameToPath",mapOf("" to rootPath))
-    setField("canonicalRepoNameToApparentName", mapOf("" to ""))
+    project.setRepoMapping { mainRepo(rootPath) }
 
     myFixture.addFileToProject("MODULE.bazel", "")
     myFixture.addFileToProject("BUILD", "")
@@ -354,7 +357,7 @@ internal class RefactorFileWithReferencesTest : BazelBasePlatformTestCase()  {
       """.trimIndent(),
     )
 
-    myFixture.moveFile("com/example/A.java", "com")
+    moveFile("com/example/A.java", "com")
 
     myFixture.checkResult(
       "com/example/BUILD",
@@ -377,9 +380,7 @@ internal class RefactorFileWithReferencesTest : BazelBasePlatformTestCase()  {
 
   @Test
   fun `Move File on bzl file should change label in BUILD file`() {
-    setupRepoMappings()
-    setField("canonicalRepoNameToPath",mapOf("" to rootPath))
-    setField("canonicalRepoNameToApparentName", mapOf("" to ""))
+    project.setRepoMapping { mainRepo(rootPath) }
 
     myFixture.addFileToProject("MODULE.bazel", "")
     myFixture.addFileToProject("BUILD", "")
@@ -401,7 +402,7 @@ internal class RefactorFileWithReferencesTest : BazelBasePlatformTestCase()  {
       """.trimIndent(),
     )
 
-    myFixture.moveFile("com/example/bzl/custom.bzl", "com/example")
+    moveFile("com/example/bzl/custom.bzl", "com/example")
 
     myFixture.checkResult(
       "com/example/BUILD",
@@ -414,9 +415,7 @@ internal class RefactorFileWithReferencesTest : BazelBasePlatformTestCase()  {
 
   @Test
   fun `Move File to another bazel package should change label in BUILD file`() {
-    setupRepoMappings()
-    setField("canonicalRepoNameToPath",mapOf("" to rootPath))
-    setField("canonicalRepoNameToApparentName", mapOf("" to ""))
+    project.setRepoMapping { mainRepo(rootPath) }
 
     myFixture.addFileToProject("MODULE.bazel", "")
     myFixture.addFileToProject("BUILD", "")
@@ -438,7 +437,7 @@ internal class RefactorFileWithReferencesTest : BazelBasePlatformTestCase()  {
       """.trimIndent(),
     )
 
-    myFixture.moveFile("com/example/custom.bzl", "com")
+    moveFile("com/example/custom.bzl", "com")
 
     myFixture.checkResult(
       "com/example/BUILD",
@@ -452,9 +451,10 @@ internal class RefactorFileWithReferencesTest : BazelBasePlatformTestCase()  {
 
   @Test
   fun `Move File to another bazel repo change label in BUILD file`() {
-    setupRepoMappings()
-    setField("canonicalRepoNameToPath",mapOf("" to rootPath, "example" to rootPath.resolve("com/example")))
-    setField("canonicalRepoNameToApparentName", mapOf("" to "", "example" to "example"))
+    project.setRepoMapping {
+      mainRepo(rootPath)
+      repo("example", rootPath.resolve("com/example"))
+    }
 
     myFixture.addFileToProject("MODULE.bazel", "")
     myFixture.addFileToProject(
@@ -477,7 +477,7 @@ internal class RefactorFileWithReferencesTest : BazelBasePlatformTestCase()  {
     myFixture.addFileToProject("com/example/MODULE.bazel", "module(name = 'example')")
     myFixture.addFileToProject("com/example/BUILD", "")
 
-    myFixture.moveFile("custom.bzl", "com/example")
+    moveFile("custom.bzl", "com/example")
 
     myFixture.checkResult(
       "BUILD",
@@ -511,7 +511,7 @@ internal class RefactorFileWithReferencesTest : BazelBasePlatformTestCase()  {
       """.trimIndent(),
     )
 
-    myFixture.moveFile("com/example/A.kt", "com")
+    moveFile("com/example/A.kt", "com")
 
     myFixture.checkResult(
       "com/example/BUILD",
@@ -526,20 +526,11 @@ internal class RefactorFileWithReferencesTest : BazelBasePlatformTestCase()  {
     )
   }
 
-
-  // For Move File tests we need to set up project repo mappings
-  private fun setupRepoMappings() {
-    val tempRoot = myFixture.tempDirFixture.getFile(".")!!
-    rootPath = Path(tempRoot.path)
-
-    persistent = project.service<PersistentBazelRepoMappingService>()
-    canonicalRepoNameToPath = persistent::class.java.getDeclaredField("canonicalRepoNameToPath")
-    canonicalRepoNameToPath.isAccessible = true
+  private fun renameElement(element: PsiElement, newName: String): Unit = timeoutRunBlocking {
+    withContext(Dispatchers.EDT) { myFixture.renameElement(element, newName) }
   }
 
-  private fun setField(name: String, value: Any) {
-    val f = persistent::class.java.getDeclaredField(name)
-    f.isAccessible = true
-    f.set(persistent, value)
+  private fun moveFile(filePath: String, to: String): Unit = timeoutRunBlocking {
+    withContext(Dispatchers.EDT) { myFixture.moveFile(filePath, to) }
   }
 }

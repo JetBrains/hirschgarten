@@ -1,21 +1,19 @@
 package org.jetbrains.bazel.languages.starlark.completion
 
-import com.intellij.testFramework.fixtures.BasePlatformTestCase
-import com.intellij.testFramework.fixtures.TempDirTestFixture
-import com.intellij.testFramework.fixtures.impl.TempDirTestFixtureImpl
+import com.intellij.codeInsight.lookup.LookupElement
 import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.collections.shouldContainOnly
 import org.jetbrains.bazel.project.BazelProjectFixtures.initializeBazelProject
-import org.jetbrains.bazel.test.framework.BazelBasePlatformTestCase
-import org.junit.Before
-import org.junit.Test
-import org.junit.runner.RunWith
-import org.junit.runners.JUnit4
+import org.jetbrains.bazel.test.framework.BazelTestApplication
+import org.jetbrains.bazel.test.framework.bazelCodeInsightFixture
+import org.junit.jupiter.api.Test
 
-@RunWith(JUnit4::class)
-class StarlarkClassCompletionTest : BazelBasePlatformTestCase() {
+@BazelTestApplication
+class StarlarkClassCompletionTest {
+  private val myFixture by bazelCodeInsightFixture()
+
   @Test
   fun `should suggest classes for classname attribute`() {
     myFixture.addFileToProject(
@@ -43,7 +41,7 @@ class StarlarkClassCompletionTest : BazelBasePlatformTestCase() {
       """.trimMargin(),
     )
 
-    val lookups = myFixture.completeBasic().map { it.lookupString }
+    val lookups = completeBasic().map { it.lookupString }
 
     lookups.shouldContainExactlyInAnyOrder(listOf("\"com.example.MyClass\"", "\"com.example.MyOtherClass\""))
   }
@@ -75,7 +73,7 @@ class StarlarkClassCompletionTest : BazelBasePlatformTestCase() {
       """.trimMargin(),
     )
 
-    val lookups = myFixture.completeBasic().map { it.lookupString }
+    val lookups = completeBasic().map { it.lookupString }
 
     lookups.shouldContainExactlyInAnyOrder(listOf("\"com.example.MyClass\"", "\"com.example.MyOtherClass\""))
   }
@@ -108,7 +106,7 @@ class StarlarkClassCompletionTest : BazelBasePlatformTestCase() {
       """.trimMargin(),
     )
 
-    val lookups = myFixture.completeBasic().map { it.lookupString }
+    val lookups = completeBasic().map { it.lookupString }
 
     lookups.shouldContainExactlyInAnyOrder(listOf("\"com.example.\"", "\"com.exampleKt.\""))
   }
@@ -133,7 +131,7 @@ class StarlarkClassCompletionTest : BazelBasePlatformTestCase() {
       """.trimMargin(),
     )
 
-    val lookups = myFixture.completeBasic().map { it.lookupString }
+    val lookups = completeBasic().map { it.lookupString }
 
     lookups.shouldContain("\"com.\"")
   }
@@ -159,7 +157,7 @@ class StarlarkClassCompletionTest : BazelBasePlatformTestCase() {
       )
       """.trimMargin(),
     )
-    val lookups = myFixture.completeBasic().map { it.lookupString }
+    val lookups = completeBasic().map { it.lookupString }
 
     lookups.shouldContainExactlyInAnyOrder(listOf("\"com.example.MyClass\"", "\"com.example.MyClass.\""))
   }
@@ -185,7 +183,7 @@ class StarlarkClassCompletionTest : BazelBasePlatformTestCase() {
       )
       """.trimMargin(),
     )
-    val lookups = myFixture.completeBasic().map { it.lookupString }
+    val lookups = completeBasic().map { it.lookupString }
 
     lookups.shouldContain("\"com.example.MyClass.NestedClass\"")
   }
@@ -209,7 +207,7 @@ class StarlarkClassCompletionTest : BazelBasePlatformTestCase() {
       """.trimMargin(),
     )
 
-    val lookups = myFixture.completeBasic().map { it.lookupString }
+    val lookups = completeBasic().map { it.lookupString }
 
     lookups.shouldBeEmpty()
   }
@@ -233,7 +231,7 @@ class StarlarkClassCompletionTest : BazelBasePlatformTestCase() {
       )
       """.trimMargin(),
     )
-    myFixture.completeBasic()
+    completeBasic()
     myFixture.type('\n')
 
     myFixture.checkResult(
@@ -265,9 +263,9 @@ class StarlarkClassCompletionTest : BazelBasePlatformTestCase() {
       """.trimMargin(),
     )
 
-    myFixture.completeBasic()
+    completeBasic()
     myFixture.type('\n')
-    val lookups = myFixture.completeBasic().map { it.lookupString }
+    val lookups = completeBasic().map { it.lookupString }
 
     myFixture.checkResult(
       """
@@ -314,7 +312,7 @@ class StarlarkClassCompletionTest : BazelBasePlatformTestCase() {
       """.trimMargin(),
     )
 
-    val lookups = myFixture.completeBasic().map { it.lookupString }
+    val lookups = completeBasic().map { it.lookupString }
     lookups.shouldContainOnly("\"com.example.Valid\"")
   }
 
@@ -346,7 +344,7 @@ class StarlarkClassCompletionTest : BazelBasePlatformTestCase() {
       """.trimMargin(),
     )
 
-    val lookups = myFixture.completeBasic().map { it.lookupString }
+    val lookups = completeBasic().map { it.lookupString }
     lookups.shouldContainOnly("\"com.example.Valid\"")
   }
 
@@ -377,7 +375,7 @@ class StarlarkClassCompletionTest : BazelBasePlatformTestCase() {
       """.trimMargin(),
     )
 
-    val lookups = myFixture.completeBasic().map { it.lookupString }
+    val lookups = completeBasic().map { it.lookupString }
     lookups.shouldContainOnly("\"com.example.Valid\"")
   }
 
@@ -408,7 +406,7 @@ class StarlarkClassCompletionTest : BazelBasePlatformTestCase() {
       """.trimMargin(),
     )
 
-    val lookups = myFixture.completeBasic().map { it.lookupString }
+    val lookups = completeBasic().map { it.lookupString }
     lookups.shouldContainOnly("\"com.example.mf.Valid\"")
   }
 
@@ -439,7 +437,9 @@ class StarlarkClassCompletionTest : BazelBasePlatformTestCase() {
       """.trimMargin(),
     )
 
-    val lookups = myFixture.completeBasic().map { it.lookupString }
+    val lookups = completeBasic().map { it.lookupString }
     lookups.shouldContainOnly("\"com.example.Valid\"")
   }
+
+  private fun completeBasic(): Array<LookupElement> = myFixture.completeBasic()
 }

@@ -51,7 +51,7 @@ import org.jetbrains.bazel.server.connection
 import org.jetbrains.bazel.sync.FileToTargetQuery
 import org.jetbrains.bazel.sync.ProjectDirtyStateService
 import org.jetbrains.bazel.sync.ProjectSyncService
-import org.jetbrains.bazel.sync.environment.projectCtx
+import org.jetbrains.bazel.sync.environment.bazelProjectInfo
 import org.jetbrains.bazel.sync.status.SyncStatusService
 import org.jetbrains.bazel.sync.workspace.persistence.WorkspaceSnapshotService
 import org.jetbrains.bazel.target.ModuleTargetService
@@ -147,7 +147,7 @@ open class DefaultBazelFileEventProcessor(private val project: Project) : BazelF
       return CompletableDeferred(BazelFileEventProcessorResult.EMPTY)
 
     // No directory is known. Startup or tests?
-    if (project.projectCtx.projectRootDir == null)
+    if (project.bazelProjectInfo.projectRootDir == null)
       return CompletableDeferred(BazelFileEventProcessorResult.EMPTY)
 
     val simplifiedEvents = events

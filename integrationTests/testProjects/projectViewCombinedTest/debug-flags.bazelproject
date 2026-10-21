@@ -1,0 +1,26 @@
+derive_targets_from_directories: false
+index: *
+
+directories:
+  flag_precedence
+
+targets:
+  //flag_precedence:flag_precedence_binary
+  //flag_precedence:flag_precedence_test
+
+import_run_configurations:
+  tools/intellij/runConfigurations/flag_precedence_binary.xml
+
+build_flags:
+  --define=precedence_a=build_flags
+  --define=precedence_b=build_flags
+
+sync_flags:
+  --define=precedence_a=sync_flags
+  --define=precedence_b=sync_flags
+
+debug_flags:
+  --define=precedence_a=debug_flags
+  --define=precedence_b=debug_flags
+
+import_depth: 0

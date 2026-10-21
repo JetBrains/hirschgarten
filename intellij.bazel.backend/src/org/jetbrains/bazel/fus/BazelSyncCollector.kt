@@ -6,8 +6,8 @@ import com.intellij.internal.statistic.eventLog.events.EventFields
 import com.intellij.internal.statistic.service.fus.collectors.CounterUsagesCollector
 import com.intellij.openapi.project.Project
 import org.jetbrains.bazel.commons.LanguageClass
+import org.jetbrains.bazel.sync.ProjectSyncCompletionResult
 import org.jetbrains.bazel.sync.ProjectSyncScope
-import org.jetbrains.bazel.sync.task.ProjectSyncCompletionResult
 import org.jetbrains.bazel.sync.task.ProjectSyncPhase
 import org.jetbrains.bazel.sync.task.ProjectSyncResult
 import org.jetbrains.bazel.sync.task.ProjectSyncStatistics

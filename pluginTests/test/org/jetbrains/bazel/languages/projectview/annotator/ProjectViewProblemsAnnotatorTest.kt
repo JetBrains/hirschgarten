@@ -91,6 +91,11 @@ class ProjectViewProblemsAnnotatorTest {
   }
 
   @Test
+  fun `should accept a build flag in sync_flags`() {
+    checkHighlighting("""sync_flags: --define=foo=bar""")
+  }
+
+  @Test
   fun `should warn about deprecated python_debug_flags section and point at its replacement`() {
     val message = BazelProjectViewBundle.message("annotator.deprecated.section.with.replacement.warning", "debug_flags")
 

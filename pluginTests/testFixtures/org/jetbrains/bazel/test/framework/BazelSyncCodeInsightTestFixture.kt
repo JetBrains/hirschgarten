@@ -92,7 +92,7 @@ fun bazelProjectFixture(
   projectView: String? = null,
   projectsRoot: Path = BazelPathManager.testProjectsRoot,
   jvmToolchains: Boolean = true,
-  registries: List<URI> = emptyList(),
+  registries: List<URI> = BazelTestCaches.defaultRegistries,
   configure: suspend (Project) -> Unit = {},
 ): TestFixture<Project> = testFixture(debugString = "bazelProject") {
   LOG.info("Setting up the Bazel project fixture for $projectPath")
@@ -185,6 +185,9 @@ class BazelSyncCodeInsightTestFixtureImpl(
   private val projectRoot: Path
     get() = Path(tempDirPath)
 
+  /** The test project of the last [copyBazelTestProject] call. */
+  private var testProjectPath: String? = null
+
   init {
     installTestConsoleService(project, testRootDisposable)
     installHostRcIsolation(testRootDisposable)
@@ -195,6 +198,7 @@ class BazelSyncCodeInsightTestFixtureImpl(
 
   override fun copyBazelTestProject(path: String) {
     BazelTestProject.copy(project, projectRoot, path, outputBase)
+    testProjectPath = path
   }
 
   override fun setProjectView(projectview: String) {
@@ -203,6 +207,8 @@ class BazelSyncCodeInsightTestFixtureImpl(
 
   override fun setBazelVersion(version: String) {
     writeBazelVersion(projectRoot, version)
+    // The cache settings depend on the Bazel version.
+    testProjectPath?.let { BazelTestCaches.configureBazelCaches(projectRoot, it, outputBase) }
   }
 
   override suspend fun performBazelSync(scope: ProjectSyncScope) {

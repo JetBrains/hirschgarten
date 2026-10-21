@@ -1,17 +1,15 @@
 package org.jetbrains.bazel.languages.starlark.references
 
-import com.intellij.testFramework.fixtures.IdeaTestFixtureFactory
-import com.intellij.testFramework.fixtures.TempDirTestFixture
+import com.intellij.openapi.application.runReadActionBlocking
 import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
-import org.jetbrains.bazel.test.framework.BazelBasePlatformTestCase
-import org.junit.Test
-import org.junit.runner.RunWith
-import org.junit.runners.JUnit4
+import org.jetbrains.bazel.test.framework.BazelTestApplication
+import org.jetbrains.bazel.test.framework.bazelCodeInsightFixture
+import org.junit.jupiter.api.Test
 
-@RunWith(JUnit4::class)
-class StarlarkScopeTest : BazelBasePlatformTestCase() {
-  override fun createTempDirTestFixture(): TempDirTestFixture = IdeaTestFixtureFactory.getFixtureFactory().createTempDirTestFixture()
+@BazelTestApplication
+class StarlarkScopeTest {
+  private val myFixture by bazelCodeInsightFixture()
 
   @Test
   fun `function scope is preferred to top-level scope`() {
@@ -189,14 +187,16 @@ class StarlarkScopeTest : BazelBasePlatformTestCase() {
     )
 
     // when
-    val reference = myFixture.file.findReferenceAt(myFixture.caretOffset)
-    val resolved = reference!!.resolve()
+    val resolved = runReadActionBlocking {
+      val reference = myFixture.file.findReferenceAt(myFixture.caretOffset)
+      reference!!.resolve()
+    }
 
     // then
     resolved.shouldNotBeNull()
-    resolved.containingFile shouldBe defsFile
-    resolved.line shouldBe 3
-    resolved.column shouldBe 4
+    runReadActionBlocking { resolved.containingFile } shouldBe defsFile
+    runReadActionBlocking { resolved.line } shouldBe 3
+    runReadActionBlocking { resolved.column } shouldBe 4
   }
 
   @Test

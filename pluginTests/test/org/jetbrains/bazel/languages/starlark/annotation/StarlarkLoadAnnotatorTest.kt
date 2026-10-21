@@ -2,8 +2,12 @@ package org.jetbrains.bazel.languages.starlark.annotation
 
 import org.jetbrains.bazel.languages.starlark.StarlarkBundle
 import org.jetbrains.bazel.languages.starlark.fixtures.StarlarkAnnotatorTestCase
+import org.jetbrains.bazel.test.framework.BazelTestApplication
+import org.junit.jupiter.api.Test
 
+@BazelTestApplication
 class StarlarkLoadAnnotatorTest : StarlarkAnnotatorTestCase() {
+  @Test
   fun testResolvedLoadedSymbolIsNotHighlighted() {
     myFixture.addFileToProject("MODULE.bazel", "")
     myFixture.addFileToProject("BUILD.bazel", "")
@@ -23,6 +27,7 @@ class StarlarkLoadAnnotatorTest : StarlarkAnnotatorTestCase() {
     myFixture.checkHighlighting(true, true, true)
   }
 
+  @Test
   fun testUnresolvedLoadedSymbolIsHighlighted() {
     myFixture.addFileToProject("MODULE.bazel", "")
     myFixture.addFileToProject("BUILD.bazel", "")
@@ -42,6 +47,7 @@ class StarlarkLoadAnnotatorTest : StarlarkAnnotatorTestCase() {
     myFixture.checkHighlighting(true, true, true)
   }
 
+  @Test
   fun testLoadedSymbolsFromTooLargeFileAreNotHighlightedAsUnresolved() {
     val description = StarlarkBundle.message("annotator.too.large.file")
     val largeFileContent = buildString {

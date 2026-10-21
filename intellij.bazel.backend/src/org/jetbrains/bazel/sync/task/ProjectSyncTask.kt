@@ -41,7 +41,9 @@ import org.jetbrains.bazel.server.BazelServerFacade
 import org.jetbrains.bazel.server.BazelServerService
 import org.jetbrains.bazel.sync.ProjectPostSyncHook
 import org.jetbrains.bazel.sync.ProjectPreSyncHook
+import org.jetbrains.bazel.sync.ProjectSyncCompletionResult
 import org.jetbrains.bazel.sync.ProjectSyncHook.ProjectSyncHookEnvironment
+import org.jetbrains.bazel.sync.ProjectSyncOutcome
 import org.jetbrains.bazel.sync.ProjectSyncScope
 import org.jetbrains.bazel.sync.SyncWorkspaceUpdate
 import org.jetbrains.bazel.sync.SyncWorkspaceUpdater
@@ -70,7 +72,7 @@ class ProjectSyncTask(
   private val scope: ProjectSyncScope,
   private val onSyncTaskStarted: (TaskId) -> Unit = {},
 ) {
-  suspend fun sync() {
+  suspend fun sync(): ProjectSyncOutcome =
     when (scope) {
       is ProjectSyncScope.Full ->
         if (scope.phased) {
@@ -81,23 +83,22 @@ class ProjectSyncTask(
         }
 
       else -> syncPhase(SyncPhase.SECOND, buildProject = scope.build)
-    }
-  }
+    }.toOutcome()
 
-  private suspend fun phasedSync(buildProject: Boolean) {
+  private suspend fun phasedSync(buildProject: Boolean): ProjectSyncResult {
     var incompleteState: IncompleteDependenciesAccessToken? = null
     try {
       val firstPhaseResult = syncPhase(SyncPhase.FIRST, false)
       if (firstPhaseResult.completionResult == ProjectSyncCompletionResult.CANCELLED ||
           firstPhaseResult.completionResult == ProjectSyncCompletionResult.SKIPPED) {
-        return
+        return firstPhaseResult
       }
       incompleteState =
         edtWriteAction {
           project.service<IncompleteDependenciesService>().enterIncompleteState(this)
         }
 
-      syncPhase(SyncPhase.SECOND, buildProject)
+      return syncPhase(SyncPhase.SECOND, buildProject)
     }
     finally {
       if (incompleteState != null) {
@@ -131,6 +132,8 @@ class ProjectSyncTask(
 
     onSyncTaskStarted(taskId)
 
+    // The status service publishes this result to everyone who waits for the end of the sync.
+    var endResult = ProjectSyncResult(ProjectSyncCompletionResult.FAILURE)
     try {
       log.debug("Starting sync project task")
 
@@ -203,6 +206,7 @@ class ProjectSyncTask(
 
           ProjectSyncCompletionResult.SKIPPED -> Unit
         }
+        endResult = syncResult
         return syncResult
       }
       finally {
@@ -210,24 +214,26 @@ class ProjectSyncTask(
       }
     }
     catch (e: CancellationException) {
+      endResult = ProjectSyncResult(ProjectSyncCompletionResult.CANCELLED, failureCause = e)
       syncConsole.finishTask(
         taskId,
         BazelBackendBundle.message("console.task.sync.cancelled"),
         SkippedResultImpl(),
       )
-      return ProjectSyncResult(ProjectSyncCompletionResult.CANCELLED, failureCause = e)
+      return endResult
     }
     catch (e: Exception) {
+      endResult = ProjectSyncResult(ProjectSyncCompletionResult.FAILURE, failureCause = e)
       log.error("Error syncing project", e)
       syncConsole.finishTask(
         taskId,
         BazelBackendBundle.message("console.task.sync.failed"),
         FailureResultImpl(e),
       )
-      return ProjectSyncResult(ProjectSyncCompletionResult.FAILURE, failureCause = e)
+      return endResult
     }
     finally {
-      SyncStatusService.getInstance(project).finishSync()
+      SyncStatusService.getInstance(project).finishSync(endResult.toOutcome())
     }
   }
 
@@ -394,6 +400,7 @@ class ProjectSyncTask(
             builder = storage,
             outputResolver = server.outputResolver,
             outputParser = server.outputParser,
+            outFileHardLinks = server.outFileHardLinks,
             bazelInfo = server.bazelInfo,
           )
           importerHelper.invoke(progressReporter, workspaceSnapshot, taskId)

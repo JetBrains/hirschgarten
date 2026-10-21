@@ -7,14 +7,11 @@ import com.intellij.openapi.projectRoots.Sdk
 import com.intellij.platform.backend.workspace.WorkspaceModel
 import com.intellij.platform.eel.provider.getEelDescriptor
 import com.intellij.platform.workspace.jps.entities.SdkDependency
-import com.intellij.python.sdk.backend.getSdkAPI
 import com.jetbrains.python.debugger.PyDebugRunner
 import com.jetbrains.python.run.PythonCommandLineState
 import com.jetbrains.python.run.PythonConfigurationType
 import com.jetbrains.python.run.PythonRunConfiguration
 import com.jetbrains.python.run.PythonScriptCommandLineState
-import com.jetbrains.python.sdk.ModuleOrProject.ProjectOnly
-import com.jetbrains.python.sdk.createLocalSdkGuessingTypeByPath
 import com.jetbrains.python.sdk.legacy.PythonSdkUtil
 import kotlinx.coroutines.CompletableDeferred
 import org.jetbrains.annotations.ApiStatus
@@ -30,7 +27,6 @@ import org.jetbrains.bazel.server.BazelServerFacade
 import org.jetbrains.bazel.target.ModuleTargetService
 import org.jetbrains.bazel.taskEvents.BazelTaskListener
 import org.jetbrains.bsp.protocol.CompileParams
-import java.nio.file.Files
 import java.nio.file.LinkOption
 import java.nio.file.Path
 
@@ -84,22 +80,14 @@ class PythonDebugCommandLineState(
       it.scriptName = debugInfo.pythonFile.toAbsolutePath().toString()
       it.scriptParameters = PythonDebugUtils.buildPythonDebugScriptParameters(debugInfo.targetArgs, runConfigArguments)
       it.workingDirectory = debugInfo.workingDirectory.toAbsolutePath().toString()
+      // The sync sets an interpreter on the module of each target, so the debug run only looks one up.
       val sdk =
-        debugInfo.pythonBinary?.let { pythonBinary -> getOrCreateSdkForPythonBinary(environment.project, pythonBinary) }
+        debugInfo.pythonBinary?.let { pythonBinary -> getSdkForPythonBinary(pythonBinary) }
         ?: getSdkForTarget(environment.project, target)
       it.envs = debugInfo.environmentVariables +
                 (PyDebugRunner.LIBRARY_ROOTS to PythonDebugUtils.buildPythonLibraryRoots(sdk, debugInfo.libraryRoots))
       it.sdk = sdk
     }
-  }
-}
-
-internal suspend fun getOrCreateSdkForPythonBinary(project: Project, pythonBinary: Path): Sdk? {
-  if (!pythonBinary.isAbsolute || !Files.isRegularFile(pythonBinary)) return null
-  getSdkForPythonBinary(pythonBinary)?.let { return it }
-  return when (val result = createLocalSdkGuessingTypeByPath(pythonBinary, ProjectOnly(project))) {
-    is com.jetbrains.python.Result.Failure -> null
-    is com.jetbrains.python.Result.Success -> result.result.getSdkAPI()
   }
 }
 

@@ -1,17 +1,26 @@
 package org.jetbrains.bazel.data
 
+import com.intellij.ide.starter.di.di
 import com.intellij.ide.starter.ide.IDETestContext
 import com.intellij.ide.starter.models.TestCase
+import com.intellij.ide.starter.path.GlobalPaths
 import com.intellij.ide.starter.project.ProjectInfoSpec
-import com.intellij.ide.starter.project.ReusableLocalProjectInfo
 import com.intellij.ide.starter.project.TestCaseTemplate
 import org.jetbrains.bazel.test.compat.IntegrationTestCompat
 import org.jetbrains.bazel.test.framework.BazelPathManager
+import org.kodein.di.instance
+import java.nio.file.Files
 import java.nio.file.Path
+import kotlin.io.path.ExperimentalPathApi
+import kotlin.io.path.copyToRecursively
 import kotlin.io.path.createDirectories
 import kotlin.io.path.createSymbolicLinkPointingTo
 import kotlin.io.path.div
 import kotlin.io.path.exists
+import kotlin.io.path.name
+import kotlin.io.path.notExists
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.minutes
 
 object IdeaBazelCases : BaseBazelCasesParametrized(BazelTestContext.IDEA) {
   val NonIndexableFilesAllTabSESplit = withBazelProject(
@@ -66,7 +75,7 @@ class IdeStarterBazelProject internal constructor(
 ) : ProjectInfoSpec {
   internal val fixtureRoot: Path
   internal val pathWithinFixture: Path?
-  private val localProject: ReusableLocalProjectInfo
+  private val description: String
 
   init {
     require(path.isNotBlank()) { "Bazel test fixture path must not be empty" }
@@ -82,21 +91,25 @@ class IdeStarterBazelProject internal constructor(
 
     fixtureRoot = testProjectsRoot.resolve(fixtureName)
     pathWithinFixture = if (projectPath.nameCount == 1) null else projectPath.subpath(1, projectPath.nameCount).normalize()
-    localProject = ReusableLocalProjectInfo(
-      projectDir = fixtureRoot,
-      configureProjectBeforeUse = configureProjectBeforeUse,
-      description = "Bundled Bazel test fixture '$path'",
-    )
+    description = "Bundled Bazel test fixture '$path'"
   }
 
-  override val isReusable: Boolean
-    get() = localProject.isReusable
+  override val isReusable: Boolean = false
 
-  override val downloadTimeout
-    get() = localProject.downloadTimeout
+  override val downloadTimeout: Duration = 1.minutes
 
+  /**
+   * Copies the fixture to a new dir that only the calling context uses.
+   * The dir name keeps the fixture name. Another test of the same fixture, or an earlier run, cannot leave files in it.
+   */
+  @OptIn(ExperimentalPathApi::class)
   override fun downloadAndUnpackProject(): Path? {
-    val copiedFixtureRoot = localProject.downloadAndUnpackProject() ?: return null
+    if (fixtureRoot.notExists()) return null
+    val globalPaths by di.instance<GlobalPaths>()
+    val copiesRoot = globalPaths.cacheDirForProjects.resolve("unpacked").createDirectories()
+    val copyRoot = Files.createTempDirectory(copiesRoot, "p")
+    val copiedFixtureRoot = fixtureRoot.copyToRecursively(copyRoot.resolve(fixtureRoot.name), followLinks = false, overwrite = false)
+      .toAbsolutePath()
     val innerPath = pathWithinFixture ?: return copiedFixtureRoot
     val projectHome = copiedFixtureRoot.resolve(innerPath).normalize()
     require(projectHome.startsWith(copiedFixtureRoot) && projectHome.exists()) {
@@ -105,7 +118,7 @@ class IdeStarterBazelProject internal constructor(
     return projectHome
   }
 
-  override fun getDescription(): String = localProject.getDescription()
+  override fun getDescription(): String = description
 
   private companion object {
     val WINDOWS_ABSOLUTE_PATH = Regex("^[A-Za-z]:[\\\\/].*")

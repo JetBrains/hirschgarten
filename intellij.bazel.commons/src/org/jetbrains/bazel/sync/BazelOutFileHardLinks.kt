@@ -48,6 +48,12 @@ interface BazelOutFileHardLinks {
   suspend fun createOutputFileHardLinks(files: Collection<Path>): List<Path>
 
   /**
+   * Returns the result of a hardlink operation from the current sync, including a fallback path.
+   * Returns null if this sync has no operation for [originalFile]. Does not create a hardlink.
+   */
+  suspend fun findPreparedOutputFile(originalFile: Path): Path? = null
+
+  /**
    * [createOutputFileHardLink] only supports files, not directories.
    * If you hardlinked an output file and want to resolve its parent directory from another place in the code, use this function.
    * May return a non-existent path if none of the transitive children of [fileOrDir] were ever hardlinked.

@@ -11,8 +11,6 @@ import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.annotations.Nls
 import org.jetbrains.bazel.assets.BazelPluginIcons
 import org.jetbrains.bazel.sync.workspace.persistence.WorkspaceSnapshotService
-import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceConfiguration
-import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceConfigurationId
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceSnapshot
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
 import org.jetbrains.bazel.workspacemodel.entities.bazelModuleExtension

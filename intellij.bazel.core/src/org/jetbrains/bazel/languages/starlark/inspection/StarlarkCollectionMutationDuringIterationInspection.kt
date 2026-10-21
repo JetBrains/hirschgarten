@@ -9,7 +9,6 @@ import com.intellij.psi.util.PsiTreeUtil
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.languages.starlark.StarlarkBundle
 import org.jetbrains.bazel.languages.starlark.StarlarkFileType
-import org.jetbrains.bazel.languages.starlark.StarlarkUtils.nearestRelevantAfter
 import org.jetbrains.bazel.languages.starlark.StarlarkUtils.relevantChildrenAfterEach
 import org.jetbrains.bazel.languages.starlark.elements.StarlarkTokenTypes
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkElementVisitor
@@ -29,7 +28,7 @@ class StarlarkCollectionMutationDuringIterationInspection : LocalInspectionTool(
 
   private class CollectionMutationVisitor(private val holder: ProblemsHolder) : StarlarkElementVisitor() {
     override fun visitForStatement(node: StarlarkForStatement) {
-      val collection = nearestRelevantAfter(node, StarlarkTokenTypes.IN_KEYWORD) ?: return
+      val collection = node.rightHandSide() ?: return
       val body = node.getStatementLists().firstOrNull() ?: return
       reportMutationsOfIteratedCollections(listOf(collection), body)
     }

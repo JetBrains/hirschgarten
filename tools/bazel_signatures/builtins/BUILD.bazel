@@ -1,0 +1,18 @@
+load("@rules_kotlin//kotlin:jvm.bzl", "kt_jvm_binary")
+
+kt_jvm_binary(
+    name = "generator",
+    srcs = glob([
+        "src/**/*.kt",
+        "gen/**/*.java",
+    ]),
+    main_class = "org.jetbrains.bazel.tools.generator.BazelBuiltinSignaturesGeneratorKt",
+    resource_strip_prefix = "plugins/bazel/tools/bazel_signatures/builtins/resources",
+    resources = glob(["resources/**"]),
+    visibility = ["//plugins/bazel:__pkg__"],
+    deps = [
+        "//plugins/bazel/tools/bazel_signatures/common",
+        "@community//libraries/gson",
+        "@community//libraries/protobuf",
+    ],
+)

@@ -111,11 +111,13 @@ class StarlarkInvalidAssignmentTargetInspectionTest : BasePlatformTestCase() {
   }
 
   @Test
-  fun `augmented assignment on sequence lhs should be highlighted`() {
+  fun `augmented assignment on sequence or tuple lhs should be highlighted`() {
     myFixture.configureByText(
       "test.bzl",
       """
       <error descr="$augmentedSeq">[a, b]</error> += [1, 2]
+      <error descr="$augmentedSeq">(c, d)</error> += [1, 2]
+      <error descr="$augmentedSeq">e, f</error> += [1, 2]
       """.trimIndent(),
     )
     myFixture.checkHighlighting(true, false, false)

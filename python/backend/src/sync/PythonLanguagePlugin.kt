@@ -4,6 +4,10 @@ import com.google.devtools.intellij.aspect.Common.ArtifactLocation
 import com.google.devtools.intellij.ideinfo.IntellijIdeInfo
 import com.google.devtools.intellij.ideinfo.IntellijIdeInfo.TargetIdeInfo
 import com.intellij.openapi.project.Project
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
+import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.commons.LanguageClass
 import org.jetbrains.bazel.commons.NoLocalRepositories
 import org.jetbrains.bazel.languages.projectview.ProjectView
@@ -12,6 +16,7 @@ import org.jetbrains.bazel.python.lang.PythonBuildTarget
 import org.jetbrains.bazel.python.lang.PythonLanguageClass
 import org.jetbrains.bazel.server.BazelServerFacade
 import org.jetbrains.bazel.server.model.sourcesList
+import org.jetbrains.bazel.sync.workspace.DefaultOutputLocationResolver
 import org.jetbrains.bazel.sync.workspace.languages.LanguagePlugin
 import org.jetbrains.bazel.sync.workspace.snapshot.OutputLocationCollectionBuilder
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceSyncConfig
@@ -19,17 +24,19 @@ import org.jetbrains.bazel.utils.allAncestorsSequence
 import org.jetbrains.bsp.protocol.BuildTargetData
 import org.jetbrains.bsp.protocol.OutputLocation
 import org.jetbrains.bsp.protocol.OutputLocationCollection
+import org.jetbrains.bsp.protocol.isGenerated
 import org.jetbrains.bsp.protocol.mapPath
-import org.jetbrains.bsp.protocol.toExecrootPath
 import java.nio.file.Files
 import kotlin.io.path.exists
 import kotlin.io.path.extension
 import kotlin.io.path.isDirectory
 import kotlin.io.path.name
 import kotlin.io.path.nameWithoutExtension
+import kotlin.io.path.pathString
 import kotlin.reflect.KClass
 
-internal class PythonLanguagePlugin : LanguagePlugin {
+@ApiStatus.Internal
+class PythonLanguagePlugin : LanguagePlugin {
   override val providedBuildTargetTypes: Set<KClass<out BuildTargetData>>
     get() = setOf(PythonBuildTarget::class)
 
@@ -53,6 +60,11 @@ internal class PythonLanguagePlugin : LanguagePlugin {
       return emptyList()
     }
     val pythonTarget = target.pythonTargetInfo
+    val generatedSources = pythonTarget.resolveGeneratedSources(server)
+    val generatedSourceOverrides = prepareGeneratedSources(
+      server,
+      server.outputParser.parse(target.srcsList).asSequence() + generatedSources.getOutputLocations(),
+    )
     val runnerScript =
       if (target.hasExecutableInfo()) {
         server.bazelPathsResolver.resolve(target.executableInfo.executableFile, NoLocalRepositories)
@@ -65,7 +77,8 @@ internal class PythonLanguagePlugin : LanguagePlugin {
         version = pythonTarget.version.takeUnless(String::isNullOrEmpty),
         interpreter = pythonTarget.parseInterpreter(server),
         imports = pythonTarget.importsList.toList(),
-        generatedSources = pythonTarget.resolveGeneratedSources(server),
+        generatedSources = generatedSources,
+        generatedSourceOverrides = generatedSourceOverrides,
         externalSources = server.outputParser.parse(getExternalSources(server, target))
           .map { it.toSitePackagesDirectory() }
           .let { OutputLocationCollectionBuilder.ofLocations(it) },
@@ -75,6 +88,30 @@ internal class PythonLanguagePlugin : LanguagePlugin {
         targetArgs = PythonDebugUtils.extractPythonTargetArgs(target),
       ),
     )
+  }
+
+  private suspend fun prepareGeneratedSources(
+    server: BazelServerFacade,
+    sources: Sequence<OutputLocation>,
+  ): Map<OutputLocation, OutputLocation> {
+    val resolver = DefaultOutputLocationResolver.createExecrootResolving(server.bazelInfo)
+    val locations = sources.filter { it.isGenerated }
+      .distinct()
+      .mapNotNull { location ->
+        resolver.resolve(location, NoLocalRepositories)
+          ?.takeIf { LanguageClass.fromExtension(it.extension) == PythonLanguageClass.PYTHON }
+          ?.let { location to it }
+      }.toList()
+    return coroutineScope {
+      locations.map { (location, path) ->
+        async {
+          val effectivePath = server.outFileHardLinks.createOutputFileHardLink(path) ?: path.toAbsolutePath()
+          if (effectivePath != server.outputResolver.resolve(location, NoLocalRepositories)) {
+            location to OutputLocation.Host(effectivePath.toAbsolutePath().pathString)
+          } else null
+        }
+      }.awaitAll().filterNotNull().toMap()
+    }
   }
 
   private fun getExternalSources(
@@ -107,7 +144,7 @@ internal class PythonLanguagePlugin : LanguagePlugin {
           listOf(rootFile to root)
         }
       }
-      .filter { (file, _) -> file.extension == "py" || file.extension == "pyw" }
+      .filter { (file, _) -> LanguageClass.fromExtension(file.extension) == PythonLanguageClass.PYTHON }
       .map { (file, location) ->
         // If type annotation exists - use it instead of generated .py file
         // https://peps.python.org/pep-0484/#the-type-of-class-objects
@@ -118,8 +155,7 @@ internal class PythonLanguagePlugin : LanguagePlugin {
           location
         }
       }
-    // parse again to hard link the files inside the directories and the `.pyi` stubs
-    return OutputLocationCollectionBuilder.buildExecroot(files.map { it.toExecrootPath() }, server.outputParser)
+    return OutputLocationCollectionBuilder.ofLocations(files)
   }
 }
 

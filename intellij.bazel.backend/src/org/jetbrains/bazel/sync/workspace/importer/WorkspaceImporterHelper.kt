@@ -13,6 +13,7 @@ import org.jetbrains.bazel.config.BazelBackendBundle
 import org.jetbrains.bazel.progress.TaskConsole
 import org.jetbrains.bazel.progress.syncConsole
 import org.jetbrains.bazel.progress.withSubtask
+import org.jetbrains.bazel.sync.BazelOutFileHardLinks
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceSnapshot
 import org.jetbrains.bazel.workspacemodel.entities.BazelProjectEntitySource
 import org.jetbrains.bsp.protocol.OutputLocationParser
@@ -27,6 +28,7 @@ class WorkspaceImporterHelper(
   private val builder: MutableEntityStorage,
   private val outputResolver: OutputLocationResolver,
   private val outputParser: OutputLocationParser,
+  private val outFileHardLinks: BazelOutFileHardLinks,
   private val bazelInfo: BazelInfo,
 ) {
   companion object {
@@ -46,6 +48,7 @@ class WorkspaceImporterHelper(
       currentSnapshot = workspaceModel.currentSnapshot,
       outputResolver = outputResolver,
       outputParser = outputParser,
+      outFileHardLinks = outFileHardLinks,
       bazelInfo = bazelInfo,
     )
     importers = BazelWorkspaceImporterFactory.EP_NAME.mapExtensionSafe { it.createWorkspaceImporter(context) }

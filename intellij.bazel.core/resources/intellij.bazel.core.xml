@@ -43,10 +43,6 @@
                     interface="org.jetbrains.bazel.run.test.BazelTestLocatorProvider"
                     dynamic="true"
     />
-    <extensionPoint qualifiedName="org.jetbrains.bazel.testFilterProvider"
-                    interface="org.jetbrains.bazel.run.test.BazelTestFilterProvider"
-                    dynamic="true"
-    />
     <extensionPoint qualifiedName="org.jetbrains.bazel.bzlmodResolver"
                     interface="org.jetbrains.bazel.languages.starlark.bazel.bzlmod.BazelModuleResolver"
                     dynamic="true"
@@ -60,6 +56,10 @@
                     beanClass="com.intellij.lang.LanguageExtensionPoint">
       <with attribute="implementationClass" implements="org.jetbrains.bazel.run.synthetic.SyntheticRunTargetTemplateGenerator"/>
     </extensionPoint>
+
+    <extensionPoint qualifiedName="org.jetbrains.bazel.testRerunExtension"
+                    interface="org.jetbrains.bazel.run.BazelTestRerunExtension"
+                    dynamic="true"/>
   </extensionPoints>
 
   <resource-bundle>messages.BazelPluginBundle</resource-bundle>
@@ -165,10 +165,6 @@
       id="DirectoriesSyncHook"
       implementation="org.jetbrains.bazel.flow.sync.DirectoriesSyncHook"
     />
-    <projectSyncHook
-      id="BazelRepoMappingSyncHook"
-      implementation="org.jetbrains.bazel.languages.starlark.repomapping.BazelRepoMappingSyncHook"
-    />
     <projectSyncHook implementation="org.jetbrains.bazel.run.import.ImportRunConfigurationsSyncHook"/>
     <projectSyncHook
       implementation="org.jetbrains.bazel.ignore.UpdateBazelIgnoreSyncHook"
@@ -212,11 +208,9 @@
 
     <vfs.asyncListener implementation="org.jetbrains.bazel.flow.exclude.BazelSymlinkExcludeFileListener"/>
 
-    <projectService serviceImplementation="org.jetbrains.bazel.languages.starlark.repomapping.BazelRepoMappingServiceAdapter"
-                    serviceInterface="org.jetbrains.bazel.workspace.BazelRepoMappingService"/>
     <projectService
-      serviceImplementation="org.jetbrains.bazel.sync.environment.IJBazelProjectContextService"
-      serviceInterface="org.jetbrains.bazel.sync.environment.BazelProjectContextService"
+      serviceImplementation="org.jetbrains.bazel.sync.environment.IJBazelProjectInfoService"
+      serviceInterface="org.jetbrains.bazel.sync.environment.BazelProjectInfoService"
     />
 
     <applicationService
@@ -607,6 +601,14 @@
                      level="ERROR"
                      implementationClass="org.jetbrains.bazel.languages.starlark.inspection.StarlarkUnsupportedPythonSyntaxInspection"/>
 
+    <localInspection language="Starlark"
+                     key="inspection.display.name.starlark.assignment.arity.mismatch.check"
+                     groupPath="Bazel"
+                     groupKey="starlark.inspection.group.name"
+                     enabledByDefault="true"
+                     level="ERROR"
+                     implementationClass="org.jetbrains.bazel.languages.starlark.inspection.StarlarkAssignmentArityMismatchInspection"/>
+
     <fileType
       extensions="bazelquery"
       fieldName="INSTANCE"
@@ -763,8 +765,7 @@
 
     <execution.processHandlerPidProvider implementation="org.jetbrains.bazel.run.BazelProcessHandlerPidProvider"/>
     <applicationSettings service="org.jetbrains.bazel.ui.settings.BazelApplicationSettingsService"/>
-    <projectSettings service="org.jetbrains.bazel.sync.environment.IJBazelProjectContextService"/>
-    <projectSettings service="org.jetbrains.bazel.languages.starlark.repomapping.PersistentBazelRepoMappingService"/>
+    <projectSettings service="org.jetbrains.bazel.sync.environment.IJBazelProjectInfoService"/>
     <projectSettings service="org.jetbrains.bazel.languages.bazelversion.service.BazelVersionCheckerService"/>
     <projectSettings service="org.jetbrains.bazel.languages.bazelversion.service.resolver.BazelGithubGlobalCacheService"/>
 

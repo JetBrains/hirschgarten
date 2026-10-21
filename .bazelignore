@@ -3,3 +3,8 @@ out
 node_modules
 pluginTests
 integrationTests/testProjects
+clion
+pluginTests.clion
+integrationTests/e2e
+tools/bazel_signatures
+tools/plugin_distribution

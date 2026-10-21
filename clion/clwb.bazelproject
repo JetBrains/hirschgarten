@@ -1,14 +1,33 @@
-# import: .bazelproject - inline since import is broken
+# inline of .bazelproject without `targets` and `index_all_files_in_directories: true` sections
 
 dot_idea_directory_location: .idea.bazel
 
-# targets:
-#   //...
-#   @community//...
-#   @rules_jvm//...
-#   @lib//...
-#   @ultimate_lib//...
-#   @jps_to_bazel//...
+directories:
+  .
+  -.claude/worktrees
+  -.opencode/node_modules
+  -community/build/download
+  -community/build/dependencies/build/android-sdk
+  -community/config
+  -community/out
+  -community/platform/sqlite/target
+  -community/system
+  -community/test-config
+  -community/test-system
+  -config
+  -dotnet/Bin.RiderBackend
+  -dotnet/Obj
+  -fleet/build/air/webpack/node_modules
+  -localization
+  -out
+  -plugins/jupyter/frontend/node_modules
+  -plugins/spy-js/server/dist
+  -rider/build/projectTemplates
+  -system
+  -test-config
+  -test-system
+  -tools/tomcat
+  -vscode
 
 use_jetbrains_test_runner: true
 
@@ -18,9 +37,11 @@ java_source_root_optimization_patterns:
 
 run_config_run_with_bazel: false
 
-# end of inline
+import_run_configurations:
+  tools/bazelRunConfigurations/IntelliJ_IDEA_Build.xml
+  tools/bazelRunConfigurations/Buildifier_Format.xml
 
-import_depth: -1
+# end of inline
 
 targets:
   //plugins/bazel/clion/intellij.bazel.clion.common:all

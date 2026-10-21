@@ -1,15 +1,12 @@
 package org.jetbrains.bazel.languages.starlark.references
 
-import com.intellij.testFramework.fixtures.IdeaTestFixtureFactory
-import com.intellij.testFramework.fixtures.TempDirTestFixture
-import org.jetbrains.bazel.test.framework.BazelBasePlatformTestCase
-import org.junit.Test
-import org.junit.runner.RunWith
-import org.junit.runners.JUnit4
+import org.jetbrains.bazel.test.framework.BazelTestApplication
+import org.jetbrains.bazel.test.framework.bazelCodeInsightFixture
+import org.junit.jupiter.api.Test
 
-@RunWith(JUnit4::class)
-class StarlarkMethodInvocationTest : BazelBasePlatformTestCase() {
-  override fun createTempDirTestFixture(): TempDirTestFixture = IdeaTestFixtureFactory.getFixtureFactory().createTempDirTestFixture()
+@BazelTestApplication
+class StarlarkMethodInvocationTest {
+  private val myFixture by bazelCodeInsightFixture()
 
   // https://youtrack.jetbrains.com/issue/BAZEL-3039
   @Test

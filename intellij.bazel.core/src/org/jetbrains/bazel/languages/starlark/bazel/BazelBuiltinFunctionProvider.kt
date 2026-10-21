@@ -2,12 +2,14 @@ package org.jetbrains.bazel.languages.starlark.bazel
 
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
+import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import com.intellij.util.text.SemVer
 import org.jetbrains.bazel.commons.BazelRelease
 import org.jetbrains.bazel.commons.orFromBazelVersionFile
 import org.jetbrains.bazel.commons.toSemVer
-import org.jetbrains.bazel.sync.environment.projectCtx
+import org.jetbrains.bazel.sync.workspace.persistence.WorkspaceSnapshotService
+import org.jetbrains.bazel.sync.workspace.snapshot.CommonWorkspaceSyncConfig
 import kotlin.io.path.Path
 
 /**
@@ -18,7 +20,7 @@ import kotlin.io.path.Path
  * deserializes the JSON into [BazelGlobalFunction] objects via Gson.
  *
  * Multiple versions are shipped. The provider selects the closest version that does not
- * exceed the project's Bazel version, obtained from [org.jetbrains.bazel.sync.environment.BazelProjectContextService].
+ * exceed the project's Bazel version, obtained from the workspace snapshot of the last sync.
  * Before the first sync, falls back to `.bazelversion`; if absent, uses the latest available signatures.
  *
  * See the KDoc on the generator's `main` function for the full generation pipeline and
@@ -39,8 +41,10 @@ internal class BazelBuiltinFunctionProvider : StarlarkGlobalFunctionProvider {
   private var cached: Pair<SemVer, List<BazelGlobalFunction>>? = null
 
   override fun functions(project: Project): List<BazelGlobalFunction> {
-    // fallbacks here are only needed before sync
-    val release = project.projectCtx.bazelRelease.orFromBazelVersionFileIn(project)
+    // Only a synced snapshot has a real release. Before the first sync, the fallbacks apply.
+    val snapshot = project.service<WorkspaceSnapshotService>().snapshot.value
+    val syncedRelease = snapshot.bazelInfo.release.takeIf { snapshot.syncConfigs.any { it is CommonWorkspaceSyncConfig } }
+    val release = syncedRelease.orFromBazelVersionFileIn(project)
     val currentVersion = release?.toSemVer()
     val selectedVersion = when {
       currentVersion == null -> BUILTIN_AVAILABLE_VERSIONS.lastOrNull() // version not detected, use latest

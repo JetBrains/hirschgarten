@@ -103,10 +103,12 @@ internal class RunScriptPathCommandLineState(
       settings.env.envs,
       additionalScriptParameters = getAdditionalJvmRunParameters(environment, settings.debugPort),
       isTest = false,
+      isPassParentEnvs = settings.env.isPassParentEnvs,
       testFilter = null,
-    ) { processHandler ->
-      attachJvmRunExtensions(environment, processHandler)
-    }
+      { processHandler ->
+        attachJvmRunExtensions(environment, processHandler)
+      },
+    )
   }
 }
 

@@ -63,12 +63,13 @@ ide_starter_e2e_matrix(
   Linux cells for them would run the same test twice in CI. Folding that monolithic Linux run onto
   the matrix is a follow-up; until then **new tests should declare `os_list = ["windows"]`** unless
   they need an OS-specific fixture setup.
-- Cells are tagged `exclusive`, because these tests are not isolated from each other: tests that use
-  the same fixture share its copied-project destination (which each test replaces), teardown
-  kills any Bazel/JCEF process under `/ide-tests/` machine-wide, the IDE-Starter cache root is
-  shared, and on Linux/macOS the nested Bazel output base is keyed by that shared workspace path.
-  Per-cell isolation, after which the tag can be dropped, is
-  [BAZEL-3393](https://youtrack.jetbrains.com/issue/BAZEL-3393).
+- Cells are tagged `exclusive`. Each test now copies its fixture to a dir of its own, uses its own
+  nested Bazel output roots, and stops only its own Bazel and JCEF processes
+  ([BAZEL-3670](https://youtrack.jetbrains.com/issue/BAZEL-3670),
+  [BAZEL-3671](https://youtrack.jetbrains.com/issue/BAZEL-3671)). The tag stays for two reasons.
+  The IDE-Starter sweep (`KillOutdatedProcesses`) still kills every process under the `ide-tests`
+  dir on the host, and the IDE-Starter cache root is shared. Per-cell isolation, after which the
+  tag can be dropped, is [BAZEL-3393](https://youtrack.jetbrains.com/issue/BAZEL-3393).
 
 `ide_starter_e2e_host_test(test_class, os_list)` is the variant for tests whose project is
 supplied dynamically at runtime (hirschgarten-style, via IDE-Starter system properties): it
@@ -84,9 +85,9 @@ fixture's committed `.bazelversion`. Nothing rewrites the source fixture:
 - The committed `MODULE.bazel.lock` matches that default. When a matrix cell selects another
   version, Bazel regenerates whatever is stale in the disposable copy
   (default `--lockfile_mode=update`).
-- On Windows, the nested Bazel invocations get short isolated roots
-  (`startup --output_user_root/--install_base/--output_base`) keyed by project root and
-  selected version, so cells never share server state (see `BazelProjectConfigurer`).
+- The nested Bazel invocations get isolated roots (`startup --output_user_root/--output_base`) keyed
+  by project root and selected version, so cells never share server state. On Windows the roots are
+  short and also set `--install_base` (see `BazelProjectConfigurer`).
 
 ## How fixtures stay cross-platform
 

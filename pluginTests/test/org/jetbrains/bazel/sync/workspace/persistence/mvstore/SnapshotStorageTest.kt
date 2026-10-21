@@ -58,10 +58,16 @@ class SnapshotStorageTest {
 
   private val outputResolver = DefaultOutputLocationResolver.createHardlinkResolving(bazelInfo)
 
-  private fun sources(vararg relativePaths: String): OutputLocationCollection =
-    OutputLocationCollectionBuilder.ofLocations(relativePaths.map { OutputLocation.Workspace(it) })
+  private fun sources(
+    vararg relativePaths: String,
+    build: (List<OutputLocation>) -> OutputLocationCollection = OutputLocationCollectionBuilder::ofLocations,
+  ): OutputLocationCollection = build(relativePaths.map { OutputLocation.Workspace(it) })
 
-  private fun rawTarget(key: WorkspaceTargetKey, index: Int): TestBuildTarget =
+  private fun rawTarget(
+    key: WorkspaceTargetKey,
+    index: Int,
+    buildSources: (List<OutputLocation>) -> OutputLocationCollection = OutputLocationCollectionBuilder::ofLocations,
+  ): TestBuildTarget =
     TestBuildTarget(
       key = key,
       dependencies = listOf(DependencyLabel(targetKey = key("@//deps:dep$index"))),
@@ -70,7 +76,7 @@ class SnapshotStorageTest {
         languageClasses = setOf(LanguageClass("java", setOf("java"))),
         ruleType = RuleType.LIBRARY,
       ),
-      sources = sources("pkg$index/Main.java", "shared/Shared.java"),
+      sources = sources("pkg$index/Main.java", "shared/Shared.java", build = buildSources),
       resources = OutputLocationCollection.EMPTY,
       data = listOf(
         JvmBuildTarget(javacOpts = listOf("-parameters"), mainClass = "com.example.Main$index"),
@@ -128,7 +134,12 @@ class SnapshotStorageTest {
     actual.data.toSet() shouldBe expected.data.toSet()
   }
 
-  private suspend fun saveAllBulk(generation: SnapshotGeneration, count: Int, firstIndex: Int = 0): SavedState {
+  private suspend fun saveAllBulk(
+    generation: SnapshotGeneration,
+    count: Int,
+    firstIndex: Int = 0,
+    buildSources: (List<OutputLocation>) -> OutputLocationCollection = OutputLocationCollectionBuilder::ofLocations,
+  ): SavedState {
     val keyId2Target = Int2ObjectBiMap<WorkspaceTargetKey>()
     val labelId2Label = Int2ObjectBiMap<Label>()
     val targets = LinkedHashMap<WorkspaceTargetKey, BuildTarget>()
@@ -138,7 +149,7 @@ class SnapshotStorageTest {
     for (n in 0 until count) {
       val index = firstIndex + n
       val targetKey = key("@//pkg$index:target")
-      val raw = rawTarget(targetKey, index)
+      val raw = rawTarget(targetKey, index, buildSources)
       val keyId = n + 1
       keyId2Target[keyId] = targetKey
       labelId2Label[keyId] = targetKey.label
@@ -184,6 +195,39 @@ class SnapshotStorageTest {
         assertComposedEquals(reopened.findOrLoadTarget(state.partial, targetKey, TargetLoadOptions.ALL), raw)
       }
       reopened.findTargetsByFile(state.partial, Path.of("/workspace/shared/Shared.java")).toSet() shouldBe state.targets.keys
+    }
+    finally {
+      reopenedStorage.close()
+    }
+  }
+
+  @Test
+  fun `bulk-saved output locations are stored once in the ref table`(): Unit = runBlocking {
+    val dbFile = tempDir.resolve("snapshot_db.data")
+    val count = 5
+
+    val state = SnapshotStorage(dbFile, buildKryo()).let { storage ->
+      val state =
+        saveAllBulk(storage.createGeneration(1), count = count, buildSources = OutputLocationCollectionBuilder::ofLocations)
+      storage.commit()
+      storage.close()
+      state
+    }
+
+    val distinctLocations = state.targets.values.flatMap { it.sources.getOutputLocations().toList() }.toSet()
+    distinctLocations.size shouldBe count + 1
+
+    val reopenedStorage = SnapshotStorage(dbFile, buildKryo())
+    try {
+      val reopened = reopenedStorage.openGeneration(1).shouldNotBeNull()
+      reopened.refCount() shouldBe distinctLocations.size
+      val loaded = state.targets.keys.map { reopened.findOrLoadTarget(state.partial, it, TargetLoadOptions.ALL).shouldNotBeNull() }
+      for (target in loaded) {
+        target.sources.getOutputLocations().toList() shouldBe state.targets.getValue(target.key).sources.getOutputLocations().toList()
+      }
+      val shared =
+        loaded.map { target -> target.sources.getOutputLocations().first { it == OutputLocation.Workspace("shared/Shared.java") } }
+      shared.all { it === shared.first() } shouldBe true
     }
     finally {
       reopenedStorage.close()
@@ -585,6 +629,39 @@ class SnapshotStorageTest {
         .valueType(StringDataType.INSTANCE)
         .singleWriter()
       rawStore.removeMap(rawStore.openMap("snapshot.g1.strings", strings))
+      rawStore.commit()
+    }
+
+    val reopened = SnapshotStorage(dbFile, buildKryo())
+    try {
+      reopened.hasGeneration(1) shouldBe false
+      reopened.openGeneration(1) shouldBe null
+      reopened.commit()
+    }
+    finally {
+      reopened.close()
+    }
+
+    MVStore.Builder().fileName(dbFile.toString()).readOnly().open().use { rawStore ->
+      rawStore.mapNames.filter { it.startsWith("snapshot.g1.") } shouldBe emptyList()
+    }
+  }
+
+  @Test
+  fun `generation without its ref table is removed instead of opened`(): Unit = runBlocking {
+    val dbFile = tempDir.resolve("snapshot_db.data")
+    SnapshotStorage(dbFile, buildKryo()).let { storage ->
+      saveAllBulk(storage.createGeneration(1), count = 20)
+      storage.commit()
+      storage.close()
+    }
+
+    MVStore.Builder().fileName(dbFile.toString()).open().use { rawStore ->
+      val refs = MVMap.Builder<Int, ByteArray>()
+        .keyType(IntegerDataType.INSTANCE)
+        .valueType(UnknownDataType)
+        .singleWriter()
+      rawStore.removeMap(rawStore.openMap("snapshot.g1.refs", refs))
       rawStore.commit()
     }
 

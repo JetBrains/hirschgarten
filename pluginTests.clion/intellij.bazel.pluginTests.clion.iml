@@ -31,7 +31,6 @@
     <orderEntry type="module" module-name="intellij.platform.projectModel.impl" scope="TEST" />
     <orderEntry type="module" module-name="intellij.platform.workspace.storage" scope="TEST" />
     <orderEntry type="module" module-name="intellij.libraries.assertj.core" scope="TEST" />
-    <orderEntry type="module" module-name="intellij.kotlin.plugin.community.main" scope="RUNTIME" />
     <orderEntry type="module" module-name="intellij.bazel.commons" scope="TEST" />
     <orderEntry type="module" module-name="intellij.bazel.backend" scope="TEST" />
     <orderEntry type="module" module-name="intellij.bazel.core" scope="TEST" />
@@ -52,5 +51,22 @@
     <orderEntry type="module" module-name="intellij.cidr.debugger.backend" scope="TEST" />
     <orderEntry type="module" module-name="intellij.platform.debugger.impl" scope="TEST" />
     <orderEntry type="module" module-name="intellij.platform.projectModel" scope="TEST" />
+    <orderEntry type="module" module-name="intellij.bazel.clion.test.google" scope="TEST" />
+    <orderEntry type="module" module-name="intellij.bazel.clion.test.catch" scope="TEST" />
+    <orderEntry type="module" module-name="intellij.rider.model.generated" scope="RUNTIME" />
+    <orderEntry type="module" module-name="intellij.clion.radler.testing" scope="RUNTIME" />
+    <orderEntry type="module" module-name="intellij.cidr.execution" scope="TEST" />
+    <orderEntry type="module" module-name="intellij.clion.radler.core" scope="RUNTIME" />
+    <orderEntry type="module" module-name="intellij.libraries.rd.core" scope="TEST" />
+    <orderEntry type="module" module-name="intellij.libraries.rd.framework" scope="TEST" />
+    <orderEntry type="module" module-name="intellij.platform.execution.impl" scope="TEST" />
+    <orderEntry type="module" module-name="intellij.platform.consoleView" scope="TEST" />
+    <orderEntry type="module" module-name="intellij.platform.core.ui" scope="TEST" />
+    <orderEntry type="module" module-name="intellij.platform.util.ui" scope="TEST" />
+    <orderEntry type="module" module-name="intellij.platform.editor.ui" scope="TEST" />
+    <orderEntry type="module" module-name="intellij.clion.test.google.nova" scope="RUNTIME" />
+    <orderEntry type="module" module-name="intellij.clion.test.catch.nova" scope="RUNTIME" />
+    <orderEntry type="module" module-name="intellij.clion.test.google" scope="TEST" />
+    <orderEntry type="module" module-name="intellij.clion.test.catch" scope="TEST" />
   </component>
 </module>

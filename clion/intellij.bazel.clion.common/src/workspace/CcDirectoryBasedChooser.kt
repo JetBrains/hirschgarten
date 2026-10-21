@@ -8,7 +8,7 @@ import com.jetbrains.cidr.lang.workspace.OCResolveConfiguration
 import com.jetbrains.cidr.lang.workspace.OCResolveConfigurationChooser
 import com.jetbrains.cidr.lang.workspace.OCResolveConfigurationSlice
 import com.jetbrains.cidr.lang.workspace.OCWorkspace
-import org.jetbrains.bazel.sync.environment.projectCtx
+import org.jetbrains.bazel.sync.environment.bazelProjectInfo
 
 /** Selects a configuration for files that are not a source of any configuration, e.g. newly created files. */
 internal class CcDirectoryBasedChooser : OCResolveConfigurationChooser {
@@ -19,9 +19,9 @@ internal class CcDirectoryBasedChooser : OCResolveConfigurationChooser {
     file: VirtualFile?,
   ): OCResolveConfiguration? {
     // a specific slice means the file is known to the workspace, leave the choice to the other choosers
-    if (file == null || slice !is OCResolveConfigurationSlice.All || !project.projectCtx.isBazelProject) return null
+    if (file == null || slice !is OCResolveConfigurationSlice.All || !project.bazelProjectInfo.isBazelProject) return null
 
-    val projectRoot = project.projectCtx.projectRootDir ?: return null
+    val projectRoot = project.bazelProjectInfo.projectRootDir ?: return null
     val workspace = OCWorkspace.getInstance(project)
 
     var directory = file.parent

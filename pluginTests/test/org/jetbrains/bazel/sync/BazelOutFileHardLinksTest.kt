@@ -41,6 +41,40 @@ import kotlin.io.path.setLastModifiedTime
 import kotlin.io.path.writeText
 
 internal class BazelOutFileHardLinksTest : MockProjectBaseTest() {
+  @Test
+  fun `prepared output lookup uses only the current sync`(@TempDir outputBase: Path): Unit = timeoutRunBlocking {
+    val root = Path(checkNotNull(project.basePath)).toRealPath()
+    BazelProjectFixtures.initializeBazelProject(project, root)
+    val info = testBazelInfo(workspaceRoot = root, outputBase = outputBase)
+    val links = DefaultBazelOutputFileHardLinks(project, info)
+    val original = info.execRoot.resolve("bazel-out/k8-fastbuild/bin/generated.py")
+    original.parent.createDirectories()
+    original.writeText("VALUE = 42\n")
+
+    repeat(2) {
+      links.onBeforeSync()
+      try {
+        assertThat(links.findPreparedOutputFile(original)).isNull()
+        val cached = links.createOutputFileHardLink(original)
+        assertThat(cached).isNotNull()
+        assertThat(links.findPreparedOutputFile(original)).isEqualTo(cached)
+      }
+      finally {
+        links.onAfterSync(false)
+      }
+      assertThat(links.findPreparedOutputFile(original)).isNull()
+    }
+    original.delete()
+    links.onBeforeSync()
+    try {
+      assertThat(links.createOutputFileHardLink(original)).isNull()
+      assertThat(links.findPreparedOutputFile(original)).isEqualTo(original)
+    }
+    finally {
+      links.onAfterSync(false)
+    }
+  }
+
   @ParameterizedTest
   @ValueSource(booleans = [false, true])
   fun `retargeted symlink with the same modified time`(removeOld: Boolean): Unit = runBlocking {
@@ -91,6 +125,9 @@ internal class BazelOutFileHardLinksTest : MockProjectBaseTest() {
     assertThat(Files.isReadable(original)).isTrue()
     assertThat(links.allHardLinksCreatedSuccessfully).isFalse()
     assertThat(paths).containsExactly(source)
+    assertThat(links.findPreparedOutputFile(original)).isEqualTo(source)
+    links.onAfterSync(false)
+    assertThat(links.findPreparedOutputFile(original)).isNull()
   }
 
   @Test

@@ -16,9 +16,8 @@ import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.project.BazelProjectFixtures.initializeBazelProject
 import org.jetbrains.bazel.python.lang.PythonBuildTarget
 import org.jetbrains.bazel.python.lang.PythonLanguageClass
-import org.jetbrains.bazel.sync.environment.BazelProjectContextService
+import org.jetbrains.bazel.sync.environment.BazelProjectInfoService
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
-import org.jetbrains.bazel.target.targetStorage
 import org.jetbrains.bazel.test.framework.target.TestBuildTarget
 import org.jetbrains.bazel.workspace.model.test.framework.setTargets
 import org.jetbrains.bsp.protocol.OutputLocationCollection
@@ -315,11 +314,11 @@ class PythonDebugUtilsTest {
 
   @Test
   fun `locating source file - project root path not found`(@TestDisposable disposable: Disposable) {
-    val projectContext = project.getService(BazelProjectContextService::class.java)
-    val nonLocalProjectContext = object : BazelProjectContextService by projectContext {
+    val projectContext = project.getService(BazelProjectInfoService::class.java)
+    val nonLocalProjectContext = object : BazelProjectInfoService by projectContext {
       override val projectRootDir = LightVirtualFile("workspace")
     }
-    project.replaceService(BazelProjectContextService::class.java, nonLocalProjectContext, disposable)
+    project.replaceService(BazelProjectInfoService::class.java, nonLocalProjectContext, disposable)
     val file = "src/source.py"
 
     val sourceFile = PythonDebugUtils.findRealSourceFile(project, Label.parse("//src:target"), file)

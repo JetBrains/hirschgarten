@@ -115,7 +115,6 @@
   </extensionPoints>
 
   <extensions defaultExtensionNs="org.jetbrains.bazel">
-    <projectSyncHook implementation="org.jetbrains.bazel.sync.hooks.PathSyncHook"/>
     <targetKindProvider implementation="org.jetbrains.bazel.sync.workspace.targetKind.GenericBazelRules" order="last"/>
 
     <workspaceTypeContributor implementation="org.jetbrains.bazel.sync.workspace.persistence.DefaultWorkspaceTypeContributor"/>
@@ -126,7 +125,7 @@
       implementation="org.jetbrains.bazel.workspace.BazelProjectDirectoriesWorkspaceFileIndexContributor"
     />
     <projectService serviceInterface="org.jetbrains.bazel.sync.workspace.persistence.WorkspaceSnapshotService"
-                    serviceImplementation="org.jetbrains.bazel.sync.workspace.persistence.mvstore.DefaultWorkspaceSnapshotService"/>
+                    serviceImplementation="org.jetbrains.bazel.sync.workspace.persistence.WorkspaceSnapshotServiceImpl"/>
 
     <statistics.counterUsagesCollector implementationClass="org.jetbrains.bazel.fus.BazelBuildMetricsCollector"/>
     <statistics.counterUsagesCollector implementationClass="org.jetbrains.bazel.fus.BazelSyncCollector"/>

@@ -1,13 +1,14 @@
 package org.jetbrains.bazel.languages.starlark.completion
 
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
-import org.jetbrains.bazel.test.framework.BazelBasePlatformTestCase
-import org.junit.Test
-import org.junit.runner.RunWith
-import org.junit.runners.JUnit4
+import org.jetbrains.bazel.test.framework.BazelTestApplication
+import org.jetbrains.bazel.test.framework.bazelCodeInsightFixture
+import org.junit.jupiter.api.Test
 
-@RunWith(JUnit4::class)
-class StarlarkStructFieldCompletionTest : BazelBasePlatformTestCase() {
+@BazelTestApplication
+class StarlarkStructFieldCompletionTest {
+  private val myFixture by bazelCodeInsightFixture()
+
   @Test
   fun `should complete local struct fields`() {
     myFixture.configureByText(
@@ -106,6 +107,5 @@ class StarlarkStructFieldCompletionTest : BazelBasePlatformTestCase() {
     completeBasicLookupStrings() shouldContainExactlyInAnyOrder listOf("delta", "gamma")
   }
 
-  private fun completeBasicLookupStrings(): List<String> =
-    myFixture.completeBasic().flatMap { it.allLookupStrings }
+  private fun completeBasicLookupStrings(): List<String> = myFixture.completeBasic().flatMap { it.allLookupStrings }
 }

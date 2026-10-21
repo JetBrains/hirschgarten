@@ -144,6 +144,34 @@ class BazelRunnerBuilderTest {
   }
 
   @Test
+  fun `build with additional bazel options after build flags`() {
+    val command =
+      bazelRunnerWithBazelInfo.buildBazelCommand(mockProjectView) {
+        build {
+          additionalBazelOptions.add("additionalFlag")
+          targets.add("in1".label())
+        }
+      }
+
+    val executionDescriptor = command.buildExecutionDescriptor()
+    val (targets, cmds) = splitOfTargetPattern(executionDescriptor.command)
+    cmds shouldContainExactly
+      listOf(
+        "bazel",
+        "build",
+        BazelFlag.toolTag(),
+        "--curses=no",
+        "--color=yes",
+        "--noprogress_in_terminal_title",
+        "flag1",
+        "flag2",
+        "additionalFlag",
+      )
+    targets shouldContainExactly listOf("in1")
+    executionDescriptor.finishCallback()
+  }
+
+  @Test
   fun `run without program arguments`() {
     val command =
       bazelRunner.buildBazelCommand(mockProjectView) {

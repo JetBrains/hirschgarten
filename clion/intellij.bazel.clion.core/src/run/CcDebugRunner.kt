@@ -27,9 +27,6 @@ import org.jetbrains.bazel.clion.workspace.CcTargetUtils
 import org.jetbrains.bazel.commons.BazelStatus
 import org.jetbrains.bazel.commons.RepoMapping
 import org.jetbrains.bazel.coroutines.BazelCoroutineService
-import org.jetbrains.bazel.utils.ExecutableInfo
-import org.jetbrains.bazel.utils.RunfileManifestOnlyException
-import org.jetbrains.bazel.utils.UnexpectedScriptContentException
 import org.jetbrains.bazel.languages.projectview.debugFlags
 import org.jetbrains.bazel.progress.ConsoleService
 import org.jetbrains.bazel.progress.ShowConsole
@@ -37,13 +34,16 @@ import org.jetbrains.bazel.progress.TaskConsole
 import org.jetbrains.bazel.progress.withSubtask
 import org.jetbrains.bazel.run.commandLine.parseAsProgramArguments
 import org.jetbrains.bazel.run.config.BazelRunConfiguration
-import org.jetbrains.bazel.run.state.GenericRunState
+import org.jetbrains.bazel.run.state.GenericRunConfigurationState
 import org.jetbrains.bazel.run.task.BazelBuildTaskListener
 import org.jetbrains.bazel.server.connection
 import org.jetbrains.bazel.server.tasks.ScriptPathBuildTargetTask
 import org.jetbrains.bazel.sync.workspace.persistence.WorkspaceSnapshotService
 import org.jetbrains.bazel.sync.workspace.snapshot.allTargets
 import org.jetbrains.bazel.taskEvents.BazelTaskEventsService
+import org.jetbrains.bazel.utils.ExecutableInfo
+import org.jetbrains.bazel.utils.RunfileManifestOnlyException
+import org.jetbrains.bazel.utils.UnexpectedScriptContentException
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.RunParams
 import org.jetbrains.bsp.protocol.TaskGroupId
@@ -60,9 +60,9 @@ class CcDebugRunner : AsyncProgramRunner<RunnerSettings>() {
 
   override fun canRun(executorId: String, profile: RunProfile): Boolean {
     return executorId == DefaultDebugExecutor.EXECUTOR_ID &&
-      profile is BazelRunConfiguration &&
-      profile.targets.size == 1 &&
-      profile.handler is CcRunHandler
+           profile is BazelRunConfiguration &&
+           profile.targets.size == 1 &&
+           (profile.handler is CcRunHandler || profile.handler is CcTestHandler)
   }
 
   @Throws(ExecutionException::class)
@@ -117,7 +117,7 @@ private data class CcDebugContext(
   val taskId: TaskId,
   val console: TaskConsole,
   val environment: ExecutionEnvironment,
-  val state: GenericRunState,
+  val state: GenericRunConfigurationState,
 )
 
 @Throws(ExecutionException::class)

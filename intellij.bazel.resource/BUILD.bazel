@@ -1,0 +1,46 @@
+load("@community//platform/build-scripts/bazel-rules:content_module_jar.bzl", "content_module_jar")
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+
+### auto-generated section `dev intellij.bazel.resource` start
+content_module_jar(module = ":resource")
+### auto-generated section `dev intellij.bazel.resource` end
+
+### auto-generated section `build intellij.bazel.resource` start
+jvm_library(
+    name = "resource",
+    srcs = glob(
+        [],
+        allow_empty = True,
+    ),
+    module_name = "intellij.bazel.resource",
+    resource_strip_prefix = "resources",
+    resources = glob(
+        ["resources/**/*"],
+        allow_empty = True,
+        exclude = ["resources/**/icon-robots.txt"],
+    ),
+    visibility = ["//visibility:public"],
+)
+
+jvm_library(
+    name = "resource_test_lib",
+    testonly = True,
+    srcs = glob(
+        [],
+        allow_empty = True,
+    ),
+    module_name = "intellij.bazel.resource",
+    visibility = ["//visibility:public"],
+    runtime_deps = [":resource"],
+)
+### auto-generated section `build intellij.bazel.resource` end
+
+### auto-generated section `iml intellij.bazel.resource` start
+exports_files(
+    [
+        "intellij.bazel.resource.iml",
+        "resources/intellij.bazel.resource.xml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.bazel.resource` end

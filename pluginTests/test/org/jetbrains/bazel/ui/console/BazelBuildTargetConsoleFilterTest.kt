@@ -1,18 +1,19 @@
 package org.jetbrains.bazel.ui.console
 
 import com.intellij.execution.filters.OpenFileHyperlinkInfo
-import com.intellij.openapi.application.runWriteAction
+import com.intellij.openapi.application.WriteAction
+import com.intellij.openapi.application.runReadActionBlocking
 import com.intellij.openapi.util.io.findOrCreateFile
 import com.intellij.openapi.vfs.VirtualFileManager
 import com.intellij.util.io.delete
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
 import org.jetbrains.bazel.config.rootDir
-import org.jetbrains.bazel.languages.starlark.repomapping.PersistentBazelRepoMappingService
-import org.jetbrains.bazel.test.framework.BazelBasePlatformTestCase
-import org.junit.Test
-import org.junit.runner.RunWith
-import org.junit.runners.JUnit4
+import org.jetbrains.bazel.test.framework.BazelTestApplication
+import org.jetbrains.bazel.test.framework.bazelCodeInsightFixture
+import org.jetbrains.bazel.workspace.setRepoMapping
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
 import java.nio.file.Path
 import kotlin.io.path.createDirectories
 import kotlin.io.path.createTempDirectory
@@ -21,14 +22,18 @@ import kotlin.io.path.writeText
 private const val TEST_LINE_PREFIX = "There are 39 characters in this string "
 private const val TEST_LINE_SUFFIX = " bliep bliep bliep\n"
 
-@RunWith(JUnit4::class)
-class BazelBuildTargetConsoleFilterTest : BazelBasePlatformTestCase() {
+@BazelTestApplication
+class BazelBuildTargetConsoleFilterTest {
+  private val myFixture by bazelCodeInsightFixture()
+
+  private val project get() = myFixture.project
+
   private lateinit var filter: BazelBuildTargetConsoleFilter
 
-  override fun setUp() {
-    super.setUp()
+  @BeforeEach
+  fun setUp() {
     filter = BazelBuildTargetConsoleFilter(project)
-    PersistentBazelRepoMappingService.getInstance(project).canonicalRepoNameToPath = mapOf("" to project.rootDir.toNioPath())
+    project.setRepoMapping { mainRepo(project.rootDir.toNioPath()) }
   }
 
   @Test
@@ -39,7 +44,7 @@ class BazelBuildTargetConsoleFilterTest : BazelBasePlatformTestCase() {
     val line = "$TEST_LINE_PREFIX$bazelTarget$TEST_LINE_SUFFIX"
 
     // when
-    val result = filter.applyFilter(line, line.length + 100)
+    val result = runReadActionBlocking { filter.applyFilter(line, line.length + 100) }
 
     // then
     result!!.resultItems.size shouldBe 1
@@ -56,7 +61,7 @@ class BazelBuildTargetConsoleFilterTest : BazelBasePlatformTestCase() {
     val line = "$TEST_LINE_PREFIX$bazelTarget$TEST_LINE_SUFFIX"
 
     // when
-    val result = filter.applyFilter(line, line.length + 100)
+    val result = runReadActionBlocking { filter.applyFilter(line, line.length + 100) }
 
     // then
     result!!.resultItems.size shouldBe 1
@@ -73,7 +78,7 @@ class BazelBuildTargetConsoleFilterTest : BazelBasePlatformTestCase() {
     val line = "$TEST_LINE_PREFIX$bazelTarget$TEST_LINE_SUFFIX"
 
     // when
-    val result = filter.applyFilter(line, line.length + 100)
+    val result = runReadActionBlocking { filter.applyFilter(line, line.length + 100) }
 
     // then
     result!!.resultItems.size shouldBe 1
@@ -89,11 +94,13 @@ class BazelBuildTargetConsoleFilterTest : BazelBasePlatformTestCase() {
     val path = createBazelFile(externalRootDir, "plugin-bazel/src")
     val bazelTarget = "@@externalRepo//plugin-bazel/src:test_fixtures"
     val line = "$TEST_LINE_PREFIX$bazelTarget$TEST_LINE_SUFFIX"
-    PersistentBazelRepoMappingService.getInstance(project).canonicalRepoNameToPath =
-      mapOf("externalRepo" to externalRootDir, "" to project.rootDir.toNioPath())
+    project.setRepoMapping {
+      mainRepo(project.rootDir.toNioPath())
+      repo("externalRepo", externalRootDir)
+    }
 
     // when
-    val result = filter.applyFilter(line, line.length + 100)
+    val result = runReadActionBlocking { filter.applyFilter(line, line.length + 100) }
 
     // then
     result!!.resultItems.size shouldBe 1
@@ -112,12 +119,13 @@ class BazelBuildTargetConsoleFilterTest : BazelBasePlatformTestCase() {
     val bazelTarget = "@externalRepo2//plugin-bazel/src:test_fixtures"
     val line = "$TEST_LINE_PREFIX$bazelTarget$TEST_LINE_SUFFIX"
 
-    PersistentBazelRepoMappingService.getInstance(project).canonicalRepoNameToPath =
-      mapOf("externalRepo2+" to externalRootDir, "" to project.rootDir.toNioPath())
-    PersistentBazelRepoMappingService.getInstance(project).apparentRepoNameToCanonicalName = mapOf("externalRepo2" to "externalRepo2+")
+    project.setRepoMapping {
+      mainRepo(project.rootDir.toNioPath())
+      repo("externalRepo2+", externalRootDir, apparentName = "externalRepo2")
+    }
 
     // when
-    val result = filter.applyFilter(line, line.length + 100)
+    val result = runReadActionBlocking { filter.applyFilter(line, line.length + 100) }
 
     // then
     result!!.resultItems.size shouldBe 1
@@ -136,7 +144,7 @@ class BazelBuildTargetConsoleFilterTest : BazelBasePlatformTestCase() {
     val line = "$TEST_LINE_PREFIX$bazelTarget$TEST_LINE_SUFFIX"
 
     // when
-    val result = filter.applyFilter(line, line.length + 100)
+    val result = runReadActionBlocking { filter.applyFilter(line, line.length + 100) }
 
     // then
     result!!.resultItems.size shouldBe 0
@@ -150,7 +158,7 @@ class BazelBuildTargetConsoleFilterTest : BazelBasePlatformTestCase() {
     val line = "$TEST_LINE_PREFIX$bazelTarget$TEST_LINE_SUFFIX"
 
     // when
-    val result = filter.applyFilter(line, line.length + 100)
+    val result = runReadActionBlocking { filter.applyFilter(line, line.length + 100) }
 
     // then
     result!!.resultItems.size shouldBe 0
@@ -164,7 +172,7 @@ class BazelBuildTargetConsoleFilterTest : BazelBasePlatformTestCase() {
     val line = "$TEST_LINE_PREFIX$bazelTarget$TEST_LINE_SUFFIX"
 
     // when
-    val result = filter.applyFilter(line, line.length + 100)
+    val result = runReadActionBlocking { filter.applyFilter(line, line.length + 100) }
 
     // then
     result!!.resultItems.size shouldBe 1
@@ -180,7 +188,7 @@ class BazelBuildTargetConsoleFilterTest : BazelBasePlatformTestCase() {
     val line = "$TEST_LINE_PREFIX$bazelTarget$TEST_LINE_SUFFIX"
 
     // when
-    val result = filter.applyFilter(line, line.length + 100)
+    val result = runReadActionBlocking { filter.applyFilter(line, line.length + 100) }
 
     // then
     result!!.resultItems.size shouldBe 1
@@ -199,7 +207,7 @@ class BazelBuildTargetConsoleFilterTest : BazelBasePlatformTestCase() {
     val line = "$TEST_LINE_PREFIX$bazelTarget$TEST_LINE_SUFFIX"
 
     // when
-    val result = filter.applyFilter(line, line.length + 100)
+    val result = runReadActionBlocking { filter.applyFilter(line, line.length + 100) }
 
     // then
     result!!.resultItems.size shouldBe 1
@@ -223,13 +231,13 @@ proto_library(
     val line = "$TEST_LINE_PREFIX$bazelTarget$TEST_LINE_SUFFIX"
 
     // when
-    val result = filter.applyFilter(line, line.length + 100)
+    val result = runReadActionBlocking { filter.applyFilter(line, line.length + 100) }
 
     // then
     result!!.resultItems.size shouldBe 1
     val hyperLink = (result.resultItems[0].hyperlinkInfo as OpenFileHyperlinkInfo)
     hyperLink.virtualFile?.toNioPath().toString() shouldContain "plugin-bazel"
-    hyperLink.descriptor?.offset shouldBe 25
+    runReadActionBlocking { hyperLink.descriptor?.offset } shouldBe 25
     result.resultItems[0].highlightStartOffset shouldBe 100 + TEST_LINE_PREFIX.length
     result.resultItems[0].highlightEndOffset shouldBe 100 + TEST_LINE_PREFIX.length + bazelTarget.length
   }
@@ -242,7 +250,7 @@ proto_library(
     val line = "$TEST_LINE_PREFIX$uri:1$TEST_LINE_SUFFIX"
 
     // when
-    val result = filter.applyFilter(line, line.length + 100)
+    val result = runReadActionBlocking { filter.applyFilter(line, line.length + 100) }
 
     // then
     result!!.resultItems.size shouldBe 0
@@ -253,7 +261,7 @@ proto_library(
     relativePath: String,
     buildFileName: String = "BUILD",
   ): Path =
-    runWriteAction {
+    WriteAction.computeAndWait<Path, Throwable> {
       rootDir
         .resolve(relativePath)
         .createDirectories()

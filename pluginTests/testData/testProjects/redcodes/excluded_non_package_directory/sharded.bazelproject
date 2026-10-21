@@ -1,0 +1,9 @@
+directories:
+  .
+  -docs
+
+derive_targets_from_directories: true
+
+shard_sync: true
+sharding_approach: expand_and_shard
+target_shard_size: 1

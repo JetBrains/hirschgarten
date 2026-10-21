@@ -1,8 +1,8 @@
 package org.jetbrains.bazel.startup
 
-import com.intellij.openapi.components.service
 import com.intellij.openapi.components.serviceAsync
 import com.intellij.openapi.diagnostic.logger
+import com.intellij.openapi.externalSystem.service.project.manage.ExternalProjectsManagerImpl
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Key
 import com.intellij.platform.backend.workspace.WorkspaceModel
@@ -16,7 +16,7 @@ import org.jetbrains.bazel.startup.utils.BazelProjectActivity
 import org.jetbrains.bazel.sync.ProjectDirtyStateService
 import org.jetbrains.bazel.sync.ProjectSyncScope
 import org.jetbrains.bazel.sync.ProjectSyncService
-import org.jetbrains.bazel.sync.environment.projectCtx
+import org.jetbrains.bazel.sync.workspace.snapshot.workspaceSnapshotOrNull
 import org.jetbrains.bazel.target.ModuleTargetService
 import org.jetbrains.bazel.target.TargetStorage
 import org.jetbrains.bazel.ui.settings.BazelApplicationSettingsService
@@ -62,6 +62,9 @@ private suspend fun executeOnEveryProjectStartup(project: Project) {
   project.serviceAsync<ProjectDirtyStateService>() // must come after initialize(), because it reads the registered project id
   project.serviceAsync<ModuleTargetService>() // warm up service
   project.serviceAsync<TargetStorage>() // warm up service
+
+  // store generated IML files outside the project directory
+  ExternalProjectsManagerImpl.getInstance(project).setStoreExternally(true)
 }
 
 private suspend fun resyncProjectIfNeeded(project: Project) {
@@ -87,4 +90,4 @@ private suspend fun isProjectInIncompleteState(project: Project): Boolean =
     !bazelExecPathExists(project)
 
 private fun bazelExecPathExists(project: Project): Boolean =
-  project.projectCtx.bazelExecPath?.isDirectory() == true
+  project.workspaceSnapshotOrNull?.bazelInfo?.execRoot?.isDirectory() == true

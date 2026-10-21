@@ -11,13 +11,14 @@ internal class DefaultProjectSyncService(private val project: Project) : Project
   override var lastSyncTaskId: TaskId? = null
     private set
 
-  override suspend fun sync(scope: ProjectSyncScope) {
+  override suspend fun sync(scope: ProjectSyncScope): ProjectSyncOutcome {
     val task = ProjectSyncTask(
       project = project,
       scope = scope,
       onSyncTaskStarted = { lastSyncTaskId = it },
     )
-    task.sync()
+    val outcome = task.sync()
     ProjectDirtyStateService.getInstance(project).finishSync(scope)
+    return outcome
   }
 }

@@ -2,13 +2,18 @@ package org.jetbrains.bazel.languages.starlark.annotation
 
 import org.jetbrains.bazel.languages.starlark.fixtures.StarlarkAnnotatorTestCase
 import org.jetbrains.bazel.project.BazelProjectFixtures.initializeBazelProject
+import org.jetbrains.bazel.test.framework.BazelTestApplication
+import org.junit.jupiter.api.Test
 
+@BazelTestApplication
 class StarlarkFunctionAnnotatorTest : StarlarkAnnotatorTestCase() {
+  @Test
   fun testFunctionAnnotator() {
     myFixture.configureByFile("FunctionAnnotatorTestData.bzl")
     myFixture.checkHighlighting(true, true, true)
   }
 
+  @Test
   fun testHighlightingForCustomMacro() {
     myFixture.addFileToProject(
       "def.bzl",

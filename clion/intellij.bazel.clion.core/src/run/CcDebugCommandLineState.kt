@@ -2,7 +2,6 @@ package org.jetbrains.bazel.clion.run
 
 import com.intellij.cidr.debugger.profiles.CidrDebugProfile
 import com.intellij.execution.configurations.CommandLineState
-import com.intellij.execution.configurations.GeneralCommandLine
 import com.intellij.execution.process.ProcessHandler
 import com.intellij.execution.runners.ExecutionEnvironment
 import com.intellij.openapi.project.Project
@@ -23,8 +22,12 @@ import com.jetbrains.cidr.execution.debugger.backend.DebuggerDriver
 import com.jetbrains.cidr.execution.runOnEDT
 import org.jetbrains.bazel.commons.RepoMapping
 import org.jetbrains.bazel.commons.getLocalRepositories
-import org.jetbrains.bazel.run.state.GenericRunState
-import org.jetbrains.bazel.sync.environment.projectCtx
+import org.jetbrains.bazel.run.commandLine.scriptPathCommandLine
+import org.jetbrains.bazel.run.state.AbstractGenericTestState
+import org.jetbrains.bazel.run.state.GenericRunConfigurationState
+import org.jetbrains.bazel.run.state.HasTestFilter
+import org.jetbrains.bazel.sync.environment.bazelProjectInfo
+import org.jetbrains.bazel.sync.workspace.snapshot.workspaceSnapshotOrNull
 import org.jetbrains.bazel.utils.ExecutableInfo
 import java.nio.file.Path
 
@@ -35,7 +38,7 @@ private val DEBUG_ENVIRONMENT = CPPEnvironment(CPPToolchains.Toolchain(OS.CURREN
 
 internal class CcDebugCommandLineState(
   environment: ExecutionEnvironment,
-  val bazelState: GenericRunState,
+  val bazelState: GenericRunConfigurationState,
 ) : CidrCommandLineState(environment, CcCidrLauncher(environment.project, bazelState)) {
 
   // set by org.jetbrains.bazel.clion.run.CcDebugRunner
@@ -44,7 +47,7 @@ internal class CcDebugCommandLineState(
   var debugProfile: CidrDebugProfile<*>? = null
 }
 
-private class CcCidrLauncher(private val project: Project, private val bazelState: GenericRunState) : CidrLauncher() {
+private class CcCidrLauncher(private val project: Project, private val bazelState: GenericRunConfigurationState) : CidrLauncher() {
 
   override fun getProject(): Project = project
 
@@ -57,8 +60,8 @@ private class CcCidrLauncher(private val project: Project, private val bazelStat
     val debugProfile = requireNotNull(ccState.debugProfile)
 
     // TODO: when can these be null and what to do then?
-    val executionRoot = requireNotNull(project.projectCtx.bazelExecPath)
-    val workspaceRoot = requireNotNull(project.projectCtx.projectRootDir?.toNioPathOrNull())
+    val executionRoot = requireNotNull(project.workspaceSnapshotOrNull?.bazelInfo?.execRoot)
+    val workspaceRoot = requireNotNull(project.bazelProjectInfo.projectRootDir?.toNioPathOrNull())
 
     val debugDriver = debugProfile.createDriverConfiguration(
       project = project,
@@ -84,18 +87,14 @@ private class CcCidrLauncher(private val project: Project, private val bazelStat
       put(Path.of(""), workspaceRoot)
     }
 
-    val prentEnvironment = if (bazelState.env.isPassParentEnvs) {
-      GeneralCommandLine.ParentEnvironmentType.CONSOLE
-    } else {
-      GeneralCommandLine.ParentEnvironmentType.NONE
-    }
-
-    val commandLine = GeneralCommandLine(executionInfo.binary.toString())
-      .withWorkingDirectory(executionInfo.workingDir)
-      .withEnvironment(executionInfo.envVars)
-      .withEnvironment(bazelState.env.envs) // custom environment variables are not preserved by the script file
-      .withParentEnvironmentType(prentEnvironment)
-      .withParameters(executionInfo.args)
+    val commandLine = scriptPathCommandLine(
+      scriptPath = executionInfo.binary,
+      env = executionInfo.envVars + bazelState.env.envs,  // custom environment variables are not preserved by the script file
+      isTest = bazelState is AbstractGenericTestState<*>,
+      isPassParentEnvs = bazelState.env.isPassParentEnvs,
+      testFilter = (bazelState as? HasTestFilter)?.testFilter,
+      additionalScriptParameters = executionInfo.args,
+    ).withWorkingDirectory(executionInfo.workingDir)
 
     val parameters = TrivialRunParameters(debugDriver, TrivialInstaller(commandLine))
 

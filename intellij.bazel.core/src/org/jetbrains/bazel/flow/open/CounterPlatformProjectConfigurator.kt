@@ -65,7 +65,7 @@ private fun removeFakeModulesAndLibrariesBlocking(project: Project) {
 /**
  * Not using asynchronous [WorkspaceModel.update] here to be extra sure that scanning can't start in between
  */
-@RequiresWriteLock(generateAssertion = false /* IJPL-115548 */)
+@RequiresWriteLock
 private fun updateProjectModel(workspaceModel: WorkspaceModel) {
   @Suppress("UsagesOfObsoleteApi")
   workspaceModel.updateProjectModel("Remove fake modules and libraries from the project") { storage ->
