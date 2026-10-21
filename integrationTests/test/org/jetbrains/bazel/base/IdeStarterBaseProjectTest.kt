@@ -66,6 +66,9 @@ import java.net.URI
 import java.nio.file.Path
 import java.util.function.Predicate
 import kotlin.io.path.ExperimentalPathApi
+import kotlin.io.path.createDirectories
+import kotlin.io.path.createFile
+import kotlin.io.path.exists
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
@@ -94,6 +97,7 @@ abstract class IdeStarterBaseProjectTest {
     pluginZipOverride: Path? = null,
   ): IDETestContext {
     IntegrationTestCompat.onPreCreateContext()
+    hideOuterBazeliskrcFromProjects()
     val ctx = Starter.newContext(projectName, case)
     if (pluginZipOverride != null) {
       ctx.pluginConfigurator.installPluginFromPath(pluginZipOverride)
@@ -165,6 +169,17 @@ abstract class IdeStarterBaseProjectTest {
       withEnv("HOME", System.getProperty("user.home"))
     }
     return this
+  }
+
+  /**
+   * Bazelisk 1.30+ uses the nearest `.bazeliskrc` in the project directory or in any parent directory.
+   * Test projects are unpacked inside the outer execroot, which links the monorepo `.bazeliskrc`,
+   * and its `BAZELISK_BASE_URL` points to the JetBrains Bazel fork.
+   * An empty `.bazeliskrc` above the projects stops the lookup there; a project with its own `.bazeliskrc` still uses it.
+   */
+  private fun hideOuterBazeliskrcFromProjects() {
+    val bazeliskrc = GlobalPaths.instance.cacheDirForProjects.createDirectories().resolve(".bazeliskrc")
+    if (!bazeliskrc.exists()) bazeliskrc.createFile()
   }
 
   private fun IDETestContext.enableCppToolchainDetectionForNestedBazel(): IDETestContext {
