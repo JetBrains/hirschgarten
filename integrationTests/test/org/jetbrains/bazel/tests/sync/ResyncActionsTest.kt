@@ -18,6 +18,7 @@ import org.jetbrains.bazel.base.findFile
 import org.jetbrains.bazel.base.openFile
 import org.jetbrains.bazel.base.syncBazelProject
 import org.jetbrains.bazel.base.waitForSyncSucceeded
+import org.jetbrains.bazel.tests.ui.rightClickRowAndWaitForMenu
 import org.jetbrains.bazel.config.BazelBackendBundle
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.data.IdeaBazelCases
@@ -102,8 +103,7 @@ class ResyncActionsTest : IdeStarterBaseProjectTest() {
         waitForSyncSucceeded()
 
         step("resync directory") {
-          projectView().projectViewTree.rightClickRow { it.contains("basenameConflict") }
-          popupMenu().waitFound()
+          projectView().projectViewTree.rightClickRowAndWaitForMenu("basenameConflict", { it.contains("basenameConflict") }) { popupMenu() }
           takeScreenshot("resyncDirectoryPopup")
           popupMenu().should("The project view popup offers '$RESYNC_DIRECTORY_ITEM'", 1.minutes) {
             itemsList().any { it == RESYNC_DIRECTORY_ITEM }
@@ -112,8 +112,7 @@ class ResyncActionsTest : IdeStarterBaseProjectTest() {
         }
 
         step("resync BUILD file") {
-          projectView().projectViewTree.rightClickRow { it == "BUILD" }
-          popupMenu().waitFound()
+          projectView().projectViewTree.rightClickRowAndWaitForMenu("BUILD", { it == "BUILD" }) { popupMenu() }
           takeScreenshot("resyncBuildFilePopup")
           popupMenu().select(RESYNC_FILE_ITEM)
           waitForIndicators(5.minutes)

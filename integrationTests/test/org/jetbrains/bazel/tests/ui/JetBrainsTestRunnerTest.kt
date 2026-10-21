@@ -3,6 +3,7 @@ package org.jetbrains.bazel.tests.ui
 import com.intellij.driver.sdk.step
 import com.intellij.driver.sdk.ui.components.common.ideFrame
 import com.intellij.driver.sdk.ui.components.elements.popup
+import com.intellij.driver.sdk.ui.components.elements.popupMenu
 import com.intellij.driver.sdk.wait
 import com.intellij.ide.starter.driver.engine.runIdeWithDriver
 import com.intellij.tools.ide.performanceTesting.commands.assertCaretPosition
@@ -104,7 +105,7 @@ class JetBrainsTestRunnerTest : IdeStarterBaseProjectTest() {
 
         step("Run individual test via right-click on test results tree") {
           val testTreeView = testTreeView()
-          testTreeView.rightClickRow { it.startsWith("[1] myClass=class java.lang.String") }
+          testTreeView.rightClickRowAndWaitForMenu("[1] myClass=class java.lang.String", { it.startsWith("[1] myClass=class java.lang.String") }) { popupMenu() }
           popup().waitOneText("Run 'testWithClasses'").click()
           wait(10.seconds)
           verifyTestStatus(

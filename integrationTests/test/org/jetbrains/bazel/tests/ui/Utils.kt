@@ -2,6 +2,8 @@ package org.jetbrains.bazel.tests.ui
 
 import com.intellij.driver.sdk.step
 import com.intellij.driver.sdk.ui.UiText
+import com.intellij.driver.sdk.ui.components.UiComponent
+import com.intellij.driver.sdk.ui.components.UiComponent.Companion.waitFound
 import com.intellij.driver.sdk.ui.components.common.GutterUiComponent
 import com.intellij.driver.sdk.ui.components.common.IdeaFrameUI
 import com.intellij.driver.sdk.ui.components.common.editorTabs
@@ -13,6 +15,7 @@ import com.intellij.driver.sdk.ui.components.elements.popup
 import com.intellij.driver.sdk.ui.components.elements.tree
 import com.intellij.driver.sdk.ui.xQuery
 import com.intellij.driver.sdk.waitFor
+import com.intellij.driver.sdk.withRetries
 import com.intellij.ide.starter.ide.IDETestContext
 import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.junit.jupiter.api.Assertions
@@ -34,8 +37,15 @@ fun IdeaFrameUI.verifyTestStatus(expectedStatus: List<String>, expectedTree: Col
   waitNoTexts("Instantiating tests…", timeout = 5.minutes)
   step("Verify test status") {
     waitContainsText("Test Results", timeout = 1.minutes)
-    val actualStatus = x { byClass("TestStatusLine") }.getAllTexts().filterRelevant()
-    Assertions.assertEquals(expectedStatus, actualStatus, "Test status must match")
+    // The status line fills in after the "Test Results" tab opens, so one read can see an empty or partial line.
+    waitFor(
+      message = "The test status is $expectedStatus",
+      timeout = 1.minutes,
+      interval = 1.seconds,
+      errorMessage = { actualStatus -> "Test status must match. Expected: $expectedStatus. Actual: $actualStatus" },
+      getter = { x { byClass("TestStatusLine") }.getAllTexts().filterRelevant() },
+      checker = { actualStatus -> actualStatus == expectedStatus },
+    )
   }
   step("Verify test results tree") {
     val showPassed = x(ActionButtonUi::class.java) { byAccessibleName("Show Passed") }
@@ -58,6 +68,31 @@ fun IdeaFrameUI.verifyTestStatus(expectedStatus: List<String>, expectedTree: Col
     }
   }
 }
+
+/**
+ * Right-clicks the one tree row that matches [matches], and returns the context menu that opens.
+ *
+ * `JTreeUiComponent.rightClickRow` looks the row up once. It fails when the tree is still rebuilding after a sync,
+ * and when more than one row matches. A right click can also open no menu. So this helper waits for exactly one
+ * matching row, clicks it, and clicks again when [menu] does not appear.
+ *
+ * Pass `{ popupMenu() }` from the scope of the IDE frame as [menu].
+ */
+fun <T : UiComponent> JTreeUiComponent.rightClickRowAndWaitForMenu(rowName: String, matches: (String) -> Boolean, menu: () -> T): T =
+  withRetries(message = "Open the context menu of the row '$rowName'", times = CONTEXT_MENU_ATTEMPTS) {
+    waitFor(
+      message = "Exactly one tree row matches '$rowName'",
+      timeout = 1.minutes,
+      interval = 1.seconds,
+      errorMessage = { rows -> "Expected one row for '$rowName'. The tree has these rows: $rows" },
+      getter = { collectExpandedPaths().map { it.path.last() } },
+      checker = { rows -> rows.count(matches) == 1 },
+    )
+    rightClickRow(matches)
+    menu().waitFound(10.seconds)
+  }
+
+private const val CONTEXT_MENU_ATTEMPTS = 3
 
 fun IdeaFrameUI.testTreeView(): JTreeUiComponent = tree(xQuery { byClass("SMTRunnerTestTreeView") })
 

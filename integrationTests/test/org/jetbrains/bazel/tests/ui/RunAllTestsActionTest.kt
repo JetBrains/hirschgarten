@@ -1,7 +1,6 @@
 package org.jetbrains.bazel.tests.ui
 
 import com.intellij.driver.sdk.step
-import com.intellij.driver.sdk.ui.components.UiComponent.Companion.waitFound
 import com.intellij.driver.sdk.ui.components.common.ideFrame
 import com.intellij.driver.sdk.ui.components.common.toolWindow
 import com.intellij.driver.sdk.ui.components.common.toolwindows.projectView
@@ -10,6 +9,7 @@ import com.intellij.driver.sdk.ui.components.elements.tree
 import com.intellij.ide.starter.driver.engine.runIdeWithDriver
 import org.jetbrains.bazel.base.IdeStarterBaseProjectTest
 import org.jetbrains.bazel.base.syncBazelProject
+import org.jetbrains.bazel.base.waitForSyncSucceeded
 import org.jetbrains.bazel.data.IdeaBazelCases
 import org.jetbrains.bazel.data.simpleBazelProject
 import org.junit.jupiter.params.ParameterizedTest
@@ -36,9 +36,12 @@ class RunAllTestsActionTest : IdeStarterBaseProjectTest() {
       ideFrame {
         syncBazelProject()
         waitForIndicators(5.minutes)
+        waitForSyncSucceeded()
+
+        // The lookup must use the scope of the IDE frame, because the popup is not a child of the tree.
+        val menu = { popupMenu() }
 
         fun verifyTestsInRoot() {
-          popupMenu().waitFound()
           takeScreenshot("afterRightClicking")
           popupMenu().findMenuItemByText("Run 'Tests in 'runAllTests''").click()
           verifyTestStatus(
@@ -66,20 +69,20 @@ class RunAllTestsActionTest : IdeStarterBaseProjectTest() {
         }
 
         step("Run all tests in root directory") {
-          projectView().projectViewTree.rightClickRow { it.substringBefore(' ') == "runAllTests" }
+          projectView().projectViewTree.rightClickRowAndWaitForMenu("runAllTests", { it.substringBefore(' ') == "runAllTests" }, menu)
           verifyTestsInRoot()
         }
 
         step("Run all tests in a root/my/package directory") {
           projectView().projectViewTree.run {
             expandPath("runAllTests", "my", fullMatch = false)
-            rightClickRow { it.contains("package") }
+            rightClickRowAndWaitForMenu("package", { it.contains("package") }, menu)
           }
           verifyTestsInMyPackage()
         }
 
         step("Run all tests in root/my toolwindow path") {
-          toolWindow("Bazel") { tree().rightClickRow { it.contains("my") } }
+          toolWindow("Bazel") { tree().rightClickRowAndWaitForMenu("my", { it.contains("my") }, menu) }
           verifyTestsInMy()
         }
 
@@ -87,7 +90,7 @@ class RunAllTestsActionTest : IdeStarterBaseProjectTest() {
           toolWindow("Bazel") {
             tree().run {
               expandAll()
-              rightClickRow { it.contains("package") }
+              rightClickRowAndWaitForMenu("package", { it.contains("package") }, menu)
             }
           }
           verifyTestsInMyPackage()
