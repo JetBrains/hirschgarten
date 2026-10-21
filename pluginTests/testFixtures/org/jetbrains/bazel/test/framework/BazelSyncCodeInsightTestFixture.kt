@@ -102,6 +102,7 @@ fun bazelProjectFixture(
       val setupDisposable = Disposer.newDisposable("bazelProjectFixture")
       installTestConsoleService(project, setupDisposable)
       installHostRcIsolation(setupDisposable)
+      installStableJdkPaths(setupDisposable)
       initialized(project) { Disposer.dispose(setupDisposable) }
     }.init()
     val projectRoot = tempPathFixture().init()
@@ -190,6 +191,7 @@ class BazelSyncCodeInsightTestFixtureImpl(
   init {
     installTestConsoleService(project, testRootDisposable)
     installHostRcIsolation(testRootDisposable)
+    installStableJdkPaths(testRootDisposable)
   }
 
   // See the comment on `NonTrackingCodeInsightTestFixture`
