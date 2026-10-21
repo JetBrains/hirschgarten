@@ -41,6 +41,7 @@ intellij_plugin_zip_and_debug_target(
         "//misc/intellij.bazel.bytecodeViewer",
         "//intellij.bazel.commons",
         "//intellij.bazel.core",
+        "//intellij.bazel.languages",
         "//intellij.bazel.core.performancePlugin",
         "//misc/intellij.bazel.coverage",
         "//misc/intellij.bazel.coverage.performancePlugin",

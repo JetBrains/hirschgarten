@@ -5,6 +5,7 @@
     <module name="intellij.bazel.commons"/>
     <module name="intellij.bazel.core"/>
     <module name="intellij.bazel.coverage"/>
+    <module name="intellij.bazel.languages"/>
     <module name="intellij.bazel.projectview"/>
     <module name="intellij.go.frontback"/>
     <module name="intellij.go.impl"/>
