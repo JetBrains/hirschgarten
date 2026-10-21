@@ -12,13 +12,17 @@ import com.intellij.execution.runners.ProgramRunner
 import com.intellij.openapi.components.BaseState
 import com.intellij.openapi.vfs.readText
 import com.intellij.testFramework.common.timeoutRunBlocking
+import com.intellij.testFramework.junit5.fixture.TestFixture
+import com.intellij.testFramework.junit5.fixture.testFixture
 import com.intellij.xdebugger.XDebuggerAssertions
 import com.jetbrains.cidr.cpp.execution.debugger.backend.CLionGdbDebugProfileType
 import com.jetbrains.cidr.cpp.execution.debugger.backend.CLionLldbDebugProfileType
 import com.jetbrains.cidr.cpp.execution.debugger.backend.GdbDebugProfileState
 import com.jetbrains.cidr.cpp.execution.debugger.backend.LldbDebugProfileState
 import com.jetbrains.cidr.execution.CidrExecutionFixture
+import com.jetbrains.cidr.execution.debugger.CidrDebuggerPathManager
 import com.jetbrains.cidr.execution.debugger.CidrDebuggingFixture.DebuggerState
+import com.jetbrains.cidr.execution.debugger.backend.lldb.LLDBDriverConfiguration
 import com.jetbrains.cidr.execution.debugger.toggleBreakpoint
 import org.assertj.core.api.Assertions.assertThat
 import org.jetbrains.bazel.assertions.assertNotNull
@@ -47,11 +51,25 @@ abstract class CcDebugTest(debugProfileTypeId: String, debugProfileSettings: Bas
 
   @EnabledOnOs(OS.LINUX)
   @CcTestApplication
-  class Gdb : CcDebugTest(CLionGdbDebugProfileType.ID, GdbDebugProfileState())
+  class Gdb : CcDebugTest(CLionGdbDebugProfileType.ID, GdbDebugProfileState()) {
+
+    @Suppress("unused")
+    private val bundledGdb = testFixture {
+      assertThat(CidrDebuggerPathManager.bundledGDBBinary).withFailMessage("bundled GDB not found").exists()
+      initialized(Unit) {}
+    }
+  }
 
   @EnabledOnOs(OS.LINUX)
   @CcTestApplication
-  class Lldb : CcDebugTest(CLionLldbDebugProfileType.ID, LldbDebugProfileState())
+  class Lldb : CcDebugTest(CLionLldbDebugProfileType.ID, LldbDebugProfileState()) {
+
+    @Suppress("unused")
+    private val bundledLldb = testFixture {
+      assertThat(LLDBDriverConfiguration.hasBundledLLDB()).withFailMessage("bundled LLDB not found").isTrue()
+      initialized(Unit) {}
+    }
+  }
 
   private val projectFixture = clionBazelProjectFixture("clion/debug", buildProject = true, bazelVersion = BazelVersions.BAZEL_9) {
     addBuildFlags("--compilation_mode=dbg")
