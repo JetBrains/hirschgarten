@@ -78,8 +78,9 @@ class HirschgartenUpgradeTest : IdeStarterBaseProjectTest() {
     val case = IdeaBazelCases.withProject(hirschgartenProjectInfo())
     val context = createContext("hirschgarten", case)
       .applyVMOptionsPatch { withXmx(11264) }
+      .disableNonModalWelcomeScreen()
     context
-      .runIdeWithDriver(runTimeout = timeout, disableNonModalWelcomeScreen = true)
+      .runIdeWithDriver(runTimeout = timeout)
       .useDriverAndCloseIde {
         ideFrame {
           syncBazelProject()

@@ -27,7 +27,7 @@ abstract class IdeStarterCombinedBaseTest : IdeStarterBaseProjectTest() {
 
   abstract fun createContext(): IDETestContext
 
-  protected open fun IDETestContext.runIde(): BackgroundRun = runIdeWithDriver(runTimeout = timeout, disableNonModalWelcomeScreen = true)
+  protected open fun IDETestContext.runIde(): BackgroundRun = disableNonModalWelcomeScreen().runIdeWithDriver(runTimeout = timeout)
 
   protected open fun Driver.syncBazelProject() {
     syncBazelProject(buildAndSync = false)
