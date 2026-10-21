@@ -167,6 +167,11 @@
                  key="bazel.highlight.ignored.source.files"
                  restartRequired="false"
     />
+    <registryKey defaultValue="false"
+                 description="Import JavaScript packages and use the Node.js runtime of rules_nodejs (requires the JavaScript plugin), applied on the next sync"
+                 key="bazel.javascript.support.enabled"
+                 restartRequired="false"
+    />
     <projectSettings service="org.jetbrains.bazel.settings.bazel.BazelProjectSettingsService"/>
     <projectSettings service="org.jetbrains.bazel.settings.bazel.BazelJVMProjectSettingsService"/>
     <postStartupActivity implementation="org.jetbrains.bazel.sync.BazelEnvironmentService$StartupActivity"/>
