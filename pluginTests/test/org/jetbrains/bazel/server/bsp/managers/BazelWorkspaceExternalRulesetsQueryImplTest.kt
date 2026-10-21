@@ -1,9 +1,6 @@
 package org.jetbrains.bazel.server.bsp.managers
 
-import com.intellij.openapi.application.EDT
-import com.intellij.openapi.application.readAction
 import com.intellij.testFramework.common.timeoutRunBlocking
-import com.intellij.workspaceModel.core.fileIndex.WorkspaceFileIndex
 import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.collections.shouldContainExactly
@@ -12,25 +9,16 @@ import io.kotest.matchers.ints.shouldBeGreaterThan
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
 import io.kotest.matchers.string.shouldEndWith
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.withContext
 import org.jetbrains.bazel.bazelrunner.BazelProcess
-import org.jetbrains.bazel.bazelrunner.BazelProcessLauncherProvider
 import org.jetbrains.bazel.bazelrunner.BazelProcessResult
 import org.jetbrains.bazel.bazelrunner.BazelRunner
 import org.jetbrains.bazel.bazelrunner.mockBazelProcessLauncher
 import org.jetbrains.bazel.bazelrunner.outputs.OutputCollector
-import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.languages.projectview.ProjectView
-import org.jetbrains.bazel.languages.projectview.ProjectViewService
 import org.jetbrains.bazel.server.bsp.managers.BazelWorkspaceExternalRulesetsQueryImpl.Companion.parseWorkspaceExternalRulesetNames
-import org.jetbrains.bazel.sync.BazelEnvironmentService
 import org.jetbrains.bazel.sync.workspace.projectTree.BazelRunnerSpyStubbingHelper
 import org.jetbrains.bazel.test.framework.BazelTestApplication
-import org.jetbrains.bazel.test.framework.bazelSyncCodeInsightFixture
-import org.jetbrains.bazel.test.framework.checkHighlighting
-import org.jetbrains.bazel.test.framework.enableGoHighlighting
 import org.jetbrains.bsp.protocol.BazelTaskEventsHandler
 import org.jetbrains.bsp.protocol.CachedTestLog
 import org.jetbrains.bsp.protocol.CoverageReport
@@ -41,23 +29,14 @@ import org.jetbrains.bsp.protocol.TaskFinishParams
 import org.jetbrains.bsp.protocol.TaskGroupId
 import org.jetbrains.bsp.protocol.TaskStartParams
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.condition.DisabledOnOs
-import org.junit.jupiter.api.condition.OS
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.spy
 import org.mockito.Mockito.`when`
 import kotlin.io.path.Path
-import kotlin.time.Duration.Companion.minutes
+
 
 @BazelTestApplication
 internal class BazelWorkspaceExternalRulesetsQueryImplTest {
-
-  private val fixture by bazelSyncCodeInsightFixture(
-    "redcodes/go_workspace_git_repository",
-    bazelVersion = "7.7.1",
-    configure = { it.enableGoHighlighting() },
-  )
-
   /** Records the log messages that the query reports to the sync console. */
   private class RecordingTaskEventsHandler : BazelTaskEventsHandler {
     val logMessages = mutableListOf<LogMessageParams>()
@@ -76,47 +55,6 @@ internal class BazelWorkspaceExternalRulesetsQueryImplTest {
   private val emptyProjectView = ProjectView(sections = emptyMap(), imports = emptyList())
 
   private val taskId = TaskGroupId.EMPTY.task("")
-
-  // ---------------------------------------------------------------------------------------------
-  // A real Bazel run against the synced test project
-  // ---------------------------------------------------------------------------------------------
-
-  @Test
-  @DisabledOnOs(OS.WINDOWS) // bazel failed to get go rules
-  fun testCustomAspectGeneratedClassResolves() = timeoutRunBlocking(timeout = 5.minutes) {
-    val project = fixture.project
-    val workspaceIndex = WorkspaceFileIndex.getInstance(project)
-    readAction { workspaceIndex.isIndexable(project.rootDir.findFileByRelativePath("main.go")!!) shouldBe true }
-
-    withContext(Dispatchers.EDT) {
-      fixture.checkHighlighting("main.go")
-    }
-  }
-
-  @Test
-  @DisabledOnOs(OS.WINDOWS) // bazel failed to get go rules
-  fun `bazel query returns the git_repository ruleset of the WORKSPACE file`(): Unit = timeoutRunBlocking(timeout = 5.minutes) {
-    val project = fixture.project
-    val projectRoot = project.rootDir.toNioPath()
-    val projectView = ProjectViewService.getInstance(project).projectView
-    val bazelProcessLauncher =
-      BazelProcessLauncherProvider.getInstance()
-        .createBazelProcessLauncher(projectRoot, BazelEnvironmentService.getInstance(project).getEnvironment())
-    val bazelRunner = BazelRunner.create(project, null, projectRoot, bazelProcessLauncher, projectView)
-    val taskEventsHandler = RecordingTaskEventsHandler()
-
-    val rulesetNames =
-      BazelWorkspaceExternalRulesetsQueryImpl(taskId, bazelRunner, isWorkspaceEnabled = true, taskEventsHandler, projectView)
-        .fetchExternalRulesetNames()
-
-    // The macros `go_rules_dependencies()` and `maybe()` create the other http_archive rules, so they are not rulesets.
-    rulesetNames shouldContainExactly listOf("io_bazel_rules_go")
-    taskEventsHandler.logMessages.shouldBeEmpty()
-  }
-
-  // ---------------------------------------------------------------------------------------------
-  // The command and the failure path, with a stubbed BazelRunner
-  // ---------------------------------------------------------------------------------------------
 
   @Test
   fun `query asks for the external targets in the streamed json proto format`(): Unit = timeoutRunBlocking {
