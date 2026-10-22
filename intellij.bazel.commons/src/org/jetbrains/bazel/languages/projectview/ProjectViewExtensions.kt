@@ -38,6 +38,12 @@ val ProjectView.allowManualTargetsSync: Boolean
   get() = getSection(ALLOW_MANUAL_TARGETS_SYNC_KEY)
 
 @Internal
+val ASPPECTS_ATTRS_KEY: ProjectViewSectionKey<List<String>?> = ProjectViewSectionKey("aspects_attrs", null)
+val ProjectView.aspectsAttrs: List<String>?
+  @Internal
+  get() = getSection(ASPPECTS_ATTRS_KEY)
+
+@Internal
 val DERIVE_TARGETS_FROM_DIRECTORIES_KEY: ProjectViewSectionKey<Boolean> = ProjectViewSectionKey("derive_targets_from_directories", false)
 val ProjectView.deriveTargetsFromDirectories: Boolean
   get() = getSection(DERIVE_TARGETS_FROM_DIRECTORIES_KEY)
