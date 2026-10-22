@@ -2,6 +2,7 @@
 out
 node_modules
 pluginTests/testData/testProjects
+pluginTests/testData/testRegistry
 integrationTests/testProjects
 clion
 pluginTests.clion
