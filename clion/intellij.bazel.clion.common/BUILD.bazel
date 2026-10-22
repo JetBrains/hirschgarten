@@ -44,6 +44,7 @@ jvm_library(
         "//CIDR/cidr-psi-base",
         "//CIDR/cidr-util/execution",
         "@community//platform/workspace/jps",
+        "//plugins/bazel/aspect-sdk:libraries-bazel-aspect-sdk",
     ],
 )
 
@@ -76,6 +77,7 @@ jvm_library(
         "//CIDR/cidr-psi-base:cidr-psi-base_test_lib",
         "//CIDR/cidr-util/execution:execution_test_lib",
         "@community//platform/workspace/jps:jps_test_lib",
+        "//plugins/bazel/aspect-sdk:libraries-bazel-aspect-sdk_test_lib",
     ],
 )
 ### auto-generated section `build intellij.bazel.clion.common` end

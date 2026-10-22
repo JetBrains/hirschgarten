@@ -10,9 +10,16 @@ import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
 import org.jetbrains.bsp.protocol.OutputLocation
 import org.jetbrains.bsp.protocol.OutputLocationCollection
 import org.jetbrains.bsp.protocol.extractData
+import java.io.IOException
 import java.nio.file.Path
 
 private const val PROC_SELF_CWD = "/proc/self/cwd"
+
+// placeholders that the apple_support compiler wrapper replaces
+private const val EXECUTION_ROOT_PLACEHOLDER = "__BAZEL_EXECUTION_ROOT__"
+private const val EXECUTION_ROOT_CANONICAL_PLACEHOLDER = "__BAZEL_EXECUTION_ROOT_CANONICAL__"
+private const val XCODE_DEVELOPER_DIR_PLACEHOLDER = "__BAZEL_XCODE_DEVELOPER_DIR__"
+private const val XCODE_SDKROOT_PLACEHOLDER = "__BAZEL_XCODE_SDKROOT__"
 
 data class CcCompilerInfo(
   val cCompiler: Path,
@@ -45,15 +52,16 @@ suspend fun buildCompilerSettings(): Map<WorkspaceTargetKey, CcCompilerInfo> = c
   val result = mutableMapOf<WorkspaceTargetKey, CcCompilerInfo>()
 
   val compilerResolver = CcCompilerResolver(ctx)
-  val xcodeLocator = CcXcodeLocator(ctx, this@coroutineScope)
+  val executionRootPlaceholders = createExecutionRootPlaceholders()
 
   for (target in ctx.snapshot.targets.allTargets()) {
     val toolchainInfo = target.extractData<CcToolchainBuildTarget>() ?: continue
+    val placeholders = executionRootPlaceholders + createXcodePlaceholders(toolchainInfo.xcodeInfo)
 
     val environment = createEnvironment(
       toolchainInfo.cEnvironment,
       toolchainInfo.cppEnvironment,
-      xcodeLocator.resolve(toolchainInfo.xcodeInfo).toMap(),
+      createXcodeEnvironment(toolchainInfo)
     )
 
     val toolEnvironment = createToolEnvironment(environment)
@@ -66,8 +74,8 @@ suspend fun buildCompilerSettings(): Map<WorkspaceTargetKey, CcCompilerInfo> = c
       cppCompiler = cppCompiler.path,
       cCompilerKind = cCompiler.kind,
       cppCompilerKind = cppCompiler.kind,
-      cSwitches = toolchainInfo.cOption.asList(),
-      cppSwitches = toolchainInfo.cppOption.asList(),
+      cSwitches = expandPlaceholders(toolchainInfo.cOption.asList(), placeholders),
+      cppSwitches = expandPlaceholders(toolchainInfo.cppOption.asList(), placeholders),
       name = toolchainInfo.compilerName,
       environment = environment,
       builtinIncludes = toolchainInfo.builtInIncludeDirectories,
@@ -78,7 +86,6 @@ suspend fun buildCompilerSettings(): Map<WorkspaceTargetKey, CcCompilerInfo> = c
   }
 
   compilerResolver.reportProblems()
-  xcodeLocator.reportProblems()
 
   result
 }
@@ -112,11 +119,42 @@ private fun createToolEnvironment(environment: Map<String, String>): CidrToolEnv
   }
 }
 
-private fun CcXcodeLocator.Result?.toMap(): Map<String, String> {
-  if (this == null) return emptyMap()
+private fun createXcodeEnvironment(info: CcToolchainBuildTarget): Map<String, String> {
+  if (info.xcodeInfo == null) return emptyMap()
 
   return mapOf(
-    "DEVELOPER_DIR" to developerDir.toString(),
-    "SDKROOT" to sdkRoot.toString(),
+    "DEVELOPER_DIR" to info.xcodeInfo.developerDir,
+    "SDKROOT" to info.xcodeInfo.sdkRoot,
   )
+}
+
+context(ctx: CcImportContext)
+private fun createExecutionRootPlaceholders(): Map<String, String> {
+  val canonical = try {
+    ctx.execroot.toRealPath()
+  }
+  catch (_: IOException) {
+    ctx.execroot
+  }
+
+  return mapOf(
+    EXECUTION_ROOT_PLACEHOLDER to ctx.execroot.toString(),
+    EXECUTION_ROOT_CANONICAL_PLACEHOLDER to canonical.toString(),
+  )
+}
+
+private fun createXcodePlaceholders(info: CcToolchainBuildTarget.XcodeInfo?): Map<String, String> {
+  if (info == null) return emptyMap()
+
+  return mapOf(
+    XCODE_DEVELOPER_DIR_PLACEHOLDER to info.developerDir,
+    XCODE_SDKROOT_PLACEHOLDER to info.sdkRoot,
+  )
+}
+
+/** Replaces each placeholder in the options. A placeholder can be a part of an option. */
+private fun expandPlaceholders(options: List<String>, placeholders: Map<String, String>): List<String> {
+  return options.map { option ->
+    placeholders.entries.fold(option) { result, (placeholder, value) -> result.replace(placeholder, value) }
+  }
 }
