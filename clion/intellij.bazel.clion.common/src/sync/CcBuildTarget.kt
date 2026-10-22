@@ -2,6 +2,7 @@ package org.jetbrains.bazel.clion.sync
 
 import org.jetbrains.bsp.protocol.BuildTargetData
 import org.jetbrains.bsp.protocol.OutputLocationCollection
+import org.jetbrains.bsp.protocol.StringsCollection
 
 data class CcBuildTarget(val ruleContext: RuleContext?, val compilationContext: CompilationContext) : BuildTargetData {
 
@@ -12,10 +13,10 @@ data class CcBuildTarget(val ruleContext: RuleContext?, val compilationContext: 
   data class RuleContext(
     val headers: OutputLocationCollection,
     val textualHeaders: OutputLocationCollection,
-    val copts: List<String>,
-    val conlyopts: List<String>,
-    val cxxopts: List<String>,
-    val args: List<String>,
+    val copts: StringsCollection,
+    val conlyopts: StringsCollection,
+    val cxxopts: StringsCollection,
+    val args: StringsCollection,
     val includePrefix: String,
     val stripIncludePrefix: String,
   )
@@ -25,7 +26,7 @@ data class CcBuildTarget(val ruleContext: RuleContext?, val compilationContext: 
    */
   data class CompilationContext(
     val headers: OutputLocationCollection,
-    val defines: List<String>,
+    val defines: StringsCollection,
     val includes: OutputLocationCollection,
     val quoteIncludes: OutputLocationCollection,
     val systemIncludes: OutputLocationCollection,

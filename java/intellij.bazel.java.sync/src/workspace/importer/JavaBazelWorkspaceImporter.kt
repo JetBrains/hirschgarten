@@ -192,7 +192,7 @@ internal class JavaBazelWorkspaceImporter(val context: WorkspaceImporterContext)
         continue
       }
       val moduleName = ctx.moduleNamesByKey[target.key] ?: continue
-      result[moduleName] = options.joinToString(" ")
+      result[moduleName] = options.asList().joinToString(" ")
     }
     return result
   }

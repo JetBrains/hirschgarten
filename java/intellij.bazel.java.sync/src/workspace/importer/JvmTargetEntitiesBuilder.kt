@@ -207,7 +207,7 @@ class JvmTargetEntitiesBuilder(private val ctx: ImportContext) {
     val resolvedDeps = ctx.dependencyBuilder.resolve(target)
     val jdkName = jdkNameFor(target)
     val javaLangVersion = ctx.jvmResolved[target.key.copy(aspectIds = WorkspaceAspectIds.EMPTY)]?.javaVersion
-    val javacOptions = target.findBuildData<JvmBuildTarget>()?.javacOpts.orEmpty()
+    val javacOptions = target.findBuildData<JvmBuildTarget>()?.javacOpts?.asList().orEmpty()
     // keep binary JARs stored as execroot paths for hotswap
     val jvmBinaryJars = target.findBuildData<JvmBuildTarget>()?.binaryOutputs?.resolvePaths(ctx.resolveExecrootLocation).orEmpty()
     val scalaTarget = target.findBuildData<ScalaBuildTarget>()

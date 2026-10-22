@@ -52,7 +52,7 @@ object PythonDebugUtils {
 
     val runfiles = pythonTargetData.findRunfilesWorkspaceRoot() ?: return null
     val runfilesRoot = runfiles.parent
-    val pythonPath = buildPythonPathEnv(runfiles, pythonTargetData.imports, EnvironmentUtil.getValue("PYTHONPATH"))
+    val pythonPath = buildPythonPathEnv(runfiles, pythonTargetData.imports.asList(), EnvironmentUtil.getValue("PYTHONPATH"))
     val pythonBinary = pythonTargetData.findPythonBinary(project, runfiles, target)
     val projectRoots = listOfNotNull(project.rootDir.toNioPathOrNull(), runfiles)
     val mainFile = pythonTargetData.mainFile?.let { project.targetStorage.resolveExecrootOutputLocation(it) }
@@ -85,7 +85,7 @@ object PythonDebugUtils {
       environmentVariables = envs,
       libraryRoots = libraryRoots.distinct(),
       workingDirectory = workingDirectory,
-      targetArgs = pythonTargetData.targetArgs,
+      targetArgs = pythonTargetData.targetArgs.asList(),
     )
   }
 

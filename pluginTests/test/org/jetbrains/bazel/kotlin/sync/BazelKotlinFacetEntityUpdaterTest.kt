@@ -17,6 +17,7 @@ import org.jetbrains.bazel.sync.workspace.languages.jvm.KotlinBuildTarget
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
 import org.jetbrains.bazel.workspace.importer.KotlinOptions
 import org.jetbrains.bazel.workspace.model.test.framework.WorkspaceModelBaseTest
+import org.jetbrains.bsp.protocol.StringsCollection
 import org.jetbrains.kotlin.cli.common.arguments.K2JVMCompilerArguments
 import org.jetbrains.kotlin.config.IKotlinFacetSettings
 import org.jetbrains.kotlin.idea.facet.KotlinFacetType
@@ -32,7 +33,7 @@ class BazelKotlinFacetEntityUpdaterTest : WorkspaceModelBaseTest() {
         KotlinBuildTarget(
           languageVersion = "1.8",
           apiVersion = "1.8",
-          kotlincOptions = listOf("-opt-in=com.example.ExperimentalApi"),
+          kotlincOptions = StringsCollection.of(listOf("-opt-in=com.example.ExperimentalApi")),
           associates = listOf("//target4", "//target5").map { WorkspaceTargetKey(label = Label.parse(it)) },
           moduleName = "kotlin-module",
         )
@@ -66,7 +67,7 @@ class BazelKotlinFacetEntityUpdaterTest : WorkspaceModelBaseTest() {
         KotlinBuildTarget(
           languageVersion = null,
           apiVersion = null,
-          kotlincOptions = listOf("-language-version=1.8", "-api-version=1.9"),
+          kotlincOptions = StringsCollection.of(listOf("-language-version=1.8", "-api-version=1.9")),
           associates = emptyList(),
           moduleName = "kotlin-module",
         )
@@ -120,7 +121,7 @@ class BazelKotlinFacetEntityUpdaterTest : WorkspaceModelBaseTest() {
       languageVersion = kotlinBuildTarget.languageVersion,
       apiVersion = kotlinBuildTarget.apiVersion,
       moduleName = kotlinBuildTarget.moduleName,
-      kotlincOptions = kotlinBuildTarget.kotlincOptions,
+      kotlincOptions = kotlinBuildTarget.kotlincOptions.asList(),
     )
     BazelKotlinFacetEntityUpdater().addEntity(
       diff = builder,

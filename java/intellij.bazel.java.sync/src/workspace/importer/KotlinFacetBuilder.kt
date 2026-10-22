@@ -22,7 +22,7 @@ object KotlinFacetBuilder {
         languageVersion = it.languageVersion,
         apiVersion = it.apiVersion,
         moduleName = it.moduleName,
-        kotlincOptions = it.kotlincOptions,
+        kotlincOptions = it.kotlincOptions.asList(),
       )
     }
     ep.addEntity(

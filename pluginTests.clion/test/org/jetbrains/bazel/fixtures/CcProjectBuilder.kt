@@ -25,6 +25,7 @@ import org.jetbrains.bsp.protocol.OutputLocation
 import org.jetbrains.bsp.protocol.OutputLocationCollection
 import org.jetbrains.bsp.protocol.OutputLocationParserWithoutHardlink
 import org.jetbrains.bsp.protocol.OutputRoot
+import org.jetbrains.bsp.protocol.StringsCollection
 import org.jetbrains.bsp.protocol.extractData
 import java.nio.file.Path
 
@@ -209,16 +210,16 @@ internal class CcTargetBuilder(private val kind: String, private val ruleType: R
           ruleContext = CcBuildTarget.RuleContext(
             headers = locations(hdrs.map(OutputLocation::Workspace)),
             textualHeaders = OutputLocationCollection.EMPTY,
-            copts = copts,
-            conlyopts = conlyopts,
-            cxxopts = cxxopts,
-            args = emptyList(),
+            copts = StringsCollection.of(copts),
+            conlyopts = StringsCollection.of(conlyopts),
+            cxxopts = StringsCollection.of(cxxopts),
+            args = StringsCollection.EMPTY,
             includePrefix = "",
             stripIncludePrefix = "",
           ),
           compilationContext = CcBuildTarget.CompilationContext(
             headers = locations(allHeaders),
-            defines = defines.toList(),
+            defines = StringsCollection.of(defines),
             includes = locations(allIncludes),
             quoteIncludes = locations(allQuoteIncludes),
             systemIncludes = locations(allSystemIncludes),
@@ -298,8 +299,8 @@ internal class CcToolchainBuilder {
       CcToolchainBuildTarget(
         targetName = "toolchain",
         compilerName = compilerName,
-        cppOption = cppOptions,
-        cOption = cOptions,
+        cppOption = StringsCollection.of(cppOptions),
+        cOption = StringsCollection.of(cOptions),
         cCompiler = OutputLocationParserWithoutHardlink.parseExecrootPath(cCompiler),
         cppCompiler = OutputLocationParserWithoutHardlink.parseExecrootPath(cppCompiler),
         builtInIncludeDirectories = locations(builtinIncludes.map(OutputLocation::Workspace)),

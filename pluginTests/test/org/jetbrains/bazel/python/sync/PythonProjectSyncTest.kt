@@ -91,6 +91,7 @@ import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.OutputLocation
 import org.jetbrains.bsp.protocol.OutputLocationResolver
 import org.jetbrains.bsp.protocol.OutputRoot
+import org.jetbrains.bsp.protocol.StringsCollection
 import org.jetbrains.bsp.protocol.TaskGroupId
 import org.jetbrains.bsp.protocol.toExecrootPath
 import org.junit.jupiter.api.AfterEach
@@ -1119,7 +1120,7 @@ class PythonProjectSyncTest : MockProjectBaseTest() {
           PythonBuildTarget(
             version = "3",
             interpreter = OutputLocation.Host(pythonBinary.toString()),
-            info.imports,
+            StringsCollection.of(info.imports),
             generatedSources = OutputLocationCollectionBuilder.ofLocations(pythonGeneratedSources),
             externalSources = OutputLocationCollectionBuilder.ofLocations(externalSources),
           ),

@@ -24,7 +24,7 @@ internal object PythonImportUtils {
                           ?: Path(".")   // In the case of an external repo the build path could be `/BUILD.bazel`
     // which has a basedir of `/`. In this case we translate this to `.` so
     // that it works in the sub file-system.
-    return ideInfo.imports.map { buildParentPath.resolve(it).normalize() }
+    return ideInfo.imports.asList().map { buildParentPath.resolve(it).normalize() }
   }
 
   /**

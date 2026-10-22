@@ -63,7 +63,7 @@ abstract class CcImportTest(override val bazelVersion: String) : BazelVersionedT
 
     val compilationCtx = data.compilationContext
     assertThat(compilationCtx.headers).haveAtLeastOne(workspace("lib/lib.h"))
-    assertThat(compilationCtx.defines).containsExactly("SPACE_DEFINE=1 2 3", "SIMPLE_DEFINE=42")
+    assertThat(compilationCtx.defines.asList()).containsExactly("SPACE_DEFINE=1 2 3", "SIMPLE_DEFINE=42")
     assertThat(compilationCtx.includes).isEmpty()
     assertThat(compilationCtx.systemIncludes).isEmpty()
 
@@ -75,9 +75,9 @@ abstract class CcImportTest(override val bazelVersion: String) : BazelVersionedT
     val ruleCtx = data.ruleContext.assertNotNull()
     assertThat(ruleCtx.headers).isEmpty()
     assertThat(ruleCtx.textualHeaders).isEmpty()
-    assertThat(ruleCtx.copts).containsExactly("-Wall", "-DCOPTS")
-    assertThat(ruleCtx.conlyopts).containsExactly("-DCONLYOPTS")
-    assertThat(ruleCtx.cxxopts).containsExactly("-DCXXOPTS")
+    assertThat(ruleCtx.copts.asList()).containsExactly("-Wall", "-DCOPTS")
+    assertThat(ruleCtx.conlyopts.asList()).containsExactly("-DCONLYOPTS")
+    assertThat(ruleCtx.cxxopts.asList()).containsExactly("-DCXXOPTS")
     assertThat(ruleCtx.stripIncludePrefix).isEqualTo("")
     assertThat(ruleCtx.includePrefix).isEqualTo("")
   }
@@ -93,7 +93,7 @@ abstract class CcImportTest(override val bazelVersion: String) : BazelVersionedT
 
     val compilationCtx = data.compilationContext
     assertThat(compilationCtx.headers).haveAtLeastOne(workspace("lib/lib.h"))
-    assertThat(compilationCtx.defines).isEmpty()
+    assertThat(compilationCtx.defines.asList()).isEmpty()
     assertThat(compilationCtx.includes).isEmpty()
     assertThat(compilationCtx.systemIncludes).isEmpty()
 
@@ -104,9 +104,9 @@ abstract class CcImportTest(override val bazelVersion: String) : BazelVersionedT
     val ruleCtx = data.ruleContext.assertNotNull()
     assertThat(ruleCtx.headers).haveAtLeastOne(workspace("lib/lib.h"))
     assertThat(ruleCtx.textualHeaders).isEmpty()
-    assertThat(ruleCtx.copts).isEmpty()
-    assertThat(ruleCtx.conlyopts).isEmpty()
-    assertThat(ruleCtx.cxxopts).isEmpty()
+    assertThat(ruleCtx.copts.asList()).isEmpty()
+    assertThat(ruleCtx.conlyopts.asList()).isEmpty()
+    assertThat(ruleCtx.cxxopts.asList()).isEmpty()
     assertThat(ruleCtx.stripIncludePrefix).isEqualTo("")
     assertThat(ruleCtx.includePrefix).isEqualTo("")
   }
@@ -122,7 +122,7 @@ abstract class CcImportTest(override val bazelVersion: String) : BazelVersionedT
 
     val compilationCtx = data.compilationContext
     assertThat(compilationCtx.headers).haveAtLeastOne(external("catch2+", "src/catch2/benchmark/catch_benchmark.hpp"))
-    assertThat(compilationCtx.defines).isEmpty()
+    assertThat(compilationCtx.defines.asList()).isEmpty()
     assertThat(compilationCtx.includes).haveAtLeastOne(bazelBin("external/catch2+/_virtual_includes/catch2_generated"))
 
     // the builtin rules treat includes slightly different
@@ -140,9 +140,9 @@ abstract class CcImportTest(override val bazelVersion: String) : BazelVersionedT
     val ruleCtx = data.ruleContext.assertNotNull()
     assertThat(ruleCtx.headers).isEmpty()
     assertThat(ruleCtx.textualHeaders).isEmpty()
-    assertThat(ruleCtx.copts).isEmpty()
-    assertThat(ruleCtx.conlyopts).isEmpty()
-    assertThat(ruleCtx.cxxopts).isEmpty()
+    assertThat(ruleCtx.copts.asList()).isEmpty()
+    assertThat(ruleCtx.conlyopts.asList()).isEmpty()
+    assertThat(ruleCtx.cxxopts.asList()).isEmpty()
     assertThat(ruleCtx.stripIncludePrefix).isEqualTo("")
     assertThat(ruleCtx.includePrefix).isEqualTo("")
   }
@@ -161,8 +161,8 @@ abstract class CcImportTest(override val bazelVersion: String) : BazelVersionedT
 
     val data = toolchain.extractData<CcToolchainBuildTarget>().assertNotNull()
     assertThat(data.compilerName).isEqualTo("false")
-    assertThat(data.cppOption).contains("-D__DEFINE__", "-std=c++17")
-    assertThat(data.cOption).contains("-D__DEFINE__", "-std=c17")
+    assertThat(data.cppOption.asList()).contains("-D__DEFINE__", "-std=c++17")
+    assertThat(data.cOption.asList()).contains("-D__DEFINE__", "-std=c17")
     assertThat(data.cCompiler).isHost("/usr/bin/false")
     assertThat(data.cppCompiler).isHost("/usr/bin/false")
     assertThat(data.builtInIncludeDirectories).isEmpty()

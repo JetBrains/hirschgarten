@@ -44,6 +44,7 @@ import org.jetbrains.bazel.workspacemodel.entities.BazelProjectEntitySource
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.LibraryItem
 import org.jetbrains.bsp.protocol.OutputLocation
+import org.jetbrains.bsp.protocol.StringsCollection
 import org.jetbrains.bsp.protocol.id
 import org.junit.jupiter.api.Test
 import java.nio.file.Files
@@ -475,7 +476,7 @@ internal class JvmTargetEntitiesBuilderTest : WorkspaceModelBaseTest() {
         KotlinBuildTarget(
           languageVersion = null,
           apiVersion = null,
-          kotlincOptions = emptyList(),
+          kotlincOptions = StringsCollection.EMPTY,
           associates = associates.map { WorkspaceTargetKey(label = it) },
           moduleName = moduleName,
         ),

@@ -11,6 +11,7 @@ import org.jetbrains.bazel.sync.workspace.languages.LanguagePlugin
 import org.jetbrains.bazel.sync.workspace.languages.jvm.ScalaBuildTarget
 import org.jetbrains.bazel.sync.workspace.snapshot.OutputLocationCollectionBuilder
 import org.jetbrains.bsp.protocol.BuildTargetData
+import org.jetbrains.bsp.protocol.StringsCollection
 import kotlin.reflect.KClass
 
 @ApiStatus.Internal
@@ -35,7 +36,7 @@ class ScalaLanguagePlugin : LanguagePlugin {
       ScalaBuildTarget(
         scalaVersion = scalaVersion,
         sdkJars = OutputLocationCollectionBuilder.build(target.scalaTargetInfo.compilerClasspathList, server.outputParser),
-        scalacOptions = target.scalaTargetInfo.scalacOptsList.toList(),
+        scalacOptions = StringsCollection.of(target.scalaTargetInfo.scalacOptsList),
         scalatestClasspathTargets = target.scalaTargetInfo.scalatestClasspathTargetsList.map { Label.parse(it) },
       ),
     )
