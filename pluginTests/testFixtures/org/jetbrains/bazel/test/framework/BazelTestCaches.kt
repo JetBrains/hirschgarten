@@ -68,7 +68,6 @@ object BazelTestCaches {
     val outputUserRoot = cacheRoot.resolve("output-user-root").createDirectories()
     val lines = buildList {
       addAll(testSettings(jvmToolchains))
-      add("startup --max_idle_secs=${bazelServerMaxIdleSeconds()}")
       add("startup --output_user_root=${outputUserRoot.toBazelRcPath()}")
       add("startup --output_base=${outputBase.toBazelRcPath()}")
       add("common --repository_cache=${repositoryCache.toBazelRcPath()}")
@@ -99,13 +98,6 @@ object BazelTestCaches {
                      ?: error("Cannot find the kotlin-stdlib jar in the test classpath")
     return Path.of(stdlibPath)
   }
-
-  private fun bazelServerMaxIdleSeconds(): Int =
-    System.getenv("BAZEL_PLUGIN_TEST_BAZEL_MAX_IDLE_SECONDS")
-      ?.toIntOrNull()
-    ?: System.getProperty("bazel.plugin.test.bazel.max.idle.seconds")
-      ?.toIntOrNull()
-    ?: 7200
 
   fun testCacheRoot(): Path {
     val cacheRoot = System.getenv("BAZEL_PLUGIN_TEST_CACHE_ROOT")
