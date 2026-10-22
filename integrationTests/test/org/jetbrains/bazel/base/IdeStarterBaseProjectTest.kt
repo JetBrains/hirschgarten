@@ -513,12 +513,17 @@ fun Driver.singleProjectOrNull(): Project? = service<ProjectManager>(RdTarget.DE
   .getOpenProjects()
   .singleOrNull()
 
+/**
+ * Fails when the IDE logged an error that names the Bazel plugin. Prints the other errors.
+ * The IDE Starter reports each IDE error as a test of its own after the IDE closes.
+ */
 fun Driver.failIfFatalIdeErrorsPresent(phase: String) {
   val errors = withContext(OnDispatcher.EDT) {
     utility<IdeMessagePool>().getInstance()
       .getFatalErrors(includeReadMessages = true, includeSubmittedMessages = true)
       .map { IdeErrorText(it.getMessage(), it.getThrowableText()) }
   }
+  otherFatalIdeErrorsReport(phase, errors)?.let(System.err::println)
   fatalIdeErrorsFailure(phase, errors)?.let(::error)
 }
 
