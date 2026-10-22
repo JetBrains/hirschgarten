@@ -22,6 +22,7 @@ import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.ignore.BazelIgnoreService
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.languages.projectview.ProjectView
+import org.jetbrains.bazel.languages.projectview.aspectsAttrs
 import org.jetbrains.bazel.languages.projectview.shardSync
 import org.jetbrains.bazel.languages.projectview.targetShardSize
 import org.jetbrains.bazel.languages.projectview.targets
@@ -154,6 +155,7 @@ class ProjectResolver(
         ruleSets,
         bazelInfo.release,
         repoMapping,
+        projectView.aspectsAttrs,
       )
     }
 

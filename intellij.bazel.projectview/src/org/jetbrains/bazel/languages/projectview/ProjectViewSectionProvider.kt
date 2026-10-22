@@ -29,6 +29,7 @@ internal class DefaultProjectViewSectionProvider : ProjectViewSectionProvider {
       DirectoriesSection,
       DotIdeaDirectoryLocationSection,
       EnabledRulesSection,
+      ApsectsAttrsSection,
       GazelleTargetSection,
       ImportDepthSection,
       ImportRunConfigurationsSection,
@@ -94,6 +95,13 @@ private val EnabledRulesSection: ProjectViewSection<List<String>> = ProjectViewS
   type = ProjectViewSectionType.string().list(),
   documentation = BazelProjectViewBundle.message("bazel.language.projectview.docs.enabled_rules"),
 )
+
+private val ApsectsAttrsSection: ProjectViewSection<List<String>?> = ProjectViewSection(
+  key = ASPPECTS_ATTRS_KEY,
+  type = ProjectViewSectionType.string().list(),
+  documentation = BazelProjectViewBundle.message("bazel.language.projectview.docs.aspects_attrs"),
+)
+
 
 private val GazelleTargetSection: ProjectViewSection<Label?> = ProjectViewSection(
   key = GAZELLE_TARGET_KEY,
