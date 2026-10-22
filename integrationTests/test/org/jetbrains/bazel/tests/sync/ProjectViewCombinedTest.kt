@@ -43,6 +43,7 @@ import org.jetbrains.bazel.tests.ui.consoleView
 import org.jetbrains.bazel.tests.ui.getRunGutterOnLine
 import org.jetbrains.bazel.tests.ui.verifyAvailableRunGutterActions
 import org.jetbrains.bazel.tests.ui.verifyTestStatus
+import org.jetbrains.bazel.tests.ui.waitForConsoleText
 import org.junit.jupiter.api.Order
 import org.junit.jupiter.api.Test
 import kotlin.io.path.div
@@ -454,7 +455,7 @@ class ProjectViewCombinedTest : IdeStarterCombinedBaseTest() {
           clickRunGutterOnLine(15)
           verifyAvailableRunGutterActions(listOf("Build Target", "Run '//binary:custom_binary'"))
           popup().waitOneText("Run '//binary:custom_binary'").click()
-          consoleView.waitContainsText("Hello, world!")
+          waitForConsoleText("Hello, world!")
         }
         step("Scroll down") {
           execute { goto(32, 1) }
@@ -486,7 +487,7 @@ class ProjectViewCombinedTest : IdeStarterCombinedBaseTest() {
         step("Debug run java_binary") {
           clickRunGutterOnLine(4)
           popup().waitOneText("Debug '//binary:java_binary'").click()
-          consoleView.waitContainsText("Hello, world!")
+          waitForConsoleText("Hello, world!")
         }
         step("Check there's no run gutters in MODULE.bazel") {
           openFile("MODULE.bazel")
