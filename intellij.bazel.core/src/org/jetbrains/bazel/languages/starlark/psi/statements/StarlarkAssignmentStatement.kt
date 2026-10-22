@@ -5,7 +5,8 @@ import com.intellij.psi.PsiElement
 import com.intellij.util.Processor
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.languages.starlark.StarlarkUtils.nearestRelevantBeforeOperator
-import org.jetbrains.bazel.languages.starlark.StarlarkUtils.selectLeftHandSideOfAssignment
+import org.jetbrains.bazel.languages.starlark.elements.StarlarkTokenType
+import org.jetbrains.bazel.languages.starlark.elements.StarlarkTokenTypes
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkBaseElement
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkElement
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkElementVisitor
@@ -16,13 +17,15 @@ import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkTargetExpr
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkTupleExpression
 
 @ApiStatus.Internal
-class StarlarkAssignmentStatement(node: ASTNode) : StarlarkBaseElement(node) {
+class StarlarkAssignmentStatement(node: ASTNode) : StarlarkBaseElement(node), StarlarkAssigningStatement {
   override fun acceptVisitor(visitor: StarlarkElementVisitor) = visitor.visitAssignmentStatement(this)
 
   override fun getName(): String? = getTargetExpression()?.name ?: super.getName()
 
+  override fun operator(): StarlarkTokenType = StarlarkTokenTypes.EQ
+
   fun check(processor: Processor<StarlarkElement>): Boolean =
-    processTargets(selectLeftHandSideOfAssignment(this), processor)
+    processTargets(leftHandSide(), processor)
 
   fun isTopLevel(): Boolean = parent is StarlarkFile
 

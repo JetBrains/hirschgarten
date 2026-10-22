@@ -3,7 +3,6 @@ package org.jetbrains.bazel.languages.starlark.utils
 import com.intellij.psi.PsiElement
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.languages.starlark.StarlarkUtils.nearestRelevantBeforeOperator
-import org.jetbrains.bazel.languages.starlark.StarlarkUtils.selectLeftHandSideOfAssignment
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkCallExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkReferenceExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkSubscriptionExpression
@@ -52,14 +51,14 @@ object StarlarkMutationUtils {
 
   private fun getMutatingAssignment(element: PsiElement): Mutation? {
     val assignment = element as? StarlarkAssignmentStatement ?: return null
-    val lhs = selectLeftHandSideOfAssignment(assignment) ?: return null
+    val lhs = assignment.leftHandSide() ?: return null
     val target = extractSubscriptionReceiver(lhs) ?: return null
     return Mutation(target, lhs, Mutation.Kind.SUBSCRIPTION_ASSIGNMENT)
   }
 
   private fun getMutatingAugAssignment(element: PsiElement): Mutation? {
     val assignment = element as? StarlarkAugAssignmentStatement ?: return null
-    val lhs = selectLeftHandSideOfAssignment(assignment) ?: return null
+    val lhs = assignment.leftHandSide() ?: return null
     val target = lhs.takeIf { it.isSimpleNameExpression() } ?: extractSubscriptionReceiver(lhs) ?: return null
     return Mutation(target, lhs, Mutation.Kind.AUGMENTED_ASSIGNMENT)
   }

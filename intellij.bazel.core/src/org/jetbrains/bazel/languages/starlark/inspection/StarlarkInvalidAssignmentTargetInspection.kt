@@ -9,7 +9,6 @@ import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.languages.starlark.StarlarkBundle
 import org.jetbrains.bazel.languages.starlark.StarlarkFileType
 import org.jetbrains.bazel.languages.starlark.StarlarkUtils.nearestRelevantBeforeOperator
-import org.jetbrains.bazel.languages.starlark.StarlarkUtils.selectLeftHandSideOfAssignment
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkElementVisitor
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkListLiteralExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkParenthesizedExpression
@@ -29,12 +28,12 @@ class StarlarkInvalidAssignmentTargetInspection : LocalInspectionTool() {
 
   private class InvalidAssignmentTargetVisitor(private val holder: ProblemsHolder) : StarlarkElementVisitor() {
     override fun visitAssignmentStatement(node: StarlarkAssignmentStatement) {
-      selectLeftHandSideOfAssignment(node)?.let(::searchForInvalidTargetAndReport)
+      node.leftHandSide()?.let(::searchForInvalidTargetAndReport)
     }
 
     override fun visitAugAssignmentStatement(node: StarlarkAugAssignmentStatement) {
-      val lhs = selectLeftHandSideOfAssignment(node) ?: return
-      if (lhs is StarlarkTupleExpression || lhs is StarlarkListLiteralExpression) {
+      val lhs = node.leftHandSide() ?: return
+      if (lhs is StarlarkTupleExpression || lhs is StarlarkListLiteralExpression || (lhs is StarlarkParenthesizedExpression && lhs.getTuple() != null)) {
         holder.registerProblem(lhs, StarlarkBundle.message("inspection.description.assignment.target.augmented.sequence"))
         return
       }
@@ -44,7 +43,7 @@ class StarlarkInvalidAssignmentTargetInspection : LocalInspectionTool() {
     override fun visitForStatement(node: StarlarkForStatement) {
       val loopVars = node.getLoopVariables()
       if (loopVars.isNotEmpty()) loopVars.forEach(::searchForInvalidTargetAndReport)
-      else selectLeftHandSideOfAssignment(node)?.let(::searchForInvalidTargetAndReport)
+      else node.leftHandSide()?.let(::searchForInvalidTargetAndReport)
     }
 
     private fun searchForInvalidTargetAndReport(target: PsiElement) {

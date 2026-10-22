@@ -14,7 +14,6 @@ import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.languages.starlark.StarlarkBundle
 import org.jetbrains.bazel.languages.starlark.StarlarkFileType
 import org.jetbrains.bazel.languages.starlark.StarlarkUtils.nearestRelevantBeforeOperator
-import org.jetbrains.bazel.languages.starlark.StarlarkUtils.selectLeftHandSideOfAssignment
 import org.jetbrains.bazel.languages.starlark.bazel.BazelGlobalFunctions
 import org.jetbrains.bazel.languages.starlark.elements.StarlarkTokenTypes
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkElementVisitor
@@ -90,7 +89,7 @@ class StarlarkVariableUsageInspection : LocalInspectionTool() {
 
     private fun isAssignmentBinding(ref: StarlarkReferenceExpression): Boolean {
       val assignment = PsiTreeUtil.getParentOfType(ref, StarlarkAssignmentStatement::class.java) ?: return false
-      val lhs = selectLeftHandSideOfAssignment(assignment) ?: return false
+      val lhs = assignment.leftHandSide() ?: return false
 
       fun containsReference(target: PsiElement): Boolean =
         when (target) {
@@ -300,7 +299,7 @@ class StarlarkVariableUsageInspection : LocalInspectionTool() {
           if (scopeForNode === node) ensureScope(scopeForNode, currentScope)
 
           when (node) {
-            is StarlarkAssignmentStatement -> putTargetBindings(currentScope, selectLeftHandSideOfAssignment(node))
+            is StarlarkAssignmentStatement -> putTargetBindings(currentScope, node.leftHandSide())
 
             is StarlarkFunctionDeclaration -> {
               putFirstBinding(currentScope, node.name, node.textOffset)

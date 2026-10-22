@@ -20,9 +20,6 @@ internal object StarlarkUtils {
     StarlarkTokenSets.COMMENT,
   )
 
-  fun selectLeftHandSideOfAssignment(node: PsiElement): PsiElement? =
-    nearestRelevantBeforeOperator(node.firstChild)
-
   fun nearestRelevantBeforeOperator(node: PsiElement?): PsiElement? {
     var current = node
     while (current != null) {
@@ -30,6 +27,16 @@ internal object StarlarkUtils {
       if (STARLARK_ASSIGNMENT_OPERATORS.contains(elementType)) return null
       if (current is StarlarkBaseElement && !STARLARK_WHITESPACES_AND_COMMENTS.contains(elementType)) return current
       current = current.nextSibling
+    }
+    return null
+  }
+
+  fun previousRelevantSibling(element: PsiElement): PsiElement? {
+    var current = element.prevSibling
+    while (current != null) {
+      val elementType = current.node?.elementType
+      if (current is StarlarkBaseElement && !STARLARK_WHITESPACES_AND_COMMENTS.contains(elementType)) return current
+      current = current.prevSibling
     }
     return null
   }
@@ -44,7 +51,7 @@ internal object StarlarkUtils {
     return null
   }
 
-  fun nearestRelevantAfter(node: PsiElement, separator: StarlarkTokenType): PsiElement? {
+  fun nearestRelevantChildAfter(node: PsiElement, separator: StarlarkTokenType): PsiElement? {
     var current = node.firstChild
     while (current != null) {
       if (current.node?.elementType == separator) return nextRelevantSibling(current)
@@ -59,6 +66,21 @@ internal object StarlarkUtils {
       while (current != null) {
         if (current.node?.elementType == separator) {
           nextRelevantSibling(current)?.let(::add)
+        }
+        current = current.nextSibling
+      }
+    }
+
+  fun relevantChildrenAroundEach(node: PsiElement, separator: StarlarkTokenType): List<Pair<PsiElement, PsiElement>> =
+    buildList {
+      var current = node.firstChild
+      while (current != null) {
+        if (current.node?.elementType == separator) {
+          val left = previousRelevantSibling(current)
+          val right = nextRelevantSibling(current)
+          if (left != null && right != null) {
+            add(left to right)
+          }
         }
         current = current.nextSibling
       }
