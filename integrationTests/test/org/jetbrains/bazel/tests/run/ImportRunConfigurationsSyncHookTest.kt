@@ -257,28 +257,37 @@ class ImportRunConfigurationsSyncHookTest : IdeStarterCombinedBaseTest() {
     withDriver(bgRun) {
       ideFrame {
         selectRunConfiguration("Bazel run :main")
-        runConfigurationsPopup {
-          list().clickItem("Edit Configurations", fullMatch = false)
+        var originalFlags: String? = null
+        try {
+          runConfigurationsPopup {
+            list().clickItem("Edit Configurations", fullMatch = false)
+          }
+          editRunConfigurationsDialog {
+            originalFlags = bazelFlags
+            bazelFlags += " --foo=\"foo value\""
+            runButton.click()
+          }
+          consoleView.waitOneText { it.text == "ERROR: --foo=foo value :: Unrecognized option: --foo=foo value" }
+          runConfigurationsPopup {
+            list().clickItem("Edit Configurations", fullMatch = false)
+          }
+          editRunConfigurationsDialog {
+            bazelFlags = bazelFlags.replace("--foo=\"foo value\"", "--bar='bar value'")
+            runButton.click()
+          }
+          consoleView.waitOneText { it.text == "ERROR: --bar=bar value :: Unrecognized option: --bar=bar value" }
         }
-        editRunConfigurationsDialog {
-          bazelFlags += " --foo=\"foo value\""
-          runButton.click()
-        }
-        consoleView.waitOneText { it.text == "ERROR: --foo=foo value :: Unrecognized option: --foo=foo value" }
-        runConfigurationsPopup {
-          list().clickItem("Edit Configurations", fullMatch = false)
-        }
-        editRunConfigurationsDialog {
-          bazelFlags = bazelFlags.replace("--foo=\"foo value\"", "--bar='bar value'")
-          runButton.click()
-        }
-        consoleView.waitOneText { it.text == "ERROR: --bar=bar value :: Unrecognized option: --bar=bar value" }
-        runConfigurationsPopup {
-          list().clickItem("Edit Configurations", fullMatch = false)
-        }
-        editRunConfigurationsDialog {
-          bazelFlags = bazelFlags.replace("--bar='bar value'", "")
-          okButton.click()
+        finally {
+          // Restore even when a check above fails. Otherwise the later tests run "Bazel run :main" with an unknown flag.
+          originalFlags?.let { flags ->
+            runConfigurationsPopup {
+              list().clickItem("Edit Configurations", fullMatch = false)
+            }
+            editRunConfigurationsDialog {
+              bazelFlags = flags
+              okButton.click()
+            }
+          }
         }
       }
     }
