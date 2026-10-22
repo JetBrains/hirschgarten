@@ -271,8 +271,8 @@ internal class CcToolchainBuilder {
     sysroot = path
   }
 
-  fun xcodeInfo(xcodeVersion: String, macosSdkVersion: String) {
-    xcodeInfo = CcToolchainBuildTarget.XcodeInfo(macosSdkVersion = macosSdkVersion, xcodeVersion = xcodeVersion)
+  fun xcodeInfo(developerDir: String, sdkRoot: String, xcodeVersion: String = "") {
+    xcodeInfo = CcToolchainBuildTarget.XcodeInfo(developerDir = developerDir, sdkRoot = sdkRoot, xcodeVersion = xcodeVersion)
   }
 
   fun cOptions(vararg options: String) {

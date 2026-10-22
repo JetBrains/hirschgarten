@@ -2,6 +2,7 @@ package org.jetbrains.bazel.clion.sync
 
 import com.google.devtools.intellij.ideinfo.IntellijIdeInfo
 import com.google.devtools.intellij.ideinfo.IntellijIdeInfo.CIdeInfo
+import com.intellij.aspect.lib.readEnvFromFile
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.commons.LanguageClass
 import org.jetbrains.bazel.server.BazelServerFacade
@@ -9,6 +10,7 @@ import org.jetbrains.bazel.sync.workspace.languages.LanguagePlugin
 import org.jetbrains.bazel.sync.workspace.snapshot.OutputLocationCollectionBuilder
 import org.jetbrains.bsp.protocol.BuildTargetData
 import org.jetbrains.bsp.protocol.OutputLocationParser
+import org.jetbrains.bsp.protocol.OutputLocationResolver
 import org.jetbrains.bsp.protocol.StringsCollection
 import kotlin.reflect.KClass
 
@@ -35,7 +37,7 @@ class CcLanguagePlugin : LanguagePlugin {
   ): List<BuildTargetData> {
     return when {
       target.hasCIdeInfo() -> listOf(mapIdeInfo(target.cIdeInfo, server.outputParser))
-      target.hasCToolchainIdeInfo() -> listOf(mapToolchainIdeInfo(target, server.outputParser))
+      target.hasCToolchainIdeInfo() -> listOf(mapToolchainIdeInfo(target.cToolchainIdeInfo, server.outputParser, server.outputResolver))
       else -> emptyList()
     }
   }
@@ -74,9 +76,11 @@ private suspend fun mapCompilationContext(
   )
 }
 
-private suspend fun mapToolchainIdeInfo(target: IntellijIdeInfo.TargetIdeInfo, parser: OutputLocationParser): CcToolchainBuildTarget {
-  val info = target.cToolchainIdeInfo
-
+private suspend fun mapToolchainIdeInfo(
+  info: IntellijIdeInfo.CToolchainIdeInfo,
+  parser: OutputLocationParser,
+  resolver: OutputLocationResolver,
+): CcToolchainBuildTarget {
   // we don't need to store them, they just need to be hardlinked
   parser.parse(info.allFilesList)
 
@@ -91,13 +95,23 @@ private suspend fun mapToolchainIdeInfo(target: IntellijIdeInfo.TargetIdeInfo, p
     sysroot = info.sysroot.takeIf { it.isNotEmpty() }?.let { parser.parseExecrootPath(it) },
     cEnvironment = info.cEnvironmentMap.toMap(),
     cppEnvironment = info.cppEnvironmentMap.toMap(),
-    xcodeInfo = target.xcodeIdeInfo.takeIf { target.hasXcodeIdeInfo() }?.let(::mapXcodeIdeInfo),
+    xcodeInfo = mapXcodeIdeInfo(info, parser, resolver),
   )
 }
 
-private fun mapXcodeIdeInfo(info: IntellijIdeInfo.XcodeIdeInfo): CcToolchainBuildTarget.XcodeInfo {
+private suspend fun mapXcodeIdeInfo(
+  info: IntellijIdeInfo.CToolchainIdeInfo,
+  parser: OutputLocationParser,
+  resolver: OutputLocationResolver,
+): CcToolchainBuildTarget.XcodeInfo? {
+  if (!info.hasXcodeInfo()) return null
+
+  val path = resolver.resolve(parser.parse(info.xcodeInfo)) ?: return null
+  val environment = readEnvFromFile(path) ?: return null
+
   return CcToolchainBuildTarget.XcodeInfo(
-    macosSdkVersion = info.macosSdkVersion,
-    xcodeVersion = info.xcodeVersion,
+    developerDir = environment["DEVELOPER_DIR"] ?: "",
+    sdkRoot = environment["SDKROOT"] ?: "",
+    xcodeVersion = environment["XCODE_VERSION_OVERRIDE"] ?: "",
   )
 }

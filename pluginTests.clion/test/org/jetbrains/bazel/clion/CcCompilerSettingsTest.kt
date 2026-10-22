@@ -2,33 +2,25 @@ package org.jetbrains.bazel.clion
 
 import com.intellij.testFramework.common.timeoutRunBlocking
 import com.intellij.testFramework.junit5.TestApplication
-import com.intellij.testFramework.junit5.fixture.disposableFixture
 import com.intellij.testFramework.junit5.fixture.projectFixture
-import com.intellij.testFramework.registerOrReplaceServiceInstance
 import org.assertj.core.api.Assertions.assertThat
 import org.jetbrains.bazel.clion.workspace.CcCompilerInfo
 import org.jetbrains.bazel.clion.workspace.buildCompilerSettings
-import org.jetbrains.bazel.commons.BazelStatus
 import org.jetbrains.bazel.fixtures.CcProjectBuilder
 import org.jetbrains.bazel.fixtures.ccProject
 import org.jetbrains.bazel.fixtures.withTestImportContext
-import org.jetbrains.bazel.label.Label
-import org.jetbrains.bazel.server.BazelServerService
-import org.jetbrains.bazel.workspace.model.test.framework.BuildServerMock
-import org.jetbrains.bazel.workspace.model.test.framework.MockBuildServerService
-import org.jetbrains.bsp.protocol.RunParams
-import org.jetbrains.bsp.protocol.RunResult
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.condition.DisabledOnOs
 import org.junit.jupiter.api.condition.OS
 
+private const val DEVELOPER_DIR = "/Applications/Xcode.app/Contents/Developer"
+private const val SDK_ROOT = "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk"
 
 @TestApplication
 @DisabledOnOs(OS.WINDOWS)
 class CcCompilerSettingsTest {
 
   private val project by projectFixture()
-  private val disposable by disposableFixture()
 
   @Test
   fun testRewritesProcSelfCwdValueToAbsolutePath() {
@@ -95,16 +87,58 @@ class CcCompilerSettingsTest {
   }
 
   @Test
-  @DisabledOnOs(OS.MAC)
-  fun testDoesNotRunTheXcodeLocatorOnANonDarwinHost() {
-    val server = RecordingBuildServer()
-    project.registerOrReplaceServiceInstance(BazelServerService::class.java, MockBuildServerService(server), disposable)
-
-    resolve {
-      ccToolchain { xcodeInfo(xcodeVersion = "None", macosSdkVersion = "10.11") }
+  fun testExpandsXcodePlaceholdersInOptions() {
+    val compiler = resolve {
+      ccToolchain {
+        cOptions("-isysroot", "__BAZEL_XCODE_SDKROOT__", "-F__BAZEL_XCODE_SDKROOT__/System/Library/Frameworks")
+        cppOptions("-B__BAZEL_XCODE_DEVELOPER_DIR__/usr/bin")
+        xcodeInfo(developerDir = DEVELOPER_DIR, sdkRoot = SDK_ROOT)
+      }
     }
 
-    assertThat(server.runTargets).isEmpty()
+    assertThat(compiler.cSwitches).containsExactly("-isysroot", SDK_ROOT, "-F$SDK_ROOT/System/Library/Frameworks")
+    assertThat(compiler.cppSwitches).containsExactly("-B$DEVELOPER_DIR/usr/bin")
+  }
+
+  @Test
+  fun testExpandsExecutionRootPlaceholdersInOptions() {
+    val compiler = resolve {
+      ccToolchain {
+        cOptions(
+          "-fdebug-prefix-map=__BAZEL_EXECUTION_ROOT__=.",
+          "-fdebug-prefix-map=__BAZEL_XCODE_DEVELOPER_DIR__=/PLACEHOLDER_DEVELOPER_DIR",
+        )
+        cppOptions("-fcoverage-prefix-map=__BAZEL_EXECUTION_ROOT__=__BAZEL_EXECUTION_ROOT_CANONICAL__")
+        xcodeInfo(developerDir = DEVELOPER_DIR, sdkRoot = SDK_ROOT)
+      }
+    }
+
+    assertThat(compiler.cSwitches).containsExactly(
+      "-fdebug-prefix-map=/execroot=.",
+      "-fdebug-prefix-map=$DEVELOPER_DIR=/PLACEHOLDER_DEVELOPER_DIR",
+    )
+    assertThat(compiler.cppSwitches).containsExactly("-fcoverage-prefix-map=/execroot=/execroot")
+  }
+
+  @Test
+  fun testSetsXcodeEnvironment() {
+    val compiler = resolve {
+      ccToolchain { xcodeInfo(developerDir = DEVELOPER_DIR, sdkRoot = SDK_ROOT) }
+    }
+
+    assertThat(compiler.environment)
+      .containsEntry("DEVELOPER_DIR", DEVELOPER_DIR)
+      .containsEntry("SDKROOT", SDK_ROOT)
+  }
+
+  @Test
+  fun testLeavesXcodePlaceholdersWithoutXcodeInfo() {
+    val compiler = resolve {
+      ccToolchain { cOptions("-isysroot", "__BAZEL_XCODE_SDKROOT__", "-fdebug-prefix-map=__BAZEL_EXECUTION_ROOT__=.") }
+    }
+
+    assertThat(compiler.cSwitches).containsExactly("-isysroot", "__BAZEL_XCODE_SDKROOT__", "-fdebug-prefix-map=/execroot=.")
+    assertThat(compiler.environment).doesNotContainKeys("DEVELOPER_DIR", "SDKROOT")
   }
 
   private fun resolve(declare: CcProjectBuilder.() -> Unit): CcCompilerInfo = timeoutRunBlocking {
@@ -116,15 +150,5 @@ class CcCompilerSettingsTest {
     assertThat(compilers).hasSize(1)
 
     compilers.values.single()
-  }
-}
-
-private class RecordingBuildServer : BuildServerMock() {
-
-  val runTargets: MutableList<Label> = mutableListOf()
-
-  override suspend fun buildTargetRun(runParams: RunParams): RunResult {
-    runTargets += runParams.target
-    return RunResult(runParams.taskId, BazelStatus.BUILD_ERROR, null)
   }
 }

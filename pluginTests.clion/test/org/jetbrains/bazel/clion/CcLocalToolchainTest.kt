@@ -99,13 +99,16 @@ abstract class CcLocalToolchainTest(override val bazelVersion: String) : BazelVe
       .extractData<CcToolchainBuildTarget>()
       .assertNotNull()
 
-    assertThat(toolchain.xcodeInfo?.xcodeVersion).isNotNull().isNotBlank()
-    assertThat(toolchain.xcodeInfo?.macosSdkVersion).isNotNull().isNotBlank()
+    val xcodeInfo = toolchain.xcodeInfo.assertNotNull()
+    assertThat(xcodeInfo.developerDir).startsWith("/").doesNotContain("__BAZEL_XCODE_")
+    assertThat(xcodeInfo.sdkRoot).startsWith("/").doesNotContain("__BAZEL_XCODE_")
 
     val compiler = project.findCompiler(target).assertNotNull()
 
-    assertThat(compiler.environment).containsKey("DEVELOPER_DIR")
-    assertThat(compiler.environment).containsKey("SDKROOT")
+    assertThat(compiler.environment).containsEntry("DEVELOPER_DIR", xcodeInfo.developerDir)
+    assertThat(compiler.environment).containsEntry("SDKROOT", xcodeInfo.sdkRoot)
+
+    assertThat(compiler.cSwitches + compiler.cppSwitches).noneMatch { it.contains("__BAZEL_") }
   }
 }
 

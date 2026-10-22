@@ -20,7 +20,8 @@ data class CcToolchainBuildTarget(
 ) : BuildTargetData {
 
   data class XcodeInfo(
-    val macosSdkVersion: String,
+    val developerDir: String,
+    val sdkRoot: String,
     val xcodeVersion: String,
   )
 }
