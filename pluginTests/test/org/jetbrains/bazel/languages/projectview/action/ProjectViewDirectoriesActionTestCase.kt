@@ -7,31 +7,27 @@ import com.intellij.openapi.actionSystem.DataContext
 import com.intellij.openapi.actionSystem.Presentation
 import com.intellij.openapi.actionSystem.ex.ActionUtil
 import com.intellij.openapi.actionSystem.impl.SimpleDataContext
-import com.intellij.openapi.application.edtWriteAction
 import com.intellij.openapi.components.service
 import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
-import com.intellij.openapi.vfs.findOrCreateDirectory
-import com.intellij.platform.backend.workspace.WorkspaceModel
-import com.intellij.platform.backend.workspace.storeAndGet
 import com.intellij.platform.ide.progress.runWithModalProgressBlocking
 import com.intellij.testFramework.TestActionEvent
 import com.intellij.testFramework.runInEdtAndGet
-import com.intellij.testFramework.runInEdtAndWait
-import com.intellij.testFramework.workspaceModel.updateProjectModel
 import org.intellij.lang.annotations.Language
 import org.jetbrains.bazel.languages.projectview.ProjectViewService
 import org.jetbrains.bazel.languages.projectview.directories
-import org.jetbrains.bazel.project.BazelProjectFixtures.initializeBazelProjectViaProjectView
 import org.jetbrains.bazel.test.framework.bazelCodeInsightFixture
-import org.jetbrains.bazel.workspacemodel.entities.BazelProjectDirectoriesEntityFixtures.emptyBazelDirectoryWorkspaceEntity
+import org.jetbrains.bazel.test.framework.testBazel
+import org.jetbrains.bazel.test.framework.testproject.projectDirectories
+import org.jetbrains.bazel.test.framework.testproject.useProjectView
 import kotlin.io.path.pathString
 
 abstract class ProjectViewDirectoriesActionTestCase(
   protected val actionId: String,
 ) {
   protected val myFixture by bazelCodeInsightFixture()
+  protected val testBazel get() = myFixture.testBazel
 
   protected val project: Project get() = myFixture.project
 
@@ -54,29 +50,15 @@ abstract class ProjectViewDirectoriesActionTestCase(
 
   protected fun useProjectView(@Language("projectview") content: String) {
     val projectView = myFixture.tempDirFixture.createFile(".user.bazelproject", content)
-    initializeBazelProjectViaProjectView(myFixture.project, projectView.toNioPath())
+    testBazel.useProjectView(projectView.toNioPath())
     // initializes editor with some file
     val file = myFixture.createFile("Foo.kt", "")
-    runInEdtAndWait { myFixture.openFileInEditor(file) }
-    val workspaceModel = WorkspaceModel.getInstance(project)
-    val manager = workspaceModel.getVirtualFileUrlManager()
-    val root = myFixture.tempDirFixture.findOrCreateDir(".")
-    val bazelProjectView = bazelProjectView
-    runInEdtAndWait {
-      runWithModalProgressBlocking(project, "Syncing project view...") {
-        val (includes, excludes) = edtWriteAction {
-          val (includedDirs, excludedDirs) = bazelProjectView.directories.partition { it.isIncluded() }
-          Pair(
-            includedDirs.map { root.findOrCreateDirectory(it.value.pathString) },
-            excludedDirs.map { root.findOrCreateDirectory(it.value.pathString) },
-          )
-        }
-        val entity = emptyBazelDirectoryWorkspaceEntity(project).also {
-          it.includedRoots = includes.mapTo(arrayListOf()) { manager.storeAndGet(it) }
-          it.excludedRoots = excludes.mapTo(arrayListOf()) { manager.storeAndGet(it) }
-        }
-        edtWriteAction { workspaceModel.updateProjectModel { updater -> updater.addEntity(entity) } }
-      }
+    myFixture.openFileInEditor(file)
+    val (included, excluded) = bazelProjectView.directories.partition { it.isIncluded() }
+    for (entry in included + excluded) myFixture.tempDirFixture.findOrCreateDir(entry.value.pathString)
+    testBazel.projectDirectories {
+      include(*included.map { it.value.pathString }.toTypedArray())
+      exclude(*excluded.map { it.value.pathString }.toTypedArray())
     }
   }
 

@@ -2,18 +2,14 @@ package org.jetbrains.bazel.languages.starlark.rename
 
 import com.intellij.openapi.application.EDT
 import com.intellij.openapi.application.runReadActionBlocking
-import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.util.PsiTreeUtil
-import com.intellij.refactoring.BaseRefactoringProcessor
 import com.intellij.testFramework.common.timeoutRunBlocking
 import com.intellij.testFramework.fixtures.CodeInsightTestFixture
-import io.kotest.assertions.throwables.shouldThrowWithMessage
 import io.kotest.matchers.shouldBe
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.jetbrains.bazel.languages.starlark.StarlarkBundle
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkNamedElement
-import org.jetbrains.bazel.project.BazelProjectFixtures
 import org.jetbrains.bazel.test.framework.BazelTestApplication
 import org.jetbrains.bazel.test.framework.bazelCodeInsightFixture
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -51,7 +47,6 @@ class StarlarkRenameTest {
 
   @Test
   fun `should rename top-level function across files`() {
-    myFixture.addFileToProject("MODULE.bazel", "")
     myFixture.addFileToProject("BUILD", "")
     val defsFile = myFixture.addFileToProject(
       "defs.bzl",
@@ -68,7 +63,7 @@ class StarlarkRenameTest {
       result = helper(42)
       """.trimIndent(),
     )
-    openFileInEditor(defsFile.virtualFile)
+    myFixture.openFileInEditor(defsFile.virtualFile)
     myFixture.renameStarlarkElement("helper", "util")
     myFixture.checkResult(
       """
@@ -130,7 +125,6 @@ class StarlarkRenameTest {
 
   @Test
   fun `should rename top-level variable across files`() {
-    myFixture.addFileToProject("MODULE.bazel", "")
     myFixture.addFileToProject("BUILD", "")
     val defsFile = myFixture.addFileToProject(
       "defs.bzl",
@@ -146,7 +140,7 @@ class StarlarkRenameTest {
       x = MY_CONST + 1
       """.trimIndent(),
     )
-    openFileInEditor(defsFile.virtualFile)
+    myFixture.openFileInEditor(defsFile.virtualFile)
     myFixture.renameStarlarkElement("MY_CONST", "MY_VALUE")
     myFixture.checkResult(
       """
@@ -261,7 +255,6 @@ class StarlarkRenameTest {
 
   @Test
   fun `rename target should not modify non-starlark files`() {
-    myFixture.addFileToProject("MODULE.bazel", "")
     myFixture.configureByText(
       "defs.bzl",
       """
@@ -512,20 +505,8 @@ class StarlarkRenameTest {
 
   // endregion
 
-  private fun openFileInEditor(file: VirtualFile): Unit = timeoutRunBlocking {
-    withContext(Dispatchers.EDT) {
-      myFixture.openFileInEditor(file)
-    }
-  }
-
   private fun conflictMessage(newName: String, fileName: String): String =
     StarlarkBundle.message("rename.name.conflict.already.exists", newName, fileName)
-
-  private inline fun shouldThrowConflict(message: String, block: () -> Unit) {
-    shouldThrowWithMessage<BaseRefactoringProcessor.ConflictsInTestsException>(message) {
-      block()
-    }
-  }
 }
 
 private fun CodeInsightTestFixture.renameStarlarkElement(oldName: String, newName: String) {

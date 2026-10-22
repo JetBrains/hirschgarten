@@ -1,23 +1,18 @@
 package org.jetbrains.bazel.ui.console
 
 import com.intellij.execution.filters.OpenFileHyperlinkInfo
-import com.intellij.openapi.application.WriteAction
 import com.intellij.openapi.application.runReadActionBlocking
-import com.intellij.openapi.util.io.findOrCreateFile
-import com.intellij.openapi.vfs.VirtualFileManager
-import com.intellij.util.io.delete
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
-import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.test.framework.BazelTestApplication
 import org.jetbrains.bazel.test.framework.bazelCodeInsightFixture
-import org.jetbrains.bazel.workspace.setRepoMapping
+import org.jetbrains.bazel.test.framework.testBazel
+import org.jetbrains.bazel.test.framework.testproject.bazelInfo
+import org.jetbrains.bazel.test.framework.testproject.externalRepositoryPath
+import org.jetbrains.bazel.test.framework.testproject.sync
+import org.jetbrains.bazel.test.framework.testproject.writeFile
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import java.nio.file.Path
-import kotlin.io.path.createDirectories
-import kotlin.io.path.createTempDirectory
-import kotlin.io.path.writeText
 
 private const val TEST_LINE_PREFIX = "There are 39 characters in this string "
 private const val TEST_LINE_SUFFIX = " bliep bliep bliep\n"
@@ -25,6 +20,7 @@ private const val TEST_LINE_SUFFIX = " bliep bliep bliep\n"
 @BazelTestApplication
 class BazelBuildTargetConsoleFilterTest {
   private val myFixture by bazelCodeInsightFixture()
+  private val testBazel get() = myFixture.testBazel
 
   private val project get() = myFixture.project
 
@@ -33,13 +29,12 @@ class BazelBuildTargetConsoleFilterTest {
   @BeforeEach
   fun setUp() {
     filter = BazelBuildTargetConsoleFilter(project)
-    project.setRepoMapping { mainRepo(project.rootDir.toNioPath()) }
   }
 
   @Test
   fun `should match an absolute bazel target without @`() {
     // given
-    createBazelFileInProject("plugin-bazel/src")
+    testBazel.writeFile("plugin-bazel/src/BUILD", testBazelFileContent)
     val bazelTarget = "//plugin-bazel/src:test_fixtures"
     val line = "$TEST_LINE_PREFIX$bazelTarget$TEST_LINE_SUFFIX"
 
@@ -56,7 +51,7 @@ class BazelBuildTargetConsoleFilterTest {
   @Test
   fun `should match an absolute bazel target with a @`() {
     // given
-    createBazelFileInProject("plugin-bazel/src")
+    testBazel.writeFile("plugin-bazel/src/BUILD", testBazelFileContent)
     val bazelTarget = "@//plugin-bazel/src:test_fixtures"
     val line = "$TEST_LINE_PREFIX$bazelTarget$TEST_LINE_SUFFIX"
 
@@ -73,7 +68,7 @@ class BazelBuildTargetConsoleFilterTest {
   @Test
   fun `should match an absolute bazel target with @@`() {
     // given
-    createBazelFileInProject("plugin-bazel/src")
+    testBazel.writeFile("plugin-bazel/src/BUILD", testBazelFileContent)
     val bazelTarget = "@@//plugin-bazel/src:test_fixtures"
     val line = "$TEST_LINE_PREFIX$bazelTarget$TEST_LINE_SUFFIX"
 
@@ -90,14 +85,11 @@ class BazelBuildTargetConsoleFilterTest {
   @Test
   fun `should match an external target with @@`() {
     // given
-    val externalRootDir = createTempDirectory("externalRepo")
-    val path = createBazelFile(externalRootDir, "plugin-bazel/src")
+    testBazel.sync { repositories { external("externalRepo") } }
+    val externalRepositoryRoot = testBazel.bazelInfo.externalRepositoryPath("externalRepo")
+    val path = testBazel.writeFile(externalRepositoryRoot.resolve("plugin-bazel/src/BUILD"), testBazelFileContent).toNioPath()
     val bazelTarget = "@@externalRepo//plugin-bazel/src:test_fixtures"
     val line = "$TEST_LINE_PREFIX$bazelTarget$TEST_LINE_SUFFIX"
-    project.setRepoMapping {
-      mainRepo(project.rootDir.toNioPath())
-      repo("externalRepo", externalRootDir)
-    }
 
     // when
     val result = runReadActionBlocking { filter.applyFilter(line, line.length + 100) }
@@ -107,22 +99,16 @@ class BazelBuildTargetConsoleFilterTest {
     (result.resultItems[0].hyperlinkInfo as OpenFileHyperlinkInfo).virtualFile?.toNioPath().toString() shouldContain path.toString()
     result.resultItems[0].highlightStartOffset shouldBe 100 + TEST_LINE_PREFIX.length
     result.resultItems[0].highlightEndOffset shouldBe 100 + TEST_LINE_PREFIX.length + bazelTarget.length
-
-    externalRootDir.delete(true)
   }
 
   @Test
   fun `should match an external target with @`() {
     // given
-    val externalRootDir = createTempDirectory("externalRepo2")
-    val path = createBazelFile(externalRootDir, "plugin-bazel/src")
+    testBazel.sync { repositories { external("externalRepo2+", apparentName = "externalRepo2") } }
+    val externalRepositoryRoot = testBazel.bazelInfo.externalRepositoryPath("externalRepo2+")
+    val path = testBazel.writeFile(externalRepositoryRoot.resolve("plugin-bazel/src/BUILD"), testBazelFileContent).toNioPath()
     val bazelTarget = "@externalRepo2//plugin-bazel/src:test_fixtures"
     val line = "$TEST_LINE_PREFIX$bazelTarget$TEST_LINE_SUFFIX"
-
-    project.setRepoMapping {
-      mainRepo(project.rootDir.toNioPath())
-      repo("externalRepo2+", externalRootDir, apparentName = "externalRepo2")
-    }
 
     // when
     val result = runReadActionBlocking { filter.applyFilter(line, line.length + 100) }
@@ -132,14 +118,12 @@ class BazelBuildTargetConsoleFilterTest {
     (result.resultItems[0].hyperlinkInfo as OpenFileHyperlinkInfo).virtualFile?.toNioPath().toString() shouldContain path.toString()
     result.resultItems[0].highlightStartOffset shouldBe 100 + TEST_LINE_PREFIX.length
     result.resultItems[0].highlightEndOffset shouldBe 100 + TEST_LINE_PREFIX.length + bazelTarget.length
-
-    externalRootDir.delete(true)
   }
 
   @Test
   fun `should not match an external target which does not exist `() {
     // given
-    createBazelFileInProject("plugin-bazel/src")
+    testBazel.writeFile("plugin-bazel/src/BUILD", testBazelFileContent)
     val bazelTarget = "@@externalRepo3//plugin-bazel/src:test_fixtures"
     val line = "$TEST_LINE_PREFIX$bazelTarget$TEST_LINE_SUFFIX"
 
@@ -153,7 +137,7 @@ class BazelBuildTargetConsoleFilterTest {
   @Test
   fun `should not match non-existing folder`() {
     // given
-    createBazelFileInProject("plugin-bazel/src")
+    testBazel.writeFile("plugin-bazel/src/BUILD", testBazelFileContent)
     val bazelTarget = "@@external//plugin-bazel/test:test_fixtures"
     val line = "$TEST_LINE_PREFIX$bazelTarget$TEST_LINE_SUFFIX"
 
@@ -167,7 +151,7 @@ class BazelBuildTargetConsoleFilterTest {
   @Test
   fun `should match top level build files`() {
     // given
-    createBazelFileInProject(".")
+    testBazel.writeFile("BUILD", testBazelFileContent)
     val bazelTarget = "//:test_fixtures"
     val line = "$TEST_LINE_PREFIX$bazelTarget$TEST_LINE_SUFFIX"
 
@@ -183,7 +167,7 @@ class BazelBuildTargetConsoleFilterTest {
   @Test
   fun `should match an absolute bazel target without @ to BUILD_bazel`() {
     // given
-    createBazelFileInProject("plugin-bazel/src", "BUILD.bazel")
+    testBazel.writeFile("plugin-bazel/src/BUILD.bazel", testBazelFileContent)
     val bazelTarget = "//plugin-bazel/src:test_fixtures"
     val line = "$TEST_LINE_PREFIX$bazelTarget$TEST_LINE_SUFFIX"
 
@@ -201,8 +185,8 @@ class BazelBuildTargetConsoleFilterTest {
   @Test
   fun `BUILD_bazel has higher priority than BUILD`() {
     // given
-    createBazelFileInProject(".", "BUILD.bazel")
-    createBazelFileInProject(".", "BUILD")
+    testBazel.writeFile("BUILD.bazel", testBazelFileContent)
+    testBazel.writeFile("BUILD", testBazelFileContent)
     val bazelTarget = "//:test_fixtures"
     val line = "$TEST_LINE_PREFIX$bazelTarget$TEST_LINE_SUFFIX"
 
@@ -226,7 +210,7 @@ proto_library(
   @Test
   fun `can jump to correct line`() {
     // given
-    createBazelFileInProject("plugin-bazel/src")
+    testBazel.writeFile("plugin-bazel/src/BUILD", testBazelFileContent)
     val bazelTarget = "//plugin-bazel/src:test_fixtures"
     val line = "$TEST_LINE_PREFIX$bazelTarget$TEST_LINE_SUFFIX"
 
@@ -245,7 +229,7 @@ proto_library(
   @Test
   fun `should not match an file URI followed by colon`() {
     // given
-    val path = createBazelFileInProject("plugin-bazel/src", "BUILD.bazel")
+    val path = testBazel.writeFile("plugin-bazel/src/BUILD.bazel", testBazelFileContent).toNioPath()
     val uri = path.toAbsolutePath().toUri()
     val line = "$TEST_LINE_PREFIX$uri:1$TEST_LINE_SUFFIX"
 
@@ -255,23 +239,4 @@ proto_library(
     // then
     result!!.resultItems.size shouldBe 0
   }
-
-  private fun createBazelFile(
-    rootDir: Path,
-    relativePath: String,
-    buildFileName: String = "BUILD",
-  ): Path =
-    WriteAction.computeAndWait<Path, Throwable> {
-      rootDir
-        .resolve(relativePath)
-        .createDirectories()
-        .resolve(buildFileName)
-        .findOrCreateFile()
-        .also {
-          it.writeText(testBazelFileContent)
-        }.also { VirtualFileManager.getInstance().refreshAndFindFileByNioPath(it) }
-    }
-
-  private fun createBazelFileInProject(relativePath: String, buildFileName: String = "BUILD"): Path =
-    createBazelFile(project.rootDir.toNioPath(), relativePath, buildFileName)
 }

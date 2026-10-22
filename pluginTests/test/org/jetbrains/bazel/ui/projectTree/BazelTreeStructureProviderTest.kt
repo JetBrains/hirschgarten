@@ -5,22 +5,22 @@ import com.intellij.ide.projectView.ViewSettings
 import com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode
 import com.intellij.ide.projectView.impl.nodes.PsiFileNode
 import com.intellij.ide.projectView.impl.nodes.PsiFileSystemItemFilter
-import com.intellij.openapi.application.EDT
 import com.intellij.openapi.application.readAction
 import com.intellij.openapi.roots.PackageIndex
 import com.intellij.openapi.vfs.VfsUtil
 import com.intellij.openapi.vfs.refreshAndFindVirtualDirectory
-import com.intellij.platform.workspace.storage.impl.url.toVirtualFileUrl
 import com.intellij.psi.PsiManager
 import com.intellij.testFramework.IndexingTestUtil
 import com.intellij.testFramework.common.timeoutRunBlocking
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
+import org.jetbrains.bazel.test.framework.BazelTestApplication
+import org.jetbrains.bazel.test.framework.testproject.addJavaModule
+import org.jetbrains.bazel.test.framework.testproject.projectDirectories
+import org.jetbrains.bazel.test.framework.testproject.testBazelProjectFixture
+import org.jetbrains.bazel.test.framework.testproject.updateWorkspaceModel
+import org.jetbrains.bazel.test.framework.testproject.virtualFileUrlManager
+import org.jetbrains.bazel.test.framework.testproject.workspaceRoot
 import org.jetbrains.bazel.workspace.importer.JAVA_SOURCE_ROOT_TYPE
 import org.jetbrains.bazel.workspace.importer.SourceRootBuilder
-import org.jetbrains.bazel.workspace.model.test.framework.WorkspaceModelBaseTest
-import org.jetbrains.bazel.workspacemodel.entities.BazelProjectDirectoriesEntity
-import org.jetbrains.bazel.workspacemodel.entities.BazelProjectEntitySource
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Test
@@ -32,7 +32,12 @@ import kotlin.io.path.createSymbolicLinkPointingTo
 import kotlin.io.path.invariantSeparatorsPathString
 import kotlin.io.path.writeText
 
-internal class BazelTreeStructureProviderTest : WorkspaceModelBaseTest() {
+@BazelTestApplication
+internal class BazelTreeStructureProviderTest {
+  private val testBazel by testBazelProjectFixture()
+
+  private val project get() = testBazel.project
+
   @ParameterizedTest
   @CsvSource(
     "false, false, util",
@@ -150,7 +155,7 @@ internal class BazelTreeStructureProviderTest : WorkspaceModelBaseTest() {
       val packageNode = directoryNode("common", settings)
       val children = packageNode.children
       val collapsedNode = children.filterIsInstance<PsiDirectoryNode>().single()
-      assertEquals(projectBasePath.resolve("common/src/main/java/com/example/common"), collapsedNode.value.virtualFile.toNioPath())
+      assertEquals(testBazel.workspaceRoot.resolve("common/src/main/java/com/example/common"), collapsedNode.value.virtualFile.toNioPath())
       collapsedNode.parent = packageNode
       assertNodeName("src/main/java/com/example/common", collapsedNode)
       assertEquals(listOf("BUILD.bazel"), children.filterIsInstance<PsiFileNode>().map { it.value.name })
@@ -159,8 +164,8 @@ internal class BazelTreeStructureProviderTest : WorkspaceModelBaseTest() {
 
   @Test
   fun `middle directories collapse only into the single child`(): Unit = timeoutRunBlocking {
+    testBazel.workspaceRoot.resolve("common/src/test").createDirectories().resolve("README.md").writeText("")
     createPackageWithDeepSourceRoot()
-    projectBasePath.resolve("common/src/test").createDirectories().resolve("README.md").writeText("")
     readAction {
       val settings = settings(flattenPackages = false, hideEmptyPackages = true)
       val packageNode = directoryNode("common", settings)
@@ -177,8 +182,8 @@ internal class BazelTreeStructureProviderTest : WorkspaceModelBaseTest() {
 
   @Test
   fun `middle directories collapse into a subdirectory without source roots`(): Unit = timeoutRunBlocking {
+    testBazel.workspaceRoot.resolve("common/docs/guide").createDirectories().resolve("README.md").writeText("")
     createPackageWithDeepSourceRoot()
-    projectBasePath.resolve("common/docs/guide").createDirectories().resolve("README.md").writeText("")
     readAction {
       val settings = settings(flattenPackages = false, hideEmptyPackages = true)
       val packageNode = directoryNode("common", settings)
@@ -220,7 +225,7 @@ internal class BazelTreeStructureProviderTest : WorkspaceModelBaseTest() {
 
   @Test
   fun `middle directories inside a bazel package collapse into a nested package`(): Unit = timeoutRunBlocking {
-    projectBasePath.resolve("BUILD.bazel").writeText("")
+    testBazel.workspaceRoot.resolve("BUILD.bazel").writeText("")
     createPackageWithDeepSourceRoot(packagePath = "outer/inner/common")
     readAction {
       val settings = settings(flattenPackages = false, hideEmptyPackages = true)
@@ -233,9 +238,9 @@ internal class BazelTreeStructureProviderTest : WorkspaceModelBaseTest() {
 
   @Test
   fun `symlinked middle directories don't collapse`(): Unit = timeoutRunBlocking {
-    val testLogs = projectBasePath.resolve("output/testlogs").createDirectories()
+    val testLogs = testBazel.workspaceRoot.resolve("output/testlogs").createDirectories()
     testLogs.resolve("common/package").createDirectories().resolve("test.log").writeText("")
-    projectBasePath.resolve("common").createDirectories().resolve("bazel-testlogs").createSymbolicLinkPointingTo(testLogs)
+    testBazel.workspaceRoot.resolve("common").createDirectories().resolve("bazel-testlogs").createSymbolicLinkPointingTo(testLogs)
     createPackageWithDeepSourceRoot()
     readAction {
       val settings = settings(flattenPackages = false, hideEmptyPackages = true)
@@ -250,7 +255,7 @@ internal class BazelTreeStructureProviderTest : WorkspaceModelBaseTest() {
 
   @Test
   fun `excluded middle directories don't collapse`(): Unit = timeoutRunBlocking {
-    projectBasePath.resolve("common/generated/a").createDirectories().resolve("generated.txt").writeText("")
+    testBazel.workspaceRoot.resolve("common/generated/a").createDirectories().resolve("generated.txt").writeText("")
     createPackageWithDeepSourceRoot(excludedPaths = listOf("common/generated"))
     readAction {
       val settings = settings(flattenPackages = false, hideEmptyPackages = true)
@@ -264,47 +269,34 @@ internal class BazelTreeStructureProviderTest : WorkspaceModelBaseTest() {
   }
 
   /** The layout which sync produces for a single-file target: the source root is the deepest directory of the sources. */
-  private suspend fun createPackageWithDeepSourceRoot(packagePath: String = "common", excludedPaths: List<String> = emptyList()) {
-    val packageRoot = projectBasePath.resolve(packagePath).createDirectories()
+  private fun createPackageWithDeepSourceRoot(packagePath: String = "common", excludedPaths: List<String> = emptyList()) {
+    val packageRoot = testBazel.workspaceRoot.resolve(packagePath).createDirectories()
     packageRoot.resolve("BUILD.bazel").writeText("")
     val sourceRoot = packageRoot.resolve("src/main/java/com/example/common").createDirectories()
     sourceRoot.resolve("Common.java").writeText("package com.example.common; class Common {}")
-    VfsUtil.markDirtyAndRefresh(false, true, true, projectBasePath.refreshAndFindVirtualDirectory()!!)
+    VfsUtil.markDirtyAndRefresh(false, true, true, testBazel.workspaceRoot.refreshAndFindVirtualDirectory()!!)
 
-    withContext(Dispatchers.EDT) {
-      updateWorkspaceModel { storage ->
-        val module = addEmptyJavaModuleEntity("target", storage)
-        val roots = listOf(SourceRootBuilder.ResolvedSourceRoot(sourceRoot, generated = false, rootType = JAVA_SOURCE_ROOT_TYPE))
-        SourceRootBuilder.write(roots, module, projectBasePath, virtualFileUrlManager, storage)
-        // as after sync, the project directories outside source roots are shown in the tree
-        val projectRoot = projectBasePath.toVirtualFileUrl(virtualFileUrlManager)
-        storage.addEntity(
-          BazelProjectDirectoriesEntity(
-            projectRoot = projectRoot,
-            includedRoots = listOf(projectRoot),
-            excludedRoots = excludedPaths.map { projectBasePath.resolve(it).toVirtualFileUrl(virtualFileUrlManager) },
-            indexPatterns = emptyList(),
-            indexableRecursiveRoots = emptyList(),
-            indexableNonRecursiveRoots = emptyList(),
-            entitySource = BazelProjectEntitySource,
-          ),
-        )
-      }
+    testBazel.updateWorkspaceModel { storage ->
+      val module = storage.addJavaModule("target")
+      val roots = listOf(SourceRootBuilder.ResolvedSourceRoot(sourceRoot, generated = false, rootType = JAVA_SOURCE_ROOT_TYPE))
+      SourceRootBuilder.write(roots, module, testBazel.workspaceRoot, testBazel.virtualFileUrlManager, storage)
+    }
+    testBazel.projectDirectories {
+      include(".")
+      exclude(*excludedPaths.toTypedArray())
     }
   }
 
-  private suspend fun createSourceRoot() {
-    val sourceRoot = projectBasePath.resolve("src").createDirectories()
+  private fun createSourceRoot() {
+    val sourceRoot = testBazel.workspaceRoot.resolve("src").createDirectories()
     sourceRoot.resolve("Root.java").writeText("class Root {}")
     sourceRoot.resolve("com/example/mod/util").createDirectories().resolve("Util.kt").writeText("package com.example.mod.util\nobject Util")
     sourceRoot.refreshAndFindVirtualDirectory()!!
 
-    withContext(Dispatchers.EDT) {
-      updateWorkspaceModel { storage ->
-        val module = addEmptyJavaModuleEntity("target", storage)
-        val roots = listOf(SourceRootBuilder.ResolvedSourceRoot(sourceRoot, generated = false, rootType = JAVA_SOURCE_ROOT_TYPE))
-        SourceRootBuilder.write(roots, module, projectBasePath, virtualFileUrlManager, storage)
-      }
+    testBazel.updateWorkspaceModel { storage ->
+      val module = storage.addJavaModule("target")
+      val roots = listOf(SourceRootBuilder.ResolvedSourceRoot(sourceRoot, generated = false, rootType = JAVA_SOURCE_ROOT_TYPE))
+      SourceRootBuilder.write(roots, module, testBazel.workspaceRoot, testBazel.virtualFileUrlManager, storage)
     }
   }
 
@@ -315,7 +307,7 @@ internal class BazelTreeStructureProviderTest : WorkspaceModelBaseTest() {
     val packages = children.filterIsInstance<PsiDirectoryNode>()
     val expected = if (hideEmptyPackages) listOf("com/example/mod/util")
     else listOf("com", "com/example", "com/example/mod", "com/example/mod/util")
-    val sourcePath = projectBasePath.resolve("src")
+    val sourcePath = testBazel.workspaceRoot.resolve("src")
     assertEquals(expected, packages.map { sourcePath.relativize(it.value.virtualFile.toNioPath()).invariantSeparatorsPathString }.sorted())
     for (node in packages) {
       node.parent = sourceNode
@@ -344,7 +336,7 @@ internal class BazelTreeStructureProviderTest : WorkspaceModelBaseTest() {
     filter: PsiFileSystemItemFilter? = null,
   ): PsiDirectoryNode {
     val directory = PsiManager.getInstance(project).findDirectory(
-      projectBasePath.resolve(relativePath).refreshAndFindVirtualDirectory()!!,
+      testBazel.workspaceRoot.resolve(relativePath).refreshAndFindVirtualDirectory()!!,
     )!!
     val node = PsiDirectoryNode(project, directory, settings, filter)
     return BazelTreeStructureProvider().modify(node, listOf(node), settings).single() as PsiDirectoryNode

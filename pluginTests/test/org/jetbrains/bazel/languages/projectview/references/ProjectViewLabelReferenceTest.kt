@@ -1,22 +1,16 @@
 package org.jetbrains.bazel.languages.projectview.references
 
-import com.intellij.openapi.util.io.toNioPathOrNull
-import com.intellij.testFramework.builders.ModuleFixtureBuilder
-import com.intellij.testFramework.fixtures.CodeInsightFixtureTestCase
-import com.intellij.testFramework.fixtures.ModuleFixture
-import org.jetbrains.bazel.project.BazelProjectFixtures.initializeBazelProject
-import org.jetbrains.bazel.workspace.setRepoMapping
-import org.junit.Test
-import org.junit.runner.RunWith
-import org.junit.runners.JUnit4
+import com.intellij.openapi.application.runReadActionBlocking
+import io.kotest.matchers.nulls.shouldBeNull
+import io.kotest.matchers.nulls.shouldNotBeNull
+import io.kotest.matchers.types.shouldBeInstanceOf
+import org.jetbrains.bazel.test.framework.BazelTestApplication
+import org.jetbrains.bazel.test.framework.bazelCodeInsightFixture
+import org.junit.jupiter.api.Test
 
-@RunWith(JUnit4::class)
-class ProjectViewLabelReferenceTest : CodeInsightFixtureTestCase<ModuleFixtureBuilder<ModuleFixture>>() {
-  override fun setUp() {
-    super.setUp()
-    initializeBazelProject(project, myFixture.tempDirPath)
-    project.setRepoMapping { mainRepo(myFixture.tempDirPath.toNioPathOrNull()!!) }
-  }
+@BazelTestApplication
+class ProjectViewLabelReferenceTest {
+  private val myFixture by bazelCodeInsightFixture()
 
   @Test
   fun `targets should return a reference and resolve`() {
@@ -35,9 +29,8 @@ class ProjectViewLabelReferenceTest : CodeInsightFixtureTestCase<ModuleFixtureBu
     )
 
     val reference = myFixture.getReferenceAtCaretPosition()
-    assertNotNull(reference)
-    assertTrue(reference is ProjectViewLabelReference)
-    assertNotNull(reference?.resolve())
+    reference.shouldBeInstanceOf<ProjectViewLabelReference>()
+    runReadActionBlocking { reference.resolve() }.shouldNotBeNull()
   }
 
   @Test
@@ -51,8 +44,7 @@ class ProjectViewLabelReferenceTest : CodeInsightFixtureTestCase<ModuleFixtureBu
     )
 
     val reference = myFixture.getReferenceAtCaretPosition()
-    assertNotNull(reference)
-    assertTrue(reference is ProjectViewLabelReference)
-    assertNull(reference?.resolve())
+    reference.shouldBeInstanceOf<ProjectViewLabelReference>()
+    runReadActionBlocking { reference.resolve() }.shouldBeNull()
   }
 }

@@ -5,12 +5,12 @@ import com.google.devtools.build.v1.BuildEvent
 import com.google.protobuf.Any
 import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
-import org.jetbrains.bazel.commons.BazelInfo
 import org.jetbrains.bazel.commons.BazelPathsResolver
-import org.jetbrains.bazel.commons.BazelRelease
 import org.jetbrains.bazel.commons.constants.Constants
 import org.jetbrains.bazel.server.diagnostics.DiagnosticsService
-import org.jetbrains.bazel.workspace.model.test.framework.MockProjectBaseTest
+import org.jetbrains.bazel.test.framework.BazelTestApplication
+import org.jetbrains.bazel.test.framework.testproject.testBazelProjectFixture
+import org.jetbrains.bazel.test.framework.testproject.testProjectBazelInfo
 import org.jetbrains.bsp.protocol.BazelTaskEventsHandler
 import org.jetbrains.bsp.protocol.CachedTestLog
 import org.jetbrains.bsp.protocol.CoverageReport
@@ -28,7 +28,10 @@ import org.junit.jupiter.params.provider.ValueSource
 import java.nio.file.Files
 import kotlin.io.path.Path
 
-class BepDiagnosticsTest : MockProjectBaseTest() {
+@BazelTestApplication
+class BepDiagnosticsTest {
+  private val testBazel by testBazelProjectFixture()
+
   private class MockBuildTaskEventsHandler : BazelTaskEventsHandler {
     val buildPublishDiagnostics: MutableList<PublishDiagnosticsParams> = mutableListOf()
     val taskFinishCalls: MutableList<TaskFinishParams> = mutableListOf()
@@ -51,22 +54,11 @@ class BepDiagnosticsTest : MockProjectBaseTest() {
   }
 
   fun newBepServer(taskHandler: BazelTaskEventsHandler): BepServer {
-    val workspaceRoot = Path("workspaceRoot")
-    val bazelInfo =
-      BazelInfo(
-        execRoot = Path("execRoot"),
-        outputBase = Path("outputBase"),
-        workspaceRoot = workspaceRoot,
-        bazelBin = Path("bazel-bin"),
-        release = BazelRelease(7),
-        isBzlModEnabled = true,
-        isWorkspaceEnabled = false,
-        externalAutoloads = emptyList(),
-      )
+    val bazelInfo = testProjectBazelInfo(workspaceRoot = Path("workspaceRoot"))
     return BepServer(
-      project = project,
+      project = testBazel.project,
       taskEventsHandler = taskHandler,
-      diagnosticsService = DiagnosticsService(workspaceRoot),
+      diagnosticsService = DiagnosticsService(bazelInfo.workspaceRoot),
       parentId = TaskGroupId("originId").task(""),
       bazelPathsResolver = BazelPathsResolver(bazelInfo),
     )
@@ -195,7 +187,7 @@ src/build/NotCompiling.java:4: error: cannot find symbol
         return bepEventHandler
       }
     }
-    BepEventHandlerProvider.EP_NAME.registerExtension(testBepEventHandlerProvider)
+    BepEventHandlerProvider.EP_NAME.point.registerExtension(testBepEventHandlerProvider, testBazel.disposable)
 
     val server = newBepServer(client)
 

@@ -2,7 +2,7 @@
 
 package org.jetbrains.bazel.workspace.fileEvents
 
-import com.intellij.openapi.project.Project
+import com.intellij.openapi.application.runWriteActionAndWait
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.newvfs.events.ChildInfo
 import com.intellij.openapi.vfs.newvfs.events.VFileContentChangeEvent
@@ -24,7 +24,6 @@ import com.intellij.platform.workspace.storage.url.VirtualFileUrl
 import com.intellij.testFramework.common.timeoutRunBlocking
 import com.intellij.testFramework.replaceService
 import com.intellij.testFramework.utils.vfs.refreshAndGetVirtualDirectory
-import com.intellij.testFramework.workspaceModel.updateProjectModel
 import com.intellij.workspaceModel.ide.toPath
 import io.kotest.assertions.withClue
 import io.kotest.matchers.booleans.shouldBeFalse
@@ -34,35 +33,36 @@ import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import kotlinx.coroutines.CompletableDeferred
 import org.jetbrains.bazel.commons.RuleType
-import org.jetbrains.bazel.commons.constants.Constants
 import org.jetbrains.bazel.commons.TargetKind
+import org.jetbrains.bazel.commons.constants.Constants
 import org.jetbrains.bazel.config.isBazelProject
 import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.magicmetamodel.formatAsModuleName
-import org.jetbrains.bazel.project.BazelProjectFixtures.deinitializeBazelProject
-import org.jetbrains.bazel.server.BazelServerService
 import org.jetbrains.bazel.sync.JavaLanguageClass
 import org.jetbrains.bazel.sync.ProjectDirtyStateService
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
 import org.jetbrains.bazel.target.targetStorage
-import org.jetbrains.bazel.test.framework.target.TestBuildTarget
-import org.jetbrains.bazel.test.framework.target.TestBuildTargetFactory
+import org.jetbrains.bazel.test.framework.BazelTestApplication
+import org.jetbrains.bazel.test.framework.testproject.buildServer
+import org.jetbrains.bazel.test.framework.testproject.buildTarget
+import org.jetbrains.bazel.test.framework.testproject.javaLibrary
+import org.jetbrains.bazel.test.framework.testproject.projectDirectories
+import org.jetbrains.bazel.test.framework.testproject.sync
+import org.jetbrains.bazel.test.framework.testproject.testBazelProjectFixture
+import org.jetbrains.bazel.test.framework.testproject.uninstall
+import org.jetbrains.bazel.test.framework.testproject.updateWorkspaceModel
+import org.jetbrains.bazel.test.framework.testproject.virtualFileUrlManager
+import org.jetbrains.bazel.test.framework.testproject.workspaceModel
+import org.jetbrains.bazel.test.framework.testproject.workspaceRoot
 import org.jetbrains.bazel.workspace.bazelProjectDirectoriesEntity
 import org.jetbrains.bazel.workspace.importer.JAVA_SOURCE_ROOT_TYPE
-import org.jetbrains.bazel.workspace.model.test.framework.BuildServerMock
-import org.jetbrains.bazel.workspace.model.test.framework.MockBuildServerService
-import org.jetbrains.bazel.workspace.model.test.framework.WorkspaceModelBaseTest
-import org.jetbrains.bazel.workspace.model.test.framework.setTargets
 import org.jetbrains.bazel.workspacemodel.entities.BazelModuleEntitySource
 import org.jetbrains.bazel.workspacemodel.entities.BazelModuleExtensionEntity
-import org.jetbrains.bazel.workspacemodel.entities.BazelProjectDirectoriesEntity
-import org.jetbrains.bazel.workspacemodel.entities.BazelProjectEntitySource
 import org.jetbrains.bazel.workspacemodel.entities.WorkspaceModelTargetKey
 import org.jetbrains.bazel.workspacemodel.entities.WorkspaceModelTargetLabelList
 import org.jetbrains.bazel.workspacemodel.entities.WorkspaceModelTargetSourceRootTypeId
 import org.jetbrains.bazel.workspacemodel.entities.bazelModuleExtension
-import org.jetbrains.bsp.protocol.OutputLocationCollection
 import org.jetbrains.bsp.protocol.StrictDependencyCheckedType
 import org.jetbrains.bsp.protocol.TaskId
 import org.junit.jupiter.api.BeforeEach
@@ -89,7 +89,17 @@ private val inverseSourcesData: Map<String, List<Label>> =
     "src/dir2/aaa.java" to listOf(TARGET2),
   ).mapValues { it.value.map { target -> Label.parse(target) } }
 
-class BazelFileEventListenerTest : WorkspaceModelBaseTest() {
+/** The kind of a java_library target with no language data. */
+private val javaLibraryKind = TargetKind(kind = "java_library", ruleType = RuleType.LIBRARY, languageClasses = setOf(JavaLanguageClass.JAVA))
+
+@BazelTestApplication
+class BazelFileEventListenerTest {
+  private val testBazel by testBazelProjectFixture()
+
+  private val project get() = testBazel.project
+  private val workspaceModel get() = testBazel.workspaceModel
+  private val virtualFileUrlManager get() = testBazel.virtualFileUrlManager
+
   private val target1 = Label.parse(TARGET1)
   private val target2 = Label.parse(TARGET2)
   private val target3 = Label.parse(TARGET3)
@@ -97,28 +107,18 @@ class BazelFileEventListenerTest : WorkspaceModelBaseTest() {
   private val requestor = this
 
   @BeforeEach
-  override fun beforeEach() {
-    super.beforeEach()
-
+  fun setUp() {
     invertedSourcesQueryCount.set(0)
-    project.replaceService(BazelServerService::class.java, MockBuildServerService(BuildServerMock()), disposable)
-    project.replaceService(BazelFileEventProcessor::class.java, MockBazelFileEventProcessor, disposable)
-    addMockTargetToProject(project)
-    addProjectDirectoriesEntity()
+    testBazel.buildServer()
+    project.replaceService(BazelFileEventProcessor::class.java, MockBazelFileEventProcessor, testBazel.disposable)
+    testBazel.projectDirectories { include(".") }
 
     createModule(target1)
     createModule(target2)
     createModule(target3)
     createModule(target4)
 
-    project.setTargets(
-      listOf(
-        TestBuildTargetFactory.createSimpleJavaLibraryTarget(id = target1),
-        TestBuildTargetFactory.createSimpleJavaLibraryTarget(id = target2),
-        TestBuildTargetFactory.createSimpleJavaLibraryTarget(id = target3),
-        TestBuildTargetFactory.createSimpleJavaLibraryTarget(id = target4),
-      ),
-    )
+    testBazel.sync { targets(javaLibrary(TARGET1), javaLibrary(TARGET2), javaLibrary(TARGET3), javaLibrary(TARGET4)) }
   }
 
   @Test
@@ -149,7 +149,7 @@ class BazelFileEventListenerTest : WorkspaceModelBaseTest() {
       target4 to false,
     )
 
-    runTestWriteAction { file.rename(requestor, "aaa.kt") }
+    runWriteActionAndWait { file.rename(requestor, "aaa.kt") }
     renameEvent(file, "aaa.java", "aaa.kt").process().shouldBeTrue()
 
     file.assertFileBelongsToTargets(
@@ -169,7 +169,7 @@ class BazelFileEventListenerTest : WorkspaceModelBaseTest() {
       target2 to true,
     )
 
-    runTestWriteAction { file.rename(requestor, "bbb.java") }
+    runWriteActionAndWait { file.rename(requestor, "bbb.java") }
 
     virtualFileUrlManager.storeAndGet(file).belongsToTarget(target1).shouldBeFalse()
     virtualFileUrlManager.storeAndGet(file).belongsToTarget(target2).shouldBeFalse()
@@ -196,7 +196,7 @@ class BazelFileEventListenerTest : WorkspaceModelBaseTest() {
     )
 
     val moveEvent = moveEvent(file, pack)
-    runTestWriteAction { file.move(requestor, pack) }
+    runWriteActionAndWait { file.move(requestor, pack) }
     moveEvent.process().shouldBeTrue()
     file.assertFileBelongsToTargets(
       target1 to false,
@@ -219,7 +219,7 @@ class BazelFileEventListenerTest : WorkspaceModelBaseTest() {
     )
 
     val moveEvent = moveEvent(file, sub2)
-    runTestWriteAction { file.move(requestor, sub2) }
+    runWriteActionAndWait { file.move(requestor, sub2) }
     moveEvent.process().shouldBeTrue()
 
     file.assertFileBelongsToTargets(
@@ -240,7 +240,7 @@ class BazelFileEventListenerTest : WorkspaceModelBaseTest() {
       target4 to false,
     )
 
-    val newFile = runTestWriteAction { file.copy(requestor, src, "bbb.java") }
+    val newFile = runWriteActionAndWait { file.copy(requestor, src, "bbb.java") }
     copyEvent(newFile, src, "bbb.java").process().shouldBeTrue()
 
     file.assertFileBelongsToTargets(
@@ -266,7 +266,7 @@ class BazelFileEventListenerTest : WorkspaceModelBaseTest() {
       target2 to true,
     )
 
-    runTestWriteAction { file.delete(requestor) }
+    runWriteActionAndWait { file.delete(requestor) }
     deleteEvent(file).process().shouldBeTrue()
 
     file.assertFileBelongsToTargets(
@@ -287,7 +287,7 @@ class BazelFileEventListenerTest : WorkspaceModelBaseTest() {
   @Test
   fun `should not add indexable bazel file outside included roots`() {
     val included = project.rootDir.createDirectory("included")
-    addProjectDirectoriesEntity(includedRoots = listOf(included))
+    testBazel.projectDirectories { include(included.name) }
 
     val file = project.rootDir.createFile("new_file", "bzl")
 
@@ -298,7 +298,7 @@ class BazelFileEventListenerTest : WorkspaceModelBaseTest() {
   @Test
   fun `should add root workspace file outside included roots`() {
     val included = project.rootDir.createDirectory("included")
-    addProjectDirectoriesEntity(includedRoots = listOf(included))
+    testBazel.projectDirectories { include(included.name) }
 
     val file = project.rootDir.createFile("WORKSPACE", "bazel")
 
@@ -312,17 +312,15 @@ class BazelFileEventListenerTest : WorkspaceModelBaseTest() {
     val srcUrl = virtualFileUrlManager.storeAndGet(src)
     val module = workspaceModel.currentSnapshot.resolveModule(target1)
 
-    runTestWriteAction {
-      workspaceModel.updateProjectModel {
-        it.modifyModuleEntity(module) {
-          contentRoots = listOf(
-            ContentRootEntity(
-              url = srcUrl,
-              excludedPatterns = emptyList(),
-              entitySource = module.entitySource,
-            )
+    testBazel.updateWorkspaceModel {
+      it.modifyModuleEntity(module) {
+        contentRoots = listOf(
+          ContentRootEntity(
+            url = srcUrl,
+            excludedPatterns = emptyList(),
+            entitySource = module.entitySource,
           )
-        }
+        )
       }
     }
 
@@ -334,7 +332,10 @@ class BazelFileEventListenerTest : WorkspaceModelBaseTest() {
 
   @Test
   fun `should not add indexable bazel file under an indexable root`() {
-    addProjectDirectoriesEntity(indexPatterns = listOf("*"), indexableRecursiveRoots = listOf(project.rootDir))
+    testBazel.projectDirectories {
+      include(".")
+      index("*")
+    }
 
     val file = project.rootDir.createFile("new_file", "bzl")
 
@@ -345,8 +346,8 @@ class BazelFileEventListenerTest : WorkspaceModelBaseTest() {
 
   @Test
   fun `deleting an untracked file should not update the model`() {
-    val trackedFiles = (1..5).map { project.rootDir.createFile("defs$it", "bzl") }
-    addProjectDirectoriesEntity(indexableNonRecursiveRoots = trackedFiles)
+    for (index in 1..5) project.rootDir.createFile("defs$index", "bzl")
+    testBazel.projectDirectories { include(".") }
     val untrackedFile = project.rootDir.createDirectory("src").createFile("aaa", "txt")
     val snapshotBefore = workspaceModel.currentSnapshot
 
@@ -357,7 +358,10 @@ class BazelFileEventListenerTest : WorkspaceModelBaseTest() {
 
   @Test
   fun `source file should be processed under an indexable root`() {
-    addProjectDirectoriesEntity(indexPatterns = listOf("*"), indexableRecursiveRoots = listOf(project.rootDir))
+    testBazel.projectDirectories {
+      include(".")
+      index("*")
+    }
 
     val file = project.rootDir.createDirectory("src").createFile("aaa", "java")
 
@@ -375,7 +379,7 @@ class BazelFileEventListenerTest : WorkspaceModelBaseTest() {
     createEvent(file).process().shouldBeFalse()
     file.isIndexableNonRecursiveRoot().shouldBeTrue()
 
-    runTestWriteAction { file.rename(requestor, "new_name.bzl") }
+    runWriteActionAndWait { file.rename(requestor, "new_name.bzl") }
 
     renameEvent(file, "old_name.bzl", "new_name.bzl").process().shouldBeFalse()
     indexableNonRecursiveRootPaths().any { it.endsWith("/old_name.bzl") }.shouldBeFalse()
@@ -402,7 +406,7 @@ class BazelFileEventListenerTest : WorkspaceModelBaseTest() {
     )
 
     val moveEvent = moveEvent(fileMoved, pack)
-    runTestWriteAction { fileMoved.move(requestor, pack) }
+    runWriteActionAndWait { fileMoved.move(requestor, pack) }
 
     // the first and the last events should be ignored, but should not cause ignoring the two middle events
     processEvents(
@@ -482,7 +486,7 @@ class BazelFileEventListenerTest : WorkspaceModelBaseTest() {
     val directory = project.rootDir.createDirectory("src")
     val createDirectoryEvent = createEvent(directory)
 
-    runTestWriteAction { directory.delete(requestor) }
+    runWriteActionAndWait { directory.delete(requestor) }
 
     createDirectoryEvent.process().shouldBeFalse()
   }
@@ -510,7 +514,7 @@ class BazelFileEventListenerTest : WorkspaceModelBaseTest() {
     val excluded = src.createExcludedDirectory("excluded")
     val file = excluded.createFile("aaa", "java")
 
-    runTestWriteAction { file.delete(requestor) }
+    runWriteActionAndWait { file.delete(requestor) }
     deleteEvent(file).process().shouldBeFalse()
   }
 
@@ -522,7 +526,7 @@ class BazelFileEventListenerTest : WorkspaceModelBaseTest() {
     val file = excluded.createFile("aaa", "java")
 
     val moveEvent = moveEvent(file, pack)
-    runTestWriteAction { file.move(requestor, pack) }
+    runWriteActionAndWait { file.move(requestor, pack) }
 
     moveEvent.process().shouldBeFalse()
   }
@@ -535,7 +539,7 @@ class BazelFileEventListenerTest : WorkspaceModelBaseTest() {
     val file = pack.createFile("aaa", "java")
 
     val moveEvent = moveEvent(file, excluded)
-    runTestWriteAction { file.move(requestor, excluded) }
+    runWriteActionAndWait { file.move(requestor, excluded) }
 
     moveEvent.process().shouldBeFalse()
   }
@@ -559,13 +563,13 @@ class BazelFileEventListenerTest : WorkspaceModelBaseTest() {
     val level3 = level2.createDirectory("level3")
     val file = level3.createFile("aaa", "java")
 
-    runTestWriteAction { level2.delete(requestor) }
+    runWriteActionAndWait { level2.delete(requestor) }
     deleteEvent(file).process().shouldBeFalse()
   }
 
   @Test
   fun `should ignore projects without any targets`() {
-    project.setTargets(emptyList())
+    testBazel.sync()
     val file = project.rootDir.createDirectory("src").createFile("aaa", "java")
     createEvent(file).process().shouldBeFalse()
     deleteEvent(file).process().shouldBeFalse()
@@ -574,10 +578,10 @@ class BazelFileEventListenerTest : WorkspaceModelBaseTest() {
   @Test
   fun `should ignore non-Bazel projects`() {
     // GIVEN
-    deinitializeBazelProject(project)
+    testBazel.uninstall()
     project.isBazelProject.shouldBeFalse()
 
-    val file = projectBasePath.refreshAndGetVirtualDirectory()
+    val file = testBazel.workspaceRoot.refreshAndGetVirtualDirectory()
       .createDirectory("src")
       .createFile("aaa", "java")
 
@@ -592,22 +596,7 @@ class BazelFileEventListenerTest : WorkspaceModelBaseTest() {
     val srcUrl = virtualFileUrlManager.storeAndGet(src)
     val module = workspaceModel.currentSnapshot.resolveModule(target1)
 
-    project.setTargets(
-      listOf(
-        TestBuildTarget(
-          key = WorkspaceTargetKey(label = target1),
-          dependencies = emptyList(),
-          kind =
-            TargetKind(
-              kind = "java_library",
-              ruleType = RuleType.LIBRARY,
-              languageClasses = setOf(JavaLanguageClass.JAVA),
-            ),
-          sources = OutputLocationCollection.EMPTY,
-          resources = OutputLocationCollection.EMPTY,
-        ),
-      ),
-    )
+    testBazel.sync { targets(buildTarget(target1, javaLibraryKind)) }
 
     val sourceRoot =
       SourceRootEntity(
@@ -625,9 +614,7 @@ class BazelFileEventListenerTest : WorkspaceModelBaseTest() {
         sourceRoots += listOf(sourceRoot)
       }
 
-    runTestWriteAction {
-      workspaceModel.updateProjectModel { it.modifyModuleEntity(module) { this.contentRoots = listOf(contentRootEntity) } }
-    }
+    testBazel.updateWorkspaceModel { it.modifyModuleEntity(module) { this.contentRoots = listOf(contentRootEntity) } }
 
     val file = src.createFile("aaa", "java")
     val fileUrl = virtualFileUrlManager.storeAndGet(file)
@@ -713,7 +700,7 @@ class BazelFileEventListenerTest : WorkspaceModelBaseTest() {
   fun `a rename away from BUILD marks the whole project dirty`() {
     val src = project.rootDir.createDirectory("src")
     val buildFile = src.createFile("BUILD", "bazel")
-    runTestWriteAction { buildFile.rename(requestor, "BUILD.old") }
+    runWriteActionAndWait { buildFile.rename(requestor, "BUILD.old") }
 
     // the rename deletes the package, and the new name tells the plugin nothing about the scope
     renameEvent(buildFile, "BUILD", "BUILD.old").process()
@@ -784,7 +771,7 @@ class BazelFileEventListenerTest : WorkspaceModelBaseTest() {
 
   private fun VirtualFile.createFile(name: String): VirtualFile {
     if (!this.isDirectory) error("Can't create a file in a non-directory file")
-    return runTestWriteAction { this.createChildData(requestor, name) }
+    return findChild(name) ?: runWriteActionAndWait { this.createChildData(requestor, name) }
   }
 
   /** Runs the real target evaluation, so that the unresolved-file path runs too. */
@@ -794,50 +781,9 @@ class BazelFileEventListenerTest : WorkspaceModelBaseTest() {
     }
   }
 
-  private fun addMockTargetToProject(project: Project) {
-    val mockLabel = Label.parse("//mock:target")
-    val mockBuildTarget =
-      TestBuildTarget(
-        key = WorkspaceTargetKey(mockLabel),
-        kind = TargetKind("mock", emptySet(), RuleType.LIBRARY),
-        dependencies = listOf(),
-        sources = OutputLocationCollection.EMPTY,
-        resources = OutputLocationCollection.EMPTY,
-        generatorName = null,
-        isTestOnly = false,
-      )
-    project.setTargets(listOf(mockBuildTarget))
-  }
-
-  private fun addProjectDirectoriesEntity(
-    includedRoots: List<VirtualFile> = listOf(project.rootDir),
-    excludedRoots: List<VirtualFile> = emptyList(),
-    indexPatterns: List<String> = emptyList(),
-    indexableRecursiveRoots: List<VirtualFile> = emptyList(),
-    indexableNonRecursiveRoots: List<VirtualFile> = emptyList(),
-  ) {
-    val rootUrl = virtualFileUrlManager.storeAndGet(project.rootDir)
-    runTestWriteAction {
-      workspaceModel.updateProjectModel {
-        project.bazelProjectDirectoriesEntity()?.let(it::removeEntity)
-        it.addEntity(
-          BazelProjectDirectoriesEntity(
-            projectRoot = rootUrl,
-            includedRoots = includedRoots.map { root -> virtualFileUrlManager.storeAndGet(root) },
-            excludedRoots = excludedRoots.map { root -> virtualFileUrlManager.storeAndGet(root) },
-            indexPatterns = indexPatterns,
-            indexableRecursiveRoots = indexableRecursiveRoots.map { root -> virtualFileUrlManager.storeAndGet(root) },
-            indexableNonRecursiveRoots = indexableNonRecursiveRoots.map { root -> virtualFileUrlManager.storeAndGet(root) },
-            entitySource = BazelProjectEntitySource,
-          )
-        )
-      }
-    }
-  }
-
   private fun VirtualFile.createFile(name: String, extension: String): VirtualFile {
     if (!this.isDirectory) error("Can't create a file in a non-directory file")
-    return runTestWriteAction {
+    return findChild("$name.$extension") ?: runWriteActionAndWait {
       this.createChildData(requestor, "$name.$extension")
     }
   }
@@ -845,7 +791,7 @@ class BazelFileEventListenerTest : WorkspaceModelBaseTest() {
   private fun VirtualFile.createDirectory(name: String): VirtualFile {
     if (!this.isDirectory) error("Can't create a directory in a non-directory file")
     // the fixture already creates some of these directories
-    return findChild(name) ?: runTestWriteAction { this.createChildDirectory(requestor, name) }
+    return findChild(name) ?: runWriteActionAndWait { this.createChildDirectory(requestor, name) }
   }
 
   private fun VirtualFile.createExcludedDirectory(name: String): VirtualFile {
@@ -858,9 +804,7 @@ class BazelFileEventListenerTest : WorkspaceModelBaseTest() {
         excludedPatterns = listOf("excluded"),
         entitySource = module.entitySource,
       )
-    runTestWriteAction {
-      workspaceModel.updateProjectModel { it.modifyModuleEntity(module) { contentRoots = listOf(contentRoot) } }
-    }
+    testBazel.updateWorkspaceModel { it.modifyModuleEntity(module) { contentRoots = listOf(contentRoot) } }
     return directory
   }
 
@@ -911,7 +855,7 @@ class BazelFileEventListenerTest : WorkspaceModelBaseTest() {
         ): Map<Path, List<Label>> {
           invertedSourcesQueryCount.incrementAndGet()
           return files.map { it.path }.associateWith {
-            inverseSourcesData.getOrDefault(it.relativeTo(projectBasePath).invariantSeparatorsPathString, emptyList())
+            inverseSourcesData.getOrDefault(it.relativeTo(testBazel.workspaceRoot).invariantSeparatorsPathString, emptyList())
           }
         }
       }.enqueue(events.toList()).await().let { !it.isEmpty() }
@@ -921,7 +865,7 @@ class BazelFileEventListenerTest : WorkspaceModelBaseTest() {
   private fun VirtualFile.assertFileBelongsToTargets(vararg expectedBelongingStatus: Pair<Label, Boolean>) {
     val vFile = this
     val vfUrl = virtualFileUrlManager.storeAndGet(vFile)
-    val relativePath = Path.of(vFile.path).relativeTo(projectBasePath)
+    val relativePath = Path.of(vFile.path).relativeTo(testBazel.workspaceRoot)
 
     for ((target, shouldBeAdded) in expectedBelongingStatus) {
       val projectModel = doesModuleContainFile(target, vfUrl)
@@ -960,7 +904,7 @@ class BazelFileEventListenerTest : WorkspaceModelBaseTest() {
           entitySource = entitySource,
         )
       }
-    runTestWriteAction { workspaceModel.updateProjectModel { it.addEntity(module) } }
+    testBazel.updateWorkspaceModel { it.addEntity(module) }
   }
 
   private fun doesModuleContainFile(moduleTarget: Label, fileUrl: VirtualFileUrl): Boolean {

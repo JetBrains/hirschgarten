@@ -1,66 +1,59 @@
 package org.jetbrains.bazel.sync
 
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.util.Disposer
-import com.intellij.openapi.util.use
 import com.intellij.platform.util.progress.reportSequentialProgress
 import com.intellij.testFramework.ExtensionTestUtil
-import com.intellij.testFramework.junit5.SystemProperty
-import com.intellij.testFramework.registerOrReplaceServiceInstance
-import io.kotest.matchers.collections.shouldNotBeEmpty
 import io.kotest.matchers.collections.shouldContain
+import io.kotest.matchers.collections.shouldNotBeEmpty
 import io.kotest.matchers.collections.shouldNotContain
 import kotlinx.coroutines.runBlocking
 import org.jetbrains.bazel.commons.LanguageClass
 import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.commons.TargetKind
-import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.golang.sync.GoBuildTarget
 import org.jetbrains.bazel.impl.flow.sync.DisabledTestProjectPostSyncHook
 import org.jetbrains.bazel.impl.flow.sync.TestProjectPostSyncHook
-import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.languages.bazelversion.psi.BazelVersionLiteral
 import org.jetbrains.bazel.languages.bazelversion.service.BazelVersionResolver
-import org.jetbrains.bazel.project.BazelProjectFixtures.initializeBazelProject
-import org.jetbrains.bazel.server.BazelServerService
-import org.jetbrains.bazel.workspace.model.test.framework.testLocations
-import org.jetbrains.bazel.target.targetStorage
+import org.jetbrains.bazel.test.framework.BazelTestApplication
+import org.jetbrains.bazel.test.framework.testproject.buildServer
+import org.jetbrains.bazel.test.framework.testproject.buildTarget
+import org.jetbrains.bazel.test.framework.testproject.testBazelProjectFixture
+import org.jetbrains.bazel.test.framework.testproject.sync
+import org.jetbrains.bazel.test.framework.testproject.workspaceLocations
 import org.jetbrains.bazel.test.framework.target.TestBuildTarget
-import org.jetbrains.bazel.workspace.model.test.framework.BuildServerMock
-import org.jetbrains.bazel.workspace.model.test.framework.MockBuildServerService
-import org.jetbrains.bazel.workspace.model.test.framework.MockProjectBaseTest
-import org.jetbrains.bazel.workspace.model.test.framework.createTestBuildTarget
-import org.jetbrains.bazel.workspace.model.test.framework.setTargets
 import org.jetbrains.bsp.protocol.TaskGroupId
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 
+@BazelTestApplication
 @DisplayName("ProjectPostSyncHook tests")
-class ProjectPostSyncHookTest : MockProjectBaseTest() {
+class ProjectPostSyncHookTest {
+  private val testBazel by testBazelProjectFixture()
+
   @Test
-  fun `should return all enabled project post-sync hooks`(): Unit = Disposer.newDisposable().use { disposable ->
-    project.registerOrReplaceServiceInstance(BazelServerService::class.java, MockBuildServerService(BuildServerMock()), disposable)
+  fun `should return all enabled project post-sync hooks`() {
+    testBazel.buildServer()
 
     // given
-    ProjectPostSyncHook.ep.registerExtension(TestProjectPostSyncHook())
-    ProjectPostSyncHook.ep.registerExtension(DisabledTestProjectPostSyncHook())
+    ProjectPostSyncHook.ep.point.registerExtension(TestProjectPostSyncHook(), testBazel.disposable)
+    ProjectPostSyncHook.ep.point.registerExtension(DisabledTestProjectPostSyncHook(), testBazel.disposable)
 
     // when & then
-    project.projectPostSyncHooks.map { it::class.java } shouldContain TestProjectPostSyncHook::class.java
-    project.projectPostSyncHooks.map { it::class.java } shouldNotContain DisabledTestProjectPostSyncHook::class.java
+    testBazel.project.projectPostSyncHooks.map { it::class.java } shouldContain TestProjectPostSyncHook::class.java
+    testBazel.project.projectPostSyncHooks.map { it::class.java } shouldNotContain DisabledTestProjectPostSyncHook::class.java
   }
 
   @Test
   fun `registered project post-sync hooks should tolerate unchanged project model`(): Unit = runBlocking {
-    initializeBazelProject(project, projectDir.get())
-    project.registerOrReplaceServiceInstance(BazelServerService::class.java, MockBuildServerService(BuildServerMock()), disposable)
-    ExtensionTestUtil.maskExtensions(BazelVersionResolver.ep, listOf(TestBazelVersionResolver()), disposable)
-    seedStaleGoTarget()
+    testBazel.buildServer()
+    ExtensionTestUtil.maskExtensions(BazelVersionResolver.ep, listOf(TestBazelVersionResolver()), testBazel.disposable)
+    testBazel.sync { targets(staleGoTarget()) }
 
     reportSequentialProgress { progressReporter ->
       val environment =
         ProjectPostSyncHook.ProjectPostSyncHookEnvironment(
-          project = project,
+          project = testBazel.project,
           taskId = TaskGroupId("test-post-sync-hooks").task("project-sync"),
           progressReporter = progressReporter,
           projectModelUpdated = false,
@@ -81,31 +74,17 @@ class ProjectPostSyncHookTest : MockProjectBaseTest() {
     }
   }
 
-  private fun seedStaleGoTarget() {
-    val source = projectDir.get().resolve("app/main.go")
-    val target =
-      createTestBuildTarget(
-        id = Label.parse("//app:go_default_library"),
-        kind = TargetKind(
-          kind = "go_library",
-          ruleType = RuleType.LIBRARY,
-          languageClasses = setOf(LanguageClass("go", setOf("go"))),
-        ),
-        sources = listOf(source),
-        data = listOf(
-          GoBuildTarget(
-            importPath = "example.com/app",
-            sources = testLocations(listOf(source)),
-            embed = emptyList(),
-          ),
-        ),
-      )
-    project.setTargets(listOf(target))
+  private fun staleGoTarget(): TestBuildTarget {
+    val kind = TargetKind(kind = "go_library", ruleType = RuleType.LIBRARY, languageClasses = setOf(LanguageClass("go", setOf("go"))))
+    return buildTarget("//app:go_default_library", kind) {
+      srcs("app/main.go")
+      data(GoBuildTarget(importPath = "example.com/app", sources = workspaceLocations("app/main.go"), embed = emptyList()))
+    }
   }
 
   private fun ProjectPostSyncHook.isEnabledForTest(): Boolean =
     try {
-      isEnabled(project)
+      isEnabled(testBazel.project)
     }
     catch (e: Throwable) {
       throw AssertionError("Post-sync hook ${this::class.java.name} failed in isEnabled", e)

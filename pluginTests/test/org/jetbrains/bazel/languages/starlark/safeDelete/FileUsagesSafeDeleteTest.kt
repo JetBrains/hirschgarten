@@ -2,23 +2,15 @@ package org.jetbrains.bazel.languages.starlark.safeDelete
 
 import com.intellij.openapi.roots.ModuleRootModificationUtil
 import com.intellij.openapi.vfs.VfsUtil
-import com.intellij.openapi.vfs.VirtualFile
-import com.intellij.platform.backend.workspace.storeAndGet
-import com.intellij.platform.backend.workspace.workspaceModel
-import com.intellij.platform.testFramework.junit5.codeInsight.fixture.codeInsightFixture
 import com.intellij.refactoring.safeDelete.SafeDeleteHandler
-import com.intellij.testFramework.IndexingTestUtil
-import com.intellij.testFramework.junit5.TestApplication
-import com.intellij.testFramework.junit5.fixture.moduleFixture
-import com.intellij.testFramework.junit5.fixture.projectFixture
-import com.intellij.testFramework.junit5.fixture.tempPathFixture
 import com.intellij.testFramework.runInEdtAndWait
-import io.kotest.common.runBlocking
 import kotlinx.coroutines.test.runTest
-import org.jetbrains.bazel.project.BazelProjectFixtures.initializeBazelProject
+import org.jetbrains.bazel.test.framework.BazelTestApplication
+import org.jetbrains.bazel.test.framework.bazelCodeInsightFixture
+import org.jetbrains.bazel.test.framework.testBazel
+import org.jetbrains.bazel.test.framework.testproject.projectDirectories
+import org.jetbrains.bazel.test.framework.testproject.workspaceRoot
 import org.jetbrains.bazel.workspacemodel.entities.BazelProjectDirectoriesEntity
-import org.jetbrains.bazel.workspacemodel.entities.BazelProjectDirectoriesEntityFixtures.emptyBazelDirectoryWorkspaceEntity
-import org.jetbrains.bazel.workspacemodel.entities.modifyBazelProjectDirectoriesEntity
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.nio.file.Path
@@ -32,21 +24,15 @@ import kotlin.io.path.createDirectories
  *
  * To properly recreate the "real life" scenario, build files must not be under content roots, and must be registered using [BazelProjectDirectoriesEntity].
  */
-@TestApplication
+@BazelTestApplication
 internal class FileUsagesSafeDeleteTest {
 
-  private val tempDirFixture = tempPathFixture()
-  private val tempDir by tempDirFixture
-  private val projectFixture = projectFixture(pathFixture = tempDirFixture, openAfterCreation = true)
-  private val project by projectFixture
-  private val moduleFixture = projectFixture.moduleFixture()
-  private val codeInsightFixture by codeInsightFixture(projectFixture, tempDirFixture)
+  private val codeInsightFixture by bazelCodeInsightFixture()
+  private val testBazel get() = codeInsightFixture.testBazel
 
   @BeforeEach
   fun setUp() {
-    initializeBazelProject(project, tempDir)
-    replaceDefaultContentRoot(tempDir.resolve("src").createDirectories())
-    runBlocking { addBazelDirectoriesEntity() }
+    replaceDefaultContentRoot(testBazel.workspaceRoot.resolve("src").createDirectories())
   }
 
   @Test
@@ -59,7 +45,7 @@ internal class FileUsagesSafeDeleteTest {
       )
     """.trimIndent())
     runInEdtAndWait {
-      SafeDeleteHandler.invoke(project, arrayOf(sourceFile), true)
+      SafeDeleteHandler.invoke(testBazel.project, arrayOf(sourceFile), true)
     }
   }
 
@@ -73,37 +59,19 @@ internal class FileUsagesSafeDeleteTest {
       )
     """.trimIndent())
     runInEdtAndWait {
-      SafeDeleteHandler.invoke(project, arrayOf(sourceFile), true)
+      SafeDeleteHandler.invoke(testBazel.project, arrayOf(sourceFile), true)
     }
   }
 
-  private suspend fun addBuildFile(content: String) {
-    val buildFile = codeInsightFixture.addFileToProject("BUILD.bazel", content)
-    registerBuildFile(buildFile.virtualFile)
-  }
-
-  private suspend fun registerBuildFile(buildFileVf: VirtualFile) {
-    val urlManager = project.workspaceModel.getVirtualFileUrlManager()
-    project.workspaceModel.update("register BUILD file") { storage ->
-      val entity = storage.entities(BazelProjectDirectoriesEntity::class.java).first()
-      storage.modifyBazelProjectDirectoriesEntity(entity) {
-        indexableNonRecursiveRoots = mutableListOf(urlManager.storeAndGet(buildFileVf))
-      }
-    }
-    IndexingTestUtil.waitUntilIndexesAreReady(project)
+  private fun addBuildFile(content: String) {
+    codeInsightFixture.addFileToProject("BUILD.bazel", content)
+    testBazel.projectDirectories { include(".") }
   }
 
   private fun replaceDefaultContentRoot(path: Path) {
-    val module = moduleFixture.get()
-    ModuleRootModificationUtil.updateModel(module) { model ->
+    ModuleRootModificationUtil.updateModel(codeInsightFixture.module) { model ->
       model.contentEntries.forEach { model.removeContentEntry(it) }
-      model.addContentEntry(VfsUtil.pathToUrl(tempDir.resolve(path).toString()))
-    }
-  }
-
-  private suspend fun addBazelDirectoriesEntity() {
-    project.workspaceModel.update("add BazelProjectDirectoriesEntity") {
-      it.addEntity(emptyBazelDirectoryWorkspaceEntity(project))
+      model.addContentEntry(VfsUtil.pathToUrl(testBazel.workspaceRoot.resolve(path).toString()))
     }
   }
 }

@@ -1,8 +1,5 @@
 package org.jetbrains.bazel.languages.projectview.language
 
-import com.intellij.testFramework.junit5.fixture.moduleFixture
-import com.intellij.testFramework.junit5.fixture.projectFixture
-import com.intellij.testFramework.junit5.fixture.tempPathFixture
 import io.kotest.matchers.collections.shouldBeSingleton
 import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.nulls.shouldNotBeNull
@@ -13,9 +10,11 @@ import org.jetbrains.bazel.languages.projectview.DIRECTORIES_KEY
 import org.jetbrains.bazel.languages.projectview.ProjectView
 import org.jetbrains.bazel.languages.projectview.ProjectViewFactory
 import org.jetbrains.bazel.languages.projectview.imports.Import
-import org.jetbrains.bazel.project.BazelProjectFixtures.initializeBazelProject
 import org.jetbrains.bazel.test.framework.BazelTestApplication
-import org.junit.jupiter.api.BeforeEach
+import org.jetbrains.bazel.test.framework.bazelCodeInsightFixture
+import org.jetbrains.bazel.test.framework.testBazel
+import org.jetbrains.bazel.test.framework.testproject.workspaceRoot
+import org.jetbrains.bazel.test.framework.testproject.writeFile
 import org.junit.jupiter.api.Test
 import java.nio.file.Path
 import kotlin.io.path.Path
@@ -26,23 +25,15 @@ import kotlin.io.path.Path
 @BazelTestApplication
 class ProjectViewTryImportTest {
 
-  private val projectFixture = projectFixture(openAfterCreation = true)
-  private val tempDirFixture = tempPathFixture()
-  private val moduleFixture = projectFixture.moduleFixture(tempDirFixture, addPathToSourceRoot = true)
+  private val myFixture by bazelCodeInsightFixture()
 
-  private val project get() = projectFixture.get()
-  private val rootDir by tempDirFixture
-
-  @BeforeEach
-  fun setUp() {
-    moduleFixture.get()
-    initializeBazelProject(project, rootDir)
-  }
+  private val project get() = myFixture.project
+  private val rootDir get() = myFixture.testBazel.workspaceRoot
 
   @Test
   fun `test try_import missing file is ignored`() {
     val main =
-      rootDir.writeProjectViewFile(
+      myFixture.testBazel.writeFile(
         "Main.bazelproject",
         """
         directories:
@@ -50,7 +41,7 @@ class ProjectViewTryImportTest {
 
         try_import Missing.bazelproject
         """.trimIndent(),
-      )
+      ).toNioPath()
 
     val projectView = parse(main)
 
@@ -60,7 +51,7 @@ class ProjectViewTryImportTest {
   @Test
   fun `test unresolved try_import mapping`() {
     val main =
-      rootDir.writeProjectViewFile(
+      myFixture.testBazel.writeFile(
         "Main.bazelproject",
         """
         directories:
@@ -68,7 +59,7 @@ class ProjectViewTryImportTest {
 
         try_import Missing.bazelproject
         """.trimIndent(),
-      )
+      ).toNioPath()
 
     val projectView = parse(main)
 
@@ -84,7 +75,7 @@ class ProjectViewTryImportTest {
 
   @Test
   fun `test try_import present merges collections`() {
-    rootDir.writeProjectViewFile(
+    myFixture.testBazel.writeFile(
       "Imported.bazelproject",
       """
       directories:
@@ -93,7 +84,7 @@ class ProjectViewTryImportTest {
     )
 
     val main =
-      rootDir.writeProjectViewFile(
+      myFixture.testBazel.writeFile(
         "Main.bazelproject",
         """
         try_import Imported.bazelproject
@@ -101,7 +92,7 @@ class ProjectViewTryImportTest {
         directories:
           dirB
         """.trimIndent(),
-      )
+      ).toNioPath()
 
     val projectView = parse(main)
 
@@ -114,7 +105,7 @@ class ProjectViewTryImportTest {
 
   @Test
   fun `test try_import self reference does not recurse infinitely`() {
-    val main = rootDir.writeProjectViewFile(
+    val main = myFixture.testBazel.writeFile(
       "Main.bazelproject",
       """
         directories:
@@ -122,7 +113,7 @@ class ProjectViewTryImportTest {
 
         try_import Main.bazelproject
         """.trimIndent(),
-    )
+    ).toNioPath()
     val projectView = parse(main)
     projectView.getSection(DIRECTORIES_KEY) shouldContainExactly listOf(ExcludableValue.included(Path("dirA")))
     projectView.imports.shouldBeSingleton {
@@ -132,7 +123,7 @@ class ProjectViewTryImportTest {
 
   @Test
   fun `test try_import cycle back to root terminates without duplicating sections`() {
-    rootDir.writeProjectViewFile(
+    myFixture.testBazel.writeFile(
       "Imported.bazelproject",
       """
       directories:
@@ -142,7 +133,7 @@ class ProjectViewTryImportTest {
       """.trimIndent(),
     )
     val main =
-      rootDir.writeProjectViewFile(
+      myFixture.testBazel.writeFile(
         "Main.bazelproject",
         """
         directories:
@@ -150,7 +141,7 @@ class ProjectViewTryImportTest {
 
         try_import Imported.bazelproject
         """.trimIndent(),
-      )
+      ).toNioPath()
     val projectView = parse(main)
     projectView.getSection(DIRECTORIES_KEY) shouldContainExactly listOf(
       ExcludableValue.included(Path("dirA")),

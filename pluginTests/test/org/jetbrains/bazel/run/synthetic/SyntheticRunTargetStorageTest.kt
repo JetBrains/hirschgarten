@@ -9,8 +9,9 @@ import com.intellij.openapi.actionSystem.DefaultActionGroup
 import com.intellij.openapi.actionSystem.impl.PresentationFactory
 import com.intellij.openapi.actionSystem.impl.SimpleDataContext
 import com.intellij.openapi.actionSystem.impl.Utils
-import com.intellij.openapi.util.registry.Registry
-import com.intellij.testFramework.fixtures.BasePlatformTestCase
+import com.intellij.openapi.application.runReadActionBlocking
+import com.intellij.testFramework.junit5.RegistryKey
+import com.intellij.testFramework.runInEdtAndGet
 import io.kotest.matchers.collections.shouldContainAll
 import io.kotest.matchers.nulls.shouldBeNull
 import io.kotest.matchers.nulls.shouldNotBeNull
@@ -18,22 +19,24 @@ import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeInstanceOf
 import org.jetbrains.bazel.commons.constants.Constants
 import org.jetbrains.bazel.config.BazelFeatureFlags
-import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.label.Main
 import org.jetbrains.bazel.label.Package
 import org.jetbrains.bazel.label.ResolvedLabel
-import org.jetbrains.bazel.test.framework.target.TestBuildTargetFactory
+import org.jetbrains.bazel.test.framework.BazelTestApplication
+import org.jetbrains.bazel.test.framework.bazelCodeInsightFixture
+import org.jetbrains.bazel.test.framework.testproject.javaLibrary
+import org.jetbrains.bazel.test.framework.testproject.kotlinLibrary
 import org.jetbrains.bazel.ui.gutters.BazelRunLocation
 import org.jetbrains.bazel.ui.gutters.getExecutorActions
 import org.jetbrains.kotlin.idea.KotlinLanguage
+import org.junit.jupiter.api.Test
 
-class SyntheticRunTargetStorageTest : BasePlatformTestCase() {
+@BazelTestApplication
+@RegistryKey(key = BazelFeatureFlags.SYNTHETIC_RUN_ENABLE, value = "true")
+class SyntheticRunTargetStorageTest {
+  private val myFixture by bazelCodeInsightFixture()
 
-  override fun setUp() {
-    super.setUp()
-    Registry.get(BazelFeatureFlags.SYNTHETIC_RUN_ENABLE).setValue(true, testRootDisposable)
-  }
-
+  @Test
   fun `test getSyntheticTargetLabel with single package part`() {
     val label = SyntheticRunTargetUtils.getSyntheticTargetLabel(
       packageParts = arrayOf("simple"),
@@ -46,6 +49,7 @@ class SyntheticRunTargetStorageTest : BasePlatformTestCase() {
     label.targetName.shouldBe("test_binary")
   }
 
+  @Test
   fun `test getSyntheticTargetLabel with multiple package parts`() {
 
     val label = SyntheticRunTargetUtils.getSyntheticTargetLabel(
@@ -69,16 +73,18 @@ class SyntheticRunTargetStorageTest : BasePlatformTestCase() {
     label.targetName.shouldBe("my_target")
   }
 
+  @Test
   fun `test getTemplateGenerators for java target`() {
-    val target = TestBuildTargetFactory.createSimpleJavaLibraryTarget(id = Label.parse("//test:java_lib"))
+    val target = javaLibrary("//test:java_lib")
 
     val generator = SyntheticRunTargetTemplateGenerator.getTemplateGenerator(target, JavaLanguage.INSTANCE)
     generator.shouldNotBeNull()
     generator.isSupported(target) shouldBe true
   }
 
+  @Test
   fun `test getTemplateGenerators for kotlin target`() {
-    val target = TestBuildTargetFactory.createSimpleKotlinLibraryTarget(id = Label.parse("//test:kotlin_lib"))
+    val target = kotlinLibrary("//test:kotlin_lib")
 
     val generator = SyntheticRunTargetTemplateGenerator.getTemplateGenerator(target, KotlinLanguage.INSTANCE)
 
@@ -86,6 +92,7 @@ class SyntheticRunTargetStorageTest : BasePlatformTestCase() {
     generator.isSupported(target) shouldBe true
   }
 
+  @Test
   fun `test escapeTargetLabel with special characters`() {
     SyntheticRunTargetUtils.escapeTargetLabel("//foo:bar").shouldBe("__foo_bar")
     SyntheticRunTargetUtils.escapeTargetLabel("@repo//pkg:target").shouldBe("_repo__pkg_target")
@@ -94,14 +101,16 @@ class SyntheticRunTargetStorageTest : BasePlatformTestCase() {
     SyntheticRunTargetUtils.escapeTargetLabel("normal_name_123").shouldBe("normal_name_123")
   }
 
+  @Test
   fun `test getTemplateGenerators filters unsupported generators`() {
-    val javaTarget = TestBuildTargetFactory.createSimpleJavaLibraryTarget(id = Label.parse("//test:java"))
+    val javaTarget = javaLibrary("//test:java")
     val generator = SyntheticRunTargetTemplateGenerator.getTemplateGenerator(javaTarget, KotlinLanguage.INSTANCE)
     generator.shouldBeNull()
   }
 
+  @Test
   fun `test addSyntheticRunActions creates actions for kotlin library main`() {
-    val target = TestBuildTargetFactory.createSimpleKotlinLibraryTarget(id = Label.parse("//test:kotlin_lib"))
+    val target = kotlinLibrary("//test:kotlin_lib")
 
     myFixture.configureByText(
       "main.kt",
@@ -113,17 +122,20 @@ class SyntheticRunTargetStorageTest : BasePlatformTestCase() {
       }
       """.trimIndent(),
     )
-    val actions = getExecutorActions(BazelRunLocation(target, PsiLocation(myFixture.elementAtCaret.firstChild)))
+    val actions = runReadActionBlocking { getExecutorActions(BazelRunLocation(target, PsiLocation(myFixture.elementAtCaret.firstChild))) }
     val group = DefaultActionGroup(actions)
     val factory = PresentationFactory()
-    val actionTexts = Utils.expandActionGroup(
-      group, factory, SimpleDataContext.getProjectContext(project), ActionPlaces.UNKNOWN, ActionUiKind.NONE,
-    ).map { action: AnAction ->
-      factory.getPresentation(action).text
+    val actionTexts = runInEdtAndGet {
+      Utils.expandActionGroup(
+        group, factory, SimpleDataContext.getProjectContext(myFixture.project), ActionPlaces.UNKNOWN, ActionUiKind.NONE,
+      ).map { action: AnAction ->
+        factory.getPresentation(action).text
+      }
     }
     actionTexts shouldContainAll listOf("Run '//test:kotlin_lib (synthetic)'", "Debug '//test:kotlin_lib (synthetic)'")
   }
 
+  @Test
   fun `test synthetic target label structure`() {
     val label = SyntheticRunTargetUtils.getSyntheticTargetLabel(
       packageParts = arrayOf("escaped_target", "escaped_main"),

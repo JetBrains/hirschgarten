@@ -3,13 +3,14 @@ package org.jetbrains.bazel.sync
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeTypeOf
 import org.jetbrains.bazel.commons.BazelInfo
-import org.jetbrains.bazel.commons.BazelRelease
 import org.jetbrains.bazel.commons.BzlmodRepoMapping
+import org.jetbrains.bazel.test.framework.testproject.externalRepositoryPath
+import org.jetbrains.bazel.test.framework.testproject.testProjectBazelInfo
+import org.jetbrains.bazel.test.framework.testproject.testRepoMapping
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 import java.nio.file.Path
-import kotlin.io.path.Path
 import kotlin.io.path.createParentDirectories
 import kotlin.io.path.writeText
 
@@ -27,7 +28,8 @@ class SyncFileClassifierTest {
   private val outputBase: Path get() = root.resolve("output_base")
   private val nestedRepoRoot: Path get() = workspaceRoot.resolve("third_party/nested")
   private val outsideRepoRoot: Path get() = root.resolve("outside")
-  private val downloadedRepoRoot: Path get() = outputBase.resolve("external").resolve(DOWNLOADED_REPO)
+  private val downloadedRepoRoot: Path get() = bazelInfo.externalRepositoryPath(DOWNLOADED_REPO)
+  private val bazelInfo: BazelInfo get() = testProjectBazelInfo(workspaceRoot = workspaceRoot, outputBase = outputBase)
 
   @BeforeEach
   fun setUp() {
@@ -48,7 +50,7 @@ class SyncFileClassifierTest {
     createFile(outsideRepoRoot.resolve("Outside.java"))
     createFile(downloadedRepoRoot.resolve("BUILD.bazel"))
     createFile(root.resolve("elsewhere/Other.java"))
-    classifier = SyncFileClassifier(createRepoMapping(), createBazelInfo())
+    classifier = SyncFileClassifier(createRepoMapping(), bazelInfo)
   }
 
   @Test
@@ -186,27 +188,9 @@ class SyncFileClassifierTest {
   }
 
   private fun createRepoMapping(): BzlmodRepoMapping =
-    BzlmodRepoMapping(
-      canonicalRepoNameToLocalPath = mapOf(NESTED_REPO to Path("third_party/nested"), OUTSIDE_REPO to outsideRepoRoot),
-      apparentRepoNameToCanonicalName = mapOf("" to "", "nested" to NESTED_REPO, "outside" to OUTSIDE_REPO),
-      canonicalRepoNameToPath = mapOf(
-        "" to workspaceRoot,
-        NESTED_REPO to Path("third_party/nested"),
-        OUTSIDE_REPO to outsideRepoRoot,
-        DOWNLOADED_REPO to downloadedRepoRoot,
-      ),
-      nonLocalCanonicalRepoNames = setOf(DOWNLOADED_REPO),
-    )
-
-  private fun createBazelInfo(): BazelInfo =
-    BazelInfo(
-      execRoot = outputBase.resolve("execroot"),
-      outputBase = outputBase,
-      workspaceRoot = workspaceRoot,
-      bazelBin = outputBase.resolve("bazel-bin"),
-      release = BazelRelease(9, 0, 0),
-      isBzlModEnabled = true,
-      isWorkspaceEnabled = false,
-      externalAutoloads = emptyList(),
-    )
+    testRepoMapping(bazelInfo) {
+      local(NESTED_REPO, "third_party/nested", apparentName = "nested")
+      local(OUTSIDE_REPO, outsideRepoRoot.toString(), apparentName = "outside")
+      external(DOWNLOADED_REPO)
+    }
 }

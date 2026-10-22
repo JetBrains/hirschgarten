@@ -3,8 +3,6 @@ package org.jetbrains.bazel.python.resolve
 import com.intellij.bazel.python.backend.BazelPyCanonicalPathProvider
 import com.intellij.bazel.python.backend.updateBazelPythonResolveIndex
 import com.intellij.openapi.application.runReadActionBlocking
-import com.intellij.openapi.command.WriteCommandAction
-import com.intellij.openapi.vfs.VfsUtil
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiManager
 import com.intellij.psi.util.QualifiedName
@@ -14,10 +12,11 @@ import com.jetbrains.python.psi.resolve.PyCanonicalPathProvider
 import io.kotest.matchers.collections.shouldExist
 import io.kotest.matchers.nulls.shouldBeNull
 import io.kotest.matchers.shouldBe
-import org.jetbrains.bazel.config.rootDir
-import org.jetbrains.bazel.project.BazelProjectFixtures.deinitializeBazelProject
 import org.jetbrains.bazel.test.framework.BazelTestApplication
 import org.jetbrains.bazel.test.framework.bazelCodeInsightFixture
+import org.jetbrains.bazel.test.framework.testBazel
+import org.jetbrains.bazel.test.framework.testproject.uninstall
+import org.jetbrains.bazel.test.framework.testproject.writeFile
 import org.junit.jupiter.api.Test
 import java.nio.file.Path
 
@@ -32,13 +31,7 @@ class BazelPyCanonicalPathProviderTest {
 
   /** Creates `src/pkg/mymod.py` under the project root with a single top-level class and returns that class. */
   private fun createModuleWithClass(): PyClass {
-    WriteCommandAction.runWriteCommandAction(project) {
-      val pkgDir = project.rootDir
-        .createChildDirectory(this, "src")
-        .createChildDirectory(this, "pkg")
-      moduleFile = pkgDir.createChildData(this, "mymod.py")
-      VfsUtil.saveText(moduleFile, "class MyClass:\n    pass\n")
-    }
+    moduleFile = myFixture.testBazel.writeFile("src/pkg/mymod.py", "class MyClass:\n    pass\n")
     modulePath = moduleFile.toNioPath()
     return runReadActionBlocking {
       val pyFile = PsiManager.getInstance(project).findFile(moduleFile) as PyFile
@@ -67,14 +60,7 @@ class BazelPyCanonicalPathProviderTest {
 
   @Test
   fun `test should return pkg qualified name for symbol in init file`() {
-    lateinit var initFile: VirtualFile
-    WriteCommandAction.runWriteCommandAction(project) {
-      val pkgDir = project.rootDir
-        .createChildDirectory(this, "src")
-        .createChildDirectory(this, "pkg")
-      initFile = pkgDir.createChildData(this, "__init__.py")
-      VfsUtil.saveText(initFile, "class MyClass:\n    pass\n")
-    }
+    val initFile = myFixture.testBazel.writeFile("src/pkg/__init__.py", "class MyClass:\n    pass\n")
     val myClass = runReadActionBlocking {
       (PsiManager.getInstance(project).findFile(initFile) as PyFile).topLevelClasses.first()
     }
@@ -106,7 +92,7 @@ class BazelPyCanonicalPathProviderTest {
   fun testShouldDeferForNonBazelProject() {
     val myClass = createModuleWithClass()
     project.updateBazelPythonResolveIndex(mapOf(QualifiedName.fromDottedString("pkg.mymod") to modulePath))
-    deinitializeBazelProject(project)
+    myFixture.testBazel.uninstall()
 
     val result = runReadActionBlocking {
       BazelPyCanonicalPathProvider()

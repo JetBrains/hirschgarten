@@ -4,27 +4,17 @@ import com.google.devtools.intellij.aspect.Common.ArtifactLocation
 import io.kotest.matchers.shouldBe
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.label.assumeResolved
+import org.jetbrains.bazel.test.framework.testproject.testProjectBazelInfo
+import org.jetbrains.bazel.test.framework.testproject.testRepoMapping
 import org.junit.jupiter.api.Test
-import java.nio.file.Paths
 import kotlin.io.path.Path
 import kotlin.test.assertEquals
 
 class BazelPathsResolverTest {
 
-  fun newResolver(): BazelPathsResolver {
-    val bazelInfo =
-      BazelInfo(
-        execRoot = Paths.get("bazel-exec"),
-        outputBase = Paths.get("bazel-out"),
-        workspaceRoot = Paths.get("workspace"),
-        bazelBin = Path("bazel-bin"),
-        release = BazelRelease.fromReleaseString("release 9.0.0").orFallbackVersion(),
-        true,
-        false,
-        emptyList(),
-      )
-    return BazelPathsResolver(bazelInfo)
-  }
+  private val bazelInfo = testProjectBazelInfo(workspaceRoot = Path("workspace"), outputBase = Path("bazel-out"), execRoot = Path("bazel-exec"))
+
+  fun newResolver(): BazelPathsResolver = BazelPathsResolver(bazelInfo)
 
   fun sourceArtifact(root: String, relativePath: String) =
     ArtifactLocation.newBuilder().setRootPath(root).setRelativePath(relativePath).setIsSource(true).build()
@@ -73,12 +63,7 @@ class BazelPathsResolverTest {
   @Test
   fun directoryPathUsesRepoMapping() {
     val resolver = newResolver()
-    val repoMapping = BzlmodRepoMapping(
-      canonicalRepoNameToLocalPath = mapOf("community+" to Path("community")),
-      apparentRepoNameToCanonicalName = mapOf("community" to "community+"),
-      canonicalRepoNameToPath = mapOf("community+" to Path("workspace/community")),
-      nonLocalCanonicalRepoNames = setOf(),
-    )
+    val repoMapping = testRepoMapping(bazelInfo) { local("community+", "community", apparentName = "community") }
 
     assertEquals(
       Path("workspace/community/fleet/kernel"),

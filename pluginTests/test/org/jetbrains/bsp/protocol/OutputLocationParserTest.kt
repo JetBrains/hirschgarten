@@ -7,9 +7,9 @@ import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.shouldBe
 import kotlinx.coroutines.test.runTest
 import org.jetbrains.bazel.commons.BazelPathsResolver
-import org.jetbrains.bazel.commons.BzlmodRepoMapping
 import org.jetbrains.bazel.test.framework.RecordingBazelOutFileHardLinks
-import org.jetbrains.bazel.test.framework.testBazelInfo
+import org.jetbrains.bazel.test.framework.testproject.testProjectBazelInfo
+import org.jetbrains.bazel.test.framework.testproject.testRepoMapping
 import org.junit.jupiter.api.Test
 import kotlin.io.path.Path
 
@@ -206,12 +206,7 @@ class OutputLocationParserTest {
 
   @Test
   fun `isUserCode respects local overrides`() {
-    val repoMapping = BzlmodRepoMapping(
-      canonicalRepoNameToLocalPath = mapOf("foo+" to Path("bar/baz")),
-      apparentRepoNameToCanonicalName = mapOf(),
-      canonicalRepoNameToPath = mapOf(),
-      nonLocalCanonicalRepoNames = setOf(),
-    )
+    val repoMapping = testRepoMapping(testProjectBazelInfo(Path("/workspace"))) { local("foo+", "bar/baz") }
 
     OutputLocation.Workspace("c/d/E.java").isUserCode(repoMapping).shouldBeTrue()
     OutputLocation.External("foo+", "d/E.java").isUserCode(repoMapping).shouldBeTrue()
@@ -245,7 +240,7 @@ class OutputLocationParserTest {
   @Test
   fun `creates hard links when parsing an output location`() = runTest {
     val hardLinks = RecordingBazelOutFileHardLinks()
-    val bazelInfo = testBazelInfo(
+    val bazelInfo = testProjectBazelInfo(
       workspaceRoot = Path("/workspace"),
       outputBase = Path("/bazel-out-base"),
       execRoot = Path("/bazel-exec"),

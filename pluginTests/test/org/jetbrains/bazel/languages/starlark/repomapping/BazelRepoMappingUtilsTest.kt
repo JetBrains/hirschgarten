@@ -1,32 +1,32 @@
 package org.jetbrains.bazel.languages.starlark.repomapping
 
-import com.intellij.openapi.application.runWriteAction
 import io.kotest.matchers.shouldBe
 import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.label.assumeResolved
 import org.jetbrains.bazel.languages.starlark.references.findReferredPackage
-import org.jetbrains.bazel.workspace.model.test.framework.WorkspaceModelBaseTest
-import org.jetbrains.bazel.workspace.setRepoMapping
+import org.jetbrains.bazel.test.framework.BazelTestApplication
+import org.jetbrains.bazel.test.framework.testproject.createDirectory
+import org.jetbrains.bazel.test.framework.testproject.sync
+import org.jetbrains.bazel.test.framework.testproject.testBazelProjectFixture
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
-class BazelRepoMappingUtilsTest : WorkspaceModelBaseTest() {
+@BazelTestApplication
+class BazelRepoMappingUtilsTest {
+  private val testBazel by testBazelProjectFixture()
+
+  private val project get() = testBazel.project
+
   @BeforeEach
-  override fun beforeEach() {
-    super.beforeEach()
-    val rootDir = project.rootDir.toNioPath()
-    runWriteAction {
-      project.rootDir
-        .createChildDirectory(this, "my")
-        .createChildDirectory(this, "repo")
-        .createChildDirectory(this, "package")
-      project.rootDir.createChildDirectory(this, "repo2")
-    }
-    project.setRepoMapping {
-      mainRepo(rootDir)
-      repo("repo~", rootDir.resolve("my", "repo"), apparentName = "repo")
-      repo("repo2+", rootDir.resolve("repo2"), apparentName = "repo2")
+  fun setUp() {
+    testBazel.createDirectory("my/repo/package")
+    testBazel.createDirectory("repo2")
+    testBazel.sync {
+      repositories {
+        local("repo~", "my/repo", apparentName = "repo")
+        local("repo2+", "repo2", apparentName = "repo2")
+      }
     }
   }
 

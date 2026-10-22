@@ -20,7 +20,6 @@ import com.intellij.ide.projectView.ViewSettings
 import com.intellij.ide.projectView.impl.nodes.PsiFileNode
 import com.intellij.ide.projectView.impl.nodes.SyntheticLibraryElementNode
 import com.intellij.lang.FileASTNode
-import com.intellij.openapi.application.runWriteAction
 import com.intellij.openapi.fileTypes.FileType
 import com.intellij.openapi.fileTypes.FileTypeManager
 import com.intellij.openapi.project.Project
@@ -33,15 +32,16 @@ import com.intellij.psi.PsiFileSystemItem
 import com.intellij.psi.PsiManager
 import com.intellij.psi.impl.FakePsiElement
 import com.intellij.psi.search.PsiElementProcessor
-import com.intellij.testFramework.utils.vfs.createFile
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
-import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.golang.sync.GoExternalSyntheticLibrary
 import org.jetbrains.bazel.label.Label
-import org.jetbrains.bazel.sync.SyncCache
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
-import org.jetbrains.bazel.workspace.model.test.framework.WorkspaceModelBaseTest
+import org.jetbrains.bazel.test.framework.BazelTestApplication
+import org.jetbrains.bazel.test.framework.testproject.testBazelProjectFixture
+import org.jetbrains.bazel.test.framework.testproject.updateWorkspaceModel
+import org.jetbrains.bazel.test.framework.testproject.virtualFileUrlManager
+import org.jetbrains.bazel.test.framework.testproject.writeFile
 import org.jetbrains.bazel.workspacemodel.entities.BazelDummyEntitySource
 import org.jetbrains.bazel.workspacemodel.entities.BazelGoPackageEntity
 import org.jetbrains.bazel.workspacemodel.entities.BazelGoTargetEntity
@@ -51,14 +51,17 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
 /** Unit tests for [BazelGoTreeStructureProvider] */
-class BazelGoTreeStructureProviderTest : WorkspaceModelBaseTest() {
+@BazelTestApplication
+class BazelGoTreeStructureProviderTest {
+  private val testBazel by testBazelProjectFixture()
+
+  private val project get() = testBazel.project
+
   private lateinit var rootNode: SyntheticLibraryElementNode
 
   @BeforeEach
-  override fun beforeEach() {
-    super.beforeEach()
+  fun setUp() {
     rootNode = createRootNode()
-    SyncCache.getInstance(project).clear()
   }
 
   @Test
@@ -66,45 +69,40 @@ class BazelGoTreeStructureProviderTest : WorkspaceModelBaseTest() {
     // GIVEN
 
     val fileName1 = "bar.go"
-    val file1 = runWriteAction { project.rootDir.createFile(fileName1) }
+    val file1 = testBazel.writeFile(fileName1)
     val fileNode1 = createPsiFileNode(file1)
 
-    val virtualFileUrlManager = workspaceModel.getVirtualFileUrlManager()
-    runWriteAction {
-      workspaceModel.updateProjectModel("add file1 with importpath root1") { storage ->
-        storage addEntity BazelGoTargetEntity(
-          _targetKey = WorkspaceModelTargetKey.of(WorkspaceTargetKey(Label.synthetic("target1"))),
-          importPath = ImportPathId("root1"),
-          entitySource = BazelDummyEntitySource,
-        )
+    testBazel.updateWorkspaceModel { storage ->
+      storage addEntity BazelGoTargetEntity(
+        _targetKey = WorkspaceModelTargetKey.of(WorkspaceTargetKey(Label.synthetic("target1"))),
+        importPath = ImportPathId("root1"),
+        entitySource = BazelDummyEntitySource,
+      )
 
-        storage addEntity BazelGoPackageEntity(
-          importPath = "root1",
-          sources = listOf(file1.toVirtualFileUrl(virtualFileUrlManager)),
-          directDepsImportPaths = emptySet(),
-          entitySource = BazelDummyEntitySource,
-        )
-      }
+      storage addEntity BazelGoPackageEntity(
+        importPath = "root1",
+        sources = listOf(file1.toVirtualFileUrl(testBazel.virtualFileUrlManager)),
+        directDepsImportPaths = emptySet(),
+        entitySource = BazelDummyEntitySource,
+      )
     }
 
     val fileName2 = "buzz.go"
-    val file2 = runWriteAction { project.rootDir.createFile(fileName2) }
+    val file2 = testBazel.writeFile(fileName2)
     val fileNode2 = createPsiFileNode(file2)
-    runWriteAction {
-      workspaceModel.updateProjectModel("add file2 with importpath root2") { storage ->
-        storage addEntity BazelGoTargetEntity(
-          _targetKey = WorkspaceModelTargetKey.of(WorkspaceTargetKey(Label.synthetic("target2"))),
-          importPath = ImportPathId("root2"),
-          entitySource = BazelDummyEntitySource,
-        )
+    testBazel.updateWorkspaceModel { storage ->
+      storage addEntity BazelGoTargetEntity(
+        _targetKey = WorkspaceModelTargetKey.of(WorkspaceTargetKey(Label.synthetic("target2"))),
+        importPath = ImportPathId("root2"),
+        entitySource = BazelDummyEntitySource,
+      )
 
-        storage addEntity BazelGoPackageEntity(
-          importPath = "root2",
-          sources = listOf(file2.toVirtualFileUrl(virtualFileUrlManager)),
-          directDepsImportPaths = emptySet(),
-          entitySource = BazelDummyEntitySource,
-        )
-      }
+      storage addEntity BazelGoPackageEntity(
+        importPath = "root2",
+        sources = listOf(file2.toVirtualFileUrl(testBazel.virtualFileUrlManager)),
+        directDepsImportPaths = emptySet(),
+        entitySource = BazelDummyEntitySource,
+      )
     }
 
     // WHEN

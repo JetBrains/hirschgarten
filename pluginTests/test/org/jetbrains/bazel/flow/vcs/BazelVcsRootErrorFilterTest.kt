@@ -16,18 +16,19 @@ import com.intellij.platform.workspace.jps.entities.ModuleEntity
 import com.intellij.platform.workspace.storage.EntitySource
 import com.intellij.platform.workspace.storage.impl.url.toVirtualFileUrl
 import com.intellij.testFramework.common.timeoutRunBlocking
-import com.intellij.testFramework.junit5.TestApplication
-import com.intellij.testFramework.junit5.fixture.projectFixture
-import com.intellij.testFramework.junit5.fixture.tempPathFixture
 import com.intellij.testFramework.refreshVfs
 import com.intellij.workspaceModel.ide.registerProjectRoot
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.jetbrains.bazel.flow.exclude.BazelSymlinkExcludeService
-import org.jetbrains.bazel.project.BazelProjectFixtures.initializeBazelProject
 import org.jetbrains.bazel.symlinks.createBazelConvenienceSymlink
 import org.jetbrains.bazel.symlinks.createSymlinkOrJunction
-import org.jetbrains.bazel.test.framework.updateBazelInfo
+import org.jetbrains.bazel.test.framework.BazelTestApplication
+import org.jetbrains.bazel.test.framework.testproject.clearSnapshot
+import org.jetbrains.bazel.test.framework.testproject.outputBase
+import org.jetbrains.bazel.test.framework.testproject.sync
+import org.jetbrains.bazel.test.framework.testproject.testBazelProjectFixture
+import org.jetbrains.bazel.test.framework.testproject.workspaceRoot
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -46,48 +47,33 @@ import kotlin.io.path.writeText
  * Bazel's symlink forest plants a `.git` symlink into `execroot/_main`, so the execution root looks like a Git repository.
  * The detection tests run the same pipeline as `VcsRootScanner`: detect the roots, then auto-register the unregistered ones.
  */
-@TestApplication
+@BazelTestApplication
 class BazelVcsRootErrorFilterTest {
-  private val tempDirFixture = tempPathFixture()
-  private val tempDir by tempDirFixture
+  private val testBazel by testBazelProjectFixture(
+    openAfterCreation = false,
+    workspace = "workspace",
+    beforeInstall = { root, outputBase -> layOut(root, outputBase) },
+  )
 
-  private val projectFixture = projectFixture(pathFixture = tempDirFixture)
-  private val project by projectFixture
+  private val project get() = testBazel.project
+  private val outputBase: Path get() = testBazel.outputBase
 
-  private val outputBase by tempPathFixture()
+  private val workspaceDir: Path get() = testBazel.workspaceRoot
+  private val execRoot: Path get() = outputBase.resolve("execroot/_main")
+  private val bazelBinPackage: Path get() = execRoot.resolve("bazel-out/k8-fastbuild/bin/pkg")
+  private val workspaceSymlink: Path get() = workspaceDir.resolve("bazel-${workspaceDir.name}")
 
-  private lateinit var workspaceDir: Path
-  private lateinit var execRoot: Path
-  private lateinit var bazelBinPackage: Path
-  private lateinit var workspaceSymlink: Path
-
-  private lateinit var nestedRepository: Path
-  private lateinit var execrootNamedRepository: Path
-  private lateinit var externalRepository: Path
-  private lateinit var linkedRepository: Path
+  private val nestedRepository: Path get() = workspaceDir.resolve("nested")
+  private val execrootNamedRepository: Path get() = workspaceDir.resolve("tools/execroot/repo")
+  private val externalRepository: Path get() = workspaceDir.parent.resolve("elsewhere/repo")
+  private val linkedRepository: Path get() = workspaceDir.resolve("linked")
   // Outside the project and named like an execution root, but no Bazel symlink points to it
-  private lateinit var unrelatedExecrootRepository: Path
+  private val unrelatedExecrootRepository: Path get() = workspaceDir.parent.resolve("unrelated/execroot/_main")
 
   @BeforeEach
   fun setUp(): Unit = timeoutRunBlocking {
-    // Lay out the files on disk before VFS sees the workspace, as on a real startup:
-    // otherwise BazelSymlinkExcludeFileListener excludes the symlink on its creation event.
-    workspaceDir = tempDir.resolve("workspace").createDirectories()
-    workspaceDir.resolve("MODULE.bazel").writeText("")
-    workspaceDir.createRepository()
-
-    execRoot = outputBase.resolve("execroot/_main").createDirectories()
-    execRoot.resolve(".git").createSymlinkOrJunction(workspaceDir.resolve(".git"))
-    bazelBinPackage = execRoot.resolve("bazel-out/k8-fastbuild/bin/pkg").createDirectories()
-    workspaceSymlink = workspaceDir.createBazelConvenienceSymlink("bazel-${workspaceDir.name}", execRoot)
-
-    nestedRepository = workspaceDir.resolve("nested").createRepository()
-    execrootNamedRepository = workspaceDir.resolve("tools/execroot/repo").createRepository()
-    externalRepository = tempDir.resolve("elsewhere/repo").createRepository()
-    linkedRepository = workspaceDir.resolve("linked").createSymlinkOrJunction(externalRepository)
-    unrelatedExecrootRepository = tempDir.resolve("unrelated/execroot/_main").createRepository()
-
-    initializeBazelProject(project, workspaceDir)
+    // The state before the first sync: the execution root is not known
+    testBazel.clearSnapshot()
     outputBase.refreshVfs()
     // The only project root known before the first sync (see OpenBazelProjectAndSyncStartupActivity)
     registerProjectRoot(project, workspaceDir)
@@ -135,7 +121,7 @@ class BazelVcsRootErrorFilterTest {
   @Test
   fun `regular repositories are registered as VCS roots as without Bazel`(): Unit = timeoutRunBlocking {
     // GIVEN the state after a sync, when the execution root is known
-    project.updateBazelInfo { info -> info.copy(execRoot = execRoot) }
+    testBazel.sync()
 
     // WHEN
     val mappings = detectAndRegisterVcsRoots().map { Path.of(it) }
@@ -149,7 +135,7 @@ class BazelVcsRootErrorFilterTest {
   @Test
   fun `startup removes only the persisted VCS mappings of Bazel output directories`(): Unit = timeoutRunBlocking {
     // GIVEN the state after a sync, and the mappings an earlier session persisted in vcs.xml
-    project.updateBazelInfo { info -> info.copy(execRoot = execRoot) }
+    testBazel.sync()
 
     val regularMappings = setMappingsOfRegularRepositoriesAndBazelOutputs()
 
@@ -212,11 +198,31 @@ class BazelVcsRootErrorFilterTest {
     }
   }
 
-  /** A `.git` directory with a `HEAD` file is enough for `GitUtil.isGitRoot`. */
-  private fun Path.createRepository(): Path {
-    resolve(".git").createDirectories().resolve("HEAD").writeText("ref: refs/heads/master\n")
-    return this
-  }
-
   private object TestEntitySource : EntitySource
+}
+
+/**
+ * Lays out the files on disk before the VFS sees the workspace, as on a real startup.
+ * Otherwise, BazelSymlinkExcludeFileListener excludes the symlink on its creation event.
+ */
+private fun layOut(workspaceDir: Path, outputBase: Path) {
+  val tempDir = workspaceDir.parent
+  workspaceDir.createRepository()
+
+  val execRoot = outputBase.resolve("execroot/_main").createDirectories()
+  execRoot.resolve(".git").createSymlinkOrJunction(workspaceDir.resolve(".git"))
+  execRoot.resolve("bazel-out/k8-fastbuild/bin/pkg").createDirectories()
+  workspaceDir.createBazelConvenienceSymlink("bazel-${workspaceDir.name}", execRoot)
+
+  workspaceDir.resolve("nested").createRepository()
+  workspaceDir.resolve("tools/execroot/repo").createRepository()
+  val externalRepository = tempDir.resolve("elsewhere/repo").createRepository()
+  workspaceDir.resolve("linked").createSymlinkOrJunction(externalRepository)
+  tempDir.resolve("unrelated/execroot/_main").createRepository()
+}
+
+/** A `.git` directory with a `HEAD` file is enough for `GitUtil.isGitRoot`. */
+private fun Path.createRepository(): Path {
+  resolve(".git").createDirectories().resolve("HEAD").writeText("ref: refs/heads/master\n")
+  return this
 }

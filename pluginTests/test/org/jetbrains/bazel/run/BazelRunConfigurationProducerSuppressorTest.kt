@@ -4,57 +4,44 @@ import com.intellij.execution.actions.ConfigurationContext
 import com.intellij.execution.actions.RunContextAction
 import com.intellij.execution.configurations.RunConfiguration
 import com.intellij.execution.executors.DefaultRunExecutor
-import com.intellij.openapi.Disposable
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.CommonDataKeys
 import com.intellij.openapi.actionSystem.PlatformCoreDataKeys
 import com.intellij.openapi.actionSystem.impl.SimpleDataContext
 import com.intellij.openapi.application.runReadActionBlocking
-import com.intellij.openapi.project.Project
-import com.intellij.openapi.vfs.VirtualFileManager
-import com.intellij.openapi.vfs.newvfs.impl.VfsRootAccess
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import com.intellij.psi.util.PsiUtilCore
 import com.intellij.testFramework.TestActionEvent
-import com.intellij.testFramework.junit5.TestDisposable
 import io.kotest.matchers.types.shouldBeInstanceOf
 import org.jetbrains.bazel.commons.RuleType
-import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.python.lang.PythonBuildTarget
-import org.jetbrains.bazel.python.lang.PythonLanguageClass
 import org.jetbrains.bazel.run.config.BazelRunConfiguration
-import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
-import org.jetbrains.bazel.target.targetStorage
 import org.jetbrains.bazel.test.framework.BazelTestApplication
 import org.jetbrains.bazel.test.framework.bazelCodeInsightFixture
+import org.jetbrains.bazel.test.framework.testBazel
+import org.jetbrains.bazel.test.framework.testproject.pythonTarget
+import org.jetbrains.bazel.test.framework.testproject.sync
+import org.jetbrains.bazel.test.framework.testproject.writeFile
 import org.jetbrains.bazel.test.framework.target.TestBuildTarget
-import org.jetbrains.bazel.workspace.model.test.framework.setTargets
+import org.jetbrains.bazel.workspace.model.test.framework.testLocation
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.OutputLocationCollection
-import org.jetbrains.bazel.workspace.model.test.framework.testLocation
 import org.jetbrains.bsp.protocol.StringsCollection
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.io.TempDir
-import java.nio.file.Files
 import java.nio.file.Path
 
 @BazelTestApplication
 internal class BazelRunConfigurationProducerSuppressorTest {
   private val myFixture by bazelCodeInsightFixture()
+  private val testBazel get() = myFixture.testBazel
 
   private val project get() = myFixture.project
-
-  @TestDisposable
-  lateinit var disposable: Disposable
-
-  @TempDir
-  lateinit var tempDirectory: Path
 
   @Test
   fun `should show standard Run context action with Bazel configuration for Python main file`() {
@@ -65,8 +52,7 @@ internal class BazelRunConfigurationProducerSuppressorTest {
           print('Hello')
       """.trimIndent(),
     )
-    project.addPyBinaryTarget(label = LABEL, mainFile = psiFile)
-    project.addFileToTargets(psiFile, LABEL)
+    addPyBinaryTarget(label = LABEL, mainFile = psiFile)
 
     val element = runReadActionBlocking { PsiUtilCore.getElementAtOffset(psiFile, myFixture.caretOffset) }
 
@@ -86,8 +72,7 @@ internal class BazelRunConfigurationProducerSuppressorTest {
           assert True
       """.trimIndent(),
     )
-    project.addPyTestTarget(label = LABEL)
-    project.addFileToTargets(psiFile, LABEL)
+    addPyTestTarget(label = LABEL, source = psiFile)
 
     val element = runReadActionBlocking { PsiUtilCore.getElementAtOffset(psiFile, myFixture.caretOffset) }
 
@@ -125,11 +110,10 @@ internal class BazelRunConfigurationProducerSuppressorTest {
           print('Hello')
       """.trimIndent(),
     )
-    project.addPyBinaryTargets(
+    addPyBinaryTargets(
       pyBinaryTarget(label = LABEL, mainFile = psiFile),
       pyBinaryTarget(label = SECOND_LABEL, mainFile = psiFile),
     )
-    project.addFileToTargets(psiFile, LABEL, SECOND_LABEL)
 
     val element = runReadActionBlocking { PsiUtilCore.getElementAtOffset(psiFile, myFixture.caretOffset) }
 
@@ -148,13 +132,7 @@ internal class BazelRunConfigurationProducerSuppressorTest {
   }
 
   private fun configurePhysicalPythonFile(fileName: String, text: String): PsiFile {
-    val directory = Files.createTempDirectory(tempDirectory, "")
-    VfsRootAccess.allowRootAccess(disposable, directory.toRealPath().toString())
-
-    val filePath = directory.resolve(fileName)
-    Files.writeString(filePath, text)
-    val virtualFile = VirtualFileManager.getInstance().refreshAndFindFileByNioPath(filePath)!!
-    myFixture.configureFromExistingVirtualFile(virtualFile)
+    myFixture.configureFromExistingVirtualFile(testBazel.writeFile(fileName, text))
     return myFixture.file
   }
 
@@ -181,52 +159,34 @@ internal class BazelRunConfigurationProducerSuppressorTest {
         .build(),
     )
 
-  private fun Project.addPyBinaryTarget(label: Label, mainFile: PsiFile) {
+  private fun addPyBinaryTarget(label: Label, mainFile: PsiFile) {
     addPyBinaryTargets(pyBinaryTarget(label, mainFile))
   }
 
-  private fun Project.addPyBinaryTargets(vararg targets: BuildTarget) {
-    setTargets(targets.toList())
+  private fun addPyBinaryTargets(vararg targets: BuildTarget) {
+    testBazel.sync { targets(*targets) }
   }
 
-  private fun Project.addPyTestTarget(label: Label) {
-    setTargets(listOf(pyTestTarget(label)))
+  private fun addPyTestTarget(label: Label, source: PsiFile) {
+    testBazel.sync { targets(pyTestTarget(label, source)) }
   }
 
   private fun pyBinaryTarget(label: Label, mainFile: PsiFile): TestBuildTarget =
-    pythonTarget(
-      label = label,
-      ruleKind = "py_binary",
-      ruleType = RuleType.BINARY,
-      mainFile = mainFile,
-    )
+    pythonSourceTarget(label, "py_binary", RuleType.BINARY, source = mainFile, mainFile = mainFile)
 
-  private fun pyTestTarget(label: Label): TestBuildTarget =
-    pythonTarget(
-      label = label,
-      ruleKind = "py_test",
-      ruleType = RuleType.TEST,
-      mainFile = null,
-    )
+  private fun pyTestTarget(label: Label, source: PsiFile): TestBuildTarget =
+    pythonSourceTarget(label, "py_test", RuleType.TEST, source = source, mainFile = null)
 
-  private fun pythonTarget(
+  private fun pythonSourceTarget(
     label: Label,
     ruleKind: String,
     ruleType: RuleType,
+    source: PsiFile,
     mainFile: PsiFile?,
   ): TestBuildTarget =
-    TestBuildTarget(
-      key = WorkspaceTargetKey(label = label),
-      dependencies = emptyList(),
-      kind =
-        TargetKind(
-          kind = ruleKind,
-          languageClasses = setOf(PythonLanguageClass.PYTHON),
-          ruleType = ruleType,
-        ),
-      sources = OutputLocationCollection.EMPTY,
-      resources = OutputLocationCollection.EMPTY,
-      data = listOf(
+    pythonTarget(label, ruleKind, ruleType) {
+      srcs(source.name)
+      data(
         PythonBuildTarget(
           version = "3.8",
           interpreter = testLocation(Path.of(myFixture.tempDirPath, "python3")),
@@ -236,12 +196,8 @@ internal class BazelRunConfigurationProducerSuppressorTest {
           mainFile = mainFile?.virtualFile?.toNioPath()?.let(::testLocation),
           mainModule = null,
         ),
-      ),
-    )
-
-  private fun Project.addFileToTargets(file: PsiFile, vararg targets: Label) {
-    targetStorage.addFileToTargetIdEntry(file.virtualFile.toNioPath(), targets.toList())
-  }
+      )
+    }
 
   @Suppress("UNCHECKED_CAST")
   private fun RunConfiguration.targets(): List<Label> =

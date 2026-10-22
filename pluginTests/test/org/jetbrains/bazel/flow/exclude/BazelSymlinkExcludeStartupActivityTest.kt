@@ -1,56 +1,37 @@
 package org.jetbrains.bazel.flow.exclude
 
 import com.intellij.platform.backend.workspace.virtualFile
-import com.intellij.platform.backend.workspace.workspaceModel
-import com.intellij.testFramework.junit5.TestApplication
-import com.intellij.testFramework.junit5.fixture.projectFixture
-import com.intellij.testFramework.junit5.fixture.tempPathFixture
-import com.intellij.testFramework.refreshVfs
 import kotlinx.coroutines.runBlocking
-import org.jetbrains.bazel.project.BazelProjectFixtures.initializeBazelProject
-import org.jetbrains.bazel.symlinks.createBazelConvenienceSymlink
+import org.jetbrains.bazel.test.framework.BazelTestApplication
+import org.jetbrains.bazel.test.framework.testproject.createConvenienceSymlink
+import org.jetbrains.bazel.test.framework.testproject.projectDirectories
+import org.jetbrains.bazel.test.framework.testproject.testBazelProjectFixture
 import org.jetbrains.bazel.workspace.bazelProjectDirectoriesEntity
-import org.jetbrains.bazel.workspacemodel.entities.BazelProjectDirectoriesEntityFixtures.emptyBazelDirectoryWorkspaceEntity
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertIterableEquals
-import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import java.nio.file.Files
 
-@TestApplication
+@BazelTestApplication
 internal class BazelSymlinkExcludeStartupActivityTest {
-  private val tempDirFixture = tempPathFixture()
-  private val tempDir by tempDirFixture
-
-  private val projectFixture = projectFixture(pathFixture = tempDirFixture)
-  private val project by projectFixture
-
-  @BeforeEach
-  fun setUp() {
-    initializeBazelProject(project, tempDir)
-    Files.createFile(tempDir.resolve("MODULE.bazel"))
-  }
+  private val testBazel by testBazelProjectFixture(openAfterCreation = false)
 
   @Test
   fun `should scan for bazel symlinks on project startup and update workspace model`() = runBlocking {
     // GIVEN
-    val bazelSymlinkExcludeService = BazelSymlinkExcludeService.getInstance(project)
-    val convenientSymlink = tempDir.createBazelConvenienceSymlink("bazel-bin")
-    tempDir.refreshVfs()
+    val bazelSymlinkExcludeService = BazelSymlinkExcludeService.getInstance(testBazel.project)
+    val convenientSymlink = testBazel.createConvenienceSymlink("bazel-bin")
 
-    project.workspaceModel.update("Initialize empty workspace entity for test") { mutableEntityStorage ->
-      mutableEntityStorage.addEntity(emptyBazelDirectoryWorkspaceEntity(project))
-    }
+    testBazel.projectDirectories()
 
     // WHEN
-    BazelSymlinkExcludeStartupActivity().execute(project)
+    BazelSymlinkExcludeStartupActivity().execute(testBazel.project)
     bazelSymlinkExcludeService.refreshWorkspaceModel()
 
     // THEN
     assertEquals(setOf(convenientSymlink), bazelSymlinkExcludeService.getBazelSymlinksToExclude())
 
     // AND
-    val actualPaths = project.bazelProjectDirectoriesEntity()!!.excludedRoots.mapNotNull { it.virtualFile?.toNioPath() }
+    val actualPaths = testBazel.project.bazelProjectDirectoriesEntity()!!.excludedRoots.mapNotNull { it.virtualFile?.toNioPath() }
     assertIterableEquals(listOf(convenientSymlink), actualPaths)
   }
 }

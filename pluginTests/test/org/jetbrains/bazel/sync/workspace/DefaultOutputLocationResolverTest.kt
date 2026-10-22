@@ -1,11 +1,11 @@
 package org.jetbrains.bazel.sync.workspace
 
 import io.kotest.matchers.shouldBe
-import org.jetbrains.bazel.commons.BzlmodRepoMapping
 import org.jetbrains.bazel.commons.getLocalRepositories
 import org.jetbrains.bazel.sync.BazelOutFileHardLinks
 import org.jetbrains.bazel.test.framework.RecordingBazelOutFileHardLinks
-import org.jetbrains.bazel.test.framework.testBazelInfo
+import org.jetbrains.bazel.test.framework.testproject.testProjectBazelInfo
+import org.jetbrains.bazel.test.framework.testproject.testRepoMapping
 import org.jetbrains.bsp.protocol.OutputLocation
 import org.jetbrains.bsp.protocol.OutputLocationResolver
 import org.jetbrains.bsp.protocol.OutputRoot
@@ -13,27 +13,20 @@ import org.junit.jupiter.api.Test
 import kotlin.io.path.Path
 
 class DefaultOutputLocationResolverTest {
+  private val layout = testProjectBazelInfo(
+    workspaceRoot = Path("workspace"),
+    outputBase = Path("bazel-out-base"),
+    execRoot = Path("bazel-exec"),
+  )
 
   private fun newResolver(hardLinks: BazelOutFileHardLinks = BazelOutFileHardLinks.NONE): OutputLocationResolver =
-    DefaultOutputLocationResolver.createHardlinkResolving(
-      testBazelInfo(
-        workspaceRoot = Path("workspace"),
-        outputBase = Path("bazel-out-base"),
-        execRoot = Path("bazel-exec"),
-      ),
-      hardlinks = hardLinks,
-    )
+    DefaultOutputLocationResolver.createHardlinkResolving(layout, hardlinks = hardLinks)
 
-  private val localOverride = BzlmodRepoMapping(
-    canonicalRepoNameToLocalPath = mapOf(
-      "foo+" to Path("bar/baz"),
-      "abs+" to Path("/opt/checkout"),
-      "sibling+" to Path("../sibling"),
-    ),
-    apparentRepoNameToCanonicalName = mapOf(),
-    canonicalRepoNameToPath = mapOf(),
-    nonLocalCanonicalRepoNames = setOf(),
-  ).getLocalRepositories()
+  private val localOverride = testRepoMapping(layout) {
+    local("foo+", "bar/baz")
+    local("abs+", "/opt/checkout")
+    local("sibling+", "../sibling")
+  }.getLocalRepositories()
 
   @Test
   fun `resolves a workspace location against the workspace root`() {
@@ -83,7 +76,7 @@ class DefaultOutputLocationResolverTest {
     // a local override points at a source checkout, which never holds a generated file.
     // the sibling repository layout puts the file next to the exec root of the main repository.
     val resolver = DefaultOutputLocationResolver.createHardlinkResolving(
-      testBazelInfo(
+      testProjectBazelInfo(
         workspaceRoot = Path("workspace"),
         outputBase = Path("bazel-out-base"),
         execRoot = Path("bazel-exec/_main"),
@@ -110,7 +103,7 @@ class DefaultOutputLocationResolverTest {
   @Test
   fun `resolves generated file of a sibling external repository via hardlinks`() {
     val resolver = DefaultOutputLocationResolver.createHardlinkResolving(
-      testBazelInfo(
+      testProjectBazelInfo(
         workspaceRoot = Path("workspace"),
         outputBase = Path("bazel-out-base"),
         execRoot = Path("bazel-exec/_main"),

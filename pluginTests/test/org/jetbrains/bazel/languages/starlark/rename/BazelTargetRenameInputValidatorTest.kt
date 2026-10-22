@@ -3,7 +3,6 @@ package org.jetbrains.bazel.languages.starlark.rename
 import com.intellij.openapi.application.runReadActionBlocking
 import com.intellij.refactoring.rename.RenameUtil
 import org.jetbrains.bazel.languages.starlark.psi.requireCallWithNameAttribute
-import org.jetbrains.bazel.project.BazelProjectFixtures
 import org.jetbrains.bazel.test.framework.BazelTestApplication
 import org.jetbrains.bazel.test.framework.bazelCodeInsightFixture
 import org.junit.jupiter.api.Assertions.assertEquals

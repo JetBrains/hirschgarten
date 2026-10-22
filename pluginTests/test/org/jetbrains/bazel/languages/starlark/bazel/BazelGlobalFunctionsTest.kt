@@ -1,54 +1,36 @@
 package org.jetbrains.bazel.languages.starlark.bazel
 
-import com.intellij.openapi.project.Project
-import com.intellij.platform.testFramework.junit5.codeInsight.fixture.codeInsightFixture
-import com.intellij.testFramework.junit5.TestApplication
-import com.intellij.testFramework.junit5.fixture.projectFixture
-import com.intellij.testFramework.junit5.fixture.tempPathFixture
 import io.kotest.matchers.collections.shouldContainAll
 import io.kotest.matchers.collections.shouldNotBeEmpty
-import io.kotest.matchers.shouldNotBe
 import io.kotest.matchers.nulls.shouldNotBeNull
+import io.kotest.matchers.shouldNotBe
 import io.kotest.matchers.string.shouldContain
 import io.kotest.matchers.string.shouldNotContain
 import org.jetbrains.bazel.commons.BazelRelease
-import org.jetbrains.bazel.sync.workspace.snapshot.CommonWorkspaceSyncConfig
-import org.jetbrains.bazel.test.framework.updateWorkspaceSnapshot
+import org.jetbrains.bazel.test.framework.BazelTestApplication
+import org.jetbrains.bazel.test.framework.testproject.testBazelProjectFixture
+import org.jetbrains.bazel.test.framework.testproject.sync
 import org.junit.jupiter.api.DynamicTest
 import org.junit.jupiter.api.DynamicTest.dynamicTest
 import org.junit.jupiter.api.TestFactory
-import kotlin.io.path.Path
 
-@TestApplication
+@BazelTestApplication
 class BazelGlobalFunctionsTest {
 
   companion object {
-    private val projectFixture = projectFixture(openAfterCreation = true)
-    private val codeInsightFixture by codeInsightFixture(projectFixture, tempPathFixture())
+    private val testBazel by testBazelProjectFixture()
   }
 
   // All tests share one project, so each test sets the release that it checks.
   private fun functionsFor(release: BazelRelease): Map<String, BazelGlobalFunction> {
-    codeInsightFixture.project.setBazelReleaseVersion(release)
-    return BazelGlobalFunctions.globalFunctions(codeInsightFixture.project)
+    setBazelReleaseVersion(release)
+    return BazelGlobalFunctions.globalFunctions(testBazel.project)
   }
 
   private fun getFunction(name: String, release: BazelRelease = latestRelease): BazelGlobalFunction =
     functionsFor(release)[name] ?: error("Function '$name' not found for Bazel $release")
 
-  private fun Project.setBazelReleaseVersion(release: BazelRelease) = updateWorkspaceSnapshot { snapshot ->
-    snapshot.copy(
-      bazelInfo = snapshot.bazelInfo.copy(release = release),
-      syncConfigs = listOf(
-        CommonWorkspaceSyncConfig(
-          projectRootDir = Path(basePath!!),
-          dotIdeaPath = null,
-          projectName = name,
-          importDepth = 0,
-        ),
-      ),
-    )
-  }
+  private fun setBazelReleaseVersion(release: BazelRelease) = testBazel.sync { release(release) }
 
   @TestFactory
   fun `builtin functions should be present across all versions`(): List<DynamicTest> {
@@ -61,8 +43,8 @@ class BazelGlobalFunctionsTest {
     return builtinFunctionNames.flatMap { name ->
       majorVersions.map { version ->
         dynamicTest("$version: $name") {
-          codeInsightFixture.project.setBazelReleaseVersion(version)
-          BazelGlobalFunctions.getFunctionByName(name, codeInsightFixture.project) shouldNotBe null
+          setBazelReleaseVersion(version)
+          BazelGlobalFunctions.getFunctionByName(name, testBazel.project) shouldNotBe null
         }
       }
     }
@@ -79,8 +61,8 @@ class BazelGlobalFunctionsTest {
     return ruleNames.flatMap { name ->
       majorVersions.map { version ->
         dynamicTest("$version: $name") {
-          codeInsightFixture.project.setBazelReleaseVersion(version)
-          BazelGlobalFunctions.getFunctionByName(name, codeInsightFixture.project) shouldNotBe null
+          setBazelReleaseVersion(version)
+          BazelGlobalFunctions.getFunctionByName(name, testBazel.project) shouldNotBe null
         }
       }
     }
@@ -234,8 +216,8 @@ class BazelGlobalFunctionsTest {
   private fun MutableList<DynamicTest>.addPresenceTest(funcName: String, version: String) {
     add(
       dynamicTest("$version: $funcName is present") {
-        codeInsightFixture.project.setBazelReleaseVersion(version.toBazelRelease())
-        BazelGlobalFunctions.getFunctionByName(funcName, codeInsightFixture.project)
+        setBazelReleaseVersion(version.toBazelRelease())
+        BazelGlobalFunctions.getFunctionByName(funcName, testBazel.project)
         ?: error("Function '$funcName' not found for Bazel $version")
       },
     )
@@ -246,8 +228,8 @@ class BazelGlobalFunctionsTest {
     if (prevIndex < 0) return
     val previousVersion = builtinVersions[prevIndex]
     val test = dynamicTest("$previousVersion: $funcName is absent") {
-      codeInsightFixture.project.setBazelReleaseVersion(previousVersion.toBazelRelease())
-      BazelGlobalFunctions.getFunctionByName(funcName, codeInsightFixture.project)
+      setBazelReleaseVersion(previousVersion.toBazelRelease())
+      BazelGlobalFunctions.getFunctionByName(funcName, testBazel.project)
         ?.let { error("Function '$funcName' should not exist for Bazel $previousVersion") }
     }
     add(test)

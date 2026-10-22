@@ -17,16 +17,16 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import org.assertj.core.api.Assertions.assertThat
 import org.jetbrains.bazel.commons.BazelPathsResolver
-import org.jetbrains.bazel.project.BazelProjectFixtures
 import org.jetbrains.bazel.sync.workspace.DefaultOutputLocationResolver
 import org.jetbrains.bazel.sync.workspace.mapper.normal.DefaultBazelOutputFileHardLinks
-import org.jetbrains.bazel.test.framework.testBazelInfo
-import org.jetbrains.bazel.workspace.model.test.framework.MockProjectBaseTest
+import org.jetbrains.bazel.test.framework.BazelTestApplication
+import org.jetbrains.bazel.test.framework.testproject.bazelInfo
+import org.jetbrains.bazel.test.framework.testproject.testBazelProjectFixture
+import org.jetbrains.bazel.test.framework.testproject.workspaceRoot
 import org.jetbrains.bsp.protocol.OutputLocationParser
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.condition.DisabledOnOs
 import org.junit.jupiter.api.condition.OS
-import org.junit.jupiter.api.io.TempDir
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.ValueSource
 import java.nio.file.Files
@@ -40,13 +40,14 @@ import kotlin.io.path.readText
 import kotlin.io.path.setLastModifiedTime
 import kotlin.io.path.writeText
 
-internal class BazelOutFileHardLinksTest : MockProjectBaseTest() {
+@BazelTestApplication
+internal class BazelOutFileHardLinksTest {
+  private val testBazel by testBazelProjectFixture()
+
   @Test
-  fun `prepared output lookup uses only the current sync`(@TempDir outputBase: Path): Unit = timeoutRunBlocking {
-    val root = Path(checkNotNull(project.basePath)).toRealPath()
-    BazelProjectFixtures.initializeBazelProject(project, root)
-    val info = testBazelInfo(workspaceRoot = root, outputBase = outputBase)
-    val links = DefaultBazelOutputFileHardLinks(project, info)
+  fun `prepared output lookup uses only the current sync`(): Unit = timeoutRunBlocking {
+    val info = testBazel.bazelInfo
+    val links = DefaultBazelOutputFileHardLinks(testBazel.project, info)
     val original = info.execRoot.resolve("bazel-out/k8-fastbuild/bin/generated.py")
     original.parent.createDirectories()
     original.writeText("VALUE = 42\n")
@@ -78,11 +79,9 @@ internal class BazelOutFileHardLinksTest : MockProjectBaseTest() {
   @ParameterizedTest
   @ValueSource(booleans = [false, true])
   fun `retargeted symlink with the same modified time`(removeOld: Boolean): Unit = runBlocking {
-    val root = Path(checkNotNull(project.basePath)).toRealPath()
-    BazelProjectFixtures.initializeBazelProject(project, root)
-    val outputBase = root.resolve("qa-output").createDirectories()
-    val info = testBazelInfo(workspaceRoot = root, outputBase = outputBase)
-    val links = DefaultBazelOutputFileHardLinks(project, info)
+    val root = testBazel.workspaceRoot
+    val info = testBazel.bazelInfo
+    val links = DefaultBazelOutputFileHardLinks(testBazel.project, info)
     val first = root.resolve("first.h").also { it.writeText("#define VALUE 1\n") }
     val second = root.resolve("second.h").also { it.writeText("#define VALUE 2\n") }
     val sameTime = FileTime.fromMillis(1_700_000_000_000)
@@ -110,11 +109,8 @@ internal class BazelOutFileHardLinksTest : MockProjectBaseTest() {
   @Test
   @DisabledOnOs(OS.WINDOWS)
   fun `readable output symlink remains available when its target cannot be hardlinked`(): Unit = runBlocking {
-    val root = Path(checkNotNull(project.basePath)).toRealPath()
-    BazelProjectFixtures.initializeBazelProject(project, root)
-    val outputBase = root.resolve("qa-output").createDirectories()
-    val info = testBazelInfo(workspaceRoot = root, outputBase = outputBase)
-    val links = DefaultBazelOutputFileHardLinks(project, info)
+    val info = testBazel.bazelInfo
+    val links = DefaultBazelOutputFileHardLinks(testBazel.project, info)
     val source = Path("/bin/ls").toRealPath()
     val original = info.execRoot.resolve("bazel-out/k8-fastbuild/bin/tool")
     original.parent.createDirectories()
@@ -131,11 +127,9 @@ internal class BazelOutFileHardLinksTest : MockProjectBaseTest() {
   }
 
   @Test
-  fun `symlink to directory should work`(@TempDir outputBase: Path): Unit = timeoutRunBlocking {
-    val root = Path(checkNotNull(project.basePath)).toRealPath()
-    BazelProjectFixtures.initializeBazelProject(project, root)
-    val info = testBazelInfo(workspaceRoot = root, outputBase = outputBase)
-    val links = DefaultBazelOutputFileHardLinks(project, info)
+  fun `symlink to directory should work`(): Unit = timeoutRunBlocking {
+    val info = testBazel.bazelInfo
+    val links = DefaultBazelOutputFileHardLinks(testBazel.project, info)
     val tree = info.execRoot.resolve("bazel-out/k8-fastbuild/bin/tree").createDirectories()
     tree.resolve("header.h").writeText("VALUE 42")
 
@@ -150,11 +144,9 @@ internal class BazelOutFileHardLinksTest : MockProjectBaseTest() {
   }
 
   @Test
-  fun `relative output symlink remains readable`(@TempDir outputBase: Path): Unit = timeoutRunBlocking {
-    val root = Path.of(checkNotNull(project.basePath)).toRealPath()
-    BazelProjectFixtures.initializeBazelProject(project, root)
-    val info = testBazelInfo(workspaceRoot = root, outputBase = outputBase)
-    val links = DefaultBazelOutputFileHardLinks(project, info)
+  fun `relative output symlink remains readable`(): Unit = timeoutRunBlocking {
+    val info = testBazel.bazelInfo
+    val links = DefaultBazelOutputFileHardLinks(testBazel.project, info)
     val bin = info.execRoot.resolve("bazel-out/k8-fastbuild/bin/pkg").createDirectories()
     bin.resolve("generated.h").writeText("VALUE 42")
     val original = bin.resolve("alias.h").createSymbolicLinkPointingTo(Path.of("generated.h"))
@@ -168,12 +160,10 @@ internal class BazelOutFileHardLinksTest : MockProjectBaseTest() {
   }
 
   @Test
-  fun `generated jar of a sibling external repository remains readable after bazel removes it`(@TempDir outputBase: Path): Unit =
+  fun `generated jar of a sibling external repository remains readable after bazel removes it`(): Unit =
     timeoutRunBlocking {
-      val root = Path(checkNotNull(project.basePath)).toRealPath()
-      BazelProjectFixtures.initializeBazelProject(project, root)
-      val info = testBazelInfo(workspaceRoot = root, outputBase = outputBase)
-      val links = DefaultBazelOutputFileHardLinks(project, info)
+      val info = testBazel.bazelInfo
+      val links = DefaultBazelOutputFileHardLinks(testBazel.project, info)
       val parser = OutputLocationParser(BazelPathsResolver(info), links)
       val resolver = DefaultOutputLocationResolver.createHardlinkResolving(info, links)
       val original = info.execRoot.resolve("../repo+/bazel-out/k8-fastbuild/bin/pkg/lib.jar").normalize()
@@ -198,11 +188,9 @@ internal class BazelOutFileHardLinksTest : MockProjectBaseTest() {
     }
 
   @Test
-  fun `sync after a cancelled sync links the current content`(@TempDir outputBase: Path): Unit = timeoutRunBlocking {
-    val root = Path(checkNotNull(project.basePath)).toRealPath()
-    BazelProjectFixtures.initializeBazelProject(project, root)
-    val info = testBazelInfo(workspaceRoot = root, outputBase = outputBase)
-    val links = DefaultBazelOutputFileHardLinks(project, info)
+  fun `sync after a cancelled sync links the current content`(): Unit = timeoutRunBlocking {
+    val info = testBazel.bazelInfo
+    val links = DefaultBazelOutputFileHardLinks(testBazel.project, info)
     val original = info.execRoot.resolve("bazel-out/k8-fastbuild/bin/pkg/lib.jar")
     original.parent.createDirectories()
     original.writeText("first")
@@ -231,11 +219,9 @@ internal class BazelOutFileHardLinksTest : MockProjectBaseTest() {
   }
 
   @Test
-  fun `hard links are visible in the VFS after sync`(@TempDir outputBase: Path): Unit = timeoutRunBlocking {
-    val root = Path.of(checkNotNull(project.basePath)).toRealPath()
-    BazelProjectFixtures.initializeBazelProject(project, root)
-    val info = testBazelInfo(workspaceRoot = root, outputBase = outputBase)
-    val links = DefaultBazelOutputFileHardLinks(project, info)
+  fun `hard links are visible in the VFS after sync`(): Unit = timeoutRunBlocking {
+    val info = testBazel.bazelInfo
+    val links = DefaultBazelOutputFileHardLinks(testBazel.project, info)
     val fileManager = VirtualFileManager.getInstance()
     val bin = info.execRoot.resolve("bazel-out/k8-fastbuild/bin/pkg").createDirectories()
     val first = bin.resolve("first.jar").also { it.writeText("first") }
@@ -286,8 +272,9 @@ internal class BazelOutFileHardLinksTest : MockProjectBaseTest() {
   }
 
   @Test
-  fun `cleanup deletes an unused file next to a used file`(@TempDir outputBase: Path): Unit = timeoutRunBlocking {
-    val links = hardLinksInOutputBase(outputBase)
+  fun `cleanup deletes an unused file next to a used file`(): Unit = timeoutRunBlocking {
+    val outputBase = testBazel.bazelInfo.outputBase
+    val links = hardLinksInOutputBase()
     val bin = outputBase.resolve("execroot/_main/bazel-out/k8-fastbuild/bin").createDirectories()
     val used = bin.resolve("used.jar").also { it.writeText("used") }
     val unused = bin.resolve("unused.jar").also { it.writeText("unused") }
@@ -301,8 +288,9 @@ internal class BazelOutFileHardLinksTest : MockProjectBaseTest() {
   }
 
   @Test
-  fun `cleanup keeps the directories of a used hard link`(@TempDir outputBase: Path): Unit = timeoutRunBlocking {
-    val links = hardLinksInOutputBase(outputBase)
+  fun `cleanup keeps the directories of a used hard link`(): Unit = timeoutRunBlocking {
+    val outputBase = testBazel.bazelInfo.outputBase
+    val links = hardLinksInOutputBase()
     val bin = outputBase.resolve("execroot/_main/bazel-out/k8-fastbuild/bin")
     val used = bin.resolve("a/b/used.jar")
     val unusedFile = bin.resolve("a/unused.jar")
@@ -324,8 +312,9 @@ internal class BazelOutFileHardLinksTest : MockProjectBaseTest() {
   }
 
   @Test
-  fun `cleanup deletes an unused directory in the cache directory`(@TempDir outputBase: Path): Unit = timeoutRunBlocking {
-    val links = hardLinksInOutputBase(outputBase)
+  fun `cleanup deletes an unused directory in the cache directory`(): Unit = timeoutRunBlocking {
+    val outputBase = testBazel.bazelInfo.outputBase
+    val links = hardLinksInOutputBase()
     val used = outputBase.resolve("execroot/_main/bazel-out/k8-fastbuild/bin/used.jar")
     val unused = outputBase.resolve("external/repo/unused.jar")
     for (file in listOf(used, unused)) {
@@ -342,8 +331,9 @@ internal class BazelOutFileHardLinksTest : MockProjectBaseTest() {
   }
 
   @Test
-  fun `hard links are visible in the VFS before the project model update`(@TempDir outputBase: Path): Unit = timeoutRunBlocking {
-    val links = hardLinksInOutputBase(outputBase)
+  fun `hard links are visible in the VFS before the project model update`(): Unit = timeoutRunBlocking {
+    val outputBase = testBazel.bazelInfo.outputBase
+    val links = hardLinksInOutputBase()
     val fileManager = VirtualFileManager.getInstance()
     val jar = outputBase.resolve("execroot/_main/bazel-out/k8-fastbuild/bin/lib.jar")
     jar.parent.createDirectories()
@@ -359,11 +349,8 @@ internal class BazelOutFileHardLinksTest : MockProjectBaseTest() {
     links.onAfterSync(true)
   }
 
-  private fun hardLinksInOutputBase(outputBase: Path): DefaultBazelOutputFileHardLinks {
-    val root = Path.of(checkNotNull(project.basePath)).toRealPath()
-    BazelProjectFixtures.initializeBazelProject(project, root)
-    return DefaultBazelOutputFileHardLinks(project, testBazelInfo(workspaceRoot = root, outputBase = outputBase))
-  }
+  private fun hardLinksInOutputBase(): DefaultBazelOutputFileHardLinks =
+    DefaultBazelOutputFileHardLinks(testBazel.project, testBazel.bazelInfo)
 
   private suspend fun sync(links: DefaultBazelOutputFileHardLinks, vararg files: Path) {
     links.onBeforeSync()

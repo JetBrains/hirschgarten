@@ -9,16 +9,13 @@ import io.kotest.matchers.ints.shouldBeGreaterThan
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
 import io.kotest.matchers.string.shouldEndWith
-import kotlinx.coroutines.runBlocking
-import org.jetbrains.bazel.bazelrunner.BazelProcess
 import org.jetbrains.bazel.bazelrunner.BazelProcessResult
-import org.jetbrains.bazel.bazelrunner.BazelRunner
-import org.jetbrains.bazel.bazelrunner.mockBazelProcessLauncher
 import org.jetbrains.bazel.bazelrunner.outputs.OutputCollector
 import org.jetbrains.bazel.languages.projectview.ProjectView
 import org.jetbrains.bazel.server.bsp.managers.BazelWorkspaceExternalRulesetsQueryImpl.Companion.parseWorkspaceExternalRulesetNames
-import org.jetbrains.bazel.sync.workspace.projectTree.BazelRunnerSpyStubbingHelper
 import org.jetbrains.bazel.test.framework.BazelTestApplication
+import org.jetbrains.bazel.test.framework.testproject.finishedProcess
+import org.jetbrains.bazel.test.framework.testproject.testBazelRunner
 import org.jetbrains.bsp.protocol.BazelTaskEventsHandler
 import org.jetbrains.bsp.protocol.CachedTestLog
 import org.jetbrains.bsp.protocol.CoverageReport
@@ -29,43 +26,49 @@ import org.jetbrains.bsp.protocol.TaskFinishParams
 import org.jetbrains.bsp.protocol.TaskGroupId
 import org.jetbrains.bsp.protocol.TaskStartParams
 import org.junit.jupiter.api.Test
-import org.mockito.Mockito.mock
-import org.mockito.Mockito.spy
-import org.mockito.Mockito.`when`
 import kotlin.io.path.Path
 
+/** Records the log messages that the query reports to the sync console. */
+internal class RecordingTaskEventsHandler : BazelTaskEventsHandler {
+  val logMessages = mutableListOf<LogMessageParams>()
 
-@BazelTestApplication
-internal class BazelWorkspaceExternalRulesetsQueryImplTest {
-  /** Records the log messages that the query reports to the sync console. */
-  private class RecordingTaskEventsHandler : BazelTaskEventsHandler {
-    val logMessages = mutableListOf<LogMessageParams>()
-
-    override fun onBuildLogMessage(params: LogMessageParams) {
-      logMessages.add(params)
-    }
-
-    override fun onBuildPublishDiagnostics(params: PublishDiagnosticsParams) {}
-    override fun onBuildTaskStart(params: TaskStartParams) {}
-    override fun onBuildTaskFinish(params: TaskFinishParams) {}
-    override fun onPublishCoverageReport(report: CoverageReport) {}
-    override fun onCachedTestLog(testLog: CachedTestLog) {}
+  override fun onBuildLogMessage(params: LogMessageParams) {
+    logMessages.add(params)
   }
+
+  override fun onBuildPublishDiagnostics(params: PublishDiagnosticsParams) {}
+  override fun onBuildTaskStart(params: TaskStartParams) {}
+  override fun onBuildTaskFinish(params: TaskFinishParams) {}
+  override fun onPublishCoverageReport(report: CoverageReport) {}
+  override fun onCachedTestLog(testLog: CachedTestLog) {}
+}
+
+/** Checks the query command, the failure path and the ndjson parser. These tests run no Bazel and sync no project. */
+@BazelTestApplication
+internal class BazelWorkspaceExternalRulesetsQueryImplUnitTest {
 
   private val emptyProjectView = ProjectView(sections = emptyMap(), imports = emptyList())
 
   private val taskId = TaskGroupId.EMPTY.task("")
 
+  // ---------------------------------------------------------------------------------------------
+  // The command and the failure path, with a stubbed BazelRunner
+  // ---------------------------------------------------------------------------------------------
+
   @Test
   fun `query asks for the external targets in the streamed json proto format`(): Unit = timeoutRunBlocking {
-    val bazelRunner = stubbedBazelRunner(stdout = gitRepositoryLine("rules_x"), exitCode = 0)
+    val commandLines = mutableListOf<List<String>>()
+    val bazelRunner = testBazelRunner(Path("workspaceRoot")) { command ->
+      commandLines += command
+      finishedProcess(stdout = gitRepositoryLine("rules_x"))
+    }
 
     val rulesetNames =
       BazelWorkspaceExternalRulesetsQueryImpl(taskId, bazelRunner, isWorkspaceEnabled = true, RecordingTaskEventsHandler(), emptyProjectView)
         .fetchExternalRulesetNames()
 
     rulesetNames shouldContainExactly listOf("rules_x")
-    val commandLine = BazelRunnerSpyStubbingHelper.captureBazelCommandFromMock(bazelRunner).buildExecutionDescriptor().command
+    val commandLine = commandLines.single()
     commandLine shouldContain "query"
     commandLine shouldContain "--output=streamed_jsonproto"
     commandLine shouldNotContain "--output=xml"
@@ -75,7 +78,7 @@ internal class BazelWorkspaceExternalRulesetsQueryImplTest {
   @Test
   fun `failed query returns no rulesets and reports a warning`(): Unit = timeoutRunBlocking {
     val stderr = "ERROR: no such package 'external': WORKSPACE file is missing"
-    val bazelRunner = stubbedBazelRunner(stdout = "", stderr = stderr, exitCode = 1)
+    val bazelRunner = testBazelRunner(Path("workspaceRoot")) { finishedProcess(stderr = stderr, exitCode = 1) }
     val taskEventsHandler = RecordingTaskEventsHandler()
 
     val rulesetNames =
@@ -90,8 +93,8 @@ internal class BazelWorkspaceExternalRulesetsQueryImplTest {
 
   @Test
   fun `disabled WORKSPACE skips the bazel call`(): Unit = timeoutRunBlocking {
-    // `mockBazelProcessLauncher` throws on a launch, so a bazel call fails the test.
-    val bazelRunner = BazelRunner(null, Path("workspaceRoot"), mockBazelProcessLauncher, Path("bazel"))
+    // `testBazelRunner` fails each launch, so a bazel call fails the test.
+    val bazelRunner = testBazelRunner(Path("workspaceRoot"))
 
     val rulesetNames =
       BazelWorkspaceExternalRulesetsQueryImpl(taskId, bazelRunner, isWorkspaceEnabled = false, RecordingTaskEventsHandler(), emptyProjectView)
@@ -188,18 +191,6 @@ internal class BazelWorkspaceExternalRulesetsQueryImplTest {
   // ---------------------------------------------------------------------------------------------
   // Helpers
   // ---------------------------------------------------------------------------------------------
-
-  /** A [BazelRunner] spy whose `runBazelCommand` returns a finished process with the given output. */
-  private fun stubbedBazelRunner(stdout: String, stderr: String = "", exitCode: Int): BazelRunner {
-    val runner = spy(BazelRunner(null, Path("workspaceRoot"), mockBazelProcessLauncher, Path("bazel")))
-    val result = BazelProcessResult(outputCollector(stdout), outputCollector(stderr), exitCode)
-    val process = mock(BazelProcess::class.java)
-    runBlocking {
-      `when`(process.waitAndGetResult()).thenReturn(result)
-    }
-    BazelRunnerSpyStubbingHelper.stubRunBazelCommand(runner, process)
-    return runner
-  }
 
   private fun outputCollector(text: String): OutputCollector = OutputCollector().also { it.append(text.toByteArray(Charsets.UTF_8)) }
 

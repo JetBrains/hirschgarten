@@ -1,7 +1,6 @@
 package org.jetbrains.bazel.clion
 
 import com.intellij.testFramework.common.timeoutRunBlocking
-import com.intellij.testFramework.junit5.fixture.projectFixture
 import com.jetbrains.cidr.lang.workspace.compiler.AppleClangCompilerKind
 import com.jetbrains.cidr.lang.workspace.compiler.ClangCompilerKind
 import com.jetbrains.cidr.lang.workspace.compiler.CompilerSpecificSwitchBuilder
@@ -11,13 +10,15 @@ import com.jetbrains.cidr.lang.workspace.compiler.OCCompilerKind
 import org.assertj.core.api.Assertions.assertThat
 import org.jetbrains.bazel.clion.workspace.CcCompilerKind
 import org.jetbrains.bazel.clion.workspace.copts.applyCopts
+import org.jetbrains.bazel.fixtures.CC_TEST_BAZEL_INFO
 import org.jetbrains.bazel.fixtures.CcTestApplication
+import org.jetbrains.bazel.fixtures.ccProject
 import org.jetbrains.bazel.fixtures.withTestImportContext
-import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceSnapshot
+import org.jetbrains.bazel.test.framework.testproject.testBazelProjectFixture
 import org.junit.jupiter.api.Test
 import java.nio.file.Path
 
-private val EXECROOT: Path = Path.of("/execroot")
+private val EXECROOT: Path = CC_TEST_BAZEL_INFO.execRoot
 
 /** Every compiler that takes the GNU spelling, with the two wrapper kinds of the plugin. */
 private val GNU = listOf(
@@ -31,7 +32,7 @@ private val GNU = listOf(
 @CcTestApplication
 class CcCoptsTest {
 
-  private val project by projectFixture()
+  private val testBazel by testBazelProjectFixture(openAfterCreation = false)
 
   @Test
   fun testDropsBlankOptions() = doTest(
@@ -203,7 +204,7 @@ class CcCoptsTest {
 
   private fun doTest(compilers: List<OCCompilerKind>, copts: List<String>, expected: List<String>) = timeoutRunBlocking {
     for (compiler in compilers) {
-      val (ctx, switches) = withTestImportContext(WorkspaceSnapshot.EMPTY, project, EXECROOT) {
+      val (ctx, switches) = withTestImportContext(ccProject {}, testBazel.project) {
         CompilerSpecificSwitchBuilder.getBuilder(compiler).apply { applyCopts(compiler, copts) }.buildRaw()
       }
 

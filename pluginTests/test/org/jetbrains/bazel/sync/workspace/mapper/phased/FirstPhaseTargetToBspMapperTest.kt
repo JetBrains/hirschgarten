@@ -3,81 +3,52 @@ package org.jetbrains.bazel.sync.workspace.mapper.phased
 import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.nulls.shouldNotBeNull
-import org.jetbrains.bazel.commons.BazelInfo
 import org.jetbrains.bazel.commons.BazelPathsResolver
-import org.jetbrains.bazel.commons.BazelRelease
 import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.commons.TargetKind
-import org.jetbrains.bazel.commons.orFallbackVersion
 import org.jetbrains.bazel.label.DependencyLabel
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.languages.projectview.ALLOW_MANUAL_TARGETS_SYNC_KEY
 import org.jetbrains.bazel.languages.projectview.ProjectView
 import org.jetbrains.bazel.sync.JavaLanguageClass
 import org.jetbrains.bazel.sync.workspace.mapper.PhasedBazelProjectMapper
-import org.jetbrains.bazel.sync.workspace.snapshot.OutputLocationCollectionBuilder
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
+import org.jetbrains.bazel.test.framework.BazelTestApplication
 import org.jetbrains.bazel.test.framework.target.TestBuildTarget
 import org.jetbrains.bazel.test.framework.target.asTestBuildTarget
-import org.jetbrains.bazel.workspace.model.test.framework.BazelPathsResolverMock
-import org.jetbrains.bazel.workspace.model.test.framework.WorkspaceModelBaseTest
+import org.jetbrains.bazel.test.framework.testproject.TestBazelProject
+import org.jetbrains.bazel.test.framework.testproject.bazelInfo
+import org.jetbrains.bazel.test.framework.testproject.testBazelProjectFixture
+import org.jetbrains.bazel.test.framework.testproject.workspaceLocations
+import org.jetbrains.bazel.test.framework.testproject.writeFile
 import org.jetbrains.bsp.protocol.BuildTargetTag
-import org.jetbrains.bsp.protocol.OutputLocation
 import org.jetbrains.bsp.protocol.OutputLocationCollection
 import org.jetbrains.bsp.protocol.id
-import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
-import java.nio.file.Path
-import java.nio.file.Paths
-import kotlin.io.path.Path
-import kotlin.io.path.createFile
-import kotlin.io.path.createParentDirectories
-import kotlin.io.path.createTempDirectory
-import kotlin.io.path.writeText
 
 // Helper: creates a mock source file at the given relative path with the given package.
-private fun Path.createMockSourceFile(relativePath: String, fullPackage: String): OutputLocation {
-  resolve(relativePath).createParentDirectories().createFile().writeText(
+private fun TestBazelProject.writeMockSource(relativePath: String, fullPackage: String): String {
+  writeFile(
+    relativePath,
     """
       |package $fullPackage;
       |
       |class A { }
     """.trimMargin(),
   )
-  return OutputLocation.Workspace(relativePath)
+  return relativePath
 }
 
-private fun Path.createMockResourceFile(relativePath: String): OutputLocation {
-  resolve(relativePath).createParentDirectories().createFile()
-  return OutputLocation.Workspace(relativePath)
+private fun TestBazelProject.writeMockResource(relativePath: String): String {
+  writeFile(relativePath)
+  return relativePath
 }
 
-class FirstPhaseTargetToBspMapperTest : WorkspaceModelBaseTest() {
-  private lateinit var workspaceRoot: Path
-  private lateinit var bazelInfo: BazelInfo
-  private lateinit var bazelPathsResolver: BazelPathsResolver
-
-  @BeforeEach
-  override fun beforeEach() {
-    workspaceRoot = createTempDirectory("workspaceRoot").also { it.toFile().deleteOnExit() }
-    bazelInfo =
-      BazelInfo(
-        execRoot = Paths.get(""),
-        outputBase = Paths.get(""),
-        workspaceRoot = workspaceRoot,
-        bazelBin = Path("bazel-bin"),
-        release = BazelRelease.fromReleaseString("release 6.0.0").orFallbackVersion(),
-        false,
-        true,
-        emptyList(),
-      )
-    bazelPathsResolver = BazelPathsResolver(bazelInfo)
-  }
-
-  private fun workspaceLocations(vararg locations: OutputLocation): OutputLocationCollection =
-    OutputLocationCollectionBuilder.ofLocations(locations.toList())
+@BazelTestApplication
+class FirstPhaseTargetToBspMapperTest {
+  private val testBazel by testBazelProjectFixture()
 
   @Nested
   @DisplayName(".toWorkspaceBuildTargetsResult(project)")
@@ -165,31 +136,31 @@ class FirstPhaseTargetToBspMapperTest : WorkspaceModelBaseTest() {
         )
 
       // Create source files for all targets that should have sources:
-      val target1Src1 = workspaceRoot.createMockSourceFile("target1/src1.java", "com.example")
-      val target1Src2 = workspaceRoot.createMockSourceFile("target1/a/src2.java", "com.example.a")
+      val target1Src1 = testBazel.writeMockSource("target1/src1.java", "com.example")
+      val target1Src2 = testBazel.writeMockSource("target1/a/src2.java", "com.example.a")
 
-      val target2Src1 = workspaceRoot.createMockSourceFile("target2/src1.kt", "com.example")
-      val target2Src2 = workspaceRoot.createMockSourceFile("target2/src2.kt", "com.example")
+      val target2Src1 = testBazel.writeMockSource("target2/src1.kt", "com.example")
+      val target2Src2 = testBazel.writeMockSource("target2/src2.kt", "com.example")
 
-      val target7Src1 = workspaceRoot.createMockSourceFile("target7/src1.java", "com.example")
-      val target7Src2 = workspaceRoot.createMockSourceFile("target7/a/src2.java", "com.example.a")
+      val target7Src1 = testBazel.writeMockSource("target7/src1.java", "com.example")
+      val target7Src2 = testBazel.writeMockSource("target7/a/src2.java", "com.example.a")
 
-      val target8Src1 = workspaceRoot.createMockSourceFile("target8/src1.kt", "com.example")
+      val target8Src1 = testBazel.writeMockSource("target8/src1.kt", "com.example")
       // Create files for filegroupSources – they will be used via dependency resolution.
-      val fgSrc1 = workspaceRoot.createMockSourceFile("filegroupSources/src1.java", "com.fg")
-      val fgSrc2 = workspaceRoot.createMockSourceFile("filegroupSources/src2.java", "com.fg")
+      val fgSrc1 = testBazel.writeMockSource("filegroupSources/src1.java", "com.fg")
+      val fgSrc2 = testBazel.writeMockSource("filegroupSources/src2.java", "com.fg")
 
       // Create resource files for targets that use resources:
-      val target1Resource1 = workspaceRoot.createMockResourceFile("target1/resource1.txt")
-      val target1Resource2 = workspaceRoot.createMockResourceFile("target1/a/resource2.txt")
-      val target3Resource1 = workspaceRoot.createMockResourceFile("target3/resource1.txt")
-      val target3Resource2 = workspaceRoot.createMockResourceFile("target3/resource2.txt")
-      val target8Resource1 = workspaceRoot.createMockResourceFile("target8/resource1.txt")
-      val fgRes1 = workspaceRoot.createMockResourceFile("filegroupResources/file1.txt")
-      val fgRes2 = workspaceRoot.createMockResourceFile("filegroupResources/file2.txt")
+      val target1Resource1 = testBazel.writeMockResource("target1/resource1.txt")
+      val target1Resource2 = testBazel.writeMockResource("target1/a/resource2.txt")
+      val target3Resource1 = testBazel.writeMockResource("target3/resource1.txt")
+      val target3Resource2 = testBazel.writeMockResource("target3/resource2.txt")
+      val target8Resource1 = testBazel.writeMockResource("target8/resource1.txt")
+      val fgRes1 = testBazel.writeMockResource("filegroupResources/file1.txt")
+      val fgRes2 = testBazel.writeMockResource("filegroupResources/file2.txt")
 
       // when
-      val mapper = PhasedBazelProjectMapper(BazelPathsResolverMock.create(workspaceRoot), ProjectView.EMPTY)
+      val mapper = PhasedBazelProjectMapper(BazelPathsResolver(testBazel.bazelInfo), ProjectView.EMPTY)
       val resultTargets = mapper.mapTargets(targets.associateBy { Label.parse(it.rule.name) })
 
       // then: update expected build targets as per the new merged behavior
@@ -369,7 +340,10 @@ class FirstPhaseTargetToBspMapperTest : WorkspaceModelBaseTest() {
 
       // when
       val mapper =
-        PhasedBazelProjectMapper(BazelPathsResolverMock.create(), ProjectView(mapOf(ALLOW_MANUAL_TARGETS_SYNC_KEY to true), emptyList()))
+        PhasedBazelProjectMapper(
+          BazelPathsResolver(testBazel.bazelInfo),
+          ProjectView(mapOf(ALLOW_MANUAL_TARGETS_SYNC_KEY to true), emptyList()),
+        )
       val resultTargets = mapper.mapTargets(targets.associateBy { Label.parse(it.rule.name) })
 
       // then
