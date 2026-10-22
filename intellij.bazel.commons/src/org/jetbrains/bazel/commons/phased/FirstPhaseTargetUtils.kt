@@ -42,6 +42,7 @@ internal fun Target.getListAttribute(name: String): List<String> =
   rule.attributeList
     .firstOrNull { it.name == name }
     ?.stringListValueList
+    ?.toList()
     .orEmpty()
 
 internal fun Target.getStringAttribute(name: String): String? =
