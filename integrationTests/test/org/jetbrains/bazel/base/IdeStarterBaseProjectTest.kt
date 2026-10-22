@@ -514,39 +514,13 @@ fun Driver.singleProjectOrNull(): Project? = service<ProjectManager>(RdTarget.DE
   .singleOrNull()
 
 fun Driver.failIfFatalIdeErrorsPresent(phase: String) {
-  val fatalErrors = withContext(OnDispatcher.EDT) {
-    utility<IdeMessagePool>().getInstance().getFatalErrors(true, true)
+  val errors = withContext(OnDispatcher.EDT) {
+    utility<IdeMessagePool>().getInstance()
+      .getFatalErrors(includeReadMessages = true, includeSubmittedMessages = true)
+      .map { IdeErrorText(it.getMessage(), it.getThrowableText()) }
   }
-  val relevantFatalErrors = fatalErrors.filterNot { it.isIgnorableFatalIdeError() }
-  if (relevantFatalErrors.isEmpty()) return
-
-  val renderedErrors = relevantFatalErrors.take(3).joinToString("\n\n---\n\n") { it.render() }
-  val remainingErrors = relevantFatalErrors.size - 3
-  val suffix = if (remainingErrors > 0) "\n\n... and $remainingErrors more fatal IDE error(s)" else ""
-  error("Fatal IDE errors detected during $phase:\n\n$renderedErrors$suffix")
+  fatalIdeErrorsFailure(phase, errors)?.let(::error)
 }
-
-private const val SHORT_UI_FREEZE_THRESHOLD_MS = 10_000
-
-private val uiFreezeMessageRegex = Regex("""UI was frozen for (\d+)ms""")
-
-private fun IdeFatalError.isIgnorableFatalIdeError(): Boolean {
-  // PerformanceWatcher reports short UI freezes as fatal IDE errors, but they do not invalidate sync results.
-  val uiFreezeDurationMs = uiFreezeMessageRegex.find(render())
-    ?.groupValues
-    ?.get(1)
-    ?.toIntOrNull()
-    ?: return false
-  return uiFreezeDurationMs < SHORT_UI_FREEZE_THRESHOLD_MS
-}
-
-private fun IdeFatalError.render(): String =
-  sequenceOf(getMessage(), getThrowableText())
-    .filterNotNull()
-    .map(String::trim)
-    .filter(String::isNotBlank)
-    .distinct()
-    .joinToString("\n")
 
 /**
  * Should be used instead of [com.intellij.driver.sdk.openFile] because this method doesn't rely on content roots
