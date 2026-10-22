@@ -1,8 +1,11 @@
 package org.jetbrains.bazel.sync.workspace.persistence.mvstore
 
 import com.esotericsoftware.kryo.kryo5.Kryo
+import com.esotericsoftware.kryo.kryo5.Registration
+import com.esotericsoftware.kryo.kryo5.Serializer
 import com.esotericsoftware.kryo.kryo5.io.Input
 import com.esotericsoftware.kryo.kryo5.io.Output
+import com.esotericsoftware.kryo.kryo5.serializers.FieldSerializer
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap
@@ -80,6 +83,46 @@ internal object SnapshotSerializers {
 
   fun singletonSerializerFor(type: Class<*>): VersionedKryoSerializer<*> =
     SingletonSerializer(type.getDeclaredField("INSTANCE").get(null))
+
+  fun rebindCollectionFieldSerializers(serializer: FieldSerializer<*>) {
+    for (field in serializer.fields) {
+      val type = field.field.type
+      val fieldSerializer = when (type) {
+        List::class.java -> CollectionFieldSerializer(fallbackType = ArrayList::class.java, emptyType = emptyList<Any?>().javaClass)
+        Set::class.java -> CollectionFieldSerializer(fallbackType = HashSet::class.java, emptyType = emptySet<Any?>().javaClass)
+        Map::class.java -> CollectionFieldSerializer(fallbackType = HashMap::class.java, emptyType = emptyMap<Any?, Any?>().javaClass)
+        else -> continue
+      }
+      field.setValueClass(type, fieldSerializer)
+    }
+  }
+}
+
+private class CollectionFieldSerializer(
+  private val fallbackType: Class<*>,
+  private val emptyType: Class<*>,
+) : Serializer<Any?>(/* acceptsNull = */ true) {
+  override fun write(kryo: Kryo, output: Output, value: Any?) {
+    if (value == null) {
+      kryo.writeClass(output, null)
+      return
+    }
+    val registration = kryo.classResolver.getRegistration(value.javaClass) ?: fallbackRegistration(kryo, value)
+    kryo.writeClass(output, registration.type)
+    @Suppress("UNCHECKED_CAST")
+    (registration.serializer as Serializer<Any>).write(kryo, output, value)
+  }
+
+  override fun read(kryo: Kryo, input: Input, type: Class<out Any?>): Any? {
+    val registration = kryo.readClass(input) ?: return null
+    @Suppress("UNCHECKED_CAST")
+    return (registration.serializer as Serializer<Any>).read(kryo, input, registration.type as Class<out Any>)
+  }
+
+  private fun fallbackRegistration(kryo: Kryo, value: Any): Registration {
+    val isEmpty = if (value is Map<*, *>) value.isEmpty() else (value as Collection<*>).isEmpty()
+    return kryo.getRegistration(if (isEmpty) emptyType else fallbackType)
+  }
 }
 
 // locations go through the ref table, so equal locations are stored once per generation
