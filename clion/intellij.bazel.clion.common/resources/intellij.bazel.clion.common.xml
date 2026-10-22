@@ -34,6 +34,11 @@
       description="Enable backend support for files without any compilation properties. `radler.deep.project.scan` must be enabled for this to work. (requires re-sync)"
       key="bazel.clion.deep.project.scan"
     />
+    <registryKey
+      defaultValue="false"
+      description="Let the backend fall back to the settings of an arbitrary target for files it knows nothing better about. (requires re-sync)"
+      key="bazel.clion.fallback.config"
+    />
   </extensions>
 
   <extensions defaultExtensionNs="org.jetbrains.bazel">
@@ -50,6 +55,7 @@
     <lang.compilerKindProvider implementation="org.jetbrains.bazel.clion.workspace.CcCompilerKindProvider"/>
     <lang.followSymlinkRootsProvider implementation="org.jetbrains.bazel.clion.workspace.CcFollowSymlinkRootsProvider"/>
     <projectModel.deepProjectScanDisabler implementation="org.jetbrains.bazel.clion.workspace.CcDeepProjectScanDisabler"/>
+    <projectModel.fallbackConfigDisabler implementation="org.jetbrains.bazel.clion.workspace.CcFallbackConfigDisabler"/>
     <projectModel.resolveConfigurationChooser
       id="Bazel.ccDirectoryBasedChooser"
       implementation="org.jetbrains.bazel.clion.workspace.CcDirectoryBasedChooser"
