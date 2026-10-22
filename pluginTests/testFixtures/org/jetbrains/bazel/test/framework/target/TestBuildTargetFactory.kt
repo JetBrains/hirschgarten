@@ -10,6 +10,7 @@ import org.jetbrains.bazel.sync.workspace.languages.jvm.KotlinBuildTarget
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
 import org.jetbrains.bsp.protocol.BuildTargetData
 import org.jetbrains.bsp.protocol.OutputLocationCollection
+import org.jetbrains.bsp.protocol.StringsCollection
 
 object TestBuildTargetFactory {
   fun createSimpleJavaLibraryTarget(id: Label): TestBuildTarget =
@@ -31,7 +32,7 @@ object TestBuildTargetFactory {
         KotlinBuildTarget(
           languageVersion = "1.8",
           apiVersion = "1.8",
-          kotlincOptions = listOf(),
+          kotlincOptions = StringsCollection.EMPTY,
           associates = listOf(),
         ),
         JvmBuildTarget(),

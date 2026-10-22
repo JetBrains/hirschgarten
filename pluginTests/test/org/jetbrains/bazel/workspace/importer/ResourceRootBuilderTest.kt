@@ -17,6 +17,7 @@ import org.jetbrains.bazel.workspace.model.test.framework.resolveTestLocation
 import org.jetbrains.bazel.workspace.model.test.framework.testLocation
 import org.jetbrains.bazel.workspace.model.test.framework.MockProjectBaseTest
 import org.jetbrains.bsp.protocol.BuildTargetData
+import org.jetbrains.bsp.protocol.StringsCollection
 import org.junit.jupiter.api.DynamicTest
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestFactory
@@ -384,7 +385,7 @@ class ResourceRootBuilderTest : MockProjectBaseTest() {
         KotlinBuildTarget(
           languageVersion = null,
           apiVersion = null,
-          kotlincOptions = emptyList(),
+          kotlincOptions = StringsCollection.EMPTY,
           associates = emptyList(),
           moduleName = null,
         ),
@@ -876,7 +877,7 @@ class ResourceRootBuilderTest : MockProjectBaseTest() {
       KotlinBuildTarget(
         languageVersion = null,
         apiVersion = null,
-        kotlincOptions = emptyList(),
+        kotlincOptions = StringsCollection.EMPTY,
         associates = emptyList(),
         moduleName = null,
       ),
@@ -900,7 +901,7 @@ class ResourceRootBuilderTest : MockProjectBaseTest() {
     data: List<BuildTargetData> = listOf(
       ScalaBuildTarget(
         scalaVersion = "2.13.0",
-        scalacOptions = emptyList(),
+        scalacOptions = StringsCollection.EMPTY,
       ),
     ),
   ): TestBuildTarget = createTestBuildTarget(

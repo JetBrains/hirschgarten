@@ -22,6 +22,7 @@ import org.jetbrains.bazel.test.framework.target.TestBuildTarget
 import org.jetbrains.bazel.workspace.model.test.framework.setTargets
 import org.jetbrains.bsp.protocol.OutputLocationCollection
 import org.jetbrains.bazel.workspace.model.test.framework.testLocation
+import org.jetbrains.bsp.protocol.StringsCollection
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertNotNull
 import org.junit.jupiter.api.io.TempDir
@@ -430,10 +431,10 @@ class PythonDebugUtilsTest {
             PythonBuildTarget(
               version = "3.8",
               interpreter = interpreter?.let(::testLocation),
-              imports = imports,
+              imports = StringsCollection.of(imports),
               mainFile = testLocation(mainFile),
               runnerScript = runnerScript,
-              targetArgs = targetArgs,
+              targetArgs = StringsCollection.of(targetArgs),
             ),
           ),
         ),

@@ -9,17 +9,18 @@ import org.jetbrains.bsp.protocol.BuildTargetData
 import org.jetbrains.bsp.protocol.OutputLocation
 import org.jetbrains.bsp.protocol.OutputLocationCollection
 import org.jetbrains.bsp.protocol.StrictDependencyCheckedType
+import org.jetbrains.bsp.protocol.StringsCollection
 import org.jetbrains.bsp.protocol.extractData
 
 @ApiStatus.Internal
 data class JvmBuildTarget(
-  val javacOpts: List<String> = listOf(),
+  val javacOpts: StringsCollection = StringsCollection.EMPTY,
   val binaryOutputs: OutputLocationCollection = OutputLocationCollection.EMPTY,
 
   val environmentVariables: Map<String, String> = mapOf(),
   val mainClass: String? = null,
-  val jvmArgs: List<String> = listOf(),
-  val programArgs: List<String> = listOf(),
+  val jvmArgs: StringsCollection = StringsCollection.EMPTY,
+  val programArgs: StringsCollection = StringsCollection.EMPTY,
   val resolvedResourceStripPrefix: OutputLocation? = null,
   val outputInterfaceJars: OutputLocationCollection = OutputLocationCollection.EMPTY,
   val outputSourceJars: OutputLocationCollection = OutputLocationCollection.EMPTY,
@@ -34,7 +35,7 @@ data class JvmBuildTarget(
 data class KotlinBuildTarget(
   val languageVersion: String?,
   val apiVersion: String?,
-  val kotlincOptions: List<String>,
+  val kotlincOptions: StringsCollection,
   val associates: List<WorkspaceTargetKey>,
   val moduleName: String? = null,
   val stdlibJars: OutputLocationCollection = OutputLocationCollection.EMPTY,
@@ -47,7 +48,7 @@ data class KotlinBuildTarget(
 data class ScalaBuildTarget(
   val scalaVersion: String,
   val sdkJars: OutputLocationCollection = OutputLocationCollection.EMPTY,
-  val scalacOptions: List<String>,
+  val scalacOptions: StringsCollection,
   val scalatestClasspathTargets: List<Label> = emptyList(),
 ) : BuildTargetData
 

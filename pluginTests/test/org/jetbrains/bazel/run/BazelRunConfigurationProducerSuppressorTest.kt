@@ -33,6 +33,7 @@ import org.jetbrains.bazel.workspace.model.test.framework.setTargets
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.OutputLocationCollection
 import org.jetbrains.bazel.workspace.model.test.framework.testLocation
+import org.jetbrains.bsp.protocol.StringsCollection
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -226,7 +227,7 @@ internal class BazelRunConfigurationProducerSuppressorTest : BazelBasePlatformTe
         PythonBuildTarget(
           version = "3.8",
           interpreter = testLocation(Path.of(myFixture.tempDirPath, "python3")),
-          listOf(),
+          StringsCollection.EMPTY,
           OutputLocationCollection.EMPTY,
           OutputLocationCollection.EMPTY,
           mainFile = mainFile?.virtualFile?.toNioPath()?.let(::testLocation),

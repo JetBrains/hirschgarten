@@ -32,6 +32,7 @@ import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceSyncConfig
 import org.jetbrains.bsp.protocol.BuildTargetData
 import org.jetbrains.bsp.protocol.OutputLocation
 import org.jetbrains.bsp.protocol.StrictDependencyCheckedType
+import org.jetbrains.bsp.protocol.StringsCollection
 import java.nio.file.Path
 import java.nio.file.Paths
 import kotlin.io.path.exists
@@ -114,12 +115,12 @@ class JavaLanguagePlugin : LanguagePlugin {
     }
 
     return JvmBuildTarget(
-      javacOpts = target.javaCommon.javacOptsList.toList(),
+      javacOpts = StringsCollection.of(target.javaCommon.javacOptsList),
       binaryOutputs = OutputLocationCollectionBuilder.build(target.javaCommon.jarsList.flatMap { it.binaryJarsList }, parser),
       environmentVariables = environmentVariables.toMap(),
       mainClass = getMainClass(jvmTarget),
-      jvmArgs = jvmTarget.jvmFlagsList.toList(),
-      programArgs = jvmTarget.argsList.toList(),
+      jvmArgs = StringsCollection.of(jvmTarget.jvmFlagsList),
+      programArgs = StringsCollection.of(jvmTarget.argsList),
       resolvedResourceStripPrefix = target.resourceStripPrefixLocation(),
       outputInterfaceJars = OutputLocationCollectionBuilder.build(target.javaCommon.jarsList.flatMap { it.interfaceJarsList }, parser),
       outputSourceJars = OutputLocationCollectionBuilder.build(target.javaCommon.jarsList.flatMap { it.sourceJarsList }, parser),

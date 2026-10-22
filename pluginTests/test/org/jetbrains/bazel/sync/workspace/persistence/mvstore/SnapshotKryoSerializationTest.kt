@@ -46,6 +46,7 @@ import org.jetbrains.bsp.protocol.OutputLocationCollection
 import org.jetbrains.bsp.protocol.OutputLocationParserWithoutHardlink
 import org.jetbrains.bsp.protocol.OutputRoot
 import org.jetbrains.bsp.protocol.StrictDependencyCheckedType
+import org.jetbrains.bsp.protocol.StringsCollection
 import org.junit.jupiter.api.Test
 import java.nio.file.Path
 
@@ -111,12 +112,12 @@ class SnapshotKryoSerializationTest {
 
   private fun jvmBuildTarget(): JvmBuildTarget =
     JvmBuildTarget(
-      javacOpts = listOf("-parameters"),
+      javacOpts = StringsCollection.of(listOf("-parameters")),
       binaryOutputs = locations(generatedTestLocation("foo.jar")),
       environmentVariables = mapOf("KEY" to "value"),
       mainClass = "com.example.Main",
-      jvmArgs = listOf("-Xmx1g"),
-      programArgs = listOf("--flag"),
+      jvmArgs = StringsCollection.of(listOf("-Xmx1g")),
+      programArgs = StringsCollection.of(listOf("--flag")),
       resolvedResourceStripPrefix = OutputLocation.Workspace("resources"),
       outputInterfaceJars = locations(generatedTestLocation("foo-hjar.jar")),
       outputSourceJars = locations(generatedTestLocation("foo-src.jar")),
@@ -283,6 +284,20 @@ class SnapshotKryoSerializationTest {
   }
 
   @Test
+  fun `strings collection e2e`() {
+    val strings = StringsCollection.of(listOf("-Xmx1g", "", "-Dkey=value with spaces", "-Xmx1g"))
+
+    val restored = serializeAndDeserializePolymorphic(strings) as StringsCollection
+
+    restored.asList() shouldBe listOf("-Xmx1g", "", "-Dkey=value with spaces", "-Xmx1g")
+    restored shouldBe strings
+    // the read must go through `StringsCollection.of`, else the interner holds a duplicate per snapshot load
+    (restored === strings) shouldBe true
+    (serializeAndDeserializePolymorphic(StringsCollection.EMPTY) === StringsCollection.EMPTY) shouldBe true
+    (StringsCollection.of(emptyList()) === StringsCollection.EMPTY) shouldBe true
+  }
+
+  @Test
   fun `mvstore envelope types`() {
     val partialTarget = PartialWorkspaceTarget(
       kind = TargetKind(
@@ -326,7 +341,7 @@ class SnapshotKryoSerializationTest {
       KotlinBuildTarget(
         languageVersion = "2.1",
         apiVersion = "2.1",
-        kotlincOptions = listOf("-Xjvm-default=all"),
+        kotlincOptions = StringsCollection.of(listOf("-Xjvm-default=all")),
         associates = listOf(key("@//foo:assoc")),
         moduleName = "foo",
         stdlibJars = locations(generatedTestLocation("kotlin-stdlib.jar")),
@@ -336,7 +351,7 @@ class SnapshotKryoSerializationTest {
       ScalaBuildTarget(
         scalaVersion = "3.4.1",
         sdkJars = locations(generatedTestLocation("scala-sdk.jar")),
-        scalacOptions = listOf("-deprecation"),
+        scalacOptions = StringsCollection.of(listOf("-deprecation")),
         scalatestClasspathTargets = listOf(Label.parse("@//scala:test")),
       ),
       JavaProviderData(fullCompileJars = locations(generatedTestLocation("full.jar")), hasApiGeneratingPlugins = true),
@@ -350,11 +365,11 @@ class SnapshotKryoSerializationTest {
       PythonBuildTarget(
         version = "3.12",
         interpreter = OutputLocation.Host("/usr/bin/python3"),
-        imports = listOf("src"),
+        imports = StringsCollection.of(listOf("src")),
         mainFile = OutputLocation.Workspace("main.py"),
         mainModule = "main",
         runnerScript = null,
-        targetArgs = listOf("--flag"),
+        targetArgs = StringsCollection.of(listOf("--flag")),
         generatedSourceOverrides = mapOf(generatedTestLocation("generated.py") to OutputLocation.Host("/exec/bazel-out/bin/generated.py")),
       ),
       GoBuildTarget(

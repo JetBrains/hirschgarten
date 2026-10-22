@@ -46,6 +46,7 @@ import org.jetbrains.bazel.test.framework.testBazelInfo
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.OutputLocation
 import org.jetbrains.bsp.protocol.OutputLocationCollection
+import org.jetbrains.bsp.protocol.StringsCollection
 import org.junit.jupiter.api.Test
 import java.nio.file.Path
 import java.util.concurrent.CountDownLatch
@@ -108,7 +109,7 @@ class WorkspaceSnapshotServiceTest {
       sources = sources("pkg$index/Main.java", "shared/Shared.java"),
       resources = OutputLocationCollection.EMPTY,
       data = listOf(
-        JvmBuildTarget(javacOpts = listOf("-parameters"), mainClass = "com.example.Main$index"),
+        JvmBuildTarget(javacOpts = StringsCollection.of(listOf("-parameters")), mainClass = "com.example.Main$index"),
         JavaToolchainData(sourceVersion = "17", targetVersion = "17"),
       ),
       generatorName = null,

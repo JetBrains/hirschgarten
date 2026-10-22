@@ -1,6 +1,5 @@
 package org.jetbrains.bazel.sync.workspace.persistence.mvstore
 
-import com.dynatrace.hash4j.hashing.HashValue128
 import com.esotericsoftware.kryo.kryo5.Kryo
 import com.esotericsoftware.kryo.kryo5.io.Input
 import com.esotericsoftware.kryo.kryo5.io.Output
@@ -15,6 +14,7 @@ import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
 import org.jetbrains.bsp.protocol.OutputLocation
 import org.jetbrains.bsp.protocol.OutputLocationCollection
 import org.jetbrains.bsp.protocol.OutputRoot
+import org.jetbrains.bsp.protocol.StringsCollection
 import java.nio.file.Path
 import java.util.TreeMap
 import kotlin.io.path.Path
@@ -74,6 +74,8 @@ internal object SnapshotSerializers {
 
     val outputLocationTypes = OutputLocation::class.sealedSubclasses + listOf(OutputLocation::class)
     outputLocationTypes.forEach { type -> kryo.register(type.java, OutputLocationSerializer()) }
+
+    kryo.register(StringsCollection::class.java, StringsCollectionSerializer())
   }
 
   fun singletonSerializerFor(type: Class<*>): VersionedKryoSerializer<*> =
@@ -99,6 +101,58 @@ internal class InterningOutputLocationCollectionSerializer : VersionedKryoSerial
   ): InterningOutputLocationCollection {
     val locations = kryo.readRefList(input) { it as OutputLocation }
     return InterningOutputLocationCollection.create(locations)
+  }
+}
+
+// the whole collection goes through the ref table, so equal collections are stored once per generation,
+// a ref value is written inline with pooled strings
+internal class StringsCollectionSerializer : VersionedKryoSerializer<StringsCollection>() {
+  init {
+    isImmutable = true
+  }
+
+  override val binaryFormatVersion: Int = 1
+
+  override fun write(kryo: Kryo, output: Output, obj: StringsCollection) {
+    output.writeVarInt(obj.size, true)
+    if (obj.isEmpty()) {
+      return
+    }
+    val table = kryo.graphContext.get(REF_TABLE_WRITE_KEY) as RefTableWriter?
+    if (table != null) {
+      output.writeByte(REF_ID)
+      output.writeVarInt(table.idFor(obj), true)
+    }
+    else {
+      output.writeByte(REF_INLINE)
+      for (value in obj.asList()) {
+        kryo.writePooledString(output, value)
+      }
+    }
+  }
+
+  override fun read(kryo: Kryo, input: Input, type: Class<out StringsCollection>): StringsCollection {
+    val size = input.readVarInt(true)
+    if (size == 0) {
+      return StringsCollection.EMPTY
+    }
+    return when (val marker = input.readByte()) {
+      REF_ID -> {
+        val table = kryo.graphContext.get(REF_TABLE_READ_KEY) as? RefTableReader?
+                    ?: error("ref table is required to decode ref")
+        table.get(input.readVarInt(true)) as StringsCollection
+      }
+
+      REF_INLINE -> {
+        val strings = ArrayList<String>(size)
+        repeat(size) {
+          strings.add(kryo.readPooledString(input))
+        }
+        StringsCollection.of(strings)
+      }
+
+      else -> error("invalid ref marker: $marker")
+    }
   }
 }
 

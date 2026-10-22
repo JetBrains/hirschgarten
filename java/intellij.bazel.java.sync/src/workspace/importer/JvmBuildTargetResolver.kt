@@ -102,7 +102,7 @@ class JvmBuildTargetResolver(
   private fun createJvmResolvedTarget(target: BuildTarget): JvmResolvedTarget {
     val targetKey = target.key
     val javaVersion =
-      javaVersionFromJavacOpts(target.findBuildData<JvmBuildTarget>()?.javacOpts.orEmpty()) ?: javaVersionFromToolchain(target)
+      javaVersionFromJavacOpts(target.findBuildData<JvmBuildTarget>()?.javacOpts?.asList().orEmpty()) ?: javaVersionFromToolchain(target)
 
     val targetLibraries = allLibraries[targetKey].orEmpty().associateBy { it.key }
 

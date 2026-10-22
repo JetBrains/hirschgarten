@@ -24,6 +24,7 @@ import org.jetbrains.bazel.utils.allAncestorsSequence
 import org.jetbrains.bsp.protocol.BuildTargetData
 import org.jetbrains.bsp.protocol.OutputLocation
 import org.jetbrains.bsp.protocol.OutputLocationCollection
+import org.jetbrains.bsp.protocol.StringsCollection
 import org.jetbrains.bsp.protocol.isGenerated
 import org.jetbrains.bsp.protocol.mapPath
 import java.nio.file.Files
@@ -76,7 +77,7 @@ class PythonLanguagePlugin : LanguagePlugin {
       PythonBuildTarget(
         version = pythonTarget.version.takeUnless(String::isNullOrEmpty),
         interpreter = pythonTarget.parseInterpreter(server),
-        imports = pythonTarget.importsList.toList(),
+        imports = StringsCollection.of(pythonTarget.importsList),
         generatedSources = generatedSources,
         generatedSourceOverrides = generatedSourceOverrides,
         externalSources = server.outputParser.parse(getExternalSources(server, target))
@@ -85,7 +86,7 @@ class PythonLanguagePlugin : LanguagePlugin {
         mainFile = MainSourceFinder.findMainFile(target, pythonTarget)?.let { server.outputParser.parse(it) },
         mainModule = pythonTarget.mainModule,
         runnerScript = runnerScript,
-        targetArgs = PythonDebugUtils.extractPythonTargetArgs(target),
+        targetArgs = StringsCollection.of(PythonDebugUtils.extractPythonTargetArgs(target)),
       ),
     )
   }

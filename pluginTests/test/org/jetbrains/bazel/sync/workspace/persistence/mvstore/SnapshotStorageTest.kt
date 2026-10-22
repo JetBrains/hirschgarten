@@ -35,6 +35,7 @@ import org.jetbrains.bazel.test.framework.testBazelInfo
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.OutputLocation
 import org.jetbrains.bsp.protocol.OutputLocationCollection
+import org.jetbrains.bsp.protocol.StringsCollection
 import org.jetbrains.bsp.protocol.isFull
 import org.junit.jupiter.api.Test
 import java.lang.ref.Reference
@@ -79,7 +80,7 @@ class SnapshotStorageTest {
       sources = sources("pkg$index/Main.java", "shared/Shared.java", build = buildSources),
       resources = OutputLocationCollection.EMPTY,
       data = listOf(
-        JvmBuildTarget(javacOpts = listOf("-parameters"), mainClass = "com.example.Main$index"),
+        JvmBuildTarget(javacOpts = StringsCollection.of(listOf("-parameters")), mainClass = "com.example.Main$index"),
         JavaToolchainData(sourceVersion = "17", targetVersion = "17"),
       ),
       generatorName = null,
@@ -220,7 +221,8 @@ class SnapshotStorageTest {
     val reopenedStorage = SnapshotStorage(dbFile, buildKryo())
     try {
       val reopened = reopenedStorage.openGeneration(1).shouldNotBeNull()
-      reopened.refCount() shouldBe distinctLocations.size
+      // one more ref for the `javacOpts` that all targets share
+      reopened.refCount() shouldBe distinctLocations.size + 1
       val loaded = state.targets.keys.map { reopened.findOrLoadTarget(state.partial, it, TargetLoadOptions.ALL).shouldNotBeNull() }
       for (target in loaded) {
         target.sources.getOutputLocations().toList() shouldBe state.targets.getValue(target.key).sources.getOutputLocations().toList()
@@ -228,6 +230,34 @@ class SnapshotStorageTest {
       val shared =
         loaded.map { target -> target.sources.getOutputLocations().first { it == OutputLocation.Workspace("shared/Shared.java") } }
       shared.all { it === shared.first() } shouldBe true
+    }
+    finally {
+      reopenedStorage.close()
+    }
+  }
+
+  @Test
+  fun `bulk-saved strings collections are stored once in the ref table`(): Unit = runBlocking {
+    val dbFile = tempDir.resolve("snapshot_db.data")
+
+    val state = SnapshotStorage(dbFile, buildKryo()).let { storage ->
+      val state = saveAllBulk(storage.createGeneration(1), count = 5, buildSources = { OutputLocationCollection.EMPTY })
+      storage.commit()
+      storage.close()
+      state
+    }
+
+    val reopenedStorage = SnapshotStorage(dbFile, buildKryo())
+    try {
+      val reopened = reopenedStorage.openGeneration(1).shouldNotBeNull()
+      // sources are empty, so the shared `javacOpts` is the only ref
+      reopened.refCount() shouldBe 1
+      val javacOpts = state.targets.keys.map { targetKey ->
+        val target = reopened.findOrLoadTarget(state.partial, targetKey, TargetLoadOptions.ALL).shouldNotBeNull()
+        target.data.filterIsInstance<JvmBuildTarget>().single().javacOpts
+      }
+      javacOpts.first().asList() shouldBe listOf("-parameters")
+      javacOpts.all { it === javacOpts.first() } shouldBe true
     }
     finally {
       reopenedStorage.close()

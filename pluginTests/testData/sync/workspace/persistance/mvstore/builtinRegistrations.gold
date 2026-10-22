@@ -41,3 +41,4 @@
 40 org.jetbrains.bsp.protocol.OutputLocation$Output org.jetbrains.bazel.sync.workspace.persistence.mvstore.OutputLocationSerializer 1
 41 org.jetbrains.bsp.protocol.OutputLocation$Workspace org.jetbrains.bazel.sync.workspace.persistence.mvstore.OutputLocationSerializer 1
 42 org.jetbrains.bsp.protocol.OutputLocation org.jetbrains.bazel.sync.workspace.persistence.mvstore.OutputLocationSerializer 1
+43 org.jetbrains.bsp.protocol.StringsCollection org.jetbrains.bazel.sync.workspace.persistence.mvstore.StringsCollectionSerializer 1

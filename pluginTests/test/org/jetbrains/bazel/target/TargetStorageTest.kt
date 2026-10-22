@@ -43,6 +43,7 @@ import org.jetbrains.bsp.protocol.BuildTargetData
 import org.jetbrains.bsp.protocol.BuildTargetTag
 import org.jetbrains.bsp.protocol.OutputLocation
 import org.jetbrains.bsp.protocol.OutputLocationCollection
+import org.jetbrains.bsp.protocol.StringsCollection
 import org.jetbrains.bsp.protocol.data
 import org.jetbrains.bsp.protocol.id
 import org.junit.jupiter.api.BeforeEach
@@ -144,7 +145,7 @@ class TargetStorageTest {
 
   @Test
   fun `getTargetDataForLabel loads language data before and after persist`(): Unit = runBlocking {
-    val jvmData = JvmBuildTarget(javacOpts = listOf("-parameters"), mainClass = "com.example.Main")
+    val jvmData = JvmBuildTarget(javacOpts = StringsCollection.of(listOf("-parameters")), mainClass = "com.example.Main")
     val lib = target("//lib:lib", deps = listOf("//other:other"), data = listOf(jvmData))
     val other = target("//other:other")
     publish(project, snapshot(project, targets = listOf(lib, other), roots = listOf(lib, other)))
@@ -162,7 +163,7 @@ class TargetStorageTest {
 
   @Test
   fun `getTargetDataForLabel loads a single data type`(): Unit = runBlocking {
-    val jvmData = JvmBuildTarget(javacOpts = listOf("-parameters"), mainClass = "com.example.Main")
+    val jvmData = JvmBuildTarget(javacOpts = StringsCollection.of(listOf("-parameters")), mainClass = "com.example.Main")
     val toolchainData = JavaToolchainData(sourceVersion = "17", targetVersion = "17")
     val lib = target("//lib:lib", data = listOf(jvmData, toolchainData))
     publish(project, snapshot(project, targets = listOf(lib)))
@@ -212,7 +213,7 @@ class TargetStorageTest {
 
   @Test
   fun `answers are identical after the snapshot is persisted`(): Unit = runBlocking {
-    val jvmData = JvmBuildTarget(javacOpts = listOf("-parameters"), mainClass = "com.example.Main")
+    val jvmData = JvmBuildTarget(javacOpts = StringsCollection.of(listOf("-parameters")), mainClass = "com.example.Main")
     val file = Path.of("/workspace/app/Bin.java")
     val bin = target(
       "//app:bin",
@@ -240,7 +241,7 @@ class TargetStorageTest {
 
   @Test
   fun `a persisted summary carries INFO and materializes the sections it did not load`(): Unit = runBlocking {
-    val jvmData = JvmBuildTarget(javacOpts = listOf("-parameters"), mainClass = "com.example.Main")
+    val jvmData = JvmBuildTarget(javacOpts = StringsCollection.of(listOf("-parameters")), mainClass = "com.example.Main")
     val bin = target("//app:bin", deps = listOf("//lib:lib"), executable = true, data = listOf(jvmData))
     val lib = target("//lib:lib")
     publish(project, snapshot(project, targets = listOf(bin, lib), roots = listOf(bin, lib)))
@@ -262,7 +263,7 @@ class TargetStorageTest {
 
   @Test
   fun `data selects from what a target already carries`() {
-    val jvmData = JvmBuildTarget(javacOpts = listOf("-parameters"), mainClass = "com.example.Main")
+    val jvmData = JvmBuildTarget(javacOpts = StringsCollection.of(listOf("-parameters")), mainClass = "com.example.Main")
     val toolchain = JavaToolchainData(sourceVersion = "17", targetVersion = "17")
     val full = target("//lib:lib", data = listOf(jvmData, toolchain))
 

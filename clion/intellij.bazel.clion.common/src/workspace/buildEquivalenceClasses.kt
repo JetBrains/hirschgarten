@@ -60,13 +60,13 @@ fun buildEquivalenceClasses(target2Compiler: Map<WorkspaceTargetKey, CcCompilerI
     val configuration = CcResolveConfiguration.EquivalenceClass(
       configuration = target.key.configuration,
       compilerSettings = target2Compiler[target.key] ?: continue,
-      copts = info.ruleContext?.copts.orEmpty(),
-      conlyopts = info.ruleContext?.conlyopts.orEmpty(),
-      cxxopts = info.ruleContext?.cxxopts.orEmpty(),
+      copts = info.ruleContext?.copts?.asList().orEmpty(),
+      conlyopts = info.ruleContext?.conlyopts?.asList().orEmpty(),
+      cxxopts = info.ruleContext?.cxxopts?.asList().orEmpty(),
       transitiveIncludes = info.compilationContext.includes,
       transitiveQuoteIncludes = info.compilationContext.quoteIncludes,
       transitiveSystemIncludes = info.compilationContext.systemIncludes,
-      transitiveDefines = info.compilationContext.defines,
+      transitiveDefines = info.compilationContext.defines.asList(),
     )
 
     equivalenceClasses.putValue(configuration, target.key)

@@ -14,6 +14,7 @@ import org.jetbrains.bazel.sync.workspace.languages.jvm.KotlinBuildTarget
 import org.jetbrains.bazel.sync.workspace.snapshot.OutputLocationCollectionBuilder
 import org.jetbrains.bazel.sync.workspace.snapshot.toWorkspaceTargetKey
 import org.jetbrains.bsp.protocol.BuildTargetData
+import org.jetbrains.bsp.protocol.StringsCollection
 import kotlin.io.path.exists
 import kotlin.reflect.KClass
 
@@ -74,7 +75,7 @@ class KotlinLanguagePlugin : LanguagePlugin {
         apiVersion = kotlinTarget.apiVersion.takeIf { it.isNotBlank() },
         associates = kotlinTarget.associatedTargetsList.map { it.toWorkspaceTargetKey() },
         moduleName = kotlinTarget.moduleName.takeIf { it.isNotBlank() },
-        kotlincOptions = kotlinTarget.toKotlincOptArguments(server, NoLocalRepositories).toList(),
+        kotlincOptions = StringsCollection.of(kotlinTarget.toKotlincOptArguments(server, NoLocalRepositories)),
         stdlibJars = OutputLocationCollectionBuilder.build(ktStdlibJars, server.outputParser),
         stdlibInferredSourceJars = OutputLocationCollectionBuilder.build(ktStdlibSources, server.outputParser),
         exportedCompilerPluginTargetsList = kotlinTarget.exportedCompilerPluginTargetsList.map { it.toWorkspaceTargetKey() },

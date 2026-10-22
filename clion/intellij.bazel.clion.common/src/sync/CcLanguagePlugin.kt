@@ -9,6 +9,7 @@ import org.jetbrains.bazel.sync.workspace.languages.LanguagePlugin
 import org.jetbrains.bazel.sync.workspace.snapshot.OutputLocationCollectionBuilder
 import org.jetbrains.bsp.protocol.BuildTargetData
 import org.jetbrains.bsp.protocol.OutputLocationParser
+import org.jetbrains.bsp.protocol.StringsCollection
 import kotlin.reflect.KClass
 
 @ApiStatus.Internal
@@ -51,10 +52,10 @@ private suspend fun mapRuleContext(ctx: CIdeInfo.RuleContext, outputParser: Outp
   return CcBuildTarget.RuleContext(
     headers = OutputLocationCollectionBuilder.build(ctx.headersList, outputParser),
     textualHeaders = OutputLocationCollectionBuilder.build(ctx.textualHeadersList, outputParser),
-    copts = ctx.coptsList.toList(),
-    conlyopts = ctx.conlyoptsList.toList(),
-    cxxopts = ctx.cxxoptsList.toList(),
-    args = ctx.argsList.toList(),
+    copts = StringsCollection.of(ctx.coptsList),
+    conlyopts = StringsCollection.of(ctx.conlyoptsList),
+    cxxopts = StringsCollection.of(ctx.cxxoptsList),
+    args = StringsCollection.of(ctx.argsList),
     includePrefix = ctx.includePrefix,
     stripIncludePrefix = ctx.stripIncludePrefix,
   )
@@ -66,7 +67,7 @@ private suspend fun mapCompilationContext(
 ): CcBuildTarget.CompilationContext {
   return CcBuildTarget.CompilationContext(
     headers = OutputLocationCollectionBuilder.build(ctx.headersList, outputParser),
-    defines = ctx.definesList.toList(),
+    defines = StringsCollection.of(ctx.definesList),
     includes = OutputLocationCollectionBuilder.buildExecroot(ctx.includesList, outputParser),
     quoteIncludes = OutputLocationCollectionBuilder.buildExecroot(ctx.quoteIncludesList, outputParser),
     systemIncludes = OutputLocationCollectionBuilder.buildExecroot(ctx.systemIncludesList, outputParser),
@@ -82,8 +83,8 @@ private suspend fun mapToolchainIdeInfo(target: IntellijIdeInfo.TargetIdeInfo, p
   return CcToolchainBuildTarget(
     targetName = info.targetName,
     compilerName = info.compilerName,
-    cppOption = info.cppOptionList.toList(),
-    cOption = info.cOptionList.toList(),
+    cppOption = StringsCollection.of(info.cppOptionList),
+    cOption = StringsCollection.of(info.cOptionList),
     cCompiler = parser.parseExecrootPath(info.cCompiler),
     cppCompiler = parser.parseExecrootPath(info.cppCompiler),
     builtInIncludeDirectories = OutputLocationCollectionBuilder.buildExecroot(info.builtInIncludeDirectoryList, parser),

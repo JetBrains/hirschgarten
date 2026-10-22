@@ -28,7 +28,7 @@ object ScalaAddendumBuilder {
       ScalaAddendumEntity(
         entitySource = parentModuleEntity.entitySource,
         compilerVersion = target.scalaVersion,
-        scalacOptions = target.scalacOptions,
+        scalacOptions = target.scalacOptions.asList(),
         sdkClasspaths = target.sdkJars.resolvePaths(resolveLocation).map { it.toVirtualFileUrl(virtualFileUrlManager) },
       )
     storage.modifyModuleEntity(parentModuleEntity) {
