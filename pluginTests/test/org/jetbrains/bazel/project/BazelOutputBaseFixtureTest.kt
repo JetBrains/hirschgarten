@@ -11,10 +11,13 @@ import kotlinx.coroutines.job
 import org.assertj.core.api.Assertions.assertThat
 import org.jetbrains.bazel.test.framework.BazelTestApplication
 import org.jetbrains.bazel.test.framework.bazelOutputBaseFixture
+import org.junit.jupiter.api.Assumptions.assumeTrue
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Timeout
+import java.nio.file.FileSystems
 import java.nio.file.Path
 import kotlin.io.path.createDirectories
+import kotlin.io.path.setPosixFilePermissions
 import kotlin.io.path.writeText
 
 @BazelTestApplication
@@ -30,6 +33,21 @@ internal class BazelOutputBaseFixtureTest {
     val readOnlyDirectory = outputBase.resolve("read-only").createDirectories()
     readOnlyDirectory.resolve("file").writeText("")
     NioFiles.setReadOnly(readOnlyDirectory, true)
+
+    fixtureJob.cancelAndJoin()
+
+    assertThat(outputBase).doesNotExist()
+  }
+
+  @Test
+  fun `cleanup deletes directories without permissions`(): Unit = timeoutRunBlocking {
+    assumeTrue(FileSystems.getDefault().supportedFileAttributeViews().contains("posix"))
+    val fixtureJob = SupervisorJob(coroutineContext.job)
+    val fixture = bazelOutputBaseFixture() as TestFixtureImpl<Path>
+    val outputBase = fixture.init(CoroutineScope(coroutineContext + fixtureJob), context).await().first
+    // the Bazel sandbox makes the same directory
+    val inaccessibleDirectory = outputBase.resolve("sandbox/inaccessibleHelperDir").createDirectories()
+    inaccessibleDirectory.setPosixFilePermissions(emptySet())
 
     fixtureJob.cancelAndJoin()
 
