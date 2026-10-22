@@ -19,7 +19,6 @@ import com.intellij.driver.sdk.ui.components.elements.button
 import com.intellij.driver.sdk.ui.components.elements.list
 import com.intellij.driver.sdk.ui.components.elements.popup
 import com.intellij.driver.sdk.ui.pasteText
-import com.intellij.driver.sdk.ui.shouldBe
 import com.intellij.driver.sdk.waitFor
 import com.intellij.ide.starter.ide.IDETestContext
 import io.kotest.matchers.shouldBe
@@ -34,6 +33,7 @@ import org.jetbrains.bazel.tests.ui.clickTestGutterOnLine
 import org.jetbrains.bazel.tests.ui.consoleView
 import org.jetbrains.bazel.tests.ui.verifyAvailableRunGutterActions
 import org.jetbrains.bazel.tests.ui.verifyTestStatus
+import org.jetbrains.bazel.tests.ui.waitForConsoleText
 import org.jetbrains.bazel.tests.ui.waitForGutterIcons
 import org.junit.jupiter.api.Order
 import org.junit.jupiter.api.Test
@@ -114,8 +114,7 @@ class ImportRunConfigurationsSyncHookTest : IdeStarterCombinedBaseTest() {
 
         step("Execute the run configuration") { x { byAccessibleName("Run 'Bazel run :main'") }.click() }
         step("Wait for run config to finish") {
-          consoleView.shouldBe { present() }
-          consoleView.waitContainsText("2 + 2 = 4", timeout = 3.minutes)
+          waitForConsoleText("2 + 2 = 4")
         }
 
         step("Check that \$PROJECT_DIR$ macro is expanded correctly") {
@@ -267,7 +266,7 @@ class ImportRunConfigurationsSyncHookTest : IdeStarterCombinedBaseTest() {
             bazelFlags += " --foo=\"foo value\""
             runButton.click()
           }
-          consoleView.waitOneText { it.text == "ERROR: --foo=foo value :: Unrecognized option: --foo=foo value" }
+          waitForConsoleText("ERROR: --foo=foo value :: Unrecognized option: --foo=foo value")
           runConfigurationsPopup {
             list().clickItem("Edit Configurations", fullMatch = false)
           }
@@ -275,7 +274,7 @@ class ImportRunConfigurationsSyncHookTest : IdeStarterCombinedBaseTest() {
             bazelFlags = bazelFlags.replace("--foo=\"foo value\"", "--bar='bar value'")
             runButton.click()
           }
-          consoleView.waitOneText { it.text == "ERROR: --bar=bar value :: Unrecognized option: --bar=bar value" }
+          waitForConsoleText("ERROR: --bar=bar value :: Unrecognized option: --bar=bar value")
         }
         finally {
           // Restore even when a check above fails. Otherwise the later tests run "Bazel run :main" with an unknown flag.
