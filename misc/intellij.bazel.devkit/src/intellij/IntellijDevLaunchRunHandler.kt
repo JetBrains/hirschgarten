@@ -10,6 +10,7 @@ import com.intellij.execution.configurations.RunProfile
 import com.intellij.execution.configurations.RunProfileState
 import com.intellij.execution.executors.DefaultDebugExecutor
 import com.intellij.execution.runners.ExecutionEnvironment
+import com.intellij.openapi.application.PathManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Ref
 import com.intellij.util.EnvironmentUtil
@@ -46,10 +47,12 @@ import java.nio.file.Files
 import java.nio.file.Path
 
 /**
- * Runs and debugs an `intellij_dev_java_launcher` row.
- * The handler builds the row with `bazel run --script_path`, which also makes the runfiles tree.
- * Then it starts `java <VM options> @<argfile> <program arguments>` from the launch file of the row.
- * Only the IDE JVM gets the debug options, so no child JVM listens on the debug port.
+ * Runs and debugs an `intellij_dev_java_launcher` target.
+ * The handler builds the target with `bazel run --script_path`, which also makes the runfiles tree.
+ * Then it starts the native launcher of the target from its launch file, as `bazel run` starts its stub.
+ * The debug options and the options of the run configuration extensions reach the JVM through a copy of the vmoptions file
+ * of the target, see [writeIntellijDevVmOptionsCopy].
+ * A program argument of the run configuration comes after the ones of the target.
  */
 internal class IntellijDevLaunchRunHandler(private val configuration: BazelRunConfiguration) : BazelRunHandler {
   init {
@@ -91,7 +94,7 @@ internal class IntellijDevLaunchRunHandlerProvider : RunHandlerProvider {
     targets.singleOrNull()?.kind?.kind == INTELLIJ_DEV_JAVA_LAUNCHER_KIND
 }
 
-/** Attaches the debugger to an `intellij_dev_java_launcher` row, as [BazelJvmDebugRunner] does for a JVM binary. */
+/** Attaches the debugger to an `intellij_dev_java_launcher` target, as [BazelJvmDebugRunner] does for a JVM binary. */
 internal class IntellijDevLaunchDebugRunner : BazelJvmDebugRunner() {
   override fun getRunnerId(): String = "IntellijDevLaunchDebugRunner"
 
@@ -122,9 +125,21 @@ private class IntellijDevLaunchCommandLineState(
       addAll(getJvmDebuggerAgentVmOptions(environment))
       addAll(getJvmRunExtensionVmOptions(environment))
     }
+    val vmOptionsCopy = withContext(Dispatchers.IO) {
+      try {
+        ensureIntellijDevLauncherFile(launch)
+        if (vmOptions.isEmpty()) null else writeIntellijDevVmOptionsCopy(launch, vmOptions, vmOptionsCopyDirectory())
+      }
+      catch (e: IOException) {
+        throw ExecutionException(BazelDevKitBundle.message("dev.launch.error.start", target, e.message ?: e.toString()), e)
+      }
+      catch (e: IllegalArgumentException) {
+        throw ExecutionException(BazelDevKitBundle.message("dev.launch.error.start", target, e.message ?: e.toString()), e)
+      }
+    }
     val workspaceRoot = project.rootDir.toNioPath()
     val commandLine =
-      GeneralCommandLine(intellijDevLaunchCommand(launch, vmOptions, parseAsProgramArguments(settings.programArguments)))
+      GeneralCommandLine(intellijDevLaunchCommand(launch, parseAsProgramArguments(settings.programArguments)))
         .withWorkingDirectory(Path.of(launch.workingDirectory))
         .withParentEnvironmentType(GeneralCommandLine.ParentEnvironmentType.NONE)
         .withEnvironment(
@@ -133,13 +148,21 @@ private class IntellijDevLaunchCommandLineState(
             parentEnvironment = EnvironmentUtil.getEnvironmentMap(),
             runConfigurationEnvironment = settings.env.envs,
             workspaceRoot = workspaceRoot.toString(),
+            vmOptionsCopy = vmOptionsCopy,
           ),
         )
+    // The native launcher runs the JVM in its own process, so the pid of the launcher is the pid of the JVM.
     runJvmCommandLine(commandLine, pidDeferred, handler) { processHandler ->
       attachJvmRunExtensions(environment, processHandler)
     }
   }
 }
+
+/**
+ * The directory of the vmoptions copies, in the system directory of the IDE that starts the target.
+ * Monorepo DevKit writes its copies into another directory, so the two plugins never replace a copy of the other.
+ */
+private fun vmOptionsCopyDirectory(): Path = PathManager.getSystemDir().resolve("bazel-dev-launch")
 
 /** The launch file of [target] in `bazel-bin`, in the main repository or in an external repository. */
 private fun findLaunchFile(project: Project, target: Label): Path {
@@ -151,7 +174,7 @@ private fun findLaunchFile(project: Project, target: Label): Path {
          ?: throw ExecutionException(BazelDevKitBundle.message("dev.launch.error.no.bazel.bin", target))
 }
 
-// The handler starts a local `java` process, so the launch file is a local file too.
+// The handler starts a local launcher process, so the launch file is a local file too.
 @Suppress("UseOptimizedEelFunctions")
 private fun readLaunch(launchFile: Path, target: Label): IntellijDevLaunch {
   val text = try {
