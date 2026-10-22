@@ -26,6 +26,7 @@ import org.jetbrains.bazel.assertions.findTarget
 import org.jetbrains.bazel.clion.run.CcDebugRunner
 import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.fixtures.CcTestApplication
+import org.jetbrains.bazel.fixtures.EXECUTION_TIMEOUT
 import org.jetbrains.bazel.fixtures.clionBazelProjectFixture
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.run.RunHandlerProvider
@@ -63,24 +64,24 @@ abstract class CcDebugTest(debugProfileTypeId: String, debugProfileSettings: Bas
   private val project by projectFixture
 
   @Test
-  fun testRunsToCompletion(): Unit = timeoutRunBlocking {
+  fun testRunsToCompletion(): Unit = timeoutRunBlocking(EXECUTION_TIMEOUT) {
     val context = startCcDebugSession("//main:main")
 
     assertTerminates(context.process.processHandler)
   }
 
   @Test
-  fun testBreakpointInDefaultLibrary(): Unit = timeoutRunBlocking {
+  fun testBreakpointInDefaultLibrary(): Unit = timeoutRunBlocking(EXECUTION_TIMEOUT) {
     assertStopsAt("lib/default/impl.cc", "return DEFAULT_LIB_VALUE;")
   }
 
   @Test
-  fun testBreakpointInHeaderOnlyLibrary(): Unit = timeoutRunBlocking {
+  fun testBreakpointInHeaderOnlyLibrary(): Unit = timeoutRunBlocking(EXECUTION_TIMEOUT) {
     assertStopsAt("lib/hdronly/hdr.h", "return HDRONLY_LIB_VALUE;")
   }
 
   @Test
-  fun testBreakpointInExternalLibrary(): Unit = timeoutRunBlocking {
+  fun testBreakpointInExternalLibrary(): Unit = timeoutRunBlocking(EXECUTION_TIMEOUT) {
     assertStopsAt("lib/external/impl.cc", "return EXTERNAL_LIB_VALUE;")
   }
 
