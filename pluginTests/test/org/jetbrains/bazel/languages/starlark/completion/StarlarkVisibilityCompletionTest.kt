@@ -1,53 +1,25 @@
 package org.jetbrains.bazel.languages.starlark.completion
 
-import com.intellij.codeInsight.lookup.LookupElement
 import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.collections.shouldBeIn
 import io.kotest.matchers.collections.shouldContainAll
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.collections.shouldNotContain
-import org.jetbrains.bazel.commons.RuleType
-import org.jetbrains.bazel.commons.TargetKind
-import org.jetbrains.bazel.label.Label
-import org.jetbrains.bazel.project.BazelProjectFixtures.initializeBazelProject
-import org.jetbrains.bazel.sync.JavaLanguageClass
-import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
-import org.jetbrains.bazel.target.targetStorage
 import org.jetbrains.bazel.test.framework.BazelTestApplication
 import org.jetbrains.bazel.test.framework.bazelCodeInsightFixture
-import org.jetbrains.bazel.test.framework.target.TestBuildTarget
-import org.jetbrains.bazel.workspace.model.test.framework.setTargets
-import org.jetbrains.bsp.protocol.OutputLocationCollection
+import org.jetbrains.bazel.test.framework.completeBasicLookupStrings
+import org.jetbrains.bazel.test.framework.testBazel
+import org.jetbrains.bazel.test.framework.testproject.javaLibrary
+import org.jetbrains.bazel.test.framework.testproject.sync
 import org.junit.jupiter.api.Test
 
 @BazelTestApplication
 class StarlarkVisibilityCompletionTest {
   private val myFixture by bazelCodeInsightFixture()
 
-  private val project get() = myFixture.project
-
-  private fun setTargets(targets: List<String>) {
-    project.setTargets(
-      targets.map {
-        TestBuildTarget(
-          key = WorkspaceTargetKey(label = Label.parse(it)),
-          dependencies = emptyList(),
-          kind =
-            TargetKind(
-              kind = "java_library",
-              ruleType = RuleType.LIBRARY,
-              languageClasses = setOf(JavaLanguageClass.JAVA),
-            ),
-          sources = OutputLocationCollection.EMPTY,
-          resources = OutputLocationCollection.EMPTY,
-        )
-      },
-    )
-  }
-
   @Test
   fun `should complete in visibility`() {
-    setTargets(listOf("//target1", "//target2"))
+    myFixture.testBazel.sync { targets(javaLibrary("//target1"), javaLibrary("//target2")) }
 
     myFixture.configureByText(
       "BUILD",
@@ -61,7 +33,7 @@ class StarlarkVisibilityCompletionTest {
       """.trimMargin(),
     )
     myFixture.type("\"")
-    val lookups = completeBasic().flatMap { it.allLookupStrings }
+    val lookups = myFixture.completeBasicLookupStrings()
 
     lookups shouldContainExactlyInAnyOrder
       listOf(
@@ -78,8 +50,6 @@ class StarlarkVisibilityCompletionTest {
 
   @Test
   fun `should complete only predefined in visibility`() {
-    setTargets(emptyList())
-
     myFixture.configureByText(
       "BUILD",
       """
@@ -92,7 +62,7 @@ class StarlarkVisibilityCompletionTest {
       """.trimMargin(),
     )
     myFixture.type("\"")
-    val lookups = completeBasic().flatMap { it.allLookupStrings }
+    val lookups = myFixture.completeBasicLookupStrings()
 
     lookups shouldContainExactlyInAnyOrder
       listOf(
@@ -103,7 +73,7 @@ class StarlarkVisibilityCompletionTest {
 
   @Test
   fun `should not complete in deps`() {
-    setTargets(listOf("//target1", "//target2"))
+    myFixture.testBazel.sync { targets(javaLibrary("//target1"), javaLibrary("//target2")) }
 
     myFixture.configureByText(
       "BUILD",
@@ -120,7 +90,7 @@ class StarlarkVisibilityCompletionTest {
       """.trimMargin(),
     )
     myFixture.type("\"")
-    val lookups = completeBasic().flatMap { it.allLookupStrings }
+    val lookups = myFixture.completeBasicLookupStrings()
 
     lookups shouldNotContain "\"//visibility:private\""
     lookups shouldNotContain "\"//visibility:public\""
@@ -132,18 +102,18 @@ class StarlarkVisibilityCompletionTest {
 
   @Test
   fun `should not complete outside`() {
-    setTargets(listOf("//target1", "//target2"))
+    myFixture.testBazel.sync { targets(javaLibrary("//target1"), javaLibrary("//target2")) }
 
     myFixture.configureByText("BUILD", "")
     myFixture.type("\"")
-    val lookups = completeBasic().flatMap { it.allLookupStrings }
+    val lookups = myFixture.completeBasicLookupStrings()
 
     lookups.shouldBeEmpty()
   }
 
   @Test
   fun `should search for visibilities`() {
-    setTargets(listOf("//abcd1299", "//abcd1239", "//abcd1234"))
+    myFixture.testBazel.sync { targets(javaLibrary("//abcd1299"), javaLibrary("//abcd1239"), javaLibrary("//abcd1234")) }
 
     myFixture.configureByText(
       "BUILD",
@@ -153,16 +123,16 @@ class StarlarkVisibilityCompletionTest {
       """.trimMargin(),
     )
     myFixture.type("\"")
-    val lookups = completeBasic().flatMap { it.allLookupStrings }
+    val lookups = myFixture.completeBasicLookupStrings()
 
     myFixture.type("12")
-    val lookups2 = completeBasic().flatMap { it.allLookupStrings }
+    val lookups2 = myFixture.completeBasicLookupStrings()
 
     myFixture.type("3")
-    val lookups3 = completeBasic().flatMap { it.allLookupStrings }
+    val lookups3 = myFixture.completeBasicLookupStrings()
 
     myFixture.type("4")
-    val lookups4 = completeBasic().flatMap { it.allLookupStrings }
+    val lookups4 = myFixture.completeBasicLookupStrings()
 
     lookups shouldContainAll
       listOf(
@@ -195,7 +165,7 @@ class StarlarkVisibilityCompletionTest {
 
   @Test
   fun `should prioritize public and private`() {
-    setTargets(listOf("//target1", "//target2"))
+    myFixture.testBazel.sync { targets(javaLibrary("//target1"), javaLibrary("//target2")) }
 
     myFixture.configureByText(
       "BUILD",
@@ -209,11 +179,9 @@ class StarlarkVisibilityCompletionTest {
       """.trimMargin(),
     )
     myFixture.type("\"")
-    val lookups = completeBasic().flatMap { it.allLookupStrings }
+    val lookups = myFixture.completeBasicLookupStrings()
 
     lookups[0] shouldBeIn listOf("\"//visibility:private\"", "\"//visibility:public\"")
     lookups[1] shouldBeIn listOf("\"//visibility:private\"", "\"//visibility:public\"")
   }
-
-  private fun completeBasic(): Array<LookupElement> = myFixture.completeBasic()
 }

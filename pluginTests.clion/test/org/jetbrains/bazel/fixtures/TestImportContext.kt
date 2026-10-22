@@ -5,11 +5,9 @@ import com.intellij.openapi.project.Project
 import com.intellij.platform.workspace.storage.url.VirtualFileUrlManager
 import com.intellij.workspaceModel.ide.impl.IdeVirtualFileUrlManagerImpl
 import org.jetbrains.bazel.clion.workspace.CcImportContext
-import org.jetbrains.bazel.commons.BazelPathsResolver
-import org.jetbrains.bazel.sync.BazelOutFileHardLinks
-import org.jetbrains.bazel.sync.workspace.DefaultOutputLocationResolver
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceSnapshot
-import org.jetbrains.bazel.test.framework.testBazelInfo
+import org.jetbrains.bazel.test.framework.testproject.outputParser
+import org.jetbrains.bazel.test.framework.testproject.outputResolver
 import org.jetbrains.bsp.protocol.OutputLocationParser
 import org.jetbrains.bsp.protocol.OutputLocationResolver
 import org.jetbrains.bsp.protocol.TaskGroupId
@@ -19,29 +17,27 @@ import java.nio.file.Path
 internal suspend fun <T> withTestImportContext(
   snapshot: WorkspaceSnapshot,
   project: Project,
-  execroot: Path = Path.of("/execroot"),
   body: suspend context(CcImportContext) () -> T,
 ): Pair<TestImportContext, T> {
-  val ctx = TestImportContext(snapshot, project, execroot)
+  val ctx = TestImportContext(snapshot, project)
   return ctx to body(ctx)
 }
 
 internal class TestImportContext(
   override val snapshot: WorkspaceSnapshot,
   override val project: Project,
-  override val execroot: Path = Path.of("/execroot"),
 ) : CcImportContext {
-  // Just resolve everything against execroot in unit tests
-  val testBazelInfo = testBazelInfo(workspaceRoot = execroot, outputBase = execroot, execRoot = execroot)
+  override val execroot: Path
+    get() = snapshot.bazelInfo.execRoot
 
   override val taskId: TaskId
     get() = TaskGroupId("test").task("task")
 
   override val outputParser: OutputLocationParser
-    get() = OutputLocationParser(BazelPathsResolver(testBazelInfo), BazelOutFileHardLinks.NONE)
+    get() = snapshot.bazelInfo.outputParser()
 
   override val outputResolver: OutputLocationResolver
-    get() = DefaultOutputLocationResolver.createHardlinkResolving(testBazelInfo)
+    get() = snapshot.bazelInfo.outputResolver()
 
   val events: MutableList<TestImportEvent> = mutableListOf()
 

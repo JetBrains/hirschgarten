@@ -1,33 +1,35 @@
 package org.jetbrains.bazel.projectAware
 
 import com.intellij.openapi.externalSystem.autoimport.AutoImportProjectTracker
-import com.intellij.openapi.externalSystem.autoimport.ExternalSystemProjectId
 import com.intellij.openapi.externalSystem.autoimport.ExternalSystemModificationType
+import com.intellij.openapi.externalSystem.autoimport.ExternalSystemProjectId
 import com.intellij.openapi.externalSystem.autoimport.ExternalSystemProjectListener
 import com.intellij.openapi.externalSystem.autoimport.ExternalSystemSettingsFilesModificationContext
 import com.intellij.openapi.externalSystem.autoimport.ExternalSystemSettingsFilesModificationContext.Event
 import com.intellij.openapi.externalSystem.autoimport.ExternalSystemSettingsFilesModificationContext.ReloadStatus
 import com.intellij.openapi.util.Disposer
-import com.intellij.openapi.vfs.VirtualFile
 import io.kotest.assertions.throwables.shouldNotThrowAny
 import io.kotest.matchers.booleans.shouldBeTrue
 import io.kotest.matchers.collections.shouldContain
-import io.kotest.matchers.collections.shouldContainAll
 import io.kotest.matchers.collections.shouldNotContain
 import io.kotest.matchers.ints.shouldBeLessThan
 import io.kotest.matchers.shouldBe
 import kotlinx.coroutines.runBlocking
-import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.sync.status.SyncStatusListener
-import org.jetbrains.bazel.workspace.model.test.framework.WorkspaceModelBaseTest
+import org.jetbrains.bazel.test.framework.BazelTestApplication
+import org.jetbrains.bazel.test.framework.testproject.testBazelProjectFixture
+import org.jetbrains.bazel.test.framework.testproject.writeFile
 import org.junit.jupiter.api.Test
 import java.nio.file.Path
 
-internal class BazelWorkspaceTest : WorkspaceModelBaseTest() {
+@BazelTestApplication
+internal class BazelWorkspaceTest {
+  private val testBazel by testBazelProjectFixture()
+
   @Test
   fun `initialize registers and activates the project aware`() {
-    val workspace = BazelWorkspace(project)
-    Disposer.register(disposable, workspace)
+    val workspace = BazelWorkspace(testBazel.project)
+    Disposer.register(testBazel.disposable, workspace)
 
     runBlocking { workspace.initialize() }
 
@@ -36,7 +38,7 @@ internal class BazelWorkspaceTest : WorkspaceModelBaseTest() {
 
   @Test
   fun `disposing the workspace removes the registration`() {
-    val workspace = BazelWorkspace(project)
+    val workspace = BazelWorkspace(testBazel.project)
     runBlocking { workspace.initialize() }
 
     Disposer.dispose(workspace)
@@ -46,7 +48,7 @@ internal class BazelWorkspaceTest : WorkspaceModelBaseTest() {
 
   @Test
   fun `initialize after disposal registers nothing and does not throw`() {
-    val workspace = BazelWorkspace(project)
+    val workspace = BazelWorkspace(testBazel.project)
     Disposer.dispose(workspace)
 
     shouldNotThrowAny {
@@ -59,11 +61,10 @@ internal class BazelWorkspaceTest : WorkspaceModelBaseTest() {
   @Test
   fun `setting files hold no BUILD file`() {
     prepareFiles()
-    val srcDir = project.rootDir.createDirectory("src")
-    srcDir.createFile("BUILD.bazel")
-    srcDir.createFile("BUILD")
-    srcDir.createFile("defs.bzl")
-    val workspace = BazelWorkspace(project)
+    testBazel.writeFile("src/BUILD.bazel")
+    testBazel.writeFile("src/BUILD")
+    testBazel.writeFile("src/defs.bzl")
+    val workspace = BazelWorkspace(testBazel.project)
 
     val result = shouldNotThrowAny { workspace.settingsFiles }
 
@@ -78,14 +79,14 @@ internal class BazelWorkspaceTest : WorkspaceModelBaseTest() {
   @Test
   fun `setting files do not throw when the project view file is missing`() {
     prepareFiles()
-    val workspace = BazelWorkspace(project)
+    val workspace = BazelWorkspace(testBazel.project)
 
     shouldNotThrowAny { workspace.settingsFiles }
   }
 
   @Test
   fun `every settings file event is ignored`() {
-    val workspace = BazelWorkspace(project)
+    val workspace = BazelWorkspace(testBazel.project)
 
     // the plugin tracks the Bazel files itself, so the platform CRC scan must stay silent
     Event.entries.forEach { event ->
@@ -95,7 +96,7 @@ internal class BazelWorkspaceTest : WorkspaceModelBaseTest() {
 
   @Test
   fun `subscribe stops delivering events after parent disposal`() {
-    val workspace = BazelWorkspace(project)
+    val workspace = BazelWorkspace(testBazel.project)
     val parentDisposable = Disposer.newDisposable()
     var reloadStartCount = 0
     workspace.subscribe(
@@ -106,7 +107,7 @@ internal class BazelWorkspaceTest : WorkspaceModelBaseTest() {
       },
       parentDisposable,
     )
-    val publisher = project.messageBus.syncPublisher(SyncStatusListener.TOPIC)
+    val publisher = testBazel.project.messageBus.syncPublisher(SyncStatusListener.TOPIC)
 
     publisher.syncStarted()
     reloadStartCount shouldBe 1
@@ -116,7 +117,8 @@ internal class BazelWorkspaceTest : WorkspaceModelBaseTest() {
     reloadStartCount shouldBe 1
   }
 
-  private fun activatedProjectIds(): Set<ExternalSystemProjectId> = AutoImportProjectTracker.getInstance(project).getActivatedProjects()
+  private fun activatedProjectIds(): Set<ExternalSystemProjectId> =
+    AutoImportProjectTracker.getInstance(testBazel.project).getActivatedProjects()
 
   private fun modificationContext(event: Event): ExternalSystemSettingsFilesModificationContext =
     object : ExternalSystemSettingsFilesModificationContext {
@@ -126,23 +128,6 @@ internal class BazelWorkspaceTest : WorkspaceModelBaseTest() {
     }
 
   private fun prepareFiles() {
-    project.rootDir.apply {
-      createFile("MODULE.bazel")
-      createFile(".bazelrc")
-    }
-  }
-
-  private fun VirtualFile.createFile(name: String): VirtualFile {
-    if (!this.isDirectory) error("Can't create a file in a non-directory file")
-    return runTestWriteAction {
-      this.createChildData(this, name)
-    }
-  }
-
-  private fun VirtualFile.createDirectory(name: String): VirtualFile {
-    if (!this.isDirectory) error("Can't create a directory in a non-directory file")
-    return runTestWriteAction {
-      this.createChildDirectory(this, name)
-    }
+    testBazel.writeFile(".bazelrc")
   }
 }

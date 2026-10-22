@@ -2,35 +2,32 @@ package org.jetbrains.bazel.python.resolve
 
 import com.intellij.bazel.python.backend.BazelPyImportResolver
 import com.intellij.bazel.python.backend.PythonSynonymProvider
-import com.intellij.openapi.Disposable
 import com.intellij.openapi.application.runReadActionBlocking
-import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.psi.PsiDirectory
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiManager
 import com.intellij.psi.util.QualifiedName
-import com.intellij.testFramework.junit5.TestDisposable
 import com.jetbrains.python.psi.PyFile
 import com.jetbrains.python.psi.resolve.PyQualifiedNameResolveContextImpl
 import io.kotest.matchers.nulls.shouldBeNull
 import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeInstanceOf
-import org.jetbrains.bazel.config.rootDir
-import org.jetbrains.bazel.project.BazelProjectFixtures.deinitializeBazelProject
 import org.jetbrains.bazel.test.framework.BazelTestApplication
 import org.jetbrains.bazel.test.framework.bazelCodeInsightFixture
+import org.jetbrains.bazel.test.framework.testBazel
+import org.jetbrains.bazel.test.framework.testproject.createDirectory
+import org.jetbrains.bazel.test.framework.testproject.uninstall
+import org.jetbrains.bazel.test.framework.testproject.writeFile
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
 @BazelTestApplication
 class BazelPyImportResolverTest {
   private val myFixture by bazelCodeInsightFixture()
+  private val testBazel get() = myFixture.testBazel
 
   private val project get() = myFixture.project
-
-  @TestDisposable
-  lateinit var disposable: Disposable
 
   @BeforeEach
   fun setUp() {
@@ -77,7 +74,7 @@ class BazelPyImportResolverTest {
 
   @Test
   fun testShouldIgnoreNonBazelProject() {
-    deinitializeBazelProject(project)
+    testBazel.uninstall()
     val result = tryResolve("file1")
     result.shouldBeNull()
   }
@@ -111,7 +108,7 @@ class BazelPyImportResolverTest {
   @Test
   fun testShouldAcceptSynonym() {
     val synonymProvider = MockSynonymProvider()
-    PythonSynonymProvider.ep.point.registerExtension(synonymProvider, disposable)
+    PythonSynonymProvider.ep.point.registerExtension(synonymProvider, testBazel.disposable)
     val result = tryResolve("synonym.dir2.dir21.dir211.file2111")
     result.shouldNotBeNull()
     result.shouldBeInstanceOf<PyFile>()
@@ -122,7 +119,7 @@ class BazelPyImportResolverTest {
   @Test
   fun testShouldNotCauseErrorIfSynonymProviderReturnsNull() {
     val synonymProvider = MockSynonymProvider()
-    PythonSynonymProvider.ep.point.registerExtension(synonymProvider, disposable)
+    PythonSynonymProvider.ep.point.registerExtension(synonymProvider, testBazel.disposable)
     val result = tryResolve("null")
     result.shouldBeNull()
     synonymProvider.wasGetSynonymCalled shouldBe true
@@ -131,7 +128,7 @@ class BazelPyImportResolverTest {
   @Test
   fun testShouldNotCallSynonymProviderIfNotNecessary() {
     val synonymProvider = MockSynonymProvider()
-    PythonSynonymProvider.ep.point.registerExtension(synonymProvider, disposable)
+    PythonSynonymProvider.ep.point.registerExtension(synonymProvider, testBazel.disposable)
     val result = tryResolve("file1")
     result.shouldNotBeNull()
     synonymProvider.wasGetSynonymCalled shouldBe false
@@ -155,23 +152,15 @@ class BazelPyImportResolverTest {
    * ```
    */
   private fun prepareFiles() {
-    WriteCommandAction.runWriteCommandAction(project) {
-      val root = project.rootDir
+    testBazel.writeFile("file1.py")
+    testBazel.writeFile("file2.java")
 
-      root.createChildData(this, "file1.py")
-      root.createChildData(this, "file2.java")
+    testBazel.writeFile("dir1/conflict/__init__.py")
+    testBazel.createDirectory("dir1/directory.py")
+    testBazel.writeFile("dir1/conflict.py")
+    testBazel.writeFile("dir1/file")
 
-      val dir1 = root.createChildDirectory(this, "dir1")
-      dir1.createChildDirectory(this, "conflict").also { it.createChildData(this, "__init__.py") }
-      dir1.createChildDirectory(this, "directory.py")
-      dir1.createChildData(this, "conflict.py")
-      dir1.createChildData(this, "file")
-
-      val dir2 = root.createChildDirectory(this, "dir2")
-      val dir21 = dir2.createChildDirectory(this, "dir21")
-      val dir211 = dir21.createChildDirectory(this, "dir211")
-      dir211.createChildData(this, "file2111.py")
-    }
+    testBazel.writeFile("dir2/dir21/dir211/file2111.py")
   }
 
   private fun tryResolve(qualifiedName: String): PsiElement? {

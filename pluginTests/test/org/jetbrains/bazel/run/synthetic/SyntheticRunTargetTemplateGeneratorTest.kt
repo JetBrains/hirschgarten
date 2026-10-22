@@ -2,21 +2,27 @@ package org.jetbrains.bazel.run.synthetic
 
 import com.intellij.lang.Language
 import com.intellij.lang.java.JavaLanguage
-import com.intellij.testFramework.fixtures.BasePlatformTestCase
+import com.intellij.openapi.application.runReadActionBlocking
 import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
 import org.jetbrains.bazel.commons.constants.Constants
-import org.jetbrains.bazel.label.Label
-import org.jetbrains.bazel.test.framework.target.TestBuildTargetFactory
+import org.jetbrains.bazel.test.framework.BazelTestApplication
+import org.jetbrains.bazel.test.framework.bazelCodeInsightFixture
+import org.jetbrains.bazel.test.framework.testproject.javaLibrary
+import org.jetbrains.bazel.test.framework.testproject.kotlinLibrary
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.kotlin.idea.KotlinLanguage
 import org.jetbrains.kotlin.psi.KtNamedFunction
+import org.junit.jupiter.api.Test
 
-class SyntheticRunTargetTemplateGeneratorTest : BasePlatformTestCase() {
+@BazelTestApplication
+class SyntheticRunTargetTemplateGeneratorTest {
+  private val myFixture by bazelCodeInsightFixture()
 
+  @Test
   fun `test getSyntheticTargetLabel generates valid label`() {
-    val target = TestBuildTargetFactory.createSimpleJavaLibraryTarget(id = Label.parse("//test:lib"))
+    val target = javaLibrary("//test:lib")
 
     myFixture.configureByText(
       "App.java",
@@ -30,14 +36,15 @@ class SyntheticRunTargetTemplateGeneratorTest : BasePlatformTestCase() {
     )
 
     val generator = getDefaultTemplateGenerator(target, JavaLanguage.INSTANCE)
-    val label = generator.getSyntheticTargetLabel(target, myFixture.elementAtCaret)
+    val label = runReadActionBlocking { generator.getSyntheticTargetLabel(target, myFixture.elementAtCaret) }
 
     label.toString().shouldContain("${Constants.DOT_BAZELBSP_DIR_NAME}/${Constants.SYNTHETIC_TARGETS_DIR_NAME}")
     label.toString().shouldContain("synthetic_binary")
   }
 
+  @Test
   fun `test getSyntheticParams extracts main class name`() {
-    val target = TestBuildTargetFactory.createSimpleJavaLibraryTarget(id = Label.parse("//test:target"))
+    val target = javaLibrary("//test:target")
 
     myFixture.configureByText(
       "TestClass.java",
@@ -51,13 +58,14 @@ class SyntheticRunTargetTemplateGeneratorTest : BasePlatformTestCase() {
     )
 
     val generator = getDefaultTemplateGenerator(target, JavaLanguage.INSTANCE)
-    val params = generator.getSyntheticParams(target, myFixture.elementAtCaret)
+    val params = runReadActionBlocking { generator.getSyntheticParams(target, myFixture.elementAtCaret) }
 
     params.data.shouldBe("com.test.TestClass")
   }
 
+  @Test
   fun `test kotlin getSyntheticParams extracts top level main class name`() {
-    val target = TestBuildTargetFactory.createSimpleKotlinLibraryTarget(id = Label.parse("//test:target"))
+    val target = kotlinLibrary("//test:target")
 
     myFixture.configureByText(
       "main.kt",
@@ -70,15 +78,18 @@ class SyntheticRunTargetTemplateGeneratorTest : BasePlatformTestCase() {
       """.trimIndent()
     )
 
-    val element = (myFixture.elementAtCaret as KtNamedFunction).nameIdentifier!!
     val generator = getDefaultTemplateGenerator(target, KotlinLanguage.INSTANCE)
-    val params = generator.getSyntheticParams(target, element)
+    val params = runReadActionBlocking {
+      val element = (myFixture.elementAtCaret as KtNamedFunction).nameIdentifier!!
+      generator.getSyntheticParams(target, element)
+    }
 
     params.data.shouldBe("com.test.MainKt")
   }
 
+  @Test
   fun `test kotlin getSyntheticParams extracts object main class name`() {
-    val target = TestBuildTargetFactory.createSimpleKotlinLibraryTarget(id = Label.parse("//test:target"))
+    val target = kotlinLibrary("//test:target")
 
     myFixture.configureByText(
       "MyObject.kt",
@@ -94,7 +105,7 @@ class SyntheticRunTargetTemplateGeneratorTest : BasePlatformTestCase() {
     )
 
     val generator = getDefaultTemplateGenerator(target, KotlinLanguage.INSTANCE)
-    val params = generator.getSyntheticParams(target, myFixture.elementAtCaret)
+    val params = runReadActionBlocking { generator.getSyntheticParams(target, myFixture.elementAtCaret) }
 
     params.data.shouldBe("com.test.MyObject")
   }

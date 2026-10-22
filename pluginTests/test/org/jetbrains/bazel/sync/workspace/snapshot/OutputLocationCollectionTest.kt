@@ -6,16 +6,16 @@ import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 import kotlinx.coroutines.test.runTest
-import org.jetbrains.bazel.workspace.model.test.framework.BuildServerMock
+import org.jetbrains.bazel.test.framework.testproject.testProjectBazelInfo
+import org.jetbrains.bazel.test.framework.testproject.outputParser
 import org.jetbrains.bsp.protocol.OutputLocation
 import org.jetbrains.bsp.protocol.OutputLocationCollection
 import org.jetbrains.bsp.protocol.OutputRoot
-import org.jetbrains.bsp.protocol.contentEquals
-import org.jetbrains.bsp.protocol.contentHashCode
 import org.junit.jupiter.api.Test
+import kotlin.io.path.Path
 
 class OutputLocationCollectionTest {
-  private val parser = BuildServerMock().outputParser
+  private val parser = testProjectBazelInfo(Path("/workspace")).outputParser()
 
   @Test
   fun `build of shared prefix paths yields all of them`() = runTest {

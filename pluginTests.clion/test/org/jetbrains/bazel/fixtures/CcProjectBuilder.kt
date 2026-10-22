@@ -6,25 +6,26 @@ import com.jetbrains.cidr.lang.workspace.compiler.OCCompilerKind
 import org.jetbrains.bazel.clion.sync.CC_LANGUAGE_CLASS
 import org.jetbrains.bazel.clion.sync.CcBuildTarget
 import org.jetbrains.bazel.clion.sync.CcToolchainBuildTarget
+import org.jetbrains.bazel.commons.BazelInfo
 import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.label.DependencyLabel
 import org.jetbrains.bazel.label.DependencyLabelKind
 import org.jetbrains.bazel.label.Label
-import org.jetbrains.bazel.sync.workspace.persistence.InMemoryWorkspaceTargetMap
 import org.jetbrains.bazel.sync.workspace.snapshot.OutputLocationCollectionBuilder
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceAspectIds
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceConfigurationId
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceSnapshot
-import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetGraphBuilder
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
 import org.jetbrains.bazel.sync.workspace.snapshot.hasBuildData
+import org.jetbrains.bazel.test.framework.testproject.testProjectBazelInfo
+import org.jetbrains.bazel.test.framework.testproject.testWorkspaceSnapshot
 import org.jetbrains.bazel.test.framework.target.TestBuildTarget
+import org.jetbrains.bazel.workspace.model.test.framework.TEST_OUTPUT_ROOT
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.OutputLocation
 import org.jetbrains.bsp.protocol.OutputLocationCollection
 import org.jetbrains.bsp.protocol.OutputLocationParserWithoutHardlink
-import org.jetbrains.bsp.protocol.OutputRoot
 import org.jetbrains.bsp.protocol.StringsCollection
 import org.jetbrains.bsp.protocol.extractData
 import java.nio.file.Path
@@ -49,11 +50,14 @@ import java.nio.file.Path
  * }
  * ```
  */
-internal fun ccProject(workspaceRoot: Path = Path.of("/workspace"), declare: CcProjectBuilder.() -> Unit): WorkspaceSnapshot {
-  return CcProjectBuilder(workspaceRoot).apply(declare).build()
+internal fun ccProject(bazelInfo: BazelInfo = CC_TEST_BAZEL_INFO, declare: CcProjectBuilder.() -> Unit): WorkspaceSnapshot {
+  return CcProjectBuilder().apply(declare).build(bazelInfo)
 }
 
-internal class CcProjectBuilder(private val workspaceRoot: Path) {
+internal val CC_TEST_BAZEL_INFO: BazelInfo =
+  testProjectBazelInfo(workspaceRoot = Path.of("/execroot"), outputBase = Path.of("/execroot"), execRoot = Path.of("/execroot"))
+
+internal class CcProjectBuilder {
 
   private val targets = mutableListOf<BuildTarget>()
 
@@ -77,14 +81,7 @@ internal class CcProjectBuilder(private val workspaceRoot: Path) {
     return PlainTargetBuilder().apply(declare).build().also(targets::add)
   }
 
-  fun build(): WorkspaceSnapshot {
-    val targetsByKey = targets.associateBy { it.key }
-
-    return WorkspaceSnapshot.EMPTY.copy(
-      targets = InMemoryWorkspaceTargetMap(targetsByKey),
-      targetGraph = WorkspaceTargetGraphBuilder.build(targetsByKey.keys, targets),
-    )
-  }
+  fun build(bazelInfo: BazelInfo): WorkspaceSnapshot = testWorkspaceSnapshot(bazelInfo) { targets(targets) }
 }
 
 internal class CcTargetBuilder(private val kind: String, private val ruleType: RuleType) {
@@ -121,7 +118,7 @@ internal class CcTargetBuilder(private val kind: String, private val ruleType: R
   fun srcs(vararg paths: String, generated: Boolean = false) {
     srcs += paths.map {
       if (generated) {
-        OutputLocation.Output(OutputRoot.of(listOf("k8-fastbuild", "bin")), it)
+        OutputLocation.Output(TEST_OUTPUT_ROOT, it)
       }
       else {
         OutputLocation.Workspace(it)
@@ -339,7 +336,7 @@ internal class PlainTargetBuilder {
   fun srcs(vararg paths: String, generated: Boolean = false) {
     srcs += paths.map {
       if (generated) {
-          OutputLocation.Output(OutputRoot.of(listOf("k8-fastbuild", "bin")), it)
+          OutputLocation.Output(TEST_OUTPUT_ROOT, it)
       }
       else {
           OutputLocation.Workspace(it)

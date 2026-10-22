@@ -1,8 +1,5 @@
 package org.jetbrains.bazel.languages.projectview.language
 
-import com.intellij.testFramework.junit5.fixture.moduleFixture
-import com.intellij.testFramework.junit5.fixture.projectFixture
-import com.intellij.testFramework.junit5.fixture.tempPathFixture
 import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.nulls.shouldBeNull
 import io.kotest.matchers.nulls.shouldNotBeNull
@@ -16,9 +13,11 @@ import org.jetbrains.bazel.languages.projectview.ProjectView
 import org.jetbrains.bazel.languages.projectview.ProjectViewFactory
 import org.jetbrains.bazel.languages.projectview.dotIdeaDirectoryLocation
 import org.jetbrains.bazel.languages.projectview.imports.Import
-import org.jetbrains.bazel.project.BazelProjectFixtures.initializeBazelProject
 import org.jetbrains.bazel.test.framework.BazelTestApplication
-import org.junit.jupiter.api.BeforeEach
+import org.jetbrains.bazel.test.framework.bazelCodeInsightFixture
+import org.jetbrains.bazel.test.framework.testBazel
+import org.jetbrains.bazel.test.framework.testproject.workspaceRoot
+import org.jetbrains.bazel.test.framework.testproject.writeFile
 import org.junit.jupiter.api.Test
 import java.nio.file.Path
 import kotlin.io.path.Path
@@ -26,18 +25,10 @@ import kotlin.io.path.Path
 
 @BazelTestApplication
 class ProjectViewContentTest {
-  private val projectFixture = projectFixture(openAfterCreation = true)
-  private val tempDirFixture = tempPathFixture()
-  private val moduleFixture = projectFixture.moduleFixture(tempDirFixture, addPathToSourceRoot = true)
+  private val myFixture by bazelCodeInsightFixture()
 
-  private val project get() = projectFixture.get()
-  private val rootDir by tempDirFixture
-
-  @BeforeEach
-  fun setUp() {
-    moduleFixture.get()
-    initializeBazelProject(project, rootDir)
-  }
+  private val project get() = myFixture.project
+  private val rootDir get() = myFixture.testBazel.workspaceRoot
 
   @Test
   fun `test sections are parsed from content with no file behind it`() {
@@ -98,7 +89,7 @@ class ProjectViewContentTest {
 
   @Test
   fun `test imports in content are resolved against the root`() {
-    rootDir.writeProjectViewFile(
+    myFixture.testBazel.writeFile(
       "imported.bazelproject",
       """
       directories:

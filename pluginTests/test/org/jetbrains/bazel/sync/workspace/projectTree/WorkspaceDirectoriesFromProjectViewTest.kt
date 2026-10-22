@@ -7,55 +7,41 @@ import com.intellij.testFramework.runInEdtAndGet
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.collections.shouldNotBeEmpty
 import io.kotest.matchers.collections.shouldNotContain
-import kotlinx.coroutines.runBlocking
-import org.jetbrains.bazel.bazelrunner.BazelProcess
-import org.jetbrains.bazel.bazelrunner.BazelProcessResult
 import org.jetbrains.bazel.bazelrunner.BazelRunner
-import org.jetbrains.bazel.bazelrunner.mockBazelProcessLauncher
-import org.jetbrains.bazel.commons.BazelInfo
 import org.jetbrains.bazel.commons.BazelPathsResolver
-import org.jetbrains.bazel.commons.BazelRelease
-import org.jetbrains.bazel.commons.BazelStatus
-import org.jetbrains.bazel.commons.BzlmodRepoMapping
 import org.jetbrains.bazel.commons.RepoMapping
 import org.jetbrains.bazel.commons.RepoMappingDisabled
-import org.jetbrains.bazel.commons.orFallbackVersion
 import org.jetbrains.bazel.languages.projectview.ProjectViewFactory
-import org.jetbrains.bazel.project.BazelProjectFixtures.initializeBazelProject
 import org.jetbrains.bazel.server.sync.BspProjectMapper
-import org.jetbrains.bazel.sync.workspace.projectTree.BazelRunnerSpyStubbingHelper.captureBazelCommandFromMock
 import org.jetbrains.bazel.test.framework.BazelTestApplication
-import org.jetbrains.bazel.test.framework.bazelCodeInsightFixture
+import org.jetbrains.bazel.test.framework.testproject.bazelInfo
+import org.jetbrains.bazel.test.framework.testproject.finishedProcess
+import org.jetbrains.bazel.test.framework.testproject.testBazelProjectFixture
+import org.jetbrains.bazel.test.framework.testproject.testBazelRunner
+import org.jetbrains.bazel.test.framework.testproject.testRepoMapping
+import org.jetbrains.bazel.test.framework.testproject.workspaceRoot
 import org.jetbrains.bsp.protocol.TaskGroupId
 import org.jetbrains.bsp.protocol.WorkspaceDirectoriesResult
-import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.mockito.Mockito.mock
-import org.mockito.Mockito.spy
-import org.mockito.Mockito.`when`
 import java.nio.file.Files
 import java.nio.file.Path
-import kotlin.io.path.Path
 import kotlin.io.path.createDirectories
 import kotlin.io.path.createFile
-import kotlin.io.path.createTempDirectory
 
 @BazelTestApplication
 class WorkspaceDirectoriesFromProjectViewTest {
-  private val myFixture by bazelCodeInsightFixture()
+  private val testBazel by testBazelProjectFixture()
 
-  private val project get() = myFixture.project
+  private val project get() = testBazel.project
 
-  private lateinit var workspaceRoot: Path
-  private lateinit var bazelRunner: BazelRunner
-  private lateinit var dotBazelBspPath: Path
-
-  @BeforeEach
-  fun setUp() {
-    workspaceRoot = createTempDirectory("workspace")
-    initializeBazelProject(project, workspaceRoot)
-    bazelRunner = createMockBazelRunner()
-    dotBazelBspPath = workspaceRoot.resolve(".bazelbsp")
+  private val workspaceRoot: Path get() = testBazel.workspaceRoot
+  private val dotBazelBspPath: Path get() = workspaceRoot.resolve(".bazelbsp")
+  private val bazelCommands = mutableListOf<List<String>>()
+  private val bazelRunner: BazelRunner by lazy {
+    testBazelRunner(workspaceRoot) { command ->
+      bazelCommands += command
+      finishedProcess(stdout = mockBuildfilesOutput())
+    }
   }
 
   @Test
@@ -366,7 +352,10 @@ class WorkspaceDirectoriesFromProjectViewTest {
       """.trimIndent()
 
     // WHEN
-    val result = runMapper(projectViewContent, createRepoMapping("community", "community+", workspaceRoot.resolve("community")))
+    val result = runMapper(
+      projectViewContent,
+      testRepoMapping(testBazel.bazelInfo) { local("community+", "community", apparentName = "community") },
+    )
 
     // THEN
     result.includedDirectories shouldContainExactlyInAnyOrder listOf(toolboxDir, communityKernelDir)
@@ -389,9 +378,10 @@ class WorkspaceDirectoriesFromProjectViewTest {
     runMapper(projectViewContent)
 
     // THEN
-    val bazelCommand = captureBazelCommandFromMock(bazelRunner)
-    bazelCommand.options.shouldNotBeEmpty()
-    bazelCommand.options shouldNotContain extraToolchainsOption
+    val bazelCommand = bazelCommands.single()
+    val options = bazelCommand.subList(bazelCommand.indexOf("query") + 1, bazelCommand.lastIndex)
+    options.shouldNotBeEmpty()
+    options shouldNotContain extraToolchainsOption
   }
 
   private fun runMapper(
@@ -400,7 +390,7 @@ class WorkspaceDirectoriesFromProjectViewTest {
   ): WorkspaceDirectoriesResult {
     val projectView = ProjectViewFactory.from(project, projectViewContent, root = workspaceRoot)
     val owner = ModalTaskOwner.guess()
-    val mapper = BspProjectMapper(workspaceRoot, bazelRunner, projectView, BazelPathsResolver(createBazelInfo()))
+    val mapper = BspProjectMapper(workspaceRoot, bazelRunner, projectView, BazelPathsResolver(testBazel.bazelInfo))
     // runWithModalProgressBlocking enters a modal state, and this needs the EDT.
     return runInEdtAndGet {
       runWithModalProgressBlocking(
@@ -413,61 +403,20 @@ class WorkspaceDirectoriesFromProjectViewTest {
     }
   }
 
-  private fun createRepoMapping(apparentName: String, canonicalName: String, path: Path): BzlmodRepoMapping =
-    BzlmodRepoMapping(
-      canonicalRepoNameToLocalPath = mapOf(canonicalName to workspaceRoot.relativize(path)),
-      apparentRepoNameToCanonicalName = mapOf("" to "", apparentName to canonicalName),
-      canonicalRepoNameToPath = mapOf("" to workspaceRoot, canonicalName to path),
-      nonLocalCanonicalRepoNames = setOf(),
-    )
+  private fun mockBuildfilesOutput(): String {
+    val lines = mutableListOf<String>()
 
-  private fun createBazelInfo(): BazelInfo =
-    BazelInfo(
-      execRoot = workspaceRoot.resolve("bazel-exec"),
-      outputBase = workspaceRoot.resolve("bazel-out"),
-      workspaceRoot = workspaceRoot,
-      bazelBin = workspaceRoot.resolve("bazel-bin"),
-      release = BazelRelease.fromReleaseString("release 9.0.0").orFallbackVersion(),
-      true,
-      false,
-      emptyList(),
-    )
-
-  private fun createMockBazelRunner(): BazelRunner {
-    val realRunner = BazelRunner(null, workspaceRoot, mockBazelProcessLauncher, Path("bazel"))
-    val runner = spy(realRunner)
-
-    fun mockBuildfilesOutput(): String {
-      val root = workspaceRoot
-      val lines = mutableListOf<String>()
-
-      fun addIfExists(rel: String) {
-        val p = root.resolve(rel)
-        if (Files.exists(p)) lines += rel
-      }
-
-      addIfExists(".bazelbsp/aspects/BUILD")
-      addIfExists("included/BUILD")
-      addIfExists("excluded/BUILD")
-      addIfExists("pkg/BUILD")
-      addIfExists("pkg/subpkg/BUILD")
-
-      return lines.joinToString("\n")
+    fun addIfExists(rel: String) {
+      val p = workspaceRoot.resolve(rel)
+      if (Files.exists(p)) lines += rel
     }
 
-    val result = mock(BazelProcessResult::class.java)
-    `when`(result.bazelStatus).thenReturn(BazelStatus.SUCCESS)
-    `when`(result.isNotSuccess).thenReturn(false)
-    `when`(result.stdout).thenAnswer { mockBuildfilesOutput().toByteArray() }
-    `when`(result.stderr).thenReturn(ByteArray(0))
+    addIfExists(".bazelbsp/aspects/BUILD")
+    addIfExists("included/BUILD")
+    addIfExists("excluded/BUILD")
+    addIfExists("pkg/BUILD")
+    addIfExists("pkg/subpkg/BUILD")
 
-    val process = mock(BazelProcess::class.java)
-    runBlocking {
-      `when`(process.waitAndGetResult()).thenReturn(result)
-    }
-
-    BazelRunnerSpyStubbingHelper.stubRunBazelCommand(runner, process)
-
-    return runner
+    return lines.joinToString("\n")
   }
 }

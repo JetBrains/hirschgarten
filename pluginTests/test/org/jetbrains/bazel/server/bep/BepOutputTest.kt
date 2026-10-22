@@ -8,11 +8,10 @@ import com.google.devtools.build.lib.buildeventstream.BuildEventStreamProtos.Out
 import com.google.devtools.build.lib.buildeventstream.BuildEventStreamProtos.TargetComplete
 import com.intellij.openapi.command.impl.DummyProject
 import io.kotest.matchers.shouldBe
-import org.jetbrains.bazel.commons.BazelInfo
 import org.jetbrains.bazel.commons.BazelPathsResolver
-import org.jetbrains.bazel.commons.BazelRelease
 import org.jetbrains.bazel.server.diagnostics.DiagnosticsService
-import org.jetbrains.bazel.workspace.model.test.framework.MockProjectBaseTest
+import org.jetbrains.bazel.test.framework.BazelTestApplication
+import org.jetbrains.bazel.test.framework.testproject.testProjectBazelInfo
 import org.jetbrains.bsp.protocol.BazelTaskEventsHandler
 import org.jetbrains.bsp.protocol.CachedTestLog
 import org.jetbrains.bsp.protocol.CoverageReport
@@ -25,7 +24,8 @@ import org.junit.jupiter.api.Test
 import kotlin.io.path.Path
 import kotlin.io.path.relativeToOrNull
 
-internal class BepOutputTest : MockProjectBaseTest() {
+@BazelTestApplication
+internal class BepOutputTest {
   private class EmptyBuildTaskEventsHandler : BazelTaskEventsHandler {
     override fun onBuildLogMessage(p0: LogMessageParams) {}
     override fun onBuildPublishDiagnostics(p0: PublishDiagnosticsParams) {}
@@ -35,24 +35,15 @@ internal class BepOutputTest : MockProjectBaseTest() {
     override fun onCachedTestLog(testLog: CachedTestLog) {}
   }
 
+  private val bazelInfo = testProjectBazelInfo(workspaceRoot = Path("workspaceRoot"))
+
   private fun newBepSever(): BepServer {
-    val workspaceRoot = Path("workspaceRoot")
-    val mockBazelInfo = BazelInfo(
-      execRoot = Path("execRoot"),
-      outputBase = Path("outputBase"),
-      workspaceRoot = workspaceRoot,
-      bazelBin = Path("bazel-bin"),
-      release = BazelRelease(8),
-      isBzlModEnabled = true,
-      isWorkspaceEnabled = false,
-      externalAutoloads = emptyList(),
-    )
     return BepServer(
       project = DummyProject.getInstance(),
       taskEventsHandler = EmptyBuildTaskEventsHandler(),
-      diagnosticsService = DiagnosticsService(workspaceRoot),
+      diagnosticsService = DiagnosticsService(bazelInfo.workspaceRoot),
       parentId = TaskGroupId("originId").task(""),
-      bazelPathsResolver = BazelPathsResolver(mockBazelInfo),
+      bazelPathsResolver = BazelPathsResolver(bazelInfo),
     )
   }
 
@@ -89,12 +80,12 @@ internal class BepOutputTest : MockProjectBaseTest() {
     server.handleBuildEventStreamProtosEvent(targetCompleted("//:foobar", mapOf("intellij-info" to listOf("1"), "foo" to listOf("0"))))
     val bepOutput = server.getOutputForTesting()
     bepOutput.filesByInfoOutputGroup()
-      .map { it.relativeToOrNull(Path("execRoot"))?.toString() }.toSet() shouldBe setOf("foo.intellij-info.txt", "bar.intellij-info.txt")
+      .map { it.relativeToOrNull(bazelInfo.execRoot)?.toString() }.toSet() shouldBe setOf("foo.intellij-info.txt", "bar.intellij-info.txt")
 
     // Renaming should not affect output group
     val renamed = bepOutput.renameNamedSets(2)
     renamed.filesByInfoOutputGroup()
-      .map { it.relativeToOrNull(Path("execRoot"))?.toString() }.toSet() shouldBe setOf("foo.intellij-info.txt", "bar.intellij-info.txt")
+      .map { it.relativeToOrNull(bazelInfo.execRoot)?.toString() }.toSet() shouldBe setOf("foo.intellij-info.txt", "bar.intellij-info.txt")
   }
 
   @Test
@@ -110,7 +101,7 @@ internal class BepOutputTest : MockProjectBaseTest() {
     )
     val firstResult = firstRunServer.getOutputForTesting().renameNamedSets(1)
     firstResult.filesByInfoOutputGroup()
-      .map { it.relativeToOrNull(Path("execRoot"))?.toString() }.toSet() shouldBe setOf("firstfoo.intellij-info.txt")
+      .map { it.relativeToOrNull(bazelInfo.execRoot)?.toString() }.toSet() shouldBe setOf("firstfoo.intellij-info.txt")
 
     val secondRunServer = newBepSever()
     secondRunServer.handleBuildEventStreamProtosEvent(namedSet("0", listOf("secondbar.intellij-info.txt"), listOf()))
@@ -123,11 +114,11 @@ internal class BepOutputTest : MockProjectBaseTest() {
     )
     val secondResult = secondRunServer.getOutputForTesting().renameNamedSets(2)
     secondResult.filesByInfoOutputGroup()
-      .map { it.relativeToOrNull(Path("execRoot"))?.toString() }.toSet() shouldBe setOf("secondfoo.intellij-info.txt")
+      .map { it.relativeToOrNull(bazelInfo.execRoot)?.toString() }.toSet() shouldBe setOf("secondfoo.intellij-info.txt")
 
     val combined = firstResult.merge(secondResult)
     combined.filesByInfoOutputGroup()
-      .map { it.relativeToOrNull(Path("execRoot"))?.toString() }.toSet() shouldBe setOf(
+      .map { it.relativeToOrNull(bazelInfo.execRoot)?.toString() }.toSet() shouldBe setOf(
       "firstfoo.intellij-info.txt",
       "secondfoo.intellij-info.txt",
     )
@@ -150,7 +141,7 @@ internal class BepOutputTest : MockProjectBaseTest() {
     )
     val bepOutput = server.getOutputForTesting()
     bepOutput.filesByInfoOutputGroup()
-      .map { it.relativeToOrNull(Path("execRoot"))?.toString() }.toSet() shouldBe setOf(
+      .map { it.relativeToOrNull(bazelInfo.execRoot)?.toString() }.toSet() shouldBe setOf(
       "baz.intellij-info.txt",
       "common_b.intellij-info.txt",
       "common_a.intellij-info.txt",
@@ -159,7 +150,7 @@ internal class BepOutputTest : MockProjectBaseTest() {
     // Renaming should not affect output group
     val renamed = bepOutput.renameNamedSets(42)
     renamed.filesByInfoOutputGroup()
-      .map { it.relativeToOrNull(Path("execRoot"))?.toString() }.toSet() shouldBe setOf(
+      .map { it.relativeToOrNull(bazelInfo.execRoot)?.toString() }.toSet() shouldBe setOf(
       "baz.intellij-info.txt",
       "common_b.intellij-info.txt",
       "common_a.intellij-info.txt",
@@ -181,7 +172,7 @@ internal class BepOutputTest : MockProjectBaseTest() {
     )
     val afterFirstRun = firstServer.getOutputForTesting().renameNamedSets(1)
     val firstBuild = afterFirstRun.filesByInfoOutputGroup()
-      .map { it.relativeToOrNull(Path("execRoot"))?.toString() }.toSet()
+      .map { it.relativeToOrNull(bazelInfo.execRoot)?.toString() }.toSet()
     firstBuild shouldBe setOf("common_a.intellij-info.txt", "common_b.intellij-info.txt", "build_only.intellij-info.txt")
 
     val secondServer = newBepSever()
@@ -190,7 +181,7 @@ internal class BepOutputTest : MockProjectBaseTest() {
     secondServer.handleBuildEventStreamProtosEvent(targetCompleted("//:two", mapOf("sync" to listOf("1"), "intellij-info" to listOf("0"))))
     val afterSecondRun = afterFirstRun.merge(secondServer.getOutputForTesting().renameNamedSets(2))
     val secondBuild = afterSecondRun.filesByInfoOutputGroup()
-      .map { it.relativeToOrNull(Path("execRoot"))?.toString() }.toSet()
+      .map { it.relativeToOrNull(bazelInfo.execRoot)?.toString() }.toSet()
     secondBuild shouldBe firstBuild + setOf("build_2.intellij-info.txt")
 
     val thirdServer = newBepSever()
@@ -202,7 +193,7 @@ internal class BepOutputTest : MockProjectBaseTest() {
     thirdServer.handleBuildEventStreamProtosEvent(targetCompleted("//:three", mapOf("sync" to listOf("4"), "intellij-info" to listOf("3"))))
     val afterThirdRun = afterSecondRun.merge(thirdServer.getOutputForTesting().renameNamedSets(3))
     val thirdBuild = afterThirdRun.filesByInfoOutputGroup()
-      .map { it.relativeToOrNull(Path("execRoot"))?.toString() }.toSet()
+      .map { it.relativeToOrNull(bazelInfo.execRoot)?.toString() }.toSet()
     thirdBuild shouldBe secondBuild + setOf(
       "build_3.intellij-info.txt",
       "build_and_sync_3.intellij-info.txt",

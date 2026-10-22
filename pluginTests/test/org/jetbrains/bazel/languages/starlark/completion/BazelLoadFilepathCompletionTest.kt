@@ -1,74 +1,59 @@
 package org.jetbrains.bazel.languages.starlark.completion
 
-import com.intellij.openapi.command.WriteCommandAction
-import com.intellij.openapi.util.io.toNioPathOrNull
-import com.intellij.platform.backend.workspace.workspaceModel
-import com.intellij.testFramework.IndexingTestUtil
-import com.intellij.testFramework.builders.ModuleFixtureBuilder
-import com.intellij.testFramework.fixtures.CodeInsightFixtureTestCase
-import com.intellij.testFramework.fixtures.CodeInsightTestFixture
-import com.intellij.testFramework.fixtures.IdeaProjectTestFixture
-import com.intellij.testFramework.fixtures.IdeaTestFixtureFactory
-import com.intellij.testFramework.fixtures.ModuleFixture
-import com.intellij.testFramework.fixtures.impl.TempDirTestFixtureImpl
 import io.kotest.matchers.collections.shouldContainAll
 import org.jetbrains.bazel.languages.starlark.references.getCanonicalRepoNameToBzlFiles
-import org.jetbrains.bazel.project.BazelProjectFixtures.initializeBazelProject
-import org.jetbrains.bazel.workspace.setRepoMapping
-import org.jetbrains.bazel.workspacemodel.entities.BazelProjectDirectoriesEntityFixtures.emptyBazelDirectoryWorkspaceEntity
-import org.junit.Rule
-import org.junit.Test
-import org.junit.rules.TemporaryFolder
-import org.junit.runner.RunWith
-import org.junit.runners.JUnit4
+import org.jetbrains.bazel.test.framework.BazelTestApplication
+import org.jetbrains.bazel.test.framework.bazelCodeInsightFixture
+import org.jetbrains.bazel.test.framework.completeBasicLookupStrings
+import org.jetbrains.bazel.test.framework.testBazel
+import org.jetbrains.bazel.test.framework.testproject.bazelInfo
+import org.jetbrains.bazel.test.framework.testproject.externalRepositoryPath
+import org.jetbrains.bazel.test.framework.testproject.projectDirectories
+import org.jetbrains.bazel.test.framework.testproject.sync
+import org.jetbrains.bazel.test.framework.testproject.writeFile
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
 
-@RunWith(JUnit4::class)
-class BazelLoadFilepathCompletionTest : CodeInsightFixtureTestCase<ModuleFixtureBuilder<ModuleFixture>>() {
+@BazelTestApplication
+class BazelLoadFilepathCompletionTest {
+  private val myFixture by bazelCodeInsightFixture()
+  private val testBazel get() = myFixture.testBazel
 
-  override fun createMyFixture(projectFixture: IdeaProjectTestFixture): CodeInsightTestFixture {
-    return IdeaTestFixtureFactory.getFixtureFactory().createCodeInsightFixture(projectFixture, TempDirTestFixtureImpl())
+  @BeforeEach
+  fun setUp() {
+    testBazel.projectDirectories()
   }
 
   @Test
   fun `should complete basic filePath`() {
-    myFixture.tempDirFixture.createFile("BUILD.bazel", "")
-    myFixture.tempDirFixture.createFile("defs_one.bzl", "")
-    myFixture.tempDirFixture.createFile("defs_dir/defs_two.bzl", "")
+    testBazel.writeFile("BUILD.bazel")
+    testBazel.writeFile("defs_one.bzl")
+    testBazel.writeFile("defs_dir/defs_two.bzl")
 
-    val myRootPath = myFixture.tempDirFixture.tempDirPath.toNioPathOrNull()!!
-
-    project.setRepoMapping { mainRepo(myRootPath) }
-    getCanonicalRepoNameToBzlFiles(project)
-    IndexingTestUtil.forceSkipWaiting
+    getCanonicalRepoNameToBzlFiles(myFixture.project)
 
     myFixture.configureByText("BUILD.bazel", """load("//:<caret>)""")
     myFixture.type("d")
 
-    val lookups = myFixture.completeBasic().flatMap { it.allLookupStrings }
+    val lookups = myFixture.completeBasicLookupStrings()
 
     lookups shouldContainAll listOf("\"//:defs_one.bzl\"", "\"//:defs_dir/defs_two.bzl\"")
   }
 
-  @get:Rule
-  val tempFolder = TemporaryFolder()
-
   @Test
   fun `should complete external filePath`() {
-    myFixture.tempDirFixture.createFile("BUILD.bazel", "")
-    val rulesDir = tempFolder.newFolder("rules_kotlin")
-    tempFolder.newFile("rules_kotlin/MODULE.bazel")
-    tempFolder.newFile("rules_kotlin/BUILD.bazel")
-    tempFolder.newFolder("rules_kotlin/package")
-    tempFolder.newFile("rules_kotlin/kt_jvm_library.bzl")
-    tempFolder.newFile("rules_kotlin/package/kt_jvm_binary.bzl")
-
-    project.setRepoMapping { repo("rules_kotlin", rulesDir.toPath()) }
-    getCanonicalRepoNameToBzlFiles(project)
+    testBazel.writeFile("BUILD.bazel")
+    testBazel.sync { repositories { external("rules_kotlin") } }
+    val repository = testBazel.bazelInfo.externalRepositoryPath("rules_kotlin")
+    for (relativePath in listOf("MODULE.bazel", "BUILD.bazel", "kt_jvm_library.bzl", "package/kt_jvm_binary.bzl")) {
+      testBazel.writeFile(repository.resolve(relativePath))
+    }
+    getCanonicalRepoNameToBzlFiles(myFixture.project)
 
     myFixture.configureByText("BUILD.bazel", """load("//:<caret>)""")
     myFixture.type("kt")
 
-    val lookups = myFixture.completeBasic().flatMap { it.allLookupStrings }
+    val lookups = myFixture.completeBasicLookupStrings()
 
     lookups shouldContainAll
       listOf(
@@ -79,41 +64,22 @@ class BazelLoadFilepathCompletionTest : CodeInsightFixtureTestCase<ModuleFixture
 
   @Test
   fun `should complete for use_extension`() {
-    val rulesDir = tempFolder.newFolder("rules_jvm_external")
-    tempFolder.newFile("rules_jvm_external/MODULE.bazel")
-    tempFolder.newFile("rules_jvm_external/BUILD.bazel")
-    tempFolder.newFile("rules_jvm_external/defs.bzl")
-    tempFolder.newFile("rules_jvm_external/extensions.bzl")
-
-    project.setRepoMapping { repo("rules_jvm_external", rulesDir.toPath()) }
-    getCanonicalRepoNameToBzlFiles(project)
+    testBazel.sync { repositories { external("rules_jvm_external") } }
+    val repository = testBazel.bazelInfo.externalRepositoryPath("rules_jvm_external")
+    for (relativePath in listOf("MODULE.bazel", "BUILD.bazel", "defs.bzl", "extensions.bzl")) {
+      testBazel.writeFile(repository.resolve(relativePath))
+    }
+    getCanonicalRepoNameToBzlFiles(myFixture.project)
 
     myFixture.configureByText("MODULE.bazel", """maven = use_extension("<caret>)""")
     myFixture.type("@ru")
 
-    val lookups = myFixture.completeBasic().flatMap { it.allLookupStrings }
+    val lookups = myFixture.completeBasicLookupStrings()
 
     lookups shouldContainAll
       listOf(
         "\"@rules_jvm_external//:extensions.bzl\"",
         "\"@rules_jvm_external//:defs.bzl\"",
       )
-  }
-
-
-  override fun setUp() {
-    super.setUp()
-    prepareProject()
-  }
-
-  fun prepareProject() {
-    initializeBazelProject(project, myFixture.tempDirPath)
-    WriteCommandAction.runWriteCommandAction(project) {
-      project.workspaceModel.updateProjectModel("add BazelProjectDirectoriesEntity") {
-        it.addEntity(emptyBazelDirectoryWorkspaceEntity(project))
-      }
-    }
-
-    IndexingTestUtil.forceSkipWaiting
   }
 }

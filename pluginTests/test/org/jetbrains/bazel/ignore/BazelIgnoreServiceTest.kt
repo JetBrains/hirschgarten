@@ -1,47 +1,41 @@
 package org.jetbrains.bazel.ignore
 
-import com.intellij.testFramework.utils.vfs.createDirectory
-import com.intellij.testFramework.utils.vfs.createFile
 import io.kotest.matchers.booleans.shouldBeFalse
 import io.kotest.matchers.booleans.shouldBeTrue
-import org.jetbrains.bazel.commons.BzlmodRepoMapping
-import org.jetbrains.bazel.config.rootDir
-import org.jetbrains.bazel.workspace.model.test.framework.WorkspaceModelBaseTest
+import org.jetbrains.bazel.test.framework.BazelTestApplication
+import org.jetbrains.bazel.test.framework.testproject.bazelInfo
+import org.jetbrains.bazel.test.framework.testproject.testBazelProjectFixture
+import org.jetbrains.bazel.test.framework.testproject.testRepoMapping
+import org.jetbrains.bazel.test.framework.testproject.workspaceRoot
+import org.jetbrains.bazel.test.framework.testproject.writeFile
 import org.junit.jupiter.api.Test
-import java.nio.file.Path
 
-class BazelIgnoreServiceTest: WorkspaceModelBaseTest() {
+@BazelTestApplication
+class BazelIgnoreServiceTest {
+  private val testBazel by testBazelProjectFixture()
+
   @Test
   fun `test multiple repositories`() {
-    runTestWriteAction {
-      project.rootDir
-        .createFile(".bazelignore")
-        .setBinaryContent(
-          """
-            sources
-            nested
-          """.trimIndent().toByteArray(Charsets.UTF_8),
-        )
-      project.rootDir
-        .createDirectory("nested")
-        .createFile(".bazelignore")
-        .setBinaryContent(
-          """
-            src
-          """.trimIndent().toByteArray(Charsets.UTF_8),
-        )
-    }
+    testBazel.writeFile(
+      ".bazelignore",
+      """
+        sources
+        nested
+      """.trimIndent(),
+    )
+    testBazel.writeFile(
+      "nested/.bazelignore",
+      """
+        src
+      """.trimIndent(),
+    )
 
-    val workspaceRoot = Path.of(project.rootDir.path)
+    val project = testBazel.project
+    val workspaceRoot = testBazel.workspaceRoot
     (BazelIgnoreService.getInstance(project) as DefaultBazelIgnoreService)
       .update(
         workspaceRoot,
-        BzlmodRepoMapping(
-          canonicalRepoNameToLocalPath = mapOf("nested+" to Path.of("nested")),
-          apparentRepoNameToCanonicalName = emptyMap(),
-          canonicalRepoNameToPath = emptyMap(),
-          nonLocalCanonicalRepoNames = setOf(),
-        )
+        testRepoMapping(testBazel.bazelInfo) { local("nested+", "nested") },
       )
 
     BazelIgnoreService.getInstance(project).isIgnored(workspaceRoot).shouldBeFalse()

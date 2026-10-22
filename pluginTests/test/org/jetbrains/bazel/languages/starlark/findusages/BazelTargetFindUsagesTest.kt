@@ -1,15 +1,9 @@
 package org.jetbrains.bazel.languages.starlark.findusages
 
-import com.intellij.openapi.application.EDT
 import com.intellij.openapi.application.runReadActionBlocking
-import com.intellij.openapi.vfs.VirtualFile
-import com.intellij.testFramework.common.timeoutRunBlocking
 import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.collections.shouldHaveSingleElement
 import io.kotest.matchers.collections.shouldHaveSize
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
-import org.jetbrains.bazel.project.BazelProjectFixtures
 import org.jetbrains.bazel.test.framework.BazelTestApplication
 import org.jetbrains.bazel.test.framework.bazelCodeInsightFixture
 import org.junit.jupiter.api.Test
@@ -40,7 +34,6 @@ class BazelTargetFindUsagesTest {
 
   @Test
   fun `should find usage of target name across BUILD files`() {
-    myFixture.addFileToProject("MODULE.bazel", "")
     val libFile = myFixture.addFileToProject(
       "core/BUILD",
       """
@@ -59,14 +52,13 @@ class BazelTargetFindUsagesTest {
       )
       """.trimIndent(),
     )
-    openFileInEditor(libFile.virtualFile)
+    myFixture.openFileInEditor(libFile.virtualFile)
     val usages = runReadActionBlocking { myFixture.findBazelTargetUsages("lib") }
     runReadActionBlocking { usages.shouldHaveSingleElement { it.element?.text == "\"//core:lib\"" } }
   }
 
   @Test
   fun `should find multiple usages of target name`() {
-    myFixture.addFileToProject("MODULE.bazel", "")
     val libFile = myFixture.addFileToProject(
       "core/BUILD",
       """
@@ -94,7 +86,7 @@ class BazelTargetFindUsagesTest {
       )
       """.trimIndent(),
     )
-    openFileInEditor(libFile.virtualFile)
+    myFixture.openFileInEditor(libFile.virtualFile)
 
     val usages = runReadActionBlocking { myFixture.findBazelTargetUsages("lib") }
     usages shouldHaveSize 3
@@ -143,7 +135,6 @@ class BazelTargetFindUsagesTest {
 
   @Test
   fun `should not find usages for name attribute in bzl file`() {
-    myFixture.addFileToProject("MODULE", "")
     myFixture.addFileToProject(
       "BUILD",
       """
@@ -171,7 +162,6 @@ class BazelTargetFindUsagesTest {
 
   @Test
   fun `should find default target shorthand usage`() {
-    myFixture.addFileToProject("MODULE.bazel", "")
     val libFile = myFixture.addFileToProject(
       "core/BUILD",
       """
@@ -190,14 +180,13 @@ class BazelTargetFindUsagesTest {
       )
       """.trimIndent(),
     )
-    openFileInEditor(libFile.virtualFile)
+    myFixture.openFileInEditor(libFile.virtualFile)
     val usages = runReadActionBlocking { myFixture.findBazelTargetUsages("core") }
     runReadActionBlocking { usages.shouldHaveSingleElement { it.element?.text == "\"//core\"" } }
   }
 
   @Test
   fun `should find default target shorthand usage with multi-segment package`() {
-    myFixture.addFileToProject("MODULE.bazel", "")
     val libFile = myFixture.addFileToProject(
       "lib/bar/BUILD",
       """
@@ -216,14 +205,13 @@ class BazelTargetFindUsagesTest {
       )
       """.trimIndent(),
     )
-    openFileInEditor(libFile.virtualFile)
+    myFixture.openFileInEditor(libFile.virtualFile)
     val usages = runReadActionBlocking { myFixture.findBazelTargetUsages("bar") }
     runReadActionBlocking { usages.shouldHaveSingleElement { it.element?.text == "\"//lib/bar\"" } }
   }
 
   @Test
   fun `should find usage from root package target`() {
-    myFixture.addFileToProject("MODULE.bazel", "")
     val libFile = myFixture.addFileToProject(
       "BUILD",
       """
@@ -242,14 +230,8 @@ class BazelTargetFindUsagesTest {
       )
       """.trimIndent(),
     )
-    openFileInEditor(libFile.virtualFile)
+    myFixture.openFileInEditor(libFile.virtualFile)
     val usages = runReadActionBlocking { myFixture.findBazelTargetUsages("lib") }
     runReadActionBlocking { usages.shouldHaveSingleElement { it.element?.text == "\"//:lib\"" } }
-  }
-
-  private fun openFileInEditor(file: VirtualFile): Unit = timeoutRunBlocking {
-    withContext(Dispatchers.EDT) {
-      myFixture.openFileInEditor(file)
-    }
   }
 }

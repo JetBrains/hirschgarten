@@ -1,28 +1,28 @@
 package org.jetbrains.bazel.sync.workspace.snapshot
 
-import com.intellij.testFramework.junit5.fixture.projectFixture
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.shouldBe
 import kotlinx.coroutines.runBlocking
 import org.jetbrains.bazel.commons.BzlmodRepoMapping
 import org.jetbrains.bazel.commons.RepoMapping
 import org.jetbrains.bazel.commons.RepoMappingDisabled
-import org.jetbrains.bazel.label.DependencyLabel
-import org.jetbrains.bazel.label.DependencyLabelKind
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.languages.projectview.ProjectView
 import org.jetbrains.bazel.sync.workspace.BazelResolvedWorkspace
 import org.jetbrains.bazel.sync.workspace.persistence.TargetLoadOptions
 import org.jetbrains.bazel.test.framework.BazelTestApplication
-import org.jetbrains.bazel.test.framework.target.TestBuildTarget
-import org.jetbrains.bazel.test.framework.testBazelInfo
+import org.jetbrains.bazel.test.framework.testproject.javaLibrary
+import org.jetbrains.bazel.test.framework.testproject.testBazelProjectFixture
+import org.jetbrains.bazel.test.framework.testproject.testProjectBazelInfo
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.junit.jupiter.api.Test
 import java.nio.file.Path
 
 @BazelTestApplication
 class WorkspaceSnapshotMergeTest {
-  val project by projectFixture()
+  private val testBazel by testBazelProjectFixture()
+
+  private val layout = testProjectBazelInfo(Path.of("workspace"))
 
   @Test
   fun `merge keeps the root targets of both snapshots`(): Unit = runBlocking {
@@ -162,19 +162,19 @@ class WorkspaceSnapshotMergeTest {
 
   private suspend fun fullSync(resolved: BazelResolvedWorkspace): WorkspaceSnapshot =
     WorkspaceSnapshotBuilder.build(
-      project = project,
+      project = testBazel.project,
       projectView = ProjectView.EMPTY,
       repoMapping = resolved.repoMapping,
-      bazelInfo = testBazelInfo(),
+      bazelInfo = layout,
       resolved = resolved,
     )
 
   private suspend fun partialSync(previous: WorkspaceSnapshot, resolved: BazelResolvedWorkspace): WorkspaceSnapshot {
     val incomplete = WorkspaceSnapshotBuilder.buildIncomplete(resolved = resolved)
     return WorkspaceSnapshotBuilder.merge(
-      project = project,
+      project = testBazel.project,
       projectView = ProjectView.EMPTY,
-      bazelInfo = testBazelInfo(),
+      bazelInfo = layout,
       snapshots = listOf(previous.toIncompleteSnapshot(), incomplete),
     )
   }
@@ -193,16 +193,7 @@ class WorkspaceSnapshotMergeTest {
       configurations = emptyMap(),
     )
 
-  private fun target(label: String, deps: List<String> = emptyList()): TestBuildTarget =
-    TestBuildTarget(
-      key = WorkspaceTargetKey(label = Label.parse(label)),
-      dependencies = deps.map {
-        DependencyLabel(
-          targetKey = WorkspaceTargetKey(label = Label.parse(it)),
-          kind = DependencyLabelKind.COMPILE,
-        )
-      },
-    )
+  private fun target(label: String, deps: List<String> = emptyList()): BuildTarget = javaLibrary(label) { deps(*deps.toTypedArray()) }
 
   private fun bzlmod(repoName: String): BzlmodRepoMapping =
     BzlmodRepoMapping(

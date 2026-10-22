@@ -1,21 +1,15 @@
 package org.jetbrains.bazel.languages.starlark.findusages
 
-import com.intellij.openapi.application.EDT
 import com.intellij.openapi.application.runReadActionBlocking
-import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.search.GlobalSearchScope
 import com.intellij.psi.search.LocalSearchScope
 import com.intellij.psi.search.PsiSearchHelper
 import com.intellij.psi.util.PsiTreeUtil
-import com.intellij.testFramework.common.timeoutRunBlocking
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeInstanceOf
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkNamedElement
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkTargetExpression
 import org.jetbrains.bazel.languages.starlark.psi.functions.StarlarkFunctionDeclaration
-import org.jetbrains.bazel.project.BazelProjectFixtures
 import org.jetbrains.bazel.test.framework.BazelTestApplication
 import org.jetbrains.bazel.test.framework.bazelCodeInsightFixture
 import org.junit.jupiter.api.Test
@@ -28,7 +22,6 @@ class StarlarkUseScopeOptimizerTest {
 
   @Test
   fun `should narrow scope for top-level public function to defining and loading files`() {
-    myFixture.addFileToProject("MODULE.bazel", "")
     myFixture.addFileToProject("BUILD", "")
     val defsFile = myFixture.addFileToProject(
       "defs.bzl",
@@ -51,7 +44,7 @@ class StarlarkUseScopeOptimizerTest {
           pass
       """.trimIndent(),
     )
-    openFileInEditor(defsFile.virtualFile)
+    myFixture.openFileInEditor(defsFile.virtualFile)
 
     val useScope = runReadActionBlocking {
       val helperFn = PsiTreeUtil
@@ -67,7 +60,6 @@ class StarlarkUseScopeOptimizerTest {
 
   @Test
   fun `should narrow scope for top-level public variable to defining and loading files`() {
-    myFixture.addFileToProject("MODULE.bazel", "")
     myFixture.addFileToProject("BUILD", "")
     val defsFile = myFixture.addFileToProject(
       "defs.bzl",
@@ -88,7 +80,7 @@ class StarlarkUseScopeOptimizerTest {
       OTHER = 99
       """.trimIndent(),
     )
-    openFileInEditor(defsFile.virtualFile)
+    myFixture.openFileInEditor(defsFile.virtualFile)
 
     val useScope = runReadActionBlocking {
       val myConst = PsiTreeUtil.collectElementsOfType(myFixture.file, StarlarkTargetExpression::class.java)
@@ -110,7 +102,7 @@ class StarlarkUseScopeOptimizerTest {
           return x + 1
       """.trimIndent(),
     )
-    openFileInEditor(defsFile.virtualFile)
+    myFixture.openFileInEditor(defsFile.virtualFile)
 
     val useScope = runReadActionBlocking {
       val fn = PsiTreeUtil
@@ -129,7 +121,7 @@ class StarlarkUseScopeOptimizerTest {
       _PRIVATE_CONST = 42
       """.trimIndent(),
     )
-    openFileInEditor(defsFile.virtualFile)
+    myFixture.openFileInEditor(defsFile.virtualFile)
 
     val useScope = runReadActionBlocking {
       val privateConst = PsiTreeUtil
@@ -150,7 +142,7 @@ class StarlarkUseScopeOptimizerTest {
           return local_var
       """.trimIndent(),
     )
-    openFileInEditor(defsFile.virtualFile)
+    myFixture.openFileInEditor(defsFile.virtualFile)
 
     val useScope = runReadActionBlocking {
       val localVar = PsiTreeUtil
@@ -170,7 +162,7 @@ class StarlarkUseScopeOptimizerTest {
           return param
       """.trimIndent(),
     )
-    openFileInEditor(defsFile.virtualFile)
+    myFixture.openFileInEditor(defsFile.virtualFile)
 
     val useScope = runReadActionBlocking {
       val param = PsiTreeUtil
@@ -179,11 +171,5 @@ class StarlarkUseScopeOptimizerTest {
       PsiSearchHelper.getInstance(project).getUseScope(param)
     }
     useScope.shouldBeInstanceOf<LocalSearchScope>()
-  }
-
-  private fun openFileInEditor(file: VirtualFile): Unit = timeoutRunBlocking {
-    withContext(Dispatchers.EDT) {
-      myFixture.openFileInEditor(file)
-    }
   }
 }

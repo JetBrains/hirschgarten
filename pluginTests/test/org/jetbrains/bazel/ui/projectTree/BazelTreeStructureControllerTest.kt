@@ -1,54 +1,33 @@
 package org.jetbrains.bazel.ui.projectTree
 
-import com.intellij.openapi.application.runWriteAction
-import com.intellij.openapi.util.io.toCanonicalPath
 import com.intellij.openapi.vfs.VirtualFile
-import com.intellij.openapi.vfs.findOrCreateDirectory
-import com.intellij.openapi.vfs.findOrCreateFile
-import com.intellij.openapi.vfs.refreshAndFindVirtualDirectory
-import com.intellij.platform.backend.workspace.toVirtualFileUrl
-import com.intellij.platform.backend.workspace.workspaceModel
-import com.intellij.testFramework.junit5.TestApplication
-import com.intellij.testFramework.junit5.fixture.projectFixture
-import com.intellij.testFramework.junit5.fixture.tempPathFixture
-import org.jetbrains.bazel.commons.constants.Constants
-import org.jetbrains.bazel.project.BazelProjectFixtures.initializeBazelProject
+import org.jetbrains.bazel.test.framework.BazelTestApplication
+import org.jetbrains.bazel.test.framework.testproject.createDirectory
+import org.jetbrains.bazel.test.framework.testproject.projectDirectories
+import org.jetbrains.bazel.test.framework.testproject.testBazelProjectFixture
+import org.jetbrains.bazel.test.framework.testproject.writeFile
 import org.jetbrains.bazel.ui.projectTree.BazelTreeNodeType.EXCLUDED
 import org.jetbrains.bazel.ui.projectTree.BazelTreeNodeType.ROOT
 import org.jetbrains.bazel.ui.projectTree.BazelTreeNodeType.UNIMPORTED
 import org.jetbrains.bazel.workspace.bazelProjectDirectoriesEntity
-import org.jetbrains.bazel.workspacemodel.entities.BazelProjectDirectoriesEntityFixtures.emptyBazelDirectoryWorkspaceEntity
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Assertions.assertTrue
-import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertNotNull
 
-@TestApplication
+@BazelTestApplication
 internal class BazelTreeStructureControllerTest {
-  private val tempDirFixture = tempPathFixture()
-  private val tempDir by tempDirFixture
-
-  private val projectFixture = projectFixture(pathFixture = tempDirFixture)
-  private val project by projectFixture
-
-  @BeforeEach
-  fun initializeBazelProject() {
-    // Explicitly create an empty projectview, not to generate the .bazelbsp folder
-    //   (this would interfere with testing behavior of unimported directories)
-    createFile(tempDir.resolve(Constants.DEFAULT_PROJECT_VIEW_FILE_NAME).toCanonicalPath())
-    initializeBazelProject(project, tempDir)
-  }
+  private val testBazel by testBazelProjectFixture()
 
   @Nested
   inner class ShouldShowNodeCases {
     @Test
     fun `when project is not imported then only root node should be visible`() {
       // GIVEN
-      assertNull(project.bazelProjectDirectoriesEntity())
+      assertNull(testBazel.project.bazelProjectDirectoriesEntity())
 
       // THEN
       assertNodeVisible(true, ROOT)
@@ -59,8 +38,8 @@ internal class BazelTreeStructureControllerTest {
     @Test
     fun `when there are no unimported directories then unimported node is not visible`() {
       // GIVEN
-      updateWorkspaceModel()
-      assertNotNull(project.bazelProjectDirectoriesEntity())
+      testBazel.projectDirectories()
+      assertNotNull(testBazel.project.bazelProjectDirectoriesEntity())
 
       // THEN
       assertNodeVisible(false, UNIMPORTED)
@@ -69,9 +48,9 @@ internal class BazelTreeStructureControllerTest {
     @Test
     fun `when there is an unimported directory then unimported node is visible`() {
       // GIVEN
-      createDirectory("unimportedDir")
-      updateWorkspaceModel()
-      assertNotNull(project.bazelProjectDirectoriesEntity())
+      testBazel.createDirectory("unimportedDir")
+      testBazel.projectDirectories()
+      assertNotNull(testBazel.project.bazelProjectDirectoriesEntity())
 
       // THEN
       assertNodeVisible(true, UNIMPORTED)
@@ -80,8 +59,8 @@ internal class BazelTreeStructureControllerTest {
     @Test
     fun `when there are no excluded directories then excluded node is not visible`() {
       // GIVEN
-      updateWorkspaceModel()
-      assertNotNull(project.bazelProjectDirectoriesEntity())
+      testBazel.projectDirectories()
+      assertNotNull(testBazel.project.bazelProjectDirectoriesEntity())
 
       // THEN
       assertNodeVisible(false, EXCLUDED)
@@ -90,8 +69,9 @@ internal class BazelTreeStructureControllerTest {
     @Test
     fun `when there is an excluded directory then excluded node is visible`() {
       // GIVEN
-      updateWorkspaceModel(excluded = setOf(createDirectory("excludedDir")))
-      assertNotNull(project.bazelProjectDirectoriesEntity())
+      testBazel.createDirectory("excludedDir")
+      testBazel.projectDirectories { exclude("excludedDir") }
+      assertNotNull(testBazel.project.bazelProjectDirectoriesEntity())
 
       // THEN
       assertNodeVisible(true, EXCLUDED)
@@ -103,8 +83,8 @@ internal class BazelTreeStructureControllerTest {
     @Test
     fun `when the project is not imported then all directories are visible under the root node`() {
       // GIVEN
-      val exampleDirectory = createDirectory("exampleDirectory")
-      assertNull(project.bazelProjectDirectoriesEntity())
+      val exampleDirectory = testBazel.createDirectory("exampleDirectory")
+      assertNull(testBazel.project.bazelProjectDirectoriesEntity())
 
       // THEN
       assertVisibleUnderNode(exampleDirectory, ROOT)
@@ -113,13 +93,13 @@ internal class BazelTreeStructureControllerTest {
     @Test
     fun `individual directories are only visible under the appropriate nodes`() {
       // GIVEN
-      val includedDir = createDirectory("includedDir")
-      val excludedDir = createDirectory("excludedDir")
-      val unimportedDir = createDirectory("unimportedDir")
-      updateWorkspaceModel(
-        included = setOf(includedDir),
-        excluded = setOf(excludedDir),
-      )
+      val includedDir = testBazel.createDirectory("includedDir")
+      val excludedDir = testBazel.createDirectory("excludedDir")
+      val unimportedDir = testBazel.createDirectory("unimportedDir")
+      testBazel.projectDirectories {
+        include("includedDir")
+        exclude("excludedDir")
+      }
 
       // THEN
       assertVisibleOnlyUnderNode(includedDir, ROOT)
@@ -130,12 +110,14 @@ internal class BazelTreeStructureControllerTest {
     @Test
     fun `parent directory is visible under a node when it contains directory belonging to that node`() {
       // GIVEN
-      val parentDir = createDirectory("parentDir")
-      updateWorkspaceModel(
-        included = setOf(createDirectory("parentDir/includedDir")),
-        excluded = setOf(createDirectory("parentDir/excludedDir")),
-      )
-      createDirectory("parentDir/unimportedDir")
+      val parentDir = testBazel.createDirectory("parentDir")
+      testBazel.createDirectory("parentDir/includedDir")
+      testBazel.createDirectory("parentDir/excludedDir")
+      testBazel.projectDirectories {
+        include("parentDir/includedDir")
+        exclude("parentDir/excludedDir")
+      }
+      testBazel.createDirectory("parentDir/unimportedDir")
 
       // THEN parentDir is visible under ROOT, EXCLUDED, UNIMPORTED nodes, because it contains included, excluded and unimported directories
       assertVisibleUnderNode(parentDir, ROOT)
@@ -149,8 +131,8 @@ internal class BazelTreeStructureControllerTest {
     @Test
     fun `files in root directory are visible only under the root node`() {
       // GIVEN
-      val file = createFile("README.md")
-      updateWorkspaceModel()
+      val file = testBazel.writeFile("README.md")
+      testBazel.projectDirectories()
 
       // THEN
       assertVisibleOnlyUnderNode(file, ROOT)
@@ -159,13 +141,13 @@ internal class BazelTreeStructureControllerTest {
     @Test
     fun `files in directory showing under multiple nodes should be visible only under a single node`() {
       // GIVEN
-      val excludedParentDir = createDirectory("parentDir")
-      val includedDir = createDirectory("parentDir/includedDir")
-      val file = createFile("parentDir/README.md")
-      updateWorkspaceModel(
-        included = setOf(includedDir),
-        excluded = setOf(excludedParentDir),
-      )
+      val excludedParentDir = testBazel.createDirectory("parentDir")
+      val includedDir = testBazel.createDirectory("parentDir/includedDir")
+      val file = testBazel.writeFile("parentDir/README.md")
+      testBazel.projectDirectories {
+        include("parentDir/includedDir")
+        exclude("parentDir")
+      }
 
       // THEN - parentDir is visible under ROOT and EXCLUDED, because it's excluded and contains included directory
       assertVisibleUnderNode(excludedParentDir, ROOT)
@@ -179,55 +161,20 @@ internal class BazelTreeStructureControllerTest {
     }
   }
 
-  private fun createFile(path: String): VirtualFile {
-    val virtualDirectory = tempDir.refreshAndFindVirtualDirectory()!!
-    return runWriteAction {
-      virtualDirectory.findOrCreateFile(path)
-    }
-  }
-
-  private fun createDirectory(path: String): VirtualFile {
-    val virtualDirectory = tempDir.refreshAndFindVirtualDirectory()!!
-    return runWriteAction {
-      virtualDirectory.findOrCreateDirectory(path)
-    }
-  }
-
-  private fun updateWorkspaceModel(
-    included: Set<VirtualFile> = emptySet(),
-    excluded: Set<VirtualFile> = emptySet(),
-  ) {
-    val workspaceModel = project.workspaceModel
-    val workspaceModelUrlManager = workspaceModel.getVirtualFileUrlManager()
-
-    val newWorkspaceEntity = emptyBazelDirectoryWorkspaceEntity(project).also { entity ->
-      entity.includedRoots = included.map { it.toVirtualFileUrl(workspaceModelUrlManager) }
-        .toMutableList()
-      entity.excludedRoots = excluded.map { it.toVirtualFileUrl(workspaceModelUrlManager) }
-        .toMutableList()
-    }
-
-    runWriteAction {
-      workspaceModel.updateProjectModel("Add bazel project directories entity") { storage ->
-        storage.addEntity(newWorkspaceEntity)
-      }
-    }
-  }
-
   private fun assertNodeVisible(expected: Boolean, nodeType: BazelTreeNodeType) {
-    val bazelTreeStructureController = BazelTreeStructureController.getInstance(project)
+    val bazelTreeStructureController = BazelTreeStructureController.getInstance(testBazel.project)
     assertEquals(expected, bazelTreeStructureController.shouldShowNode(nodeType))
   }
 
   private fun assertVisibleUnderNode(file: VirtualFile, nodeType: BazelTreeNodeType) {
-    val bazelTreeStructureController = BazelTreeStructureController.getInstance(project)
+    val bazelTreeStructureController = BazelTreeStructureController.getInstance(testBazel.project)
     assertTrue(bazelTreeStructureController.shouldShowUnderTreeNode(file, nodeType)) {
       "File $file should be visible under $nodeType node"
     }
   }
 
   private fun assertVisibleOnlyUnderNode(file: VirtualFile, nodeType: BazelTreeNodeType) {
-    val bazelTreeStructureController = BazelTreeStructureController.getInstance(project)
+    val bazelTreeStructureController = BazelTreeStructureController.getInstance(testBazel.project)
     assertTrue(bazelTreeStructureController.shouldShowUnderTreeNode(file, nodeType)) {
       "File $file should be visible under $nodeType node"
     }

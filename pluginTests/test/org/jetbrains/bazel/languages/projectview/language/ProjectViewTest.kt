@@ -6,9 +6,6 @@ import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.testFramework.common.timeoutRunBlocking
-import com.intellij.testFramework.junit5.fixture.moduleFixture
-import com.intellij.testFramework.junit5.fixture.projectFixture
-import com.intellij.testFramework.junit5.fixture.tempPathFixture
 import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.nulls.shouldBeNull
@@ -35,30 +32,24 @@ import org.jetbrains.bazel.languages.projectview.directories
 import org.jetbrains.bazel.languages.projectview.dotIdeaDirectoryLocation
 import org.jetbrains.bazel.languages.projectview.imports.Import
 import org.jetbrains.bazel.languages.projectview.syncFlags
-import org.jetbrains.bazel.project.BazelProjectFixtures.initializeBazelProject
 import org.jetbrains.bazel.test.framework.BazelTestApplication
+import org.jetbrains.bazel.test.framework.bazelCodeInsightFixture
+import org.jetbrains.bazel.test.framework.testBazel
+import org.jetbrains.bazel.test.framework.testproject.createDirectory
+import org.jetbrains.bazel.test.framework.testproject.workspaceRoot
+import org.jetbrains.bazel.test.framework.testproject.writeFile
 import org.jetbrains.bazel.utils.findVirtualFile
-import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.nio.file.Path
 import kotlin.io.path.Path
-import kotlin.io.path.createDirectory
+import kotlin.io.path.createDirectories
+import kotlin.io.path.writeBytes
 import kotlin.time.Duration.Companion.seconds
 
 @BazelTestApplication
 class ProjectViewTest {
-  private val projectFixture = projectFixture(openAfterCreation = true)
-  private val tempDirFixture = tempPathFixture()
-  private val moduleFixture = projectFixture.moduleFixture(tempDirFixture, addPathToSourceRoot = true)
-
-  private val project get() = projectFixture.get()
-  private val rootDir by tempDirFixture
-
-  @BeforeEach
-  fun setUp() {
-    moduleFixture.get()
-    initializeBazelProject(project, rootDir)
-  }
+  private val myFixture by bazelCodeInsightFixture()
+  private val testBazel get() = myFixture.testBazel
 
   @Test
   fun `test project view from file`() {
@@ -212,14 +203,14 @@ class ProjectViewTest {
 
   @Test
   fun `test unresolved import is reported at its position in the importing file`() {
-    val main = rootDir.writeProjectViewFile(
+    val main = testBazel.writeFile(
       "main.bazelproject",
       """
       dot_idea_directory_location: custom/.idea
 
       import missing.bazelproject
       """.trimIndent(),
-    )
+    ).toNioPath()
 
     val projectView = parse(main)
 
@@ -233,15 +224,15 @@ class ProjectViewTest {
 
   @Test
   fun `test a directory cannot be imported`() {
-    rootDir.resolve("importeddir").createDirectory()
-    val main = rootDir.writeProjectViewFile(
+    testBazel.createDirectory("importeddir")
+    val main = testBazel.writeFile(
       "main.bazelproject",
       """
       dot_idea_directory_location: custom/.idea
 
       import importeddir
       """.trimIndent(),
-    )
+    ).toNioPath()
 
     val projectView = parse(main)
 
@@ -251,7 +242,8 @@ class ProjectViewTest {
 
   @Test
   fun `test the byte order mark does not swallow the first section`() {
-    val main = rootDir.writeProjectViewFile("main.bazelproject", "\uFEFFdot_idea_directory_location: custom/.idea")
+    val main =
+      testBazel.workspaceRoot.writeProjectViewFileUnknownToVfs("main.bazelproject", "\uFEFFdot_idea_directory_location: custom/.idea")
 
     val projectView = parse(main)
 
@@ -260,8 +252,8 @@ class ProjectViewTest {
 
   @Test
   fun `test a file VFS does not know about is parsed`() {
-    val imported = rootDir.writeProjectViewFileUnknownToVfs("imported.bazelproject", "import_depth: 123")
-    val main = rootDir.writeProjectViewFileUnknownToVfs(
+    val imported = testBazel.workspaceRoot.writeProjectViewFileUnknownToVfs("imported.bazelproject", "import_depth: 123")
+    val main = testBazel.workspaceRoot.writeProjectViewFileUnknownToVfs(
       "main.bazelproject",
       "dot_idea_directory_location: custom/.idea\n\nimport imported.bazelproject",
     )
@@ -276,18 +268,18 @@ class ProjectViewTest {
 
   @Test
   fun `test the default project view comes from the template file in the project root`() {
-    rootDir.writeProjectViewFile("tools/intellij/.managed.bazelproject", "import_depth: 7")
+    testBazel.writeFile("tools/intellij/.managed.bazelproject", "import_depth: 7")
 
-    val projectView = ProjectViewFactory.fromDefault(project)
+    val projectView = ProjectViewFactory.fromDefault(testBazel.project)
 
     projectView.getSection(IMPORT_DEPTH_KEY) shouldBe 7
   }
 
   @Test
   fun `test forceDefaultTemplate ignores the template file in the project root`() {
-    rootDir.writeProjectViewFile("tools/intellij/.managed.bazelproject", "import_depth: 7")
+    testBazel.writeFile("tools/intellij/.managed.bazelproject", "import_depth: 7")
 
-    val projectView = ProjectViewFactory.fromDefault(project, forceDefaultTemplate = true)
+    val projectView = ProjectViewFactory.fromDefault(testBazel.project, forceDefaultTemplate = true)
 
     projectView.getSection(IMPORT_DEPTH_KEY) shouldBe -1
     projectView.deriveTargetsFromDirectories shouldBe true
@@ -295,12 +287,12 @@ class ProjectViewTest {
   }
 
   private fun parse(@Language("projectview") content: String): ProjectView =
-    parse(rootDir.writeProjectViewFile(".bazelproject", content))
+    parse(testBazel.writeFile(".bazelproject", content).toNioPath())
 
-  private fun parse(source: Path): ProjectView = ProjectViewFactory.from(project, source = source, root = rootDir)
+  private fun parse(source: Path): ProjectView = ProjectViewFactory.from(testBazel.project, source = source, root = testBazel.workspaceRoot)
 
   private fun createProjectViewFiles(): Pair<Path, Path> {
-    val imported = rootDir.writeProjectViewFile(
+    val imported = testBazel.writeFile(
       "imported.bazelproject",
       """
       import_depth: 123
@@ -308,15 +300,15 @@ class ProjectViewTest {
         //targetA
         //targetB
       """.trimIndent(),
-    )
-    val main = rootDir.writeProjectViewFile(
+    ).toNioPath()
+    val main = testBazel.writeFile(
       "main.bazelproject",
       """
       dot_idea_directory_location: custom/.idea
 
       import imported.bazelproject
       """.trimIndent(),
-    )
+    ).toNioPath()
     return main to imported
   }
 
@@ -326,10 +318,23 @@ class ProjectViewTest {
     val virtualFile = virtualFile()
     withContext(Dispatchers.EDT) {
       val document = FileDocumentManager.getInstance().getDocument(virtualFile).shouldNotBeNull()
-      WriteCommandAction.runWriteCommandAction(project) { document.setText(text) }
+      WriteCommandAction.runWriteCommandAction(testBazel.project) { document.setText(text) }
     }
     FileDocumentManager.getInstance().isFileModified(virtualFile) shouldBe true
   }
 
   private fun Path.virtualFile(): VirtualFile = findVirtualFile().shouldNotBeNull()
+
+  /**
+   * Writes a file and deliberately does not let the VFS see it.
+   *
+   * This is the situation of `BazelProjectStorePathCustomizer`, which parses the project view before the project exists,
+   * and of an imported file that nothing has opened yet.
+   */
+  private fun Path.writeProjectViewFileUnknownToVfs(relativePath: String, @Language("projectview") content: String): Path {
+    val path = resolve(relativePath)
+    path.parent.createDirectories()
+    path.writeBytes(content.toByteArray(Charsets.UTF_8))
+    return path
+  }
 }

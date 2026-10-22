@@ -4,8 +4,6 @@ import com.intellij.util.system.OS
 import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.shouldBe
 import org.jetbrains.bazel.bazelrunner.params.BazelFlag
-import org.jetbrains.bazel.commons.BazelInfo
-import org.jetbrains.bazel.commons.BazelRelease
 import org.jetbrains.bazel.commons.ExcludableValue
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.languages.projectview.ALLOW_MANUAL_TARGETS_SYNC_KEY
@@ -19,8 +17,9 @@ import org.jetbrains.bazel.languages.projectview.SYNC_FLAGS_KEY
 import org.jetbrains.bazel.languages.projectview.TARGETS_KEY
 import org.jetbrains.bazel.languages.projectview.TARGET_SHARD_SIZE_KEY
 import org.jetbrains.bazel.languages.projectview.targets
-import org.jetbrains.kotlin.cli.common.repl.replNormalizeLineBreaks
 import org.jetbrains.bazel.test.framework.BazelTestApplication
+import org.jetbrains.bazel.test.framework.testproject.testBazelRunner
+import org.jetbrains.kotlin.cli.common.repl.replNormalizeLineBreaks
 import org.junit.jupiter.api.Assertions.fail
 import org.junit.jupiter.api.Test
 import java.nio.file.Paths
@@ -56,26 +55,7 @@ private val mockProjectView: ProjectView = ProjectView(
   imports = emptyList(),
 )
 
-val mockBazelInfo =
-  BazelInfo(
-    execRoot = Path("execRoot"),
-    outputBase = Path("outputBase"),
-    workspaceRoot = Path("workspaceRoot"),
-    bazelBin = Path("bazel-bin"),
-    release = BazelRelease(7),
-    isBzlModEnabled = true,
-    isWorkspaceEnabled = true,
-    externalAutoloads = emptyList(),
-  )
-
-val mockBazelProcessLauncher = object : BazelProcessLauncher {
-  override fun launchProcess(executionDescriptor: BazelCommandExecutionDescriptor): Process {
-    throw NotImplementedError()
-  }
-}
-
-val bazelRunner = BazelRunner(null, mockBazelInfo.workspaceRoot, mockBazelProcessLauncher, Path("bazel"))
-val bazelRunnerWithBazelInfo = BazelRunner(null, mockBazelInfo.workspaceRoot, mockBazelProcessLauncher, Path("bazel"))
+private val bazelRunner = testBazelRunner(Path("workspaceRoot"))
 
 fun splitOfTargetPattern(cmds: List<String>): Pair<List<String>, List<String>> {
   cmds.indexOf("--") shouldBe -1
@@ -110,7 +90,7 @@ class BazelRunnerBuilderTest {
   @Test
   fun `build with targets from spec`() {
     val command =
-      bazelRunnerWithBazelInfo.buildBazelCommand(mockProjectView) {
+      bazelRunner.buildBazelCommand(mockProjectView) {
         build {
           addTargetsFromExcludableList(mockProjectView.targets)
         }
@@ -146,7 +126,7 @@ class BazelRunnerBuilderTest {
   @Test
   fun `build with additional bazel options after build flags`() {
     val command =
-      bazelRunnerWithBazelInfo.buildBazelCommand(mockProjectView) {
+      bazelRunner.buildBazelCommand(mockProjectView) {
         build {
           additionalBazelOptions.add("additionalFlag")
           targets.add("in1".label())

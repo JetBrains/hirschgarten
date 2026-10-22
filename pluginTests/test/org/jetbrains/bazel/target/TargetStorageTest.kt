@@ -3,8 +3,6 @@ package org.jetbrains.bazel.target
 import com.intellij.configurationStore.SettingsSavingComponent
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
-import com.intellij.testFramework.junit5.TestApplication
-import com.intellij.testFramework.junit5.fixture.projectFixture
 import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
@@ -24,7 +22,6 @@ import org.jetbrains.bazel.sync.workspace.persistence.InMemoryWorkspaceTargetMap
 import org.jetbrains.bazel.sync.workspace.persistence.TargetLoadOptions
 import org.jetbrains.bazel.sync.workspace.persistence.TargetSection
 import org.jetbrains.bazel.sync.workspace.persistence.WorkspaceSnapshotService
-import org.jetbrains.bazel.sync.workspace.persistence.WorkspaceSnapshotServiceImpl
 import org.jetbrains.bazel.sync.workspace.snapshot.CommonWorkspaceSyncConfig
 import org.jetbrains.bazel.sync.workspace.snapshot.ExecutableTargetsIndexBuilder
 import org.jetbrains.bazel.sync.workspace.snapshot.File2TargetMapBuilder
@@ -34,10 +31,11 @@ import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceSnapshot
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceSnapshotMetadata
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetGraphBuilder
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
+import org.jetbrains.bazel.test.framework.BazelTestApplication
 import org.jetbrains.bazel.test.framework.target.TestBuildTarget
 import org.jetbrains.bazel.test.framework.testBazelInfo
+import org.jetbrains.bazel.test.framework.testproject.testBazelProjectFixture
 import org.jetbrains.bazel.ui.gutters.NonImportedBuildTarget
-import org.jetbrains.bazel.workspace.model.test.framework.setTargets
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.BuildTargetData
 import org.jetbrains.bsp.protocol.BuildTargetTag
@@ -46,20 +44,14 @@ import org.jetbrains.bsp.protocol.OutputLocationCollection
 import org.jetbrains.bsp.protocol.StringsCollection
 import org.jetbrains.bsp.protocol.data
 import org.jetbrains.bsp.protocol.id
-import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.nio.file.Path
 
-@TestApplication
+@BazelTestApplication
 class TargetStorageTest {
 
-  private val projectFixture = projectFixture()
-  private val project by projectFixture
-
-  @BeforeEach
-  fun before() {
-    (project.service<WorkspaceSnapshotService>() as? WorkspaceSnapshotServiceImpl)?.forcePersistent = true
-  }
+  private val testBazel by testBazelProjectFixture(openAfterCreation = false, persistentSnapshots = true)
+  private val project: Project get() = testBazel.project
 
   private suspend fun publish(project: Project, snapshot: WorkspaceSnapshot) {
     project.service<WorkspaceSnapshotService>().update { snapshot to Unit }
@@ -296,7 +288,8 @@ class TargetStorageTest {
     val second = targetUtils.allTargetSummaries()
     second shouldBeSameInstanceAs first
 
-    project.setTargets(listOf(bin))
+    publish(project, snapshot(project, listOf(bin)))
+    targetUtils.awaitLoaded()
 
     val afterNewSnapshot = targetUtils.allTargetSummaries()
     afterNewSnapshot shouldNotBeSameInstanceAs first

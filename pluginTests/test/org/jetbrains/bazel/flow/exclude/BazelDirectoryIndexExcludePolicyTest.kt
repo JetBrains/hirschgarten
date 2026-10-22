@@ -4,45 +4,39 @@ import com.intellij.openapi.application.edtWriteAction
 import com.intellij.openapi.application.readAction
 import com.intellij.openapi.roots.ProjectFileIndex
 import com.intellij.openapi.vfs.VirtualFile
-import com.intellij.testFramework.junit5.TestApplication
-import com.intellij.testFramework.junit5.fixture.projectFixture
-import com.intellij.testFramework.junit5.fixture.tempPathFixture
 import com.intellij.testFramework.utils.vfs.refreshAndGetVirtualDirectory
 import kotlinx.coroutines.runBlocking
-import org.jetbrains.bazel.project.BazelProjectFixtures.initializeBazelProject
 import org.jetbrains.bazel.symlinks.createBazelConvenienceSymlink
+import org.jetbrains.bazel.test.framework.BazelTestApplication
+import org.jetbrains.bazel.test.framework.testproject.testBazelProjectFixture
+import org.jetbrains.bazel.test.framework.testproject.uninstall
+import org.jetbrains.bazel.test.framework.testproject.workspaceRoot
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
-import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.ValueSource
 import java.nio.file.Path
 
-@TestApplication
+@BazelTestApplication
 class BazelDirectoryIndexExcludePolicyTest {
-  private val tempDirFixture = tempPathFixture()
-  private val tempDir by tempDirFixture
+  private val testBazel by testBazelProjectFixture(
+    openAfterCreation = false,
+    beforeInstall = { root, _ -> root.createBazelConvenienceSymlink("bazel-out") },
+  )
 
-  private val projectFixture = projectFixture(pathFixture = tempDirFixture)
-  private val project by projectFixture
-
-  private lateinit var convenienceSymlink: Path
-
-  @BeforeEach
-  fun setUp() {
-    convenienceSymlink = tempDir.createBazelConvenienceSymlink("bazel-out")
-  }
+  private val convenienceSymlink: Path
+    get() = testBazel.workspaceRoot.resolve("bazel-out")
 
   @ParameterizedTest(name = "isBazelProject = {0}")
   @ValueSource(booleans = [true, false])
   fun `should mark symlinks registered in the service as excluded from the project`(isBazelProject: Boolean) = runBlocking {
     // GIVEN
-    if (isBazelProject) {
-      initializeBazelProject(project, tempDir)
+    if (!isBazelProject) {
+      testBazel.uninstall()
     }
     edtWriteAction {
-      BazelSymlinkExcludeService.getInstance(project).addBazelSymlinksToExclude(setOf(convenienceSymlink))
+      BazelSymlinkExcludeService.getInstance(testBazel.project).addBazelSymlinksToExclude(setOf(convenienceSymlink))
     }
 
     // WHEN
@@ -55,13 +49,12 @@ class BazelDirectoryIndexExcludePolicyTest {
   @Test
   fun `should flush workspace file index cache after updating symlinks`() = runBlocking {
     // GIVEN workspace file index cache is populated
-    initializeBazelProject(project, tempDir)
     val convenienceSymlinkFile = convenienceSymlink.refreshAndGetVirtualDirectory()
     assertFalse(isExcluded(convenienceSymlinkFile))
 
     // AND convenience symlink has been excluded
     edtWriteAction {
-      BazelSymlinkExcludeService.getInstance(project).addBazelSymlinksToExclude(setOf(convenienceSymlink))
+      BazelSymlinkExcludeService.getInstance(testBazel.project).addBazelSymlinksToExclude(setOf(convenienceSymlink))
     }
 
     // WHEN the state of the file has been queried again
@@ -72,6 +65,6 @@ class BazelDirectoryIndexExcludePolicyTest {
   }
 
   private suspend fun isExcluded(file: VirtualFile) = readAction {
-    ProjectFileIndex.getInstance(project).isExcluded(file)
+    ProjectFileIndex.getInstance(testBazel.project).isExcluded(file)
   }
 }

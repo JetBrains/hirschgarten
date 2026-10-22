@@ -1,18 +1,12 @@
 package org.jetbrains.bazel.languages.starlark.findusages
 
-import com.intellij.openapi.application.EDT
 import com.intellij.openapi.application.runReadActionBlocking
-import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.util.PsiTreeUtil
-import com.intellij.testFramework.common.timeoutRunBlocking
 import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.nulls.shouldNotBeNull
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkNamedElement
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkTargetExpression
-import org.jetbrains.bazel.project.BazelProjectFixtures
 import org.jetbrains.bazel.languages.starlark.psi.functions.StarlarkParameter
 import org.jetbrains.bazel.test.framework.BazelTestApplication
 import org.jetbrains.bazel.test.framework.bazelCodeInsightFixture
@@ -41,7 +35,6 @@ class StarlarkFindUsagesTest {
 
   @Test
   fun `should find usage of loaded function in another file`() {
-    myFixture.addFileToProject("MODULE.bazel", "")
     myFixture.addFileToProject("BUILD", "")
     val defsFile = myFixture.addFileToProject(
       "defs.bzl",
@@ -58,7 +51,7 @@ class StarlarkFindUsagesTest {
       result = helper(42)
       """.trimIndent(),
     )
-    openFileInEditor(defsFile.virtualFile)
+    myFixture.openFileInEditor(defsFile.virtualFile)
     myFixture.findStarlarkUsages("helper") shouldHaveSize 2
   }
 
@@ -107,7 +100,6 @@ class StarlarkFindUsagesTest {
 
   @Test
   fun `should find usage of loaded variable in another file`() {
-    myFixture.addFileToProject("MODULE.bazel", "")
     myFixture.addFileToProject("BUILD", "")
     val defsFile = myFixture.addFileToProject(
       "defs.bzl",
@@ -123,7 +115,7 @@ class StarlarkFindUsagesTest {
       x = MY_CONST + 1
       """.trimIndent(),
     )
-    openFileInEditor(defsFile.virtualFile)
+    myFixture.openFileInEditor(defsFile.virtualFile)
     myFixture.findStarlarkUsages("MY_CONST") shouldHaveSize 2
   }
 
@@ -293,12 +285,6 @@ class StarlarkFindUsagesTest {
   }
 
   // endregion
-
-  private fun openFileInEditor(file: VirtualFile): Unit = timeoutRunBlocking {
-    withContext(Dispatchers.EDT) {
-      myFixture.openFileInEditor(file)
-    }
-  }
 }
 
 private fun com.intellij.testFramework.fixtures.CodeInsightTestFixture.findStarlarkUsages(name: String) =
