@@ -3,6 +3,7 @@ package org.jetbrains.bazel.sync.workspace.persistence.mvstore
 import com.esotericsoftware.kryo.kryo5.Kryo
 import com.esotericsoftware.kryo.kryo5.Registration
 import com.esotericsoftware.kryo.kryo5.objenesis.strategy.StdInstantiatorStrategy
+import com.esotericsoftware.kryo.kryo5.serializers.FieldSerializer
 import com.esotericsoftware.kryo.kryo5.util.DefaultClassResolver
 import com.esotericsoftware.kryo.kryo5.util.DefaultInstantiatorStrategy
 import com.esotericsoftware.kryo.kryo5.util.MapReferenceResolver
@@ -20,7 +21,7 @@ internal const val KRYO_POOL_INSTANCES: Int = 8
 
 // covers container layout, manifest codec, Kryo configuration, builtin registrations and the
 // binary formats of all handwritten serializers - bump on any change to those
-internal const val SNAPSHOT_FORMAT_VERSION: Int = 8
+internal const val SNAPSHOT_FORMAT_VERSION: Int = 9
 
 @ApiStatus.Internal
 class SnapshotKryo(val universe: SnapshotTypeUniverse) {
@@ -53,11 +54,15 @@ class SnapshotKryo(val universe: SnapshotTypeUniverse) {
 
     // register open type set
     for ((registrationId, type, serializer) in universe.registrations) {
-      if (serializer != null) {
+      val registration = if (serializer != null) {
         kryo.register(type, serializer, registrationId)
       }
       else {
         kryo.register(type, registrationId)
+      }
+      val fieldSerializer = registration.serializer as? FieldSerializer<*>
+      if (fieldSerializer != null) {
+        SnapshotSerializers.rebindCollectionFieldSerializers(fieldSerializer)
       }
     }
     return kryo
