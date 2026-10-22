@@ -7,6 +7,7 @@ import org.assertj.core.api.Assertions.assertThat
 import org.jetbrains.bazel.bazelrunner.BazelCommandExecutionDescriptor
 import org.jetbrains.bazel.bazelrunner.BazelProcessLauncher
 import org.jetbrains.bazel.bazelrunner.BazelProcessLauncherProvider
+import org.jetbrains.bazel.test.framework.BazelPathManager
 import org.jetbrains.bazel.test.framework.BazelTestApplication
 import org.jetbrains.bazel.test.framework.BazelTestCaches
 import org.jetbrains.bazel.test.framework.installHostRcIsolation
@@ -33,6 +34,28 @@ internal class BazelTestRcIsolationTest {
     assertThat(lines.first()).isEqualTo("build --@rules_go//go/config:pure")
     assertThat(lines).contains("build --java_runtime_version=remotejdk_21")
     assertThat(lines.filter { it.startsWith("# BEGIN ") }).hasSize(1)
+  }
+
+  @Test
+  fun `large downloads go through the cache redirector`() {
+    assertThat(BazelPathManager.downloaderConfig.readLines())
+      .contains("rewrite ^dl\\.google\\.com/(.*)$ https://cache-redirector.jetbrains.com/dl.google.com/$1")
+  }
+
+  @Test
+  fun `Bazel 7 reads the downloader config from the experimental flag`() {
+    val bazelVersion = projectRoot.resolve(".bazelversion")
+    val outputBase = projectRoot.resolve("output-base")
+
+    bazelVersion.writeText("7.7.1")
+    BazelTestCaches.configureBazelCaches(projectRoot, "redcodes/go_strict_deps", outputBase)
+    assertThat(projectRoot.resolve(".bazelrc").readLines()).anyMatch { it.startsWith("common --experimental_downloader_config=") }
+
+    bazelVersion.writeText("9.1.0")
+    BazelTestCaches.configureBazelCaches(projectRoot, "redcodes/go_strict_deps", outputBase)
+    assertThat(projectRoot.resolve(".bazelrc").readLines())
+      .anyMatch { it.startsWith("common --downloader_config=") }
+      .noneMatch { it.startsWith("common --experimental_downloader_config=") }
   }
 
   @Test
