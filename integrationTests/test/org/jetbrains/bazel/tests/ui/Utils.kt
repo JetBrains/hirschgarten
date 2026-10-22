@@ -181,6 +181,29 @@ val IdeaFrameUI.debuggerFramesUi
 val IdeaFrameUI.consoleView
   get() = x("//div[@class='ConsoleViewImpl']")
 
+private val RUN_CONSOLE_TIMEOUT = 3.minutes
+
+/**
+ * Waits until a console in the IDE frame shows a line that contains [text].
+ *
+ * A Bazel run first builds its target in the Build tool window, and its console appears only when the run starts.
+ * So the wait covers the build, and it looks up the consoles again on each poll.
+ */
+fun IdeaFrameUI.waitForConsoleText(text: String, timeout: Duration = RUN_CONSOLE_TIMEOUT) {
+  waitFor(
+    message = "A console shows '$text'",
+    timeout = timeout,
+    interval = 1.seconds,
+    errorMessage = { lines -> "No console shows '$text'. The last console lines: ${lines.takeLast(10)}" },
+    getter = {
+      xx("//div[@class='ConsoleViewImpl']").list().flatMap { console ->
+        runCatching { console.getAllTexts().map { it.text } }.getOrDefault(emptyList())
+      }
+    },
+    checker = { lines -> lines.any { text in it } },
+  )
+}
+
 private data class DebuggerPauseState(
   val toolWindowPresent: Boolean = false,
   val resumeEnabled: Boolean = false,
