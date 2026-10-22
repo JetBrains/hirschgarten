@@ -15,19 +15,24 @@ import java.nio.file.LinkOption
 import java.nio.file.NoSuchFileException
 import java.nio.file.Path
 import java.nio.file.attribute.BasicFileAttributes
+import java.nio.file.attribute.PosixFileAttributeView
+import java.nio.file.attribute.PosixFilePermission.OWNER_EXECUTE
+import java.nio.file.attribute.PosixFilePermission.OWNER_READ
+import java.nio.file.attribute.PosixFilePermission.OWNER_WRITE
 import java.util.UUID
 import kotlin.io.path.createDirectory
 import kotlin.time.Duration.Companion.milliseconds
 
 private const val DELETE_ATTEMPTS = 5
 private val DELETE_RETRY_DELAY = 100L.milliseconds
+private val OWNER_DIRECTORY_PERMISSIONS = setOf(OWNER_READ, OWNER_WRITE, OWNER_EXECUTE)
 
 private val LOG = fileLogger()
 
 /**
  * Creates a temporary output base with a short name, and deletes it after the test.
  *
- * The cleanup restores the directory write permissions first. On Windows, the test JVM can hold the files of a JDK in
+ * The cleanup restores the directory permissions first. On Windows, the test JVM can hold the files of a JDK in
  * the output base until a garbage collection. The cleanup then runs the collector between its attempts, and it keeps
  * the files that stay open.
  */
@@ -35,7 +40,7 @@ internal fun bazelOutputBaseFixture() = testFixture {
   val outputBase = withContext(Dispatchers.IO) { createOutputBase() }
   initialized(outputBase) {
     withContext(Dispatchers.IO) {
-      restoreWritePermissions(outputBase)
+      restorePermissions(outputBase)
       deleteOutputBase(outputBase)
     }
   }
@@ -54,11 +59,12 @@ private fun createOutputBase(): Path {
 }
 
 /**
- * Makes [dir] and its subdirectories writable. It does not enter a symlink or a junction, such as `external/_main`.
+ * Lets the owner list and change [dir] and its subdirectories, such as the Bazel `sandbox/inaccessibleHelperDir`.
+ * It does not enter a symlink or a junction, such as `external/_main`.
  */
-private fun restoreWritePermissions(dir: Path) {
+private fun restorePermissions(dir: Path) {
   val children = try {
-    NioFiles.setReadOnly(dir, false)
+    makeDirectoryAccessible(dir)
     Files.newDirectoryStream(dir).use { it.toList() }
   }
   catch (_: NoSuchFileException) {
@@ -72,8 +78,20 @@ private fun restoreWritePermissions(dir: Path) {
       continue
     }
     if (attrs.isDirectory && !attrs.isWindowsJunction) {
-      restoreWritePermissions(child)
+      restorePermissions(child)
     }
+  }
+}
+
+private fun makeDirectoryAccessible(dir: Path) {
+  val posixView = Files.getFileAttributeView(dir, PosixFileAttributeView::class.java)
+  if (posixView == null) {
+    NioFiles.setReadOnly(dir, false)
+    return
+  }
+  val permissions = posixView.readAttributes().permissions()
+  if (permissions.addAll(OWNER_DIRECTORY_PERMISSIONS)) {
+    posixView.setPermissions(permissions)
   }
 }
 
