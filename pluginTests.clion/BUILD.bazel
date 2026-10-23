@@ -87,6 +87,8 @@ jvm_library(
         "@community//platform/core-impl:core-impl_test_lib",
         "@community//platform/lang-api:lang",
         "@community//platform/lang-api:lang_test_lib",
+        "@community//platform/lang-impl",
+        "@community//platform/lang-impl:lang-impl_test_lib",
         "@community//platform/buildView",
         "@community//platform/buildView:buildView_test_lib",
         "@community//platform/testFramework",
