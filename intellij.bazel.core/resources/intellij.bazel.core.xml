@@ -138,6 +138,7 @@
     <module name="intellij.platform.searchEverywhere"/>
     <module name="intellij.platform.smRunner"/>
     <module name="intellij.platform.statistics"/>
+    <module name="intellij.platform.structureView"/>
     <module name="intellij.platform.syntax"/>
     <module name="intellij.platform.testRunner"/>
     <module name="intellij.platform.usageView"/>
@@ -352,6 +353,10 @@
     <useScopeEnlarger implementation="org.jetbrains.bazel.languages.starlark.findusages.StarlarkFileUseScopeEnlarger"/>
     <lang.findUsagesProvider
       implementationClass="org.jetbrains.bazel.languages.starlark.findusages.StarlarkFindUsagesProvider"
+      language="Starlark"
+    />
+    <lang.psiStructureViewFactory
+      implementationClass="org.jetbrains.bazel.languages.starlark.structureView.StarlarkStructureViewFactory"
       language="Starlark"
     />
     <targetElementEvaluator
