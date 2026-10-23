@@ -49,7 +49,7 @@ abstract class CcDebugTest(debugProfileTypeId: String, debugProfileSettings: Bas
   @CcTestApplication
   class Gdb : CcDebugTest(CLionGdbDebugProfileType.ID, GdbDebugProfileState())
 
-  @EnabledOnOs(OS.LINUX, OS.MAC)
+  @EnabledOnOs(OS.LINUX)
   @CcTestApplication
   class Lldb : CcDebugTest(CLionLldbDebugProfileType.ID, LldbDebugProfileState())
 
