@@ -12,19 +12,14 @@ import com.intellij.openapi.vfs.toNioPathOrNull
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.jetbrains.annotations.ApiStatus
-import org.jetbrains.bazel.commons.symlinks.BazelSymlinksCalculator
-import org.jetbrains.bazel.config.BazelFeatureFlags
+import org.jetbrains.bazel.commons.symlinks.BazelConvenienceSymlinksScanner
 import org.jetbrains.bazel.config.isBazelProject
 import org.jetbrains.bazel.flow.exclude.BazelSymlinkExcludeService
 import org.jetbrains.bazel.sync.environment.bazelProjectInfo
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceSnapshot
 import org.jetbrains.bazel.sync.workspace.snapshot.currentWorkspaceSnapshotOrNull
 import org.jetbrains.bazel.sync.workspace.snapshot.workspaceSnapshotOrNull
-import org.jetbrains.bazel.utils.isWindowsJunction
 import org.jetbrains.bazel.utils.toRealPathOrNull
-import java.nio.file.Files
-import java.nio.file.Path
-import kotlin.io.path.name
 
 /**
  * [BAZEL-948](https://youtrack.jetbrains.com/issue/BAZEL-948): Bazel's symlink forest plants a `.git` symlink into the execution root,
@@ -63,7 +58,7 @@ class BazelVcsRootErrorFilter : VcsRootErrorFilter {
      * A directory under a Bazel symlink is recognized even before that collection finishes, by checking its own path.
      */
     fun bazelOutputDirectoryPredicate(project: Project, snapshot: WorkspaceSnapshot?): IsBazelOutputDirectoryPredicate {
-      val workspace = project.bazelProjectInfo.projectRootDir?.toNioPathOrNull()
+      val symlinksScanner = project.bazelProjectInfo.projectRootDir?.toNioPathOrNull()?.let(::BazelConvenienceSymlinksScanner)
       val knownSymlinks = BazelSymlinkExcludeService.getInstance(project).getBazelSymlinksToExclude()
       val outputTrees = (knownSymlinks + listOfNotNull(snapshot?.bazelInfo?.execRoot))
         .mapNotNullTo(mutableSetOf()) { it.toRealPathOrNull() }
@@ -73,7 +68,7 @@ class BazelVcsRootErrorFilter : VcsRootErrorFilter {
           val path = directory.toNioPathOrNull() ?: return false
           if (knownSymlinks.any { path.startsWith(it) }) return true
           // VCS root detection can run before BazelSymlinkExcludeStartupActivity finishes collecting the symlinks
-          if (workspace != null && isUnderBazelSymlink(workspace, path)) return true
+          if (symlinksScanner?.isUnderBazelSymlink(path) == true) return true
           if (outputTrees.isEmpty()) return false
           val realPath = path.toRealPathOrNull() ?: return false
           return outputTrees.any { realPath.startsWith(it) }
@@ -102,20 +97,6 @@ class BazelVcsRootErrorFilter : VcsRootErrorFilter {
 
       log.info("Removing VCS mappings in Bazel output directories: ${bazelOutputMappings.map { it.directory }}")
       manager.setDirectoryMappings(otherMappings)
-    }
-
-    /**
-     * Whether [path] lies under a Bazel symlink of [workspace], looking as deep as [BazelSymlinksCalculator] scans for them.
-     */
-    private fun isUnderBazelSymlink(workspace: Path, path: Path): Boolean {
-      if (!path.startsWith(workspace)) return false
-      val relativePath = workspace.relativize(path)
-      if (relativePath.toString().isEmpty()) return false
-      return (1..minOf(relativePath.nameCount, BazelFeatureFlags.symlinkScanMaxDepth)).any { depth ->
-        val ancestor = workspace.resolve(relativePath.subpath(0, depth))
-        // Check the link first: isBazelSymlink logs every regular directory that ends like a Bazel symlink, e.g., `bin`
-        (Files.isSymbolicLink(ancestor) || ancestor.isWindowsJunction) && BazelSymlinksCalculator.isBazelSymlink(workspace.name, ancestor)
-      }
     }
 
     private val log = logger<BazelVcsRootErrorFilter>()

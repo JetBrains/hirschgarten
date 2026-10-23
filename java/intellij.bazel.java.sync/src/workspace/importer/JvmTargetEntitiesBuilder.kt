@@ -26,6 +26,7 @@ import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.commons.RepoMapping
 import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.commons.TargetKind
+import org.jetbrains.bazel.commons.symlinks.BazelConvenienceSymlinksScanner
 import org.jetbrains.bazel.config.BazelJavaBackendBundle
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.scala.sdk.scalaSdkExtensionExists
@@ -109,6 +110,7 @@ class ImportContext(
 
   val dependencyBuilder: DependencyBuilder = DependencyBuilder(this.targets, jvmResolved, repoMapping, libraryShadowedProducers)
   val sourceRootMerger: JavaSourceRootMerger = JavaSourceRootMerger(fileToTargets)
+  val convenienceSymlinksScanner: BazelConvenienceSymlinksScanner = BazelConvenienceSymlinksScanner(projectBasePath)
 
   // targets contain stripped keys, so we need to ensure that `key` is stripped too
   fun isInTargets(key: WorkspaceTargetKey): Boolean = targetKeys.contains(key.stripAspects())
@@ -247,8 +249,7 @@ class JvmTargetEntitiesBuilder(private val ctx: ImportContext) {
         val resourceRoots = ResourceRootBuilder.resolve(
           target = target,
           baseDirectory = baseDirectory,
-          bazelProjectName = ctx.projectName,
-          workspaceRoot = ctx.projectBasePath,
+          symlinksScanner = ctx.convenienceSymlinksScanner,
           resolveLocation = ctx.resolveLocation,
         )
         TargetPlan.Full(

@@ -17,8 +17,7 @@ package org.jetbrains.bazel.server.sync.sharding
 
 import org.jetbrains.bazel.commons.BazelPathsResolver
 import org.jetbrains.bazel.commons.constants.Constants
-import org.jetbrains.bazel.commons.symlinks.BazelSymlinksCalculator
-import org.jetbrains.bazel.config.BazelFeatureFlags
+import org.jetbrains.bazel.commons.symlinks.BazelConvenienceSymlinksScanner
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.label.toPath
 import java.io.File
@@ -40,11 +39,7 @@ internal object PackageLister {
     pathResolver: BazelPathsResolver,
     wildcardPatterns: List<Label>,
   ): Map<Label, List<Label>> {
-    val calculatedBazelSymlinks =
-      BazelSymlinksCalculator.calculateBazelSymlinksToExclude(
-        pathResolver.workspaceRoot(),
-        BazelFeatureFlags.symlinkScanMaxDepth,
-      )
+    val calculatedBazelSymlinks = BazelConvenienceSymlinksScanner(pathResolver.workspaceRoot()).scan()
     return wildcardPatterns
       .filter { it.isRecursive }
       .mapNotNull { pattern ->

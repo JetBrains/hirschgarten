@@ -4,13 +4,12 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.ProjectManager
 import com.intellij.openapi.util.io.toNioPathOrNull
 import com.intellij.openapi.vfs.AsyncFileListener
-import com.intellij.openapi.vfs.newvfs.BulkFileListener
 import com.intellij.openapi.vfs.newvfs.events.VFileCreateEvent
 import com.intellij.openapi.vfs.newvfs.events.VFileEvent
 import org.jetbrains.annotations.ApiStatus
-import org.jetbrains.bazel.commons.symlinks.BazelSymlinksCalculator
-import org.jetbrains.bazel.config.bazelProjectName
+import org.jetbrains.bazel.commons.symlinks.BazelConvenienceSymlinksScanner
 import org.jetbrains.bazel.config.isBazelProject
+import org.jetbrains.bazel.config.rootDir
 import java.nio.file.Path
 
 @ApiStatus.Internal
@@ -21,9 +20,13 @@ class BazelSymlinkExcludeFileListener : AsyncFileListener {
       .filterIsInstance<VFileCreateEvent>()
       .filter { it.attributes?.isSymLink ?: false }
       .flatMap { it.toListOfProjectAndPath() }
-      .filter { BazelSymlinksCalculator.isBazelSymlink(it.project.bazelProjectName, it.path) }
       .groupBy({ it.project }, { it.path })
-      .toList()
+      .mapNotNull { (project, paths) ->
+        val scanner = BazelConvenienceSymlinksScanner(project.rootDir.toNioPath())
+        val bazelSymlinks = paths.filter { scanner.isBazelSymlink(it) }
+        if (bazelSymlinks.isEmpty()) null else project to bazelSymlinks
+      }
+    if (project2Paths.isEmpty()) return null
     return object : AsyncFileListener.ChangeApplier {
       override fun beforeVfsChange() {
         for ((project, paths) in project2Paths) {

@@ -23,8 +23,7 @@ import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.launch
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.annotations.VisibleForTesting
-import org.jetbrains.bazel.commons.symlinks.BazelSymlinksCalculator
-import org.jetbrains.bazel.config.BazelFeatureFlags
+import org.jetbrains.bazel.commons.symlinks.BazelConvenienceSymlinksScanner
 import org.jetbrains.bazel.performance.bspTracer
 import org.jetbrains.bazel.workspace.bazelProjectDirectoriesEntity
 import org.jetbrains.bazel.workspace.excludeSymlinksFromFileWatcher
@@ -58,7 +57,7 @@ class BazelSymlinkExcludeService(
     val computedSymlinks = measure("BazelSymlinkExcludeService.scanForBazelSymlinksToExclude.ms") {
       coroutineScope.async(Dispatchers.IO) {
         logger.info("Scanning directory for bazel symlinks to exclude: $bazelWorkspace")
-        BazelSymlinksCalculator.calculateBazelSymlinksToExclude(bazelWorkspace, BazelFeatureFlags.symlinkScanMaxDepth)
+        BazelConvenienceSymlinksScanner(bazelWorkspace).scan()
       }.await()
     }
 

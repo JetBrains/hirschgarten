@@ -16,7 +16,7 @@ import com.intellij.platform.workspace.storage.impl.url.toVirtualFileUrl
 import com.intellij.platform.workspace.storage.url.VirtualFileUrlManager
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.commons.constants.Constants
-import org.jetbrains.bazel.commons.symlinks.BazelSymlinksCalculator
+import org.jetbrains.bazel.commons.symlinks.BazelConvenienceSymlinksScanner
 import org.jetbrains.bazel.sync.workspace.languages.jvm.extractJvmBuildTarget
 import org.jetbrains.bazel.sync.workspace.languages.jvm.extractKotlinBuildTarget
 import org.jetbrains.bazel.sync.workspace.languages.jvm.extractScalaBuildTarget
@@ -45,8 +45,7 @@ object ResourceRootBuilder {
   fun resolve(
     target: BuildTarget,
     baseDirectory: Path?,
-    bazelProjectName: String,
-    workspaceRoot: Path,
+    symlinksScanner: BazelConvenienceSymlinksScanner,
     resolveLocation: (OutputLocation) -> Path?,
   ): List<ResolvedResourceRoot> {
     val rootType = target.inferRootType()
@@ -54,14 +53,14 @@ object ResourceRootBuilder {
     if (resourceFiles.isEmpty()) return emptyList()
     val stripPrefixes = extractStripPrefixOrNull(target, resolveLocation) ?: defaultStripPrefixes(target, resourceFiles)
     val resourcesSet = resourceFiles.toSet()
-    val dirtinessCache = DirtinessCache(resourcesSet, bazelProjectName)
+    val dirtinessCache = DirtinessCache(resourcesSet, symlinksScanner)
     val result = stripPrefixes.fold(MergeResult(leftovers = resourcesSet)) { acc, prefix ->
       acc.mergeUsing(prefix, dirtinessCache)
     }
     val leftoverPaths = collapseLeftoversByTopology(
       leftovers = result.leftovers,
       alreadyMerged = result.merged,
-      ceilingFor = { parent -> collapseCeiling(parent, baseDirectory, workspaceRoot) },
+      ceilingFor = { parent -> collapseCeiling(parent, baseDirectory, symlinksScanner.workspaceRoot) },
       dirtinessCache = dirtinessCache,
     )
     return (result.merged + leftoverPaths).map { path ->
@@ -224,7 +223,7 @@ object ResourceRootBuilder {
 
   private class DirtinessCache(
     private val allResourceFiles: Set<Path>,
-    private val bazelProjectName: String,
+    private val symlinksScanner: BazelConvenienceSymlinksScanner,
   ) {
     private val cache = HashMap<VirtualFile, Boolean>()
 
@@ -259,7 +258,7 @@ object ResourceRootBuilder {
     }
 
     private fun VirtualFile.isDirtySymlink(): Boolean = when {
-      BazelSymlinksCalculator.isBazelSymlink(bazelProjectName, this) -> false
+      symlinksScanner.isBazelSymlink(this) -> false
       isDirectory -> true // symlinked directory: foreign content, dirty without descending
       else -> toNioPath() !in allResourceFiles // symlink to a file (or broken): treat like a regular file entry
     }

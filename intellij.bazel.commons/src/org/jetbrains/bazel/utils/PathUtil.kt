@@ -29,6 +29,19 @@ fun Path.isUnder(ancestors: Set<Path>): Boolean = this.allAncestorsSequence().an
 @get:ApiStatus.Internal
 val BasicFileAttributes.isSymbolicLinkOrJunction: Boolean get() = isSymbolicLink || isWindowsJunction
 
+/**
+ * Checks whether the path is a symbolic link or a Windows junction, see [BasicFileAttributes.isSymbolicLinkOrJunction].
+ *
+ * This property reads the file attributes. The result is `false` when the attributes cannot be read.
+ */
+@get:ApiStatus.Internal
+val Path.isSymbolicLinkOrJunction: Boolean get() = try {
+  readAttributes<BasicFileAttributes>(LinkOption.NOFOLLOW_LINKS).isSymbolicLinkOrJunction
+}
+catch (_: IOException) {
+  false
+}
+
 @get:ApiStatus.Internal
 val BasicFileAttributes.isWindowsJunction: Boolean get() = SystemInfoRt.isWindows && isDirectory && isOther
 
