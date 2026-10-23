@@ -13,6 +13,7 @@ import com.intellij.execution.ui.RunContentDescriptor
 import com.intellij.openapi.application.EDT
 import com.intellij.openapi.components.service
 import com.intellij.util.asSafely
+import com.intellij.util.system.OS
 import com.jetbrains.cidr.cpp.execution.DebugProfileErrorWithCustomNotification
 import com.jetbrains.cidr.cpp.execution.showMissingDebugProfileNotification
 import com.jetbrains.cidr.execution.CidrRunner
@@ -21,6 +22,7 @@ import kotlinx.coroutines.withContext
 import org.jetbrains.annotations.NonNls
 import org.jetbrains.annotations.PropertyKey
 import org.jetbrains.bazel.action.saveAllFiles
+import org.jetbrains.bazel.bazelrunner.params.BazelFlag
 import org.jetbrains.bazel.clion.BazelCLionCoreBundle
 import org.jetbrains.bazel.clion.workspace.CcCompilerInfo
 import org.jetbrains.bazel.clion.workspace.CcTargetUtils
@@ -189,6 +191,10 @@ private suspend fun collectExecutableInfo(targetInfo: CcDebugTargetInfo): Execut
 
       val bazelParams = buildList {
         addAll(ScriptPathBuildTargetTask.scriptPathParams(scriptPath))
+        if (OS.CURRENT == OS.macOS) {
+          // On macOS the debug info stays in the object files and static archives, and Bazel does not download them by default
+          add(BazelFlag.remoteDownloadRegex(".*\\.(o|a|lo)$"))
+        }
         addAll(server.projectView.debugFlags)
         addAll(parseAsProgramArguments(ctx.state.additionalBazelParams))
       }
