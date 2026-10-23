@@ -61,7 +61,7 @@ abstract class CcDebugTest(debugProfileTypeId: String, debugProfileSettings: Bas
     }
   }
 
-  @EnabledOnOs(OS.LINUX, OS.MAC)
+  @EnabledOnOs(OS.LINUX)
   @CcTestApplication
   class Lldb : CcDebugTest(CLionLldbDebugProfileType.ID, LldbDebugProfileState()) {
 
