@@ -27,9 +27,9 @@ import java.nio.file.Files
 import java.nio.file.InvalidPathException
 import java.nio.file.NoSuchFileException
 import java.nio.file.Path
-import java.nio.file.Paths
 import kotlin.collections.distinct
 import kotlin.collections.plus
+import kotlin.io.path.Path
 import kotlin.io.path.isDirectory
 import kotlin.io.path.name
 import kotlin.runCatching
@@ -119,7 +119,7 @@ object PythonDebugUtils {
     } else {
       RunfilesManifestEntry(
         runfilesPath = substring(0, separatorIndex),
-        realPath = Paths.get(substring(separatorIndex + 1)),
+        realPath = Path(substring(separatorIndex + 1)),
       )
     }
   }
@@ -196,7 +196,7 @@ object PythonDebugUtils {
       try {
         // if the file string is not a valid path, or the file does not exist, it should not cause a debugger failure
         // throwing an exception might cause debugger freeze, returning null will simply show "frame not available" in stack trace
-        Paths.get(file).toRealPath()
+        Path(file).toRealPath()
       } catch (_: NoSuchFileException) {
         return null
       } catch (_: InvalidPathException) {

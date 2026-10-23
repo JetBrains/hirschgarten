@@ -6,12 +6,14 @@ import com.intellij.ide.starter.models.TestCase
 import com.intellij.ide.starter.path.GlobalPaths
 import com.intellij.ide.starter.project.ProjectInfoSpec
 import com.intellij.ide.starter.project.TestCaseTemplate
+import org.jetbrains.bazel.symlinks.createSymlinkOrJunction
 import org.jetbrains.bazel.test.compat.IntegrationTestCompat
 import org.jetbrains.bazel.test.framework.BazelPathManager
 import org.kodein.di.instance
 import java.nio.file.Files
 import java.nio.file.Path
 import kotlin.io.path.ExperimentalPathApi
+import kotlin.io.path.Path
 import kotlin.io.path.copyToRecursively
 import kotlin.io.path.createDirectories
 import kotlin.io.path.createSymbolicLinkPointingTo
@@ -51,7 +53,7 @@ object DevKitBazelCases : BaseBazelCasesParametrized(BazelTestContext.IDEA_DEVKI
 
 fun preCacheBazelisk(context: IDETestContext) {
   val systemBazelisk = listOf("/opt/homebrew/bin/bazelisk", "/usr/local/bin/bazelisk")
-    .map { Path.of(it) }
+    .map { Path(it) }
     .firstOrNull { it.exists() } ?: return
   val cacheDir = (context.paths.systemDir / "bazel-plugin").createDirectories()
   val target = cacheDir / "bazelisk"
@@ -72,19 +74,15 @@ class IdeStarterBazelProject internal constructor(
   path: String,
   override val configureProjectBeforeUse: (IDETestContext) -> Unit,
   testProjectsRoot: Path = BazelPathManager.bazelTestProjectsRoot,
+  private val symlinkPath: String? = null,
 ) : ProjectInfoSpec {
   internal val fixtureRoot: Path
   internal val pathWithinFixture: Path?
   private val description: String
 
   init {
-    require(path.isNotBlank()) { "Bazel test fixture path must not be empty" }
-    require(!isAbsoluteOnAnyPlatform(path)) { "Bazel test fixture path must be relative: '$path'" }
-
-    val projectPath = Path.of(path)
-    require(projectPath.none { it.toString() == ".." } && path.split('/', '\\').none { it == ".." }) {
-      "Bazel test fixture path must not contain '..': '$path'"
-    }
+    val projectPath = requireRelativePath(path = path, name = "Bazel test fixture path")
+    if (symlinkPath != null) requireRelativePath(path = symlinkPath, name = "Symlink path")
 
     val fixtureName = projectPath.first().toString()
     require(fixtureName != ".") { "Bazel test fixture path must start with a fixture name: '$path'" }
@@ -110,9 +108,15 @@ class IdeStarterBazelProject internal constructor(
     val copyRoot = Files.createTempDirectory(copiesRoot, "p")
     val copiedFixtureRoot = fixtureRoot.copyToRecursively(copyRoot.resolve(fixtureRoot.name), followLinks = false, overwrite = false)
       .toAbsolutePath()
-    val innerPath = pathWithinFixture ?: return copiedFixtureRoot
-    val projectHome = copiedFixtureRoot.resolve(innerPath).normalize()
-    require(projectHome.startsWith(copiedFixtureRoot) && projectHome.exists()) {
+    val openedFixtureRoot = when (symlinkPath) {
+      null -> copiedFixtureRoot
+      else -> copyRoot.resolve(symlinkPath)
+        .also { it.parent.createDirectories() }
+        .createSymlinkOrJunction(copiedFixtureRoot)
+    }
+    val innerPath = pathWithinFixture ?: return openedFixtureRoot
+    val projectHome = openedFixtureRoot.resolve(innerPath).normalize()
+    require(projectHome.startsWith(openedFixtureRoot) && projectHome.exists()) {
       "Bazel test fixture path does not exist: '$innerPath' in '$fixtureRoot'"
     }
     return projectHome
@@ -124,14 +128,26 @@ class IdeStarterBazelProject internal constructor(
     val WINDOWS_ABSOLUTE_PATH = Regex("^[A-Za-z]:[\\\\/].*")
 
     fun isAbsoluteOnAnyPlatform(path: String): Boolean =
-      Path.of(path).isAbsolute || WINDOWS_ABSOLUTE_PATH.matches(path) || path.startsWith("/") || path.startsWith("\\")
+      Path(path).isAbsolute || WINDOWS_ABSOLUTE_PATH.matches(path) || path.startsWith("/") || path.startsWith("\\")
+
+    fun requireRelativePath(path: String, name: String): Path {
+      require(path.isNotBlank()) { "$name must not be empty" }
+      require(!isAbsoluteOnAnyPlatform(path)) { "$name must be relative: '$path'" }
+      val relativePath = Path(path)
+      require(relativePath.none { it.toString() == ".." } && path.split('/', '\\').none { it == ".." }) {
+        "$name must not contain '..': '$path'"
+      }
+      return relativePath
+    }
   }
 }
 
 fun simpleBazelProject(
   path: String,
   configureProject: (IDETestContext) -> Unit = BazelProjectConfigurer::configureProjectBeforeUse,
+  symlinkPath: String? = null,
 ): IdeStarterBazelProject = IdeStarterBazelProject(
   path = path,
   configureProjectBeforeUse = configureProject,
+  symlinkPath = symlinkPath,
 )

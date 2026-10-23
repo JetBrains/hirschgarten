@@ -27,12 +27,12 @@ internal class BazelProjectOpenProcessor : ProjectOpenProcessor() {
     virtualFile: VirtualFile,
     projectOpenOptions: ProjectOpenOptions
   ): Project? {
-    val fileBeingOpen = virtualFile.toNioPathOrNull() ?: return null
-    log.info("Opening asynchronously file as a Bazel project: $fileBeingOpen")
+    val openedFile = virtualFile.toNioPathOrNull() ?: return null
+    log.info("Opening asynchronously file as a Bazel project: $openedFile")
 
     // The user (or another part of the plugin) may try to open the project by pointing to:
     // BUILD files, MODULE.bazel, project view file, etc. so we need to do normalization here
-    val projectRootDir = findProjectFolderFromFile(fileBeingOpen) ?: return null
+    val (projectRootDir, fileBeingOpen) = ResolvedProjectRoot.from(openedFile = openedFile) ?: return null
     log.trace { "Found project root directory: $projectRootDir" }
 
     val projectViewFile = pickProjectViewFileForProject(fileBeingOpen, projectRootDir)

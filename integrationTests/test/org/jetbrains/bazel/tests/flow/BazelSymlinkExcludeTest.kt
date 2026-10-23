@@ -30,14 +30,22 @@ import kotlin.io.path.name
 import kotlin.io.path.readAttributes
 import kotlin.time.Duration.Companion.minutes
 
+private val configureWithoutProjectView: (IDETestContext) -> Unit = { context ->
+  BazelProjectConfigurer.configureProjectBeforeUse(
+    context,
+    createProjectView = false,
+  )
+}
+
 private val BAZEL_SYMLINK_EXCLUDE_PROJECT = simpleBazelProject(
   path = "simpleKotlinTest",
-  configureProject = { context ->
-    BazelProjectConfigurer.configureProjectBeforeUse(
-      context,
-      createProjectView = false,
-    )
-  },
+  configureProject = configureWithoutProjectView,
+)
+
+private val BAZEL_SYMLINK_EXCLUDE_PROJECT_THROUGH_SYMLINK = simpleBazelProject(
+  path = "simpleKotlinTest",
+  configureProject = configureWithoutProjectView,
+  symlinkPath = "simpleKotlinTestLink",
 )
 
 /**
@@ -57,6 +65,11 @@ internal class BazelSymlinkExcludeTest : IdeStarterBaseProjectTest() {
   @Test
   fun `should exclude the convenience symlinks with custom prefix`() {
     runIdeAndAssertExclusion(BAZEL_SYMLINK_EXCLUDE_PROJECT, symlinkPrefix = "foo-")
+  }
+
+  @Test
+  fun `should exclude the convenience symlinks when the project is opened through a symlink or Windows junction`() {
+    runIdeAndAssertExclusion(BAZEL_SYMLINK_EXCLUDE_PROJECT_THROUGH_SYMLINK)
   }
 
   private fun runIdeAndAssertExclusion(
@@ -91,8 +104,9 @@ private fun Driver.assertConvenienceSymlinksAreExcluded(
   context: IDETestContext,
   symlinkPrefix: String,
 ) {
-  val home = context.resolvedProjectHome
+  val home = context.resolvedProjectHome.toRealPath()
   val fileIndex = projectFileIndex()
+  // Bazel names its `bazel-<workspace>` symlink after the real dir
   val symlinks = listOf("${symlinkPrefix}bin", "${symlinkPrefix}out", "${symlinkPrefix}testlogs", "${symlinkPrefix}${home.name}")
   symlinks.forEach { symlink ->
     val file = projectRootDir.findFileByRelativePath(symlink) ?: Assertions.fail("Symlink $symlink not found!")

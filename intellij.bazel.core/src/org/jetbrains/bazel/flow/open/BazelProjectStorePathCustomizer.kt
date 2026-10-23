@@ -25,10 +25,10 @@ internal class BazelProjectStorePathCustomizer : ProjectStorePathCustomizer {
            fileBeingOpen.hasExtensionOf(*Constants.SUPPORTED_EXTENSIONS)
   }
 
-  private fun getBazelStoreDirectoryPath(fileBeingOpen: Path): BazelProjectStoreDescriptor {
-    log.info("Computing BazelProjectStoreDescriptor for file: $fileBeingOpen")
+  private fun getBazelStoreDirectoryPath(openedFile: Path): BazelProjectStoreDescriptor? {
+    log.info("Computing BazelProjectStoreDescriptor for file: $openedFile")
 
-    val projectRootPath = findProjectRootPath(fileBeingOpen)
+    val (projectRootPath, fileBeingOpen) = ResolvedProjectRoot.from(openedFile = openedFile) ?: return null
     val projectIdentityFilePath = selectProjectIdentityFilePath(projectRootPath, fileBeingOpen)
     val projectViewFile = pickProjectViewFileForProject(projectIdentityFilePath, projectRootPath)
     val dotIdeaPath = selectDotIdeaPath(projectRootPath, projectViewFile)
@@ -52,9 +52,6 @@ internal class BazelProjectStorePathCustomizer : ProjectStorePathCustomizer {
     }
     return fileBeingOpen
   }
-
-  private fun findProjectRootPath(fileBeingOpen: Path): Path =
-    findProjectFolderFromFile(fileBeingOpen) ?: fileBeingOpen.parent
 
   private fun selectDotIdeaPath(projectRootPath: Path, projectViewPath: Path): Path {
     val defaultProject = ProjectManager.getInstance().defaultProject
