@@ -17,7 +17,9 @@ enum class BazelTestContext {
     IDEA -> IdeInfo.IdeaUltimate
     GOLAND -> IdeInfo.GoLand
     PYCHARM -> IdeInfo.PyCharm
-    IDEA_GO_PLUGIN -> IdeInfo.IdeaUltimate.copy(additionalModules = IdeInfo.IdeaUltimate.additionalModules + listOf("intellij.go.plugin"))
+    IDEA_GO_PLUGIN -> IdeInfo.IdeaUltimate.copy(
+      additionalModules = IdeInfo.IdeaUltimate.additionalModules + listOf("intellij.go.plugin", "intellij.go.syntax.plugin")
+    )
     IDEA_DEVKIT_PLUGIN -> IdeInfo.IdeaUltimate.copy(additionalModules = IdeInfo.IdeaUltimate.additionalModules + listOf("intellij.devkit"))
   }
 }
