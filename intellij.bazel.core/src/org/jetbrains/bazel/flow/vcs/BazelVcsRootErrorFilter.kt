@@ -21,7 +21,7 @@ import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceSnapshot
 import org.jetbrains.bazel.sync.workspace.snapshot.currentWorkspaceSnapshotOrNull
 import org.jetbrains.bazel.sync.workspace.snapshot.workspaceSnapshotOrNull
 import org.jetbrains.bazel.utils.isWindowsJunction
-import java.io.IOException
+import org.jetbrains.bazel.utils.toRealPathOrNull
 import java.nio.file.Files
 import java.nio.file.Path
 import kotlin.io.path.name
@@ -117,14 +117,6 @@ class BazelVcsRootErrorFilter : VcsRootErrorFilter {
         (Files.isSymbolicLink(ancestor) || ancestor.isWindowsJunction) && BazelSymlinksCalculator.isBazelSymlink(workspace.name, ancestor)
       }
     }
-
-    private fun Path.toRealPathOrNull(): Path? =
-      try {
-        toRealPath()
-      }
-      catch (_: IOException) {
-        null
-      }
 
     private val log = logger<BazelVcsRootErrorFilter>()
   }

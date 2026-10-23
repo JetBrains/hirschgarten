@@ -11,6 +11,7 @@ import org.jetbrains.bazel.buildTask.AdditionalProjectTaskRunnerProvider
 import org.jetbrains.bazel.commons.BazelStatus
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.target.ModuleTargetService
+import org.jetbrains.bazel.utils.toRealPathOrNull
 import org.jetbrains.bazel.workspacemodel.entities.jvmBinaryJarsEntity
 import java.net.URI
 import java.nio.file.Path
@@ -58,7 +59,7 @@ private class HotSwapTask(
     .map { URI.create(it.url) }  // Don't use VFS here as we're dealing with files in bazel-out
     .distinct()
     .mapNotNull { Path.of(it) }
-    .mapNotNull { runCatching { it.toRealPath() }.getOrNull() }
+    .mapNotNull { it.toRealPathOrNull() }
     .toList()
 
   override suspend fun postRun(result: BazelStatus) {
