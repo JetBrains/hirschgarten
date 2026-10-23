@@ -7,6 +7,7 @@ import com.intellij.build.DefaultBuildDescriptor
 import com.intellij.build.FilePosition
 import com.intellij.build.events.BuildEvent
 import com.intellij.build.events.EventResult
+import com.intellij.build.events.FailureResult
 import com.intellij.build.events.MessageEvent
 import com.intellij.build.events.OutputBuildEvent
 import com.intellij.build.events.StartBuildEvent
@@ -30,6 +31,7 @@ import com.intellij.openapi.project.DumbAwareAction
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Disposer
 import com.intellij.terminal.TerminalExecutionConsoleBuilder
+import com.intellij.util.causeChain
 import com.jediterm.core.util.TermSize
 import com.jediterm.terminal.TtyConnector
 import org.jetbrains.annotations.ApiStatus
@@ -200,8 +202,9 @@ abstract class BaseTaskConsole(
     message: String,
     result: EventResult,
   ) {
-    if (result is FailureResultImpl) {
-      result.failures.forEach {
+    val resultWithoutShownErrors = withoutShownError(taskId, result)
+    if (resultWithoutShownErrors is FailureResultImpl) {
+      resultWithoutShownErrors.failures.forEach {
         log.warn(it.message, it.error)
         it.error?.let { error ->
           addMessage(taskId, getStackTraceAsString(error))
@@ -212,7 +215,7 @@ abstract class BaseTaskConsole(
     tasksInProgress.remove(taskId)
     taskFailures.remove(taskId)
     subtaskParentMap.entries.removeAll { findActiveRootTaskId(it.value) == taskId }
-    val event = FinishBuildEventImpl(taskId, null, System.currentTimeMillis(), message, result)
+    val event = FinishBuildEventImpl(taskId, null, System.currentTimeMillis(), message, resultWithoutShownErrors)
     taskView.onEvent(taskId, event)
   }
 
@@ -260,11 +263,27 @@ abstract class BaseTaskConsole(
     val savedMessage = subtaskMessageMap.remove(subtaskId) ?: ""
     val messageToDisplay = message ?: savedMessage
 
+    val resultWithoutShownErrors = withoutShownError(rootTask, result)
     finishChildrenSubtasks(subtaskId, result)
-    val event = FinishEventImpl(subtaskId, null, System.currentTimeMillis(), messageToDisplay, result)
+    val event = FinishEventImpl(subtaskId, null, System.currentTimeMillis(), messageToDisplay, resultWithoutShownErrors)
     taskView.onEvent(rootTask, event)
 
     subtaskParentMap.remove(subtaskId)
+  }
+
+  /** Shows a plain failure when the root task already shows the exception of [result]. */
+  private fun withoutShownError(rootTaskId: TaskId, result: EventResult): EventResult {
+    val error = (result as? FailureResult)?.failures?.singleOrNull()?.error ?: return result
+    return if (registerFailure(rootTaskId, error)) result else FailureResultImpl()
+  }
+
+  /**
+   * Returns false when the root task already shows [error] or one of its causes.
+   * The check includes the causes, because kotlinx.coroutines can rethrow a copy of an exception with the original as the cause.
+   */
+  private fun registerFailure(rootTaskId: TaskId, error: Throwable): Boolean {
+    val failures = taskFailures.getOrPut(rootTaskId) { mutableSetOf() }
+    return error.causeChain().none { it in failures } && failures.add(error)
   }
 
   private fun finishChildrenSubtasks(parentId: TaskId, result: EventResult) {
@@ -285,10 +304,12 @@ abstract class BaseTaskConsole(
     message: String,
     description: String?,
     severity: MessageEvent.Kind,
+    error: Throwable?,
   ) {
     if (message.isBlank()) return
     val rootTaskId = findActiveRootTaskId(taskId) ?: return
     val activeTaskId = findActiveTaskId(taskId) ?: return
+    if (error != null && !registerFailure(rootTaskId, error)) return
     val filePosition = path?.let { FilePosition(path, line, column) }
     doAddDiagnosticMessage(rootTaskId, activeTaskId, filePosition, message, description, severity)
   }
@@ -331,12 +352,6 @@ abstract class BaseTaskConsole(
     val rootTaskId = findActiveRootTaskId(taskId) ?: return
     val activeTaskId = findActiveTaskId(taskId) ?: return
     doAddMessage(activeTaskId, message)
-  }
-
-  @Synchronized
-  override fun registerException(taskId: TaskId, ex: Throwable): Boolean {
-    val rootTaskId = findActiveRootTaskId(taskId) ?: return true
-    return taskFailures.getOrPut(rootTaskId) { mutableSetOf() }.add(ex)
   }
 
   private fun doAddMessage(taskId: TaskId, message: String) {

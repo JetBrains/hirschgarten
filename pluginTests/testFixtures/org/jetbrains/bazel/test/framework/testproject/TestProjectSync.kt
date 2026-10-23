@@ -11,10 +11,12 @@ import org.jetbrains.bazel.server.model.AspectSyncProject
 import org.jetbrains.bazel.sync.ProjectSyncScope
 import org.jetbrains.bazel.sync.ProjectSyncService
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
+import org.jetbrains.bazel.test.framework.TestConsoleService
 import org.jetbrains.bazel.workspace.model.test.framework.BuildServerMock
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetParams
 import kotlin.io.path.Path
 import kotlin.io.path.createDirectories
+import java.util.concurrent.atomic.AtomicInteger
 import kotlin.io.path.writeText
 
 /** Returns a target proto with [label] and [kind]. */
@@ -63,6 +65,28 @@ fun TestBazelProject.failingBuildServer(failure: Throwable) {
 /** Runs the project sync service with [scope] and waits for the end of the sync. */
 fun TestBazelProject.runProjectSync(scope: ProjectSyncScope = ProjectSyncScope.Full(build = false, phased = false)) {
   runBlocking { project.service<ProjectSyncService>().sync(scope) }
+}
+
+/**
+ * Runs [block] and returns how many errors with an exception that has [errorMessage] the product code logs.
+ * The test logger does not fail the test for these errors.
+ * [TestConsoleService] logs an error for each failed task. This function ignores those errors, because they only repeat what the console shows.
+ */
+fun countLoggedErrors(errorMessage: String, block: () -> Unit): Int {
+  val count = AtomicInteger()
+  LoggedErrorProcessor.executeWith<RuntimeException>(
+    object : LoggedErrorProcessor() {
+      override fun processError(category: String, message: String, details: Array<String>, t: Throwable?): Set<Action> {
+        if (category.endsWith(TestConsoleService::class.java.name)) return Action.NONE
+        if (t?.message != errorMessage) return Action.ALL
+        count.incrementAndGet()
+        return Action.NONE
+      }
+    },
+  ) {
+    block()
+  }
+  return count.get()
 }
 
 /** Runs [block] and ignores the "Error syncing project" error that the log gets from a failed sync. */

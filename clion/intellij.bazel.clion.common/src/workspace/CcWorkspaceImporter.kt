@@ -38,20 +38,20 @@ internal class CcWorkspaceImporter(val context: WorkspaceImporterContext) : Baze
   override val importerName: @NlsContexts.ProgressTitle String
     get() = BazelCLionCommonBundle.message("cc.workspace.importer.name")
 
-  override suspend fun import(phase: WorkspaceImporterPhase, snapshot: WorkspaceSnapshot, taskId: TaskId): Result<WorkspaceImporterResult> {
-    if (!BazelCLionFeatureFlags.isCLionEnabled) return Result.success(WorkspaceImporterResult.Abort)
+  override suspend fun import(phase: WorkspaceImporterPhase, snapshot: WorkspaceSnapshot, taskId: TaskId): WorkspaceImporterResult {
+    if (!BazelCLionFeatureFlags.isCLionEnabled) return WorkspaceImporterResult.Abort
 
     return when (phase) {
       is WorkspaceImporterPhase.Initialize -> onInitialize(snapshot, taskId)
       is WorkspaceImporterPhase.WorkspaceApply -> onWorkspaceApply(phase)
       is WorkspaceImporterPhase.PostProcessing -> onPostProcessing(snapshot, taskId)
-      else -> Result.success(WorkspaceImporterResult.Success)
+      else -> WorkspaceImporterResult.Success
     }
   }
 
-  private suspend fun onInitialize(snapshot: WorkspaceSnapshot, taskId: TaskId): Result<WorkspaceImporterResult> {
+  private suspend fun onInitialize(snapshot: WorkspaceSnapshot, taskId: TaskId): WorkspaceImporterResult {
     val target2Toolchain = subtask(snapshot, "cc.import.task.toolchain.map", taskId) { buildToolchainMap() }
-    if (target2Toolchain.isEmpty()) return Result.success(WorkspaceImporterResult.Abort)
+    if (target2Toolchain.isEmpty()) return WorkspaceImporterResult.Abort
 
     val toolchain2Compiler = subtask(snapshot, "cc.import.task.compiler.settings", taskId) { buildCompilerSettings() }
     val target2Compiler = target2Toolchain.mapValues { toolchain2Compiler[it.value] }
@@ -59,19 +59,19 @@ internal class CcWorkspaceImporter(val context: WorkspaceImporterContext) : Baze
     this.configurations = subtask(snapshot, "cc.import.task.equivalence.classes", taskId) { buildEquivalenceClasses(target2Compiler) }
     this.toolchain2Compiler = toolchain2Compiler
 
-    return Result.success(WorkspaceImporterResult.Success)
+    return WorkspaceImporterResult.Success
   }
 
-  private fun onWorkspaceApply(phase: WorkspaceImporterPhase.WorkspaceApply): Result<WorkspaceImporterResult> {
+  private fun onWorkspaceApply(phase: WorkspaceImporterPhase.WorkspaceApply): WorkspaceImporterResult {
     addCcWorkspaceModule(phase.builder, phase.entitySource)
     addCcCompilerInfoEntities(phase.builder, phase.entitySource, toolchain2Compiler)
-    return Result.success(WorkspaceImporterResult.Success)
+    return WorkspaceImporterResult.Success
   }
 
-  private suspend fun onPostProcessing(snapshot: WorkspaceSnapshot, taskId: TaskId): Result<WorkspaceImporterResult> {
+  private suspend fun onPostProcessing(snapshot: WorkspaceSnapshot, taskId: TaskId): WorkspaceImporterResult {
     if (findCcWorkspaceModuleId(context.project) == null) {
       LOG.error("CC workspace module is absent, dropping ${configurations.size} configuration(s)")
-      return Result.success(WorkspaceImporterResult.Abort)
+      return WorkspaceImporterResult.Abort
     }
 
     val workspace = OCWorkspaceImpl.getInstanceImpl(context.project).getModifiableModel(CC_CLIENT_KEY, clear = true)
@@ -91,7 +91,7 @@ internal class CcWorkspaceImporter(val context: WorkspaceImporterContext) : Baze
       toolchain2Compiler = emptyMap()
     }
 
-    return Result.success(WorkspaceImporterResult.Success)
+    return WorkspaceImporterResult.Success
   }
 
   private suspend fun <T> subtask(

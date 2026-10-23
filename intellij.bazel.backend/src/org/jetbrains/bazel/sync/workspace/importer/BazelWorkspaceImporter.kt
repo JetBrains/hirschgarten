@@ -53,8 +53,9 @@ interface BazelWorkspaceImporter {
    * @param phase Current importer phase
    * @param snapshot Immutable workspace snapshot
    * @param taskId Parent [TaskId] of the current phase for this importer
+   * @return the result of the phase. The importer throws an exception when the phase fails.
    */
-  suspend fun import(phase: WorkspaceImporterPhase, snapshot: WorkspaceSnapshot, taskId: TaskId): Result<WorkspaceImporterResult>
+  suspend fun import(phase: WorkspaceImporterPhase, snapshot: WorkspaceSnapshot, taskId: TaskId): WorkspaceImporterResult
 }
 
 /**

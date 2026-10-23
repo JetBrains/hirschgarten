@@ -51,7 +51,7 @@ internal class GoWorkspaceImporter(val context: WorkspaceImporterContext) : Baze
   override val importerName: @NlsContexts.ProgressTitle String
     get() = BazelPluginBundle.message("console.task.model.go.importer")
 
-  override suspend fun import(phase: WorkspaceImporterPhase, snapshot: WorkspaceSnapshot, taskId: TaskId): Result<WorkspaceImporterResult> {
+  override suspend fun import(phase: WorkspaceImporterPhase, snapshot: WorkspaceSnapshot, taskId: TaskId): WorkspaceImporterResult {
     when (phase) {
       is WorkspaceImporterPhase.Initialize -> {
         val importDepth = snapshot.commonSyncConfig.importDepth
@@ -62,7 +62,7 @@ internal class GoWorkspaceImporter(val context: WorkspaceImporterContext) : Baze
         goTargets = goBuildTargetList.associate { (target, goTarget) -> target.key to goTarget }
         goTargetDependencies = goBuildTargetList.associate { (target, _) -> target.key to target.dependencies.map { it.targetKey } }
         if (goTargets.isEmpty()) {
-          return Result.success(WorkspaceImporterResult.Abort)
+          return WorkspaceImporterResult.Abort
         }
       }
 
@@ -76,7 +76,7 @@ internal class GoWorkspaceImporter(val context: WorkspaceImporterContext) : Baze
 
       else -> {}
     }
-    return Result.success(WorkspaceImporterResult.Success)
+    return WorkspaceImporterResult.Success
   }
 
   private fun onWorkspaceApply(

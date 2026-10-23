@@ -26,11 +26,11 @@ internal class ScalaBazelWorkspaceImporter(val context: WorkspaceImporterContext
 
   private var scalaSdks: Set<ScalaSdk>? = null
 
-  override suspend fun import(phase: WorkspaceImporterPhase, snapshot: WorkspaceSnapshot, taskId: TaskId): Result<WorkspaceImporterResult> {
+  override suspend fun import(phase: WorkspaceImporterPhase, snapshot: WorkspaceSnapshot, taskId: TaskId): WorkspaceImporterResult {
     when (phase) {
       is WorkspaceImporterPhase.Initialize -> {
         if (!scalaSdkExtensionExists()) {
-          return Result.success(WorkspaceImporterResult.Abort)
+          return WorkspaceImporterResult.Abort
         }
         scalaSdks = calculateAllScalaSdkInfos(context, snapshot)
       }
@@ -50,7 +50,7 @@ internal class ScalaBazelWorkspaceImporter(val context: WorkspaceImporterContext
       }
     }
 
-    return Result.success(WorkspaceImporterResult.Success)
+    return WorkspaceImporterResult.Success
   }
 
   private fun calculateAllScalaSdkInfos(context: WorkspaceImporterContext, snapshot: WorkspaceSnapshot): Set<ScalaSdk> {
