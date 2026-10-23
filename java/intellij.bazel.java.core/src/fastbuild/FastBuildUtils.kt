@@ -55,6 +55,7 @@ import java.io.OutputStreamWriter
 import java.nio.file.Files
 import java.nio.file.Path
 import java.util.zip.ZipFile
+import kotlin.io.path.Path
 import kotlin.io.path.name
 import kotlin.io.path.notExists
 import kotlin.io.path.outputStream
@@ -118,7 +119,7 @@ internal object FastBuildUtils {
       val inputFile = entry.key
       val canonicalFilePath = inputFile.canonicalPath
       val canonicalWorkspaceRootPath = workspaceRoot.toCanonicalPath()
-      if (!(canonicalFilePath?.startsWith(canonicalWorkspaceRootPath) ?: false)) {
+      if (canonicalFilePath == null || !Path(canonicalFilePath).startsWith(Path(canonicalWorkspaceRootPath))) {
         throw ExecutionException(
           BazelPluginBundle.message(
             "widget.fastbuild.error.wrong.canonical.path",
@@ -134,7 +135,7 @@ internal object FastBuildUtils {
       val bazelBin =
         project.workspaceSnapshotOrNull?.bazelInfo?.bazelBin
         ?: throw ExecutionException(BazelPluginBundle.message("widget.fastbuild.error.missing.path"))
-      val targetJar = Path.of("$bazelBin/$relativePath/${if (isLib) "lib" else ""}${entry.value.id.targetName}.jar")
+      val targetJar = Path("$bazelBin/$relativePath/${if (isLib) "lib" else ""}${entry.value.id.targetName}.jar")
 
       var fastBuildTargetStatus: FastBuildTargetStatus? = null
       fastBuildService.startFastBuildTarget()
@@ -174,8 +175,8 @@ internal object FastBuildUtils {
                 originalParamsFile,
                 tempDir,
                 outputJar,
-                Path.of(inputFile.canonicalPath),
-                Path.of(workspaceRoot.toCanonicalPath()),
+                Path(canonicalFilePath),
+                Path(workspaceRoot.toCanonicalPath()),
                 targetJar,
               )
             val paramsFile1 =

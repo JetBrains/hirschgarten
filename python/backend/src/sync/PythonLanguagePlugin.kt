@@ -21,6 +21,7 @@ import org.jetbrains.bazel.sync.workspace.languages.LanguagePlugin
 import org.jetbrains.bazel.sync.workspace.snapshot.OutputLocationCollectionBuilder
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceSyncConfig
 import org.jetbrains.bazel.utils.allAncestorsSequence
+import org.jetbrains.bazel.utils.rebase
 import org.jetbrains.bsp.protocol.BuildTargetData
 import org.jetbrains.bsp.protocol.OutputLocation
 import org.jetbrains.bsp.protocol.OutputLocationCollection
@@ -138,7 +139,7 @@ class PythonLanguagePlugin : LanguagePlugin {
         // some code gen rules return directories. we need to figure out what files are there
         if (rootFile.isDirectory()) {
           Files.walk(rootFile).use { stream ->
-            stream.toList().map { file -> file to root.mapPath { it.resolve(rootFile.relativize(file)) } }
+            stream.toList().map { file -> file to root.mapPath { file.rebase(from = rootFile, to = it) } }
           }
         }
         else {

@@ -17,6 +17,7 @@ import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.commons.constants.Constants
 import org.jetbrains.bazel.coroutines.BazelApplicationCoroutineScopeService
 import org.jetbrains.bazel.utils.rebase
+import org.jetbrains.bazel.utils.toRealPathOrNull
 import org.jetbrains.bazel.utils.toRealPathOrSelf
 import java.nio.file.Files.isDirectory
 import java.nio.file.Files.isRegularFile
@@ -54,7 +55,7 @@ private fun Path.shouldStopTraversal(): Boolean = this == root || this in reject
 
 private val rejectedDirectories: Set<Path> by lazy {
   val tempPath = System.getProperty("java.io.tmpdir")?.let(::Path) ?: return@lazy emptySet()
-  val realTempPath = runCatching { tempPath.toRealPath() }.getOrNull()
+  val realTempPath = tempPath.toRealPathOrNull()
   setOfNotNull(tempPath, realTempPath)
 }
 

@@ -22,6 +22,9 @@ import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.coroutines.BazelCoroutineService
 import org.jetbrains.bazel.sync.BazelOutFileHardLinks
 import org.jetbrains.bazel.utils.readSymbolicLinkTarget
+import org.jetbrains.bazel.utils.rebase
+import org.jetbrains.bazel.utils.rebaseOrNull
+import org.jetbrains.bazel.utils.toRealPathOrNull
 import java.io.IOException
 import java.nio.file.LinkOption
 import java.nio.file.Path
@@ -37,7 +40,6 @@ import kotlin.io.path.getLastModifiedTime
 import kotlin.io.path.isDirectory
 import kotlin.io.path.listDirectoryEntries
 import kotlin.io.path.readAttributes
-import kotlin.io.path.relativeTo
 import kotlin.io.path.walk
 
 @ApiStatus.Internal
@@ -117,8 +119,6 @@ class DefaultBazelOutputFileHardLinks(
         continue
       }
 
-      val bazelOutRelativePath = originalFile.relativeTo(bazelOutputBase)
-
       /**
        * Don't recreate the hard link unnecessarily to avoid spamming the file watcher (and because creating a link is expensive).
        * Also, the hard link may exist on disk, but if we delete the original file
@@ -128,7 +128,7 @@ class DefaultBazelOutputFileHardLinks(
       val hardLink = hardLinksDuringSync.computeIfAbsent(originalFile) { originalFile ->
         BazelCoroutineService.getInstance(project).startAsync {
           withContext(limitedDispatcher) {
-            val targetHardLink = cacheDir.resolve(bazelOutRelativePath)
+            val targetHardLink = originalFile.rebase(from = bazelOutputBase, to = cacheDir)
             try {
               val targetHardLinkAttributes =
                 runCatching { targetHardLink.readAttributes<BasicFileAttributes>(LinkOption.NOFOLLOW_LINKS) }.getOrNull()
@@ -162,7 +162,7 @@ class DefaultBazelOutputFileHardLinks(
     originalFile: Path,
   ) {
     if (shouldCreateSymLink(realFile, rootDirPath)) {
-      if (targetHardLinkAttributes?.isSymbolicLink == true && runCatching { targetHardLink.toRealPath() }.getOrNull() == realFile) {
+      if (targetHardLinkAttributes?.isSymbolicLink == true && targetHardLink.toRealPathOrNull() == realFile) {
         return  // The symlink stayed the same
       }
       try {
@@ -242,11 +242,7 @@ class DefaultBazelOutputFileHardLinks(
     RefreshQueue.getInstance().refresh(recursive = true, listOf(cacheDirFile))
   }
 
-  override fun resolveCachedPath(fileOrDir: Path): Path {
-    if (!fileOrDir.startsWith(bazelOutputBase)) return fileOrDir
-    val bazelOutRelativePath = fileOrDir.relativeTo(bazelOutputBase)
-    return cacheDir.resolve(bazelOutRelativePath)
-  }
+  override fun resolveCachedPath(fileOrDir: Path): Path = fileOrDir.rebaseOrNull(from = bazelOutputBase, to = cacheDir) ?: fileOrDir
 
   override suspend fun findPreparedOutputFile(originalFile: Path): Path? =
     hardLinksDuringSync[originalFile]?.await()?.path ?: originalFile.takeIf { it in missingFilesDuringSync }

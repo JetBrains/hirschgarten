@@ -20,12 +20,13 @@ import org.jetbrains.bazel.run.commandLine.parseAsProgramArguments
 import org.jetbrains.bazel.target.getTargetDataForLabel
 import org.jetbrains.bazel.target.targetStorage
 import org.jetbrains.bazel.utils.isUnder
+import org.jetbrains.bazel.utils.rebaseOrNull
+import org.jetbrains.bazel.utils.toRealPathOrNull
 import org.jetbrains.bsp.protocol.relativeNioPath
 import java.nio.charset.StandardCharsets
 import java.nio.file.FileVisitOption
 import java.nio.file.Files
 import java.nio.file.InvalidPathException
-import java.nio.file.NoSuchFileException
 import java.nio.file.Path
 import kotlin.collections.distinct
 import kotlin.collections.plus
@@ -196,21 +197,18 @@ object PythonDebugUtils {
       try {
         // if the file string is not a valid path, or the file does not exist, it should not cause a debugger failure
         // throwing an exception might cause debugger freeze, returning null will simply show "frame not available" in stack trace
-        Path(file).toRealPath()
-      } catch (_: NoSuchFileException) {
-        return null
+        Path(file)
       } catch (_: InvalidPathException) {
         return null
-      }
+      }.toRealPathOrNull() ?: return null
     if (filePath.isUnder(setOf(rootDir))) {
       // after resolving symlinks, path is inside the project - no need to search elsewhere
       return filePath.toString()
     }
 
     val runFileSourceRoot = getPythonTargetData(project, target)?.findRunfilesWorkspaceRoot()
-    if (runFileSourceRoot != null && filePath.startsWith(runFileSourceRoot)) {
-      val fileRelativePath = filePath.subpath(runFileSourceRoot.nameCount, filePath.nameCount).toString()
-      return rootDir.resolve(fileRelativePath).toString()
+    if (runFileSourceRoot != null) {
+      filePath.rebaseOrNull(from = runFileSourceRoot, to = rootDir)?.let { return it.toString() }
     }
 
     return file
