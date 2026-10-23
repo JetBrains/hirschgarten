@@ -13,7 +13,10 @@ filegroup(
 
 make(
     name = "format_utils",
-    args = ["PREFIX=$$INSTALLDIR$$"],
+    args = [
+        "PREFIX=$$INSTALLDIR$$",
+        "AR=ar",
+    ],
     lib_source = ":srcs",
     out_static_libs = ["libformat_utils.a"],
 )
