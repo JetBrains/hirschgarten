@@ -6,13 +6,11 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiDocumentManager
 import com.intellij.psi.PsiManager
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.flow.open.BazelProjectStoreDescriptor
 import org.jetbrains.bazel.languages.projectview.ProjectView
-import org.jetbrains.bazel.languages.projectview.ProjectViewFactory
 import org.jetbrains.bazel.languages.projectview.ProjectViewService
+import org.jetbrains.bazel.languages.projectview.ProjectViewServiceBase
 import org.jetbrains.bazel.languages.projectview.imports.resolvedPathOrNull
 import org.jetbrains.bazel.languages.projectview.psi.ProjectViewPsiFile
 import org.jetbrains.bazel.sync.environment.stateStoreOrNull
@@ -20,47 +18,39 @@ import org.jetbrains.bazel.utils.findVirtualFile
 import java.nio.file.Path
 
 @ApiStatus.Internal
-class DefaultProjectViewService(private val project: Project) : ProjectViewService {
+class DefaultProjectViewService(project: Project) : ProjectViewServiceBase(project) {
+
   val projectViewFile: VirtualFile by lazy {
-    requireProjectViewVirtualFile()
+    requireProjectViewPath().findVirtualFile() ?: error("Could not find project view file in VFS")
   }
 
-  override val projectViewState: StateFlow<ProjectView>
-    field = MutableStateFlow(ProjectView.EMPTY)
+  override val projectViewPath: Path?
+    get() = (project.stateStoreOrNull?.storeDescriptor as? BazelProjectStoreDescriptor)?.projectViewFile
 
-  suspend fun ensureProjectViewInitialized() {
-    if (projectViewState.value === ProjectView.EMPTY) {
-      val newProjectView = computeProjectView()
-      projectViewState.emit(newProjectView)
+  fun ensureProjectViewInitialized() {
+    if (projectView === ProjectView.EMPTY) {
+      loadProjectView(requireProjectViewPath())
     }
   }
 
+  // Only to be used in monorepo devkit module
+  fun forceLoadProjectViewFile(newFile: VirtualFile) {
+    logger.info("Forcibly loading project view file content: $newFile")
+    loadProjectView(newFile.toNioPath())
+  }
+
   override suspend fun forceReparseCurrentProjectViewFiles() {
-    logger.info("Reparsing currently opened project view file")
-    val newProjectView = computeProjectView()
-    projectViewState.emit(newProjectView)
-    val resolvedImports = newProjectView.imports.mapNotNull { it.resolvedPathOrNull()?.findVirtualFile() }
+    loadProjectView(requireProjectViewPath())
+    val resolvedImports = projectView
+      .imports
+      .mapNotNull { it.resolvedPathOrNull()?.findVirtualFile() }
     edtWriteAction {
       PsiDocumentManager.getInstance(project)
         .reparseFiles(resolvedImports + projectViewFile, false)
     }
   }
 
-  private fun computeProjectView(): ProjectView = ProjectViewFactory.fromOrNull(project, requireProjectViewPath())
-                                                  ?: ProjectViewFactory.fromDefault(project)
-
   private fun requireProjectViewPath(): Path = projectViewPath ?: error("Missing project view path")
-
-  private fun requireProjectViewVirtualFile(): VirtualFile = requireProjectViewPath().findVirtualFile() ?: error("Could not find project view file in VFS")
-
-  // Only to be used in monorepo devkit module
-  suspend fun forceLoadProjectViewFile(newFile: VirtualFile) {
-    logger.info("Forcibly loading project view file content: $newFile")
-    projectViewState.emit(ProjectViewFactory.from(project, newFile.toNioPath()))
-  }
-
-  override val projectViewPath: Path?
-    get() = (project.stateStoreOrNull?.storeDescriptor as? BazelProjectStoreDescriptor)?.projectViewFile
 
   companion object {
     private val logger = logger<DefaultProjectViewService>()
