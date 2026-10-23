@@ -7,6 +7,7 @@ import com.intellij.util.containers.MultiMap
 import com.jetbrains.cidr.lang.OCFileTypeHelpers
 import com.jetbrains.cidr.lang.workspace.OCResolveConfiguration
 import org.jetbrains.annotations.ApiStatus
+import org.jetbrains.bazel.clion.BazelCLionCommonBundle
 import org.jetbrains.bazel.clion.sync.CcBuildTarget
 import org.jetbrains.bazel.commons.getLocalRepositories
 import org.jetbrains.bazel.sync.workspace.persistence.TargetLoadOptions
@@ -103,14 +104,22 @@ private fun collectSources(targets: Collection<WorkspaceTargetKey>): List<Virtua
     .toList()
 }
 
+context(ctx: CcImportContext)
 private fun computeDisplayName(targets: Collection<WorkspaceTargetKey>): String {
   val minTargetKey = targets.minBy { it.label }
 
   return buildString {
-    append(minTargetKey.presentable())
+    append(minTargetKey.label)
+    minTargetKey.configuration.shortChecksum?.let { checksum ->
+      append(" (")
+      ctx.snapshot.configurations[minTargetKey.configuration]?.summary?.mnemonic?.takeIf { it.isNotBlank() }?.let {
+        append(it).append(' ')
+      }
+      append(checksum).append(')')
+    }
 
     if (targets.size > 1) {
-      append(" and ${targets.size - 1} other target(s)")
+      append(BazelCLionCommonBundle.message("cc.resolve.configuration.other.targets", targets.size - 1))
     }
   }
 }

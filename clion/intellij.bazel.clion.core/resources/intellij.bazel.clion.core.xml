@@ -58,7 +58,16 @@
 
   <extensions defaultExtensionNs="cidr">
     <debugger.debugProfilesEnabler implementation="org.jetbrains.bazel.clion.run.DebugProfileEnabler"/>
+    <projectModel.resolveConfigurationChooser
+      id="Bazel.ccRunConfigurationChooser"
+      implementation="org.jetbrains.bazel.clion.workspace.CcRunConfigurationChooser"
+      order="after com.jetbrains.cidr.lang.workspace.RunConfigurationBasedChooser, before Bazel.ccDirectoryBasedChooser"
+    />
   </extensions>
+
+  <projectListeners>
+    <listener class="org.jetbrains.bazel.clion.workspace.CcRunConfigurationListener" topic="com.intellij.execution.RunManagerListener"/>
+  </projectListeners>
 
   <actions resource-bundle="messages.BazelCLionCoreBundle">
     <group id="Bazel.CLion.DebugActions">
