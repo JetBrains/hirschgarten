@@ -15,6 +15,9 @@ import org.jetbrains.bazel.fixtures.CcProjectBuilder
 import org.jetbrains.bazel.fixtures.ccProject
 import org.jetbrains.bazel.fixtures.withTestImportContext
 import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceConfiguration
+import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceConfigurationId
+import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceConfigurationSummary
 import org.junit.jupiter.api.Test
 
 private const val SAME_DEFINE = "SAME=1"
@@ -206,6 +209,25 @@ class CcEquivalenceClassesTest {
 
     assertThat(configurations).hasSize(1)
     assertThat(configurations.byName("@//foo/bar:one (configA)")).isNotNull()
+  }
+
+  @Test
+  fun testConfigurationMnemonicInGroupName() {
+    val id = WorkspaceConfigurationId.of("configA")
+    val configuration = WorkspaceConfiguration(
+      id,
+      WorkspaceConfigurationSummary("configA", "darwin_arm64-fastbuild", "darwin_arm64", "darwin_arm64", false),
+      emptyList(),
+    )
+    val configurations = resolve(mapOf(id to configuration)) {
+      ccBinary {
+        label("//foo/bar:one")
+        configurationId("configA")
+        srcs("foo/bar/one.c")
+      }
+    }
+
+    assertThat(configurations.byName("@//foo/bar:one (darwin_arm64-fastbuild configA)")).isNotNull()
   }
 
   @Test
@@ -401,8 +423,12 @@ class CcEquivalenceClassesTest {
     assertThat(configurations.single().sources.map { it.fileName }).containsExactly("one.c")
   }
 
-  private fun resolve(declare: CcProjectBuilder.() -> Unit): List<CcResolveConfiguration> = timeoutRunBlocking {
-    val (ctx, result) = withTestImportContext(ccProject(declare = declare), project = project) {
+  private fun resolve(
+    configurations: Map<WorkspaceConfigurationId, WorkspaceConfiguration> = emptyMap(),
+    declare: CcProjectBuilder.() -> Unit,
+  ): List<CcResolveConfiguration> = timeoutRunBlocking {
+    val snapshot = ccProject(declare = declare).copy(configurations = configurations)
+    val (ctx, result) = withTestImportContext(snapshot, project = project) {
       val target2Toolchain = buildToolchainMap()
       val toolchain2Compiler = buildCompilerSettings()
 

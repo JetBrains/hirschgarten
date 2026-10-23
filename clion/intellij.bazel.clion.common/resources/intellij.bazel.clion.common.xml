@@ -42,6 +42,7 @@
     <lang.compilerKindProvider implementation="org.jetbrains.bazel.clion.workspace.CcCompilerKindProvider"/>
     <lang.followSymlinkRootsProvider implementation="org.jetbrains.bazel.clion.workspace.CcFollowSymlinkRootsProvider"/>
     <projectModel.resolveConfigurationChooser
+      id="Bazel.ccDirectoryBasedChooser"
       implementation="org.jetbrains.bazel.clion.workspace.CcDirectoryBasedChooser"
       order="after com.jetbrains.cidr.lang.workspace.RunConfigurationBasedChooser, before com.jetbrains.cidr.lang.workspace.ClosestConfigurationBasedChooser"
     />
