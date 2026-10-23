@@ -1,31 +1,14 @@
 package org.jetbrains.bazel.debug.configuration
 
 import com.intellij.openapi.options.SettingsEditor
-import com.intellij.openapi.ui.LabeledComponent
+import com.intellij.ui.components.JBTextField
+import com.intellij.ui.dsl.builder.AlignX
+import com.intellij.ui.dsl.builder.panel
 import org.jetbrains.bazel.config.BazelPluginBundle
-import java.awt.GridBagConstraints
-import java.awt.GridBagLayout
 import javax.swing.JComponent
-import javax.swing.JLabel
-import javax.swing.JPanel
-import javax.swing.JTextField
 
 internal class StarlarkDebugSettingsEditor : SettingsEditor<StarlarkDebugConfiguration>() {
-  private val targetField = JTextField()
-  private val targetLabel =
-    createLabelFor(BazelPluginBundle.message("starlark.debug.config.target.label"), targetField)
-  private val targetBox =
-    JPanel().apply {
-      add(targetLabel)
-      add(targetField)
-    }
-
-  private fun createLabelFor(text: String?, component: JComponent): JLabel {
-    val label = JLabel()
-    LabeledComponent.TextWithMnemonic.fromTextWithMnemonic(text).setToLabel(label)
-    label.labelFor = component
-    return label
-  }
+  private val targetField = JBTextField()
 
   override fun resetEditorFrom(config: StarlarkDebugConfiguration) {
     targetField.text = config.getTarget()
@@ -35,15 +18,12 @@ internal class StarlarkDebugSettingsEditor : SettingsEditor<StarlarkDebugConfigu
     config.setTarget(targetField.text)
   }
 
-  override fun createEditor(): JComponent {
-    val configPanel = JPanel(GridBagLayout())
-
-    val constraints =
-      GridBagConstraints().apply {
-        gridy = 0
-        anchor = GridBagConstraints.WEST
+  override fun createEditor(): JComponent =
+    panel {
+      row(BazelPluginBundle.message("starlark.debug.config.target.label")) {
+        cell(targetField)
+          .align(AlignX.FILL)
+          .resizableColumn()
       }
-    configPanel.add(targetBox, constraints)
-    return configPanel
-  }
+    }
 }
