@@ -8,6 +8,14 @@
   </dependencies>
   <!-- endregion -->
 
+  <extensionPoints>
+    <extensionPoint
+      dynamic="true"
+      interface="org.jetbrains.bazel.sync.workspace.languages.jvm.JavacOptionsUpdater"
+      qualifiedName="org.jetbrains.bazel.javacOptionsUpdater"
+    />
+  </extensionPoints>
+
   <extensions defaultExtensionNs="org.jetbrains.bazel">
     <languageClassProvider implementation="org.jetbrains.bazel.sync.JavaLanguageClassProvider"/>
     <targetKindProvider implementation="org.jetbrains.bazel.sync.workspace.languages.jvm.JavaBazelRules"/>

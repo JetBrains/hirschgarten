@@ -109,6 +109,7 @@
     <testLocationHintProvider implementation="org.jetbrains.bazel.testing.BazelJavaTestLocationHintProvider"/>
     <incompleteTestSuiteParser implementation="org.jetbrains.bazel.jvm.run.Junit5TestVisualOutputParser"/>
     <testRerunExtension implementation="org.jetbrains.bazel.jvm.run.DefaultJvmTestRerunExtension" order="last"/>
+    <javacOptionsUpdater implementation="org.jetbrains.bazel.java.compiler.BazelJavacOptionsUpdater"/>
   </extensions>
 
   <extensions defaultExtensionNs="com.intellij">

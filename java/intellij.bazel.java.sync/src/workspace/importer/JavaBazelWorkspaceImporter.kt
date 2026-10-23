@@ -1,6 +1,5 @@
 package org.jetbrains.bazel.workspace.importer
 
-import com.intellij.compiler.impl.javaCompiler.javac.JavacConfiguration
 import com.intellij.openapi.util.NlsContexts
 import com.intellij.platform.diagnostic.telemetry.helpers.use
 import com.intellij.platform.workspace.storage.EntitySource
@@ -20,6 +19,7 @@ import org.jetbrains.bazel.sync.workspace.importer.WorkspaceImporterContext
 import org.jetbrains.bazel.sync.workspace.importer.WorkspaceImporterPhase
 import org.jetbrains.bazel.sync.workspace.importer.WorkspaceImporterResult
 import org.jetbrains.bazel.sync.workspace.languages.java.JavaWorkspaceSyncConfig
+import org.jetbrains.bazel.sync.workspace.languages.jvm.JavacOptionsUpdater
 import org.jetbrains.bazel.sync.workspace.languages.jvm.extractJvmBuildTarget
 import org.jetbrains.bazel.sync.workspace.persistence.TargetLoadOptions
 import org.jetbrains.bazel.sync.workspace.snapshot.CommonWorkspaceSyncConfig
@@ -127,10 +127,10 @@ internal class JavaBazelWorkspaceImporter(val context: WorkspaceImporterContext)
       )
     }
 
-    JavacConfiguration.getOptions(context.project, JavacConfiguration::class.java).ADDITIONAL_OPTIONS_OVERRIDE =
-      requireNotNull(this.javacOptions) {
-        "javacOptions is null but expected to be computed"
-      }
+    val javacOptions = requireNotNull(this.javacOptions) {
+      "javacOptions is null but expected to be computed"
+    }
+    JavacOptionsUpdater.ep.extensionList.forEach { it.updateJavacOptions(context.project, javacOptions) }
     return WorkspaceImporterResult.Success
   }
 
