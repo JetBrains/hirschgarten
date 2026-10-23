@@ -44,6 +44,7 @@ import org.jetbrains.bazel.workspacemodel.entities.BazelGoPackageEntity
 import org.jetbrains.bazel.workspacemodel.entities.BazelGoTargetEntity
 import org.jetbrains.bazel.workspacemodel.entities.targetKey
 import java.util.function.Predicate
+import com.goide.psi.impl.getBuildFlags as buildFlags
 
 /**
  * Wrapper around [BazelGoPackageEntity] that implements [GoPackage] from the Go plugin.
@@ -213,7 +214,7 @@ class BazelGoPackage(
           source.let {
             psiManager.findFile(it) as? GoFile
           }
-        }.firstOrNull { it.buildFlags != "ignore" }
+        }.firstOrNull { it.buildFlags() != "ignore" }
         ?.let {
           return GoPackageUtil.getTrimmedPackageName(it) ?: importPath.substringAfterLast('/')
         }
