@@ -55,6 +55,39 @@ fun Path.readSymbolicLinkTarget(): Path? =
     null
   }
 
+@ApiStatus.Internal
+fun Path.toRealPathOrNull(): Path? = try {
+  toRealPath()
+}
+catch (_: IOException) {
+  null
+}
+
+/**
+ * The real path of this path, or this path when the real path cannot be read, for example when the file does not exist.
+ */
+@ApiStatus.Internal
+fun Path.toRealPathOrSelf(): Path = toRealPathOrNull() ?: this
+
+/**
+ * This path with its [from] prefix changed to [to], or `null` when this path is not under [from].
+ * For example, `/a/b/c` with [from] `/a` and [to] `/x` gives `/x/b/c`.
+ */
+@ApiStatus.Internal
+fun Path.rebaseOrNull(from: Path, to: Path): Path? = when {
+  !startsWith(from) -> null
+  from == to -> this
+  nameCount == from.nameCount -> to
+  else -> to.resolve(subpath(from.nameCount, nameCount))
+}
+
+/**
+ * This path with its [from] prefix changed to [to]. This path must be under [from], see [rebaseOrNull].
+ */
+@ApiStatus.Internal
+fun Path.rebase(from: Path, to: Path): Path =
+  requireNotNull(rebaseOrNull(from = from, to = to)) { "$this is not under $from" }
+
 /**
  * See [com.intellij.openapi.vfs.VfsUtilCore.getCommonAncestor].
  * Input paths must be absolute and normalized.

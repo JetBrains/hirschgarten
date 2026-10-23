@@ -20,10 +20,12 @@ import java.nio.file.Files
 import java.nio.file.Path
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.Executors
+import kotlin.io.path.Path
 import kotlin.io.path.createDirectories
 import kotlin.io.path.exists
 import kotlin.io.path.isDirectory
 import kotlin.io.path.isRegularFile
+import kotlin.io.path.name
 import kotlin.io.path.readText
 import kotlin.io.path.writeText
 
@@ -42,7 +44,7 @@ internal class BazelTestFixtureConfigTest {
     )
 
     assertEquals(tempDir.resolve("simpleJavaTest"), project.fixtureRoot)
-    assertEquals(Path.of("MODULE.bazel"), project.pathWithinFixture)
+    assertEquals(Path("MODULE.bazel"), project.pathWithinFixture)
     assertFalse(project.isReusable)
   }
 
@@ -105,6 +107,33 @@ internal class BazelTestFixtureConfigTest {
 
       assertThrows(IllegalArgumentException::class.java) {
         IdeStarterBazelProject("legacyGooglePluginTest/missing", {}, fixturesRoot).downloadAndUnpackProject()
+      }
+    }
+  }
+
+  @Test
+  fun `project declarations open the fixture copy through a symlink`(@TempDir tempDir: Path) {
+    val fixturesRoot = tempDir.resolve("fixtures").createDirectories()
+    fixturesRoot.resolve("linkedFixture").createDirectories().resolve("MODULE.bazel").writeText("module(name = \"fixture\")")
+
+    withTemporaryStarterPaths(tempDir.resolve("starter")) {
+      val linkedRoot = checkNotNull(
+        IdeStarterBazelProject("linkedFixture", {}, fixturesRoot, symlinkPath = "linked/workspace").downloadAndUnpackProject(),
+      )
+      assertTrue(linkedRoot.endsWith(Path("linked", "workspace")))
+      assertEquals("linkedFixture", linkedRoot.toRealPath().name)
+      assertTrue(linkedRoot.resolve("MODULE.bazel").isRegularFile())
+
+      val moduleFile = checkNotNull(
+        IdeStarterBazelProject("linkedFixture/MODULE.bazel", {}, fixturesRoot, symlinkPath = "linked/workspace").downloadAndUnpackProject(),
+      )
+      assertTrue(moduleFile.endsWith(Path("linked", "workspace", "MODULE.bazel")))
+      assertTrue(moduleFile.isRegularFile())
+    }
+
+    listOf("", "/linked", "../linked", "linked/../other").forEach { symlinkPath ->
+      assertThrows(IllegalArgumentException::class.java) {
+        IdeStarterBazelProject("linkedFixture", {}, fixturesRoot, symlinkPath = symlinkPath)
       }
     }
   }
@@ -512,8 +541,8 @@ internal class BazelTestFixtureConfigTest {
 
   @Test
   fun `cache settings quote Bazelrc paths`() {
-    val repositoryCache = Path.of("repository cache")
-    val diskCache = Path.of("disk cache")
+    val repositoryCache = Path("repository cache")
+    val diskCache = Path("disk cache")
 
     assertEquals(
       "common --repository_cache=${repositoryCache.toAbsolutePath().toBazelRcPathForTest()}",

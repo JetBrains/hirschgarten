@@ -16,6 +16,8 @@ import kotlinx.coroutines.withContext
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.commons.constants.Constants
 import org.jetbrains.bazel.coroutines.BazelApplicationCoroutineScopeService
+import org.jetbrains.bazel.utils.rebase
+import org.jetbrains.bazel.utils.toRealPathOrSelf
 import java.nio.file.Files.isDirectory
 import java.nio.file.Files.isRegularFile
 import java.nio.file.Path
@@ -54,6 +56,29 @@ private val rejectedDirectories: Set<Path> by lazy {
   val tempPath = System.getProperty("java.io.tmpdir")?.let(::Path) ?: return@lazy emptySet()
   val realTempPath = runCatching { tempPath.toRealPath() }.getOrNull()
   setOfNotNull(tempPath, realTempPath)
+}
+
+/**
+ * The real path of a project root, and a file under it.
+ */
+@ConsistentCopyVisibility
+internal data class ResolvedProjectRoot private constructor(val rootDir: Path, val openedFile: Path) {
+  companion object {
+    /**
+     * Finds the project root of [openedFile] with [findProjectFolderFromFile], changes it to its real path,
+     * and moves [openedFile] onto it. Only the root is resolved.
+     * Returns `null` when [openedFile] is not in a Bazel project.
+     */
+    @RequiresBackgroundThread(generateAssertion = false)
+    fun from(openedFile: Path): ResolvedProjectRoot? {
+      val projectRoot = findProjectFolderFromFile(openedFile) ?: return null
+      val realProjectRoot = projectRoot.toRealPathOrSelf()
+      return ResolvedProjectRoot(
+        rootDir = realProjectRoot,
+        openedFile = openedFile.rebase(from = projectRoot, to = realProjectRoot),
+      )
+    }
+  }
 }
 
 @RequiresBackgroundThread(generateAssertion = false /* IJPL-115548 */)

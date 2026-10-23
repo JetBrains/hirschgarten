@@ -15,6 +15,6 @@ internal class BazelTrustedProjectsLocator : TrustedProjectsLocator {
 
   override fun getProjectRoots(projectRoot: Path, project: Project?): List<Path> {
     // 'projectRoot' despite its name, may be a file when bazel plugin opens MODULE.bazel, *.bazelproject, etc.
-    return listOfNotNull(findProjectFolderFromFile(projectRoot))
+    return listOfNotNull(ResolvedProjectRoot.from(openedFile = projectRoot)?.rootDir)
   }
 }
