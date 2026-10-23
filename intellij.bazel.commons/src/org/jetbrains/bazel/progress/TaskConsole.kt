@@ -81,6 +81,7 @@ interface TaskConsole {
    * @param message message of the diagnostic
    * @param description description of the diagnostic
    * @param severity severity of the diagnostic
+   * @param error the exception that the diagnostic reports. The console does not add the diagnostic when its task already shows this exception.
    */
   fun addDiagnosticMessage(
     taskId: TaskId,
@@ -90,6 +91,7 @@ interface TaskConsole {
     @NlsContexts.ProgressText message: String,
     description: String? = null,
     severity: MessageEvent.Kind,
+    error: Throwable? = null,
   )
 
   /**
@@ -101,13 +103,4 @@ interface TaskConsole {
    */
   fun addMessage(taskId: TaskId, message: String)
 
-  /**
-   * Registers new exception during task processing.
-   * NOTE: this does not add any UI elements. It is to prevent duplicate UI nodes when subtask fails
-   *
-   * @param taskId id of the task (or a subtask) whic produced an exception
-   * @param ex exception itself
-   * @return true if this exception is new and was not registered already
-   */
-  fun registerException(taskId: TaskId, ex: Throwable): Boolean
 }

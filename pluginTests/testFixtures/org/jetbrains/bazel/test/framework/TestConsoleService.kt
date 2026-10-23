@@ -8,6 +8,7 @@ import com.intellij.build.events.FinishEvent
 import com.intellij.build.events.MessageEvent
 import com.intellij.build.events.OutputBuildEvent
 import com.intellij.openapi.Disposable
+import com.intellij.openapi.diagnostic.isControlFlowException
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Disposer
@@ -40,7 +41,7 @@ internal class TestConsoleService(project: Project) : ConsoleService, Disposable
   override val buildConsole: TaskConsole
   override val syncConsole: TaskConsole
 
-  /** Every warning and error message of the sync console, oldest first. */
+  /** Every warning and error that the sync console shows, as a message or as the error of a failed task, oldest first. */
   val syncDiagnostics: List<String>
     field = ArrayList<String>()
 
@@ -52,6 +53,9 @@ internal class TestConsoleService(project: Project) : ConsoleService, Disposable
   private fun storeEvent(event: BuildEvent) {
     if (event is MessageEvent && (event.kind == MessageEvent.Kind.WARNING || event.kind == MessageEvent.Kind.ERROR)) {
       syncDiagnostics.add(event.message.trimCrLf().orEmpty())
+    }
+    if (event is FinishEvent) {
+      (event.result as? FailureResult)?.failures?.forEach { syncDiagnostics.add(it.description ?: it.message ?: it.error?.message.orEmpty()) }
     }
   }
 
@@ -68,7 +72,7 @@ internal class TestConsoleService(project: Project) : ConsoleService, Disposable
                 if (f.error != null) appendLine().append(f.error).appendLine()
               }
             },
-            failure.failures.firstOrNull()?.error,
+            failure.failures.firstOrNull()?.error?.takeUnless { it.isControlFlowException },
           )
         }
 

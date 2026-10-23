@@ -1,7 +1,5 @@
 package org.jetbrains.bazel.sync.workspace.importer
 
-import com.intellij.build.events.impl.FailureResultImpl
-import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.externalSystem.autolink.mapExtensionSafe
 import com.intellij.openapi.project.Project
 import com.intellij.platform.backend.workspace.WorkspaceModel
@@ -11,7 +9,7 @@ import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.commons.BazelInfo
 import org.jetbrains.bazel.config.BazelBackendBundle
 import org.jetbrains.bazel.progress.TaskConsole
-import org.jetbrains.bazel.progress.syncConsole
+import org.jetbrains.bazel.progress.isolateSubtaskFailure
 import org.jetbrains.bazel.progress.withSubtask
 import org.jetbrains.bazel.sync.BazelOutFileHardLinks
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceSnapshot
@@ -31,10 +29,6 @@ class WorkspaceImporterHelper(
   private val outFileHardLinks: BazelOutFileHardLinks,
   private val bazelInfo: BazelInfo,
 ) {
-  companion object {
-    private val log = logger<WorkspaceImporterHelper>()
-  }
-
   private val workspaceModel = WorkspaceModel.getInstance(project)
   private val toSkip = mutableSetOf<BazelWorkspaceImporter>()
   private lateinit var importers: List<BazelWorkspaceImporter>
@@ -63,17 +57,8 @@ class WorkspaceImporterHelper(
         message = BazelBackendBundle.message("workspace.importer.phase.initialization.progress"),
       ) { taskId ->
         importers.forEach { importer ->
-          importer.runContextual(taskId, WorkspaceImporterPhase.Initialize(namingBuilder), snapshot)
-            .onFailure { toSkip += importer }
-            .onSuccess { result ->
-              when (result) {
-                WorkspaceImporterResult.Abort -> toSkip += importer
-                WorkspaceImporterResult.Success -> {
-                  /* noop */
-                }
-              }
-
-            }
+          val result = importer.runContextual(taskId, WorkspaceImporterPhase.Initialize(namingBuilder), snapshot)
+          if (result != WorkspaceImporterResult.Success) toSkip += importer
         }
       }
 
@@ -87,15 +72,8 @@ class WorkspaceImporterHelper(
           if (importer in toSkip) {
             return@forEach
           }
-          importer.runContextual(taskId, WorkspaceImporterPhase.WorkspaceApply(builder, BazelProjectEntitySource, naming), snapshot)
-            .onFailure { toSkip += importer }
-            .onSuccess { result ->
-              when (result) {
-                WorkspaceImporterResult.Abort -> toSkip += importer
-                WorkspaceImporterResult.Success -> { /* noop */
-                }
-              }
-            }
+          val result = importer.runContextual(taskId, WorkspaceImporterPhase.WorkspaceApply(builder, BazelProjectEntitySource, naming), snapshot)
+          if (result != WorkspaceImporterResult.Success) toSkip += importer
         }
       }
 
@@ -107,16 +85,8 @@ class WorkspaceImporterHelper(
           if (importer in toSkip) {
             return@forEach
           }
-          importer.runContextual(taskId, WorkspaceImporterPhase.Finalize, snapshot)
-            .onFailure { /* noop */ }
-            .onSuccess { result ->
-              when (result) {
-                WorkspaceImporterResult.Abort -> toSkip += importer
-                WorkspaceImporterResult.Success -> {
-                  /* noop */
-                }
-              }
-            }
+          val result = importer.runContextual(taskId, WorkspaceImporterPhase.Finalize, snapshot)
+          if (result == WorkspaceImporterResult.Abort) toSkip += importer
         }
       }
     }
@@ -136,22 +106,12 @@ class WorkspaceImporterHelper(
     }
   }
 
-  private fun <T> Result<T>.logExceptionIfNeeded(taskId: TaskId): Result<T> =
-    this.onFailure { throwable ->
-      log.error(throwable)
-      project.syncConsole.finishSubtask(
-        taskId,
-        null,
-        FailureResultImpl(throwable),
-      )
-    }
-
   // MAYBE RC: using context parameters for `TaskId` would be great fit here
   private suspend fun BazelWorkspaceImporter.runContextual(
     taskId: TaskId,
     phase: WorkspaceImporterPhase,
     snapshot: WorkspaceSnapshot,
-  ): Result<WorkspaceImporterResult> = runCatching {
+  ): WorkspaceImporterResult? = taskConsole.isolateSubtaskFailure(taskId) {
     if (this is BazelWorkspaceImporter.Named) {
       taskConsole.withSubtask(
         taskId.uniqueSubTask("importer"),
@@ -164,9 +124,4 @@ class WorkspaceImporterHelper(
       this.import(phase, snapshot, taskId)
     }
   }
-    .fold(
-      onSuccess = { it },
-      onFailure = { Result.failure(it) },
-    )
-    .logExceptionIfNeeded(taskId)
 }

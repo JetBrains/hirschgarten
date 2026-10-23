@@ -31,9 +31,8 @@ import org.jetbrains.bazel.coroutines.BazelCoroutineService
 import org.jetbrains.bazel.fus.BazelSyncCollector
 import org.jetbrains.bazel.commons.RepoMapping
 import org.jetbrains.bazel.label.Label
-import org.jetbrains.bazel.languages.projectview.ProjectViewService
-import org.jetbrains.bazel.languages.projectview.unresolvedRequiredImports
 import org.jetbrains.bazel.performance.bspTracer
+import org.jetbrains.bazel.progress.isolateSubtaskFailure
 import org.jetbrains.bazel.progress.syncConsole
 import org.jetbrains.bazel.progress.withSubtask
 import org.jetbrains.bazel.run.task.BazelBuildTaskListener
@@ -41,6 +40,7 @@ import org.jetbrains.bazel.server.BazelServerFacade
 import org.jetbrains.bazel.server.BazelServerService
 import org.jetbrains.bazel.sync.ProjectPostSyncHook
 import org.jetbrains.bazel.sync.ProjectPreSyncHook
+import org.jetbrains.bazel.sync.ProjectSyncAbortException
 import org.jetbrains.bazel.sync.ProjectSyncCompletionResult
 import org.jetbrains.bazel.sync.ProjectSyncHook.ProjectSyncHookEnvironment
 import org.jetbrains.bazel.sync.ProjectSyncOutcome
@@ -293,6 +293,12 @@ class ProjectSyncTask(
         failureCause = e,
       )
     }
+    catch (_: ProjectSyncAbortException) {
+      syncResult.copy(
+        completionResult = ProjectSyncCompletionResult.FAILURE,
+        phaseDurations = phaseDurations.toList(),
+      )
+    }
     catch (e: Exception) {
       syncResult.copy(
         completionResult = ProjectSyncCompletionResult.FAILURE,
@@ -313,15 +319,6 @@ class ProjectSyncTask(
     var syncScope: ProjectSyncScope = scope
     try {
       executePreSyncHooks(progressReporter, taskId)
-
-      // A required `import` in the project view (e.g. `import local.bazelproject`) whose file is
-      // missing leaves the project view effectively empty. Without stopping here the sync still
-      // contacts the Bazel server and tries to resolve configurations/targets from that empty view,
-      // which fails slowly with misleading secondary errors instead of the real cause. Stop now;
-      // the offending import was already reported as an error by ReparseProjectViewFilePreSyncHook.
-      if (project.serviceAsync<ProjectViewService>().projectView.unresolvedRequiredImports().isNotEmpty()) {
-        return ProjectSyncResult(ProjectSyncCompletionResult.FAILURE)
-      }
 
       return BazelServerService.getInstance(project).connection.runWithServer(taskId) { server ->
         server.withOutFileHardLinksSync(projectModelUpdated = { shouldUpdateProjectModel && syncScope is ProjectSyncScope.Full }) {
@@ -539,25 +536,6 @@ class ProjectSyncTask(
   }
 
   private suspend fun <T> List<T>.forEachSubtask(taskId: TaskId, action: suspend (T) -> Unit) {
-    forEach { item ->
-      try {
-        action(item)
-      }
-      catch (e: CancellationException) {
-        throw e
-      }
-      catch (e: Throwable) {
-        if (project.syncConsole.registerException(taskId, e)) {
-          project.syncConsole.addDiagnosticMessage(
-            taskId,
-            null, -1, -1,
-            message = e.message ?: "Unknown error",
-            description = null,
-            MessageEvent.Kind.ERROR,
-          )
-        }
-        log.error(e)
-      }
-    }
+    forEach { item -> project.syncConsole.isolateSubtaskFailure(taskId) { action(item) } }
   }
 }

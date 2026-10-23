@@ -51,14 +51,13 @@ internal class JavaBazelWorkspaceImporter(val context: WorkspaceImporterContext)
   override val importerName: @NlsContexts.ProgressTitle String
     get() = BazelJavaBackendBundle.message("workspace.java.importer.name")
 
-  override suspend fun import(phase: WorkspaceImporterPhase, snapshot: WorkspaceSnapshot, taskId: TaskId): Result<WorkspaceImporterResult> = runCatching {
+  override suspend fun import(phase: WorkspaceImporterPhase, snapshot: WorkspaceSnapshot, taskId: TaskId): WorkspaceImporterResult =
     when (phase) {
       is WorkspaceImporterPhase.Initialize -> onInitialize(snapshot, phase.naming)
       is WorkspaceImporterPhase.WorkspaceApply -> onWorkspaceApply(snapshot, phase.builder, phase.entitySource, phase.naming, taskId)
       WorkspaceImporterPhase.Finalize -> onFinalize(snapshot)
       WorkspaceImporterPhase.PostProcessing -> onPostProcessing(snapshot)
     }
-  }
 
   fun onInitialize(
     snapshot: WorkspaceSnapshot,
