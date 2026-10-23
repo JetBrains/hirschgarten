@@ -6,6 +6,7 @@ import io.kotest.matchers.collections.shouldNotContain
 import io.kotest.matchers.shouldBe
 import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.commons.TargetKind
+import org.jetbrains.bazel.commons.symlinks.BazelConvenienceSymlinksScanner
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.sync.JavaLanguageClass
 import org.jetbrains.bazel.sync.workspace.languages.jvm.JvmBuildTarget
@@ -28,8 +29,6 @@ import kotlin.io.path.createFile
 import kotlin.io.path.createSymbolicLinkPointingTo
 
 class ResourceRootBuilderTest : MockProjectBaseTest() {
-
-  private val projectName = "test-project"
 
   @TempDir
   private lateinit var tempDir: Path
@@ -840,12 +839,11 @@ class ResourceRootBuilderTest : MockProjectBaseTest() {
     }
   }
 
-  private fun resolve(target: TestBuildTarget, sourceContentRoots: List<Path> = emptyList(), baseDirectory: Path? = null) =
+  private fun resolve(target: TestBuildTarget, baseDirectory: Path? = null) =
     ResourceRootBuilder.resolve(
       target = target,
       baseDirectory = baseDirectory,
-      bazelProjectName = projectName,
-      workspaceRoot = projectRoot,
+      symlinksScanner = BazelConvenienceSymlinksScanner(projectRoot),
       resolveLocation = ::resolveTestLocation,
     )
 

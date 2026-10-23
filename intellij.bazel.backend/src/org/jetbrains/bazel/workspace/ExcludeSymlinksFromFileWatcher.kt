@@ -5,7 +5,7 @@ import com.intellij.openapi.diagnostic.fileLogger
 import com.intellij.openapi.vfs.WatchRoots
 import com.intellij.openapi.vfs.impl.local.WatchRootsServiceImpl
 import org.jetbrains.annotations.ApiStatus
-import org.jetbrains.bazel.commons.symlinks.BazelSymlinksCalculator
+import org.jetbrains.bazel.commons.symlinks.BazelConvenienceSymlinksScanner
 import org.jetbrains.bazel.sync.environment.BazelApplicationContextService
 import java.nio.file.Path
 
@@ -26,7 +26,7 @@ fun excludeSymlinksFromFileWatcher(symlinksToExclude: List<Path>) {
 
   try {
     val watchRoots = WatchRoots.getInstance() as? WatchRootsServiceImpl ?: return
-    val paths = symlinksToExclude + symlinksToExclude.mapNotNull { BazelSymlinksCalculator.resolveSymlinkTarget(it) }
+    val paths = symlinksToExclude + symlinksToExclude.mapNotNull { BazelConvenienceSymlinksScanner.resolveSymlinkTarget(it) }
     @Suppress("UsagesOfObsoleteApi")
     watchRoots.excludeSymlinks(paths)
   }

@@ -1,7 +1,6 @@
 package org.jetbrains.bazel.commons.symlinks
 
-import com.intellij.openapi.util.SystemInfoRt
-import com.intellij.openapi.util.io.IoTestUtil
+import org.jetbrains.bazel.symlinks.SymlinkTestConditions
 import org.jetbrains.bazel.symlinks.createJunction
 import org.jetbrains.bazel.symlinks.createSymlinkOrJunction
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -19,7 +18,7 @@ import kotlin.io.path.createFile
 import kotlin.io.path.deleteExisting
 import kotlin.io.path.name
 
-internal class BazelSymlinksCalculatorTest {
+internal class BazelConvenienceSymlinksScannerTest {
   @TempDir
   lateinit var workspaceRoot: Path
 
@@ -31,25 +30,25 @@ internal class BazelSymlinksCalculatorTest {
   @Test
   fun `finds a convenience symlink`() {
     val link = createSymlinkOrJunctionInWorkspace("bazel-bin", "execroot/_main/bazel-out/fastbuild/bin")
-    assertEquals(setOf(link), calculateSymlinksToExclude())
+    assertEquals(setOf(link), scanSymlinks())
   }
 
   @Test
   fun `finds a symlink with another prefix`() {
     val link = createSymlinkOrJunctionInWorkspace("custom-bin", "execroot/_main/bazel-out/fastbuild/bin")
-    assertEquals(setOf(link), calculateSymlinksToExclude())
+    assertEquals(setOf(link), scanSymlinks())
   }
 
   @Test
   fun `finds a symlink one level below the workspace root`() {
     val link = createSymlinkOrJunctionInWorkspace("out/bazel-bin", "execroot/_main/bazel-out/fastbuild/bin")
-    assertEquals(setOf(link), calculateSymlinksToExclude())
+    assertEquals(setOf(link), scanSymlinks())
   }
 
   @Test
   fun `finds a symlink that points to the execution root`() {
     val link = createSymlinkOrJunctionInWorkspace("bazel-${workspaceRoot.name}", "execroot/_main")
-    assertEquals(setOf(link), calculateSymlinksToExclude())
+    assertEquals(setOf(link), scanSymlinks())
   }
 
   @Test
@@ -57,7 +56,7 @@ internal class BazelSymlinksCalculatorTest {
   fun `finds a Windows junction`() {
     val target = workspaceRoot.resolve("execroot/_main/bazel-out")
     val junction = workspaceRoot.resolve("bazel-out").createJunction(target)
-    assertEquals(setOf(junction), calculateSymlinksToExclude())
+    assertEquals(setOf(junction), scanSymlinks())
   }
 
   @Test
@@ -66,41 +65,40 @@ internal class BazelSymlinksCalculatorTest {
     val target = workspaceRoot.resolve("execroot/_main/bazel-out")
     val junction = workspaceRoot.resolve("bazel-out").createJunction(target)
     target.deleteExisting()
-    assertEquals(setOf(junction), calculateSymlinksToExclude())
+    assertEquals(setOf(junction), scanSymlinks())
   }
 
   @Test
-  @DisabledIf("isFsCaseSensitive")
+  @DisabledIf(SymlinkTestConditions.IS_FILE_SYSTEM_CASE_SENSITIVE)
   fun `finds a symlink when the execroot case differs`() {
     val link = createSymlinkOrJunctionInWorkspace("BAZEL-BIN", "EXECROOT/_main/bazel-out/fastbuild/bin")
-    assertEquals(setOf(link), calculateSymlinksToExclude())
+    assertEquals(setOf(link), scanSymlinks())
   }
 
   @Test
-  @DisabledIf("isFsCaseSensitive")
+  @DisabledIf(SymlinkTestConditions.IS_FILE_SYSTEM_CASE_SENSITIVE)
   fun `finds a symlink that points to the execution root when case differs`() {
-    IoTestUtil.assumeCaseInsensitiveFS()
     val link = createSymlinkOrJunctionInWorkspace("bazel-${workspaceRoot.name.uppercase()}", "execroot/_main")
-    assertEquals(setOf(link), calculateSymlinksToExclude())
+    assertEquals(setOf(link), scanSymlinks())
   }
 
   @Test
-  @EnabledIf("isFsCaseSensitive")
+  @EnabledIf(SymlinkTestConditions.IS_FILE_SYSTEM_CASE_SENSITIVE)
   fun `ignores a symlink when the case differs on a case-sensitive file system`() {
     createSymlinkOrJunctionInWorkspace("bazel-${workspaceRoot.name.uppercase()}", "execroot/_main")
-    assertEquals(emptySet<Path>(), calculateSymlinksToExclude())
+    assertEquals(emptySet<Path>(), scanSymlinks())
   }
 
   @Test
   fun `ignores a symlink outside the execution root`() {
     workspaceRoot.resolve("bazel-bin").createSymlinkOrJunction(workspaceRoot.root)
-    assertEquals(emptySet<Path>(), calculateSymlinksToExclude())
+    assertEquals(emptySet<Path>(), scanSymlinks())
   }
 
   @Test
   fun `ignores a symlink with another name`() {
     createSymlinkOrJunctionInWorkspace("generated", "execroot/_main/bazel-out")
-    assertEquals(emptySet<Path>(), calculateSymlinksToExclude())
+    assertEquals(emptySet<Path>(), scanSymlinks())
   }
 
   @Test
@@ -108,17 +106,38 @@ internal class BazelSymlinksCalculatorTest {
     val target = "execroot/_main/bazel-out/fastbuild/bin"
     val link = createSymlinkOrJunctionInWorkspace("bazel-bin", target)
     Files.delete(workspaceRoot.resolve(target))
-    assertEquals(setOf(link), calculateSymlinksToExclude())
+    assertEquals(setOf(link), scanSymlinks())
   }
 
   @Test
   fun `ignores a symlink below the maximum depth`() {
     createSymlinkOrJunctionInWorkspace(link = "out/nested/bazel-bin", target = "execroot/_main/bazel-out/fastbuild/bin")
-    assertEquals(emptySet<Path>(), calculateSymlinksToExclude())
+    assertEquals(emptySet<Path>(), scanSymlinks())
   }
 
-  private fun calculateSymlinksToExclude(): Set<Path> =
-    BazelSymlinksCalculator.calculateBazelSymlinksToExclude(workspaceRoot, MAX_DEPTH)
+  @Test
+  fun `finds a path under a symlink as deep as the scan`(@TempDir otherDir: Path) {
+    createSymlinkOrJunctionInWorkspace("bazel-bin", "execroot/_main/bazel-out/fastbuild/bin")
+    createSymlinkOrJunctionInWorkspace("out/bazel-out", "execroot/_main/bazel-out")
+    createSymlinkOrJunctionInWorkspace("out/nested/bazel-testlogs", "execroot/_main/bazel-out/fastbuild/testlogs")
+    workspaceRoot.resolve("src").createDirectories()
+    val scanner = BazelConvenienceSymlinksScanner(workspaceRoot, MAX_DEPTH)
+
+    assertEquals(
+      listOf(true, true, false, false, false, false),
+      listOf(
+        scanner.isUnderBazelSymlink(workspaceRoot.resolve("bazel-bin/pkg")),
+        scanner.isUnderBazelSymlink(workspaceRoot.resolve("out/bazel-out/pkg")),
+        // deeper than the maximum depth
+        scanner.isUnderBazelSymlink(workspaceRoot.resolve("out/nested/bazel-testlogs/pkg")),
+        scanner.isUnderBazelSymlink(workspaceRoot.resolve("src/pkg")),
+        scanner.isUnderBazelSymlink(workspaceRoot),
+        scanner.isUnderBazelSymlink(otherDir.resolve("bazel-bin/pkg")),
+      ),
+    )
+  }
+
+  private fun scanSymlinks(): Set<Path> = BazelConvenienceSymlinksScanner(workspaceRoot, MAX_DEPTH).scan()
 
   private fun createSymlinkOrJunctionInWorkspace(link: String, target: String): Path {
     val targetPath = workspaceRoot.resolve(target).createDirectories()
@@ -131,6 +150,4 @@ internal class BazelSymlinksCalculatorTest {
     // The default value of the bazel.symlink.scan.max.depth registry key
     const val MAX_DEPTH = 2
   }
-
-  private fun isFsCaseSensitive(): Boolean = SystemInfoRt.isFileSystemCaseSensitive
 }
