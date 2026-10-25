@@ -1,21 +1,11 @@
 load("@community//platform/build-scripts/bazel-rules:content_module_jar.bzl", "content_module_jar")
-load("@rules_jvm//:jvm.bzl", "jvm_library", "jvm_provided_library")
+load("@rules_jvm//:jvm.bzl", "jvm_library")
 
 ### auto-generated section `dev intellij.bazel.commons` start
 content_module_jar(module = ":commons")
 ### auto-generated section `dev intellij.bazel.commons` end
 
 ### auto-generated section `build intellij.bazel.commons` start
-jvm_provided_library(
-    name = "community_libraries_opentelemetry-extension-kotlin_provided",
-    lib = "@community//libraries/opentelemetry-extension-kotlin",
-)
-
-jvm_provided_library(
-    name = "community_platform_analysis_provided",
-    lib = "@community//platform/analysis-api:analysis",
-)
-
 jvm_library(
     name = "commons",
     srcs = glob(
@@ -46,6 +36,7 @@ jvm_library(
         "@community//libraries/gson",
         "@community//libraries/commons/cli",
         "@community//libraries/commons/io",
+        "@community//libraries/opentelemetry-extension-kotlin",
         "@community//libraries/hash4j",
         "@community//libraries/jetbrains/annotations",
         "@community//libraries/kotlinx/datetime",
@@ -61,8 +52,6 @@ jvm_library(
         "@community//platform/eel-provider",
         "//plugins/bazel/aspect-sdk:libraries-bazel-aspect-sdk",
         "@community//platform/external-system-api:externalSystem",
-        ":community_libraries_opentelemetry-extension-kotlin_provided",
-        ":community_platform_analysis_provided",
     ],
 )
 
@@ -89,15 +78,12 @@ jvm_library(
         "@community//libraries/gson:gson_test_lib",
         "@community//libraries/commons/cli:cli_test_lib",
         "@community//libraries/commons/io:io_test_lib",
-        "@community//libraries/opentelemetry-extension-kotlin",
         "@community//libraries/opentelemetry-extension-kotlin:opentelemetry-extension-kotlin_test_lib",
         "@community//libraries/hash4j:hash4j_test_lib",
         "@community//libraries/jetbrains/annotations:annotations_test_lib",
         "@community//libraries/kotlinx/datetime:datetime_test_lib",
         "@community//platform/util:util_test_lib",
         "@community//platform/core-api:core_test_lib",
-        "@community//platform/analysis-api:analysis",
-        "@community//platform/analysis-api:analysis_test_lib",
         "@community//platform/platform-impl:ide-impl_test_lib",
         "@community//platform/projectModel-api:projectModel_test_lib",
         "@community//platform/projectModel-impl:projectModel-impl_test_lib",

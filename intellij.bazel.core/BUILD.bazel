@@ -1,21 +1,11 @@
 load("@community//platform/build-scripts/bazel-rules:content_module_jar.bzl", "content_module_jar")
-load("@rules_jvm//:jvm.bzl", "jvm_library", "jvm_provided_library")
+load("@rules_jvm//:jvm.bzl", "jvm_library")
 
 ### auto-generated section `dev intellij.bazel.core` start
 content_module_jar(module = ":core")
 ### auto-generated section `dev intellij.bazel.core` end
 
 ### auto-generated section `build intellij.bazel.core` start
-jvm_provided_library(
-    name = "community_libraries_opentelemetry_provided",
-    lib = "@community//libraries/opentelemetry",
-)
-
-jvm_provided_library(
-    name = "community_libraries_opentelemetry-extension-kotlin_provided",
-    lib = "@community//libraries/opentelemetry-extension-kotlin",
-)
-
 jvm_library(
     name = "core",
     srcs = glob(
@@ -46,6 +36,7 @@ jvm_library(
         "@community//libraries/kotlinx/datetime",
         "@community//platform/smRunner",
         "@community//platform/rd-platform-community:rd-community",
+        "@community//libraries/opentelemetry",
         "@community//libraries/protobuf",
         "@community//libraries/stream",
         "@community//libraries/caffeine",
@@ -127,8 +118,6 @@ jvm_library(
         "@community//platform/statistics",
         "@community//platform/testRunner",
         "//plugins/bazel/aspect-sdk:libraries-bazel-aspect-sdk",
-        ":community_libraries_opentelemetry_provided",
-        ":community_libraries_opentelemetry-extension-kotlin_provided",
     ],
 )
 
@@ -155,10 +144,7 @@ jvm_library(
         "@community//libraries/kotlinx/datetime:datetime_test_lib",
         "@community//platform/smRunner:smRunner_test_lib",
         "@community//platform/rd-platform-community:rd-community_test_lib",
-        "@community//libraries/opentelemetry",
         "@community//libraries/opentelemetry:opentelemetry_test_lib",
-        "@community//libraries/opentelemetry-extension-kotlin",
-        "@community//libraries/opentelemetry-extension-kotlin:opentelemetry-extension-kotlin_test_lib",
         "@community//libraries/protobuf:protobuf_test_lib",
         "@community//libraries/stream:stream_test_lib",
         "@community//libraries/caffeine:caffeine_test_lib",

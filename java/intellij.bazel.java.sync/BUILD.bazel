@@ -1,16 +1,11 @@
 load("@community//platform/build-scripts/bazel-rules:content_module_jar.bzl", "content_module_jar")
-load("@rules_jvm//:jvm.bzl", "jvm_library", "jvm_provided_library")
+load("@rules_jvm//:jvm.bzl", "jvm_library")
 
 ### auto-generated section `dev intellij.bazel.java.sync` start
 content_module_jar(module = ":bazel-java-sync")
 ### auto-generated section `dev intellij.bazel.java.sync` end
 
 ### auto-generated section `build intellij.bazel.java.sync` start
-jvm_provided_library(
-    name = "community_libraries_opentelemetry_provided",
-    lib = "@community//libraries/opentelemetry",
-)
-
 jvm_library(
     name = "bazel-java-sync",
     srcs = glob(
@@ -31,6 +26,7 @@ jvm_library(
         # do not sort,
         "@lib//:kotlin-stdlib",
         "@community//libraries/jetbrains/annotations",
+        "@community//libraries/opentelemetry",
         "@community//platform/platform-api:ide",
         "@community//libraries/protobuf",
         "@community//libraries/guava",
@@ -73,7 +69,6 @@ jvm_library(
         "@community//java/compiler/impl",
         "@community//platform/eel-provider",
         "//plugins/bazel/java/intellij.bazel.java.common:bazel-java-common",
-        ":community_libraries_opentelemetry_provided",
     ],
 )
 
@@ -90,7 +85,6 @@ jvm_library(
         # do not sort,
         ":bazel-java-sync",
         "@community//libraries/jetbrains/annotations:annotations_test_lib",
-        "@community//libraries/opentelemetry",
         "@community//libraries/opentelemetry:opentelemetry_test_lib",
         "@community//platform/platform-api:ide_test_lib",
         "@community//libraries/protobuf:protobuf_test_lib",

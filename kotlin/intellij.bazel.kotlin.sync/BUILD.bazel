@@ -1,16 +1,11 @@
 load("@community//platform/build-scripts/bazel-rules:content_module_jar.bzl", "content_module_jar")
-load("@rules_jvm//:jvm.bzl", "jvm_library", "jvm_provided_library")
+load("@rules_jvm//:jvm.bzl", "jvm_library")
 
 ### auto-generated section `dev intellij.bazel.kotlin.sync` start
 content_module_jar(module = ":bazel-kotlin-sync")
 ### auto-generated section `dev intellij.bazel.kotlin.sync` end
 
 ### auto-generated section `build intellij.bazel.kotlin.sync` start
-jvm_provided_library(
-    name = "community_libraries_kotlinc_libraries-kotlinc-kotlin-jps-common_provided",
-    lib = "@community//libraries/kotlinc/kotlin-jps-common:libraries-kotlinc-kotlin-jps-common",
-)
-
 jvm_library(
     name = "bazel-kotlin-sync",
     srcs = glob(
@@ -31,6 +26,7 @@ jvm_library(
         # do not sort,
         "@lib//:kotlin-stdlib",
         "@community//libraries/kotlinc/kotlin-compiler-common:libraries-kotlinc-kotlin-compiler-common",
+        "@community//libraries/kotlinc/kotlin-jps-common:libraries-kotlinc-kotlin-jps-common",
         "//plugins/bazel/intellij.bazel.commons:commons",
         "//plugins/bazel/intellij.bazel.backend:backend",
         "//plugins/bazel/java/intellij.bazel.java.sync:bazel-java-sync",
@@ -43,7 +39,6 @@ jvm_library(
         "@community//platform/workspace/jps",
         "@community//java/openapi:java",
         "@community//plugins/kotlin/base/project-structure",
-        ":community_libraries_kotlinc_libraries-kotlinc-kotlin-jps-common_provided",
     ],
 )
 
@@ -60,7 +55,6 @@ jvm_library(
         # do not sort,
         ":bazel-kotlin-sync",
         "@community//libraries/kotlinc/kotlin-compiler-common:libraries-kotlinc-kotlin-compiler-common_test_lib",
-        "@community//libraries/kotlinc/kotlin-jps-common:libraries-kotlinc-kotlin-jps-common",
         "@community//libraries/kotlinc/kotlin-jps-common:libraries-kotlinc-kotlin-jps-common_test_lib",
         "//plugins/bazel/intellij.bazel.commons:commons_test_lib",
         "//plugins/bazel/intellij.bazel.backend:backend_test_lib",
