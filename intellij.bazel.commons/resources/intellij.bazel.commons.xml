@@ -13,6 +13,7 @@
     <module name="intellij.libraries.jetbrains.annotations"/>
     <module name="intellij.libraries.kotlinx.datetime"/>
     <module name="intellij.libraries.opentelemetry"/>
+    <module name="intellij.libraries.opentelemetry.extension.kotlin"/>
     <module name="intellij.libraries.protobuf"/>
     <module name="intellij.platform.buildView"/>
     <module name="intellij.platform.core"/>
