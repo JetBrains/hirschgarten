@@ -77,36 +77,32 @@ object ProjectViewFactory {
     source: Path? = null,
   ): ProjectView {
     val name = source?.fileName?.toString() ?: Constants.DEFAULT_PROJECT_VIEW_FILE_NAME
-    return fromPsiFile(createLightPsiFile(project, name, content), source, root, setOfNotNull(source))
+    return Parser(project = project, root = root, mainFile = source).parse(psi = createLightPsiFile(project, name, content), source = source)
   }
+}
 
-  private fun fromPsiFile(
-    psi: ProjectViewPsiFile,
-    source: Path?,
-    root: Path,
-    visited: Set<Path>,
-  ): ProjectView {
+private class Parser(
+  private val project: Project,
+  private val root: Path,
+  mainFile: Path?,
+) {
+  private val inProgress = setOfNotNull(mainFile).toMutableSet()
+
+  fun parse(psi: ProjectViewPsiFile, source: Path?): ProjectView {
     val imports = mutableListOf<Import>()
     val sections = mutableMapOf<ProjectViewSectionKey<*>, Any>()
     for (it in psi.children) {
       when (it) {
-        is ProjectViewPsiSection -> {
-          val (section, value) = it.toSectionWithValue() ?: continue
-          mergeSection(sections, section.key, value)
-        }
-
+        is ProjectViewPsiSection -> it
+          .toSectionWithValue()
+          ?.let { (section, value) -> sections.mergeSection(section.key, value) }
         is ProjectViewPsiImportBase -> {
           val import = ImportFactory.from(root, it, source)
           imports += import
-          // skip if recursion detected
-          if (import is Import.Resolved && import.path !in visited) {
-            parseImport(
-              project = psi.project,
-              import = import,
-              into = sections,
-              root = root,
-              visited = visited,
-            )
+          if (import is Import.Resolved) {
+            import(import.path)
+              ?.sections
+              ?.forEach { (key, value) -> sections.mergeSection(key, value) }
           }
         }
       }
@@ -114,61 +110,54 @@ object ProjectViewFactory {
     return ProjectView(sections, imports)
   }
 
-  private fun mergeSection(
-    target: MutableMap<ProjectViewSectionKey<*>, Any>,
-    sectionKey: ProjectViewSectionKey<*>,
-    value: Any,
-  ) {
-    val existing = target[sectionKey]
-    if (existing is Collection<*> && value is Collection<*>) {
-      target[sectionKey] = existing + value
+  private fun import(path: Path): ProjectView? {
+    if (path in inProgress) return null
+    inProgress.add(path)
+    try {
+      return readLightPsiFile(project, path)?.let { parse(it, path) }
     }
-    else {
-      target[sectionKey] = value
+    finally {
+      inProgress.remove(path)
     }
   }
-
-  private fun parseImport(
-    project: Project,
-    import: Import.Resolved,
-    into: MutableMap<ProjectViewSectionKey<*>, Any>,
-    root: Path,
-    visited: Set<Path>,
-  ) {
-    val psiFile = runCatching { createLightPsiFile(project, import.path.fileName.toString(), readContent(import.path)) }
-      .getOrHandleException { log.warn("Failed to parse imported project view file ${import.path}. Skipping the import.", it) }
-      ?: return
-    val otherProjectView = fromPsiFile(psiFile, import.path, root, visited.plusElement(import.path))
-    for ((sectionKey, value) in otherProjectView.sections) {
-      mergeSection(into, sectionKey, value)
-    }
-  }
-
-  /**
-   * - the file already has a document - take its text, so that unsaved editor changes are not lost.
-   *   [FileDocumentManager.getCachedDocument] returns an already loaded document and never loads one.
-   * - otherwise - read the file itself.
-   *
-   * [LoadTextUtil] decodes the bytes, so the charset of the file is respected and its byte order mark is stripped.
-   */
-  private fun readContent(path: Path): CharSequence {
-    val document = path.findVirtualFile()?.let { FileDocumentManager.getInstance().getCachedDocument(it) }
-    return document?.immutableCharSequence ?: LoadTextUtil.getTextByBinaryPresentation(path.readBytes(), Charsets.UTF_8)
-  }
-
-  private fun createLightPsiFile(project: Project, name: String, content: CharSequence): ProjectViewPsiFile {
-    val lightFile = ReadOnlyLightVirtualFile(name, ProjectViewLanguage, content)
-    val psiFileFactory = PsiFileFactory.getInstance(project)
-    val factory = psiFileFactory as? PsiFileFactoryImpl ?: error("Expected ${PsiFileFactoryImpl::class.simpleName}, got ${psiFileFactory.javaClass.name}")
-    val psiFile = factory.trySetupPsiForFile(lightFile, ProjectViewLanguage, false, false)
-    return psiFile as? ProjectViewPsiFile ?: error("Expected ${ProjectViewPsiFile::class.simpleName} for $name, got ${psiFile?.javaClass?.name}")
-  }
-
-  private fun ProjectViewPsiSection.toSectionWithValue(): Pair<ProjectViewSection<*>, Any>? {
-    val section = ProjectViewSection.findByPsi(this) ?: return null
-    val value = read(type = section.type) ?: return null
-    return section to value
-  }
-
-  private val log = logger<ProjectViewFactory>()
 }
+
+private fun MutableMap<ProjectViewSectionKey<*>, Any>.mergeSection(key: ProjectViewSectionKey<*>, value: Any) {
+  merge(key, value) { existing, new ->
+    if (existing is Collection<*> && new is Collection<*>) existing + new else new
+  }
+}
+
+private fun readLightPsiFile(
+  project: Project,
+  path: Path,
+): ProjectViewPsiFile? = runCatching { createLightPsiFile(project, path.fileName.toString(), readContent(path)) }
+  .getOrHandleException { log.warn("Failed to parse imported project view file $path. Skipping the import.", it) }
+
+/**
+ * - the file already has a document - take its text, so that unsaved editor changes are not lost.
+ *   [FileDocumentManager.getCachedDocument] returns an already loaded document and never loads one.
+ * - otherwise - read the file itself.
+ *
+ * [LoadTextUtil] decodes the bytes, so the charset of the file is respected and its byte order mark is stripped.
+ */
+private fun readContent(path: Path): CharSequence {
+  val document = path.findVirtualFile()?.let { FileDocumentManager.getInstance().getCachedDocument(it) }
+  return document?.immutableCharSequence ?: LoadTextUtil.getTextByBinaryPresentation(path.readBytes(), Charsets.UTF_8)
+}
+
+private fun createLightPsiFile(project: Project, name: String, content: CharSequence): ProjectViewPsiFile {
+  val lightFile = ReadOnlyLightVirtualFile(name, ProjectViewLanguage, content)
+  val psiFileFactory = PsiFileFactory.getInstance(project)
+  val factory = psiFileFactory as? PsiFileFactoryImpl ?: error("Expected ${PsiFileFactoryImpl::class.simpleName}, got ${psiFileFactory.javaClass.name}")
+  val psiFile = factory.trySetupPsiForFile(lightFile, ProjectViewLanguage, false, false)
+  return psiFile as? ProjectViewPsiFile ?: error("Expected ${ProjectViewPsiFile::class.simpleName} for $name, got ${psiFile?.javaClass?.name}")
+}
+
+private fun ProjectViewPsiSection.toSectionWithValue(): Pair<ProjectViewSection<*>, Any>? {
+  val section = ProjectViewSection.findByPsi(this) ?: return null
+  val value = read(type = section.type) ?: return null
+  return section to value
+}
+
+private val log = logger<ProjectViewFactory>()
