@@ -1,0 +1,39 @@
+load("@rules_go//go:def.bzl", "go_library", "go_test")
+
+go_library(
+    name = "greeter",
+    srcs = ["greeter.go"],
+    importpath = "example.com/greeter",
+    visibility = ["//visibility:public"],
+)
+
+genrule(
+    name = "mocks",
+    outs = ["mock_greeter_test.go"],
+    cmd = """
+cat <<EOF > "$@"
+package greeter
+
+type MockGreeter struct{}
+
+func NewMockGreeter() *MockGreeter {
+	return &MockGreeter{}
+}
+
+func (m *MockGreeter) Greet(name string) string {
+	return name
+}
+EOF
+""",
+)
+
+go_test(
+    name = "greeter_test",
+    srcs = [
+        "external_test.go",
+        "format_internal_test.go",
+        "greeter_internal_test.go",
+        ":mocks",
+    ],
+    embed = [":greeter"],
+)
