@@ -138,6 +138,7 @@ fun <T : Any> ProjectViewSectionType.Scalar<T>.list(): ProjectViewSectionType<Li
 private fun <T> scalarChecker(read: (String) -> T?) = ProjectViewValueChecker { _, subject, sink ->
   if (read(subject) == null) {
     val problem = ProjectViewProblem(
+      id = ProjectViewProblem.Id.InvalidValue,
       message = BazelProjectViewBundle.message("annotator.cannot.parse.value", subject),
       severity = ProjectViewProblem.Severity.Error,
     )
@@ -149,6 +150,7 @@ private fun pathChecker(read: (String) -> Path?, existing: Boolean) = ProjectVie
   val path = read(subject)
   if (path == null) {
     val problem = ProjectViewProblem(
+      id = ProjectViewProblem.Id.InvalidValue,
       message = BazelProjectViewBundle.message("annotator.invalid.path.error"),
       severity = ProjectViewProblem.Severity.Error,
     )
@@ -164,6 +166,7 @@ private fun pathChecker(read: (String) -> Path?, existing: Boolean) = ProjectVie
   }
   if (!resolvedPath.exists()) {
     val problem = ProjectViewProblem(
+      id = ProjectViewProblem.Id.MissingPath,
       message = BazelProjectViewBundle.message("annotator.path.not.exists.error"),
       severity = ProjectViewProblem.Severity.Warning,
     )
@@ -174,6 +177,7 @@ private fun pathChecker(read: (String) -> Path?, existing: Boolean) = ProjectVie
 private fun <T> variantsChecker(read: (String) -> T?, variants: List<String>) = ProjectViewValueChecker { _, subject, sink ->
   if (read(subject) == null) {
     val problem = ProjectViewProblem(
+      id = ProjectViewProblem.Id.InvalidValue,
       message = BazelProjectViewBundle.message("annotator.unknown.variant.error", subject, variants.joinToString()),
       severity = ProjectViewProblem.Severity.Error,
     )
@@ -185,6 +189,7 @@ private fun flagChecker(commands: Array<out String>) = ProjectViewValueChecker {
   val flag = Flag.byName(subject.takeWhile { it != '=' })
   if (flag == null) {
     val problem = ProjectViewProblem(
+      id = ProjectViewProblem.Id.UnknownFlag,
       message = BazelProjectViewBundle.message("annotator.unknown.flag.error", subject),
       severity = ProjectViewProblem.Severity.Warning,
     )
@@ -193,6 +198,7 @@ private fun flagChecker(commands: Array<out String>) = ProjectViewValueChecker {
   }
   if (commands.any { it !in flag.option.commands }) {
     val problem = ProjectViewProblem(
+      id = ProjectViewProblem.Id.FlagNotAllowed,
       message = BazelProjectViewBundle.message("annotator.flag.not.allowed.here.error", subject, commands.contentToString()),
       severity = ProjectViewProblem.Severity.Warning,
     )
