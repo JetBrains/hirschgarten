@@ -56,8 +56,8 @@ internal class ProjectViewProblemsAnnotator : Annotator, DumbAware {
     }
   }
 
-  private fun AnnotationBuilder.highlightingTypeFor(problem: ProjectViewProblem) = when (problem.type) {
-    ProjectViewProblem.Type.Message -> this
-    ProjectViewProblem.Type.Deprecation -> highlightType(ProblemHighlightType.LIKE_DEPRECATED)
+  private fun AnnotationBuilder.highlightingTypeFor(problem: ProjectViewProblem) = when (problem.id) {
+    ProjectViewProblem.Id.Deprecation -> highlightType(ProblemHighlightType.LIKE_DEPRECATED)
+    else -> this
   }
 }

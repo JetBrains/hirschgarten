@@ -39,6 +39,7 @@ private val unsupportedSectionChecker = ProjectViewPsiSectionChecker { _, subjec
   val section = ProjectViewSection.findByPsi(subject)
   if (section == null) {
     val problem = ProjectViewProblem(
+      id = ProjectViewProblem.Id.UnsupportedSection,
       message = BazelProjectViewBundle.message("annotator.unsupported.section.warning"),
       severity = ProjectViewProblem.Severity.Warning,
       element = subject.getKeyword(),
@@ -61,9 +62,9 @@ private val sectionDeprecationChecker = ProjectViewPsiSectionChecker { _, subjec
   val deprecation = section.deprecation ?: return@ProjectViewPsiSectionChecker
   sink.report(
     ProjectViewProblem(
+      id = ProjectViewProblem.Id.Deprecation,
       message = deprecation.message,
       severity = deprecation.level.toSeverity(),
-      type = ProjectViewProblem.Type.Deprecation,
       element = subject.getKeyword(),
       quickFixes = deprecation.quickFixes
     )
