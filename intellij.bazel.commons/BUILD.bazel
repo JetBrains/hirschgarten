@@ -65,6 +65,7 @@ jvm_library(
         "@community//platform/util/progress",
         "@community//platform/eel-provider",
         "//plugins/bazel/aspect-sdk:libraries-bazel-aspect-sdk",
+        "@community//platform/external-system-api:externalSystem",
         ":community_libraries_kotlinx_coroutines_core_provided",
         ":community_libraries_opentelemetry-extension-kotlin_provided",
         ":community_platform_analysis_provided",
@@ -114,6 +115,7 @@ jvm_library(
         "@community//platform/util/progress:progress_test_lib",
         "@community//platform/eel-provider:eel-provider_test_lib",
         "//plugins/bazel/aspect-sdk:libraries-bazel-aspect-sdk_test_lib",
+        "@community//platform/external-system-api:externalSystem_test_lib",
     ],
 )
 ### auto-generated section `build intellij.bazel.commons` end
