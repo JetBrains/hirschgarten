@@ -4,6 +4,7 @@ import com.intellij.java.workspace.entities.JavaModuleSettingsEntity
 import com.intellij.java.workspace.entities.javaSettings
 import com.intellij.openapi.roots.DependencyScope
 import com.intellij.platform.util.progress.RawProgressReporter
+import com.intellij.platform.workspace.jps.entities.ExternalSystemModuleOptionsEntity
 import com.intellij.platform.workspace.jps.entities.ModuleDependency
 import com.intellij.platform.workspace.jps.entities.ModuleDependencyItem
 import com.intellij.platform.workspace.jps.entities.ModuleEntity
@@ -13,6 +14,7 @@ import com.intellij.platform.workspace.jps.entities.ModuleTypeId
 import com.intellij.platform.workspace.jps.entities.SdkDependency
 import com.intellij.platform.workspace.jps.entities.SdkId
 import com.intellij.platform.workspace.jps.entities.SourceRootTypeId
+import com.intellij.platform.workspace.jps.entities.exModuleOptions
 import com.intellij.platform.workspace.jps.entities.modifyModuleEntity
 import com.intellij.platform.workspace.storage.EntitySource
 import com.intellij.platform.workspace.storage.MutableEntityStorage
@@ -26,6 +28,7 @@ import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.config.BazelJavaBackendBundle
+import org.jetbrains.bazel.config.BazelPluginConstants
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.scala.sdk.scalaSdkExtensionExists
 import org.jetbrains.bazel.sync.includesJava
@@ -430,6 +433,11 @@ class JvmTargetEntitiesBuilder(private val ctx: ImportContext) {
           ),
           entitySource = entitySource,
         )
+        this.exModuleOptions = ExternalSystemModuleOptionsEntity(
+          entitySource = entitySource,
+        ) {
+          externalSystem = BazelPluginConstants.ID
+        }
       },
     )
   }
