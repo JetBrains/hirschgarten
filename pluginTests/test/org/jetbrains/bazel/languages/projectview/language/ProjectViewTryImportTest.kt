@@ -1,9 +1,8 @@
 package org.jetbrains.bazel.languages.projectview.language
 
+import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.collections.shouldBeSingleton
 import io.kotest.matchers.collections.shouldContainExactly
-import io.kotest.matchers.nulls.shouldNotBeNull
-import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeInstanceOf
 import org.jetbrains.bazel.commons.ExcludableValue
 import org.jetbrains.bazel.languages.projectview.DIRECTORIES_KEY
@@ -42,7 +41,7 @@ class ProjectViewTryImportTest {
   }
 
   @Test
-  fun `test unresolved try_import mapping`() {
+  fun `test unresolved try_import is not in the project view`() {
     val main =
       testBazel.writeFile(
         "Main.bazelproject",
@@ -56,14 +55,7 @@ class ProjectViewTryImportTest {
 
     val projectView = testBazel.parseProjectView(main)
 
-    projectView.imports.shouldBeSingleton {
-      val unresolved = it.shouldBeInstanceOf<Import.Unresolved>()
-      unresolved.isRequired shouldBe false
-      unresolved.text shouldBe "Missing.bazelproject"
-      val position = unresolved.position.shouldNotBeNull()
-      position.startLine shouldBe 3
-      position.startColumn shouldBe 11
-    }
+    projectView.imports.shouldBeEmpty()
   }
 
   @Test

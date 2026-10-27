@@ -4,6 +4,7 @@ import com.intellij.codeInspection.util.InspectionMessage
 import com.intellij.psi.PsiElement
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.languages.projectview.ProjectViewSectionKey
+import java.nio.file.Path
 
 @ApiStatus.Internal
 data class ProjectViewProblem(
@@ -12,6 +13,7 @@ data class ProjectViewProblem(
   val severity: Severity,
   val quickFixes: List<QuickFix> = emptyList(),
   val element: PsiElement? = null,
+  val sourcePath: Path? = null,
 ) {
 
   /**

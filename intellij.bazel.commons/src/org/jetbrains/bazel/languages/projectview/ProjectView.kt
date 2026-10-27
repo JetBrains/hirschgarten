@@ -8,7 +8,7 @@ import org.jetbrains.bazel.languages.projectview.imports.Import
  */
 class ProjectView @Internal constructor(
   @get:Internal val sections: Map<ProjectViewSectionKey<*>, Any>,
-  @get:Internal val imports: List<Import>,
+  @get:Internal val imports: List<Import.Resolved>,
 ) {
   @Internal
   fun isEmpty(): Boolean = sections.isEmpty() && imports.isEmpty()

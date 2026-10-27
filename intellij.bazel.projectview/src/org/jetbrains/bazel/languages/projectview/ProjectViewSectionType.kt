@@ -5,7 +5,6 @@ import com.intellij.codeInsight.completion.CompletionProvider
 import com.intellij.openapi.util.io.toNioPathOrNull
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.commons.ExcludableValue
-import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.languages.bazelrc.flags.Flag
 import org.jetbrains.bazel.languages.projectview.checker.ProjectViewProblem
@@ -16,6 +15,7 @@ import org.jetbrains.bazel.languages.projectview.completion.FlagCompletionProvid
 import org.jetbrains.bazel.languages.projectview.completion.SimpleCompletionProvider
 import org.jetbrains.bazel.languages.projectview.completion.TargetCompletionProvider
 import org.jetbrains.bazel.languages.projectview.psi.sections.ProjectViewPsiSection
+import org.jetbrains.bazel.sync.environment.bazelProjectInfo
 import java.nio.file.Path
 import kotlin.collections.contains
 import kotlin.enums.EnumEntries
@@ -152,7 +152,7 @@ private fun pathChecker(read: (String) -> Path?, existing: Boolean) = projectVie
   if (path == null) {
     val problem = ProjectViewProblem(
       id = ProjectViewProblem.Id.InvalidValue,
-      message = BazelProjectViewBundle.message("annotator.invalid.path.error"),
+      message = BazelProjectViewBundle.message("annotator.invalid.path.error", subject),
       severity = ProjectViewProblem.Severity.Error,
     )
     yield(problem)
@@ -163,12 +163,12 @@ private fun pathChecker(read: (String) -> Path?, existing: Boolean) = projectVie
 
   val resolvedPath = when {
     path.isAbsolute -> path
-    else -> project.rootDir.toNioPath().resolve(path)
+    else -> project.bazelProjectInfo.projectRootDir?.toNioPath()?.resolve(path) ?: return@projectViewChecker
   }
   if (!resolvedPath.exists()) {
     val problem = ProjectViewProblem(
       id = ProjectViewProblem.Id.MissingPath,
-      message = BazelProjectViewBundle.message("annotator.path.not.exists.error"),
+      message = BazelProjectViewBundle.message("annotator.path.not.exists.error", resolvedPath.toString()),
       severity = ProjectViewProblem.Severity.Warning,
     )
     yield(problem)
@@ -200,7 +200,7 @@ private fun flagChecker(commands: Array<out String>) = projectViewChecker<String
   if (commands.any { it !in flag.option.commands }) {
     val problem = ProjectViewProblem(
       id = ProjectViewProblem.Id.FlagNotAllowed,
-      message = BazelProjectViewBundle.message("annotator.flag.not.allowed.here.error", subject, commands.contentToString()),
+      message = BazelProjectViewBundle.message("annotator.flag.not.allowed.here.error", subject, commands.joinToString(", ") { "'$it'" }),
       severity = ProjectViewProblem.Severity.Warning,
     )
     yield(problem)

@@ -11,7 +11,7 @@ import org.jetbrains.bazel.flow.open.BazelProjectStoreDescriptor
 import org.jetbrains.bazel.languages.projectview.ProjectView
 import org.jetbrains.bazel.languages.projectview.ProjectViewService
 import org.jetbrains.bazel.languages.projectview.ProjectViewServiceBase
-import org.jetbrains.bazel.languages.projectview.imports.resolvedPathOrNull
+import org.jetbrains.bazel.languages.projectview.checker.ProjectViewProblem
 import org.jetbrains.bazel.languages.projectview.psi.ProjectViewPsiFile
 import org.jetbrains.bazel.sync.environment.stateStoreOrNull
 import org.jetbrains.bazel.utils.findVirtualFile
@@ -39,11 +39,11 @@ class DefaultProjectViewService(project: Project) : ProjectViewServiceBase(proje
     loadProjectView(newFile.toNioPath())
   }
 
-  override suspend fun forceReparseCurrentProjectViewFiles() {
-    loadProjectView(requireProjectViewPath())
+  override suspend fun forceReparseCurrentProjectViewFiles(onEachProblem: ((ProjectViewProblem) -> Unit)?) {
+    loadProjectView(requireProjectViewPath(), onEachProblem)
     val resolvedImports = projectView
       .imports
-      .mapNotNull { it.resolvedPathOrNull()?.findVirtualFile() }
+      .mapNotNull { it.path.findVirtualFile() }
     edtWriteAction {
       PsiDocumentManager.getInstance(project)
         .reparseFiles(resolvedImports + projectViewFile, false)

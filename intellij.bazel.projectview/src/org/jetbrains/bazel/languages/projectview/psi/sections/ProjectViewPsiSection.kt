@@ -23,6 +23,8 @@ class ProjectViewPsiSection(node: ASTNode) : ProjectViewBaseElement(node) {
   companion object {
 
     fun findByName(psi: PsiElement, name: String): ProjectViewPsiSection? = psi.childrenOfType<ProjectViewPsiSection>()
-      .firstOrNull { it.getKeyword().text.trim() == name }
+      .firstOrNull { it.sectionName() == name }
   }
 }
+
+internal fun ProjectViewPsiSection.sectionName(): String = getKeyword().text.trim()

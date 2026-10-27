@@ -17,6 +17,7 @@ import org.jetbrains.bazel.base.IdeStarterBaseProjectTest
 import org.jetbrains.bazel.languages.projectview.ProjectView
 import org.jetbrains.bazel.languages.projectview.ProjectViewFactory
 import org.jetbrains.bazel.languages.projectview.ProjectViewService
+import org.jetbrains.bazel.languages.projectview.checker.ProjectViewProblem
 import org.jetbrains.bazel.project.BazelProjectFixtures
 import org.jetbrains.bazel.test.framework.BazelPathManager
 import org.junit.jupiter.api.AfterEach
@@ -171,9 +172,9 @@ internal class WorkspaceImportApprovalTests {
         serviceInterface = ProjectViewService::class.java,
         instance = object : ProjectViewService {
           override val projectView: ProjectView
-            get() = ProjectViewFactory.from(project, projectView)
+            get() = checkNotNull(ProjectViewFactory.fromOrNull(project, projectView))
 
-          override suspend fun forceReparseCurrentProjectViewFiles() {}
+          override suspend fun forceReparseCurrentProjectViewFiles(onEachProblem: ((ProjectViewProblem) -> Unit)?) {}
 
           override val projectViewPath: Path = projectView
         },
