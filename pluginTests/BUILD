@@ -67,6 +67,7 @@ jvm_library(
         "//intellij.bazel.backend:backend",
         "//intellij.bazel.core:core",
         "//intellij.bazel.core.performancePlugin:core-performancePlugin",
+        "//intellij.bazel.languages:languages",
         "//misc/intellij.bazel.coverage:bazel-coverage",
         "//misc/intellij.bazel.coverage.performancePlugin:bazel-coverage-performancePlugin",
         "//misc/intellij.bazel.devkit:bazel-devkit",
