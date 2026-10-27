@@ -1,6 +1,7 @@
 package org.jetbrains.bazel.clion
 
 import com.intellij.testFramework.common.timeoutRunBlocking
+import com.intellij.testFramework.junit5.fixture.projectFixture
 import org.assertj.core.api.Assertions.assertThat
 import org.jetbrains.bazel.clion.workspace.CcCompilerInfo
 import org.jetbrains.bazel.clion.workspace.buildCompilerSettings
@@ -8,7 +9,6 @@ import org.jetbrains.bazel.fixtures.CcProjectBuilder
 import org.jetbrains.bazel.fixtures.CcTestApplication
 import org.jetbrains.bazel.fixtures.ccProject
 import org.jetbrains.bazel.fixtures.withTestImportContext
-import org.jetbrains.bazel.test.framework.testproject.testBazelProjectFixture
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.condition.DisabledOnOs
 import org.junit.jupiter.api.condition.OS
@@ -20,7 +20,7 @@ private const val SDK_ROOT = "/Applications/Xcode.app/Contents/Developer/Platfor
 @DisabledOnOs(OS.WINDOWS)
 class CcCompilerSettingsTest {
 
-  private val testBazel by testBazelProjectFixture(openAfterCreation = false)
+  private val project by projectFixture()
 
   @Test
   fun testRewritesProcSelfCwdValueToAbsolutePath() {
@@ -142,7 +142,7 @@ class CcCompilerSettingsTest {
   }
 
   private fun resolve(declare: CcProjectBuilder.() -> Unit): CcCompilerInfo = timeoutRunBlocking {
-    val (ctx, compilers) = withTestImportContext(ccProject(declare = declare), project = testBazel.project) {
+    val (ctx, compilers) = withTestImportContext(ccProject(declare = declare), project = project) {
       buildCompilerSettings()
     }
 
