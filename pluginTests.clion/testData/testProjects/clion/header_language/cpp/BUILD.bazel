@@ -1,0 +1,15 @@
+load("@rules_cc//cc:defs.bzl", "cc_library")
+
+# lib.cc includes ryu.c textually. A filegroup puts the C file into hdrs, like the libstdc++ build of hermetic-llvm.
+filegroup(
+    name = "internal_headers",
+    srcs = ["ryu.c"],
+)
+
+cc_library(
+    name = "lib",
+    srcs = ["lib.cc"],
+    hdrs = [":internal_headers"],
+    # copts also apply to C files, so a C++ standard here is only valid for C++ files
+    copts = ["-std=c++17"],
+)

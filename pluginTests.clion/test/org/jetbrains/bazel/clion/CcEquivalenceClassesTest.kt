@@ -417,7 +417,8 @@ class CcEquivalenceClassesTest {
     }
 
     assertThat(configurations).hasSize(1)
-    assertThat(configurations.single().sources.map { it.fileName }).containsExactly("lib.h")
+    assertThat(configurations.single().sources).isEmpty()
+    assertThat(configurations.single().headers.map { it.fileName }).containsExactly("lib.h")
   }
 
   @Test
@@ -444,12 +445,15 @@ class CcEquivalenceClassesTest {
     }
 
     assertThat(configurations).hasSize(1)
-    assertThat(configurations.single().sources.map { it.fileName }).containsExactly("feature.cc", "feature.h")
-    assertThat(configurations.single().sources.map { it.url }).noneMatch { it.contains("_virtual_includes") }
+    assertThat(configurations.single().sources.map { it.fileName }).containsExactly("feature.cc")
+    assertThat(configurations.single().headers.map { it.fileName }).containsExactly("feature.h")
+
+    val allUrls = configurations.single().let { it.sources + it.headers }.map { it.url }
+    assertThat(allUrls).noneMatch { it.contains("_virtual_includes") }
   }
 
   @Test
-  fun testPrivateHeadersBecomeSources() {
+  fun testPrivateHeadersBecomeHeaders() {
     val configurations = resolve {
       ccLibrary {
         label("//lib:lib")
@@ -460,12 +464,42 @@ class CcEquivalenceClassesTest {
     }
 
     assertThat(configurations).hasSize(1)
-    assertThat(configurations.single().sources.map { it.fileName })
-      .containsExactlyInAnyOrder("lib.cc", "public.h", "private.h")
+    assertThat(configurations.single().sources.map { it.fileName }).containsExactly("lib.cc")
+    assertThat(configurations.single().headers.map { it.fileName }).containsExactlyInAnyOrder("public.h", "private.h")
   }
 
   @Test
-  fun testHeadersOfTargetWithoutRuleContextBecomeSources() {
+  fun testSourceFileInHeadersBecomesHeader() {
+    val configurations = resolve {
+      ccLibrary {
+        label("//lib:lib")
+        srcs("lib/lib.cc")
+        hdrs("lib/ryu.c")
+      }
+    }
+
+    assertThat(configurations).hasSize(1)
+    assertThat(configurations.single().sources.map { it.fileName }).containsExactly("lib.cc")
+    assertThat(configurations.single().headers.map { it.fileName }).containsExactly("ryu.c")
+  }
+
+  @Test
+  fun testFileInSourcesAndHeadersBecomesSource() {
+    val configurations = resolve {
+      ccLibrary {
+        label("//lib:lib")
+        srcs("lib/lib.c")
+        hdrs("lib/lib.c")
+      }
+    }
+
+    assertThat(configurations).hasSize(1)
+    assertThat(configurations.single().sources.map { it.fileName }).containsExactly("lib.c")
+    assertThat(configurations.single().headers).isEmpty()
+  }
+
+  @Test
+  fun testHeadersOfTargetWithoutRuleContextBecomeHeaders() {
     val configurations = resolve {
       ccLibrary {
         label("//custom:custom")
@@ -476,8 +510,8 @@ class CcEquivalenceClassesTest {
     }
 
     assertThat(configurations).hasSize(1)
-    assertThat(configurations.single().sources.map { it.fileName })
-      .containsExactlyInAnyOrder("custom.cc", "custom.h")
+    assertThat(configurations.single().sources.map { it.fileName }).containsExactly("custom.cc")
+    assertThat(configurations.single().headers.map { it.fileName }).containsExactly("custom.h")
   }
 
   @Test

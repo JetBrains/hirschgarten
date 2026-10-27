@@ -30,7 +30,12 @@ data class CcResolveConfiguration(
   val name: @NlsSafe String,
   val shared: EquivalenceClass,
   val targets: List<WorkspaceTargetKey>,
+
+  /** Compiled sources of the targets, i.e. all files sources file in srcs. */
   val sources: List<VirtualFileUrl>,
+
+  /** Available headers of the targets, i.e. all header files in hdrs and srcs. */
+  val headers: List<VirtualFileUrl>,
 ) {
 
   /** Represents a set of compiler settings that are shared across multiple targets. */
@@ -87,29 +92,65 @@ private fun createResolveConfiguration(
   clazz: CcResolveConfiguration.EquivalenceClass,
   targets: Collection<WorkspaceTargetKey>,
 ): CcResolveConfiguration? {
-  val sources = collectSources(targets)
-  if (sources.isEmpty()) return null
+  val buildTargets = targets.mapNotNull { ctx.snapshot.targets.findTargetByKey(it) }
+
+  val sources = collectSources(buildTargets)
+  // a file in srcs and in hdrs is compiled, so it is a source
+  val headers = collectHeaders(buildTargets) - sources.toSet()
+
+  if (sources.isEmpty() && headers.isEmpty()) return null
 
   return CcResolveConfiguration(
     id = CcResolveConfiguration.Identifier(clazz.hashCode(), clazz.configuration),
     shared = clazz,
     targets = targets.toList(),
     sources = sources,
+    headers = headers,
     name = computeDisplayName(targets),
   )
 }
 
+/** Only actual source files in srcs are compiled by rules_cc. */
 context(ctx: CcImportContext)
-private fun collectSources(targets: Collection<WorkspaceTargetKey>): List<VirtualFileUrl> {
+private fun collectSources(targets: List<BuildTarget>): List<VirtualFileUrl> {
   return targets.asSequence()
-    .mapNotNull { ctx.snapshot.targets.findTargetByKey(it) }
-    .flatMap { target -> target.sources.getOutputLocations() + target.directHeaders() }
-    .mapNotNull { location -> ctx.outputResolver.resolve(location, localOverride = ctx.snapshot.repoMapping.getLocalRepositories())?.let { location to it } }
-    .filter { (_, path) -> path.fileName.toString().let { name -> OCFileTypeHelpers.isSourceFile(name) || OCFileTypeHelpers.isHeaderFile(name) } }
-    .map { (location, path) -> if (location.isGenerated) path.originalFile() else path }
+    .flatMap { target -> target.sources.getOutputLocations() }
+    .resolveFiles(OCFileTypeHelpers::isSourceFile)
+    .toList()
+}
+
+/** All headers in srcs and hdrs are available for compilation of the sources. */
+context(ctx: CcImportContext)
+private fun collectHeaders(targets: List<BuildTarget>): List<VirtualFileUrl> {
+  val privateHeaders = targets.asSequence()
+    .flatMap { target -> target.sources.getOutputLocations() }
+    .resolveFiles(OCFileTypeHelpers::isHeaderFile)
+
+  val directHeaders = targets.asSequence()
+    .flatMap { target -> target.directHeaders() }
+    .resolveFiles(
+      filter = { name -> OCFileTypeHelpers.isSourceFile(name) || OCFileTypeHelpers.isHeaderFile(name) },
+      collapseReExports = true,
+    )
+
+  // a header in both srcs and hdrs reaches both sequences
+  return (privateHeaders + directHeaders).distinct().toList()
+}
+
+/** [collapseReExports] replaces a header that `strip_include_prefix` re-exports with its source file. */
+context(ctx: CcImportContext)
+private fun Sequence<OutputLocation>.resolveFiles(
+  filter: (String) -> Boolean,
+  collapseReExports: Boolean = false,
+): Sequence<VirtualFileUrl> {
+  return mapNotNull { location ->
+      ctx.outputResolver.resolve(location, localOverride = ctx.snapshot.repoMapping.getLocalRepositories())
+        ?.let { location to it }
+    }
+    .filter { (_, path) -> filter(path.fileName.toString()) }
+    .map { (location, path) -> if (collapseReExports && location.isGenerated) path.originalFile() else path }
     .distinct()
     .map { it.toVirtualFileUrl(ctx.vfuManager) }
-    .toList()
 }
 
 /** Returns the source file of a symlinked output, which the sync creates for CPP-52156. */

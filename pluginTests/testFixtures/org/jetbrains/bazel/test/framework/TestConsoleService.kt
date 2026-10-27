@@ -52,7 +52,8 @@ internal class TestConsoleService(project: Project) : ConsoleService, Disposable
 
   private fun storeEvent(event: BuildEvent) {
     if (event is MessageEvent && (event.kind == MessageEvent.Kind.WARNING || event.kind == MessageEvent.Kind.ERROR)) {
-      syncDiagnostics.add(event.message.trimCrLf().orEmpty())
+      val description = event.description.trimCrLf()?.takeIf { it.isNotBlank() && it != event.message.trimCrLf() }
+      syncDiagnostics.add(listOfNotNull(event.message.trimCrLf(), description).joinToString("\n"))
     }
     if (event is FinishEvent) {
       (event.result as? FailureResult)?.failures?.forEach { syncDiagnostics.add(it.description ?: it.message ?: it.error?.message.orEmpty()) }
