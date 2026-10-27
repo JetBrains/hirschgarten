@@ -88,7 +88,7 @@ internal class BazelTargetsPanel(project: Project, model: BazelTargetsPanelModel
       showTargetTree()
     }
 
-    targetTree.updateTree(visibleTargets, displayAsTree)
+    targetTree.updateTree(visibleTargets, displayAsTree, searchRegex)
 
     // Refresh the panel
     revalidate()
