@@ -39,8 +39,7 @@ internal suspend fun buildWorkspaceModel(model: OCWorkspace.ModifiableModel, con
       config.shared.cxxopts,
     )
 
-    for (file in config.sources) {
-      val languageKind = getDeclaredLanguageKind(file)
+    fun addFile(file: VirtualFileUrl, languageKind: OCLanguageKind) {
       val fileConfig = workspaceConfig.addSource(file.url, languageKind)
 
       if (languageKind == CLanguageKind.C) {
@@ -51,6 +50,19 @@ internal suspend fun buildWorkspaceModel(model: OCWorkspace.ModifiableModel, con
       if (languageKind == CLanguageKind.CPP) {
         fileConfig.setCompiler(settings.cppCompilerKind, settings.cppCompiler.toFile(), ctx.execroot.toFile())
         fileConfig.setCompilerSwitches(cppSwitches)
+      }
+    }
+
+    val sourceLanguageKinds = mutableSetOf<OCLanguageKind>()
+    for (file in config.sources) {
+      val languageKind = getSourceLanguageKind(file).also(sourceLanguageKinds::add)
+      addFile(file, languageKind)
+    }
+
+    // headers might contain sources files, which are only guaranteed to compile in the same language as the sources
+    for (file in config.headers) {
+      for (language in sourceLanguageKinds) {
+        addFile(file, language)
       }
     }
 
@@ -85,14 +97,8 @@ private fun CompilerSpecificSwitchBuilder.appendCompilationContext(config: CcRes
   config.shared.transitiveSystemIncludes.getOutputLocations().resolve().forEach(::withSystemIncludePath)
 }
 
-private fun getDeclaredLanguageKind(sourceOrHeaderFile: VirtualFileUrl): OCLanguageKind {
-  val name = sourceOrHeaderFile.fileName
-
-  if (OCFileTypeHelpers.isSourceFile(name)) {
-    return OCFileTypeHelpers.getLanguageKind(name) ?: DEFAULT_LANGUAGE_KIND
-  }
-
-  return DEFAULT_LANGUAGE_KIND
+private fun getSourceLanguageKind(sourceFile: VirtualFileUrl): OCLanguageKind {
+  return OCFileTypeHelpers.getLanguageKind(sourceFile.fileName) ?: DEFAULT_LANGUAGE_KIND
 }
 
 context(ctx: CcImportContext)
