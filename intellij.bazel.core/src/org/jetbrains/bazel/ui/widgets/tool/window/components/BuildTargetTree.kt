@@ -84,7 +84,7 @@ internal class BuildTargetTree(
     addMouseListener(loadedTargetsMouseListener)
   }
 
-  fun updateTree(visibleTargets: Collection<Label>, displayAsTree: Boolean) {
+  fun updateTree(visibleTargets: Collection<Label>, displayAsTree: Boolean, searchQuery: Regex?) {
     val classifier =
       if (displayAsTree) {
         TreeTargetClassifier(project)
@@ -99,6 +99,7 @@ internal class BuildTargetTree(
     (treeModel as? DefaultTreeModel)?.reload()
 
     expandPath(TreePath(rootNode.path))
+    searchQuery?.let { expandMatchingNodes(rootNode, it) }
   }
 
   private fun generateTree(targets: Collection<Label>, classifier: BuildTargetClassifierExtension) {
@@ -206,6 +207,39 @@ internal class BuildTargetTree(
         childrenList.addAll(onlyChild.children().toList())
       }
     }
+  }
+
+  private fun expandMatchingNodes(root: DefaultMutableTreeNode, searchRegex: Regex) {
+    val dirsToProcess = ArrayDeque<DefaultMutableTreeNode>()
+    for (topLevelNode in root.children()) {
+      if (topLevelNode is DefaultMutableTreeNode && topLevelNode.childCount > 0) {
+        dirsToProcess.add(topLevelNode)
+      }
+    }
+
+    while (dirsToProcess.isNotEmpty()) {
+      val node = dirsToProcess.removeFirst()
+      if (!node.containsMatch(searchRegex)) {
+        // if the node name does not match, expand it and go deeper
+        expandPath(TreePath(node.path))
+        for (child in node.children()) {
+          if (child is DefaultMutableTreeNode && child.childCount > 0) {
+            dirsToProcess.add(child)
+          }
+        }
+      }
+    }
+  }
+
+  private fun DefaultMutableTreeNode.containsMatch(regex: Regex): Boolean {
+    val userObject = userObject ?: return false
+    val nodeName =
+      when (userObject) {
+        is DirectoryNodeData -> userObject.name
+        is TargetNodeData -> userObject.displayName
+        else -> return false
+      }
+    return regex.containsMatchIn(nodeName)
   }
 
   override fun isEmpty(): Boolean = rootNode.isLeaf
