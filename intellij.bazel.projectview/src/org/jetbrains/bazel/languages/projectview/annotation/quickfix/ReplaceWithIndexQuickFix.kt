@@ -3,7 +3,6 @@ package org.jetbrains.bazel.languages.projectview.annotation.quickfix
 import com.intellij.codeInspection.util.IntentionFamilyName
 import com.intellij.modcommand.ActionContext
 import com.intellij.modcommand.ModPsiUpdater
-import com.intellij.modcommand.Presentation
 import com.intellij.modcommand.PsiUpdateModCommandAction
 import com.intellij.openapi.project.DumbAware
 import org.jetbrains.bazel.languages.projectview.BazelProjectViewBundle
@@ -59,11 +58,5 @@ internal class ReplaceWithIndexQuickFix(
       .forEach { it.deleteContent() }
   }
 
-  override fun getPresentation(
-    context: ActionContext,
-    element: ProjectViewPsiSection,
-  ): Presentation = Presentation.of(BazelProjectViewBundle.message("quickfix.deprecated.section.replace.presentation", targetSectionName))
-
-  override fun getFamilyName(): @IntentionFamilyName String =
-    BazelProjectViewBundle.message("quickfix.deprecated.section.replace.description")
+  override fun getFamilyName(): @IntentionFamilyName String = BazelProjectViewBundle.message("quickfix.deprecated.section.replace.presentation", targetSectionName)
 }

@@ -1,14 +1,9 @@
 package org.jetbrains.bazel.languages.projectview.quickfix
 
-import com.intellij.openapi.application.EDT
-import com.intellij.testFramework.common.timeoutRunBlocking
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 import org.jetbrains.bazel.languages.projectview.BazelProjectViewBundle
 import org.jetbrains.bazel.test.framework.BazelTestApplication
 import org.jetbrains.bazel.test.framework.bazelCodeInsightFixture
 import org.junit.jupiter.api.Test
-import kotlin.time.Duration.Companion.seconds
 
 @BazelTestApplication
 class ReplaceWithIndexQuickFixTest {
@@ -160,17 +155,9 @@ class ReplaceWithIndexQuickFixTest {
     )
   }
 
-  private fun checkQuickFix(before: String, after: String) {
-    timeoutRunBlocking(30.seconds) {
-      withContext(Dispatchers.EDT) {
-        codeInsightFixture.configureByText(".bazelproject", before.trimIndent() + "\n")
-        val intention =
-          codeInsightFixture.findSingleIntention(
-            BazelProjectViewBundle.message("quickfix.deprecated.section.replace.presentation", "index"),
-          )
-        codeInsightFixture.launchAction(intention)
-        codeInsightFixture.checkResult(after.trimIndent() + "\n")
-      }
-    }
-  }
+  private fun checkQuickFix(before: String, after: String) = codeInsightFixture.checkQuickFix(
+    name = BazelProjectViewBundle.message("quickfix.deprecated.section.replace.presentation", "index"),
+    before = before,
+    after = after,
+  )
 }
