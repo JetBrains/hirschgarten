@@ -20,13 +20,12 @@
     <orderEntry type="module" module-name="intellij.libraries.gson" />
     <orderEntry type="module" module-name="intellij.libraries.commons.cli" />
     <orderEntry type="module" module-name="intellij.libraries.commons.io" />
-    <orderEntry type="module" module-name="intellij.libraries.opentelemetry.extension.kotlin" scope="PROVIDED" />
+    <orderEntry type="module" module-name="intellij.libraries.opentelemetry.extension.kotlin" />
     <orderEntry type="module" module-name="intellij.libraries.hash4j" />
     <orderEntry type="module" module-name="intellij.libraries.jetbrains.annotations" />
     <orderEntry type="module" module-name="intellij.libraries.kotlinx.datetime" />
     <orderEntry type="module" module-name="intellij.platform.util" />
     <orderEntry type="module" module-name="intellij.platform.core" />
-    <orderEntry type="module" module-name="intellij.platform.analysis" scope="PROVIDED" />
     <orderEntry type="module" module-name="intellij.platform.ide.impl" />
     <orderEntry type="module" module-name="intellij.platform.projectModel" />
     <orderEntry type="module" module-name="intellij.platform.projectModel.impl" />

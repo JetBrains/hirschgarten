@@ -20,8 +20,7 @@
     <orderEntry type="module" module-name="intellij.libraries.kotlinx.datetime" />
     <orderEntry type="module" module-name="intellij.platform.smRunner" />
     <orderEntry type="module" module-name="intellij.platform.rd.community" />
-    <orderEntry type="module" module-name="intellij.libraries.opentelemetry" scope="PROVIDED" />
-    <orderEntry type="module" module-name="intellij.libraries.opentelemetry.extension.kotlin" scope="PROVIDED" />
+    <orderEntry type="module" module-name="intellij.libraries.opentelemetry" />
     <orderEntry type="module" module-name="intellij.libraries.protobuf" />
     <orderEntry type="module" module-name="intellij.libraries.stream" />
     <orderEntry type="module" module-name="intellij.libraries.caffeine" />
