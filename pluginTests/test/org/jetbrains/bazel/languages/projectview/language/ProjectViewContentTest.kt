@@ -123,6 +123,103 @@ class ProjectViewContentTest {
   }
 
   @Test
+  fun `test a suppression comment covers the next section`() {
+    problems(
+      """
+      # suppress: unsupported_section
+      not_supported_section: someValue
+      """.trimIndent(),
+    ).shouldBeEmpty()
+  }
+
+  @Test
+  fun `test a suppression comment covers the items of the next section`() {
+    problems(
+      """
+      # suppress: unknown_flag
+      build_flags:
+        not_a_flag
+      """.trimIndent(),
+    ).shouldBeEmpty()
+  }
+
+  @Test
+  fun `test a suppression comment in a section covers only the next item`() {
+    problems(
+      """
+      build_flags:
+        not_a_flag_a
+        # suppress: unknown_flag
+        not_a_flag_b
+        not_a_flag_c
+      """.trimIndent(),
+    ).map { it.element?.text } shouldContainExactly listOf("not_a_flag_a", "not_a_flag_c")
+  }
+
+  @Test
+  fun `test a suppression comment after a section covers the next section`() {
+    problems(
+      """
+      directories:
+        dirA
+      # suppress: unsupported_section
+      not_supported_section: someValue
+      """.trimIndent(),
+    ).shouldBeEmpty()
+  }
+
+  @Test
+  fun `test a suppression comment takes several IDs and free text`() {
+    problems(
+      """
+      #suppress:unknown_flag , unsupported_section the CI image needs it, deprecation
+      not_supported_section: someValue
+      """.trimIndent(),
+    ).shouldBeEmpty()
+  }
+
+  @Test
+  fun `test an ID in the free text of a suppression comment suppresses nothing`() {
+    problems(
+      """
+      # suppress: unknown_flag - unsupported_section
+      not_supported_section: someValue
+      """.trimIndent(),
+    ).map { it.id } shouldContainExactly listOf(ProjectViewProblem.Id.UnsupportedSection)
+  }
+
+  @Test
+  fun `test a suppression comment does not cover a section after a blank line`() {
+    problems(
+      """
+      # suppress: unsupported_section
+
+      not_supported_section: someValue
+      """.trimIndent(),
+    ).map { it.id } shouldContainExactly listOf(ProjectViewProblem.Id.UnsupportedSection)
+  }
+
+  @Test
+  fun `test a suppression comment with another ID suppresses nothing`() {
+    problems(
+      """
+      # suppress: unknown_flag
+      not_supported_section: someValue
+      """.trimIndent(),
+    ).map { it.id } shouldContainExactly listOf(ProjectViewProblem.Id.UnsupportedSection)
+  }
+
+  @Test
+  fun `test a suppression comment does not suppress an error`() {
+    problems(
+      """
+      # suppress: invalid_value
+      shard_sync: not_a_boolean
+      """.trimIndent(),
+    ).map { it.id } shouldContainExactly listOf(ProjectViewProblem.Id.InvalidValue)
+  }
+
+  @Test
   fun `test a problem ID cannot be written in a suppression comment unless it is a word`() {
     shouldThrow<IllegalArgumentException> { ProjectViewProblem.Id("not-an-id") }
   }

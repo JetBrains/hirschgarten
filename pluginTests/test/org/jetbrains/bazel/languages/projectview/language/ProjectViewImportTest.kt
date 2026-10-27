@@ -350,6 +350,20 @@ class ProjectViewImportTest {
     problems(main).shouldBeEmpty()
   }
 
+  @Test
+  fun `test a suppression comment in an imported file covers its problems`() {
+    testBazel.writeFile(
+      "imported.bazelproject",
+      """
+      # suppress: unsupported_section
+      not_supported_section: someValue
+      """.trimIndent(),
+    ).toNioPath()
+    val main = testBazel.writeFile("main.bazelproject", "import imported.bazelproject").toNioPath()
+
+    problems(main).shouldBeEmpty()
+  }
+
   private fun problems(path: Path): List<ProjectViewProblem> {
     val problems = mutableListOf<ProjectViewProblem>()
     testBazel.parseProjectView(path, problems::add)

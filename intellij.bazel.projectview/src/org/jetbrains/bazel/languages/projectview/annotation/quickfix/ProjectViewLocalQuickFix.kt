@@ -11,6 +11,7 @@ import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
+import org.jetbrains.bazel.languages.projectview.annotation.suppress.ProjectViewActionWithSuppressOptions
 
 /**
  * A quick fix of a project view problem for the editor and for Inspect Code.
@@ -19,8 +20,10 @@ import com.intellij.psi.PsiFile
  * [ModCommandAction.asIntention] returns an intention that is not a [LocalQuickFix], so Inspect Code would show no fix.
  * This class is an [IntentionAction] for the editor and a [LocalQuickFix] for Inspect Code. It delegates both to the intention.
  */
-@Suppress("SplitModeApiUsage")
-internal class ProjectViewLocalQuickFix(action: ModCommandAction) : IntentionAction, LocalQuickFix {
+internal class ProjectViewLocalQuickFix(
+  action: ModCommandAction,
+  override val suppressActions: List<ModCommandAction> = emptyList(),
+) : ProjectViewActionWithSuppressOptions, LocalQuickFix {
 
   private val fix = action.asIntention()
 

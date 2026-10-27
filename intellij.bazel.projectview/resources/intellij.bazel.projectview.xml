@@ -65,6 +65,14 @@
       implementationClass="org.jetbrains.bazel.languages.projectview.annotation.ProjectViewProblemsAnnotator"
       language="ProjectView"
     />
+    <lang.inspectionSuppressor
+      implementationClass="org.jetbrains.bazel.languages.projectview.annotation.suppress.ProjectViewAnnotatorSuppressor"
+      language="ProjectView"
+    />
+    <!--suppress SplitModeXmlApiUsage -->
+    <daemon.changeLocalityDetector
+      implementation="org.jetbrains.bazel.languages.projectview.annotation.suppress.ProjectViewSuppressionChangeLocalityDetector"
+    />
 
     <completion.contributor
       implementationClass="org.jetbrains.bazel.languages.projectview.completion.ProjectViewSectionItemCompletionContributor"
