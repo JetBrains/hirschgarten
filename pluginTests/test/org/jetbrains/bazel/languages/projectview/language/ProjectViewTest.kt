@@ -6,12 +6,12 @@ import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.testFramework.common.timeoutRunBlocking
+import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.nulls.shouldBeNull
 import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
-import io.kotest.matchers.types.shouldBeInstanceOf
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.intellij.lang.annotations.Language
@@ -26,11 +26,11 @@ import org.jetbrains.bazel.languages.projectview.SHARDING_APPROACH_KEY
 import org.jetbrains.bazel.languages.projectview.SHARD_SYNC_KEY
 import org.jetbrains.bazel.languages.projectview.TARGETS_KEY
 import org.jetbrains.bazel.languages.projectview.buildFlags
+import org.jetbrains.bazel.languages.projectview.checker.ProjectViewProblem
 import org.jetbrains.bazel.languages.projectview.debugFlags
 import org.jetbrains.bazel.languages.projectview.deriveTargetsFromDirectories
 import org.jetbrains.bazel.languages.projectview.directories
 import org.jetbrains.bazel.languages.projectview.dotIdeaDirectoryLocation
-import org.jetbrains.bazel.languages.projectview.imports.Import
 import org.jetbrains.bazel.languages.projectview.syncFlags
 import org.jetbrains.bazel.test.framework.BazelTestApplication
 import org.jetbrains.bazel.test.framework.testproject.createDirectory
@@ -201,7 +201,7 @@ class ProjectViewTest {
   }
 
   @Test
-  fun `test unresolved import is reported at its position in the importing file`() {
+  fun `test unresolved import is reported in the importing file`() {
     val main = testBazel.writeFile(
       "main.bazelproject",
       """
@@ -211,14 +211,12 @@ class ProjectViewTest {
       """.trimIndent(),
     ).toNioPath()
 
-    val projectView = testBazel.parseProjectView(main)
+    val problems = mutableListOf<ProjectViewProblem>()
+    val projectView = testBazel.parseProjectView(main, problems::add)
 
     projectView.dotIdeaDirectoryLocation shouldBe Path("custom/.idea")
-    val unresolved = projectView.imports.single().shouldBeInstanceOf<Import.Unresolved>()
-    unresolved.text shouldBe "missing.bazelproject"
-    val position = unresolved.position.shouldNotBeNull()
-    position.path shouldBe main
-    position.startLine shouldBe 2
+    projectView.imports.shouldBeEmpty()
+    problems.single().sourcePath shouldBe main
   }
 
   @Test
@@ -236,7 +234,7 @@ class ProjectViewTest {
     val projectView = testBazel.parseProjectView(main)
 
     projectView.dotIdeaDirectoryLocation shouldBe Path("custom/.idea")
-    projectView.imports.single().shouldBeInstanceOf<Import.Unresolved>()
+    projectView.imports.shouldBeEmpty()
   }
 
   @Test

@@ -5,8 +5,14 @@ import com.intellij.psi.PsiElement
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.languages.projectview.BazelProjectViewBundle
 import org.jetbrains.bazel.languages.projectview.ProjectViewSection
+import org.jetbrains.bazel.languages.projectview.imports.Import
+import org.jetbrains.bazel.languages.projectview.imports.ImportFactory
 import org.jetbrains.bazel.languages.projectview.psi.ProjectViewPsiFile
+import org.jetbrains.bazel.languages.projectview.psi.sections.ProjectViewPsiImportBase
 import org.jetbrains.bazel.languages.projectview.psi.sections.ProjectViewPsiSection
+import org.jetbrains.bazel.languages.projectview.psi.sections.sectionName
+import org.jetbrains.bazel.sync.environment.bazelProjectInfo
+import java.nio.file.Path
 
 @ApiStatus.Internal
 fun interface ProjectViewChecker<T> {
@@ -21,9 +27,13 @@ fun interface ProjectViewChecker<T> {
       sectionDeprecationChecker,
     )
 
+    private val importCheckers = sequenceOf(unresolvedImportChecker)
+
     val Main: ProjectViewChecker<PsiElement> = ProjectViewChecker { project, subject ->
       when (subject) {
         is ProjectViewPsiSection -> sectionCheckers
+          .flatMap { it.check(project, subject) }
+        is ProjectViewPsiImportBase -> importCheckers
           .flatMap { it.check(project, subject) }
         else -> emptySequence()
       }
@@ -35,11 +45,25 @@ internal fun <T> projectViewChecker(
   block: suspend SequenceScope<ProjectViewProblem>.(project: Project, subject: T) -> Unit,
 ): ProjectViewChecker<T> = ProjectViewChecker { project, subject -> sequence { block(project, subject) } }
 
+private val unresolvedImportChecker = projectViewChecker<ProjectViewPsiImportBase> { project, subject ->
+  val root = project.bazelProjectInfo.projectRootDir ?: return@projectViewChecker
+  val import = ImportFactory.from(root.toNioPath(), subject)
+  if (import !is Import.Unresolved || !import.isRequired) return@projectViewChecker
+  yield(
+    ProjectViewProblem(
+      id = ProjectViewProblem.Id.UnresolvedImport,
+      message = BazelProjectViewBundle.message("annotator.import.unresolved.error", import.text),
+      severity = ProjectViewProblem.Severity.Error,
+      element = subject.getImportPath() ?: subject.firstChild,
+    )
+  )
+}
+
 private val unsupportedSectionChecker = projectViewChecker<ProjectViewPsiSection> { _, subject ->
   if (ProjectViewSection.findByPsi(subject) == null) {
     val problem = ProjectViewProblem(
       id = ProjectViewProblem.Id.UnsupportedSection,
-      message = BazelProjectViewBundle.message("annotator.unsupported.section.warning"),
+      message = BazelProjectViewBundle.message("annotator.unsupported.section.warning", subject.sectionName()),
       severity = ProjectViewProblem.Severity.Warning,
       element = subject.getKeyword(),
     )
@@ -60,7 +84,7 @@ private val sectionDeprecationChecker = projectViewChecker<ProjectViewPsiSection
   yield(
     ProjectViewProblem(
       id = ProjectViewProblem.Id.Deprecation,
-      message = deprecation.message,
+      message = deprecation.message(subject.sectionName()),
       severity = deprecation.level.toSeverity(),
       element = subject.getKeyword(),
       quickFixes = deprecation.quickFixes
@@ -83,6 +107,13 @@ internal fun ProjectViewChecker<PsiElement>.checkChildren(file: ProjectViewPsiFi
 private fun Sequence<ProjectViewProblem>.withElement(element: PsiElement): Sequence<ProjectViewProblem> = map {
   when {
     it.element == null -> it.copy(element = element)
+    else -> it
+  }
+}
+
+internal fun Sequence<ProjectViewProblem>.withSourcePath(sourcePath: Path?): Sequence<ProjectViewProblem> = map {
+  when {
+    it.sourcePath == null -> it.copy(sourcePath = sourcePath)
     else -> it
   }
 }

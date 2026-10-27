@@ -14,12 +14,17 @@ import org.jetbrains.bazel.commons.constants.Constants
 import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.flow.open.ProjectViewFileUtils
 import org.jetbrains.bazel.languages.projectview.base.ProjectViewLanguage
+import org.jetbrains.bazel.languages.projectview.checker.ProjectViewChecker
+import org.jetbrains.bazel.languages.projectview.checker.ProjectViewProblem
+import org.jetbrains.bazel.languages.projectview.checker.checkChildren
+import org.jetbrains.bazel.languages.projectview.checker.withSourcePath
 import org.jetbrains.bazel.languages.projectview.imports.Import
 import org.jetbrains.bazel.languages.projectview.imports.ImportFactory
 import org.jetbrains.bazel.languages.projectview.psi.ProjectViewPsiFile
 import org.jetbrains.bazel.languages.projectview.psi.sections.ProjectViewPsiImportBase
 import org.jetbrains.bazel.languages.projectview.psi.sections.ProjectViewPsiSection
 import org.jetbrains.bazel.utils.findVirtualFile
+import org.jetbrains.bazel.utils.toRealPathOrSelf
 import java.nio.file.Path
 import kotlin.io.path.readBytes
 
@@ -41,17 +46,31 @@ import kotlin.io.path.readBytes
 @ApiStatus.Internal
 object ProjectViewFactory {
 
+  /**
+   * Parses the project view against [root]. Use this function only when the project root is not set,
+   * for example in `BazelProjectStorePathCustomizer`. The checkers do not run, because they need the project root.
+   */
   @RequiresBackgroundThread(generateAssertion = false)
   fun fromOrNull(
     project: Project,
-    path: Path,
-    root: Path = project.rootDir.toNioPath(),
-  ): ProjectView? = runCatching { from(project, path, root) }
-    // In principle, project view parse should not throw.
-    // However, in case it does, it might break some code paths e.g. project opening, so it's better to keep it in a try-catch block.
-    .getOrHandleException {
-      log.error("Failed to load project view file at $path.", it)
-    }
+    source: Path,
+    root: Path,
+  ): ProjectView? = loadOrNull(source) {
+    parse(project = project, content = readContent(source), root = root, source = source, onEachProblem = null)
+  }
+
+  /**
+   * Parses the project view from [source] against the [project] root, and calls [onEachProblem] for each problem.
+   * The checkers resolve the imports against the [project] root, so the parse uses the same root.
+   */
+  @RequiresBackgroundThread(generateAssertion = false)
+  fun fromOrNull(
+    project: Project,
+    source: Path,
+    onEachProblem: ((ProjectViewProblem) -> Unit)? = null,
+  ): ProjectView? = loadOrNull(source) {
+    from(project = project, source = source, onEachProblem = onEachProblem)
+  }
 
   @RequiresBackgroundThread(generateAssertion = false)
   fun fromDefault(
@@ -62,62 +81,102 @@ object ProjectViewFactory {
     content = ProjectViewFileUtils.projectViewTemplate(project.rootDir, forceDefaultTemplate = forceDefaultTemplate),
   )
 
+  /**
+   * Parses project view from [source] against the [project] root and calls [onEachProblem] for each problem.
+   */
   @RequiresBackgroundThread(generateAssertion = false)
   fun from(
     project: Project,
     source: Path,
-    root: Path = project.rootDir.toNioPath(),
-  ): ProjectView = from(project, readContent(source), root, source)
+    onEachProblem: ((ProjectViewProblem) -> Unit)? = null,
+  ): ProjectView = parse(
+    project = project,
+    content = readContent(source),
+    root = project.rootDir.toNioPath(),
+    source = source,
+    onEachProblem = onEachProblem,
+  )
 
+  /**
+   * Parses [content] against the [project] root, and calls [onEachProblem] for each problem.
+   * [source] is the file of the content, if it has one.
+   */
   @RequiresBackgroundThread(generateAssertion = false)
   fun from(
     project: Project,
     content: CharSequence,
-    root: Path = project.rootDir.toNioPath(),
     source: Path? = null,
+    onEachProblem: ((ProjectViewProblem) -> Unit)? = null,
+  ): ProjectView = parse(project = project, content = content, root = project.rootDir.toNioPath(), source = source, onEachProblem = onEachProblem)
+
+  // In principle, project view parse should not throw.
+  // However, in case it does, it might break some code paths e.g. project opening, so it's better to keep it in a try-catch block.
+  private fun loadOrNull(path: Path, load: () -> ProjectView): ProjectView? = runCatching(load)
+    .getOrHandleException {
+      log.error("Failed to load project view file at $path.", it)
+    }
+
+  private fun parse(
+    project: Project,
+    content: CharSequence,
+    root: Path,
+    source: Path?,
+    onEachProblem: ((ProjectViewProblem) -> Unit)?,
   ): ProjectView {
     val name = source?.fileName?.toString() ?: Constants.DEFAULT_PROJECT_VIEW_FILE_NAME
-    return Parser(project = project, root = root, mainFile = source).parse(psi = createLightPsiFile(project, name, content), source = source)
+    return Parser(
+      project = project,
+      root = root,
+      onEachProblem = onEachProblem,
+      mainFile = source,
+    ).parse(psi = createLightPsiFile(project, name, content), source = source)
   }
 }
 
 private class Parser(
   private val project: Project,
   private val root: Path,
+  private val onEachProblem: ((ProjectViewProblem) -> Unit)?,
   mainFile: Path?,
 ) {
-  private val inProgress = setOfNotNull(mainFile).toMutableSet()
+  private val parsed = mutableMapOf<Path, ProjectView?>()
+  private val inProgress = setOfNotNull(mainFile?.toRealPathOrSelf()).toMutableSet()
 
   fun parse(psi: ProjectViewPsiFile, source: Path?): ProjectView {
-    val imports = mutableListOf<Import>()
+    val imports = mutableSetOf<Import.Resolved>()
     val sections = mutableMapOf<ProjectViewSectionKey<*>, Any>()
+    onEachProblem?.let { ProjectViewChecker.Main.checkChildren(psi).withSourcePath(source).forEach(it) }
     for (it in psi.children) {
       when (it) {
         is ProjectViewPsiSection -> it
           .toSectionWithValue()
           ?.let { (section, value) -> sections.mergeSection(section.key, value) }
-        is ProjectViewPsiImportBase -> {
-          val import = ImportFactory.from(root, it, source)
-          imports += import
-          if (import is Import.Resolved) {
+        is ProjectViewPsiImportBase -> when (val import = ImportFactory.from(root, it)) {
+          is Import.Resolved -> {
+            imports += import
             import(import.path)
               ?.sections
               ?.forEach { (key, value) -> sections.mergeSection(key, value) }
           }
+          is Import.Unresolved -> Unit
         }
       }
     }
-    return ProjectView(sections, imports)
+    return ProjectView(sections, imports.toList())
   }
 
   private fun import(path: Path): ProjectView? {
-    if (path in inProgress) return null
-    inProgress.add(path)
+    val key = path.toRealPathOrSelf()
+    if (key in inProgress) return null
+    if (key in parsed) return parsed[key]
+    inProgress.add(key)
     try {
-      return readLightPsiFile(project, path)?.let { parse(it, path) }
+      val result = readLightPsiFile(project, path)?.let { parse(it, path) }
+      parsed[key] = result
+      return result
     }
     finally {
-      inProgress.remove(path)
+      inProgress.remove(key)
     }
   }
 }

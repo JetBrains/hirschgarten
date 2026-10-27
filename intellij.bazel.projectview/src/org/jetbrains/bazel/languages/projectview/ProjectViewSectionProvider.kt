@@ -173,7 +173,9 @@ private val TargetsSection: ProjectViewSection<List<ExcludableValue<Label>>> = P
 // deprecated sections
 
 private val indexingDeprecation = ProjectViewSection.Deprecation(
-  message = BazelProjectViewBundle.message("annotator.deprecated.section.with.replacement.warning", INDEX_KEY.name),
+  message = { sectionName ->
+    BazelProjectViewBundle.message("annotator.deprecated.section.with.replacement.warning", sectionName, INDEX_KEY.name)
+  },
   level = ProjectViewSection.Deprecation.Level.Warning,
   quickFixes = listOf(ProjectViewProblem.QuickFix.ReplaceWithIndex),
 )
@@ -203,5 +205,5 @@ private val TestSourcesSection: ProjectViewSection<List<String>> = ProjectViewSe
   key = TEST_SOURCES_KEY,
   type = ProjectViewSectionType.string().list(),
   documentation = BazelProjectViewBundle.message("bazel.language.projectview.docs.test_sources"),
-  deprecation = ProjectViewSection.Deprecation(BazelProjectViewBundle.message("annotator.deprecated.section.test_sources")),
+  deprecation = ProjectViewSection.Deprecation(message = { BazelProjectViewBundle.message("annotator.deprecated.section.test_sources") }),
 )

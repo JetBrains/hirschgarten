@@ -187,21 +187,43 @@ class ProjectSyncTaskTest {
 
   @Test
   fun `should stop the sync without an error log when a required project view import has no file`() {
-    // given
-    testBazel.useProjectView(testBazel.writeFile(Constants.DEFAULT_PROJECT_VIEW_FILE_NAME, "import missing.bazelproject").toNioPath())
+    val (syncHookCalled, completionResult) = syncWithProjectView("import missing.bazelproject")
+
+    syncHookCalled shouldBe false
+    completionResult shouldBe "FAILURE"
+  }
+
+  @Test
+  fun `should stop the sync without an error log when a project view value is invalid`() {
+    val (syncHookCalled, completionResult) = syncWithProjectView("shard_sync: not_a_boolean")
+
+    syncHookCalled shouldBe false
+    completionResult shouldBe "FAILURE"
+  }
+
+  @Test
+  fun `should not stop the sync when the project view has only warnings`() {
+    val (syncHookCalled, _) = syncWithProjectView("not_supported_section: someValue")
+
+    syncHookCalled shouldBe true
+  }
+
+  /**
+   * Syncs with [projectView] as the project view file, and returns whether the sync hooks ran and the completion result.
+   * The test logger fails the test if the sync logs an error.
+   */
+  private fun syncWithProjectView(projectView: String): Pair<Boolean, Any?> {
+    testBazel.useProjectView(testBazel.writeFile(Constants.DEFAULT_PROJECT_VIEW_FILE_NAME, projectView).toNioPath())
     testBazel.aspectSyncServer()
     val syncHook = TestProjectSyncHook()
     ProjectSyncHook.ep.point.registerExtension(syncHook, testBazel.disposable)
 
-    // when (the test logger fails the test if the sync logs an error)
     val events = FUCollectorTestCase.collectLogEvents(testBazel.disposable) {
       testBazel.runProjectSync()
     }.filter { it.group.id == "bazel.sync" }.map { it.event }
 
-    // then
-    syncHook.wasCalled shouldBe false
     val finished = events.singleOrNull { it.id == "sync.finished" }.shouldNotBeNull()
-    finished.data["completion_result"] shouldBe "FAILURE"
+    return syncHook.wasCalled to finished.data["completion_result"]
   }
 
   @ParameterizedTest(name = "the error is in a subtask: {0}")

@@ -8,6 +8,7 @@ import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.annotations.Nls
 import org.jetbrains.bazel.languages.projectview.checker.ProjectViewProblem
 import org.jetbrains.bazel.languages.projectview.psi.sections.ProjectViewPsiSection
+import org.jetbrains.bazel.languages.projectview.psi.sections.sectionName
 
 @ApiStatus.Internal
 class ProjectViewSection<T>(
@@ -18,7 +19,7 @@ class ProjectViewSection<T>(
 ) {
 
   class Deprecation(
-    @InspectionMessage val message: String,
+    val message: (sectionName: String) -> @InspectionMessage String,
     val level: Level = Level.Warning,
     val quickFixes: List<ProjectViewProblem.QuickFix> = emptyList()
   ) {
@@ -33,7 +34,9 @@ class ProjectViewSection<T>(
         targetKey: ProjectViewSectionKey<*>,
         level: Level = Level.Warning,
       ): Deprecation = Deprecation(
-        message = BazelProjectViewBundle.message("annotator.deprecated.section.with.replacement.warning", targetKey.name),
+        message = { sectionName ->
+          BazelProjectViewBundle.message("annotator.deprecated.section.with.replacement.warning", sectionName, targetKey.name)
+        },
         level = level,
         quickFixes = listOf(ProjectViewProblem.QuickFix.MergeIntoSection(targetKey))
       )
@@ -58,10 +61,7 @@ class ProjectViewSection<T>(
 
     fun findByPsi(psi: PsiElement): ProjectViewSection<*>? {
       val section = psi.parentOfType<ProjectViewPsiSection>(withSelf = true) ?: return null
-      return section.getKeyword()
-        .text
-        .trim()
-        .let(::findByName)
+      return section.sectionName().let(::findByName)
     }
   }
 }
