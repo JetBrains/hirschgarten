@@ -67,7 +67,6 @@
     <orderEntry type="module" module-name="intellij.idea.community.build.tasks" scope="TEST" />
     <orderEntry type="module" module-name="intellij.libraries.teamcity.service.messages" scope="TEST" />
     <orderEntry type="module" module-name="intellij.python.venv.tests" scope="TEST" />
-    <orderEntry type="module" module-name="intellij.python.community.services.systemPython.tests" scope="TEST" />
     <orderEntry type="module" module-name="intellij.python.pyproject.tests" scope="TEST" />
     <orderEntry type="module" module-name="intellij.python.community.services.internal.impl.tests" scope="TEST" />
     <orderEntry type="module" module-name="intellij.platform.ijent.impl.tests" scope="TEST" />
