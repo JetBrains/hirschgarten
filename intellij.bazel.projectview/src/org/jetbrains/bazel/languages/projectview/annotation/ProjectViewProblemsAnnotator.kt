@@ -1,6 +1,5 @@
 package org.jetbrains.bazel.languages.projectview.annotation
 
-import com.intellij.codeInsight.intention.CommonIntentionAction
 import com.intellij.codeInspection.ProblemHighlightType
 import com.intellij.lang.annotation.AnnotationBuilder
 import com.intellij.lang.annotation.AnnotationHolder
@@ -8,13 +7,11 @@ import com.intellij.lang.annotation.Annotator
 import com.intellij.lang.annotation.HighlightSeverity
 import com.intellij.openapi.project.DumbAware
 import com.intellij.psi.PsiElement
-import com.intellij.psi.util.parentOfType
-import org.jetbrains.bazel.languages.projectview.annotation.quickfix.MergeIntoSectionQuickFix
-import org.jetbrains.bazel.languages.projectview.annotation.quickfix.ReplaceWithIndexQuickFix
+import org.jetbrains.bazel.languages.projectview.annotation.quickfix.ProjectViewLocalQuickFix
+import org.jetbrains.bazel.languages.projectview.annotation.quickfix.quickFixActions
 import org.jetbrains.bazel.languages.projectview.checker.ProjectViewChecker
 import org.jetbrains.bazel.languages.projectview.checker.ProjectViewProblem
 import org.jetbrains.bazel.languages.projectview.checker.check
-import org.jetbrains.bazel.languages.projectview.psi.sections.ProjectViewPsiSection
 
 @Suppress("SplitModeApiUsage")
 internal class ProjectViewProblemsAnnotator : Annotator, DumbAware {
@@ -39,21 +36,14 @@ internal class ProjectViewProblemsAnnotator : Annotator, DumbAware {
     else -> range(element)
   }
 
-  private fun AnnotationBuilder.withQuickFixesFrom(problem: ProjectViewProblem): AnnotationBuilder {
-    if (problem.quickFixes.isEmpty()) return this
-    return problem
-      .quickFixes
-      .mapNotNull { it.toIntentionAction(problem.element) }
-      .fold(this) { builder, fix -> builder.withFix(fix) }
-  }
-
-  private fun ProjectViewProblem.QuickFix.toIntentionAction(element: PsiElement?): CommonIntentionAction? {
-    val section = element?.parentOfType<ProjectViewPsiSection>(withSelf = true) ?: return null
-    return when (this) {
-      is ProjectViewProblem.QuickFix.MergeIntoSection -> MergeIntoSectionQuickFix(section, this.targetSectionKey)
-      ProjectViewProblem.QuickFix.ReplaceWithIndex -> ReplaceWithIndexQuickFix(section)
+  private fun AnnotationBuilder.withQuickFixesFrom(problem: ProjectViewProblem): AnnotationBuilder = problem
+    .quickFixActions()
+    .fold(this) { builder, fix ->
+      builder
+        .newFix(ProjectViewLocalQuickFix(fix))
+        .universal()
+        .registerFix()
     }
-  }
 
   private fun AnnotationBuilder.highlightingTypeFor(problem: ProjectViewProblem) = when (problem.id) {
     ProjectViewProblem.Id.Deprecation -> highlightType(ProblemHighlightType.LIKE_DEPRECATED)
