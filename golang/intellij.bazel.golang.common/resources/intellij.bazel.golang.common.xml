@@ -78,6 +78,7 @@
     <targetsToBuildProvider implementation="org.jetbrains.bazel.golang.workspace.GoTargetsToBuildProvider"/>
     <testLocationHintProvider implementation="org.jetbrains.bazel.golang.run.BazelGoTestLocationHintProvider"/>
     <testLocatorProvider implementation="org.jetbrains.bazel.golang.run.BazelGoTestLocatorProvider"/>
+    <testRerunExtension implementation="org.jetbrains.bazel.golang.run.BazelGoTestRerunExtension"/>
   </extensions>
   <extensions defaultExtensionNs="com.goide">
     <dlv.positionConverterFactory

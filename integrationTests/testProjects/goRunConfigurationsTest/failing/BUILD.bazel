@@ -1,0 +1,7 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_test")
+
+go_test(
+    name = "failing_test",
+    srcs = ["failing_test.go"],
+    importpath = "goruntest/failing",
+)
