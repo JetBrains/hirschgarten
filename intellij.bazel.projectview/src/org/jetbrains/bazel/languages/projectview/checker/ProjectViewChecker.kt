@@ -33,8 +33,10 @@ fun interface ProjectViewChecker<T> {
       when (subject) {
         is ProjectViewPsiSection -> sectionCheckers
           .flatMap { it.check(project, subject) }
+          .withSuppressions()
         is ProjectViewPsiImportBase -> importCheckers
           .flatMap { it.check(project, subject) }
+          .withSuppressions()
         else -> emptySequence()
       }
     }

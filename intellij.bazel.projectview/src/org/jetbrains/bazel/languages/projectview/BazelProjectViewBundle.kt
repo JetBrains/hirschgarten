@@ -7,12 +7,12 @@ import org.jetbrains.annotations.PropertyKey
 
 @ApiStatus.Internal
 object BazelProjectViewBundle {
-  private const val BUNDLE = "messages.BazelProjectViewBundle"
-  private val INSTANCE = DynamicBundle(BazelProjectViewBundle::class.java, BUNDLE)
+  const val NAME: String = "messages.BazelProjectViewBundle"
+  private val INSTANCE = DynamicBundle(BazelProjectViewBundle::class.java, NAME)
 
   @JvmStatic
   fun message(
-    @PropertyKey(resourceBundle = BUNDLE)
+    @PropertyKey(resourceBundle = NAME)
     key: String,
     vararg params: Any?,
   ): @Nls String {

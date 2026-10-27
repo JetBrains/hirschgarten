@@ -34,7 +34,9 @@ data class ProjectViewProblem(
     }
 
     companion object {
-      private val regex = Regex("""\w+""")
+      /** The pattern of [value]. The suppression comments build their patterns from it. */
+      internal const val PATTERN: String = """\w+"""
+      private val regex = Regex(PATTERN)
 
       val UnsupportedSection: Id = Id("unsupported_section")
       val InvalidValue: Id = Id("invalid_value")
