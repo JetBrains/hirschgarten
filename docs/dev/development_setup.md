@@ -3,12 +3,6 @@
 This guide provides instructions for setting up and developing our Bazel plugin for JetBrains IDEA.  
 Follow these steps to get your development environment ready.
 
-### Limitations
-
-Tests (unit, integration) cannot be compiled and run from their source.
-The reason is that it's too difficult to adapt it from our internal build configuration.
-This unfortunately means you'll have to submit your PR without tests.
-
 ### Build the Bazel plugin from sources
 1) `git clone https://github.com/JetBrains/hirschgarten.git`
 2) Checkout the 262 branch
@@ -43,6 +37,15 @@ This unfortunately means you'll have to submit your PR without tests.
 10) The following plugin runs can be started by clicking "Run" button in the upper right corner, next to the now present run configuration.
 11) To avoid IDEA showing red code for `BuildEventStreamProtos` class, click Help->Edit Custom Properties... and add the following line:
     `idea.max.intellisense.filesize=10000`
+
+### Run the tests
+
+Open the project in IDEA as the previous section shows.
+Then click a gutter icon:
+
+- To run all plugin tests, open `pluginTests/BUILD` and click the icon next to the `pluginTests_test` target.
+- To run one test class or one test method, open the test file and click the icon next to the class or the method.
+
 ### Conclusion
 
 After completing these steps, your development environment should be ready for plugin development. If you encounter any issues not covered here, please reach out to the team.
