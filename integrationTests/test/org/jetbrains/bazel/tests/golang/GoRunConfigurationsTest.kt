@@ -155,6 +155,30 @@ internal class GoRunConfigurationsTest : IdeStarterCombinedBaseTest() {
     }
   }
 
+  @Test
+  @Order(4)
+  fun `Rerun Failed Tests action works`() {
+    withDriver(bgRun) {
+      ideFrame {
+        execute { openFile("failing/failing_test.go") }
+        clickTestGutterOnLine(0)
+        verifyTestStatus(
+          listOf("2 tests failed,", " 1 passed"),
+          setOf(
+            "goruntest/failing.TestPasses", "TestPasses",
+            "goruntest/failing.TestFails", "TestFails",
+            "goruntest/failing.TestAnotherFails", "TestAnotherFails",
+          ),
+        )
+        x { byAccessibleName("Rerun Failed Tests") }.click()
+        verifyTestStatus(
+          listOf("2 tests failed"),
+          setOf("goruntest/failing.TestFails", "TestFails", "goruntest/failing.TestAnotherFails", "TestAnotherFails"),
+        )
+      }
+    }
+  }
+
   private fun Driver.testDebuggingSingleFunction(
     name: String,
     gutterLine: Int,
