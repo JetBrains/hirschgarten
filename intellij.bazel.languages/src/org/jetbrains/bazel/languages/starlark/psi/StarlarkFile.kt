@@ -2,7 +2,6 @@ package org.jetbrains.bazel.languages.starlark.psi
 
 import com.intellij.extapi.psi.PsiFileBase
 import com.intellij.openapi.fileTypes.FileType
-import com.intellij.openapi.progress.ProgressManager
 import com.intellij.psi.FileViewProvider
 import com.intellij.psi.util.CachedValueProvider
 import com.intellij.psi.util.CachedValuesManager
@@ -38,8 +37,8 @@ open class StarlarkFile(viewProvider: FileViewProvider) :
     val rulesByName = CachedValuesManager.getCachedValue(this) {
       val rulesByName = HashMap<String, StarlarkCallExpression>()
       for (rule in getTargetRules()) {
-        ProgressManager.checkCanceled()
-        rulesByName.putIfAbsent(rule.getNameAttributeValue()!!, rule)
+        val name = rule.getNameAttributeValue() ?: continue
+        rulesByName.putIfAbsent(name, rule)
       }
       CachedValueProvider.Result.create(rulesByName, this)
     }
