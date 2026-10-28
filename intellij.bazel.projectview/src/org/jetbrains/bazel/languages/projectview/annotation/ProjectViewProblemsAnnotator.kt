@@ -13,20 +13,19 @@ import org.jetbrains.bazel.languages.projectview.annotation.quickfix.MergeIntoSe
 import org.jetbrains.bazel.languages.projectview.annotation.quickfix.ReplaceWithIndexQuickFix
 import org.jetbrains.bazel.languages.projectview.checker.ProjectViewChecker
 import org.jetbrains.bazel.languages.projectview.checker.ProjectViewProblem
+import org.jetbrains.bazel.languages.projectview.checker.check
 import org.jetbrains.bazel.languages.projectview.psi.sections.ProjectViewPsiSection
 
 @Suppress("SplitModeApiUsage")
 internal class ProjectViewProblemsAnnotator : Annotator, DumbAware {
   override fun annotate(element: PsiElement, holder: AnnotationHolder) {
-    if (element !is ProjectViewPsiSection) return
-    val sink = ProjectViewChecker.Sink { problem ->
+    ProjectViewChecker.Main.check(element).forEach { problem ->
       holder.newAnnotation(problem.severity.toHighlightSeverity(), problem.message)
         .rangeIfPresent(problem.element)
         .withQuickFixesFrom(problem)
         .highlightingTypeFor(problem)
         .create()
     }
-    ProjectViewChecker.run(element, sink)
   }
 
   private fun ProjectViewProblem.Severity.toHighlightSeverity() = when (this) {
