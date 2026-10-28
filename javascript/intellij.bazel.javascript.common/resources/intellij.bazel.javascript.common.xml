@@ -1,0 +1,14 @@
+<idea-plugin>
+  <!-- region Generated dependencies - run `Generate Product Layouts` to regenerate -->
+  <dependencies>
+    <module name="intellij.bazel.backend"/>
+    <module name="intellij.bazel.commons"/>
+    <module name="intellij.javascript.backend"/>
+  </dependencies>
+  <!-- endregion -->
+
+  <extensions defaultExtensionNs="org.jetbrains.bazel">
+    <syncWorkspaceImporter implementation="org.jetbrains.bazel.javascript.sync.JavaScriptWorkspaceImporter"/>
+    <projectSyncHook implementation="org.jetbrains.bazel.javascript.sync.BazelNodeInterpreterSyncHook"/>
+  </extensions>
+</idea-plugin>

@@ -386,6 +386,8 @@ def _rewrite_deps(deps):
             continue
         if dep.startswith("//goland/intellij-go"):
             continue
+        if dep.startswith("//plugins/JavaScriptLanguage"):
+            continue
         if dep.startswith("//platform/backend"):
             continue
 
@@ -413,6 +415,7 @@ def jvm_library(
             "//rules_intellij/third_party/terminal",
             "//rules_intellij/third_party/coverage",
             "//rules_intellij/intellij_platform_sdk:java",
+            "//rules_intellij/intellij_platform_sdk:javascript",
             "//rules_intellij/intellij_platform_sdk:kotlin",
             "//rules_intellij/intellij_platform_sdk:bytecode_viewer",
             "//rules_intellij/intellij_platform_sdk:junit",
