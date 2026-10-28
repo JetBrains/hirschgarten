@@ -1,19 +1,13 @@
 package org.jetbrains.bazel.server.bep
 
-import com.google.devtools.build.lib.buildeventstream.BuildEventStreamProtos
-import com.google.devtools.build.lib.buildeventstream.BuildEventStreamProtos.NamedSetOfFiles
 import com.google.devtools.build.lib.buildeventstream.BuildEventStreamProtos.OutputGroup
 import com.intellij.aspect.lib.OutputGroups
 import org.jetbrains.annotations.ApiStatus
-import org.jetbrains.bazel.commons.BazelPathsResolver
 import org.jetbrains.bazel.commons.BazelRelease
-import org.jetbrains.bazel.commons.constants.Constants
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceConfiguration
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceConfigurationId
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
-import java.io.File
 import java.nio.file.Path
-import kotlin.io.path.Path
 
 @ApiStatus.Internal
 data class TextProtoDepSet(val files: Collection<Path>, val children: Collection<String>)
@@ -26,25 +20,8 @@ internal class BepOutputBuilder {
   val configurations: MutableMap<WorkspaceConfigurationId, WorkspaceConfiguration> = mutableMapOf()
   var buildToolVersion: BazelRelease = BazelRelease.FALLBACK_VERSION
 
-  fun storeNamedSet(id: String, namedSetOfFiles: NamedSetOfFiles, bazelPathsResolver: BazelPathsResolver) {
-    val textProtoDepSet =
-      TextProtoDepSet(
-        files =
-          namedSetOfFiles
-            .filesList
-            .filter { it.name.endsWith(Constants.ASPECT_INFO_OUTPUT_EXTENSION) }
-            .map { it.toLocalPath(bazelPathsResolver) },
-        children = namedSetOfFiles.fileSetsList.map { it.id },
-      )
-
+  fun storeNamedSet(id: String, textProtoDepSet: TextProtoDepSet) {
     textProtoFileSets[id] = textProtoDepSet
-  }
-
-  private fun BuildEventStreamProtos.File.toLocalPath(bazelPathsResolver: BazelPathsResolver): Path {
-    val mergedPathPrefix = Path(pathPrefixList.joinToString(File.separator))
-    val bazelOutputRelativePath = mergedPathPrefix.resolve(name)
-
-    return bazelPathsResolver.resolveOutput(bazelOutputRelativePath)
   }
 
   fun storeTargetOutputGroups(target: WorkspaceTargetKey, outputGroups: List<OutputGroup>) {
