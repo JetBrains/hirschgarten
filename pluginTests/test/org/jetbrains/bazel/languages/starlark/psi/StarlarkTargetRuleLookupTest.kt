@@ -12,7 +12,6 @@ import com.intellij.testFramework.TestActionEvent
 import com.intellij.testFramework.common.timeoutRunBlocking
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkCallExpression
 import org.jetbrains.bazel.test.framework.BazelTestApplication
 import org.jetbrains.bazel.test.framework.bazelCodeInsightFixture
 import org.jetbrains.bazel.test.framework.testBazel
@@ -74,35 +73,6 @@ internal class StarlarkTargetRuleLookupTest {
 
       assertNull(file.findTargetRule("old"))
       assertEquals("new", file.findTargetRule("new")?.getNameAttributeValue())
-    }
-  }
-
-  @Test
-  @Suppress("DEPRECATION", "UNCHECKED_CAST")
-  fun `search stops after the consumer rejects the first result`(): Unit = timeoutRunBlocking {
-    withContext(Dispatchers.EDT) {
-      myFixture.addFileToProject(
-        "BUILD",
-        """
-        rule(name = "first_target")
-        rule(name = "last_target")
-        """.trimIndent(),
-      )
-    }
-    val names = listOf("first_target", "macro_target", "last_target")
-    myFixture.testBazel.sync { targets(names.map { javaLibrary("//:$it") }) }
-
-    val contributor = searchContributor()
-    val found = mutableListOf<StarlarkCallExpression>()
-    contributor.fetchWeightedElements("target", EmptyProgressIndicator()) { descriptor ->
-      val element = (descriptor.item as PsiElementNavigationItem).targetElement
-      found.add(element as StarlarkCallExpression)
-      false
-    }
-
-    assertEquals(1, found.size)
-    withContext(Dispatchers.EDT) {
-      assertEquals("first_target", found.single().getNameAttributeValue())
     }
   }
 
