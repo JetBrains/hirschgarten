@@ -302,19 +302,18 @@ internal class WorkspaceTargetGraphImpl internal constructor(
     val compileSuccessors = if (useRelaxedDependencyExpansion) id2RelaxedCompileSuccessors else id2CompileSuccessors
     return sequence {
       val visited = IntOpenHashSet()
-      val toVisit = IntArrayList()
+      val toVisit = ArrayDeque<Int>()
       for (successorId in allSuccessors[targetId]) {
         if (!rootTargetIds.contains(successorId) && visited.add(successorId)) {
-          toVisit.add(successorId)
+          toVisit.addLast(successorId)
         }
       }
-      var index = 0
-      while (index < toVisit.size) {
-        val currentId = toVisit.getInt(index++)
+      while (toVisit.isNotEmpty()) {
+        val currentId = toVisit.removeFirst()
         yield(id2WorkspaceTarget[currentId])
         for (successorId in compileSuccessors[currentId]) {
           if (visited.add(successorId)) {
-            toVisit.add(successorId)
+            toVisit.addLast(successorId)
           }
         }
       }
