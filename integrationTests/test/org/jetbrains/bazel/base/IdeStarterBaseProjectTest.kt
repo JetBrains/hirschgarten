@@ -633,7 +633,7 @@ fun getProjectInfoFromSystemProperties(): ProjectInfoSpec {
       configureProjectBeforeUse = ::configureProjectWithHermeticCcToolchain,
     )
   }
-  val projectUrl = System.getProperty("bazel.ide.starter.test.project.url") ?: "https://github.com/JetBrains/hirschgarten.git"
+  val projectUrl = System.getProperty("bazel.ide.starter.test.project.url") ?: "ssh://git@github.com/JetBrains/hirschgarten.git"
   val commitHash = System.getProperty("bazel.ide.starter.test.commit.hash").orEmpty()
   val branchName = System.getProperty("bazel.ide.starter.test.branch.name") ?: "252"
   val projectHomeRelativePath: String? = System.getProperty("bazel.ide.starter.test.project.home.relative.path")
