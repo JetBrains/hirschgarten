@@ -18,7 +18,7 @@ import kotlin.io.path.Path
 @ApiStatus.Internal
 data class TextProtoDepSet(val files: Collection<Path>, val children: Collection<String>)
 
-internal class BepOutputBuilder(private val bazelPathsResolver: BazelPathsResolver) {
+internal class BepOutputBuilder {
   private val infoOutputGroupFileSets: MutableSet<String> = HashSet()
   private val textProtoFileSets: MutableMap<String, TextProtoDepSet> = HashMap()
   private val rootTargets: MutableSet<WorkspaceTargetKey> = HashSet()
@@ -26,21 +26,21 @@ internal class BepOutputBuilder(private val bazelPathsResolver: BazelPathsResolv
   val configurations: MutableMap<WorkspaceConfigurationId, WorkspaceConfiguration> = mutableMapOf()
   var buildToolVersion: BazelRelease = BazelRelease.FALLBACK_VERSION
 
-  fun storeNamedSet(id: String, namedSetOfFiles: NamedSetOfFiles) {
+  fun storeNamedSet(id: String, namedSetOfFiles: NamedSetOfFiles, bazelPathsResolver: BazelPathsResolver) {
     val textProtoDepSet =
       TextProtoDepSet(
         files =
           namedSetOfFiles
             .filesList
             .filter { it.name.endsWith(Constants.ASPECT_INFO_OUTPUT_EXTENSION) }
-            .map { it.toLocalPath() },
+            .map { it.toLocalPath(bazelPathsResolver) },
         children = namedSetOfFiles.fileSetsList.map { it.id },
       )
 
     textProtoFileSets[id] = textProtoDepSet
   }
 
-  private fun BuildEventStreamProtos.File.toLocalPath(): Path {
+  private fun BuildEventStreamProtos.File.toLocalPath(bazelPathsResolver: BazelPathsResolver): Path {
     val mergedPathPrefix = Path(pathPrefixList.joinToString(File.separator))
     val bazelOutputRelativePath = mergedPathPrefix.resolve(name)
 
@@ -60,6 +60,19 @@ internal class BepOutputBuilder(private val bazelPathsResolver: BazelPathsResolv
 
   fun storeConfiguration(configuration: WorkspaceConfiguration) {
     configurations[configuration.id] = configuration
+  }
+
+  fun add(output: BepOutput) {
+    infoOutputGroupFileSets.addAll(output.infoOutputGroupFileSets)
+    for ((id, depSet) in output.textProtoFileSets) {
+      textProtoFileSets.merge(id, depSet) { first, second -> TextProtoDepSet(first.files + second.files, first.children + second.children) }
+    }
+    rootTargets.addAll(output.rootTargets())
+    options.addAll(output.options)
+    configurations.putAll(output.configurations)
+    if (buildToolVersion == BazelRelease.FALLBACK_VERSION) {
+      buildToolVersion = output.buildToolVersion
+    }
   }
 
   fun clear() {

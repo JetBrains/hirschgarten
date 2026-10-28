@@ -62,7 +62,7 @@ class BepServer(
 
   private var startedEvent: TaskId? = null
   private var bspClientTestNotifier: BspClientTestNotifier? = null // Present for test commands
-  private val bepOutputBuilder = BepOutputBuilder(bazelPathsResolver)
+  private val bepOutputBuilder = BepOutputBuilder()
   private val buildProgressParser = BuildProgressParser()
   private val customBepEventHandlers: List<BepEventHandler>
 
@@ -223,6 +223,7 @@ class BepServer(
       bepOutputBuilder.storeNamedSet(
         event.id.namedSet.id,
         internedNamedSetOfFiles,
+        bazelPathsResolver,
       )
     }
   }
