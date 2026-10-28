@@ -23,6 +23,7 @@ import org.jetbrains.bazel.languages.projectview.ProjectView
 import org.jetbrains.bazel.languages.projectview.allowManualTargetsSync
 import org.jetbrains.bazel.languages.projectview.syncFlags
 import org.jetbrains.bazel.server.bep.BepOutput
+import org.jetbrains.bazel.server.bep.BepOutputBuilder
 import org.jetbrains.bazel.server.sync.ExecuteService
 import org.jetbrains.bazel.util.BazelRuleSet
 import org.jetbrains.bazel.util.BazelRuleSetProvider
@@ -41,7 +42,7 @@ data class BazelBspAspectsManagerResult(val bepOutput: BepOutput, val status: Ba
   fun merge(anotherResult: BazelBspAspectsManagerResult): BazelBspAspectsManagerResult = mergeAll(listOf(this, anotherResult))
 
   class Accumulator {
-    private val bepOutput = BepOutput.Accumulator()
+    private val bepOutput = BepOutputBuilder()
     private var status = BazelStatus.SUCCESS
 
     fun add(result: BazelBspAspectsManagerResult): Accumulator {
