@@ -86,6 +86,21 @@ class SourceFileCollectionTest {
   }
 
   @Test
+  fun `build keeps path outside the threshold root normalized`() {
+    val pkg = root.resolve("pkg")
+    val paths = listOf(
+      pkg.resolve("a.go"),
+      pkg.resolve("b.go"),
+      pkg.resolve("c.go"),
+      root.resolve("out/hardlink/pkg/mock.go"),
+    )
+
+    val set = SourceFileCollectionBuilder.build(relativeRoot = pkg, paths = paths)
+
+    set.getFiles().toList() shouldContainExactlyInAnyOrder paths
+  }
+
+  @Test
   fun `build marks relativeRoot itself as terminal`() {
     val set = SourceFileCollectionBuilder.build(relativeRoot = root, paths = listOf(root))
 

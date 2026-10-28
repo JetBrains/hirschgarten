@@ -4,7 +4,7 @@ import com.intellij.util.containers.Interner
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bsp.protocol.SourceFileCollection
 import java.nio.file.Path
-import kotlin.io.path.relativeToOrNull
+import kotlin.io.path.relativeTo
 
 /**
  * Traditional path trie paths under [relativizeRoot] share their common prefix through
@@ -112,7 +112,7 @@ object SourceFileCollectionBuilder {
     val root = TrieNode(segment = "")
     val externalPaths = mutableListOf<Path>()
     for (path in allPaths) {
-      val relativePath = if (effectiveRoot == null) null else path.relativeToOrNull(effectiveRoot)
+      val relativePath = if (effectiveRoot != null && path.startsWith(effectiveRoot)) path.relativeTo(effectiveRoot) else null
       if (relativePath == null) {
         externalPaths.add(path)
         continue
