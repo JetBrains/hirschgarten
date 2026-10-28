@@ -9,7 +9,8 @@ import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.languages.bazelrc.flags.Flag
 import org.jetbrains.bazel.languages.projectview.checker.ProjectViewProblem
-import org.jetbrains.bazel.languages.projectview.checker.ProjectViewValueChecker
+import org.jetbrains.bazel.languages.projectview.checker.ProjectViewChecker
+import org.jetbrains.bazel.languages.projectview.checker.projectViewChecker
 import org.jetbrains.bazel.languages.projectview.completion.FiletypeCompletionProvider
 import org.jetbrains.bazel.languages.projectview.completion.FlagCompletionProvider
 import org.jetbrains.bazel.languages.projectview.completion.SimpleCompletionProvider
@@ -24,7 +25,7 @@ import kotlin.io.path.exists
 @ApiStatus.Internal
 interface ProjectViewSectionType<T : Any> {
 
-  val valueChecker: ProjectViewValueChecker?
+  val valueChecker: ProjectViewChecker<String>?
   val completionProvider: CompletionProvider<CompletionParameters>?
   fun readFrom(values: List<String>): T?
 
@@ -85,7 +86,7 @@ interface ProjectViewSectionType<T : Any> {
 
     private fun <T : Any> scalar(
       read: (String) -> T?,
-      checker: ProjectViewValueChecker = scalarChecker(read),
+      checker: ProjectViewChecker<String> = scalarChecker(read),
       completionProvider: CompletionProvider<CompletionParameters>? = null,
     ): Scalar<T> = object : Scalar<T> {
 
@@ -108,8 +109,8 @@ fun <T : Any> ProjectViewPsiSection.read(type: ProjectViewSectionType<T>): T? =
 fun <T : Any> ProjectViewSectionType.Scalar<T>.excludable(): ProjectViewSectionType.Scalar<ExcludableValue<T>> {
   val type = this
   return object : ProjectViewSectionType.Scalar<ExcludableValue<T>> {
-    override val valueChecker = ProjectViewValueChecker { project, value, sink ->
-      type.valueChecker?.check(project, value.removePrefix("-"), sink)
+    override val valueChecker = ProjectViewChecker<String> { project, value ->
+      type.valueChecker?.check(project, value.removePrefix("-")).orEmpty()
     }
 
     override val completionProvider: CompletionProvider<CompletionParameters>?
@@ -129,24 +130,24 @@ fun <T : Any> ProjectViewSectionType.Scalar<T>.list(): ProjectViewSectionType<Li
 
     override val completionProvider: CompletionProvider<CompletionParameters>? = itemType.completionProvider
 
-    override val valueChecker: ProjectViewValueChecker? = itemType.valueChecker
+    override val valueChecker: ProjectViewChecker<String>? = itemType.valueChecker
 
     override fun readFrom(values: List<String>) = values.mapNotNull { itemType.readFrom(it) }
   }
 }
 
-private fun <T> scalarChecker(read: (String) -> T?) = ProjectViewValueChecker { _, subject, sink ->
+private fun <T> scalarChecker(read: (String) -> T?) = projectViewChecker<String> { _, subject ->
   if (read(subject) == null) {
     val problem = ProjectViewProblem(
       id = ProjectViewProblem.Id.InvalidValue,
       message = BazelProjectViewBundle.message("annotator.cannot.parse.value", subject),
       severity = ProjectViewProblem.Severity.Error,
     )
-    sink.report(problem)
+    yield(problem)
   }
 }
 
-private fun pathChecker(read: (String) -> Path?, existing: Boolean) = ProjectViewValueChecker { project, subject, sink ->
+private fun pathChecker(read: (String) -> Path?, existing: Boolean) = projectViewChecker<String> { project, subject ->
   val path = read(subject)
   if (path == null) {
     val problem = ProjectViewProblem(
@@ -154,11 +155,11 @@ private fun pathChecker(read: (String) -> Path?, existing: Boolean) = ProjectVie
       message = BazelProjectViewBundle.message("annotator.invalid.path.error"),
       severity = ProjectViewProblem.Severity.Error,
     )
-    sink.report(problem)
-    return@ProjectViewValueChecker
+    yield(problem)
+    return@projectViewChecker
   }
 
-  if (!existing) return@ProjectViewValueChecker
+  if (!existing) return@projectViewChecker
 
   val resolvedPath = when {
     path.isAbsolute -> path
@@ -170,22 +171,22 @@ private fun pathChecker(read: (String) -> Path?, existing: Boolean) = ProjectVie
       message = BazelProjectViewBundle.message("annotator.path.not.exists.error"),
       severity = ProjectViewProblem.Severity.Warning,
     )
-    sink.report(problem)
+    yield(problem)
   }
 }
 
-private fun <T> variantsChecker(read: (String) -> T?, variants: List<String>) = ProjectViewValueChecker { _, subject, sink ->
+private fun <T> variantsChecker(read: (String) -> T?, variants: List<String>) = projectViewChecker<String> { _, subject ->
   if (read(subject) == null) {
     val problem = ProjectViewProblem(
       id = ProjectViewProblem.Id.InvalidValue,
       message = BazelProjectViewBundle.message("annotator.unknown.variant.error", subject, variants.joinToString()),
       severity = ProjectViewProblem.Severity.Error,
     )
-    sink.report(problem)
+    yield(problem)
   }
 }
 
-private fun flagChecker(commands: Array<out String>) = ProjectViewValueChecker { _, subject, sink ->
+private fun flagChecker(commands: Array<out String>) = projectViewChecker<String> { _, subject ->
   val flag = Flag.byName(subject.takeWhile { it != '=' })
   if (flag == null) {
     val problem = ProjectViewProblem(
@@ -193,8 +194,8 @@ private fun flagChecker(commands: Array<out String>) = ProjectViewValueChecker {
       message = BazelProjectViewBundle.message("annotator.unknown.flag.error", subject),
       severity = ProjectViewProblem.Severity.Warning,
     )
-    sink.report(problem)
-    return@ProjectViewValueChecker
+    yield(problem)
+    return@projectViewChecker
   }
   if (commands.any { it !in flag.option.commands }) {
     val problem = ProjectViewProblem(
@@ -202,6 +203,6 @@ private fun flagChecker(commands: Array<out String>) = ProjectViewValueChecker {
       message = BazelProjectViewBundle.message("annotator.flag.not.allowed.here.error", subject, commands.contentToString()),
       severity = ProjectViewProblem.Severity.Warning,
     )
-    sink.report(problem)
+    yield(problem)
   }
 }
