@@ -14,7 +14,6 @@ import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.label.SingleTarget
 import org.jetbrains.bazel.label.assumeResolved
 import org.jetbrains.bsp.protocol.BuildTarget
-import java.util.concurrent.atomic.AtomicReferenceArray
 
 /**
  * Immutable [BuildTarget] graph, takes into account configurations [WorkspaceConfiguration]
@@ -163,14 +162,6 @@ internal class WorkspaceTargetGraphImpl internal constructor(
   private val id2RelaxedAllSuccessors: Array<IntArray>,
 ) : WorkspaceTargetGraph {
 
-  // recreated lazily: Kryo field serialization skips transient fields and instantiates
-  // the class without running field initializers
-  @field:Transient
-  private var id2TransitiveTargetCache: AtomicReferenceArray<IntArray?>? = AtomicReferenceArray(id2WorkspaceTarget.size)
-
-  private fun transitiveTargetCache(): AtomicReferenceArray<IntArray?> =
-    id2TransitiveTargetCache ?: AtomicReferenceArray<IntArray?>(id2WorkspaceTarget.size).also { id2TransitiveTargetCache = it }
-
   // no backing field: a stored Sequence would end up in the serialized form
   override val allTargets: Sequence<WorkspaceTargetKey>
     get() = id2WorkspaceTarget.asSequence()
@@ -285,9 +276,8 @@ internal class WorkspaceTargetGraphImpl internal constructor(
     if (targetId == INVALID_TARGET_ID) {
       return emptySequence()
     }
-    return computeTransitiveSuccessorIds(targetId, useRelaxedDependencyExpansion)
-      .asSequence()
-      .map { transitiveSuccId -> id2WorkspaceTarget[transitiveSuccId] }
+    val compileSuccessors = if (useRelaxedDependencyExpansion) id2RelaxedCompileSuccessors else id2CompileSuccessors
+    return visitTransitiveSuccessors(compileSuccessors[targetId], compileSuccessors)
   }
 
   override fun findAllTransitiveSuccessorsWithoutRootTargets(
@@ -300,67 +290,30 @@ internal class WorkspaceTargetGraphImpl internal constructor(
     }
     val allSuccessors = if (useRelaxedDependencyExpansion) id2RelaxedAllSuccessors else id2AllSuccessors
     val compileSuccessors = if (useRelaxedDependencyExpansion) id2RelaxedCompileSuccessors else id2CompileSuccessors
-    return sequence {
-      val visited = IntOpenHashSet()
-      val toVisit = ArrayDeque<Int>()
-      for (successorId in allSuccessors[targetId]) {
-        if (!rootTargetIds.contains(successorId) && visited.add(successorId)) {
+    val directSuccessorIds = allSuccessors[targetId].filter { it !in rootTargetIds }.toIntArray()
+    return visitTransitiveSuccessors(directSuccessorIds, compileSuccessors)
+  }
+
+  private fun visitTransitiveSuccessors(
+    directSuccessorIds: IntArray,
+    compileSuccessors: Array<IntArray>,
+  ): Sequence<WorkspaceTargetKey> = sequence {
+    val visited = IntOpenHashSet()
+    val toVisit = ArrayDeque<Int>()
+    for (successorId in directSuccessorIds) {
+      if (visited.add(successorId)) {
+        toVisit.addLast(successorId)
+      }
+    }
+    while (toVisit.isNotEmpty()) {
+      val currentId = toVisit.removeFirst()
+      yield(id2WorkspaceTarget[currentId])
+      for (successorId in compileSuccessors[currentId]) {
+        if (visited.add(successorId)) {
           toVisit.addLast(successorId)
         }
       }
-      while (toVisit.isNotEmpty()) {
-        val currentId = toVisit.removeFirst()
-        yield(id2WorkspaceTarget[currentId])
-        for (successorId in compileSuccessors[currentId]) {
-          if (visited.add(successorId)) {
-            toVisit.addLast(successorId)
-          }
-        }
-      }
     }
-  }
-
-  private fun computeTransitiveSuccessorIds(targetId: Int, useRelaxedDependencyExpansion: Boolean): IntArray =
-    if (useRelaxedDependencyExpansion) {
-      // TODO: cache relaxed transitive closures if profiling shows it matters
-      computeTransitiveSuccessorSlow(targetId, id2RelaxedCompileSuccessors)
-    }
-    else {
-      findAllTransitiveSuccessorIds(cache = transitiveTargetCache(), targetId = targetId)
-    }
-
-  private fun findAllTransitiveSuccessorIds(cache: AtomicReferenceArray<IntArray?>, targetId: Int): IntArray {
-    val cached = cache.get(targetId)
-    if (cached != null) {
-      return cached
-    }
-    val visited = IntOpenHashSet()
-    for (succId in id2CompileSuccessors[targetId]) {
-      if (!visited.add(succId)) {
-        continue
-      }
-      for (succDepId in findAllTransitiveSuccessorIds(cache, succId)) {
-        visited.add(succDepId)
-      }
-    }
-    val baked = visited.toIntArray()
-    cache.compareAndSet(targetId, null, baked)
-    return baked
-  }
-
-  private fun computeTransitiveSuccessorSlow(targetId: Int, adjacency: Array<IntArray>): IntArray {
-    val visited = IntOpenHashSet()
-    val stack = ArrayDeque<Int>()
-    stack.addLast(targetId)
-    while (stack.isNotEmpty()) {
-      val currentId = stack.removeLast()
-      for (succId in adjacency[currentId]) {
-        if (visited.add(succId)) {
-          stack.addLast(succId)
-        }
-      }
-    }
-    return visited.toIntArray()
   }
 
 }

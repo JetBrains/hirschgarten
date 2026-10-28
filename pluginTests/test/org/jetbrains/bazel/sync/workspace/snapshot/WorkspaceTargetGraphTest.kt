@@ -85,7 +85,7 @@ class WorkspaceTargetGraphTest {
     }
 
     @Test
-    fun `should return same result when called twice (caching)`() {
+    fun `should return same result when called twice`() {
       val b = workspaceTarget("//b")
       val c = workspaceTarget("//c")
       val a = workspaceTarget("//A", compileDeps = listOf("//b" to null, "//c" to null))
