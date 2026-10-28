@@ -46,9 +46,12 @@ import org.jetbrains.bsp.protocol.TaskFinishParams
 import org.jetbrains.bsp.protocol.TaskId
 import org.jetbrains.bsp.protocol.TaskStartParams
 import org.jetbrains.bsp.protocol.TestStatus
+import java.io.File
 import java.io.IOException
 import java.nio.file.FileSystemNotFoundException
 import java.nio.file.Files
+import java.nio.file.Path
+import kotlin.io.path.Path
 
 @ApiStatus.Internal
 class BepServer(
@@ -222,10 +225,25 @@ class BepServer(
       val internedNamedSetOfFiles = event.namedSetOfFiles.intern()
       bepOutputBuilder.storeNamedSet(
         event.id.namedSet.id,
-        internedNamedSetOfFiles,
-        bazelPathsResolver,
+        internedNamedSetOfFiles.toTextProtoDepSet(),
       )
     }
+  }
+
+  private fun NamedSetOfFiles.toTextProtoDepSet(): TextProtoDepSet =
+    TextProtoDepSet(
+      files =
+        filesList
+          .filter { it.name.endsWith(Constants.ASPECT_INFO_OUTPUT_EXTENSION) }
+          .map { it.toLocalPath() },
+      children = fileSetsList.map { it.id },
+    )
+
+  private fun BuildEventStreamProtos.File.toLocalPath(): Path {
+    val mergedPathPrefix = Path(pathPrefixList.joinToString(File.separator))
+    val bazelOutputRelativePath = mergedPathPrefix.resolve(name)
+
+    return bazelPathsResolver.resolveOutput(bazelOutputRelativePath)
   }
 
   /**
