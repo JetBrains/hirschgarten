@@ -41,35 +41,6 @@ jvm_library(
         "@community//platform/execution-impl",
     ],
 )
-
-jvm_library(
-    name = "bazel-java-profiler_test_lib",
-    testonly = True,
-    srcs = glob(
-        [],
-        allow_empty = True,
-    ),
-    module_name = "intellij.bazel.java.profiler",
-    visibility = ["//visibility:public"],
-    runtime_deps = [
-        # do not sort,
-        ":bazel-java-profiler",
-        "//plugins/profiler/ultimate:ultimate_test_lib",
-        "//plugins/profiler/common:common_test_lib",
-        "@community//platform/util:util_test_lib",
-        "@community//platform/execution:execution_test_lib",
-        "@community//java/execution/impl:impl_test_lib",
-        "@community//platform/ide-core:ide-core_test_lib",
-        "//plugins/bazel/intellij.bazel.core:core_test_lib",
-        "//plugins/bazel/java/intellij.bazel.java.core:bazel-java-core_test_lib",
-        "@community//platform/smRunner:smRunner_test_lib",
-        "@community//platform/testRunner:testRunner_test_lib",
-        "@community//platform/platform-util-io:ide-util-io_test_lib",
-        "@community//platform/core-api:core_test_lib",
-        "//plugins/bazel/intellij.bazel.commons:commons_test_lib",
-        "@community//platform/execution-impl:execution-impl_test_lib",
-    ],
-)
 ### auto-generated section `build intellij.bazel.java.profiler` end
 
 ### auto-generated section `iml intellij.bazel.java.profiler` start

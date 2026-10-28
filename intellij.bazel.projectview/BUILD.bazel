@@ -45,39 +45,6 @@ jvm_library(
         "@community//platform/util:util-ui",
     ],
 )
-
-jvm_library(
-    name = "projectview_test_lib",
-    testonly = True,
-    srcs = glob(
-        [],
-        allow_empty = True,
-    ),
-    module_name = "intellij.bazel.projectview",
-    visibility = ["//visibility:public"],
-    runtime_deps = [
-        # do not sort,
-        ":projectview",
-        "@community//libraries/kotlinx/collections-immutable:libraries-kotlinx-collections-immutable_test_lib",
-        "@community//libraries/jetbrains/annotations:annotations_test_lib",
-        "//plugins/bazel/intellij.bazel.commons:commons_test_lib",
-        "@community//platform/core-api:core_test_lib",
-        "@community//platform/platform-api:ide_test_lib",
-        "@community//platform/ide-core-impl:ide-core-impl_test_lib",
-        "@community//platform/ide-core:ide-core_test_lib",
-        "@community//platform/platform-impl:ide-impl_test_lib",
-        "@community//platform/lang-api:lang_test_lib",
-        "@community//platform/analysis-api:analysis_test_lib",
-        "@community//platform/lang-impl:lang-impl_test_lib",
-        "@community//platform/buildView:buildView_test_lib",
-        "@community//platform/markdown-utils:markdown-utils_test_lib",
-        "@community//platform/code-style-api:codeStyle_test_lib",
-        "@community//platform/core-ui:core-ui_test_lib",
-        "@community//platform/core-impl:core-impl_test_lib",
-        "@community//platform/editor-ui-api:editor-ui_test_lib",
-        "@community//platform/util:util-ui_test_lib",
-    ],
-)
 ### auto-generated section `build intellij.bazel.projectview` end
 
 ### auto-generated section `iml intellij.bazel.projectview` start

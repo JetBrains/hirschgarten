@@ -33,27 +33,6 @@ jvm_library(
         "@community//plugins/sh/core",
     ],
 )
-
-jvm_library(
-    name = "bazel-sh_test_lib",
-    testonly = True,
-    srcs = glob(
-        [],
-        allow_empty = True,
-    ),
-    module_name = "intellij.bazel.sh",
-    visibility = ["//visibility:public"],
-    runtime_deps = [
-        # do not sort,
-        ":bazel-sh",
-        "//plugins/bazel/intellij.bazel.core:core_test_lib",
-        "//plugins/bazel/intellij.bazel.languages:languages_test_lib",
-        "@community//platform/util:util_test_lib",
-        "@community//platform/core-impl:core-impl_test_lib",
-        "@community//platform/core-api:core_test_lib",
-        "@community//plugins/sh/core:core_test_lib",
-    ],
-)
 ### auto-generated section `build intellij.bazel.sh` end
 
 ### auto-generated section `iml intellij.bazel.sh` start

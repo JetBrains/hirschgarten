@@ -47,39 +47,6 @@ jvm_library(
         "//plugins/bazel/aspect-sdk:libraries-bazel-aspect-sdk",
     ],
 )
-
-jvm_library(
-    name = "bazel-clion-common_test_lib",
-    testonly = True,
-    srcs = glob(
-        [],
-        allow_empty = True,
-    ),
-    module_name = "intellij.bazel.clion.common",
-    visibility = ["//visibility:public"],
-    runtime_deps = [
-        # do not sort,
-        ":bazel-clion-common",
-        "//plugins/bazel/intellij.bazel.core:core_test_lib",
-        "//plugins/bazel/intellij.bazel.commons:commons_test_lib",
-        "//plugins/bazel/intellij.bazel.backend:backend_test_lib",
-        "@community//platform/core-api:core_test_lib",
-        "@community//platform/lang-api:lang_test_lib",
-        "@community//platform/buildView:buildView_test_lib",
-        "@community//platform/analysis-api:analysis_test_lib",
-        "@community//platform/projectModel-api:projectModel_test_lib",
-        "@community//platform/workspace/storage:storage_test_lib",
-        "@community//platform/backend/workspace:workspace_test_lib",
-        "@community//platform/platform-util-io:ide-util-io_test_lib",
-        "//CIDR/clion:clion_test_lib",
-        "//CIDR/cidr-projectModel:cidr-projectModel_test_lib",
-        "//CIDR/cidr-workspaceModel:cidr-workspaceModel_test_lib",
-        "//CIDR/cidr-psi-base:cidr-psi-base_test_lib",
-        "//CIDR/cidr-util/execution:execution_test_lib",
-        "@community//platform/workspace/jps:jps_test_lib",
-        "//plugins/bazel/aspect-sdk:libraries-bazel-aspect-sdk_test_lib",
-    ],
-)
 ### auto-generated section `build intellij.bazel.clion.common` end
 
 ### auto-generated section `iml intellij.bazel.clion.common` start

@@ -36,30 +36,6 @@ jvm_library(
         "@community//platform/core-impl",
     ],
 )
-
-jvm_library(
-    name = "bazel-kotlin-coverage_test_lib",
-    testonly = True,
-    srcs = glob(
-        [],
-        allow_empty = True,
-    ),
-    module_name = "intellij.bazel.kotlin.coverage",
-    visibility = ["//visibility:public"],
-    runtime_deps = [
-        # do not sort,
-        ":bazel-kotlin-coverage",
-        "@community//libraries/kotlinc/kotlin-compiler-common:libraries-kotlinc-kotlin-compiler-common_test_lib",
-        "@community//libraries/kotlinc/analysis-api-platform-interface:libraries-kotlinc-analysis-api-platform-interface_test_lib",
-        "//plugins/bazel/misc/intellij.bazel.coverage:bazel-coverage_test_lib",
-        "@community//platform/core-api:core_test_lib",
-        "@community//plugins/kotlin/base/plugin:plugin_test_lib",
-        "//plugins/bazel/java/intellij.bazel.java.coverage:bazel-java-coverage_test_lib",
-        "@community//plugins/kotlin/base/psi:psi_test_lib",
-        "@community//platform/util:util_test_lib",
-        "@community//platform/core-impl:core-impl_test_lib",
-    ],
-)
 ### auto-generated section `build intellij.bazel.kotlin.coverage` end
 
 ### auto-generated section `iml intellij.bazel.kotlin.coverage` start

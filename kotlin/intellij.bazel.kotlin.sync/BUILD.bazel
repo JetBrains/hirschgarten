@@ -41,35 +41,6 @@ jvm_library(
         "@community//plugins/kotlin/base/project-structure",
     ],
 )
-
-jvm_library(
-    name = "bazel-kotlin-sync_test_lib",
-    testonly = True,
-    srcs = glob(
-        [],
-        allow_empty = True,
-    ),
-    module_name = "intellij.bazel.kotlin.sync",
-    visibility = ["//visibility:public"],
-    runtime_deps = [
-        # do not sort,
-        ":bazel-kotlin-sync",
-        "@community//libraries/kotlinc/kotlin-compiler-common:libraries-kotlinc-kotlin-compiler-common_test_lib",
-        "@community//libraries/kotlinc/kotlin-jps-common:libraries-kotlinc-kotlin-jps-common_test_lib",
-        "//plugins/bazel/intellij.bazel.commons:commons_test_lib",
-        "//plugins/bazel/intellij.bazel.backend:backend_test_lib",
-        "//plugins/bazel/java/intellij.bazel.java.sync:bazel-java-sync_test_lib",
-        "@community//platform/core-api:core_test_lib",
-        "@community//platform/platform-api:ide_test_lib",
-        "@community//plugins/kotlin/base/facet:facet_test_lib",
-        "@community//plugins/kotlin/base/plugin:plugin_test_lib",
-        "@community//platform/workspace/storage:storage_test_lib",
-        "@community//platform/backend/workspace:workspace_test_lib",
-        "@community//platform/workspace/jps:jps_test_lib",
-        "@community//java/openapi:java_test_lib",
-        "@community//plugins/kotlin/base/project-structure:project-structure_test_lib",
-    ],
-)
 ### auto-generated section `build intellij.bazel.kotlin.sync` end
 
 ### auto-generated section `iml intellij.bazel.kotlin.sync` start
