@@ -12,6 +12,7 @@ import com.intellij.psi.search.GlobalSearchScope
 import com.intellij.psi.util.QualifiedName
 import com.jetbrains.python.PyNames
 import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.ensureActive
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.annotations.TestOnly
@@ -137,42 +138,38 @@ internal class PythonResolveIndexService(private val project: Project) {
         .mapNotNull { it.relativeToOrNull(rootDir) }
         .toList()
 
-    val (importsByTarget, sharedSourcesByImports, sharedIndexesByImports) =
-      BazelCoroutineService.getInstance(project).startAsync {
-        val importsByTarget = pythonTargets.map { PythonImportUtils.assembleExplicitImportsPaths(it) }
-        val workspaceImports = importsByTarget.indices
-          .filter { pythonTargets[it].isWorkspace(snapshot.repoMapping) && importsByTarget[it].isNotEmpty() }
-          .map { importsByTarget[it] }
-          .distinct()
-        val importRoots = workspaceImports.flatten().toSet()
-        val sourcesByImportRoot = hashMapOf<Path, MutableList<Path>>()
-        if (importRoots.isNotEmpty()) {
-          pythonTargets.asSequence()
-            .flatMap { workspaceRelativePythonSources(it) }
-            .distinct()
-            .forEach { source ->
-              ensureActive()
-              for (length in 1..source.nameCount) {
-                val prefix = source.subpath(0, length)
-                if (prefix in importRoots) {
-                  sourcesByImportRoot.getOrPut(prefix) { mutableListOf() }.add(source)
-                }
-              }
+    val importsByTarget = pythonTargets.map { PythonImportUtils.assembleExplicitImportsPaths(it) }
+    val workspaceImports = importsByTarget.indices
+      .filter { pythonTargets[it].isWorkspace(snapshot.repoMapping) && importsByTarget[it].isNotEmpty() }
+      .map { importsByTarget[it] }
+      .distinct()
+    val importRoots = workspaceImports.flatten().toSet()
+    val sourcesByImportRoot = hashMapOf<Path, MutableList<Path>>()
+    if (importRoots.isNotEmpty()) {
+      pythonTargets.asSequence()
+        .flatMap { workspaceRelativePythonSources(it) }
+        .distinct()
+        .forEach { source ->
+          currentCoroutineContext().ensureActive()
+          for (length in 1..source.nameCount) {
+            val prefix = source.subpath(0, length)
+            if (prefix in importRoots) {
+              sourcesByImportRoot.getOrPut(prefix) { mutableListOf() }.add(source)
             }
+          }
         }
-        val sharedSourcesByImports = workspaceImports.associateWith { imports ->
-          imports.flatMap { sourcesByImportRoot[it].orEmpty() }
-        }
-        val sharedIndexesByImports = sharedSourcesByImports.mapValues { (imports, sources) ->
-          ensureActive()
-          if (sources.isEmpty()) null
-          else expandPathsToQualifiedNames(
-            PythonImportUtils.assembleQualifiedNameImportPaths(imports),
-            sources.associateWith { rootDir.resolve(it) },
-          )
-        }
-        Triple(importsByTarget, sharedSourcesByImports, sharedIndexesByImports)
-      }.await()
+    }
+    val sharedSourcesByImports = workspaceImports.associateWith { imports ->
+      imports.flatMap { sourcesByImportRoot[it].orEmpty() }
+    }
+    val sharedIndexesByImports = sharedSourcesByImports.mapValues { (imports, sources) ->
+      currentCoroutineContext().ensureActive()
+      if (sources.isEmpty()) null
+      else expandPathsToQualifiedNames(
+        PythonImportUtils.assembleQualifiedNameImportPaths(imports),
+        sources.associateWith { rootDir.resolve(it) },
+      )
+    }
 
     val targetContributions: List<IndexContribution> = pythonTargets.mapIndexed { index, target ->
       BazelCoroutineService.getInstance(project).startAsync {
