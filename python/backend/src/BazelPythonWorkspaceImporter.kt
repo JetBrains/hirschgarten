@@ -166,7 +166,6 @@ internal class BazelPythonWorkspaceImporter(val context: WorkspaceImporterContex
         .filter { it in allPythonTargets }
         .associateWith { workspaceTargetKey ->
           snapshot.targetGraph.findAllTransitiveSuccessorsWithoutRootTargets(workspaceTargetKey)
-            .distinct()
             .mapNotNull { snapshot.targets.findTargetByKey(it, TargetLoadOptions.ALL) }
             .filterBuildTarget<PythonBuildTarget>()
             .filter { it.second.nonLocalExternalSources(snapshot.repoMapping).any() }
