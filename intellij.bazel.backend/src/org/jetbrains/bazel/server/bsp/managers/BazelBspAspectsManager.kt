@@ -214,6 +214,8 @@ class BazelBspAspectsManager(
         BazelBspAspectsManagerResult(bepOutput, it.processResult.bazelStatus)
       }
   }
-
-  private fun resolveAspectLabel(aspect: String): String = "//${Constants.DOT_BAZELBSP_DIR_NAME}/$aspect"
 }
+
+/** Returns the label of an aspect deployed to the `.bazelbsp` directory. */
+@ApiStatus.Internal
+fun resolveAspectLabel(aspect: String): String = "//${Constants.DOT_BAZELBSP_DIR_NAME}/$aspect"
