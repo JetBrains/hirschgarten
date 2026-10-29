@@ -52,6 +52,7 @@ private fun loadCompilerSettings(storage: EntityStorage): Map<WorkspaceTargetKey
 private fun compilerKindById(id: String): OCCompilerKind = when (id) {
   OCCompilerId.CLANG.toString() -> CcCompilerKind.CLANG
   OCCompilerId.GCC.toString() -> CcCompilerKind.GCC
+  OCCompilerId.APPLE_CLANG.toString() -> CcCompilerKind.APPLE_CLANG
   else -> UnknownCompilerKind
 }
 
