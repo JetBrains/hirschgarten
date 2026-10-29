@@ -18,6 +18,8 @@ interface CompiledSourceCodeInsideJarExcludeEntityBuilder : WorkspaceEntityBuild
   var relativePathsInsideJarToExclude: MutableSet<String>
   var librariesFromInternalTargetsUrls: MutableSet<String>
   var excludeId: CompiledSourceCodeInsideJarExcludeId
+  val symbolicId: CompiledSourceCodeInsideJarExcludeId
+    get() = excludeId
 }
 
 internal object CompiledSourceCodeInsideJarExcludeEntityType :

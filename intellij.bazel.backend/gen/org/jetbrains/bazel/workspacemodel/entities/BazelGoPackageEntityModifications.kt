@@ -20,6 +20,8 @@ interface BazelGoPackageEntityBuilder : WorkspaceEntityBuilder<BazelGoPackageEnt
   var importPath: String
   var sources: MutableList<VirtualFileUrl>
   var directDepsImportPaths: MutableSet<String>
+  val symbolicId: ImportPathId
+    get() = ImportPathId(importPath)
 }
 
 internal object BazelGoPackageEntityType : EntityType<BazelGoPackageEntity, BazelGoPackageEntityBuilder>() {

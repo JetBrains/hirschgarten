@@ -16,6 +16,8 @@ interface BazelGoTargetEntityBuilder : WorkspaceEntityBuilder<BazelGoTargetEntit
   override var entitySource: EntitySource
   var _targetKey: WorkspaceModelTargetKey
   var importPath: ImportPathId
+  val symbolicId: BazelGoTargetEntityId
+    get() = BazelGoTargetEntityId(_targetKey)
 }
 
 internal object BazelGoTargetEntityType : EntityType<BazelGoTargetEntity, BazelGoTargetEntityBuilder>() {
