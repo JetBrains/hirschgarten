@@ -9,7 +9,6 @@ import org.jetbrains.annotations.ApiStatus
 
 @ApiStatus.Internal
 interface JvmBinaryJarsEntity : WorkspaceEntity {
-  @IndexVfu
   val jars: List<VirtualFileUrl>
 
   @Parent

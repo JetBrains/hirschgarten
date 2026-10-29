@@ -120,10 +120,6 @@ internal class ScalaAddendumEntityImpl(private val dataSource: ScalaAddendumEnti
       updateChildToParentReferences(parents)
     }
 
-    override fun index() {
-      index(this, "sdkClasspaths", this.sdkClasspaths)
-    }
-
     override var entitySource: EntitySource
       get() = getEntityData().entitySource
       set(value) {
@@ -159,9 +155,6 @@ internal class ScalaAddendumEntityImpl(private val dataSource: ScalaAddendumEnti
         scalacOptionsUpdater.invoke(value)
       }
     private val sdkClasspathsUpdater: (value: List<VirtualFileUrl>) -> Unit = { value ->
-      if (diff != null) {
-        index(this, "sdkClasspaths", value)
-      }
       changedProperty.add("sdkClasspaths")
     }
     override var sdkClasspaths: MutableList<VirtualFileUrl>

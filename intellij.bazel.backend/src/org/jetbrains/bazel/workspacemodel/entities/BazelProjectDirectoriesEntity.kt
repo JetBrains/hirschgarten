@@ -7,7 +7,6 @@ import org.jetbrains.annotations.ApiStatus
 
 @ApiStatus.Internal
 interface BazelProjectDirectoriesEntity : WorkspaceEntity {
-  @IndexVfu
   public val projectRoot: VirtualFileUrl
   public val includedRoots: List<VirtualFileUrl>
   public val excludedRoots: List<VirtualFileUrl>

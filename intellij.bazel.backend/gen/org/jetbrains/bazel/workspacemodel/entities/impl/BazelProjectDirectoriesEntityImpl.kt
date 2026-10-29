@@ -140,10 +140,6 @@ internal class BazelProjectDirectoriesEntityImpl(private val dataSource: BazelPr
       updateChildToParentReferences(parents)
     }
 
-    override fun index() {
-      index(this, "projectRoot", this.projectRoot)
-    }
-
     override var entitySource: EntitySource
       get() = getEntityData().entitySource
       set(value) {
@@ -157,10 +153,6 @@ internal class BazelProjectDirectoriesEntityImpl(private val dataSource: BazelPr
         checkModificationAllowed()
         getEntityData(true).projectRoot = value
         changedProperty.add("projectRoot")
-        val _diff = diff
-        if (_diff != null) {
-          index(this, "projectRoot", value)
-        }
       }
     private val includedRootsUpdater: (value: List<VirtualFileUrl>) -> Unit = { value ->
       changedProperty.add("includedRoots")

@@ -11,7 +11,6 @@ import org.jetbrains.annotations.ApiStatus
 interface ScalaAddendumEntity : WorkspaceEntity {
   val compilerVersion: String
   val scalacOptions: List<String>
-  @IndexVfu
   val sdkClasspaths: List<VirtualFileUrl>
 
   @Parent
