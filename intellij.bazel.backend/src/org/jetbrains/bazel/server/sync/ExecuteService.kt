@@ -185,6 +185,7 @@ class ExecuteService(
       statusCode = result.processResult.bazelStatus,
       taskId = params.taskId,
       stdout = if (params.captureStdout) result.processResult.stdout.decodeToString() else null,
+      infoFiles = result.bepOutput.filesByInfoOutputGroup(),
     )
   }
 
