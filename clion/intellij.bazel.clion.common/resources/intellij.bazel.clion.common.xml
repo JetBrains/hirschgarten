@@ -47,6 +47,7 @@
       implementation="org.jetbrains.bazel.clion.workspace.CcDirectoryBasedChooser"
       order="after com.jetbrains.cidr.lang.workspace.RunConfigurationBasedChooser, before com.jetbrains.cidr.lang.workspace.ClosestConfigurationBasedChooser"
     />
+    <projectModel.resolveConfigurationDisplayNameProvider implementation="org.jetbrains.bazel.clion.workspace.CcResolveConfigurationDisplayNameProvider"/>
   </extensions>
 
 </idea-plugin>

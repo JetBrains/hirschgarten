@@ -11,6 +11,7 @@ import org.jetbrains.bazel.clion.BazelCLionCommonBundle
 import org.jetbrains.bazel.clion.sync.CcBuildTarget
 import org.jetbrains.bazel.commons.getLocalRepositories
 import org.jetbrains.bazel.sync.workspace.persistence.TargetLoadOptions
+import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceConfiguration
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceConfigurationId
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
 import org.jetbrains.bsp.protocol.OutputLocationCollection
@@ -109,17 +110,23 @@ private fun computeDisplayName(targets: Collection<WorkspaceTargetKey>): String 
   val minTargetKey = targets.minBy { it.label }
 
   return buildString {
-    append(minTargetKey.label)
-    minTargetKey.configuration.shortChecksum?.let { checksum ->
-      append(" (")
-      ctx.snapshot.configurations[minTargetKey.configuration]?.summary?.mnemonic?.takeIf { it.isNotBlank() }?.let {
-        append(it).append(' ')
-      }
-      append(checksum).append(')')
-    }
+    append(minTargetKey.displayName(ctx.snapshot.configurations))
 
     if (targets.size > 1) {
       append(BazelCLionCommonBundle.message("cc.resolve.configuration.other.targets", targets.size - 1))
+    }
+  }
+}
+
+internal fun WorkspaceTargetKey.displayName(configurations: Map<WorkspaceConfigurationId, WorkspaceConfiguration>): String {
+  return buildString {
+    append(label)
+    configuration.shortChecksum?.let { checksum ->
+      append(" (")
+      configurations[configuration]?.summary?.mnemonic?.takeIf { it.isNotBlank() }?.let {
+        append(it).append(' ')
+      }
+      append(checksum).append(')')
     }
   }
 }
