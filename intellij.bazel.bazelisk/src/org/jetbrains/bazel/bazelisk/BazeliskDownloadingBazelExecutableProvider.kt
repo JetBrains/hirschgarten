@@ -11,6 +11,7 @@ import com.intellij.openapi.util.io.NioFiles
 import com.intellij.util.io.HttpRequests
 import com.intellij.util.system.CpuArch
 import com.intellij.util.system.OS
+import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.commons.constants.Constants
 import org.jetbrains.bazel.sync.BazelEnvironmentService
 import org.jetbrains.bazel.sync.environment.BazelApplicationContextService
@@ -52,10 +53,14 @@ internal class BazeliskDownloadingBazelExecutableProvider : BazelExecutableProvi
    */
   private fun readBazeliskVersion(workspaceRoot: Path): String? {
     val bazeliskVersionFile = workspaceRoot.resolve(Constants.BAZELISK_VERSION_FILE_NAME)
-    return runCatching { bazeliskVersionFile.readText() }
+    val version = runCatching { bazeliskVersionFile.readText() }
       .getOrNull()
       ?.trim()
       ?.takeIf { it.isNotEmpty() }
+      ?: return null
+    if (!isValidBazeliskVersion(version))
+      error("Invalid bazelisk version in $bazeliskVersionFile: '$version'")
+    return version
   }
 
   private fun downloadBazelisk(bazeliskVersion: String?): Path? {
@@ -161,3 +166,13 @@ internal class BazeliskDownloadingBazelExecutableProvider : BazelExecutableProvi
     return "$base$suffix".takeIf { OS.CURRENT != OS.Windows } ?: "$base$suffix.exe"
   }
 }
+
+private val BAZELISK_VERSION_REGEX = Regex("""\d+\.\d+\.\d+(-[0-9A-Za-z]+(\.[0-9A-Za-z]+)*)?""")
+
+/**
+ * Returns `true` if [version] is a release version such as `1.26.0` or `1.26.0-rc.1`.
+ * The plugin puts the version into the download URL and into the cache file name.
+ * Thus the version must not contain a path separator or a `..` segment.
+ */
+@ApiStatus.Internal
+fun isValidBazeliskVersion(version: String): Boolean = BAZELISK_VERSION_REGEX.matches(version)
