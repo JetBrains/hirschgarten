@@ -34,13 +34,14 @@ open class StarlarkFile(viewProvider: FileViewProvider) :
       .filter { it.isRuleTarget() }
 
   fun findTargetRule(targetName: String): StarlarkCallExpression? {
-    val rulesByName = CachedValuesManager.getCachedValue(this) {
+    val file = this
+    val rulesByName = CachedValuesManager.getCachedValue(file) {
       val rulesByName = HashMap<String, StarlarkCallExpression>()
-      for (rule in getTargetRules()) {
+      for (rule in file.getTargetRules()) {
         val name = rule.getNameAttributeValue() ?: continue
         rulesByName.putIfAbsent(name, rule)
       }
-      CachedValueProvider.Result.create(rulesByName, this)
+      CachedValueProvider.Result.create(rulesByName, file)
     }
     return rulesByName[targetName]
   }
