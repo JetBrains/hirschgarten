@@ -1,5 +1,6 @@
 package org.jetbrains.bazel.server.connection
 
+import com.intellij.ide.trustedProjects.TrustedProjects
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import org.jetbrains.bazel.bazelrunner.BazelInfoResolver
@@ -7,6 +8,7 @@ import org.jetbrains.bazel.bazelrunner.BazelProcessLauncherProvider
 import org.jetbrains.bazel.bazelrunner.BazelRunner
 import org.jetbrains.bazel.commons.BazelPathsResolver
 import org.jetbrains.bazel.config.BazelFeatureFlags
+import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.install.EnvironmentCreator
 import org.jetbrains.bazel.languages.bazelversion.psi.BazelVersionLiteral
@@ -34,9 +36,7 @@ import java.util.concurrent.atomic.AtomicReference
 
 internal class DefaultBazelServerConnection(private val project: Project) : BazelServerConnection {
   private val workspaceRoot = project.rootDir.toNioPath()
-  private val environmentCreator = EnvironmentCreator(workspaceRoot).also {
-    it.create()
-  }
+  private val environmentCreator = EnvironmentCreator(workspaceRoot)
 
   data class ServerWithVersionLiteral(val server: BazelServerFacadeImpl?, val versionLiteral: BazelVersionLiteral?)
 
@@ -47,6 +47,9 @@ internal class DefaultBazelServerConnection(private val project: Project) : Baze
   }
 
   private suspend fun getServer(taskId: TaskId?): BazelServerFacadeImpl {
+    if (!TrustedProjects.isProjectTrusted(project))
+      error(BazelPluginBundle.message("project.untrusted.bazel.not.run", project.name))
+
     // ensure `.bazelbsp` directory exists and functions
     environmentCreator.create()
 
