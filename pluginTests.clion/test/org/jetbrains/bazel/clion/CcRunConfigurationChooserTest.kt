@@ -31,7 +31,7 @@ import org.junit.jupiter.api.Test
 
 @BazelTestApplication
 class CcRunConfigurationChooserTest {
-  private val testBazel by testBazelProjectFixture()
+  private val testBazel by testBazelProjectFixture(openAfterCreation = false)
   private val project get() = testBazel.project
 
   private val targets: CcProjectBuilder.() -> Unit = {
