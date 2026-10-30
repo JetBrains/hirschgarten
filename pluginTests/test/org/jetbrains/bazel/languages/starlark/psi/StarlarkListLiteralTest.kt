@@ -1,16 +1,16 @@
 package org.jetbrains.bazel.languages.starlark.psi
 
+import com.intellij.openapi.application.runReadActionBlocking
 import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.psi.util.PsiTreeUtil
 import io.kotest.matchers.shouldBe
 import org.jetbrains.bazel.languages.starlark.fixtures.StarlarkPsiTestCase
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkListLiteralExpression
 import org.jetbrains.bazel.languages.starlark.psi.statements.StarlarkExpressionStatement
-import org.junit.Test
-import org.junit.runner.RunWith
-import org.junit.runners.JUnit4
+import org.jetbrains.bazel.test.framework.BazelTestApplication
+import org.junit.jupiter.api.Test
 
-@RunWith(JUnit4::class)
+@BazelTestApplication
 class StarlarkListLiteralTest : StarlarkPsiTestCase() {
   @Test
   fun `should append string at the end of list`() {
@@ -59,7 +59,7 @@ class StarlarkListLiteralTest : StarlarkPsiTestCase() {
     val list = getLists().last()
     val expected = listOf("\"first\"", "\"second\"")
     // when
-    val elements = list.getElements().map { it.text }
+    val elements = runReadActionBlocking { list.getElements().map { it.text } }
     // then
     elements shouldBe expected
   }
@@ -69,17 +69,19 @@ class StarlarkListLiteralTest : StarlarkPsiTestCase() {
     val initial = lists.first()
     val expected = lists.last()
 
-    WriteCommandAction.runWriteCommandAction(project) {
+    WriteCommandAction.runWriteCommandAction(myFixture.project) {
       initial.appendString("second")
     }
 
-    initial.text shouldBe expected.text
+    runReadActionBlocking { initial.text } shouldBe runReadActionBlocking { expected.text }
   }
 
   private fun getLists() =
-    myFixture.file.children
-      .filterIsInstance<StarlarkExpressionStatement>()
-      .mapNotNull {
-        PsiTreeUtil.getChildOfType(it, StarlarkListLiteralExpression::class.java)
-      }
+    runReadActionBlocking {
+      myFixture.file.children
+        .filterIsInstance<StarlarkExpressionStatement>()
+        .mapNotNull {
+          PsiTreeUtil.getChildOfType(it, StarlarkListLiteralExpression::class.java)
+        }
+    }
 }

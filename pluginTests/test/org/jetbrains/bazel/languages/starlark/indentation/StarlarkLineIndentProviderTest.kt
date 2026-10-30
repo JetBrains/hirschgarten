@@ -1,25 +1,26 @@
 package org.jetbrains.bazel.languages.starlark.indentation
 
+import com.intellij.testFramework.runInEdtAndGet
+import com.intellij.testFramework.runInEdtAndWait
 import io.kotest.matchers.comparables.shouldBeGreaterThan
 import org.jetbrains.bazel.languages.starlark.fixtures.StarlarkIndentationTestCase
-import org.junit.Test
-import org.junit.runner.RunWith
-import org.junit.runners.JUnit4
+import org.jetbrains.bazel.test.framework.BazelTestApplication
+import org.junit.jupiter.api.Test
 
-@RunWith(JUnit4::class)
+@BazelTestApplication
 class StarlarkLineIndentProviderTest : StarlarkIndentationTestCase() {
   @Test
   fun `should add indent in the empty line after enter between braces`() {
     // given
     myFixture.configureByFile("IndentationTestData.bzl")
     myFixture.type("()")
-    myFixture.editor.caretModel.moveToOffset(myFixture.caretOffset - 1)
+    moveCaretBack()
 
     // when
     myFixture.type("\n")
 
     // then
-    myFixture.editor.caretModel.logicalPosition.column shouldBeGreaterThan 0
+    caretColumn() shouldBeGreaterThan 0
   }
 
   @Test
@@ -27,13 +28,13 @@ class StarlarkLineIndentProviderTest : StarlarkIndentationTestCase() {
     // given
     myFixture.configureByFile("IndentationTestData.bzl")
     myFixture.type("(x")
-    myFixture.editor.caretModel.moveToOffset(myFixture.caretOffset - 1)
+    moveCaretBack()
 
     // when
     myFixture.type("\n")
 
     // then
-    myFixture.editor.caretModel.logicalPosition.column shouldBeGreaterThan 0
+    caretColumn() shouldBeGreaterThan 0
   }
 
   @Test
@@ -46,6 +47,12 @@ class StarlarkLineIndentProviderTest : StarlarkIndentationTestCase() {
     myFixture.type("\n")
 
     // then
-    myFixture.editor.caretModel.logicalPosition.column shouldBeGreaterThan 0
+    caretColumn() shouldBeGreaterThan 0
   }
+
+  private fun moveCaretBack() {
+    runInEdtAndWait { myFixture.editor.caretModel.moveToOffset(myFixture.caretOffset - 1) }
+  }
+
+  private fun caretColumn(): Int = runInEdtAndGet { myFixture.editor.caretModel.logicalPosition.column }
 }

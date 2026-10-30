@@ -1,6 +1,5 @@
 package org.jetbrains.bazel.languages.starlark.completion
 
-import com.intellij.codeInsight.lookup.LookupElement
 import com.intellij.openapi.application.runReadActionBlocking
 import com.intellij.testFramework.fixtures.TestLookupElementPresentation
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
@@ -8,6 +7,7 @@ import io.kotest.matchers.collections.shouldNotContainAnyOf
 import io.kotest.matchers.shouldBe
 import org.jetbrains.bazel.test.framework.BazelTestApplication
 import org.jetbrains.bazel.test.framework.bazelCodeInsightFixture
+import org.jetbrains.bazel.test.framework.completeBasicLookupStrings
 import org.junit.jupiter.api.Test
 
 @BazelTestApplication
@@ -27,7 +27,7 @@ class StarlarkFileCompletionTest {
       )
       """.trimIndent(),
     )
-    val lookups = completeBasic().associateBy { it.lookupString }
+    val lookups = myFixture.completeBasic().associateBy { it.lookupString }
 
     lookups.keys shouldContainExactlyInAnyOrder files.keys.map { "\"$it\"" } + "\"MODULE.bazel\""
     for ((path, file) in files) {
@@ -53,7 +53,7 @@ class StarlarkFileCompletionTest {
       """.trimMargin(),
     )
     myFixture.type("\"")
-    val lookups = completeBasic().flatMap { it.allLookupStrings }
+    val lookups = myFixture.completeBasicLookupStrings()
 
     lookups shouldContainExactlyInAnyOrder listOf("\"a.kt\"", "\"b.kt\"", "\"MODULE.bazel\"")
   }
@@ -74,7 +74,7 @@ class StarlarkFileCompletionTest {
       """.trimMargin(),
     )
     myFixture.type("\"")
-    val lookups = completeBasic().flatMap { it.allLookupStrings }
+    val lookups = myFixture.completeBasicLookupStrings()
 
     lookups shouldContainExactlyInAnyOrder listOf("\"c.kt\"", "\"d.kt\"", "\"MODULE.bazel\"")
   }
@@ -94,7 +94,7 @@ class StarlarkFileCompletionTest {
       """.trimMargin(),
     )
     myFixture.type("\"")
-    val lookups = completeBasic().flatMap { it.allLookupStrings }
+    val lookups = myFixture.completeBasicLookupStrings()
 
     lookups shouldContainExactlyInAnyOrder listOf("\"folder1/e.kt\"", "\"folder2/f.kt\"", "\"MODULE.bazel\"")
   }
@@ -118,7 +118,7 @@ class StarlarkFileCompletionTest {
       """.trimMargin(),
     )
     myFixture.type("\"")
-    val lookups = completeBasic().flatMap { it.allLookupStrings }
+    val lookups = myFixture.completeBasicLookupStrings()
 
     lookups shouldContainExactlyInAnyOrder
       listOf(
@@ -168,7 +168,7 @@ class StarlarkFileCompletionTest {
       """.trimMargin(),
     )
     myFixture.type("\"")
-    val lookups = completeBasic().flatMap { it.allLookupStrings }
+    val lookups = myFixture.completeBasicLookupStrings()
 
     lookups shouldContainExactlyInAnyOrder
       listOf(
@@ -186,6 +186,4 @@ class StarlarkFileCompletionTest {
         "\"package/dirInPackage/i.java\"",
       )
   }
-
-  private fun completeBasic(): Array<LookupElement> = myFixture.completeBasic()
 }

@@ -16,7 +16,6 @@ class StarlarkFrozenLoadedValueMutationInspectionTest {
 
   @BeforeEach
   fun beforeEach() {
-    myFixture.addFileToProject("MODULE.bazel", "")
     myFixture.addFileToProject("BUILD", "")
     myFixture.addFileToProject(
       "defs.bzl",

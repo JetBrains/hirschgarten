@@ -19,10 +19,8 @@ package org.jetbrains.bazel.commons
 import io.kotest.matchers.booleans.shouldBeFalse
 import io.kotest.matchers.booleans.shouldBeTrue
 import io.kotest.matchers.shouldBe
-import org.jetbrains.bazel.test.framework.annotation.BazelTest
 import org.junit.jupiter.api.Test
 
-@BazelTest
 class WorkspacePathTest {
   @Test
   fun testValidation() {

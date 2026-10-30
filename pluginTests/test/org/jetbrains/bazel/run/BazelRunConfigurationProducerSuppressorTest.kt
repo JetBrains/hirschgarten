@@ -16,19 +16,14 @@ import com.intellij.testFramework.TestActionEvent
 import io.kotest.matchers.types.shouldBeInstanceOf
 import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.label.Label
-import org.jetbrains.bazel.python.lang.PythonBuildTarget
 import org.jetbrains.bazel.run.config.BazelRunConfiguration
 import org.jetbrains.bazel.test.framework.BazelTestApplication
 import org.jetbrains.bazel.test.framework.bazelCodeInsightFixture
 import org.jetbrains.bazel.test.framework.testBazel
 import org.jetbrains.bazel.test.framework.testproject.pythonTarget
 import org.jetbrains.bazel.test.framework.testproject.sync
-import org.jetbrains.bazel.test.framework.testproject.writeFile
 import org.jetbrains.bazel.test.framework.target.TestBuildTarget
-import org.jetbrains.bazel.workspace.model.test.framework.testLocation
 import org.jetbrains.bsp.protocol.BuildTarget
-import org.jetbrains.bsp.protocol.OutputLocationCollection
-import org.jetbrains.bsp.protocol.StringsCollection
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertNull
@@ -45,7 +40,7 @@ internal class BazelRunConfigurationProducerSuppressorTest {
 
   @Test
   fun `should show standard Run context action with Bazel configuration for Python main file`() {
-    val psiFile = configurePhysicalPythonFile(
+    val psiFile = myFixture.configureByText(
       "main.py",
       """
       <caret>if __name__ == '__main__':
@@ -65,7 +60,7 @@ internal class BazelRunConfigurationProducerSuppressorTest {
 
   @Test
   fun `should show standard Run context action with Bazel configuration for Python test function`() {
-    val psiFile = configurePhysicalPythonFile(
+    val psiFile = myFixture.configureByText(
       "test_sample.py",
       """
       def <caret>test_passes():
@@ -86,7 +81,7 @@ internal class BazelRunConfigurationProducerSuppressorTest {
 
   @Test
   fun `should hide standard Run context action for Python files without Bazel runnable target`() {
-    val psiFile = configurePhysicalPythonFile(
+    val psiFile = myFixture.configureByText(
       "main.py",
       """
       <caret>if __name__ == '__main__':
@@ -103,7 +98,7 @@ internal class BazelRunConfigurationProducerSuppressorTest {
 
   @Test
   fun `should hide standard Run context action for Python files with ambiguous Bazel targets`() {
-    val psiFile = configurePhysicalPythonFile(
+    val psiFile = myFixture.configureByText(
       "main.py",
       """
       <caret>if __name__ == '__main__':
@@ -129,11 +124,6 @@ internal class BazelRunConfigurationProducerSuppressorTest {
     val configuration = configurations.single().configurationSettings.configuration
     assertEquals("org.jetbrains.bazel.run.config.BazelRunConfiguration", configuration.javaClass.name)
     return configuration
-  }
-
-  private fun configurePhysicalPythonFile(fileName: String, text: String): PsiFile {
-    myFixture.configureFromExistingVirtualFile(testBazel.writeFile(fileName, text))
-    return myFixture.file
   }
 
   private fun assertRunContextActionAvailable(element: PsiElement) {
@@ -184,19 +174,14 @@ internal class BazelRunConfigurationProducerSuppressorTest {
     source: PsiFile,
     mainFile: PsiFile?,
   ): TestBuildTarget =
-    pythonTarget(label, ruleKind, ruleType) {
+    pythonTarget(
+      label,
+      ruleKind,
+      ruleType,
+      interpreter = Path.of(myFixture.tempDirPath, "python3"),
+      mainFile = mainFile?.virtualFile?.toNioPath(),
+    ) {
       srcs(source.name)
-      data(
-        PythonBuildTarget(
-          version = "3.8",
-          interpreter = testLocation(Path.of(myFixture.tempDirPath, "python3")),
-          StringsCollection.EMPTY,
-          OutputLocationCollection.EMPTY,
-          OutputLocationCollection.EMPTY,
-          mainFile = mainFile?.virtualFile?.toNioPath()?.let(::testLocation),
-          mainModule = null,
-        ),
-      )
     }
 
   @Suppress("UNCHECKED_CAST")

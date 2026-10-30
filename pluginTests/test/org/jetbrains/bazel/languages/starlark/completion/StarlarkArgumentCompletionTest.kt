@@ -2,18 +2,18 @@ package org.jetbrains.bazel.languages.starlark.completion
 
 import io.kotest.matchers.collections.shouldContainOnly
 import org.jetbrains.bazel.languages.starlark.fixtures.StarlarkCompletionTestCase
-import org.junit.Test
-import org.junit.runner.RunWith
-import org.junit.runners.JUnit4
+import org.jetbrains.bazel.test.framework.BazelTestApplication
+import org.jetbrains.bazel.test.framework.completeBasicLookupStrings
+import org.junit.jupiter.api.Test
 
-@RunWith(JUnit4::class)
-class StarlarkFileFindUsagesTest : StarlarkCompletionTestCase() {
+@BazelTestApplication
+class StarlarkArgumentCompletionTest : StarlarkCompletionTestCase() {
   @Test
   fun `should complete arguments in function call (excluding variadic ones)`() {
     myFixture.configureByFile("ArgumentCompletion.bzl")
     myFixture.type("ar")
 
-    val lookups = myFixture.completeBasic().flatMap { it.allLookupStrings }
+    val lookups = myFixture.completeBasicLookupStrings()
 
     lookups shouldContainOnly listOf("bar = ", "arg = ")
   }
@@ -23,7 +23,7 @@ class StarlarkFileFindUsagesTest : StarlarkCompletionTestCase() {
     myFixture.configureByFile("PassedArgumentCompletion.bzl")
     myFixture.type("ar")
 
-    val lookups = myFixture.completeBasic().flatMap { it.allLookupStrings }
+    val lookups = myFixture.completeBasicLookupStrings()
 
     lookups shouldContainOnly listOf("arg = ", "dar = ")
   }

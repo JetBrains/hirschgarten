@@ -4,7 +4,6 @@ import com.intellij.configurationStore.ProjectStoreImpl
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Disposer
-import com.intellij.openapi.util.io.toNioPathOrNull
 import com.intellij.openapi.vfs.refreshAndFindVirtualFile
 import com.intellij.project.stateStore
 import com.intellij.testFramework.refreshVfs
@@ -34,11 +33,6 @@ object BazelProjectFixtures {
     )
     // projectview virtual file lookup requires a VFS refresh in test environment
     ProjectViewService.getInstance(project).projectViewPath?.refreshAndFindVirtualFile()
-  }
-
-  fun initializeBazelProject(project: Project, rootDir: String, runStartupSync: Boolean = false) {
-    val rootDirPath = rootDir.toNioPathOrNull() ?: error("NIO path not found for $rootDir")
-    initializeBazelProject(project, rootDirPath, runStartupSync)
   }
 
   /** Marks a test project as Bazel through a project view. Set [runStartupSync] to test automatic startup sync. */

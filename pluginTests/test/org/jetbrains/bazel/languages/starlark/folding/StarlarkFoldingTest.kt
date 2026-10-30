@@ -1,32 +1,50 @@
 package org.jetbrains.bazel.languages.starlark.folding
 
-import com.intellij.testFramework.fixtures.BasePlatformTestCase
 import com.intellij.testFramework.fixtures.impl.CodeInsightTestFixtureImpl
+import io.kotest.matchers.shouldBe
 import org.jetbrains.bazel.test.framework.BazelPathManager
+import org.jetbrains.bazel.test.framework.BazelTestApplication
+import org.jetbrains.bazel.test.framework.bazelCodeInsightFixture
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
 
-class StarlarkFoldingTest : BasePlatformTestCase() {
-  override fun getTestDataPath(): String =
-    BazelPathManager.getTestFixture("starlark/folding")
+@BazelTestApplication
+class StarlarkFoldingTest {
+  private val myFixture by bazelCodeInsightFixture()
 
-  fun testFunction() = myFixture.testFolding(getTestDataPath() + "/function.bzl")
+  @BeforeEach
+  fun beforeEach() {
+    myFixture.testDataPath = BazelPathManager.getTestFixture("starlark/folding")
+  }
 
-  fun testList() = myFixture.testFolding(getTestDataPath() + "/list.bzl")
+  @Test
+  fun testFunction() = doTest("function.bzl")
 
-  fun testNested() = myFixture.testFolding(getTestDataPath() + "/nested.bzl")
+  @Test
+  fun testList() = doTest("list.bzl")
 
-  fun testParens() = myFixture.testFolding(getTestDataPath() + "/parens.bzl")
+  @Test
+  fun testNested() = doTest("nested.bzl")
 
-  fun testTarget() = myFixture.testFolding(getTestDataPath() + "/target.bzl")
+  @Test
+  fun testParens() = doTest("parens.bzl")
+
+  @Test
+  fun testTarget() = doTest("target.bzl")
 
   /** A dict literal and a function body do not fold. */
-  fun testDict() = myFixture.testFolding(getTestDataPath() + "/dict.bzl")
+  @Test
+  fun testDict() = doTest("dict.bzl")
 
   /** A call on a dotted name shows the full name. */
-  fun testQualifiedCall() = myFixture.testFolding(getTestDataPath() + "/qualifiedCall.bzl")
+  @Test
+  fun testQualifiedCall() = doTest("qualifiedCall.bzl")
 
   /** A call on a subscription has no name, so the placeholder is the fallback. */
-  fun testUnknownRule() = myFixture.testFolding(getTestDataPath() + "/unknownRule.bzl")
+  @Test
+  fun testUnknownRule() = doTest("unknownRule.bzl")
 
+  @Test
   fun testExpressionFoldsAreExpandedByDefault() {
     myFixture.configureByText(
       "expanded.bzl",
@@ -40,33 +58,43 @@ class StarlarkFoldingTest : BasePlatformTestCase() {
 
     val description = (myFixture as CodeInsightTestFixtureImpl).getFoldingDescription(true, false)
 
-    assertEquals(
+    description shouldBe
       """
       <fold text='some_function(target)' expand='true'>some_function(
           name = "target",
           arg1,
       )</fold>
-      """.trimIndent(),
-      description,
-    )
+      """.trimIndent()
   }
 
-  fun testRegion() = myFixture.testFolding(getTestDataPath() + "/region.bzl")
+  @Test
+  fun testRegion() = doTest("region.bzl")
 
-  fun testRegionNoDescription() = myFixture.testFolding(getTestDataPath() + "/regionNoDescription.bzl")
+  @Test
+  fun testRegionNoDescription() = doTest("regionNoDescription.bzl")
 
-  fun testRegionNested() = myFixture.testFolding(getTestDataPath() + "/regionNested.bzl")
+  @Test
+  fun testRegionNested() = doTest("regionNested.bzl")
 
-  fun testRegionInFunction() = myFixture.testFolding(getTestDataPath() + "/regionInFunction.bzl")
+  @Test
+  fun testRegionInFunction() = doTest("regionInFunction.bzl")
 
   /** An unpaired marker makes no region. */
-  fun testRegionUnmatched() = myFixture.testFolding(getTestDataPath() + "/regionUnmatched.bzl")
+  @Test
+  fun testRegionUnmatched() = doTest("regionUnmatched.bzl")
 
-  fun testRegionAroundCall() = myFixture.testFolding(getTestDataPath() + "/regionAroundCall.bzl")
+  @Test
+  fun testRegionAroundCall() = doTest("regionAroundCall.bzl")
 
   /** Extra hash characters before the marker still make a region. */
-  fun testRegionExtraHashes() = myFixture.testFolding(getTestDataPath() + "/regionExtraHashes.bzl")
+  @Test
+  fun testRegionExtraHashes() = doTest("regionExtraHashes.bzl")
 
   /** The NetBeans style markers also make a region. */
-  fun testEditorFold() = myFixture.testFolding(getTestDataPath() + "/editorFold.bzl")
+  @Test
+  fun testEditorFold() = doTest("editorFold.bzl")
+
+  private fun doTest(fileName: String) {
+    myFixture.testFolding("${myFixture.testDataPath}/$fileName")
+  }
 }

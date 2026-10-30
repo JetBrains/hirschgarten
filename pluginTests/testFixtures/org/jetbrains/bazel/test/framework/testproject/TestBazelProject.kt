@@ -18,6 +18,7 @@ import com.intellij.testFramework.replaceService
 import org.jetbrains.bazel.bazelrunner.BazelProcessLauncher
 import org.jetbrains.bazel.bazelrunner.BazelProcessLauncherProvider
 import org.jetbrains.bazel.commons.BazelInfo
+import org.jetbrains.bazel.commons.BazelRelease
 import org.jetbrains.bazel.commons.constants.Constants.DEFAULT_PROJECT_VIEW_FILE_NAME
 import org.jetbrains.bazel.commons.constants.Constants.LEGACY_DEFAULT_PROJECT_VIEW_FILE_NAME
 import org.jetbrains.bazel.commons.constants.Constants.MODULE_BAZEL_FILE_NAME
@@ -58,24 +59,19 @@ class TestBazelProject internal constructor(
   val disposable: Disposable,
 )
 
-internal fun Project.installTestBazelProject(root: Path, parentDisposable: Disposable): TestBazelProject {
-  val outputBase = createTempDirectory("bazel-output-base").toRealPath()
-  Disposer.register(parentDisposable) { NioFiles.deleteRecursively(outputBase) }
-  return installTestBazelProject(root, outputBase, parentDisposable)
-}
-
 internal fun Project.installTestBazelProject(
   root: Path,
   outputBase: Path,
   parentDisposable: Disposable,
   realBazel: Boolean = false,
   persistentSnapshots: Boolean = false,
+  release: BazelRelease = BazelRelease.FALLBACK_VERSION,
 ): TestBazelProject {
   require(root.isAbsolute) { "bazel root $root is not absolute" }
   val lifetime = Disposer.newDisposable(parentDisposable, "TestBazelProject")
   var installed = false
   try {
-    return installInternal(root, outputBase, parentDisposable, lifetime, realBazel, persistentSnapshots).also { installed = true }
+    return installInternal(root, outputBase, parentDisposable, lifetime, realBazel, persistentSnapshots, release).also { installed = true }
   }
   finally {
     if (!installed) Disposer.dispose(lifetime)
@@ -89,9 +85,10 @@ private fun Project.installInternal(
   lifetime: Disposable,
   realBazel: Boolean,
   persistentSnapshots: Boolean,
+  release: BazelRelease,
 ): TestBazelProject {
   val project = this
-  val defaultBazelInfo = testProjectBazelInfo(workspaceRoot = root, outputBase = outputBase)
+  val defaultBazelInfo = testProjectBazelInfo(workspaceRoot = root, outputBase = outputBase, release = release)
   defaultBazelInfo.bazelBin.createDirectories()
 
   if (realBazel) {

@@ -17,10 +17,12 @@ import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Disposer
 import com.intellij.openapi.util.SystemInfo
+import com.intellij.testFramework.junit5.TestDisposable
+import com.intellij.testFramework.junit5.fixture.projectFixture
 import io.kotest.matchers.maps.shouldContainExactly
 import org.jetbrains.bazel.action.SuspendableAction
+import org.jetbrains.bazel.test.framework.BazelTestApplication
 import org.jetbrains.bazel.ui.console.BaseTaskConsole
-import org.jetbrains.bazel.workspace.model.test.framework.WorkspaceModelBaseTest
 import org.jetbrains.bsp.protocol.TaskGroupId
 import org.jetbrains.bsp.protocol.TaskId
 import org.junit.jupiter.api.Test
@@ -116,7 +118,13 @@ class TestTaskConsole(
     }
 }
 
-class TaskConsoleTest : WorkspaceModelBaseTest() {
+@BazelTestApplication
+class TaskConsoleTest {
+  private val project by projectFixture()
+
+  @TestDisposable
+  lateinit var disposable: Disposable
+
   @Test
   fun `should start the task, start 3 subtasks, put 2 messages and for each subtask and finish the task (the happy path)`() {
     // given

@@ -1,37 +1,44 @@
 package org.jetbrains.bazel.languages.starlark.index
 
+import com.intellij.openapi.application.runReadActionBlocking
+import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.search.GlobalSearchScope
-import com.intellij.testFramework.fixtures.BasePlatformTestCase
 import com.intellij.util.indexing.FileBasedIndex
 import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.collections.shouldBeSingleton
 import io.kotest.matchers.collections.shouldHaveSize
 import org.jetbrains.bazel.languages.starlark.StarlarkFileType
+import org.jetbrains.bazel.test.framework.BazelTestApplication
+import org.jetbrains.bazel.test.framework.bazelCodeInsightFixture
+import org.junit.jupiter.api.Test
 
-class StarlarkLoadsIndexTest : BasePlatformTestCase() {
+@BazelTestApplication
+class StarlarkLoadsIndexTest {
+  private val myFixture by bazelCodeInsightFixture()
 
+  @Test
   fun testSimpleLoadIndexesImportedNames() {
     myFixture.configureByText(
       StarlarkFileType,
       """load(":foo.bzl", "bar", "baz")""",
     )
 
-    val scope = GlobalSearchScope.allScope(project)
-    getIndexedFiles("bar", scope).shouldBeSingleton()
-    getIndexedFiles("baz", scope).shouldBeSingleton()
+    getIndexedFiles("bar").shouldBeSingleton()
+    getIndexedFiles("baz").shouldBeSingleton()
   }
 
+  @Test
   fun testNamedLoadIndexesOriginalName() {
     myFixture.configureByText(
       StarlarkFileType,
       """load(":foo.bzl", alias = "original_name")""",
     )
 
-    val scope = GlobalSearchScope.allScope(project)
-    getIndexedFiles("original_name", scope).shouldBeSingleton()
-    getIndexedFiles("alias", scope).shouldBeEmpty()
+    getIndexedFiles("original_name").shouldBeSingleton()
+    getIndexedFiles("alias").shouldBeEmpty()
   }
 
+  @Test
   fun testMultipleLoadsFromDifferentFiles() {
     myFixture.addFileToProject(
       "a.bzl",
@@ -42,22 +49,24 @@ class StarlarkLoadsIndexTest : BasePlatformTestCase() {
       """load(":common.bzl", "shared_func")""",
     )
 
-    val scope = GlobalSearchScope.allScope(project)
-    getIndexedFiles("shared_func", scope).shouldHaveSize(2)
+    getIndexedFiles("shared_func").shouldHaveSize(2)
   }
 
+  @Test
   fun testMixedNamedAndPositionalLoad() {
     myFixture.configureByText(
       StarlarkFileType,
       """load(":foo.bzl", "positional", alias = "named")""",
     )
 
-    val scope = GlobalSearchScope.allScope(project)
-    getIndexedFiles("positional", scope).shouldBeSingleton()
-    getIndexedFiles("named", scope).shouldBeSingleton()
+    getIndexedFiles("positional").shouldBeSingleton()
+    getIndexedFiles("named").shouldBeSingleton()
   }
 
-  private fun getIndexedFiles(key: String, scope: GlobalSearchScope) = FileBasedIndex
-    .getInstance()
-    .getContainingFiles(StarlarkLoadsIndex.NAME, key, scope)
+  private fun getIndexedFiles(key: String): Collection<VirtualFile> =
+    runReadActionBlocking {
+      FileBasedIndex
+        .getInstance()
+        .getContainingFiles(StarlarkLoadsIndex.NAME, key, GlobalSearchScope.allScope(myFixture.project))
+    }
 }

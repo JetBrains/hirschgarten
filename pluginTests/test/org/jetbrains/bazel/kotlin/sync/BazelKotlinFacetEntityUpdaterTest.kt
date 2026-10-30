@@ -1,10 +1,14 @@
 package org.jetbrains.bazel.kotlin.sync
 
 import com.intellij.facet.FacetManager
+import com.intellij.openapi.application.WriteAction
 import com.intellij.openapi.module.ModuleManager
+import com.intellij.platform.backend.workspace.WorkspaceModel
 import com.intellij.platform.workspace.jps.entities.ModuleEntity
 import com.intellij.platform.workspace.storage.MutableEntityStorage
+import com.intellij.testFramework.junit5.fixture.projectFixture
 import com.intellij.testFramework.runInEdtAndWait
+import com.intellij.testFramework.workspaceModel.updateProjectModel
 import io.kotest.matchers.collections.shouldHaveSingleElement
 import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
@@ -15,15 +19,18 @@ import org.jetbrains.bazel.sync.BazelKotlinFacetEntityUpdater
 import org.jetbrains.bazel.sync.workspace.languages.jvm.JvmBuildTarget
 import org.jetbrains.bazel.sync.workspace.languages.jvm.KotlinBuildTarget
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
+import org.jetbrains.bazel.test.framework.BazelTestApplication
+import org.jetbrains.bazel.test.framework.testproject.addJavaModule
 import org.jetbrains.bazel.workspace.importer.KotlinOptions
-import org.jetbrains.bazel.workspace.model.test.framework.WorkspaceModelBaseTest
 import org.jetbrains.bsp.protocol.StringsCollection
 import org.jetbrains.kotlin.cli.common.arguments.K2JVMCompilerArguments
 import org.jetbrains.kotlin.config.IKotlinFacetSettings
 import org.jetbrains.kotlin.idea.facet.KotlinFacetType
 import org.junit.jupiter.api.Test
 
-class BazelKotlinFacetEntityUpdaterTest : WorkspaceModelBaseTest() {
+@BazelTestApplication
+class BazelKotlinFacetEntityUpdaterTest {
+  private val project by projectFixture()
 
   @Test
   fun `should add KotlinFacet when given KotlinAddendum`() {
@@ -98,9 +105,11 @@ class BazelKotlinFacetEntityUpdaterTest : WorkspaceModelBaseTest() {
     val unused = jvmBuildTarget // reserved for future SDK plumbing in this fixture
     val moduleName = "module1"
 
-    updateWorkspaceModel {
-      val returnedModuleEntity = addEmptyJavaModuleEntity(moduleName, it)
-      addKotlinFacetEntity(kotlinBuildTarget, returnedModuleEntity, it)
+    WriteAction.compute<Unit, Throwable> {
+      WorkspaceModel.getInstance(project).updateProjectModel {
+        val returnedModuleEntity = it.addJavaModule(moduleName)
+        addKotlinFacetEntity(kotlinBuildTarget, returnedModuleEntity, it)
+      }
     }
 
     val moduleManager = ModuleManager.getInstance(project)

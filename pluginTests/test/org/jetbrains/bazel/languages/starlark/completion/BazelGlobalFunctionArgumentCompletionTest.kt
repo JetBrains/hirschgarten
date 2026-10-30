@@ -1,23 +1,26 @@
 package org.jetbrains.bazel.languages.starlark.completion
 
-import com.intellij.testFramework.fixtures.BasePlatformTestCase
+import com.intellij.testFramework.runInEdtAndWait
 import io.kotest.matchers.collections.shouldContainAll
 import org.jetbrains.bazel.languages.starlark.bazel.BazelGlobalFunctions
-import org.junit.Test
-import org.junit.runner.RunWith
-import org.junit.runners.JUnit4
+import org.jetbrains.bazel.test.framework.BazelTestApplication
+import org.jetbrains.bazel.test.framework.bazelCodeInsightFixture
+import org.jetbrains.bazel.test.framework.completeBasicLookupStrings
+import org.junit.jupiter.api.Test
 
-@RunWith(JUnit4::class)
-class BazelGlobalFunctionArgumentCompletionTest : BasePlatformTestCase() {
+@BazelTestApplication
+class BazelGlobalFunctionArgumentCompletionTest {
+  private val myFixture by bazelCodeInsightFixture()
+
   @Test
   fun `should complete module function`() {
     myFixture.configureByText("MODULE.bazel", "module(<caret>)")
     myFixture.type("a")
 
-    val lookups = myFixture.completeBasic().flatMap { it.allLookupStrings }
+    val lookups = myFixture.completeBasicLookupStrings()
 
     val expectedArgNames =
-      BazelGlobalFunctions.moduleGlobalFunctions(project)["module"]!!
+      BazelGlobalFunctions.moduleGlobalFunctions(myFixture.project)["module"]!!
         .params
         .filter { it.name.contains('a') }
         .map { it.name }
@@ -29,10 +32,10 @@ class BazelGlobalFunctionArgumentCompletionTest : BasePlatformTestCase() {
     myFixture.configureByText("MODULE.bazel", "module(name = 'testName', <caret>)")
     myFixture.type("a")
 
-    val lookups = myFixture.completeBasic().flatMap { it.allLookupStrings }
+    val lookups = myFixture.completeBasicLookupStrings()
 
     val expectedArgNames =
-      BazelGlobalFunctions.moduleGlobalFunctions(project)["module"]!!
+      BazelGlobalFunctions.moduleGlobalFunctions(myFixture.project)["module"]!!
         .params
         .filter { it.name.contains('a') && it.name != "name" }
         .map { it.name }
@@ -48,7 +51,7 @@ class BazelGlobalFunctionArgumentCompletionTest : BasePlatformTestCase() {
 
     // Select first lookup element and simulate pressing Tab key to trigger insert handler.
     if (lookupElements != null && lookupElements.isNotEmpty()) {
-      myFixture.lookup?.currentItem = lookupElements[0]
+      runInEdtAndWait { myFixture.lookup?.currentItem = lookupElements[0] }
       myFixture.type('\t')
     }
 

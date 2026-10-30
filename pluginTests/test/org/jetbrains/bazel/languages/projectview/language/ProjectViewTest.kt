@@ -33,9 +33,9 @@ import org.jetbrains.bazel.languages.projectview.dotIdeaDirectoryLocation
 import org.jetbrains.bazel.languages.projectview.imports.Import
 import org.jetbrains.bazel.languages.projectview.syncFlags
 import org.jetbrains.bazel.test.framework.BazelTestApplication
-import org.jetbrains.bazel.test.framework.bazelCodeInsightFixture
-import org.jetbrains.bazel.test.framework.testBazel
 import org.jetbrains.bazel.test.framework.testproject.createDirectory
+import org.jetbrains.bazel.test.framework.testproject.parseProjectView
+import org.jetbrains.bazel.test.framework.testproject.testBazelProjectFixture
 import org.jetbrains.bazel.test.framework.testproject.workspaceRoot
 import org.jetbrains.bazel.test.framework.testproject.writeFile
 import org.jetbrains.bazel.utils.findVirtualFile
@@ -48,8 +48,7 @@ import kotlin.time.Duration.Companion.seconds
 
 @BazelTestApplication
 class ProjectViewTest {
-  private val myFixture by bazelCodeInsightFixture()
-  private val testBazel get() = myFixture.testBazel
+  private val testBazel by testBazelProjectFixture()
 
   @Test
   fun `test project view from file`() {
@@ -171,7 +170,7 @@ class ProjectViewTest {
     main.cachedDocument().shouldBeNull()
     imported.cachedDocument().shouldBeNull()
 
-    val projectView = parse(main)
+    val projectView = testBazel.parseProjectView(main)
 
     projectView.dotIdeaDirectoryLocation shouldBe Path("custom/.idea")
     projectView.getSection(IMPORT_DEPTH_KEY) shouldBe 123
@@ -184,7 +183,7 @@ class ProjectViewTest {
     val (main, _) = createProjectViewFiles()
     ApplicationManager.getApplication().isReadAccessAllowed shouldBe false
 
-    val projectView = parse(main)
+    val projectView = testBazel.parseProjectView(main)
 
     projectView.dotIdeaDirectoryLocation shouldBe Path("custom/.idea")
   }
@@ -195,7 +194,7 @@ class ProjectViewTest {
     main.setUnsavedText("dot_idea_directory_location: unsaved/.idea\n\nimport imported.bazelproject")
     imported.setUnsavedText("import_depth: 321")
 
-    val projectView = parse(main)
+    val projectView = testBazel.parseProjectView(main)
 
     projectView.dotIdeaDirectoryLocation shouldBe Path("unsaved/.idea")
     projectView.getSection(IMPORT_DEPTH_KEY) shouldBe 321
@@ -212,7 +211,7 @@ class ProjectViewTest {
       """.trimIndent(),
     ).toNioPath()
 
-    val projectView = parse(main)
+    val projectView = testBazel.parseProjectView(main)
 
     projectView.dotIdeaDirectoryLocation shouldBe Path("custom/.idea")
     val unresolved = projectView.imports.single().shouldBeInstanceOf<Import.Unresolved>()
@@ -234,7 +233,7 @@ class ProjectViewTest {
       """.trimIndent(),
     ).toNioPath()
 
-    val projectView = parse(main)
+    val projectView = testBazel.parseProjectView(main)
 
     projectView.dotIdeaDirectoryLocation shouldBe Path("custom/.idea")
     projectView.imports.single().shouldBeInstanceOf<Import.Unresolved>()
@@ -245,7 +244,7 @@ class ProjectViewTest {
     val main =
       testBazel.workspaceRoot.writeProjectViewFileUnknownToVfs("main.bazelproject", "\uFEFFdot_idea_directory_location: custom/.idea")
 
-    val projectView = parse(main)
+    val projectView = testBazel.parseProjectView(main)
 
     projectView.dotIdeaDirectoryLocation shouldBe Path("custom/.idea")
   }
@@ -260,7 +259,7 @@ class ProjectViewTest {
     main.findVirtualFile().shouldBeNull()
     imported.findVirtualFile().shouldBeNull()
 
-    val projectView = parse(main)
+    val projectView = testBazel.parseProjectView(main)
 
     projectView.dotIdeaDirectoryLocation shouldBe Path("custom/.idea")
     projectView.getSection(IMPORT_DEPTH_KEY) shouldBe 123
@@ -287,9 +286,7 @@ class ProjectViewTest {
   }
 
   private fun parse(@Language("projectview") content: String): ProjectView =
-    parse(testBazel.writeFile(".bazelproject", content).toNioPath())
-
-  private fun parse(source: Path): ProjectView = ProjectViewFactory.from(testBazel.project, source = source, root = testBazel.workspaceRoot)
+    testBazel.parseProjectView(testBazel.writeFile(".bazelproject", content).toNioPath())
 
   private fun createProjectViewFiles(): Pair<Path, Path> {
     val imported = testBazel.writeFile(

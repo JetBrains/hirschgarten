@@ -4,7 +4,7 @@ import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.shouldBe
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeout
-import org.junit.Test
+import org.junit.jupiter.api.Test
 import java.util.concurrent.TimeUnit
 import kotlin.coroutines.cancellation.CancellationException
 

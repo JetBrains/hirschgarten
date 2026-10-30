@@ -1,26 +1,30 @@
 package org.jetbrains.bazel.languages.starlark.commenter
 
 import com.intellij.openapi.actionSystem.IdeActions
-import com.intellij.openapi.vfs.newvfs.impl.VfsRootAccess
-import com.intellij.testFramework.fixtures.BasePlatformTestCase
 import org.jetbrains.bazel.test.framework.BazelPathManager
+import org.jetbrains.bazel.test.framework.BazelTestApplication
+import org.jetbrains.bazel.test.framework.bazelCodeInsightFixture
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
 
-class StarlarkCommenterTest : BasePlatformTestCase() {
-  override fun getTestDataPath(): String =
-    BazelPathManager.getTestFixture("starlark/commenter")
+@BazelTestApplication
+class StarlarkCommenterTest {
+  private val myFixture by bazelCodeInsightFixture()
 
-  fun testComment() = doTest()
+  @BeforeEach
+  fun beforeEach() {
+    myFixture.testDataPath = BazelPathManager.getTestFixture("starlark/commenter")
+  }
 
-  fun testUncomment() = doTest()
+  @Test
+  fun testComment() = doTest("Comment")
 
-  private fun doTest() {
-    VfsRootAccess.allowRootAccess(testRootDisposable, testDataPath)
+  @Test
+  fun testUncomment() = doTest("Uncomment")
 
-    val name = getTestName(false)
-    val source = "$name.bzl"
-    myFixture.configureByFile(source)
+  private fun doTest(name: String) {
+    myFixture.configureByFile("$name.bzl")
     myFixture.performEditorAction(IdeActions.ACTION_COMMENT_LINE)
-    val result = "${name}Result.bzl"
-    myFixture.checkResultByFile(result)
+    myFixture.checkResultByFile("${name}Result.bzl")
   }
 }

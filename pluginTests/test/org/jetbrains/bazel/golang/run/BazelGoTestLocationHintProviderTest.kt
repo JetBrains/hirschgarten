@@ -4,8 +4,8 @@ import io.kotest.matchers.shouldBe
 import org.jetbrains.bazel.server.bep.MockBuildTaskEventsHandler
 import org.jetbrains.bazel.server.bep.TestXmlParser
 import org.jetbrains.bazel.sync.workspace.targetKind.TargetKindService
+import org.jetbrains.bazel.test.framework.BazelTestApplication
 import org.jetbrains.bazel.util.BspClientTestNotifier
-import org.jetbrains.bazel.workspace.model.test.framework.MockProjectBaseTest
 import org.jetbrains.bsp.protocol.TaskGroupId
 import org.jetbrains.bsp.protocol.TestStart
 import org.junit.jupiter.api.Test
@@ -13,7 +13,8 @@ import org.junit.jupiter.api.io.TempDir
 import java.nio.file.Path
 import kotlin.io.path.writeText
 
-internal class BazelGoTestLocationHintProviderTest : MockProjectBaseTest() {
+@BazelTestApplication
+internal class BazelGoTestLocationHintProviderTest {
   @Test
   fun `should provide correct gotest location hints`(@TempDir tempDir: Path) {
     val testXml = """

@@ -12,7 +12,6 @@ import io.kotest.matchers.shouldBe
 import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.label.Label
-import org.jetbrains.bazel.python.lang.PythonBuildTarget
 import org.jetbrains.bazel.python.lang.PythonLanguageClass
 import org.jetbrains.bazel.test.framework.BazelTestApplication
 import org.jetbrains.bazel.test.framework.bazelCodeInsightFixture
@@ -22,9 +21,6 @@ import org.jetbrains.bazel.test.framework.testproject.pythonTarget
 import org.jetbrains.bazel.test.framework.testproject.sync
 import org.jetbrains.bazel.ui.gutters.BazelContainingTargetsLocationsProvider
 import org.jetbrains.bazel.ui.gutters.NonImportedBuildTarget
-import org.jetbrains.bazel.workspace.model.test.framework.testLocation
-import org.jetbrains.bsp.protocol.OutputLocationCollection
-import org.jetbrains.bsp.protocol.StringsCollection
 import org.junit.jupiter.api.Test
 import java.nio.file.Path
 
@@ -327,19 +323,15 @@ internal class BazelPyRunConfigurationProducerTest {
   ) {
     testBazel.sync {
       targets(
-        pythonTarget(label, ruleKind, ruleType) {
+        pythonTarget(
+          label,
+          ruleKind,
+          ruleType,
+          interpreter = Path.of(myFixture.tempDirPath, "python3"),
+          mainFile = mainFile?.virtualFile?.toNioPath(),
+          mainModule = mainModule,
+        ) {
           srcs(*sources.map { it.name }.toTypedArray())
-          data(
-            PythonBuildTarget(
-              version = "3.8",
-              interpreter = testLocation(Path.of(myFixture.tempDirPath, "python3")),
-              StringsCollection.EMPTY,
-              OutputLocationCollection.EMPTY,
-              OutputLocationCollection.EMPTY,
-              mainFile = mainFile?.virtualFile?.toNioPath()?.let(::testLocation),
-              mainModule = mainModule,
-            ),
-          )
         },
       )
     }

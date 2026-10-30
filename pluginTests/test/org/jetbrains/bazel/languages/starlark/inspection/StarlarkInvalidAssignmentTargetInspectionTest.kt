@@ -1,21 +1,20 @@
 package org.jetbrains.bazel.languages.starlark.inspection
 
-import com.intellij.testFramework.fixtures.BasePlatformTestCase
 import org.jetbrains.bazel.languages.starlark.StarlarkBundle
-import org.junit.Before
-import org.junit.Test
-import org.junit.runner.RunWith
-import org.junit.runners.JUnit4
+import org.jetbrains.bazel.languages.starlark.fixtures.StarlarkInspectionTestCase
+import org.jetbrains.bazel.test.framework.BazelTestApplication
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
 
-@RunWith(JUnit4::class)
-class StarlarkInvalidAssignmentTargetInspectionTest : BasePlatformTestCase() {
+@BazelTestApplication
+class StarlarkInvalidAssignmentTargetInspectionTest : StarlarkInspectionTestCase() {
   private val invalid = StarlarkBundle.message("inspection.description.assignment.target.invalid", "1")
   private val invalidSlice = StarlarkBundle.message("inspection.description.assignment.target.invalid", "a[1:2]")
   private val augmentedSeq = StarlarkBundle.message("inspection.description.assignment.target.augmented.sequence")
   private val invalidCall = StarlarkBundle.message("inspection.description.assignment.target.invalid", "f()")
   private val invalidBinary = StarlarkBundle.message("inspection.description.assignment.target.invalid", "a + b")
 
-  @Before
+  @BeforeEach
   fun beforeEach() {
     myFixture.enableInspections(StarlarkInvalidAssignmentTargetInspection())
   }

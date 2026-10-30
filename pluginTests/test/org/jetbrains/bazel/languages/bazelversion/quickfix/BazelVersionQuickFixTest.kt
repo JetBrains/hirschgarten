@@ -1,10 +1,9 @@
 package org.jetbrains.bazel.languages.bazelversion.quickfix
 
+import com.intellij.openapi.application.runReadActionBlocking
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.vfs.newvfs.impl.VfsRootAccess
 import com.intellij.testFramework.ExtensionTestUtil
-import com.intellij.testFramework.fixtures.BasePlatformTestCase
 import kotlinx.coroutines.runBlocking
 import org.jetbrains.bazel.languages.bazelversion.inspection.BazelVersionInspection
 import org.jetbrains.bazel.languages.bazelversion.psi.BazelVersionLiteral
@@ -13,27 +12,34 @@ import org.jetbrains.bazel.languages.bazelversion.psi.withNewVersionWhenPossible
 import org.jetbrains.bazel.languages.bazelversion.service.BazelVersionCheckerService
 import org.jetbrains.bazel.languages.bazelversion.service.BazelVersionResolver
 import org.jetbrains.bazel.test.framework.BazelPathManager
+import org.jetbrains.bazel.test.framework.BazelTestApplication
+import org.jetbrains.bazel.test.framework.bazelCodeInsightFixture
+import org.jetbrains.bazel.test.framework.testBazel
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
 
-class BazelVersionQuickFixTest : BasePlatformTestCase() {
-  override fun getTestDataPath(): String =
-    BazelPathManager.getTestFixture("bazelversion/quickfix")
+@BazelTestApplication
+class BazelVersionQuickFixTest {
+  private val myFixture by bazelCodeInsightFixture()
 
-  override fun setUp() {
-    super.setUp()
+  @BeforeEach
+  fun setUp() {
+    myFixture.testDataPath = BazelPathManager.getTestFixture("bazelversion/quickfix")
 
     ExtensionTestUtil.maskExtensions(
       BazelVersionResolver.ep,
       listOf(CustomBazelVersionResolver()),
-      testRootDisposable,
+      myFixture.testBazel.disposable,
     )
 
     myFixture.enableInspections(BazelVersionInspection())
   }
 
+  @Test
   fun testQuickfix() {
-    VfsRootAccess.allowRootAccess(this.testRootDisposable, this.testDataPath)
-
-    val currentVersion = myFixture.configureByFile(".bazelversion").text.toBazelVersionLiteral()
+    val file = myFixture.configureByFile(".bazelversion")
+    val currentVersion = runReadActionBlocking { file.text }.toBazelVersionLiteral()
+    val project = myFixture.project
     runBlocking { project.service<BazelVersionCheckerService>().refreshLatestBazelVersion(project, currentVersion) }
     myFixture.doHighlighting()
 

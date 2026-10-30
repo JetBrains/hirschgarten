@@ -1,24 +1,30 @@
 package org.jetbrains.bazel.languages.bazelrc.quickfix
 
-import com.intellij.openapi.vfs.newvfs.impl.VfsRootAccess
-import com.intellij.testFramework.fixtures.BasePlatformTestCase
 import org.jetbrains.bazel.test.framework.BazelPathManager
+import org.jetbrains.bazel.test.framework.BazelTestApplication
+import org.jetbrains.bazel.test.framework.bazelCodeInsightFixture
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
 
-class BazelrcQuickFixTest : BasePlatformTestCase() {
-  override fun getTestDataPath(): String =
-    BazelPathManager.getTestFixture("bazelrc/quickfix")
+@BazelTestApplication
+class BazelrcQuickFixTest {
+  private val myFixture by bazelCodeInsightFixture()
 
-  fun testDeleteNoOpFlag() = doTest()
+  @BeforeEach
+  fun setUpTestDataPath() {
+    myFixture.testDataPath = BazelPathManager.getTestFixture("bazelrc/quickfix")
+  }
 
-  fun testReplaceDeprecatedFlag() = doTest()
+  @Test
+  fun testDeleteNoOpFlag() = doTest("DeleteNoOpFlag")
 
-  fun testReplaceNegatedDeprecatedFlag() = doTest()
+  @Test
+  fun testReplaceDeprecatedFlag() = doTest("ReplaceDeprecatedFlag")
 
-  private fun doTest() {
-    VfsRootAccess.allowRootAccess(this.testRootDisposable, this.testDataPath)
+  @Test
+  fun testReplaceNegatedDeprecatedFlag() = doTest("ReplaceNegatedDeprecatedFlag")
 
-    val name = getTestName(false)
-
+  private fun doTest(name: String) {
     myFixture.configureByFile("$name.bazelrc")
     myFixture.doHighlighting()
 

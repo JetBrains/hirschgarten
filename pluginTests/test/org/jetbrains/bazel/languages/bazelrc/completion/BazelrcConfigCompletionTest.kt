@@ -3,11 +3,11 @@ package org.jetbrains.bazel.languages.bazelrc.completion
 import io.kotest.matchers.collections.shouldContainOnly
 import io.kotest.matchers.collections.shouldHaveSize
 import org.jetbrains.bazel.languages.bazelrc.fixtures.BazelrcCompletionTestCase
-import org.junit.Test
-import org.junit.runner.RunWith
-import org.junit.runners.JUnit4
+import org.jetbrains.bazel.test.framework.BazelTestApplication
+import org.jetbrains.bazel.test.framework.completeBasicLookupStrings
+import org.junit.jupiter.api.Test
 
-@RunWith(JUnit4::class)
+@BazelTestApplication
 class BazelrcConfigCompletionTest : BazelrcCompletionTestCase() {
   @Test
   fun `should not suggest any config if none exists`() {
@@ -24,7 +24,7 @@ class BazelrcConfigCompletionTest : BazelrcCompletionTestCase() {
     )
 
     // when
-    val lookups = myFixture.completeBasic().flatMap { it.allLookupStrings }
+    val lookups = myFixture.completeBasicLookupStrings()
 
     // then
     lookups shouldHaveSize 0
@@ -45,7 +45,7 @@ class BazelrcConfigCompletionTest : BazelrcCompletionTestCase() {
     )
 
     // when
-    val lookups = myFixture.completeBasic().flatMap { it.allLookupStrings }
+    val lookups = myFixture.completeBasicLookupStrings()
 
     // then
     lookups shouldContainOnly listOf("config1", "config2")
@@ -73,7 +73,7 @@ class BazelrcConfigCompletionTest : BazelrcCompletionTestCase() {
     )
 
     // when
-    val lookups = myFixture.completeBasic().flatMap { it.allLookupStrings }
+    val lookups = myFixture.completeBasicLookupStrings()
 
     // then
     lookups shouldContainOnly listOf("deep-config", "immediate")

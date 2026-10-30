@@ -1,5 +1,6 @@
 package org.jetbrains.bazel.workspace.importer
 
+import com.intellij.testFramework.junit5.fixture.tempPathFixture
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.collections.shouldHaveSingleElement
 import io.kotest.matchers.collections.shouldNotContain
@@ -12,11 +13,11 @@ import org.jetbrains.bazel.sync.JavaLanguageClass
 import org.jetbrains.bazel.sync.workspace.languages.jvm.JvmBuildTarget
 import org.jetbrains.bazel.sync.workspace.languages.jvm.KotlinBuildTarget
 import org.jetbrains.bazel.sync.workspace.languages.jvm.ScalaBuildTarget
+import org.jetbrains.bazel.test.framework.BazelTestApplication
 import org.jetbrains.bazel.test.framework.target.TestBuildTarget
 import org.jetbrains.bazel.workspace.model.test.framework.createTestBuildTarget
 import org.jetbrains.bazel.workspace.model.test.framework.resolveTestLocation
 import org.jetbrains.bazel.workspace.model.test.framework.testLocation
-import org.jetbrains.bazel.workspace.model.test.framework.MockProjectBaseTest
 import org.jetbrains.bsp.protocol.BuildTargetData
 import org.jetbrains.bsp.protocol.StringsCollection
 import org.junit.jupiter.api.DynamicTest
@@ -28,12 +29,13 @@ import kotlin.io.path.createDirectories
 import kotlin.io.path.createFile
 import kotlin.io.path.createSymbolicLinkPointingTo
 
-class ResourceRootBuilderTest : MockProjectBaseTest() {
+@BazelTestApplication
+class ResourceRootBuilderTest {
 
   @TempDir
   private lateinit var tempDir: Path
 
-  private val projectRoot: Path get() = projectDir.get()
+  private val projectRoot by tempPathFixture()
 
   @Test
   fun `should mark resources as JAVA_RESOURCE_ROOT_TYPE by default`() {

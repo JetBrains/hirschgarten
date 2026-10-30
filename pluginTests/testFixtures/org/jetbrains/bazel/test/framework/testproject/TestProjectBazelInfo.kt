@@ -15,13 +15,14 @@ fun testProjectBazelInfo(
   workspaceRoot: Path,
   outputBase: Path = workspaceRoot.resolveSibling("${workspaceRoot.name}-output-base"),
   execRoot: Path = outputBase.resolve("execroot").resolve("_main"),
+  release: BazelRelease = BazelRelease.FALLBACK_VERSION,
 ): BazelInfo =
   BazelInfo(
     execRoot = execRoot,
     outputBase = outputBase,
     workspaceRoot = workspaceRoot,
     bazelBin = TEST_OUTPUT_ROOT.segments.fold(execRoot.resolve("bazel-out"), Path::resolve),
-    release = BazelRelease.FALLBACK_VERSION,
+    release = release,
     isBzlModEnabled = true,
     isWorkspaceEnabled = false,
     externalAutoloads = emptyList(),

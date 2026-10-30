@@ -1,18 +1,17 @@
 package org.jetbrains.bazel.languages.starlark.inspection
 
-import com.intellij.testFramework.fixtures.BasePlatformTestCase
 import org.jetbrains.bazel.languages.starlark.StarlarkBundle
-import org.junit.Before
-import org.junit.Test
-import org.junit.runner.RunWith
-import org.junit.runners.JUnit4
+import org.jetbrains.bazel.languages.starlark.fixtures.StarlarkInspectionTestCase
+import org.jetbrains.bazel.test.framework.BazelTestApplication
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
 
-@RunWith(JUnit4::class)
-class StarlarkInvalidDictKeyInspectionTest : BasePlatformTestCase() {
+@BazelTestApplication
+class StarlarkInvalidDictKeyInspectionTest : StarlarkInspectionTestCase() {
   private val descriptionNotHashable = StarlarkBundle.message("inspection.description.dict.key.not.hashable")
   private val descriptionDuplicate = StarlarkBundle.message("inspection.description.dict.key.duplicate")
 
-  @Before
+  @BeforeEach
   fun beforeEach() {
     myFixture.enableInspections(StarlarkInvalidDictKeyInspection())
   }

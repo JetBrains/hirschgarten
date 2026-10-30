@@ -5,12 +5,8 @@ import com.intellij.execution.RunManagerListener
 import com.intellij.execution.RunnerAndConfigurationSettings
 import com.intellij.openapi.application.EDT
 import com.intellij.openapi.application.readAction
-import com.intellij.openapi.components.service
 import com.intellij.openapi.util.Disposer
 import com.intellij.testFramework.common.timeoutRunBlocking
-import com.intellij.testFramework.junit5.TestApplication
-import com.intellij.testFramework.junit5.fixture.projectFixture
-import com.intellij.testFramework.junit5.fixture.tempPathFixture
 import com.jetbrains.cidr.lang.workspace.OCResolveConfigurations
 import com.jetbrains.cidr.lang.workspace.OCWorkspace
 import com.jetbrains.cidr.lang.workspace.OCWorkspaceListener
@@ -21,23 +17,24 @@ import org.assertj.core.api.Assertions.assertThat
 import org.jetbrains.bazel.clion.workspace.CC_CLIENT_KEY
 import org.jetbrains.bazel.clion.workspace.CcResolveConfiguration
 import org.jetbrains.bazel.clion.workspace.encode
-import org.jetbrains.bazel.fixtures.ccProject
+import org.jetbrains.bazel.fixtures.CcProjectBuilder
+import org.jetbrains.bazel.fixtures.ccTargets
 import org.jetbrains.bazel.label.Label
-import org.jetbrains.bazel.project.BazelProjectFixtures.initializeBazelProject
 import org.jetbrains.bazel.run.config.BazelRunConfiguration
 import org.jetbrains.bazel.run.config.BazelRunConfigurationType
-import org.jetbrains.bazel.sync.workspace.persistence.WorkspaceSnapshotService
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceConfigurationId
+import org.jetbrains.bazel.test.framework.BazelTestApplication
+import org.jetbrains.bazel.test.framework.testproject.sync
+import org.jetbrains.bazel.test.framework.testproject.testBazelProjectFixture
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
-@TestApplication
+@BazelTestApplication
 class CcRunConfigurationChooserTest {
-  private val directoryFixture = tempPathFixture()
-  private val directory by directoryFixture
-  private val project by projectFixture(pathFixture = directoryFixture)
+  private val testBazel by testBazelProjectFixture()
+  private val project get() = testBazel.project
 
-  private val snapshot = ccProject {
+  private val targets: CcProjectBuilder.() -> Unit = {
     val arm = ccLibrary {
       label("//lib:shared")
       configurationId("arm")
@@ -62,8 +59,7 @@ class CcRunConfigurationChooserTest {
 
   @BeforeEach
   fun setUp(): Unit = timeoutRunBlocking {
-    initializeBazelProject(project, directory)
-    project.service<WorkspaceSnapshotService>().update { snapshot to Unit }
+    testBazel.sync { ccTargets(targets) }
 
     val workspace = OCWorkspace.getInstance(project)
     val model = workspace.getModifiableModel(CC_CLIENT_KEY, true)
@@ -98,19 +94,20 @@ class CcRunConfigurationChooserTest {
 
   @Test
   fun testDoesNotSelectDependencyConfiguration(): Unit = timeoutRunBlocking {
-    val updated = ccProject {
-      val arm = ccLibrary {
-        label("//lib:shared")
-        configurationId("arm")
-        srcs("lib/shared.cc")
-      }
-      ccBinary {
-        label("//app:x86")
-        configurationId("x86")
-        deps(arm)
+    testBazel.sync {
+      ccTargets {
+        val arm = ccLibrary {
+          label("//lib:shared")
+          configurationId("arm")
+          srcs("lib/shared.cc")
+        }
+        ccBinary {
+          label("//app:x86")
+          configurationId("x86")
+          deps(arm)
+        }
       }
     }
-    project.service<WorkspaceSnapshotService>().update { updated to Unit }
 
     select("//app:x86")
     assertThat(choose("arm", "x86")).isEqualTo("x86")
@@ -176,10 +173,11 @@ class CcRunConfigurationChooserTest {
     select("//app:arm")
     assertThat(choose("arm", "x86")).isEqualTo("arm")
 
-    val updated = ccProject {
-      ccBinary { label("//app:arm") }
+    testBazel.sync {
+      ccTargets {
+        ccBinary { label("//app:arm") }
+      }
     }
-    project.service<WorkspaceSnapshotService>().update { updated to Unit }
     assertThat(choose("arm", "x86")).isNull()
   }
 

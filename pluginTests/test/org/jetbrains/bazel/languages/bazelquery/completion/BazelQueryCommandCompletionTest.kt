@@ -3,6 +3,7 @@ package org.jetbrains.bazel.languages.bazelquery.completion
 import io.kotest.matchers.collections.shouldContainAll
 import org.jetbrains.bazel.test.framework.BazelTestApplication
 import org.jetbrains.bazel.test.framework.bazelCodeInsightFixture
+import org.jetbrains.bazel.test.framework.completeBasicLookupStrings
 import org.junit.jupiter.api.Test
 
 @BazelTestApplication
@@ -15,7 +16,7 @@ class BazelQueryCommandCompletionTest {
     myFixture.configureByText(".bazelquery", "<caret>")
 
     // when
-    val lookups = completeBasic()
+    val lookups = myFixture.completeBasicLookupStrings()
 
     // then
     lookups shouldContainAll knownCommands
@@ -27,7 +28,7 @@ class BazelQueryCommandCompletionTest {
     myFixture.configureByText(".bazelquery", """a<caret>""")
 
     // when
-    val lookups = completeBasic()
+    val lookups = myFixture.completeBasicLookupStrings()
 
     // then
     lookups shouldContainAll listOf("attr()", "allrdeps()", "allpaths()")
@@ -39,7 +40,7 @@ class BazelQueryCommandCompletionTest {
     myFixture.configureByText(".bazelquery", """"<caret>""")
 
     // when
-    val lookups = completeBasic()
+    val lookups = myFixture.completeBasicLookupStrings()
 
     // then
     lookups shouldContainAll knownCommands
@@ -51,11 +52,9 @@ class BazelQueryCommandCompletionTest {
     myFixture.configureByText(".bazelquery", "'<caret>'")
 
     // when
-    val lookups = completeBasic()
+    val lookups = myFixture.completeBasicLookupStrings()
 
     // then
     lookups shouldContainAll knownCommands
   }
-
-  private fun completeBasic(): List<String> = myFixture.completeBasic().flatMap { it.allLookupStrings }
 }

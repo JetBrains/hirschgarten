@@ -9,8 +9,9 @@ import org.jetbrains.bazel.commons.BazelPathsResolver
 import org.jetbrains.bazel.commons.constants.Constants
 import org.jetbrains.bazel.server.diagnostics.DiagnosticsService
 import org.jetbrains.bazel.test.framework.BazelTestApplication
+import org.jetbrains.bazel.test.framework.testproject.bazelInfo
 import org.jetbrains.bazel.test.framework.testproject.testBazelProjectFixture
-import org.jetbrains.bazel.test.framework.testproject.testProjectBazelInfo
+import org.jetbrains.bazel.test.framework.testproject.workspaceRoot
 import org.jetbrains.bsp.protocol.BazelTaskEventsHandler
 import org.jetbrains.bsp.protocol.CachedTestLog
 import org.jetbrains.bsp.protocol.CoverageReport
@@ -26,7 +27,6 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.ValueSource
 import java.nio.file.Files
-import kotlin.io.path.Path
 
 @BazelTestApplication
 class BepDiagnosticsTest {
@@ -53,16 +53,14 @@ class BepDiagnosticsTest {
     override fun onCachedTestLog(testLog: CachedTestLog) {}
   }
 
-  fun newBepServer(taskHandler: BazelTaskEventsHandler): BepServer {
-    val bazelInfo = testProjectBazelInfo(workspaceRoot = Path("workspaceRoot"))
-    return BepServer(
+  fun newBepServer(taskHandler: BazelTaskEventsHandler): BepServer =
+    BepServer(
       project = testBazel.project,
       taskEventsHandler = taskHandler,
-      diagnosticsService = DiagnosticsService(bazelInfo.workspaceRoot),
+      diagnosticsService = DiagnosticsService(testBazel.workspaceRoot),
       parentId = TaskGroupId("originId").task(""),
-      bazelPathsResolver = BazelPathsResolver(bazelInfo),
+      bazelPathsResolver = BazelPathsResolver(testBazel.bazelInfo),
     )
-  }
 
   @ParameterizedTest
   @ValueSource(booleans = [true, false])

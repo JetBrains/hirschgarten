@@ -8,6 +8,7 @@ import com.intellij.testFramework.junit5.fixture.projectFixture
 import com.intellij.testFramework.junit5.fixture.testFixture
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import org.jetbrains.bazel.commons.BazelRelease
 import org.jetbrains.bazel.test.framework.BazelTestApplication
 import org.jetbrains.bazel.test.framework.bazelOutputBaseFixture
 import java.nio.file.Path
@@ -31,21 +32,29 @@ import kotlin.io.path.createDirectories
  * @param workspace Workspace root, relative to the project directory, fixture creates that directory
  * @param persistentSnapshots Set it to true to keep the snapshots in the persistent store.
  * @param beforeInstall Runs on a background thread after the fixture creates the directories and before the install.
+ * @param release Bazel release of fixture BazelInfo.
  */
 fun testBazelProjectFixture(
   openAfterCreation: Boolean = true,
   workspace: String = "",
   persistentSnapshots: Boolean = false,
+  release: BazelRelease = BazelRelease.FALLBACK_VERSION,
   beforeInstall: (workspaceRoot: Path, outputBase: Path) -> Unit = { _, _ -> },
 ): TestFixture<TestBazelProject> =
   projectFixture(openAfterCreation = openAfterCreation)
-    .testBazelProjectFixture(workspace = workspace, persistentSnapshots = persistentSnapshots, beforeInstall = beforeInstall)
+    .testBazelProjectFixture(
+      workspace = workspace,
+      persistentSnapshots = persistentSnapshots,
+      release = release,
+      beforeInstall = beforeInstall,
+    )
 
 internal fun TestFixture<Project>.testBazelProjectFixture(
   rootFixture: TestFixture<Path>? = null,
   realBazel: Boolean = false,
   workspace: String = "",
   persistentSnapshots: Boolean = false,
+  release: BazelRelease = BazelRelease.FALLBACK_VERSION,
   beforeInstall: (workspaceRoot: Path, outputBase: Path) -> Unit = { _, _ -> },
 ): TestFixture<TestBazelProject> = testFixture("testBazelProject") {
   val project = this@testBazelProjectFixture.init()
@@ -54,7 +63,7 @@ internal fun TestFixture<Project>.testBazelProjectFixture(
   val parentDisposable = disposableFixture().init()
   val testBazel = withContext(Dispatchers.IO) {
     beforeInstall(root, outputBase)
-    project.installTestBazelProject(root, outputBase, parentDisposable, realBazel, persistentSnapshots)
+    project.installTestBazelProject(root, outputBase, parentDisposable, realBazel, persistentSnapshots, release)
   }
   initialized(testBazel) {
     withContext(Dispatchers.IO) { testBazel.uninstall() }

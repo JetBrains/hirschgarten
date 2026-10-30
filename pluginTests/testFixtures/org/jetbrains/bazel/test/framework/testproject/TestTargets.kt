@@ -4,6 +4,7 @@ import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.label.DependencyLabel
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.sync.workspace.snapshot.OutputLocationCollectionBuilder
+import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceConfigurationId
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
 import org.jetbrains.bazel.test.framework.target.TestBuildTarget
 import org.jetbrains.bazel.workspace.model.test.framework.TEST_OUTPUT_ROOT
@@ -16,6 +17,8 @@ class TestTargetBuilder internal constructor(private val label: Label, private v
   private val resources = mutableListOf<OutputLocation>()
   private val dependencies = mutableListOf<DependencyLabel>()
   private val data = mutableListOf<BuildTargetData>()
+  private val tags = mutableListOf<String>()
+  private var configuration = WorkspaceConfigurationId.EMPTY
 
   fun srcs(vararg paths: String, generated: Boolean = false) {
     sources += locations(paths, generated)
@@ -27,6 +30,14 @@ class TestTargetBuilder internal constructor(private val label: Label, private v
 
   fun deps(vararg labels: String) {
     dependencies += labels.map { DependencyLabel(targetKey = WorkspaceTargetKey(label = Label.parse(it))) }
+  }
+
+  fun tags(vararg tags: String) {
+    this.tags += tags
+  }
+
+  fun configuration(configuration: WorkspaceConfigurationId) {
+    this.configuration = configuration
   }
 
   fun data(vararg items: BuildTargetData) {
@@ -43,12 +54,13 @@ class TestTargetBuilder internal constructor(private val label: Label, private v
 
   internal fun build(): TestBuildTarget =
     TestBuildTarget(
-      key = WorkspaceTargetKey(label = label),
+      key = WorkspaceTargetKey(label = label, configuration = configuration),
       dependencies = dependencies.toList(),
       kind = kind,
       sources = OutputLocationCollectionBuilder.ofLocations(sources),
       resources = OutputLocationCollectionBuilder.ofLocations(resources),
       data = data.toList(),
+      tags = tags.toList(),
     )
 }
 

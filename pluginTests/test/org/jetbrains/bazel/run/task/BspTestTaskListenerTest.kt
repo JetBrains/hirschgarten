@@ -3,13 +3,13 @@ package org.jetbrains.bazel.run.task
 import com.intellij.execution.testframework.sm.ServiceMessageBuilder
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Key
-import com.intellij.testFramework.junit5.TestApplication
+import com.intellij.testFramework.junit5.fixture.projectFixture
 import kotlinx.coroutines.CompletableDeferred
 import org.jetbrains.bazel.commons.BazelStatus
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.run.BazelProcessHandler
+import org.jetbrains.bazel.test.framework.BazelTestApplication
 import org.jetbrains.bazel.workspace.model.matchers.shouldBeEqual
-import org.jetbrains.bazel.workspace.model.test.framework.WorkspaceModelBaseTest
 import org.jetbrains.bsp.protocol.JUnitStyleTestSuiteData
 import org.jetbrains.bsp.protocol.TaskGroupId
 import org.jetbrains.bsp.protocol.TestFinish
@@ -33,8 +33,9 @@ internal class MockBazelProcessHandler(project: Project) : BazelProcessHandler(p
   override fun detachProcessImpl() {}
 }
 
-@TestApplication
-class BspTestTaskListenerTest : WorkspaceModelBaseTest() {
+@BazelTestApplication
+class BspTestTaskListenerTest {
+  private val project by projectFixture()
   private lateinit var handler: MockBazelProcessHandler
   private lateinit var listener: BazelTestTaskListener
 

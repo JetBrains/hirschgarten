@@ -3,26 +3,27 @@ package org.jetbrains.bazel.languages.projectview.completion
 import com.intellij.codeInsight.completion.PrioritizedLookupElement
 import com.intellij.codeInsight.lookup.LookupElement
 import com.intellij.codeInsight.lookup.LookupElementPresentation
-import com.intellij.testFramework.DumbModeTestUtils
-import com.intellij.testFramework.fixtures.BasePlatformTestCase
 import io.kotest.matchers.collections.shouldContainAll
 import io.kotest.matchers.collections.shouldNotContainAll
 import io.kotest.matchers.doubles.shouldBeLessThan
 import io.kotest.matchers.shouldBe
 import org.jetbrains.bazel.languages.projectview.ProjectViewSection
-import org.junit.Test
-import org.junit.runner.RunWith
-import org.junit.runners.JUnit4
+import org.jetbrains.bazel.test.framework.BazelTestApplication
+import org.jetbrains.bazel.test.framework.bazelCodeInsightFixture
+import org.jetbrains.bazel.test.framework.completeBasicLookupStrings
+import org.junit.jupiter.api.Test
 
-@RunWith(JUnit4::class)
-class ProjectViewSectionCompletionContributorTest : BasePlatformTestCase() {
+@BazelTestApplication
+class ProjectViewSectionCompletionContributorTest {
+  private val myFixture by bazelCodeInsightFixture()
+
   @Test
   fun `should suggest section names in top level`() {
     myFixture.configureByText(".bazelproject", "")
 
     myFixture.type("a")
 
-    val lookups = myFixture.completeBasic().flatMap { it.allLookupStrings }
+    val lookups = myFixture.completeBasicLookupStrings()
     val expected = ProjectViewSection.allRegistered
       .filter { it.key.name.contains("a") }
       .map { it.key.name }
@@ -35,10 +36,8 @@ class ProjectViewSectionCompletionContributorTest : BasePlatformTestCase() {
     myFixture.configureByText(".bazelproject", "")
     myFixture.type("a")
 
-    DumbModeTestUtils.runInDumbModeSynchronously(project) {
-      val lookups = myFixture.completeBasic().flatMap { it.allLookupStrings }
-      lookups shouldContainAll listOf("targets", "shard_sync")
-    }
+    val lookups = myFixture.completeBasicLookupStrings(dumbMode = true)
+    lookups shouldContainAll listOf("targets", "shard_sync")
   }
 
   @Test
@@ -64,7 +63,7 @@ class ProjectViewSectionCompletionContributorTest : BasePlatformTestCase() {
 
     myFixture.type("a")
 
-    val lookups = myFixture.completeBasic().flatMap { it.allLookupStrings }
+    val lookups = myFixture.completeBasicLookupStrings()
     lookups shouldNotContainAll ProjectViewSection.allRegistered
       .filter { it.key.name.contains("a") }
       .map { it.key.name }
@@ -84,7 +83,7 @@ class ProjectViewSectionCompletionContributorTest : BasePlatformTestCase() {
 
     myFixture.type("a")
 
-    val lookups = myFixture.completeBasic().flatMap { it.allLookupStrings }
+    val lookups = myFixture.completeBasicLookupStrings()
     lookups shouldNotContainAll ProjectViewSection.allRegistered
       .filter { it.key.name.contains("a") }
       .map { it.key.name }

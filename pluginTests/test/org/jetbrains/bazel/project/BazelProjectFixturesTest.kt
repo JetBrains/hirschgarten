@@ -1,26 +1,39 @@
 package org.jetbrains.bazel.project
 
+import com.intellij.openapi.Disposable
 import com.intellij.openapi.startup.ProjectActivity
 import com.intellij.openapi.startup.StartupActivity
 import com.intellij.testFramework.common.timeoutRunBlocking
+import com.intellij.testFramework.junit5.TestDisposable
+import com.intellij.testFramework.junit5.fixture.projectFixture
+import com.intellij.testFramework.junit5.fixture.tempPathFixture
 import com.intellij.testFramework.replaceService
+import io.kotest.matchers.collections.shouldBeEmpty
+import io.kotest.matchers.collections.shouldContainExactly
+import io.kotest.matchers.collections.shouldHaveSize
 import org.jetbrains.bazel.project.BazelProjectFixtures.initializeBazelProject
 import org.jetbrains.bazel.project.BazelProjectFixtures.initializeBazelProjectViaProjectView
 import org.jetbrains.bazel.sync.ProjectSyncCompletionResult
 import org.jetbrains.bazel.sync.ProjectSyncOutcome
 import org.jetbrains.bazel.sync.ProjectSyncScope
 import org.jetbrains.bazel.sync.ProjectSyncService
-import org.jetbrains.bazel.workspace.model.test.framework.MockProjectBaseTest
+import org.jetbrains.bazel.test.framework.BazelTestApplication
 import org.jetbrains.bsp.protocol.TaskId
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Timeout
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.EnumSource
 import kotlin.io.path.writeText
-import kotlin.test.assertEquals
 
+@BazelTestApplication
 @Timeout(30)
-internal class BazelProjectFixturesTest : MockProjectBaseTest() {
+internal class BazelProjectFixturesTest {
+  private val projectDir = tempPathFixture()
+  private val project by projectFixture(projectDir, openAfterCreation = false)
+
+  @TestDisposable
+  lateinit var disposable: Disposable
+
   private val syncService = RecordingSyncService()
 
   @BeforeEach
@@ -34,11 +47,11 @@ internal class BazelProjectFixturesTest : MockProjectBaseTest() {
     initialize(initialization)
 
     runStartupActivity()
-    assertEquals(0, syncService.scopes.size)
+    syncService.scopes.shouldBeEmpty()
 
     val scope = ProjectSyncScope.Full(build = false, phased = false)
     project.getService(ProjectSyncService::class.java).sync(scope)
-    assertEquals(listOf<ProjectSyncScope>(scope), syncService.scopes)
+    syncService.scopes shouldContainExactly listOf(scope)
   }
 
   @ParameterizedTest
@@ -48,14 +61,13 @@ internal class BazelProjectFixturesTest : MockProjectBaseTest() {
     initialize(initialization, runStartupSync = true)
 
     runStartupActivity()
-    assertEquals(1, syncService.scopes.size)
+    syncService.scopes shouldHaveSize 1
   }
 
   private fun initialize(initialization: ProjectInitialization, runStartupSync: Boolean = false) {
     val root = projectDir.get()
     when (initialization) {
       ProjectInitialization.PATH -> initializeBazelProject(project, root, runStartupSync)
-      ProjectInitialization.STRING -> initializeBazelProject(project, root.toString(), runStartupSync)
       ProjectInitialization.PROJECT_VIEW -> {
         val projectView = root.resolve(".bazelproject")
         projectView.writeText("directories:\n  .\n")
@@ -71,7 +83,7 @@ internal class BazelProjectFixturesTest : MockProjectBaseTest() {
     activity.execute(project)
   }
 
-  enum class ProjectInitialization { PATH, STRING, PROJECT_VIEW }
+  enum class ProjectInitialization { PATH, PROJECT_VIEW }
 }
 
 private class RecordingSyncService : ProjectSyncService {

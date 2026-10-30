@@ -5,34 +5,27 @@ import io.kotest.matchers.nulls.shouldBeNull
 import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeInstanceOf
-import org.intellij.lang.annotations.Language
 import org.jetbrains.bazel.commons.ExcludableValue
 import org.jetbrains.bazel.languages.projectview.DIRECTORIES_KEY
 import org.jetbrains.bazel.languages.projectview.IMPORT_DEPTH_KEY
-import org.jetbrains.bazel.languages.projectview.ProjectView
-import org.jetbrains.bazel.languages.projectview.ProjectViewFactory
 import org.jetbrains.bazel.languages.projectview.dotIdeaDirectoryLocation
 import org.jetbrains.bazel.languages.projectview.imports.Import
 import org.jetbrains.bazel.test.framework.BazelTestApplication
-import org.jetbrains.bazel.test.framework.bazelCodeInsightFixture
-import org.jetbrains.bazel.test.framework.testBazel
+import org.jetbrains.bazel.test.framework.testproject.parseProjectView
+import org.jetbrains.bazel.test.framework.testproject.testBazelProjectFixture
 import org.jetbrains.bazel.test.framework.testproject.workspaceRoot
 import org.jetbrains.bazel.test.framework.testproject.writeFile
 import org.junit.jupiter.api.Test
-import java.nio.file.Path
 import kotlin.io.path.Path
 
 
 @BazelTestApplication
 class ProjectViewContentTest {
-  private val myFixture by bazelCodeInsightFixture()
-
-  private val project get() = myFixture.project
-  private val rootDir get() = myFixture.testBazel.workspaceRoot
+  private val testBazel by testBazelProjectFixture()
 
   @Test
   fun `test sections are parsed from content with no file behind it`() {
-    val projectView = parse(
+    val projectView = testBazel.parseProjectView(
       """
       dot_idea_directory_location: custom/.idea
       import_depth: 42
@@ -52,7 +45,7 @@ class ProjectViewContentTest {
 
   @Test
   fun `test an unresolved import in content with no source has no position`() {
-    val projectView = parse(
+    val projectView = testBazel.parseProjectView(
       """
       dot_idea_directory_location: custom/.idea
 
@@ -69,9 +62,9 @@ class ProjectViewContentTest {
 
   @Test
   fun `test an unresolved import is positioned when a source is passed alongside content`() {
-    val source = rootDir.resolve("main.bazelproject")
+    val source = testBazel.workspaceRoot.resolve("main.bazelproject")
 
-    val projectView = parse(
+    val projectView = testBazel.parseProjectView(
       """
       dot_idea_directory_location: custom/.idea
 
@@ -89,7 +82,7 @@ class ProjectViewContentTest {
 
   @Test
   fun `test imports in content are resolved against the root`() {
-    myFixture.testBazel.writeFile(
+    testBazel.writeFile(
       "imported.bazelproject",
       """
       directories:
@@ -97,12 +90,10 @@ class ProjectViewContentTest {
       """.trimIndent(),
     )
 
-    val projectView = parse("import imported.bazelproject")
+    val projectView = testBazel.parseProjectView("import imported.bazelproject")
 
-    projectView.imports.single().shouldBeInstanceOf<Import.Resolved>().path shouldBe rootDir.resolve("imported.bazelproject")
+    val imported = projectView.imports.single().shouldBeInstanceOf<Import.Resolved>()
+    imported.path shouldBe testBazel.workspaceRoot.resolve("imported.bazelproject")
     projectView.getSection(DIRECTORIES_KEY) shouldContainExactly listOf(ExcludableValue.included(Path("dirA")))
   }
-
-  private fun parse(@Language("projectview") content: String, source: Path? = null): ProjectView =
-    ProjectViewFactory.from(project, content = content, root = rootDir, source = source)
 }

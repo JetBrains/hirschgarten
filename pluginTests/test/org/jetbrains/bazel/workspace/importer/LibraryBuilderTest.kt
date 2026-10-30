@@ -1,25 +1,48 @@
 package org.jetbrains.bazel.workspace.importer
 
+import com.intellij.platform.backend.workspace.WorkspaceModel
 import com.intellij.platform.workspace.jps.entities.LibraryEntity
 import com.intellij.platform.workspace.jps.entities.LibraryRoot
 import com.intellij.platform.workspace.jps.entities.LibraryRootTypeId
 import com.intellij.platform.workspace.jps.entities.LibraryTableId
+import com.intellij.platform.workspace.storage.MutableEntityStorage
+import com.intellij.platform.workspace.storage.WorkspaceEntity
+import com.intellij.platform.workspace.storage.url.VirtualFileUrlManager
+import com.intellij.testFramework.junit5.fixture.projectFixture
+import com.intellij.workspaceModel.ide.impl.WorkspaceModelImpl
 import io.kotest.matchers.shouldBe
 import org.jetbrains.bazel.commons.RepoMappingDisabled
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.magicmetamodel.formatAsLibraryName
 import org.jetbrains.bazel.magicmetamodel.formatAsModuleName
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
+import org.jetbrains.bazel.test.framework.BazelTestApplication
 import org.jetbrains.bazel.workspace.model.matchers.entries.ExpectedLibraryEntity
 import org.jetbrains.bazel.workspace.model.matchers.entries.shouldBeEqual
 import org.jetbrains.bazel.workspace.model.matchers.entries.shouldContainExactlyInAnyOrder
-import org.jetbrains.bazel.workspace.model.test.framework.WorkspaceModelBaseTest
 import org.jetbrains.bazel.workspacemodel.entities.BazelDummyEntitySource
 import org.jetbrains.bsp.protocol.LibraryItem
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import kotlin.io.path.Path
 
-internal class LibraryBuilderTest : WorkspaceModelBaseTest() {
+@BazelTestApplication
+internal class LibraryBuilderTest {
+  private val project by projectFixture()
+
+  private lateinit var workspaceEntityStorageBuilder: MutableEntityStorage
+
+  private val virtualFileUrlManager: VirtualFileUrlManager
+    get() = WorkspaceModel.getInstance(project).getVirtualFileUrlManager()
+
+  @BeforeEach
+  fun setUp() {
+    workspaceEntityStorageBuilder = (WorkspaceModel.getInstance(project) as WorkspaceModelImpl).getBuilderSnapshot().builder
+  }
+
+  private fun <E : WorkspaceEntity> loadedEntries(entityClass: Class<E>): List<E> =
+    workspaceEntityStorageBuilder.entities(entityClass).toList()
+
   @Test
   fun `should add one project library`() {
     val libraryItem =

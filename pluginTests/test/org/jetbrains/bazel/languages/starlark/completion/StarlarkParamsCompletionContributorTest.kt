@@ -1,13 +1,14 @@
 package org.jetbrains.bazel.languages.starlark.completion
 
-import com.intellij.testFramework.fixtures.BasePlatformTestCase
 import io.kotest.matchers.shouldBe
-import org.junit.Test
-import org.junit.runner.RunWith
-import org.junit.runners.JUnit4
+import org.jetbrains.bazel.test.framework.BazelTestApplication
+import org.jetbrains.bazel.test.framework.bazelCodeInsightFixture
+import org.junit.jupiter.api.Test
 
-@RunWith(JUnit4::class)
-class StarlarkParamsCompletionContributorTest : BasePlatformTestCase() {
+@BazelTestApplication
+class StarlarkParamsCompletionContributorTest {
+  private val myFixture by bazelCodeInsightFixture()
+
   @Test
   fun `should complete args`() {
     myFixture.configureByText("args.bzl", "")

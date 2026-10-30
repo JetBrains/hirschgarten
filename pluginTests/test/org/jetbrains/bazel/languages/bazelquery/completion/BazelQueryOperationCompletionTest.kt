@@ -3,6 +3,7 @@ package org.jetbrains.bazel.languages.bazelquery.completion
 import io.kotest.matchers.collections.shouldContainAll
 import org.jetbrains.bazel.test.framework.BazelTestApplication
 import org.jetbrains.bazel.test.framework.bazelCodeInsightFixture
+import org.jetbrains.bazel.test.framework.completeBasicLookupStrings
 import org.junit.jupiter.api.Test
 
 @BazelTestApplication
@@ -15,7 +16,7 @@ class BazelQueryOperationCompletionTest {
     myFixture.configureByText(".bazelquery", "<caret>")
 
     // when
-    val lookups = completeBasic()
+    val lookups = myFixture.completeBasicLookupStrings()
 
     // then
     lookups shouldContainAll knownOperations
@@ -27,7 +28,7 @@ class BazelQueryOperationCompletionTest {
     myFixture.configureByText(".bazelquery", """l<caret>""")
 
     // when
-    val lookups = completeBasic()
+    val lookups = myFixture.completeBasicLookupStrings()
 
     // then
     lookups shouldContainAll listOf("let  in")
@@ -39,7 +40,7 @@ class BazelQueryOperationCompletionTest {
     myFixture.configureByText(".bazelquery", """"<caret>""")
 
     // when
-    val lookups = completeBasic()
+    val lookups = myFixture.completeBasicLookupStrings()
 
     // then
     lookups shouldContainAll knownOperations
@@ -51,7 +52,7 @@ class BazelQueryOperationCompletionTest {
     myFixture.configureByText(".bazelquery", "'<caret>'")
 
     // when
-    val lookups = completeBasic()
+    val lookups = myFixture.completeBasicLookupStrings()
 
     // then
     lookups shouldContainAll knownOperations
@@ -63,11 +64,9 @@ class BazelQueryOperationCompletionTest {
     myFixture.configureByText(".bazelquery", "//my:target <caret>")
 
     // when
-    val lookups = completeBasic()
+    val lookups = myFixture.completeBasicLookupStrings()
 
     // then
     lookups shouldContainAll listOf("union", "except", "intersect")
   }
-
-  private fun completeBasic(): List<String> = myFixture.completeBasic().flatMap { it.allLookupStrings }
 }

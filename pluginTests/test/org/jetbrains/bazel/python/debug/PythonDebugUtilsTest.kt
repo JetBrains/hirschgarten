@@ -6,19 +6,14 @@ import com.intellij.testFramework.replaceService
 import com.intellij.util.execution.ParametersListUtil
 import io.kotest.matchers.nulls.shouldNotBeNull
 import org.jetbrains.bazel.commons.RuleType
-import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.label.Label
-import org.jetbrains.bazel.python.lang.PythonBuildTarget
-import org.jetbrains.bazel.python.lang.PythonLanguageClass
 import org.jetbrains.bazel.sync.environment.BazelProjectInfoService
 import org.jetbrains.bazel.test.framework.BazelTestApplication
-import org.jetbrains.bazel.test.framework.testproject.buildTarget
 import org.jetbrains.bazel.test.framework.testproject.outputBase
+import org.jetbrains.bazel.test.framework.testproject.pythonTarget
 import org.jetbrains.bazel.test.framework.testproject.sync
 import org.jetbrains.bazel.test.framework.testproject.testBazelProjectFixture
 import org.jetbrains.bazel.test.framework.testproject.workspaceRoot
-import org.jetbrains.bazel.workspace.model.test.framework.testLocation
-import org.jetbrains.bsp.protocol.StringsCollection
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 import java.io.File
@@ -397,21 +392,18 @@ class PythonDebugUtilsTest {
     val importRoots = imports.map { runfilesWorkspaceRoot.resolve(it).createDirectories() }
     val sitePackagesRoot = runfilesRoot.resolve("rules_python++pip+pypi__pytest/site-packages").createDirectories()
 
-    val kind = TargetKind(kind = ruleKind, languageClasses = setOf(PythonLanguageClass.PYTHON), ruleType = ruleType)
     testBazel.sync {
       targets(
-        buildTarget(target, kind) {
-          data(
-            PythonBuildTarget(
-              version = "3.8",
-              interpreter = interpreter?.let(::testLocation),
-              imports = StringsCollection.of(imports),
-              mainFile = testLocation(mainFile),
-              runnerScript = runnerScript,
-              targetArgs = StringsCollection.of(targetArgs),
-            ),
-          )
-        },
+        pythonTarget(
+          target,
+          ruleKind,
+          ruleType,
+          interpreter = interpreter,
+          imports = imports,
+          mainFile = mainFile,
+          runnerScript = runnerScript,
+          targetArgs = targetArgs,
+        ),
       )
     }
 

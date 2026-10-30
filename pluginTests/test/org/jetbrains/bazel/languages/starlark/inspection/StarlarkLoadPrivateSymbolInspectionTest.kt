@@ -1,18 +1,17 @@
 package org.jetbrains.bazel.languages.starlark.inspection
 
-import com.intellij.testFramework.fixtures.BasePlatformTestCase
 import org.jetbrains.bazel.languages.starlark.StarlarkBundle
-import org.junit.Before
-import org.junit.Test
-import org.junit.runner.RunWith
-import org.junit.runners.JUnit4
+import org.jetbrains.bazel.languages.starlark.fixtures.StarlarkInspectionTestCase
+import org.jetbrains.bazel.test.framework.BazelTestApplication
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
 
 
-@RunWith(JUnit4::class)
-internal class StarlarkLoadPrivateSymbolInspectionTest : BasePlatformTestCase() {
+@BazelTestApplication
+internal class StarlarkLoadPrivateSymbolInspectionTest : StarlarkInspectionTestCase() {
   val description = StarlarkBundle.message("inspection.description.load.private.symbol")
 
-  @Before
+  @BeforeEach
   fun beforeEach() {
     myFixture.enableInspections(StarlarkLoadPrivateSymbolInspection())
   }

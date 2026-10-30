@@ -8,20 +8,14 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.jetbrains.bazel.test.framework.BazelTestApplication
 import org.jetbrains.bazel.test.framework.bazelCodeInsightFixture
-import org.jetbrains.bazel.workspace.setRepoMapping
+import org.jetbrains.bazel.test.framework.testBazel
+import org.jetbrains.bazel.test.framework.testproject.sync
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
-import java.nio.file.Path
-import kotlin.io.path.Path
 
 @BazelTestApplication
 internal class RefactorFileWithReferencesTest {
   private val myFixture by bazelCodeInsightFixture()
-
-  private val project get() = myFixture.project
-
-  private val rootPath: Path
-    get() = Path(myFixture.tempDirFixture.getFile(".")!!.path)
 
   @Test
   fun `rename kotlin file should update label in build file`() {
@@ -262,9 +256,6 @@ internal class RefactorFileWithReferencesTest {
 
   @Test
   fun `Move File on kotlin file should change label in BUILD file`() {
-    project.setRepoMapping { mainRepo(rootPath) }
-
-    myFixture.addFileToProject("MODULE.bazel", "")
     myFixture.addFileToProject("BUILD", "")
     myFixture.addFileToProject(
       "com/example/A.kt",
@@ -322,9 +313,6 @@ internal class RefactorFileWithReferencesTest {
 
   @Test
   fun `Move File on java file should change label in BUILD file`() {
-    project.setRepoMapping { mainRepo(rootPath) }
-
-    myFixture.addFileToProject("MODULE.bazel", "")
     myFixture.addFileToProject("BUILD", "")
     myFixture.addFileToProject(
       "com/example/A.java",
@@ -380,9 +368,6 @@ internal class RefactorFileWithReferencesTest {
 
   @Test
   fun `Move File on bzl file should change label in BUILD file`() {
-    project.setRepoMapping { mainRepo(rootPath) }
-
-    myFixture.addFileToProject("MODULE.bazel", "")
     myFixture.addFileToProject("BUILD", "")
     myFixture.addFileToProject(
       "com/example/bzl/custom.bzl",
@@ -415,9 +400,6 @@ internal class RefactorFileWithReferencesTest {
 
   @Test
   fun `Move File to another bazel package should change label in BUILD file`() {
-    project.setRepoMapping { mainRepo(rootPath) }
-
-    myFixture.addFileToProject("MODULE.bazel", "")
     myFixture.addFileToProject("BUILD", "")
     myFixture.addFileToProject(
       "com/example/custom.bzl",
@@ -451,12 +433,8 @@ internal class RefactorFileWithReferencesTest {
 
   @Test
   fun `Move File to another bazel repo change label in BUILD file`() {
-    project.setRepoMapping {
-      mainRepo(rootPath)
-      repo("example", rootPath.resolve("com/example"))
-    }
+    myFixture.testBazel.sync { repositories { local("example", "com/example") } }
 
-    myFixture.addFileToProject("MODULE.bazel", "")
     myFixture.addFileToProject(
       "BUILD",
       """
@@ -491,7 +469,6 @@ internal class RefactorFileWithReferencesTest {
 
   @Test
   fun `Move File should not change glob pattern in BUILD file`() {
-    myFixture.addFileToProject("MODULE.bazel", "")
     myFixture.addFileToProject("BUILD", "")
     myFixture.addFileToProject(
       "com/example/A.kt",

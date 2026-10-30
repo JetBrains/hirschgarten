@@ -1,9 +1,14 @@
 package org.jetbrains.bazel.languages.bazelrc.fixtures
 
-import com.intellij.testFramework.fixtures.BasePlatformTestCase
 import org.jetbrains.bazel.test.framework.BazelPathManager
+import org.jetbrains.bazel.test.framework.bazelCodeInsightFixture
+import org.junit.jupiter.api.BeforeEach
 
-abstract class BazelrcAnnotatorTestCase : BasePlatformTestCase() {
-  override fun getTestDataPath(): String =
-    BazelPathManager.getTestFixture("bazelrc/annotation")
+abstract class BazelrcAnnotatorTestCase {
+  protected val myFixture by bazelCodeInsightFixture()
+
+  @BeforeEach
+  fun setUpTestDataPath() {
+    myFixture.testDataPath = BazelPathManager.getTestFixture("bazelrc/annotation")
+  }
 }

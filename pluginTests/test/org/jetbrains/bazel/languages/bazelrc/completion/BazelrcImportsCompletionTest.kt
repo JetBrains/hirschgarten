@@ -3,11 +3,11 @@ package org.jetbrains.bazel.languages.bazelrc.completion
 import io.kotest.matchers.collections.shouldContainAll
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import org.jetbrains.bazel.languages.bazelrc.fixtures.BazelrcCompletionTestCase
-import org.junit.Test
-import org.junit.runner.RunWith
-import org.junit.runners.JUnit4
+import org.jetbrains.bazel.test.framework.BazelTestApplication
+import org.jetbrains.bazel.test.framework.completeBasicLookupStrings
+import org.junit.jupiter.api.Test
 
-@RunWith(JUnit4::class)
+@BazelTestApplication
 class BazelrcImportsCompletionTest : BazelrcCompletionTestCase() {
   @Test
   fun `beginning of line should complete commands`() {
@@ -15,7 +15,7 @@ class BazelrcImportsCompletionTest : BazelrcCompletionTestCase() {
     myFixture.configureByText(".bazelrc", "<caret>")
 
     // when
-    val lookups = myFixture.completeBasic().flatMap { it.allLookupStrings }
+    val lookups = myFixture.completeBasicLookupStrings()
 
     // then
     lookups shouldContainAll BazelImportCompletionProvider.importKeywordAndDescriptions.keys
@@ -27,7 +27,7 @@ class BazelrcImportsCompletionTest : BazelrcCompletionTestCase() {
     myFixture.configureByText(".bazelrc", """im<caret>""")
 
     // when
-    val lookups = myFixture.completeBasic().flatMap { it.allLookupStrings }
+    val lookups = myFixture.completeBasicLookupStrings()
 
     // then
     lookups shouldContainExactlyInAnyOrder BazelImportCompletionProvider.importKeywordAndDescriptions.keys
@@ -42,7 +42,7 @@ class BazelrcImportsCompletionTest : BazelrcCompletionTestCase() {
     myFixture.configureByText("text.bazelrc", """import <caret>""")
 
     // when
-    val lookups = myFixture.completeBasic().flatMap { it.allLookupStrings }
+    val lookups = myFixture.completeBasicLookupStrings()
 
     // then
     lookups shouldContainExactlyInAnyOrder listOf("text.bazelrc", "dir", ".bazelrc")
