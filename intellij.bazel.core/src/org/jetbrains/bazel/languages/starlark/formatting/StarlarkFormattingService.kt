@@ -13,6 +13,7 @@ import com.intellij.formatting.FormattingMode
 import com.intellij.formatting.service.AsyncDocumentFormattingService
 import com.intellij.formatting.service.AsyncFormattingRequest
 import com.intellij.formatting.service.FormattingService.Feature
+import com.intellij.ide.trustedProjects.TrustedProjects
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.ModalityState
 import com.intellij.openapi.application.readAndWriteAction
@@ -49,6 +50,7 @@ internal class StarlarkFormattingService : AsyncDocumentFormattingService() {
   override fun createFormattingTask(request: AsyncFormattingRequest): FormattingTask? {
     val formattingContext = request.context
     val project = formattingContext.project
+    if (!TrustedProjects.isProjectTrusted(project)) return null
     val buildifierPath = project.bazelProjectSettings.getBuildifierPathString(request.context.project) ?: return null
 
     if (!checkDocumentExists(request)) {
