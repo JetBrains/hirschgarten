@@ -37,6 +37,7 @@ jvm_library(
         "//rider/model/generated",
         "//CIDR/clion-radler/testing",
         "//CIDR/clion-radler/core",
+        "@community//json/plugin",
         "//CIDR/clion-test-google/nova",
         "//CIDR/clion-test-catch/nova",
     ],

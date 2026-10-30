@@ -203,6 +203,7 @@
     <orderEntry type="module" module-name="intellij.bazel.kotlin.sync" scope="TEST" />
     <orderEntry type="module" module-name="intellij.bazel.java.sync" scope="TEST" />
     <orderEntry type="module" module-name="intellij.bazel.python.backend" scope="TEST" />
+    <orderEntry type="module" module-name="intellij.json.plugin" scope="RUNTIME" />
     <orderEntry type="module" module-name="intellij.python.community.services.systemPython" scope="TEST" />
     <orderEntry type="module" module-name="intellij.libraries.bazel.aspect.sdk" scope="TEST" />
     <orderEntry type="module" module-name="intellij.libraries.junit4" scope="TEST" />
