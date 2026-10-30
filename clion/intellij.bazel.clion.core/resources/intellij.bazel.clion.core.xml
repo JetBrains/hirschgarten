@@ -47,7 +47,7 @@
   <extensions defaultExtensionNs="com.intellij">
     <runConfigurationProducer implementation="org.jetbrains.bazel.clion.run.BazelCcMainRunConfigurationProducer"/>
     <runConfigurationProducer implementation="org.jetbrains.bazel.clion.run.BazelCcTestRunConfigurationProducer"/>
-    <programRunner implementation="org.jetbrains.bazel.clion.run.CcDebugRunner"/>
+    <programRunner implementation="org.jetbrains.bazel.clion.run.debug.CcDebugRunner"/>
   </extensions>
 
   <extensions defaultExtensionNs="org.jetbrains.bazel">

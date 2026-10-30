@@ -1,4 +1,4 @@
-package org.jetbrains.bazel.clion.run
+package org.jetbrains.bazel.clion.run.debug
 
 import com.intellij.build.events.impl.FailureResultImpl
 import com.intellij.cidr.debugger.profiles.CidrDebugProfileManager
@@ -22,6 +22,8 @@ import org.jetbrains.annotations.NonNls
 import org.jetbrains.annotations.PropertyKey
 import org.jetbrains.bazel.action.saveAllFiles
 import org.jetbrains.bazel.clion.BazelCLionCoreBundle
+import org.jetbrains.bazel.clion.run.CcRunHandler
+import org.jetbrains.bazel.clion.run.CcTestHandler
 import org.jetbrains.bazel.clion.workspace.CcCompilerInfo
 import org.jetbrains.bazel.clion.workspace.CcTargetUtils
 import org.jetbrains.bazel.commons.BazelStatus
