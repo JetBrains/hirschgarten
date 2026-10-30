@@ -10,6 +10,7 @@ import com.intellij.openapi.project.Project
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.clion.BazelCLionCoreBundle
 import org.jetbrains.bazel.clion.BazelCLionFeatureFlags
+import org.jetbrains.bazel.clion.run.debug.CcDebugCommandLineState
 import org.jetbrains.bazel.clion.sync.includesCc
 import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.run.BazelRunHandler

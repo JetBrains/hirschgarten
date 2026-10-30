@@ -1,4 +1,4 @@
-package org.jetbrains.bazel.clion.run
+package org.jetbrains.bazel.clion.run.debug
 
 import com.intellij.cidr.debugger.profiles.CidrDebugProfile
 import com.intellij.execution.configurations.CommandLineState
@@ -55,7 +55,7 @@ internal class CcDebugCommandLineState(
   val bazelState: GenericRunConfigurationState,
 ) : CidrCommandLineState(environment, CcCidrLauncher(environment, bazelState)) {
 
-  // set by org.jetbrains.bazel.clion.run.CcDebugRunner
+  // set by the CcDebugRunner
   var targetInfo: CcDebugTargetInfo? = null
   var executionInfo: ExecutableInfo? = null
   var debugProfile: CidrDebugProfile<*>? = null
@@ -69,7 +69,7 @@ private class CcCidrLauncher(private val environment: ExecutionEnvironment, priv
   override fun createDebugProcess(state: CommandLineState, session: XDebugSession): XDebugProcess {
     val ccState = state as CcDebugCommandLineState
 
-    // should always be set by org.jetbrains.bazel.clion.run.CcDebugRunner before this is reached
+    // the CcDebugRunner sets these before the debug process starts
     val targetInfo = requireNotNull(ccState.targetInfo)
     val executionInfo = requireNotNull(ccState.executionInfo)
     val debugProfile = requireNotNull(ccState.debugProfile)

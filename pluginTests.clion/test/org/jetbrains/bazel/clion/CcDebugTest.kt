@@ -29,7 +29,7 @@ import com.jetbrains.cidr.execution.debugger.toggleBreakpoint
 import org.assertj.core.api.Assertions.assertThat
 import org.jetbrains.bazel.assertions.assertNotNull
 import org.jetbrains.bazel.assertions.findTarget
-import org.jetbrains.bazel.clion.run.CcDebugRunner
+import org.jetbrains.bazel.clion.run.debug.CcDebugRunner
 import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.fixtures.CcTestApplication
 import org.jetbrains.bazel.fixtures.EXECUTION_TIMEOUT
