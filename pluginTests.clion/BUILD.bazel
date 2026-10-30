@@ -38,6 +38,7 @@ jvm_library(
         "//CIDR/clion-radler/testing",
         "//CIDR/clion-radler/core",
         "@community//json/plugin",
+        "@community//plugins/yaml/plugin",
         "//CIDR/clion-test-google/nova",
         "//CIDR/clion-test-catch/nova",
     ],
