@@ -8,7 +8,7 @@ import org.assertj.core.api.Assertions.assertThat
 import org.jetbrains.bazel.assertions.assertThat
 import org.jetbrains.bazel.clion.workspace.buildToolchainMap
 import org.jetbrains.bazel.fixtures.CcProjectBuilder
-import org.jetbrains.bazel.fixtures.TestImportEvent
+import org.jetbrains.bazel.fixtures.TestEvent
 import org.jetbrains.bazel.fixtures.ccProject
 import org.jetbrains.bazel.fixtures.withTestImportContext
 import org.jetbrains.bazel.label.DependencyLabelKind
@@ -335,7 +335,7 @@ class CcToolchainMapTest {
 
   private fun resolve(
     declare: CcProjectBuilder.() -> Unit,
-  ): Pair<List<TestImportEvent>, Map<WorkspaceTargetKey, WorkspaceTargetKey>> = timeoutRunBlocking {
+  ): Pair<List<TestEvent>, Map<WorkspaceTargetKey, WorkspaceTargetKey>> = timeoutRunBlocking {
     val (ctx, result) = withTestImportContext(ccProject(declare = declare), project) { buildToolchainMap() }
     ctx.events to result
   }

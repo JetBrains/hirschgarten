@@ -39,16 +39,13 @@ internal class TestImportContext(
   override val outputResolver: OutputLocationResolver
     get() = snapshot.bazelInfo.outputResolver()
 
-  val events: MutableList<TestImportEvent> = mutableListOf()
+  val events: MutableList<TestEvent> = mutableListOf()
 
   override val vfuManager: VirtualFileUrlManager by lazy {
     IdeVirtualFileUrlManagerImpl()
   }
 
   override fun reportEvent(severity: MessageEvent.Kind, message: String, description: String?) {
-    events += TestImportEvent(severity, message, description)
+    events += TestEvent(severity, message, description)
   }
 }
-
-/** An event that an import step reported. */
-internal data class TestImportEvent(val severity: MessageEvent.Kind, val message: String, val description: String?)
