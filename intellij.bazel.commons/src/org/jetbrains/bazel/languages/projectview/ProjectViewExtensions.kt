@@ -44,6 +44,12 @@ val ProjectView.aspectsAttrs: List<String>?
   get() = getSection(ASPPECTS_ATTRS_KEY)
 
 @Internal
+val DROP_NO_IDE_KEY: ProjectViewSectionKey<Boolean> = ProjectViewSectionKey("drop_no_ide", false)
+val ProjectView.dropNoIde: Boolean
+  @Internal
+  get() = getSection(DROP_NO_IDE_KEY)
+
+@Internal
 val DERIVE_TARGETS_FROM_DIRECTORIES_KEY: ProjectViewSectionKey<Boolean> = ProjectViewSectionKey("derive_targets_from_directories", false)
 val ProjectView.deriveTargetsFromDirectories: Boolean
   get() = getSection(DERIVE_TARGETS_FROM_DIRECTORIES_KEY)

@@ -23,6 +23,7 @@ import org.jetbrains.bazel.ignore.BazelIgnoreService
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.languages.projectview.ProjectView
 import org.jetbrains.bazel.languages.projectview.aspectsAttrs
+import org.jetbrains.bazel.languages.projectview.dropNoIde
 import org.jetbrains.bazel.languages.projectview.shardSync
 import org.jetbrains.bazel.languages.projectview.targetShardSize
 import org.jetbrains.bazel.languages.projectview.targets
@@ -156,6 +157,7 @@ class ProjectResolver(
         bazelInfo.release,
         repoMapping,
         projectView.aspectsAttrs,
+        projectView.dropNoIde,
       )
     }
 
