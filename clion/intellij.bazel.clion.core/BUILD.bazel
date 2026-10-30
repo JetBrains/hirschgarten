@@ -29,6 +29,7 @@ jvm_library(
         "//plugins/bazel/intellij.bazel.core:core",
         "//plugins/bazel/intellij.bazel.commons:commons",
         "//plugins/bazel/intellij.bazel.backend:backend",
+        "//plugins/bazel/intellij.bazel.projectview:projectview",
         "@community//platform/core-api:core",
         "@community//platform/lang-api:lang",
         "@community//platform/execution",
