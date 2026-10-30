@@ -41,7 +41,7 @@ private val TEST_HANDLER_KEY = Key.create<CcDebugInfoDialogTestHandler>("bazel.c
 @ApiStatus.Internal
 enum class CcDebugInfoChoice { OPEN_PROJECT_VIEW, USE_DBG, DEBUG_ANYWAY, CANCEL }
 
-/** Answers the debug info dialog in a test. The test cannot click the dialog, because the headless dialog closes at once. */
+/** Answers the debug info dialog in a test. */
 @ApiStatus.Internal
 fun interface CcDebugInfoDialogTestHandler {
 
