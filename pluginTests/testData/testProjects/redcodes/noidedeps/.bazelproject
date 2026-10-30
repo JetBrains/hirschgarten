@@ -1,0 +1,4 @@
+targets:
+    //:main
+
+drop_no_ide: false
