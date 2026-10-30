@@ -230,7 +230,7 @@ abstract class BazelCommand(val bazelBinary: String) {
       commandLine.addAll(programArguments.map { "--test_arg=$it" })
       commandLine.addAll(targetCommandLine())
 
-      return BazelCommandExecutionDescriptor(commandLine, enablePty)
+      return BazelCommandExecutionDescriptor(commandLine, enablePty, alwaysShowStdout = true)
     }
   }
 

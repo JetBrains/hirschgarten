@@ -210,10 +210,9 @@ class ExecuteService(
       (command as HasAdditionalBazelOptions).additionalBazelOptions.addAll(additionalOptions)
     }
 
-    if (params.streamTestOutput) {
-      // Ensure streamed test output for live UI in IDE
-      ensureTestOutputStreamed(command)
-    }
+    val outputFlag = if (params.streamTestOutput) BazelFlag.testOutputStreamed() else BazelFlag.testOutputAll()
+    command.options.addFirst(outputFlag)
+
     (command as HasEnvironment).environment.putAll(params.environmentVariables)
     (command as HasProgramArguments).programArguments.addAll(params.arguments)
     command.options.add(BazelFlag.buildEventBinaryPathConversion(false))
@@ -246,11 +245,6 @@ class ExecuteService(
       }
 
     return runWithBepServer(command, taskId, BazelInvocationContext.BUILD).processResult
-  }
-
-  private fun ensureTestOutputStreamed(command: BazelCommand) {
-    // Add to the beginning to make overriding possible
-    command.options.addFirst(BazelFlag.testOutputStreamed())
   }
 
   suspend fun buildTargetsWithBep(
