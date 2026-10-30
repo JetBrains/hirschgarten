@@ -112,6 +112,7 @@ class BazelBspAspectsManager(
     bazelRelease: BazelRelease,
     repoMapping: RepoMapping,
     aspectAttrs: List<String>?,
+    dropNoIde: Boolean,
   ) {
     val ruleNameMapping = ruleSetInstances.mapNotNull {
       // As the versions of rules_java for bazel 7 do not provide full information, we
@@ -137,6 +138,7 @@ class BazelBspAspectsManager(
         useBuiltin = builtInLanguages,
         rulesets = ruleSetInstances.map { it.ruleset.aspectLanguage }.toSet(),
         attrAspects = aspectAttrs,
+        dropNoIde = dropNoIde,
       ),
     )
   }

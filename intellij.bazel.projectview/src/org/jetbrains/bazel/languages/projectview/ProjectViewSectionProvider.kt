@@ -30,6 +30,7 @@ internal class DefaultProjectViewSectionProvider : ProjectViewSectionProvider {
       DotIdeaDirectoryLocationSection,
       EnabledRulesSection,
       ApsectsAttrsSection,
+      DropNoIdeSection,
       GazelleTargetSection,
       ImportDepthSection,
       ImportRunConfigurationsSection,
@@ -100,6 +101,12 @@ private val ApsectsAttrsSection: ProjectViewSection<List<String>?> = ProjectView
   key = ASPPECTS_ATTRS_KEY,
   type = ProjectViewSectionType.string().list(),
   documentation = BazelProjectViewBundle.message("bazel.language.projectview.docs.aspects_attrs"),
+)
+
+private val DropNoIdeSection: ProjectViewSection<Boolean> = ProjectViewSection(
+  key = DROP_NO_IDE_KEY,
+  type = ProjectViewSectionType.boolean,
+  documentation = BazelProjectViewBundle.message("bazel.language.projectview.docs.drop_no_ide"),
 )
 
 

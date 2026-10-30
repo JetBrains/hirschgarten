@@ -8,6 +8,7 @@ import org.jetbrains.bazel.commons.constants.Constants
 import org.jetbrains.bazel.config.BazelBackendBundle
 import org.jetbrains.bazel.ignore.BazelIgnoreService
 import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.languages.projectview.dropNoIde
 import org.jetbrains.bazel.progress.syncConsole
 import org.jetbrains.bazel.progress.withSubtask
 import org.jetbrains.bazel.server.BazelServerService
@@ -64,7 +65,7 @@ object BazelWorkspaceResolver {
           .mapTargets(targetInfoPaths = syncProject.targetProtoPaths, build = build, taskId = taskId)
       }
 
-      reportImportedNoIdeTargets(project, taskId, targets)
+      reportImportedNoIdeTargets(project, taskId, targets, server.projectView.dropNoIde)
 
       val extendedRepoMapping = extendRepoMapping(server, repoMapping, targets.map { it.id }, taskId)
 
@@ -83,17 +84,28 @@ object BazelWorkspaceResolver {
     project: Project,
     taskId: TaskId,
     targets: Collection<BuildTarget>,
+    dropNoIde: Boolean,
   ) {
     val noIdeTargets = targets.filter { target -> Constants.NO_IDE in target.tags }
     if (noIdeTargets.isNotEmpty()) {
-      project.syncConsole.addDiagnosticMessage(
-        taskId, null, -1, -1,
-        message = BazelBackendBundle.message("bazel.import.noide.targets", noIdeTargets.size, Constants.NO_IDE),
-        description = noIdeTargets.joinToString(",", limit = 5) {
-          it.id.toString()
-        },
-        MessageEvent.Kind.WARNING,
-      )
+      if (dropNoIde) {
+        project.syncConsole.addDiagnosticMessage(
+          taskId, null, -1, -1,
+          message = BazelBackendBundle.message("bazel.import.noide.droppedtargets", noIdeTargets.size, Constants.NO_IDE),
+          description = noIdeTargets.joinToString(",", limit = 5) { it.id.toString() },
+          MessageEvent.Kind.INFO,
+        )
+      }
+      else {
+        project.syncConsole.addDiagnosticMessage(
+          taskId, null, -1, -1,
+          message = BazelBackendBundle.message("bazel.import.noide.targets", noIdeTargets.size, Constants.NO_IDE),
+          description = noIdeTargets.joinToString(",", limit = 5) {
+            it.id.toString()
+          },
+          MessageEvent.Kind.WARNING,
+        )
+      }
     }
   }
 
