@@ -42,7 +42,6 @@ import org.jetbrains.bazel.sync.workspace.persistence.WorkspaceSnapshotService
 import org.jetbrains.bazel.sync.workspace.snapshot.allTargets
 import org.jetbrains.bazel.taskEvents.BazelTaskEventsService
 import org.jetbrains.bazel.utils.ExecutableInfo
-import org.jetbrains.bazel.utils.RunfileManifestOnlyException
 import org.jetbrains.bazel.utils.UnexpectedScriptContentException
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.RunParams
@@ -211,15 +210,14 @@ private suspend fun collectExecutableInfo(targetInfo: CcDebugTargetInfo): Execut
       Files.readString(scriptPath)
     }
 
-    ExecutableInfo.fromBazelRunScript(content)
+    val executableInfo = ExecutableInfo.fromBazelRunScript(content)
+    withContext(Dispatchers.IO) { executableInfo.createRequiredDirectories() }
+    executableInfo
   }
   catch (e: IOException) {
     throw ExecutionException(BazelCLionCoreBundle.message("debug.error.script.read.failed", e.message.orEmpty()))
   }
   catch (e: UnexpectedScriptContentException) {
-    throw ExecutionException(BazelCLionCoreBundle.message("debug.error.script.parse.failed", e.message.orEmpty()))
-  }
-  catch (e: RunfileManifestOnlyException) {
     throw ExecutionException(BazelCLionCoreBundle.message("debug.error.script.parse.failed", e.message.orEmpty()))
   }
   finally {

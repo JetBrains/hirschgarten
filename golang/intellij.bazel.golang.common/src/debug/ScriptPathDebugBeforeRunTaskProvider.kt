@@ -21,7 +21,6 @@ import org.jetbrains.bazel.server.tasks.runBuildTargetTask
 import org.jetbrains.bazel.target.targetStorage
 import org.jetbrains.bazel.ui.notifications.BazelBalloonNotifier
 import org.jetbrains.bazel.utils.ExecutableInfo
-import org.jetbrains.bazel.utils.RunfileManifestOnlyException
 import org.jetbrains.bazel.utils.UnexpectedScriptContentException
 import kotlin.io.path.readText
 
@@ -79,9 +78,9 @@ internal class ScriptPathDebugBeforeRunTaskProvider : BeforeRunTaskProvider<Scri
     val scriptContent = runCatching { scriptPath.readText() }
       .onFailure { handleScriptReadingErrors(it, target) }
       .getOrNull() ?: return false
-    val executableInfo = runCatching { ExecutableInfo.fromBazelRunScript(scriptContent) }
-      .onFailure { handleScriptParsingErrors(it, target) }
-      .getOrNull() ?: return false
+    val executableInfo = runCatching {
+      ExecutableInfo.fromBazelRunScript(scriptContent).also { it.createRequiredDirectories() }
+    }.onFailure { handleScriptParsingErrors(it, target) }.getOrNull() ?: return false
     executableKey.set(executableInfo)
     return true
   }
@@ -92,7 +91,6 @@ internal class ScriptPathDebugBeforeRunTaskProvider : BeforeRunTaskProvider<Scri
   private fun handleScriptParsingErrors(error: Throwable, target: Label) {
     val content = when (error) {
       is UnexpectedScriptContentException -> BazelPluginBundle.message("go.debug.prepare.failed.reason.unexpected.script.content")
-      is RunfileManifestOnlyException -> BazelPluginBundle.message("go.debug.prepare.failed.reason.runfile.manifest.only")
       else -> BazelPluginBundle.message("go.debug.prepare.failed.reason.unexpected.error")
     }
     LOG.error("Unable to prepare Go binary for debugging. Failed while parsing the script.", error)
