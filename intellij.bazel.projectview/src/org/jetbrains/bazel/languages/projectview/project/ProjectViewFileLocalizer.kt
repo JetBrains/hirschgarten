@@ -8,8 +8,11 @@ import org.jetbrains.bazel.commons.constants.Constants.DOT_BAZELBSP_DIR_NAME
 import org.jetbrains.bazel.commons.constants.Constants.LEGACY_DEFAULT_PROJECT_VIEW_FILE_NAME
 import org.jetbrains.bazel.commons.constants.Constants.PROJECT_VIEW_FILE_EXTENSION
 import org.jetbrains.bazel.flow.open.ProjectViewFileUtils.projectViewTemplate
+import org.jetbrains.bazel.languages.projectview.BazelProjectViewBundle
 import org.jetbrains.bazel.utils.findVirtualFile
+import java.nio.file.FileAlreadyExistsException
 import java.nio.file.Path
+import java.nio.file.StandardOpenOption
 import kotlin.io.path.extension
 import kotlin.io.path.isRegularFile
 import kotlin.io.path.name
@@ -59,8 +62,15 @@ object ProjectViewFileLocalizer {
     return null
   }
 
+  /**
+   * The plugin calls this function before the user trusts the project.
+   * Thus a symlink in the project must not move the created file out of the project.
+   */
   private fun useDotBazelBspProjectViewFile(rootDir: Path): Path {
     val dotBazelBspDirectory = rootDir.findOrCreateDirectory(DOT_BAZELBSP_DIR_NAME)
+    if (!dotBazelBspDirectory.toRealPath().startsWith(rootDir.toRealPath())) {
+      error(BazelProjectViewBundle.message("project.view.file.outside.of.project.root", dotBazelBspDirectory, rootDir))
+    }
     val projectViewFile = dotBazelBspDirectory.resolve(DEFAULT_PROJECT_VIEW_FILE_NAME)
 
     if (projectViewFile.isRegularFile()) {
@@ -72,7 +82,13 @@ object ProjectViewFileLocalizer {
     }
 
     val projectViewTemplate = projectViewTemplate(rootDir.findVirtualFile()!!)
-    projectViewFile.writeText(projectViewTemplate)
+    try {
+      // CREATE_NEW fails on any existing entry, also on a dangling symlink
+      projectViewFile.writeText(projectViewTemplate, Charsets.UTF_8, StandardOpenOption.CREATE_NEW, StandardOpenOption.WRITE)
+    }
+    catch (_: FileAlreadyExistsException) {
+      error(BazelProjectViewBundle.message("project.view.file.not.regular.file", projectViewFile))
+    }
     return projectViewFile
   }
 }
